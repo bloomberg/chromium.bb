@@ -126,6 +126,11 @@ class ImmersiveModeController {
   virtual void OnFindBarVisibleBoundsChanged(
       const gfx::Rect& new_visible_bounds_in_screen) = 0;
 
+  // Disables animations and moves the mouse so that it is not over the
+  // top-of-window views for the sake of testing. Must be called before
+  // enabling immersive fullscreen.
+  virtual void SetupForTest() = 0;
+
   virtual void AddObserver(Observer* observer);
   virtual void RemoveObserver(Observer* observer);
 

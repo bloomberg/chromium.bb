@@ -404,7 +404,7 @@ BrowserView::BrowserView()
       devtools_dock_side_(DEVTOOLS_DOCK_SIDE_BOTTOM),
       devtools_window_(NULL),
       initialized_(false),
-      ignore_layout_(true),
+      in_process_fullscreen_(false),
 #if defined(OS_WIN) && !defined(USE_AURA)
       hung_window_detector_(&hung_plugin_action_),
       ticker_(0),
@@ -1804,7 +1804,7 @@ const char* BrowserView::GetClassName() const {
 }
 
 void BrowserView::Layout() {
-  if (ignore_layout_)
+  if (!initialized_ || in_process_fullscreen_)
     return;
 
   views::View::Layout();
@@ -2048,9 +2048,6 @@ void BrowserView::InitViews() {
 
   GetLocationBar()->GetLocationEntry()->model()->popup_model()->AddObserver(
       this);
-
-  // We're now initialized and ready to process Layout requests.
-  ignore_layout_ = false;
 }
 
 void BrowserView::LoadingAnimationCallback() {
@@ -2285,11 +2282,14 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
                                     FullscreenType type,
                                     const GURL& url,
                                     FullscreenExitBubbleType bubble_type) {
+  if (in_process_fullscreen_)
+    return;
+  in_process_fullscreen_ = true;
+
   // Reduce jankiness during the following position changes by:
   //   * Hiding the window until it's in the final position
   //   * Ignoring all intervening Layout() calls, which resize the webpage and
-  //     thus are slow and look ugly
-  ignore_layout_ = true;
+  //     thus are slow and look ugly (enforced via |in_process_fullscreen_|).
   LocationBarView* location_bar = GetLocationBarView();
 #if defined(OS_WIN) && !defined(USE_AURA)
   OmniboxViewWin* omnibox_win =
@@ -2360,8 +2360,9 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   // recompute the height of the infobar top arrow because toggling in and out
   // of fullscreen changes it. Calling ToolbarSizeChanged() will do both these
   // things since it computes the arrow height directly and forces a layout
-  // indirectly via UpdateUIForContents().
-  ignore_layout_ = false;
+  // indirectly via UpdateUIForContents(). Reset |in_process_fullscreen_| in
+  // order to let the layout occur.
+  in_process_fullscreen_ = false;
   ToolbarSizeChanged(false);
 }
 

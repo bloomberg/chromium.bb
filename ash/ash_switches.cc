@@ -138,11 +138,6 @@ const char kAshHideNotificationsForFactory[] =
 // "1024x768*2" sets the scale factor to 2 for a high DPI display.
 const char kAshHostWindowBounds[] = "ash-host-window-bounds";
 
-// Hides the small tab indicators at the top of the screen during immersive
-// fullscreen mode.
-const char kAshImmersiveHideTabIndicators[] =
-    "ash-immersive-hide-tab-indicators";
-
 // OEM-supplied wallpaper (as paths to trusted, non-user-writable JPEG files).
 const char kAshOemWallpaperLarge[] = "ash-oem-wallpaper-large";
 const char kAshOemWallpaperSmall[] = "ash-oem-wallpaper-small";

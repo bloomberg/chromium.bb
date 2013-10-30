@@ -32,6 +32,7 @@ class ImmersiveModeControllerStub : public ImmersiveModeController {
       AnimateReveal animate_reveal) OVERRIDE WARN_UNUSED_RESULT;
   virtual void OnFindBarVisibleBoundsChanged(
       const gfx::Rect& new_visible_bounds_in_screen) OVERRIDE;
+  virtual void SetupForTest() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImmersiveModeControllerStub);

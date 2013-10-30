@@ -12,10 +12,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
-#endif
-
 typedef InProcessBrowserTest ZoomBubbleBrowserTest;
 
 // TODO(linux_aura) http://crbug.com/163931
@@ -74,13 +70,9 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, ImmersiveFullscreen) {
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
   content::WebContents* web_contents = browser_view->GetActiveWebContents();
 
-  ImmersiveModeControllerAsh* immersive_controller =
-      static_cast<ImmersiveModeControllerAsh*>(
-          browser_view->immersive_mode_controller());
-  immersive_controller->DisableAnimationsForTest();
-
-  // Move the mouse out of the way.
-  immersive_controller->SetMouseHoveredForTest(false);
+  ImmersiveModeController* immersive_controller =
+      browser_view->immersive_mode_controller();
+  immersive_controller->SetupForTest();
 
   // Enter immersive fullscreen.
   {

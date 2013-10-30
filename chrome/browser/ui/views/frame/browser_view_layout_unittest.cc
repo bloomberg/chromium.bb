@@ -116,6 +116,7 @@ class MockImmersiveModeController : public ImmersiveModeController {
       AnimateReveal animate_reveal) OVERRIDE WARN_UNUSED_RESULT { return NULL; }
   virtual void OnFindBarVisibleBoundsChanged(
       const gfx::Rect& new_visible_bounds) OVERRIDE {}
+  virtual void SetupForTest() OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockImmersiveModeController);

@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller_test.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
+#include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -126,17 +126,16 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
 IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
   // We know we're using Views, so static cast.
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
+  content::WebContents* web_contents = browser_view->GetActiveWebContents();
   Widget* widget = browser_view->GetWidget();
   // We know we're using Ash, so static cast.
   BrowserNonClientFrameViewAsh* frame_view =
       static_cast<BrowserNonClientFrameViewAsh*>(
           widget->non_client_view()->frame_view());
 
-  ImmersiveModeControllerAsh* immersive_mode_controller =
-      static_cast<ImmersiveModeControllerAsh*>(
-          browser_view->immersive_mode_controller());
-  immersive_mode_controller->DisableAnimationsForTest();
-  immersive_mode_controller->SetForceHideTabIndicatorsForTest(true);
+  ImmersiveModeController* immersive_mode_controller =
+      browser_view->immersive_mode_controller();
+  immersive_mode_controller->SetupForTest();
 
   // Immersive mode starts disabled.
   ASSERT_FALSE(widget->IsFullscreen());
@@ -145,30 +144,53 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
   // Frame paints by default.
   EXPECT_TRUE(frame_view->ShouldPaint());
 
-  // Going fullscreen enables immersive mode.
-  chrome::ToggleFullscreenMode(browser());
+  // Enter both browser fullscreen and tab fullscreen. Entering browser
+  // fullscreen should enable immersive fullscreen.
+  {
+    // NOTIFICATION_FULLSCREEN_CHANGED is sent asynchronously.
+    scoped_ptr<FullscreenNotificationObserver> waiter(
+        new FullscreenNotificationObserver());
+    chrome::ToggleFullscreenMode(browser());
+    waiter->Wait();
+  }
+  {
+    scoped_ptr<FullscreenNotificationObserver> waiter(
+        new FullscreenNotificationObserver());
+    browser()->fullscreen_controller()->ToggleFullscreenModeForTab(
+        web_contents, true);
+    waiter->Wait();
+  }
   EXPECT_TRUE(immersive_mode_controller->IsEnabled());
 
   // An immersive reveal shows the buttons and the top of the frame.
-  immersive_mode_controller->StartRevealForTest(true);
+  scoped_ptr<ImmersiveRevealedLock> revealed_lock(
+      immersive_mode_controller->GetRevealedLock(
+          ImmersiveModeController::ANIMATE_REVEAL_NO));
   EXPECT_TRUE(immersive_mode_controller->IsRevealed());
   EXPECT_TRUE(frame_view->ShouldPaint());
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
   EXPECT_TRUE(frame_view->UseShortHeader());
   EXPECT_FALSE(frame_view->UseImmersiveLightbarHeaderStyle());
 
-  // End the reveal. As the header does not paint a light bar when the
-  // top-of-window views are not revealed, nothing should be painted.
-  immersive_mode_controller->SetMouseHoveredForTest(false);
+  // End the reveal. When in both immersive browser fullscreen and tab
+  // fullscreen, the tab lightbars should not be painted.
+  revealed_lock.reset();
   EXPECT_FALSE(immersive_mode_controller->IsRevealed());
   EXPECT_FALSE(frame_view->ShouldPaint());
 
-  // Repeat test but with the tab light bar visible when the top-of-window views
-  // are not revealed.
-  immersive_mode_controller->SetForceHideTabIndicatorsForTest(false);
+  // Repeat test but without tab fullscreen. The tab lightbars should now show
+  // when the top-of-window views are not revealed.
+  {
+    scoped_ptr<FullscreenNotificationObserver> waiter(
+        new FullscreenNotificationObserver());
+    browser()->fullscreen_controller()->ToggleFullscreenModeForTab(
+        web_contents, false);
+    waiter->Wait();
+  }
 
   // Immersive reveal should have same behavior as before.
-  immersive_mode_controller->StartRevealForTest(true);
+  revealed_lock.reset(immersive_mode_controller->GetRevealedLock(
+      ImmersiveModeController::ANIMATE_REVEAL_NO));
   EXPECT_TRUE(immersive_mode_controller->IsRevealed());
   EXPECT_TRUE(frame_view->ShouldPaint());
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
@@ -177,17 +199,21 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
 
   // Ending the reveal should hide the caption buttons and the header should
   // be in the lightbar style.
-  immersive_mode_controller->SetMouseHoveredForTest(false);
+  revealed_lock.reset();
   EXPECT_TRUE(frame_view->ShouldPaint());
   EXPECT_FALSE(frame_view->caption_button_container_->visible());
   EXPECT_TRUE(frame_view->UseShortHeader());
   EXPECT_TRUE(frame_view->UseImmersiveLightbarHeaderStyle());
 
-  // Exiting fullscreen exits immersive mode.
-  browser_view->ExitFullscreen();
+  // Exiting immersive fullscreen should make the caption buttons and the frame
+  // visible again.
+  {
+    scoped_ptr<FullscreenNotificationObserver> waiter(
+        new FullscreenNotificationObserver());
+    browser_view->ExitFullscreen();
+    waiter->Wait();
+  }
   EXPECT_FALSE(immersive_mode_controller->IsEnabled());
-
-  // Exiting immersive mode makes controls and frame visible again.
   EXPECT_TRUE(frame_view->ShouldPaint());
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
   EXPECT_FALSE(frame_view->UseImmersiveLightbarHeaderStyle());

@@ -56,9 +56,6 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   void LockRevealedState(AnimateReveal animate_reveal);
   void UnlockRevealedState();
 
-  // Exits immersive fullscreen based on |native_window_|'s show state.
-  void MaybeExitImmersiveFullscreen();
-
   // ImmersiveModeController overrides:
   virtual void Init(Delegate* delegate,
                     views::Widget* widget,
@@ -74,6 +71,7 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
       AnimateReveal animate_reveal) OVERRIDE WARN_UNUSED_RESULT;
   virtual void OnFindBarVisibleBoundsChanged(
       const gfx::Rect& new_visible_bounds_in_screen) OVERRIDE;
+  virtual void SetupForTest() OVERRIDE;
 
   // content::NotificationObserver override:
   virtual void Observe(int type,
@@ -108,12 +106,6 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
                                    aura::Window* transient) OVERRIDE;
   virtual void OnRemoveTransientChild(aura::Window* window,
                                       aura::Window* transient) OVERRIDE;
-
-  // Testing interface.
-  void SetForceHideTabIndicatorsForTest(bool force);
-  void StartRevealForTest(bool hovered);
-  void SetMouseHoveredForTest(bool hovered);
-  void DisableAnimationsForTest();
 
  private:
   friend class ImmersiveModeControllerAshTest;
@@ -206,13 +198,6 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   // Called when the animation to slide out the top-of-window views has
   // completed.
   void OnSlideClosedAnimationCompleted();
-
-  // Returns whether immersive fullscreen should be exited based on
-  // |native_window_|'s show state. This handles cases where the user has
-  // exited immersive fullscreen without going through
-  // FullscreenController::ToggleFullscreenMode(). This is the case if the
-  // user exits fullscreen via the restore button.
-  bool ShouldExitImmersiveFullscreen() const;
 
   // Returns the type of swipe given |event|.
   SwipeType GetSwipeType(ui::GestureEvent* event) const;

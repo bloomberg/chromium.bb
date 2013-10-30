@@ -57,7 +57,6 @@ ASH_EXPORT extern const char kAshGuestWallpaperLarge[];
 ASH_EXPORT extern const char kAshGuestWallpaperSmall[];
 ASH_EXPORT extern const char kAshHideNotificationsForFactory[];
 ASH_EXPORT extern const char kAshHostWindowBounds[];
-ASH_EXPORT extern const char kAshImmersiveHideTabIndicators[];
 ASH_EXPORT extern const char kAshOemWallpaperLarge[];
 ASH_EXPORT extern const char kAshOemWallpaperSmall[];
 ASH_EXPORT extern const char kAshOverviewDelayOnAltTab[];

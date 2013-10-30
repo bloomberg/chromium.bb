@@ -704,9 +704,10 @@ class BrowserView : public BrowserWindow,
   // True if we have already been initialized.
   bool initialized_;
 
-  // True if we should ignore requests to layout.  This is set while toggling
-  // fullscreen mode on and off to reduce jankiness.
-  bool ignore_layout_;
+  // True when in ProcessFullscreen(). The flag is used to avoid reentrance and
+  // to ignore requests to layout while in ProcessFullscreen() to reduce
+  // jankiness.
+  bool in_process_fullscreen_;
 
   scoped_ptr<FullscreenExitBubbleViews> fullscreen_bubble_;
 

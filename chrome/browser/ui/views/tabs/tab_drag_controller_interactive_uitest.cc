@@ -50,7 +50,7 @@
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
+#include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
@@ -1637,10 +1637,9 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
 
   // Put the second browser into immersive fullscreen.
   BrowserView* browser_view2 = BrowserView::GetBrowserViewForBrowser(browser2);
-  ImmersiveModeControllerAsh* immersive_controller2 =
-      static_cast<ImmersiveModeControllerAsh*>(
-          browser_view2->immersive_mode_controller());
-  immersive_controller2->DisableAnimationsForTest();
+  ImmersiveModeController* immersive_controller2 =
+      browser_view2->immersive_mode_controller();
+  immersive_controller2->SetupForTest();
   chrome::ToggleFullscreenMode(browser2);
   ASSERT_TRUE(immersive_controller2->IsEnabled());
   ASSERT_FALSE(immersive_controller2->IsRevealed());

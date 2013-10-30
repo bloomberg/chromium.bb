@@ -5,6 +5,9 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 
 #include "ash/display/display_manager.h"
+#include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_types.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -139,7 +142,7 @@ class ImmersiveModeControllerAshTest : public ash::test::AshTestBase {
   // SetHovered(true) moves the mouse over the |top_container_| but does not
   // move it to the top of the screen so will not initiate a reveal.
   void SetHovered(bool is_mouse_hovered) {
-    MoveMouse(0, is_mouse_hovered ? 1 : top_container_->height() + 100);
+    MoveMouse(0, is_mouse_hovered ? 10 : top_container_->height() + 100);
   }
 
   // Move the mouse to the given coordinates. The coordinates should be in
@@ -194,7 +197,6 @@ class ImmersiveModeControllerAshTest : public ash::test::AshTestBase {
   scoped_ptr<MockImmersiveModeControllerDelegate> delegate_;
   views::Widget* widget_;  // Owned by the native widget.
   views::View* top_container_;  // Owned by |root_view_|.
-  scoped_ptr<aura::test::EventGenerator> event_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(ImmersiveModeControllerAshTest);
 };
@@ -241,6 +243,58 @@ TEST_F(ImmersiveModeControllerAshTest, ImmersiveModeControllerAsh) {
   EXPECT_FALSE(controller()->IsRevealed());
   EXPECT_FALSE(controller()->ShouldHideTopViews());
   EXPECT_FALSE(delegate()->immersive_style());
+}
+
+// GetRevealedLock() specific tests.
+TEST_F(ImmersiveModeControllerAshTest, RevealedLock) {
+  scoped_ptr<ImmersiveRevealedLock> lock1;
+  scoped_ptr<ImmersiveRevealedLock> lock2;
+
+  // Immersive fullscreen is not on by default.
+  EXPECT_FALSE(controller()->IsEnabled());
+
+  // 1) Test acquiring and releasing a revealed state lock while immersive
+  // fullscreen is disabled. Acquiring or releasing the lock should have no
+  // effect till immersive fullscreen is enabled.
+  lock1.reset(controller()->GetRevealedLock(
+      ImmersiveModeControllerAsh::ANIMATE_REVEAL_NO));
+  EXPECT_FALSE(controller()->IsEnabled());
+  EXPECT_FALSE(controller()->IsRevealed());
+
+  // Immersive fullscreen should start in the revealed state due to the lock.
+  controller()->SetEnabled(true);
+  EXPECT_TRUE(controller()->IsEnabled());
+  EXPECT_TRUE(controller()->IsRevealed());
+
+  controller()->SetEnabled(false);
+  EXPECT_FALSE(controller()->IsEnabled());
+  EXPECT_FALSE(controller()->IsRevealed());
+
+  lock1.reset();
+  EXPECT_FALSE(controller()->IsEnabled());
+  EXPECT_FALSE(controller()->IsRevealed());
+
+  // Immersive fullscreen should start in the closed state because the lock is
+  // no longer held.
+  controller()->SetEnabled(true);
+  EXPECT_TRUE(controller()->IsEnabled());
+  EXPECT_FALSE(controller()->IsRevealed());
+
+  // 2) Test that acquiring a lock reveals the top-of-window views if they are
+  // hidden.
+  lock1.reset(controller()->GetRevealedLock(
+      ImmersiveModeControllerAsh::ANIMATE_REVEAL_NO));
+  EXPECT_TRUE(controller()->IsRevealed());
+
+  // 3) Test that the top-of-window views are only hidden when all of the locks
+  // are released.
+  lock2.reset(controller()->GetRevealedLock(
+      ImmersiveModeControllerAsh::ANIMATE_REVEAL_NO));
+  lock1.reset();
+  EXPECT_TRUE(controller()->IsRevealed());
+
+  lock2.reset();
+  EXPECT_FALSE(controller()->IsRevealed());
 }
 
 // Test mouse event processing for top-of-screen reveal triggering.
@@ -472,6 +526,53 @@ TEST_F(ImmersiveModeControllerAshTest, FindBar) {
   controller()->OnFindBarVisibleBoundsChanged(gfx::Rect());
   AttemptReveal(MODALITY_MOUSE);
   MoveMouse(over_find_bar.x(), over_find_bar.y());
+  EXPECT_FALSE(controller()->IsRevealed());
+}
+
+// Test behavior when the mouse becomes hovered without moving.
+TEST_F(ImmersiveModeControllerAshTest, MouseHoveredWithoutMoving) {
+  controller()->SetEnabled(true);
+  scoped_ptr<ImmersiveRevealedLock> lock;
+
+  // 1) Test that if the mouse becomes hovered without the mouse moving due to a
+  // lock causing the top-of-window views to be revealed (and the mouse
+  // happening to be near the top of the screen), the top-of-window views do not
+  // hide till the mouse moves off of the top-of-window views.
+  SetHovered(true);
+  EXPECT_FALSE(controller()->IsRevealed());
+  lock.reset(controller()->GetRevealedLock(
+      ImmersiveModeControllerAsh::ANIMATE_REVEAL_NO));
+  EXPECT_TRUE(controller()->IsRevealed());
+  lock.reset();
+  EXPECT_TRUE(controller()->IsRevealed());
+  SetHovered(false);
+  EXPECT_FALSE(controller()->IsRevealed());
+
+  // 2) Test that if the mouse becomes hovered without moving because of a
+  // reveal in ImmersiveModeControllerAshTest::controller()->SetEnabled(true)
+  // and there are no locks keeping the top-of-window views revealed, that mouse
+  // hover does not prevent the top-of-window views from closing.
+  controller()->SetEnabled(false);
+  SetHovered(true);
+  EXPECT_FALSE(controller()->IsRevealed());
+  controller()->SetEnabled(true);
+  EXPECT_FALSE(controller()->IsRevealed());
+
+  // 3) Test that if the mouse becomes hovered without moving because of a
+  // reveal in ImmersiveModeControllerAshTest::controller()->SetEnabled(true)
+  // and there is a lock keeping the top-of-window views revealed, that the
+  // top-of-window views do not hide till the mouse moves off of the
+  // top-of-window views.
+  controller()->SetEnabled(false);
+  SetHovered(true);
+  lock.reset(controller()->GetRevealedLock(
+      ImmersiveModeControllerAsh::ANIMATE_REVEAL_NO));
+  EXPECT_FALSE(controller()->IsRevealed());
+  controller()->SetEnabled(true);
+  EXPECT_TRUE(controller()->IsRevealed());
+  lock.reset();
+  EXPECT_TRUE(controller()->IsRevealed());
+  SetHovered(false);
   EXPECT_FALSE(controller()->IsRevealed());
 }
 
@@ -798,16 +899,8 @@ class ImmersiveModeControllerAshTestWithBrowserView
 
     browser()->window()->Show();
 
-    controller_ = static_cast<ImmersiveModeControllerAsh*>(
-        browser_view()->immersive_mode_controller());
-    controller_->DisableAnimationsForTest();
-
-    // Move the mouse so that it is not over the top-of-window views. The mouse
-    // position matters because entering immersive fullscreen causes synthesized
-    // mouse moves. (If the mouse is at the very top of the screen when entering
-    // immersive fullscreen, the top-of-window views will hide, then reveal as
-    // a result of the synthesized mouse moves).
-    controller()->SetMouseHoveredForTest(false);
+    controller_ = browser_view()->immersive_mode_controller();
+    controller_->SetupForTest();
   }
 
   // Returns the bounds of |view| in widget coordinates.
@@ -815,11 +908,49 @@ class ImmersiveModeControllerAshTestWithBrowserView
     return view->ConvertRectToWidget(view->GetLocalBounds());
   }
 
-  ImmersiveModeControllerAsh* controller() { return controller_; }
+  // Toggle the browser's fullscreen state.
+  void ToggleFullscreen() {
+    // NOTIFICATION_FULLSCREEN_CHANGED is sent asynchronously. The notification
+    // is used to trigger changes in whether the shelf is auto hidden and
+    // whether a "light bar" version of the tab strip is used when the
+    // top-of-window views are hidden.
+    scoped_ptr<FullscreenNotificationObserver> waiter(
+        new FullscreenNotificationObserver());
+    chrome::ToggleFullscreenMode(browser());
+    waiter->Wait();
+  }
+
+  // Set whether the browser is in tab fullscreen.
+  void SetTabFullscreen(bool tab_fullscreen) {
+    content::WebContents* web_contents =
+        browser_view()->GetContentsWebViewForTest()->GetWebContents();
+    scoped_ptr<FullscreenNotificationObserver> waiter(
+        new FullscreenNotificationObserver());
+    browser()->fullscreen_controller()->ToggleFullscreenModeForTab(
+        web_contents, tab_fullscreen);
+    waiter->Wait();
+  }
+
+  // Attempt revealing the top-of-window views.
+  void AttemptReveal() {
+    if (!revealed_lock_.get()) {
+      revealed_lock_.reset(controller_->GetRevealedLock(
+          ImmersiveModeControllerAsh::ANIMATE_REVEAL_NO));
+    }
+  }
+
+  // Attempt unrevealing the top-of-window views.
+  void AttemptUnreveal() {
+    revealed_lock_.reset();
+  }
+
+  ImmersiveModeController* controller() { return controller_; }
 
  private:
   // Not owned.
-  ImmersiveModeControllerAsh* controller_;
+  ImmersiveModeController* controller_;
+
+  scoped_ptr<ImmersiveRevealedLock> revealed_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(ImmersiveModeControllerAshTestWithBrowserView);
 };
@@ -842,14 +973,7 @@ TEST_F(ImmersiveModeControllerAshTestWithBrowserView, Layout) {
   EXPECT_TRUE(tabstrip->visible());
   EXPECT_TRUE(toolbar->visible());
 
-  // Enter immersive fullscreen.
-  {
-    // NOTIFICATION_FULLSCREEN_CHANGED is sent asynchronously.
-    scoped_ptr<FullscreenNotificationObserver> waiter(
-        new FullscreenNotificationObserver());
-    chrome::ToggleFullscreenMode(browser());
-    waiter->Wait();
-  }
+  ToggleFullscreen();
   EXPECT_TRUE(browser_view()->GetWidget()->IsFullscreen());
   EXPECT_TRUE(controller()->IsEnabled());
   EXPECT_FALSE(controller()->IsRevealed());
@@ -869,7 +993,7 @@ TEST_F(ImmersiveModeControllerAshTestWithBrowserView, Layout) {
 
   // Revealing the top-of-window views should set the tab strip back to the
   // normal style and show the toolbar.
-  controller()->StartRevealForTest(true);
+  AttemptReveal();
   EXPECT_TRUE(controller()->IsRevealed());
   EXPECT_TRUE(tabstrip->visible());
   EXPECT_FALSE(tabstrip->IsImmersiveStyle());
@@ -886,16 +1010,10 @@ TEST_F(ImmersiveModeControllerAshTestWithBrowserView, Layout) {
             GetBoundsInWidget(contents_web_view).y());
 
   // Repeat the test for when in both immersive fullscreen and tab fullscreen.
-  {
-    scoped_ptr<FullscreenNotificationObserver> waiter(
-        new FullscreenNotificationObserver());
-    browser()->fullscreen_controller()->ToggleFullscreenModeForTab(
-        contents_web_view->GetWebContents(), true);
-    waiter->Wait();
-  }
+  SetTabFullscreen(true);
   // Hide and reveal the top-of-window views so that they get relain out.
-  controller()->SetMouseHoveredForTest(false);
-  controller()->StartRevealForTest(true);
+  AttemptUnreveal();
+  AttemptReveal();
 
   // The tab strip and toolbar should still be visible and the TopContainerView
   // should still be flush with the top edge of the widget.
@@ -911,7 +1029,7 @@ TEST_F(ImmersiveModeControllerAshTestWithBrowserView, Layout) {
 
   // Hide the top-of-window views. Both the tab strip and the toolbar should
   // hide when in both immersive and tab fullscreen.
-  controller()->SetMouseHoveredForTest(false);
+  AttemptUnreveal();
   EXPECT_FALSE(controller()->IsRevealed());
   EXPECT_FALSE(tabstrip->visible());
   EXPECT_FALSE(toolbar->visible());
@@ -921,12 +1039,7 @@ TEST_F(ImmersiveModeControllerAshTestWithBrowserView, Layout) {
 
   // Exiting both immersive and tab fullscreen should show the tab strip and
   // toolbar.
-  {
-    scoped_ptr<FullscreenNotificationObserver> waiter(
-        new FullscreenNotificationObserver());
-    chrome::ToggleFullscreenMode(browser());
-    waiter->Wait();
-  }
+  ToggleFullscreen();
   EXPECT_FALSE(browser_view()->GetWidget()->IsFullscreen());
   EXPECT_FALSE(controller()->IsEnabled());
   EXPECT_FALSE(controller()->IsRevealed());
@@ -943,7 +1056,7 @@ TEST_F(ImmersiveModeControllerAshTestWithBrowserView, EnabledCommands) {
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_ABOUT));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FOCUS_LOCATION));
 
-  chrome::ToggleFullscreenMode(browser());
+  ToggleFullscreen();
   EXPECT_TRUE(controller()->IsEnabled());
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_OPEN_CURRENT_URL));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_ABOUT));
@@ -953,18 +1066,91 @@ TEST_F(ImmersiveModeControllerAshTestWithBrowserView, EnabledCommands) {
 // Test that restoring a window properly exits immersive fullscreen.
 TEST_F(ImmersiveModeControllerAshTestWithBrowserView, ExitUponRestore) {
   ASSERT_FALSE(controller()->IsEnabled());
-  chrome::ToggleFullscreenMode(browser());
-  controller()->StartRevealForTest(true);
+  ToggleFullscreen();
+  AttemptReveal();
   ASSERT_TRUE(controller()->IsEnabled());
   ASSERT_TRUE(controller()->IsRevealed());
   ASSERT_TRUE(browser_view()->GetWidget()->IsFullscreen());
 
   browser_view()->GetWidget()->Restore();
-  // Exiting immersive fullscreen occurs as a result of a task posted to the
-  // message loop.
-  content::RunAllPendingInMessageLoop();
-
   EXPECT_FALSE(controller()->IsEnabled());
+}
+
+// Test that the shelf is set to auto hide as long as the window is in
+// immersive fullscreen and that the shelf's state before entering immersive
+// fullscreen is restored upon exiting immersive fullscreen.
+TEST_F(ImmersiveModeControllerAshTestWithBrowserView, Shelf) {
+  // Shelf is visible when the test starts.
+  ash::internal::ShelfLayoutManager* shelf =
+      ash::Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
+  ASSERT_EQ(ash::SHELF_VISIBLE, shelf->visibility_state());
+
+  // Entering immersive fullscreen sets the shelf to auto hide.
+  ToggleFullscreen();
+  ASSERT_TRUE(browser_view()->IsFullscreen());
+  ASSERT_TRUE(controller()->IsEnabled());
+  EXPECT_EQ(ash::SHELF_AUTO_HIDE, shelf->visibility_state());
+
+  // Disabling immersive fullscreen puts it back.
+  ToggleFullscreen();
+  ASSERT_FALSE(browser_view()->IsFullscreen());
+  ASSERT_FALSE(controller()->IsEnabled());
+  EXPECT_EQ(ash::SHELF_VISIBLE, shelf->visibility_state());
+
+  // The user could toggle the shelf auto-hide behavior.
+  shelf->SetAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  EXPECT_EQ(ash::SHELF_AUTO_HIDE, shelf->visibility_state());
+
+  // Entering immersive fullscreen keeps auto-hide.
+  ToggleFullscreen();
+  ASSERT_TRUE(browser_view()->IsFullscreen());
+  ASSERT_TRUE(controller()->IsEnabled());
+  EXPECT_EQ(ash::SHELF_AUTO_HIDE, shelf->visibility_state());
+
+  // Disabling immersive fullscreen maintains the user's auto-hide selection.
+  ToggleFullscreen();
+  ASSERT_FALSE(browser_view()->IsFullscreen());
+  ASSERT_FALSE(controller()->IsEnabled());
+  EXPECT_EQ(ash::SHELF_AUTO_HIDE, shelf->visibility_state());
+}
+
+// Test how being simultaneously in tab fullscreen and immersive fullscreen
+// affects the shelf visibility and whether the tab indicators are hidden.
+TEST_F(ImmersiveModeControllerAshTestWithBrowserView, TabAndBrowserFullscreen) {
+  AddTab(browser(), GURL("about:blank"));
+
+  // The shelf should start out as visible.
+  ash::internal::ShelfLayoutManager* shelf =
+      ash::Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
+  ASSERT_EQ(ash::SHELF_VISIBLE, shelf->visibility_state());
+
+  // 1) Test that entering tab fullscreen from immersive fullscreen hides the
+  // tab indicators and the shelf.
+  ToggleFullscreen();
+  ASSERT_TRUE(controller()->IsEnabled());
+  EXPECT_EQ(ash::SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_FALSE(controller()->ShouldHideTabIndicators());
+
+  SetTabFullscreen(true);
+  ASSERT_TRUE(controller()->IsEnabled());
+  EXPECT_EQ(ash::SHELF_HIDDEN, shelf->visibility_state());
+  EXPECT_TRUE(controller()->ShouldHideTabIndicators());
+
+  // 2) Test that exiting tab fullscreen shows the tab indicators and autohides
+  // the shelf.
+  SetTabFullscreen(false);
+  ASSERT_TRUE(controller()->IsEnabled());
+  EXPECT_EQ(ash::SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_FALSE(controller()->ShouldHideTabIndicators());
+
+  // 3) Test that exiting tab fullscreen and immersive fullscreen
+  // simultaneously correctly updates the shelf visibility and whether the tab
+  // indicators should be hidden.
+  SetTabFullscreen(true);
+  ToggleFullscreen();
+  ASSERT_FALSE(controller()->IsEnabled());
+  EXPECT_EQ(ash::SHELF_VISIBLE, shelf->visibility_state());
+  EXPECT_TRUE(controller()->ShouldHideTabIndicators());
 }
 
 #endif  // defined(OS_CHROMEOS)
