@@ -141,7 +141,13 @@ function sendErrorReport(error) {
   request.onloadend = function(event) {
     console.log('sendErrorReport status: ' + request.status);
   };
-  request.send(JSON.stringify(errorObject));
+
+  chrome.identity.getAuthToken({interactive: false}, function(token) {
+    if (token) {
+      request.setRequestHeader('Authorization', 'Bearer ' + token);
+      request.send(JSON.stringify(errorObject));
+    }
+  });
 }
 
 // Limiting 1 error report per background page load.

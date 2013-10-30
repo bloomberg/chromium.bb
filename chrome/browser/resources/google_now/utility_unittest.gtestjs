@@ -41,10 +41,16 @@ TEST_F('GoogleNowUtilityUnitTest', 'SendErrorReport1', function() {
     message: 'TEST ERROR MESSAGE'
   };
 
-  this.makeAndRegisterMockGlobals(['buildServerRequest']);
-  this.makeMockLocalFunctions(['sendRequest']);
+  var testIdentityToken = 'test identity token';
 
-  var mockRequest = {send: this.mockLocalFunctions.functions().sendRequest};
+  this.makeAndRegisterMockGlobals(['buildServerRequest']);
+  this.makeMockLocalFunctions(['sendRequest', 'setRequestHeader']);
+  this.makeAndRegisterMockApis(['chrome.identity.getAuthToken']);
+
+  var mockRequest = {
+    send: this.mockLocalFunctions.functions().sendRequest,
+    setRequestHeader: this.mockLocalFunctions.functions().setRequestHeader
+  };
 
   var expectedRequestObject = {
     message: 'TEST ERROR NAME: TEST ERROR MESSAGE',
@@ -62,6 +68,20 @@ TEST_F('GoogleNowUtilityUnitTest', 'SendErrorReport1', function() {
   this.mockGlobals.expects(once()).
       buildServerRequest('POST', 'jserrors', 'application/json').
       will(returnValue(mockRequest));
+
+  var chromeIdentityGetAuthTokenSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      chrome_identity_getAuthToken(
+          chromeIdentityGetAuthTokenSavedArgs.match(
+              eqJSON({interactive: false})),
+          chromeIdentityGetAuthTokenSavedArgs.match(ANYTHING)).
+      will(invokeCallback(
+          chromeIdentityGetAuthTokenSavedArgs,
+          1,
+          testIdentityToken));
+
+  this.mockLocalFunctions.expects(once()).setRequestHeader(
+      'Authorization', 'Bearer test identity token');
   this.mockLocalFunctions.expects(once()).sendRequest(
       JSON.stringify(expectedRequestObject));
 
@@ -84,10 +104,16 @@ TEST_F('GoogleNowUtilityUnitTest', 'SendErrorReport2', function() {
     name: 'TypeError'
   };
 
-  this.makeAndRegisterMockGlobals(['buildServerRequest']);
-  this.makeMockLocalFunctions(['sendRequest']);
+  var testIdentityToken = 'test identity token';
 
-  var mockRequest = {send: this.mockLocalFunctions.functions().sendRequest};
+  this.makeAndRegisterMockGlobals(['buildServerRequest']);
+  this.makeMockLocalFunctions(['sendRequest', 'setRequestHeader']);
+  this.makeAndRegisterMockApis(['chrome.identity.getAuthToken']);
+
+  var mockRequest = {
+    send: this.mockLocalFunctions.functions().sendRequest,
+    setRequestHeader: this.mockLocalFunctions.functions().setRequestHeader
+  };
 
   var expectedRequestObject = {
     message: 'TypeError',
@@ -101,6 +127,20 @@ TEST_F('GoogleNowUtilityUnitTest', 'SendErrorReport2', function() {
   this.mockGlobals.expects(once()).
       buildServerRequest('POST', 'jserrors', 'application/json').
       will(returnValue(mockRequest));
+
+  var chromeIdentityGetAuthTokenSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      chrome_identity_getAuthToken(
+          chromeIdentityGetAuthTokenSavedArgs.match(
+              eqJSON({interactive: false})),
+          chromeIdentityGetAuthTokenSavedArgs.match(ANYTHING)).
+      will(invokeCallback(
+          chromeIdentityGetAuthTokenSavedArgs,
+          1,
+          testIdentityToken));
+
+  this.mockLocalFunctions.expects(once()).setRequestHeader(
+      'Authorization', 'Bearer test identity token');
   this.mockLocalFunctions.expects(once()).sendRequest(
       JSON.stringify(expectedRequestObject));
 
