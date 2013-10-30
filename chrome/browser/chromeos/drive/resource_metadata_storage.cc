@@ -34,8 +34,13 @@ enum DBInitStatus {
   DB_INIT_MAX_VALUE,
 };
 
+// The name of the DB which stores the metadata.
 const base::FilePath::CharType kResourceMapDBName[] =
     FILE_PATH_LITERAL("resource_metadata_resource_map.db");
+
+// The name of the DB which couldn't be opened, but is preserved just in case.
+const base::FilePath::CharType kPreservedResourceMapDBName[] =
+    FILE_PATH_LITERAL("resource_metadata_preserved_resource_map.db");
 
 // Meant to be a character which never happen to be in real IDs.
 const char kDBKeyDelimeter = '\0';
@@ -304,14 +309,25 @@ bool ResourceMetadataStorage::UpgradeOldDB(
       kDBVersion == 11,
       db_version_and_this_function_should_be_updated_at_the_same_time);
 
+  const base::FilePath resource_map_path =
+      directory_path.Append(kResourceMapDBName);
+  const base::FilePath preserved_resource_map_path =
+      directory_path.Append(kPreservedResourceMapDBName);
+
+  if (base::PathExists(preserved_resource_map_path)) {
+    // Preserved DB is found. The previous attempt to create a new DB should not
+    // be successful. Discard the imperfect new DB and restore the old DB.
+    if (!base::DeleteFile(resource_map_path, false /* recursive */) ||
+        !base::Move(preserved_resource_map_path, resource_map_path))
+      return false;
+  }
+
   // Open DB.
   leveldb::DB* db = NULL;
   leveldb::Options options;
   options.max_open_files = 0;  // Use minimum.
   options.create_if_missing = false;
-  if (!leveldb::DB::Open(
-          options,
-          directory_path.Append(kResourceMapDBName).AsUTF8Unsafe(), &db).ok())
+  if (!leveldb::DB::Open(options, resource_map_path.AsUTF8Unsafe(), &db).ok())
     return false;
   scoped_ptr<leveldb::DB> resource_map(db);
 
@@ -390,6 +406,8 @@ bool ResourceMetadataStorage::Initialize() {
 
   const base::FilePath resource_map_path =
       directory_path_.Append(kResourceMapDBName);
+  const base::FilePath preserved_resource_map_path =
+      directory_path_.Append(kPreservedResourceMapDBName);
 
   // Try to open the existing DB.
   leveldb::DB* db = NULL;
@@ -441,20 +459,25 @@ bool ResourceMetadataStorage::Initialize() {
 
   // Failed to open the existing DB, create new DB.
   if (!resource_map_) {
-    // Clean up the destination.
-    const bool kRecursive = true;
-    base::DeleteFile(resource_map_path, kRecursive);
+    // Move the existing DB to the preservation path. The moved old DB is
+    // deleted once the new DB creation succeeds, or is restored later in
+    // UpgradeOldDB() when the creation fails.
+    if (base::PathExists(resource_map_path) &&
+        base::DeleteFile(preserved_resource_map_path, true /* recursive */))
+      base::Move(resource_map_path, preserved_resource_map_path);
 
     // Create DB.
     options.max_open_files = 0;  // Use minimum.
     options.create_if_missing = true;
+    options.error_if_exists = true;
 
     status = leveldb::DB::Open(options, resource_map_path.AsUTF8Unsafe(), &db);
     if (status.ok()) {
       resource_map_.reset(db);
 
-      // Set up header.
-      if (!PutHeader(GetDefaultHeaderEntry())) {
+      if (!PutHeader(GetDefaultHeaderEntry()) ||  // Set up header.
+          !base::DeleteFile(preserved_resource_map_path,
+                            true /* recursive */)) {  // Remove the old DB.
         init_result = DB_INIT_FAILED;
         resource_map_.reset();
       }
