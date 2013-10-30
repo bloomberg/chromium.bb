@@ -490,6 +490,9 @@ shell_configuration(struct desktop_shell *shell)
 					 "startup-animation", &s, "fade");
 	shell->startup_animation_type = get_animation_type(s);
 	free(s);
+	if (shell->startup_animation_type == ANIMATION_ZOOM)
+		shell->startup_animation_type = ANIMATION_NONE;
+
 	weston_config_section_get_uint(section, "num-workspaces",
 				       &shell->workspaces.num,
 				       DEFAULT_NUM_WORKSPACES);
