@@ -248,7 +248,7 @@ interface TestObjectPython {
     XPathNSResolver xPathNSResolverMethod();
     void voidMethodDOMStringListArg(DOMStringList domStringListArg);
     void voidMethodNodeFilterArg(NodeFilter nodeFilterArg);
-    // void voidMethodSerializedScriptValueArg(SerializedScriptValue serializedScriptValueArg); // FIXME: more special cases
+    void voidMethodSerializedScriptValueArg(SerializedScriptValue serializedScriptValueArg);
     void voidMethodXPathNSResolverArg(XPathNSResolver xPathNSResolverArg);
 
     // Arguments

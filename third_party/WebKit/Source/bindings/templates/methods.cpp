@@ -16,7 +16,12 @@ static void {{method.name}}Method(const v8::FunctionCallbackInfo<v8::Value>& arg
         return;
     }
     {% endif %}
-    {% if argument.is_variadic_wrapper_type %}
+    {% if argument.idl_type == 'SerializedScriptValue' %}
+    bool {{argument.name}}DidThrow = false;
+    {{argument.cpp_type}} {{argument.name}} = SerializedScriptValue::create(args[{{argument.index}}], 0, 0, {{argument.name}}DidThrow, args.GetIsolate());
+    if ({{argument.name}}DidThrow)
+        return;
+    {% elif argument.is_variadic_wrapper_type %}
     Vector<{{argument.cpp_type}} > {{argument.name}};
     for (int i = {{argument.index}}; i < args.Length(); ++i) {
         if (!V8{{argument.idl_type}}::HasInstance(args[i], args.GetIsolate(), worldType(args.GetIsolate()))) {
