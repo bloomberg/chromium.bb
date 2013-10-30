@@ -25,7 +25,6 @@
 
 #include "SVGNames.h"
 #include "core/platform/graphics/Font.h"
-#include "core/platform/graphics/GlyphBuffer.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/WidthIterator.h"
 #include "core/rendering/RenderObject.h"
@@ -35,6 +34,7 @@
 #include "core/svg/SVGFontElement.h"
 #include "core/svg/SVGFontFaceElement.h"
 #include "core/svg/SVGGlyphElement.h"
+#include "platform/fonts/GlyphBuffer.h"
 
 namespace WebCore {
 

@@ -26,10 +26,10 @@
 #include "core/platform/graphics/Font.h"
 
 #include "core/platform/graphics/FontFallbackList.h"
-#include "core/platform/graphics/GlyphBuffer.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/mac/ComplexTextController.h"
+#include "platform/fonts/GlyphBuffer.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/TextRun.h"
 #include "wtf/MathExtras.h"

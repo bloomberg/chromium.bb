@@ -33,11 +33,11 @@
 #include "FontFamilyNames.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "core/platform/graphics/AlternateFontFamily.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/FontFallbackList.h"
 #include "core/platform/graphics/FontPlatformData.h"
 #include "core/platform/graphics/opentype/OpenTypeVerticalData.h"
+#include "platform/fonts/AlternateFontFamily.h"
 #include "platform/fonts/FontCacheKey.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontSelector.h"

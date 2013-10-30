@@ -27,9 +27,9 @@
 #include "core/platform/graphics/opentype/OpenTypeVerticalData.h"
 
 #include "platform/SharedBuffer.h"
-#include "core/platform/graphics/GlyphPage.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/opentype/OpenTypeTypes.h"
+#include "platform/fonts/GlyphPage.h"
 #include "platform/geometry/FloatRect.h"
 #include "wtf/RefPtr.h"
 

@@ -25,12 +25,12 @@
 #define SimpleFontData_h
 
 #include "core/platform/graphics/FontPlatformData.h"
-#include "core/platform/graphics/GlyphBuffer.h"
-#include "core/platform/graphics/GlyphMetricsMap.h"
 #include "core/platform/graphics/GlyphPageTreeNode.h"
 #include "platform/fonts/FontBaseline.h"
 #include "platform/fonts/FontData.h"
 #include "platform/fonts/FontMetrics.h"
+#include "platform/fonts/GlyphBuffer.h"
+#include "platform/fonts/GlyphMetricsMap.h"
 #if ENABLE(OPENTYPE_VERTICAL)
 #include "core/platform/graphics/opentype/OpenTypeVerticalData.h"
 #endif

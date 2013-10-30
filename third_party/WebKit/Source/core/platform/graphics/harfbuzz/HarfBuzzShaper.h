@@ -31,8 +31,8 @@
 #ifndef HarfBuzzShaper_h
 #define HarfBuzzShaper_h
 
-#include "core/platform/graphics/GlyphBuffer.h"
 #include "hb.h"
+#include "platform/fonts/GlyphBuffer.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/graphics/TextRun.h"
 #include "wtf/HashSet.h"

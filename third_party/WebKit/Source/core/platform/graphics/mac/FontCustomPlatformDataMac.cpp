@@ -19,7 +19,7 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/FontCustomPlatformData.h"
+#include "platform/fonts/FontCustomPlatformData.h"
 
 #include "platform/SharedBuffer.h"
 #include "core/platform/graphics/FontPlatformData.h"

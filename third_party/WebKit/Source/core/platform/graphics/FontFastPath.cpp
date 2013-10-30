@@ -25,10 +25,10 @@
 
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/FontFallbackList.h"
-#include "core/platform/graphics/GlyphBuffer.h"
 #include "core/platform/graphics/GlyphPageTreeNode.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/WidthIterator.h"
+#include "platform/fonts/GlyphBuffer.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/TextRun.h"
 #include "wtf/MainThread.h"

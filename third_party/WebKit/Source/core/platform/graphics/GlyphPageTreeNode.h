@@ -29,8 +29,8 @@
 #ifndef GlyphPageTreeNode_h
 #define GlyphPageTreeNode_h
 
+#include "platform/fonts/GlyphPage.h"
 #include <string.h>
-#include "core/platform/graphics/GlyphPage.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"

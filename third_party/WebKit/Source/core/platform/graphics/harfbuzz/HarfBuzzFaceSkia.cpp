@@ -38,9 +38,9 @@
 #include "SkTypeface.h"
 #include "SkUtils.h"
 #include "core/platform/graphics/FontPlatformData.h"
-#include "core/platform/graphics/GlyphBuffer.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/harfbuzz/HarfBuzzShaper.h"
+#include "platform/fonts/GlyphBuffer.h"
 
 #include "hb.h"
 #include "wtf/HashMap.h"

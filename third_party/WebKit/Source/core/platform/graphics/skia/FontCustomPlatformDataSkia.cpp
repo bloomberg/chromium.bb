@@ -31,7 +31,7 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/FontCustomPlatformData.h"
+#include "platform/fonts/FontCustomPlatformData.h"
 
 #include "platform/LayoutTestSupport.h"
 #include "platform/SharedBuffer.h"

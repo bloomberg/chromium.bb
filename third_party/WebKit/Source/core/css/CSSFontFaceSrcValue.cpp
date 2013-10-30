@@ -33,8 +33,8 @@
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/FontResource.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/platform/graphics/FontCustomPlatformData.h"
 #include "core/svg/SVGFontFaceElement.h"
+#include "platform/fonts/FontCustomPlatformData.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
