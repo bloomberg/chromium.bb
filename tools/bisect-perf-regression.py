@@ -2241,7 +2241,7 @@ class BisectPerformanceMetrics(object):
       print
       print 'Also consider passing --profiler=list to see available profilers.'
 
-  def _PrintOtherRegressions(other_regressions, revision_data):
+  def _PrintOtherRegressions(self, other_regressions, revision_data):
     print
     print 'Other regressions may have occurred:'
     for regression in other_regressions:
