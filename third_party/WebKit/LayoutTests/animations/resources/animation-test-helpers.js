@@ -39,6 +39,8 @@ var ENABLE_ERROR_LOGGING = false;
 
 function isCloseEnough(actual, desired, tolerance)
 {
+    if (typeof desired === "string")
+        return actual === desired;
     var diff = Math.abs(actual - desired);
     return diff <= tolerance;
 }
@@ -373,7 +375,10 @@ function checkExpectedTransitionValue(expected, index)
             for (var i = 0; i < computedStyle.length; ++i) {
                 switch (computedStyle[i].cssValueType) {
                   case CSSValue.CSS_PRIMITIVE_VALUE:
-                    values.push(computedStyle[i].getFloatValue(CSSPrimitiveValue.CSS_NUMBER));
+                    if (computedStyle[i].primitiveType == CSSPrimitiveValue.CSS_STRING)
+                        values.push(computedStyle[i].getStringValue());
+                    else
+                        values.push(computedStyle[i].getFloatValue(CSSPrimitiveValue.CSS_NUMBER));
                     break;
                   case CSSValue.CSS_CUSTOM:
                     // arbitrarily pick shadow-x and shadow-y

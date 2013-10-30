@@ -161,6 +161,8 @@ void computeCandidateTransitions(const RenderStyle* oldStyle, const RenderStyle*
         ASSERT(animateAll || mode == CSSAnimationData::AnimateSingleProperty);
         const StylePropertyShorthand& propertyList = animateAll ? CSSAnimations::animatableProperties() : shorthandForProperty(anim->property());
         if (!propertyList.length()) {
+            if (!CSSAnimations::isAnimatableProperty(anim->property()))
+                continue;
             listedProperties.add(anim->property());
             calculateCandidateTransitionForProperty(anim, anim->property(), oldStyle, newStyle, candidateMap);
         } else {
