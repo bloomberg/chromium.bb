@@ -1072,6 +1072,7 @@
       'type': '<(gtest_target_type)',
       'dependencies': [
         'media',
+        'media_test_support',
         'shared_memory_support',
         '../base/base.gyp:test_support_base',
         '../testing/gmock.gyp:gmock',
@@ -1079,6 +1080,7 @@
         '../testing/perf/perf_test.gyp:perf_test',
       ],
       'sources': [
+        'base/audio_bus_perftest.cc',
         'base/audio_converter_perftest.cc',
         'base/run_all_unittests.cc',
       ],
