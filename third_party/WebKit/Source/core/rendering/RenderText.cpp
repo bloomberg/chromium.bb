@@ -1653,7 +1653,7 @@ int RenderText::previousOffset(int current) const
     return result;
 }
 
-#if OS(MACOSX)
+#if OS(MACOSX) || OS(LINUX)
 
 #define HANGUL_CHOSEONG_START (0x1100)
 #define HANGUL_CHOSEONG_END (0x115F)
@@ -1695,7 +1695,7 @@ inline bool isRegionalIndicator(UChar32 c)
 
 int RenderText::previousOffsetForBackwardDeletion(int current) const
 {
-#if OS(MACOSX)
+#if OS(MACOSX) || OS(LINUX)
     ASSERT(m_text);
     StringImpl& text = *m_text.impl();
     UChar32 character;
@@ -1738,7 +1738,6 @@ int RenderText::previousOffsetForBackwardDeletion(int current) const
     character = text.characterStartingAt(current);
     if (((character >= HANGUL_CHOSEONG_START) && (character <= HANGUL_JONGSEONG_END)) || ((character >= HANGUL_SYLLABLE_START) && (character <= HANGUL_SYLLABLE_END))) {
         HangulState state;
-        HangulState initialState;
 
         if (character < HANGUL_JUNGSEONG_START)
             state = HangulStateL;
@@ -1748,8 +1747,6 @@ int RenderText::previousOffsetForBackwardDeletion(int current) const
             state = HangulStateT;
         else
             state = isHangulLVT(character) ? HangulStateLVT : HangulStateLV;
-
-        initialState = state;
 
         while (current > 0 && ((character = text.characterStartingAt(current - 1)) >= HANGUL_CHOSEONG_START) && (character <= HANGUL_SYLLABLE_END) && ((character <= HANGUL_JONGSEONG_END) || (character >= HANGUL_SYLLABLE_START))) {
             switch (state) {
@@ -1782,7 +1779,7 @@ int RenderText::previousOffsetForBackwardDeletion(int current) const
 
     return current;
 #else
-    // Platforms other than Mac delete by one code point.
+    // Platforms other than Mac or Linux delete by one code point.
     if (U16_IS_TRAIL(m_text[--current]))
         --current;
     if (current < 0)
