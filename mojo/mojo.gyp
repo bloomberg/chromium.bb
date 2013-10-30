@@ -272,6 +272,7 @@
           },
           'sources': [
             'shell/android/apk/src/org/chromium/mojo_shell_apk/MojoMain.java',
+            'shell/android/apk/src/org/chromium/mojo_shell_apk/MojoView.java',
           ],
           'variables': {
             'jni_gen_package': 'mojo'
@@ -284,6 +285,8 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+            '../ui/gfx/gfx.gyp:gfx',
+            '../ui/gl/gl.gyp:gl',
             'mojo_jni_headers',
             'mojo_shell_lib',
           ],
@@ -291,6 +294,8 @@
             'shell/android/library_loader.cc',
             'shell/android/mojo_main.cc',
             'shell/android/mojo_main.h',
+            'shell/android/mojo_view.cc',
+            'shell/android/mojo_view.h',
           ],
         },
         {

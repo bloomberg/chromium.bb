@@ -11,11 +11,19 @@ import org.chromium.base.JNINamespace;
 @JNINamespace("mojo")
 public class MojoMain {
     /**
-     * Initialize application context in native side.
+     * Initializes the native system.
+     **/
+    public static void init(Context context) {
+        nativeInit(context);
+    }
+
+    /**
+     * Starts the specified application in the specified context.
      **/
     public static void start(Context context, String appUrl) {
         nativeStart(context, appUrl);
     }
 
+    private static native void nativeInit(Context context);
     private static native void nativeStart(Context context, String appUrl);
 };

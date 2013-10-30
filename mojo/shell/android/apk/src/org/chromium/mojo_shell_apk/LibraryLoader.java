@@ -14,18 +14,6 @@ public class LibraryLoader {
         if (sInitialized)
             return;
         sInitialized = true;
-        // TODO(abarth): We should generate this list of libraries
-        // automatically like content_shell does.
-        System.loadLibrary("stlport_shared");
-        System.loadLibrary("icuuc.cr");
-        System.loadLibrary("icui18n.cr");
-        System.loadLibrary("base.cr");
-        System.loadLibrary("base_i18n.cr");
-        System.loadLibrary("openssl.cr");
-        System.loadLibrary("crcrypto.cr");
-        System.loadLibrary("url_lib.cr");
-        System.loadLibrary("net.cr");
-        System.loadLibrary("mojo_system.cr");
         System.loadLibrary("mojo_shell.cr");
         Log.i(TAG, "libmojo_shell initialization success.");
     }

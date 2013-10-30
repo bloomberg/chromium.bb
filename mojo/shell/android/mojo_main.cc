@@ -13,6 +13,7 @@
 #include "base/threading/thread.h"
 #include "jni/MojoMain_jni.h"
 #include "mojo/shell/run.h"
+#include "ui/gl/gl_surface_egl.h"
 
 using base::LazyInstance;
 
@@ -22,7 +23,7 @@ namespace {
 
 base::AtExitManager* g_at_exit = 0;
 
-LazyInstance<scoped_ptr<base::Thread> > g_main_thread =
+LazyInstance<scoped_ptr<base::Thread> > g_shell_thread =
     LAZY_INSTANCE_INITIALIZER;
 
 LazyInstance<scoped_ptr<shell::Context> > g_context =
@@ -48,17 +49,26 @@ void StartOnShellThread() {
 
 }  // namspace
 
-static void Start(JNIEnv* env, jclass clazz, jobject context, jstring jurl) {
+static void Init(JNIEnv* env, jclass clazz, jobject context) {
   base::android::ScopedJavaLocalRef<jobject> scoped_context(env, context);
+
   base::android::InitApplicationContext(scoped_context);
 
   if (g_at_exit)
     return;
   g_at_exit = new base::AtExitManager();
+  // TODO(abarth): Currently we leak g_at_exit.
 
   CommandLine::Init(0, 0);
   InitializeLogging();
 
+  // TODO(abarth): At which point should we switch to cross-platform
+  // initialization?
+
+  gfx::GLSurface::InitializeOneOff();
+}
+
+static void Start(JNIEnv* env, jclass clazz, jobject context, jstring jurl) {
   if (jurl) {
     std::string app_url = base::android::ConvertJavaStringToUTF8(env, jurl);
     std::vector<std::string> argv;
@@ -67,12 +77,12 @@ static void Start(JNIEnv* env, jclass clazz, jobject context, jstring jurl) {
     CommandLine::ForCurrentProcess()->InitFromArgv(argv);
   }
 
-  g_main_thread.Get().reset(new base::Thread("shell_thread"));
-  g_main_thread.Get()->Start();
-  g_main_thread.Get()->message_loop()->PostTask(FROM_HERE,
+  g_shell_thread.Get().reset(new base::Thread("shell_thread"));
+  g_shell_thread.Get()->Start();
+  g_shell_thread.Get()->message_loop()->PostTask(FROM_HERE,
       base::Bind(StartOnShellThread));
 
-  // TODO(abarth): Currently we leak g_at_exit and g_main_thread.
+  // TODO(abarth): Currently we leak g_shell_thread.
 }
 
 bool RegisterMojoMain(JNIEnv* env) {

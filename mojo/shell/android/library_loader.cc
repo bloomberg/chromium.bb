@@ -7,12 +7,14 @@
 #include "base/android/jni_registrar.h"
 #include "base/logging.h"
 #include "mojo/shell/android/mojo_main.h"
+#include "mojo/shell/android/mojo_view.h"
 #include "net/android/net_jni_registrar.h"
 
 namespace {
 
 base::android::RegistrationMethod kMojoRegisteredMethods[] = {
   { "MojoMain", mojo::RegisterMojoMain },
+  { "MojoView", mojo::MojoView::Register },
 };
 
 bool RegisterMojoJni(JNIEnv* env) {
