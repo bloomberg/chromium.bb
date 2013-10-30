@@ -23,6 +23,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 
@@ -81,10 +82,22 @@ const std::string& SigninManagerBase::GetAuthenticatedUsername() const {
 
 void SigninManagerBase::SetAuthenticatedUsername(const std::string& username) {
   if (!authenticated_username_.empty()) {
-    DLOG_IF(ERROR, username != authenticated_username_) <<
+    DLOG_IF(ERROR, !gaia::AreEmailsSame(username, authenticated_username_)) <<
         "Tried to change the authenticated username to something different: " <<
         "Current: " << authenticated_username_ << ", New: " << username;
+
+#if defined(OS_IOS)
+    // Prior to M26, chrome on iOS did not normalize the email before setting
+    // it in SigninManager.  If the emails are the same as given by
+    // gaia::AreEmailsSame() but not the same as given by std::string::op==(),
+    // make sure to set the authenticated name below.
+    if (!gaia::AreEmailsSame(username, authenticated_username_) ||
+        username == authenticated_username_) {
+      return;
+    }
+#else
     return;
+#endif
   }
   authenticated_username_ = username;
   // TODO(tim): We could go further in ensuring kGoogleServicesUsername and
