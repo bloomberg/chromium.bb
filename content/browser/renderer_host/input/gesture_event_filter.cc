@@ -179,47 +179,56 @@ void GestureEventFilter::ProcessGestureAck(InputEventAckState ack_result,
     DLOG(ERROR) << "Received unexpected ACK for event type " << type;
     return;
   }
-  DCHECK_EQ(coalesced_gesture_events_.front().event.type, type);
 
   // Ack'ing an event may enqueue additional gesture events.  By ack'ing the
   // event before the forwarding of queued events below, such additional events
   // can be coalesced with existing queued events prior to dispatch.
-  GestureEventWithLatencyInfo event_with_latency = GetGestureEventAwaitingAck();
+  GestureEventWithLatencyInfo event_with_latency =
+      coalesced_gesture_events_.front();
+  DCHECK_EQ(event_with_latency.event.type, type);
   event_with_latency.latency.AddNewLatencyFrom(latency);
   client_->OnGestureEventAck(event_with_latency, ack_result);
 
   const bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
   if (type == WebInputEvent::GestureFlingCancel) {
-    if (coalesced_gesture_events_.front().event.sourceDevice ==
-        WebGestureEvent::Touchscreen)
+    if (event_with_latency.event.sourceDevice == WebGestureEvent::Touchscreen)
       touchscreen_tap_suppression_controller_->GestureFlingCancelAck(processed);
     else
       touchpad_tap_suppression_controller_->GestureFlingCancelAck(processed);
   }
   coalesced_gesture_events_.pop_front();
+
   // If the event which was just ACKed was blocking events ignoring ack, fire
   // those events now.
   SendEventsIgnoringAck();
+
   if (ignore_next_ack_) {
     ignore_next_ack_ = false;
-  } else if (!coalesced_gesture_events_.empty()) {
-    const GestureEventWithLatencyInfo& next_gesture_event =
-        coalesced_gesture_events_.front();
-    client_->SendGestureEventImmediately(next_gesture_event);
-    // TODO(yusufo): Introduce GesturePanScroll so that these can be combined
-    // into one gesture and kept inside the queue that way.
-    if (coalesced_gesture_events_.size() > 1) {
-      const GestureEventWithLatencyInfo& second_gesture_event =
-          coalesced_gesture_events_[1];
-      if (next_gesture_event.event.type ==
-              WebInputEvent::GestureScrollUpdate &&
-          second_gesture_event.event.type ==
-              WebInputEvent::GesturePinchUpdate) {
-        client_->SendGestureEventImmediately(second_gesture_event);
-        ignore_next_ack_ = true;
-      }
-    }
+    return;
   }
+
+  if (coalesced_gesture_events_.empty())
+    return;
+
+  const GestureEventWithLatencyInfo& first_gesture_event =
+      coalesced_gesture_events_.front();
+
+  // TODO(yusufo): Introduce GesturePanScroll so that these can be combined
+  // into one gesture and kept inside the queue that way.
+  // Check for the coupled GesturePinchUpdate before sending either event,
+  // handling the case where the first GestureScrollUpdate ack is synchronous.
+  GestureEventWithLatencyInfo second_gesture_event;
+  if (first_gesture_event.event.type == WebInputEvent::GestureScrollUpdate &&
+      coalesced_gesture_events_.size() > 1 &&
+      coalesced_gesture_events_[1].event.type ==
+          WebInputEvent::GesturePinchUpdate) {
+    second_gesture_event = coalesced_gesture_events_[1];
+    ignore_next_ack_ = true;
+  }
+
+  client_->SendGestureEventImmediately(first_gesture_event);
+  if (second_gesture_event.event.type != WebInputEvent::Undefined)
+    client_->SendGestureEventImmediately(second_gesture_event);
 }
 
 TouchpadTapSuppressionController*
@@ -229,15 +238,6 @@ TouchpadTapSuppressionController*
 
 bool GestureEventFilter::HasQueuedGestureEvents() const {
   return !coalesced_gesture_events_.empty();
-}
-
-const GestureEventWithLatencyInfo&
-GestureEventFilter::GetGestureEventAwaitingAck() const {
-  DCHECK(!coalesced_gesture_events_.empty());
-  if (!ignore_next_ack_)
-    return coalesced_gesture_events_.front();
-  else
-    return coalesced_gesture_events_.at(1);
 }
 
 void GestureEventFilter::FlingHasBeenHalted() {
@@ -256,16 +256,16 @@ void GestureEventFilter::ForwardGestureEvent(
 
 void GestureEventFilter::SendScrollEndingEventsNow() {
   scrolling_in_progress_ = false;
-  for (GestureEventQueue::const_iterator it =
-      debouncing_deferral_queue_.begin();
-      it != debouncing_deferral_queue_.end(); it++) {
+  GestureEventQueue debouncing_deferral_queue;
+  debouncing_deferral_queue.swap(debouncing_deferral_queue_);
+  for (GestureEventQueue::const_iterator it = debouncing_deferral_queue.begin();
+       it != debouncing_deferral_queue.end(); it++) {
     if (ShouldForwardForGFCFiltering(*it) &&
         ShouldForwardForTapSuppression(*it) &&
         ShouldForwardForCoalescing(*it)) {
       client_->SendGestureEventImmediately(*it);
     }
   }
-  debouncing_deferral_queue_.clear();
 }
 
 void GestureEventFilter::MergeOrInsertScrollAndPinchEvent(

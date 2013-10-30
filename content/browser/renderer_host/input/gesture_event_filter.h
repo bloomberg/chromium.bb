@@ -95,9 +95,6 @@ class CONTENT_EXPORT GestureEventFilter {
 
   static bool ShouldIgnoreAckForGestureType(WebKit::WebInputEvent::Type type);
 
-  // Returns the last gesture event that was sent to the renderer.
-  const GestureEventWithLatencyInfo& GetGestureEventAwaitingAck() const;
-
   // TODO(mohsen): There are a bunch of ShouldForward.../ShouldDiscard...
   // methods that are getting confusing. This should be somehow fixed. Maybe
   // while refactoring GEF: http://crbug.com/148443.

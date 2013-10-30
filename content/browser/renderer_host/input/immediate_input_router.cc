@@ -303,17 +303,6 @@ bool ImmediateInputRouter::Send(IPC::Message* message) {
   return sender_->Send(message);
 }
 
-void ImmediateInputRouter::SendWebInputEvent(
-    const WebInputEvent& input_event,
-    const ui::LatencyInfo& latency_info,
-    bool is_keyboard_shortcut) {
-  input_event_start_time_ = TimeTicks::Now();
-  if (Send(new InputMsg_HandleInputEvent(
-          routing_id(), &input_event, latency_info, is_keyboard_shortcut))) {
-    client_->IncrementInFlightEventCount();
-  }
-}
-
 void ImmediateInputRouter::FilterAndSendWebInputEvent(
     const WebInputEvent& input_event,
     const ui::LatencyInfo& latency_info,
@@ -321,28 +310,35 @@ void ImmediateInputRouter::FilterAndSendWebInputEvent(
   TRACE_EVENT1("input", "ImmediateInputRouter::FilterAndSendWebInputEvent",
                "type", WebInputEventTraits::GetName(input_event.type));
 
+  // Transmit any pending wheel events on a non-wheel event. This ensures that
+  // final PhaseEnded wheel event is received, which is necessary to terminate
+  // rubber-banding, for example.
+   if (input_event.type != WebInputEvent::MouseWheel) {
+    WheelEventQueue mouse_wheel_events;
+    mouse_wheel_events.swap(coalesced_mouse_wheel_events_);
+    for (size_t i = 0; i < mouse_wheel_events.size(); ++i) {
+      OfferToHandlers(mouse_wheel_events[i].event,
+                      mouse_wheel_events[i].latency,
+                      false);
+     }
+  }
+
+  // Any input event cancels a pending mouse move event.
+  next_mouse_move_.reset();
+
+  OfferToHandlers(input_event, latency_info, is_keyboard_shortcut);
+}
+
+void ImmediateInputRouter::OfferToHandlers(const WebInputEvent& input_event,
+                                           const ui::LatencyInfo& latency_info,
+                                           bool is_keyboard_shortcut) {
   if (OfferToOverscrollController(input_event, latency_info))
     return;
 
   if (OfferToClient(input_event, latency_info))
     return;
 
-  // Transmit any pending wheel events on a non-wheel event. This ensures that
-  // the renderer receives the final PhaseEnded wheel event, which is necessary
-  // to terminate rubber-banding, for example.
-  if (input_event.type != WebInputEvent::MouseWheel) {
-    for (size_t i = 0; i < coalesced_mouse_wheel_events_.size(); ++i) {
-      SendWebInputEvent(coalesced_mouse_wheel_events_[i].event,
-                        coalesced_mouse_wheel_events_[i].latency,
-                        false);
-    }
-    coalesced_mouse_wheel_events_.clear();
-  }
-
-  SendWebInputEvent(input_event, latency_info, is_keyboard_shortcut);
-
-  // Any input event cancels a pending mouse move event.
-  next_mouse_move_.reset();
+  OfferToRenderer(input_event, latency_info, is_keyboard_shortcut);
 }
 
 bool ImmediateInputRouter::OfferToOverscrollController(
@@ -404,6 +400,18 @@ bool ImmediateInputRouter::OfferToClient(const WebInputEvent& input_event,
   }
 
   return consumed;
+}
+
+bool ImmediateInputRouter::OfferToRenderer(const WebInputEvent& input_event,
+                                           const ui::LatencyInfo& latency_info,
+                                           bool is_keyboard_shortcut) {
+  input_event_start_time_ = TimeTicks::Now();
+  if (Send(new InputMsg_HandleInputEvent(
+          routing_id(), &input_event, latency_info, is_keyboard_shortcut))) {
+    client_->IncrementInFlightEventCount();
+    return true;
+  }
+  return false;
 }
 
 void ImmediateInputRouter::OnInputEventAck(

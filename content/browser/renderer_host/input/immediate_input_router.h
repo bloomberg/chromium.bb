@@ -90,25 +90,31 @@ private:
   bool SendSelectRange(scoped_ptr<IPC::Message> message);
   bool Send(IPC::Message* message);
 
-  // Transmits the given input event an as an IPC::Message. This is an internal
-  // helper for |FilterAndSendInputEvent()| and should not be used otherwise.
-  void SendWebInputEvent(const WebKit::WebInputEvent& input_event,
-                         const ui::LatencyInfo& latency_info,
-                         bool is_keyboard_shortcut);
-
-  // Filters and forwards the given WebInputEvent to |SendWebInputEvent()|. This
-  // is an internal helper for |Send*Event()| and should not be used otherwise.
+  // Filters and forwards |input_event| to the appropriate handler.
   void FilterAndSendWebInputEvent(const WebKit::WebInputEvent& input_event,
                                   const ui::LatencyInfo& latency_info,
                                   bool is_keyboard_shortcut);
-  // Returns true if the event was consumed by the OverscrollController, called
-  // immediately prior to sending |input_event| to the renderer.
+
+  // Utility routine for filtering and forwarding |input_event| to the
+  // appropriate handler. |input_event| will be offered to the overscroll
+  // controller, client and renderer, in that order.
+  void OfferToHandlers(const WebKit::WebInputEvent& input_event,
+                       const ui::LatencyInfo& latency_info,
+                       bool is_keyboard_shortcut);
+
+  // Returns true if |input_event| was consumed by the overscroll controller.
   bool OfferToOverscrollController(const WebKit::WebInputEvent& input_event,
                                    const ui::LatencyInfo& latency_info);
-  // Returns true if the event was consumed by the client, called immediately
-  // prior to sending |input_event| to the renderer.
+
+  // Returns true if |input_event| was consumed by the client.
   bool OfferToClient(const WebKit::WebInputEvent& input_event,
                      const ui::LatencyInfo& latency_info);
+
+  // Returns true if |input_event| was successfully sent to the renderer
+  // as an async IPC Message.
+  bool OfferToRenderer(const WebKit::WebInputEvent& input_event,
+                       const ui::LatencyInfo& latency_info,
+                       bool is_keyboard_shortcut);
 
   // IPC message handlers
   void OnInputEventAck(WebKit::WebInputEvent::Type event_type,

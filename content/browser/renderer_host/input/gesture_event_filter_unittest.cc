@@ -47,13 +47,17 @@ class GestureEventFilterTest : public testing::Test,
   virtual void SendGestureEventImmediately(
       const GestureEventWithLatencyInfo& event) OVERRIDE {
     ++sent_gesture_event_count_;
-    last_immediately_sent_gesture_event_ = event.event;
+    if (sync_ack_result_) {
+      scoped_ptr<InputEventAckState> ack_result = sync_ack_result_.Pass();
+      SendInputEventACK(event.event.type, *ack_result);
+    }
   }
 
   virtual void OnGestureEventAck(
       const GestureEventWithLatencyInfo& event,
       InputEventAckState ack_result) OVERRIDE {
     ++acked_gesture_event_count_;
+    last_acked_event_ = event.event;
   }
 
   // TouchpadTapSuppressionControllerClient
@@ -127,12 +131,16 @@ class GestureEventFilterTest : public testing::Test,
     return count;
   }
 
-  const WebGestureEvent& last_immediately_sent_gesture_event() const {
-    return last_immediately_sent_gesture_event_;
+  const WebGestureEvent& last_acked_event() const {
+    return last_acked_event_;
   }
 
   void set_debounce_interval_time_ms(int ms) {
     filter()->debounce_interval_time_ms_ = ms;
+  }
+
+  void set_synchronous_ack(InputEventAckState ack_result) {
+    sync_ack_result_.reset(new InputEventAckState(ack_result));
   }
 
   unsigned GestureEventLastQueueEventSize() {
@@ -176,7 +184,8 @@ class GestureEventFilterTest : public testing::Test,
   scoped_ptr<GestureEventFilter> filter_;
   size_t acked_gesture_event_count_;
   size_t sent_gesture_event_count_;
-  WebGestureEvent last_immediately_sent_gesture_event_;
+  WebGestureEvent last_acked_event_;
+  scoped_ptr<InputEventAckState> sync_ack_result_;
   base::MessageLoopForUI message_loop_;
 };
 
@@ -286,7 +295,7 @@ TEST_F(GestureEventFilterTest, CoalescesScrollAndPinchEvents) {
   EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
 
   // Coalesced without changing event order. Note anchor at (60, 60). Anchoring
-  // from a poinht that is not the origin should still give us the wight scroll.
+  // from a point that is not the origin should still give us the right scroll.
   SimulateGesturePinchUpdateEvent(1.5, 60, 60, 1);
   EXPECT_EQ(4U, GestureEventLastQueueEventSize());
   merged_event = GestureEventLastQueueEvent();
@@ -428,6 +437,7 @@ TEST_F(GestureEventFilterTest, CoalescesScrollAndPinchEvents) {
   // Check that the ACK gets ignored.
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, last_acked_event().type);
   RunUntilIdle();
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
   // The flag should have been flipped back to false.
@@ -451,24 +461,28 @@ TEST_F(GestureEventFilterTest, CoalescesScrollAndPinchEvents) {
   // Check that the ACK sends the next scroll pinch pair.
   SendInputEventACK(WebInputEvent::GesturePinchUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(WebInputEvent::GesturePinchUpdate, last_acked_event().type);
   RunUntilIdle();
   EXPECT_EQ(2U, GetAndResetSentGestureEventCount());
 
   // Check that the ACK sends the second message.
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, last_acked_event().type);
   RunUntilIdle();
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
 
   // Check that the ACK sends the second event.
   SendInputEventACK(WebInputEvent::GesturePinchUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(WebInputEvent::GesturePinchUpdate, last_acked_event().type);
   RunUntilIdle();
   EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
 
   // Check that the queue is empty after ACK and no events get sent.
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, last_acked_event().type);
   RunUntilIdle();
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
   EXPECT_EQ(0U, GestureEventLastQueueEventSize());
@@ -492,7 +506,7 @@ TEST_F(GestureEventFilterTest, CoalescesMultiplePinchEventSequences) {
   EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
 
   // Coalesced without changing event order. Note anchor at (60, 60). Anchoring
-  // from a poinht that is not the origin should still give us the wight scroll.
+  // from a point that is not the origin should still give us the right scroll.
   SimulateGesturePinchUpdateEvent(1.5, 60, 60, 1);
   EXPECT_EQ(++expected_events_in_queue, GestureEventLastQueueEventSize());
   merged_event = GestureEventLastQueueEvent();
@@ -538,7 +552,7 @@ TEST_F(GestureEventFilterTest, CoalescesMultiplePinchEventSequences) {
   EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
 
   // Coalesced without changing event order. Note anchor at (60, 60). Anchoring
-  // from a poinht that is not the origin should still give us the wight scroll.
+  // from a point that is not the origin should still give us the right scroll.
   SimulateGesturePinchUpdateEvent(1.5, 30, 30, 1);
   EXPECT_EQ(++expected_events_in_queue, GestureEventLastQueueEventSize());
   merged_event = GestureEventLastQueueEvent();
@@ -565,6 +579,53 @@ TEST_F(GestureEventFilterTest, CoalescesMultiplePinchEventSequences) {
   EXPECT_EQ(12, merged_event.data.scrollUpdate.deltaX);
   EXPECT_EQ(-6, merged_event.data.scrollUpdate.deltaY);
   EXPECT_EQ(1, merged_event.modifiers);
+}
+
+
+TEST_F(GestureEventFilterTest, CoalescesScrollAndPinchEventWithSyncAck) {
+  // Turn off debounce handling for test isolation.
+  set_debounce_interval_time_ms(0);
+
+  // Simulate a pinch sequence.
+  SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
+                       WebGestureEvent::Touchscreen);
+  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
+  SimulateGestureEvent(WebInputEvent::GesturePinchBegin,
+                       WebGestureEvent::Touchscreen);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+
+  SimulateGestureScrollUpdateEvent(8, -4, 1);
+  // Make sure that the queue contains what we think it should.
+  WebGestureEvent merged_event = GestureEventLastQueueEvent();
+  EXPECT_EQ(3U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
+
+  // Coalesced without changing event order. Note anchor at (60, 60). Anchoring
+  // from a point that is not the origin should still give us the right scroll.
+  SimulateGesturePinchUpdateEvent(1.5, 60, 60, 1);
+  EXPECT_EQ(4U, GestureEventLastQueueEventSize());
+
+  SendInputEventACK(WebInputEvent::GestureScrollBegin,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(3U, GestureEventLastQueueEventSize());
+
+  // Ack the PinchBegin, and schedule a synchronous ack for GestureScrollUpdate.
+  set_synchronous_ack(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendInputEventACK(WebInputEvent::GesturePinchBegin,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // Both GestureScrollUpdate and GesturePinchUpdate should have been sent.
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, last_acked_event().type);
+  EXPECT_EQ(1U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(2U, GetAndResetSentGestureEventCount());
+
+  // Ack the final GesturePinchUpdate.
+  SendInputEventACK(WebInputEvent::GesturePinchUpdate,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(WebInputEvent::GesturePinchUpdate, last_acked_event().type);
+  EXPECT_EQ(0U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
 }
 
 #if GTEST_HAS_PARAM_TEST
