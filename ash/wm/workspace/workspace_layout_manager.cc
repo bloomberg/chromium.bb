@@ -349,7 +349,7 @@ void WorkspaceLayoutManager::UpdateBoundsFromShowState(
       MoveToDisplayForRestore(window_state);
       gfx::Rect new_bounds = ScreenAsh::GetDisplayBoundsInParent(
           window->parent()->parent());
-      if (window->GetProperty(kAnimateToFullscreenKey) &&
+      if (window_state->animate_to_fullscreen() &&
           last_show_state != ui::SHOW_STATE_MINIMIZED) {
         CrossFadeToBounds(window, new_bounds);
       } else {

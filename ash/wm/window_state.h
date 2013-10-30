@@ -25,6 +25,7 @@ namespace ash {
 class WindowResizer;
 
 namespace wm {
+class WindowStateDelegate;
 class WindowStateObserver;
 
 // WindowState manages and defines ash specific window state and
@@ -47,6 +48,8 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   aura::Window* window() { return window_; }
   const aura::Window* window() const { return window_; }
+
+  void SetDelegate(scoped_ptr<WindowStateDelegate> delegate);
 
   // Returns the window's current show state.
   ui::WindowShowState GetShowState() const;
@@ -84,6 +87,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   void Deactivate();
   void Restore();
   void ToggleMaximized();
+  void ToggleFullscreen();
   void SnapLeft(const gfx::Rect& bounds);
   void SnapRight(const gfx::Rect& bounds);
 
@@ -133,6 +137,15 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   void set_hide_shelf_when_fullscreen(bool value) {
     hide_shelf_when_fullscreen_ = value;
+  }
+
+  // Sets/gets the flag to suppress the cross-fade animation for
+  // the transition to the fullscreen state.
+  bool animate_to_fullscreen() const {
+    return animate_to_fullscreen_;
+  }
+  void set_animate_to_fullscreen(bool value) {
+    animate_to_fullscreen_ = value;
   }
 
   // Gets/Sets the bounds of the window before it was moved by the auto window
@@ -234,6 +247,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   // The owner of this window settings.
   aura::Window* window_;
+  scoped_ptr<WindowStateDelegate> delegate_;
 
   bool tracked_by_workspace_;
   bool window_position_managed_;
@@ -247,6 +261,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   bool always_restores_to_restore_bounds_;
   bool hide_shelf_when_fullscreen_;
+  bool animate_to_fullscreen_;
 
   // A property to remember the window position which was set before the
   // auto window position manager changed the window bounds, so that it can get

@@ -62,10 +62,6 @@ void CenterWindow(aura::Window* window) {
   window->SetBoundsInScreen(center, display);
 }
 
-void SetAnimateToFullscreen(aura::Window* window, bool animate) {
-  window->SetProperty(ash::internal::kAnimateToFullscreenKey, animate);
-}
-
 void AdjustBoundsToEnsureMinimumWindowVisibility(const gfx::Rect& visible_area,
                                                  gfx::Rect* bounds) {
   AdjustBoundsToEnsureWindowVisibility(

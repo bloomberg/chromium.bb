@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/user_action_handler.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
@@ -85,55 +84,6 @@ bool ChromeShellDelegate::IsRunningInForcedAppMode() const {
 
 void ChromeShellDelegate::Exit() {
   chrome::AttemptUserExit();
-}
-
-void ChromeShellDelegate::ToggleFullscreen() {
-  // Only toggle if the user has a window open.
-  aura::Window* window = ash::wm::GetActiveWindow();
-  if (!window)
-    return;
-  ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
-
-  bool is_fullscreen = window_state->IsFullscreen();
-
-  // Windows which cannot be maximized should not be fullscreened.
-  if (!is_fullscreen && !window_state->CanMaximize())
-    return;
-
-  Browser* browser = chrome::FindBrowserWithWindow(window);
-  if (browser) {
-    // If a window is fullscreen, exit fullscreen.
-    if (is_fullscreen) {
-      chrome::ToggleFullscreenMode(browser);
-      return;
-    }
-
-    // AppNonClientFrameViewAsh shows only the window controls and no other
-    // window decorations which is pretty close to fullscreen. Put v1 apps
-    // into maximized mode instead of fullscreen to avoid showing the ugly
-    // fullscreen exit bubble.
-#if defined(OS_WIN)
-    if (browser->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_NATIVE) {
-      chrome::ToggleFullscreenMode(browser);
-      return;
-    }
-#endif  // OS_WIN
-    if (browser->is_app() && browser->app_type() != Browser::APP_TYPE_CHILD)
-      window_state->ToggleMaximized();
-    else
-      chrome::ToggleFullscreenMode(browser);
-    return;
-  }
-
-  // |window| may belong to a shell window.
-  apps::ShellWindow* shell_window = apps::ShellWindowRegistry::
-      GetShellWindowForNativeWindowAnyProfile(window);
-  if (shell_window) {
-    if (is_fullscreen)
-      shell_window->Restore();
-    else
-      shell_window->Fullscreen();
-  }
 }
 
 content::BrowserContext* ChromeShellDelegate::GetCurrentBrowserContext() {

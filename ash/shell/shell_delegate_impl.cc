@@ -89,13 +89,6 @@ void ShellDelegateImpl::Exit() {
   base::MessageLoopForUI::current()->Quit();
 }
 
-void ShellDelegateImpl::ToggleFullscreen() {
-  // TODO(oshima): Remove this when crbug.com/309837 is implemented.
-  wm::WindowState* window_state = wm::GetActiveWindowState();
-  if (window_state)
-    window_state->ToggleMaximized();
-}
-
 keyboard::KeyboardControllerProxy*
     ShellDelegateImpl::CreateKeyboardControllerProxy() {
   return new KeyboardControllerProxyStub();

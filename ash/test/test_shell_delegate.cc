@@ -72,9 +72,6 @@ void TestShellDelegate::Exit() {
   num_exit_requests_++;
 }
 
-void TestShellDelegate::ToggleFullscreen() {
-}
-
 keyboard::KeyboardControllerProxy*
     TestShellDelegate::CreateKeyboardControllerProxy() {
   return new KeyboardControllerProxyStub();

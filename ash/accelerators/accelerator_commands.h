@@ -21,6 +21,10 @@ ASH_EXPORT bool ToggleMinimized();
 // fullscreen mode.
 ASH_EXPORT void ToggleMaximized();
 
+// Toggles the fullscreen state. The behavior can be overridden
+// by WindowStateDelegate::ToggleFullscreen().
+ASH_EXPORT void ToggleFullscreen();
+
 }  // namespace accelerators
 }  // namespace ash
 

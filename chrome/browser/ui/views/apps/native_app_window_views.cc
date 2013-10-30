@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/apps/native_app_window_views.h"
 
+#include "apps/shell_window.h"
 #include "apps/ui/views/shell_window_frame_view.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
@@ -46,6 +48,7 @@
 #include "ash/wm/custom_frame_view_ash.h"
 #include "ash/wm/panels/panel_frame_view.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_delegate.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_tree_client.h"
@@ -124,6 +127,34 @@ void CreateIconAndSetRelaunchDetails(
 }
 #endif
 
+#if defined(USE_ASH)
+// This class handles a user's fullscreen request (Shift+F4/F4).
+class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate {
+ public:
+  explicit NativeAppWindowStateDelegate(ShellWindow* shell_window)
+      : shell_window_(shell_window) {
+    DCHECK(shell_window_);
+  }
+  virtual ~NativeAppWindowStateDelegate(){}
+
+  // Overridden from ash::wm::WindowStateDelegate.
+  virtual bool ToggleFullscreen(ash::wm::WindowState* window_state) OVERRIDE {
+    // Windows which cannot be maximized should not be fullscreened.
+    DCHECK(window_state->IsFullscreen() || window_state->CanMaximize());
+    if (window_state->IsFullscreen())
+      shell_window_->Restore();
+    else if (window_state->CanMaximize())
+      shell_window_->Fullscreen();
+    return true;
+  }
+
+ private:
+  ShellWindow* shell_window_;  // not owned.
+
+  DISALLOW_COPY_AND_ASSIGN(NativeAppWindowStateDelegate);
+};
+#endif  // USE_ASH
+
 }  // namespace
 
 NativeAppWindowViews::NativeAppWindowViews(
@@ -155,6 +186,14 @@ NativeAppWindowViews::NativeAppWindowViews(
 
   OnViewWasResized();
   window_->AddObserver(this);
+#if defined(USE_ASH)
+  if (chrome::GetHostDesktopTypeForNativeView(GetNativeWindow()) ==
+      chrome::HOST_DESKTOP_TYPE_ASH) {
+    ash::wm::GetWindowState(GetNativeWindow())->SetDelegate(
+        scoped_ptr<ash::wm::WindowStateDelegate>(
+            new NativeAppWindowStateDelegate(shell_window)).Pass());
+  }
+#endif
 }
 
 NativeAppWindowViews::~NativeAppWindowViews() {

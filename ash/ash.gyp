@@ -540,6 +540,8 @@
         'wm/window_positioner.h',
         'wm/window_state.cc',
         'wm/window_state.h',
+        'wm/window_state_delegate.cc',
+        'wm/window_state_delegate.h',
         'wm/window_state_observer.h',
         'wm/window_properties.cc',
         'wm/window_properties.h',

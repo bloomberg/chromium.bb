@@ -50,8 +50,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_ASH)
-#include "ash/shell.h"
-#include "ash/shell_delegate.h"
+#include "ash/accelerators/accelerator_commands.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/window_state.h"
 #include "ui/aura/env.h"
@@ -1911,7 +1910,7 @@ void TabDragController::CompleteDrag() {
           host_desktop_type_ == chrome::HOST_DESKTOP_TYPE_ASH) {
         // In fullscreen mode it is only possible to get here if the source
         // was in "immersive fullscreen" mode, so toggle it back on.
-        ash::Shell::GetInstance()->delegate()->ToggleFullscreen();
+        ash::accelerators::ToggleFullscreen();
       }
 #endif
     } else {

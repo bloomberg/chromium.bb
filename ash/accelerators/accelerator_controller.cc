@@ -849,7 +849,7 @@ bool AcceleratorController::PerformAction(int action,
         shell->delegate()->RecordUserMetricsAction(
             UMA_ACCEL_FULLSCREEN_F4);
       }
-      shell->delegate()->ToggleFullscreen();
+      accelerators::ToggleFullscreen();
       return true;
     }
     case TOGGLE_MAXIMIZED: {

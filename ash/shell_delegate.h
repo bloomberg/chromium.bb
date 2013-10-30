@@ -129,9 +129,6 @@ class ASH_EXPORT ShellDelegate {
   // Invoked when the user uses Ctrl-Shift-Q to close chrome.
   virtual void Exit() = 0;
 
-  // Invoked when the user uses Shift+F4 to toggle the window fullscreen state.
-  virtual void ToggleFullscreen() = 0;
-
   // Create a shell-specific keyboard::KeyboardControllerProxy
   virtual keyboard::KeyboardControllerProxy*
       CreateKeyboardControllerProxy() = 0;

@@ -25,10 +25,6 @@ namespace internal {
 
 // Alphabetical sort.
 
-//  A property key to suppress the cross-fade animation for the transition to
-// the fullscreen state.
-extern const aura::WindowProperty<bool>* const kAnimateToFullscreenKey;
-
 // If this is set to true, the window stays in the same root window
 // even if the bounds outside of its root window is set.
 // This is exported as it's used in the tests.

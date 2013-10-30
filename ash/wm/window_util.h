@@ -47,9 +47,6 @@ ASH_EXPORT bool IsWindowMinimized(aura::Window* window);
 // Moves the window to the center of the display.
 ASH_EXPORT void CenterWindow(aura::Window* window);
 
-// Change the availability of animation to the fullscreen of the |window|.
-ASH_EXPORT void SetAnimateToFullscreen(aura::Window* window, bool animate);
-
 // Move the given bounds inside the given |visible_area| in parent coordinates,
 // including a safety margin given by |kMinimumOnScreenArea|.
 // This also ensures that the top of the bounds is visible.

@@ -37,9 +37,15 @@ void ToggleMaximized() {
     return;
   // Get out of fullscreen when in fullscreen mode.
   if (window_state->IsFullscreen())
-    Shell::GetInstance()->delegate()->ToggleFullscreen();
+    ToggleFullscreen();
   else
     window_state->ToggleMaximized();
+}
+
+void ToggleFullscreen() {
+  wm::WindowState* window_state = wm::GetActiveWindowState();
+  if (window_state)
+    window_state->ToggleFullscreen();
 }
 
 }  // namespace accelerators

@@ -8,6 +8,7 @@
 #include "ash/screen_ash.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_types.h"
@@ -39,11 +40,17 @@ WindowState::WindowState(aura::Window* window)
       window_resizer_(NULL),
       always_restores_to_restore_bounds_(false),
       hide_shelf_when_fullscreen_(true),
+      animate_to_fullscreen_(true),
       window_show_type_(ToWindowShowType(GetShowState())) {
   window_->AddObserver(this);
 }
 
 WindowState::~WindowState() {
+}
+
+void WindowState::SetDelegate(scoped_ptr<WindowStateDelegate> delegate) {
+  DCHECK(!delegate_.get());
+  delegate_ = delegate.Pass();
 }
 
 ui::WindowShowState WindowState::GetShowState() const {
@@ -159,6 +166,22 @@ void WindowState::ToggleMaximized() {
     Restore();
   else if (CanMaximize())
     Maximize();
+}
+
+void WindowState::ToggleFullscreen() {
+  // Window which cannot be maximized should not be fullscreened.
+  // It can, however, be restored if it was fullscreened.
+  bool is_fullscreen = IsFullscreen();
+  if (!is_fullscreen && !CanMaximize())
+    return;
+  if (delegate_ && delegate_->ToggleFullscreen(this))
+    return;
+  if (is_fullscreen) {
+    Restore();
+  } else {
+    window_->SetProperty(aura::client::kShowStateKey,
+                         ui::SHOW_STATE_FULLSCREEN);
+  }
 }
 
 void WindowState::SetBoundsInScreen(

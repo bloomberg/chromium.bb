@@ -1,15 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/chrome_shell_delegate.h"
+#include "ash/accelerators/accelerator_commands.h"
 
 #include "apps/shell_window.h"
 #include "apps/ui/native_app_window.h"
-#include "ash/accelerators/accelerator_commands.h"
-#include "ash/ash_switches.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/wm/window_state.h"
 #include "base/command_line.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
@@ -36,15 +33,11 @@ bool IsInImmersiveFullscreen(BrowserWindow* browser_window) {
 
 }  // namespace
 
-typedef InProcessBrowserTest ChromeShellDelegateBrowserTest;
-
-// TODO(oshima): Move these tests to ash once ToggleFullscreen is moved
-// to ash. crbug.com/309837.
+typedef InProcessBrowserTest AcceleratorCommandsBrowserTest;
 
 // Confirm that toggling window miximized works properly
-IN_PROC_BROWSER_TEST_F(ChromeShellDelegateBrowserTest, ToggleMaximized) {
-  ash::ShellDelegate* shell_delegate = ash::Shell::GetInstance()->delegate();
-  ASSERT_TRUE(shell_delegate);
+IN_PROC_BROWSER_TEST_F(AcceleratorCommandsBrowserTest, ToggleMaximized) {
+  ASSERT_TRUE(ash::Shell::HasInstance()) << "No Instance";
   ash::wm::WindowState* window_state = ash::wm::GetActiveWindowState();
   ASSERT_TRUE(window_state);
 
@@ -70,10 +63,8 @@ IN_PROC_BROWSER_TEST_F(ChromeShellDelegateBrowserTest, ToggleMaximized) {
 }
 
 // Confirm that toggling window fullscren works properly.
-IN_PROC_BROWSER_TEST_F(ChromeShellDelegateBrowserTest, ToggleFullscreen) {
-  ash::ShellDelegate* shell_delegate = ash::Shell::GetInstance()->delegate();
-  ASSERT_TRUE(shell_delegate);
-
+IN_PROC_BROWSER_TEST_F(AcceleratorCommandsBrowserTest, ToggleFullscreen) {
+  ASSERT_TRUE(ash::Shell::HasInstance()) << "No Instance";
   // 1) ToggleFullscreen() should toggle whether a tabbed browser window is in
   // immersive fullscreen.
   ASSERT_TRUE(browser()->is_type_tabbed());
@@ -82,11 +73,11 @@ IN_PROC_BROWSER_TEST_F(ChromeShellDelegateBrowserTest, ToggleFullscreen) {
   EXPECT_FALSE(browser_window->IsMaximized());
   EXPECT_FALSE(browser_window->IsFullscreen());
 
-  shell_delegate->ToggleFullscreen();
+  ash::accelerators::ToggleFullscreen();
   EXPECT_TRUE(browser_window->IsFullscreen());
   EXPECT_TRUE(IsInImmersiveFullscreen(browser_window));
 
-  shell_delegate->ToggleFullscreen();
+  ash::accelerators::ToggleFullscreen();
   EXPECT_FALSE(browser_window->IsMaximized());
   EXPECT_FALSE(browser_window->IsFullscreen());
 
@@ -94,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(ChromeShellDelegateBrowserTest, ToggleFullscreen) {
   // maximized.
   browser_window->GetNativeWindow()->SetProperty(aura::client::kCanMaximizeKey,
                                                  false);
-  shell_delegate->ToggleFullscreen();
+  ash::accelerators::ToggleFullscreen();
   EXPECT_FALSE(browser_window->IsMaximized());
   EXPECT_FALSE(browser_window->IsFullscreen());
 
@@ -117,10 +108,10 @@ IN_PROC_BROWSER_TEST_F(ChromeShellDelegateBrowserTest, ToggleFullscreen) {
   EXPECT_FALSE(browser_window->IsMaximized());
   EXPECT_FALSE(browser_window->IsFullscreen());
 
-  shell_delegate->ToggleFullscreen();
+  ash::accelerators::ToggleFullscreen();
   EXPECT_TRUE(browser_window->IsMaximized());
 
-  shell_delegate->ToggleFullscreen();
+  ash::accelerators::ToggleFullscreen();
   EXPECT_FALSE(browser_window->IsMaximized());
   EXPECT_FALSE(browser_window->IsFullscreen());
 
@@ -136,11 +127,11 @@ IN_PROC_BROWSER_TEST_F(ChromeShellDelegateBrowserTest, ToggleFullscreen) {
   EXPECT_FALSE(browser_window->IsMaximized());
   EXPECT_FALSE(browser_window->IsFullscreen());
 
-  shell_delegate->ToggleFullscreen();
+  ash::accelerators::ToggleFullscreen();
   EXPECT_TRUE(browser_window->IsFullscreen());
   EXPECT_FALSE(IsInImmersiveFullscreen(browser_window));
 
-  shell_delegate->ToggleFullscreen();
+  ash::accelerators::ToggleFullscreen();
   EXPECT_FALSE(browser_window->IsMaximized());
   EXPECT_FALSE(browser_window->IsFullscreen());
 
@@ -156,24 +147,22 @@ IN_PROC_BROWSER_TEST_F(ChromeShellDelegateBrowserTest, ToggleFullscreen) {
   EXPECT_FALSE(browser_window->IsMaximized());
   EXPECT_FALSE(browser_window->IsFullscreen());
 
-  shell_delegate->ToggleFullscreen();
+  ash::accelerators::ToggleFullscreen();
   EXPECT_TRUE(browser_window->IsFullscreen());
   EXPECT_FALSE(IsInImmersiveFullscreen(browser_window));
 
-  shell_delegate->ToggleFullscreen();
+  ash::accelerators::ToggleFullscreen();
   EXPECT_FALSE(browser_window->IsMaximized());
   EXPECT_FALSE(browser_window->IsFullscreen());
 }
 
 typedef extensions::PlatformAppBrowserTest
-    ChromeShellDelegatePlatformAppBrowserTest;
+    AcceleratorCommandsPlatformAppBrowserTest;
 
 // Test that ToggleFullscreen() toggles the platform app's fullscreen state.
-IN_PROC_BROWSER_TEST_F(ChromeShellDelegatePlatformAppBrowserTest,
+IN_PROC_BROWSER_TEST_F(AcceleratorCommandsPlatformAppBrowserTest,
                        ToggleFullscreenPlatformApp) {
-  ash::ShellDelegate* shell_delegate = ash::Shell::GetInstance()->delegate();
-  ASSERT_TRUE(shell_delegate);
-
+  ASSERT_TRUE(ash::Shell::HasInstance()) << "No Instance";
   const extensions::Extension* extension = LoadAndLaunchPlatformApp("minimal");
   apps::ShellWindow* shell_window = CreateShellWindow(extension);
   apps::NativeAppWindow* app_window = shell_window->GetBaseWindow();
@@ -181,10 +170,10 @@ IN_PROC_BROWSER_TEST_F(ChromeShellDelegatePlatformAppBrowserTest,
   EXPECT_FALSE(app_window->IsMaximized());
   EXPECT_FALSE(app_window->IsFullscreen());
 
-  shell_delegate->ToggleFullscreen();
+  ash::accelerators::ToggleFullscreen();
   EXPECT_TRUE(app_window->IsFullscreen());
 
-  shell_delegate->ToggleFullscreen();
+  ash::accelerators::ToggleFullscreen();
   EXPECT_FALSE(app_window->IsMaximized());
   EXPECT_FALSE(app_window->IsFullscreen());
 
