@@ -865,15 +865,15 @@ class ${nativeType};
 v8::Handle<v8::Value> toV8(${nativeType}*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
 template<class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ${nativeType}* impl, v8::Handle<v8::Object> creationContext)
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ${nativeType}* impl)
 {
-    v8SetReturnValue(callbackInfo, toV8(impl, creationContext, callbackInfo.GetIsolate()));
+    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, ${nativeType}* impl, v8::Handle<v8::Object> creationContext)
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, ${nativeType}* impl)
 {
-     v8SetReturnValue(callbackInfo, toV8(impl, creationContext, callbackInfo.GetIsolate()));
+     v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 template<class CallbackInfo, class Wrappable>
@@ -917,7 +917,7 @@ inline v8::Handle<v8::Value> toV8(${nativeType}* impl, v8::Handle<v8::Object> cr
 }
 
 template<typename CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ${nativeType}* impl, v8::Handle<v8::Object> creationContext)
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ${nativeType}* impl)
 {
     if (UNLIKELY(!impl)) {
         v8SetReturnValueNull(callbackInfo);
@@ -925,12 +925,12 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ${nativeType}* im
     }
     if (DOMDataStore::setReturnValueFromWrapper<${v8ClassName}>(callbackInfo.GetReturnValue(), impl))
         return;
-    v8::Handle<v8::Object> wrapper = wrap(impl, creationContext, callbackInfo.GetIsolate());
+    v8::Handle<v8::Object> wrapper = wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
     v8SetReturnValue(callbackInfo, wrapper);
 }
 
 template<typename CallbackInfo>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, ${nativeType}* impl, v8::Handle<v8::Object> creationContext)
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, ${nativeType}* impl)
 {
     ASSERT(worldType(callbackInfo.GetIsolate()) == MainWorld);
     if (UNLIKELY(!impl)) {
@@ -939,7 +939,7 @@ inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, ${nat
     }
     if (DOMDataStore::setReturnValueFromWrapperForMainWorld<${v8ClassName}>(callbackInfo.GetReturnValue(), impl))
         return;
-    v8::Handle<v8::Value> wrapper = wrap(impl, creationContext, callbackInfo.GetIsolate());
+    v8::Handle<v8::Value> wrapper = wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
     v8SetReturnValue(callbackInfo, wrapper);
 }
 
@@ -966,15 +966,15 @@ inline v8::Handle<v8::Value> toV8(PassRefPtr<${nativeType} > impl, v8::Handle<v8
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtr<${nativeType} > impl, v8::Handle<v8::Object> creationContext)
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtr<${nativeType} > impl)
 {
-    v8SetReturnValue(callbackInfo, impl.get(), creationContext);
+    v8SetReturnValue(callbackInfo, impl.get());
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassRefPtr<${nativeType} > impl, v8::Handle<v8::Object> creationContext)
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassRefPtr<${nativeType} > impl)
 {
-    v8SetReturnValueForMainWorld(callbackInfo, impl.get(), creationContext);
+    v8SetReturnValueForMainWorld(callbackInfo, impl.get());
 }
 
 template<class CallbackInfo, class Wrappable>
@@ -1604,7 +1604,7 @@ END
         my $svgNativeType = GetSVGTypeNeedingTearOff($attrType);
         # Convert from abstract SVGProperty to real type, so the right toJS() method can be invoked.
         if ($forMainWorldSuffix eq "ForMainWorld") {
-            $code .= "    v8SetReturnValueForMainWorld(info, static_cast<$svgNativeType*>($expression), info.Holder());\n";
+            $code .= "    v8SetReturnValueForMainWorld(info, static_cast<$svgNativeType*>($expression));\n";
         } else {
             $code .= "    v8SetReturnValueFast(info, static_cast<$svgNativeType*>($expression), imp);\n";
         }
@@ -1639,7 +1639,7 @@ END
                 $wrappedValue = "WTF::getPtr(${tearOffType}::create($expression))";
         }
         if ($forMainWorldSuffix eq "ForMainWorld") {
-            $code .= "    v8SetReturnValueForMainWorld(info, $wrappedValue, info.Holder());\n";
+            $code .= "    v8SetReturnValueForMainWorld(info, $wrappedValue);\n";
         } else {
             $code .= "    v8SetReturnValueFast(info, $wrappedValue, imp);\n";
         }
@@ -1674,7 +1674,7 @@ END
         $code .= "    EventListener* jsValue = ${functionName}(" . join(", ", @arguments) . ");\n";
         $code .= "    v8SetReturnValue(info, jsValue ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(jsValue)->getListenerObject(imp->executionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));\n";
     } else {
-        my $nativeValue = NativeToJSValue($attribute->type, $attribute->extendedAttributes, $expression, "    ", "", "info.Holder()", "info.GetIsolate()", "info", "imp", $forMainWorldSuffix, "return");
+        my $nativeValue = NativeToJSValue($attribute->type, $attribute->extendedAttributes, $expression, "    ", "", "info.GetIsolate()", "info", "imp", $forMainWorldSuffix, "return");
         $code .= "${nativeValue}\n";
     }
 
@@ -3467,7 +3467,7 @@ sub GenerateImplementationIndexedPropertyGetter
     my $nativeValue = "element";
     $nativeValue .= ".release()" if (IsRefPtrType($returnType));
     my $isNull = GenerateIsNullExpression($returnType, "element");
-    my $returnJSValueCode = NativeToJSValue($indexedGetterFunction->type, $indexedGetterFunction->extendedAttributes, $nativeValue, "    ", "", "info.Holder()", "info.GetIsolate()", "info", "collection", "", "return");
+    my $returnJSValueCode = NativeToJSValue($indexedGetterFunction->type, $indexedGetterFunction->extendedAttributes, $nativeValue, "    ", "", "info.GetIsolate()", "info", "collection", "", "return");
     my $raisesExceptions = $indexedGetterFunction->extendedAttributes->{"RaisesException"};
     my $methodCallCode = GenerateMethodCall($returnType, "element", "collection->${methodName}", "index", $raisesExceptions);
     my $getterCode = "static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
@@ -3821,7 +3821,7 @@ sub GenerateImplementationNamedPropertyGetter
     my $isNull = GenerateIsNullExpression($returnType, "element");
     my $nativeValue = "element";
     $nativeValue .= ".release()" if (IsRefPtrType($returnType));
-    my $returnJSValueCode = NativeToJSValue($namedGetterFunction->type, $namedGetterFunction->extendedAttributes, $nativeValue, "    ", "", "info.Holder()", "info.GetIsolate()", "info", "collection", "", "return");
+    my $returnJSValueCode = NativeToJSValue($namedGetterFunction->type, $namedGetterFunction->extendedAttributes, $nativeValue, "    ", "", "info.GetIsolate()", "info", "collection", "", "return");
     my $raisesExceptions = $namedGetterFunction->extendedAttributes->{"RaisesException"};
     my $methodCallCode = GenerateMethodCall($returnType, "element", "collection->${methodName}", "propertyName", $raisesExceptions);
 
@@ -4890,7 +4890,7 @@ END
             @args = ();
             foreach my $param (@params) {
                 my $paramName = $param->name;
-                $code .= NativeToJSValue($param->type, $param->extendedAttributes, $paramName, "    ", "v8::Handle<v8::Value> ${paramName}Handle =", "v8::Handle<v8::Object>()", "isolate", "") . "\n";
+                $code .= NativeToJSValue($param->type, $param->extendedAttributes, $paramName, "    ", "v8::Handle<v8::Value> ${paramName}Handle =", "isolate", "") . "\n";
                 $code .= "    if (${paramName}Handle.IsEmpty()) {\n";
                 $code .= "        if (!isScriptControllerTerminating())\n";
                 $code .= "            CRASH();\n";
@@ -5224,12 +5224,12 @@ END
         # FIXME: Update for all ScriptWrappables.
         if (IsDOMNodeType($interfaceName)) {
             if ($forMainWorldSuffix eq "ForMainWorld") {
-                $code .= $indent . "v8SetReturnValueForMainWorld(args, WTF::getPtr(${svgNativeType}::create($return), args.Holder()));\n";
+                $code .= $indent . "v8SetReturnValueForMainWorld(args, WTF::getPtr(${svgNativeType}::create($return)));\n";
             } else {
                 $code .= $indent . "v8SetReturnValueFast(args, WTF::getPtr(${svgNativeType}::create($return)), imp);\n";
             }
         } else {
-            $code .= $indent . "v8SetReturnValue${forMainWorldSuffix}(args, WTF::getPtr(${svgNativeType}::create($return)), args.Holder());\n";
+            $code .= $indent . "v8SetReturnValue${forMainWorldSuffix}(args, WTF::getPtr(${svgNativeType}::create($return)));\n";
         }
         return $code;
     }
@@ -5244,9 +5244,9 @@ END
     my $nativeValue;
     # FIXME: Update for all ScriptWrappables.
     if (IsDOMNodeType($interfaceName)) {
-        $nativeValue = NativeToJSValue($function->type, $function->extendedAttributes, $return, $indent, "", "args.Holder()", "args.GetIsolate()", "args", "imp", $forMainWorldSuffix, "return");
+        $nativeValue = NativeToJSValue($function->type, $function->extendedAttributes, $return, $indent, "", "args.GetIsolate()", "args", "imp", $forMainWorldSuffix, "return");
     } else {
-        $nativeValue = NativeToJSValue($function->type, $function->extendedAttributes, $return, $indent, "", "args.Holder()", "args.GetIsolate()", "args", 0, $forMainWorldSuffix, "return");
+        $nativeValue = NativeToJSValue($function->type, $function->extendedAttributes, $return, $indent, "", "args.GetIsolate()", "args", 0, $forMainWorldSuffix, "return");
     }
 
     $code .= $nativeValue . "\n" if $nativeValue;  # Skip blank line for void return type
@@ -5616,13 +5616,11 @@ sub NativeToJSValue
     my $nativeValue = shift;
     my $indent = shift;  # added before every line
     my $receiver = shift;  # "return" or "<variableName> ="
-    my $getCreationContext = shift;
     my $getIsolate = shift;
     die "An Isolate is mandatory for native value => JS value conversion." unless $getIsolate;
     my $getCallbackInfo = shift || "";
-    my $getCallbackInfoArg = $getCallbackInfo ? ", $getCallbackInfo" : "";
+    my $creationContext = $getCallbackInfo ? "${getCallbackInfo}.Holder()" : "v8::Handle<v8::Object>()";
     my $getScriptWrappable = shift || "";
-    my $getScriptWrappableArg = $getScriptWrappable ? ", $getScriptWrappable" : "";
     my $forMainWorldSuffix = shift || "";
     my $returnValueArg = shift || 0;
     my $isReturnValue = $returnValueArg eq "return";
@@ -5637,7 +5635,7 @@ sub NativeToJSValue
             my $unionMemberEnabledVariable = $nativeValue . $i . "Enabled";
             my $unionMemberNativeValue = $unionMemberVariable;
             $unionMemberNativeValue .= ".release()" if (IsRefPtrType($unionMemberType));
-            my $returnJSValueCode = NativeToJSValue($unionMemberType, $extendedAttributes, $unionMemberNativeValue, $indent . "    ", $receiver, $getCreationContext, $getIsolate, $getCallbackInfo, $getScriptWrappable, $forMainWorldSuffix, $returnValueArg);
+            my $returnJSValueCode = NativeToJSValue($unionMemberType, $extendedAttributes, $unionMemberNativeValue, $indent . "    ", $receiver, $getIsolate, $getCallbackInfo, $getScriptWrappable, $forMainWorldSuffix, $returnValueArg);
             my $code = "";
             if ($isReturnValue) {
               $code .= "${indent}if (${unionMemberEnabledVariable}) {\n";
@@ -5761,14 +5759,14 @@ sub NativeToJSValue
         # FIXME: Use safe handles
         if ($isReturnValue) {
             if ($forMainWorldSuffix eq "ForMainWorld") {
-                return "${indent}v8SetReturnValueForMainWorld(${getCallbackInfo}, $nativeValue, $getCallbackInfo.Holder());";
+                return "${indent}v8SetReturnValueForMainWorld(${getCallbackInfo}, $nativeValue);";
             }
-            return "${indent}v8SetReturnValueFast(${getCallbackInfo}, $nativeValue$getScriptWrappableArg);";
+            return "${indent}v8SetReturnValueFast(${getCallbackInfo}, $nativeValue, $getScriptWrappable);";
         }
     }
     # FIXME: Use safe handles
-    return "${indent}v8SetReturnValue(${getCallbackInfo}, $nativeValue, $getCreationContext);" if $isReturnValue;
-    return "$indent$receiver toV8($nativeValue, $getCreationContext, $getIsolate);";
+    return "${indent}v8SetReturnValue(${getCallbackInfo}, $nativeValue);" if $isReturnValue;
+    return "$indent$receiver toV8($nativeValue, $creationContext, $getIsolate);";
 }
 
 sub WriteData

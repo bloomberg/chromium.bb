@@ -73,7 +73,7 @@ static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
     }
     TestEventTarget* imp = V8TestEventTarget::toNative(args.Holder());
     V8TRYCATCH_VOID(unsigned, index, toUInt32(args[0]));
-    v8SetReturnValue(args, imp->item(index), args.Holder());
+    v8SetReturnValue(args, imp->item(index));
 }
 
 static void itemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -91,7 +91,7 @@ static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
     }
     TestEventTarget* imp = V8TestEventTarget::toNative(args.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, args[0]);
-    v8SetReturnValue(args, imp->namedItem(name), args.Holder());
+    v8SetReturnValue(args, imp->namedItem(name));
 }
 
 static void namedItemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)

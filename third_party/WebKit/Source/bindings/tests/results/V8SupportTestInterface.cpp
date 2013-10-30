@@ -327,7 +327,7 @@ static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>&
     RefPtr<TestObj> result = SupportTestPartialInterface::supplementalMethod2(scriptContext, imp, strArg, objArg, es);
     if (es.throwIfNeeded())
         return;
-    v8SetReturnValue(args, result.release(), args.Holder());
+    v8SetReturnValue(args, result.release());
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)

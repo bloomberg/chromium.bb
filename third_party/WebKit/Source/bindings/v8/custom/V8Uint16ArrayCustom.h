@@ -74,15 +74,15 @@ inline v8::Handle<v8::Value> toV8(Uint16Array* impl, v8::Handle<v8::Object> crea
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, Uint16Array* impl, v8::Handle<v8::Object> creationContext)
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, Uint16Array* impl)
 {
-    V8TypedArray<Uint16Array>::v8SetReturnValue(callbackInfo, impl, creationContext);
+    V8TypedArray<Uint16Array>::v8SetReturnValue(callbackInfo, impl);
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, Uint16Array* impl, v8::Handle<v8::Object> creationContext)
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, Uint16Array* impl)
 {
-    V8TypedArray<Uint16Array>::v8SetReturnValueForMainWorld(callbackInfo, impl, creationContext);
+    V8TypedArray<Uint16Array>::v8SetReturnValueForMainWorld(callbackInfo, impl);
 }
 
 template<class CallbackInfo, class Wrappable>
@@ -97,15 +97,15 @@ inline v8::Handle<v8::Value> toV8(PassRefPtr< Uint16Array > impl, v8::Handle<v8:
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtr<Uint16Array> impl, v8::Handle<v8::Object> creationContext)
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtr<Uint16Array> impl)
 {
-    v8SetReturnValue(callbackInfo, impl.get(), creationContext);
+    v8SetReturnValue(callbackInfo, impl.get());
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassRefPtr<Uint16Array> impl, v8::Handle<v8::Object> creationContext)
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassRefPtr<Uint16Array> impl)
 {
-    v8SetReturnValueForMainWorld(callbackInfo, impl.get(), creationContext);
+    v8SetReturnValueForMainWorld(callbackInfo, impl.get());
 }
 
 template<class CallbackInfo, class Wrappable>

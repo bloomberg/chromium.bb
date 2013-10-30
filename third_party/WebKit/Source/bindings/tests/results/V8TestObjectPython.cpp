@@ -3666,7 +3666,7 @@ static void voidMethodUnsignedShortArgMethodCallback(const v8::FunctionCallbackI
 static void testInterfaceEmptyMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
-    v8SetReturnValue(args, imp->testInterfaceEmptyMethod(), args.Holder());
+    v8SetReturnValue(args, imp->testInterfaceEmptyMethod());
 }
 
 static void testInterfaceEmptyMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3898,11 +3898,11 @@ static void testInterfaceEmptyMethodOptionalLongArgMethod(const v8::FunctionCall
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
     if (UNLIKELY(args.Length() <= 0)) {
-        v8SetReturnValue(args, imp->testInterfaceEmptyMethodOptionalLongArg(), args.Holder());
+        v8SetReturnValue(args, imp->testInterfaceEmptyMethodOptionalLongArg());
         return;
     }
     V8TRYCATCH_VOID(int, optionalLongArg, toInt32(args[0]));
-    v8SetReturnValue(args, imp->testInterfaceEmptyMethodOptionalLongArg(optionalLongArg), args.Holder());
+    v8SetReturnValue(args, imp->testInterfaceEmptyMethodOptionalLongArg(optionalLongArg));
 }
 
 static void testInterfaceEmptyMethodOptionalLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)

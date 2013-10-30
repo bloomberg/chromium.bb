@@ -2163,7 +2163,7 @@ static void perWorldAttributeAttributeSetterCallback(v8::Local<v8::String> name,
 static void perWorldAttributeAttributeGetterForMainWorld(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueForMainWorld(info, imp->perWorldAttribute(), info.Holder());
+    v8SetReturnValueForMainWorld(info, imp->perWorldAttribute());
 }
 
 static void perWorldAttributeAttributeGetterCallbackForMainWorld(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -2890,7 +2890,7 @@ static void longMethodWithArgsMethodCallback(const v8::FunctionCallbackInfo<v8::
 static void objMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestObj* imp = V8TestObject::toNative(args.Holder());
-    v8SetReturnValue(args, imp->objMethod(), args.Holder());
+    v8SetReturnValue(args, imp->objMethod());
 }
 
 static void objMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -2911,7 +2911,7 @@ static void objMethodWithArgsMethod(const v8::FunctionCallbackInfo<v8::Value>& a
     V8TRYCATCH_VOID(int, longArg, toInt32(args[0]));
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, args[1]);
     V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::HasInstance(args[2], args.GetIsolate(), worldType(args.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(args[2])) : 0);
-    v8SetReturnValue(args, imp->objMethodWithArgs(longArg, strArg, objArg), args.Holder());
+    v8SetReturnValue(args, imp->objMethodWithArgs(longArg, strArg, objArg));
 }
 
 static void objMethodWithArgsMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -2993,7 +2993,7 @@ static void methodThatRequiresAllArgsAndThrowsMethod(const v8::FunctionCallbackI
     RefPtr<TestObj> result = imp->methodThatRequiresAllArgsAndThrows(strArg, objArg, es);
     if (es.throwIfNeeded())
         return;
-    v8SetReturnValue(args, result.release(), args.Holder());
+    v8SetReturnValue(args, result.release());
 }
 
 static void methodThatRequiresAllArgsAndThrowsMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3179,7 +3179,7 @@ static void withScriptStateObjMethod(const v8::FunctionCallbackInfo<v8::Value>& 
         throwError(exception, args.GetIsolate());
         return;
     }
-    v8SetReturnValue(args, result.release(), args.Holder());
+    v8SetReturnValue(args, result.release());
 }
 
 static void withScriptStateObjMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3232,7 +3232,7 @@ static void withScriptStateObjExceptionMethod(const v8::FunctionCallbackInfo<v8:
         throwError(exception, args.GetIsolate());
         return;
     }
-    v8SetReturnValue(args, result.release(), args.Holder());
+    v8SetReturnValue(args, result.release());
 }
 
 static void withScriptStateObjExceptionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3298,7 +3298,7 @@ static void withExecutionContextAndScriptStateObjExceptionMethod(const v8::Funct
         throwError(exception, args.GetIsolate());
         return;
     }
-    v8SetReturnValue(args, result.release(), args.Holder());
+    v8SetReturnValue(args, result.release());
 }
 
 static void withExecutionContextAndScriptStateObjExceptionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3323,7 +3323,7 @@ static void withExecutionContextAndScriptStateWithSpacesMethod(const v8::Functio
         throwError(exception, args.GetIsolate());
         return;
     }
-    v8SetReturnValue(args, result.release(), args.Holder());
+    v8SetReturnValue(args, result.release());
 }
 
 static void withExecutionContextAndScriptStateWithSpacesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -4193,7 +4193,7 @@ static void domStringListFunctionMethod(const v8::FunctionCallbackInfo<v8::Value
     RefPtr<DOMStringList> result = imp->domStringListFunction(values, es);
     if (es.throwIfNeeded())
         return;
-    v8SetReturnValue(args, result.release(), args.Holder());
+    v8SetReturnValue(args, result.release());
 }
 
 static void domStringListFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -4215,7 +4215,7 @@ static void getSVGDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& args
     RefPtr<SVGDocument> result = imp->getSVGDocument(es);
     if (es.throwIfNeeded())
         return;
-    v8SetReturnValue(args, result.release(), args.Holder());
+    v8SetReturnValue(args, result.release());
 }
 
 static void getSVGDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -4300,7 +4300,7 @@ static void convert5MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& ar
 static void mutablePointFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestObj* imp = V8TestObject::toNative(args.Holder());
-    v8SetReturnValue(args, WTF::getPtr(SVGPropertyTearOff<SVGPoint>::create(imp->mutablePointFunction())), args.Holder());
+    v8SetReturnValue(args, WTF::getPtr(SVGPropertyTearOff<SVGPoint>::create(imp->mutablePointFunction())));
 }
 
 static void mutablePointFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -4313,7 +4313,7 @@ static void mutablePointFunctionMethodCallback(const v8::FunctionCallbackInfo<v8
 static void immutablePointFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestObj* imp = V8TestObject::toNative(args.Holder());
-    v8SetReturnValue(args, WTF::getPtr(SVGPropertyTearOff<SVGPoint>::create(imp->immutablePointFunction())), args.Holder());
+    v8SetReturnValue(args, WTF::getPtr(SVGPropertyTearOff<SVGPoint>::create(imp->immutablePointFunction())));
 }
 
 static void immutablePointFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -4336,7 +4336,7 @@ static void svgPointMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args
         throwUninformativeAndGenericTypeError(args.GetIsolate());
         return;
     }
-    v8SetReturnValue(args, WTF::getPtr(SVGPropertyTearOff<SVGPoint>::create(imp->svgPointMethod(item->propertyReference(), index))), args.Holder());
+    v8SetReturnValue(args, WTF::getPtr(SVGPropertyTearOff<SVGPoint>::create(imp->svgPointMethod(item->propertyReference(), index))));
 }
 
 static void svgPointMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -4367,7 +4367,7 @@ static void strictSVGPointMethodMethod(const v8::FunctionCallbackInfo<v8::Value>
     SVGPoint result = imp->strictSVGPointMethod(item->propertyReference(), index, es);
     if (es.throwIfNeeded())
         return;
-    v8SetReturnValue(args, WTF::getPtr(SVGPropertyTearOff<SVGPoint>::create(result)), args.Holder());
+    v8SetReturnValue(args, WTF::getPtr(SVGPropertyTearOff<SVGPoint>::create(result)));
 }
 
 static void strictSVGPointMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)

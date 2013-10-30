@@ -80,7 +80,7 @@ public:
     }
 
     template<typename CallbackInfo>
-    static void v8SetReturnValue(const CallbackInfo& callbackInfo, TypedArray* impl, v8::Handle<v8::Object> creationContext)
+    static void v8SetReturnValue(const CallbackInfo& callbackInfo, TypedArray* impl)
     {
         if (UNLIKELY(!impl)) {
             v8SetReturnValueNull(callbackInfo);
@@ -88,12 +88,12 @@ public:
         }
         if (DOMDataStore::setReturnValueFromWrapper<Binding>(callbackInfo.GetReturnValue(), impl))
             return;
-        v8::Handle<v8::Object> wrapper = wrap(impl, creationContext, callbackInfo.GetIsolate());
+        v8::Handle<v8::Object> wrapper = wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
         callbackInfo.GetReturnValue().Set(wrapper);
     }
 
     template<typename CallbackInfo>
-    static void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, TypedArray* impl, v8::Handle<v8::Object> creationContext)
+    static void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, TypedArray* impl)
     {
         ASSERT(worldType(callbackInfo.GetIsolate()) == MainWorld);
         if (UNLIKELY(!impl)) {
@@ -102,7 +102,7 @@ public:
         }
         if (DOMDataStore::setReturnValueFromWrapperForMainWorld<Binding>(callbackInfo.GetReturnValue(), impl))
             return;
-        v8::Handle<v8::Value> wrapper = wrap(impl, creationContext, callbackInfo.GetIsolate());
+        v8::Handle<v8::Value> wrapper = wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
         callbackInfo.GetReturnValue().Set(wrapper);
     }
 
