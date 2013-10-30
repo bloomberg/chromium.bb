@@ -8,6 +8,7 @@
 #include <iterator>
 
 #include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
@@ -181,14 +182,19 @@ void AutocompleteResult::SortAndCull(const AutocompleteInput& input,
   default_match_ = matches_.begin();
 
   if (default_match_ != matches_.end()) {
-    DCHECK(default_match_->allowed_to_be_default_match);
+    const string16 debug_info = ASCIIToUTF16("fill_into_edit=") +
+        default_match_->fill_into_edit + ASCIIToUTF16(", provider=") +
+        ((default_match_->provider != NULL) ?
+         ASCIIToUTF16(default_match_->provider->GetName()) : string16()) +
+        ASCIIToUTF16(", input=") + input.text();
+    DCHECK(default_match_->allowed_to_be_default_match) << debug_info;
     // We shouldn't get query matches for URL inputs, or non-query matches
     // for query inputs.
     if (AutocompleteMatch::IsSearchType(default_match_->type)) {
-      DCHECK_NE(AutocompleteInput::URL, input.type());
+      DCHECK_NE(AutocompleteInput::URL, input.type()) << debug_info;
     } else {
-      DCHECK_NE(AutocompleteInput::QUERY, input.type());
-      DCHECK_NE(AutocompleteInput::FORCED_QUERY, input.type());
+      DCHECK_NE(AutocompleteInput::QUERY, input.type()) << debug_info;
+      DCHECK_NE(AutocompleteInput::FORCED_QUERY, input.type()) << debug_info;
     }
   }
 
