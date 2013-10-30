@@ -147,6 +147,8 @@
         'browser/extensions/api/braille_display_private/braille_display_private_api.cc',
         'browser/extensions/api/braille_display_private/brlapi_connection.cc',
         'browser/extensions/api/braille_display_private/brlapi_connection.h',
+        'browser/extensions/api/braille_display_private/stub_braille_controller.cc',
+        'browser/extensions/api/braille_display_private/stub_braille_controller.h',
         'browser/extensions/api/browsing_data/browsing_data_api.cc',
         'browser/extensions/api/browsing_data/browsing_data_api.h',
         'browser/extensions/api/cast_channel/cast_auth_util.h',

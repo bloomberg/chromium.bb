@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager_impl.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/extensions/api/braille_display_private/stub_braille_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
@@ -24,6 +25,10 @@
 #include "chromeos/chromeos_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using extensions::api::braille_display_private::BrailleObserver;
+using extensions::api::braille_display_private::DisplayState;
+using extensions::api::braille_display_private::StubBrailleController;
 
 namespace chromeos {
 
@@ -90,6 +95,39 @@ class MockAccessibilityObserver : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAccessibilityObserver);
+};
+
+class MockBrailleController : public StubBrailleController {
+ public:
+
+  MockBrailleController() : available_(false), observer_(NULL) {}
+
+  virtual scoped_ptr<DisplayState> GetDisplayState() OVERRIDE {
+    scoped_ptr<DisplayState> state(new DisplayState());
+    state->available = available_;
+    return state.Pass();
+  }
+
+  virtual void AddObserver(BrailleObserver* observer) OVERRIDE {
+    ASSERT_EQ(NULL, observer_);
+    observer_ = observer;
+  }
+
+  virtual void RemoveObserver(BrailleObserver* observer) OVERRIDE {
+    ASSERT_EQ(observer_, observer);
+  }
+
+  void SetAvailable(bool available) {
+    available_ = available;
+  }
+
+  BrailleObserver* GetObserver() {
+    return observer_;
+  }
+
+ private:
+  bool available_;
+  BrailleObserver* observer_;
 };
 
 void SetLargeCursorEnabled(bool enabled) {
@@ -196,6 +234,10 @@ class AccessibilityManagerTest : public InProcessBrowserTest {
                                     TestingProfile::kTestUserProfileDir);
   }
 
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    AccessibilityManager::SetBrailleControllerForTest(&braille_controller_);
+  }
+
   virtual void SetUpOnMainThread() OVERRIDE {
     // Sets the login-screen profile.
     AccessibilityManager::Get()->
@@ -203,11 +245,17 @@ class AccessibilityManagerTest : public InProcessBrowserTest {
     default_autoclick_delay_ = GetAutoclickDelay();
   }
 
+  virtual void CleanUpOnMainThread() OVERRIDE {
+    AccessibilityManager::SetBrailleControllerForTest(NULL);
+  }
+
   int default_autoclick_delay() const { return default_autoclick_delay_; }
 
   int default_autoclick_delay_;
 
   content::NotificationRegistrar registrar_;
+
+  MockBrailleController braille_controller_;
   DISALLOW_COPY_AND_ASSIGN(AccessibilityManagerTest);
 };
 
@@ -261,6 +309,18 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, Login) {
   // Test that autoclick delay is set properly.
   SetAutoclickDelay(kTestAutoclickDelayMs);
   EXPECT_EQ(kTestAutoclickDelayMs, GetAutoclickDelay());
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, BrailleOnLoginScreen) {
+  EXPECT_FALSE(IsSpokenFeedbackEnabled());
+
+  // Signal the accessibility manager that a braille display was connected.
+  braille_controller_.SetAvailable(true);
+  braille_controller_.GetObserver()->OnDisplayStateChanged(
+      *braille_controller_.GetDisplayState());
+
+  // Confirms that the spoken feedback is enabled.
+  EXPECT_TRUE(IsSpokenFeedbackEnabled());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, TypePref) {

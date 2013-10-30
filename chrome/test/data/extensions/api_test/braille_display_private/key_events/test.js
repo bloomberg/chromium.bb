@@ -7,14 +7,6 @@
 
 var pass = chrome.test.callbackPass;
 
-function createBuffer(size, element) {
-  var buf = new Uint8Array(size);
-  for (var i = 0; i < size; ++i) {
-    buf[i] = element;
-  }
-  return buf.buffer;
-}
-
 var EXPECTED_EVENTS = [
   { "command": "line_up" },
   { "command": "line_down" },
@@ -27,7 +19,6 @@ function eventListener(event) {
   console.log("Received event: " + event);
   chrome.test.assertEq(event, EXPECTED_EVENTS[event_number]);
   if (++event_number == EXPECTED_EVENTS.length) {
-    console.log("Happy!");
     callbackCompleted();
   }
   console.log("Event number: " + event_number);

@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/screen_locker_tester.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/extensions/api/braille_display_private/braille_controller_brlapi.h"
 #include "chrome/browser/extensions/api/braille_display_private/braille_display_private_api.h"
 #include "chrome/browser/extensions/api/braille_display_private/brlapi_connection.h"
+#include "chrome/browser/extensions/api/braille_display_private/stub_braille_controller.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_profile.h"
@@ -151,16 +153,27 @@ class BrailleDisplayPrivateApiTest : public ExtensionApiTest {
         base::Bind(
             &BrailleDisplayPrivateApiTest::CreateBrlapiConnection,
             base::Unretained(this)));
+    DisableAccessibilityManagerBraille();
   }
 
  protected:
   MockBrlapiConnectionData connection_data_;
+
+  // By default, don't let the accessibility manager interfere and
+  // steal events.  Some tests override this to keep the normal behaviour
+  // of the accessibility manager.
+  virtual void DisableAccessibilityManagerBraille() {
+    chromeos::AccessibilityManager::SetBrailleControllerForTest(
+        &stub_braille_controller_);
+  }
 
  private:
   scoped_ptr<BrlapiConnection> CreateBrlapiConnection() {
     return scoped_ptr<BrlapiConnection>(
         new MockBrlapiConnection(&connection_data_));
   }
+
+  StubBrailleController stub_braille_controller_;
 };
 
 IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateApiTest, WriteDots) {
@@ -244,6 +257,11 @@ class BrailleDisplayPrivateAPIUserTest : public BrailleDisplayPrivateApiTest {
     if (tester->IsLocked())
       lock_state_observer.Wait();
     ASSERT_FALSE(tester->IsLocked());
+  }
+
+ protected:
+  virtual void DisableAccessibilityManagerBraille() OVERRIDE {
+    // Let the accessibility manager behave as usual for these tests.
   }
 };
 

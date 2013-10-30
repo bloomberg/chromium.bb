@@ -110,10 +110,12 @@ void BrailleControllerImpl::WriteDots(const std::string& cells) {
 
 void BrailleControllerImpl::AddObserver(BrailleObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(
-                              &BrailleControllerImpl::StartConnecting,
-                              base::Unretained(this)));
+  if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                               base::Bind(
+                                   &BrailleControllerImpl::StartConnecting,
+                                   base::Unretained(this)))) {
+    NOTREACHED();
+  }
   observers_.AddObserver(observer);
 }
 
@@ -334,11 +336,13 @@ void BrailleControllerImpl::DispatchKeyEvent(scoped_ptr<KeyEvent> event) {
 void BrailleControllerImpl::DispatchOnDisplayStateChanged(
     scoped_ptr<DisplayState> new_state) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&BrailleControllerImpl::DispatchOnDisplayStateChanged,
-                   base::Unretained(this),
-                   base::Passed(&new_state)));
+    if (!BrowserThread::PostTask(
+            BrowserThread::UI, FROM_HERE,
+            base::Bind(&BrailleControllerImpl::DispatchOnDisplayStateChanged,
+                       base::Unretained(this),
+                       base::Passed(&new_state)))) {
+      NOTREACHED();
+    }
     return;
   }
   FOR_EACH_OBSERVER(BrailleObserver, observers_,

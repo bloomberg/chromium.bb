@@ -36,6 +36,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/login/login_state.h"
 #include "content/public/browser/browser_accessibility_state.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -50,13 +51,24 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using content::BrowserThread;
 using content::RenderViewHost;
+using extensions::api::braille_display_private::BrailleController;
+using extensions::api::braille_display_private::DisplayState;
 
 namespace chromeos {
 
 namespace {
 
 static chromeos::AccessibilityManager* g_accessibility_manager = NULL;
+
+static BrailleController* g_braille_controller_for_test = NULL;
+
+BrailleController* GetBrailleController() {
+  return g_braille_controller_for_test
+      ? g_braille_controller_for_test
+      : BrailleController::GetInstance();
+}
 
 // Helper class that directly loads an extension's content scripts into
 // all of the frames corresponding to a given RenderViewHost.
@@ -272,7 +284,8 @@ AccessibilityManager::AccessibilityManager()
       spoken_feedback_enabled_(false),
       high_contrast_enabled_(false),
       autoclick_delay_ms_(ash::AutoclickController::kDefaultAutoclickDelayMs),
-      spoken_feedback_notification_(ash::A11Y_NOTIFICATION_NONE) {
+      spoken_feedback_notification_(ash::A11Y_NOTIFICATION_NONE),
+      weak_ptr_factory_(this) {
 
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
@@ -286,6 +299,7 @@ AccessibilityManager::AccessibilityManager()
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
                               content::NotificationService::AllSources());
+  GetBrailleController()->AddObserver(this);
 }
 
 AccessibilityManager::~AccessibilityManager() {
@@ -605,6 +619,21 @@ void AccessibilityManager::UpdateAutoclickDelayFromPref() {
 #endif
 }
 
+void AccessibilityManager::CheckBrailleState() {
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::IO, FROM_HERE, base::Bind(
+          &BrailleController::GetDisplayState,
+          base::Unretained(GetBrailleController())),
+      base::Bind(&AccessibilityManager::ReceiveBrailleDisplayState,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void AccessibilityManager::ReceiveBrailleDisplayState(
+    scoped_ptr<extensions::api::braille_display_private::DisplayState> state) {
+  OnDisplayStateChanged(*state);
+}
+
+
 void AccessibilityManager::SetProfile(Profile* profile) {
   pref_change_registrar_.reset();
   local_state_pref_change_registrar_.reset();
@@ -657,6 +686,9 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   autoclick_pref_handler_.HandleProfileChanged(profile_, profile);
   autoclick_delay_pref_handler_.HandleProfileChanged(profile_, profile);
 
+  if (!profile_ && profile)
+    CheckBrailleState();
+
   profile_ = profile;
   UpdateLargeCursorFromPref();
   UpdateStickyKeysFromPref();
@@ -668,6 +700,11 @@ void AccessibilityManager::SetProfile(Profile* profile) {
 
 void AccessibilityManager::SetProfileForTest(Profile* profile) {
   SetProfile(profile);
+}
+
+void AccessibilityManager::SetBrailleControllerForTest(
+    BrailleController* controller) {
+  g_braille_controller_for_test = controller;
 }
 
 void AccessibilityManager::UpdateChromeOSAccessibilityHistograms() {
@@ -733,4 +770,9 @@ void AccessibilityManager::Observe(
   }
 }
 
+void AccessibilityManager::OnDisplayStateChanged(
+    const DisplayState& display_state) {
+  if (display_state.available)
+    EnableSpokenFeedback(true, ash::A11Y_NOTIFICATION_SHOW);
+}
 }  // namespace chromeos
