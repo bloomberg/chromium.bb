@@ -200,6 +200,8 @@ const GritResourceMap* GetKeyboardExtensionResources(size_t* size) {
     {"keyboard/elements/kb-keyset.html", IDR_KEYBOARD_ELEMENTS_KEYSET},
     {"keyboard/elements/kb-modifier-key.html",
         IDR_KEYBOARD_ELEMENTS_MODIFIER_KEY},
+    {"keyboard/elements/kb-options-menu.html",
+        IDR_KEYBOARD_ELEMENTS_OPTIONS_MENU},
     {"keyboard/elements/kb-row.html", IDR_KEYBOARD_ELEMENTS_ROW},
     {"keyboard/elements/kb-shift-key.html", IDR_KEYBOARD_ELEMENTS_SHIFT_KEY},
     {"keyboard/layouts/function-key-row.html", IDR_KEYBOARD_FUNCTION_KEY_ROW},

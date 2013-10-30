@@ -38,6 +38,8 @@ content::WebUIDataSource* CreateKeyboardUIDataSource() {
                           IDR_KEYBOARD_ELEMENTS_KEYSET);
   source->AddResourcePath("elements/kb-modifier-key.html",
                           IDR_KEYBOARD_ELEMENTS_MODIFIER_KEY);
+  source->AddResourcePath("elements/kb-options-menu.html",
+                          IDR_KEYBOARD_ELEMENTS_OPTIONS_MENU);
   source->AddResourcePath("elements/kb-row.html", IDR_KEYBOARD_ELEMENTS_ROW);
   source->AddResourcePath("elements/kb-shift-key.html",
                           IDR_KEYBOARD_ELEMENTS_SHIFT_KEY);

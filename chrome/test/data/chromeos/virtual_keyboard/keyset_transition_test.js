@@ -188,9 +188,7 @@ function testInputTypeResponsivenessAsync(testDoneCallback) {
   var subtasks = [];
   subtasks.push(transition('qwerty-lower', 'number',
       "Did not reset keyboard on focus change"));
-  subtasks.push(transition('numeric-symbol', 'password',
-      "Did not switch to numeric keypad."));
-  subtasks.push(transition('system-qwerty-lower', 'text',
+  subtasks.push(transition('numeric-symbol', 'text',
       "Did not switch to numeric keypad."));
   // Clean up
   subtasks.push(function() {

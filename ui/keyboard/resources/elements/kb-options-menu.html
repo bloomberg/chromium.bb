@@ -1,0 +1,111 @@
+<!--
+  -- Copyright 2013 The Chromium Authors. All rights reserved.
+  -- Use of this source code is governed by a BSD-style license that can be
+  -- found in the LICENSE file.
+  -->
+
+<polymer-element name="kb-options-menu-item" attributes="layout label active"
+    on-pointerup="up" on-pointerover="over" on-pointerout="out">
+  <template>
+    <style>
+      @host {
+        * {
+          -webkit-padding-end: 5px;
+          -webkit-padding-start: 5px;
+          color: #fff;
+          display: -webkit-box;
+          font-family: 'Open Sans', 'Noto Sans UI', sans-serif;
+          font-weight: 300;
+          height: 28px;
+        }
+        *.active {
+          background-color: #848490;
+        }
+    </style>
+    <span>{{label}}</span>
+  </template>
+  <script>
+    Polymer('kb-options-menu-item', {
+      /**
+       * Layout to select on a key press.
+       */
+      layout: null,
+
+      up: function(event) {
+        if (this.layout == 'none') 
+          hideKeyboard();
+        else
+          this.fire('set-layout', {layout: this.layout});
+        this.hidden = true;
+      },
+
+      over: function(event) {
+        this.classList.add('active');
+      },
+
+      out: function(event) {
+        this.classList.remove('active');
+      },
+    });
+  </script>
+</polymer>
+
+<polymer-element name="kb-options-menu">
+  <template>
+    <style>
+      @host {
+        * {
+          -webkit-box-orient: vertical;
+          background-color: #3b3b3e;
+          border-radius: 2px;
+          display: -webkit-box;
+          left: 0;
+          position: absolute;
+          top: 0;
+          z-index: 1;
+        }
+      }
+    </style>
+    <!-- TODO(kevers): This is a temporary placeholder to enable testing
+      -- of layout switching.  Deprecate once a decision is reached on
+      -- a more permanent solution for layout selection. -->
+    <kb-options-menu-item layout="system-qwerty" label="System QWERTY">
+    </kb-options-menu-item>
+    <kb-options-menu-item layout="qwerty" label="QWERTY">
+    </kb-options-menu-item>
+    <kb-options-menu-item layout="dvorak" label="Dvorak">
+    </kb-options-menu-item>
+    <kb-options-menu-item layout="none" label="Hide keyboard">
+    </kb-options-menu-item>
+  </template>
+  <script>
+    Polymer('kb-options-menu', {});
+   </script>
+</polymer>
+
+<polymer-element name="kb-keyboard-overlay" attributes="keyset"
+    on-pointerup="up">
+  <template>
+    <style>
+      @host {
+        * {
+          background-color: rgba(0, 0, 0, 0.6);
+          bottom: 0;
+          left: 0;
+          position: absolute;
+          right: 0;
+          top: 0;
+        }
+      }
+    </style>
+    <!-- Insert popups here. -->
+    <kb-options-menu id="options" hidden></kb-options-menu>
+  </template>
+  <script>
+    Polymer('kb-keyboard-overlay', {
+      up: function() {
+        this.hidden = true;
+      }
+    });
+  </script>
+</polymer-element>

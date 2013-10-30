@@ -29,6 +29,7 @@
       <include name="IDR_KEYBOARD_ELEMENTS_KEYBOARD" file="resources/elements/kb-keyboard.html" type="BINDATA" />
       <include name="IDR_KEYBOARD_ELEMENTS_KEYSET" file="resources/elements/kb-keyset.html" type="BINDATA" />
       <include name="IDR_KEYBOARD_ELEMENTS_MODIFIER_KEY" file="resources/elements/kb-modifier-key.html" type="BINDATA" />
+      <include name="IDR_KEYBOARD_ELEMENTS_OPTIONS_MENU" file="resources/elements/kb-options-menu.html" type="BINDATA" />
       <include name="IDR_KEYBOARD_ELEMENTS_ROW" file="resources/elements/kb-row.html" type="BINDATA" />
       <include name="IDR_KEYBOARD_ELEMENTS_SHIFT_KEY" file="resources/elements/kb-shift-key.html" type="BINDATA" />
       <include name="IDR_KEYBOARD_FUNCTION_KEY_ROW" file="resources/layouts/function-key-row.html" type="BINDATA" />

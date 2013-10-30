@@ -21,7 +21,7 @@ function MockTimer() {
    * @type {number}
    * @private
    */
-  this.nextTimerKey_ = 0;
+  this.nextTimerKey_ = 1;
 
   /**
    * Details for active timers.
