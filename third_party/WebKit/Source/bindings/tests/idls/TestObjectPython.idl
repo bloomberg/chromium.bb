@@ -241,6 +241,15 @@ interface TestObjectPython {
     // Enumerations
     TestEnum testEnumMethod();
     void voidMethodTestEnumArg(TestEnum testEnumTypeArg);
+    // Miscellaneous special types
+    DOMStringList domStringListMethod();
+    NodeFilter nodeFilterMethod();
+    SerializedScriptValue serializedScriptValueMethod();
+    XPathNSResolver xPathNSResolverMethod();
+    void voidMethodDOMStringListArg(DOMStringList domStringListArg);
+    void voidMethodNodeFilterArg(NodeFilter nodeFilterArg);
+    // void voidMethodSerializedScriptValueArg(SerializedScriptValue serializedScriptValueArg); // FIXME: more special cases
+    void voidMethodXPathNSResolverArg(XPathNSResolver xPathNSResolverArg);
 
     // Arguments
     void voidMethodStringArgLongArg(DOMString stringArg, long longArg);

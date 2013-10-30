@@ -233,10 +233,10 @@ CPP_SPECIAL_CONVERSION_RULES = {
 }
 CPP_REF_PTR_CONVERSION_TYPES = set([
     # FIXME: overlaps with NON_WRAPPER_TYPES
-    # FIXME: other special cases occur only for methods (not attributes)
     'DOMStringList',
     'NodeFilter',
     'SerializedScriptValue',
+    'XPathNSResolver',
 ])
 
 def cpp_type(idl_type, extended_attributes=None, used_as_argument=False):
@@ -368,6 +368,7 @@ V8_VALUE_TO_CPP_VALUE_AND_INCLUDES = {
     'SerializedScriptValue': (
         'SerializedScriptValue::create({v8_value}, {isolate})',
         set(['bindings/v8/SerializedScriptValue.h'])),
+    'XPathNSResolver': ('toXPathNSResolver({v8_value}, {isolate})', set()),
 }
 
 

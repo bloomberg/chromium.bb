@@ -74,10 +74,16 @@ def generate_argument(method, argument, index):
 
 
 def cpp_method(method, number_of_arguments):
-    argument_names = [argument.name for argument in method.arguments]
+    def cpp_argument(argument):
+        if argument.idl_type in ('NodeFilter', 'XPathNSResolver'):
+            # FIXME: remove this special case
+            return '%s.get()' % argument.name
+        return argument.name
+
     # Truncate omitted optional arguments
-    argument_names = argument_names[:number_of_arguments]
-    cpp_value = 'imp->%s(%s)' % (method.name, ', '.join(argument_names))
+    arguments = method.arguments[:number_of_arguments]
+    cpp_arguments = [cpp_argument(argument) for argument in arguments]
+    cpp_value = 'imp->%s(%s)' % (method.name, ', '.join(cpp_arguments))
 
     idl_type = method.idl_type
     if idl_type == 'void':
@@ -89,7 +95,10 @@ def custom_signature(arguments):
     def argument_template(argument):
         idl_type = argument.idl_type
         if (v8_types.is_wrapper_type(idl_type) and
-            not v8_types.is_typed_array_type(idl_type)):
+            not v8_types.is_typed_array_type(idl_type) and
+            # Compatibility: all other browsers accepts a callable for
+            # XPathNSResolver, despite it being against spec.
+            not idl_type == 'XPathNSResolver'):
             return 'V8PerIsolateData::from(isolate)->rawTemplate(&V8{idl_type}::wrapperTypeInfo, currentWorldType)'.format(idl_type=idl_type)
         return 'v8::Handle<v8::FunctionTemplate>()'
 
