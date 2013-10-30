@@ -1561,7 +1561,6 @@ class Port(object):
             VirtualTestSuite('fasttextautosizing',
                              'fast/text-autosizing',
                              ['--enable-fast-text-autosizing']),
-            VirtualTestSuite('crash', 'crash', []),
         ]
 
     @memoized
