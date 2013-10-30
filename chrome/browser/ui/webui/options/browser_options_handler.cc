@@ -272,6 +272,8 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
     { "profilesDeleteSingle", IDS_PROFILES_DELETE_SINGLE_BUTTON_LABEL },
     { "profilesListItemCurrent", IDS_PROFILES_LIST_ITEM_CURRENT },
     { "profilesManage", IDS_PROFILES_MANAGE_BUTTON_LABEL },
+    { "profilesSupervisedDashboardTip",
+      IDS_PROFILES_SUPERVISED_USER_DASHBOARD_TIP },
 #if defined(ENABLE_SETTINGS_APP)
     { "profilesAppListSwitch", IDS_SETTINGS_APP_PROFILES_SWITCH_BUTTON_LABEL },
 #endif
@@ -754,6 +756,10 @@ void BrowserOptionsHandler::InitializeHandler() {
       base::Bind(&BrowserOptionsHandler::SetupFontSizeSelector,
                  base::Unretained(this)));
   profile_pref_registrar_.Add(
+      prefs::kManagedUsers,
+      base::Bind(&BrowserOptionsHandler::SetupManagingSupervisedUsers,
+                 base::Unretained(this)));
+  profile_pref_registrar_.Add(
       prefs::kSigninAllowed,
       base::Bind(&BrowserOptionsHandler::OnSigninAllowedPrefChange,
                  base::Unretained(this)));
@@ -781,6 +787,7 @@ void BrowserOptionsHandler::InitializePage() {
   SetupPageZoomSelector();
   SetupAutoOpenFileTypes();
   SetupProxySettingsSection();
+  SetupManagingSupervisedUsers();
 
 #if defined(ENABLE_FULL_PRINTING) && !defined(OS_CHROMEOS)
   if (!cloud_print_mdns_ui_enabled_) {
@@ -1568,6 +1575,15 @@ void BrowserOptionsHandler::SetupProxySettingsSection() {
                                    disabled, extension_controlled);
 
 #endif  // !defined(OS_CHROMEOS)
+}
+
+void BrowserOptionsHandler::SetupManagingSupervisedUsers() {
+  bool has_users = !Profile::FromWebUI(web_ui())->
+      GetPrefs()->GetDictionary(prefs::kManagedUsers)->empty();
+  base::FundamentalValue has_users_value(has_users);
+  web_ui()->CallJavascriptFunction(
+      "BrowserOptions.updateManagesSupervisedUsers",
+      has_users_value);
 }
 
 }  // namespace options

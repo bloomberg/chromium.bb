@@ -264,6 +264,9 @@ class BrowserOptionsHandler
   // Setup the proxy settings section UI.
   void SetupProxySettingsSection();
 
+  // Setup the UI specific to managing supervised users.
+  void SetupManagingSupervisedUsers();
+
 #if defined(OS_CHROMEOS)
   // Setup the accessibility features for ChromeOS.
   void SetupAccessibilityFeatures();
