@@ -142,8 +142,13 @@ void NewWebSocketChannelImpl::connect(const KURL& url, const String& protocol)
         return;
     m_url = url;
     Vector<String> protocols;
-    // Since protocol is already verified and escaped, we can simply split it.
-    protocol.split(", ", true, protocols);
+    // Avoid placing an empty token in the Vector when the protocol string is
+    // empty.
+    if (!protocol.isEmpty()) {
+        // Since protocol is already verified and escaped, we can simply split
+        // it.
+        protocol.split(", ", true, protocols);
+    }
     WebKit::WebVector<WebKit::WebString> webProtocols(protocols.size());
     for (size_t i = 0; i < protocols.size(); ++i) {
         webProtocols[i] = protocols[i];
