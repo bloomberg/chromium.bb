@@ -133,15 +133,6 @@ HTMLAnchorElement::~HTMLAnchorElement()
     clearRootEditableElementForSelectionOnMouseDown();
 }
 
-// This function does not allow leading spaces before the port number.
-static unsigned parsePortFromStringPosition(const String& value, unsigned portStart, unsigned& portEnd)
-{
-    portEnd = portStart;
-    while (isASCIIDigit(value[portEnd]))
-        ++portEnd;
-    return value.substring(portStart, portEnd - portStart).toUInt();
-}
-
 bool HTMLAnchorElement::supportsFocus() const
 {
     if (rendererIsEditable())

@@ -40,7 +40,7 @@ namespace WebCore {
 // Instead of trying to construct a bitmap font and then going down the fallback path map
 // certain common bitmap fonts to their truetype equivalent up front. This also allows the
 // GDI_FONTS_ON_WINDOWS disabled code path to match our current behavior.
-static const AtomicString& alternateFamilyNameAvoidingBitmapFonts(const AtomicString& familyName)
+inline const AtomicString& alternateFamilyNameAvoidingBitmapFonts(const AtomicString& familyName)
 {
 #if OS(WIN)
     // On Windows, 'Courier New' (truetype font) is always present and
@@ -70,7 +70,7 @@ static const AtomicString& alternateFamilyNameAvoidingBitmapFonts(const AtomicSt
     return emptyAtom;
 }
 
-static const AtomicString& alternateFamilyName(const AtomicString& familyName)
+inline const AtomicString& alternateFamilyName(const AtomicString& familyName)
 {
     // Alias Courier <-> Courier New
     DEFINE_STATIC_LOCAL(AtomicString, courier, ("Courier", AtomicString::ConstructFromLiteral));
@@ -105,7 +105,7 @@ static const AtomicString& alternateFamilyName(const AtomicString& familyName)
 }
 
 
-static const AtomicString getFallbackFontFamily(const FontDescription& description)
+inline const AtomicString getFallbackFontFamily(const FontDescription& description)
 {
     DEFINE_STATIC_LOCAL(const AtomicString, sansStr, ("Sans", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, serifStr, ("Serif", AtomicString::ConstructFromLiteral));

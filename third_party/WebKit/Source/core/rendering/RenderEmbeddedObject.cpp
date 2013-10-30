@@ -51,12 +51,6 @@ static const float replacementTextRoundedRectOpacity = 0.20f;
 static const float replacementTextRoundedRectRadius = 5;
 static const float replacementTextTextOpacity = 0.55f;
 
-static const Color& replacementTextRoundedRectPressedColor()
-{
-    static const Color lightGray(205, 205, 205);
-    return lightGray;
-}
-
 RenderEmbeddedObject::RenderEmbeddedObject(Element* element)
     : RenderPart(element)
     , m_hasFallbackContent(false)

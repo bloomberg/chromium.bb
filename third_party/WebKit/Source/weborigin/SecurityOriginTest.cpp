@@ -32,7 +32,6 @@
 
 #include "weborigin/KURL.h"
 #include "weborigin/SecurityOrigin.h"
-#include "wtf/testing/WTFTestHelpers.h"
 
 #include <gtest/gtest.h>
 

@@ -165,19 +165,6 @@ static void resourceInfo(const v8::Handle<v8::Function> function, String& resour
     }
 }
 
-static String resourceString(const v8::Handle<v8::Function> function)
-{
-    String resourceName;
-    int lineNumber;
-    resourceInfo(function, resourceName, lineNumber);
-
-    StringBuilder builder;
-    builder.append(resourceName);
-    builder.append(':');
-    builder.appendNumber(lineNumber);
-    return builder.toString();
-}
-
 v8::Local<v8::Value> ScriptController::callFunction(ExecutionContext* context, v8::Handle<v8::Function> function, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> args[], v8::Isolate* isolate)
 {
     InspectorInstrumentationCookie cookie;

@@ -92,6 +92,7 @@ static const int MaxOriginalImageArea = 1500 * 1500;
 static const int LinkDragBorderInset = 2;
 static const float DragImageAlpha = 0.75f;
 
+#if !ASSERT_DISABLED
 static bool dragTypeIsValid(DragSourceAction action)
 {
     switch (action) {
@@ -106,6 +107,7 @@ static bool dragTypeIsValid(DragSourceAction action)
     // Make sure MSVC doesn't complain that not all control paths return a value.
     return false;
 }
+#endif
 
 static PlatformMouseEvent createMouseEvent(DragData* dragData)
 {

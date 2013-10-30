@@ -102,17 +102,6 @@ bool isBackForwardLoadType(FrameLoadType type)
     return type == FrameLoadTypeBackForward;
 }
 
-// This is not in the FrameLoader class to emphasize that it does not depend on
-// private FrameLoader data, and to avoid increasing the number of public functions
-// with access to private data.  Since only this .cpp file needs it, making it
-// non-member lets us exclude it from the header file, thus keeping core/loader/FrameLoader.h's
-// API simpler.
-//
-static bool isDocumentSandboxed(Frame* frame, SandboxFlags mask)
-{
-    return frame->document() && frame->document()->isSandboxed(mask);
-}
-
 class FrameLoader::FrameProgressTracker {
 public:
     static PassOwnPtr<FrameProgressTracker> create(Frame* frame) { return adoptPtr(new FrameProgressTracker(frame)); }

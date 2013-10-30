@@ -133,17 +133,6 @@ static bool equalIgnoringCase(CSSParserValue* value, const char (&b)[N])
     return equalIgnoringCase(value->string, b);
 }
 
-static bool hasPrefix(const char* string, unsigned length, const char* prefix)
-{
-    for (unsigned i = 0; i < length; ++i) {
-        if (!prefix[i])
-            return true;
-        if (string[i] != prefix[i])
-            return false;
-    }
-    return false;
-}
-
 static PassRefPtr<CSSPrimitiveValue> createPrimitiveValuePair(PassRefPtr<CSSPrimitiveValue> first, PassRefPtr<CSSPrimitiveValue> second, Pair::IdenticalValuesPolicy identicalValuesPolicy = Pair::DropIdenticalValues)
 {
     return cssValuePool().createValue(Pair::create(first, second, identicalValuesPolicy));
