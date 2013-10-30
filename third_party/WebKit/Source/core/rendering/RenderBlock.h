@@ -575,19 +575,6 @@ private:
 
     Node* nodeForHitTest() const;
 
-    struct FloatWithRect {
-        FloatWithRect(RenderBox* f)
-            : object(f)
-            , rect(LayoutRect(f->x() - f->marginLeft(), f->y() - f->marginTop(), f->width() + f->marginWidth(), f->height() + f->marginHeight()))
-            , everHadLayout(f->everHadLayout())
-        {
-        }
-
-        RenderBox* object;
-        LayoutRect rect;
-        bool everHadLayout;
-    };
-
     // FIXME-BLOCKFLOW: Remove virtualizaion when all callers have moved to RenderBlockFlow
     virtual void paintFloats(PaintInfo&, const LayoutPoint&, bool) { }
     void paintContents(PaintInfo&, const LayoutPoint&);

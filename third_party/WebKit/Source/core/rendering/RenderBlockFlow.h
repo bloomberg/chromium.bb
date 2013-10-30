@@ -182,6 +182,19 @@ private:
     virtual void adjustForBorderFit(LayoutUnit x, LayoutUnit& left, LayoutUnit& right) const OVERRIDE; // Helper function for borderFitAdjust
 
 public:
+    struct FloatWithRect {
+        FloatWithRect(RenderBox* f)
+            : object(f)
+            , rect(LayoutRect(f->x() - f->marginLeft(), f->y() - f->marginTop(), f->width() + f->marginWidth(), f->height() + f->marginHeight()))
+            , everHadLayout(f->everHadLayout())
+        {
+        }
+
+        RenderBox* object;
+        LayoutRect rect;
+        bool everHadLayout;
+    };
+
     class MarginValues {
     public:
         MarginValues(LayoutUnit beforePos, LayoutUnit beforeNeg, LayoutUnit afterPos, LayoutUnit afterNeg)

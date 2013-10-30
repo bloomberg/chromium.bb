@@ -1431,7 +1431,7 @@ public:
     FloatingObject* lastFloat() const { return m_lastFloat; }
     void setLastFloat(FloatingObject* lastFloat) { m_lastFloat = lastFloat; }
 
-    Vector<RenderBlock::FloatWithRect>& floats() { return m_floats; }
+    Vector<RenderBlockFlow::FloatWithRect>& floats() { return m_floats; }
 
     unsigned floatIndex() const { return m_floatIndex; }
     void setFloatIndex(unsigned floatIndex) { m_floatIndex = floatIndex; }
@@ -1443,7 +1443,7 @@ public:
     void setFlowThread(RenderFlowThread* thread) { m_flowThread = thread; }
 
 private:
-    Vector<RenderBlock::FloatWithRect> m_floats;
+    Vector<RenderBlockFlow::FloatWithRect> m_floats;
     FloatingObject* m_lastFloat;
     RootInlineBox* m_endLine;
     LineInfo m_lineInfo;
