@@ -32,7 +32,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "WebInputEvent.h"
-#include "core/platform/WindowsKeyboardCodes.h"
+#include "platform/WindowsKeyboardCodes.h"
 #include "wtf/ASCIICType.h"
 
 #if __MAC_OS_X_VERSION_MAX_ALLOWED == 1060
