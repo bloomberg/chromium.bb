@@ -157,6 +157,11 @@ void WebSettingsImpl::setTextAutosizingFontScaleFactor(float fontScaleFactor)
     m_settings->setTextAutosizingFontScaleFactor(fontScaleFactor);
 }
 
+void WebSettingsImpl::setDeviceScaleAdjustment(float deviceScaleAdjustment)
+{
+    m_settings->setDeviceScaleAdjustment(deviceScaleAdjustment);
+}
+
 void WebSettingsImpl::setDefaultTextEncodingName(const WebString& encoding)
 {
     m_settings->setDefaultTextEncodingName((String)encoding);

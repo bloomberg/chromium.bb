@@ -114,6 +114,7 @@ Settings::Settings(Page* page)
     : m_page(0)
     , m_mediaTypeOverride("screen")
     , m_textAutosizingFontScaleFactor(1)
+    , m_deviceScaleAdjustment(1.0f)
 #if HACK_FORCE_TEXT_AUTOSIZING_ON_DESKTOP
     , m_textAutosizingWindowSizeOverride(320, 480)
     , m_textAutosizingEnabled(true)
@@ -258,15 +259,25 @@ void Settings::setLoadWithOverviewMode(bool loadWithOverviewMode)
         m_page->chrome().dispatchViewportPropertiesDidChange(m_page->mainFrame()->document()->viewportDescription());
 }
 
-void Settings::setTextAutosizingFontScaleFactor(float fontScaleFactor)
+void Settings::recalculateTextAutosizingMultipliers()
 {
-    m_textAutosizingFontScaleFactor = fontScaleFactor;
-
     // FIXME: I wonder if this needs to traverse frames like in WebViewImpl::resize, or whether there is only one document per Settings instance?
     for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext())
         frame->document()->textAutosizer()->recalculateMultipliers();
 
     m_page->setNeedsRecalcStyleInAllFrames();
+}
+
+void Settings::setTextAutosizingFontScaleFactor(float fontScaleFactor)
+{
+    m_textAutosizingFontScaleFactor = fontScaleFactor;
+    recalculateTextAutosizingMultipliers();
+}
+
+void Settings::setDeviceScaleAdjustment(float deviceScaleAdjustment)
+{
+    m_deviceScaleAdjustment = deviceScaleAdjustment;
+    recalculateTextAutosizingMultipliers();
 }
 
 void Settings::setMediaTypeOverride(const String& mediaTypeOverride)

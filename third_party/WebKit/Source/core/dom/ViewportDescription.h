@@ -106,6 +106,7 @@ struct ViewportDescription {
 
     bool isLegacyViewportType() const { return type >= HandheldFriendlyMeta && type <= ViewportMeta; }
     bool isMetaViewportType() const { return type == ViewportMeta; }
+    bool isSpecifiedByAuthor() const { return type != UserAgentStyleSheet; }
 
 private:
     enum Direction { Horizontal, Vertical };

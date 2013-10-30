@@ -91,6 +91,12 @@ public:
     void setTextAutosizingFontScaleFactor(float);
     float textAutosizingFontScaleFactor() const { return m_textAutosizingFontScaleFactor; }
 
+    // Compensates for poor text legibility on mobile devices. This value is
+    // multiplied by the font scale factor when performing text autosizing of
+    // websites that do not set an explicit viewport description.
+    void setDeviceScaleAdjustment(float);
+    float deviceScaleAdjustment() const { return m_deviceScaleAdjustment; }
+
     // Only set by Layout Tests, and only used if textAutosizingEnabled() returns true.
     void setTextAutosizingWindowSizeOverride(const IntSize&);
     const IntSize& textAutosizingWindowSizeOverride() const { return m_textAutosizingWindowSizeOverride; }
@@ -168,6 +174,7 @@ private:
     ScriptFontFamilyMap m_fantasyFontFamilyMap;
     ScriptFontFamilyMap m_pictographFontFamilyMap;
     float m_textAutosizingFontScaleFactor;
+    float m_deviceScaleAdjustment;
     IntSize m_textAutosizingWindowSizeOverride;
     bool m_textAutosizingEnabled : 1;
     bool m_useWideViewport : 1;
@@ -192,6 +199,7 @@ private:
 
     Timer<Settings> m_setImageLoadingSettingsTimer;
     void imageLoadingSettingsTimerFired(Timer<Settings>*);
+    void recalculateTextAutosizingMultipliers();
 };
 
 } // namespace WebCore

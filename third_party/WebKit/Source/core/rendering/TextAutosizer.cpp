@@ -208,6 +208,12 @@ float TextAutosizer::clusterMultiplier(WritingMode writingMode, const TextAutosi
 
     float multiplier = logicalClusterWidth / logicalWindowWidth;
     multiplier *= m_document->settings()->textAutosizingFontScaleFactor();
+
+    // If the page has a meta viewport or @viewport, don't apply the device scale adjustment.
+    const ViewportDescription& viewportDescription = m_document->page()->mainFrame()->document()->viewportDescription();
+    if (!viewportDescription.isSpecifiedByAuthor()) {
+        multiplier *= m_document->settings()->deviceScaleAdjustment();
+    }
     return std::max(1.0f, multiplier);
 }
 
