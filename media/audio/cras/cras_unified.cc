@@ -161,6 +161,23 @@ void CrasUnifiedStream::Close() {
 
 void CrasUnifiedStream::Start(AudioSourceCallback* callback) {
   CHECK(callback);
+
+  // Channel map to CRAS_CHANNEL, values in the same order of
+  // corresponding source in Chromium defined Channels.
+  static const int kChannelMap[] = {
+    CRAS_CH_FL,
+    CRAS_CH_FR,
+    CRAS_CH_FC,
+    CRAS_CH_LFE,
+    CRAS_CH_RL,
+    CRAS_CH_RR,
+    CRAS_CH_FLC,
+    CRAS_CH_FRC,
+    CRAS_CH_RC,
+    CRAS_CH_SL,
+    CRAS_CH_SR
+  };
+
   source_callback_ = callback;
 
   // Only start if we can enter the playing state.
@@ -175,6 +192,22 @@ void CrasUnifiedStream::Start(AudioSourceCallback* callback) {
       params_.channels());
   if (!audio_format) {
     LOG(WARNING) << "Error setting up audio parameters.";
+    callback->OnError(this);
+    return;
+  }
+
+  // Initialize channel layout to all -1 to indicate that none of
+  // the channels is set in the layout.
+  int8 layout[CRAS_CH_MAX] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
+
+  // Converts to CRAS defined channels. ChannelOrder will return -1
+  // for channels that does not present in params_.channel_layout().
+  for (size_t i = 0; i < arraysize(kChannelMap); ++i)
+    layout[kChannelMap[i]] = ChannelOrder(params_.channel_layout(),
+                                          static_cast<Channels>(i));
+
+  if (cras_audio_format_set_channel_layout(audio_format, layout)) {
+    LOG(WARNING) << "Error setting channel layout.";
     callback->OnError(this);
     return;
   }
