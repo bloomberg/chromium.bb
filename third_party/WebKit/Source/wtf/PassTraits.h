@@ -41,7 +41,7 @@ namespace WTF {
 template<typename T> struct PassTraits {
     typedef T Type;
     typedef T PassType;
-    static PassType transfer(Type& value) { return value; }
+    static Type& transfer(Type& value) { return value; }
 };
 
 template<typename T> struct PassTraits<OwnPtr<T> > {
