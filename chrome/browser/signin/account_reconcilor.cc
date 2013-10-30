@@ -5,6 +5,7 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_reconcilor.h"
 #include "chrome/browser/signin/google_auto_login_helper.h"
@@ -18,6 +19,7 @@
 
 AccountReconcilor::AccountReconcilor(Profile* profile) : profile_(profile) {
   RegisterWithSigninManager();
+  RegisterWithCookieMonster();
 
   // If this profile is not connected, the reconcilor should do nothing but
   // wait for the connection.
@@ -29,6 +31,16 @@ AccountReconcilor::AccountReconcilor(Profile* profile) : profile_(profile) {
   }
 }
 
+void AccountReconcilor::RegisterWithCookieMonster() {
+  content::Source<Profile> source(profile_);
+  registrar_.Add(this, chrome::NOTIFICATION_COOKIE_CHANGED, source);
+}
+
+void AccountReconcilor::UnregisterWithCookieMonster() {
+  content::Source<Profile> source(profile_);
+  registrar_.Remove(this, chrome::NOTIFICATION_COOKIE_CHANGED, source);
+}
+
 void AccountReconcilor::RegisterWithSigninManager() {
   content::Source<Profile> source(profile_);
   registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL, source);
@@ -36,7 +48,10 @@ void AccountReconcilor::RegisterWithSigninManager() {
 }
 
 void AccountReconcilor::UnregisterWithSigninManager() {
-  registrar_.RemoveAll();
+  content::Source<Profile> source(profile_);
+  registrar_.Remove(
+      this, chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL, source);
+  registrar_.Remove(this, chrome::NOTIFICATION_GOOGLE_SIGNED_OUT, source);
 }
 
 void AccountReconcilor::RegisterWithTokenService() {
@@ -80,10 +95,18 @@ void AccountReconcilor::Observe(int type,
       UnregisterWithTokenService();
       StopPeriodicReconciliation();
       break;
+    case chrome::NOTIFICATION_COOKIE_CHANGED:
+      OnCookieChanged(content::Details<ChromeCookieDetails>(details).ptr());
+      break;
     default:
       NOTREACHED();
       break;
   }
+}
+
+void AccountReconcilor::OnCookieChanged(ChromeCookieDetails* details) {
+  // TODO(acleung): Filter out cookies by looking at the domain.
+  // PerformReconcileAction();
 }
 
 void AccountReconcilor::OnRefreshTokenAvailable(const std::string& account_id) {
@@ -118,5 +141,6 @@ AccountReconcilor::~AccountReconcilor() {
 void AccountReconcilor::Shutdown() {
   UnregisterWithSigninManager();
   UnregisterWithTokenService();
+  UnregisterWithCookieMonster();
   StopPeriodicReconciliation();
 }

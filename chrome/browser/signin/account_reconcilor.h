@@ -12,6 +12,7 @@
 #include "google_apis/gaia/oauth2_token_service.h"
 
 class Profile;
+struct ChromeCookieDetails;
 
 class AccountReconcilor : public BrowserContextKeyedService,
                                  content::NotificationObserver,
@@ -31,6 +32,8 @@ class AccountReconcilor : public BrowserContextKeyedService,
 
  private:
   // Register and unregister with dependent services.
+  void RegisterWithCookieMonster();
+  void UnregisterWithCookieMonster();
   void RegisterWithSigninManager();
   void UnregisterWithSigninManager();
   void RegisterWithTokenService();
@@ -54,6 +57,8 @@ class AccountReconcilor : public BrowserContextKeyedService,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  void OnCookieChanged(ChromeCookieDetails* details);
 
   // Overriden from OAuth2TokenService::Observer
   virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
