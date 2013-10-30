@@ -75,6 +75,10 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
       int child_id,
       const std::string& filesystem_id) OVERRIDE;
 
+  void GrantCreateReadWriteFileSystem(
+      int child_id,
+      const std::string& filesystem_id);
+
   // Pseudo schemes are treated differently than other schemes because they
   // cannot be requested like normal URLs.  There is no mechanism for revoking
   // pseudo schemes.

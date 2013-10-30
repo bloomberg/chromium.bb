@@ -643,6 +643,12 @@ bool ChildProcessSecurityPolicyImpl::CanDeleteFromFileSystem(
                                      DELETE_FILE_GRANT);
 }
 
+void ChildProcessSecurityPolicyImpl::GrantCreateReadWriteFileSystem(
+    int child_id, const std::string& filesystem_id) {
+  GrantPermissionsForFileSystem(
+      child_id, filesystem_id, CREATE_READ_WRITE_FILE_GRANT);
+}
+
 bool ChildProcessSecurityPolicyImpl::HasPermissionsForFile(
     int child_id, const base::FilePath& file, int permissions) {
   base::AutoLock lock(lock_);
