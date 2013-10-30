@@ -315,6 +315,9 @@ class DownloadItemView : public views::ButtonListener,
   // The time at which this view was created.
   base::Time creation_time_;
 
+  // The time at which a dangerous download warning was displayed.
+  base::Time time_download_warning_shown_;
+
   // Method factory used to delay reenabling of the item when opening the
   // downloaded file.
   base::WeakPtrFactory<DownloadItemView> weak_ptr_factory_;

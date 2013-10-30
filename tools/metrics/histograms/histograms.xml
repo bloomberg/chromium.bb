@@ -1365,6 +1365,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="clickjacking.dismiss_download" units="ms">
+  <summary>
+    The length of time between a dangerous download appearing on the downloads
+    shelf, and the &quot;Dismiss&quot; button being clicked.
+  </summary>
+</histogram>
+
 <histogram name="clickjacking.launch_url" units="ms">
   <summary>
     The length of time between the external protocol dialog being shown and the

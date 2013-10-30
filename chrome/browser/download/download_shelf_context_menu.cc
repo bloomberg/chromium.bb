@@ -322,7 +322,6 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetMaybeMaliciousMenuModel() {
   maybe_malicious_download_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
   maybe_malicious_download_menu_model_->AddItemWithStringId(
       LEARN_MORE_SCANNING, IDS_DOWNLOAD_MENU_LEARN_MORE_SCANNING);
-  LOG(INFO) << "GetMaybeMaliciousMenuModel";
   return maybe_malicious_download_menu_model_.get();
 }
 
@@ -341,7 +340,6 @@ DownloadShelfContextMenu::GetMaliciousMenuModel() {
     maybe_malicious_download_menu_model_->AddItemWithStringId(
         DISCARD, IDS_DOWNLOAD_MENU_DISCARD);
   }
-  LOG(INFO) << "GetMaliciousMenuModel";
   malicious_download_menu_model_->AddItemWithStringId(
       LEARN_MORE_SCANNING, IDS_DOWNLOAD_MENU_LEARN_MORE_SCANNING);
 
