@@ -1,4 +1,4 @@
-Test for Web Socket close in SharedWorker.
+Test for WebSocket close in SharedWorker.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

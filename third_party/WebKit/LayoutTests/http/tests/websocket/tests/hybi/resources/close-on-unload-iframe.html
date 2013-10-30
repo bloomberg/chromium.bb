@@ -9,7 +9,8 @@
 var ws = new WebSocket("ws://127.0.0.1:8880/websocket/tests/hybi/close-on-unload");
 ws.onopen = function()
 {
-    // send "socket1" to server, so that "socket1" will be broadcasted to web sockets connected to close-on-unload when this web socket is closed.
+    // Send "socket1" to server, so that "socket1" will be broadcasted to
+    // WebSockets connected to close-on-unload when this WebSocket is closed.
     ws.send("socket1");
 };
 ws.onmessage = function(evt)

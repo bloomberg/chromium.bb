@@ -1,4 +1,4 @@
-Test if Web Socket is closed on unload and not crashed if garbage collected
+Test if WebSocket is closed on unload and not crashed if garbage collected
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

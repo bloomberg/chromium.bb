@@ -7,7 +7,7 @@
 <div id="description"></div>
 <div id="console"></div>
 <script type="text/javascript">
-description("Test if Web Socket opened in iframe but referred in parent document is closed on unloading the frame.");
+description("Test that WebSocket opened in iframe is closed when the iframe is unloaded even if the WebSocket is referred by the parent frame.");
 
 window.jsTestIsAsync = true;
 

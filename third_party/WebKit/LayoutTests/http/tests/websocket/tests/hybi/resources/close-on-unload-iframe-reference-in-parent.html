@@ -10,7 +10,8 @@ parent.document.childWebSocket = new WebSocket("ws://127.0.0.1:8880/websocket/te
 
 parent.document.childWebSocket.onopen = function()
 {
-    // send "socket1" to server, so that "socket1" will be broadcasted to web sockets connected to close-on-unload when this web socket is closed.
+    // Send "socket1" to server, so that "socket1" will be broadcasted to
+    // WebSockets connected to close-on-unload when this web socket is closed.
     parent.document.childWebSocket.send("socket1");
 };
 parent.document.childWebSocket.onmessage = function(evt)

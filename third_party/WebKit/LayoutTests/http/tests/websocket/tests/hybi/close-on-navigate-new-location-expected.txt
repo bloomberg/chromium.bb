@@ -1,4 +1,4 @@
-Test if Web Socket is closed when navigating to new location.
+Test if WebSocket is closed when navigating to new location.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

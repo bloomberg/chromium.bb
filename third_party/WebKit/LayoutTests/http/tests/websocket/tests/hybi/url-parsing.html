@@ -33,8 +33,8 @@ shouldBe('(new WebSocket("ws://127.0.0.1:8880/a/../websocket/tests/hybi/simple")
 shouldBe('(new WebSocket("ws://127.0.0.1:8880/websocket/tests/hybi/simple?")).URL', '"ws://127.0.0.1:8880/websocket/tests/hybi/simple?"');
 shouldBe('(new WebSocket("ws://127.0.0.1:8880/websocket/tests/hybi/simple?k=v")).URL', '"ws://127.0.0.1:8880/websocket/tests/hybi/simple?k=v"');
 
-// draft-hixie-thewebsocketprotocol-60 says If /url/ has a <fragment>
-// component, then fail the parsing Web Socket URLs, so throw a SYNTAX_ERR
+// The WebSocket API specification says If /url/ has a <fragment>
+// component, then fail the parsing WebSocket URLs, so throw a SYNTAX_ERR
 // exception.
 shouldThrow('new WebSocket("ws://127.0.0.1/path#")');
 shouldThrow('new WebSocket("ws://127.0.0.1/path#fragment")');

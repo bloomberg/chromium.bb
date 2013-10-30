@@ -1,4 +1,4 @@
-Test if Web Socket opened in iframe but referred in parent document is closed on unloading the frame.
+Test that WebSocket opened in iframe is closed when the iframe is unloaded even if the WebSocket is referred by the parent frame.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

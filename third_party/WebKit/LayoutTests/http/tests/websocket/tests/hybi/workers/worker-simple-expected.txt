@@ -1,4 +1,4 @@
-Test for Web Socket in Worker.
+Test for WebSocket in Worker.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

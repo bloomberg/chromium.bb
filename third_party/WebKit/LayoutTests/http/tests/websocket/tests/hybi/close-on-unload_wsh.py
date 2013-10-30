@@ -52,7 +52,7 @@ def web_socket_transfer_data(request):
         dataToBroadcast["message"] = message
         dataToBroadcast["closeCode"] = str(request.ws_close_code)
     finally:
-        # request is closed. notify this dataToBroadcast to other web sockets.
+        # request is closed. notify this dataToBroadcast to other WebSockets.
         del connections[request]
         for ws in connections.keys():
             msgutil.send_message(ws, json.dumps(dataToBroadcast))

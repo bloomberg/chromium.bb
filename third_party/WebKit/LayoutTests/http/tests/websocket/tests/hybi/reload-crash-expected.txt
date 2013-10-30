@@ -1,4 +1,4 @@
-Test if it doesn't crash when reloading while Web Socket is busy
+Test if it doesn't crash when reloading while WebSocket is busy
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

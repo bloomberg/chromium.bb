@@ -1,4 +1,4 @@
-Test if Web Socket opened in iframe, referred in parent document is, and try to send() returns false.
+Test if WebSocket opened in iframe, referred in parent document is, and try to send() returns false.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

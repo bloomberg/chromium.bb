@@ -1,4 +1,4 @@
-Simple Web Socket test
+Simple WebSocket test
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
