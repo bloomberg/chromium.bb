@@ -134,6 +134,16 @@ FileTasks.knownExtensions_ = [
 ];
 
 /**
+ * The list of extensions to skip the suggest app dialog.
+ * @const
+ * @type {Array.<string>}
+ * @private
+ */
+FileTasks.EXTENSIONS_TO_SKIP_SUGGEST_APPS_ = Object.freeze([
+  'crdownload', 'dsc', 'inf',
+]);
+
+/**
  * Records trial of opening file grouped by extensions.
  *
  * @param {Array.<string>} urls The path to be opened.
@@ -328,7 +338,9 @@ FileTasks.prototype.executeDefaultInternal_ = function(urls, opt_callback) {
       return;
     }
 
-    if (!fm.isOnDrive() || !urls[0]) {
+    if (!fm.isOnDrive() ||
+        !urls[0] ||
+        FileTasks.EXTENSIONS_TO_SKIP_SUGGEST_APPS_.indexOf(extension) != -1) {
       showAlert();
       return;
     }
