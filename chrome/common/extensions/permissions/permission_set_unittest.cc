@@ -640,6 +640,9 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kActiveTab);
   skip.insert(APIPermission::kAdView);
   skip.insert(APIPermission::kAlarms);
+  skip.insert(APIPermission::kAppCurrentWindowInternal);
+  skip.insert(APIPermission::kAppRuntime);
+  skip.insert(APIPermission::kAppWindow);
   skip.insert(APIPermission::kAudio);
   skip.insert(APIPermission::kBrowsingData);
   skip.insert(APIPermission::kContextMenus);

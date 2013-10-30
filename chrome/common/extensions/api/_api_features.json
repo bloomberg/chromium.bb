@@ -29,16 +29,14 @@
     ]
   },
   "app.runtime": {
-    "channel": "stable",
+    "noparent": true,
     "contexts": ["blessed_extension"],
-    "extension_types": ["platform_app"],
-    "noparent": true
+    "dependencies": ["permission:app.runtime"]
   },
   "app.window": {
-    "channel": "stable",
+    "noparent": true,
     "contexts": ["blessed_extension"],
-    "extension_types": ["platform_app"],
-    "noparent": true
+    "dependencies": ["permission:app.window"]
   },
   "app.currentWindowInternal": {
     "noparent": true,
