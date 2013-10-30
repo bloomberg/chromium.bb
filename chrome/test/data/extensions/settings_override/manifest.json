@@ -10,10 +10,10 @@
         "keyword": "firstkey",
         "search_url": "http://www.foo.com/s?q={searchTerms}",
         "favicon_url": "http://www.foo.com/favicon.ico",
-        "suggest_url": "http://www.foo.com/s?q={searchTerms}",
+        "suggest_url": "http://www.foo.com/suggest?q={searchTerms}",
         "encoding": "UTF-8",
         "is_default": true
     },
-    "startup_page": "http://www.startup.com"
+    "startup_pages": ["http://www.startup.com"]
    }
 }

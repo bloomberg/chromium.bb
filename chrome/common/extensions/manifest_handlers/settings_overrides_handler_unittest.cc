@@ -28,7 +28,7 @@ const char kManifest[] = "{"
     "        \"encoding\" : \"UTF-8\","
     "        \"is_default\" : true"
     "    },"
-    "   \"startup_page\" : \"http://www.startup.com\""
+    "   \"startup_pages\" : [\"http://www.startup.com\"]"
     "  }"
     "}";
 
@@ -74,8 +74,8 @@ TEST_F(DeclarativeSettingsTest, ParseManifest) {
             *search_engine->suggest_url);
   EXPECT_EQ("UTF-8", search_engine->encoding);
 
-  ASSERT_TRUE(settings_override->startup_page);
-  EXPECT_EQ(GURL("http://www.startup.com"), *settings_override->startup_page);
+  EXPECT_EQ(std::vector<GURL>(1, GURL("http://www.startup.com")),
+            settings_override->startup_pages);
 
   ASSERT_TRUE(settings_override->homepage);
   EXPECT_EQ(GURL("http://www.homepage.com"), *settings_override->homepage);

@@ -120,10 +120,11 @@
               }
             }
           },
-          "startup_page": {
+          "startup_pages": {
             "description": "A new startup page to be added to the list.",
             "optional": true,
-            "type": "string"
+            "type": "array",
+            "items": {"type": "string"}
           }
         }
       },
