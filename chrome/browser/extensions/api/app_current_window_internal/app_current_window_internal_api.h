@@ -134,6 +134,46 @@ class AppCurrentWindowInternalSetBoundsFunction
   virtual bool RunWithWindow(apps::ShellWindow* window) OVERRIDE;
 };
 
+class AppCurrentWindowInternalSetMinWidthFunction
+    : public AppCurrentWindowInternalExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.setMinWidth",
+                             APP_CURRENTWINDOWINTERNAL_SETMINWIDTH)
+ protected:
+  virtual ~AppCurrentWindowInternalSetMinWidthFunction() {}
+  virtual bool RunWithWindow(apps::ShellWindow* window) OVERRIDE;
+};
+
+class AppCurrentWindowInternalSetMinHeightFunction
+    : public AppCurrentWindowInternalExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.setMinHeight",
+                             APP_CURRENTWINDOWINTERNAL_SETMINHEIGHT)
+ protected:
+  virtual ~AppCurrentWindowInternalSetMinHeightFunction() {}
+  virtual bool RunWithWindow(apps::ShellWindow* window) OVERRIDE;
+};
+
+class AppCurrentWindowInternalSetMaxWidthFunction
+    : public AppCurrentWindowInternalExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.setMaxWidth",
+                             APP_CURRENTWINDOWINTERNAL_SETMAXWIDTH)
+ protected:
+  virtual ~AppCurrentWindowInternalSetMaxWidthFunction() {}
+  virtual bool RunWithWindow(apps::ShellWindow* window) OVERRIDE;
+};
+
+class AppCurrentWindowInternalSetMaxHeightFunction
+    : public AppCurrentWindowInternalExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.setMaxHeight",
+                             APP_CURRENTWINDOWINTERNAL_SETMAXHEIGHT)
+ protected:
+  virtual ~AppCurrentWindowInternalSetMaxHeightFunction() {}
+  virtual bool RunWithWindow(apps::ShellWindow* window) OVERRIDE;
+};
+
 class AppCurrentWindowInternalSetIconFunction
     : public AppCurrentWindowInternalExtensionFunction {
  public:

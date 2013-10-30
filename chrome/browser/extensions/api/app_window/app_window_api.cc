@@ -52,6 +52,8 @@ const char kHtmlFrameOption[] = "experimental-html";
 
 namespace {
 
+const int kUnboundedSize = apps::ShellWindow::SizeConstraints::kUnboundedSize;
+
 // Opens an inspector window and delays the response to the
 // AppWindowCreateFunction until the DevToolsWindow has finished loading, and is
 // ready to stop on breakpoints in the callback.
@@ -101,6 +103,19 @@ void SetCreateResultFromShellWindow(ShellWindow* window,
   boundsValue->SetInteger("width", bounds.width());
   boundsValue->SetInteger("height", bounds.height());
   result->Set("bounds", boundsValue);
+
+  const ShellWindow::SizeConstraints& size_constraints =
+      window->size_constraints();
+  gfx::Size min_size = size_constraints.GetMinimumSize();
+  gfx::Size max_size = size_constraints.GetMaximumSize();
+  if (min_size.width() != kUnboundedSize)
+    result->SetInteger("minWidth", min_size.width());
+  if (min_size.height() != kUnboundedSize)
+    result->SetInteger("minHeight", min_size.height());
+  if (max_size.width() != kUnboundedSize)
+    result->SetInteger("maxWidth", max_size.width());
+  if (max_size.height() != kUnboundedSize)
+    result->SetInteger("maxHeight", max_size.height());
 }
 
 }  // namespace

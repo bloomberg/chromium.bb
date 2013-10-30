@@ -19,6 +19,12 @@
 
 namespace app_window = extensions::api::app_window;
 
+namespace {
+
+const int kUnboundedSize = apps::ShellWindow::SizeConstraints::kUnboundedSize;
+
+}
+
 namespace apps {
 
 AppWindowContents::AppWindowContents(ShellWindow* host)
@@ -93,6 +99,19 @@ void AppWindowContents::NativeWindowChanged(
   dictionary->SetBoolean("minimized", native_app_window->IsMinimized());
   dictionary->SetBoolean("maximized", native_app_window->IsMaximized());
   dictionary->SetBoolean("alwaysOnTop", native_app_window->IsAlwaysOnTop());
+
+  const ShellWindow::SizeConstraints& size_constraints =
+      host_->size_constraints();
+  gfx::Size min_size = size_constraints.GetMinimumSize();
+  gfx::Size max_size = size_constraints.GetMaximumSize();
+  if (min_size.width() != kUnboundedSize)
+    dictionary->SetInteger("minWidth", min_size.width());
+  if (min_size.height() != kUnboundedSize)
+    dictionary->SetInteger("minHeight", min_size.height());
+  if (max_size.width() != kUnboundedSize)
+    dictionary->SetInteger("maxWidth", max_size.width());
+  if (max_size.height() != kUnboundedSize)
+    dictionary->SetInteger("maxHeight", max_size.height());
 
   content::RenderViewHost* rvh = web_contents_->GetRenderViewHost();
   rvh->Send(new ExtensionMsg_MessageInvoke(rvh->GetRoutingID(),

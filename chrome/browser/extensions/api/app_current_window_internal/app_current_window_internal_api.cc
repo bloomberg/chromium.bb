@@ -16,17 +16,22 @@
 #include "extensions/common/switches.h"
 #include "third_party/skia/include/core/SkRegion.h"
 
-namespace SetBounds = extensions::api::app_current_window_internal::SetBounds;
-namespace SetIcon = extensions::api::app_current_window_internal::SetIcon;
-namespace SetInputRegion =
-    extensions::api::app_current_window_internal::SetInputRegion;
-namespace SetAlwaysOnTop =
-    extensions::api::app_current_window_internal::SetAlwaysOnTop;
+namespace app_current_window_internal =
+    extensions::api::app_current_window_internal;
+
+namespace SetBounds = app_current_window_internal::SetBounds;
+namespace SetMinWidth = app_current_window_internal::SetMinWidth;
+namespace SetMinHeight = app_current_window_internal::SetMinHeight;
+namespace SetMaxWidth = app_current_window_internal::SetMaxWidth;
+namespace SetMaxHeight = app_current_window_internal::SetMaxHeight;
+namespace SetIcon = app_current_window_internal::SetIcon;
+namespace SetInputRegion = app_current_window_internal::SetInputRegion;
+namespace SetAlwaysOnTop = app_current_window_internal::SetAlwaysOnTop;
 
 using apps::ShellWindow;
-using extensions::api::app_current_window_internal::Bounds;
-using extensions::api::app_current_window_internal::Region;
-using extensions::api::app_current_window_internal::RegionRect;
+using app_current_window_internal::Bounds;
+using app_current_window_internal::Region;
+using app_current_window_internal::RegionRect;
 
 namespace extensions {
 
@@ -38,6 +43,8 @@ const char kNoAssociatedShellWindow[] =
 
 const char kDevChannelOnly[] =
     "This function is currently only available in the Dev channel.";
+
+const int kUnboundedSize = apps::ShellWindow::SizeConstraints::kUnboundedSize;
 
 }  // namespace
 
@@ -129,6 +136,50 @@ bool AppCurrentWindowInternalSetBoundsFunction::RunWithWindow(
 
   bounds.Inset(-window->GetBaseWindow()->GetFrameInsets());
   window->GetBaseWindow()->SetBounds(bounds);
+  return true;
+}
+
+bool AppCurrentWindowInternalSetMinWidthFunction::RunWithWindow(
+    ShellWindow* window) {
+  scoped_ptr<SetMinWidth::Params> params(SetMinWidth::Params::Create(*args_));
+  CHECK(params.get());
+  gfx::Size min_size = window->size_constraints().GetMinimumSize();
+  min_size.set_width(params->min_width.get() ?
+      *(params->min_width) : kUnboundedSize);
+  window->SetMinimumSize(min_size);
+  return true;
+}
+
+bool AppCurrentWindowInternalSetMinHeightFunction::RunWithWindow(
+    ShellWindow* window) {
+  scoped_ptr<SetMinHeight::Params> params(SetMinHeight::Params::Create(*args_));
+  CHECK(params.get());
+  gfx::Size min_size = window->size_constraints().GetMinimumSize();
+  min_size.set_height(params->min_height.get() ?
+      *(params->min_height) : kUnboundedSize);
+  window->SetMinimumSize(min_size);
+  return true;
+}
+
+bool AppCurrentWindowInternalSetMaxWidthFunction::RunWithWindow(
+    ShellWindow* window) {
+  scoped_ptr<SetMaxWidth::Params> params(SetMaxWidth::Params::Create(*args_));
+  CHECK(params.get());
+  gfx::Size max_size = window->size_constraints().GetMaximumSize();
+  max_size.set_width(params->max_width.get() ?
+      *(params->max_width) : kUnboundedSize);
+  window->SetMaximumSize(max_size);
+  return true;
+}
+
+bool AppCurrentWindowInternalSetMaxHeightFunction::RunWithWindow(
+    ShellWindow* window) {
+  scoped_ptr<SetMaxHeight::Params> params(SetMaxHeight::Params::Create(*args_));
+  CHECK(params.get());
+  gfx::Size max_size = window->size_constraints().GetMaximumSize();
+  max_size.set_height(params->max_height.get() ?
+      *(params->max_height) : kUnboundedSize);
+  window->SetMaximumSize(max_size);
   return true;
 }
 

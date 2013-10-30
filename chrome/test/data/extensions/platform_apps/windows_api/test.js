@@ -129,6 +129,150 @@ chrome.app.runtime.onLaunched.addListener(function() {
      }));
    },
 
+   function testUndefinedMinAndMaxSize() {
+     chrome.app.window.create('test.html', {
+       bounds: { width: 250, height: 250 }
+     }, callbackPass(function(win) {
+       chrome.test.assertEq(undefined, win.getMinWidth());
+       chrome.test.assertEq(undefined, win.getMinHeight());
+       chrome.test.assertEq(undefined, win.getMaxWidth());
+       chrome.test.assertEq(undefined, win.getMaxHeight());
+       win.close();
+     }));
+   },
+
+   function testSetUndefinedMinAndMaxSize() {
+     chrome.app.window.create('test.html', {
+       bounds: { width: 102, height: 103 },
+       minWidth: 100, minHeight: 101,
+       maxWidth: 104, maxHeight: 105
+     }, callbackPass(function(win) {
+       chrome.test.assertEq(100, win.getMinWidth());
+       chrome.test.assertEq(101, win.getMinHeight());
+       chrome.test.assertEq(104, win.getMaxWidth());
+       chrome.test.assertEq(105, win.getMaxHeight());
+       win.setMinWidth(null);
+       win.setMinHeight(null);
+       win.setMaxWidth(null);
+       win.setMaxHeight(null);
+       // We need to wait for an onBoundsChanged to ensure the size has been
+       // updated.
+       win.setBounds({ width: 103, height: 102 });
+       var cb;
+       win.onBoundsChanged.addListener(cb = callbackPass(function() {
+         chrome.test.assertEq(undefined, win.getMinWidth());
+         chrome.test.assertEq(undefined, win.getMinHeight());
+         chrome.test.assertEq(undefined, win.getMaxWidth());
+         chrome.test.assertEq(undefined, win.getMaxHeight());
+         win.close();
+       }));
+     }));
+   },
+
+   function testChangingMinAndMaxSize() {
+     chrome.app.window.create('test.html', {
+       bounds: { width: 102, height: 103 },
+       minWidth: 100, minHeight: 101,
+       maxWidth: 104, maxHeight: 105
+     }, callbackPass(function(win) {
+       chrome.test.assertEq(100, win.getMinWidth());
+       chrome.test.assertEq(101, win.getMinHeight());
+       chrome.test.assertEq(104, win.getMaxWidth());
+       chrome.test.assertEq(105, win.getMaxHeight());
+       win.setMinWidth(98);
+       win.setMinHeight(99);
+       win.setMaxWidth(106);
+       win.setMaxHeight(107);
+       // We need to wait for an onBoundsChanged to ensure the size has been
+       // updated.
+       win.setBounds({ width: 103, height: 102 });
+       var cb;
+       win.onBoundsChanged.addListener(cb = callbackPass(function() {
+         chrome.test.assertEq(98, win.getMinWidth());
+         chrome.test.assertEq(99, win.getMinHeight());
+         chrome.test.assertEq(106, win.getMaxWidth());
+         chrome.test.assertEq(107, win.getMaxHeight());
+         win.close();
+       }));
+     }));
+   },
+
+   function testMinWidthLargerThanMaxWidth() {
+     chrome.app.window.create('test.html', {
+       bounds: { width: 102, height: 103 },
+       minWidth: 100, minHeight: 101,
+       maxWidth: 104, maxHeight: 105
+     }, callbackPass(function(win) {
+       win.setMinWidth(200);
+       // An onBoundsChanged will be fired because this resizes the window.
+       var cb;
+       win.onBoundsChanged.addListener(cb = callbackPass(function() {
+         chrome.test.assertEq(200, win.getMinWidth());
+         chrome.test.assertEq(101, win.getMinHeight());
+         chrome.test.assertEq(200, win.getMaxWidth());
+         chrome.test.assertEq(105, win.getMaxHeight());
+         win.close();
+       }));
+     }));
+   },
+
+   function testMinHeightLargerThanMaxHeight() {
+     chrome.app.window.create('test.html', {
+       bounds: { width: 102, height: 103 },
+       minWidth: 100, minHeight: 101,
+       maxWidth: 104, maxHeight: 105
+     }, callbackPass(function(win) {
+       win.setMinHeight(200);
+       // An onBoundsChanged will be fired because this resizes the window.
+       var cb;
+       win.onBoundsChanged.addListener(cb = callbackPass(function() {
+         chrome.test.assertEq(100, win.getMinWidth());
+         chrome.test.assertEq(200, win.getMinHeight());
+         chrome.test.assertEq(104, win.getMaxWidth());
+         chrome.test.assertEq(200, win.getMaxHeight());
+         win.close();
+       }));
+     }));
+   },
+
+   function testMaxWidthSmallerThanMinWidth() {
+     chrome.app.window.create('test.html', {
+       bounds: { width: 102, height: 103 },
+       minWidth: 100, minHeight: 101,
+       maxWidth: 104, maxHeight: 105
+     }, callbackPass(function(win) {
+       win.setMaxWidth(50);
+       // An onBoundsChanged will be fired because this resizes the window.
+       var cb;
+       win.onBoundsChanged.addListener(cb = callbackPass(function() {
+         chrome.test.assertEq(100, win.getMinWidth());
+         chrome.test.assertEq(101, win.getMinHeight());
+         chrome.test.assertEq(100, win.getMaxWidth());
+         chrome.test.assertEq(105, win.getMaxHeight());
+         win.close();
+       }));
+     }));
+   },
+
+   function testMaxHeightSmallerThanMinHeight() {
+     chrome.app.window.create('test.html', {
+       bounds: { width: 102, height: 103 },
+       minWidth: 100, minHeight: 101,
+       maxWidth: 104, maxHeight: 105
+     }, callbackPass(function(win) {
+       win.setMaxHeight(50);
+       // An onBoundsChanged will be fired because this resizes the window.
+       var cb;
+       win.onBoundsChanged.addListener(cb = callbackPass(function() {
+         chrome.test.assertEq(100, win.getMinWidth());
+         chrome.test.assertEq(101, win.getMinHeight());
+         chrome.test.assertEq(104, win.getMaxWidth());
+         chrome.test.assertEq(101, win.getMaxHeight());
+         win.close();
+       }));
+     }));
+   },
+
    function testMinSizeRestore() {
      chrome.app.window.create('test.html', {
        bounds: { width: 100, height: 150 },

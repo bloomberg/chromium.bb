@@ -38,6 +38,10 @@
     static void show();
     static void hide();
     static void setBounds(Bounds bounds);
+    static void setMinWidth(optional long minWidth);
+    static void setMinHeight(optional long minHeight);
+    static void setMaxWidth(optional long maxWidth);
+    static void setMaxHeight(optional long maxHeight);
     static void setIcon(DOMString icon_url);
     static void setInputRegion(Region region);
     static void setAlwaysOnTop(boolean always_on_top);
