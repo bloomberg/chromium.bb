@@ -5,15 +5,22 @@
 #include "chrome/common/extensions/chrome_extensions_client.h"
 
 #include "chrome/common/extensions/chrome_manifest_handlers.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/permission_message.h"
+#include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
+
+namespace {
+const char kThumbsWhiteListedExtension[] = "khopmbdjffemhegeeobelklnbglcdgfh";
+}  // namespace
 
 namespace extensions {
 
@@ -90,6 +97,30 @@ void ChromeExtensionsClient::SetScriptingWhitelist(
 const ExtensionsClient::ScriptingWhitelist&
 ChromeExtensionsClient::GetScriptingWhitelist() const {
   return scripting_whitelist_;
+}
+
+URLPatternSet ChromeExtensionsClient::GetPermittedChromeSchemeHosts(
+      const Extension* extension,
+      const APIPermissionSet& api_permissions) const {
+  URLPatternSet hosts;
+  // Regular extensions are only allowed access to chrome://favicon.
+  hosts.AddPattern(URLPattern(URLPattern::SCHEME_CHROMEUI,
+                              chrome::kChromeUIFaviconURL));
+
+  // Experimental extensions are also allowed chrome://thumb.
+  //
+  // TODO: A public API should be created for retrieving thumbnails.
+  // See http://crbug.com/222856. A temporary hack is implemented here to
+  // make chrome://thumbs available to NTP Russia extension as
+  // non-experimental.
+  if ((api_permissions.find(APIPermission::kExperimental) !=
+       api_permissions.end()) ||
+      (extension->id() == kThumbsWhiteListedExtension &&
+       extension->from_webstore())) {
+    hosts.AddPattern(URLPattern(URLPattern::SCHEME_CHROMEUI,
+                                chrome::kChromeUIThumbnailURL));
+  }
+  return hosts;
 }
 
 // static

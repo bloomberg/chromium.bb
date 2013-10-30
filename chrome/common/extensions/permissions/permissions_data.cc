@@ -13,7 +13,6 @@
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/permissions/chrome_scheme_hosts.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
@@ -68,7 +67,7 @@ bool CanSpecifyHostPermission(const Extension* extension,
                               const APIPermissionSet& permissions) {
   if (!pattern.match_all_urls() &&
       pattern.MatchesScheme(chrome::kChromeUIScheme)) {
-    URLPatternSet chrome_scheme_hosts =
+    URLPatternSet chrome_scheme_hosts = ExtensionsClient::Get()->
         GetPermittedChromeSchemeHosts(extension, permissions);
     if (chrome_scheme_hosts.ContainsPattern(pattern))
       return true;
@@ -216,9 +215,11 @@ bool ParseHelper(Extension* extension,
       host_permissions->AddPattern(pattern);
       // We need to make sure all_urls matches chrome://favicon and (maybe)
       // chrome://thumbnail, so add them back in to host_permissions separately.
-      if (pattern.match_all_urls())
-        host_permissions->AddPatterns(GetPermittedChromeSchemeHosts(
-            extension, *api_permissions));
+      if (pattern.match_all_urls()) {
+        host_permissions->AddPatterns(
+            ExtensionsClient::Get()->GetPermittedChromeSchemeHosts(
+                extension, *api_permissions));
+      }
       continue;
     }
 

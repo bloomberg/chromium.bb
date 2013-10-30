@@ -35,6 +35,9 @@ class ChromeExtensionsClient : public ExtensionsClient {
   virtual void SetScriptingWhitelist(const ScriptingWhitelist& whitelist)
       OVERRIDE;
   virtual const ScriptingWhitelist& GetScriptingWhitelist() const OVERRIDE;
+  virtual URLPatternSet GetPermittedChromeSchemeHosts(
+      const Extension* extension,
+      const APIPermissionSet& api_permissions) const OVERRIDE;
 
   // Get the LazyInstance for ChromeExtensionsClient.
   static ChromeExtensionsClient* GetInstance();

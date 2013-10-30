@@ -11,6 +11,8 @@
 
 namespace extensions {
 
+class APIPermissionSet;
+class Extension;
 class FeatureProvider;
 class PermissionMessage;
 class PermissionMessageProvider;
@@ -55,6 +57,11 @@ class ExtensionsClient {
   // Return the whitelist of extensions that can run content scripts on
   // any origin.
   virtual const ScriptingWhitelist& GetScriptingWhitelist() const = 0;
+
+  // Get the set of chrome:// hosts that |extension| can run content scripts on.
+  virtual URLPatternSet GetPermittedChromeSchemeHosts(
+      const Extension* extension,
+      const APIPermissionSet& api_permissions) const = 0;
 
   // Return the extensions client.
   static ExtensionsClient* Get();
