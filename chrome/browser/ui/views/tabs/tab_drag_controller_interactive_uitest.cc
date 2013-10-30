@@ -568,15 +568,9 @@ void DragToSeparateWindowStep2(DetachToBrowserTabDragControllerTest* test,
 
 }  // namespace
 
-#if defined(OS_WIN) && defined(USE_AURA)
-#define MAYBE_DragToSeparateWindow DISABLED_DragToSeparateWindow
-#else
-#define MAYBE_DragToSeparateWindow DragToSeparateWindow
-#endif
-
 // Creates two browsers, drags from first into second.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
-                       MAYBE_DragToSeparateWindow) {
+                       DragToSeparateWindow) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   // Add another tab to browser().
