@@ -146,6 +146,9 @@ cr.define('ntp', function() {
         // Records the index of this tile.
         chrome.send('metricsHandler:recordInHistogram',
                     ['NewTabPage.MostVisited', this.index, 8]);
+        // Records the action. This will be available as a time-stamped stream
+        // server-side and can be used to compute time-to-long-dwell.
+        chrome.send('metricsHandler:recordAction', ['MostVisited_Clicked']);
         chrome.send('mostVisitedAction',
                     [ntp.NtpFollowAction.CLICKED_TILE]);
       }

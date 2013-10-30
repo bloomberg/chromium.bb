@@ -7,6 +7,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/browser_resources.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
@@ -67,9 +68,13 @@ void MostVisitedIframeSource::StartDataRequest(
     std::string str_position;
     int position;
     if (net::GetValueForKeyInQuery(url, "pos", &str_position) &&
-        base::StringToInt(str_position, &position))
+        base::StringToInt(str_position, &position)) {
       UMA_HISTOGRAM_ENUMERATION(kMostVisitedHistogramName, position,
                                 kNumMostVisited);
+      // Records the action. This will be available as a time-stamped stream
+      // server-side and can be used to compute time-to-long-dwell.
+      content::RecordAction(content::UserMetricsAction("MostVisited_Clicked"));
+    }
     callback.Run(NULL);
   } else {
     callback.Run(NULL);

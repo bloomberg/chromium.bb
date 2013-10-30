@@ -1178,6 +1178,7 @@
 0x1b40c6b1b5dd7106	MostVisited9
 0x245e4aa9fe5a8a3c	MostVisitedReordered
 0x9c6a4ef293d946ca	MostVisited_BlacklistCleared
+0x110c33db0e4c6ebf	MostVisited_Clicked
 0x018c0ec301cb02ae	MostVisited_UrlBlacklisted
 0x4cbb82140919fe65	MostVisited_UrlPinned
 0xa90e38146e0a4399	MostVisited_UrlRemoved
