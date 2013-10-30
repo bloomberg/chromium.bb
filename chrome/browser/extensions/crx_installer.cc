@@ -523,7 +523,7 @@ void CrxInstaller::OnBlacklistChecked(
 
   blacklist_state_ = blacklist_state;
 
-  if (blacklist_state_ == extensions::Blacklist::BLACKLISTED &&
+  if (blacklist_state_ == extensions::Blacklist::BLACKLISTED_MALWARE &&
       !allow_silent_install_) {
     // User tried to install a blacklisted extension. Show an error and
     // refuse to install it.

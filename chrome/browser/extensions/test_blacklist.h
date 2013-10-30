@@ -8,10 +8,9 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "chrome/browser/extensions/blacklist.h"
 
 namespace extensions {
-
-class Blacklist;
 
 // A wrapper for an extensions::Blacklist that provides functionality for
 // testing.
@@ -21,7 +20,7 @@ class TestBlacklist {
 
   Blacklist* blacklist() { return blacklist_; }
 
-  bool IsBlacklisted(const std::string& extension_id);
+  Blacklist::BlacklistState GetBlacklistState(const std::string& extension_id);
 
  private:
   Blacklist* blacklist_;

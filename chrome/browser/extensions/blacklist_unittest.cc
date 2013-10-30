@@ -87,12 +87,12 @@ TEST_F(BlacklistTest, OnlyIncludesRequestedIDs) {
   blacklist_db()->Enable();
   blacklist_db()->SetUnsafe(a, b);
 
-  EXPECT_TRUE(tester.IsBlacklisted(a));
-  EXPECT_TRUE(tester.IsBlacklisted(b));
-  EXPECT_FALSE(tester.IsBlacklisted(c));
+  EXPECT_EQ(Blacklist::BLACKLISTED_MALWARE, tester.GetBlacklistState(a));
+  EXPECT_EQ(Blacklist::BLACKLISTED_MALWARE, tester.GetBlacklistState(b));
+  EXPECT_EQ(Blacklist::NOT_BLACKLISTED, tester.GetBlacklistState(c));
 
   std::set<std::string> blacklisted_ids;
-  blacklist.GetBlacklistedIDs(Set(a, c), base::Bind(&Assign, &blacklisted_ids));
+  blacklist.GetMalwareIDs(Set(a, c), base::Bind(&Assign, &blacklisted_ids));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(Set(a), blacklisted_ids);
@@ -104,20 +104,20 @@ TEST_F(BlacklistTest, SafeBrowsing) {
   Blacklist blacklist(prefs());
   TestBlacklist tester(&blacklist);
 
-  EXPECT_FALSE(tester.IsBlacklisted(a));
+  EXPECT_EQ(Blacklist::NOT_BLACKLISTED, tester.GetBlacklistState(a));
 
   blacklist_db()->SetUnsafe(a);
   // The manager is still disabled at this point, so it won't be blacklisted.
-  EXPECT_FALSE(tester.IsBlacklisted(a));
+  EXPECT_EQ(Blacklist::NOT_BLACKLISTED, tester.GetBlacklistState(a));
 
   blacklist_db()->Enable().NotifyUpdate();
   base::RunLoop().RunUntilIdle();
   // Now it should be.
-  EXPECT_TRUE(tester.IsBlacklisted(a));
+  EXPECT_EQ(Blacklist::BLACKLISTED_MALWARE, tester.GetBlacklistState(a));
 
   blacklist_db()->ClearUnsafe().NotifyUpdate();
   // Safe browsing blacklist empty, now enabled.
-  EXPECT_FALSE(tester.IsBlacklisted(a));
+  EXPECT_EQ(Blacklist::NOT_BLACKLISTED, tester.GetBlacklistState(a));
 }
 
 // Tests that Blacklist clears the old prefs blacklist on startup.
@@ -149,8 +149,8 @@ TEST_F(BlacklistTest, ClearsPreferencesBlacklist) {
   // safebrowsing. Blacklist no longer reads from prefs. This is purely a
   // concern of somebody else (currently, ExtensionService).
   std::set<std::string> blacklisted_ids;
-  blacklist.GetBlacklistedIDs(Set(a, b, c, d),
-                              base::Bind(&Assign, &blacklisted_ids));
+  blacklist.GetMalwareIDs(Set(a, b, c, d),
+                          base::Bind(&Assign, &blacklisted_ids));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(std::set<std::string>(), blacklisted_ids);
 

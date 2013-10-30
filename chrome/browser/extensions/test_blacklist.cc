@@ -19,20 +19,19 @@ TestBlacklist::TestBlacklist(Blacklist* blacklist)
 
 namespace {
 
-void Assign(std::set<std::string>* out, const std::set<std::string>& in) {
+void Assign(Blacklist::BlacklistState *out, Blacklist::BlacklistState in) {
   *out = in;
 }
 
 }  // namespace
 
-bool TestBlacklist::IsBlacklisted(const std::string& extension_id) {
-  std::set<std::string> id_set;
-  id_set.insert(extension_id);
-  std::set<std::string> blacklist_set;
-  blacklist_->GetBlacklistedIDs(id_set,
-                                base::Bind(&Assign, &blacklist_set));
+Blacklist::BlacklistState TestBlacklist::GetBlacklistState(
+    const std::string& extension_id) {
+  Blacklist::BlacklistState blacklist_state;
+  blacklist_->IsBlacklisted(extension_id,
+                            base::Bind(&Assign, &blacklist_state));
   base::RunLoop().RunUntilIdle();
-  return blacklist_set.count(extension_id) > 0;
+  return blacklist_state;
 }
 
 }  // namespace extensions

@@ -1852,7 +1852,7 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
   extension_dict->Set(kPrefInstallTime,
                       new base::StringValue(
                           base::Int64ToString(install_time.ToInternalValue())));
-  if (blacklist_state == Blacklist::BLACKLISTED)
+  if (blacklist_state == Blacklist::BLACKLISTED_MALWARE)
     extension_dict->Set(kPrefBlacklist, new base::FundamentalValue(true));
 
   base::FilePath::StringType path = MakePathRelative(install_directory_,

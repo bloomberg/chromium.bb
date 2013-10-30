@@ -2430,7 +2430,7 @@ void ExtensionService::OnExtensionInstalled(
     extension_prefs_->ClearDisableReasons(id);
   }
 
-  if (blacklist_state == extensions::Blacklist::BLACKLISTED) {
+  if (blacklist_state == extensions::Blacklist::BLACKLISTED_MALWARE) {
     // Installation of a blacklisted extension can happen from sync, policy,
     // etc, where to maintain consistency we need to install it, just never
     // load it (see AddExtension). Usually it should be the job of callers to
@@ -3076,7 +3076,7 @@ void ExtensionService::OnNeedsToGarbageCollectIsolatedStorage() {
 }
 
 void ExtensionService::OnBlacklistUpdated() {
-  blacklist_->GetBlacklistedIDs(
+  blacklist_->GetMalwareIDs(
       GenerateInstalledExtensionsSet()->GetIDs(),
       base::Bind(&ExtensionService::ManageBlacklist, AsWeakPtr()));
 }
