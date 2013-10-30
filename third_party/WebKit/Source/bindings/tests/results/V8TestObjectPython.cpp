@@ -3803,6 +3803,42 @@ static void voidMethodNodeArgMethodCallback(const v8::FunctionCallbackInfo<v8::V
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void testEnumMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
+    v8SetReturnValueString(args, imp->testEnumMethod(), args.GetIsolate());
+}
+
+static void testEnumMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::testEnumMethodMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void voidMethodTestEnumArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    if (UNLIKELY(args.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestEnumArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, testEnumTypeArg, args[0]);
+    String string = testEnumTypeArg;
+    if (!(string == "" || string == "EnumValue1" || string == "EnumValue2" || string == "EnumValue3")) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestEnumArg", "TestObjectPython", "parameter 1 ('" + string + "') is not a valid enum value."), args.GetIsolate());
+        return;
+    }
+    imp->voidMethodTestEnumArg(testEnumTypeArg);
+}
+
+static void voidMethodTestEnumArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodTestEnumArgMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void voidMethodStringArgLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (UNLIKELY(args.Length() < 2)) {
@@ -4257,6 +4293,8 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"voidMethodUnsignedLongLongArg", TestObjectPythonV8Internal::voidMethodUnsignedLongLongArgMethodCallback, 0, 1},
     {"voidMethodUnsignedShortArg", TestObjectPythonV8Internal::voidMethodUnsignedShortArgMethodCallback, 0, 1},
     {"testInterfaceEmptyMethod", TestObjectPythonV8Internal::testInterfaceEmptyMethodMethodCallback, 0, 0},
+    {"testEnumMethod", TestObjectPythonV8Internal::testEnumMethodMethodCallback, 0, 0},
+    {"voidMethodTestEnumArg", TestObjectPythonV8Internal::voidMethodTestEnumArgMethodCallback, 0, 1},
     {"voidMethodStringArgLongArg", TestObjectPythonV8Internal::voidMethodStringArgLongArgMethodCallback, 0, 2},
     {"voidMethodOptionalStringArg", TestObjectPythonV8Internal::voidMethodOptionalStringArgMethodCallback, 0, 0},
     {"voidMethodOptionalTestInterfaceEmptyArg", TestObjectPythonV8Internal::voidMethodOptionalTestInterfaceEmptyArgMethodCallback, 0, 0},

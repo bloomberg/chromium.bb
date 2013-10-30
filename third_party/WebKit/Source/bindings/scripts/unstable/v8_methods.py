@@ -63,6 +63,7 @@ def generate_argument(method, argument, index):
     return {
         'cpp_method': cpp_method(method, index),
         'cpp_type': v8_types.cpp_type(idl_type),
+        'enum_validation_expression': v8_utilities.enum_validation_expression(idl_type),
         'idl_type': argument.idl_type,
         'index': index,
         'is_optional': argument.is_optional,

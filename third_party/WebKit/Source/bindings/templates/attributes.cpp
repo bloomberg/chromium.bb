@@ -128,7 +128,7 @@ static void {{attribute.name}}AttributeSetter{{world_suffix}}(v8::Local<v8::Stri
     transferHiddenDependency(info.Holder(), {{attribute.event_handler_getter_expression}}, jsValue, {{v8_class_name}}::eventListenerCacheIndex, info.GetIsolate());
     {% endif %}
     {% if attribute.enum_validation_expression %}
-    {# Setter ignores invalid enum values #}
+    {# Setter ignores invalid enum values: http://www.w3.org/TR/WebIDL/#idl-enums #}
     String string = cppValue;
     if (!({{attribute.enum_validation_expression}}))
         return;

@@ -28,6 +28,14 @@ static void {{method.name}}Method(const v8::FunctionCallbackInfo<v8::Value>& arg
     {% else %}
     {{argument.v8_value_to_local_cpp_value}};
     {% endif %}
+    {% if argument.enum_validation_expression %}
+    {# Methods throw on invalid enum values: http://www.w3.org/TR/WebIDL/#idl-enums #}
+    String string = {{argument.name}};
+    if (!({{argument.enum_validation_expression}})) {
+        throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", "parameter {{argument.index + 1}} ('" + string + "') is not a valid enum value."), args.GetIsolate());
+        return;
+    }
+    {% endif %}
     {% endfor %}
     {{method.cpp_method}};
 }

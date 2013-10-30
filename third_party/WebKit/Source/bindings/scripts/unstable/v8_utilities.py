@@ -85,6 +85,13 @@ def v8_class_name(interface):
     return v8_types.v8_type(interface.name)
 
 
+def enum_validation_expression(idl_type):
+    if not v8_types.is_enum_type(idl_type):
+        return None
+    return ' || '.join(['string == "%s"' % enum_value
+                        for enum_value in v8_types.enum_values(idl_type)])
+
+
 # [ActivityLogging]
 def activity_logging_world_list(member, access_type=None):
     """Returns a set of world suffixes for which a definition member has activity logging, for specified access type.

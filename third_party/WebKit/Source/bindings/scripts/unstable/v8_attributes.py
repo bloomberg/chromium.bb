@@ -216,7 +216,7 @@ def generate_setter(interface, attribute, contents):
         includes.add('core/dom/custom/CustomElementCallbackDispatcher.h')
     contents.update({
         'cpp_setter': setter_expression(interface, attribute, contents),
-        'enum_validation_expression': enum_validation_expression(idl_type),
+        'enum_validation_expression': v8_utilities.enum_validation_expression(idl_type),
         'has_strict_type_checking': 'StrictTypeChecking' in extended_attributes and v8_types.is_interface_type(idl_type),
         'is_reflect': is_reflect,
         'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(idl_type, extended_attributes, 'jsValue', 'cppValue', 'info.GetIsolate()'),
@@ -265,13 +265,6 @@ def setter_base_name(attribute, arguments):
     if idl_type in CONTENT_ATTRIBUTE_SETTER_NAMES:
         return CONTENT_ATTRIBUTE_SETTER_NAMES[idl_type]
     return 'setAttribute'
-
-
-def enum_validation_expression(idl_type):
-    if not v8_types.is_enum_type(idl_type):
-        return None
-    return ' || '.join(['string == "%s"' % enum_value
-                        for enum_value in v8_types.enum_values(idl_type)])
 
 
 def scoped_content_attribute_name(attribute):

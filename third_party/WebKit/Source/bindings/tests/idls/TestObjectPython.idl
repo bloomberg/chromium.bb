@@ -213,6 +213,9 @@ interface TestObjectPython {
     void voidMethodDocumentTypeArg(DocumentType documentTypeArg);
     void voidMethodElementArg(Element elementArg);
     void voidMethodNodeArg(Node nodeArg);
+    // Enumerations
+    TestEnum testEnumMethod();
+    void voidMethodTestEnumArg(TestEnum testEnumTypeArg);
 
     // Arguments
     void voidMethodStringArgLongArg(DOMString stringArg, long longArg);
