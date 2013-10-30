@@ -38,6 +38,9 @@ enum LockDiscardableMemoryStatus {
 //   - Because of memory alignment, the amount of memory allocated can be
 //     larger than the requested memory size. It is not very efficient for
 //     small allocations.
+//   - A discardable memory instance is not thread safe. It is the
+//     responsibility of users of discardable memory to ensure there are no
+//     races.
 //
 // References:
 //   - Linux: http://lwn.net/Articles/452035/
@@ -48,8 +51,9 @@ class BASE_EXPORT DiscardableMemory {
  public:
   virtual ~DiscardableMemory() {}
 
-  // Returns whether the system supports discardable memory.
-  static bool Supported();
+  // Check whether the system supports discardable memory natively. Returns
+  // false if the support is emulated.
+  static bool SupportedNatively();
 
   static scoped_ptr<DiscardableMemory> CreateLockedMemory(size_t size);
 

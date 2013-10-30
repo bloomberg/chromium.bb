@@ -557,6 +557,11 @@
           'proprietary_codecs%': 0,
         }],
 
+        ['OS=="mac"', {
+          'native_discardable_memory%': 1,
+          'native_memory_pressure_signals%': 1,
+        }],
+
         # Enable autofill dialog for Android, Mac and Views-enabled platforms.
         ['toolkit_views==1 or (OS=="android" and android_webview_build==0) or OS=="mac"', {
           'enable_autofill_dialog%': 1
@@ -2057,6 +2062,12 @@
       ['enable_hidpi==1', {
         'defines': ['ENABLE_HIDPI=1'],
       }],
+      ['native_discardable_memory==1', {
+        'defines': ['DISCARDABLE_MEMORY_ALWAYS_SUPPORTED_NATIVELY'],
+      }],
+      ['native_memory_pressure_signals==1', {
+        'defines': ['SYSTEM_NATIVELY_SIGNALS_MEMORY_PRESSURE'],
+      }],
       ['fastbuild!=0', {
         'xcode_settings': {
           'GCC_GENERATE_DEBUGGING_SYMBOLS': 'NO',
@@ -3466,12 +3477,6 @@
               # gets the right path.
               '-B<(PRODUCT_DIR)/../../third_party/gold',
             ],
-          }],
-          ['native_discardable_memory', {
-            'defines': ['DISCARDABLE_MEMORY_ALWAYS_SUPPORTED_NATIVELY'],
-          }],
-          ['native_memory_pressure_signals', {
-            'defines': ['SYSTEM_NATIVELY_SIGNALS_MEMORY_PRESSURE'],
           }],
         ],
       },

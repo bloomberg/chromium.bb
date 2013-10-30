@@ -34,8 +34,6 @@ SkDiscardableMemoryChrome::SkDiscardableMemoryChrome(
 }
 
 SkDiscardableMemory* SkDiscardableMemory::Create(size_t bytes) {
-  if (!base::DiscardableMemory::Supported())
-    return NULL;
   scoped_ptr<base::DiscardableMemory> discardable(
       base::DiscardableMemory::CreateLockedMemory(bytes));
   if (!discardable)

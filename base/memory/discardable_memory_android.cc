@@ -135,7 +135,7 @@ class DiscardableMemoryAndroid : public DiscardableMemory {
 }  // namespace
 
 // static
-bool DiscardableMemory::Supported() {
+bool DiscardableMemory::SupportedNatively() {
   return true;
 }
 

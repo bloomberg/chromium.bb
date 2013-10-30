@@ -283,10 +283,12 @@
           'mac/sdk_forward_declarations.h',
           'memory/aligned_memory.cc',
           'memory/aligned_memory.h',
-          'memory/discardable_memory.cc',
           'memory/discardable_memory.h',
           'memory/discardable_memory_android.cc',
+          'memory/discardable_memory_emulated.cc',
           'memory/discardable_memory_mac.cc',
+          'memory/discardable_memory_provider.cc',
+          'memory/discardable_memory_provider.h',
           'memory/linked_ptr.h',
           'memory/manual_constructor.h',
           'memory/memory_pressure_listener.cc',
@@ -845,6 +847,14 @@
           ],
           ['OS != "win" or >(nacl_untrusted_build)==1', {
               'sources/': [ ['exclude', '^win/'] ],
+            },
+          ],
+          ['<(native_discardable_memory)==1', {
+              'sources!': [
+                'memory/discardable_memory_emulated.cc',
+                'memory/discardable_memory_provider.cc',
+                'memory/discardable_memory_provider.h',
+              ],
             },
           ],
           ['OS != "android" or >(nacl_untrusted_build)==1', {

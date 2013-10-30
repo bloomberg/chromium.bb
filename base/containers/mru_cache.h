@@ -123,9 +123,14 @@ class MRUCacheBase {
 
   // Retrieves the payload associated with a given key and returns it via
   // result without affecting the ordering (unlike Get).
-  //
-  // TODO(brettw) We may want a const version of this function in the future.
   iterator Peek(const KeyType& key) {
+    typename KeyIndex::const_iterator index_iter = index_.find(key);
+    if (index_iter == index_.end())
+      return end();
+    return index_iter->second;
+  }
+
+  const_iterator Peek(const KeyType& key) const {
     typename KeyIndex::const_iterator index_iter = index_.find(key);
     if (index_iter == index_.end())
       return end();

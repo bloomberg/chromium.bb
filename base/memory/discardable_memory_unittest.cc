@@ -7,13 +7,22 @@
 
 namespace base {
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
 const size_t kSize = 1024;
+
+TEST(DiscardableMemoryTest, SupportedNatively) {
+#if defined(DISCARDABLE_MEMORY_ALWAYS_SUPPORTED_NATIVELY)
+  ASSERT_TRUE(DiscardableMemory::SupportedNatively());
+#else
+  // If we ever have a platform that decides at runtime if it can support
+  // discardable memory natively, then we'll have to add a 'never supported
+  // natively' define for this case. At present, if it's not always supported
+  // natively, it's never supported.
+  ASSERT_FALSE(DiscardableMemory::SupportedNatively());
+#endif
+}
 
 // Test Lock() and Unlock() functionalities.
 TEST(DiscardableMemoryTest, LockAndUnLock) {
-  ASSERT_TRUE(DiscardableMemory::Supported());
-
   const scoped_ptr<DiscardableMemory> memory(
       DiscardableMemory::CreateLockedMemory(kSize));
   ASSERT_TRUE(memory);
@@ -32,17 +41,14 @@ TEST(DiscardableMemoryTest, LockAndUnLock) {
 
 // Test delete a discardable memory while it is locked.
 TEST(DiscardableMemoryTest, DeleteWhileLocked) {
-  ASSERT_TRUE(DiscardableMemory::Supported());
-
   const scoped_ptr<DiscardableMemory> memory(
       DiscardableMemory::CreateLockedMemory(kSize));
   ASSERT_TRUE(memory);
 }
 
-#if defined(OS_MACOSX)
+#if !defined(OS_ANDROID)
 // Test forced purging.
 TEST(DiscardableMemoryTest, Purge) {
-  ASSERT_TRUE(DiscardableMemory::Supported());
   ASSERT_TRUE(DiscardableMemory::PurgeForTestingSupported());
 
   const scoped_ptr<DiscardableMemory> memory(
@@ -53,7 +59,7 @@ TEST(DiscardableMemoryTest, Purge) {
   DiscardableMemory::PurgeForTesting();
   EXPECT_EQ(DISCARDABLE_MEMORY_PURGED, memory->Lock());
 }
-#endif  // OS_MACOSX
+#endif  // !OS_ANDROID
 
 #if !defined(NDEBUG) && !defined(OS_ANDROID)
 // Death tests are not supported with Android APKs.
@@ -66,7 +72,5 @@ TEST(DiscardableMemoryTest, UnlockedMemoryAccessCrashesInDebugMode) {
       { *static_cast<int*>(memory->Memory()) = 0xdeadbeef; }, ".*");
 }
 #endif
-
-#endif  // OS_*
 
 }

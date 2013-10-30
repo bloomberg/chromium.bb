@@ -530,6 +530,7 @@
         'md5_unittest.cc',
         'memory/aligned_memory_unittest.cc',
         'memory/discardable_memory_unittest.cc',
+        'memory/discardable_memory_provider_unittest.cc',
         'memory/linked_ptr_unittest.cc',
         'memory/ref_counted_memory_unittest.cc',
         'memory/ref_counted_unittest.cc',
@@ -828,6 +829,11 @@
         ['use_system_nspr==1', {
           'dependencies': [
             'third_party/nspr/nspr.gyp:nspr',
+          ],
+        }],
+        ['<(native_discardable_memory)==1', {
+          'sources!': [
+            'memory/discardable_memory_provider_unittest.cc',
           ],
         }],
       ],  # conditions
