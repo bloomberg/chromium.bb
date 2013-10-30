@@ -837,9 +837,14 @@ weston_logind_connect(struct weston_logind **out,
 
 	t = NULL;
 	r = sd_session_get_seat(wl->sid, &t);
-	if (r < 0 || strcmp(seat_id, t)) {
+	if (r < 0) {
+		weston_log("logind: failed to get session seat\n");
+		free(t);
+		goto err_session;
+	} else if (strcmp(seat_id, t)) {
 		weston_log("logind: weston's seat '%s' differs from session-seat '%s'\n",
 			   seat_id, t);
+		r = -EINVAL;
 		free(t);
 		goto err_session;
 	}
@@ -852,6 +857,7 @@ weston_logind_connect(struct weston_logind **out,
 	} else if (tty > 0 && wl->vtnr != (unsigned int )tty) {
 		weston_log("logind: requested VT --tty=%d differs from real session VT %u\n",
 			   tty, wl->vtnr);
+		r = -EINVAL;
 		goto err_session;
 	}
 
