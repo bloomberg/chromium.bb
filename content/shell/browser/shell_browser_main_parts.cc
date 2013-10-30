@@ -128,6 +128,7 @@ void ShellBrowserMainParts::PreEarlyInitialization() {
 }
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableCrashReporter)) {
     breakpad::InitCrashReporter();
@@ -138,6 +139,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
     crash_dump_manager_.reset(new breakpad::CrashDumpManager(crash_dumps_dir));
 #endif
   }
+#endif
   net_log_.reset(new ShellNetLog());
   browser_context_.reset(new ShellBrowserContext(false, net_log_.get()));
   off_the_record_browser_context_.reset(
