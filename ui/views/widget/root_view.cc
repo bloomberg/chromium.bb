@@ -639,6 +639,7 @@ void RootView::VisibilityChanged(View* /*starting_from*/, bool is_visible) {
     // When the root view is being hidden (e.g. when widget is minimized)
     // handlers are reset, so that after it is reshown, events are not captured
     // by old handlers.
+    explicit_mouse_handler_ = false;
     mouse_pressed_handler_ = NULL;
     mouse_move_handler_ = NULL;
     touch_pressed_handler_ = NULL;

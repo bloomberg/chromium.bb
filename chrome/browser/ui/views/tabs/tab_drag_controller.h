@@ -109,7 +109,7 @@ class TabDragController : public content::WebContentsDelegate,
   // |tab_strip|.
   // NOTE: this returns false if the TabDragController is in the process of
   // finishing the drag.
-  static bool IsAttachedTo(TabStrip* tab_strip);
+  static bool IsAttachedTo(const TabStrip* tab_strip);
 
   // Returns true if there is a drag underway.
   static bool IsActive();

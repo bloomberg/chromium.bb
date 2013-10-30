@@ -75,6 +75,11 @@ bool WindowState::IsActive() const {
   return IsActiveWindow(window_);
 }
 
+bool WindowState::IsDocked() const {
+  return window_->parent() &&
+      window_->parent()->id() == internal::kShellWindowId_DockedContainer;
+}
+
 bool WindowState::CanMaximize() const {
   return window_->GetProperty(aura::client::kCanMaximizeKey);
 }

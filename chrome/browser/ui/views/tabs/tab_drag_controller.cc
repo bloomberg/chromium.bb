@@ -209,6 +209,16 @@ void SetWindowPositionManaged(gfx::NativeWindow window, bool value) {
 #endif
 }
 
+// Returns true if |tab_strip| browser window is docked.
+bool IsDocked(const TabStrip* tab_strip) {
+#if defined(USE_ASH)
+  DCHECK(tab_strip);
+  return ash::wm::GetWindowState(
+      tab_strip->GetWidget()->GetNativeWindow())->IsDocked();
+#endif
+  return false;
+}
+
 // Returns true if |bounds| contains the y-coordinate |y|. The y-coordinate
 // of |bounds| is adjusted by |vertical_adjustment|.
 bool DoesRectContainVerticalPointExpanded(
@@ -484,7 +494,7 @@ void TabDragController::Init(
 }
 
 // static
-bool TabDragController::IsAttachedTo(TabStrip* tab_strip) {
+bool TabDragController::IsAttachedTo(const TabStrip* tab_strip) {
   return (instance_ && instance_->active() &&
           instance_->attached_tabstrip() == tab_strip);
 }
@@ -1873,6 +1883,11 @@ void TabDragController::CompleteDrag() {
 
   if (attached_tabstrip_) {
     if (is_dragging_new_browser_) {
+      if (IsDocked(attached_tabstrip_)) {
+        DCHECK_EQ(host_desktop_type_, chrome::HOST_DESKTOP_TYPE_ASH);
+        was_source_maximized_ = false;
+        was_source_fullscreen_ = false;
+      }
       // If source window was maximized - maximize the new window as well.
       if (was_source_maximized_)
         attached_tabstrip_->GetWidget()->Maximize();
@@ -1884,6 +1899,14 @@ void TabDragController::CompleteDrag() {
         ash::Shell::GetInstance()->delegate()->ToggleFullscreen();
       }
 #endif
+    } else {
+      // When dragging results in maximized or fullscreen browser window getting
+      // docked, restore it.
+      if ((was_source_fullscreen_ || was_source_maximized_) &&
+          (IsDocked(attached_tabstrip_))) {
+        DCHECK_EQ(host_desktop_type_, chrome::HOST_DESKTOP_TYPE_ASH);
+        attached_tabstrip_->GetWidget()->Restore();
+      }
     }
     attached_tabstrip_->StoppedDraggingTabs(
         GetTabsMatchingDraggedContents(attached_tabstrip_),

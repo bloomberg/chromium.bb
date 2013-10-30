@@ -577,7 +577,7 @@ void DockedWindowLayoutManager::OnWindowShowTypeChanged(
     // Reparenting changes the source bounds for the animation if a window is
     // visible so hide it here and show later when it is already in the desktop.
     UndockWindow(window);
-  } else {
+  } else if (old_type == wm::SHOW_TYPE_MINIMIZED) {
     RestoreDockedWindow(window_state);
   }
 }

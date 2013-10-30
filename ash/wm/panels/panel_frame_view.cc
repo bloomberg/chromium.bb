@@ -80,6 +80,10 @@ void PanelFrameView::Layout() {
   header_painter_->set_header_height(NonClientTopBorderHeight());
 }
 
+void PanelFrameView::GetWindowMask(const gfx::Size&, gfx::Path*) {
+  // Nothing.
+}
+
 void PanelFrameView::ResetWindowControls() {
   NOTIMPLEMENTED();
 }
@@ -97,10 +101,6 @@ void PanelFrameView::UpdateWindowTitle() {
   if (!header_painter_)
     return;
   header_painter_->SchedulePaintForTitle(title_font_);
-}
-
-void PanelFrameView::GetWindowMask(const gfx::Size&, gfx::Path*) {
-  // Nothing.
 }
 
 int PanelFrameView::NonClientHitTest(const gfx::Point& point) {

@@ -48,6 +48,7 @@
 #include "ash/shell.h"
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/wm/coordinate_conversion.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -680,7 +681,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
   EXPECT_TRUE(GetTrackedByWorkspace(browser()));
   EXPECT_TRUE(GetTrackedByWorkspace(new_browser));
-  // After this both windows should still be managable.
+  // After this both windows should still be manageable.
   EXPECT_TRUE(IsWindowPositionManaged(browser()->window()->GetNativeWindow()));
   EXPECT_TRUE(IsWindowPositionManaged(
       new_browser->window()->GetNativeWindow()));
@@ -738,7 +739,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
   EXPECT_TRUE(GetTrackedByWorkspace(browser()));
   EXPECT_TRUE(GetTrackedByWorkspace(new_browser));
-  // After this both windows should still be managable.
+  // After this both windows should still be manageable.
   EXPECT_TRUE(IsWindowPositionManaged(browser()->window()->GetNativeWindow()));
   EXPECT_TRUE(IsWindowPositionManaged(
       new_browser->window()->GetNativeWindow()));
@@ -1320,6 +1321,7 @@ class DetachToBrowserInSeparateDisplayTabDragControllerTest
     : public DetachToBrowserTabDragControllerTest {
  public:
   DetachToBrowserInSeparateDisplayTabDragControllerTest() {}
+  virtual ~DetachToBrowserInSeparateDisplayTabDragControllerTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     DetachToBrowserTabDragControllerTest::SetUpCommandLine(command_line);
@@ -1339,6 +1341,7 @@ class DetachToBrowserTabDragControllerTestTouch
     : public DetachToBrowserTabDragControllerTest {
  public:
   DetachToBrowserTabDragControllerTestTouch() {}
+  virtual ~DetachToBrowserTabDragControllerTestTouch() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DetachToBrowserTabDragControllerTestTouch);
@@ -1689,10 +1692,13 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
 }
 #endif  // OS_CHROMEOS
 
+// Subclass of DetachToBrowserTabDragControllerTest that
+// creates multiple displays with different device scale factors.
 class DifferentDeviceScaleFactorDisplayTabDragControllerTest
     : public DetachToBrowserTabDragControllerTest {
  public:
   DifferentDeviceScaleFactorDisplayTabDragControllerTest() {}
+  virtual ~DifferentDeviceScaleFactorDisplayTabDragControllerTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     DetachToBrowserTabDragControllerTest::SetUpCommandLine(command_line);
@@ -2034,6 +2040,111 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
             new_browser->window()->GetNativeWindow()->bounds().ToString());
 }
 
+// Subclass of DetachToBrowserTabDragControllerTest that runs tests with
+// docked windows enabled and disabled.
+class DetachToDockedTabDragControllerTest
+    : public DetachToBrowserTabDragControllerTest {
+ public:
+  DetachToDockedTabDragControllerTest() {}
+  virtual ~DetachToDockedTabDragControllerTest() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DetachToDockedTabDragControllerTest);
+};
+
+namespace {
+
+void DetachToDockedWindowNextStep(
+    DetachToDockedTabDragControllerTest* test,
+    const gfx::Point& target_point,
+    int iteration) {
+  ASSERT_EQ(2u, test->native_browser_list->size());
+  Browser* new_browser = test->native_browser_list->get(1);
+  ASSERT_TRUE(new_browser->window()->IsActive());
+
+  if (!iteration) {
+    ASSERT_TRUE(test->ReleaseInput());
+    return;
+  }
+  ASSERT_TRUE(test->DragInputToNotifyWhenDone(
+      target_point.x(), target_point.y(),
+      base::Bind(&DetachToDockedWindowNextStep,
+                 test,
+                 gfx::Point(target_point.x(), 1 + target_point.y()),
+                 iteration - 1)));
+}
+
+}  // namespace
+
+// Drags from browser to separate window, docks that window and releases mouse.
+IN_PROC_BROWSER_TEST_P(DetachToDockedTabDragControllerTest,
+                       DetachToDockedWindowFromMaximizedWindow) {
+  if (!TabDragController::ShouldDetachIntoNewBrowser()) {
+    VLOG(1)
+        << "Skipping DetachToDockedWindowFromMaximizedWindow on this platform.";
+    return;
+  }
+
+  // Maximize the initial browser window.
+  browser()->window()->Maximize();
+  ASSERT_TRUE(browser()->window()->IsMaximized());
+
+  // Add another tab.
+  AddTabAndResetBrowser(browser());
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+
+  // Move to the first tab and drag it enough so that it detaches.
+  gfx::Point tab_0_center(
+      GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
+  ASSERT_TRUE(PressInput(tab_0_center));
+
+  // The following matches kMovesBeforeAdjust in snap_sizer.cc
+  const int kNumIterations = 25 * 5 + 10;
+  ASSERT_TRUE(DragInputToNotifyWhenDone(
+      tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
+      base::Bind(&DetachToDockedWindowNextStep, this,
+                 gfx::Point(0, tab_0_center.y() + GetDetachY(tab_strip)),
+                 kNumIterations)));
+  // Continue dragging enough times to go through snapping sequence and dock
+  // the window.
+  QuitWhenNotDragging();
+  // Should no longer be dragging.
+  ASSERT_FALSE(tab_strip->IsDragSessionActive());
+  ASSERT_FALSE(TabDragController::IsActive());
+
+  // There should now be another browser.
+  ASSERT_EQ(2u, native_browser_list->size());
+  Browser* new_browser = native_browser_list->get(1);
+  ASSERT_TRUE(new_browser->window()->IsActive());
+  TabStrip* tab_strip2 = GetTabStripForBrowser(new_browser);
+  ASSERT_FALSE(tab_strip2->IsDragSessionActive());
+
+  EXPECT_EQ("0", IDString(new_browser->tab_strip_model()));
+  EXPECT_EQ("1", IDString(browser()->tab_strip_model()));
+
+  // The bounds of the initial window should not have changed.
+  EXPECT_TRUE(browser()->window()->IsMaximized());
+
+  EXPECT_TRUE(GetTrackedByWorkspace(browser()));
+  EXPECT_TRUE(GetTrackedByWorkspace(new_browser));
+  // After this both windows should still be manageable.
+  EXPECT_TRUE(IsWindowPositionManaged(browser()->window()->GetNativeWindow()));
+  EXPECT_TRUE(IsWindowPositionManaged(
+      new_browser->window()->GetNativeWindow()));
+
+  // The new window should be docked and not maximized if docking is allowed.
+  ash::wm::WindowState* window_state =
+      ash::wm::GetWindowState(new_browser->window()->GetNativeWindow());
+  if (docked_windows_enabled()) {
+    EXPECT_FALSE(new_browser->window()->IsMaximized());
+    EXPECT_TRUE(window_state->IsDocked());
+  } else {
+    EXPECT_TRUE(new_browser->window()->IsMaximized());
+    EXPECT_FALSE(window_state->IsDocked());
+  }
+}
+
+
 #endif
 
 #if defined(USE_ASH) && !defined(OS_WIN)  // TODO(win_ash)
@@ -2046,6 +2157,9 @@ INSTANTIATE_TEST_CASE_P(TabDragging,
 INSTANTIATE_TEST_CASE_P(TabDragging,
                         DetachToBrowserTabDragControllerTest,
                         ::testing::Values("mouse", "touch"));
+INSTANTIATE_TEST_CASE_P(TabDragging,
+                        DetachToDockedTabDragControllerTest,
+                        ::testing::Values("mouse", "mouse docked"));
 INSTANTIATE_TEST_CASE_P(TabDragging,
                         DetachToBrowserTabDragControllerTestTouch,
                         ::testing::Values("touch", "touch docked"));
