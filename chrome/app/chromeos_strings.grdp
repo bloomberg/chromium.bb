@@ -2226,11 +2226,11 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_SWITCH_INPUT_METHODS_HINT"
            desc="Explanatory message about how to switch input methods">
-    Press alt+shift to switch between input methods.
+    Press Alt+Shift to switch between input methods.
   </message>
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_SELECT_PREVIOUS_INPUT_METHOD_HINT"
            desc="Explanatory message about how to select the previous input method">
-    Press ctrl+space to select the previous input method.
+    Press Ctrl+Space to select the previous input method.
   </message>
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD_EXTENSION_IME"
            desc="Label for extension IMEs">
