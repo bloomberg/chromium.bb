@@ -145,7 +145,7 @@ cr.define('dnd', function() {
   }
 
   /**
-    * Stores the information abou the bookmark and folders being dragged.
+    * Stores the information about the bookmark and folders being dragged.
     * @type {Object}
     */
   var dragData = null;
@@ -318,6 +318,13 @@ cr.define('dnd', function() {
 
     // We manage starting the drag by using the extension API.
     e.preventDefault();
+
+    // Do not allow dragging if there is an ephemeral item being edited at the
+    // moment.
+    for (var i = 0; i < draggedNodes.length; i++) {
+      if (draggedNodes[i].id === 'new')
+        return;
+    }
 
     if (draggedNodes.length) {
       // If we are dragging a single link, we can do the *Link* effect.
