@@ -7,6 +7,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "cc/base/cc_export.h"
 #include "cc/resources/return_callback.h"
@@ -46,10 +47,6 @@ class CC_EXPORT DelegatedFrameResourceCollection
   friend class base::RefCounted<DelegatedFrameResourceCollection>;
   ~DelegatedFrameResourceCollection();
 
-  void UnrefResourcesOnImplThread(
-      scoped_refptr<BlockingTaskRunner> main_thread_runner,
-      const ReturnedResourceArray& returned);
-
   DelegatedFrameResourceCollectionClient* client_;
   scoped_refptr<BlockingTaskRunner> main_thread_runner_;
 
@@ -64,6 +61,7 @@ class CC_EXPORT DelegatedFrameResourceCollection
   ResourceIdRefCountMap resource_id_ref_count_map_;
 
   base::ThreadChecker main_thread_checker_;
+  base::WeakPtrFactory<DelegatedFrameResourceCollection> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegatedFrameResourceCollection);
 };

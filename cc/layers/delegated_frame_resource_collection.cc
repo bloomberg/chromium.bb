@@ -12,7 +12,8 @@ namespace cc {
 DelegatedFrameResourceCollection::DelegatedFrameResourceCollection()
     : client_(NULL),
       main_thread_runner_(BlockingTaskRunner::current()),
-      lost_all_resources_(false) {
+      lost_all_resources_(false),
+      weak_ptr_factory_(this) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 }
 
@@ -112,21 +113,21 @@ void DelegatedFrameResourceCollection::RefResources(
     resource_id_ref_count_map_[resources[i].id].refs_to_wait_for++;
 }
 
-ReturnCallback
-DelegatedFrameResourceCollection::GetReturnResourcesCallbackForImplThread() {
-  return base::Bind(
-      &DelegatedFrameResourceCollection::UnrefResourcesOnImplThread,
-      this,
-      main_thread_runner_);
-}
-
-void DelegatedFrameResourceCollection::UnrefResourcesOnImplThread(
+static void UnrefResourcesOnImplThread(
+    base::WeakPtr<DelegatedFrameResourceCollection> self,
     scoped_refptr<BlockingTaskRunner> main_thread_runner,
     const ReturnedResourceArray& returned) {
   main_thread_runner->PostTask(
       FROM_HERE,
       base::Bind(
-          &DelegatedFrameResourceCollection::UnrefResources, this, returned));
+          &DelegatedFrameResourceCollection::UnrefResources, self, returned));
+}
+
+ReturnCallback
+DelegatedFrameResourceCollection::GetReturnResourcesCallbackForImplThread() {
+  return base::Bind(&UnrefResourcesOnImplThread,
+                    weak_ptr_factory_.GetWeakPtr(),
+                    main_thread_runner_);
 }
 
 }  // namespace cc
