@@ -47,7 +47,7 @@
   <script type="text/javascript">
     
     const expectedValues = [
-      // [time, element-id, property, expected-value, tolerance, callback, should-be-transitioning]
+      // [time, element-id, property, expected-value, tolerance]
       // color and width of each side should be animating
       [0.5, 'box', 'border-top-color', [128, 0, 128], 30],
       [0.5, 'box', 'border-right-color', [128, 0, 128], 30],
@@ -60,7 +60,7 @@
 
       // only border-width should be animating
       [0.5, 'box1', 'border-top-width', 10, 2],
-      [0.5, 'box1', 'border-top-color', [255, 0, 255], 0, null, shouldNotBeTransitioning],
+      [0.5, 'box1', 'border-top-color', [255, 0, 255], 0],
 
       // border-width should be animating
       [0.5, 'box2', 'border-top-width', 10, 2],

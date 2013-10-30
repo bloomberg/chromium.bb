@@ -19,9 +19,9 @@
   <script type="text/javascript">
     
     const expectedValues = [
-      // [time, element-id, property, expected-value, tolerance, post-completion callback, should-be-transitioning]
-      [0.25, "box", "left", 50, 10, null, shouldBeTransitioning],
-      [0.25, "box", "top", 100, 10, null, shouldNotBeTransitioning],
+      // [time, element-id, property, expected-value, tolerance]
+      [0.25, "box", "left", 50, 10],
+      [0.25, "box", "top", 100, 10],
     ];
     
     function setupTest()

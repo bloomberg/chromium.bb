@@ -595,9 +595,6 @@ var hasPauseAnimationAPI;
 var animStartTime;
 var isTransitionsTest = false;
 
-var shouldBeTransitioning = 'should-be-transitioning';
-var shouldNotBeTransitioning = 'should-not-be-transitioning';
-
 function log(message)
 {
     logMessages.push(performance.now() + ' - ' + message);

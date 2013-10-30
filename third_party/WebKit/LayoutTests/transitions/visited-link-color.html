@@ -25,17 +25,17 @@ a {
 <script src="../animations/resources/animation-test-helpers.js"></script>
 <script>
     const expectedValues = [
-    // [time, element-id, property, expected-value, tolerance, post-completion callback, should-be-transitioning]
-    [0.5, 'link', 'color', [127, 127, 0], 10, null, shouldBeTransitioning],
-    [0.5, 'link', 'background-color', [0, 127, 127], 10, null, shouldBeTransitioning],
-    [0.5, 'link', 'border-left-color', [127, 0, 127], 10, null, shouldBeTransitioning],
-    [0.5, 'link', 'border-right-color', [127, 0, 127], 10, null, shouldBeTransitioning],
-    [0.5, 'link', 'border-top-color', [127, 0, 127], 10, null, shouldBeTransitioning],
-    [0.5, 'link', 'border-bottom-color', [127, 0, 127], 10, null, shouldBeTransitioning],
-    [0.5, 'link', 'outline-color', [127, 127, 0], 10, null, shouldBeTransitioning],
-    [0.5, 'link', '-webkit-column-rule-color', [127, 127, 0], 10, null, shouldBeTransitioning],
-    [0.5, 'link', '-webkit-text-stroke-color', [127, 127, 0], 10, null, shouldBeTransitioning],
-    [0.5, 'link', '-webkit-text-fill-color', [0, 0, 255], 0, null, shouldNotBeTransitioning],
+    // [time, element-id, property, expected-value, tolerance]
+    [0.5, 'link', 'color', [127, 127, 0], 10],
+    [0.5, 'link', 'background-color', [0, 127, 127], 10],
+    [0.5, 'link', 'border-left-color', [127, 0, 127], 10],
+    [0.5, 'link', 'border-right-color', [127, 0, 127], 10],
+    [0.5, 'link', 'border-top-color', [127, 0, 127], 10],
+    [0.5, 'link', 'border-bottom-color', [127, 0, 127], 10],
+    [0.5, 'link', 'outline-color', [127, 127, 0], 10],
+    [0.5, 'link', '-webkit-column-rule-color', [127, 127, 0], 10],
+    [0.5, 'link', '-webkit-text-stroke-color', [127, 127, 0], 10],
+    [0.5, 'link', '-webkit-text-fill-color', [0, 0, 255], 0], // not animatable
     ];
     function setupTest()
     {
