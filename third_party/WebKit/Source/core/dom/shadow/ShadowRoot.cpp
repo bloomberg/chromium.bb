@@ -171,11 +171,6 @@ void ShadowRoot::recalcStyle(StyleRecalcChange change)
     StyleResolver* styleResolver = document().styleResolver();
     styleResolver->pushParentShadowRoot(*this);
 
-    if (!confusingAndOftenMisusedAttached()) {
-        attach();
-        return;
-    }
-
     // When we're set to lazyAttach we'll have a SubtreeStyleChange and we'll need
     // to promote the change to a Force for all our descendants so they get a
     // recalc and will attach.
@@ -201,6 +196,7 @@ void ShadowRoot::recalcStyle(StyleRecalcChange change)
     styleResolver->popParentShadowRoot(*this);
     clearNeedsStyleRecalc();
     clearChildNeedsStyleRecalc();
+    setAttached();
 }
 
 bool ShadowRoot::isActive() const
