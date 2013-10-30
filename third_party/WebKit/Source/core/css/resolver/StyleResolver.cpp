@@ -222,7 +222,7 @@ void StyleResolver::resetAuthorStyle(const ContainerNode* scopingNode)
     if (!resolver)
         return;
 
-    m_ruleSets.shadowDistributedRules().reset(scopingNode);
+    m_ruleSets.treeBoundaryCrossingRules().reset(scopingNode);
 
     resolver->resetAuthorStyle();
     if (!scopingNode)
@@ -348,9 +348,9 @@ StyleResolver::~StyleResolver()
     m_viewportStyleResolver->clearDocument();
 }
 
-inline void StyleResolver::collectShadowDistributedRules(ElementRuleCollector& collector, bool includeEmptyRules)
+inline void StyleResolver::collectTreeBoundaryCrossingRules(ElementRuleCollector& collector, bool includeEmptyRules)
 {
-    if (m_ruleSets.shadowDistributedRules().isEmpty())
+    if (m_ruleSets.treeBoundaryCrossingRules().isEmpty())
         return;
 
     bool previousCanUseFastReject = collector.canUseFastReject();
@@ -358,15 +358,21 @@ inline void StyleResolver::collectShadowDistributedRules(ElementRuleCollector& c
 
     RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
 
-    for (ShadowDistributedRules::iterator it = m_ruleSets.shadowDistributedRules().begin(); it != m_ruleSets.shadowDistributedRules().end(); ++it) {
+    TreeBoundaryCrossingRules& rules = m_ruleSets.treeBoundaryCrossingRules();
+    CascadeOrder cascadeOrder = 0;
+
+    DocumentOrderedList::iterator it = rules.end();
+    while (it != rules.begin()) {
+        --it;
+        const ContainerNode* scopingNode = toContainerNode(*it);
+        RuleSet* ruleSet = rules.ruleSetScopedBy(scopingNode);
         unsigned boundaryBehavior = SelectorChecker::CrossesBoundary | SelectorChecker::ScopeContainsLastMatchedElement;
-        const ContainerNode* scopingNode = it->key;
 
         if (scopingNode && scopingNode->isShadowRoot()) {
             boundaryBehavior |= SelectorChecker::ScopeIsShadowHost;
             scopingNode = toShadowRoot(scopingNode)->host();
         }
-        collector.collectMatchingRules(MatchRequest(it->value.get(), includeEmptyRules, scopingNode), ruleRange, static_cast<SelectorChecker::BehaviorAtBoundary>(boundaryBehavior), ignoreCascadeScope);
+        collector.collectMatchingRules(MatchRequest(ruleSet, includeEmptyRules, scopingNode), ruleRange, static_cast<SelectorChecker::BehaviorAtBoundary>(boundaryBehavior), ignoreCascadeScope, cascadeOrder++);
     }
     collector.setCanUseFastReject(previousCanUseFastReject);
 }
@@ -401,7 +407,7 @@ void StyleResolver::matchAuthorRulesForShadowHost(Element* element, ElementRuleC
     for (unsigned i = 0; i < resolvers.size(); ++i)
         resolvers.at(i)->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, cascadeScope++, --cascadeOrder);
 
-    collectShadowDistributedRules(collector, includeEmptyRules);
+    collectTreeBoundaryCrossingRules(collector, includeEmptyRules);
     collector.sortAndTransferMatchedRules();
 
     if (!resolvers.isEmpty())
@@ -412,6 +418,11 @@ void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& col
 {
     if (m_styleTree.hasOnlyScopedResolverForDocument()) {
         m_styleTree.scopedStyleResolverForDocument()->matchAuthorRules(collector, includeEmptyRules, applyAuthorStylesOf(element));
+
+        collector.clearMatchedRules();
+        collector.matchedResult().ranges.lastAuthorRule = collector.matchedResult().matchedProperties.size() - 1;
+        collectTreeBoundaryCrossingRules(collector, includeEmptyRules);
+        collector.sortAndTransferMatchedRules();
         return;
     }
 
@@ -440,7 +451,7 @@ void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& col
         resolver->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, cascadeScope++, resolver->treeScope() == element->treeScope() && resolver->scopingNode().isShadowRoot() ? 0 : cascadeOrder);
     }
 
-    collectShadowDistributedRules(collector, includeEmptyRules);
+    collectTreeBoundaryCrossingRules(collector, includeEmptyRules);
     collector.sortAndTransferMatchedRules();
 
     matchHostRules(element, resolvers.first(), collector, includeEmptyRules);

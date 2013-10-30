@@ -1163,9 +1163,19 @@ filter:
 
 combinator:
     '+' maybe_space { $$ = CSSSelector::DirectAdjacent; }
-  | '~' maybe_space { $$ = CSSSelector::IndirectAdjacent; }
-  | '>' maybe_space { $$ = CSSSelector::Child; }
-  ;
+    | '~' maybe_space { $$ = CSSSelector::IndirectAdjacent; }
+    | '>' maybe_space { $$ = CSSSelector::Child; }
+    | '^' maybe_space {
+        if (!RuntimeEnabledFeatures::shadowDOMEnabled())
+            YYERROR;
+        $$ = CSSSelector::ChildTree;
+    }
+    | '^' '^' maybe_space {
+        if (!RuntimeEnabledFeatures::shadowDOMEnabled())
+            YYERROR;
+        $$ = CSSSelector::DescendantTree;
+    }
+    ;
 
 maybe_unary_operator:
     unary_operator

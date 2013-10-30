@@ -25,6 +25,7 @@
 
 #include "core/css/RuleFeature.h"
 #include "core/css/RuleSet.h"
+#include "core/dom/DocumentOrderedList.h"
 
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -40,21 +41,22 @@ class MediaQueryEvaluator;
 class RuleSet;
 class StyleEngine;
 
-class ShadowDistributedRules {
+class TreeBoundaryCrossingRules {
 public:
     void addRule(StyleRule*, size_t selectorIndex, ContainerNode* scopingNode, AddRuleFlags);
-    void clear() { m_shadowDistributedRuleSetMap.clear(); }
+    void clear() { m_treeBoundaryCrossingRuleSetMap.clear(); }
     void reset(const ContainerNode* scopingNode);
-    bool isEmpty() const { return m_shadowDistributedRuleSetMap.isEmpty(); }
+    bool isEmpty() const { return m_treeBoundaryCrossingRuleSetMap.isEmpty(); }
     void collectFeaturesTo(RuleFeatureSet&);
 
-    typedef HashMap<const ContainerNode*, OwnPtr<RuleSet> >::iterator iterator;
-    iterator begin() { return m_shadowDistributedRuleSetMap.begin(); }
-    iterator end() { return m_shadowDistributedRuleSetMap.end(); }
+    DocumentOrderedList::iterator begin() { return m_scopingNodes.begin(); }
+    DocumentOrderedList::iterator end() { return m_scopingNodes.end(); }
+    RuleSet* ruleSetScopedBy(const ContainerNode* scopingNode) { return m_treeBoundaryCrossingRuleSetMap.get(scopingNode); }
 
 private:
-    typedef HashMap<const ContainerNode*, OwnPtr<RuleSet> > ShadowDistributedRuleSetMap;
-    ShadowDistributedRuleSetMap m_shadowDistributedRuleSetMap;
+    DocumentOrderedList m_scopingNodes;
+    typedef HashMap<const ContainerNode*, OwnPtr<RuleSet> > TreeBoundaryCrossingRuleSetMap;
+    TreeBoundaryCrossingRuleSetMap m_treeBoundaryCrossingRuleSetMap;
 };
 
 class DocumentRuleSets {
@@ -67,13 +69,13 @@ public:
     void resetAuthorStyle();
     void collectFeaturesTo(RuleFeatureSet&, bool isViewSource);
 
-    ShadowDistributedRules& shadowDistributedRules() { return m_shadowDistributedRules; }
+    TreeBoundaryCrossingRules& treeBoundaryCrossingRules() { return m_treeBoundaryCrossingRules; }
 
 private:
     void collectRulesFromUserStyleSheets(const Vector<RefPtr<CSSStyleSheet> >&, RuleSet& userStyle, const MediaQueryEvaluator&, StyleResolver&);
     void collectRulesFromWatchedSelectors(const Vector<RefPtr<StyleRule> >&, RuleSet& userStyle);
     OwnPtr<RuleSet> m_userStyle;
-    ShadowDistributedRules m_shadowDistributedRules;
+    TreeBoundaryCrossingRules m_treeBoundaryCrossingRules;
 };
 
 } // namespace WebCore

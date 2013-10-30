@@ -179,4 +179,18 @@ bool CSSSelectorList::hasShadowDistributedAt(size_t index) const
     return forEachTagSelector(functor, selectorAt(index));
 }
 
+class SelectorHasCombinatorCrossingTreeBoundary {
+public:
+    bool operator()(const CSSSelector* selector)
+    {
+        return selector->relation() == CSSSelector::ChildTree || selector->relation() == CSSSelector::DescendantTree;
+    }
+};
+
+bool CSSSelectorList::hasCombinatorCrossingTreeBoundaryAt(size_t index) const
+{
+    SelectorHasCombinatorCrossingTreeBoundary functor;
+    return forEachTagSelector(functor, selectorAt(index));
+}
+
 } // namespace WebCore

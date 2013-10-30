@@ -64,9 +64,9 @@ void DocumentOrderedList::parserAdd(Node* node)
     m_nodes.add(node);
 }
 
-void DocumentOrderedList::remove(Node* node)
+void DocumentOrderedList::remove(const Node* node)
 {
-    m_nodes.remove(node);
+    m_nodes.remove(const_cast<Node*>(node));
 }
 
 }

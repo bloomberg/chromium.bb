@@ -260,17 +260,33 @@ SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& con
         return match(nextContext, dynamicPseudo, siblingTraversalStrategy);
 
     case CSSSelector::ShadowPseudo:
+    case CSSSelector::ChildTree:
         {
             // If we're in the same tree-scope as the scoping element, then following a shadow descendant combinator would escape that and thus the scope.
             if (context.scope && context.scope->treeScope() == context.element->treeScope() && (context.behaviorAtBoundary & BoundaryBehaviorMask) != StaysWithinTreeScope)
                 return SelectorFailsCompletely;
-            Element* shadowHostNode = context.element->shadowHost();
-            if (!shadowHostNode)
+
+            Element* shadowHost = context.element->shadowHost();
+            if (!shadowHost)
                 return SelectorFailsCompletely;
-            nextContext.element = shadowHostNode;
+            nextContext.element = shadowHost;
             nextContext.isSubSelector = false;
             nextContext.elementStyle = 0;
-            return match(nextContext, ignoreDynamicPseudo, siblingTraversalStrategy);
+            return this->match(nextContext, ignoreDynamicPseudo, siblingTraversalStrategy);
+        }
+
+    case CSSSelector::DescendantTree:
+        {
+            nextContext.isSubSelector = false;
+            nextContext.elementStyle = 0;
+            for (nextContext.element = parentElement(context); nextContext.element; nextContext.element = parentElement(nextContext)) {
+                Match match = this->match(nextContext, ignoreDynamicPseudo, siblingTraversalStrategy);
+                if (match == SelectorMatches || match == SelectorFailsCompletely)
+                    return match;
+                if (nextContext.element == nextContext.scope && (nextContext.behaviorAtBoundary & BoundaryBehaviorMask) != StaysWithinTreeScope)
+                    return SelectorFailsCompletely;
+            }
+            return SelectorFailsCompletely;
         }
     }
 

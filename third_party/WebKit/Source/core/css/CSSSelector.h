@@ -76,7 +76,10 @@ namespace WebCore {
             DirectAdjacent,
             IndirectAdjacent,
             SubSelector,
-            ShadowPseudo
+            ShadowPseudo,
+            // FIXME: rename ChildTree and DescendantTree when the spec for this is written down.
+            ChildTree,
+            DescendantTree
         };
 
         enum PseudoType {
