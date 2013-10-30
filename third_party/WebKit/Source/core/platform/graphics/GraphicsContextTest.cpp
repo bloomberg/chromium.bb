@@ -522,10 +522,9 @@ TEST(GraphicsContextTest, trackOpaqueImageTest)
     Color alpha(0.0f, 0.0f, 0.0f, 0.0f);
 
     SkBitmap opaqueBitmap;
-    opaqueBitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
+    opaqueBitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10, 0, kOpaque_SkAlphaType);
     opaqueBitmap.allocPixels();
 
-    opaqueBitmap.setIsOpaque(true);
     for (int y = 0; y < opaqueBitmap.height(); ++y)
         for (int x = 0; x < opaqueBitmap.width(); ++x)
             *opaqueBitmap.getAddr32(x, y) = 0xFFFFFFFF;
@@ -533,10 +532,9 @@ TEST(GraphicsContextTest, trackOpaqueImageTest)
     EXPECT_TRUE(opaqueImage->currentFrameKnownToBeOpaque());
 
     SkBitmap alphaBitmap;
-    alphaBitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
+    alphaBitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10, 0, kPremul_SkAlphaType);
     alphaBitmap.allocPixels();
 
-    alphaBitmap.setIsOpaque(false);
     for (int y = 0; y < alphaBitmap.height(); ++y)
         for (int x = 0; x < alphaBitmap.width(); ++x)
             *alphaBitmap.getAddr32(x, y) = 0x00000000;
@@ -773,17 +771,15 @@ TEST(GraphicsContextTest, trackOpaqueWritePixelsTest)
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
 
     SkBitmap opaqueBitmap;
-    opaqueBitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
+    opaqueBitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10, 0, kOpaque_SkAlphaType);
     opaqueBitmap.allocPixels();
-    opaqueBitmap.setIsOpaque(true);
     for (int y = 0; y < opaqueBitmap.height(); ++y)
         for (int x = 0; x < opaqueBitmap.width(); ++x)
             *opaqueBitmap.getAddr32(x, y) = 0xFFFFFFFF;
 
     SkBitmap alphaBitmap;
-    alphaBitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
+    alphaBitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10, 0, kPremul_SkAlphaType);
     alphaBitmap.allocPixels();
-    alphaBitmap.setIsOpaque(false);
     for (int y = 0; y < alphaBitmap.height(); ++y)
         for (int x = 0; x < alphaBitmap.width(); ++x)
             *alphaBitmap.getAddr32(x, y) = 0x00000000;
@@ -830,17 +826,15 @@ TEST(GraphicsContextTest, trackOpaqueDrawBitmapTest)
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
 
     SkBitmap opaqueBitmap;
-    opaqueBitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
+    opaqueBitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10, 0, kOpaque_SkAlphaType);
     opaqueBitmap.allocPixels();
-    opaqueBitmap.setIsOpaque(true);
     for (int y = 0; y < opaqueBitmap.height(); ++y)
         for (int x = 0; x < opaqueBitmap.width(); ++x)
             *opaqueBitmap.getAddr32(x, y) = 0xFFFFFFFF;
 
     SkBitmap alphaBitmap;
-    alphaBitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
+    alphaBitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10, 0, kPremul_SkAlphaType);
     alphaBitmap.allocPixels();
-    alphaBitmap.setIsOpaque(false);
     for (int y = 0; y < alphaBitmap.height(); ++y)
         for (int x = 0; x < alphaBitmap.width(); ++x)
             *alphaBitmap.getAddr32(x, y) = 0x00000000;
@@ -887,17 +881,15 @@ TEST(GraphicsContextTest, trackOpaqueDrawBitmapRectTest)
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
 
     SkBitmap opaqueBitmap;
-    opaqueBitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
+    opaqueBitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10, 0, kOpaque_SkAlphaType);
     opaqueBitmap.allocPixels();
-    opaqueBitmap.setIsOpaque(true);
     for (int y = 0; y < opaqueBitmap.height(); ++y)
         for (int x = 0; x < opaqueBitmap.width(); ++x)
             *opaqueBitmap.getAddr32(x, y) = 0xFFFFFFFF;
 
     SkBitmap alphaBitmap;
-    alphaBitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
+    alphaBitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10, 0, kPremul_SkAlphaType);
     alphaBitmap.allocPixels();
-    alphaBitmap.setIsOpaque(false);
     for (int y = 0; y < alphaBitmap.height(); ++y)
         for (int x = 0; x < alphaBitmap.width(); ++x)
             *alphaBitmap.getAddr32(x, y) = 0x00000000;

@@ -132,17 +132,16 @@ void ImageFrame::setHasAlpha(bool alpha)
     // If the frame is not fully loaded, there will be transparent pixels,
     // so we can't tell skia we're opaque, even for image types that logically
     // always are (e.g. jpeg).
-    bool isOpaque = !m_hasAlpha;
     if (m_status != FrameComplete)
-        isOpaque = false;
-    m_bitmap->bitmap().setIsOpaque(isOpaque);
+        alpha = true;
+    m_bitmap->bitmap().setAlphaType(alpha ? kPremul_SkAlphaType : kOpaque_SkAlphaType);
 }
 
 void ImageFrame::setStatus(Status status)
 {
     m_status = status;
     if (m_status == FrameComplete) {
-        m_bitmap->bitmap().setIsOpaque(!m_hasAlpha);
+        m_bitmap->bitmap().setAlphaType(m_hasAlpha ? kPremul_SkAlphaType : kOpaque_SkAlphaType);
         m_bitmap->setDataComplete(); // Tell the bitmap it's done.
     }
 }

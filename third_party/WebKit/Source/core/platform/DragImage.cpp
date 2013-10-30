@@ -249,7 +249,7 @@ void DragImage::scale(float scaleX, float scaleY)
 
 void DragImage::dissolveToFraction(float fraction)
 {
-    m_bitmap.setIsOpaque(false);
+    m_bitmap.setAlphaType(kPremul_SkAlphaType);
     SkAutoLockPixels lock(m_bitmap);
 
     for (int row = 0; row < m_bitmap.height(); ++row) {

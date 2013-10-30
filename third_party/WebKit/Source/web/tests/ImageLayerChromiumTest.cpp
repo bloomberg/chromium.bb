@@ -45,20 +45,18 @@ class MockGraphicsLayerClient : public GraphicsLayerClient {
 class TestImage : public Image {
 public:
 
-    static PassRefPtr<TestImage> create(const IntSize& size, bool opaque)
+    static PassRefPtr<TestImage> create(const IntSize& size, SkAlphaType alphaType)
     {
-        return adoptRef(new TestImage(size, opaque));
+        return adoptRef(new TestImage(size, alphaType));
     }
 
-    explicit TestImage(const IntSize& size, bool opaque)
+    explicit TestImage(const IntSize& size, SkAlphaType alphaType)
         : Image(0)
         , m_size(size)
     {
         m_nativeImage = NativeImageSkia::create();
-        m_nativeImage->bitmap().setConfig(SkBitmap::kARGB_8888_Config,
-                                          size.width(), size.height(), 0);
+        m_nativeImage->bitmap().setConfig(SkBitmap::kARGB_8888_Config, size.width(), size.height(), 0, alphaType);
         m_nativeImage->bitmap().allocPixels();
-        m_nativeImage->bitmap().setIsOpaque(opaque);
     }
 
     virtual bool isBitmapImage() const OVERRIDE
@@ -112,9 +110,9 @@ TEST(ImageLayerChromiumTest, opaqueImages)
     OwnPtr<GraphicsLayerForTesting> graphicsLayer = adoptPtr(new GraphicsLayerForTesting(&client));
     ASSERT_TRUE(graphicsLayer.get());
 
-    RefPtr<Image> opaqueImage = TestImage::create(IntSize(100, 100), true);
+    RefPtr<Image> opaqueImage = TestImage::create(IntSize(100, 100), kOpaque_SkAlphaType);
     ASSERT_TRUE(opaqueImage.get());
-    RefPtr<Image> nonOpaqueImage = TestImage::create(IntSize(100, 100), false);
+    RefPtr<Image> nonOpaqueImage = TestImage::create(IntSize(100, 100), kPremul_SkAlphaType);
     ASSERT_TRUE(nonOpaqueImage.get());
 
     ASSERT_FALSE(graphicsLayer->contentsLayer());
