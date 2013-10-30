@@ -140,14 +140,15 @@ class PageCycler(page_measurement.PageMeasurement):
                               options.repeat_options.page_repeat_iters)
     self._cold_run_start_index = (self._number_warm_runs +
         options.repeat_options.page_repeat_iters)
-    self.discard_first_result = (self._cold_runs_requested or
+    self.discard_first_result = ((self._cold_runs_requested and
+                                  not options.cold_load_percent) or
                                  self.discard_first_result)
 
   def MeasurePage(self, page, tab, results):
     tab.WaitForJavaScriptExpression('__pc_load_time', 60)
 
     chart_name_prefix = ('' if not self._cold_runs_requested else
-                         'cold_' if self.ShouldRunCold(page.url) else
+                         'cold_' if self.IsRunCold(page.url) else
                          'warm_')
 
     results.Add('page_load_time', 'ms',
@@ -177,6 +178,11 @@ class PageCycler(page_measurement.PageMeasurement):
   def DidRunTest(self, browser, results):
     self._memory_metric.AddSummaryResults(results)
     io.IOMetric().AddSummaryResults(browser, results)
+
+  def IsRunCold(self, url):
+    return (self.ShouldRunCold(url) or
+            (self._cold_runs_requested and
+             self._has_loaded_page[url] == 0))
 
   def ShouldRunCold(self, url):
     # We do the warm runs first for two reasons.  The first is so we can
