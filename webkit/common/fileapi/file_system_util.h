@@ -145,6 +145,10 @@ WEBKIT_STORAGE_COMMON_EXPORT bool CrackIsolatedFileSystemName(
     const std::string& filesystem_name,
     std::string* filesystem_id);
 
+// Validates the given isolated file system id.
+WEBKIT_STORAGE_COMMON_EXPORT bool ValidateIsolatedFileSystemId(
+    const std::string& filesystem_id);
+
 // Returns the root URI for an isolated filesystem for origin |origin_url|
 // and |filesystem_id|. If the |optional_root_name| is given the resulting
 // root URI will point to the subfolder within the isolated filesystem.

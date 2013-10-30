@@ -23,19 +23,6 @@ namespace content {
 
 namespace {
 
-// TODO(teravest): Move this function to be shared and public in fileapi.
-bool LooksLikeAGuid(const std::string& fsid) {
-  const size_t kExpectedFsIdSize = 32;
-  if (fsid.size() != kExpectedFsIdSize)
-    return false;
-  for (std::string::const_iterator it = fsid.begin(); it != fsid.end(); ++it) {
-    if (('A' <= *it && *it <= 'F') || ('0' <= *it && *it <= '9'))
-      continue;
-    return false;
-  }
-  return true;
-}
-
 scoped_refptr<fileapi::FileSystemContext>
 GetFileSystemContextFromRenderId(int render_process_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -201,7 +188,7 @@ int32_t PepperFileSystemBrowserHost::OnHostMsgInitIsolatedFileSystem(
     return PP_ERROR_INPROGRESS;
   called_open_ = true;
   // Do a sanity check.
-  if (!LooksLikeAGuid(fsid))
+  if (!fileapi::ValidateIsolatedFileSystemId(fsid))
     return PP_ERROR_BADARGUMENT;
   const GURL& url =
       browser_ppapi_host_->GetDocumentURLForInstance(pp_instance());

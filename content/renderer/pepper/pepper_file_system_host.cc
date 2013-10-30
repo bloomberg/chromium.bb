@@ -25,23 +25,6 @@
 
 namespace content {
 
-namespace {
-
-bool LooksLikeAGuid(const std::string& fsid) {
-  const size_t kExpectedFsIdSize = 32;
-  if (fsid.size() != kExpectedFsIdSize)
-    return false;
-  for (std::string::const_iterator it = fsid.begin(); it != fsid.end(); ++it) {
-    if (('A' <= *it && *it <= 'F') ||
-        ('0' <= *it && *it <= '9'))
-      continue;
-    return false;
-  }
-  return true;
-}
-
-}  // namespace
-
 PepperFileSystemHost::PepperFileSystemHost(RendererPpapiHost* host,
                                            PP_Instance instance,
                                            PP_Resource resource,
@@ -158,7 +141,7 @@ int32_t PepperFileSystemHost::OnHostMsgInitIsolatedFileSystem(
     return PP_ERROR_INPROGRESS;
   called_open_ = true;
   // Do a sanity check.
-  if (!LooksLikeAGuid(fsid))
+  if (!fileapi::ValidateIsolatedFileSystemId(fsid))
     return PP_ERROR_BADARGUMENT;
   RenderView* view =
       renderer_ppapi_host_->GetRenderViewForInstance(pp_instance());

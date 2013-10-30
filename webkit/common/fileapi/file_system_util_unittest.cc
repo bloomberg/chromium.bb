@@ -222,5 +222,42 @@ TEST_F(FileSystemUtilTest, RejectBadIsolatedFileSystemName) {
   EXPECT_FALSE(CrackIsolatedFileSystemName("foo:Isolated_", &fsid));
 }
 
+TEST_F(FileSystemUtilTest, ValidateIsolatedFileSystemId) {
+  EXPECT_TRUE(ValidateIsolatedFileSystemId("ABCDEF0123456789ABCDEF0123456789"));
+  EXPECT_TRUE(ValidateIsolatedFileSystemId("ABCDEFABCDEFABCDEFABCDEFABCDEFAB"));
+  EXPECT_TRUE(ValidateIsolatedFileSystemId("01234567890123456789012345678901"));
+
+  const size_t kExpectedFileSystemIdSize = 32;
+
+  // Should not contain lowercase characters.
+  const std::string kLowercaseId = "abcdef0123456789abcdef0123456789";
+  EXPECT_EQ(kExpectedFileSystemIdSize, kLowercaseId.size());
+  EXPECT_FALSE(ValidateIsolatedFileSystemId(kLowercaseId));
+
+  // Should not be shorter/longer than expected.
+  EXPECT_FALSE(ValidateIsolatedFileSystemId(std::string()));
+
+  const std::string kShorterId = "ABCDEF0123456789ABCDEF";
+  EXPECT_GT(kExpectedFileSystemIdSize, kShorterId.size());
+  EXPECT_FALSE(ValidateIsolatedFileSystemId(kShorterId));
+
+  const std::string kLongerId = "ABCDEF0123456789ABCDEF0123456789ABCDEF";
+  EXPECT_LT(kExpectedFileSystemIdSize, kLongerId.size());
+  EXPECT_FALSE(ValidateIsolatedFileSystemId(kLongerId));
+
+  // Should not contain not alphabetical nor numerical characters.
+  const std::string kSlashId = "ABCD/EFGH/IJKL/MNOP/QRST/UVWX/YZ";
+  EXPECT_EQ(kExpectedFileSystemIdSize, kSlashId.size());
+  EXPECT_FALSE(ValidateIsolatedFileSystemId(kSlashId));
+
+  const std::string kBackslashId = "ABCD\\EFGH\\IJKL\\MNOP\\QRST\\UVWX\\YZ";
+  EXPECT_EQ(kExpectedFileSystemIdSize, kBackslashId.size());
+  EXPECT_FALSE(ValidateIsolatedFileSystemId(kBackslashId));
+
+  const std::string kSpaceId = "ABCD EFGH IJKL MNOP QRST UVWX YZ";
+  EXPECT_EQ(kExpectedFileSystemIdSize, kSpaceId.size());
+  EXPECT_FALSE(ValidateIsolatedFileSystemId(kSpaceId));
+}
+
 }  // namespace
 }  // namespace fileapi
