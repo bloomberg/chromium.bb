@@ -504,20 +504,18 @@ void SVGElement::invalidateRelativeLengthClients(SubtreeLayoutScope* layoutScope
     TemporaryChange<bool> inRelativeLengthClientsInvalidationChange(m_inRelativeLengthClientsInvalidation, true);
 #endif
 
+    RenderObject* renderer = this->renderer();
+    if (renderer && selfHasRelativeLengths()) {
+        if (renderer->isSVGResourceContainer())
+            toRenderSVGResourceContainer(renderer)->invalidateCacheAndMarkForLayout(layoutScope);
+        else
+            renderer->setNeedsLayout(MarkContainingBlockChain, layoutScope);
+    }
+
     HashSet<SVGElement*>::iterator end = m_elementsWithRelativeLengths.end();
     for (HashSet<SVGElement*>::iterator it = m_elementsWithRelativeLengths.begin(); it != end; ++it) {
-        if (*it == this)
-            continue;
-
-        RenderObject* renderer = (*it)->renderer();
-        if (renderer && (*it)->selfHasRelativeLengths()) {
-            if (renderer->isSVGResourceContainer())
-                toRenderSVGResourceContainer(renderer)->invalidateCacheAndMarkForLayout(layoutScope);
-            else
-                renderer->setNeedsLayout(MarkContainingBlockChain, layoutScope);
-        }
-
-        (*it)->invalidateRelativeLengthClients(layoutScope);
+        if (*it != this)
+            (*it)->invalidateRelativeLengthClients(layoutScope);
     }
 }
 
