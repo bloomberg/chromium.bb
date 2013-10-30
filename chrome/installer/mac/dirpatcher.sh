@@ -49,7 +49,7 @@ shopt -s dotglob nullglob
 # find_tool looks for an executable file named |tool_name|:
 #  - in the same directory as this script,
 #  - if this script is located in a Chromium source tree, at the expected
-#    Release output location in the Mac xcodebuild directory,
+#    Release output location in the Mac out directory,
 #  - as above, but in the Debug output location
 # If found in any of the above locations, the script's path is output.
 # Otherwise, this function outputs |tool_name| as a fallback, allowing it to
@@ -69,13 +69,13 @@ find_tool() {
   local script_dir_phys
   script_dir_phys="$(cd "${script_dir}" && pwd -P)"
   if [[ "${script_dir_phys}" =~ ^(.*)/src/chrome/installer/mac$ ]]; then
-    tool="${BASH_REMATCH[1]}/src/xcodebuild/Release/${tool_name}"
+    tool="${BASH_REMATCH[1]}/src/out/Release/${tool_name}"
     if [[ -f "${tool}" ]] && [[ -x "${tool}" ]]; then
       echo "${tool}"
       return
     fi
 
-    tool="${BASH_REMATCH[1]}/src/xcodebuild/Debug/${tool_name}"
+    tool="${BASH_REMATCH[1]}/src/out/Debug/${tool_name}"
     if [[ -f "${tool}" ]] && [[ -x "${tool}" ]]; then
       echo "${tool}"
       return

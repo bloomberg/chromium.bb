@@ -138,10 +138,14 @@ if __name__ == '__main__':
     args.append('--no-circular-check')
 
   # Default to ninja on linux, but only if no generator has explicitly been set.
+  # Also default to ninja on mac, but only when not building chrome/ios.
   # . -f / --format has precedence over the env var, no need to check for it
   # . set the env var only if it hasn't been set yet
   # . chromium.gyp_env has been applied to os.environ at this point already
   if sys.platform.startswith('linux') and not os.environ.get('GYP_GENERATORS'):
+    os.environ['GYP_GENERATORS'] = 'ninja'
+  elif sys.platform == 'darwin' and not os.environ.get('GYP_GENERATORS') and \
+      not 'OS=ios' in os.environ.get('GYP_DEFINES'):
     os.environ['GYP_GENERATORS'] = 'ninja'
 
   # If CHROMIUM_GYP_SYNTAX_CHECK is set to 1, it will invoke gyp with --check

@@ -109,6 +109,6 @@ def builder():
     elif IsLinux():
       return 'ninja'
     elif IsMac():
-      return 'xcode'
+      return 'ninja'
     else:
       assert False, 'Don\'t know what builder we\'re using!'
