@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <string>
 
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -122,7 +123,7 @@ bool IsIssuedByInKeychain(const std::vector<std::string>& valid_issuers,
 // full certificate chains. If it is false, only the the certificates and their
 // intermediates (available via X509Certificate::GetIntermediateCertificates())
 // will be considered.
-bool GetClientCertsImpl(const scoped_refptr<X509Certificate>& preferred_cert,
+void GetClientCertsImpl(const scoped_refptr<X509Certificate>& preferred_cert,
                         const CertificateList& regular_certs,
                         const SSLCertRequestInfo& request,
                         bool query_keychain,
@@ -167,13 +168,13 @@ bool GetClientCertsImpl(const scoped_refptr<X509Certificate>& preferred_cert,
     ++sort_begin;
   }
   sort(sort_begin, sort_end, x509_util::ClientCertSorter());
-  return true;
 }
 
 }  // namespace
 
-bool ClientCertStoreImpl::GetClientCerts(const SSLCertRequestInfo& request,
-                                         CertificateList* selected_certs) {
+void ClientCertStoreImpl::GetClientCerts(const SSLCertRequestInfo& request,
+                                         CertificateList* selected_certs,
+                                         const base::Closure& callback) {
   std::string server_domain =
       HostPortPair::FromString(request.host_and_port).host();
 
@@ -205,8 +206,11 @@ bool ClientCertStoreImpl::GetClientCerts(const SSLCertRequestInfo& request,
     base::AutoLock lock(crypto::GetMacSecurityServicesLock());
     err = SecIdentitySearchCreate(NULL, CSSM_KEYUSE_SIGN, &search);
   }
-  if (err)
-    return false;
+  if (err) {
+    selected_certs->clear();
+    callback.Run();
+    return;
+  }
   ScopedCFTypeRef<SecIdentitySearchRef> scoped_search(search);
   while (!err) {
     SecIdentityRef identity = NULL;
@@ -239,19 +243,22 @@ bool ClientCertStoreImpl::GetClientCerts(const SSLCertRequestInfo& request,
 
   if (err != errSecItemNotFound) {
     OSSTATUS_LOG(ERROR, err) << "SecIdentitySearch error";
-    return false;
+    selected_certs->clear();
+    callback.Run();
+    return;
   }
 
-  return GetClientCertsImpl(preferred_cert, regular_certs, request, true,
-                            selected_certs);
+  GetClientCertsImpl(preferred_cert, regular_certs, request, true,
+                     selected_certs);
+  callback.Run();
 }
 
 bool ClientCertStoreImpl::SelectClientCertsForTesting(
     const CertificateList& input_certs,
     const SSLCertRequestInfo& request,
     CertificateList* selected_certs) {
-  return GetClientCertsImpl(NULL, input_certs, request, false,
-                            selected_certs);
+  GetClientCertsImpl(NULL, input_certs, request, false, selected_certs);
+  return true;
 }
 
 #if !defined(OS_IOS)
@@ -260,8 +267,9 @@ bool ClientCertStoreImpl::SelectClientCertsGivenPreferredForTesting(
     const CertificateList& regular_certs,
     const SSLCertRequestInfo& request,
     CertificateList* selected_certs) {
-  return GetClientCertsImpl(preferred_cert, regular_certs, request, false,
-                            selected_certs);
+  GetClientCertsImpl(
+      preferred_cert, regular_certs, request, false, selected_certs);
+  return true;
 }
 #endif
 

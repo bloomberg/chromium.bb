@@ -6,6 +6,7 @@
 #define NET_SSL_CLIENT_CERT_STORE_H_
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "net/base/net_export.h"
 #include "net/cert/x509_certificate.h"
 
@@ -13,12 +14,19 @@ namespace net {
 
 class SSLCertRequestInfo;
 
+// The caller is expected to keep the ClientCertStore alive until the callback
+// supplied to GetClientCerts has been run.
 class NET_EXPORT ClientCertStore {
  public:
   virtual ~ClientCertStore() {}
 
-  virtual bool GetClientCerts(const SSLCertRequestInfo& cert_request_info,
-                              CertificateList* selected_certs) = 0;
+  // Get client certs matching the |cert_request_info|. On completion, the
+  // results will be stored in |selected_certs| and the |callback| will be run.
+  // The |callback| may be called sychronously. The caller must ensure the
+  // |selected_certs| object remains alive until the callback has been run.
+  virtual void GetClientCerts(const SSLCertRequestInfo& cert_request_info,
+                              CertificateList* selected_certs,
+                              const base::Closure& callback) = 0;
  protected:
   ClientCertStore() {}
 

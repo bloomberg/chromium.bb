@@ -13,6 +13,7 @@
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/ssl/client_cert_store.h"
 
 using base::UserDataAdapter;
 
@@ -52,6 +53,10 @@ ResourceContext::~ResourceContext() {
 
   // In some tests this object is destructed on UI thread.
   DetachUserDataThread();
+}
+
+scoped_ptr<net::ClientCertStore> ResourceContext::CreateClientCertStore() {
+  return scoped_ptr<net::ClientCertStore>();
 }
 
 ChromeBlobStorageContext* GetChromeBlobStorageContextForResourceContext(

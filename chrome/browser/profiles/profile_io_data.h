@@ -361,6 +361,7 @@ class ProfileIOData {
     // ResourceContext implementation:
     virtual net::HostResolver* GetHostResolver() OVERRIDE;
     virtual net::URLRequestContext* GetRequestContext() OVERRIDE;
+    virtual scoped_ptr<net::ClientCertStore> CreateClientCertStore() OVERRIDE;
     virtual bool AllowMicAccess(const GURL& origin) OVERRIDE;
     virtual bool AllowCameraAccess(const GURL& origin) OVERRIDE;
 

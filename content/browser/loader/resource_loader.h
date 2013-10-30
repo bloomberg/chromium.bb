@@ -14,10 +14,6 @@
 #include "content/public/browser/resource_controller.h"
 #include "net/url_request/url_request.h"
 
-namespace net {
-class ClientCertStore;
-}
-
 namespace content {
 class ResourceDispatcherHostLoginDelegate;
 class ResourceLoaderDelegate;
@@ -56,17 +52,7 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceLoaderTest, ClientCertStoreLookup);
-
-  ResourceLoader(scoped_ptr<net::URLRequest> request,
-                 scoped_ptr<ResourceHandler> handler,
-                 ResourceLoaderDelegate* delegate,
-                 scoped_ptr<net::ClientCertStore> client_cert_store);
-
-  // Initialization logic shared between the public and private constructor.
-  void Init(scoped_ptr<net::URLRequest> request,
-            scoped_ptr<ResourceHandler> handler,
-            ResourceLoaderDelegate* delegate,
-            scoped_ptr<net::ClientCertStore> client_cert_store);
+  FRIEND_TEST_ALL_PREFIXES(ResourceLoaderTest, ClientCertStoreNull);
 
   // net::URLRequest::Delegate implementation:
   virtual void OnReceivedRedirect(net::URLRequest* request,
@@ -132,8 +118,6 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   // consumer.  We are waiting for a notification to complete the transfer, at
   // which point we'll receive a new ResourceHandler.
   bool is_transferring_;
-
-  scoped_ptr<net::ClientCertStore> client_cert_store_;
 
   base::WeakPtrFactory<ResourceLoader> weak_ptr_factory_;
 

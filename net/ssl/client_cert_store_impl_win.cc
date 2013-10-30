@@ -12,6 +12,7 @@
 #include <wincrypt.h>
 #include <security.h>
 
+#include "base/callback.h"
 #include "base/logging.h"
 #include "crypto/scoped_capi_types.h"
 #include "net/cert/x509_util.h"
@@ -63,7 +64,7 @@ static BOOL WINAPI ClientCertFindCallback(PCCERT_CONTEXT cert_context,
   return TRUE;
 }
 
-bool GetClientCertsImpl(HCERTSTORE cert_store,
+void GetClientCertsImpl(HCERTSTORE cert_store,
                         const SSLCertRequestInfo& request,
                         CertificateList* selected_certs) {
   selected_certs->clear();
@@ -138,26 +139,26 @@ bool GetClientCertsImpl(HCERTSTORE cert_store,
 
   std::sort(selected_certs->begin(), selected_certs->end(),
             x509_util::ClientCertSorter());
-  return true;
 }
 
 }  // namespace
 
-bool ClientCertStoreImpl::GetClientCerts(const SSLCertRequestInfo& request,
-                                         CertificateList* selected_certs) {
+void ClientCertStoreImpl::GetClientCerts(const SSLCertRequestInfo& request,
+                                         CertificateList* selected_certs,
+                                         const base::Closure& callback) {
   // Client certificates of the user are in the "MY" system certificate store.
   HCERTSTORE my_cert_store = CertOpenSystemStore(NULL, L"MY");
   if (!my_cert_store) {
     PLOG(ERROR) << "Could not open the \"MY\" system certificate store: ";
-    return false;
+    selected_certs->clear();
+    callback.Run();
+    return;
   }
 
-  bool rv = GetClientCertsImpl(my_cert_store, request, selected_certs);
-  if (!CertCloseStore(my_cert_store, CERT_CLOSE_STORE_CHECK_FLAG)) {
+  GetClientCertsImpl(my_cert_store, request, selected_certs);
+  if (!CertCloseStore(my_cert_store, CERT_CLOSE_STORE_CHECK_FLAG))
     PLOG(ERROR) << "Could not close the \"MY\" system certificate store: ";
-    return false;
-  }
-  return rv;
+  callback.Run();
 }
 
 bool ClientCertStoreImpl::SelectClientCertsForTesting(
@@ -198,8 +199,8 @@ bool ClientCertStoreImpl::SelectClientCertsForTesting(
       return false;
   }
 
-  bool rv = GetClientCertsImpl(test_store.get(), request, selected_certs);
-  return rv;
+  GetClientCertsImpl(test_store.get(), request, selected_certs);
+  return true;
 }
 
 }  // namespace net

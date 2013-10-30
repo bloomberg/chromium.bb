@@ -7,6 +7,7 @@
 #include <nss.h>
 #include <ssl.h>
 
+#include "base/callback.h"
 #include "base/logging.h"
 #include "net/cert/x509_util.h"
 
@@ -19,7 +20,7 @@ namespace {
 // certificates in |selected_certs|.
 // If |query_nssdb| is true, NSS will be queried to construct full certificate
 // chains. If it is false, only the certificate will be considered.
-bool GetClientCertsImpl(CERTCertList* cert_list,
+void GetClientCertsImpl(CERTCertList* cert_list,
                         const SSLCertRequestInfo& request,
                         bool query_nssdb,
                         CertificateList* selected_certs) {
@@ -72,23 +73,26 @@ bool GetClientCertsImpl(CERTCertList* cert_list,
 
   std::sort(selected_certs->begin(), selected_certs->end(),
             x509_util::ClientCertSorter());
-  return true;
 }
 
 }  // namespace
 
-bool ClientCertStoreImpl::GetClientCerts(const SSLCertRequestInfo& request,
-                                         CertificateList* selected_certs) {
+void ClientCertStoreImpl::GetClientCerts(const SSLCertRequestInfo& request,
+                                         CertificateList* selected_certs,
+                                         const base::Closure& callback) {
   CERTCertList* client_certs = CERT_FindUserCertsByUsage(
       CERT_GetDefaultCertDB(), certUsageSSLClient,
       PR_FALSE, PR_FALSE, NULL);
   // It is ok for a user not to have any client certs.
-  if (!client_certs)
-    return true;
+  if (!client_certs) {
+    selected_certs->clear();
+    callback.Run();
+    return;
+  }
 
-  bool rv = GetClientCertsImpl(client_certs, request, true, selected_certs);
+  GetClientCertsImpl(client_certs, request, true, selected_certs);
   CERT_DestroyCertList(client_certs);
-  return rv;
+  callback.Run();
 }
 
 bool ClientCertStoreImpl::SelectClientCertsForTesting(
@@ -103,9 +107,9 @@ bool ClientCertStoreImpl::SelectClientCertsForTesting(
         cert_list, CERT_DupCertificate(input_certs[i]->os_cert_handle()));
   }
 
-  bool rv = GetClientCertsImpl(cert_list, request, false, selected_certs);
+  GetClientCertsImpl(cert_list, request, false, selected_certs);
   CERT_DestroyCertList(cert_list);
-  return rv;
+  return true;
 }
 
 }  // namespace net

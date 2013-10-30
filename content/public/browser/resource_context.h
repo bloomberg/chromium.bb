@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_RESOURCE_CONTEXT_H_
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
@@ -17,6 +18,7 @@ class AppCacheService;
 }
 
 namespace net {
+class ClientCertStore;
 class HostResolver;
 class URLRequestContext;
 }
@@ -40,6 +42,9 @@ class CONTENT_EXPORT ResourceContext : public base::SupportsUserData {
   // storage partitioning. This getter returns the default context associated
   // with a BrowsingContext.
   virtual net::URLRequestContext* GetRequestContext() = 0;
+
+  // Get platform ClientCertStore. May return NULL.
+  virtual scoped_ptr<net::ClientCertStore> CreateClientCertStore();
 
   // Returns true if microphone access is allowed for |origin|. Used to
   // determine what level of authorization is given to |origin| to access

@@ -71,6 +71,8 @@
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
+#include "net/ssl/client_cert_store.h"
+#include "net/ssl/client_cert_store_impl.h"
 #include "net/ssl/server_bound_cert_service.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
@@ -708,6 +710,18 @@ net::URLRequestContext* ProfileIOData::ResourceContext::GetRequestContext()  {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(io_data_->initialized_);
   return request_context_;
+}
+
+scoped_ptr<net::ClientCertStore>
+ProfileIOData::ResourceContext::CreateClientCertStore() {
+#if !defined(USE_OPENSSL)
+  return scoped_ptr<net::ClientCertStore>(new net::ClientCertStoreImpl());
+#else
+  // OpenSSL does not use the ClientCertStore infrastructure. On Android client
+  // cert matching is done by the OS as part of the call to show the cert
+  // selection dialog.
+  return scoped_ptr<net::ClientCertStore>();
+#endif
 }
 
 bool ProfileIOData::ResourceContext::AllowMicAccess(const GURL& origin) {

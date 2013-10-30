@@ -16,6 +16,7 @@
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/public/browser/cert_store.h"
+#include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/content_client.h"
@@ -27,7 +28,6 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/ssl/client_cert_store.h"
-#include "net/ssl/client_cert_store_impl.h"
 #include "webkit/browser/appcache/appcache_interceptor.h"
 
 using base::TimeDelta;
@@ -67,12 +67,16 @@ void PopulateResourceResponse(net::URLRequest* request,
 ResourceLoader::ResourceLoader(scoped_ptr<net::URLRequest> request,
                                scoped_ptr<ResourceHandler> handler,
                                ResourceLoaderDelegate* delegate)
-    : weak_ptr_factory_(this) {
-  scoped_ptr<net::ClientCertStore> client_cert_store;
-#if !defined(USE_OPENSSL)
-  client_cert_store.reset(new net::ClientCertStoreImpl());
-#endif
-  Init(request.Pass(), handler.Pass(), delegate, client_cert_store.Pass());
+    : deferred_stage_(DEFERRED_NONE),
+      request_(request.Pass()),
+      handler_(handler.Pass()),
+      delegate_(delegate),
+      last_upload_position_(0),
+      waiting_for_upload_progress_ack_(false),
+      is_transferring_(false),
+      weak_ptr_factory_(this) {
+  request_->set_delegate(this);
+  handler_->SetController(this);
 }
 
 ResourceLoader::~ResourceLoader() {
@@ -189,32 +193,6 @@ void ResourceLoader::OnUploadProgressACK() {
   waiting_for_upload_progress_ack_ = false;
 }
 
-ResourceLoader::ResourceLoader(
-    scoped_ptr<net::URLRequest> request,
-    scoped_ptr<ResourceHandler> handler,
-    ResourceLoaderDelegate* delegate,
-    scoped_ptr<net::ClientCertStore> client_cert_store)
-    : weak_ptr_factory_(this) {
-  Init(request.Pass(), handler.Pass(), delegate, client_cert_store.Pass());
-}
-
-void ResourceLoader::Init(scoped_ptr<net::URLRequest> request,
-                          scoped_ptr<ResourceHandler> handler,
-                          ResourceLoaderDelegate* delegate,
-                          scoped_ptr<net::ClientCertStore> client_cert_store) {
-  deferred_stage_ = DEFERRED_NONE;
-  request_ = request.Pass();
-  handler_ = handler.Pass();
-  delegate_ = delegate;
-  last_upload_position_ = 0;
-  waiting_for_upload_progress_ack_ = false;
-  is_transferring_ = false;
-  client_cert_store_ = client_cert_store.Pass();
-
-  request_->set_delegate(this);
-  handler_->SetController(this);
-}
-
 void ResourceLoader::OnReceivedRedirect(net::URLRequest* unused,
                                         const GURL& new_url,
                                         bool* defer) {
@@ -289,19 +267,12 @@ void ResourceLoader::OnCertificateRequested(
     return;
   }
 
-#if !defined(USE_OPENSSL)
-  client_cert_store_->GetClientCerts(*cert_info, &cert_info->client_certs);
-  if (cert_info->client_certs.empty()) {
-    // No need to query the user if there are no certs to choose from.
-    request_->ContinueWithCertificate(NULL);
-    return;
-  }
-#endif
-
   DCHECK(!ssl_client_auth_handler_.get())
       << "OnCertificateRequested called with ssl_client_auth_handler pending";
-  ssl_client_auth_handler_ = new SSLClientAuthHandler(request_.get(),
-                                                      cert_info);
+  ssl_client_auth_handler_ = new SSLClientAuthHandler(
+      GetRequestInfo()->GetContext()->CreateClientCertStore(),
+      request_.get(),
+      cert_info);
   ssl_client_auth_handler_->SelectCertificate();
 }
 

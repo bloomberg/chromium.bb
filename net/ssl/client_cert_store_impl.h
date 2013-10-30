@@ -19,8 +19,9 @@ class NET_EXPORT ClientCertStoreImpl : public ClientCertStore {
   virtual ~ClientCertStoreImpl() {}
 
   // ClientCertStore:
-  virtual bool GetClientCerts(const SSLCertRequestInfo& cert_request_info,
-                              CertificateList* selected_certs) OVERRIDE;
+  virtual void GetClientCerts(const SSLCertRequestInfo& cert_request_info,
+                              CertificateList* selected_certs,
+                              const base::Closure& callback) OVERRIDE;
 
  private:
   friend class ClientCertStoreImplTest;
