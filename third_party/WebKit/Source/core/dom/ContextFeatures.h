@@ -27,7 +27,7 @@
 #ifndef ContextFeatures_h
 #define ContextFeatures_h
 
-#include "core/platform/RefCountedSupplement.h"
+#include "platform/RefCountedSupplement.h"
 
 namespace WebCore {
 

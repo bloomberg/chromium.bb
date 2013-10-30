@@ -77,6 +77,7 @@
       'PrerenderClient.h',
       'PurgeableBuffer.cpp',
       'PurgeableBuffer.h',
+      'RefCountedSupplement.h',
       'SSLKeyGenerator.cpp',
       'SSLKeyGenerator.h',
       'SecureTextInput.cpp',

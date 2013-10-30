@@ -29,8 +29,8 @@
 
 #if ENABLE(NAVIGATOR_CONTENT_UTILS)
 
-#include "core/platform/RefCountedSupplement.h"
 #include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
+#include "platform/RefCountedSupplement.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
