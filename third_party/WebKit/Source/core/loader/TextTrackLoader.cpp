@@ -40,7 +40,7 @@
 
 namespace WebCore {
 
-TextTrackLoader::TextTrackLoader(TextTrackLoaderClient* client, Document& document)
+TextTrackLoader::TextTrackLoader(TextTrackLoaderClient& client, Document& document)
     : m_client(client)
     , m_document(document)
     , m_cueLoadTimer(this, &TextTrackLoader::cueLoadTimerFired)
@@ -61,11 +61,11 @@ void TextTrackLoader::cueLoadTimerFired(Timer<TextTrackLoader>* timer)
 
     if (m_newCuesAvailable) {
         m_newCuesAvailable = false;
-        m_client->newCuesAvailable(this);
+        m_client.newCuesAvailable(this);
     }
 
     if (m_state >= Finished)
-        m_client->cueLoadingCompleted(this, m_state == Failed);
+        m_client.cueLoadingCompleted(this, m_state == Failed);
 }
 
 void TextTrackLoader::cancelLoad()
@@ -120,7 +120,7 @@ bool TextTrackLoader::load(const KURL& url, const String& crossOriginMode)
 {
     cancelLoad();
 
-    if (!m_client->shouldLoadCues(this))
+    if (!m_client.shouldLoadCues(this))
         return false;
 
     FetchRequest cueRequest(ResourceRequest(m_document.completeURL(url)), FetchInitiatorTypeNames::texttrack);
@@ -142,7 +142,7 @@ bool TextTrackLoader::load(const KURL& url, const String& crossOriginMode)
     if (m_resource)
         m_resource->addClient(this);
 
-    m_client->cueLoadingStarted(this);
+    m_client.cueLoadingStarted(this);
 
     return true;
 }
@@ -158,7 +158,7 @@ void TextTrackLoader::newCuesParsed()
 
 void TextTrackLoader::newRegionsParsed()
 {
-    m_client->newRegionsAvailable(this);
+    m_client.newRegionsAvailable(this);
 }
 
 void TextTrackLoader::fileFailedToParse()
