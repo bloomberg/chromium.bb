@@ -1,6 +1,4 @@
 include_rules = [
-  # TODO(scottmg): http://crbug.com/239107
-  "+ui/base/clipboard",
   "-webkit/browser",
   "-webkit/renderer",
 ]

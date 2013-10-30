@@ -26,7 +26,6 @@
             '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator',
             '<(DEPTH)/ui/gl/gl.gyp:gl',
             '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
-            '<(DEPTH)/ui/ui.gyp:ui',
           ],
           'sources': [
             # This list contains all .h and .cc in gpu except for test code.
