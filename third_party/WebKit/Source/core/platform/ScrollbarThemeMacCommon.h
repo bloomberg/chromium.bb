@@ -44,8 +44,8 @@ public:
     virtual double initialAutoscrollTimerDelay() OVERRIDE;
     virtual double autoscrollTimerDelay() OVERRIDE;
 
-    virtual void paintOverhangBackground(ScrollView*, GraphicsContext*, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect) OVERRIDE;
-    virtual void paintOverhangShadows(ScrollView*, GraphicsContext*, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect) OVERRIDE;
+    virtual void paintOverhangBackground(GraphicsContext*, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect) OVERRIDE;
+    virtual void paintOverhangShadows(GraphicsContext*, const IntSize& scrollOffset, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect) OVERRIDE;
     virtual void paintTickmarks(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
 
 protected:

@@ -291,7 +291,7 @@ int ScrollbarTheme::trackLength(ScrollbarThemeClient* scrollbar)
     return (scrollbar->orientation() == HorizontalScrollbar) ? constrainedTrackRect.width() : constrainedTrackRect.height();
 }
 
-void ScrollbarTheme::paintScrollCorner(ScrollView*, GraphicsContext* context, const IntRect& cornerRect)
+void ScrollbarTheme::paintScrollCorner(GraphicsContext* context, const IntRect& cornerRect)
 {
     context->fillRect(cornerRect, Color::white);
 }
@@ -316,7 +316,7 @@ int ScrollbarTheme::thumbThickness(ScrollbarThemeClient* scrollbar)
     return scrollbar->orientation() == HorizontalScrollbar ? track.height() : track.width();
 }
 
-void ScrollbarTheme::paintOverhangBackground(ScrollView*, GraphicsContext* context, const IntRect& horizontalOverhangRect, const IntRect& verticalOverhangRect, const IntRect& dirtyRect)
+void ScrollbarTheme::paintOverhangBackground(GraphicsContext* context, const IntRect& horizontalOverhangRect, const IntRect& verticalOverhangRect, const IntRect& dirtyRect)
 {
     context->setFillColor(Color::white);
     if (!horizontalOverhangRect.isEmpty())

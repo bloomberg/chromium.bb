@@ -180,7 +180,7 @@ void ScrollbarThemeMacCommon::paintGivenTickmarks(GraphicsContext* context, Scro
     }
 }
 
-void ScrollbarThemeMacCommon::paintOverhangBackground(ScrollView* view, GraphicsContext* context, const IntRect& horizontalOverhangRect, const IntRect& verticalOverhangRect, const IntRect& dirtyRect)
+void ScrollbarThemeMacCommon::paintOverhangBackground(GraphicsContext* context, const IntRect& horizontalOverhangRect, const IntRect& verticalOverhangRect, const IntRect& dirtyRect)
 {
     const bool hasHorizontalOverhang = !horizontalOverhangRect.isEmpty();
     const bool hasVerticalOverhang = !verticalOverhangRect.isEmpty();
@@ -199,7 +199,7 @@ void ScrollbarThemeMacCommon::paintOverhangBackground(ScrollView* view, Graphics
         context->fillRect(intersection(verticalOverhangRect, dirtyRect));
 }
 
-void ScrollbarThemeMacCommon::paintOverhangShadows(ScrollView* view, GraphicsContext* context, const IntRect& horizontalOverhangRect, const IntRect& verticalOverhangRect, const IntRect& dirtyRect)
+void ScrollbarThemeMacCommon::paintOverhangShadows(GraphicsContext* context, const IntSize& scrollOffset, const IntRect& horizontalOverhangRect, const IntRect& verticalOverhangRect, const IntRect& dirtyRect)
 {
     // The extent of each shadow in pixels.
     const int kShadowSize = 4;
@@ -225,7 +225,6 @@ void ScrollbarThemeMacCommon::paintOverhangShadows(ScrollView* view, GraphicsCon
 
     GraphicsContextStateSaver stateSaver(*context);
 
-    IntSize scrollOffset = view->scrollOffset();
     FloatPoint shadowCornerOrigin;
     FloatPoint shadowCornerOffset;
 

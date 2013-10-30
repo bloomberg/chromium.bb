@@ -107,7 +107,7 @@ IntRect RenderScrollbarTheme::constrainTrackRectToTrackPieces(ScrollbarThemeClie
     return result;
 }
 
-void RenderScrollbarTheme::paintScrollCorner(ScrollView*, GraphicsContext* context, const IntRect& cornerRect)
+void RenderScrollbarTheme::paintScrollCorner(GraphicsContext* context, const IntRect& cornerRect)
 {
     // FIXME: Implement.
     context->fillRect(cornerRect, Color::white);

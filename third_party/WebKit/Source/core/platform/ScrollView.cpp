@@ -836,7 +836,7 @@ void ScrollView::updateScrollCorner()
 
 void ScrollView::paintScrollCorner(GraphicsContext* context, const IntRect& cornerRect)
 {
-    ScrollbarTheme::theme()->paintScrollCorner(this, context, cornerRect);
+    ScrollbarTheme::theme()->paintScrollCorner(context, cornerRect);
 }
 
 void ScrollView::paintScrollbar(GraphicsContext* context, Scrollbar* bar, const IntRect& rect)
@@ -976,8 +976,8 @@ void ScrollView::updateOverhangAreas()
 
 void ScrollView::paintOverhangAreas(GraphicsContext* context, const IntRect& horizontalOverhangRect, const IntRect& verticalOverhangRect, const IntRect& dirtyRect)
 {
-    ScrollbarTheme::theme()->paintOverhangBackground(this, context, horizontalOverhangRect, verticalOverhangRect, dirtyRect);
-    ScrollbarTheme::theme()->paintOverhangShadows(this, context, horizontalOverhangRect, verticalOverhangRect, dirtyRect);
+    ScrollbarTheme::theme()->paintOverhangBackground(context, horizontalOverhangRect, verticalOverhangRect, dirtyRect);
+    ScrollbarTheme::theme()->paintOverhangShadows(context, scrollOffset(), horizontalOverhangRect, verticalOverhangRect, dirtyRect);
 }
 
 void ScrollView::calculateAndPaintOverhangAreas(GraphicsContext* context, const IntRect& dirtyRect)
@@ -997,7 +997,7 @@ void ScrollView::calculateAndPaintOverhangBackground(GraphicsContext* context, c
     calculateOverhangAreasForPainting(horizontalOverhangRect, verticalOverhangRect);
 
     if (dirtyRect.intersects(horizontalOverhangRect) || dirtyRect.intersects(verticalOverhangRect))
-        ScrollbarTheme::theme()->paintOverhangBackground(this, context, horizontalOverhangRect, verticalOverhangRect, dirtyRect);
+        ScrollbarTheme::theme()->paintOverhangBackground(context, horizontalOverhangRect, verticalOverhangRect, dirtyRect);
 }
 
 bool ScrollView::isPointInScrollbarCorner(const IntPoint& windowPoint)
