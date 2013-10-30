@@ -257,6 +257,7 @@ decode_mi(struct drm_intel_decode *ctx)
 		{ 0x03, 0, 1, 1, "MI_WAIT_FOR_EVENT", decode_MI_WAIT_FOR_EVENT },
 		{ 0x16, 0x7f, 3, 3, "MI_SEMAPHORE_MBOX" },
 		{ 0x26, 0x1f, 3, 4, "MI_FLUSH_DW" },
+		{ 0x28, 0x3f, 3, 3, "MI_REPORT_PERF_COUNT" },
 		{ 0x0b, 0, 1, 1, "MI_SUSPEND_FLUSH"},
 	}, *opcode_mi = NULL;
 
