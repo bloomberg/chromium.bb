@@ -13,9 +13,8 @@ class WindowOpenPanelTest : public ExtensionApiTest {
   }
 };
 
-// http://crbug.com/162912 || defined(OS_WIN)
 // http://crbug.com/253417 for NDEBUG
-#if defined(OS_MACOSX) && defined(NDEBUG)
+#if defined(OS_WIN) || (defined(OS_MACOSX) && defined(NDEBUG))
 // Focus test fails if there is no window manager on Linux.
 IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, WindowOpenFocus) {
   ASSERT_TRUE(RunExtensionTest("window_open/focus")) << message_;
