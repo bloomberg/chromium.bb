@@ -8,26 +8,40 @@ var mockBeta = 2.2;
 var mockGamma = 3.3;
 var absolute = true;
 
-if (window.testRunner)
-    testRunner.setMockDeviceOrientation(true, mockAlpha, true, mockBeta, true, mockGamma, true, absolute);
-else
-    debug('This test can not be run without the LayoutTestController');
+if (!window.testRunner)
+    debug("This test requires testRunner");
+
+function setup()
+{
+    window.addEventListener("deviceorientation", handler, false);
+    if (window.testRunner)
+        testRunner.setMockDeviceOrientation(true, mockAlpha, true, mockBeta, true, mockGamma, true, absolute);
+}
 
 function handler(evt)
 {
-        console.log('alpha: ' + evt.alpha + ' beta: ' + evt.beta + ' gamma: ' + evt.gamma);
+    console.log("alpha: " + evt.alpha + " beta: " + evt.beta + " gamma: " + evt.gamma);
 }
 
 function test()
 {
-    function callback()
-    {
-        PageAgent.clearDeviceOrientationOverride();
-        InspectorTest.completeTest();
-    }
+    InspectorTest.runTestSuite([
+        function setUp(next)
+        {
+            InspectorTest.evaluateInPage("setup()", next);
+        },
 
-    InspectorTest.evaluateInPage("window.addEventListener('deviceorientation', handler, false);", callback);
-    PageAgent.setDeviceOrientationOverride(20, 30, 40);
+        function setOverride(next)
+        {
+            InspectorTest.addConsoleSniffer(next);
+            PageAgent.setDeviceOrientationOverride(20, 30, 40);
+        },
+
+        function clearOverride(next)
+        {
+            PageAgent.clearDeviceOrientationOverride(next);
+        }
+    ]);
 }
 </script>
 </head>
