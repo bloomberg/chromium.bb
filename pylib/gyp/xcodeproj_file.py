@@ -2238,20 +2238,22 @@ class PBXNativeTarget(XCTarget):
   #  prefix : the prefix for the file name
   #  suffix : the suffix for the filen ame
   _product_filetypes = {
-    'com.apple.product-type.application':     ['wrapper.application',
-                                               '', '.app'],
-    'com.apple.product-type.bundle':          ['wrapper.cfbundle',
-                                               '', '.bundle'],
-    'com.apple.product-type.framework':       ['wrapper.framework',
-                                               '', '.framework'],
-    'com.apple.product-type.library.dynamic': ['compiled.mach-o.dylib',
-                                               'lib', '.dylib'],
-    'com.apple.product-type.library.static':  ['archive.ar',
-                                               'lib', '.a'],
-    'com.apple.product-type.tool':            ['compiled.mach-o.executable',
-                                               '', ''],
-    'com.googlecode.gyp.xcode.bundle':        ['compiled.mach-o.dylib',
-                                               '', '.so'],
+    'com.apple.product-type.application':       ['wrapper.application',
+                                                 '', '.app'],
+    'com.apple.product-type.bundle':            ['wrapper.cfbundle',
+                                                 '', '.bundle'],
+    'com.apple.product-type.framework':         ['wrapper.framework',
+                                                 '', '.framework'],
+    'com.apple.product-type.library.dynamic':   ['compiled.mach-o.dylib',
+                                                 'lib', '.dylib'],
+    'com.apple.product-type.library.static':    ['archive.ar',
+                                                 'lib', '.a'],
+    'com.apple.product-type.tool':              ['compiled.mach-o.executable',
+                                                 '', ''],
+    'com.apple.product-type.bundle.unit-test':  ['wrapper.cfbundle',
+                                                 '', '.xctest'],
+    'com.googlecode.gyp.xcode.bundle':          ['compiled.mach-o.dylib',
+                                                 '', '.so'],
   }
 
   def __init__(self, properties=None, id=None, parent=None,
@@ -2300,6 +2302,11 @@ class PBXNativeTarget(XCTarget):
           self.SetBuildSetting('MACH_O_TYPE', 'mh_bundle')
           self.SetBuildSetting('DYLIB_CURRENT_VERSION', '')
           self.SetBuildSetting('DYLIB_COMPATIBILITY_VERSION', '')
+          if force_extension is None:
+            force_extension = suffix[1:]
+
+        if self._properties['productType'] == \
+           'com.apple.product-type-bundle.unit.test':
           if force_extension is None:
             force_extension = suffix[1:]
 

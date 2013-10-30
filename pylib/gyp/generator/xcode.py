@@ -72,6 +72,7 @@ generator_additional_non_configuration_keys = [
   'mac_bundle_resources',
   'mac_framework_headers',
   'mac_framework_private_headers',
+  'mac_xctest_bundle',
   'xcode_create_dependents_test_runner',
 ]
 
@@ -642,6 +643,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
       'static_library':         'com.apple.product-type.library.static',
       'executable+bundle':      'com.apple.product-type.application',
       'loadable_module+bundle': 'com.apple.product-type.bundle',
+      'loadable_module+xctest': 'com.apple.product-type.bundle.unit-test',
       'shared_library+bundle':  'com.apple.product-type.framework',
     }
 
@@ -651,11 +653,18 @@ def GenerateOutput(target_list, target_dicts, data, params):
     }
 
     type = spec['type']
-    is_bundle = int(spec.get('mac_bundle', 0))
+    is_xctest = int(spec.get('mac_xctest_bundle', 0))
+    is_bundle = int(spec.get('mac_bundle', 0)) or is_xctest
     if type != 'none':
       type_bundle_key = type
-      if is_bundle:
+      if is_xctest:
+        type_bundle_key += '+xctest'
+        assert type == 'loadable_module', (
+            'mac_xctest_bundle targets must have type loadable_module '
+            '(target %s)' % target_name)
+      elif is_bundle:
         type_bundle_key += '+bundle'
+
       xctarget_type = gyp.xcodeproj_file.PBXNativeTarget
       try:
         target_properties['productType'] = _types[type_bundle_key]
@@ -667,6 +676,9 @@ def GenerateOutput(target_list, target_dicts, data, params):
       xctarget_type = gyp.xcodeproj_file.PBXAggregateTarget
       assert not is_bundle, (
           'mac_bundle targets cannot have type none (target "%s")' %
+          target_name)
+      assert not is_xctest, (
+          'mac_xctest_bundle targets cannot have type none (target "%s")' %
           target_name)
 
     target_product_name = spec.get('product_name')
