@@ -572,7 +572,9 @@ KeyEvent* KeyEvent::Copy() const {
 #if defined(USE_OZONE)
   KeyEvent* copy = new KeyEvent(*this);
 #else
-  KeyEvent* copy = new KeyEvent(::CopyNativeEvent(native_event()), is_char());
+  KeyEvent* copy = HasNativeEvent() ?
+      new KeyEvent(::CopyNativeEvent(native_event()), is_char()) :
+      new KeyEvent(*this);
 #endif
 #if defined(USE_X11)
   copy->set_delete_native_event(true);
