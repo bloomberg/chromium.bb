@@ -8,6 +8,7 @@
 import bisect
 import csv
 import datetime
+import glob
 import json
 import optparse
 import os
@@ -30,6 +31,7 @@ GS_CHROMEDRIVER_BUCKET = 'gs://chromedriver'
 GS_CHROMEDRIVER_DATA_BUCKET = 'gs://chromedriver-data'
 GS_CONTINUOUS_URL = GS_CHROMEDRIVER_DATA_BUCKET + '/continuous'
 GS_PREBUILTS_URL = GS_CHROMEDRIVER_DATA_BUCKET + '/prebuilts'
+GS_SERVER_LOGS_URL = GS_CHROMEDRIVER_DATA_BUCKET + '/server_logs'
 TEST_LOG_FORMAT = '%s_log.json'
 
 SCRIPT_DIR = os.path.join(_THIS_DIR, os.pardir, os.pardir, os.pardir, os.pardir,
@@ -52,6 +54,16 @@ def _ArchivePrebuilts(revision):
       zip_path,
       '%s/%s' % (GS_PREBUILTS_URL, 'r%s.zip' % revision)):
     util.MarkBuildStepError()
+
+
+def _ArchiveServerLogs():
+  """Uploads chromedriver server logs to google storage."""
+  util.MarkBuildStepStart('archive chromedriver server logs')
+  for server_log in glob.glob(os.path.join(tempfile.gettempdir(),
+                                           'chromedriver_*')):
+    slave_utils.GSUtilCopy(
+        server_log, '%s/%s' % (GS_SERVER_LOGS_URL,
+                               os.path.basename(server_log)))
 
 
 def _DownloadPrebuilts():
@@ -353,6 +365,8 @@ def main():
     cmd.append('--android-packages=' + options.android_packages)
 
   passed = (util.RunCommand(cmd) == 0)
+
+  _ArchiveServerLogs()
 
   if platform == 'android':
     if options.update_log:
