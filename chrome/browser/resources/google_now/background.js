@@ -86,12 +86,6 @@ var ON_PUSH_MESSAGE_START_TASK_NAME = 'on-push-message';
 var LOCATION_WATCH_NAME = 'location-watch';
 
 /**
- * Chrome push messaging subchannel for messages causing an immediate poll.
- */
-var SUBCHANNEL_ID_POLL_NOW = 0;
-
-/**
-/**
  * Notification as it's sent by the server.
  *
  * @typedef {{
@@ -1086,15 +1080,26 @@ instrumented.pushMessaging.onMessage.addListener(function(message) {
   // So, we need to poll the server only when the payload is non-empty and has
   // changed.
   console.log('pushMessaging.onMessage ' + JSON.stringify(message));
-  if (message.subchannelId == SUBCHANNEL_ID_POLL_NOW && message.payload) {
+  if (message.payload.indexOf('REQUEST_CARDS') == 0) {
     tasks.add(ON_PUSH_MESSAGE_START_TASK_NAME, function() {
-      instrumented.storage.local.get('lastPollNowPayload', function(items) {
-        if (items && items.lastPollNowPayload != message.payload) {
-          chrome.storage.local.set({lastPollNowPayload: message.payload});
+      instrumented.storage.local.get('lastPollNowPayloads', function(items) {
+        // If storage.get fails, it's safer to do nothing, preventing polling
+        // the server when the payload really didn't change.
+        if (!items)
+          return;
+
+        // If this is the first time we get lastPollNowPayloads, initialize it.
+        items.lastPollNowPayloads = items.lastPollNowPayloads || {};
+
+        if (items.lastPollNowPayloads[message.subchannelId] !=
+            message.payload) {
+          items.lastPollNowPayloads[message.subchannelId] = message.payload;
+          chrome.storage.local.set(
+              {lastPollNowPayloads: items.lastPollNowPayloads});
 
           updateCardsAttempts.isRunning(function(running) {
             if (running)
-              requestNotificationGroups([]);
+              requestNotificationGroups(['PUSH' + message.subchannelId]);
           });
         }
       });
