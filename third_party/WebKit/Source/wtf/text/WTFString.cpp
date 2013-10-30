@@ -391,18 +391,18 @@ String String::stripWhiteSpace(IsWhiteSpaceFunctionPtr isWhiteSpace) const
     return m_impl->stripWhiteSpace(isWhiteSpace);
 }
 
-String String::simplifyWhiteSpace() const
+String String::simplifyWhiteSpace(StripBehavior stripBehavior) const
 {
     if (!m_impl)
         return String();
-    return m_impl->simplifyWhiteSpace();
+    return m_impl->simplifyWhiteSpace(stripBehavior);
 }
 
-String String::simplifyWhiteSpace(IsWhiteSpaceFunctionPtr isWhiteSpace) const
+String String::simplifyWhiteSpace(IsWhiteSpaceFunctionPtr isWhiteSpace, StripBehavior stripBehavior) const
 {
     if (!m_impl)
         return String();
-    return m_impl->simplifyWhiteSpace(isWhiteSpace);
+    return m_impl->simplifyWhiteSpace(isWhiteSpace, stripBehavior);
 }
 
 String String::removeCharacters(CharacterMatchFunctionPtr findMatch) const

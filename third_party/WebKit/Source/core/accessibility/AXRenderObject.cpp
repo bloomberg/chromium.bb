@@ -1152,27 +1152,8 @@ String AXRenderObject::textUnderElement() const
     if (m_renderer->isFileUploadControl())
         return toRenderFileUploadControl(m_renderer)->buttonValue();
 
-    if (m_renderer->isText()) {
-        // If possible, use a text iterator to get the text, so that whitespace
-        // is handled consistently.
-        if (Node* node = this->node()) {
-            if (Frame* frame = node->document().frame()) {
-                // catch stale WebCoreAXObject (see <rdar://problem/3960196>)
-                if (frame->document() != node->document())
-                    return String();
-
-                return plainText(rangeOfContents(node).get(), TextIteratorIgnoresStyleVisibility);
-            }
-        }
-
-        // Sometimes text fragments don't have Nodes associated with them (like when
-        // CSS content is used to insert text or when a RenderCounter is used.)
-        RenderText* renderTextObject = toRenderText(m_renderer);
-        if (renderTextObject->isTextFragment())
-            return String(toRenderTextFragment(m_renderer)->contentString());
-
-        return String(renderTextObject->text());
-    }
+    if (m_renderer->isText())
+        return toRenderText(m_renderer)->plainText();
 
     return AXNodeObject::textUnderElement();
 }

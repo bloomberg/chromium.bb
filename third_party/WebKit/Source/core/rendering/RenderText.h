@@ -54,8 +54,8 @@ public:
     void removeTextBox(InlineTextBox*);
 
     const String& text() const { return m_text; }
-    String textWithoutTranscoding() const;
     virtual unsigned textStartOffset() const { return 0; }
+    String plainText() const;
 
     InlineTextBox* createInlineTextBox();
     void dirtyLineBoxes(bool fullLayout);

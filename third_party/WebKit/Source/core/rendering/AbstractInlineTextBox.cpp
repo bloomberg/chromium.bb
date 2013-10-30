@@ -156,8 +156,10 @@ String AbstractInlineTextBox::text() const
         return plainText(range.get(), TextIteratorIgnoresStyleVisibility);
     }
 
-    // This case is for text without a node, like generated text.
-    return text().substring(start, len);
+    String result = m_renderText->text().substring(start, len).simplifyWhiteSpace(WTF::DoNotStripWhiteSpace);
+    if (m_inlineTextBox->nextTextBox() && m_inlineTextBox->nextTextBox()->start() > m_inlineTextBox->end() && result.length() && !result.right(1).containsOnlyWhitespace())
+        return result + " ";
+    return result;
 }
 
 } // namespace WebCore

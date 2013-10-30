@@ -332,8 +332,8 @@ public:
 
     String stripWhiteSpace() const;
     String stripWhiteSpace(IsWhiteSpaceFunctionPtr) const;
-    String simplifyWhiteSpace() const;
-    String simplifyWhiteSpace(IsWhiteSpaceFunctionPtr) const;
+    String simplifyWhiteSpace(StripBehavior stripBehavior = StripExtraWhiteSpace) const;
+    String simplifyWhiteSpace(IsWhiteSpaceFunctionPtr, StripBehavior stripBehavior = StripExtraWhiteSpace) const;
 
     String removeCharacters(CharacterMatchFunctionPtr) const;
     template<bool isSpecialCharacter(UChar)> bool isAllSpecialCharacters() const;

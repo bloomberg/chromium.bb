@@ -912,7 +912,7 @@ PassRefPtr<StringImpl> StringImpl::removeCharacters(CharacterMatchFunctionPtr fi
 }
 
 template <typename CharType, class UCharPredicate>
-inline PassRefPtr<StringImpl> StringImpl::simplifyMatchedCharactersToSpace(UCharPredicate predicate)
+inline PassRefPtr<StringImpl> StringImpl::simplifyMatchedCharactersToSpace(UCharPredicate predicate, StripBehavior stripBehavior)
 {
     StringBuffer<CharType> data(m_length);
 
@@ -923,22 +923,34 @@ inline PassRefPtr<StringImpl> StringImpl::simplifyMatchedCharactersToSpace(UChar
 
     CharType* to = data.characters();
 
-    while (true) {
-        while (from != fromend && predicate(*from)) {
-            if (*from != ' ')
-                changedToSpace = true;
-            ++from;
+    if (stripBehavior == StripExtraWhiteSpace) {
+        while (true) {
+            while (from != fromend && predicate(*from)) {
+                if (*from != ' ')
+                    changedToSpace = true;
+                ++from;
+            }
+            while (from != fromend && !predicate(*from))
+                to[outc++] = *from++;
+            if (from != fromend)
+                to[outc++] = ' ';
+            else
+                break;
         }
-        while (from != fromend && !predicate(*from))
-            to[outc++] = *from++;
-        if (from != fromend)
-            to[outc++] = ' ';
-        else
-            break;
-    }
 
-    if (outc > 0 && to[outc - 1] == ' ')
-        --outc;
+        if (outc > 0 && to[outc - 1] == ' ')
+            --outc;
+    } else {
+        for (; from != fromend; ++from) {
+            if (predicate(*from)) {
+                if (*from != ' ')
+                    changedToSpace = true;
+                to[outc++] = ' ';
+            } else {
+                to[outc++] = *from;
+            }
+        }
+    }
 
     if (static_cast<unsigned>(outc) == m_length && !changedToSpace)
         return this;
@@ -948,18 +960,18 @@ inline PassRefPtr<StringImpl> StringImpl::simplifyMatchedCharactersToSpace(UChar
     return data.release();
 }
 
-PassRefPtr<StringImpl> StringImpl::simplifyWhiteSpace()
+PassRefPtr<StringImpl> StringImpl::simplifyWhiteSpace(StripBehavior stripBehavior)
 {
     if (is8Bit())
-        return StringImpl::simplifyMatchedCharactersToSpace<LChar>(SpaceOrNewlinePredicate());
-    return StringImpl::simplifyMatchedCharactersToSpace<UChar>(SpaceOrNewlinePredicate());
+        return StringImpl::simplifyMatchedCharactersToSpace<LChar>(SpaceOrNewlinePredicate(), stripBehavior);
+    return StringImpl::simplifyMatchedCharactersToSpace<UChar>(SpaceOrNewlinePredicate(), stripBehavior);
 }
 
-PassRefPtr<StringImpl> StringImpl::simplifyWhiteSpace(IsWhiteSpaceFunctionPtr isWhiteSpace)
+PassRefPtr<StringImpl> StringImpl::simplifyWhiteSpace(IsWhiteSpaceFunctionPtr isWhiteSpace, StripBehavior stripBehavior)
 {
     if (is8Bit())
-        return StringImpl::simplifyMatchedCharactersToSpace<LChar>(UCharPredicate(isWhiteSpace));
-    return StringImpl::simplifyMatchedCharactersToSpace<UChar>(UCharPredicate(isWhiteSpace));
+        return StringImpl::simplifyMatchedCharactersToSpace<LChar>(UCharPredicate(isWhiteSpace), stripBehavior);
+    return StringImpl::simplifyMatchedCharactersToSpace<UChar>(UCharPredicate(isWhiteSpace), stripBehavior);
 }
 
 int StringImpl::toIntStrict(bool* ok, int base)

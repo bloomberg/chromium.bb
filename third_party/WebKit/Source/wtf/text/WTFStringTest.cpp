@@ -161,4 +161,19 @@ TEST(WTF, StringComparisonOfSameStringVectors)
     ASSERT_EQ(stringVector, sameStringVector);
 }
 
+TEST(WTF, SimplifyWhiteSpace)
+{
+    String extraSpaces("  Hello  world  ");
+    ASSERT_EQ(String("Hello world"), extraSpaces.simplifyWhiteSpace());
+    ASSERT_EQ(String("  Hello  world  "), extraSpaces.simplifyWhiteSpace(WTF::DoNotStripWhiteSpace));
+
+    String extraSpacesAndNewlines(" \nHello\n world\n ");
+    ASSERT_EQ(String("Hello world"), extraSpacesAndNewlines.simplifyWhiteSpace());
+    ASSERT_EQ(String("  Hello  world  "), extraSpacesAndNewlines.simplifyWhiteSpace(WTF::DoNotStripWhiteSpace));
+
+    String extraSpacesAndTabs(" \nHello\t world\t ");
+    ASSERT_EQ(String("Hello world"), extraSpacesAndTabs.simplifyWhiteSpace());
+    ASSERT_EQ(String("  Hello  world  "), extraSpacesAndTabs.simplifyWhiteSpace(WTF::DoNotStripWhiteSpace));
+}
+
 } // namespace

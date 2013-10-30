@@ -27,6 +27,7 @@
 
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Text.h"
+#include "core/editing/TextIterator.h"
 #include "core/fetch/TextResourceDecoder.h"
 #include "core/frame/FrameView.h"
 #include "core/page/Settings.h"
@@ -297,6 +298,22 @@ PassRefPtr<StringImpl> RenderText::originalText() const
 {
     Node* e = node();
     return (e && e->isTextNode()) ? toText(e)->dataImpl() : 0;
+}
+
+String RenderText::plainText() const
+{
+    if (node())
+        return WebCore::plainText(rangeOfContents(node()).get());
+
+    // FIXME: this is just a stopgap until TextIterator is adapted to support generated text.
+    StringBuilder plainTextBuilder;
+    for (InlineTextBox* textBox = firstTextBox(); textBox; textBox = textBox->nextTextBox()) {
+        String text = m_text.substring(textBox->start(), textBox->len()).simplifyWhiteSpace(WTF::DoNotStripWhiteSpace);
+        plainTextBuilder.append(text);
+        if (textBox->nextTextBox() && textBox->nextTextBox()->start() > textBox->end() && text.length() && !text.right(1).containsOnlyWhitespace())
+            plainTextBuilder.append(" ");
+    }
+    return plainTextBuilder.toString();
 }
 
 void RenderText::absoluteRects(Vector<IntRect>& rects, const LayoutPoint& accumulatedOffset) const

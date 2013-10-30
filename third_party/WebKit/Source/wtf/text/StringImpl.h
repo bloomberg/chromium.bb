@@ -53,6 +53,8 @@ template<typename> class RetainPtr;
 
 enum TextCaseSensitivity { TextCaseSensitive, TextCaseInsensitive };
 
+enum StripBehavior { StripExtraWhiteSpace, DoNotStripWhiteSpace };
+
 typedef bool (*CharacterMatchFunctionPtr)(UChar);
 typedef bool (*IsWhiteSpaceFunctionPtr)(UChar);
 
@@ -370,8 +372,8 @@ public:
 
     PassRefPtr<StringImpl> stripWhiteSpace();
     PassRefPtr<StringImpl> stripWhiteSpace(IsWhiteSpaceFunctionPtr);
-    PassRefPtr<StringImpl> simplifyWhiteSpace();
-    PassRefPtr<StringImpl> simplifyWhiteSpace(IsWhiteSpaceFunctionPtr);
+    PassRefPtr<StringImpl> simplifyWhiteSpace(StripBehavior stripBehavior = StripExtraWhiteSpace);
+    PassRefPtr<StringImpl> simplifyWhiteSpace(IsWhiteSpaceFunctionPtr, StripBehavior stripBehavior = StripExtraWhiteSpace);
 
     PassRefPtr<StringImpl> removeCharacters(CharacterMatchFunctionPtr);
     template <typename CharType>
@@ -434,7 +436,7 @@ private:
     static const unsigned s_copyCharsInlineCutOff = 20;
 
     template <class UCharPredicate> PassRefPtr<StringImpl> stripMatchedCharacters(UCharPredicate);
-    template <typename CharType, class UCharPredicate> PassRefPtr<StringImpl> simplifyMatchedCharactersToSpace(UCharPredicate);
+    template <typename CharType, class UCharPredicate> PassRefPtr<StringImpl> simplifyMatchedCharactersToSpace(UCharPredicate, StripBehavior);
     NEVER_INLINE unsigned hashSlowCase() const;
 
 #ifdef STRING_STATS
