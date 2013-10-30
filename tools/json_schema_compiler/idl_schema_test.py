@@ -108,6 +108,25 @@ class IdlSchemaTest(unittest.TestCase):
     self.assertTrue(idl_basics['internal'])
     self.assertFalse(idl_basics['nodoc'])
 
+  def testChromeOSPlatformsNamespace(self):
+    schema = idl_schema.Load('test/idl_namespace_chromeos.idl')[0]
+    self.assertEquals('idl_namespace_chromeos', schema['namespace'])
+    expected = ['chromeos']
+    self.assertEquals(expected, schema['platforms'])
+
+  def testAllPlatformsNamespace(self):
+    schema = idl_schema.Load('test/idl_namespace_all_platforms.idl')[0]
+    self.assertEquals('idl_namespace_all_platforms', schema['namespace'])
+    expected = ['chromeos', 'chromeos_touch', 'linux', 'mac', 'win']
+    self.assertEquals(expected, schema['platforms'])
+
+  def testNonSpecificPlatformsNamespace(self):
+    schema = idl_schema.Load('test/idl_namespace_non_specific_platforms.idl')[0]
+    self.assertEquals('idl_namespace_non_specific_platforms',
+                      schema['namespace'])
+    expected = None
+    self.assertEquals(expected, schema['platforms'])
+
   def testCallbackComment(self):
     schema = self.idl_basics
     self.assertEquals('A comment on a callback.',

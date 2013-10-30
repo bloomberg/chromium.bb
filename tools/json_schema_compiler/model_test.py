@@ -4,6 +4,8 @@
 # found in the LICENSE file.
 
 from json_schema import CachedLoad
+from idl_schema import Load
+from model import Platforms
 import model
 import unittest
 
@@ -22,9 +24,25 @@ class ModelTest(unittest.TestCase):
     self.model.AddNamespace(self.tabs_json[0],
         'path/to/tabs.json')
     self.tabs = self.model.namespaces.get('tabs')
+    self.idl_chromeos = Load('test/idl_namespace_chromeos.idl')
+    self.model.AddNamespace(self.idl_chromeos[0],
+        'path/to/idl_namespace_chromeos.idl')
+    self.idl_namespace_chromeos = self.model.namespaces.get(
+        'idl_namespace_chromeos')
+    self.idl_all_platforms = Load('test/idl_namespace_all_platforms.idl')
+    self.model.AddNamespace(self.idl_all_platforms[0],
+        'path/to/idl_namespace_all_platforms.idl')
+    self.idl_namespace_all_platforms = self.model.namespaces.get(
+        'idl_namespace_all_platforms')
+    self.idl_non_specific_platforms = Load(
+        'test/idl_namespace_non_specific_platforms.idl')
+    self.model.AddNamespace(self.idl_non_specific_platforms[0],
+        'path/to/idl_namespace_non_specific_platforms.idl')
+    self.idl_namespace_non_specific_platforms = self.model.namespaces.get(
+        'idl_namespace_non_specific_platforms')
 
   def testNamespaces(self):
-    self.assertEquals(3, len(self.model.namespaces))
+    self.assertEquals(6, len(self.model.namespaces))
     self.assertTrue(self.permissions)
 
   def testHasFunctions(self):
@@ -100,6 +118,15 @@ class ModelTest(unittest.TestCase):
     for name in expectations:
       self.assertEquals(expectations[name], model.UnixName(name))
 
+  def testPlatforms(self):
+    self.assertEqual([Platforms.CHROMEOS],
+                     self.idl_namespace_chromeos.platforms)
+    self.assertEqual(
+        [Platforms.CHROMEOS, Platforms.CHROMEOS_TOUCH, Platforms.LINUX,
+         Platforms.MAC, Platforms.WIN],
+        self.idl_namespace_all_platforms.platforms)
+    self.assertEqual(None,
+        self.idl_namespace_non_specific_platforms.platforms)
 
 if __name__ == '__main__':
   unittest.main()

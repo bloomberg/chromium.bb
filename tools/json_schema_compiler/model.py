@@ -486,8 +486,11 @@ class Platforms(object):
   WIN = _PlatformInfo("win")
 
 def _GetPlatforms(json):
-  if 'platforms' not in json:
+  if 'platforms' not in json or json['platforms'] == None:
     return None
+  # Sanity check: platforms should not be an empty list.
+  if not json['platforms']:
+    raise ValueError('"platforms" cannot be an empty list')
   platforms = []
   for platform_name in json['platforms']:
     for platform_enum in _Enum.GetAll(Platforms):
