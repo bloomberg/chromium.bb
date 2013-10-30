@@ -91,6 +91,10 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, TestOpenPopup) {
     frame_observer.Wait();
   }
 
+  EXPECT_TRUE(new_browser != NULL);
+
+// Flaky on non-aura linux http://crbug.com/309749
+#if !(defined(OS_LINUX) && !defined(USE_AURA))
   ResultCatcher catcher;
   {
     content::WindowedNotificationObserver frame_observer(
@@ -102,6 +106,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, TestOpenPopup) {
     EXPECT_TRUE(BrowserActionTestUtil(new_browser).HasPopup());
   }
   ASSERT_TRUE(catcher.GetNextResult()) << message_;
+#endif
 }
 
 // Tests opening a popup in an incognito window.
