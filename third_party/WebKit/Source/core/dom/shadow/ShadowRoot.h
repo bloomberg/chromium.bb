@@ -91,9 +91,9 @@ public:
     InsertionPoint* insertionPoint() const;
     void setInsertionPoint(PassRefPtr<InsertionPoint>);
 
-    void addInsertionPoint(InsertionPoint*);
-    void removeInsertionPoint(InsertionPoint*);
-    const Vector<RefPtr<InsertionPoint> >& childInsertionPoints();
+    void didAddInsertionPoint(InsertionPoint*);
+    void didRemoveInsertionPoint(InsertionPoint*);
+    const Vector<RefPtr<InsertionPoint> >& descendantInsertionPoints();
 
     ShadowRootType type() const { return static_cast<ShadowRootType>(m_type); }
 

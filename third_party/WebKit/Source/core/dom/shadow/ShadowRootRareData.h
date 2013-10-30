@@ -42,8 +42,8 @@ namespace WebCore {
 class ShadowRootRareData {
 public:
     ShadowRootRareData()
-        : m_childShadowElementCount(0)
-        , m_childContentElementCount(0)
+        : m_descendantShadowElementCount(0)
+        , m_descendantContentElementCount(0)
         , m_childShadowRootCount(0)
     {
     }
@@ -51,55 +51,55 @@ public:
     InsertionPoint* insertionPoint() const { return m_insertionPoint.get(); }
     void setInsertionPoint(PassRefPtr<InsertionPoint> insertionPoint) { m_insertionPoint = insertionPoint; }
 
-    void addInsertionPoint(InsertionPoint*);
-    void removeInsertionPoint(InsertionPoint*);
+    void didAddInsertionPoint(InsertionPoint*);
+    void didRemoveInsertionPoint(InsertionPoint*);
 
-    bool hasShadowElementChildren() const { return m_childShadowElementCount; }
-    bool hasContentElementChildren() const { return m_childContentElementCount; }
-    bool hasShadowRootChildren() const { return m_childShadowRootCount; }
+    bool containsShadowElements() const { return m_descendantShadowElementCount; }
+    bool containsContentElements() const { return m_descendantContentElementCount; }
+    bool containsShadowRoots() const { return m_childShadowRootCount; }
 
-    void addChildShadowRoot() { ++m_childShadowRootCount; }
-    void removeChildShadowRoot() { ASSERT(m_childShadowRootCount > 0); --m_childShadowRootCount; }
+    void didAddChildShadowRoot() { ++m_childShadowRootCount; }
+    void didRemoveChildShadowRoot() { ASSERT(m_childShadowRootCount > 0); --m_childShadowRootCount; }
 
     unsigned childShadowRootCount() const { return m_childShadowRootCount; }
 
-    const Vector<RefPtr<InsertionPoint> >& childInsertionPoints() { return m_childInsertionPoints; }
-    void setChildInsertionPoints(Vector<RefPtr<InsertionPoint> >& list) { m_childInsertionPoints.swap(list); }
-    void clearChildInsertionPoints() { m_childInsertionPoints.clear(); }
+    const Vector<RefPtr<InsertionPoint> >& descendantInsertionPoints() { return m_descendantInsertionPoints; }
+    void setDescendantInsertionPoints(Vector<RefPtr<InsertionPoint> >& list) { m_descendantInsertionPoints.swap(list); }
+    void clearDescendantInsertionPoints() { m_descendantInsertionPoints.clear(); }
 
     StyleSheetList* styleSheets() { return m_styleSheetList.get(); }
     void setStyleSheets(PassRefPtr<StyleSheetList> styleSheetList) { m_styleSheetList = styleSheetList; }
 
 private:
     RefPtr<InsertionPoint> m_insertionPoint;
-    unsigned m_childShadowElementCount;
-    unsigned m_childContentElementCount;
+    unsigned m_descendantShadowElementCount;
+    unsigned m_descendantContentElementCount;
     unsigned m_childShadowRootCount;
-    Vector<RefPtr<InsertionPoint> > m_childInsertionPoints;
+    Vector<RefPtr<InsertionPoint> > m_descendantInsertionPoints;
     RefPtr<StyleSheetList> m_styleSheetList;
 };
 
-inline void ShadowRootRareData::addInsertionPoint(InsertionPoint* point)
+inline void ShadowRootRareData::didAddInsertionPoint(InsertionPoint* point)
 {
     if (isHTMLShadowElement(point))
-        ++m_childShadowElementCount;
+        ++m_descendantShadowElementCount;
     else if (isHTMLContentElement(point))
-        ++m_childContentElementCount;
+        ++m_descendantContentElementCount;
     else
         ASSERT_NOT_REACHED();
 }
 
-inline void ShadowRootRareData::removeInsertionPoint(InsertionPoint* point)
+inline void ShadowRootRareData::didRemoveInsertionPoint(InsertionPoint* point)
 {
     if (isHTMLShadowElement(point))
-        --m_childShadowElementCount;
+        --m_descendantShadowElementCount;
     else if (isHTMLContentElement(point))
-        --m_childContentElementCount;
+        --m_descendantContentElementCount;
     else
         ASSERT_NOT_REACHED();
 
-    ASSERT(m_childContentElementCount >= 0);
-    ASSERT(m_childShadowElementCount >= 0);
+    ASSERT(m_descendantContentElementCount >= 0);
+    ASSERT(m_descendantShadowElementCount >= 0);
 }
 
 } // namespace WebCore

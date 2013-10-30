@@ -324,17 +324,17 @@ ShadowRootRareData* ShadowRoot::ensureShadowRootRareData()
 
 bool ShadowRoot::containsShadowElements() const
 {
-    return m_shadowRootRareData ? m_shadowRootRareData->hasShadowElementChildren() : 0;
+    return m_shadowRootRareData ? m_shadowRootRareData->containsShadowElements() : 0;
 }
 
 bool ShadowRoot::containsContentElements() const
 {
-    return m_shadowRootRareData ? m_shadowRootRareData->hasContentElementChildren() : 0;
+    return m_shadowRootRareData ? m_shadowRootRareData->containsContentElements() : 0;
 }
 
 bool ShadowRoot::containsShadowRoots() const
 {
-    return m_shadowRootRareData ? m_shadowRootRareData->hasShadowRootChildren() : 0;
+    return m_shadowRootRareData ? m_shadowRootRareData->containsShadowRoots() : 0;
 }
 
 InsertionPoint* ShadowRoot::insertionPoint() const
@@ -349,21 +349,21 @@ void ShadowRoot::setInsertionPoint(PassRefPtr<InsertionPoint> insertionPoint)
     ensureShadowRootRareData()->setInsertionPoint(insertionPoint);
 }
 
-void ShadowRoot::addInsertionPoint(InsertionPoint* insertionPoint)
+void ShadowRoot::didAddInsertionPoint(InsertionPoint* insertionPoint)
 {
-    ensureShadowRootRareData()->addInsertionPoint(insertionPoint);
+    ensureShadowRootRareData()->didAddInsertionPoint(insertionPoint);
     invalidateChildInsertionPoints();
 }
 
-void ShadowRoot::removeInsertionPoint(InsertionPoint* insertionPoint)
+void ShadowRoot::didRemoveInsertionPoint(InsertionPoint* insertionPoint)
 {
-    m_shadowRootRareData->removeInsertionPoint(insertionPoint);
+    m_shadowRootRareData->didRemoveInsertionPoint(insertionPoint);
     invalidateChildInsertionPoints();
 }
 
 void ShadowRoot::addChildShadowRoot()
 {
-    ensureShadowRootRareData()->addChildShadowRoot();
+    ensureShadowRootRareData()->didAddChildShadowRoot();
 }
 
 void ShadowRoot::removeChildShadowRoot()
@@ -371,7 +371,7 @@ void ShadowRoot::removeChildShadowRoot()
     // FIXME: Why isn't this an ASSERT?
     if (!m_shadowRootRareData)
         return;
-    m_shadowRootRareData->removeChildShadowRoot();
+    m_shadowRootRareData->didRemoveChildShadowRoot();
 }
 
 unsigned ShadowRoot::childShadowRootCount() const
@@ -382,15 +382,15 @@ unsigned ShadowRoot::childShadowRootCount() const
 void ShadowRoot::invalidateChildInsertionPoints()
 {
     m_childInsertionPointsIsValid = false;
-    m_shadowRootRareData->clearChildInsertionPoints();
+    m_shadowRootRareData->clearDescendantInsertionPoints();
 }
 
-const Vector<RefPtr<InsertionPoint> >& ShadowRoot::childInsertionPoints()
+const Vector<RefPtr<InsertionPoint> >& ShadowRoot::descendantInsertionPoints()
 {
     DEFINE_STATIC_LOCAL(const Vector<RefPtr<InsertionPoint> >, emptyList, ());
 
     if (m_shadowRootRareData && m_childInsertionPointsIsValid)
-        return m_shadowRootRareData->childInsertionPoints();
+        return m_shadowRootRareData->descendantInsertionPoints();
 
     m_childInsertionPointsIsValid = true;
 
@@ -403,9 +403,9 @@ const Vector<RefPtr<InsertionPoint> >& ShadowRoot::childInsertionPoints()
             insertionPoints.append(toInsertionPoint(element));
     }
 
-    ensureShadowRootRareData()->setChildInsertionPoints(insertionPoints);
+    ensureShadowRootRareData()->setDescendantInsertionPoints(insertionPoints);
 
-    return m_shadowRootRareData->childInsertionPoints();
+    return m_shadowRootRareData->descendantInsertionPoints();
 }
 
 StyleSheetList* ShadowRoot::styleSheets()
