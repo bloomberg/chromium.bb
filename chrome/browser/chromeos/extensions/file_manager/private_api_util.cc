@@ -210,22 +210,27 @@ void VolumeInfoToVolumeMetadata(
   }
 }
 
-int32 GetTabId(ExtensionFunctionDispatcher* dispatcher) {
+content::WebContents* GetWebContents(ExtensionFunctionDispatcher* dispatcher) {
   if (!dispatcher) {
     LOG(WARNING) << "No dispatcher";
-    return 0;
+    return NULL;
   }
   if (!dispatcher->delegate()) {
     LOG(WARNING) << "No delegate";
-    return 0;
+    return NULL;
   }
   content::WebContents* web_contents =
       dispatcher->delegate()->GetAssociatedWebContents();
   if (!web_contents) {
     LOG(WARNING) << "No associated tab contents";
-    return 0;
+    return NULL;
   }
-  return ExtensionTabUtil::GetTabId(web_contents);
+  return web_contents;
+}
+
+int32 GetTabId(ExtensionFunctionDispatcher* dispatcher) {
+  content::WebContents* web_contents = GetWebContents(dispatcher);
+  return web_contents ? ExtensionTabUtil::GetTabId(web_contents) : 0;
 }
 
 base::FilePath GetLocalPathFromURL(

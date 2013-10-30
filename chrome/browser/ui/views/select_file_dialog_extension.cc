@@ -49,13 +49,16 @@ const int kFileManagerHeight = 640;  // pixels
 class PendingDialog {
  public:
   static PendingDialog* GetInstance();
-  void Add(int32 tab_id, scoped_refptr<SelectFileDialogExtension> dialog);
-  void Remove(int32 tab_id);
-  scoped_refptr<SelectFileDialogExtension> Find(int32 tab_id);
+  void Add(SelectFileDialogExtension::RoutingID id,
+           scoped_refptr<SelectFileDialogExtension> dialog);
+  void Remove(SelectFileDialogExtension::RoutingID id);
+  scoped_refptr<SelectFileDialogExtension> Find(
+      SelectFileDialogExtension::RoutingID id);
 
  private:
   friend struct DefaultSingletonTraits<PendingDialog>;
-  typedef std::map<int32, scoped_refptr<SelectFileDialogExtension> > Map;
+  typedef std::map<SelectFileDialogExtension::RoutingID,
+                   scoped_refptr<SelectFileDialogExtension> > Map;
   Map map_;
 };
 
@@ -64,21 +67,22 @@ PendingDialog* PendingDialog::GetInstance() {
   return Singleton<PendingDialog>::get();
 }
 
-void PendingDialog::Add(int32 tab_id,
-                         scoped_refptr<SelectFileDialogExtension> dialog) {
+void PendingDialog::Add(SelectFileDialogExtension::RoutingID id,
+                        scoped_refptr<SelectFileDialogExtension> dialog) {
   DCHECK(dialog.get());
-  if (map_.find(tab_id) == map_.end())
-    map_.insert(std::make_pair(tab_id, dialog));
+  if (map_.find(id) == map_.end())
+    map_.insert(std::make_pair(id, dialog));
   else
-    DLOG(WARNING) << "Duplicate pending dialog " << tab_id;
+    DLOG(WARNING) << "Duplicate pending dialog " << id;
 }
 
-void PendingDialog::Remove(int32 tab_id) {
-  map_.erase(tab_id);
+void PendingDialog::Remove(SelectFileDialogExtension::RoutingID id) {
+  map_.erase(id);
 }
 
-scoped_refptr<SelectFileDialogExtension> PendingDialog::Find(int32 tab_id) {
-  Map::const_iterator it = map_.find(tab_id);
+scoped_refptr<SelectFileDialogExtension> PendingDialog::Find(
+    SelectFileDialogExtension::RoutingID id) {
+  Map::const_iterator it = map_.find(id);
   if (it == map_.end())
     return NULL;
   return it->second;
@@ -87,6 +91,16 @@ scoped_refptr<SelectFileDialogExtension> PendingDialog::Find(int32 tab_id) {
 }  // namespace
 
 /////////////////////////////////////////////////////////////////////////////
+
+// static
+SelectFileDialogExtension::RoutingID
+SelectFileDialogExtension::GetRoutingIDFromWebContents(
+    const content::WebContents* web_contents) {
+  // Use the raw pointer value as the identifier. Previously we have used the
+  // tab ID for the purpose, but some web_contents, especially those of the
+  // packaged apps, don't have tab IDs assigned.
+  return web_contents;
+}
 
 // TODO(jamescook): Move this into a new file shell_dialogs_chromeos.cc
 // static
@@ -101,7 +115,7 @@ SelectFileDialogExtension::SelectFileDialogExtension(
     ui::SelectFilePolicy* policy)
     : SelectFileDialog(listener, policy),
       has_multiple_file_type_choices_(false),
-      tab_id_(0),
+      routing_id_(),
       profile_(NULL),
       owner_window_(NULL),
       selection_type_(CANCEL),
@@ -122,7 +136,7 @@ bool SelectFileDialogExtension::IsRunning(
 void SelectFileDialogExtension::ListenerDestroyed() {
   listener_ = NULL;
   params_ = NULL;
-  PendingDialog::GetInstance()->Remove(tab_id_);
+  PendingDialog::GetInstance()->Remove(routing_id_);
 }
 
 void SelectFileDialogExtension::ExtensionDialogClosing(
@@ -131,7 +145,7 @@ void SelectFileDialogExtension::ExtensionDialogClosing(
   owner_window_ = NULL;
   // Release our reference to the underlying dialog to allow it to close.
   extension_dialog_ = NULL;
-  PendingDialog::GetInstance()->Remove(tab_id_);
+  PendingDialog::GetInstance()->Remove(routing_id_);
   // Actually invoke the appropriate callback on our listener.
   NotifyListener();
 }
@@ -164,11 +178,11 @@ void SelectFileDialogExtension::ExtensionTerminated(
 
 // static
 void SelectFileDialogExtension::OnFileSelected(
-    int32 tab_id,
+    RoutingID routing_id,
     const ui::SelectedFileInfo& file,
     int index) {
   scoped_refptr<SelectFileDialogExtension> dialog =
-      PendingDialog::GetInstance()->Find(tab_id);
+      PendingDialog::GetInstance()->Find(routing_id);
   if (!dialog.get())
     return;
   dialog->selection_type_ = SINGLE_FILE;
@@ -179,10 +193,10 @@ void SelectFileDialogExtension::OnFileSelected(
 
 // static
 void SelectFileDialogExtension::OnMultiFilesSelected(
-    int32 tab_id,
+    RoutingID routing_id,
     const std::vector<ui::SelectedFileInfo>& files) {
   scoped_refptr<SelectFileDialogExtension> dialog =
-      PendingDialog::GetInstance()->Find(tab_id);
+      PendingDialog::GetInstance()->Find(routing_id);
   if (!dialog.get())
     return;
   dialog->selection_type_ = MULTIPLE_FILES;
@@ -191,9 +205,9 @@ void SelectFileDialogExtension::OnMultiFilesSelected(
 }
 
 // static
-void SelectFileDialogExtension::OnFileSelectionCanceled(int32 tab_id) {
+void SelectFileDialogExtension::OnFileSelectionCanceled(RoutingID routing_id) {
   scoped_refptr<SelectFileDialogExtension> dialog =
-      PendingDialog::GetInstance()->Find(tab_id);
+      PendingDialog::GetInstance()->Find(routing_id);
   if (!dialog.get())
     return;
   dialog->selection_type_ = CANCEL;
@@ -228,13 +242,13 @@ void SelectFileDialogExtension::NotifyListener() {
   }
 }
 
-void SelectFileDialogExtension::AddPending(int32 tab_id) {
-  PendingDialog::GetInstance()->Add(tab_id, this);
+void SelectFileDialogExtension::AddPending(RoutingID routing_id) {
+  PendingDialog::GetInstance()->Add(routing_id, this);
 }
 
 // static
-bool SelectFileDialogExtension::PendingExists(int32 tab_id) {
-  return PendingDialog::GetInstance()->Find(tab_id).get() != NULL;
+bool SelectFileDialogExtension::PendingExists(RoutingID routing_id) {
+  return PendingDialog::GetInstance()->Find(routing_id).get() != NULL;
 }
 
 bool SelectFileDialogExtension::HasMultipleFileTypeChoicesImpl() {
@@ -306,12 +320,10 @@ void SelectFileDialogExtension::SelectFileImpl(
   DCHECK(profile_);
 
   // Check if we have another dialog opened for the contents. It's unlikely, but
-  // possible. If there is no web contents use a tab_id of -1. A dialog without
-  // an associated web contents will be shown full-screen; only one at a time
-  // is allowed in this state.
-  int32 tab_id = SessionID::IdForTab(web_contents);
-  if (PendingExists(tab_id)) {
-    DLOG(WARNING) << "Pending dialog exists with id " << tab_id;
+  // possible.
+  RoutingID routing_id = GetRoutingIDFromWebContents(web_contents);
+  if (PendingExists(routing_id)) {
+    DLOG(WARNING) << "Pending dialog exists with id " << routing_id;
     return;
   }
 
@@ -372,10 +384,10 @@ void SelectFileDialogExtension::SelectFileImpl(
   }
 
   // Connect our listener to FileDialogFunction's per-tab callbacks.
-  AddPending(tab_id);
+  AddPending(routing_id);
 
   extension_dialog_ = dialog;
   params_ = params;
-  tab_id_ = tab_id;
+  routing_id_ = routing_id;
   owner_window_ = owner_window;
 }

@@ -14,9 +14,21 @@ using content::BrowserThread;
 
 namespace extensions {
 
+namespace {
+
+// Computes the routing ID for SelectFileDialogExtension from the |dispatcher|.
+SelectFileDialogExtension::RoutingID GetFileDialogRoutingID(
+    ExtensionFunctionDispatcher* dispatcher) {
+  return SelectFileDialogExtension::GetRoutingIDFromWebContents(
+      file_manager::util::GetWebContents(dispatcher));
+}
+
+}  // namespace
+
 bool FileBrowserPrivateCancelDialogFunction::RunImpl() {
-  const int32 tab_id = file_manager::util::GetTabId(dispatcher());
-  SelectFileDialogExtension::OnFileSelectionCanceled(tab_id);
+  const SelectFileDialogExtension::RoutingID routing_id =
+      GetFileDialogRoutingID(dispatcher());
+  SelectFileDialogExtension::OnFileSelectionCanceled(routing_id);
   SendResponse(true);
   return true;
 }
@@ -57,8 +69,9 @@ void FileBrowserPrivateSelectFileFunction::GetSelectedFileInfoResponse(
     SendResponse(false);
     return;
   }
-  const int32 tab_id = file_manager::util::GetTabId(dispatcher());
-  SelectFileDialogExtension::OnFileSelected(tab_id, files[0], index);
+  const SelectFileDialogExtension::RoutingID routing_id =
+      GetFileDialogRoutingID(dispatcher());
+  SelectFileDialogExtension::OnFileSelected(routing_id, files[0], index);
   SendResponse(true);
 }
 
@@ -90,8 +103,9 @@ bool FileBrowserPrivateSelectFilesFunction::RunImpl() {
 void FileBrowserPrivateSelectFilesFunction::GetSelectedFileInfoResponse(
     const std::vector<ui::SelectedFileInfo>& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  const int32 tab_id = file_manager::util::GetTabId(dispatcher());
-  SelectFileDialogExtension::OnMultiFilesSelected(tab_id, files);
+  const SelectFileDialogExtension::RoutingID routing_id =
+      GetFileDialogRoutingID(dispatcher());
+  SelectFileDialogExtension::OnMultiFilesSelected(routing_id, files);
   SendResponse(true);
 }
 

@@ -10,7 +10,8 @@
 
 namespace {
 
-const int32 kDefaultTabId = 0;
+const SelectFileDialogExtension::RoutingID kDefaultRoutingID =
+    SelectFileDialogExtension::RoutingID();
 
 }  // namespace
 
@@ -25,9 +26,9 @@ class SelectFileDialogExtensionTest : public testing::Test {
     SelectFileDialogExtension* dialog = new SelectFileDialogExtension(listener,
                                                                       NULL);
     // Simulate the dialog opening.
-    EXPECT_FALSE(SelectFileDialogExtension::PendingExists(kDefaultTabId));
-    dialog->AddPending(kDefaultTabId);
-    EXPECT_TRUE(SelectFileDialogExtension::PendingExists(kDefaultTabId));
+    EXPECT_FALSE(SelectFileDialogExtension::PendingExists(kDefaultRoutingID));
+    dialog->AddPending(kDefaultRoutingID);
+    EXPECT_TRUE(SelectFileDialogExtension::PendingExists(kDefaultRoutingID));
     return dialog;
   }
 
@@ -92,7 +93,8 @@ TEST_F(SelectFileDialogExtensionTest, FileSelected) {
       CreateDialog(listener.get());
   // Simulate selecting a file.
   ui::SelectedFileInfo info;
-  SelectFileDialogExtension::OnFileSelected(kDefaultTabId, info, kFileIndex);
+  SelectFileDialogExtension::OnFileSelected(kDefaultRoutingID, info,
+                                            kFileIndex);
   // Simulate closing the dialog so the listener gets invoked.
   dialog->ExtensionDialogClosing(NULL);
   EXPECT_TRUE(listener->selected());
@@ -104,7 +106,7 @@ TEST_F(SelectFileDialogExtensionTest, FileSelectionCanceled) {
   scoped_refptr<SelectFileDialogExtension> dialog =
       CreateDialog(listener.get());
   // Simulate cancelling the dialog.
-  SelectFileDialogExtension::OnFileSelectionCanceled(kDefaultTabId);
+  SelectFileDialogExtension::OnFileSelectionCanceled(kDefaultRoutingID);
   // Simulate closing the dialog so the listener gets invoked.
   dialog->ExtensionDialogClosing(NULL);
   EXPECT_FALSE(listener->selected());
@@ -116,7 +118,7 @@ TEST_F(SelectFileDialogExtensionTest, SelfDeleting) {
   // Ensure we don't crash or trip an Address Sanitizer warning about
   // use-after-free.
   ui::SelectedFileInfo file_info;
-  SelectFileDialogExtension::OnFileSelected(kDefaultTabId, file_info, 0);
+  SelectFileDialogExtension::OnFileSelected(kDefaultRoutingID, file_info, 0);
   // Simulate closing the dialog so the listener gets invoked.
   client->dialog()->ExtensionDialogClosing(NULL);
 }

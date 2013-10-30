@@ -16,6 +16,7 @@ class Profile;
 
 namespace content {
 class RenderViewHost;
+class WebContents;
 }
 
 namespace extensions {
@@ -42,6 +43,10 @@ void VolumeInfoToVolumeMetadata(
     Profile* profile,
     const VolumeInfo& volume_info,
     extensions::api::file_browser_private::VolumeMetadata* volume_metadata);
+
+// Returns the WebContents of the tab associated with the dispatcher. Returns
+// NULL on error.
+content::WebContents* GetWebContents(ExtensionFunctionDispatcher* dispatcher);
 
 // Returns the ID of the tab associated with the dispatcher. Returns 0 on
 // error.
