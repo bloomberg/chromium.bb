@@ -199,7 +199,7 @@ private:
     bool updateClippingMaskLayers(bool needsChildClippingMaskLayer);
     bool requiresHorizontalScrollbarLayer() const { return m_owningLayer->scrollableArea() && m_owningLayer->scrollableArea()->horizontalScrollbar(); }
     bool requiresVerticalScrollbarLayer() const { return m_owningLayer->scrollableArea() && m_owningLayer->scrollableArea()->verticalScrollbar(); }
-    bool requiresScrollCornerLayer() const { return !m_owningLayer->scrollCornerAndResizerRect().isEmpty(); }
+    bool requiresScrollCornerLayer() const { return m_owningLayer->scrollableArea() && !m_owningLayer->scrollableArea()->scrollCornerAndResizerRect().isEmpty(); }
     bool updateScrollingLayers(bool scrollingLayers);
     void updateScrollParent(RenderLayer*);
     void updateClipParent(RenderLayer*);

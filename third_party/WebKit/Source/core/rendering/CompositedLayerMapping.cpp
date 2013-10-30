@@ -988,7 +988,7 @@ void CompositedLayerMapping::positionOverflowControlsLayers(const IntSize& offse
     }
 
     if (GraphicsLayer* layer = layerForScrollCorner()) {
-        const LayoutRect& scrollCornerAndResizer = m_owningLayer->scrollCornerAndResizerRect();
+        const LayoutRect& scrollCornerAndResizer = m_owningLayer->scrollableArea()->scrollCornerAndResizerRect();
         layer->setPosition(scrollCornerAndResizer.location() - offsetFromRenderer);
         layer->setSize(scrollCornerAndResizer.size());
         layer->setDrawsContent(!scrollCornerAndResizer.isEmpty());
@@ -1740,7 +1740,7 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
     } else if (graphicsLayer == layerForVerticalScrollbar()) {
         paintScrollbar(m_owningLayer->scrollableArea()->verticalScrollbar(), context, clip);
     } else if (graphicsLayer == layerForScrollCorner()) {
-        const IntRect& scrollCornerAndResizer = m_owningLayer->scrollCornerAndResizerRect();
+        const IntRect& scrollCornerAndResizer = m_owningLayer->scrollableArea()->scrollCornerAndResizerRect();
         context.save();
         context.translate(-scrollCornerAndResizer.x(), -scrollCornerAndResizer.y());
         IntRect transformedClip = clip;

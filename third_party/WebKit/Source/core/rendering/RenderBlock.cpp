@@ -3219,7 +3219,7 @@ bool RenderBlock::isPointInOverflowControl(HitTestResult& result, const LayoutPo
     if (!scrollsOverflow())
         return false;
 
-    return layer()->hitTestOverflowControls(result, roundedIntPoint(locationInContainer - toLayoutSize(accumulatedOffset)));
+    return layer()->scrollableArea()->hitTestOverflowControls(result, roundedIntPoint(locationInContainer - toLayoutSize(accumulatedOffset)));
 }
 
 Node* RenderBlock::nodeForHitTest() const

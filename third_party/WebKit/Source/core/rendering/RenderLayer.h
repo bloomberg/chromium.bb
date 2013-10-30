@@ -137,11 +137,6 @@ public:
 
     LayoutRect rect() const { return LayoutRect(location(), size()); }
 
-    bool hitTestOverflowControls(HitTestResult&, const IntPoint& localPoint);
-    IntSize offsetFromResizeCorner(const IntPoint& absolutePoint) const;
-
-    void autoscroll(const IntPoint&);
-
     bool isRootLayer() const { return m_isRootLayer; }
 
     RenderLayerCompositor* compositor() const;
@@ -559,9 +554,6 @@ private:
     bool shouldBeSelfPaintingLayer() const;
 
 private:
-    // Rectangle encompassing the scroll corner and resizer rect.
-    IntRect scrollCornerAndResizerRect() const;
-
     // FIXME: We should only create the stacking node if needed.
     bool requiresStackingNode() const { return true; }
     void updateStackingNode();

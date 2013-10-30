@@ -1375,7 +1375,7 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
         if (layer && layer->scrollableArea() && layer->scrollableArea()->isPointInResizeControl(p, ResizerForPointer)) {
             m_resizeScrollableArea = layer->scrollableArea();
             m_resizeScrollableArea->setInResizeMode(true);
-            m_offsetFromResizeCorner = layer->offsetFromResizeCorner(p);
+            m_offsetFromResizeCorner = m_resizeScrollableArea->offsetFromResizeCorner(p);
             invalidateClick();
             return true;
         }
@@ -2457,7 +2457,7 @@ bool EventHandler::handleScrollGestureOnResizer(Node* eventTarget, const Platfor
         if (layer && layer->scrollableArea() && layer->scrollableArea()->isPointInResizeControl(p, ResizerForTouch)) {
             m_resizeScrollableArea = layer->scrollableArea();
             m_resizeScrollableArea->setInResizeMode(true);
-            m_offsetFromResizeCorner = layer->offsetFromResizeCorner(p);
+            m_offsetFromResizeCorner = m_resizeScrollableArea->offsetFromResizeCorner(p);
             return true;
         }
     } else if (gestureEvent.type() == PlatformEvent::GestureScrollUpdate ||

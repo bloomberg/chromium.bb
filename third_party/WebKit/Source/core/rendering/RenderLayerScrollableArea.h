@@ -156,10 +156,14 @@ public:
     // isPointInResizeControl() is used for testing if a pointer/touch position is in the resize control
     // area.
     bool isPointInResizeControl(const IntPoint& absolutePoint, ResizerHitTestType) const;
+    bool hitTestOverflowControls(HitTestResult&, const IntPoint& localPoint);
 
     LayoutRect exposeRect(const LayoutRect&, const ScrollAlignment& alignX, const ScrollAlignment& alignY);
 
     bool scrollsOverflow() const;
+
+    // Rectangle encompassing the scroll corner and resizer rect.
+    IntRect scrollCornerAndResizerRect() const;
 
 private:
     bool hasHorizontalOverflow() const;
@@ -186,11 +190,9 @@ private:
     void setHasVerticalScrollbar(bool hasScrollbar);
 
     void updateScrollCornerStyle();
-    bool hitTestOverflowControls(HitTestResult&, const IntPoint& localPoint);
 
     // See comments on isPointInResizeControl.
     IntRect resizerCornerRect(const IntRect&, ResizerHitTestType) const;
-    IntRect scrollCornerAndResizerRect() const;
     bool overflowControlsIntersectRect(const IntRect& localRect) const;
     bool hitTestResizerInFragments(const LayerFragments&, const HitTestLocation&) const;
     void updateResizerAreaSet();

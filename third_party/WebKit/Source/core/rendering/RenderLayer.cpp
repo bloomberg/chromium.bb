@@ -1799,25 +1799,6 @@ void RenderLayer::updateScrollableArea()
         m_scrollableArea = nullptr;
 }
 
-void RenderLayer::autoscroll(const IntPoint& position)
-{
-    Frame* frame = renderer()->frame();
-    if (!frame)
-        return;
-
-    FrameView* frameView = frame->view();
-    if (!frameView)
-        return;
-
-    IntPoint currentDocumentPosition = frameView->windowToContents(position);
-    renderer()->enclosingBox()->scrollRectToVisible(LayoutRect(currentDocumentPosition, LayoutSize(1, 1)), ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded);
-}
-
-IntSize RenderLayer::offsetFromResizeCorner(const IntPoint& absolutePoint) const
-{
-    return m_scrollableArea->offsetFromResizeCorner(absolutePoint);
-}
-
 PassOwnPtr<Vector<FloatRect> > RenderLayer::collectTrackedRepaintRects() const
 {
     if (CompositedLayerMapping* mapping = compositedLayerMapping())
@@ -4196,22 +4177,6 @@ void RenderLayer::addLayerHitTestRects(LayerHitTestRects& rects) const
 
     for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
         child->addLayerHitTestRects(rects);
-}
-
-IntRect RenderLayer::scrollCornerAndResizerRect() const
-{
-    if (!m_scrollableArea)
-        return IntRect();
-
-    return m_scrollableArea->scrollCornerAndResizerRect();
-}
-
-bool RenderLayer::hitTestOverflowControls(HitTestResult& result, const IntPoint& localPoint)
-{
-    if (!m_scrollableArea)
-        return false;
-
-    return m_scrollableArea->hitTestOverflowControls(result, localPoint);
 }
 
 } // namespace WebCore

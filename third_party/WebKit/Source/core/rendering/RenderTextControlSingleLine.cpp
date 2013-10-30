@@ -385,9 +385,8 @@ void RenderTextControlSingleLine::autoscroll(const IntPoint& position)
     RenderBox* renderer = innerTextElement()->renderBox();
     if (!renderer)
         return;
-    RenderLayer* layer = renderer->layer();
-    if (layer)
-        layer->autoscroll(position);
+
+    renderer->autoscroll(position);
 }
 
 int RenderTextControlSingleLine::scrollWidth() const
