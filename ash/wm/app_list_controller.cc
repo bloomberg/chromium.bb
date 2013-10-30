@@ -375,9 +375,9 @@ void AppListController::OnShelfAlignmentChanged(aura::Window* root_window) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AppListController, LauncherIconObserver implementation:
+// AppListController, ShelfIconObserver implementation:
 
-void AppListController::OnLauncherIconPositionsChanged() {
+void AppListController::OnShelfIconPositionsChanged() {
   UpdateBounds();
 }
 

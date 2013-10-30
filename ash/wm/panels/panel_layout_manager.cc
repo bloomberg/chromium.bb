@@ -438,9 +438,9 @@ void PanelLayoutManager::SetChildBounds(aura::Window* child,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PanelLayoutManager, ash::LauncherIconObserver implementation:
+// PanelLayoutManager, ShelfIconObserver implementation:
 
-void PanelLayoutManager::OnLauncherIconPositionsChanged() {
+void PanelLayoutManager::OnShelfIconPositionsChanged() {
   // TODO: As this is called for every animation step now. Relayout needs to be
   // updated to use current icon position instead of use the ideal bounds so
   // that the panels slide with their icons instead of jumping.

@@ -121,11 +121,11 @@ void Launcher::CycleWindowLinear(CycleDirection direction) {
     ActivateLauncherItem(item_index);
 }
 
-void Launcher::AddIconObserver(LauncherIconObserver* observer) {
+void Launcher::AddIconObserver(ShelfIconObserver* observer) {
   shelf_view_->AddIconObserver(observer);
 }
 
-void Launcher::RemoveIconObserver(LauncherIconObserver* observer) {
+void Launcher::RemoveIconObserver(ShelfIconObserver* observer) {
   shelf_view_->RemoveIconObserver(observer);
 }
 

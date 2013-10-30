@@ -34,9 +34,9 @@ class ShelfViewTestAPI;
 
 class LauncherDelegate;
 struct LauncherItem;
-class LauncherIconObserver;
 class LauncherItemDelegateManager;
 class LauncherModel;
+class ShelfIconObserver;
 
 namespace internal {
 
@@ -79,8 +79,8 @@ class ASH_EXPORT ShelfView : public views::View,
   // Repositions the icon for the specified item by the midpoint of the window.
   void UpdatePanelIconPosition(LauncherID id, const gfx::Point& midpoint);
 
-  void AddIconObserver(LauncherIconObserver* observer);
-  void RemoveIconObserver(LauncherIconObserver* observer);
+  void AddIconObserver(ShelfIconObserver* observer);
+  void RemoveIconObserver(ShelfIconObserver* observer);
 
   // Returns true if we're showing a menu.
   bool IsShowingMenu() const;
@@ -356,7 +356,7 @@ class ASH_EXPORT ShelfView : public views::View,
 
   scoped_ptr<views::MenuRunner> launcher_menu_runner_;
 
-  ObserverList<LauncherIconObserver> observers_;
+  ObserverList<ShelfIconObserver> observers_;
 
   // Amount content is inset on the left edge (or top edge for vertical
   // alignment).

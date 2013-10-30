@@ -9,7 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/display/display_controller.h"
-#include "ash/launcher/launcher_icon_observer.h"
+#include "ash/shelf/shelf_icon_observer.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/window_state_observer.h"
@@ -53,8 +53,8 @@ class ShelfLayoutManager;
 
 class ASH_EXPORT PanelLayoutManager
     : public aura::LayoutManager,
-      public ash::LauncherIconObserver,
-      public ash::ShellObserver,
+      public ShelfIconObserver,
+      public ShellObserver,
       public aura::WindowObserver,
       public aura::client::ActivationChangeObserver,
       public keyboard::KeyboardControllerObserver,
@@ -89,10 +89,10 @@ class ASH_EXPORT PanelLayoutManager
   virtual void SetChildBounds(aura::Window* child,
                               const gfx::Rect& requested_bounds) OVERRIDE;
 
-  // Overridden from ash::LauncherIconObserver
-  virtual void OnLauncherIconPositionsChanged() OVERRIDE;
+  // Overridden from ShelfIconObserver
+  virtual void OnShelfIconPositionsChanged() OVERRIDE;
 
-  // Overridden from ash::ShellObserver
+  // Overridden from ShellObserver
   virtual void OnShelfAlignmentChanged(aura::Window* root_window) OVERRIDE;
 
   // Overridden from ash::wm::WindowStateObserver

@@ -41,9 +41,9 @@ namespace test {
 class LauncherTestAPI;
 }
 
-class LauncherIconObserver;
 class LauncherDelegate;
 class LauncherModel;
+class ShelfIconObserver;
 class ShelfWidget;
 
 class ASH_EXPORT Launcher {
@@ -82,8 +82,8 @@ class ASH_EXPORT Launcher {
   // Cycles the window focus linearly over the current launcher items.
   void CycleWindowLinear(CycleDirection direction);
 
-  void AddIconObserver(LauncherIconObserver* observer);
-  void RemoveIconObserver(LauncherIconObserver* observer);
+  void AddIconObserver(ShelfIconObserver* observer);
+  void RemoveIconObserver(ShelfIconObserver* observer);
 
   // Returns true if the Launcher is showing a context menu.
   bool IsShowingMenu() const;

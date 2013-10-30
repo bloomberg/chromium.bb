@@ -11,7 +11,6 @@
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_delegate.h"
-#include "ash/launcher/launcher_icon_observer.h"
 #include "ash/launcher/launcher_item_delegate.h"
 #include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/launcher/launcher_model.h"
@@ -21,6 +20,7 @@
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/overflow_bubble.h"
 #include "ash/shelf/overflow_button.h"
+#include "ash/shelf/shelf_icon_observer.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_widget.h"
@@ -877,11 +877,11 @@ int ShelfView::DetermineFirstVisiblePanelIndex(int min_value) const {
   return index;
 }
 
-void ShelfView::AddIconObserver(LauncherIconObserver* observer) {
+void ShelfView::AddIconObserver(ShelfIconObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void ShelfView::RemoveIconObserver(LauncherIconObserver* observer) {
+void ShelfView::RemoveIconObserver(ShelfIconObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
@@ -1355,8 +1355,8 @@ gfx::Size ShelfView::GetPreferredSize() {
 
 void ShelfView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   LayoutToIdealBounds();
-  FOR_EACH_OBSERVER(LauncherIconObserver, observers_,
-                    OnLauncherIconPositionsChanged());
+  FOR_EACH_OBSERVER(ShelfIconObserver, observers_,
+                    OnShelfIconPositionsChanged());
 
   if (IsShowingOverflowBubble())
     overflow_bubble_->Hide();
@@ -1804,8 +1804,8 @@ void ShelfView::ShowMenu(scoped_ptr<views::MenuModelAdapter> menu_model_adapter,
 }
 
 void ShelfView::OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) {
-  FOR_EACH_OBSERVER(LauncherIconObserver, observers_,
-                    OnLauncherIconPositionsChanged());
+  FOR_EACH_OBSERVER(ShelfIconObserver, observers_,
+                    OnShelfIconPositionsChanged());
   PreferredSizeChanged();
 }
 

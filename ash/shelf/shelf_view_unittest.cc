@@ -10,11 +10,11 @@
 #include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_button.h"
-#include "ash/launcher/launcher_icon_observer.h"
 #include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_types.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_icon_observer.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_widget.h"
@@ -47,24 +47,24 @@ namespace ash {
 namespace test {
 
 ////////////////////////////////////////////////////////////////////////////////
-// LauncherIconObserver tests.
+// ShelfIconObserver tests.
 
-class TestLauncherIconObserver : public LauncherIconObserver {
+class TestShelfIconObserver : public ShelfIconObserver {
  public:
-  explicit TestLauncherIconObserver(Launcher* launcher)
+  explicit TestShelfIconObserver(Launcher* launcher)
       : launcher_(launcher),
         change_notified_(false) {
     if (launcher_)
       launcher_->AddIconObserver(this);
   }
 
-  virtual ~TestLauncherIconObserver() {
+  virtual ~TestShelfIconObserver() {
     if (launcher_)
       launcher_->RemoveIconObserver(this);
   }
 
-  // LauncherIconObserver implementation.
-  virtual void OnLauncherIconPositionsChanged() OVERRIDE {
+  // ShelfIconObserver implementation.
+  virtual void OnShelfIconPositionsChanged() OVERRIDE {
     change_notified_ = true;
   }
 
@@ -75,7 +75,7 @@ class TestLauncherIconObserver : public LauncherIconObserver {
   Launcher* launcher_;
   bool change_notified_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestLauncherIconObserver);
+  DISALLOW_COPY_AND_ASSIGN(TestShelfIconObserver);
 };
 
 class ShelfViewIconObserverTest : public ash::test::AshTestBase {
@@ -86,7 +86,7 @@ class ShelfViewIconObserverTest : public ash::test::AshTestBase {
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
     Launcher* launcher = Launcher::ForPrimaryDisplay();
-    observer_.reset(new TestLauncherIconObserver(launcher));
+    observer_.reset(new TestShelfIconObserver(launcher));
 
     shelf_view_test_.reset(new ShelfViewTestAPI(
         LauncherTestAPI(launcher).shelf_view()));
@@ -98,7 +98,7 @@ class ShelfViewIconObserverTest : public ash::test::AshTestBase {
     AshTestBase::TearDown();
   }
 
-  TestLauncherIconObserver* observer() { return observer_.get(); }
+  TestShelfIconObserver* observer() { return observer_.get(); }
 
   ShelfViewTestAPI* shelf_view_test() {
     return shelf_view_test_.get();
@@ -109,7 +109,7 @@ class ShelfViewIconObserverTest : public ash::test::AshTestBase {
   }
 
  private:
-  scoped_ptr<TestLauncherIconObserver> observer_;
+  scoped_ptr<TestShelfIconObserver> observer_;
   scoped_ptr<ShelfViewTestAPI> shelf_view_test_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfViewIconObserverTest);
@@ -151,7 +151,7 @@ TEST_F(ShelfViewIconObserverTest, AddRemove) {
 // launcher on external display as well as one on primary.
 TEST_F(ShelfViewIconObserverTest, MAYBE_AddRemoveWithMultipleDisplays) {
   UpdateDisplay("400x400,400x400");
-  TestLauncherIconObserver second_observer(LauncherForSecondaryDisplay());
+  TestShelfIconObserver second_observer(LauncherForSecondaryDisplay());
 
   ash::test::TestLauncherDelegate* launcher_delegate =
       ash::test::TestLauncherDelegate::instance();
