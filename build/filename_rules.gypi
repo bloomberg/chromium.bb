@@ -92,6 +92,9 @@
     ['<(use_aura)==0 or OS!="win" or >(nacl_untrusted_build)==1', {
       'sources/': [ ['exclude', '_aurawin\\.(h|cc)$'] ]
     }],
+    ['<(use_aura)==0 or OS!="linux" or >(nacl_untrusted_build)==1', {
+      'sources/': [ ['exclude', '_auralinux\\.(h|cc)$'] ]
+    }],
     ['<(use_ash)==0 or >(nacl_untrusted_build)==1', {
       'sources/': [ ['exclude', '_ash(_browsertest|_unittest)?\\.(h|cc)$'],
                     ['exclude', '(^|/)ash/'],
