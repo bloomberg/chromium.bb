@@ -7,6 +7,7 @@
  * - 3: preview-panel
  * - 500: scrollbar
  * - 500: splitter
+ * - 525: spinner
  * - 550: autocomplete-suggestions
  * - 600: menus
  * - 600: tooltip
@@ -724,28 +725,14 @@ body[drive] .dialog-container[connection='metered'] .offline-icon-space {
   width: 16px;
 }
 
-#spinner-container,
-.spinner-container {
-  -webkit-box-align: center;
-  -webkit-box-pack: center;
+.spinner-layer {
+  background: url(../images/common/spinner.svg) center / 16px no-repeat;
   bottom: 0;
-  display: -webkit-box;
   left: 0;
-  pointer-events: none;
   position: absolute;
   right: 0;
   top: 0;
-}
-
-#spinner-with-text {
-  background: no-repeat url(../images/common/spinner.svg);
-  font-size: 16px;
-  height: 16px;
-  line-height: 16px;
-  min-width: 16px;
-  padding-left: 26px;
-  position: relative;
-  z-index: 10;
+  z-index: 525;
 }
 
 .downloads-warning {
@@ -1830,17 +1817,18 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
 #suggest-app-dialog #webview-container {
   border-bottom: solid 1px #bbb;
   border-top: solid 1px #bbb;
+  position: relative;
 }
 
 #suggest-app-dialog.show-spinner #webview-container webview {
   pointer-events: none;
 }
 
-#suggest-app-dialog:not(.show-spinner) .spinner-container {
+#suggest-app-dialog:not(.show-spinner) .spinner-layer {
   display: none;
 }
 
-#suggest-app-dialog .spinner-container {
+#suggest-app-dialog .spinner-layer {
   background-color: rgba(255, 255, 255, 0.7);
   top: 45px;  /* Title: 44px, border: 1px */
 }

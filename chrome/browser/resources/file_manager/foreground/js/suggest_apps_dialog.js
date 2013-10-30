@@ -49,21 +49,15 @@ function SuggestAppsDialog(parentNode, state) {
 
   this.frame_.id = 'suggest-app-dialog';
 
-  this.spinner_ = this.document_.createElement('div');
-  this.spinner_.className = 'spinner';
-
-  this.spinnerWrapper_ = this.document_.createElement('div');
-  this.spinnerWrapper_.className = 'spinner-container';
-  this.spinnerWrapper_.style.width = WEBVIEW_WIDTH + 'px';
-  this.spinnerWrapper_.style.height = WEBVIEW_HEIGHT + 'px';
-  this.spinnerWrapper_.appendChild(this.spinner_);
-  this.frame_.insertBefore(this.spinnerWrapper_, this.text_.nextSibling);
-
   this.webviewContainer_ = this.document_.createElement('div');
   this.webviewContainer_.id = 'webview-container';
   this.webviewContainer_.style.width = WEBVIEW_WIDTH + 'px';
   this.webviewContainer_.style.height = WEBVIEW_HEIGHT + 'px';
   this.frame_.insertBefore(this.webviewContainer_, this.text_.nextSibling);
+
+  var spinnerLayer = this.document_.createElement('div');
+  spinnerLayer.className = 'spinner-layer';
+  this.webviewContainer_.appendChild(spinnerLayer);
 
   this.buttons_ = this.document_.createElement('div');
   this.buttons_.id = 'buttons';
@@ -217,10 +211,9 @@ SuggestAppsDialog.prototype.show = function(extension, mime, onDialogClosed) {
       return;
     }
 
-    this.webviewContainer_.innerHTML =
-        '<webview id="cws-widget" partition="persist:cwswidgets"></webview>';
-
-    this.webview_ = this.container_.querySelector('#cws-widget');
+    this.webview_ = this.document_.createElement('webview');
+    this.webview_.id = 'cws-widget';
+    this.webview_.partition = 'persist:cwswidgets';
     this.webview_.style.width = WEBVIEW_WIDTH + 'px';
     this.webview_.style.height = WEBVIEW_HEIGHT + 'px';
     this.webview_.request.onBeforeSendHeaders.addListener(
@@ -233,6 +226,7 @@ SuggestAppsDialog.prototype.show = function(extension, mime, onDialogClosed) {
       util.visitURL(event.targetUrl);
       event.preventDefault();
     });
+    this.webviewContainer_.appendChild(this.webview_);
 
     this.frame_.classList.add('show-spinner');
 
@@ -378,7 +372,8 @@ SuggestAppsDialog.prototype.hide = function(opt_originalOnHide) {
     this.webviewClient_ = null;
   }
 
-  this.webviewContainer_.innerHTML = '';
+  this.webviewContainer_.removeChild(this.webview_);
+  this.webview_ = null;
   this.extension_ = null;
   this.mime_ = null;
 

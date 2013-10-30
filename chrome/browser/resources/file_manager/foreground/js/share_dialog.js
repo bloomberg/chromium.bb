@@ -15,7 +15,7 @@ function ShareDialog(parentNode) {
   this.onQueueTaskFinished_ = null;
   this.shareClient_ = null;
   this.spinner_ = null;
-  this.spinnerWrapper_ = null;
+  this.spinnerLayer_ = null;
   this.webViewWrapper_ = null;
   this.webView_ = null;
   this.failureTimeout_ = null;
@@ -122,13 +122,9 @@ ShareDialog.prototype.initDom_ = function() {
   FileManagerDialogBase.prototype.initDom_.call(this);
   this.frame_.classList.add('share-dialog-frame');
 
-  this.spinnerWrapper_ = this.document_.createElement('div');
-  this.spinnerWrapper_.className = 'spinner-container';
-  this.frame_.appendChild(this.spinnerWrapper_);
-
-  this.spinner_ = this.document_.createElement('div');
-  this.spinner_.className = 'spinner';
-  this.spinnerWrapper_.appendChild(this.spinner_);
+  this.spinnerLayer_ = this.document_.createElement('div');
+  this.spinnerLayer_.className = 'spinner-layer';
+  this.frame_.appendChild(this.spinnerLayer_);
 
   this.webViewWrapper_ = this.document_.createElement('div');
   this.webViewWrapper_.className = 'share-dialog-webview-wrapper';
@@ -171,7 +167,7 @@ ShareDialog.prototype.onLoaded = function() {
   console.debug('Loaded.');
 
   this.okButton_.hidden = false;
-  this.spinnerWrapper_.hidden = true;
+  this.spinnerLayer_.hidden = true;
   this.webViewWrapper_.classList.add('loaded');
   this.webView_.focus();
 };
@@ -236,7 +232,7 @@ ShareDialog.prototype.show = function(entry, callback) {
 
   // Initialize the variables.
   this.callback_ = callback;
-  this.spinnerWrapper_.hidden = false;
+  this.spinnerLayer_.hidden = false;
   this.webViewWrapper_.style.width = '';
   this.webViewWrapper_.style.height = '';
 

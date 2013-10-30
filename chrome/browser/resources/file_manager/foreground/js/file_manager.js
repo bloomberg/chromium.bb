@@ -740,7 +740,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.table_ = dom.querySelector('.detail-table');
     this.grid_ = dom.querySelector('.thumbnail-grid');
-    this.spinner_ = dom.querySelector('#spinner-with-text');
+    this.spinner_ = dom.querySelector('#list-container > .spinner-layer');
     this.showSpinner_(true);
 
     // Check the option to hide the selecting checkboxes.
