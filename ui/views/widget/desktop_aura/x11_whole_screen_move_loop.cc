@@ -94,6 +94,11 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
   if (!GrabPointerWithCursor(cursor))
     return false;
 
+  // We are handling a mouse drag outside of the aura::RootWindow system. We
+  // must manually make aura think that the mouse button is pressed so that we
+  // don't draw extraneous tooltips.
+  aura::Env::GetInstance()->set_mouse_button_flags(ui::EF_LEFT_MOUSE_BUTTON);
+
   base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
   base::MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
   base::RunLoop run_loop(aura::Env::GetInstance()->GetDispatcher());
@@ -110,6 +115,9 @@ void X11WholeScreenMoveLoop::UpdateCursor(gfx::NativeCursor cursor) {
 void X11WholeScreenMoveLoop::EndMoveLoop() {
   if (!in_move_loop_)
     return;
+
+  // We undo our emulated mouse click from RunMoveLoop();
+  aura::Env::GetInstance()->set_mouse_button_flags(0);
 
   // TODO(erg): Is this ungrab the cause of having to click to give input focus
   // on drawn out windows? Not ungrabbing here screws the X server until I kill

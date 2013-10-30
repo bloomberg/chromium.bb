@@ -10,10 +10,6 @@ namespace aura {
 
 // static
 scoped_ptr<InputStateLookup> InputStateLookup::Create() {
-#if !defined(OS_CHROMEOS)
-  // TODO: need to create input_state_lookup_x11.
-  NOTIMPLEMENTED();
-#endif
   return scoped_ptr<InputStateLookup>();
 }
 
