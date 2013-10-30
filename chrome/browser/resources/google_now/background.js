@@ -229,7 +229,7 @@ function recordEvent(event) {
  *     parameter.
  */
 function setAuthorization(request, callbackBoolean) {
-  authenticationManager.isSignedIn(function(token) {
+  authenticationManager.getAuthToken(function(token) {
     if (!token) {
       callbackBoolean(false);
       return;
@@ -975,8 +975,7 @@ function updateRunningState(
  */
 function onStateChange() {
   tasks.add(STATE_CHANGED_TASK_NAME, function() {
-    authenticationManager.isSignedIn(function(token) {
-      var signedIn = !!token;
+    authenticationManager.isSignedIn(function(signedIn) {
       instrumented.metricsPrivate.getVariationParams(
           'GoogleNow',
           function(response) {

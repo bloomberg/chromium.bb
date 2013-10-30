@@ -13,6 +13,9 @@ chrome['identity'] = {
   getAuthToken: emptyMock,
   removeCachedAuthToken: emptyMock
 };
+chrome['webstorePrivate'] = {
+  getBrowserLogin: emptyMock
+};
 
 mockChromeEvent(chrome, 'alarms.onAlarm');
 mockChromeEvent(chrome, 'identity.onSignInChanged');

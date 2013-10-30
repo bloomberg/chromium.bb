@@ -401,6 +401,7 @@ wrapper.instrumentChromeApiFunction('alarms.onAlarm.addListener', 0);
 wrapper.instrumentChromeApiFunction('identity.getAuthToken', 1);
 wrapper.instrumentChromeApiFunction('identity.onSignInChanged.addListener', 0);
 wrapper.instrumentChromeApiFunction('identity.removeCachedAuthToken', 1);
+wrapper.instrumentChromeApiFunction('webstorePrivate.getBrowserLogin', 0);
 
 /**
  * Builds the object to manage tasks (mutually exclusive chains of events).
@@ -680,15 +681,24 @@ function buildAuthenticationManager() {
   var alarmName = 'sign-in-alarm';
 
   /**
-   * Determines if the user is signed in and provides a token if signed in.
+   * Gets an OAuth2 access token.
    * @param {function(string=)} callback Called on completion.
-   *     If the user is signed in, the string contains the token.
+   *     The string contains the token. It's undefined if there was an error.
    */
-  function isSignedIn(callback) {
+  function getAuthToken(callback) {
     instrumented.identity.getAuthToken({interactive: false}, function(token) {
       token = chrome.runtime.lastError ? undefined : token;
       callback(token);
-      checkAndNotifyListeners(!!token);
+    });
+  }
+
+  /**
+   * Determines whether there is an account attached to the profile.
+   * @param {function(boolean)} callback Called on completion.
+   */
+  function isSignedIn(callback) {
+    instrumented.webstorePrivate.getBrowserLogin(function(accountInfo) {
+      callback(!!accountInfo.login);
     });
   }
 
@@ -699,10 +709,8 @@ function buildAuthenticationManager() {
    */
   function removeToken(token, callback) {
     instrumented.identity.removeCachedAuthToken({token: token}, function() {
-      // Removing the token from the cache will change the sign in state.
-      // Repoll now to check the state and notify listeners.
-      // This also lets Chrome now about a possible problem with the token.
-      isSignedIn(function() {});
+      // Let Chrome now about a possible problem with the token.
+      getAuthToken(function() {});
       callback();
     });
   }
@@ -719,32 +727,33 @@ function buildAuthenticationManager() {
   }
 
   /**
-   * Checks if the last signed in state matches the specified one.
+   * Checks if the last signed in state matches the current one.
    * If it doesn't, it notifies the listeners of the change.
-   * @param {boolean} currentSignedInState The current signed in state.
    */
-  function checkAndNotifyListeners(currentSignedInState) {
-    instrumented.storage.local.get('lastSignedInState', function(items) {
-      items = items || {};
-      if (items.lastSignedInState != currentSignedInState) {
-        chrome.storage.local.set(
-            {lastSignedInState: currentSignedInState});
-        if (items.lastSignedInState != undefined) {
-          listeners.forEach(function(callback) {
-            callback();
-          });
+  function checkAndNotifyListeners() {
+    isSignedIn(function(signedIn) {
+      instrumented.storage.local.get('lastSignedInState', function(items) {
+        items = items || {};
+        if (items.lastSignedInState != signedIn) {
+          chrome.storage.local.set(
+              {lastSignedInState: signedIn});
+          if (items.lastSignedInState != undefined) {
+            listeners.forEach(function(callback) {
+              callback();
+            });
+          }
         }
-      }
+      });
     });
   }
 
   instrumented.identity.onSignInChanged.addListener(function() {
-    isSignedIn(function() {});
+    checkAndNotifyListeners();
   });
 
   instrumented.alarms.onAlarm.addListener(function(alarm) {
     if (alarm.name == alarmName)
-      isSignedIn(function() {});
+      checkAndNotifyListeners();
   });
 
   // Poll for the sign in state every hour.
@@ -753,6 +762,7 @@ function buildAuthenticationManager() {
 
   return {
     addListener: addListener,
+    getAuthToken: getAuthToken,
     isSignedIn: isSignedIn,
     removeToken: removeToken
   };
