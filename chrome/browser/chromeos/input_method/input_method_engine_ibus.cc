@@ -407,7 +407,7 @@ bool InputMethodEngineIBus::DeleteSurroundingText(int context_id,
   return true;
 }
 
-void InputMethodEngineIBus::FocusIn() {
+void InputMethodEngineIBus::FocusIn(ibus::TextInputType text_input_type) {
   focused_ = true;
   if (!active_)
     return;
@@ -434,7 +434,7 @@ void InputMethodEngineIBus::FocusOut() {
 void InputMethodEngineIBus::Enable() {
   active_ = true;
   observer_->OnActivate(engine_id_);
-  FocusIn();
+  FocusIn(ibus::TEXT_INPUT_TYPE_TEXT);
 
   // Calls RequireSurroundingText once here to notify ibus-daemon to send
   // surrounding text to this engine.

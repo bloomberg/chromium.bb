@@ -60,7 +60,7 @@ class CHROMEOS_EXPORT IBusEngineHandlerInterface {
   virtual ~IBusEngineHandlerInterface() {}
 
   // Called when the Chrome input field get the focus.
-  virtual void FocusIn() = 0;
+  virtual void FocusIn(ibus::TextInputType text_input_type) = 0;
 
   // Called when the Chrome input field lose the focus.
   virtual void FocusOut() = 0;

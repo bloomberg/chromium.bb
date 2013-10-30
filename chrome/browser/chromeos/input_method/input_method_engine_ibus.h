@@ -79,7 +79,7 @@ class InputMethodEngineIBus : public InputMethodEngine,
                                      std::string* error) OVERRIDE;
 
   // IBusEngineHandlerInterface overrides.
-  virtual void FocusIn() OVERRIDE;
+  virtual void FocusIn(ibus::TextInputType text_input_type) OVERRIDE;
   virtual void FocusOut() OVERRIDE;
   virtual void Enable() OVERRIDE;
   virtual void Disable() OVERRIDE;

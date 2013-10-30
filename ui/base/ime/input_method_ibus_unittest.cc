@@ -609,16 +609,38 @@ TEST_F(InputMethodIBusTest, FocusOut_Password) {
   EXPECT_EQ(1, mock_ime_engine_handler_->focus_out_call_count());
 }
 
-// Confirm that IBusClient::FocusOut is NOT called.
-TEST_F(InputMethodIBusTest, FocusOut_Url) {
-  input_type_ = TEXT_INPUT_TYPE_TEXT;
+// FocusIn/FocusOut scenario test
+TEST_F(InputMethodIBusTest, Focus_Scenario) {
   ime_->Init(true);
+  // Confirm that both FocusIn and FocusOut are NOT called.
+  EXPECT_EQ(0, mock_ime_engine_handler_->focus_in_call_count());
+  EXPECT_EQ(0, mock_ime_engine_handler_->focus_out_call_count());
+  EXPECT_EQ(chromeos::ibus::TEXT_INPUT_TYPE_NONE,
+            mock_ime_engine_handler_->last_text_input_type());
+
+  input_type_ = TEXT_INPUT_TYPE_TEXT;
+  ime_->OnTextInputTypeChanged(this);
+  // Confirm that only FocusIn is called and the TextInputType is TEXT.
   EXPECT_EQ(1, mock_ime_engine_handler_->focus_in_call_count());
   EXPECT_EQ(0, mock_ime_engine_handler_->focus_out_call_count());
+  EXPECT_EQ(chromeos::ibus::TEXT_INPUT_TYPE_TEXT,
+            mock_ime_engine_handler_->last_text_input_type());
+
+  ime_->OnTextInputTypeChanged(this);
+  // Confirm that both FocusIn and FocusOut are NOT called.
+  EXPECT_EQ(1, mock_ime_engine_handler_->focus_in_call_count());
+  EXPECT_EQ(0, mock_ime_engine_handler_->focus_out_call_count());
+  EXPECT_EQ(chromeos::ibus::TEXT_INPUT_TYPE_TEXT,
+            mock_ime_engine_handler_->last_text_input_type());
+
   input_type_ = TEXT_INPUT_TYPE_URL;
   ime_->OnTextInputTypeChanged(this);
-  EXPECT_EQ(1, mock_ime_engine_handler_->focus_in_call_count());
-  EXPECT_EQ(0, mock_ime_engine_handler_->focus_out_call_count());
+  // Confirm that both FocusIn and FocusOut are called and the TextInputType is
+  // URL.
+  EXPECT_EQ(2, mock_ime_engine_handler_->focus_in_call_count());
+  EXPECT_EQ(1, mock_ime_engine_handler_->focus_out_call_count());
+  EXPECT_EQ(chromeos::ibus::TEXT_INPUT_TYPE_URL,
+            mock_ime_engine_handler_->last_text_input_type());
 }
 
 // Test if the new |caret_bounds_| is correctly sent to ibus-daemon.

@@ -12,6 +12,7 @@ MockIMEEngineHandler::MockIMEEngineHandler()
       set_surrounding_text_call_count_(0),
       process_key_event_call_count_(0),
       reset_call_count_(0),
+      last_text_input_type_(ibus::TEXT_INPUT_TYPE_NONE),
       last_set_surrounding_cursor_pos_(0),
       last_set_surrounding_anchor_pos_(0),
       last_processed_keysym_(0),
@@ -22,8 +23,9 @@ MockIMEEngineHandler::MockIMEEngineHandler()
 MockIMEEngineHandler::~MockIMEEngineHandler() {
 }
 
-void MockIMEEngineHandler::FocusIn() {
+void MockIMEEngineHandler::FocusIn(ibus::TextInputType text_input_type) {
   ++focus_in_call_count_;
+  last_text_input_type_ = text_input_type;
 }
 
 void MockIMEEngineHandler::FocusOut() {

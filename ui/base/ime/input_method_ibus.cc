@@ -69,6 +69,57 @@ chromeos::IBusEngineHandlerInterface* GetEngine() {
   return chromeos::IBusBridge::Get()->GetEngineHandler();
 }
 
+// Check ui::TextInputType and chrome::ibus::TextInputType is kept in sync.
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_NONE) == \
+               int(chromeos::ibus::TEXT_INPUT_TYPE_NONE), mismatching_enums);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_TEXT) == \
+               int(chromeos::ibus::TEXT_INPUT_TYPE_TEXT), mismatching_enums);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_PASSWORD) == \
+               int(chromeos::ibus::TEXT_INPUT_TYPE_PASSWORD),
+               mismatching_enums);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_SEARCH) == \
+               int(chromeos::ibus::TEXT_INPUT_TYPE_SEARCH), mismatching_enums);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_EMAIL) == \
+               int(chromeos::ibus::TEXT_INPUT_TYPE_EMAIL), mismatching_enums);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_NUMBER) == \
+               int(chromeos::ibus::TEXT_INPUT_TYPE_NUMBER), mismatching_enums);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_TELEPHONE) == \
+               int(chromeos::ibus::TEXT_INPUT_TYPE_TELEPHONE),
+               mismatching_enums);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_URL) == \
+               int(chromeos::ibus::TEXT_INPUT_TYPE_URL), mismatching_enums);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_DATE) == \
+               int(chromeos::ibus::TEXT_INPUT_TYPE_DATE), mismatching_enum);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_DATE_TIME) == \
+               int(chromeos::ibus::TEXT_INPUT_TYPE_DATE_TIME),
+               mismatching_enum);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL) == \
+               int(chromeos::ibus::TEXT_INPUT_TYPE_DATE_TIME_LOCAL),
+               mismatching_enum);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_MONTH) == \
+               int(chromeos::ibus::TEXT_INPUT_TYPE_MONTH), mismatching_enum);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_TIME) == \
+               int(chromeos::ibus::TEXT_INPUT_TYPE_TIME), mismatching_enum);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_WEEK) == \
+               int(chromeos::ibus::TEXT_INPUT_TYPE_WEEK), mismatching_enum);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_TEXT_AREA) == \
+               int(chromeos::ibus::TEXT_INPUT_TYPE_TEXT_AREA),
+               mismatching_enums);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE) == \
+               int(chromeos::ibus::TEXT_INPUT_TYPE_CONTENT_EDITABLE),
+               mismatching_enums);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_DATE_TIME_FIELD) == \
+               int(chromeos::ibus::TEXT_INPUT_TYPE_DATE_TIME_FIELD),
+               mismatching_enums);
+
+chromeos::ibus::TextInputType UiToIbusTextInputType(ui::TextInputType type) {
+  // Check the type is in the range representable by
+  // chrome::ibus::TextInputType.
+  DCHECK_LE(type, static_cast<int>(chromeos::ibus::TEXT_INPUT_TYPE_MAX)) <<
+    "ui::TextInputType and chromeos::ibus::TextInputType not synchronized";
+  return static_cast<chromeos::ibus::TextInputType>(type);
+}
+
 }  // namespace
 
 namespace ui {
@@ -229,6 +280,7 @@ void InputMethodIBus::OnTextInputTypeChanged(const TextInputClient* client) {
     UpdateContextFocusState();
     if (previous_textinput_type_ != client->GetTextInputType())
       OnInputMethodChanged();
+    previous_textinput_type_ = client->GetTextInputType();
   }
   InputMethodBase::OnTextInputTypeChanged(client);
 }
@@ -326,8 +378,9 @@ void InputMethodIBus::ResetContext() {
 
 void InputMethodIBus::UpdateContextFocusState() {
   const bool old_context_focused = context_focused_;
+  const TextInputType current_text_input_type = GetTextInputType();
   // Use switch here in case we are going to add more text input types.
-  switch (GetTextInputType()) {
+  switch (current_text_input_type) {
     case TEXT_INPUT_TYPE_NONE:
     case TEXT_INPUT_TYPE_PASSWORD:
       context_focused_ = false;
@@ -344,7 +397,12 @@ void InputMethodIBus::UpdateContextFocusState() {
   if (old_context_focused && !context_focused_) {
     GetEngine()->FocusOut();
   } else if (!old_context_focused && context_focused_) {
-    GetEngine()->FocusIn();
+    GetEngine()->FocusIn(UiToIbusTextInputType(current_text_input_type));
+    OnCaretBoundsChanged(GetTextInputClient());
+  } else if (context_focused_ &&
+             current_text_input_type != previous_textinput_type_) {
+    GetEngine()->FocusOut();
+    GetEngine()->FocusIn(UiToIbusTextInputType(current_text_input_type));
     OnCaretBoundsChanged(GetTextInputClient());
   }
 }

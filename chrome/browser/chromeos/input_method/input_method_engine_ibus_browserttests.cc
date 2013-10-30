@@ -182,7 +182,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
 
   // onFocus event should be fired if FocusIn function is called.
   ExtensionTestMessageListener focus_listener("onFocus", false);;
-  engine_handler->FocusIn();
+  engine_handler->FocusIn(ibus::TEXT_INPUT_TYPE_TEXT);
   ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
   ASSERT_TRUE(focus_listener.was_satisfied());
 
@@ -263,7 +263,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
       1);
 
   engine_handler->Enable();
-  engine_handler->FocusIn();
+  engine_handler->FocusIn(ibus::TEXT_INPUT_TYPE_TEXT);
 
   {
     SCOPED_TRACE("KeyDown, Ctrl:No, alt:No, Shift:No, Caps:No");
