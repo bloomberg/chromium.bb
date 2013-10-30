@@ -7,9 +7,12 @@
 
 import contextlib
 import getpass
+# pylint: disable=E1101
+import hashlib
 import logging
 import os
 import re
+import urlparse
 import uuid
 
 from chromite.buildbot import constants
@@ -116,6 +119,7 @@ class GSContext(object):
   AUTHORIZATION_ERRORS = ('no configured', 'detail=Authorization')
 
   DEFAULT_BOTO_FILE = os.path.expanduser('~/.boto')
+  DEFAULT_GSUTIL_TRACKER_DIR = os.path.expanduser('~/.gsutil')
   # This is set for ease of testing.
   DEFAULT_GSUTIL_BIN = None
   DEFAULT_GSUTIL_BUILDER_BIN = '/b/build/third_party/gsutil/gsutil'
@@ -128,6 +132,11 @@ class GSContext(object):
 
   GSUTIL_TAR = 'gsutil_3.25.tar.gz'
   GSUTIL_URL = PUBLIC_BASE_HTTPS_URL + 'pub/%s' % GSUTIL_TAR
+
+  RESUMABLE_UPLOAD_ERROR = ('Too many resumable upload attempts failed without '
+                            'progress')
+  RESUMABLE_DOWNLOAD_ERROR = ('Too many resumable download attempts failed '
+                              'without progress')
 
   @classmethod
   def GetDefaultGSUtilBin(cls, cache_dir=None):
@@ -274,6 +283,41 @@ class GSContext(object):
                       '%s/%s' % (remote_dir, os.path.basename(filename)),
                       acl=acl, version=version)
 
+  @staticmethod
+  def _GetTrackerFilenames(dest_path):
+    """Returns a list of gsutil tracker filenames.
+
+    Tracker files are used by gsutil to resume downloads/uploads. This
+    function returns tracker filenames that are compatible with gsutil
+    3.25 to 3.31.
+
+    Args:
+      dest_path: either a GS path or an absolute local path.
+    Returns:
+      The list of potential tracker filenames.
+    """
+    dest = urlparse.urlsplit(dest_path)
+    filenames = []
+    if dest.scheme == 'gs':
+      bucket_name = os.path.dirname('%s%s' % (dest.netloc, dest.path))
+      object_name = os.path.basename(dest.path)
+      filenames.append(
+          re.sub(r'[/\\]', '_', 'resumable_upload__%s__%s.url' %
+                 (bucket_name, object_name)))
+    else:
+      filenames.append(
+          re.sub(r'[/\\]', '_', 'resumable_download__%s.etag' % dest.path))
+
+    hashed_filenames = []
+    for filename in filenames:
+      if not isinstance(filename, unicode):
+        filename = unicode(filename, 'utf8').encode('utf-8')
+      m = hashlib.sha1(filename)
+      hashed_filenames.append('TRACKER_%s.%s' %
+                              (m.hexdigest(), filename[-16:]))
+
+    return hashed_filenames
+
   def _RetryFilter(self, e):
     """Function to filter retry-able RunCommandError exceptions.
 
@@ -301,11 +345,34 @@ class GSContext(object):
           raise GSContextPreconditionFailed(e)
         if 'code=NoSuchKey' in error:
           raise GSNoSuchKey(e)
+
       # If the file does not exist, one of the following errors occurs.
       if ('InvalidUriError:' in error or
           'CommandException: No URIs matched' in error or
           'CommandException: One or more URIs matched no objects' in error):
         raise GSNoSuchKey(e)
+
+      # Temporary fix: remove the gsutil tracker files so that our retry
+      # can hit a different backend. This should be removed after the
+      # bug is fixed by the Google Storage team (see crbug.com/308300).
+      if (self.RESUMABLE_DOWNLOAD_ERROR in error or
+          self.RESUMABLE_UPLOAD_ERROR in error):
+        # Only remove the tracker files if we try to upload/download a file.
+        if 'cp' in e.result.cmd[:-2]:
+          # Assume a command: gsutil [options] cp [options] src_path dest_path
+          # dest_path needs to be a fully qualified local path, which is already
+          # required for GSContext.Copy().
+          tracker_filenames = self._GetTrackerFilenames(e.result.cmd[-1])
+          for tracker_filename in tracker_filenames:
+            tracker_file_path = os.path.join(self.DEFAULT_GSUTIL_TRACKER_DIR,
+                                             tracker_filename)
+            if os.path.exists(tracker_file_path):
+              logging.info('Deleting gsutil tracker file %s before retrying.',
+                           tracker_file_path)
+              logging.info('The content of the tracker file: %s',
+                           osutils.ReadFile(tracker_file_path))
+              osutils.SafeUnlink(tracker_file_path)
+
     return True
 
   def DoCommand(self, gsutil_cmd, headers=(), retries=None, **kwargs):

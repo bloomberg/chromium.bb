@@ -253,6 +253,78 @@ class GSDoCommandTest(cros_test_lib.TestCase):
     self._testDoCommand(ctx, retries=4, sleep=1)
 
 
+class GSRemoveTrackerFilesTest(cros_test_lib.TestCase):
+  """Test that the _RetryFilter removes the tracker files between retries."""
+
+  LOCAL_PATH = '/tmp/file'
+  REMOTE_PATH = 'gs://test/path/file'
+  GSUTIL_TRACKER_DIR = '/foo'
+  UPLOAD_TRACKER_FILE = (
+      'TRACKER_bab42ee553729f2ea4e8a947ae84318232292297.t_path__file.url')
+  DOWNLOAD_TRACKER_FILE = (
+      'TRACKER_1e6cb2935097b207b634d86f91584d0b66de354e.___tmp_file.etag')
+  RETURN_CODE = 3
+
+  def setUp(self):
+    self.ctx = gs.GSContext()
+    self.ctx.DEFAULT_GSUTIL_TRACKER_DIR = self.GSUTIL_TRACKER_DIR
+
+  def _getException(self, cmd, error, returncode=RETURN_CODE):
+    result = cros_build_lib.CommandResult(
+        error=error,
+        cmd=cmd,
+        returncode=returncode)
+    return cros_build_lib.RunCommandError('blah', result)
+
+  @mock.patch('chromite.lib.osutils.SafeUnlink')
+  @mock.patch('chromite.lib.osutils.ReadFile')
+  @mock.patch('os.path.exists')
+  def testRemoveUploadTrackerFile(self, exists_mock, readfile_mock,
+                                  unlink_mock):
+    """Test that the tracker file is deleted after a upload failure."""
+    cmd = ['gsutil', 'cp', self.LOCAL_PATH, self.REMOTE_PATH]
+    e = self._getException(cmd, self.ctx.RESUMABLE_UPLOAD_ERROR)
+    exists_mock.return_value = True
+    readfile_mock.return_value = 'foohash'
+    self.ctx._RetryFilter(e)
+    tracker_file_path = os.path.join(self.GSUTIL_TRACKER_DIR,
+                                     self.UPLOAD_TRACKER_FILE)
+    unlink_mock.assert_called_once_with(tracker_file_path)
+
+  @mock.patch('chromite.lib.osutils.SafeUnlink')
+  @mock.patch('chromite.lib.osutils.ReadFile')
+  @mock.patch('os.path.exists')
+  def testRemoveDownloadTrackerFile(self, exists_mock, readfile_mock,
+                                    unlink_mock):
+    """Test that the tracker file is deleted after a download failure."""
+    cmd = ['gsutil', 'cp', self.REMOTE_PATH, self.LOCAL_PATH]
+    e = self._getException(cmd, self.ctx.RESUMABLE_DOWNLOAD_ERROR)
+    exists_mock.return_value = True
+    readfile_mock.return_value = 'foohash'
+    self.ctx._RetryFilter(e)
+    tracker_file_path = os.path.join(self.GSUTIL_TRACKER_DIR,
+                                     self.DOWNLOAD_TRACKER_FILE)
+    unlink_mock.assert_called_once_with(tracker_file_path)
+
+  def testRemoveTrackerFileOnlyForCP(self):
+    """Test that we only support 'gsutil cp' which uses tracker files."""
+    cmd = ['gsutil', 'ls', self.REMOTE_PATH]
+    e = self._getException(cmd, self.ctx.RESUMABLE_DOWNLOAD_ERROR)
+
+    with mock.MagicMock() as self.ctx._GetTrackerFilenames:
+      self.ctx._RetryFilter(e)
+      self.assertFalse(self.ctx._GetTrackerFilenames.called)
+
+  def testNoRemoveTrackerFileOnOtherErrors(self):
+    """Test that we do not attempt to delete tracker files for other errors."""
+    cmd = ['gsutil', 'cp', self.REMOTE_PATH, self.LOCAL_PATH]
+    e = self._getException(cmd, 'InvalidUriError')
+
+    with mock.MagicMock() as self.ctx._GetTrackerFilenames:
+      self.ctx._RetryFilter(e)
+      self.assertFalse(self.ctx._GetTrackerFilenames.called)
+
+
 class GSContextTest(AbstractGSContextTest):
   """Tests for GSContext()"""
 
