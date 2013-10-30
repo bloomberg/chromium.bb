@@ -4,7 +4,9 @@
 
 #include "chrome/browser/chromeos/extensions/external_cache.h"
 
+#include <map>
 #include <set>
+#include <string>
 
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -77,6 +79,13 @@ class ExternalCacheTest : public testing::Test,
     prefs_.reset(prefs->DeepCopy());
   }
 
+  virtual std::string GetInstalledExtensionVersion(
+      const std::string& id) OVERRIDE {
+    std::map<std::string, std::string>::iterator it =
+        installed_extensions_.find(id);
+    return it != installed_extensions_.end() ? it->second : std::string();
+  }
+
   base::FilePath CreateCacheDir(bool initialized) {
     EXPECT_TRUE(cache_dir_.CreateUniqueTempDir());
     if (initialized)
@@ -124,6 +133,11 @@ class ExternalCacheTest : public testing::Test,
     base::RunLoop().RunUntilIdle();
   }
 
+  void AddInstalledExtension(const std::string& id,
+                             const std::string& version) {
+    installed_extensions_[id] = version;
+  }
+
  private:
   content::TestBrowserThreadBundle thread_bundle_;
 
@@ -136,6 +150,7 @@ class ExternalCacheTest : public testing::Test,
   base::ScopedTempDir cache_dir_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<base::DictionaryValue> prefs_;
+  std::map<std::string, std::string> installed_extensions_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalCacheTest);
 };
@@ -279,6 +294,34 @@ TEST_F(ExternalCacheTest, Basic) {
   WaitForCompletion();
   EXPECT_TRUE(base::PathExists(
       GetExtensionFile(cache_dir, kTestExtensionId4, "4")));
+}
+
+TEST_F(ExternalCacheTest, PreserveInstalled) {
+  base::FilePath cache_dir(CreateCacheDir(false));
+  ExternalCache external_cache(cache_dir, request_context_getter(),
+      background_task_runner(), this, true, false);
+
+  scoped_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
+  prefs->Set(kTestExtensionId1, CreateEntryWithUpdateUrl(true));
+  prefs->Set(kTestExtensionId2, CreateEntryWithUpdateUrl(true));
+
+  AddInstalledExtension(kTestExtensionId1, "1");
+
+  external_cache.UpdateExtensionsList(prefs.Pass());
+  WaitForCompletion();
+
+  ASSERT_TRUE(provided_prefs());
+  EXPECT_EQ(provided_prefs()->size(), 1ul);
+
+  // File not in cache but extension installed.
+  const base::DictionaryValue* entry1 = NULL;
+  ASSERT_TRUE(provided_prefs()->GetDictionary(kTestExtensionId1, &entry1));
+  EXPECT_TRUE(entry1->HasKey(
+      extensions::ExternalProviderImpl::kExternalUpdateUrl));
+  EXPECT_FALSE(entry1->HasKey(
+      extensions::ExternalProviderImpl::kExternalCrx));
+  EXPECT_FALSE(entry1->HasKey(
+      extensions::ExternalProviderImpl::kExternalVersion));
 }
 
 }  // namespace chromeos

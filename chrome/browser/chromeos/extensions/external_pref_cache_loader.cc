@@ -4,16 +4,22 @@
 
 #include "chrome/browser/chromeos/extensions/external_pref_cache_loader.h"
 
+#include <map>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
-#include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
+#include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/external_cache.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
@@ -36,8 +42,30 @@ class ExternalCacheDispatcher : public ExternalCache::Delegate {
   virtual void OnExtensionListsUpdated(
       const base::DictionaryValue* prefs) OVERRIDE {
     is_extensions_list_ready_ = true;
-    FOR_EACH_OBSERVER(ExternalPrefCacheLoader, pref_loaders_,
-                      OnExtensionListsUpdated(prefs));
+    for (LoadersMap::iterator it = pref_loaders_.begin();
+         it != pref_loaders_.end(); ++it) {
+      it->first->OnExtensionListsUpdated(prefs);
+    }
+  }
+
+  virtual std::string GetInstalledExtensionVersion(
+      const std::string& id) OVERRIDE {
+    // Return lowest installed version. Updater will download an update if
+    // CWS has higher version. Version returned here matters only if file is
+    // missing in .crx cache.
+    base::Version version;
+    for (LoadersMap::iterator it = pref_loaders_.begin();
+         it != pref_loaders_.end(); ++it) {
+      ExtensionServiceInterface* extension_service =
+          extensions::ExtensionSystem::Get(it->second)->extension_service();
+      const extensions::Extension* extension = extension_service ?
+          extension_service->GetExtensionById(id, true) : NULL;
+      if (extension) {
+        if (!version.IsValid() || extension->version()->CompareTo(version) < 0)
+          version = *extension->version();
+      }
+    }
+    return version.IsValid() ? version.GetString() : std::string();
   }
 
   void UpdateExtensionsList(scoped_ptr<base::DictionaryValue> prefs) {
@@ -48,8 +76,9 @@ class ExternalCacheDispatcher : public ExternalCache::Delegate {
   // Return false if cache doesn't have list of extensions and it needs to
   // be provided via UpdateExtensionsList.
   bool RegisterExternalPrefCacheLoader(ExternalPrefCacheLoader* observer,
-                                       int base_path_id) {
-    pref_loaders_.AddObserver(observer);
+                                       int base_path_id,
+                                       Profile* profile) {
+    pref_loaders_.insert(std::make_pair(observer, profile));
 
     if (base_path_id_ == 0) {
       // First ExternalPrefCacheLoader is registered.
@@ -67,11 +96,13 @@ class ExternalCacheDispatcher : public ExternalCache::Delegate {
   }
 
   void UnregisterExternalPrefCacheLoader(ExternalPrefCacheLoader* observer) {
-    pref_loaders_.RemoveObserver(observer);
+    pref_loaders_.erase(observer);
   }
 
  private:
   friend struct DefaultSingletonTraits<ExternalCacheDispatcher>;
+
+  typedef std::map<ExternalPrefCacheLoader*, Profile*> LoadersMap;
 
   ExternalCacheDispatcher()
     : external_cache_(base::FilePath(kPreinstalledAppsCacheDir),
@@ -89,7 +120,7 @@ class ExternalCacheDispatcher : public ExternalCache::Delegate {
   }
 
   ExternalCache external_cache_;
-  ObserverList<ExternalPrefCacheLoader> pref_loaders_;
+  LoadersMap pref_loaders_;
   int base_path_id_;
   bool is_extensions_list_ready_;
 
@@ -98,8 +129,10 @@ class ExternalCacheDispatcher : public ExternalCache::Delegate {
 
 }  // namespace
 
-ExternalPrefCacheLoader::ExternalPrefCacheLoader(int base_path_id)
-  : ExternalPrefLoader(base_path_id, ExternalPrefLoader::NONE) {
+ExternalPrefCacheLoader::ExternalPrefCacheLoader(int base_path_id,
+                                                 Profile* profile)
+  : ExternalPrefLoader(base_path_id, ExternalPrefLoader::NONE),
+    profile_(profile) {
 }
 
 ExternalPrefCacheLoader::~ExternalPrefCacheLoader() {
@@ -115,7 +148,7 @@ void ExternalPrefCacheLoader::OnExtensionListsUpdated(
 
 void ExternalPrefCacheLoader::StartLoading() {
   if (!ExternalCacheDispatcher::GetInstance()->RegisterExternalPrefCacheLoader(
-          this, base_path_id_)) {
+          this, base_path_id_, profile_)) {
     // ExternalCacheDispatcher doesn't know list of extensions load it.
     ExternalPrefLoader::StartLoading();
   }

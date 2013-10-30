@@ -43,6 +43,11 @@ class ExternalCache : public content::NotificationObserver,
     // Caller owns |prefs|.
     virtual void OnExtensionListsUpdated(
         const base::DictionaryValue* prefs) = 0;
+
+    // Cache needs to provide already installed extensions otherwise they
+    // will be removed. Cache calls this function to get version of installed
+    // extension or empty string if not installed.
+    virtual std::string GetInstalledExtensionVersion(const std::string& id);
   };
 
   // The |request_context| is used for update checks. All file I/O is done via

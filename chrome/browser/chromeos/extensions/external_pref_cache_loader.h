@@ -7,6 +7,8 @@
 
 #include "chrome/browser/extensions/external_pref_loader.h"
 
+class Profile;
+
 namespace chromeos {
 
 // A specialization of the ExternalPrefLoader that caches crx files for external
@@ -15,8 +17,9 @@ class ExternalPrefCacheLoader : public extensions::ExternalPrefLoader {
  public:
   // All instances of ExternalPrefCacheLoader use the same cache so
   // |base_path_id| must be the same for all profile in session.
-  // It is checked in run-time with CHECK.
-  explicit ExternalPrefCacheLoader(int base_path_id);
+  // It is checked in run-time with CHECK. |profile| is used to check if the
+  // extension is installed to keep providing.
+  ExternalPrefCacheLoader(int base_path_id, Profile* profile);
 
   void OnExtensionListsUpdated(const base::DictionaryValue* prefs);
 
@@ -27,6 +30,8 @@ class ExternalPrefCacheLoader : public extensions::ExternalPrefLoader {
 
   virtual void StartLoading() OVERRIDE;
   virtual void LoadFinished() OVERRIDE;
+
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalPrefCacheLoader);
 };

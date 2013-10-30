@@ -444,7 +444,8 @@ void ExternalProviderImpl::CreateExternalProviders(
         linked_ptr<ExternalProviderInterface>(
             new ExternalProviderImpl(
                 service,
-                new chromeos::ExternalPrefCacheLoader(external_apps_path_id),
+                new chromeos::ExternalPrefCacheLoader(
+                    external_apps_path_id, profile),
                 profile,
                 Manifest::EXTERNAL_PREF,
                 Manifest::EXTERNAL_PREF_DOWNLOAD,
