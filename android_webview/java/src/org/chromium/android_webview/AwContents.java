@@ -359,6 +359,12 @@ public class AwContents {
             if (mNativeAwContents == 0) return;
             nativeSetFixedLayoutSize(mNativeAwContents, widthDip, heightDip);
         }
+
+        @Override
+        public boolean isLayoutParamsHeightWrapContent() {
+            return mContainerView.getLayoutParams() != null &&
+                mContainerView.getLayoutParams().height == ViewGroup.LayoutParams.WRAP_CONTENT;
+        }
     }
 
     //--------------------------------------------------------------------------------------------
