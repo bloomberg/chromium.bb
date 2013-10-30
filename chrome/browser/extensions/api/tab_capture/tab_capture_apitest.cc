@@ -26,6 +26,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/features/feature.h"
+#include "ui/compositor/compositor_switches.h"
 
 namespace {
 
@@ -40,6 +41,13 @@ class TabCaptureApiTest : public ExtensionApiTest {
     // crbug.com/269087
     UseRealGLBindings();
 
+    // These test should be using OSMesa on CrOS, which would make this
+    // unneeded.
+    // crbug.com/313128
+#if !defined(OS_CHROMEOS)
+    UseRealGLContexts();
+#endif
+
     ExtensionApiTest::SetUp();
   }
 
@@ -51,8 +59,8 @@ class TabCaptureApiTest : public ExtensionApiTest {
 
 }  // namespace
 
-// http://crbug.com/261493 and http://crbug.com/268644
-#if defined(OS_CHROMEOS) || defined(USE_AURA)
+// http://crbug.com/261493
+#if defined(OS_CHROMEOS)
 #define MAYBE_ApiTests DISABLED_ApiTests
 #else
 #define MAYBE_ApiTests ApiTests
@@ -76,13 +84,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ApiTests) {
                                   "api_tests.html")) << message_;
 }
 
-// http://crbug.com/268644
-#if defined(USE_AURA)
-#define MAYBE_ApiTestsAudio DISABLED_ApiTestsAudio
-#else
-#define MAYBE_ApiTestsAudio ApiTestsAudio
-#endif
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ApiTestsAudio) {
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTestsAudio) {
 #if defined(OS_WIN)
   // TODO(justinlin): Disabled for WinXP due to timeout issues.
   if (base::win::GetVersion() < base::win::VERSION_VISTA) {
@@ -95,8 +97,8 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ApiTestsAudio) {
                                   "api_tests_audio.html")) << message_;
 }
 
-// http://crbug.com/177163 and http://crbug.com/268644
-#if defined(OS_WIN) && (!defined(NDEBUG) || defined(USE_AURA))
+// http://crbug.com/177163
+#if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_EndToEnd DISABLED_EndToEnd
 #else
 #define MAYBE_EndToEnd EndToEnd
@@ -152,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_GetUserMediaTest) {
 }
 
 // http://crbug.com/177163
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_ActiveTabPermission DISABLED_ActiveTabPermission
 #else
 #define MAYBE_ActiveTabPermission ActiveTabPermission
@@ -287,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_GrantForChromePages) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_CaptureInSplitIncognitoMode DISABLED_CaptureInSplitIncognitoMode
 #else
 #define MAYBE_CaptureInSplitIncognitoMode CaptureInSplitIncognitoMode
@@ -301,7 +303,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_CaptureInSplitIncognitoMode) {
       << message_;
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_Constraints DISABLED_Constraints
 #else
 #define MAYBE_Constraints Constraints
