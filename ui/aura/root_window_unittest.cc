@@ -1183,5 +1183,64 @@ TEST_F(RootWindowTest, ValidRootDuringDestruction) {
   EXPECT_TRUE(has_valid_root);
 }
 
+namespace {
+
+// See description above DontResetHeldEvent for details.
+class DontResetHeldEventWindowDelegate : public test::TestWindowDelegate {
+ public:
+  explicit DontResetHeldEventWindowDelegate(aura::Window* root)
+      : root_(root),
+        mouse_event_count_(0) {}
+  virtual ~DontResetHeldEventWindowDelegate() {}
+
+  int mouse_event_count() const { return mouse_event_count_; }
+
+  // TestWindowDelegate:
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+    if ((event->flags() & ui::EF_SHIFT_DOWN) != 0 &&
+        mouse_event_count_++ == 0) {
+      ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED,
+                                 gfx::Point(10, 10), gfx::Point(10, 10),
+                                 ui::EF_SHIFT_DOWN);
+      root_->GetDispatcher()->RepostEvent(mouse_event);
+    }
+  }
+
+ private:
+  Window* root_;
+  int mouse_event_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(DontResetHeldEventWindowDelegate);
+};
+
+}  // namespace
+
+// Verifies RootWindow doesn't reset |RootWindow::held_repostable_event_| after
+// dispatching. This is done by using DontResetHeldEventWindowDelegate, which
+// tracks the number of events with ui::EF_SHIFT_DOWN set (all reposted events
+// have EF_SHIFT_DOWN). When the first event is seen RepostEvent() is used to
+// schedule another reposted event.
+TEST_F(RootWindowTest, DontResetHeldEvent) {
+  DontResetHeldEventWindowDelegate delegate(root_window());
+  scoped_ptr<Window> w1(CreateNormalWindow(1, root_window(), &delegate));
+  RootWindowHostDelegate* root_window_delegate =
+      static_cast<RootWindowHostDelegate*>(root_window()->GetDispatcher());
+  w1->SetBounds(gfx::Rect(0, 0, 40, 40));
+  ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED,
+                         gfx::Point(10, 10), gfx::Point(10, 10),
+                         ui::EF_SHIFT_DOWN);
+  root_window()->GetDispatcher()->RepostEvent(pressed);
+  ui::MouseEvent pressed2(ui::ET_MOUSE_PRESSED,
+                          gfx::Point(10, 10), gfx::Point(10, 10), 0);
+  // Invoke OnHostMouseEvent() to flush event scheduled by way of RepostEvent().
+  root_window_delegate->OnHostMouseEvent(&pressed2);
+  // Delegate should have seen reposted event (identified by way of
+  // EF_SHIFT_DOWN). Invoke OnHostMouseEvent() to flush the second
+  // RepostedEvent().
+  EXPECT_EQ(1, delegate.mouse_event_count());
+  root_window_delegate->OnHostMouseEvent(&pressed2);
+  EXPECT_EQ(2, delegate.mouse_event_count());
+}
+
 }  // namespace aura
 

@@ -1109,15 +1109,13 @@ bool RootWindow::DispatchTouchEventImpl(ui::TouchEvent* event) {
 void RootWindow::DispatchHeldEvents() {
   if (held_repostable_event_) {
     if (held_repostable_event_->type() == ui::ET_MOUSE_PRESSED) {
-      ui::MouseEvent mouse_event(
-          static_cast<const ui::MouseEvent&>(*held_repostable_event_.get()));
-      held_repostable_event_.reset();  // must be reset before dispatch
-      DispatchMouseEventRepost(&mouse_event);
+      scoped_ptr<ui::MouseEvent> mouse_event(
+          static_cast<ui::MouseEvent*>(held_repostable_event_.release()));
+      DispatchMouseEventRepost(mouse_event.get());
     } else {
       // TODO(rbyers): GESTURE_TAP_DOWN not yet supported: crbug.com/170987.
       NOTREACHED();
     }
-    held_repostable_event_.reset();
   }
   if (held_move_event_ && held_move_event_->IsMouseEvent()) {
     // If a mouse move has been synthesized, the target location is suspect,
