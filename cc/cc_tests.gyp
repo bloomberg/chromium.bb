@@ -261,7 +261,7 @@
         'resources/worker_pool_perftest.cc',
         'test/cc_test_suite.cc',
         'test/lap_timer.cc',
-        'test/run_all_unittests.cc',
+        'test/run_all_perftests.cc',
         'trees/layer_tree_host_common_perftest.cc',
         'trees/layer_tree_host_perftest.cc',
       ],

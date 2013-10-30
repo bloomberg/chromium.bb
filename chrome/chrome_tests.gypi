@@ -2057,7 +2057,7 @@
         'browser/extensions/extension_apitest.cc',
         'browser/extensions/extension_browsertest.cc',
         'browser/extensions/extension_test_notification_observer.cc',
-        'test/base/browser_tests_main.cc',
+        'test/base/browser_perf_tests_main.cc',
         'test/base/chrome_render_view_test.cc',
         'test/base/chrome_render_view_test.h',
         'test/perf/browser_perf_test.cc',
@@ -2521,7 +2521,7 @@
         'browser/sync/test/integration/sync_test.h',
         'browser/sync/test/integration/typed_urls_helper.cc',
         'browser/sync/test/integration/typed_urls_helper.h',
-        'test/base/browser_tests_main.cc',
+        'test/base/browser_perf_tests_main.cc',
         'test/data/resource.rc',
       ],
       'conditions': [
