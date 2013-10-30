@@ -402,7 +402,8 @@ void RenderWidgetHostViewGuest::GetScreenInfo(WebKit::WebScreenInfo* results) {
   RenderWidgetHostViewPort* embedder_view =
       RenderWidgetHostViewPort::FromRWHV(
           guest_->GetEmbedderRenderWidgetHostView());
-  embedder_view->GetScreenInfo(results);
+  if (embedder_view)
+    embedder_view->GetScreenInfo(results);
 }
 
 void RenderWidgetHostViewGuest::OnAccessibilityEvents(
