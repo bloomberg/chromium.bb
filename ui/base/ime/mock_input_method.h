@@ -36,8 +36,6 @@ class UI_EXPORT MockInputMethod : NON_EXPORTED_BASE(public InputMethod) {
   virtual bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
                                         NativeEventResult* result) OVERRIDE;
   virtual void SetFocusedTextInputClient(TextInputClient* client) OVERRIDE;
-  virtual void SetStickyFocusedTextInputClient(
-      TextInputClient* client) OVERRIDE;
   virtual void DetachTextInputClient(TextInputClient* client) OVERRIDE;
   virtual TextInputClient* GetTextInputClient() const OVERRIDE;
   virtual bool DispatchKeyEvent(const base::NativeEvent& native_event) OVERRIDE;
@@ -58,7 +56,6 @@ class UI_EXPORT MockInputMethod : NON_EXPORTED_BASE(public InputMethod) {
 
  private:
   TextInputClient* text_input_client_;
-  bool is_sticky_text_input_client_;
   ObserverList<InputMethodObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(MockInputMethod);

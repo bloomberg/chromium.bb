@@ -38,8 +38,7 @@ namespace ui {
 
 FakeInputMethod::FakeInputMethod(internal::InputMethodDelegate* delegate)
     : delegate_(NULL),
-      text_input_client_(NULL),
-      is_sticky_text_input_client_(false) {
+      text_input_client_(NULL) {
   SetDelegate(delegate);
 }
 
@@ -51,16 +50,7 @@ void FakeInputMethod::SetDelegate(internal::InputMethodDelegate* delegate) {
 }
 
 void FakeInputMethod::SetFocusedTextInputClient(TextInputClient* client) {
-  if (is_sticky_text_input_client_)
-    return;
   text_input_client_ = client;
-  FOR_EACH_OBSERVER(InputMethodObserver, observers_,
-                    OnTextInputStateChanged(client));
-}
-
-void FakeInputMethod::SetStickyFocusedTextInputClient(TextInputClient* client) {
-  text_input_client_ = client;
-  is_sticky_text_input_client_ = (client != NULL);
   FOR_EACH_OBSERVER(InputMethodObserver, observers_,
                     OnTextInputStateChanged(client));
 }
@@ -68,7 +58,6 @@ void FakeInputMethod::SetStickyFocusedTextInputClient(TextInputClient* client) {
 void FakeInputMethod::DetachTextInputClient(TextInputClient* client) {
   if (text_input_client_ == client) {
     text_input_client_ = NULL;
-    is_sticky_text_input_client_ = false;
     FOR_EACH_OBSERVER(InputMethodObserver, observers_,
                       OnTextInputStateChanged(client));
   }

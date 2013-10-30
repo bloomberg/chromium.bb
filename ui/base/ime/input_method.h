@@ -86,14 +86,6 @@ class InputMethod {
   // calling the method with NULL when it is unfocused.
   virtual void SetFocusedTextInputClient(TextInputClient* client) = 0;
 
-  // A variant of SetFocusedTextInputClient. Unlike SetFocusedTextInputClient,
-  // all the subsequent calls of SetFocusedTextInputClient will be ignored
-  // until |client| is detached. This method is introduced as a workaround
-  // against crbug.com/287620.
-  // NOTE: You can pass NULL to |client| to detach the sticky client.
-  // NOTE: You can also use DetachTextInputClient to remove the sticky client.
-  virtual void SetStickyFocusedTextInputClient(TextInputClient* client) = 0;
-
   // Detaches and forgets the |client| regardless of whether it has the focus or
   // not.  This method is meant to be called when the |client| is going to be
   // destroyed.

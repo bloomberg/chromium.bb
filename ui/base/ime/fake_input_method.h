@@ -34,8 +34,6 @@ class UI_EXPORT FakeInputMethod : NON_EXPORTED_BASE(public InputMethod) {
   virtual bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
                                         NativeEventResult* result) OVERRIDE;
   virtual void SetFocusedTextInputClient(TextInputClient* client) OVERRIDE;
-  virtual void SetStickyFocusedTextInputClient(
-      TextInputClient* client) OVERRIDE;
   virtual void DetachTextInputClient(TextInputClient* client) OVERRIDE;
   virtual TextInputClient* GetTextInputClient() const OVERRIDE;
   virtual bool DispatchKeyEvent(const base::NativeEvent& native_event) OVERRIDE;
@@ -57,7 +55,6 @@ class UI_EXPORT FakeInputMethod : NON_EXPORTED_BASE(public InputMethod) {
  private:
   internal::InputMethodDelegate* delegate_;
   TextInputClient* text_input_client_;
-  bool is_sticky_text_input_client_;
   ObserverList<InputMethodObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeInputMethod);

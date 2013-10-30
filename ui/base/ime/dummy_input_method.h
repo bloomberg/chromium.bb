@@ -25,8 +25,6 @@ class DummyInputMethod : public InputMethod {
   virtual bool OnUntranslatedIMEMessage(
       const base::NativeEvent& event, NativeEventResult* result) OVERRIDE;
   virtual void SetFocusedTextInputClient(TextInputClient* client) OVERRIDE;
-  virtual void SetStickyFocusedTextInputClient(
-      TextInputClient* client) OVERRIDE;
   virtual void DetachTextInputClient(TextInputClient* client) OVERRIDE;
   virtual TextInputClient* GetTextInputClient() const OVERRIDE;
   virtual bool DispatchKeyEvent(const base::NativeEvent& event) OVERRIDE;
