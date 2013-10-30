@@ -835,6 +835,13 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) {
     for (int i = first_panel_index; i <= last_hidden_index_; ++i)
       view_model_->set_ideal_bounds(i, gfx::Rect(x, y, w, h));
 
+    // Add more space between last visible item and overflow button.
+    // Without this, two buttons look too close compared with other items.
+    if (ash::switches::UseAlternateShelfLayout()) {
+      x = layout_manager_->PrimaryAxisValue(x + button_spacing, x);
+      y = layout_manager_->PrimaryAxisValue(y, y + button_spacing);
+    }
+
     bounds->overflow_bounds.set_x(x);
     bounds->overflow_bounds.set_y(y);
     if (!ash::switches::UseAlternateShelfLayout()) {
