@@ -62,6 +62,7 @@ CHROMEOS_EXPORT extern const char kLoginManager[];
 CHROMEOS_EXPORT extern const char kLoginPassword[];
 CHROMEOS_EXPORT extern const char kLoginProfile[];
 CHROMEOS_EXPORT extern const char kLoginUser[];
+CHROMEOS_EXPORT extern const char kNaturalScrollDefault[];
 CHROMEOS_EXPORT extern const char kOobeSkipPostLogin[];
 CHROMEOS_EXPORT extern const char kSkipHWIDCheck[];
 CHROMEOS_EXPORT extern const char kSmsTestMessages[];
