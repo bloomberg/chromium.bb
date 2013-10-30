@@ -87,16 +87,14 @@
 
 #if defined(OS_ANDROID)
 #include "content/browser/android/date_time_chooser_android.h"
+#include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
+#include "content/common/java_bridge_messages.h"
 #include "content/public/browser/android/content_view_core.h"
 #endif
 
 #if defined(OS_MACOSX)
 #include "base/mac/foundation_util.h"
 #include "ui/gl/io_surface_support_mac.h"
-#endif
-
-#if defined(OS_ANDROID)
-#include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
 #endif
 
 // Cross-Site Navigations
@@ -527,6 +525,8 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                         OnFindMatchRectsReply)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenDateTimeDialog,
                         OnOpenDateTimeDialog)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(JavaBridgeHostMsg_GetChannelHandle,
+                                    OnJavaBridgeGetChannelHandle)
 #endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_MediaNotification, OnMediaNotification)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -1050,9 +1050,6 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
 #if defined(OS_ANDROID)
   java_bridge_dispatcher_host_manager_.reset(
       new JavaBridgeDispatcherHostManager(this));
-#endif
-
-#if defined(OS_ANDROID)
   date_time_chooser_.reset(new DateTimeChooserAndroid());
 #endif
 }
@@ -2308,6 +2305,11 @@ void WebContentsImpl::OnOpenDateTimeDialog(
                                  value.minimum,
                                  value.maximum,
                                  value.step);
+}
+
+void WebContentsImpl::OnJavaBridgeGetChannelHandle(IPC::Message* reply_msg) {
+  java_bridge_dispatcher_host_manager_->OnGetChannelHandle(
+      message_source_, reply_msg);
 }
 
 #endif

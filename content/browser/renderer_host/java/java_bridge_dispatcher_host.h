@@ -10,10 +10,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "content/child/npapi/npobject_stub.h"
-#include "content/public/browser/render_view_host_observer.h"
 
 class RouteIDGenerator;
 struct NPObject;
+
+namespace IPC {
+class Message;
+}
 
 namespace content {
 class NPChannelBase;
@@ -25,11 +28,10 @@ struct NPVariant_Param;
 // proxy object is created in the renderer. An instance of this class exists
 // for each RenderViewHost.
 class JavaBridgeDispatcherHost
-    : public base::RefCountedThreadSafe<JavaBridgeDispatcherHost>,
-      public RenderViewHostObserver {
+    : public base::RefCountedThreadSafe<JavaBridgeDispatcherHost> {
  public:
   // We hold a weak pointer to the RenderViewhost. It must outlive this object.
-  JavaBridgeDispatcherHost(RenderViewHost* render_view_host);
+  explicit JavaBridgeDispatcherHost(RenderViewHost* render_view_host);
 
   // Injects |object| into the main frame of the corresponding RenderView. A
   // proxy object is created in the renderer and when the main frame's window
@@ -43,28 +45,23 @@ class JavaBridgeDispatcherHost
   void AddNamedObject(const string16& name, NPObject* object);
   void RemoveNamedObject(const string16& name);
 
-  // RenderViewHostObserver overrides:
-  // The IPC macros require this to be public.
-  virtual bool Send(IPC::Message* msg) OVERRIDE;
-  virtual void RenderViewHostDestroyed(
-      RenderViewHost* render_view_host) OVERRIDE;
+  // Since this object is ref-counted, it might outlive render_view_host_.
+  void RenderViewDeleted();
+
+  void OnGetChannelHandle(IPC::Message* reply_msg);
 
  private:
   friend class base::RefCountedThreadSafe<JavaBridgeDispatcherHost>;
   virtual ~JavaBridgeDispatcherHost();
 
-  // RenderViewHostObserver override:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-
-  // Message handlers
-  void OnGetChannelHandle(IPC::Message* reply_msg);
+  void Send(IPC::Message* msg);
 
   void GetChannelHandle(IPC::Message* reply_msg);
   void CreateNPVariantParam(NPObject* object, NPVariant_Param* param);
-  void CreateObjectStub(NPObject* object, int route_id);
+  void CreateObjectStub(NPObject* object, int render_process_id, int route_id);
 
   scoped_refptr<NPChannelBase> channel_;
-  bool is_renderer_initialized_;
+  RenderViewHost* render_view_host_;
   std::vector<base::WeakPtr<NPObjectStub> > stubs_;
 
   DISALLOW_COPY_AND_ASSIGN(JavaBridgeDispatcherHost);

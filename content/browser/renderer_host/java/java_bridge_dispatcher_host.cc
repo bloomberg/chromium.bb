@@ -18,7 +18,7 @@
 #include "third_party/WebKit/public/web/WebBindings.h"
 
 #if !defined(OS_ANDROID)
-#error "JavaBridge currently only supports OS_ANDROID"
+#error "JavaBridge only supports OS_ANDROID"
 #endif
 
 namespace content {
@@ -50,8 +50,7 @@ base::LazyInstance<JavaBridgeThread> g_background_thread =
 
 JavaBridgeDispatcherHost::JavaBridgeDispatcherHost(
     RenderViewHost* render_view_host)
-    : RenderViewHostObserver(render_view_host),
-      is_renderer_initialized_(false) {
+    : render_view_host_(render_view_host) {
 }
 
 JavaBridgeDispatcherHost::~JavaBridgeDispatcherHost() {
@@ -65,11 +64,8 @@ void JavaBridgeDispatcherHost::AddNamedObject(const string16& name,
   NPVariant_Param variant_param;
   CreateNPVariantParam(object, &variant_param);
 
-  if (!is_renderer_initialized_) {
-    is_renderer_initialized_ = true;
-    Send(new JavaBridgeMsg_Init(routing_id()));
-  }
-  Send(new JavaBridgeMsg_AddNamedObject(routing_id(), name, variant_param));
+  Send(new JavaBridgeMsg_AddNamedObject(
+      render_view_host_->GetRoutingID(), name, variant_param));
 }
 
 void JavaBridgeDispatcherHost::RemoveNamedObject(const string16& name) {
@@ -78,34 +74,27 @@ void JavaBridgeDispatcherHost::RemoveNamedObject(const string16& name) {
   // removed, the proxy object will delete its NPObjectProxy, which will cause
   // the NPObjectStub to be deleted, which will drop its reference to the
   // original NPObject.
-  Send(new JavaBridgeMsg_RemoveNamedObject(routing_id(), name));
+  Send(new JavaBridgeMsg_RemoveNamedObject(
+      render_view_host_->GetRoutingID(), name));
 }
 
-bool JavaBridgeDispatcherHost::Send(IPC::Message* msg) {
-  return RenderViewHostObserver::Send(msg);
-}
-
-void JavaBridgeDispatcherHost::RenderViewHostDestroyed(
-    RenderViewHost* render_view_host) {
-  // Base implementation deletes the object. This class is ref counted, with
-  // refs held by the JavaBridgeDispatcherHostManager and base::Bind, so that
-  // behavior is unwanted.
-}
-
-bool JavaBridgeDispatcherHost::OnMessageReceived(const IPC::Message& msg) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(JavaBridgeDispatcherHost, msg)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(JavaBridgeHostMsg_GetChannelHandle,
-                                    OnGetChannelHandle)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
+void JavaBridgeDispatcherHost::RenderViewDeleted() {
+  render_view_host_ = NULL;
 }
 
 void JavaBridgeDispatcherHost::OnGetChannelHandle(IPC::Message* reply_msg) {
   g_background_thread.Get().message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&JavaBridgeDispatcherHost::GetChannelHandle, this, reply_msg));
+}
+
+void JavaBridgeDispatcherHost::Send(IPC::Message* msg) {
+  if (render_view_host_) {
+    render_view_host_->Send(msg);
+    return;
+  }
+
+  delete msg;
 }
 
 void JavaBridgeDispatcherHost::GetChannelHandle(IPC::Message* reply_msg) {
@@ -115,7 +104,11 @@ void JavaBridgeDispatcherHost::GetChannelHandle(IPC::Message* reply_msg) {
   JavaBridgeHostMsg_GetChannelHandle::WriteReplyParams(
       reply_msg,
       channel_->channel_handle());
-  Send(reply_msg);
+
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&JavaBridgeDispatcherHost::Send, this, reply_msg));
 }
 
 void JavaBridgeDispatcherHost::CreateNPVariantParam(NPObject* object,
@@ -139,16 +132,17 @@ void JavaBridgeDispatcherHost::CreateNPVariantParam(NPObject* object,
   g_background_thread.Get().message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&JavaBridgeDispatcherHost::CreateObjectStub, this, object,
-                 route_id));
+                 render_view_host_->GetProcess()->GetID(), route_id));
 }
 
 void JavaBridgeDispatcherHost::CreateObjectStub(NPObject* object,
+                                                int render_process_id,
                                                 int route_id) {
   DCHECK_EQ(g_background_thread.Get().message_loop(),
             base::MessageLoop::current());
   if (!channel_.get()) {
     channel_ = JavaBridgeChannelHost::GetJavaBridgeChannelHost(
-        render_view_host()->GetProcess()->GetID(),
+        render_process_id,
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
   }
 

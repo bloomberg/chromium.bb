@@ -636,6 +636,7 @@ class CONTENT_EXPORT WebContentsImpl
 
   void OnOpenDateTimeDialog(
       const ViewHostMsg_DateTimeDialogValue_Params& value);
+  void OnJavaBridgeGetChannelHandle(IPC::Message* reply_msg);
 #endif
   void OnCrashedPlugin(const base::FilePath& plugin_path,
                        base::ProcessId plugin_pid);

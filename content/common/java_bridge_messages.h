@@ -16,9 +16,6 @@
 
 // Messages for handling Java objects injected into JavaScript -----------------
 
-// Sent from browser to renderer to initialize the Java Bridge.
-IPC_MESSAGE_ROUTED0(JavaBridgeMsg_Init)
-
 // Sent from browser to renderer to add a Java object with the given name.
 IPC_MESSAGE_ROUTED2(JavaBridgeMsg_AddNamedObject,
                     string16 /* name */,

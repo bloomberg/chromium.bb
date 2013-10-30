@@ -924,7 +924,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnSetEditCommandsForNextKeyEvent(const EditCommands& edit_commands);
   void OnUndo();
   void OnUnselect();
-
   void OnAllowBindings(int enabled_bindings_flags);
   void OnAllowScriptToClose(bool script_can_close);
   void OnCancelDownload(int32 download_id);
@@ -975,10 +974,7 @@ class CONTENT_EXPORT RenderViewImpl
       const base::FilePath& local_directory_name);
   void OnMediaPlayerActionAt(const gfx::Point& location,
                              const WebKit::WebMediaPlayerAction& action);
-
-  // Screen has rotated. 0 = default (portrait), 90 = one turn right, and so on.
   void OnOrientationChangeEvent(int orientation);
-
   void OnPluginActionAt(const gfx::Point& location,
                         const WebKit::WebPluginAction& action);
   void OnMoveOrResizeStarted();
@@ -1015,16 +1011,12 @@ class CONTENT_EXPORT RenderViewImpl
   void OnUpdateTargetURLAck();
   void OnUpdateTimezone();
   void OnUpdateWebPreferences(const WebPreferences& prefs);
-
   void OnZoom(PageZoom zoom);
   void OnZoomFactor(PageZoom zoom, int zoom_center_x, int zoom_center_y);
-
   void OnEnableViewSourceMode();
-
-  void OnJavaBridgeInit();
-
   void OnDisownOpener();
-
+  void OnWindowSnapshotCompleted(const int snapshot_id,
+      const gfx::Size& size, const std::vector<unsigned char>& png);
 #if defined(OS_ANDROID)
   void OnActivateNearestFindResult(int request_id, float x, float y);
   void OnFindMatchRects(int current_version);
@@ -1045,10 +1037,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnWindowFrameChanged(const gfx::Rect& window_frame,
                             const gfx::Rect& view_frame);
 #endif
-
-  void OnWindowSnapshotCompleted(const int snapshot_id,
-      const gfx::Size& size, const std::vector<unsigned char>& png);
-
 
   // Adding a new message handler? Please add it in alphabetical order above
   // and put it in the same position in the .cc file.
@@ -1423,9 +1411,6 @@ class CONTENT_EXPORT RenderViewImpl
   // Only valid if |accessibility_mode_| is anything other than
   // AccessibilityModeOff.
   RendererAccessibility* renderer_accessibility_;
-
-  // Java Bridge dispatcher attached to this view; lazily initialized.
-  JavaBridgeDispatcher* java_bridge_dispatcher_;
 
   // Mouse Lock dispatcher attached to this view.
   MouseLockDispatcher* mouse_lock_dispatcher_;

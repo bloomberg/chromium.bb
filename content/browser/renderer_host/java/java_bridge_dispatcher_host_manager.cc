@@ -82,6 +82,11 @@ void JavaBridgeDispatcherHostManager::RemoveNamedObject(const string16& name) {
   }
 }
 
+void JavaBridgeDispatcherHostManager::OnGetChannelHandle(
+    RenderViewHost* render_view_host, IPC::Message* reply_msg) {
+  instances_[render_view_host]->OnGetChannelHandle(reply_msg);
+}
+
 void JavaBridgeDispatcherHostManager::RenderViewCreated(
     RenderViewHost* render_view_host) {
   // Creates a JavaBridgeDispatcherHost for the specified RenderViewHost and
@@ -99,6 +104,9 @@ void JavaBridgeDispatcherHostManager::RenderViewCreated(
 
 void JavaBridgeDispatcherHostManager::RenderViewDeleted(
     RenderViewHost* render_view_host) {
+  if (!instances_.count(render_view_host))  // Needed for tests.
+    return;
+  instances_[render_view_host]->RenderViewDeleted();
   instances_.erase(render_view_host);
 }
 
