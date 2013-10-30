@@ -717,15 +717,21 @@ bool AcceleratorController::PerformAction(int action,
         return keyboard_brightness_control_delegate_->
             HandleKeyboardBrightnessUp(accelerator);
       break;
-    case VOLUME_MUTE:
-      return shell->system_tray_delegate()->GetVolumeControlDelegate()->
-          HandleVolumeMute(accelerator);
-    case VOLUME_DOWN:
-      return shell->system_tray_delegate()->GetVolumeControlDelegate()->
-          HandleVolumeDown(accelerator);
-    case VOLUME_UP:
-      return shell->system_tray_delegate()->GetVolumeControlDelegate()->
-          HandleVolumeUp(accelerator);
+    case VOLUME_MUTE: {
+      ash::VolumeControlDelegate* volume_delegate =
+          shell->system_tray_delegate()->GetVolumeControlDelegate();
+      return volume_delegate && volume_delegate->HandleVolumeMute(accelerator);
+    }
+    case VOLUME_DOWN: {
+      ash::VolumeControlDelegate* volume_delegate =
+          shell->system_tray_delegate()->GetVolumeControlDelegate();
+      return volume_delegate && volume_delegate->HandleVolumeDown(accelerator);
+    }
+    case VOLUME_UP: {
+      ash::VolumeControlDelegate* volume_delegate =
+          shell->system_tray_delegate()->GetVolumeControlDelegate();
+      return volume_delegate && volume_delegate->HandleVolumeUp(accelerator);
+    }
     case FOCUS_LAUNCHER:
       return shell->focus_cycler()->FocusWidget(
           Launcher::ForPrimaryDisplay()->shelf_widget());
