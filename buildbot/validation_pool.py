@@ -8,6 +8,7 @@ The validation pool is the set of commits that are ready to be validated i.e.
 ready for the commit queue to try.
 """
 
+import ConfigParser
 import contextlib
 import cPickle
 import functools
@@ -115,6 +116,53 @@ def _RunCommand(cmd, dryrun):
     cros_build_lib.RunCommand(cmd)
   except cros_build_lib.RunCommandError:
     cros_build_lib.Error('Command failed', exc_info=True)
+
+
+def GetStagesToIgnoreFromConfigFile(config_path):
+  """Get a list of stage name prefixes to ignore from |config_path|.
+
+  This function reads the specified config file and returns the list
+  of stage name prefixes to ignore in the CQ. See GetStagesToIgnoreForProject
+  for more details.
+
+  Args:
+    config_path: The path to the config file to read.
+  """
+  ignored_stages = []
+  parser = ConfigParser.SafeConfigParser()
+  try:
+    parser.read(config_path)
+    if parser.has_option('GENERAL', 'ignored-stages'):
+      ignored_stages = parser.get('GENERAL', 'ignored-stages').split()
+  except ConfigParser.Error:
+    cros_build_lib.Error('Error parsing %r', config_path, exc_info=True)
+
+  return ignored_stages
+
+
+def GetStagesToIgnoreForProject(build_root, project):
+  """Get a list of stages that the CQ should ignore for a given |project|.
+
+  The list of stage name prefixes to ignore for each project is specified in a
+  config file inside the project, named COMMIT-QUEUE.ini. The file would look
+  like this:
+
+  [GENERAL]
+    ignored-stages: HWTest VMTest
+
+  The CQ will submit changes to the given project even if the listed stages
+  failed. These strings are stage name prefixes, meaning that "HWTest" would
+  match any HWTest stage (e.g. "HWTest [bvt]" or "HWTest [foo]")
+
+  Args:
+    build_root: The root of the checkout.
+    changes: Changes to examine.
+  """
+  manifest = git.ManifestCheckout.Cached(build_root)
+  dirname = os.path.join(build_root, manifest.GetProjectPath(project))
+  path = os.path.join(dirname, 'COMMIT-QUEUE.ini')
+  return GetStagesToIgnoreFromConfigFile(path)
+
 
 class GerritHelperNotAvailable(gerrit.GerritException):
   """Exception thrown when a specific helper is requested but unavailable."""
@@ -1146,8 +1194,6 @@ class ValidationPool(object):
     self._overlays = overlays
     self._build_number = build_number
     self._builder_name = builder_name
-    self._patch_series = PatchSeries(self.build_root,
-                                     helper_pool=self._helper_pool)
 
   @staticmethod
   def GetBuildDashboardForOverlays(overlays, trybot):
@@ -1493,9 +1539,11 @@ class ValidationPool(object):
 
     True if we managed to apply any changes.
     """
+    patch_series = PatchSeries(self.build_root,
+                               helper_pool=self._helper_pool)
     try:
       # pylint: disable=E1123
-      applied, failed_tot, failed_inflight = self._patch_series.Apply(
+      applied, failed_tot, failed_inflight = patch_series.Apply(
           self.changes, dryrun=self.dryrun, manifest=manifest)
     except (KeyboardInterrupt, RuntimeError, SystemExit):
       raise
@@ -1563,8 +1611,8 @@ class ValidationPool(object):
   # than patch resolution/applying needs to use .change_id from patch objects.
   # Basically all code from this point forward.
 
-  def _SubmitChanges(self, changes, check_tree_open=True):
-    """Submits given changes to Gerrit.
+  def SubmitChanges(self, changes, check_tree_open=True):
+    """Submits the given changes to Gerrit.
 
     Args:
       changes: GerritPatch's to submit.
@@ -1593,7 +1641,9 @@ class ValidationPool(object):
     changes = list(self.ReloadChanges(changes))
     changes_that_failed_to_submit = []
 
-    plans, _ = self._patch_series.CreateDisjointTransactions(changes)
+    patch_series = PatchSeries(self.build_root,
+                               helper_pool=self._helper_pool)
+    plans, _ = patch_series.CreateDisjointTransactions(changes)
 
     for plan in plans:
       # First, verify that all changes have their approvals. We do this up front
@@ -1689,8 +1739,8 @@ class ValidationPool(object):
       TreeIsClosedException: if the tree is closed.
       FailedToSubmitAllChangesException: if we can't submit a change.
     """
-    self._SubmitChanges(self.non_manifest_changes,
-                        check_tree_open=check_tree_open)
+    self.SubmitChanges(self.non_manifest_changes,
+                       check_tree_open=check_tree_open)
 
   def SubmitPool(self, check_tree_open=True):
     """Commits changes to Gerrit from Pool.  This is only called by a master.
@@ -1703,15 +1753,49 @@ class ValidationPool(object):
       TreeIsClosedException: if the tree is closed.
       FailedToSubmitAllChangesException: if we can't submit a change.
     """
-    # Note that _SubmitChanges can throw an exception if it can't
+    # Note that SubmitChanges can throw an exception if it can't
     # submit all changes; in that particular case, don't mark the inflight
     # failures patches as failed in gerrit- some may apply next time we do
     # a CQ run (since the submit state has changed, we have no way of
     # knowing).  They *likely* will still fail, but this approach tries
     # to minimize wasting the developers time.
-    self._SubmitChanges(self.changes, check_tree_open=check_tree_open)
+    self.SubmitChanges(self.changes, check_tree_open=check_tree_open)
     if self.changes_that_failed_to_apply_earlier:
       self._HandleApplyFailure(self.changes_that_failed_to_apply_earlier)
+
+  def SubmitPartialPool(self, tracebacks):
+    """If the build failed, push any CLs that don't care about the failure.
+
+    Each project can specify a list of stages it does not care about in its
+    COMMIT-QUEUE.ini file. Changes to that project will be submitted even if
+    those stages fail.
+
+    Args:
+      tracebacks: A list of RecordedTraceback objects. These objects represent
+        the exceptions that failed the build.
+
+    Returns:
+      A list of the rejected changes.
+    """
+    # Create a list of the failing stage prefixes.
+    failing_stages = set(traceback.failed_prefix for traceback in tracebacks)
+
+    # For each CL, look at whether it cares about the failures. Based on this,
+    # categorize the CL as accepted or rejected.
+    accepted, rejected = [], []
+    for change in self.changes:
+      ignored_stages = GetStagesToIgnoreForProject(
+          self.build_root, change.project)
+      if failing_stages.issubset(ignored_stages):
+        accepted.append(change)
+      else:
+        rejected.append(change)
+
+    # Actually submit the accepted changes.
+    self.SubmitChanges(accepted)
+
+    # Return the list of rejected changes.
+    return rejected
 
   def _HandleApplyFailure(self, failures):
     """Handles changes that were not able to be applied cleanly.
@@ -1738,10 +1822,21 @@ class ValidationPool(object):
     self.SendNotification(failure.patch, msg, failure=failure)
     self.RemoveCommitReady(failure.patch)
 
-  def HandleValidationTimeout(self):
-    """Handles changes that timed out."""
+  def HandleValidationTimeout(self, changes=None):
+    """Handles changes that timed out.
+
+    This handler removes the commit ready bit from the specified changes and
+    sends the developer a message explaining why.
+
+    Args:
+      changes: A list of cros_patch.GerritPatch instances to mark as failed.
+        By default, mark all of the changes as failed.
+    """
+    if changes is None:
+      changes = self.changes
+
     logging.info('Validation timed out for all changes.')
-    for change in self.changes:
+    for change in changes:
       logging.info('Validation timed out for change %s.', change)
       self.SendNotification(change,
           '%(queue)s timed out while verifying your change in '
@@ -1845,7 +1940,7 @@ class ValidationPool(object):
 
     return '\n\n'.join(msg)
 
-  def HandleValidationFailure(self, messages):
+  def HandleValidationFailure(self, messages, changes=None):
     """Handles a list of validation failure messages from slave builders.
 
     This handler parses a list of failure messages from our list of builders
@@ -1856,19 +1951,24 @@ class ValidationPool(object):
     Args:
       messages: A list of build failure messages from supporting builders.
           These must be ValidationFailedMessage objects.
+      changes: A list of cros_patch.GerritPatch instances to mark as failed.
+        By default, mark all of the changes as failed.
     """
-    changes = []
-    for change in self.changes:
+    if changes is None:
+      changes = self.changes
+
+    candidates = []
+    for change in changes:
       # Ignore changes that were already verified.
       if self.pre_cq and self.GetCLStatus(PRE_CQ, change) == self.STATUS_PASSED:
         continue
-      changes.append(change)
+      candidates.append(change)
 
     # First, calculate which changes are likely at fault for the failure.
-    suspects = CalculateSuspects.FindSuspects(changes, messages)
+    suspects = CalculateSuspects.FindSuspects(candidates, messages)
 
     # Send out failure notifications for each change.
-    for change in changes:
+    for change in candidates:
       msg = self._CreateValidationFailureMessage(self.pre_cq, change, suspects,
                                                  messages)
       self.SendNotification(change, '%(details)s', details=msg)

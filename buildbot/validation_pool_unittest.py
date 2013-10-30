@@ -29,8 +29,12 @@ from chromite.lib import cros_test_lib
 from chromite.lib import gerrit
 from chromite.lib import gob_util
 from chromite.lib import gs
+from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
+
+
+import mock
 
 
 _GetNumber = iter(itertools.count()).next
@@ -174,6 +178,49 @@ class MoxBase(Base, cros_test_lib.MoxTestCase):
       mox_._mock_objects.append(patch)
     kwargs['patch'] = patch
     return Base.MockPatch(self, *args, **kwargs)
+
+
+class IgnoredStagesTest(cros_test_lib.TestCase):
+  """Tests for functions that calculate what stages to ignore."""
+
+  def testGetStagesToIgnoreForProject(self):
+    """Test GetStagesToIgnoreForProject.
+
+    This verifies that GetStagesToIgnoreForProject returns the right results
+    when we point it at the real buildroot. This uses some magic values but
+    serves as a good integration test.
+    """
+    expected_ignores = (
+      ('chromiumos/chromite', []),
+      ('chromiumos/third_party/coreboot', ['HWTest', 'VMTest']),
+    )
+    buildroot = constants.SOURCE_ROOT
+    for project, xignored in expected_ignores:
+      ignored = validation_pool.GetStagesToIgnoreForProject(buildroot, project)
+      self.assertEqual(xignored, list(sorted(ignored)))
+
+  def testBadConfigFile(self):
+    """Test if we can handle an incorrectly formatted config file."""
+    with osutils.TempDir(set_global=True) as tempdir:
+      path = os.path.join(tempdir, 'foo.ini')
+      osutils.WriteFile(path, 'foobar')
+      ignored = validation_pool.GetStagesToIgnoreFromConfigFile(path)
+      self.assertEqual([], ignored)
+
+  def testMissingConfigFile(self):
+    """Test if we can handle a missing config file."""
+    with osutils.TempDir(set_global=True) as tempdir:
+      path = os.path.join(tempdir, 'foo.ini')
+      ignored = validation_pool.GetStagesToIgnoreFromConfigFile(path)
+      self.assertEqual([], ignored)
+
+  def testGoodConfigFile(self):
+    """Test if we can handle a good config file."""
+    with osutils.TempDir(set_global=True) as tempdir:
+      path = os.path.join(tempdir, 'foo.ini')
+      osutils.WriteFile(path, '[GENERAL]\nignored-stages: bar baz\n')
+      ignored = validation_pool.GetStagesToIgnoreFromConfigFile(path)
+      self.assertEqual(['bar', 'baz'], ignored)
 
 
 class TestPatchSeries(MoxBase):
@@ -545,6 +592,11 @@ class TestCoreLogic(MoxBase):
   """Tests the core resolution and applying logic of
   validation_pool.ValidationPool."""
 
+  def setUp(self):
+    self.mox.StubOutWithMock(validation_pool.PatchSeries, 'Apply')
+    self.mox.StubOutWithMock(validation_pool.PatchSeries,
+                             'CreateDisjointTransactions')
+
   def MakePool(self, *args, **kwds):
     """Helper for creating ValidationPool objects for Mox tests."""
     handlers = kwds.pop('handlers', False)
@@ -555,7 +607,6 @@ class TestCoreLogic(MoxBase):
       self.mox.StubOutWithMock(pool, '_HandleApplySuccess')
       self.mox.StubOutWithMock(pool, '_HandleApplyFailure')
       self.mox.StubOutWithMock(pool, '_HandleCouldNotApply')
-    self.mox.StubOutWithMock(pool, '_patch_series')
     return pool
 
   def MakeFailure(self, patch, inflight=True):
@@ -567,8 +618,8 @@ class TestCoreLogic(MoxBase):
     applied = list(applied)
     tot = [self.MakeFailure(x, inflight=False) for x in tot]
     inflight = [self.MakeFailure(x, inflight=True) for x in inflight]
-    # pylint: disable=E1123
-    pool._patch_series.Apply(
+    # pylint: disable=E1120,E1123
+    validation_pool.PatchSeries.Apply(
         changes, dryrun=dryrun, manifest=mox.IgnoreArg()
         ).AndReturn((applied, tot, inflight))
 
@@ -666,7 +717,8 @@ class TestCoreLogic(MoxBase):
 
     self.mox.StubOutWithMock(pool, '_SubmitChange')
     self.mox.StubOutWithMock(pool, '_HandleCouldNotSubmit')
-    pool._patch_series.CreateDisjointTransactions(patches
+    # pylint: disable=E1120
+    validation_pool.PatchSeries.CreateDisjointTransactions(patches
         ).AndReturn(([[patch2, patch1, patch3]], []))
 
     pool._SubmitChange(patch2).AndReturn(False)
@@ -695,7 +747,8 @@ class TestCoreLogic(MoxBase):
     self.mox.StubOutWithMock(pool, '_SubmitChange')
     self.mox.StubOutWithMock(pool, '_HandleCouldNotSubmit')
     self.mox.StubOutWithMock(pool, '_HandleApplyFailure')
-    pool._patch_series.CreateDisjointTransactions(passed
+    # pylint: disable=E1120
+    validation_pool.PatchSeries.CreateDisjointTransactions(passed
         ).AndReturn(([passed], []))
 
     for patch in passed:
@@ -720,7 +773,8 @@ class TestCoreLogic(MoxBase):
 
     self.mox.StubOutWithMock(pool, '_SubmitChange')
     self.mox.StubOutWithMock(pool, '_HandleCouldNotSubmit')
-    pool._patch_series.CreateDisjointTransactions(passed
+    # pylint: disable=E1120
+    validation_pool.PatchSeries.CreateDisjointTransactions(passed
         ).AndReturn(([passed], []))
 
     pool._SubmitChange(patch1).AndReturn(True)
@@ -759,9 +813,8 @@ class TestCoreLogic(MoxBase):
     class MyException(Exception):
       pass
 
-    self.mox.StubOutWithMock(pool._patch_series, 'Apply')
-    # pylint: disable=E1123
-    pool._patch_series.Apply(
+    # pylint: disable=E1120,E1123
+    validation_pool.PatchSeries.Apply(
         patches, dryrun=False, manifest=mox.IgnoreArg()).AndRaise(
         MyException)
 
@@ -1189,29 +1242,112 @@ class TestCreateDisjointTransactions(MockCreateDisjointTransactions):
     self.assertEqual(5, call_count)
 
 
-class SubmitPoolTest(MockCreateDisjointTransactions,
-                     cros_build_lib_unittest.RunCommandTestCase):
+class BaseSubmitPoolTestCase(MockCreateDisjointTransactions,
+                             cros_build_lib_unittest.RunCommandTestCase):
   """Test full ability to submit and reject CL pools."""
 
   def setUp(self):
-    self.PatchObject(gerrit.GerritOnBorgHelper, 'SubmitChange')
+    self.submit = self.PatchObject(gerrit.GerritOnBorgHelper, 'SubmitChange')
     self.PatchObject(gerrit.GerritOnBorgHelper, 'QuerySingleRecord')
+    self.patches = self.GetPatches(2)
+
+  def SetUpPatchPool(self, failed_to_apply=False):
+    pool = MakePool(changes=self.patches)
+    if failed_to_apply:
+      errors = []
+      for patch in self.GetPatches(2):
+        errors.append(validation_pool.InternalCQError(patch, str('foo')))
+      pool.changes_that_failed_to_apply_earlier = errors[:]
+    return pool
+
+
+class SubmitPoolTest(BaseSubmitPoolTestCase):
 
   def testSubmitPool(self):
     """Test that we can submit a pool successfully."""
-    patches = self.GetPatches(2)
-    pool = MakePool(changes=patches)
-    pool.SubmitPool()
+    self.SetUpPatchPool().SubmitPool()
 
   def testRejectCLs(self):
     """Test that we can reject a CL successfully."""
-    patches = self.GetPatches(2)
-    pool = MakePool(changes=patches)
-    errors = []
-    for patch in self.GetPatches(2):
-      errors.append(validation_pool.InternalCQError(patch, str('foo')))
-    pool.changes_that_failed_to_apply_earlier = errors[:]
-    pool.SubmitPool()
+    self.SetUpPatchPool(failed_to_apply=True).SubmitPool()
+
+
+class SubmitPartialPoolTest(BaseSubmitPoolTestCase):
+  """Test the SubmitPartialPool function."""
+
+  def setUp(self):
+    # Set up each patch to be in its own project, so that we can easily
+    # request to ignore failures for the specified patch.
+    for patch in self.patches:
+      patch.project = str(patch)
+
+    # By default, don't ignore any errors.
+    self.ignores = dict((str(patch), []) for patch in self.patches)
+
+    self.stage_name = 'MyHWTest'
+
+  def GetTracebacks(self):
+    """Return a list containing a single traceback."""
+    traceback = results_lib.RecordedTraceback(
+        self.stage_name, self.stage_name, Exception(), '')
+    return [traceback]
+
+  def IgnoreFailures(self, patch):
+    """Set us up to ignore failures for the specified |patch|."""
+    self.ignores[str(patch)] = [self.stage_name]
+
+  def SubmitPartialPool(self, submitted=(), rejected=(), **kwargs):
+    """Helper function for testing that we can submit a pool successfully.
+
+    Args:
+      submitted: List of changes that we expect to be submitted.
+      rejected: List of changes that we expect to be rejected.
+      **kwargs: Keyword arguments for SetUpPatchPool.
+    """
+    # self.ignores maps projects to a list of stages to ignore. Use it.
+    self.PatchObject(
+        validation_pool, 'GetStagesToIgnoreForProject',
+        side_effect=lambda _, project: self.ignores[project])
+
+    # Set up our pool and submit the patches.
+    pool = self.SetUpPatchPool(**kwargs)
+    actually_rejected = pool.SubmitPartialPool(self.GetTracebacks())
+
+    # Check that the right patches were submitted and rejected.
+    expected_calls = [mock.call(x, dryrun=True) for x in submitted]
+    self.assertEqual(expected_calls, self.submit.call_args_list)
+    self.assertEqual(list(rejected), list(actually_rejected))
+
+  def testSubmitNone(self):
+    """Submit no changes."""
+    self.SubmitPartialPool(submitted=(), rejected=self.patches)
+
+  def testSubmitAll(self):
+    """Submit all changes."""
+    self.IgnoreFailures(self.patches[0])
+    self.IgnoreFailures(self.patches[1])
+    self.SubmitPartialPool(submitted=self.patches, rejected=[])
+
+  def testSubmitFirst(self):
+    """Submit the first change in a series."""
+    self.IgnoreFailures(self.patches[0])
+    self.SubmitPartialPool(submitted=[self.patches[0]],
+                           rejected=[self.patches[1]])
+
+  def testSubmitSecond(self):
+    """Attempt to submit the second change in a series."""
+    # Right now, when the CQ finds out that it is missing dependencies, it
+    # just sends a generic message about the prior CL not being marked commit
+    # ready. This is strictly true (we just removed the commit ready bit of
+    # a required CL, so the CL should be rejected); however, it is not very
+    # helpful.
+    #
+    # In this case, we don't reject the CLs that are missing dependencies
+    # immediately, but they will be rejected on the next CQ run.
+    #
+    # TODO(davidjames): Send a nicer error message in this case.
+    self.IgnoreFailures(self.patches[1])
+    self.SubmitPartialPool(submitted=[], rejected=[self.patches[0]])
 
 
 if __name__ == '__main__':

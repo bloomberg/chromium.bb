@@ -1240,6 +1240,12 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       return bs.BuilderStage._HandleStageException(self, exception)
 
   def HandleSuccess(self):
+    """Handle a successful build.
+
+    This function is called whenever the cbuildbot run is successful.
+    For the master, this will only be called when all slave builders
+    are also successful. This function may be overridden by subclasses.
+    """
     # We only promote for the pfq, not chrome pfq.
     # TODO(build): Run this logic in debug mode too.
     if (not self._options.debug and
@@ -1252,11 +1258,27 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       if LKGMCandidateSyncStage.sub_manager:
         LKGMCandidateSyncStage.sub_manager.PromoteCandidate()
 
-  def HandleValidationFailure(self, failing_statuses):
+  def HandleFailure(self, failing, inflight):
+    """Handle a build failure.
+
+    This function is called whenever the cbuildbot run fails.
+    For the master, this will be called when any slave fails or times
+    out. This function may be overridden by subclasses.
+
+    Args:
+      failing: The names of the failing builders.
+      inflight: The names of the builders that are still running.
+    """
+    if failing:
+      self.HandleValidationFailure(failing)
+    elif inflight:
+      self.HandleValidationTimeout(inflight)
+
+  def HandleValidationFailure(self, failing):
     cros_build_lib.PrintBuildbotStepWarnings()
     cros_build_lib.Warning('\n'.join([
         'The following builders failed with this manifest:',
-        ', '.join(sorted(failing_statuses.keys())),
+        ', '.join(sorted(failing)),
         'Please check the logs of the failing builders for details.']))
 
   def HandleValidationTimeout(self, inflight_statuses):
@@ -1268,30 +1290,19 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
 
   def PerformStage(self):
     if ManifestVersionedSyncStage.manifest_manager:
+      # Upload our pass/fail status to Google Storage.
       ManifestVersionedSyncStage.manifest_manager.UploadStatus(
           success=self.success, message=self.message)
-      if not self.success and self._build_config['important']:
-        tracebacks = results_lib.Results.GetTracebacks()
-        if len(tracebacks) != 1 or tracebacks[0].failed_prefix != 'HWTest':
-          self._AbortCQHWTests()
 
       statuses = self._FetchSlaveStatuses()
       self._slave_statuses = statuses
-      failing_build_dict, inflight_build_dict = {}, {}
-      for builder, status in statuses.iteritems():
-        if status.Failed():
-          failing_build_dict[builder] = status
-        elif status.Inflight():
-          inflight_build_dict[builder] = status
+      failing = set(builder for builder, status in statuses.iteritems()
+                    if status.Failed())
+      inflight = set(builder for builder, status in statuses.iteritems()
+                     if status.Inflight())
 
-      if failing_build_dict or inflight_build_dict:
-        if failing_build_dict:
-          self.HandleValidationFailure(failing_build_dict)
-
-        if inflight_build_dict:
-          self.HandleValidationTimeout(inflight_build_dict)
-
-      if failing_build_dict or inflight_build_dict:
+      if failing or inflight:
+        self.HandleFailure(failing, inflight)
         raise ImportantBuilderFailedException()
       else:
         self.HandleSuccess()
@@ -1322,19 +1333,45 @@ class CommitQueueCompletionStage(LKGMCandidateSyncCompletionStage):
       if cbuildbot_config.IsPFQType(self._build_config['build_type']):
         super(CommitQueueCompletionStage, self).HandleSuccess()
 
-  def HandleValidationFailure(self, failing_statuses):
-    """Sends the failure message of all failing builds in one go."""
-    super(CommitQueueCompletionStage, self).HandleValidationFailure(
-        failing_statuses)
+  def HandleFailure(self, failing, inflight):
+    """Handle a build failure or timeout in the Commit Queue.
+
+    This function performs any tasks that need to happen when the Commit Queue
+    fails:
+      - Abort the HWTests if necessary.
+      - Push any CLs that indicate that they don't care about this failure.
+      - Reject the rest of the changes.
+
+    See LKGMCandidateSyncCompletionStage.HandleFailure.
+
+    Args:
+      failing: Status objects for the builders that failed.
+      inflight: Status objects for the builders that timed out.
+    """
+    # Print out the status about what builds failed or not.
+    LKGMCandidateSyncCompletionStage.HandleFailure(self, failing, inflight)
+
+    # Abort hardware tests to save time if we have already seen a failure,
+    # except in the case where the only failure is a hardware test failure.
+    #
+    # When we're debugging hardware test failures, it's useful to see the
+    # results on all platforms, to see if the failure is platform-specific.
+    tracebacks = results_lib.Results.GetTracebacks()
+    if not self.success and self._build_config['important']:
+      if len(tracebacks) != 1 or tracebacks[0].failed_prefix != 'HWTest':
+        self._AbortCQHWTests()
 
     if self._build_config['master']:
-      failing_messages = [x.message for x in failing_statuses.itervalues()]
-      self.sync_stage.pool.HandleValidationFailure(failing_messages)
+      # Even if there was a failure, we can submit the changes that indicate
+      # that they don't care about this failure.
+      rejected = self.sync_stage.pool.SubmitPartialPool(tracebacks)
+      self.sync_stage.pool.changes = rejected
 
-  def HandleValidationTimeout(self, inflight_builders):
-    super(CommitQueueCompletionStage, self).HandleValidationTimeout(
-        inflight_builders)
-    self.sync_stage.pool.HandleValidationTimeout()
+      if failing:
+        messages = [self._slave_statuses[x].message for x in failing]
+        self.sync_stage.pool.HandleValidationFailure(messages)
+      elif inflight:
+        self.sync_stage.pool.HandleValidationTimeout()
 
   def PerformStage(self):
     if not self.success and self._build_config['important']:
