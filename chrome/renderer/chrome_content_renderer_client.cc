@@ -819,9 +819,11 @@ bool ChromeContentRendererClient::IsNaClAllowed(
     bool is_nacl_unrestricted,
     const Extension* extension,
     WebPluginParams* params) {
-  // Temporarily allow these whitelisted apps to use NaCl.
+  // Temporarily allow these whitelisted apps and WebUIs to use NaCl.
   std::string app_url_host = app_url.host();
   std::string manifest_url_path = manifest_url.path();
+  bool is_whitelisted_web_ui =
+      app_url.spec() == chrome::kChromeUIAppListStartPageURL;
   bool is_whitelisted_app =
       // Whitelisted apps must be served over https.
       app_url.SchemeIs("https") &&
@@ -863,6 +865,7 @@ bool ChromeContentRendererClient::IsNaClAllowed(
   // scheme. Also allow invocations if they are from whitelisted URLs or
   // if --enable-nacl is set.
   bool is_nacl_allowed = is_nacl_unrestricted ||
+                         is_whitelisted_web_ui ||
                          is_whitelisted_app ||
                          is_nacl_pdf_viewer ||
                          is_invoked_by_hosted_app ||
