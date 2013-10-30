@@ -133,7 +133,8 @@ std::string InstantNTPPrerenderer::GetInstantURL() const {
 
   // TODO(kmadhusu): Remove start margin param from chrome::GetInstantURL().
   const GURL instant_url = chrome::GetInstantURL(profile_,
-                                                 chrome::kDisableStartMargin);
+                                                 chrome::kDisableStartMargin,
+                                                 false);
   if (!instant_url.is_valid())
     return GetLocalInstantURL();
 

@@ -73,7 +73,8 @@ std::string SearchTermsData::GetSuggestClient() const {
   return std::string();
 }
 
-std::string SearchTermsData::InstantEnabledParam() const {
+std::string SearchTermsData::ForceInstantResultsParam(
+    bool for_prerender) const {
   return std::string();
 }
 
@@ -150,10 +151,12 @@ std::string UIThreadSearchTermsData::GetSuggestClient() const {
   return chrome::IsInstantExtendedAPIEnabled() ? "chrome-omni" : "chrome";
 }
 
-std::string UIThreadSearchTermsData::InstantEnabledParam() const {
+std::string UIThreadSearchTermsData::ForceInstantResultsParam(
+    bool for_prerender) const {
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return chrome::IsInstantExtendedAPIEnabled() ? std::string() : "ion=1&";
+  return (for_prerender || !chrome::IsInstantExtendedAPIEnabled()) ? "ion=1&" :
+      std::string();
 }
 
 std::string UIThreadSearchTermsData::InstantExtendedEnabledParam() const {

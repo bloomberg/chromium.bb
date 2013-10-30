@@ -127,6 +127,12 @@ class TemplateURLRef {
 
     // When searching for an image, the original size of the image.
     gfx::Size image_original_size;
+
+    // If set, ReplaceSearchTerms() will append a param to the TemplateURLRef to
+    // update the search results page incrementally even if that is otherwise
+    // disabled by google.com preferences. See comments on
+    // SearchTermsData::ForceInstantResultsParam().
+    bool force_instant_results;
   };
 
   TemplateURLRef(TemplateURL* owner, Type type);
@@ -253,7 +259,7 @@ class TemplateURLRef {
     GOOGLE_IMAGE_SEARCH_SOURCE,
     GOOGLE_IMAGE_THUMBNAIL,
     GOOGLE_IMAGE_URL,
-    GOOGLE_INSTANT_ENABLED,
+    GOOGLE_FORCE_INSTANT_RESULTS,
     GOOGLE_INSTANT_EXTENDED_ENABLED,
     GOOGLE_NTP_IS_THEMED,
     GOOGLE_OMNIBOX_START_MARGIN,

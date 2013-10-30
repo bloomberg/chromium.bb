@@ -128,17 +128,20 @@ TemplateURL* GetDefaultSearchProviderTemplateURL(Profile* profile) {
 
 GURL TemplateURLRefToGURL(const TemplateURLRef& ref,
                           int start_margin,
-                          bool append_extra_query_params) {
+                          bool append_extra_query_params,
+                          bool force_instant_results) {
   TemplateURLRef::SearchTermsArgs search_terms_args =
       TemplateURLRef::SearchTermsArgs(string16());
   search_terms_args.omnibox_start_margin = start_margin;
   search_terms_args.append_extra_query_params = append_extra_query_params;
+  search_terms_args.force_instant_results = force_instant_results;
   return GURL(ref.ReplaceSearchTerms(search_terms_args));
 }
 
 bool MatchesAnySearchURL(const GURL& url, TemplateURL* template_url) {
   GURL search_url =
-      TemplateURLRefToGURL(template_url->url_ref(), kDisableStartMargin, false);
+      TemplateURLRefToGURL(template_url->url_ref(), kDisableStartMargin, false,
+                           false);
   if (search_url.is_valid() &&
       search::MatchesOriginAndPath(url, search_url))
     return true;
@@ -146,7 +149,7 @@ bool MatchesAnySearchURL(const GURL& url, TemplateURL* template_url) {
   // "URLCount() - 1" because we already tested url_ref above.
   for (size_t i = 0; i < template_url->URLCount() - 1; ++i) {
     TemplateURLRef ref(template_url, i);
-    search_url = TemplateURLRefToGURL(ref, kDisableStartMargin, false);
+    search_url = TemplateURLRefToGURL(ref, kDisableStartMargin, false, false);
     if (search_url.is_valid() &&
         search::MatchesOriginAndPath(url, search_url))
       return true;
@@ -223,7 +226,7 @@ bool IsInstantURL(const GURL& url, Profile* profile) {
 
   const TemplateURLRef& instant_url_ref = template_url->instant_url_ref();
   const GURL instant_url =
-      TemplateURLRefToGURL(instant_url_ref, kDisableStartMargin, false);
+      TemplateURLRefToGURL(instant_url_ref, kDisableStartMargin, false, false);
   if (!instant_url.is_valid())
     return false;
 
@@ -422,7 +425,8 @@ bool IsSuggestPrefEnabled(Profile* profile) {
          profile->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled);
 }
 
-GURL GetInstantURL(Profile* profile, int start_margin) {
+GURL GetInstantURL(Profile* profile, int start_margin,
+                   bool force_instant_results) {
   if (!IsInstantExtendedAPIEnabled() || !IsSuggestPrefEnabled(profile))
     return GURL();
 
@@ -431,7 +435,8 @@ GURL GetInstantURL(Profile* profile, int start_margin) {
     return GURL();
 
   GURL instant_url =
-      TemplateURLRefToGURL(template_url->instant_url_ref(), start_margin, true);
+      TemplateURLRefToGURL(template_url->instant_url_ref(), start_margin, true,
+                           force_instant_results);
   if (!instant_url.is_valid() ||
       !template_url->HasSearchTermsReplacementKey(instant_url))
     return GURL();
@@ -461,7 +466,8 @@ std::vector<GURL> GetSearchURLs(Profile* profile) {
     return result;
   for (size_t i = 0; i < template_url->URLCount(); ++i) {
     TemplateURLRef ref(template_url, i);
-    result.push_back(TemplateURLRefToGURL(ref, kDisableStartMargin, false));
+    result.push_back(TemplateURLRefToGURL(ref, kDisableStartMargin, false,
+                                          false));
   }
   return result;
 }
@@ -481,7 +487,7 @@ GURL GetNewTabPageURL(Profile* profile) {
     return GURL(chrome::kChromeSearchLocalNtpUrl);
 
   GURL url(TemplateURLRefToGURL(template_url->new_tab_url_ref(),
-                                kDisableStartMargin, false));
+                                kDisableStartMargin, false, false));
   if (!url.is_valid() || !url.SchemeIsSecure())
     return GURL(chrome::kChromeSearchLocalNtpUrl);
 
@@ -588,7 +594,7 @@ GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile) {
   TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
   if (template_url) {
     const GURL instant_url = TemplateURLRefToGURL(
-        template_url->instant_url_ref(), kDisableStartMargin, false);
+        template_url->instant_url_ref(), kDisableStartMargin, false, false);
     if (instant_url.is_valid() &&
         search::MatchesOriginAndPath(url, instant_url)) {
       replacements.SetHost(online_ntp_host.c_str(),

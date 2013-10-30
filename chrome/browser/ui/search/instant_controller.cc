@@ -130,7 +130,7 @@ void InstantController::InstantPageLoadFailed(content::WebContents* contents) {
   // we don't want to redirect and nuke their forward history stack.
   const GURL& current_url = contents->GetURL();
   GURL instant_url = chrome::GetInstantURL(profile(),
-                                           chrome::kDisableStartMargin);
+                                           chrome::kDisableStartMargin, false);
   if (instant_tab_->IsLocal() ||
       !search::MatchesOriginAndPath(instant_url, current_url) ||
       !current_url.ref().empty() ||

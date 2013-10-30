@@ -66,7 +66,7 @@ const char kGoogleBaseSuggestURLParameter[] = "google:baseSuggestURL";
 const char kGoogleBaseSuggestURLParameterFull[] = "{google:baseSuggestURL}";
 const char kGoogleBookmarkBarPinnedParameter[] = "google:bookmarkBarPinned";
 const char kGoogleCursorPositionParameter[] = "google:cursorPosition";
-const char kGoogleInstantEnabledParameter[] = "google:instantEnabledParameter";
+const char kGoogleForceInstantResultsParameter[] = "google:forceInstantResults";
 const char kGoogleInstantExtendedEnabledParameter[] =
     "google:instantExtendedEnabledParameter";
 const char kGoogleInstantExtendedEnabledKey[] =
@@ -204,7 +204,8 @@ TemplateURLRef::SearchTermsArgs::SearchTermsArgs(const string16& search_terms)
       omnibox_start_margin(-1),
       page_classification(AutocompleteInput::INVALID_SPEC),
       bookmark_bar_pinned(false),
-      append_extra_query_params(false) {
+      append_extra_query_params(false),
+      force_instant_results(false) {
 }
 
 TemplateURLRef::SearchTermsArgs::~SearchTermsArgs() {
@@ -574,8 +575,8 @@ bool TemplateURLRef::ParseParameter(size_t start,
   } else if (parameter == kGoogleImageURLParameter) {
     replacements->push_back(Replacement(TemplateURLRef::GOOGLE_IMAGE_URL,
                                         start));
-  } else if (parameter == kGoogleInstantEnabledParameter) {
-    replacements->push_back(Replacement(GOOGLE_INSTANT_ENABLED, start));
+  } else if (parameter == kGoogleForceInstantResultsParameter) {
+    replacements->push_back(Replacement(GOOGLE_FORCE_INSTANT_RESULTS, start));
   } else if (parameter == kGoogleInstantExtendedEnabledParameter) {
     replacements->push_back(Replacement(GOOGLE_INSTANT_EXTENDED_ENABLED,
                                         start));
@@ -871,10 +872,13 @@ std::string TemplateURLRef::HandleReplacements(
               &url);
         break;
 
-      case GOOGLE_INSTANT_ENABLED:
+      case GOOGLE_FORCE_INSTANT_RESULTS:
         DCHECK(!i->is_post_param);
-        HandleReplacement(
-            std::string(), search_terms_data.InstantEnabledParam(), *i, &url);
+        HandleReplacement(std::string(),
+                          search_terms_data.ForceInstantResultsParam(
+                              search_terms_args.force_instant_results),
+                          *i,
+                          &url);
         break;
 
       case GOOGLE_INSTANT_EXTENDED_ENABLED:

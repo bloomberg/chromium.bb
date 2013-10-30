@@ -34,7 +34,7 @@
       "encodings": "UTF-8",
       "icon_url": "http://www.google.com/favicon.ico",
       "id": "2",
-      "instant_url": "{google:baseURL}webhp?{google:RLZ}sourceid=chrome-instant&{google:instantFieldTrialGroupParameter}ie={inputEncoding}{google:instantEnabledParameter}{searchTerms}",
+      "instant_url": "{google:baseURL}webhp?{google:RLZ}sourceid=chrome-instant&{google:instantFieldTrialGroupParameter}ie={inputEncoding}{google:forceInstantResults}{searchTerms}",
       "keyword": "google.com",
       "name": "Google",
       "prepopulate_id": "1",

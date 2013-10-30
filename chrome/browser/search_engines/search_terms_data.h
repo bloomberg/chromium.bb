@@ -44,14 +44,15 @@ class SearchTermsData {
   // implementation returns the empty string.
   virtual std::string GetSuggestClient() const;
 
-  // Returns a string indicating whether Instant (in the visible-preview mode)
-  // is enabled, suitable for adding as a query string param to the homepage
-  // (instant_url) request. Returns an empty string if Instant is disabled, or
-  // if it's only active in a hidden field trial mode, or if InstantExtended is
-  // enabled (since that supercedes regular Instant). Determining this requires
-  // accessing the Profile, so this can only ever be non-empty for
-  // UIThreadSearchTermsData.
-  virtual std::string InstantEnabledParam() const;
+  // Returns a string that will cause the search results page to update
+  // incrementally. Currently, Instant Extended passes a different param to
+  // search results pages that also has this effect, so by default this function
+  // returns the empty string when Instant Extended is enabled. However, when
+  // doing instant search result prerendering, we still need to pass this param,
+  // as Instant Extended does not cause incremental updates by default for the
+  // prerender page. Callers should set |for_prerender| in this case to force
+  // the returned string to be non-empty.
+  virtual std::string ForceInstantResultsParam(bool for_prerender) const;
 
   // Returns a string indicating whether InstantExtended is enabled, suitable
   // for adding as a query string param to the homepage or search requests.
@@ -74,7 +75,7 @@ class SearchTermsData {
 class UIThreadSearchTermsData : public SearchTermsData {
  public:
   // If |profile_| is NULL, the Google base URL accessors will return default
-  // values, and InstantEnabledParam(), InstantExtendedEnabledParam(), and
+  // values, and ForceInstantResultsParam(), InstantExtendedEnabledParam(), and
   // NTPIsThemedParam(), will return the empty string.
   explicit UIThreadSearchTermsData(Profile* profile);
 
@@ -83,7 +84,8 @@ class UIThreadSearchTermsData : public SearchTermsData {
   virtual string16 GetRlzParameterValue() const OVERRIDE;
   virtual std::string GetSearchClient() const OVERRIDE;
   virtual std::string GetSuggestClient() const OVERRIDE;
-  virtual std::string InstantEnabledParam() const OVERRIDE;
+  virtual std::string ForceInstantResultsParam(
+      bool for_prerender) const OVERRIDE;
   virtual std::string InstantExtendedEnabledParam() const OVERRIDE;
   virtual std::string NTPIsThemedParam() const OVERRIDE;
 
