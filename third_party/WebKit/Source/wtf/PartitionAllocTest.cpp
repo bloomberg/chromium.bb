@@ -49,7 +49,8 @@
 
 namespace {
 
-static PartitionAllocator<4096> allocator;
+static const size_t kTestMaxAllocation = 4096;
+static PartitionAllocator<kTestMaxAllocation> allocator;
 
 static const int kTestAllocSize = sizeof(void*);
 
@@ -69,7 +70,7 @@ static WTF::PartitionPageHeader* GetFullPage(size_t size)
 {
     size_t bucketIdx = size >> WTF::kBucketShift;
     WTF::PartitionBucket* bucket = &allocator.root()->buckets()[bucketIdx];
-    size_t numSlots = (WTF::kPartitionPageSize - WTF::kPartitionPageHeaderSize) / size;
+    size_t numSlots = (bucket->pageSize - WTF::kPartitionPageHeaderSize) / size;
     void* first = 0;
     void* last = 0;
     size_t i;
@@ -91,7 +92,7 @@ static WTF::PartitionPageHeader* GetFullPage(size_t size)
 
 static void FreeFullPage(WTF::PartitionPageHeader* page, size_t size)
 {
-    size_t numSlots = (WTF::kPartitionPageSize - WTF::kPartitionPageHeaderSize) / size;
+    size_t numSlots = (page->bucket->pageSize - WTF::kPartitionPageHeaderSize) / size;
     EXPECT_EQ(numSlots, static_cast<size_t>(abs(page->numAllocatedSlots)));
     char* ptr = reinterpret_cast<char*>(page);
     ptr += WTF::kPartitionPageHeaderSize;
@@ -583,6 +584,30 @@ TEST(WTF_PartitionAlloc, PageRefilling)
     FreeFullPage(page2, kTestAllocSize);
     FreeFullPage(page1, kTestAllocSize);
     partitionFree(ptr);
+
+    TestShutdown();
+}
+
+// Basic tests to ensure that allocations work for partial page buckets.
+TEST(WTF_PartitionAlloc, PartialPages)
+{
+    TestSetup();
+
+    // Find a size that is backed by a partial partition page.
+    size_t size = sizeof(void*);
+    WTF::PartitionBucket* bucket = 0;
+    while (size < kTestMaxAllocation) {
+        bucket = &allocator.root()->buckets()[size >> WTF::kBucketShift];
+        if (bucket->pageSize < WTF::kPartitionPageSize)
+            break;
+        size += sizeof(void*);
+    }
+    EXPECT_LT(size, kTestMaxAllocation);
+
+    WTF::PartitionPageHeader* page1 = GetFullPage(size);
+    WTF::PartitionPageHeader* page2 = GetFullPage(size);
+    FreeFullPage(page2, size);
+    FreeFullPage(page1, size);
 
     TestShutdown();
 }

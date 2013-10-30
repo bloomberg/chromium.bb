@@ -47,6 +47,27 @@ COMPILE_ASSERT(!(WTF::kPartitionPageHeaderSize % sizeof(void*)), PartitionPageHe
 
 namespace WTF {
 
+static size_t partitionBucketPageSize(size_t size)
+{
+    double bestWasteRatio = 1.0f;
+    size_t bestPages = 0;
+    for (size_t i = kNumSubPagesPerPartitionPage - 1; i <= kNumSubPagesPerPartitionPage; ++i) {
+        size_t pageSize = kSubPartitionPageSize * i;
+        size_t numSlots = (pageSize - kPartitionPageHeaderSize) / size;
+        size_t waste = pageSize - (numSlots * size);
+        // Leave a page unfaulted is not free; the page will occupy an empty page table entry.
+        // Make a simple attempt to account for that.
+        waste += sizeof(void*) * (kNumSubPagesPerPartitionPage - i);
+        double wasteRatio = (double) waste / (double) pageSize;
+        if (wasteRatio < bestWasteRatio) {
+            bestWasteRatio = wasteRatio;
+            bestPages = i;
+        }
+    }
+    ASSERT(bestPages > 0);
+    return bestPages * kSubPartitionPageSize;
+}
+
 WTF_EXPORT void partitionAllocInit(PartitionRoot* root, size_t numBuckets, size_t maxAllocation)
 {
     ASSERT(!root->initialized);
@@ -62,6 +83,8 @@ WTF_EXPORT void partitionAllocInit(PartitionRoot* root, size_t numBuckets, size_
         bucket->currPage = &root->seedPage;
         bucket->freePages = 0;
         bucket->numFullPages = 0;
+        size_t size = partitionBucketSize(bucket);
+        bucket->pageSize = partitionBucketPageSize(size);
     }
 
     root->nextSuperPage = 0;
@@ -220,7 +243,7 @@ static ALWAYS_INLINE void partitionUnusePage(PartitionPageHeader* page)
 
 static ALWAYS_INLINE size_t partitionBucketSlots(const PartitionBucket* bucket)
 {
-    return (kPartitionPageSize - kPartitionPageHeaderSize) / partitionBucketSize(bucket);
+    return (bucket->pageSize - kPartitionPageHeaderSize) / partitionBucketSize(bucket);
 }
 
 static ALWAYS_INLINE void partitionPageReset(PartitionPageHeader* page, PartitionBucket* bucket)
@@ -484,9 +507,9 @@ void partitionDumpStats(const PartitionRoot& root)
         size_t bucketSlotSize = partitionBucketSize(&bucket);
         size_t bucketNumSlots = partitionBucketSlots(&bucket);
         size_t bucketUsefulStorage = bucketSlotSize * bucketNumSlots;
-        size_t bucketWaste = kPartitionPageSize - bucketUsefulStorage;
+        size_t bucketWaste = bucket.pageSize - bucketUsefulStorage;
         size_t numActiveBytes = bucket.numFullPages * bucketUsefulStorage;
-        size_t numResidentBytes = bucket.numFullPages * kPartitionPageSize;
+        size_t numResidentBytes = bucket.numFullPages * bucket.pageSize;
         size_t numFreeableBytes = 0;
         size_t numActivePages = 0;
         const PartitionPageHeader* page = bucket.currPage;
@@ -506,7 +529,7 @@ void partitionDumpStats(const PartitionRoot& root)
         totalLive += numActiveBytes;
         totalResident += numResidentBytes;
         totalFreeable += numFreeableBytes;
-        printf("bucket size %ld (waste %ld): %ld alloc/%ld commit/%ld freeable bytes, %ld/%ld/%ld full/active/free pages\n", bucketSlotSize, bucketWaste, numActiveBytes, numResidentBytes, numFreeableBytes, bucket.numFullPages, numActivePages, numFreePages);
+        printf("bucket size %ld (pageSize %ld waste %ld): %ld alloc/%ld commit/%ld freeable bytes, %ld/%ld/%ld full/active/free pages\n", bucketSlotSize, static_cast<size_t>(bucket.pageSize), bucketWaste, numActiveBytes, numResidentBytes, numFreeableBytes, static_cast<size_t>(bucket.numFullPages), numActivePages, numFreePages);
     }
     printf("total live: %ld bytes\n", totalLive);
     printf("total resident: %ld bytes\n", totalResident);

@@ -131,6 +131,7 @@ static const size_t kPartitionPageHeaderSize = 64;
 // never actually store objects there.
 static const size_t kSubPartitionPageSize = 1 << 12; // 4KB
 static const size_t kSubPartitionPageMask = kSubPartitionPageSize - 1;
+static const size_t kNumSubPagesPerPartitionPage = kPartitionPageSize / kSubPartitionPageSize;
 // Special bucket id for internal metadata.
 static const size_t kInternalMetadataBucket = 0;
 
@@ -160,7 +161,8 @@ struct PartitionBucket {
     PartitionRoot* root;
     PartitionPageHeader* currPage;
     PartitionFreepagelistEntry* freePages;
-    size_t numFullPages;
+    unsigned numFullPages;
+    unsigned pageSize;
 };
 
 struct PartitionSuperPageExtentEntry {
