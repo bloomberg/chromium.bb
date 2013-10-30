@@ -20,6 +20,7 @@
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
@@ -235,8 +236,12 @@ bool MediaGalleriesDialogViews::AddOrUpdateGallery(
 
   views::Checkbox* checkbox = new views::Checkbox(label);
   checkbox->set_listener(this);
+  if (gallery.pref_id != kInvalidMediaGalleryPrefId)
+    checkbox->set_context_menu_controller(this);
   checkbox->SetTooltipText(tooltip_text);
   views::Label* secondary_text = new views::Label(details);
+  if (gallery.pref_id != kInvalidMediaGalleryPrefId)
+    secondary_text->set_context_menu_controller(this);
   secondary_text->SetTooltipText(tooltip_text);
   secondary_text->SetEnabledColor(kDeemphasizedTextColor);
   secondary_text->SetTooltipText(tooltip_text);
@@ -247,6 +252,8 @@ bool MediaGalleriesDialogViews::AddOrUpdateGallery(
       views::kRelatedControlSmallHorizontalSpacing));
 
   views::View* checkbox_view = new views::View();
+  if (gallery.pref_id != kInvalidMediaGalleryPrefId)
+    checkbox_view->set_context_menu_controller(this);
   checkbox_view->set_border(views::Border::CreateEmptyBorder(
       0,
       views::kPanelHorizMargin,
@@ -362,6 +369,34 @@ void MediaGalleriesDialogViews::ButtonPressed(views::Button* sender,
     if (sender == iter->first) {
       controller_->DidToggleNewGallery(iter->second, iter->first->checked());
     }
+  }
+}
+
+void MediaGalleriesDialogViews::ShowContextMenuForView(
+    views::View* source,
+    const gfx::Point& point,
+    ui::MenuSourceType source_type) {
+  for (CheckboxMap::const_iterator iter = checkbox_map_.begin();
+       iter != checkbox_map_.end(); ++iter) {
+    if (iter->second->parent()->Contains(source)) {
+      ShowContextMenu(point, source_type, iter->first);
+      return;
+    }
+  }
+}
+
+void MediaGalleriesDialogViews::ShowContextMenu(const gfx::Point& point,
+                                                ui::MenuSourceType source_type,
+                                                MediaGalleryPrefId id) {
+  context_menu_runner_.reset(new views::MenuRunner(
+      controller_->GetContextMenuModel(id)));
+
+  if (context_menu_runner_->RunMenuAt(
+          GetWidget(), NULL, gfx::Rect(point.x(), point.y(), 0, 0),
+          views::MenuItemView::TOPLEFT, source_type,
+          views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU) ==
+      views::MenuRunner::MENU_DELETED) {
+    return;
   }
 }
 

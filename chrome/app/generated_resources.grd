@@ -15244,6 +15244,9 @@ Do you accept?
     <message name="IDS_MEDIA_GALLERIES_DIALOG_DEVICE_NOT_ATTACHED" desc="Label text to indicate a removable storage device is not attached.">
       not attached
     </message>
+    <message name="IDS_MEDIA_GALLERIES_DIALOG_DELETE" desc="Text label of the menu item which removes selected media gallery access for all apps.">
+      Permanently remove access for all apps
+    </message>
 
     <!-- App List. -->
     <message name="IDS_APP_LIST_CONTACT_CHAT_TOOLTIP" desc="Tooltip text for the 'chat' icon displayed next to a contact search result.">

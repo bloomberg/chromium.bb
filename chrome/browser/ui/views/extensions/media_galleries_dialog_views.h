@@ -9,12 +9,18 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
+#include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/dialog_delegate.h"
+
+namespace ui {
+class MenuModel;
+}
 
 namespace views {
 class Checkbox;
 class LabelButton;
+class MenuRunner;
 class Widget;
 }
 
@@ -22,6 +28,7 @@ class Widget;
 // upon construction.
 class MediaGalleriesDialogViews : public MediaGalleriesDialog,
                                   public views::ButtonListener,
+                                  public views::ContextMenuController,
                                   public views::DialogDelegate {
  public:
   explicit MediaGalleriesDialogViews(
@@ -51,6 +58,11 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
+  // views::ContextMenuController implementation:
+  virtual void ShowContextMenuForView(views::View* source,
+                                      const gfx::Point& point,
+                                      ui::MenuSourceType source_type) OVERRIDE;
+
  private:
   typedef std::map<MediaGalleryPrefId, views::Checkbox*> CheckboxMap;
   typedef std::map<views::Checkbox*, MediaGalleryPrefInfo> NewCheckboxMap;
@@ -63,6 +75,10 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
                           bool permitted,
                           views::View* container,
                           int trailing_vertical_space);
+
+  void ShowContextMenu(const gfx::Point& point,
+                       ui::MenuSourceType source_type,
+                       MediaGalleryPrefId id);
 
   MediaGalleriesDialogController* controller_;
 
@@ -88,6 +104,8 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
 
   // True if the user has pressed accept.
   bool accepted_;
+
+  scoped_ptr<views::MenuRunner> context_menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesDialogViews);
 };

@@ -22,6 +22,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/base/text/bytes_formatting.h"
 
 using extensions::APIPermission;
@@ -44,6 +45,40 @@ bool GalleriesVectorComparator(
 
 }  // namespace
 
+class GalleryContextMenuModel : public ui::SimpleMenuModel::Delegate {
+ public:
+  explicit GalleryContextMenuModel(MediaGalleriesDialogController* controller)
+      : controller_(controller), id_(kInvalidMediaGalleryPrefId) {}
+  virtual ~GalleryContextMenuModel() {}
+
+  void set_media_gallery_pref_id(MediaGalleryPrefId id) {
+    id_ = id;
+  }
+
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE {
+    return false;
+  }
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE {
+    return true;
+  }
+  virtual bool IsCommandIdVisible(int command_id) const OVERRIDE {
+    return true;
+  }
+
+  virtual bool GetAcceleratorForCommandId(
+      int command_id, ui::Accelerator* accelerator) OVERRIDE {
+    return false;
+  }
+
+  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE {
+    controller_->DidForgetGallery(id_);
+  }
+
+ private:
+  MediaGalleriesDialogController* controller_;
+  MediaGalleryPrefId id_;
+};
+
 MediaGalleriesDialogController::MediaGalleriesDialogController(
     content::WebContents* web_contents,
     const Extension& extension,
@@ -60,6 +95,13 @@ MediaGalleriesDialogController::MediaGalleriesDialogController(
   preferences_->EnsureInitialized(
       base::Bind(&MediaGalleriesDialogController::OnPreferencesInitialized,
                  base::Unretained(this)));
+
+  gallery_menu_model_.reset(new GalleryContextMenuModel(this));
+  ui::SimpleMenuModel* menu_model =
+      new ui::SimpleMenuModel(gallery_menu_model_.get());
+  menu_model->AddItem(
+      1, l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_DIALOG_DELETE));
+  context_menu_model_.reset(menu_model);
 }
 
 void MediaGalleriesDialogController::OnPreferencesInitialized() {
@@ -216,6 +258,12 @@ void MediaGalleriesDialogController::DidToggleNewGallery(
       return;
     }
   }
+}
+
+void MediaGalleriesDialogController::DidForgetGallery(
+    MediaGalleryPrefId pref_id) {
+  DCHECK(preferences_);
+  preferences_->ForgetGalleryById(pref_id);
 }
 
 void MediaGalleriesDialogController::DialogFinished(bool accepted) {
@@ -410,6 +458,12 @@ void MediaGalleriesDialogController::UpdateGalleriesOnPreferencesEvent() {
 void MediaGalleriesDialogController::UpdateGalleriesOnDeviceEvent(
     const std::string& device_id) {
   dialog_->UpdateGalleries();
+}
+
+ui::MenuModel* MediaGalleriesDialogController::GetContextMenuModel(
+    MediaGalleryPrefId id) {
+  gallery_menu_model_->set_media_gallery_pref_id(id);
+  return context_menu_model_.get();
 }
 
 // MediaGalleries dialog -------------------------------------------------------
