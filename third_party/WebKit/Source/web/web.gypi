@@ -120,6 +120,7 @@
       'WebCustomElement.cpp',
       'WebDOMActivityLogger.cpp',
       'WebDOMCustomEvent.cpp',
+      'WebDOMError.cpp',
       'WebDOMEvent.cpp',
       'WebDOMEventListener.cpp',
       'WebDOMEventListenerPrivate.cpp',
