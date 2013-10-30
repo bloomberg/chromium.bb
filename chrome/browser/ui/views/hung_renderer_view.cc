@@ -442,8 +442,17 @@ namespace chrome {
 void ShowHungRendererDialog(WebContents* contents) {
   if (!logging::DialogsAreSuppressed() &&
       !PlatformShowCustomHungRendererDialog(contents)) {
+    gfx::NativeView toplevel_view =
+        platform_util::GetTopLevel(contents->GetView()->GetNativeView());
+#if defined(USE_AURA)
+    // Don't show the dialog if there is no root window for the renderer,
+    // because it's invisible to the user (happens when the renderer is for
+    // prerendering for example).
+    if (!toplevel_view->GetRootWindow())
+      return;
+#endif
     HungRendererDialogView* view = HungRendererDialogView::Create(
-        platform_util::GetTopLevel(contents->GetView()->GetNativeView()));
+        toplevel_view);
     view->ShowForWebContents(contents);
   }
 }
