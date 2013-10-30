@@ -247,6 +247,9 @@ public:
     // Same as above, but always returns actual value, without any caches.
     virtual size_t actualMemoryUsageMB() { return 0; }
 
+    // Return the physical memory of the current machine, in MB.
+    virtual size_t physicalMemoryMB() { return 0; }
+
     // Returns private and shared usage, in bytes. Private bytes is the amount of
     // memory currently allocated to this process that cannot be shared. Returns
     // false on platform specific error conditions.
