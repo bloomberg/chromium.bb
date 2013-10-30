@@ -35,6 +35,10 @@ websocket_basic_stream_test.cc
 websocket_channel.cc
 websocket_channel.h
 websocket_channel_test.cc
+websocket_deflate_predictor.h
+websocket_deflate_predictor_impl.cc
+websocket_deflate_predictor_impl.h
+websocket_deflate_predictor_impl_test.cc
 websocket_deflate_stream.cc
 websocket_deflate_stream.h
 websocket_deflate_stream_test.cc

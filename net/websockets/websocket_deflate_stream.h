@@ -21,14 +21,27 @@ class GURL;
 
 namespace net {
 
+class WebSocketDeflatePredictor;
+
 // WebSocketDeflateStream is a WebSocketStream subclass.
 // WebSocketDeflateStream is for permessage-deflate WebSocket extension[1].
+//
+// WebSocketDeflateStream::ReadFrames and WriteFrames may change frame
+// boundary. In particular, if a control frame is placed in the middle of
+// data message frames, the control frame can overtake data frames.
+// Say there are frames df1, df2 and cf, df1 and df2 are frames of a
+// data message and cf is a control message frame. cf may arrive first and
+// data frames may follow cf.
+// Note that message boundary will be preserved, i.e. if the last frame of
+// a message m1 is read / written before the last frame of a message m2,
+// WebSocketDeflateStream will respect the order.
 //
 // [1]: http://tools.ietf.org/html/draft-ietf-hybi-permessage-compression-12
 class NET_EXPORT_PRIVATE WebSocketDeflateStream : public WebSocketStream {
  public:
   WebSocketDeflateStream(scoped_ptr<WebSocketStream> stream,
-                         WebSocketDeflater::ContextTakeOverMode mode);
+                         WebSocketDeflater::ContextTakeOverMode mode,
+                         scoped_ptr<WebSocketDeflatePredictor> predictor);
   virtual ~WebSocketDeflateStream();
 
   // WebSocketStream functions.
@@ -50,6 +63,7 @@ class NET_EXPORT_PRIVATE WebSocketDeflateStream : public WebSocketStream {
   enum WritingState {
     WRITING_COMPRESSED_MESSAGE,
     WRITING_UNCOMPRESSED_MESSAGE,
+    WRITING_POSSIBLY_COMPRESSED_MESSAGE,
     NOT_WRITING,
   };
 
@@ -59,6 +73,12 @@ class NET_EXPORT_PRIVATE WebSocketDeflateStream : public WebSocketStream {
 
   // This function deflates |frames| and stores the result to |frames| itself.
   int Deflate(ScopedVector<WebSocketFrame>* frames);
+  void OnMessageStart(const ScopedVector<WebSocketFrame>& frames, size_t index);
+  int AppendCompressedFrame(const WebSocketFrameHeader& header,
+                            ScopedVector<WebSocketFrame>* frames_to_write);
+  int AppendPossiblyCompressedMessage(
+      ScopedVector<WebSocketFrame>* frames,
+      ScopedVector<WebSocketFrame>* frames_to_write);
 
   // This function inflates |frames| and stores the result to |frames| itself.
   int Inflate(ScopedVector<WebSocketFrame>* frames);
@@ -73,6 +93,7 @@ class NET_EXPORT_PRIVATE WebSocketDeflateStream : public WebSocketStream {
   WritingState writing_state_;
   WebSocketFrameHeader::OpCode current_reading_opcode_;
   WebSocketFrameHeader::OpCode current_writing_opcode_;
+  scoped_ptr<WebSocketDeflatePredictor> predictor_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketDeflateStream);
 };
