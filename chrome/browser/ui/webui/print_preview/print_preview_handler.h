@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -18,7 +19,6 @@ class PrintSystemTaskProxy;
 
 namespace base {
 class DictionaryValue;
-class FilePath;
 class RefCountedBytes;
 }
 
@@ -223,7 +223,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
 
   // Holds the path to the print to pdf request. It is empty if no such request
   // exists.
-  scoped_ptr<base::FilePath> print_to_pdf_path_;
+  base::FilePath print_to_pdf_path_;
 
   // Holds token service to get OAuth2 access tokens.
   scoped_ptr<AccessTokenService> token_service_;

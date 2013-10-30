@@ -60,8 +60,6 @@
 #include "printing/backend/print_backend.h"
 #include "printing/metafile.h"
 #include "printing/metafile_impl.h"
-#include "printing/page_range.h"
-#include "printing/page_size_margins.h"
 #include "printing/print_settings.h"
 #include "third_party/icu/source/i18n/unicode/ulocdata.h"
 
@@ -71,12 +69,8 @@
 #endif
 
 using content::BrowserThread;
-using content::NavigationEntry;
-using content::OpenURLParams;
 using content::RenderViewHost;
-using content::Referrer;
 using content::WebContents;
-using printing::Metafile;
 
 namespace {
 
@@ -247,12 +241,12 @@ void ReportPrintSettingsStats(const DictionaryValue& settings) {
 }
 
 // Callback that stores a PDF file on disk.
-void PrintToPdfCallback(Metafile* metafile, const base::FilePath& path) {
+void PrintToPdfCallback(printing::Metafile* metafile,
+                        const base::FilePath& path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   metafile->SaveTo(path);
   // |metafile| must be deleted on the UI thread.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&base::DeletePointer<Metafile>, metafile));
+  BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, metafile);
 }
 
 std::string GetDefaultPrinterOnFileThread(
@@ -590,7 +584,8 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
     settings->SetString(printing::kSettingHeaderFooterTitle,
                         initiator->GetTitle());
     std::string url;
-    NavigationEntry* entry = initiator->GetController().GetActiveEntry();
+    content::NavigationEntry* entry =
+        initiator->GetController().GetActiveEntry();
     if (entry)
       url = entry->GetVirtualURL().spec();
     settings->SetString(printing::kSettingHeaderFooterURL, url);
@@ -723,7 +718,7 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
 }
 
 void PrintPreviewHandler::PrintToPdf() {
-  if (print_to_pdf_path_.get()) {
+  if (!print_to_pdf_path_.empty()) {
     // User has already selected a path, no need to show the dialog again.
     PostPrintToPdfTask();
   } else if (!select_file_dialog_.get() ||
@@ -854,9 +849,9 @@ void PrintPreviewHandler::HandleManageCloudPrint(const ListValue* /*args*/) {
   Profile* profile = Profile::FromBrowserContext(
       preview_web_contents()->GetBrowserContext());
   preview_web_contents()->OpenURL(
-      OpenURLParams(
+      content::OpenURLParams(
           CloudPrintURL(profile).GetCloudPrintServiceManageURL(),
-          Referrer(),
+          content::Referrer(),
           NEW_FOREGROUND_TAB,
           content::PAGE_TRANSITION_LINK,
           false));
@@ -1161,7 +1156,7 @@ void PrintPreviewHandler::FileSelected(const base::FilePath& path,
   sticky_settings->SaveInPrefs(Profile::FromBrowserContext(
       preview_web_contents()->GetBrowserContext())->GetPrefs());
   web_ui()->CallJavascriptFunction("fileSelectionCompleted");
-  print_to_pdf_path_.reset(new base::FilePath(path));
+  print_to_pdf_path_ = path;
   PostPrintToPdfTask();
 }
 
@@ -1172,13 +1167,12 @@ void PrintPreviewHandler::PostPrintToPdfTask() {
     NOTREACHED() << "Preview data was checked before file dialog.";
     return;
   }
-  printing::PreviewMetafile* metafile = new printing::PreviewMetafile;
+  scoped_ptr<printing::PreviewMetafile> metafile(new printing::PreviewMetafile);
   metafile->InitFromData(static_cast<const void*>(data->front()), data->size());
-  // PrintToPdfCallback takes ownership of |metafile|.
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&PrintToPdfCallback, metafile,
-                                     *print_to_pdf_path_));
-  print_to_pdf_path_.reset();
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&PrintToPdfCallback, metafile.release(), print_to_pdf_path_));
+  print_to_pdf_path_ = base::FilePath();
   ClosePreviewDialog();
 }
 
