@@ -16,7 +16,9 @@ from generators import mojom_cpp_generator
 
 def Main():
   parser = OptionParser(usage="usage: %prog [options] filename1 [filename2...]")
-  parser.add_option("-o", "--outdir", dest="outdir", default=".",
+  parser.add_option("-i", "--include_dir", dest="include_dir", default=".",
+                    help="specify directory for #includes")
+  parser.add_option("-o", "--output_dir", dest="output_dir", default=".",
                     help="specify output directory")
   (options, args) = parser.parse_args()
 
@@ -30,8 +32,9 @@ def Main():
     tree = mojo_parser.Parse(filename)
     mojom = mojo_translate.Translate(tree)
     module = mojom_data.ModuleFromData(mojom)
-    cpp = mojom_cpp_generator.CPPGenerator(module)
-    cpp.GenerateFiles(options.outdir)
+    cpp = mojom_cpp_generator.CPPGenerator(
+        module, options.include_dir, options.output_dir)
+    cpp.GenerateFiles()
 
 
 if __name__ == '__main__':

@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Generates C++ source files from a mojom.Module."""
+
 import datetime
 import mojom
 import mojom_pack
@@ -14,14 +16,32 @@ from string import Template
 # cpp = mojom_cpp_generator.CPPGenerator(module)
 # cpp.GenerateFiles("/tmp/g")
 def ReadTemplate(filename):
+  """Reads a string.Template from |filename|."""
   dir = os.path.dirname(__file__)
   with open(dir + '/' + filename, 'r') as file:
     return Template(file.read())
 
 
+def AddForward(forwards, kind):
+  """Adds a forward class declaration line to the |forwards| set."""
+  if isinstance(kind, mojom.Struct):
+    forwards.add("class %s;" % kind.name.capitalize())
+  if isinstance(kind, mojom.Array):
+    AddForward(forwards, kind.kind)
+
+
+def GetForwards(forwards):
+  """Returns a string suitable for substituting into a $FORWARDS section."""
+  if len(forwards) > 0:
+    return '\n'.join(sorted(forwards)) + '\n'
+  return ""
+
+
 class CPPGenerator(object):
-  struct_template = ReadTemplate("cpp_struct.template")
-  interface_template = ReadTemplate("cpp_interface.template")
+
+  struct_header_template = ReadTemplate("module_struct.h")
+  struct_source_template = ReadTemplate("module_struct.cc")
+  interface_header_template = ReadTemplate("module_interface.h")
   field_template = Template("  $itype ${field}_;")
   bool_field_template = Template("  uint8_t ${field}_ : 1;")
   setter_template = \
@@ -31,6 +51,7 @@ class CPPGenerator(object):
   ptr_getter_template = \
       Template("  $gtype $field() const { return ${field}_.ptr; }")
   pad_template = Template("  uint8_t _pad${count}_[$pad];")
+  HEADER_SIZE = 8
 
   kind_to_type = {
     mojom.BOOL:   "bool",
@@ -103,19 +124,31 @@ class CPPGenerator(object):
     return "MOJO_GENERATED_BINDINGS_%s_%s_H_" % \
         (self.module.name.upper(), component.name.upper())
 
-  def OpenComponentFile(self, directory, component):
-    filename = "%s_%s.h" % \
-        (self.module.name.lower(), component.name.lower())
-    return open(directory + '/' + filename, "w+")
-
-  def __init__(self, module):
+  # Pass |output_dir| to emit files to disk. Omit |output_dir| to echo all files
+  # to stdout.
+  def __init__(self, module, header_dir, output_dir=None):
     self.module = module
-    self.file = file
+    self.header_dir = header_dir
+    self.output_dir = output_dir
 
-  def GenerateStruct(self, struct, file):
+  def WriteTemplateToFile(self, template, name, ext, **substitutions):
+    if self.output_dir is None:
+      file = sys.stdout
+    else:
+      filename = "%s_%s.%s" % \
+          (self.module.name.lower(), name.lower(), ext)
+      file = open(os.path.join(self.output_dir, filename), "w+")
+    try:
+      file.write(template.substitute(substitutions))
+    finally:
+      if self.output_dir is not None:
+        file.close()
+
+  def GenerateStructHeader(self, struct):
     fields = []
     setters = []
     getters = []
+    forwards = set()
 
     ps = mojom_pack.PackedStruct(struct)
     pad_count = 0
@@ -123,6 +156,7 @@ class CPPGenerator(object):
     for i in xrange(num_fields):
       pf = ps.packed_fields[i]
       fields.append(self.GetFieldLine(pf))
+      AddForward(forwards, pf.field.kind)
       if i < (num_fields - 2):
         next_pf = ps.packed_fields[i+1]
         pad = next_pf.offset - (pf.offset + pf.size)
@@ -143,19 +177,30 @@ class CPPGenerator(object):
     else:
       size = 0
 
-    file.write(self.struct_template.substitute(
-      year = datetime.date.today().year,
-      header_guard = self.GetHeaderGuard(struct),
-      namespace = self.module.namespace,
-      classname = struct.name.capitalize(),
-      num_fields = len(ps.packed_fields),
-      size = size + 8,
-      setters = '\n'.join(setters),
-      getters = '\n'.join(getters),
-      fields = '\n'.join(fields)))
+    self.WriteTemplateToFile(self.struct_header_template, struct.name, 'h',
+        YEAR = datetime.date.today().year,
+        HEADER_GUARD = self.GetHeaderGuard(struct),
+        NAMESPACE = self.module.namespace,
+        CLASS = struct.name.capitalize(),
+        SIZE = size + self.HEADER_SIZE,
+        FORWARDS = GetForwards(forwards),
+        SETTERS = '\n'.join(setters),
+        GETTERS = '\n'.join(getters),
+        FIELDS = '\n'.join(fields))
 
-  def GenerateInterface(self, interface, file):
+  def GenerateStructSource(self, struct):
+    header = "%s_%s.h" % (self.module.name.lower(), struct.name.lower())
+    header = os.path.join(self.header_dir, header)
+    self.WriteTemplateToFile(self.struct_source_template, struct.name, 'cc',
+        YEAR = datetime.date.today().year,
+        NAMESPACE = self.module.namespace,
+        CLASS = struct.name.capitalize(),
+        NUM_FIELDS = len(struct.fields),
+        HEADER = header)
+
+  def GenerateInterfaceHeader(self, interface):
     cpp_methods = []
+    forwards = set()
     for method in interface.methods:
       cpp_method = "  virtual void %s(" % method.name
       first_param = True
@@ -164,29 +209,25 @@ class CPPGenerator(object):
           first_param = False
         else:
           cpp_method += ", "
+        AddForward(forwards, param.kind)
         cpp_method += "%s %s" % (self.GetConstType(param.kind), param.name)
       cpp_method += ") = 0;"
       cpp_methods.append(cpp_method)
 
-    file.write(self.interface_template.substitute(
-      year = datetime.date.today().year,
-      header_guard = self.GetHeaderGuard(interface),
-      namespace = self.module.namespace,
-      classname = interface.name.capitalize(),
-      methods = '\n'.join(cpp_methods)))
+    self.WriteTemplateToFile(
+        self.interface_header_template,
+        interface.name,
+        'h',
+        YEAR = datetime.date.today().year,
+        HEADER_GUARD = self.GetHeaderGuard(interface),
+        NAMESPACE = self.module.namespace,
+        CLASS = interface.name.capitalize(),
+        FORWARDS = GetForwards(forwards),
+        METHODS = '\n'.join(cpp_methods))
 
-  # Pass |directory| to emit files to disk. Omit |directory| to echo all files
-  # to stdout.
-  def GenerateFiles(self, directory=None):
+  def GenerateFiles(self):
     for struct in self.module.structs:
-      if directory is None:
-        self.GenerateStruct(struct, sys.stdout)
-      else:
-        with self.OpenComponentFile(directory, struct) as file:
-          self.GenerateStruct(struct, file)
+      self.GenerateStructHeader(struct)
+      self.GenerateStructSource(struct)
     for interface in self.module.interfaces:
-      if directory is None:
-        self.GenerateInterface(interface, sys.stdout)
-      else:
-        with self.OpenComponentFile(directory, interface) as file:
-          self.GenerateInterface(interface, file)
+      self.GenerateInterfaceHeader(interface)

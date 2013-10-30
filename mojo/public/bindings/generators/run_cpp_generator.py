@@ -18,8 +18,8 @@ def ReadDict(file):
 
 dict = ReadDict(sys.argv[1])
 module = mojom_data.ModuleFromData(dict)
-cpp = mojom_cpp_generator.CPPGenerator(module)
 dir = None
 if len(sys.argv) > 2:
   dir = sys.argv[2]
-cpp.GenerateFiles(dir)
+cpp = mojom_cpp_generator.CPPGenerator(module, "src", dir)
+cpp.GenerateFiles()
