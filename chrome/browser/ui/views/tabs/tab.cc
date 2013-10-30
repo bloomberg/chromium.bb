@@ -1469,9 +1469,7 @@ void Tab::PaintMediaIndicator(gfx::Canvas* canvas) {
 
 void Tab::PaintTitle(gfx::Canvas* canvas, SkColor title_color) {
   // Paint the Title.
-  const gfx::Rect& title_bounds = GetTitleBounds();
   string16 title = data().title;
-
   if (title.empty()) {
     title = data().loading ?
         l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE) :
@@ -1480,8 +1478,8 @@ void Tab::PaintTitle(gfx::Canvas* canvas, SkColor title_color) {
     Browser::FormatTitleForDisplay(&title);
   }
 
-  canvas->DrawFadeTruncatingString(title, gfx::Canvas::TruncateFadeTail, 0,
-                                   *font_, title_color, title_bounds);
+  canvas->DrawFadeTruncatingStringRect(title, gfx::Canvas::TruncateFadeTail,
+      gfx::FontList(*font_), title_color, GetTitleBounds());
 }
 
 void Tab::AdvanceLoadingAnimation(TabRendererData::NetworkState old_state,

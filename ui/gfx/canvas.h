@@ -43,7 +43,6 @@ class GFX_EXPORT Canvas {
   enum TruncateFadeMode {
     TruncateFadeTail,
     TruncateFadeHead,
-    TruncateFadeHeadAndTail,
   };
 
   // Specifies the alignment for text rendered with the DrawStringInt method.
@@ -446,23 +445,11 @@ class GFX_EXPORT Canvas {
   // Apply transformation on the canvas.
   void Transform(const Transform& transform);
 
-  // Draws the given string with the beginning and/or the end using a fade
-  // gradient. When truncating the head
-  // |desired_characters_to_truncate_from_head| specifies the maximum number of
-  // characters that can be truncated.
+  // Draws the given string with the beginning or the end using a fade gradient.
   void DrawFadeTruncatingStringRect(
       const base::string16& text,
       TruncateFadeMode truncate_mode,
-      size_t desired_characters_to_truncate_from_head,
       const FontList& font_list,
-      SkColor color,
-      const Rect& display_rect);
-  // Obsolete version.  Use the above version which takes FontList.
-  void DrawFadeTruncatingString(
-      const base::string16& text,
-      TruncateFadeMode truncate_mode,
-      size_t desired_characters_to_truncate_from_head,
-      const Font& font,
       SkColor color,
       const Rect& display_rect);
 
