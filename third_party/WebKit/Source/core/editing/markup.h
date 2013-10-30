@@ -69,7 +69,6 @@ String createFullMarkup(const Node*);
 String createFullMarkup(const Range*);
 
 String urlToMarkup(const KURL&, const String& title);
-void mergeWithNextTextNode(PassRefPtr<Node>, ExceptionState&);
 
 }
 
