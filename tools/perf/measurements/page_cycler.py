@@ -43,6 +43,7 @@ class PageCycler(page_measurement.PageMeasurement):
     self._v8_object_stats_metric = None
     self._number_warm_runs = None
     self._cold_runs_requested = False
+    self._cold_run_start_index = None
     self._has_loaded_page = collections.defaultdict(int)
 
   def AddCommandLineOptions(self, parser):
@@ -62,7 +63,7 @@ class PageCycler(page_measurement.PageMeasurement):
         action='store_true',
         help='Enable the speed index metric.')
 
-    parser.add_option('--cold-load-percent', type='int', default=0,
+    parser.add_option('--cold-load-percent', type='int',
                       help='%d of page visits for which a cold load is forced')
 
   def DidStartBrowser(self, browser):
@@ -115,13 +116,14 @@ class PageCycler(page_measurement.PageMeasurement):
       print '%s is currently disabled on mac. Skipping test.' % sys.argv[-1]
       sys.exit(0)
 
+    self._cold_runs_requested = (options.cold_load_percent != None)
     # Handle requests for cold cache runs
-    if (options.cold_load_percent and
+    if (self._cold_runs_requested and
         (options.repeat_options.page_repeat_secs or
          options.repeat_options.pageset_repeat_secs)):
       raise Exception('--cold-load-percent is incompatible with timed repeat')
 
-    if (options.cold_load_percent and
+    if (self._cold_runs_requested and
         (options.cold_load_percent < 0 or options.cold_load_percent > 100)):
       raise Exception('--cold-load-percent must be in the range [0-100]')
 
@@ -129,15 +131,16 @@ class PageCycler(page_measurement.PageMeasurement):
     # dropping the first run.
     number_warm_pageset_runs = int(
         (int(options.repeat_options.pageset_repeat_iters) - 1) *
-        (100 - options.cold_load_percent) / 100)
+        (100 - int(options.cold_load_percent or 0)) / 100)
 
     # Make sure _number_cold_runs is an integer multiple of page_repeat.
     # Without this, --pageset_shuffle + --page_repeat could lead to
     # assertion failures on _started_warm in WillNavigateToPage.
     self._number_warm_runs = (number_warm_pageset_runs *
                               options.repeat_options.page_repeat_iters)
-    self._cold_runs_requested = bool(options.cold_load_percent)
-    self.discard_first_result = (bool(options.cold_load_percent) or
+    self._cold_run_start_index = (self._number_warm_runs +
+        options.repeat_options.page_repeat_iters)
+    self.discard_first_result = (self._cold_runs_requested or
                                  self.discard_first_result)
 
   def MeasurePage(self, page, tab, results):
@@ -183,7 +186,8 @@ class PageCycler(page_measurement.PageMeasurement):
     # contribute to the cold data and warm the catch for the following
     # warm run, and clearing the cache before the load of the following
     # URL would eliminate the intended warmup for the previous URL.
-    return self._has_loaded_page[url] >= self._number_warm_runs + 1
+    return (self._cold_runs_requested and
+            self._has_loaded_page[url] >= self._cold_run_start_index)
 
   def results_are_the_same_on_every_page(self):
     return not self._cold_runs_requested
