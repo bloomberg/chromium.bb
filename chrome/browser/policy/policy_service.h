@@ -12,43 +12,11 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/policy/policy_map.h"
+#include "components/policy/core/common/policy_namespace.h"
 
 namespace policy {
 
 class PolicyDomainDescriptor;
-
-// Policies are namespaced by a (PolicyDomain, ID) pair. The meaning of the ID
-// string depends on the domain; for example, if the PolicyDomain is
-// "extensions" then the ID identifies the extension that the policies control.
-enum PolicyDomain {
-  // The component ID for chrome policies is always the empty string.
-  POLICY_DOMAIN_CHROME,
-
-  // The extensions policy domain is a work in progress. Included here for
-  // tests.
-  POLICY_DOMAIN_EXTENSIONS,
-
-  // Must be the last entry.
-  POLICY_DOMAIN_SIZE,
-};
-
-// Groups a policy domain and a component ID in a single object representing
-// a policy namespace. Objects of this class can be used as keys in std::maps.
-struct PolicyNamespace {
- public:
-  PolicyNamespace();
-  PolicyNamespace(PolicyDomain domain, const std::string& component_id);
-  PolicyNamespace(const PolicyNamespace& other);
-  ~PolicyNamespace();
-
-  PolicyNamespace& operator=(const PolicyNamespace& other);
-  bool operator<(const PolicyNamespace& other) const;
-  bool operator==(const PolicyNamespace& other) const;
-  bool operator!=(const PolicyNamespace& other) const;
-
-  PolicyDomain domain;
-  std::string component_id;
-};
 
 // The PolicyService merges policies from all available sources, taking into
 // account their priorities. Policy clients can retrieve policy for their domain

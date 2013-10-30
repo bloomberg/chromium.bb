@@ -13,9 +13,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/policy/cloud/component_cloud_policy_store.h"
 #include "chrome/browser/policy/cloud/external_policy_data_fetcher.h"
-#include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/policy/proto/cloud/chrome_extension_policy.pb.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
+#include "components/policy/core/common/policy_namespace.h"
 
 namespace em = enterprise_management;
 

@@ -20,6 +20,8 @@
       'conditions': [
         ['configuration_policy==1', {
           'sources': [
+            'policy/core/common/policy_namespace.cc',
+            'policy/core/common/policy_namespace.h',
             'policy/core/common/policy_pref_names.cc',
             'policy/core/common/policy_pref_names.h',
             'policy/core/common/policy_switches.cc',
@@ -30,14 +32,12 @@
             'policy/policy_export.h',
           ],
         }, {  # configuration_policy==0
-          # The target 'policy_component' always exists. Later it will include
-          # some stubs when configuration_policy==0. For now this stub file is
-          # compiled so that an output is produced, otherwise the shared build
-          # breaks on iOS.
-          # TODO(joaodasilva): remove this comment and the temporary stub after
-          # moving one of the real stubs. http://crbug.com/271392
+          # Some of the policy code is always enabled, so that other parts of
+          # Chrome can always interface with the PolicyService without having
+          # to #ifdef on ENABLE_CONFIGURATION_POLICY.
           'sources': [
-            'policy/stub_to_remove.cc',
+            'policy/core/common/policy_namespace.cc',
+            'policy/core/common/policy_namespace.h',
           ],
         }],
       ],

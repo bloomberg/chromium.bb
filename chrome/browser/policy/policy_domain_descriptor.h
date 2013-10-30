@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/policy/policy_service.h"
+#include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/schema.h"
 
 namespace policy {

@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "chrome/browser/policy/policy_map.h"
 
 namespace policy {
 

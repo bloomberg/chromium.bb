@@ -9,11 +9,10 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/policy/policy_service.h"
+#include "chrome/browser/policy/policy_map.h"
+#include "components/policy/core/common/policy_namespace.h"
 
 namespace policy {
-
-class PolicyMap;
 
 // Maps policy namespaces to PolicyMaps.
 class PolicyBundle {
