@@ -826,25 +826,26 @@ bool WorkspaceWindowResizer::StickToWorkAreaOnMove(
   const int right_edge = work_area.right();
   const int top_edge = work_area.y();
   const int bottom_edge = work_area.bottom();
+  bool updated = false;
   if (ShouldStickToEdge(bounds->x() - left_edge, sticky_size)) {
     bounds->set_x(left_edge);
-    return true;
+    updated = true;
   } else if (ShouldStickToEdge(right_edge - bounds->right(), sticky_size)) {
     bounds->set_x(right_edge - bounds->width());
-    return true;
+    updated = true;
   }
   if (ShouldStickToEdge(bounds->y() - top_edge, sticky_size)) {
     bounds->set_y(top_edge);
-    return true;
+    updated = true;
   } else if (ShouldStickToEdge(bottom_edge - bounds->bottom(), sticky_size) &&
              bounds->height() < (bottom_edge - top_edge)) {
     // Only snap to the bottom if the window is smaller than the work area.
     // Doing otherwise can lead to window snapping in weird ways as it bounces
     // between snapping to top then bottom.
     bounds->set_y(bottom_edge - bounds->height());
-    return true;
+    updated = true;
   }
-  return false;
+  return updated;
 }
 
 void WorkspaceWindowResizer::StickToWorkAreaOnResize(

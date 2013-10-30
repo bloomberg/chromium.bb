@@ -946,6 +946,22 @@ TEST_F(WorkspaceWindowResizerTest, SnapToEdge) {
   EXPECT_EQ("96,20 320x160", window_->bounds().ToString());
   resizer->Drag(CalculateDragPoint(*resizer, 0, -112 + 7), 0);
   EXPECT_EQ("96,0 320x160", window_->bounds().ToString());
+
+  // And bottom/left should snap too.
+  resizer->Drag(
+      CalculateDragPoint(*resizer, 7 - 96, 600 - 160 - 112 - 3 - 7), 0);
+  EXPECT_EQ("0,437 320x160", window_->bounds().ToString());
+  resizer->Drag(
+      CalculateDragPoint(*resizer, -15 - 96, 600 - 160 - 112 - 3 + 15), 0);
+  EXPECT_EQ("0,437 320x160", window_->bounds().ToString());
+  // should move past snap points.
+  resizer->Drag(
+      CalculateDragPoint(*resizer, -32 - 96, 600 - 160 - 112 - 2 + 32), 0);
+  EXPECT_EQ("-32,470 320x160", window_->bounds().ToString());
+  resizer->Drag(
+      CalculateDragPoint(*resizer, -33 - 96, 600 - 160 - 112 - 2 + 33), 0);
+  EXPECT_EQ("-33,471 320x160", window_->bounds().ToString());
+
   // No need to test dragging < 0 as we force that to 0.
 }
 
