@@ -390,7 +390,7 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, isolate, inde
         includes.update(new_includes)
     elif is_typed_array_type(idl_type):
         cpp_expression_format = (
-            'jsValue->Is{idl_type}() ? '
+            '{v8_value}->Is{idl_type}() ? '
             'V8{idl_type}::toNative(v8::Handle<v8::{idl_type}>::Cast({v8_value})) : 0')
         add_includes_for_type(idl_type)
     else:

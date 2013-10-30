@@ -88,7 +88,8 @@ def cpp_method(method, number_of_arguments):
 def custom_signature(arguments):
     def argument_template(argument):
         idl_type = argument.idl_type
-        if v8_types.is_wrapper_type(idl_type):
+        if (v8_types.is_wrapper_type(idl_type) and
+            not v8_types.is_typed_array_type(idl_type)):
             return 'V8PerIsolateData::from(isolate)->rawTemplate(&V8{idl_type}::wrapperTypeInfo, currentWorldType)'.format(idl_type=idl_type)
         return 'v8::Handle<v8::FunctionTemplate>()'
 

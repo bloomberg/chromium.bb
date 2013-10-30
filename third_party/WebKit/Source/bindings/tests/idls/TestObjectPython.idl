@@ -213,6 +213,17 @@ interface TestObjectPython {
     void voidMethodDocumentTypeArg(DocumentType documentTypeArg);
     void voidMethodElementArg(Element elementArg);
     void voidMethodNodeArg(Node nodeArg);
+    // Typed arrays
+    ArrayBuffer arrayBufferMethod();
+    ArrayBufferView arrayBufferViewMethod();
+    Float32Array float32ArrayMethod();
+    Int32Array int32ArrayMethod();
+    Uint8Array uint8ArrayMethod();
+    void voidMethodArrayBufferArg(ArrayBuffer arrayBufferArg);
+    void voidMethodArrayBufferViewArg(ArrayBufferView arrayBufferViewArg);
+    void voidMethodFloat32ArrayArg(Float32Array float32ArrayArg);
+    void voidMethodInt32ArrayArg(Int32Array int32ArrayArg);
+    void voidMethodUint8ArrayArg(Uint8Array uint8ArrayArg);
     // Arrays
     long[] longArrayMethod();
     DOMString[] stringArrayMethod();
