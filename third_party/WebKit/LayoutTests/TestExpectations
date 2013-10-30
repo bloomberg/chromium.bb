@@ -530,3 +530,4 @@ crbug.com/312910 webaudio/audiobuffersource-loop-points.html [ Crash Timeout Pas
 crbug.com/313217 fast/dom/node-iterator-document-moved-crash.html [ Crash Pass ]
 crbug.com/313219 traversal/tree-walker-005.html [ Crash Pass ]
 crbug.com/313219 traversal/node-iterator-004.html [ Crash Pass ]
+crbug.com/313338 inspector/debugger/debugger-proto-property.html [ Pass Timeout ]
