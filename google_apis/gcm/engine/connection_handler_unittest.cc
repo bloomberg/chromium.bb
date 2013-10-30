@@ -51,7 +51,7 @@ std::string EncodePacket(uint8 tag, const std::string& proto) {
   google::protobuf::io::StringOutputStream string_output_stream(&result);
   google::protobuf::io::CodedOutputStream coded_output_stream(
       &string_output_stream);
-  const char tag_byte[1] = {tag};
+  const unsigned char tag_byte[1] = {tag};
   coded_output_stream.WriteRaw(tag_byte, 1);
   coded_output_stream.WriteVarint32(proto.size());
   coded_output_stream.WriteRaw(proto.c_str(), proto.size());

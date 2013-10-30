@@ -111,16 +111,18 @@ class MockDeviceImpl : public AndroidDevice {
                             const CommandCallback& callback) OVERRIDE {
     const char* response;
 
-    if (command == kDeviceModelCommand)
+    if (command == kDeviceModelCommand) {
       response = device_model_;
-    else if (command == kOpenedUnixSocketsCommand)
+    } else if (command == kOpenedUnixSocketsCommand) {
       response = kSampleOpenedUnixSockets;
-    else if (command == kListProcessesCommand)
+    } else if (command == kListProcessesCommand) {
       response = kSampleListProcesses;
-    else if (command == kDumpsysCommand)
+    } else if (command == kDumpsysCommand) {
       response = kSampleDumpsysCommand;
-    else
+    } else {
       NOTREACHED();
+      return;
+    }
 
     base::MessageLoop::current()->PostTask( FROM_HERE,
               base::Bind(&MockDeviceImpl::RunCommandCallback,
@@ -143,21 +145,26 @@ class MockDeviceImpl : public AndroidDevice {
     const char* response;
 
     if (la_name == "chrome_devtools_remote") {
-      if (request == kVersionRequest)
+      if (request == kVersionRequest) {
         response = kSampleChromeVersion;
-      else if (request == kPageListRequest)
+      } else if (request == kPageListRequest) {
         response = kSampleChromePages;
-      else
+      } else {
         NOTREACHED();
+        return;
+      }
     } else if (la_name == "webview_devtools_remote_2425") {
-      if (request == kVersionRequest)
+      if (request == kVersionRequest) {
         response = kSampleWebViewVersion;
-      else if (request == kPageListRequest)
+      } else if (request == kPageListRequest) {
         response = kSampleWebViewPages;
-      else
+      } else {
         NOTREACHED();
+        return;
+      }
     } else {
       NOTREACHED();
+      return;
     }
 
     base::MessageLoop::current()->PostTask( FROM_HERE,
