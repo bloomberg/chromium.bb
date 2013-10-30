@@ -298,9 +298,6 @@ enum OutputLinkTypes {
 // WARNING: Deprecated.  Will be removed in the near future.  CDMs should
 // implement ContentDecryptionModule_2 instead.
 
-// Deprecated. Remove after CDMs start to use ContentDecryptionModule*.kVersion.
-const int kCdmInterfaceVersion_1 = 1;
-
 // ContentDecryptionModule interface that all CDMs need to implement.
 // The interface is versioned for backward compatibility.
 // Note: ContentDecryptionModule implementations must use the allocator
@@ -309,7 +306,7 @@ const int kCdmInterfaceVersion_1 = 1;
 // when a Buffer is created that will never be returned to the caller.
 class ContentDecryptionModule_1 {
  public:
-  static const int kVersion = kCdmInterfaceVersion_1;
+  static const int kVersion = 1;
   typedef Host_1 Host;
 
   // Generates a |key_request| given |type| and |init_data|.
@@ -430,9 +427,6 @@ class ContentDecryptionModule_1 {
   virtual ~ContentDecryptionModule_1() {}
 };
 
-// Deprecated. Remove after CDMs start to use ContentDecryptionModule*.kVersion.
-const int kCdmInterfaceVersion_2 = 2;
-
 // ContentDecryptionModule interface that all CDMs need to implement.
 // The interface is versioned for backward compatibility.
 // Note: ContentDecryptionModule implementations must use the allocator
@@ -441,7 +435,7 @@ const int kCdmInterfaceVersion_2 = 2;
 // when a Buffer is created that will never be returned to the caller.
 class ContentDecryptionModule_2 {
  public:
-  static const int kVersion = kCdmInterfaceVersion_2;
+  static const int kVersion = 2;
   typedef Host_2 Host;
 
   // Generates a |key_request| given |type| and |init_data|.
@@ -586,7 +580,6 @@ class ContentDecryptionModule_2 {
 };
 
 typedef ContentDecryptionModule_2 ContentDecryptionModule;
-const int kCdmInterfaceVersion = ContentDecryptionModule::kVersion;
 
 // Represents a buffer created by Allocator implementations.
 class Buffer {
@@ -608,17 +601,12 @@ class Buffer {
   void operator=(const Buffer&);
 };
 
-// Deprecated.
-// Remove after CDMs start to use ContentDecryptionModule*::Host::kVersion.
-const int kHostInterfaceVersion_1 = 1;
-const int kHostInterfaceVersion_2 = 2;
-
 // Host interface that the CDM can call into to access browser side services.
 // Host interfaces are versioned for backward compatibility. CDM should use
 // HostFactory object to request a Host interface of a particular version.
 class Host_1 {
  public:
-  static const int kVersion = kHostInterfaceVersion_1;
+  static const int kVersion = 1;
 
   // Returns a Buffer* containing non-zero members upon success, or NULL on
   // failure. The caller owns the Buffer* after this call. The buffer is not
@@ -659,7 +647,7 @@ class Host_1 {
 
 class Host_2 {
  public:
-  static const int kVersion = kHostInterfaceVersion_2;
+  static const int kVersion = 2;
 
   // Returns a Buffer* containing non-zero members upon success, or NULL on
   // failure. The caller owns the Buffer* after this call. The buffer is not
@@ -720,11 +708,6 @@ class Host_2 {
   Host_2() {}
   virtual ~Host_2() {}
 };
-
-// Deprecated. Remove after CDMs start to use ContentDecryptionModule*::Host
-// and ContentDecryptionModule*::Host::kVersion.
-typedef Host_2 Host;
-const int kHostInterfaceVersion = kHostInterfaceVersion_2;
 
 // Represents a decrypted block that has not been decoded.
 class DecryptedBlock {
