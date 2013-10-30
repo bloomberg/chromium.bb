@@ -5,6 +5,7 @@
 #include "remoting/client/jni/chromoting_jni_runtime.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/basictypes.h"
@@ -19,6 +20,8 @@
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 using base::android::ConvertJavaStringToUTF8;
+using base::android::ConvertUTF8ToJavaString;
+using base::android::ToJavaByteArray;
 
 namespace {
 
@@ -226,19 +229,14 @@ void ChromotingJniRuntime::CommitPairingCredentials(const std::string& host,
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  jstring host_jstr = env->NewStringUTF(host.c_str());
-  jbyteArray id_arr = env->NewByteArray(id.size());
-  env->SetByteArrayRegion(id_arr, 0, id.size(),
-      reinterpret_cast<const jbyte*>(id.c_str()));
-  jbyteArray secret_arr = env->NewByteArray(secret.size());
-  env->SetByteArrayRegion(secret_arr, 0, secret.size(),
-      reinterpret_cast<const jbyte*>(secret.c_str()));
+  ScopedJavaLocalRef<jstring> j_host = ConvertUTF8ToJavaString(env, host);
+  ScopedJavaLocalRef<jbyteArray> j_id = ToJavaByteArray(
+      env, reinterpret_cast<const uint8*>(id.data()), id.size());
+  ScopedJavaLocalRef<jbyteArray> j_secret = ToJavaByteArray(
+      env, reinterpret_cast<const uint8*>(secret.data()), secret.size());
 
-  Java_JniInterface_commitPairingCredentials(env, host_jstr, id_arr,
-                                             secret_arr);
-
-  // Because we passed them as arguments, their corresponding Java objects were
-  // GCd as soon as the managed method returned, so we mustn't release it here.
+  Java_JniInterface_commitPairingCredentials(
+      env, j_host.obj(), j_id.obj(), j_secret.obj());
 }
 
 base::android::ScopedJavaLocalRef<jobject> ChromotingJniRuntime::NewBitmap(
