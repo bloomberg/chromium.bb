@@ -3,14 +3,17 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'chromium_code': 1,
+  },
   'targets': [
     {
       'target_name': 'shell',
       'type': 'static_library',
       'dependencies': [
+        '../../skia/skia.gyp:skia',
         '../aura/aura.gyp:aura',
         '../views/views.gyp:views',
-        '../../skia/skia.gyp:skia',
       ],
       'sources': [
         'minimal_shell.cc',
