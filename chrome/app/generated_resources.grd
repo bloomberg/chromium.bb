@@ -13740,6 +13740,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_NOTIFICATION_WELCOME_BODY" desc="Notification body for the Welcome Notification">
         Stay connected to what you need to know, across all devices.
       </message>
+      <message name="IDS_NOTIFICATION_WELCOME_BUTTON_LEARN_MORE" desc="Learn more button text for the Welcome Notification">
+        Learn more
+      </message>
       <message name="IDS_NOTIFICATION_WELCOME_DISPLAY_SOURCE" desc="Display source for the Welcome Notification">
         Notifications
       </message>

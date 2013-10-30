@@ -519,6 +519,9 @@ const char kLearnMoreEnterpriseURL[] =
 const char kNotificationsHelpURL[] =
     "https://support.google.com/chrome/?p=ui_notifications";
 
+const char kNotificationWelcomeLearnMoreURL[] =
+    "https://support.google.com/chrome/?p=ib_google_now_welcome";
+
 // Add hosts here to be included in chrome://chrome-urls (about:about).
 // These hosts will also be suggested by BuiltinProvider.
 const char* const kChromeHostURLs[] = {

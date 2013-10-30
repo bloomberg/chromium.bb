@@ -433,6 +433,9 @@ extern const char kLearnMoreEnterpriseURL[];
 
 extern const char kNotificationsHelpURL[];
 
+// The Welcome Notification More Info URL.
+extern const char kNotificationWelcomeLearnMoreURL[];
+
 // Gets the hosts/domains that are shown in chrome://chrome-urls.
 extern const char* const kChromeHostURLs[];
 extern const size_t kNumberOfChromeHostURLs;

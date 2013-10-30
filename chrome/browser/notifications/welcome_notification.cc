@@ -47,12 +47,27 @@ class WelcomeNotificationDelegate
   }
 
   virtual void Click() OVERRIDE {}
-  virtual void ButtonClick(int index) OVERRIDE {}
+  virtual void ButtonClick(int index) OVERRIDE {
+    DCHECK(index == 0);
+    OpenNotificationLearnMoreTab();
+  }
 
  private:
   void MarkAsDismissed() {
     profile_->GetPrefs()->
         SetBoolean(prefs::kWelcomeNotificationDismissed, true);
+  }
+
+  void OpenNotificationLearnMoreTab() {
+    Browser* browser = chrome::FindOrCreateTabbedBrowser(
+        profile_, chrome::GetActiveDesktop());
+    chrome::NavigateParams params(
+        browser,
+        GURL(chrome::kNotificationWelcomeLearnMoreURL),
+        content::PAGE_TRANSITION_LINK);
+    params.disposition = NEW_FOREGROUND_TAB;
+    params.window_action = chrome::NavigateParams::SHOW_WINDOW;
+    chrome::Navigate(&params);
   }
 
   virtual ~WelcomeNotificationDelegate() {}
@@ -111,8 +126,14 @@ void WelcomeNotification::RegisterProfilePrefs(
 }
 
 void WelcomeNotification::ShowWelcomeNotification(PopUpRequest popUpRequest) {
+  message_center::ButtonInfo learn_more(
+      l10n_util::GetStringUTF16(IDS_NOTIFICATION_WELCOME_BUTTON_LEARN_MORE));
+  learn_more.icon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+      IDR_NOTIFICATION_WELCOME_LEARN_MORE);
+
   message_center::RichNotificationData rich_notification_data;
   rich_notification_data.priority = 2;
+  rich_notification_data.buttons.push_back(learn_more);
 
   if (welcome_notification_id_.empty())
     welcome_notification_id_ = base::GenerateGUID();
