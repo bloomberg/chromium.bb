@@ -1099,16 +1099,13 @@ TEST_F(DeferredCookieTaskTest, DeferredTaskOrder) {
 
   MockGetCookiesCallback get_cookies_callback;
   MockSetCookiesCallback set_cookies_callback;
-  MockClosure delete_cookie_callback;
   MockGetCookiesCallback get_cookies_callback_deferred;
 
   EXPECT_CALL(*this, Begin()).WillOnce(testing::DoAll(
       GetCookiesAction(
           &cookie_monster(), url_google_, &get_cookies_callback),
       SetCookieAction(
-          &cookie_monster(), url_google_, "A=B", &set_cookies_callback),
-      DeleteCookieAction(
-          &cookie_monster(), url_google_, "A", &delete_cookie_callback)));
+          &cookie_monster(), url_google_, "A=B", &set_cookies_callback)));
   ExpectLoadCall();
   ExpectLoadForKeyCall("google.izzle", false);
   Begin();
@@ -1117,10 +1114,9 @@ TEST_F(DeferredCookieTaskTest, DeferredTaskOrder) {
   EXPECT_CALL(get_cookies_callback, Invoke("X=1")).WillOnce(
       GetCookiesAction(
           &cookie_monster(), url_google_, &get_cookies_callback_deferred));
-  EXPECT_CALL(get_cookies_callback_deferred, Invoke("X=1")).WillOnce(
-      QuitCurrentMessageLoop());
   EXPECT_CALL(set_cookies_callback, Invoke(true));
-  EXPECT_CALL(delete_cookie_callback, Invoke());
+  EXPECT_CALL(get_cookies_callback_deferred, Invoke("A=B; X=1")).WillOnce(
+      QuitCurrentMessageLoop());
 
   CompleteLoadingAndWait();
 }

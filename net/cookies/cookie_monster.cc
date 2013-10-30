@@ -1474,21 +1474,31 @@ void CookieMonster::OnKeyLoaded(const std::string& key,
   StoreLoadedCookies(cookies);
 
   std::deque<scoped_refptr<CookieMonsterTask> > tasks_pending_for_key;
-  {
-    base::AutoLock autolock(lock_);
-    keys_loaded_.insert(key);
-    std::map<std::string, std::deque<scoped_refptr<CookieMonsterTask> > >
-      ::iterator it = tasks_pending_for_key_.find(key);
-    if (it == tasks_pending_for_key_.end())
-      return;
-    it->second.swap(tasks_pending_for_key);
-    tasks_pending_for_key_.erase(it);
-  }
 
-  while (!tasks_pending_for_key.empty()) {
-    scoped_refptr<CookieMonsterTask> task = tasks_pending_for_key.front();
-    task->Run();
-    tasks_pending_for_key.pop_front();
+  // We need to do this repeatedly until no more tasks were added to the queue
+  // during the period where we release the lock.
+  while (true) {
+    {
+      base::AutoLock autolock(lock_);
+      std::map<std::string, std::deque<scoped_refptr<CookieMonsterTask> > >
+        ::iterator it = tasks_pending_for_key_.find(key);
+      if (it == tasks_pending_for_key_.end()) {
+        keys_loaded_.insert(key);
+        return;
+      }
+      if (it->second.empty()) {
+        keys_loaded_.insert(key);
+        tasks_pending_for_key_.erase(it);
+        return;
+      }
+      it->second.swap(tasks_pending_for_key);
+    }
+
+    while (!tasks_pending_for_key.empty()) {
+      scoped_refptr<CookieMonsterTask> task = tasks_pending_for_key.front();
+      task->Run();
+      tasks_pending_for_key.pop_front();
+    }
   }
 }
 
