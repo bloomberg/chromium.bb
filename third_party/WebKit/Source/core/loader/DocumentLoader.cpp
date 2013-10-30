@@ -31,7 +31,6 @@
 #include "core/loader/DocumentLoader.h"
 
 #include "FetchInitiatorTypeNames.h"
-#include "core/dom/DOMImplementation.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
 #include "core/events/Event.h"
@@ -45,7 +44,6 @@
 #include "core/loader/DocumentWriter.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/loader/SinkDocument.h"
 #include "core/loader/UniqueIdentifier.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/loader/archive/ArchiveResourceCollection.h"
@@ -893,9 +891,15 @@ PassRefPtr<DocumentWriter> DocumentLoader::createWriterFor(Frame* frame, const D
 {
     // Create a new document before clearing the frame, because it may need to
     // inherit an aliased security context.
-    RefPtr<Document> document = DOMImplementation::createDocument(mimeType, frame, url, frame->inViewSourceMode());
-    if (document->isPluginDocument() && document->isSandboxed(SandboxPlugins))
-        document = SinkDocument::create(DocumentInit(url, frame));
+    DocumentInit init(url, frame);
+
+    // In some rare cases, we'll re-used a DOMWindow for a new Document. For example,
+    // when a script calls window.open("..."), the browser gives JavaScript a window
+    // synchronously but kicks off the load in the window asynchronously. Web sites
+    // expect that modifications that they make to the window object synchronously
+    // won't be blown away when the network load commits. To make that happen, we
+    // "securely transition" the existing DOMWindow to the Document that results from
+    // the network load. See also SecurityContext::isSecureTransitionTo.
     bool shouldReuseDefaultView = frame->loader().stateMachine()->isDisplayingInitialEmptyDocument() && frame->document()->isSecureTransitionTo(url);
 
     ClearOptions options = 0;
@@ -910,8 +914,7 @@ PassRefPtr<DocumentWriter> DocumentLoader::createWriterFor(Frame* frame, const D
         frame->setDOMWindow(DOMWindow::create(frame));
 
     frame->loader().setOutgoingReferrer(url);
-    frame->domWindow()->setDocument(document);
-
+    RefPtr<Document> document = frame->domWindow()->installNewDocument(mimeType, init);
     if (ownerDocument) {
         document->setCookieURL(ownerDocument->cookieURL());
         document->setSecurityOrigin(ownerDocument->securityOrigin());

@@ -32,6 +32,7 @@ namespace WebCore {
 
 class CSSStyleSheet;
 class Document;
+class DocumentInit;
 class DocumentType;
 class ExceptionState;
 class Frame;
@@ -62,6 +63,7 @@ public:
 
     // Other methods (not part of DOM)
     static PassRefPtr<Document> createDocument(const String& MIMEType, Frame*, const KURL&, bool inViewSourceMode);
+    static PassRefPtr<Document> createDocument(const String& type, const DocumentInit&, bool inViewSourceMode);
 
     static bool isXMLMIMEType(const String& MIMEType);
     static bool isTextMIMEType(const String& MIMEType);

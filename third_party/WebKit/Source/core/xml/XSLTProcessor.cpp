@@ -65,26 +65,29 @@ PassRefPtr<Document> XSLTProcessor::createDocumentFromSource(const String& sourc
     String documentSource = sourceString;
 
     RefPtr<Document> result;
-    if (sourceMIMEType == "text/plain") {
-        result = Document::create(DocumentInit(sourceIsDocument ? ownerDocument->url() : KURL(), frame));
-        transformTextStringToXHTMLDocumentString(documentSource);
-    } else
-        result = DOMImplementation::createDocument(sourceMIMEType, frame, sourceIsDocument ? ownerDocument->url() : KURL(), false);
+    DocumentInit init(sourceIsDocument ? ownerDocument->url() : KURL(), frame);
 
-    // Before parsing, we need to save & detach the old document and get the new document
-    // in place. We have to do this only if we're rendering the result document.
+    bool forceXHTML = sourceMIMEType == "text/plain";
+    if (forceXHTML)
+        transformTextStringToXHTMLDocumentString(documentSource);
+
     if (frame) {
+        RefPtr<Document> oldDocument = frame->document();
+        result = frame->domWindow()->installNewDocument(sourceMIMEType, init, forceXHTML);
+
+        // Before parsing, we need to save & detach the old document and get the new document
+        // in place. We have to do this only if we're rendering the result document.
         if (FrameView* view = frame->view())
             view->clear();
 
-        if (Document* oldDocument = frame->document()) {
-            result->setTransformSourceDocument(oldDocument);
-            result->setSecurityOrigin(oldDocument->securityOrigin());
+        if (oldDocument) {
+            result->setTransformSourceDocument(oldDocument.get());
+            result->updateSecurityOrigin(oldDocument->securityOrigin());
             result->setCookieURL(oldDocument->cookieURL());
             result->contentSecurityPolicy()->copyStateFrom(oldDocument->contentSecurityPolicy());
         }
-
-        frame->domWindow()->setDocument(result);
+    } else {
+        result = DOMWindow::createDocument(sourceMIMEType, init, forceXHTML);
     }
 
     result->setEncoding(sourceEncoding.isEmpty() ? UTF8Encoding() : WTF::TextEncoding(sourceEncoding));

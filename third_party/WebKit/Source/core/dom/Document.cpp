@@ -383,7 +383,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_evaluateMediaQueriesOnStyleRecalc(false)
     , m_pendingSheetLayout(NoLayoutWithPendingSheets)
     , m_frame(initializer.frame())
-    , m_domWindow(0)
+    , m_domWindow(m_frame ? m_frame->domWindow() : 0)
     , m_import(initializer.import())
     , m_activeParserCount(0)
     , m_contextFeatures(ContextFeatures::defaultSwitch())
@@ -4401,20 +4401,6 @@ bool Document::useSecureKeyboardEntryWhenActive() const
     return m_useSecureKeyboardEntryWhenActive;
 }
 
-static bool isEligibleForSeamless(Document* parent, Document* child)
-{
-    // It should not matter what we return for the top-most document.
-    if (!parent)
-        return false;
-    if (parent->isSandboxed(SandboxSeamlessIframes))
-        return false;
-    if (child->isSrcdocDocument())
-        return true;
-    if (parent->securityOrigin()->canAccess(child->securityOrigin()))
-        return true;
-    return parent->securityOrigin()->canRequest(child->url());
-}
-
 void Document::initSecurityContext()
 {
     initSecurityContext(DocumentInit(m_url, m_frame, contextDocument(), m_import));
@@ -4461,15 +4447,14 @@ void Document::initSecurityContext(const DocumentInit& initializer)
         }
     }
 
-    Document* parentDocument = ownerElement() ? &ownerElement()->document() : 0;
-    if (parentDocument && initializer.shouldTreatURLAsSrcdocDocument()) {
+    if (initializer.shouldTreatURLAsSrcdocDocument()) {
         m_isSrcdocDocument = true;
-        setBaseURLOverride(parentDocument->baseURL());
+        setBaseURLOverride(initializer.parentBaseURL());
     }
 
     // FIXME: What happens if we inherit the security origin? This check may need to be later.
     // <iframe seamless src="about:blank"> likely won't work as-is.
-    m_mayDisplaySeamlesslyWithParent = isEligibleForSeamless(parentDocument, this);
+    m_mayDisplaySeamlesslyWithParent = initializer.isSeamlessAllowedFor(this);
 
     if (!shouldInheritSecurityOriginFromOwner(m_url))
         return;
@@ -4477,8 +4462,7 @@ void Document::initSecurityContext(const DocumentInit& initializer)
     // If we do not obtain a meaningful origin from the URL, then we try to
     // find one via the frame hierarchy.
 
-    Frame* ownerFrame = initializer.ownerFrame();
-    if (!ownerFrame) {
+    if (!initializer.owner()) {
         didFailToInitializeSecurityOrigin();
         return;
     }
@@ -4488,15 +4472,15 @@ void Document::initSecurityContext(const DocumentInit& initializer)
         // but we're also sandboxed, the only thing we inherit is the ability
         // to load local resources. This lets about:blank iframes in file://
         // URL documents load images and other resources from the file system.
-        if (ownerFrame->document()->securityOrigin()->canLoadLocalResources())
+        if (initializer.owner()->securityOrigin()->canLoadLocalResources())
             securityOrigin()->grantLoadLocalResources();
         return;
     }
 
-    m_cookieURL = ownerFrame->document()->cookieURL();
+    m_cookieURL = initializer.owner()->cookieURL();
     // We alias the SecurityOrigins to match Firefox, see Bug 15313
     // https://bugs.webkit.org/show_bug.cgi?id=15313
-    setSecurityOrigin(ownerFrame->document()->securityOrigin());
+    setSecurityOrigin(initializer.owner()->securityOrigin());
 }
 
 void Document::initContentSecurityPolicy(const ContentSecurityPolicyResponseHeaders& headers)
@@ -4537,6 +4521,12 @@ bool Document::allowExecutingScripts(Node* node)
     if (!contextDocument().get()->frame()->script().canExecuteScripts(AboutToExecuteScript))
         return false;
     return true;
+}
+
+void Document::updateSecurityOrigin(PassRefPtr<SecurityOrigin> origin)
+{
+    setSecurityOrigin(origin);
+    didUpdateSecurityOrigin();
 }
 
 void Document::didUpdateSecurityOrigin()

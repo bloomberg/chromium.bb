@@ -656,7 +656,7 @@ public:
     void didMergeTextNodes(Text* oldNode, unsigned offset);
     void didSplitTextNode(Text* oldNode);
 
-    void setDOMWindow(DOMWindow* domWindow) { m_domWindow = domWindow; }
+    void clearDOMWindow() { m_domWindow = 0; }
     DOMWindow* domWindow() const { return m_domWindow; }
 
     // Helper functions for forwarding DOMWindow event related tasks to the DOMWindow if it exists.
@@ -1005,6 +1005,7 @@ public:
     };
     void maybeHandleHttpRefresh(const String&, HttpRefreshType);
 
+    void updateSecurityOrigin(PassRefPtr<SecurityOrigin>);
     PassOwnPtr<LifecycleNotifier<Document> > createLifecycleNotifier();
 
 protected:

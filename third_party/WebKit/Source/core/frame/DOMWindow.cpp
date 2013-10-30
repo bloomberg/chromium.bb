@@ -43,6 +43,7 @@
 #include "core/css/StyleMedia.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ContextFeatures.h"
+#include "core/dom/DOMImplementation.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
@@ -70,6 +71,7 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/loader/SinkDocument.h"
 #include "core/loader/appcache/ApplicationCache.h"
 #include "core/frame/BarProp.h"
 #include "core/page/BackForwardClient.h"
@@ -356,23 +358,39 @@ void DOMWindow::clearDocument()
 
     m_eventQueue.clear();
 
-    m_document->setDOMWindow(0);
+    m_document->clearDOMWindow();
     m_document = 0;
 }
 
-void DOMWindow::setDocument(PassRefPtr<Document> document)
+PassRefPtr<Document> DOMWindow::createDocument(const String& mimeType, const DocumentInit& init, bool forceXHTML)
 {
-    ASSERT(document && document->frame() == m_frame);
-    clearDocument();
-    m_document = document;
-    m_eventQueue = DOMWindowEventQueue::create(document.get());
+    RefPtr<Document> document;
+    if (forceXHTML) {
+        // This is a hack for XSLTProcessor. See XSLTProcessor::createDocumentFromSource().
+        document = Document::create(init);
+    } else {
+        document = DOMImplementation::createDocument(mimeType, init, init.frame() ? init.frame()->inViewSourceMode() : false);
+        if (document->isPluginDocument() && document->isSandboxed(SandboxPlugins))
+            document = SinkDocument::create(init);
+    }
 
-    m_document->setDOMWindow(this);
+    return document.release();
+}
+
+PassRefPtr<Document> DOMWindow::installNewDocument(const String& mimeType, const DocumentInit& init, bool forceXHTML)
+{
+    ASSERT(init.frame() == m_frame);
+
+    clearDocument();
+
+    m_document = createDocument(mimeType, init, forceXHTML);
+    m_eventQueue = DOMWindowEventQueue::create(m_document.get());
+
     if (!m_document->confusingAndOftenMisusedAttached())
         m_document->attach();
 
     if (!m_frame)
-        return;
+        return m_document;
 
     m_frame->script().updateDocument();
     m_document->updateViewportDescription();
@@ -392,6 +410,8 @@ void DOMWindow::setDocument(PassRefPtr<Document> document)
         if (m_document->hasTouchEventHandlers())
             m_frame->page()->chrome().client().needTouchEvents(true);
     }
+
+    return m_document;
 }
 
 EventQueue* DOMWindow::eventQueue() const

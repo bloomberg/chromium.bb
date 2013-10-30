@@ -48,6 +48,7 @@ namespace WebCore {
     class Database;
     class DatabaseCallback;
     class Document;
+    class DocumentInit;
     class DOMWindowEventQueue;
     class DOMWindowLifecycleNotifier;
     class Element;
@@ -91,17 +92,11 @@ enum PageshowEventPersistence {
     class DOMWindow : public RefCounted<DOMWindow>, public ScriptWrappable, public EventTargetWithInlineData, public FrameDestructionObserver, public Supplementable<DOMWindow>, public LifecycleContext<DOMWindow> {
         REFCOUNTED_EVENT_TARGET(DOMWindow);
     public:
+        static PassRefPtr<Document> createDocument(const String& mimeType, const DocumentInit&, bool forceXHTML);
         static PassRefPtr<DOMWindow> create(Frame* frame) { return adoptRef(new DOMWindow(frame)); }
         virtual ~DOMWindow();
 
-        // In some rare cases, we'll re-used a DOMWindow for a new Document. For example,
-        // when a script calls window.open("..."), the browser gives JavaScript a window
-        // synchronously but kicks off the load in the window asynchronously. Web sites
-        // expect that modifications that they make to the window object synchronously
-        // won't be blown away when the network load commits. To make that happen, we
-        // "securely transition" the existing DOMWindow to the Document that results from
-        // the network load. See also SecurityContext::isSecureTransitionTo.
-        void setDocument(PassRefPtr<Document>);
+        PassRefPtr<Document> installNewDocument(const String& mimeType, const DocumentInit&, bool forceXHTML = false);
 
         virtual const AtomicString& interfaceName() const OVERRIDE;
         virtual ExecutionContext* executionContext() const OVERRIDE;
