@@ -130,20 +130,11 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
-  // views::WidgetDelegate
-  virtual bool ShouldShowWindowTitle() const OVERRIDE;
-  virtual bool ShouldShowCloseButton() const OVERRIDE;
-
   // views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   bool is_inline_install() const {
     return prompt_.type() == ExtensionInstallPrompt::INLINE_INSTALL_PROMPT;
-  }
-
-  bool is_first_run() const {
-    return prompt_.type() ==
-        ExtensionInstallPrompt::DEFAULT_INSTALL_FIRST_RUN_PROMPT;
   }
 
   bool is_bundle_install() const {
@@ -665,10 +656,7 @@ string16 ExtensionInstallDialogView::GetDialogButtonLabel(
 }
 
 int ExtensionInstallDialogView::GetDefaultDialogButton() const {
-  if (is_first_run())
-    return ui::DIALOG_BUTTON_OK;
-  else
-    return ui::DIALOG_BUTTON_CANCEL;
+  return ui::DIALOG_BUTTON_CANCEL;
 }
 
 bool ExtensionInstallDialogView::Cancel() {
@@ -707,14 +695,6 @@ void ExtensionInstallDialogView::Layout() {
 
 gfx::Size ExtensionInstallDialogView::GetPreferredSize() {
   return dialog_size_;
-}
-
-bool ExtensionInstallDialogView::ShouldShowWindowTitle() const {
-  return false;
-}
-
-bool ExtensionInstallDialogView::ShouldShowCloseButton() const {
-  return false;
 }
 
 // static

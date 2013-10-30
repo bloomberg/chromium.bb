@@ -162,13 +162,9 @@ TEST_F(ExternalCacheTest, Basic) {
 
   scoped_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
   base::DictionaryValue* dict = CreateEntryWithUpdateUrl(true);
-  dict->SetBoolean(
-      extensions::ExternalProviderImpl::kRequirePermissionsConsent, true);
   prefs->Set(kTestExtensionId1, dict);
   CreateExtensionFile(cache_dir, kTestExtensionId1, "1");
   dict = CreateEntryWithUpdateUrl(true);
-  dict->SetBoolean(
-      extensions::ExternalProviderImpl::kRequirePermissionsConsent, true);
   prefs->Set(kTestExtensionId2, dict);
   prefs->Set(kTestExtensionId3, CreateEntryWithUpdateUrl(false));
   CreateExtensionFile(cache_dir, kTestExtensionId3, "3");
@@ -193,11 +189,6 @@ TEST_F(ExternalCacheTest, Basic) {
   EXPECT_TRUE(entry1->GetBoolean(
       extensions::ExternalProviderImpl::kIsFromWebstore, &from_webstore));
   EXPECT_TRUE(from_webstore);
-  bool require_permissions_consent = false;
-  EXPECT_TRUE(entry1->GetBoolean(
-      extensions::ExternalProviderImpl::kRequirePermissionsConsent,
-      &require_permissions_consent));
-  EXPECT_TRUE(require_permissions_consent);
 
   // File in cache not from Webstore.
   const base::DictionaryValue* entry3 = NULL;
@@ -237,11 +228,6 @@ TEST_F(ExternalCacheTest, Basic) {
   EXPECT_TRUE(entry2->GetBoolean(
       extensions::ExternalProviderImpl::kIsFromWebstore, &from_webstore));
   EXPECT_TRUE(from_webstore);
-  require_permissions_consent = false;
-  EXPECT_TRUE(entry2->GetBoolean(
-      extensions::ExternalProviderImpl::kRequirePermissionsConsent,
-      &require_permissions_consent));
-  EXPECT_TRUE(require_permissions_consent);
   EXPECT_TRUE(base::PathExists(
       GetExtensionFile(cache_dir, kTestExtensionId2, "2")));
 

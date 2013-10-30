@@ -3987,9 +3987,6 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_POST_INSTALL_PERMISSIONS_PROMPT_TITLE" desc="Titlebar of the extension or app permissions review window">
         Current Permissions
       </message>
-      <message name="IDS_EXTENSION_FIRST_RUN_PROMPT_TITLE" desc="Titlebar of the extension or app permissions prompt window">
-        Confirm Permissions
-      </message>
       <message name="IDS_EXTENSION_LAUNCH_APP_PROMPT_TITLE" desc="Titlebar of the app launch prompt window">
         Confirm Launch App
       </message>
@@ -4016,9 +4013,6 @@ Make sure you do not expose any sensitive information.
       </message>
       <message name="IDS_EXTENSION_POST_INSTALL_PERMISSIONS_PROMPT_HEADING" desc="First bold line in the content area of the extension or app permissions prompt. Shows the user the permissions a particular extension or app has.">
         <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>
-      </message>
-      <message name="IDS_EXTENSION_FIRST_RUN_PROMPT_HEADING" desc="First bold line in the content area of the extension or app permissions prompt. Asks the user if they want to accept permission for a particular app.">
-        Enable "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
       </message>
       <message name="IDS_EXTENSION_LAUNCH_APP_PROMPT_HEADING" desc="First bold line in the content area of the app launch prompt. Asks the user if they want to launch a particular app.">
         Launch "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
@@ -4997,9 +4991,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_EXTENSION_PROMPT_PERMISSIONS_CLEAR_RETAINED_FILES_BUTTON" desc="Text for the Revoke File Access button on the extension permissions prompt">
         Revoke File Access
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_FIRST_RUN_ACCEPT_BUTTON" desc="Text for the allow button on the first run promopt to accept permissions and launch app">
-        Accept and open
       </message>
       <message name="IDS_EXTENSION_WEB_STORE_TITLE" desc="Text for the Chrome Web Store">
         Chrome Web Store

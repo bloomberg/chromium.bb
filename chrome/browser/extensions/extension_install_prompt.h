@@ -60,7 +60,6 @@ class ExtensionInstallPrompt
     PERMISSIONS_PROMPT,
     EXTERNAL_INSTALL_PROMPT,
     POST_INSTALL_PERMISSIONS_PROMPT,
-    DEFAULT_INSTALL_FIRST_RUN_PROMPT,
     LAUNCH_PROMPT,
     NUM_PROMPT_TYPES
   };
@@ -305,13 +304,6 @@ class ExtensionInstallPrompt
   //
   // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
   virtual void ConfirmReEnable(Delegate* delegate,
-                               const extensions::Extension* extension);
-
-  // This is called by the app handler launcher to verify whether the app
-  // should be launched first time. This is declared virtual for testing.
-  //
-  // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
-  virtual void ConfirmDefaultInstallFirstRun(Delegate* delegate,
                                const extensions::Extension* extension);
 
   // This is called by the external install alert UI to verify whether the

@@ -130,9 +130,7 @@ void ExtensionAppItem::UpdateIcon() {
 
   const ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
-  // If app waits for permission confirmation, don't show it disabled in UI.
-  const bool enabled = service->IsExtensionEnabledForLauncher(extension_id_) ||
-      service->DoesExtensionRequirePermissionConsent(extension_id_);
+  const bool enabled = service->IsExtensionEnabledForLauncher(extension_id_);
   if (!enabled) {
     const color_utils::HSL shift = {-1, 0, 0.6};
     icon = gfx::ImageSkiaOperations::CreateHSLShiftedImage(icon, shift);

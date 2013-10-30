@@ -62,8 +62,6 @@ const char ExternalProviderImpl::kSupportedLocales[] = "supported_locales";
 const char ExternalProviderImpl::kIsBookmarkApp[] = "is_bookmark_app";
 const char ExternalProviderImpl::kIsFromWebstore[] = "is_from_webstore";
 const char ExternalProviderImpl::kKeepIfPresent[] = "keep_if_present";
-const char ExternalProviderImpl::kRequirePermissionsConsent[] =
-    "require_permissions_consent";
 
 ExternalProviderImpl::ExternalProviderImpl(
     VisitorInterface* service,
@@ -220,12 +218,6 @@ void ExternalProviderImpl::SetPrefs(base::DictionaryValue* prefs) {
                 << "only if it is already installed.";
         continue;
       }
-    }
-    bool require_permissions_consent;
-    if (extension->GetBoolean(kRequirePermissionsConsent,
-                              &require_permissions_consent) &&
-        require_permissions_consent) {
-      creation_flags |= Extension::REQUIRE_PERMISSIONS_CONSENT;
     }
 
     if (has_external_crx) {

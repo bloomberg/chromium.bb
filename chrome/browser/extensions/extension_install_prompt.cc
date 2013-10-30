@@ -60,7 +60,6 @@ static const int kTitleIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_PERMISSIONS_PROMPT_TITLE,
   IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_TITLE,
   IDS_EXTENSION_POST_INSTALL_PERMISSIONS_PROMPT_TITLE,
-  IDS_EXTENSION_FIRST_RUN_PROMPT_TITLE,
   IDS_EXTENSION_LAUNCH_APP_PROMPT_TITLE,
 };
 static const int kHeadingIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
@@ -71,7 +70,6 @@ static const int kHeadingIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_PERMISSIONS_PROMPT_HEADING,
   0,  // External installs use different strings for extensions/apps.
   IDS_EXTENSION_POST_INSTALL_PERMISSIONS_PROMPT_HEADING,
-  IDS_EXTENSION_FIRST_RUN_PROMPT_HEADING,
   IDS_EXTENSION_LAUNCH_APP_PROMPT_HEADING,
 };
 static const int kButtons[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
@@ -83,7 +81,6 @@ static const int kButtons[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
   ui::DIALOG_BUTTON_CANCEL,
   ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
-  ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
 };
 static const int kAcceptButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_PROMPT_INSTALL_BUTTON,
@@ -93,7 +90,6 @@ static const int kAcceptButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_PROMPT_PERMISSIONS_BUTTON,
   0,  // External installs use different strings for extensions/apps.
   IDS_EXTENSION_PROMPT_PERMISSIONS_CLEAR_RETAINED_FILES_BUTTON,
-  IDS_EXTENSION_PROMPT_FIRST_RUN_ACCEPT_BUTTON,
   IDS_EXTENSION_PROMPT_LAUNCH_BUTTON,
 };
 static const int kAbortButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
@@ -105,7 +101,6 @@ static const int kAbortButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ABORT_BUTTON,
   IDS_CLOSE,
   0,  // Platform dependent cancel button.
-  0,
 };
 static const int kPermissionsHeaderIds[
     ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
@@ -115,7 +110,6 @@ static const int kPermissionsHeaderIds[
   IDS_EXTENSION_PROMPT_WILL_NOW_HAVE_ACCESS_TO,
   IDS_EXTENSION_PROMPT_WANTS_ACCESS_TO,
   IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO,
-  IDS_EXTENSION_PROMPT_CAN_ACCESS,
   IDS_EXTENSION_PROMPT_CAN_ACCESS,
   IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO,
 };
@@ -127,7 +121,6 @@ static const int kOAuthHeaderIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_PROMPT_OAUTH_PERMISSIONS_HEADER,
   0,
   0,
-  IDS_EXTENSION_PROMPT_OAUTH_HEADER,
   IDS_EXTENSION_PROMPT_OAUTH_HEADER,
 };
 
@@ -635,17 +628,6 @@ void ExtensionInstallPrompt::ConfirmReEnable(Delegate* delegate,
   LoadImageIfNeeded();
 }
 
-void ExtensionInstallPrompt::ConfirmDefaultInstallFirstRun(
-    Delegate* delegate,
-    const Extension* extension) {
-  DCHECK(ui_loop_ == base::MessageLoop::current());
-  extension_ = extension;
-  permissions_ = extension->GetActivePermissions();
-  delegate_ = delegate;
-  prompt_.set_type(DEFAULT_INSTALL_FIRST_RUN_PROMPT);
-  LoadImageIfNeeded();
-}
-
 void ExtensionInstallPrompt::ConfirmExternalInstall(
     Delegate* delegate,
     const Extension* extension,
@@ -816,7 +798,6 @@ void ExtensionInstallPrompt::ShowConfirmation() {
   switch (prompt_.type()) {
     case PERMISSIONS_PROMPT:
     case RE_ENABLE_PROMPT:
-    case DEFAULT_INSTALL_FIRST_RUN_PROMPT:
     case INLINE_INSTALL_PROMPT:
     case EXTERNAL_INSTALL_PROMPT:
     case INSTALL_PROMPT:
