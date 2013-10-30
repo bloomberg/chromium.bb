@@ -80,7 +80,7 @@ void InitializeCompositingFieldTrial() {
   scoped_refptr<base::FieldTrial> trial(
     base::FieldTrialList::FactoryGetFieldTrial(
         content::kGpuCompositingFieldTrialName, kDivisor,  "disable",
-        2013, 12, 31, base::FieldTrial::ONE_TIME_RANDOMIZED, NULL));
+        2014, 05, 31, base::FieldTrial::ONE_TIME_RANDOMIZED, NULL));
 
   base::FieldTrial::Probability force_compositing_mode_probability = 0;
   base::FieldTrial::Probability threaded_compositing_probability = 0;
