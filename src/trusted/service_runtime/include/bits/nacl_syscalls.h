@@ -113,6 +113,9 @@
 #define NACL_sys_futex_wait_abs         120
 #define NACL_sys_futex_wake             121
 
-#define NACL_MAX_SYSCALLS               122
+#define NACL_sys_pread                  130
+#define NACL_sys_pwrite                 131
+
+#define NACL_MAX_SYSCALLS               132
 
 #endif

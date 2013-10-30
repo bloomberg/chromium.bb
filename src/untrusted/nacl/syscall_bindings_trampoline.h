@@ -76,6 +76,12 @@ typedef int (*TYPE_nacl_lseek) (int desc,
 
 typedef int (*TYPE_nacl_stat) (const char *file, struct stat *st);
 
+typedef int (*TYPE_nacl_pread) (int fd, void *buf, size_t count, off_t *offset);
+
+typedef int (*TYPE_nacl_pwrite) (int fd,
+                                 const void *buf, size_t count,
+                                 off_t *offset);
+
 /* ============================================================ */
 /* imc */
 /* ============================================================ */

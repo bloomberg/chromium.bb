@@ -255,6 +255,7 @@ int BasicPermChecks(struct NaClHostDesc *test_file,
    */
   if (0 != params->seq_read_bytes1) {
     memset(buffer, 0, sizeof buffer);
+    CHECK(params->seq_read_bytes1 <= sizeof buffer);
     result = NaClHostDescRead(test_file, buffer, params->seq_read_bytes1);
     if (result != (ssize_t) params->seq_read_bytes1) {
       fprintf(stderr,
@@ -272,6 +273,7 @@ int BasicPermChecks(struct NaClHostDesc *test_file,
   }
   len = strlen(params->expected_pread_data);
   memset(buffer, 0, sizeof buffer);
+  CHECK(len <= sizeof buffer);
   result = NaClHostDescPRead(test_file, buffer, len, params->pread_offset);
   if (result != (ssize_t) params->expected_pread_result) {
     fprintf(stderr,
@@ -294,6 +296,7 @@ int BasicPermChecks(struct NaClHostDesc *test_file,
      * Make sure that the read pointer did not change.
      */
     memset(buffer, 0, sizeof buffer);
+    CHECK(params->seq_read_bytes2 <= sizeof buffer);
     result = NaClHostDescRead(test_file, buffer, params->seq_read_bytes2);
     if (result != (ssize_t) params->seq_read_bytes2) {
       fprintf(stderr,
@@ -334,6 +337,7 @@ int BasicPermChecks(struct NaClHostDesc *test_file,
         return 0;
       }
       memset(buffer, 0, sizeof buffer);
+      CHECK(len <= sizeof buffer);
       result = NaClHostDescRead(ro_view, buffer, len);
       if (result != (ssize_t) len) {
         fprintf(stderr, "BasicPermChecks: pwrite verification read failed\n");
@@ -443,9 +447,9 @@ static char const another_quote[] = {
   "scientifique de leur \\'epoque , incapable de les com\n"
 };
 
-int PWriteGoesToEndSeekReadVerification(struct NaClHostDesc *test_file,
-                                        struct NaClHostDesc *ro_view,
-                                        void const *test_params) {
+int PWriteUsesOffsetSeekReadVerification(struct NaClHostDesc *test_file,
+                                         struct NaClHostDesc *ro_view,
+                                         void const *test_params) {
   size_t len = strlen(another_quote);
   char buffer[4096];
   ssize_t io_rv;
@@ -459,44 +463,45 @@ int PWriteGoesToEndSeekReadVerification(struct NaClHostDesc *test_file,
   io_rv = NaClHostDescPWrite(test_file, another_quote, len, GG_LONGLONG(0));
   if (io_rv < 0) {
     fprintf(stderr,
-            "PWriteGoesToEndSeekReadVerification:"
+            "PWriteUsesOffsetSeekReadVerification:"
             " pwrite (ostensibly to beginning) failed,"
             " errno %d\n", -(int) io_rv);
     return 0;
   }
   if ((size_t) io_rv != len) {
     fprintf(stderr,
-            "PWriteGoesToEndSeekReadVerification:"
+            "PWriteUsesOffsetSeekReadVerification:"
             " pwrite short write, expected %"NACL_PRIuS
             ", got %"NACL_PRIuS"\n",
             len, (size_t) io_rv);
     return 0;
   }
-  seek_err = NaClHostDescSeek(test_file, kNumFileBytes, 0);
+  seek_err = NaClHostDescSeek(test_file, 0, 0);
   if (seek_err < 0) {
     fprintf(stderr,
-            "PWriteGoesToEndSeekReadVerification:"
+            "PWriteUsesOffsetSeekReadVerification:"
             " seek failed, errno %d\n", -(int) seek_err);
     return 0;
   }
-  if (seek_err != (nacl_off64_t) kNumFileBytes) {
+  if (seek_err != (nacl_off64_t) 0) {
     fprintf(stderr,
-            "PWriteGoesToEndSeekReadVerification:"
+            "PWriteUsesOffsetSeekReadVerification:"
             " seek returned bad position %"NACL_PRIdNACL_OFF64"\n",
             seek_err);
     return 0;
   }
-  io_rv = NaClHostDescRead(test_file, buffer, sizeof buffer);
+  CHECK(len <= sizeof buffer);
+  io_rv = NaClHostDescRead(test_file, buffer, len);
   if (io_rv < 0) {
     fprintf(stderr,
-            "PWriteGoesToEndSeekReadVerification:"
+            "PWriteUsesOffsetSeekReadVerification:"
             " NaClHostDescRead failed, errno %d\n",
             -(int) io_rv);
     return 0;
   }
   if ((size_t) io_rv != len) {
     fprintf(stderr,
-            "PWriteGoesToEndSeekReadVerification:"
+            "PWriteUsesOffsetSeekReadVerification:"
             " short read, expected %"NACL_PRIuS
             ", got %"NACL_PRIuS"\n",
             len, (size_t) io_rv);
@@ -504,8 +509,8 @@ int PWriteGoesToEndSeekReadVerification(struct NaClHostDesc *test_file,
   }
   if (0 != memcmp(buffer, another_quote, len)) {
     fprintf(stderr,
-            "PWriteGoesToEndSeekReadVerification:"
-            " data at end differs\n"
+            "PWriteUsesOffsetSeekReadVerification:"
+            " data at beginning differs\n"
             " Expected: %.*s\n"
             "      Got: %.*s\n",
             (int) len, another_quote,
@@ -514,9 +519,9 @@ int PWriteGoesToEndSeekReadVerification(struct NaClHostDesc *test_file,
   }
   return 1;
 }
-int PWriteGoesToEndPReadVerification(struct NaClHostDesc *test_file,
-                                     struct NaClHostDesc *ro_view,
-                                     void const *test_params) {
+int PWriteUsesOffsetPReadVerification(struct NaClHostDesc *test_file,
+                                      struct NaClHostDesc *ro_view,
+                                      void const *test_params) {
   size_t len = strlen(another_quote);
   char buffer[4096];
   ssize_t io_rv;
@@ -528,31 +533,31 @@ int PWriteGoesToEndPReadVerification(struct NaClHostDesc *test_file,
   io_rv = NaClHostDescPWrite(test_file, another_quote, len, GG_LONGLONG(0));
   if (io_rv < 0) {
     fprintf(stderr,
-            "PWriteGoesToEndPReadVerification:"
+            "PWriteUsesOffsetPReadVerification:"
             " pwrite (ostensibly to beginning) failed,"
             " errno %d\n", -(int) io_rv);
     return 0;
   }
   if ((size_t) io_rv != len) {
     fprintf(stderr,
-            "PWriteGoesToEndPReadVerification:"
+            "PWriteUsesOffsetPReadVerification:"
             " pwrite short write, expected %"NACL_PRIuS
             ", got %"NACL_PRIuS"\n",
             len, (size_t) io_rv);
     return 0;
   }
-  io_rv = NaClHostDescPRead(ro_view, buffer, sizeof buffer,
-                            kNumFileBytes);
+  CHECK(len <= sizeof buffer);
+  io_rv = NaClHostDescPRead(ro_view, buffer, len, GG_LONGLONG(0));
   if (io_rv < 0) {
     fprintf(stderr,
-            "PWriteGoesToEndPReadVerification:"
+            "PWriteUsesOffsetPReadVerification:"
             " NaClHostPDescRead failed, errno %d\n",
             -(int) io_rv);
     return 0;
   }
   if ((size_t) io_rv != len) {
     fprintf(stderr,
-            "PWriteGoesToEndPReadVerification:"
+            "PWriteUsesOffsetPReadVerification:"
             " short read, expected %"NACL_PRIuS
             ", got %"NACL_PRIuS"\n",
             len, (size_t) io_rv);
@@ -560,7 +565,7 @@ int PWriteGoesToEndPReadVerification(struct NaClHostDesc *test_file,
   }
   if (0 != memcmp(buffer, another_quote, len)) {
     fprintf(stderr,
-            "PWriteGoesToEndPReadVerification:"
+            "PWriteUsesOffsetPReadVerification:"
             " data at end differs\n"
             " Expected: %.*s\n"
             "      Got: %.*s\n",
@@ -568,6 +573,88 @@ int PWriteGoesToEndPReadVerification(struct NaClHostDesc *test_file,
             (int) len, buffer);
     return 0;
   }
+  return 1;
+}
+
+int PWriteUsesOffsetReadPtrVerification(struct NaClHostDesc *test_file,
+                                        struct NaClHostDesc *ro_view,
+                                        void const *test_params) {
+  nacl_off64_t seek_err;
+  char buffer[512];
+  ssize_t io_rv;
+  const size_t pwrite_position = 4096;
+
+  UNREFERENCED_PARAMETER(test_params);
+
+  seek_err = NaClHostDescSeek(test_file, 0, 0);
+  if (seek_err < 0) {
+    fprintf(stderr,
+            "PWriteUsesOffsetReadPtrVerification: seek failed, errno %d\n",
+            -(int) seek_err);
+    return 0;
+  }
+  io_rv = NaClHostDescRead(test_file, buffer, sizeof buffer);
+  if (sizeof buffer != io_rv) {
+    fprintf(stderr,
+            "PWriteUsesOffsetReadPtrVerification: read failed, got %d,"
+            " expected %d",
+            (int) io_rv, (int) sizeof buffer);
+    return 0;
+  }
+  if (0 != memcmp(buffer, quote, sizeof buffer)) {
+    fprintf(stderr,
+            "PWriteUsesOffsetReadPtrVerification: initial bytes mangled?!?\n");
+    return 0;
+  }
+  io_rv = NaClHostDescPWrite(test_file, another_quote, sizeof another_quote - 1,
+                             pwrite_position);
+  if (io_rv != sizeof another_quote - 1) {
+    fprintf(stderr,
+            "PWriteUsesOffsetReadPtrVerification: pwrite failed\n");
+    return 0;
+  }
+  io_rv = NaClHostDescRead(test_file, buffer, sizeof buffer);
+  if (sizeof buffer != io_rv) {
+    fprintf(stderr,
+            "PWriteUsesOffsetReadPtrVerification:"
+            " 2nd implicit file ptr read failed, got %d,"
+            " expected %d\n",
+            (int) io_rv, (int) sizeof buffer);
+    return 0;
+  }
+  if (0 != memcmp(buffer, quote + sizeof buffer, sizeof buffer)) {
+    fprintf(stderr,
+            "PWriteUsesOffsetReadPtrVerification: 2nd read contents mangled\n"
+            "Expected:\n"
+            "%.*s\n"
+            "Got:\n"
+            "%.*s\n",
+            (int) sizeof buffer, quote + sizeof buffer,
+            (int) sizeof buffer, buffer);
+    return 0;
+  }
+
+  io_rv = NaClHostDescPRead(ro_view, buffer, sizeof buffer,
+                            pwrite_position);
+  if (io_rv != sizeof buffer) {
+    fprintf(stderr,
+            "PWriteUsesOffsetReadPtrVerification: verification pread failed,"
+            " got %d, expected %d",
+            (int) io_rv, (int) sizeof buffer);
+    return 0;
+  }
+  if (0 != memcmp(buffer, another_quote, sizeof buffer)) {
+    fprintf(stderr,
+            "PWriteUsesOffsetReadPtrVerification: verification content bad\n"
+            "Got:\n"
+            "%.*s\n"
+            "Expected:\n"
+            "%.*s\n",
+            (int) sizeof buffer, buffer,
+            (int) sizeof buffer, another_quote);
+    return 0;
+  }
+
   return 1;
 }
 
@@ -610,17 +697,23 @@ static struct TestParams const tests[] = {
   }, {
     "O_RDWR | O_APPEND, check pwrites show up w/ seek/read",
     NACL_ABI_O_RDWR | NACL_ABI_O_APPEND, 0666,
-    PWriteGoesToEndSeekReadVerification,
+    PWriteUsesOffsetSeekReadVerification,
     NULL,
   }, {
     "O_RDWR | O_APPEND, check pwrites show up w/ pread",
     NACL_ABI_O_RDWR | NACL_ABI_O_APPEND, 0666,
-    PWriteGoesToEndPReadVerification,
+    PWriteUsesOffsetPReadVerification,
     NULL,
   }, {
+
     "O_WRONLY | O_APPEND, check pwrites show up w/ pread",
     NACL_ABI_O_WRONLY | NACL_ABI_O_APPEND, 0666,
-    PWriteGoesToEndPReadVerification,
+    PWriteUsesOffsetPReadVerification,
+    NULL,
+  }, {
+    "O_RDWR | O_APPEND, check seek 0, read, pwrite, read behaves consistently",
+    NACL_ABI_O_RDWR | NACL_ABI_O_APPEND, 0666,
+    PWriteUsesOffsetReadPtrVerification,
     NULL,
   },
 };

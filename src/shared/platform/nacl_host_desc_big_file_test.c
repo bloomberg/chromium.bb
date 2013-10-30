@@ -245,8 +245,30 @@ static ssize_t SimulatedPWrite(struct NaClHostDesc *d,
                                void const *buffer,
                                size_t num_bytes,
                                nacl_off64_t offset) {
+  ssize_t rv;
+#if NACL_LINUX
+  int is_append = d->flags & NACL_ABI_O_APPEND;
+  int orig_flags;
+
+  if (is_append) {
+    orig_flags = fcntl(d->d, F_GETFL, 0);
+    if (-1 == fcntl(d->d, F_SETFL, orig_flags & ~O_APPEND)) {
+      fprintf(stderr, "Linux pwrite POSIX O_APPEND hack failed\n");
+      exit(1);
+    }
+  }
+#endif
   CheckedSeek(d, offset, 0);
-  return NaClHostDescWrite(d, buffer, num_bytes);
+  rv = NaClHostDescWrite(d, buffer, num_bytes);
+#if NACL_LINUX
+  if (is_append) {
+    if (-1 == fcntl(d->d, F_SETFL, orig_flags)) {
+      fprintf(stderr, "Linux pwrite POSIX O_APPEND hack (restore) failed\n");
+      exit(1);
+    }
+  }
+#endif
+  return rv;
 }
 
 static int CheckedPReadFn(ssize_t (*fn)(struct NaClHostDesc *d,
@@ -585,6 +607,26 @@ static struct TestParams const tests[] = {
     "Using real pread/pwrite: write too",
     BasicPWriteReadTest,
     NACL_ABI_O_RDWR,
+    (void *) &g_RealPReadWriteImpl,
+  }, {
+    "Using simulated pread/pwrite: write too (O_APPEND)",
+    BasicPWriteReadTest,
+    NACL_ABI_O_RDWR | NACL_ABI_O_APPEND,
+    (void *) &g_SimulatedPReadWriteImpl,
+  }, {
+    "Using real pread, simulated pwrite: write too (O_APPEND)",
+    BasicPWriteReadTest,
+    NACL_ABI_O_RDWR | NACL_ABI_O_APPEND,
+    (void *) &g_RealPReadSimulatedPWriteImpl,
+  }, {
+    "Using simulated pread, real pwrite: write too (O_APPEND)",
+    BasicPWriteReadTest,
+    NACL_ABI_O_RDWR | NACL_ABI_O_APPEND,
+    (void *) &g_SimulatedPReadRealPWriteImpl,
+  }, {
+    "Using real pread/pwrite: write too (O_APPEND)",
+    BasicPWriteReadTest,
+    NACL_ABI_O_RDWR | NACL_ABI_O_APPEND,
     (void *) &g_RealPReadWriteImpl,
   },
 };

@@ -58,6 +58,7 @@
           'posix/lock.c',
           'posix/nacl_exit.c',
           'posix/nacl_fast_mutex.c',
+          'posix/nacl_file_lock.c',
           'posix/nacl_find_addrsp.c',
           'posix/nacl_host_desc.c',
           'posix/nacl_secure_random.c',

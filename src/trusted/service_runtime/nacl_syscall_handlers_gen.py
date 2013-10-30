@@ -37,6 +37,8 @@ AUTOGEN_HEADER = """\
 #include "native_client/src/trusted/service_runtime/sys_imc.h"
 #include "native_client/src/trusted/service_runtime/sys_list_mappings.h"
 #include "native_client/src/trusted/service_runtime/sys_memory.h"
+#include "native_client/src/trusted/service_runtime/sys_parallel_io.h"
+
 """
 
 
@@ -152,6 +154,12 @@ SYSCALL_LIST = [
     ('NACL_sys_chdir', 'NaClSysChdir', ['uint32_t path']),
     ('NACL_sys_getcwd', 'NaClSysGetcwd', ['uint32_t buffer', 'int len']),
     ('NACL_sys_unlink', 'NaClSysUnlink', ['uint32_t path']),
+    ('NACL_sys_pread', 'NaClSysPRead',
+     ['int32_t d', 'uint32_t usr_addr', 'uint32_t buffer_bytes',
+      'uint32_t offset_addr']),
+    ('NACL_sys_pwrite', 'NaClSysPWrite',
+     ['int32_t d', 'uint32_t usr_addr', 'uint32_t buffer_bytes',
+      'uint32_t offset_addr']),
     ('NACL_sys_imc_makeboundsock', 'NaClSysImcMakeBoundSock',
      ['int32_t *sap']),
     ('NACL_sys_imc_accept', 'NaClSysImcAccept', ['int d']),

@@ -1154,6 +1154,8 @@ ssize_t NaClHostDescWrite(struct NaClHostDesc *d,
   HANDLE fh;
   DWORD bytes_written;
   DWORD err;
+  OVERLAPPED overlap;
+  OVERLAPPED *overlap_ptr = NULL;
 
   if (NACL_ABI_O_RDONLY == (d->flags & NACL_ABI_O_ACCMODE)) {
     NaClLog(3, "NaClHostDescWrite: RDONLY file\n");
@@ -1170,6 +1172,13 @@ ssize_t NaClHostDescWrite(struct NaClHostDesc *d,
    * See discussion in NaClHostDescRead above wrt why we use WriteFile
    * instead of _write below.
    */
+  if (0 != (NACL_ABI_O_APPEND & d->flags)) {
+    nacl_off64_t offset = GG_LONGLONG(0xffffffffffffffff);
+    memset(&overlap, 0, sizeof overlap);
+    overlap.Offset = (DWORD) offset;
+    overlap.OffsetHigh = (DWORD) (offset >> 32);
+    overlap_ptr = &overlap;
+  }
   fh = (HANDLE) _get_osfhandle(d->d);
   CHECK(INVALID_HANDLE_VALUE != fh);
   /*
@@ -1178,7 +1187,7 @@ ssize_t NaClHostDescWrite(struct NaClHostDesc *d,
   if (d->protect_filepos) {
     NaClTakeFilePosLock(fh);
   }
-  if (!WriteFile(fh, buf, actual_len, &bytes_written, (OVERLAPPED *) NULL)) {
+  if (!WriteFile(fh, buf, actual_len, &bytes_written, overlap_ptr)) {
     err = GetLastError();
     NaClLog(4, "NaClHostDescWrite: WriteFile error %d\n", err);
 
@@ -1287,10 +1296,6 @@ ssize_t NaClHostDescPWrite(struct NaClHostDesc *d,
      */
     return -NACL_ABI_EINVAL;
   }
-  if (0 != (NACL_ABI_O_APPEND & d->flags)) {
-    NaClLog(3, "NaClHostDescPWrite: APPEND-only file\n");
-    offset = GG_LONGLONG(0xffffffffffffffff);
-  }
   fh = (HANDLE) _get_osfhandle(d->d);
   CHECK(INVALID_HANDLE_VALUE != fh);
   memset(&overlap, 0, sizeof overlap);
@@ -1332,7 +1337,7 @@ int NaClHostDescIoctl(struct NaClHostDesc *d,
 int NaClHostDescFstat(struct NaClHostDesc   *d,
                       nacl_host_stat_t      *nasp) {
   NaClHostDescCheckValidity("NaClHostDescFstat", d);
-  if (_fstat64(d->d, nasp) == -1) {
+  if (NACL_HOST_FSTAT64(d->d, nasp) == -1) {
     return -GetErrno();
   }
 
@@ -1360,7 +1365,7 @@ int NaClHostDescClose(struct NaClHostDesc *d) {
  */
 int NaClHostDescStat(char const       *host_os_pathname,
                      nacl_host_stat_t *nhsp) {
-  if (_stati64(host_os_pathname, nhsp) == -1) {
+  if (NACL_HOST_STAT64(host_os_pathname, nhsp) == -1) {
     return -GetErrno();
   }
 

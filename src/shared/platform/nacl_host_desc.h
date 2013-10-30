@@ -51,10 +51,16 @@ typedef int64_t nacl_off64_t;
  */
 #if NACL_LINUX
 typedef struct stat64 nacl_host_stat_t;
+# define NACL_HOST_FSTAT64 fstat64
+# define NACL_HOST_STAT64 stat64
 #elif NACL_OSX
 typedef struct stat nacl_host_stat_t;
+# define NACL_HOST_FSTAT64 fstat
+# define NACL_HOST_STAT64 stat
 #elif NACL_WINDOWS
 typedef struct _stati64 nacl_host_stat_t;
+# define NACL_HOST_FSTAT64 _fstat64
+# define NACL_HOST_STAT64 _stati64
 #elif defined __native_client__
 /* nacl_host_stat_t not exposed to NaCl module code */
 #else

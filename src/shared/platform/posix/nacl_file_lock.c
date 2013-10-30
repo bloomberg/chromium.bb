@@ -11,9 +11,11 @@
 #include "native_client/src/shared/platform/posix/nacl_file_lock_intern.h"
 
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
+
 
 static struct NaClFileLockEntry **NaClFileLockManagerFindEntryMu(
     struct NaClFileLockManager *self,
@@ -67,10 +69,11 @@ static void NaClFileLockManagerFileEntryRecycler(
 static void NaClFileLockManagerSetFileIdentityData(
     struct NaClFileLockEntry *entry,
     int desc) {
-  struct stat stbuf;
-  if (0 != fstat(desc, &stbuf)) {
+  nacl_host_stat_t stbuf;
+  if (0 != NACL_HOST_FSTAT64(desc, &stbuf)) {
     NaClLog(LOG_FATAL,
-            "NaClFileLockManagerSetFileIdentityData: fstat failed\n");
+            "NaClFileLockManagerSetFileIdentityData: fstat failed, desc %d,"
+            " errno %d\n", desc, errno);
   }
   entry->file_dev = stbuf.st_dev;
   entry->file_ino = stbuf.st_ino;

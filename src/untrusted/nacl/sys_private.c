@@ -140,6 +140,16 @@ int write(int fd, const void *buf, size_t count) {
       NACL_SYSCALL(write)(fd, buf, count)));
 }
 
+int pread(int fd, void *buf, size_t count, off_t offset) {
+  return errno_value_call(NACL_GC_WRAP_SYSCALL(
+      NACL_SYSCALL(pread)(fd, buf, count, &offset)));
+}
+
+int pwrite(int fd, const void *buf, size_t count, off_t offset) {
+  return errno_value_call(NACL_GC_WRAP_SYSCALL(
+      NACL_SYSCALL(pwrite)(fd, buf, count, &offset)));
+}
+
 off_t lseek(int fd, off_t offset, int whence) {
   int error = NACL_SYSCALL(lseek)(fd, &offset, whence);
   if (error) {

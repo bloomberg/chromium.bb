@@ -176,6 +176,11 @@ static struct sock_filter filter[] = {
   BPF_JUMP(BPF_JMP + BPF_JEQ + BPF_K, __NR_clone, 0, 1),
   BPF_STMT(BPF_RET + BPF_K, SECCOMP_RET_ALLOW),
 
+#ifdef __NR_flock
+  BPF_JUMP(BPF_JMP + BPF_JEQ + BPF_K, __NR_flock, 0, 1),
+  BPF_STMT(BPF_RET + BPF_K, SECCOMP_RET_ALLOW),
+#endif
+
   BPF_JUMP(BPF_JMP + BPF_JEQ + BPF_K, __NR_set_robust_list, 0, 1),
   BPF_STMT(BPF_RET + BPF_K, SECCOMP_RET_ALLOW),
 
