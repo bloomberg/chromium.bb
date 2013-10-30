@@ -938,8 +938,8 @@ class ChromiumAndroidDriver(driver.Driver):
             self._push_file_if_needed(self._port.layout_tests_dir() + '/' + resource, DEVICE_LAYOUT_TESTS_DIR + resource, log_callback)
 
     def _get_last_stacktrace(self):
-        tombstones = self._android_commands.run(['shell', 'ls', '-n', '/data/tombstones'])
-        if not tombstones or tombstones.startswith('/data/tombstones: No such file or directory'):
+        tombstones = self._android_commands.run(['shell', 'ls', '-n', '/data/tombstones/tombstone_*'])
+        if not tombstones or tombstones.startswith('/data/tombstones/tombstone_*: No such file or directory'):
             self._log_error('The driver crashed, but no tombstone found!')
             return ''
         tombstones = tombstones.rstrip().split('\n')
