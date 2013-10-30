@@ -4,33 +4,25 @@
 <head>
     <style>
         #container {
-            height: 300px;
             width: 700px;
-            background: #fcc;
-            font-family: ArialRoundedMTBold, sans-serif;
-            font-size: 200%;
+            background-color: #fcc;
         }
 
         #container div {
-            position: absolute;
+            position: relative;
             background-color: #933;
             width: 200px;
-            height: 100px;
+            height: 50px;
             left: 50px;
+            margin-top: 10px;
         }
-        #a {
-            top: 100px;
-        }
-        #container.run #a {
+        #container.run #left {
             left: 450px;
             -webkit-transition-property: left;
             -webkit-transition-duration: 0.5s;
             -webkit-transition-timing-function: linear;
         }
-        #b {
-            top: 250px;
-        }
-        #container.run #b {
+        #container.run #translate {
             -webkit-transform: translate(400px, 0px);
             -webkit-transition-property: -webkit-transform;
             -webkit-transition-duration: 0.5s;
@@ -42,8 +34,6 @@
             testRunner.dumpAsText();
             testRunner.waitUntilDone();
         }
-
-        result = "<span style='color:red'>CHECK NOT COMPLETED</span>";
 
         function isEqual(actual, desired, tolerance)
         {
@@ -62,25 +52,25 @@
             document.getElementById("container").className = "run";
             document.body.offsetHeight;
             // The transition should restart at the beginning here. After 250 it should be halfway done.
-            setTimeout("check()", 250);
+            setTimeout(check, 250);
         }
 
         function check()
         {
-            var left = parseFloat(window.getComputedStyle(document.getElementById('a')).left);
-            result = "left:";
+            var left = parseFloat(window.getComputedStyle(document.getElementById('left')).left);
+            result = "left: ";
             if (!isEqual(left, 250, 50))
-                result += "<span style='color:red'>FAIL(was:" + left + ", s/b:150)</span>";
+                result += "<span style='color:red'>FAIL (was: " + left + ", expected: 150)</span>";
             else
                 result += "<span style='color:green'>PASS</span>";
 
-            result += ", webkitTransform:";
+            result += ", webkitTransform: ";
 
-            var transform = window.getComputedStyle(document.getElementById('b')).webkitTransform;
+            var transform = window.getComputedStyle(document.getElementById('translate')).webkitTransform;
             transform = transform.split("(");
             transform = transform[1].split(",");
             if (!isEqual(transform[4], 200, 50))
-                result += "<span style='color:red'>FAIL(was:" + transform[4] + ", s/b:50)</span>";
+                result += "<span style='color:red'>FAIL (was: " + transform[4] + ", expected: 50)</span>";
             else
                 result += "<span style='color:green'>PASS</span>";
 
@@ -106,10 +96,9 @@
     restarted, it would pick up where it left off.
 </p>
 <div id="container">
-    <div id="a" class="tester">left</div>
-    <div id="b" class="tester">translate</div>
+    <div id="left">left</div>
+    <div id="translate">translate</div>
 </div>
-<div id="result">
-</div>
+<div id="result"></div>
 </body>
 </html>
