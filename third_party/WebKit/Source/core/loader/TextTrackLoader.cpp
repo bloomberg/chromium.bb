@@ -52,8 +52,8 @@ TextTrackLoader::TextTrackLoader(TextTrackLoaderClient* client, Document& docume
 
 TextTrackLoader::~TextTrackLoader()
 {
-    if (m_cachedCueData)
-        m_cachedCueData->removeClient(this);
+    if (m_resource)
+        m_resource->removeClient(this);
 }
 
 void TextTrackLoader::cueLoadTimerFired(Timer<TextTrackLoader>* timer)
@@ -71,15 +71,15 @@ void TextTrackLoader::cueLoadTimerFired(Timer<TextTrackLoader>* timer)
 
 void TextTrackLoader::cancelLoad()
 {
-    if (m_cachedCueData) {
-        m_cachedCueData->removeClient(this);
-        m_cachedCueData = 0;
+    if (m_resource) {
+        m_resource->removeClient(this);
+        m_resource = 0;
     }
 }
 
 void TextTrackLoader::processNewCueData(Resource* resource)
 {
-    ASSERT(m_cachedCueData == resource);
+    ASSERT(m_resource == resource);
 
     if (m_state == Failed || !resource->resourceBuffer())
         return;
@@ -102,7 +102,7 @@ void TextTrackLoader::processNewCueData(Resource* resource)
 
 void TextTrackLoader::dataReceived(Resource* resource, const char*, int)
 {
-    ASSERT(m_cachedCueData == resource);
+    ASSERT(m_resource == resource);
 
     if (!resource->resourceBuffer())
         return;
@@ -119,7 +119,7 @@ void TextTrackLoader::corsPolicyPreventedLoad()
 
 void TextTrackLoader::notifyFinished(Resource* resource)
 {
-    ASSERT(m_cachedCueData == resource);
+    ASSERT(m_resource == resource);
 
     if (!m_crossOriginMode.isNull()
         && !m_document.securityOrigin()->canRequest(resource->response().url())
@@ -162,9 +162,9 @@ bool TextTrackLoader::load(const KURL& url, const String& crossOriginMode)
     }
 
     ResourceFetcher* fetcher = m_document.fetcher();
-    m_cachedCueData = fetcher->fetchTextTrack(cueRequest);
-    if (m_cachedCueData)
-        m_cachedCueData->addClient(this);
+    m_resource = fetcher->fetchTextTrack(cueRequest);
+    if (m_resource)
+        m_resource->addClient(this);
 
     m_client->cueLoadingStarted(this);
 

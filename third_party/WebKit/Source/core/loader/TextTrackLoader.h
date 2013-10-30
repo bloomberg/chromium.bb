@@ -86,7 +86,7 @@ private:
 
     TextTrackLoaderClient* m_client;
     OwnPtr<WebVTTParser> m_cueParser;
-    ResourcePtr<TextTrackResource> m_cachedCueData;
+    ResourcePtr<TextTrackResource> m_resource;
     // FIXME: Remove this pointer and get the Document from m_client.
     Document& m_document;
     Timer<TextTrackLoader> m_cueLoadTimer;
