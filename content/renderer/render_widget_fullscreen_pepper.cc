@@ -406,7 +406,8 @@ void RenderWidgetFullscreenPepper::SetLayer(WebKit::WebLayer* layer) {
   bool compositing = !!layer_;
   if (compositing != is_accelerated_compositing_active_) {
     if (compositing) {
-      initializeLayerTreeView();
+      if (!layerTreeView())
+        initializeLayerTreeView();
       if (!layerTreeView())
         return;
       layer_->setBounds(WebKit::WebSize(size()));
