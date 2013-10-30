@@ -35,6 +35,8 @@ static const int kAudioSamplingFrequency = 48000;
 static const int kSoundFrequency = 1234;  // Frequency of sinusoid wave.
 static const int kVideoWidth = 1280;
 static const int kVideoHeight = 720;
+static const int kCommonRtpHeaderLength = 12;
+static const uint8 kCastReferenceFrameIdBitReset = 0xDF;  // Mask is 0x40.
 
 // Since the video encoded and decoded an error will be introduced; when
 // comparing individual pixels the error can be quite large; we allow a PSNR of
@@ -58,6 +60,7 @@ class LoopBackTransport : public PacketSender {
       : packet_receiver_(NULL),
         send_packets_(true),
         drop_packets_belonging_to_odd_frames_(false),
+        reset_reference_frame_id_(false),
         cast_environment_(cast_environment) {
   }
 
@@ -91,6 +94,10 @@ class LoopBackTransport : public PacketSender {
       }
       uint8* packet_copy = new uint8[packet.size()];
       memcpy(packet_copy, packet.data(), packet.size());
+      if (reset_reference_frame_id_) {
+        // Reset the is_reference bit in the cast header.
+        packet_copy[kCommonRtpHeaderLength] &= kCastReferenceFrameIdBitReset;
+      }
       packet_receiver_->ReceivedPacket(packet_copy, packet.size(),
           base::Bind(PacketReceiver::DeletePacket, packet_copy));
     }
@@ -105,10 +112,15 @@ class LoopBackTransport : public PacketSender {
     drop_packets_belonging_to_odd_frames_ = true;
   }
 
+  void AlwaysResetReferenceFrameId() {
+    reset_reference_frame_id_ = true;
+  }
+
  private:
   PacketReceiver* packet_receiver_;
   bool send_packets_;
   bool drop_packets_belonging_to_odd_frames_;
+  bool reset_reference_frame_id_;
   scoped_refptr<CastEnvironment> cast_environment_;
 };
 
@@ -586,7 +598,7 @@ TEST_F(End2EndTest, LoopNoLossPcm16) {
   }
   std::cout << std::endl;
 
-  RunTasks(67);  // Empty the receiver pipeline.
+  RunTasks(2 * kFrameTimerMs + 1);  // Empty the receiver pipeline.
   EXPECT_EQ(i - 1, test_receiver_audio_callback_->number_times_called());
   EXPECT_EQ(i, test_receiver_video_callback_->number_times_called());
 }
@@ -618,7 +630,7 @@ TEST_F(End2EndTest, LoopNoLossPcm16ExternalDecoder) {
         base::Bind(&TestReceiverAudioCallback::CheckCodedPcmAudioFrame,
             test_receiver_audio_callback_));
   }
-  RunTasks(67);  // Empty the receiver pipeline.
+  RunTasks(2 * kFrameTimerMs + 1);  // Empty the receiver pipeline.
   EXPECT_EQ(100, test_receiver_audio_callback_->number_times_called());
 }
 
@@ -659,7 +671,7 @@ TEST_F(End2EndTest, LoopNoLossOpus) {
               test_receiver_audio_callback_));
     }
   }
-  RunTasks(67);  // Empty the receiver pipeline.
+  RunTasks(2 * kFrameTimerMs + 1);  // Empty the receiver pipeline.
   EXPECT_EQ(i - 1, test_receiver_audio_callback_->number_times_called());
 }
 
@@ -734,7 +746,7 @@ TEST_F(End2EndTest, StartSenderBeforeReceiver) {
             test_receiver_video_callback_));
     video_start++;
   }
-  RunTasks(67);  // Empty the receiver pipeline.
+  RunTasks(2 * kFrameTimerMs + 1);  // Empty the receiver pipeline.
   EXPECT_EQ(j - number_of_audio_frames_to_ignore,
             test_receiver_audio_callback_->number_times_called());
   EXPECT_EQ(j, test_receiver_video_callback_->number_times_called());
@@ -786,7 +798,7 @@ TEST_F(End2EndTest, GlitchWith3Buffers) {
       base::Bind(&TestReceiverVideoCallback::CheckVideoFrame,
           test_receiver_video_callback_));
 
-  RunTasks(67);  // Empty the receiver pipeline.
+  RunTasks(2 * kFrameTimerMs + 1);  // Empty the receiver pipeline.
   EXPECT_EQ(2, test_receiver_video_callback_->number_times_called());
 }
 
@@ -821,8 +833,35 @@ TEST_F(End2EndTest, DropEveryOtherFrame3Buffers) {
     video_start++;
   }
   std::cout << std::endl;
-  RunTasks(67);  // Empty the pipeline.
+  RunTasks(2 * kFrameTimerMs + 1);  // Empty the pipeline.
   EXPECT_EQ(i / 2, test_receiver_video_callback_->number_times_called());
+}
+
+TEST_F(End2EndTest, ResetReferenceFrameId) {
+  SetupConfig(kOpus, kAudioSamplingFrequency, false, 3);
+  video_sender_config_.rtp_max_delay_ms = 67;
+  video_receiver_config_.rtp_max_delay_ms = 67;
+  Create();
+  sender_to_receiver_.AlwaysResetReferenceFrameId();
+
+  int frames_counter = 0;
+  for (; frames_counter < 20; ++frames_counter) {
+    const base::TimeTicks send_time = testing_clock_.NowTicks();
+    SendVideoFrame(frames_counter, send_time);
+
+    test_receiver_video_callback_->AddExpectedResult(frames_counter,
+        video_sender_config_.width, video_sender_config_.height, send_time);
+
+    // GetRawVideoFrame will not return the frame until we are close to the
+    // time in which we should render the frame.
+    frame_receiver_->GetRawVideoFrame(
+        base::Bind(&TestReceiverVideoCallback::CheckVideoFrame,
+                   test_receiver_video_callback_));
+    RunTasks(kFrameTimerMs);
+  }
+  RunTasks(2 * kFrameTimerMs + 1);  // Empty the pipeline.
+  EXPECT_EQ(frames_counter,
+            test_receiver_video_callback_->number_times_called());
 }
 
 // TODO(pwestin): Add repeatable packet loss test.
