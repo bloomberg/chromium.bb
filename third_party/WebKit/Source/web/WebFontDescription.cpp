@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebFontDescription.h"
 
-#include "core/platform/graphics/FontDescription.h"
+#include "platform/fonts/FontDescription.h"
 
 using namespace WebCore;
 

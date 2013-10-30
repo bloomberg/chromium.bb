@@ -26,7 +26,7 @@
 #ifndef CSSSegmentedFontFace_h
 #define CSSSegmentedFontFace_h
 
-#include "core/platform/graphics/FontTraitsMask.h"
+#include "platform/fonts/FontTraitsMask.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

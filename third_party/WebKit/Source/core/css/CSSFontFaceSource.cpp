@@ -31,8 +31,8 @@
 #include "core/css/CSSFontSelector.h"
 #include "core/fetch/FontResource.h"
 #include "core/platform/graphics/FontCache.h"
-#include "core/platform/graphics/FontDescription.h"
 #include "core/platform/graphics/SimpleFontData.h"
+#include "platform/fonts/FontDescription.h"
 #include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"
 

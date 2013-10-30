@@ -26,14 +26,14 @@
 #define FontDescription_h
 
 #include "FontFamilyNames.h"
-#include "core/platform/graphics/FontCacheKey.h"
-#include "core/platform/graphics/FontOrientation.h"
-#include "core/platform/graphics/FontSmoothingMode.h"
-#include "core/platform/graphics/FontTraitsMask.h"
-#include "core/platform/graphics/FontWidthVariant.h"
-#include "core/platform/graphics/TextRenderingMode.h"
+#include "platform/fonts/FontCacheKey.h"
 #include "platform/fonts/FontFamily.h"
 #include "platform/fonts/FontFeatureSettings.h"
+#include "platform/fonts/FontOrientation.h"
+#include "platform/fonts/FontSmoothingMode.h"
+#include "platform/fonts/FontTraitsMask.h"
+#include "platform/fonts/FontWidthVariant.h"
+#include "platform/fonts/TextRenderingMode.h"
 #include "platform/text/NonCJKGlyphOrientation.h"
 #include "wtf/MathExtras.h"
 
@@ -65,7 +65,7 @@ enum FontSmallCaps {
     FontSmallCapsOn = 1
 };
 
-class FontDescription {
+class PLATFORM_EXPORT FontDescription {
 public:
     enum GenericFamilyType { NoFamily, StandardFamily, SerifFamily, SansSerifFamily,
                              MonospaceFamily, CursiveFamily, FantasyFamily, PictographFamily };

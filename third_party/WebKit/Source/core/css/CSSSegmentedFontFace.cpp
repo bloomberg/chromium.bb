@@ -29,9 +29,9 @@
 #include "RuntimeEnabledFeatures.h"
 #include "core/css/CSSFontFace.h"
 #include "core/platform/graphics/FontCache.h"
-#include "core/platform/graphics/FontDescription.h"
 #include "core/platform/graphics/SegmentedFontData.h"
 #include "core/platform/graphics/SimpleFontData.h"
+#include "platform/fonts/FontDescription.h"
 
 namespace WebCore {
 

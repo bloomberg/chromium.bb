@@ -36,7 +36,7 @@
 #ifndef FontFallbackWin_h
 #define FontFallbackWin_h
 
-#include "core/platform/graphics/FontDescription.h"
+#include "platform/fonts/FontDescription.h"
 #include <unicode/uscript.h>
 #include <usp10.h>
 #include <wchar.h>

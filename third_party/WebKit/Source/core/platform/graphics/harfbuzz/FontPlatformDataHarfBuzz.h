@@ -33,9 +33,9 @@
 
 #include "SkPaint.h"
 #include "platform/SharedBuffer.h"
-#include "core/platform/graphics/FontOrientation.h"
 #include "core/platform/graphics/chromium/FontRenderStyle.h"
 #include "core/platform/graphics/opentype/OpenTypeVerticalData.h"
+#include "platform/fonts/FontOrientation.h"
 #include "wtf/Forward.h"
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/RefPtr.h"

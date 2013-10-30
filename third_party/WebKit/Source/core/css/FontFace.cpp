@@ -47,8 +47,8 @@
 #include "core/dom/Document.h"
 #include "core/frame/Frame.h"
 #include "core/page/Settings.h"
-#include "core/platform/graphics/FontTraitsMask.h"
 #include "core/svg/SVGFontFaceElement.h"
+#include "platform/fonts/FontTraitsMask.h"
 
 namespace WebCore {
 

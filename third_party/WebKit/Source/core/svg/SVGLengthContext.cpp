@@ -27,12 +27,12 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/css/CSSHelper.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/platform/graphics/FontMetrics.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/RenderSVGViewportContainer.h"
 #include "core/svg/SVGSVGElement.h"
+#include "platform/fonts/FontMetrics.h"
 
 namespace WebCore {
 

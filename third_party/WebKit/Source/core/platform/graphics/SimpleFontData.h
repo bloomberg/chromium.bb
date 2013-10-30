@@ -24,17 +24,17 @@
 #ifndef SimpleFontData_h
 #define SimpleFontData_h
 
-#include "core/platform/graphics/FontMetrics.h"
 #include "core/platform/graphics/FontPlatformData.h"
 #include "core/platform/graphics/GlyphBuffer.h"
 #include "core/platform/graphics/GlyphMetricsMap.h"
 #include "core/platform/graphics/GlyphPageTreeNode.h"
 #include "platform/fonts/FontBaseline.h"
 #include "platform/fonts/FontData.h"
+#include "platform/fonts/FontMetrics.h"
 #if ENABLE(OPENTYPE_VERTICAL)
 #include "core/platform/graphics/opentype/OpenTypeVerticalData.h"
 #endif
-#include "core/platform/graphics/TypesettingFeatures.h"
+#include "platform/fonts/TypesettingFeatures.h"
 #include "platform/geometry/FloatRect.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"

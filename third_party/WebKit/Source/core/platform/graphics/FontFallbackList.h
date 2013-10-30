@@ -21,9 +21,9 @@
 #ifndef FontFallbackList_h
 #define FontFallbackList_h
 
-#include "core/platform/graphics/FontSelector.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/WidthCache.h"
+#include "platform/fonts/FontSelector.h"
 #include "wtf/Forward.h"
 #include "wtf/MainThread.h"
 

@@ -27,7 +27,7 @@
 
 #if ENABLE(OPENTYPE_VERTICAL)
 
-#include "core/platform/graphics/Glyph.h"
+#include "platform/fonts/Glyph.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

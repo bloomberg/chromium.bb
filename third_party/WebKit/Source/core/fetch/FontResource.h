@@ -28,8 +28,8 @@
 
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceClient.h"
-#include "core/platform/graphics/FontOrientation.h"
-#include "core/platform/graphics/FontWidthVariant.h"
+#include "platform/fonts/FontOrientation.h"
+#include "platform/fonts/FontWidthVariant.h"
 #include "wtf/OwnPtr.h"
 
 namespace WebCore {

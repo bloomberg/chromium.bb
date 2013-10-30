@@ -147,7 +147,7 @@ private:
     bool m_hasZeroWidth;
 };
 
-static inline float scaleEmToUnits(float x, unsigned unitsPerEm)
+inline float scaleEmToUnits(float x, unsigned unitsPerEm)
 {
     return unitsPerEm ? x / unitsPerEm : x;
 }

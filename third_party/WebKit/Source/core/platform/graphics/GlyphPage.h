@@ -30,8 +30,8 @@
 #ifndef GlyphPage_h
 #define GlyphPage_h
 
+#include "platform/fonts/Glyph.h"
 #include <string.h>
-#include "core/platform/graphics/Glyph.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"

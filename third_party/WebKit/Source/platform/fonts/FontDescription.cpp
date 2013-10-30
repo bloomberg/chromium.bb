@@ -28,7 +28,7 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/FontDescription.h"
+#include "platform/fonts/FontDescription.h"
 
 #include "RuntimeEnabledFeatures.h"
 #include "wtf/text/AtomicStringHash.h"

@@ -27,7 +27,7 @@
 #include "core/rendering/RenderThemeChromiumFontProvider.h"
 
 #include "CSSValueKeywords.h"
-#include "core/platform/graphics/FontDescription.h"
+#include "platform/fonts/FontDescription.h"
 
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/WTFString.h"

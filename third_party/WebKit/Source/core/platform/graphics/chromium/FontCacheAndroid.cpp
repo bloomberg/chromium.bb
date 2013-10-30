@@ -32,8 +32,8 @@
 #include "core/platform/graphics/FontCache.h"
 
 #include "core/platform/graphics/Font.h"
-#include "core/platform/graphics/FontDescription.h"
 #include "core/platform/graphics/SimpleFontData.h"
+#include "platform/fonts/FontDescription.h"
 
 #include "SkTypeface_android.h"
 

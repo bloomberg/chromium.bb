@@ -29,7 +29,7 @@
 #include <windows.h>
 
 #include "CSSValueKeywords.h"
-#include "core/platform/graphics/FontDescription.h"
+#include "platform/fonts/FontDescription.h"
 #include "platform/win/HWndDC.h"
 #include "platform/win/SystemInfo.h"
 #include "wtf/text/WTFString.h"

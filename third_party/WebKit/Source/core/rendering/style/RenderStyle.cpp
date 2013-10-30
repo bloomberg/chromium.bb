@@ -28,7 +28,6 @@
 #include "RuntimeEnabledFeatures.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/platform/graphics/Font.h"
-#include "core/platform/graphics/FontSelector.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/TextAutosizer.h"
 #include "core/rendering/style/ContentData.h"
@@ -37,6 +36,7 @@
 #include "core/rendering/style/ShadowList.h"
 #include "core/rendering/style/StyleImage.h"
 #include "core/rendering/style/StyleInheritedData.h"
+#include "platform/fonts/FontSelector.h"
 #include "wtf/MathExtras.h"
 #include "wtf/StdLibExtras.h"
 

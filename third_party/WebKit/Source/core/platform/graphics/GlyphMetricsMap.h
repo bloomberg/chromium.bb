@@ -29,7 +29,7 @@
 #ifndef GlyphMetricsMap_h
 #define GlyphMetricsMap_h
 
-#include "core/platform/graphics/Glyph.h"
+#include "platform/fonts/Glyph.h"
 #include "platform/geometry/FloatRect.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"

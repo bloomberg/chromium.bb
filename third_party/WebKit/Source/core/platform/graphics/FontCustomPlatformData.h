@@ -32,8 +32,8 @@
 #ifndef FontCustomPlatformData_h
 #define FontCustomPlatformData_h
 
-#include "core/platform/graphics/FontOrientation.h"
-#include "core/platform/graphics/FontWidthVariant.h"
+#include "platform/fonts/FontOrientation.h"
+#include "platform/fonts/FontWidthVariant.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"

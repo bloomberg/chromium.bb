@@ -41,8 +41,8 @@
 #include "core/frame/Frame.h"
 #include "core/page/Settings.h"
 #include "core/platform/graphics/FontCache.h"
-#include "core/platform/graphics/FontDescription.h"
 #include "core/platform/graphics/SimpleFontData.h"
+#include "platform/fonts/FontDescription.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {

@@ -86,6 +86,7 @@
     ],
     'include_dirs': [
       '<(DEPTH)/third_party/angle_dx11/include',
+      '<(SHARED_INTERMEDIATE_DIR)/blink',
     ],
     'sources': [
       '<@(platform_files)',

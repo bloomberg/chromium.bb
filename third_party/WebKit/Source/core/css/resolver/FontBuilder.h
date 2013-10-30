@@ -25,7 +25,7 @@
 
 #include "CSSValueKeywords.h"
 
-#include "core/platform/graphics/FontDescription.h"
+#include "platform/fonts/FontDescription.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {
