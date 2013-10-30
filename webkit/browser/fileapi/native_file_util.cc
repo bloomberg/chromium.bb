@@ -140,8 +140,12 @@ PlatformFileError NativeFileUtil::CreateDirectory(
   if (!file_util::CreateDirectory(path))
     return base::PLATFORM_FILE_ERROR_FAILED;
 
-  if (!SetPlatformSpecificDirectoryPermissions(path))
-    return base::PLATFORM_FILE_ERROR_FAILED;
+  if (!SetPlatformSpecificDirectoryPermissions(path)) {
+    // Since some file systems don't support permission setting, we do not treat
+    // an error from the function as the failure of copying. Just log it.
+    LOG(WARNING) << "Setting directory permission failed: "
+        << path.AsUTF8Unsafe();
+  }
 
   return base::PLATFORM_FILE_OK;
 }
