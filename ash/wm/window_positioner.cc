@@ -227,20 +227,18 @@ void WindowPositioner::GetBoundsAndShowStateForNewWindow(
   if (top_window == new_window)
     top_window = NULL;
 
-  // If there is no valid other window we take the coordinates as is.
+  // If there is no valid other window we take and adjust the passed coordinates
+  // and show state.
   if (!top_window) {
     gfx::Rect work_area = screen->GetDisplayNearestWindow(target).work_area();
 
-    if (is_saved_bounds) {
-      // Restore to saved state - if there is one.
-      bounds_in_out->AdjustToFit(work_area);
+    bounds_in_out->AdjustToFit(work_area);
+    // Use adjusted saved bounds, if there is one.
+    if (is_saved_bounds)
       return;
-    }
-
     // When using "small screens" we want to always open in full screen mode.
     if (show_state_in == ui::SHOW_STATE_DEFAULT &&
-        work_area.width() <=
-        WindowPositioner::GetForceMaximizedWidthLimit() &&
+        work_area.width() <= GetForceMaximizedWidthLimit() &&
         (!new_window || !wm::GetWindowState(new_window)->IsFullscreen())) {
       *show_state_out = ui::SHOW_STATE_MAXIMIZED;
     }

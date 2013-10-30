@@ -283,7 +283,7 @@ void RootWindowController::Shutdown() {
   // being removed triggers a relayout of the shelf it will try to build a
   // window list adding windows from the target root window's containers which
   // may have already gone away.
-  if (Shell::GetTargetRootWindow()->GetDispatcher() == root_window_) {
+  if (Shell::GetTargetRootWindow() == root_window_.get()) {
     Shell::GetInstance()->set_target_root_window(
         Shell::GetPrimaryRootWindow() == root_window_.get() ?
         NULL : Shell::GetPrimaryRootWindow());
@@ -608,9 +608,6 @@ void RootWindowController::Init(RootWindowType root_window_type,
         root_window_.get());
     shell->high_contrast_controller()->OnRootWindowAdded(root_window_.get());
     root_window_->ShowRootWindow();
-    // Activate new root for testing.
-    // TODO(oshima): remove this.
-    shell->set_target_root_window(root_window_.get());
 
     // Create a launcher if a user is already logged.
     if (shell->session_state_delegate()->NumberOfLoggedInUsers())

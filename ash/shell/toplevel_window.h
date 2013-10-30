@@ -18,7 +18,12 @@ class ToplevelWindow : public views::WidgetDelegateView {
     bool can_resize;
     bool can_maximize;
   };
-  static void CreateToplevelWindow(const CreateParams& params);
+  static views::Widget* CreateToplevelWindow(
+      const CreateParams& params);
+
+  // Clears saved show state and bounds used to position
+  // a new window.
+  static void ClearSavedStateForTest();
 
  private:
   explicit ToplevelWindow(const CreateParams& params);

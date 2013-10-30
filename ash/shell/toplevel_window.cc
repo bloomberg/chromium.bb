@@ -36,13 +36,21 @@ ToplevelWindow::CreateParams::CreateParams()
 }
 
 // static
-void ToplevelWindow::CreateToplevelWindow(const CreateParams& params) {
+views::Widget* ToplevelWindow::CreateToplevelWindow(
+    const CreateParams& params) {
   views::Widget* widget = views::Widget::CreateWindowWithContext(
       new ToplevelWindow(params), Shell::GetPrimaryRootWindow());
   widget->GetNativeView()->SetName("Examples:ToplevelWindow");
   wm::WindowState* window_state = wm::GetWindowState(widget->GetNativeView());
   window_state->set_window_position_managed(true);
   widget->Show();
+  return widget;
+}
+
+// static
+void ToplevelWindow::ClearSavedStateForTest() {
+  delete saved_state;
+  saved_state = NULL;
 }
 
 ToplevelWindow::ToplevelWindow(const CreateParams& params) : params_(params) {

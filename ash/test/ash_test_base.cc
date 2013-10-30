@@ -11,6 +11,7 @@
 #include "ash/display/display_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
+#include "ash/shell/toplevel_window.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/test_session_state_delegate.h"
@@ -101,6 +102,11 @@ AshTestBase::~AshTestBase() {
 
 void AshTestBase::SetUp() {
   setup_called_ = true;
+
+  // Clears the saved state so that test doesn't use on the wrong
+  // default state.
+  shell::ToplevelWindow::ClearSavedStateForTest();
+
   // TODO(jamescook): Can we do this without changing command line?
   // Use the origin (1,1) so that it doesn't over
   // lap with the native mouse cursor.
