@@ -66,7 +66,7 @@ hr interfaceName=HTMLHRElement
 html
 i interfaceName=HTMLElement
 iframe interfaceName=HTMLIFrameElement
-image interfaceName=HTMLElement
+image interfaceName=HTMLUnknownElement
 img interfaceName=HTMLImageElement, constructorNeedsFormElement
 input constructorNeedsFormElement, constructorNeedsCreatedByParser
 ins interfaceName=HTMLModElement
