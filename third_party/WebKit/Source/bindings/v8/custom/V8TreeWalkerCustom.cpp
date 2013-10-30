@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2009 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,27 +29,26 @@
  */
 
 #include "config.h"
-#include "V8NodeList.h"
+#include "V8TreeWalker.h"
 
-#include "V8Node.h"
+#include "V8NodeFilter.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8GCController.h"
-#include "core/dom/LiveNodeList.h"
-#include "core/dom/NodeList.h"
-#include "wtf/RefPtr.h"
-#include "wtf/StdLibExtras.h"
+#include "bindings/v8/V8HiddenPropertyName.h"
+#include "core/dom/Node.h"
 
 namespace WebCore {
 
-void* V8NodeList::opaqueRootForGC(void* object, v8::Isolate* isolate)
+v8::Handle<v8::Object> wrap(TreeWalker* treeWalker, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    NodeList* impl = static_cast<NodeList*>(object);
-    if (!impl->isLiveNodeList())
-        return object;
-    Node* owner = static_cast<LiveNodeList*>(impl)->ownerNode();
-    if (!owner)
-        return object;
-    return V8GCController::opaqueRootForGC(owner, isolate);
+    ASSERT(treeWalker);
+    ASSERT(!DOMDataStore::containsWrapper<V8TreeWalker>(treeWalker, isolate));
+
+    v8::Handle<v8::Object> wrapper = V8TreeWalker::createWrapper(treeWalker, creationContext, isolate);
+
+    if (treeWalker->filter())
+        V8HiddenPropertyName::setNamedHiddenReference(wrapper, "filter", toV8(treeWalker->filter(), creationContext, isolate));
+
+    return wrapper;
 }
 
 } // namespace WebCore
