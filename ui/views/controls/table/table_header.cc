@@ -178,46 +178,23 @@ gfx::NativeCursor TableHeader::GetCursor(const ui::MouseEvent& event) {
 }
 
 bool TableHeader::OnMousePressed(const ui::MouseEvent& event) {
-  if (event.IsOnlyLeftMouseButton()) {
-    const int index = GetResizeColumn(GetMirroredXInView(event.x()));
-    if (index != -1) {
-      DCHECK(!is_resizing());
-      resize_details_.reset(new ColumnResizeDetails);
-      resize_details_->column_index = index;
-      resize_details_->initial_x = event.root_location().x();
-      resize_details_->initial_width =
-          table_->visible_columns()[index].width;
-    }
+  if (event.IsOnlyLeftMouseButton() && StartResize(event))
     return true;
-  }
+
   // Return false so that context menus on ancestors work.
   return false;
 }
 
 bool TableHeader::OnMouseDragged(const ui::MouseEvent& event) {
-  if (is_resizing()) {
-    const int scale = base::i18n::IsRTL() ? -1 : 1;
-    const int delta = scale *
-        (event.root_location().x() - resize_details_->initial_x);
-    table_->SetVisibleColumnWidth(
-        resize_details_->column_index,
-        std::max(kMinColumnWidth, resize_details_->initial_width + delta));
-  }
+  ContinueResize(event);
   return true;
 }
 
 void TableHeader::OnMouseReleased(const ui::MouseEvent& event) {
   const bool was_resizing = resize_details_ != NULL;
   resize_details_.reset();
-  if (!was_resizing && event.IsOnlyLeftMouseButton() &&
-      !table_->visible_columns().empty()) {
-    const int x = GetMirroredXInView(event.x());
-    const int index = GetClosestVisibleColumnIndex(table_, x);
-    const TableView::VisibleColumn& column(table_->visible_columns()[index]);
-    if (x >= column.x && x < column.x + column.width && event.y() >= 0 &&
-        event.y() < height())
-      table_->ToggleSortOrder(index);
-  }
+  if (!was_resizing && event.IsOnlyLeftMouseButton())
+    ToggleSortOrder(event);
 }
 
 void TableHeader::OnMouseCaptureLost() {
@@ -226,6 +203,66 @@ void TableHeader::OnMouseCaptureLost() {
                                   resize_details_->initial_width);
   }
   resize_details_.reset();
+}
+
+void TableHeader::OnGestureEvent(ui::GestureEvent* event) {
+  switch (event->type()) {
+    case ui::ET_GESTURE_TAP:
+      if (!resize_details_.get())
+        ToggleSortOrder(*event);
+      break;
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+      StartResize(*event);
+      break;
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      ContinueResize(*event);
+      break;
+    case ui::ET_GESTURE_SCROLL_END:
+      resize_details_.reset();
+      break;
+    default:
+      return;
+  }
+  event->SetHandled();
+}
+
+bool TableHeader::StartResize(const ui::LocatedEvent& event) {
+  if (is_resizing())
+    return false;
+
+  const int index = GetResizeColumn(GetMirroredXInView(event.x()));
+  if (index == -1)
+    return false;
+
+  resize_details_.reset(new ColumnResizeDetails);
+  resize_details_->column_index = index;
+  resize_details_->initial_x = event.root_location().x();
+  resize_details_->initial_width = table_->visible_columns()[index].width;
+  return true;
+}
+
+void TableHeader::ContinueResize(const ui::LocatedEvent& event) {
+  if (!is_resizing())
+    return;
+
+  const int scale = base::i18n::IsRTL() ? -1 : 1;
+  const int delta = scale *
+      (event.root_location().x() - resize_details_->initial_x);
+  table_->SetVisibleColumnWidth(
+      resize_details_->column_index,
+      std::max(kMinColumnWidth, resize_details_->initial_width + delta));
+}
+
+void TableHeader::ToggleSortOrder(const ui::LocatedEvent& event) {
+  if (table_->visible_columns().empty())
+    return;
+
+  const int x = GetMirroredXInView(event.x());
+  const int index = GetClosestVisibleColumnIndex(table_, x);
+  const TableView::VisibleColumn& column(table_->visible_columns()[index]);
+  if (x >= column.x && x < column.x + column.width && event.y() >= 0 &&
+      event.y() < height())
+    table_->ToggleSortOrder(index);
 }
 
 int TableHeader::GetResizeColumn(int x) const {

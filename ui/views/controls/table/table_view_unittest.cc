@@ -195,6 +195,15 @@ class TableViewTest : public testing::Test {
     table_->OnMousePressed(pressed);
   }
 
+  void TapOnRow(int row) {
+    const int y = row * table_->row_height();
+    const ui::GestureEventDetails event_details(ui::ET_GESTURE_TAP,
+                                                .0f, .0f);
+    ui::GestureEvent tap(ui::ET_GESTURE_TAP, 0, y, 0, base::TimeDelta(),
+                         event_details, 1);
+    table_->OnGestureEvent(&tap);
+  }
+
   // Returns the state of the selection model as a string. The format is:
   // 'active=X anchor=X selection=X X X...'.
   std::string SelectionStateAsString() const {
@@ -285,6 +294,25 @@ TEST_F(TableViewTest, Resize) {
   const ui::MouseEvent dragged(ui::ET_MOUSE_DRAGGED, gfx::Point(x - 1, 0),
                                gfx::Point(x - 1, 0), ui::EF_LEFT_MOUSE_BUTTON);
   helper_->header()->OnMouseDragged(dragged);
+
+  // This should shrink the first column and pull the second column in.
+  EXPECT_EQ(x - 1, table_->visible_columns()[0].width);
+  EXPECT_EQ(x - 1, table_->visible_columns()[1].x);
+}
+
+// Verifies resizing a column works with a gesture.
+TEST_F(TableViewTest, ResizeViaGesture) {
+  const int x = table_->visible_columns()[0].width;
+  EXPECT_NE(0, x);
+  // Drag the mouse 1 pixel to the left.
+  const ui::GestureEventDetails event_details(ui::ET_GESTURE_SCROLL_BEGIN,
+                                              .0f, .0f);
+  ui::GestureEvent scroll_begin(ui::ET_GESTURE_SCROLL_BEGIN, x, 0, 0,
+                                base::TimeDelta(), event_details, 1);
+  helper_->header()->OnGestureEvent(&scroll_begin);
+  ui::GestureEvent scroll_update(ui::ET_GESTURE_SCROLL_UPDATE, x - 1, 0,
+                                 0, base::TimeDelta(), event_details, 1);
+  helper_->header()->OnGestureEvent(&scroll_update);
 
   // This should shrink the first column and pull the second column in.
   EXPECT_EQ(x - 1, table_->visible_columns()[0].width);
@@ -500,6 +528,22 @@ TEST_F(TableViewTest, Selection) {
   model_->AddRow(0, 1, 2);
   EXPECT_EQ(0, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=3 anchor=3 selection=3", SelectionStateAsString());
+
+  table_->SetObserver(NULL);
+}
+
+// Verifies selection works by way of a gesture.
+TEST_F(TableViewTest, SelectOnTap) {
+  // Initially no selection.
+  EXPECT_EQ("active=-1 anchor=-1 selection=", SelectionStateAsString());
+
+  TableViewObserverImpl observer;
+  table_->SetObserver(&observer);
+
+  // Click on the first row, should select it.
+  TapOnRow(0);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=0 anchor=0 selection=0", SelectionStateAsString());
 
   table_->SetObserver(NULL);
 }

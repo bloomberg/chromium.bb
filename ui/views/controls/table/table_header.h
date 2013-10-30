@@ -36,6 +36,7 @@ class VIEWS_EXPORT TableHeader : public views::View {
   virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  private:
   // Used to track the column being resized.
@@ -51,6 +52,17 @@ class VIEWS_EXPORT TableHeader : public views::View {
     // Width of the column when the drag started.
     int initial_width;
   };
+
+  // If not already resizing and |event| is over a resizable column starts
+  // resizing.
+  bool StartResize(const ui::LocatedEvent& event);
+
+  // Continues a resize operation. Does nothing if not in the process of
+  // resizing.
+  void ContinueResize(const ui::LocatedEvent& event);
+
+  // Toggles the sort order of the column at the location in |event|.
+  void ToggleSortOrder(const ui::LocatedEvent& event);
 
   // Returns the column to resize given the specified x-coordinate, or -1 if |x|
   // is not in the resize range of any columns.

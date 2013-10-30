@@ -389,6 +389,20 @@ bool TableView::OnMousePressed(const ui::MouseEvent& event) {
   return true;
 }
 
+void TableView::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() != ui::ET_GESTURE_TAP)
+    return;
+
+  const int row = event->y() / row_height_;
+  if (row < 0 || row >= RowCount())
+    return;
+
+  event->StopPropagation();
+  ui::ListSelectionModel new_model;
+  ConfigureSelectionModelForEvent(*event, &new_model);
+  SetSelectionModel(new_model);
+}
+
 bool TableView::GetTooltipText(const gfx::Point& p,
                                string16* tooltip) const {
   return GetTooltipImpl(p, tooltip, NULL);
@@ -792,7 +806,7 @@ void TableView::AdvanceSelection(AdvanceDirection direction) {
 }
 
 void TableView::ConfigureSelectionModelForEvent(
-    const ui::MouseEvent& event,
+    const ui::LocatedEvent& event,
     ui::ListSelectionModel* model) const {
   const int view_index = event.y() / row_height_;
   DCHECK(view_index >= 0 && view_index < RowCount());

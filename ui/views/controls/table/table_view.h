@@ -169,6 +169,7 @@ class VIEWS_EXPORT TableView
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p,
                               string16* tooltip) const OVERRIDE;
   virtual bool GetTooltipTextOrigin(const gfx::Point& p,
@@ -270,8 +271,8 @@ class VIEWS_EXPORT TableView
   // Advances the selection (from the active index) in the specified direction.
   void AdvanceSelection(AdvanceDirection direction);
 
-  // Sets |model| appropriately based on a mouse event.
-  void ConfigureSelectionModelForEvent(const ui::MouseEvent& event,
+  // Sets |model| appropriately based on a event.
+  void ConfigureSelectionModelForEvent(const ui::LocatedEvent& event,
                                        ui::ListSelectionModel* model) const;
 
   // Set the selection state of row at |view_index| to |select|, additionally
