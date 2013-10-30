@@ -277,6 +277,8 @@ Status ParseChromeOptions(
     parser_map["localState"] =
         base::Bind(&ParseDict, &capabilities->local_state);
     parser_map["logPath"] = base::Bind(&ParseLogPath);
+    parser_map["minidumpPath"] =
+        base::Bind(&ParseString, &capabilities->minidump_path);
     parser_map["prefs"] = base::Bind(&ParseDict, &capabilities->prefs);
   }
 

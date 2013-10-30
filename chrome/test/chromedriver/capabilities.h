@@ -105,6 +105,9 @@ struct Capabilities {
 
   LoggingPrefs logging_prefs;
 
+  // If set, enable minidump for chrome crashes and save to this directory.
+  std::string minidump_path;
+
   scoped_ptr<base::DictionaryValue> prefs;
 
   Switches switches;
