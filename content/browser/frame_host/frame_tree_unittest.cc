@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/frame_tree.h"
+#include "content/browser/frame_host/frame_tree.h"
 
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "content/browser/renderer_host/render_frame_host_impl.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"

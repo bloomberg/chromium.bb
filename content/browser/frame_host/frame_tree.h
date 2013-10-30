@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_FRAME_TREE_H_
-#define CONTENT_BROWSER_RENDERER_HOST_FRAME_TREE_H_
+#ifndef CONTENT_BROWSER_FRAME_HOST_FRAME_TREE_H_
+#define CONTENT_BROWSER_FRAME_HOST_FRAME_TREE_H_
 
 #include <string>
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/renderer_host/frame_tree_node.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -100,4 +100,4 @@ class CONTENT_EXPORT FrameTree {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_FRAME_TREE_H_
+#endif  // CONTENT_BROWSER_FRAME_HOST_FRAME_TREE_H_

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/render_frame_message_filter.h"
+#include "content/browser/frame_host/render_frame_message_filter.h"
 
-#include "content/browser/renderer_host/render_frame_host_impl.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/browser_thread.h"

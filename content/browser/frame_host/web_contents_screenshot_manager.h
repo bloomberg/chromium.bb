@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_SCREENSHOT_MANAGER_H_
-#define CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_SCREENSHOT_MANAGER_H_
+#ifndef CONTENT_BROWSER_FRAME_HOST_WEB_CONTENTS_SCREENSHOT_MANAGER_H_
+#define CONTENT_BROWSER_FRAME_HOST_WEB_CONTENTS_SCREENSHOT_MANAGER_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
@@ -23,6 +23,8 @@ class ScreenshotData;
 // current navigation entry of a NavigationControllerImpl, and managing these
 // captured images. These image-captures are used for history navigation using
 // overscroll gestures.
+// TODO(nasko): Rename this to better reflect that it is used for
+// navigation entries and not WebContents.
 class CONTENT_EXPORT WebContentsScreenshotManager {
  public:
   explicit WebContentsScreenshotManager(NavigationControllerImpl* controller);
@@ -86,4 +88,4 @@ class CONTENT_EXPORT WebContentsScreenshotManager {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_SCREENSHOT_MANAGER_H_
+#endif  // CONTENT_BROWSER_FRAME_HOST_WEB_CONTENTS_SCREENSHOT_MANAGER_H_

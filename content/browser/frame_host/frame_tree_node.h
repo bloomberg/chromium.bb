@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WEB_CONTENTS_FRAME_TREE_NODE_H_
-#define CONTENT_BROWSER_WEB_CONTENTS_FRAME_TREE_NODE_H_
+#ifndef CONTENT_BROWSER_FRAME_HOST_FRAME_TREE_NODE_H_
+#define CONTENT_BROWSER_FRAME_HOST_FRAME_TREE_NODE_H_
 
 #include <string>
 
@@ -113,4 +113,4 @@ class CONTENT_EXPORT FrameTreeNode {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_WEB_CONTENTS_FRAME_TREE_NODE_H_
+#endif  // CONTENT_BROWSER_FRAME_HOST_FRAME_TREE_NODE_H_

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/web_contents/navigation_entry_impl.h"
+#include "content/browser/frame_host/navigation_entry_impl.h"
 
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"

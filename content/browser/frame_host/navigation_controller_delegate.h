@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WEB_CONTENTS_NAVIGATION_CONTROLLER_DELEGATE_H_
-#define CONTENT_BROWSER_WEB_CONTENTS_NAVIGATION_CONTROLLER_DELEGATE_H_
+#ifndef CONTENT_BROWSER_FRAME_HOST_NAVIGATION_CONTROLLER_DELEGATE_H_
+#define CONTENT_BROWSER_FRAME_HOST_NAVIGATION_CONTROLLER_DELEGATE_H_
 
 #include <string>
 #include "content/public/browser/navigation_controller.h"
@@ -76,4 +76,4 @@ class NavigationControllerDelegate {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_WEB_CONTENTS_NAVIGATION_CONTROLLER_DELEGATE_H_
+#endif  // CONTENT_BROWSER_FRAME_HOST_NAVIGATION_CONTROLLER_DELEGATE_H_

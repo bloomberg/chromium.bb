@@ -5,9 +5,9 @@
 #include "content/browser/ssl/ssl_error_handler.h"
 
 #include "base/bind.h"
+#include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/ssl/ssl_cert_error_handler.h"
-#include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
