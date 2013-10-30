@@ -1072,11 +1072,11 @@ class ArchivingStageTest(AbstractStageTest):
     results_skipped = ('SignerTests',)
     for result in json_data['results']:
       if result['name'] in results_passed:
-        self.assertEquals(result['status'], 'passed')
+        self.assertEquals(result['status'], constants.FINAL_STATUS_PASSED)
       elif result['name'] in results_failed:
-        self.assertEquals(result['status'], 'failed')
+        self.assertEquals(result['status'], constants.FINAL_STATUS_FAILED)
       elif result['name'] in results_skipped:
-        self.assertEquals(result['status'], 'passed')
+        self.assertEquals(result['status'], constants.FINAL_STATUS_PASSED)
         self.assertTrue('skipped' in result['summary'].lower())
 
     # The buildtools manifest doesn't have any overlays. In this case, we can't
@@ -1659,7 +1659,8 @@ class ReportStageTest(AbstractStageTest):
 
   def setUp(self):
     for cmd in ((osutils, 'ReadFile'), (osutils, 'WriteFile'),
-                (commands, 'UploadArchivedFile'),):
+                (commands, 'UploadArchivedFile'),
+                (stages.ReportStage, '_UpdateStreakCounter')):
       self.StartPatcher(mock.patch.object(*cmd, autospec=True))
     self.StartPatcher(ArchiveStageMock())
     self.cq = CLStatusMock()

@@ -93,12 +93,21 @@ class GSCounter(object):
     except GSNoSuchKey:
       return 0
 
-  def Increment(self):
-    """Atomically increment the counter."""
+  def AtomicCounterOperation(self, default_value, operation):
+    """Atomically set the counter value using |operation|.
+
+    Args:
+      default_value: Default value to use for counter, if counter
+                     does not exist.
+      operation: Function that takes the current counter value as a
+                 parameter, and returns the new desired value.
+    Returns:
+      The new counter value. None if value could not be set.
+    """
     generation, _ = self.ctx.GetGeneration(self.path)
     for _ in xrange(self.ctx.retries + 1):
       try:
-        value = 1 if generation == 0 else self.Get() + 1
+        value = default_value if generation == 0 else operation(self.Get())
         self.ctx.Copy('-', self.path, input=str(value), version=generation)
         return value
       except (GSContextPreconditionFailed, GSNoSuchKey):
@@ -110,6 +119,42 @@ class GSCounter(object):
         if new_generation == generation:
           raise
         generation = new_generation
+
+  def Increment(self):
+    """Increment the counter.
+
+    Returns:
+      The new counter value. None if value could not be set.
+    """
+    return self.AtomicCounterOperation(1, lambda x: x + 1)
+
+  def Decrement(self):
+    """Decrement the counter.
+
+    Returns:
+      The new counter value. None if value could not be set."""
+    return self.AtomicCounterOperation(-1, lambda x: x - 1)
+
+  def Reset(self):
+    """Reset the counter to zero.
+
+    Returns:
+      The new counter value. None if value could not be set."""
+    return self.AtomicCounterOperation(0, lambda x: 0)
+
+  def StreakIncrement(self):
+    """Increment the counter if it is positive, otherwise set it to 1.
+
+    Returns:
+      The new counter value. None if value could not be set."""
+    return self.AtomicCounterOperation(1, lambda x: x + 1 if x > 0 else 1)
+
+  def StreakDecrement(self):
+    """Decrement the counter if it is negative, otherwise set it to -1.
+
+    Returns:
+      The new counter value. None if value could not be set."""
+    return self.AtomicCounterOperation(-1, lambda x: x - 1 if x < 0 else -1)
 
 
 class GSContext(object):

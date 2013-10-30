@@ -30,6 +30,11 @@ DEFAULT_CHROOT_DIR = 'chroot'
 SDK_TOOLCHAINS_OUTPUT = 'tmp/toolchain-pkgs'
 AUTOTEST_BUILD_PATH = 'usr/local/build/autotest'
 
+# TODO: Eliminate these or merge with manifest_version.py:STATUS_PASSED
+# crbug.com/318930
+FINAL_STATUS_PASSED = 'passed'
+FINAL_STATUS_FAILED = 'failed'
+
 # Re-execution API constants.
 # Used by --resume and --bootstrap to decipher which options they
 # can pass to the target cbuildbot (since it may not have that
@@ -121,6 +126,8 @@ MANIFEST_VERSIONS_SUFFIX = '/chromiumos/manifest-versions'
 MANIFEST_VERSIONS_INT_SUFFIX = '/chromeos/manifest-versions'
 MANIFEST_VERSIONS_GS_URL = 'gs://chromeos-manifest-versions'
 TRASH_BUCKET = 'gs://chromeos-throw-away-bucket'
+
+STREAK_COUNTERS = 'streak_counters'
 
 PATCH_BRANCH = 'patch_branch'
 STABLE_EBUILD_BRANCH = 'stabilizing_branch'

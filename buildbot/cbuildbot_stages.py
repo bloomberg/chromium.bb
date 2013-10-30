@@ -349,9 +349,9 @@ class ArchivingStage(BoardSpecificBuilderStage):
     for entry in results_lib.Results.Get():
       timestr = datetime.timedelta(seconds=math.ceil(entry.time))
       if entry.result in results_lib.Results.NON_FAILURE_TYPES:
-        status = 'passed'
+        status = constants.FINAL_STATUS_PASSED
       else:
-        status = 'failed'
+        status = constants.FINAL_STATUS_FAILED
       metadata['results'].append({
           'name': entry.name,
           'status': status,
@@ -3218,6 +3218,39 @@ class ReportStage(bs.BuilderStage):
     self._sync_instance = sync_instance
     self._completion_instance = completion_instance
 
+  def _UpdateStreakCounter(self, final_status, counter_name,
+                           dry_run=False):
+    """Update the given streak counter based on the final status of build.
+
+    A streak counter counts the number of consecutive passes or failures of
+    a particular builder. Consecutive passes are indicated by a positive value,
+    consecutive failures by a negative value.
+
+    Args:
+      final_status: String indicating final status of build,
+                    constants.FINAL_STATUS_PASSED indicating success.
+      counter_name: Name of counter to increment, typically the name of the
+                    build config.
+      dry_run: Pretend to update counter only. Default: False.
+
+    Returns:
+      The new value of the streak counter.
+    """
+    gs_ctx = gs.GSContext(dry_run=dry_run)
+    counter_url = os.path.join(constants.MANIFEST_VERSIONS_GS_URL,
+                               constants.STREAK_COUNTERS,
+                               counter_name)
+    gs_counter = gs.GSCounter(gs_ctx, counter_url)
+
+    if final_status == constants.FINAL_STATUS_PASSED:
+      streak_value = gs_counter.StreakIncrement()
+    else:
+      streak_value = gs_counter.StreakDecrement()
+
+    logging.debug('Streak counter value is %s', streak_value)
+    return streak_value
+
+
   def PerformStage(self):
     acl = ArchivingStage.GetUploadACL(self._build_config)
     archive_urls = {}
@@ -3237,13 +3270,20 @@ class ReportStage(bs.BuilderStage):
 
       # Generate the final metadata before we look at the uploaded list.
       if results_lib.Results.BuildSucceededSoFar():
-        final_status = 'passed'
+        final_status = constants.FINAL_STATUS_PASSED
       else:
-        final_status = 'failed'
+        final_status = constants.FINAL_STATUS_FAILED
       archive_stage.UploadMetadata(final_status=final_status,
                                    sync_instance=self._sync_instance,
                                    completion_instance=
                                    self._completion_instance)
+
+      # If this was a Commit Queue build, update the streak counter
+      if (self._sync_instance and
+          isinstance(self._sync_instance, CommitQueueSyncStage)):
+        self._UpdateStreakCounter(final_status=final_status,
+                                  counter_name=board_config.name,
+                                  dry_run=archive_stage.debug)
 
       # Generate the index page needed for public reading.
       uploaded = os.path.join(path, commands.UPLOADED_LIST_FILENAME)
