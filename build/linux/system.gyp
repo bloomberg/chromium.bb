@@ -477,6 +477,15 @@
       ],
     },
     {
+      'target_name': 'libcap',
+      'type': 'none',
+      'link_settings': {
+        'libraries': [
+          '-lcap',
+        ],
+      },
+    },
+    {
       'target_name': 'libgcrypt',
       'type': 'none',
       'conditions': [
