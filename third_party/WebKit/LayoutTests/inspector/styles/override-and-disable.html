@@ -2,15 +2,15 @@
 <head>
 
 <style type="text/css" media="screen">
-@media (max-device-width: 478px) and (max-device-height: 799px) {
+@media (max-device-width: 998px) and (max-device-height: 1199x) {
     #main { background: red; }
 }
 
-@media (max-device-width: 480px) and (max-device-height: 800px) {
+@media (max-device-width: 1000px) and (max-device-height: 1200px) {
     #main { background: green; }
 }
 
-@media (min-device-width: 481px) and (min-device-height: 801px) {
+@media (min-device-width: 1001px) and (min-device-height: 1201px) {
     #main { background: yellow; }
 }
 
@@ -59,7 +59,7 @@ function test()
 
     function step0()
     {
-        overrideAndDumpData(480, 800, step1);
+        overrideAndDumpData(1000, 1200, step1);
     }
 
     function step1()

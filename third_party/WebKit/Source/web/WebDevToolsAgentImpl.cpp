@@ -199,6 +199,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_generatingEvent(false)
     , m_deviceMetricsEnabled(false)
     , m_isOverlayScrollbarsEnabled(false)
+    , m_isCSSViewportEnabled(false)
 {
     ASSERT(m_hostId > 0);
     ClientMessageLoopAdapter::ensureClientMessageLoopCreated(m_client);
@@ -318,6 +319,12 @@ void WebDevToolsAgentImpl::overrideDeviceMetrics(int width, int height, float de
     if (!width && !height) {
         if (m_deviceMetricsEnabled) {
             RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(m_isOverlayScrollbarsEnabled);
+
+            RuntimeEnabledFeatures::setCSSViewportEnabled(m_isCSSViewportEnabled);
+            m_webViewImpl->settings()->setViewportEnabled(false);
+            m_webViewImpl->setIgnoreViewportTagScaleLimits(false);
+            m_webViewImpl->setPageScaleFactorLimits(1, 1);
+
             m_client->disableDeviceEmulation();
         }
         m_deviceMetricsEnabled = false;
@@ -325,6 +332,12 @@ void WebDevToolsAgentImpl::overrideDeviceMetrics(int width, int height, float de
         if (!m_deviceMetricsEnabled) {
             m_isOverlayScrollbarsEnabled = RuntimeEnabledFeatures::overlayScrollbarsEnabled();
             RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
+
+            m_isCSSViewportEnabled = RuntimeEnabledFeatures::cssViewportEnabled();
+            RuntimeEnabledFeatures::setCSSViewportEnabled(true);
+            m_webViewImpl->settings()->setViewportEnabled(true);
+            m_webViewImpl->setIgnoreViewportTagScaleLimits(true);
+            m_webViewImpl->setPageScaleFactorLimits(-1, -1);
         }
         m_client->enableDeviceEmulation(IntSize(width, height), IntRect(0, 0, width, height), deviceScaleFactor, fitWindow);
         m_deviceMetricsEnabled = true;

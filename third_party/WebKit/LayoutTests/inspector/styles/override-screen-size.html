@@ -2,15 +2,15 @@
 <head>
 
 <style type="text/css" media="screen">
-@media (max-device-width: 478px) and (max-device-height: 799px) {
+@media (max-device-width: 998px) and (max-device-height: 1199x) {
     #main { background: red; }
 }
 
-@media (max-device-width: 480px) and (max-device-height: 800px) {
+@media (max-device-width: 1000px) and (max-device-height: 1200px) {
     #main { background: green; }
 }
 
-@media (min-device-width: 481px) and (min-device-height: 801px) {
+@media (min-device-width: 1001px) and (min-device-height: 1201px) {
     #main { background: yellow; }
 }
 
@@ -60,27 +60,27 @@ function test()
 
     function step0()
     {
-        overrideAndDumpData(480, 800, step1);
+        overrideAndDumpData(1000, 1200, step1);
     }
 
     function step1()
     {
-        overrideAndDumpData(800, 480, step2);
+        overrideAndDumpData(1200, 1000, step2);
     }
 
     function step2()
     {
-        applyOverride(exceededDimension, 800, step3);
+        applyOverride(exceededDimension, 1200, step3);
     }
 
     function step3()
     {
-        applyOverride(-1, 800, step4);
+        applyOverride(-1, 1200, step4);
     }
 
     function step4()
     {
-        applyOverride(480, exceededDimension, step5);
+        applyOverride(1000, exceededDimension, step5);
     }
 
     function step5()
@@ -90,7 +90,7 @@ function test()
             InspectorTest.addResult("Current dimensions:");
             getAndDumpSizes(step6);
         }
-        applyOverride(480, -1, callback);
+        applyOverride(1000, -1, callback);
     }
 
     function step6()

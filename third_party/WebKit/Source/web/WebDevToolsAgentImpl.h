@@ -132,6 +132,7 @@ private:
     bool m_generatingEvent;
     bool m_deviceMetricsEnabled;
     bool m_isOverlayScrollbarsEnabled;
+    bool m_isCSSViewportEnabled;
 };
 
 } // namespace WebKit
