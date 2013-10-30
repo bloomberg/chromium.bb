@@ -32,8 +32,6 @@
 #define WebGraphicsContext3D_h
 
 #include "WebCommon.h"
-#include "WebGraphicsMemoryAllocation.h"
-#include "WebGraphicsMemoryStats.h"
 #include "WebNonCopyable.h"
 #include "WebString.h"
 
@@ -137,21 +135,6 @@ public:
         virtual ~WebGraphicsSwapBuffersCompleteCallbackCHROMIUM() { }
     };
 
-    class WebGraphicsMemoryAllocationChangedCallbackCHROMIUM {
-    public:
-        virtual void onMemoryAllocationChanged(WebGraphicsMemoryAllocation) = 0;
-
-    protected:
-        virtual ~WebGraphicsMemoryAllocationChangedCallbackCHROMIUM() { }
-    };
-
-    class WebGraphicsSyncPointCallback {
-    public:
-        virtual ~WebGraphicsSyncPointCallback() { }
-
-        virtual void onSyncPointReached() = 0;
-    };
-
     // This destructor needs to be public so that using classes can destroy instances if initialization fails.
     virtual ~WebGraphicsContext3D() { }
 
@@ -169,10 +152,6 @@ public:
     // GL_CHROMIUM_setVisibility - Changes the visibility of the backbuffer
     virtual void setVisibilityCHROMIUM(bool visible) = 0;
 
-    // GL_CHROMIUM_gpu_memory_manager - sets callback to observe changes to memory allocation limits.
-    virtual void setMemoryAllocationChangedCallbackCHROMIUM(WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback) { }
-    virtual void sendManagedMemoryStatsCHROMIUM(const WebGraphicsManagedMemoryStats* stats) { }
-
     // GL_EXT_discard_framebuffer - makes specified attachments of currently bound framebuffer undefined.
     virtual void discardFramebufferEXT(WGC3Denum target, WGC3Dsizei numAttachments, const WGC3Denum* attachments) { }
 
@@ -182,9 +161,6 @@ public:
 
     virtual unsigned insertSyncPoint() { return 0; }
     virtual void waitSyncPoint(unsigned) { }
-    // This call passes ownership of the WebGraphicsSyncPointCallback to the
-    // WebGraphicsContext3D implementation.
-    virtual void signalSyncPoint(unsigned syncPoint, WebGraphicsSyncPointCallback* callback) { delete callback; }
 
     // Copies the contents of the off-screen render target used by the WebGL
     // context to the corresponding texture used by the compositor.
@@ -438,10 +414,6 @@ public:
     virtual void endQueryEXT(WGC3Denum target) { }
     virtual void getQueryivEXT(WGC3Denum target, WGC3Denum pname, WGC3Dint* params) { }
     virtual void getQueryObjectuivEXT(WebGLId query, WGC3Denum pname, WGC3Duint* params) { }
-
-    // This call passes ownership of the WebGraphicsSyncPointCallback to the
-    // WebGraphicsContext3D implementation.
-    virtual void signalQuery(WebGLId query, WebGraphicsSyncPointCallback* callback) { delete callback; }
 
     // GL_CHROMIUM_bind_uniform_location
     virtual void bindUniformLocationCHROMIUM(WebGLId program, WGC3Dint location, const WGC3Dchar* uniform) { }

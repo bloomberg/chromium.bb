@@ -60,8 +60,6 @@ public:
     virtual void discardFramebufferEXT(WGC3Denum target, WGC3Dsizei numAttachments, const WGC3Denum* attachments) { }
     virtual void ensureFramebufferCHROMIUM() { }
 
-    virtual void setMemoryAllocationChangedCallbackCHROMIUM(WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback) { }
-
     virtual WebString getRequestableExtensionsCHROMIUM() { return WebString(); }
     virtual void requestExtensionCHROMIUM(const char*) { }
 
