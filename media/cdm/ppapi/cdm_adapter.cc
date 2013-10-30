@@ -914,10 +914,10 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
 
   CdmAdapter* cdm_adapter = static_cast<CdmAdapter*>(user_data);
   switch (host_interface_version) {
-    case cdm::kHostInterfaceVersion_1:
-      return static_cast<cdm::Host_1*>(cdm_adapter);
-    case cdm::kHostInterfaceVersion_2:
-      return static_cast<cdm::Host_2*>(cdm_adapter);
+    case cdm::ContentDecryptionModule_1::Host::kVersion:
+      return static_cast<cdm::ContentDecryptionModule_1::Host*>(cdm_adapter);
+    case cdm::ContentDecryptionModule_2::Host::kVersion:
+      return static_cast<cdm::ContentDecryptionModule_2::Host*>(cdm_adapter);
     default:
       PP_NOTREACHED();
       return NULL;
