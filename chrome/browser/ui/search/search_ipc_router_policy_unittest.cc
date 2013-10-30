@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/search/search_ipc_router.h"
 
+#include "build/build_config.h"
 #include "base/command_line.h"
 #include "chrome/browser/ui/search/search_ipc_router_policy_impl.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
@@ -107,6 +108,19 @@ TEST_F(SearchIPCRouterPolicyTest, ProcessNavigateToURL) {
       ShouldProcessNavigateToURL(true));
 }
 
+TEST_F(SearchIPCRouterPolicyTest, ProcessPasteIntoOmniboxMsg) {
+  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
+  EXPECT_TRUE(GetSearchTabHelper()->ipc_router().policy()->
+      ShouldProcessPasteIntoOmnibox(true));
+}
+
+TEST_F(SearchIPCRouterPolicyTest, DoNotProcessPasteIntoOmniboxMsg) {
+  // Process message only if the current tab is an Instant NTP.
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
+  EXPECT_FALSE(GetSearchTabHelper()->ipc_router().policy()->
+      ShouldProcessPasteIntoOmnibox(true));
+}
+
 TEST_F(SearchIPCRouterPolicyTest, DoNotProcessMessagesForIncognitoPage) {
   NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
   SearchTabHelper* search_tab_helper = GetSearchTabHelper();
@@ -127,6 +141,8 @@ TEST_F(SearchIPCRouterPolicyTest, DoNotProcessMessagesForIncognitoPage) {
       ShouldProcessUndoAllMostVisitedDeletions());
   EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
       ShouldProcessLogEvent());
+  EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
+      ShouldProcessPasteIntoOmnibox(true));
 }
 
 TEST_F(SearchIPCRouterPolicyTest, DoNotProcessMessagesForInactiveTab) {
@@ -138,6 +154,8 @@ TEST_F(SearchIPCRouterPolicyTest, DoNotProcessMessagesForInactiveTab) {
       ShouldProcessFocusOmnibox(false));
   EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
       ShouldProcessNavigateToURL(false));
+  EXPECT_FALSE(search_tab_helper->ipc_router().policy()->
+      ShouldProcessPasteIntoOmnibox(false));
 }
 
 TEST_F(SearchIPCRouterPolicyTest, SendSetDisplayInstantResults) {

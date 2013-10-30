@@ -156,27 +156,6 @@ void BrowserInstantController::TabDeactivated(content::WebContents* contents) {
   instant_.TabDeactivated(contents);
 }
 
-void BrowserInstantController::PasteIntoOmnibox(const string16& text) {
-  OmniboxView* omnibox_view = browser_->window()->GetLocationBar()->
-      GetLocationEntry();
-  // The first case is for right click to paste, where the text is retrieved
-  // from the clipboard already sanitized. The second case is needed to handle
-  // drag-and-drop value and it has to be sanitazed before setting it into the
-  // omnibox.
-  string16 text_to_paste = text.empty() ?
-      omnibox_view->GetClipboardText() :
-      omnibox_view->SanitizeTextForPaste(text);
-
-  if (!text_to_paste.empty()) {
-    if (!omnibox_view->model()->has_focus())
-      omnibox_view->SetFocus();
-    omnibox_view->OnBeforePossibleChange();
-    omnibox_view->model()->on_paste();
-    omnibox_view->SetUserText(text_to_paste);
-    omnibox_view->OnAfterPossibleChange();
-  }
-}
-
 void BrowserInstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
   instant_.SetOmniboxBounds(bounds);
 }

@@ -51,6 +51,7 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
   MOCK_METHOD1(OnUndoMostVisitedDeletion, void(const GURL& url));
   MOCK_METHOD0(OnUndoAllMostVisitedDeletions, void());
   MOCK_METHOD1(OnLogEvent, void(NTPLoggingEventType event));
+  MOCK_METHOD1(PasteIntoOmnibox, void(const string16&));
 };
 
 class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
@@ -64,6 +65,7 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
   MOCK_METHOD0(ShouldProcessUndoMostVisitedDeletion, bool());
   MOCK_METHOD0(ShouldProcessUndoAllMostVisitedDeletions, bool());
   MOCK_METHOD0(ShouldProcessLogEvent, bool());
+  MOCK_METHOD1(ShouldProcessPasteIntoOmnibox, bool(bool));
   MOCK_METHOD0(ShouldSendSetPromoInformation, bool());
   MOCK_METHOD0(ShouldSendSetDisplayInstantResults, bool());
   MOCK_METHOD0(ShouldSendSetSuggestionToPrefetch, bool());
@@ -538,6 +540,56 @@ TEST_F(SearchIPCRouterTest, IgnoreMessageIfThePageIsNotActive) {
   EXPECT_CALL(*policy, ShouldProcessLogEvent()).Times(0);
   message.reset(new ChromeViewHostMsg_LogEvent(contents->GetRoutingID(),
                                                invalid_page_id, NTP_MOUSEOVER));
+  search_tab_helper->ipc_router().OnMessageReceived(*message);
+
+  string16 text;
+  EXPECT_CALL(*mock_delegate(), PasteIntoOmnibox(text)).Times(0);
+  EXPECT_CALL(*policy, ShouldProcessPasteIntoOmnibox(
+      search_tab_helper->ipc_router().is_active_tab_)).Times(0);
+  message.reset(new ChromeViewHostMsg_PasteAndOpenDropdown(
+      contents->GetRoutingID(), invalid_page_id, text));
+  search_tab_helper->ipc_router().OnMessageReceived(*message);
+}
+
+TEST_F(SearchIPCRouterTest, ProcessPasteAndOpenDropdownMsg) {
+  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
+  process()->sink().ClearMessages();
+
+  content::WebContents* contents = web_contents();
+  string16 text;
+  SetupMockDelegateAndPolicy(contents);
+  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy(contents);
+  SearchTabHelper* search_tab_helper = GetSearchTabHelper(contents);
+  bool is_active_tab = search_tab_helper->ipc_router().is_active_tab_;
+  EXPECT_TRUE(is_active_tab);
+  EXPECT_CALL(*mock_delegate(), PasteIntoOmnibox(text)).Times(1);
+  EXPECT_CALL(*policy, ShouldProcessPasteIntoOmnibox(is_active_tab)).Times(1)
+      .WillOnce(testing::Return(true));
+
+  scoped_ptr<IPC::Message> message(new ChromeViewHostMsg_PasteAndOpenDropdown(
+      contents->GetRoutingID(),
+      contents->GetController().GetVisibleEntry()->GetPageID(), text));
+  search_tab_helper->ipc_router().OnMessageReceived(*message);
+}
+
+TEST_F(SearchIPCRouterTest, IgnorePasteAndOpenDropdownMsg) {
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
+  process()->sink().ClearMessages();
+
+  content::WebContents* contents = web_contents();
+  string16 text;
+  SetupMockDelegateAndPolicy(contents);
+  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy(contents);
+  SearchTabHelper* search_tab_helper = GetSearchTabHelper(contents);
+  bool is_active_tab = search_tab_helper->ipc_router().is_active_tab_;
+  EXPECT_TRUE(is_active_tab);
+  EXPECT_CALL(*mock_delegate(), PasteIntoOmnibox(text)).Times(0);
+  EXPECT_CALL(*policy, ShouldProcessPasteIntoOmnibox(is_active_tab)).Times(1)
+      .WillOnce(testing::Return(false));
+
+  scoped_ptr<IPC::Message> message(new ChromeViewHostMsg_PasteAndOpenDropdown(
+      contents->GetRoutingID(),
+      contents->GetController().GetVisibleEntry()->GetPageID(), text));
   search_tab_helper->ipc_router().OnMessageReceived(*message);
 }
 

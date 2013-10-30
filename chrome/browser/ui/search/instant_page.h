@@ -52,11 +52,6 @@ class InstantPage : public content::WebContentsObserver,
         const content::WebContents* contents,
         const GURL& url) = 0;
 
-    // Called when the page wants to paste the |text| (or the clipboard content
-    // if the |text| is empty) into the omnibox.
-    virtual void PasteIntoOmnibox(const content::WebContents* contents,
-                                  const string16& text) = 0;
-
     // Called when the page fails to load for whatever reason.
     virtual void InstantPageLoadFailed(content::WebContents* contents) = 0;
 
@@ -103,7 +98,6 @@ class InstantPage : public content::WebContentsObserver,
   // choose to ignore some or all of the received messages by overriding these
   // methods.
   virtual bool ShouldProcessAboutToNavigateMainFrame();
-  virtual bool ShouldProcessPasteIntoOmnibox();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(InstantPageTest, IsLocal);
@@ -118,7 +112,6 @@ class InstantPage : public content::WebContentsObserver,
                            AppropriateMessagesSentToIncognitoPages);
 
   // Overridden from content::WebContentsObserver:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidCommitProvisionalLoadForFrame(
       int64 frame_id,
       const string16& frame_unique_name,
@@ -144,8 +137,6 @@ class InstantPage : public content::WebContentsObserver,
 
   // Update the status of Instant support.
   void InstantSupportDetermined(bool supports_instant);
-
-  void OnSearchBoxPaste(int page_id, const string16& text);
 
   void ClearContents();
 

@@ -101,6 +101,8 @@ bool SearchIPCRouter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions,
                         OnUndoAllMostVisitedDeletions);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_LogEvent, OnLogEvent);
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_PasteAndOpenDropdown,
+                        OnPasteAndOpenDropDown);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -198,6 +200,18 @@ void SearchIPCRouter::OnLogEvent(int page_id, NTPLoggingEventType event) const {
     return;
 
   delegate_->OnLogEvent(event);
+}
+
+void SearchIPCRouter::OnPasteAndOpenDropDown(int page_id,
+                                             const string16& text) const {
+  if (!web_contents()->IsActiveEntry(page_id))
+    return;
+
+  delegate_->OnInstantSupportDetermined(true);
+  if (!policy_->ShouldProcessPasteIntoOmnibox(is_active_tab_))
+    return;
+
+  delegate_->PasteIntoOmnibox(text);
 }
 
 void SearchIPCRouter::set_delegate(Delegate* delegate) {

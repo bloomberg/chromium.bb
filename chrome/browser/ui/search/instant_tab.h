@@ -28,7 +28,6 @@ class InstantTab : public InstantPage {
  private:
   // Overridden from InstantPage:
   virtual bool ShouldProcessAboutToNavigateMainFrame() OVERRIDE;
-  virtual bool ShouldProcessPasteIntoOmnibox() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(InstantTab);
 };

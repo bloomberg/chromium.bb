@@ -64,11 +64,6 @@ class BrowserInstantController : public SearchModelObserver,
   // Invoked by |browser_| when the active tab is about to be deactivated.
   void TabDeactivated(content::WebContents* contents);
 
-  // Invoked by |instant_| to paste the |text| (or clipboard content if text is
-  // empty) into the omnibox. It will set focus to the omnibox if the omnibox is
-  // not focused.
-  void PasteIntoOmnibox(const string16& text);
-
   // Sets the stored omnibox bounds.
   void SetOmniboxBounds(const gfx::Rect& bounds);
 

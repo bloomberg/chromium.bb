@@ -69,23 +69,6 @@ bool InstantPage::ShouldProcessAboutToNavigateMainFrame() {
   return false;
 }
 
-bool InstantPage::ShouldProcessPasteIntoOmnibox() {
-  return false;
-}
-
-bool InstantPage::OnMessageReceived(const IPC::Message& message) {
-  if (is_incognito_)
-    return false;
-
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(InstantPage, message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_PasteAndOpenDropdown,
-                        OnSearchBoxPaste);
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
 void InstantPage::DidCommitProvisionalLoadForFrame(
     int64 /* frame_id */,
     const string16& frame_unique_name,
@@ -132,19 +115,6 @@ void InstantPage::InstantSupportDetermined(bool supports_instant) {
   if (!supports_instant)
     ClearContents();
 }
-
-void InstantPage::OnSearchBoxPaste(int page_id, const string16& text) {
-  if (!contents()->IsActiveEntry(page_id))
-    return;
-
-  SearchTabHelper::FromWebContents(contents())->InstantSupportChanged(true);
-  if (!ShouldProcessPasteIntoOmnibox())
-    return;
-
-  delegate_->PasteIntoOmnibox(contents(), text);
-}
-
-
 
 void InstantPage::ClearContents() {
   if (contents())

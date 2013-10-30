@@ -30,7 +30,3 @@ void InstantTab::EmitMouseoverCount(content::WebContents* contents) {
 bool InstantTab::ShouldProcessAboutToNavigateMainFrame() {
   return true;
 }
-
-bool InstantTab::ShouldProcessPasteIntoOmnibox() {
-  return true;
-}

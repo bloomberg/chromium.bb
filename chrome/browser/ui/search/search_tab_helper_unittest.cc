@@ -37,6 +37,7 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
   MOCK_METHOD1(OnUndoMostVisitedDeletion, void(const GURL& url));
   MOCK_METHOD0(OnUndoAllMostVisitedDeletions, void());
   MOCK_METHOD1(OnLogEvent, void(NTPLoggingEventType event));
+  MOCK_METHOD1(PasteIntoOmnibox, void(const string16&));
 };
 
 }  // namespace

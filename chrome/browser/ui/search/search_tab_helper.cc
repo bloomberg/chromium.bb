@@ -8,6 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/history/most_visited_tiles_experiment.h"
 #include "chrome/browser/history/top_sites.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/search/search_ipc_router_policy_impl.h"
@@ -108,7 +110,7 @@ bool InInstantProcess(Profile* profile,
 
 // Updates the location bar to reflect |contents| Instant support state.
 void UpdateLocationBar(content::WebContents* contents) {
-// iOS and Android doesn't use the Instant framework.
+// iOS and Android don't use the Instant framework.
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
   if (!contents)
     return;
@@ -382,7 +384,7 @@ void SearchTabHelper::MaybeRemoveMostVisitedItems(
 }
 
 void SearchTabHelper::FocusOmnibox(OmniboxFocusState state) {
-// iOS and Android doesn't use the Instant framework.
+// iOS and Android don't use the Instant framework.
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   if (!browser)
@@ -474,6 +476,35 @@ void SearchTabHelper::OnLogEvent(NTPLoggingEventType event) {
   NTPUserDataLogger* data = NTPUserDataLogger::FromWebContents(web_contents());
   if (data)
     data->LogEvent(event);
+}
+
+void SearchTabHelper::PasteIntoOmnibox(const string16& text) {
+// iOS and Android don't use the Instant framework.
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  if (!browser)
+    return;
+
+  OmniboxView* omnibox_view = browser->window()->GetLocationBar()->
+      GetLocationEntry();
+  // The first case is for right click to paste, where the text is retrieved
+  // from the clipboard already sanitized. The second case is needed to handle
+  // drag-and-drop value and it has to be sanitazed before setting it into the
+  // omnibox.
+  string16 text_to_paste = text.empty() ? omnibox_view->GetClipboardText() :
+      omnibox_view->SanitizeTextForPaste(text);
+
+  if (text_to_paste.empty())
+    return;
+
+  if (!omnibox_view->model()->has_focus())
+    omnibox_view->SetFocus();
+
+  omnibox_view->OnBeforePossibleChange();
+  omnibox_view->model()->on_paste();
+  omnibox_view->SetUserText(text_to_paste);
+  omnibox_view->OnAfterPossibleChange();
+#endif
 }
 
 void SearchTabHelper::UpdateMode(bool update_origin, bool is_preloaded_ntp) {

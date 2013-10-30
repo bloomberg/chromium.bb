@@ -208,12 +208,6 @@ void InstantNTPPrerenderer::InstantPageAboutToNavigateMainFrame(
   NOTREACHED();
 }
 
-void InstantNTPPrerenderer::PasteIntoOmnibox(
-    const content::WebContents* /* contents */,
-    const string16& /* text */) {
-  NOTREACHED();
-}
-
 void InstantNTPPrerenderer::InstantPageLoadFailed(
     content::WebContents* contents) {
   DCHECK(ntp() && ntp()->contents() == contents);

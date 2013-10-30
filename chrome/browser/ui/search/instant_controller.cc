@@ -261,16 +261,6 @@ void InstantController::InstantPageAboutToNavigateMainFrame(
   UpdateInfoForInstantTab();
 }
 
-void InstantController::PasteIntoOmnibox(const content::WebContents* contents,
-      const string16& text) {
-  if (search_mode_.is_origin_default())
-    return;
-
-  DCHECK(IsContentsFrom(instant_tab(), contents));
-
-  browser_->PasteIntoOmnibox(text);
-}
-
 void InstantController::ResetInstantTab() {
   if (!search_mode_.is_origin_default()) {
     content::WebContents* active_tab = browser_->GetActiveWebContents();

@@ -124,6 +124,10 @@ class SearchTabHelper : public content::NotificationObserver,
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            ProcessUndoAllMostVisitedDeletions);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           ProcessPasteIntoOmniboxMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           DoNotProcessPasteIntoOmniboxMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            DoNotProcessMessagesForIncognitoPage);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            DoNotProcessMessagesForInactiveTab);
@@ -162,6 +166,8 @@ class SearchTabHelper : public content::NotificationObserver,
                            DoNotSendThemeBackgroundInfoMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, SendSubmitMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, DoNotSendSubmitMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessPasteAndOpenDropdownMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnorePasteAndOpenDropdownMsg);
   FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
                            DetermineIfPageSupportsInstant_Local);
   FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
@@ -208,6 +214,7 @@ class SearchTabHelper : public content::NotificationObserver,
   virtual void OnUndoMostVisitedDeletion(const GURL& url) OVERRIDE;
   virtual void OnUndoAllMostVisitedDeletions() OVERRIDE;
   virtual void OnLogEvent(NTPLoggingEventType event) OVERRIDE;
+  virtual void PasteIntoOmnibox(const string16& text) OVERRIDE;
 
   // Overridden from InstantServiceObserver:
   virtual void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) OVERRIDE;

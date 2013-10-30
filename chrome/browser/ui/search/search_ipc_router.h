@@ -61,6 +61,10 @@ class SearchIPCRouter : public content::WebContentsObserver {
 
     // Called to signal that an event has occurred on the New Tab Page.
     virtual void OnLogEvent(NTPLoggingEventType event) = 0;
+
+    // Called when the page wants to paste the |text| (or the clipboard contents
+    // if the |text| is empty) into the omnibox.
+    virtual void PasteIntoOmnibox(const string16& text) = 0;
   };
 
   // An interface to be implemented by consumers of SearchIPCRouter objects to
@@ -79,6 +83,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
     virtual bool ShouldProcessUndoMostVisitedDeletion() = 0;
     virtual bool ShouldProcessUndoAllMostVisitedDeletions() = 0;
     virtual bool ShouldProcessLogEvent() = 0;
+    virtual bool ShouldProcessPasteIntoOmnibox(bool is_active_tab) = 0;
     virtual bool ShouldSendSetPromoInformation() = 0;
     virtual bool ShouldSendSetDisplayInstantResults() = 0;
     virtual bool ShouldSendSetSuggestionToPrefetch() = 0;
@@ -160,6 +165,10 @@ class SearchIPCRouter : public content::WebContentsObserver {
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            ProcessUndoAllMostVisitedDeletions);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           ProcessPasteIntoOmniboxMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           DoNotProcessPasteIntoOmniboxMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            DoNotProcessMessagesForIncognitoPage);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            DoNotProcessMessagesForInactiveTab);
@@ -189,6 +198,8 @@ class SearchIPCRouter : public content::WebContentsObserver {
                            IgnoreUndoAllMostVisitedDeletionsMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
                            IgnoreMessageIfThePageIsNotActive);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessPasteAndOpenDropdownMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnorePasteAndOpenDropdownMsg);
 
   // Overridden from contents::WebContentsObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -205,6 +216,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
   void OnUndoMostVisitedDeletion(int page_id, const GURL& url) const;
   void OnUndoAllMostVisitedDeletions(int page_id) const;
   void OnLogEvent(int page_id, NTPLoggingEventType event) const;
+  void OnPasteAndOpenDropDown(int page_id, const string16& text) const;
 
   // Used by unit tests to set a fake delegate.
   void set_delegate(Delegate* delegate);

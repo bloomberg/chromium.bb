@@ -157,8 +157,6 @@ class InstantController : public InstantPage::Delegate {
   virtual void InstantPageAboutToNavigateMainFrame(
       const content::WebContents* contents,
       const GURL& url) OVERRIDE;
-  virtual void PasteIntoOmnibox(const content::WebContents* contents,
-                                const string16& text) OVERRIDE;
   virtual void InstantPageLoadFailed(content::WebContents* contents) OVERRIDE;
 
   // Helper function to navigate the given contents to the local fallback
