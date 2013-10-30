@@ -6,6 +6,7 @@
 #define UI_GFX_PLATFORM_FONT_MAC_H_
 
 #include "base/compiler_specific.h"
+#include "base/mac/scoped_nsobject.h"
 #include "ui/gfx/platform_font.h"
 
 namespace gfx {
@@ -31,22 +32,25 @@ class PlatformFontMac : public PlatformFont {
   virtual NativeFont GetNativeFont() const OVERRIDE;
 
  private:
-  PlatformFontMac(const std::string& font_name, int font_size, int style);
-  virtual ~PlatformFontMac() {}
+  PlatformFontMac(const std::string& font_name, int font_size, int font_style);
+  virtual ~PlatformFontMac();
 
-  // Initialize the object with the specified parameters.
-  void InitWithNameSizeAndStyle(const std::string& font_name,
-                                int font_size,
-                                int style);
-
-  // Calculate and cache the font metrics.
+  // Calculates and caches the font metrics.
   void CalculateMetrics();
 
-  std::string font_name_;
-  int font_size_;
-  int style_;
+  // The NSFont instance for this object. If this object was constructed from an
+  // NSFont instance, this holds that NSFont instance. Otherwise this NSFont
+  // instance is constructed from the name, size, and style, and if there is no
+  // active font that matched those criteria, this object may be nil.
+  base::scoped_nsobject<NSFont> native_font_;
 
-  // Cached metrics, generated at construction.
+  // The name/size/style trio that specify the font. Initialized in the
+  // constructors.
+  std::string font_name_;  // Corresponds to -[NSFont fontFamily].
+  int font_size_;
+  int font_style_;
+
+  // Cached metrics, generated in CalculateMetrics().
   int height_;
   int ascent_;
   int cap_height_;

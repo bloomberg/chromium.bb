@@ -16,10 +16,14 @@
 
 #if defined(__OBJC__)
 #import <Foundation/Foundation.h>
+@class NSFont;
+@class UIFont;
 #else  // __OBJC__
 #include <CoreFoundation/CoreFoundation.h>
 class NSBundle;
+class NSFont;
 class NSString;
+class UIFont;
 #endif  // __OBJC__
 
 #if defined(OS_IOS)
@@ -224,6 +228,12 @@ CF_TO_NS_CAST_DECL(CFReadStream, NSInputStream);
 CF_TO_NS_CAST_DECL(CFWriteStream, NSOutputStream);
 CF_TO_NS_MUTABLE_CAST_DECL(String);
 CF_TO_NS_CAST_DECL(CFURL, NSURL);
+
+#if defined(OS_IOS)
+CF_TO_NS_CAST_DECL(CTFont, UIFont);
+#else
+CF_TO_NS_CAST_DECL(CTFont, NSFont);
+#endif
 
 #undef CF_TO_NS_CAST_DECL
 #undef CF_TO_NS_MUTABLE_CAST_DECL

@@ -17,6 +17,7 @@
 extern "C" {
 CFTypeID SecACLGetTypeID();
 CFTypeID SecTrustedApplicationGetTypeID();
+Boolean _CFIsObjC(CFTypeID typeID, CFTypeRef obj);
 }  // extern "C"
 #endif
 
@@ -290,6 +291,31 @@ CF_TO_NS_CAST_DEFN(CFWriteStream, NSOutputStream);
 CF_TO_NS_MUTABLE_CAST_DEFN(String);
 CF_TO_NS_CAST_DEFN(CFURL, NSURL);
 
+#if defined(OS_IOS)
+CF_TO_NS_CAST_DEFN(CTFont, UIFont);
+#else
+// The NSFont/CTFont toll-free bridging is broken when it comes to type
+// checking, so do some special-casing.
+// http://www.openradar.me/15341349 rdar://15341349
+NSFont* CFToNSCast(CTFontRef cf_val) {
+  NSFont* ns_val =
+      const_cast<NSFont*>(reinterpret_cast<const NSFont*>(cf_val));
+  DCHECK(!cf_val ||
+         CTFontGetTypeID() == CFGetTypeID(cf_val) ||
+         (_CFIsObjC(CTFontGetTypeID(), cf_val) &&
+          [ns_val isKindOfClass:NSClassFromString(@"NSFont")]));
+  return ns_val;
+}
+
+CTFontRef NSToCFCast(NSFont* ns_val) {
+  CTFontRef cf_val = reinterpret_cast<CTFontRef>(ns_val);
+  DCHECK(!cf_val ||
+         CTFontGetTypeID() == CFGetTypeID(cf_val) ||
+         [ns_val isKindOfClass:NSClassFromString(@"NSFont")]);
+  return cf_val;
+}
+#endif
+
 #undef CF_TO_NS_CAST_DEFN
 #undef CF_TO_NS_MUTABLE_CAST_DEFN
 
@@ -327,8 +353,40 @@ CF_CAST_DEFN(CFUUID);
 
 CF_CAST_DEFN(CGColor);
 
-CF_CAST_DEFN(CTFont);
 CF_CAST_DEFN(CTRun);
+
+#if defined(OS_IOS)
+CF_CAST_DEFN(CTFont);
+#else
+// The NSFont/CTFont toll-free bridging is broken when it comes to type
+// checking, so do some special-casing.
+// http://www.openradar.me/15341349 rdar://15341349
+template<> CTFontRef
+CFCast<CTFontRef>(const CFTypeRef& cf_val) {
+  if (cf_val == NULL) {
+    return NULL;
+  }
+  if (CFGetTypeID(cf_val) == CTFontGetTypeID()) {
+    return (CTFontRef)(cf_val);
+  }
+
+  if (!_CFIsObjC(CTFontGetTypeID(), cf_val))
+    return NULL;
+
+  id<NSObject> ns_val = reinterpret_cast<id>(const_cast<void*>(cf_val));
+  if ([ns_val isKindOfClass:NSClassFromString(@"NSFont")]) {
+    return (CTFontRef)(cf_val);
+  }
+  return NULL;
+}
+
+template<> CTFontRef
+CFCastStrict<CTFontRef>(const CFTypeRef& cf_val) {
+  CTFontRef rv = CFCast<CTFontRef>(cf_val);
+  DCHECK(cf_val == NULL || rv);
+  return rv;
+}
+#endif
 
 #if !defined(OS_IOS)
 CF_CAST_DEFN(SecACL);

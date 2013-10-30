@@ -15,33 +15,75 @@
 
 namespace gfx {
 
+namespace {
+
+// Returns an autoreleased NSFont created with the passed-in specifications.
+NSFont* NSFontWithSpec(const std::string& font_name,
+                       int font_size,
+                       int font_style) {
+  NSFontSymbolicTraits trait_bits = 0;
+  if (font_style & Font::BOLD)
+    trait_bits |= NSFontBoldTrait;
+  if (font_style & Font::ITALIC)
+    trait_bits |= NSFontItalicTrait;
+  // The Mac doesn't support underline as a font trait, so just drop it.
+  // (Underlines must be added as an attribute on an NSAttributedString.)
+  NSDictionary* traits = @{ NSFontSymbolicTrait : @(trait_bits) };
+
+  NSDictionary* attrs = @{
+    NSFontFamilyAttribute : base::SysUTF8ToNSString(font_name),
+    NSFontTraitsAttribute : traits
+  };
+  NSFontDescriptor* descriptor =
+      [NSFontDescriptor fontDescriptorWithFontAttributes:attrs];
+  NSFont* font = [NSFont fontWithDescriptor:descriptor size:font_size];
+  if (font)
+    return font;
+
+  // Make one fallback attempt by looking up via font name rather than font
+  // family name.
+  attrs = @{
+    NSFontNameAttribute : base::SysUTF8ToNSString(font_name),
+    NSFontTraitsAttribute : traits
+  };
+  descriptor = [NSFontDescriptor fontDescriptorWithFontAttributes:attrs];
+  return [NSFont fontWithDescriptor:descriptor size:font_size];
+}
+
+}  // namespace
+
 ////////////////////////////////////////////////////////////////////////////////
 // PlatformFontMac, public:
 
-PlatformFontMac::PlatformFontMac() {
-  font_size_ = [NSFont systemFontSize];
-  style_ = gfx::Font::NORMAL;
-  NSFont* system_font = [NSFont systemFontOfSize:font_size_];
-  font_name_ = base::SysNSStringToUTF8([system_font fontName]);
+PlatformFontMac::PlatformFontMac()
+    : native_font_([[NSFont systemFontOfSize:[NSFont systemFontSize]] retain]),
+      font_name_(base::SysNSStringToUTF8([native_font_ familyName])),
+      font_size_([NSFont systemFontSize]),
+      font_style_(Font::NORMAL) {
   CalculateMetrics();
 }
 
-PlatformFontMac::PlatformFontMac(NativeFont native_font) {
-  int style = 0;
+PlatformFontMac::PlatformFontMac(NativeFont native_font)
+    : native_font_([native_font retain]),
+      font_name_(base::SysNSStringToUTF8([native_font_ familyName])),
+      font_size_([native_font_ pointSize]),
+      font_style_(Font::NORMAL) {
   NSFontSymbolicTraits traits = [[native_font fontDescriptor] symbolicTraits];
   if (traits & NSFontItalicTrait)
-    style |= Font::ITALIC;
+    font_style_ |= Font::ITALIC;
   if (traits & NSFontBoldTrait)
-    style |= Font::BOLD;
+    font_style_ |= Font::BOLD;
 
-  InitWithNameSizeAndStyle(base::SysNSStringToUTF8([native_font familyName]),
-                           [native_font pointSize],
-                           style);
+  CalculateMetrics();
 }
 
 PlatformFontMac::PlatformFontMac(const std::string& font_name,
-                                 int font_size) {
-  InitWithNameSizeAndStyle(font_name, font_size, gfx::Font::NORMAL);
+                                 int font_size)
+    : native_font_([NSFontWithSpec(font_name, font_size, Font::NORMAL) retain]),
+      font_name_(font_name),
+      font_size_(font_size),
+      font_style_(Font::NORMAL) {
+  CalculateMetrics();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -77,7 +119,7 @@ int PlatformFontMac::GetExpectedTextWidth(int length) const {
 }
 
 int PlatformFontMac::GetStyle() const {
-  return style_;
+  return font_style_;
 }
 
 std::string PlatformFontMac::GetFontName() const {
@@ -89,23 +131,7 @@ int PlatformFontMac::GetFontSize() const {
 }
 
 NativeFont PlatformFontMac::GetNativeFont() const {
-  // We could cache this, but then we'd have to conditionally change the
-  // dtor just for MacOS. Not sure if we want to/need to do that.
-  NSFont* font = [NSFont fontWithName:base::SysUTF8ToNSString(font_name_)
-                                 size:font_size_];
-
-  if (style_ & Font::BOLD) {
-    font = [[NSFontManager sharedFontManager] convertFont:font
-                                              toHaveTrait:NSBoldFontMask];
-  }
-  if (style_ & Font::ITALIC) {
-    font = [[NSFontManager sharedFontManager] convertFont:font
-                                              toHaveTrait:NSItalicFontMask];
-  }
-  // Mac doesn't support underline as a font trait, just drop it. Underlines
-  // can instead be added as an attribute on an NSAttributedString.
-
-  return font;
+  return [[native_font_.get() retain] autorelease];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -113,21 +139,29 @@ NativeFont PlatformFontMac::GetNativeFont() const {
 
 PlatformFontMac::PlatformFontMac(const std::string& font_name,
                                  int font_size,
-                                 int style) {
-  InitWithNameSizeAndStyle(font_name, font_size, style);
-}
-
-void PlatformFontMac::InitWithNameSizeAndStyle(const std::string& font_name,
-                                               int font_size,
-                                               int style) {
-  font_name_ = font_name;
-  font_size_ = font_size;
-  style_ = style;
+                                 int font_style)
+    : native_font_([NSFontWithSpec(font_name, font_size, font_style) retain]),
+      font_name_(font_name),
+      font_size_(font_size),
+      font_style_(font_style) {
   CalculateMetrics();
 }
 
+PlatformFontMac::~PlatformFontMac() {
+}
+
 void PlatformFontMac::CalculateMetrics() {
-  NSFont* font = GetNativeFont();
+  NSFont* font = native_font_.get();
+  if (!font) {
+    // This object was constructed from a font name that doesn't correspond to
+    // an actual font. Don't waste time working out metrics.
+    height_ = 0;
+    ascent_ = 0;
+    cap_height_ = 0;
+    average_width_ = 0;
+    return;
+  }
+
   base::scoped_nsobject<NSLayoutManager> layout_manager(
       [[NSLayoutManager alloc] init]);
   height_ = [layout_manager defaultLineHeightForFont:font];
