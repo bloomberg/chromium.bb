@@ -14789,10 +14789,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
       Oops! The new supervised user couldn't be created. Please make sure you're signed in properly and try again.
     </message>
     <message name="IDS_PROFILES_CREATE_MANAGED_SIGNED_IN_LABEL" desc="Label for the 'Supervised user' checkbox in the create-profile dialog when the current user is signed in. This will be followed by a 'Learn more' link.">
-      This is a supervised user managed by <ph name="CUSTODIAN_EMAIL">$1<ex>user@gmail.com</ex>.</ph>
+      This is a supervised user managed by <ph name="CUSTODIAN_EMAIL">$1<ex>user@gmail.com</ex></ph>.
     </message>
     <message name="IDS_PROFILES_CREATE_MANAGED_ACCOUNT_DETAILS_OUT_OF_DATE_LABEL" desc="Label for the 'Supervised user' checkbox in the create-profile dialog when the current user is signed in, but their login information is invalid. This will be followed by a 'Sign in again' link.">
-      This is a supervised user managed by <ph name="CUSTODIAN_EMAIL">$1<ex>user@gmail.com</ex>.</ph>
+      This is a supervised user managed by <ph name="CUSTODIAN_EMAIL">$1<ex>user@gmail.com</ex></ph>.
 Your account sign-in details are out of date.
     </message>
     <message name="IDS_PROFILES_CREATE_MANAGED_JUST_SIGNED_IN" desc="Warning message shown in the create-profile dialog when the custodian signed in recently, sync has not yet finished initializing, and so the creation process is likely to take extra time.">
