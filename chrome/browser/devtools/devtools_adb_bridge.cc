@@ -745,7 +745,8 @@ DevToolsAdbBridge::RemoteBrowser::RemoteBrowser(
     const std::string& socket)
     : adb_thread_(adb_thread),
       device_(device),
-      socket_(socket) {
+      socket_(socket),
+      page_descriptors_(new base::ListValue()) {
 }
 
 bool DevToolsAdbBridge::RemoteBrowser::IsChrome() const {
