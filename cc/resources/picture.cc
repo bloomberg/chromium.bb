@@ -86,7 +86,8 @@ scoped_refptr<Picture> Picture::Create(gfx::Rect layer_rect) {
 }
 
 Picture::Picture(gfx::Rect layer_rect)
-    : layer_rect_(layer_rect) {
+  : layer_rect_(layer_rect),
+    cell_size_(layer_rect.size()) {
   // Instead of recording a trace event for object creation here, we wait for
   // the picture to be recorded in Picture::Record.
 }
@@ -155,7 +156,8 @@ Picture::Picture(SkPicture* picture,
                  gfx::Rect opaque_rect) :
     layer_rect_(layer_rect),
     opaque_rect_(opaque_rect),
-    picture_(skia::AdoptRef(picture)) {
+    picture_(skia::AdoptRef(picture)),
+    cell_size_(layer_rect.size()) {
 }
 
 Picture::Picture(const skia::RefPtr<SkPicture>& picture,
@@ -165,7 +167,8 @@ Picture::Picture(const skia::RefPtr<SkPicture>& picture,
     layer_rect_(layer_rect),
     opaque_rect_(opaque_rect),
     picture_(picture),
-    pixel_refs_(pixel_refs) {
+    pixel_refs_(pixel_refs),
+    cell_size_(layer_rect.size()) {
 }
 
 Picture::~Picture() {
@@ -387,8 +390,9 @@ Picture::PixelRefIterator::PixelRefIterator(
       current_index_(0) {
   gfx::Rect layer_rect = picture->layer_rect_;
   gfx::Size cell_size = picture->cell_size_;
+  DCHECK(!cell_size.IsEmpty());
 
-  // Early out if the query rect doesn't intersect this picture
+  // Early out if the query rect doesn't intersect this picture.
   if (!query_rect.Intersects(layer_rect)) {
     min_point_ = gfx::Point(0, 0);
     max_point_ = gfx::Point(0, 0);

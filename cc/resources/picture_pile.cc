@@ -94,7 +94,8 @@ bool PicturePile::Update(
     int recorded_pixel_count =
         picture->LayerRect().width() * picture->LayerRect().height();
     stats_instrumentation->AddRecord(best_duration, recorded_pixel_count);
-    picture->GatherPixelRefs(tile_grid_info_);
+    if (num_raster_threads_ > 1)
+      picture->GatherPixelRefs(tile_grid_info_);
     picture->CloneForDrawing(num_raster_threads_);
   }
 
