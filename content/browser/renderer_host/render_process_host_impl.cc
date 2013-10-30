@@ -613,7 +613,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       GetID(),
       storage_partition_impl_->GetIndexedDBContext()));
   AddFilter(new ServiceWorkerDispatcherHost(
-      storage_partition_impl_->GetServiceWorkerContext()));
+      GetID(), storage_partition_impl_->GetServiceWorkerContext()));
   if (IsGuest()) {
     if (!g_browser_plugin_geolocation_context.Get().get()) {
       g_browser_plugin_geolocation_context.Get() =

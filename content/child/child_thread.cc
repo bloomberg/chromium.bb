@@ -4,6 +4,8 @@
 
 #include "content/child/child_thread.h"
 
+#include <string>
+
 #include "base/allocator/allocator_extension.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -25,6 +27,8 @@
 #include "content/child/quota_dispatcher.h"
 #include "content/child/quota_message_filter.h"
 #include "content/child/resource_dispatcher.h"
+#include "content/child/service_worker/service_worker_dispatcher.h"
+#include "content/child/service_worker/service_worker_message_filter.h"
 #include "content/child/socket_stream_dispatcher.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/websocket_dispatcher.h"
@@ -183,6 +187,11 @@ void ChildThread::Init() {
   resource_message_filter_ =
       new ChildResourceMessageFilter(resource_dispatcher());
 
+  service_worker_message_filter_ =
+      new ServiceWorkerMessageFilter(thread_safe_sender_.get());
+  service_worker_dispatcher_.reset(
+      new ServiceWorkerDispatcher(thread_safe_sender_.get()));
+
   quota_message_filter_ =
       new QuotaMessageFilter(thread_safe_sender_.get());
   quota_dispatcher_.reset(new QuotaDispatcher(thread_safe_sender_.get(),
@@ -194,6 +203,7 @@ void ChildThread::Init() {
       ChildProcess::current()->io_message_loop_proxy()));
   channel_->AddFilter(resource_message_filter_.get());
   channel_->AddFilter(quota_message_filter_.get());
+  channel_->AddFilter(service_worker_message_filter_.get());
 
   // In single process mode we may already have a power monitor
   if (!base::PowerMonitor::Get()) {
@@ -255,6 +265,7 @@ ChildThread::~ChildThread() {
   IPC::Logging::GetInstance()->SetIPCSender(NULL);
 #endif
 
+  channel_->RemoveFilter(service_worker_message_filter_.get());
   channel_->RemoveFilter(quota_message_filter_.get());
   channel_->RemoveFilter(histogram_message_filter_.get());
   channel_->RemoveFilter(sync_message_filter_.get());

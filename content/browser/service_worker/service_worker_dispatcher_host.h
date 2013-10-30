@@ -15,7 +15,8 @@ class ServiceWorkerContext;
 
 class ServiceWorkerDispatcherHost : public BrowserMessageFilter {
  public:
-  explicit ServiceWorkerDispatcherHost(ServiceWorkerContext* context);
+  ServiceWorkerDispatcherHost(int render_process_id,
+                              ServiceWorkerContext* context);
 
   // BrowserIOMessageFilter implementation
   virtual bool OnMessageReceived(const IPC::Message& message,
@@ -26,12 +27,13 @@ class ServiceWorkerDispatcherHost : public BrowserMessageFilter {
 
  private:
   // IPC Message handlers
-
-  void OnRegisterServiceWorker(int32 registry_id,
-                            const string16& scope,
-                            const GURL& script_url);
-  void OnUnregisterServiceWorker(int32 registry_id, const string16& scope);
-
+  void OnRegisterServiceWorker(int32 thread_id,
+                               int32 request_id,
+                               const GURL& scope,
+                               const GURL& script_url);
+  void OnUnregisterServiceWorker(int32 thread_id,
+                                 int32 request_id,
+                                 const GURL& scope);
   scoped_refptr<ServiceWorkerContext> context_;
 };
 

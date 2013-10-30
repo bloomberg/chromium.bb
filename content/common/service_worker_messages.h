@@ -13,21 +13,26 @@
 
 // Messages sent from the child process to the browser.
 
-IPC_MESSAGE_CONTROL3(ServiceWorkerHostMsg_RegisterServiceWorker,
-                     int32 /* callback_id */,
-                     string16 /* scope */,
+IPC_MESSAGE_CONTROL4(ServiceWorkerHostMsg_RegisterServiceWorker,
+                     int32 /* thread_id */,
+                     int32 /* request_id */,
+                     GURL /* scope */,
                      GURL /* script_url */)
 
-IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_UnregisterServiceWorker,
-                     int32 /* callback_id */,
-                     string16 /* scope (url pattern) */)
+IPC_MESSAGE_CONTROL3(ServiceWorkerHostMsg_UnregisterServiceWorker,
+                     int32 /* thread_id */,
+                     int32 /* request_id */,
+                     GURL /* scope (url pattern) */)
 
 // Messages sent from the browser to the child process.
 
 // Response to ServiceWorkerMsg_RegisterServiceWorker
-IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_ServiceWorkerRegistered,
-                     int32 /* callback_id */)
+IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ServiceWorkerRegistered,
+                     int32 /* thread_id */,
+                     int32 /* request_id */,
+                     int64 /* service_worker_id */)
 
 // Response to ServiceWorkerMsg_UnregisterServiceWorker
-IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_ServiceWorkerUnregistered,
-                     int32 /* callback_id */)
+IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_ServiceWorkerUnregistered,
+                     int32 /* thread_id */,
+                     int32 /* request_id */)

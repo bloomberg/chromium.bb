@@ -5,6 +5,8 @@
 #ifndef CONTENT_CHILD_CHILD_THREAD_H_
 #define CONTENT_CHILD_CHILD_THREAD_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
@@ -37,6 +39,8 @@ namespace content {
 class ChildHistogramMessageFilter;
 class ChildResourceMessageFilter;
 class FileSystemDispatcher;
+class ServiceWorkerDispatcher;
+class ServiceWorkerMessageFilter;
 class QuotaDispatcher;
 class QuotaMessageFilter;
 class ResourceDispatcher;
@@ -100,6 +104,10 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
     return file_system_dispatcher_.get();
   }
 
+  ServiceWorkerDispatcher* service_worker_dispatcher() const {
+    return service_worker_dispatcher_.get();
+  }
+
   QuotaDispatcher* quota_dispatcher() const {
     return quota_dispatcher_.get();
   }
@@ -117,6 +125,10 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
 
   ChildHistogramMessageFilter* child_histogram_message_filter() const {
     return histogram_message_filter_.get();
+  }
+
+  ServiceWorkerMessageFilter* service_worker_message_filter() const {
+    return service_worker_message_filter_.get();
   }
 
   QuotaMessageFilter* quota_message_filter() const {
@@ -195,11 +207,15 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
 
   scoped_ptr<FileSystemDispatcher> file_system_dispatcher_;
 
+  scoped_ptr<ServiceWorkerDispatcher> service_worker_dispatcher_;
+
   scoped_ptr<QuotaDispatcher> quota_dispatcher_;
 
   scoped_refptr<ChildHistogramMessageFilter> histogram_message_filter_;
 
   scoped_refptr<ChildResourceMessageFilter> resource_message_filter_;
+
+  scoped_refptr<ServiceWorkerMessageFilter> service_worker_message_filter_;
 
   scoped_refptr<QuotaMessageFilter> quota_message_filter_;
 

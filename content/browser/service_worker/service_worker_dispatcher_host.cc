@@ -12,14 +12,13 @@
 namespace content {
 
 ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
-    ServiceWorkerContext* context)
-    : context_(context) {}
+    int render_process_id,
+    ServiceWorkerContext* context) : context_(context) {}
 
 ServiceWorkerDispatcherHost::~ServiceWorkerDispatcherHost() {}
 
 bool ServiceWorkerDispatcherHost::OnMessageReceived(const IPC::Message& message,
                                                     bool* message_was_ok) {
-
   if (IPC_MESSAGE_CLASS(message) != ServiceWorkerMsgStart)
     return false;
 
@@ -36,15 +35,37 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(const IPC::Message& message,
   return handled;
 }
 
-void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(int32 registry_id,
-                                                       const string16& scope,
-                                                       const GURL& script_url) {
-  // TODO(alecflett): Enforce that script_url must have the same
-  // origin as the registering document.
+// TODO(alecflett): Store the service_worker_id keyed by (domain+pattern,
+// script) so we don't always return a new service worker id.
+static int64 NextWorkerId() {
+  static int64 service_worker_id = 0;
+  return service_worker_id++;
 }
 
-void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
-    int32 registry_id,
-    const string16& scope) {}
+void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
+    int32 thread_id,
+    int32 request_id,
+    const GURL& scope,
+    const GURL& script_url) {
+  // TODO(alecflett): add a ServiceWorker-specific policy query in
+  // ChildProcessSecurityImpl. See http://crbug.com/311631.
+
+  // TODO(alecflett): Throw an error for origin mismatch, rather than
+  // just returning.
+  if (scope.GetOrigin() != script_url.GetOrigin())
+    return;
+
+  Send(new ServiceWorkerMsg_ServiceWorkerRegistered(
+      thread_id, request_id, NextWorkerId()));
+}
+
+void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(int32 thread_id,
+                                                            int32 request_id,
+                                                            const GURL& scope) {
+  // TODO(alecflett): add a ServiceWorker-specific policy query in
+  // ChildProcessSecurityImpl. See http://crbug.com/311631.
+
+  Send(new ServiceWorkerMsg_ServiceWorkerUnregistered(thread_id, request_id));
+}
 
 }  // namespace content
