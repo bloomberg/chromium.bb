@@ -33,21 +33,21 @@ namespace WebCore {
 
 class NodeChildRemovalTracker {
 public:
-    explicit NodeChildRemovalTracker(Node*);
+    explicit NodeChildRemovalTracker(Node&);
     ~NodeChildRemovalTracker();
 
     static bool isBeingRemoved(Node*);
 
 private:
-    Node* node() const { return m_node; }
+    Node& node() const { return m_node; }
     NodeChildRemovalTracker* previous() { return m_previous; }
 
-    Node* m_node;
+    Node& m_node;
     NodeChildRemovalTracker* m_previous;
     static NodeChildRemovalTracker* s_last;
 };
 
-inline NodeChildRemovalTracker::NodeChildRemovalTracker(Node* node)
+inline NodeChildRemovalTracker::NodeChildRemovalTracker(Node& node)
     : m_node(node)
     , m_previous(s_last)
 {
@@ -62,7 +62,7 @@ inline NodeChildRemovalTracker::~NodeChildRemovalTracker()
 inline bool NodeChildRemovalTracker::isBeingRemoved(Node* node)
 {
     for (NodeChildRemovalTracker* removal = s_last; removal; removal = removal->previous()) {
-        if (removal->node()->containsIncludingShadowDOM(node))
+        if (removal->node().containsIncludingShadowDOM(node))
             return true;
     }
 

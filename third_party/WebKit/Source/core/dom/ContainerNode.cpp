@@ -955,13 +955,13 @@ static void dispatchChildRemovalEvents(Node& child)
 
     // dispatch pre-removal mutation events
     if (c->parentNode() && document->hasListenerType(Document::DOMNODEREMOVED_LISTENER)) {
-        NodeChildRemovalTracker scope(&child);
+        NodeChildRemovalTracker scope(child);
         c->dispatchScopedEvent(MutationEvent::create(EventTypeNames::DOMNodeRemoved, true, c->parentNode()));
     }
 
     // dispatch the DOMNodeRemovedFromDocument event to all descendants
     if (c->inDocument() && document->hasListenerType(Document::DOMNODEREMOVEDFROMDOCUMENT_LISTENER)) {
-        NodeChildRemovalTracker scope(&child);
+        NodeChildRemovalTracker scope(child);
         for (; c; c = NodeTraversal::next(c.get(), &child))
             c->dispatchScopedEvent(MutationEvent::create(EventTypeNames::DOMNodeRemovedFromDocument, false));
     }
