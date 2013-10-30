@@ -205,7 +205,7 @@ TEST_F(TooltipControllerTest, EnableOrDisableTooltips) {
   helper_->FireTooltipTimer();
   EXPECT_TRUE(helper_->IsTooltipVisible());
 
-  // Diable tooltips and check again.
+  // Disable tooltips and check again.
   helper_->controller()->SetTooltipsEnabled(false);
   EXPECT_FALSE(helper_->IsTooltipVisible());
   helper_->FireTooltipTimer();
@@ -216,6 +216,18 @@ TEST_F(TooltipControllerTest, EnableOrDisableTooltips) {
   EXPECT_FALSE(helper_->IsTooltipVisible());
   helper_->FireTooltipTimer();
   EXPECT_TRUE(helper_->IsTooltipVisible());
+}
+
+// Verifies tooltip isn't shown if tooltip text consists entirely of whitespace.
+TEST_F(TooltipControllerTest, DontShowEmptyTooltips) {
+  view_->set_tooltip_text(ASCIIToUTF16("                     "));
+  EXPECT_EQ(string16(), helper_->GetTooltipText());
+  EXPECT_EQ(NULL, helper_->GetTooltipWindow());
+
+  generator_->MoveMouseRelativeTo(GetWindow(), view_->bounds().CenterPoint());
+
+  helper_->FireTooltipTimer();
+  EXPECT_FALSE(helper_->IsTooltipVisible());
 }
 
 TEST_F(TooltipControllerTest, TooltipHidesOnKeyPressAndStaysHiddenUntilChange) {

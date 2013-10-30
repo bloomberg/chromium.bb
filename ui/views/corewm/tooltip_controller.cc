@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/drag_drop_client.h"
@@ -257,11 +258,15 @@ void TooltipController::UpdateIfRequired() {
   if (tooltip_text_ != tooltip_text || !tooltip_->IsVisible()) {
     tooltip_shown_timer_.Stop();
     tooltip_text_ = tooltip_text;
-    if (tooltip_text_.empty()) {
+    base::string16 trimmed_text(tooltip_text_);
+    views::TooltipManager::TrimTooltipText(&trimmed_text);
+    // If the string consists entirely of whitespace, then don't both showing it
+    // (an empty tooltip is useless).
+    base::string16 whitespace_removed_text;
+    TrimWhitespace(trimmed_text, TRIM_ALL, &whitespace_removed_text);
+    if (whitespace_removed_text.empty()) {
       tooltip_->Hide();
     } else {
-      base::string16 trimmed_text(tooltip_text_);
-      views::TooltipManager::TrimTooltipText(&trimmed_text);
       gfx::Point widget_loc = curr_mouse_loc_ +
           tooltip_window_->GetBoundsInScreen().OffsetFromOrigin();
       tooltip_->SetText(tooltip_window_, trimmed_text, widget_loc);
