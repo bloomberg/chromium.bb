@@ -87,7 +87,8 @@ void ReturnResourcesOnThread(ReturnCallback callback,
 
 // Tests that the ReturnCallback can run safely on threads even after the
 // last references to the collection were dropped.
-TEST_F(DelegatedFrameResourceCollectionTest, Thread) {
+// Flaky: crbug.com/313441
+TEST_F(DelegatedFrameResourceCollectionTest, DISABLED_Thread) {
   base::Thread thread("test thread");
   thread.Start();
 
