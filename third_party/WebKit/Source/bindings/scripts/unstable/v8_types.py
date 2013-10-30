@@ -371,10 +371,10 @@ V8_VALUE_TO_CPP_VALUE_AND_INCLUDES = {
 }
 
 
-def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, isolate):
+def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, isolate, index):
     this_array_or_sequence_type = array_or_sequence_type(idl_type)
     if this_array_or_sequence_type:
-        return v8_value_to_cpp_value_array_or_sequence(this_array_or_sequence_type, v8_value, isolate)
+        return v8_value_to_cpp_value_array_or_sequence(this_array_or_sequence_type, v8_value, isolate, index)
 
     idl_type = preprocess_idl_type(idl_type)
 
@@ -402,19 +402,25 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, isolate):
     return cpp_expression_format.format(arguments=arguments, idl_type=idl_type, isolate=isolate, v8_value=v8_value)
 
 
-def v8_value_to_cpp_value_array_or_sequence(this_array_or_sequence_type, v8_value, isolate):
+def v8_value_to_cpp_value_array_or_sequence(this_array_or_sequence_type, v8_value, isolate, index):
+    # Index is None for setters, index (starting at 0) for method arguments,
+    # and is used to provide a human-readable exception message
+    if index is None:
+        index = 0  # special case, meaning "setter"
+    else:
+        index += 1  # human-readable index
     if is_interface_type(this_array_or_sequence_type):
         this_cpp_type = None
-        expression_format = '(toRefPtrNativeArray<{array_or_sequence_type}, V8{array_or_sequence_type}>({v8_value}, 0, {isolate}))'
+        expression_format = '(toRefPtrNativeArray<{array_or_sequence_type}, V8{array_or_sequence_type}>({v8_value}, {index}, {isolate}))'
         includes.add('V8%s.h' % this_array_or_sequence_type)
     else:
         this_cpp_type = cpp_type(this_array_or_sequence_type)
-        expression_format = 'toNativeArray<{cpp_type}>({v8_value}, 0, {isolate})'
-    expression = expression_format.format(array_or_sequence_type=this_array_or_sequence_type, cpp_type=this_cpp_type, isolate=isolate, v8_value=v8_value)
+        expression_format = 'toNativeArray<{cpp_type}>({v8_value}, {index}, {isolate})'
+    expression = expression_format.format(array_or_sequence_type=this_array_or_sequence_type, cpp_type=this_cpp_type, index=index, isolate=isolate, v8_value=v8_value)
     return expression
 
 
-def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name, isolate):
+def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variable_name, isolate, index=None):
     """Returns an expression that converts a V8 value to a C++ value and stores it as a local value."""
     this_cpp_type = cpp_type(idl_type, extended_attributes=extended_attributes, used_as_argument=True)
 
@@ -426,7 +432,7 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
     else:
         format_string = 'V8TRYCATCH_VOID({cpp_type}, {variable_name}, {cpp_value})'
 
-    cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, isolate)
+    cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, isolate, index)
     return format_string.format(cpp_type=this_cpp_type, cpp_value=cpp_value, isolate=isolate, variable_name=variable_name)
 
 

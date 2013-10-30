@@ -107,4 +107,4 @@ def v8_value_to_local_cpp_value(argument, index):
                 cpp_type=v8_types.cpp_type(idl_type), name=name, index=index)
     return v8_types.v8_value_to_local_cpp_value(
         idl_type, argument.extended_attributes,
-        'args[%s]' % index, name, 'args.GetIsolate()')
+        'args[%s]' % index, name, 'args.GetIsolate()', index=index)

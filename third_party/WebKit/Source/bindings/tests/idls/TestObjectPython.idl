@@ -82,7 +82,7 @@ interface TestObjectPython {
     readonly attribute Window readonlyWindowAttribute;  // FIXME: support [ImplementedAs] on interface
     attribute HTMLCollection htmlCollectionAttribute;
     attribute HTMLElement htmlElementAttribute;
-    // arrays
+    // Arrays
     attribute DOMString[] stringArrayAttribute;
     attribute TestInterfaceEmpty[] testInterfaceEmptyArrayAttribute;
     attribute float[] floatArrayAttribute;
@@ -213,6 +213,20 @@ interface TestObjectPython {
     void voidMethodDocumentTypeArg(DocumentType documentTypeArg);
     void voidMethodElementArg(Element elementArg);
     void voidMethodNodeArg(Node nodeArg);
+    // Arrays
+    long[] longArrayMethod();
+    DOMString[] stringArrayMethod();
+    TestInterfaceEmpty[] testInterfaceEmptyArrayMethod();
+    void voidMethodArrayLongArg(long[] arrayLongArg);
+    void voidMethodArrayStringArg(DOMString[] arrayStringArg);
+    void voidMethodArrayTestInterfaceEmptyArg(TestInterfaceEmpty[] arrayTestInterfaceEmptyArg);
+    // Sequences
+    sequence<long> sequenceLongMethod();
+    sequence<DOMString> sequenceStringMethod();
+    sequence<TestInterfaceEmpty> sequenceTestInterfaceEmptyMethod();
+    void voidMethodSequenceLongArg(sequence<long> sequenceLongArg);
+    void voidMethodSequenceStringArg(sequence<DOMString> sequenceStringArg);
+    void voidMethodSequenceTestInterfaceEmptyArg(sequence<TestInterfaceEmpty> sequenceTestInterfaceEmptyArg);
     // Enumerations
     TestEnum testEnumMethod();
     void voidMethodTestEnumArg(TestEnum testEnumTypeArg);
