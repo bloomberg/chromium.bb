@@ -64,7 +64,7 @@ class CachingFileSystem(FileSystem):
     # Always stat the parent directory, since it will have the stat of the child
     # anyway, and this gives us an entire directory's stat info at once.
     dir_path, file_path = posixpath.split(path)
-    if dir_path:
+    if dir_path and not dir_path.endswith('/'):
       dir_path += '/'
 
     # ... and we only ever need to cache the dir stat, too.
