@@ -41,9 +41,6 @@ class TabScrubberTest : public InProcessBrowserTest,
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-#if defined(OS_CHROMEOS)
-    command_line->AppendSwitch(chromeos::switches::kNaturalScrollDefault);
-#endif
     command_line->AppendSwitch(switches::kOpenAsh);
   }
 
@@ -54,6 +51,8 @@ class TabScrubberTest : public InProcessBrowserTest,
     ash::Shell* shell = ash::Shell::GetInstance();
     shell->event_transformation_handler()->set_transformation_mode(
         ash::internal::EventTransformationHandler::TRANSFORM_NONE);
+
+    ui::SetNaturalScroll(true);
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {

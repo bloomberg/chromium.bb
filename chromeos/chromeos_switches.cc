@@ -157,9 +157,6 @@ const char kLoginProfile[]                  = "login-profile";
 // Specifies the user which is already logged in.
 const char kLoginUser[]                     = "login-user";
 
-// Enables natural scroll by default.
-const char kNaturalScrollDefault[]          = "enable-natural-scroll-default";
-
 // Skips all other OOBE pages after user login.
 const char kOobeSkipPostLogin[]             = "oobe-skip-postlogin";
 

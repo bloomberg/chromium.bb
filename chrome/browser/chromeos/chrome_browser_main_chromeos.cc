@@ -644,11 +644,8 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
   // adjusting the oom priority.
   g_browser_process->platform_part()->oom_priority_manager()->Start();
 
-  if (ui::ShouldDefaultToNaturalScroll()) {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        chromeos::switches::kNaturalScrollDefault);
+  if (ui::ShouldDefaultToNaturalScroll())
     ui::SetNaturalScroll(true);
-  }
 
   ChromeBrowserMainPartsLinux::PreBrowserStart();
 }
