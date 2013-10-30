@@ -631,6 +631,7 @@ BUILD/stamp-glibc32: BUILD/stamp-$(CROSSARCH)-pregcc-standalone | SRC/glibc
 	    libc_cv_forced_unwind=yes \
 	    libc_cv_c_cleanup=yes \
 	    libc_cv_slibdir=/lib32 \
+	    libc_cv_z_combreloc=no \
 	    --prefix= \
 	    --libdir=/lib32 \
 	    --host=i486-linux-gnu \
@@ -653,6 +654,7 @@ BUILD/stamp-glibc64: BUILD/stamp-$(CROSSARCH)-pregcc-standalone | SRC/glibc
 	    libc_cv_forced_unwind=yes \
 	    libc_cv_c_cleanup=yes \
 	    libc_cv_slibdir=/lib \
+	    libc_cv_z_combreloc=no \
 	    --prefix= \
 	    --libdir=/lib \
 	    --host=x86_64-linux-gnu \
