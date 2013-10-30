@@ -944,6 +944,43 @@ TEST_F(URLRequestTest, FileDirCancelTest) {
   NetModule::SetResourceProvider(NULL);
 }
 
+TEST_F(URLRequestTest, FileDirOutputSanity) {
+  // Verify the general sanity of the the output of the file:
+  // directory lister by checking for the output of a known existing
+  // file.
+  const char sentinel_name[] = "filedir-sentinel";
+
+  base::FilePath path;
+  PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  path = path.Append(FILE_PATH_LITERAL("net"));
+  path = path.Append(FILE_PATH_LITERAL("data"));
+  path = path.Append(FILE_PATH_LITERAL("url_request_unittest"));
+
+  TestDelegate d;
+  URLRequest req(FilePathToFileURL(path), &d, &default_context_);
+  req.Start();
+  base::RunLoop().Run();
+
+  // Generate entry for the sentinel file.
+  base::FilePath sentinel_path = path.AppendASCII(sentinel_name);
+  base::PlatformFileInfo info;
+  EXPECT_TRUE(file_util::GetFileInfo(sentinel_path, &info));
+  EXPECT_GT(info.size, 0);
+  std::string sentinel_output = GetDirectoryListingEntry(
+      base::string16(sentinel_name, sentinel_name + strlen(sentinel_name)),
+      std::string(sentinel_name),
+      false /* is_dir */,
+      info.size,
+      info.last_modified);
+
+  ASSERT_LT(0, d.bytes_received());
+  ASSERT_FALSE(d.request_failed());
+  ASSERT_TRUE(req.status().is_success());
+  // Check for the entry generated for the "sentinel" file.
+  const std::string& data = d.data_received();
+  ASSERT_NE(data.find(sentinel_output), std::string::npos);
+}
+
 TEST_F(URLRequestTest, FileDirRedirectNoCrash) {
   // There is an implicit redirect when loading a file path that matches a
   // directory and does not end with a slash.  Ensure that following such

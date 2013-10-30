@@ -119,7 +119,8 @@ void URLRequestFileDirJob::OnListFile(
   std::string raw_bytes;  // Empty on Windows means UTF-8 encoded name.
 #elif defined(OS_POSIX)
   // TOOD(jungshik): The same issue as for the directory name.
-  const std::string& raw_bytes = data.info.GetName().value();
+  base::FilePath filename = data.info.GetName();
+  const std::string& raw_bytes = filename.value();
 #endif
   data_.append(GetDirectoryListingEntry(
       data.info.GetName().LossyDisplayName(),
