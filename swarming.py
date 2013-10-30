@@ -133,7 +133,7 @@ class Manifest(object):
       uploaded = self.storage.upload_items([self._isolate_item])
       elapsed = time.time() - start_time
     except (IOError, OSError) as exc:
-      print >> sys.stderr, 'Failed to upload the zip file: %s' % exc
+      tools.report_error('Failed to upload the zip file: %s' % exc)
       return False
 
     if self._isolate_item in uploaded:
@@ -349,12 +349,12 @@ def process_manifest(
     file_hash = archive(
         file_hash_or_isolated, isolate_server, slave_os, algo, verbose)
     if not file_hash:
-      print >> sys.stderr, 'Archival failure %s' % file_hash_or_isolated
+      tools.report_error('Archival failure %s' % file_hash_or_isolated)
       return 1
   elif isolateserver.is_valid_hash(file_hash_or_isolated, algo):
     file_hash = file_hash_or_isolated
   else:
-    print >> sys.stderr, 'Invalid hash %s' % file_hash_or_isolated
+    tools.report_error('Invalid hash %s' % file_hash_or_isolated)
     return 1
 
   try:
@@ -371,7 +371,7 @@ def process_manifest(
         priority,
         algo)
   except ValueError as e:
-    print >> sys.stderr, 'Unable to process %s: %s' % (test_name, e)
+    tools.report_error('Unable to process %s: %s' % (test_name, e))
     return 1
 
   chromium_setup(manifest)
@@ -389,16 +389,18 @@ def process_manifest(
   manifest_text = manifest.to_json()
   result = net.url_read(test_url, data={'request': manifest_text})
   if not result:
-    print >> sys.stderr, 'Failed to send test for %s\n%s' % (
-        test_name, test_url)
+    tools.report_error(
+        'Failed to send test for %s\n%s' % (test_name, test_url))
     return 1
   try:
     json.loads(result)
   except (ValueError, TypeError) as e:
-    print >> sys.stderr, 'Failed to send test for %s' % test_name
-    print >> sys.stderr, 'Manifest: %s' % manifest_text
-    print >> sys.stderr, 'Bad response: %s' % result
-    print >> sys.stderr, str(e)
+    msg = '\n'.join((
+        'Failed to send test for %s' % test_name,
+        'Manifest: %s' % manifest_text,
+        'Bad response: %s' % result,
+        str(e)))
+    tools.report_error(msg)
     return 1
   return 0
 
@@ -540,7 +542,8 @@ def CMDcollect(parser, args):
   try:
     return collect(options.swarming, args[0], options.timeout, options.decorate)
   except Failure as e:
-    parser.error(e.args[0])
+    tools.report_error(e)
+    return 1
 
 
 @subcommand.usage('[hash|isolated ...]')
@@ -574,12 +577,12 @@ def CMDrun(parser, args):
     except Failure as e:
       result = e.args[0]
     if result:
-      print >> sys.stderr, 'Failed to trigger %s: %s' % (arg, result)
+      tools.report_error('Failed to trigger %s: %s' % (arg, result))
     else:
       success.append(os.path.basename(arg))
 
   if not success:
-    print >> sys.stderr, 'Failed to trigger any job.'
+    tools.report_error('Failed to trigger any job.')
     return result
 
   code = 0
@@ -594,7 +597,7 @@ def CMDrun(parser, args):
       code = max(code, new_code)
     except Failure as e:
       code = max(code, 1)
-      print >> sys.stderr, e.args[0]
+      tools.report_error(e)
   return code
 
 
@@ -632,7 +635,8 @@ def CMDtrigger(parser, args):
         options.profile,
         options.priority)
   except Failure as e:
-    parser.error(e.args[0])
+    tools.report_error(e)
+    return 1
 
 
 class OptionParserSwarming(tools.OptionParserWithLogging):
@@ -657,10 +661,8 @@ def main(args):
   dispatcher = subcommand.CommandDispatcher(__name__)
   try:
     return dispatcher.execute(OptionParserSwarming(version=__version__), args)
-  except Failure as e:
-    sys.stderr.write('\nError: ')
-    sys.stderr.write(str(e))
-    sys.stderr.write('\n')
+  except Exception as e:
+    tools.report_error(e)
     return 1
 
 

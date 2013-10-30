@@ -2449,13 +2449,8 @@ def main(argv):
   dispatcher = subcommand.CommandDispatcher(__name__)
   try:
     return dispatcher.execute(OptionParserIsolate(version=__version__), argv)
-  except (
-      ExecutionError,
-      isolateserver.ConfigError,
-      isolateserver.MappingError) as e:
-    sys.stderr.write('\nError: ')
-    sys.stderr.write(str(e))
-    sys.stderr.write('\n')
+  except Exception as e:
+    tools.report_error(e)
     return 1
 
 

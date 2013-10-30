@@ -364,11 +364,10 @@ class IsolateModeBase(IsolateBase):
     self._expect_no_result()
     root = file_path.get_native_path_case(unicode(ROOT_DIR))
     expected = (
-      '\n'
-      'Error: Input directory %s must have a trailing slash\n' %
+      'Input directory %s must have a trailing slash' %
           os.path.join(root, 'tests', 'isolate', 'files1')
     )
-    self.assertEqual(expected, out)
+    self.assertIn(expected, out)
 
   def _test_non_existent(self, mode):
     try:
@@ -381,11 +380,10 @@ class IsolateModeBase(IsolateBase):
     self._expect_no_result()
     root = file_path.get_native_path_case(unicode(ROOT_DIR))
     expected = (
-      '\n'
-      'Error: Input file %s doesn\'t exist\n' %
+      'Input file %s doesn\'t exist' %
           os.path.join(root, 'tests', 'isolate', 'A_file_that_do_not_exist')
     )
-    self.assertEqual(expected, out)
+    self.assertIn(expected, out)
 
   def _test_all_items_invalid(self, mode):
     out = self._execute(mode, 'all_items_invalid.isolate',
@@ -842,9 +840,9 @@ class Isolate_trace_read_merge(IsolateModeBase):
       err = e.stderr
     self._expect_no_tree()
     self._expect_no_result()
-    expected = '\nError: No command to run.\n'
+    expected = 'No command to run.'
     self.assertEqual('', out)
-    self.assertEqual(expected, err)
+    self.assertIn(expected, err)
 
   # TODO(csharp): Disabled until crbug.com/150823 is fixed.
   def do_not_test_touch_only(self):

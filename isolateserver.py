@@ -1652,10 +1652,8 @@ def main(args):
   try:
     return dispatcher.execute(
         OptionParserIsolateServer(version=__version__), args)
-  except (ConfigError, MappingError) as e:
-    sys.stderr.write('\nError: ')
-    sys.stderr.write(str(e))
-    sys.stderr.write('\n')
+  except Exception as e:
+    tools.report_error(e)
     return 1
 
 

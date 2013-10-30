@@ -187,7 +187,7 @@ class RunSwarmStep(unittest.TestCase):
     out, err, returncode = self._run(self._generate_args_with_hash(result_hash))
     if not VERBOSE:
       self.assertEqual('', out)
-      self.assertEqual('No command to run\n', err)
+      self.assertIn('No command to run\n', err)
     self.assertEqual(1, returncode)
     actual = list_files_tree(self.cache)
     self.assertEqual(sorted(expected), actual)

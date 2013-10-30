@@ -497,7 +497,7 @@ def run_tha_test(isolated_hash, storage, cache, algo, outdir):
           os_flavor=get_flavor(),
           require_command=True)
     except isolateserver.ConfigError as e:
-      print >> sys.stderr, str(e)
+      tools.report_error(e)
       return 1
 
     if settings.read_only:
@@ -517,7 +517,7 @@ def run_tha_test(isolated_hash, storage, cache, algo, outdir):
       with tools.Profiler('RunTest'):
         return subprocess.call(settings.command, cwd=cwd, env=env)
     except OSError:
-      print >> sys.stderr, 'Failed to run %s; cwd=%s' % (settings.command, cwd)
+      tools.report_error('Failed to run %s; cwd=%s' % (settings.command, cwd))
       return 1
   finally:
     if outdir:
@@ -602,6 +602,7 @@ def main():
         options.isolated or options.hash, storage, cache, algo, outdir)
   except Exception as e:
     # Make sure any exception is logged.
+    tools.report_error(e)
     logging.exception(e)
     return 1
 
