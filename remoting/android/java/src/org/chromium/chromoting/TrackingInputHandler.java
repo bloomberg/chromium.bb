@@ -22,6 +22,11 @@ public class TrackingInputHandler implements TouchInputHandler {
      */
     private static final double MIN_ZOOM_DELTA = 0.05;
 
+    /**
+     * Maximum allowed zoom level - see {@link #repositionImageWithZoom()}.
+     */
+    private static final float MAX_ZOOM_FACTOR = 100.0f;
+
     private DesktopViewInterface mViewer;
     private RenderData mRenderData;
 
@@ -134,6 +139,41 @@ public class TrackingInputHandler implements TouchInputHandler {
         mViewer.transformationChanged();
     }
 
+    /**
+     * Repositions the image by translating and zooming it, to keep the zoom level within sensible
+     * limits. The minimum zoom level is chosen to avoid black space around all 4 sides. The
+     * maximum zoom level is set arbitrarily, so that the user can zoom out again in a reasonable
+     * time, and to prevent arithmetic overflow problems from displaying the image.
+     */
+    private void repositionImageWithZoom() {
+        synchronized (mRenderData) {
+            // Avoid division by zero in case this gets called before the image size is initialized.
+            if (mRenderData.imageWidth == 0 || mRenderData.imageHeight == 0) {
+                return;
+            }
+
+            // Zoom out if the zoom level is too high.
+            float currentZoomLevel = mRenderData.transform.mapRadius(1.0f);
+            if (currentZoomLevel > MAX_ZOOM_FACTOR) {
+                mRenderData.transform.setScale(MAX_ZOOM_FACTOR, MAX_ZOOM_FACTOR);
+            }
+
+            // Get image size scaled to screen coordinates.
+            float[] imageSize = {(float)mRenderData.imageWidth, (float)mRenderData.imageHeight};
+            mRenderData.transform.mapVectors(imageSize);
+
+            if (imageSize[0] < mRenderData.screenWidth && imageSize[1] < mRenderData.screenHeight) {
+                // Displayed image is too small in both directions, so apply the minimum zoom
+                // level needed to fit either the width or height.
+                float scale = Math.min((float)mRenderData.screenWidth / mRenderData.imageWidth,
+                                       (float)mRenderData.screenHeight / mRenderData.imageHeight);
+                mRenderData.transform.setScale(scale, scale);
+            }
+
+            repositionImage();
+        }
+    }
+
     /** Injects a button event using the current cursor location. */
     private void injectButtonEvent(int button, boolean pressed) {
         mViewer.injectMouseEvent((int)mCursorPosition.x, (int)mCursorPosition.y, button, pressed);
@@ -200,12 +240,13 @@ public class TrackingInputHandler implements TouchInputHandler {
 
     @Override
     public void onClientSizeChanged(int width, int height) {
-        repositionImage();
+        repositionImageWithZoom();
     }
 
     @Override
     public void onHostSizeChanged(int width, int height) {
         moveCursor((float)width / 2, (float)height / 2);
+        repositionImageWithZoom();
     }
 
     /** Responds to touch events filtered by the gesture detectors. */
@@ -245,7 +286,7 @@ public class TrackingInputHandler implements TouchInputHandler {
                 mRenderData.transform.postScale(
                         scaleFactor, scaleFactor, detector.getFocusX(), detector.getFocusY());
             }
-            repositionImage();
+            repositionImageWithZoom();
             return true;
         }
 
