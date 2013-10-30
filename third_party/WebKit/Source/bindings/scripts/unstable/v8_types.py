@@ -529,11 +529,11 @@ V8_SET_RETURN_VALUE = {
     'SerializedScriptValue': 'v8SetReturnValue({callback_info}, {cpp_value})',
     # DOMWrapper
     'DOMWrapperFast': 'v8SetReturnValueFast({callback_info}, {cpp_value}, {script_wrappable})',
-    'DOMWrapperDefault': 'v8SetReturnValue({callback_info}, {cpp_value}, {creation_context})',
+    'DOMWrapperDefault': 'v8SetReturnValue({callback_info}, {cpp_value})',
 }
 
 
-def v8_set_return_value(idl_type, cpp_value, callback_info, isolate, creation_context='', extended_attributes=None, script_wrappable=''):
+def v8_set_return_value(idl_type, cpp_value, callback_info, isolate, extended_attributes=None, script_wrappable=''):
     """Returns a statement that converts a C++ value to a V8 value and sets it as a return value."""
     def dom_wrapper_conversion_type():
         if not script_wrappable:
@@ -550,7 +550,7 @@ def v8_set_return_value(idl_type, cpp_value, callback_info, isolate, creation_co
         this_v8_conversion_type = dom_wrapper_conversion_type()
 
     format_string = V8_SET_RETURN_VALUE[this_v8_conversion_type]
-    statement = format_string.format(callback_info=callback_info, cpp_value=cpp_value, creation_context=creation_context, isolate=isolate, script_wrappable=script_wrappable)
+    statement = format_string.format(callback_info=callback_info, cpp_value=cpp_value, isolate=isolate, script_wrappable=script_wrappable)
     return statement
 
 
@@ -569,14 +569,14 @@ CPP_VALUE_TO_V8_VALUE = {
     'EventHandler': '{cpp_value} ? v8::Handle<v8::Value>(V8AbstractEventListener::cast({cpp_value})->getListenerObject(imp->executionContext())) : v8::Handle<v8::Value>(v8::Null({isolate}))',
     # General
     'array': 'v8Array({cpp_value}, {isolate})',
-    'default': 'toV8({cpp_value}, {creation_context}, {isolate})',
+    'default': 'toV8({cpp_value}, {isolate})',
 }
 
 
-def cpp_value_to_v8_value(idl_type, cpp_value, isolate, callback_info='', creation_context='', extended_attributes=None):
+def cpp_value_to_v8_value(idl_type, cpp_value, isolate, callback_info='', extended_attributes=None):
     """Returns an expression that converts a C++ value to a V8 value."""
     idl_type, cpp_value = preprocess_idl_type_and_value(idl_type, cpp_value, extended_attributes)
     this_v8_conversion_type = v8_conversion_type(idl_type, extended_attributes)
     format_string = CPP_VALUE_TO_V8_VALUE[this_v8_conversion_type]
-    statement = format_string.format(callback_info=callback_info, cpp_value=cpp_value, creation_context=creation_context, isolate=isolate)
+    statement = format_string.format(callback_info=callback_info, cpp_value=cpp_value, isolate=isolate)
     return statement

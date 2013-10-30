@@ -81,7 +81,7 @@ def cpp_method(method, number_of_arguments):
     idl_type = method.idl_type
     if idl_type == 'void':
         return cpp_value
-    return v8_types.v8_set_return_value(idl_type, cpp_value, callback_info='args', creation_context='args.Holder()', isolate='args.GetIsolate()')
+    return v8_types.v8_set_return_value(idl_type, cpp_value, callback_info='args', isolate='args.GetIsolate()')
 
 
 def custom_signature(arguments):
