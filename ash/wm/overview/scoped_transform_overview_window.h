@@ -6,7 +6,7 @@
 #define ASH_WM_OVERVIEW_SCOPED_TRANSFORM_OVERVIEW_WINDOW_H_
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
 
@@ -80,6 +80,11 @@ class ScopedTransformOverviewWindow {
   aura::Window* window() const { return window_; }
 
  private:
+  // Creates copies of |window| and all of its modal transient parents on the
+  // root window |target_root|.
+  void CopyWindowAndTransientParents(aura::Window* target_root,
+                                     aura::Window* window);
+
   // Applies the |transform| to the overview window and all of its transient
   // children using animations. If |animate| the transform is animated in,
   // otherwise it is applied immediately.
@@ -89,8 +94,8 @@ class ScopedTransformOverviewWindow {
   // A weak pointer to the real window in the overview.
   aura::Window* window_;
 
-  // A copy of the window used to transition the window to another root.
-  scoped_ptr<ScopedWindowCopy> window_copy_;
+  // Copies of the window and transient parents for a different root window.
+  ScopedVector<ScopedWindowCopy> window_copies_;
 
   // If true, the window was minimized and should be restored if the window
   // was not selected.

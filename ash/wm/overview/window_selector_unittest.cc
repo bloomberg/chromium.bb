@@ -61,6 +61,41 @@ bool IsWindowAbove(aura::Window* w1, aura::Window* w2) {
   return false;
 }
 
+aura::Window* GetWindowByName(aura::Window* container,
+                              const std::string& name) {
+  aura::Window* window = NULL;
+  for (aura::Window::Windows::const_iterator iter =
+       container->children().begin(); iter != container->children().end();
+       ++iter) {
+    if ((*iter)->name() == name) {
+      // The name should be unique.
+      DCHECK(!window);
+      window = *iter;
+    }
+  }
+  return window;
+}
+
+// Returns the copy of |window| created for overview. It is found using the
+// window name which should be the same as the source window's name with a
+// special suffix, and in the same container as the source window.
+aura::Window* GetCopyWindow(aura::Window* window) {
+  aura::Window* copy_window = NULL;
+  std::string copy_name = window->name() + " (Copy)";
+  std::vector<aura::Window*> containers(
+      Shell::GetContainersFromAllRootWindows(window->parent()->id(), NULL));
+  for (std::vector<aura::Window*>::iterator iter = containers.begin();
+       iter != containers.end(); ++iter) {
+    aura::Window* found = GetWindowByName(*iter, copy_name);
+    if (found) {
+      // There should only be one copy window.
+      DCHECK(!copy_window);
+      copy_window = found;
+    }
+  }
+  return copy_window;
+}
+
 }  // namespace
 
 class WindowSelectorTest : public test::AshTestBase {
@@ -735,6 +770,75 @@ TEST_F(WindowSelectorTest, CycleOverviewUsesCurrentDisplay) {
       ToEnclosingRect(GetTransformedTargetBounds(window1.get()))));
   EXPECT_TRUE(root_windows[1]->GetBoundsInScreen().Contains(
       ToEnclosingRect(GetTransformedTargetBounds(window2.get()))));
+  StopCycling();
+}
+
+// Verifies that the windows being shown on another display are copied.
+TEST_F(WindowSelectorTest, CycleMultipleDisplaysCopiesWindows) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("400x400,400x400");
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+
+  gfx::Rect root1_rect(0, 0, 100, 100);
+  gfx::Rect root2_rect(450, 0, 100, 100);
+  scoped_ptr<aura::Window> unmoved1(CreateWindow(root2_rect));
+  scoped_ptr<aura::Window> unmoved2(CreateWindow(root2_rect));
+  scoped_ptr<aura::Window> moved1_trans_parent(CreateWindow(root1_rect));
+  scoped_ptr<aura::Window> moved1(CreateWindow(root1_rect));
+  unmoved1->SetName("unmoved1");
+  unmoved2->SetName("unmoved2");
+  moved1->SetName("moved1");
+  moved1->SetProperty(aura::client::kModalKey,
+                      ui::MODAL_TYPE_WINDOW);
+  moved1_trans_parent->AddTransientChild(moved1.get());
+  moved1_trans_parent->SetName("moved1_trans_parent");
+
+  EXPECT_EQ(root_windows[0], moved1->GetRootWindow());
+  EXPECT_EQ(root_windows[0], moved1_trans_parent->GetRootWindow());
+  EXPECT_EQ(root_windows[1], unmoved1->GetRootWindow());
+  EXPECT_EQ(root_windows[1], unmoved2->GetRootWindow());
+  wm::ActivateWindow(unmoved2.get());
+  wm::ActivateWindow(unmoved1.get());
+
+  Cycle(WindowSelector::FORWARD);
+  FireOverviewStartTimer();
+
+  // All windows are moved to second root window.
+  EXPECT_TRUE(root_windows[1]->GetBoundsInScreen().Contains(
+      ToEnclosingRect(GetTransformedTargetBounds(unmoved1.get()))));
+  EXPECT_TRUE(root_windows[1]->GetBoundsInScreen().Contains(
+      ToEnclosingRect(GetTransformedTargetBounds(unmoved2.get()))));
+  EXPECT_TRUE(root_windows[1]->GetBoundsInScreen().Contains(
+      ToEnclosingRect(GetTransformedTargetBounds(moved1.get()))));
+  EXPECT_TRUE(root_windows[1]->GetBoundsInScreen().Contains(
+      ToEnclosingRect(GetTransformedTargetBounds(moved1_trans_parent.get()))));
+
+  // unmoved1 and unmoved2 were already on the correct display and should not
+  // have been copied.
+  EXPECT_TRUE(!GetCopyWindow(unmoved1.get()));
+  EXPECT_TRUE(!GetCopyWindow(unmoved2.get()));
+
+  // moved1 and its transient parent moved1_trans_parent should have also been
+  // copied for displaying on root_windows[1].
+  aura::Window* copy1 = GetCopyWindow(moved1.get());
+  aura::Window* copy1_trans_parent = GetCopyWindow(moved1_trans_parent.get());
+  ASSERT_FALSE(!copy1);
+  ASSERT_FALSE(!copy1_trans_parent);
+
+  // Verify that the bounds and transform of the copy match the original window
+  // but that it is on the other root window.
+  EXPECT_EQ(root_windows[1], copy1->GetRootWindow());
+  EXPECT_EQ(moved1->GetBoundsInScreen(), copy1->GetBoundsInScreen());
+  EXPECT_EQ(moved1->layer()->GetTargetTransform(),
+            copy1->layer()->GetTargetTransform());
+  StopCycling();
+
+  // After cycling the copy windows should have been destroyed.
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(!GetCopyWindow(moved1.get()));
+  EXPECT_TRUE(!GetCopyWindow(moved1_trans_parent.get()));
 }
 
 // Tests that beginning to cycle from overview mode moves windows to the

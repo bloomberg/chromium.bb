@@ -98,10 +98,6 @@ ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() {
   if (window_) {
     WindowSelectorAnimationSettings animation_settings(window_);
     gfx::Transform transform;
-    // If the initial window wasn't destroyed and we have copied the window
-    // layer, the copy needs to be animated out.
-    // CleanupWidgetAfterAnimationObserver will destroy the widget and
-    // layer after the animation is complete.
     SetTransformOnWindowAndTransientChildren(original_transform_, true);
     if (minimized_ && window_->GetProperty(aura::client::kShowStateKey) !=
         ui::SHOW_STATE_MINIMIZED) {
@@ -121,8 +117,11 @@ ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() {
 }
 
 bool ScopedTransformOverviewWindow::Contains(const aura::Window* target) const {
-  if (window_copy_ && window_copy_->GetWindow()->Contains(target))
-    return true;
+  for (ScopedVector<ScopedWindowCopy>::const_iterator iter =
+      window_copies_.begin(); iter != window_copies_.end(); ++iter) {
+    if ((*iter)->GetWindow()->Contains(target))
+      return true;
+  }
   aura::Window* window = window_;
   while (window) {
     if (window->Contains(target))
@@ -192,23 +191,43 @@ void ScopedTransformOverviewWindow::SetTransform(
     bool animate) {
   DCHECK(overview_started_);
 
-  // If the window bounds have changed and a copy of the window is being
-  // shown on another display, forcibly recreate the copy.
-  if (window_copy_ && window_copy_->GetWindow()->GetBoundsInScreen() !=
-      window_->GetBoundsInScreen()) {
-    DCHECK_NE(window_->GetRootWindow(), root_window);
-    // TODO(flackr): If only the position changed and not the size, update the
-    // existing window_copy_'s position and continue to use it.
-    window_copy_.reset();
-  }
-
-  if (root_window != window_->GetRootWindow() && !window_copy_) {
-    // TODO(flackr): Create copies of the transient children and transient
-    // parent windows as well. Currently they will only be visible on the
-    // window's initial display.
-    window_copy_.reset(new ScopedWindowCopy(root_window, window_));
+  if (root_window != window_->GetRootWindow()) {
+    if (!window_copies_.empty()) {
+      bool bounds_or_hierarchy_changed = false;
+      aura::Window* window = window_;
+      for (ScopedVector<ScopedWindowCopy>::reverse_iterator iter =
+               window_copies_.rbegin();
+           !bounds_or_hierarchy_changed && iter != window_copies_.rend();
+           ++iter, window = GetModalTransientParent(window)) {
+        if (!window) {
+          bounds_or_hierarchy_changed = true;
+        } else if ((*iter)->GetWindow()->GetBoundsInScreen() !=
+                window->GetBoundsInScreen()) {
+          bounds_or_hierarchy_changed = true;
+        }
+      }
+      // Clearing the window copies array will force it to be recreated.
+      // TODO(flackr): If only the position changed and not the size,
+      // update the existing window copy's position and continue to use it.
+      if (bounds_or_hierarchy_changed)
+        window_copies_.clear();
+    }
+    if (window_copies_.empty()) {
+      // TODO(flackr): Create copies of the transient children windows as well.
+      // Currently they will only be visible on the window's initial display.
+      CopyWindowAndTransientParents(root_window, window_);
+    }
   }
   SetTransformOnWindowAndTransientChildren(transform, animate);
+}
+
+void ScopedTransformOverviewWindow::CopyWindowAndTransientParents(
+    aura::Window* target_root,
+    aura::Window* window) {
+  aura::Window* modal_parent = GetModalTransientParent(window);
+  if (modal_parent)
+    CopyWindowAndTransientParents(target_root, modal_parent);
+  window_copies_.push_back(new ScopedWindowCopy(target_root, window));
 }
 
 void ScopedTransformOverviewWindow::SetTransformOnWindowAndTransientChildren(
@@ -218,11 +237,13 @@ void ScopedTransformOverviewWindow::SetTransformOnWindowAndTransientChildren(
   aura::Window* window = window_;
   while (window->transient_parent())
     window = window->transient_parent();
-  if (window_copy_) {
+  for (ScopedVector<ScopedWindowCopy>::const_iterator iter =
+      window_copies_.begin(); iter != window_copies_.end(); ++iter) {
     SetTransformOnWindow(
-        window_copy_->GetWindow(),
+        (*iter)->GetWindow(),
         TranslateTransformOrigin(ScreenAsh::ConvertRectToScreen(
-            window_->parent(), window_->GetTargetBounds()).origin() - origin,
+            (*iter)->GetWindow()->parent(),
+            (*iter)->GetWindow()->GetTargetBounds()).origin() - origin,
             transform),
         animate);
   }
