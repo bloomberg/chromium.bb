@@ -301,6 +301,16 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
                 "document.forms[0].requestAutocomplete();"
                 "send('clicked');"
               "};"
+              "function getValueForFieldOfType(type) {"
+              "  var fields = document.getElementsByTagName('input');"
+              "  for (var i = 0; i < fields.length; i++) {"
+              "    if (fields[i].autocomplete == type) {"
+              "      send(fields[i].value);"
+              "      return;"
+              "    }"
+              "  }"
+              "  send('');"
+              "};"
             "</script>"
           "</body>"
         "</html>"));
@@ -326,6 +336,19 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
     ASSERT_TRUE(dom_message_queue_->WaitForMessage(&message));
     dom_message_queue_->ClearQueue();
     EXPECT_EQ("\"" + expected + "\"", message);
+  }
+
+  // Returns the value filled into the first field with autocomplete attribute
+  // equal to |autocomplete_type|, or an empty string if there is no such field.
+  std::string GetValueForHTMLFieldOfType(const std::string& autocomplete_type) {
+    content::RenderViewHost* render_view_host =
+        browser()->tab_strip_model()->GetActiveWebContents()->
+        GetRenderViewHost();
+    std::string script = "getValueForFieldOfType('" + autocomplete_type + "');";
+    std::string result;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(render_view_host, script,
+                                                       &result));
+    return result;
   }
 
   void AddCreditcardToProfile(Profile* profile, const CreditCard& card) {
@@ -821,8 +844,6 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_PreservedSections) {
 }
 #endif  // defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
 
-// TODO(groby): figure out if the CVC challenge code actually works on Mac.
-#if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
                        GeneratedCardLastFourAfterVerifyCvv) {
   std::vector<std::string> usernames;
@@ -873,7 +894,6 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   EXPECT_EQ(1, test_generated_bubble_controller()->bubbles_shown());
   EXPECT_EQ(last_four, test_generated_bubble_controller()->backing_card_name());
 }
-#endif  // !defined(OS_MACOSX)
 
 // Simulates the user successfully signing in to the dialog for the first time.
 // The controller listens for nav entry commits and should not destroy the web
@@ -903,6 +923,23 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, SignInNoCrash) {
 
   // Wallet should now be selected and Chrome shouldn't have crashed.
   EXPECT_TRUE(account_chooser_model.WalletIsSelected());
+}
+
+// Verify that filling a form works correctly, including filling the CVC when
+// that is requested separately.
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillFormIncludesCVC) {
+  AutofillDialogControllerImpl* controller =
+      SetUpHtmlAndInvoke("<input autocomplete='cc-csc'>");
+
+  AddCreditcardToProfile(controller->profile(), test::GetVerifiedCreditCard());
+  AddAutofillProfileToProfile(controller->profile(),
+                              test::GetVerifiedProfile());
+
+  TestableAutofillDialogView* view = controller->GetTestableView();
+  view->SetTextContentsOfSuggestionInput(SECTION_CC, ASCIIToUTF16("123"));
+  view->SubmitForTesting();
+  ExpectDomMessage("success");
+  EXPECT_EQ("123", GetValueForHTMLFieldOfType("cc-csc"));
 }
 
 }  // namespace autofill

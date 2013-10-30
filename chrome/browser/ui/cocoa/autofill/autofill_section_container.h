@@ -67,7 +67,7 @@ namespace autofill {
 // Designated initializer. Queries |delegate| for the list of desired input
 // fields for |section|.
 - (id)initWithDelegate:(autofill::AutofillDialogViewDelegate*)delegate
-              forSection:(autofill::DialogSection)section;
+            forSection:(autofill::DialogSection)section;
 
 // Populates |output| with mappings from field identification to input value.
 - (void)getInputs:(autofill::DetailOutputMap*)output;
@@ -85,6 +85,10 @@ namespace autofill {
 // Validate this section. Validation rules depend on |validationType|.
 - (BOOL)validateFor:(autofill::ValidationType)validationType;
 
+// Returns the value of the |suggestContainer_|'s input field, or nil if no
+// suggestion is currently showing.
+- (NSString*)suggestionText;
+
 @end
 
 @interface AutofillSectionContainer (ForTesting)
@@ -95,7 +99,7 @@ namespace autofill {
 // Sets the value for the field matching |input|. Does nothing if the field is
 // not part of this section.
 - (void)setFieldValue:(NSString*)text
-              forInput:(const autofill::DetailInput&)input;
+             forInput:(const autofill::DetailInput&)input;
 
 // Sets the value for the suggestion text field.
 - (void)setSuggestionFieldValue:(NSString*)text;

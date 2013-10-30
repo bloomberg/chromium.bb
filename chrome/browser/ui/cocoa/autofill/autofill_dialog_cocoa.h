@@ -147,6 +147,7 @@ class AutofillDialogCocoa : public AutofillDialogView,
            forInput:(const autofill::DetailInput&)input;
 - (void)getInputs:(autofill::DetailOutputMap*)outputs
        forSection:(autofill::DialogSection)section;
+- (NSString*)getCvc;
 - (BOOL)saveDetailsLocally;
 - (content::NavigationController*)showSignIn;
 - (void)hideSignIn;

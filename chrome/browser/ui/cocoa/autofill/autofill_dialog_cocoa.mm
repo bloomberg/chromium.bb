@@ -131,7 +131,7 @@ void AutofillDialogCocoa::GetUserInput(DialogSection section,
 }
 
 string16 AutofillDialogCocoa::GetCvc() {
-  return string16();
+  return base::SysNSStringToUTF16([sheet_delegate_ getCvc]);
 }
 
 bool AutofillDialogCocoa::HitTestInput(const DetailInput& input,
@@ -570,6 +570,16 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 - (void)getInputs:(autofill::DetailOutputMap*)output
        forSection:(autofill::DialogSection)section {
   [[mainContainer_ sectionForId:section] getInputs:output];
+}
+
+- (NSString*)getCvc {
+  autofill::DialogSection section = autofill::SECTION_CC;
+  NSString* value = [[mainContainer_ sectionForId:section] suggestionText];
+  if (!value) {
+    section = autofill::SECTION_CC_BILLING;
+    value = [[mainContainer_ sectionForId:section] suggestionText];
+  }
+  return value;
 }
 
 - (BOOL)saveDetailsLocally {
