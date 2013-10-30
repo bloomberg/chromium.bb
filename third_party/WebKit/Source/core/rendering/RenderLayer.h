@@ -285,6 +285,7 @@ public:
         DontConstrainForMask = 1 << 4,
         IncludeCompositedDescendants = 1 << 5,
         UseFragmentBoxes = 1 << 6,
+        PretendLayerHasOwnBacking = 1 << 7,
         DefaultCalculateLayerBoundsFlags =  IncludeSelfTransform | UseLocalClipRectIfPossible | IncludeLayerFilterOutsets | UseFragmentBoxes
     };
     typedef unsigned CalculateLayerBoundsFlags;

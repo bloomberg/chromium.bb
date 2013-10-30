@@ -3598,11 +3598,12 @@ IntRect RenderLayer::calculateLayerBounds(const RenderLayer* ancestorLayer, cons
     }
 
     LayoutRect unionBounds = boundingBoxRect;
+    bool shouldIncludeTransform = paintsWithTransform(PaintBehaviorNormal) || (transform() && flags & PretendLayerHasOwnBacking);
 
     if (flags & UseLocalClipRectIfPossible) {
         LayoutRect localClipRect = this->localClipRect();
         if (localClipRect != PaintInfo::infiniteRect()) {
-            if ((flags & IncludeSelfTransform) && paintsWithTransform(PaintBehaviorNormal))
+            if ((flags & IncludeSelfTransform) && shouldIncludeTransform)
                 localClipRect = transform()->mapRect(localClipRect);
 
             LayoutPoint ancestorRelOffset;
@@ -3648,7 +3649,7 @@ IntRect RenderLayer::calculateLayerBounds(const RenderLayer* ancestorLayer, cons
     if (flags & IncludeLayerFilterOutsets)
         renderer->style()->filterOutsets().expandRect(unionBounds);
 
-    if ((flags & IncludeSelfTransform) && paintsWithTransform(PaintBehaviorNormal)) {
+    if ((flags & IncludeSelfTransform) && shouldIncludeTransform) {
         TransformationMatrix* affineTrans = transform();
         boundingBoxRect = affineTrans->mapRect(boundingBoxRect);
         unionBounds = affineTrans->mapRect(unionBounds);

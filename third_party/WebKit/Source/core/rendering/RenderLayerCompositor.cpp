@@ -2027,8 +2027,12 @@ bool RenderLayerCompositor::requiresCompositingForPosition(RenderObject* rendere
     // Fixed position elements that are invisible in the current view don't get their own layer.
     if (FrameView* frameView = m_renderView->frameView()) {
         LayoutRect viewBounds = frameView->viewportConstrainedVisibleContentRect();
-        LayoutRect layerBounds = layer->calculateLayerBounds(rootRenderLayer(), 0, RenderLayer::DefaultCalculateLayerBoundsFlags
-            | RenderLayer::ExcludeHiddenDescendants | RenderLayer::DontConstrainForMask | RenderLayer::IncludeCompositedDescendants);
+        LayoutRect layerBounds = layer->calculateLayerBounds(rootRenderLayer(), 0,
+            RenderLayer::DefaultCalculateLayerBoundsFlags
+            | RenderLayer::ExcludeHiddenDescendants
+            | RenderLayer::DontConstrainForMask
+            | RenderLayer::IncludeCompositedDescendants
+            | RenderLayer::PretendLayerHasOwnBacking);
         if (!viewBounds.intersects(enclosingIntRect(layerBounds))) {
             if (viewportConstrainedNotCompositedReason) {
                 *viewportConstrainedNotCompositedReason = RenderLayer::NotCompositedForBoundsOutOfView;
