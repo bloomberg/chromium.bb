@@ -540,7 +540,7 @@ void ContainerNode::removeChildren()
     {
         // Removing focus can cause frames to load, either via events (focusout, blur)
         // or widget updates (e.g., for <embed>).
-        SubframeLoadingDisabler disabler(this);
+        SubframeLoadingDisabler disabler(*this);
 
         // Exclude this node when looking for removed focusedElement since only
         // children will be removed.

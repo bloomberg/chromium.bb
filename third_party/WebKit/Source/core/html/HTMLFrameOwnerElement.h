@@ -40,7 +40,7 @@ public:
     DOMWindow* contentWindow() const;
     Document* contentDocument() const;
 
-    void setContentFrame(Frame*);
+    void setContentFrame(Frame&);
     void clearContentFrame();
 
     void disconnectContentFrame();
@@ -81,20 +81,20 @@ DEFINE_NODE_TYPE_CASTS(HTMLFrameOwnerElement, isFrameOwnerElement());
 
 class SubframeLoadingDisabler {
 public:
-    explicit SubframeLoadingDisabler(Node* root)
+    explicit SubframeLoadingDisabler(Node& root)
         : m_root(root)
     {
-        disabledSubtreeRoots().add(m_root);
+        disabledSubtreeRoots().add(&m_root);
     }
 
     ~SubframeLoadingDisabler()
     {
-        disabledSubtreeRoots().remove(m_root);
+        disabledSubtreeRoots().remove(&m_root);
     }
 
-    static bool canLoadFrame(HTMLFrameOwnerElement* owner)
+    static bool canLoadFrame(HTMLFrameOwnerElement& owner)
     {
-        for (Node* node = owner; node; node = node->parentOrShadowHostNode()) {
+        for (Node* node = &owner; node; node = node->parentOrShadowHostNode()) {
             if (disabledSubtreeRoots().contains(node))
                 return false;
         }
@@ -108,7 +108,7 @@ private:
         return nodes;
     }
 
-    Node* m_root;
+    Node& m_root;
 };
 
 } // namespace WebCore

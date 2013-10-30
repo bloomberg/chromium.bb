@@ -153,7 +153,7 @@ void HTMLFrameElementBase::didNotifySubtreeInsertionsToDocument()
     if (!document().frame())
         return;
 
-    if (!SubframeLoadingDisabler::canLoadFrame(this))
+    if (!SubframeLoadingDisabler::canLoadFrame(*this))
         return;
 
     setNameAndOpenURL();

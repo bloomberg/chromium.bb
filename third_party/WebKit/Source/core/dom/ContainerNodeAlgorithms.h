@@ -313,7 +313,7 @@ inline void ChildFrameDisconnector::disconnectCollectedFrameOwners()
 {
     // Must disable frame loading in the subtree so an unload handler cannot
     // insert more frames and create loaded frames in detached subtrees.
-    SubframeLoadingDisabler disabler(&m_root);
+    SubframeLoadingDisabler disabler(m_root);
 
     for (unsigned i = 0; i < m_frameOwners.size(); ++i) {
         HTMLFrameOwnerElement* owner = m_frameOwners[i].get();
