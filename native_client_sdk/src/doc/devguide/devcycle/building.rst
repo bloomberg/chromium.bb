@@ -79,7 +79,8 @@ The GCC-based Native Client SDK only has support for
 C++11 library support is only complete in libc++ but other non-library
 language features should work regardless of which standard library is
 used. The ``-std=[c++98|c++11]`` command line argument can be used to
-indicate which C++ language standard to use.
+indicate which C++ language standard to use (or ``-std=gnu++11`` with
+non-standard extensions).
 
 SDK toolchains
 --------------

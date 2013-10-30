@@ -220,6 +220,8 @@ portability to JavaScript and can adapt to new instruction set
 architectures without requiring recompilation. The web is better when
 it's platform-independent, and we'd like it to stay that way.
 
+.. _other_languages:
+
 Do I have to use C or C++? I'd really like to use another language.
 -------------------------------------------------------------------
 
@@ -307,12 +309,12 @@ barriers, atomic read/modify/write, compare-and-exchange, etc...), thus
 allowing your Native Client application to utilize several CPU cores.
 Note that this allows you to modify datastructures concurrently without
 needing to copy them, which is often a limitation of shared-nothing
-systems.
+systems. For more information see :ref:`memory model and atomics
+<memory_model_and_atomics>` and :ref:`threading
+<language_support_threading>`.
 
 Native Client doesn't support HTML5 Web Workers directly but can
 interact with JavaScript code which does.
-
-.. TODO Add link to relevant documentation, once written.
 
 
 Coming Soon
