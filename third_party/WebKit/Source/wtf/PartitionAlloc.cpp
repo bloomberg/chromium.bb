@@ -451,17 +451,19 @@ void* partitionReallocGeneric(PartitionRoot* root, void* ptr, size_t newSize)
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
     return realloc(ptr, newSize);
 #else
-    bool oldPtrIsInPartition = partitionPointerIsValid(root, ptr);
     size_t oldIndex;
     if (LIKELY(partitionPointerIsValid(root, ptr))) {
-        PartitionBucket* bucket = partitionPointerToPage(ptr)->bucket;
+        void* realPtr = partitionCookieFreePointerAdjust(ptr);
+        PartitionBucket* bucket = partitionPointerToPage(realPtr)->bucket;
         ASSERT(bucket->root == root);
         oldIndex = bucket - root->buckets();
     } else {
         oldIndex = root->numBuckets;
     }
 
-    size_t newIndex = QuantizedAllocation::quantizedSize(newSize) >> kBucketShift;
+    size_t allocSize = QuantizedAllocation::quantizedSize(newSize);
+    allocSize = partitionCookieSizeAdjust(allocSize);
+    size_t newIndex = allocSize >> kBucketShift;
     if (newIndex > root->numBuckets)
         newIndex = root->numBuckets;
 

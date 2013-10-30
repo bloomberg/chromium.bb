@@ -76,7 +76,7 @@
 // - Freed pages will only hold same-sized objects when re-used.
 // - Dereference of freelist pointer should fault.
 // - Linear overflow into page header should be trapped, as long as ASLR has
-// not been bypasses.
+// not been bypassed.
 // - Partial pointer overwrite of freelist pointer should fault.
 // - Rudimentary double-free detection.
 //
@@ -84,6 +84,8 @@
 // - Per-object bucketing (instead of per-size) is mostly available at the API,
 // but not used yet.
 // - No randomness of freelist entries or bucket position.
+// - Check alignment of pointers in free in Release builds.
+// - Better freelist masking function to guarantee fault on 32-bit.
 
 #include "wtf/Assertions.h"
 #include "wtf/ByteSwap.h"
@@ -95,6 +97,10 @@
 
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 #include <stdlib.h>
+#endif
+
+#ifndef NDEBUG
+#include <string.h>
 #endif
 
 namespace WTF {
@@ -134,6 +140,17 @@ static const size_t kSubPartitionPageMask = kSubPartitionPageSize - 1;
 static const size_t kNumSubPagesPerPartitionPage = kPartitionPageSize / kSubPartitionPageSize;
 // Special bucket id for internal metadata.
 static const size_t kInternalMetadataBucket = 0;
+
+#ifndef NDEBUG
+// These two byte values match tcmalloc.
+static const unsigned char kUninitializedByte = 0xAB;
+static const unsigned char kFreedByte = 0xCD;
+#if CPU(64BIT)
+static const uintptr_t kCookieValue = 0xDEADBEEFDEADBEEFul;
+#else
+static const uintptr_t kCookieValue = 0xDEADBEEFu;
+#endif
+#endif
 
 struct PartitionRoot;
 struct PartitionBucket;
@@ -216,13 +233,31 @@ ALWAYS_INLINE PartitionFreelistEntry* partitionFreelistMask(PartitionFreelistEnt
     return reinterpret_cast<PartitionFreelistEntry*>(masked);
 }
 
+ALWAYS_INLINE size_t partitionCookieSizeAdjust(size_t size)
+{
+#ifndef NDEBUG
+    // Add space for cookies.
+    size += 2 * sizeof(uintptr_t);
+#endif
+    return size;
+}
+
+ALWAYS_INLINE void* partitionCookieFreePointerAdjust(void* ptr)
+{
+#ifndef NDEBUG
+    // The value given to the application is actually just after the cookie.
+    ptr = static_cast<uintptr_t*>(ptr) - 1;
+#endif
+    return ptr;
+}
+
 ALWAYS_INLINE size_t partitionBucketSize(const PartitionBucket* bucket)
 {
     PartitionRoot* root = bucket->root;
     size_t index = bucket - &root->buckets()[0];
     size_t size;
     if (UNLIKELY(index == kInternalMetadataBucket))
-        size = sizeof(PartitionFreepagelistEntry);
+        size = partitionCookieSizeAdjust(sizeof(PartitionFreepagelistEntry));
     else
         size = index << kBucketShift;
     return size;
@@ -278,17 +313,29 @@ ALWAYS_INLINE void* partitionBucketAlloc(PartitionBucket* bucket)
 {
     PartitionPageHeader* page = bucket->currPage;
     partitionValidatePage(page);
-    PartitionFreelistEntry* ret = page->freelistHead;
+    void* ret = page->freelistHead;
     if (LIKELY(ret != 0)) {
         // If these asserts fire, you probably corrupted memory.
         ASSERT(partitionPointerIsValid(bucket->root, ret));
         ASSERT(partitionPointerToPage(ret));
-        ASSERT(ret != ret->next); // Catches some double frees.
-        page->freelistHead = partitionFreelistMask(ret->next);
+        page->freelistHead = partitionFreelistMask(static_cast<PartitionFreelistEntry*>(ret)->next);
+        ASSERT(!page->freelistHead || partitionPointerIsValid(bucket->root, page->freelistHead));
+        ASSERT(!page->freelistHead || partitionPointerToPage(page->freelistHead));
         page->numAllocatedSlots++;
-        return ret;
+    } else {
+        ret = partitionAllocSlowPath(bucket);
     }
-    return partitionAllocSlowPath(bucket);
+#ifndef NDEBUG
+    // Fill the uninitialized pattern. and write the cookies.
+    size_t bucketSize = partitionBucketSize(bucket);
+    memset(ret, kUninitializedByte, bucketSize);
+    *(static_cast<uintptr_t*>(ret)) = kCookieValue;
+    void* retEnd = static_cast<char*>(ret) + bucketSize;
+    *(static_cast<uintptr_t*>(retEnd) - 1) = kCookieValue;
+    // The value given to the application is actually just after the cookie.
+    ret = static_cast<uintptr_t*>(ret) + 1;
+#endif
+    return ret;
 }
 
 ALWAYS_INLINE void* partitionAlloc(PartitionRoot* root, size_t size)
@@ -298,23 +345,31 @@ ALWAYS_INLINE void* partitionAlloc(PartitionRoot* root, size_t size)
     RELEASE_ASSERT(result);
     return result;
 #else
+    size = partitionCookieSizeAdjust(size);
     ASSERT(root->initialized);
     size_t index = size >> kBucketShift;
     ASSERT(index < root->numBuckets);
     ASSERT(size == index << kBucketShift);
     PartitionBucket* bucket = &root->buckets()[index];
     return partitionBucketAlloc(bucket);
-#endif
+#endif // defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 }
 
 ALWAYS_INLINE void partitionFreeWithPage(void* ptr, PartitionPageHeader* page)
 {
     // If these asserts fire, you probably corrupted memory.
+    partitionValidatePage(page);
+#ifndef NDEBUG
+    size_t bucketSize = partitionBucketSize(page->bucket);
+    void* ptrEnd = static_cast<char*>(ptr) + bucketSize;
+    ASSERT(*(static_cast<uintptr_t*>(ptr)) == kCookieValue);
+    ASSERT(*(static_cast<uintptr_t*>(ptrEnd) - 1) == kCookieValue);
+    memset(ptr, kFreedByte, bucketSize);
+#endif
     ASSERT(!page->freelistHead || partitionPointerIsValid(page->bucket->root, page->freelistHead));
     ASSERT(!page->freelistHead || partitionPointerToPage(page->freelistHead));
     RELEASE_ASSERT(ptr != page->freelistHead); // Catches an immediate double free.
     ASSERT(!page->freelistHead || ptr != partitionFreelistMask(page->freelistHead->next)); // Look for double free one level deeper in debug.
-    partitionValidatePage(page);
     PartitionFreelistEntry* entry = static_cast<PartitionFreelistEntry*>(ptr);
     entry->next = partitionFreelistMask(page->freelistHead);
     page->freelistHead = entry;
@@ -328,6 +383,7 @@ ALWAYS_INLINE void partitionFree(void* ptr)
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
     free(ptr);
 #else
+    ptr = partitionCookieFreePointerAdjust(ptr);
     PartitionPageHeader* page = partitionPointerToPage(ptr);
     ASSERT(partitionPointerIsValid(page->bucket->root, ptr));
     partitionFreeWithPage(ptr, page);
@@ -343,7 +399,8 @@ ALWAYS_INLINE void* partitionAllocGeneric(PartitionRoot* root, size_t size)
 #else
     ASSERT(root->initialized);
     size = QuantizedAllocation::quantizedSize(size);
-    if (LIKELY(size <= root->maxAllocation)) {
+    size_t realSize = partitionCookieSizeAdjust(size);
+    if (LIKELY(realSize <= root->maxAllocation)) {
         spinLockLock(&root->lock);
         void* ret = partitionAlloc(root, size);
         spinLockUnlock(&root->lock);
@@ -360,6 +417,7 @@ ALWAYS_INLINE void partitionFreeGeneric(PartitionRoot* root, void* ptr)
 #else
     ASSERT(root->initialized);
     if (LIKELY(partitionPointerIsValid(root, ptr))) {
+        ptr = partitionCookieFreePointerAdjust(ptr);
         PartitionPageHeader* page = partitionPointerToPage(ptr);
         spinLockLock(&root->lock);
         partitionFreeWithPage(ptr, page);
