@@ -263,8 +263,14 @@ class TestingProfile : public Profile {
   virtual void RequestMIDISysExPermission(
       int render_process_id,
       int render_view_id,
+      int bridge_id,
       const GURL& requesting_frame,
       const MIDISysExPermissionCallback& callback) OVERRIDE;
+  virtual void CancelMIDISysExPermissionRequest(
+        int render_process_id,
+        int render_view_id,
+        int bridge_id,
+        const GURL& requesting_frame) OVERRIDE;
   virtual net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
       const base::FilePath& partition_path,
       bool in_memory,

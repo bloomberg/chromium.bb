@@ -179,6 +179,7 @@ net::URLRequestContextGetter*
 void ShellBrowserContext::RequestMIDISysExPermission(
       int render_process_id,
       int render_view_id,
+      int bridge_id,
       const GURL& requesting_frame,
       const MIDISysExPermissionCallback& callback) {
   // Always reject requests for LayoutTests for now.
@@ -189,6 +190,13 @@ void ShellBrowserContext::RequestMIDISysExPermission(
   }
   // TODO(toyoshim): Implement. http://crbug.com/257618 .
   callback.Run(false);
+}
+
+void ShellBrowserContext::CancelMIDISysExPermissionRequest(
+    int render_process_id,
+    int render_view_id,
+    int bridge_id,
+    const GURL& requesting_frame) {
 }
 
 net::URLRequestContextGetter*

@@ -101,10 +101,18 @@ TestBrowserContext::GetMediaRequestContextForStoragePartition(
 void TestBrowserContext::RequestMIDISysExPermission(
       int render_process_id,
       int render_view_id,
+      int bridge_id,
       const GURL& requesting_frame,
       const MIDISysExPermissionCallback& callback) {
   // Always reject requests for testing.
   callback.Run(false);
+}
+
+void TestBrowserContext::CancelMIDISysExPermissionRequest(
+    int render_process_id,
+    int render_view_id,
+    int bridge_id,
+    const GURL& requesting_frame) {
 }
 
 ResourceContext* TestBrowserContext::GetResourceContext() {

@@ -31,10 +31,13 @@ class MIDIDispatcherHost : public BrowserMessageFilter {
 
  private:
   void OnRequestSysExPermission(int render_view_id,
-                                int client_id,
+                                int bridge_id,
                                 const GURL& origin);
+  void OnCancelSysExPermissionRequest(int render_view_id,
+                                      int bridge_id,
+                                      const GURL& requesting_frame);
   void WasSysExPermissionGranted(int render_view_id,
-                                 int client_id,
+                                 int bridge_id,
                                  bool success);
 
   int render_process_id_;

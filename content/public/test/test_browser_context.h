@@ -43,8 +43,14 @@ class TestBrowserContext : public BrowserContext {
   virtual void RequestMIDISysExPermission(
       int render_process_id,
       int render_view_id,
+      int bridge_id,
       const GURL& requesting_frame,
       const MIDISysExPermissionCallback& callback) OVERRIDE;
+  virtual void CancelMIDISysExPermissionRequest(
+        int render_process_id,
+        int render_view_id,
+        int bridge_id,
+        const GURL& requesting_frame) OVERRIDE;
   virtual ResourceContext* GetResourceContext() OVERRIDE;
   virtual GeolocationPermissionContext*
       GetGeolocationPermissionContext() OVERRIDE;

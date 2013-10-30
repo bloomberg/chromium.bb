@@ -288,14 +288,27 @@ OffTheRecordProfileImpl::GetMediaRequestContextForStoragePartition(
 void OffTheRecordProfileImpl::RequestMIDISysExPermission(
       int render_process_id,
       int render_view_id,
+      int bridge_id,
       const GURL& requesting_frame,
       const MIDISysExPermissionCallback& callback) {
   ChromeMIDIPermissionContext* context =
       ChromeMIDIPermissionContextFactory::GetForProfile(this);
   context->RequestMIDISysExPermission(render_process_id,
                                       render_view_id,
+                                      bridge_id,
                                       requesting_frame,
                                       callback);
+}
+
+void OffTheRecordProfileImpl::CancelMIDISysExPermissionRequest(
+    int render_process_id,
+    int render_view_id,
+    int bridge_id,
+    const GURL& requesting_frame) {
+  ChromeMIDIPermissionContext* context =
+      ChromeMIDIPermissionContextFactory::GetForProfile(this);
+  context->CancelMIDISysExPermissionRequest(
+      render_process_id, render_view_id, bridge_id, requesting_frame);
 }
 
 net::URLRequestContextGetter*

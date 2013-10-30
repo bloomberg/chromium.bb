@@ -132,8 +132,16 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   virtual void RequestMIDISysExPermission(
       int render_process_id,
       int render_view_id,
+      int bridge_id,
       const GURL& requesting_frame,
       const MIDISysExPermissionCallback& callback) = 0;
+
+  // Cancels a pending MIDI permission request.
+  virtual void CancelMIDISysExPermissionRequest(
+      int render_process_id,
+      int render_view_id,
+      int bridge_id,
+      const GURL& requesting_frame) = 0;
 
   // Returns the resource context.
   virtual ResourceContext* GetResourceContext() = 0;

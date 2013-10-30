@@ -34,6 +34,7 @@ void ChromeMIDIPermissionContext::Shutdown() {
 void ChromeMIDIPermissionContext::RequestMIDISysExPermission(
     int render_process_id,
     int render_view_id,
+    int bridge_id,
     const GURL& requesting_frame,
     const content::BrowserContext::MIDISysExPermissionCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -49,7 +50,7 @@ void ChromeMIDIPermissionContext::RequestMIDISysExPermission(
   if (!web_contents)
     return;
 
-  const PermissionRequestID id(render_process_id, render_view_id, 0);
+  const PermissionRequestID id(render_process_id, render_view_id, bridge_id);
 
   GURL embedder = web_contents->GetURL();
   if (!requesting_frame.is_valid() || !embedder.is_valid()) {
@@ -61,6 +62,15 @@ void ChromeMIDIPermissionContext::RequestMIDISysExPermission(
   }
 
   DecidePermission(id, requesting_frame, embedder, callback);
+}
+
+void ChromeMIDIPermissionContext::CancelMIDISysExPermissionRequest(
+    int render_process_id,
+    int render_view_id,
+    int bridge_id,
+    const GURL& requesting_frame) {
+  CancelPendingInfoBarRequest(
+      PermissionRequestID(render_process_id, render_view_id, bridge_id));
 }
 
 void ChromeMIDIPermissionContext::DecidePermission(
@@ -128,4 +138,12 @@ PermissionQueueController* ChromeMIDIPermissionContext::GetQueueController() {
                                       CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
   }
   return permission_queue_controller_.get();
+}
+
+void ChromeMIDIPermissionContext::CancelPendingInfoBarRequest(
+    const PermissionRequestID& id) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  if (shutting_down_)
+    return;
+  GetQueueController()->CancelInfoBarRequest(id);
 }

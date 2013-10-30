@@ -30,6 +30,12 @@ IPC_MESSAGE_CONTROL3(MIDIHostMsg_RequestSysExPermission,
                      int /* client id */,
                      GURL /* origin */)
 
+// Renderer request to browser for canceling a previous permission request.
+IPC_MESSAGE_CONTROL3(MIDIHostMsg_CancelSysExPermissionRequest,
+                     int /* render_view_id */,
+                     int /* bridge_id */,
+                     GURL /* GURL of the frame */)
+
 // Messages sent from the browser to the renderer.
 
 IPC_MESSAGE_ROUTED2(MIDIMsg_SysExPermissionApproved,

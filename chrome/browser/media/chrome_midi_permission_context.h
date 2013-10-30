@@ -27,8 +27,15 @@ class ChromeMIDIPermissionContext : public BrowserContextKeyedService {
   void RequestMIDISysExPermission(
       int render_process_id,
       int render_view_id,
+      int bridge_id,
       const GURL& requesting_frame,
       const content::BrowserContext::MIDISysExPermissionCallback& callback);
+
+  // Cancel a pending MIDI permission request.
+  void CancelMIDISysExPermissionRequest(int render_process_id,
+                                        int render_view_id,
+                                        int bridge_id,
+                                        const GURL& requesting_frame);
 
  private:
   // Decide whether the permission should be granted.
@@ -58,6 +65,9 @@ class ChromeMIDIPermissionContext : public BrowserContextKeyedService {
 
   // Return an instance of the infobar queue controller, creating it if needed.
   PermissionQueueController* GetQueueController();
+
+  // Removes any pending InfoBar request.
+  void CancelPendingInfoBarRequest(const PermissionRequestID& id);
 
   Profile* const profile_;
   bool shutting_down_;

@@ -34,11 +34,11 @@ bool MIDIDispatcher::OnMessageReceived(const IPC::Message& message) {
 
 void MIDIDispatcher::requestSysExPermission(
       const WebMIDIPermissionRequest& request) {
-  int client_id = requests_.Add(new WebMIDIPermissionRequest(request));
+  int bridge_id = requests_.Add(new WebMIDIPermissionRequest(request));
   WebSecurityOrigin security_origin = request.securityOrigin();
   std::string origin = security_origin.toString().utf8();
   GURL url(origin);
-  Send(new MIDIHostMsg_RequestSysExPermission(routing_id(), client_id, url));
+  Send(new MIDIHostMsg_RequestSysExPermission(routing_id(), bridge_id, url));
 }
 
 void MIDIDispatcher::cancelSysExPermissionRequest(
@@ -47,19 +47,23 @@ void MIDIDispatcher::cancelSysExPermissionRequest(
        !it.IsAtEnd();
        it.Advance()) {
     WebMIDIPermissionRequest* value = it.GetCurrentValue();
-    if (!value->equals(request))
-      continue;
-    requests_.Remove(it.GetCurrentKey());
+    if (value->equals(request)) {
+      string16 origin = request.securityOrigin().toString();
+      Send(new MIDIHostMsg_CancelSysExPermissionRequest(
+          routing_id(), it.GetCurrentKey(), GURL(origin)));
+      requests_.Remove(it.GetCurrentKey());
+      break;
+    }
   }
 }
 
-void MIDIDispatcher::OnSysExPermissionApproved(int client_id, bool is_allowed) {
+void MIDIDispatcher::OnSysExPermissionApproved(int bridge_id, bool is_allowed) {
   // |request| can be NULL when the request is canceled.
-  WebMIDIPermissionRequest* request = requests_.Lookup(client_id);
+  WebMIDIPermissionRequest* request = requests_.Lookup(bridge_id);
   if (!request)
     return;
   request->setIsAllowed(is_allowed);
-  requests_.Remove(client_id);
+  requests_.Remove(bridge_id);
 }
 
 }  // namespace content
