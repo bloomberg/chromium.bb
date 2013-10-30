@@ -2828,6 +2828,7 @@ desktop_shell_set_lock_surface(struct wl_client *client,
 	wl_signal_add(&surface->destroy_signal,
 		      &shell->lock_surface_listener);
 
+	weston_view_create(surface);
 	surface->configure = lock_surface_configure;
 	surface->configure_private = shell;
 }
