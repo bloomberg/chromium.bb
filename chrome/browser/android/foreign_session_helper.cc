@@ -52,6 +52,12 @@ bool ShouldSkipTab(const SessionTab& tab) {
         selected_index >= static_cast<int>(tab.navigations.size()))
       return true;
 
+    const ::sessions::SerializedNavigationEntry& current_navigation =
+        tab.navigations.at(selected_index);
+
+    if (current_navigation.virtual_url().is_empty())
+      return true;
+
     return false;
 }
 
