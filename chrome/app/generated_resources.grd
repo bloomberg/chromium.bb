@@ -7807,9 +7807,10 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
       <message name="IDS_FEEDBACK_PRIVACY_NOTE" desc="Text for the privacy note included with Chrome OS">
         Your Chrome and operating system version will be submitted in addition
-        to any information you choose to include above. This feedback is used to
-        diagnose problems and help improve Chrome. Any personal information you
-        submit, whether explicitly or incidentally will be protected in
+        to any information you choose to include above. If you include your email
+        address, Google may contact you regarding your feedback report. This feedback
+        is used to diagnose problems and help improve Chrome. Any personal information
+        you submit, whether explicitly or incidentally will be protected in
         accordance with our privacy policies.<ph name="BEGIN_BOLD">&lt;strong&gt;
         </ph> By submitting this feedback, you agree that Google may use feedback
         that you provide to improve any Google product or service.
