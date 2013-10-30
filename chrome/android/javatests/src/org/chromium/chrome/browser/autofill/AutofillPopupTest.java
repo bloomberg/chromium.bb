@@ -18,6 +18,7 @@ import org.chromium.content.browser.test.util.TestInputMethodManagerWrapper;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.ui.autofill.AutofillPopup;
 
+import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.text.TextUtils;
 import android.view.View;
@@ -69,8 +70,12 @@ public class AutofillPopupTest extends ChromiumTestShellTestBase {
         mHelper = new AutofillTestHelper();
     }
 
-    @MediumTest
-    @Feature({"autofill"})
+    /*
+     * @MediumTest
+     * @Feature({"autofill"})
+     * Bug 312896
+     */
+    @FlakyTest
     public void testClickAutofillPopupSuggestion()
             throws InterruptedException, ExecutionException, TimeoutException {
         // The TestInputMethodManagerWrapper intercepts showSoftInput so that a keyboard is never
