@@ -18122,9 +18122,19 @@ other types of suffix sets.
 
 <histogram name="Tab.StatusWhenSwitchedBackToForeground" enum="TabStatus">
   <summary>
-    The status of a tab collected each time the user switches to it on Android.
+    The status of a tab collected each time the user switches to it on mobile.
     That does not include tabs being created at the time the user switches to
     them, such as NTP or tabs opened to handle intents.
+  </summary>
+</histogram>
+
+<histogram name="Tab.StatusWhenSwitchedBackToForegroundDataProxyEnabled"
+    enum="TabStatus">
+  <summary>
+    The status of a tab collected each time the user switches to it on mobile
+    with the data reduction proxy enabled. This is populated identically, and in
+    addition to Tab.StatusWhenSwitchedBackToForeground for any given tab
+    switching event if the proxy is enabled.
   </summary>
 </histogram>
 
