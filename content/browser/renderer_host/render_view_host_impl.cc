@@ -14,7 +14,6 @@
 #include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_reader.h"
-#include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
@@ -117,9 +116,6 @@ base::i18n::TextDirection WebTextDirectionToChromeTextDirection(
   }
 }
 
-base::LazyInstance<std::vector<RenderViewHost::CreatedCallback> >
-g_created_callbacks = LAZY_INSTANCE_INITIALIZER;
-
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -199,9 +195,6 @@ RenderViewHostImpl::RenderViewHostImpl(
                               main_frame_routing_id, is_swapped_out_));
 
   GetProcess()->EnableSendQueue();
-
-  for (size_t i = 0; i < g_created_callbacks.Get().size(); i++)
-    g_created_callbacks.Get().at(i).Run(this);
 
   if (!swapped_out)
     instance_->increment_active_view_count();
@@ -2003,19 +1996,6 @@ void RenderViewHostImpl::FilterURL(ChildProcessSecurityPolicyImpl* policy,
     VLOG(1) << "Blocked URL " << url->spec();
     *url = GURL(kAboutBlankURL);
     RecordAction(UserMetricsAction("FilterURLTermiate_Blocked"));
-  }
-}
-
-void RenderViewHost::AddCreatedCallback(const CreatedCallback& callback) {
-  g_created_callbacks.Get().push_back(callback);
-}
-
-void RenderViewHost::RemoveCreatedCallback(const CreatedCallback& callback) {
-  for (size_t i = 0; i < g_created_callbacks.Get().size(); ++i) {
-    if (g_created_callbacks.Get().at(i).Equals(callback)) {
-      g_created_callbacks.Get().erase(g_created_callbacks.Get().begin() + i);
-      return;
-    }
   }
 }
 

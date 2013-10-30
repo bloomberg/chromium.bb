@@ -79,11 +79,6 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
                         bool empty_allowed,
                         GURL* url);
 
-  // Adds/removes a callback called on creation of each new RenderViewHost.
-  typedef base::Callback<void(RenderViewHost*)> CreatedCallback;
-  static void AddCreatedCallback(const CreatedCallback& callback);
-  static void RemoveCreatedCallback(const CreatedCallback& callback);
-
   virtual ~RenderViewHost() {}
 
   // Tell the render view to enable a set of javascript bindings. The argument
