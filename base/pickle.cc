@@ -153,8 +153,7 @@ bool PickleIterator::ReadBytes(const char** data, int length) {
 Pickle::Pickle()
     : header_(NULL),
       header_size_(sizeof(Header)),
-      capacity_(0),
-      variable_buffer_offset_(0) {
+      capacity_(0) {
   Resize(kPayloadUnit);
   header_->payload_size = 0;
 }
@@ -162,8 +161,7 @@ Pickle::Pickle()
 Pickle::Pickle(int header_size)
     : header_(NULL),
       header_size_(AlignInt(header_size, sizeof(uint32))),
-      capacity_(0),
-      variable_buffer_offset_(0) {
+      capacity_(0) {
   DCHECK_GE(static_cast<size_t>(header_size), sizeof(Header));
   DCHECK_LE(header_size, kPayloadUnit);
   Resize(kPayloadUnit);
@@ -173,8 +171,7 @@ Pickle::Pickle(int header_size)
 Pickle::Pickle(const char* data, size_t data_len)
     : header_(reinterpret_cast<Header*>(const_cast<char*>(data))),
       header_size_(0),
-      capacity_(kCapacityReadOnly),
-      variable_buffer_offset_(0) {
+      capacity_(kCapacityReadOnly) {
   if (data_len >= sizeof(Header))
     header_size_ = data_len - header_->payload_size;
 
@@ -192,8 +189,7 @@ Pickle::Pickle(const char* data, size_t data_len)
 Pickle::Pickle(const Pickle& other)
     : header_(NULL),
       header_size_(other.header_size_),
-      capacity_(0),
-      variable_buffer_offset_(other.variable_buffer_offset_) {
+      capacity_(0) {
   size_t payload_size = header_size_ + other.header_->payload_size;
   bool resized = Resize(payload_size);
   CHECK(resized);  // Realloc failed.
@@ -223,7 +219,6 @@ Pickle& Pickle::operator=(const Pickle& other) {
   CHECK(resized);  // Realloc failed.
   memcpy(header_, other.header_,
          other.header_size_ + other.header_->payload_size);
-  variable_buffer_offset_ = other.variable_buffer_offset_;
   return *this;
 }
 
@@ -265,43 +260,6 @@ bool Pickle::WriteBytes(const void* data, int data_len) {
 
   EndWrite(dest, data_len);
   return true;
-}
-
-char* Pickle::BeginWriteData(int length) {
-  DCHECK_EQ(variable_buffer_offset_, 0U) <<
-    "There can only be one variable buffer in a Pickle";
-
-  if (length < 0 || !WriteInt(length))
-    return NULL;
-
-  char *data_ptr = BeginWrite(length);
-  if (!data_ptr)
-    return NULL;
-
-  variable_buffer_offset_ =
-      data_ptr - reinterpret_cast<char*>(header_) - sizeof(int);
-
-  // EndWrite doesn't necessarily have to be called after the write operation,
-  // so we call it here to pad out what the caller will eventually write.
-  EndWrite(data_ptr, length);
-  return data_ptr;
-}
-
-void Pickle::TrimWriteData(int new_length) {
-  DCHECK_NE(variable_buffer_offset_, 0U);
-
-  // Fetch the the variable buffer size
-  int* cur_length = reinterpret_cast<int*>(
-      reinterpret_cast<char*>(header_) + variable_buffer_offset_);
-
-  if (new_length < 0 || new_length > *cur_length) {
-    NOTREACHED() << "Invalid length in TrimWriteData.";
-    return;
-  }
-
-  // Update the payload size and variable buffer size
-  header_->payload_size -= (*cur_length - new_length);
-  *cur_length = new_length;
 }
 
 void Pickle::Reserve(size_t additional_capacity) {

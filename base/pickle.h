@@ -252,27 +252,6 @@ class BASE_EXPORT Pickle {
   // known size. See also WriteData.
   bool WriteBytes(const void* data, int data_len);
 
-  // Same as WriteData, but allows the caller to write directly into the
-  // Pickle. This saves a copy in cases where the data is not already
-  // available in a buffer. The caller should take care to not write more
-  // than the length it declares it will. Use ReadData to get the data.
-  // Returns NULL on failure.
-  //
-  // The returned pointer will only be valid until the next write operation
-  // on this Pickle.
-  char* BeginWriteData(int length);
-
-  // For Pickles which contain variable length buffers (e.g. those created
-  // with BeginWriteData), the Pickle can
-  // be 'trimmed' if the amount of data required is less than originally
-  // requested.  For example, you may have created a buffer with 10K of data,
-  // but decided to only fill 10 bytes of that data.  Use this function
-  // to trim the buffer so that we don't send 9990 bytes of unused data.
-  // You cannot increase the size of the variable buffer; only shrink it.
-  // This function assumes that the length of the variable buffer has
-  // not been changed.
-  void TrimWriteData(int length);
-
   // Reserves space for upcoming writes when multiple writes will be made and
   // their sizes are computed in advance. It can be significantly faster to call
   // Reserve() before calling WriteFoo() multiple times.
@@ -358,7 +337,6 @@ class BASE_EXPORT Pickle {
   size_t header_size_;  // Supports extra data between header and payload.
   // Allocation size of payload (or -1 if allocation is const).
   size_t capacity_;
-  size_t variable_buffer_offset_;  // IF non-zero, then offset to a buffer.
 
   FRIEND_TEST_ALL_PREFIXES(PickleTest, Resize);
   FRIEND_TEST_ALL_PREFIXES(PickleTest, FindNext);
