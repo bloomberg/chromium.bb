@@ -1,17 +1,12 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/engine/process_updates_command.h"
+#include "sync/engine/process_updates_util.h"
 
-#include <vector>
-
-#include "base/basictypes.h"
 #include "base/location.h"
-#include "sync/engine/syncer.h"
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/engine/syncer_util.h"
-#include "sync/sessions/sync_session.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/model_neutral_mutable_entry.h"
 #include "sync/syncable/syncable_model_neutral_write_transaction.h"
@@ -19,17 +14,11 @@
 #include "sync/syncable/syncable_util.h"
 #include "sync/util/cryptographer.h"
 
-using std::vector;
-
 namespace syncer {
 
-using sessions::SyncSession;
 using sessions::StatusController;
 
 using syncable::GET_BY_ID;
-
-ProcessUpdatesCommand::ProcessUpdatesCommand() {}
-ProcessUpdatesCommand::~ProcessUpdatesCommand() {}
 
 namespace {
 
@@ -87,57 +76,51 @@ bool UpdateContainsNewVersion(syncable::BaseTransaction *trans,
 
 }  // namespace
 
-SyncerError ProcessUpdatesCommand::ExecuteImpl(SyncSession* session) {
-  syncable::Directory* dir = session->context()->directory();
-
-  syncable::ModelNeutralWriteTransaction trans(
-      FROM_HERE, syncable::SYNCER, dir);
-
-  sessions::StatusController* status = session->mutable_status_controller();
-  const sync_pb::GetUpdatesResponse& updates =
-      status->updates_response().get_updates();
-  ModelTypeSet requested_types = GetRoutingInfoTypes(
-      session->context()->routing_info());
-
-  TypeSyncEntityMap updates_by_type;
-
-  PartitionUpdatesByType(updates, &updates_by_type);
-
-  int update_count = updates.entries().size();
-  status->increment_num_updates_downloaded_by(update_count);
-
-  DVLOG(1) << update_count << " entries to verify";
-  for (TypeSyncEntityMap::iterator it = updates_by_type.begin();
-       it != updates_by_type.end(); ++it) {
-    for (SyncEntityList::iterator update_it = it->second.begin();
-         update_it != it->second.end(); ++update_it) {
-      if (!UpdateContainsNewVersion(&trans, **update_it))
-        status->increment_num_reflected_updates_downloaded_by(1);
-      if ((*update_it)->deleted())
-        status->increment_num_tombstone_updates_downloaded_by(1);
-      VerifyResult verify_result = VerifyUpdate(
-          &trans,
-          **update_it,
-          requested_types,
-          session->context()->routing_info());
-      if (verify_result != VERIFY_SUCCESS && verify_result != VERIFY_UNDELETE)
-        continue;
-      ProcessUpdate(**update_it, dir->GetCryptographer(&trans), &trans);
-    }
-  }
-
-  return SYNCER_OK;
-}
-
-void ProcessUpdatesCommand::PartitionUpdatesByType(
+void PartitionUpdatesByType(
     const sync_pb::GetUpdatesResponse& updates,
+    ModelTypeSet requested_types,
     TypeSyncEntityMap* updates_by_type) {
   int update_count = updates.entries().size();
+  for (ModelTypeSet::Iterator it = requested_types.First();
+       it.Good(); it.Inc()) {
+    updates_by_type->insert(std::make_pair(it.Get(), SyncEntityList()));
+  }
   for (int i = 0; i < update_count; ++i) {
     const sync_pb::SyncEntity& update = updates.entries(i);
     ModelType type = GetModelType(update);
-    DCHECK(IsRealDataType(type));
-    (*updates_by_type)[type].push_back(&update);
+    if (!IsRealDataType(type)) {
+      NOTREACHED() << "Received update with invalid type.";
+      continue;
+    }
+
+    TypeSyncEntityMap::iterator it = updates_by_type->find(type);
+    if (it == updates_by_type->end()) {
+      DLOG(WARNING) << "Skipping update for unexpected type "
+                    << ModelTypeToString(type);
+      continue;
+    }
+
+    it->second.push_back(&update);
+  }
+}
+
+void ProcessDownloadedUpdates(
+    syncable::Directory* dir,
+    syncable::ModelNeutralWriteTransaction* trans,
+    ModelType type,
+    const SyncEntityList& applicable_updates,
+    sessions::StatusController* status) {
+  for (SyncEntityList::const_iterator update_it = applicable_updates.begin();
+       update_it != applicable_updates.end(); ++update_it) {
+    DCHECK_EQ(type, GetModelType(**update_it));
+    if (!UpdateContainsNewVersion(trans, **update_it))
+      status->increment_num_reflected_updates_downloaded_by(1);
+    if ((*update_it)->deleted())
+      status->increment_num_tombstone_updates_downloaded_by(1);
+    VerifyResult verify_result = VerifyUpdate(trans, **update_it, type);
+    if (verify_result != VERIFY_SUCCESS && verify_result != VERIFY_UNDELETE)
+      continue;
+    ProcessUpdate(**update_it, dir->GetCryptographer(trans), trans);
   }
 }
 
@@ -160,11 +143,10 @@ VerifyResult VerifyTagConsistency(
 
 }  // namespace
 
-VerifyResult ProcessUpdatesCommand::VerifyUpdate(
+VerifyResult VerifyUpdate(
     syncable::ModelNeutralWriteTransaction* trans,
     const sync_pb::SyncEntity& entry,
-    ModelTypeSet requested_types,
-    const ModelSafeRoutingInfo& routes) {
+    ModelType requested_type) {
   syncable::Id id = SyncableIdFromProto(entry.id_string());
   VerifyResult result = VERIFY_FAIL;
 
@@ -198,8 +180,7 @@ VerifyResult ProcessUpdatesCommand::VerifyUpdate(
     if (deleted) {
       // For deletes the server could send tombostones for items that
       // the client did not request. If so ignore those items.
-      if (IsRealDataType(placement_type) &&
-          !requested_types.Has(placement_type)) {
+      if (IsRealDataType(placement_type) && requested_type != placement_type) {
         result = VERIFY_SKIP;
       } else {
         result = VERIFY_SUCCESS;
@@ -240,7 +221,7 @@ bool ReverifyEntry(syncable::ModelNeutralWriteTransaction* trans,
 }  // namespace
 
 // Process a single update. Will avoid touching global state.
-void ProcessUpdatesCommand::ProcessUpdate(
+void ProcessUpdate(
     const sync_pb::SyncEntity& update,
     const Cryptographer* cryptographer,
     syncable::ModelNeutralWriteTransaction* const trans) {

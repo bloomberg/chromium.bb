@@ -70,6 +70,7 @@ class SYNC_EXPORT_PRIVATE Syncer {
  private:
   void ApplyUpdates(sessions::SyncSession* session);
   bool DownloadAndApplyUpdates(
+      ModelTypeSet request_types,
       sessions::SyncSession* session,
       base::Callback<void(sync_pb::ClientToServerMessage*)> build_fn);
 

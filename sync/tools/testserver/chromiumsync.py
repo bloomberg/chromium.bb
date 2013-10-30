@@ -451,8 +451,7 @@ class UpdateSieve(object):
         final_stamp = max(old_timestamp, new_timestamp)
         final_migration = self._migration_history.GetLatestVersion(data_type)
         new_marker.token = pickle.dumps((final_stamp, final_migration))
-        if new_marker not in self._original_request.from_progress_marker:
-          get_updates_response.new_progress_marker.add().MergeFrom(new_marker)
+        get_updates_response.new_progress_marker.add().MergeFrom(new_marker)
     elif self._original_request.HasField('from_timestamp'):
       if self._original_request.from_timestamp < new_timestamp:
         get_updates_response.new_timestamp = new_timestamp

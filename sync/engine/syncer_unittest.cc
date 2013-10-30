@@ -25,7 +25,6 @@
 #include "build/build_config.h"
 #include "sync/engine/get_commit_ids.h"
 #include "sync/engine/net/server_connection_manager.h"
-#include "sync/engine/process_updates_command.h"
 #include "sync/engine/sync_scheduler_impl.h"
 #include "sync/engine/syncer.h"
 #include "sync/engine/syncer_proto_util.h"

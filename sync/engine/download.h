@@ -55,7 +55,8 @@ SYNC_EXPORT_PRIVATE void BuildDownloadUpdatesForPoll(
 // Sends the specified message to the server and stores the response in a member
 // of the |session|'s StatusController.
 SYNC_EXPORT_PRIVATE SyncerError
-    ExecuteDownloadUpdates(sessions::SyncSession* session,
+    ExecuteDownloadUpdates(ModelTypeSet request_types,
+                           sessions::SyncSession* session,
                            sync_pb::ClientToServerMessage* msg);
 
 }  // namespace syncer
