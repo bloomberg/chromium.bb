@@ -35,13 +35,6 @@ struct GridCoordinate;
 struct GridSpan;
 class GridTrack;
 
-enum GridPositionSide {
-    ColumnStartSide,
-    ColumnEndSide,
-    RowStartSide,
-    RowEndSide
-};
-
 class RenderGrid FINAL : public RenderBlock {
 public:
     RenderGrid(Element*);

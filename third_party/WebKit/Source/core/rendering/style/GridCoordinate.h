@@ -31,6 +31,7 @@
 #ifndef GridCoordinate_h
 #define GridCoordinate_h
 
+#include "core/rendering/style/GridPosition.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
@@ -44,6 +45,57 @@ struct GridSpan {
     static PassOwnPtr<GridSpan> create(size_t initialPosition, size_t finalPosition)
     {
         return adoptPtr(new GridSpan(initialPosition, finalPosition));
+    }
+
+    static PassOwnPtr<GridSpan> createWithSpanAgainstOpposite(size_t resolvedOppositePosition, const GridPosition& position, GridPositionSide side)
+    {
+        // 'span 1' is contained inside a single grid track regardless of the direction.
+        // That's why the CSS span value is one more than the offset we apply.
+        size_t positionOffset = position.spanPosition() - 1;
+        if (side == ColumnStartSide || side == RowStartSide) {
+            size_t initialResolvedPosition = std::max<int>(0, resolvedOppositePosition - positionOffset);
+            return GridSpan::create(initialResolvedPosition, resolvedOppositePosition);
+        }
+
+        return GridSpan::create(resolvedOppositePosition, resolvedOppositePosition + positionOffset);
+    }
+
+    static PassOwnPtr<GridSpan> createWithNamedSpanAgainstOpposite(size_t resolvedOppositePosition, const GridPosition& position, GridPositionSide side, const Vector<size_t>& gridLines)
+    {
+        if (side == RowStartSide || side == ColumnStartSide)
+            return createWithInitialNamedSpanAgainstOpposite(resolvedOppositePosition, position, gridLines);
+
+        return createWithFinalNamedSpanAgainstOpposite(resolvedOppositePosition, position, gridLines);
+    }
+
+    static PassOwnPtr<GridSpan> createWithInitialNamedSpanAgainstOpposite(size_t resolvedOppositePosition, const GridPosition& position, const Vector<size_t>& gridLines)
+    {
+        // The grid line inequality needs to be strict (which doesn't match the after / end case) because |resolvedOppositePosition|
+        // is already converted to an index in our grid representation (ie one was removed from the grid line to account for the side).
+        size_t firstLineBeforeOppositePositionIndex = 0;
+        const size_t* firstLineBeforeOppositePosition = std::lower_bound(gridLines.begin(), gridLines.end(), resolvedOppositePosition);
+        if (firstLineBeforeOppositePosition != gridLines.end())
+            firstLineBeforeOppositePositionIndex = firstLineBeforeOppositePosition - gridLines.begin();
+
+        size_t gridLineIndex = std::max<int>(0, firstLineBeforeOppositePositionIndex - position.spanPosition() + 1);
+        size_t resolvedGridLinePosition = gridLines[gridLineIndex];
+        if (resolvedGridLinePosition > resolvedOppositePosition)
+            resolvedGridLinePosition = resolvedOppositePosition;
+        return GridSpan::create(resolvedGridLinePosition, resolvedOppositePosition);
+    }
+
+    static PassOwnPtr<GridSpan> createWithFinalNamedSpanAgainstOpposite(size_t resolvedOppositePosition, const GridPosition& position, const Vector<size_t>& gridLines)
+    {
+        size_t firstLineAfterOppositePositionIndex = gridLines.size() - 1;
+        const size_t* firstLineAfterOppositePosition = std::upper_bound(gridLines.begin(), gridLines.end(), resolvedOppositePosition);
+        if (firstLineAfterOppositePosition != gridLines.end())
+            firstLineAfterOppositePositionIndex = firstLineAfterOppositePosition - gridLines.begin();
+
+        size_t gridLineIndex = std::min(gridLines.size() - 1, firstLineAfterOppositePositionIndex + position.spanPosition() - 1);
+        size_t resolvedGridLinePosition = GridPosition::adjustGridPositionForAfterEndSide(gridLines[gridLineIndex]);
+        if (resolvedGridLinePosition < resolvedOppositePosition)
+            resolvedGridLinePosition = resolvedOppositePosition;
+        return GridSpan::create(resolvedOppositePosition, resolvedGridLinePosition);
     }
 
     GridSpan(size_t initialPosition, size_t finalPosition)
