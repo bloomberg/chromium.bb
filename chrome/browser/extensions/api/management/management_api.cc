@@ -348,7 +348,7 @@ class SafeManifestJSONParser : public UtilityProcessHostClient {
   void ReportResultFromUIThread() {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (error_.empty() && parsed_manifest_.get())
-      client_->OnParseSuccess(parsed_manifest_.release());
+      client_->OnParseSuccess(parsed_manifest_.Pass());
     else
       client_->OnParseFailure(error_);
   }
@@ -387,8 +387,8 @@ bool ManagementGetPermissionWarningsByManifestFunction::RunImpl() {
 }
 
 void ManagementGetPermissionWarningsByManifestFunction::OnParseSuccess(
-    base::DictionaryValue* parsed_manifest) {
-  CHECK(parsed_manifest);
+    scoped_ptr<base::DictionaryValue> parsed_manifest) {
+  CHECK(parsed_manifest.get());
 
   scoped_refptr<Extension> extension = Extension::Create(
       base::FilePath(), Manifest::INVALID_LOCATION, *parsed_manifest,

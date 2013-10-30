@@ -76,7 +76,7 @@ class ManagementGetPermissionWarningsByManifestFunction
       MANAGEMENT_GETPERMISSIONWARNINGSBYMANIFEST);
 
   // Called when utility process finishes.
-  void OnParseSuccess(base::DictionaryValue* parsed_manifest);
+  void OnParseSuccess(scoped_ptr<base::DictionaryValue> parsed_manifest);
   void OnParseFailure(const std::string& error);
 
  protected:
