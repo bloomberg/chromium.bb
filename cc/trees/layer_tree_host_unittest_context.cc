@@ -1403,13 +1403,16 @@ class LayerTreeHostContextTestCompositeAndReadbackBeforeOutputSurfaceInit
 
     times_output_surface_created_ = 0;
 
+    // Post the SetNeedsCommit before the readback to make sure it is run
+    // on the main thread before the readback's replacement commit when
+    // we have a threaded compositor.
+    PostSetNeedsCommitToMainThread();
+
     char pixels[4];
     bool result = layer_tree_host()->CompositeAndReadback(
         &pixels, gfx::Rect(1, 1));
     EXPECT_EQ(!delegating_renderer(), result);
     EXPECT_EQ(1, times_output_surface_created_);
-
-    PostSetNeedsCommitToMainThread();
   }
 
   virtual void DidInitializeOutputSurface(bool succeeded) OVERRIDE {
