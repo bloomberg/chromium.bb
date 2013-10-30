@@ -218,7 +218,7 @@ void HTMLTrackElement::loadTimerFired(Timer<HTMLTrackElement>*)
     // 8. If the track element's parent is a media element then let CORS mode be the state of the parent media
     // element's crossorigin content attribute. Otherwise, let CORS mode be No CORS.
     if (!canLoadUrl(url)) {
-        didCompleteLoad(ensureTrack(), HTMLTrackElement::Failure);
+        didCompleteLoad(HTMLTrackElement::Failure);
         return;
     }
 
@@ -250,7 +250,7 @@ bool HTMLTrackElement::canLoadUrl(const KURL& url)
     return dispatchBeforeLoadEvent(url.string());
 }
 
-void HTMLTrackElement::didCompleteLoad(LoadableTextTrack*, LoadStatus status)
+void HTMLTrackElement::didCompleteLoad(LoadStatus status)
 {
     // 4.8.10.12.3 Sourcing out-of-band text tracks (continued)
 

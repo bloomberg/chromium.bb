@@ -90,7 +90,7 @@ void LoadableTextTrack::loadTimerFired(Timer<LoadableTextTrack>*)
     // origin of the media element's Document, and the default origin behaviour set to fail.
     m_loader = TextTrackLoader::create(*this, m_trackElement->document());
     if (!m_loader->load(m_url, m_trackElement->mediaElementCrossOriginAttribute()))
-        m_trackElement->didCompleteLoad(this, HTMLTrackElement::Failure);
+        m_trackElement->didCompleteLoad(HTMLTrackElement::Failure);
 }
 
 void LoadableTextTrack::newCuesAvailable(TextTrackLoader* loader)
@@ -124,7 +124,7 @@ void LoadableTextTrack::cueLoadingCompleted(TextTrackLoader* loader, bool loadin
     if (!m_trackElement)
         return;
 
-    m_trackElement->didCompleteLoad(this, loadingFailed ? HTMLTrackElement::Failure : HTMLTrackElement::Success);
+    m_trackElement->didCompleteLoad(loadingFailed ? HTMLTrackElement::Failure : HTMLTrackElement::Success);
 }
 
 void LoadableTextTrack::newRegionsAvailable(TextTrackLoader* loader)

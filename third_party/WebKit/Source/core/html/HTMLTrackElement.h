@@ -59,7 +59,7 @@ public:
     void scheduleLoad();
 
     enum LoadStatus { Failure, Success };
-    virtual void didCompleteLoad(LoadableTextTrack*, LoadStatus);
+    void didCompleteLoad(LoadStatus);
 
     const AtomicString& mediaElementCrossOriginAttribute() const;
 
