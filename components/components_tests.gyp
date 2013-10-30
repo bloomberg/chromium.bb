@@ -16,9 +16,10 @@
           'target_name': 'components_unittests',
           'type': '<(gtest_target_type)',
           'sources': [
+            'auto_login_parser/auto_login_parser_unittest.cc',
             'autofill/core/common/form_data_unittest.cc',
             'autofill/core/common/form_field_data_unittest.cc',
-            'auto_login_parser/auto_login_parser_unittest.cc',
+            'autofill/core/common/password_form_fill_data_unittest.cc',
             'browser_context_keyed_service/browser_context_dependency_manager_unittest.cc',
             'browser_context_keyed_service/dependency_graph_unittest.cc',
             'dom_distiller/core/distiller_url_fetcher_unittest.cc',

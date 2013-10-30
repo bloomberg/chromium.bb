@@ -1964,7 +1964,6 @@
         '../components/autofill/core/browser/webdata/autofill_entry_unittest.cc',
         '../components/autofill/core/browser/webdata/autofill_table_unittest.cc',
         '../components/autofill/core/browser/webdata/web_data_service_unittest.cc',
-        '../components/autofill/core/common/password_form_fill_data_unittest.cc',
 
         # TODO(yael): Move to //components/components_tests.gypi once
         # nacl_defines is moved out of chrome.gyp into a common place.
