@@ -2752,14 +2752,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         return;
 
       case '27':  // Escape => Cancel dialog.
-        if (this.fileOperationManager_ &&
-            this.fileOperationManager_.isRunning()) {
-          // If there is a copy in progress, ESC will cancel it.
-          event.preventDefault();
-          this.fileOperationManager_.requestCancel();
-          return;
-        }
-
         if (this.dialogType != DialogType.FULL_PAGE) {
           // If there is nothing else for ESC to do, then cancel the dialog.
           event.preventDefault();

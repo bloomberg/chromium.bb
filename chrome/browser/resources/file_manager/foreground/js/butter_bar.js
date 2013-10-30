@@ -258,9 +258,9 @@ ButterBar.prototype.showProgress_ = function(progress) {
   if (this.currentMode_ == ButterBar.Mode.COPY) {
     this.update_(progressString, options);
   } else {
-    options.actions[ButterBar.ACTION_X] =
-        this.fileOperationManager_.requestCancel.bind(
-            this.fileOperationManager_);
+    // Ignore the cancel behavior because the butter bar is already obsoleted.
+    options.actions[ButterBar.ACTION_X] = function() {
+    };
     this.show(ButterBar.Mode.COPY, progressString, options);
   }
 };

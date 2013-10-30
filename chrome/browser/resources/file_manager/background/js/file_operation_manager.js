@@ -269,9 +269,6 @@ fileOperationUtil.zipSelection = function(
 function FileOperationManager() {
   this.copyTasks_ = [];
   this.deleteTasks_ = [];
-  this.cancelObservers_ = [];
-  this.cancelRequested_ = false;
-  this.cancelCallback_ = null;
   this.unloadTimeout_ = null;
   this.taskIdCounter_ = 0;
 
@@ -628,7 +625,7 @@ FileOperationManager.CopyTask.prototype.run = function(
           return;
         }
         progressCallback();
-        this.cancelCallback_ = FileOperationManager.CopyTask.processEntry_(
+        this.processEntry_(
             entry, this.targetDirEntry,
             function(sourceUrl, destinationUrl) {
               // Finalize the entry's progress state.
@@ -653,14 +650,8 @@ FileOperationManager.CopyTask.prototype.run = function(
                 progressCallback();
               }
             }.bind(this),
-            function() {
-              this.cancelCallback_ = null;
-              callback();
-            }.bind(this),
-            function(error) {
-              this.cancelCallback_ = null;
-              errorCallback(error);
-            }.bind(this));
+            callback,
+            errorCallback);
       },
       function() {
         if (this.deleteAfterCopy) {
@@ -685,48 +676,34 @@ FileOperationManager.CopyTask.prototype.run = function(
  *     periodically during the copying.
  * @param {function()} successCallback On success.
  * @param {function(FileOperationManager.Error)} errorCallback On error.
- * @return {function()} Callback to cancel the current file copy operation.
- *     When the cancel is done, errorCallback will be called. The returned
- *     callback must not be called more than once.
  * @private
  */
-FileOperationManager.CopyTask.processEntry_ = function(
+FileOperationManager.CopyTask.prototype.processEntry_ = function(
     sourceEntry, destinationEntry, entryChangedCallback, progressCallback,
     successCallback, errorCallback) {
-  var cancelRequested = false;
-  var cancelCallback = null;
   fileOperationUtil.deduplicatePath(
       destinationEntry, sourceEntry.name,
       function(destinationName) {
-        if (cancelRequested) {
+        if (this.cancelRequested_) {
           errorCallback(new FileOperationManager.Error(
               util.FileOperationErrorType.FILESYSTEM_ERROR,
               util.createFileError(FileError.ABORT_ERR)));
           return;
         }
-
-        cancelCallback = fileOperationUtil.copyTo(
+        this.cancelCallback_ = fileOperationUtil.copyTo(
             sourceEntry, destinationEntry, destinationName,
             entryChangedCallback, progressCallback,
             function(entry) {
-              cancelCallback = null;
+              this.cancelCallback_ = null;
               successCallback();
-            },
+            }.bind(this),
             function(error) {
-              cancelCallback = null;
+              this.cancelCallback_ = null;
               errorCallback(new FileOperationManager.Error(
                   util.FileOperationErrorType.FILESYSTEM_ERROR, error));
-            });
-      },
+            }.bind(this));
+      }.bind(this),
       errorCallback);
-
-  return function() {
-    cancelRequested = true;
-    if (cancelCallback) {
-      cancelCallback();
-      cancelCallback = null;
-    }
-  };
 };
 
 /**
@@ -1089,34 +1066,8 @@ FileOperationManager.prototype.maybeScheduleCloseBackgroundPage_ = function() {
  * @private
  */
 FileOperationManager.prototype.resetQueue_ = function() {
-  for (var i = 0; i < this.cancelObservers_.length; i++)
-    this.cancelObservers_[i]();
-
   this.copyTasks_ = [];
-  this.cancelObservers_ = [];
   this.maybeScheduleCloseBackgroundPage_();
-};
-
-/**
- * Request that the current copy queue be abandoned.
- *
- * @param {function()=} opt_callback On cancel.
- */
-FileOperationManager.prototype.requestCancel = function(opt_callback) {
-  this.cancelRequested_ = true;
-  if (this.cancelCallback_) {
-    this.cancelCallback_();
-    this.cancelCallback_ = null;
-  }
-  if (opt_callback)
-    this.cancelObservers_.push(opt_callback);
-
-  // If there is any active task it will eventually call maybeCancel_.
-  // Otherwise call it right now.
-  if (this.copyTasks_.length == 0)
-    this.doCancel_();
-  else
-    this.copyTasks_[0].requestCancel();
 };
 
 /**
@@ -1124,46 +1075,37 @@ FileOperationManager.prototype.requestCancel = function(opt_callback) {
  * @param {string} taskId ID of task to be canceled.
  */
 FileOperationManager.prototype.requestTaskCancel = function(taskId) {
+  console.debug('requestTaskCancel', taskId);
   var task = null;
   for (var i = 0; i < this.copyTasks_.length; i++) {
-    if (this.copyTasks_[i].taskId === taskId) {
-      this.copyTasks_[i].requestCancel();
-      return;
+    task = this.copyTasks_[i];
+    if (task.taskId !== taskId)
+      continue;
+    task.requestCancel();
+    // If the task is not on progress, remove it immediately.
+    if (i !== 0) {
+      this.eventRouter_.sendProgressEvent('CANCELED',
+                                          task.getStatus(),
+                                          task.taskId);
+      this.copyTasks_.splice(i, 1);
     }
   }
   for (var i = 0; i < this.deleteTasks_.length; i++) {
-    if (this.deleteTasks_[i].taskId === taskId) {
-      this.deleteTasks_[i].requestCancel();
-      return;
+    task = this.deleteTasks_[i];
+    if (task.taskId !== taskId)
+      continue;
+    task.requestCancel();
+    // If the task is not on progress, remove it immediately.
+    if (i != 0) {
+      this.eventRouter_.sendDeleteEvent(
+          'CANCELED',
+          task.entries.map(function(entry) {
+                             return util.makeFilesystemUrl(entry.fullPath);
+                           }),
+          task.taskId);
+      this.deleteTasks_.splice(i, 1);
     }
   }
-};
-
-/**
- * Perform the bookkeeping required to cancel.
- *
- * @private
- */
-FileOperationManager.prototype.doCancel_ = function() {
-  var taskId = this.copyTasks_[0].taskId;
-  this.resetQueue_();
-  this.cancelRequested_ = false;
-  this.eventRouter_.sendProgressEvent('CANCELLED', this.getStatus(), taskId);
-};
-
-/**
- * Used internally to check if a cancel has been requested, and handle
- * it if so.
- *
- * @return {boolean} If canceled.
- * @private
- */
-FileOperationManager.prototype.maybeCancel_ = function() {
-  if (!this.cancelRequested_)
-    return false;
-
-  this.doCancel_();
-  return true;
 };
 
 /**
@@ -1282,11 +1224,8 @@ FileOperationManager.prototype.queueCopy_ = function(
     this.copyTasks_.push(task);
     this.maybeScheduleCloseBackgroundPage_();
     this.eventRouter_.sendProgressEvent('BEGIN', task.getStatus(), task.taskId);
-    if (this.copyTasks_.length == 1) {
-      // Assume this.cancelRequested_ == false.
-      // This moved us from 0 to 1 active tasks, let the servicing begin!
+    if (this.copyTasks_.length == 1)
       this.serviceAllTasks_();
-    }
   }.bind(this));
 
   return task;
@@ -1317,9 +1256,8 @@ FileOperationManager.prototype.serviceAllTasks_ = function() {
 
   var onTaskError = function(err) {
     var task = this.copyTasks_.shift();
-    if (this.maybeCancel_())
-      return;
-    this.eventRouter_.sendProgressEvent('ERROR',
+    var reason = err.data.code === FileError.ABORT_ERR ? 'CANCELED' : 'ERROR';
+    this.eventRouter_.sendProgressEvent(reason,
                                         task.getStatus(),
                                         task.taskId,
                                         err);
@@ -1327,9 +1265,6 @@ FileOperationManager.prototype.serviceAllTasks_ = function() {
   }.bind(this);
 
   var onTaskSuccess = function() {
-    if (this.maybeCancel_())
-      return;
-
     // The task at the front of the queue is completed. Pop it from the queue.
     var task = this.copyTasks_.shift();
     this.maybeScheduleCloseBackgroundPage_();
@@ -1483,11 +1418,8 @@ FileOperationManager.prototype.zipSelection = function(
     this.eventRouter_.sendProgressEvent('BEGIN',
                                         zipTask.getStatus(),
                                         zipTask.taskId);
-    if (this.copyTasks_.length == 1) {
-      // Assume this.cancelRequested_ == false.
-      // This moved us from 0 to 1 active tasks, let the servicing begin!
+    if (this.copyTasks_.length == 1)
       this.serviceAllTasks_();
-    }
   }.bind(this));
 };
 

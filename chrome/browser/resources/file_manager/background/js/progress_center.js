@@ -390,6 +390,7 @@ ProgressCenterHandler.prototype.onCopyProgress_ = function(event) {
       break;
 
     case 'SUCCESS':
+    case 'CANCELED':
     case 'ERROR':
       item = progressCenter.getItemById(event.taskId);
       if (!item) {
@@ -402,7 +403,7 @@ ProgressCenterHandler.prototype.onCopyProgress_ = function(event) {
         // TODO(hirono): Add a message for complete.
         item.state = ProgressItemState.COMPLETE;
         item.progressValue = item.progressMax;
-      } else if (event.error.data.code === FileError.ABORT_ERR) {
+      } else if (event.reason === 'CANCELED') {
         item.message = strf('COPY_CANCELLED');
         item.state = ProgressItemState.CANCELED;
       } else {
@@ -431,6 +432,7 @@ ProgressCenterHandler.prototype.onDeleteProgress_ = function(event) {
       item.message =
           ProgressCenterHandler.getDeleteMessage_(event, this.totalDeleted_);
       item.progressMax = 100;
+      // TODO(hirono): Specify the cancel handler to the item.
       progressCenter.updateItem(item);
       break;
 

@@ -48,7 +48,6 @@ FileOperationManagerWrapper.decorateAsyncMethod = function(method) {
   };
 };
 
-FileOperationManagerWrapper.decorateAsyncMethod('requestCancel');
 FileOperationManagerWrapper.decorateAsyncMethod('paste');
 FileOperationManagerWrapper.decorateAsyncMethod('deleteEntries');
 FileOperationManagerWrapper.decorateAsyncMethod('forceDeleteTask');
