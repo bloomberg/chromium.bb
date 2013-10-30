@@ -1978,6 +1978,9 @@
   "ReportDeviceNetworkInterfaces": {
   },
 
+  "ReportDeviceUsers": {
+  },
+
   "DeviceAllowNewUsers": {
   },
 

@@ -69,6 +69,7 @@ const char* kKnownSettings[] = {
   kReportDeviceBootMode,
   kReportDeviceLocation,
   kReportDeviceNetworkInterfaces,
+  kReportDeviceUsers,
   kReportDeviceVersionInfo,
   kScreenSaverExtensionId,
   kScreenSaverTimeout,
@@ -403,6 +404,7 @@ void DeviceSettingsProvider::SetInPolicy() {
     //   kReportDeviceLocation
     //   kReportDeviceVersionInfo
     //   kReportDeviceNetworkInterfaces
+    //   kReportDeviceUsers
     //   kScreenSaverExtensionId
     //   kScreenSaverTimeout
     //   kStartUpUrls
@@ -675,6 +677,11 @@ void DeviceSettingsProvider::DecodeReportingPolicies(
       new_values_cache->SetBoolean(
           kReportDeviceNetworkInterfaces,
           reporting_policy.report_network_interfaces());
+    }
+    if (reporting_policy.has_report_users()) {
+      new_values_cache->SetBoolean(
+          kReportDeviceUsers,
+          reporting_policy.report_users());
     }
   }
 }

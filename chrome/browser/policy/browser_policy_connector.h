@@ -130,6 +130,11 @@ class BrowserPolicyConnector {
   // previously set delegate is removed. Passing NULL removes the current
   // delegate, if there is one.
   void SetUserPolicyDelegate(ConfigurationPolicyProvider* user_policy_provider);
+
+  // Sets the install attributes for testing. Must be called before the browser
+  // is created. Takes ownership of |attributes|.
+  static void SetInstallAttributesForTesting(
+      EnterpriseInstallAttributes* attributes);
 #endif
 
   // Sets a |provider| that will be included in PolicyServices returned by

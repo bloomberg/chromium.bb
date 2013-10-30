@@ -98,6 +98,11 @@ const int64 kServiceInitializationStartupDelay = 5000;
 const char kDefaultDeviceManagementServerUrl[] =
     "https://m.google.com/devicemanagement/data/api";
 
+#if defined(OS_CHROMEOS)
+// Install attributes for tests.
+EnterpriseInstallAttributes* g_testing_install_attributes = NULL;
+#endif  // defined(OS_CHROMEOS)
+
 // Used in BrowserPolicyConnector::SetPolicyProviderForTesting.
 ConfigurationPolicyProvider* g_testing_provider = NULL;
 
@@ -210,6 +215,9 @@ BrowserPolicyConnector::BrowserPolicyConnector()
   platform_provider_.reset(CreatePlatformProvider());
 
 #if defined(OS_CHROMEOS)
+  if (g_testing_install_attributes)
+    install_attributes_.reset(g_testing_install_attributes);
+
   // SystemSaltGetter or DBusThreadManager may be uninitialized on unit tests.
 
   // TODO(satorux): Remove SystemSaltGetter::IsInitialized() when it's ready
@@ -218,8 +226,10 @@ BrowserPolicyConnector::BrowserPolicyConnector()
       chromeos::DBusThreadManager::IsInitialized()) {
     chromeos::CryptohomeClient* cryptohome_client =
         chromeos::DBusThreadManager::Get()->GetCryptohomeClient();
-    install_attributes_.reset(
-        new EnterpriseInstallAttributes(cryptohome_client));
+    if (!g_testing_install_attributes) {
+      install_attributes_.reset(
+          new EnterpriseInstallAttributes(cryptohome_client));
+    }
     base::FilePath install_attrs_file;
     CHECK(PathService::Get(chromeos::FILE_INSTALL_ATTRIBUTES,
                            &install_attrs_file));
@@ -452,6 +462,12 @@ AppPackUpdater* BrowserPolicyConnector::GetAppPackUpdater() {
 void BrowserPolicyConnector::SetUserPolicyDelegate(
     ConfigurationPolicyProvider* user_policy_provider) {
   global_user_cloud_policy_provider_.SetDelegate(user_policy_provider);
+}
+
+void BrowserPolicyConnector::SetInstallAttributesForTesting(
+    EnterpriseInstallAttributes* attributes) {
+  DCHECK(!g_testing_install_attributes);
+  g_testing_install_attributes = attributes;
 }
 #endif
 

@@ -12,9 +12,13 @@
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/chromeos/login/mock_user_manager.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/policy/stub_enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -147,7 +151,9 @@ class DeviceStatusCollectorTest : public testing::Test {
     : message_loop_(base::MessageLoop::TYPE_UI),
       ui_thread_(content::BrowserThread::UI, &message_loop_),
       file_thread_(content::BrowserThread::FILE, &message_loop_),
-      io_thread_(content::BrowserThread::IO, &message_loop_) {
+      io_thread_(content::BrowserThread::IO, &message_loop_),
+      user_manager_(new chromeos::MockUserManager()),
+      user_manager_enabler_(user_manager_) {
     // Run this test with a well-known timezone so that Time::LocalMidnight()
     // returns the same values on all machines.
     scoped_ptr<base::Environment> env(base::Environment::Create());
@@ -166,6 +172,13 @@ class DeviceStatusCollectorTest : public testing::Test {
     EXPECT_TRUE(
         cros_settings_->RemoveSettingsProvider(device_settings_provider_));
     cros_settings_->AddSettingsProvider(&stub_settings_provider_);
+
+    // Set up fake install attributes.
+    StubEnterpriseInstallAttributes* attributes =
+        new StubEnterpriseInstallAttributes();
+    attributes->SetDomain("managed.com");
+    attributes->SetRegistrationUser("user@managed.com");
+    BrowserPolicyConnector::SetInstallAttributesForTesting(attributes);
 
     RestartStatusCollector();
   }
@@ -252,6 +265,8 @@ class DeviceStatusCollectorTest : public testing::Test {
   chromeos::CrosSettings* cros_settings_;
   chromeos::CrosSettingsProvider* device_settings_provider_;
   chromeos::StubCrosSettingsProvider stub_settings_provider_;
+  chromeos::MockUserManager* user_manager_;
+  chromeos::ScopedUserManagerEnabler user_manager_enabler_;
   em::DeviceStatusReportRequest status_;
   scoped_ptr<TestingDeviceStatusCollector> status_collector_;
 };
@@ -584,6 +599,59 @@ TEST_F(DeviceStatusCollectorTest, Location) {
   // Allow the new pref to propagate to the status collector.
   message_loop_.RunUntilIdle();
   CheckThatALocationErrorIsReported();
+}
+
+TEST_F(DeviceStatusCollectorTest, ReportUsers) {
+  user_manager_->AddUser("user0@managed.com");
+  user_manager_->AddUser("user1@managed.com");
+  user_manager_->AddUser("user2@managed.com");
+  user_manager_->AddUser("user3@unmanaged.com");
+  user_manager_->AddUser("user4@managed.com");
+  user_manager_->AddUser("user5@managed.com");
+
+  // Verify that users are not reported by default.
+  GetStatus();
+  EXPECT_EQ(0, status_.user_size());
+
+  // Verify that users are reported after enabling the setting.
+  cros_settings_->SetBoolean(chromeos::kReportDeviceUsers, true);
+  GetStatus();
+  EXPECT_EQ(5, status_.user_size());
+  EXPECT_EQ(em::DeviceUser::USER_TYPE_MANAGED, status_.user(0).type());
+  EXPECT_EQ("user0@managed.com", status_.user(0).email());
+  EXPECT_EQ(em::DeviceUser::USER_TYPE_MANAGED, status_.user(1).type());
+  EXPECT_EQ("user1@managed.com", status_.user(1).email());
+  EXPECT_EQ(em::DeviceUser::USER_TYPE_MANAGED, status_.user(2).type());
+  EXPECT_EQ("user2@managed.com", status_.user(2).email());
+  EXPECT_EQ(em::DeviceUser::USER_TYPE_UNMANAGED, status_.user(3).type());
+  EXPECT_FALSE(status_.user(3).has_email());
+  EXPECT_EQ(em::DeviceUser::USER_TYPE_MANAGED, status_.user(4).type());
+  EXPECT_EQ("user4@managed.com", status_.user(4).email());
+
+  // Verify that users are no longer reported if setting is disabled.
+  cros_settings_->SetBoolean(chromeos::kReportDeviceUsers, false);
+  GetStatus();
+  EXPECT_EQ(0, status_.user_size());
+}
+
+TEST_F(DeviceStatusCollectorTest, ReportManagedUser) {
+  // Verify that at least one managed user is reported regardless of list size.
+  user_manager_->AddUser("user0@unmanaged.com");
+  user_manager_->AddUser("user1@unmanaged.com");
+  user_manager_->AddUser("user2@unmanaged.com");
+  user_manager_->AddUser("user3@unmanaged.com");
+  user_manager_->AddUser("user4@unmanaged.com");
+  user_manager_->AddUser("user5@unmanaged.com");
+  user_manager_->AddUser("user6@managed.com");
+  user_manager_->AddUser("user7@managed.com");
+
+  cros_settings_->SetBoolean(chromeos::kReportDeviceUsers, true);
+  GetStatus();
+  EXPECT_EQ(7, status_.user_size());
+  for (int i = 0; i < 6; ++i)
+    EXPECT_EQ(em::DeviceUser::USER_TYPE_UNMANAGED, status_.user(i).type());
+  EXPECT_EQ(em::DeviceUser::USER_TYPE_MANAGED, status_.user(6).type());
+  EXPECT_EQ("user6@managed.com", status_.user(6).email());
 }
 
 // Fake device state.

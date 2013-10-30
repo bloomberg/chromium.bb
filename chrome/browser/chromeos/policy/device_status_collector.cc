@@ -15,7 +15,12 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_version_info.h"
@@ -66,6 +71,9 @@ int64 TimestampToDayKey(Time timestamp) {
   timestamp.LocalMidnight().LocalExplode(&exploded);
   return (Time::FromUTCExploded(exploded) - Time::UnixEpoch()).InMilliseconds();
 }
+
+// Maximum number of users to report.
+const int kMaxUserCount = 5;
 
 }  // namespace
 
@@ -130,6 +138,7 @@ DeviceStatusCollector::DeviceStatusCollector(
       report_boot_mode_(false),
       report_location_(false),
       report_network_interfaces_(false),
+      report_users_(false),
       context_(new Context()) {
   if (location_update_requester) {
     location_update_requester_ = *location_update_requester;
@@ -158,6 +167,8 @@ DeviceStatusCollector::DeviceStatusCollector(
       chromeos::kReportDeviceLocation, callback);
   network_interfaces_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kReportDeviceNetworkInterfaces, callback);
+  users_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kReportDeviceUsers, callback);
 
   // The last known location is persisted in local state. This makes location
   // information available immediately upon startup and avoids the need to
@@ -230,6 +241,8 @@ void DeviceStatusCollector::UpdateReportingSettings() {
       chromeos::kReportDeviceLocation, &report_location_);
   cros_settings_->GetBoolean(
       chromeos::kReportDeviceNetworkInterfaces, &report_network_interfaces_);
+  cros_settings_->GetBoolean(
+      chromeos::kReportDeviceUsers, &report_users_);
 
   if (report_location_) {
     ScheduleGeolocationUpdateRequest();
@@ -448,6 +461,32 @@ void DeviceStatusCollector::GetNetworkInterfaces(
   }
 }
 
+void DeviceStatusCollector::GetUsers(em::DeviceStatusReportRequest* request) {
+  BrowserPolicyConnector* connector =
+      g_browser_process->browser_policy_connector();
+  bool found_managed_user = false;
+  const chromeos::UserList& users = chromeos::UserManager::Get()->GetUsers();
+  chromeos::UserList::const_iterator user;
+  for (user = users.begin(); user != users.end(); ++user) {
+    em::DeviceUser* device_user = request->add_user();
+    const std::string& email = (*user)->email();
+    if (connector->GetUserAffiliation(email) == USER_AFFILIATION_MANAGED) {
+      device_user->set_type(em::DeviceUser::USER_TYPE_MANAGED);
+      device_user->set_email(email);
+      found_managed_user = true;
+    } else {
+      device_user->set_type(em::DeviceUser::USER_TYPE_UNMANAGED);
+      // Do not report the email address of unmanaged users.
+    }
+
+    // Add only kMaxUserCount entries, unless no managed users are found in the
+    // first kMaxUserCount users. In that case, continue until at least one
+    // managed user is found.
+    if (request->user_size() >= kMaxUserCount && found_managed_user)
+      break;
+  }
+}
+
 void DeviceStatusCollector::GetStatus(em::DeviceStatusReportRequest* request) {
   // TODO(mnissler): Remove once the old cloud policy stack is retired. The old
   // stack doesn't support reporting successful submissions back to here, so
@@ -472,6 +511,9 @@ bool DeviceStatusCollector::GetDeviceStatus(
 
   if (report_network_interfaces_)
     GetNetworkInterfaces(status);
+
+  if (report_users_)
+    GetUsers(status);
 
   return true;
 }

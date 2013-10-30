@@ -85,6 +85,10 @@ const char kReportDeviceLocation[] = "cros.device_status.report_location";
 const char kReportDeviceNetworkInterfaces[] =
     "cros.device_status.report_network_interfaces";
 
+// Determines whether the device reports recently logged in users in device
+// status reports to the device management server.
+const char kReportDeviceUsers[] = "cros.device_status.report_users";
+
 // A list of dictionaries, each detailing one extension to install as part of
 // the AppPack and including the following fields:
 // "extension-id": ID of the extension to install

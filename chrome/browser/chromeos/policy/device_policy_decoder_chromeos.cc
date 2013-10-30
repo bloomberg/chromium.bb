@@ -376,6 +376,13 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
                         container.report_network_interfaces()),
                     NULL);
     }
+    if (container.has_report_users()) {
+      policies->Set(key::kReportDeviceUsers,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateBooleanValue(container.report_users()),
+                    NULL);
+    }
   }
 }
 

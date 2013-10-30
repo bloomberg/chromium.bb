@@ -147,6 +147,8 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider {
       enterprise_management::DeviceStatusReportRequest* request);
   void GetNetworkInterfaces(
       enterprise_management::DeviceStatusReportRequest* request);
+  void GetUsers(
+      enterprise_management::DeviceStatusReportRequest* request);
 
   // Update the cached values of the reporting settings.
   void UpdateReportingSettings();
@@ -201,6 +203,7 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider {
   bool report_boot_mode_;
   bool report_location_;
   bool report_network_interfaces_;
+  bool report_users_;
 
   scoped_refptr<Context> context_;
 
@@ -214,6 +217,8 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider {
       location_subscription_;
   scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
       network_interfaces_subscription_;
+  scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
+      users_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceStatusCollector);
 };

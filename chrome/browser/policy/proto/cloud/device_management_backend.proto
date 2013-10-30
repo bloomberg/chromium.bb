@@ -408,6 +408,24 @@ message NetworkInterface {
   optional string imei = 4;
 }
 
+// Details about a device user.
+message DeviceUser {
+  // Types of device users which can be reported.
+  enum UserType {
+    // A user managed by the same domain as the device.
+    USER_TYPE_MANAGED = 0;
+
+    // A user not managed by the same domain as the device.
+    USER_TYPE_UNMANAGED = 1;
+  }
+
+  // The type of the user.
+  required UserType type = 1;
+
+  // Email address of the user. Present only if the user type is managed.
+  optional string email = 2;
+}
+
 // Report device level status.
 message DeviceStatusReportRequest {
   // The OS version reported by the device is a platform version
@@ -435,6 +453,9 @@ message DeviceStatusReportRequest {
 
   // List of network interfaces.
   repeated NetworkInterface network_interface = 8;
+
+  // List of recent device users, in descending order by last login time.
+  repeated DeviceUser user = 9;
 }
 
 // Report session (a user on one device) level status.

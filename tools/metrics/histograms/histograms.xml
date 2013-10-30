@@ -21144,8 +21144,8 @@ other types of suffix sets.
       label="Enable submission of documents to Google Cloud Print"/>
   <int value="110" label="Set disk cache size in bytes"/>
   <int value="111" label="Set media disk cache size in bytes"/>
-  <int value="112" label="Enterprise web store URL"/>
-  <int value="113" label="Enterprise web store name"/>
+  <int value="112" label="Enterprise web store URL (deprecated)"/>
+  <int value="113" label="Enterprise web store name (deprecated)"/>
   <int value="114" label="Enable TLS domain-bound certificates extension"/>
   <int value="115" label="Enable reporting memory info (JS heap size) to page"/>
   <int value="116" label="Proxy settings"/>
@@ -21176,8 +21176,10 @@ other types of suffix sets.
   <int value="137" label="Load specified urls on demo login"/>
   <int value="138"
       label="Continue running background apps when Google Chrome is closed"/>
-  <int value="139" label="Disables Drive"/>
-  <int value="140" label="Disables Google Drive over Cellular connections"/>
+  <int value="139" label="Disables Drive in the Chrome OS Files app"/>
+  <int value="140"
+      label="Disables Google Drive over Cellular connections in the Chrome OS
+             Files app"/>
   <int value="141"
       label="Additional command line parameters for Google Chrome"/>
   <int value="142" label="Target Auto Update Version"/>
@@ -21234,9 +21236,10 @@ other types of suffix sets.
   <int value="183"
       label="Specify whether video activity affects power management"/>
   <int value="184"
-      label="Percentage by which to scale the idle delay in presentation mode"/>
+      label="Percentage by which to scale the idle delay in presentation mode
+             (deprecated)"/>
   <int value="185"
-      label="Allow users to redeem offers through Chrome OS Registration."/>
+      label="Allow users to redeem offers through Chrome OS Registration"/>
   <int value="186" label="Set the Terms of Service for a device-local account"/>
   <int value="187" label="Enable deleting browser and download history"/>
   <int value="188" label="Show accessibility options in system tray menu"/>
@@ -21327,6 +21330,11 @@ other types of suffix sets.
   <int value="246"
       label="Selects the strategy used to free up disk space during automatic
              clean-up"/>
+  <int value="247"
+      label="Specify whether power management delays and the session length
+             limit should only start running after initial user activity in a
+             session"/>
+  <int value="248" label="Report device users"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

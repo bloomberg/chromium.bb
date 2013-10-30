@@ -103,14 +103,22 @@ class MockUserManager : public UserManager {
   virtual void RespectLocalePreference(Profile* profile, const User* user) const
       OVERRIDE;
 
-  // Sets a new User instance.
+  // Sets a new User instance. Users previously created by this MockUserManager
+  // become invalid.
   void SetActiveUser(const std::string& email);
 
   // Creates a new public session user. Users previously created by this
   // MockUserManager become invalid.
   User* CreatePublicAccountUser(const std::string& email);
 
-  User* user_;
+  // Adds a new User instance to the back of the user list. Users previously
+  // created by this MockUserManager remain valid.
+  void AddUser(const std::string& email);
+
+  // Clears the user list and the active user. Users previously created by this
+  // MockUserManager become invalid.
+  void ClearUserList();
+
   scoped_ptr<UserFlow> user_flow_;
   scoped_ptr<MockUserImageManager> user_image_manager_;
   scoped_ptr<FakeSupervisedUserManager> supervised_user_manager_;

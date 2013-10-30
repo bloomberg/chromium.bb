@@ -9,12 +9,11 @@
 namespace chromeos {
 
 MockUserManager::MockUserManager()
-    : user_(NULL),
-      user_flow_(new DefaultUserFlow()),
+    : user_flow_(new DefaultUserFlow()),
       supervised_user_manager_(new FakeSupervisedUserManager()) {}
 
 MockUserManager::~MockUserManager() {
-  delete user_;
+  ClearUserList();
 }
 
 const UserList& MockUserManager::GetUsers() const {
@@ -22,11 +21,11 @@ const UserList& MockUserManager::GetUsers() const {
 }
 
 const User* MockUserManager::GetLoggedInUser() const {
-  return user_;
+  return user_list_.empty() ? NULL : user_list_.front();
 }
 
 User* MockUserManager::GetLoggedInUser() {
-  return user_;
+  return user_list_.empty() ? NULL : user_list_.front();
 }
 
 UserList MockUserManager::GetUnlockUsers() const {
@@ -34,23 +33,23 @@ UserList MockUserManager::GetUnlockUsers() const {
 }
 
 const std::string& MockUserManager::GetOwnerEmail() {
-  return user_->email();
+  return GetLoggedInUser()->email();
 }
 
 const User* MockUserManager::GetActiveUser() const {
-  return user_;
+  return GetLoggedInUser();
 }
 
 User* MockUserManager::GetActiveUser() {
-  return user_;
+  return GetLoggedInUser();
 }
 
 const User* MockUserManager::GetPrimaryUser() const {
-  return user_;
+  return GetLoggedInUser();
 }
 
 User* MockUserManager::GetUserByProfile(Profile* profile) const {
-  return user_;
+  return user_list_.empty() ? NULL : user_list_.front();
 }
 
 UserImageManager* MockUserManager::GetUserImageManager() {
@@ -63,10 +62,8 @@ SupervisedUserManager* MockUserManager::GetSupervisedUserManager() {
 
 // Creates a new User instance.
 void MockUserManager::SetActiveUser(const std::string& email) {
-  delete user_;
-  user_ = User::CreateRegularUser(email);
-  user_list_.clear();
-  user_list_.push_back(user_);
+  ClearUserList();
+  AddUser(email);
 }
 
 UserFlow* MockUserManager::GetCurrentUserFlow() const {
@@ -78,11 +75,21 @@ UserFlow* MockUserManager::GetUserFlow(const std::string&) const {
 }
 
 User* MockUserManager::CreatePublicAccountUser(const std::string& email) {
-  delete user_;
-  user_ = User::CreatePublicAccountUser(email);
+  ClearUserList();
+  user_list_.push_back(User::CreatePublicAccountUser(email));
+  return user_list_.back();
+}
+
+void MockUserManager::AddUser(const std::string& email) {
+  user_list_.push_back(User::CreateRegularUser(email));
+}
+
+void MockUserManager::ClearUserList() {
+  // Can't use STLDeleteElements because of the protected destructor of User.
+  UserList::iterator user;
+  for (user = user_list_.begin(); user != user_list_.end(); ++user)
+    delete *user;
   user_list_.clear();
-  user_list_.push_back(user_);
-  return user_;
 }
 
 void MockUserManager::RespectLocalePreference(Profile* profile,

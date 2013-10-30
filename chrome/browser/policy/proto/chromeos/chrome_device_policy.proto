@@ -96,6 +96,7 @@ message DeviceReportingProto {
   optional bool report_boot_mode = 3;
   optional bool report_location = 4;
   optional bool report_network_interfaces = 5;
+  optional bool report_users = 6;
 }
 
 message EphemeralUsersEnabledProto {
