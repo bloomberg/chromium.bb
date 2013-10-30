@@ -22,7 +22,7 @@ namespace ui {
 class EVENTS_EXPORT EventFactoryOzone {
  public:
   EventFactoryOzone();
-  ~EventFactoryOzone();
+  virtual ~EventFactoryOzone();
 
   // Called from RootWindowHostOzone to create the starting set of event
   // converters.
