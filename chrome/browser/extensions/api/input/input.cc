@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/user_metrics.h"
 #include "ui/events/event.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_switches.h"
@@ -119,6 +120,8 @@ bool VirtualKeyboardPrivateKeyboardLoadedFunction::RunImpl() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   keyboard::MarkKeyboardLoadFinished();
+
+  content::UserMetricsAction("VirtualKeyboardLoaded");
 
   return true;
 #endif
