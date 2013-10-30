@@ -594,13 +594,7 @@ void HandleSingleTabModeBlockOnUIThread(const BlockedWindowParams& params) {
   SingleTabModeTabHelper::FromWebContents(web_contents)->HandleOpenUrl(params);
 }
 
-float GetFontScaleMultiplier(const PrefService* prefs) {
-  if (prefs->GetBoolean(prefs::kWebKitFontScaleFactorQuirk)) {
-    // The value of kWebKitFontScaleFactor passed by Chrome for Android already
-    // includes the multiplier.
-    return 1.0f;
-  }
-
+float GetFontScaleMultiplier() {
   static const float kMinFSM = 1.05f;
   static const int kWidthForMinFSM = 320;
   static const float kMaxFSM = 1.3f;
@@ -2227,7 +2221,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 #if defined(OS_ANDROID)
   web_prefs->text_autosizing_font_scale_factor =
       static_cast<float>(prefs->GetDouble(prefs::kWebKitFontScaleFactor)) *
-      GetFontScaleMultiplier(prefs);
+      GetFontScaleMultiplier();
   web_prefs->force_enable_zoom =
       prefs->GetBoolean(prefs::kWebKitForceEnableZoom);
 #endif

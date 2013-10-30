@@ -444,10 +444,6 @@ void PrefsTabHelper::RegisterProfilePrefs(
       1.0,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kWebKitFontScaleFactorQuirk,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
       prefs::kWebKitForceEnableZoom,
       pref_defaults.force_enable_zoom,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
