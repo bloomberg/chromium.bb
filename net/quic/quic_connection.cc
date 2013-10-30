@@ -867,7 +867,7 @@ QuicConsumedData QuicConnection::SendStreamDataInner(
   size_t bytes_written = 0;
   bool fin_consumed = false;
 
-  for (int i = 0; i < data.Size(); ++i) {
+  for (size_t i = 0; i < data.Size(); ++i) {
     bool send_fin = fin && (i == data.Size() - 1);
     if (!send_fin && data.iovec()[i].iov_len == 0) {
       LOG(DFATAL) << "Attempt to send empty stream frame";

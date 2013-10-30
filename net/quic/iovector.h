@@ -17,10 +17,10 @@
 namespace net {
 
 // Calculate the total number of bytes in an array of iovec structures.
-inline size_t TotalIovecLength(const struct iovec* iov, int iovcnt) {
+inline size_t TotalIovecLength(const struct iovec* iov, size_t iovcnt) {
   size_t length = 0;
   if (iov != NULL) {
-    for (int i = 0; i < iovcnt; ++i) {
+    for (size_t i = 0; i < iovcnt; ++i) {
       length += iov[i].iov_len;
     }
   }
@@ -67,17 +67,17 @@ class NET_EXPORT_PRIVATE IOVector {
 
   // Provides a way to convert system call-like iovec representation to
   // IOVector.
-  void AppendIovec(const struct iovec* iov, int iovcnt) {
-    for (int i = 0; i < iovcnt; ++i)
+  void AppendIovec(const struct iovec* iov, size_t iovcnt) {
+    for (size_t i = 0; i < iovcnt; ++i)
       Append(static_cast<char*>(iov[i].iov_base), iov[i].iov_len);
   }
 
   // Appends at most max_bytes from iovec to the IOVector.
   size_t AppendIovecAtMostBytes(const struct iovec* iov,
-                                int iovcnt,
+                                size_t iovcnt,
                                 size_t max_bytes) {
     size_t bytes_appended = 0;
-    for (int i = 0; i < iovcnt && max_bytes > 0; ++i) {
+    for (size_t i = 0; i < iovcnt && max_bytes > 0; ++i) {
       const size_t length = std::min(max_bytes, iov[i].iov_len);
       Append(static_cast<char*>(iov[i].iov_base), length);
       max_bytes -= length;
@@ -152,11 +152,11 @@ class NET_EXPORT_PRIVATE IOVector {
 
   // Returns the number of valid blocks in the IOVector (not the number of
   // bytes).
-  int Size() const { return iovec_.size(); }
+  size_t Size() const { return iovec_.size(); }
 
   // Returns the total storage used by the IOVector in number of blocks (not
   // the number of bytes).
-  int Capacity() const { return iovec_.capacity(); }
+  size_t Capacity() const { return iovec_.capacity(); }
 
   // Returns true if there are no blocks in the IOVector.
   bool Empty() const { return iovec_.empty(); }
@@ -180,7 +180,7 @@ class NET_EXPORT_PRIVATE IOVector {
   // Returns the total number of bytes in the IOVector.
   size_t TotalBufferSize() const { return TotalIovecLength(iovec(), Size()); }
 
-  void Resize(int count) {
+  void Resize(size_t count) {
     iovec_.resize(count);
   }
 
