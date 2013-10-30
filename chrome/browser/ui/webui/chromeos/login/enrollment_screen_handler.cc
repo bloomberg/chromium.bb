@@ -233,6 +233,15 @@ void EnrollmentScreenHandler::ShowEnrollmentStatus(
               true);
       }
       return;
+    case policy::EnrollmentStatus::STATUS_ROBOT_AUTH_FETCH_FAILED:
+      ShowError(IDS_ENTERPRISE_ENROLLMENT_ROBOT_AUTH_FETCH_FAILED, true);
+      return;
+    case policy::EnrollmentStatus::STATUS_ROBOT_REFRESH_FETCH_FAILED:
+      ShowError(IDS_ENTERPRISE_ENROLLMENT_ROBOT_REFRESH_FETCH_FAILED, true);
+      return;
+    case policy::EnrollmentStatus::STATUS_ROBOT_REFRESH_STORE_FAILED:
+      ShowError(IDS_ENTERPRISE_ENROLLMENT_ROBOT_REFRESH_STORE_FAILED, true);
+      return;
     case policy::EnrollmentStatus::STATUS_REGISTRATION_BAD_MODE:
       ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_REGISTRATION_BAD_MODE, false);
       return;

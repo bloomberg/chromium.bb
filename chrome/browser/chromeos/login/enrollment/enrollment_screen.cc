@@ -264,6 +264,15 @@ void EnrollmentScreen::ReportEnrollmentStatus(
     case policy::EnrollmentStatus::STATUS_LOCK_ERROR:
       UMAFailure(policy::kMetricEnrollmentOtherFailed);
       return;
+    case policy::EnrollmentStatus::STATUS_ROBOT_AUTH_FETCH_FAILED:
+      UMAFailure(policy::kMetricEnrollmentRobotAuthCodeFetchFailed);
+      return;
+    case policy::EnrollmentStatus::STATUS_ROBOT_REFRESH_FETCH_FAILED:
+      UMAFailure(policy::kMetricEnrollmentRobotRefreshTokenFetchFailed);
+      return;
+    case policy::EnrollmentStatus::STATUS_ROBOT_REFRESH_STORE_FAILED:
+      UMAFailure(policy::kMetricEnrollmentRobotRefreshTokenStoreFailed);
+      return;
   }
 
   NOTREACHED();

@@ -15,6 +15,7 @@
 #include "chrome/browser/policy/proto/chromeos/chrome_device_policy.pb.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "net/http/http_status_code.h"
 
 namespace em = enterprise_management;
 
@@ -53,8 +54,7 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
       device_mode_(DEVICE_MODE_NOT_SET),
       enrollment_step_(STEP_PENDING),
       lockbox_init_duration_(0),
-      lock_weak_factory_(this),
-      token_weak_factory_(this) {
+      weak_ptr_factory_(this) {
   CHECK(!client_->is_registered());
   CHECK_EQ(DM_STATUS_SUCCESS, client_->status());
   store_->AddObserver(this);
@@ -111,7 +111,7 @@ void EnrollmentHandlerChromeOS::OnPolicyFetched(CloudPolicyClient* client) {
   validator->ValidateInitialKey();
   validator.release()->StartValidation(
       base::Bind(&EnrollmentHandlerChromeOS::PolicyValidated,
-                 lock_weak_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void EnrollmentHandlerChromeOS::OnRegistrationStateChanged(
@@ -140,12 +140,9 @@ void EnrollmentHandlerChromeOS::OnClientError(CloudPolicyClient* client) {
   DCHECK_EQ(client_.get(), client);
 
   if (enrollment_step_ == STEP_ROBOT_AUTH_FETCH) {
-    LOG(WARNING) << "API authentication code fetch failed: "
-                 << client_->status();
-    // Robot auth tokens are currently optional.  Skip fetching the refresh
-    // token and jump directly to the lock device step.
-    robot_refresh_token_.clear();
-    DoLockDeviceStep();
+    LOG(ERROR) << "API authentication code fetch failed: "
+               << client_->status();
+    ReportResult(EnrollmentStatus::ForRobotAuthFetchError(client_->status()));
   } else if (enrollment_step_ < STEP_POLICY_FETCH) {
     ReportResult(EnrollmentStatus::ForRegistrationError(client_->status()));
   } else {
@@ -162,19 +159,8 @@ void EnrollmentHandlerChromeOS::OnStoreLoaded(CloudPolicyStore* store) {
     // registration rolling again after the store finishes loading.
     AttemptRegistration();
   } else if (enrollment_step_ == STEP_STORE_POLICY) {
-    chromeos::DeviceOAuth2TokenServiceFactory::Get(
-        base::Bind(&EnrollmentHandlerChromeOS::DidGetTokenService,
-                   token_weak_factory_.GetWeakPtr()));
+    ReportResult(EnrollmentStatus::ForStatus(EnrollmentStatus::STATUS_SUCCESS));
   }
-}
-
-void EnrollmentHandlerChromeOS::DidGetTokenService(
-    chromeos::DeviceOAuth2TokenService* token_service) {
-  // Store the robot API auth refresh token.
-  // Currently optional, so always return success.
-  if (token_service && !robot_refresh_token_.empty())
-    token_service->SetAndSaveRefreshToken(robot_refresh_token_);
-  ReportResult(EnrollmentStatus::ForStatus(EnrollmentStatus::STATUS_SUCCESS));
 }
 
 void EnrollmentHandlerChromeOS::OnStoreError(CloudPolicyStore* store) {
@@ -237,12 +223,8 @@ void EnrollmentHandlerChromeOS::OnGetTokensResponse(
     int expires_in_seconds) {
   CHECK_EQ(STEP_ROBOT_AUTH_REFRESH, enrollment_step_);
 
-  robot_refresh_token_ = refresh_token;
+  refresh_token_ = refresh_token;
 
-  DoLockDeviceStep();
-}
-
-void EnrollmentHandlerChromeOS::DoLockDeviceStep() {
   enrollment_step_ = STEP_LOCK_DEVICE,
   StartLockDevice(username_, device_mode_, device_id_);
 }
@@ -258,15 +240,20 @@ void EnrollmentHandlerChromeOS::OnRefreshTokenResponse(
 // GaiaOAuthClient::Delegate OAuth2 error when fetching refresh token request.
 void EnrollmentHandlerChromeOS::OnOAuthError() {
   CHECK_EQ(STEP_ROBOT_AUTH_REFRESH, enrollment_step_);
-  DoLockDeviceStep();
+  // OnOAuthError is only called if the request is bad (malformed) or the
+  // response is bad (empty access token returned).
+  LOG(ERROR) << "OAuth protocol error while fetching API refresh token.";
+  ReportResult(
+      EnrollmentStatus::ForRobotRefreshFetchError(net::HTTP_BAD_REQUEST));
 }
 
 // GaiaOAuthClient::Delegate network error when fetching refresh token.
 void EnrollmentHandlerChromeOS::OnNetworkError(int response_code) {
+  CHECK_EQ(STEP_ROBOT_AUTH_REFRESH, enrollment_step_);
   LOG(ERROR) << "Network error while fetching API refresh token: "
              << response_code;
-  CHECK_EQ(STEP_ROBOT_AUTH_REFRESH, enrollment_step_);
-  DoLockDeviceStep();
+  ReportResult(
+      EnrollmentStatus::ForRobotRefreshFetchError(response_code));
 }
 
 void EnrollmentHandlerChromeOS::StartLockDevice(
@@ -275,12 +262,12 @@ void EnrollmentHandlerChromeOS::StartLockDevice(
     const std::string& device_id) {
   CHECK_EQ(STEP_LOCK_DEVICE, enrollment_step_);
   // Since this method is also called directly.
-  lock_weak_factory_.InvalidateWeakPtrs();
+  weak_ptr_factory_.InvalidateWeakPtrs();
 
   install_attributes_->LockDevice(
       user, device_mode, device_id,
       base::Bind(&EnrollmentHandlerChromeOS::HandleLockDeviceResult,
-                 lock_weak_factory_.GetWeakPtr(),
+                 weak_ptr_factory_.GetWeakPtr(),
                  user,
                  device_mode,
                  device_id));
@@ -294,8 +281,11 @@ void EnrollmentHandlerChromeOS::HandleLockDeviceResult(
   CHECK_EQ(STEP_LOCK_DEVICE, enrollment_step_);
   switch (lock_result) {
     case EnterpriseInstallAttributes::LOCK_SUCCESS:
-      enrollment_step_ = STEP_STORE_POLICY;
-      store_->InstallInitialPolicy(*policy_);
+      // Get the token service so we can store our robot refresh token.
+      enrollment_step_ = STEP_STORE_ROBOT_AUTH;
+      chromeos::DeviceOAuth2TokenServiceFactory::Get(
+          base::Bind(&EnrollmentHandlerChromeOS::DidGetTokenService,
+                     weak_ptr_factory_.GetWeakPtr()));
       return;
     case EnterpriseInstallAttributes::LOCK_NOT_READY:
       // We wait up to |kLockRetryTimeoutMs| milliseconds and if it hasn't
@@ -307,7 +297,7 @@ void EnrollmentHandlerChromeOS::HandleLockDeviceResult(
         base::MessageLoop::current()->PostDelayedTask(
             FROM_HERE,
             base::Bind(&EnrollmentHandlerChromeOS::StartLockDevice,
-                       lock_weak_factory_.GetWeakPtr(),
+                       weak_ptr_factory_.GetWeakPtr(),
                        user, device_mode, device_id),
             base::TimeDelta::FromMilliseconds(kLockRetryIntervalMs));
         lockbox_init_duration_ += kLockRetryIntervalMs;
@@ -333,11 +323,33 @@ void EnrollmentHandlerChromeOS::HandleLockDeviceResult(
       EnrollmentStatus::STATUS_LOCK_ERROR));
 }
 
+void EnrollmentHandlerChromeOS::DidGetTokenService(
+    chromeos::DeviceOAuth2TokenService* token_service) {
+  CHECK_EQ(STEP_STORE_ROBOT_AUTH, enrollment_step_);
+  // Store the robot API auth refresh token.
+  if (!token_service) {
+    LOG(ERROR) << "Failed to store API refresh token (no token service).";
+    ReportResult(EnrollmentStatus::ForStatus(
+        EnrollmentStatus::STATUS_ROBOT_REFRESH_STORE_FAILED));
+    return;
+  }
+
+  if (!token_service->SetAndSaveRefreshToken(refresh_token_)) {
+    LOG(ERROR) << "Failed to store API refresh token.";
+    ReportResult(EnrollmentStatus::ForStatus(
+        EnrollmentStatus::STATUS_ROBOT_REFRESH_STORE_FAILED));
+    return;
+  }
+
+  enrollment_step_ = STEP_STORE_POLICY;
+  store_->InstallInitialPolicy(*policy_);
+}
+
 void EnrollmentHandlerChromeOS::Stop() {
   if (client_.get())
     client_->RemoveObserver(this);
   enrollment_step_ = STEP_FINISHED;
-  lock_weak_factory_.InvalidateWeakPtrs();
+  weak_ptr_factory_.InvalidateWeakPtrs();
   completion_callback_.Reset();
 }
 

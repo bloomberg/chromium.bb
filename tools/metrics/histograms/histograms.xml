@@ -21004,6 +21004,18 @@ other types of suffix sets.
   <int value="18" label="Missing licenses">
     No licenses left for that domain.
   </int>
+  <int value="19" label="Robot auth code fetch failed">
+    Enrollment failed due to an error fetching the device robot authorization
+    code from the DM Server.
+  </int>
+  <int value="20" label="Robot refresh token fetch failed">
+    Enrollment failed due to an error fetching the device robot refresh token
+    from Gaia.
+  </int>
+  <int value="21" label="Robot refresh token store failed">
+    Enrollment failed due to an error persisting the device robot refresh token
+    on the device.
+  </int>
 </enum>
 
 <enum name="EnterprisePolicies" type="int">

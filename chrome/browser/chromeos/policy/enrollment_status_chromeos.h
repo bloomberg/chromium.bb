@@ -20,6 +20,9 @@ class EnrollmentStatus {
     STATUS_SUCCESS,                     // Enrollment succeeded.
     STATUS_REGISTRATION_FAILED,         // DM registration failed.
     STATUS_REGISTRATION_BAD_MODE,       // Bad device mode.
+    STATUS_ROBOT_AUTH_FETCH_FAILED,     // API OAuth2 auth code failure.
+    STATUS_ROBOT_REFRESH_FETCH_FAILED,  // API OAuth2 refresh token failure.
+    STATUS_ROBOT_REFRESH_STORE_FAILED,  // Failed to store API OAuth2 token.
     STATUS_POLICY_FETCH_FAILED,         // DM policy fetch failed.
     STATUS_VALIDATION_FAILED,           // Policy validation failed.
     STATUS_LOCK_ERROR,                  // Cryptohome failed to lock the device.
@@ -33,6 +36,9 @@ class EnrollmentStatus {
   static EnrollmentStatus ForRegistrationError(
       DeviceManagementStatus client_status);
   static EnrollmentStatus ForFetchError(DeviceManagementStatus client_status);
+  static EnrollmentStatus ForRobotAuthFetchError(
+      DeviceManagementStatus client_status);
+  static EnrollmentStatus ForRobotRefreshFetchError(int http_status);
   static EnrollmentStatus ForValidationError(
       CloudPolicyValidatorBase::Status validation_status);
   static EnrollmentStatus ForStoreError(
@@ -41,6 +47,7 @@ class EnrollmentStatus {
 
   Status status() const { return status_; }
   DeviceManagementStatus client_status() const { return client_status_; }
+  int http_status() const { return http_status_; }
   CloudPolicyStore::Status store_status() const { return store_status_; }
   CloudPolicyValidatorBase::Status validation_status() const {
     return validation_status_;
@@ -49,11 +56,13 @@ class EnrollmentStatus {
  private:
   EnrollmentStatus(Status status,
                    DeviceManagementStatus client_status,
+                   int http_status,
                    CloudPolicyStore::Status store_status,
                    CloudPolicyValidatorBase::Status validation_status);
 
   Status status_;
   DeviceManagementStatus client_status_;
+  int http_status_;
   CloudPolicyStore::Status store_status_;
   CloudPolicyValidatorBase::Status validation_status_;
 };

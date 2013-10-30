@@ -44,8 +44,9 @@ class TokenEncryptor;
 class DeviceOAuth2TokenService : public OAuth2TokenService {
  public:
   // Persist the given refresh token on the device.  Overwrites any previous
-  // value.  Should only be called during initial device setup.
-  void SetAndSaveRefreshToken(const std::string& refresh_token);
+  // value.  Should only be called during initial device setup.  Returns false
+  // if there was an error encrypting and persisting the value, else true.
+  bool SetAndSaveRefreshToken(const std::string& refresh_token);
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 

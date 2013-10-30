@@ -109,6 +109,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
     STEP_ROBOT_AUTH_FETCH,    // Fetching device API auth code.
     STEP_ROBOT_AUTH_REFRESH,  // Fetching device API refresh token.
     STEP_LOCK_DEVICE,         // Writing installation-time attributes.
+    STEP_STORE_ROBOT_AUTH,    // Encrypting & writing robot refresh token.
     STEP_STORE_POLICY,        // Storing policy and API refresh token.
     STEP_FINISHED,            // Enrollment process finished, no further action.
   };
@@ -119,11 +120,6 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   // Handles the policy validation result, proceeding with installation-time
   // attributes locking if successful.
   void PolicyValidated(DeviceCloudPolicyValidator* validator);
-
-  // Method called to initiate the STEP_LOCK_DEVICE step.  Usually called after
-  // the STEP_ROBOT_AUTH_REFRESH, but may be called directly after a failed
-  // STEP_ROBOT_AUTH_FETCH, since robot tokens are currently optional.
-  void DoLockDeviceStep();
 
   // Calls LockDevice() and proceeds to policy installation. If unsuccessful,
   // reports the result. Actual installation or error report will be done in
@@ -157,9 +153,9 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
 
   std::string auth_token_;
   std::string client_id_;
-  std::string robot_refresh_token_;
   bool is_auto_enrollment_;
   std::string requisition_;
+  std::string refresh_token_;
   AllowedDeviceModes allowed_device_modes_;
   EnrollmentCallback completion_callback_;
 
@@ -178,12 +174,8 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   // initialization.
   int lockbox_init_duration_;
 
-  // Used for locking the device.
-  base::WeakPtrFactory<EnrollmentHandlerChromeOS> lock_weak_factory_;
-
-  // Used for getting the OAuth2 token service. This needs to be separate
-  // as lock_weak_factory_ could be invalidated at a random time.
-  base::WeakPtrFactory<EnrollmentHandlerChromeOS> token_weak_factory_;
+  // Used for locking the device and getting the OAuth2 token service.
+  base::WeakPtrFactory<EnrollmentHandlerChromeOS> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(EnrollmentHandlerChromeOS);
 };

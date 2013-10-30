@@ -370,6 +370,17 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     }
     base::RunLoop().RunUntilIdle();
 
+    if (done_)
+      return;
+
+    // Process robot refresh token store.
+    chromeos::DeviceOAuth2TokenService* token_service = NULL;
+    chromeos::DeviceOAuth2TokenServiceFactory::Get(
+        base::Bind(&CopyTokenService, &token_service));
+    base::RunLoop().RunUntilIdle();
+    ASSERT_TRUE(token_service);
+    EXPECT_EQ("refreshToken4Test", token_service->GetRefreshToken(""));
+
     // Process policy store.
     device_settings_test_helper_.set_store_result(store_result_);
     device_settings_test_helper_.FlushStore();
@@ -379,25 +390,11 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     if (done_)
       return;
 
-    // Key installation, policy load and refresh token save.
+    // Key installation and policy load.
     device_settings_test_helper_.set_policy_blob(loaded_blob_);
     owner_key_util_->SetPublicKeyFromPrivateKey(
         *device_policy_.GetNewSigningKey());
     ReloadDeviceSettings();
-
-    if (done_)
-      return;
-
-    chromeos::DeviceOAuth2TokenService* token_service = NULL;
-    chromeos::DeviceOAuth2TokenServiceFactory::Get(
-        base::Bind(&CopyTokenService, &token_service));
-    base::RunLoop().RunUntilIdle();
-    ASSERT_TRUE(token_service);
-
-    // Process robot refresh token store.
-    EXPECT_EQ(
-        "refreshToken4Test",
-        token_service->GetRefreshToken(token_service->GetRobotAccountId()));
   }
 
   bool is_auto_enrollment_;
@@ -459,35 +456,45 @@ TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest, RegistrationFailed) {
   EXPECT_EQ(DM_STATUS_REQUEST_FAILED, status_.client_status());
 }
 
-// Policy server implementations are not required to support robot auth
-// tokens, so the following 4 Robot* tests verify that enrollment succeeds
-// even if the robot auth token fetch fails.
 TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest,
        RobotAuthCodeFetchFailed) {
   robot_auth_fetch_status_ = DM_STATUS_REQUEST_FAILED;
   RunTest();
-  ExpectSuccessfulEnrollment();
+  ExpectFailedEnrollment(EnrollmentStatus::STATUS_ROBOT_AUTH_FETCH_FAILED);
 }
 
 TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest,
        RobotRefreshTokenFetchResponseCodeFailed) {
   url_fetcher_response_code_ = 400;
   RunTest();
-  ExpectSuccessfulEnrollment();
+  ExpectFailedEnrollment(EnrollmentStatus::STATUS_ROBOT_REFRESH_FETCH_FAILED);
+  EXPECT_EQ(400, status_.http_status());
 }
 
 TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest,
        RobotRefreshTokenFetchResponseStringFailed) {
   url_fetcher_response_string_ = "invalid response json";
   RunTest();
-  ExpectSuccessfulEnrollment();
+  ExpectFailedEnrollment(EnrollmentStatus::STATUS_ROBOT_REFRESH_FETCH_FAILED);
 }
 
 TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest, RobotRefreshSaveFailed) {
   // Without a DeviceOAuth2TokenService, the refresh token can't be saved.
   chromeos::DeviceOAuth2TokenServiceFactory::Shutdown();
   RunTest();
-  ExpectSuccessfulEnrollment();
+  ExpectFailedEnrollment(EnrollmentStatus::STATUS_ROBOT_REFRESH_STORE_FAILED);
+}
+
+TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest,
+       RobotRefreshEncryptionFailed) {
+  // The encryption lib is a noop for tests, but empty results from encryption
+  // is an error, so we simulate an encryption error by returning an empty
+  // refresh token.
+  url_fetcher_response_string_ = "{\"access_token\":\"accessToken4Test\","
+                                 "\"expires_in\":1234,"
+                                 "\"refresh_token\":\"\"}";
+  RunTest();
+  ExpectFailedEnrollment(EnrollmentStatus::STATUS_ROBOT_REFRESH_STORE_FAILED);
 }
 
 TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest, PolicyFetchFailed) {

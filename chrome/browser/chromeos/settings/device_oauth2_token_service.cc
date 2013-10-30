@@ -232,26 +232,32 @@ void DeviceOAuth2TokenService::RegisterPrefs(PrefRegistrySimple* registry) {
                                std::string());
 }
 
-void DeviceOAuth2TokenService::SetAndSaveRefreshToken(
+bool DeviceOAuth2TokenService::SetAndSaveRefreshToken(
     const std::string& refresh_token) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   std::string encrypted_refresh_token =
       token_encryptor_->EncryptWithSystemSalt(refresh_token);
+  if (encrypted_refresh_token.empty()) {
+    LOG(ERROR) << "Failed to encrypt refresh token; save aborted.";
+    return false;
+  }
 
   local_state_->SetString(prefs::kDeviceRobotAnyApiRefreshToken,
                           encrypted_refresh_token);
+  return true;
 }
 
 std::string DeviceOAuth2TokenService::GetRefreshToken(
     const std::string& account_id) {
-  DCHECK_EQ(account_id, GetRobotAccountId());
   if (refresh_token_.empty()) {
     std::string encrypted_refresh_token =
         local_state_->GetString(prefs::kDeviceRobotAnyApiRefreshToken);
 
     refresh_token_ = token_encryptor_->DecryptWithSystemSalt(
         encrypted_refresh_token);
+    if (!encrypted_refresh_token.empty() && refresh_token_.empty())
+      LOG(ERROR) << "Failed to decrypt refresh token.";
   }
   return refresh_token_;
 }

@@ -14471,12 +14471,16 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_ENTERPRISE_ENROLLMENT_STATUS_VALIDATION_FAILED" desc="Error message shown on the enrollment screen upon a failure to validate downloaded policy.">
         The policy downloaded from the server is invalid: <ph name="VALIDATION_ERROR">$1<ex>Invalid signature</ex></ph>.
       </message>
-      <message name="IDS_ENTERPRISE_ENROLLMENT_STATUS_REGISTRATION_ROBOT_AUTH_FETCH_FAILED" desc="Error message shown on the enrollment screen upon failure to fetch the OAuth2 authorization code for device-level API access.">
+      <message name="IDS_ENTERPRISE_ENROLLMENT_ROBOT_AUTH_FETCH_FAILED" desc="Error message shown on the enrollment screen upon failure to fetch the OAuth2 authorization code for device-level API access.">
         Oops!  The system failed to authorize API access for this device.
       </message>
-      <message name="IDS_ENTERPRISE_ENROLLMENT_STATUS_REGISTRATION_ROBOT_REFRESH_FETCH_FAILED" desc="Error message shown on the enrollment screen upon failure to fetch the OAuth2 refresh token for device-level API access.">
+      <message name="IDS_ENTERPRISE_ENROLLMENT_ROBOT_REFRESH_FETCH_FAILED" desc="Error message shown on the enrollment screen upon failure to fetch the OAuth2 refresh token for device-level API access.">
         Oops!  The system failed to attain a long-term API access token for this device.
       </message>
+      <message name="IDS_ENTERPRISE_ENROLLMENT_ROBOT_REFRESH_STORE_FAILED" desc="Error message shown on the enrollment screen upon failure to store the OAuth2 refresh token for device-level API access.">
+        Oops!  The system failed to store the long-term API access token for this device.
+      </message>
+
       <message name="IDS_ENTERPRISE_ENROLLMENT_STATUS_LOCK_ERROR" desc="Error message shown on the enrollment screen upon failure to lock the device mode.">
         Oops!  The system failed to establish the device installation-time attributes lock.
       </message>
