@@ -53,6 +53,8 @@ class MacPortTest(port_testcase.PortTestCase):
 
         self.assert_name(None, 'lion', 'mac-lion')
         self.assert_name(None, 'mountainlion', 'mac-mountainlion')
+        self.assert_name(None, 'mavericks', 'mac-mountainlion')
+        self.assert_name(None, 'future', 'mac-mountainlion')
 
         self.assert_name('mac', 'lion', 'mac-lion')
         self.assertRaises(AssertionError, self.assert_name, None, 'tiger', 'should-raise-assertion-so-this-value-does-not-matter')

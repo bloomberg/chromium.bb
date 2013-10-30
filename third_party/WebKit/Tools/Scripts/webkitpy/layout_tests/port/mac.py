@@ -59,7 +59,12 @@ class MacPort(base.Port):
         if port_name.endswith('mac'):
             if host.platform.is_highdpi():
                 return "mac-retina"
-            return port_name + '-' + host.platform.os_version
+            # 10.9 isn't explicitly supported, pretend it's 10.8.
+            if host.platform.os_version in ('mavericks', 'future'):
+                version = 'mountainlion'
+            else:
+                version = host.platform.os_version
+            return port_name + '-' + version
         return port_name
 
     def __init__(self, host, port_name, **kwargs):
