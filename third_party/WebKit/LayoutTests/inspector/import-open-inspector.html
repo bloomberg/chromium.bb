@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="import" href="resources/import-open-inspector-linked.html">
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script>
+
+function getGreeting()
+{
+    return window.greeting;
+}
+
+function test()
+{
+    InspectorTest.runTestSuite([
+        function checkGreetingSet(next)
+        {
+            InspectorTest.evaluateInPage("getGreeting()", callback);
+            function callback(result)
+            {
+                InspectorTest.addResult("Received: " + result.value);
+                next();
+            }
+        },
+
+        function reloadPage(next)
+        {
+            InspectorTest.reloadPage(next);
+        },
+
+        function checkReloaded(next)
+        {
+            InspectorTest.addResult("Page successfully reloaded");
+            next();
+        }
+    ]);
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+This tests that reloading a page with the inspector opened does not crash (rewritten test from r156199).
+</p>
+
+</body>
+</html>
