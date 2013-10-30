@@ -878,3 +878,19 @@
    fun:views::BubbleDelegateView::CreateBubble
    fun:TranslateBubbleViewTest::SetUp
 }
+{
+   bug_313238
+   Heapcheck:Leak
+   fun:??
+   fun:GtkThemeService::GtkThemeService
+   fun:ThemeServiceFactory::BuildServiceInstanceFor
+   fun:BrowserContextKeyedServiceFactory::GetServiceForBrowserContext
+   fun:_init
+   fun:BrowserContextDependencyManager::DoCreateBrowserContextServices
+   fun:BrowserContextDependencyManager::CreateBrowserContextServicesForTest
+   fun:TestingProfile::Init
+   fun:TestingProfile::TestingProfile
+   fun:AppKeepAliveServiceUnitTest::AppKeepAliveServiceUnitTest
+   fun:AppKeepAliveServiceUnitTest_Basic_Test::AppKeepAliveServiceUnitTest_Basic_Test
+   fun:testing::internal::TestFactoryImpl::CreateTest
+}

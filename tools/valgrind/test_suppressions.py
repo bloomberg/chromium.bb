@@ -126,7 +126,8 @@ def main(argv):
       cur_supp += supp['win_suppressions']
     elif all([re.search("Linux%20", url) for url in all_reports[r]]):
       cur_supp += supp['linux_suppressions']
-    elif all([re.search("%20Heapcheck", url)
+    # Separate from OS matches as we want to match "Linux%20Heapcheck" twice:
+    if all([re.search("%20Heapcheck", url)
               for url in all_reports[r]]):
       cur_supp += supp['heapcheck_suppressions']
     if all(["DrMemory" in url for url in all_reports[r]]):
