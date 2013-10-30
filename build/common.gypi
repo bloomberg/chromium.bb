@@ -1743,8 +1743,8 @@
         'release_valgrind_build': 1,
       }],
 
-      # Enable RLZ on Win, Mac and ChromeOS.
-      ['branding=="Chrome" and (OS=="win" or OS=="mac" or chromeos==1)', {
+      # Enable RLZ on Win, Mac, iOS and ChromeOS.
+      ['branding=="Chrome" and (OS=="win" or OS=="mac" or OS=="ios" or chromeos==1)', {
         'enable_rlz%': 1,
       }],
 
