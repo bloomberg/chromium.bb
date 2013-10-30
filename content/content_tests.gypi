@@ -831,7 +831,7 @@
           ],
           'sources': [
             'common/cc_messages_perftest.cc',
-            'test/run_all_unittests.cc',
+            'test/run_all_perftests.cc',
           ],
         },
         {
