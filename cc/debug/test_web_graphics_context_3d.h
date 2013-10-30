@@ -121,11 +121,6 @@ class CC_EXPORT TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   virtual void loseContextCHROMIUM(WebKit::WGC3Denum current,
                                    WebKit::WGC3Denum other);
 
-  virtual void signalSyncPoint(unsigned sync_point,
-                               WebGraphicsSyncPointCallback* callback);
-  virtual void signalQuery(WebKit::WebGLId query,
-                           WebGraphicsSyncPointCallback* callback);
-
   virtual void setSwapBuffersCompleteCallbackCHROMIUM(
       WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* callback);
 
@@ -307,7 +302,6 @@ class CC_EXPORT TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   int times_map_buffer_chromium_succeeds_;
   WebGraphicsContextLostCallback* context_lost_callback_;
   WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* swap_buffers_callback_;
-  std::vector<WebGraphicsSyncPointCallback*> sync_point_callbacks_;
   base::hash_set<WebKit::WebGLId> used_textures_;
   std::vector<WebKit::WebGraphicsContext3D*> shared_contexts_;
   int max_texture_size_;

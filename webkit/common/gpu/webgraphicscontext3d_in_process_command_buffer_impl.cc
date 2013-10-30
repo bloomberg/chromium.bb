@@ -41,11 +41,6 @@ const size_t kStartTransferBufferSize = 4 * 1024 * 1024;
 const size_t kMinTransferBufferSize = 1 * 256 * 1024;
 const size_t kMaxTransferBufferSize = 16 * 1024 * 1024;
 
-void OnSignalSyncPoint(
-    WebKit::WebGraphicsContext3D::WebGraphicsSyncPointCallback* callback) {
-  callback->onSyncPointReached();
-}
-
 uint32_t GenFlushID() {
   static base::subtle::Atomic32 flush_id = 0;
 
@@ -1190,18 +1185,6 @@ DELEGATE_TO_GL_2(drawBuffersEXT, DrawBuffersEXT,
 unsigned WebGraphicsContext3DInProcessCommandBufferImpl::insertSyncPoint() {
   shallowFlushCHROMIUM();
   return 0;
-}
-
-void WebGraphicsContext3DInProcessCommandBufferImpl::signalSyncPoint(
-    unsigned sync_point,
-    WebGraphicsSyncPointCallback* callback) {
-  NOTREACHED();
-}
-
-void WebGraphicsContext3DInProcessCommandBufferImpl::signalQuery(
-    unsigned query,
-    WebGraphicsSyncPointCallback* callback) {
-  NOTREACHED();
 }
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::loseContextCHROMIUM(

@@ -1337,18 +1337,6 @@ void WebGraphicsContext3DCommandBufferImpl::shallowFinishCHROMIUM() {
 
 DELEGATE_TO_GL_1(waitSyncPoint, WaitSyncPointCHROMIUM, GLuint)
 
-void WebGraphicsContext3DCommandBufferImpl::signalSyncPoint(
-    unsigned sync_point,
-    WebGraphicsSyncPointCallback* callback) {
-  NOTREACHED();
-}
-
-void WebGraphicsContext3DCommandBufferImpl::signalQuery(
-    unsigned query,
-    WebGraphicsSyncPointCallback* callback) {
-  NOTREACHED();
-}
-
 void WebGraphicsContext3DCommandBufferImpl::loseContextCHROMIUM(
     WGC3Denum current, WGC3Denum other) {
   gl_->LoseContextCHROMIUM(current, other);

@@ -425,18 +425,6 @@ void TestWebGraphicsContext3D::loseContextCHROMIUM(WGC3Denum current,
   shared_contexts_.clear();
 }
 
-void TestWebGraphicsContext3D::signalSyncPoint(
-    unsigned sync_point,
-    WebGraphicsSyncPointCallback* callback) {
-  NOTREACHED();
-}
-
-void TestWebGraphicsContext3D::signalQuery(
-    WebKit::WebGLId query,
-    WebGraphicsSyncPointCallback* callback) {
-  NOTREACHED();
-}
-
 void TestWebGraphicsContext3D::setSwapBuffersCompleteCallbackCHROMIUM(
     WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* callback) {
   if (test_capabilities_.swapbuffers_complete_callback)

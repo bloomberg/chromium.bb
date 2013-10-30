@@ -144,10 +144,6 @@ class WebGraphicsContext3DCommandBufferImpl
 
   virtual unsigned int insertSyncPoint();
   virtual void waitSyncPoint(unsigned int sync_point);
-  virtual void signalSyncPoint(unsigned sync_point,
-                               WebGraphicsSyncPointCallback* callback);
-  virtual void signalQuery(unsigned query,
-                           WebGraphicsSyncPointCallback* callback);
 
   virtual void loseContextCHROMIUM(WGC3Denum current, WGC3Denum other);
 
