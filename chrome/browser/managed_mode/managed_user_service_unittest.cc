@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_builder.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -153,7 +154,8 @@ TEST_F(ManagedUserServiceTest, ShutDownCustodianProfileDownloader) {
 class ManagedUserServiceExtensionTestBase : public ExtensionServiceTestBase {
  public:
   explicit ManagedUserServiceExtensionTestBase(bool is_managed)
-      : is_managed_(is_managed) {}
+      : is_managed_(is_managed),
+        channel_(chrome::VersionInfo::CHANNEL_DEV) {}
   virtual ~ManagedUserServiceExtensionTestBase() {}
 
   virtual void SetUp() OVERRIDE {
@@ -194,6 +196,7 @@ class ManagedUserServiceExtensionTestBase : public ExtensionServiceTestBase {
   }
 
   bool is_managed_;
+  extensions::ScopedCurrentChannel channel_;
 };
 
 class ManagedUserServiceExtensionTestUnmanaged
