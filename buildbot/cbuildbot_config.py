@@ -545,7 +545,7 @@ class HWTestConfig(object):
   def DefaultListCQ(cls, **dargs):
     """Returns a default list of HWTestConfig's for a CQ build,
     with overrides for optional args."""
-    default_dict = dict(pool=constants.HWTEST_PALADIN_POOL, timeout=65 * 60,
+    default_dict = dict(pool=constants.HWTEST_PALADIN_POOL, timeout=120 * 60,
                         fatal_timeouts=True, file_bugs=False)
     # Allows dargs overrides to default_dict for cq.
     default_dict.update(dargs)
