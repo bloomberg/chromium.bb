@@ -51,7 +51,7 @@ public:
     bool pointerBeforeReferenceNode() const { return m_referenceNode.isPointerBeforeNode; }
 
     // This function is called before any node is removed from the document tree.
-    void nodeWillBeRemoved(Node*);
+    void nodeWillBeRemoved(Node&);
 
 private:
     NodeIterator(PassRefPtr<Node>, unsigned whatToShow, PassRefPtr<NodeFilter>);
@@ -66,7 +66,7 @@ private:
         bool moveToPrevious(Node* root);
     };
 
-    void updateForNodeRemoval(Node* nodeToBeRemoved, NodePointer&) const;
+    void updateForNodeRemoval(Node& nodeToBeRemoved, NodePointer&) const;
 
     NodePointer m_referenceNode;
     NodePointer m_candidateNode;

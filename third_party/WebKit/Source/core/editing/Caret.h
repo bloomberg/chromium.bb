@@ -88,7 +88,7 @@ public:
     void setCaretPosition(const VisiblePosition&);
     void clear() { setCaretPosition(VisiblePosition()); }
 
-    void nodeWillBeRemoved(Node*);
+    void nodeWillBeRemoved(Node&);
 
 private:
     DragCaretController();

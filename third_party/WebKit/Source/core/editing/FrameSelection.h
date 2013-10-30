@@ -151,7 +151,7 @@ public:
 
     PassRefPtr<Range> toNormalizedRange() const { return m_selection.toNormalizedRange(); }
 
-    void nodeWillBeRemoved(Node*);
+    void nodeWillBeRemoved(Node&);
     void didUpdateCharacterData(CharacterData*, unsigned offset, unsigned oldLength, unsigned newLength);
     void didMergeTextNodes(const Text& oldNode, unsigned offset);
     void didSplitTextNode(const Text& oldNode);
@@ -209,7 +209,7 @@ public:
 private:
     enum EPositionType { START, END, BASE, EXTENT };
 
-    void respondToNodeModification(Node*, bool baseRemoved, bool extentRemoved, bool startRemoved, bool endRemoved);
+    void respondToNodeModification(Node&, bool baseRemoved, bool extentRemoved, bool startRemoved, bool endRemoved);
     TextDirection directionOfEnclosingBlock();
     TextDirection directionOfSelection();
 

@@ -399,7 +399,7 @@ static void willRemoveChild(Node& child)
     ChildListMutationScope(*child.parentNode()).willRemoveChild(child);
     child.notifyMutationObserversNodeWillDetach();
     dispatchChildRemovalEvents(child);
-    child.document().nodeWillBeRemoved(&child); // e.g. mutation event listener can create a new range.
+    child.document().nodeWillBeRemoved(child); // e.g. mutation event listener can create a new range.
     ChildFrameDisconnector(child).disconnect();
 }
 

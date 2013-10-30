@@ -78,7 +78,7 @@ void DragCaretController::setCaretPosition(const VisiblePosition& position)
         updateCaretRect(document, m_position);
 }
 
-static bool removingNodeRemovesPosition(Node* node, const Position& position)
+static bool removingNodeRemovesPosition(Node& node, const Position& position)
 {
     if (!position.anchorNode())
         return false;
@@ -86,11 +86,11 @@ static bool removingNodeRemovesPosition(Node* node, const Position& position)
     if (position.anchorNode() == node)
         return true;
 
-    if (!node->isElementNode())
+    if (!node.isElementNode())
         return false;
 
-    Element* element = toElement(node);
-    return element->containsIncludingShadowDOM(position.anchorNode());
+    Element& element = toElement(node);
+    return element.containsIncludingShadowDOM(position.anchorNode());
 }
 
 static void clearRenderViewSelection(const Position& position)
@@ -101,9 +101,9 @@ static void clearRenderViewSelection(const Position& position)
         view->clearSelection();
 }
 
-void DragCaretController::nodeWillBeRemoved(Node* node)
+void DragCaretController::nodeWillBeRemoved(Node& node)
 {
-    if (!hasCaret() || (node && !node->inDocument()))
+    if (!hasCaret() || !node.inDocument())
         return;
 
     if (!removingNodeRemovesPosition(node, m_position.deepEquivalent()))

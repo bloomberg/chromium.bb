@@ -364,9 +364,9 @@ void EventHandler::clear()
     m_mouseDownMayStartDrag = false;
 }
 
-void EventHandler::nodeWillBeRemoved(Node* nodeToBeRemoved)
+void EventHandler::nodeWillBeRemoved(Node& nodeToBeRemoved)
 {
-    if (nodeToBeRemoved->contains(m_clickNode.get()))
+    if (nodeToBeRemoved.contains(m_clickNode.get()))
         m_clickNode = 0;
 }
 

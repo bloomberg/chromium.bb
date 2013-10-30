@@ -1035,7 +1035,7 @@ void Range::insertNode(PassRefPtr<Node> prpNewNode, ExceptionState& es)
             return;
 
         if (collapsed)
-            m_end.setToBeforeChild(newText.get());
+            m_end.setToBeforeChild(*newText);
     } else {
         RefPtr<Node> lastChild = (newNodeType == Node::DOCUMENT_FRAGMENT_NODE) ? newNode->lastChild() : newNode;
         if (lastChild && lastChild == m_start.childBefore()) {
@@ -1043,7 +1043,7 @@ void Range::insertNode(PassRefPtr<Node> prpNewNode, ExceptionState& es)
             // the inserted nodes.
             Node* firstChild = (newNodeType == Node::DOCUMENT_FRAGMENT_NODE) ? newNode->firstChild() : newNode.get();
             ASSERT(firstChild);
-            m_start.setToBeforeChild(firstChild);
+            m_start.setToBeforeChild(*firstChild);
             return;
         }
 
@@ -1694,7 +1694,7 @@ void Range::nodeChildrenWillBeRemoved(ContainerNode* container)
     boundaryNodeChildrenWillBeRemoved(m_end, container);
 }
 
-static inline void boundaryNodeWillBeRemoved(RangeBoundaryPoint& boundary, Node* nodeToBeRemoved)
+static inline void boundaryNodeWillBeRemoved(RangeBoundaryPoint& boundary, Node& nodeToBeRemoved)
 {
     if (boundary.childBefore() == nodeToBeRemoved) {
         boundary.childBeforeWillBeRemoved();
@@ -1709,15 +1709,14 @@ static inline void boundaryNodeWillBeRemoved(RangeBoundaryPoint& boundary, Node*
     }
 }
 
-void Range::nodeWillBeRemoved(Node* node)
+void Range::nodeWillBeRemoved(Node& node)
 {
-    ASSERT(node);
-    ASSERT(node->document() == m_ownerDocument);
+    ASSERT(node.document() == m_ownerDocument);
     ASSERT(node != m_ownerDocument);
 
     // FIXME: Once DOMNodeRemovedFromDocument mutation event removed, we
     // should change following if-statement to ASSERT(!node->parentNode).
-    if (!node->parentNode())
+    if (!node.parentNode())
         return;
     boundaryNodeWillBeRemoved(m_start, node);
     boundaryNodeWillBeRemoved(m_end, node);

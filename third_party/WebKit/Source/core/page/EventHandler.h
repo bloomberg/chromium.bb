@@ -88,7 +88,7 @@ public:
     ~EventHandler();
 
     void clear();
-    void nodeWillBeRemoved(Node*);
+    void nodeWillBeRemoved(Node&);
 
     void updateSelectionForMouseDrag();
 
