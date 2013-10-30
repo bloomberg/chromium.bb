@@ -732,9 +732,13 @@ cr.define('options', function() {
 
       // If the user gets signed out while the advanced sync settings dialog is
       // visible, say, due to a dashboard clear, close the dialog.
+      // However, if the user gets signed out as a result of abandoning first
+      // time sync setup, do not call closeOverlay as it will redirect the
+      // browser to the main settings page and override any in-progress
+      // user-initiated navigation. See crbug.com/278030.
       // Note: SyncSetupOverlay.closeOverlay is a no-op if the overlay is
       // already hidden.
-      if (this.signedIn_ && !syncData.signedIn)
+      if (this.signedIn_ && !syncData.signedIn && !syncData.setupInProgress)
         SyncSetupOverlay.closeOverlay();
 
       this.signedIn_ = syncData.signedIn;

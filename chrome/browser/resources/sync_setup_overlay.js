@@ -26,6 +26,11 @@ cr.define('options', function() {
   // the boxes are restored to their most recent checked state from this cache.
   var dataTypeBoxes_ = {};
 
+  // Used to determine whether to bring the OK button / passphrase field into
+  // focus.
+  var confirmPageVisible_ = false;
+  var customizePageVisible_ = false;
+
   /**
    * The user's selection in the synced data type drop-down menu, as an index.
    * @enum {number}
@@ -90,11 +95,6 @@ cr.define('options', function() {
     closeOverlay_: function() {
       this.syncConfigureArgs_ = null;
       this.dataTypeBoxes_ = {};
-
-      // Required in order to determine whether to give focus to the OK button
-      // or passphrase field. See crbug.com/279770.
-      $('confirm-sync-preferences').hidden = true;
-      $('customize-sync-preferences').hidden = true;
 
       var overlay = $('sync-setup-overlay');
       if (!overlay.hidden)
@@ -421,6 +421,11 @@ cr.define('options', function() {
       if (args)
         this.syncConfigureArgs_ = args;
 
+      // Required in order to determine whether to give focus to the OK button
+      // or passphrase field. See crbug.com/310555 and crbug.com/306353.
+      this.confirmPageVisible_ = false;
+      this.customizePageVisible_ = false;
+
       // Once the advanced sync settings dialog is visible, we transition
       // between its drop-down menu items as follows:
       // "Sync everything": Show encryption and passphrase sections, and disable
@@ -485,7 +490,8 @@ cr.define('options', function() {
 
     showSyncEverythingPage_: function() {
       // Determine whether to bring the OK button into focus.
-      var wasConfirmPageHidden = $('confirm-sync-preferences').hidden;
+      var wasConfirmPageHidden = !this.confirmPageVisible_;
+      this.confirmPageVisible_ = true;
 
       $('confirm-sync-preferences').hidden = false;
       $('customize-sync-preferences').hidden = true;
@@ -580,7 +586,8 @@ cr.define('options', function() {
      */
     showCustomizePage_: function(args, index) {
       // Determine whether to bring the OK button field into focus.
-      var wasCustomizePageHidden = $('customize-sync-preferences').hidden;
+      var wasCustomizePageHidden = !this.customizePageVisible_;
+      this.customizePageVisible_ = true;
 
       $('confirm-sync-preferences').hidden = true;
       $('customize-sync-preferences').hidden = false;
@@ -624,6 +631,14 @@ cr.define('options', function() {
      *     section.
      */
     showSyncSetupPage_: function(page, args) {
+      // If the user clicks the OK button, dismiss the dialog immediately, and
+      // do not go through the process of hiding elements of the overlay.
+      // See crbug.com/308873.
+      if (page == 'done') {
+        this.closeOverlay_();
+        return;
+      }
+
       this.setThrobbersVisible_(false);
 
       // Hide an existing visible overlay (ensuring the close button is not
@@ -649,10 +664,7 @@ cr.define('options', function() {
       // focus, we need to ensure that the overlay container and dialog aren't
       // [hidden] (as trying to focus() nodes inside of a [hidden] DOM section
       // doesn't work).
-      if (page == 'done')
-        this.closeOverlay_();
-      else
-        this.showOverlay_();
+      this.showOverlay_();
 
       if (page == 'configure' || page == 'passphrase')
         this.showConfigure_(args);
