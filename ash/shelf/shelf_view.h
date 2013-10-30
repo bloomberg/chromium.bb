@@ -222,6 +222,9 @@ class ASH_EXPORT ShelfView : public views::View,
   // Invoked after the fading out animation for item deletion is ended.
   void OnFadeOutAnimationEnded();
 
+  // Fade in last visible item.
+  void StartFadeInLastVisibleItem();
+
   // Updates the visible range of overflow items in |overflow_view|.
   void UpdateOverflowRange(ShelfView* overflow_view);
 

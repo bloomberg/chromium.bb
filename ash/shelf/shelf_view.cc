@@ -731,6 +731,8 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) {
   }
 
   if (is_overflow_mode()) {
+    // The overflow button is not shown in overflow mode.
+    overflow_button_->SetVisible(false);
     DCHECK_LT(last_visible_index_, view_model_->view_size());
     for (int i = 0; i < view_model_->view_size(); ++i) {
       bool visible = i >= first_visible_index_ &&
@@ -1102,9 +1104,11 @@ bool ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
     drag_view_->layer()->SetOpacity(0.0f);
     dragged_off_shelf_ = true;
     if (RemovableByRipOff(current_index) == REMOVABLE) {
-      // Move the item to the end of the launcher and hide it.
+      // Move the item to the front of the first panel item and hide it.
+      // LauncherItemMoved() callback will handle the |view_model_| update and
+      // call AnimateToIdealBounds().
       model_->Move(current_index, model_->FirstPanelIndex() - 1);
-      AnimateToIdealBounds();
+      StartFadeInLastVisibleItem();
       // Make the item partially disappear to show that it will get removed if
       // dropped.
       drag_image_->SetOpacity(0.5f);
@@ -1261,7 +1265,10 @@ void ShelfView::UpdateFirstButtonPadding() {
 
 void ShelfView::OnFadeOutAnimationEnded() {
   AnimateToIdealBounds();
+  StartFadeInLastVisibleItem();
+}
 
+void ShelfView::StartFadeInLastVisibleItem() {
   // If overflow button is visible and there is a valid new last item, fading
   // the new last item in after sliding animation is finished.
   if (overflow_button_->visible() && last_visible_index_ >= 0) {
