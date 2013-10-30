@@ -20,6 +20,7 @@ enum TabLoadingState {
   kTabCrashed,
 };
 
+@class GTMFadeTruncatingTextFieldCell;
 @class MediaIndicatorView;
 @class MenuController;
 namespace TabControllerInternal {
@@ -43,6 +44,7 @@ class MenuDelegate;
  @private
   base::scoped_nsobject<NSView> iconView_;
   base::scoped_nsobject<NSTextField> titleView_;
+  GTMFadeTruncatingTextFieldCell* titleViewCell_;  // weak
   base::scoped_nsobject<MediaIndicatorView> mediaIndicatorView_;
   base::scoped_nsobject<HoverCloseButton> closeButton_;
 

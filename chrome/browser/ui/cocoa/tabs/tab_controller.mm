@@ -7,8 +7,10 @@
 #include <algorithm>
 #include <cmath>
 
+#include "base/i18n/rtl.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
+#include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/tabs/media_indicator_view.h"
@@ -110,6 +112,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
         [[labelCell font] fontName] size:fontSize];
     [labelCell setFont:font];
     [titleView_ setCell:labelCell];
+    titleViewCell_ = labelCell;
 
     // Close button.
     closeButton_.reset([[HoverCloseButton alloc] initWithFrame:
@@ -192,6 +195,12 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
 - (void)setTitle:(NSString*)title {
   [titleView_ setStringValue:title];
+  base::string16 title16 = base::SysNSStringToUTF16(title);
+  bool isRTL = base::i18n::GetFirstStrongCharacterDirection(title16) ==
+               base::i18n::RIGHT_TO_LEFT;
+  titleViewCell_.truncateMode = isRTL ? GTMFadeTruncatingHead
+                                      : GTMFadeTruncatingTail;
+
   if ([self mini] && ![self selected]) {
     TabView* tabView = static_cast<TabView*>([self view]);
     DCHECK([tabView isKindOfClass:[TabView class]]);
