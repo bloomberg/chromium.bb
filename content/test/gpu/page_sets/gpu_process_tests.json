@@ -1,6 +1,7 @@
 {
   "description": "Tests that accelerated content triggers the creation of a GPU process",
   "user_agent_type": "desktop",
+  "serving_dirs": [ "../../data" ],
   "pages": [
     {
       "name": "GpuProcess.canvas2d",
@@ -29,8 +30,9 @@
       "navigate_steps": [
         { "action": "navigate"},
         {
-          "action": "play",
-          "selector": "#video"
+          "action": "wait",
+          "javascript": "domAutomationController._finished",
+          "timeout": 30
         }
       ]
     }

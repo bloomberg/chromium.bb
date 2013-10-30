@@ -7,6 +7,17 @@ from telemetry import test
 from telemetry.page import page_set
 from telemetry.page import page_test
 
+test_harness_script = r"""
+  var domAutomationController = {};
+  domAutomationController._finished = false;
+  domAutomationController.setAutomationId = function(id) {}
+  domAutomationController.send = function(msg) {
+    domAutomationController._finished = true;
+  }
+
+  window.domAutomationController = domAutomationController;
+"""
+
 class GpuProcessValidator(page_test.PageTest):
   def __init__(self):
     super(GpuProcessValidator, self).__init__('ValidatePage',
@@ -28,3 +39,9 @@ class GpuProcess(test.Test):
 
   def CreateExpectations(self, page_set):
     return expectations.GpuProcessExpectations()
+
+  def CreatePageSet(self, options):
+    page_set = super(GpuProcess, self).CreatePageSet(options)
+    for page in page_set.pages:
+      page.script_to_evaluate_on_commit = test_harness_script
+    return page_set
