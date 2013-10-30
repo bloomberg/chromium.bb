@@ -11,13 +11,18 @@
 #include "base/pickle.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "net/base/cache_type.h"
+#include "net/base/test_completion_callback.h"
+#include "net/disk_cache/disk_cache_test_util.h"
+#include "net/disk_cache/simple/simple_backend_impl.h"
 #include "net/disk_cache/simple/simple_backend_version.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_index.h"
 #include "net/disk_cache/simple/simple_index_file.h"
 #include "net/disk_cache/simple/simple_util.h"
+#include "net/disk_cache/simple/simple_version_upgrade.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
@@ -255,6 +260,84 @@ TEST_F(SimpleIndexFileTest, LoadCorruptIndex) {
   ASSERT_TRUE(callback_called());
   EXPECT_TRUE(load_index_result.did_load);
   EXPECT_TRUE(load_index_result.flush_required);
+}
+
+// Tests that after an upgrade the backend has the index file put in place.
+TEST_F(SimpleIndexFileTest, SimpleCacheUpgrade) {
+  base::ScopedTempDir cache_dir;
+  ASSERT_TRUE(cache_dir.CreateUniqueTempDir());
+  const base::FilePath cache_path = cache_dir.path();
+
+  // Write an old fake index file.
+  base::PlatformFileError error;
+  base::PlatformFile file = base::CreatePlatformFile(
+      cache_path.AppendASCII("index"),
+      base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE,
+      NULL,
+      &error);
+  disk_cache::FakeIndexData file_contents;
+  file_contents.initial_magic_number = disk_cache::kSimpleInitialMagicNumber;
+  file_contents.version = 5;
+  int bytes_written = base::WritePlatformFile(
+      file, 0, reinterpret_cast<char*>(&file_contents), sizeof(file_contents));
+  ASSERT_TRUE(base::ClosePlatformFile(file));
+  ASSERT_EQ((int)sizeof(file_contents), bytes_written);
+
+  // Write the index file. The format is incorrect, but for transitioning from
+  // v5 it does not matter.
+  const std::string index_file_contents("incorrectly serialized data");
+  const base::FilePath old_index_file =
+      cache_path.AppendASCII("the-real-index");
+  ASSERT_EQ(implicit_cast<int>(index_file_contents.size()),
+            file_util::WriteFile(old_index_file,
+                                 index_file_contents.data(),
+                                 index_file_contents.size()));
+
+  // Upgrade the cache.
+  ASSERT_TRUE(disk_cache::UpgradeSimpleCacheOnDisk(cache_path));
+
+  // Create the backend and initiate index flush by destroying the backend.
+  base::Thread cache_thread("CacheThread");
+  ASSERT_TRUE(cache_thread.StartWithOptions(
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
+  disk_cache::SimpleBackendImpl* simple_cache =
+      new disk_cache::SimpleBackendImpl(cache_path,
+                                        0,
+                                        net::DISK_CACHE,
+                                        cache_thread.message_loop_proxy().get(),
+                                        NULL);
+  net::TestCompletionCallback cb;
+  int rv = simple_cache->Init(cb.callback());
+  EXPECT_EQ(net::OK, cb.GetResult(rv));
+  rv = simple_cache->index()->ExecuteWhenReady(cb.callback());
+  EXPECT_EQ(net::OK, cb.GetResult(rv));
+  delete simple_cache;
+
+  // The backend flushes the index on destruction and does so on the cache
+  // thread, wait for the flushing to finish by posting a callback to the cache
+  // thread after that.
+  MessageLoopHelper helper;
+  CallbackTest cb_shutdown(&helper, false);
+  cache_thread.message_loop_proxy()->PostTask(
+      FROM_HERE,
+      base::Bind(&CallbackTest::Run, base::Unretained(&cb_shutdown), net::OK));
+  helper.WaitUntilCacheIoFinished(1);
+
+  // Verify that the index file exists.
+  const base::FilePath& index_file_path =
+      cache_path.AppendASCII("index-dir").AppendASCII("the-real-index");
+  EXPECT_TRUE(base::PathExists(index_file_path));
+
+  // Verify that the version of the index file is correct.
+  std::string contents;
+  EXPECT_TRUE(base::ReadFileToString(index_file_path, &contents));
+  base::Time when_index_last_saw_cache;
+  SimpleIndexLoadResult deserialize_result;
+  WrappedSimpleIndexFile::Deserialize(contents.data(),
+                                      contents.size(),
+                                      &when_index_last_saw_cache,
+                                      &deserialize_result);
+  EXPECT_TRUE(deserialize_result.did_load);
 }
 
 #endif  // defined(OS_POSIX)

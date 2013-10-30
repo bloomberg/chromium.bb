@@ -3470,8 +3470,4 @@ TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationCorruption) {
   EXPECT_TRUE(keys_to_match.empty());
 }
 
-// TODO(pasko): Add a Simple Cache test that would simulate upgrade from the
-// version with the index file in the cache directory to the version with the
-// index file in subdirectory.
-
 #endif  // defined(OS_POSIX)
