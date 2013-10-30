@@ -431,6 +431,8 @@
         '..',
       ],
       'sources': [
+        'browser/sync/glue/session_sync_test_helper.cc',
+        'browser/sync/glue/session_sync_test_helper.h',
         'browser/sync/profile_sync_service_mock.cc',
         'browser/sync/profile_sync_service_mock.h',
         'test/base/run_all_unittests.cc',
@@ -1307,8 +1309,6 @@
         'browser/sync/glue/non_ui_data_type_controller_unittest.cc',
         'browser/sync/glue/search_engine_data_type_controller_unittest.cc',
         'browser/sync/glue/session_model_associator_unittest.cc',
-        'browser/sync/glue/session_sync_test_helper.cc',
-        'browser/sync/glue/session_sync_test_helper.h',
         'browser/sync/glue/shared_change_processor_mock.cc',
         'browser/sync/glue/shared_change_processor_mock.h',
         'browser/sync/glue/shared_change_processor_unittest.cc',
