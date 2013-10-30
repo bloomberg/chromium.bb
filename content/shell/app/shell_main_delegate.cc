@@ -163,8 +163,10 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
         switches::kEnableExperimentalWebPlatformFeatures);
     }
 
-    if (!command_line.HasSwitch(switches::kEnableThreadedCompositing))
+    if (!command_line.HasSwitch(switches::kEnableThreadedCompositing)) {
+      command_line.AppendSwitch(switches::kDisableThreadedCompositing);
       command_line.AppendSwitch(cc::switches::kDisableThreadedAnimation);
+    }
 
     command_line.AppendSwitch(switches::kEnableInbandTextTracks);
     command_line.AppendSwitch(switches::kMuteAudio);
