@@ -547,9 +547,11 @@ void ContainerNode::removeChildren()
         // This must be later than willRemoveChildren, which might change focus
         // state of a child.
         document().removeFocusedElementOfSubtree(this, true);
+
+        // Removing a node from a selection can cause widget updates.
+        document().nodeChildrenWillBeRemoved(this);
     }
 
-    document().nodeChildrenWillBeRemoved(this);
 
     NodeVector removedChildren;
     {
