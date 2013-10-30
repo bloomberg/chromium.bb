@@ -125,7 +125,7 @@ class TabCapturePerformanceTest
       command_line->AppendSwitchASCII(switches::kWindowSize, "2000,1500");
     }
 
-    command_line->AppendSwitch(switches::kDisableTestCompositor);
+    UseRealGLContexts();
 
     if (!HasFlag(kUseGpu)) {
       command_line->AppendSwitch(switches::kDisableGpu);

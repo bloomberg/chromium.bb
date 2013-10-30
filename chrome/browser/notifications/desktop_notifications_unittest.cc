@@ -24,6 +24,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/test/context_factories_for_test.h"
 #endif
 
 
@@ -107,6 +108,9 @@ void DesktopNotificationsTest::SetUp() {
   // The message center is notmally initialized on |g_browser_process| which
   // is not created for these tests.
   message_center::MessageCenter::Initialize();
+  // The ContextFactory must exist before any Compositors are created.
+  bool allow_test_contexts = true;
+  ui::InitializeContextFactoryForTests(allow_test_contexts);
   // MockBalloonCollection retrieves information about the screen on creation.
   // So it is necessary to make sure the desktop gets created first.
   ash::Shell::CreateInstance(new ash::test::TestShellDelegate);
@@ -131,6 +135,7 @@ void DesktopNotificationsTest::TearDown() {
   // is not created for these tests.
   message_center::MessageCenter::Shutdown();
   aura::Env::DeleteInstance();
+  ui::TerminateContextFactoryForTests();
 #endif
   ui::ShutdownInputMethodForTesting();
 }

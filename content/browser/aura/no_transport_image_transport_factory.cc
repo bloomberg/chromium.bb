@@ -44,8 +44,8 @@ class FakeTexture : public ui::Texture {
 }  // anonymous namespace
 
 NoTransportImageTransportFactory::NoTransportImageTransportFactory(
-    ui::ContextFactory* context_factory)
-    : context_factory_(context_factory) {}
+    scoped_ptr<ui::ContextFactory> context_factory)
+    : context_factory_(context_factory.Pass()) {}
 
 NoTransportImageTransportFactory::~NoTransportImageTransportFactory() {}
 

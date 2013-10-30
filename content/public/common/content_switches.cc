@@ -989,11 +989,6 @@ const char kUseCoreAnimation[]              = "use-core-animation";
 const char kChildCleanExit[]                = "child-clean-exit";
 #endif
 
-#if defined(USE_AURA)
-// Forces usage of the test compositor. Needed to run ui tests on bots.
-extern const char kTestCompositor[]         = "test-compositor";
-#endif
-
 // Don't dump stuff here, follow the same order as the header.
 
 }  // namespace switches

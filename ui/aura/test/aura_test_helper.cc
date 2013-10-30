@@ -22,6 +22,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/gfx/screen.h"
 
 #if defined(USE_X11)
@@ -66,7 +67,7 @@ void AuraTestHelper::SetUp() {
 
   // The ContextFactory must exist before any Compositors are created.
   bool allow_test_contexts = true;
-  ui::Compositor::InitializeContextFactoryForTests(allow_test_contexts);
+  ui::InitializeContextFactoryForTests(allow_test_contexts);
 
   Env::CreateInstance();
   // Unit tests generally don't want to query the system, rather use the state
@@ -115,6 +116,8 @@ void AuraTestHelper::TearDown() {
   ui::ShutdownInputMethodForTesting();
 
   Env::DeleteInstance();
+
+  ui::TerminateContextFactoryForTests();
 }
 
 void AuraTestHelper::RunAllPendingInMessageLoop() {

@@ -19,6 +19,7 @@
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/corewm/capture_controller.h"
 
@@ -53,6 +54,9 @@ void AshTestHelper::SetUp(bool start_session) {
   zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
   ui::InitializeInputMethodForTesting();
+
+  bool allow_test_contexts = true;
+  ui::InitializeContextFactoryForTests(allow_test_contexts);
 
   // Creates Shell and hook with Desktop.
   test_shell_delegate_ = new TestShellDelegate;
@@ -111,6 +115,7 @@ void AshTestHelper::TearDown() {
 #endif
 
   aura::Env::DeleteInstance();
+  ui::TerminateContextFactoryForTests();
 
   // Need to reset the initial login status.
   TestSystemTrayDelegate::SetInitialLoginStatus(user::LOGGED_IN_USER);

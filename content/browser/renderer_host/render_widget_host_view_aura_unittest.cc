@@ -38,6 +38,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/compositor.h"
+#include "ui/compositor/test/test_context_factory.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 
@@ -153,7 +154,8 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
       : browser_thread_for_ui_(BrowserThread::UI, &message_loop_) {}
 
   virtual void SetUp() {
-    ImageTransportFactory::InitializeForUnitTests();
+    ImageTransportFactory::InitializeForUnitTests(
+        scoped_ptr<ui::ContextFactory>(new ui::TestContextFactory));
     aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
     aura_test_helper_->SetUp();
 

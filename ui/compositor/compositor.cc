@@ -18,27 +18,18 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
-#include "cc/debug/test_context_provider.h"
-#include "cc/debug/test_web_graphics_context_3d.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
 #include "cc/output/context_provider.h"
-#include "cc/output/output_surface.h"
 #include "cc/trees/layer_tree_host.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/reflector.h"
 #include "ui/gfx/frame_time.h"
 #include "ui/gl/gl_context.h"
-#include "ui/gl/gl_implementation.h"
-#include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_switches.h"
-#include "webkit/common/gpu/context_provider_in_process.h"
-#include "webkit/common/gpu/grcontext_for_webgraphicscontext3d.h"
-#include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 namespace {
 
@@ -53,7 +44,6 @@ enum SwapType {
 bool g_compositor_initialized = false;
 base::Thread* g_compositor_thread = NULL;
 
-ui::ContextFactory* g_implicit_factory = NULL;
 ui::ContextFactory* g_context_factory = NULL;
 
 const int kCompositorLockTimeoutMs = 67;
@@ -90,141 +80,6 @@ ContextFactory* ContextFactory::GetInstance() {
 void ContextFactory::SetInstance(ContextFactory* instance) {
   g_context_factory = instance;
 }
-
-DefaultContextFactory::DefaultContextFactory() {
-}
-
-DefaultContextFactory::~DefaultContextFactory() {
-}
-
-bool DefaultContextFactory::Initialize() {
-  if (!gfx::GLSurface::InitializeOneOff() ||
-      gfx::GetGLImplementation() == gfx::kGLImplementationNone) {
-    LOG(ERROR) << "Could not load the GL bindings";
-    return false;
-  }
-  return true;
-}
-
-scoped_ptr<cc::OutputSurface> DefaultContextFactory::CreateOutputSurface(
-    Compositor* compositor) {
-  WebKit::WebGraphicsContext3D::Attributes attrs;
-  attrs.depth = false;
-  attrs.stencil = false;
-  attrs.antialias = false;
-  attrs.shareResources = true;
-
-  using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
-  scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d(
-      WebGraphicsContext3DInProcessCommandBufferImpl::CreateViewContext(
-          attrs, compositor->widget()));
-  CHECK(context3d);
-
-  using webkit::gpu::ContextProviderInProcess;
-  scoped_refptr<ContextProviderInProcess> context_provider =
-      ContextProviderInProcess::Create(context3d.Pass(),
-                                       "UICompositor");
-
-  return make_scoped_ptr(new cc::OutputSurface(context_provider));
-}
-
-scoped_refptr<Reflector> DefaultContextFactory::CreateReflector(
-    Compositor* mirroed_compositor,
-    Layer* mirroring_layer) {
-  return NULL;
-}
-
-void DefaultContextFactory::RemoveReflector(
-    scoped_refptr<Reflector> reflector) {
-}
-
-scoped_refptr<cc::ContextProvider>
-DefaultContextFactory::OffscreenCompositorContextProvider() {
-  if (!offscreen_compositor_contexts_.get() ||
-      !offscreen_compositor_contexts_->DestroyedOnMainThread()) {
-    offscreen_compositor_contexts_ =
-        webkit::gpu::ContextProviderInProcess::CreateOffscreen();
-  }
-  return offscreen_compositor_contexts_;
-}
-
-scoped_refptr<cc::ContextProvider>
-DefaultContextFactory::SharedMainThreadContextProvider() {
-  if (shared_main_thread_contexts_ &&
-      !shared_main_thread_contexts_->DestroyedOnMainThread())
-    return shared_main_thread_contexts_;
-
-  if (ui::Compositor::WasInitializedWithThread()) {
-    shared_main_thread_contexts_ =
-        webkit::gpu::ContextProviderInProcess::CreateOffscreen();
-  } else {
-    shared_main_thread_contexts_ =
-        static_cast<webkit::gpu::ContextProviderInProcess*>(
-            OffscreenCompositorContextProvider().get());
-  }
-  if (shared_main_thread_contexts_ &&
-      !shared_main_thread_contexts_->BindToCurrentThread())
-    shared_main_thread_contexts_ = NULL;
-
-  return shared_main_thread_contexts_;
-}
-
-void DefaultContextFactory::RemoveCompositor(Compositor* compositor) {
-}
-
-bool DefaultContextFactory::DoesCreateTestContexts() { return false; }
-
-TestContextFactory::TestContextFactory() {}
-
-TestContextFactory::~TestContextFactory() {}
-
-scoped_ptr<cc::OutputSurface> TestContextFactory::CreateOutputSurface(
-    Compositor* compositor) {
-  return make_scoped_ptr(
-      new cc::OutputSurface(cc::TestContextProvider::Create()));
-}
-
-scoped_refptr<Reflector> TestContextFactory::CreateReflector(
-    Compositor* mirrored_compositor,
-    Layer* mirroring_layer) {
-  return new Reflector();
-}
-
-void TestContextFactory::RemoveReflector(scoped_refptr<Reflector> reflector) {
-}
-
-scoped_refptr<cc::ContextProvider>
-TestContextFactory::OffscreenCompositorContextProvider() {
-  if (!offscreen_compositor_contexts_.get() ||
-      offscreen_compositor_contexts_->DestroyedOnMainThread())
-    offscreen_compositor_contexts_ = cc::TestContextProvider::Create();
-  return offscreen_compositor_contexts_;
-}
-
-scoped_refptr<cc::ContextProvider>
-TestContextFactory::SharedMainThreadContextProvider() {
-  if (shared_main_thread_contexts_ &&
-      !shared_main_thread_contexts_->DestroyedOnMainThread())
-    return shared_main_thread_contexts_;
-
-  if (ui::Compositor::WasInitializedWithThread()) {
-    shared_main_thread_contexts_ = cc::TestContextProvider::Create();
-  } else {
-    shared_main_thread_contexts_ =
-        static_cast<cc::TestContextProvider*>(
-            OffscreenCompositorContextProvider().get());
-  }
-  if (shared_main_thread_contexts_ &&
-      !shared_main_thread_contexts_->BindToCurrentThread())
-    shared_main_thread_contexts_ = NULL;
-
-  return shared_main_thread_contexts_;
-}
-
-void TestContextFactory::RemoveCompositor(Compositor* compositor) {
-}
-
-bool TestContextFactory::DoesCreateTestContexts() { return true; }
 
 Texture::Texture(bool flipped, const gfx::Size& size, float device_scale_factor)
     : size_(size),
@@ -460,44 +315,6 @@ Compositor::~Compositor() {
 }
 
 // static
-void Compositor::InitializeContextFactoryForTests(bool allow_test_contexts) {
-  // The factory may already have been initialized by the content layer, in
-  // which case, use that one.
-  if (g_context_factory)
-    return;
-  DCHECK(!g_implicit_factory) <<
-      "ContextFactory for tests already initialized.";
-
-  bool use_test_contexts = true;
-
-  // Always use test contexts unless the disable command line flag is used.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableTestCompositor))
-    use_test_contexts = false;
-
-#if defined(OS_CHROMEOS)
-  // If the test is running on the chromeos envrionment (such as
-  // device or vm bots), always use real contexts.
-  if (base::SysInfo::IsRunningOnChromeOS())
-    use_test_contexts = false;
-#endif
-
-  if (!allow_test_contexts)
-    use_test_contexts = false;
-
-  if (use_test_contexts) {
-    g_implicit_factory = new ui::TestContextFactory;
-  } else {
-    DVLOG(1) << "Using DefaultContextFactory";
-    scoped_ptr<ui::DefaultContextFactory> instance(
-        new ui::DefaultContextFactory());
-    if (instance->Initialize())
-      g_implicit_factory = instance.release();
-  }
-  g_context_factory = g_implicit_factory;
-}
-
-// static
 void Compositor::Initialize() {
 #if defined(OS_CHROMEOS)
   bool use_thread = !CommandLine::ForCurrentProcess()->HasSwitch(
@@ -534,17 +351,7 @@ scoped_refptr<base::MessageLoopProxy> Compositor::GetCompositorMessageLoop() {
 
 // static
 void Compositor::Terminate() {
-  if (g_context_factory) {
-    if (g_implicit_factory) {
-      delete g_implicit_factory;
-      g_implicit_factory = NULL;
-    }
-    g_context_factory = NULL;
-  }
-
   if (g_compositor_thread) {
-    DCHECK(!g_context_factory)
-        << "The ContextFactory should not outlive the compositor thread.";
     g_compositor_thread->Stop();
     delete g_compositor_thread;
     g_compositor_thread = NULL;

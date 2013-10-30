@@ -36,6 +36,11 @@
 #include "content/public/browser/browser_thread.h"
 #endif
 
+#if defined(USE_AURA)
+#include "content/browser/aura/image_transport_factory.h"
+#include "ui/compositor/test/test_context_factory.h"
+#endif
+
 namespace content {
 namespace {
 
@@ -148,11 +153,23 @@ void BrowserTestBase::SetUp() {
   // GPU blacklisting decisions were made.
   command_line->AppendSwitch(switches::kLogGpuControlListDecisions);
 
+#if defined(OS_CHROMEOS)
+  // If the test is running on the chromeos envrionment (such as
+  // device or vm bots), always use real contexts.
+  if (base::SysInfo::IsRunningOnChromeOS())
+    allow_test_contexts_ = false;
+#endif
+
 #if defined(USE_AURA)
+  if (command_line->HasSwitch(switches::kDisableTestCompositor))
+    allow_test_contexts_  = false;
+
   // Use test contexts for browser tests unless they override and force us to
   // use a real context.
-  if (allow_test_contexts_)
-    command_line->AppendSwitch(switches::kTestCompositor);
+  if (allow_test_contexts_) {
+    content::ImageTransportFactory::InitializeForUnitTests(
+        scoped_ptr<ui::ContextFactory>(new ui::TestContextFactory));
+  }
 #endif
 
   // When using real GL contexts, we usually use OSMesa as this works on all

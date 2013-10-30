@@ -18,7 +18,7 @@ namespace content {
 class NoTransportImageTransportFactory : public ImageTransportFactory {
  public:
   explicit NoTransportImageTransportFactory(
-      ui::ContextFactory* context_factory);
+      scoped_ptr<ui::ContextFactory> context_factory);
   virtual ~NoTransportImageTransportFactory();
 
   // ImageTransportFactory implementation.

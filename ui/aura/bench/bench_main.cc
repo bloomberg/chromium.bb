@@ -26,6 +26,7 @@
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/debug_utils.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
@@ -301,7 +302,7 @@ int main(int argc, char** argv) {
 
   // The ContextFactory must exist before any Compositors are created.
   bool allow_test_contexts = false;
-  ui::Compositor::InitializeContextFactoryForTests(allow_test_contexts);
+  ui::InitializeContextFactoryForTests(allow_test_contexts);
 
   ui::RegisterPathProvider();
   base::i18n::InitializeICU();

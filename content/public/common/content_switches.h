@@ -294,10 +294,6 @@ extern const char kUseCoreAnimation[];
 extern const char kChildCleanExit[];
 #endif
 
-#if defined(USE_AURA)
-CONTENT_EXPORT extern const char kTestCompositor[];
-#endif
-
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in
 // alphabetical order, or in one of the ifdefs (also in order in each section).
 

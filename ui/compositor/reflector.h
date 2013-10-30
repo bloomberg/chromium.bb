@@ -5,12 +5,11 @@
 #ifndef UI_COMPOSITOR_REFLECTOR_H_
 #define UI_COMPOSITOR_REFLECTOR_H_
 
-#include "ui/compositor/compositor_export.h"
+#include "base/memory/ref_counted.h"
 
 namespace ui {
 
-class COMPOSITOR_EXPORT Reflector
-    : public base::RefCountedThreadSafe<Reflector> {
+class Reflector : public base::RefCountedThreadSafe<Reflector> {
  public:
   Reflector() {}
 

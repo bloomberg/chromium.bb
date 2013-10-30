@@ -133,6 +133,7 @@
       'dependencies': [
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
+        '../compositor/compositor.gyp:compositor_test_support',
         '../events/events.gyp:events',
         '../gfx/gfx.gyp:gfx',
         '../ui.gyp:ui',

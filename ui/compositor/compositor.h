@@ -34,7 +34,6 @@ class ContextProvider;
 class Layer;
 class LayerTreeDebugState;
 class LayerTreeHost;
-class TestContextProvider;
 }
 
 namespace gfx {
@@ -115,68 +114,6 @@ class COMPOSITOR_EXPORT ContextFactory {
   // When true, the factory uses test contexts that do not do real GL
   // operations.
   virtual bool DoesCreateTestContexts() = 0;
-};
-
-// The default factory that creates in-process contexts.
-class COMPOSITOR_EXPORT DefaultContextFactory : public ContextFactory {
- public:
-  DefaultContextFactory();
-  virtual ~DefaultContextFactory();
-
-  // ContextFactory implementation
-  virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(
-      Compositor* compositor) OVERRIDE;
-
-  virtual scoped_refptr<Reflector> CreateReflector(
-      Compositor* compositor,
-      Layer* layer) OVERRIDE;
-  virtual void RemoveReflector(scoped_refptr<Reflector> reflector) OVERRIDE;
-
-  virtual scoped_refptr<cc::ContextProvider>
-      OffscreenCompositorContextProvider() OVERRIDE;
-  virtual scoped_refptr<cc::ContextProvider>
-      SharedMainThreadContextProvider() OVERRIDE;
-  virtual void RemoveCompositor(Compositor* compositor) OVERRIDE;
-  virtual bool DoesCreateTestContexts() OVERRIDE;
-
-  bool Initialize();
-
- private:
-  scoped_refptr<webkit::gpu::ContextProviderInProcess>
-      offscreen_compositor_contexts_;
-  scoped_refptr<webkit::gpu::ContextProviderInProcess>
-      shared_main_thread_contexts_;
-
-  DISALLOW_COPY_AND_ASSIGN(DefaultContextFactory);
-};
-
-// The factory that creates test contexts.
-class COMPOSITOR_EXPORT TestContextFactory : public ContextFactory {
- public:
-  TestContextFactory();
-  virtual ~TestContextFactory();
-
-  // ContextFactory implementation
-  virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(
-      Compositor* compositor) OVERRIDE;
-
-  virtual scoped_refptr<Reflector> CreateReflector(
-      Compositor* mirrored_compositor,
-      Layer* mirroring_layer) OVERRIDE;
-  virtual void RemoveReflector(scoped_refptr<Reflector> reflector) OVERRIDE;
-
-  virtual scoped_refptr<cc::ContextProvider>
-      OffscreenCompositorContextProvider() OVERRIDE;
-  virtual scoped_refptr<cc::ContextProvider>
-      SharedMainThreadContextProvider() OVERRIDE;
-  virtual void RemoveCompositor(Compositor* compositor) OVERRIDE;
-  virtual bool DoesCreateTestContexts() OVERRIDE;
-
- private:
-  scoped_refptr<cc::TestContextProvider> offscreen_compositor_contexts_;
-  scoped_refptr<cc::TestContextProvider> shared_main_thread_contexts_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestContextFactory);
 };
 
 // Texture provide an abstraction over the external texture that can be passed
@@ -287,14 +224,6 @@ class COMPOSITOR_EXPORT Compositor
   Compositor(bool use_software_renderer,
              gfx::AcceleratedWidget widget);
   virtual ~Compositor();
-
-  // Set up the compositor ContextFactory for a test environment. Unit tests
-  // that do not have a full content environment need to call this before
-  // initializing the Compositor.
-  // Some tests expect pixel output, and they should pass false for
-  // |allow_test_contexts|. Most unit tests should pass true. Once this has been
-  // called, the Initialize() and Terminate() methods should be used as normal.
-  static void InitializeContextFactoryForTests(bool allow_test_contexts);
 
   static void Initialize();
   static bool WasInitializedWithThread();

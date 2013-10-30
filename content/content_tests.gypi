@@ -642,6 +642,7 @@
             '../third_party/icu/icu.gyp:icuuc',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             '../third_party/libjingle/libjingle.gyp:libjingle',
+            '../ui/compositor/compositor.gyp:compositor_test_support',
             '../ui/gl/gl.gyp:gl',
             '../v8/tools/gyp/v8.gyp:v8',
             '../webkit/common/webkit_common.gyp:webkit_common',

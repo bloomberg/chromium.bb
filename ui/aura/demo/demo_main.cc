@@ -19,7 +19,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/compositor/compositor.h"
+#include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
@@ -112,7 +112,7 @@ int DemoMain() {
 
   // The ContextFactory must exist before any Compositors are created.
   bool allow_test_contexts = false;
-  ui::Compositor::InitializeContextFactoryForTests(allow_test_contexts);
+  ui::InitializeContextFactoryForTests(allow_test_contexts);
 
   aura::Env::CreateInstance();
   scoped_ptr<aura::TestScreen> test_screen(aura::TestScreen::Create());

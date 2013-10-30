@@ -9,6 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "ui/compositor/compositor.h"
+#include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/gfx/ozone/surface_factory_ozone.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skia_util.h"
@@ -83,7 +84,7 @@ SoftwareOutputDeviceOzoneTest::~SoftwareOutputDeviceOzoneTest() {
 }
 
 void SoftwareOutputDeviceOzoneTest::SetUp() {
-  ui::Compositor::InitializeContextFactoryForTests(false);
+  ui::InitializeContextFactoryForTests(false);
   ui::Compositor::Initialize();
 
   surface_factory_.reset(new MockSurfaceFactoryOzone());
@@ -103,6 +104,7 @@ void SoftwareOutputDeviceOzoneTest::TearDown() {
   output_device_.reset();
   compositor_.reset();
   surface_factory_.reset();
+  ui::TerminateContextFactoryForTests();
   ui::Compositor::Terminate();
 }
 

@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/test/ui_controls.h"
+#include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
@@ -22,9 +23,6 @@
 #include "ash/shell.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
-#if defined(OS_WIN)
-#include "ui/compositor/compositor.h"
-#endif
 #endif
 
 #if defined(USE_AURA)
@@ -102,17 +100,15 @@ void ViewEventTestBase::SetUp() {
   gfx::NativeView context = NULL;
 
 #if defined(USE_ASH)
+  // The ContextFactory must exist before any Compositors are created.
+  bool allow_test_contexts = true;
+  ui::InitializeContextFactoryForTests(allow_test_contexts);
 #if defined(OS_WIN)
   // http://crbug.com/154081 use ash::Shell code path below on win_ash bots when
   // interactive_ui_tests is brought up on that platform.
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, views::CreateDesktopScreen());
 
-  // The ContextFactory must exist before any Compositors are created. The
-  // ash::Shell code path below handles this, but since we skip it we must
-  // do this here.
-  bool allow_test_contexts = true;
-  ui::Compositor::InitializeContextFactoryForTests(allow_test_contexts);
 #else  // !OS_WIN
   // Ash Shell can't just live on its own without a browser process, we need to
   // also create the message center.
@@ -164,6 +160,7 @@ void ViewEventTestBase::TearDown() {
   message_center::MessageCenter::Shutdown();
 #endif  // !OS_WIN
   aura::Env::DeleteInstance();
+  ui::TerminateContextFactoryForTests();
 #elif defined(USE_AURA)
   aura_test_helper_->TearDown();
 #endif  // !USE_ASH && USE_AURA

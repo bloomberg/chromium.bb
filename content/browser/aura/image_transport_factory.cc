@@ -4,56 +4,32 @@
 
 #include "content/browser/aura/image_transport_factory.h"
 
-#include "base/command_line.h"
-#include "base/sys_info.h"
 #include "content/browser/aura/gpu_process_transport_factory.h"
 #include "content/browser/aura/no_transport_image_transport_factory.h"
-#include "content/public/common/content_switches.h"
 #include "ui/compositor/compositor.h"
-#include "ui/compositor/compositor_switches.h"
 
 namespace content {
 
 namespace {
-ImageTransportFactory* g_factory;
-}
-
-
-static bool UseTestContextAndTransportFactory() {
-#if defined(OS_CHROMEOS)
-  // If the test is running on the chromeos envrionment (such as
-  // device or vm bots), always use real contexts.
-  if (base::SysInfo::IsRunningOnChromeOS())
-    return false;
-#endif
-
-  // Only used if the enable command line flag is used.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kTestCompositor))
-    return false;
-
-  // The disable command line flag preempts the enable flag.
-  if (!command_line->HasSwitch(switches::kDisableTestCompositor))
-    return true;
-
-  return false;
+ImageTransportFactory* g_factory = NULL;
+bool g_initialized_for_unit_tests = false;
 }
 
 // static
 void ImageTransportFactory::Initialize() {
-  DCHECK(!g_factory);
-  if (UseTestContextAndTransportFactory()) {
-    g_factory =
-        new NoTransportImageTransportFactory(new ui::TestContextFactory);
-  } else {
-    g_factory = new GpuProcessTransportFactory;
-  }
+  DCHECK(!g_factory || g_initialized_for_unit_tests);
+  if (g_initialized_for_unit_tests)
+    return;
+  g_factory = new GpuProcessTransportFactory;
   ui::ContextFactory::SetInstance(g_factory->AsContextFactory());
 }
 
-void ImageTransportFactory::InitializeForUnitTests() {
+void ImageTransportFactory::InitializeForUnitTests(
+    scoped_ptr<ui::ContextFactory> test_factory) {
   DCHECK(!g_factory);
-  g_factory = new NoTransportImageTransportFactory(new ui::TestContextFactory);
+  DCHECK(!g_initialized_for_unit_tests);
+  g_initialized_for_unit_tests = true;
+  g_factory = new NoTransportImageTransportFactory(test_factory.Pass());
   ui::ContextFactory::SetInstance(g_factory->AsContextFactory());
 }
 
@@ -62,6 +38,7 @@ void ImageTransportFactory::Terminate() {
   ui::ContextFactory::SetInstance(NULL);
   delete g_factory;
   g_factory = NULL;
+  g_initialized_for_unit_tests = false;
 }
 
 // static

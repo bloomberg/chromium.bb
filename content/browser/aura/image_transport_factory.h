@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -52,9 +53,10 @@ class CONTENT_EXPORT ImageTransportFactory {
   // Initializes the global transport factory.
   static void Initialize();
 
-  // Initializes the global transport factory for unit tests, using a test
-  // context.
-  static void InitializeForUnitTests();
+  // Initializes the global transport factory for unit tests using the provided
+  // context factory.
+  static void InitializeForUnitTests(
+      scoped_ptr<ui::ContextFactory> test_factory);
 
   // Terminates the global transport factory.
   static void Terminate();

@@ -22,6 +22,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/compositor/test/test_compositor_host.h"
 #include "ui/compositor/test/test_layers.h"
 #include "ui/gfx/canvas.h"
@@ -84,7 +85,7 @@ class LayerWithRealCompositorTest : public testing::Test {
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
     bool allow_test_contexts = false;
-    Compositor::InitializeContextFactoryForTests(allow_test_contexts);
+    InitializeContextFactoryForTests(allow_test_contexts);
     Compositor::Initialize();
 
     const gfx::Rect host_bounds(10, 10, 500, 500);
@@ -94,6 +95,7 @@ class LayerWithRealCompositorTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     window_.reset();
+    TerminateContextFactoryForTests();
     Compositor::Terminate();
   }
 
@@ -351,7 +353,7 @@ class LayerWithDelegateTest : public testing::Test {
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
     bool allow_test_contexts = true;
-    Compositor::InitializeContextFactoryForTests(allow_test_contexts);
+    InitializeContextFactoryForTests(allow_test_contexts);
     Compositor::Initialize();
     compositor_.reset(new Compositor(false, gfx::kNullAcceleratedWidget));
     compositor_->SetScaleAndSize(1.0f, gfx::Size(1000, 1000));
@@ -359,6 +361,7 @@ class LayerWithDelegateTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     compositor_.reset();
+    TerminateContextFactoryForTests();
     Compositor::Terminate();
   }
 
