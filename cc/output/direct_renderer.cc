@@ -148,10 +148,11 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
   if (!resource_provider_)
     return;
 
-  base::hash_map<RenderPass::Id, const RenderPass*> render_passes_in_frame;
+  base::hash_map<RenderPass::Id, gfx::Size> render_passes_in_frame;
   for (size_t i = 0; i < render_passes_in_draw_order.size(); ++i)
-    render_passes_in_frame.insert(std::pair<RenderPass::Id, const RenderPass*>(
-        render_passes_in_draw_order[i]->id, render_passes_in_draw_order[i]));
+    render_passes_in_frame.insert(std::pair<RenderPass::Id, gfx::Size>(
+        render_passes_in_draw_order[i]->id,
+        RenderPassTextureSize(render_passes_in_draw_order[i])));
 
   std::vector<RenderPass::Id> passes_to_delete;
   base::ScopedPtrHashMap<RenderPass::Id, ScopedResource>::const_iterator
@@ -159,24 +160,20 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
   for (pass_iter = render_pass_textures_.begin();
        pass_iter != render_pass_textures_.end();
        ++pass_iter) {
-    base::hash_map<RenderPass::Id, const RenderPass*>::const_iterator it =
+    base::hash_map<RenderPass::Id, gfx::Size>::const_iterator it =
         render_passes_in_frame.find(pass_iter->first);
     if (it == render_passes_in_frame.end()) {
       passes_to_delete.push_back(pass_iter->first);
       continue;
     }
 
-    const RenderPass* render_pass_in_frame = it->second;
-    gfx::Size required_size = RenderPassTextureSize(render_pass_in_frame);
-    ResourceFormat required_format =
-        RenderPassTextureFormat(render_pass_in_frame);
+    gfx::Size required_size = it->second;
     ScopedResource* texture = pass_iter->second;
     DCHECK(texture);
 
     bool size_appropriate = texture->size().width() >= required_size.width() &&
                             texture->size().height() >= required_size.height();
-    if (texture->id() &&
-        (!size_appropriate || texture->format() != required_format))
+    if (texture->id() && !size_appropriate)
       texture->Free();
   }
 
@@ -410,9 +407,8 @@ bool DirectRenderer::UseRenderPass(DrawingFrame* frame,
   size.Enlarge(enlarge_pass_texture_amount_.x(),
                enlarge_pass_texture_amount_.y());
   if (!texture->id() &&
-      !texture->Allocate(size,
-                         ResourceProvider::TextureUsageFramebuffer,
-                         RenderPassTextureFormat(render_pass)))
+      !texture->Allocate(
+           size, ResourceProvider::TextureUsageFramebuffer, RGBA_8888))
     return false;
 
   return BindFramebufferToTexture(frame, texture, render_pass->output_rect);
@@ -427,12 +423,6 @@ bool DirectRenderer::HasAllocatedResourcesForTesting(RenderPass::Id id)
 // static
 gfx::Size DirectRenderer::RenderPassTextureSize(const RenderPass* render_pass) {
   return render_pass->output_rect.size();
-}
-
-// static
-ResourceFormat DirectRenderer::RenderPassTextureFormat(
-    const RenderPass* render_pass) {
-  return RGBA_8888;
 }
 
 }  // namespace cc

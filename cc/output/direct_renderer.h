@@ -86,7 +86,6 @@ class CC_EXPORT DirectRenderer : public Renderer {
                                      gfx::RectF draw_space_rect);
 
   static gfx::Size RenderPassTextureSize(const RenderPass* render_pass);
-  static ResourceFormat RenderPassTextureFormat(const RenderPass* render_pass);
 
   void DrawRenderPass(DrawingFrame* frame,
                       const RenderPass* render_pass,
