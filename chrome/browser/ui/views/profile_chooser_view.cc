@@ -5,10 +5,13 @@
 #include "chrome/browser/ui/views/profile_chooser_view.h"
 
 #include "base/command_line.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/singleton_tabs.h"
@@ -24,7 +27,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/blue_button.h"
-#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -246,6 +248,7 @@ void ProfileChooserView::ResetLinksAndButtons() {
   end_guest_button_ = NULL;
   users_button_ = NULL;
   add_user_button_ = NULL;
+  add_account_button_ = NULL;
   open_other_profile_indexes_map_.clear();
 }
 
@@ -277,12 +280,17 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
   views::GridLayout* layout = CreateSingleColumnLayout(this);
   layout->set_minimum_size(gfx::Size(kMinMenuWidth, 0));
 
-  if (view_to_display == GAIA_SIGNIN_VIEW) {
-    const int kMinGaiaViewWidth = 280;
-    const int kMinGaiaViewHeight = 300;
+  if (view_to_display == GAIA_SIGNIN_VIEW ||
+      view_to_display == GAIA_ADD_ACCOUNT_VIEW) {
+    // Minimum size for embedded sign in pages as defined in Gaia.
+    const int kMinGaiaViewWidth = 320;
+    const int kMinGaiaViewHeight = 500;
     Profile* profile = browser_->profile();
     views::WebView* web_view = new views::WebView(profile);
-    web_view->LoadInitialURL(GURL(chrome::kChromeUIInlineLoginURL));
+    signin::Source source = (view_to_display == GAIA_SIGNIN_VIEW) ?
+        signin::SOURCE_AVATAR_BUBBLE_SIGN_IN :
+        signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT;
+    web_view->LoadInitialURL(GURL(signin::GetPromoURL(source, false)));
     layout->StartRow(1, 0);
     layout->AddView(web_view);
     layout->set_minimum_size(
@@ -364,6 +372,8 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     UserManagerView::Show(browser_);
   } else if (sender == add_user_button_) {
     profiles::CreateAndSwitchToNewProfile(browser_->host_desktop_type());
+  } else if (sender == add_account_button_) {
+    ShowView(GAIA_ADD_ACCOUNT_VIEW, avatar_menu_.get());
   } else {
     // One of the "other profiles" buttons was pressed.
     ButtonIndexes::const_iterator match =
@@ -594,21 +604,30 @@ views::View* ProfileChooserView::CreateCurrentProfileAccountsView(
                     views::kButtonVEdgeMarginNew,
                     views::kButtonHEdgeMarginNew);
 
-  views::Label* email_label = new views::Label(avatar_item.sync_state);
-  email_label->SetElideBehavior(views::Label::ELIDE_AS_EMAIL);
-  email_label->SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
-      ui::ResourceBundle::SmallFont));
-  email_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  Profile* profile = browser_->profile();
+  std::vector<std::string> accounts(
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->GetAccounts());
+  for (size_t i = 0; i < accounts.size(); ++i) {
+    if (i != 0)
+      layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
-  layout->StartRow(1, 0);
-  layout->AddView(email_label);
+    views::Label* email_label = new views::Label(UTF8ToUTF16(accounts[i]));
+    email_label->SetElideBehavior(views::Label::ELIDE_AS_EMAIL);
+    email_label->SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
+        ui::ResourceBundle::SmallFont));
+    email_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+    layout->StartRow(1, 0);
+    layout->AddView(email_label);
+  }
+
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
-  views::BlueButton* add_account_button = new views::BlueButton(
-      NULL,
+  add_account_button_ = new views::BlueButton(
+      this,
       l10n_util::GetStringFUTF16(IDS_PROFILES_PROFILE_ADD_ACCOUNT_BUTTON,
                                  avatar_item.name));
   layout->StartRow(1, 0);
-  layout->AddView(add_account_button);
+  layout->AddView(add_account_button_);
   return view;
 }

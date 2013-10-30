@@ -22,6 +22,7 @@ class Image;
 namespace views {
 class Link;
 class TextButton;
+class LabelButton;
 }
 
 class Browser;
@@ -65,7 +66,8 @@ class ProfileChooserView : public views::BubbleDelegateView,
   enum BubbleViewMode {
     PROFILE_CHOOSER_VIEW,     // Shows a "fast profile switcher" view.
     ACCOUNT_MANAGEMENT_VIEW,  // Shows a list of accounts for the active user.
-    GAIA_SIGNIN_VIEW          // Shows a web view with Gaia signin page.
+    GAIA_SIGNIN_VIEW,         // Shows a web view for primary sign in.
+    GAIA_ADD_ACCOUNT_VIEW     // Shows a web view for adding secondary accounts.
   };
 
   ProfileChooserView(views::View* anchor_view,
@@ -130,6 +132,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
   views::TextButton* end_guest_button_;
   views::TextButton* add_user_button_;
   views::TextButton* users_button_;
+  views::LabelButton* add_account_button_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileChooserView);
 };

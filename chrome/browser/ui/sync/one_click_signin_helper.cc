@@ -324,7 +324,7 @@ void LogHistogramValue(signin::Source source, int action) {
       break;
     default:
       // This switch statement needs to be updated when the enum Source changes.
-      COMPILE_ASSERT(signin::SOURCE_UNKNOWN == 9,
+      COMPILE_ASSERT(signin::SOURCE_UNKNOWN == 11,
                      kSourceEnumHasChangedButNotThisSwitchStatement);
       NOTREACHED();
       return;

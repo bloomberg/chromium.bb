@@ -14,9 +14,12 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/signin/signin_manager_cookie_helper.h"
 #include "chrome/browser/signin/signin_names_io_thread.h"
+#include "chrome/browser/signin/signin_oauth_helper.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
@@ -143,7 +146,11 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
 
       const GURL& current_url = web_ui()->GetWebContents()->GetURL();
       signin::Source source = signin::GetSourceForPromoURL(current_url);
-      if (source != signin::SOURCE_UNKNOWN) {
+      // TODO(guohui): switch to the embedded gaia endpoint for avatar flows
+      // when available.
+      DCHECK(source != signin::SOURCE_UNKNOWN);
+      if (source != signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT &&
+          source != signin::SOURCE_AVATAR_BUBBLE_SIGN_IN) {
         params.SetString("service", "chromiumsync");
         base::StringAppendF(
             &encoded_continue_params, "&%s=%d", "source",
@@ -209,40 +216,51 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
       const string16 password,
       const net::CookieList& cookie_list) {
     net::CookieList::const_iterator it;
+    std::string oauth_code;
     for (it = cookie_list.begin(); it != cookie_list.end(); ++it) {
       if (it->Name() == "oauth_code") {
-        content::WebContents* contents = web_ui()->GetWebContents();
-        ProfileSyncService* sync_service =
-            ProfileSyncServiceFactory::GetForProfile(profile_);
-        const GURL& current_url = contents->GetURL();
-        signin::Source source = signin::GetSourceForPromoURL(current_url);
-
-        OneClickSigninSyncStarter::StartSyncMode start_mode =
-            source == signin::SOURCE_SETTINGS || choose_what_to_sync_ ?
-                (SigninGlobalError::GetForProfile(profile_)->HasMenuItem() &&
-                 sync_service && sync_service->HasSyncSetupCompleted()) ?
-                    OneClickSigninSyncStarter::SHOW_SETTINGS_WITHOUT_CONFIGURE :
-                    OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST :
-                OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS;
-        OneClickSigninSyncStarter::ConfirmationRequired confirmation_required =
-            source == signin::SOURCE_SETTINGS ||
-            source == signin::SOURCE_WEBSTORE_INSTALL ||
-            choose_what_to_sync_?
-                OneClickSigninSyncStarter::NO_CONFIRMATION :
-                OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN;
-        // Call OneClickSigninSyncStarter to exchange oauth code for tokens.
-        // OneClickSigninSyncStarter will delete itself once the job is done.
-        new OneClickSigninSyncStarter(
-            profile_, NULL, "0" /* session_index 0 for the default user */,
-            UTF16ToASCII(email), UTF16ToASCII(password), it->Value(),
-            start_mode,
-            contents,
-            confirmation_required,
-            base::Bind(&InlineLoginUIHandler::SyncStarterCallback,
-                       weak_factory_.GetWeakPtr()));
+        oauth_code = it->Value();
         break;
       }
     }
+
+    DCHECK(!oauth_code.empty());
+    content::WebContents* contents = web_ui()->GetWebContents();
+    ProfileSyncService* sync_service =
+        ProfileSyncServiceFactory::GetForProfile(profile_);
+    const GURL& current_url = contents->GetURL();
+    signin::Source source = signin::GetSourceForPromoURL(current_url);
+
+    if (source == signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT) {
+      // SigninOAuthHelper will delete itself.
+      SigninOAuthHelper* helper = new SigninOAuthHelper(profile_);
+      helper->StartAddingAccount(oauth_code);
+    } else {
+      OneClickSigninSyncStarter::StartSyncMode start_mode =
+          source == signin::SOURCE_SETTINGS || choose_what_to_sync_ ?
+              (SigninGlobalError::GetForProfile(profile_)->HasMenuItem() &&
+                sync_service && sync_service->HasSyncSetupCompleted()) ?
+                  OneClickSigninSyncStarter::SHOW_SETTINGS_WITHOUT_CONFIGURE :
+                  OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST :
+              OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS;
+      OneClickSigninSyncStarter::ConfirmationRequired confirmation_required =
+          source == signin::SOURCE_SETTINGS ||
+          source == signin::SOURCE_WEBSTORE_INSTALL ||
+          choose_what_to_sync_?
+              OneClickSigninSyncStarter::NO_CONFIRMATION :
+              OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN;
+      // Call OneClickSigninSyncStarter to exchange oauth code for tokens.
+      // OneClickSigninSyncStarter will delete itself once the job is done.
+      new OneClickSigninSyncStarter(
+          profile_, NULL, "" /* session_index, not used */,
+          UTF16ToASCII(email), UTF16ToASCII(password), oauth_code,
+          start_mode,
+          contents,
+          confirmation_required,
+          base::Bind(&InlineLoginUIHandler::SyncStarterCallback,
+                      weak_factory_.GetWeakPtr()));
+    }
+
     web_ui()->CallJavascriptFunction("inline.login.closeDialog");
   }
 
@@ -287,9 +305,11 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
       }
     }
   }
+
   Profile* profile_;
   base::WeakPtrFactory<InlineLoginUIHandler> weak_factory_;
   bool choose_what_to_sync_;
+
 #if defined(OS_CHROMEOS)
   scoped_ptr<chromeos::OAuth2TokenFetcher> oauth2_token_fetcher_;
   scoped_ptr<InlineLoginUIOAuth2Delegate> oauth2_delegate_;
