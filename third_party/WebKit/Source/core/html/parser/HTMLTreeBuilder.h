@@ -166,6 +166,7 @@ private:
     void defaultForAfterHead();
     void defaultForInTableText();
 
+    inline PassRefPtr<HTMLStackItem> adjustedCurrentStackItem() const;
     inline bool shouldProcessTokenInForeignContent(AtomicHTMLToken*);
     void processTokenInForeignContent(AtomicHTMLToken*);
 

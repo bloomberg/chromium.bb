@@ -8,6 +8,7 @@ var text = createSVGElement("text");
 text.setAttribute("id", "text");
 text.setAttribute("x", "20px");
 text.setAttribute("y", "100px");
+text.setAttribute("visibility", "hidden");
 text.innerHTML = "Test";
 rootSVGElement.appendChild(text);
 

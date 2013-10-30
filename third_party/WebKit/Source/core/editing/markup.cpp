@@ -1075,4 +1075,18 @@ void replaceChildrenWithText(ContainerNode* container, const String& text, Excep
     containerNode->appendChild(textNode.release(), es);
 }
 
+void mergeWithNextTextNode(PassRefPtr<Node> node, ExceptionState& es)
+{
+    ASSERT(node && node->isTextNode());
+    Node* next = node->nextSibling();
+    if (!next || !next->isTextNode())
+        return;
+
+    RefPtr<Text> textNode = toText(node.get());
+    RefPtr<Text> textNext = toText(next);
+    textNode->appendData(textNext->data());
+    if (textNext->parentNode()) // Might have been removed by mutation event.
+        textNext->remove(es);
+}
+
 }
