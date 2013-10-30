@@ -62,7 +62,7 @@ PassRefPtr<SVGFontFaceElement> SVGFontFaceElement::create(const QualifiedName& t
     return adoptRef(new SVGFontFaceElement(tagName, document));
 }
 
-static CSSPropertyID cssPropertyIdForSVGAttributeName(const QualifiedName& attrName)
+static CSSPropertyID cssPropertyIdForFontFaceAttributeName(const QualifiedName& attrName)
 {
     if (!attrName.namespaceURI().isNull())
         return CSSPropertyInvalid;
@@ -112,7 +112,7 @@ static CSSPropertyID cssPropertyIdForSVGAttributeName(const QualifiedName& attrN
 
 void SVGFontFaceElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    CSSPropertyID propId = cssPropertyIdForSVGAttributeName(name);
+    CSSPropertyID propId = cssPropertyIdForFontFaceAttributeName(name);
     if (propId > 0) {
         m_fontFaceRule->mutableProperties()->setProperty(propId, value, false);
         rebuildFontFace();
