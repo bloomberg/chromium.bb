@@ -114,11 +114,15 @@ private:
 
     bool appendToBuffer(const char* data, size_t len);
     void skipBuffer(size_t len);
-    bool processBuffer();
+    // Repeats parsing data from m_buffer until instructed to stop.
+    void processBuffer();
+    // Parses a handshake response or one frame from m_buffer and processes it.
+    bool processOneItemFromBuffer();
     void resumeTimerFired(Timer<MainThreadWebSocketChannel>*);
     void startClosingHandshake(int code, const String& reason);
     void closingTimerFired(Timer<MainThreadWebSocketChannel>*);
 
+    // Parses one frame from m_buffer and processes it.
     bool processFrame();
 
     // It is allowed to send a Blob as a binary frame if hybi-10 protocol is in use. Sending a Blob
