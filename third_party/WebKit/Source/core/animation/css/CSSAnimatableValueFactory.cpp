@@ -132,6 +132,13 @@ inline static PassRefPtr<AnimatableValue> createFromLengthSize(const LengthSize&
         createFromLength(lengthSize.height(), style));
 }
 
+inline static PassRefPtr<AnimatableValue> createFromStyleImage(StyleImage* image)
+{
+    if (image)
+        return AnimatableImage::create(image);
+    return AnimatableUnknown::create(CSSValueNone);
+}
+
 inline static PassRefPtr<AnimatableValue> createFromFillSize(const FillSize& fillSize, const RenderStyle* style)
 {
     switch (fillSize.type) {
@@ -156,11 +163,7 @@ inline static PassRefPtr<AnimatableValue> createFromFillLayers(const FillLayer* 
         if (property == CSSPropertyBackgroundImage || property == CSSPropertyWebkitMaskImage) {
             if (!fillLayer->isImageSet())
                 break;
-            StyleImage* image = fillLayer->image();
-            if (image)
-                values.append(AnimatableImage::create(image));
-            else
-                values.append(AnimatableUnknown::create(CSSValueNone));
+            values.append(createFromStyleImage(fillLayer->image()));
         } else if (property == CSSPropertyBackgroundPositionX || property == CSSPropertyWebkitMaskPositionX) {
             if (!fillLayer->isXPositionSet())
                 break;
@@ -230,7 +233,7 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
     case CSSPropertyBorderImageSlice:
         return createFromLengthBox(style->borderImageSlices(), style);
     case CSSPropertyBorderImageSource:
-        return AnimatableImage::create(style->borderImageSource());
+        return createFromStyleImage(style->borderImageSource());
     case CSSPropertyBorderImageWidth:
         return createFromLengthBox(style->borderImageWidth(), style);
     case CSSPropertyBorderLeftColor:
@@ -287,7 +290,7 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
     case CSSPropertyLightingColor:
         return createFromColor(property, style);
     case CSSPropertyListStyleImage:
-        return AnimatableImage::create(style->listStyleImage());
+        return createFromStyleImage(style->listStyleImage());
     case CSSPropertyLeft:
         return createFromLength(style->left(), style);
     case CSSPropertyLetterSpacing:
@@ -377,7 +380,7 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
     case CSSPropertyWebkitMaskBoxImageSlice:
         return createFromLengthBoxAndBool(style->maskBoxImageSlices(), style->maskBoxImageSlicesFill(), style);
     case CSSPropertyWebkitMaskBoxImageSource:
-        return AnimatableImage::create(style->maskBoxImageSource());
+        return createFromStyleImage(style->maskBoxImageSource());
     case CSSPropertyWebkitMaskBoxImageWidth:
         return createFromLengthBox(style->maskBoxImageWidth(), style);
     case CSSPropertyWebkitMaskImage:

@@ -1,3 +1,9 @@
+PASS: list-style-image from [none] to [url(../resources/stripes-20.png)] was [none] at -0.3
+PASS: list-style-image from [none] to [url(../resources/stripes-20.png)] was [none] at 0
+PASS: list-style-image from [none] to [url(../resources/stripes-20.png)] was [none] at 0.3
+PASS: list-style-image from [none] to [url(../resources/stripes-20.png)] was [url(../resources/stripes-20.png)] at 0.6
+PASS: list-style-image from [none] to [url(../resources/stripes-20.png)] was [url(../resources/stripes-20.png)] at 1
+PASS: list-style-image from [none] to [url(../resources/stripes-20.png)] was [url(../resources/stripes-20.png)] at 1.5
 PASS: list-style-image from [url(../resources/green-20.png)] to [url(../resources/stripes-20.png)] was [url(../resources/green-20.png)] at -0.3
 PASS: list-style-image from [url(../resources/green-20.png)] to [url(../resources/stripes-20.png)] was [url(../resources/green-20.png)] at 0
 PASS: list-style-image from [url(../resources/green-20.png)] to [url(../resources/stripes-20.png)] was [-webkit-cross-fade(url(../resources/green-20.png), url(../resources/stripes-20.png), 0.3)] at 0.3

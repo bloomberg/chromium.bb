@@ -26,9 +26,25 @@ div.wrapper div.target {
 </template>
 <script src="resources/interpolation-test.js"></script>
 <script>
-// Image to image
-var from = 'url(../resources/green-100.png)';
+// None to image
+var from = 'none';
 var to = 'url(../resources/stripes-100.png)';
+assertInterpolation({
+  property: '-webkit-mask-box-image-source',
+  from: from,
+  to: to
+}, [
+  {at: -0.3, is: from},
+  {at: 0, is: from},
+  {at: 0.3, is: from},
+  {at: 0.6, is: to},
+  {at: 1, is: to},
+  {at: 1.5, is: to},
+]);
+
+// Image to image
+from = 'url(../resources/green-100.png)';
+to = 'url(../resources/stripes-100.png)';
 assertInterpolation({
   property: '-webkit-mask-box-image-source',
   from: from,
@@ -43,7 +59,7 @@ assertInterpolation({
 ]);
 
 // Image to gradient
-var to = 'linear-gradient(45deg, blue, orange)';
+to = 'linear-gradient(45deg, blue, orange)';
 assertInterpolation({
   property: '-webkit-mask-box-image-source',
   from: from,
@@ -58,7 +74,7 @@ assertInterpolation({
 ]);
 
 // Gradient to gradient
-var from = 'linear-gradient(-45deg, red, yellow)';
+from = 'linear-gradient(-45deg, red, yellow)';
 assertInterpolation({
   property: '-webkit-mask-box-image-source',
   from: from,
