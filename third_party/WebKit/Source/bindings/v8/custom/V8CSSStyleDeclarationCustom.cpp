@@ -82,9 +82,10 @@ static bool hasCSSPropertyNamePrefix(const String& propertyName, const char* pre
     return false;
 }
 
-class CSSPropertyInfo {
-public:
-    CSSPropertyID propID;
+struct CSSPropertyInfo {
+    unsigned propID: 30; // CSSPropertyID
+    unsigned nameWithDash: 1;
+    unsigned nameWithCssPrefix: 1;
 };
 
 // When getting properties on CSSStyleDeclarations, the name used from
@@ -111,20 +112,27 @@ static CSSPropertyInfo* cssPropertyInfo(v8::Handle<v8::String> v8PropertyName)
         builder.reserveCapacity(length);
 
         unsigned i = 0;
+        bool hasSeenDash = false;
+        bool hasSeenCssPrefix = false;
 
-        if (hasCSSPropertyNamePrefix(propertyName, "css"))
+        if (hasCSSPropertyNamePrefix(propertyName, "css")) {
+            hasSeenCssPrefix = true;
             i += 3;
-        else if (hasCSSPropertyNamePrefix(propertyName, "webkit"))
+        } else if (hasCSSPropertyNamePrefix(propertyName, "webkit")) {
             builder.append('-');
-        else if (isASCIIUpper(propertyName[0]))
+        } else if (isASCIIUpper(propertyName[0])) {
             return 0;
+        }
 
         builder.append(toASCIILower(propertyName[i++]));
 
         for (; i < length; ++i) {
             UChar c = propertyName[i];
-            if (!isASCIIUpper(c))
+            if (!isASCIIUpper(c)) {
+                if (c == '-')
+                    hasSeenDash = true;
                 builder.append(c);
+            }
             else {
                 builder.append('-');
                 builder.append(toASCIILower(c));
@@ -136,9 +144,19 @@ static CSSPropertyInfo* cssPropertyInfo(v8::Handle<v8::String> v8PropertyName)
         if (propertyID && RuntimeCSSEnabled::isCSSPropertyEnabled(propertyID)) {
             propInfo = new CSSPropertyInfo();
             propInfo->propID = propertyID;
+            propInfo->nameWithDash = hasSeenDash;
+            propInfo->nameWithCssPrefix = hasSeenCssPrefix;
             map.add(propertyName, propInfo);
         }
     }
+
+    if (propInfo) {
+        if (propInfo->nameWithDash)
+            UseCounter::count(activeDOMWindow(), UseCounter::CSSStyleDeclarationPropertyName);
+        if (propInfo->propID == CSSPropertyFloat && !propInfo->nameWithCssPrefix)
+            UseCounter::count(activeDOMWindow(), UseCounter::CSSStyleDeclarationFloatPropertyName);
+    }
+
     return propInfo;
 }
 
