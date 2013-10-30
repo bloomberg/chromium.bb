@@ -345,6 +345,16 @@ bool WebSocketHandshakeResponseHandler::HasResponse() const {
       static_cast<size_t>(original_header_length_) <= original_.size();
 }
 
+void ComputeSecWebSocketAccept(const std::string& key,
+                               std::string* accept) {
+  DCHECK(accept);
+
+  std::string hash =
+      base::SHA1HashString(key + websockets::kWebSocketGuid);
+  bool encode_success = base::Base64Encode(hash, accept);
+  DCHECK(encode_success);
+}
+
 bool WebSocketHandshakeResponseHandler::ParseResponseInfo(
     const HttpResponseInfo& response_info,
     const std::string& challenge) {
@@ -363,11 +373,8 @@ bool WebSocketHandshakeResponseHandler::ParseResponseInfo(
   AppendHeader(
       HttpRequestHeaders::kConnection, websockets::kUpgrade, &response_message);
 
-  std::string hash =
-      base::SHA1HashString(challenge + websockets::kWebSocketGuid);
   std::string websocket_accept;
-  bool encode_success = base::Base64Encode(hash, &websocket_accept);
-  DCHECK(encode_success);
+  ComputeSecWebSocketAccept(challenge, &websocket_accept);
   AppendHeader(
       websockets::kSecWebSocketAccept, websocket_accept, &response_message);
 

@@ -23,6 +23,9 @@
 
 namespace net {
 
+void ComputeSecWebSocketAccept(const std::string& key,
+                               std::string* accept);
+
 class NET_EXPORT_PRIVATE WebSocketHandshakeRequestHandler {
  public:
   WebSocketHandshakeRequestHandler();
