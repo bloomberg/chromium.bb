@@ -1,0 +1,6 @@
+NAME_FULL | name | Name* | 
+EMAIL_ADDRESS | email | Email Id* | 
+PHONE_HOME_WHOLE_NUMBER | mobile | Mobile* | 
+ADDRESS_HOME_LINE1 | address | Full Address* | 
+ADDRESS_HOME_CITY | city | City | Select
+ADDRESS_HOME_ZIP | pincode | Pin Code* | 
