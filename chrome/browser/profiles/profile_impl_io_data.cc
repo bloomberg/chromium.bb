@@ -63,11 +63,19 @@ net::BackendType ChooseCacheBackendType() {
   }
   const std::string experiment_name =
       base::FieldTrialList::FindFullName("SimpleCacheTrial");
+#if defined(OS_ANDROID)
+  if (experiment_name == "ExperimentNo" ||
+      experiment_name == "ExperimentControl") {
+    return net::CACHE_BACKEND_BLOCKFILE;
+  }
+  return net::CACHE_BACKEND_SIMPLE;
+#else
   if (experiment_name == "ExperimentYes" ||
       experiment_name == "ExperimentYes2") {
     return net::CACHE_BACKEND_SIMPLE;
   }
   return net::CACHE_BACKEND_BLOCKFILE;
+#endif
 }
 
 }  // namespace
