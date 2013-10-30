@@ -588,7 +588,9 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
     // Internet Explorer, but not Firefox.
     const AutocompleteInput& old_input = autocomplete_controller()->input();
     AutocompleteInput input(
-      old_input.text(), old_input.cursor_position(), ASCIIToUTF16("com"),
+      has_temporary_text_ ?
+          UserTextFromDisplayText(view_->GetText())  : old_input.text(),
+      old_input.cursor_position(), ASCIIToUTF16("com"),
       GURL(), old_input.current_page_classification(),
       old_input.prevent_inline_autocomplete(), old_input.prefer_keyword(),
       old_input.allow_exact_keyword_match(), old_input.matches_requested());
