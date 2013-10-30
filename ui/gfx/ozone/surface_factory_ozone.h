@@ -5,6 +5,8 @@
 #ifndef UI_GFX_OZONE_SURFACE_LNUX_FACTORY_OZONE_H_
 #define UI_GFX_OZONE_SURFACE_LNUX_FACTORY_OZONE_H_
 
+#include "base/callback.h"
+#include "base/native_library.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
@@ -51,6 +53,11 @@ class GFX_EXPORT SurfaceFactoryOzone {
     FAILED,
   };
 
+  typedef void*(*GLGetProcAddressProc)(const char* name);
+  typedef base::Callback<void(base::NativeLibrary)> AddGLLibraryCallback;
+  typedef base::Callback<void(GLGetProcAddressProc)>
+      SetGLGetProcAddressProcCallback;
+
   SurfaceFactoryOzone();
   virtual ~SurfaceFactoryOzone();
 
@@ -91,8 +98,11 @@ class GFX_EXPORT SurfaceFactoryOzone {
   virtual gfx::AcceleratedWidget RealizeAcceleratedWidget(
       gfx::AcceleratedWidget w) = 0;
 
-  // Sets up GL bindings for the native surface.
-  virtual bool LoadEGLGLES2Bindings() = 0;
+  // Sets up GL bindings for the native surface. Takes two callback parameters
+  // that allow Ozone to register the GL bindings.
+  virtual bool LoadEGLGLES2Bindings(
+      AddGLLibraryCallback add_gl_library,
+      SetGLGetProcAddressProcCallback set_gl_get_proc_address) = 0;
 
   // If possible attempts to resize the given AcceleratedWidget instance and if
   // a resize action was performed returns true, otherwise false (native

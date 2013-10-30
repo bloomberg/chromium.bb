@@ -55,7 +55,9 @@ AcceleratedWidget FileSurfaceFactoryOzone::RealizeAcceleratedWidget(
   return 1;
 }
 
-bool FileSurfaceFactoryOzone::LoadEGLGLES2Bindings() {
+bool FileSurfaceFactoryOzone::LoadEGLGLES2Bindings(
+      AddGLLibraryCallback add_gl_library,
+      SetGLGetProcAddressProcCallback set_gl_get_proc_address) {
   return false;
 }
 

@@ -186,7 +186,9 @@ gfx::AcceleratedWidget SoftwareSurfaceFactoryOzone::RealizeAcceleratedWidget(
   return reinterpret_cast<gfx::AcceleratedWidget>(controller_->get_surface());
 }
 
-bool SoftwareSurfaceFactoryOzone::LoadEGLGLES2Bindings() {
+bool SoftwareSurfaceFactoryOzone::LoadEGLGLES2Bindings(
+      AddGLLibraryCallback add_gl_library,
+      SetGLGetProcAddressProcCallback set_gl_get_proc_address) {
   return false;
 }
 

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "ui/gfx/ozone/surface_factory_ozone.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_egl_api_implementation.h"
@@ -41,7 +42,9 @@ bool InitializeGLBindings(GLImplementation implementation) {
     case kGLImplementationOSMesaGL:
       return InitializeGLBindingsOSMesaGL();
     case kGLImplementationEGLGLES2:
-      if (!gfx::SurfaceFactoryOzone::GetInstance()->LoadEGLGLES2Bindings())
+      if (!gfx::SurfaceFactoryOzone::GetInstance()->LoadEGLGLES2Bindings(
+              base::Bind(&AddGLNativeLibrary),
+              base::Bind(&SetGLGetProcAddressProc)))
         return false;
       SetGLImplementation(kGLImplementationEGLGLES2);
       InitializeGLBindingsGL();

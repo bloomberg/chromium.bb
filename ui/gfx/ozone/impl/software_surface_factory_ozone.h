@@ -29,7 +29,9 @@ class SoftwareSurfaceFactoryOzone : public SurfaceFactoryOzone {
   virtual gfx::AcceleratedWidget RealizeAcceleratedWidget(
       gfx::AcceleratedWidget w) OVERRIDE;
 
-  virtual bool LoadEGLGLES2Bindings() OVERRIDE;
+  virtual bool LoadEGLGLES2Bindings(
+      AddGLLibraryCallback add_gl_library,
+      SetGLGetProcAddressProcCallback set_gl_get_proc_address) OVERRIDE;
 
   virtual bool AttemptToResizeAcceleratedWidget(
       gfx::AcceleratedWidget w,

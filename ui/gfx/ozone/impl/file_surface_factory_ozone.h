@@ -28,7 +28,9 @@ class FileSurfaceFactoryOzone : public SurfaceFactoryOzone {
   virtual AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual AcceleratedWidget RealizeAcceleratedWidget(
       AcceleratedWidget widget) OVERRIDE;
-  virtual bool LoadEGLGLES2Bindings() OVERRIDE;
+  virtual bool LoadEGLGLES2Bindings(
+      AddGLLibraryCallback add_gl_library,
+      SetGLGetProcAddressProcCallback set_gl_get_proc_address) OVERRIDE;
   virtual bool AttemptToResizeAcceleratedWidget(AcceleratedWidget widget,
                                                 const Rect& bounds) OVERRIDE;
   virtual bool SchedulePageFlip(AcceleratedWidget widget) OVERRIDE;

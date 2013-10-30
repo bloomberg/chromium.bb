@@ -27,7 +27,11 @@ class SurfaceFactoryOzoneStub : public SurfaceFactoryOzone {
       gfx::AcceleratedWidget w) OVERRIDE {
     return 0;
   }
-  virtual bool LoadEGLGLES2Bindings() OVERRIDE { return true; }
+  virtual bool LoadEGLGLES2Bindings(
+      AddGLLibraryCallback add_gl_library,
+      SetGLGetProcAddressProcCallback set_gl_get_proc_address) OVERRIDE {
+    return true;
+  }
   virtual bool AttemptToResizeAcceleratedWidget(
       gfx::AcceleratedWidget w,
       const gfx::Rect& bounds) OVERRIDE {
