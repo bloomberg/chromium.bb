@@ -570,8 +570,7 @@ TEST(TransformOperationTest, BlendPerspectiveFromIdentity) {
     SkMScalar progress = 0.5f;
 
     gfx::Transform expected;
-    expected.ApplyPerspectiveDepth(500 +
-                                   0.5 * std::numeric_limits<SkMScalar>::max());
+    expected.ApplyPerspectiveDepth(2000);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         expected, operations.Blend(*identity_operations[i], progress));
@@ -662,8 +661,7 @@ TEST(TransformOperationTest, BlendPerspectiveToIdentity) {
     SkMScalar progress = 0.5f;
 
     gfx::Transform expected;
-    expected.ApplyPerspectiveDepth(500 +
-                                   0.5 * std::numeric_limits<SkMScalar>::max());
+    expected.ApplyPerspectiveDepth(2000);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         expected, identity_operations[i]->Blend(operations, progress));
@@ -678,13 +676,13 @@ TEST(TransformOperationTest, ExtrapolatePerspectiveBlending) {
   operations2.AppendPerspective(500);
 
   gfx::Transform expected;
-  expected.ApplyPerspectiveDepth(250);
+  expected.ApplyPerspectiveDepth(400);
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected, operations1.Blend(operations2, -0.5));
 
   expected.MakeIdentity();
-  expected.ApplyPerspectiveDepth(1250);
+  expected.ApplyPerspectiveDepth(2000);
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected, operations1.Blend(operations2, 1.5));
@@ -1070,6 +1068,33 @@ TEST(TransformOperationsTest, BlendedBoundsForRotationEmpiricalTests) {
       }
     }
   }
+}
+
+TEST(TransformOperationTest, PerspectiveMatrixAndTransformBlendingEquivalency) {
+    TransformOperations from_operations;
+    from_operations.AppendPerspective(200);
+
+    TransformOperations to_operations;
+    to_operations.AppendPerspective(1000);
+
+    gfx::Transform from_transform;
+    from_transform.ApplyPerspectiveDepth(200);
+
+    gfx::Transform to_transform;
+    to_transform.ApplyPerspectiveDepth(1000);
+
+    static const int steps = 20;
+    for (int i = 0; i < steps; ++i) {
+      double progress = static_cast<double>(i) / (steps - 1);
+
+      gfx::Transform blended_matrix = to_transform;
+      EXPECT_TRUE(blended_matrix.Blend(from_transform, progress));
+
+      gfx::Transform blended_transform =
+          to_operations.Blend(from_operations, progress);
+
+      EXPECT_TRANSFORMATION_MATRIX_EQ(blended_matrix, blended_transform);
+    }
 }
 
 TEST(TransformOperationTest, BlendedBoundsForSequence) {

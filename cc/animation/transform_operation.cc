@@ -163,11 +163,19 @@ bool TransformOperation::BlendTransformOperations(
     SkMScalar from_perspective_depth =
         IsOperationIdentity(from) ? std::numeric_limits<SkMScalar>::max()
                                   : from->perspective_depth;
-    SkMScalar to_perspective_depth = IsOperationIdentity(to)
-                                         ? std::numeric_limits<SkMScalar>::max()
-                                         : to->perspective_depth;
-    result->ApplyPerspectiveDepth(BlendSkMScalars(
-        from_perspective_depth, to_perspective_depth, progress));
+    SkMScalar to_perspective_depth =
+        IsOperationIdentity(to) ? std::numeric_limits<SkMScalar>::max()
+                                : to->perspective_depth;
+    if (from_perspective_depth == 0.f || to_perspective_depth == 0.f)
+      return false;
+
+    SkMScalar blended_perspective_depth = BlendSkMScalars(
+        1.f / from_perspective_depth, 1.f / to_perspective_depth, progress);
+
+    if (blended_perspective_depth == 0.f)
+      return false;
+
+    result->ApplyPerspectiveDepth(1.f / blended_perspective_depth);
     break;
   }
   case TransformOperation::TransformOperationMatrix: {
