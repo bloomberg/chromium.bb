@@ -145,6 +145,13 @@ void CPU::Initialize() {
     __cpuid(cpu_info, parameter_containing_non_stop_time_stamp_counter);
     has_non_stop_time_stamp_counter_ = (cpu_info[3] & (1 << 8)) != 0;
   }
+#elif defined(ARCH_CPU_ARM_FAMILY)
+  // TODO(piman): Expand this. ARM has a CPUID register, but it's not available
+  // in user mode. /proc/cpuinfo has some information, but it's non standard,
+  // platform-specific, and not accessible from the sandbox.
+  // For some purposes, this first approximation is enough.
+  // crbug.com/313454
+  cpu_brand_.assign("ARM");
 #endif
 }
 
