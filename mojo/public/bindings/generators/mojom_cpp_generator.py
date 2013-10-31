@@ -41,7 +41,22 @@ class CPPGenerator(object):
 
   struct_header_template = ReadTemplate("module_struct.h")
   struct_source_template = ReadTemplate("module_struct.cc")
+  struct_serialization_header_template = \
+      ReadTemplate("module_struct_serialization.h")
+  struct_serialization_source_template = \
+      ReadTemplate("module_struct_serialization.cc")
+  struct_serialization_compute_template = \
+    Template(" +\n      mojo::internal::ComputeSizeOf($NAME->$FIELD())")
+  struct_serialization_clone_template = Template(
+      "  clone->set_$FIELD(mojo::internal::Clone($NAME->$FIELD(), buf));")
+  struct_serialization_encode_template = Template(
+      "  Encode(&$NAME->${FIELD}_, handles);")
+  struct_serialization_decode_template = Template(
+      "  if (!Decode(&$NAME->${FIELD}_, message))\n    return false;")
   interface_header_template = ReadTemplate("module_interface.h")
+  interface_stub_header_template = ReadTemplate("module_interface_stub.h")
+  interface_stub_source_template = ReadTemplate("module_interface_stub.cc")
+  interface_stub_case_template = ReadTemplate("module_interface_stub_case")
   field_template = Template("  $itype ${field}_;")
   bool_field_template = Template("  uint8_t ${field}_ : 1;")
   setter_template = \
@@ -120,9 +135,40 @@ class CPPGenerator(object):
       itype = cls.kind_to_type[kind]
     return cls.field_template.substitute(field=pf.field.name, itype=itype)
 
-  def GetHeaderGuard(self, component):
+  @classmethod
+  def GetCaseLine(cls, interface, method):
+    method_call = "%s(" % method.name
+    first_param = True
+    for param in method.parameters:
+      if first_param:
+        first_param = False
+      else:
+        method_call += ", "
+      method_call += "params->%s()" % param.name
+    method_call += ");"
+    return cls.interface_stub_case_template.substitute(
+        CLASS = interface.name,
+        METHOD = method.name,
+        METHOD_CALL = method_call);
+
+  @classmethod
+  def GetSerializedFields(cls, ps):
+    fields = []
+    for pf in ps.packed_fields:
+      if isinstance(pf.field.kind, (mojom.Struct, mojom.Array)) or \
+          pf.field.kind.spec == 's':
+        fields.append(pf.field)
+    return fields
+
+  def GetHeaderGuard(self, name):
     return "MOJO_GENERATED_BINDINGS_%s_%s_H_" % \
-        (self.module.name.upper(), component.name.upper())
+        (self.module.name.upper(), name.upper())
+
+  def GetHeaderFile(self, *components):
+    component_string = '_'.join(components)
+    return os.path.join(
+      self.header_dir,
+      "%s_%s.h" % (self.module.name.lower(), component_string.lower()))
 
   # Pass |output_dir| to emit files to disk. Omit |output_dir| to echo all files
   # to stdout.
@@ -144,13 +190,13 @@ class CPPGenerator(object):
       if self.output_dir is not None:
         file.close()
 
-  def GenerateStructHeader(self, struct):
+  def GenerateStructHeader(self, ps):
+    struct = ps.struct
     fields = []
     setters = []
     getters = []
     forwards = set()
 
-    ps = mojom_pack.PackedStruct(struct)
     pad_count = 0
     num_fields = len(ps.packed_fields)
     for i in xrange(num_fields):
@@ -179,7 +225,7 @@ class CPPGenerator(object):
 
     self.WriteTemplateToFile(self.struct_header_template, struct.name, 'h',
         YEAR = datetime.date.today().year,
-        HEADER_GUARD = self.GetHeaderGuard(struct),
+        HEADER_GUARD = self.GetHeaderGuard(struct.name),
         NAMESPACE = self.module.namespace,
         CLASS = struct.name.capitalize(),
         SIZE = size + self.HEADER_SIZE,
@@ -188,15 +234,65 @@ class CPPGenerator(object):
         GETTERS = '\n'.join(getters),
         FIELDS = '\n'.join(fields))
 
-  def GenerateStructSource(self, struct):
-    header = "%s_%s.h" % (self.module.name.lower(), struct.name.lower())
-    header = os.path.join(self.header_dir, header)
+  def GenerateStructSource(self, ps):
+    struct = ps.struct
+    header = self.GetHeaderFile(struct.name)
     self.WriteTemplateToFile(self.struct_source_template, struct.name, 'cc',
         YEAR = datetime.date.today().year,
         NAMESPACE = self.module.namespace,
         CLASS = struct.name.capitalize(),
         NUM_FIELDS = len(struct.fields),
         HEADER = header)
+
+  def GenerateStructSerializationHeader(self, ps):
+    struct = ps.struct
+    header = self.GetHeaderFile(struct.name, "serialization")
+    self.WriteTemplateToFile(
+        self.struct_serialization_header_template,
+        struct.name + "_serialization",
+        'h',
+        YEAR = datetime.date.today().year,
+        HEADER_GUARD = self.GetHeaderGuard(struct.name + "_SERIALIZATION"),
+        NAMESPACE = self.module.namespace,
+        CLASS = struct.name.capitalize(),
+        FULL_CLASS = "%s::%s" % \
+            (self.module.namespace, struct.name.capitalize()),
+        HEADER = header)
+
+  def GenerateStructSerializationSource(self, ps):
+    struct = ps.struct
+    serialization_header = self.GetHeaderFile(struct.name, "serialization")
+    class_header = self.GetHeaderFile(struct.name)
+    clones = []
+    encodes = []
+    decodes = []
+    sizes = "  return sizeof(*%s)" % struct.name.lower()
+    fields = self.GetSerializedFields(ps)
+    for field in fields:
+      substitutions = {'NAME': struct.name.lower(), 'FIELD': field.name.lower()}
+      sizes += \
+          self.struct_serialization_compute_template.substitute(substitutions)
+      clones.append(
+          self.struct_serialization_clone_template.substitute(substitutions))
+      encodes.append(
+          self.struct_serialization_encode_template.substitute(substitutions))
+      decodes.append(
+          self.struct_serialization_decode_template.substitute(substitutions))
+    sizes += ";"
+    self.WriteTemplateToFile(
+        self.struct_serialization_source_template,
+        struct.name + "_serialization",
+        'cc',
+        YEAR = datetime.date.today().year,
+        NAME = struct.name.lower(),
+        FULL_CLASS = "%s::%s" % \
+            (self.module.namespace, struct.name.capitalize()),
+        SERIALIZATION_HEADER = serialization_header,
+        CLASS_HEADER = class_header,
+        SIZES = sizes,
+        CLONES = '\n'.join(clones),
+        ENCODES = '\n'.join(encodes),
+        DECODES = '\n'.join(decodes))
 
   def GenerateInterfaceHeader(self, interface):
     cpp_methods = []
@@ -219,15 +315,49 @@ class CPPGenerator(object):
         interface.name,
         'h',
         YEAR = datetime.date.today().year,
-        HEADER_GUARD = self.GetHeaderGuard(interface),
+        HEADER_GUARD = self.GetHeaderGuard(interface.name),
         NAMESPACE = self.module.namespace,
         CLASS = interface.name.capitalize(),
         FORWARDS = GetForwards(forwards),
         METHODS = '\n'.join(cpp_methods))
 
+  def GenerateInterfaceStubHeader(self, interface):
+    header = self.GetHeaderFile(interface.name)
+    self.WriteTemplateToFile(
+        self.interface_stub_header_template,
+        interface.name + "_stub",
+        'h',
+        YEAR = datetime.date.today().year,
+        HEADER_GUARD = self.GetHeaderGuard(interface.name + "_STUB"),
+        NAMESPACE = self.module.namespace,
+        CLASS = interface.name.capitalize(),
+        HEADER = header)
+
+  def GenerateInterfaceStubSource(self, interface):
+    stub_header = self.GetHeaderFile(interface.name, "stub")
+    serialization_header = self.GetHeaderFile(interface.name, "serialization")
+    cases = []
+    for method in interface.methods:
+      cases.append(self.GetCaseLine(interface, method))
+    self.WriteTemplateToFile(
+        self.interface_stub_source_template,
+        interface.name + "_stub",
+        'cc',
+        YEAR = datetime.date.today().year,
+        NAMESPACE = self.module.namespace,
+        CLASS = interface.name.capitalize(),
+        CASES = '\n'.join(cases),
+        STUB_HEADER = stub_header,
+        SERIALIZATION_HEADER = serialization_header)
+
   def GenerateFiles(self):
     for struct in self.module.structs:
-      self.GenerateStructHeader(struct)
-      self.GenerateStructSource(struct)
+      ps = mojom_pack.PackedStruct(struct)
+      self.GenerateStructHeader(ps)
+      self.GenerateStructSource(ps)
+      self.GenerateStructSerializationHeader(ps)
+      self.GenerateStructSerializationSource(ps)
     for interface in self.module.interfaces:
       self.GenerateInterfaceHeader(interface)
+      self.GenerateInterfaceStubHeader(interface)
+      self.GenerateInterfaceStubSource(interface)

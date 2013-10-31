@@ -1,0 +1,10 @@
+    case internal::k${CLASS}_${METHOD}_Name: {
+      internal::${CLASS}_${METHOD}_Params* params =
+          reinterpret_cast<internal::${CLASS}_${METHOD}_Params*>(
+              message->data->payload);
+
+      if (!mojo::internal::DecodePointersAndHandles(params, *message))
+        return false;
+      $METHOD_CALL
+      break;
+    }

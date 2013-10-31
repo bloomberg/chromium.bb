@@ -1,0 +1,31 @@
+// Copyright $YEAR The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef $HEADER_GUARD
+#define $HEADER_GUARD
+
+#include "mojo/public/bindings/lib/bindings_serialization.h"
+
+namespace $NAMESPACE {
+class $CLASS;
+}
+
+namespace mojo {
+namespace internal {
+
+template <>
+class ObjectTraits<$FULL_CLASS> {
+ public:
+  static size_t ComputeSizeOf(const $FULL_CLASS* bar);
+  static $FULL_CLASS* Clone(const $FULL_CLASS* bar, Buffer* buf);
+  static void EncodePointersAndHandles($FULL_CLASS* bar,
+                                       std::vector<mojo::Handle>* handles);
+  static bool DecodePointersAndHandles($FULL_CLASS* bar,
+                                       const mojo::Message& message);
+};
+
+}  // namespace internal
+}  // namespace mojo
+
+#endif  // $HEADER_GUARD
