@@ -486,6 +486,8 @@ def check_licenses(options, args):
     print "\nFAILED\n"
     return 1
 
+  used_suppressions = set()
+
   success = True
   for line in stdout.splitlines():
     filename, license = line.split(':', 1)
@@ -507,13 +509,12 @@ def check_licenses(options, args):
       continue
 
     if not options.ignore_suppressions:
-      found_path_specific = False
-      for prefix in PATH_SPECIFIC_WHITELISTED_LICENSES:
-        if (filename.startswith(prefix) and
-            license in PATH_SPECIFIC_WHITELISTED_LICENSES[prefix]):
-          found_path_specific = True
-          break
-      if found_path_specific:
+      matched_prefixes = [
+          prefix for prefix in PATH_SPECIFIC_WHITELISTED_LICENSES
+          if filename.startswith(prefix) and
+          license in PATH_SPECIFIC_WHITELISTED_LICENSES[prefix]]
+      if matched_prefixes:
+        used_suppressions.update(set(matched_prefixes))
         continue
 
     print "'%s' has non-whitelisted license '%s'" % (filename, license)
@@ -521,6 +522,13 @@ def check_licenses(options, args):
 
   if success:
     print "\nSUCCESS\n"
+
+    unused_suppressions = set(
+      PATH_SPECIFIC_WHITELISTED_LICENSES.keys()).difference(used_suppressions)
+    if unused_suppressions:
+      print "\nNOTE: unused suppressions detected:\n"
+      print '\n'.join(unused_suppressions)
+
     return 0
   else:
     print "\nFAILED\n"
@@ -530,6 +538,11 @@ def check_licenses(options, args):
     print
     print "Please respect OWNERS of checklicenses.py. Changes violating"
     print "this requirement may be reverted."
+
+    # Do not print unused suppressions so that above message is clearly
+    # visible and gets proper attention. Too much unrelated output
+    # would be distracting and make the important points easier to miss.
+
     return 1
 
 
