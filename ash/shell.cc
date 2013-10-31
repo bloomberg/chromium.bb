@@ -691,16 +691,17 @@ void Shell::Init() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 
   delegate_->PreInit();
-  bool display_initialized = false;
-#if defined(OS_CHROMEOS) && defined(USE_X11)
-  output_configurator_animation_.reset(
-      new internal::OutputConfiguratorAnimation());
-  output_configurator_->AddObserver(output_configurator_animation_.get());
   if (command_line->HasSwitch(keyboard::switches::kKeyboardUsabilityTest)) {
     display_manager_->SetSecondDisplayMode(
         internal::DisplayManager::VIRTUAL_KEYBOARD);
   }
-  if (base::SysInfo::IsRunningOnChromeOS()) {
+  bool display_initialized = display_manager_->InitFromCommandLine();
+#if defined(OS_CHROMEOS) && defined(USE_X11)
+  output_configurator_animation_.reset(
+      new internal::OutputConfiguratorAnimation());
+  output_configurator_->AddObserver(output_configurator_animation_.get());
+
+  if (!display_initialized && base::SysInfo::IsRunningOnChromeOS()) {
     display_change_observer_.reset(new internal::DisplayChangeObserver);
     // Register |display_change_observer_| first so that the rest of
     // observer gets invoked after the root windows are configured.
@@ -715,7 +716,7 @@ void Shell::Init() {
   }
 #endif  // defined(OS_CHROMEOS) && defined(USE_X11)
   if (!display_initialized)
-    display_manager_->InitFromCommandLine();
+    display_manager_->InitDefaultDisplay();
 
   // Install the custom factory first so that views::FocusManagers for Tray,
   // Launcher, and WallPaper could be created by the factory.

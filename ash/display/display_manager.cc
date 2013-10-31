@@ -202,9 +202,11 @@ float DisplayManager::GetNextUIScale(const DisplayInfo& info, bool up) {
   return 1.0f;
 }
 
-void DisplayManager::InitFromCommandLine() {
+bool DisplayManager::InitFromCommandLine() {
   DisplayInfoList info_list;
   CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kAshHostWindowBounds))
+    return false;
   const string size_str =
       command_line->GetSwitchValueASCII(switches::kAshHostWindowBounds);
   vector<string> parts;
@@ -213,12 +215,19 @@ void DisplayManager::InitFromCommandLine() {
        iter != parts.end(); ++iter) {
     info_list.push_back(DisplayInfo::CreateFromSpec(*iter));
   }
-  if (info_list.size())
-    MaybeInitInternalDisplay(info_list[0].id());
+  MaybeInitInternalDisplay(info_list[0].id());
   if (info_list.size() > 1 &&
       command_line->HasSwitch(switches::kAshEnableSoftwareMirroring)) {
     SetSecondDisplayMode(MIRRORING);
   }
+  OnNativeDisplaysChanged(info_list);
+  return true;
+}
+
+void DisplayManager::InitDefaultDisplay() {
+  DisplayInfoList info_list;
+  info_list.push_back(DisplayInfo::CreateFromSpec(std::string()));
+  MaybeInitInternalDisplay(info_list[0].id());
   OnNativeDisplaysChanged(info_list);
 }
 

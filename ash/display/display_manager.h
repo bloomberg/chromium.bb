@@ -108,9 +108,12 @@ class ASH_EXPORT DisplayManager
   // Returns the display id of the first display in the outupt list.
   int64 first_display_id() const { return first_display_id_; }
 
-  // Initializes displays using command line flag, or uses
-  // defualt if no options are specified.
-  void InitFromCommandLine();
+  // Initializes displays using command line flag. Returns false
+  // if no command line flag was provided.
+  bool InitFromCommandLine();
+
+  // Initialize default display.
+  void InitDefaultDisplay();
 
   // True if the given |display| is currently connected.
   bool IsActiveDisplay(const gfx::Display& display) const;
