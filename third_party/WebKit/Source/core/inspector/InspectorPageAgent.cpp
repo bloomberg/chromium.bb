@@ -660,6 +660,13 @@ void InspectorPageAgent::setDeviceMetricsOverride(ErrorString* errorString, int 
     if (!deviceMetricsChanged(width, height, deviceScaleFactor, fitWindow, fontScaleFactor, textAutosizing))
         return;
 
+    Settings& settings = m_page->settings();
+    if (width && height && !settings.acceleratedCompositingEnabled()) {
+        if (errorString)
+            *errorString = "Compositing mode is not supported";
+        return;
+    }
+
     m_state->setLong(PageAgentState::pageAgentScreenWidthOverride, width);
     m_state->setLong(PageAgentState::pageAgentScreenHeightOverride, height);
     m_state->setDouble(PageAgentState::pageAgentDeviceScaleFactorOverride, deviceScaleFactor);
@@ -1185,6 +1192,11 @@ void InspectorPageAgent::applyEmulatedMedia(String* media)
     String emulatedMedia = m_state->getString(PageAgentState::pageAgentEmulatedMedia);
     if (!emulatedMedia.isEmpty())
         *media = emulatedMedia;
+}
+
+void InspectorPageAgent::canForceCompositingMode(ErrorString* errorString, bool* result)
+{
+    *result = m_page->settings().acceleratedCompositingEnabled();
 }
 
 void InspectorPageAgent::setForceCompositingMode(ErrorString* errorString, bool force)
