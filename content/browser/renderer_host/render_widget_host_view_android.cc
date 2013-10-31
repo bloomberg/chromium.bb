@@ -117,7 +117,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       ime_adapter_android_(this),
       cached_background_color_(SK_ColorWHITE),
       texture_id_in_layer_(0),
-      current_mailbox_output_surface_id_(kUndefinedOutputSurfaceId),
+      last_output_surface_id_(kUndefinedOutputSurfaceId),
       weak_ptr_factory_(this),
       overscroll_effect_enabled_(true),
       flush_input_requested_(false) {
@@ -677,7 +677,7 @@ void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
     scoped_ptr<cc::DelegatedFrameData> frame_data) {
   bool has_content = !texture_size_in_layer_.IsEmpty();
 
-  if (output_surface_id != current_mailbox_output_surface_id_) {
+  if (output_surface_id != last_output_surface_id_) {
     // TODO(danakj): Lose all resources and send them back here, such as:
     // resource_collection_->LoseAllResources();
     // SendReturnedDelegatedResources(last_output_surface_id_);
@@ -689,6 +689,8 @@ void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
       resource_collection_ = NULL;
     }
     DestroyDelegatedContent();
+
+    last_output_surface_id_ = output_surface_id;
   }
 
   if (!has_content) {
@@ -775,9 +777,9 @@ void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
   if (!frame->gl_frame_data || frame->gl_frame_data->mailbox.IsZero())
     return;
 
-  if (output_surface_id != current_mailbox_output_surface_id_) {
+  if (output_surface_id != last_output_surface_id_) {
     current_mailbox_ = gpu::Mailbox();
-    current_mailbox_output_surface_id_ = kUndefinedOutputSurfaceId;
+    last_output_surface_id_ = kUndefinedOutputSurfaceId;
   }
 
   base::Closure callback = base::Bind(&InsertSyncPointAndAckForCompositor,
@@ -877,7 +879,7 @@ void RenderWidgetHostViewAndroid::BuffersSwapped(
   ResetClipping();
 
   current_mailbox_ = mailbox;
-  current_mailbox_output_surface_id_ = output_surface_id;
+  last_output_surface_id_ = output_surface_id;
 
   if (host_->is_hidden())
     ack_callback.Run();
@@ -974,7 +976,7 @@ void RenderWidgetHostViewAndroid::AcceleratedSurfaceRelease() {
         texture_id_in_layer_);
     texture_id_in_layer_ = 0;
     current_mailbox_ = gpu::Mailbox();
-    current_mailbox_output_surface_id_ = kUndefinedOutputSurfaceId;
+    last_output_surface_id_ = kUndefinedOutputSurfaceId;
   }
   if (delegated_renderer_layer_.get())
     DestroyDelegatedContent();

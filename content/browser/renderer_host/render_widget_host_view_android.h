@@ -323,7 +323,9 @@ class RenderWidgetHostViewAndroid
 
   // The mailbox of the previously received frame.
   gpu::Mailbox current_mailbox_;
-  uint32_t current_mailbox_output_surface_id_;
+
+  // The output surface id of the last received frame.
+  uint32_t last_output_surface_id_;
 
   base::WeakPtrFactory<RenderWidgetHostViewAndroid> weak_ptr_factory_;
 
