@@ -145,7 +145,6 @@ private:
 
     bool isEmpty();
 
-    void drawGutter();
     void drawNodeHighlight();
     void drawQuadHighlight();
     void drawPausedInDebuggerMessage();

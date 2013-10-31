@@ -416,7 +416,6 @@ void InspectorOverlay::update()
     // Clear canvas and paint things.
     reset(size, m_size.isEmpty() ? IntSize() : frameViewFullSize, viewRect.x(), viewRect.y());
 
-    drawGutter();
     drawNodeHighlight();
     drawQuadHighlight();
     if (!m_inspectModeEnabled)
@@ -486,11 +485,6 @@ static PassRefPtr<JSONObject> buildObjectForSize(const IntSize& size)
     result->setNumber("width", size.width());
     result->setNumber("height", size.height());
     return result.release();
-}
-
-void InspectorOverlay::drawGutter()
-{
-    evaluateInOverlay("drawGutter", "");
 }
 
 void InspectorOverlay::drawNodeHighlight()

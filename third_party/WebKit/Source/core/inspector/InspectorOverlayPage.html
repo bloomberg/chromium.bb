@@ -149,23 +149,6 @@ body.platform-linux {
     color: rgb(153, 69, 0);
 }
 
-#right-gutter {
-    display: none;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    position: absolute;
-    background-color: darkgray;
-}
-
-#bottom-gutter {
-    display: none;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    position: absolute;
-    background-color: darkgray;
-}
 </style>
 <script>
 const lightGridColor = "rgba(0,0,0,0.2)";
@@ -369,26 +352,6 @@ function quadEquals(quad1, quad2)
         quad1[3].x === quad2[3].x && quad1[3].y === quad2[3].y;
 }
 
-function drawGutter()
-{
-    var frameWidth = frameViewFullSize.width;
-    var frameHeight = frameViewFullSize.height;
-
-    if (!frameWidth || document.body.offsetWidth <= frameWidth)
-        rightGutter.style.removeProperty("display");
-    else {
-        rightGutter.style.display = "block";
-        rightGutter.style.left = frameWidth + "px";
-    }
-
-    if (!frameHeight || document.body.offsetHeight <= frameHeight)
-        bottomGutter.style.removeProperty("display");
-    else {
-        bottomGutter.style.display = "block";
-        bottomGutter.style.top = frameHeight + "px";
-    }
-}
-
 function drawViewSize(drawViewSizeWithGrid)
 {
     var drawGridBoolean = drawViewSizeWithGrid === "true";
@@ -424,8 +387,6 @@ function reset(resetData)
 
     window.canvas = document.getElementById("canvas");
     window.context = canvas.getContext("2d");
-    window.rightGutter = document.getElementById("right-gutter");
-    window.bottomGutter = document.getElementById("bottom-gutter");
 
     canvas.width = deviceScaleFactor * viewportSize.width;
     canvas.height = deviceScaleFactor * viewportSize.height;
@@ -713,7 +674,5 @@ window.addEventListener("DOMContentLoaded", onLoaded);
   <span id="tag-name"></span><span id="node-id"></span><span id="class-name"></span>
   <span id="node-width"></span><span class="px">px</span><span class="px"> &#xD7; </span><span id="node-height"></span><span class="px">px</span>
 </div>
-<div id="right-gutter"></div>
-<div id="bottom-gutter"></div>
 <div id="log"></div>
 </html>
