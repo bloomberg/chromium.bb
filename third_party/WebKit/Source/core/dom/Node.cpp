@@ -713,7 +713,7 @@ inline void Node::markAncestorsWithChildNeedsStyleRecalc()
 void Node::setNeedsStyleRecalc(StyleChangeType changeType, StyleChangeSource source)
 {
     ASSERT(changeType != NoStyleChange);
-    if (!confusingAndOftenMisusedAttached()) // changed compared to what?
+    if (!inActiveDocument())
         return;
 
     if (source == StyleChangeFromRenderer)
