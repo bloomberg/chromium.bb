@@ -21,7 +21,7 @@ from redirector import Redirector
 from reference_resolver import ReferenceResolver
 from samples_data_source import SamplesDataSource
 import svn_constants
-from template_data_source import TemplateDataSource
+from template_renderer import TemplateRenderer
 from test_branch_utility import TestBranchUtility
 from test_object_store import TestObjectStore
 
@@ -147,24 +147,14 @@ class ServerInstance(object):
         host_fs_at_trunk,
         svn_constants.PUBLIC_TEMPLATE_PATH)
 
+    # TODO(kalman): Move all the remaining DataSources into DataSourceRegistry,
+    # then factor out the DataSource creation into a factory method, so that
+    # the entire ServerInstance doesn't need to be passed in here.
+    self.template_renderer = TemplateRenderer(self)
+
     self.strings_json_path = svn_constants.STRINGS_JSON_PATH
     self.manifest_json_path = svn_constants.MANIFEST_JSON_PATH
     self.manifest_features_path = svn_constants.MANIFEST_FEATURES_PATH
-
-    self.template_data_source_factory = TemplateDataSource.Factory(
-        self.api_data_source_factory,
-        self.api_list_data_source_factory,
-        self.intro_data_source_factory,
-        self.samples_data_source_factory,
-        self.compiled_fs_factory,
-        host_fs_at_trunk,
-        self.ref_resolver_factory,
-        svn_constants.PUBLIC_TEMPLATE_PATH,
-        svn_constants.PRIVATE_TEMPLATE_PATH,
-        base_path)
-
-    self.api_data_source_factory.SetTemplateDataSource(
-        self.template_data_source_factory)
 
   @staticmethod
   def ForTest(file_system, base_path='/'):

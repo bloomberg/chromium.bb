@@ -7,6 +7,7 @@ import sys
 import schema_util
 from file_system import FileNotFoundError
 from future import Gettable, Future
+from third_party.handlebar import Handlebar
 from third_party.json_schema_compiler import json_parse
 from third_party.json_schema_compiler.memoize import memoize
 
@@ -70,6 +71,14 @@ class CompiledFileSystem(object):
                          schema_util.ProcessSchema,
                          CompiledFileSystem,
                          category='api-schema')
+
+    @memoize
+    def ForTemplates(self, file_system):
+      '''Creates a CompiledFileSystem for parsing templates.
+      '''
+      return self.Create(file_system,
+                         lambda path, text: Handlebar(text, name=path),
+                         CompiledFileSystem)
 
   def __init__(self,
                file_system,
@@ -151,9 +160,9 @@ class CompiledFileSystem(object):
     if (cache_entry is not None) and (version == cache_entry.version):
       return Future(value=cache_entry._cache_data)
 
-    future_files = self._file_system.Read([path], binary=binary)
+    future_files = self._file_system.ReadSingle(path, binary=binary)
     def resolve():
-      cache_data = self._populate_function(path, future_files.Get().get(path))
+      cache_data = self._populate_function(path, future_files.Get())
       self._file_object_store.Set(path, _CacheEntry(cache_data, version))
       return cache_data
     return Future(delegate=Gettable(resolve))

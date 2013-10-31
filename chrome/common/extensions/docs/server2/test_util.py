@@ -52,7 +52,6 @@ def _ReplaceLogging(name, replacement):
   return decorator
 
 
-# TODO(kalman): Use this everywhere. A lot of tests are doing this.
-def ReadFile(name):
-  with open(os.path.join(sys.path[0], os.pardir, os.pardir, name)) as f:
+def ReadFile(*path):
+  with open(os.path.join(sys.path[0], '..', '..', *path)) as f:
     return f.read()

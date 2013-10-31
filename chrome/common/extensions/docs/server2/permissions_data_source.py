@@ -7,6 +7,7 @@ from operator import itemgetter
 
 from data_source import DataSource
 import features_utility as features
+from svn_constants import PRIVATE_TEMPLATE_PATH
 from third_party.json_schema_compiler.json_parse import Parse
 
 def _ListifyPermissions(permissions):
@@ -45,8 +46,8 @@ class PermissionsDataSource(DataSource):
     self._features_bundle = server_instance.features_bundle
     self._object_store = server_instance.object_store_creator.Create(
         PermissionsDataSource)
-    self._template_data_source = (
-        server_instance.template_data_source_factory.Create(None, {}))
+    self._template_cache = server_instance.compiled_fs_factory.ForTemplates(
+        server_instance.host_file_system_provider.GetTrunk())
 
   def _CreatePermissionsData(self):
     api_features = self._features_bundle.GetAPIFeatures()
@@ -61,8 +62,8 @@ class PermissionsDataSource(DataSource):
       if not 'anchor' in permission:
         permission['anchor'] = permission['name']
       if 'partial' in permission:
-        permission['description'] = self._template_data_source.get(
-            permission['partial'])
+        permission['description'] = self._template_cache.GetFromFile('%s/%s' %
+            (PRIVATE_TEMPLATE_PATH, permission['partial'])).Get()
         del permission['partial']
 
     return {

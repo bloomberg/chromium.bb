@@ -16,6 +16,7 @@ from branch_utility import ChannelInfo
 from collections import namedtuple
 from compiled_file_system import CompiledFileSystem
 from file_system import FileNotFoundError
+from future import Future
 from object_store_creator import ObjectStoreCreator
 from reference_resolver import ReferenceResolver
 from test_branch_utility import TestBranchUtility
@@ -63,10 +64,10 @@ class FakeAPIAndListDataSource(object):
     return self._json.keys()
 
 
-class FakeTemplateDataSource(object):
+class FakeTemplateCache(object):
 
-  def get(self, key):
-    return 'handlebar %s' % key
+  def GetFromFile(self, key):
+    return Future(value='handlebar %s' % key)
 
 
 class APIDataSourceTest(unittest.TestCase):
@@ -104,7 +105,7 @@ class APIDataSourceTest(unittest.TestCase):
                       FakeAvailabilityFinder(),
                       TestBranchUtility.CreateWithCannedData(),
                       self._json_cache,
-                      FakeTemplateDataSource(),
+                      FakeTemplateCache(),
                       None).ToDict()
     self.assertEquals('type-TypeA', dict_['types'][0]['id'])
     self.assertEquals('property-TypeA-b',
@@ -124,7 +125,7 @@ class APIDataSourceTest(unittest.TestCase):
                       FakeAvailabilityFinder(),
                       TestBranchUtility.CreateWithCannedData(),
                       self._json_cache,
-                      FakeTemplateDataSource(),
+                      FakeTemplateCache(),
                       None).ToDict()
     self.assertEquals(expected_json, dict_)
 
@@ -140,7 +141,7 @@ class APIDataSourceTest(unittest.TestCase):
                       FakeAvailabilityFinder(),
                       TestBranchUtility.CreateWithCannedData(),
                       self._json_cache,
-                      FakeTemplateDataSource(),
+                      FakeTemplateCache(),
                       None).ToDict()
     self.assertEquals(_MakeLink('ref_test.html#type-type2', 'type2'),
                       _GetType(dict_, 'type1')['description'])
@@ -161,7 +162,7 @@ class APIDataSourceTest(unittest.TestCase):
                       FakeAvailabilityFinder(),
                       TestBranchUtility.CreateWithCannedData(),
                       self._json_cache,
-                      FakeTemplateDataSource(),
+                      FakeTemplateCache(),
                       None)
     # The model namespace is "tester". No predetermined availability is found,
     # so the FakeAvailabilityFinder instance is used to find availability.
@@ -193,7 +194,7 @@ class APIDataSourceTest(unittest.TestCase):
                       FakeAvailabilityFinder(),
                       TestBranchUtility.CreateWithCannedData(),
                       self._json_cache,
-                      FakeTemplateDataSource(),
+                      FakeTemplateCache(),
                       None)
     expected_list = [
       { 'title': 'Description',
@@ -203,7 +204,8 @@ class APIDataSourceTest(unittest.TestCase):
       },
       { 'title': 'Availability',
         'content': [
-          { 'partial': 'handlebar intro_tables/stable_message.html',
+          { 'partial': 'handlebar docs/templates/private/' +
+                       'intro_tables/stable_message.html',
             'version': 5
           }
         ]
@@ -231,8 +233,7 @@ class APIDataSourceTest(unittest.TestCase):
         ]
       }
     ]
-    self.assertEquals(json.dumps(model._GetIntroTableList()),
-                      json.dumps(expected_list))
+    self.assertEquals(model._GetIntroTableList(), expected_list)
 
   def testGetAddRulesDefinitionFromEvents(self):
     events = {}
@@ -272,7 +273,7 @@ class APIDataSourceTest(unittest.TestCase):
                       FakeAvailabilityFinder(),
                       TestBranchUtility.CreateWithCannedData(),
                       self._json_cache,
-                      FakeTemplateDataSource(),
+                      FakeTemplateCache(),
                       self._FakeLoadAddRulesSchema).ToDict()
     # Check that the first event has the addRulesFunction defined.
     self.assertEquals('tester', dict_['name'])

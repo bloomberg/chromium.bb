@@ -61,7 +61,7 @@ class _JSCModel(object):
                availability_finder,
                branch_utility,
                parse_cache,
-               template_data_source,
+               template_cache,
                add_rules_schema_function,
                idl=False):
     self._ref_resolver = ref_resolver
@@ -74,7 +74,7 @@ class _JSCModel(object):
         '%s/intro_tables.json' % svn_constants.JSON_PATH)
     self._api_features = parse_cache.GetFromFile(
         '%s/_api_features.json' % svn_constants.API_PATH)
-    self._template_data_source = template_data_source
+    self._template_cache = template_cache
     self._add_rules_schema_function = add_rules_schema_function
     clean_json = copy.deepcopy(json)
     if RemoveNoDocs(clean_json):
@@ -387,8 +387,9 @@ class _JSCModel(object):
     return {
       'title': 'Availability',
       'content': [{
-        'partial': self._template_data_source.get(
-            'intro_tables/%s_message.html' % status),
+        'partial': self._template_cache.GetFromFile(
+                       '%s/intro_tables/%s_message.html' %
+                           (svn_constants.PRIVATE_TEMPLATE_PATH, status)).Get(),
         'version': version
       }]
     }
@@ -460,7 +461,8 @@ class _JSCModel(object):
         # If there is a 'partial' argument and it hasn't already been
         # converted to a Handlebar object, transform it to a template.
         if 'partial' in node:
-          node['partial'] = self._template_data_source.get(node['partial'])
+          node['partial'] = self._template_cache.GetFromFile('%s/%s' %
+              (svn_constants.PRIVATE_TEMPLATE_PATH, node['partial'])).Get()
       misc_rows.append({ 'title': category, 'content': content })
     return misc_rows
 
@@ -520,6 +522,9 @@ class APIDataSource(object):
       self._parse_cache = create_compiled_fs(
           lambda _, json: json_parse.Parse(json),
           'intro-cache')
+
+      self._template_cache = compiled_fs_factory.ForTemplates(file_system)
+
       # These must be set later via the SetFooDataSourceFactory methods.
       self._ref_resolver_factory = None
       self._samples_data_source_factory = None
@@ -532,11 +537,6 @@ class APIDataSource(object):
 
     def SetReferenceResolverFactory(self, ref_resolver_factory):
       self._ref_resolver_factory = ref_resolver_factory
-
-    def SetTemplateDataSource(self, template_data_source_factory):
-      # This TemplateDataSource is only being used for fetching template data.
-      self._template_data_source = template_data_source_factory.Create(
-          None, {})
 
     def Create(self, request):
       '''Creates an APIDataSource.
@@ -577,7 +577,7 @@ class APIDataSource(object):
           self._availability_finder,
           self._branch_utility,
           self._parse_cache,
-          self._template_data_source,
+          self._template_cache,
           self._LoadAddRulesSchema).ToDict()
 
     def _LoadIdlAPI(self, api, disable_refs):
@@ -589,7 +589,7 @@ class APIDataSource(object):
           self._availability_finder,
           self._branch_utility,
           self._parse_cache,
-          self._template_data_source,
+          self._template_cache,
           self._LoadAddRulesSchema,
           idl=True).ToDict()
 

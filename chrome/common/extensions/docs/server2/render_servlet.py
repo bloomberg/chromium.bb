@@ -10,7 +10,7 @@ from urlparse import urlsplit
 from data_source_registry import CreateDataSources
 from file_system import FileNotFoundError
 from servlet import Servlet, Response
-import svn_constants
+from svn_constants import DOCS_PATH, PUBLIC_TEMPLATE_PATH
 
 def _IsBinaryMimetype(mimetype):
   return any(
@@ -50,9 +50,8 @@ class RenderServlet(Servlet):
                                permanent=canonical_result.permanent)
 
     trunk_fs = server_instance.host_file_system_provider.GetTrunk()
-    templates = server_instance.template_data_source_factory.Create(
-        self._request,
-        CreateDataSources(server_instance, self._request))
+    template_renderer = server_instance.template_renderer
+    template_cache = server_instance.compiled_fs_factory.ForTemplates(trunk_fs)
 
     content = None
     content_type = None
@@ -63,24 +62,26 @@ class RenderServlet(Servlet):
       if path.endswith('/'):
         pass
       elif fnmatch(path, 'extensions/examples/*.zip'):
-        zip_path = (
-            svn_constants.DOCS_PATH + path[len('extensions'):-len('.zip')])
+        zip_path = DOCS_PATH + path[len('extensions'):-len('.zip')]
         content = server_instance.directory_zipper.Zip(zip_path).Get()
         content_type = 'application/zip'
       elif path.startswith('extensions/examples/'):
         mimetype = mimetypes.guess_type(path)[0] or 'text/plain'
         content = trunk_fs.ReadSingle(
-            '%s/%s' % (svn_constants.DOCS_PATH, path[len('extensions/'):]),
+            '%s/%s' % (DOCS_PATH, path[len('extensions/'):]),
             binary=_IsBinaryMimetype(mimetype)).Get()
         content_type = mimetype
       elif path.startswith('static/'):
         mimetype = mimetypes.guess_type(path)[0] or 'text/plain'
         content = trunk_fs.ReadSingle(
-            ('%s/%s' % (svn_constants.DOCS_PATH, path)),
+            '%s/%s' % (DOCS_PATH, path),
             binary=_IsBinaryMimetype(mimetype)).Get()
         content_type = mimetype
       elif path.endswith('.html'):
-        content = templates.Render(path)
+        content = template_renderer.Render(
+            template_cache.GetFromFile(
+                '%s/%s' % (PUBLIC_TEMPLATE_PATH, path)).Get(),
+            self._request)
         content_type = 'text/html'
       else:
         content = None
@@ -89,8 +90,18 @@ class RenderServlet(Servlet):
 
     headers = {'x-frame-options': 'sameorigin'}
     if content is None:
-      content = (templates.Render('%s/404' % path.split('/', 1)[0]) or
-                 templates.Render('extensions/404'))
+      def render_template_or_none(path):
+        try:
+          return template_renderer.Render(
+              template_cache.GetFromFile(
+                  '%s/%s' % (PUBLIC_TEMPLATE_PATH, path)).Get(),
+              self._request)
+        except FileNotFoundError:
+          return None
+      content = (render_template_or_none('%s/404.html' %
+                                         path.split('/', 1)[0]) or
+                 render_template_or_none('extensions/404.html') or
+                 'Not found')
       return Response.NotFound(content, headers=headers)
 
     if not content:
