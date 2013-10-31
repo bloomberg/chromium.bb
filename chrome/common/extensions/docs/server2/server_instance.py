@@ -4,6 +4,7 @@
 
 from api_data_source import APIDataSource
 from api_list_data_source import APIListDataSource
+from api_models import APIModels
 from appengine_wrappers import IsDevServer
 from availability_finder import AvailabilityFinder
 from compiled_file_system import CompiledFileSystem
@@ -72,6 +73,11 @@ class ServerInstance(object):
         host_fs_at_trunk,
         self.compiled_fs_factory,
         self.object_store_creator)
+
+    self.api_models = APIModels(
+        self.features_bundle,
+        self.compiled_fs_factory,
+        host_fs_at_trunk)
 
     self.availability_finder = AvailabilityFinder(
         branch_utility,
