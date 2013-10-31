@@ -3,23 +3,23 @@
 // found in the LICENSE file.
 
 #include "base/files/file_path.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list.h"
 #include "chrome/browser/ui/app_list/app_list_factory.h"
 #include "chrome/browser/ui/app_list/app_list_shower.h"
 #include "chrome/browser/ui/app_list/keep_alive_service.h"
+#include "chrome/browser/ui/app_list/test/fake_browser_context.h"
 #include "chrome/browser/ui/app_list/test/fake_keep_alive_service.h"
-#include "chrome/browser/ui/app_list/test/fake_profile.h"
+#include "content/public/browser/browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class FakeAppList : public AppList {
  public:
-  explicit FakeAppList(Profile* profile)
-      : profile_(profile) {
+  explicit FakeAppList(content::BrowserContext* context) {
+    SetBrowserContext(context);
   }
 
   std::string profile_name() {
-    return profile_->GetProfileName();
+    return context_->name();
   }
 
   // AppList overrides.
@@ -49,11 +49,11 @@ class FakeAppList : public AppList {
     return NULL;
   }
 
-  virtual void SetProfile(Profile* profile) OVERRIDE {
-    profile_ = profile;
+  virtual void SetBrowserContext(content::BrowserContext* context) OVERRIDE {
+    context_ = static_cast<FakeBrowserContext*>(context);
   }
 
-  Profile* profile_;
+  FakeBrowserContext* context_;
   bool visible_;
   bool prerendered_;
 };
@@ -65,10 +65,10 @@ class FakeFactory : public AppListFactory {
   }
 
   virtual AppList* CreateAppList(
-      Profile* profile,
+      content::BrowserContext* context,
       const base::Closure& on_should_dismiss) OVERRIDE {
     views_created_++;
-    return new FakeAppList(profile);
+    return new FakeAppList(context);
   }
 
   int views_created_;
@@ -82,17 +82,22 @@ class AppListShowerUnitTest : public testing::Test {
     shower_.reset(
         new AppListShower(scoped_ptr<AppListFactory>(factory_),
                           scoped_ptr<KeepAliveService>(keep_alive_service_)));
-    profile1_ = CreateProfile("p1").Pass();
-    profile2_ = CreateProfile("p2").Pass();
+    context1_ = CreateProfile("p1").Pass();
+    context2_ = CreateProfile("p2").Pass();
   }
 
   virtual void TearDown() OVERRIDE {
   }
 
-  scoped_ptr<FakeProfile> CreateProfile(const std::string& name) {
-    return make_scoped_ptr(new FakeProfile(name));
+  scoped_ptr<FakeBrowserContext> CreateProfile(const std::string& name) {
+    return make_scoped_ptr(new FakeBrowserContext(
+        name, base::FilePath().AppendASCII(name)));
   }
 
+  std::string GetCurrentAppListContextName() {
+    FakeAppList* app_list = static_cast<FakeAppList*>(shower_->app_list());
+    return app_list->profile_name();
+  }
   FakeAppList* GetCurrentAppList() {
     return static_cast<FakeAppList*>(shower_->app_list());
   }
@@ -102,8 +107,8 @@ class AppListShowerUnitTest : public testing::Test {
   // Owned by |shower_|.
   FakeFactory* factory_;
   scoped_ptr<AppListShower> shower_;
-  scoped_ptr<FakeProfile> profile1_;
-  scoped_ptr<FakeProfile> profile2_;
+  scoped_ptr<FakeBrowserContext> context1_;
+  scoped_ptr<FakeBrowserContext> context2_;
 };
 
 TEST_F(AppListShowerUnitTest, Preconditions) {
@@ -113,14 +118,14 @@ TEST_F(AppListShowerUnitTest, Preconditions) {
 }
 
 TEST_F(AppListShowerUnitTest, ShowForProfilePutsViewOnScreen) {
-  shower_->ShowForProfile(profile1_.get());
+  shower_->ShowForBrowserContext(context1_.get());
   EXPECT_TRUE(shower_->IsAppListVisible());
   EXPECT_TRUE(shower_->HasView());
   EXPECT_TRUE(keep_alive_service_->is_keeping_alive());
 }
 
 TEST_F(AppListShowerUnitTest, HidingViewRemovesKeepalive) {
-  shower_->ShowForProfile(profile1_.get());
+  shower_->ShowForBrowserContext(context1_.get());
   shower_->DismissAppList();
   EXPECT_FALSE(shower_->IsAppListVisible());
   EXPECT_TRUE(shower_->HasView());
@@ -128,21 +133,21 @@ TEST_F(AppListShowerUnitTest, HidingViewRemovesKeepalive) {
 }
 
 TEST_F(AppListShowerUnitTest, HideAndShowReusesView) {
-  shower_->ShowForProfile(profile1_.get());
+  shower_->ShowForBrowserContext(context1_.get());
   shower_->DismissAppList();
-  shower_->ShowForProfile(profile1_.get());
+  shower_->ShowForBrowserContext(context1_.get());
   EXPECT_EQ(1, factory_->views_created_);
 }
 
 TEST_F(AppListShowerUnitTest, CloseAndShowRecreatesView) {
-  shower_->ShowForProfile(profile1_.get());
+  shower_->ShowForBrowserContext(context1_.get());
   shower_->CloseAppList();
-  shower_->ShowForProfile(profile1_.get());
+  shower_->ShowForBrowserContext(context1_.get());
   EXPECT_EQ(2, factory_->views_created_);
 }
 
 TEST_F(AppListShowerUnitTest, CloseRemovesView) {
-  shower_->ShowForProfile(profile1_.get());
+  shower_->ShowForBrowserContext(context1_.get());
   shower_->CloseAppList();
   EXPECT_FALSE(shower_->IsAppListVisible());
   EXPECT_FALSE(shower_->HasView());
@@ -150,19 +155,19 @@ TEST_F(AppListShowerUnitTest, CloseRemovesView) {
 }
 
 TEST_F(AppListShowerUnitTest, CloseAppListClearsProfile) {
-  EXPECT_EQ(NULL, shower_->profile());
-  shower_->ShowForProfile(profile1_.get());
-  EXPECT_EQ(profile1_.get(), shower_->profile());
+  EXPECT_EQ(NULL, shower_->browser_context());
+  shower_->ShowForBrowserContext(context1_.get());
+  EXPECT_EQ(context1_.get(), shower_->browser_context());
   shower_->CloseAppList();
-  EXPECT_EQ(NULL, shower_->profile());
+  EXPECT_EQ(NULL, shower_->browser_context());
 }
 
 TEST_F(AppListShowerUnitTest, SwitchingProfiles) {
-  shower_->ShowForProfile(profile1_.get());
+  shower_->ShowForBrowserContext(context1_.get());
   EXPECT_EQ("p1", GetCurrentAppList()->profile_name());
-  shower_->ShowForProfile(profile2_.get());
+  shower_->ShowForBrowserContext(context2_.get());
   EXPECT_EQ("p2", GetCurrentAppList()->profile_name());
 
-  // Shouldn't create new view for second profile - it should switch in place.
+  // Shouldn't create new view for second context - it should switch in place.
   EXPECT_EQ(1, factory_->views_created_);
 }

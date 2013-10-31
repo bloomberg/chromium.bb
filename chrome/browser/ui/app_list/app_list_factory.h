@@ -8,17 +8,19 @@
 #include "base/callback_forward.h"
 #include "chrome/browser/ui/app_list/app_list.h"
 
-class Profile;
-
 namespace app_list {
 class PaginationModel;
+}
+
+namespace content {
+class BrowserContext;
 }
 
 // Factory for AppLists. Used to allow us to create fake app lists in tests.
 class AppListFactory {
  public:
   virtual ~AppListFactory() {}
-  virtual AppList* CreateAppList(Profile* profile,
+  virtual AppList* CreateAppList(content::BrowserContext* context,
                                  const base::Closure& on_should_dismiss) = 0;
 };
 

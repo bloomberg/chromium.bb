@@ -320,14 +320,14 @@ class AppListFactoryWin : public AppListFactory {
   }
 
   virtual AppList* CreateAppList(
-      Profile* profile,
+      content::BrowserContext* context,
       const base::Closure& on_should_dismiss) OVERRIDE {
     // The controller will be owned by the view delegate, and the delegate is
     // owned by the app list view. The app list view manages it's own lifetime.
     scoped_ptr<AppListControllerDelegate> controller_delegate(
         new AppListControllerDelegateWin(service_));
     AppListViewDelegate* view_delegate = new AppListViewDelegate(
-        controller_delegate.Pass(), profile);
+        controller_delegate.Pass(), Profile::FromBrowserContext(context));
     app_list::AppListView* view = new app_list::AppListView(view_delegate);
     gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
     view->InitAsBubbleAtFixedLocation(NULL,
@@ -374,7 +374,7 @@ gfx::NativeWindow AppListServiceWin::GetAppListWindow() {
 }
 
 Profile* AppListServiceWin::GetCurrentAppListProfile() {
-  return shower_->profile();
+  return static_cast<Profile*>(shower_->browser_context());
 }
 
 AppListControllerDelegate* AppListServiceWin::CreateControllerDelegate() {
@@ -406,7 +406,7 @@ void AppListServiceWin::ShowForProfile(Profile* requested_profile) {
 
   InvalidatePendingProfileLoads();
   SetProfilePath(requested_profile->GetPath());
-  shower_->ShowForProfile(requested_profile);
+  shower_->ShowForBrowserContext(requested_profile);
   RecordAppListLaunch();
 }
 
@@ -496,7 +496,7 @@ void AppListServiceWin::Init(Profile* initial_profile) {
 }
 
 void AppListServiceWin::CreateForProfile(Profile* profile) {
-  shower_->CreateViewForProfile(profile);
+  shower_->CreateViewForBrowserContext(profile);
 }
 
 bool AppListServiceWin::IsAppListVisible() const {

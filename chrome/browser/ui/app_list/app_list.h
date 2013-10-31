@@ -7,7 +7,9 @@
 
 #include "ui/gfx/native_widget_types.h"
 
-class Profile;
+namespace content{
+class BrowserContext;
+}
 
 // A container for an AppListView that can be positioned and knows when it has
 // lost focus. Has platform-specific implementations.
@@ -21,7 +23,7 @@ class AppList {
   virtual void Prerender() = 0;
   virtual void RegainNextLostFocus() = 0;
   virtual gfx::NativeWindow GetWindow() = 0;
-  virtual void SetProfile(Profile* profile) = 0;
+  virtual void SetBrowserContext(content::BrowserContext* browser_context) = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_APP_LIST_H_

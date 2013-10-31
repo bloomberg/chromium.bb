@@ -12,10 +12,12 @@
 #include "ui/app_list/pagination_model.h"
 #include "ui/gfx/native_widget_types.h"
 
-class Profile;
-
 namespace app_list {
 class AppListModel;
+}
+
+namespace content {
+class BrowserContext;
 }
 
 // Creates and shows AppLists as needed. This class is created and destroyed
@@ -30,30 +32,30 @@ class AppListShower {
     can_close_app_list_ = can_close;
   }
 
-  void ShowAndReacquireFocus(Profile* requested_profile);
-  void ShowForProfile(Profile* requested_profile);
+  void ShowAndReacquireFocus(content::BrowserContext* requested_context);
+  void ShowForBrowserContext(content::BrowserContext* requested_context);
   gfx::NativeWindow GetWindow();
 
   AppList* app_list() {
     return app_list_.get();
   }
 
-  Profile* profile() const { return profile_; }
+  content::BrowserContext* browser_context() const { return browser_context_; }
 
-  // Create or recreate, and initialize |app_list_| from |requested_profile|.
-  void CreateViewForProfile(Profile* requested_profile);
+  // Create or recreate, and initialize |app_list_| from |requested_context|.
+  void CreateViewForBrowserContext(content::BrowserContext* requested_context);
 
   void DismissAppList();
   void CloseAppList();
   bool IsAppListVisible() const;
-  void WarmupForProfile(Profile* profile);
+  void WarmupForProfile(content::BrowserContext* context);
   bool HasView() const;
 
  private:
   scoped_ptr<AppListFactory> factory_;
   scoped_ptr<KeepAliveService> keep_alive_service_;
   scoped_ptr<AppList> app_list_;
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
   bool can_close_app_list_;
 
   // Used to keep the browser process alive while the app list is visible.
