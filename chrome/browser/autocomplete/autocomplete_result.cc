@@ -193,7 +193,6 @@ void AutocompleteResult::SortAndCull(const AutocompleteInput& input,
     if (AutocompleteMatch::IsSearchType(default_match_->type)) {
       DCHECK_NE(AutocompleteInput::URL, input.type()) << debug_info;
     } else {
-      DCHECK_NE(AutocompleteInput::QUERY, input.type()) << debug_info;
       DCHECK_NE(AutocompleteInput::FORCED_QUERY, input.type()) << debug_info;
     }
   }
