@@ -31,6 +31,10 @@ class PepperOutputProtectionMessageFilter
                                       PP_Instance instance);
 
  private:
+#if defined(OS_CHROMEOS)
+  class Delegate;
+#endif
+
   // ppapi::host::ResourceMessageFilter overrides.
   virtual scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
       const IPC::Message& msg) OVERRIDE;
@@ -40,19 +44,13 @@ class PepperOutputProtectionMessageFilter
 
   virtual ~PepperOutputProtectionMessageFilter();
 
-#if defined(OS_CHROMEOS)
-  chromeos::OutputConfigurator::OutputProtectionClientId GetClientId();
-#endif
   int32_t OnQueryStatus(ppapi::host::HostMessageContext* context);
   int32_t OnEnableProtection(ppapi::host::HostMessageContext* context,
                              uint32_t desired_method_mask);
 
 #if defined(OS_CHROMEOS)
-  chromeos::OutputConfigurator::OutputProtectionClientId client_id_;
-
-  // Used to lookup the WebContents associated with this PP_Instance.
-  int render_process_id_;
-  int render_view_id_;
+  // Delegator. Should be deleted in UI thread.
+  Delegate* delegate_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PepperOutputProtectionMessageFilter);

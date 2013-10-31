@@ -68,6 +68,7 @@ class CHROMEOS_EXPORT OutputConfigurator
       public base::MessagePumpObserver {
  public:
   typedef uint64_t OutputProtectionClientId;
+  static const OutputProtectionClientId kInvalidClientId = 0;
 
   struct ModeInfo {
     ModeInfo();
@@ -413,6 +414,7 @@ class CHROMEOS_EXPORT OutputConfigurator
   // Returns true on success.
   bool QueryOutputProtectionStatus(
       OutputProtectionClientId client_id,
+      int64 display_id,
       uint32_t* link_mask,
       uint32_t* protection_mask);
 
@@ -422,12 +424,15 @@ class CHROMEOS_EXPORT OutputConfigurator
   // Returns true when the protection request has been made.
   bool EnableOutputProtection(
       OutputProtectionClientId client_id,
+      int64 display_id,
       uint32_t desired_protection_mask);
 
  private:
-  // Mapping a client to its protection request bitmask.
-  typedef std::map<chromeos::OutputConfigurator::OutputProtectionClientId,
-                   uint32_t> ProtectionRequests;
+  // Mapping a display_id to a protection request bitmask.
+  typedef std::map<int64, uint32_t> DisplayProtections;
+  // Mapping a client to its protection request.
+  typedef std::map<OutputProtectionClientId,
+                   DisplayProtections> ProtectionRequests;
 
   // Updates |cached_outputs_| to contain currently-connected outputs. Calls
   // |delegate_->GetOutputs()| and then does additional work, like finding the
@@ -486,6 +491,9 @@ class CHROMEOS_EXPORT OutputConfigurator
   // (mirror_mode_width * mirrow_mode_height) / (native_width * native_height)
   float GetMirroredDisplayAreaRatio(
       const OutputConfigurator::OutputSnapshot& output);
+
+  // Applies output protections according to requests.
+  bool ApplyProtections(const DisplayProtections& requests);
 
   StateController* state_controller_;
   SoftwareMirroringController* mirroring_controller_;

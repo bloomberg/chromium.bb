@@ -299,21 +299,72 @@ void OutputConfigurator::Start(uint32 background_color_argb) {
   NotifyObservers(success, new_state);
 }
 
+bool OutputConfigurator::ApplyProtections(const DisplayProtections& requests) {
+  for (std::vector<OutputSnapshot>::const_iterator it = cached_outputs_.begin();
+       it != cached_outputs_.end(); ++it) {
+    RROutput this_id = it->output;
+    uint32_t all_desired = 0;
+    DisplayProtections::const_iterator request_it = requests.find(
+        it->display_id);
+    if (request_it != requests.end())
+      all_desired = request_it->second;
+    switch (it->type) {
+      case OUTPUT_TYPE_UNKNOWN:
+        return false;
+      // DisplayPort, DVI, and HDMI all support HDCP.
+      case OUTPUT_TYPE_DISPLAYPORT:
+      case OUTPUT_TYPE_DVI:
+      case OUTPUT_TYPE_HDMI: {
+        HDCPState new_desired_state =
+            (all_desired & OUTPUT_PROTECTION_METHOD_HDCP) ?
+            HDCP_STATE_DESIRED : HDCP_STATE_UNDESIRED;
+        if (!delegate_->SetHDCPState(this_id, new_desired_state))
+          return false;
+        break;
+      }
+      case OUTPUT_TYPE_INTERNAL:
+      case OUTPUT_TYPE_VGA:
+      case OUTPUT_TYPE_NETWORK:
+        // No protections for these types. Do nothing.
+        break;
+      case OUTPUT_TYPE_NONE:
+        NOTREACHED();
+        break;
+    }
+  }
+
+  return true;
+}
+
 OutputConfigurator::OutputProtectionClientId
 OutputConfigurator::RegisterOutputProtectionClient() {
   if (!configure_display_)
-    return 0;
+    return kInvalidClientId;
 
   return next_output_protection_client_id_++;
 }
 
 void OutputConfigurator::UnregisterOutputProtectionClient(
     OutputProtectionClientId client_id) {
-  EnableOutputProtection(client_id, OUTPUT_PROTECTION_METHOD_NONE);
+  client_protection_requests_.erase(client_id);
+
+  DisplayProtections protections;
+  for (ProtectionRequests::const_iterator it =
+           client_protection_requests_.begin();
+       it != client_protection_requests_.end();
+       ++it) {
+    for (DisplayProtections::const_iterator it2 = it->second.begin();
+       it2 != it->second.end(); ++it2) {
+      protections[it2->first] |= it2->second;
+    }
+  }
+
+  ApplyProtections(protections);
 }
 
 bool OutputConfigurator::QueryOutputProtectionStatus(
     OutputProtectionClientId client_id,
+    int64 display_id,
     uint32_t* link_mask,
     uint32_t* protection_mask) {
   if (!configure_display_)
@@ -325,6 +376,8 @@ bool OutputConfigurator::QueryOutputProtectionStatus(
   for (std::vector<OutputSnapshot>::const_iterator it = cached_outputs_.begin();
        it != cached_outputs_.end(); ++it) {
     RROutput this_id = it->output;
+    if (it->display_id != display_id)
+      continue;
     *link_mask |= it->type;
     switch (it->type) {
       case OUTPUT_TYPE_UNKNOWN:
@@ -356,7 +409,9 @@ bool OutputConfigurator::QueryOutputProtectionStatus(
   // Don't reveal protections requested by other clients.
   ProtectionRequests::iterator it = client_protection_requests_.find(client_id);
   if (it != client_protection_requests_.end()) {
-    uint32_t requested_mask = it->second;
+    uint32_t requested_mask = 0;
+    if (it->second.find(display_id) != it->second.end())
+      requested_mask = it->second[display_id];
     *protection_mask = enabled & ~unfulfilled & requested_mask;
   } else {
     *protection_mask = 0;
@@ -366,51 +421,38 @@ bool OutputConfigurator::QueryOutputProtectionStatus(
 
 bool OutputConfigurator::EnableOutputProtection(
     OutputProtectionClientId client_id,
+    int64 display_id,
     uint32_t desired_method_mask) {
   if (!configure_display_)
     return false;
 
-  uint32_t all_desired = desired_method_mask;
+  DisplayProtections protections;
   for (ProtectionRequests::const_iterator it =
            client_protection_requests_.begin();
        it != client_protection_requests_.end();
        ++it) {
-    if (it->first != client_id)
-      all_desired |= it->second;
-  }
-
-  for (std::vector<OutputSnapshot>::const_iterator it = cached_outputs_.begin();
-       it != cached_outputs_.end(); ++it) {
-    RROutput this_id = it->output;
-    switch (it->type) {
-      case OUTPUT_TYPE_UNKNOWN:
-        return false;
-      // DisplayPort, DVI, and HDMI all support HDCP.
-      case OUTPUT_TYPE_DISPLAYPORT:
-      case OUTPUT_TYPE_DVI:
-      case OUTPUT_TYPE_HDMI: {
-        HDCPState new_desired_state =
-            (all_desired & OUTPUT_PROTECTION_METHOD_HDCP) ?
-            HDCP_STATE_DESIRED : HDCP_STATE_UNDESIRED;
-        if (!delegate_->SetHDCPState(this_id, new_desired_state))
-          return false;
-        break;
-      }
-      case OUTPUT_TYPE_INTERNAL:
-      case OUTPUT_TYPE_VGA:
-      case OUTPUT_TYPE_NETWORK:
-        // No protections for these types. Do nothing.
-        break;
-      case OUTPUT_TYPE_NONE:
-        NOTREACHED();
-        break;
+    for (DisplayProtections::const_iterator it2 = it->second.begin();
+       it2 != it->second.end(); ++it2) {
+      if (it->first == client_id && it2->first == display_id)
+        continue;
+      protections[it2->first] |= it2->second;
     }
   }
+  protections[display_id] |= desired_method_mask;
 
-  if (desired_method_mask == OUTPUT_PROTECTION_METHOD_NONE)
-    client_protection_requests_.erase(client_id);
-  else
-    client_protection_requests_[client_id] = desired_method_mask;
+  if (!ApplyProtections(protections))
+    return false;
+
+  if (desired_method_mask == OUTPUT_PROTECTION_METHOD_NONE) {
+    if (client_protection_requests_.find(client_id) !=
+        client_protection_requests_.end()) {
+      client_protection_requests_[client_id].erase(display_id);
+      if (client_protection_requests_[client_id].size() == 0)
+        client_protection_requests_.erase(client_id);
+    }
+  } else {
+    client_protection_requests_[client_id][display_id] = desired_method_mask;
+  }
 
   return true;
 }

@@ -358,6 +358,7 @@ class OutputConfiguratorTest : public testing::Test {
     o->is_aspect_preserving_scaling = true;
     o->mode_infos[kSmallModeId] = small_mode_info;
     o->has_display_id = true;
+    o->display_id = 123;
     o->index = 0;
 
     o = &outputs_[1];
@@ -371,6 +372,7 @@ class OutputConfiguratorTest : public testing::Test {
     o->mode_infos[kSmallModeId] = small_mode_info;
     o->mode_infos[kBigModeId] = big_mode_info;
     o->has_display_id = true;
+    o->display_id = 456;
     o->index = 1;
 
     UpdateOutputs(2, false);
@@ -1120,7 +1122,9 @@ TEST_F(OutputConfiguratorTest, OutputProtection) {
   EXPECT_NE(kNoActions, delegate_->GetActionsAndClear());
   uint32_t link_mask = 0;
   uint32_t protection_mask = 0;
-  EXPECT_TRUE(configurator_.QueryOutputProtectionStatus(id, &link_mask,
+  EXPECT_TRUE(configurator_.QueryOutputProtectionStatus(id,
+                                                        outputs_[0].display_id,
+                                                        &link_mask,
                                                         &protection_mask));
   EXPECT_EQ(static_cast<uint32_t>(OUTPUT_TYPE_INTERNAL), link_mask);
   EXPECT_EQ(static_cast<uint32_t>(OUTPUT_PROTECTION_METHOD_NONE),
@@ -1130,28 +1134,38 @@ TEST_F(OutputConfiguratorTest, OutputProtection) {
   // Two outputs.
   UpdateOutputs(2, true);
   EXPECT_NE(kNoActions, delegate_->GetActionsAndClear());
-  EXPECT_TRUE(configurator_.QueryOutputProtectionStatus(id, &link_mask,
+  EXPECT_TRUE(configurator_.QueryOutputProtectionStatus(id,
+                                                        outputs_[1].display_id,
+                                                        &link_mask,
                                                         &protection_mask));
-  EXPECT_EQ(static_cast<uint32_t>(OUTPUT_TYPE_INTERNAL | OUTPUT_TYPE_HDMI),
+  EXPECT_EQ(static_cast<uint32_t>(OUTPUT_TYPE_HDMI),
             link_mask);
   EXPECT_EQ(static_cast<uint32_t>(OUTPUT_PROTECTION_METHOD_NONE),
             protection_mask);
   EXPECT_EQ(kNoActions, delegate_->GetActionsAndClear());
 
   EXPECT_TRUE(
-      configurator_.EnableOutputProtection(id, OUTPUT_PROTECTION_METHOD_HDCP));
+      configurator_.EnableOutputProtection(id,
+                                           outputs_[1].display_id,
+                                           OUTPUT_PROTECTION_METHOD_HDCP));
   EXPECT_EQ(GetSetHDCPStateAction(outputs_[1].output, HDCP_STATE_DESIRED),
             delegate_->GetActionsAndClear());
 
   // Enable protection.
   delegate_->set_hdcp_state(HDCP_STATE_ENABLED);
-  EXPECT_TRUE(configurator_.QueryOutputProtectionStatus(id, &link_mask,
+  EXPECT_TRUE(configurator_.QueryOutputProtectionStatus(id,
+                                                        outputs_[1].display_id,
+                                                        &link_mask,
                                                         &protection_mask));
-  EXPECT_EQ(static_cast<uint32_t>(OUTPUT_TYPE_INTERNAL | OUTPUT_TYPE_HDMI),
-            link_mask);
+  EXPECT_EQ(static_cast<uint32_t>(OUTPUT_TYPE_HDMI), link_mask);
   EXPECT_EQ(static_cast<uint32_t>(OUTPUT_PROTECTION_METHOD_HDCP),
             protection_mask);
   EXPECT_EQ(kNoActions, delegate_->GetActionsAndClear());
+
+  // Protections should be disabled after unregister.
+  configurator_.UnregisterOutputProtectionClient(id);
+  EXPECT_EQ(GetSetHDCPStateAction(outputs_[1].output, HDCP_STATE_UNDESIRED),
+            delegate_->GetActionsAndClear());
 }
 
 TEST_F(OutputConfiguratorTest, OutputProtectionTwoClients) {
@@ -1169,6 +1183,7 @@ TEST_F(OutputConfiguratorTest, OutputProtectionTwoClients) {
   // Clients never know state enableness for methods that they didn't request.
   EXPECT_TRUE(
       configurator_.EnableOutputProtection(client1,
+                                           outputs_[1].display_id,
                                            OUTPUT_PROTECTION_METHOD_HDCP));
   EXPECT_EQ(GetSetHDCPStateAction(outputs_[1].output,
                                   HDCP_STATE_DESIRED).c_str(),
@@ -1177,27 +1192,31 @@ TEST_F(OutputConfiguratorTest, OutputProtectionTwoClients) {
 
   uint32_t link_mask = 0;
   uint32_t protection_mask = 0;
-  EXPECT_TRUE(configurator_.QueryOutputProtectionStatus(client1, &link_mask,
+  EXPECT_TRUE(configurator_.QueryOutputProtectionStatus(client1,
+                                                        outputs_[1].display_id,
+                                                        &link_mask,
                                                         &protection_mask));
-  EXPECT_EQ(static_cast<uint32_t>(OUTPUT_TYPE_INTERNAL | OUTPUT_TYPE_HDMI),
-            link_mask);
+  EXPECT_EQ(static_cast<uint32_t>(OUTPUT_TYPE_HDMI), link_mask);
   EXPECT_EQ(OUTPUT_PROTECTION_METHOD_HDCP, protection_mask);
 
-  EXPECT_TRUE(configurator_.QueryOutputProtectionStatus(client2, &link_mask,
+  EXPECT_TRUE(configurator_.QueryOutputProtectionStatus(client2,
+                                                        outputs_[1].display_id,
+                                                        &link_mask,
                                                         &protection_mask));
-  EXPECT_EQ(static_cast<uint32_t>(OUTPUT_TYPE_INTERNAL | OUTPUT_TYPE_HDMI),
-            link_mask);
+  EXPECT_EQ(static_cast<uint32_t>(OUTPUT_TYPE_HDMI), link_mask);
   EXPECT_EQ(OUTPUT_PROTECTION_METHOD_NONE, protection_mask);
 
   // Protections will be disabled only if no more clients request them.
   EXPECT_TRUE(
       configurator_.EnableOutputProtection(client2,
+                                           outputs_[1].display_id,
                                            OUTPUT_PROTECTION_METHOD_NONE));
   EXPECT_EQ(GetSetHDCPStateAction(outputs_[1].output,
                                   HDCP_STATE_DESIRED).c_str(),
             delegate_->GetActionsAndClear());
   EXPECT_TRUE(
       configurator_.EnableOutputProtection(client1,
+                                           outputs_[1].display_id,
                                            OUTPUT_PROTECTION_METHOD_NONE));
   EXPECT_EQ(GetSetHDCPStateAction(outputs_[1].output,
                                   HDCP_STATE_UNDESIRED).c_str(),
