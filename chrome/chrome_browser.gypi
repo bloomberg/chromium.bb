@@ -2735,6 +2735,8 @@
           'sources': [
             'browser/download/download_dir_policy_handler.cc',
             'browser/download/download_dir_policy_handler.h',
+            'browser/net/disk_cache_dir_policy_handler.cc',
+            'browser/net/disk_cache_dir_policy_handler.h',
           ],
         }],
         ['OS=="mac"', {
@@ -2839,6 +2841,8 @@
         }, {  # configuration_policy==0
           'sources/': [
             ['exclude', '^browser/policy/'],
+            ['exclude', 'browser/net/disk_cache_dir_policy_handler.cc'],
+            ['exclude', 'browser/net/disk_cache_dir_policy_handler.h'],
             ['include', 'browser/policy/external_data_fetcher.cc'],
             ['include', 'browser/policy/external_data_fetcher.h'],
             ['include', 'browser/policy/external_data_manager.h'],

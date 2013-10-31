@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/policy_handlers.h"
+#include "chrome/browser/net/disk_cache_dir_policy_handler.h"
 #include "chrome/browser/net/proxy_policy_handler.h"
 #include "chrome/browser/policy/autofill_policy_handler.h"
 #include "chrome/browser/policy/configuration_policy_handler.h"
@@ -562,12 +563,12 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList() {
           false)));
 #endif  // defined(OS_CHROMEOS)
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
-      new DiskCacheDirPolicyHandler(prefs::kDiskCacheDir)));
+      new DiskCacheDirPolicyHandler()));
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new DownloadDirPolicyHandler));
-#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
 
 #if defined(OS_CHROMEOS)
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(

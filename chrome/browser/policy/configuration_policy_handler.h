@@ -226,25 +226,6 @@ class IntPercentageToDoublePolicyHandler : public IntRangePolicyHandlerBase {
   DISALLOW_COPY_AND_ASSIGN(IntPercentageToDoublePolicyHandler);
 };
 
-#if !defined(OS_ANDROID)
-
-// ConfigurationPolicyHandler for the DiskCacheDir policy.
-class DiskCacheDirPolicyHandler : public TypeCheckingPolicyHandler {
- public:
-  explicit DiskCacheDirPolicyHandler(const char* pref_name);
-  virtual ~DiskCacheDirPolicyHandler();
-
-  // ConfigurationPolicyHandler methods:
-  virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
-
- private:
-  const char* pref_name_;
-  DISALLOW_COPY_AND_ASSIGN(DiskCacheDirPolicyHandler);
-};
-
-#endif  // !defined(OS_ANDROID)
-
 }  // namespace policy
 
 #endif  // CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_HANDLER_H_

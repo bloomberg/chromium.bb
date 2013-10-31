@@ -338,6 +338,7 @@
         ['configuration_policy==0', {
           'sources/': [
             ['exclude', '^browser/policy'],
+            ['exclude', 'browser/net/disk_cache_dir_policy_handler_unittest.cc'],
           ],
         }],
         ['configuration_policy==1', {
@@ -2683,6 +2684,7 @@
         ['OS!="android" and OS!="ios" and chromeos==0', {
           'sources': [
             'browser/download/download_dir_policy_handler_unittest.cc',
+            'browser/net/disk_cache_dir_policy_handler_unittest.cc',
           ],
         }],
         ['enable_printing!=1', {
