@@ -136,6 +136,9 @@ class PPAPI_SHARED_EXPORT PPB_Audio_Shared
   // The size (in bytes) of one second of audio data. Used to calculate latency.
   size_t bytes_per_second_;
 
+  // Buffer index used to coordinate with the browser side audio receiver.
+  uint32_t buffer_index_;
+
   DISALLOW_COPY_AND_ASSIGN(PPB_Audio_Shared);
 };
 
