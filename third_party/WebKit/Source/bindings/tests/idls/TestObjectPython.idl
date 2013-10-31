@@ -61,8 +61,9 @@ interface TestObjectPython {
     attribute NodeFilter nodeFilterAttribute;
     attribute SerializedScriptValue serializedScriptValueAttribute;
     attribute any anyAttribute;
-    // Special V8 -> C++ types (RefPtr exceptions, special conversion)
+    // Special type conversions
     attribute DOMStringList domStringListAttribute;
+    attribute Promise promiseAttribute;
     // DOM Node types
     attribute Document documentAttribute;
     attribute DocumentFragment documentFragmentAttribute;
@@ -97,9 +98,8 @@ interface TestObjectPython {
     // Constructors
     // attribute attribute TestSubObjConstructor TestSubObj;
     attribute TestObjectAConstructor testObjectAConstructorAttribute;
-    // Miscellaneous special types
+    // Special types
     attribute EventHandler eventHandlerAttribute;
-    attribute Promise promiseAttribute;
 
     // Extended attributes
     [ActivityLogging=AccessForAllWorlds] attribute long activityLoggingAccessForAllWorldsLongAttribute;
@@ -207,6 +207,15 @@ interface TestObjectPython {
     TestInterfaceEmpty testInterfaceEmptyMethod();
     void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
     void voidMethodLongArgTestInterfaceEmptyArg(long longArg, TestInterfaceEmpty testInterfaceEmptyArg);
+    // Special type conversions
+    CompareHow compareHowMethod();
+    DOMStringList domStringListMethod();
+    MediaQueryListListener mediaQueryListListenerMethod();
+    any anyMethod();
+    void voidMethodMediaQueryListListenerArg(MediaQueryListListener mediaQueryListListenerArg);
+    void voidMethodCompareHowArg(CompareHow compareHowArg);
+    void voidMethodDOMStringListArg(DOMStringList domStringListArg);
+    void voidMethodAnyArg(any anyArg);
     // DOM node types
     void voidMethodAttrArg(Attr attrArg);
     void voidMethodDocumentArg(Document documentArg);
@@ -241,12 +250,12 @@ interface TestObjectPython {
     // Enumerations
     TestEnum testEnumMethod();
     void voidMethodTestEnumArg(TestEnum testEnumTypeArg);
-    // Miscellaneous special types
-    DOMStringList domStringListMethod();
+    // Special types
+    Dictionary dictionaryMethod();
     NodeFilter nodeFilterMethod();
     SerializedScriptValue serializedScriptValueMethod();
     XPathNSResolver xPathNSResolverMethod();
-    void voidMethodDOMStringListArg(DOMStringList domStringListArg);
+    void voidMethodDictionaryArg(Dictionary dictionaryArg);
     void voidMethodNodeFilterArg(NodeFilter nodeFilterArg);
     void voidMethodSerializedScriptValueArg(SerializedScriptValue serializedScriptValueArg);
     void voidMethodXPathNSResolverArg(XPathNSResolver xPathNSResolverArg);

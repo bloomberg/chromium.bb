@@ -166,6 +166,9 @@ DOM_NODE_TYPES = set([
     'TestNode',
 ])
 NON_WRAPPER_TYPES = set([
+    'CompareHow',
+    'Dictionary',
+    'MediaQueryListListener',
     'NodeFilter',
     'SerializedScriptValue',
 ])
@@ -226,18 +229,14 @@ CPP_UNSIGNED_TYPES = set([
     'unsigned short',
 ])
 CPP_SPECIAL_CONVERSION_RULES = {
+    'CompareHow': 'Range::CompareHow',
     'Date': 'double',
+    'Dictionary': 'Dictionary',
+    'EventHandler': 'EventListener*',
     'Promise': 'ScriptPromise',
     'any': 'ScriptValue',
     'boolean': 'bool',
 }
-CPP_REF_PTR_CONVERSION_TYPES = set([
-    # FIXME: overlaps with NON_WRAPPER_TYPES
-    'DOMStringList',
-    'NodeFilter',
-    'SerializedScriptValue',
-    'XPathNSResolver',
-])
 
 def cpp_type(idl_type, extended_attributes=None, used_as_argument=False):
     """Returns C++ type corresponding to IDL type."""
@@ -263,7 +262,9 @@ def cpp_type(idl_type, extended_attributes=None, used_as_argument=False):
         return 'unsigned'
     if idl_type in CPP_SPECIAL_CONVERSION_RULES:
         return CPP_SPECIAL_CONVERSION_RULES[idl_type]
-    if idl_type in CPP_REF_PTR_CONVERSION_TYPES:
+    if (idl_type in NON_WRAPPER_TYPES or
+        idl_type == 'DOMStringList' or  # FIXME: eliminate this special case
+        idl_type == 'XPathNSResolver'):  # FIXME: eliminate this special case
         return 'RefPtr<%s>' % idl_type
     if idl_type == 'DOMString':
         return cpp_string_type()
@@ -273,12 +274,8 @@ def cpp_type(idl_type, extended_attributes=None, used_as_argument=False):
     if this_array_or_sequence_type:
         return cpp_template_type('Vector', cpp_type(this_array_or_sequence_type))
 
-    # Special cases
-    if idl_type == 'EventHandler':
-        return 'EventListener*'
     if is_typed_array_type and used_as_argument:
         return idl_type + '*'
-
     if is_interface_type(idl_type) and not used_as_argument:
         return cpp_template_type('RefPtr', idl_type)
     # Default, assume native type is a pointer with same type name as idl type
@@ -357,11 +354,14 @@ V8_VALUE_TO_CPP_VALUE_AND_INCLUDES = {
     # idl_type -> (cpp_expression_format, includes)
     'any': ('ScriptValue({v8_value}, {isolate})',
             set(['bindings/v8/ScriptValue.h'])),
+    'CompareHow': ('static_cast<Range::CompareHow>({v8_value}->Int32Value())',
+                   set()),
     'Dictionary': ('Dictionary({v8_value}, {isolate})',
                    set(['bindings/v8/Dictionary.h'])),
     'DOMStringList': ('toDOMStringList({v8_value}, {isolate})', set()),
-    'MediaQueryListListener': ('MediaQueryListListener::create({v8_value})',
-                               set(['core/css/MediaQueryListListener.h'])),
+    'MediaQueryListListener': (
+        'MediaQueryListListener::create(ScriptValue({v8_value}, {isolate}))',
+        set(['core/css/MediaQueryListListener.h'])),
     'NodeFilter': ('toNodeFilter({v8_value}, {isolate})', set()),
     'Promise': ('ScriptPromise({v8_value})',
                 set(['bindings/v8/ScriptPromise.h'])),

@@ -41,6 +41,12 @@ static void {{method.name}}Method(const v8::FunctionCallbackInfo<v8::Value>& arg
         return;
     }
     {% endif %}
+    {% if argument.idl_type == 'Dictionary' %}
+    if (!dictionaryArg.isUndefinedOrNull() && !dictionaryArg.isObject()) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodDictionaryArg", "TestObjectPython", "parameter 1 ('dictionaryArg') is not an object."), args.GetIsolate());
+        return;
+    }
+    {% endif %}
     {% endfor %}
     {{method.cpp_method}};
 }
