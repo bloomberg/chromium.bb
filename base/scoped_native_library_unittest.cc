@@ -18,19 +18,25 @@ TEST(ScopedNativeLibrary, Basic) {
   // Get the pointer to DirectDrawCreate() from "ddraw.dll" and verify it
   // is valid only in this scope.
   // FreeLibrary() doesn't actually unload a DLL until its reference count
-  // becomes zero, i.e. this function pointer is still valid if the DLL used
+  // becomes zero, i.e. function pointer is still valid if the DLL used
   // in this test is also used by another part of this executable.
   // So, this test uses "ddraw.dll", which is not used by Chrome at all but
   // installed on all versions of Windows.
-  FARPROC test_function;
+  const char kFunctionName[] = "DirectDrawCreate";
+  NativeLibrary native_library;
   {
     FilePath path(GetNativeLibraryName(L"ddraw"));
-    ScopedNativeLibrary library(path);
-    test_function = reinterpret_cast<FARPROC>(
-        library.GetFunctionPointer("DirectDrawCreate"));
+    native_library = LoadNativeLibrary(path, NULL);
+    ScopedNativeLibrary library(native_library);
+    FARPROC test_function =
+        reinterpret_cast<FARPROC>(library.GetFunctionPointer(kFunctionName));
     EXPECT_EQ(0, IsBadCodePtr(test_function));
+    EXPECT_EQ(
+        GetFunctionPointerFromNativeLibrary(native_library, kFunctionName),
+        test_function);
   }
-  EXPECT_NE(0, IsBadCodePtr(test_function));
+  EXPECT_EQ(NULL,
+            GetFunctionPointerFromNativeLibrary(native_library, kFunctionName));
 #endif
 }
 
