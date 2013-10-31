@@ -12,8 +12,8 @@ base_dir=$(dirname "$0")
 OUTPUT="$(uname | grep 'MINGW')"
 MINGW=$?
 
-if [ -e "$base_dir/python.bat" -a $MINGW = 0 ]; then
-  PYTHONDONTWRITEBYTECODE=1 cmd.exe /c "$base_dir/python.bat $base_dir/pylint.py $@"
+if [ -d "$base_dir/python_bin" -a $MINGW = 0 ]; then
+  PYTHONDONTWRITEBYTECODE=1 exec "$base_dir/python_bin/python.exe" "$base_dir"/pylint.py "$@"
 else
   PYTHONDONTWRITEBYTECODE=1 exec "$base_dir/pylint.py" "$@"
 fi

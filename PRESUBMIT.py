@@ -15,7 +15,7 @@ def CommonChecks(input_api, output_api, tests_to_black_list):
   black_list = list(input_api.DEFAULT_BLACK_LIST) + [
       r'^cpplint\.py$',
       r'^cpplint_chromium\.py$',
-      r'^python275_bin[\/\\].+',
+      r'^python_274[\/\\].+',
       r'^python_bin[\/\\].+',
       r'^site-packages-py[0-9]\.[0-9][\/\\].+',
       r'^svn_bin[\/\\].+',
