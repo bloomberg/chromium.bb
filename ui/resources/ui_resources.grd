@@ -126,14 +126,6 @@
       <structure type="chrome_scaled_image" name="IDR_BUBBLE_L_ARROW" file="bubble_pointer_left.png" />
       <structure type="chrome_scaled_image" name="IDR_BUBBLE_R" file="bubble_right.png" />
       <structure type="chrome_scaled_image" name="IDR_BUBBLE_R_ARROW" file="bubble_pointer_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_B" file="bubble_shadow_bottom.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_BL" file="bubble_shadow_bottom_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_BR" file="bubble_shadow_bottom_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_L" file="bubble_shadow_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_R" file="bubble_shadow_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_T" file="bubble_shadow_top.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_TL" file="bubble_shadow_top_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_TR" file="bubble_shadow_top_right.png" />
       <structure type="chrome_scaled_image" name="IDR_BUBBLE_T" file="bubble_top.png" />
       <structure type="chrome_scaled_image" name="IDR_BUBBLE_TL" file="bubble_top_left.png" />
       <structure type="chrome_scaled_image" name="IDR_BUBBLE_TR" file="bubble_top_right.png" />

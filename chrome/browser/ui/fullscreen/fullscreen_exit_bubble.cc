@@ -20,7 +20,7 @@
 #if defined(OS_LINUX)
 const int FullscreenExitBubble::kPaddingPx = 8;
 #else
-const int FullscreenExitBubble::kPaddingPx = 0;
+const int FullscreenExitBubble::kPaddingPx = 15;
 #endif
 const int FullscreenExitBubble::kInitialDelayMs = 3800;
 const int FullscreenExitBubble::kIdleTimeMs = 2300;

@@ -23,7 +23,6 @@ class BubbleExample : public ExampleBase, public ButtonListener {
  private:
   virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
 
-  Button* shadow_;
   Button* no_shadow_;
   Button* big_shadow_;
   Button* small_shadow_;

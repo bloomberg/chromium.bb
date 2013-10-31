@@ -134,7 +134,8 @@ FullscreenExitBubbleViews::FullscreenExitView::FullscreenExitView(
       button_view_(NULL),
       browser_fullscreen_exit_accelerator_(accelerator) {
   views::BubbleBorder* bubble_border = new views::BubbleBorder(
-      views::BubbleBorder::NONE, views::BubbleBorder::SHADOW, SK_ColorWHITE);
+      views::BubbleBorder::NONE, views::BubbleBorder::BIG_SHADOW,
+      SK_ColorWHITE);
   set_background(new views::BubbleBackground(bubble_border));
   set_border(bubble_border);
   set_focusable(false);

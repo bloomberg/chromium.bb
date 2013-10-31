@@ -71,8 +71,6 @@ void BubbleExample::CreateExampleView(View* container) {
   PrintStatus("Click with optional modifiers: [Ctrl] for set_arrow(NONE), "
      "[Alt] for set_arrow(FLOAT), or [Shift] to reverse the arrow iteration.");
   container->SetLayoutManager(new BoxLayout(BoxLayout::kHorizontal, 0, 0, 10));
-  shadow_ = new LabelButton(this, ASCIIToUTF16("Shadow"));
-  container->AddChildView(shadow_);
   no_shadow_ = new LabelButton(this, ASCIIToUTF16("No Shadow"));
   container->AddChildView(no_shadow_);
   big_shadow_ = new LabelButton(this, ASCIIToUTF16("Big Shadow"));
@@ -100,9 +98,7 @@ void BubbleExample::ButtonPressed(Button* sender, const ui::Event& event) {
   ExampleBubble* bubble = new ExampleBubble(sender, arrow);
   bubble->set_color(colors[(color_index++) % arraysize(colors)]);
 
-  if (sender == shadow_)
-    bubble->set_shadow(BubbleBorder::SHADOW);
-  else if (sender == no_shadow_)
+  if (sender == no_shadow_)
     bubble->set_shadow(BubbleBorder::NO_SHADOW);
   else if (sender == big_shadow_)
     bubble->set_shadow(BubbleBorder::BIG_SHADOW);

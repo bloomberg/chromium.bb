@@ -75,12 +75,6 @@ const int kStroke = 1;
 
 // Bubble border and arrow image resource ids. They don't use the IMAGE_GRID
 // macro because there is no center image.
-const int kShadowImages[] =  {
-    IDR_BUBBLE_SHADOW_TL, IDR_BUBBLE_SHADOW_T, IDR_BUBBLE_SHADOW_TR,
-    IDR_BUBBLE_SHADOW_L,  0,                   IDR_BUBBLE_SHADOW_R,
-    IDR_BUBBLE_SHADOW_BL, IDR_BUBBLE_SHADOW_B, IDR_BUBBLE_SHADOW_BR };
-const int kShadowArrows[] = { 0, 0, 0, 0 };
-
 const int kNoShadowImages[] = {
     IDR_BUBBLE_TL, IDR_BUBBLE_T, IDR_BUBBLE_TR,
     IDR_BUBBLE_L,  0,            IDR_BUBBLE_R,
@@ -134,11 +128,6 @@ BorderImages* GetBorderImages(BubbleBorder::Shadow shadow) {
     return set;
 
   switch (shadow) {
-    case BubbleBorder::SHADOW:
-      // Note: SHADOW's border interior thickness is actually 10, but 0 is used
-      // here to match the legacy appearance of SHADOW's extra large inset.
-      set = new BorderImages(kShadowImages, kShadowArrows, 0, 0, 3);
-      break;
     case BubbleBorder::NO_SHADOW:
     case BubbleBorder::NO_SHADOW_OPAQUE_BORDER:
       set = new BorderImages(kNoShadowImages, kNoShadowArrows, 6, 7, 4);
@@ -379,10 +368,6 @@ void BubbleBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   SkPath path;
   gfx::Rect bounds(view->GetLocalBounds());
   bounds.Inset(border_->GetInsets());
-
-  // Note: This matches the legacy appearance of SHADOW's extra large inset.
-  if (border_->shadow() == BubbleBorder::SHADOW)
-    bounds.Inset(-10, -10);
 
   SkScalar radius = SkIntToScalar(border_->GetBorderCornerRadius());
   path.addRoundRect(gfx::RectToSkRect(bounds), radius, radius);
