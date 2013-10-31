@@ -132,30 +132,42 @@ camera.views.Album.prototype.onCurrentIndexChanged = function(
 camera.views.Album.prototype.onKeyPressed = function(event) {
   var currentPicture = this.currentPicture();
   switch (camera.util.getShortcutIdentifier(event)) {
-   case 'Down':
-      for (var index = this.model.currentIndex - 1; index >= 0; index--) {
-        if (currentPicture.element.offsetLeft ==
-            this.pictures[index].element.offsetLeft) {
-          this.model.currentIndex = index;
-          break;
+    case 'Down':
+      if (this.model.length) {
+        if (!currentPicture) {
+          this.model.currentIndex = this.model.length - 1;
+        } else {
+          for (var index = this.model.currentIndex - 1; index >= 0; index--) {
+            if (currentPicture.element.offsetLeft ==
+                this.pictures[index].element.offsetLeft) {
+              this.model.currentIndex = index;
+              break;
+            }
+          }
         }
       }
       event.preventDefault();
       return;
     case 'Up':
-      for (var index = this.model.currentIndex + 1;
-           index < this.model.length;
-           index++) {
-        if (currentPicture.element.offsetLeft ==
-            this.pictures[index].element.offsetLeft) {
-          this.model.currentIndex = index;
-          break;
+      if (this.model.length) {
+        if (!currentPicture) {
+          this.model.currentIndex = 0;
+        } else {
+          for (var index = this.model.currentIndex + 1;
+               index < this.model.length;
+               index++) {
+            if (currentPicture.element.offsetLeft ==
+                this.pictures[index].element.offsetLeft) {
+              this.model.currentIndex = index;
+              break;
+            }
+          }
         }
       }
       event.preventDefault();
       return;
     case 'Enter':
-      if (this.model.length)
+      if (currentPicture)
         this.router.navigate(camera.Router.ViewIdentifier.BROWSER);
       event.preventDefault();
       return;
