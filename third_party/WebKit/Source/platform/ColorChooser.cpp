@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -10,6 +10,9 @@
  * 2.  Redistributions in binary form must reproduce the above copyright
  *     notice, this list of conditions and the following disclaimer in the
  *     documentation and/or other materials provided with the distribution.
+ * 3.  Neither the name of Google, Inc. ("Google") nor the names of
+ *     its contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -21,50 +24,17 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
  */
 
-#ifndef ColorChooserUIController_h
-#define ColorChooserUIController_h
+#include "config.h"
 
-#include "WebColorChooserClient.h"
 #include "platform/ColorChooser.h"
-#include "platform/text/PlatformLocale.h"
-#include "wtf/OwnPtr.h"
 
 namespace WebCore {
-class ColorChooserClient;
+
+ColorChooser::~ColorChooser()
+{
 }
 
-namespace WebKit {
-
-class ChromeClientImpl;
-class WebColorChooser;
-
-class ColorChooserUIController : public WebColorChooserClient, public WebCore::ColorChooser {
-public:
-    ColorChooserUIController(ChromeClientImpl*, WebCore::ColorChooserClient*);
-    virtual ~ColorChooserUIController();
-
-    virtual void openUI();
-
-    // ColorChooser functions:
-    virtual void setSelectedColor(const WebCore::Color&) OVERRIDE;
-    virtual void endChooser() OVERRIDE;
-
-    // WebColorChooserClient functions:
-    virtual void didChooseColor(const WebColor&) OVERRIDE;
-    virtual void didEndChooser() OVERRIDE;
-
-protected:
-    void openColorChooser();
-    OwnPtr<WebColorChooser> m_chooser;
-
-private:
-
-    ChromeClientImpl* m_chromeClient;
-    WebCore::ColorChooserClient* m_client;
-};
-
-}
-
-#endif // ColorChooserUIController_h
+} // namespace WebCore

@@ -32,7 +32,7 @@
 #define ColorInputType_h
 
 #include "core/html/forms/BaseClickableWithKeyInputType.h"
-#include "core/platform/ColorChooserClient.h"
+#include "platform/ColorChooserClient.h"
 
 namespace WebCore {
 

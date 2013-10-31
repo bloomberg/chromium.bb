@@ -30,13 +30,15 @@
 #ifndef ColorChooser_h
 #define ColorChooser_h
 
+#include "platform/PlatformExport.h"
+
 namespace WebCore {
 
 class Color;
 
-class ColorChooser {
+class PLATFORM_EXPORT ColorChooser {
 public:
-    virtual ~ColorChooser() { }
+    virtual ~ColorChooser();
 
     virtual void setSelectedColor(const Color&) { }
     virtual void endChooser() { }

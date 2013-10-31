@@ -32,7 +32,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "core/platform/ColorChooser.h"
+#include "platform/ColorChooser.h"
 #include "platform/Supplementable.h"
 #include "platform/text/LocaleToScriptMapping.h"
 

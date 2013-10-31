@@ -32,7 +32,7 @@
 #include "WebColorChooser.h"
 #include "WebViewImpl.h"
 #include "core/frame/FrameView.h"
-#include "core/platform/ColorChooserClient.h"
+#include "platform/ColorChooserClient.h"
 #include "platform/geometry/IntRect.h"
 
 using namespace WebCore;

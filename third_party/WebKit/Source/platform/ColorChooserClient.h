@@ -31,7 +31,8 @@
 #ifndef ColorChooserClient_h
 #define ColorChooserClient_h
 
-#include "core/platform/ColorChooser.h"
+#include "platform/ColorChooser.h"
+#include "platform/PlatformExport.h"
 #include "platform/geometry/IntRect.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -41,9 +42,9 @@ namespace WebCore {
 
 class Color;
 
-class ColorChooserClient {
+class PLATFORM_EXPORT ColorChooserClient {
 public:
-    virtual ~ColorChooserClient() { }
+    virtual ~ColorChooserClient();
 
     virtual void didChooseColor(const Color&) = 0;
     virtual void didEndChooser() = 0;

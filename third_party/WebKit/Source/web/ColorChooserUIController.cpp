@@ -28,7 +28,7 @@
 
 #include "ChromeClientImpl.h"
 #include "WebColorChooser.h"
-#include "core/platform/ColorChooserClient.h"
+#include "platform/ColorChooserClient.h"
 #include "platform/graphics/Color.h"
 #include "public/platform/WebColor.h"
 
