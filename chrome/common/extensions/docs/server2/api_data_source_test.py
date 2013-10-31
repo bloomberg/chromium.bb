@@ -54,7 +54,7 @@ class FakeAPIAndListDataSource(object):
   def Create(self, *args, **kwargs):
     return self
 
-  def get(self, key):
+  def get(self, key, disable_refs=False):
     if key not in self._json:
       raise FileNotFoundError(key)
     return self._json[key]

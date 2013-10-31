@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from appengine_wrappers import IsDevServer
 from branch_utility import BranchUtility
 from compiled_file_system import CompiledFileSystem
 from empty_dir_file_system import EmptyDirFileSystem
+from environment import IsDevServer
 from github_file_system_provider import GithubFileSystemProvider
 from host_file_system_provider import HostFileSystemProvider
 from third_party.json_schema_compiler.memoize import memoize

@@ -8,6 +8,7 @@ import logging
 import os
 from collections import defaultdict, Mapping
 
+from environment import IsPreviewServer
 import svn_constants
 import third_party.json_schema_compiler.json_parse as json_parse
 import third_party.json_schema_compiler.model as model
@@ -107,10 +108,15 @@ class _JSCModel(object):
       'events': self._GenerateEvents(self._namespace.events),
       'domEvents': self._GenerateDomEvents(self._namespace.events),
       'properties': self._GenerateProperties(self._namespace.properties),
-      'introList': self._GetIntroTableList(),
-      'channelWarning': self._GetChannelWarning(),
       'byName': {},
     }
+    # Rendering the intro list is really expensive and there's no point doing it
+    # unless we're rending the page - and disable_refs=True implies we're not.
+    if not self._disable_refs:
+      as_dict.update({
+        'introList': self._GetIntroTableList(),
+        'channelWarning': self._GetChannelWarning(),
+      })
     # Make every type/function/event/property also accessible by name for
     # rendering specific API entities rather than the whole thing at once, for
     # example {{apis.manifestTypes.byName.ExternallyConnectable}}.
@@ -208,7 +214,9 @@ class _JSCModel(object):
       event_dict['parentName'] = event.parent.simple_name
     # For the addRules method we can use the common definition, because addRules
     # has the same signature for every event.
-    if event.supports_rules:
+    # If refs are disabled then don't worry about this, since it's only needed
+    # for rendering, and disable_refs=True implies we're not rendering.
+    if event.supports_rules and not self._disable_refs:
       event_dict['addRulesFunction'] = self._add_rules_schema_function()
     # We need to create the method description for addListener based on the
     # information stored in |event|.
@@ -530,10 +538,8 @@ class APIDataSource(object):
       self._template_data_source = template_data_source_factory.Create(
           None, {})
 
-    def Create(self, request, disable_refs=False):
-      '''Create an APIDataSource. |disable_refs| specifies whether $ref's in
-      APIs being processed by the |ToDict| method of _JSCModel follows $ref's
-      in the API. This prevents endless recursion in ReferenceResolver.
+    def Create(self, request):
+      '''Creates an APIDataSource.
       '''
       if self._samples_data_source_factory is None:
         # Only error if there is a request, which means this APIDataSource is
@@ -544,9 +550,6 @@ class APIDataSource(object):
         samples = None
       else:
         samples = self._samples_data_source_factory.Create(request)
-      if not disable_refs and self._ref_resolver_factory is None:
-        logging.error('ReferenceResolver.Factory was never set in '
-                      'APIDataSource.Factory.')
       return APIDataSource(self._json_cache,
                            self._idl_cache,
                            self._json_cache_no_refs,
@@ -554,8 +557,7 @@ class APIDataSource(object):
                            self._names_cache,
                            self._idl_names_cache,
                            self._base_path,
-                           samples,
-                           disable_refs)
+                           samples)
 
     def _LoadAddRulesSchema(self):
       """ All events supporting rules have the addRules method. We source its
@@ -609,8 +611,7 @@ class APIDataSource(object):
                names_cache,
                idl_names_cache,
                base_path,
-               samples,
-               disable_refs):
+               samples):
     self._base_path = base_path
     self._json_cache = json_cache
     self._idl_cache = idl_cache
@@ -619,12 +620,14 @@ class APIDataSource(object):
     self._names_cache = names_cache
     self._idl_names_cache = idl_names_cache
     self._samples = samples
-    self._disable_refs = disable_refs
 
   def _GenerateHandlebarContext(self, handlebar_dict):
-    handlebar_dict['samples'] = _LazySamplesGetter(
-        handlebar_dict['name'],
-        self._samples)
+    # Parsing samples on the preview server takes seconds and doesn't add
+    # anything. Don't do it.
+    if not IsPreviewServer():
+      handlebar_dict['samples'] = _LazySamplesGetter(
+          handlebar_dict['name'],
+          self._samples)
     return handlebar_dict
 
   def _GetAsSubdirectory(self, name):
@@ -636,7 +639,7 @@ class APIDataSource(object):
       return '%s/%s' % (parts[0], name)
     return name.replace('_', '/', 1)
 
-  def get(self, key):
+  def get(self, key, disable_refs=False):
     if key.endswith('.html') or key.endswith('.json') or key.endswith('.idl'):
       path, ext = os.path.splitext(key)
     else:
@@ -647,7 +650,7 @@ class APIDataSource(object):
     if unix_name not in names and self._GetAsSubdirectory(unix_name) in names:
       unix_name = self._GetAsSubdirectory(unix_name)
 
-    if self._disable_refs:
+    if disable_refs:
       cache, ext = (
           (self._idl_cache_no_refs, '.idl') if (unix_name in idl_names) else
           (self._json_cache_no_refs, '.json'))

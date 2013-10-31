@@ -2,8 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from appengine_wrappers import db, IsDevServer
+from appengine_wrappers import db
 from datastore_models import PersistentObjectStoreItem
+from environment import IsDevServer
 from future import Future
 from object_store import ObjectStore
 

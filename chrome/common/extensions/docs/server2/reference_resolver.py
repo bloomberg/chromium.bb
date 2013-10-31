@@ -59,7 +59,7 @@ class ReferenceResolver(object):
 
     def Create(self):
       return ReferenceResolver(
-          self._api_data_source_factory.Create(None, disable_refs=True),
+          self._api_data_source_factory.Create(None),
           self._api_list_data_source_factory.Create(),
           self._object_store_creator.Create(ReferenceResolver))
 
@@ -76,7 +76,7 @@ class ReferenceResolver(object):
       if api_name not in api_list:
         continue
       try:
-        api = self._api_data_source.get(api_name)
+        api = self._api_data_source.get(api_name, disable_refs=True)
       except FileNotFoundError:
         continue
       name = '.'.join(parts[i:])

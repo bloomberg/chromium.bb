@@ -16,7 +16,8 @@ class FakeAPIDataSource(object):
   def __init__(self, json_data):
     self._json = json_data
 
-  def get(self, key):
+  def get(self, key, disable_refs=False):
+    assert disable_refs, 'ReferenceResolve should be disabling refs'
     if key not in self._json:
       raise FileNotFoundError(key)
     return self._json[key]

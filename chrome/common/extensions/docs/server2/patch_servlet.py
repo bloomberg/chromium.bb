@@ -7,11 +7,11 @@ import logging
 from urlparse import urlparse
 
 from appengine_url_fetcher import AppEngineUrlFetcher
-from appengine_wrappers import IsDevServer
 from caching_file_system import CachingFileSystem
 from caching_rietveld_patcher import CachingRietveldPatcher
 from chained_compiled_file_system import ChainedCompiledFileSystem
 from compiled_file_system import  CompiledFileSystem
+from environment import IsDevServer
 from host_file_system_provider import HostFileSystemProvider
 from instance_servlet import InstanceServlet
 from render_servlet import RenderServlet

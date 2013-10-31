@@ -15,9 +15,6 @@ def GetAppVersion():
   with open(app_yaml_path, 'r') as app_yaml:
     return AppYamlHelper.ExtractVersion(app_yaml.read())
 
-def IsDevServer():
-  return os.environ.get('SERVER_SOFTWARE', '').find('Development') == 0
-
 def IsDeadlineExceededError(error):
   '''A general way of determining whether |error| is a DeadlineExceededError,
   since there are 3 different types thrown by AppEngine and we might as well
