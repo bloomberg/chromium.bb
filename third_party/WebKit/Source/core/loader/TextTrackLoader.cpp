@@ -138,11 +138,10 @@ bool TextTrackLoader::load(const KURL& url, const String& crossOriginMode)
 
     ResourceFetcher* fetcher = m_document.fetcher();
     m_resource = fetcher->fetchRawResource(cueRequest);
-    if (m_resource)
-        m_resource->addClient(this);
-
+    if (!m_resource)
+        return false;
+    m_resource->addClient(this);
     m_client.cueLoadingStarted(this);
-
     return true;
 }
 
@@ -185,5 +184,5 @@ void TextTrackLoader::getNewRegions(Vector<RefPtr<TextTrackRegion> >& outputRegi
     if (m_cueParser)
         m_cueParser->getNewRegions(outputRegions);
 }
-}
 
+}
