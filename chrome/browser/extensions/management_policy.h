@@ -102,12 +102,28 @@ class ManagementPolicy {
   int GetNumProviders() const;
 
  private:
+  // This is a pointer to a function in the Provider interface, used in
+  // ApplyToProviderList.
+  typedef bool (Provider::*ProviderFunction)(const Extension*, string16*) const;
+
   typedef std::set<Provider*> ProviderList;
+
+  // This is a helper to apply a method in the Provider interface to each of
+  // the Provider objects in |providers_|. The return value of this function
+  // will be |normal_result|, unless any of the Provider calls to |function|
+  // return !normal_result, in which case this function will then early-return
+  // !normal_result.
+  bool ApplyToProviderList(ProviderFunction function,
+                           const char* debug_operation_name,
+                           bool normal_result,
+                           const Extension* extension,
+                           string16* error) const;
+
   ProviderList providers_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagementPolicy);
 };
 
-}  // namespace
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_MANAGEMENT_POLICY_H_
