@@ -455,6 +455,7 @@ extern const char kUseMockKeychain[];
 #endif
 
 #if defined(OS_WIN)
+extern const char kEnableProfileShortcutManager[];
 extern const char kForceImmersive[];
 extern const char kForceDesktop[];
 extern const char kPrintRaster[];

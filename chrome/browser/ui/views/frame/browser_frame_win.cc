@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_frame_common_win.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/browser_window_property_manager_win.h"
 #include "chrome/browser/ui/views/frame/system_menu_insertion_delegate_win.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/chrome_constants.h"
@@ -41,6 +42,7 @@
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/native_widget_win.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/win/hwnd_message_handler.h"
 #include "ui/views/window/non_client_view.h"
 #include "url/gurl.h"
 #include "win8/util/win8_util.h"
@@ -181,6 +183,17 @@ bool BrowserFrameWin::GetClientAreaInsets(gfx::Insets* insets) const {
     border_thickness -= kClientEdgeThickness;
   insets->Set(0, border_thickness, border_thickness, border_thickness);
   return true;
+}
+
+void BrowserFrameWin::HandleCreate() {
+  NativeWidgetWin::HandleCreate();
+  browser_window_property_manager_ =
+      BrowserWindowPropertyManager::CreateBrowserWindowPropertyManager(
+          browser_view_);
+  if (browser_window_property_manager_) {
+    browser_window_property_manager_->UpdateWindowProperties(
+        GetMessageHandler()->hwnd());
+  }
 }
 
 void BrowserFrameWin::HandleFrameChanged() {

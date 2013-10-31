@@ -189,13 +189,11 @@
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"
-#include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "components/autofill/core/browser/autofill_ie_toolbar_import_win.h"
 #include "ui/base/win/shell.h"
-#include "ui/views/win/hwnd_util.h"
 #endif  // OS_WIN
 
 #if defined(OS_CHROMEOS)
@@ -408,18 +406,6 @@ Browser::Browser(const CreateParams& params)
   ProfileMetrics::LogProfileLaunch(profile_);
 
   window_ = params.window ? params.window : CreateBrowserWindow(this);
-
-  // TODO(beng): move to BrowserFrameWin.
-#if defined(OS_WIN)
-  // Set the app user model id for this application to that of the application
-  // name.  See http://crbug.com/7028.
-  ui::win::SetAppIdForWindow(
-      is_app() ?
-      ShellIntegration::GetAppModelIdForProfile(UTF8ToWide(app_name_),
-                                                profile_->GetPath()) :
-      ShellIntegration::GetChromiumModelIdForProfile(profile_->GetPath()),
-      views::HWNDForNativeWindow(window()->GetNativeWindow()));
-#endif
 
   // Create the extension window controller before sending notifications.
   extension_window_controller_.reset(

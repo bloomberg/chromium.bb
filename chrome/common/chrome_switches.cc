@@ -1612,6 +1612,10 @@ const char kUseMockKeychain[]               = "use-mock-keychain";
 #endif
 
 #if defined(OS_WIN)
+// Force-enables the profile shortcut manager. This is needed for tests since
+// they use a custom-user-data-dir which disables this.
+const char kEnableProfileShortcutManager[]  = "enable-profile-shortcut-manager";
+
 // For the DelegateExecute verb handler to launch Chrome in metro mode on
 // Windows 8 and higher.  Used when relaunching metro Chrome.
 const char kForceImmersive[]                = "force-immersive";

@@ -790,8 +790,7 @@ TEST_F(ProfileShortcutManagerTest, CreateProfileIcon) {
   EXPECT_TRUE(base::DeleteFile(icon_path, false));
   EXPECT_FALSE(base::PathExists(icon_path));
 
-  profile_shortcut_manager_->CreateOrUpdateProfileIcon(profile_1_path_,
-                                                       base::Closure());
+  profile_shortcut_manager_->CreateOrUpdateProfileIcon(profile_1_path_);
   RunPendingTasks();
   EXPECT_TRUE(base::PathExists(icon_path));
 }
