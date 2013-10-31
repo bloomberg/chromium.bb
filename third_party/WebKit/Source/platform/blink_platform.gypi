@@ -213,6 +213,8 @@
       'exported/WebCryptoAlgorithm.cpp',
       'exported/WebCryptoKey.cpp',
       'exported/WebData.cpp',
+      'exported/WebDeviceMotionData.cpp',
+      'exported/WebDeviceOrientationData.cpp',
       'exported/WebFileSystemCallbacks.cpp',
       'exported/WebFilterKeyframe.cpp',
       'exported/WebFloatQuad.cpp',

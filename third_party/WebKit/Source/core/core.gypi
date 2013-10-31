@@ -3501,8 +3501,6 @@
             'platform/chromium/support/WebArrayBuffer.cpp',
             'platform/chromium/support/WebCrypto.cpp',
             'platform/chromium/support/WebCursorInfo.cpp',
-            'platform/chromium/support/WebDeviceMotionData.cpp',
-            'platform/chromium/support/WebDeviceOrientationData.cpp',
             'platform/chromium/support/WebMediaConstraints.cpp',
             'platform/chromium/support/WebMediaStream.cpp',
             'platform/chromium/support/WebMediaStreamSource.cpp',
