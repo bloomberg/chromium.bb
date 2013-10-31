@@ -48,28 +48,18 @@ BOT_ASSIGNMENT = {
       python + ' buildbot/buildbot_standard.py opt 32 newlib --asan',
 
     # PNaCl.
-    'lucid_64-newlib-arm_qemu-pnacl-dbg':
-        'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-dbg',
-    'lucid_64-newlib-arm_qemu-pnacl-opt':
-        'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-opt',
     'oneiric_32-newlib-arm_hw-pnacl-panda-dbg':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-dbg',
     'oneiric_32-newlib-arm_hw-pnacl-panda-opt':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-opt',
-    'lucid_64-newlib-x86_32-pnacl':
-      python + ' buildbot/buildbot_pnacl.py opt 32 pnacl',
-    'lucid_64-newlib-x86_64-pnacl':
-      python + ' buildbot/buildbot_pnacl.py opt 64 pnacl',
-    'lucid_64-newlib-mips-pnacl':
-        'echo "TODO(mseaborn): add mips"',
     'precise_64-newlib-arm_qemu-pnacl-dbg':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-dbg',
     'precise_64-newlib-arm_qemu-pnacl-opt':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-opt',
     'precise_64-newlib-x86_32-pnacl':
-        'bash buildbot/buildbot_pnacl.sh mode-buildbot-x86 32',
+      python + ' buildbot/buildbot_pnacl.py opt 32 pnacl',
     'precise_64-newlib-x86_64-pnacl':
-        'bash buildbot/buildbot_pnacl.sh mode-buildbot-x86 64',
+      python + ' buildbot/buildbot_pnacl.py opt 64 pnacl',
     'precise_64-newlib-mips-pnacl':
         'echo "TODO(mseaborn): add mips"',
     # PNaCl Spec
