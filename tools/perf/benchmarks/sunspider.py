@@ -11,7 +11,7 @@ from telemetry.page import page_measurement
 from telemetry.page import page_set
 
 
-class SunspiderMeasurement(page_measurement.PageMeasurement):
+class _SunspiderMeasurement(page_measurement.PageMeasurement):
   def MeasurePage(self, _, tab, results):
     tab.WaitForJavaScriptExpression(
         'window.location.pathname.indexOf("results.html") >= 0'
@@ -37,7 +37,7 @@ class SunspiderMeasurement(page_measurement.PageMeasurement):
 
 class Sunspider(test.Test):
   """Apple's SunSpider JavaScript benchmark."""
-  test = SunspiderMeasurement
+  test = _SunspiderMeasurement
 
   def CreatePageSet(self, options):
     sunspider_dir = os.path.join(util.GetChromiumSrcDir(),

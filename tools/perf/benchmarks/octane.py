@@ -10,7 +10,7 @@ from telemetry.page import page_measurement
 from telemetry.page import page_set
 
 
-class OctaneMeasurement(page_measurement.PageMeasurement):
+class _OctaneMeasurement(page_measurement.PageMeasurement):
   def MeasurePage(self, _, tab, results):
     tab.WaitForJavaScriptExpression(
         'completed && !document.getElementById("progress-bar-container")', 300)
@@ -41,7 +41,7 @@ JSON.stringify(results);
 
 class Octane(test.Test):
   """Google's Octane JavaScript benchmark."""
-  test = OctaneMeasurement
+  test = _OctaneMeasurement
 
   def CreatePageSet(self, options):
     octane_dir = os.path.join(util.GetChromiumSrcDir(), 'chrome', 'test',

@@ -6,14 +6,36 @@ import os
 
 from telemetry import test
 from telemetry.core import util
+from telemetry.page import page_measurement
 from telemetry.page import page_set
 
-from measurements import dromaeo
+
+class _DromaeoMeasurement(page_measurement.PageMeasurement):
+  def MeasurePage(self, page, tab, results):
+    tab.WaitForJavaScriptExpression(
+        'window.document.cookie.indexOf("__done=1") >= 0', 600)
+
+    js_get_results = 'JSON.stringify(window.automation.GetResults())'
+    print js_get_results
+    score = eval(tab.EvaluateJavaScript(js_get_results))
+
+    def Escape(k):
+      chars = [' ', '-', '/', '(', ')', '*']
+      for c in chars:
+        k = k.replace(c, '_')
+      return k
+
+    suffix = page.url[page.url.index('?') + 1 : page.url.index('&')]
+    for k, v in score.iteritems():
+      data_type = 'unimportant'
+      if k == suffix:
+        data_type = 'default'
+      results.Add(Escape(k), 'runs/s', v, data_type=data_type)
 
 
-class DromaeoBenchmark(test.Test):
+class _DromaeoBenchmark(test.Test):
   """A base class for Dromaeo benchmarks."""
-  test = dromaeo.Dromaeo
+  test = _DromaeoMeasurement
 
   def CreatePageSet(self, options):
     """Makes a PageSet for Dromaeo benchmarks."""
@@ -33,85 +55,85 @@ class DromaeoBenchmark(test.Test):
     return page_set.PageSet.FromDict(page_set_dict, dromaeo_dir)
 
 
-class DromaeoDomCoreAttr(DromaeoBenchmark):
+class DromaeoDomCoreAttr(_DromaeoBenchmark):
   """Dromaeo DOMCore attr JavaScript benchmark."""
   tag = 'domcoreattr'
   query_param = 'dom-attr'
 
 
-class DromaeoDomCoreModify(DromaeoBenchmark):
+class DromaeoDomCoreModify(_DromaeoBenchmark):
   """Dromaeo DOMCore modify JavaScript benchmark."""
   tag = 'domcoremodify'
   query_param = 'dom-modify'
 
 
-class DromaeoDomCoreQuery(DromaeoBenchmark):
+class DromaeoDomCoreQuery(_DromaeoBenchmark):
   """Dromaeo DOMCore query JavaScript benchmark."""
   tag = 'domcorequery'
   query_param = 'dom-query'
 
 
-class DromaeoDomCoreTraverse(DromaeoBenchmark):
+class DromaeoDomCoreTraverse(_DromaeoBenchmark):
   """Dromaeo DOMCore traverse JavaScript benchmark."""
   tag = 'domcoretraverse'
   query_param = 'dom-traverse'
 
 
-class DromaeoJslibAttrJquery(DromaeoBenchmark):
+class DromaeoJslibAttrJquery(_DromaeoBenchmark):
   """Dromaeo JSLib attr jquery JavaScript benchmark"""
   tag = 'jslibattrjquery'
   query_param = 'jslib-attr-jquery'
 
 
-class DromaeoJslibAttrPrototype(DromaeoBenchmark):
+class DromaeoJslibAttrPrototype(_DromaeoBenchmark):
   """Dromaeo JSLib attr prototype JavaScript benchmark"""
   tag = 'jslibattrprototype'
   query_param = 'jslib-attr-prototype'
 
 
-class DromaeoJslibEventJquery(DromaeoBenchmark):
+class DromaeoJslibEventJquery(_DromaeoBenchmark):
   """Dromaeo JSLib event jquery JavaScript benchmark"""
   tag = 'jslibeventjquery'
   query_param = 'jslib-event-jquery'
 
 
-class DromaeoJslibEventPrototype(DromaeoBenchmark):
+class DromaeoJslibEventPrototype(_DromaeoBenchmark):
   """Dromaeo JSLib event prototype JavaScript benchmark"""
   tag = 'jslibeventprototype'
   query_param = 'jslib-event-prototype'
 
 
-class DromaeoJslibModifyJquery(DromaeoBenchmark):
+class DromaeoJslibModifyJquery(_DromaeoBenchmark):
   """Dromaeo JSLib modify jquery JavaScript benchmark"""
   tag = 'jslibmodifyjquery'
   query_param = 'jslib-modify-jquery'
 
 
-class DromaeoJslibModifyPrototype(DromaeoBenchmark):
+class DromaeoJslibModifyPrototype(_DromaeoBenchmark):
   """Dromaeo JSLib modify prototype JavaScript benchmark"""
   tag = 'jslibmodifyprototype'
   query_param = 'jslib-modify-prototype'
 
 
-class DromaeoJslibStyleJquery(DromaeoBenchmark):
+class DromaeoJslibStyleJquery(_DromaeoBenchmark):
   """Dromaeo JSLib style jquery JavaScript benchmark"""
   tag = 'jslibstylejquery'
   query_param = 'jslib-style-jquery'
 
 
-class DromaeoJslibStylePrototype(DromaeoBenchmark):
+class DromaeoJslibStylePrototype(_DromaeoBenchmark):
   """Dromaeo JSLib style prototype JavaScript benchmark"""
   tag = 'jslibstyleprototype'
   query_param = 'jslib-style-prototype'
 
 
-class DromaeoJslibTraverseJquery(DromaeoBenchmark):
+class DromaeoJslibTraverseJquery(_DromaeoBenchmark):
   """Dromaeo JSLib traverse jquery JavaScript benchmark"""
   tag = 'jslibtraversejquery'
   query_param = 'jslib-traverse-jquery'
 
 
-class DromaeoJslibTraversePrototype(DromaeoBenchmark):
+class DromaeoJslibTraversePrototype(_DromaeoBenchmark):
   """Dromaeo JSLib traverse prototype JavaScript benchmark"""
   tag = 'jslibtraverseprototype'
   query_param = 'jslib-traverse-prototype'

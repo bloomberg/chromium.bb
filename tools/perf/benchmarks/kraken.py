@@ -15,7 +15,7 @@ def _Mean(l):
   return float(sum(l)) / len(l) if len(l) > 0 else 0.0
 
 
-class KrakenMeasurement(page_measurement.PageMeasurement):
+class _KrakenMeasurement(page_measurement.PageMeasurement):
   def MeasurePage(self, _, tab, results):
     tab.WaitForDocumentReadyStateToBeComplete()
     tab.WaitForJavaScriptExpression(
@@ -37,7 +37,7 @@ decodeURIComponent(formElement.value.split("?")[1]);
 
 class Kraken(test.Test):
   """Mozilla's Kraken JavaScript benchmark."""
-  test = KrakenMeasurement
+  test = _KrakenMeasurement
 
   def CreatePageSet(self, options):
     return page_set.PageSet.FromDict({

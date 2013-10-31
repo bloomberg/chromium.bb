@@ -5,7 +5,7 @@
 from telemetry import test
 from telemetry.page import page_measurement
 
-class PicaMeasurement(page_measurement.PageMeasurement):
+class _PicaMeasurement(page_measurement.PageMeasurement):
   def CustomizeBrowserOptions(self, options):
     # Needed for native custom elements (document.register)
     options.AppendExtraBrowserArgs(
@@ -17,5 +17,5 @@ class PicaMeasurement(page_measurement.PageMeasurement):
 
 
 class Pica(test.Test):
-  test = PicaMeasurement
+  test = _PicaMeasurement
   page_set = 'page_sets/pica.json'

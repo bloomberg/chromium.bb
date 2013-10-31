@@ -11,7 +11,7 @@ from telemetry.page import page_measurement
 from telemetry.page import page_set
 
 
-class RobohornetProMeasurement(page_measurement.PageMeasurement):
+class _RobohornetProMeasurement(page_measurement.PageMeasurement):
   def MeasurePage(self, _, tab, results):
     tab.ExecuteJavaScript('ToggleRoboHornet()')
     tab.WaitForJavaScriptExpression(
@@ -22,7 +22,7 @@ class RobohornetProMeasurement(page_measurement.PageMeasurement):
 
 
 class RobohornetPro(test.Test):
-  test = RobohornetProMeasurement
+  test = _RobohornetProMeasurement
 
   def CreatePageSet(self, options):
     return page_set.PageSet.FromDict({

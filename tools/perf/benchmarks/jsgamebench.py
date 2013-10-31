@@ -11,7 +11,7 @@ from telemetry.page import page_measurement
 from telemetry.page import page_set
 
 
-class JsgamebenchMeasurement(page_measurement.PageMeasurement):
+class _JsgamebenchMeasurement(page_measurement.PageMeasurement):
   def MeasurePage(self, _, tab, results):
     tab.ExecuteJavaScript('UI.call({}, "perftest")')
     tab.WaitForJavaScriptExpression(
@@ -23,7 +23,7 @@ class JsgamebenchMeasurement(page_measurement.PageMeasurement):
 
 class Jsgamebench(test.Test):
   """Counts how many animating sprites can move around on the screen at once."""
-  test = JsgamebenchMeasurement
+  test = _JsgamebenchMeasurement
 
   def CreatePageSet(self, options):
     return page_set.PageSet.FromDict({

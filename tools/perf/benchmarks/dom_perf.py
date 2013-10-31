@@ -35,7 +35,7 @@ SCORE_UNIT = 'score (bigger is better)'
 SCORE_TRACE_NAME = 'score'
 
 
-class DomPerfMeasurement(page_measurement.PageMeasurement):
+class _DomPerfMeasurement(page_measurement.PageMeasurement):
   @property
   def results_are_the_same_on_every_page(self):
     return False
@@ -70,7 +70,7 @@ class DomPerf(test.Test):
   The final score is computed as the geometric mean of the individual results.
   Scores are not comparable across benchmark suite versions and higher scores
   means better performance: Bigger is better!"""
-  test = DomPerfMeasurement
+  test = _DomPerfMeasurement
 
   def CreatePageSet(self, options):
     dom_perf_dir = os.path.join(util.GetChromiumSrcDir(), 'data', 'dom_perf')

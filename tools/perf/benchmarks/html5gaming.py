@@ -17,7 +17,7 @@ from telemetry.page import page_measurement
 from telemetry.page import page_set
 
 
-class HTML5GamingMeasurement(page_measurement.PageMeasurement):
+class _HTML5GamingMeasurement(page_measurement.PageMeasurement):
   def MeasurePage(self, _, tab, results):
     tab.ExecuteJavaScript('benchmark();')
     # Default value of score element is 87485, its value is updated with actual
@@ -31,7 +31,7 @@ class HTML5GamingMeasurement(page_measurement.PageMeasurement):
 
 class HTML5Gaming(test.Test):
   """Imapct HTML5 smooth running games benchmark suite."""
-  test = HTML5GamingMeasurement
+  test = _HTML5GamingMeasurement
   def CreatePageSet(self, options):
     return page_set.PageSet.FromDict({
         'archive_data_file': '../page_sets/data/html5gaming.json',

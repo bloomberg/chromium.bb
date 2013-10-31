@@ -13,7 +13,7 @@ from telemetry.page import page_measurement
 from telemetry.page import page_set
 
 
-class SpaceportMeasurement(page_measurement.PageMeasurement):
+class _SpaceportMeasurement(page_measurement.PageMeasurement):
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--disable-gpu-vsync')
 
@@ -54,7 +54,7 @@ class SpaceportMeasurement(page_measurement.PageMeasurement):
 
 class Spaceport(test.Test):
   """spaceport.io's PerfMarks benchmark."""
-  test = SpaceportMeasurement
+  test = _SpaceportMeasurement
 
   def CreatePageSet(self, options):
     spaceport_dir = os.path.join(util.GetChromiumSrcDir(), 'chrome', 'test',

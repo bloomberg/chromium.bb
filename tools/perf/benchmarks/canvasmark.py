@@ -15,7 +15,7 @@ from telemetry import test
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 
-class CanvasMarkMeasurement(page_measurement.PageMeasurement):
+class _CanvasMarkMeasurement(page_measurement.PageMeasurement):
 
   def WillNavigateToPage(self, page, tab):
     page.script_to_evaluate_on_commit = """
@@ -46,7 +46,7 @@ class CanvasMarkMeasurement(page_measurement.PageMeasurement):
 
 
 class CanvasMark(test.Test):
-  test = CanvasMarkMeasurement
+  test = _CanvasMarkMeasurement
 
   def CreatePageSet(self, options):
     return page_set.PageSet.FromDict({
