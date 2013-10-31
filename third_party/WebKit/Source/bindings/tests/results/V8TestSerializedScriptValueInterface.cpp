@@ -243,9 +243,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestSerializedScriptValueInte
     desc->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestSerializedScriptValueInterface", v8::Local<v8::FunctionTemplate>(), V8TestSerializedScriptValueInterface::internalFieldCount,
-        V8TestSerializedScriptValueInterfaceAttributes, WTF_ARRAY_LENGTH(V8TestSerializedScriptValueInterfaceAttributes),
-        0, 0, isolate, currentWorldType);
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestSerializedScriptValueInterface", v8::Local<v8::FunctionTemplate>(), V8TestSerializedScriptValueInterface::internalFieldCount, V8TestSerializedScriptValueInterfaceAttributes, WTF_ARRAY_LENGTH(V8TestSerializedScriptValueInterfaceAttributes), 0, 0, isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
 
     // Custom toString template

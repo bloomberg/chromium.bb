@@ -314,9 +314,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestActiveDOMObjectTemplate(v
     desc->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestActiveDOMObject", v8::Local<v8::FunctionTemplate>(), V8TestActiveDOMObject::internalFieldCount,
-        V8TestActiveDOMObjectAttributes, WTF_ARRAY_LENGTH(V8TestActiveDOMObjectAttributes),
-        0, 0, isolate, currentWorldType);
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestActiveDOMObject", v8::Local<v8::FunctionTemplate>(), V8TestActiveDOMObject::internalFieldCount, V8TestActiveDOMObjectAttributes, WTF_ARRAY_LENGTH(V8TestActiveDOMObjectAttributes), 0, 0, isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
     v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();

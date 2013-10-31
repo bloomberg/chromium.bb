@@ -5071,9 +5071,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::
     desc->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestObjectPython", v8::Local<v8::FunctionTemplate>(), V8TestObjectPython::internalFieldCount,
-        V8TestObjectPythonAttributes, WTF_ARRAY_LENGTH(V8TestObjectPythonAttributes),
-        V8TestObjectPythonMethods, WTF_ARRAY_LENGTH(V8TestObjectPythonMethods), isolate, currentWorldType);
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestObjectPython", v8::Local<v8::FunctionTemplate>(), V8TestObjectPython::internalFieldCount, V8TestObjectPythonAttributes, WTF_ARRAY_LENGTH(V8TestObjectPythonAttributes), V8TestObjectPythonMethods, WTF_ARRAY_LENGTH(V8TestObjectPythonMethods), isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
     v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();

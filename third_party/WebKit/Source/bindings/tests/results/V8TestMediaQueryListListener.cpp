@@ -91,9 +91,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestMediaQueryListListenerTem
     desc->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestMediaQueryListListener", v8::Local<v8::FunctionTemplate>(), V8TestMediaQueryListListener::internalFieldCount,
-        0, 0,
-        V8TestMediaQueryListListenerMethods, WTF_ARRAY_LENGTH(V8TestMediaQueryListListenerMethods), isolate, currentWorldType);
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestMediaQueryListListener", v8::Local<v8::FunctionTemplate>(), V8TestMediaQueryListListener::internalFieldCount, 0, 0, V8TestMediaQueryListListenerMethods, WTF_ARRAY_LENGTH(V8TestMediaQueryListListenerMethods), isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
     v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();

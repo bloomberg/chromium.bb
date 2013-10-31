@@ -66,9 +66,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestConstantsTemplate(v8::Han
     desc->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestConstants", v8::Local<v8::FunctionTemplate>(), V8TestConstants::internalFieldCount,
-        0, 0,
-        0, 0, isolate, currentWorldType);
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestConstants", v8::Local<v8::FunctionTemplate>(), V8TestConstants::internalFieldCount, 0, 0, 0, 0, isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
     v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();

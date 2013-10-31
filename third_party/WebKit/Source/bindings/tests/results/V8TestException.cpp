@@ -83,9 +83,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestExceptionTemplate(v8::Han
     desc->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestException", v8::Local<v8::FunctionTemplate>(), V8TestException::internalFieldCount,
-        V8TestExceptionAttributes, WTF_ARRAY_LENGTH(V8TestExceptionAttributes),
-        0, 0, isolate, currentWorldType);
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestException", v8::Local<v8::FunctionTemplate>(), V8TestException::internalFieldCount, V8TestExceptionAttributes, WTF_ARRAY_LENGTH(V8TestExceptionAttributes), 0, 0, isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
 
     // Custom toString template

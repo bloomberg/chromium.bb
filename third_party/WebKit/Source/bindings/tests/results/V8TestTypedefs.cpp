@@ -513,9 +513,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestTypedefsTemplate(v8::Hand
     desc->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestTypedefs", v8::Local<v8::FunctionTemplate>(), V8TestTypedefs::internalFieldCount,
-        V8TestTypedefsAttributes, WTF_ARRAY_LENGTH(V8TestTypedefsAttributes),
-        V8TestTypedefsMethods, WTF_ARRAY_LENGTH(V8TestTypedefsMethods), isolate, currentWorldType);
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestTypedefs", v8::Local<v8::FunctionTemplate>(), V8TestTypedefs::internalFieldCount, V8TestTypedefsAttributes, WTF_ARRAY_LENGTH(V8TestTypedefsAttributes), V8TestTypedefsMethods, WTF_ARRAY_LENGTH(V8TestTypedefsMethods), isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
     desc->SetCallHandler(V8TestTypedefs::constructorCallback);
     desc->SetLength(2);

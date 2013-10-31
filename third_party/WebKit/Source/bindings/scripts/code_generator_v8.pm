@@ -3135,7 +3135,7 @@ sub GenerateAttributeConfigurationParameters
     @propAttributeList = ("v8::None") unless @propAttributeList;
     my $propAttribute = join(" | ", @propAttributeList);
 
-    my $on_proto = "0 /* on instance */";
+    my $onProto = "0 /* on instance */";
     my $data = "0";  # no data
 
     # Constructor
@@ -3174,7 +3174,7 @@ sub GenerateAttributeConfigurationParameters
 
     # An accessor can be installed on the proto
     if ($attrExt->{"OnProto"}) {
-        $on_proto = "1 /* on proto */";
+        $onProto = "1 /* on proto */";
     }
 
     if (!$attrExt->{"PerWorldBindings"}) {
@@ -3182,7 +3182,7 @@ sub GenerateAttributeConfigurationParameters
       $setterForMainWorld = "0";
     }
 
-    return ($attrName, $getter, $setter, $getterForMainWorld, $setterForMainWorld, $data, $accessControl, "static_cast<v8::PropertyAttribute>($propAttribute)", $on_proto);
+    return ($attrName, $getter, $setter, $getterForMainWorld, $setterForMainWorld, $data, $accessControl, "static_cast<v8::PropertyAttribute>($propAttribute)", $onProto);
 }
 
 sub GenerateAttributeConfiguration
@@ -3193,9 +3193,9 @@ sub GenerateAttributeConfiguration
     my $indent = shift;
     my $code = "";
 
-    my ($attrName, $getter, $setter, $getterForMainWorld, $setterForMainWorld, $data, $accessControl, $propAttribute, $on_proto) = GenerateAttributeConfigurationParameters($interface, $attribute);
+    my ($attrName, $getter, $setter, $getterForMainWorld, $setterForMainWorld, $data, $accessControl, $propAttribute, $onProto) = GenerateAttributeConfigurationParameters($interface, $attribute);
 
-    $code .= $indent . "    {\"$attrName\", $getter, $setter, $getterForMainWorld, $setterForMainWorld, $data, $accessControl, $propAttribute, $on_proto}" . $delimiter . "\n";
+    $code .= $indent . "    {\"$attrName\", $getter, $setter, $getterForMainWorld, $setterForMainWorld, $data, $accessControl, $propAttribute, $onProto}" . $delimiter . "\n";
     return $code;
 }
 
@@ -3206,7 +3206,7 @@ sub GenerateStaticAttribute
     my $attrExt = $attribute->extendedAttributes;
     my $code = "";
 
-    my ($attrName, $getter, $setter, $getterForMainWorld, $setterForMainWorld, $data, $accessControl, $propAttribute, $on_proto) = GenerateAttributeConfigurationParameters($interface, $attribute);
+    my ($attrName, $getter, $setter, $getterForMainWorld, $setterForMainWorld, $data, $accessControl, $propAttribute, $onProto) = GenerateAttributeConfigurationParameters($interface, $attribute);
 
     die "Static attributes do not support optimized getters or setters for the main world" if $getterForMainWorld || $setterForMainWorld;
 
@@ -4303,9 +4303,9 @@ END
         $implementation{nameSpaceWebCore}->add($code);
     }
 
-    my $has_attributes = 0;
+    my $hasAttributes = 0;
     if (@normalAttributes) {
-        $has_attributes = 1;
+        $hasAttributes = 1;
         my $code = "";
         $code .= "static const V8DOMConfiguration::AttributeConfiguration ${v8ClassName}Attributes[] = {\n";
         $code .= GenerateAttributeConfigurationArray($interface, \@normalAttributes);
@@ -4314,17 +4314,16 @@ END
     }
 
     # Setup table of standard callback functions
-    my $num_callbacks = 0;
-    my $has_callbacks = 0;
+    my $hasFunctions = 0;
     $code = "";
     foreach my $function (@normalFunctions) {
-        # Only one table entry is needed for overloaded methods:
+        # Only one table entry is needed for overloaded functions:
         next if $function->{overloadIndex} > 1;
         # Don't put any nonstandard functions into this table:
         next if !IsStandardFunction($interface, $function);
         next if $function->name eq "";
-        if (!$has_callbacks) {
-            $has_callbacks = 1;
+        if (!$hasFunctions) {
+            $hasFunctions = 1;
             $code .= "static const V8DOMConfiguration::MethodConfiguration ${v8ClassName}Methods[] = {\n";
         }
         my $name = $function->name;
@@ -4339,14 +4338,13 @@ END
     {"$name", ${implClassName}V8Internal::${name}MethodCallback, ${methodForMainWorld}, ${functionLength}},
 END
         $code .= "#endif // ${conditionalString}\n" if $conditionalString;
-        $num_callbacks++;
     }
-    $code .= "};\n\n"  if $has_callbacks;
+    $code .= "};\n\n"  if $hasFunctions;
     $implementation{nameSpaceWebCore}->add($code);
 
-    my $has_constants = 0;
+    my $hasConstants = 0;
     if (@{$interface->constants}) {
-        $has_constants = 1;
+        $hasConstants = 1;
     }
 
     if (!HasCustomConstructor($interface)) {
@@ -4362,9 +4360,9 @@ END
         GenerateConstructorCallback($interface);
     }
 
-    my $access_check = "";
+    my $accessCheck = "";
     if ($interface->extendedAttributes->{"CheckSecurity"} && $interfaceName ne "Window") {
-        $access_check = "instance->SetAccessCheckCallbacks(${implClassName}V8Internal::namedSecurityCheck, ${implClassName}V8Internal::indexedSecurityCheck, v8::External::New(const_cast<WrapperTypeInfo*>(&${v8ClassName}::wrapperTypeInfo)));";
+        $accessCheck = "instance->SetAccessCheckCallbacks(${implClassName}V8Internal::namedSecurityCheck, ${implClassName}V8Internal::indexedSecurityCheck, v8::External::New(const_cast<WrapperTypeInfo*>(&${v8ClassName}::wrapperTypeInfo)));";
     }
 
     # For the Window interface, generate the shadow object template
@@ -4394,6 +4392,8 @@ static v8::Handle<v8::FunctionTemplate> Configure${v8ClassName}Template(v8::Hand
 
     v8::Local<v8::Signature> defaultSignature;
 END
+
+    # Define constants, attributes, accessors and operations.
     if ($interface->extendedAttributes->{"RuntimeEnabled"}) {
         my $runtimeEnabledFunction = GetRuntimeEnabledFunctionName($interface);
         $code .= <<END;
@@ -4402,34 +4402,12 @@ END
     else
 END
     }
-    $code .=  <<END;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, \"${interfaceName}\", $parentClassTemplate, ${v8ClassName}::internalFieldCount,
-END
-    # Set up our attributes if we have them
-    if ($has_attributes) {
-        $code .= <<END;
-        ${v8ClassName}Attributes, WTF_ARRAY_LENGTH(${v8ClassName}Attributes),
-END
-    } else {
-        $code .= <<END;
-        0, 0,
-END
-    }
-
-    if ($has_callbacks) {
-        $code .= <<END;
-        ${v8ClassName}Methods, WTF_ARRAY_LENGTH(${v8ClassName}Methods), isolate, currentWorldType);
-END
-    } else {
-        $code .= <<END;
-        0, 0, isolate, currentWorldType);
-END
-    }
+    $code .=  "    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, \"${interfaceName}\", $parentClassTemplate, ${v8ClassName}::internalFieldCount, ";
+    $code .=  $hasAttributes ? "${v8ClassName}Attributes, WTF_ARRAY_LENGTH(${v8ClassName}Attributes), " : "0, 0, ";
+    $code .= $hasFunctions ? "${v8ClassName}Methods, WTF_ARRAY_LENGTH(${v8ClassName}Methods), isolate, currentWorldType);\n" : "0, 0, isolate, currentWorldType);\n";
 
     AddToImplIncludes("wtf/UnusedParam.h");
-    $code .= <<END;
-    UNUSED_PARAM(defaultSignature);
-END
+    $code .= "    UNUSED_PARAM(defaultSignature);\n";
 
     if (IsConstructable($interface)) {
         $code .= "    desc->SetCallHandler(${v8ClassName}::constructorCallback);\n";
@@ -4437,7 +4415,7 @@ END
         $code .= "    desc->SetLength(${interfaceLength});\n";
     }
 
-    if ($access_check or @runtimeEnabledAttributes or @normalFunctions or $has_constants) {
+    if ($accessCheck or @runtimeEnabledAttributes or @normalFunctions or $hasConstants) {
         $code .=  <<END;
     v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
@@ -4446,18 +4424,18 @@ END
 END
     }
 
-    if ($access_check) {
-        $code .=  "    $access_check\n";
+    if ($accessCheck) {
+        $code .=  "    $accessCheck\n";
     }
 
-    # Setup the enable-at-runtime attributes if we have them
-    foreach my $runtime_attr (@runtimeEnabledAttributes) {
-        my $runtimeEnabledFunction = GetRuntimeEnabledFunctionName($runtime_attr);
-        my $conditionalString = GenerateConditionalString($runtime_attr);
+    # Define runtime enabled attributes.
+    foreach my $runtimeEnabledAttribute (@runtimeEnabledAttributes) {
+        my $runtimeEnabledFunction = GetRuntimeEnabledFunctionName($runtimeEnabledAttribute);
+        my $conditionalString = GenerateConditionalString($runtimeEnabledAttribute);
         $code .= "#if ${conditionalString}\n" if $conditionalString;
         $code .= "    if (${runtimeEnabledFunction}()) {\n";
         $code .= "        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\\\n";
-        $code .= GenerateAttributeConfiguration($interface, $runtime_attr, ";", "    ");
+        $code .= GenerateAttributeConfiguration($interface, $runtimeEnabledAttribute, ";", "    ");
         $code .= <<END;
         V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate, currentWorldType);
     }
@@ -4465,8 +4443,9 @@ END
         $code .= "#endif // ${conditionalString}\n" if $conditionalString;
     }
 
-    my @constantsEnabledAtRuntime;
-    if ($has_constants) {
+    my @runtimeEnabledConstants;
+    if ($hasConstants) {
+        # Define constants.
         $code .= "    static const V8DOMConfiguration::ConstantConfiguration ${v8ClassName}Constants[] = {\n";
         foreach my $constant (@{$interface->constants}) {
             my $name = $constant->name;
@@ -4478,7 +4457,7 @@ END
                 AddToImplIncludes(HeaderFilesForInterface($implementedBy, $implementedByImplName));
             }
             if ($attrExt->{"RuntimeEnabled"}) {
-                push(@constantsEnabledAtRuntime, $constant);
+                push(@runtimeEnabledConstants, $constant);
             } else {
                 $code .= <<END;
         {"${name}", $value},
@@ -4489,11 +4468,11 @@ END
         $code .= <<END;
     V8DOMConfiguration::installConstants(desc, proto, ${v8ClassName}Constants, WTF_ARRAY_LENGTH(${v8ClassName}Constants), isolate);
 END
-        # Setup the enable-at-runtime constants if we have them
-        foreach my $runtime_const (@constantsEnabledAtRuntime) {
-            my $runtimeEnabledFunction = GetRuntimeEnabledFunctionName($runtime_const);
-            my $name = $runtime_const->name;
-            my $value = $runtime_const->value;
+        # Define runtime enabled constants.
+        foreach my $runtimeEnabledConstant (@runtimeEnabledConstants) {
+            my $runtimeEnabledFunction = GetRuntimeEnabledFunctionName($runtimeEnabledConstant);
+            my $name = $runtimeEnabledConstant->name;
+            my $value = $runtimeEnabledConstant->value;
             $code .= "    if (${runtimeEnabledFunction}()) {\n";
             $code .= <<END;
         static const V8DOMConfiguration::ConstantConfiguration constantConfiguration = {"${name}", static_cast<signed int>(${value})};
@@ -4509,20 +4488,17 @@ END
     $code .= GenerateImplementationLegacyCall($interface);
     $code .= GenerateImplementationMasqueradesAsUndefined($interface);
 
-    # Define our functions with Set() or SetAccessor()
+    # Define operations.
     my $total_functions = 0;
     foreach my $function (@normalFunctions) {
-        # Only one accessor is needed for overloaded methods:
+        # Only one accessor is needed for overloaded operations.
         next if $function->{overloadIndex} > 1;
         next if $function->name eq "";
 
         $total_functions++;
         next if IsStandardFunction($interface, $function);
         $code .= GenerateNonStandardFunction($interface, $function);
-        $num_callbacks++;
     }
-
-    die "Wrong number of callbacks generated for $interfaceName ($num_callbacks, should be $total_functions)" if $num_callbacks != $total_functions;
 
     # Define static attributes.
     foreach my $attribute (@staticAttributes) {
@@ -4600,7 +4576,7 @@ void ${v8ClassName}::installPerContextEnabledProperties(v8::Handle<v8::Object> i
     v8::Local<v8::Object> proto = v8::Local<v8::Object>::Cast(instance->GetPrototype());
 END
 
-        # Setup the enable-by-settings attributes if we have them
+        # Define per-context enabled attributes.
         foreach my $perContextEnabledAttribute (@perContextEnabledAttributes) {
             my $contextEnabledFunction = GetContextEnabledFunctionName($perContextEnabledAttribute);
             $code .= "    if (${contextEnabledFunction}(impl->document())) {\n";
@@ -4626,7 +4602,7 @@ void ${v8ClassName}::installPerContextEnabledPrototypeProperties(v8::Handle<v8::
 {
     UNUSED_PARAM(proto);
 END
-        # Setup the enable-by-settings functions if we have them
+        # Define per-context enabled operations.
         $code .=  <<END;
     v8::Local<v8::Signature> defaultSignature = v8::Signature::New(GetTemplate(isolate, worldType(isolate)));
     UNUSED_PARAM(defaultSignature);
@@ -4634,13 +4610,13 @@ END
     ExecutionContext* context = toExecutionContext(proto->CreationContext());
 END
 
-        foreach my $runtimeFunc (@perContextEnabledFunctions) {
-            my $contextEnabledFunction = GetContextEnabledFunctionName($runtimeFunc);
-            my $functionLength = GetFunctionLength($runtimeFunc);
-            my $conditionalString = GenerateConditionalString($runtimeFunc);
+        foreach my $perContextEnabledFunction (@perContextEnabledFunctions) {
+            my $contextEnabledFunction = GetContextEnabledFunctionName($perContextEnabledFunction);
+            my $functionLength = GetFunctionLength($perContextEnabledFunction);
+            my $conditionalString = GenerateConditionalString($perContextEnabledFunction);
             $code .= "\n#if ${conditionalString}\n" if $conditionalString;
             $code .= "    if (context && context->isDocument() && ${contextEnabledFunction}(toDocument(context)))\n";
-            my $name = $runtimeFunc->name;
+            my $name = $perContextEnabledFunction->name;
             $code .= <<END;
         proto->Set(v8::String::NewSymbol("${name}"), v8::FunctionTemplate::New(${implClassName}V8Internal::${name}MethodCallback, v8Undefined(), defaultSignature, $functionLength)->GetFunction());
 END
