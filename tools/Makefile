@@ -586,7 +586,12 @@ endif
 	for bits in 32 64; do \
 	  mv $(DESTDIR)$(PREFIX)/$(CROSSARCH)/lib$$bits/libc.a \
 	     $(DESTDIR)$(PREFIX)/$(CROSSARCH)/lib$$bits/libcrt_common.a; \
-	  sed "s/@OBJFORMAT@/elf$${bits}-nacl/" newlib-libc-script \
+	  if [[ "$$bits" = "32" ]]; then \
+	    objformat=elf32-i386-nacl ; \
+	  else \
+	    objformat=elf64-x86-64-nacl ; \
+	  fi ; \
+	  sed "s/@OBJFORMAT@/$$objformat/" newlib-libc-script \
 	    > $(DESTDIR)$(PREFIX)/$(CROSSARCH)/lib$$bits/libc.a; \
 	done
 	touch $@
