@@ -28,6 +28,7 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   void SetWatcher(WindowWatcher* watcher);
 
   virtual bool IsFirstRunAfterBoot() const OVERRIDE;
+  virtual bool IsIncognitoAllowed() const OVERRIDE;
   virtual bool IsMultiProfilesEnabled() const OVERRIDE;
   virtual bool IsRunningInForcedAppMode() const OVERRIDE;
   virtual void PreInit() OVERRIDE;

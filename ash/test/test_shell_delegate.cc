@@ -54,6 +54,10 @@ bool TestShellDelegate::IsFirstRunAfterBoot() const {
   return false;
 }
 
+bool TestShellDelegate::IsIncognitoAllowed() const {
+  return true;
+}
+
 bool TestShellDelegate::IsMultiProfilesEnabled() const {
   return multi_profiles_enabled_;
 }

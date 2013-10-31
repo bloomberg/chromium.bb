@@ -28,6 +28,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/default_pinned_apps_field_trial.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #endif
@@ -74,6 +75,13 @@ bool ChromeShellDelegate::IsMultiProfilesEnabled() const {
   }
   if (admitted_users_to_be_added + logged_in_users <= 1)
     return false;
+#endif
+  return true;
+}
+
+bool ChromeShellDelegate::IsIncognitoAllowed() const {
+#if defined(OS_CHROMEOS)
+  return chromeos::AccessibilityManager::Get()->IsIncognitoAllowed();
 #endif
   return true;
 }

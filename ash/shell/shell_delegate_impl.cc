@@ -71,6 +71,10 @@ bool ShellDelegateImpl::IsFirstRunAfterBoot() const {
   return false;
 }
 
+bool ShellDelegateImpl::IsIncognitoAllowed() const {
+  return true;
+}
+
 bool ShellDelegateImpl::IsMultiProfilesEnabled() const {
   return false;
 }

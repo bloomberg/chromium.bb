@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -90,7 +91,7 @@ class ContentScriptLoader {
     resources_.push(resource);
   }
 
-  // Fianlly, call this method once to fetch all of the resources and
+  // Finally, call this method once to fetch all of the resources and
   // load them. This method will delete this object when done.
   void Run() {
     if (resources_.empty()) {
@@ -339,6 +340,12 @@ void AccessibilityManager::UpdateLargeCursorFromPref() {
   ash::Shell::GetInstance()->cursor_manager()->SetCursorSet(
       enabled ? ui::CURSOR_SET_LARGE : ui::CURSOR_SET_NORMAL);
 #endif
+}
+
+bool AccessibilityManager::IsIncognitoAllowed() {
+  UserManager* user_manager = UserManager::Get();
+  // Supervised users can't create incognito-mode windows.
+  return !(user_manager->IsLoggedInAsLocallyManagedUser());
 }
 
 bool AccessibilityManager::IsLargeCursorEnabled() {

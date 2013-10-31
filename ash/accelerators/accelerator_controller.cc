@@ -623,10 +623,14 @@ bool AcceleratorController::PerformAction(int action,
       // UMA metrics are recorded in the handler.
       exit_warning_handler_.HandleAccelerator();
       return true;
-    case NEW_INCOGNITO_WINDOW:
-      Shell::GetInstance()->new_window_delegate()->NewWindow(
-          true /* is_incognito */);
-      return true;
+    case NEW_INCOGNITO_WINDOW: {
+        bool incognito_allowed =
+            Shell::GetInstance()->delegate()->IsIncognitoAllowed();
+        if (incognito_allowed)
+          Shell::GetInstance()->new_window_delegate()->NewWindow(
+              true /* is_incognito */);
+        return incognito_allowed;
+    }
     case NEW_TAB:
       if (key_code == ui::VKEY_T)
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_NEWTAB_T);

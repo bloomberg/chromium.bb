@@ -116,6 +116,10 @@ class ASH_EXPORT ShellDelegate {
   // Returns true if multi-profiles feature is enabled.
   virtual bool IsMultiProfilesEnabled() const = 0;
 
+  // Returns true if incognito mode is allowed for the user.
+  // Incognito windows are restricted for supervised users.
+  virtual bool IsIncognitoAllowed() const = 0;
+
   // Returns true if we're running in forced app mode.
   virtual bool IsRunningInForcedAppMode() const = 0;
 
