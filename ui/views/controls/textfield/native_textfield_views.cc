@@ -679,6 +679,7 @@ void NativeTextfieldViews::HandleFocus() {
   GetRenderText()->set_focused(true);
   is_cursor_visible_ = true;
   SchedulePaint();
+  GetInputMethod()->OnFocus();
   OnCaretBoundsChanged();
 
   const size_t caret_blink_ms = Textfield::GetCaretBlinkMs();
@@ -693,6 +694,7 @@ void NativeTextfieldViews::HandleFocus() {
 
 void NativeTextfieldViews::HandleBlur() {
   GetRenderText()->set_focused(false);
+  GetInputMethod()->OnBlur();
   // Stop blinking cursor.
   cursor_timer_.InvalidateWeakPtrs();
   if (is_cursor_visible_) {
