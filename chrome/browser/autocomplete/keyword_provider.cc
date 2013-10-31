@@ -159,11 +159,10 @@ const TemplateURL* KeywordProvider::GetSubstitutingTemplateURLForInput(
         !remaining_input.empty() &&
         EndsWith(input->text(), remaining_input, true)) {
       int offset = input->text().length() - input->cursor_position();
-      // The cursor should never be past the last character.
+      // The cursor should never be past the last character or before the
+      // first character.
       DCHECK_GE(offset, 0);
-      // The cursor should never be in the keyword part, which is guaranteed
-      // by OmniboxEditModel implementation (see omnibox_edit_model.cc).
-      DCHECK_LE(offset, static_cast<int>(remaining_input.length()));
+      DCHECK_LE(offset, static_cast<int>(input->text().length()));
       if (offset <= 0) {
         // Normalize the cursor to be exactly after the last character.
         cursor_position = remaining_input.length();
@@ -395,10 +394,8 @@ bool KeywordProvider::ExtractKeywordFromInput(const AutocompleteInput& input,
       (input.type() == AutocompleteInput::FORCED_QUERY))
     return false;
 
-  string16 trimmed_input;
-  TrimWhitespace(input.text(), TRIM_TRAILING, &trimmed_input);
   *keyword = TemplateURLService::CleanUserInputKeyword(
-      SplitKeywordFromInput(trimmed_input, true, remaining_input));
+      SplitKeywordFromInput(input.text(), true, remaining_input));
   return !keyword->empty();
 }
 

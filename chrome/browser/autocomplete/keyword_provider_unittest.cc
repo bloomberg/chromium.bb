@@ -291,15 +291,15 @@ TEST_F(KeywordProviderTest, GetSubstitutingTemplateURLForInput) {
     { "aa foo", 3u, true, "aa.com?foo={searchTerms}", "foo", 0u },
 
     // Trailing space.
-    { "aa foo ", 7u, true, "aa.com?foo={searchTerms}", "foo", string16::npos },
+    { "aa foo ", 7u, true, "aa.com?foo={searchTerms}", "foo ", 4u },
     // Trailing space without remaining text, cursor in the middle.
     { "aa  ", 3u, true, "aa.com?foo={searchTerms}", "", string16::npos },
     // Trailing space without remaining text, cursor at the end.
     { "aa  ", 4u, true, "aa.com?foo={searchTerms}", "", string16::npos },
     // Extra space after keyword, cursor at the end.
-    { "aa  foo ", 8u, true, "aa.com?foo={searchTerms}", "foo", string16::npos },
+    { "aa  foo ", 8u, true, "aa.com?foo={searchTerms}", "foo ", 4u },
     // Extra space after keyword, cursor in the middle.
-    { "aa  foo ", 3u, true, "aa.com?foo={searchTerms}", "foo", string16::npos },
+    { "aa  foo ", 3u, true, "aa.com?foo={searchTerms}", "foo ", 0 },
     // Extra space after keyword, no trailing space, cursor at the end.
     { "aa  foo", 7u, true, "aa.com?foo={searchTerms}", "foo", 3u },
     // Extra space after keyword, no trailing space, cursor in the middle.
