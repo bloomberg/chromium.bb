@@ -421,12 +421,9 @@ SigninScreenHandler::SigninScreenHandler(
   registrar_.Add(this,
                  chrome::NOTIFICATION_AUTH_CANCELLED,
                  content::NotificationService::AllSources());
-
-  WallpaperManager::Get()->AddObserver(this);
 }
 
 SigninScreenHandler::~SigninScreenHandler() {
-  WallpaperManager::Get()->RemoveObserver(this);
   weak_factory_.InvalidateWeakPtrs();
   SystemKeyEventListener* key_event_listener =
       SystemKeyEventListener::GetInstance();
@@ -1286,11 +1283,6 @@ void SigninScreenHandler::HandleShutdownSystem() {
 void SigninScreenHandler::HandleLoadWallpaper(const std::string& email) {
   if (delegate_)
     delegate_->LoadWallpaper(email);
-}
-
-void SigninScreenHandler::OnWallpaperAnimationFinished(
-    const std::string& email) {
-  CallJS("login.AccountPickerScreen.onWallpaperLoaded", email);
 }
 
 void SigninScreenHandler::HandleRebootSystem() {

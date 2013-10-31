@@ -312,7 +312,6 @@ void WallpaperManager::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED: {
-      NotifyAnimationFinished();
       if (should_cache_wallpaper_) {
         BrowserThread::PostDelayedTask(
             BrowserThread::UI, FROM_HERE,
@@ -604,19 +603,6 @@ void WallpaperManager::UpdateWallpaper() {
     return;
   }
   SetUserWallpaper(last_selected_user_);
-}
-
-void WallpaperManager::AddObserver(WallpaperManager::Observer* observer) {
-  observers_.AddObserver(observer);
-}
-
-void WallpaperManager::RemoveObserver(WallpaperManager::Observer* observer) {
-  observers_.RemoveObserver(observer);
-}
-
-void WallpaperManager::NotifyAnimationFinished() {
-  FOR_EACH_OBSERVER(
-      Observer, observers_, OnWallpaperAnimationFinished(last_selected_user_));
 }
 
 // WallpaperManager, private: --------------------------------------------------
