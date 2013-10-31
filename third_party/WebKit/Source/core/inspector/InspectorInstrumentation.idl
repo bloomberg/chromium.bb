@@ -501,6 +501,9 @@ interface InspectorOverrides {
     DeviceOrientationData* overrideDeviceOrientation(Page* page, [DefaultReturn] DeviceOrientationData* deviceOrientation);
 
     [Page, Inline=FastReturn]
+    float overrideTextAutosizingFontScaleFactor(Page* page, [DefaultReturn] float fontScaleFactor);
+
+    [Page, Inline=FastReturn]
     bool overrideTextAutosizing(Page* page, [DefaultReturn] bool textAutosizing);
 
     [Profiler]

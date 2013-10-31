@@ -89,7 +89,7 @@ public:
     bool textAutosizingEnabled() const;
 
     void setTextAutosizingFontScaleFactor(float);
-    float textAutosizingFontScaleFactor() const { return m_textAutosizingFontScaleFactor; }
+    float textAutosizingFontScaleFactor() const;
 
     // Compensates for poor text legibility on mobile devices. This value is
     // multiplied by the font scale factor when performing text autosizing of

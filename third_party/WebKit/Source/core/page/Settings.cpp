@@ -230,6 +230,11 @@ bool Settings::textAutosizingEnabled() const
     return InspectorInstrumentation::overrideTextAutosizing(m_page, m_textAutosizingEnabled);
 }
 
+float Settings::textAutosizingFontScaleFactor() const
+{
+    return InspectorInstrumentation::overrideTextAutosizingFontScaleFactor(m_page, m_textAutosizingFontScaleFactor);
+}
+
 void Settings::setTextAutosizingWindowSizeOverride(const IntSize& textAutosizingWindowSizeOverride)
 {
     if (m_textAutosizingWindowSizeOverride == textAutosizingWindowSizeOverride)
