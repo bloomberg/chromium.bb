@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "media/cdm/aes_decryptor.h"
-#include "media/cdm/ppapi/clear_key_cdm_common.h"
+#include "media/cdm/ppapi/api/content_decryption_module.h"
 
 // Enable this to use the fake decoder for testing.
 // TODO(tomfinegan): Move fake audio decoder into a separate class.
@@ -28,9 +28,9 @@ class DecoderBuffer;
 class FFmpegCdmAudioDecoder;
 
 // Clear key implementation of the cdm::ContentDecryptionModule interface.
-class ClearKeyCdm : public CdmInterface {
+class ClearKeyCdm : public cdm::ContentDecryptionModule_2 {
  public:
-  explicit ClearKeyCdm(Host* host);
+  explicit ClearKeyCdm(cdm::Host* host);
   virtual ~ClearKeyCdm();
 
   // ContentDecryptionModule implementation.
@@ -139,7 +139,7 @@ class ClearKeyCdm : public CdmInterface {
   // simultaneously.
   base::Lock client_lock_;
 
-  CdmHost* host_;
+  cdm::Host* host_;
 
   std::string heartbeat_session_id_;
   std::string next_heartbeat_message_;

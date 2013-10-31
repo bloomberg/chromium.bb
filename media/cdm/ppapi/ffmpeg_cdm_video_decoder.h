@@ -8,8 +8,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "media/cdm/ppapi/api/content_decryption_module.h"
 #include "media/cdm/ppapi/cdm_video_decoder.h"
-#include "media/cdm/ppapi/clear_key_cdm_common.h"
 
 struct AVCodecContext;
 struct AVFrame;
@@ -21,7 +21,7 @@ class ScopedPtrAVFreeFrame;
 
 class FFmpegCdmVideoDecoder : public CdmVideoDecoder {
  public:
-  explicit FFmpegCdmVideoDecoder(CdmHost* host);
+  explicit FFmpegCdmVideoDecoder(cdm::Host* host);
   virtual ~FFmpegCdmVideoDecoder();
 
   // CdmVideoDecoder implementation.
@@ -52,7 +52,7 @@ class FFmpegCdmVideoDecoder : public CdmVideoDecoder {
 
   bool is_initialized_;
 
-  CdmHost* const host_;
+  cdm::Host* const host_;
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegCdmVideoDecoder);
 };
