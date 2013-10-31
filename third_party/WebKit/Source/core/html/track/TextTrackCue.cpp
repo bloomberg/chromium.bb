@@ -791,7 +791,7 @@ void TextTrackCue::markFutureAndPastNodes(ContainerNode* root, double previousTi
         if (child->nodeName() == timestampTag) {
             unsigned position = 0;
             String timestamp = child->nodeValue();
-            double currentTimestamp = WebVTTParser::create(0, document())->collectTimeStamp(timestamp, &position);
+            double currentTimestamp = WebVTTParser::collectTimeStamp(timestamp, &position);
             ASSERT(currentTimestamp != -1);
 
             if (currentTimestamp > movieTime)

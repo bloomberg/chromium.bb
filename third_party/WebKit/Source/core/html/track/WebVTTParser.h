@@ -94,6 +94,7 @@ public:
     }
     static String collectDigits(const String&, unsigned*);
     static String collectWord(const String&, unsigned*);
+    static double collectTimeStamp(const String&, unsigned*);
 
     // Useful functions for parsing percentage settings.
     static float parseFloatPercentageValue(const String&, bool&);
@@ -107,7 +108,6 @@ public:
     void getNewRegions(Vector<RefPtr<TextTrackRegion> >&);
 
     PassRefPtr<DocumentFragment> createDocumentFragmentFromCueText(const String&);
-    double collectTimeStamp(const String&, unsigned*);
 
 private:
     WebVTTParser(WebVTTParserClient*, Document&);
