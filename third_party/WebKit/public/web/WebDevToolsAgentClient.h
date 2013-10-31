@@ -79,15 +79,11 @@ public:
     };
     virtual void dumpUncountedAllocatedObjects(const InstrumentedObjectSizeProvider*) { }
 
-    // FIXME: remove once new API lands on both sides.
     typedef void (*TraceEventCallback)(char phase, const unsigned char*, const char* name, unsigned long long id,
-        int numArgs, const char* const* argNames, const unsigned char* argTypes, const unsigned long long* argValues,
-        unsigned char flags);
-    typedef void (*TraceEventWithTimestampCallback)(char phase, const unsigned char*, const char* name, unsigned long long id,
         int numArgs, const char* const* argNames, const unsigned char* argTypes, const unsigned long long* argValues,
         unsigned char flags, double timestamp);
 
-    virtual void setTraceEventCallback(TraceEventWithTimestampCallback) { }
+    virtual void setTraceEventCallback(TraceEventCallback) { }
 
     // Called to emulate device dimensions, scale factor and input. Window should
     // occupy the whole device screen, while the view should be located at |viewRect|.

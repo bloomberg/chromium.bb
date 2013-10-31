@@ -74,7 +74,7 @@ public:
     virtual void dispatchKeyEvent(const WebCore::PlatformKeyboardEvent&);
     virtual void dispatchMouseEvent(const WebCore::PlatformMouseEvent&);
 
-    virtual void setTraceEventCallback(TraceEventWithTimestampCallback);
+    virtual void setTraceEventCallback(TraceEventCallback);
 
 private:
     WebDevToolsAgentImpl* devToolsAgent();
