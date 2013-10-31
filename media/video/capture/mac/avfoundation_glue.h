@@ -43,7 +43,6 @@ class MEDIA_EXPORT AVFoundationGlue {
 };
 
 // Originally AVCaptureDevice and coming from AVCaptureDevice.h
-MEDIA_EXPORT
 @interface CrAVCaptureDevice : NSObject
 
 - (BOOL)hasMediaType:(NSString*)mediaType;
@@ -52,7 +51,6 @@ MEDIA_EXPORT
 
 @end
 
-MEDIA_EXPORT
 @interface AVCaptureDeviceGlue : NSObject
 
 + (NSArray*)devices;
