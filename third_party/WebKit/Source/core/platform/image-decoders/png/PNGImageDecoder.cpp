@@ -262,6 +262,7 @@ bool PNGImageDecoder::setFailed()
     return ImageDecoder::setFailed();
 }
 
+#if USE(QCMSLIB)
 static void readColorProfile(png_structp png, png_infop info, ColorProfile& colorProfile)
 {
 #ifdef PNG_iCCP_SUPPORTED
@@ -295,6 +296,7 @@ static void readColorProfile(png_structp png, png_infop info, ColorProfile& colo
     UNUSED_PARAM(colorProfile);
 #endif
 }
+#endif
 
 void PNGImageDecoder::headerAvailable()
 {

@@ -425,9 +425,8 @@ bool RenderThemeChromiumSkia::shouldShowPlaceholderWhenFocused() const
 //
 // Following values are come from default of GTK+
 //
-static const int progressDeltaPixelsPerSecond = 100;
 static const int progressActivityBlocks = 5;
-static const int progressAnimationFrmaes = 10;
+static const int progressAnimationFrames = 10;
 static const double progressAnimationInterval = 0.125;
 
 IntRect RenderThemeChromiumSkia::determinateProgressValueRectFor(RenderProgress* renderProgress, const IntRect& rect) const
@@ -457,7 +456,7 @@ double RenderThemeChromiumSkia::animationRepeatIntervalForProgressBar(RenderProg
 
 double RenderThemeChromiumSkia::animationDurationForProgressBar(RenderProgress* renderProgress) const
 {
-    return progressAnimationInterval * progressAnimationFrmaes * 2; // "2" for back and forth
+    return progressAnimationInterval * progressAnimationFrames * 2; // "2" for back and forth
 }
 
 IntRect RenderThemeChromiumSkia::progressValueRectFor(RenderProgress* renderProgress, const IntRect& rect) const

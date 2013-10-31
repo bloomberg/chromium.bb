@@ -214,6 +214,7 @@ static ImageOrientation readImageOrientation(jpeg_decompress_struct* info)
     return ImageOrientation();
 }
 
+#if USE(QCMSLIB)
 static void readColorProfile(jpeg_decompress_struct* info, ColorProfile& colorProfile)
 {
 #if USE(ICCJPEG)
@@ -242,6 +243,7 @@ static void readColorProfile(jpeg_decompress_struct* info, ColorProfile& colorPr
     UNUSED_PARAM(colorProfile);
 #endif
 }
+#endif
 
 class JPEGImageReader {
     WTF_MAKE_FAST_ALLOCATED;
