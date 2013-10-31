@@ -6,13 +6,11 @@
 
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/ui/app_list/extension_uninstaller.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "net/base/url_util.h"
 
@@ -144,22 +142,4 @@ void AppListControllerDelegate::SetExtensionLaunchType(
 bool AppListControllerDelegate::IsExtensionInstalled(
     Profile* profile, const std::string& app_id) {
   return !!GetExtension(profile, app_id);
-}
-
-extensions::InstallTracker* AppListControllerDelegate::GetInstallTrackerFor(
-    Profile* profile) {
-  if (extensions::ExtensionSystem::Get(profile)->extension_service())
-    return extensions::InstallTrackerFactory::GetForProfile(profile);
-  return NULL;
-}
-
-void AppListControllerDelegate::GetApps(Profile* profile,
-                                        ExtensionSet* out_apps) {
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  if (!service)
-    return;
-  out_apps->InsertAll(*service->extensions());
-  out_apps->InsertAll(*service->disabled_extensions());
-  out_apps->InsertAll(*service->terminated_extensions());
 }
