@@ -434,7 +434,13 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
 };
 
 // Test beforeunload event delivery.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestBeforeUnloadEvents) {
+// Crashes on Win only.  http://crbug.com/313658
+#if defined(OS_WIN)
+#define MAYBE_TestBeforeUnloadEvents DISABLED_TestBeforeUnloadEvents
+#else
+#define MAYBE_TestBeforeUnloadEvents TestBeforeUnloadEvents
+#endif
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestBeforeUnloadEvents) {
   OpenDevToolsWindow(kDebuggerTestPage);
   scoped_ptr<DevToolsWindowBeforeUnloadObserver> contents_observer;
   contents_observer.reset(
