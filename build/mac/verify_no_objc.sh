@@ -26,10 +26,9 @@
 
 set -eu
 
-otool="${DEVELOPER_BIN_DIR:-/usr/bin}/otool"
 executable="${BUILT_PRODUCTS_DIR}/${EXECUTABLE_PATH}"
 
-if "${otool}" -arch i386 -o "${executable}" | grep -q '^Contents.*section$'; \
+if xcrun otool -arch i386 -o "${executable}" | grep -q '^Contents.*section$'; \
 then
   echo "${0}: ${executable} has an __OBJC,__image_info section" 2>&1
   exit 1

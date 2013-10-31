@@ -4648,6 +4648,11 @@
           'x86_64'
          ],
       }],
+      ['target_arch=="ia32"', {
+        'ARCHS': [
+          'i386'
+         ],
+      }],
     ],
 
     # The Xcode generator will look for an xcode_settings section at the root
