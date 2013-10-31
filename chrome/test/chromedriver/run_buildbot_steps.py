@@ -32,6 +32,8 @@ GS_CHROMEDRIVER_DATA_BUCKET = 'gs://chromedriver-data'
 GS_CONTINUOUS_URL = GS_CHROMEDRIVER_DATA_BUCKET + '/continuous'
 GS_PREBUILTS_URL = GS_CHROMEDRIVER_DATA_BUCKET + '/prebuilts'
 GS_SERVER_LOGS_URL = GS_CHROMEDRIVER_DATA_BUCKET + '/server_logs'
+SERVER_LOGS_LINK = (
+  'http://chromedriver-data.storage.googleapis.com/server_logs')
 TEST_LOG_FORMAT = '%s_log.json'
 
 SCRIPT_DIR = os.path.join(_THIS_DIR, os.pardir, os.pardir, os.pardir, os.pardir,
@@ -61,9 +63,12 @@ def _ArchiveServerLogs():
   util.MarkBuildStepStart('archive chromedriver server logs')
   for server_log in glob.glob(os.path.join(tempfile.gettempdir(),
                                            'chromedriver_*')):
+    base_name = os.path.basename(server_log)
+    util.AddLink(base_name, '%s/%s' % (SERVER_LOGS_LINK, base_name))
     slave_utils.GSUtilCopy(
-        server_log, '%s/%s' % (GS_SERVER_LOGS_URL,
-                               os.path.basename(server_log)))
+        server_log,
+        '%s/%s' % (GS_SERVER_LOGS_URL, base_name),
+        mimetype='text/plain')
 
 
 def _DownloadPrebuilts():

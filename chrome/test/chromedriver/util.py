@@ -181,3 +181,13 @@ def AddBuildStepText(text):
 def PrintAndFlush(text):
   print text
   sys.stdout.flush()
+
+
+def AddLink(label, url):
+  """Adds a link with name |label| linking to |url| to current buildbot step.
+
+  Args:
+    label: A string with the name of the label.
+    url: A string of the URL.
+  """
+  print '@@@STEP_LINK@%s@%s@@@' % (label, url)
