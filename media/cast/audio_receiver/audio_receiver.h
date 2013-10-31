@@ -87,6 +87,12 @@ class AudioReceiver : public base::NonThreadSafe,
   // Actually send the next RTCP report.
   void SendNextRtcpReport();
 
+  // Schedule timing for the next cast message.
+  void ScheduleNextCastMessage();
+
+  // Actually send the next cast message.
+  void SendNextCastMessage();
+
   scoped_refptr<CastEnvironment> cast_environment_;
   base::WeakPtrFactory<AudioReceiver> weak_factory_;
 

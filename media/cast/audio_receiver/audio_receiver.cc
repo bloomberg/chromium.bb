@@ -119,6 +119,7 @@ AudioReceiver::AudioReceiver(scoped_refptr<CastEnvironment> cast_environment,
                        audio_config.rtcp_c_name));
   rtcp_->SetRemoteSSRC(audio_config.incoming_ssrc);
   ScheduleNextRtcpReport();
+  ScheduleNextCastMessage();
 }
 
 AudioReceiver::~AudioReceiver() {}
@@ -190,6 +191,7 @@ void AudioReceiver::DecodeAudioFrameThread(
 }
 
 void AudioReceiver::PlayoutTimeout() {
+  DCHECK(audio_buffer_) << "Invalid function call in this configuration";
   if (queued_encoded_callbacks_.empty()) {
     // Already released by incoming packet.
     return;
@@ -242,6 +244,7 @@ bool AudioReceiver::PostEncodedAudioFrame(
     uint32 rtp_timestamp,
     bool next_frame,
     scoped_ptr<EncodedAudioFrame>* encoded_frame) {
+  DCHECK(audio_buffer_) << "Invalid function call in this configuration";
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   base::TimeTicks playout_time = GetPlayoutTime(now, rtp_timestamp);
   base::TimeDelta time_until_playout = playout_time - now;
@@ -326,6 +329,29 @@ void AudioReceiver::ScheduleNextRtcpReport() {
 void AudioReceiver::SendNextRtcpReport() {
   rtcp_->SendRtcpReport(incoming_ssrc_);
   ScheduleNextRtcpReport();
+}
+
+// Cast messages should be sent within a maximum interval. Schedule a call
+// if not triggered elsewhere, e.g. by the cast message_builder.
+void AudioReceiver::ScheduleNextCastMessage() {
+  if (audio_buffer_) {
+    base::TimeTicks send_time;
+    audio_buffer_->TimeToSendNextCastMessage(&send_time);
+
+    base::TimeDelta time_to_send = send_time -
+        cast_environment_->Clock()->NowTicks();
+    time_to_send = std::max(time_to_send,
+        base::TimeDelta::FromMilliseconds(kMinSchedulingDelayMs));
+    cast_environment_->PostDelayedTask(CastEnvironment::MAIN, FROM_HERE,
+        base::Bind(&AudioReceiver::SendNextCastMessage,
+                   weak_factory_.GetWeakPtr()), time_to_send);
+  }
+}
+
+void AudioReceiver::SendNextCastMessage() {
+  DCHECK(audio_buffer_) << "Invalid function call in this configuration";
+  audio_buffer_->SendCastMessage();  // Will only send a message if it is time.
+  ScheduleNextCastMessage();
 }
 
 }  // namespace cast
