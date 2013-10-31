@@ -1030,7 +1030,10 @@ void FrameLoader::checkLoadCompleteForThisFrame()
 
 void FrameLoader::didFirstLayout()
 {
-    if (m_frame->page() && isBackForwardLoadType(m_loadType))
+    if (!m_frame->page())
+        return;
+
+    if (isBackForwardLoadType(m_loadType) || m_loadType == FrameLoadTypeReload || m_loadType == FrameLoadTypeReloadFromOrigin)
         history()->restoreScrollPositionAndViewState();
 }
 
