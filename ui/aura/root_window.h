@@ -136,6 +136,9 @@ class AURA_EXPORT RootWindow : public Window,
   // Clips the cursor movement to the root_window.
   bool ConfineCursorToWindow();
 
+  // Restores the cursor movement beyond the root window.
+  void UnConfineCursor();
+
   // Draw the damage_rect.
   void ScheduleRedrawRect(const gfx::Rect& damage_rect);
 

@@ -467,13 +467,17 @@ bool DesktopRootWindowHostWin::QueryMouseLocation(gfx::Point* location_return) {
 }
 
 bool DesktopRootWindowHostWin::ConfineCursorToRootWindow() {
-  return false;
+  RECT window_rect = root_window_->GetBoundsInScreen().ToRECT();
+  ::ClipCursor(&window_rect);
+  return true;
 }
 
 void DesktopRootWindowHostWin::UnConfineCursor() {
+  ::ClipCursor(NULL);
 }
 
 void DesktopRootWindowHostWin::OnCursorVisibilityChanged(bool show) {
+  ::ShowCursor(!!show);
 }
 
 void DesktopRootWindowHostWin::MoveCursorTo(const gfx::Point& location) {

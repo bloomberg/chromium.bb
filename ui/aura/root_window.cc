@@ -321,6 +321,10 @@ bool RootWindow::ConfineCursorToWindow() {
   return host_->ConfineCursorToRootWindow();
 }
 
+void RootWindow::UnConfineCursor() {
+  host_->UnConfineCursor();
+}
+
 void RootWindow::ScheduleRedrawRect(const gfx::Rect& damage_rect) {
   compositor_->ScheduleRedrawRect(damage_rect);
 }
