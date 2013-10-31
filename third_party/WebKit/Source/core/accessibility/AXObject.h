@@ -386,6 +386,7 @@ public:
     bool accessibilityIsIgnoredByDefault() const;
     AXObjectInclusion accessibilityPlatformIncludesObject() const;
     virtual AXObjectInclusion defaultObjectInclusion() const;
+    bool isInertOrAriaHidden() const;
     bool lastKnownIsIgnoredValue();
     void setLastKnownIsIgnoredValue(bool);
 
@@ -570,7 +571,6 @@ protected:
     virtual void scrollTo(const IntPoint&) const { }
 
     AccessibilityRole buttonRoleType() const;
-    bool ariaIsHidden() const;
 
     bool allowsTextRanges() const { return isTextControl(); }
     unsigned getLengthForTextRange() const { return text().length(); }

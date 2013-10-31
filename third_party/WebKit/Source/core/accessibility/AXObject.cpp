@@ -278,13 +278,28 @@ AXObjectInclusion AXObject::accessibilityPlatformIncludesObject() const
 
 AXObjectInclusion AXObject::defaultObjectInclusion() const
 {
-    if (ariaIsHidden())
+    if (isInertOrAriaHidden())
         return IgnoreObject;
 
     if (isPresentationalChildOfAriaRole())
         return IgnoreObject;
 
     return accessibilityPlatformIncludesObject();
+}
+
+bool AXObject::isInertOrAriaHidden() const
+{
+    if (equalIgnoringCase(getAttribute(aria_hiddenAttr), "true"))
+        return true;
+    if (node() && node()->isInert())
+        return true;
+
+    for (AXObject* object = parentObject(); object; object = object->parentObject()) {
+        if (equalIgnoringCase(object->getAttribute(aria_hiddenAttr), "true"))
+            return true;
+    }
+
+    return false;
 }
 
 bool AXObject::lastKnownIsIgnoredValue()
@@ -894,19 +909,6 @@ AccessibilityRole AXObject::buttonRoleType() const
     // type.
 
     return ButtonRole;
-}
-
-bool AXObject::ariaIsHidden() const
-{
-    if (equalIgnoringCase(getAttribute(aria_hiddenAttr), "true"))
-        return true;
-
-    for (AXObject* object = parentObject(); object; object = object->parentObject()) {
-        if (equalIgnoringCase(object->getAttribute(aria_hiddenAttr), "true"))
-            return true;
-    }
-
-    return false;
 }
 
 } // namespace WebCore

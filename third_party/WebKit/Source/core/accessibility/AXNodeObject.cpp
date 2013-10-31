@@ -669,7 +669,7 @@ bool AXNodeObject::isEnabled() const
     if (!node || !node->isElementNode())
         return true;
 
-    return !node->isInert() && !toElement(node)->isDisabledFormControl();
+    return !toElement(node)->isDisabledFormControl();
 }
 
 bool AXNodeObject::isIndeterminate() const
@@ -1090,7 +1090,7 @@ static bool shouldUseAccessiblityObjectInnerText(AXObject* obj)
     // containers with lots of children.
 
     // Skip hidden children
-    if (equalIgnoringCase(obj->getAttribute(aria_hiddenAttr), "true"))
+    if (obj->isInertOrAriaHidden())
         return false;
 
     // Skip focusable children, so we don't include the text of links and controls.

@@ -1,0 +1,44 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../fast/js/resources/js-test-pre.js"></script>
+</head>
+<body id="body">
+This content should not be exposed to AT when a modal dialog is open.
+<div>
+<input title="input" id="input" type="text">
+</div>
+<dialog title="dialog" id="dialog">Howdy</dialog>
+
+<script>
+description("This tests that inert elements are not in the AT tree.");
+
+function treeContainsText(node, text) {
+    if (node.stringValue.indexOf(text) > 0)
+        return true;
+    for (i = 0; i < node.childrenCount; i++) {
+        if (treeContainsText(node.childAtIndex(i), text))
+            return true;
+    }
+    return false;
+}
+
+if (window.accessibilityController) {
+    document.body.focus();
+    webArea = accessibilityController.focusedElement;
+
+    shouldBeNonNull("accessibilityController.accessibleElementById('input')");
+    shouldBeTrue("treeContainsText(webArea, 'This content should not be exposed to AT when a modal dialog is open')");
+
+    document.querySelector('dialog').showModal();
+    shouldBeNull("accessibilityController.accessibleElementById('input')");
+    shouldBeFalse("treeContainsText(webArea, 'This content should not be exposed to AT when a modal dialog is open')");
+
+    document.querySelector('dialog').close();
+    shouldBeNonNull("accessibilityController.accessibleElementById('input')");
+    shouldBeTrue("treeContainsText(webArea, 'This content should not be exposed to AT when a modal dialog is open')");
+}
+</script>
+<script src="../fast/js/resources/js-test-post.js"></script>
+</body>
+</html>
