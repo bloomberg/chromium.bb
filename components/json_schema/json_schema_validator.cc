@@ -53,6 +53,18 @@ bool CompareToString(const ExpectedType& entry, const std::string& key) {
   return entry.key < key;
 }
 
+// If |value| is a dictionary, returns the "name" attribute of |value| or NULL
+// if |value| does not contain a "name" attribute. Otherwise, returns |value|.
+const base::Value* ExtractNameFromDictionary(const base::Value* value) {
+  const base::DictionaryValue* value_dict = NULL;
+  const base::Value* name_value = NULL;
+  if (value->GetAsDictionary(&value_dict)) {
+    value_dict->Get("name", &name_value);
+    return name_value;
+  }
+  return value;
+}
+
 bool IsValidSchema(const base::DictionaryValue* dict, std::string* error) {
   // This array must be sorted, so that std::lower_bound can perform a
   // binary search.
@@ -195,6 +207,13 @@ bool IsValidSchema(const base::DictionaryValue* dict, std::string* error) {
       for (size_t i = 0; i < list_value->GetSize(); ++i) {
         const base::Value* value = NULL;
         list_value->Get(i, &value);
+        // Sometimes the enum declaration is a dictionary with the enum value
+        // under "name".
+        value = ExtractNameFromDictionary(value);
+        if (!value) {
+          *error = "Invalid value in enum attribute";
+          return false;
+        }
         switch (value->GetType()) {
           case base::Value::TYPE_NULL:
           case base::Value::TYPE_BOOLEAN:
@@ -479,6 +498,12 @@ void JSONSchemaValidator::ValidateEnum(const base::Value* instance,
   for (size_t i = 0; i < choices->GetSize(); ++i) {
     const base::Value* choice = NULL;
     CHECK(choices->Get(i, &choice));
+    // Sometimes the enum declaration is a dictionary with the enum value under
+    // "name".
+    choice = ExtractNameFromDictionary(choice);
+    if (!choice) {
+      NOTREACHED();
+    }
     switch (choice->GetType()) {
       case base::Value::TYPE_NULL:
       case base::Value::TYPE_BOOLEAN:

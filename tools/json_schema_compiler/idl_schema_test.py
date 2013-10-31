@@ -77,7 +77,9 @@ class IdlSchemaTest(unittest.TestCase):
 
   def testEnum(self):
     schema = self.idl_basics
-    expected = {'enum': ['name1', 'name2'], 'description': 'Enum description',
+    expected = {'enum': [{'name': 'name1', 'description': 'comment1'},
+                         {'name': 'name2'}],
+                'description': 'Enum description',
                 'type': 'string', 'id': 'EnumType'}
     self.assertEquals(expected, getType(schema, expected['id']))
 
@@ -162,10 +164,12 @@ class IdlSchemaTest(unittest.TestCase):
     schema = idl_schema.Load('test/idl_reserved_words.idl')[0]
 
     foo_type = getType(schema, 'Foo')
-    self.assertEquals(['float', 'DOMString'], foo_type['enum'])
+    self.assertEquals([{'name': 'float'}, {'name': 'DOMString'}],
+                      foo_type['enum'])
 
     enum_type = getType(schema, 'enum')
-    self.assertEquals(['callback', 'namespace'], enum_type['enum'])
+    self.assertEquals([{'name': 'callback'}, {'name': 'namespace'}],
+                      enum_type['enum'])
 
     dictionary = getType(schema, 'dictionary')
     self.assertEquals('integer', dictionary['properties']['long']['type'])
