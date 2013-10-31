@@ -30,35 +30,34 @@ using testing::_;
 using testing::Invoke;
 using testing::NiceMock;
 using testing::Return;
+using testing::WithArgs;
 
 namespace utils = extension_function_test_utils;
 
 namespace extensions {
 namespace {
 
-void DoesKeyExistCallbackTrue(
-    chromeos::attestation::AttestationKeyType key_type,
-    const std::string& user_id,
-    const std::string& key_name,
-    const chromeos::BoolDBusMethodCallback& callback) {
-  callback.Run(chromeos::DBUS_METHOD_CALL_SUCCESS, true);
-}
+// Certificate errors as reported to the calling extension.
+const int kDBusError = 1;
+const int kUserRejected = 2;
+const int kGetCertificateFailed = 3;
+const int kResetRequired = 4;
 
-void DoesKeyExistCallbackFalse(
-    chromeos::attestation::AttestationKeyType key_type,
-    const std::string& user_id,
-    const std::string& key_name,
-    const chromeos::BoolDBusMethodCallback& callback) {
-  callback.Run(chromeos::DBUS_METHOD_CALL_SUCCESS, false);
-}
+// A simple functor to invoke a callback with predefined arguments.
+class FakeBoolDBusMethod {
+ public:
+  FakeBoolDBusMethod(chromeos::DBusMethodCallStatus status, bool value)
+      : status_(status),
+        value_(value) {}
 
-void DoesKeyExistCallbackFailed(
-    chromeos::attestation::AttestationKeyType key_type,
-    const std::string& user_id,
-    const std::string& key_name,
-    const chromeos::BoolDBusMethodCallback& callback) {
-  callback.Run(chromeos::DBUS_METHOD_CALL_FAILURE, false);
-}
+  void operator() (const chromeos::BoolDBusMethodCallback& callback) {
+    callback.Run(status_, value_);
+  }
+
+ private:
+  chromeos::DBusMethodCallStatus status_;
+  bool value_;
+};
 
 void RegisterKeyCallbackTrue(
     chromeos::attestation::AttestationKeyType key_type,
@@ -126,7 +125,11 @@ class EPKPChallengeKeyTestBase : public BrowserWithTestWindowTest {
       : extension_(utils::CreateEmptyExtension("")) {
     // Set up the default behavior of mocks.
     ON_CALL(mock_cryptohome_client_, TpmAttestationDoesKeyExist(_, _, _, _))
-        .WillByDefault(Invoke(DoesKeyExistCallbackFalse));
+        .WillByDefault(WithArgs<3>(Invoke(FakeBoolDBusMethod(
+            chromeos::DBUS_METHOD_CALL_SUCCESS, false))));
+    ON_CALL(mock_cryptohome_client_, TpmAttestationIsPrepared(_))
+        .WillByDefault(Invoke(FakeBoolDBusMethod(
+            chromeos::DBUS_METHOD_CALL_SUCCESS, true)));
     ON_CALL(mock_async_method_caller_, TpmAttestationRegisterKey(_, _, _, _))
         .WillByDefault(Invoke(RegisterKeyCallbackTrue));
     ON_CALL(mock_async_method_caller_,
@@ -195,6 +198,13 @@ class EPKPChallengeMachineKeyTest : public EPKPChallengeKeyTestBase {
     func_->set_extension(extension_.get());
   }
 
+  // Returns an error string for the given code.
+  std::string GetCertificateError(int error_code) {
+    return base::StringPrintf(
+        EPKPChallengeMachineKey::kGetCertificateFailedError,
+        error_code);
+  }
+
   scoped_refptr<EPKPChallengeMachineKey> func_;
 };
 
@@ -239,10 +249,10 @@ TEST_F(EPKPChallengeMachineKeyTest, DevicePolicyDisabled) {
 
 TEST_F(EPKPChallengeMachineKeyTest, DoesKeyExistDbusFailed) {
   EXPECT_CALL(mock_cryptohome_client_, TpmAttestationDoesKeyExist(_, _, _, _))
-      .WillRepeatedly(Invoke(DoesKeyExistCallbackFailed));
+      .WillRepeatedly(WithArgs<3>(Invoke(FakeBoolDBusMethod(
+          chromeos::DBUS_METHOD_CALL_FAILURE, false))));
 
-  EXPECT_EQ(base::StringPrintf(
-      EPKPChallengeMachineKey::kGetCertificateFailedError, 1),
+  EXPECT_EQ(GetCertificateError(kDBusError),
             utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
 }
 
@@ -250,8 +260,7 @@ TEST_F(EPKPChallengeMachineKeyTest, GetCertificateFailed) {
   EXPECT_CALL(mock_attestation_flow_, GetCertificate(_, _, _, _, _))
       .WillRepeatedly(Invoke(GetCertificateCallbackFalse));
 
-  EXPECT_EQ(base::StringPrintf(
-      EPKPChallengeMachineKey::kGetCertificateFailedError, 3),
+  EXPECT_EQ(GetCertificateError(kGetCertificateFailed),
             utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
 }
 
@@ -266,7 +275,8 @@ TEST_F(EPKPChallengeMachineKeyTest, SignChallengeFailed) {
 
 TEST_F(EPKPChallengeMachineKeyTest, KeyExists) {
   EXPECT_CALL(mock_cryptohome_client_, TpmAttestationDoesKeyExist(_, _, _, _))
-      .WillRepeatedly(Invoke(DoesKeyExistCallbackTrue));
+      .WillRepeatedly(WithArgs<3>(Invoke(FakeBoolDBusMethod(
+          chromeos::DBUS_METHOD_CALL_SUCCESS, true))));
   // GetCertificate must not be called if the key exists.
   EXPECT_CALL(mock_attestation_flow_, GetCertificate(_, _, _, _, _))
       .Times(0);
@@ -296,6 +306,24 @@ TEST_F(EPKPChallengeMachineKeyTest, Success) {
   EXPECT_EQ("cmVzcG9uc2U=" /* Base64 encoding of 'response' */, response);
 }
 
+TEST_F(EPKPChallengeMachineKeyTest, AttestationNotPrepared) {
+  EXPECT_CALL(mock_cryptohome_client_, TpmAttestationIsPrepared(_))
+      .WillRepeatedly(Invoke(FakeBoolDBusMethod(
+          chromeos::DBUS_METHOD_CALL_SUCCESS, false)));
+
+  EXPECT_EQ(GetCertificateError(kResetRequired),
+            utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
+}
+
+TEST_F(EPKPChallengeMachineKeyTest, AttestationPreparedDbusFailed) {
+  EXPECT_CALL(mock_cryptohome_client_, TpmAttestationIsPrepared(_))
+      .WillRepeatedly(Invoke(FakeBoolDBusMethod(
+          chromeos::DBUS_METHOD_CALL_FAILURE, true)));
+
+  EXPECT_EQ(GetCertificateError(kDBusError),
+            utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
+}
+
 class EPKPChallengeUserKeyTest : public EPKPChallengeKeyTestBase {
  protected:
   static const char kArgs[];
@@ -313,6 +341,12 @@ class EPKPChallengeUserKeyTest : public EPKPChallengeKeyTestBase {
 
     // Set the user preferences.
     prefs_->SetBoolean(prefs::kAttestationEnabled, true);
+  }
+
+  // Returns an error string for the given code.
+  std::string GetCertificateError(int error_code) {
+    return base::StringPrintf(EPKPChallengeUserKey::kGetCertificateFailedError,
+                              error_code);
   }
 
   scoped_refptr<EPKPChallengeUserKey> func_;
@@ -359,10 +393,10 @@ TEST_F(EPKPChallengeUserKeyTest, DevicePolicyDisabled) {
 
 TEST_F(EPKPChallengeUserKeyTest, DoesKeyExistDbusFailed) {
   EXPECT_CALL(mock_cryptohome_client_, TpmAttestationDoesKeyExist(_, _, _, _))
-      .WillRepeatedly(Invoke(DoesKeyExistCallbackFailed));
+      .WillRepeatedly(WithArgs<3>(Invoke(FakeBoolDBusMethod(
+          chromeos::DBUS_METHOD_CALL_FAILURE, false))));
 
-  EXPECT_EQ(base::StringPrintf(
-      EPKPChallengeUserKey::kGetCertificateFailedError, 1),
+  EXPECT_EQ(GetCertificateError(kDBusError),
             utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
 }
 
@@ -370,8 +404,7 @@ TEST_F(EPKPChallengeUserKeyTest, GetCertificateFailed) {
   EXPECT_CALL(mock_attestation_flow_, GetCertificate(_, _, _, _, _))
       .WillRepeatedly(Invoke(GetCertificateCallbackFalse));
 
-  EXPECT_EQ(base::StringPrintf(
-      EPKPChallengeUserKey::kGetCertificateFailedError, 3),
+  EXPECT_EQ(GetCertificateError(kGetCertificateFailed),
             utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
 }
 
@@ -394,7 +427,8 @@ TEST_F(EPKPChallengeUserKeyTest, KeyRegistrationFailed) {
 
 TEST_F(EPKPChallengeUserKeyTest, KeyExists) {
   EXPECT_CALL(mock_cryptohome_client_, TpmAttestationDoesKeyExist(_, _, _, _))
-      .WillRepeatedly(Invoke(DoesKeyExistCallbackTrue));
+      .WillRepeatedly(WithArgs<3>(Invoke(FakeBoolDBusMethod(
+          chromeos::DBUS_METHOD_CALL_SUCCESS, true))));
   // GetCertificate must not be called if the key exists.
   EXPECT_CALL(mock_attestation_flow_, GetCertificate(_, _, _, _, _))
       .Times(0);
@@ -414,7 +448,7 @@ TEST_F(EPKPChallengeUserKeyTest, PersonalDevice) {
   stub_install_attributes_.SetRegistrationUser("");
 
   // Currently personal devices are not supported.
-  EXPECT_EQ("Failed to get Enterprise user certificate. Error code = 2",
+  EXPECT_EQ(GetCertificateError(kUserRejected),
             utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
 }
 
@@ -445,6 +479,24 @@ TEST_F(EPKPChallengeUserKeyTest, Success) {
   std::string response;
   value->GetAsString(&response);
   EXPECT_EQ("cmVzcG9uc2U=" /* Base64 encoding of 'response' */, response);
+}
+
+TEST_F(EPKPChallengeUserKeyTest, AttestationNotPrepared) {
+  EXPECT_CALL(mock_cryptohome_client_, TpmAttestationIsPrepared(_))
+      .WillRepeatedly(Invoke(FakeBoolDBusMethod(
+          chromeos::DBUS_METHOD_CALL_SUCCESS, false)));
+
+  EXPECT_EQ(GetCertificateError(kResetRequired),
+            utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
+}
+
+TEST_F(EPKPChallengeUserKeyTest, AttestationPreparedDbusFailed) {
+  EXPECT_CALL(mock_cryptohome_client_, TpmAttestationIsPrepared(_))
+      .WillRepeatedly(Invoke(FakeBoolDBusMethod(
+          chromeos::DBUS_METHOD_CALL_FAILURE, true)));
+
+  EXPECT_EQ(GetCertificateError(kDBusError),
+            utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
 }
 
 }  // namespace

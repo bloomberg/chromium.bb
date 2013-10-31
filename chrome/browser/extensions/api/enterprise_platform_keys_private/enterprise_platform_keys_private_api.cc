@@ -151,39 +151,57 @@ void EPKPChallengeKeyBase::PrepareKey(
     chromeos::attestation::AttestationCertificateProfile certificate_profile,
     bool require_user_consent,
     const base::Callback<void(PrepareKeyResult)>& callback) {
-  cryptohome_client_->TpmAttestationDoesKeyExist(
-      key_type, user_id, key_name, base::Bind(
-          &EPKPChallengeKeyBase::DoesKeyExistCallback, this,
-          certificate_profile, user_id, require_user_consent, callback));
+  const PrepareKeyContext context = {key_type,
+                                     user_id,
+                                     key_name,
+                                     certificate_profile,
+                                     require_user_consent,
+                                     callback};
+  cryptohome_client_->TpmAttestationIsPrepared(base::Bind(
+      &EPKPChallengeKeyBase::IsAttestationPreparedCallback, this, context));
 }
 
-void EPKPChallengeKeyBase::DoesKeyExistCallback(
-    chromeos::attestation::AttestationCertificateProfile certificate_profile,
-    const std::string& user_id,
-    bool require_user_consent,
-    const base::Callback<void(PrepareKeyResult)>& callback,
+void EPKPChallengeKeyBase::IsAttestationPreparedCallback(
+    const PrepareKeyContext& context,
     chromeos::DBusMethodCallStatus status,
     bool result) {
   if (status == chromeos::DBUS_METHOD_CALL_FAILURE) {
-    callback.Run(PREPARE_KEY_DBUS_ERROR);
+    context.callback.Run(PREPARE_KEY_DBUS_ERROR);
+    return;
+  }
+  if (!result) {
+    context.callback.Run(PREPARE_KEY_RESET_REQUIRED);
+    return;
+  }
+  // Attestation is available, see if the key we need already exists.
+  cryptohome_client_->TpmAttestationDoesKeyExist(
+      context.key_type, context.user_id, context.key_name, base::Bind(
+          &EPKPChallengeKeyBase::DoesKeyExistCallback, this, context));
+}
+
+void EPKPChallengeKeyBase::DoesKeyExistCallback(
+    const PrepareKeyContext& context,
+    chromeos::DBusMethodCallStatus status,
+    bool result) {
+  if (status == chromeos::DBUS_METHOD_CALL_FAILURE) {
+    context.callback.Run(PREPARE_KEY_DBUS_ERROR);
     return;
   }
 
   if (result) {
     // The key exists. Do nothing more.
-    callback.Run(PREPARE_KEY_OK);
+    context.callback.Run(PREPARE_KEY_OK);
   } else {
     // The key does not exist. Create a new key and have it signed by PCA.
-    if (require_user_consent) {
+    if (context.require_user_consent) {
       // We should ask the user explicitly before sending any private
       // information to PCA.
       AskForUserConsent(
           base::Bind(&EPKPChallengeKeyBase::AskForUserConsentCallback, this,
-                     certificate_profile, user_id, callback));
+                     context));
     } else {
       // User consent is not required. Skip to the next step.
-      AskForUserConsentCallback(certificate_profile, user_id, callback,
-                                true);
+      AskForUserConsentCallback(context, true);
     }
   }
 }
@@ -196,24 +214,22 @@ void EPKPChallengeKeyBase::AskForUserConsent(
 }
 
 void EPKPChallengeKeyBase::AskForUserConsentCallback(
-    chromeos::attestation::AttestationCertificateProfile certificate_profile,
-    const std::string& user_id,
-    const base::Callback<void(PrepareKeyResult)>& callback,
+    const PrepareKeyContext& context,
     bool result) {
   if (!result) {
     // The user rejects the request.
-    callback.Run(PREPARE_KEY_USER_REJECTED);
+    context.callback.Run(PREPARE_KEY_USER_REJECTED);
     return;
   }
 
   // Generate a new key and have it signed by PCA.
   attestation_flow_->GetCertificate(
-      certificate_profile,
-      user_id,
+      context.certificate_profile,
+      context.user_id,
       std::string(),  // Not used.
       true,  // Force a new key to be generated.
       base::Bind(&EPKPChallengeKeyBase::GetCertificateCallback, this,
-                 callback));
+                 context.callback));
 }
 
 void EPKPChallengeKeyBase::GetCertificateCallback(
