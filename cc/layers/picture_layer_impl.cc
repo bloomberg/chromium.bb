@@ -1068,6 +1068,7 @@ void PictureLayerImpl::GetDebugBorderProperties(
 }
 
 void PictureLayerImpl::AsValueInto(base::DictionaryValue* state) const {
+  const_cast<PictureLayerImpl*>(this)->DoPostCommitInitializationIfNeeded();
   LayerImpl::AsValueInto(state);
   state->SetDouble("ideal_contents_scale", ideal_contents_scale_);
   state->SetDouble("geometry_contents_scale", contents_scale_x());
@@ -1095,6 +1096,7 @@ void PictureLayerImpl::AsValueInto(base::DictionaryValue* state) const {
 }
 
 size_t PictureLayerImpl::GPUMemoryUsageInBytes() const {
+  const_cast<PictureLayerImpl*>(this)->DoPostCommitInitializationIfNeeded();
   return tilings_->GPUMemoryUsageInBytes();
 }
 
