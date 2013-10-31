@@ -1548,10 +1548,11 @@ void ShelfView::PointerPressedOnButton(views::View* view,
 void ShelfView::PointerDraggedOnButton(views::View* view,
                                        Pointer pointer,
                                        const ui::LocatedEvent& event) {
+  // To prepare all drag types (moving an item in the shelf and dragging off),
+  // we should check the x-axis and y-axis offset.
   if (!dragging() && drag_view_ &&
-      layout_manager_->PrimaryAxisValue(abs(event.x() - drag_offset_),
-                                        abs(event.y() - drag_offset_)) >=
-      kMinimumDragDistance) {
+      ((abs(event.x() - drag_offset_) >= kMinimumDragDistance) ||
+       (abs(event.y() - drag_offset_) >= kMinimumDragDistance))) {
     PrepareForDrag(pointer, event);
   }
   if (drag_pointer_ == pointer)

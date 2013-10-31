@@ -279,7 +279,7 @@ class LauncherAppBrowserTest : public ExtensionBrowserTest {
                        RipOffCommand command) {
     ash::internal::LauncherButton* button = test->GetButton(index);
     gfx::Point start_point = button->GetBoundsInScreen().CenterPoint();
-    gfx::Point rip_off_point(0, 0);
+    gfx::Point rip_off_point(start_point.x(), 0);
     generator->MoveMouseTo(start_point.x(), start_point.y());
     base::MessageLoop::current()->RunUntilIdle();
     generator->PressLeftButton();
