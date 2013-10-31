@@ -66,8 +66,8 @@ void SearchController::Init() {
       new OmniboxProvider(profile_)).Pass());
   AddProvider(Mixer::WEBSTORE_GROUP, scoped_ptr<SearchProvider>(
       new WebstoreProvider(profile_, list_controller_)).Pass());
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisablePeopleSearch)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnablePeopleSearch)) {
     AddProvider(Mixer::PEOPLE_GROUP, scoped_ptr<SearchProvider>(
         new PeopleProvider(profile_)).Pass());
   }
