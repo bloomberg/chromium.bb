@@ -217,19 +217,19 @@ TEST(PickleTest, Resize) {
   size_t cur_payload = payload_size_after_header;
 
   // note: we assume 'unit' is a power of 2
-  EXPECT_EQ(unit, pickle.capacity());
+  EXPECT_EQ(unit, pickle.capacity_after_header());
   EXPECT_EQ(pickle.payload_size(), payload_size_after_header);
 
   // fill out a full page (noting data header)
   pickle.WriteData(data_ptr, static_cast<int>(unit - sizeof(uint32)));
   cur_payload += unit;
-  EXPECT_EQ(unit * 2, pickle.capacity());
+  EXPECT_EQ(unit * 2, pickle.capacity_after_header());
   EXPECT_EQ(cur_payload, pickle.payload_size());
 
   // one more byte should double the capacity
   pickle.WriteData(data_ptr, 1);
   cur_payload += 5;
-  EXPECT_EQ(unit * 4, pickle.capacity());
+  EXPECT_EQ(unit * 4, pickle.capacity_after_header());
   EXPECT_EQ(cur_payload, pickle.payload_size());
 }
 

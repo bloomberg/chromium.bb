@@ -216,7 +216,7 @@ class BASE_EXPORT Pickle {
     return WriteInt(value ? 1 : 0);
   }
   bool WriteInt(int value) {
-    return WriteBytes(&value, sizeof(value));
+    return WritePOD(value);
   }
   // WARNING: DO NOT USE THIS METHOD IF PICKLES ARE PERSISTED IN ANY WAY.
   // It will write whatever a "long" is on this architecture. On 32-bit
@@ -224,22 +224,22 @@ class BASE_EXPORT Pickle {
   // pickles are still around after upgrading to 64-bit, or if they are copied
   // between dissimilar systems, YOUR PICKLES WILL HAVE GONE BAD.
   bool WriteLongUsingDangerousNonPortableLessPersistableForm(long value) {
-    return WriteBytes(&value, sizeof(value));
+    return WritePOD(value);
   }
   bool WriteUInt16(uint16 value) {
-    return WriteBytes(&value, sizeof(value));
+    return WritePOD(value);
   }
   bool WriteUInt32(uint32 value) {
-    return WriteBytes(&value, sizeof(value));
+    return WritePOD(value);
   }
   bool WriteInt64(int64 value) {
-    return WriteBytes(&value, sizeof(value));
+    return WritePOD(value);
   }
   bool WriteUInt64(uint64 value) {
-    return WriteBytes(&value, sizeof(value));
+    return WritePOD(value);
   }
   bool WriteFloat(float value) {
-    return WriteBytes(&value, sizeof(value));
+    return WritePOD(value);
   }
   bool WriteString(const std::string& value);
   bool WriteWString(const std::wstring& value);
@@ -247,10 +247,10 @@ class BASE_EXPORT Pickle {
   // "Data" is a blob with a length. When you read it out you will be given the
   // length. See also WriteBytes.
   bool WriteData(const char* data, int length);
-  // "Bytes" is a blob with no length. The caller must specify the lenght both
+  // "Bytes" is a blob with no length. The caller must specify the length both
   // when reading and writing. It is normally used to serialize PoD types of a
   // known size. See also WriteData.
-  bool WriteBytes(const void* data, int data_len);
+  bool WriteBytes(const void* data, int length);
 
   // Reserves space for upcoming writes when multiple writes will be made and
   // their sizes are computed in advance. It can be significantly faster to call
@@ -295,26 +295,13 @@ class BASE_EXPORT Pickle {
     return reinterpret_cast<char*>(header_) + header_size_;
   }
 
-  size_t capacity() const {
-    return capacity_;
+  size_t capacity_after_header() const {
+    return capacity_after_header_;
   }
 
-  // Resizes the buffer for use when writing the specified amount of data. The
-  // location that the data should be written at is returned, or NULL if there
-  // was an error. Call EndWrite with the returned offset and the given length
-  // to pad out for the next write.
-  char* BeginWrite(size_t length);
-
-  // Completes the write operation by padding the data with NULL bytes until it
-  // is padded. Should be paired with BeginWrite, but it does not necessarily
-  // have to be called after the data is written.
-  void EndWrite(char* dest, int length);
-
-  // Resize the capacity, note that the input value should include the size of
-  // the header: new_capacity = sizeof(Header) + desired_payload_capacity.
-  // A realloc() failure will cause a Resize failure... and caller should check
-  // the return result for true (i.e., successful resizing).
-  bool Resize(size_t new_capacity);
+  // Resize the capacity, note that the input value should not include the size
+  // of the header.
+  void Resize(size_t new_capacity);
 
   // Aligns 'i' by rounding it up to the next multiple of 'alignment'
   static size_t AlignInt(size_t i, int alignment) {
@@ -335,8 +322,22 @@ class BASE_EXPORT Pickle {
 
   Header* header_;
   size_t header_size_;  // Supports extra data between header and payload.
-  // Allocation size of payload (or -1 if allocation is const).
-  size_t capacity_;
+  // Allocation size of payload (or -1 if allocation is const). Note: this
+  // doesn't count the header.
+  size_t capacity_after_header_;
+  // The offset at which we will write the next field. Note: this doesn't count
+  // the header.
+  size_t write_offset_;
+
+  // Just like WriteBytes, but with a compile-time size, for performance.
+  template<size_t length> void WriteBytesStatic(const void* data);
+
+  // Writes a POD by copying its bytes.
+  template <typename T> bool WritePOD(const T& data) {
+    WriteBytesStatic<sizeof(data)>(&data);
+    return true;
+  }
+  inline void WriteBytesCommon(const void* data, size_t length);
 
   FRIEND_TEST_ALL_PREFIXES(PickleTest, Resize);
   FRIEND_TEST_ALL_PREFIXES(PickleTest, FindNext);
