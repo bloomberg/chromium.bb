@@ -435,9 +435,6 @@ class TestPort(Port):
     def default_child_processes(self):
         return 1
 
-    def worker_startup_delay_secs(self):
-        return 0
-
     def check_build(self, needs_http, printer):
         return test_run_results.OK_EXIT_STATUS
 

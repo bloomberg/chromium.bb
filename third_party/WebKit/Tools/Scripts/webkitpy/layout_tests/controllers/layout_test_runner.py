@@ -113,13 +113,13 @@ class LayoutTestRunner(object):
 
         start_time = time.time()
         try:
-            with message_pool.get(self, self._worker_factory, num_workers, self._port.worker_startup_delay_secs(), self._port.host) as pool:
+            with message_pool.get(self, self._worker_factory, num_workers, self._port.host) as pool:
                 pool.run(('test_list', shard.name, shard.test_inputs) for shard in all_shards)
 
             if self._shards_to_redo:
                 num_workers -= len(self._shards_to_redo)
                 if num_workers > 0:
-                    with message_pool.get(self, self._worker_factory, num_workers, self._port.worker_startup_delay_secs(), self._port.host) as pool:
+                    with message_pool.get(self, self._worker_factory, num_workers, self._port.host) as pool:
                         pool.run(('test_list', shard.name, shard.test_inputs) for shard in self._shards_to_redo)
         except TestRunInterruptedException, e:
             _log.warning(e.reason)

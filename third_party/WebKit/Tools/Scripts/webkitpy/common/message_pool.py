@@ -56,17 +56,16 @@ from webkitpy.common.system import stack_utils
 _log = logging.getLogger(__name__)
 
 
-def get(caller, worker_factory, num_workers, worker_startup_delay_secs=0.0, host=None):
+def get(caller, worker_factory, num_workers, host=None):
     """Returns an object that exposes a run() method that takes a list of test shards and runs them in parallel."""
-    return _MessagePool(caller, worker_factory, num_workers, worker_startup_delay_secs, host)
+    return _MessagePool(caller, worker_factory, num_workers, host)
 
 
 class _MessagePool(object):
-    def __init__(self, caller, worker_factory, num_workers, worker_startup_delay_secs=0.0, host=None):
+    def __init__(self, caller, worker_factory, num_workers, host=None):
         self._caller = caller
         self._worker_factory = worker_factory
         self._num_workers = num_workers
-        self._worker_startup_delay_secs = worker_startup_delay_secs
         self._workers = []
         self._workers_stopped = set()
         self._host = host
@@ -107,8 +106,6 @@ class _MessagePool(object):
             worker = _Worker(host, self._messages_to_manager, self._messages_to_worker, self._worker_factory, worker_number, self._running_inline, self if self._running_inline else None, self._worker_log_level())
             self._workers.append(worker)
             worker.start()
-            if self._worker_startup_delay_secs:
-                time.sleep(self._worker_startup_delay_secs)
 
     def _worker_log_level(self):
         log_level = logging.NOTSET
