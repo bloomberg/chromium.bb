@@ -55,6 +55,11 @@ class HostVarTracker : public ppapi::VarTracker {
       PP_Instance instance) const;
 
   // VarTracker public implementation.
+  virtual PP_Var MakeResourcePPVarFromMessage(
+      PP_Instance instance,
+      const IPC::Message& creation_message,
+      int pending_renderer_id,
+      int pending_browser_id) OVERRIDE;
   virtual ppapi::ResourceVar* MakeResourceVar(PP_Resource pp_resource) OVERRIDE;
   virtual void DidDeleteInstance(PP_Instance instance) OVERRIDE;
 

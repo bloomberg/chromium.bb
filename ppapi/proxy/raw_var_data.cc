@@ -695,14 +695,18 @@ bool ResourceRawVarData::Init(const PP_Var& var, PP_Instance /*instance*/) {
 }
 
 PP_Var ResourceRawVarData::CreatePPVar(PP_Instance instance) {
-  // If pp_resource_ is NULL, it could be because we are on the plugin side and
-  // there is a pending resource host on the renderer.
-  // TODO(mgiuca): Create a plugin-side resource in this case.
-  // Currently, this should never occur. This will be needed when passing a
-  // resource from the renderer to the plugin (http://crbug.com/177017).
-  DCHECK(pp_resource_);
+  // If this is not a pending resource host, just create the var.
+  if (pp_resource_ || !creation_message_) {
+    return PpapiGlobals::Get()->GetVarTracker()->MakeResourcePPVar(
+        pp_resource_);
+  }
 
-  return PpapiGlobals::Get()->GetVarTracker()->MakeResourcePPVar(pp_resource_);
+  // This is a pending resource host, so create the resource and var.
+  return PpapiGlobals::Get()->GetVarTracker()->MakeResourcePPVarFromMessage(
+      instance,
+      *creation_message_,
+      pending_renderer_host_id_,
+      pending_browser_host_id_);
 }
 
 void ResourceRawVarData::PopulatePPVar(const PP_Var& var,

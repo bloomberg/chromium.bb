@@ -103,6 +103,17 @@ int HostVarTracker::GetLiveNPObjectVarsForInstance(PP_Instance instance) const {
   return static_cast<int>(found->second->size());
 }
 
+PP_Var HostVarTracker::MakeResourcePPVarFromMessage(
+    PP_Instance instance,
+    const IPC::Message& creation_message,
+    int pending_renderer_id,
+    int pending_browser_id) {
+  // On the host side, the creation message is ignored when creating a resource.
+  // Therefore, a call to this function indicates a null resource. Return the
+  // resource 0.
+  return MakeResourcePPVar(0);
+}
+
 ppapi::ResourceVar* HostVarTracker::MakeResourceVar(PP_Resource pp_resource) {
   return new HostResourceVar(pp_resource);
 }

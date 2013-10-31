@@ -10,6 +10,7 @@
 #include "content/common/pepper_renderer_instance_data.h"
 #include "content/common/view_messages.h"
 #include "content/browser/renderer_host/pepper/pepper_file_ref_host.h"
+#include "content/browser/renderer_host/pepper/pepper_file_system_browser_host.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "ipc/ipc_message_macros.h"
@@ -98,24 +99,40 @@ void PepperRendererConnection::OnMsgCreateResourceHostsFromHost(
     DLOG(ERROR) << "Invalid plugin process ID.";
   } else {
     for (size_t i = 0; i < nested_msgs.size(); ++i) {
-      // FileRef_CreateExternal is only permitted from the renderer. Because of
-      // this, we handle this message here and not in
-      // content_browser_pepper_host_factory.cc.
+      const IPC::Message& nested_msg = nested_msgs[i];
       scoped_ptr<ppapi::host::ResourceHost> resource_host;
       if (host->IsValidInstance(instance)) {
-        if (nested_msgs[i].type() == PpapiHostMsg_FileRef_CreateExternal::ID) {
+        if (nested_msg.type() == PpapiHostMsg_FileRef_CreateExternal::ID) {
+          // FileRef_CreateExternal is only permitted from the renderer. Because
+          // of this, we handle this message here and not in
+          // content_browser_pepper_host_factory.cc.
           base::FilePath external_path;
           if (ppapi::UnpackMessage<PpapiHostMsg_FileRef_CreateExternal>(
-              nested_msgs[i], &external_path)) {
+                  nested_msg, &external_path)) {
             resource_host.reset(new PepperFileRefHost(
                 host, instance, params.pp_resource(), external_path));
+          }
+        } else if (nested_msg.type() ==
+                   PpapiHostMsg_FileSystem_CreateFromRenderer::ID) {
+          // Similarly, FileSystem_CreateFromRenderer is only permitted from the
+          // renderer.
+          std::string root_url;
+          PP_FileSystemType file_system_type;
+          if (ppapi::UnpackMessage<PpapiHostMsg_FileSystem_CreateFromRenderer>(
+                  nested_msg, &root_url, &file_system_type)) {
+            resource_host.reset(
+                new PepperFileSystemBrowserHost(host,
+                                                instance,
+                                                params.pp_resource(),
+                                                GURL(root_url),
+                                                file_system_type));
           }
         }
       }
 
       if (!resource_host.get()) {
         resource_host = host->GetPpapiHost()->CreateResourceHost(
-            params, instance, nested_msgs[i]);
+            params, instance, nested_msg);
       }
 
       if (resource_host.get()) {

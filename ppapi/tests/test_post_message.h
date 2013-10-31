@@ -8,6 +8,9 @@
 #include <string>
 #include <vector>
 
+#include "ppapi/c/dev/ppb_var_resource_dev.h"
+#include "ppapi/c/ppb_file_system.h"
+#include "ppapi/c/ppb_var.h"
 #include "ppapi/tests/test_case.h"
 
 class TestPostMessage : public TestCase {
@@ -47,6 +50,13 @@ class TestPostMessage : public TestCase {
   // at the time of invocation.
   int WaitForMessages();
 
+  // Posts a message from JavaScript to the plugin and wait for it to arrive.
+  // |func| should be a JavaScript function(callback) which calls |callback|
+  // with the variable to post. This function will block until the message
+  // arrives on the plugin side (there is no need to use WaitForMessages()).
+  // Returns the number of messages that were pending at the time of invocation.
+  int PostAsyncMessageFromJavaScriptAndWait(const std::string& func);
+
   // Verifies that the given javascript assertions are true of the message
   // (|test_data|) passed via PostMessage().
   std::string CheckMessageProperties(
@@ -71,6 +81,10 @@ class TestPostMessage : public TestCase {
   // Test sending Dictionary vars in both directions.
   std::string TestSendingDictionary();
 
+  // Test sending Resource vars from JavaScript to the plugin.
+  // TODO(mgiuca): Test sending Resource vars in both directions.
+  std::string TestSendingResource();
+
   // Test sending a complex var with references and cycles in both directions.
   std::string TestSendingComplexVar();
 
@@ -93,6 +107,12 @@ class TestPostMessage : public TestCase {
   // This is used to store pp::Var objects we receive via a call to
   // HandleMessage.
   VarVector message_data_;
+
+  // Interfaces for C APIs.
+  const PPB_Core* core_interface_;
+  const PPB_FileSystem* file_system_interface_;
+  const PPB_Var* var_interface_;
+  const PPB_VarResource_Dev* var_resource_interface_;
 };
 
 #endif  // PPAPI_TESTS_TEST_POST_MESSAGE_H_

@@ -21,6 +21,10 @@
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 #include "ppapi/shared_impl/var.h"
 
+namespace IPC {
+class Message;
+}  // namespace IPC
+
 namespace ppapi {
 
 class ArrayBufferVar;
@@ -84,6 +88,16 @@ class PPAPI_SHARED_EXPORT VarTracker {
   // RefCounted objects, has a 0 initial internal reference count. (You should
   // usually immediately put this in a scoped_refptr).
   ArrayBufferVar* MakeArrayBufferVar(uint32 size_in_bytes, const void* data);
+
+  // Creates a new resource var from a resource creation message. Returns a
+  // PP_Var that references a new PP_Resource, both with an initial reference
+  // count of 1. On the host side, |creation_message| is ignored, and an empty
+  // resource var is always returned.
+  virtual PP_Var MakeResourcePPVarFromMessage(
+      PP_Instance instance,
+      const IPC::Message& creation_message,
+      int pending_renderer_id,
+      int pending_browser_id) = 0;
 
   // Creates a new resource var that points to a given resource ID. Returns a
   // PP_Var that references it and has an initial reference count of 1.

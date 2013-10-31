@@ -4,12 +4,17 @@
 
 #include "ppapi/tests/test_post_message.h"
 
+#include <string.h>
 #include <algorithm>
 #include <map>
 #include <sstream>
 
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/c/ppb_file_io.h"
+#include "ppapi/cpp/file_io.h"
+#include "ppapi/cpp/file_ref.h"
+#include "ppapi/cpp/file_system.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/var_array.h"
@@ -28,6 +33,7 @@ REGISTER_TEST_CASE(PostMessage);
 
 namespace {
 
+const char kTestFilename[] = "testfile.txt";
 const char kTestString[] = "Hello world!";
 const bool kTestBool = true;
 const int32_t kTestInt = 42;
@@ -161,6 +167,18 @@ TestPostMessage::~TestPostMessage() {
 bool TestPostMessage::Init() {
   bool success = CheckTestingInterface();
 
+  core_interface_ = static_cast<const PPB_Core*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_CORE_INTERFACE));
+  file_system_interface_ = static_cast<const PPB_FileSystem*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_FILESYSTEM_INTERFACE));
+  var_interface_ = static_cast<const PPB_Var*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_VAR_INTERFACE));
+  var_resource_interface_ = static_cast<const PPB_VarResource_Dev*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_VAR_RESOURCE_DEV_INTERFACE));
+  if (!core_interface_ || !file_system_interface_ || !var_interface_ ||
+      !var_resource_interface_)
+    return false;
+
   // Set up a special listener that only responds to a FINISHED_WAITING string.
   // This is for use by WaitForMessages.
   std::string js_code;
@@ -201,6 +219,7 @@ void TestPostMessage::RunTests(const std::string& filter) {
   RUN_TEST(SendingArrayBuffer, filter);
   RUN_TEST(SendingArray, filter);
   RUN_TEST(SendingDictionary, filter);
+  RUN_TEST(SendingResource, filter);
   RUN_TEST(SendingComplexVar, filter);
   RUN_TEST(MessageEvent, filter);
   RUN_TEST(NoHandler, filter);
@@ -269,6 +288,31 @@ int TestPostMessage::WaitForMessages() {
   // We first post a FINISHED_WAITING_MESSAGE. This should be guaranteed to
   // come back _after_ any other incoming messages that were already pending.
   instance_->PostMessage(pp::Var(FINISHED_WAITING_MESSAGE));
+  testing_interface_->RunMessageLoop(instance_->pp_instance());
+  // Now that the FINISHED_WAITING_MESSAGE has been echoed back to us, we know
+  // that all pending messages have been slurped up. Return the number we
+  // received (which may be zero).
+  return message_data_.size() - message_size_before;
+}
+
+int TestPostMessage::PostAsyncMessageFromJavaScriptAndWait(
+    const std::string& func) {
+  // After the |func| calls callback, post both the given |message|, as well as
+  // the special message FINISHED_WAITING_MESSAGE. This ensures that
+  // RunMessageLoop correctly waits until the callback is called.
+  std::string js_code;
+  js_code += "var plugin = document.getElementById('plugin');"
+             "var callback = function(message) {"
+             "  plugin.postMessage(message);"
+             "  plugin.postMessage('" FINISHED_WAITING_MESSAGE "');"
+             "};";
+  js_code += "(" + func + ")(callback);";
+  instance_->EvalScript(js_code);
+
+  size_t message_size_before = message_data_.size();
+  // Unlike WaitForMessages, we do not post FINISHED_WAITING_MESSAGE. This is
+  // because the above JavaScript code will post it for us, when the
+  // asynchronous operation completes.
   testing_interface_->RunMessageLoop(instance_->pp_instance());
   // Now that the FINISHED_WAITING_MESSAGE has been echoed back to us, we know
   // that all pending messages have been slurped up. Return the number we
@@ -529,6 +573,80 @@ std::string TestPostMessage::TestSendingDictionary() {
 
   message_data_.clear();
   ASSERT_TRUE(ClearListeners());
+
+  PASS();
+}
+
+std::string TestPostMessage::TestSendingResource() {
+  // Clean up after previous tests. This also swallows the message sent by Init
+  // if we didn't run the 'SendInInit' test. All tests other than 'SendInInit'
+  // should start with these.
+  WaitForMessages();
+  message_data_.clear();
+  ASSERT_TRUE(ClearListeners());
+
+  // Test sending a DOMFileSystem from JavaScript to the plugin.
+  // This opens a real (temporary) file using the HTML5 FileSystem API and
+  // writes to it.
+  ASSERT_TRUE(AddEchoingListener("message_event.data"));
+  ASSERT_EQ(message_data_.size(), 0);
+  std::string js_code =
+      "function(callback) {"
+      "  window.webkitRequestFileSystem(window.TEMPORARY, 1024,"
+      "                                 function(fileSystem) {"
+      "    fileSystem.root.getFile('";
+  js_code += kTestFilename;
+  js_code += "', {create: true}, function(tempFile) {"
+      "      tempFile.createWriter(function(writer) {"
+      "        writer.onerror = function() { callback(null); };"
+      "        writer.onwriteend = function() { callback(fileSystem); };"
+      "        var blob = new Blob(['";
+  js_code += kTestString;
+  js_code += "'], {'type': 'text/plain'});"
+      "        writer.write(blob);"
+      "      });"
+      "    }, function() { callback(null); });"
+      "  }, function() { callback(null); });"
+      "}";
+  ASSERT_EQ(PostAsyncMessageFromJavaScriptAndWait(js_code), 1);
+  // TODO(mgiuca): Use the C++ API instead of the C API, when it is available.
+  PP_Var var = message_data_.back().Detach();
+  PP_Resource result = var_resource_interface_->VarToResource(var);
+  ASSERT_TRUE(file_system_interface_->IsFileSystem(result));
+  {
+    pp::FileSystem file_system(pp::PASS_REF, result);
+    std::string file_path("/");
+    file_path += kTestFilename;
+    pp::FileRef file_ref(file_system, file_path.c_str());
+    ASSERT_NE(0, file_ref.pp_resource());
+
+    // Read the file and test that its contents match.
+    pp::FileIO file_io(instance_);
+    ASSERT_NE(0, file_io.pp_resource());
+    TestCompletionCallback callback(instance_->pp_instance(),
+                                    callback_type());
+    callback.WaitForResult(
+        file_io.Open(file_ref, PP_FILEOPENFLAG_READ, callback.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(callback);
+    ASSERT_EQ(PP_OK, callback.result());
+
+    int length = strlen(kTestString);
+    std::vector<char> buffer_vector(length);
+    char* buffer = &buffer_vector[0];  // Note: Not null-terminated!
+    callback.WaitForResult(
+        file_io.Read(0, buffer, length, callback.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(callback);
+    ASSERT_EQ(length, callback.result());
+    ASSERT_EQ(0, memcmp(buffer, kTestString, length));
+  }
+  var_interface_->Release(var);
+
+  WaitForMessages();
+  message_data_.clear();
+  ASSERT_TRUE(ClearListeners());
+
+  // TODO(mgiuca): Test roundtrip from plugin to JS and back, when the plugin to
+  // JS support is available.
 
   PASS();
 }

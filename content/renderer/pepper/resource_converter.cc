@@ -7,9 +7,15 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
+#include "content/renderer/pepper/pepper_file_system_host.h"
 #include "ipc/ipc_message.h"
+#include "ppapi/host/ppapi_host.h"
+#include "ppapi/host/resource_host.h"
+#include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/resource_var.h"
 #include "ppapi/shared_impl/scoped_pp_var.h"
+#include "third_party/WebKit/public/platform/WebFileSystem.h"
+#include "third_party/WebKit/public/web/WebDOMFileSystem.h"
 
 namespace {
 
@@ -22,6 +28,61 @@ void FlushComplete(
     browser_vars[i]->set_pending_browser_host_id(pending_host_ids[i]);
   }
   callback.Run(true);
+}
+
+// Converts a WebKit::WebFileSystem::Type to a PP_FileSystemType.
+PP_FileSystemType WebFileSystemTypeToPPAPI(WebKit::WebFileSystem::Type type) {
+  switch (type) {
+    case WebKit::WebFileSystem::TypeTemporary:
+      return PP_FILESYSTEMTYPE_LOCALTEMPORARY;
+    case WebKit::WebFileSystem::TypePersistent:
+      return PP_FILESYSTEMTYPE_LOCALPERSISTENT;
+    case WebKit::WebFileSystem::TypeIsolated:
+      return PP_FILESYSTEMTYPE_ISOLATED;
+    case WebKit::WebFileSystem::TypeExternal:
+      return PP_FILESYSTEMTYPE_EXTERNAL;
+    default:
+      NOTREACHED();
+      return PP_FILESYSTEMTYPE_LOCALTEMPORARY;
+  }
+}
+
+// Given a V8 value containing a DOMFileSystem, creates a resource host and
+// returns the resource information for serialization.
+// On error, false.
+bool DOMFileSystemToResource(
+    PP_Instance instance,
+    content::RendererPpapiHost* host,
+    const WebKit::WebDOMFileSystem& dom_file_system,
+    int* pending_renderer_id,
+    scoped_ptr<IPC::Message>* create_message,
+    scoped_ptr<IPC::Message>* browser_host_create_message) {
+  DCHECK(!dom_file_system.isNull());
+
+  PP_FileSystemType file_system_type =
+      WebFileSystemTypeToPPAPI(dom_file_system.type());
+  GURL root_url = dom_file_system.rootURL();
+
+  // External file systems are not currently supported. (Without this check,
+  // there would be a CHECK-fail in FileRefResource.)
+  // TODO(mgiuca): Support external file systems.
+  if (file_system_type == PP_FILESYSTEMTYPE_EXTERNAL)
+    return false;
+
+  *pending_renderer_id = host->GetPpapiHost()->AddPendingResourceHost(
+      scoped_ptr<ppapi::host::ResourceHost>(
+          new content::PepperFileSystemHost(host, instance, 0, root_url,
+                                            file_system_type)));
+  if (*pending_renderer_id == 0)
+    return false;
+
+  create_message->reset(
+      new PpapiPluginMsg_FileSystem_CreateFromPendingHost(file_system_type));
+
+  browser_host_create_message->reset(
+      new PpapiHostMsg_FileSystem_CreateFromRenderer(root_url.spec(),
+                                                     file_system_type));
+  return true;
 }
 
 }  // namespace
@@ -50,9 +111,31 @@ bool ResourceConverterImpl::FromV8Value(v8::Handle<v8::Object> val,
   v8::HandleScope handle_scope(context->GetIsolate());
 
   *was_resource = false;
-  // TODO(mgiuca): There are currently no values which can be converted to
-  // resources.
 
+  WebKit::WebDOMFileSystem dom_file_system =
+      WebKit::WebDOMFileSystem::fromV8Value(val);
+  if (!dom_file_system.isNull()) {
+    int pending_renderer_id;
+    scoped_ptr<IPC::Message> create_message;
+    scoped_ptr<IPC::Message> browser_host_create_message;
+    if (!DOMFileSystemToResource(instance_, host_, dom_file_system,
+                                 &pending_renderer_id, &create_message,
+                                 &browser_host_create_message)) {
+      return false;
+    }
+    DCHECK(create_message);
+    DCHECK(browser_host_create_message);
+    scoped_refptr<HostResourceVar> result_var =
+        CreateResourceVarWithBrowserHost(
+            pending_renderer_id, *create_message, *browser_host_create_message);
+    *result = result_var->GetPPVar();
+    *was_resource = true;
+    return true;
+  }
+
+  // The value was not convertible to a resource. Return true with
+  // |was_resource| set to false. As per the interface of FromV8Value, |result|
+  // may be left unmodified in this case.
   return true;
 }
 
