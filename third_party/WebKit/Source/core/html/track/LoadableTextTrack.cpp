@@ -112,11 +112,6 @@ void LoadableTextTrack::newCuesAvailable(TextTrackLoader* loader)
         client()->textTrackAddCues(this, m_cues.get());
 }
 
-void LoadableTextTrack::cueLoadingStarted(TextTrackLoader* loader)
-{
-    ASSERT_UNUSED(loader, m_loader == loader);
-}
-
 void LoadableTextTrack::cueLoadingCompleted(TextTrackLoader* loader, bool loadingFailed)
 {
     ASSERT_UNUSED(loader, m_loader == loader);

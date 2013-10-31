@@ -119,9 +119,6 @@ bool TextTrackLoader::load(const KURL& url, const String& crossOriginMode)
 {
     cancelLoad();
 
-    if (!m_client.shouldLoadCues(this))
-        return false;
-
     FetchRequest cueRequest(ResourceRequest(m_document.completeURL(url)), FetchInitiatorTypeNames::texttrack);
 
     if (!crossOriginMode.isNull()) {
@@ -141,7 +138,6 @@ bool TextTrackLoader::load(const KURL& url, const String& crossOriginMode)
     if (!m_resource)
         return false;
     m_resource->addClient(this);
-    m_client.cueLoadingStarted(this);
     return true;
 }
 

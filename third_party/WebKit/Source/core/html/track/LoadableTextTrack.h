@@ -55,11 +55,9 @@ public:
 
 private:
     // TextTrackLoaderClient
-    virtual bool shouldLoadCues(TextTrackLoader*) { return true; }
-    virtual void newCuesAvailable(TextTrackLoader*);
-    virtual void cueLoadingStarted(TextTrackLoader*);
-    virtual void cueLoadingCompleted(TextTrackLoader*, bool loadingFailed);
-    virtual void newRegionsAvailable(TextTrackLoader*);
+    virtual void newCuesAvailable(TextTrackLoader*) OVERRIDE;
+    virtual void cueLoadingCompleted(TextTrackLoader*, bool loadingFailed) OVERRIDE;
+    virtual void newRegionsAvailable(TextTrackLoader*) OVERRIDE;
 
     LoadableTextTrack(HTMLTrackElement*, const String& kind, const String& label, const String& language);
 
