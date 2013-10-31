@@ -46,6 +46,9 @@ PassRefPtr<InputType> TextInputType::create(HTMLInputElement& element)
 
 void TextInputType::countUsage()
 {
+    countUsageIfVisible(UseCounter::InputTypeText);
+    if (element().fastHasAttribute(maxlengthAttr))
+        countUsageIfVisible(UseCounter::InputTypeTextMaxLength);
     const AtomicString& type = element().fastGetAttribute(typeAttr);
     if (equalIgnoringCase(type, InputTypeNames::datetime()))
         countUsageIfVisible(UseCounter::InputTypeDateTimeFallback);

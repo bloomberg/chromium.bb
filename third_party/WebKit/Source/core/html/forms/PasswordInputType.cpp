@@ -52,6 +52,13 @@ PassRefPtr<InputType> PasswordInputType::create(HTMLInputElement& element)
     return adoptRef(new PasswordInputType(element));
 }
 
+void PasswordInputType::countUsage()
+{
+    countUsageIfVisible(UseCounter::InputTypePassword);
+    if (element().fastHasAttribute(HTMLNames::maxlengthAttr))
+        countUsageIfVisible(UseCounter::InputTypePasswordMaxLength);
+}
+
 bool PasswordInputType::isPasswordGenerationEnabled() const
 {
     if (isPasswordGenerationDecorationEnabled())

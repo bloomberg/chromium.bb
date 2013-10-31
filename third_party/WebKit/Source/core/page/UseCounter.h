@@ -249,6 +249,10 @@ public:
         TextTrackCueConstructor,
         CSSStyleDeclarationPropertyName, // Removed in CSSOM.
         CSSStyleDeclarationFloatPropertyName, // Pending removal in CSSOM.
+        InputTypeText,
+        InputTypeTextMaxLength,
+        InputTypePassword,
+        InputTypePasswordMaxLength,
         // Add new features immediately above this line. Don't change assigned
         // numbers of each items, and don't reuse unused slots.
         NumberOfFeatures, // This enum value must be last.
