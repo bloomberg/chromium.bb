@@ -3,11 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Moves C++ files to a new location, updating any include paths that
-point to them, and re-ordering headers as needed.  If multiple source
-files are specified, the destination must be a directory (and must end
-in a slash).  Updates include guards in moved header files.  Assumes
-Chromium coding style.
+"""Moves C++ files to a new location, updating any include paths that point
+to them, and re-ordering headers as needed.  If multiple source files are
+specified, the destination must be a directory.  Updates include guards in
+moved header files.  Assumes Chromium coding style.
 
 Attempts to update paths used in .gyp(i) files, but does not reorder
 or restructure .gyp(i) files in any way.
@@ -40,22 +39,24 @@ HANDLED_EXTENSIONS = ['.cc', '.mm', '.h', '.hh']
 def IsHandledFile(path):
   return os.path.splitext(path)[1] in HANDLED_EXTENSIONS
 
+
 def MakeDestinationPath(from_path, to_path):
   """Given the from and to paths, return a correct destination path.
 
-  The initial destination path may either a full path or a directory,
-  in which case the path must end with /.  Also does basic sanity
-  checks.
+  The initial destination path may either a full path or a directory.
+  Also does basic sanity checks.
   """
   if not IsHandledFile(from_path):
-    raise Exception('Only intended to move individual source files. (%s)' %
+    raise Exception('Only intended to move individual source files '
+                    '(%s does not have a recognized extension).' %
                     from_path)
-  dest_extension = os.path.splitext(to_path)[1]
-  if dest_extension not in HANDLED_EXTENSIONS:
-    if to_path.endswith('/') or to_path.endswith('\\'):
-      to_path += os.path.basename(from_path)
-    else:
-      raise Exception('Destination must be either full path or end with /.')
+  if os.path.isdir(to_path):
+    to_path = os.path.join(to_path, os.path.basename(from_path))
+  else:
+    dest_extension = os.path.splitext(to_path)[1]
+    if dest_extension not in HANDLED_EXTENSIONS:
+      raise Exception('Destination must be either a full path with '
+                      'a recognized extension or a directory.')
   return to_path
 
 
@@ -148,7 +149,6 @@ def UpdateIncludeGuard(old_path, new_path):
   with open(new_path, 'w') as f:
     f.write(new_contents)
 
-
 def main():
   if not os.path.isdir('.git'):
     print 'Fatal: You must run from the root of a git checkout.'
@@ -170,17 +170,20 @@ def main():
     parser.print_help()
     return 1
 
-  if len(args) > 2 and not args[-1].endswith('/'):
-    print 'Target %s is not a directory.' % args[-1]
+  from_paths = args[:len(args)-1]
+  orig_to_path = args[-1]
+
+  if len(from_paths) > 1 and not os.path.isdir(orig_to_path):
+    print 'Target %s is not a directory.' % orig_to_path
     print
     parser.print_help()
     return 1
 
-  for from_path in args[:len(args)-1]:
+  for from_path in from_paths:
     if not opts.error_for_non_source_file and not IsHandledFile(from_path):
       print '%s does not appear to be a source file, skipping' % (from_path)
       continue
-    to_path = MakeDestinationPath(from_path, args[-1])
+    to_path = MakeDestinationPath(from_path, orig_to_path)
     if not opts.already_moved:
       MoveFile(from_path, to_path)
     UpdatePostMove(from_path, to_path)
