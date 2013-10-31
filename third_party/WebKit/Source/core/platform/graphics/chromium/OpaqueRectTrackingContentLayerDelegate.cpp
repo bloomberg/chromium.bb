@@ -50,12 +50,16 @@ OpaqueRectTrackingContentLayerDelegate::~OpaqueRectTrackingContentLayerDelegate(
 
 void OpaqueRectTrackingContentLayerDelegate::paintContents(SkCanvas* canvas, const WebRect& clip, bool canPaintLCDText, WebFloatRect& opaque)
 {
+    static const unsigned char* annotationsEnabled = 0;
+    if (UNLIKELY(!annotationsEnabled))
+        annotationsEnabled = EventTracer::getTraceCategoryEnabledFlag(TRACE_DISABLED_BY_DEFAULT("blink.graphics_context_annotations"));
+
     GraphicsContext context(canvas);
     context.setTrackOpaqueRegion(!m_opaque);
     context.setCertainlyOpaque(m_opaque);
     context.setShouldSmoothFonts(canPaintLCDText);
 
-    if (*EventTracer::getTraceCategoryEnabledFlag(TRACE_DISABLED_BY_DEFAULT("blink.graphics_context_annotations")))
+    if (*annotationsEnabled)
         context.setAnnotationMode(AnnotateAll);
 
     // Record transform prior to painting, as all opaque tracking will be
