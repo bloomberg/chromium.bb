@@ -142,7 +142,7 @@ class NET_EXPORT SpdySessionPool
 
   // CertDatabase::Observer methods:
   virtual void OnCertAdded(const X509Certificate* cert) OVERRIDE;
-  virtual void OnCertTrustChanged(const X509Certificate* cert) OVERRIDE;
+  virtual void OnCACertChanged(const X509Certificate* cert) OVERRIDE;
 
  private:
   friend class SpdySessionPoolPeer;  // For testing.

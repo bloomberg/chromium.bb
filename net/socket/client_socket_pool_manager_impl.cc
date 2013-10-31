@@ -374,7 +374,7 @@ void ClientSocketPoolManagerImpl::OnCertAdded(const X509Certificate* cert) {
   FlushSocketPoolsWithError(ERR_NETWORK_CHANGED);
 }
 
-void ClientSocketPoolManagerImpl::OnCertTrustChanged(
+void ClientSocketPoolManagerImpl::OnCACertChanged(
     const X509Certificate* cert) {
   // We should flush the socket pools if we removed trust from a
   // cert, because a previously trusted server may have become
@@ -383,8 +383,8 @@ void ClientSocketPoolManagerImpl::OnCertTrustChanged(
   // We should not flush the socket pools if we added trust to a
   // cert.
   //
-  // Since the OnCertTrustChanged method doesn't tell us what
-  // kind of trust change it is, we have to flush the socket
+  // Since the OnCACertChanged method doesn't tell us what
+  // kind of change it is, we have to flush the socket
   // pools to be safe.
   FlushSocketPoolsWithError(ERR_NETWORK_CHANGED);
 }

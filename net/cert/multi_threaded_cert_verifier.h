@@ -137,7 +137,7 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier
                     const CertVerifyResult& verify_result);
 
   // CertDatabase::Observer methods:
-  virtual void OnCertTrustChanged(const X509Certificate* cert) OVERRIDE;
+  virtual void OnCACertChanged(const X509Certificate* cert) OVERRIDE;
 
   // For unit testing.
   void ClearCache() { cache_.Clear(); }

@@ -379,10 +379,14 @@ void CertLoader::NotifyCertificatesLoaded(bool initial_load) {
                     OnCertificatesLoaded(cert_list_, initial_load));
 }
 
-void CertLoader::OnCertTrustChanged(const net::X509Certificate* cert) {
+void CertLoader::OnCACertChanged(const net::X509Certificate* cert) {
+  // This is triggered when a CA certificate is modified.
+  VLOG(1) << "OnCACertChanged";
+  LoadCertificates();
 }
 
 void CertLoader::OnCertAdded(const net::X509Certificate* cert) {
+  // This is triggered when a client certificate is added.
   VLOG(1) << "OnCertAdded";
   LoadCertificates();
 }

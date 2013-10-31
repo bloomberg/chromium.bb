@@ -40,8 +40,8 @@ class CertDatabase::Notifier : public NSSCertDatabase::Observer {
     cert_db_->NotifyObserversOfCertRemoved(cert);
   }
 
-  virtual void OnCertTrustChanged(const X509Certificate* cert) OVERRIDE {
-    cert_db_->NotifyObserversOfCertTrustChanged(cert);
+  virtual void OnCACertChanged(const X509Certificate* cert) OVERRIDE {
+    cert_db_->NotifyObserversOfCACertChanged(cert);
   }
 
  private:

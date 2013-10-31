@@ -37,7 +37,7 @@ int CertDatabase::AddUserCert(X509Certificate* cert) {
 }
 
 void CertDatabase::OnAndroidKeyChainChanged() {
-  observer_list_->Notify(&Observer::OnCertTrustChanged,
+  observer_list_->Notify(&Observer::OnCACertChanged,
                          scoped_refptr<X509Certificate>());
 }
 

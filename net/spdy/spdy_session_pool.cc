@@ -290,11 +290,11 @@ void SpdySessionPool::OnCertAdded(const X509Certificate* cert) {
   CloseCurrentSessions(ERR_NETWORK_CHANGED);
 }
 
-void SpdySessionPool::OnCertTrustChanged(const X509Certificate* cert) {
+void SpdySessionPool::OnCACertChanged(const X509Certificate* cert) {
   // Per wtc, we actually only need to CloseCurrentSessions when trust is
-  // reduced. CloseCurrentSessions now because OnCertTrustChanged does not
+  // reduced. CloseCurrentSessions now because OnCACertChanged does not
   // tell us this.
-  // See comments in ClientSocketPoolManager::OnCertTrustChanged.
+  // See comments in ClientSocketPoolManager::OnCACertChanged.
   CloseCurrentSessions(ERR_NETWORK_CHANGED);
 }
 

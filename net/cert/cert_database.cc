@@ -30,10 +30,10 @@ void CertDatabase::NotifyObserversOfCertRemoved(const X509Certificate* cert) {
   observer_list_->Notify(&Observer::OnCertRemoved, make_scoped_refptr(cert));
 }
 
-void CertDatabase::NotifyObserversOfCertTrustChanged(
+void CertDatabase::NotifyObserversOfCACertChanged(
     const X509Certificate* cert) {
   observer_list_->Notify(
-      &Observer::OnCertTrustChanged, make_scoped_refptr(cert));
+      &Observer::OnCACertChanged, make_scoped_refptr(cert));
 }
 
 }  // namespace net

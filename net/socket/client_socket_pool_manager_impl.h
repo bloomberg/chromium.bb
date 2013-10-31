@@ -90,7 +90,7 @@ class ClientSocketPoolManagerImpl : public base::NonThreadSafe,
 
   // CertDatabase::Observer methods:
   virtual void OnCertAdded(const X509Certificate* cert) OVERRIDE;
-  virtual void OnCertTrustChanged(const X509Certificate* cert) OVERRIDE;
+  virtual void OnCACertChanged(const X509Certificate* cert) OVERRIDE;
 
  private:
   typedef internal::OwnedPoolMap<HostPortPair, TransportClientSocketPool*>

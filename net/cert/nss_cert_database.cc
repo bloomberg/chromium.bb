@@ -167,7 +167,7 @@ bool NSSCertDatabase::ImportCACerts(const CertificateList& certificates,
   bool success = psm::ImportCACerts(certificates, root, trust_bits,
                                     not_imported);
   if (success)
-    NotifyObserversOfCertTrustChanged(NULL);
+    NotifyObserversOfCACertChanged(NULL);
 
   return success;
 }
@@ -283,7 +283,7 @@ bool NSSCertDatabase::SetCertTrust(const X509Certificate* cert,
                                 TrustBits trust_bits) {
   bool success = psm::SetCertTrust(cert, type, trust_bits);
   if (success)
-    NotifyObserversOfCertTrustChanged(cert);
+    NotifyObserversOfCACertChanged(cert);
 
   return success;
 }
@@ -335,10 +335,10 @@ void NSSCertDatabase::NotifyObserversOfCertRemoved(
   observer_list_->Notify(&Observer::OnCertRemoved, make_scoped_refptr(cert));
 }
 
-void NSSCertDatabase::NotifyObserversOfCertTrustChanged(
+void NSSCertDatabase::NotifyObserversOfCACertChanged(
     const X509Certificate* cert) {
   observer_list_->Notify(
-      &Observer::OnCertTrustChanged, make_scoped_refptr(cert));
+      &Observer::OnCACertChanged, make_scoped_refptr(cert));
 }
 
 }  // namespace net

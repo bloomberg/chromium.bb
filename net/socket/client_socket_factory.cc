@@ -60,10 +60,10 @@ class DefaultClientSocketFactory : public ClientSocketFactory,
     ClearSSLSessionCache();
   }
 
-  virtual void OnCertTrustChanged(const X509Certificate* cert) OVERRIDE {
+  virtual void OnCACertChanged(const X509Certificate* cert) OVERRIDE {
     // Per wtc, we actually only need to flush when trust is reduced.
-    // Always flush now because OnCertTrustChanged does not tell us this.
-    // See comments in ClientSocketPoolManager::OnCertTrustChanged.
+    // Always flush now because OnCACertChanged does not tell us this.
+    // See comments in ClientSocketPoolManager::OnCACertChanged.
     ClearSSLSessionCache();
   }
 

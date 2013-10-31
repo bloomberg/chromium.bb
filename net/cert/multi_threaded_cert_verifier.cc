@@ -556,7 +556,7 @@ void MultiThreadedCertVerifier::HandleResult(
   delete job;
 }
 
-void MultiThreadedCertVerifier::OnCertTrustChanged(
+void MultiThreadedCertVerifier::OnCACertChanged(
     const X509Certificate* cert) {
   DCHECK(CalledOnValidThread());
 

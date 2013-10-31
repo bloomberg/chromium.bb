@@ -103,7 +103,7 @@ OSStatus CertDatabase::Notifier::KeychainCallback(
   switch (keychain_event) {
     case kSecKeychainListChangedEvent:
     case kSecTrustSettingsChangedEvent:
-      that->cert_db_->NotifyObserversOfCertTrustChanged(NULL);
+      that->cert_db_->NotifyObserversOfCACertChanged(NULL);
       break;
   }
 

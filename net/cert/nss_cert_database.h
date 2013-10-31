@@ -39,10 +39,10 @@ class NET_EXPORT NSSCertDatabase {
     // Will be called when a certificate is removed.
     virtual void OnCertRemoved(const X509Certificate* cert) {}
 
-    // Will be called when a certificate's trust is changed.
+    // Will be called when a CA certificate is changed.
     // Called with |cert| == NULL after importing a list of certificates
     // in ImportCACerts().
-    virtual void OnCertTrustChanged(const X509Certificate* cert) {}
+    virtual void OnCACertChanged(const X509Certificate* cert) {}
 
    protected:
     Observer() {}
@@ -196,7 +196,7 @@ class NET_EXPORT NSSCertDatabase {
   // Broadcasts notifications to all registered observers.
   void NotifyObserversOfCertAdded(const X509Certificate* cert);
   void NotifyObserversOfCertRemoved(const X509Certificate* cert);
-  void NotifyObserversOfCertTrustChanged(const X509Certificate* cert);
+  void NotifyObserversOfCACertChanged(const X509Certificate* cert);
 
   const scoped_refptr<ObserverListThreadSafe<Observer> > observer_list_;
 
