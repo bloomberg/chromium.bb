@@ -998,6 +998,7 @@ public:
 
     DocumentLifecycleNotifier& lifecycleNotifier();
     bool isActive() const { return m_lifecyle.state() == DocumentLifecycle::Active; }
+    bool isStopped() const { return m_lifecyle.state() == DocumentLifecycle::Stopped; }
 
     enum HttpRefreshType {
         HttpRefreshFromHeader,
