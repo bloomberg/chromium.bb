@@ -53,6 +53,7 @@ class InspectorTimelineAgent;
 class InspectorOverlay;
 class InspectorState;
 class InstrumentingAgents;
+class IntPoint;
 class IntSize;
 class Page;
 class PlatformGestureEvent;
@@ -98,6 +99,8 @@ public:
     bool handleGestureEvent(Frame*, const PlatformGestureEvent&);
     bool handleMouseEvent(Frame*, const PlatformMouseEvent&);
     bool handleTouchEvent(Frame*, const PlatformTouchEvent&);
+
+    void requestPageScaleFactor(float scale, const IntPoint& origin);
 
     bool isUnderTest();
     void evaluateForTestInFrontend(long callId, const String& script);

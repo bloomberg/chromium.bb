@@ -360,6 +360,11 @@ bool InspectorController::handleTouchEvent(Frame* frame, const PlatformTouchEven
     return false;
 }
 
+void InspectorController::requestPageScaleFactor(float scale, const IntPoint& origin)
+{
+    m_inspectorClient->requestPageScaleFactor(scale, origin);
+}
+
 void InspectorController::resume()
 {
     if (InspectorDebuggerAgent* debuggerAgent = m_instrumentingAgents->inspectorDebuggerAgent()) {

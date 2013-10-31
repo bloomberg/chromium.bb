@@ -370,6 +370,10 @@ private:
     bool m_didStartDrag;
 
     bool m_longTapShouldInvokeContextMenu;
+    OwnPtr<IntPoint> m_lastSyntheticPinchAnchorCss;
+    OwnPtr<IntPoint> m_lastSyntheticPinchAnchorDip;
+    OwnPtr<IntPoint> m_lastSyntheticPanLocation;
+    float m_syntheticPageScaleFactor;
 };
 
 } // namespace WebCore

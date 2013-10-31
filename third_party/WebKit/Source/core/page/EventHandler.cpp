@@ -66,6 +66,7 @@
 #include "core/frame/Frame.h"
 #include "core/page/FrameTree.h"
 #include "core/frame/FrameView.h"
+#include "core/inspector/InspectorController.h"
 #include "core/page/MouseEventWithHitTestResults.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
@@ -308,6 +309,7 @@ EventHandler::EventHandler(Frame* frame)
     , m_baseEventType(PlatformEvent::NoType)
     , m_didStartDrag(false)
     , m_longTapShouldInvokeContextMenu(false)
+    , m_syntheticPageScaleFactor(0)
 {
 }
 
@@ -3785,11 +3787,77 @@ bool EventHandler::dispatchSyntheticTouchEventIfEnabled(const PlatformMouseEvent
         return false;
 
     // The order is important. This check should follow the subframe test: http://webkit.org/b/111292.
-    if (eventType == PlatformEvent::MouseMoved && !m_touchPressed)
+    if (eventType == PlatformEvent::MouseMoved && event.button() == NoButton)
         return true;
 
     SyntheticSingleTouchEvent touchEvent(event);
-    return handleTouchEvent(touchEvent);
+    if (handleTouchEvent(touchEvent))
+        return true;
+
+    Page* page = m_frame->page();
+    FrameView* view = m_frame->view();
+    if (event.button() != LeftButton || page->mainFrame() != m_frame)
+        return false;
+
+    // Simulate pinch / scroll gesture.
+    const IntPoint& position = event.position();
+    bool swallowEvent = false;
+
+    if (event.shiftKey()) {
+        // Shift pressed - consider it gesture.
+        swallowEvent = true;
+        float pageScaleFactor = page->pageScaleFactor();
+        switch (eventType) {
+        case PlatformEvent::MousePressed:
+            m_lastSyntheticPinchAnchorCss = adoptPtr(new IntPoint(view->scrollPosition() + position));
+            m_lastSyntheticPinchAnchorDip = adoptPtr(new IntPoint(position));
+            m_lastSyntheticPinchAnchorDip->scale(pageScaleFactor, pageScaleFactor);
+            m_syntheticPageScaleFactor = pageScaleFactor;
+            break;
+        case PlatformEvent::MouseMoved:
+            {
+                if (!m_lastSyntheticPinchAnchorCss)
+                    break;
+
+                float dy = m_lastSyntheticPinchAnchorDip->y() - position.y() * pageScaleFactor;
+                float magnifyDelta = exp(dy * 0.002f);
+                float newPageScaleFactor = m_syntheticPageScaleFactor * magnifyDelta;
+
+                IntPoint anchorCss(*m_lastSyntheticPinchAnchorDip.get());
+                anchorCss.scale(1.f / newPageScaleFactor, 1.f / newPageScaleFactor);
+                page->inspectorController().requestPageScaleFactor(newPageScaleFactor, *m_lastSyntheticPinchAnchorCss.get() - toIntSize(anchorCss));
+                break;
+            }
+        case PlatformEvent::MouseReleased:
+            m_lastSyntheticPinchAnchorCss.clear();
+            m_lastSyntheticPinchAnchorDip.clear();
+        default:
+            break;
+        }
+    } else {
+        switch (eventType) {
+        case PlatformEvent::MouseMoved:
+            {
+                // Always consume move events.
+                swallowEvent = true;
+                int dx = m_lastSyntheticPanLocation ? position.x() - m_lastSyntheticPanLocation->x() : 0;
+                int dy = m_lastSyntheticPanLocation ? position.y() - m_lastSyntheticPanLocation->y() : 0;
+                if (dx || dy)
+                    view->scrollBy(IntSize(-dx, -dy));
+                // Mouse dragged - consider it gesture.
+                m_lastSyntheticPanLocation = adoptPtr(new IntPoint(position));
+                break;
+            }
+        case PlatformEvent::MouseReleased:
+            // There was a drag -> gesture.
+            swallowEvent = !!m_lastSyntheticPanLocation;
+            m_lastSyntheticPanLocation.clear();
+        default:
+            break;
+        }
+    }
+
+    return swallowEvent;
 }
 
 void EventHandler::setLastKnownMousePosition(const PlatformMouseEvent& event)
