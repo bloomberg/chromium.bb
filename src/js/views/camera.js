@@ -141,25 +141,47 @@ camera.views.Camera = function(context, router) {
   this.frame_ = 0;
 
   /**
-   * If the tools are expanded.
+   * If the toolbar is expanded.
    * @type {boolean}
    * @private
    */
   this.expanded_ = false;
 
   /**
-   * Tools animation effect wrapper.
+   * If the window controls are visible.
+   * @type {boolean}
+   * @private
+   */
+  this.controlsVisible_ = true;
+
+  /**
+   * Toolbar animation effect wrapper.
    * @type {camera.util.StyleEffect}
    * @private
    */
-  this.toolsEffect_ = new camera.util.StyleEffect(
+  this.toolbarEffect_ = new camera.util.StyleEffect(
       function(args, callback) {
         if (args)
-          document.body.classList.add('expanded');
+          document.querySelector('#toolbar').classList.add('expanded');
         else
-          document.body.classList.remove('expanded');
+          document.querySelector('#toolbar').classList.remove('expanded');
         camera.util.waitForTransitionCompletion(
             document.querySelector('#toolbar'), 500, callback);
+      });
+
+  /**
+   * Window controls animation effect wrapper.
+   * @type {camera.util.StyleEffect}
+   * @private
+   */
+  this.controlsEffect_ = new camera.util.StyleEffect(
+      function(args, callback) {
+        if (args)
+          document.body.classList.add('controls-visible');
+        else
+          document.body.classList.remove('controls-visible');
+        camera.util.waitForTransitionCompletion(
+            document.body, 500, callback);
       });
 
   /**
@@ -219,7 +241,7 @@ camera.views.Camera = function(context, router) {
    * @private
    */
   this.pointerTracker_ = new camera.util.PointerTracker(
-      document.body, this.setExpanded_.bind(this, true));
+      document.body, this.onPointerActivity_.bind(this));
 
   /**
    * Enables scrolling the ribbon by dragging the mouse.
@@ -264,6 +286,16 @@ camera.views.Camera = function(context, router) {
 
   document.querySelector('#toolbar #album-enter').addEventListener('click',
       this.onAlbumEnterClicked_.bind(this));
+
+  document.querySelector('#toolbar #filters-toggle').addEventListener('click',
+      this.onFiltersToggleClicked_.bind(this));
+
+  // Hide window controls when moving outside of the window.
+  window.addEventListener('mouseout', this.onWindowMouseOut_.bind(this));
+
+  // Hide window controls when any key pressed.
+  // TODO(mtomasz): Move managing window controls to main.js.
+  window.addEventListener('keydown', this.onWindowKeyDown_.bind(this));
 
   // Load the shutter sound.
   this.shutterSound_.src = '../sounds/shutter.ogg';
@@ -414,6 +446,49 @@ camera.views.Camera.prototype.onAlbumEnterClicked_ = function(event) {
 };
 
 /**
+ * Handles clicking on the toggle filters button.
+ * @param {Event} event Mouse event
+ * @private
+ */
+camera.views.Camera.prototype.onFiltersToggleClicked_ = function(event) {
+  this.setExpanded_(!this.expanded_);
+};
+
+/**
+ * Handles moving the mouse outside of the window.
+ * @param {Event} event Mouse event
+ * @private
+ */
+camera.views.Camera.prototype.onWindowMouseOut_ = function(event) {
+  if (event.toElement !== null)
+    return;
+
+  this.setControlsVisible_(false, 1000);
+};
+
+/**
+ * Handles pressing a key within a window.
+ * @param {Event} event Key down event
+ * @private
+ */
+camera.views.Camera.prototype.onWindowKeyDown_ = function(event) {
+  this.setControlsVisible_(false);
+};
+
+/**
+ * Handles pointer actions, such as mouse or touch activity.
+ * @private
+ */
+camera.views.Camera.prototype.onPointerActivity_ = function() {
+  // Show the window controls.
+  this.setControlsVisible_(true);
+
+  // Prevent auto-hiding the ribbon.
+  if (this.expanded_)
+    this.setExpanded_(true);
+};
+
+/**
  * Adds an effect to the user interface.
  * @param {camera.Effect} effect Effect to be added.
  * @private
@@ -523,8 +598,8 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
 };
 
 /**
- * Toggles the tools visibility.
- * @param {boolean} expanded True to show the tools, false to hide.
+ * Toggles the toolbar visibility.
+ * @param {boolean} expanded True to show the toolbar, false to hide.
  * @private
  */
 camera.views.Camera.prototype.setExpanded_ = function(expanded) {
@@ -533,18 +608,37 @@ camera.views.Camera.prototype.setExpanded_ = function(expanded) {
     this.collapseTimer_ = null;
   }
   if (expanded) {
-    this.collapseTimer_ = setTimeout(this.setExpanded_.bind(this, false), 2000);
+    this.collapseTimer_ = setTimeout(this.setExpanded_.bind(this, false), 3000);
     if (!this.expanded_) {
-      this.toolsEffect_.invoke(true, function() {
+      this.toolbarEffect_.invoke(true, function() {
         this.expanded_ = true;
       }.bind(this));
     }
   } else {
     if (this.expanded_) {
       this.expanded_ = false;
-      this.toolsEffect_.invoke(false, function() {});
+      this.toolbarEffect_.invoke(false, function() {});
     }
   }
+};
+
+/**
+ * Toggles the window controls visibility.
+ *
+ * @param {boolean} visible True to show the controls, false to hide.
+ * @param {number=} opt_delay Optional delay before toggling.
+ * @private
+ */
+camera.views.Camera.prototype.setControlsVisible_ = function(
+    visible, opt_delay) {
+  if (this.controlsVisible_ == visible)
+    return;
+
+  this.controlsEffect_.invoke(visible, function() {}, opt_delay);
+
+  // Set the visibility property as soon as possible, to avoid races, when
+  // showing, and hiding one after each other.
+  this.controlsVisible_ = visible;
 };
 
 /**
@@ -904,8 +998,9 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
 
   // Draw the camera frame. Decrease the rendering resolution when scrolling, or
   // while performing animations.
-  if (this.taking_ || this.toolsEffect_.isActive() ||
-      this.mainProcessor_.effect.isSlow() ||
+  if (this.taking_ || this.toolbarEffect_.animating ||
+      this.controlsEffect_.animating || this.mainProcessor_.effect.isSlow() ||
+      this.context.isUIAnimating() ||
       (this.scrollTracker_.scrolling && this.expanded_)) {
     this.drawCameraFrame_(camera.views.Camera.DrawMode.OPTIMIZED);
   } else {
@@ -916,8 +1011,9 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
   // Process effect preview canvases. Ribbon initialization is true before the
   // ribbon is expanded for the first time. This trick is used to fill the
   // ribbon with images as soon as possible.
-  if (this.expanded_ && !this.taking_ &&
-     !this.scrollTracker_.scrolling || this.ribbonInitialization_) {
+  if (this.expanded_ && !this.taking_ && !this.controlsEffect_.animating &&
+      !this.context.isUIAnimating() && !this.scrollTracker_.scrolling ||
+      this.ribbonInitialization_) {
 
     // Every third frame draw only the visible effects. Every 30-th frame, draw
     // all of them, to avoid displaying old effects when scrolling.
