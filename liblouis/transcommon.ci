@@ -688,9 +688,9 @@ passDoTest (void)
 {
   int k;
   int not = 0;
-  TranslationTableOffset ruleOffset;
-  TranslationTableRule *rule;
-  TranslationTableCharacterAttributes attributes;
+  TranslationTableOffset ruleOffset = 0;
+  TranslationTableRule *rule = NULL;
+  TranslationTableCharacterAttributes attributes = 0;
   groupingRule = NULL;
   passSrc = src;
   passInstructions = &transRule->charsdots[transCharslen];
@@ -865,8 +865,8 @@ static int
 passDoAction (void)
 {
   int k;
-  TranslationTableOffset ruleOffset;
-  TranslationTableRule *rule;
+  TranslationTableOffset ruleOffset = 0;
+  TranslationTableRule *rule = NULL;
   if ((dest + startReplace - startMatch) > destmax)
     return 0;
   if (transOpcode != CTO_Context)
