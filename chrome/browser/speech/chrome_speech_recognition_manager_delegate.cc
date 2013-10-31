@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
@@ -422,6 +423,15 @@ void ChromeSpeechRecognitionManagerDelegate::CheckRenderViewType(
   }
 
   WebContents* web_contents = WebContents::FromRenderViewHost(render_view_host);
+
+  // chrome://app-list/ uses speech recognition.
+  if (web_contents->GetCommittedWebUI() &&
+      web_contents->GetLastCommittedURL().spec() ==
+      chrome::kChromeUIAppListStartPageURL) {
+    allowed = true;
+    check_permission = false;
+  }
+
   extensions::ViewType view_type = extensions::GetViewType(web_contents);
 
   // TODO(kalman): Also enable speech bubble for extension popups
