@@ -34,6 +34,7 @@
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "core/dom/DocumentFragment.h"
+#include "core/fetch/TextResourceDecoder.h"
 #include "core/html/track/TextTrackCue.h"
 #include "core/html/track/TextTrackRegion.h"
 #include "core/html/track/WebVTTTokenizer.h"
@@ -114,10 +115,10 @@ private:
     Document* m_document;
     ParseState m_state;
 
-    bool hasRequiredFileIdentifier();
+    bool hasRequiredFileIdentifier(const String& line);
     ParseState collectCueId(const String&);
     ParseState collectTimingsAndSettings(const String&);
-    ParseState collectCueText(const String&, unsigned length, unsigned);
+    ParseState collectCueText(const String&, bool);
     ParseState ignoreBadCue(const String&);
 
     void createNewCue();
@@ -127,15 +128,15 @@ private:
     void createNewRegion();
 
     void skipWhiteSpace(const String&, unsigned*);
-    static void skipLineTerminator(const char* data, unsigned length, unsigned*);
-    static String collectNextLine(const char* data, unsigned length, unsigned*);
+    static void skipLineTerminator(const String& data, unsigned*);
+    static String collectNextLine(const String& data, unsigned*);
 
     void constructTreeFromToken(Document&);
 
     String m_currentHeaderName;
     String m_currentHeaderValue;
 
-    Vector<char> m_identifierData;
+    RefPtr<TextResourceDecoder> m_decoder;
     String m_currentId;
     double m_currentStartTime;
     double m_currentEndTime;

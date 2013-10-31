@@ -12,11 +12,11 @@ PASS WebVTT parser tests, signature-tab.vtt
 PASS WebVTT parser tests, signature-tab-no-newline.vtt 
 PASS WebVTT parser tests, signature-timings.vtt 
 PASS WebVTT parser tests, signature-two-boms.vtt 
-FAIL WebVTT parser tests, signature-lowercase.vtt assert_equals: number of cues expected "error" but got 0
-FAIL WebVTT parser tests, signature-too-short.vtt assert_equals: number of cues expected "error" but got 0
-FAIL WebVTT parser tests, signature-websrt.vtt assert_equals: number of cues expected "error" but got 0
+PASS WebVTT parser tests, signature-lowercase.vtt 
+PASS WebVTT parser tests, signature-too-short.vtt 
+PASS WebVTT parser tests, signature-websrt.vtt 
 FAIL WebVTT parser tests, signature-formfeed.vtt assert_equals: number of cues expected "error" but got 0
-FAIL WebVTT parser tests, signature-null.vtt assert_equals: number of cues expected "error" but got 0
+PASS WebVTT parser tests, signature-null.vtt 
 PASS WebVTT parser tests, signature-no-newline.vtt 
 PASS WebVTT parser tests, no-signature.vtt 
 FAIL WebVTT parser tests, nulls.vtt assert_equals: number of cues expected 7 but got 6

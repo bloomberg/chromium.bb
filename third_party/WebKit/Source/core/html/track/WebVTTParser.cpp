@@ -44,7 +44,6 @@ const double secondsPerHour = 3600;
 const double secondsPerMinute = 60;
 const double secondsPerMillisecond = 0.001;
 const double malformedTime = -1;
-const unsigned bomLength = 3;
 const unsigned fileIdentifierLength = 6;
 
 String WebVTTParser::collectDigits(const String& input, unsigned* position)
@@ -114,6 +113,7 @@ FloatPoint WebVTTParser::parseFloatPercentageValuePair(const String& value, char
 WebVTTParser::WebVTTParser(WebVTTParserClient* client, Document& document)
     : m_document(&document)
     , m_state(Initial)
+    , m_decoder(TextResourceDecoder::create("text/plain", UTF8Encoding()))
     , m_currentStartTime(0)
     , m_currentEndTime(0)
     , m_tokenizer(WebVTTTokenizer::create())
@@ -135,29 +135,25 @@ void WebVTTParser::getNewRegions(Vector<RefPtr<TextTrackRegion> >& outputRegions
 
 void WebVTTParser::parseBytes(const char* data, unsigned length)
 {
+    String textData = m_decoder->decode(data, length);
+
     // 4.8.10.13.3 WHATWG WebVTT Parser algorithm.
     // 1-3 - Initial setup.
     unsigned position = 0;
 
-    while (position < length) {
-        String line = collectNextLine(data, length, &position);
+    while (position < textData.length()) {
+        String line = collectNextLine(textData, &position);
 
         switch (m_state) {
         case Initial:
-            // Buffer up at least 9 bytes before proceeding with checking for the file identifier.
-            m_identifierData.append(data, length);
-            if (m_identifierData.size() < bomLength + fileIdentifierLength)
-                return;
-
-            // 4-12 - Collect the first line and check for "WEBVTT".
-            if (!hasRequiredFileIdentifier()) {
+            // 4-12 - Check for a valid WebVTT signature.
+            if (!hasRequiredFileIdentifier(line)) {
                 if (m_client)
                     m_client->fileFailedToParse();
                 return;
             }
 
             m_state = Header;
-            m_identifierData.clear();
             break;
 
         case Header:
@@ -191,7 +187,7 @@ void WebVTTParser::parseBytes(const char* data, unsigned length)
 
         case CueText:
             // 41-53 - Collect the cue text, create a cue, and add it to the output.
-            m_state = collectCueText(line, length, position);
+            m_state = collectCueText(line, position >= textData.length());
             break;
 
         case BadCue:
@@ -202,21 +198,14 @@ void WebVTTParser::parseBytes(const char* data, unsigned length)
     }
 }
 
-bool WebVTTParser::hasRequiredFileIdentifier()
+bool WebVTTParser::hasRequiredFileIdentifier(const String& line)
 {
     // A WebVTT file identifier consists of an optional BOM character,
     // the string "WEBVTT" followed by an optional space or tab character,
     // and any number of characters that are not line terminators ...
-    unsigned position = 0;
-    if (m_identifierData.size() >= bomLength && m_identifierData[0] == '\xEF' && m_identifierData[1] == '\xBB' && m_identifierData[2] == '\xBF')
-        position += bomLength;
-    String line = collectNextLine(m_identifierData.data(), m_identifierData.size(), &position);
-
-    if (line.length() < fileIdentifierLength)
+    if (!line.startsWith("WEBVTT", fileIdentifierLength))
         return false;
-    if (line.substring(0, fileIdentifierLength) != "WEBVTT")
-        return false;
-    if (line.length() > fileIdentifierLength && line[fileIdentifierLength] != ' ' && line[fileIdentifierLength] != '\t')
+    if (line.length() > fileIdentifierLength && !isASpace(line[fileIdentifierLength]))
         return false;
 
     return true;
@@ -288,7 +277,7 @@ WebVTTParser::ParseState WebVTTParser::collectTimingsAndSettings(const String& l
     return CueText;
 }
 
-WebVTTParser::ParseState WebVTTParser::collectCueText(const String& line, unsigned length, unsigned position)
+WebVTTParser::ParseState WebVTTParser::collectCueText(const String& line, bool isAtEnd)
 {
     if (line.isEmpty()) {
         createNewCue();
@@ -298,7 +287,7 @@ WebVTTParser::ParseState WebVTTParser::collectCueText(const String& line, unsign
         m_currentContent.append("\n");
     m_currentContent.append(line);
 
-    if (position >= length)
+    if (isAtEnd)
         createNewCue();
 
     return CueText;
@@ -532,25 +521,25 @@ void WebVTTParser::skipWhiteSpace(const String& line, unsigned* position)
         (*position)++;
 }
 
-void WebVTTParser::skipLineTerminator(const char* data, unsigned length, unsigned* position)
+void WebVTTParser::skipLineTerminator(const String& data, unsigned* position)
 {
-    if (*position >= length)
+    if (*position >= data.length())
         return;
     if (data[*position] == '\r')
         (*position)++;
-    if (*position >= length)
+    if (*position >= data.length())
         return;
     if (data[*position] == '\n')
         (*position)++;
 }
 
-String WebVTTParser::collectNextLine(const char* data, unsigned length, unsigned* position)
+String WebVTTParser::collectNextLine(const String& data, unsigned* position)
 {
     unsigned oldPosition = *position;
-    while (*position < length && data[*position] != '\r' && data[*position] != '\n')
+    while (*position < data.length() && data[*position] != '\r' && data[*position] != '\n')
         (*position)++;
-    String line = String::fromUTF8(data + oldPosition, *position - oldPosition);
-    skipLineTerminator(data, length, position);
+    String line = data.substring(oldPosition, *position - oldPosition);
+    skipLineTerminator(data, position);
     return line;
 }
 
