@@ -279,6 +279,13 @@ void NetworkConfigurationHandler::CreateConfiguration(
       DBusThreadManager::Get()->GetShillManagerClient();
   std::string type;
   properties.GetStringWithoutPathExpansion(shill::kTypeProperty, &type);
+  if (NetworkTypePattern::Ethernet().MatchesType(type)) {
+    InvokeErrorCallback(
+        "" /* no service path */,
+        error_callback,
+        "ConfigureServiceForProfile is not implemented for Ethernet");
+    return;
+  }
 
   NET_LOG_USER("CreateConfiguration", type);
   LogConfigProperties("Configure", type, properties);

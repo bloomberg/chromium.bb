@@ -20,6 +20,7 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_profile.h"
 #include "chromeos/network/network_profile_handler.h"
+#include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/onc/onc_normalizer.h"
@@ -203,6 +204,7 @@ void ImportNetworksForUser(const chromeos::User* user,
     return;
   }
 
+  bool ethernet_not_found = false;
   for (base::ListValue::const_iterator it = expanded_networks->begin();
        it != expanded_networks->end();
        ++it) {
@@ -232,11 +234,34 @@ void ImportNetworksForUser(const chromeos::User* user,
     shill_dict->SetStringWithoutPathExpansion(shill::kProfileProperty,
                                               profile->path);
 
-    NetworkHandler::Get()->network_configuration_handler()->CreateConfiguration(
-        *shill_dict,
-        network_handler::StringResultCallback(),
-        network_handler::ErrorCallback());
+    std::string type;
+    shill_dict->GetStringWithoutPathExpansion(shill::kTypeProperty, &type);
+    NetworkConfigurationHandler* config_handler =
+        NetworkHandler::Get()->network_configuration_handler();
+    if (NetworkTypePattern::Ethernet().MatchesType(type)) {
+      // Ethernet has to be configured using an existing Ethernet service.
+      const NetworkState* ethernet =
+          NetworkHandler::Get()->network_state_handler()->FirstNetworkByType(
+              NetworkTypePattern::Ethernet());
+      if (ethernet) {
+        config_handler->SetProperties(ethernet->path(),
+                                      *shill_dict,
+                                      base::Closure(),
+                                      network_handler::ErrorCallback());
+      } else {
+        ethernet_not_found = true;
+      }
+
+    } else {
+      config_handler->CreateConfiguration(
+          *shill_dict,
+          network_handler::StringResultCallback(),
+          network_handler::ErrorCallback());
+    }
   }
+
+  if (ethernet_not_found)
+    *error = "No Ethernet available to configure.";
 }
 
 const base::DictionaryValue* FindPolicyForActiveUser(
