@@ -52,7 +52,7 @@
 #include "core/frame/FrameView.h"
 #include "core/platform/PopupMenu.h"
 #include "core/platform/PopupMenuClient.h"
-#include "platform/KeyboardCodes.h"
+#include "core/platform/chromium/KeyboardCodes.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/graphics/Color.h"
 #include "public/platform/Platform.h"

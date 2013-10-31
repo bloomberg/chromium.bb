@@ -31,10 +31,10 @@
 #include "config.h"
 #include "WebInputEvent.h"
 
-#include "platform/KeyboardCodes.h"
+#include <ctype.h>
+#include "core/platform/chromium/KeyboardCodes.h"
 #include "wtf/Assertions.h"
 #include "wtf/StringExtras.h"
-#include <ctype.h>
 
 using namespace WebCore;
 

@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "platform/KeyboardCodes.h"
+#include "core/platform/chromium/KeyboardCodes.h"
 
 #include <android/keycodes.h>
 
@@ -82,7 +82,7 @@ enum {
     AKEYCODE_CHANNEL_DOWN    = 167,
 };
 
-int windowsKeyCodeForKeyEvent(unsigned keyCode)
+int windowsKeyCodeForKeyEvent(unsigned int keyCode)
 {
     // Does not provide all key codes, and does not handle all keys.
     switch (keyCode) {
