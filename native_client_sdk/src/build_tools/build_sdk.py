@@ -54,7 +54,7 @@ import oshelpers
 CYGTAR = os.path.join(NACL_DIR, 'build', 'cygtar.py')
 
 NACLPORTS_URL = 'https://naclports.googlecode.com/svn/trunk/src'
-NACLPORTS_REV = 850
+NACLPORTS_REV = 954
 
 GYPBUILD_DIR = 'gypbuild'
 
@@ -820,10 +820,10 @@ def BuildStepBuildNaClPorts(pepper_ver, pepperdir):
   """Build selected naclports in all configurations."""
   # TODO(sbc): currently naclports doesn't know anything about
   # Debug builds so the Debug subfolders are all empty.
-  bundle_dir = os.path.join(NACLPORTS_DIR, 'out', 'sdk_bundle')
 
   env = dict(os.environ)
   env['NACL_SDK_ROOT'] = pepperdir
+  env['PEPPER_DIR'] = os.path.dirname(pepperdir)
   env['NACLPORTS_NO_ANNOTATE'] = "1"
   env['NACLPORTS_NO_UPLOAD'] = "1"
 
@@ -831,6 +831,7 @@ def BuildStepBuildNaClPorts(pepper_ver, pepperdir):
   buildbot_common.BuildStep('Build naclports')
   buildbot_common.Run([build_script], env=env, cwd=NACLPORTS_DIR)
 
+  bundle_dir = os.path.join(NACLPORTS_DIR, 'out', 'sdk_bundle')
   out_dir = os.path.join(bundle_dir, 'pepper_%s' % pepper_ver)
 
   # Some naclports do not include a standalone LICENSE/COPYING file
