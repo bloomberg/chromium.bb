@@ -20,6 +20,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
+#include "net/base/request_priority.h"
 #include "net/url_request/url_request_test_util.h"
 #include "net/url_request/url_request_throttler_manager.h"
 #include "net/url_request/url_request_throttler_test_support.h"
@@ -116,16 +117,14 @@ class DiscreteTimeSimulation {
 // after all |Requester| objects.
 class Server : public DiscreteTimeSimulation::Actor {
  public:
-  Server(int max_queries_per_tick,
-         double request_drop_ratio)
+  Server(int max_queries_per_tick, double request_drop_ratio)
       : max_queries_per_tick_(max_queries_per_tick),
         request_drop_ratio_(request_drop_ratio),
         num_overloaded_ticks_remaining_(0),
         num_current_tick_queries_(0),
         num_overloaded_ticks_(0),
         max_experienced_queries_per_tick_(0),
-        mock_request_(GURL(), NULL, &context_, NULL) {
-  }
+        mock_request_(GURL(), DEFAULT_PRIORITY, NULL, &context_) {}
 
   void SetDowntime(const TimeTicks& start_time, const TimeDelta& duration) {
     start_downtime_ = start_time;

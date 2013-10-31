@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "net/base/request_priority.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
 
@@ -151,11 +152,10 @@ class AndroidStreamReaderURLRequestJobTest : public Test {
   virtual void SetUp() {
     context_.set_job_factory(&factory_);
     context_.set_network_delegate(&network_delegate_);
-    req_.reset(
-        new TestURLRequest(GURL("content://foo"),
-                           &url_request_delegate_,
-                           &context_,
-                           &network_delegate_));
+    req_.reset(new TestURLRequest(GURL("content://foo"),
+                                  net::DEFAULT_PRIORITY,
+                                  &url_request_delegate_,
+                                  &context_));
     req_->set_method("GET");
   }
 

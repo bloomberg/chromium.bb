@@ -127,11 +127,10 @@ void TestURLRequestContext::Init() {
 }
 
 TestURLRequest::TestURLRequest(const GURL& url,
+                               RequestPriority priority,
                                Delegate* delegate,
-                               TestURLRequestContext* context,
-                               NetworkDelegate* network_delegate)
-    : URLRequest(url, delegate, context, network_delegate) {
-}
+                               TestURLRequestContext* context)
+    : URLRequest(url, priority, delegate, context) {}
 
 TestURLRequest::~TestURLRequest() {
 }

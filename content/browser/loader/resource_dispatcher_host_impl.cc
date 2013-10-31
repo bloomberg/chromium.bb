@@ -1040,7 +1040,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
   // Construct the request.
   scoped_ptr<net::URLRequest> new_request;
   net::URLRequest* request;
-  new_request.reset(request_context->CreateRequest(request_data.url, NULL));
+  new_request = request_context->CreateRequest(
+      request_data.url, request_data.priority, NULL);
   request = new_request.get();
 
   request->set_method(request_data.method);
@@ -1052,7 +1053,6 @@ void ResourceDispatcherHostImpl::BeginRequest(
   request->SetExtraRequestHeaders(headers);
 
   request->set_load_flags(load_flags);
-  request->SetPriority(request_data.priority);
 
   // Resolve elements from request_body and prepare upload data.
   if (request_data.request_body.get()) {
@@ -1293,7 +1293,7 @@ void ResourceDispatcherHostImpl::BeginSaveFile(
   }
 
   scoped_ptr<net::URLRequest> request(
-      request_context->CreateRequest(url, NULL));
+      request_context->CreateRequest(url, net::DEFAULT_PRIORITY, NULL));
   request->set_method("GET");
   SetReferrerForRequest(request.get(), referrer);
 

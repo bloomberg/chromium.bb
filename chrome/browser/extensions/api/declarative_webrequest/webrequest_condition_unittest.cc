@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/common/matcher/url_matcher_constants.h"
+#include "net/base/request_priority.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -76,7 +77,8 @@ TEST(WebRequestConditionTest, CreateCondition) {
 
   net::TestURLRequestContext context;
   const GURL http_url("http://www.example.com");
-  net::TestURLRequest match_request(http_url, NULL, &context, NULL);
+  net::TestURLRequest match_request(
+      http_url, net::DEFAULT_PRIORITY, NULL, &context);
   WebRequestData data(&match_request, ON_BEFORE_REQUEST);
   WebRequestDataWithMatchIds request_data(&data);
   request_data.url_match_ids = matcher.MatchURL(http_url);
@@ -86,7 +88,8 @@ TEST(WebRequestConditionTest, CreateCondition) {
   EXPECT_TRUE(result->IsFulfilled(request_data));
 
   const GURL https_url("https://www.example.com");
-  net::TestURLRequest wrong_resource_type(https_url, NULL, &context, NULL);
+  net::TestURLRequest wrong_resource_type(
+      https_url, net::DEFAULT_PRIORITY, NULL, &context);
   data.request = &wrong_resource_type;
   request_data.url_match_ids = matcher.MatchURL(http_url);
   // Make sure IsFulfilled does not fail because of URL matching.
@@ -123,7 +126,8 @@ TEST(WebRequestConditionTest, CreateConditionFirstPartyForCookies) {
   net::TestURLRequestContext context;
   const GURL http_url("http://www.example.com");
   const GURL first_party_url("http://fpfc.example.com");
-  net::TestURLRequest match_request(http_url, NULL, &context, NULL);
+  net::TestURLRequest match_request(
+      http_url, net::DEFAULT_PRIORITY, NULL, &context);
   WebRequestData data(&match_request, ON_BEFORE_REQUEST);
   WebRequestDataWithMatchIds request_data(&data);
   request_data.url_match_ids = matcher.MatchURL(http_url);
@@ -196,7 +200,7 @@ TEST(WebRequestConditionTest, NoUrlAttributes) {
 
   net::TestURLRequestContext context;
   net::TestURLRequest https_request(
-      GURL("https://www.example.com"), NULL, &context, NULL);
+      GURL("https://www.example.com"), net::DEFAULT_PRIORITY, NULL, &context);
 
   // 1. A non-empty condition without UrlFilter attributes is fulfilled iff its
   //    attributes are fulfilled.
@@ -255,7 +259,8 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   // https://www.example.com
   GURL http_url("http://www.example.com");
   net::TestURLRequestContext context;
-  net::TestURLRequest http_request(http_url, NULL, &context, NULL);
+  net::TestURLRequest http_request(
+      http_url, net::DEFAULT_PRIORITY, NULL, &context);
   WebRequestData data(&http_request, ON_BEFORE_REQUEST);
   WebRequestDataWithMatchIds request_data(&data);
   request_data.url_match_ids = matcher.MatchURL(http_url);
@@ -266,7 +271,8 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   GURL https_url("https://www.example.com");
   request_data.url_match_ids = matcher.MatchURL(https_url);
   EXPECT_EQ(1u, request_data.url_match_ids.size());
-  net::TestURLRequest https_request(https_url, NULL, &context, NULL);
+  net::TestURLRequest https_request(
+      https_url, net::DEFAULT_PRIORITY, NULL, &context);
   data.request = &https_request;
   EXPECT_TRUE(result->IsFulfilled(*(request_data.url_match_ids.begin()),
                                   request_data));
@@ -275,7 +281,8 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   GURL https_foo_url("https://foo.example.com");
   request_data.url_match_ids = matcher.MatchURL(https_foo_url);
   EXPECT_EQ(0u, request_data.url_match_ids.size());
-  net::TestURLRequest https_foo_request(https_foo_url, NULL, &context, NULL);
+  net::TestURLRequest https_foo_request(
+      https_foo_url, net::DEFAULT_PRIORITY, NULL, &context);
   data.request = &https_foo_request;
   EXPECT_FALSE(result->IsFulfilled(-1, request_data));
 }
@@ -313,22 +320,26 @@ TEST(WebRequestConditionTest, TestPortFilter) {
   // Test various URLs.
   GURL http_url("http://www.example.com");
   net::TestURLRequestContext context;
-  net::TestURLRequest http_request(http_url, NULL, &context, NULL);
+  net::TestURLRequest http_request(
+      http_url, net::DEFAULT_PRIORITY, NULL, &context);
   url_match_ids = matcher.MatchURL(http_url);
   ASSERT_EQ(1u, url_match_ids.size());
 
   GURL http_url_80("http://www.example.com:80");
-  net::TestURLRequest http_request_80(http_url_80, NULL, &context, NULL);
+  net::TestURLRequest http_request_80(
+      http_url_80, net::DEFAULT_PRIORITY, NULL, &context);
   url_match_ids = matcher.MatchURL(http_url_80);
   ASSERT_EQ(1u, url_match_ids.size());
 
   GURL http_url_1000("http://www.example.com:1000");
-  net::TestURLRequest http_request_1000(http_url_1000, NULL, &context, NULL);
+  net::TestURLRequest http_request_1000(
+      http_url_1000, net::DEFAULT_PRIORITY, NULL, &context);
   url_match_ids = matcher.MatchURL(http_url_1000);
   ASSERT_EQ(1u, url_match_ids.size());
 
   GURL http_url_2000("http://www.example.com:2000");
-  net::TestURLRequest http_request_2000(http_url_2000, NULL, &context, NULL);
+  net::TestURLRequest http_request_2000(
+      http_url_2000, net::DEFAULT_PRIORITY, NULL, &context);
   url_match_ids = matcher.MatchURL(http_url_2000);
   ASSERT_EQ(0u, url_match_ids.size());
 }

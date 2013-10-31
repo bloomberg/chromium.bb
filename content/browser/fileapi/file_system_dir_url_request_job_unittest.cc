@@ -18,6 +18,7 @@
 #include "content/public/test/test_file_system_context.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/base/request_priority.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -82,7 +83,8 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
                          FileSystemContext* file_system_context) {
     delegate_.reset(new net::TestDelegate());
     delegate_->set_quit_on_redirect(true);
-    request_.reset(empty_context_.CreateRequest(url, delegate_.get()));
+    request_ = empty_context_.CreateRequest(
+        url, net::DEFAULT_PRIORITY, delegate_.get());
     job_ = new FileSystemDirURLRequestJob(
         request_.get(), NULL, file_system_context);
 

@@ -13,6 +13,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/base/request_priority.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_context.h"
@@ -91,15 +92,16 @@ AppCacheUpdateJob::UrlToFetch::~UrlToFetch() {
 // Helper class to fetch resources. Depending on the fetch type,
 // can either fetch to an in-memory string or write the response
 // data out to the disk cache.
-AppCacheUpdateJob::URLFetcher::URLFetcher(
-    const GURL& url, FetchType fetch_type, AppCacheUpdateJob* job)
+AppCacheUpdateJob::URLFetcher::URLFetcher(const GURL& url,
+                                          FetchType fetch_type,
+                                          AppCacheUpdateJob* job)
     : url_(url),
       job_(job),
       fetch_type_(fetch_type),
       retry_503_attempts_(0),
       buffer_(new net::IOBuffer(kBufferSize)),
-      request_(job->service_->request_context()->CreateRequest(url, this)) {
-}
+      request_(job->service_->request_context()
+                   ->CreateRequest(url, net::DEFAULT_PRIORITY, this)) {}
 
 AppCacheUpdateJob::URLFetcher::~URLFetcher() {
 }
@@ -287,7 +289,8 @@ bool AppCacheUpdateJob::URLFetcher::MaybeRetryRequest() {
     return false;
   }
   ++retry_503_attempts_;
-  request_.reset(job_->service_->request_context()->CreateRequest(url_, this));
+  request_ = job_->service_->request_context()->CreateRequest(
+      url_, net::DEFAULT_PRIORITY, this);
   Start();
   return true;
 }

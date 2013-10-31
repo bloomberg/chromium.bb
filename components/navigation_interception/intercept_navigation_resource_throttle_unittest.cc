@@ -22,6 +22,7 @@
 #include "content/public/common/page_transition_types.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_renderer_host.h"
+#include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/url_request/url_request.h"
@@ -118,7 +119,10 @@ class TestIOThreadState {
                     RedirectMode redirect_mode,
                     MockInterceptCallbackReceiver* callback_receiver)
       : resource_context_(&test_url_request_context_),
-        request_(url, NULL, resource_context_.GetRequestContext()) {
+        request_(url,
+                 net::DEFAULT_PRIORITY,
+                 NULL,
+                 resource_context_.GetRequestContext()) {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     if (render_process_id != MSG_ROUTING_NONE &&
         render_view_id != MSG_ROUTING_NONE) {

@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "content/public/test/test_file_system_context.h"
 #include "net/base/io_buffer.h"
+#include "net/base/request_priority.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
@@ -237,8 +238,8 @@ class BlobURLRequestJobTest : public testing::Test {
 
   void TestRequest(const std::string& method,
                    const net::HttpRequestHeaders& extra_headers) {
-    request_.reset(url_request_context_.CreateRequest(
-        GURL("blob:blah"), &url_request_delegate_));
+    request_ = url_request_context_.CreateRequest(
+        GURL("blob:blah"), net::DEFAULT_PRIORITY, &url_request_delegate_);
     request_->set_method(method);
     if (!extra_headers.IsEmpty())
       request_->SetExtraRequestHeaders(extra_headers);

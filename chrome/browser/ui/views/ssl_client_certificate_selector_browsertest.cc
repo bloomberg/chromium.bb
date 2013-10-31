@@ -15,6 +15,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/base/request_priority.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/x509_certificate.h"
 #include "net/http/http_transaction_factory.h"
@@ -81,7 +82,7 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
   }
 
   virtual void SetUpOnIOThread() {
-    url_request_ = MakeURLRequest(url_request_context_getter_);
+    url_request_ = MakeURLRequest(url_request_context_getter_).release();
 
     auth_requestor_ = new StrictMock<SSLClientAuthRequestorMock>(
         url_request_,
@@ -109,12 +110,10 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
   }
 
  protected:
-  net::URLRequest* MakeURLRequest(
+  scoped_ptr<net::URLRequest> MakeURLRequest(
       net::URLRequestContextGetter* context_getter) {
-    net::URLRequest* request =
-        context_getter->GetURLRequestContext()->CreateRequest(
-            GURL("https://example"), NULL);
-    return request;
+    return context_getter->GetURLRequestContext()->CreateRequest(
+        GURL("https://example"), net::DEFAULT_PRIORITY, NULL);
   }
 
   base::WaitableEvent io_loop_finished_event_;
@@ -180,8 +179,8 @@ class SSLClientCertificateSelectorMultiTabTest
   }
 
   virtual void SetUpOnIOThread() OVERRIDE {
-    url_request_1_ = MakeURLRequest(url_request_context_getter_);
-    url_request_2_ = MakeURLRequest(url_request_context_getter_);
+    url_request_1_ = MakeURLRequest(url_request_context_getter_).release();
+    url_request_2_ = MakeURLRequest(url_request_context_getter_).release();
 
     auth_requestor_1_ = new StrictMock<SSLClientAuthRequestorMock>(
         url_request_1_,
@@ -247,7 +246,7 @@ class SSLClientCertificateSelectorMultiProfileTest
   }
 
   virtual void SetUpOnIOThread() OVERRIDE {
-    url_request_1_ = MakeURLRequest(url_request_context_getter_1_);
+    url_request_1_ = MakeURLRequest(url_request_context_getter_1_).release();
 
     auth_requestor_1_ = new StrictMock<SSLClientAuthRequestorMock>(
         url_request_1_,

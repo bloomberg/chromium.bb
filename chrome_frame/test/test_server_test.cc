@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/win/scoped_handle.h"
 #include "chrome_frame/test/test_server.h"
+#include "net/base/request_priority.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/dns/host_resolver_proc.h"
@@ -64,10 +65,10 @@ class ScopedInternet {
 class TestURLRequest : public net::URLRequest {
  public:
   TestURLRequest(const GURL& url,
+                 net::RequestPriority priority,
                  Delegate* delegate,
-                 net::TestURLRequestContext* context)
-      : net::URLRequest(url, delegate, context) {
-  }
+                 const net::TestURLRequestContext* context)
+      : net::URLRequest(url, priority, delegate, context) {}
 };
 
 class UrlTaskChain {
@@ -82,7 +83,7 @@ class UrlTaskChain {
     base::MessageLoopForIO loop;
 
     net::TestURLRequestContext context;
-    TestURLRequest r(GURL(url_), &delegate_, &context);
+    TestURLRequest r(GURL(url_), net::DEFAULT_PRIORITY, &delegate_, &context);
     r.Start();
     EXPECT_TRUE(r.is_pending());
 

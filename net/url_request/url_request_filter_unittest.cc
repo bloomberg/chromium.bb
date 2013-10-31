@@ -5,6 +5,7 @@
 #include "net/url_request/url_request_filter.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
@@ -53,10 +54,12 @@ TEST(URLRequestFilter, BasicMatching) {
   TestURLRequestContext request_context;
 
   GURL url_1("http://foo.com/");
-  TestURLRequest request_1(url_1, &delegate, &request_context, NULL);
+  TestURLRequest request_1(
+      url_1, DEFAULT_PRIORITY, &delegate, &request_context);
 
   GURL url_2("http://bar.com/");
-  TestURLRequest request_2(url_2, &delegate, &request_context, NULL);
+  TestURLRequest request_2(
+      url_2, DEFAULT_PRIORITY, &delegate, &request_context);
 
   // Check AddUrlHandler checks for invalid URLs.
   EXPECT_FALSE(URLRequestFilter::GetInstance()->AddUrlHandler(GURL(),

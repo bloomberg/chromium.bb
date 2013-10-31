@@ -14,6 +14,7 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "content/public/test/test_browser_thread.h"
+#include "net/base/request_priority.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/x509_certificate.h"
 #include "net/http/transport_security_state.h"
@@ -123,7 +124,10 @@ class NotSendingTestReporter : public TestReporter {
 class MockURLRequest : public net::URLRequest {
  public:
   explicit MockURLRequest(net::URLRequestContext* context)
-      : net::URLRequest(GURL(std::string()), NULL, context) {}
+      : net::URLRequest(GURL(std::string()),
+                        net::DEFAULT_PRIORITY,
+                        NULL,
+                        context) {}
 
  private:
 };
@@ -135,9 +139,9 @@ class MockReporter : public ChromeFraudulentCertificateReporter {
   explicit MockReporter(net::URLRequestContext* request_context)
     : ChromeFraudulentCertificateReporter(request_context) {}
 
-  virtual net::URLRequest* CreateURLRequest(
+  virtual scoped_ptr<net::URLRequest> CreateURLRequest(
       net::URLRequestContext* context) OVERRIDE {
-    return new MockURLRequest(context);
+    return scoped_ptr<net::URLRequest>(new MockURLRequest(context));
   }
 
   virtual void SendReport(

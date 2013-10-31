@@ -9,6 +9,8 @@
 #include "base/stl_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
+#include "net/base/request_priority.h"
+#include "net/url_request/url_request_context.h"
 
 namespace {
 
@@ -121,17 +123,14 @@ void ResourcePrefetcher::TryToLaunchPrefetchRequests() {
 void ResourcePrefetcher::SendRequest(Request* request) {
   request->prefetch_status = Request::PREFETCH_STATUS_STARTED;
 
-  net::URLRequest* url_request =
-      new net::URLRequest(request->resource_url,
-                          this,
-                          delegate_->GetURLRequestContext());
+  net::URLRequest* url_request = new net::URLRequest(
+      request->resource_url, net::LOW, this, delegate_->GetURLRequestContext());
   inflight_requests_[url_request] = request;
   host_inflight_counts_[url_request->original_url().host()] += 1;
 
   url_request->set_method("GET");
   url_request->set_first_party_for_cookies(navigation_id_.main_frame_url);
   url_request->SetReferrer(navigation_id_.main_frame_url.spec());
-  url_request->SetPriority(net::LOW);
   StartURLRequest(url_request);
 }
 

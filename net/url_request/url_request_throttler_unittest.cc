@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "net/base/load_flags.h"
+#include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
@@ -172,8 +173,8 @@ struct GurlAndString {
 
 class URLRequestThrottlerEntryTest : public testing::Test {
  protected:
-  URLRequestThrottlerEntryTest() : request_(GURL(), NULL, &context_, NULL) {
-  }
+  URLRequestThrottlerEntryTest()
+      : request_(GURL(), DEFAULT_PRIORITY, NULL, &context_) {}
 
   virtual void SetUp();
   virtual void TearDown();
@@ -391,8 +392,7 @@ TEST_F(URLRequestThrottlerEntryTest, ExplicitUserRequest) {
 class URLRequestThrottlerManagerTest : public testing::Test {
  protected:
   URLRequestThrottlerManagerTest()
-      : request_(GURL(), NULL, &context_, NULL) {
-  }
+      : request_(GURL(), DEFAULT_PRIORITY, NULL, &context_) {}
 
   virtual void SetUp() {
     request_.set_load_flags(0);

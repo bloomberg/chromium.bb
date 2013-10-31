@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/auth.h"
+#include "net/base/request_priority.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_transaction_unittest.h"
 #include "net/url_request/url_request_status.h"
@@ -40,7 +41,10 @@ class TestURLRequestHttpJob : public URLRequestHttpJob {
 class URLRequestHttpJobTest : public ::testing::Test {
  protected:
   URLRequestHttpJobTest()
-      : req_(GURL("http://www.example.com"), &delegate_, &context_, NULL) {
+      : req_(GURL("http://www.example.com"),
+             DEFAULT_PRIORITY,
+             &delegate_,
+             &context_) {
     context_.set_http_transaction_factory(&network_layer_);
   }
 

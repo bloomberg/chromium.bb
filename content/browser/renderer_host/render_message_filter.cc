@@ -834,7 +834,8 @@ void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
   scoped_ptr<DownloadSaveInfo> save_info(new DownloadSaveInfo());
   save_info->suggested_name = suggested_name;
   scoped_ptr<net::URLRequest> request(
-      resource_context_->GetRequestContext()->CreateRequest(url, NULL));
+      resource_context_->GetRequestContext()->CreateRequest(
+          url, net::DEFAULT_PRIORITY, NULL));
   RecordDownloadSource(INITIATED_BY_RENDERER);
   resource_dispatcher_host_->BeginDownload(
       request.Pass(),

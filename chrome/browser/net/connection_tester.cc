@@ -18,6 +18,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/base/request_priority.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/dns/host_resolver.h"
@@ -409,7 +410,8 @@ void ConnectionTester::TestRunner::ProxyConfigServiceCreated(
     return;
   }
   // Fetch a request using the experimental context.
-  request_.reset(request_context_->CreateRequest(experiment.url, this));
+  request_ = request_context_->CreateRequest(
+      experiment.url, net::DEFAULT_PRIORITY, this);
   request_->Start();
 }
 

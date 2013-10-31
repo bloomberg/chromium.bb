@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "content/public/test/test_file_system_context.h"
 #include "net/base/io_buffer.h"
+#include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
@@ -129,8 +130,8 @@ class FileWriterDelegateTest : public PlatformTest {
                        int64 allowed_growth) {
     file_writer_delegate_.reset(
         CreateWriterDelegate(test_file_path, offset, allowed_growth));
-    request_.reset(empty_context_.CreateRequest(
-        blob_url, file_writer_delegate_.get()));
+    request_ = empty_context_.CreateRequest(
+        blob_url, net::DEFAULT_PRIORITY, file_writer_delegate_.get());
   }
 
   static net::URLRequest::ProtocolFactory Factory;
@@ -326,8 +327,8 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimitConcurrent) {
 
   // Credate another FileWriterDelegate for concurrent write.
   file_writer_delegate2.reset(CreateWriterDelegate("test2", 0, kint64max));
-  request2.reset(empty_context_.CreateRequest(
-      kBlobURL2, file_writer_delegate2.get()));
+  request2 = empty_context_.CreateRequest(
+      kBlobURL2, net::DEFAULT_PRIORITY, file_writer_delegate2.get());
 
   Result result, result2;
   ASSERT_EQ(0, usage());

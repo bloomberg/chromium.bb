@@ -11,6 +11,7 @@
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/test_content_browser_client.h"
+#include "net/base/request_priority.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
@@ -211,9 +212,11 @@ TEST_F(ResourceLoaderTest, ClientCertStoreLookup) {
   const int kRenderProcessId = 1;
   const int kRenderViewId = 2;
 
-  scoped_ptr<net::URLRequest> request(new net::URLRequest(
-      GURL("dummy"), NULL,
-      resource_context_.GetRequestContext()));
+  scoped_ptr<net::URLRequest> request(
+      new net::URLRequest(GURL("dummy"),
+                          net::DEFAULT_PRIORITY,
+                          NULL,
+                          resource_context_.GetRequestContext()));
   ResourceRequestInfo::AllocateForTesting(request.get(),
                                           ResourceType::MAIN_FRAME,
                                           &resource_context_,
@@ -274,8 +277,11 @@ TEST_F(ResourceLoaderTest, ClientCertStoreNull) {
   const int kRenderProcessId = 1;
   const int kRenderViewId = 2;
 
-  scoped_ptr<net::URLRequest> request(new net::URLRequest(
-      GURL("dummy"), NULL, resource_context_.GetRequestContext()));
+  scoped_ptr<net::URLRequest> request(
+      new net::URLRequest(GURL("dummy"),
+                          net::DEFAULT_PRIORITY,
+                          NULL,
+                          resource_context_.GetRequestContext()));
   ResourceRequestInfo::AllocateForTesting(request.get(),
                                           ResourceType::MAIN_FRAME,
                                           &resource_context_,

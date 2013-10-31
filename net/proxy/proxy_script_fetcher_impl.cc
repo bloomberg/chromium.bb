@@ -13,6 +13,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/base/request_priority.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_context.h"
@@ -133,7 +134,8 @@ int ProxyScriptFetcherImpl::Fetch(
     return OK;
   }
 
-  cur_request_.reset(url_request_context_->CreateRequest(url, this));
+  cur_request_ =
+      url_request_context_->CreateRequest(url, DEFAULT_PRIORITY, this);
   cur_request_->set_method("GET");
 
   // Make sure that the PAC script is downloaded using a direct connection,

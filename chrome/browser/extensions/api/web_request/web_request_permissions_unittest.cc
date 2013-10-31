@@ -11,6 +11,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/base/request_priority.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -90,7 +91,8 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
   // Check that requests are rejected based on the destination
   for (size_t i = 0; i < arraysize(sensitive_urls); ++i) {
     GURL sensitive_url(sensitive_urls[i]);
-    net::TestURLRequest request(sensitive_url, NULL, &context, NULL);
+    net::TestURLRequest request(
+        sensitive_url, net::DEFAULT_PRIORITY, NULL, &context);
     EXPECT_TRUE(
         WebRequestPermissions::HideRequest(extension_info_map_.get(), &request))
         << sensitive_urls[i];
@@ -98,7 +100,8 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
   // Check that requests are accepted if they don't touch sensitive urls.
   for (size_t i = 0; i < arraysize(non_sensitive_urls); ++i) {
     GURL non_sensitive_url(non_sensitive_urls[i]);
-    net::TestURLRequest request(non_sensitive_url, NULL, &context, NULL);
+    net::TestURLRequest request(
+        non_sensitive_url, net::DEFAULT_PRIORITY, NULL, &context);
     EXPECT_FALSE(
         WebRequestPermissions::HideRequest(extension_info_map_.get(), &request))
         << non_sensitive_urls[i];
@@ -109,7 +112,7 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
   // Normally this request is not protected:
   GURL non_sensitive_url("http://www.google.com/test.js");
   net::TestURLRequest non_sensitive_request(
-      non_sensitive_url, NULL, &context, NULL);
+      non_sensitive_url, net::DEFAULT_PRIORITY, NULL, &context);
   EXPECT_FALSE(WebRequestPermissions::HideRequest(extension_info_map_.get(),
                                                   &non_sensitive_request));
   // If the origin is labeled by the WebStoreAppId, it becomes protected.
@@ -118,7 +121,7 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
     int site_instance_id = 23;
     int frame_id = 17;
     net::TestURLRequest sensitive_request(
-        non_sensitive_url, NULL, &context, NULL);
+        non_sensitive_url, net::DEFAULT_PRIORITY, NULL, &context);
     ResourceRequestInfo::AllocateForTesting(
         &sensitive_request, ResourceType::SCRIPT, NULL,
         process_id, frame_id, false);
@@ -132,7 +135,7 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
     int process_id = kSigninProcessId;
     int frame_id = 19;
     net::TestURLRequest sensitive_request(
-        non_sensitive_url, NULL, &context, NULL);
+        non_sensitive_url, net::DEFAULT_PRIORITY, NULL, &context);
     ResourceRequestInfo::AllocateForTesting(
         &sensitive_request, ResourceType::SCRIPT, NULL,
         process_id, frame_id, false);
@@ -144,7 +147,7 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
 TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest,
        TestCanExtensionAccessURL_HostPermissions) {
   net::TestURLRequest request(
-      GURL("http://example.com"), NULL, &context, NULL);
+      GURL("http://example.com"), net::DEFAULT_PRIORITY, NULL, &context);
 
   EXPECT_TRUE(WebRequestPermissions::CanExtensionAccessURL(
       extension_info_map_.get(),

@@ -308,16 +308,10 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
     virtual ~Delegate() {}
   };
 
-  // TODO(shalev): Get rid of this constructor in favour of the one below it.
-  // Initialize an URL request.
   URLRequest(const GURL& url,
+             RequestPriority priority,
              Delegate* delegate,
              const URLRequestContext* context);
-
-  URLRequest(const GURL& url,
-             Delegate* delegate,
-             const URLRequestContext* context,
-             NetworkDelegate* network_delegate);
 
   // If destroyed after Start() has been called but while IO is pending,
   // then the request will be effectively canceled and the delegate

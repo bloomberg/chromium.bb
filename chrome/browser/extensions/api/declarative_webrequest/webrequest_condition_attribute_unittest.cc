@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "content/public/browser/resource_request_info.h"
+#include "net/base/request_priority.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -89,14 +90,14 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
 
   net::TestURLRequestContext context;
   net::TestURLRequest url_request_ok(
-      GURL("http://www.example.com"), NULL, &context, NULL);
+      GURL("http://www.example.com"), net::DEFAULT_PRIORITY, NULL, &context);
   content::ResourceRequestInfo::AllocateForTesting(
       &url_request_ok, ResourceType::SUB_FRAME, NULL, -1, -1, false);
   EXPECT_TRUE(attribute->IsFulfilled(WebRequestData(&url_request_ok,
                                                     ON_BEFORE_REQUEST)));
 
   net::TestURLRequest url_request_fail(
-      GURL("http://www.example.com"), NULL, &context, NULL);
+      GURL("http://www.example.com"), net::DEFAULT_PRIORITY, NULL, &context);
   content::ResourceRequestInfo::AllocateForTesting(
       &url_request_fail, ResourceType::MAIN_FRAME, NULL, -1, -1, false);
   EXPECT_FALSE(attribute->IsFulfilled(WebRequestData(&url_request_fail,
@@ -119,8 +120,10 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
 
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
-  net::TestURLRequest url_request(
-      test_server.GetURL("files/headers.html"), &delegate, &context, NULL);
+  net::TestURLRequest url_request(test_server.GetURL("files/headers.html"),
+                                  net::DEFAULT_PRIORITY,
+                                  &delegate,
+                                  &context);
   url_request.Start();
   base::MessageLoop::current()->Run();
 
@@ -203,7 +206,8 @@ TEST(WebRequestConditionAttributeTest, ThirdParty) {
   const GURL url_b("http://b.com");
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
-  net::TestURLRequest url_request(url_a, &delegate, &context, NULL);
+  net::TestURLRequest url_request(
+      url_a, net::DEFAULT_PRIORITY, &delegate, &context);
 
   for (unsigned int i = 1; i <= kLastActiveStage; i <<= 1) {
     if (!(kActiveStages & i))
@@ -293,7 +297,8 @@ TEST(WebRequestConditionAttributeTest, Stages) {
   const GURL url_empty;
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
-  net::TestURLRequest url_request(url_empty, &delegate, &context, NULL);
+  net::TestURLRequest url_request(
+      url_empty, net::DEFAULT_PRIORITY, &delegate, &context);
 
   for (size_t i = 0; i < arraysize(active_stages); ++i) {
     EXPECT_FALSE(empty_attribute->IsFulfilled(
@@ -417,7 +422,9 @@ TEST(WebRequestConditionAttributeTest, RequestHeaders) {
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
   net::TestURLRequest url_request(GURL("http://example.com"),  // Dummy URL.
-                                  &delegate, &context, NULL);
+                                  net::DEFAULT_PRIORITY,
+                                  &delegate,
+                                  &context);
   url_request.SetExtraRequestHeaderByName(
       "Custom-header", "custom/value", true /* overwrite */);
   url_request.Start();
@@ -502,7 +509,9 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
   net::TestURLRequest url_request(test_server.GetURL("files/headers.html"),
-                                  &delegate, &context, NULL);
+                                  net::DEFAULT_PRIORITY,
+                                  &delegate,
+                                  &context);
   url_request.Start();
   base::MessageLoop::current()->Run();
 

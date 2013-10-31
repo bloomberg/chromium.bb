@@ -23,6 +23,7 @@
 #include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate.h"
+#include "net/base/request_priority.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/disk_cache/disk_cache.h"
@@ -107,9 +108,10 @@ class TestURLRequestContextGetter : public URLRequestContextGetter {
 
 class TestURLRequest : public URLRequest {
  public:
-  TestURLRequest(
-      const GURL& url, Delegate* delegate,
-      TestURLRequestContext* context, NetworkDelegate* network_delegate);
+  TestURLRequest(const GURL& url,
+                 RequestPriority priority,
+                 Delegate* delegate,
+                 TestURLRequestContext* context);
   virtual ~TestURLRequest();
 };
 

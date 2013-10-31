@@ -34,7 +34,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT BlobProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   // A helper to manufacture an URLRequest to retrieve the given blob.
-  static net::URLRequest* CreateBlobRequest(
+  static scoped_ptr<net::URLRequest> CreateBlobRequest(
       scoped_ptr<BlobDataHandle> blob_data_handle,
       const net::URLRequestContext* request_context,
       net::URLRequest::Delegate* request_delegate);

@@ -68,9 +68,11 @@ const HttpNetworkSession::Params* URLRequestContext::GetNetworkSessionParams(
   return &network_session->params();
 }
 
-URLRequest* URLRequestContext::CreateRequest(
-    const GURL& url, URLRequest::Delegate* delegate) const {
-  return new URLRequest(url, delegate, this, network_delegate_);
+scoped_ptr<URLRequest> URLRequestContext::CreateRequest(
+    const GURL& url,
+    RequestPriority priority,
+    URLRequest::Delegate* delegate) const {
+  return scoped_ptr<URLRequest>(new URLRequest(url, priority, delegate, this));
 }
 
 void URLRequestContext::set_cookie_store(CookieStore* cookie_store) {

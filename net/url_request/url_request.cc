@@ -200,8 +200,8 @@ void URLRequest::Delegate::OnSSLCertificateError(URLRequest* request,
 ///////////////////////////////////////////////////////////////////////////////
 // URLRequest
 
-// TODO(shalev): Get rid of this constructor in favour of the one below it.
 URLRequest::URLRequest(const GURL& url,
+                       RequestPriority priority,
                        Delegate* delegate,
                        const URLRequestContext* context)
     : context_(context),
@@ -216,44 +216,7 @@ URLRequest::URLRequest(const GURL& url,
       is_pending_(false),
       is_redirecting_(false),
       redirect_limit_(kMaxRedirects),
-      priority_(DEFAULT_PRIORITY),
-      identifier_(GenerateURLRequestIdentifier()),
-      calling_delegate_(false),
-      delegate_info_usage_(DELEGATE_INFO_DEBUG_ONLY),
-      before_request_callback_(base::Bind(&URLRequest::BeforeRequestComplete,
-                                          base::Unretained(this))),
-      has_notified_completion_(false),
-      received_response_content_length_(0),
-      creation_time_(base::TimeTicks::Now()) {
-  SIMPLE_STATS_COUNTER("URLRequestCount");
-
-  // Sanity check out environment.
-  DCHECK(base::MessageLoop::current())
-      << "The current base::MessageLoop must exist";
-
-  CHECK(context);
-  context->url_requests()->insert(this);
-
-  net_log_.BeginEvent(NetLog::TYPE_REQUEST_ALIVE);
-}
-
-URLRequest::URLRequest(const GURL& url,
-                       Delegate* delegate,
-                       const URLRequestContext* context,
-                       NetworkDelegate* network_delegate)
-    : context_(context),
-      network_delegate_(network_delegate),
-      net_log_(BoundNetLog::Make(context->net_log(),
-                                 NetLog::SOURCE_URL_REQUEST)),
-      url_chain_(1, url),
-      method_("GET"),
-      referrer_policy_(CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE),
-      load_flags_(LOAD_NORMAL),
-      delegate_(delegate),
-      is_pending_(false),
-      is_redirecting_(false),
-      redirect_limit_(kMaxRedirects),
-      priority_(DEFAULT_PRIORITY),
+      priority_(priority),
       identifier_(GenerateURLRequestIdentifier()),
       calling_delegate_(false),
       delegate_info_usage_(DELEGATE_INFO_DEBUG_ONLY),

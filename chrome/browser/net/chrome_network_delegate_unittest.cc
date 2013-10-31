@@ -16,6 +16,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/completion_callback.h"
+#include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,11 +49,11 @@ class ChromeNetworkDelegateTest : public testing::Test {
 
     net::TestURLRequestContext context;
     net::TestURLRequest extension_request(
-        GURL("http://example.com/"), NULL, &context, NULL);
+        GURL("http://example.com/"), net::DEFAULT_PRIORITY, NULL, &context);
     extension_request.set_first_party_for_cookies(
         GURL("chrome-extension://abcdef/bingo.html"));
     net::TestURLRequest web_page_request(
-        GURL("http://example.com/"), NULL, &context, NULL);
+        GURL("http://example.com/"), net::DEFAULT_PRIORITY, NULL, &context);
     web_page_request.set_first_party_for_cookies(
         GURL("http://example.com/helloworld.html"));
 
@@ -127,7 +128,7 @@ class ChromeNetworkDelegateSafeSearchTest : public testing::Test {
     SCOPED_TRACE(url_string);
 
     net::TestURLRequest request(
-        GURL(url_string), &delegate_, &context_, network_delegate_);
+        GURL(url_string), net::DEFAULT_PRIORITY, &delegate_, &context_);
 
     request.Start();
     base::MessageLoop::current()->RunUntilIdle();

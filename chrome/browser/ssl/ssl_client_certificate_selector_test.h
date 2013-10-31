@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SSL_SSL_CLIENT_CERTIFICATE_SELECTOR_TEST_H_
 #define CHROME_BROWSER_SSL_SSL_CLIENT_CERTIFICATE_SELECTOR_TEST_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/ssl/ssl_client_auth_requestor_mock.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -28,7 +29,7 @@ class SSLClientCertificateSelectorTestBase : public InProcessBrowserTest {
   virtual void CleanUpOnIOThread();
 
  protected:
-  net::URLRequest* MakeURLRequest(
+  scoped_ptr<net::URLRequest> MakeURLRequest(
       net::URLRequestContextGetter* context_getter);
 
   base::WaitableEvent io_loop_finished_event_;

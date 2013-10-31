@@ -12,6 +12,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/base/request_priority.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/x509_certificate.h"
 #include "net/http/http_transaction_factory.h"
@@ -78,7 +79,7 @@ void SSLClientCertificateSelectorTestBase::CleanUpOnMainThread() {
 }
 
 void SSLClientCertificateSelectorTestBase::SetUpOnIOThread() {
-  url_request_ = MakeURLRequest(url_request_context_getter_.get());
+  url_request_ = MakeURLRequest(url_request_context_getter_.get()).release();
 
   auth_requestor_ = new StrictMock<SSLClientAuthRequestorMock>(
       url_request_, cert_request_info_.get());
@@ -92,10 +93,11 @@ void SSLClientCertificateSelectorTestBase::CleanUpOnIOThread() {
   io_loop_finished_event_.Signal();
 }
 
-net::URLRequest* SSLClientCertificateSelectorTestBase::MakeURLRequest(
+scoped_ptr<net::URLRequest>
+SSLClientCertificateSelectorTestBase::MakeURLRequest(
     net::URLRequestContextGetter* context_getter) {
-  net::URLRequest* request =
+  scoped_ptr<net::URLRequest> request =
       context_getter->GetURLRequestContext()->CreateRequest(
-          GURL("https://example"), NULL);
-  return request;
+          GURL("https://example"), net::DEFAULT_PRIORITY, NULL);
+  return request.Pass();
 }

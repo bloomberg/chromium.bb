@@ -25,6 +25,7 @@
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/base/request_priority.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -97,7 +98,8 @@ class FileSystemURLRequestJobTest : public testing::Test {
     // Make delegate_ exit the MessageLoop when the request is done.
     delegate_->set_quit_on_complete(true);
     delegate_->set_quit_on_redirect(true);
-    request_.reset(empty_context_.CreateRequest(url, delegate_.get()));
+    request_ = empty_context_.CreateRequest(
+        url, net::DEFAULT_PRIORITY, delegate_.get());
     if (headers)
       request_->SetExtraRequestHeaders(*headers);
     ASSERT_TRUE(!job_);

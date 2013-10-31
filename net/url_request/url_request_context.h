@@ -19,6 +19,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
+#include "net/base/request_priority.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/transport_security_state.h"
@@ -56,8 +57,9 @@ class NET_EXPORT URLRequestContext
   // May return NULL if this context doesn't have an associated network session.
   const HttpNetworkSession::Params* GetNetworkSessionParams() const;
 
-  URLRequest* CreateRequest(
-      const GURL& url, URLRequest::Delegate* delegate) const;
+  scoped_ptr<URLRequest> CreateRequest(const GURL& url,
+                                       RequestPriority priority,
+                                       URLRequest::Delegate* delegate) const;
 
   NetLog* net_log() const {
     return net_log_;

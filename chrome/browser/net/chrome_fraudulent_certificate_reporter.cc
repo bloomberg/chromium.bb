@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/net/cert_logger.pb.h"
 #include "net/base/load_flags.h"
+#include "net/base/request_priority.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/cert/x509_certificate.h"
@@ -55,12 +56,14 @@ static std::string BuildReport(const std::string& hostname,
   return out;
 }
 
-net::URLRequest* ChromeFraudulentCertificateReporter::CreateURLRequest(
-      net::URLRequestContext* context) {
-  net::URLRequest* request = context->CreateRequest(upload_url_, this);
+scoped_ptr<net::URLRequest>
+ChromeFraudulentCertificateReporter::CreateURLRequest(
+    net::URLRequestContext* context) {
+  scoped_ptr<net::URLRequest> request =
+      context->CreateRequest(upload_url_, net::DEFAULT_PRIORITY, this);
   request->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES |
                           net::LOAD_DO_NOT_SAVE_COOKIES);
-  return request;
+  return request.Pass();
 }
 
 void ChromeFraudulentCertificateReporter::SendReport(
@@ -76,7 +79,7 @@ void ChromeFraudulentCertificateReporter::SendReport(
 
   std::string report = BuildReport(hostname, ssl_info);
 
-  net::URLRequest* url_request = CreateURLRequest(request_context_);
+  scoped_ptr<net::URLRequest> url_request = CreateURLRequest(request_context_);
   url_request->set_method("POST");
 
   scoped_ptr<net::UploadElementReader> reader(
@@ -89,15 +92,16 @@ void ChromeFraudulentCertificateReporter::SendReport(
                     "x-application/chrome-fraudulent-cert-report");
   url_request->SetExtraRequestHeaders(headers);
 
-  inflight_requests_.insert(url_request);
-  url_request->Start();
+  net::URLRequest* raw_url_request = url_request.get();
+  inflight_requests_.insert(url_request.release());
+  raw_url_request->Start();
 }
 
 void ChromeFraudulentCertificateReporter::RequestComplete(
     net::URLRequest* request) {
   std::set<net::URLRequest*>::iterator i = inflight_requests_.find(request);
   DCHECK(i != inflight_requests_.end());
-  delete *i;
+  scoped_ptr<net::URLRequest> url_request(*i);
   inflight_requests_.erase(i);
 }
 

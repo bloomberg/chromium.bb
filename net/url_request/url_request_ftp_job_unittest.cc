@@ -7,6 +7,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
+#include "net/base/request_priority.h"
 #include "net/ftp/ftp_auth_cache.h"
 #include "net/http/http_transaction_unittest.h"
 #include "net/proxy/mock_proxy_resolver.h"
@@ -121,7 +122,10 @@ class URLRequestFtpJobPriorityTest : public testing::Test {
  protected:
   URLRequestFtpJobPriorityTest()
       : proxy_service_(new SimpleProxyConfigService, NULL, NULL),
-        req_(GURL("ftp://ftp.example.com"), &delegate_, &context_, NULL) {
+        req_(GURL("ftp://ftp.example.com"),
+             DEFAULT_PRIORITY,
+             &delegate_,
+             &context_) {
     context_.set_proxy_service(&proxy_service_);
     context_.set_http_transaction_factory(&network_layer_);
   }
@@ -262,9 +266,9 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequest) {
 
   TestDelegate request_delegate;
   URLRequest url_request(GURL("ftp://ftp.example.com/"),
+                         DEFAULT_PRIORITY,
                          &request_delegate,
-                         request_context(),
-                         network_delegate());
+                         request_context());
   url_request.Start();
   ASSERT_TRUE(url_request.is_pending());
   socket_data(0)->RunFor(4);
@@ -287,9 +291,9 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestOrphanJob) {
 
   TestDelegate request_delegate;
   URLRequest url_request(GURL("ftp://ftp.example.com/"),
+                         DEFAULT_PRIORITY,
                          &request_delegate,
-                         request_context(),
-                         network_delegate());
+                         request_context());
   url_request.Start();
 
   // Now |url_request| will be deleted before its completion,
@@ -315,9 +319,9 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestNeedProxyAuthNoCredentials) {
 
   TestDelegate request_delegate;
   URLRequest url_request(GURL("ftp://ftp.example.com/"),
+                         DEFAULT_PRIORITY,
                          &request_delegate,
-                         request_context(),
-                         network_delegate());
+                         request_context());
   url_request.Start();
   ASSERT_TRUE(url_request.is_pending());
   socket_data(0)->RunFor(5);
@@ -359,9 +363,9 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestNeedProxyAuthWithCredentials) {
   request_delegate.set_credentials(
       AuthCredentials(ASCIIToUTF16("myuser"), ASCIIToUTF16("mypass")));
   URLRequest url_request(GURL("ftp://ftp.example.com/"),
+                         DEFAULT_PRIORITY,
                          &request_delegate,
-                         request_context(),
-                         network_delegate());
+                         request_context());
   url_request.Start();
   ASSERT_TRUE(url_request.is_pending());
   socket_data(0)->RunFor(9);
@@ -392,9 +396,9 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestNeedServerAuthNoCredentials) {
 
   TestDelegate request_delegate;
   URLRequest url_request(GURL("ftp://ftp.example.com/"),
+                         DEFAULT_PRIORITY,
                          &request_delegate,
-                         request_context(),
-                         network_delegate());
+                         request_context());
   url_request.Start();
   ASSERT_TRUE(url_request.is_pending());
   socket_data(0)->RunFor(5);
@@ -436,9 +440,9 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestNeedServerAuthWithCredentials) {
   request_delegate.set_credentials(
       AuthCredentials(ASCIIToUTF16("myuser"), ASCIIToUTF16("mypass")));
   URLRequest url_request(GURL("ftp://ftp.example.com/"),
+                         DEFAULT_PRIORITY,
                          &request_delegate,
-                         request_context(),
-                         network_delegate());
+                         request_context());
   url_request.Start();
   ASSERT_TRUE(url_request.is_pending());
   socket_data(0)->RunFor(9);
@@ -501,10 +505,8 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestNeedProxyAndServerAuth) {
   TestDelegate request_delegate;
   request_delegate.set_credentials(
       AuthCredentials(ASCIIToUTF16("proxyuser"), ASCIIToUTF16("proxypass")));
-  URLRequest url_request(url,
-                         &request_delegate,
-                         request_context(),
-                         network_delegate());
+  URLRequest url_request(
+      url, DEFAULT_PRIORITY, &request_delegate, request_context());
   url_request.Start();
   ASSERT_TRUE(url_request.is_pending());
   socket_data(0)->RunFor(5);
@@ -537,9 +539,9 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestDoNotSaveCookies) {
 
   TestDelegate request_delegate;
   URLRequest url_request(GURL("ftp://ftp.example.com/"),
+                         DEFAULT_PRIORITY,
                          &request_delegate,
-                         request_context(),
-                         network_delegate());
+                         request_context());
   url_request.Start();
   ASSERT_TRUE(url_request.is_pending());
 
@@ -571,9 +573,9 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestDoNotFollowRedirects) {
 
   TestDelegate request_delegate;
   URLRequest url_request(GURL("ftp://ftp.example.com/"),
+                         DEFAULT_PRIORITY,
                          &request_delegate,
-                         request_context(),
-                         network_delegate());
+                         request_context());
   url_request.Start();
   EXPECT_TRUE(url_request.is_pending());
 
@@ -615,9 +617,9 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestReuseSocket) {
 
   TestDelegate request_delegate1;
   URLRequest url_request1(GURL("ftp://ftp.example.com/first"),
+                          DEFAULT_PRIORITY,
                           &request_delegate1,
-                          request_context(),
-                          network_delegate());
+                          request_context());
   url_request1.Start();
   ASSERT_TRUE(url_request1.is_pending());
   socket_data(0)->RunFor(4);
@@ -630,9 +632,9 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestReuseSocket) {
 
   TestDelegate request_delegate2;
   URLRequest url_request2(GURL("ftp://ftp.example.com/second"),
+                          DEFAULT_PRIORITY,
                           &request_delegate2,
-                          request_context(),
-                          network_delegate());
+                          request_context());
   url_request2.Start();
   ASSERT_TRUE(url_request2.is_pending());
   socket_data(0)->RunFor(4);
@@ -676,9 +678,9 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestDoNotReuseSocket) {
 
   TestDelegate request_delegate1;
   URLRequest url_request1(GURL("ftp://ftp.example.com/first"),
+                          DEFAULT_PRIORITY,
                           &request_delegate1,
-                          request_context(),
-                          network_delegate());
+                          request_context());
   url_request1.Start();
   ASSERT_TRUE(url_request1.is_pending());
   socket_data(0)->RunFor(4);
@@ -691,9 +693,9 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestDoNotReuseSocket) {
 
   TestDelegate request_delegate2;
   URLRequest url_request2(GURL("http://ftp.example.com/second"),
+                          DEFAULT_PRIORITY,
                           &request_delegate2,
-                          request_context(),
-                          network_delegate());
+                          request_context());
   url_request2.Start();
   ASSERT_TRUE(url_request2.is_pending());
   socket_data(1)->RunFor(4);

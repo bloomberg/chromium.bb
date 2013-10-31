@@ -28,7 +28,8 @@ class ChromeFraudulentCertificateReporter
 
   // Allows users of this class to override this and set their own URLRequest
   // type. Used by SendReport.
-  virtual net::URLRequest* CreateURLRequest(net::URLRequestContext* context);
+  virtual scoped_ptr<net::URLRequest> CreateURLRequest(
+      net::URLRequestContext* context);
 
   // net::FraudulentCertificateReporter
   virtual void SendReport(const std::string& hostname,
@@ -48,6 +49,7 @@ class ChromeFraudulentCertificateReporter
   void RequestComplete(net::URLRequest* request);
 
   const GURL upload_url_;
+  // Owns the contained requests.
   std::set<net::URLRequest*> inflight_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeFraudulentCertificateReporter);

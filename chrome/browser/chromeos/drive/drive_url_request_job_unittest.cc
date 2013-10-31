@@ -20,6 +20,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_test_util.h"
@@ -183,9 +184,10 @@ class DriveURLRequestJobTest : public testing::Test {
 };
 
 TEST_F(DriveURLRequestJobTest, NonGetMethod) {
-  net::URLRequest request(
-      GURL("drive:drive/root/File 1.txt"), test_delegate_.get(),
-      url_request_context_.get(), test_network_delegate_.get());
+  net::URLRequest request(GURL("drive:drive/root/File 1.txt"),
+                          net::DEFAULT_PRIORITY,
+                          test_delegate_.get(),
+                          url_request_context_.get());
   request.set_method("POST");  // Set non "GET" method.
   request.Start();
 
@@ -201,9 +203,10 @@ TEST_F(DriveURLRequestJobTest, RegularFile) {
 
   // For the first time, the file should be fetched from the server.
   {
-    net::URLRequest request(
-        kTestUrl, test_delegate_.get(),
-        url_request_context_.get(), test_network_delegate_.get());
+    net::URLRequest request(kTestUrl,
+                            net::DEFAULT_PRIORITY,
+                            test_delegate_.get(),
+                            url_request_context_.get());
     request.Start();
 
     base::RunLoop().Run();
@@ -226,9 +229,10 @@ TEST_F(DriveURLRequestJobTest, RegularFile) {
   // The caching emulation is done by FakeFileSystem.
   {
     test_delegate_.reset(new TestDelegate);
-    net::URLRequest request(
-        GURL("drive:drive/root/File 1.txt"), test_delegate_.get(),
-        url_request_context_.get(), test_network_delegate_.get());
+    net::URLRequest request(GURL("drive:drive/root/File 1.txt"),
+                            net::DEFAULT_PRIORITY,
+                            test_delegate_.get(),
+                            url_request_context_.get());
     request.Start();
 
     base::RunLoop().Run();
@@ -249,8 +253,9 @@ TEST_F(DriveURLRequestJobTest, HostedDocument) {
   test_delegate_->set_quit_on_redirect(true);
   net::URLRequest request(
       GURL("drive:drive/root/Document 1 excludeDir-test.gdoc"),
+      net::DEFAULT_PRIORITY,
       test_delegate_.get(),
-      url_request_context_.get(), test_network_delegate_.get());
+      url_request_context_.get());
   request.Start();
 
   base::RunLoop().Run();
@@ -263,9 +268,10 @@ TEST_F(DriveURLRequestJobTest, HostedDocument) {
 }
 
 TEST_F(DriveURLRequestJobTest, RootDirectory) {
-  net::URLRequest request(
-      GURL("drive:drive/root"), test_delegate_.get(),
-      url_request_context_.get(), test_network_delegate_.get());
+  net::URLRequest request(GURL("drive:drive/root"),
+                          net::DEFAULT_PRIORITY,
+                          test_delegate_.get(),
+                          url_request_context_.get());
   request.Start();
 
   base::RunLoop().Run();
@@ -275,9 +281,10 @@ TEST_F(DriveURLRequestJobTest, RootDirectory) {
 }
 
 TEST_F(DriveURLRequestJobTest, Directory) {
-  net::URLRequest request(
-      GURL("drive:drive/root/Directory 1"), test_delegate_.get(),
-      url_request_context_.get(), test_network_delegate_.get());
+  net::URLRequest request(GURL("drive:drive/root/Directory 1"),
+                          net::DEFAULT_PRIORITY,
+                          test_delegate_.get(),
+                          url_request_context_.get());
   request.Start();
 
   base::RunLoop().Run();
@@ -287,9 +294,10 @@ TEST_F(DriveURLRequestJobTest, Directory) {
 }
 
 TEST_F(DriveURLRequestJobTest, NonExistingFile) {
-  net::URLRequest request(
-      GURL("drive:drive/root/non-existing-file.txt"), test_delegate_.get(),
-      url_request_context_.get(), test_network_delegate_.get());
+  net::URLRequest request(GURL("drive:drive/root/non-existing-file.txt"),
+                          net::DEFAULT_PRIORITY,
+                          test_delegate_.get(),
+                          url_request_context_.get());
   request.Start();
 
   base::RunLoop().Run();
@@ -299,9 +307,10 @@ TEST_F(DriveURLRequestJobTest, NonExistingFile) {
 }
 
 TEST_F(DriveURLRequestJobTest, WrongFormat) {
-  net::URLRequest request(
-      GURL("drive:"), test_delegate_.get(),
-      url_request_context_.get(), test_network_delegate_.get());
+  net::URLRequest request(GURL("drive:"),
+                          net::DEFAULT_PRIORITY,
+                          test_delegate_.get(),
+                          url_request_context_.get());
   request.Start();
 
   base::RunLoop().Run();
@@ -311,9 +320,10 @@ TEST_F(DriveURLRequestJobTest, WrongFormat) {
 }
 
 TEST_F(DriveURLRequestJobTest, Cancel) {
-  net::URLRequest request(
-      GURL("drive:drive/root/File 1.txt"), test_delegate_.get(),
-      url_request_context_.get(), test_network_delegate_.get());
+  net::URLRequest request(GURL("drive:drive/root/File 1.txt"),
+                          net::DEFAULT_PRIORITY,
+                          test_delegate_.get(),
+                          url_request_context_.get());
 
   // Start the request, and cancel it immediately after it.
   request.Start();
@@ -328,9 +338,10 @@ TEST_F(DriveURLRequestJobTest, RangeHeader) {
   const GURL kTestUrl("drive:drive/root/File 1.txt");
   const base::FilePath kTestFilePath("drive/root/File 1.txt");
 
-  net::URLRequest request(
-      kTestUrl, test_delegate_.get(),
-      url_request_context_.get(), test_network_delegate_.get());
+  net::URLRequest request(kTestUrl,
+                          net::DEFAULT_PRIORITY,
+                          test_delegate_.get(),
+                          url_request_context_.get());
 
   // Set range header.
   request.SetExtraRequestHeaderByName(
@@ -351,9 +362,10 @@ TEST_F(DriveURLRequestJobTest, RangeHeader) {
 TEST_F(DriveURLRequestJobTest, WrongRangeHeader) {
   const GURL kTestUrl("drive:drive/root/File 1.txt");
 
-  net::URLRequest request(
-      kTestUrl, test_delegate_.get(),
-      url_request_context_.get(), test_network_delegate_.get());
+  net::URLRequest request(kTestUrl,
+                          net::DEFAULT_PRIORITY,
+                          test_delegate_.get(),
+                          url_request_context_.get());
 
   // Set range header.
   request.SetExtraRequestHeaderByName(

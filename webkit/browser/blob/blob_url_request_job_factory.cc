@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_util.h"
+#include "net/base/request_priority.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "webkit/browser/blob/blob_data_handle.h"
@@ -28,15 +29,15 @@ BlobDataHandle* GetRequestedBlobDataHandle(net::URLRequest* request) {
 }  // namespace
 
 // static
-net::URLRequest* BlobProtocolHandler::CreateBlobRequest(
+scoped_ptr<net::URLRequest> BlobProtocolHandler::CreateBlobRequest(
     scoped_ptr<BlobDataHandle> blob_data_handle,
     const net::URLRequestContext* request_context,
     net::URLRequest::Delegate* request_delegate) {
   const GURL kBlobUrl("blob://see_user_data/");
-  net::URLRequest* request = request_context->CreateRequest(
-      kBlobUrl, request_delegate);
-  SetRequestedBlobDataHandle(request, blob_data_handle.Pass());
-  return request;
+  scoped_ptr<net::URLRequest> request = request_context->CreateRequest(
+      kBlobUrl, net::DEFAULT_PRIORITY, request_delegate);
+  SetRequestedBlobDataHandle(request.get(), blob_data_handle.Pass());
+  return request.Pass();
 }
 
 // static

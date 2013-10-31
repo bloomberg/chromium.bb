@@ -16,6 +16,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_throttle.h"
+#include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_test_job.h"
@@ -160,7 +161,7 @@ class UserScriptListenerTest : public ExtensionServiceTestBase {
                                         net::TestURLRequestContext* context) {
     GURL url(url_string);
     net::TestURLRequest* request =
-        new net::TestURLRequest(url, delegate, context, NULL);
+        new net::TestURLRequest(url, net::DEFAULT_PRIORITY, delegate, context);
 
     ResourceThrottle* throttle =
         listener_->CreateResourceThrottle(url, ResourceType::MAIN_FRAME);
@@ -326,7 +327,7 @@ TEST_F(UserScriptListenerTest, ResumeBeforeStart) {
   net::TestURLRequestContext context;
   GURL url(kMatchingUrl);
   scoped_ptr<net::TestURLRequest> request(
-      new net::TestURLRequest(url, &delegate, &context, NULL));
+      new net::TestURLRequest(url, net::DEFAULT_PRIORITY, &delegate, &context));
 
   ResourceThrottle* throttle =
       listener_->CreateResourceThrottle(url, ResourceType::MAIN_FRAME);

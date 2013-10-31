@@ -13,6 +13,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -496,7 +497,8 @@ TEST_F(URLBlacklistManagerTest, DontBlockResources) {
   EXPECT_TRUE(blacklist_manager_->IsURLBlocked(GURL("http://google.com")));
 
   net::TestURLRequestContext context;
-  net::URLRequest request(GURL("http://google.com"), NULL, &context);
+  net::URLRequest request(
+      GURL("http://google.com"), net::DEFAULT_PRIORITY, NULL, &context);
 
   // Background requests aren't filtered.
   EXPECT_FALSE(blacklist_manager_->IsRequestBlocked(request));
@@ -515,7 +517,7 @@ TEST_F(URLBlacklistManagerTest, DontBlockResources) {
 
   GURL sync_url(GaiaUrls::GetInstance()->service_login_url().Resolve(
       "?service=chromiumsync"));
-  net::URLRequest sync_request(sync_url, NULL, &context);
+  net::URLRequest sync_request(sync_url, net::DEFAULT_PRIORITY, NULL, &context);
   sync_request.set_load_flags(net::LOAD_MAIN_FRAME);
   EXPECT_EQ(block_signin_urls,
             blacklist_manager_->IsRequestBlocked(sync_request));

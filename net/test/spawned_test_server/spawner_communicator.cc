@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "net/base/net_util.h"
+#include "net/base/request_priority.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/http/http_response_headers.h"
@@ -171,9 +172,9 @@ void SpawnerCommunicator::SendCommandAndWaitForResultOnIOThread(
   // Prepare the URLRequest for sending the command.
   DCHECK(!cur_request_.get());
   context_.reset(new TestURLRequestContext);
-  cur_request_.reset(context_->CreateRequest(
-      GenerateSpawnerCommandURL(command, port_), this));
-  DCHECK(cur_request_.get());
+  cur_request_ = context_->CreateRequest(
+      GenerateSpawnerCommandURL(command, port_), DEFAULT_PRIORITY, this);
+  DCHECK(cur_request_);
   int current_request_id = ++next_id_;
   SpawnerRequestData* data = new SpawnerRequestData(current_request_id,
                                                     result_code,

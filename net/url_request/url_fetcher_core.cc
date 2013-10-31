@@ -14,6 +14,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/base/request_priority.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/base/upload_file_element_reader.h"
@@ -502,8 +503,8 @@ void URLFetcherCore::StartURLRequest() {
 
   g_registry.Get().AddURLFetcherCore(this);
   current_response_bytes_ = 0;
-  request_.reset(request_context_getter_->GetURLRequestContext()->CreateRequest(
-      original_url_, this));
+  request_ = request_context_getter_->GetURLRequestContext()->CreateRequest(
+      original_url_, DEFAULT_PRIORITY, this);
   request_->set_stack_trace(stack_trace_);
   int flags = request_->load_flags() | load_flags_;
   if (!g_interception_enabled)

@@ -18,6 +18,7 @@
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/constants.h"
+#include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_status.h"
@@ -170,6 +171,7 @@ TEST_F(ExtensionProtocolTest, IncognitoRequest) {
       // is blocked, we should see ADDRESS_UNREACHABLE. Otherwise, the request
       // should just fail because the file doesn't exist.
       net::URLRequest request(extension->GetResourceURL("404.html"),
+                              net::DEFAULT_PRIORITY,
                               &test_delegate_,
                               resource_context_.GetRequestContext());
       StartRequest(&request, ResourceType::MAIN_FRAME);
@@ -187,6 +189,7 @@ TEST_F(ExtensionProtocolTest, IncognitoRequest) {
     // Now do a subframe request.
     {
       net::URLRequest request(extension->GetResourceURL("404.html"),
+                              net::DEFAULT_PRIORITY,
                               &test_delegate_,
                               resource_context_.GetRequestContext());
       StartRequest(&request, ResourceType::SUB_FRAME);
@@ -225,6 +228,7 @@ TEST_F(ExtensionProtocolTest, ComponentResourceRequest) {
   // First test it with the extension enabled.
   {
     net::URLRequest request(extension->GetResourceURL("webstore_icon_16.png"),
+                            net::DEFAULT_PRIORITY,
                             &test_delegate_,
                             resource_context_.GetRequestContext());
     StartRequest(&request, ResourceType::MEDIA);
@@ -237,6 +241,7 @@ TEST_F(ExtensionProtocolTest, ComponentResourceRequest) {
                                        UnloadedExtensionInfo::REASON_DISABLE);
   {
     net::URLRequest request(extension->GetResourceURL("webstore_icon_16.png"),
+                            net::DEFAULT_PRIORITY,
                             &test_delegate_,
                             resource_context_.GetRequestContext());
     StartRequest(&request, ResourceType::MEDIA);
@@ -256,6 +261,7 @@ TEST_F(ExtensionProtocolTest, ResourceRequestResponseHeaders) {
 
   {
     net::URLRequest request(extension->GetResourceURL("test.dat"),
+                            net::DEFAULT_PRIORITY,
                             &test_delegate_,
                             resource_context_.GetRequestContext());
     StartRequest(&request, ResourceType::MEDIA);

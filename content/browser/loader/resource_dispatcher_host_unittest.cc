@@ -32,6 +32,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/test/test_content_browser_client.h"
 #include "net/base/net_errors.h"
+#include "net/base/request_priority.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/http/http_util.h"
@@ -1514,7 +1515,8 @@ TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsDontLeak) {
 // Test the private helper method "CalculateApproximateMemoryCost()".
 TEST_F(ResourceDispatcherHostTest, CalculateApproximateMemoryCost) {
   net::URLRequestContext context;
-  net::URLRequest req(GURL("http://www.google.com"), NULL, &context);
+  net::URLRequest req(
+      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, NULL, &context);
   EXPECT_EQ(4427,
             ResourceDispatcherHostImpl::CalculateApproximateMemoryCost(&req));
 

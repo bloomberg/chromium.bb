@@ -40,6 +40,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/referrer.h"
 #include "net/base/load_flags.h"
+#include "net/base/request_priority.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/url_request/url_request_context.h"
@@ -55,7 +56,7 @@ void BeginDownload(scoped_ptr<DownloadUrlParameters> params,
   // we must down cast. RDHI is the only subclass of RDH as of 2012 May 4.
   scoped_ptr<net::URLRequest> request(
       params->resource_context()->GetRequestContext()->CreateRequest(
-          params->url(), NULL));
+          params->url(), net::DEFAULT_PRIORITY, NULL));
   request->set_load_flags(request->load_flags() | params->load_flags());
   request->set_method(params->method());
   if (!params->post_body().empty()) {

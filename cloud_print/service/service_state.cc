@@ -13,6 +13,7 @@
 #include "net/base/escape.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
+#include "net/base/request_priority.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/url_request/url_request.h"
@@ -174,7 +175,8 @@ std::string ServiceState::LoginToGoogle(const std::string& service,
   post_body += "&source=" + net::EscapeUrlEncodedData("CP-Service", true);
   post_body += "&service=" + net::EscapeUrlEncodedData(service, true);
 
-  net::URLRequest request(url, &fetcher_delegate, context.get());
+  net::URLRequest request(
+      url, net::DEFAULT_PRIORITY, &fetcher_delegate, context.get());
   int load_flags = request.load_flags();
   load_flags = load_flags | net::LOAD_DO_NOT_SEND_COOKIES;
   load_flags = load_flags | net::LOAD_DO_NOT_SAVE_COOKIES;

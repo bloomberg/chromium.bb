@@ -14,6 +14,7 @@
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "grit/browser_resources.h"
+#include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
@@ -96,7 +97,9 @@ class IframeSourceTest : public testing::Test {
       int render_process_id,
       int render_view_id) {
     net::URLRequest* request =
-        new net::URLRequest(GURL(url), NULL,
+        new net::URLRequest(GURL(url),
+                            net::DEFAULT_PRIORITY,
+                            NULL,
                             resource_context_.GetRequestContext());
     if (allocate_info) {
       content::ResourceRequestInfo::AllocateForTesting(request,

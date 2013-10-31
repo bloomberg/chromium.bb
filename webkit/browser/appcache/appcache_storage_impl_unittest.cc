@@ -9,10 +9,12 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "net/base/net_errors.h"
+#include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_job_factory_impl.h"
@@ -1704,8 +1706,8 @@ class AppCacheStorageImplTest : public testing::Test {
       backend_->RegisterHost(2);
       AppCacheHost* host2 = backend_->GetHost(2);
       GURL manifest_url = MockHttpServer::GetMockUrl("manifest");
-      request_.reset(
-          service()->request_context()->CreateRequest(manifest_url, NULL));
+      request_ = service()->request_context()->CreateRequest(
+          manifest_url, net::DEFAULT_PRIORITY, NULL);
       AppCacheInterceptor::SetExtraRequestInfo(
           request_.get(), service_.get(),
           backend_->process_id(), host2->host_id(),

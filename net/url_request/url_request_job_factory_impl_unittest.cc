@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
+#include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_test_util.h"
@@ -59,7 +60,8 @@ class DummyProtocolHandler : public URLRequestJobFactory::ProtocolHandler {
 TEST(URLRequestJobFactoryTest, NoProtocolHandler) {
   TestDelegate delegate;
   TestURLRequestContext request_context;
-  TestURLRequest request(GURL("foo://bar"), &delegate, &request_context, NULL);
+  TestURLRequest request(
+      GURL("foo://bar"), DEFAULT_PRIORITY, &delegate, &request_context);
   request.Start();
 
   base::MessageLoop::current()->Run();
@@ -73,7 +75,8 @@ TEST(URLRequestJobFactoryTest, BasicProtocolHandler) {
   TestURLRequestContext request_context;
   request_context.set_job_factory(&job_factory);
   job_factory.SetProtocolHandler("foo", new DummyProtocolHandler);
-  TestURLRequest request(GURL("foo://bar"), &delegate, &request_context, NULL);
+  TestURLRequest request(
+      GURL("foo://bar"), DEFAULT_PRIORITY, &delegate, &request_context);
   request.Start();
 
   base::MessageLoop::current()->Run();

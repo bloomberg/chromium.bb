@@ -5,6 +5,7 @@
 #include "net/url_request/url_request_context_builder.h"
 
 #include "build/build_config.h"
+#include "net/base/request_priority.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
@@ -55,8 +56,10 @@ TEST_F(URLRequestContextBuilderTest, DefaultSettings) {
 
   scoped_ptr<URLRequestContext> context(builder_.Build());
   TestDelegate delegate;
-  URLRequest request(
-      test_server_.GetURL("echoheader?Foo"), &delegate, context.get());
+  URLRequest request(test_server_.GetURL("echoheader?Foo"),
+                     DEFAULT_PRIORITY,
+                     &delegate,
+                     context.get());
   request.set_method("GET");
   request.SetExtraRequestHeaderByName("Foo", "Bar", false);
   request.Start();
@@ -70,8 +73,10 @@ TEST_F(URLRequestContextBuilderTest, UserAgent) {
   builder_.set_user_agent("Bar");
   scoped_ptr<URLRequestContext> context(builder_.Build());
   TestDelegate delegate;
-  URLRequest request(
-      test_server_.GetURL("echoheader?User-Agent"), &delegate, context.get());
+  URLRequest request(test_server_.GetURL("echoheader?User-Agent"),
+                     DEFAULT_PRIORITY,
+                     &delegate,
+                     context.get());
   request.set_method("GET");
   request.Start();
   base::MessageLoop::current()->Run();

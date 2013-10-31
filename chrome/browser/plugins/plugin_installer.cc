@@ -24,6 +24,7 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
+#include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
@@ -44,7 +45,8 @@ void BeginDownload(
 
   ResourceDispatcherHost* rdh = ResourceDispatcherHost::Get();
   scoped_ptr<net::URLRequest> request(
-      resource_context->GetRequestContext()->CreateRequest(url, NULL));
+      resource_context->GetRequestContext()->CreateRequest(
+          url, net::DEFAULT_PRIORITY, NULL));
   net::Error error = rdh->BeginDownload(
       request.Pass(),
       content::Referrer(),
