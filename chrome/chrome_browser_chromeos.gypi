@@ -348,6 +348,8 @@
         'browser/chromeos/file_manager/open_util.h',
         'browser/chromeos/file_manager/open_with_browser.cc',
         'browser/chromeos/file_manager/open_with_browser.h',
+        'browser/chromeos/file_manager/path_util.cc',
+        'browser/chromeos/file_manager/path_util.h',
         'browser/chromeos/file_manager/select_file_dialog_util.cc',
         'browser/chromeos/file_manager/select_file_dialog_util.h',
         'browser/chromeos/file_manager/url_util.cc',

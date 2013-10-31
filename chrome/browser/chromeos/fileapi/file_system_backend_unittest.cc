@@ -45,12 +45,9 @@ TEST(ChromeOSFileSystemBackendTest, DefaultMountPoints) {
   std::vector<base::FilePath> root_dirs = backend.GetRootDirectories();
   std::set<base::FilePath> root_dirs_set(root_dirs.begin(), root_dirs.end());
 
-  // By default there should be 4 mount points (in system mount points):
-  EXPECT_EQ(4u, root_dirs.size());
-  base::FilePath home_path;
-  ASSERT_TRUE(PathService::Get(base::DIR_HOME, &home_path));
+  // By default there should be 3 mount points (in system mount points):
+  EXPECT_EQ(3u, root_dirs.size());
 
-  EXPECT_TRUE(root_dirs_set.count(home_path.AppendASCII("Downloads")));
   EXPECT_TRUE(root_dirs_set.count(
       chromeos::CrosDisksClient::GetRemovableDiskMountPoint()));
   EXPECT_TRUE(root_dirs_set.count(

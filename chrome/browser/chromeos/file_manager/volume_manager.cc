@@ -10,13 +10,13 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/mounted_disk_monitor.h"
+#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_factory.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,6 +24,7 @@
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "webkit/browser/fileapi/external_mount_points.h"
 
 namespace file_manager {
 namespace {
@@ -132,6 +133,20 @@ VolumeManager* VolumeManager::Get(content::BrowserContext* context) {
 }
 
 void VolumeManager::Initialize() {
+  // Register 'Downloads' folder for the profile to the file system.
+  fileapi::ExternalMountPoints* mount_points =
+      content::BrowserContext::GetMountPoints(profile_);
+  DCHECK(mount_points);
+
+  const base::FilePath downloads_folder =
+      file_manager::util::GetDownloadsFolderForProfile(profile_);
+  bool success = mount_points->RegisterFileSystem(
+      downloads_folder.BaseName().AsUTF8Unsafe(),
+      fileapi::kFileSystemTypeNativeLocal,
+      downloads_folder);
+  DCHECK(success);
+
+  // Subscribe to DriveIntegrationService.
   if (drive_integration_service_)
     drive_integration_service_->AddObserver(this);
 
@@ -177,11 +192,15 @@ std::vector<VolumeInfo> VolumeManager::GetVolumeInfoList() const {
     result.push_back(CreateDriveVolumeInfo());
 
   // Adds "Downloads".
-  base::FilePath home_path;
-  if (PathService::Get(base::DIR_HOME, &home_path)) {
-    result.push_back(
-        CreateDownloadsVolumeInfo(home_path.AppendASCII("Downloads")));
-  }
+  // Usually, the path of the directory is where we registered in Initialize(),
+  // but in tests, the mount point may be overridden. To take it into account,
+  // here we explicitly retrieves the path from the file API mount points.
+  fileapi::ExternalMountPoints* fileapi_mount_points =
+      content::BrowserContext::GetMountPoints(profile_);
+  DCHECK(fileapi_mount_points);
+  base::FilePath downloads;
+  if (fileapi_mount_points->GetRegisteredPath("Downloads", &downloads))
+    result.push_back(CreateDownloadsVolumeInfo(downloads));
 
   // Adds disks (both removable disks and zip archives).
   const chromeos::disks::DiskMountManager::MountPointMap& mount_points =
