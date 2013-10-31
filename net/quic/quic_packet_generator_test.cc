@@ -434,7 +434,7 @@ TEST_F(QuicPacketGeneratorTest, ConsumeDataFEC) {
   }
 
   // Send enough data to create 3 packets: two full and one partial.
-  size_t data_len = 2 * kMaxPacketSize + 100;
+  size_t data_len = 2 * kDefaultMaxPacketSize + 100;
   QuicConsumedData consumed =
       generator_.ConsumeData(3, CreateData(data_len), 0, true, NULL);
   EXPECT_EQ(data_len, consumed.bytes_consumed);
@@ -466,7 +466,7 @@ TEST_F(QuicPacketGeneratorTest, ConsumeDataSendsFecAtEnd) {
   }
 
   // Send enough data to create 2 packets: one full and one partial.
-  size_t data_len = 1 * kMaxPacketSize + 100;
+  size_t data_len = 1 * kDefaultMaxPacketSize + 100;
   QuicConsumedData consumed =
       generator_.ConsumeData(3, CreateData(data_len), 0, true, NULL);
   EXPECT_EQ(data_len, consumed.bytes_consumed);
@@ -584,7 +584,7 @@ TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations2) {
   }
 
   // Send enough data to exceed one packet
-  size_t data_len = kMaxPacketSize + 100;
+  size_t data_len = kDefaultMaxPacketSize + 100;
   QuicConsumedData consumed =
       generator_.ConsumeData(3, CreateData(data_len), 0, true, NULL);
   EXPECT_EQ(data_len, consumed.bytes_consumed);

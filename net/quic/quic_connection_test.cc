@@ -546,6 +546,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<bool> {
     FLAGS_track_retransmission_history = true;
     connection_.set_visitor(&visitor_);
     connection_.SetSendAlgorithm(send_algorithm_);
+    framer_.set_received_entropy_calculator(&entropy_calculator_);
     // Simplify tests by not sending feedback unless specifically configured.
     SetFeedback(NULL);
     EXPECT_CALL(
@@ -810,6 +811,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<bool> {
   QuicGuid guid_;
   QuicFramer framer_;
   QuicPacketCreator creator_;
+  MockEntropyCalculator entropy_calculator_;
 
   MockSendAlgorithm* send_algorithm_;
   TestReceiveAlgorithm* receive_algorithm_;
@@ -936,7 +938,11 @@ TEST_P(QuicConnectionTest, RejectPacketTooFarOut) {
   ProcessDataPacket(6000, 0, !kEntropyFlag);
 }
 
-TEST_P(QuicConnectionTest, TruncatedAck) {
+// TODO(rtenneti): Delete this when QUIC_VERSION_11 is deprecated.
+TEST_P(QuicConnectionTest, TruncatedAck11) {
+  if (QuicVersionMax() > QUIC_VERSION_11) {
+    return;
+  }
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   EXPECT_CALL(*send_algorithm_, OnIncomingAck(_, _, _)).Times(2);
   EXPECT_CALL(*send_algorithm_, OnIncomingLoss(_)).Times(1);
@@ -960,6 +966,38 @@ TEST_P(QuicConnectionTest, TruncatedAck) {
       QuicConnectionPeer::GetSentEntropyHash(&connection_, 193) ^
       QuicConnectionPeer::GetSentEntropyHash(&connection_, 191);
 
+  ProcessAckPacket(&frame);
+  EXPECT_FALSE(QuicConnectionPeer::GetReceivedTruncatedAck(&connection_));
+}
+
+TEST_P(QuicConnectionTest, TruncatedAck) {
+  // TODO(rtenneti): Delete this when QUIC_VERSION_11 is deprecated.
+  if (QuicVersionMax() <= QUIC_VERSION_11) {
+    return;
+  }
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(*send_algorithm_, OnIncomingAck(_, _, _)).Times(256);
+  EXPECT_CALL(*send_algorithm_, OnIncomingLoss(_)).Times(2);
+  int num_packets = 256 * 2 + 1;
+  for (int i = 0; i < num_packets; ++i) {
+    SendStreamDataToPeer(1, "foo", i * 3, !kFin, NULL);
+  }
+
+  QuicAckFrame frame(num_packets, QuicTime::Zero(), 1);
+  // Create an ack with 256 nacks, none adjacent to one another.
+  for (QuicPacketSequenceNumber i = 1; i <= 256; ++i) {
+    frame.received_info.missing_packets.insert(i * 2);
+  }
+  EXPECT_CALL(entropy_calculator_,
+              EntropyHash(511)).WillOnce(testing::Return(0));
+  ProcessAckPacket(&frame);
+
+  EXPECT_TRUE(QuicConnectionPeer::GetReceivedTruncatedAck(&connection_));
+
+  frame.received_info.missing_packets.erase(192);
+
+  // Removing one missing packet allows us to ack 192 and one more range.
+  EXPECT_CALL(*send_algorithm_, OnIncomingAck(_, _, _)).Times(2);
   ProcessAckPacket(&frame);
   EXPECT_FALSE(QuicConnectionPeer::GetReceivedTruncatedAck(&connection_));
 }
@@ -1097,33 +1135,6 @@ TEST_P(QuicConnectionTest, LargestObservedLower) {
   EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INVALID_ACK_DATA, false));
   EXPECT_CALL(visitor_, OnCanWrite()).Times(0);
   ProcessAckPacket(&frame2);
-}
-
-TEST_P(QuicConnectionTest, LeastUnackedGreaterThanPacketSequenceNumber) {
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INVALID_ACK_DATA, false));
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
-  // Create an ack with least_unacked is 2 in packet number 1.
-  creator_.set_sequence_number(0);
-  QuicAckFrame frame(0, QuicTime::Zero(), 2);
-  EXPECT_CALL(visitor_, OnCanWrite()).Times(0);
-  ProcessAckPacket(&frame);
-}
-
-TEST_P(QuicConnectionTest,
-       NackSequenceNumberGreaterThanLargestReceived) {
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-
-  SendStreamDataToPeer(1, "foo", 0, !kFin, NULL);
-  SendStreamDataToPeer(1, "bar", 3, !kFin, NULL);
-  SendStreamDataToPeer(1, "eep", 6, !kFin, NULL);
-
-  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INVALID_ACK_DATA, false));
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
-  QuicAckFrame frame(0, QuicTime::Zero(), 1);
-  frame.received_info.missing_packets.insert(3);
-  EXPECT_CALL(visitor_, OnCanWrite()).Times(0);
-  ProcessAckPacket(&frame);
 }
 
 TEST_P(QuicConnectionTest, AckUnsentData) {
@@ -2329,6 +2340,12 @@ TEST_P(QuicConnectionTest, InitialTimeout) {
   connection_.GetTimeoutAlarm()->Fire();
   EXPECT_FALSE(connection_.GetTimeoutAlarm()->IsSet());
   EXPECT_FALSE(connection_.connected());
+
+  EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetResumeWritesAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetSendAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetTimeoutAlarm()->IsSet());
 }
 
 TEST_P(QuicConnectionTest, TimeoutAfterSend) {
@@ -3063,7 +3080,7 @@ TEST_P(QuicConnectionTest, TestFecGroupLimits) {
   ASSERT_TRUE(QuicConnectionPeer::GetFecGroup(&connection_, 3) == NULL);
 }
 
-TEST_P(QuicConnectionTest, DontProcessFramesIfPacketClosedConnection) {
+TEST_P(QuicConnectionTest, ProcessFramesIfPacketClosedConnection) {
   // Construct a packet with stream frame and connection close frame.
   header_.public_header.guid = guid_;
   header_.packet_sequence_number = 1;
@@ -3089,7 +3106,7 @@ TEST_P(QuicConnectionTest, DontProcessFramesIfPacketClosedConnection) {
       ENCRYPTION_NONE, 1, *packet));
 
   EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_PEER_GOING_AWAY, true));
-  EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(0);
+  EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(1);
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
 
   connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
@@ -3277,7 +3294,7 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackAfterFECRecovery) {
   ack_header.public_header.version_flag = false;
   ack_header.entropy_flag = !kEntropyFlag;
   ack_header.fec_flag = true;
-  ack_header.packet_sequence_number = 42;
+  ack_header.packet_sequence_number = 1;
   ack_header.is_in_fec_group = IN_FEC_GROUP;
   ack_header.fec_group = 1;
 

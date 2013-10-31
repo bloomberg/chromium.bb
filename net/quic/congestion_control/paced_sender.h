@@ -17,7 +17,9 @@ namespace net {
 
 class NET_EXPORT_PRIVATE PacedSender {
  public:
-  explicit PacedSender(QuicBandwidth bandwidth_estimate);
+  PacedSender(QuicBandwidth bandwidth_estimate, QuicByteCount max_segment_size);
+
+  void set_max_segment_size(QuicByteCount max_segment_size);
 
   // The estimated bandidth from the congestion algorithm changed.
   void UpdateBandwidthEstimate(QuicTime now, QuicBandwidth bandwidth_estimate);
@@ -32,6 +34,7 @@ class NET_EXPORT_PRIVATE PacedSender {
   // Helper object to track the rate data can leave the buffer for pacing.
   LeakyBucket leaky_bucket_;
   QuicBandwidth pace_;
+  QuicByteCount max_segment_size_;
 
   DISALLOW_COPY_AND_ASSIGN(PacedSender);
 };

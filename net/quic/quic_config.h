@@ -41,6 +41,7 @@ class NET_EXPORT_PRIVATE QuicNegotiableValue {
 
 class NET_EXPORT_PRIVATE QuicNegotiableUint32 : public QuicNegotiableValue {
  public:
+  // Default and max values default to 0.
   QuicNegotiableUint32(QuicTag name, Presence presence);
 
   // Sets the maximum possible value that can be achieved after negotiation and
@@ -159,6 +160,23 @@ class NET_EXPORT_PRIVATE QuicConfig {
 
   QuicTime::Delta max_time_before_crypto_handshake() const;
 
+  // Sets the server's TCP sender's max and default initial congestion window
+  // in packets.
+  void set_server_initial_congestion_window(size_t max_initial_window,
+                                            size_t default_initial_window);
+
+  uint32 server_initial_congestion_window() const;
+
+  // Sets the server's max packet size and default max packet size in bytes.
+  void set_server_max_packet_size(size_t max_bytes, size_t default_bytes);
+
+  uint32 server_max_packet_size() const;
+
+  // Sets an estimated initial round trip time in us.
+  void set_initial_round_trip_time_us(size_t max_rtt, size_t default_rtt);
+
+  uint32 initial_round_trip_time_us() const;
+
   bool negotiated();
 
   // SetDefaults sets the members to sensible, default values.
@@ -190,6 +208,12 @@ class NET_EXPORT_PRIVATE QuicConfig {
   // Maximum time till the session can be alive before crypto handshake is
   // finished. (Not negotiated).
   QuicTime::Delta max_time_before_crypto_handshake_;
+  // Initial congestion window in packets.
+  QuicNegotiableUint32 server_initial_congestion_window_;
+  // Maximum packet size for the server to send in bytes.
+  QuicNegotiableUint32 server_max_packet_size_;
+  // Initial round trip time estimate in microseconds.
+  QuicNegotiableUint32 initial_round_trip_time_us_;
 };
 
 }  // namespace net

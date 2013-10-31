@@ -27,6 +27,8 @@ class NET_EXPORT_PRIVATE InterArrivalSender : public SendAlgorithmInterface {
   explicit InterArrivalSender(const QuicClock* clock);
   virtual ~InterArrivalSender();
 
+  virtual void SetFromConfig(const QuicConfig& config, bool is_server) OVERRIDE;
+
   static QuicBandwidth CalculateSentBandwidth(
       const SendAlgorithmInterface::SentPacketsMap& sent_packets_map,
       QuicTime feedback_receive_time);
@@ -83,6 +85,7 @@ class NET_EXPORT_PRIVATE InterArrivalSender : public SendAlgorithmInterface {
   bool ProbingPhase(QuicTime feedback_receive_time);
 
   bool probing_;  // Are we currently in the probing phase?
+  QuicByteCount max_segment_size_;
   QuicBandwidth current_bandwidth_;
   QuicTime::Delta smoothed_rtt_;
   scoped_ptr<ChannelEstimator> channel_estimator_;

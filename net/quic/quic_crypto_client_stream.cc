@@ -346,6 +346,8 @@ void QuicCryptoClientStream::DoHandshakeLoop(
               error, "Server hello invalid: " + error_details);
           return;
         }
+        session()->OnConfigNegotiated();
+
         CrypterPair* crypters =
             &crypto_negotiated_params_.forward_secure_crypters;
         // TODO(agl): we don't currently latch this decrypter because the idea

@@ -1,14 +1,14 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/crypto/crypto_handshake.h"
+#include "net/quic/crypto/quic_crypto_server_config.h"
 
 #include <stdarg.h>
 
 #include "base/stl_util.h"
 #include "net/quic/crypto/aes_128_gcm_12_encrypter.h"
-#include "net/quic/crypto/crypto_server_config.h"
+#include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/crypto_server_config_protobuf.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_time.h"

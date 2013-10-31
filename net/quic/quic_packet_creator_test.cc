@@ -258,7 +258,7 @@ TEST_F(QuicPacketCreatorTest, SerializeWithFECChangingSequenceNumberLength) {
   // Ensure the next FEC group starts using the new sequence number length.
   serialized = creator_.SerializeAllFrames(frames_);
   EXPECT_EQ(PACKET_4BYTE_SEQUENCE_NUMBER, serialized.sequence_number_length);
-  delete frames_[0].stream_frame;
+  delete frames_[0].ack_frame;
   delete serialized.packet;
 }
 
@@ -292,7 +292,10 @@ TEST_F(QuicPacketCreatorTest, ReserializeFramesWithSequenceNumberLength) {
   delete serialized.packet;
 }
 
-TEST_F(QuicPacketCreatorTest, SerializeConnectionClose) {
+// TODO(rtenneti): Delete this when QUIC_VERSION_11 is deprecated.
+TEST_F(QuicPacketCreatorTest, SerializeConnectionClosev11) {
+  client_framer_.set_version(QUIC_VERSION_11);
+  server_framer_.set_version(QUIC_VERSION_11);
   QuicConnectionCloseFrame frame;
   frame.error_code = QUIC_NO_ERROR;
   frame.error_details = "error";
@@ -306,6 +309,30 @@ TEST_F(QuicPacketCreatorTest, SerializeConnectionClose) {
   EXPECT_CALL(framer_visitor_, OnPacket());
   EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
   EXPECT_CALL(framer_visitor_, OnAckFrame(_));
+  EXPECT_CALL(framer_visitor_, OnConnectionCloseFrame(_));
+  EXPECT_CALL(framer_visitor_, OnPacketComplete());
+
+  ProcessPacket(serialized.packet);
+  delete serialized.packet;
+}
+
+TEST_F(QuicPacketCreatorTest, SerializeConnectionClose) {
+  // TODO(rtenneti): Delete this when QUIC_VERSION_11 is deprecated.
+  if (QuicVersionMax() <= QUIC_VERSION_11) {
+    return;
+  }
+  QuicConnectionCloseFrame frame;
+  frame.error_code = QUIC_NO_ERROR;
+  frame.error_details = "error";
+  frame.ack_frame = QuicAckFrame(0u, QuicTime::Zero(), 0u);
+
+  SerializedPacket serialized = creator_.SerializeConnectionClose(&frame);
+  ASSERT_EQ(1u, serialized.sequence_number);
+  ASSERT_EQ(1u, creator_.sequence_number());
+
+  InSequence s;
+  EXPECT_CALL(framer_visitor_, OnPacket());
+  EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
   EXPECT_CALL(framer_visitor_, OnConnectionCloseFrame(_));
   EXPECT_CALL(framer_visitor_, OnPacketComplete());
 
@@ -362,7 +389,7 @@ TEST_F(QuicPacketCreatorTest, StreamFrameConsumption) {
   // Compute the total overhead for a single frame in packet.
   const size_t overhead = GetPacketHeaderOverhead() + GetEncryptionOverhead()
       + GetStreamFrameOverhead();
-  size_t capacity = kMaxPacketSize - overhead;
+  size_t capacity = kDefaultMaxPacketSize - overhead;
   // Now, test various sizes around this size.
   for (int delta = -5; delta <= 5; ++delta) {
     string data(capacity + delta, 'A');
@@ -391,7 +418,7 @@ TEST_F(QuicPacketCreatorTest, CryptoStreamFramePacketPadding) {
   const size_t overhead = GetPacketHeaderOverhead() + GetEncryptionOverhead()
       + GetStreamFrameOverhead();
   ASSERT_GT(kMaxPacketSize, overhead);
-  size_t capacity = kMaxPacketSize - overhead;
+  size_t capacity = kDefaultMaxPacketSize - overhead;
   // Now, test various sizes around this size.
   for (int delta = -5; delta <= 5; ++delta) {
     string data(capacity + delta, 'A');
@@ -408,10 +435,10 @@ TEST_F(QuicPacketCreatorTest, CryptoStreamFramePacketPadding) {
     // (1 byte) and to expand the stream frame (another 2 bytes) the packet
     // will not be padded.
     if (bytes_free < 3) {
-      EXPECT_EQ(client_framer_.GetMaxPlaintextSize(kMaxPacketSize) - bytes_free,
-                serialized_packet.packet->length());
+      EXPECT_EQ(client_framer_.GetMaxPlaintextSize(kDefaultMaxPacketSize)
+                - bytes_free, serialized_packet.packet->length());
     } else {
-      EXPECT_EQ(client_framer_.GetMaxPlaintextSize(kMaxPacketSize),
+      EXPECT_EQ(client_framer_.GetMaxPlaintextSize(kDefaultMaxPacketSize),
                 serialized_packet.packet->length());
     }
     delete serialized_packet.packet;
@@ -426,8 +453,8 @@ TEST_F(QuicPacketCreatorTest, NonCryptoStreamFramePacketNonPadding) {
   // Compute the total overhead for a single frame in packet.
   const size_t overhead = GetPacketHeaderOverhead() + GetEncryptionOverhead()
       + GetStreamFrameOverhead();
-  ASSERT_GT(kMaxPacketSize, overhead);
-  size_t capacity = kMaxPacketSize - overhead;
+  ASSERT_GT(kDefaultMaxPacketSize, overhead);
+  size_t capacity = kDefaultMaxPacketSize - overhead;
   // Now, test various sizes around this size.
   for (int delta = -5; delta <= 5; ++delta) {
     string data(capacity + delta, 'A');
@@ -441,10 +468,10 @@ TEST_F(QuicPacketCreatorTest, NonCryptoStreamFramePacketNonPadding) {
     SerializedPacket serialized_packet = creator_.SerializePacket();
     ASSERT_TRUE(serialized_packet.packet);
     if (bytes_free > 0) {
-      EXPECT_EQ(client_framer_.GetMaxPlaintextSize(kMaxPacketSize) - bytes_free,
-                serialized_packet.packet->length());
+      EXPECT_EQ(client_framer_.GetMaxPlaintextSize(kDefaultMaxPacketSize)
+                - bytes_free, serialized_packet.packet->length());
     } else {
-      EXPECT_EQ(client_framer_.GetMaxPlaintextSize(kMaxPacketSize),
+      EXPECT_EQ(client_framer_.GetMaxPlaintextSize(kDefaultMaxPacketSize),
                 serialized_packet.packet->length());
     }
     delete serialized_packet.packet;
@@ -576,7 +603,7 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndSerialize) {
             creator_.BytesFree());
 
   // Add a variety of frame types and then a padding frame.
-  QuicAckFrame ack_frame;
+  QuicAckFrame ack_frame(0u, QuicTime::Zero(), 0u);
   EXPECT_TRUE(creator_.AddSavedFrame(QuicFrame(&ack_frame)));
   EXPECT_TRUE(creator_.HasPendingFrames());
 

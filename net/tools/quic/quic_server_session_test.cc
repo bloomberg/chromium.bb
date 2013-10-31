@@ -5,7 +5,7 @@
 #include "net/tools/quic/quic_server_session.h"
 
 
-#include "net/quic/crypto/crypto_server_config.h"
+#include "net/quic/crypto/quic_crypto_server_config.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/test_tools/quic_connection_peer.h"

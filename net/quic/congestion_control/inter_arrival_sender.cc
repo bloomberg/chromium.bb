@@ -24,15 +24,16 @@ static const int kMinBitrateSmoothingPeriodMs = 500;
 
 InterArrivalSender::InterArrivalSender(const QuicClock* clock)
     : probing_(true),
+      max_segment_size_(kDefaultMaxPacketSize),
       current_bandwidth_(QuicBandwidth::Zero()),
       smoothed_rtt_(QuicTime::Delta::Zero()),
       channel_estimator_(new ChannelEstimator()),
       bitrate_ramp_up_(new InterArrivalBitrateRampUp(clock)),
       overuse_detector_(new InterArrivalOveruseDetector()),
-      probe_(new InterArrivalProbe()),
+      probe_(new InterArrivalProbe(max_segment_size_)),
       state_machine_(new InterArrivalStateMachine(clock)),
       paced_sender_(new PacedSender(QuicBandwidth::FromKBytesPerSecond(
-          kProbeBitrateKBytesPerSecond))),
+          kProbeBitrateKBytesPerSecond), max_segment_size_)),
       accumulated_number_of_lost_packets_(0),
       bandwidth_usage_state_(kBandwidthSteady),
       back_down_time_(QuicTime::Zero()),
@@ -41,6 +42,13 @@ InterArrivalSender::InterArrivalSender(const QuicClock* clock)
 }
 
 InterArrivalSender::~InterArrivalSender() {
+}
+
+void InterArrivalSender::SetFromConfig(const QuicConfig& config,
+                                       bool is_server) {
+  max_segment_size_ = config.server_max_packet_size();
+  paced_sender_->set_max_segment_size(max_segment_size_);
+  probe_->set_max_segment_size(max_segment_size_);
 }
 
 // TODO(pwestin): this is really inefficient (4% CPU on the GFE loadtest).
@@ -459,7 +467,7 @@ void InterArrivalSender::EstimateBandwidthAfterDelayEvent(
 
   // While in delay sensing mode send at least one packet per RTT.
   QuicBandwidth min_delay_bitrate =
-      QuicBandwidth::FromBytesAndTimeDelta(kMaxPacketSize, SmoothedRtt());
+      QuicBandwidth::FromBytesAndTimeDelta(max_segment_size_, SmoothedRtt());
   new_target_bitrate = std::max(new_target_bitrate, min_delay_bitrate);
 
   ResetCurrentBandwidth(feedback_receive_time, new_target_bitrate);

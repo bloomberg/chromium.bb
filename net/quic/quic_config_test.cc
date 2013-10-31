@@ -20,6 +20,7 @@ class QuicConfigTest : public ::testing::Test {
  protected:
   QuicConfigTest() {
     config_.SetDefaults();
+    config_.set_initial_round_trip_time_us(kMaxInitialRoundTripTimeUs, 0);
   }
 
   QuicConfig config_;
@@ -59,6 +60,9 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
       QuicTime::Delta::FromSeconds(kDefaultTimeoutSecs));
   client_config.set_max_streams_per_connection(
       2 * kDefaultMaxStreamsPerConnection, kDefaultMaxStreamsPerConnection);
+  client_config.set_initial_round_trip_time_us(
+      10 * base::Time::kMicrosecondsPerMillisecond,
+      10 * base::Time::kMicrosecondsPerMillisecond);
 
   CryptoHandshakeMessage msg;
   client_config.ToHandshakeMessage(&msg);
@@ -72,6 +76,8 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
   EXPECT_EQ(kDefaultMaxStreamsPerConnection,
             config_.max_streams_per_connection());
   EXPECT_EQ(QuicTime::Delta::FromSeconds(0), config_.keepalive_timeout());
+  EXPECT_EQ(10 * base::Time::kMicrosecondsPerMillisecond,
+            config_.initial_round_trip_time_us());
 }
 
 TEST_F(QuicConfigTest, ProcessServerHello) {
@@ -85,6 +91,13 @@ TEST_F(QuicConfigTest, ProcessServerHello) {
   server_config.set_max_streams_per_connection(
       kDefaultMaxStreamsPerConnection / 2,
       kDefaultMaxStreamsPerConnection / 2);
+  server_config.set_server_max_packet_size(kDefaultMaxPacketSize / 2,
+                                           kDefaultMaxPacketSize / 2);
+  server_config.set_server_initial_congestion_window(kDefaultInitialWindow / 2,
+                                                     kDefaultInitialWindow / 2);
+  server_config.set_initial_round_trip_time_us(
+      10 * base::Time::kMicrosecondsPerMillisecond,
+      10 * base::Time::kMicrosecondsPerMillisecond);
 
   CryptoHandshakeMessage msg;
   server_config.ToHandshakeMessage(&msg);
@@ -97,7 +110,12 @@ TEST_F(QuicConfigTest, ProcessServerHello) {
             config_.idle_connection_state_lifetime());
   EXPECT_EQ(kDefaultMaxStreamsPerConnection / 2,
             config_.max_streams_per_connection());
+  EXPECT_EQ(kDefaultMaxPacketSize / 2, config_.server_max_packet_size());
+  EXPECT_EQ(kDefaultInitialWindow / 2,
+            config_.server_initial_congestion_window());
   EXPECT_EQ(QuicTime::Delta::FromSeconds(0), config_.keepalive_timeout());
+  EXPECT_EQ(10 * base::Time::kMicrosecondsPerMillisecond,
+            config_.initial_round_trip_time_us());
 }
 
 TEST_F(QuicConfigTest, MissingValueInCHLO) {

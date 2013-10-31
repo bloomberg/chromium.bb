@@ -48,6 +48,7 @@ class TestCryptoStream : public QuicCryptoStream {
     const QuicErrorCode error = session()->config()->ProcessClientHello(
         msg, &error_details);
     EXPECT_EQ(QUIC_NO_ERROR, error);
+    session()->OnConfigNegotiated();
     session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
   }
 

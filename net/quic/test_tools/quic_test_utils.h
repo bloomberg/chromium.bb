@@ -193,6 +193,7 @@ class MockConnectionVisitor : public QuicConnectionVisitorInterface {
   MOCK_CONST_METHOD0(HasPendingHandshake, bool());
   MOCK_METHOD1(OnSuccessfulVersionNegotiation,
                void(const QuicVersion& version));
+  MOCK_METHOD0(OnConfigNegotiated, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockConnectionVisitor);
@@ -348,6 +349,7 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   MockSendAlgorithm();
   virtual ~MockSendAlgorithm();
 
+  MOCK_METHOD2(SetFromConfig, void(const QuicConfig& config, bool is_server));
   MOCK_METHOD3(OnIncomingQuicCongestionFeedbackFrame,
                void(const QuicCongestionFeedbackFrame&,
                     QuicTime feedback_receive_time,
@@ -376,11 +378,21 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
 class TestEntropyCalculator :
       public QuicReceivedEntropyHashCalculatorInterface {
  public:
-  TestEntropyCalculator() { }
-  virtual ~TestEntropyCalculator() { }
+  TestEntropyCalculator();
+  virtual ~TestEntropyCalculator();
 
   virtual QuicPacketEntropyHash EntropyHash(
       QuicPacketSequenceNumber sequence_number) const OVERRIDE;
+};
+
+class MockEntropyCalculator : public TestEntropyCalculator {
+ public:
+  MockEntropyCalculator();
+  virtual ~MockEntropyCalculator();
+
+  MOCK_CONST_METHOD1(
+      EntropyHash,
+      QuicPacketEntropyHash(QuicPacketSequenceNumber sequence_number));
 };
 
 class TestDecompressorVisitor : public QuicSpdyDecompressor::Visitor {

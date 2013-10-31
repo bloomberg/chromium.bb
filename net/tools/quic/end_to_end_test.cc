@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "net/base/ip_endpoint.h"
+#include "net/quic/congestion_control/tcp_cubic_sender.h"
 #include "net/quic/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/quic/crypto/null_encrypter.h"
 #include "net/quic/quic_framer.h"
@@ -145,6 +146,8 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     FLAGS_track_retransmission_history = true;
     client_config_.SetDefaults();
     server_config_.SetDefaults();
+    server_config_.set_initial_round_trip_time_us(kMaxInitialRoundTripTimeUs,
+                                                  0);
 
     QuicInMemoryCachePeer::ResetForTests();
     AddToCache("GET", kLargeRequest, "HTTP/1.1", "200", "OK", kFooResponseBody);
@@ -536,6 +539,7 @@ TEST_P(EndToEndTest, DISABLED_LargePostZeroRTTFailure) {
 
   // The 0-RTT handshake should succeed.
   client_->Connect();
+  client_->WaitForResponseForMs(-1);
   ASSERT_TRUE(client_->client()->connected());
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
   EXPECT_EQ(1, client_->client()->session()->GetNumSentClientHellos());
@@ -675,6 +679,106 @@ TEST_P(EndToEndTest, LimitMaxOpenStreams) {
   client_->client()->WaitForCryptoHandshakeConfirmed();
   QuicConfig* client_negotiated_config = client_->client()->session()->config();
   EXPECT_EQ(2u, client_negotiated_config->max_streams_per_connection());
+}
+
+TEST_P(EndToEndTest, LimitMaxPacketSizeAndCongestionWindowAndRTT) {
+  // Client tries to negotiate twice the server's max and negotiation settles
+  // on the max.
+  client_config_.set_server_max_packet_size(2 * kMaxPacketSize,
+                                            kDefaultMaxPacketSize);
+  client_config_.set_server_initial_congestion_window(2 * kMaxInitialWindow,
+                                                      kDefaultInitialWindow);
+  client_config_.set_initial_round_trip_time_us(1, 1);
+
+  ASSERT_TRUE(Initialize());
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+  QuicDispatcher* dispatcher =
+      QuicServerPeer::GetDispatcher(server_thread_->server());
+  ASSERT_EQ(1u, dispatcher->session_map().size());
+  QuicSession* session = dispatcher->session_map().begin()->second;
+  while (!session->IsCryptoHandshakeConfirmed()) {
+    server_thread_->server()->WaitForEvents();
+  }
+
+  QuicConfig* client_negotiated_config = client_->client()->session()->config();
+  QuicConfig* server_negotiated_config = session->config();
+  QuicCongestionManager* client_congestion_manager =
+      QuicConnectionPeer::GetCongestionManager(
+          client_->client()->session()->connection());
+  QuicCongestionManager* server_congestion_manager =
+      QuicConnectionPeer::GetCongestionManager(session->connection());
+
+  EXPECT_EQ(kMaxPacketSize, client_negotiated_config->server_max_packet_size());
+  if (negotiated_version_ > QUIC_VERSION_11) {
+    EXPECT_EQ(kMaxPacketSize, client_->client()->options()->max_packet_length);
+    EXPECT_EQ(kMaxPacketSize, session->options()->max_packet_length);
+  } else {
+    EXPECT_EQ(kDefaultMaxPacketSize,
+              client_->client()->options()->max_packet_length);
+    EXPECT_EQ(kDefaultMaxPacketSize,
+              session->options()->max_packet_length);
+  }
+
+  EXPECT_EQ(kMaxInitialWindow,
+            client_negotiated_config->server_initial_congestion_window());
+  EXPECT_EQ(kMaxInitialWindow,
+            server_negotiated_config->server_initial_congestion_window());
+  // The client shouldn't set it's initial window based on the negotiated value.
+  EXPECT_EQ(kDefaultInitialWindow * kDefaultTCPMSS,
+            client_congestion_manager->GetCongestionWindow());
+  EXPECT_EQ(kMaxInitialWindow * kDefaultTCPMSS,
+            server_congestion_manager->GetCongestionWindow());
+
+  EXPECT_EQ(1u, client_negotiated_config->initial_round_trip_time_us());
+  EXPECT_EQ(1u, server_negotiated_config->initial_round_trip_time_us());
+
+  // Now use the negotiated limits with packet loss.
+  SetPacketLossPercentage(30);
+
+  // 10 Kb body.
+  string body;
+  GenerateBody(&body, 1024 * 10);
+
+  HTTPMessage request(HttpConstants::HTTP_1_1,
+                      HttpConstants::POST, "/foo");
+  request.AddBody(body, true);
+
+  EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
+}
+
+TEST_P(EndToEndTest, InitialRTT) {
+  // Client tries to negotiate twice the server's max and negotiation settles
+  // on the max.
+  client_config_.set_initial_round_trip_time_us(2 * kMaxInitialRoundTripTimeUs,
+                                                0);
+
+  ASSERT_TRUE(Initialize());
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+  QuicDispatcher* dispatcher =
+      QuicServerPeer::GetDispatcher(server_thread_->server());
+  ASSERT_EQ(1u, dispatcher->session_map().size());
+  QuicSession* session = dispatcher->session_map().begin()->second;
+  while (!session->IsCryptoHandshakeConfirmed()) {
+    server_thread_->server()->WaitForEvents();
+  }
+
+  QuicConfig* client_negotiated_config = client_->client()->session()->config();
+  QuicConfig* server_negotiated_config = session->config();
+  QuicCongestionManager* client_congestion_manager =
+      QuicConnectionPeer::GetCongestionManager(
+          client_->client()->session()->connection());
+  QuicCongestionManager* server_congestion_manager =
+      QuicConnectionPeer::GetCongestionManager(session->connection());
+
+  EXPECT_EQ(kMaxInitialRoundTripTimeUs,
+            client_negotiated_config->initial_round_trip_time_us());
+  EXPECT_EQ(kMaxInitialRoundTripTimeUs,
+            server_negotiated_config->initial_round_trip_time_us());
+  // Now that acks have been exchanged, the RTT estimate has decreased on the
+  // server and is not infinite on the client.
+  EXPECT_FALSE(client_congestion_manager->SmoothedRtt().IsInfinite());
+  EXPECT_GE(kMaxInitialRoundTripTimeUs,
+            server_congestion_manager->SmoothedRtt().ToMicroseconds());
 }
 
 TEST_P(EndToEndTest, ResetConnection) {

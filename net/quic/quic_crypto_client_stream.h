@@ -9,8 +9,8 @@
 
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/x509_certificate.h"
-#include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/proof_verifier.h"
+#include "net/quic/crypto/quic_crypto_client_config.h"
 #include "net/quic/quic_config.h"
 #include "net/quic/quic_crypto_stream.h"
 

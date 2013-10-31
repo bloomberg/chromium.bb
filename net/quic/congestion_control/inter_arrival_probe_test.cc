@@ -13,7 +13,9 @@ namespace test {
 
 class InterArrivalProbeTest : public ::testing::Test {
  protected:
-  InterArrivalProbeTest() : start_(QuicTime::Zero()) {
+  InterArrivalProbeTest()
+      : probe_(kDefaultMaxPacketSize),
+        start_(QuicTime::Zero()) {
   }
 
   InterArrivalProbe probe_;
@@ -22,19 +24,20 @@ class InterArrivalProbeTest : public ::testing::Test {
 
 TEST_F(InterArrivalProbeTest, CongestionWindow) {
   for (size_t i = 0; i < 10; i++) {
-    probe_.OnPacketSent(kMaxPacketSize);
-    EXPECT_EQ((9 - i) * kMaxPacketSize, probe_.GetAvailableCongestionWindow());
+    probe_.OnPacketSent(kDefaultMaxPacketSize);
+    EXPECT_EQ((9 - i) * kDefaultMaxPacketSize,
+              probe_.GetAvailableCongestionWindow());
   }
-  probe_.OnAcknowledgedPacket(kMaxPacketSize);
-  EXPECT_EQ(kMaxPacketSize, probe_.GetAvailableCongestionWindow());
+  probe_.OnAcknowledgedPacket(kDefaultMaxPacketSize);
+  EXPECT_EQ(kDefaultMaxPacketSize, probe_.GetAvailableCongestionWindow());
 
-  probe_.OnPacketSent(kMaxPacketSize);
+  probe_.OnPacketSent(kDefaultMaxPacketSize);
   EXPECT_EQ(0u, probe_.GetAvailableCongestionWindow());
 }
 
 TEST_F(InterArrivalProbeTest, Estimate) {
   QuicPacketSequenceNumber sequence_number = 1;
-  QuicByteCount bytes_sent = kMaxPacketSize;
+  QuicByteCount bytes_sent = kDefaultMaxPacketSize;
   QuicTime time_received = start_.Add(QuicTime::Delta::FromMilliseconds(10));
   QuicTime time_sent = start_.Add(QuicTime::Delta::FromMilliseconds(1));
   QuicBandwidth available_channel_estimate = QuicBandwidth::Zero();
@@ -50,13 +53,13 @@ TEST_F(InterArrivalProbeTest, Estimate) {
     time_received = time_received.Add(QuicTime::Delta::FromMilliseconds(10));
   }
   EXPECT_TRUE(probe_.GetEstimate(&available_channel_estimate));
-  EXPECT_EQ(kMaxPacketSize * 100,
+  EXPECT_EQ(kDefaultMaxPacketSize * 100,
             static_cast<uint64>(available_channel_estimate.ToBytesPerSecond()));
 }
 
 TEST_F(InterArrivalProbeTest, EstimateWithLoss) {
   QuicPacketSequenceNumber sequence_number = 1;
-  QuicByteCount bytes_sent = kMaxPacketSize;
+  QuicByteCount bytes_sent = kDefaultMaxPacketSize;
   QuicTime time_received = start_.Add(QuicTime::Delta::FromMilliseconds(10));
   QuicTime time_sent = start_.Add(QuicTime::Delta::FromMilliseconds(1));
   QuicBandwidth available_channel_estimate = QuicBandwidth::Zero();
@@ -73,7 +76,7 @@ TEST_F(InterArrivalProbeTest, EstimateWithLoss) {
     time_received = time_received.Add(QuicTime::Delta::FromMilliseconds(10));
   }
   EXPECT_TRUE(probe_.GetEstimate(&available_channel_estimate));
-  EXPECT_EQ(kMaxPacketSize * 50,
+  EXPECT_EQ(kDefaultMaxPacketSize * 50,
             static_cast<uint64>(available_channel_estimate.ToBytesPerSecond()));
 }
 

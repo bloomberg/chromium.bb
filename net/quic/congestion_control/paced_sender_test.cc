@@ -20,7 +20,8 @@ class PacedSenderTest : public ::testing::Test {
   PacedSenderTest()
       : zero_time_(QuicTime::Delta::Zero()),
         paced_sender_(new PacedSender(
-            QuicBandwidth::FromKBytesPerSecond(kHundredKBytesPerS))) {
+            QuicBandwidth::FromKBytesPerSecond(kHundredKBytesPerS),
+            kDefaultMaxPacketSize)) {
   }
 
   const QuicTime::Delta zero_time_;
@@ -32,10 +33,10 @@ TEST_F(PacedSenderTest, Basic) {
   paced_sender_->UpdateBandwidthEstimate(clock_.Now(),
       QuicBandwidth::FromKBytesPerSecond(kHundredKBytesPerS * 10));
   EXPECT_TRUE(paced_sender_->TimeUntilSend(clock_.Now(), zero_time_).IsZero());
-  paced_sender_->OnPacketSent(clock_.Now(), kMaxPacketSize);
+  paced_sender_->OnPacketSent(clock_.Now(), kDefaultMaxPacketSize);
   EXPECT_TRUE(paced_sender_->TimeUntilSend(clock_.Now(), zero_time_).IsZero());
-  paced_sender_->OnPacketSent(clock_.Now(), kMaxPacketSize);
-  EXPECT_EQ(static_cast<int64>(kMaxPacketSize * 2),
+  paced_sender_->OnPacketSent(clock_.Now(), kDefaultMaxPacketSize);
+  EXPECT_EQ(static_cast<int64>(kDefaultMaxPacketSize * 2),
             paced_sender_->TimeUntilSend(
                 clock_.Now(), zero_time_).ToMicroseconds());
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(24));
@@ -46,10 +47,10 @@ TEST_F(PacedSenderTest, LowRate) {
   paced_sender_->UpdateBandwidthEstimate(clock_.Now(),
       QuicBandwidth::FromKBytesPerSecond(kHundredKBytesPerS));
   EXPECT_TRUE(paced_sender_->TimeUntilSend(clock_.Now(), zero_time_).IsZero());
-  paced_sender_->OnPacketSent(clock_.Now(), kMaxPacketSize);
+  paced_sender_->OnPacketSent(clock_.Now(), kDefaultMaxPacketSize);
   EXPECT_TRUE(paced_sender_->TimeUntilSend(clock_.Now(), zero_time_).IsZero());
-  paced_sender_->OnPacketSent(clock_.Now(), kMaxPacketSize);
-  EXPECT_EQ(static_cast<int64>(kMaxPacketSize * 20),
+  paced_sender_->OnPacketSent(clock_.Now(), kDefaultMaxPacketSize);
+  EXPECT_EQ(static_cast<int64>(kDefaultMaxPacketSize * 20),
             paced_sender_->TimeUntilSend(
                 clock_.Now(), zero_time_).ToMicroseconds());
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(24));
@@ -62,11 +63,11 @@ TEST_F(PacedSenderTest, HighRate) {
   paced_sender_->UpdateBandwidthEstimate(clock_.Now(), bandwidth_estimate);
   EXPECT_TRUE(paced_sender_->TimeUntilSend(clock_.Now(), zero_time_).IsZero());
   for (int i = 0; i < 16; ++i) {
-    paced_sender_->OnPacketSent(clock_.Now(), kMaxPacketSize);
+    paced_sender_->OnPacketSent(clock_.Now(), kDefaultMaxPacketSize);
     EXPECT_TRUE(paced_sender_->TimeUntilSend(
         clock_.Now(), zero_time_).IsZero());
   }
-  paced_sender_->OnPacketSent(clock_.Now(), kMaxPacketSize);
+  paced_sender_->OnPacketSent(clock_.Now(), kDefaultMaxPacketSize);
   EXPECT_EQ(2040, paced_sender_->TimeUntilSend(
       clock_.Now(), zero_time_).ToMicroseconds());
   clock_.AdvanceTime(QuicTime::Delta::FromMicroseconds(20400));

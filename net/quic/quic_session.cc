@@ -59,6 +59,10 @@ class VisitorShim : public QuicConnectionVisitorInterface {
     session_->OnSuccessfulVersionNegotiation(version);
   }
 
+  virtual void OnConfigNegotiated() OVERRIDE {
+    session_->OnConfigNegotiated();
+  }
+
   virtual void OnConnectionClosed(QuicErrorCode error,
                                   bool from_peer) OVERRIDE {
     session_->OnConnectionClosed(error, from_peer);
@@ -89,12 +93,11 @@ QuicSession::QuicSession(QuicConnection* connection,
       has_pending_handshake_(false) {
 
   connection_->set_visitor(visitor_shim_.get());
-  connection_->SetIdleNetworkTimeout(config_.idle_connection_state_lifetime());
+  connection_->SetFromConfig(config_);
   if (connection_->connected()) {
     connection_->SetOverallConnectionTimeout(
         config_.max_time_before_crypto_handshake());
   }
-  // TODO(satyamshekhar): Set congestion control and ICSL also.
 }
 
 QuicSession::~QuicSession() {
@@ -339,6 +342,10 @@ bool QuicSession::IsCryptoHandshakeConfirmed() {
   return GetCryptoStream()->handshake_confirmed();
 }
 
+void QuicSession::OnConfigNegotiated() {
+  connection_->SetFromConfig(config_);
+}
+
 void QuicSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
   switch (event) {
     // TODO(satyamshekhar): Move the logic of setting the encrypter/decrypter
@@ -356,8 +363,6 @@ void QuicSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
     case HANDSHAKE_CONFIRMED:
       LOG_IF(DFATAL, !config_.negotiated()) << ENDPOINT
           << "Handshake confirmed without parameter negotiation.";
-      connection_->SetIdleNetworkTimeout(
-          config_.idle_connection_state_lifetime());
       connection_->SetOverallConnectionTimeout(QuicTime::Delta::Infinite());
       max_open_streams_ = config_.max_streams_per_connection();
       break;

@@ -19,6 +19,7 @@
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/iovector.h"
 #include "net/quic/quic_bandwidth.h"
+#include "net/quic/quic_config.h"
 #include "net/quic/quic_utils.h"
 
 using base::hash_map;
@@ -54,7 +55,7 @@ const QuicPacketSequenceNumber kMaxPacketGap = 5000;
 // We want to make sure if we get a nack packet which triggers several
 // retransmissions, we don't queue up too many packets.  10 is TCP's default
 // initial congestion window(RFC 6928).
-const size_t kMaxRetransmissionsPerAck = 10;
+const size_t kMaxRetransmissionsPerAck = kDefaultInitialWindow;
 
 // TCP retransmits after 3 nacks.
 // TODO(ianswett): Change to match TCP's rule of retransmitting once an ack
@@ -250,6 +251,19 @@ QuicConnection::~QuicConnection() {
        it != queued_packets_.end(); ++it) {
     delete it->packet;
   }
+}
+
+void QuicConnection::SetFromConfig(const QuicConfig& config) {
+  DCHECK_LT(0u, config.server_max_packet_size());
+  DCHECK_LT(0u, config.server_initial_congestion_window());
+  SetIdleNetworkTimeout(config.idle_connection_state_lifetime());
+  // Set the max packet length only when QUIC_VERSION_12 or later is supported,
+  // with explicitly truncated acks.
+  if (version() > QUIC_VERSION_11) {
+    options()->max_packet_length = config.server_max_packet_size();
+  }
+  congestion_manager_.SetFromConfig(config, is_server_);
+  // TODO(satyamshekhar): Set congestion control and ICSL also.
 }
 
 bool QuicConnection::SelectMutualVersion(
@@ -506,8 +520,10 @@ void QuicConnection::ProcessAckFrame(const QuicAckFrame& incoming_ack) {
 
   largest_seen_packet_with_ack_ = last_header_.packet_sequence_number;
 
-  received_truncated_ack_ = incoming_ack.received_info.missing_packets.size() >=
-                            QuicFramer::GetMaxUnackedPackets(last_header_);
+  received_truncated_ack_ = version() <= QUIC_VERSION_11 ?
+      incoming_ack.received_info.missing_packets.size() >=
+          QuicFramer::GetMaxUnackedPackets(last_header_) :
+      incoming_ack.received_info.is_truncated;
 
   received_packet_manager_.UpdatePacketInformationReceivedByPeer(incoming_ack);
   received_packet_manager_.UpdatePacketInformationSentByPeer(incoming_ack);
@@ -590,8 +606,10 @@ bool QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
 
   // We can't have too many unacked packets, or our ack frames go over
   // kMaxPacketSize.
-  DCHECK_LE(incoming_ack.received_info.missing_packets.size(),
-            QuicFramer::GetMaxUnackedPackets(last_header_));
+  if (version() <= QUIC_VERSION_11) {
+    DCHECK_LE(incoming_ack.received_info.missing_packets.size(),
+              QuicFramer::GetMaxUnackedPackets(last_header_));
+  }
 
   if (incoming_ack.sent_info.least_unacked <
       received_packet_manager_.peer_least_packet_awaiting_ack()) {
@@ -672,9 +690,8 @@ bool QuicConnection::OnConnectionCloseFrame(
   DLOG(INFO) << ENDPOINT << "Connection " << guid() << " closed with error "
              << QuicUtils::ErrorToString(frame.error_code)
              << " " << frame.error_details;
-  CloseConnection(frame.error_code, true);
-  DCHECK(!connected_);
-  return false;
+  last_close_frames_.push_back(frame);
+  return connected_;
 }
 
 bool QuicConnection::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
@@ -742,6 +759,10 @@ void QuicConnection::OnPacketComplete() {
   for (size_t i = 0; i < last_congestion_frames_.size(); ++i) {
     congestion_manager_.OnIncomingQuicCongestionFeedbackFrame(
         last_congestion_frames_[i], time_of_last_received_packet_);
+  }
+  if (!last_close_frames_.empty()) {
+    CloseConnection(last_close_frames_[0].error_code, true);
+    DCHECK(!connected_);
   }
 
   if (received_packet_manager_.GetNumMissingPackets() != 0) {
@@ -1286,13 +1307,20 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
     CloseConnection(QUIC_ENCRYPTION_FAILURE, false);
     return false;
   }
+
+  if (encrypted->length() > options()->max_packet_length) {
+    LOG(DFATAL) << ENDPOINT
+                << "Writing an encrypted packet larger than max_packet_length:"
+                << options()->max_packet_length;
+  }
   DLOG(INFO) << ENDPOINT << "Sending packet number " << sequence_number
              << " : " << (packet->is_fec_packet() ? "FEC " :
                  (retransmittable == HAS_RETRANSMITTABLE_DATA
                       ? "data bearing " : " ack only "))
              << ", encryption level: "
              << QuicUtils::EncryptionLevelToString(level)
-             << ", length:" << packet->length();
+             << ", length:" << packet->length() << ", encrypted length:"
+             << encrypted->length();
   DVLOG(2) << ENDPOINT << "packet(" << sequence_number << "): " << std::endl
            << QuicUtils::StringToHexASCIIDump(packet->AsStringPiece());
 
@@ -1344,7 +1372,7 @@ bool QuicConnection::ShouldDiscardPacket(
     HasRetransmittableData retransmittable) {
   if (!connected_) {
     DLOG(INFO) << ENDPOINT
-        << "Not sending packet as connection is disconnected.";
+               << "Not sending packet as connection is disconnected.";
     return true;
   }
 
@@ -1353,7 +1381,7 @@ bool QuicConnection::ShouldDiscardPacket(
     // Drop packets that are NULL encrypted since the peer won't accept them
     // anymore.
     DLOG(INFO) << ENDPOINT << "Dropping packet: " << sequence_number
-        << " since the packet is NULL encrypted.";
+               << " since the packet is NULL encrypted.";
     sent_packet_manager_.DiscardUnackedPacket(sequence_number);
     return true;
   }
@@ -1367,7 +1395,7 @@ bool QuicConnection::ShouldDiscardPacket(
       // high water mark, all before we're able to send the packet
       // then we can simply drop it.
       DLOG(INFO) << ENDPOINT << "Dropping packet: " << sequence_number
-          << " since it has already been acked.";
+                 << " since it has already been acked.";
       return true;
     }
 
@@ -1385,7 +1413,7 @@ bool QuicConnection::ShouldDiscardPacket(
 
     if (!sent_packet_manager_.HasRetransmittableFrames(sequence_number)) {
       DLOG(INFO) << ENDPOINT << "Dropping packet: " << sequence_number
-          << " since a previous transmission has been acked.";
+                 << " since a previous transmission has been acked.";
       sent_packet_manager_.DiscardUnackedPacket(sequence_number);
       return true;
     }
@@ -1737,6 +1765,7 @@ void QuicConnection::SendConnectionClosePacket(QuicErrorCode error,
   DLOG(INFO) << ENDPOINT << "Force closing " << guid() << " with error "
              << QuicUtils::ErrorToString(error) << " (" << error << ") "
              << details;
+  ScopedPacketBundler ack_bundler(this, version() > QUIC_VERSION_11);
   QuicConnectionCloseFrame* frame = new QuicConnectionCloseFrame();
   frame->error_code = error;
   frame->error_details = details;
@@ -1751,6 +1780,13 @@ void QuicConnection::CloseConnection(QuicErrorCode error, bool from_peer) {
   DCHECK(connected_);
   connected_ = false;
   visitor_->OnConnectionClosed(error, from_peer);
+  // Cancel the alarms so they don't trigger any action now that the
+  // connection is closed.
+  ack_alarm_->Cancel();
+  resume_writes_alarm_->Cancel();
+  retransmission_alarm_->Cancel();
+  send_alarm_->Cancel();
+  timeout_alarm_->Cancel();
 }
 
 void QuicConnection::SendGoAway(QuicErrorCode error,

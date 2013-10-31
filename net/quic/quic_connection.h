@@ -34,7 +34,6 @@
 #include "net/quic/quic_alarm.h"
 #include "net/quic/quic_blocked_writer_interface.h"
 #include "net/quic/quic_connection_stats.h"
-#include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_creator.h"
 #include "net/quic/quic_packet_generator.h"
 #include "net/quic/quic_packet_writer.h"
@@ -49,6 +48,7 @@ NET_EXPORT_PRIVATE extern bool FLAGS_bundle_ack_with_outgoing_packet;
 namespace net {
 
 class QuicClock;
+class QuicConfig;
 class QuicConnection;
 class QuicDecrypter;
 class QuicEncrypter;
@@ -84,6 +84,9 @@ class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
 
   // Called once a specific QUIC version is agreed by both endpoints.
   virtual void OnSuccessfulVersionNegotiation(const QuicVersion& version) = 0;
+
+  // Indicates a new QuicConfig has been negotiated.
+  virtual void OnConfigNegotiated() = 0;
 
   // Called when a blocked socket becomes writable.  If all pending bytes for
   // this visitor are consumed by the connection successfully this should
@@ -198,6 +201,9 @@ class NET_EXPORT_PRIVATE QuicConnection
                  bool is_server,
                  const QuicVersionVector& supported_versions);
   virtual ~QuicConnection();
+
+  // Sets connection parameters from the supplied |config|.
+  void SetFromConfig(const QuicConfig& config);
 
   // Send the data in |data| to the peer in as few packets as possible.
   // Returns a pair with the number of bytes consumed from data, and a boolean
@@ -672,6 +678,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   std::vector<QuicCongestionFeedbackFrame> last_congestion_frames_;
   std::vector<QuicRstStreamFrame> last_rst_frames_;
   std::vector<QuicGoAwayFrame> last_goaway_frames_;
+  std::vector<QuicConnectionCloseFrame> last_close_frames_;
   // Then number of packets retransmitted because of nacks
   // while processed the current ack frame.
   size_t retransmitted_nacked_packet_count_;

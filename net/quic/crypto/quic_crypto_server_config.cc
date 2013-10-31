@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/crypto/crypto_server_config.h"
+#include "net/quic/crypto/quic_crypto_server_config.h"
 
 #include <stdlib.h>
 #include <algorithm>
@@ -757,12 +757,22 @@ void QuicCryptoServerConfig::BuildRejection(
 
   // kREJOverheadBytes is a very rough estimate of how much of a REJ
   // message is taken up by things other than the certificates.
-  const size_t kREJOverheadBytes = 112;
+  // STK: 56 bytes
+  // SNO: 56 bytes
+  // SCFG
+  //   SCID: 16 bytes
+  //   PUBS: 38 bytes
+  const size_t kREJOverheadBytes = 166;
+  // kMultiplier is the multiple of the CHLO message size that a REJ message
+  // must stay under when the client doesn't present a valid source-address
+  // token.
+  const size_t kMultiplier = 2;
   // max_unverified_size is the number of bytes that the certificate chain
   // and signature can consume before we will demand a valid source-address
   // token.
-  const size_t max_unverified_size = client_hello.size() - kREJOverheadBytes;
-  COMPILE_ASSERT(kClientHelloMinimumSize >= kREJOverheadBytes,
+  const size_t max_unverified_size =
+      client_hello.size() * kMultiplier - kREJOverheadBytes;
+  COMPILE_ASSERT(kClientHelloMinimumSize * kMultiplier >= kREJOverheadBytes,
                  overhead_calculation_may_underflow);
   if (info.valid_source_address_token ||
       signature.size() + compressed.size() < max_unverified_size) {

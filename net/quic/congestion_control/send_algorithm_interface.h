@@ -13,6 +13,7 @@
 #include "net/base/net_export.h"
 #include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_clock.h"
+#include "net/quic/quic_config.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_time.h"
 
@@ -40,6 +41,8 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
                                         CongestionFeedbackType type);
 
   virtual ~SendAlgorithmInterface() {}
+
+  virtual void SetFromConfig(const QuicConfig& config, bool is_server) = 0;
 
   // Called when we receive congestion feedback from remote peer.
   virtual void OnIncomingQuicCongestionFeedbackFrame(

@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_CRYPTO_CRYPTO_SERVER_CONFIG_H_
-#define NET_QUIC_CRYPTO_CRYPTO_SERVER_CONFIG_H_
+#ifndef NET_QUIC_CRYPTO_QUIC_CRYPTO_SERVER_CONFIG_H_
+#define NET_QUIC_CRYPTO_QUIC_CRYPTO_SERVER_CONFIG_H_
 
 #include <map>
 #include <string>
@@ -367,4 +367,4 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
 
 }  // namespace net
 
-#endif  // NET_QUIC_CRYPTO_CRYPTO_SERVER_CONFIG_H_
+#endif  // NET_QUIC_CRYPTO_QUIC_CRYPTO_SERVER_CONFIG_H_

@@ -13,6 +13,7 @@ namespace net {
 namespace test {
 
 const uint32 kDefaultWindowTCP = 10 * kDefaultTCPMSS;
+
 // TODO(ianswett): Remove 10000 once b/10075719 is fixed.
 const QuicTcpCongestionWindow kDefaultMaxCongestionWindowTCP = 10000;
 
@@ -23,6 +24,11 @@ class TcpCubicSenderPeer : public TcpCubicSender {
                      QuicTcpCongestionWindow max_tcp_congestion_window)
       : TcpCubicSender(clock, reno, max_tcp_congestion_window) {
   }
+
+  QuicTcpCongestionWindow congestion_window() {
+    return congestion_window_;
+  }
+
   using TcpCubicSender::AvailableSendWindow;
   using TcpCubicSender::SendWindow;
   using TcpCubicSender::AckAccounting;
@@ -369,6 +375,17 @@ TEST_F(TcpCubicSenderTest, SendWindowNotAffectedByAcks) {
   sender_->OnPacketSent(clock_.Now(), sequence_number_++, bytes_in_packet,
                         NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
   EXPECT_GT(send_window, sender_->AvailableSendWindow());
+}
+
+TEST_F(TcpCubicSenderTest, ConfigureMaxInitialWindow) {
+  QuicTcpCongestionWindow congestion_window = sender_->congestion_window();
+  QuicConfig config;
+  config.set_server_initial_congestion_window(2 * congestion_window,
+                                       2 * congestion_window);
+  EXPECT_EQ(2 * congestion_window, config.server_initial_congestion_window());
+
+  sender_->SetFromConfig(config, true);
+  EXPECT_EQ(2 * congestion_window, sender_->congestion_window());
 }
 
 }  // namespace test

@@ -51,6 +51,14 @@ TcpCubicSender::~TcpCubicSender() {
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.FinalTcpCwnd", congestion_window_);
 }
 
+void TcpCubicSender::SetFromConfig(const QuicConfig& config, bool is_server) {
+  if (is_server) {
+    // Set the initial window size.
+    // Ignoring the max packet size and always using TCP's default MSS.
+    congestion_window_ = config.server_initial_congestion_window();
+  }
+}
+
 void TcpCubicSender::OnIncomingQuicCongestionFeedbackFrame(
     const QuicCongestionFeedbackFrame& feedback,
     QuicTime feedback_receive_time,
@@ -206,7 +214,7 @@ bool TcpCubicSender::IsCwndLimited() const {
   return left <= tcp_max_burst;
 }
 
-// Called when we receive and ack. Normal TCP tracks how many packets one ack
+// Called when we receive an ack. Normal TCP tracks how many packets one ack
 // represents, but quic has a separate ack for each packet.
 void TcpCubicSender::CongestionAvoidance(QuicPacketSequenceNumber ack) {
   if (!IsCwndLimited()) {
@@ -254,6 +262,8 @@ void TcpCubicSender::OnTimeOut() {
 
 void TcpCubicSender::AckAccounting(QuicTime::Delta rtt) {
   if (rtt.IsInfinite() || rtt.IsZero()) {
+    DLOG(INFO) << "Ignoring rtt, because it's "
+               << (rtt.IsZero() ? "Zero" : "Infinite");
     return;
   }
   // RTT can't be negative.
@@ -278,7 +288,8 @@ void TcpCubicSender::AckAccounting(QuicTime::Delta rtt) {
     smoothed_rtt_ = QuicTime::Delta::FromMicroseconds(
         kOneMinusAlpha * smoothed_rtt_.ToMicroseconds() +
         kAlpha * rtt.ToMicroseconds());
-    DLOG(INFO) << "Cubic; mean_deviation_:" << mean_deviation_.ToMicroseconds();
+    DLOG(INFO) << "Cubic; smoothed_rtt_:" << smoothed_rtt_.ToMicroseconds()
+               << " mean_deviation_:" << mean_deviation_.ToMicroseconds();
   }
 
   // Hybrid start triggers when cwnd is larger than some threshold.

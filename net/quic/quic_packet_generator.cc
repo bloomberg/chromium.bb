@@ -216,7 +216,9 @@ bool QuicPacketGenerator::AddNextPendingFrame() {
     return !should_send_feedback_;
   }
 
-  DCHECK(!queued_control_frames_.empty());
+  if (queued_control_frames_.empty()) {
+    LOG(DFATAL) << "AddNextPendingFrame called with no queued control frames.";
+  }
   if (!AddFrame(queued_control_frames_.back())) {
     // Packet was full.
     return false;

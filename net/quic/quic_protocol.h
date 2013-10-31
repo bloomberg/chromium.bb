@@ -45,8 +45,18 @@ typedef std::vector<QuicTag> QuicTagVector;
 typedef uint32 QuicPriority;
 
 // TODO(rch): Consider Quic specific names for these constants.
-// Maximum size in bytes of a QUIC packet.
-const QuicByteCount kMaxPacketSize = 1200;
+// Default and initial maximum size in bytes of a QUIC packet.
+const QuicByteCount kDefaultMaxPacketSize = 1200;
+// The maximum packet size of any QUIC packet, based on ethernet's max size,
+// minus the IP and UDP headers.
+const QuicByteCount kMaxPacketSize = 1472;
+
+// Maximum size of the initial congestion window in packets.
+const size_t kDefaultInitialWindow = 10;
+const size_t kMaxInitialWindow = 100;
+
+// Don't allow a client to suggest an RTT longer than 15 seconds.
+const uint32 kMaxInitialRoundTripTimeUs = 15 * kNumMicrosPerSecond;
 
 // Maximum number of open streams per connection.
 const size_t kDefaultMaxStreamsPerConnection = 100;
@@ -146,6 +156,14 @@ enum QuicSequenceNumberLength {
   PACKET_6BYTE_SEQUENCE_NUMBER = 6
 };
 
+// Used to indicate a QuicSequenceNumberLength using two flag bits.
+enum QuicSequenceNumberLengthFlags {
+  PACKET_FLAGS_1BYTE_SEQUENCE = 0,  // 00
+  PACKET_FLAGS_2BYTE_SEQUENCE = 1,  // 01
+  PACKET_FLAGS_4BYTE_SEQUENCE = 1 << 1,  // 10
+  PACKET_FLAGS_6BYTE_SEQUENCE = 1 << 1 | 1,  // 11
+};
+
 // The public flags are specified in one byte.
 enum QuicPacketPublicFlags {
   PACKET_PUBLIC_FLAGS_NONE = 0,
@@ -171,10 +189,10 @@ enum QuicPacketPublicFlags {
   // --01----: 2 bytes
   // --10----: 4 bytes
   // --11----: 6 bytes
-  PACKET_PUBLIC_FLAGS_1BYTE_SEQUENCE = 0,
-  PACKET_PUBLIC_FLAGS_2BYTE_SEQUENCE = 1 << 4,
-  PACKET_PUBLIC_FLAGS_4BYTE_SEQUENCE = 1 << 5,
-  PACKET_PUBLIC_FLAGS_6BYTE_SEQUENCE = 1 << 5 | 1 << 4,
+  PACKET_PUBLIC_FLAGS_1BYTE_SEQUENCE = PACKET_FLAGS_1BYTE_SEQUENCE << 4,
+  PACKET_PUBLIC_FLAGS_2BYTE_SEQUENCE = PACKET_FLAGS_2BYTE_SEQUENCE << 4,
+  PACKET_PUBLIC_FLAGS_4BYTE_SEQUENCE = PACKET_FLAGS_4BYTE_SEQUENCE << 4,
+  PACKET_PUBLIC_FLAGS_6BYTE_SEQUENCE = PACKET_FLAGS_6BYTE_SEQUENCE << 4,
 
   // All bits set (bits 6 and 7 are not currently used): 00111111
   PACKET_PUBLIC_FLAGS_MAX = (1 << 6) - 1
@@ -208,7 +226,8 @@ enum QuicVersion {
   QUIC_VERSION_UNSUPPORTED = 0,
 
   QUIC_VERSION_10 = 10,
-  QUIC_VERSION_11 = 11,  // Current version.
+  QUIC_VERSION_11 = 11,
+  QUIC_VERSION_12 = 12,  // Current version.
 };
 
 // This vector contains QUIC versions which we currently support.
@@ -533,6 +552,9 @@ struct NET_EXPORT_PRIVATE ReceivedPacketInfo {
   // structure.
   // The set of packets which we're expecting and have not received.
   SequenceNumberSet missing_packets;
+
+  // Whether the ack had to be truncated when sent.
+  bool is_truncated;
 };
 
 // True if the sequence number is greater than largest_observed or is listed
@@ -634,6 +656,7 @@ struct NET_EXPORT_PRIVATE QuicRstStreamFrame {
 struct NET_EXPORT_PRIVATE QuicConnectionCloseFrame {
   QuicErrorCode error_code;
   std::string error_details;
+  // TODO(ianswett): Remove this once QUIC_VERSION_11 is removed.
   QuicAckFrame ack_frame;
 };
 

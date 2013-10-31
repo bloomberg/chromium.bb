@@ -90,15 +90,8 @@ void QuicPacketCreator::UpdateSequenceNumberLength(
       bytes_per_second / options_.max_packet_length;
   const uint64 delta = max(current_delta, congestion_window);
 
-  if (delta < 1 << ((PACKET_1BYTE_SEQUENCE_NUMBER * 8) - 2)) {
-    options_.send_sequence_number_length = PACKET_1BYTE_SEQUENCE_NUMBER;
-  } else if (delta < 1 << ((PACKET_2BYTE_SEQUENCE_NUMBER * 8) - 2)) {
-    options_.send_sequence_number_length = PACKET_2BYTE_SEQUENCE_NUMBER;
-  } else if (delta < 1 << ((PACKET_4BYTE_SEQUENCE_NUMBER * 8) - 2)) {
-    options_.send_sequence_number_length = PACKET_4BYTE_SEQUENCE_NUMBER;
-  } else {
-    options_.send_sequence_number_length = PACKET_6BYTE_SEQUENCE_NUMBER;
-  }
+  options_.send_sequence_number_length =
+      QuicFramer::GetMinSequenceNumberLength(delta * 4);
 }
 
 bool QuicPacketCreator::HasRoomForStreamFrame(QuicStreamId id,
@@ -137,7 +130,9 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
   }
 
   if (data.size() == 0) {
-    DCHECK(fin);
+    if (!fin) {
+      LOG(DFATAL) << "Creating a stream frame with no data or fin.";
+    }
     // Create a new packet for the fin, if necessary.
     *frame = QuicFrame(new QuicStreamFrame(id, true, offset, ""));
     return 0;
@@ -294,8 +289,8 @@ SerializedPacket QuicPacketCreator::SerializePacket() {
   size_t max_plaintext_size =
       framer_->GetMaxPlaintextSize(options_.max_packet_length);
   DCHECK_GE(max_plaintext_size, packet_size_);
-  // ACK and CONNECTION_CLOSE Frames will only be truncated only if they're
-  // the first frame in the packet.  If truncation is to occure, then
+  // ACK and CONNECTION_CLOSE Frames will be truncated only if they're
+  // the first frame in the packet.  If truncation is to occur, then
   // GetSerializedFrameLength will have returned all bytes free.
   bool possibly_truncated =
       packet_size_ != max_plaintext_size ||
@@ -304,7 +299,10 @@ SerializedPacket QuicPacketCreator::SerializePacket() {
        queued_frames_.back().type == CONNECTION_CLOSE_FRAME);
   SerializedPacket serialized =
       framer_->BuildDataPacket(header, queued_frames_, packet_size_);
-  DCHECK(serialized.packet);
+  if (!serialized.packet) {
+    LOG(DFATAL) << "Failed to serialize " << queued_frames_.size()
+                << " frames.";
+  }
   // Because of possible truncation, we can't be confident that our
   // packet size calculation worked correctly.
   if (!possibly_truncated)
@@ -329,7 +327,10 @@ SerializedPacket QuicPacketCreator::SerializeFec() {
   fec_group_.reset(NULL);
   fec_group_number_ = 0;
   packet_size_ = 0;
-  DCHECK(serialized.packet);
+  if (!serialized.packet) {
+    LOG(DFATAL) << "Failed to serialize fec packet for group:"
+                << fec_data.fec_group;
+  }
   DCHECK_GE(options_.max_packet_length, serialized.packet->length());
   return serialized;
 }
@@ -393,7 +394,8 @@ bool QuicPacketCreator::ShouldRetransmit(const QuicFrame& frame) {
 bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
                                  bool save_retransmittable_frames) {
   size_t frame_len = framer_->GetSerializedFrameLength(
-      frame, BytesFree(), queued_frames_.empty(), true);
+      frame, BytesFree(), queued_frames_.empty(), true,
+      options()->send_sequence_number_length);
   if (frame_len == 0) {
     return false;
   }

@@ -432,7 +432,8 @@ size_t GetPacketLengthForOneStream(
           version, PACKET_8BYTE_GUID, include_version,
           sequence_number_length, is_in_fec_group);
   const size_t ack_length = NullEncrypter(false).GetCiphertextSize(
-      QuicFramer::GetMinAckFrameSize()) +
+      QuicFramer::GetMinAckFrameSize(
+          version, sequence_number_length, PACKET_1BYTE_SEQUENCE_NUMBER)) +
       GetPacketHeaderSize(PACKET_8BYTE_GUID, include_version,
                           sequence_number_length, is_in_fec_group);
   if (stream_length < ack_length) {
@@ -451,10 +452,18 @@ size_t GetMinStreamFrameSize(QuicVersion version) {
   return kQuicFrameTypeSize + kQuicMaxStreamIdSize + kQuicMaxStreamOffsetSize;
 }
 
+TestEntropyCalculator::TestEntropyCalculator() { }
+
+TestEntropyCalculator::~TestEntropyCalculator() { }
+
 QuicPacketEntropyHash TestEntropyCalculator::EntropyHash(
     QuicPacketSequenceNumber sequence_number) const {
   return 1u;
 }
+
+MockEntropyCalculator::MockEntropyCalculator() { }
+
+MockEntropyCalculator::~MockEntropyCalculator() { }
 
 QuicConfig DefaultQuicConfig() {
   QuicConfig config;

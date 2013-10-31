@@ -4,8 +4,8 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "crypto/secure_hash.h"
-#include "net/quic/crypto/crypto_server_config.h"
 #include "net/quic/crypto/crypto_utils.h"
+#include "net/quic/crypto/quic_crypto_server_config.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/mock_clock.h"

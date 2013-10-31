@@ -32,6 +32,8 @@ class NET_EXPORT_PRIVATE QuicCongestionManager {
                         CongestionFeedbackType congestion_type);
   virtual ~QuicCongestionManager();
 
+  virtual void SetFromConfig(const QuicConfig& config, bool is_server);
+
   // Called when we have received an ack frame from peer.
   virtual void OnIncomingAckFrame(const QuicAckFrame& frame,
                                   QuicTime ack_receive_time);

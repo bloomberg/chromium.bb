@@ -7,8 +7,8 @@
 #include "base/base64.h"
 #include "crypto/secure_hash.h"
 #include "net/quic/crypto/crypto_protocol.h"
-#include "net/quic/crypto/crypto_server_config.h"
 #include "net/quic/crypto/crypto_utils.h"
+#include "net/quic/crypto/quic_crypto_server_config.h"
 #include "net/quic/quic_config.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_session.h"
@@ -62,6 +62,7 @@ void QuicCryptoServerStream::OnHandshakeMessage(
     CloseConnectionWithDetails(error, error_details);
     return;
   }
+  session()->OnConfigNegotiated();
 
   config->ToHandshakeMessage(&reply);
 

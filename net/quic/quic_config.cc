@@ -19,7 +19,9 @@ QuicNegotiableValue::QuicNegotiableValue(QuicTag tag, Presence presence)
 }
 
 QuicNegotiableUint32::QuicNegotiableUint32(QuicTag tag, Presence presence)
-    : QuicNegotiableValue(tag, presence) {
+    : QuicNegotiableValue(tag, presence),
+      max_value_(0),
+      default_value_(0) {
 }
 
 void QuicNegotiableUint32::set(uint32 max, uint32 default_value) {
@@ -224,9 +226,15 @@ QuicConfig::QuicConfig() :
         kICSL, QuicNegotiableValue::PRESENCE_REQUIRED),
     keepalive_timeout_seconds_(kKATO, QuicNegotiableValue::PRESENCE_OPTIONAL),
     max_streams_per_connection_(kMSPC, QuicNegotiableValue::PRESENCE_REQUIRED),
-    max_time_before_crypto_handshake_(QuicTime::Delta::Zero()) {
-  idle_connection_state_lifetime_seconds_.set(0, 0);
-  keepalive_timeout_seconds_.set(0, 0);
+    max_time_before_crypto_handshake_(QuicTime::Delta::Zero()),
+    server_initial_congestion_window_(
+        kSWND, QuicNegotiableValue::PRESENCE_OPTIONAL),
+    server_max_packet_size_(kSMSS, QuicNegotiableValue::PRESENCE_OPTIONAL),
+    initial_round_trip_time_us_(kIRTT, QuicNegotiableValue::PRESENCE_OPTIONAL) {
+  // All optional non-zero parameters should be initialized here.
+  server_initial_congestion_window_.set(kMaxInitialWindow,
+                                        kDefaultInitialWindow);
+  server_max_packet_size_.set(kMaxPacketSize, kDefaultMaxPacketSize);
 }
 
 QuicConfig::~QuicConfig() {}
@@ -277,11 +285,45 @@ QuicTime::Delta QuicConfig::max_time_before_crypto_handshake() const {
   return max_time_before_crypto_handshake_;
 }
 
+void QuicConfig::set_server_initial_congestion_window(size_t max_initial_window,
+                                               size_t default_initial_window) {
+  server_initial_congestion_window_.set(max_initial_window,
+                                        default_initial_window);
+}
+
+uint32 QuicConfig::server_initial_congestion_window() const {
+  return server_initial_congestion_window_.GetUint32();
+}
+
+void QuicConfig::set_server_max_packet_size(size_t max_bytes,
+                                            size_t default_bytes) {
+  server_max_packet_size_.set(max_bytes, default_bytes);
+}
+
+uint32 QuicConfig::server_max_packet_size() const {
+  return server_max_packet_size_.GetUint32();
+}
+
+void QuicConfig::set_initial_round_trip_time_us(size_t max_rtt,
+                                                size_t default_rtt) {
+  initial_round_trip_time_us_.set(max_rtt, default_rtt);
+}
+
+uint32 QuicConfig::initial_round_trip_time_us() const {
+  return initial_round_trip_time_us_.GetUint32();
+}
+
 bool QuicConfig::negotiated() {
+  // TODO(ianswett): Add the negotiated parameters once and iterate over all
+  // of them in negotiated, ToHandshakeMessage, ProcessClientHello, and
+  // ProcessServerHello.
   return congestion_control_.negotiated() &&
       idle_connection_state_lifetime_seconds_.negotiated() &&
       keepalive_timeout_seconds_.negotiated() &&
-      max_streams_per_connection_.negotiated();
+      max_streams_per_connection_.negotiated() &&
+      server_initial_congestion_window_.negotiated() &&
+      server_max_packet_size_.negotiated() &&
+      initial_round_trip_time_us_.negotiated();
 }
 
 void QuicConfig::SetDefaults() {
@@ -294,6 +336,9 @@ void QuicConfig::SetDefaults() {
                                   kDefaultMaxStreamsPerConnection);
   max_time_before_crypto_handshake_ = QuicTime::Delta::FromSeconds(
       kDefaultMaxTimeForCryptoHandshakeSecs);
+  server_initial_congestion_window_.set(kMaxInitialWindow,
+                                        kDefaultInitialWindow);
+  server_max_packet_size_.set(kMaxPacketSize, kDefaultMaxPacketSize);
 }
 
 void QuicConfig::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
@@ -301,6 +346,10 @@ void QuicConfig::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
   idle_connection_state_lifetime_seconds_.ToHandshakeMessage(out);
   keepalive_timeout_seconds_.ToHandshakeMessage(out);
   max_streams_per_connection_.ToHandshakeMessage(out);
+  server_initial_congestion_window_.ToHandshakeMessage(out);
+  server_max_packet_size_.ToHandshakeMessage(out);
+  // TODO(ianswett): Don't transmit parameters which are optional and not set.
+  initial_round_trip_time_us_.ToHandshakeMessage(out);
 }
 
 QuicErrorCode QuicConfig::ProcessClientHello(
@@ -322,6 +371,18 @@ QuicErrorCode QuicConfig::ProcessClientHello(
   }
   if (error == QUIC_NO_ERROR) {
     error = max_streams_per_connection_.ProcessClientHello(
+        client_hello, error_details);
+  }
+  if (error == QUIC_NO_ERROR) {
+    error = server_initial_congestion_window_.ProcessClientHello(
+        client_hello, error_details);
+  }
+  if (error == QUIC_NO_ERROR) {
+    error = server_max_packet_size_.ProcessClientHello(
+        client_hello, error_details);
+  }
+  if (error == QUIC_NO_ERROR) {
+    error = initial_round_trip_time_us_.ProcessClientHello(
         client_hello, error_details);
   }
   return error;
@@ -346,6 +407,18 @@ QuicErrorCode QuicConfig::ProcessServerHello(
   }
   if (error == QUIC_NO_ERROR) {
     error = max_streams_per_connection_.ProcessServerHello(
+        server_hello, error_details);
+  }
+  if (error == QUIC_NO_ERROR) {
+    error = server_initial_congestion_window_.ProcessServerHello(
+        server_hello, error_details);
+  }
+  if (error == QUIC_NO_ERROR) {
+    error = server_max_packet_size_.ProcessServerHello(
+        server_hello, error_details);
+  }
+  if (error == QUIC_NO_ERROR) {
+    error = initial_round_trip_time_us_.ProcessServerHello(
         server_hello, error_details);
   }
   return error;

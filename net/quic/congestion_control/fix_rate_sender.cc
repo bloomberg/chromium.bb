@@ -20,8 +20,9 @@ namespace net {
 
 FixRateSender::FixRateSender(const QuicClock* clock)
     : bitrate_(QuicBandwidth::FromBytesPerSecond(kInitialBitrate)),
+      max_segment_size_(kDefaultMaxPacketSize),
       fix_rate_leaky_bucket_(bitrate_),
-      paced_sender_(bitrate_),
+      paced_sender_(bitrate_, max_segment_size_),
       data_in_flight_(0),
       latest_rtt_(QuicTime::Delta::Zero()) {
   DLOG(INFO) << "FixRateSender";
@@ -30,12 +31,18 @@ FixRateSender::FixRateSender(const QuicClock* clock)
 FixRateSender::~FixRateSender() {
 }
 
+void FixRateSender::SetFromConfig(const QuicConfig& config, bool is_server) {
+  max_segment_size_ = config.server_max_packet_size();
+  paced_sender_.set_max_segment_size(max_segment_size_);
+}
+
 void FixRateSender::OnIncomingQuicCongestionFeedbackFrame(
     const QuicCongestionFeedbackFrame& feedback,
     QuicTime feedback_receive_time,
     const SentPacketsMap& /*sent_packets*/) {
-  DCHECK(feedback.type == kFixRate) <<
-      "Invalid incoming CongestionFeedbackType:" << feedback.type;
+  if (feedback.type != kFixRate) {
+    LOG(DFATAL) << "Invalid incoming CongestionFeedbackType:" << feedback.type;
+  }
   if (feedback.type == kFixRate) {
     bitrate_ = feedback.fix_rate.bitrate;
     fix_rate_leaky_bucket_.SetDrainingRate(feedback_receive_time, bitrate_);
@@ -105,7 +112,7 @@ QuicByteCount FixRateSender::CongestionWindow() {
   QuicByteCount window_size_bytes = bitrate_.ToBytesPerPeriod(
       QuicTime::Delta::FromMicroseconds(kWindowSizeUs));
   // Make sure window size is not less than a packet.
-  return std::max(kMaxPacketSize, window_size_bytes);
+  return std::max(kDefaultMaxPacketSize, window_size_bytes);
 }
 
 QuicBandwidth FixRateSender::BandwidthEstimate() {

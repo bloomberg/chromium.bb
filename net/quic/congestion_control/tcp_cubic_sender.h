@@ -35,6 +35,8 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
                  QuicTcpCongestionWindow max_tcp_congestion_window);
   virtual ~TcpCubicSender();
 
+  virtual void SetFromConfig(const QuicConfig& config, bool is_server) OVERRIDE;
+
   // Start implementation of SendAlgorithmInterface.
   virtual void OnIncomingQuicCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& feedback,

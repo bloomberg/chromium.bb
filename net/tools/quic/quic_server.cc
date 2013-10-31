@@ -43,6 +43,7 @@ QuicServer::QuicServer()
       supported_versions_(QuicSupportedVersions()) {
   // Use hardcoded crypto parameters for now.
   config_.SetDefaults();
+  config_.set_initial_round_trip_time_us(kMaxInitialRoundTripTimeUs, 0);
   Initialize();
 }
 

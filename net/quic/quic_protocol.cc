@@ -127,6 +127,8 @@ QuicTag QuicVersionToQuicTag(const QuicVersion version) {
       return MakeQuicTag('Q', '0', '1', '0');
     case QUIC_VERSION_11:
       return MakeQuicTag('Q', '0', '1', '1');
+    case QUIC_VERSION_12:
+      return MakeQuicTag('Q', '0', '1', '2');
     default:
       // This shold be an ERROR because we should never attempt to convert an
       // invalid QuicVersion to be written to the wire.
@@ -155,6 +157,7 @@ string QuicVersionToString(const QuicVersion version) {
   switch (version) {
     RETURN_STRING_LITERAL(QUIC_VERSION_10);
     RETURN_STRING_LITERAL(QUIC_VERSION_11);
+    RETURN_STRING_LITERAL(QUIC_VERSION_12);
     default:
       return "QUIC_VERSION_UNSUPPORTED";
   }
@@ -196,7 +199,8 @@ ostream& operator<<(ostream& os, const QuicPacketHeader& header) {
 // TODO(ianswett): Initializing largest_observed to 0 should not be necessary.
 ReceivedPacketInfo::ReceivedPacketInfo()
     : largest_observed(0),
-      delta_time_largest_observed(QuicTime::Delta::Infinite()) {
+      delta_time_largest_observed(QuicTime::Delta::Infinite()),
+      is_truncated(false) {
 }
 
 ReceivedPacketInfo::~ReceivedPacketInfo() {}

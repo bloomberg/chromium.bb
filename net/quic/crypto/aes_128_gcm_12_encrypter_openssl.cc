@@ -4,6 +4,7 @@
 
 #include "net/quic/crypto/aes_128_gcm_12_encrypter.h"
 
+#include <openssl/err.h>
 #include <openssl/evp.h>
 #include <string.h>
 
@@ -18,6 +19,18 @@ namespace {
 const size_t kKeySize = 16;
 const size_t kNoncePrefixSize = 4;
 const size_t kAESNonceSize = 12;
+
+void ClearOpenSslErrors() {
+#ifdef NDEBUG
+  while (ERR_get_error()) {}
+#else
+  while (long error = ERR_get_error()) {
+    char buf[120];
+    ERR_error_string_n(error, buf, arraysize(buf));
+    DLOG(ERROR) << "OpenSSL error: " << buf;
+  }
+#endif
+}
 
 }  // namespace
 
@@ -35,12 +48,14 @@ bool Aes128Gcm12Encrypter::SetKey(StringPiece key) {
   // Set the cipher type and the key.
   if (EVP_EncryptInit_ex(ctx_.get(), EVP_aes_128_gcm(), NULL, key_,
                          NULL) == 0) {
+    ClearOpenSslErrors();
     return false;
   }
 
   // Set the IV (nonce) length.
   if (EVP_CIPHER_CTX_ctrl(ctx_.get(), EVP_CTRL_GCM_SET_IVLEN, kAESNonceSize,
                           NULL) == 0) {
+    ClearOpenSslErrors();
     return false;
   }
 
@@ -69,6 +84,7 @@ bool Aes128Gcm12Encrypter::Encrypt(StringPiece nonce,
   if (EVP_EncryptInit_ex(
           ctx_.get(), NULL, NULL, NULL,
           reinterpret_cast<const unsigned char*>(nonce.data())) == 0) {
+    ClearOpenSslErrors();
     return false;
   }
 
@@ -82,6 +98,7 @@ bool Aes128Gcm12Encrypter::Encrypt(StringPiece nonce,
             ctx_.get(), NULL, &unused_len,
             reinterpret_cast<const unsigned char*>(associated_data.data()),
             associated_data.size()) == 0) {
+      ClearOpenSslErrors();
       return false;
     }
   }
@@ -91,17 +108,20 @@ bool Aes128Gcm12Encrypter::Encrypt(StringPiece nonce,
           ctx_.get(), output, &len,
           reinterpret_cast<const unsigned char*>(plaintext.data()),
           plaintext.size()) == 0) {
+    ClearOpenSslErrors();
     return false;
   }
   output += len;
 
   if (EVP_EncryptFinal_ex(ctx_.get(), output, &len) == 0) {
+    ClearOpenSslErrors();
     return false;
   }
   output += len;
 
   if (EVP_CIPHER_CTX_ctrl(ctx_.get(), EVP_CTRL_GCM_GET_TAG, kAuthTagSize,
                           output) == 0) {
+    ClearOpenSslErrors();
     return false;
   }
 

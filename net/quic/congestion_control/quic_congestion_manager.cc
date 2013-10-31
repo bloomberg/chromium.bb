@@ -48,6 +48,19 @@ QuicCongestionManager::~QuicCongestionManager() {
   STLDeleteValues(&packet_history_map_);
 }
 
+void QuicCongestionManager::SetFromConfig(const QuicConfig& config,
+                                          bool is_server) {
+  if (config.initial_round_trip_time_us() > 0 &&
+      current_rtt_.IsInfinite()) {
+    // The initial rtt should already be set on the client side.
+    DLOG_IF(INFO, !is_server)
+        << "Client did not set an initial RTT, but did negotiate one.";
+    current_rtt_ =
+        QuicTime::Delta::FromMicroseconds(config.initial_round_trip_time_us());
+  }
+  send_algorithm_->SetFromConfig(config, is_server);
+}
+
 void QuicCongestionManager::OnPacketSent(
     QuicPacketSequenceNumber sequence_number,
     QuicTime sent_time,

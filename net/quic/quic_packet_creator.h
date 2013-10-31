@@ -33,7 +33,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   // Options for controlling how packets are created.
   struct Options {
     Options()
-        : max_packet_length(kMaxPacketSize),
+        : max_packet_length(kDefaultMaxPacketSize),
           max_packets_per_fec_group(0),
           send_guid_length(PACKET_8BYTE_GUID),
           send_sequence_number_length(PACKET_1BYTE_SEQUENCE_NUMBER) {}
@@ -128,6 +128,9 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   // in BytesFree.
   size_t PacketSize() const;
 
+  // TODO(jri): AddSavedFrame calls AddFrame, which only saves the frame
+  // if it is a stream frame, not other types of frames. Fix this API;
+  // add a AddNonSavedFrame method.
   // Adds |frame| to the packet creator's list of frames to be serialized.
   // Returns false if the frame doesn't fit into the current packet.
   bool AddSavedFrame(const QuicFrame& frame);

@@ -66,6 +66,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   virtual void OnConnectionClosed(QuicErrorCode error, bool from_peer) OVERRIDE;
   virtual void OnSuccessfulVersionNegotiation(
       const QuicVersion& version) OVERRIDE{}
+  virtual void OnConfigNegotiated() OVERRIDE;
   // Not needed for HTTP.
   virtual bool OnCanWrite() OVERRIDE;
   virtual bool HasPendingHandshake() const OVERRIDE;

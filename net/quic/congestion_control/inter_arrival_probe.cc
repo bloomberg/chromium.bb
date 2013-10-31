@@ -16,13 +16,18 @@ const float kUncertainScaleFactor = 0.5;  // TODO(pwestin): revisit this factor.
 
 namespace net {
 
-InterArrivalProbe::InterArrivalProbe()
-    : estimate_available_(false),
+InterArrivalProbe::InterArrivalProbe(QuicByteCount max_segment_size)
+    : max_segment_size_(max_segment_size),
+      estimate_available_(false),
       available_channel_estimate_(QuicBandwidth::Zero()),
       unacked_data_(0) {
 }
 
 InterArrivalProbe::~InterArrivalProbe() {
+}
+
+void InterArrivalProbe::set_max_segment_size(QuicByteCount max_segment_size) {
+  max_segment_size_ = max_segment_size;
 }
 
 bool InterArrivalProbe::GetEstimate(QuicBandwidth* available_channel_estimate) {
@@ -50,7 +55,7 @@ QuicByteCount InterArrivalProbe::GetAvailableCongestionWindow() {
   if (estimate_available_) {
     return 0;
   }
-  return (kProbeSizePackets * kMaxPacketSize) - unacked_data_;
+  return (kProbeSizePackets * max_segment_size_) - unacked_data_;
 }
 
 void InterArrivalProbe::OnIncomingFeedback(

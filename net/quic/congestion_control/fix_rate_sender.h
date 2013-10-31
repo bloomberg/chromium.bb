@@ -23,6 +23,8 @@ class NET_EXPORT_PRIVATE FixRateSender : public SendAlgorithmInterface {
   explicit FixRateSender(const QuicClock* clock);
   virtual ~FixRateSender();
 
+  virtual void SetFromConfig(const QuicConfig& config, bool is_server) OVERRIDE;
+
   // Start implementation of SendAlgorithmInterface.
   virtual void OnIncomingQuicCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& feedback,
@@ -56,6 +58,7 @@ class NET_EXPORT_PRIVATE FixRateSender : public SendAlgorithmInterface {
   QuicByteCount CongestionWindow();
 
   QuicBandwidth bitrate_;
+  QuicByteCount max_segment_size_;
   LeakyBucket fix_rate_leaky_bucket_;
   PacedSender paced_sender_;
   QuicByteCount data_in_flight_;

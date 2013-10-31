@@ -16,9 +16,14 @@ const int64 kMinPacketBurstSize = 2;
 // AvailableCongestionWindow.
 const int64 kMaxSchedulingDelayUs = 2000;
 
-PacedSender::PacedSender(QuicBandwidth estimate)
+PacedSender::PacedSender(QuicBandwidth estimate, QuicByteCount max_segment_size)
     : leaky_bucket_(estimate),
-      pace_(estimate) {
+      pace_(estimate),
+      max_segment_size_(kDefaultMaxPacketSize) {
+}
+
+void PacedSender::set_max_segment_size(QuicByteCount max_segment_size) {
+  max_segment_size_ = max_segment_size;
 }
 
 void PacedSender::UpdateBandwidthEstimate(QuicTime now,
@@ -39,7 +44,7 @@ QuicTime::Delta PacedSender::TimeUntilSend(QuicTime now,
   // Pace the data.
   QuicByteCount pacing_window = pace_.ToBytesPerPeriod(
       QuicTime::Delta::FromMicroseconds(kMaxSchedulingDelayUs));
-  QuicByteCount min_window_size = kMinPacketBurstSize *  kMaxPacketSize;
+  QuicByteCount min_window_size = kMinPacketBurstSize *  max_segment_size_;
   pacing_window = std::max(pacing_window, min_window_size);
 
   if (pacing_window > leaky_bucket_.BytesPending(now)) {
