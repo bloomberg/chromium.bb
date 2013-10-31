@@ -183,11 +183,11 @@ void SessionStartupPref::MigrateIfNecessary(PrefService* prefs) {
                     now.ToInternalValue());
     if (now < last_migration_time)
       last_migration_time = now;
-    HISTOGRAM_CUSTOM_TIMES("Settings.StartupURLsResetTime",
-                           now - last_migration_time,
-                           base::TimeDelta::FromDays(0),
-                           base::TimeDelta::FromDays(7),
-                           50);
+    UMA_HISTOGRAM_CUSTOM_TIMES("Settings.StartupURLsResetTime",
+                               now - last_migration_time,
+                               base::TimeDelta::FromDays(0),
+                               base::TimeDelta::FromDays(7),
+                               50);
     metrics_result = STARTUP_URLS_MIGRATION_METRICS_RESET;
   }
 
