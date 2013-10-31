@@ -1501,13 +1501,8 @@ static PassRefPtr<CSSPrimitiveValue> valueForLineHeight(RenderStyle* style, Rend
     Length length = style->lineHeight();
     if (length.isNegative())
         return cssValuePool().createIdentifierValue(CSSValueNormal);
-    if (length.isPercent())
-        // This is imperfect, because it doesn't include the zoom factor and the real computation
-        // for how high to be in pixels does include things like minimum font size and the zoom factor.
-        // On the other hand, since font-size doesn't include the zoom factor, we really can't do
-        // that here either.
-        return zoomAdjustedPixelValue(static_cast<int>(length.percent() * style->fontDescription().specifiedSize()) / 100, style);
-    return zoomAdjustedPixelValue(floatValueForLength(length, 0, renderView), style);
+
+    return zoomAdjustedPixelValue(floatValueForLength(length, style->fontDescription().specifiedSize(), renderView), style);
 }
 
 static PassRefPtr<CSSPrimitiveValue> valueForFontSize(RenderStyle* style)

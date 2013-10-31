@@ -280,13 +280,17 @@ void StyleBuilderFunctions::applyValueCSSPropertyLineHeight(StyleResolverState& 
             multiplier *= frame->textZoomFactor();
         lineHeight = primitiveValue->computeLength<Length>(state.style(), state.rootElementStyle(), multiplier);
     } else if (primitiveValue->isPercentage()) {
-        // FIXME: percentage should not be restricted to an integer here.
         lineHeight = Length((state.style()->computedFontSize() * primitiveValue->getIntValue()) / 100.0, Fixed);
     } else if (primitiveValue->isNumber()) {
-        // FIXME: number and percentage values should produce the same type of Length (ie. Fixed or Percent).
         lineHeight = Length(primitiveValue->getDoubleValue() * 100.0, Percent);
     } else if (primitiveValue->isViewportPercentageLength()) {
         lineHeight = primitiveValue->viewportPercentageLength();
+    } else if (primitiveValue->isCalculated()) {
+        double multiplier = state.style()->effectiveZoom();
+        if (Frame* frame = state.document().frame())
+            multiplier *= frame->textZoomFactor();
+        Length zoomedLength = Length(primitiveValue->cssCalcValue()->toCalcValue(state.style(), state.rootElementStyle(), multiplier));
+        lineHeight = Length(valueForLength(zoomedLength, state.style()->fontSize()), Fixed);
     } else {
         return;
     }
