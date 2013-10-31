@@ -30,6 +30,9 @@
         else
             log("This test can be run meaningfully only in DumpRenderTree");
 
+        if (window.internals)
+            internals.settings.setTreatIPAddressAsDomain(true);
+
         domainShouldBe("127.0.0.1");
         document.domain = "0.0.1";
         domainShouldBe("0.0.1");

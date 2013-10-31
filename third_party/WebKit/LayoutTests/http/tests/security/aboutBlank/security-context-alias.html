@@ -5,7 +5,10 @@
 <pre>
 <script>
 if (window.testRunner)
-  testRunner.dumpAsText();
+    testRunner.dumpAsText();
+
+if (window.internals)
+    internals.settings.setTreatIPAddressAsDomain(true);
 
 document.write('--- Test begins ---\n');
 document.write('* "about:blank"\n');

@@ -97,6 +97,7 @@ downloadableBinaryFontsEnabled initial=true
 
 xssAuditorEnabled initial=false
 unsafePluginPastingEnabled initial=true
+treatIPAddressAsDomain initial=false
 
 acceleratedCompositingFor3DTransformsEnabled initial=true
 acceleratedCompositingForVideoEnabled initial=true

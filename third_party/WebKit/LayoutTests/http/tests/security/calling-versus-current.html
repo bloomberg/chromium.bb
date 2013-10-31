@@ -4,6 +4,9 @@
 if (window.testRunner)
     testRunner.dumpAsText();
 
+if (window.internals)
+    internals.settings.setTreatIPAddressAsDomain(true);
+
 window.onload = function() {
     window.f = frames[0].atob;
     document.domain = "0.0.1";

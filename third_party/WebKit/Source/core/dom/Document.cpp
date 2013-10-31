@@ -174,6 +174,7 @@
 #include "platform/network/HTTPParsers.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/text/SegmentedString.h"
+#include "weborigin/OriginAccessEntry.h"
 #include "weborigin/SchemeRegistry.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/CurrentTime.h"
@@ -3761,42 +3762,15 @@ void Document::setDomain(const String& newDomain, ExceptionState& es)
         return;
     }
 
-    // Both NS and IE specify that changing the domain is only allowed when
-    // the new domain is a suffix of the old domain.
-
-    // If the new domain is the same as the old domain, still call
-    // securityOrigin()->setDomainForDOM. This will change the
-    // security check behavior. For example, if a page loaded on port 8000
-    // assigns its current domain using document.domain, the page will
-    // allow other pages loaded on different ports in the same domain that
-    // have also assigned to access this page.
-    if (equalIgnoringCase(domain(), newDomain)) {
-        securityOrigin()->setDomainFromDOM(newDomain);
-        if (m_frame)
-            m_frame->script().updateSecurityOrigin();
-        return;
-    }
-
-    int oldLength = domain().length();
-    int newLength = newDomain.length();
-    String exceptionMessage =  ExceptionMessages::failedToSet("domain", "Document", "'" + newDomain + "' is not a suffix of '" + domain() + "'.");
-    // e.g. newDomain = subdomain.www.example.com (25) and domain() = www.example.com (15)
-    if (newLength >= oldLength) {
+    String exceptionMessage = ExceptionMessages::failedToSet("domain", "Document", "'" + newDomain + "' is not a suffix of '" + domain() + "'.");
+    if (newDomain.isEmpty()) {
         es.throwSecurityError(exceptionMessage);
         return;
     }
 
-    String test = domain();
-    // Check that it's a complete suffix, not e.g. "ample.com"
-    if (test[oldLength - newLength - 1] != '.') {
-        es.throwSecurityError(exceptionMessage);
-        return;
-    }
-
-    // Now test is "example.com" from domain()
-    // and we check that it's the same thing as newDomain
-    test.remove(0, oldLength - newLength);
-    if (test != newDomain) {
+    OriginAccessEntry::IPAddressSetting ipAddressSetting = settings() && settings()->treatIPAddressAsDomain() ? OriginAccessEntry::TreatIPAddressAsDomain : OriginAccessEntry::TreatIPAddressAsIPAddress;
+    OriginAccessEntry accessEntry(securityOrigin()->protocol(), newDomain, OriginAccessEntry::AllowSubdomains, ipAddressSetting);
+    if (!accessEntry.matchesOrigin(*securityOrigin())) {
         es.throwSecurityError(exceptionMessage);
         return;
     }
