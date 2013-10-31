@@ -132,7 +132,7 @@ class SwitchToMetroUIHandler
       case ShellIntegration::STATE_UNKNOWN :
         break;
       case ShellIntegration::STATE_IS_DEFAULT:
-        chrome::AttemptRestartWithModeSwitch();
+        chrome::AttemptRestartToMetroMode();
         break;
       case ShellIntegration::STATE_NOT_DEFAULT:
         if (first_check_) {
@@ -483,7 +483,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       browser_->SetMetroSnapMode(false);
       break;
     case IDC_WIN8_DESKTOP_RESTART:
-      chrome::AttemptRestartWithModeSwitch();
+      chrome::AttemptRestartToDesktopMode();
       content::RecordAction(content::UserMetricsAction("Win8DesktopRestart"));
       break;
     case IDC_WIN8_METRO_RESTART:
@@ -965,7 +965,13 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_7, normal_window);
   command_updater_.UpdateCommandEnabled(IDC_SELECT_LAST_TAB, normal_window);
 #if defined(OS_WIN)
+#if !defined(USE_AURA)
   const bool metro_mode = base::win::IsMetroProcess();
+#else
+  const bool metro_mode =
+     browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH ?
+         true : false;
+#endif
   command_updater_.UpdateCommandEnabled(IDC_METRO_SNAP_ENABLE, metro_mode);
   command_updater_.UpdateCommandEnabled(IDC_METRO_SNAP_DISABLE, metro_mode);
   int restart_mode = metro_mode ?

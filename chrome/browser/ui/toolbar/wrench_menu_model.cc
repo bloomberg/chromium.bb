@@ -533,15 +533,24 @@ void WrenchMenuModel::Build(bool is_new_menu) {
                            recent_tabs_sub_menu_model_.get());
   }
 
-#if defined(OS_WIN) && !defined(USE_ASH)
-  if (base::win::IsMetroProcess()) {
-    // Metro mode, add the 'Relaunch Chrome in desktop mode'.
-    AddSeparator(ui::SPACING_SEPARATOR);
-    AddItemWithStringId(IDC_WIN8_DESKTOP_RESTART, IDS_WIN8_DESKTOP_RESTART);
-  } else if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
-    // In Windows 8 desktop, add the 'Relaunch Chrome in Windows 8 mode'.
-    AddSeparator(ui::SPACING_SEPARATOR);
-    AddItemWithStringId(IDC_WIN8_METRO_RESTART, IDS_WIN8_METRO_RESTART);
+#if defined(OS_WIN)
+ if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+#if defined(USE_AURA)
+    bool in_desktop_mode =
+        browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH ?
+            false : true;
+#else
+    bool in_desktop_mode = !base::win::IsMetroProcess();
+#endif
+    if (!in_desktop_mode) {
+      // Metro mode, add the 'Relaunch Chrome in desktop mode'.
+      AddSeparator(ui::NORMAL_SEPARATOR);
+      AddItemWithStringId(IDC_WIN8_DESKTOP_RESTART, IDS_WIN8_DESKTOP_RESTART);
+    } else {
+      // In Windows 8 desktop, add the 'Relaunch Chrome in Windows 8 mode'.
+      AddSeparator(ui::NORMAL_SEPARATOR);
+      AddItemWithStringId(IDC_WIN8_METRO_RESTART, IDS_WIN8_METRO_RESTART);
+    }
   }
 #endif
 

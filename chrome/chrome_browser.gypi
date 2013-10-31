@@ -3048,7 +3048,6 @@
               'sources/': [
                 ['exclude', '^browser/automation/automation_provider_aura.cc'],
                 ['exclude', '^browser/background/background_mode_manager_aura.cc'],
-                ['exclude', '^browser/lifetime/application_lifetime_win.cc'],
               ],
               'dependencies': [
                 'launcher_support',

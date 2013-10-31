@@ -529,38 +529,6 @@ EC_HOST_UI_MODE CommandExecuteImpl::GetLaunchMode() {
     parameters_ = CommandLine(CommandLine::NO_PROGRAM);
   }
 
-#if defined(USE_AURA)
-  if (launch_mode_determined)
-    return launch_mode;
-
-  CComPtr<IExecuteCommandHost> host;
-  CComQIPtr<IServiceProvider> service_provider = m_spUnkSite;
-  if (service_provider) {
-    service_provider->QueryService(IID_IExecuteCommandHost, &host);
-    if (host) {
-      host->GetUIMode(&launch_mode);
-    }
-  }
-
-  // According to 'developing metro style enabled desktop browser' document
-  // ECHUIM_SYSTEM_LAUNCHER – Start menu launch (includes Tile activation,
-  // typing a URL into the search box in Start, etc.)
-  // In non aura world we apparently used ECHUIM_SYSTEM_LAUNCHER to mean
-  // launch on desktop. For Aura we are changing ECHUIM_SYSTEM to mean
-  // immersive mode.
-  if (launch_mode == ECHUIM_SYSTEM_LAUNCHER)
-    launch_mode = ECHUIM_IMMERSIVE;
-  else if (launch_mode > ECHUIM_SYSTEM_LAUNCHER) {
-    // At the end if launch mode is not proper apply heuristics.
-    launch_mode = base::win::IsTouchEnabledDevice() ?
-                          ECHUIM_IMMERSIVE : ECHUIM_DESKTOP;
-  }
-
-  AtlTrace("Launching mode is %d\n", launch_mode);
-  launch_mode_determined = true;
-  return launch_mode;
-#endif
-
   base::win::RegKey reg_key;
   LONG key_result = reg_key.Create(HKEY_CURRENT_USER,
                                    chrome::kMetroRegistryPath,

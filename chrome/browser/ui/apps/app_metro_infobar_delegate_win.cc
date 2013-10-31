@@ -95,7 +95,7 @@ bool AppMetroInfoBarDelegateWin::Accept() {
   }
 
   web_contents()->Close();  // Note: deletes |this|.
-  chrome::AttemptRestartWithModeSwitch();
+  chrome::AttemptRestartToDesktopMode();
   return false;
 }
 

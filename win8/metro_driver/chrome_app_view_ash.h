@@ -49,6 +49,7 @@ class ChromeAppViewAsh
   // Returns S_OK on success.
   static HRESULT Unsnap();
 
+  void OnActivateDesktop(const base::FilePath& file_path);
   void OnOpenURLOnDesktop(const base::FilePath& shortcut, const string16& url);
   void OnSetCursor(HCURSOR cursor);
   void OnDisplayFileOpenDialog(const string16& title,

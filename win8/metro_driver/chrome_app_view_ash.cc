@@ -81,6 +81,8 @@ class ChromeChannelListener : public IPC::Listener {
 
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     IPC_BEGIN_MESSAGE_MAP(ChromeChannelListener, message)
+      IPC_MESSAGE_HANDLER(MetroViewerHostMsg_ActivateDesktop,
+                          OnActivateDesktop)
       IPC_MESSAGE_HANDLER(MetroViewerHostMsg_OpenURLOnDesktop,
                           OnOpenURLOnDesktop)
       IPC_MESSAGE_HANDLER(MetroViewerHostMsg_SetCursor, OnSetCursor)
@@ -102,6 +104,13 @@ class ChromeChannelListener : public IPC::Listener {
   }
 
  private:
+  void OnActivateDesktop(const base::FilePath& shortcut) {
+    ui_proxy_->PostTask(FROM_HERE,
+        base::Bind(&ChromeAppViewAsh::OnActivateDesktop,
+        base::Unretained(app_view_),
+        shortcut));
+  }
+
   void OnOpenURLOnDesktop(const base::FilePath& shortcut,
                           const string16& url) {
     ui_proxy_->PostTask(FROM_HERE,
@@ -524,6 +533,23 @@ HRESULT ChromeAppViewAsh::Unsnap() {
   return hr;
 }
 
+void ChromeAppViewAsh::OnActivateDesktop(const base::FilePath& file_path) {
+  DLOG(INFO) << "ChannelAppViewAsh::OnActivateDesktop\n";
+  // We are just executing delegate_execute here without parameters. Assumption
+  // here is that this process will be reused by shell when asking for
+  // IExecuteCommand interface.
+
+  // TODO(shrikant): Consolidate ShellExecuteEx with SEE_MASK_FLAG_LOG_USAGE
+  // and place it metro.h or similar accessible file from all code code paths
+  // using this function.
+  SHELLEXECUTEINFO sei = { sizeof(sei) };
+  sei.fMask = SEE_MASK_FLAG_LOG_USAGE;
+  sei.nShow = SW_SHOWNORMAL;
+  sei.lpFile = file_path.value().c_str();
+  sei.lpParameters = NULL;
+  ::ShellExecuteExW(&sei);
+  ui_channel_->Send(new MetroViewerHostMsg_ActivateDesktopDone());
+}
 
 void ChromeAppViewAsh::OnOpenURLOnDesktop(const base::FilePath& shortcut,
     const string16& url) {

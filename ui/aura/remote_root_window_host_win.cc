@@ -109,6 +109,13 @@ void HandleSelectFolder(const base::string16& title,
                                                                 on_failure);
 }
 
+void HandleActivateDesktop(const base::FilePath& shortcut,
+                           const ActivateDesktopCompleted& on_success) {
+  DCHECK(aura::RemoteRootWindowHostWin::Instance());
+  aura::RemoteRootWindowHostWin::Instance()->HandleActivateDesktop(shortcut,
+                                                                   on_success);
+}
+
 RemoteRootWindowHostWin* g_instance = NULL;
 
 RemoteRootWindowHostWin* RemoteRootWindowHostWin::Instance() {
@@ -176,6 +183,8 @@ bool RemoteRootWindowHostWin::OnMessageReceived(const IPC::Message& message) {
                         OnSetCursorPosAck)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_WindowSizeChanged,
                         OnWindowSizeChanged)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_ActivateDesktopDone,
+                        OnDesktopActivated)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -187,6 +196,16 @@ void RemoteRootWindowHostWin::HandleOpenURLOnDesktop(
   if (!host_)
     return;
   host_->Send(new MetroViewerHostMsg_OpenURLOnDesktop(shortcut, url));
+}
+
+void RemoteRootWindowHostWin::HandleActivateDesktop(
+    const base::FilePath& shortcut,
+    const ActivateDesktopCompleted& on_success) {
+  if (!host_)
+    return;
+  DCHECK(activate_completed_callback_.is_null());
+  activate_completed_callback_ = on_success;
+  host_->Send(new MetroViewerHostMsg_ActivateDesktop(shortcut));
 }
 
 void RemoteRootWindowHostWin::HandleOpenFile(
@@ -558,6 +577,12 @@ void RemoteRootWindowHostWin::OnSetCursorPosAck() {
 
 void RemoteRootWindowHostWin::OnWindowSizeChanged(uint32 width, uint32 height) {
   SetBounds(gfx::Rect(0, 0, width, height));
+}
+
+void RemoteRootWindowHostWin::OnDesktopActivated() {
+  ActivateDesktopCompleted temp = activate_completed_callback_;
+  activate_completed_callback_.Reset();
+  temp.Run();
 }
 
 void RemoteRootWindowHostWin::DispatchKeyboardMessage(ui::EventType type,

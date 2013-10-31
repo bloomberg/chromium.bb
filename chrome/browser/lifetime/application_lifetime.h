@@ -33,6 +33,8 @@ void AttemptRestart();
 // in desktop mode it starts in metro mode and vice-versa. The switching like
 // the restarting is controlled by a preference.
 void AttemptRestartWithModeSwitch();
+void AttemptRestartToDesktopMode();
+void AttemptRestartToMetroMode();
 #endif
 
 // Attempt to exit by closing all browsers.  This is equivalent to

@@ -546,7 +546,7 @@ extern const char kShutdownNumProcessesSlow[];
 extern const char kRestartLastSessionOnShutdown[];
 extern const char kWasRestarted[];
 #if defined(OS_WIN)
-extern const char kRestartSwitchMode[];
+extern const char kRelaunchMode[];
 #endif
 
 extern const char kDisableVideoAndChat[];

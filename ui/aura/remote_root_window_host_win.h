@@ -44,6 +44,8 @@ typedef base::Callback<void(const base::FilePath&, int, void*)>
 
 typedef base::Callback<void(void*)> FileSelectionCanceled;
 
+typedef base::Callback<void()> ActivateDesktopCompleted;
+
 // Handles the open file operation for Metro Chrome Ash. The on_success
 // callback passed in is invoked when we receive the opened file name from
 // the metro viewer. The on failure callback is invoked on failure.
@@ -81,6 +83,12 @@ AURA_EXPORT void HandleSelectFolder(const base::string16& title,
                                     const SelectFolderCompletion& on_success,
                                     const FileSelectionCanceled& on_failure);
 
+// Handles the activate desktop command for Metro Chrome Ash. The on_success
+// callback passed in is invoked when activation is completed.
+AURA_EXPORT void HandleActivateDesktop(
+    const base::FilePath& shortcut,
+    const ActivateDesktopCompleted& on_success);
+
 // RootWindowHost implementaton that receives events from a different
 // process. In the case of Windows this is the Windows 8 (aka Metro)
 // frontend process, which forwards input events to this class.
@@ -103,6 +111,9 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
 
   void HandleOpenURLOnDesktop(const base::FilePath& shortcut,
                               const base::string16& url);
+
+  void HandleActivateDesktop(const base::FilePath& shortcut,
+      const ActivateDesktopCompleted& on_success);
 
   void HandleOpenFile(const base::string16& title,
                       const base::FilePath& default_path,
@@ -167,6 +178,7 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
   void OnSelectFolderDone(bool success, const base::FilePath& folder);
   void OnSetCursorPosAck();
   void OnWindowSizeChanged(uint32 width, uint32 height);
+  void OnDesktopActivated();
 
   // RootWindowHost overrides:
   virtual void SetDelegate(RootWindowHostDelegate* delegate) OVERRIDE;
@@ -233,6 +245,10 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
   SaveFileCompletion file_saveas_completion_callback_;
   SelectFolderCompletion select_folder_completion_callback_;
   FileSelectionCanceled failure_callback_;
+
+  // Saved callback which informs caller about successful completion of desktop
+  // activation.
+  ActivateDesktopCompleted activate_completed_callback_;
 
   // Set to true if we need to ignore mouse messages until the SetCursorPos
   // operation is acked by the viewer.

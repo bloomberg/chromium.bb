@@ -85,7 +85,35 @@ base::FilePath GetMetroRelauncherPath(const base::FilePath& chrome_exe,
 
 namespace upgrade_util {
 
-bool RelaunchChromeHelper(const CommandLine& command_line, bool mode_switch) {
+const char kRelaunchModeMetro[] = "relaunch.mode.metro";
+const char kRelaunchModeDesktop[] = "relaunch.mode.desktop";
+const char kRelaunchModeDefault[] = "relaunch.mode.default";
+
+// TODO(shrikant): Have a map/array to quickly map enum to strings.
+std::string RelaunchModeEnumToString(const RelaunchMode relaunch_mode) {
+  if (relaunch_mode == RELAUNCH_MODE_METRO)
+    return kRelaunchModeMetro;
+
+  if (relaunch_mode == RELAUNCH_MODE_DESKTOP)
+    return kRelaunchModeDesktop;
+
+  // For the purpose of code flow, even in case of wrong value we will
+  // return default re-launch mode.
+  return kRelaunchModeDefault;
+}
+
+RelaunchMode RelaunchModeStringToEnum(const std::string& relaunch_mode) {
+  if (relaunch_mode == kRelaunchModeMetro)
+    return RELAUNCH_MODE_METRO;
+
+  if (relaunch_mode == kRelaunchModeDesktop)
+    return RELAUNCH_MODE_DESKTOP;
+
+  return RELAUNCH_MODE_DEFAULT;
+}
+
+bool RelaunchChromeHelper(const CommandLine& command_line,
+                          const RelaunchMode& relaunch_mode) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   std::string version_str;
 
@@ -133,9 +161,9 @@ bool RelaunchChromeHelper(const CommandLine& command_line, bool mode_switch) {
       ShellIntegration::GetStartMenuShortcut(chrome_exe));
   relaunch_cmd.AppendSwitchNative(switches::kWaitForMutex, mutex_name);
 
-  if (mode_switch) {
-    relaunch_cmd.AppendSwitch(base::win::IsMetroProcess() ?
-        switches::kForceDesktop : switches::kForceImmersive);
+  if (relaunch_mode != RELAUNCH_MODE_DEFAULT) {
+    relaunch_cmd.AppendSwitch(relaunch_mode == RELAUNCH_MODE_METRO?
+        switches::kForceImmersive : switches::kForceDesktop);
   }
 
   string16 params(relaunch_cmd.GetCommandLineString());
@@ -164,11 +192,12 @@ bool RelaunchChromeHelper(const CommandLine& command_line, bool mode_switch) {
 }
 
 bool RelaunchChromeBrowser(const CommandLine& command_line) {
-  return RelaunchChromeHelper(command_line, false);
+  return RelaunchChromeHelper(command_line, RELAUNCH_MODE_DEFAULT);
 }
 
-bool RelaunchChromeWithModeSwitch(const CommandLine& command_line) {
-  return RelaunchChromeHelper(command_line, true);
+bool RelaunchChromeWithMode(const CommandLine& command_line,
+                            const RelaunchMode& relaunch_mode) {
+  return RelaunchChromeHelper(command_line, relaunch_mode);
 }
 
 bool IsUpdatePendingRestart() {

@@ -1644,8 +1644,10 @@ const char kRestartLastSessionOnShutdown[] = "restart.last.session.on.shutdown";
 const char kWasRestarted[] = "was.restarted";
 
 #if defined(OS_WIN)
-// On Windows 8 chrome can restart in desktop or in metro mode.
-const char kRestartSwitchMode[] = "restart.switch_mode";
+// Preference to be used while relaunching Chrome. This preference dictates if
+// Chrome should be launched in Metro or Desktop mode.
+// For more info take a look at ChromeRelaunchMode enum.
+const char kRelaunchMode[] = "relaunch.mode";
 #endif
 
 // Placeholder preference for disabling voice / video chat if it is ever added.
