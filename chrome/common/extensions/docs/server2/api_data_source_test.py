@@ -11,7 +11,7 @@ import unittest
 
 from api_data_source import (_JSCModel,
                              _FormatValue,
-                             _GetAddRulesDefinitionFromEvents)
+                             _GetEventByNameFromEvents)
 from branch_utility import ChannelInfo
 from collections import namedtuple
 from compiled_file_system import CompiledFileSystem
@@ -235,34 +235,29 @@ class APIDataSourceTest(unittest.TestCase):
     ]
     self.assertEquals(model._GetIntroTableList(), expected_list)
 
-  def testGetAddRulesDefinitionFromEvents(self):
+  def testGetEventByNameFromEvents(self):
     events = {}
     # Missing 'types' completely.
-    self.assertRaises(AssertionError, _GetAddRulesDefinitionFromEvents, events)
+    self.assertRaises(AssertionError, _GetEventByNameFromEvents, events)
 
     events['types'] = []
     # No type 'Event' defined.
-    self.assertRaises(AssertionError, _GetAddRulesDefinitionFromEvents, events)
+    self.assertRaises(AssertionError, _GetEventByNameFromEvents, events)
 
-    events['types'].append({ 'name': 'Event' })
-    # 'Event' has no 'functions'.
-    self.assertRaises(AssertionError, _GetAddRulesDefinitionFromEvents, events)
-
-    events['types'][0]['functions'] = []
-    # No 'functions' named 'addRules'.
-    self.assertRaises(AssertionError, _GetAddRulesDefinitionFromEvents, events)
-
+    events['types'].append({ 'name': 'Event',
+                             'functions': []})
     add_rules = { "name": "addRules" }
     events['types'][0]['functions'].append(add_rules)
-    self.assertEqual(add_rules, _GetAddRulesDefinitionFromEvents(events))
+    self.assertEqual(add_rules,
+                     _GetEventByNameFromEvents(events)['addRules'])
 
     events['types'][0]['functions'].append(add_rules)
     # Duplicates are an error.
-    self.assertRaises(AssertionError, _GetAddRulesDefinitionFromEvents, events)
+    self.assertRaises(AssertionError, _GetEventByNameFromEvents, events)
 
   def _FakeLoadAddRulesSchema(self):
     events = self._LoadJSON('add_rules_def_test.json')
-    return _GetAddRulesDefinitionFromEvents(events)
+    return _GetEventByNameFromEvents(events)
 
   def testAddRules(self):
     data_source = FakeAPIAndListDataSource(
@@ -279,17 +274,15 @@ class APIDataSourceTest(unittest.TestCase):
     self.assertEquals('tester', dict_['name'])
     self.assertEquals('rules', dict_['events'][0]['name'])
     self.assertEquals('notable_name_to_check_for',
-                      dict_['events'][0]['addRulesFunction'][
+                      dict_['events'][0]['byName']['addRules'][
                           'parameters'][0]['name'])
 
-    # Check that the second event has no addRulesFunction defined.
+    # Check that the second event has addListener defined.
     self.assertEquals('noRules', dict_['events'][1]['name'])
-    self.assertFalse('addRulesFunction' in dict_['events'][1])
-    # But addListener should be defined.
     self.assertEquals('tester', dict_['name'])
     self.assertEquals('noRules', dict_['events'][1]['name'])
     self.assertEquals('callback',
-                      dict_['events'][0]['addListenerFunction'][
+                      dict_['events'][0]['byName']['addListener'][
                           'parameters'][0]['name'])
 
 if __name__ == '__main__':

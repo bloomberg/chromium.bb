@@ -1,0 +1,8 @@
+{{- Parameters:
+    |api|: the schema for the API that the function belongs to
+    |function|: the schema for the function
+    |parentName|: name of the parent object of the function
+-}}
+<div class="line">
+<span>{{?function.returns}}{{+partials.variable_type}} {{/}}{{?api}}{{+partials.api_namespace api:api}}{{/}}{{?parentName}}{{parentName}}.{{/}}{{function.name}}</span>({{#function.parameters}}{{+partials.parameter_item}}{{^last}}, {{/}}{{/}})
+</div>

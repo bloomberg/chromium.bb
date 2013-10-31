@@ -4,7 +4,9 @@
     |parentName|: name of the parent object of the function
 -}}
 <div class="summary{{^function.returns}}{{?api}} uncapitalize{{/}}{{/}}">
-<span>{{?function.returns}}{{+partials.variable_type}} {{/}}{{?api}}{{+partials.api_namespace api:api}}{{/}}{{?parentName}}{{parentName}}.{{/}}{{function.name}}</span>({{#function.parameters}}{{+partials.parameter_item}}{{^last}}, {{/}}{{/}})
+{{+partials.function_signature function:function
+                               parentName:parentName
+                               api:api}}
 </div>
 <div class="description">
   {{?function.description}}

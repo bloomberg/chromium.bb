@@ -31,22 +31,37 @@ def _FormatValue(value):
   return ','.join([s[max(0, i - 3):i] for i in range(len(s), 0, -3)][::-1])
 
 
-def _GetAddRulesDefinitionFromEvents(events):
-  '''Parses the dictionary |events| to find the definition of the method
-  addRules among functions of the type Event.
+def _GetByNameDict(namespace):
+  '''Returns a dictionary mapping names to named items from |namespace|.
+
+  This lets us render specific API entities rather than the whole thing at once,
+  for example {{apis.manifestTypes.byName.ExternallyConnectable}}.
+
+  Includes items from namespace['types'], namespace['functions'],
+  namespace['events'], and namespace['properties'].
+  '''
+  by_name = {}
+  for item_type in ('types', 'functions', 'events', 'properties'):
+    if item_type in namespace:
+      old_size = len(by_name)
+      by_name.update(
+          (item['name'], item) for item in namespace[item_type])
+      assert len(by_name) == old_size + len(namespace[item_type]), (
+          'Duplicate name in %r' % namespace)
+  return by_name
+
+
+def _GetEventByNameFromEvents(events):
+  '''Parses the dictionary |events| to find the definitions of members of the
+  type Event.  Returns a dictionary mapping the name of a member to that
+  member's definition.
   '''
   assert 'types' in events, \
       'The dictionary |events| must contain the key "types".'
   event_list = [t for t in events['types']
                 if 'name' in t and t['name'] == 'Event']
   assert len(event_list) == 1, 'Exactly one type must be called "Event".'
-  event = event_list[0]
-  assert 'functions' in event, 'The type Event must contain "functions".'
-  result_list = [f for f in event['functions']
-                 if 'name' in f and f['name'] == 'addRules']
-  assert len(result_list) == 1, \
-      'Exactly one function must be called "addRules".'
-  return result_list[0]
+  return _GetByNameDict(event_list[0])
 
 
 class _JSCModel(object):
@@ -62,7 +77,7 @@ class _JSCModel(object):
                branch_utility,
                parse_cache,
                template_cache,
-               add_rules_schema_function,
+               event_byname_function,
                idl=False):
     self._ref_resolver = ref_resolver
     self._disable_refs = disable_refs
@@ -75,7 +90,7 @@ class _JSCModel(object):
     self._api_features = parse_cache.GetFromFile(
         '%s/_api_features.json' % svn_constants.API_PATH)
     self._template_cache = template_cache
-    self._add_rules_schema_function = add_rules_schema_function
+    self._event_byname_function = event_byname_function
     clean_json = copy.deepcopy(json)
     if RemoveNoDocs(clean_json):
       self._namespace = None
@@ -108,7 +123,6 @@ class _JSCModel(object):
       'events': self._GenerateEvents(self._namespace.events),
       'domEvents': self._GenerateDomEvents(self._namespace.events),
       'properties': self._GenerateProperties(self._namespace.properties),
-      'byName': {},
     }
     # Rendering the intro list is really expensive and there's no point doing it
     # unless we're rending the page - and disable_refs=True implies we're not.
@@ -117,12 +131,7 @@ class _JSCModel(object):
         'introList': self._GetIntroTableList(),
         'channelWarning': self._GetChannelWarning(),
       })
-    # Make every type/function/event/property also accessible by name for
-    # rendering specific API entities rather than the whole thing at once, for
-    # example {{apis.manifestTypes.byName.ExternallyConnectable}}.
-    for item_type in ('types', 'functions', 'events', 'properties'):
-      as_dict['byName'].update(
-          (item['name'], item) for item in as_dict[item_type])
+    as_dict['byName'] = _GetByNameDict(as_dict)
     return as_dict
 
   def _GetApiAvailability(self):
@@ -207,17 +216,17 @@ class _JSCModel(object):
       'supportsRules': event.supports_rules,
       'supportsListeners': event.supports_listeners,
       'properties': [],
-      'id': _CreateId(event, 'event')
+      'id': _CreateId(event, 'event'),
+      'byName': {},
     }
     if (event.parent is not None and
         not isinstance(event.parent, model.Namespace)):
       event_dict['parentName'] = event.parent.simple_name
-    # For the addRules method we can use the common definition, because addRules
-    # has the same signature for every event.
+    # Add the Event members to each event in this object.
     # If refs are disabled then don't worry about this, since it's only needed
     # for rendering, and disable_refs=True implies we're not rendering.
-    if event.supports_rules and not self._disable_refs:
-      event_dict['addRulesFunction'] = self._add_rules_schema_function()
+    if self._event_byname_function and not self._disable_refs:
+      event_dict['byName'].update(self._event_byname_function())
     # We need to create the method description for addListener based on the
     # information stored in |event|.
     if event.supports_listeners:
@@ -231,7 +240,7 @@ class _JSCModel(object):
         callback_object.callback = event.callback
       callback_parameters = self._GenerateCallbackProperty(callback_object)
       callback_parameters['last'] = True
-      event_dict['addListenerFunction'] = {
+      event_dict['byName']['addListener'] = {
         'name': 'addListener',
         'callback': self._GenerateFunction(callback_object),
         'parameters': [callback_parameters]
@@ -529,8 +538,8 @@ class APIDataSource(object):
       self._ref_resolver_factory = None
       self._samples_data_source_factory = None
 
-      # This caches the result of _LoadAddRulesSchema.
-      self._add_rules_schema = None
+      # This caches the result of _LoadEventByName.
+      self._event_byname = None
 
     def SetSamplesDataSourceFactory(self, samples_data_source_factory):
       self._samples_data_source_factory = samples_data_source_factory
@@ -559,15 +568,15 @@ class APIDataSource(object):
                            self._base_path,
                            samples)
 
-    def _LoadAddRulesSchema(self):
-      """ All events supporting rules have the addRules method. We source its
-      description from Event in events.json.
+    def _LoadEventByName(self):
+      """ All events have some members in common. We source their description
+      from Event in events.json.
       """
-      if self._add_rules_schema is None:
+      if self._event_byname is None:
         events_json = self._json_cache.GetFromFile(
             '%s/events.json' % self._base_path).Get()
-        self._add_rules_schema = _GetAddRulesDefinitionFromEvents(events_json)
-      return self._add_rules_schema
+        self._event_byname = _GetEventByNameFromEvents(events_json)
+      return self._event_byname
 
     def _LoadJsonAPI(self, api, disable_refs):
       return _JSCModel(
@@ -578,7 +587,7 @@ class APIDataSource(object):
           self._branch_utility,
           self._parse_cache,
           self._template_cache,
-          self._LoadAddRulesSchema).ToDict()
+          self._LoadEventByName).ToDict()
 
     def _LoadIdlAPI(self, api, disable_refs):
       idl = idl_parser.IDLParser().ParseData(api)
@@ -590,7 +599,7 @@ class APIDataSource(object):
           self._branch_utility,
           self._parse_cache,
           self._template_cache,
-          self._LoadAddRulesSchema,
+          self._LoadEventByName,
           idl=True).ToDict()
 
     def _GetIDLNames(self, base_dir, apis):

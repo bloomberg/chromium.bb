@@ -79,7 +79,7 @@ class FakeSubversionServer(_FakeFetcher):
 class FakeViewvcServer(_FakeFetcher):
   def __init__(self, base_path):
     _FakeFetcher.__init__(self, base_path)
-    self._base_pattern = re.compile(r'.*chrome/common/extensions/(.*)')
+    self._base_pattern = re.compile(r'.*chrome/common/extensions/+(.*)')
 
   def fetch(self, url):
     url = url.rsplit('?', 1)[0]

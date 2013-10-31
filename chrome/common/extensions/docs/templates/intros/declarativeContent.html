@@ -20,7 +20,7 @@ user clicks on it, you'll have to keep using the $ref:pageAction API.
 
 <p>As a <a href="events.html#declarative">declarative API</a>, this
 API lets you register rules on the
-<code>$ref:onPageChanged</code> event object which
+<code>$ref:onPageChanged</code> $ref:[events.Event event] object which
 take an action (currently just <code>$ref:ShowPageAction</code>) when
 a set of conditions, represented as a
 <code>$ref:[PageStateMatcher]</code>, are met.
@@ -48,7 +48,7 @@ var rule1 = {
 <p class="note">
 <strong>Note:</strong> All conditions and actions are created via a constructor
 as shown in the example above.
-<p>
+</p>
 
 <p>
 In order to also show a page action for sites with a video, you can
@@ -96,3 +96,26 @@ permissions but can invite the user to click its page action on
 relevant pages and can run on those pages when the user clicks the
 page action.
 </p>
+
+<h2 id="css-matching">CSS Matching</h2>
+
+<p>$ref:PageStateMatcher.css conditions must be
+<i><a href="http://www.w3.org/TR/selectors4/#compound">compound selectors</a></i>,
+meaning that you can't
+include <a href="http://www.w3.org/community/webed/wiki/CSS/Selectors#Combinators">combinators</a>
+like whitespace or "<code>&gt;</code>" in your selectors.  This helps Chrome
+match the selectors more efficiently.</p>
+
+<table>
+  <tr><th>Compound Selectors (OK)</th><th>Complex Selectors (Not OK)</th></tr>
+  <tr><td><code>a</code></td><td><code>div p</code></td></tr>
+  <tr><td><code>iframe.special[src^='http']</code></td><td><code>p>span.highlight</code></td></tr>
+  <tr><td><code>ns|*</code></td><td><code>p + ol</code></td></tr>
+  <tr><td><code>#abcd:checked</code></td><td><code>p::first-line</code></td></tr>
+</table>
+
+<p>CSS conditions only match displayed elements: if an element that matches your
+selector is <code>display:none</code> or one of its parent elements
+is <code>display:none</code>, it doesn't cause the condition to match.  Elements
+styled with <code>visibility:hidden</code>, positioned off-screen, or hidden by
+other elements can still make your condition match.</p>
