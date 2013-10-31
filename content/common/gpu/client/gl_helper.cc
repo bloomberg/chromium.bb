@@ -898,7 +898,7 @@ GLHelper::CopyTextureToImpl::ReadbackYUV_MRT::ReadbackYUV_MRT(
           src_size,
           src_subrect,
           dst_subrect.size(),
-          flip_vertically,
+          false,
           false)),
       pass1_shader_(scaler_impl->CreateYuvMrtShader(
           dst_subrect.size(),
@@ -907,7 +907,7 @@ GLHelper::CopyTextureToImpl::ReadbackYUV_MRT::ReadbackYUV_MRT(
                     dst_subrect.height()),
           gfx::Size((dst_subrect.width() + 3) / 4,
                     dst_subrect.height()),
-          false,
+          flip_vertically,
           GLHelperScaling::SHADER_YUV_MRT_PASS1)),
       pass2_shader_(scaler_impl->CreateYuvMrtShader(
           gfx::Size((dst_subrect.width() + 3) / 4,
