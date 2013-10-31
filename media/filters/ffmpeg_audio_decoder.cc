@@ -282,25 +282,22 @@ void FFmpegAudioDecoder::BufferReady(
     return;
   }
 
-  bool is_vorbis = codec_context_->codec_id == AV_CODEC_ID_VORBIS;
   if (!input->end_of_stream()) {
-    if (last_input_timestamp_ == kNoTimestamp()) {
-      if (is_vorbis && (input->timestamp() < base::TimeDelta())) {
-        // Dropping frames for negative timestamps as outlined in section A.2
-        // in the Vorbis spec. http://xiph.org/vorbis/doc/Vorbis_I_spec.html
-        output_frames_to_drop_ = floor(
-            0.5 + -input->timestamp().InSecondsF() * samples_per_second_);
-      } else {
-        last_input_timestamp_ = input->timestamp();
-      }
-    } else if (input->timestamp() != kNoTimestamp()) {
-      if (input->timestamp() < last_input_timestamp_) {
-        base::TimeDelta diff = input->timestamp() - last_input_timestamp_;
-        DVLOG(1) << "Input timestamps are not monotonically increasing! "
-                 << " ts " << input->timestamp().InMicroseconds() << " us"
-                 << " diff " << diff.InMicroseconds() << " us";
-        base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
-        return;
+    if (last_input_timestamp_ == kNoTimestamp() &&
+        codec_context_->codec_id == AV_CODEC_ID_VORBIS &&
+        input->timestamp() < base::TimeDelta()) {
+      // Dropping frames for negative timestamps as outlined in section A.2
+      // in the Vorbis spec. http://xiph.org/vorbis/doc/Vorbis_I_spec.html
+      output_frames_to_drop_ = floor(
+          0.5 + -input->timestamp().InSecondsF() * samples_per_second_);
+    } else {
+      if (last_input_timestamp_ != kNoTimestamp() &&
+          input->timestamp() < last_input_timestamp_) {
+        const base::TimeDelta diff = input->timestamp() - last_input_timestamp_;
+        DLOG(WARNING)
+            << "Input timestamps are not monotonically increasing! "
+            << " ts " << input->timestamp().InMicroseconds() << " us"
+            << " diff " << diff.InMicroseconds() << " us";
       }
 
       last_input_timestamp_ = input->timestamp();
@@ -434,14 +431,12 @@ void FFmpegAudioDecoder::RunDecodeLoop(
           << "This is quite possibly a bug in the audio decoder not handling "
           << "end of stream AVPackets correctly.";
 
-      DLOG(ERROR)
-          << "Error decoding an audio frame with timestamp: "
+      DLOG(WARNING)
+          << "Failed to decode an audio frame with timestamp: "
           << input->timestamp().InMicroseconds() << " us, duration: "
           << input->duration().InMicroseconds() << " us, packet size: "
           << input->data_size() << " bytes";
 
-      // TODO(dalecurtis): We should return a kDecodeError here instead:
-      // http://crbug.com/145276
       break;
     }
 
