@@ -363,6 +363,7 @@ def AddExtensionActions(actions):
   actions.add('FileBrowser.CreateNewFolder')
   actions.add('FileBrowser.PhotoEditor.Edit')
   actions.add('FileBrowser.PhotoEditor.View')
+  actions.add('FileBrowser.SuggestApps.ShowDialog')
 
   # Actions sent by Google Now client.
   actions.add('GoogleNow.MessageClicked')

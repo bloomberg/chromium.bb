@@ -105,6 +105,7 @@ SuggestAppsDialog.State = {
   INITIALIZED: 'SuggestAppsDialog.State.INITIALIZED',
   INSTALLING: 'SuggestAppsDialog.State.INSTALLING',
   INSTALLED_CLOSING: 'SuggestAppsDialog.State.INSTALLED_CLOSING',
+  OPENING_WEBSTORE_CLOSING: 'SuggestAppsDialog.State.OPENING_WEBSTORE_CLOSING',
   CANCELED_CLOSING: 'SuggestAppsDialog.State.CANCELED_CLOSING'
 };
 Object.freeze(SuggestAppsDialog.State);
@@ -118,6 +119,8 @@ SuggestAppsDialog.Result = {
   INSTALL_SUCCESSFUL: 'SuggestAppsDialog.Result.INSTALL_SUCCESSFUL',
   // User cancelled the suggest app dialog. No message should be shown.
   USER_CANCELL: 'SuggestAppsDialog.Result.USER_CANCELL',
+  // User clicked the link to web store so the dialog is closed.
+  WEBSTORE_LINK_OPENED: 'SuggestAppsDialog.Result.WEBSTORE_LINK_OPENED',
   // Failed to load the widget. Error message should be shown.
   FAILED: 'SuggestAppsDialog.Result.FAILED'
 };
@@ -192,6 +195,9 @@ SuggestAppsDialog.prototype.show = function(extension, mime, onDialogClosed) {
   this.onDialogClosed_ = onDialogClosed;
   this.state_ = SuggestAppsDialog.State.INITIALIZING;
 
+  SuggestAppsDialog.Metrics.recordShowDialog();
+  SuggestAppsDialog.Metrics.startLoad();
+
   // Makes it sure that the initialization is completed.
   this.initializationTask_.run(function() {
     if (!this.accessToken_) {
@@ -255,6 +261,7 @@ SuggestAppsDialog.prototype.onWebstoreLinkClicked_ = function(e) {
   var webStoreUrl =
       FileTasks.createWebStoreLink(this.extension_, this.mimeType_);
   chrome.windows.create({url: webStoreUrl});
+  this.state_ = SuggestAppsDialog.State.OPENING_WEBSTORE_CLOSING;
   this.hide();
 };
 
@@ -264,6 +271,10 @@ SuggestAppsDialog.prototype.onWebstoreLinkClicked_ = function(e) {
  * @private
  */
 SuggestAppsDialog.prototype.onWidgetLoaded_ = function(event) {
+  SuggestAppsDialog.Metrics.finishLoad();
+  SuggestAppsDialog.Metrics.recordLoad(
+      SuggestAppsDialog.Metrics.LOAD.SUCCEEDED);
+
   this.frame_.classList.remove('show-spinner');
   this.state_ = SuggestAppsDialog.State.INITIALIZED;
 
@@ -276,6 +287,8 @@ SuggestAppsDialog.prototype.onWidgetLoaded_ = function(event) {
  * @private
  */
 SuggestAppsDialog.prototype.onWidgetLoadFailed_ = function(event) {
+  SuggestAppsDialog.Metrics.recordLoad(SuggestAppsDialog.Metrics.LOAD.FAILURE);
+
   this.frame_.classList.remove('show-spinner');
   this.state_ = SuggestAppsDialog.State.INITIALIZE_FAILED_CLOSING;
 
@@ -329,12 +342,18 @@ SuggestAppsDialog.prototype.onInstallCompleted_ = function(result, error) {
 
   switch (result) {
   case AppInstaller.Result.SUCCESS:
+    SuggestAppsDialog.Metrics.recordInstall(
+        SuggestAppsDialog.Metrics.INSTALL.SUCCESS);
     this.hide();
     break;
   case AppInstaller.Result.CANCELLED:
+    SuggestAppsDialog.Metrics.recordInstall(
+        SuggestAppsDialog.Metrics.INSTALL.CANCELLED);
     // User cancelled the installation. Do nothing.
     break;
   case AppInstaller.Result.ERROR:
+    SuggestAppsDialog.Metrics.recordInstall(
+        SuggestAppsDialog.Metrics.INSTALL.FAILED);
     fileManager.error.show(str('SUGGEST_DIALOG_INSTALLATION_FAILED'));
     break;
   }
@@ -355,8 +374,14 @@ SuggestAppsDialog.prototype.hide = function(opt_originalOnHide) {
       // Assumes closing the dialog as canceling the install.
       this.state_ = SuggestAppsDialog.State.CANCELED_CLOSING;
       break;
+    case SuggestAppsDialog.State.INITIALIZING:
+      SuggestAppsDialog.Metrics.recordLoad(
+          SuggestAppsDialog.Metrics.LOAD.CANCELLED);
+      this.state_ = SuggestAppsDialog.State.CANCELED_CLOSING;
+      break;
     case SuggestAppsDialog.State.INSTALLED_CLOSING:
     case SuggestAppsDialog.State.INITIALIZE_FAILED_CLOSING:
+    case SuggestAppsDialog.State.OPENING_WEBSTORE_CLOSING:
       // Do nothing.
       break;
     case SuggestAppsDialog.State.INITIALIZED:
@@ -396,18 +421,90 @@ SuggestAppsDialog.prototype.onHide_ = function(opt_originalOnHide) {
   switch (this.state_) {
     case SuggestAppsDialog.State.INSTALLED_CLOSING:
       result = SuggestAppsDialog.Result.INSTALL_SUCCESSFUL;
+      SuggestAppsDialog.Metrics.recordCloseDialog(
+          SuggestAppsDialog.Metrics.CLOSE_DIALOG.ITEM_INSTALLED);
       break;
     case SuggestAppsDialog.State.INITIALIZE_FAILED_CLOSING:
       result = SuggestAppsDialog.Result.FAILED;
       break;
     case SuggestAppsDialog.State.CANCELED_CLOSING:
       result = SuggestAppsDialog.Result.USER_CANCELL;
+      SuggestAppsDialog.Metrics.recordCloseDialog(
+          SuggestAppsDialog.Metrics.CLOSE_DIALOG.USER_CANCELL);
+      break;
+    case SuggestAppsDialog.State.OPENING_WEBSTORE_CLOSING:
+      result = SuggestAppsDialog.Result.WEBSTORE_LINK_OPENED;
+      SuggestAppsDialog.Metrics.recordCloseDialog(
+          SuggestAppsDialog.Metrics.CLOSE_DIALOG.WEB_STORE_LINK);
       break;
     default:
       result = SuggestAppsDialog.Result.USER_CANCELL;
+      SuggestAppsDialog.Metrics.recordCloseDialog(
+          SuggestAppsDialog.Metrics.CLOSE_DIALOG.UNKNOWN_ERROR);
       console.error('Invalid state.');
   }
   this.state_ = SuggestAppsDialog.State.UNINITIALIZED;
 
   this.onDialogClosed_(result);
 };
+
+/**
+ * Utility methods and constants to record histograms.
+ */
+SuggestAppsDialog.Metrics = Object.freeze({
+  LOAD: Object.freeze({
+    SUCCEEDED: 0,
+    CANCELLED: 1,
+    FAILED: 2,
+  }),
+
+  /**
+   * @param {SuggestAppsDialog.Metrics.LOAD} result Result of load.
+   */
+  recordLoad: function(result) {
+    if (0 <= result && result < 3)
+      metrics.recordEnum('SuggestApps.Load', result, 3);
+  },
+
+  CLOSE_DIALOG: Object.freeze({
+    UNKOWN_ERROR: 0,
+    ITEM_INSTALLED: 1,
+    USER_CANCELLED: 2,
+    WEBSTORE_LINK_OPENED: 3,
+  }),
+
+  /**
+   * @param {SuggestAppsDialog.Metrics.CLOSE_DIALOG} reason Reason of closing
+   * dialog.
+   */
+  recordCloseDialog: function(reason) {
+    if (0 <= reason && reason < 4)
+      metrics.recordEnum('SuggestApps.CloseDialog', reason, 4);
+  },
+
+  INSTALL: Object.freeze({
+    SUCCEEDED: 0,
+    CANCELLED: 1,
+    FAILED: 2,
+  }),
+
+  /**
+   * @param {SuggestAppsDialog.Metrics.INSTALL} result Result of installation.
+   */
+  recordInstall: function(result) {
+    if (0 <= result && result < 3)
+      metrics.recordEnum('SuggestApps.Install', result, 3);
+  },
+
+  recordShowDialog: function() {
+    metrics.recordUserAction('SuggestApps.ShowDialog');
+  },
+
+  startLoad: function() {
+    metrics.startInterval('SuggestApps.LoadTime');
+  },
+
+  finishLoad: function() {
+    metrics.recordInterval('SuggestApps.LoadTime');
+  },
+});

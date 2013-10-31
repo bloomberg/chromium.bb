@@ -4864,6 +4864,36 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="FileBrowser.SuggestApps.Close"
+    enum="SuggestAppsDialogCloseReason">
+  <summary>
+    Chrome OS File Browser: the reason why the suggest apps dialog was closed.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.SuggestApps.Install"
+    enum="SuggestAppsDialogInstall">
+  <summary>
+    Chrome OS File Browser: whether the Webstore item user selected was
+    successfully installed or not.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.SuggestApps.Load" enum="SuggestAppsDialogLoad">
+  <summary>
+    Chrome OS File Browser: whether the initialization of the dialog succeeded
+    or not.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.SuggestApps.LoadTime" units="milliseconds">
+  <summary>
+    Chrome OS File Browser: time to load the suggest apps dialog. Measured
+    between the moment window appears and the moment all the contants in the
+    dialog including the Chrome Webstore widget are ready.
+  </summary>
+</histogram>
+
 <histogram name="FileBrowser.ViewingFileType" enum="ViewFileType">
   <summary>
     File types that were tried to be viewed through browser. This is recorded
@@ -27757,6 +27787,25 @@ other types of suffix sets.
   <int value="0" label="Performed migration"/>
   <int value="1" label="No migration value"/>
   <int value="2" label="Reset migration"/>
+</enum>
+
+<enum name="SuggestAppsDialogCloseReason" type="int">
+  <int value="0" label="Unknown error"/>
+  <int value="1" label="Item installed"/>
+  <int value="2" label="User cancelled"/>
+  <int value="3" label="Webstore link clicked"/>
+</enum>
+
+<enum name="SuggestAppsDialogInstall" type="int">
+  <int value="0" label="Install succeeded"/>
+  <int value="1" label="Install cancelled"/>
+  <int value="2" label="Install failed"/>
+</enum>
+
+<enum name="SuggestAppsDialogLoad" type="int">
+  <int value="0" label="Load succeeded"/>
+  <int value="1" label="Load cancelled"/>
+  <int value="2" label="Load failed"/>
 </enum>
 
 <enum name="SuspendStatus" type="int">
