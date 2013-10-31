@@ -52,7 +52,8 @@ ChildTraceMessageFilter::~ChildTraceMessageFilter() {}
 void ChildTraceMessageFilter::OnBeginTracing(
     const std::string& category_filter_str,
     base::TimeTicks browser_time,
-    int options) {
+    int options,
+    bool tracing_startup) {
 #if defined(__native_client__)
   // NaCl and system times are offset by a bit, so subtract some time from
   // the captured timestamps. The value might be off by a bit due to messaging
@@ -61,9 +62,15 @@ void ChildTraceMessageFilter::OnBeginTracing(
       browser_time;
   TraceLog::GetInstance()->SetTimeOffset(time_offset);
 #endif
-  TraceLog::GetInstance()->SetEnabled(
-      base::debug::CategoryFilter(category_filter_str),
-      static_cast<base::debug::TraceLog::Options>(options));
+
+  // Some subprocesses handle --trace-startup by themselves to begin
+  // trace as early as possible. Don't start twice, otherwise the trace
+  // buffer can't be correctly flushed on the end of startup tracing.
+  if (!tracing_startup || !TraceLog::GetInstance()->IsEnabled()) {
+    TraceLog::GetInstance()->SetEnabled(
+        base::debug::CategoryFilter(category_filter_str),
+        static_cast<base::debug::TraceLog::Options>(options));
+  }
 }
 
 void ChildTraceMessageFilter::OnEndTracing() {

@@ -101,6 +101,7 @@
 #include "content/browser/speech/speech_recognition_dispatcher_host.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/streams/stream_context.h"
+#include "content/browser/tracing/trace_controller_impl.h"
 #include "content/browser/tracing/trace_message_filter.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/worker_host/worker_message_filter.h"
@@ -994,7 +995,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kStatsCollectionController,
     switches::kTestSandbox,
     switches::kTouchEvents,
-    switches::kTraceStartup,
     switches::kTraceToConsole,
     // This flag needs to be propagated to the renderer process for
     // --in-process-webgl.
@@ -1083,6 +1083,13 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));
+
+  if (browser_cmd.HasSwitch(switches::kTraceStartup) &&
+      TraceControllerImpl::GetInstance()->is_tracing_startup()) {
+    // Pass kTraceStartup switch to renderer only if startup tracing has not
+    // finished.
+    renderer_cmd->AppendSwitch(switches::kTraceStartup);
+  }
 
   // Disable databases in incognito mode.
   if (GetBrowserContext()->IsOffTheRecord() &&

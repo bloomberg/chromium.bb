@@ -84,7 +84,8 @@ bool TracingControllerImpl::EnableRecording(
 
   // Notify all child processes.
   for (FilterMap::iterator it = filters_.begin(); it != filters_.end(); ++it) {
-    it->get()->SendBeginTracing(category_filter_.ToString(), trace_options_);
+    it->get()->SendBeginTracing(
+        category_filter_.ToString(), trace_options_, false);
   }
 
   if (!callback.is_null())
@@ -256,7 +257,7 @@ void TracingControllerImpl::AddFilter(TraceMessageFilter* filter) {
   filters_.insert(filter);
   if (can_disable_recording()) {
     std::string cf_str = category_filter_.ToString();
-    filter->SendBeginTracing(cf_str, trace_options_);
+    filter->SendBeginTracing(cf_str, trace_options_, false);
   }
 }
 

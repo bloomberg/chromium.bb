@@ -25,6 +25,7 @@ class TraceControllerImpl : public TraceController {
   // Called on the main thread of the browser process to initialize
   // startup tracing.
   void InitStartupTracing(const CommandLine& command_line);
+  bool is_tracing_startup() const { return is_tracing_startup_; }
 
   // TraceController implementation:
   virtual bool BeginTracing(TraceSubscriber* subscriber,
@@ -94,6 +95,7 @@ class TraceControllerImpl : public TraceController {
   int pending_bpf_ack_count_;
   float maximum_bpf_;
   bool is_tracing_;
+  bool is_tracing_startup_;
   bool is_get_category_groups_;
   std::set<std::string> known_category_groups_;
   std::string watch_category_;

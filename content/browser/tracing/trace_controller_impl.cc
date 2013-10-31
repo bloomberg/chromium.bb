@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/strings/string_number_conversions.h"
+#include "components/tracing/tracing_messages.h"
 #include "content/browser/tracing/trace_message_filter.h"
 #include "content/browser/tracing/trace_subscriber_stdio.h"
 #include "content/common/child_process_messages.h"
@@ -56,6 +57,7 @@ TraceControllerImpl::TraceControllerImpl() :
     pending_bpf_ack_count_(0),
     maximum_bpf_(0.0f),
     is_tracing_(false),
+    is_tracing_startup_(false),
     is_get_category_groups_(false),
     category_filter_(
         base::debug::CategoryFilter::kDefaultCategoryFilterString) {
@@ -101,6 +103,7 @@ void TraceControllerImpl::InitStartupTracing(const CommandLine& command_line) {
     delay_secs = 5;
   }
 
+  is_tracing_startup_ = true;
   OnTracingBegan(subscriber.get());
   BrowserThread::PostDelayedTask(
       BrowserThread::UI,
@@ -156,6 +159,7 @@ bool TraceControllerImpl::EndTracingAsync(TraceSubscriber* subscriber) {
   // Disable local trace early to avoid traces during end-tracing process from
   // interfering with the process.
   TraceLog::GetInstance()->SetDisabled();
+  is_tracing_startup_ = false;
 
 #if defined(OS_ANDROID)
   if (!is_get_category_groups_)
@@ -268,7 +272,7 @@ void TraceControllerImpl::AddFilter(TraceMessageFilter* filter) {
   filters_.insert(filter);
   if (is_tracing_enabled()) {
     std::string cf_str = category_filter_.ToString();
-    filter->SendBeginTracing(cf_str, trace_options_);
+    filter->SendBeginTracing(cf_str, trace_options_, is_tracing_startup_);
     if (!watch_category_.empty())
       filter->SendSetWatchEvent(watch_category_, watch_name_);
   }
@@ -295,7 +299,8 @@ void TraceControllerImpl::OnTracingBegan(TraceSubscriber* subscriber) {
 
   // Notify all child processes.
   for (FilterMap::iterator it = filters_.begin(); it != filters_.end(); ++it) {
-    it->get()->SendBeginTracing(category_filter_.ToString(), trace_options_);
+    it->get()->SendBeginTracing(category_filter_.ToString(), trace_options_,
+                                is_tracing_startup_);
   }
 }
 

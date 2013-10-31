@@ -32,7 +32,8 @@ class ChildTraceMessageFilter : public IPC::ChannelProxy::MessageFilter {
   // Message handlers.
   void OnBeginTracing(const std::string& category_filter_str,
                       base::TimeTicks browser_time,
-                      int options);
+                      int options,
+                      bool tracing_startup);
   void OnEndTracing();
   void OnEnableMonitoring(const std::string& category_filter_str,
                           base::TimeTicks browser_time,

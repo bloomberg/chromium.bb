@@ -26,7 +26,8 @@ class TraceMessageFilter : public BrowserMessageFilter {
                                  bool* message_was_ok) OVERRIDE;
 
   void SendBeginTracing(const std::string& category_filter_str,
-                        base::debug::TraceLog::Options options);
+                        base::debug::TraceLog::Options options,
+                        bool tracing_startup);
   void SendEndTracing();
   void SendEnableMonitoring(const std::string& category_filter_str,
                             base::debug::TraceLog::Options options);
