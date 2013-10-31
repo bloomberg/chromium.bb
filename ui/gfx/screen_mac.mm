@@ -42,15 +42,16 @@ NSScreen* GetMatchingScreen(const gfx::Rect& match_rect) {
   return max_screen;
 }
 
-gfx::Display GetDisplayForScreen(NSScreen* screen, bool is_primary) {
+gfx::Display GetDisplayForScreen(NSScreen* screen) {
   NSRect frame = [screen frame];
   // TODO(oshima): Implement ID and Observer.
   gfx::Display display(0, gfx::Rect(NSRectToCGRect(frame)));
 
   NSRect visible_frame = [screen visibleFrame];
+  NSScreen* primary = [[NSScreen screens] objectAtIndex:0];
 
   // Convert work area's coordinate systems.
-  if (is_primary) {
+  if ([screen isEqual:primary]) {
     gfx::Rect work_area = gfx::Rect(NSRectToCGRect(visible_frame));
     work_area.set_y(frame.size.height - visible_frame.origin.y -
                     visible_frame.size.height);
@@ -142,7 +143,7 @@ class ScreenMac : public gfx::Screen {
     NSScreen* match_screen = [window screen];
     if (!match_screen)
       return GetPrimaryDisplay();
-    return GetDisplayForScreen(match_screen, false /* may not be primary */);
+    return GetDisplayForScreen(match_screen);
   }
 
   virtual gfx::Display GetDisplayNearestPoint(
@@ -154,7 +155,7 @@ class ScreenMac : public gfx::Screen {
     ns_point.y = NSMaxY([primary frame]) - ns_point.y;
     for (NSScreen* screen in screens) {
       if (NSMouseInRect(ns_point, [screen frame], NO))
-        return GetDisplayForScreen(screen, screen == primary);
+        return GetDisplayForScreen(screen);
     }
     return GetPrimaryDisplay();
   }
@@ -163,7 +164,7 @@ class ScreenMac : public gfx::Screen {
   virtual gfx::Display GetDisplayMatching(
       const gfx::Rect& match_rect) const OVERRIDE {
     NSScreen* match_screen = GetMatchingScreen(match_rect);
-    return GetDisplayForScreen(match_screen, false /* may not be primary */);
+    return GetDisplayForScreen(match_screen);
   }
 
   // Returns the primary display.
@@ -171,7 +172,7 @@ class ScreenMac : public gfx::Screen {
     // Primary display is defined as the display with the menubar,
     // which is always at index 0.
     NSScreen* primary = [[NSScreen screens] objectAtIndex:0];
-    gfx::Display display = GetDisplayForScreen(primary, true /* primary */);
+    gfx::Display display = GetDisplayForScreen(primary);
     return display;
   }
 
