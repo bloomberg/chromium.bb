@@ -665,7 +665,7 @@ function testList(tests, header, tableId)
 
     // FIXME: Include this for all testLists.
     if (tableId == 'passes-table')
-        html += '<thead><th>test</th><th>expected failure</th></thead>';
+        html += '<thead><th>test</th><th>expected</th></thead>';
 
     for (var i = 0; i < tests.length; i++) {
         var testObject = tests[i];
@@ -1275,8 +1275,8 @@ function failingTestsTable(tests, title, id)
         '<th>test</th>' +
         '<th id="text-results-header">results</th>' +
         '<th id="image-results-header">image results</th>' +
-        '<th>actual failure</th>' +
-        '<th>expected failure</th>';
+        '<th>actual</th>' +
+        '<th>expected</th>';
 
     if (id == 'flaky-tests-table')
         header += '<th>failures</th>';
