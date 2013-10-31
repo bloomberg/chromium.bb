@@ -25,6 +25,20 @@ camera.util.TooltipManager = function() {
    */
   this.queue_ = new camera.util.Queue();
 
+  /**
+   * @type {camera.util.StyleEffect}
+   * @private
+   */
+  this.effect_ = new camera.util.StyleEffect(
+      function(args, callback) {
+        if (args)
+          document.querySelector('#tooltip').classList.add('visible');
+        else
+          document.querySelector('#tooltip').classList.remove('visible');
+        camera.util.waitForTransitionCompletion(
+            document.querySelector('#tooltip'), 1000, callback);
+      });
+
   // No more properties. Freeze the object.
   Object.freeze(this);
 };
@@ -35,6 +49,12 @@ camera.util.TooltipManager = function() {
  * @const
  */
 camera.util.TooltipManager.EDGE_MARGIN = 10;
+
+camera.util.TooltipManager.prototype = {
+  get animating() {
+    return this.effect_.animating;
+  }
+};
 
 /**
  * Initializes the manager by adding tooltip handlers to every element which
@@ -59,16 +79,18 @@ camera.util.TooltipManager.prototype.showTooltip_ = function(element) {
     var tooltipMsg = tooltip.querySelector('#tooltip-msg');
     var tooltipArrow = tooltip.querySelector('#tooltip-arrow');
 
-    tooltip.classList.remove('visible');
+    this.effect_.invoke(false, function() {});
     tooltipMsg.textContent = chrome.i18n.getMessage(
         element.getAttribute('i18n-label'));
 
     var hideTooltip = function() {
-      tooltip.classList.remove('visible');
+      this.effect_.invoke(false, function() {});
       element.removeEventListener('mouseout', hideTooltip);
-    };
+      element.removeEventListener('click', hideTooltip);
+    }.bind(this);
 
     element.addEventListener('mouseout', hideTooltip);
+    element.addEventListener('click', hideTooltip);
 
     // Set the position. Wait for DOM refresh to get accurate tooltip dimensions
     // for the new text.
@@ -89,10 +111,11 @@ camera.util.TooltipManager.prototype.showTooltip_ = function(element) {
       // Align the arrow to point to the element.
       tooltipArrow.style.left = Math.round(elementCenter - left) + 'px';
 
-      tooltip.classList.add('visible');
+      // Show the tooltip after 500ms.
+      this.effect_.invoke(true, function() {}, 500);
       callback();
-    }, 0);
-  });
+    }.bind(this), 0);
+  }.bind(this));
 };
 
 /**
@@ -239,8 +262,20 @@ camera.util.StyleEffect = function(closure) {
    */
   this.callback_ = null;
 
+  /**
+   * @type {?number{
+   * @private
+   */
+  this.invocationTimer_ = null;
+
   // End of properties. Seal the object.
   Object.seal(this);
+};
+
+camera.util.StyleEffect.prototype = {
+  get animating() {
+    return !!this.callback_;
+  }
 };
 
 /**
@@ -249,26 +284,32 @@ camera.util.StyleEffect = function(closure) {
  *
  * @param {*} state State of the effect to be set
  * @param {function()} callback Completion callback.
+ * @param {number=} opt_delay Timeout in milliseconds before invoking.
  */
-camera.util.StyleEffect.prototype.invoke = function(state, callback) {
-  this.callback_ = callback;
-  this.closure_(state, function() {
-    if (!this.callback_)
-      return;
-    var callback = this.callback_;
-    this.callback_ = null;
+camera.util.StyleEffect.prototype.invoke = function(
+    state, callback, opt_delay) {
+  if (this.invocationTimer_) {
+    clearTimeout(this.invocationTimer_);
+    this.invocationTimer_ = null;
+  }
 
-    // Let the animation neatly finish.
-    setTimeout(callback, 0);
-  }.bind(this));
-};
+  var invokeClosure = function() {
+    this.callback_ = callback;
+    this.closure_(state, function() {
+      if (!this.callback_)
+        return;
+      var callback = this.callback_;
+      this.callback_ = null;
 
-/**
- * Checks whether the effect is in progress or already finished.
- * @return {boolean} True if active, false otherwise.
- */
-camera.util.StyleEffect.prototype.isActive = function() {
-  return !!this.callback_;
+      // Let the animation neatly finish.
+      setTimeout(callback, 0);
+    }.bind(this));
+  }.bind(this);
+
+  if (opt_delay !== undefined)
+    this.invocationTimer_ = setTimeout(invokeClosure, opt_delay);
+  else
+    invokeClosure();
 };
 
 /**
@@ -672,7 +713,7 @@ camera.util.ScrollTracker.prototype = {
     return [
       this.startScrollPosition_[0] - this.lastScrollPosition_[0],
       this.startScrollPosition_[1] - this.lastScrollPosition_[1]
-    ]
+    ];
   }
 };
 
@@ -953,6 +994,7 @@ camera.util.PerformanceMonitor.prototype.startMeasuring = function() {
 
 /**
  * Finishes measuring.
+ * @param {number} startTime Start time in milliseconds.
  * @private
  */
 camera.util.PerformanceMonitor.prototype.finishMeasuring_ = function(
