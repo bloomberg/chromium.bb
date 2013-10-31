@@ -41,15 +41,15 @@ body {
   transition: opacity 100ms;
 }
 
-body.expanded .scrollbar-track .scrollbar-thumb {
+body.controls-visible .scrollbar-track .scrollbar-thumb {
   opacity: 0.4;
 }
 
-body .scrollbar-track .scrollbar-thumb:hover {
+body.controls-visible .scrollbar-track .scrollbar-thumb:hover {
   opacity: 0.6;
 }
 
-body .scrollbar-track .scrollbar-thumb:active {
+body.controls-visible .scrollbar-track .scrollbar-thumb:active {
   opacity: 0.8;
 }
 
@@ -65,6 +65,16 @@ body .scrollbar-track .scrollbar-thumb:active {
 
 button:empty {
   outline: none;
+}
+
+.dynamic {
+  opacity: 1;
+  transition: opacity 200ms linear;
+}
+
+body:not(.controls-visible) .dynamic {
+  opacity: 0;
+  pointer-events: none;
 }
 
 #header {
@@ -104,15 +114,6 @@ button:empty {
   position: relative;
 }
 
-.buttons.dynamic {
-  opacity: 1;
-  transition: opacity 200ms linear;
-}
-
-body:not(.expanded) .buttons.dynamic {
-  opacity: 0;
-}
-
 #toolbar #album-enter.flash {
   -webkit-animation: flashButton 300ms linear 2s 3;
 }
@@ -143,16 +144,29 @@ body:not(.expanded) .buttons.dynamic {
   top: 0;
 }
 
-.buttons #album-enter {
-  background-image: -webkit-image-set(
-      url(../images/topbar_button_gallery.png) 1x,
-      url(../images/2x/topbar_button_gallery.png) 2x);
+.buttons.opposite-side {
+  -webkit-box-pack: start;
 }
 
+.buttons #album-enter {
+  background-image: -webkit-image-set(
+      url(../images/camera_button_album.png) 1x,
+      url(../images/2x/camera_button_album.png) 2x);
+}
+
+.buttons #filters-toggle {
+  background-image: -webkit-image-set(
+      url(../images/camera_button_filters.png) 1x,
+      url(../images/2x/camera_button_filters.png) 2x);
+}
 
 #toolbar .buttons {
   -webkit-box-align: center;
   padding: 0 10px;
+}
+
+#toolbar .buttons button:not(:hover):not(:active) {
+  background-color: transparent;
 }
 
 .buttons button[disabled] {
@@ -389,19 +403,25 @@ canvas {
   background-position: 0 -74px;
 }
 
-#toolbar {
-  -webkit-transform: translateY(200px);
-  background: rgba(0, 0, 0, 0.75);
-  bottom: 0;
-  left: 0;
-  padding: 10px 0;
-  position: absolute;
-  right: 0;
-  transition: -webkit-transform 200ms linear;
+body.controls-visible #toolbar,
+body.controls-visible #header {
+  opacity: 1;
 }
 
-body.expanded:not(.has-error) #toolbar {
-  -webkit-transform: translateY(0);
+#toolbar {
+  -webkit-transform: translateY(100%);
+  background: rgba(32, 32, 32, 0.8);
+  bottom: 52px;  /* Keep in sync with #toolbar.expanded. */
+  left: 0;
+  padding: 8px 0;
+  position: absolute;
+  right: 0;
+  transition: -webkit-transform 200ms ease,
+              opacity 200ms linear;
+}
+
+body:not(.has-error) #toolbar.expanded {
+  -webkit-transform: translateY(52px);
 }
 
 #shutter {
@@ -593,9 +613,9 @@ body:not(.album):not(.browser) #album {
   padding: 10px;
 }
 
-body.expanded #tooltip.visible {
+body.controls-visible #tooltip.visible {
   -webkit-transform: translateY(0);
-  transition: opacity 500ms 500ms, -webkit-transform 500ms 500ms;
+  transition: opacity 500ms, -webkit-transform 500ms;
   opacity: 1;
 }
 

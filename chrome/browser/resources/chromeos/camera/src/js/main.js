@@ -19,6 +19,7 @@ camera.Camera = function() {
    * @private
    */
   this.context_ = new camera.Camera.Context(
+      this.isUIAnimating_.bind(this),
       this.onError_.bind(this),
       this.onErrorRecovered_.bind(this));
 
@@ -100,13 +101,14 @@ camera.Camera = function() {
 /**
  * Creates context for the views.
  *
+ * @param {function():boolean} isUIAnimating Checks if the UI is animating.
  * @param {function(string, string, opt_string)} onError Callback to be called,
  *     when an error occurs. Arguments: identifier, first line, second line.
  * @param {function(string)} onErrorRecovered Callback to be called,
  *     when the error goes away. The argument is the error id.
  * @constructor
  */
-camera.Camera.Context = function(onError, onErrorRecovered) {
+camera.Camera.Context = function(isUIAnimating, onError, onErrorRecovered) {
   camera.View.Context.call(this);
 
   /**
@@ -118,6 +120,11 @@ camera.Camera.Context = function(onError, onErrorRecovered) {
    * @type {boolean}
    */
   this.hasError = false;
+
+  /**
+   * @type {function():boolean}
+   */
+  this.isUIAnimating = isUIAnimating;
 
   /**
    * @type {function(string, string, string)}
@@ -340,6 +347,15 @@ camera.Camera.prototype.onError_ = function(identifier, message, opt_hint) {
   this.context_.hasError = true;
   document.querySelector('#error-msg').textContent = message;
   document.querySelector('#error-msg-hint').textContent = opt_hint || '';
+};
+
+/**
+ * Checks if any of UI elements are animating.
+ * @return {boolean} True if animating, false otherwise.
+ * @private
+ */
+camera.Camera.prototype.isUIAnimating_ = function() {
+  return this.tooltipManager_.animating;
 };
 
 /**
