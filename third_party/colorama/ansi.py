@@ -1,3 +1,4 @@
+# Copyright Jonathan Hartley 2013. BSD 3-Clause license, see LICENSE file.
 '''
 This module generates ANSI character codes to printing colors to terminals.
 See: http://en.wikipedia.org/wiki/ANSI_escape_code
@@ -9,14 +10,13 @@ def code_to_chars(code):
     return CSI + str(code) + 'm'
 
 class AnsiCodes(object):
-    def __init__(self):
-        for name in dir(self):
-            if not name.startswith('_') and name.upper() == name:
-                value = getattr(self, name)
+    def __init__(self, codes):
+        for name in dir(codes):
+            if not name.startswith('_'):
+                value = getattr(codes, name)
                 setattr(self, name, code_to_chars(value))
 
-
-class AnsiFore(AnsiCodes):
+class AnsiFore:
     BLACK   = 30
     RED     = 31
     GREEN   = 32
@@ -27,7 +27,7 @@ class AnsiFore(AnsiCodes):
     WHITE   = 37
     RESET   = 39
 
-class AnsiBack(AnsiCodes):
+class AnsiBack:
     BLACK   = 40
     RED     = 41
     GREEN   = 42
@@ -38,15 +38,13 @@ class AnsiBack(AnsiCodes):
     WHITE   = 47
     RESET   = 49
 
-class AnsiStyle(AnsiCodes):
+class AnsiStyle:
     BRIGHT    = 1
     DIM       = 2
     NORMAL    = 22
     RESET_ALL = 0
 
+Fore = AnsiCodes( AnsiFore )
+Back = AnsiCodes( AnsiBack )
+Style = AnsiCodes( AnsiStyle )
 
-# Constructing the object converts the code into the equivalent ANSI escape
-# string.
-Fore = AnsiFore()
-Back = AnsiBack()
-Style = AnsiStyle()
