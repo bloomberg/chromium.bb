@@ -53,7 +53,7 @@ all:
 #
 # All projects built by this Makefile
 #
-PROJECTS = earth voronoi life bullet lua
+PROJECTS = earth voronoi life bullet lua smoothlife
 
 GS_URL_CONTINUOUS = gs://gonacl/demos/continuous
 GS_URL_PUBLISH = gs://gonacl/demos/publish
@@ -142,6 +142,18 @@ life_TGTS = $(life_TGT_DIR)/life.pexe \
 $(life_TGTS): $(life_SRCS)
 	$(MAKE) -C life TOOLCHAIN=pnacl CONFIG=Release
 
+#
+# SmoothLife
+#
+smoothlife_SRC_DIR = smoothlife
+smoothlife_TGT_DIR = smoothlife/out
+smoothlife_SRCS = $(smoothlife_SRC_DIR)/build.sh
+smoothlife_TGTS = $(smoothlife_TGT_DIR)/smoothnacl.pexe \
+                  $(smoothlife_TGT_DIR)/smoothnacl.nmf
+
+$(smoothlife_TGTS): $(smoothlife_SRCS)
+	smoothlife/build.sh
+
 ###############################################################################
 
 SHELL = /bin/bash
@@ -179,9 +191,9 @@ endif
 #
 define PROJECT
   $(1)_UPLOADS = $$($(1)_TGTS) $$($(1)_EXTRA_UPLOADS)
-  $(1)_CONTINUOUS_DIR = $(GS_URL_CONTINUOUS)/$(REVISION)/$(1)
-  $(1)_CONTINUOUS_UPLOADS = $$(addprefix $$($(1)_CONTINUOUS_DIR)/,$$(notdir $$($(1)_UPLOADS)))
-  $(1)_PUBLISH_DIR = $(GS_URL_PUBLISH)/$(REVISION)/$(1)
+  $(1)_CONTINUOUS_DIR = $(GS_URL_CONTINUOUS)/$(REVISION)/$(1)/
+  $(1)_CONTINUOUS_UPLOADS = $$(addprefix $$($(1)_CONTINUOUS_DIR),$$(notdir $$($(1)_UPLOADS)))
+  $(1)_PUBLISH_DIR = $(GS_URL_PUBLISH)/$(REVISION)/$(1)/
 
   all: $$($(1)_TGTS)
 
@@ -200,7 +212,7 @@ define UPLOAD_RULE
 .PHONY: upload-$(1)
 upload-$(1): revision-check
 	@echo "Uploading $$(notdir $$($(1)_UPLOADS)) to $$($(1)_CONTINUOUS_DIR)"
-	@$(GSUTIL) cp -q -a public-read $$($(1)_UPLOADS) $$($(1)_CONTINUOUS_DIR)
+	@$(GSUTIL) -q cp -a public-read $$($(1)_UPLOADS) $$($(1)_CONTINUOUS_DIR)
 
 upload: upload-$(1)
 endef
@@ -224,7 +236,7 @@ publish-$(1): revision-check
 	    exit 1; \
 	  fi;
 	@echo "Publishing..."
-	@$(GSUTIL) cp -p -q $$($(1)_CONTINUOUS_UPLOADS) $$($(1)_PUBLISH_DIR)/
+	@$(GSUTIL) -q cp -p $$($(1)_CONTINUOUS_UPLOADS) $$($(1)_PUBLISH_DIR)
 	@echo "Done."
 
 publish: publish-$(1)

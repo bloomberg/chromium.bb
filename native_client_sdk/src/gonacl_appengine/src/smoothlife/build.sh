@@ -10,12 +10,9 @@ SCRIPT_DIR="$(cd $(dirname $0) && pwd)"
 cd ${SCRIPT_DIR}
 
 OUT_DIR=out
-NACLPORTS_URL=https://chromium.googlesource.com/external/naclports
-NACLPORTS_SHA=0096083c0fa71c014f6218bb14d7e1742d9a6b0c
-NACLPORTS_DIR=${OUT_DIR}/naclports
-NACLAM_URL=https://github.com/johnmccutchan/NaClAMBase
-NACLAM_DIR=${OUT_DIR}/NaClAMBase
-NACLAM_SHA=0eb4647a3f99c6e66156959edc6c55d4a913468a
+SMOOTHLIFE_URL=https://github.com/binji/smoothnacl
+SMOOTHLIFE_DIR=${OUT_DIR}/smoothlife
+SMOOTHLIFE_SHA=63f115f2393aa629aab1403948cbfb28acc54360
 
 if [ -z "${NACL_SDK_ROOT:-}" ]; then
   echo "-------------------------------------------------------------------"
@@ -65,23 +62,22 @@ else
   OS_JOBS=1
 fi
 
-Banner Cloning naclports
-Clone ${NACLPORTS_URL} ${NACLPORTS_DIR} ${NACLPORTS_SHA}
+Banner Cloning smoothlife
+Clone ${SMOOTHLIFE_URL} ${SMOOTHLIFE_DIR} ${SMOOTHLIFE_SHA}
 
-Banner Building bullet
-pushd ${NACLPORTS_DIR}
-make NACL_ARCH=pnacl bullet
+pushd ${SMOOTHLIFE_DIR}
+
+Banner Updating submodules
+LogExecute git submodule update --init
+
+Banner Building FFTW
+LogExecute make ports
+
+Banner Building smoothlife
+LogExecute make TOOLCHAIN=pnacl CONFIG=Release -j${OS_JOBS}
+
 popd
 
-Banner Cloning NaClAMBase
-Clone ${NACLAM_URL} ${NACLAM_DIR} ${NACLAM_SHA}
-
-Banner Building NaClAM
-LogExecute cp Makefile ${NACLAM_DIR}
-pushd ${NACLAM_DIR}
-LogExecute make -j${OS_JOBS}
-popd
-
-LogExecute cp ${NACLAM_DIR}/pnacl/Release/NaClAMBullet.{pexe,nmf} ${OUT_DIR}
+LogExecute cp ${SMOOTHLIFE_DIR}/pnacl/Release/smoothnacl.{pexe,nmf} ${OUT_DIR}
 
 Banner Done!

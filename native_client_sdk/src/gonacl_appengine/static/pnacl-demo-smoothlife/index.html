@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<!--
+Copyright (c) 2013 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<head>
+  <meta charset="UTF-8">
+  <title>SmoothLife</title>
+  <script type="text/javascript" src="example.js"></script>
+  <link href="/static/common.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+  <div class="absolute-fill">
+    <div class="flex-container">
+      <div class="main absolute-fill-parent">
+        <div class="absolute-fill">
+          <div class="flex-container flex-column flex-justify-center">
+            <div id="message">
+              <div id="statusField"></div>
+              <progress id="progress"></progress>
+            </div>
+          </div>
+        </div>
+        <div id="listener" class="absolute-fill"></div>
+      </div>
+      <div class="sidebar">
+        <h1>SmoothLife</h1>
+        <div>
+          <select id="preset">
+            <option value="0">Subdividers</option>
+            <option value="1">Green Hex</option>
+            <option value="2">Fire Jellies</option>
+            <option value="3">Magical Maze</option>
+            <option value="4">Waterbug Gliders</option>
+            <option value="5">Stitches 'n' Jitters</option>
+            <option value="6">Blink Tubes</option>
+            <option value="7">Oil Slick</option>
+            <option value="8">Worms</option>
+          </select>
+          <button id="reset">Reset</button>
+        </div>
+        <div>
+          <button id="splat">Splat</button>
+          <button id="clear">Clear</button>
+        </div>
+        <div>
+          Brush Size:
+          <input type="range" id="brushSizeRange" min="10.0" max="50.0"
+              step="0.5" value="10.0">
+          <span id="brushSize">10.0</span>
+        </div>
+        <p class="small">
+          This demo was implemented by Ben Smith. The source code is available
+          on GitHub at <a
+            href="https://github.com/binji/smoothnacl">https://github.com/binji/smoothnacl</a>.
+        </p>
+        <p class="small">
+        The implementation was based on <a
+          href="http://sourceforge.net/projects/smoothlife/">this source</a> by
+        ionreq. Also see Stephan Rafler's paper <a
+          href="http://arxiv.org/abs/1111.1567">Generalization of Conway's
+          "Game of Life" to a continuous domain - SmoothLife</a> for more
+        information about the algorithm.
+        </p>
+        <p class="small">
+          FPS: <span id="fps">0</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
