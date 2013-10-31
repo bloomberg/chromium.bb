@@ -178,6 +178,10 @@
                 "href": "/apps/app_usb.html"
               },
               {
+                "title": "Serial",
+                "href": "/apps/app_serial.html"
+              },
+              {
                 "title": "Network Communications",
                 "href": "/apps/app_network.html"
               }

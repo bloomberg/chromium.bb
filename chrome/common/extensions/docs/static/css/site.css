@@ -20,7 +20,10 @@ body {
 
 p.note,
 p.caution,
-p.warning {
+p.warning,
+div.note,
+div.caution,
+div.warning {
   background-color: #F5F5F5;
   border-bottom: 1px solid;
   border-top: 1px solid;
@@ -29,18 +32,23 @@ p.warning {
   padding: .2em .5em .2em .9em;
 }
 
-p.note {
+p.note,
+div.note {
   border-color: #36C;
 }
-p.caution {
+p.caution,
+div.caution {
   border-color: #FC3;
 }
-p.warning {
+p.warning,
+div.warning {
   border-color: #A03;
 }
 
 p.warning em,
-p.warning strong {
+p.warning strong,
+div.warning em,
+div.warning strong {
   color: #A03;
 }
 
@@ -63,6 +71,14 @@ a:visited {
 li {
   margin: .3em 0 0 1.5em;
   padding: 0;
+}
+
+ul.condensed {
+  margin: 0.5em 0;
+}
+
+ul.condensed li {
+  margin-top: 0;
 }
 
 ol li {

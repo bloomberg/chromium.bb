@@ -1,0 +1,173 @@
+<h1>Serial Devices</h1>
+
+<p>
+</p>
+
+<p>
+This document describes how to use the <a href="serial.html">serial API</a> to read
+and write from serial devices. Chrome Apps can also connect to
+<a href="usb.html">USB</a> and <a href="bluetooth.html">Bluetooth</a> devices.
+</p>
+
+<p class="note">
+<b>Samples:</b> For examples that illustrate how Chrome Apps can connect to hardware devices, see the
+<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/serial">serial</a>,
+<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/servo">servo</a>,
+<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/usb">usb</a>, and
+<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/zephyr_hxm">zephyr_hxm
+Bluetooth</a> samples.
+</p>
+
+<h2 id="requirement">Manifest requirement</h2>
+
+<p>
+You must add the "serial" permission to the manifest file:
+</p>
+<pre data-filename="manifest.json">
+"permissions": [
+  "serial"
+]
+</pre>
+
+<h2 id="listing">Listing available serial ports</h2>
+
+<p>
+To get a list of available serial ports,
+use the <code>getPorts()</code> method. <b>Note:</b> not all serial ports are available. The API uses a heuristic based on the name of the port to only expose serial devices that are expected to be safe.
+</p>
+
+<pre>
+var onGetPorts = function(ports) {
+  for (var i=0; i&lt;ports.length; i++) {
+    console.log(ports[i]);
+  }
+}
+chrome.serial.getPorts(onGetPorts);
+</pre>
+
+<h2 id="opening">Opening a serial device</h2>
+
+<p>
+If you know the serial port name, you can open it for read and write using the <code>open</code> method:
+</p>
+
+<pre>
+chrome.serial.open(portName, options, openCallback)
+</pre>
+
+<table border="0">
+  <tr>
+    <th scope="col"> Parameter </th>
+    <th scope="col"> Description </th>
+  </tr>
+  <tr>
+    <td>portName&nbsp;(string)</td>
+    <td>If your device's port name is unknown, you can use the <code>getPorts</code> method.</td>
+  </tr>
+  <tr>
+    <td>options&nbsp;(object)</td>
+    <td>Parameter object with one single value: <code>bitrate</code>, an integer specifying the desired bitrate used to communicate with the serial port.</td>
+  </tr>
+  <tr>
+    <td>openCallback</td>
+    <td>Invoked when the port has been successfully opened. The callback will be called with one parameter, <code>openInfo</code>, that has one attribute, <code>connectionId</code>. Save this id, because you will need it to actually communicate with the port.
+    </td>
+  </tr>
+</table>
+
+<p>A simple example:</p>
+
+<pre>
+var onOpen = function(connectionInfo) {
+   // The serial port has been opened. Save its id to use later.
+  _this.connectionId = connectionInfo.connectionId;
+  // Do whatever you need to do with the opened port.
+}
+// Open the serial port /dev/ttyS01
+chrome.serial.open("/dev/ttyS01", {bitrate: 115200}, onOpen);
+</pre>
+
+<h2 id="closing">Closing a serial port</h2>
+
+<p>
+Closing a serial port is simple but very important. See the example below:
+</p>
+
+<pre>
+var onClose = function(result) {
+ console.log("Serial port closed");
+}
+chrome.serial.close(connectionId, onClose);
+</pre>
+
+<h2 id="reading">Reading from a serial port</h2>
+
+<p>
+The serial API reads from the serial port and
+delivers the read bytes as an ArrayBuffer.
+There is no guarantee that all the requested bytes, even if available in the port, will be read in one chunk.
+The following example can accumulate read bytes, at most 128 at a time, until a new line is read,
+and then call a listener with the <code>ArrayBuffer</code> bytes converted to a String:
+</p>
+
+<pre>
+var dataRead='';
+
+var onCharRead=function(readInfo) {
+    if (!connectionInfo) {
+      return;
+    }
+    if (readInfo &amp;&amp; readInfo.bytesRead>0 &amp;&amp; readInfo.data) {
+      var str=ab2str(readInfo.data);
+      if (str[readInfo.bytesRead-1]==='\n') {
+        dataRead+=str.substring(0, readInfo.bytesRead-1);
+        onLineRead(dataRead);
+        dataRead="";
+      } else {
+        dataRead+=str;
+      }
+    }
+    chrome.serial.read(connectionId, 128, onCharRead);
+  }
+
+/* Convert an ArrayBuffer to a String, using UTF-8 as the encoding scheme.
+   This is consistent with how Arduino sends characters by default */
+  var ab2str=function(buf) {
+    return String.fromCharCode.apply(null, new Uint8Array(buf));
+  };
+</pre>
+
+<h2 id="writing">Writing to a serial port</h2>
+
+<p>
+The writing routine is simpler than reading,
+since the writing can occur all at once.
+The only catch is that if your data protocol is String based,
+you have to convert your output string to an <code>ArrayBuffer</code>.
+See the code example below:
+</p>
+
+<pre>
+var writeSerial=function(str) {
+  chrome.serial.write(connectionId, str2ab(str), onWrite);
+}
+// Convert string to ArrayBuffer
+var str2ab=function(str) {
+  var buf=new ArrayBuffer(str.length);
+  var bufView=new Uint8Array(buf);
+  for (var i=0; i&lt;str.length; i++) {
+    bufView[i]=str.charCodeAt(i);
+  }
+  return buf;
+}
+</pre>
+
+<h2 id="flushing">Flushing a serial port buffer</h2>
+
+<p>
+You can flush your serial port buffer by issuing the flush command:
+</p>
+
+<pre>
+  chrome.serial.flush(connectionId, onFlush);
+</pre>
