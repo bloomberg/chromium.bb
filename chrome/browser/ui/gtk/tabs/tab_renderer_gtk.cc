@@ -889,17 +889,24 @@ void TabRendererGtk::PaintTitle(GtkWidget* widget, cairo_t* cr) {
     Browser::FormatTitleForDisplay(&title);
   }
 
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  gfx::Rect bounds(allocation);
+
+  // Draw the text directly onto the Cairo context. This is necessary for
+  // getting the draw order correct, and automatically applying transformations
+  // such as scaling when a tab is detached.
+  gfx::CanvasSkiaPaintCairo canvas(cr, bounds.size(), true);
+
   SkColor title_color = IsSelected() ? selected_title_color_
                                      : unselected_title_color_;
 
-  DrawTextOntoCairoSurface(cr,
-                           title,
-                           *title_font_,
-                           title_bounds_,
-                           title_bounds_,
-                           title_color,
-                           base::i18n::IsRTL() ? gfx::Canvas::TEXT_ALIGN_RIGHT :
-                           gfx::Canvas::TEXT_ALIGN_LEFT);
+  // Disable subpixel rendering. This does not work because the canvas has a
+  // transparent background.
+  int flags = gfx::Canvas::NO_ELLIPSIS | gfx::Canvas::NO_SUBPIXEL_RENDERING;
+  canvas.DrawFadeTruncatingStringRectWithFlags(
+      title, gfx::Canvas::TruncateFadeTail, gfx::FontList(*title_font_),
+      title_color, title_bounds_, flags);
 }
 
 void TabRendererGtk::PaintIcon(GtkWidget* widget, cairo_t* cr) {

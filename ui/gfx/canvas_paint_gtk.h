@@ -57,6 +57,46 @@ class GFX_EXPORT CanvasSkiaPaint : public Canvas {
   CanvasSkiaPaint& operator=(const CanvasSkiaPaint&);
 };
 
+// A class designed to translate skia painting into a region in a Cairo context.
+// On construction, it will set up a context for painting into, and on
+// destruction, it will commit it to the Cairo context. If there are any
+// transformations applied to the Cairo context, they will affect the drawing.
+class GFX_EXPORT CanvasSkiaPaintCairo : public Canvas {
+ public:
+  CanvasSkiaPaintCairo(cairo_t* cairo, Size size, bool opaque);
+  virtual ~CanvasSkiaPaintCairo();
+
+  // Sets whether the bitmap is composited in such a way that the alpha channel
+  // is honored. This is only useful if you've enabled an RGBA colormap on the
+  // widget. The default is false.
+  void set_composite_alpha(bool composite_alpha) {
+    composite_alpha_ = composite_alpha;
+  }
+
+  // Returns true if size of the drawing region is empty. The caller should call
+  // this function to determine if anything needs painting.
+  bool is_empty() const {
+    return size_.IsEmpty();
+  }
+
+  Size size() const {
+    return size_;
+  }
+
+ private:
+  void Init(bool opaque);
+
+  cairo_t* context_;
+  cairo_t* dest_;
+  Size size_;
+  // See description above setter.
+  bool composite_alpha_;
+
+  // Disallow copy and assign.
+  CanvasSkiaPaintCairo(const CanvasSkiaPaintCairo&);
+  CanvasSkiaPaintCairo& operator=(const CanvasSkiaPaintCairo&);
+};
+
 }  // namespace gfx
 
 #endif  // UI_GFX_CANVAS_PAINT_LINUX_H_

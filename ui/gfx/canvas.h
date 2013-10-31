@@ -452,6 +452,13 @@ class GFX_EXPORT Canvas {
       const FontList& font_list,
       SkColor color,
       const Rect& display_rect);
+  void DrawFadeTruncatingStringRectWithFlags(
+      const base::string16& text,
+      TruncateFadeMode truncate_mode,
+      const FontList& font_list,
+      SkColor color,
+      const Rect& display_rect,
+      int flags);
 
   skia::PlatformCanvas* platform_canvas() const { return owned_canvas_.get(); }
   SkCanvas* sk_canvas() const { return canvas_; }

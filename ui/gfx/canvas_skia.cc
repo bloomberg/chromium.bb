@@ -375,8 +375,17 @@ void Canvas::DrawFadeTruncatingStringRect(
     const FontList& font_list,
     SkColor color,
     const Rect& display_rect) {
-  int flags = NO_ELLIPSIS;
+  DrawFadeTruncatingStringRectWithFlags(
+      text, truncate_mode, font_list, color, display_rect, NO_ELLIPSIS);
+}
 
+void Canvas::DrawFadeTruncatingStringRectWithFlags(
+    const base::string16& text,
+    TruncateFadeMode truncate_mode,
+    const FontList& font_list,
+    SkColor color,
+    const Rect& display_rect,
+    int flags) {
   // If the whole string fits in the destination then just draw it directly.
   if (GetStringWidth(text, font_list) <= display_rect.width()) {
     DrawStringRectWithFlags(text, font_list, color, display_rect, flags);
