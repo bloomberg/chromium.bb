@@ -3892,6 +3892,13 @@ void GLES2DecoderImpl::DoDisableVertexAttribArray(GLuint index) {
 void GLES2DecoderImpl::DoDiscardFramebufferEXT(GLenum target,
                                                GLsizei numAttachments,
                                                const GLenum* attachments) {
+  if (!features().ext_discard_framebuffer) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                       "glDiscardFramebufferEXT",
+                       "function not available");
+    return;
+  }
+
   Framebuffer* framebuffer =
       GetFramebufferInfoForTarget(GL_FRAMEBUFFER);
 
@@ -4977,6 +4984,7 @@ void GLES2DecoderImpl::DoBlitFramebufferEXT(
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         "glBlitFramebufferEXT", "function not available");
+    return;
   }
 
   if (!CheckBoundFramebuffersValid("glBlitFramebufferEXT")) {

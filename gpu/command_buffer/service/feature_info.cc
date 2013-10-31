@@ -122,7 +122,8 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       ext_draw_buffers(false),
       ext_frag_depth(false),
       use_async_readpixels(false),
-      map_buffer_range(false) {
+      map_buffer_range(false),
+      ext_discard_framebuffer(false) {
 }
 
 FeatureInfo::Workarounds::Workarounds() :
@@ -697,6 +698,7 @@ void FeatureInfo::InitializeFeatures() {
       !workarounds_.disable_ext_discard_framebuffer) {
     // DiscardFramebufferEXT is automatically bound to InvalidateFramebuffer.
     AddExtensionString("GL_EXT_discard_framebuffer");
+    feature_flags_.ext_discard_framebuffer = true;
   }
 }
 

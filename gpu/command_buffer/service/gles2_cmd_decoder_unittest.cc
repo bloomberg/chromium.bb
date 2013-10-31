@@ -8610,6 +8610,62 @@ TEST_F(GLES2DecoderTest, DrawBuffersEXTImmediateBackbuffer) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
+TEST_F(GLES2DecoderManualInitTest, DiscardFramebufferEXT) {
+  InitDecoder("GL_EXT_discard_framebuffer",  // extensions
+              false,                         // has alpha
+              false,                         // has depth
+              false,                         // has stencil
+              false,                         // request alpha
+              false,                         // request depth
+              false,                         // request stencil
+              false);                        // bind generates resource
+
+  const GLenum target = GL_FRAMEBUFFER;
+  const GLsizei count = 1;
+  const GLenum attachments[] = { GL_COLOR_ATTACHMENT0 };
+
+  SetupTexture();
+  DoBindFramebuffer(
+      GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
+  DoFramebufferTexture2D(GL_FRAMEBUFFER,
+                         GL_COLOR_ATTACHMENT0,
+                         GL_TEXTURE_2D,
+                         client_texture_id_,
+                         kServiceTextureId,
+                         0,
+                         GL_NO_ERROR);
+  FramebufferManager* framebuffer_manager = group().framebuffer_manager();
+  Framebuffer* framebuffer =
+      framebuffer_manager->GetFramebuffer(client_framebuffer_id_);
+  EXPECT_TRUE(framebuffer->IsCleared());
+
+  EXPECT_CALL(*gl_, DiscardFramebufferEXT(target, count, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  DiscardFramebufferEXTImmediate& cmd =
+      *GetImmediateAs<DiscardFramebufferEXTImmediate>();
+  cmd.Init(target, count, attachments);
+
+  EXPECT_EQ(error::kNoError,
+            ExecuteImmediateCmd(cmd, sizeof(attachments)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_FALSE(framebuffer->IsCleared());
+}
+
+TEST_F(GLES2DecoderTest, DiscardFramebufferEXTUnsupported) {
+  const GLenum target = GL_FRAMEBUFFER;
+  const GLsizei count = 1;
+  const GLenum attachments[] = { GL_COLOR_EXT };
+  DiscardFramebufferEXTImmediate& cmd =
+      *GetImmediateAs<DiscardFramebufferEXTImmediate>();
+  cmd.Init(target, count, attachments);
+
+  // Should not result into a call into GL.
+  EXPECT_EQ(error::kNoError,
+            ExecuteImmediateCmd(cmd, sizeof(attachments)));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
 // TODO(gman): Complete this test.
 // TEST_F(GLES2DecoderTest, CompressedTexImage2DGLError) {
 // }

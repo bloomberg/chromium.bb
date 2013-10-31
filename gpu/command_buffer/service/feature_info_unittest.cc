@@ -116,6 +116,7 @@ TEST_F(FeatureInfoTest, Basic) {
   EXPECT_FALSE(info_->feature_flags().native_vertex_array_object);
   EXPECT_FALSE(info_->feature_flags().map_buffer_range);
   EXPECT_FALSE(info_->feature_flags().use_async_readpixels);
+  EXPECT_FALSE(info_->feature_flags().ext_discard_framebuffer);
 
 #define GPU_OP(type, name) EXPECT_FALSE(info_->workarounds().name);
   GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
@@ -850,6 +851,12 @@ TEST_F(FeatureInfoTest, InitializeEXT_frag_depth) {
   EXPECT_THAT(info_->extensions(), HasSubstr("GL_EXT_frag_depth"));
 }
 
+TEST_F(FeatureInfoTest, InitializeEXT_discard_framebuffer) {
+  SetupInitExpectations("GL_EXT_discard_framebuffer");
+  EXPECT_TRUE(info_->feature_flags().ext_discard_framebuffer);
+  EXPECT_THAT(info_->extensions(), HasSubstr("GL_EXT_discard_framebuffer"));
+}
+
 TEST_F(FeatureInfoTest, InitializeSamplersWithARBSamplerObjects) {
   SetupInitExpectationsWithGLVersion("GL_ARB_sampler_objects", "OpenGL 3.0");
   EXPECT_TRUE(info_->feature_flags().enable_samplers);
@@ -859,6 +866,8 @@ TEST_F(FeatureInfoTest, InitializeWithES3) {
   SetupInitExpectationsWithGLVersion("", "OpenGL ES 3.0");
   EXPECT_TRUE(info_->feature_flags().enable_samplers);
   EXPECT_TRUE(info_->feature_flags().map_buffer_range);
+  EXPECT_TRUE(info_->feature_flags().ext_discard_framebuffer);
+  EXPECT_THAT(info_->extensions(), HasSubstr("GL_EXT_discard_framebuffer"));
   EXPECT_FALSE(info_->feature_flags().use_async_readpixels);
 }
 
