@@ -57,8 +57,23 @@ function Background() {
       FileOperationManager.getInstance(),
       this.progressCenter);
 
-  // Freeze self.
-  Object.freeze(this);
+  /**
+   * String assets.
+   * @type {Object.<string, string>}
+   */
+  this.stringData = null;
+
+  /**
+   * Callback list to be invoked after initialization.
+   * It turns to null after initialization.
+   *
+   * @type {Array.<function()>}
+   * @private
+   */
+  this.initializeCallbacks_ = [];
+
+  // Seal self.
+  Object.seal(this);
 
   // Initialize handlers.
   chrome.fileBrowserHandler.onExecute.addListener(this.onExecute_.bind(this));
@@ -68,14 +83,36 @@ function Background() {
       this.onContextMenuClicked_.bind(this));
 
   // Fetch strings and initialize the context menu.
-  this.queue.run(function(callback) {
+  this.queue.run(function(callNextStep) {
     chrome.fileBrowserPrivate.getStrings(function(strings) {
+      // Initialize string assets.
+      this.stringData = strings;
       loadTimeData.data = strings;
       this.initContextMenu_();
-      chrome.storage.local.set({strings: strings}, callback);
+
+      // Invoke initialize callbacks.
+      for (var i = 0; i < this.initializeCallbacks_.length; i++) {
+        this.initializeCallbacks_[i]();
+      }
+      this.initializeCallbacks_ = null;
+
+      callNextStep();
     }.bind(this));
   }.bind(this));
 }
+
+/**
+ * Register callback to be invoked after initialization.
+ * If the initialization is already done, the callback is invoked immediately.
+ *
+ * @param {function()} callback Initialize callback to be registered.
+ */
+Background.prototype.ready = function(callback) {
+  if (this.initializeCallbacks_ !== null)
+    this.initializeCallbacks_.push(callback);
+  else
+    callback();
+};
 
 /**
  * Wrapper for an app window.
