@@ -52,6 +52,9 @@ class MockPatch(mox.MockObject):
   def __eq__(self, other):
     return self.id == getattr(other, 'id')
 
+  def PatchLink(self):
+    return 'CL:%s' % (self.id,)
+
 
 def GetTestJson(change_id=None):
   """Get usable fake Gerrit patch json data

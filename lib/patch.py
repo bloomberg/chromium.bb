@@ -41,8 +41,17 @@ class PatchException(Exception):
     if message is not None:
       self.args += (message,)
 
+  def ShortExplanation(self):
+    """Print a short explanation of why the patch failed.
+
+    Explanations here should be suitable for inclusion in a sentence
+    starting with the CL number. This is useful for writing nice error
+    messages about dependency errors.
+    """
+    return 'failed: %s' % (self.message,)
+
   def __str__(self):
-    return "Change %s failed: %s" % (self.patch, self.message)
+    return '%s %s' % (self.patch.PatchLink(), self.ShortExplanation())
 
 
 class ApplyPatchException(PatchException):
@@ -58,11 +67,10 @@ class ApplyPatchException(PatchException):
     self.args = (patch, message, inflight, trivial, files)
 
   def _stringify_inflight(self):
-    return 'current patch series' if self.inflight else 'ToT'
+    return 'the current patch series' if self.inflight else 'ToT'
 
-  def __str__(self):
-    s = 'Failed to cherry-pick patch %s to %s' % (
-        self.patch, self._stringify_inflight())
+  def ShortExplanation(self):
+    s = 'conflicted with %s' % (self._stringify_inflight(),)
     if self.trivial:
       s += (' because file content merging is disabled for this '
             'project.')
@@ -78,9 +86,9 @@ class ApplyPatchException(PatchException):
 
 class PatchAlreadyApplied(ApplyPatchException):
 
-  def __str__(self):
-    return "Failed to cherry-pick %s to %s since it's already committed" % (
-        self.patch, self._stringify_inflight())
+  def ShortExplanation(self):
+    return 'conflicted with %s because it\'s already committed.' % (
+        self._stringify_inflight(),)
 
 
 class DependencyError(PatchException):
@@ -97,11 +105,11 @@ class DependencyError(PatchException):
     PatchException.__init__(self, patch)
     self.inflight = error.inflight
     self.error = error
-    self.args += (error,)
+    self.args = (patch, error,)
 
-  def __str__(self):
-    return "Patch %s depends on %s which has an error: %s" % (
-        self.patch, self.error.patch.id, self.error)
+  def ShortExplanation(self):
+    link = self.error.patch.PatchLink()
+    return ('depends on %s, which %s' % (link, self.error.ShortExplanation()))
 
 
 class BrokenCQDepends(PatchException):
@@ -111,11 +119,10 @@ class BrokenCQDepends(PatchException):
     PatchException.__init__(self, patch)
     self.text = text
     self.msg = msg
-    self.args += (text, msg)
+    self.args = (patch, text, msg)
 
-  def __str__(self):
-    s = "Change %s has a malformed CQ-DEPEND target: %s" % (
-        self.patch, self.text)
+  def ShortExplanation(self):
+    s = 'has a malformed CQ-DEPEND target: %s' % (self.text,)
     if self.msg is not None:
       s += '; %s' % (self.msg,)
     return s
@@ -128,10 +135,10 @@ class BrokenChangeID(PatchException):
     PatchException.__init__(self, patch)
     self.message = message
     self.missing = missing
-    self.args += (message, missing)
+    self.args = (patch, message, missing)
 
-  def __str__(self):
-    return "Change %s has a broken ChangeId: %s" % (self.patch, self.message)
+  def ShortExplanation(self):
+    return 'has a broken ChangeId: %s' % (self.message,)
 
 
 def MakeChangeId(unusable=False):
@@ -867,6 +874,12 @@ class GitRepoPatch(object):
     output = git.RunGit(git_repo, cmd + targets, error_code_ok=True).output
     return unicode(output, 'ascii', 'ignore').split('\0')[:-1]
 
+  def PatchLink(self):
+    """Return a CL link for this patch."""
+    # GitRepoPatch instances don't have a CL link, so just return the string
+    # representation.
+    return str(self)
+
   def __str__(self):
     """Returns custom string to identify this patch."""
     s = '%s:%s' % (self.project, self.ref)
@@ -1244,6 +1257,10 @@ class GerritPatch(GitRepoPatch):
           self, self.change_id, self.sha1)
 
     return self.id
+
+  def PatchLink(self):
+    """Return a CL link for this patch."""
+    return 'CL:%s' % (self.gerrit_number_str,)
 
   def __str__(self):
     """Returns custom string to identify this patch."""

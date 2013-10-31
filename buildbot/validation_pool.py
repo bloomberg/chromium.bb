@@ -86,15 +86,15 @@ class ChangeNotInManifestException(Exception):
 class DependencyNotCommitReady(cros_patch.PatchException):
   """Exception thrown when a required dep isn't satisfied."""
 
-  def __str__(self):
-    return '%s isn\'t marked as Commit-Ready yet.' % (self.patch,)
+  def ShortExplanation(self):
+    return 'isn\'t marked as Commit-Ready yet.'
 
 
 class DependencyRejected(cros_patch.PatchException):
   """Exception thrown when a required dep was rejected."""
 
-  def __str__(self):
-    return '%s was rejected by the CQ.' % (self.patch,)
+  def ShortExplanation(self):
+    return 'was rejected by the CQ.'
 
 
 class PatchSeriesTooLong(cros_patch.PatchException):
@@ -104,10 +104,13 @@ class PatchSeriesTooLong(cros_patch.PatchException):
     cros_patch.PatchException.__init__(self, patch)
     self.max_length = max_length
 
-  def __str__(self):
+  def ShortExplanation(self):
     return ("The Pre-CQ cannot handle a patch series longer than %s patches. "
             "Please wait for some patches to be submitted before marking more "
             "patches as ready. "  % (self.max_length,))
+
+  def __str__(self):
+    return self.ShortExplanation()
 
 
 def _RunCommand(cmd, dryrun):
@@ -2074,10 +2077,10 @@ class ValidationPool(object):
 
   def HandleDependencyRejected(self, error):
     """Handler for when the deps of a patch were rejected."""
-    msg = ('A dependency of your CL was rejected by %(queue)s. '
-           '%(build_log)s . %(error)s')
+    msg = ('A dependency of your CL was rejected by %(queue)s in '
+           '%(build_log)s . Your CL %(error)s')
     change = error.patch
-    self.SendNotification(change, msg, error=str(error))
+    self.SendNotification(change, msg, error=error.ShortExplanation())
     self.RemoveCommitReady(change)
 
   @classmethod
