@@ -68,6 +68,16 @@ ProgressCenter.TimeoutManager.prototype.request = function(milliseconds) {
   }.bind(this), milliseconds);
 };
 
+/**
+ * Cancels the timeout and invoke the callback function synchronously.
+ */
+ProgressCenter.TimeoutManager.prototype.callImmediately = function() {
+  if (this.id_)
+    clearTimeout(this.id_);
+  this.id_ = null;
+  this.callback_();
+};
+
 ProgressCenter.prototype = {
   __proto__: cr.EventTarget.prototype,
 
@@ -89,6 +99,7 @@ ProgressCenter.prototype = {
  * @param {ProgressCenterItem} item Updated item.
  */
 ProgressCenter.prototype.updateItem = function(item) {
+  // Update item.
   var index = this.getItemIndex_(item.id);
   if (index === -1) {
     item.container = this.targetContainer_;
@@ -97,12 +108,23 @@ ProgressCenter.prototype.updateItem = function(item) {
     this.items_[index] = item;
   }
 
-  if (item.status !== ProgressItemState.PROGRESSING)
-    this.resetTimeout_.request(ProgressCenter.RESET_DELAY_TIME_MS_);
-
+  // Disptach event.
   var event = new Event(ProgressCenterEvent.ITEM_UPDATED);
   event.item = item;
   this.dispatchEvent(event);
+
+  // Reset if there is no item.
+  for (var i = 0; i < this.items_.length; i++) {
+    switch (this.items_[i].state) {
+      case ProgressItemState.PROGRESSING:
+        return;
+      case ProgressItemState.ERROR:
+        this.resetTimeout_.request(ProgressCenter.RESET_DELAY_TIME_MS_);
+        return;
+    }
+  }
+  // Cancel timeout and call reset function immediately.
+  this.resetTimeout_.callImmediately();
 };
 
 /**

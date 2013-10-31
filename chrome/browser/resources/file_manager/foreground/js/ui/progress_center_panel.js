@@ -19,13 +19,21 @@ var ProgressCenterPanel = function(element, cancelCallback) {
   this.cancelCallback_ = cancelCallback;
 
   /**
+   * Reset is requested but it is pending until the transition of progress bar
+   * is complete.
+   * @type {boolean}
+   * @private
+   */
+  this.resetRequested_ = false;
+
+  /**
    * Only progress item in the close view.
    * @type {!HTMLElement}
    * @private
    */
   this.closeViewItem_ = this.closeView_.querySelector('li');
 
-  Object.freeze(this);
+  Object.seal(this);
 
   // Register event handlers.
   element.addEventListener('click', this.onClick_.bind(this));
@@ -43,31 +51,33 @@ var ProgressCenterPanel = function(element, cancelCallback) {
 ProgressCenterPanel.ENABLED_ = true;
 
 /**
- * Update item element.
- * @param {HTMLElement} element Element to be updated.
- * @param {ProgressCenterItem} item Progress center item.
+ * Updates attributes of the item element.
+ * @param {!HTMLElement} element Element to be updated.
+ * @param {!ProgressCenterItem} item Progress center item.
  * @private
  */
 ProgressCenterPanel.updateItemElement_ = function(element, item) {
-  var additionalClass = item.state === ProgressItemState.COMPLETE ? 'complete' :
-                        item.state === ProgressItemState.ERROR ? 'error' :
-                        item.state === ProgressItemState.CANCELED ? 'canceled' :
-                        '';
+  // Sets element attributes.
+  element.querySelector('label').textContent = item.message;
+  element.setAttribute('data-progress-id', item.id);
+  element.setAttribute('data-progress-max', item.progressMax);
+  element.setAttribute('data-progress-value', item.progressValue);
+  element.className = '';
+  if (item.state === ProgressItemState.ERROR)
+    element.classList.add('error');
   if (item.cancelable)
-    additionalClass += ' cancelable';
+    element.classList.add('cancelable');
+
+  // If the transition animation is needed, apply it.
   var previousWidthRate =
       parseInt(element.querySelector('.progress-track').style.width);
   if (item.state === ProgressItemState.COMPLETE &&
-      previousWidthRate === item.progressRateByPercent) {
-    // Stop to update the message until the transition ends.
-    element.setAttribute('data-complete-message', item.message);
-    // The class pre-complete means that the actual operation is already done
-    // but the UI transition of progress bar is not complete.
-    additionalClass = 'pre-complete';
-  } else {
-    element.querySelector('label').textContent = item.message;
-    element.removeAttribute('data-complete-message');
+      previousWidthRate !== item.progressRateByPercent) {
+    // The attribute pre-complete means that the actual operation is already
+    // done but the UI transition of progress bar is not complete.
+    element.setAttribute('pre-complete', '');
   }
+
   // To commit the property change and to trigger the transition even if the
   // change is done synchronously, assign the width value asynchronously.
   setTimeout(function() {
@@ -79,38 +89,79 @@ ProgressCenterPanel.updateItemElement_ = function(element, item) {
         previousWidthRate > item.progressRateByPercent ? '0' : null;
     track.style.width = item.progressRateByPercent + '%';
   }, 0);
-  element.setAttribute('data-progress-id', item.id);
-  element.setAttribute('data-progress-max', item.progressMax);
-  element.setAttribute('data-progress-value', item.progressValue);
-  element.className = additionalClass;
 };
 
 /**
  * Updates an item to the progress center panel.
- * @param {ProgressCenterItem} item Item including new contents.
- * @param {ProgressCenterItem} summarizedItem Item to be desplayed in the close
+ * @param {!ProgressCenterItem} item Item including new contents.
+ * @param {!ProgressCenterItem} summarizedItem Item to be desplayed in the close
  *     view.
  */
 ProgressCenterPanel.prototype.updateItem = function(item, summarizedItem) {
+  // If reset is requested, force to reset.
+  if (this.resetRequested_)
+    this.reset(true);
+
+  // Update the item.
   var itemElement = this.getItemElement_(item.id);
-  if (!itemElement) {
-    itemElement = this.createNewItemElement_();
-    this.openView_.insertBefore(itemElement, this.openView_.firstNode);
+  var removed = false;
+
+  // Check whether the item should be displayed or not by referring its state.
+  switch (item.state) {
+    // Should show the item.
+    case ProgressItemState.PROGRESSING:
+    case ProgressItemState.ERROR:
+      // If the item has not been added yet, create a new element and add it.
+      if (!itemElement) {
+        itemElement = this.createNewItemElement_();
+        this.openView_.insertBefore(itemElement, this.openView_.firstNode);
+      }
+
+      // Update the element by referring the item model.
+      ProgressCenterPanel.updateItemElement_(itemElement, item);
+      this.element_.hidden = false;
+      break;
+
+    // Should not show the item.
+    case ProgressItemState.COMPLETE:
+    case ProgressItemState.CANCELED:
+      // If itemElement is not shown, just break.
+      if (!itemElement)
+        break;
+
+      // If the item is complete state, once update it because it may turn to
+      // have the pre-complete attribute.
+      if (item.state == ProgressItemState.COMPLETE)
+        ProgressCenterPanel.updateItemElement_(itemElement, item);
+
+      // If the item has the pre-complete attribute, keep showing it. Otherwise,
+      // just remove it.
+      if (item.state !== ProgressItemState.COMPLETE ||
+          !itemElement.hasAttribute('pre-complete')) {
+        this.openView_.removeChild(itemElement);
+      }
+      break;
   }
-  ProgressCenterPanel.updateItemElement_(itemElement, item);
 
   // Update close view.
   this.closeView_.classList.toggle('single', !summarizedItem.summarized);
   ProgressCenterPanel.updateItemElement_(this.closeViewItem_, summarizedItem);
-
-  if (ProgressCenterPanel.ENABLED_)
-    this.element_.hidden = false;
 };
 
 /**
  * Remove all the items.
+ * @param {boolean=} opt_force True if we force to reset and do not wait the
+ *    transition of progress bar. False otherwise. False is default.
  */
-ProgressCenterPanel.prototype.reset = function() {
+ProgressCenterPanel.prototype.reset = function(opt_force) {
+  if (!opt_force && this.element_.querySelector('[pre-complete]')) {
+    this.resetRequested_ = true;
+    return;
+  }
+
+  // Clear the flag.
+  this.resetRequested_ = false;
+
   // Clear the all compete item.
   this.openView_.innerHTML = '';
 
@@ -169,14 +220,15 @@ ProgressCenterPanel.prototype.createNewItemElement_ = function() {
  */
 ProgressCenterPanel.prototype.onItemTransitionEnd_ = function(event) {
   var itemElement = event.target.parentNode.parentNode.parentNode;
-  if (itemElement.className !== 'pre-complete' ||
+  if (!itemElement.hasAttribute('pre-complete') ||
       event.propertyName !== 'width')
     return;
-  var completeMessage = itemElement.getAttribute('data-complete-message');
-  if (!completeMessage)
-    return;
-  itemElement.className = 'complete';
-  itemElement.querySelector('label').textContent = completeMessage;
+  if (itemElement !== this.closeViewItem_)
+    this.openView_.removeChild(itemElement);
+  else
+    itemElement.removeAttribute('pre-complete');
+  if (this.resetRequested_)
+    this.reset();
 };
 
 /**
