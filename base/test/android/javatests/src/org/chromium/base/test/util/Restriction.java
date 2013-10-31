@@ -24,8 +24,11 @@ public @interface Restriction {
     /** Specifies the test is only valid on tablet form factors. */
     public static final String RESTRICTION_TYPE_TABLET = "Tablet";
 
-    /** Specifies the test is only valid on devices with a small amount of memory. */
-    public static final String RESTRICTION_TYPE_SMALL_MEMORY = "Small_Memory";
+    /** Specifies the test is only valid on low end devices that have less memory. */
+    public static final String RESTRICTION_TYPE_LOW_END_DEVICE = "Low_End_Device";
+
+    /** Specifies the test is only valid on non-low end devices. */
+    public static final String RESTRICTION_TYPE_NON_LOW_END_DEVICE = "Non_Low_End_Device";
 
     /**
      * @return A list of restrictions.
