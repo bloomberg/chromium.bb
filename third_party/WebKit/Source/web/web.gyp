@@ -46,6 +46,7 @@
             'variables': { 'enable_wexit_time_destructors': 1, },
             'dependencies': [
                 'picker_resources',
+                '../config.gyp:config',
                 '../platform/blink_platform.gyp:blink_common',
                 '../core/core.gyp:webcore',
                 '../modules/modules.gyp:modules',
@@ -214,10 +215,6 @@
                     'sources/': [
                         ['exclude', 'WebInputEventFactoryWin.cpp$'],
                     ],
-                    'variables': {
-                        # FIXME: Turn on warnings on Windows.
-                        'chromium_code': 1,
-                    }
                 }],
                 ['use_default_render_theme==1', {
                     'include_dirs': [
@@ -251,6 +248,7 @@
                 }, {
                     'type': 'static_library',
                     'dependencies': [
+                        '../config.gyp:config',
                         '../core/core.gyp:webcore_test_support',
                         '../modules/modules.gyp:modules_test_support',
                         '../wtf/wtf.gyp:wtf',
