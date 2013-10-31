@@ -69,6 +69,8 @@ TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_1_4000) {
   for (int i = 0; i < 4000; ++i) {
     render_pass->quad_list.push_back(
         PictureDrawQuad::Create().PassAs<DrawQuad>());
+    render_pass->quad_list.back()->shared_quad_state =
+        render_pass->shared_quad_state_list.back();
   }
 
   frame->delegated_frame_data.reset(new DelegatedFrameData);
@@ -85,6 +87,8 @@ TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_1_100000) {
   for (int i = 0; i < 100000; ++i) {
     render_pass->quad_list.push_back(
         PictureDrawQuad::Create().PassAs<DrawQuad>());
+    render_pass->quad_list.back()->shared_quad_state =
+        render_pass->shared_quad_state_list.back();
   }
 
   frame->delegated_frame_data.reset(new DelegatedFrameData);
@@ -101,6 +105,8 @@ TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_4000_4000) {
     render_pass->shared_quad_state_list.push_back(SharedQuadState::Create());
     render_pass->quad_list.push_back(
         PictureDrawQuad::Create().PassAs<DrawQuad>());
+    render_pass->quad_list.back()->shared_quad_state =
+        render_pass->shared_quad_state_list.back();
   }
 
   frame->delegated_frame_data.reset(new DelegatedFrameData);
@@ -117,6 +123,8 @@ TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_100000_100000) {
     render_pass->shared_quad_state_list.push_back(SharedQuadState::Create());
     render_pass->quad_list.push_back(
         PictureDrawQuad::Create().PassAs<DrawQuad>());
+    render_pass->quad_list.back()->shared_quad_state =
+        render_pass->shared_quad_state_list.back();
   }
 
   frame->delegated_frame_data.reset(new DelegatedFrameData);
@@ -136,6 +144,8 @@ TEST_F(CCMessagesPerfTest,
       render_pass->shared_quad_state_list.push_back(SharedQuadState::Create());
       render_pass->quad_list.push_back(
           PictureDrawQuad::Create().PassAs<DrawQuad>());
+      render_pass->quad_list.back()->shared_quad_state =
+          render_pass->shared_quad_state_list.back();
     }
     frame->delegated_frame_data->render_pass_list.push_back(render_pass.Pass());
   }
