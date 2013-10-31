@@ -390,6 +390,66 @@ ErrorParsingResult ParseMethodAndError(const char* string,
   return NONE;
 }
 
+// Keep in sync with LevelDBCorruptionTypes in histograms.xml. Also, don't
+// change the order because indices into this array have been recorded in uma
+// histograms.
+const char* patterns[] = {
+  "missing files",
+  "log record too small",
+  "corrupted internal key",
+  "partial record",
+  "missing start of fragmented record",
+  "error in middle of record",
+  "unknown record type",
+  "truncated record at end",
+  "bad record length",
+  "VersionEdit",
+  "FileReader invoked with unexpected value",
+  "corrupted key",
+  "CURRENT file does not end with newline",
+  "no meta-nextfile entry",
+  "no meta-lognumber entry",
+  "no last-sequence-number entry",
+  "malformed WriteBatch",
+  "bad WriteBatch Put",
+  "bad WriteBatch Delete",
+  "unknown WriteBatch tag",
+  "WriteBatch has wrong count",
+  "bad entry in block",
+  "bad block contents",
+  "bad block handle",
+  "truncated block read",
+  "block checksum mismatch",
+  "checksum mismatch",
+  "corrupted compressed block contents",
+  "bad block type",
+  "bad magic number",
+  "file is too short",
+};
+
+// Returns 1-based index into the above array or 0 if nothing matches.
+int ParseCorruptionMessage(const leveldb::Status& status) {
+  DCHECK(!status.IsIOError());
+  DCHECK(!status.ok());
+  const int kOtherError = 0;
+  int error = kOtherError;
+  const std::string& str_error = status.ToString();
+  const size_t kNumPatterns = arraysize(patterns);
+  for (size_t i = 0; i < kNumPatterns; ++i) {
+    if (str_error.find(patterns[i]) != std::string::npos) {
+      error = i + 1;
+      break;
+    }
+  }
+  return error;
+}
+
+int GetNumCorruptionPatterns() {
+  // + 1 for the "other" error that is returned when a corruption message
+  // doesn't match any of the patterns.
+  return arraysize(patterns) + 1;
+}
+
 bool IndicatesDiskFull(leveldb::Status status) {
   if (status.ok())
     return false;

@@ -213,60 +213,16 @@ static void ParseAndHistogramIOErrorDetails(const std::string& histogram_name,
 static void ParseAndHistogramCorruptionDetails(
     const std::string& histogram_name,
     const leveldb::Status& status) {
-  DCHECK(!status.IsIOError());
-  DCHECK(!status.ok());
-  const int kOtherError = 0;
-  int error = kOtherError;
-  const std::string& str_error = status.ToString();
-  // Keep in sync with LevelDBCorruptionTypes in histograms.xml.
-  const char* patterns[] = {
-    "missing files",
-    "log record too small",
-    "corrupted internal key",
-    "partial record",
-    "missing start of fragmented record",
-    "error in middle of record",
-    "unknown record type",
-    "truncated record at end",
-    "bad record length",
-    "VersionEdit",
-    "FileReader invoked with unexpected value",
-    "corrupted key",
-    "CURRENT file does not end with newline",
-    "no meta-nextfile entry",
-    "no meta-lognumber entry",
-    "no last-sequence-number entry",
-    "malformed WriteBatch",
-    "bad WriteBatch Put",
-    "bad WriteBatch Delete",
-    "unknown WriteBatch tag",
-    "WriteBatch has wrong count",
-    "bad entry in block",
-    "bad block contents",
-    "bad block handle",
-    "truncated block read",
-    "block checksum mismatch",
-    "checksum mismatch",
-    "corrupted compressed block contents",
-    "bad block type",
-    "bad magic number",
-    "file is too short",
-  };
-  const size_t kNumPatterns = arraysize(patterns);
-  for (size_t i = 0; i < kNumPatterns; ++i) {
-    if (str_error.find(patterns[i]) != std::string::npos) {
-      error = i + 1;
-      break;
-    }
-  }
+  int error = leveldb_env::ParseCorruptionMessage(status);
   DCHECK(error >= 0);
   std::string corruption_histogram_name(histogram_name);
   corruption_histogram_name.append(".Corruption");
+  const int kNumPatterns = leveldb_env::GetNumCorruptionPatterns();
   base::LinearHistogram::FactoryGet(
       corruption_histogram_name,
       1,
+      kNumPatterns,
       kNumPatterns + 1,
-      kNumPatterns + 2,
       base::HistogramBase::kUmaTargetedHistogramFlag)->Add(error);
 }
 
