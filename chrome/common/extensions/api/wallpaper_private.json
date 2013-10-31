@@ -21,7 +21,7 @@
       {
         "name": "getStrings",
         "type": "function",
-        "description": "Gets translated strings.",
+        "description": "Gets translated strings and initialization data.",
         "nodoc": "true",
         "parameters": [
           {
@@ -31,7 +31,7 @@
               {
                 "name": "result",
                 "type": "object",
-                "additionalProperties": {"type": "string"}
+                "additionalProperties": {"type": "any"}
               }
             ]
           }
