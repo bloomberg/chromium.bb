@@ -69,8 +69,8 @@ void MessagePort::postMessage(PassRefPtr<SerializedScriptValue> message, const M
     if (ports) {
         for (unsigned int i = 0; i < ports->size(); ++i) {
             MessagePort* dataPort = (*ports)[i].get();
-            if (dataPort == this || m_entangledChannel->isConnectedTo(dataPort)) {
-                es.throwDOMException(DataCloneError, ExceptionMessages::failedToExecute("postMessage", "MessagePort", "Item #" + String::number(i) + " in the array of ports contains the " + (dataPort == this ? "source" : "target") + " port."));
+            if (dataPort == this) {
+                es.throwDOMException(DataCloneError, ExceptionMessages::failedToExecute("postMessage", "MessagePort", "Item #" + String::number(i) + " in the array of ports contains the source port."));
                 return;
             }
         }
@@ -81,7 +81,7 @@ void MessagePort::postMessage(PassRefPtr<SerializedScriptValue> message, const M
     m_entangledChannel->postMessageToRemote(message, channels.release());
 }
 
-PassRefPtr<MessagePortChannel> MessagePort::disentangle()
+PassOwnPtr<MessagePortChannel> MessagePort::disentangle()
 {
     ASSERT(m_entangledChannel);
 
@@ -124,7 +124,7 @@ void MessagePort::close()
     m_closed = true;
 }
 
-void MessagePort::entangle(PassRefPtr<MessagePortChannel> remote)
+void MessagePort::entangle(PassOwnPtr<MessagePortChannel> remote)
 {
     // Only invoked to set our initial entanglement.
     ASSERT(!m_entangledChannel);
@@ -192,7 +192,7 @@ PassOwnPtr<MessagePortChannelArray> MessagePort::disentanglePorts(const MessageP
     HashSet<MessagePort*> portSet;
 
     // Walk the incoming array - if there are any duplicate ports, or null ports or cloned ports, throw an error (per section 8.3.3 of the HTML5 spec).
-    for (unsigned int i = 0; i < ports->size(); ++i) {
+    for (unsigned i = 0; i < ports->size(); ++i) {
         MessagePort* port = (*ports)[i].get();
         if (!port || port->isNeutered() || portSet.contains(port)) {
             String type;
@@ -210,10 +210,8 @@ PassOwnPtr<MessagePortChannelArray> MessagePort::disentanglePorts(const MessageP
 
     // Passed-in ports passed validity checks, so we can disentangle them.
     OwnPtr<MessagePortChannelArray> portArray = adoptPtr(new MessagePortChannelArray(ports->size()));
-    for (unsigned int i = 0 ; i < ports->size() ; ++i) {
-        RefPtr<MessagePortChannel> channel = (*ports)[i]->disentangle();
-        (*portArray)[i] = channel.release();
-    }
+    for (unsigned i = 0; i < ports->size(); ++i)
+        (*portArray)[i] = (*ports)[i]->disentangle();
     return portArray.release();
 }
 

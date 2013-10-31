@@ -51,14 +51,14 @@ class ExecutionContext;
 class SerializedScriptValue;
 
 // The overwhelmingly common case is sending a single port, so handle that efficiently with an inline buffer of size 1.
-typedef Vector<RefPtr<MessagePortChannel>, 1> MessagePortChannelArray;
+typedef Vector<OwnPtr<MessagePortChannel>, 1> MessagePortChannelArray;
 
 // MessagePortChannel is a platform-independent interface to the remote side of a message channel.
-class MessagePortChannel : public ThreadSafeRefCounted<MessagePortChannel>, public WebKit::WebMessagePortChannelClient {
+class MessagePortChannel : public WebKit::WebMessagePortChannelClient {
     WTF_MAKE_NONCOPYABLE(MessagePortChannel);
 public:
     static void createChannel(MessagePort*, MessagePort*);
-    static PassRefPtr<MessagePortChannel> create(WebKit::WebMessagePortChannel*);
+    static PassOwnPtr<MessagePortChannel> create(WebKit::WebMessagePortChannel*);
 
     virtual ~MessagePortChannel();
 
@@ -70,9 +70,6 @@ public:
 
     // Closes the port (ensures that no further messages can be added to either queue).
     void close();
-
-    // Used by MessagePort.postMessage() to prevent callers from passing a port's own entangled port.
-    bool isConnectedTo(MessagePort*);
 
     // Returns true if the proxy currently contains messages for this port.
     bool hasPendingActivity();
@@ -89,16 +86,11 @@ public:
 private:
     explicit MessagePortChannel(WebKit::WebMessagePortChannel*);
 
-    void setEntangledChannel(PassRefPtr<MessagePortChannel>);
-
     // WebKit::WebMessagePortChannelClient implementation
     virtual void messageAvailable() OVERRIDE;
 
     // Mutex used to ensure exclusive access to the object internals.
     Mutex m_mutex;
-
-    // Pointer to our entangled pair - cleared when close() is called.
-    RefPtr<MessagePortChannel> m_entangledChannel;
 
     // The port we are connected to - this is the port that is notified when new messages arrive.
     MessagePort* m_localPort;

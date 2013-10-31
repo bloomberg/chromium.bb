@@ -63,7 +63,7 @@ PassRefPtr<SharedWorker> SharedWorker::create(ExecutionContext* context, const S
 
     RefPtr<MessageChannel> channel = MessageChannel::create(context);
     worker->m_port = channel->port1();
-    RefPtr<MessagePortChannel> remotePort = channel->port2()->disentangle();
+    OwnPtr<MessagePortChannel> remotePort = channel->port2()->disentangle();
     ASSERT(remotePort);
 
     worker->suspendIfNeeded();

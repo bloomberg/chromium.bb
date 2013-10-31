@@ -74,10 +74,12 @@ WebString WebDOMMessageEvent::origin() const
 
 WebMessagePortChannelArray WebDOMMessageEvent::releaseChannels()
 {
-    MessagePortChannelArray channels = constUnwrap<MessageEvent>()->channels();
-    WebMessagePortChannelArray webChannels(channels.size());
-    for (size_t i = 0; i < channels.size(); ++i)
-        webChannels[i] = channels[i]->webChannelRelease();
+    MessagePortChannelArray* channels = constUnwrap<MessageEvent>()->channels();
+    WebMessagePortChannelArray webChannels(channels ? channels->size() : 0);
+    if (channels) {
+        for (size_t i = 0; i < channels->size(); ++i)
+            webChannels[i] = (*channels)[i]->webChannelRelease();
+    }
     return webChannels;
 }
 
