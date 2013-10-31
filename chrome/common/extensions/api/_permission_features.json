@@ -233,7 +233,7 @@
   ],
   "desktopCapture": [
     {
-      "channel": "dev",
+      "channel": "beta",
       "extension_types": ["extension", "platform_app"]
     },
     {
