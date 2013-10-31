@@ -137,6 +137,8 @@ class SearchProviderTest : public testing::Test,
 
   void ResetFieldTrialList();
 
+  void ClearAllResults();
+
   // See description above class for details of these fields.
   TemplateURL* default_t_url_;
   const string16 term1_;
@@ -363,6 +365,10 @@ void SearchProviderTest::ResetFieldTrialList() {
   base::FieldTrial* trial = base::FieldTrialList::CreateFieldTrial(
       "AutocompleteDynamicTrial_0", "DefaultGroup");
   trial->group();
+}
+
+void SearchProviderTest::ClearAllResults() {
+  provider_->ClearAllResults();
 }
 
 // Actual Tests ---------------------------------------------------------------
@@ -2867,6 +2873,93 @@ TEST_F(SearchProviderTest, PrefetchMetadataParsing) {
     }
   }
 }
+
+// A basic test that verifies that the XSSI guarded JSON response is parsed
+// correctly.
+TEST_F(SearchProviderTest, XSSIGuardedJSONParsing) {
+  struct Match {
+    std::string contents;
+    AutocompleteMatchType::Type type;
+  };
+  const Match kEmptyMatch = { kNotApplicable,
+                              AutocompleteMatchType::NUM_TYPES};
+
+  struct {
+    const std::string input_text;
+    const std::string default_provider_response_json;
+    const Match matches[4];
+  } cases[] = {
+    // No XSSI guard.
+    { "a",
+      "[\"a\",[\"b\", \"c\"],[],[],"
+      "{\"google:suggesttype\":[\"QUERY\",\"QUERY\"],"
+      "\"google:suggestrelevance\":[1, 2]}]",
+      { { "a", AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED },
+        { "c", AutocompleteMatchType::SEARCH_SUGGEST },
+        { "b", AutocompleteMatchType::SEARCH_SUGGEST },
+        kEmptyMatch,
+      },
+    },
+    // Standard XSSI guard - )]}'\n.
+    { "a",
+      ")]}'\n[\"a\",[\"b\", \"c\"],[],[],"
+      "{\"google:suggesttype\":[\"QUERY\",\"QUERY\"],"
+      "\"google:suggestrelevance\":[1, 2]}]",
+      { { "a", AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED },
+        { "c", AutocompleteMatchType::SEARCH_SUGGEST },
+        { "b", AutocompleteMatchType::SEARCH_SUGGEST },
+        kEmptyMatch,
+      },
+    },
+    // Modified XSSI guard - contains "[".
+    { "a",
+      ")]}'\n[)\"[\"a\",[\"b\", \"c\"],[],[],"
+      "{\"google:suggesttype\":[\"QUERY\",\"QUERY\"],"
+      "\"google:suggestrelevance\":[1, 2]}]",
+      { { "a", AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED },
+        { "c", AutocompleteMatchType::SEARCH_SUGGEST },
+        { "b", AutocompleteMatchType::SEARCH_SUGGEST },
+        kEmptyMatch,
+      },
+    },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
+    ClearAllResults();
+    QueryForInput(ASCIIToUTF16(cases[i].input_text), false, false);
+
+    // Set up a default fetcher with provided results.
+    net::TestURLFetcher* fetcher =
+        test_factory_.GetFetcherByID(
+            SearchProvider::kDefaultProviderURLFetcherID);
+    ASSERT_TRUE(fetcher);
+    fetcher->set_response_code(200);
+    fetcher->SetResponseString(cases[i].default_provider_response_json);
+    fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+    RunTillProviderDone();
+
+    const ACMatches& matches = provider_->matches();
+    // The top match must inline and score as highly as calculated verbatim.
+    ASSERT_FALSE(matches.empty());
+    EXPECT_GE(matches[0].relevance, 1300);
+
+    SCOPED_TRACE("for case: " + base::IntToString(i));
+    size_t j = 0;
+    // Ensure that the returned matches equal the expectations.
+    for (; j < matches.size(); ++j) {
+      SCOPED_TRACE("and match: " + base::IntToString(j));
+      EXPECT_EQ(cases[i].matches[j].contents, UTF16ToUTF8(matches[j].contents));
+      EXPECT_EQ(cases[i].matches[j].type, matches[j].type);
+    }
+    for (; j < ARRAYSIZE_UNSAFE(cases[i].matches); ++j) {
+      SCOPED_TRACE("and match: " + base::IntToString(j));
+      EXPECT_EQ(cases[i].matches[j].contents, kNotApplicable);
+      EXPECT_EQ(cases[i].matches[j].type, AutocompleteMatchType::NUM_TYPES);
+    }
+  }
+}
+
 
 TEST_F(SearchProviderTest, ReflectsBookmarkBarState) {
   profile_.GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, false);

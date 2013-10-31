@@ -600,24 +600,6 @@ void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
   suggest_results_pending_--;
   LogOmniboxSuggestRequest(REPLY_RECEIVED);
   DCHECK_GE(suggest_results_pending_, 0);  // Should never go negative.
-  const net::HttpResponseHeaders* const response_headers =
-      source->GetResponseHeaders();
-  std::string json_data;
-  source->GetResponseAsString(&json_data);
-  // JSON is supposed to be UTF-8, but some suggest service providers send JSON
-  // files in non-UTF-8 encodings.  The actual encoding is usually specified in
-  // the Content-Type header field.
-  if (response_headers) {
-    std::string charset;
-    if (response_headers->GetCharset(&charset)) {
-      string16 data_16;
-      // TODO(jungshik): Switch to CodePageToUTF8 after it's added.
-      if (base::CodepageToUTF16(json_data, charset.c_str(),
-                                base::OnStringConversionError::FAIL,
-                                &data_16))
-        json_data = UTF16ToUTF8(data_16);
-    }
-  }
 
   const bool is_keyword = (source == keyword_fetcher_.get());
   // Ensure the request succeeded and that the provider used is still available.
@@ -648,10 +630,43 @@ void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
 
   bool results_updated = false;
   if (request_succeeded) {
-    JSONStringValueSerializer deserializer(json_data);
-    deserializer.set_allow_trailing_comma(true);
-    scoped_ptr<Value> data(deserializer.Deserialize(NULL, NULL));
-    results_updated = data.get() && ParseSuggestResults(data.get(), is_keyword);
+    const net::HttpResponseHeaders* const response_headers =
+        source->GetResponseHeaders();
+    std::string json_data;
+    source->GetResponseAsString(&json_data);
+    // JSON is supposed to be UTF-8, but some suggest service providers send
+    // JSON files in non-UTF-8 encodings.  The actual encoding is usually
+    // specified in the Content-Type header field.
+    if (response_headers) {
+      std::string charset;
+      if (response_headers->GetCharset(&charset)) {
+        string16 data_16;
+        // TODO(jungshik): Switch to CodePageToUTF8 after it's added.
+        if (base::CodepageToUTF16(json_data, charset.c_str(),
+                                  base::OnStringConversionError::FAIL,
+                                  &data_16))
+          json_data = UTF16ToUTF8(data_16);
+      }
+    }
+
+    // The JSON response should be an array.
+    for (size_t response_start_index = json_data.find("["), i = 0;
+         response_start_index != std::string::npos && i < 5;
+         response_start_index = json_data.find("[", 1), i++) {
+      // Remove any XSSI guards to allow for JSON parsing.
+      if (response_start_index > 0)
+        json_data.erase(0, response_start_index);
+
+      JSONStringValueSerializer deserializer(json_data);
+      deserializer.set_allow_trailing_comma(true);
+      int error_code = 0;
+      scoped_ptr<Value> data(deserializer.Deserialize(&error_code, NULL));
+      if (error_code == 0) {
+        results_updated = data.get() &&
+            ParseSuggestResults(data.get(), is_keyword);
+        break;
+      }
+    }
   }
 
   UpdateMatches();
