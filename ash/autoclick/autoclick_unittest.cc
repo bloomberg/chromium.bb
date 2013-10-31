@@ -18,6 +18,7 @@ namespace ash {
 class MouseEventCapturer : public ui::EventHandler {
  public:
   MouseEventCapturer() { Reset(); }
+  virtual ~MouseEventCapturer() {}
 
   void Reset() {
     events_.clear();
@@ -131,16 +132,7 @@ TEST_F(AutoclickTest, ToggleEnabled) {
   EXPECT_EQ(0u, events.size());
 }
 
-#if defined(OS_WIN)
-// On Windows, we are getting unexpected mouse drag events that
-// are breaking this test. See http://crbug.com/303830.
-#define MAYBE_MouseMovement \
-        DISABLED_MouseMovement
-#else
-#define MAYBE_MouseMovement \
-        MouseMovement
-#endif
-TEST_F(AutoclickTest, MAYBE_MouseMovement) {
+TEST_F(AutoclickTest, MouseMovement) {
   std::vector<ui::MouseEvent> events;
   GetAutoclickController()->SetEnabled(true);
 
@@ -223,15 +215,7 @@ TEST_F(AutoclickTest, KeyModifiersReleased) {
   EXPECT_EQ(ui::EF_ALT_DOWN, events[0].flags() & ui::EF_ALT_DOWN);
 }
 
-#if defined(OS_WIN)
-// Multiple displays are not supported on Windows Ash. http://crbug.com/165962
-#define MAYBE_ExtendedDisplay \
-        DISABLED_ExtendedDisplay
-#else
-#define MAYBE_ExtendedDisplay \
-        ExtendedDisplay
-#endif
-TEST_F(AutoclickTest, MAYBE_ExtendedDisplay) {
+TEST_F(AutoclickTest, ExtendedDisplay) {
   UpdateDisplay("1280x1024,800x600");
   RunAllPendingInMessageLoop();
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
@@ -257,6 +241,49 @@ TEST_F(AutoclickTest, MAYBE_ExtendedDisplay) {
   EXPECT_EQ(400, events[0].root_location().y());
 
   // Test movement threshold between displays.
+}
+
+TEST_F(AutoclickTest, UserInputCancelsAutoclick) {
+  GetAutoclickController()->SetEnabled(true);
+  std::vector<ui::MouseEvent> events;
+
+  // Pressing a normal key should cancel the autoclick.
+  GetEventGenerator().MoveMouseTo(200, 200);
+  GetEventGenerator().PressKey(ui::VKEY_K, ui::EF_NONE);
+  GetEventGenerator().ReleaseKey(ui::VKEY_K, ui::EF_NONE);
+  events = WaitForMouseEvents();
+  EXPECT_EQ(0u, events.size());
+
+  // Pressing a modifier key should NOT cancel the autoclick.
+  GetEventGenerator().MoveMouseTo(100, 100);
+  GetEventGenerator().PressKey(ui::VKEY_SHIFT, ui::EF_SHIFT_DOWN);
+  GetEventGenerator().ReleaseKey(ui::VKEY_SHIFT, ui::EF_NONE);
+  events = WaitForMouseEvents();
+  EXPECT_EQ(2u, events.size());
+
+  // Performing a gesture should cancel the autoclick.
+  GetEventGenerator().MoveMouseTo(200, 200);
+  GetEventGenerator().GestureTapDownAndUp(gfx::Point(100, 100));
+  events = WaitForMouseEvents();
+  EXPECT_EQ(0u, events.size());
+
+  // Test another gesture.
+  GetEventGenerator().MoveMouseTo(100, 100);
+  GetEventGenerator().GestureScrollSequence(
+      gfx::Point(100, 100),
+      gfx::Point(200, 200),
+      base::TimeDelta::FromMilliseconds(200),
+      3);
+  events = WaitForMouseEvents();
+  EXPECT_EQ(0u, events.size());
+
+  // Test scroll events.
+  GetEventGenerator().MoveMouseTo(200, 200);
+  GetEventGenerator().ScrollSequence(
+      gfx::Point(100, 100), base::TimeDelta::FromMilliseconds(200),
+      0, 100, 3, 2);
+  events = WaitForMouseEvents();
+  EXPECT_EQ(0u, events.size());
 }
 
 }  // namespace ash

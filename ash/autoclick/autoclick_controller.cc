@@ -23,6 +23,17 @@ namespace {
 // initiate a new autoclick.
 const int kMovementThreshold = 20;
 
+bool IsModifierKey(ui::KeyboardCode key_code) {
+  return key_code == ui::VKEY_SHIFT ||
+      key_code == ui::VKEY_LSHIFT ||
+      key_code == ui::VKEY_CONTROL ||
+      key_code == ui::VKEY_LCONTROL ||
+      key_code == ui::VKEY_RCONTROL ||
+      key_code == ui::VKEY_MENU ||
+      key_code == ui::VKEY_LMENU ||
+      key_code == ui::VKEY_RMENU;
+}
+
 }  // namespace
 
 // static.
@@ -45,6 +56,8 @@ class AutoclickControllerImpl : public AutoclickController,
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
 
   void InitClickTimer();
 
@@ -145,9 +158,20 @@ void AutoclickControllerImpl::OnKeyEvent(ui::KeyEvent* event) {
       ui::EF_EXTENDED;
   int new_modifiers = event->flags() & modifier_mask;
   mouse_event_flags_ = (mouse_event_flags_ & ~modifier_mask) | new_modifiers;
+
+  if (!IsModifierKey(event->key_code()))
+    autoclick_timer_->Stop();
 }
 
 void AutoclickControllerImpl::OnTouchEvent(ui::TouchEvent* event) {
+  autoclick_timer_->Stop();
+}
+
+void AutoclickControllerImpl::OnGestureEvent(ui::GestureEvent* event) {
+  autoclick_timer_->Stop();
+}
+
+void AutoclickControllerImpl::OnScrollEvent(ui::ScrollEvent* event) {
   autoclick_timer_->Stop();
 }
 
