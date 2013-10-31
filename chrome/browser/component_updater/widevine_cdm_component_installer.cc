@@ -202,9 +202,9 @@ void WidevineCdmComponentInstallerTraits::ComponentReady(
   // TODO(ddorwin): Check API version compatibility. Return if fails.
   base::FilePath adapter_install_path = GetPlatformDirectory(path)
       .AppendASCII(kWidevineCdmAdapterFileName);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-      &RegisterWidevineCdmWithChrome,
-      version, adapter_install_path, base::Passed(&manifest)));
+  RegisterWidevineCdmWithChrome(version,
+                                adapter_install_path,
+                                manifest.Pass());
 }
 
 bool WidevineCdmComponentInstallerTraits::VerifyInstallation(

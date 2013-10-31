@@ -37,7 +37,7 @@ class ComponentInstallerTraits {
   // OnCustomInstall is called during the installation process. Components that
   // require custom installation operations should implement them here.
   // Returns false if a custom operation failed, and true otherwise.
-  // Called only from the FILE thread.
+  // Called only from a thread belonging to a blocking thread pool.
   virtual bool OnCustomInstall(const base::DictionaryValue& manifest,
                                const base::FilePath& install_dir) = 0;
 
@@ -47,8 +47,7 @@ class ComponentInstallerTraits {
   // In both cases the install is verified before this is called. This method
   // is guaranteed to be called before any observers of the component are
   // notified of a successful install, and is meant to support follow-on work
-  // such as updating paths elsewhere in Chrome. Called only from the FILE
-  // thread.
+  // such as updating paths elsewhere in Chrome. Called on the UI thread.
   // |version| is the version of the component.
   // |install_dir| is the path to the install directory for this version.
   // |manifest| is the manifest for this version of the component.

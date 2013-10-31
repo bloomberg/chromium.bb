@@ -145,8 +145,6 @@ void CRLSetFetcher::OnUpdateError(int error) {
 
 bool CRLSetFetcher::Install(const base::DictionaryValue& manifest,
                             const base::FilePath& unpack_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
   base::FilePath crl_set_file_path =
       unpack_path.Append(FILE_PATH_LITERAL("crl-set"));
   base::FilePath save_to;

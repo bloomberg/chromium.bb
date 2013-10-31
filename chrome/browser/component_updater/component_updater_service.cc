@@ -20,6 +20,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/component_patcher.h"
@@ -143,7 +144,8 @@ net::URLFetcherDelegate* MakeContextDelegate(Del* delegate, Ctx* context) {
 // Helper to start a url request using |fetcher| with the common flags.
 void StartFetch(net::URLFetcher* fetcher,
                 net::URLRequestContextGetter* context_getter,
-                bool save_to_file) {
+                bool save_to_file,
+                scoped_refptr<base::SequencedTaskRunner> task_runner) {
   fetcher->SetRequestContext(context_getter);
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                         net::LOAD_DO_NOT_SAVE_COOKIES |
@@ -151,8 +153,7 @@ void StartFetch(net::URLFetcher* fetcher,
   // TODO(cpu): Define our retry and backoff policy.
   fetcher->SetAutomaticallyRetryOn5xx(false);
   if (save_to_file) {
-    fetcher->SaveResponseToTemporaryFile(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+    fetcher->SaveResponseToTemporaryFile(task_runner);
   }
   fetcher->Start();
 }
@@ -388,6 +389,8 @@ class CrxUpdateService : public ComponentUpdateService {
 
   base::OneShotTimer<CrxUpdateService> timer_;
 
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+
   const Version chrome_version_;
 
   bool running_;
@@ -403,6 +406,10 @@ CrxUpdateService::CrxUpdateService(ComponentUpdateService::Configurator* config)
       ping_manager_(new component_updater::PingManager(
           config->PingUrl(),
           config->RequestContext())),
+      blocking_task_runner_(BrowserThread::GetBlockingPool()->
+          GetSequencedTaskRunnerWithShutdownBehavior(
+              BrowserThread::GetBlockingPool()->GetSequenceToken(),
+              base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
       chrome_version_(chrome::VersionInfo().Version()),
       running_(false) {
 }
@@ -755,7 +762,10 @@ void CrxUpdateService::UpdateComponent(CrxUpdateItem* workitem) {
   url_fetcher_.reset(net::URLFetcher::Create(
       0, package_url, net::URLFetcher::GET,
       MakeContextDelegate(this, context)));
-  StartFetch(url_fetcher_.get(), config_->RequestContext(), true);
+  StartFetch(url_fetcher_.get(),
+             config_->RequestContext(),
+             true,
+             blocking_task_runner_);
 }
 
 // Given that our |work_items_| list is expected to contain relatively few
@@ -813,7 +823,10 @@ void CrxUpdateService::DoUpdateCheck(const std::string& query) {
   url_fetcher_.reset(net::URLFetcher::Create(
       0, GURL(full_query), net::URLFetcher::GET,
       MakeContextDelegate(this, new UpdateContext())));
-  StartFetch(url_fetcher_.get(), config_->RequestContext(), false);
+  StartFetch(url_fetcher_.get(),
+             config_->RequestContext(),
+             false,
+             blocking_task_runner_);
 }
 
 // Called when we got a response from the update server. It consists of an xml
@@ -971,8 +984,7 @@ void CrxUpdateService::OnURLFetchComplete(const net::URLFetcher* source,
     url_fetcher_.reset();
 
     // Why unretained? See comment at top of file.
-    BrowserThread::PostDelayedTask(
-        BrowserThread::FILE,
+    blocking_task_runner_->PostDelayedTask(
         FROM_HERE,
         base::Bind(&CrxUpdateService::Install,
                    base::Unretained(this),
@@ -988,8 +1000,7 @@ void CrxUpdateService::OnURLFetchComplete(const net::URLFetcher* source,
 // the files created.
 void CrxUpdateService::Install(const CRXContext* context,
                                const base::FilePath& crx_path) {
-  // This function owns the |crx_path| and the |context| object.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  // This function owns the file at |crx_path| and the |context| object.
   ComponentUnpacker unpacker(context->pk_hash,
                              crx_path,
                              context->fingerprint,

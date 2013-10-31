@@ -37,8 +37,8 @@ void DefaultComponentInstaller::Register(ComponentUpdateService* cus) {
                  << "has no installer traits.";
     return;
   }
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE, FROM_HERE,
+  content::BrowserThread::PostBlockingPoolTask(
+      FROM_HERE,
       base::Bind(&DefaultComponentInstaller::StartRegistration,
                  base::Unretained(this),
                  cus));
@@ -84,10 +84,15 @@ bool DefaultComponentInstaller::Install(const base::DictionaryValue& manifest,
   // TODO(ddorwin): Change the parameter to scoped_ptr<base::DictionaryValue>
   // so we can avoid this DeepCopy.
   current_manifest_.reset(manifest.DeepCopy());
-  installer_traits_->ComponentReady(
-      current_version_,
-      GetInstallDirectory(),
-      scoped_ptr<base::DictionaryValue>(current_manifest_->DeepCopy()).Pass());
+  scoped_ptr<base::DictionaryValue> manifest_copy(
+      current_manifest_->DeepCopy());
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&ComponentInstallerTraits::ComponentReady,
+                 base::Unretained(installer_traits_.get()),
+                 current_version_,
+                 GetInstallDirectory(),
+                 base::Passed(&manifest_copy)));
   return true;
 }
 
@@ -105,7 +110,6 @@ bool DefaultComponentInstaller::GetInstalledFile(
 
 void DefaultComponentInstaller::StartRegistration(
     ComponentUpdateService* cus) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   base::FilePath base_dir = installer_traits_->GetBaseDirectory();
   if (!base::PathExists(base_dir) &&
       !file_util::CreateDirectory(base_dir)) {
@@ -196,16 +200,11 @@ void DefaultComponentInstaller::FinishRegistration(
   }
 
   if (current_version_.CompareTo(base::Version(kNullVersion)) > 0) {
-    // TODO(ddorwin): Call this function directly the UI thread. The only
-    // implementation posts back to the UI thread. Then post to UI in Install().
     scoped_ptr<base::DictionaryValue> manifest_copy(
         current_manifest_->DeepCopy());
-    content::BrowserThread::PostTask(
-        content::BrowserThread::FILE, FROM_HERE,
-        base::Bind(&ComponentInstallerTraits::ComponentReady,
-                   base::Unretained(installer_traits_.get()),
-                   current_version_,
-                   GetInstallDirectory(),
-                   base::Passed(&manifest_copy)));
+    installer_traits_->ComponentReady(
+        current_version_,
+        GetInstallDirectory(),
+        manifest_copy.Pass());
   }
 }
