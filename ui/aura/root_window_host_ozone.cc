@@ -14,7 +14,7 @@ RootWindowHostOzone::RootWindowHostOzone(const gfx::Rect& bounds)
       widget_(0),
       bounds_(bounds),
       factory_(ui::EventFactoryOzone::GetInstance()) {
-  factory_->CreateStartupEventConverters();
+  factory_->StartProcessingEvents();
   gfx::SurfaceFactoryOzone* surface_factory =
       gfx::SurfaceFactoryOzone::GetInstance();
   widget_ = surface_factory->GetAcceleratedWidget();

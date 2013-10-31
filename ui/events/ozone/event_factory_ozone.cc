@@ -64,7 +64,7 @@ EventFactoryOzone* EventFactoryOzone::GetInstance() {
 
 void EventFactoryOzone::SetInstance(EventFactoryOzone* impl) { impl_ = impl; }
 
-void EventFactoryOzone::CreateStartupEventConverters() {}
+void EventFactoryOzone::StartProcessingEvents() {}
 
 void EventFactoryOzone::AddEventConverter(
     int fd,

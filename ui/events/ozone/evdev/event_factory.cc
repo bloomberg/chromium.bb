@@ -21,7 +21,7 @@ EventFactoryEvdev::EventFactoryEvdev() {}
 
 EventFactoryEvdev::~EventFactoryEvdev() {}
 
-void EventFactoryEvdev::CreateStartupEventConverters() {
+void EventFactoryEvdev::StartProcessingEvents() {
   // The number of devices in the directory is unknown without reading
   // the contents of the directory. Further, with hot-plugging,  the entries
   // might decrease during the execution of this loop. So exciting from the

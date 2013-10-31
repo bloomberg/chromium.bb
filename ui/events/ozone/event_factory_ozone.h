@@ -24,9 +24,13 @@ class EVENTS_EXPORT EventFactoryOzone {
   EventFactoryOzone();
   virtual ~EventFactoryOzone();
 
-  // Called from RootWindowHostOzone to create the starting set of event
-  // converters.
-  virtual void CreateStartupEventConverters();
+  // Called from RootWindowHostOzone to initialize and start processing events.
+  // This should create the initial set of converters, and potentially arrange
+  // for more converters to be created as new event sources become available.
+  // No events processing should happen until this is called. All processes have
+  // an EventFactoryOzone but not all of them should process events. In chrome,
+  // events are dispatched in the browser process on the UI thread.
+  virtual void StartProcessingEvents();
 
   // Returns the static instance last set using SetInstance().
   static EventFactoryOzone* GetInstance();

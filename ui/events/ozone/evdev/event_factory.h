@@ -17,7 +17,7 @@ class EventFactoryEvdev : public EventFactoryOzone {
   EventFactoryEvdev();
   virtual ~EventFactoryEvdev();
 
-  virtual void CreateStartupEventConverters() OVERRIDE;
+  virtual void StartProcessingEvents() OVERRIDE;
 
  private:
   EventModifiersEvdev modifiers_;
