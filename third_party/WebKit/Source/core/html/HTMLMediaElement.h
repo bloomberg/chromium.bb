@@ -98,11 +98,10 @@ public:
 
     bool isActive() const { return m_active; }
 
-// DOM API
-// error state
+    // error state
     PassRefPtr<MediaError> error() const;
 
-// network state
+    // network state
     void setSrc(const String&);
     const KURL& currentSrc() const { return m_currentSrc; }
 
@@ -116,11 +115,11 @@ public:
     void load();
     String canPlayType(const String& mimeType, const String& keySystem = String(), const KURL& = KURL()) const;
 
-// ready state
+    // ready state
     ReadyState readyState() const;
     bool seeking() const;
 
-// playback state
+    // playback state
     double currentTime() const;
     void setCurrentTime(double, ExceptionState&);
     double duration() const;
@@ -139,15 +138,15 @@ public:
     void play();
     void pause();
 
-// Statistics
+    // statistics
     unsigned webkitAudioDecodedByteCount() const;
     unsigned webkitVideoDecodedByteCount() const;
 
-//  Media Source.
+    // media source extensions
     void closeMediaSource();
-
     void durationChanged(double duration);
 
+    // encrypted media extensions
     void webkitGenerateKeyRequest(const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionState&);
     void webkitGenerateKeyRequest(const String& keySystem, ExceptionState&);
     void webkitAddKey(const String& keySystem, PassRefPtr<Uint8Array> key, PassRefPtr<Uint8Array> initData, const String& sessionId, ExceptionState&);
@@ -164,7 +163,7 @@ public:
     void setMediaKeys(MediaKeys*);
 #endif
 
-// controls
+    // controls
     bool controls() const;
     void setControls(bool);
     double volume() const;
