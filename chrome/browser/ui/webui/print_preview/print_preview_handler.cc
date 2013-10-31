@@ -1248,12 +1248,14 @@ void PrintPreviewHandler::ConvertColorSettingToCUPSColorModel(
     return;
   }
 
-  printing::ColorModel bw_model = cups_printer_color_models_->bw_model;
-  if (color == printing::GRAY && bw_model != printing::UNKNOWN_COLOR_MODEL) {
-    settings->SetInteger(printing::kSettingColor, bw_model);
+  if (color == printing::GRAY) {
+    if (cups_printer_color_models_->bw_model != printing::UNKNOWN_COLOR_MODEL) {
+      settings->SetInteger(printing::kSettingColor,
+                           cups_printer_color_models_->bw_model);
+    }
     return;
   }
-  DCHECK_EQ(printing::COLOR, color);
+
   printing::ColorModel color_model = cups_printer_color_models_->color_model;
   if (color_model != printing::UNKNOWN_COLOR_MODEL)
     settings->SetInteger(printing::kSettingColor, color_model);
