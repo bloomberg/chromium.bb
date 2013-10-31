@@ -36,6 +36,8 @@
       'dependencies': [
         '../third_party/WebKit/public/all.gyp:all_blink',
         '../content/content_shell_and_tests.gyp:content_shell_apk',
+        '../breakpad/breakpad.gyp:dump_syms',
+        '../breakpad/breakpad.gyp:minidump_stackwalk',
       ],
     }, # target_name: all_webkit
     {
