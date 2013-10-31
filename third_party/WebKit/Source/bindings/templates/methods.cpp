@@ -16,7 +16,15 @@ static void {{method.name}}Method(const v8::FunctionCallbackInfo<v8::Value>& arg
         return;
     }
     {% endif %}
-    {% if argument.idl_type == 'SerializedScriptValue' %}
+    {% if argument.is_clamp %}
+    {# FIXME: use C++ type for local variable #}
+    {{argument.idl_type}} {{argument.name}} = 0;
+    V8TRYCATCH_VOID(double, {{argument.name}}NativeValue, args[{{argument.index}}]->NumberValue());
+    if (!std::isnan({{argument.name}}NativeValue))
+        {# IDL type is used for clamping - to get the right bounds - since
+           different IDL types have same internal C++ type (int or unsigned) #}
+        {{argument.name}} = clampTo<{{argument.idl_type}}>({{argument.name}}NativeValue);
+    {% elif argument.idl_type == 'SerializedScriptValue' %}
     bool {{argument.name}}DidThrow = false;
     {{argument.cpp_type}} {{argument.name}} = SerializedScriptValue::create(args[{{argument.index}}], 0, 0, {{argument.name}}DidThrow, args.GetIsolate());
     if ({{argument.name}}DidThrow)

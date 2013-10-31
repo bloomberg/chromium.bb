@@ -4765,6 +4765,31 @@ static void voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgMethodCa
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void voidMethodClampUnsignedShortArgClampUnsignedLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    if (UNLIKELY(args.Length() < 2)) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodClampUnsignedShortArgClampUnsignedLongArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(2, args.Length())), args.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
+    unsigned short clampUnsignedShortArg = 0;
+    V8TRYCATCH_VOID(double, clampUnsignedShortArgNativeValue, args[0]->NumberValue());
+    if (!std::isnan(clampUnsignedShortArgNativeValue))
+        clampUnsignedShortArg = clampTo<unsigned short>(clampUnsignedShortArgNativeValue);
+    unsigned long clampUnsignedLongArg = 0;
+    V8TRYCATCH_VOID(double, clampUnsignedLongArgNativeValue, args[1]->NumberValue());
+    if (!std::isnan(clampUnsignedLongArgNativeValue))
+        clampUnsignedLongArg = clampTo<unsigned long>(clampUnsignedLongArgNativeValue);
+    imp->voidMethodClampUnsignedShortArgClampUnsignedLongArg(clampUnsignedShortArg, clampUnsignedLongArg);
+}
+
+static void voidMethodClampUnsignedShortArgClampUnsignedLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodClampUnsignedShortArgClampUnsignedLongArgMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 } // namespace TestObjectPythonV8Internal
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttributes[] = {
@@ -4961,6 +4986,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"voidMethodTestInterfaceEmptyArgOptionalLongArg", TestObjectPythonV8Internal::voidMethodTestInterfaceEmptyArgOptionalLongArgMethodCallback, 0, 1},
     {"voidMethodVariadicStringArg", TestObjectPythonV8Internal::voidMethodVariadicStringArgMethodCallback, 0, 1},
     {"voidMethodStringArgVariadicStringArg", TestObjectPythonV8Internal::voidMethodStringArgVariadicStringArgMethodCallback, 0, 2},
+    {"voidMethodClampUnsignedShortArgClampUnsignedLongArg", TestObjectPythonV8Internal::voidMethodClampUnsignedShortArgClampUnsignedLongArgMethodCallback, 0, 2},
 };
 
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)

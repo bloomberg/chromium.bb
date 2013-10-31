@@ -282,4 +282,7 @@ interface TestObjectPython {
     void voidMethodStringArgVariadicStringArg(DOMString stringArg, DOMString... variadicStringArgs);
     void voidMethodVariadicTestInterfaceEmptyArg(TestInterfaceEmpty... variadicTestInterfaceEmptyArgs);
     void voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg, TestInterfaceEmpty... variadicTestInterfaceEmptyArgs);
+
+    // Extended attributes
+    void voidMethodClampUnsignedShortArgClampUnsignedLongArg([Clamp] unsigned short clampUnsignedShortArg, [Clamp] unsigned long clampUnsignedLongArg);
 };

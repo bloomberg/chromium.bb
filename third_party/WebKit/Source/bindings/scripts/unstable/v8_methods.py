@@ -59,6 +59,7 @@ def generate_method(method):
 
 
 def generate_argument(method, argument, index):
+    extended_attributes = argument.extended_attributes
     idl_type = argument.idl_type
     return {
         'cpp_method': cpp_method(method, index),
@@ -66,6 +67,7 @@ def generate_argument(method, argument, index):
         'enum_validation_expression': v8_utilities.enum_validation_expression(idl_type),
         'idl_type': argument.idl_type,
         'index': index,
+        'is_clamp': 'Clamp' in extended_attributes,
         'is_optional': argument.is_optional,
         'is_variadic_wrapper_type': argument.is_variadic and v8_types.is_wrapper_type(idl_type),
         'name': argument.name,
