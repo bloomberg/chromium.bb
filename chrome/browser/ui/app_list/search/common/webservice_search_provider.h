@@ -16,6 +16,8 @@ class Profile;
 
 namespace app_list {
 
+class WebserviceCache;
+
 // Helper class for webservice based searches.
 class WebserviceSearchProvider : public SearchProvider {
  public:
@@ -32,10 +34,7 @@ class WebserviceSearchProvider : public SearchProvider {
 
  protected:
   Profile* profile_;
-
-  // The cache of the search result which will be valid only in a single
-  // input session.
-  WebserviceCache cache_;
+  WebserviceCache* cache_;  // BrowserContextKeyedService, not owned.
 
  private:
   bool IsSensitiveInput(const string16& query);

@@ -175,6 +175,8 @@
         'browser/ui/app_list/search/common/url_icon_source.h',
         'browser/ui/app_list/search/common/webservice_cache.cc',
         'browser/ui/app_list/search/common/webservice_cache.h',
+        'browser/ui/app_list/search/common/webservice_cache_factory.cc',
+        'browser/ui/app_list/search/common/webservice_cache_factory.h',
         'browser/ui/app_list/search/common/webservice_search_provider.cc',
         'browser/ui/app_list/search/common/webservice_search_provider.h',
         'browser/ui/app_list/search/history.cc',

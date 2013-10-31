@@ -8,7 +8,10 @@
 
 #include "base/callback.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/ui/app_list/search/common/webservice_cache.h"
+#include "chrome/browser/ui/app_list/search/common/webservice_cache_factory.h"
 #include "chrome/common/url_constants.h"
 #include "url/gurl.h"
 
@@ -22,7 +25,9 @@ const size_t kMinimumQueryLength = 3u;
 }  // namespace
 
 WebserviceSearchProvider::WebserviceSearchProvider(Profile* profile)
-    : profile_(profile), use_throttling_(true) {}
+    : profile_(profile),
+      cache_(WebserviceCacheFactory::GetForBrowserContext(profile)),
+      use_throttling_(true) {}
 
 WebserviceSearchProvider::~WebserviceSearchProvider() {}
 

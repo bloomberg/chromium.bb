@@ -53,12 +53,13 @@ void WebstoreProvider::Start(const base::string16& query) {
   }
 
   query_ = UTF16ToUTF8(query);
-  const base::DictionaryValue* cached_result = cache_.Get(query_);
-  if (cached_result) {
-    ProcessWebstoreSearchResults(cached_result);
+  const CacheResult result = cache_->Get(WebserviceCache::WEBSTORE, query_);
+  if (result.second) {
+    ProcessWebstoreSearchResults(result.second);
     if (!webstore_search_fetched_callback_.is_null())
       webstore_search_fetched_callback_.Run();
-    return;
+    if (result.first == FRESH)
+      return;
   }
 
   if (UseWebstoreSearch()) {
@@ -96,7 +97,7 @@ void WebstoreProvider::StartQuery() {
 void WebstoreProvider::OnWebstoreSearchFetched(
     scoped_ptr<base::DictionaryValue> json) {
   ProcessWebstoreSearchResults(json.get());
-  cache_.Put(query_, json.Pass());
+  cache_->Put(WebserviceCache::WEBSTORE, query_, json.Pass());
 
   if (!webstore_search_fetched_callback_.is_null())
     webstore_search_fetched_callback_.Run();

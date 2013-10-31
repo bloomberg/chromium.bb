@@ -64,6 +64,7 @@ class PeopleProvider : public WebserviceSearchProvider,
   // Start the search request with |query_|.
   void StartQuery();
 
+  // Callback for people search results being fetched.
   void OnPeopleSearchFetched(scoped_ptr<base::DictionaryValue> json);
   void ProcessPeopleSearchResults(const base::DictionaryValue* json);
   scoped_ptr<ChromeSearchResult> CreateResult(
