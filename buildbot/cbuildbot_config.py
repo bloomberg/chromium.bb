@@ -1222,7 +1222,7 @@ internal_paladin.add_config('x86-mario-paladin',
 internal_paladin.add_config('x86-alex-paladin',
   boards=['x86-alex'],
   paladin_builder_name='x86-alex paladin',
-  hw_tests=HWTestConfig.DefaultListCQ(timeout=60 * 60, num=8),
+  hw_tests=HWTestConfig.DefaultListCQ(),
   upload_hw_test_artifacts=True,
 )
 
@@ -1367,6 +1367,7 @@ internal_arm_paladin = internal_paladin.derive(arm)
 internal_arm_paladin.add_config('daisy-paladin',
   boards=['daisy'],
   paladin_builder_name='daisy paladin',
+  hw_tests=HWTestConfig.DefaultListCQ(),
   upload_hw_test_artifacts=True,
 )
 
