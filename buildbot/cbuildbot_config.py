@@ -1529,10 +1529,13 @@ release_pgo.add_group('daisy-release-pgo',
 
 ### Release configs.
 
+# bayleybay-release does not enable vm_tests or unittests due to the compiler
+# flags enabled for baytrail.
 _release.add_config('bayleybay-release',
   boards=['bayleybay'],
   hw_tests=[],
   vm_tests=None,
+  unittests=False,
 )
 
 _release.add_config('beltino-release',
@@ -1593,10 +1596,13 @@ _release.add_config('peppy-release',
   boards=['peppy'],
 )
 
+# rambi-release does not enable vm_tests or unittests due to the compiler
+# flags enabled for baytrail.
 _release.add_config('rambi-release',
   boards=['rambi'],
   hw_tests=[],
   vm_tests=None,
+  unittests=False,
 )
 
 _release.add_config('samus-release',
