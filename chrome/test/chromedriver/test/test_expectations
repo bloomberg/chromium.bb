@@ -84,6 +84,8 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'VisibilityTest.testElementHiddenByOverflowYIsNotVisible',
     'VisibilityTest.tooSmallAWindowWithOverflowHiddenIsNotAProblem',
     'WindowTest.*',
+    # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=528
+    'PageLoadingTest.testShouldDoNothingIfThereIsNothingToGoBackTo',
 ]
 _REVISION_NEGATIVE_FILTER['31'] = _REVISION_NEGATIVE_FILTER['HEAD'] + [
     'I18nTest.*',  # This was fixed in a later version of 31 than we use.
