@@ -256,7 +256,8 @@ void PasswordManager::DidNavigateMainFrame(
   // Clear data after main frame navigation. We don't want to clear data after
   // subframe navigation as there might be password forms on other frames that
   // could be submitted.
-  pending_login_managers_.clear();
+  if (!details.is_in_page)
+    pending_login_managers_.clear();
 }
 
 bool PasswordManager::OnMessageReceived(const IPC::Message& message) {
