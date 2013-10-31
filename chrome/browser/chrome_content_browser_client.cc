@@ -1441,12 +1441,8 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
           extensions::ExtensionSystem::Get(profile)->extension_service();
       if (extension_service) {
         extensions::ProcessMap* process_map = extension_service->process_map();
-        if (process_map && process_map->Contains(process->GetID())) {
+        if (process_map && process_map->Contains(process->GetID()))
           command_line->AppendSwitch(switches::kExtensionProcess);
-#if defined(OS_WIN) && defined(USE_AURA)
-          command_line->AppendSwitch(switches::kDisableGpuCompositing);
-#endif
-        }
       }
 
       PrefService* prefs = profile->GetPrefs();
