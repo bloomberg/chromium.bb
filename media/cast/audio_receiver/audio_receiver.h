@@ -67,8 +67,7 @@ class AudioReceiver : public base::NonThreadSafe,
   // Time to pull out the audio even though we are missing data.
   void PlayoutTimeout();
 
-  void PostEncodedAudioFrame(bool on_wait_event_put_first_in_queue,
-                             const AudioFrameEncodedCallback& callback,
+  bool PostEncodedAudioFrame(const AudioFrameEncodedCallback& callback,
                              uint32 rtp_timestamp,
                              bool next_frame,
                              scoped_ptr<EncodedAudioFrame>* encoded_frame);
@@ -103,6 +102,8 @@ class AudioReceiver : public base::NonThreadSafe,
   scoped_ptr<Rtcp> rtcp_;
   scoped_ptr<RtpReceiverStatistics> rtp_audio_receiver_statistics_;
   base::TimeDelta time_offset_;
+  base::TimeTicks time_first_incoming_packet_;
+  uint32 first_incoming_rtp_timestamp_;
 
   std::list<AudioFrameEncodedCallback> queued_encoded_callbacks_;
 };

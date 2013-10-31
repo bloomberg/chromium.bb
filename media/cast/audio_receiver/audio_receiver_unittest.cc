@@ -10,6 +10,7 @@
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/pacing/mock_paced_packet_sender.h"
+#include "media/cast/rtcp/test_rtcp_packet_builder.h"
 #include "media/cast/test/fake_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -32,7 +33,7 @@ class TestAudioEncoderCallback :
 
   void DeliverEncodedAudioFrame(scoped_ptr<EncodedAudioFrame> audio_frame,
                                 const base::TimeTicks& playout_time) {
-    EXPECT_EQ(0, audio_frame->frame_id);
+    EXPECT_EQ(expected_frame_id_, audio_frame->frame_id);
     EXPECT_EQ(kPcm16, audio_frame->codec);
     EXPECT_EQ(expected_playout_time_, playout_time);
     num_called_++;
@@ -86,6 +87,8 @@ class AudioReceiverTest : public ::testing::Test {
 
   virtual ~AudioReceiverTest() {}
 
+  static void DummyDeletePacket(const uint8* packet) {};
+
   virtual void SetUp() {
     payload_.assign(kIpPacketSize, 0);
     rtp_header_.is_key_frame = true;
@@ -125,6 +128,80 @@ TEST_F(AudioReceiverTest, GetOnePacketEncodedframe) {
   receiver_->GetEncodedAudioFrame(frame_encoded_callback);
   task_runner_->RunTasks();
   EXPECT_EQ(1, test_audio_encoder_callback_->number_times_called());
+}
+
+TEST_F(AudioReceiverTest, MultiplePendingGetCalls) {
+  Configure(true);
+  EXPECT_CALL(mock_transport_, SendRtcpPacket(testing::_)).Times(2);
+
+  AudioFrameEncodedCallback frame_encoded_callback =
+      base::Bind(&TestAudioEncoderCallback::DeliverEncodedAudioFrame,
+                 test_audio_encoder_callback_.get());
+
+  receiver_->GetEncodedAudioFrame(frame_encoded_callback);
+
+  receiver_->IncomingParsedRtpPacket(payload_.data(), payload_.size(),
+                                     rtp_header_);
+
+  EncodedAudioFrame audio_frame;
+  base::TimeTicks playout_time;
+  test_audio_encoder_callback_->SetExpectedResult(0, testing_clock_.NowTicks());
+
+  task_runner_->RunTasks();
+  EXPECT_EQ(1, test_audio_encoder_callback_->number_times_called());
+
+  TestRtcpPacketBuilder rtcp_packet;
+
+  uint32 ntp_high;
+  uint32 ntp_low;
+  ConvertTimeToNtp(testing_clock_.NowTicks(), &ntp_high, &ntp_low);
+  rtcp_packet.AddSrWithNtp(audio_config_.feedback_ssrc, ntp_high, ntp_low,
+      rtp_header_.webrtc.header.timestamp);
+
+  testing_clock_.Advance(base::TimeDelta::FromMilliseconds(20));
+
+  receiver_->IncomingPacket(rtcp_packet.Packet(), rtcp_packet.Length(),
+      base::Bind(AudioReceiverTest::DummyDeletePacket, rtcp_packet.Packet()));
+
+  // Make sure that we are not continuous and that the RTP timestamp represent a
+  // time in the future.
+  rtp_header_.is_key_frame = false;
+  rtp_header_.frame_id = 2;
+  rtp_header_.is_reference = true;
+  rtp_header_.reference_frame_id = 0;
+  rtp_header_.webrtc.header.timestamp = 960;
+  test_audio_encoder_callback_->SetExpectedResult(2,
+      testing_clock_.NowTicks() + base::TimeDelta::FromMilliseconds(100));
+
+  receiver_->IncomingParsedRtpPacket(payload_.data(), payload_.size(),
+                                     rtp_header_);
+  receiver_->GetEncodedAudioFrame(frame_encoded_callback);
+  task_runner_->RunTasks();
+
+  // Frame 2 should not come out at this point in time.
+  EXPECT_EQ(1, test_audio_encoder_callback_->number_times_called());
+
+  // Through on one more pending callback.
+  receiver_->GetEncodedAudioFrame(frame_encoded_callback);
+
+  testing_clock_.Advance(base::TimeDelta::FromMilliseconds(100));
+
+  task_runner_->RunTasks();
+  EXPECT_EQ(2, test_audio_encoder_callback_->number_times_called());
+
+  test_audio_encoder_callback_->SetExpectedResult(3, testing_clock_.NowTicks());
+
+  // Through on one more pending audio frame.
+  rtp_header_.frame_id = 3;
+  rtp_header_.is_reference = false;
+  rtp_header_.reference_frame_id = 0;
+  rtp_header_.webrtc.header.timestamp = 1280;
+  receiver_->IncomingParsedRtpPacket(payload_.data(), payload_.size(),
+                                     rtp_header_);
+
+  receiver_->GetEncodedAudioFrame(frame_encoded_callback);
+  task_runner_->RunTasks();
+  EXPECT_EQ(3, test_audio_encoder_callback_->number_times_called());
 }
 
 // TODO(mikhal): Add encoded frames.

@@ -25,6 +25,19 @@ void TestRtcpPacketBuilder::AddSr(uint32 sender_ssrc,
   big_endian_writer_.WriteU32(kSendOctetCount);
 }
 
+void TestRtcpPacketBuilder::AddSrWithNtp(uint32 sender_ssrc,
+                                         uint32 ntp_high,
+                                         uint32 ntp_low,
+                                         uint32 rtp_timestamp) {
+  AddRtcpHeader(200, 0);
+  big_endian_writer_.WriteU32(sender_ssrc);
+  big_endian_writer_.WriteU32(ntp_high);
+  big_endian_writer_.WriteU32(ntp_low);
+  big_endian_writer_.WriteU32(rtp_timestamp);
+  big_endian_writer_.WriteU32(kSendPacketCount);
+  big_endian_writer_.WriteU32(kSendOctetCount);
+}
+
 void TestRtcpPacketBuilder::AddRr(uint32 sender_ssrc,
                                   int number_of_report_blocks) {
   AddRtcpHeader(201, number_of_report_blocks);

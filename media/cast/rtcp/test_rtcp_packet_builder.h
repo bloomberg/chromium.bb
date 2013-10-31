@@ -56,6 +56,8 @@ class TestRtcpPacketBuilder {
   TestRtcpPacketBuilder();
 
   void AddSr(uint32 sender_ssrc, int number_of_report_blocks);
+  void AddSrWithNtp(uint32 sender_ssrc, uint32 ntp_high, uint32 ntp_low,
+                    uint32 rtp_timestamp);
   void AddRr(uint32 sender_ssrc, int number_of_report_blocks);
   void AddRb(uint32 rtp_ssrc);
   void AddSdesCname(uint32 sender_ssrc, const std::string& c_name);
