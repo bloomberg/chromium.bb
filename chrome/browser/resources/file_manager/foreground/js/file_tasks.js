@@ -134,6 +134,16 @@ FileTasks.knownExtensions_ = [
 ];
 
 /**
+ * The list of excutable file extensions.
+ *
+ * @const
+ * @type {Array.<string>}
+ */
+FileTasks.EXECUTABLE_EXTENSIONS = Object.freeze([
+  '.exe', '.lnk', '.deb', '.dmg', 'jar', 'msi',
+]);
+
+/**
  * The list of extensions to skip the suggest app dialog.
  * @const
  * @type {Array.<string>}

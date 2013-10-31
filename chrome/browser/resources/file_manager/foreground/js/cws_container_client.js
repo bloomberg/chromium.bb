@@ -6,18 +6,21 @@
 
 /**
  * @param {WebView} webView Web View tag.
- * @param {string} ext File extension.
- * @param {string} mime File mime type.
+ * @param {?string} ext File extension.
+ * @param {?string} mime File mime type.
+ * @param {?string} searchQuery Search query.
  * @param {number} width Width of the CWS widget.
  * @param {number} height Height of the CWS widget.
  * @param {string} url Share Url for an entry.
  * @param {string} target Target (scheme + host + port) of the widget.
  * @constructor
  */
-function CWSContainerClient(webView, ext, mime, width, height, url, target) {
+function CWSContainerClient(
+    webView, ext, mime, searchQuery, width, height, url, target) {
   this.webView_ = webView;
-  this.ext_ = ext;
+  this.ext_ = (ext && ext[0] == '.') ? ext.substr(1) : ext;
   this.mime_ = mime;
+  this.searchQuery_ = searchQuery;
   this.width_ = width;
   this.height_ = height;
   this.url_ = url;
@@ -185,10 +188,15 @@ CWSContainerClient.prototype.postInitializeMessage_ = function() {
     hl: util.getCurrentLocaleOrDefault(),
     widgth: this.width_,
     height: this.height_,
-    file_extension: this.ext_,
-    mime_type: this.mime_,
     v: 1
   };
+
+  if (this.searchQuery_) {
+    message['search_query'] = this.searchQuery_;
+  } else {
+    message['file_extension'] = this.ext_;
+    message['mime_type'] = this.mime_;
+  }
 
   this.postMessage_(message);
 };

@@ -176,7 +176,14 @@ SuggestAppsDialog.prototype.retrieveAuthorizeToken_ = function(callback) {
 };
 
 /**
- * Shows dialog.
+ * Dummy function for SuggestAppsDialog.show() not to be called unintentionally.
+ */
+SuggestAppsDialog.prototype.show = function() {
+  console.error('SuggestAppsDialog.show() shouldn\'t be called directly.');
+};
+
+/**
+ * Shows suggest-apps dialog by file extension and mime.
  *
  * @param {string} extension Extension of the file.
  * @param {string} mime Mime of the file.
@@ -184,7 +191,42 @@ SuggestAppsDialog.prototype.retrieveAuthorizeToken_ = function(callback) {
  *     The argument is the result of installation: true if an app is installed,
  *     false otherwise.
  */
-SuggestAppsDialog.prototype.show = function(extension, mime, onDialogClosed) {
+SuggestAppsDialog.prototype.showByExtensionAndMime =
+    function(extension, mime, onDialogClosed) {
+  this.text_.hidden = true;
+  this.dialogText_ = '';
+  this.showInternal_(null, extension, mime, onDialogClosed);
+};
+
+/**
+ * Shows suggest-apps dialog by the filename.
+ *
+ * @param {string} filename Filename (without extension) of the file.
+ * @param {function(boolean)} onDialogClosed Called when the dialog is closed.
+ *     The argument is the result of installation: true if an app is installed,
+ *     false otherwise.
+ */
+SuggestAppsDialog.prototype.showByFilename =
+    function(filename, onDialogClosed) {
+  this.text_.hidden = false;
+  this.dialogText_ = str('SUGGEST_DIALOG_MESSAGE_FOR_EXECUTABLE');
+  this.showInternal_(filename, null, null, onDialogClosed);
+};
+
+/**
+ * Internal methdo to shows a dialog. This should be called only from 'Suggest.
+ * appDialog.showXxxx()' functions.
+ *
+ * @param {string} filename Filename (without extension) of the file.
+ * @param {string} extension Extension of the file.
+ * @param {string} mime Mime of the file.
+ * @param {function(boolean)} onDialogClosed Called when the dialog is closed.
+ *     The argument is the result of installation: true if an app is installed,
+ *     false otherwise.
+ *     @private
+ */
+SuggestAppsDialog.prototype.showInternal_ =
+    function(filename, extension, mime, onDialogClosed) {
   if (this.state_ != SuggestAppsDialog.State.UNINITIALIZED) {
     console.error('Invalid state.');
     return;
@@ -207,9 +249,11 @@ SuggestAppsDialog.prototype.show = function(extension, mime, onDialogClosed) {
     }
 
     var title = str('SUGGEST_DIALOG_TITLE');
-
-    var show =
-        FileManagerDialogBase.prototype.showTitleOnlyDialog.call(this, title);
+    var show = this.dialogText_ ?
+        FileManagerDialogBase.prototype.showTitleAndTextDialog.call(
+            this, title, this.dialogText_) :
+        FileManagerDialogBase.prototype.showTitleOnlyDialog.call(
+            this, title);
     if (!show) {
       console.error('SuggestAppsDialog can\'t be shown');
       this.state_ = SuggestAppsDialog.State.UNINITIALIZED;
@@ -238,7 +282,7 @@ SuggestAppsDialog.prototype.show = function(extension, mime, onDialogClosed) {
 
     this.webviewClient_ = new CWSContainerClient(
         this.webview_,
-        extension, mime,
+        extension, mime, filename,
         WEBVIEW_WIDTH, WEBVIEW_HEIGHT,
         this.widgetUrl_, this.widgetOrigin_);
     this.webviewClient_.addEventListener(CWSContainerClient.Events.LOADED,

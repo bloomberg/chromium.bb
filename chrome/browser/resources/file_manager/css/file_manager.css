@@ -1834,10 +1834,17 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
 }
 
 #suggest-app-dialog .cr-dialog-buttons,
-#suggest-app-dialog .cr-dialog-text,
 #suggest-app-dialog .cr-dialog-ok,
 #suggest-app-dialog .cr-dialog-cancel {
   display: none;
+}
+
+#suggest-app-dialog .cr-dialog-text {
+  -webkit-padding-after: 10px;
+  -webkit-padding-before: 0;
+  -webkit-padding-end: 20px;
+  -webkit-padding-start: 20px;
+  margin: 0;
 }
 
 #suggest-app-dialog #buttons {

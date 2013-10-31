@@ -353,15 +353,24 @@ PathUtil.isEligibleForFolderShortcut = function(directoryPath) {
 };
 
 /**
- * Returns the extension of the filename
+ * Extracts the extension of the path.
  *
- * @param {string} filename Filename to be extracted.
- * @return {string} Extension of the given filename.
+ * Examples:
+ * PathUtil.splitExtension('abc.ext') -> ['abc', '.ext']
+ * PathUtil.splitExtension('a/b/abc.ext') -> ['a/b/abc', '.ext']
+ * PathUtil.splitExtension('a/b') -> ['a/b', '']
+ * PathUtil.splitExtension('.cshrc') -> ['', '.cshrc']
+ * PathUtil.splitExtension('a/b.backup/hoge') -> ['a/b.backup/hoge', '']
+ *
+ * @param {string} path Path to be extracted.
+ * @return {Array.<string>} Filename and extension of the given path.
  */
-PathUtil.extractExtension = function(filename) {
-  if (filename.indexOf('/') != -1)
-    filename = filename.substr(filename.lastIndexOf('/') + 1);
-  var extension = filename.lastIndexOf('.') != -1 ?
-      filename.substr(filename.lastIndexOf('.') + 1) : '';
-  return extension;
+PathUtil.splitExtension = function(path) {
+  var dotPosition = path.lastIndexOf('.');
+  if (dotPosition <= path.lastIndexOf('/'))
+    dotPosition = -1;
+
+  var filename = dotPosition != -1 ? path.substr(0, dotPosition) : path;
+  var extension = dotPosition != -1 ? path.substr(dotPosition) : '';
+  return [filename, extension];
 };

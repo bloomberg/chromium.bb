@@ -2092,8 +2092,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         return;
       }
 
-      var filename = util.extractFilePath(url);
-      var extension = PathUtil.extractExtension(filename);
+      var path = util.extractFilePath(url);
+      var basename = PathUtil.basename(path);
+      var splitted = PathUtil.splitExtension(basename);
+      var filename = splitted[0];
+      var extension = splitted[1];
       var mime = props[0].contentMimeType;
 
       // Returns with failure if the file has neither extension nor mime.
@@ -2102,20 +2105,25 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         return;
       }
 
-      this.suggestAppsDialog.show(
-          extension, mime,
-          function(result) {
-            switch (result) {
-              case SuggestAppsDialog.Result.INSTALL_SUCCESSFUL:
-                onSuccess();
-                break;
-              case SuggestAppsDialog.Result.FAILED:
-                onFailure();
-                break;
-              default:
-                onCancelled();
-            }
-          });
+      var onDialogClosed = function(result) {
+        switch (result) {
+          case SuggestAppsDialog.Result.INSTALL_SUCCESSFUL:
+            onSuccess();
+            break;
+          case SuggestAppsDialog.Result.FAILED:
+            onFailure();
+            break;
+          default:
+            onCancelled();
+        }
+      };
+
+      if (FileTasks.EXECUTABLE_EXTENSIONS.indexOf(extension) !== -1) {
+        this.suggestAppsDialog.showByFilename(filename, onDialogClosed);
+      } else {
+        this.suggestAppsDialog.showByExtensionAndMime(
+            extension, mime, onDialogClosed);
+      }
     }.bind(this));
   };
 

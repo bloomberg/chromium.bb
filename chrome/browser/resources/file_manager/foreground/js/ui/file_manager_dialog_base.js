@@ -97,6 +97,16 @@ FileManagerDialogBase.prototype.showTitleOnlyDialog = function(title) {
 };
 
 /**
+ * @param {string} title Title.
+ * @param {string} text Text to be shown in the dialog.
+ * @return {boolean} True if the dialog can show successfully. False if the
+ *     dialog failed to show due to an existing dialog.
+ */
+FileManagerDialogBase.prototype.showTitleAndTextDialog = function(title, text) {
+  return this.showImpl_(title, text, null, null, null);
+};
+
+/**
  * @param {function()=} opt_onHide Called when the dialog is hidden.
  */
 FileManagerDialogBase.prototype.hide = function(opt_onHide) {
