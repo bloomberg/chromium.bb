@@ -7,6 +7,24 @@ Release Notes
 This page provides notes for all releases of the Native Client SDK (including
 releases that have been or will be published subsequent to Pepper 28).
 
+PNaCl enabled by default in Chrome 31 (12 Nov 2013)
+===================================================
+
+* Portable Native Client (PNaCl) is enabled by default in Chrome 31. See
+  :doc:`NaCl and PNaCl </nacl-and-pnacl>` for details on the differences between
+  PNaCl and NaCl.
+* The PNaCl ABI has changed from the preview release in Chrome
+  version 30. If you have pexes built with the Native Client SDK version 30,
+  please recompile them with the newest SDK to run in Chrome 31. As a general
+  rule, it is always recommended to build applications with the latest Native
+  Client SDK. The PNaCl ABI will remain stable starting with the release of
+  Chrome 31.
+
+Additional changes:
+
+* Updates to the Pepper API, including socket and network support.
+* Improved socket support in nacl_io.
+
 PNaCl in Chrome 30 Dev channel (01 Aug 2013)
 ============================================
 
