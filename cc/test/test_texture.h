@@ -2,21 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CC_TEST_TEST_TEXTURE_H_
+#define CC_TEST_TEST_TEXTURE_H_
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "cc/base/cc_export.h"
 #include "cc/resources/resource_format.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
-#include "ui/gfx/rect.h"
-
-#ifndef CC_DEBUG_TEST_TEXTURE_H_
-#define CC_DEBUG_TEST_TEXTURE_H_
+#include "ui/gfx/size.h"
 
 namespace cc {
 
-size_t CC_EXPORT TextureSizeBytes(gfx::Size size, ResourceFormat format);
+size_t TextureSizeBytes(gfx::Size size, ResourceFormat format);
 
-struct CC_EXPORT TestTexture : public base::RefCounted<TestTexture> {
+struct TestTexture : public base::RefCounted<TestTexture> {
   TestTexture();
 
   void Reallocate(gfx::Size size, ResourceFormat format);
@@ -36,4 +35,4 @@ struct CC_EXPORT TestTexture : public base::RefCounted<TestTexture> {
 
 }  // namespace cc
 
-#endif  // CC_DEBUG_TEST_TEXTURE_H_
+#endif  // CC_TEST_TEST_TEXTURE_H_

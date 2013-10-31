@@ -4,7 +4,7 @@
 
 #include "cc/output/shader.h"
 
-#include "cc/debug/fake_web_graphics_context_3d.h"
+#include "cc/test/fake_web_graphics_context_3d.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/debug/test_web_graphics_context_3d.h"
+#include "cc/test/test_web_graphics_context_3d.h"
 
 #include <algorithm>
 #include <string>
@@ -11,7 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "cc/debug/test_context_support.h"
+#include "cc/test/test_context_support.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 

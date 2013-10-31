@@ -216,6 +216,7 @@
             'content.gyp:content_renderer',
             'content.gyp:content_utility',
             'content.gyp:content_worker',
+            '../cc/cc_tests.gyp:cc_test_support',
             '../media/media.gyp:media',
             '../ppapi/ppapi_internal.gyp:ppapi_host',
             '../ppapi/ppapi_internal.gyp:ppapi_proxy',

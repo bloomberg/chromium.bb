@@ -2,21 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_DEBUG_ORDERED_TEXTURE_MAP_H_
-#define CC_DEBUG_ORDERED_TEXTURE_MAP_H_
+#ifndef CC_TEST_ORDERED_TEXTURE_MAP_H_
+#define CC_TEST_ORDERED_TEXTURE_MAP_H_
 
 #include <vector>
 
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
-#include "cc/base/cc_export.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 
 namespace cc {
 
 struct TestTexture;
 
-class CC_EXPORT OrderedTextureMap {
+class OrderedTextureMap {
  public:
   OrderedTextureMap();
   ~OrderedTextureMap();
@@ -43,4 +42,4 @@ class CC_EXPORT OrderedTextureMap {
 
 }  // namespace cc
 
-#endif  // CC_DEBUG_ORDERED_TEXTURE_MAP_H_
+#endif  // CC_TEST_ORDERED_TEXTURE_MAP_H_

@@ -4,9 +4,9 @@
 
 #include "cc/resources/texture_mailbox_deleter.h"
 
-#include "cc/debug/test_context_provider.h"
-#include "cc/debug/test_web_graphics_context_3d.h"
 #include "cc/resources/single_release_callback.h"
+#include "cc/test/test_context_provider.h"
+#include "cc/test/test_web_graphics_context_3d.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {

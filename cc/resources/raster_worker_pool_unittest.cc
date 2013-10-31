@@ -7,7 +7,6 @@
 #include <limits>
 #include <vector>
 
-#include "cc/debug/test_web_graphics_context_3d.h"
 #include "cc/resources/image_raster_worker_pool.h"
 #include "cc/resources/picture_pile.h"
 #include "cc/resources/picture_pile_impl.h"
@@ -16,6 +15,7 @@
 #include "cc/resources/scoped_resource.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
+#include "cc/test/test_web_graphics_context_3d.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {

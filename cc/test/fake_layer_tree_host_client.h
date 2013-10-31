@@ -6,8 +6,8 @@
 #define CC_TEST_FAKE_LAYER_TREE_HOST_CLIENT_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/debug/test_context_provider.h"
 #include "cc/input/input_handler.h"
+#include "cc/test/test_context_provider.h"
 #include "cc/trees/layer_tree_host.h"
 
 namespace cc {

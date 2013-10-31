@@ -5,8 +5,6 @@
 #include "cc/trees/layer_tree_host.h"
 
 #include "base/basictypes.h"
-#include "cc/debug/test_context_provider.h"
-#include "cc/debug/test_web_graphics_context_3d.h"
 #include "cc/layers/content_layer.h"
 #include "cc/layers/delegated_frame_provider.h"
 #include "cc/layers/delegated_frame_resource_collection.h"
@@ -34,6 +32,8 @@
 #include "cc/test/fake_video_frame_provider.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/render_pass_test_common.h"
+#include "cc/test/test_context_provider.h"
+#include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"

@@ -5,20 +5,21 @@
 #include "cc/resources/resource_provider.h"
 
 #include <algorithm>
+#include <map>
 
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "cc/base/scoped_ptr_deque.h"
-#include "cc/debug/test_texture.h"
-#include "cc/debug/test_web_graphics_context_3d.h"
 #include "cc/output/output_surface.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/resources/shared_bitmap_manager.h"
 #include "cc/resources/single_release_callback.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
+#include "cc/test/test_texture.h"
+#include "cc/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

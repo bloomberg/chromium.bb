@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_DEBUG_TEST_WEB_GRAPHICS_CONTEXT_3D_H_
-#define CC_DEBUG_TEST_WEB_GRAPHICS_CONTEXT_3D_H_
+#ifndef CC_TEST_TEST_WEB_GRAPHICS_CONTEXT_3D_H_
+#define CC_TEST_TEST_WEB_GRAPHICS_CONTEXT_3D_H_
 
 #include <vector>
 
@@ -15,17 +15,16 @@
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "base/synchronization/lock.h"
-#include "cc/base/cc_export.h"
-#include "cc/debug/fake_web_graphics_context_3d.h"
-#include "cc/debug/ordered_texture_map.h"
-#include "cc/debug/test_texture.h"
 #include "cc/output/context_provider.h"
+#include "cc/test/fake_web_graphics_context_3d.h"
+#include "cc/test/ordered_texture_map.h"
+#include "cc/test/test_texture.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
 namespace cc {
 class TestContextSupport;
 
-class CC_EXPORT TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
+class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
  public:
   static scoped_ptr<TestWebGraphicsContext3D> Create();
 
@@ -320,4 +319,4 @@ class CC_EXPORT TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
 
 }  // namespace cc
 
-#endif  // CC_DEBUG_TEST_WEB_GRAPHICS_CONTEXT_3D_H_
+#endif  // CC_TEST_TEST_WEB_GRAPHICS_CONTEXT_3D_H_

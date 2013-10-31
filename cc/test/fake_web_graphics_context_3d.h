@@ -2,21 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_DEBUG_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_
-#define CC_DEBUG_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_
+#ifndef CC_TEST_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_
+#define CC_TEST_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_
 
 #include <string>
 
-#include "base/compiler_specific.h"
-#include "cc/base/cc_export.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 
 namespace cc {
 
 // WebGraphicsContext3D base class for use in unit tests.
 // All operations are no-ops (returning 0 if necessary).
-class CC_EXPORT FakeWebGraphicsContext3D
-    : public NON_EXPORTED_BASE(WebKit::WebGraphicsContext3D) {
+class FakeWebGraphicsContext3D : public WebKit::WebGraphicsContext3D {
  public:
   FakeWebGraphicsContext3D();
   virtual ~FakeWebGraphicsContext3D();
@@ -614,4 +611,4 @@ class CC_EXPORT FakeWebGraphicsContext3D
 
 }  // namespace cc
 
-#endif  // CC_DEBUG_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_
+#endif  // CC_TEST_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_

@@ -5,10 +5,10 @@
 #include "cc/resources/video_resource_updater.h"
 
 #include "base/memory/shared_memory.h"
-#include "cc/debug/test_web_graphics_context_3d.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
+#include "cc/test/test_web_graphics_context_3d.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

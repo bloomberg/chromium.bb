@@ -2,24 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_DEBUG_TEST_CONTEXT_PROVIDER_H_
-#define CC_DEBUG_TEST_CONTEXT_PROVIDER_H_
+#ifndef CC_TEST_TEST_CONTEXT_PROVIDER_H_
+#define CC_TEST_TEST_CONTEXT_PROVIDER_H_
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "cc/base/cc_export.h"
-#include "cc/debug/test_context_support.h"
 #include "cc/output/context_provider.h"
+#include "cc/test/test_context_support.h"
 
 namespace WebKit { class WebGraphicsContext3D; }
 
 namespace cc {
 class TestWebGraphicsContext3D;
 
-class CC_EXPORT TestContextProvider
-    : public NON_EXPORTED_BASE(cc::ContextProvider) {
+class TestContextProvider : public cc::ContextProvider {
  public:
   typedef base::Callback<scoped_ptr<TestWebGraphicsContext3D>(void)>
     CreateCallback;
@@ -55,7 +53,7 @@ class CC_EXPORT TestContextProvider
   void SetMaxTransferBufferUsageBytes(size_t max_transfer_buffer_usage_bytes);
 
  protected:
-  TestContextProvider(scoped_ptr<TestWebGraphicsContext3D> context);
+  explicit TestContextProvider(scoped_ptr<TestWebGraphicsContext3D> context);
   virtual ~TestContextProvider();
 
   void OnLostContext();
@@ -86,5 +84,5 @@ class CC_EXPORT TestContextProvider
 
 }  // namespace cc
 
-#endif  // CC_DEBUG_TEST_CONTEXT_PROVIDER_H_
+#endif  // CC_TEST_TEST_CONTEXT_PROVIDER_H_
 

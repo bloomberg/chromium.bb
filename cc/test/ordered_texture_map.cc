@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/debug/ordered_texture_map.h"
+#include "cc/test/ordered_texture_map.h"
 
 #include "base/logging.h"
-#include "cc/debug/test_texture.h"
+#include "cc/test/test_texture.h"
 
 namespace cc {
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/debug/test_context_support.h"
+#include "cc/test/test_context_support.h"
 
 #include "base/message_loop/message_loop.h"
 

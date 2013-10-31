@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_DEBUG_TEST_CONTEXT_SUPPORT_H_
-#define CC_DEBUG_TEST_CONTEXT_SUPPORT_H_
+#ifndef CC_TEST_TEST_CONTEXT_SUPPORT_H_
+#define CC_TEST_TEST_CONTEXT_SUPPORT_H_
 
 #include <vector>
 
@@ -34,4 +34,4 @@ class TestContextSupport : public gpu::ContextSupport {
 
 }  // namespace cc
 
-#endif  // CC_DEBUG_TEST_CONTEXT_SUPPORT_H_
+#endif  // CC_TEST_TEST_CONTEXT_SUPPORT_H_

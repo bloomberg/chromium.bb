@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "cc/debug/test_web_graphics_context_3d.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/test/fake_content_layer_client.h"
@@ -18,6 +17,7 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/impl_side_painting_settings.h"
 #include "cc/test/mock_quad_culler.h"
+#include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmapDevice.h"

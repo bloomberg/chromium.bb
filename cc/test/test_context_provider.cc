@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/debug/test_context_provider.h"
+#include "cc/test/test_context_provider.h"
 
 #include <set>
 #include <vector>
@@ -11,7 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/string_split.h"
-#include "cc/debug/test_web_graphics_context_3d.h"
+#include "cc/test/test_web_graphics_context_3d.h"
 
 namespace cc {
 

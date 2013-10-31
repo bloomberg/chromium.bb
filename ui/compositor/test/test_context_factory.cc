@@ -4,8 +4,8 @@
 
 #include "ui/compositor/test/test_context_factory.h"
 
-#include "cc/debug/test_context_provider.h"
 #include "cc/output/output_surface.h"
+#include "cc/test/test_context_provider.h"
 #include "ui/compositor/reflector.h"
 
 namespace ui {
