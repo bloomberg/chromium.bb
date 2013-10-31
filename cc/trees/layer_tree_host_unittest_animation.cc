@@ -375,14 +375,17 @@ class LayerTreeHostAnimationTestNoBackgroundTickingWithoutActiveTree
 
     // Verify that commits are actually alternating with empty / non-empty
     // trees.
-    switch (host_impl->active_tree()->source_frame_number()) {
+    int frame_number = host_impl->active_tree()->source_frame_number();
+    switch (frame_number) {
       case 0:
       case 2:
-        EXPECT_TRUE(host_impl->active_tree()->root_layer());
+        EXPECT_TRUE(host_impl->active_tree()->root_layer())
+            << "frame: " << frame_number;
         break;
       case 1:
       case 3:
-        EXPECT_FALSE(host_impl->active_tree()->root_layer());
+        EXPECT_FALSE(host_impl->active_tree()->root_layer())
+            << "frame: " << frame_number;
         break;
     }
 
