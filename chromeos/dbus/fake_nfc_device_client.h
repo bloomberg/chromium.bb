@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_FAKE_NFC_ADAPTER_CLIENT_H_
-#define CHROMEOS_DBUS_FAKE_NFC_ADAPTER_CLIENT_H_
+#ifndef CHROMEOS_DBUS_FAKE_NFC_DEVICE_CLIENT_H_
+#define CHROMEOS_DBUS_FAKE_NFC_DEVICE_CLIENT_H_
 
 #include "chromeos/chromeos_export.h"
-#include "chromeos/dbus/nfc_adapter_client.h"
 #include "chromeos/dbus/nfc_client_helpers.h"
+#include "chromeos/dbus/nfc_device_client.h"
 
 namespace chromeos {
 
-// FakeNfcAdapterClient simulates the behavior of the NFC adapter objects
+// FakeNfcDeviceClient simulates the behavior of the NFC device objects
 // and is used both in test cases in place of a mock and on the Linux desktop.
 // TODO(armansito): For now, this doesn't do anything. Implement fake
 // behavior in conjunction with unit tests while implementing the src/device
 // layer.
-class CHROMEOS_EXPORT FakeNfcAdapterClient : public NfcAdapterClient {
+class CHROMEOS_EXPORT FakeNfcDeviceClient : public NfcDeviceClient {
  public:
-  struct Properties : public NfcAdapterClient::Properties {
+  struct Properties : public NfcDeviceClient::Properties {
     explicit Properties(const PropertyChangedCallback& callback);
     virtual ~Properties();
 
@@ -30,29 +30,25 @@ class CHROMEOS_EXPORT FakeNfcAdapterClient : public NfcAdapterClient {
                      dbus::PropertySet::SetCallback callback) OVERRIDE;
   };
 
-  FakeNfcAdapterClient();
-  virtual ~FakeNfcAdapterClient();
+  FakeNfcDeviceClient();
+  virtual ~FakeNfcDeviceClient();
 
-  // NfcAdapterClient overrides.
+  // NfcDeviceClient overrides.
   virtual void Init(dbus::Bus* bus) OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual Properties* GetProperties(
       const dbus::ObjectPath& object_path) OVERRIDE;
-  virtual void StartPollLoop(
+  virtual void Push(
       const dbus::ObjectPath& object_path,
-      const std::string& mode,
-      const base::Closure& callback,
-      const nfc_client_helpers::ErrorCallback& error_callback) OVERRIDE;
-  virtual void StopPollLoop(
-      const dbus::ObjectPath& object_path,
+      const std::map<std::string, std::string>& attributes,
       const base::Closure& callback,
       const nfc_client_helpers::ErrorCallback& error_callback) OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FakeNfcAdapterClient);
+  DISALLOW_COPY_AND_ASSIGN(FakeNfcDeviceClient);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_FAKE_NFC_ADAPTER_CLIENT_H_
+#endif  // CHROMEOS_DBUS_FAKE_NFC_DEVICE_CLIENT_H_

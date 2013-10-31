@@ -27,7 +27,9 @@ class FakeBluetoothInputClient;
 class FakeBluetoothProfileManagerClient;
 class FakeGsmSMSClient;
 class FakeNfcAdapterClient;
+class FakeNfcDeviceClient;
 class FakeNfcManagerClient;
+class FakeNfcTagClient;
 class FakeShillDeviceClient;
 class FakeShillIPConfigClient;
 class MockCryptohomeClient;
@@ -74,7 +76,9 @@ class MockDBusThreadManager : public DBusThreadManager {
   MOCK_METHOD0(GetIntrospectableClient, IntrospectableClient*(void));
   MOCK_METHOD0(GetModemMessagingClient, ModemMessagingClient*(void));
   MOCK_METHOD0(GetNfcAdapterClient, NfcAdapterClient*(void));
+  MOCK_METHOD0(GetNfcDeviceClient, NfcDeviceClient*(void));
   MOCK_METHOD0(GetNfcManagerClient, NfcManagerClient*(void));
+  MOCK_METHOD0(GetNfcTagClient, NfcTagClient*(void));
   MOCK_METHOD0(GetPermissionBrokerClient, PermissionBrokerClient*(void));
   MOCK_METHOD0(GetPowerManagerClient, PowerManagerClient*(void));
   MOCK_METHOD0(GetPowerPolicyController, PowerPolicyController*(void));
@@ -110,8 +114,14 @@ class MockDBusThreadManager : public DBusThreadManager {
   FakeNfcAdapterClient* fake_nfc_adapter_client() {
     return fake_nfc_adapter_client_.get();
   }
+  FakeNfcDeviceClient* fake_nfc_device_client() {
+    return fake_nfc_device_client_.get();
+  }
   FakeNfcManagerClient* fake_nfc_manager_client() {
     return fake_nfc_manager_client_.get();
+  }
+  FakeNfcTagClient* fake_nfc_tag_client() {
+    return fake_nfc_tag_client_.get();
   }
   FakeShillDeviceClient* fake_shill_device_client() {
     return fake_shill_device_client_.get();
@@ -149,7 +159,9 @@ class MockDBusThreadManager : public DBusThreadManager {
       fake_bluetooth_profile_manager_client_;
   scoped_ptr<FakeGsmSMSClient> fake_gsm_sms_client_;
   scoped_ptr<FakeNfcAdapterClient> fake_nfc_adapter_client_;
+  scoped_ptr<FakeNfcDeviceClient> fake_nfc_device_client_;
   scoped_ptr<FakeNfcManagerClient> fake_nfc_manager_client_;
+  scoped_ptr<FakeNfcTagClient> fake_nfc_tag_client_;
   scoped_ptr<FakeShillDeviceClient> fake_shill_device_client_;
   scoped_ptr<FakeShillIPConfigClient> fake_shill_ipconfig_client_;
   scoped_ptr<MockCryptohomeClient> mock_cryptohome_client_;

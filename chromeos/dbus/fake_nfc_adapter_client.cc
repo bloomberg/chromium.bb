@@ -65,19 +65,14 @@ void FakeNfcAdapterClient::StartPollLoop(
     const std::string& mode,
     const base::Closure& callback,
     const nfc_client_helpers::ErrorCallback& error_callback) {
-  VLOG(1) << "Starting fake NFC Adapter poll loop.";
-  VLOG(1) << "Nothing happened.";
+  VLOG(1) << "FakeNfcAdapterClient::StartPollLoop called. Nothing happened.";
 }
 
 void FakeNfcAdapterClient::StopPollLoop(
     const dbus::ObjectPath& object_path,
     const base::Closure& callback,
     const nfc_client_helpers::ErrorCallback& error_callback) {
-  VLOG(1) << "Stopping fake NFC Adapter poll loop.";
-}
-
-void FakeNfcAdapterClient::OnPropertyChanged(const std::string& property_name) {
-  VLOG(1) << "Fake NFC property changed:  " << property_name;
+  VLOG(1) << "FakeNfcAdapterClient::StopPollLoop called. Nothing happened.";
 }
 
 }  // namespace chromeos

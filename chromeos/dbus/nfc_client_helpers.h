@@ -64,6 +64,9 @@ class CHROMEOS_EXPORT DBusObjectMap {
         dbus::ObjectProxy* object_proxy) = 0;
   };
 
+  typedef std::pair<dbus::ObjectProxy*, NfcPropertySet*> ObjectPropertyPair;
+  typedef std::map<dbus::ObjectPath, ObjectPropertyPair> ObjectMap;
+
   // Constructor takes in the D-Bus service name the proxies belong to and
   // the delegate which will be used to construct properties structures.
   // |service_name| must be a valid D-Bus service name, and |delegate| cannot
@@ -91,10 +94,10 @@ class CHROMEOS_EXPORT DBusObjectMap {
   // remote object with object path |object_path|.
   void RemoveObject(const dbus::ObjectPath& object_path);
 
- private:
-  typedef std::pair<dbus::ObjectProxy*, NfcPropertySet*> ObjectPropertyPair;
-  typedef std::map<dbus::ObjectPath, ObjectPropertyPair> ObjectMap;
+  // Returns the underlying map.
+  const ObjectMap& object_map() const { return object_map_; }
 
+ private:
   // Returns an instance of ObjectPropertyPair by looking up |object_path| in
   // |object_map_|. If no entry is found, returns an instance that contains
   // NULL pointers.

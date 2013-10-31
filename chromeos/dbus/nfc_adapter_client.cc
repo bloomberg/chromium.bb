@@ -162,8 +162,8 @@ class NfcAdapterClientImpl
   }
 
   // NfcManagerClient::Observer override.
-  virtual void ManagerPropertyChanged(const std::string& property_name)
-        OVERRIDE {
+  virtual void ManagerPropertyChanged(
+      const std::string& property_name) OVERRIDE {
     NfcManagerClient::Properties* manager_properties =
         manager_client_->GetProperties();
     if (!initial_adapters_received_ &&

@@ -75,7 +75,7 @@ bool DBusObjectMap::AddObject(const dbus::ObjectPath& object_path) {
   properties->ConnectSignals();
   properties->GetAll();
   VLOG(1) << "Created proxy for object with Path: " << object_path.value()
-          << " Service: " << service_name_;
+          << ", Service: " << service_name_;
   ObjectPropertyPair object = std::make_pair(object_proxy, properties);
   object_map_[object_path] = object;
   return true;

@@ -28,7 +28,9 @@ class FakeCrosDisksClient;
 class FakeCryptohomeClient;
 class FakeGsmSMSClient;
 class FakeNfcAdapterClient;
+class FakeNfcDeviceClient;
 class FakeNfcManagerClient;
+class FakeNfcTagClient;
 class FakePowerManagerClient;
 class FakeImageBurnerClient;
 class FakeSessionManagerClient;
@@ -75,7 +77,9 @@ class FakeDBusThreadManager : public DBusThreadManager {
   virtual IntrospectableClient* GetIntrospectableClient() OVERRIDE;
   virtual ModemMessagingClient* GetModemMessagingClient() OVERRIDE;
   virtual NfcAdapterClient* GetNfcAdapterClient() OVERRIDE;
+  virtual NfcDeviceClient* GetNfcDeviceClient() OVERRIDE;
   virtual NfcManagerClient* GetNfcManagerClient() OVERRIDE;
+  virtual NfcTagClient* GetNfcTagClient() OVERRIDE;
   virtual PermissionBrokerClient* GetPermissionBrokerClient() OVERRIDE;
   virtual PowerManagerClient* GetPowerManagerClient() OVERRIDE;
   virtual PowerPolicyController* GetPowerPolicyController() OVERRIDE;
@@ -130,8 +134,16 @@ class FakeDBusThreadManager : public DBusThreadManager {
     return fake_nfc_adapter_client_.get();
   }
 
+  FakeNfcDeviceClient* fake_nfc_device_client() {
+    return fake_nfc_device_client_.get();
+  }
+
   FakeNfcManagerClient* fake_nfc_manager_client() {
     return fake_nfc_manager_client_.get();
+  }
+
+  FakeNfcTagClient* fake_nfc_tag_client() {
+    return fake_nfc_tag_client_.get();
   }
 
   FakeSessionManagerClient* fake_session_manager_client() {
@@ -192,7 +204,9 @@ class FakeDBusThreadManager : public DBusThreadManager {
   scoped_ptr<FakeGsmSMSClient> fake_gsm_sms_client_;
   scoped_ptr<FakeImageBurnerClient> fake_image_burner_client_;
   scoped_ptr<FakeNfcAdapterClient> fake_nfc_adapter_client_;
+  scoped_ptr<FakeNfcDeviceClient> fake_nfc_device_client_;
   scoped_ptr<FakeNfcManagerClient> fake_nfc_manager_client_;
+  scoped_ptr<FakeNfcTagClient> fake_nfc_tag_client_;
   scoped_ptr<FakeSessionManagerClient> fake_session_manager_client_;
   scoped_ptr<FakeShillDeviceClient> fake_shill_device_client_;
   scoped_ptr<FakeShillManagerClient> fake_shill_manager_client_;
