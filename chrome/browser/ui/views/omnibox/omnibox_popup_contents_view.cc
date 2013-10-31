@@ -214,12 +214,8 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     if (!popup_.get())
       return;
 #if defined(USE_AURA)
-    views::corewm::SetWindowVisibilityAnimationType(
-        popup_->GetNativeView(),
-        views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
-    // No animation for autocomplete popup appearance.
     views::corewm::SetWindowVisibilityAnimationTransition(
-        popup_->GetNativeView(), views::corewm::ANIMATE_HIDE);
+        popup_->GetNativeView(), views::corewm::ANIMATE_NONE);
 #endif
     popup_->SetContentsView(this);
     popup_->StackAbove(omnibox_view_->GetRelativeWindowForPopup());
