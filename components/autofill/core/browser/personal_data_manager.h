@@ -126,7 +126,7 @@ class PersonalDataManager : public WebDataServiceConsumer,
   // lifetime is until the web database is updated with new profile and credit
   // card information, respectively.  |GetProfiles()| returns both web and
   // auxiliary profiles.  |web_profiles()| returns only web profiles.
-  virtual const std::vector<AutofillProfile*>& GetProfiles();
+  virtual const std::vector<AutofillProfile*>& GetProfiles() const;
   virtual const std::vector<AutofillProfile*>& web_profiles() const;
   virtual const std::vector<CreditCard*>& GetCreditCards() const;
 
@@ -181,6 +181,11 @@ class PersonalDataManager : public WebDataServiceConsumer,
       const std::string& app_locale,
       std::vector<AutofillProfile>* merged_profiles);
 
+  // Returns our best guess for the country a user is likely to use when
+  // inputting a new address. The value is calculated once and cached, so it
+  // will only update when Chrome is restarted.
+  const std::string& GetDefaultCountryCodeForNewAddress() const;
+
  protected:
   // Only PersonalDataManagerFactory and certain tests can create instances of
   // PersonalDataManager.
@@ -221,7 +226,7 @@ class PersonalDataManager : public WebDataServiceConsumer,
   virtual void LoadProfiles();
 
   // Loads the auxiliary profiles.  Currently Mac and Android only.
-  virtual void LoadAuxiliaryProfiles();
+  virtual void LoadAuxiliaryProfiles() const;
 
   // Loads the saved credit cards from the web database.
   virtual void LoadCreditCards();
@@ -282,7 +287,14 @@ class PersonalDataManager : public WebDataServiceConsumer,
   ObserverList<PersonalDataManagerObserver> observers_;
 
  private:
+  // Finds the country code that occurs most frequently among all profiles.
+  // Prefers verified profiles over unverified ones.
+  std::string MostCommonCountryCodeFromProfiles() const;
+
   const std::string app_locale_;
+
+  // The default country code for new addresses.
+  mutable std::string default_country_code_;
 
   // For logging UMA metrics. Overridden by metrics tests.
   scoped_ptr<const AutofillMetrics> metric_logger_;

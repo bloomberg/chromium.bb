@@ -139,6 +139,12 @@ bool IsValidFieldTypeAndValue(const std::set<ServerFieldType>& types_seen,
   return true;
 }
 
+// A helper function for finding the maximum value in a string->int map.
+static bool CompareVotes(const std::pair<std::string, int>& a,
+                         const std::pair<std::string, int>& b) {
+  return a.second < b.second;
+}
+
 }  // namespace
 
 PersonalDataManager::PersonalDataManager(const std::string& app_locale)
@@ -542,7 +548,7 @@ bool PersonalDataManager::IsDataLoaded() const {
   return is_data_loaded_;
 }
 
-const std::vector<AutofillProfile*>& PersonalDataManager::GetProfiles() {
+const std::vector<AutofillProfile*>& PersonalDataManager::GetProfiles() const {
   if (!user_prefs::UserPrefs::Get(browser_context_)->GetBoolean(
           prefs::kAutofillAuxiliaryProfilesEnabled)) {
     return web_profiles();
@@ -765,6 +771,19 @@ std::string PersonalDataManager::MergeProfile(
   return guid;
 }
 
+const std::string& PersonalDataManager::GetDefaultCountryCodeForNewAddress()
+    const {
+  if (default_country_code_.empty())
+    default_country_code_ = MostCommonCountryCodeFromProfiles();
+
+  // If the profiles don't help, guess based on locale.
+  // TODO(estade): prefer to use the timezone instead.
+  if (default_country_code_.empty())
+    default_country_code_ = AutofillCountry::CountryCodeForLocale(app_locale());
+
+  return default_country_code_;
+}
+
 void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {
   if (browser_context_->IsOffTheRecord())
     return;
@@ -888,7 +907,7 @@ void PersonalDataManager::LoadProfiles() {
 // Win and Linux implementations do nothing. Mac and Android implementations
 // fill in the contents of |auxiliary_profiles_|.
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
-void PersonalDataManager::LoadAuxiliaryProfiles() {
+void PersonalDataManager::LoadAuxiliaryProfiles() const {
 }
 #endif
 
@@ -1029,6 +1048,35 @@ void PersonalDataManager::set_metric_logger(
 void PersonalDataManager::set_browser_context(
     content::BrowserContext* context) {
   browser_context_ = context;
+}
+
+std::string PersonalDataManager::MostCommonCountryCodeFromProfiles() const {
+  // Count up country codes from existing profiles.
+  std::map<std::string, int> votes;
+  // TODO(estade): can we make this GetProfiles() instead? It seems to cause
+  // errors in tests on mac trybots. See http://crbug.com/57221
+  const std::vector<AutofillProfile*>& profiles = web_profiles();
+  std::vector<std::string> country_codes;
+  AutofillCountry::GetAvailableCountries(&country_codes);
+  for (size_t i = 0; i < profiles.size(); ++i) {
+    std::string country_code = StringToUpperASCII(UTF16ToASCII(
+        profiles[i]->GetRawInfo(ADDRESS_HOME_COUNTRY)));
+
+    if (std::find(country_codes.begin(), country_codes.end(), country_code) !=
+            country_codes.end()) {
+      // Verified profiles count 100x more than unverified ones.
+      votes[country_code] += profiles[i]->IsVerified() ? 100 : 1;
+    }
+  }
+
+  // Take the most common country code.
+  if (!votes.empty()) {
+    std::map<std::string, int>::iterator iter =
+        std::max_element(votes.begin(), votes.end(), CompareVotes);
+    return iter->first;
+  }
+
+  return std::string();
 }
 
 }  // namespace autofill

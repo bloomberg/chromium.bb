@@ -25,7 +25,8 @@ void TestPersonalDataManager::AddTestingCreditCard(CreditCard* credit_card) {
                     OnPersonalDataChanged());
 }
 
-const std::vector<AutofillProfile*>& TestPersonalDataManager::GetProfiles() {
+const std::vector<AutofillProfile*>& TestPersonalDataManager::GetProfiles()
+    const {
   return profiles_;
 }
 

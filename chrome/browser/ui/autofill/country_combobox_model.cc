@@ -7,15 +7,19 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "components/autofill/core/browser/autofill_country.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "ui/base/l10n/l10n_util_collator.h"
 
 namespace autofill {
 
-CountryComboboxModel::CountryComboboxModel() {
+CountryComboboxModel::CountryComboboxModel(const PersonalDataManager& manager) {
   // Insert the default country at the top as well as in the ordered list.
   std::string app_locale = g_browser_process->GetApplicationLocale();
   std::string default_country_code =
-      AutofillCountry::CountryCodeForLocale(app_locale);
+      manager.GetDefaultCountryCodeForNewAddress();
+  if (default_country_code.empty())
+    default_country_code = "US";
+
   countries_.push_back(new AutofillCountry(default_country_code, app_locale));
   // The separator item.
   countries_.push_back(NULL);

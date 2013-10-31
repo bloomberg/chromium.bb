@@ -2417,4 +2417,77 @@ TEST_F(PersonalDataManagerTest, IncognitoReadOnly) {
   EXPECT_EQ(1U, personal_data_->GetCreditCards().size());
 }
 
+TEST_F(PersonalDataManagerTest, DefaultCountryCodeIsCached) {
+  // The return value should always be some country code, no matter what.
+  std::string default_country =
+      personal_data_->GetDefaultCountryCodeForNewAddress();
+  EXPECT_EQ(2U, default_country.size());
+
+  AutofillProfile moose(base::GenerateGUID(), "Chrome settings");
+  test::SetProfileInfo(&moose, "Moose", "P", "McMahon", "mpm@example.com",
+      "", "1 Taiga TKTR", "", "Calgary", "AB", "T2B 2K2",
+      "CA", "(800) 555-9000");
+  personal_data_->AddProfile(moose);
+  EXPECT_CALL(personal_data_observer_,
+              OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
+  base::MessageLoop::current()->Run();
+  // The value is cached and doesn't change even after adding an address.
+  EXPECT_EQ(default_country,
+            personal_data_->GetDefaultCountryCodeForNewAddress());
+}
+
+TEST_F(PersonalDataManagerTest, DefaultCountryCodeComesFromProfiles) {
+  AutofillProfile moose(base::GenerateGUID(), "Chrome settings");
+  test::SetProfileInfo(&moose, "Moose", "P", "McMahon", "mpm@example.com",
+      "", "1 Taiga TKTR", "", "Calgary", "AB", "T2B 2K2",
+      "CA", "(800) 555-9000");
+  personal_data_->AddProfile(moose);
+  ResetPersonalDataManager();
+  EXPECT_EQ("CA", personal_data_->GetDefaultCountryCodeForNewAddress());
+
+  // Multiple profiles cast votes.
+  AutofillProfile armadillo(base::GenerateGUID(), "Chrome settings");
+  test::SetProfileInfo(&armadillo, "Armin", "Dill", "Oh", "ado@example.com",
+      "", "1 Speed Bump", "", "Lubbock", "TX", "77500",
+      "MX", "(800) 555-9000");
+  AutofillProfile armadillo2(base::GenerateGUID(), "Chrome settings");
+  test::SetProfileInfo(&armadillo2, "Armin", "Dill", "Oh", "ado@example.com",
+      "", "2 Speed Bump", "", "Lubbock", "TX", "77500",
+      "MX", "(800) 555-9000");
+  personal_data_->AddProfile(armadillo);
+  personal_data_->AddProfile(armadillo2);
+  ResetPersonalDataManager();
+  EXPECT_EQ("MX", personal_data_->GetDefaultCountryCodeForNewAddress());
+
+  personal_data_->RemoveByGUID(armadillo.guid());
+  personal_data_->RemoveByGUID(armadillo2.guid());
+  ResetPersonalDataManager();
+  // Verified profiles count more.
+  armadillo.set_origin("http://randomwebsite.com");
+  armadillo2.set_origin("http://randomwebsite.com");
+  personal_data_->AddProfile(armadillo);
+  personal_data_->AddProfile(armadillo2);
+  ResetPersonalDataManager();
+  EXPECT_EQ("CA", personal_data_->GetDefaultCountryCodeForNewAddress());
+
+  personal_data_->RemoveByGUID(armadillo.guid());
+  ResetPersonalDataManager();
+  // But unverified profiles can be a tie breaker.
+  armadillo.set_origin("Chrome settings");
+  personal_data_->AddProfile(armadillo);
+  ResetPersonalDataManager();
+  EXPECT_EQ("MX", personal_data_->GetDefaultCountryCodeForNewAddress());
+
+  // Invalid country codes are ignored.
+  personal_data_->RemoveByGUID(armadillo.guid());
+  personal_data_->RemoveByGUID(moose.guid());
+  AutofillProfile space_invader(base::GenerateGUID(), "Chrome settings");
+  test::SetProfileInfo(&space_invader, "Marty", "", "Martian",
+      "mm@example.com", "", "1 Flying Object", "", "Valles Marineris", "",
+      "", "XX", "");
+  personal_data_->AddProfile(moose);
+  ResetPersonalDataManager();
+  EXPECT_EQ("MX", personal_data_->GetDefaultCountryCodeForNewAddress());
+}
+
 }  // namespace autofill
