@@ -53,10 +53,8 @@ class WebrtcAudioPrivateTest : public ExtensionApiTest {
         RunFunctionAndReturnSingleResult(function.get(),
                                          parameter_string,
                                          browser()));
-    ListValue* list = NULL;
     std::string device_id;
-    result->GetAsList(&list);
-    list->GetString(0, &device_id);
+    result->GetAsString(&device_id);
     return device_id;
   }
 
@@ -93,10 +91,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetSinks) {
       new WebrtcAudioPrivateGetSinksFunction();
   scoped_ptr<base::Value> result(
       RunFunctionAndReturnSingleResult(function.get(), "[]", browser()));
-  base::ListValue* parameter_list = NULL;
-  result->GetAsList(&parameter_list);
   base::ListValue* sink_list = NULL;
-  parameter_list->GetList(0, &sink_list);
+  result->GetAsList(&sink_list);
 
   std::string result_string;
   JSONWriter::Write(result.get(), &result_string);
@@ -146,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetActiveSinkNoMediaStream) {
 
   std::string result_string;
   JSONWriter::Write(result.get(), &result_string);
-  EXPECT_EQ("[\"\"]", result_string);
+  EXPECT_EQ("\"\"", result_string);
 }
 
 // This exercises the case where you have a tab with no active media
@@ -177,10 +173,7 @@ static void OnAudioControllers(
     *audio_playing = true;
 }
 
-// TODO(joi): Currently this needs to be run manually. See if we can
-// enable this on bots.
-IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest,
-                       DISABLED_GetAndSetWithMediaStream) {
+IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetAndSetWithMediaStream) {
   // First get the list of output devices, so that we can (if
   // available) set the active device to a device other than the one
   // it starts as. This function is not threadsafe and is normally
@@ -219,40 +212,31 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest,
   VLOG(2) << "Before setting, current device: " << current_device;
   EXPECT_NE("", current_device);
 
-  // Try to find a different device in the list of output
-  // devices. Even if we don't find one, we still go through the
-  // motions of setting the active device to the same device ID as
-  // before, to exercise the code paths involved.
-  std::string target_device(current_device);
+  // Set to each of the other devices in turn.
   for (AudioDeviceNames::const_iterator it = devices.begin();
-       it != devices.end(); ++it) {
-    if (it->unique_id != current_device) {
-      target_device = it->unique_id;
-      VLOG(2) << "Found different device ID to set to: " << target_device;
-      break;
-    }
-  }
+       it != devices.end();
+       ++it) {
+    std::string target_device(it->unique_id);
 
-  ListValue parameters;
-  parameters.AppendInteger(tab_id);
-  parameters.AppendString(target_device);
-  std::string parameter_string;
-  JSONWriter::Write(&parameters, &parameter_string);
+    ListValue parameters;
+    parameters.AppendInteger(tab_id);
+    parameters.AppendString(target_device);
+    std::string parameter_string;
+    JSONWriter::Write(&parameters, &parameter_string);
 
-  scoped_refptr<WebrtcAudioPrivateSetActiveSinkFunction> function =
+    scoped_refptr<WebrtcAudioPrivateSetActiveSinkFunction> function =
       new WebrtcAudioPrivateSetActiveSinkFunction();
-  scoped_ptr<base::Value> result(
-      RunFunctionAndReturnSingleResult(function.get(),
-                                       parameter_string,
-                                       browser()));
-  // The function was successful if the above invocation doesn't
-  // fail. Just for kicks, also check that it returns no result.
-  EXPECT_EQ(NULL, result.get());
+    scoped_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
+        function.get(), parameter_string, browser()));
+    // The function was successful if the above invocation doesn't
+    // fail. Just for kicks, also check that it returns no result.
+    EXPECT_EQ(NULL, result.get());
 
-  current_device = InvokeGetActiveSink(tab_id);
-  VLOG(2) << "After setting to " << target_device
-          << ", current device is " << current_device;
-  EXPECT_EQ(target_device, current_device);
+    current_device = InvokeGetActiveSink(tab_id);
+    VLOG(2) << "After setting to " << target_device
+            << ", current device is " << current_device;
+    EXPECT_EQ(target_device, current_device);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetAssociatedSink) {

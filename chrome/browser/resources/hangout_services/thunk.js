@@ -8,9 +8,21 @@ chrome.runtime.onMessageExternal.addListener(
     var errorMessage = error || chrome.extension.lastError;
     sendResponse({'value': value, 'error': errorMessage});
   }
+
+  function getHost(url) {
+    if (!url)
+      return '';
+    // Use the DOM to parse the URL. Since we don't add the anchor to
+    // the page, this is the only reference to it and it will be
+    // deleted once it's gone out of scope.
+    var a = document.createElement('a');
+    a.href = url;
+    return a.hostname;
+  }
+
   try {
     var method = message['method'];
-    var origin = message['origin'];
+    var origin = getHost(sender.url);
     if (method == 'chooseDesktopMedia') {
       chrome.desktopCapture.chooseDesktopMedia(
           ['screen', 'window'], sender.tab, doSendResponse);

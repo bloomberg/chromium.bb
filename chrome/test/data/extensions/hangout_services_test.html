@@ -1,0 +1,81 @@
+<!--
+Copyright 2013 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+
+A file intended for both manual and automated end-to-end testing of
+the Hangout Services component extension.
+-->
+<html>
+<head>
+<title>Hangout Services Test Page</title>
+<script>
+// ID of the Hangout Services component extension.
+var EXTENSION_ID = "nkeimhogjdpnpccoofpliimaahmaaome";
+
+// Sends a message to the Hangout Services extension, expecting
+// success, and unwraps the value returned.
+function sendMessage(message, callback) {
+  function unwrapValue(result) {
+    if (callback)
+      callback(result.value);
+  }
+  window.top.chrome.runtime.sendMessage(EXTENSION_ID, message, unwrapValue);
+}
+
+// Will call |callback(sinkList)| on completion.
+function getSinks(callback) {
+  sendMessage({'method': 'getSinks'}, callback);
+}
+
+// Will call |callback(activeSink)| on completion.
+function getActiveSink(callback) {
+  sendMessage({'method': 'getActiveSink'}, callback);
+}
+
+// Will call |callback()| on completion.
+function setActiveSink(sinkId, callback) {
+  sendMessage({'method': 'setActiveSink', 'sinkId': sinkId}, callback);
+}
+
+// Will call |callback(sinkId)| on completion.
+function getAssociatedSink(sourceId, callback) {
+  sendMessage({'method': 'getAssociatedSink', 'sourceId': sourceId},
+	      callback);
+}
+
+// Populates the select box with information on all sinks and the
+// currently selected sink.
+function populateSinks() {
+  var select = document.getElementById("select");
+  while (select.length > 0)
+    select.remove(0);
+  getSinks(function(sinks) {
+      for (var i = 0; i < sinks.length; ++i) {
+	var option = document.createElement("option");
+	option.value = sinks[i].sinkId;
+	option.text = sinks[i].sinkLabel + " (" + sinks[i].sinkId + ")";
+	select.add(option);
+      }
+      getActiveSink(function(sinkId) {
+	  select.value = sinkId;
+	});
+    });
+}
+
+// Sets the currently active sink to the one selected in the select
+// box.
+function setActiveSinkFromSelection() {
+  var select = document.getElementById("select");
+  setActiveSink(select.value, function() {
+      populateSinks();
+    });
+}
+</script>
+</head>
+<body onload="populateSinks()">
+<audio id="audio" src="long_audio.ogg" controls autoplay></audio>
+<br/>
+<select style="width:100%" id="select" size=10 onClick="setActiveSinkFromSelection()"></select>
+</body>
+</html>

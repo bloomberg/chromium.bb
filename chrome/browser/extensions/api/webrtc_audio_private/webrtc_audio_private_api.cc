@@ -131,7 +131,7 @@ void WebrtcAudioPrivateGetSinksFunction::DoQuery() {
   // object run strictly in sequence; first RunImpl on the UI thread,
   // then DoQuery on the audio IO thread, then DoneOnUIThread on the
   // UI thread.
-  SetResult(wap::GetSinks::Results::Create(results).release());
+  results_.reset(wap::GetSinks::Results::Create(results).release());
 }
 
 void WebrtcAudioPrivateGetSinksFunction::DoneOnUIThread() {
@@ -174,7 +174,8 @@ void WebrtcAudioPrivateGetActiveSinkFunction::OnControllerList(
     // If there is no current audio stream for the rvh, we return an
     // empty string as the sink ID.
     DVLOG(2) << "chrome.webrtcAudioPrivate.getActiveSink: No controllers.";
-    SetResult(wap::GetActiveSink::Results::Create(std::string()).release());
+    results_.reset(
+        wap::GetActiveSink::Results::Create(std::string()).release());
     SendResponse(true);
   } else {
     DVLOG(2) << "chrome.webrtcAudioPrivate.getActiveSink: "
@@ -191,7 +192,7 @@ void WebrtcAudioPrivateGetActiveSinkFunction::OnSinkId(const std::string& id) {
     DVLOG(2) << "Received empty ID, replacing with default ID.";
     result = media::AudioManagerBase::kDefaultDeviceId;
   }
-  SetResult(wap::GetActiveSink::Results::Create(result).release());
+  results_.reset(wap::GetActiveSink::Results::Create(result).release());
   SendResponse(true);
 }
 
@@ -214,6 +215,11 @@ bool WebrtcAudioPrivateSetActiveSinkFunction::RunImpl() {
 
   tab_id_ = params->tab_id;
   sink_id_ = params->sink_id;
+
+  if (sink_id_ == media::AudioManagerBase::kDefaultDeviceId) {
+    DVLOG(2) << "Received default ID, replacing with empty ID.";
+    sink_id_ = "";
+  }
 
   return DoRunImpl(tab_id_);
 }
@@ -305,8 +311,8 @@ void WebrtcAudioPrivateGetAssociatedSinkFunction::DoneOnUIThread(
     const std::string& associated_sink_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  SetResult(wap::GetAssociatedSink::Results::Create(
-      associated_sink_id).release());
+  results_.reset(
+      wap::GetAssociatedSink::Results::Create(associated_sink_id).release());
   SendResponse(true);
 }
 

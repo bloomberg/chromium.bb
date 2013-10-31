@@ -55,6 +55,9 @@
       <include name="IDR_GAIA_AUTH_CHANNEL_JS" file="gaia_auth/channel.js" type="BINDATA" />
       <include name="IDR_GAIA_AUTH_INLINE_INJECTED_JS" file="gaia_auth/inline_injected.js" type="BINDATA" />
       <include name="IDR_GAIA_AUTH_INLINE_MAIN" file="gaia_auth/inline_main.html" allowexternalscript="true" type="BINDATA" />
+      <!-- Hangout Services extension -->
+      <include name="IDR_HANGOUT_SERVICES_BACKGROUND_HTML" file="hangout_services/background.html" type="BINDATA" />
+      <include name="IDR_HANGOUT_SERVICES_THUNK_JS" file="hangout_services/thunk.js" type="BINDATA" />
       <if expr="pp_ifdef('chromeos')">
         <!-- Background page loader  -->
         <include name="IDR_BACKLOADER_BACKGROUND_HTML" file="backloader/background.html" type="BINDATA" />
