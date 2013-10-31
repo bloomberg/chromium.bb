@@ -4402,9 +4402,10 @@ END
     else
 END
     }
-    $code .=  "    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, \"${interfaceName}\", $parentClassTemplate, ${v8ClassName}::internalFieldCount, ";
-    $code .=  $hasAttributes ? "${v8ClassName}Attributes, WTF_ARRAY_LENGTH(${v8ClassName}Attributes), " : "0, 0, ";
-    $code .= $hasFunctions ? "${v8ClassName}Methods, WTF_ARRAY_LENGTH(${v8ClassName}Methods), isolate, currentWorldType);\n" : "0, 0, isolate, currentWorldType);\n";
+    $code .=  "    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, \"${interfaceName}\", $parentClassTemplate, ${v8ClassName}::internalFieldCount,\n";
+    $code .= "        " . ($hasAttributes ? "${v8ClassName}Attributes, WTF_ARRAY_LENGTH(${v8ClassName}Attributes),\n" : "0, 0,\n");
+    $code .= "        " . ($hasFunctions ? "${v8ClassName}Methods, WTF_ARRAY_LENGTH(${v8ClassName}Methods),\n" : "0, 0,\n");
+    $code .= "        isolate, currentWorldType);\n";
 
     AddToImplIncludes("wtf/UnusedParam.h");
     $code .= "    UNUSED_PARAM(defaultSignature);\n";

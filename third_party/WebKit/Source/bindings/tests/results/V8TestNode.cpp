@@ -157,7 +157,10 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestNodeTemplate(v8::Handle<v
     desc->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestNode", V8Node::GetTemplate(isolate, currentWorldType), V8TestNode::internalFieldCount, V8TestNodeAttributes, WTF_ARRAY_LENGTH(V8TestNodeAttributes), 0, 0, isolate, currentWorldType);
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestNode", V8Node::GetTemplate(isolate, currentWorldType), V8TestNode::internalFieldCount,
+        V8TestNodeAttributes, WTF_ARRAY_LENGTH(V8TestNodeAttributes),
+        0, 0,
+        isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
     desc->SetCallHandler(V8TestNode::constructorCallback);
     desc->SetLength(0);

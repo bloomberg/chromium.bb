@@ -845,7 +845,10 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8::Han
     desc->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestInterface", v8::Local<v8::FunctionTemplate>(), V8TestInterface::internalFieldCount, V8TestInterfaceAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceAttributes), V8TestInterfaceMethods, WTF_ARRAY_LENGTH(V8TestInterfaceMethods), isolate, currentWorldType);
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestInterface", v8::Local<v8::FunctionTemplate>(), V8TestInterface::internalFieldCount,
+        V8TestInterfaceAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceAttributes),
+        V8TestInterfaceMethods, WTF_ARRAY_LENGTH(V8TestInterfaceMethods),
+        isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
     desc->SetCallHandler(V8TestInterface::constructorCallback);
     desc->SetLength(1);

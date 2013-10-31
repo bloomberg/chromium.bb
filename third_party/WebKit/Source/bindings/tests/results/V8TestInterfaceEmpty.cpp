@@ -66,7 +66,10 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceEmptyTemplate(v8
     desc->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestInterfaceEmpty", v8::Local<v8::FunctionTemplate>(), V8TestInterfaceEmpty::internalFieldCount, 0, 0, 0, 0, isolate, currentWorldType);
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestInterfaceEmpty", v8::Local<v8::FunctionTemplate>(), V8TestInterfaceEmpty::internalFieldCount,
+        0, 0,
+        0, 0,
+        isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
 
     // Custom toString template

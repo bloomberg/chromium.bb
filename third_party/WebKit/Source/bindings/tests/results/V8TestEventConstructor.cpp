@@ -142,7 +142,10 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestEventConstructorTemplate(
     desc->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestEventConstructor", v8::Local<v8::FunctionTemplate>(), V8TestEventConstructor::internalFieldCount, V8TestEventConstructorAttributes, WTF_ARRAY_LENGTH(V8TestEventConstructorAttributes), 0, 0, isolate, currentWorldType);
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "TestEventConstructor", v8::Local<v8::FunctionTemplate>(), V8TestEventConstructor::internalFieldCount,
+        V8TestEventConstructorAttributes, WTF_ARRAY_LENGTH(V8TestEventConstructorAttributes),
+        0, 0,
+        isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
     desc->SetCallHandler(V8TestEventConstructor::constructorCallback);
     desc->SetLength(1);

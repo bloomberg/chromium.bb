@@ -150,7 +150,10 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8Float64ArrayTemplate(v8::Hand
     desc->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "Float64Array", V8ArrayBufferView::GetTemplate(isolate, currentWorldType), V8Float64Array::internalFieldCount, 0, 0, V8Float64ArrayMethods, WTF_ARRAY_LENGTH(V8Float64ArrayMethods), isolate, currentWorldType);
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(desc, "Float64Array", V8ArrayBufferView::GetTemplate(isolate, currentWorldType), V8Float64Array::internalFieldCount,
+        0, 0,
+        V8Float64ArrayMethods, WTF_ARRAY_LENGTH(V8Float64ArrayMethods),
+        isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
     desc->SetCallHandler(V8Float64Array::constructorCallback);
     desc->SetLength(1);
