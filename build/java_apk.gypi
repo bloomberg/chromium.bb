@@ -232,7 +232,7 @@
         },
         {
           'action_name': 'native_libraries_template_data_<(_target_name)',
-          'message': 'Creating native_libraries_list.h for <(_target_name).',
+          'message': 'Creating native_libraries_list.h for <(_target_name)',
           'inputs': [
             '<(DEPTH)/build/android/gyp/util/build_utils.py',
             '<(DEPTH)/build/android/gyp/create_native_libraries_header.py',

@@ -2734,7 +2734,7 @@
                           '<@(swig_args)',
                           'test/pyautolib/pyautolib.i',
               ],
-              'message': 'Generating swig wrappers for pyautolib.',
+              'message': 'Generating swig wrappers for pyautolib',
               'msvs_cygwin_shell': 1,
             },
           ],  # actions
@@ -2932,7 +2932,7 @@
           'type': 'none',
           'actions': [
             {
-              'message': 'Coverage is now complete.',
+              'message': 'Coverage is now complete',
               # MSVS must have an input file and an output file.
               'inputs': [ '<(PRODUCT_DIR)/coverage.info' ],
               'outputs': [ '<(PRODUCT_DIR)/coverage-build-and-run.stamp' ],
@@ -3021,7 +3021,7 @@
               # 'message' for Linux/scons in particular.  Scons
               # requires the 'coverage' target be run from within
               # src/chrome.
-              'message': 'Compiling coverage bundles.',
+              'message': 'Compiling coverage bundles',
               # MSVS must have an input file and an output file.
               #
               # TODO(jrg):
@@ -3075,7 +3075,7 @@
               # 'message' for Linux/scons in particular.  Scons
               # requires the 'coverage' target be run from within
               # src/chrome.
-              'message': 'Running the coverage script.  NOT building anything.',
+              'message': 'Running the coverage script, NOT building anything',
               # MSVS must have an input file and an output file.
               'inputs': [ '<(PRODUCT_DIR)/coverage_bundles.py' ],
               'outputs': [ '<(PRODUCT_DIR)/coverage.info' ],

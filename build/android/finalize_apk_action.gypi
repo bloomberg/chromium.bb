@@ -18,7 +18,7 @@
 #
 
 {
-  'message': 'Signing/aligning <(_target_name) APK: <(input_apk_path).',
+  'message': 'Signing/aligning <(_target_name) APK: <(input_apk_path)',
   'variables': {
     'inputs': [],
     'keystore_path%': '<(DEPTH)/build/android/ant/chromium-debug.keystore',

@@ -187,7 +187,7 @@
           ],
           # These files are #included, so do not treat them as sources.
           'process_outputs_as_sources': 0,
-          'message': 'yasm gperf for <(RULE_INPUT_PATH).',
+          'message': 'yasm gperf for <(RULE_INPUT_PATH)',
         },
         {
           'rule_name': 'generate_re2c',
@@ -203,7 +203,7 @@
             '<(RULE_INPUT_PATH)',
           ],
           'process_outputs_as_sources': 1,
-          'message': 'yasm re2c for <(RULE_INPUT_PATH).',
+          'message': 'yasm re2c for <(RULE_INPUT_PATH)',
         },
       ],
       'actions': [
@@ -226,7 +226,7 @@
            # Not a direct source because this is #included by
            #   source/patched-yasm/modules/parsers/nasm/nasm-parser.c
           'process_outputs_as_sources': 1,
-          'message': 'yasm genmacro for <(infile).',
+          'message': 'yasm genmacro for <(infile)',
         },
         {
           'action_name': 'generate_nasm_version',
@@ -245,7 +245,7 @@
            # Not a direct source because this is #included by
            #   source/patched-yasm/modules/preprocs/nasm/nasm-preproc.c
           'process_outputs_as_sources': 0,
-          'message': 'yasm genmacro for <(infile).',
+          'message': 'yasm genmacro for <(infile)',
         },
         {
           'action_name': 'generate_win64_gas',
@@ -264,7 +264,7 @@
            # Not a direct source because this is #included by
            #   source/patched-yasm/modules/objfmts/coff/coff-objfmt.c
           'process_outputs_as_sources': 0,
-          'message': 'yasm genmacro for <(infile).',
+          'message': 'yasm genmacro for <(infile)',
         },
         {
           'action_name': 'generate_win64_nasm',
@@ -285,7 +285,7 @@
            # Not a direct source because this is #included by
            #   source/patched-yasm/modules/objfmts/coff/coff-objfmt.c
           'process_outputs_as_sources': 0,
-          'message': 'yasm genmacro for <(infile).',
+          'message': 'yasm genmacro for <(infile)',
         },
 
         ###
@@ -310,7 +310,7 @@
           # Not a direct source because this is #included by
           #   source/patched-yasm/frontends/yasm/yasm.c
           'process_outputs_as_sources': 0,
-          'message': 'Generating yasm embeddable license.',
+          'message': 'Generating yasm embeddable license',
         },
 
         ###
@@ -334,7 +334,7 @@
             '<(infile)'
           ],
           'process_outputs_as_sources': 1,
-          'message': 'Generating yasm tokens for lc3b.',
+          'message': 'Generating yasm tokens for lc3b',
         },
 
         ###
@@ -360,7 +360,7 @@
             '<(outfile)'
           ],
           'process_outputs_as_sources': 1,
-          'message': 'Generating yasm module information.',
+          'message': 'Generating yasm module information',
         },
       ],
     },
@@ -399,7 +399,7 @@
             '<(shared_generated_dir)/<(RULE_INPUT_ROOT).c',
           ],
           'process_outputs_as_sources': 0,
-          'message': 'yasm genperf for <(RULE_INPUT_PATH).',
+          'message': 'yasm genperf for <(RULE_INPUT_PATH)',
         },
       ],
       'actions': [
@@ -420,7 +420,7 @@
             '<(gen_insn_path)',
             '<(shared_generated_dir)',
           ],
-          'message': 'Running <(gen_insn_path).',
+          'message': 'Running <(gen_insn_path)',
           'process_outputs_as_sources': 0,
         },
         {
@@ -433,7 +433,7 @@
             '<(shared_generated_dir)/<(version_file)'
           ],
           'message': 'Generating yasm version file: '
-                     '<(shared_generated_dir)/<(version_file).',
+                     '<(shared_generated_dir)/<(version_file)',
           'process_outputs_as_sources': 0,
         },
       ],

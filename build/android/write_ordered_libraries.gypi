@@ -20,7 +20,7 @@
 
 {
   'action_name': 'ordered_libraries_<(_target_name)',
-  'message': 'Writing dependency ordered libraries for <(_target_name).',
+  'message': 'Writing dependency ordered libraries for <(_target_name)',
   'variables': {
     'input_libraries%': [],
   },

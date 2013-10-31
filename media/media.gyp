@@ -673,7 +673,7 @@
                              '<@(_inputs)',
                   ],
                   'process_outputs_as_sources': 1,
-                  'message': 'Generating Pulse stubs for dynamic loading.',
+                  'message': 'Generating Pulse stubs for dynamic loading',
                 },
               ],
               'conditions': [

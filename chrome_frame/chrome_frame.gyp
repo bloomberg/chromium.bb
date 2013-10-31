@@ -835,7 +835,7 @@
           'process_outputs_as_sources': 1,
           'message':
               'Assembling <(RULE_INPUT_PATH) to ' \
-              '<(INTERMEDIATE_DIR)\<(RULE_INPUT_ROOT).obj.',
+              '<(INTERMEDIATE_DIR)\<(RULE_INPUT_ROOT).obj',
         },
       ],
       'msvs_settings': {
@@ -974,7 +974,7 @@
           'type': 'none',
           'actions': [
             {
-              'message': 'Coverage is now complete.',
+              'message': 'Coverage is now complete',
               # MSVS must have an input file and an output file.
               'inputs': [ '<(PRODUCT_DIR)/gcf_coverage.info' ],
               'outputs': [ '<(PRODUCT_DIR)/gcf_coverage-build-and-run.stamp' ],

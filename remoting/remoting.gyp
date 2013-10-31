@@ -2181,7 +2181,7 @@
                 '<(RULE_INPUT_PATH)',
               ],
               'process_outputs_as_sources': 1,
-              'message': 'Running message compiler on <(RULE_INPUT_PATH).',
+              'message': 'Running message compiler on <(RULE_INPUT_PATH)',
             },
           ],
         }],

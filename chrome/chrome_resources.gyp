@@ -468,7 +468,7 @@
                      'credits',
                      '<(about_credits_file)',
           ],
-          'message': 'Generating about:credits.',
+          'message': 'Generating about:credits',
         },
       ],
     },

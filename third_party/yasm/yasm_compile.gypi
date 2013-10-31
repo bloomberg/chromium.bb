@@ -113,7 +113,7 @@
         '<(RULE_INPUT_PATH)',
       ],
       'process_outputs_as_sources': 1,
-      'message': 'Compile assembly <(RULE_INPUT_PATH).',
+      'message': 'Compile assembly <(RULE_INPUT_PATH)',
     },
   ],  # rules
 }

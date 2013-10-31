@@ -54,7 +54,7 @@
                  '<@(generator_args)',
                  '--generate',
       ],
-      'message': 'Generating <(_target_name) shim headers.',
+      'message': 'Generating <(_target_name) shim headers',
     },
   ],
 }
