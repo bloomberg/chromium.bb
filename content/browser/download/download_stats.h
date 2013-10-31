@@ -15,6 +15,7 @@
 #include "content/public/browser/download_interrupt_reasons.h"
 
 namespace base {
+class FilePath;
 class Time;
 class TimeDelta;
 class TimeTicks;
@@ -129,11 +130,15 @@ void RecordDownloadInterrupted(DownloadInterruptReason reason,
                                int64 total);
 
 // Record a dangerous download accept event.
-void RecordDangerousDownloadAccept(DownloadDangerType danger_type);
+void RecordDangerousDownloadAccept(
+    DownloadDangerType danger_type,
+    const base::FilePath& file_path);
 
 // Record a dangerous download discard event.
-void RecordDangerousDownloadDiscard(DownloadDiscardReason reason,
-                                    DownloadDangerType danger_type);
+void RecordDangerousDownloadDiscard(
+    DownloadDiscardReason reason,
+    DownloadDangerType danger_type,
+    const base::FilePath& file_path);
 
 // Records the mime type of the download.
 void RecordDownloadMimeType(const std::string& mime_type);

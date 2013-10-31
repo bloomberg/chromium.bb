@@ -5,6 +5,7 @@
 #include "content/browser/download/download_stats.h"
 
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_util.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -64,6 +65,144 @@ void RecordContentDispositionCountFlag(
     int flags_to_test,
     net::HttpContentDisposition::ParseResultFlags flag) {
   RecordContentDispositionCount(type, (flags_to_test & flag) == flag);
+}
+
+// Do not insert, delete, or reorder; this is being histogrammed. Append only.
+// All of the download_extensions.cc file types should be in this list.
+const base::FilePath::CharType* kDangerousFileTypes[] = {
+  FILE_PATH_LITERAL(".ad"),
+  FILE_PATH_LITERAL(".ade"),
+  FILE_PATH_LITERAL(".adp"),
+  FILE_PATH_LITERAL(".ah"),
+  FILE_PATH_LITERAL(".apk"),
+  FILE_PATH_LITERAL(".app"),
+  FILE_PATH_LITERAL(".application"),
+  FILE_PATH_LITERAL(".asp"),
+  FILE_PATH_LITERAL(".asx"),
+  FILE_PATH_LITERAL(".bas"),
+  FILE_PATH_LITERAL(".bash"),
+  FILE_PATH_LITERAL(".bat"),
+  FILE_PATH_LITERAL(".cfg"),
+  FILE_PATH_LITERAL(".chi"),
+  FILE_PATH_LITERAL(".chm"),
+  FILE_PATH_LITERAL(".class"),
+  FILE_PATH_LITERAL(".cmd"),
+  FILE_PATH_LITERAL(".com"),
+  FILE_PATH_LITERAL(".command"),
+  FILE_PATH_LITERAL(".crt"),
+  FILE_PATH_LITERAL(".crx"),
+  FILE_PATH_LITERAL(".csh"),
+  FILE_PATH_LITERAL(".deb"),
+  FILE_PATH_LITERAL(".dex"),
+  FILE_PATH_LITERAL(".dll"),
+  FILE_PATH_LITERAL(".drv"),
+  FILE_PATH_LITERAL(".exe"),
+  FILE_PATH_LITERAL(".fxp"),
+  FILE_PATH_LITERAL(".grp"),
+  FILE_PATH_LITERAL(".hlp"),
+  FILE_PATH_LITERAL(".hta"),
+  FILE_PATH_LITERAL(".htm"),
+  FILE_PATH_LITERAL(".html"),
+  FILE_PATH_LITERAL(".htt"),
+  FILE_PATH_LITERAL(".inf"),
+  FILE_PATH_LITERAL(".ini"),
+  FILE_PATH_LITERAL(".ins"),
+  FILE_PATH_LITERAL(".isp"),
+  FILE_PATH_LITERAL(".jar"),
+  FILE_PATH_LITERAL(".jnlp"),
+  FILE_PATH_LITERAL(".user.js"),
+  FILE_PATH_LITERAL(".js"),
+  FILE_PATH_LITERAL(".jse"),
+  FILE_PATH_LITERAL(".ksh"),
+  FILE_PATH_LITERAL(".lnk"),
+  FILE_PATH_LITERAL(".local"),
+  FILE_PATH_LITERAL(".mad"),
+  FILE_PATH_LITERAL(".maf"),
+  FILE_PATH_LITERAL(".mag"),
+  FILE_PATH_LITERAL(".mam"),
+  FILE_PATH_LITERAL(".manifest"),
+  FILE_PATH_LITERAL(".maq"),
+  FILE_PATH_LITERAL(".mar"),
+  FILE_PATH_LITERAL(".mas"),
+  FILE_PATH_LITERAL(".mat"),
+  FILE_PATH_LITERAL(".mau"),
+  FILE_PATH_LITERAL(".mav"),
+  FILE_PATH_LITERAL(".maw"),
+  FILE_PATH_LITERAL(".mda"),
+  FILE_PATH_LITERAL(".mdb"),
+  FILE_PATH_LITERAL(".mde"),
+  FILE_PATH_LITERAL(".mdt"),
+  FILE_PATH_LITERAL(".mdw"),
+  FILE_PATH_LITERAL(".mdz"),
+  FILE_PATH_LITERAL(".mht"),
+  FILE_PATH_LITERAL(".mhtml"),
+  FILE_PATH_LITERAL(".mmc"),
+  FILE_PATH_LITERAL(".mof"),
+  FILE_PATH_LITERAL(".msc"),
+  FILE_PATH_LITERAL(".msh"),
+  FILE_PATH_LITERAL(".mshxml"),
+  FILE_PATH_LITERAL(".msi"),
+  FILE_PATH_LITERAL(".msp"),
+  FILE_PATH_LITERAL(".mst"),
+  FILE_PATH_LITERAL(".ocx"),
+  FILE_PATH_LITERAL(".ops"),
+  FILE_PATH_LITERAL(".pcd"),
+  FILE_PATH_LITERAL(".pif"),
+  FILE_PATH_LITERAL(".pkg"),
+  FILE_PATH_LITERAL(".pl"),
+  FILE_PATH_LITERAL(".plg"),
+  FILE_PATH_LITERAL(".prf"),
+  FILE_PATH_LITERAL(".prg"),
+  FILE_PATH_LITERAL(".pst"),
+  FILE_PATH_LITERAL(".py"),
+  FILE_PATH_LITERAL(".pyc"),
+  FILE_PATH_LITERAL(".pyw"),
+  FILE_PATH_LITERAL(".rb"),
+  FILE_PATH_LITERAL(".reg"),
+  FILE_PATH_LITERAL(".rpm"),
+  FILE_PATH_LITERAL(".scf"),
+  FILE_PATH_LITERAL(".scr"),
+  FILE_PATH_LITERAL(".sct"),
+  FILE_PATH_LITERAL(".sh"),
+  FILE_PATH_LITERAL(".shar"),
+  FILE_PATH_LITERAL(".shb"),
+  FILE_PATH_LITERAL(".shs"),
+  FILE_PATH_LITERAL(".shtm"),
+  FILE_PATH_LITERAL(".shtml"),
+  FILE_PATH_LITERAL(".spl"),
+  FILE_PATH_LITERAL(".svg"),
+  FILE_PATH_LITERAL(".swf"),
+  FILE_PATH_LITERAL(".sys"),
+  FILE_PATH_LITERAL(".tcsh"),
+  FILE_PATH_LITERAL(".url"),
+  FILE_PATH_LITERAL(".vb"),
+  FILE_PATH_LITERAL(".vbe"),
+  FILE_PATH_LITERAL(".vbs"),
+  FILE_PATH_LITERAL(".vsd"),
+  FILE_PATH_LITERAL(".vsmacros"),
+  FILE_PATH_LITERAL(".vss"),
+  FILE_PATH_LITERAL(".vst"),
+  FILE_PATH_LITERAL(".vsw"),
+  FILE_PATH_LITERAL(".ws"),
+  FILE_PATH_LITERAL(".wsc"),
+  FILE_PATH_LITERAL(".wsf"),
+  FILE_PATH_LITERAL(".wsh"),
+  FILE_PATH_LITERAL(".xbap"),
+  FILE_PATH_LITERAL(".xht"),
+  FILE_PATH_LITERAL(".xhtm"),
+  FILE_PATH_LITERAL(".xhtml"),
+  FILE_PATH_LITERAL(".xml"),
+  FILE_PATH_LITERAL(".xsl"),
+  FILE_PATH_LITERAL(".xslt")
+};
+
+// Maps extensions to their matching UMA histogram int value.
+int GetDangerousFileType(const base::FilePath& file_path) {
+  for (size_t i = 0; i < arraysize(kDangerousFileTypes); ++i) {
+    if (file_path.MatchesExtension(kDangerousFileTypes[i]))
+      return i + 1;
+  }
+  return 0;  // Unknown extension.
 }
 
 } // namespace
@@ -145,23 +284,38 @@ void RecordDownloadInterrupted(DownloadInterruptReason reason,
   UMA_HISTOGRAM_BOOLEAN("Download.InterruptedUnknownSize", unknown_size);
 }
 
-void RecordDangerousDownloadAccept(DownloadDangerType danger_type) {
+void RecordDangerousDownloadAccept(DownloadDangerType danger_type,
+                                   const base::FilePath& file_path) {
   UMA_HISTOGRAM_ENUMERATION("Download.DangerousDownloadValidated",
                             danger_type,
                             DOWNLOAD_DANGER_TYPE_MAX);
+  if (danger_type == DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
+        "Download.DangerousFile.DangerousDownloadValidated",
+        GetDangerousFileType(file_path));
+  }
 }
 
 void RecordDangerousDownloadDiscard(DownloadDiscardReason reason,
-                                    DownloadDangerType danger_type) {
+                                    DownloadDangerType danger_type,
+                                    const base::FilePath& file_path) {
   switch (reason) {
     case DOWNLOAD_DISCARD_DUE_TO_USER_ACTION:
       UMA_HISTOGRAM_ENUMERATION(
           "Download.UserDiscard", danger_type, DOWNLOAD_DANGER_TYPE_MAX);
+      if (danger_type == DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE) {
+        UMA_HISTOGRAM_SPARSE_SLOWLY("Download.DangerousFile.UserDiscard",
+                                    GetDangerousFileType(file_path));
+      }
       break;
     case DOWNLOAD_DISCARD_DUE_TO_SHUTDOWN:
       UMA_HISTOGRAM_ENUMERATION(
           "Download.Discard", danger_type, DOWNLOAD_DANGER_TYPE_MAX);
       break;
+      if (danger_type == DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE) {
+        UMA_HISTOGRAM_SPARSE_SLOWLY("Download.DangerousFile.Discard",
+                                    GetDangerousFileType(file_path));
+      }
     default:
       NOTREACHED();
   }

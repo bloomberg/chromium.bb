@@ -2746,6 +2746,31 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Download.DangerousFile.DangerousDownloadValidated"
+    enum="DownloadItem.DangerousFileType">
+  <summary>
+    User chose to save a download which was marked DANGEROUS_FILE. Grouped by
+    the type of file.
+  </summary>
+</histogram>
+
+<histogram name="Download.DangerousFile.Discard"
+    enum="DownloadItem.DangerousFileType">
+  <summary>
+    A download which was marked DANGEROUS_FILE was discarded without the user
+    directly choosing, because the browser was closed.  Grouped by the file
+    extension.
+  </summary>
+</histogram>
+
+<histogram name="Download.DangerousFile.UserDiscard"
+    enum="DownloadItem.DangerousFileType">
+  <summary>
+    User chose to discard a download which was marked DANGEROUS_FILE. Grouped by
+    the file extension.
+  </summary>
+</histogram>
+
 <histogram name="Download.DatabaseRecordDropped"
     enum="DownloadDatabaseRecordDroppedType">
   <summary>Reason for dropping a record read in from the DB.</summary>
@@ -20845,6 +20870,134 @@ other types of suffix sets.
 <enum name="DownloadInterruptedUnknownSizeType" type="int">
   <int value="0" label="Size Known"/>
   <int value="1" label="Size Unknown"/>
+</enum>
+
+<enum name="DownloadItem.DangerousFileType" type="int">
+  <int value="0" label="unknown"/>
+  <int value="1" label="ad"/>
+  <int value="2" label="ade"/>
+  <int value="3" label="adp"/>
+  <int value="4" label="ah"/>
+  <int value="5" label="apk"/>
+  <int value="6" label="app"/>
+  <int value="7" label="application"/>
+  <int value="8" label="asp"/>
+  <int value="9" label="asx"/>
+  <int value="10" label="bas"/>
+  <int value="11" label="bash"/>
+  <int value="12" label="bat"/>
+  <int value="13" label="cfg"/>
+  <int value="14" label="chi"/>
+  <int value="15" label="chm"/>
+  <int value="16" label="class"/>
+  <int value="17" label="cmd"/>
+  <int value="18" label="com"/>
+  <int value="19" label="command"/>
+  <int value="20" label="crt"/>
+  <int value="21" label="crx"/>
+  <int value="22" label="csh"/>
+  <int value="23" label="deb"/>
+  <int value="24" label="dex"/>
+  <int value="25" label="dll"/>
+  <int value="26" label="drv"/>
+  <int value="27" label="exe"/>
+  <int value="28" label="fxp"/>
+  <int value="29" label="grp"/>
+  <int value="30" label="hlp"/>
+  <int value="31" label="hta"/>
+  <int value="32" label="htm"/>
+  <int value="33" label="html"/>
+  <int value="34" label="htt"/>
+  <int value="35" label="inf"/>
+  <int value="36" label="ini"/>
+  <int value="37" label="ins"/>
+  <int value="38" label="isp"/>
+  <int value="39" label="jar"/>
+  <int value="40" label="jnlp"/>
+  <int value="41" label="user.js"/>
+  <int value="42" label="js"/>
+  <int value="43" label="jse"/>
+  <int value="44" label="ksh"/>
+  <int value="45" label="lnk"/>
+  <int value="46" label="local"/>
+  <int value="47" label="mad"/>
+  <int value="48" label="maf"/>
+  <int value="49" label="mag"/>
+  <int value="50" label="mam"/>
+  <int value="51" label="manifest"/>
+  <int value="52" label="maq"/>
+  <int value="53" label="mar"/>
+  <int value="54" label="mas"/>
+  <int value="55" label="mat"/>
+  <int value="56" label="mau"/>
+  <int value="57" label="mav"/>
+  <int value="58" label="maw"/>
+  <int value="59" label="mda"/>
+  <int value="60" label="mdb"/>
+  <int value="61" label="mde"/>
+  <int value="62" label="mdt"/>
+  <int value="63" label="mdw"/>
+  <int value="64" label="mdz"/>
+  <int value="65" label="mht"/>
+  <int value="66" label="mhtml"/>
+  <int value="67" label="mmc"/>
+  <int value="68" label="mof"/>
+  <int value="69" label="msc"/>
+  <int value="70" label="msh"/>
+  <int value="71" label="mshxml"/>
+  <int value="72" label="msi"/>
+  <int value="73" label="msp"/>
+  <int value="74" label="mst"/>
+  <int value="75" label="ocx"/>
+  <int value="76" label="ops"/>
+  <int value="77" label="pcd"/>
+  <int value="78" label="pif"/>
+  <int value="79" label="pkg"/>
+  <int value="80" label="pl"/>
+  <int value="81" label="plg"/>
+  <int value="82" label="prf"/>
+  <int value="83" label="prg"/>
+  <int value="84" label="pst"/>
+  <int value="85" label="py"/>
+  <int value="86" label="pyc"/>
+  <int value="87" label="pyw"/>
+  <int value="88" label="rb"/>
+  <int value="89" label="reg"/>
+  <int value="90" label="rpm"/>
+  <int value="91" label="scf"/>
+  <int value="92" label="scr"/>
+  <int value="93" label="sct"/>
+  <int value="94" label="sh"/>
+  <int value="95" label="shar"/>
+  <int value="96" label="shb"/>
+  <int value="97" label="shs"/>
+  <int value="98" label="shtm"/>
+  <int value="99" label="shtml"/>
+  <int value="100" label="spl"/>
+  <int value="101" label="svg"/>
+  <int value="102" label="swf"/>
+  <int value="103" label="sys"/>
+  <int value="104" label="tcsh"/>
+  <int value="105" label="url"/>
+  <int value="106" label="vb"/>
+  <int value="107" label="vbe"/>
+  <int value="108" label="vbs"/>
+  <int value="109" label="vsd"/>
+  <int value="110" label="vsmacros"/>
+  <int value="111" label="vss"/>
+  <int value="112" label="vst"/>
+  <int value="113" label="vsw"/>
+  <int value="114" label="ws"/>
+  <int value="115" label="wsc"/>
+  <int value="116" label="wsf"/>
+  <int value="117" label="wsh"/>
+  <int value="118" label="xbap"/>
+  <int value="119" label="xht"/>
+  <int value="120" label="xhtm"/>
+  <int value="121" label="xhtml"/>
+  <int value="122" label="xml"/>
+  <int value="123" label="xsl"/>
+  <int value="124" label="xslt"/>
 </enum>
 
 <enum name="DownloadItem.DangerType" type="int">

@@ -294,7 +294,8 @@ void DownloadItemImpl::ValidateDangerousDownload() {
   if (IsDone() || !IsDangerous())
     return;
 
-  RecordDangerousDownloadAccept(GetDangerType());
+  RecordDangerousDownloadAccept(GetDangerType(),
+                                GetTargetFilePath());
 
   danger_type_ = DOWNLOAD_DANGER_TYPE_USER_VALIDATED;
 
@@ -380,7 +381,8 @@ void DownloadItemImpl::Cancel(bool user_cancel) {
     RecordDangerousDownloadDiscard(
         user_cancel ? DOWNLOAD_DISCARD_DUE_TO_USER_ACTION
                     : DOWNLOAD_DISCARD_DUE_TO_SHUTDOWN,
-        GetDangerType());
+        GetDangerType(),
+        GetTargetFilePath());
   }
 
   last_reason_ = user_cancel ? DOWNLOAD_INTERRUPT_REASON_USER_CANCELED
