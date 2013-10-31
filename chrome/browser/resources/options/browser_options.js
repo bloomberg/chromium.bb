@@ -903,19 +903,18 @@ cr.define('options', function() {
     onDefaultDownloadDirectoryChanged_: function(event) {
       $('downloadLocationPath').value = event.value.value;
       if (cr.isChromeOS) {
-        // On ChromeOS, replace /special/drive with Drive for drive paths, and
-        // /home/chronos/user/Downloads with Downloads for local files.
-        // Also replace '/' with ' \u203a ' (angled quote sign) everywhere.
+        // On ChromeOS, replace /special/drive/root with Drive for drive paths,
+        // /home/chronos/user/Downloads or /home/chronos/u-<hash>/Downloads
+        // with Downloads for local paths, and '/' with ' \u203a ' (angled quote
+        // sign) everywhere. The modified path is used only for display purpose.
         var path = $('downloadLocationPath').value;
         path = path.replace(/^\/special\/drive\/root/, 'Google Drive');
-        path = path.replace(/^\/home\/chronos\/user\//, '');
+        path = path.replace(/^\/home\/chronos\/(user|u-[^\/]*)\//, '');
         path = path.replace(/\//g, ' \u203a ');
         $('downloadLocationPath').value = path;
       }
-      if (event.value.disabled)
-        $('download-location-label').classList.add('disabled');
-      else
-        $('download-location-label').classList.remove('disabled');
+      $('download-location-label').classList.toggle('disabled',
+                                                    event.value.disabled);
       $('downloadLocationChangeButton').disabled = event.value.disabled;
     },
 
