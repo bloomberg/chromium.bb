@@ -60,10 +60,8 @@ class MacTool(object):
 
   def _CopyXIBFile(self, source, dest):
     """Compiles a XIB file with ibtool into a binary plist in the bundle."""
-    tools_dir = os.environ.get('DEVELOPER_BIN_DIR', '/usr/bin')
-    args = [os.path.join(tools_dir, 'ibtool'), '--errors', '--warnings',
-        '--notices', '--output-format', 'human-readable-text', '--compile',
-        dest, source]
+    args = ['xcrun', 'ibtool', '--errors', '--warnings', '--notices',
+        '--output-format', 'human-readable-text', '--compile', dest, source]
     ibtool_section_re = re.compile(r'/\*.*\*/')
     ibtool_re = re.compile(r'.*note:.*is clipping its content')
     ibtoolout = subprocess.Popen(args, stdout=subprocess.PIPE)
