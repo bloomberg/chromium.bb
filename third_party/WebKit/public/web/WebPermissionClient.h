@@ -101,6 +101,9 @@ public:
     // Controls whether pushState and related History APIs are enabled for this frame.
     virtual bool allowPushState(const WebDocument&) { return true; }
 
+    // Controls whether WebGL extension WEBGL_debug_renderer_info is allowed for this frame.
+    virtual bool allowWebGLDebugRendererInfo(WebFrame*) { return false; }
+
     // Notifies the client that the frame would have instantiated a plug-in if plug-ins were enabled.
     virtual void didNotAllowPlugins(WebFrame*) { }
 

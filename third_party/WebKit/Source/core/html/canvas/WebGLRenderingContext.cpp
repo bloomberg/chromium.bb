@@ -624,7 +624,7 @@ WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, Pa
     registerExtension<WebGLDrawBuffers>(m_webglDrawBuffers, DraftExtension);
 
     // Register privileged extensions.
-    registerExtension<WebGLDebugRendererInfo>(m_webglDebugRendererInfo, PrivilegedExtension);
+    registerExtension<WebGLDebugRendererInfo>(m_webglDebugRendererInfo, WebGLDebugRendererInfoExtension);
     registerExtension<WebGLDebugShaders>(m_webglDebugShaders, PrivilegedExtension);
 }
 
@@ -726,6 +726,14 @@ bool WebGLRenderingContext::allowPrivilegedExtensions() const
     if (Page* p = canvas()->document().page())
         return p->settings().privilegedWebGLExtensionsEnabled();
     return false;
+}
+
+bool WebGLRenderingContext::allowWebGLDebugRendererInfo() const
+{
+    if (allowPrivilegedExtensions())
+        return true;
+    Frame* frame = canvas()->document().frame();
+    return frame && frame->loader().client()->allowWebGLDebugRendererInfo();
 }
 
 void WebGLRenderingContext::addCompressedTextureFormat(GC3Denum format)
@@ -2177,6 +2185,8 @@ PassRefPtr<WebGLExtension> WebGLRenderingContext::getExtension(const String& nam
     for (size_t i = 0; i < m_extensions.size(); ++i) {
         ExtensionTracker* tracker = m_extensions[i];
         if (tracker->matchesNameWithPrefixes(name)) {
+            if (tracker->webglDebugRendererInfo() && !allowWebGLDebugRendererInfo())
+                return 0;
             if (tracker->privileged() && !allowPrivilegedExtensions())
                 return 0;
             if (tracker->draft() && !RuntimeEnabledFeatures::webGLDraftExtensionsEnabled())
@@ -2630,6 +2640,8 @@ Vector<String> WebGLRenderingContext::getSupportedExtensions()
 
     for (size_t i = 0; i < m_extensions.size(); ++i) {
         ExtensionTracker* tracker = m_extensions[i];
+        if (tracker->webglDebugRendererInfo() && !allowWebGLDebugRendererInfo())
+            continue;
         if (tracker->privileged() && !allowPrivilegedExtensions())
             continue;
         if (tracker->draft() && !RuntimeEnabledFeatures::webGLDraftExtensionsEnabled())

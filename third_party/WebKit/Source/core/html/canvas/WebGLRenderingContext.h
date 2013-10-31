@@ -539,6 +539,7 @@ public:
         DraftExtension      = 0x01,
         PrivilegedExtension = 0x02,
         PrefixedExtension   = 0x04,
+        WebGLDebugRendererInfoExtension = 0x08,
     };
 
     class ExtensionTracker {
@@ -547,6 +548,7 @@ public:
             : m_privileged(flags & PrivilegedExtension)
             , m_draft(flags & DraftExtension)
             , m_prefixed(flags & PrefixedExtension)
+            , m_webglDebugRendererInfo(flags & WebGLDebugRendererInfoExtension)
             , m_prefixes(prefixes)
         {
         }
@@ -570,6 +572,11 @@ public:
             return m_draft;
         }
 
+        bool webglDebugRendererInfo() const
+        {
+            return m_webglDebugRendererInfo;
+        }
+
         bool matchesNameWithPrefixes(const String&) const;
 
         virtual PassRefPtr<WebGLExtension> getExtension(WebGLRenderingContext*) const = 0;
@@ -581,6 +588,7 @@ public:
         bool m_privileged;
         bool m_draft;
         bool m_prefixed;
+        bool m_webglDebugRendererInfo;
         const char* const* m_prefixes;
     };
 
@@ -859,6 +867,11 @@ public:
     // Determine if we are running privileged code in the browser, for example,
     // a Safari or Chrome extension.
     bool allowPrivilegedExtensions() const;
+
+    // Determine if WEBGL_debug_renderer_info extension is enabled. For the
+    // moment it can be enabled either through a chromium finch experiment
+    // or for privileged code in the browser.
+    bool allowWebGLDebugRendererInfo() const;
 
     enum ConsoleDisplayPreference {
         DisplayInConsole,
