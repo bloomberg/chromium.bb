@@ -6,7 +6,6 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   rest-devsite-examples.rst
    overview.rst
    quick-start.rst
    nacl-and-pnacl.rst
@@ -14,7 +13,6 @@ Contents:
    sdk/index.rst
    sdk/download.rst
    sdk/examples.rst
-   sdk/release-notes.rst
    sdk/release-notes.rst
    devguide/index.rst
    devguide/tutorial/index.rst

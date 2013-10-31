@@ -1,0 +1,7 @@
+toc:
+- title: "Version ${version} (${folder})"
+  path: /native-client/${folder}version
+- title: "News & Announcements"
+  path: /native-client/${folder}announcements
+${toc}
+- include: /native-client/${folder}_reference_toc.yaml

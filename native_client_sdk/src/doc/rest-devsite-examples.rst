@@ -1,5 +1,7 @@
 .. _getting_started:
 
+:orphan:
+
 ####################################################
 Examples of ReST markup for devsite (Document title)
 ####################################################

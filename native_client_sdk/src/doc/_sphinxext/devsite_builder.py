@@ -6,7 +6,9 @@
 # This is a Sphinx extension.
 #
 
+from __future__ import print_function
 import codecs
+from collections import namedtuple, OrderedDict
 import os
 import string
 from docutils import nodes
@@ -57,6 +59,9 @@ DEVSITE_BUTTERBAR = '{{butterbar}}'
 NONPROD_CSS = '<link href="/_static/css/local_extensions.css"'\
               'rel="stylesheet" type="text/css"/>'
 NONPROD_META_HEAD = '<meta charset="utf-8" />'
+
+# Path to the top-level YAML table-of-contents file for the devsite
+BOOK_TOC_TEMPLATE = '_book_template.yaml'
 
 
 class DevsiteHTMLTranslator(HTMLTranslator):
@@ -237,8 +242,8 @@ class DevsiteBuilder(StandaloneHTMLBuilder):
   def init(self):
     self.devsite_production_mode = int(self.config.devsite_production_mode) == 1
     self.kill_internal_links = int(self.config.kill_internal_links) == 1
-    print "----> Devsite builder with production mode = %d" % (
-        self.devsite_production_mode,)
+    self.info("----> Devsite builder with production mode = %d" % (
+        self.devsite_production_mode,))
     self.config_hash = ''
     self.tags_hash = ''
     self.theme = None       # no theme necessary
@@ -248,36 +253,8 @@ class DevsiteBuilder(StandaloneHTMLBuilder):
 
   def finish(self):
     super(DevsiteBuilder, self).finish()
-
-    if self.devsite_production_mode:
-      self.info(bold('generating yaml files... '), nonl=True)
-
-      substitutions = {
-        'version': PEPPER_VERSION,
-        'folder': self.config.devsite_foldername
-      }
-
-      olddir = os.getcwd()
-      try:
-        os.chdir(self.env.srcdir)
-        for root, dirs, files in os.walk('.'):
-          root = os.path.normpath(root)
-          if root.startswith("_"):
-            continue
-          for filename in files:
-            if os.path.splitext(filename)[1] != ".yaml":
-              continue
-            filename = os.path.join(root, filename)
-            outfile = os.path.join(self.outdir, filename)
-            with open(filename) as f:
-              template = string.Template(f.read())
-
-            with open(outfile, 'w') as f:
-              f.write(template.substitute(substitutions))
-      finally:
-        os.chdir(olddir)
-
-      self.info()
+    self.info(bold('generating YAML table-of-contents files... '))
+    create_toc_yaml_files(self.app)
 
   def dump_inventory(self):
     # We don't want an inventory file when building for devsite
@@ -366,6 +343,170 @@ class NaclCodeDirective(Directive):
     literal['prettyprint'] = self.options.get('prettyprint', 1)
     return [literal]
 
+# RstFileInfo and RstDirInfo are types that are used to represent a hierarchical
+# tree of directories and files. What ends up being created is something like
+# the following:
+#
+# { 'overview.rst':     RstFileInfo('overview.rst', 'Overview'),
+#   'quick-start.rst':  RstFileInfo('quick-start.rst', 'Quick Start'),
+#   'sdk':              RstDirInfo('sdk', 'SDK', {
+#                         'index.rst': RstFileInfo('sdk/index.rst', 'SDK'),
+#                         ...}),
+#   'devguide':
+#     RstDirInfo('devguide', "Developer's Guide", {
+#       'index.rst':  RstFileInfo('devguide/index.rst', 'Devguide index'),
+#       'tutorial':   RstDirInfo('devguide/tutorial', 'Tutorial', {
+#         ...}))
+# }
+#
+# Note: the containers are actually OrderedDicts.
+RstFileInfo = namedtuple('RstFileInfo', 'path title')
+RstDirInfo = namedtuple('RstDirInfo', 'path title items')
+
+def create_toc_yaml_files(app):
+  rst_tree = parse_rst_index_tree(app)
+  generate_yaml_tree(app, rst_tree, rootpath=None, title=None)
+
+def dump_rst_tree(tree, indent=0):
+  """ tree: a sequence of RstDirInfo/RstFileInfo objects.
+  """
+  for path, item in tree.items():
+    if isinstance(item, RstFileInfo):
+      print(' ' * indent, item.path)
+    else:
+      print(' ' * indent, 'Dumping subtree', item.path)
+      dump_rst_tree(item.items, indent + 4)
+
+def generate_yaml_tree(app, rst_tree, rootpath=None, title=None):
+  """Generate YAML table-of-contents files in the build directory.
+
+  Arguments:
+
+    app: Sphinx app object
+    rst_tree: the RST tree from parse_rst_index_tree
+
+  The following two arguments should be left default in the top-level call;
+  they are used for recursive calls.
+
+    rootpath: path within the full rst_tree for this tree.
+    title: title for the current tree.
+  """
+  # Template substitutions for the generated YAML data.
+  substitutions = {
+    'version': PEPPER_VERSION,
+    'folder': ''}
+  if app.config.devsite_foldername:
+    substitutions['folder'] = app.config.devsite_foldername + '/'
+
+  # toclines collects a list of lines to be generated into the YAML file.
+  # The logic here handles two cases: top-level table of contents (goes into
+  # top-level _book.yaml) and per-directory _toc.yaml files.
+  toclines = []
+  if rootpath is None:
+    # Top-level TOC.
+    out_path = os.path.join(app.outdir, '_book.yaml')
+    template_path = os.path.join(app.srcdir, '_book_template.yaml')
+    indent = 0
+  else:
+    out_path = os.path.join(app.outdir, rootpath, '_toc.yaml')
+    template_path = None
+    toclines.append('- title: "%s"' % title)
+    toclines.append('  path: /native-client/${folder}%s' % rootpath)
+    toclines.append('  section:')
+    indent = 4
+
+  def add_tocline(s):
+    toclines.append((' ' * indent) + s)
+
+  # A list of discovered subtrees that need to be processed after we're done
+  # with this one.
+  subtrees = []
+
+  for name, item in rst_tree.items():
+    if isinstance(item, RstFileInfo):
+      add_tocline('- title: "%s"' % item.title)
+      add_tocline('  path: /native-client/${folder}%s' % (
+        os.path.splitext(item.path)[0]))
+    else:
+      assert isinstance(item, RstDirInfo)
+      add_tocline('- include: /native-client/${folder}%s/_toc.yaml' % item.path)
+      subtrees.append(item)
+
+  if template_path is not None:
+    toc = '\n'.join(toclines)
+    # When we have a template file, read the template and substitute the
+    # contents in the '${toc}' variable (and then apply substitutions on that
+    # recursively...)
+    with open(template_path) as tfile:
+      toc = string.Template(tfile.read()).substitute(toc=toc, **substitutions)
+      toc = string.Template(toc).substitute(substitutions)
+  else:
+    toc = '\n'.join(['toc:'] + toclines)
+    toc = string.Template(toc).substitute(substitutions)
+
+  with open(out_path, 'w') as outfile:
+    outfile.write(toc)
+  app.info('Wrote %s' % out_path)
+
+  for subtree in subtrees:
+    # Call self recursively on subtrees.
+    generate_yaml_tree(app, subtree.items, rootpath=subtree.path,
+                       title=subtree.title)
+
+def parse_rst_index_tree(app):
+  """Parse the top-level index.rst and build a tree of RST files and dirs.
+
+  Return the top-level tree, which is an OrderedDict. See the comment above
+  RstFileInfo for more details.
+  """
+  # Parse index.rst to create a list of all known .rst files - their paths
+  # within the source tree and the titles of the documents they contain. The
+  # result is rst_files - an ordered dict mapping path->title.
+  with open(os.path.join(app.srcdir, 'index.rst')) as f:
+    paths = [line.strip() for line in f if line.strip().endswith('.rst')]
+  rst_files = OrderedDict()
+  for path in paths:
+    path_noext = os.path.splitext(path)[0]
+    if path_noext in app.env.titles:
+      rst_files[path] = app.env.titles[path_noext].astext()
+    else:
+      app.warn('unable to get title for path %s' % path)
+      continue
+  # rst_files represent a file/dir hierarchy which has to be unraveled into a
+  # hierarchical data structure.
+  rst_tree = OrderedDict()
+  for path in rst_files:
+    path_components = path.split('/')
+    cur_dir_itemlist = rst_tree
+    # Figure out the actual tree node this file has to be attached to (creating
+    # the nodes on-demand if needed). Note that when we see a file, the
+    # RstDirInfo representing the directory it's in may not exist yet (and the
+    # same for the parent directories...). This loop makes sure that the whole
+    # hierarchy gets created if it doesn't already exist.
+    # Throughout the loop, cur_dir_itemlist points to the OrderedDict that
+    # represents the directory containing this path.
+    for i in range(len(path_components) - 1):
+      dir = path_components[i]
+      if dir not in cur_dir_itemlist:
+        newpath = os.path.join(*path_components[:i+1])
+        # We assume every dir has an index.rst, the title of which is used as
+        # the title of the dir.
+        newtitle = rst_files[os.path.join(newpath, 'index.rst')]
+        newitems = OrderedDict()
+        cur_dir_itemlist[dir] = RstDirInfo(path=newpath, title=newtitle,
+                                           items=newitems)
+        cur_dir_itemlist = newitems
+      else:
+        cur_dir_itemlist = cur_dir_itemlist[dir].items
+    filename = path_components[-1]
+    if filename != 'index.rst':
+      # Now that the path through the tree is blazed through, we can finally
+      # add the file.
+      # But don't add index.rst - because the directory is already described
+      # by a title.
+      cur_dir_itemlist[path_components[-1]] = RstFileInfo(
+          path=filename, title=rst_files[path])
+  return rst_tree
 
 def setup(app):
   """ Extension registration hook.
