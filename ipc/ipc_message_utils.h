@@ -216,8 +216,12 @@ struct ParamTraits<unsigned long long> {
 template <>
 struct IPC_EXPORT ParamTraits<float> {
   typedef float param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Write(Message* m, const param_type& p) {
+    m->WriteFloat(p);
+  }
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
+    return m->ReadFloat(iter, r);
+  }
   static void Log(const param_type& p, std::string* l);
 };
 

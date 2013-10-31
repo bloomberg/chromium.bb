@@ -311,37 +311,18 @@ void ParamTraits<unsigned long long>::Log(const param_type& p, std::string* l) {
   l->append(base::Uint64ToString(p));
 }
 
-void ParamTraits<float>::Write(Message* m, const param_type& p) {
-  m->WriteData(reinterpret_cast<const char*>(&p), sizeof(param_type));
-}
-
-bool ParamTraits<float>::Read(const Message* m, PickleIterator* iter,
-                              param_type* r) {
-  const char *data;
-  int data_size;
-  if (!m->ReadData(iter, &data, &data_size) ||
-      data_size != sizeof(param_type)) {
-    NOTREACHED();
-    return false;
-  }
-  memcpy(r, data, sizeof(param_type));
-  return true;
-}
-
 void ParamTraits<float>::Log(const param_type& p, std::string* l) {
   l->append(base::StringPrintf("%e", p));
 }
 
 void ParamTraits<double>::Write(Message* m, const param_type& p) {
-  m->WriteData(reinterpret_cast<const char*>(&p), sizeof(param_type));
+  m->WriteBytes(reinterpret_cast<const char*>(&p), sizeof(param_type));
 }
 
 bool ParamTraits<double>::Read(const Message* m, PickleIterator* iter,
                                param_type* r) {
   const char *data;
-  int data_size;
-  if (!m->ReadData(iter, &data, &data_size) ||
-      data_size != sizeof(param_type)) {
+  if (!m->ReadBytes(iter, &data, sizeof(*r))) {
     NOTREACHED();
     return false;
   }
