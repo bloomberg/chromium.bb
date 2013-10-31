@@ -4,7 +4,9 @@
 
 #include "cc/test/layer_tree_pixel_test.h"
 
+#include "base/command_line.h"
 #include "base/path_service.h"
+#include "cc/base/switches.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/texture_layer.h"
 #include "cc/output/copy_output_request.h"
@@ -96,8 +98,9 @@ void LayerTreePixelTest::AfterTest() {
   EXPECT_TRUE(PathService::Get(cc::DIR_TEST_DATA, &test_data_dir));
   base::FilePath ref_file_path = test_data_dir.Append(ref_file_);
 
-  // To rebaseline:
-  // EXPECT_TRUE(WritePNGFile(*result_bitmap_, ref_file_path, true));
+  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  if (cmd->HasSwitch(switches::kCCRebaselinePixeltests))
+    EXPECT_TRUE(WritePNGFile(*result_bitmap_, ref_file_path, true));
 
   EXPECT_TRUE(MatchesPNGFile(*result_bitmap_,
                              ref_file_path,

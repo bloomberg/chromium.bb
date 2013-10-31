@@ -4,8 +4,10 @@
 
 #include "cc/test/pixel_test.h"
 
+#include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "cc/base/switches.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
@@ -147,8 +149,9 @@ bool PixelTest::PixelsMatchReference(const base::FilePath& ref_file,
   if (!result_bitmap_)
     return false;
 
-  // To rebaseline:
-  // return WritePNGFile(*result_bitmap_, test_data_dir.Append(ref_file), true);
+  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  if (cmd->HasSwitch(switches::kCCRebaselinePixeltests))
+    return WritePNGFile(*result_bitmap_, test_data_dir.Append(ref_file), true);
 
   return MatchesPNGFile(*result_bitmap_,
                         test_data_dir.Append(ref_file),

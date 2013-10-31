@@ -69,6 +69,7 @@ CC_EXPORT extern const char kUIShowNonOccludingRects[];
 
 // Unit test related.
 CC_EXPORT extern const char kCCLayerTreeTestNoTimeout[];
+CC_EXPORT extern const char kCCRebaselinePixeltests[];
 
 CC_EXPORT bool IsLCDTextEnabled();
 CC_EXPORT bool IsImplSidePaintingEnabled();
