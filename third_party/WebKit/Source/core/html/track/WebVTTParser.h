@@ -100,14 +100,15 @@ public:
     static float parseFloatPercentageValue(const String&, bool&);
     static FloatPoint parseFloatPercentageValuePair(const String&, char, bool&);
 
+    // Create the DocumentFragment representation of the WebVTT cue text.
+    static PassRefPtr<DocumentFragment> createDocumentFragmentFromCueText(Document&, const String&);
+
     // Input data to the parser to parse.
     void parseBytes(const char* data, unsigned length);
 
     // Transfers ownership of last parsed cues to caller.
     void getNewCues(Vector<RefPtr<TextTrackCue> >&);
     void getNewRegions(Vector<RefPtr<TextTrackRegion> >&);
-
-    PassRefPtr<DocumentFragment> createDocumentFragmentFromCueText(const String&);
 
 private:
     WebVTTParser(WebVTTParserClient*, Document&);
@@ -131,8 +132,6 @@ private:
     static void skipLineTerminator(const String& data, unsigned*);
     static String collectNextLine(const String& data, unsigned*);
 
-    void constructTreeFromToken(Document&);
-
     String m_currentHeaderName;
     String m_currentHeaderValue;
 
@@ -143,14 +142,8 @@ private:
     StringBuilder m_currentContent;
     String m_currentSettings;
 
-    WebVTTToken m_token;
-    OwnPtr<WebVTTTokenizer> m_tokenizer;
-
-    RefPtr<ContainerNode> m_currentNode;
-
     WebVTTParserClient* m_client;
 
-    Vector<AtomicString> m_languageStack;
     Vector<RefPtr<TextTrackCue> > m_cuelist;
 
     Vector<RefPtr<TextTrackRegion> > m_regionList;

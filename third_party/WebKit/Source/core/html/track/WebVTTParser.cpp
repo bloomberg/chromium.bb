@@ -116,7 +116,6 @@ WebVTTParser::WebVTTParser(WebVTTParserClient* client, Document& document)
     , m_decoder(TextResourceDecoder::create("text/plain", UTF8Encoding()))
     , m_currentStartTime(0)
     , m_currentEndTime(0)
-    , m_tokenizer(WebVTTTokenizer::create())
     , m_client(client)
 {
 }
@@ -300,29 +299,53 @@ WebVTTParser::ParseState WebVTTParser::ignoreBadCue(const String& line)
     return Id;
 }
 
-PassRefPtr<DocumentFragment>  WebVTTParser::createDocumentFragmentFromCueText(const String& text)
+// A helper class for the construction of a "cue fragment" from the cue text.
+class WebVTTTreeBuilder {
+public:
+    WebVTTTreeBuilder(Document& document)
+        : m_document(document) { }
+
+    PassRefPtr<DocumentFragment> buildFromString(const String& cueText);
+
+private:
+    void constructTreeFromToken(Document&);
+
+    WebVTTToken m_token;
+    RefPtr<ContainerNode> m_currentNode;
+    Vector<AtomicString> m_languageStack;
+    Document& m_document;
+};
+
+PassRefPtr<DocumentFragment> WebVTTTreeBuilder::buildFromString(const String& cueText)
 {
     // Cue text processing based on
     // 4.8.10.13.4 WebVTT cue text parsing rules and
     // 4.8.10.13.5 WebVTT cue text DOM construction rules.
 
-    RefPtr<DocumentFragment> fragment = DocumentFragment::create(*m_document);
+    RefPtr<DocumentFragment> fragment = DocumentFragment::create(m_document);
 
-    if (!text.length()) {
-        fragment->parserAppendChild(Text::create(*m_document, ""));
+    if (cueText.isEmpty()) {
+        fragment->parserAppendChild(Text::create(m_document, ""));
         return fragment;
     }
 
     m_currentNode = fragment;
-    m_tokenizer->reset();
-    m_token.clear();
 
+    OwnPtr<WebVTTTokenizer> tokenizer(WebVTTTokenizer::create());
+    m_token.clear();
     m_languageStack.clear();
-    SegmentedString content(text);
-    while (m_tokenizer->nextToken(content, m_token))
-        constructTreeFromToken(*m_document);
+
+    SegmentedString content(cueText);
+    while (tokenizer->nextToken(content, m_token))
+        constructTreeFromToken(m_document);
 
     return fragment.release();
+}
+
+PassRefPtr<DocumentFragment> WebVTTParser::createDocumentFragmentFromCueText(Document& document, const String& cueText)
+{
+    WebVTTTreeBuilder treeBuilder(document);
+    return treeBuilder.buildFromString(cueText);
 }
 
 void WebVTTParser::createNewCue()
@@ -456,7 +479,7 @@ static WebVTTNodeType tokenToNodeType(WebVTTToken& token)
     return WebVTTNodeTypeNone;
 }
 
-void WebVTTParser::constructTreeFromToken(Document& document)
+void WebVTTTreeBuilder::constructTreeFromToken(Document& document)
 {
     QualifiedName tagName(nullAtom, AtomicString(m_token.name()), xhtmlNamespaceURI);
 
@@ -504,7 +527,7 @@ void WebVTTParser::constructTreeFromToken(Document& document)
     case WebVTTTokenTypes::TimestampTag: {
         unsigned position = 0;
         String charactersString(StringImpl::create8BitIfPossible(m_token.characters()));
-        double time = collectTimeStamp(charactersString, &position);
+        double time = WebVTTParser::collectTimeStamp(charactersString, &position);
         if (time != malformedTime)
             m_currentNode->parserAppendChild(ProcessingInstruction::create(document, "timestamp", charactersString));
         break;

@@ -504,7 +504,7 @@ void TextTrackCue::invalidateCueIndex()
 void TextTrackCue::createWebVTTNodeTree()
 {
     if (!m_webVTTNodeTree)
-        m_webVTTNodeTree = WebVTTParser::create(0, document())->createDocumentFragmentFromCueText(m_content);
+        m_webVTTNodeTree = WebVTTParser::createDocumentFragmentFromCueText(document(), m_content);
 }
 
 void TextTrackCue::copyWebVTTNodeToDOMTree(ContainerNode* webVTTNode, ContainerNode* parent)
