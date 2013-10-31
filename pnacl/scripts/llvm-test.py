@@ -341,6 +341,7 @@ def TestsuiteRun(env, config, options):
                               'PNACL_TRANSLATE_FLAGS=' + opt_trans,
                               'PNACL_BIN={PNACL_BIN}'.format(**env),
                               'PNACL_RUN={NACL_ROOT}/run.py'.format(**env),
+                              'COLLATE=true',
                               'PNACL_ARCH=' + arch,
                               'ENABLE_PARALLEL_REPORT=true',
                               'DISABLE_CBE=true',

@@ -120,6 +120,9 @@ def main(argv):
   return_code = 0
 
   sel_ldr_options = []
+  # sel_ldr's "quiet" options need to come early in the command line
+  # to suppress noisy output from processing other options, like -Q.
+  sel_ldr_quiet_options = []
   nexe, nexe_params = ArgSplit(argv[1:])
 
   # Translate .pexe files
@@ -150,7 +153,7 @@ def main(argv):
       # These need to be at the start of the arglist for full effectiveness.
       # -q means quiet most stderr warnings.
       # -l /dev/null means log to /dev/null.
-      sel_ldr_options = ['-q', '-l', '/dev/null'] + sel_ldr_options
+      sel_ldr_quiet_options = ['-q', '-l', '/dev/null']
     if env.debug:
       # Disabling validation (-c) is used by the debug stub test.
       # TODO(dschuff): remove if/when it's no longer necessary
@@ -195,7 +198,8 @@ def main(argv):
     collate = env.collate or retries > 0
     input = sys.stdin.read() if collate else None
     for iter in range(1 + max(retries, 0)):
-      output = RunSelLdr(sel_ldr_args, collate=collate, stdin_string=input)
+      output = RunSelLdr(sel_ldr_args, quiet_args=sel_ldr_quiet_options,
+                         collate=collate, stdin_string=input)
       if env.last_return_code < 128:
         # If the application crashes, we expect a 128+ return code.
         break
@@ -212,7 +216,7 @@ def main(argv):
   return return_code
 
 
-def RunSelLdr(args, collate=False, stdin_string=None):
+def RunSelLdr(args, quiet_args=[], collate=False, stdin_string=None):
   """Run the sel_ldr command and optionally capture its output.
 
   Args:
@@ -227,6 +231,9 @@ def RunSelLdr(args, collate=False, stdin_string=None):
     any captured stderr.
   """
   prefix = []
+  # The bootstrap loader args (--r_debug, --reserved_at_zero) need to
+  # come before quiet_args.
+  bootstrap_loader_args = []
   if GetBuildArch().find('arm') == -1 and env.arch == 'arm':
     prefix = [ env.qemu_arm, '-cpu', 'cortex-a9']
     if env.trace:
@@ -245,11 +252,12 @@ def RunSelLdr(args, collate=False, stdin_string=None):
                              'nacl_helper_bootstrap')
     loader = [bootstrap, env.sel_ldr]
     template_digits = 'X' * 16
-    args = ['--r_debug=0x' + template_digits,
-            '--reserved_at_zero=0x' + template_digits] + args
+    bootstrap_loader_args = ['--r_debug=0x' + template_digits,
+                             '--reserved_at_zero=0x' + template_digits]
   else:
     loader = [env.sel_ldr]
-  return Run(prefix + loader + args, exit_on_failure=(not collate),
+  return Run(prefix + loader + bootstrap_loader_args + quiet_args + args,
+             exit_on_failure=(not collate),
              capture_stdout=collate, capture_stderr=collate,
              stdin_string=stdin_string)
 

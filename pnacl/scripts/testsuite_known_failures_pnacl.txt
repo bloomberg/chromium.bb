@@ -7,8 +7,6 @@
 
 # some output incorrect
 sphereflake
-alacconvert-encode
-alacconvert-decode
 
 # FP nan/inf handling
 voronoi
