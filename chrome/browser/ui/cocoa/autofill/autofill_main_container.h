@@ -29,6 +29,7 @@ namespace autofill {
                                                     NSTextViewDelegate> {
  @private
   base::scoped_nsobject<GTMWidthBasedTweaker> buttonContainer_;
+  base::scoped_nsobject<NSImageView> buttonStripImage_;
   base::scoped_nsobject<NSButton> saveInChromeCheckbox_;
   base::scoped_nsobject<NSImageView> saveInChromeTooltip_;
   base::scoped_nsobject<AutofillDetailsContainer> detailsContainer_;
@@ -85,6 +86,8 @@ namespace autofill {
 @interface AutofillMainContainer (Testing)
 
 @property(readonly, nonatomic) NSButton* saveInChromeCheckboxForTesting;
+@property(readonly, nonatomic) NSImageView* buttonStripImageForTesting;
+@property(readonly, nonatomic) NSImageView* saveInChromeTooltipForTesting;
 
 @end
 

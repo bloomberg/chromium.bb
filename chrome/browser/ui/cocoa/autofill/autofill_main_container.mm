@@ -52,6 +52,11 @@
 
   [self layoutButtons];
 
+  // Set up Wallet icon.
+  buttonStripImage_.reset([[NSImageView alloc] initWithFrame:NSZeroRect]);
+  [self updateWalletIcon];
+  [[self view] addSubview:buttonStripImage_];
+
   // Set up "Save in Chrome" checkbox.
   saveInChromeCheckbox_.reset([[NSButton alloc] initWithFrame:NSZeroRect]);
   [saveInChromeCheckbox_ setButtonType:NSSwitchButton];
@@ -111,10 +116,16 @@
 - (NSSize)preferredSize {
   // Overall width is determined by |detailsContainer_|.
   NSSize buttonSize = [buttonContainer_ frame].size;
+  NSSize buttonStripImageSize = [buttonStripImage_ frame].size;
+  NSSize buttonStripSize =
+      NSMakeSize(buttonSize.width + chrome_style::kHorizontalPadding +
+                     buttonStripImageSize.width,
+                 std::max(buttonSize.height, buttonStripImageSize.height));
+
   NSSize detailsSize = [detailsContainer_ preferredSize];
 
-  NSSize size = NSMakeSize(std::max(buttonSize.width, detailsSize.width),
-                           buttonSize.height + detailsSize.height);
+  NSSize size = NSMakeSize(std::max(buttonStripSize.width, detailsSize.width),
+                           buttonStripSize.height + detailsSize.height);
   size.height += 2 * autofill::kDetailVerticalPadding;
 
   if (![legalDocumentsView_ isHidden]) {
@@ -143,6 +154,11 @@
   buttonFrame.origin.y = currentY;
   [buttonContainer_ setFrameOrigin:buttonFrame.origin];
   currentY = NSMaxY(buttonFrame) + autofill::kDetailVerticalPadding;
+
+  NSPoint walletIconOrigin =
+      NSMakePoint(chrome_style::kHorizontalPadding, buttonFrame.origin.y);
+  [buttonStripImage_ setFrameOrigin:walletIconOrigin];
+  currentY = std::max(currentY, NSMaxY([buttonStripImage_ frame]));
 
   NSRect checkboxFrame = [saveInChromeCheckbox_ frame];
   [saveInChromeCheckbox_ setFrameOrigin:
@@ -247,6 +263,7 @@
 
 - (void)modelChanged {
   [self updateSaveInChrome];
+  [self updateWalletIcon];
   [detailsContainer_ modelChanged];
 }
 
@@ -303,6 +320,15 @@
       (delegate_->ShouldSaveInChrome() ? NSOnState : NSOffState)];
 }
 
+- (void)updateWalletIcon {
+  gfx::Image image = delegate_->ButtonStripImage();
+  [buttonStripImage_ setHidden:image.IsEmpty()];
+  if (![buttonStripImage_ isHidden]) {
+    [buttonStripImage_ setImage:image.ToNSImage()];
+    [buttonStripImage_ setFrameSize:[[buttonStripImage_ image] size]];
+  }
+}
+
 - (void)updateErrorBubble {
   [detailsContainer_ updateErrorBubble];
 }
@@ -314,6 +340,14 @@
 
 - (NSButton*)saveInChromeCheckboxForTesting {
   return saveInChromeCheckbox_.get();
+}
+
+- (NSImageView*)buttonStripImageForTesting {
+  return buttonStripImage_.get();
+}
+
+- (NSImageView*)saveInChromeTooltipForTesting {
+  return saveInChromeTooltip_.get();
 }
 
 @end
