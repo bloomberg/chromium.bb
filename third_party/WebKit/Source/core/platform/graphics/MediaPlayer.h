@@ -178,6 +178,7 @@ public:
 
     virtual unsigned decodedFrameCount() const = 0;
     virtual unsigned droppedFrameCount() const = 0;
+    virtual unsigned corruptedFrameCount() const = 0;
     virtual unsigned audioDecodedByteCount() const = 0;
     virtual unsigned videoDecodedByteCount() const = 0;
 

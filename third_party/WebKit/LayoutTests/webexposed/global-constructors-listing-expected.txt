@@ -440,6 +440,7 @@ Uint32Array
 Uint8Array
 Uint8ClampedArray
 ValidityState
+VideoPlaybackQuality
 WaveShaperNode
 WebGLActiveInfo
 WebGLBuffer

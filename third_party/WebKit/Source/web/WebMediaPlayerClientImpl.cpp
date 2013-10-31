@@ -578,6 +578,13 @@ unsigned WebMediaPlayerClientImpl::droppedFrameCount() const
     return 0;
 }
 
+unsigned WebMediaPlayerClientImpl::corruptedFrameCount() const
+{
+    if (m_webMediaPlayer)
+        return m_webMediaPlayer->corruptedFrameCount();
+    return 0;
+}
+
 unsigned WebMediaPlayerClientImpl::audioDecodedByteCount() const
 {
     if (m_webMediaPlayer)

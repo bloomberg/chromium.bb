@@ -129,6 +129,7 @@ public:
     virtual double mediaTimeForTimeValue(double timeValue) const OVERRIDE;
     virtual unsigned decodedFrameCount() const OVERRIDE;
     virtual unsigned droppedFrameCount() const OVERRIDE;
+    virtual unsigned corruptedFrameCount() const OVERRIDE;
     virtual unsigned audioDecodedByteCount() const OVERRIDE;
     virtual unsigned videoDecodedByteCount() const OVERRIDE;
     virtual void showFullscreenOverlay() OVERRIDE;
