@@ -113,6 +113,8 @@ const char kSandboxedPagesCSP[] = "sandbox.content_security_policy";
 const char kScriptBadge[] = "script_badge";
 const char kSearchProvider[] = "chrome_settings_overrides.search_provider";
 const char kSettingsOverride[] = "chrome_settings_overrides";
+const char kSettingsOverrideAlternateUrls[] =
+    "chrome_settings_overrides.search_provider.alternate_urls";
 const char kShiftKey[] = "shiftKey";
 const char kShortcutKey[] = "shortcutKey";
 const char kShortName[] = "short_name";

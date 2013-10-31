@@ -6,14 +6,25 @@
   "chrome_settings_overrides": {
     "homepage": "http://www.homepage.com",
     "search_provider": {
-        "name": "first",
-        "keyword": "firstkey",
-        "search_url": "http://www.foo.com/s?q={searchTerms}",
-        "favicon_url": "http://www.foo.com/favicon.ico",
-        "suggest_url": "http://www.foo.com/suggest?q={searchTerms}",
+        "name": "name.__MSG_url_domain__",
+        "keyword": "keyword.__MSG_url_domain__",
+        "search_url": "http://www.foo.__MSG_url_domain__/s?q={searchTerms}",
+        "favicon_url": "http://www.foo.__MSG_url_domain__/favicon.ico",
+        "suggest_url": "http://www.foo.__MSG_url_domain__/suggest?q={searchTerms}",
+        "instant_url": "http://www.foo.__MSG_url_domain__/instant?q={searchTerms}",
+        "image_url": "http://www.foo.__MSG_url_domain__/image?q={searchTerms}",
+        "search_url_post_params": "search_lang=__MSG_url_domain__",
+        "suggest_url_post_params": "suggest_lang=__MSG_url_domain__",
+        "instant_url_post_params": "instant_lang=__MSG_url_domain__",
+        "image_url_post_params": "image_lang=__MSG_url_domain__",
+        "alternate_urls": [
+          "http://www.moo.__MSG_url_domain__/s?q={searchTerms}",
+          "http://www.noo.__MSG_url_domain__/s?q={searchTerms}"
+        ],
         "encoding": "UTF-8",
         "is_default": true
     },
     "startup_pages": ["http://www.startup.com"]
-   }
+   },
+   "default_locale": "de"
 }

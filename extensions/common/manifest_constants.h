@@ -122,6 +122,7 @@ extern const char kSandboxedPagesCSP[];
 extern const char kScriptBadge[];
 extern const char kSearchProvider[];
 extern const char kSettingsOverride[];
+extern const char kSettingsOverrideAlternateUrls[];
 extern const char kShiftKey[];
 extern const char kShortcutKey[];
 extern const char kShortName[];

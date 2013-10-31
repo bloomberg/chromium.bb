@@ -79,13 +79,29 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, OverrideSettings) {
   TemplateURL* extension_provider = url_service->GetDefaultSearchProvider();
   EXPECT_EQ(TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION,
             extension_provider->GetType());
-  EXPECT_EQ(ASCIIToUTF16("first"), extension_provider->short_name());
-  EXPECT_EQ(ASCIIToUTF16("firstkey"), extension_provider->keyword());
-  EXPECT_EQ("http://www.foo.com/s?q={searchTerms}", extension_provider->url());
-  EXPECT_EQ(GURL("http://www.foo.com/favicon.ico"),
+  EXPECT_EQ(ASCIIToUTF16("name.de"), extension_provider->short_name());
+  EXPECT_EQ(ASCIIToUTF16("keyword.de"), extension_provider->keyword());
+  EXPECT_EQ("http://www.foo.de/s?q={searchTerms}", extension_provider->url());
+  EXPECT_EQ(GURL("http://www.foo.de/favicon.ico"),
             extension_provider->favicon_url());
-  EXPECT_EQ("http://www.foo.com/suggest?q={searchTerms}",
+  EXPECT_EQ("http://www.foo.de/suggest?q={searchTerms}",
             extension_provider->suggestions_url());
+  EXPECT_EQ("http://www.foo.de/instant?q={searchTerms}",
+            extension_provider->instant_url());
+  EXPECT_EQ("http://www.foo.de/image?q={searchTerms}",
+              extension_provider->image_url());
+  EXPECT_EQ("search_lang=de", extension_provider->search_url_post_params());
+  EXPECT_EQ("suggest_lang=de",
+            extension_provider->suggestions_url_post_params());
+  EXPECT_EQ("instant_lang=de", extension_provider->instant_url_post_params());
+  EXPECT_EQ("image_lang=de", extension_provider->image_url_post_params());
+  const std::string alternate_urls[] = {
+      "http://www.moo.de/s?q={searchTerms}",
+      "http://www.noo.de/s?q={searchTerms}"
+  };
+  EXPECT_EQ(std::vector<std::string>(
+                alternate_urls, alternate_urls + arraysize(alternate_urls)),
+            extension_provider->alternate_urls());
   EXPECT_EQ(std::vector<std::string>(1, "UTF-8"),
             extension_provider->input_encodings());
 
