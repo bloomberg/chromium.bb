@@ -400,8 +400,6 @@ void RootWindowController::CloseChildWindows() {
   // down associated layout managers.
   DeactivateKeyboard(Shell::GetInstance()->keyboard_controller());
 
-  if (!shelf_.get())
-    return;
   // panel_layout_manager_ needs to be shut down before windows are destroyed.
   if (panel_layout_manager_) {
     panel_layout_manager_->Shutdown();
@@ -409,7 +407,7 @@ void RootWindowController::CloseChildWindows() {
   }
   // docked_layout_manager_ needs to be shut down before windows are destroyed.
   if (docked_layout_manager_) {
-    if (shelf_->shelf_layout_manager())
+    if (shelf_ && shelf_->shelf_layout_manager())
       docked_layout_manager_->RemoveObserver(shelf_->shelf_layout_manager());
     docked_layout_manager_->Shutdown();
     docked_layout_manager_ = NULL;
@@ -418,10 +416,12 @@ void RootWindowController::CloseChildWindows() {
   aura::client::SetDragDropClient(root_window_.get(), NULL);
 
   // TODO(harrym): Remove when Status Area Widget is a child view.
-  shelf_->ShutdownStatusAreaWidget();
+  if (shelf_) {
+    shelf_->ShutdownStatusAreaWidget();
 
-  if (shelf_->shelf_layout_manager())
-    shelf_->shelf_layout_manager()->PrepareForShutdown();
+    if (shelf_->shelf_layout_manager())
+      shelf_->shelf_layout_manager()->PrepareForShutdown();
+  }
 
   // Close background widget first as it depends on tooltip.
   wallpaper_controller_.reset();
@@ -460,7 +460,7 @@ void RootWindowController::CloseChildWindows() {
     }
   }
 
-  shelf_.reset(NULL);
+  shelf_.reset();
 }
 
 void RootWindowController::MoveWindowsTo(aura::Window* dst) {
