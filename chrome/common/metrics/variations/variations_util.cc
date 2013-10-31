@@ -61,7 +61,7 @@ void GetFieldTrialActiveGroupIds(
   DCHECK(name_group_ids->empty());
   // A note on thread safety: Since GetActiveFieldTrialGroups() is thread
   // safe, and we operate on a separate list of that data, this function is
-  // technically thread safe as well, with respect to the FieldTriaList data.
+  // technically thread safe as well, with respect to the FieldTrialList data.
   base::FieldTrial::ActiveGroups active_groups;
   base::FieldTrialList::GetActiveFieldTrialGroups(&active_groups);
   GetFieldTrialActiveGroupIdsForActiveGroups(active_groups,
