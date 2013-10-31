@@ -891,7 +891,7 @@ SVGElementInstance* SVGUseElement::instanceForShadowTreeElement(Node* element, S
 
 void SVGUseElement::invalidateShadowTree()
 {
-    if (!confusingAndOftenMisusedAttached() || m_needsShadowTreeRecreation)
+    if (!inActiveDocument() || m_needsShadowTreeRecreation)
         return;
     m_needsShadowTreeRecreation = true;
     setNeedsStyleRecalc();
