@@ -46,7 +46,7 @@ const size_t kLargestValueAllowed = 1024;
 
 void SetCrashKeyValue(const base::StringPiece& key,
                       const base::StringPiece& value) {
-  if (!g_set_key_func_)
+  if (!g_set_key_func_ || !g_crash_keys_)
     return;
 
   const CrashKey* crash_key = LookupCrashKey(key);
@@ -77,7 +77,7 @@ void SetCrashKeyValue(const base::StringPiece& key,
 }
 
 void ClearCrashKey(const base::StringPiece& key) {
-  if (!g_clear_key_func_)
+  if (!g_clear_key_func_ || !g_crash_keys_)
     return;
 
   const CrashKey* crash_key = LookupCrashKey(key);
@@ -162,6 +162,8 @@ size_t InitCrashKeys(const CrashKey* const keys, size_t count,
 }
 
 const CrashKey* LookupCrashKey(const base::StringPiece& key) {
+  if (!g_crash_keys_)
+    return NULL;
   CrashKeyMap::const_iterator it = g_crash_keys_->find(key.as_string());
   if (it == g_crash_keys_->end())
     return NULL;
