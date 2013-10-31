@@ -139,6 +139,9 @@ ImageFrame* WEBPImageDecoder::frameBufferAtIndex(size_t index)
             PlatformInstrumentation::didDecodeImage();
             WebPDemuxReleaseIterator(&webpFrame);
 
+            if (failed())
+                return 0;
+
             // We need more data to continue decoding.
             if (m_frameBufferCache[frameIndex].status() != ImageFrame::FrameComplete)
                 break;
@@ -156,7 +159,7 @@ ImageFrame* WEBPImageDecoder::frameBufferAtIndex(size_t index)
     PlatformInstrumentation::willDecodeImage("WEBP");
     decode(reinterpret_cast<const uint8_t*>(m_data->data()), m_data->size(), false, index);
     PlatformInstrumentation::didDecodeImage();
-    return &frame;
+    return failed() ? 0 : &frame;
 }
 
 void WEBPImageDecoder::setData(SharedBuffer* data, bool allDataReceived)
@@ -528,8 +531,11 @@ bool WEBPImageDecoder::decode(const uint8_t* dataBytes, size_t dataSize, bool on
         clearDecoder();
         return true;
     case VP8_STATUS_SUSPENDED:
-        applyPostProcessing(frameIndex);
-        return false;
+        if (!isAllDataReceived() && !frameIsCompleteAtIndex(frameIndex)) {
+            applyPostProcessing(frameIndex);
+            return false;
+        }
+        // FALLTHROUGH
     default:
         clear();
         return setFailed();
