@@ -961,12 +961,19 @@ weston_wm_window_draw_decoration(void *data)
 		}
 		if (window->view)
 			weston_view_geometry_dirty(window->view);
-	}
 
-	if (window->surface && !window->fullscreen) {
 		pixman_region32_fini(&window->surface->pending.input);
-		frame_input_rect(window->frame, &input_x, &input_y,
-				 &input_w, &input_h);
+
+		if (window->fullscreen) {
+			input_x = 0;
+			input_y = 0;
+			input_w = window->width;
+			input_h = window->height;
+		} else if (window->decorate) {
+			frame_input_rect(window->frame, &input_x, &input_y,
+					 &input_w, &input_h);
+		}
+
 		pixman_region32_init_rect(&window->surface->pending.input,
 					  input_x, input_y, input_w, input_h);
 	}
