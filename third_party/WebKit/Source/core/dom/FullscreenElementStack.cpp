@@ -187,7 +187,6 @@ void FullscreenElementStack::requestFullScreenForElement(Element* element, unsig
         // FIXME: Does this need to null-check settings()?
         if (!UserGestureIndicator::processingUserGesture() && (!element->isMediaElement() || document()->settings()->mediaFullscreenRequiresUserGesture()))
             break;
-        UserGestureIndicator::consumeUserGesture();
 
         // There is a previously-established user preference, security risk, or platform limitation.
         if (!document()->settings() || !document()->settings()->fullScreenEnabled())
