@@ -6,14 +6,10 @@
 
 #include <dlfcn.h>
 
-#include "base/command_line.h"
 #include "base/mac/mac_util.h"
-#include "media/base/media_switches.h"
 
 bool AVFoundationGlue::IsAVFoundationSupported() {
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  return cmd_line->HasSwitch(switches::kEnableAVFoundation) &&
-      base::mac::IsOSLionOrLater() && [AVFoundationBundle() load];
+  return (base::mac::IsOSLionOrLater() && [AVFoundationBundle() load]);
 }
 
 NSBundle const* AVFoundationGlue::AVFoundationBundle() {
