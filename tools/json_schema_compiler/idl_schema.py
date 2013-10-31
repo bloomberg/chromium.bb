@@ -292,13 +292,7 @@ class Enum(object):
     enum = []
     for node in self.node.children:
       if node.cls == 'EnumItem':
-        enum_value = {'name': node.GetName()}
-        for child in node.children:
-          if child.cls == 'Comment':
-            enum_value['description'] = ProcessComment(child.GetName())[0]
-          else:
-            raise ValueError('Did not process %s %s' % (child.cls, child))
-        enum.append(enum_value)
+        enum.append(node.GetName())
       elif node.cls == 'Comment':
         self.description = ProcessComment(node.GetName())[0]
       else:

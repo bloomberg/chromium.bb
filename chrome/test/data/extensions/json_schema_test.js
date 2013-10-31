@@ -138,17 +138,16 @@ function testComplex() {
 
 function testEnum() {
   var schema = {
-    enum: [{"name": "foo"}, 42, false]
+    enum: ["foo", 42, false]
   };
 
   assertValid("", "foo", schema);
   assertValid("", 42, schema);
   assertValid("", false, schema);
-  var enum_values = ["foo", 42, false];
   assertNotValid("", "42", schema, [formatError("invalidEnum",
-                                                [enum_values.join(", ")])]);
+                                                [schema.enum.join(", ")])]);
   assertNotValid("", null, schema, [formatError("invalidEnum",
-                                                [enum_values.join(", ")])]);
+                                                [schema.enum.join(", ")])]);
 }
 
 function testChoices() {

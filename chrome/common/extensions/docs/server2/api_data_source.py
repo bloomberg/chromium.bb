@@ -326,9 +326,9 @@ class _JSCModel(object):
     elif type_.property_type == model.PropertyType.ARRAY:
       dst_dict['array'] = self._GenerateType(type_.item_type)
     elif type_.property_type == model.PropertyType.ENUM:
-      dst_dict['enum_values'] = [
-          {'name': value.name, 'description': value.description}
-          for value in type_.enum_values]
+      dst_dict['enum_values'] = []
+      for enum_value in type_.enum_values:
+        dst_dict['enum_values'].append({'name': enum_value})
       if len(dst_dict['enum_values']) > 0:
         dst_dict['enum_values'][-1]['last'] = True
     elif type_.instance_of is not None:

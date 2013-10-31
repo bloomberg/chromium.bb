@@ -7,7 +7,6 @@
 [internal] namespace idl_basics {
   // Enum description
   enum EnumType {
-    // comment1
     name1,
     name2
   };
