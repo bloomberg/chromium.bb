@@ -2158,6 +2158,9 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& e)
     if (!view)
         return false;
 
+    if (handleWheelEventAsEmulatedGesture(e))
+        return true;
+
     LayoutPoint vPoint = view->windowToContents(e.position());
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::DisallowShadowContent);
@@ -3794,6 +3797,12 @@ bool EventHandler::dispatchSyntheticTouchEventIfEnabled(const PlatformMouseEvent
     if (handleTouchEvent(touchEvent))
         return true;
 
+    return handleMouseEventAsEmulatedGesture(event);
+}
+
+bool EventHandler::handleMouseEventAsEmulatedGesture(const PlatformMouseEvent& event)
+{
+    PlatformEvent::Type eventType = event.type();
     Page* page = m_frame->page();
     FrameView* view = m_frame->view();
     if (event.button() != LeftButton || page->mainFrame() != m_frame)
@@ -3858,6 +3867,25 @@ bool EventHandler::dispatchSyntheticTouchEventIfEnabled(const PlatformMouseEvent
     }
 
     return swallowEvent;
+}
+
+bool EventHandler::handleWheelEventAsEmulatedGesture(const PlatformWheelEvent& event)
+{
+    if (!m_frame || !m_frame->settings() || !m_frame->settings()->isTouchEventEmulationEnabled())
+        return false;
+
+    // Only convert vertical wheel w/ shift into pinch for touch-enabled device convenience.
+    if (event.shiftKey() && event.deltaY()) {
+        Page* page = m_frame->page();
+        IntPoint centerAnchorCss(m_frame->view()->visibleSize());
+        centerAnchorCss.scale(0.5f, 0.5f);
+        float magnifyDelta = exp(event.deltaY() * 0.002f);
+        IntPoint anchorCss(centerAnchorCss);
+        anchorCss.scale(magnifyDelta, magnifyDelta);
+        page->inspectorController().requestPageScaleFactor(page->pageScaleFactor() * magnifyDelta, m_frame->view()->scrollPosition() + anchorCss - toIntSize(centerAnchorCss));
+        return true;
+    }
+    return false;
 }
 
 void EventHandler::setLastKnownMousePosition(const PlatformMouseEvent& event)
