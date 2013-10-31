@@ -94,7 +94,6 @@ public:
     };
 
     static CSSStyleRule* asCSSStyleRule(CSSRule*);
-    static bool cssErrorFilter(const CSSParserString& content, int propertyId, int errorType);
 
     static PassOwnPtr<InspectorCSSAgent> create(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state, InspectorDOMAgent* domAgent, InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent)
     {

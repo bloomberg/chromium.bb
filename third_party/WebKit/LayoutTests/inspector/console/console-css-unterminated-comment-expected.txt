@@ -1,6 +1,1 @@
 Tests that unterminated comment in CSS generates a warning.
-
-Unterminated CSS comment (line 6)
-Unterminated CSS comment (line 7)
-Unterminated CSS comment (line 10)
-

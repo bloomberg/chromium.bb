@@ -170,8 +170,6 @@ inline InstrumentingAgents* instrumentingAgentsFor(Node* node)
     return node ? instrumentingAgentsFor(node->document()) : 0;
 }
 
-bool cssErrorFilter(const CSSParserString& content, int propertyId, int errorType);
-
 } // namespace InspectorInstrumentation
 
 InstrumentingAgents* instrumentationForPage(Page*);

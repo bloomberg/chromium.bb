@@ -11203,76 +11203,9 @@ void CSSParser::endInvalidRuleHeader()
     endRuleHeader();
 }
 
-void CSSParser::reportError(const CSSParserLocation& location, ErrorType error)
+void CSSParser::reportError(const CSSParserLocation&, ErrorType)
 {
-    if (!isLoggingErrors() || (m_ruleHeaderType == CSSRuleSourceData::SUPPORTS_RULE && error != InvalidSupportsConditionError))
-        return;
-
-    m_ignoreErrors = true;
-    CSSParserString content = location.token;
-    if (error == InvalidPropertyValueError || error == InvalidSelectorError || error == InvalidMediaQueryError || error == InvalidKeyframeSelectorError) {
-        if (m_source) {
-            if (is8BitSource())
-                content.init(*m_source, location.token.characters8() - m_dataStart8.get(), tokenStart<LChar>() - location.token.characters8());
-            else
-                content.init(*m_source, location.token.characters16() - m_dataStart16.get(), tokenStart<UChar>() - location.token.characters16());
-            content.trimTrailingWhitespace();
-        }
-    }
-
-    if (!InspectorInstrumentation::cssErrorFilter(content, m_id, error))
-        return;
-
-    StringBuilder builder;
-    switch (error) {
-    case PropertyDeclarationError:
-        builder.appendLiteral("Invalid CSS property declaration at: ");
-        break;
-
-    case InvalidPropertyValueError:
-        builder.appendLiteral("Invalid CSS property value: ");
-        break;
-
-    case InvalidPropertyError:
-        builder.appendLiteral("Invalid CSS property name: ");
-        break;
-
-    case InvalidSelectorError:
-        builder.appendLiteral("Invalid CSS selector: ");
-        break;
-
-    case InvalidSupportsConditionError:
-        builder.appendLiteral("Invalid CSS @supports condition: ");
-        break;
-
-    case InvalidRuleError:
-        builder.appendLiteral("Invalid CSS rule at: ");
-        break;
-
-    case InvalidMediaQueryError:
-        builder.appendLiteral("Invalid CSS media query: ");
-        break;
-
-    case InvalidSelectorPseudoError:
-        builder.appendLiteral("Invalid CSS selector pseudoclass: ");
-        break;
-
-    case InvalidKeyframeSelectorError:
-        builder.appendLiteral("Invalid CSS keyframe selector: ");
-        break;
-
-    case UnterminatedCommentError:
-        content.setLength(0);
-        builder.appendLiteral("Unterminated CSS comment");
-        break;
-
-    default:
-        builder.appendLiteral("Unexpected CSS token: ");
-    }
-
-    builder.append(content);
-
-    logError(builder.toString(), location);
+    // FIXME: error reporting temporatily disabled.
 }
 
 bool CSSParser::isLoggingErrors()

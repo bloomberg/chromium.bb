@@ -233,11 +233,6 @@ InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ExecutionContext* 
     return 0;
 }
 
-bool cssErrorFilter(const CSSParserString& content, int propertyId, int errorType)
-{
-    return InspectorCSSAgent::cssErrorFilter(content, propertyId, errorType);
-}
-
 } // namespace InspectorInstrumentation
 
 namespace InstrumentationEvents {
