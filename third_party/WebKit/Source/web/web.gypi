@@ -263,6 +263,8 @@
       'WorkerAllowMainThreadBridgeBase.h',
       'WorkerFileSystemClient.cpp',
       'WorkerFileSystemClient.h',
+      'WorkerPermissionClient.cpp',
+      'WorkerPermissionClient.h',
       'default/WebRenderTheme.cpp',
       'linux/WebFontInfo.cpp',
       'linux/WebFontRenderStyle.cpp',

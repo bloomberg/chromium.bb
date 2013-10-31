@@ -35,6 +35,8 @@
 
 namespace WebKit {
 
+// FIXME: Deprecate this bridge code when PermissionClientProxy is implemented
+// by the embedder.
 // Base class for worker thread bridges. This class adds an observer to
 // WorkerGlobalScope so that it doesn't try to use deleted pointers when
 // WorkerGlobalScope is destroyed.
@@ -91,4 +93,3 @@ private:
 };
 
 } // namespace WebKit
-

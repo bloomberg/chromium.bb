@@ -44,6 +44,7 @@
 #include "WebWorkerBase.h"
 #include "WebWorkerClientImpl.h"
 #include "WorkerAllowMainThreadBridgeBase.h"
+#include "WorkerPermissionClient.h"
 #include "bindings/v8/WorkerScriptController.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/DOMError.h"
@@ -121,6 +122,17 @@ bool IDBFactoryBackendProxy::allowIndexedDB(ExecutionContext* context, const Str
         allowed = !webView->permissionClient() || webView->permissionClient()->allowIndexedDB(webFrame, name, origin);
     } else {
         WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
+        WorkerPermissionClient* permissionClient = WorkerPermissionClient::from(workerGlobalScope);
+        if (permissionClient->proxy()) {
+            allowed = permissionClient->allowIndexedDB(name);
+            if (!allowed)
+                callbacks->onError(WebIDBDatabaseError(UnknownError, "The user denied permission to access the database."));
+
+            return allowed;
+        }
+
+        // FIXME: Deprecate this bridge code when PermissionClientProxy is
+        // implemented by the embedder.
         WebWorkerBase* webWorkerBase = static_cast<WebWorkerBase*>(workerGlobalScope->thread()->workerLoaderProxy().toWebWorkerBase());
         WorkerRunLoop& runLoop = workerGlobalScope->thread()->runLoop();
 

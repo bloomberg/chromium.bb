@@ -37,8 +37,10 @@
 namespace WebKit {
 
 class WebNotificationPresenter;
+class WebSecurityOrigin;
 class WebString;
 class WebWorker;
+class WebWorkerPermissionClientProxy;
 
 // Provides an interface back to the in-page script object for a worker.
 // All functions are expected to be called back on the thread that created
@@ -52,8 +54,16 @@ public:
     // is owned by the object implementing WebCommonWorkerClient.
     virtual WebNotificationPresenter* notificationPresenter() = 0;
 
-    // Called on the main webkit thread in the worker process during initialization.
+    // Called on the main webkit thread in the worker process during
+    // initialization.
     virtual WebApplicationCacheHost* createApplicationCacheHost(WebApplicationCacheHostClient*) = 0;
+
+    // Called on the main webkit thread in the worker process during
+    // initialization.
+    // WebWorkerPermissionClientProxy should not retain the given
+    // WebSecurityOrigin, as the proxy instance is passed to worker thread
+    // while WebSecurityOrigin is not thread safe.
+    virtual WebWorkerPermissionClientProxy* createWorkerPermissionClientProxy(const WebSecurityOrigin&) { return 0; }
 
     virtual void dispatchDevToolsMessage(const WebString&) { }
     virtual void saveDevToolsAgentState(const WebString&) { }

@@ -44,6 +44,7 @@
 #include "WebSharedWorkerClient.h"
 #include "WebView.h"
 #include "WorkerFileSystemClient.h"
+#include "WorkerPermissionClient.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
@@ -64,6 +65,7 @@
 #include "core/workers/WorkerThread.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/webdatabase/DatabaseTask.h"
+#include "public/web/WebWorkerPermissionClientProxy.h"
 #include "weborigin/KURL.h"
 #include "weborigin/SecurityOrigin.h"
 
@@ -285,6 +287,8 @@ void WebSharedWorkerImpl::startWorkerContext(const WebURL& url, const WebString&
     WorkerThreadStartMode startMode = m_pauseWorkerContextOnStart ? PauseWorkerGlobalScopeOnStart : DontPauseWorkerGlobalScopeOnStart;
     OwnPtr<WorkerClients> workerClients = WorkerClients::create();
     provideLocalFileSystemToWorker(workerClients.get(), WorkerFileSystemClient::create());
+    WebSecurityOrigin webSecurityOrigin(m_loadingDocument->securityOrigin());
+    providePermissionClientToWorker(workerClients.get(), adoptPtr(m_client->createWorkerPermissionClientProxy(webSecurityOrigin)));
     OwnPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(url, userAgent, sourceCode, startMode, contentSecurityPolicy, static_cast<WebCore::ContentSecurityPolicy::HeaderType>(policyType), workerClients.release());
     setWorkerThread(SharedWorkerThread::create(name, *this, *this, startupData.release()));
 

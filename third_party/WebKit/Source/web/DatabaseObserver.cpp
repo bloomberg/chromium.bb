@@ -41,6 +41,7 @@
 #include "WebViewImpl.h"
 #include "WebWorkerBase.h"
 #include "WorkerAllowMainThreadBridgeBase.h"
+#include "WorkerPermissionClient.h"
 #include "bindings/v8/WorkerScriptController.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
@@ -58,6 +59,7 @@ namespace {
 
 static const char allowDatabaseMode[] = "allowDatabaseMode";
 
+// FIXME: Deprecate this.
 // This class is used to route the result of the WebWorkerBase::allowDatabase
 // call back to the worker context.
 class AllowDatabaseMainThreadBridge : public WorkerAllowMainThreadBridgeBase {
@@ -144,6 +146,12 @@ bool DatabaseObserver::canEstablishDatabase(ExecutionContext* executionContext, 
             return webView->permissionClient()->allowDatabase(webFrame, name, displayName, estimatedSize);
     } else {
         WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(executionContext);
+        WorkerPermissionClient* permissionClient = WorkerPermissionClient::from(workerGlobalScope);
+        if (permissionClient->proxy())
+            return permissionClient->allowDatabase(name, displayName, estimatedSize);
+
+        // FIXME: Deprecate this bridge code when PermissionClientProxy is
+        // implemented by the embedder.
         WebWorkerBase* webWorker = static_cast<WebWorkerBase*>(workerGlobalScope->thread()->workerLoaderProxy().toWebWorkerBase());
         WebView* view = webWorker->view();
         if (!view)

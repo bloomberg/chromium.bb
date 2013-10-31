@@ -44,8 +44,11 @@
 #include "WebPermissionClient.h"
 #include "WebViewImpl.h"
 #include "WorkerFileSystemClient.h"
+#include "WorkerPermissionClient.h"
 #include "public/platform/WebString.h"
+#include "public/web/WebFrameClient.h"
 #include "public/web/WebSecurityOrigin.h"
+#include "public/web/WebWorkerPermissionClientProxy.h"
 
 using namespace WebCore;
 
@@ -61,6 +64,7 @@ WorkerGlobalScopeProxy* WebWorkerClientImpl::createWorkerGlobalScopeProxy(Worker
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
         OwnPtr<WorkerClients> workerClients = WorkerClients::create();
         provideLocalFileSystemToWorker(workerClients.get(), WorkerFileSystemClient::create());
+        providePermissionClientToWorker(workerClients.get(), adoptPtr(webFrame->client()->createWorkerPermissionClientProxy(webFrame)));
         WebWorkerClientImpl* proxy = new WebWorkerClientImpl(worker, webFrame, workerClients.release());
         return proxy;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,42 +28,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebCommonWorkerClient_h
-#define WebCommonWorkerClient_h
-
-#include "../platform/WebCommon.h"
-#include "../platform/WebFileSystem.h"
-#include "../platform/WebFileSystemType.h"
-// FIXME: need to move this to Platform
-#include "WebStorageQuotaCallbacks.h"
-#include "WebStorageQuotaType.h"
+#ifndef WebWorkerPermissionClientProxy_h
+#define WebWorkerPermissionClientProxy_h
 
 namespace WebKit {
 
-class WebApplicationCacheHost;
-class WebApplicationCacheHostClient;
-class WebFrame;
-class WebNotificationPresenter;
 class WebString;
-class WebWorker;
-class WebWorkerClient;
 
-// FIXME: Deprecate this.
-class WebCommonWorkerClient {
+// Proxy interface to talk to the document's PermissionClient implementation.
+// This proxy is created by the embedder and is passed to the worker's
+// WorkerGlobalScope in blink. Each allow method is called on the worker thread
+// and may destructed on the worker thread.
+class WebWorkerPermissionClientProxy {
 public:
-    // Called on the main webkit thread before opening a web database.
-    virtual bool allowDatabase(WebFrame*, const WebString& name, const WebString& displayName, unsigned long estimatedSize)
+    virtual ~WebWorkerPermissionClientProxy() { }
+
+    virtual bool allowDatabase(const WebString& name, const WebString& displayName, unsigned long estimatedSize)
     {
         return true;
     }
 
-    // Called on the main webkit thread before opening a file system.
     virtual bool allowFileSystem()
     {
         return true;
     }
 
-    // Called on the main webkit thread before opening an indexed database.
     virtual bool allowIndexedDB(const WebString& name)
     {
         return true;
@@ -72,4 +61,4 @@ public:
 
 } // namespace WebKit
 
-#endif
+#endif // WebWorkerPermissionClientProxy_h

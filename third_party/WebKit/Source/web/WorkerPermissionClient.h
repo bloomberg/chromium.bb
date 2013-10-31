@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,48 +28,46 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebCommonWorkerClient_h
-#define WebCommonWorkerClient_h
+#ifndef WorkerPermissionClient_h
+#define WorkerPermissionClient_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebFileSystem.h"
-#include "../platform/WebFileSystemType.h"
-// FIXME: need to move this to Platform
-#include "WebStorageQuotaCallbacks.h"
-#include "WebStorageQuotaType.h"
+#include "core/workers/WorkerClients.h"
+#include "wtf/Forward.h"
+
+namespace WebCore {
+class ExecutionContext;
+}
 
 namespace WebKit {
 
-class WebApplicationCacheHost;
-class WebApplicationCacheHostClient;
 class WebFrame;
-class WebNotificationPresenter;
 class WebString;
-class WebWorker;
-class WebWorkerClient;
+class WebWorkerPermissionClientProxy;
 
-// FIXME: Deprecate this.
-class WebCommonWorkerClient {
+class WorkerPermissionClient : public WebCore::Supplement<WebCore::WorkerClients> {
 public:
-    // Called on the main webkit thread before opening a web database.
-    virtual bool allowDatabase(WebFrame*, const WebString& name, const WebString& displayName, unsigned long estimatedSize)
-    {
-        return true;
-    }
+    static PassOwnPtr<WorkerPermissionClient> create(PassOwnPtr<WebWorkerPermissionClientProxy>);
 
-    // Called on the main webkit thread before opening a file system.
-    virtual bool allowFileSystem()
-    {
-        return true;
-    }
+    virtual ~WorkerPermissionClient();
 
-    // Called on the main webkit thread before opening an indexed database.
-    virtual bool allowIndexedDB(const WebString& name)
-    {
-        return true;
-    }
+    bool allowDatabase(const WebString& name, const WebString& displayName, unsigned long estimatedSize);
+    bool allowFileSystem();
+    bool allowIndexedDB(const WebString& name);
+
+    // FIXME: Remove this after embedder implement this.
+    WebWorkerPermissionClientProxy* proxy() { return m_proxy.get(); }
+
+    static const char* supplementName();
+    static WorkerPermissionClient* from(WebCore::ExecutionContext*);
+
+private:
+    explicit WorkerPermissionClient(PassOwnPtr<WebWorkerPermissionClientProxy>);
+
+    OwnPtr<WebWorkerPermissionClientProxy> m_proxy;
 };
+
+void providePermissionClientToWorker(WebCore::WorkerClients*, PassOwnPtr<WebWorkerPermissionClientProxy>);
 
 } // namespace WebKit
 
-#endif
+#endif // WorkerPermissionClient_h

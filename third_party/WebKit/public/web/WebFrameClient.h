@@ -71,7 +71,7 @@ class WebString;
 class WebURL;
 class WebURLLoader;
 class WebURLResponse;
-class WebWorker;
+class WebWorkerPermissionClientProxy;
 struct WebPluginParams;
 struct WebRect;
 struct WebSize;
@@ -92,6 +92,9 @@ public:
 
     // May return null. Takes ownership of the client.
     virtual WebServiceWorkerProvider* createServiceWorkerProvider(WebFrame*, WebServiceWorkerProviderClient*) { return 0; }
+
+    // May return null.
+    virtual WebWorkerPermissionClientProxy* createWorkerPermissionClientProxy(WebFrame*) { return 0; }
 
 
     // Services ------------------------------------------------------------
