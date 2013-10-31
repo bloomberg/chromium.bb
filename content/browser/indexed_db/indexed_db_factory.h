@@ -21,11 +21,12 @@
 namespace content {
 
 class IndexedDBBackingStore;
+class IndexedDBContextImpl;
 
 class CONTENT_EXPORT IndexedDBFactory
     : NON_EXPORTED_BASE(public base::RefCounted<IndexedDBFactory>) {
  public:
-  IndexedDBFactory();
+  explicit IndexedDBFactory(IndexedDBContextImpl* context);
 
   // Notifications from weak pointers.
   void ReleaseDatabase(const IndexedDBDatabase::Identifier& identifier,
@@ -47,6 +48,8 @@ class CONTENT_EXPORT IndexedDBFactory
                       scoped_refptr<IndexedDBCallbacks> callbacks,
                       const GURL& origin_url,
                       const base::FilePath& data_directory);
+
+  void HandleBackingStoreFailure(const GURL& origin_url);
 
   // Iterates over all databases; for diagnostics only.
   std::vector<IndexedDBDatabase*> GetOpenDatabasesForOrigin(
@@ -76,6 +79,8 @@ class CONTENT_EXPORT IndexedDBFactory
   // factory has the last reference, it will be released.
   void MaybeCloseBackingStore(const GURL& origin_url);
   bool HasLastBackingStoreReference(const GURL& origin_url) const;
+
+  IndexedDBContextImpl* context_;
 
   typedef std::map<IndexedDBDatabase::Identifier,
                    scoped_refptr<IndexedDBDatabase> > IndexedDBDatabaseMap;

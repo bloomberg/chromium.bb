@@ -119,7 +119,7 @@ IndexedDBFactory* IndexedDBContextImpl::GetIDBFactory() {
     // Prime our cache of origins with existing databases so we can
     // detect when dbs are newly created.
     GetOriginSet();
-    factory_ = new IndexedDBFactory();
+    factory_ = new IndexedDBFactory(this);
   }
   return factory_;
 }
@@ -328,7 +328,7 @@ void IndexedDBContextImpl::DeleteForOrigin(const GURL& origin_url) {
   }
 }
 
-void IndexedDBContextImpl::ForceClose(const GURL& origin_url) {
+void IndexedDBContextImpl::ForceClose(const GURL origin_url) {
   DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
   if (data_path_.empty() || !IsInOriginSet(origin_url))
     return;

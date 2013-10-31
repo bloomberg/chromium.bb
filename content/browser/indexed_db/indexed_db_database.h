@@ -56,12 +56,9 @@ class CONTENT_EXPORT IndexedDBDatabase
       IndexedDBBackingStore* backing_store,
       IndexedDBFactory* factory,
       const Identifier& unique_identifier);
-  scoped_refptr<IndexedDBBackingStore> BackingStore() const;
 
-  const Identifier& identifier() { return identifier_; }
-  scoped_refptr<IndexedDBBackingStore> backing_store() {
-    return backing_store_;
-  }
+  const Identifier& identifier() const { return identifier_; }
+  IndexedDBBackingStore* backing_store() { return backing_store_.get(); }
 
   int64 id() const { return metadata_.id; }
   const base::string16& name() const { return metadata_.name; }
@@ -124,6 +121,9 @@ class CONTENT_EXPORT IndexedDBDatabase
   void TransactionFinished(IndexedDBTransaction* transaction);
   void TransactionFinishedAndCompleteFired(IndexedDBTransaction* transaction);
   void TransactionFinishedAndAbortFired(IndexedDBTransaction* transaction);
+
+  // Called by transactions to report failure committing to the backing store.
+  void TransactionCommitFailed();
 
   void Get(int64 transaction_id,
            int64 object_store_id,

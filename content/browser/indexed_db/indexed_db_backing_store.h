@@ -45,7 +45,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
  public:
   class CONTENT_EXPORT Transaction;
 
-  const GURL& origin_url() { return origin_url_; }
+  const GURL& origin_url() const { return origin_url_; }
   base::OneShotTimer<IndexedDBBackingStore>* close_timer() {
     return &close_timer_;
   }

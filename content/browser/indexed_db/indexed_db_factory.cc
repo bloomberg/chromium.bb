@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
+#include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction_coordinator.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseException.h"
@@ -17,7 +18,8 @@ namespace content {
 
 const int64 kBackingStoreGracePeriodMs = 2000;
 
-IndexedDBFactory::IndexedDBFactory() {}
+IndexedDBFactory::IndexedDBFactory(IndexedDBContextImpl* context)
+    : context_(context) {}
 
 IndexedDBFactory::~IndexedDBFactory() {}
 
@@ -98,6 +100,7 @@ void IndexedDBFactory::ContextDestroyed() {
        ++it)
     it->second->close_timer()->Stop();
   backing_store_map_.clear();
+  context_ = NULL;
 }
 
 void IndexedDBFactory::GetDatabaseNames(
@@ -164,6 +167,13 @@ void IndexedDBFactory::DeleteDatabase(
   database_map_[unique_identifier] = database;
   database->DeleteDatabase(callbacks);
   database_map_.erase(unique_identifier);
+}
+
+void IndexedDBFactory::HandleBackingStoreFailure(const GURL& origin_url) {
+  // NULL after ContextDestroyed() called, and in some unit tests.
+  if (!context_)
+    return;
+  context_->ForceClose(origin_url);
 }
 
 bool IndexedDBFactory::IsBackingStoreOpenForTesting(const GURL& origin_url)

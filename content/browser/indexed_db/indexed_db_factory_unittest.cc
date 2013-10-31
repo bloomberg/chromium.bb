@@ -36,6 +36,7 @@ class IndexedDBFactoryTest : public testing::Test {
 
 class MockIDBFactory : public IndexedDBFactory {
  public:
+  MockIDBFactory() : IndexedDBFactory(NULL) {}
   scoped_refptr<IndexedDBBackingStore> TestOpenBackingStore(
       const GURL& origin,
       const base::FilePath& data_directory) {
@@ -173,6 +174,9 @@ TEST_F(IndexedDBFactoryTest, RejectLongOrigins) {
 }
 
 class DiskFullFactory : public IndexedDBFactory {
+ public:
+  DiskFullFactory() : IndexedDBFactory(NULL) {}
+
  private:
   virtual ~DiskFullFactory() {}
   virtual scoped_refptr<IndexedDBBackingStore> OpenBackingStore(
@@ -223,7 +227,7 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleasedOnForcedClose) {
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
 
-  scoped_refptr<IndexedDBFactory> factory = new IndexedDBFactory();
+  scoped_refptr<IndexedDBFactory> factory = new IndexedDBFactory(NULL);
 
   scoped_refptr<MockIndexedDBCallbacks> callbacks(new MockIndexedDBCallbacks());
   scoped_refptr<MockIndexedDBDatabaseCallbacks> db_callbacks(
@@ -250,7 +254,7 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleaseDelayedOnClose) {
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
 
-  scoped_refptr<IndexedDBFactory> factory = new IndexedDBFactory();
+  scoped_refptr<IndexedDBFactory> factory = new IndexedDBFactory(NULL);
 
   scoped_refptr<MockIndexedDBCallbacks> callbacks(new MockIndexedDBCallbacks());
   scoped_refptr<MockIndexedDBDatabaseCallbacks> db_callbacks(

@@ -218,10 +218,6 @@ IndexedDBDatabase::~IndexedDBDatabase() {
   DCHECK(pending_delete_calls_.empty());
 }
 
-scoped_refptr<IndexedDBBackingStore> IndexedDBDatabase::BackingStore() const {
-  return backing_store_;
-}
-
 IndexedDBTransaction* IndexedDBDatabase::GetTransaction(
     int64 transaction_id) const {
   TransactionMap::const_iterator trans_iterator =
@@ -882,18 +878,17 @@ void IndexedDBDatabase::SetIndexKeys(int64 transaction_id,
     return;
   DCHECK_EQ(transaction->mode(), indexed_db::TRANSACTION_VERSION_CHANGE);
 
-  scoped_refptr<IndexedDBBackingStore> store = BackingStore();
   // TODO(alecflett): This method could be asynchronous, but we need to
   // evaluate if it's worth the extra complexity.
   IndexedDBBackingStore::RecordIdentifier record_identifier;
   bool found = false;
-  bool ok =
-      store->KeyExistsInObjectStore(transaction->BackingStoreTransaction(),
-                                    metadata_.id,
-                                    object_store_id,
-                                    *primary_key,
-                                    &record_identifier,
-                                    &found);
+  bool ok = backing_store_->KeyExistsInObjectStore(
+      transaction->BackingStoreTransaction(),
+      metadata_.id,
+      object_store_id,
+      *primary_key,
+      &record_identifier,
+      &found);
   if (!ok) {
     transaction->Abort(
         IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
@@ -915,7 +910,7 @@ void IndexedDBDatabase::SetIndexKeys(int64 transaction_id,
   const IndexedDBObjectStoreMetadata& object_store_metadata =
       metadata_.object_stores[object_store_id];
   bool backing_store_success = MakeIndexWriters(transaction,
-                                                store,
+                                                backing_store_,
                                                 id(),
                                                 object_store_metadata,
                                                 *primary_key,
@@ -940,7 +935,7 @@ void IndexedDBDatabase::SetIndexKeys(int64 transaction_id,
   for (size_t i = 0; i < index_writers.size(); ++i) {
     IndexWriter* index_writer = index_writers[i];
     index_writer->WriteIndexKeys(record_identifier,
-                                 store,
+                                 backing_store_,
                                  transaction->BackingStoreTransaction(),
                                  id(),
                                  object_store_id);
@@ -1318,6 +1313,10 @@ void IndexedDBDatabase::TransactionFinishedAndCompleteFired(
     }
     ProcessPendingCalls();
   }
+}
+
+void IndexedDBDatabase::TransactionCommitFailed() {
+  factory_->HandleBackingStoreFailure(backing_store_->origin_url());
 }
 
 size_t IndexedDBDatabase::ConnectionCount() const {

@@ -61,7 +61,7 @@ IndexedDBTransaction::IndexedDBTransaction(
       commit_pending_(false),
       callbacks_(callbacks),
       database_(database),
-      transaction_(database->BackingStore().get()),
+      transaction_(database->backing_store()),
       should_process_queue_(false),
       pending_preemptive_events_(0),
       queue_status_(CREATED),
@@ -256,6 +256,7 @@ void IndexedDBTransaction::Commit() {
         IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
                                "Internal error committing transaction."));
     database_->TransactionFinishedAndAbortFired(this);
+    database_->TransactionCommitFailed();
   }
 
   database_ = NULL;

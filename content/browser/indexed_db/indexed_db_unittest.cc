@@ -9,6 +9,8 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
+#include "content/browser/indexed_db/mock_indexed_db_callbacks.h"
+#include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_browser_context.h"
@@ -219,6 +221,43 @@ TEST_F(IndexedDBTest, DeleteFailsIfDirectoryLocked) {
   FlushIndexedDBTaskRunner();
 
   EXPECT_TRUE(base::DirectoryExists(test_path));
+}
+
+TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnCommitFailure) {
+  const GURL kTestOrigin("http://test/");
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  scoped_refptr<IndexedDBContextImpl> context = new IndexedDBContextImpl(
+      temp_dir.path(), special_storage_policy_, NULL, task_runner_);
+
+  scoped_refptr<IndexedDBFactory> factory = context->GetIDBFactory();
+
+  scoped_refptr<MockIndexedDBCallbacks> callbacks(new MockIndexedDBCallbacks());
+  scoped_refptr<MockIndexedDBDatabaseCallbacks> db_callbacks(
+      new MockIndexedDBDatabaseCallbacks());
+  const int64 transaction_id = 1;
+  factory->Open(ASCIIToUTF16("db"),
+                IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION,
+                transaction_id,
+                callbacks,
+                db_callbacks,
+                kTestOrigin,
+                temp_dir.path());
+
+  EXPECT_TRUE(callbacks->connection());
+
+  // ConnectionOpened() is usually called by the dispatcher.
+  context->ConnectionOpened(kTestOrigin, callbacks->connection());
+
+  EXPECT_TRUE(factory->IsBackingStoreOpenForTesting(kTestOrigin));
+
+  // Simulate the write failure.
+  callbacks->connection()->database()->TransactionCommitFailed();
+
+  EXPECT_TRUE(db_callbacks->forced_close_called());
+  EXPECT_FALSE(factory->IsBackingStoreOpenForTesting(kTestOrigin));
 }
 
 }  // namespace content

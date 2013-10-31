@@ -84,7 +84,7 @@ TEST(IndexedDBDatabaseTest, ConnectionLifecycle) {
   EXPECT_FALSE(request2->connection()->IsConnected());
 
   EXPECT_TRUE(backing_store->HasOneRef());
-  EXPECT_FALSE(db->BackingStore());
+  EXPECT_FALSE(db->backing_store());
 
   db = NULL;
 }
@@ -180,7 +180,7 @@ TEST(IndexedDBDatabaseTest, PendingDelete) {
 
   db->Close(request1->connection(), true /* forced */);
 
-  EXPECT_FALSE(db->BackingStore());
+  EXPECT_FALSE(db->backing_store());
   EXPECT_TRUE(backing_store->HasOneRef());  // local
 }
 
