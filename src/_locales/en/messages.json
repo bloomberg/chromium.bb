@@ -119,6 +119,10 @@
     "message": "Go to gallery",
     "description": "Label for the gallery button."
   },
+  "filtersButton": {
+    "message": "Toggle filters",
+    "description": "Label for the toggle filters button."
+  },
   "deleteButton": {
     "message": "Delete",
     "description": "Label for the delete button."
