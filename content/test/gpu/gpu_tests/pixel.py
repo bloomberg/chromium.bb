@@ -17,26 +17,6 @@ test_data_dir = os.path.abspath(os.path.join(
 default_generated_data_dir = os.path.join(test_data_dir, 'generated')
 default_reference_image_dir = os.path.join(test_data_dir, 'gpu_reference')
 
-test_harness_script = r"""
-  var domAutomationController = {};
-
-  domAutomationController._succeeded = false;
-  domAutomationController._finished = false;
-
-  domAutomationController.setAutomationId = function(id) {}
-
-  domAutomationController.send = function(msg) {
-    domAutomationController._finished = true;
-
-    if(msg.toLowerCase() == "success") {
-      domAutomationController._succeeded = true;
-    } else {
-      domAutomationController._succeeded = false;
-    }
-  }
-
-  window.domAutomationController = domAutomationController;
-"""
 
 class PixelTestFailure(Exception):
   pass
@@ -50,6 +30,9 @@ class PixelValidator(page_test.PageTest):
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
+
+  def InjectJavascript(self):
+    return [os.path.join(os.path.dirname(__file__), 'pixel.js')]
 
   def ValidatePage(self, page, tab, results):
     if not _DidTestSucceed(tab):
@@ -165,9 +148,3 @@ class Pixel(test.Test):
         help='Chrome revision being tested.',
         default="unknownrev")
     parser.add_option_group(group)
-
-  def CreatePageSet(self, options):
-    page_set = super(Pixel, self).CreatePageSet(options)
-    for page in page_set.pages:
-      page.script_to_evaluate_on_commit = test_harness_script
-    return page_set

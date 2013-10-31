@@ -60,9 +60,9 @@ class HardwareAcceleratedFeature(test.Test):
             safe_feature_name(feature),
         'url': 'chrome://gpu',
         'navigate_steps': [
-          { "action": 'navigate' }
+          { 'action': 'navigate' },
+          { 'action': 'javascript', 'expression': test_harness_script}
         ],
-        'script_to_evaluate_on_commit': test_harness_script,
         'feature': feature
       })
 

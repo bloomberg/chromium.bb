@@ -54,11 +54,6 @@ def _CreatePageSetFromPath(path):
 
 class _BlinkPerfMeasurement(page_measurement.PageMeasurement):
   """Tuns a blink performance test and reports the results."""
-  def __init__(self):
-    super(_BlinkPerfMeasurement, self).__init__('')
-    with open(os.path.join(os.path.dirname(__file__),
-                           'blink_perf.js'), 'r') as f:
-      self._blink_perf_js = f.read()
 
   def CreatePageSet(self, args, options):
     if len(args) < 2:
@@ -77,8 +72,8 @@ class _BlinkPerfMeasurement(page_measurement.PageMeasurement):
   def results_are_the_same_on_every_page(self):
     return False
 
-  def WillNavigateToPage(self, page, tab):
-    page.script_to_evaluate_on_commit = self._blink_perf_js
+  def InjectJavascript(self):
+    return [os.path.join(os.path.dirname(__file__), 'blink_perf.js')]
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs([

@@ -17,15 +17,8 @@ from telemetry.page import page_set
 
 class _CanvasMarkMeasurement(page_measurement.PageMeasurement):
 
-  def WillNavigateToPage(self, page, tab):
-    page.script_to_evaluate_on_commit = """
-        var __results = [];
-        var __real_log = window.console.log;
-        window.console.log = function(msg) {
-          __results.push(msg);
-          __real_log.apply(this, [msg]);
-        }
-        """
+  def InjectJavascript(self):
+    return [os.path.join(os.path.dirname(__file__), 'canvasmark.js')]
 
   def MeasurePage(self, _, tab, results):
     tab.WaitForJavaScriptExpression('__results.length == 8', 300)

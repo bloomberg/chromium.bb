@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 (function() {
+if (window.parent != window)  // Ignore subframes.
+  return;
 window.testRunner = {};
 window.testRunner.isDone = false;
 

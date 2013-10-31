@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
+
 from telemetry import test
 from telemetry.page import page_measurement
 
@@ -10,6 +12,9 @@ class _PicaMeasurement(page_measurement.PageMeasurement):
     # Needed for native custom elements (document.register)
     options.AppendExtraBrowserArgs(
         '--enable-experimental-web-platform-features')
+
+  def InjectJavascript(self):
+    return [os.path.join(os.path.dirname(__file__), 'pica.js')]
 
   def MeasurePage(self, _, tab, results):
     result = int(tab.EvaluateJavaScript('__pica_load_time'))
