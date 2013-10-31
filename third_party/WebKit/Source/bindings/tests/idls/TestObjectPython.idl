@@ -247,6 +247,9 @@ interface TestObjectPython {
     void voidMethodSequenceLongArg(sequence<long> sequenceLongArg);
     void voidMethodSequenceStringArg(sequence<DOMString> sequenceStringArg);
     void voidMethodSequenceTestInterfaceEmptyArg(sequence<TestInterfaceEmpty> sequenceTestInterfaceEmptyArg);
+    // Nullable types
+    // Currently only used on interface type arguments
+    void voidMethodNullableStringArg(TestInterfaceEmpty? nullableTestInterfaceEmptyArg);
     // Enumerations
     TestEnum testEnumMethod();
     void voidMethodTestEnumArg(TestEnum testEnumTypeArg);

@@ -4276,6 +4276,24 @@ static void voidMethodSequenceTestInterfaceEmptyArgMethodCallback(const v8::Func
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void voidMethodNullableStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    if (UNLIKELY(args.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodNullableStringArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, nullableTestInterfaceEmptyArg, V8TestInterfaceEmpty::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
+    imp->voidMethodNullableStringArg(nullableTestInterfaceEmptyArg);
+}
+
+static void voidMethodNullableStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodNullableStringArgMethod(args);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void testEnumMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
@@ -5048,6 +5066,12 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::
     v8::Handle<v8::FunctionTemplate> voidMethodUint8ArrayArgArgv[voidMethodUint8ArrayArgArgc] = { v8::Handle<v8::FunctionTemplate>() };
     v8::Handle<v8::Signature> voidMethodUint8ArrayArgSignature = v8::Signature::New(desc, voidMethodUint8ArrayArgArgc, voidMethodUint8ArrayArgArgv);
     proto->Set(v8::String::NewSymbol("voidMethodUint8ArrayArg"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::voidMethodUint8ArrayArgMethodCallback, v8Undefined(), voidMethodUint8ArrayArgSignature, 1));
+
+    // Custom Signature 'voidMethodNullableStringArg'
+    const int voidMethodNullableStringArgArgc = 1;
+    v8::Handle<v8::FunctionTemplate> voidMethodNullableStringArgArgv[voidMethodNullableStringArgArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8TestInterfaceEmpty::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::Signature> voidMethodNullableStringArgSignature = v8::Signature::New(desc, voidMethodNullableStringArgArgc, voidMethodNullableStringArgArgv);
+    proto->Set(v8::String::NewSymbol("voidMethodNullableStringArg"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::voidMethodNullableStringArgMethodCallback, v8Undefined(), voidMethodNullableStringArgSignature, 1));
 
     // Custom Signature 'voidMethodXPathNSResolverArg'
     const int voidMethodXPathNSResolverArgArgc = 1;
