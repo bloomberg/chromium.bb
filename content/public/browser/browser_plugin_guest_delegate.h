@@ -79,6 +79,9 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
       const PermissionResponseCallback& callback,
       bool allowed_by_default);
 
+  // Requests resolution of a potentially relative URL.
+  virtual GURL ResolveURL(const std::string& src);
+
   // Notifies that the content size of the guest has changed in autosize mode.
   virtual void SizeChanged(const gfx::Size& old_size,
                            const gfx::Size& new_size) {}

@@ -1341,7 +1341,7 @@ void BrowserPluginGuest::OnLockMouseAck(int instance_id, bool succeeded) {
 void BrowserPluginGuest::OnNavigateGuest(
     int instance_id,
     const std::string& src) {
-  GURL url(src);
+  GURL url = delegate_ ? delegate_->ResolveURL(src) : GURL(src);
   // We do not load empty urls in web_contents.
   // If a guest sets empty src attribute after it has navigated to some
   // non-empty page, the action is considered no-op. This empty src navigation

@@ -5,6 +5,7 @@
 #include "chrome/browser/guestview/webview/webview_guest.h"
 
 #include "base/command_line.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/extensions/extension_web_contents_observer.h"
@@ -27,6 +28,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
+#include "extensions/common/constants.h"
 #include "net/base/net_errors.h"
 
 #if defined(ENABLE_PLUGINS)
@@ -556,6 +558,17 @@ void WebViewGuest::RemoveWebViewFromExtensionRendererState(
           base::Unretained(ExtensionRendererState::GetInstance()),
           web_contents->GetRenderProcessHost()->GetID(),
           web_contents->GetRoutingID()));
+}
+
+GURL WebViewGuest::ResolveURL(const std::string& src) {
+  if (extension_id().empty()) {
+    NOTREACHED();
+    return GURL(src);
+  }
+  GURL default_url(base::StringPrintf("%s://%s/",
+                                      extensions::kExtensionScheme,
+                                      extension_id().c_str()));
+  return default_url.Resolve(src);
 }
 
 void WebViewGuest::SizeChanged(const gfx::Size& old_size,

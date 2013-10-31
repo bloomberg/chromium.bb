@@ -62,6 +62,7 @@ class WebViewGuest : public GuestView,
       const base::DictionaryValue& request_info,
       const PermissionResponseCallback& callback,
       bool allowed_by_default) OVERRIDE;
+  virtual GURL ResolveURL(const std::string& src) OVERRIDE;
   virtual void SizeChanged(const gfx::Size& old_size, const gfx::Size& new_size)
       OVERRIDE;
 

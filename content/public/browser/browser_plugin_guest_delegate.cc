@@ -27,4 +27,8 @@ bool BrowserPluginGuestDelegate::RequestPermission(
   return false;
 }
 
+GURL BrowserPluginGuestDelegate::ResolveURL(const std::string& src) {
+  return GURL(src);
+}
+
 }  // namespace content
