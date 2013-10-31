@@ -37,7 +37,7 @@
 
 namespace WebCore {
 
-void V8TrackEvent::trackAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8TrackEvent::trackAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TrackEvent* trackEvent = V8TrackEvent::toNative(info.Holder());
     TrackBase* track = trackEvent->track();

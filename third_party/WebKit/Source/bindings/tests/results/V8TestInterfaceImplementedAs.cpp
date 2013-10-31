@@ -63,57 +63,57 @@ namespace RealClassV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
-static void aAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void aAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     RealClass* imp = V8TestInterfaceImplementedAs::toNative(info.Holder());
     v8SetReturnValueString(info, imp->a(), info.GetIsolate());
 }
 
-static void aAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void aAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    RealClassV8Internal::aAttributeGetter(name, info);
+    RealClassV8Internal::aAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void aAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void aAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     RealClass* imp = V8TestInterfaceImplementedAs::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     imp->setA(cppValue);
 }
 
-static void aAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void aAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    RealClassV8Internal::aAttributeSetter(name, jsValue, info);
+    RealClassV8Internal::aAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void bAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void bAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     RealClass* imp = V8TestInterfaceImplementedAs::toNative(info.Holder());
     v8SetReturnValueFast(info, imp->b(), imp);
 }
 
-static void bAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void bAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    RealClassV8Internal::bAttributeGetter(name, info);
+    RealClassV8Internal::bAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void bAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void bAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     RealClass* imp = V8TestInterfaceImplementedAs::toNative(info.Holder());
     V8TRYCATCH_VOID(RealClass*, cppValue, V8TestInterfaceImplementedAs::HasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceImplementedAs::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     imp->setB(WTF::getPtr(cppValue));
 }
 
-static void bAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void bAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    RealClassV8Internal::bAttributeSetter(name, jsValue, info);
+    RealClassV8Internal::bAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 

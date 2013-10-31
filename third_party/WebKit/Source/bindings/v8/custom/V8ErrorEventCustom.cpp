@@ -44,7 +44,7 @@
 
 namespace WebCore {
 
-void V8ErrorEvent::errorAttributeGetterCustom(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8ErrorEvent::errorAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Value> error = info.Holder()->GetHiddenValue(V8HiddenPropertyName::error(info.GetIsolate()));
 

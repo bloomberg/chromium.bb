@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-void V8HTMLMediaElement::controllerAttributeSetterCustom(v8::Local<v8::String>, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+void V8HTMLMediaElement::controllerAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     MediaController* controller = 0;
     if (!value->IsNull()) {

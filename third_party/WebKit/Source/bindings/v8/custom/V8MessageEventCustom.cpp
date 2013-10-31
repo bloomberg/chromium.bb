@@ -42,7 +42,7 @@
 
 namespace WebCore {
 
-void V8MessageEvent::dataAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8MessageEvent::dataAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     MessageEvent* event = V8MessageEvent::toNative(info.Holder());
 
@@ -93,7 +93,7 @@ void V8MessageEvent::dataAttributeGetterCustom(v8::Local<v8::String> name, const
     // Overwrite the data attribute so it returns the cached result in future invocations.
     // This custom handler (dataAccessGetter) will not be called again.
     v8::PropertyAttribute dataAttr = static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::ReadOnly);
-    info.Holder()->ForceSet(name, result, dataAttr);
+    info.Holder()->ForceSet(v8::String::NewSymbol("data"), result, dataAttr);
     v8SetReturnValue(info, result);
 }
 

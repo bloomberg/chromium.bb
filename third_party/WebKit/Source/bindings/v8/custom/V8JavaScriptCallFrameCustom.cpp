@@ -57,7 +57,7 @@ void V8JavaScriptCallFrame::setVariableValueMethodCustom(const v8::FunctionCallb
     v8SetReturnValue(info, impl->setVariableValue(scopeIndex, variableName, newValue));
 }
 
-void V8JavaScriptCallFrame::scopeChainAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8JavaScriptCallFrame::scopeChainAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     JavaScriptCallFrame* impl = V8JavaScriptCallFrame::toNative(info.Holder());
     v8SetReturnValue(info, impl->scopeChain());
@@ -70,13 +70,13 @@ void V8JavaScriptCallFrame::scopeTypeMethodCustom(const v8::FunctionCallbackInfo
     v8SetReturnValue(info, impl->scopeType(scopeIndex));
 }
 
-void V8JavaScriptCallFrame::thisObjectAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8JavaScriptCallFrame::thisObjectAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     JavaScriptCallFrame* impl = V8JavaScriptCallFrame::toNative(info.Holder());
     v8SetReturnValue(info, impl->thisObject());
 }
 
-void V8JavaScriptCallFrame::typeAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8JavaScriptCallFrame::typeAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8SetReturnValue(info, v8::String::NewSymbol("function"));
 }

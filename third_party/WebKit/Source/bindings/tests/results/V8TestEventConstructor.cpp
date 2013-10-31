@@ -62,29 +62,29 @@ namespace TestEventConstructorV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
-static void attr1AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void attr1AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestEventConstructor* imp = V8TestEventConstructor::toNative(info.Holder());
     v8SetReturnValueString(info, imp->attr1(), info.GetIsolate());
 }
 
-static void attr1AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void attr1AttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestEventConstructorV8Internal::attr1AttributeGetter(name, info);
+    TestEventConstructorV8Internal::attr1AttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void attr2AttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void attr2AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestEventConstructor* imp = V8TestEventConstructor::toNative(info.Holder());
     v8SetReturnValueString(info, imp->attr2(), info.GetIsolate());
 }
 
-static void attr2AttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void attr2AttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestEventConstructorV8Internal::attr2AttributeGetter(name, info);
+    TestEventConstructorV8Internal::attr2AttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 

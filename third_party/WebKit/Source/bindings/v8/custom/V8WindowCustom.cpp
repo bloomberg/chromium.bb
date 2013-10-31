@@ -153,7 +153,7 @@ void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool 
     v8SetReturnValue(info, timerId);
 }
 
-void V8Window::eventAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8Window::eventAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(V8Window::GetTemplate(info.GetIsolate(), worldTypeInMainThread(info.GetIsolate())));
     if (holder.IsEmpty())
@@ -178,7 +178,7 @@ void V8Window::eventAttributeGetterCustom(v8::Local<v8::String> name, const v8::
     v8SetReturnValue(info, jsEvent);
 }
 
-void V8Window::eventAttributeSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+void V8Window::eventAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(V8Window::GetTemplate(info.GetIsolate(), worldTypeInMainThread(info.GetIsolate())));
     if (holder.IsEmpty())
@@ -200,7 +200,7 @@ void V8Window::eventAttributeSetterCustom(v8::Local<v8::String> name, v8::Local<
     context->Global()->SetHiddenValue(eventSymbol, value);
 }
 
-void V8Window::openerAttributeSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+void V8Window::openerAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     DOMWindow* imp = V8Window::toNative(info.Holder());
     ExceptionState es(info.GetIsolate());
@@ -220,10 +220,10 @@ void V8Window::openerAttributeSetterCustom(v8::Local<v8::String> name, v8::Local
     }
 
     // Delete the accessor from this object.
-    info.Holder()->Delete(name);
+    info.Holder()->Delete(v8::String::NewSymbol("opener"));
 
     // Put property on the front (this) object.
-    info.This()->Set(name, value);
+    info.This()->Set(v8::String::NewSymbol("opener"), value);
 }
 
 static bool isLegacyTargetOriginDesignation(v8::Handle<v8::Value> value)

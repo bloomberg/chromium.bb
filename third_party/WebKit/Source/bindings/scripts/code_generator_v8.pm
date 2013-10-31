@@ -743,14 +743,14 @@ END
         if (HasCustomGetter($attrExt) && !$attrExt->{"ImplementedBy"}) {
             $header{classPublic}->add("#if ${conditionalString}\n") if $conditionalString;
             $header{classPublic}->add(<<END);
-    static void ${name}AttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>&);
+    static void ${name}AttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>&);
 END
             $header{classPublic}->add("#endif // ${conditionalString}\n") if $conditionalString;
         }
         if (HasCustomSetter($attribute) && !$attrExt->{"ImplementedBy"}) {
             $header{classPublic}->add("#if ${conditionalString}\n") if $conditionalString;
             $header{classPublic}->add(<<END);
-    static void ${name}AttributeSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
+    static void ${name}AttributeSetterCustom(v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
 END
             $header{classPublic}->add("#endif // ${conditionalString}\n") if $conditionalString;
         }
@@ -1184,7 +1184,7 @@ sub GenerateDomainSafeFunctionGetter
 
     AddToImplIncludes("bindings/v8/BindingSecurity.h");
     $implementation{nameSpaceInternal}->add(<<END);
-static void ${funcName}AttributeGetter${forMainWorldSuffix}(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void ${funcName}AttributeGetter${forMainWorldSuffix}(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     // This is only for getting a unique pointer which we can pass to privateTemplate.
     static int privateTemplateUniqueKey;
@@ -1207,7 +1207,7 @@ static void ${funcName}AttributeGetter${forMainWorldSuffix}(v8::Local<v8::String
         return;
     }
 
-    v8::Local<v8::Value> hiddenValue = info.This()->GetHiddenValue(name);
+    v8::Local<v8::Value> hiddenValue = info.This()->GetHiddenValue(v8::String::NewSymbol("${funcName}"));
     if (!hiddenValue.IsEmpty()) {
         v8SetReturnValue(info, hiddenValue);
         return;
@@ -1218,10 +1218,10 @@ static void ${funcName}AttributeGetter${forMainWorldSuffix}(v8::Local<v8::String
 
 END
     $implementation{nameSpaceInternal}->add(<<END);
-static void ${funcName}AttributeGetterCallback${forMainWorldSuffix}(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void ${funcName}AttributeGetterCallback${forMainWorldSuffix}(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    ${implClassName}V8Internal::${funcName}AttributeGetter${forMainWorldSuffix}(name, info);
+    ${implClassName}V8Internal::${funcName}AttributeGetter${forMainWorldSuffix}(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -1262,7 +1262,7 @@ sub GenerateConstructorGetter
     my $implClassName = GetImplName($interface);
 
     $implementation{nameSpaceInternal}->add(<<END);
-static void ${implClassName}ConstructorGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void ${implClassName}ConstructorGetter(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Value> data = info.Data();
     ASSERT(data->IsExternal());
@@ -1352,7 +1352,7 @@ sub GenerateNormalAttributeGetterCallback
     my $code = "";
     $code .= "#if ${conditionalString}\n" if $conditionalString;
 
-    $code .= "static void ${attrName}AttributeGetterCallback${forMainWorldSuffix}(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
+    $code .= "static void ${attrName}AttributeGetterCallback${forMainWorldSuffix}(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
     $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"Blink\", \"DOMGetter\");\n";
     $code .= GenerateFeatureObservation($attrExt->{"MeasureAs"});
@@ -1361,9 +1361,9 @@ sub GenerateNormalAttributeGetterCallback
         $code .= GenerateActivityLogging("Getter", $interface, "${attrName}");
     }
     if (HasCustomGetter($attrExt)) {
-        $code .= "    ${v8ClassName}::${attrName}AttributeGetterCustom(name, info);\n";
+        $code .= "    ${v8ClassName}::${attrName}AttributeGetterCustom(info);\n";
     } else {
-        $code .= "    ${implClassName}V8Internal::${attrName}AttributeGetter${forMainWorldSuffix}(name, info);\n";
+        $code .= "    ${implClassName}V8Internal::${attrName}AttributeGetter${forMainWorldSuffix}(info);\n";
     }
     $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
     $code .= "}\n";
@@ -1409,7 +1409,7 @@ sub GenerateNormalAttributeGetter
     my $code = "";
     $code .= "#if ${conditionalString}\n" if $conditionalString;
     $code .= <<END;
-static void ${attrName}AttributeGetter${forMainWorldSuffix}(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void ${attrName}AttributeGetter${forMainWorldSuffix}(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
 END
     if ($svgNativeType) {
@@ -1798,7 +1798,7 @@ sub GenerateNormalAttributeSetterCallback
     my $code = "";
     $code .= "#if ${conditionalString}\n" if $conditionalString;
 
-    $code .= "static void ${attrName}AttributeSetterCallback${forMainWorldSuffix}(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)\n";
+    $code .= "static void ${attrName}AttributeSetterCallback${forMainWorldSuffix}(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)\n";
     $code .= "{\n";
     $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"Blink\", \"DOMSetter\");\n";
     $code .= GenerateFeatureObservation($attrExt->{"MeasureAs"});
@@ -1808,9 +1808,9 @@ sub GenerateNormalAttributeSetterCallback
     }
     $code .= GenerateCustomElementInvocationScopeIfNeeded($attrExt);
     if (HasCustomSetter($attribute)) {
-        $code .= "    ${v8ClassName}::${attrName}AttributeSetterCustom(name, jsValue, info);\n";
+        $code .= "    ${v8ClassName}::${attrName}AttributeSetterCustom(jsValue, info);\n";
     } else {
-        $code .= "    ${implClassName}V8Internal::${attrName}AttributeSetter${forMainWorldSuffix}(name, jsValue, info);\n";
+        $code .= "    ${implClassName}V8Internal::${attrName}AttributeSetter${forMainWorldSuffix}(jsValue, info);\n";
     }
     $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
     $code .= "}\n";
@@ -1852,7 +1852,7 @@ sub GenerateNormalAttributeSetter
     my $conditionalString = GenerateConditionalString($attribute);
     my $code = "";
     $code .= "#if ${conditionalString}\n" if $conditionalString;
-    $code .= "static void ${attrName}AttributeSetter${forMainWorldSuffix}(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)\n";
+    $code .= "static void ${attrName}AttributeSetter${forMainWorldSuffix}(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)\n";
     $code .= "{\n";
 
     # If the "StrictTypeChecking" extended attribute is present, and the attribute's type is an

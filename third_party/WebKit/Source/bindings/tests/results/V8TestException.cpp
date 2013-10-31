@@ -59,16 +59,16 @@ namespace TestExceptionV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
-static void nameAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void nameAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestException* imp = V8TestException::toNative(info.Holder());
     v8SetReturnValueString(info, imp->name(), info.GetIsolate());
 }
 
-static void nameAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void nameAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestExceptionV8Internal::nameAttributeGetter(name, info);
+    TestExceptionV8Internal::nameAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 

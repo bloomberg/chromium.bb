@@ -65,30 +65,30 @@ namespace EventV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
-static void locationAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void locationAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     Event* imp = V8TestExtendedEvent::toNative(info.Holder());
     v8SetReturnValueUnsigned(info, imp->location());
 }
 
-static void locationAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void locationAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    EventV8Internal::locationAttributeGetter(name, info);
+    EventV8Internal::locationAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void keyLocationAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void keyLocationAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     Event* imp = V8TestExtendedEvent::toNative(info.Holder());
     v8SetReturnValueUnsigned(info, imp->location());
 }
 
-static void keyLocationAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void keyLocationAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     UseCounter::countDeprecation(activeExecutionContext(), UseCounter::KeyboardEventKeyLocation);
-    EventV8Internal::keyLocationAttributeGetter(name, info);
+    EventV8Internal::keyLocationAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 

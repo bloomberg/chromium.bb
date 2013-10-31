@@ -64,16 +64,16 @@ namespace TestActiveDOMObjectV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
-static void excitingAttrAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void excitingAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestActiveDOMObject* imp = V8TestActiveDOMObject::toNative(info.Holder());
     v8SetReturnValueInt(info, imp->excitingAttr());
 }
 
-static void excitingAttrAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void excitingAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestActiveDOMObjectV8Internal::excitingAttrAttributeGetter(name, info);
+    TestActiveDOMObjectV8Internal::excitingAttrAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -130,7 +130,7 @@ static void postMessageMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void postMessageAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void postMessageAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     // This is only for getting a unique pointer which we can pass to privateTemplate.
     static int privateTemplateUniqueKey;
@@ -153,7 +153,7 @@ static void postMessageAttributeGetter(v8::Local<v8::String> name, const v8::Pro
         return;
     }
 
-    v8::Local<v8::Value> hiddenValue = info.This()->GetHiddenValue(name);
+    v8::Local<v8::Value> hiddenValue = info.This()->GetHiddenValue(v8::String::NewSymbol("postMessage"));
     if (!hiddenValue.IsEmpty()) {
         v8SetReturnValue(info, hiddenValue);
         return;
@@ -162,10 +162,10 @@ static void postMessageAttributeGetter(v8::Local<v8::String> name, const v8::Pro
     v8SetReturnValue(info, privateTemplate->GetFunction());
 }
 
-static void postMessageAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void postMessageAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestActiveDOMObjectV8Internal::postMessageAttributeGetter(name, info);
+    TestActiveDOMObjectV8Internal::postMessageAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -210,7 +210,7 @@ static void perWorldBindingsMethodWithDoNotCheckSecurityMethodCallbackForMainWor
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     // This is only for getting a unique pointer which we can pass to privateTemplate.
     static int privateTemplateUniqueKey;
@@ -233,7 +233,7 @@ static void perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetter(v8::Loca
         return;
     }
 
-    v8::Local<v8::Value> hiddenValue = info.This()->GetHiddenValue(name);
+    v8::Local<v8::Value> hiddenValue = info.This()->GetHiddenValue(v8::String::NewSymbol("perWorldBindingsMethodWithDoNotCheckSecurity"));
     if (!hiddenValue.IsEmpty()) {
         v8SetReturnValue(info, hiddenValue);
         return;
@@ -242,14 +242,14 @@ static void perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetter(v8::Loca
     v8SetReturnValue(info, privateTemplate->GetFunction());
 }
 
-static void perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestActiveDOMObjectV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetter(name, info);
+    TestActiveDOMObjectV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetterForMainWorld(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetterForMainWorld(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     // This is only for getting a unique pointer which we can pass to privateTemplate.
     static int privateTemplateUniqueKey;
@@ -272,7 +272,7 @@ static void perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetterForMainWo
         return;
     }
 
-    v8::Local<v8::Value> hiddenValue = info.This()->GetHiddenValue(name);
+    v8::Local<v8::Value> hiddenValue = info.This()->GetHiddenValue(v8::String::NewSymbol("perWorldBindingsMethodWithDoNotCheckSecurity"));
     if (!hiddenValue.IsEmpty()) {
         v8SetReturnValue(info, hiddenValue);
         return;
@@ -281,10 +281,10 @@ static void perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetterForMainWo
     v8SetReturnValue(info, privateTemplate->GetFunction());
 }
 
-static void perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetterCallbackForMainWorld(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetterCallbackForMainWorld(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestActiveDOMObjectV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetterForMainWorld(name, info);
+    TestActiveDOMObjectV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetterForMainWorld(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
