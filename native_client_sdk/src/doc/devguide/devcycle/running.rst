@@ -141,6 +141,8 @@ application uses. For example, if you compiled your application using the
 the application in Chrome 31 or higher. To check which version of Chrome you're
 using, type ``about:version`` in the Chrome address bar.
 
+.. _cache:
+
 Chrome Cache
 ------------
 

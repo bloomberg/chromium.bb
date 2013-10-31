@@ -43,6 +43,7 @@ Applications that are published in the `Chrome Web Store
 also include a Chrome
 Web Store manifest file ``(manifest.json)`` and one or more icon files.
 
+.. _html_file:
 
 HTML file and the <embed> element
 =================================

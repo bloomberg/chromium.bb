@@ -197,6 +197,8 @@ you can use the built-in Visual Studio debugger. When running as a Native
 Client module Visual Studio will launch an instance of nacl-gdb for you and
 link it to the running code.
 
+.. _using_gdb:
+
 Debugging with nacl-gdb
 -----------------------
 
@@ -443,10 +445,6 @@ For the brave-hearted there are open source tools at `Chromium.org
 and `Linux
 <http://www.chromium.org/nativeclient/how-tos/limited-profiling-with-oprofile-on-x86-64>`_
 machines.
-
-
-
-
 
 
 .. |menu-icon| image:: /images/menu-icon.png
