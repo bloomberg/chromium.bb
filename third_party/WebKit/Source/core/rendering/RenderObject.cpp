@@ -172,9 +172,6 @@ RenderObject* RenderObject::createObject(Element* element, RenderStyle* style)
     if (RuntimeEnabledFeatures::cssRegionsEnabled() && style->isDisplayRegionType() && style->hasFlowFrom() && doc.renderView())
         return new RenderRegion(element, 0);
 
-    if (style->display() == COMPACT)
-        UseCounter::count(doc, UseCounter::CSSDisplayCompact);
-
     switch (style->display()) {
     case NONE:
         return 0;
@@ -182,7 +179,6 @@ RenderObject* RenderObject::createObject(Element* element, RenderStyle* style)
         return new RenderInline(element);
     case BLOCK:
     case INLINE_BLOCK:
-    case COMPACT:
         if ((!style->hasAutoColumnCount() || !style->hasAutoColumnWidth()) && doc.regionBasedColumnsEnabled())
             return new RenderMultiColumnBlock(element);
         return new RenderBlockFlow(element);

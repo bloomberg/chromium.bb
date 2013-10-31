@@ -444,7 +444,7 @@ enum ECursor {
 
 // The order of this enum must match the order of the display values in CSSValueKeywords.in.
 enum EDisplay {
-    INLINE, BLOCK, LIST_ITEM, COMPACT, INLINE_BLOCK,
+    INLINE, BLOCK, LIST_ITEM, INLINE_BLOCK,
     TABLE, INLINE_TABLE, TABLE_ROW_GROUP,
     TABLE_HEADER_GROUP, TABLE_FOOTER_GROUP, TABLE_ROW,
     TABLE_COLUMN_GROUP, TABLE_COLUMN, TABLE_CELL,

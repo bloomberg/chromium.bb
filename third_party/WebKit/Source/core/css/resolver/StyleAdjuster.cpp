@@ -111,7 +111,6 @@ static EDisplay equivalentBlockDisplay(EDisplay display, bool isFloating, bool s
         return GRID;
 
     case INLINE:
-    case COMPACT:
     case INLINE_BLOCK:
     case TABLE_ROW_GROUP:
     case TABLE_HEADER_GROUP:

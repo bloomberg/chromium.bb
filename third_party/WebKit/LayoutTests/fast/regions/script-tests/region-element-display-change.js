@@ -16,7 +16,6 @@ document.body.appendChild(element);
 shouldBeFalse('testElement(element, "none")');
 shouldBeTrue('testElement(element, "block")');
 shouldBeTrue('testElement(element, "inline-block")');
-shouldBeFalse('testElement(element, "compact")');
 shouldBeFalse('testElement(element, "inline")');
 shouldBeFalse('testElement(element, "table")');
 shouldBeFalse('testElement(element, "inline-table")');
