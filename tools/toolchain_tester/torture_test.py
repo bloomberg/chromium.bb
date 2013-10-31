@@ -109,19 +109,10 @@ def run_torture(status, compiler, platform, extra_args):
     return 1
   return 0
 
-#TODO: move this to buildbot_lib and factor wrt ParseStandardCommandLine?
-def setup_buildbot_context(context):
-  context['platform'] = buildbot_lib.GetHostPlatform()
-  context['mode'] = ('opt-host', 'nacl')
-  context['clang'] = False
-  context['asan'] = False
-  context['use_glibc'] = False
-  context['use_breakpad_tools'] = False
-  context['max_jobs'] = int(os.environ.get('PNACL_CONCURRENCY', 4))
-
 def main():
   context = buildbot_lib.BuildContext()
-  setup_buildbot_context(context)
+  buildbot_lib.SetDefaultContextAttributes(context)
+  context['max_jobs'] = int(os.environ.get('PNACL_CONCURRENCY', 4))
   status = buildbot_lib.BuildStatus(context)
 
   # TODO(dschuff): it's a pain to pass through unknown arguments with optparse,

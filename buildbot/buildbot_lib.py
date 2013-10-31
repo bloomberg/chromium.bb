@@ -42,6 +42,20 @@ def GetHostPlatform():
   else:
     raise Exception('Can not determine the platform!')
 
+def SetDefaultContextAttributes(context):
+  """
+  Set default values for the attributes needed by the SCons function, so that
+  SCons can be run without needing ParseStandardCommandLine
+  """
+  context['platform'] = GetHostPlatform()
+  context['mode'] = 'opt'
+  context['default_scons_mode'] = ['opt-host', 'nacl']
+  context['clang'] = False
+  context['asan'] = False
+  context['pnacl'] = False
+  context['use_glibc'] = False
+  context['use_breakpad_tools'] = False
+  context['max_jobs'] = 8
 
 def ParseStandardCommandLine(context):
   """
