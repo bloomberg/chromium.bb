@@ -100,7 +100,7 @@ dev_list="apache2.2-bin bison curl elfutils fakeroot flex g++ gperf
 # 64-bit systems need a minimum set of 32-bit compat packages for the pre-built
 # NaCl binaries. These are always needed, regardless of whether or not we want
 # the full 32-bit "cross-compile" support (--lib32).
-if [ "$(uname -m)" = "x86_64" ]; then
+if file /sbin/init | grep -q 'ELF 64-bit'; then
   dev_list="${dev_list} libc6-i386 lib32gcc1 lib32stdc++6"
 fi
 
@@ -240,7 +240,7 @@ fi
 # When cross building for arm on 64-bit systems the host binaries
 # that are part of v8 need to be compiled with -m32 which means
 # that basic multilib support is needed.
-if [ "$(uname -m)" = "x86_64" ]; then
+if file /sbin/init | grep -q 'ELF 64-bit'; then
   arm_list="$arm_list g++-multilib"
 fi
 
@@ -362,7 +362,7 @@ else
 fi
 
 # Install 32bit backwards compatibility support for 64bit systems
-if [ "$(uname -m)" = "x86_64" ]; then
+if file /sbin/init | grep -q 'ELF 64-bit'; then
   if test "$do_inst_lib32" != "1"
   then
     echo "NOTE: If you were expecting the option to install 32bit libs,"
