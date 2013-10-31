@@ -43,7 +43,9 @@
 
 namespace WebCore {
 
+#if OS(MACOSX)
 const int kBufferSize = 1024;
+#endif
 
 Biquad::Biquad()
 {
