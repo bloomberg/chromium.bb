@@ -83,8 +83,8 @@ class GFX_EXPORT SurfaceFactoryOzone {
   // This method must be safe to run inside of the sandbox.
   virtual void ShutdownHardware() = 0;
 
-  // Returns the native EGL display. This is generally needed in creating
-  // EGL windows.
+  // Returns native platform display handle. This is used to obtain the EGL
+  // display connection for the native display.
   virtual intptr_t GetNativeDisplay();
 
   // Obtains an AcceleratedWidget backed by a native Linux framebuffer.
