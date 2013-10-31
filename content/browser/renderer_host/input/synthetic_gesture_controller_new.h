@@ -5,7 +5,8 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_GESTURE_CONTROLLER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_GESTURE_CONTROLLER_H_
 
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_new.h"
@@ -22,7 +23,7 @@ class SyntheticGestureTarget;
 class CONTENT_EXPORT SyntheticGestureControllerNew {
  public:
   explicit SyntheticGestureControllerNew(
-      SyntheticGestureTarget* gesture_target);
+      scoped_ptr<SyntheticGestureTarget> gesture_target);
   virtual ~SyntheticGestureControllerNew();
 
   void QueueSyntheticGesture(
@@ -35,7 +36,7 @@ class CONTENT_EXPORT SyntheticGestureControllerNew {
   void StopGesture(const SyntheticGestureNew& gesture,
                    SyntheticGestureNew::Result result);
 
-  SyntheticGestureTarget* gesture_target_;
+  scoped_ptr<SyntheticGestureTarget> gesture_target_;
   ScopedVector<SyntheticGestureNew> pending_gesture_queue_;
 
   base::RepeatingTimer<SyntheticGestureControllerNew> timer_;

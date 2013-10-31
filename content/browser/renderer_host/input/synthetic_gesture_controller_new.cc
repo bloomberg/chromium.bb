@@ -13,8 +13,8 @@
 namespace content {
 
 SyntheticGestureControllerNew::SyntheticGestureControllerNew(
-    SyntheticGestureTarget* gesture_target)
-    : gesture_target_(gesture_target) {}
+    scoped_ptr<SyntheticGestureTarget> gesture_target)
+    : gesture_target_(gesture_target.Pass()) {}
 
 SyntheticGestureControllerNew::~SyntheticGestureControllerNew() {}
 
@@ -40,11 +40,11 @@ void SyntheticGestureControllerNew::ForwardInputEvents() {
   DCHECK(!last_tick_time_.is_null());
 
   base::TimeTicks now = base::TimeTicks::Now();
-  base::TimeDelta interval = last_tick_time_ - now;
+  base::TimeDelta interval = now - last_tick_time_;
   last_tick_time_ = now;
   SyntheticGestureNew::Result result =
       pending_gesture_queue_.front()->ForwardInputEvents(interval,
-                                                         gesture_target_);
+                                                         gesture_target_.get());
 
   if (result != SyntheticGestureNew::GESTURE_RUNNING) {
 

@@ -17,6 +17,9 @@ class InputEvent;
 // Interface between the synthetic gesture controller and the RWHV.
 class CONTENT_EXPORT SyntheticGestureTarget {
  public:
+  SyntheticGestureTarget() {}
+  virtual ~SyntheticGestureTarget() {}
+
   virtual void QueueInputEventToPlatform(const InputEvent& event) = 0;
 
   virtual void OnSyntheticGestureCompleted(

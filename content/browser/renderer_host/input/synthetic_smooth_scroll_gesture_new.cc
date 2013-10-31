@@ -106,7 +106,8 @@ void SyntheticSmoothScrollGestureNew::ForwardMouseWheelEvent(
 
 float SyntheticSmoothScrollGestureNew::GetPositionDelta(
     const base::TimeDelta& interval) {
-  return kDeltaInPixelsPerMs * interval.InMillisecondsF();
+  float delta = kDeltaInPixelsPerMs * interval.InMillisecondsF();
+  return (params_.distance > 0) ? delta : -delta;
 }
 
 bool SyntheticSmoothScrollGestureNew::HasFinished() {

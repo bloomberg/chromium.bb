@@ -7,7 +7,6 @@
 
 #include "content/common/content_export.h"
 #include "content/common/input/synthetic_gesture_params.h"
-#include "ipc/ipc_message.h"
 
 namespace content {
 

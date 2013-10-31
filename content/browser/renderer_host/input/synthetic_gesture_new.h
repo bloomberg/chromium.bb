@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_GESTURE_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -14,6 +15,17 @@ namespace content {
 
 class SyntheticGestureTarget;
 
+// Base class for synthetic gesture implementations. A synthetic gesture class
+// is responsible for forwaring InputEvents, simulating the gesture, to a
+// SyntheticGestureTarget.
+//
+// Adding new gesture types involved the following steps:
+//   1) Create a sub-type of SyntheticGesture that implements the gesture.
+//   2) Extend SyntheticGesture::Create with the new class.
+//   3) Add at least one unit test per supported input source type (touch,
+//      mouse, etc) to SyntheticGestureController unit tests. The unit tests
+//      only checks basic functionality and termination. If the gesture is
+//      hooked up to Telemetry its correctness can additionally be tested there.
 class CONTENT_EXPORT SyntheticGestureNew {
  public:
   SyntheticGestureNew();

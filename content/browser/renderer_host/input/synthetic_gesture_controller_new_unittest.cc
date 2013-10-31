@@ -10,14 +10,18 @@
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture_new.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
+#include "content/common/input/input_event.h"
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 
 namespace content {
 
 namespace {
+
+const int kSyntheticGestureUpdateRate = 1;
 
 class MockSyntheticGesture : public SyntheticGestureNew {
  public:
@@ -68,7 +72,7 @@ class MockSyntheticGestureTarget : public SyntheticGestureTarget {
   }
 
   virtual base::TimeDelta GetSyntheticGestureUpdateRate() const OVERRIDE {
-    return base::TimeDelta::FromMilliseconds(16);
+    return base::TimeDelta::FromMilliseconds(kSyntheticGestureUpdateRate);
   }
 
   virtual SyntheticGestureParams::GestureSourceType
@@ -81,12 +85,68 @@ class MockSyntheticGestureTarget : public SyntheticGestureTarget {
     return true;
   }
 
-  int num_success() { return num_success_; }
-  int num_failure() { return num_failure_; }
+  int num_success() const { return num_success_; }
+  int num_failure() const { return num_failure_; }
 
  private:
   int num_success_;
   int num_failure_;
+};
+
+class MockSyntheticSmoothScrollMouseTarget : public MockSyntheticGestureTarget {
+ public:
+  MockSyntheticSmoothScrollMouseTarget() : scroll_distance_(0) {}
+  virtual ~MockSyntheticSmoothScrollMouseTarget() {}
+
+  virtual void QueueInputEventToPlatform(const InputEvent& event) OVERRIDE {
+    const WebKit::WebInputEvent* web_event = event.web_event.get();
+    DCHECK_EQ(web_event->type, WebKit::WebInputEvent::MouseWheel);
+    const WebKit::WebMouseWheelEvent* mouse_wheel_event =
+        static_cast<const WebKit::WebMouseWheelEvent*>(web_event);
+    DCHECK_EQ(mouse_wheel_event->deltaX, 0);
+    scroll_distance_ += mouse_wheel_event->deltaY;
+  }
+
+  float scroll_distance() const { return scroll_distance_; }
+
+ private:
+  float scroll_distance_;
+};
+
+class MockSyntheticSmoothScrollTouchTarget : public MockSyntheticGestureTarget {
+ public:
+  MockSyntheticSmoothScrollTouchTarget()
+      : scroll_distance_(0), anchor_y_(0), started_(false) {}
+  virtual ~MockSyntheticSmoothScrollTouchTarget() {}
+
+  virtual void QueueInputEventToPlatform(const InputEvent& event) OVERRIDE {
+    const WebKit::WebInputEvent* web_event = event.web_event.get();
+    DCHECK(WebKit::WebInputEvent::isTouchEventType(web_event->type));
+    const WebKit::WebTouchEvent* touch_event =
+        static_cast<const WebKit::WebTouchEvent*>(web_event);
+    DCHECK_EQ(touch_event->touchesLength, (unsigned int)1);
+
+    if (!started_) {
+      DCHECK_EQ(touch_event->type, WebKit::WebInputEvent::TouchStart);
+      anchor_y_ = touch_event->touches[0].position.y;
+      started_ = true;
+    }
+    else {
+      DCHECK_NE(touch_event->type, WebKit::WebInputEvent::TouchStart);
+      DCHECK_NE(touch_event->type, WebKit::WebInputEvent::TouchCancel);
+      // Ignore move events.
+
+      if (touch_event->type == WebKit::WebInputEvent::TouchEnd)
+        scroll_distance_ = touch_event->touches[0].position.y - anchor_y_;
+    }
+  }
+
+  float scroll_distance() const { return scroll_distance_; }
+
+ private:
+  float scroll_distance_;
+  float anchor_y_;
+  bool started_;
 };
 
 class SyntheticGestureControllerNewTest : public testing::Test {
@@ -97,7 +157,9 @@ class SyntheticGestureControllerNewTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     target_.reset(new MockSyntheticGestureTarget());
-    controller_.reset(new SyntheticGestureControllerNew(target_.get()));
+    target_ptr_ = target_.get();
+    controller_.reset(new SyntheticGestureControllerNew(
+        target_.PassAs<SyntheticGestureTarget>()));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -113,8 +175,7 @@ class SyntheticGestureControllerNewTest : public testing::Test {
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE, base::MessageLoop::QuitClosure(),
         base::TimeDelta::FromMilliseconds(
-            target_->GetSyntheticGestureUpdateRate().InMilliseconds() *
-            num_steps));
+            kSyntheticGestureUpdateRate * num_steps));
     base::MessageLoop::current()->Run();
   }
 
@@ -122,6 +183,7 @@ class SyntheticGestureControllerNewTest : public testing::Test {
 
   scoped_ptr<SyntheticGestureControllerNew> controller_;
   scoped_ptr<MockSyntheticGestureTarget> target_;
+  const MockSyntheticGestureTarget* target_ptr_;
 };
 
 TEST_F(SyntheticGestureControllerNewTest, SingleGesture) {
@@ -129,11 +191,11 @@ TEST_F(SyntheticGestureControllerNewTest, SingleGesture) {
   scoped_ptr<MockSyntheticGesture> gesture(
       new MockSyntheticGesture(&finished, 3));
   controller_->QueueSyntheticGesture(gesture.PassAs<SyntheticGestureNew>());
-  PostQuitMessageAndRun(5);
+  PostQuitMessageAndRun(30);
 
   EXPECT_TRUE(finished);
-  EXPECT_EQ(1, target_->num_success());
-  EXPECT_EQ(0, target_->num_failure());
+  EXPECT_EQ(1, target_ptr_->num_success());
+  EXPECT_EQ(0, target_ptr_->num_failure());
 }
 
 TEST_F(SyntheticGestureControllerNewTest, GestureFailed) {
@@ -141,11 +203,11 @@ TEST_F(SyntheticGestureControllerNewTest, GestureFailed) {
   scoped_ptr<MockSyntheticGesture> gesture(
       new MockSyntheticGesture(&finished, 0));
   controller_->QueueSyntheticGesture(gesture.PassAs<SyntheticGestureNew>());
-  PostQuitMessageAndRun(5);
+  PostQuitMessageAndRun(10);
 
   EXPECT_TRUE(finished);
-  EXPECT_EQ(1, target_->num_failure());
-  EXPECT_EQ(0, target_->num_success());
+  EXPECT_EQ(1, target_ptr_->num_failure());
+  EXPECT_EQ(0, target_ptr_->num_success());
 }
 
 TEST_F(SyntheticGestureControllerNewTest, SuccessiveGestures) {
@@ -157,19 +219,19 @@ TEST_F(SyntheticGestureControllerNewTest, SuccessiveGestures) {
 
   // Queue first gesture and wait for it to finish
   controller_->QueueSyntheticGesture(gesture_1.PassAs<SyntheticGestureNew>());
-  PostQuitMessageAndRun(4);
+  PostQuitMessageAndRun(30);
 
   EXPECT_TRUE(finished_1);
-  EXPECT_EQ(1, target_->num_success());
-  EXPECT_EQ(0, target_->num_failure());
+  EXPECT_EQ(1, target_ptr_->num_success());
+  EXPECT_EQ(0, target_ptr_->num_failure());
 
   // Queue second gesture.
   controller_->QueueSyntheticGesture(gesture_2.PassAs<SyntheticGestureNew>());
-  PostQuitMessageAndRun(6);
+  PostQuitMessageAndRun(30);
 
   EXPECT_TRUE(finished_2);
-  EXPECT_EQ(2, target_->num_success());
-  EXPECT_EQ(0, target_->num_failure());
+  EXPECT_EQ(2, target_ptr_->num_success());
+  EXPECT_EQ(0, target_ptr_->num_failure());
 }
 
 TEST_F(SyntheticGestureControllerNewTest, TwoGesturesInFlight) {
@@ -181,27 +243,57 @@ TEST_F(SyntheticGestureControllerNewTest, TwoGesturesInFlight) {
 
   controller_->QueueSyntheticGesture(gesture_1.PassAs<SyntheticGestureNew>());
   controller_->QueueSyntheticGesture(gesture_2.PassAs<SyntheticGestureNew>());
-  PostQuitMessageAndRun(10);
+  PostQuitMessageAndRun(30);
 
   EXPECT_TRUE(finished_1);
   EXPECT_TRUE(finished_2);
 
-  EXPECT_EQ(2, target_->num_success());
-  EXPECT_EQ(0, target_->num_failure());
+  EXPECT_EQ(2, target_ptr_->num_success());
+  EXPECT_EQ(0, target_ptr_->num_failure());
 }
 
-TEST_F(SyntheticGestureControllerNewTest, SmoothScrollGesture) {
+TEST_F(SyntheticGestureControllerNewTest, SmoothScrollGestureTouch) {
+  scoped_ptr<MockSyntheticSmoothScrollTouchTarget> smooth_scroll_touch_target(
+      new MockSyntheticSmoothScrollTouchTarget);
+  const MockSyntheticSmoothScrollTouchTarget* smooth_scroll_touch_target_ptr =
+      smooth_scroll_touch_target.get();
+  controller_.reset(new SyntheticGestureControllerNew(
+      smooth_scroll_touch_target.PassAs<SyntheticGestureTarget>()));
+
   SyntheticSmoothScrollGestureParams params;
   params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
-  params.distance = 100;
+  params.distance = 6;
 
   scoped_ptr<SyntheticSmoothScrollGestureNew> gesture(
       new SyntheticSmoothScrollGestureNew(params));
   controller_->QueueSyntheticGesture(gesture.PassAs<SyntheticGestureNew>());
-  PostQuitMessageAndRun(20);
+  PostQuitMessageAndRun(30);
 
-  EXPECT_EQ(1, target_->num_success());
-  EXPECT_EQ(0, target_->num_failure());
+  EXPECT_EQ(1, smooth_scroll_touch_target_ptr->num_success());
+  EXPECT_EQ(0, smooth_scroll_touch_target_ptr->num_failure());
+  EXPECT_LE(params.distance, smooth_scroll_touch_target_ptr->scroll_distance());
+}
+
+TEST_F(SyntheticGestureControllerNewTest, SmoothScrollGestureMouse) {
+  scoped_ptr<MockSyntheticSmoothScrollMouseTarget> smooth_scroll_mouse_target(
+      new MockSyntheticSmoothScrollMouseTarget);
+  const MockSyntheticSmoothScrollMouseTarget* smooth_scroll_mouse_target_ptr =
+      smooth_scroll_mouse_target.get();
+  controller_.reset(new SyntheticGestureControllerNew(
+      smooth_scroll_mouse_target.PassAs<SyntheticGestureTarget>()));
+
+  SyntheticSmoothScrollGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::MOUSE_INPUT;
+  params.distance = -6;
+
+  scoped_ptr<SyntheticSmoothScrollGestureNew> gesture(
+      new SyntheticSmoothScrollGestureNew(params));
+  controller_->QueueSyntheticGesture(gesture.PassAs<SyntheticGestureNew>());
+  PostQuitMessageAndRun(30);
+
+  EXPECT_EQ(1, smooth_scroll_mouse_target_ptr->num_success());
+  EXPECT_EQ(0, smooth_scroll_mouse_target_ptr->num_failure());
+  EXPECT_GE(params.distance, smooth_scroll_mouse_target_ptr->scroll_distance());
 }
 
 }  // namespace

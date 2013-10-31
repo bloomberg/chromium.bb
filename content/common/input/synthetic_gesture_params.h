@@ -7,7 +7,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
-#include "ipc/ipc_message.h"
 
 namespace content {
 
