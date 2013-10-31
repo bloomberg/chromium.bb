@@ -248,8 +248,9 @@ bool WebCryptoImpl::DigestInternal(const WebKit::WebCryptoAlgorithm& algorithm,
 
 bool WebCryptoImpl::GenerateKeyInternal(
     const WebKit::WebCryptoAlgorithm& algorithm,
-    scoped_ptr<WebKit::WebCryptoKeyHandle>* key,
-    WebKit::WebCryptoKeyType* type) {
+    bool extractable,
+    WebKit::WebCryptoKeyUsageMask usage_mask,
+    WebKit::WebCryptoKey* key) {
 
   unsigned keylen_bytes = 0;
   WebKit::WebCryptoKeyType key_type;
@@ -291,8 +292,9 @@ bool WebCryptoImpl::GenerateKeyInternal(
     return false;
   }
 
-  key->reset(new SymKeyHandle(&random_bytes[0], random_bytes.size()));
-  *type = key_type;
+  *key = WebKit::WebCryptoKey::create(
+      new SymKeyHandle(&random_bytes[0], random_bytes.size()),
+      key_type, extractable, algorithm, usage_mask);
 
   return true;
 }
@@ -301,10 +303,15 @@ bool WebCryptoImpl::ImportKeyInternal(
     WebKit::WebCryptoKeyFormat format,
     const unsigned char* key_data,
     unsigned key_data_size,
-    const WebKit::WebCryptoAlgorithm& algorithm,
-    WebKit::WebCryptoKeyUsageMask /*usage_mask*/,
-    scoped_ptr<WebKit::WebCryptoKeyHandle>* handle,
-    WebKit::WebCryptoKeyType* type) {
+    const WebKit::WebCryptoAlgorithm& algorithm_or_null,
+    bool extractable,
+    WebKit::WebCryptoKeyUsageMask usage_mask,
+    WebKit::WebCryptoKey* key) {
+  // TODO(eroman): Currently expects algorithm to always be specified, as it is
+  //               required for raw format.
+  if (algorithm_or_null.isNull())
+    return false;
+  const WebKit::WebCryptoAlgorithm& algorithm = algorithm_or_null;
 
   // TODO(padolph): Support all relevant alg types and then remove this gate.
   if (algorithm.id() != WebKit::WebCryptoAlgorithmIdHmac &&
@@ -321,7 +328,7 @@ bool WebCryptoImpl::ImportKeyInternal(
   // they differ? (jwk, probably)
 
   // Symmetric keys are always type secret
-  *type = WebKit::WebCryptoKeyTypeSecret;
+  WebKit::WebCryptoKeyType type = WebKit::WebCryptoKeyTypeSecret;
 
   const unsigned char* raw_key_data;
   unsigned raw_key_data_size;
@@ -344,7 +351,9 @@ bool WebCryptoImpl::ImportKeyInternal(
       return false;
   }
 
-  handle->reset(new SymKeyHandle(raw_key_data, raw_key_data_size));
+  *key = WebKit::WebCryptoKey::create(
+      new SymKeyHandle(raw_key_data, raw_key_data_size),
+      type, extractable, algorithm, usage_mask);
 
   return true;
 }

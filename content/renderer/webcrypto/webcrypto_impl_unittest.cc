@@ -87,24 +87,21 @@ class WebCryptoImplTest : public testing::Test {
       const std::string& key_hex,
       const WebKit::WebCryptoAlgorithm& algorithm,
       WebKit::WebCryptoKeyUsageMask usage) {
-    WebKit::WebCryptoKeyType type;
-    scoped_ptr<WebKit::WebCryptoKeyHandle> handle;
-
     std::vector<uint8> key_raw = HexStringToBytes(key_hex);
 
+    WebKit::WebCryptoKey key = WebCryptoImpl::NullKey();
+    bool extractable = true;
     EXPECT_TRUE(crypto_.ImportKeyInternal(WebKit::WebCryptoKeyFormatRaw,
                                           Start(key_raw),
                                           key_raw.size(),
                                           algorithm,
+                                          extractable,
                                           usage,
-                                          &handle,
-                                          &type));
+                                          &key));
 
-    EXPECT_EQ(WebKit::WebCryptoKeyTypeSecret, type);
-    EXPECT_TRUE(handle.get());
-
-    return WebKit::WebCryptoKey::create(
-        handle.release(), type, false, algorithm, usage);
+    EXPECT_EQ(WebKit::WebCryptoKeyTypeSecret, key.type());
+    EXPECT_TRUE(key.handle());
+    return key;
   }
 
   // Forwarding methods to gain access to protected methods of
@@ -119,9 +116,10 @@ class WebCryptoImplTest : public testing::Test {
 
   bool GenerateKeyInternal(
       const WebKit::WebCryptoAlgorithm& algorithm,
-      scoped_ptr<WebKit::WebCryptoKeyHandle>* handle,
-      WebKit::WebCryptoKeyType* type) {
-    return crypto_.GenerateKeyInternal(algorithm, handle, type);
+      WebKit::WebCryptoKey* key) {
+    bool extractable = true;
+    WebKit::WebCryptoKeyUsageMask usage_mask = 0;
+    return crypto_.GenerateKeyInternal(algorithm, extractable, usage_mask, key);
   }
 
   bool ImportKeyInternal(
@@ -129,15 +127,15 @@ class WebCryptoImplTest : public testing::Test {
       const std::vector<uint8>& key_data,
       const WebKit::WebCryptoAlgorithm& algorithm,
       WebKit::WebCryptoKeyUsageMask usage_mask,
-      scoped_ptr<WebKit::WebCryptoKeyHandle>* handle,
-      WebKit::WebCryptoKeyType* type) {
+      WebKit::WebCryptoKey* key) {
+    bool extractable = true;
     return crypto_.ImportKeyInternal(format,
                                      Start(key_data),
                                      key_data.size(),
                                      algorithm,
+                                     extractable,
                                      usage_mask,
-                                     handle,
-                                     type);
+                                     key);
   }
 
   bool SignInternal(
@@ -472,18 +470,15 @@ TEST_F(WebCryptoImplTest, AesCbcFailures) {
 
   // Fail importing the key (too few bytes specified)
   {
-    WebKit::WebCryptoKeyType type;
-    scoped_ptr<WebKit::WebCryptoKeyHandle> handle;
-
     std::vector<uint8> key_raw(1);
     std::vector<uint8> iv(16);
 
+    WebKit::WebCryptoKey key = WebCryptoImpl::NullKey();
     EXPECT_FALSE(ImportKeyInternal(WebKit::WebCryptoKeyFormatRaw,
                                    key_raw,
                                    CreateAesCbcAlgorithm(iv),
                                    WebKit::WebCryptoKeyUsageDecrypt,
-                                   &handle,
-                                   &type));
+                                   &key));
   }
 }
 
@@ -622,38 +617,46 @@ TEST_F(WebCryptoImplTest, AesCbcSampleSets) {
 
 
 TEST_F(WebCryptoImplTest, GenerateKeyAes) {
-  scoped_ptr<WebKit::WebCryptoKeyHandle> result;
-  WebKit::WebCryptoKeyType type = WebKit::WebCryptoKeyTypePublic;
-  ASSERT_TRUE(GenerateKeyInternal(CreateAesCbcAlgorithm(128), &result, &type));
-  EXPECT_TRUE(result);
-  EXPECT_EQ(type, WebKit::WebCryptoKeyTypeSecret);
+  WebKit::WebCryptoKey key = WebCryptoImpl::NullKey();
+  ASSERT_TRUE(GenerateKeyInternal(CreateAesCbcAlgorithm(128), &key));
+  EXPECT_TRUE(key.handle());
+  EXPECT_EQ(WebKit::WebCryptoKeyTypeSecret, key.type());
 }
 
 TEST_F(WebCryptoImplTest, GenerateKeyAesBadLength) {
-  scoped_ptr<WebKit::WebCryptoKeyHandle> result;
-  WebKit::WebCryptoKeyType type = WebKit::WebCryptoKeyTypePublic;
-  EXPECT_FALSE(GenerateKeyInternal(CreateAesCbcAlgorithm(0), &result, &type));
-  EXPECT_FALSE(GenerateKeyInternal(CreateAesCbcAlgorithm(129), &result, &type));
+  WebKit::WebCryptoKey key = WebCryptoImpl::NullKey();
+  EXPECT_FALSE(GenerateKeyInternal(CreateAesCbcAlgorithm(0), &key));
+  EXPECT_FALSE(GenerateKeyInternal(CreateAesCbcAlgorithm(129), &key));
 }
 
 TEST_F(WebCryptoImplTest, GenerateKeyHmac) {
-  scoped_ptr<WebKit::WebCryptoKeyHandle> result;
-  WebKit::WebCryptoKeyType type = WebKit::WebCryptoKeyTypePublic;
+  WebKit::WebCryptoKey key = WebCryptoImpl::NullKey();
   WebKit::WebCryptoAlgorithm algorithm =
       CreateHmacKeyAlgorithm(WebKit::WebCryptoAlgorithmIdSha1, 128);
-  ASSERT_TRUE(GenerateKeyInternal(algorithm, &result, &type));
-  EXPECT_TRUE(result);
-  EXPECT_EQ(type, WebKit::WebCryptoKeyTypeSecret);
+  ASSERT_TRUE(GenerateKeyInternal(algorithm, &key));
+  EXPECT_TRUE(key.handle());
+  EXPECT_EQ(WebKit::WebCryptoKeyTypeSecret, key.type());
 }
 
 TEST_F(WebCryptoImplTest, GenerateKeyHmacNoLength) {
-  scoped_ptr<WebKit::WebCryptoKeyHandle> result;
-  WebKit::WebCryptoKeyType type = WebKit::WebCryptoKeyTypePublic;
+  WebKit::WebCryptoKey key = WebCryptoImpl::NullKey();
   WebKit::WebCryptoAlgorithm algorithm =
       CreateHmacKeyAlgorithm(WebKit::WebCryptoAlgorithmIdSha1, 0);
-  ASSERT_TRUE(GenerateKeyInternal(algorithm, &result, &type));
-  EXPECT_TRUE(result);
-  EXPECT_EQ(type, WebKit::WebCryptoKeyTypeSecret);
+  ASSERT_TRUE(GenerateKeyInternal(algorithm, &key));
+  EXPECT_TRUE(key.handle());
+  EXPECT_EQ(WebKit::WebCryptoKeyTypeSecret, key.type());
+}
+
+TEST_F(WebCryptoImplTest, ImportSecretKeyNoAlgorithm) {
+  WebKit::WebCryptoKey key = WebCryptoImpl::NullKey();
+
+  // This fails because the algorithm is null.
+  EXPECT_FALSE(ImportKeyInternal(
+      WebKit::WebCryptoKeyFormatRaw,
+      HexStringToBytes("00000000000000000000"),
+      WebKit::WebCryptoAlgorithm::createNull(),
+      WebKit::WebCryptoKeyUsageSign,
+      &key));
 }
 
 }  // namespace content

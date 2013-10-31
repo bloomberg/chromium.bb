@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebCrypto.h"
 
@@ -38,13 +37,13 @@ class CONTENT_EXPORT WebCryptoImpl
   virtual void generateKey(
       const WebKit::WebCryptoAlgorithm& algorithm,
       bool extractable,
-      WebKit::WebCryptoKeyUsageMask usage,
+      WebKit::WebCryptoKeyUsageMask usage_mask,
       WebKit::WebCryptoResult result);
   virtual void importKey(
       WebKit::WebCryptoKeyFormat format,
       const unsigned char* key_data,
       unsigned key_data_size,
-      const WebKit::WebCryptoAlgorithm& algorithm,
+      const WebKit::WebCryptoAlgorithm& algorithm_or_null,
       bool extractable,
       WebKit::WebCryptoKeyUsageMask usage_mask,
       WebKit::WebCryptoResult result);
@@ -64,6 +63,7 @@ class CONTENT_EXPORT WebCryptoImpl
       WebKit::WebCryptoResult result);
 
   static void ShrinkBuffer(WebKit::WebArrayBuffer* buffer, unsigned new_size);
+  static WebKit::WebCryptoKey NullKey();
 
  protected:
   friend class WebCryptoImplTest;
@@ -89,16 +89,17 @@ class CONTENT_EXPORT WebCryptoImpl
       WebKit::WebArrayBuffer* buffer);
   bool GenerateKeyInternal(
       const WebKit::WebCryptoAlgorithm& algorithm,
-      scoped_ptr<WebKit::WebCryptoKeyHandle>* key,
-      WebKit::WebCryptoKeyType* type);
+      bool extractable,
+      WebKit::WebCryptoKeyUsageMask usage_mask,
+      WebKit::WebCryptoKey* key);
   bool ImportKeyInternal(
       WebKit::WebCryptoKeyFormat format,
       const unsigned char* key_data,
       unsigned key_data_size,
-      const WebKit::WebCryptoAlgorithm& algorithm,
+      const WebKit::WebCryptoAlgorithm& algorithm_or_null,
+      bool extractable,
       WebKit::WebCryptoKeyUsageMask usage_mask,
-      scoped_ptr<WebKit::WebCryptoKeyHandle>* handle,
-      WebKit::WebCryptoKeyType* type);
+      WebKit::WebCryptoKey* key);
   bool SignInternal(
       const WebKit::WebCryptoAlgorithm& algorithm,
       const WebKit::WebCryptoKey& key,

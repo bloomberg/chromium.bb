@@ -34,12 +34,23 @@ void WebCryptoImpl::ShrinkBuffer(
   *buffer = new_buffer;
 }
 
+// static
+// TODO(eroman): Expose functionality in Blink instead.
+WebKit::WebCryptoKey WebCryptoImpl::NullKey() {
+  // Needs a non-null algorithm to succeed.
+  return WebKit::WebCryptoKey::create(
+      NULL, WebKit::WebCryptoKeyTypeSecret, false,
+      WebKit::WebCryptoAlgorithm::adoptParamsAndCreate(
+          WebKit::WebCryptoAlgorithmIdAesGcm, NULL), 0);
+}
+
 void WebCryptoImpl::encrypt(
     const WebKit::WebCryptoAlgorithm& algorithm,
     const WebKit::WebCryptoKey& key,
     const unsigned char* data,
     unsigned data_size,
     WebKit::WebCryptoResult result) {
+  DCHECK(!algorithm.isNull());
   WebKit::WebArrayBuffer buffer;
   if (!EncryptInternal(algorithm, key, data, data_size, &buffer)) {
     result.completeWithError();
@@ -54,6 +65,7 @@ void WebCryptoImpl::decrypt(
     const unsigned char* data,
     unsigned data_size,
     WebKit::WebCryptoResult result) {
+  DCHECK(!algorithm.isNull());
   WebKit::WebArrayBuffer buffer;
   if (!DecryptInternal(algorithm, key, data, data_size, &buffer)) {
     result.completeWithError();
@@ -67,6 +79,7 @@ void WebCryptoImpl::digest(
     const unsigned char* data,
     unsigned data_size,
     WebKit::WebCryptoResult result) {
+  DCHECK(!algorithm.isNull());
   WebKit::WebArrayBuffer buffer;
   if (!DigestInternal(algorithm, data, data_size, &buffer)) {
     result.completeWithError();
@@ -77,17 +90,18 @@ void WebCryptoImpl::digest(
 
 void WebCryptoImpl::generateKey(
     const WebKit::WebCryptoAlgorithm& algorithm,
-    bool exportable,
-    WebKit::WebCryptoKeyUsageMask usage,
+    bool extractable,
+    WebKit::WebCryptoKeyUsageMask usage_mask,
     WebKit::WebCryptoResult result) {
-  scoped_ptr<WebKit::WebCryptoKeyHandle> handle;
-  WebKit::WebCryptoKeyType type;
-  if (!GenerateKeyInternal(algorithm, &handle, &type)) {
+  DCHECK(!algorithm.isNull());
+  WebKit::WebCryptoKey key = NullKey();
+  if (!GenerateKeyInternal(algorithm, extractable, usage_mask, &key)) {
     result.completeWithError();
   } else {
-    WebKit::WebCryptoKey key(
-        WebKit::WebCryptoKey::create(handle.release(), type, exportable,
-                                     algorithm, usage));
+    DCHECK(key.handle());
+    DCHECK_EQ(algorithm.id(), key.algorithm().id());
+    DCHECK_EQ(extractable, key.extractable());
+    DCHECK_EQ(usage_mask, key.usages());
     result.completeWithKey(key);
   }
 }
@@ -96,28 +110,24 @@ void WebCryptoImpl::importKey(
     WebKit::WebCryptoKeyFormat format,
     const unsigned char* key_data,
     unsigned key_data_size,
-    const WebKit::WebCryptoAlgorithm& algorithm,
+    const WebKit::WebCryptoAlgorithm& algorithm_or_null,
     bool extractable,
     WebKit::WebCryptoKeyUsageMask usage_mask,
     WebKit::WebCryptoResult result) {
-  WebKit::WebCryptoKeyType type;
-  scoped_ptr<WebKit::WebCryptoKeyHandle> handle;
-
+  WebKit::WebCryptoKey key = NullKey();
   if (!ImportKeyInternal(format,
                          key_data,
                          key_data_size,
-                         algorithm,
+                         algorithm_or_null,
+                         extractable,
                          usage_mask,
-                         &handle,
-                         &type)) {
+                         &key)) {
     result.completeWithError();
     return;
   }
-
-  WebKit::WebCryptoKey key(
-      WebKit::WebCryptoKey::create(
-          handle.release(), type, extractable, algorithm, usage_mask));
-
+  DCHECK(key.handle());
+  DCHECK(!key.algorithm().isNull());
+  DCHECK_EQ(extractable, key.extractable());
   result.completeWithKey(key);
 }
 
@@ -127,6 +137,7 @@ void WebCryptoImpl::sign(
     const unsigned char* data,
     unsigned data_size,
     WebKit::WebCryptoResult result) {
+  DCHECK(!algorithm.isNull());
   WebKit::WebArrayBuffer buffer;
   if (!SignInternal(algorithm, key, data, data_size, &buffer)) {
     result.completeWithError();
@@ -143,6 +154,7 @@ void WebCryptoImpl::verifySignature(
     const unsigned char* data,
     unsigned data_size,
     WebKit::WebCryptoResult result) {
+  DCHECK(!algorithm.isNull());
   bool signature_match = false;
   if (!VerifySignatureInternal(algorithm,
                                key,
