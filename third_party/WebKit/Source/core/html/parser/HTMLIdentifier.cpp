@@ -76,10 +76,6 @@ StringImpl* HTMLIdentifier::findIfKnown(const UChar* characters, unsigned length
     return it->value;
 }
 
-const unsigned kHTMLNamesIndexOffset = 0;
-const unsigned kHTMLAttrsIndexOffset = 1000;
-COMPILE_ASSERT(kHTMLAttrsIndexOffset > HTMLTagsCount, kHTMLAttrsIndexOffset_should_be_larger_than_HTMLTagsCount);
-
 const String& HTMLIdentifier::asString() const
 {
     ASSERT(isMainThread());
@@ -91,7 +87,7 @@ const StringImpl* HTMLIdentifier::asStringImpl() const
     return m_string.impl();
 }
 
-void HTMLIdentifier::addNames(const QualifiedName* const* names, unsigned namesCount, unsigned indexOffset)
+void HTMLIdentifier::addNames(const QualifiedName* const* names, unsigned namesCount)
 {
     IdentifierTable& table = identifierTable();
     for (unsigned i = 0; i < namesCount; ++i) {
@@ -118,8 +114,8 @@ void HTMLIdentifier::init()
     isInitialized = true;
 
     // FIXME: We should atomize small whitespace (\n, \n\n, etc.)
-    addNames(getHTMLTags(), HTMLTagsCount, kHTMLNamesIndexOffset);
-    addNames(getHTMLAttrs(), HTMLAttrsCount, kHTMLAttrsIndexOffset);
+    addNames(getHTMLTags(), HTMLTagsCount);
+    addNames(getHTMLAttrs(), HTMLAttrsCount);
 }
 
 }

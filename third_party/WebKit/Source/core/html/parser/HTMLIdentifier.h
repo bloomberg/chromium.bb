@@ -72,7 +72,7 @@ public:
 private:
     static unsigned maxNameLength;
     static StringImpl* findIfKnown(const UChar* characters, unsigned length);
-    static void addNames(const QualifiedName* const* names, unsigned namesCount, unsigned indexOffset);
+    static void addNames(const QualifiedName* const* names, unsigned namesCount);
 
     String m_string;
 };
