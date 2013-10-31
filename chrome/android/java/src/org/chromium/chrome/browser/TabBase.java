@@ -72,8 +72,11 @@ public abstract class TabBase implements NavigationClient {
     /** The {@link ContentView} showing the current page or {@code null} if the tab is frozen. */
     private ContentView mContentView;
 
-    /** InfoBar container to show infobars for this tab */
+    /** InfoBar container to show InfoBars for this tab. */
     private InfoBarContainer mInfoBarContainer;
+
+    /** The sync id of the TabBase if session sync is enabled. */
+    private int mSyncId;
 
     /**
      * The {@link ContentViewCore} for the current page, provided for convenience. This always
@@ -432,6 +435,22 @@ public abstract class TabBase implements NavigationClient {
     public int getSecurityLevel() {
         if (mNativeTabAndroid == 0) return ToolbarModelSecurityLevel.NONE;
         return nativeGetSecurityLevel(mNativeTabAndroid);
+    }
+
+    /**
+     * @return The sync id of the tab if session sync is enabled, {@code 0} otherwise.
+     */
+    @CalledByNative
+    protected int getSyncId() {
+        return mSyncId;
+    }
+
+    /**
+     * @param syncId The sync id of the tab if session sync is enabled.
+     */
+    @CalledByNative
+    protected void setSyncId(int syncId) {
+        mSyncId = syncId;
     }
 
     /**

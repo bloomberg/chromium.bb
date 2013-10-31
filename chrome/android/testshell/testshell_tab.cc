@@ -95,10 +95,3 @@ ScopedJavaLocalRef<jstring> TestShellTab::FixupUrl(JNIEnv* env,
 static jint Init(JNIEnv* env, jobject obj) {
   return reinterpret_cast<jint>(new TestShellTab(env, obj));
 }
-
-int TestShellTab::GetSyncId() const {
-  NOTIMPLEMENTED();
-  return 0;
-}
-
-void TestShellTab::SetSyncId(int sync_id) { NOTIMPLEMENTED(); }

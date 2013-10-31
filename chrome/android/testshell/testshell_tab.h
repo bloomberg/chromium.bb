@@ -63,8 +63,6 @@ class TestShellTab : public TabAndroid {
   virtual void OnNewTabPageReady() OVERRIDE;
 
   virtual void HandlePopupNavigation(chrome::NavigateParams* params) OVERRIDE;
-  virtual int GetSyncId() const OVERRIDE;
-  virtual void SetSyncId(int sync_id) OVERRIDE;
 
   // Register the Tab's native methods through JNI.
   static bool RegisterTestShellTab(JNIEnv* env);

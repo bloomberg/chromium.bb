@@ -156,6 +156,14 @@ int TabAndroid::GetAndroidId() const {
   return Java_TabBase_getId(env, obj.obj());
 }
 
+int TabAndroid::GetSyncId() const {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = weak_java_tab_.get(env);
+  if (obj.is_null())
+    return 0;
+  return Java_TabBase_getSyncId(env, obj.obj());
+}
+
 string16 TabAndroid::GetTitle() const {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = weak_java_tab_.get(env);
@@ -198,6 +206,14 @@ Profile* TabAndroid::GetProfile() const {
 
 browser_sync::SyncedTabDelegate* TabAndroid::GetSyncedTabDelegate() const {
   return synced_tab_delegate_.get();
+}
+
+void TabAndroid::SetSyncId(int sync_id) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = weak_java_tab_.get(env);
+  if (obj.is_null())
+    return;
+  Java_TabBase_setSyncId(env, obj.obj(), sync_id);
 }
 
 void TabAndroid::SwapTabContents(content::WebContents* old_contents,
