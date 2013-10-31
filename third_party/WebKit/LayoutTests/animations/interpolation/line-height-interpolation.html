@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<style>
+.target {
+  display: inline-block;
+  font: 20px sans-serif;
+}
+.replica {
+  color: green;
+  margin-right: 30px;
+}
+</style>
+<body>
+<template id="target-template">
+  <p>
+  v<br />v
+  </p>
+</template>
+<script src="resources/interpolation-test.js"></script>
+<script>
+assertInterpolation({
+  property: 'line-height',
+  from: '4',
+  to: '14'
+}, [
+  {at: -1, is: '0'},
+  {at: -0.3, is: '1'},
+  {at: 0, is: '4'},
+  {at: 0.3, is: '7'},
+  {at: 0.6, is: '10'},
+  {at: 1, is: '14'},
+  {at: 1.5, is: '19'},
+]);
+assertInterpolation({
+  property: 'line-height',
+  from: '4px',
+  to: '14px'
+}, [
+  {at: -1, is: '0px'},
+  {at: -0.3, is: '1px'},
+  {at: 0, is: '4px'},
+  {at: 0.3, is: '7px'},
+  {at: 0.6, is: '10px'},
+  {at: 1, is: '14px'},
+  {at: 1.5, is: '19px'},
+]);
+assertInterpolation({
+  property: 'line-height',
+  from: 'normal',
+  to: 'normal'
+}, [
+  {at: -0.3, is: 'normal'},
+  {at: 0, is: 'normal'},
+  {at: 0.3, is: 'normal'},
+  {at: 0.6, is: 'normal'},
+  {at: 1, is: 'normal'},
+  {at: 1.5, is: 'normal'},
+]);
+assertInterpolation({
+  property: 'line-height',
+  from: '4',
+  to: '14px'
+}, [
+  {at: -0.3, is: '4'},
+  {at: 0, is: '4'},
+  {at: 0.3, is: '4'},
+  {at: 0.6, is: '14px'},
+  {at: 1, is: '14px'},
+  {at: 1.5, is: '14px'},
+]);
+assertInterpolation({
+  property: 'line-height',
+  from: '14px',
+  to: 'normal'
+}, [
+  {at: -0.3, is: '14px'},
+  {at: 0, is: '14px'},
+  {at: 0.3, is: '14px'},
+  {at: 0.6, is: 'normal'},
+  {at: 1, is: 'normal'},
+  {at: 1.5, is: 'normal'},
+]);
+assertInterpolation({
+  property: 'line-height',
+  from: 'normal',
+  to: '4'
+}, [
+  {at: -0.3, is: 'normal'},
+  {at: 0, is: 'normal'},
+  {at: 0.3, is: 'normal'},
+  {at: 0.6, is: '4'},
+  {at: 1, is: '4'},
+  {at: 1.5, is: '4'},
+]);
+assertInterpolation({
+  property: 'line-height',
+  from: '4',
+  to: 'normal'
+}, [
+  {at: -0.3, is: '4'},
+  {at: 0, is: '4'},
+  {at: 0.3, is: '4'},
+  {at: 0.6, is: 'normal'},
+  {at: 1, is: 'normal'},
+  {at: 1.5, is: 'normal'},
+]);
+assertInterpolation({
+  property: 'line-height',
+  from: 'normal',
+  to: '14px'
+}, [
+  {at: -0.3, is: 'normal'},
+  {at: 0, is: 'normal'},
+  {at: 0.3, is: 'normal'},
+  {at: 0.6, is: '14px'},
+  {at: 1, is: '14px'},
+  {at: 1.5, is: '14px'},
+]);
+assertInterpolation({
+  property: 'line-height',
+  from: '14px',
+  to: '4'
+}, [
+  {at: -0.3, is: '14px'},
+  {at: 0, is: '14px'},
+  {at: 0.3, is: '14px'},
+  {at: 0.6, is: '4'},
+  {at: 1, is: '4'},
+  {at: 1.5, is: '4'},
+]);
+</script>
+</body>
