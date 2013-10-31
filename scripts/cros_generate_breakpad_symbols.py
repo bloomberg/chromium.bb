@@ -154,8 +154,11 @@ def GenerateBreakpadSymbol(elf_file, debug_file=None, breakpad_dir=None,
 def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
                             generate_count=None, sysroot=None,
                             num_processes=None, clean_breakpad=False,
-                            exclude_dirs=()):
-  """Generate all the symbols for this board
+                            exclude_dirs=(), file_list=None):
+  """Generate symbols for this board.
+
+  If |file_list| is None, symbols are generated for all executables, otherwise
+  only for the files included in |file_list|.
 
   TODO(build):
   This should be merged with buildbot_commands.GenerateBreakpadSymbols()
@@ -171,6 +174,9 @@ def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
     clean_breakpad: Should we `rm -rf` the breakpad output dir first; note: we
       do not do any locking, so do not run more than one in parallel when True
     exclude_dirs: List of dirs (relative to |sysroot|) to not search
+    file_list: Only generate symbols for files in this list. Each file must be a
+      full path (including |sysroot| prefix).
+      TODO(build): Support paths w/o |sysroot|.
   Returns:
     The number of errors that were encountered.
   """
@@ -188,13 +194,17 @@ def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
                                    breakpad_dir])
   debug_dir = FindDebugDir(board)
   exclude_paths = [os.path.join(debug_dir, x) for x in exclude_dirs]
+  if file_list is None:
+    file_list = []
+  file_filter = dict.fromkeys([os.path.normpath(x) for x in file_list], False)
 
-  cros_build_lib.Info('generating all breakpad symbol files using %s',
-                      debug_dir)
+  cros_build_lib.Info('generating breakpad symbols using %s', debug_dir)
 
-  # Let's locate all the debug_files first and their size.  This way we can
-  # start processing the largest files first in parallel with the small ones.
-  debug_files = []
+  # Let's locate all the debug_files and elfs first along with the debug file
+  # sizes.  This way we can start processing the largest files first in parallel
+  # with the small ones.
+  # If |file_list| was given, ignore all other files.
+  targets = []
   for root, dirs, files in os.walk(debug_dir):
     if root in exclude_paths:
       cros_build_lib.Info('Skipping excluded dir %s', root)
@@ -203,38 +213,61 @@ def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
 
     for debug_file in files:
       debug_file = os.path.join(root, debug_file)
-      if debug_file.endswith('.ko.debug'):
-        cros_build_lib.Debug('Skipping kernel module %s', debug_file)
-      elif debug_file.endswith('.debug'):
-        if os.path.islink(debug_file):
-          # The build-id stuff is common enough to filter out by default.
-          if '/.build-id/' in debug_file:
-            msg = cros_build_lib.Debug
-          else:
-            msg = cros_build_lib.Warning
-          msg('Skipping symbolic link %s', debug_file)
-        else:
-          debug_files.append((os.path.getsize(debug_file), debug_file))
-
-  # Now start generating symbols for all the inputs.
-  bg_errors = multiprocessing.Value('i')
-  with parallel.BackgroundTaskRunner(GenerateBreakpadSymbol,
-                                     breakpad_dir=breakpad_dir, board=board,
-                                     strip_cfi=strip_cfi,
-                                     num_errors=bg_errors,
-                                     processes=num_processes) as queue:
-    for _, debug_file in sorted(debug_files, reverse=True):
-      if generate_count == 0:
-        break
-
       # Turn /build/$BOARD/usr/lib/debug/sbin/foo.debug into
       # /build/$BOARD/sbin/foo.
       elf_file = os.path.join(sysroot, debug_file[len(debug_dir) + 1:-6])
+
+      if file_filter:
+        if elf_file in file_filter:
+          file_filter[elf_file] = True
+        elif debug_file in file_filter:
+          file_filter[debug_file] = True
+        else:
+          continue
+
+      # Filter out files based on common issues with the debug file.
+      if not debug_file.endswith('.debug'):
+        continue
+
+      elif debug_file.endswith('.ko.debug'):
+        cros_build_lib.Debug('Skipping kernel module %s', debug_file)
+        continue
+
+      elif os.path.islink(debug_file):
+        # The build-id stuff is common enough to filter out by default.
+        if '/.build-id/' in debug_file:
+          msg = cros_build_lib.Debug
+        else:
+          msg = cros_build_lib.Warning
+        msg('Skipping symbolic link %s', debug_file)
+        continue
+
+      # Filter out files based on common issues with the elf file.
       if not os.path.exists(elf_file):
         # Sometimes we filter out programs from /usr/bin but leave behind
         # the .debug file.
         cros_build_lib.Warning('Skipping missing %s', elf_file)
         continue
+
+      targets.append((os.path.getsize(debug_file), elf_file, debug_file))
+
+  bg_errors = multiprocessing.Value('i')
+  if file_filter:
+    files_not_found = [x for x, found in file_filter.iteritems() if not found]
+    bg_errors.value += len(files_not_found)
+    if files_not_found:
+      cros_build_lib.Error('Failed to find requested files: %s',
+                           files_not_found)
+
+  # Now start generating symbols for the discovered elfs.
+  with parallel.BackgroundTaskRunner(GenerateBreakpadSymbol,
+                                     breakpad_dir=breakpad_dir, board=board,
+                                     strip_cfi=strip_cfi,
+                                     num_errors=bg_errors,
+                                     processes=num_processes) as queue:
+    for _, elf_file, debug_file in sorted(targets, reverse=True):
+      if generate_count == 0:
+        break
 
       queue.put([elf_file, debug_file])
       if generate_count is not None:
@@ -274,6 +307,9 @@ def main(argv):
                       help='limit number of parallel jobs')
   parser.add_argument('--strip_cfi', action='store_true', default=False,
                       help='do not generate CFI data (pass -c to dump_syms)')
+  parser.add_argument('file_list', nargs='*', default=None,
+                      help='generate symbols for only these files '
+                           '(e.g. /build/$BOARD/usr/bin/foo)')
 
   opts = parser.parse_args(argv)
 
@@ -285,7 +321,8 @@ def main(argv):
                                 generate_count=opts.generate_count,
                                 num_processes=opts.jobs,
                                 clean_breakpad=opts.clean,
-                                exclude_dirs=opts.exclude_dir)
+                                exclude_dirs=opts.exclude_dir,
+                                file_list=opts.file_list)
   if ret:
     cros_build_lib.Error('encountered %i problem(s)', ret)
     # Since exit(status) gets masked, clamp it to 1 so we don't inadvertently

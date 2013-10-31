@@ -107,6 +107,30 @@ class GenerateSymbolsTest(cros_test_lib.MockTempDirTestCase):
                           gen_mock.call_args_list[2][0]))
       self.assertEquals(exp_calls, actual_calls)
 
+  def testFileList(self, gen_mock):
+    """Verify that file_list restricts the symbols generated"""
+    with parallel_unittest.ParallelMock():
+      call1 = (os.path.join(self.board_dir, 'usr/sbin/elf'),
+               os.path.join(self.debug_dir, 'usr/sbin/elf.debug'))
+
+      # Filter with elf path.
+      ret = cros_generate_breakpad_symbols.GenerateBreakpadSymbols(
+          self.board, sysroot=self.board_dir, breakpad_dir=self.breakpad_dir,
+          file_list=[os.path.join(self.board_dir, 'usr', 'sbin', 'elf')])
+      self.assertEquals(ret, 0)
+      self.assertEquals(gen_mock.call_count, 1)
+      self.assertEquals(gen_mock.call_args_list[0][0], call1)
+
+      # Filter with debug symbols file path.
+      gen_mock.reset_mock()
+      ret = cros_generate_breakpad_symbols.GenerateBreakpadSymbols(
+          self.board, sysroot=self.board_dir, breakpad_dir=self.breakpad_dir,
+          file_list=[os.path.join(self.debug_dir, 'usr', 'sbin', 'elf.debug')])
+      self.assertEquals(ret, 0)
+      self.assertEquals(gen_mock.call_count, 1)
+      self.assertEquals(gen_mock.call_args_list[0][0], call1)
+
+
   def testGenLimit(self, gen_mock):
     """Verify generate_count arg works"""
     with parallel_unittest.ParallelMock():
