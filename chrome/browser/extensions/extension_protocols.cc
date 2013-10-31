@@ -379,7 +379,7 @@ bool AllowExtensionResourceLoad(net::URLRequest* request,
                                                  info->GetRouteID(),
                                                  &webview_info);
   std::string resource_path = request->url().path();
-  if (is_guest &&
+  if (is_guest && webview_info.allow_chrome_extension_urls &&
       extensions::WebviewInfo::IsResourceWebviewAccessible(
             extension, webview_info.partition_id, resource_path)) {
     return true;

@@ -521,6 +521,12 @@ void WebViewGuest::LoadRedirect(const GURL& old_url,
   DispatchEvent(new GuestView::Event(webview::kEventLoadRedirect, args.Pass()));
 }
 
+// static
+bool WebViewGuest::AllowChromeExtensionURLs() {
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  return channel <= chrome::VersionInfo::CHANNEL_DEV;
+}
+
 void WebViewGuest::AddWebViewToExtensionRendererState() {
   const GURL& site_url = web_contents()->GetSiteInstance()->GetSiteURL();
   ExtensionRendererState::WebViewInfo webview_info;
@@ -529,6 +535,7 @@ void WebViewGuest::AddWebViewToExtensionRendererState() {
   // TODO(fsamuel): Partition IDs should probably be a chrome-only concept. They
   // should probably be passed in via attach args.
   webview_info.partition_id =  site_url.query();
+  webview_info.allow_chrome_extension_urls = AllowChromeExtensionURLs();
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
