@@ -60,7 +60,10 @@ void AddWebContents(Browser* browser,
   params.disposition = disposition;
   params.window_bounds = initial_pos;
   params.window_action = NavigateParams::SHOW_WINDOW;
-  params.user_gesture = user_gesture;
+  // At this point, we're already beyond the popup blocker. Even if the popup
+  // was created without a user gesture, we have to set |user_gesture| to true,
+  // so it gets correctly focused.
+  params.user_gesture = true;
   Navigate(&params);
 }
 
