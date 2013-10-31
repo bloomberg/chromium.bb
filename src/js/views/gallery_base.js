@@ -204,24 +204,30 @@ camera.views.GalleryBase.prototype.onPictureDeleting = function(index) {
  */
 camera.views.GalleryBase.prototype.onKeyPressed = function(event) {
   var currentPicture = this.currentPicture();
-  switch (event.keyIdentifier) {
+  switch (camera.util.getShortcutIdentifier(event)) {
     case 'Right':
       this.model.currentIndex = Math.max(0, this.model.currentIndex - 1);
+      event.preventDefault();
       break;
     case 'Left':
       this.model.currentIndex =
           Math.min(this.model.length - 1, this.model.currentIndex + 1);
+      event.preventDefault();
       break;
-     case 'End':
+    case 'End':
       this.model.currentIndex = 0;
+      event.preventDefault();
       break;
     case 'Home':
       this.model.currentIndex = this.model.length - 1;
+      event.preventDefault();
       break;
-    case 'U+007F':
+    case 'U+007F':  // Delete.
+      event.preventDefault();
       this.deleteSelection();
       break;
-    case 'U+001B':
+    case 'U+001B':  // Escape.
+      event.preventDefault();
       this.router.back();
       break;
   }

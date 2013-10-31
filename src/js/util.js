@@ -961,3 +961,17 @@ camera.util.PerformanceMonitor.prototype.finishMeasuring_ = function(
   this.timesSum_ += (performance.now() - startTime) / 1000;
 };
 
+
+/**
+ * Returns a shortcut string, such as Ctrl-Alt-U+0041.
+ * @param {Event} event Keyboard event.
+ * @return {string} Shortcut identifier.
+ */
+camera.util.getShortcutIdentifier = function(event) {
+  return (event.ctrlKey ? 'Ctrl-' : '') +
+         (event.altKey ? 'Alt-' : '') +
+         (event.shiftKey ? 'Shift-' : '') +
+         (event.metaKey ? 'Meta-' : '') +
+         event.keyIdentifier;
+};
+

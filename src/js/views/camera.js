@@ -493,7 +493,7 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
     this.keyBuffer_ = '';
   }
 
-  switch (event.keyIdentifier) {
+  switch (camera.util.getShortcutIdentifier(event)) {
     case 'Left':
       this.setCurrentEffect_(
           (this.currentEffectIndex_ + this.previewProcessors_.length - 1) %
@@ -517,6 +517,10 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
     case 'U+0020':
       this.takePicture_();
       event.stopPropagation();
+      event.preventDefault();
+      break;
+    case 'U+0047':  // G key for the gallery.
+      this.router.navigate(camera.Router.ViewIdentifier.ALBUM);
       event.preventDefault();
       break;
   }

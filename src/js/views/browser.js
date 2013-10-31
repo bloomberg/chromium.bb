@@ -291,9 +291,15 @@ camera.views.Browser.prototype.exportSelection_ = function() {
  */
 camera.views.Browser.prototype.onKeyPressed = function(event) {
   var currentPicture = this.currentPicture();
-  switch (event.keyIdentifier) {
-   case 'Enter':
+  switch (camera.util.getShortcutIdentifier(event)) {
+    case 'Enter':
+    case 'Ctrl-U+0053':  // Ctrl+S or Enter for saving.
       this.exportSelection_();
+      event.preventDefault();
+      return;
+    case 'Ctrl-U+0050':  // Ctrl+P for printing.
+      window.print();
+      event.preventDefault();
       return;
   }
 
