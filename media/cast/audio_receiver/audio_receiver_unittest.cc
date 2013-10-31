@@ -132,7 +132,8 @@ TEST_F(AudioReceiverTest, GetOnePacketEncodedframe) {
 
 TEST_F(AudioReceiverTest, MultiplePendingGetCalls) {
   Configure(true);
-  EXPECT_CALL(mock_transport_, SendRtcpPacket(testing::_)).Times(2);
+  EXPECT_CALL(mock_transport_, SendRtcpPacket(testing::_)).WillRepeatedly(
+      testing::Return(true));
 
   AudioFrameEncodedCallback frame_encoded_callback =
       base::Bind(&TestAudioEncoderCallback::DeliverEncodedAudioFrame,
@@ -154,7 +155,7 @@ TEST_F(AudioReceiverTest, MultiplePendingGetCalls) {
 
   uint32 ntp_high;
   uint32 ntp_low;
-  ConvertTimeToNtp(testing_clock_.NowTicks(), &ntp_high, &ntp_low);
+  ConvertTimeTicksToNtp(testing_clock_.NowTicks(), &ntp_high, &ntp_low);
   rtcp_packet.AddSrWithNtp(audio_config_.feedback_ssrc, ntp_high, ntp_low,
       rtp_header_.webrtc.header.timestamp);
 

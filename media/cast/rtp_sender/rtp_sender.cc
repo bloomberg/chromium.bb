@@ -121,7 +121,7 @@ void RtpSender::RtpStatistics(const base::TimeTicks& now,
   // was captured.
   uint32 ntp_seconds = 0;
   uint32 ntp_fraction = 0;
-  ConvertTimeToNtp(now, &ntp_seconds, &ntp_fraction);
+  ConvertTimeTicksToNtp(now, &ntp_seconds, &ntp_fraction);
   sender_info->ntp_seconds = ntp_seconds;
   sender_info->ntp_fraction = ntp_fraction;
 

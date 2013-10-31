@@ -273,7 +273,7 @@ void Rtcp::SendRtcp(const base::TimeTicks& now,
 
     packet_type_flags |= RtcpSender::kRtcpRrtr;
     RtcpReceiverReferenceTimeReport rrtr;
-    ConvertTimeToNtp(now, &rrtr.ntp_seconds, &rrtr.ntp_fraction);
+    ConvertTimeTicksToNtp(now, &rrtr.ntp_seconds, &rrtr.ntp_fraction);
 
     time_last_report_sent_ = now;
     last_report_sent_ = ConvertToNtpDiff(rrtr.ntp_seconds, rrtr.ntp_fraction);
@@ -335,9 +335,9 @@ bool Rtcp::RtpTimestampInSenderTime(int frequency, uint32 rtp_timestamp,
   // Sanity check.
   if (abs(rtp_time_diff_ms) > kMaxDiffSinceReceivedRtcpMs)  return false;
 
-  *rtp_timestamp_in_ticks =
-     ConvertNtpToTime(last_received_ntp_seconds_, last_received_ntp_fraction_) +
-     base::TimeDelta::FromMilliseconds(rtp_time_diff_ms);
+  *rtp_timestamp_in_ticks = ConvertNtpToTimeTicks(last_received_ntp_seconds_,
+      last_received_ntp_fraction_) +
+      base::TimeDelta::FromMilliseconds(rtp_time_diff_ms);
   return true;
 }
 

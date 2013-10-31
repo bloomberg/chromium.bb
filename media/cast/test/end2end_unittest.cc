@@ -27,9 +27,7 @@
 namespace media {
 namespace cast {
 
-// Since our time is based on year 1600 and NTP is based on year 1900 we must
-// initialize our fake clock to at least 300 year passed year 1600.
-static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
+static const int64 kStartMillisecond = GG_INT64_C(1245);
 static const int kAudioChannels = 2;
 static const int kAudioSamplingFrequency = 48000;
 static const int kSoundFrequency = 1234;  // Frequency of sinusoid wave.

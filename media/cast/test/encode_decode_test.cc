@@ -77,6 +77,7 @@ TEST_F(EncodeDecodeTest, BasicEncodeDecode) {
   I420VideoFrame decoded_frame;
   // Encode frame.
   encoder_->Encode(*(video_frame_.get()), &encoded_frame);
+  EXPECT_GT(encoded_frame.data.size(), GG_UINT64_C(0));
   // Decode frame.
   decoder_->Decode(encoded_frame, &decoded_frame);
   // Validate data.

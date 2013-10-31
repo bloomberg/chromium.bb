@@ -23,7 +23,6 @@ static const int kMaxPacketLength = 1500;
 static const int kSsrc = 0x12345;
 static const unsigned int kFrameSize = 5000;
 static const int kMaxPacketStorageTimeMs = 300;
-static const int64 kStartMillisecond = 0;
 
 class TestRtpPacketTransport : public PacedPacketSender {
  public:
@@ -108,8 +107,6 @@ class RtpPacketizerTest : public ::testing::Test {
     config_.payload_type = kPayload;
     config_.max_payload_length = kMaxPacketLength;
     transport_.reset(new TestRtpPacketTransport(config_));
-    testing_clock_.Advance(
-        base::TimeDelta::FromMilliseconds(kStartMillisecond));
     rtp_packetizer_.reset(
         new RtpPacketizer(transport_.get(), &packet_storage_, config_));
   }

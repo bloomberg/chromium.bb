@@ -54,15 +54,14 @@ typedef std::map<uint8, PacketIdSet> MissingFramesAndPacketsMap;
 // TODO(pwestin): Re-factor the functions bellow into a class with static
 // methods.
 
+// January 1970, in NTP seconds.
+// Network Time Protocol (NTP), which is in seconds relative to 0h UTC on
+// 1 January 1900.
+static const int64 kUnixEpochInNtpSeconds = GG_INT64_C(2208988800);
+
 // Magic fractional unit. Used to convert time (in microseconds) to/from
 // fractional NTP seconds.
 static const double kMagicFractionalUnit = 4.294967296E3;
-
-// Network Time Protocol (NTP), which is in seconds relative to 0h UTC on
-// 1 January 1900.
-static const int64 kNtpEpochDeltaSeconds = GG_INT64_C(9435484800);
-static const int64 kNtpEpochDeltaMicroseconds =
-    kNtpEpochDeltaSeconds * base::Time::kMicrosecondsPerSecond;
 
 inline bool IsNewerFrameId(uint8 frame_id, uint8 prev_frame_id) {
   return (frame_id != prev_frame_id) &&
@@ -107,20 +106,28 @@ inline void ConvertTimeToFractions(int64 time_us,
       (time_us % base::Time::kMicrosecondsPerSecond) * kMagicFractionalUnit);
 }
 
-inline void ConvertTimeToNtp(const base::TimeTicks& time,
-                             uint32* ntp_seconds,
-                             uint32* ntp_fractions) {
-  int64 time_us = time.ToInternalValue() - kNtpEpochDeltaMicroseconds;
-  ConvertTimeToFractions(time_us, ntp_seconds, ntp_fractions);
+inline void ConvertTimeTicksToNtp(const base::TimeTicks& time,
+                                  uint32* ntp_seconds,
+                                  uint32* ntp_fractions) {
+  base::TimeDelta elapsed_since_unix_epoch =
+      time - base::TimeTicks::UnixEpoch();
+
+  int64 ntp_time_us = elapsed_since_unix_epoch.InMicroseconds() +
+      (kUnixEpochInNtpSeconds * base::Time::kMicrosecondsPerSecond);
+
+  ConvertTimeToFractions(ntp_time_us, ntp_seconds, ntp_fractions);
 }
 
-inline base::TimeTicks ConvertNtpToTime(uint32 ntp_seconds,
-                                        uint32 ntp_fractions) {
+inline base::TimeTicks ConvertNtpToTimeTicks(uint32 ntp_seconds,
+                                             uint32 ntp_fractions) {
   int64 ntp_time_us = static_cast<int64>(ntp_seconds) *
-       base::Time::kMicrosecondsPerSecond;
-  ntp_time_us += static_cast<int64>(ntp_fractions) / kMagicFractionalUnit;
-  return base::TimeTicks::FromInternalValue(ntp_time_us +
-      kNtpEpochDeltaMicroseconds);
+      base::Time::kMicrosecondsPerSecond +
+          static_cast<int64>(ntp_fractions) / kMagicFractionalUnit;
+
+  base::TimeDelta elapsed_since_unix_epoch =
+      base::TimeDelta::FromMicroseconds(ntp_time_us -
+          (kUnixEpochInNtpSeconds * base::Time::kMicrosecondsPerSecond));
+  return base::TimeTicks::UnixEpoch() + elapsed_since_unix_epoch;
 }
 
 }  // namespace cast

@@ -113,8 +113,8 @@ class RtcpTest : public ::testing::Test {
 };
 
 TEST_F(RtcpTest, TimeToSend) {
-  base::TimeTicks start_time =
-      base::TimeTicks::FromInternalValue(kStartMillisecond * 1000);
+  base::TimeTicks start_time;
+  start_time += base::TimeDelta::FromMilliseconds(kStartMillisecond);
   Rtcp rtcp(&testing_clock_,
             &mock_sender_feedback_,
             &transport_,
@@ -293,29 +293,40 @@ TEST_F(RtcpTest, Rtt) {
   EXPECT_NEAR((2 * kAddedShortDelay + 2 * kAddedDelay) / 2,
                avg_rtt.InMilliseconds(),
                1);
-  EXPECT_NEAR(2 *  kAddedShortDelay, min_rtt.InMilliseconds(), 1);
+  EXPECT_NEAR(2 * kAddedShortDelay, min_rtt.InMilliseconds(), 1);
   EXPECT_NEAR(2 * kAddedDelay, max_rtt.InMilliseconds(), 1);
 }
 
 TEST_F(RtcpTest, NtpAndTime) {
-  RtcpPeer rtcp_peer(&testing_clock_,
-                     &mock_sender_feedback_,
-                     NULL,
-                     NULL,
-                     NULL,
-                     kRtcpReducedSize,
-                     base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
-                     false,
-                     kReceiverSsrc,
-                     kCName);
-  uint32 ntp_seconds = 0;
-  uint32 ntp_fractions = 0;
-  base::TimeTicks input_time = base::TimeTicks::FromInternalValue(
-    12345678901000LL + kNtpEpochDeltaMicroseconds);
-  ConvertTimeToNtp(input_time, &ntp_seconds, &ntp_fractions);
-  EXPECT_EQ(12345678u, ntp_seconds);
-  EXPECT_EQ(input_time,
-            ConvertNtpToTime(ntp_seconds, ntp_fractions));
+  const int64 kSecondsbetweenYear1900and2010 = GG_INT64_C(40176 * 24 * 60 * 60);
+  const int64 kSecondsbetweenYear1900and2030 = GG_INT64_C(47481 * 24 * 60 * 60);
+
+  uint32 ntp_seconds_1 = 0;
+  uint32 ntp_fractions_1 = 0;
+  base::TimeTicks input_time = base::TimeTicks::Now();
+  ConvertTimeTicksToNtp(input_time, &ntp_seconds_1, &ntp_fractions_1);
+
+  // Verify absolute value.
+  EXPECT_GT(ntp_seconds_1, kSecondsbetweenYear1900and2010);
+  EXPECT_LT(ntp_seconds_1, kSecondsbetweenYear1900and2030);
+
+  base::TimeTicks out_1 = ConvertNtpToTimeTicks(ntp_seconds_1, ntp_fractions_1);
+  EXPECT_EQ(input_time, out_1);  // Verify inverse.
+
+  base::TimeDelta time_delta = base::TimeDelta::FromMilliseconds(1100);
+  input_time += time_delta;
+
+  uint32 ntp_seconds_2 = 0;
+  uint32 ntp_fractions_2 = 0;
+
+  ConvertTimeTicksToNtp(input_time, &ntp_seconds_2, &ntp_fractions_2);
+  base::TimeTicks out_2 = ConvertNtpToTimeTicks(ntp_seconds_2, ntp_fractions_2);
+  EXPECT_EQ(input_time, out_2);  // Verify inverse.
+
+  // Verify delta.
+  EXPECT_EQ((out_2 - out_1), time_delta);
+  EXPECT_EQ((ntp_seconds_2 - ntp_seconds_1), GG_UINT32_C(1));
+  EXPECT_NEAR((ntp_fractions_2 - ntp_fractions_1), 0xffffffff / 10, 1);
 }
 
 TEST_F(RtcpTest, WrapAround) {
@@ -367,34 +378,35 @@ TEST_F(RtcpTest, RtpTimestampInSenderTime) {
 
   uint32 ntp_seconds = 0;
   uint32 ntp_fractions = 0;
-  base::TimeTicks input_time = base::TimeTicks::FromInternalValue(
-      12345678901000LL + kNtpEpochDeltaMicroseconds);
+  uint64 input_time_us = 12345678901000LL;
+  base::TimeTicks input_time;
+  input_time += base::TimeDelta::FromMicroseconds(input_time_us);
 
   // Test exact match.
-  ConvertTimeToNtp(input_time, &ntp_seconds, &ntp_fractions);
+  ConvertTimeTicksToNtp(input_time, &ntp_seconds, &ntp_fractions);
   rtcp_peer.OnReceivedLipSyncInfo(rtp_timestamp, ntp_seconds, ntp_fractions);
   EXPECT_TRUE(rtcp_peer.RtpTimestampInSenderTime(frequency, rtp_timestamp,
-                                                  &rtp_timestamp_in_ticks));
+                                                 &rtp_timestamp_in_ticks));
   EXPECT_EQ(input_time, rtp_timestamp_in_ticks);
 
   // Test older rtp_timestamp.
   rtp_timestamp = 32000;
   EXPECT_TRUE(rtcp_peer.RtpTimestampInSenderTime(frequency, rtp_timestamp,
-                                                  &rtp_timestamp_in_ticks));
+                                                 &rtp_timestamp_in_ticks));
   EXPECT_EQ(input_time - base::TimeDelta::FromMilliseconds(1000),
             rtp_timestamp_in_ticks);
 
   // Test older rtp_timestamp with wrap.
   rtp_timestamp = 4294903296u;
   EXPECT_TRUE(rtcp_peer.RtpTimestampInSenderTime(frequency, rtp_timestamp,
-                                                  &rtp_timestamp_in_ticks));
+                                                 &rtp_timestamp_in_ticks));
   EXPECT_EQ(input_time - base::TimeDelta::FromMilliseconds(4000),
             rtp_timestamp_in_ticks);
 
   // Test newer rtp_timestamp.
   rtp_timestamp = 128000;
   EXPECT_TRUE(rtcp_peer.RtpTimestampInSenderTime(frequency, rtp_timestamp,
-                                                  &rtp_timestamp_in_ticks));
+                                                 &rtp_timestamp_in_ticks));
   EXPECT_EQ(input_time + base::TimeDelta::FromMilliseconds(2000),
             rtp_timestamp_in_ticks);
 
@@ -403,7 +415,7 @@ TEST_F(RtcpTest, RtpTimestampInSenderTime) {
   rtcp_peer.OnReceivedLipSyncInfo(rtp_timestamp, ntp_seconds, ntp_fractions);
   rtp_timestamp = 64000;
   EXPECT_TRUE(rtcp_peer.RtpTimestampInSenderTime(frequency, rtp_timestamp,
-                                                  &rtp_timestamp_in_ticks));
+                                                 &rtp_timestamp_in_ticks));
   EXPECT_EQ(input_time + base::TimeDelta::FromMilliseconds(4000),
             rtp_timestamp_in_ticks);
 }

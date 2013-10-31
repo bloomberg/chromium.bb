@@ -8,6 +8,7 @@
 #include <ostream>
 
 #include "base/float_util.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/third_party/nspr/prtime.h"
 #include "base/third_party/nspr/prtypes.h"
@@ -187,6 +188,29 @@ bool Time::FromStringInternal(const char* time_string,
   result_time += kTimeTToMicrosecondsOffset;
   *parsed_time = Time(result_time);
   return true;
+}
+
+// Local helper class to hold the conversion from Time to TickTime at the
+// time of the Unix epoch.
+class UnixEpochSingleton {
+ public:
+  UnixEpochSingleton()
+      : unix_epoch_(TimeTicks::Now() - (Time::Now() - Time::UnixEpoch())) {}
+
+  TimeTicks unix_epoch() const { return unix_epoch_; }
+
+ private:
+  const TimeTicks unix_epoch_;
+
+  DISALLOW_COPY_AND_ASSIGN(UnixEpochSingleton);
+};
+
+static LazyInstance<UnixEpochSingleton>::Leaky
+    leaky_unix_epoch_singleton_instance = LAZY_INSTANCE_INITIALIZER;
+
+// Static
+TimeTicks TimeTicks::UnixEpoch() {
+  return leaky_unix_epoch_singleton_instance.Get().unix_epoch();
 }
 
 // Time::Exploded -------------------------------------------------------------
