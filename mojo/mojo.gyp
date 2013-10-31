@@ -63,7 +63,6 @@
     },
     {
       'target_name': 'mojo_system',
-      # TODO(vtl): This should probably be '<(component)'; make it work.
       'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
@@ -139,6 +138,7 @@
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
         'mojo_system',
+        'native_viewport',
       ],
       'sources': [
         'shell/app_container.cc',
@@ -194,7 +194,6 @@
       'target_name': 'sample_app',
       'type': 'shared_library',
       'dependencies': [
-        '../base/base.gyp:base',
         'mojo_system',
       ],
       'sources': [
@@ -244,6 +243,31 @@
         'public/bindings/sample/generated/sample_service_serialization.h',
         'public/bindings/sample/generated/sample_service_stub.cc',
         'public/bindings/sample/sample_test.cc',
+      ],
+    },
+    {
+      'target_name': 'native_viewport',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../ui/gfx/gfx.gyp:gfx',
+        '../ui/events/events.gyp:events'
+      ],
+      'sources': [
+        'services/native_viewport/native_viewport.h',
+        'services/native_viewport/native_viewport_android.cc',
+        'services/native_viewport/native_viewport_controller.cc',
+        'services/native_viewport/native_viewport_controller.h',
+        'services/native_viewport/native_viewport_stub.cc',
+        'services/native_viewport/native_viewport_win.cc',
+        'services/native_viewport/native_viewport_x11.cc',
+      ],
+      'conditions': [
+        ['OS=="win" or OS=="android" or OS=="linux"', {
+          'sources!': [
+            'services/native_viewport/native_viewport_stub.cc',
+          ],
+        }]
       ],
     },
   ],

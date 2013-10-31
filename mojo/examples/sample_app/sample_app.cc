@@ -4,8 +4,8 @@
 
 #include <stdio.h>
 
-#include "base/basictypes.h"
 #include "mojo/public/system/core.h"
+#include "mojo/public/system/macros.h"
 #include "mojo/system/core_impl.h"
 
 #if defined(OS_WIN)
@@ -52,18 +52,21 @@ class SampleMessageWaiter {
   }
 
   void WaitAndRead() {
-    MojoResult result = mojo::Wait(pipe_, MOJO_WAIT_FLAG_READABLE, 100);
-    if (result < MOJO_RESULT_OK) {
-      // Failure...
+    for (int i = 0; i < 100;) {
+      MojoResult result = mojo::Wait(pipe_, MOJO_WAIT_FLAG_READABLE, 100);
+      if (result < MOJO_RESULT_OK) {
+        // Failure...
+        continue;
+      }
+      ++i;
+      Read();
     }
-
-    Read();
   }
 
  private:
-
   mojo::Handle pipe_;
-  DISALLOW_COPY_AND_ASSIGN(SampleMessageWaiter);
+
+  MOJO_DISALLOW_COPY_AND_ASSIGN(SampleMessageWaiter);
 };
 
 extern "C" SAMPLE_APP_EXPORT MojoResult CDECL MojoMain(

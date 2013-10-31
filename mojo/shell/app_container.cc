@@ -12,6 +12,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "mojo/public/system/core.h"
+#include "mojo/services/native_viewport/native_viewport_controller.h"
 #include "mojo/shell/context.h"
 
 typedef MojoResult (*MojoMainFunction)(mojo::Handle pipe);
@@ -89,15 +90,18 @@ void AppContainer::DidCompleteLoad(const GURL& app_url,
   if (result < MOJO_RESULT_OK) {
     // Failure..
   }
+
+  // TODO(beng): This should be created on demand by the NativeViewportService
+  //             when it is retrieved by the app.
+  native_viewport_controller_.reset(
+      new services::NativeViewportController(shell_handle_));
 }
 
 void AppContainer::AppCompleted() {
+  native_viewport_controller_->Close();
+
   thread_.reset();
   Close(shell_handle_);
-
-  // Probably want to do something more sophisticated here, like notify someone
-  // else to do this.
-  base::MessageLoop::current()->Quit();
 }
 
 }  // namespace shell

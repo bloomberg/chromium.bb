@@ -17,6 +17,9 @@ class Thread;
 }
 
 namespace mojo {
+namespace services {
+class NativeViewportController;
+}
 namespace shell {
 
 class Context;
@@ -39,6 +42,7 @@ class AppContainer : public Loader::Delegate {
   Context* context_;
   scoped_ptr<Loader::Job> request_;
   scoped_ptr<base::Thread> thread_;
+  scoped_ptr<services::NativeViewportController> native_viewport_controller_;
 
   // Following members are valid only on app thread.
   Handle shell_handle_;
