@@ -2522,11 +2522,11 @@ END
             }
         } elsif ($parameter->extendedAttributes->{"Clamp"}) {
                 my $nativeValue = "${parameterName}NativeValue";
-                my $paramType = $parameter->type;
-                $parameterCheckString .= "    $paramType $parameterName = 0;\n";
+                my $idlType = $parameter->type;
+                $parameterCheckString .= "    $nativeType $parameterName = 0;\n";
                 $parameterCheckString .= "    V8TRYCATCH_VOID(double, $nativeValue, args[$paramIndex]->NumberValue());\n";
                 $parameterCheckString .= "    if (!std::isnan($nativeValue))\n";
-                $parameterCheckString .= "        $parameterName = clampTo<$paramType>($nativeValue);\n";
+                $parameterCheckString .= "        $parameterName = clampTo<$idlType>($nativeValue);\n";
         } elsif ($parameter->type eq "SerializedScriptValue") {
             AddToImplIncludes("bindings/v8/SerializedScriptValue.h");
             $parameterCheckString .= "    bool ${parameterName}DidThrow = false;\n";

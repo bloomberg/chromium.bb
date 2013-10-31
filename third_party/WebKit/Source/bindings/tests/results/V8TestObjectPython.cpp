@@ -4825,7 +4825,7 @@ static void voidMethodClampUnsignedShortArgMethod(const v8::FunctionCallbackInfo
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
-    unsigned short clampUnsignedShortArg = 0;
+    unsigned clampUnsignedShortArg = 0;
     V8TRYCATCH_VOID(double, clampUnsignedShortArgNativeValue, args[0]->NumberValue());
     if (!std::isnan(clampUnsignedShortArgNativeValue))
         clampUnsignedShortArg = clampTo<unsigned short>(clampUnsignedShortArgNativeValue);
@@ -4846,7 +4846,7 @@ static void voidMethodClampUnsignedLongArgMethod(const v8::FunctionCallbackInfo<
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(args.Holder());
-    unsigned long clampUnsignedLongArg = 0;
+    unsigned clampUnsignedLongArg = 0;
     V8TRYCATCH_VOID(double, clampUnsignedLongArgNativeValue, args[0]->NumberValue());
     if (!std::isnan(clampUnsignedLongArgNativeValue))
         clampUnsignedLongArg = clampTo<unsigned long>(clampUnsignedLongArgNativeValue);

@@ -21,12 +21,12 @@ static void {{method.name}}Method(const v8::FunctionCallbackInfo<v8::Value>& arg
     }
     {% endif %}
     {% if argument.is_clamp %}
-    {# FIXME: use C++ type for local variable #}
-    {{argument.idl_type}} {{argument.name}} = 0;
+    {# NaN is treated as 0: http://www.w3.org/TR/WebIDL/#es-type-mapping #}
+    {{argument.cpp_type}} {{argument.name}} = 0;
     V8TRYCATCH_VOID(double, {{argument.name}}NativeValue, args[{{argument.index}}]->NumberValue());
     if (!std::isnan({{argument.name}}NativeValue))
-        {# IDL type is used for clamping - to get the right bounds - since
-           different IDL types have same internal C++ type (int or unsigned) #}
+        {# IDL type is used for clamping, for the right bounds, since different
+           IDL integer types have same internal C++ type (int or unsigned) #}
         {{argument.name}} = clampTo<{{argument.idl_type}}>({{argument.name}}NativeValue);
     {% elif argument.idl_type == 'SerializedScriptValue' %}
     bool {{argument.name}}DidThrow = false;
