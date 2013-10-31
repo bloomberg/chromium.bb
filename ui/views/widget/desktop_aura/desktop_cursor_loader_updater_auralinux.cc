@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/widget/desktop_aura/desktop_cursor_loader_updater_aurax11.h"
+#include "ui/views/widget/desktop_aura/desktop_cursor_loader_updater_auralinux.h"
 
 #include "ui/aura/root_window.h"
 #include "ui/base/cursor/cursor_loader.h"
@@ -48,17 +48,17 @@ void LoadImageCursors(float device_scale_factor, ui::CursorLoader* loader) {
 
 }  // namespace
 
-DesktopCursorLoaderUpdaterAuraX11::DesktopCursorLoaderUpdaterAuraX11() {}
+DesktopCursorLoaderUpdaterAuraLinux::DesktopCursorLoaderUpdaterAuraLinux() {}
 
-DesktopCursorLoaderUpdaterAuraX11::~DesktopCursorLoaderUpdaterAuraX11() {}
+DesktopCursorLoaderUpdaterAuraLinux::~DesktopCursorLoaderUpdaterAuraLinux() {}
 
-void DesktopCursorLoaderUpdaterAuraX11::OnCreate(
+void DesktopCursorLoaderUpdaterAuraLinux::OnCreate(
     aura::RootWindow* window,
     ui::CursorLoader* loader) {
   LoadImageCursors(window->compositor()->device_scale_factor(), loader);
 }
 
-void DesktopCursorLoaderUpdaterAuraX11::OnDisplayUpdated(
+void DesktopCursorLoaderUpdaterAuraLinux::OnDisplayUpdated(
     const gfx::Display& display,
     ui::CursorLoader* loader) {
   LoadImageCursors(display.device_scale_factor(), loader);
@@ -67,7 +67,7 @@ void DesktopCursorLoaderUpdaterAuraX11::OnDisplayUpdated(
 // static
 scoped_ptr<DesktopCursorLoaderUpdater> DesktopCursorLoaderUpdater::Create() {
   return scoped_ptr<DesktopCursorLoaderUpdater>(
-      new DesktopCursorLoaderUpdaterAuraX11).Pass();
+      new DesktopCursorLoaderUpdaterAuraLinux).Pass();
 }
 
 }  // namespace views
