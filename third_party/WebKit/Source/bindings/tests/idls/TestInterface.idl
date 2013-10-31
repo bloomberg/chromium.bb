@@ -33,7 +33,8 @@
     Conditional=Condition1|Condition2,
     ConstructorCallWith=ExecutionContext,
     Constructor(DOMString str1, [Default=Undefined] optional DOMString str2),
-    ConstructorRaisesException
+    ConstructorRaisesException,
+    SetReference(ReferencedType referencedName)
 ] interface TestInterface {
     [ImplementedAs=getItem] getter (Node or NodeList)(DOMString name);
     [Custom] setter Node (DOMString name, Node value);

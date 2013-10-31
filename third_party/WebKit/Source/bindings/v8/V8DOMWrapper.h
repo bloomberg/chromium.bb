@@ -85,6 +85,41 @@ struct WrapperTypeInfo;
         return wrapper;
     }
 
+    class V8WrapperInstantiationScope {
+    public:
+        V8WrapperInstantiationScope(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+            : m_didEnterContext(false)
+            , m_context(v8::Context::GetCurrent())
+        {
+            // FIXME: Remove all empty creationContexts from caller sites.
+            // If a creationContext is empty, we will end up creating a new object
+            // in the context currently entered. This is wrong.
+            if (creationContext.IsEmpty())
+                return;
+            v8::Handle<v8::Context> contextForWrapper = creationContext->CreationContext();
+            // For performance, we enter the context only if the currently running context
+            // is different from the context that we are about to enter.
+            if (contextForWrapper == m_context)
+                return;
+            m_context = v8::Local<v8::Context>::New(isolate, contextForWrapper);
+            m_didEnterContext = true;
+            m_context->Enter();
+        }
+
+        ~V8WrapperInstantiationScope()
+        {
+            if (!m_didEnterContext)
+                return;
+            m_context->Exit();
+        }
+
+        v8::Handle<v8::Context> context() const { return m_context; }
+
+    private:
+        bool m_didEnterContext;
+        v8::Handle<v8::Context> m_context;
+    };
+
 }
 
 #endif // V8DOMWrapper_h
