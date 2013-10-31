@@ -4,7 +4,6 @@
 
 package org.chromium.sync.notifier;
 
-
 import android.accounts.Account;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -26,6 +25,8 @@ import javax.annotation.concurrent.ThreadSafe;
  * It also provides an observer to be used whenever Android sync settings change.
  *
  * To retrieve an instance of this class, call SyncStatusHelper.get(someContext).
+ *
+ * All new public methods MUST call notifyObservers at the end.
  */
 @ThreadSafe
 public class SyncStatusHelper {
@@ -38,19 +39,68 @@ public class SyncStatusHelper {
      * expensive calls to Android are made.
      */
     @NotThreadSafe
-    private class CachedAccountSyncSettings {
+    @VisibleForTesting
+    public static class CachedAccountSyncSettings {
+        private final String mContractAuthority;
+        private final SyncContentResolverDelegate mSyncContentResolverWrapper;
         private Account mAccount;
+        private boolean mDidUpdate;
         private boolean mSyncAutomatically;
         private int mIsSyncable;
+
+        public CachedAccountSyncSettings(String contractAuthority,
+                SyncContentResolverDelegate contentResolverWrapper) {
+            mContractAuthority = contractAuthority;
+            mSyncContentResolverWrapper = contentResolverWrapper;
+        }
 
         private void ensureSettingsAreForAccount(Account account) {
             assert account != null;
             if (account.equals(mAccount)) return;
             updateSyncSettingsForAccount(account);
+            mDidUpdate = true;
+        }
+
+        public void clearUpdateStatus() {
+            mDidUpdate = false;
+        }
+
+        public boolean getDidUpdateStatus() {
+            return mDidUpdate;
+        }
+
+        // Calling this method may have side-effects.
+        public boolean getSyncAutomatically(Account account) {
+            ensureSettingsAreForAccount(account);
+            return mSyncAutomatically;
         }
 
         public void updateSyncSettingsForAccount(Account account) {
             if (account == null) return;
+            updateSyncSettingsForAccountInternal(account);
+        }
+
+        public void setIsSyncable(Account account) {
+            ensureSettingsAreForAccount(account);
+            if (mIsSyncable == 1) return;
+            setIsSyncableInternal(account);
+        }
+
+        public void setSyncAutomatically(Account account, boolean value) {
+            ensureSettingsAreForAccount(account);
+            if (mSyncAutomatically == value) return;
+            setSyncAutomaticallyInternal(account, value);
+        }
+
+        @VisibleForTesting
+        protected void updateSyncSettingsForAccountInternal(Account account) {
+            // Null check here otherwise Findbugs complains.
+            if (account == null) return;
+
+            boolean oldSyncAutomatically = mSyncAutomatically;
+            int oldIsSyncable = mIsSyncable;
+            Account oldAccount = mAccount;
+
             mAccount = account;
 
             StrictMode.ThreadPolicy oldPolicy = temporarilyAllowDiskWritesAndDiskReads();
@@ -58,31 +108,27 @@ public class SyncStatusHelper {
                     account, mContractAuthority);
             mIsSyncable = mSyncContentResolverWrapper.getIsSyncable(account, mContractAuthority);
             StrictMode.setThreadPolicy(oldPolicy);
+            mDidUpdate = (oldIsSyncable != mIsSyncable)
+                || (oldSyncAutomatically != mSyncAutomatically)
+                || (!account.equals(oldAccount));
         }
 
-        public boolean getSyncAutomatically(Account account) {
-            ensureSettingsAreForAccount(account);
-            return mSyncAutomatically;
-        }
-
-        public void setIsSyncable(Account account) {
-            ensureSettingsAreForAccount(account);
-            if (mIsSyncable == 0) return;
-
+        @VisibleForTesting
+        protected void setIsSyncableInternal(Account account) {
             mIsSyncable = 1;
             StrictMode.ThreadPolicy oldPolicy = temporarilyAllowDiskWritesAndDiskReads();
             mSyncContentResolverWrapper.setIsSyncable(account, mContractAuthority, 1);
             StrictMode.setThreadPolicy(oldPolicy);
+            mDidUpdate = true;
         }
 
-        public void setSyncAutomatically(Account account, boolean value) {
-            ensureSettingsAreForAccount(account);
-            if (mSyncAutomatically == value) return;
-
+        @VisibleForTesting
+        protected void setSyncAutomaticallyInternal(Account account, boolean value) {
             mSyncAutomatically = value;
             StrictMode.ThreadPolicy oldPolicy = temporarilyAllowDiskWritesAndDiskReads();
             mSyncContentResolverWrapper.setSyncAutomatically(account, mContractAuthority, value);
             StrictMode.setThreadPolicy(oldPolicy);
+            mDidUpdate = true;
         }
     }
 
@@ -108,7 +154,7 @@ public class SyncStatusHelper {
     private boolean mCachedMasterSyncAutomatically;
 
     // Instantiation of SyncStatusHelper is guarded by a lock so volatile is unneeded.
-    private final CachedAccountSyncSettings mCachedSettings = new CachedAccountSyncSettings();
+    private CachedAccountSyncSettings mCachedSettings;
 
     private final ObserverList<SyncSettingsChangedObserver> mObservers =
             new ObserverList<SyncSettingsChangedObserver>();
@@ -125,10 +171,12 @@ public class SyncStatusHelper {
      * @param syncContentResolverWrapper an implementation of SyncContentResolverWrapper
      */
     private SyncStatusHelper(Context context,
-            SyncContentResolverDelegate syncContentResolverWrapper) {
+            SyncContentResolverDelegate syncContentResolverWrapper,
+            CachedAccountSyncSettings cachedAccountSettings) {
         mApplicationContext = context.getApplicationContext();
         mSyncContentResolverWrapper = syncContentResolverWrapper;
         mContractAuthority = getContractAuthority();
+        mCachedSettings = cachedAccountSettings;
 
         updateMasterSyncAutomaticallySetting();
 
@@ -159,8 +207,11 @@ public class SyncStatusHelper {
     public static SyncStatusHelper get(Context context) {
         synchronized (INSTANCE_LOCK) {
             if (sSyncStatusHelper == null) {
-                sSyncStatusHelper = new SyncStatusHelper(context,
-                        new SystemSyncContentResolverDelegate());
+                SyncContentResolverDelegate contentResolverDelegate =
+                        new SystemSyncContentResolverDelegate();
+                CachedAccountSyncSettings cache = new CachedAccountSyncSettings(
+                        context.getPackageName(), contentResolverDelegate);
+                sSyncStatusHelper = new SyncStatusHelper(context, contentResolverDelegate, cache);
             }
         }
         return sSyncStatusHelper;
@@ -175,13 +226,24 @@ public class SyncStatusHelper {
      */
     @VisibleForTesting
     public static void overrideSyncStatusHelperForTests(Context context,
-            SyncContentResolverDelegate syncContentResolverWrapper) {
+            SyncContentResolverDelegate syncContentResolverWrapper,
+            CachedAccountSyncSettings cachedAccountSettings) {
         synchronized (INSTANCE_LOCK) {
             if (sSyncStatusHelper != null) {
                 throw new IllegalStateException("SyncStatusHelper already exists");
             }
-            sSyncStatusHelper = new SyncStatusHelper(context, syncContentResolverWrapper);
+            sSyncStatusHelper = new SyncStatusHelper(context, syncContentResolverWrapper,
+                    cachedAccountSettings);
         }
+    }
+
+    @VisibleForTesting
+    public static void overrideSyncStatusHelperForTests(Context context,
+            SyncContentResolverDelegate syncContentResolverWrapper) {
+        CachedAccountSyncSettings cachedAccountSettings = new CachedAccountSyncSettings(
+                context.getPackageName(), syncContentResolverWrapper);
+        overrideSyncStatusHelperForTests(context, syncContentResolverWrapper,
+                cachedAccountSettings);
     }
 
     /**
@@ -216,9 +278,14 @@ public class SyncStatusHelper {
      */
     public boolean isSyncEnabled(Account account) {
         if (account == null) return false;
+        boolean returnValue;
         synchronized (mCachedSettings) {
-            return mCachedMasterSyncAutomatically && mCachedSettings.getSyncAutomatically(account);
+            returnValue = mCachedMasterSyncAutomatically &&
+                mCachedSettings.getSyncAutomatically(account);
         }
+
+        notifyObservers();
+        return returnValue;
     }
 
     /**
@@ -244,9 +311,14 @@ public class SyncStatusHelper {
      */
     public boolean isSyncEnabledForChrome(Account account) {
         if (account == null) return false;
+
+        boolean returnValue;
         synchronized (mCachedSettings) {
-            return mCachedSettings.getSyncAutomatically(account);
+            returnValue = mCachedSettings.getSyncAutomatically(account);
         }
+
+        notifyObservers();
+        return returnValue;
     }
 
     /**
@@ -271,6 +343,8 @@ public class SyncStatusHelper {
         synchronized (mCachedSettings) {
             mCachedSettings.setSyncAutomatically(account, true);
         }
+
+        notifyObservers();
     }
 
     /**
@@ -282,6 +356,8 @@ public class SyncStatusHelper {
         synchronized (mCachedSettings) {
             mCachedSettings.setSyncAutomatically(account, false);
         }
+
+        notifyObservers();
     }
 
     /**
@@ -327,11 +403,7 @@ public class SyncStatusHelper {
                     mCachedSettings.updateSyncSettingsForAccount(
                             ChromeSigninController.get(mApplicationContext).getSignedInUser());
                 }
-
-                // Notify anyone else that's interested
-                for (SyncSettingsChangedObserver observer: mObservers) {
-                    observer.syncSettingsChanged();
-                }
+                notifyObservers();
             }
         }
     }
@@ -353,5 +425,21 @@ public class SyncStatusHelper {
         newPolicy.permitDiskWrites();
         StrictMode.setThreadPolicy(newPolicy.build());
         return oldPolicy;
+    }
+
+    private boolean getAndClearDidUpdateStatus() {
+        boolean didGetStatusUpdate;
+        synchronized (mCachedSettings) {
+            didGetStatusUpdate = mCachedSettings.getDidUpdateStatus();
+            mCachedSettings.clearUpdateStatus();
+        }
+        return didGetStatusUpdate;
+    }
+
+    private void notifyObservers() {
+        if (!getAndClearDidUpdateStatus()) return;
+        for (SyncSettingsChangedObserver observer: mObservers) {
+            observer.syncSettingsChanged();
+        }
     }
 }

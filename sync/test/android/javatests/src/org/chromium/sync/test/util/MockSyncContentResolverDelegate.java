@@ -31,16 +31,20 @@ import java.util.concurrent.TimeUnit;
  */
 public class MockSyncContentResolverDelegate implements SyncContentResolverDelegate {
 
-    private final Map<String, Boolean> mSyncAutomaticallyMap;
+    private final Set<String> mSyncAutomaticallySet;
+    private final Map<String, Boolean> mIsSyncableMap;
+    private final Object mSyncableMapLock = new Object();
 
     private final Set<AsyncSyncStatusObserver> mObservers;
 
     private boolean mMasterSyncAutomatically;
+    private boolean mDisableObserverNotifications;
 
     private Semaphore mPendingObserverCount;
 
     public MockSyncContentResolverDelegate() {
-        mSyncAutomaticallyMap = new HashMap<String, Boolean>();
+        mSyncAutomaticallySet = new HashSet<String>();
+        mIsSyncableMap = new HashMap<String, Boolean>();
         mObservers = new HashSet<AsyncSyncStatusObserver>();
     }
 
@@ -80,22 +84,25 @@ public class MockSyncContentResolverDelegate implements SyncContentResolverDeleg
     @Override
     public boolean getSyncAutomatically(Account account, String authority) {
         String key = createKey(account, authority);
-        synchronized (mSyncAutomaticallyMap) {
-            return mSyncAutomaticallyMap.containsKey(key) && mSyncAutomaticallyMap.get(key);
+        synchronized (mSyncableMapLock) {
+            return mSyncAutomaticallySet.contains(key);
         }
     }
 
     @Override
     public void setSyncAutomatically(Account account, String authority, boolean sync) {
         String key = createKey(account, authority);
-        synchronized (mSyncAutomaticallyMap) {
-            if (!mSyncAutomaticallyMap.containsKey(key)) {
+        synchronized (mSyncableMapLock) {
+            if (!mIsSyncableMap.containsKey(key) || !mIsSyncableMap.get(key)) {
                 throw new IllegalArgumentException("Account " + account +
                         " is not syncable for authority " + authority +
                         ". Can not set sync state to " + sync);
             }
-            if (mSyncAutomaticallyMap.get(key) == sync) return;
-            mSyncAutomaticallyMap.put(key, sync);
+            if (sync) {
+                mSyncAutomaticallySet.add(key);
+            } else if (mSyncAutomaticallySet.contains(key)) {
+                mSyncAutomaticallySet.remove(key);
+            }
         }
         notifyObservers();
     }
@@ -104,17 +111,22 @@ public class MockSyncContentResolverDelegate implements SyncContentResolverDeleg
     public void setIsSyncable(Account account, String authority, int syncable) {
         String key = createKey(account, authority);
 
-        synchronized (mSyncAutomaticallyMap) {
+        synchronized (mSyncableMapLock) {
             switch (syncable) {
                 case 0:
-                    if (!mSyncAutomaticallyMap.containsKey(key)) return;
+                    if (mSyncAutomaticallySet.contains(key)) {
+                        mSyncAutomaticallySet.remove(key);
+                    }
 
-                    mSyncAutomaticallyMap.remove(key);
+                    mIsSyncableMap.put(key, false);
                     break;
                 case 1:
-                    if (mSyncAutomaticallyMap.containsKey(key)) return;
-
-                    mSyncAutomaticallyMap.put(key, false);
+                    mIsSyncableMap.put(key, true);
+                    break;
+                case -1:
+                    if (mIsSyncableMap.containsKey(key)) {
+                        mIsSyncableMap.remove(key);
+                    }
                     break;
                 default:
                     throw new IllegalArgumentException("Unable to understand syncable argument: " +
@@ -126,12 +138,13 @@ public class MockSyncContentResolverDelegate implements SyncContentResolverDeleg
 
     @Override
     public int getIsSyncable(Account account, String authority) {
-        synchronized (mSyncAutomaticallyMap) {
-            final Boolean isSyncable = mSyncAutomaticallyMap.get(createKey(account, authority));
-            if (isSyncable == null) {
+        String key = createKey(account, authority);
+        synchronized (mSyncableMapLock) {
+            if (mIsSyncableMap.containsKey(key)) {
+                return mIsSyncableMap.containsKey(key) ? 1 : 0;
+            } else {
                 return -1;
             }
-            return isSyncable ? 1 : 0;
         }
     }
 
@@ -140,6 +153,7 @@ public class MockSyncContentResolverDelegate implements SyncContentResolverDeleg
     }
 
     private void notifyObservers() {
+        if (mDisableObserverNotifications) return;
         synchronized (mObservers) {
             mPendingObserverCount = new Semaphore(1 - mObservers.size());
             for (AsyncSyncStatusObserver observer : mObservers) {
@@ -158,6 +172,10 @@ public class MockSyncContentResolverDelegate implements SyncContentResolverDeleg
     public void waitForLastNotificationCompleted() throws InterruptedException {
         Assert.assertTrue("Timed out waiting for notifications to complete.",
                 mPendingObserverCount.tryAcquire(5, TimeUnit.SECONDS));
+    }
+
+    public void disableObserverNotifications() {
+        mDisableObserverNotifications = true;
     }
 
     private static class AsyncSyncStatusObserver {
