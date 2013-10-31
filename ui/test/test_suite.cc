@@ -14,7 +14,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
-#include "ui/android/ui_jni_registrar.h"
+#include "ui/base/android/ui_jni_registrar.h"
 #include "ui/gfx/android/gfx_jni_registrar.h"
 #endif
 

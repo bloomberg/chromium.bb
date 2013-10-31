@@ -4,8 +4,8 @@
 
 #include "ui/snapshot/snapshot.h"
 
-#include "ui/android/view_android.h"
-#include "ui/android/window_android.h"
+#include "ui/base/android/view_android.h"
+#include "ui/base/android/window_android.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"

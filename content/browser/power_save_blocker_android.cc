@@ -11,7 +11,7 @@
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/PowerSaveBlocker_jni.h"
-#include "ui/android/view_android.h"
+#include "ui/base/android/view_android.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;

@@ -10,8 +10,8 @@
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "jni/AutofillPopupGlue_jni.h"
-#include "ui/android/view_android.h"
-#include "ui/android/window_android.h"
+#include "ui/base/android/view_android.h"
+#include "ui/base/android/window_android.h"
 #include "ui/gfx/rect.h"
 
 namespace autofill {

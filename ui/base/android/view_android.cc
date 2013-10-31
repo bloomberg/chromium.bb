@@ -1,14 +1,14 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/android/view_android.h"
+#include "ui/base/android/view_android.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_helper.h"
 #include "base/android/scoped_java_ref.h"
 #include "jni/ViewAndroid_jni.h"
-#include "ui/android/window_android.h"
+#include "ui/base/android/window_android.h"
 
 namespace ui {
 

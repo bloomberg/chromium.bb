@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_ANDROID_WINDOW_ANDROID_H_
-#define UI_ANDROID_WINDOW_ANDROID_H_
+#ifndef UI_BASE_ANDROID_WINDOW_ANDROID_H_
+#define UI_BASE_ANDROID_WINDOW_ANDROID_H_
 
 #include <jni.h>
 #include <vector>
@@ -45,4 +45,4 @@ class UI_EXPORT WindowAndroid {
 
 }  // namespace ui
 
-#endif  // UI_ANDROID_WINDOW_ANDROID_H_
+#endif  // UI_BASE_ANDROID_WINDOW_ANDROID_H_
