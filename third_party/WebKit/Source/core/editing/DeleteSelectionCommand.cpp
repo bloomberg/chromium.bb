@@ -523,8 +523,8 @@ void DeleteSelectionCommand::handleGeneralDelete()
                 removeNode(node.get());
                 node = nextNode.get();
             } else {
-                Node* n = node->lastDescendant();
-                if (m_downstreamEnd.deprecatedNode() == n && m_downstreamEnd.deprecatedEditingOffset() >= caretMaxOffset(n)) {
+                Node& n = node->lastDescendant();
+                if (m_downstreamEnd.deprecatedNode() == n && m_downstreamEnd.deprecatedEditingOffset() >= caretMaxOffset(&n)) {
                     removeNode(node.get());
                     node = 0;
                 } else

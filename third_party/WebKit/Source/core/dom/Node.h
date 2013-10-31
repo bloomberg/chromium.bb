@@ -216,8 +216,7 @@ public:
     String textContent(bool convertBRsToNewlines = false) const;
     void setTextContent(const String&, ExceptionState&);
 
-    Node* lastDescendant() const;
-    Node* firstDescendant() const;
+    Node& lastDescendant() const;
 
     // Other methods (not part of DOM)
 

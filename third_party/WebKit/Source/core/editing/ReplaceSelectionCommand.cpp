@@ -658,27 +658,27 @@ void ReplaceSelectionCommand::moveNodeOutOfAncestor(PassRefPtr<Node> prpNode, Pa
         removeNode(ancestor.release());
 }
 
-static inline bool nodeHasVisibleRenderText(Text* text)
+static inline bool nodeHasVisibleRenderText(Text& text)
 {
-    return text->renderer() && toRenderText(text->renderer())->renderedTextLength() > 0;
+    return text.renderer() && toRenderText(text.renderer())->renderedTextLength() > 0;
 }
 
 void ReplaceSelectionCommand::removeUnrenderedTextNodesAtEnds(InsertedNodes& insertedNodes)
 {
     document().updateLayoutIgnorePendingStylesheets();
 
-    Node* lastLeafInserted = insertedNodes.lastLeafInserted();
-    if (lastLeafInserted && lastLeafInserted->isTextNode() && !nodeHasVisibleRenderText(toText(lastLeafInserted))
-        && !enclosingNodeWithTag(firstPositionInOrBeforeNode(lastLeafInserted), selectTag)
-        && !enclosingNodeWithTag(firstPositionInOrBeforeNode(lastLeafInserted), scriptTag)) {
-        insertedNodes.willRemoveNode(lastLeafInserted);
-        removeNode(lastLeafInserted);
+    Node& lastLeafInserted = insertedNodes.lastLeafInserted();
+    if (lastLeafInserted.isTextNode() && !nodeHasVisibleRenderText(toText(lastLeafInserted))
+        && !enclosingNodeWithTag(firstPositionInOrBeforeNode(&lastLeafInserted), selectTag)
+        && !enclosingNodeWithTag(firstPositionInOrBeforeNode(&lastLeafInserted), scriptTag)) {
+        insertedNodes.willRemoveNode(&lastLeafInserted);
+        removeNode(&lastLeafInserted);
     }
 
     // We don't have to make sure that firstNodeInserted isn't inside a select or script element, because
     // it is a top level node in the fragment and the user can't insert into those elements.
     Node* firstNodeInserted = insertedNodes.firstNodeInserted();
-    if (firstNodeInserted && firstNodeInserted->isTextNode() && !nodeHasVisibleRenderText(toText(firstNodeInserted))) {
+    if (firstNodeInserted && firstNodeInserted->isTextNode() && !nodeHasVisibleRenderText(toText(*firstNodeInserted))) {
         insertedNodes.willRemoveNode(firstNodeInserted);
         removeNode(firstNodeInserted);
     }
@@ -1137,7 +1137,7 @@ void ReplaceSelectionCommand::doApply()
 
     // Setup m_startOfInsertedContent and m_endOfInsertedContent. This should be the last two lines of code that access insertedNodes.
     m_startOfInsertedContent = firstPositionInOrBeforeNode(insertedNodes.firstNodeInserted());
-    m_endOfInsertedContent = lastPositionInOrAfterNode(insertedNodes.lastLeafInserted());
+    m_endOfInsertedContent = lastPositionInOrAfterNode(&insertedNodes.lastLeafInserted());
 
     // Determine whether or not we should merge the end of inserted content with what's after it before we do
     // the start merge so that the start merge doesn't effect our decision.
@@ -1453,7 +1453,7 @@ void ReplaceSelectionCommand::updateNodesInserted(Node *node)
     if (m_startOfInsertedContent.isNull())
         m_startOfInsertedContent = firstPositionInOrBeforeNode(node);
 
-    m_endOfInsertedContent = lastPositionInOrAfterNode(node->lastDescendant());
+    m_endOfInsertedContent = lastPositionInOrAfterNode(&node->lastDescendant());
 }
 
 // During simple pastes, where we're just pasting a text node into a run of text, we insert the text node
