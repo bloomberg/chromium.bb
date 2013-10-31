@@ -1532,7 +1532,7 @@ void Document::scheduleStyleRecalc()
 
 void Document::unscheduleStyleRecalc()
 {
-    ASSERT(!confusingAndOftenMisusedAttached() || (!needsStyleRecalc() && !childNeedsStyleRecalc()));
+    ASSERT(!isActive() || (!needsStyleRecalc() && !childNeedsStyleRecalc()));
     m_styleRecalcTimer.stop();
 }
 
@@ -1946,7 +1946,7 @@ void Document::clearStyleResolver()
 
 void Document::attach(const AttachContext& context)
 {
-    ASSERT(!confusingAndOftenMisusedAttached());
+    ASSERT(m_lifecyle.state() == DocumentLifecycle::Inactive);
     ASSERT(!m_axObjectCache || this != topDocument());
 
     m_renderView = new RenderView(this);
@@ -1965,9 +1965,8 @@ void Document::attach(const AttachContext& context)
 
 void Document::detach(const AttachContext& context)
 {
+    ASSERT(isActive());
     m_lifecyle.advanceTo(DocumentLifecycle::Stopping);
-
-    ASSERT(confusingAndOftenMisusedAttached());
 
     if (page())
         page()->documentDetached(this);
@@ -2036,9 +2035,8 @@ void Document::prepareForDestruction()
 {
     disconnectDescendantFrames();
 
-    // The process of disconnecting descendant frames could have already
-    // detached us.
-    if (!confusingAndOftenMisusedAttached())
+    // The process of disconnecting descendant frames could have already detached us.
+    if (!isActive())
         return;
 
     if (DOMWindow* window = this->domWindow())
@@ -3162,7 +3160,7 @@ void Document::styleResolverChanged(RecalcStyleTime updateTime, StyleResolverUpd
 {
     // Don't bother updating, since we haven't loaded all our style info yet
     // and haven't calculated the style selector for the first time.
-    if (!confusingAndOftenMisusedAttached() || (!m_didCalculateStyleResolver && !haveStylesheetsLoaded())) {
+    if (!isActive() || (!m_didCalculateStyleResolver && !haveStylesheetsLoaded())) {
         m_styleResolver.clear();
         return;
     }
