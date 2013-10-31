@@ -191,6 +191,12 @@ inline HTMLFormControlElement* toHTMLFormControlElement(FormAssociatedElement* c
     return static_cast<HTMLFormControlElement*>(control);
 }
 
+inline HTMLFormControlElement& toHTMLFormControlElement(FormAssociatedElement& control)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(control.isFormControlElement());
+    return static_cast<HTMLFormControlElement&>(control);
+}
+
 inline const HTMLFormControlElement* toHTMLFormControlElement(const FormAssociatedElement* control)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!control || control->isFormControlElement());

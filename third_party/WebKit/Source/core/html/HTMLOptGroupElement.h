@@ -73,6 +73,11 @@ inline bool isHTMLOptGroupElement(const Element* element)
     return element->hasTagName(HTMLNames::optgroupTag);
 }
 
+inline bool isHTMLOptGroupElement(const Element& element)
+{
+    return element.hasTagName(HTMLNames::optgroupTag);
+}
+
 DEFINE_NODE_TYPE_CASTS(HTMLOptGroupElement, hasTagName(HTMLNames::optgroupTag));
 
 } //namespace

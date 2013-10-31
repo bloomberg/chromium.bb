@@ -36,7 +36,7 @@ namespace WebCore {
 
 class SelectorCheckerFastPath {
 public:
-    SelectorCheckerFastPath(const CSSSelector*, const Element*);
+    SelectorCheckerFastPath(const CSSSelector*, const Element&);
 
     bool matches() const;
     bool matchesRightmostSelector(SelectorChecker::VisitedMatchType) const;
@@ -48,7 +48,7 @@ private:
     bool commonPseudoClassSelectorMatches(SelectorChecker::VisitedMatchType) const;
 
     const CSSSelector* m_selector;
-    const Element* m_element;
+    const Element& m_element;
 };
 
 inline bool SelectorCheckerFastPath::matchesRightmostAttributeSelector() const

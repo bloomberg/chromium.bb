@@ -2653,7 +2653,7 @@ bool Element::webkitMatchesSelector(const String& selector, ExceptionState& es)
     SelectorQuery* selectorQuery = document().selectorQueryCache().add(selector, document(), es);
     if (!selectorQuery)
         return false;
-    return selectorQuery->matches(this);
+    return selectorQuery->matches(*this);
 }
 
 DOMTokenList* Element::classList()

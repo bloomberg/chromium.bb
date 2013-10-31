@@ -45,9 +45,9 @@ class SpaceSplitString;
 class SelectorDataList {
 public:
     void initialize(const CSSSelectorList&);
-    bool matches(Element*) const;
-    PassRefPtr<NodeList> queryAll(Node* rootNode) const;
-    PassRefPtr<Element> queryFirst(Node* rootNode) const;
+    bool matches(Element&) const;
+    PassRefPtr<NodeList> queryAll(Node& rootNode) const;
+    PassRefPtr<Element> queryFirst(Node& rootNode) const;
 
 private:
     struct SelectorData {
@@ -56,18 +56,18 @@ private:
         bool isFastCheckable;
     };
 
-    bool canUseFastQuery(Node* rootNode) const;
-    bool selectorMatches(const SelectorData&, Element*, const Node*) const;
-    void collectElementsByClassName(Node* rootNode, const AtomicString& className, Vector<RefPtr<Node> >&) const;
-    Element* findElementByClassName(Node* rootNode, const AtomicString& className) const;
-    void collectElementsByTagName(Node* rootNode, const QualifiedName& tagName, Vector<RefPtr<Node> >&) const;
-    Element* findElementByTagName(Node* rootNode, const QualifiedName& tagName) const;
+    bool canUseFastQuery(const Node& rootNode) const;
+    bool selectorMatches(const SelectorData&, Element&, const Node&) const;
+    void collectElementsByClassName(Node& rootNode, const AtomicString& className, Vector<RefPtr<Node> >&) const;
+    Element* findElementByClassName(Node& rootNode, const AtomicString& className) const;
+    void collectElementsByTagName(Node& rootNode, const QualifiedName& tagName, Vector<RefPtr<Node> >&) const;
+    Element* findElementByTagName(Node& rootNode, const QualifiedName& tagName) const;
     PassOwnPtr<SimpleNodeList> findTraverseRoots(Node* rootNode, bool& matchTraverseRoots) const;
-    void executeSlowQueryAll(Node* rootNode, Vector<RefPtr<Node> >& matchedElements) const;
-    void executeQueryAll(Node* rootNode, Vector<RefPtr<Node> >& matchedElements) const;
-    Node* findTraverseRoot(Node* rootNode, bool& matchTraverseRoot) const;
-    Element* executeSlowQueryFirst(Node* rootNode) const;
-    Element* executeQueryFirst(Node* rootNode) const;
+    void executeSlowQueryAll(Node& rootNode, Vector<RefPtr<Node> >& matchedElements) const;
+    void executeQueryAll(Node& rootNode, Vector<RefPtr<Node> >& matchedElements) const;
+    Node* findTraverseRoot(Node& rootNode, bool& matchTraverseRoot) const;
+    Element* executeSlowQueryFirst(Node& rootNode) const;
+    Element* executeQueryFirst(Node& rootNode) const;
 
     Vector<SelectorData> m_selectors;
 };
@@ -77,9 +77,9 @@ class SelectorQuery {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     explicit SelectorQuery(const CSSSelectorList&);
-    bool matches(Element*) const;
-    PassRefPtr<NodeList> queryAll(Node* rootNode) const;
-    PassRefPtr<Element> queryFirst(Node* rootNode) const;
+    bool matches(Element&) const;
+    PassRefPtr<NodeList> queryAll(Node& rootNode) const;
+    PassRefPtr<Element> queryFirst(Node& rootNode) const;
 private:
     SelectorDataList m_selectors;
     CSSSelectorList m_selectorList;

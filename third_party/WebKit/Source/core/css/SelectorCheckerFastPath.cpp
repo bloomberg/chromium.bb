@@ -39,11 +39,11 @@ using namespace HTMLNames;
 
 namespace {
 
-template <bool checkValue(const Element*, const CSSSelector*)>
+template <bool checkValue(const Element&, const CSSSelector*)>
 inline bool fastCheckSingleSelector(const CSSSelector*& selector, const Element*& element, const CSSSelector*& topChildOrSubselector, const Element*& topChildOrSubselectorMatchElement)
 {
     for (; element; element = element->parentElement()) {
-        if (checkValue(element, selector)) {
+        if (checkValue(*element, selector)) {
             if (selector->relation() == CSSSelector::Descendant)
                 topChildOrSubselector = 0;
             else if (!topChildOrSubselector) {
@@ -73,29 +73,29 @@ inline bool fastCheckSingleSelector(const CSSSelector*& selector, const Element*
     return false;
 }
 
-inline bool checkClassValue(const Element* element, const CSSSelector* selector)
+inline bool checkClassValue(const Element& element, const CSSSelector* selector)
 {
-    return element->hasClass() && element->classNames().contains(selector->value().impl());
+    return element.hasClass() && element.classNames().contains(selector->value().impl());
 }
 
-inline bool checkIDValue(const Element* element, const CSSSelector* selector)
+inline bool checkIDValue(const Element& element, const CSSSelector* selector)
 {
-    return element->hasID() && element->idForStyleResolution().impl() == selector->value().impl();
+    return element.hasID() && element.idForStyleResolution().impl() == selector->value().impl();
 }
 
-inline bool checkExactAttributeValue(const Element* element, const CSSSelector* selector)
+inline bool checkExactAttributeValue(const Element& element, const CSSSelector* selector)
 {
     return SelectorChecker::checkExactAttribute(element, selector->attribute(), selector->value().impl());
 }
 
-inline bool checkTagValue(const Element* element, const CSSSelector* selector)
+inline bool checkTagValue(const Element& element, const CSSSelector* selector)
 {
     return SelectorChecker::tagMatches(element, selector->tagQName());
 }
 
 }
 
-SelectorCheckerFastPath::SelectorCheckerFastPath(const CSSSelector* selector, const Element* element)
+SelectorCheckerFastPath::SelectorCheckerFastPath(const CSSSelector* selector, const Element& element)
     : m_selector(selector)
     , m_element(element)
 {
@@ -127,7 +127,7 @@ bool SelectorCheckerFastPath::matches() const
 {
     ASSERT(matchesRightmostSelector(SelectorChecker::VisitedMatchEnabled));
     const CSSSelector* selector = m_selector;
-    const Element* element = m_element;
+    const Element* element = &m_element;
 
     const CSSSelector* topChildOrSubselector = 0;
     const Element* topChildOrSubselectorMatchElement = 0;
@@ -209,9 +209,9 @@ bool SelectorCheckerFastPath::commonPseudoClassSelectorMatches(SelectorChecker::
     switch (m_selector->pseudoType()) {
     case CSSSelector::PseudoLink:
     case CSSSelector::PseudoAnyLink:
-        return m_element->isLink();
+        return m_element.isLink();
     case CSSSelector::PseudoVisited:
-        return m_element->isLink() && visitedMatchType == SelectorChecker::VisitedMatchEnabled;
+        return m_element.isLink() && visitedMatchType == SelectorChecker::VisitedMatchEnabled;
     case CSSSelector::PseudoFocus:
         return SelectorChecker::matchesFocusPseudoClass(m_element);
     default:

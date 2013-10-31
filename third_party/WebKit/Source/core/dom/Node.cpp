@@ -1249,7 +1249,7 @@ PassRefPtr<Element> Node::querySelector(const AtomicString& selectors, Exception
     SelectorQuery* selectorQuery = document().selectorQueryCache().add(selectors, document(), es);
     if (!selectorQuery)
         return 0;
-    return selectorQuery->queryFirst(this);
+    return selectorQuery->queryFirst(*this);
 }
 
 PassRefPtr<NodeList> Node::querySelectorAll(const AtomicString& selectors, ExceptionState& es)
@@ -1262,7 +1262,7 @@ PassRefPtr<NodeList> Node::querySelectorAll(const AtomicString& selectors, Excep
     SelectorQuery* selectorQuery = document().selectorQueryCache().add(selectors, document(), es);
     if (!selectorQuery)
         return 0;
-    return selectorQuery->queryAll(this);
+    return selectorQuery->queryAll(*this);
 }
 
 Document* Node::ownerDocument() const
