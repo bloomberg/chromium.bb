@@ -33,7 +33,6 @@ callback interface TestCallback {
   boolean callbackWithTestObjectParam(TestObject class1Param);
   boolean callbackWithTestObjectParam(TestObject class2Param, DOMString strArg);
   [Custom] long customCallback(TestObject testObjParam, TestObject testObjParam);
-  boolean callbackWithStringList(DOMStringList listParam);
   boolean callbackWithBoolean(boolean boolParam);
   boolean callbackWithSequence(sequence<TestObject> sequenceParam);
   boolean callbackWithFloat(float floatParam);

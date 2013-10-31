@@ -3811,7 +3811,7 @@ static void overloadedMethod6Method(const v8::FunctionCallbackInfo<v8::Value>& i
         return;
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(RefPtr<DOMStringList>, listArg, toDOMStringList(info[0], info.GetIsolate()));
+    V8TRYCATCH_VOID(DOMStringList*, listArg, V8DOMStringList::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8DOMStringList::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
     imp->overloadedMethod(listArg);
 }
 
@@ -4136,7 +4136,7 @@ static void domStringListFunctionMethod(const v8::FunctionCallbackInfo<v8::Value
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
     ExceptionState es(info.GetIsolate());
-    V8TRYCATCH_VOID(RefPtr<DOMStringList>, values, toDOMStringList(info[0], info.GetIsolate()));
+    V8TRYCATCH_VOID(DOMStringList*, values, V8DOMStringList::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8DOMStringList::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
     RefPtr<DOMStringList> result = imp->domStringListFunction(values, es);
     if (es.throwIfNeeded())
         return;

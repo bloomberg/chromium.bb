@@ -31,7 +31,6 @@
 #include "config.h"
 #include "bindings/v8/V8Binding.h"
 
-#include "V8DOMStringList.h"
 #include "V8Element.h"
 #include "V8NodeFilter.h"
 #include "V8Window.h"
@@ -43,7 +42,6 @@
 #include "bindings/v8/V8WindowShell.h"
 #include "bindings/v8/WorkerScriptController.h"
 #include "bindings/v8/custom/V8CustomXPathNSResolver.h"
-#include "core/dom/DOMStringList.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeFilter.h"
 #include "core/dom/QualifiedName.h"
@@ -122,17 +120,6 @@ v8::ArrayBuffer::Allocator* v8ArrayBufferAllocator()
 {
     DEFINE_STATIC_LOCAL(ArrayBufferAllocator, arrayBufferAllocator, ());
     return &arrayBufferAllocator;
-}
-
-
-v8::Handle<v8::Value> v8Array(PassRefPtr<DOMStringList> stringList, v8::Isolate* isolate)
-{
-    if (!stringList)
-        return v8::Array::New();
-    v8::Local<v8::Array> result = v8::Array::New(stringList->length());
-    for (unsigned i = 0; i < stringList->length(); ++i)
-        result->Set(v8::Integer::New(i, isolate), v8String(stringList->item(i), isolate));
-    return result;
 }
 
 Vector<v8::Handle<v8::Value> > toVectorOfArguments(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -383,28 +370,6 @@ v8::Handle<v8::FunctionTemplate> createRawTemplate(v8::Isolate* isolate)
     v8::HandleScope scope(isolate);
     v8::Local<v8::FunctionTemplate> result = v8::FunctionTemplate::New(V8ObjectConstructor::isValidConstructorMode);
     return scope.Close(result);
-}
-
-PassRefPtr<DOMStringList> toDOMStringList(v8::Handle<v8::Value> value, v8::Isolate* isolate)
-{
-    v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(isolate, value));
-
-    if (V8DOMStringList::HasInstance(v8Value, isolate, worldType(isolate))) {
-        RefPtr<DOMStringList> ret = V8DOMStringList::toNative(v8::Handle<v8::Object>::Cast(v8Value));
-        return ret.release();
-    }
-
-    if (!v8Value->IsArray())
-        return 0;
-
-    RefPtr<DOMStringList> ret = DOMStringList::create();
-    v8::Local<v8::Array> v8Array = v8::Local<v8::Array>::Cast(v8Value);
-    for (size_t i = 0; i < v8Array->Length(); ++i) {
-        v8::Local<v8::Value> indexedValue = v8Array->Get(v8::Integer::New(i, isolate));
-        V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringValue, indexedValue, 0);
-        ret->append(stringValue);
-    }
-    return ret.release();
 }
 
 PassRefPtr<XPathNSResolver> toXPathNSResolver(v8::Handle<v8::Value> value, v8::Isolate* isolate)

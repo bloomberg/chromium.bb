@@ -47,7 +47,6 @@ public:
     virtual bool callbackWithTestObjectParam(TestObj* class1Param);
     virtual bool callbackWithTestObjectParam(TestObj* class2Param, const String& strArg);
     virtual int customCallback(TestObj* testObjParam, TestObj* testObjParam);
-    virtual bool callbackWithStringList(RefPtr<DOMStringList> listParam);
     virtual bool callbackWithBoolean(bool boolParam);
     virtual bool callbackWithSequence(const Vector<RefPtr<TestObj> >& sequenceParam);
     virtual bool callbackWithFloat(float floatParam);

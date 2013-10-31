@@ -62,7 +62,6 @@ interface TestObjectPython {
     attribute SerializedScriptValue serializedScriptValueAttribute;
     attribute any anyAttribute;
     // Special type conversions
-    attribute DOMStringList domStringListAttribute;
     attribute Promise promiseAttribute;
     // DOM Node types
     attribute Document documentAttribute;
@@ -209,12 +208,10 @@ interface TestObjectPython {
     void voidMethodLongArgTestInterfaceEmptyArg(long longArg, TestInterfaceEmpty testInterfaceEmptyArg);
     // Special type conversions
     CompareHow compareHowMethod();
-    DOMStringList domStringListMethod();
     MediaQueryListListener mediaQueryListListenerMethod();
     any anyMethod();
     void voidMethodMediaQueryListListenerArg(MediaQueryListListener mediaQueryListListenerArg);
     void voidMethodCompareHowArg(CompareHow compareHowArg);
-    void voidMethodDOMStringListArg(DOMStringList domStringListArg);
     void voidMethodAnyArg(any anyArg);
     // DOM node types
     void voidMethodAttrArg(Attr attrArg);

@@ -21,7 +21,6 @@
 #include "config.h"
 #include "V8TestCallback.h"
 
-#include "V8DOMStringList.h"
 #include "V8TestObject.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Callback.h"
@@ -128,35 +127,6 @@ bool V8TestCallback::callbackWithTestObjectParam(TestObj* class2Param, const Str
 
     bool callbackReturnValue = false;
     return !invokeCallback(m_callback.newLocal(isolate), 2, argv, callbackReturnValue, executionContext(), isolate);
-}
-
-bool V8TestCallback::callbackWithStringList(RefPtr<DOMStringList> listParam)
-{
-    if (!canInvokeCallback())
-        return true;
-
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope handleScope(isolate);
-
-    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), m_world.get());
-    if (v8Context.IsEmpty())
-        return true;
-
-    v8::Context::Scope scope(v8Context);
-
-    v8::Handle<v8::Value> listParamHandle = toV8(listParam, v8::Handle<v8::Object>(), isolate);
-    if (listParamHandle.IsEmpty()) {
-        if (!isScriptControllerTerminating())
-            CRASH();
-        return true;
-    }
-
-    v8::Handle<v8::Value> argv[] = {
-        listParamHandle
-    };
-
-    bool callbackReturnValue = false;
-    return !invokeCallback(m_callback.newLocal(isolate), 1, argv, callbackReturnValue, executionContext(), isolate);
 }
 
 bool V8TestCallback::callbackWithBoolean(bool boolParam)

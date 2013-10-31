@@ -45,7 +45,6 @@
 
 namespace WebCore {
 
-    class DOMStringList;
     class DOMWindow;
     class Document;
     class Frame;
@@ -307,8 +306,6 @@ namespace WebCore {
             result->Set(v8::Integer::New(index++, isolate), TraitsType::arrayV8Value(*iter, isolate));
         return result;
     }
-
-    v8::Handle<v8::Value> v8Array(PassRefPtr<DOMStringList>, v8::Isolate*);
 
     // Conversion flags, used in toIntXX/toUIntXX.
     enum IntegerConversionConfiguration {
@@ -626,7 +623,6 @@ namespace WebCore {
 
     v8::Handle<v8::FunctionTemplate> createRawTemplate(v8::Isolate*);
 
-    PassRefPtr<DOMStringList> toDOMStringList(v8::Handle<v8::Value>, v8::Isolate*);
     PassRefPtr<XPathNSResolver> toXPathNSResolver(v8::Handle<v8::Value>, v8::Isolate*);
 
     v8::Handle<v8::Object> toInnerGlobalObject(v8::Handle<v8::Context>);

@@ -5278,7 +5278,7 @@ sub GetNativeType
     }
 
     # We need to check [ImplementedAs] extended attribute for wrapper types.
-    return "RefPtr<$type>" if $type eq "DOMStringList" or $type eq "XPathNSResolver";  # FIXME: can these be put in nonWrapperTypes instead?
+    return "RefPtr<$type>" if $type eq "XPathNSResolver";  # FIXME: can this be put in nonWrapperTypes instead?
     if (IsWrapperType($type)) {
         my $interface = ParseInterface($type);
         my $implClassName = GetImplName($interface);
@@ -5370,7 +5370,6 @@ sub JSValueToNative
     }
     return "static_cast<Range::CompareHow>($value->Int32Value())" if $type eq "CompareHow";
     return "toWebCoreDate($value)" if $type eq "Date";
-    return "toDOMStringList($value, $getIsolate)" if $type eq "DOMStringList";
 
     if ($type eq "DOMString" or IsEnumType($type)) {
         return $value;

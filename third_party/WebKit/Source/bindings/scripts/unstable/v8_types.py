@@ -263,7 +263,6 @@ def cpp_type(idl_type, extended_attributes=None, used_as_argument=False):
     if idl_type in CPP_SPECIAL_CONVERSION_RULES:
         return CPP_SPECIAL_CONVERSION_RULES[idl_type]
     if (idl_type in NON_WRAPPER_TYPES or
-        idl_type == 'DOMStringList' or  # FIXME: eliminate this special case
         idl_type == 'XPathNSResolver'):  # FIXME: eliminate this special case
         return 'RefPtr<%s>' % idl_type
     if idl_type == 'DOMString':
@@ -358,7 +357,6 @@ V8_VALUE_TO_CPP_VALUE_AND_INCLUDES = {
                    set()),
     'Dictionary': ('Dictionary({v8_value}, {isolate})',
                    set(['bindings/v8/Dictionary.h'])),
-    'DOMStringList': ('toDOMStringList({v8_value}, {isolate})', set()),
     'MediaQueryListListener': (
         'MediaQueryListListener::create(ScriptValue({v8_value}, {isolate}))',
         set(['core/css/MediaQueryListListener.h'])),
