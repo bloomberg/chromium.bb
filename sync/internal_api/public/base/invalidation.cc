@@ -10,6 +10,8 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "sync/notifier/ack_handler.h"
+#include "sync/notifier/dropped_invalidation_tracker.h"
 #include "sync/notifier/invalidation_util.h"
 
 namespace syncer {
@@ -121,19 +123,23 @@ bool Invalidation::SupportsAcknowledgement() const {
   return ack_handler_.IsInitialized();
 }
 
-// void Invalidation::Acknowledge() const {
-//   if (SupportsAcknowledgement()) {
-//     ack_handler_.Call(FROM_HERE,
-//                       &AckHandler::Acknowledge,
-//                       id_,
-//                       ack_handle_);
-//   }
-// }
+void Invalidation::Acknowledge() const {
+  if (SupportsAcknowledgement()) {
+    ack_handler_.Call(FROM_HERE,
+                      &AckHandler::Acknowledge,
+                      id_,
+                      ack_handle_);
+  }
+}
 
-// void Invalidation::Drop(DroppedInvalidationTracker* tracker) const {
-//   DCHECK(tracker->object_id() == object_id());
-//   tracker->Drop(ack_handler_, ack_handle_);
-// }
+void Invalidation::Drop(DroppedInvalidationTracker* tracker) const {
+  DCHECK(tracker->object_id() == object_id());
+  tracker->RecordDropEvent(ack_handler_, ack_handle_);
+  ack_handler_.Call(FROM_HERE,
+                    &AckHandler::Drop,
+                    id_,
+                    ack_handle_);
+}
 
 bool Invalidation::Equals(const Invalidation& other) const {
   return id_ == other.id_

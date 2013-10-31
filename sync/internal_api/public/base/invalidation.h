@@ -54,14 +54,19 @@ class SYNC_EXPORT Invalidation {
   // TODO(rlarocque): Remove this method and use AckHandlers instead.
   void set_ack_handle(const AckHandle& ack_handle);
 
+  // Functions from the alternative ack tracking framework.
+  // Currently unused.
   void set_ack_handler(syncer::WeakHandle<AckHandler> ack_handler);
-
-  // True if this class has a valid AckHandler.
   bool SupportsAcknowledgement() const;
+  void Acknowledge() const;
 
-  // TODO(rlarocque): Re-enable these when we switch to AckHandlers.
-  // void Acknowledge() const;
-  // void Drop(DroppedInvalidationTracker* tracker) const;
+  // Drops an invalidation.
+  //
+  // The drop record will be tracked by the specified
+  // DroppedInvalidationTracker.  The caller should hang on to this tracker.  It
+  // will need to use it when it recovers from this drop event.  See the
+  // documentation of DroppedInvalidationTracker for more details.
+  void Drop(DroppedInvalidationTracker* tracker) const;
 
   scoped_ptr<base::DictionaryValue> ToValue() const;
   std::string ToString() const;

@@ -119,6 +119,8 @@
         'notifier/fake_invalidator.h',
         'notifier/invalidator_test_template.cc',
         'notifier/invalidator_test_template.h',
+        'notifier/mock_ack_handler.cc',
+        'notifier/mock_ack_handler.h',
       ],
     },
 

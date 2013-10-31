@@ -23,6 +23,10 @@
     '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
   ],
   'sources': [
+    'notifier/ack_handler.cc',
+    'notifier/ack_handler.h',
+    'notifier/dropped_invalidation_tracker.cc',
+    'notifier/dropped_invalidation_tracker.h',
     'notifier/invalidation_handler.h',
     'notifier/invalidation_state_tracker.cc',
     'notifier/invalidation_state_tracker.h',
