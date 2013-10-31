@@ -32,6 +32,7 @@ const uint16 kHttpPortDefault = 10101;
 const uint32 kTtlDefault = 60*60;  // in seconds
 
 const char kServiceType[] = "_privet._tcp.local";
+const char kSecondaryServiceType[] = "_printer._sub._privet._tcp.local";
 const char kServiceNamePrefixDefault[] = "first_gcp20_device";
 const char kServiceDomainNameDefault[] = "my-privet-device.local";
 
@@ -825,7 +826,8 @@ bool Printer::StartDnsServer() {
   std::string service_domain_name =
       command_line_reader::ReadDomainName(kServiceDomainNameDefault);
 
-  ServiceParameters params(kServiceType, service_name_prefix,
+  ServiceParameters params(kServiceType, kSecondaryServiceType,
+                           service_name_prefix,
                            service_domain_name, ip, port);
 
   return dns_server_.Start(params,
@@ -911,4 +913,3 @@ bool Printer::ChangeState(ConnectionState new_state) {
 
   return true;
 }
-

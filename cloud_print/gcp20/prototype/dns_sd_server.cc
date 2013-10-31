@@ -200,11 +200,13 @@ void DnsSdServer::ProccessQuery(uint32 current_ttl, const DnsQueryRecord& query,
     // TODO(maksymb): Add IPv6 support.
     case net::dns_protocol::kTypePTR:
       log = "Processing PTR query";
-      if (query.qname == serv_params_.service_type_) {
-        builder->AppendPtr(serv_params_.service_type_, current_ttl,
+      if (query.qname == serv_params_.service_type_ ||
+          query.qname == serv_params_.secondary_service_type_) {
+        builder->AppendPtr(query.qname, current_ttl,
                            serv_params_.service_name_);
         responded = true;
       }
+
       break;
     case net::dns_protocol::kTypeSRV:
       log = "Processing SRV query";
@@ -260,6 +262,8 @@ void DnsSdServer::SendAnnouncement(uint32 ttl) {
 
     builder.AppendPtr(serv_params_.service_type_, ttl,
                       serv_params_.service_name_);
+    builder.AppendPtr(serv_params_.secondary_service_type_, ttl,
+                      serv_params_.service_name_);
     builder.AppendSrv(serv_params_.service_name_, ttl, kSrvPriority, kSrvWeight,
                       serv_params_.http_port_,
                       serv_params_.service_domain_name_);
@@ -296,4 +300,3 @@ uint32 DnsSdServer::GetCurrentTLL() const {
   }
   return current_ttl;
 }
-
