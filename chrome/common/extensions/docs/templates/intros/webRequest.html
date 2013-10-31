@@ -132,6 +132,11 @@ the request,
 and others (this list is not complete). Also synchronous XMLHttpRequests from
 your extension are hidden from blocking event handlers in order to prevent
 deadlocks.
+Note that for some of the supported schemes the set of available events might be
+limited due to the nature of the corresponding protocol.
+For example, for the <q>file:</q> scheme, only <code>onBeforeRequest</code>,
+<code>onResponseStarted</code>, <code>onCompleted</code>, and
+<code>onErrorOccurred</code> may be dispatched.
 </p>
 
 <h2 id="concepts">Concepts</h2>
