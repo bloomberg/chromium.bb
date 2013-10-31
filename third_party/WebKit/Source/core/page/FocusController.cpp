@@ -80,7 +80,7 @@ Element* FocusNavigationScope::owner() const
     Node* root = rootNode();
     if (root->isShadowRoot()) {
         ShadowRoot* shadowRoot = toShadowRoot(root);
-        return shadowRoot->isYoungest() ? shadowRoot->host() : shadowRoot->insertionPoint();
+        return shadowRoot->isYoungest() ? shadowRoot->host() : shadowRoot->shadowInsertionPointOfYoungerShadowRoot();
     }
     if (Frame* frame = root->document().frame())
         return frame->ownerElement();

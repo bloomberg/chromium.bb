@@ -294,7 +294,7 @@ void ShadowRoot::removedFrom(ContainerNode* insertionPoint)
 void ShadowRoot::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
 {
     ContainerNode::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
-    if (InsertionPoint* point = insertionPoint()) {
+    if (InsertionPoint* point = shadowInsertionPointOfYoungerShadowRoot()) {
         if (ShadowRoot* root = point->containingShadowRoot())
             root->owner()->setNeedsDistributionRecalc();
     }
@@ -337,16 +337,16 @@ bool ShadowRoot::containsShadowRoots() const
     return m_shadowRootRareData ? m_shadowRootRareData->containsShadowRoots() : 0;
 }
 
-InsertionPoint* ShadowRoot::insertionPoint() const
+HTMLShadowElement* ShadowRoot::shadowInsertionPointOfYoungerShadowRoot() const
 {
-    return m_shadowRootRareData ? m_shadowRootRareData->insertionPoint() : 0;
+    return m_shadowRootRareData ? m_shadowRootRareData->shadowInsertionPointOfYoungerShadowRoot() : 0;
 }
 
-void ShadowRoot::setInsertionPoint(PassRefPtr<InsertionPoint> insertionPoint)
+void ShadowRoot::setShadowInsertionPointOfYoungerShadowRoot(PassRefPtr<HTMLShadowElement> shadowInsertionPoint)
 {
-    if (!m_shadowRootRareData && !insertionPoint)
+    if (!m_shadowRootRareData && !shadowInsertionPoint)
         return;
-    ensureShadowRootRareData()->setInsertionPoint(insertionPoint);
+    ensureShadowRootRareData()->setShadowInsertionPointOfYoungerShadowRoot(shadowInsertionPoint);
 }
 
 void ShadowRoot::didAddInsertionPoint(InsertionPoint* insertionPoint)

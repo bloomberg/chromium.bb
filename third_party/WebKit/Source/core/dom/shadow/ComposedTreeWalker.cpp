@@ -31,6 +31,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/InsertionPoint.h"
+#include "core/html/shadow/HTMLShadowElement.h"
 
 namespace WebCore {
 
@@ -49,7 +50,7 @@ static inline bool nodeCanBeDistributed(const Node* node)
         return false;
 
     if (ShadowRoot* shadowRoot = parent->isShadowRoot() ? toShadowRoot(parent) : 0)
-        return shadowRoot->insertionPoint();
+        return shadowRoot->shadowInsertionPointOfYoungerShadowRoot();
 
     if (parent->isElementNode() && toElement(parent)->shadow())
         return true;
@@ -132,7 +133,7 @@ Node* ComposedTreeWalker::traverseBackToYoungerShadowRoot(const Node* node, Trav
     if (node->parentNode() && node->parentNode()->isShadowRoot()) {
         ShadowRoot* parentShadowRoot = toShadowRoot(node->parentNode());
         if (!parentShadowRoot->isYoungest()) {
-            InsertionPoint* assignedInsertionPoint = parentShadowRoot->insertionPoint();
+            InsertionPoint* assignedInsertionPoint = parentShadowRoot->shadowInsertionPointOfYoungerShadowRoot();
             ASSERT(assignedInsertionPoint);
             return traverseSiblingInCurrentTree(assignedInsertionPoint, direction);
         }
@@ -189,7 +190,7 @@ inline Node* ComposedTreeWalker::traverseParentInCurrentTree(const Node* node, P
 Node* ComposedTreeWalker::traverseParentBackToYoungerShadowRootOrHost(const ShadowRoot* shadowRoot, ParentTraversalDetails* details) const
 {
     ASSERT(shadowRoot);
-    ASSERT(!shadowRoot->insertionPoint());
+    ASSERT(!shadowRoot->shadowInsertionPointOfYoungerShadowRoot());
 
     if (shadowRoot->isYoungest()) {
         if (details)

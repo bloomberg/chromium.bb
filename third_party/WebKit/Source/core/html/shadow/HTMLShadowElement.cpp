@@ -63,7 +63,7 @@ ShadowRoot* HTMLShadowElement::olderShadowRoot()
     document().updateDistributionForNodeIfNeeded(this);
 
     ShadowRoot* older = containingRoot->olderShadowRoot();
-    if (!older || !older->shouldExposeToBindings() || older->insertionPoint() != this)
+    if (!older || !older->shouldExposeToBindings() || older->shadowInsertionPointOfYoungerShadowRoot() != this)
         return 0;
 
     ASSERT(older->shouldExposeToBindings());

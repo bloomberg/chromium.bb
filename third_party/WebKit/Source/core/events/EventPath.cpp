@@ -34,6 +34,7 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/html/shadow/HTMLShadowElement.h"
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGUseElement.h"
 
@@ -161,14 +162,14 @@ void EventPath::calculatePath()
         }
         if (!current->isShadowRoot()) {
             current = current->parentNode();
-            if (!(current && current->isShadowRoot() && toShadowRoot(current)->insertionPoint()))
+            if (!(current && current->isShadowRoot() && toShadowRoot(current)->shadowInsertionPointOfYoungerShadowRoot()))
                 distributedNode = current;
             continue;
         }
 
         const ShadowRoot* shadowRoot = toShadowRoot(current);
-        if (InsertionPoint* insertionPoint = shadowRoot->insertionPoint()) {
-            current = insertionPoint;
+        if (HTMLShadowElement* shadowInsertionPoint = shadowRoot->shadowInsertionPointOfYoungerShadowRoot()) {
+            current = shadowInsertionPoint;
             continue;
         }
 

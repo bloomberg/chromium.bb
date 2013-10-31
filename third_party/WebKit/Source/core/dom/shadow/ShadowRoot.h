@@ -38,6 +38,7 @@ namespace WebCore {
 
 class ElementShadow;
 class ExceptionState;
+class HTMLShadowElement;
 class InsertionPoint;
 class ShadowRootRareData;
 
@@ -88,8 +89,8 @@ public:
     // For Internals, don't use this.
     unsigned childShadowRootCount() const;
 
-    InsertionPoint* insertionPoint() const;
-    void setInsertionPoint(PassRefPtr<InsertionPoint>);
+    HTMLShadowElement* shadowInsertionPointOfYoungerShadowRoot() const;
+    void setShadowInsertionPointOfYoungerShadowRoot(PassRefPtr<HTMLShadowElement>);
 
     void didAddInsertionPoint(InsertionPoint*);
     void didRemoveInsertionPoint(InsertionPoint*);

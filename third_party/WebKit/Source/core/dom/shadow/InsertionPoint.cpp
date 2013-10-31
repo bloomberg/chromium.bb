@@ -30,6 +30,7 @@
 
 #include "config.h"
 #include "core/dom/shadow/InsertionPoint.h"
+#include "core/html/shadow/HTMLShadowElement.h"
 
 #include "HTMLNames.h"
 #include "core/dom/QualifiedName.h"
@@ -254,7 +255,7 @@ InsertionPoint* resolveReprojection(const Node* projectedNode)
         }
 
         if (Node* parent = parentNodeForDistribution(current)) {
-            if (InsertionPoint* insertedTo = parent->isShadowRoot() ? toShadowRoot(parent)->insertionPoint() : 0) {
+            if (HTMLShadowElement* insertedTo = parent->isShadowRoot() ? toShadowRoot(parent)->shadowInsertionPointOfYoungerShadowRoot() : 0) {
                 current = insertedTo;
                 insertionPoint = insertedTo;
                 continue;
@@ -279,7 +280,7 @@ void collectInsertionPointsWhereNodeIsDistributed(const Node* node, Vector<Inser
             }
         }
         if (Node* parent = parentNodeForDistribution(current)) {
-            if (InsertionPoint* insertedTo = parent->isShadowRoot() ? toShadowRoot(parent)->insertionPoint() : 0) {
+            if (HTMLShadowElement* insertedTo = parent->isShadowRoot() ? toShadowRoot(parent)->shadowInsertionPointOfYoungerShadowRoot() : 0) {
                 current = insertedTo;
                 results.append(insertedTo);
                 continue;

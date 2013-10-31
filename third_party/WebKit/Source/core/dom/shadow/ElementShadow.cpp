@@ -282,7 +282,7 @@ void ElementShadow::distribute()
             // Only allow reprojecting older shadow roots between the same type to
             // disallow reprojecting UA elements into author shadows.
             distributeNodeChildrenTo(shadowElement, root->olderShadowRoot());
-            root->olderShadowRoot()->setInsertionPoint(shadowElement);
+            root->olderShadowRoot()->setShadowInsertionPointOfYoungerShadowRoot(shadowElement);
         } else if (!root->olderShadowRoot()) {
             // There's assumed to always be a UA shadow that selects all nodes.
             // We don't actually add it, instead we just distribute the pool to the
@@ -356,7 +356,7 @@ void ElementShadow::clearDistribution()
     m_nodeToInsertionPoint.clear();
 
     for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot())
-        root->setInsertionPoint(0);
+        root->setShadowInsertionPointOfYoungerShadowRoot(0);
 }
 
 } // namespace
