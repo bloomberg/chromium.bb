@@ -1,3 +1,0 @@
-# Defines the Blink style for automatic reformatting.
-# http://clang.llvm.org/docs/ClangFormatStyleOptions.html
-BasedOnStyle: WebKit
