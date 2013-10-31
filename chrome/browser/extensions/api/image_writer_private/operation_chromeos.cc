@@ -17,17 +17,16 @@ using content::BrowserThread;
 namespace {
 
 void ClearImageBurner() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            base::Bind(&ClearImageBurner));
+    return;
+  }
+
   chromeos::DBusThreadManager::Get()->
       GetImageBurnerClient()->
       ResetEventHandlers();
-}
-
-void CleanUpImageBurner() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(&ClearImageBurner));
 }
 
 }  // namespace
@@ -40,7 +39,7 @@ void Operation::WriteStart() {
                           FROM_HERE,
                           base::Bind(&Operation::StartWriteOnUIThread, this));
 
-  AddCleanUpFunction(base::Bind(&CleanUpImageBurner));
+  AddCleanUpFunction(base::Bind(&ClearImageBurner));
 }
 
 void Operation::StartWriteOnUIThread() {

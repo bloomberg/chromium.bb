@@ -128,10 +128,11 @@ void Operation::SetStage(image_writer_api::Stage stage) {
 }
 
 void Operation::Finish() {
-  if (BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
     BrowserThread::PostTask(BrowserThread::FILE,
                             FROM_HERE,
                             base::Bind(&Operation::Finish, this));
+    return;
   }
   DVLOG(1) << "Write operation complete.";
 
@@ -158,6 +159,7 @@ void Operation::AddCleanUpFunction(base::Closure callback) {
 }
 
 void Operation::CleanUp() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   for (std::vector<base::Closure>::iterator it = cleanup_functions_.begin();
        it != cleanup_functions_.end();
        ++it) {
