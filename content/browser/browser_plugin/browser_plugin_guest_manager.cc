@@ -73,7 +73,10 @@ BrowserPluginGuest* BrowserPluginGuestManager::CreateGuest(
     guest_site_instance =
         embedder_site_instance->GetRelatedSiteInstance(GURL(params.src));
   } else {
-    // Only trust |embedder_frame_url| reported by a WebUI renderer.
+    // We usually require BrowserPlugins to be hosted by a storage isolated
+    // extension. We treat WebUI pages as a special case if they host the
+    // BrowserPlugin in a component extension iframe. In that case, we use the
+    // iframe's URL to determine the extension.
     const GURL& embedder_site_url = embedder_site_instance->GetSiteURL();
     GURL validated_frame_url(params.embedder_frame_url);
     RenderViewHost::FilterURL(

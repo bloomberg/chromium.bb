@@ -12,8 +12,9 @@
 
 using content::WebContents;
 
-AdViewGuest::AdViewGuest(WebContents* guest_web_contents)
-    : GuestView(guest_web_contents),
+AdViewGuest::AdViewGuest(WebContents* guest_web_contents,
+                         const std::string& extension_id)
+    : GuestView(guest_web_contents, extension_id),
       WebContentsObserver(guest_web_contents) {
 }
 

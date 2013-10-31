@@ -19,7 +19,8 @@
 class AdViewGuest : public GuestView,
                     public content::WebContentsObserver {
  public:
-  explicit AdViewGuest(content::WebContents* guest_web_contents);
+  AdViewGuest(content::WebContents* guest_web_contents,
+              const std::string& extension_id);
 
   static AdViewGuest* From(int embedder_process_id, int instance_id);
 

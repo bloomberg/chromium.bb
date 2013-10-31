@@ -823,10 +823,37 @@ content::WebContentsViewDelegate*
 }
 
 void ChromeContentBrowserClient::GuestWebContentsCreated(
+    SiteInstance* guest_site_instance,
     WebContents* guest_web_contents,
     WebContents* opener_web_contents,
     content::BrowserPluginGuestDelegate** guest_delegate,
     scoped_ptr<base::DictionaryValue> extra_params) {
+  if (!guest_site_instance) {
+    NOTREACHED();
+    return;
+  }
+  GURL guest_site_url = guest_site_instance->GetSiteURL();
+  const std::string& extension_id = guest_site_url.host();
+
+  Profile* profile = Profile::FromBrowserContext(
+      guest_web_contents->GetBrowserContext());
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  if (!service) {
+    NOTREACHED();
+    return;
+  }
+
+  /// TODO(fsamuel): In the future, certain types of GuestViews won't require
+  // extension bindings. At that point, we should clear |extension_id| instead
+  // of exiting early.
+  if (!service->GetExtensionById(extension_id, false) &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserPluginForAllViewTypes)) {
+    NOTREACHED();
+    return;
+  }
+
   if (opener_web_contents) {
     GuestView* guest = GuestView::FromWebContents(opener_web_contents);
     if (!guest) {
@@ -836,7 +863,9 @@ void ChromeContentBrowserClient::GuestWebContentsCreated(
 
     // Create a new GuestView of the same type as the opener.
     *guest_delegate =
-        GuestView::Create(guest_web_contents, guest->GetViewType());
+        GuestView::Create(guest_web_contents,
+                          extension_id,
+                          guest->GetViewType());
     return;
   }
 
@@ -847,48 +876,29 @@ void ChromeContentBrowserClient::GuestWebContentsCreated(
   std::string api_type;
   extra_params->GetString(guestview::kParameterApi, &api_type);
 
+  if (api_type.empty())
+    return;
+
   *guest_delegate =
       GuestView::Create(guest_web_contents,
+                        extension_id,
                         GuestView::GetViewTypeFromString(api_type));
 }
 
 void ChromeContentBrowserClient::GuestWebContentsAttached(
     WebContents* guest_web_contents,
     WebContents* embedder_web_contents,
-    const GURL& embedder_frame_url,
     const base::DictionaryValue& extra_params) {
-  Profile* profile = Profile::FromBrowserContext(
-      embedder_web_contents->GetBrowserContext());
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  if (!service) {
-    NOTREACHED();
-    return;
-  }
 
-  // We usually require BrowserPlugins to be hosted by a storage isolated
-  // extension. We treat WebUI pages as a special case if they host the
-  // BrowserPlugin in a component extension iframe. In that case, we use the
-  // iframe's URL to determine the extension.
-  const GURL& embedder_site_url =
-      embedder_web_contents->GetSiteInstance()->GetSiteURL();
-  const Extension* extension = service->extensions()->GetExtensionOrAppByURL(
-      content::HasWebUIScheme(embedder_site_url) ?
-          embedder_frame_url : embedder_site_url);
-  if (!extension) {
+  GuestView* guest = GuestView::FromWebContents(guest_web_contents);
+  if (!guest) {
     // It's ok to return here, since we could be running a browser plugin
     // outside an extension, and don't need to attach a
     // BrowserPluginGuestDelegate in that case;
     // e.g. running with flag --enable-browser-plugin-for-all-view-types.
     return;
   }
-
-  GuestView* guest = GuestView::FromWebContents(guest_web_contents);
-  if (!guest) {
-    NOTREACHED();
-    return;
-  }
-  guest->Attach(embedder_web_contents, extension->id(), extra_params);
+  guest->Attach(embedder_web_contents, extra_params);
 }
 
 void ChromeContentBrowserClient::RenderProcessHostCreated(

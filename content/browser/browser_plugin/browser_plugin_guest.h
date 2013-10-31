@@ -64,6 +64,7 @@ class BrowserPluginEmbedder;
 class BrowserPluginGuestManager;
 class RenderProcessHost;
 class RenderWidgetHostView;
+class SiteInstance;
 struct DropData;
 struct MediaStreamRequest;
 
@@ -86,8 +87,16 @@ class CONTENT_EXPORT BrowserPluginGuest
   typedef base::Callback<void(bool)> GeolocationCallback;
   virtual ~BrowserPluginGuest();
 
+  // The WebContents passed into the factory method here has not been
+  // initialized yet and so it does not yet hold a SiteInstance.
+  // BrowserPluginGuest must be constructed and installed into a WebContents
+  // prior to its initialization because WebContents needs to determine what
+  // type of WebContentsView to construct on initialization. The content
+  // embedder needs to be aware of |guest_site_instance| on the guest's
+  // construction and so we pass it in here.
   static BrowserPluginGuest* Create(
       int instance_id,
+      SiteInstance* guest_site_instance,
       WebContentsImpl* web_contents,
       scoped_ptr<base::DictionaryValue> extra_params);
 

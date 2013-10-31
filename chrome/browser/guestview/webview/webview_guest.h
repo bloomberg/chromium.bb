@@ -26,14 +26,14 @@ class WebViewGuest : public GuestView,
                      public content::NotificationObserver,
                      public content::WebContentsObserver {
  public:
-  explicit WebViewGuest(content::WebContents* guest_web_contents);
+  WebViewGuest(content::WebContents* guest_web_contents,
+               const std::string& extension_id);
 
   static WebViewGuest* From(int embedder_process_id, int instance_id);
   static WebViewGuest* FromWebContents(content::WebContents* contents);
 
   // GuestView implementation.
   virtual void Attach(content::WebContents* embedder_web_contents,
-                      const std::string& extension_id,
                       const base::DictionaryValue& args) OVERRIDE;
   virtual GuestView::Type GetViewType() const OVERRIDE;
   virtual WebViewGuest* AsWebView() OVERRIDE;

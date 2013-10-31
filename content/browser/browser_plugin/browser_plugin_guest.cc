@@ -636,6 +636,7 @@ BrowserPluginGuest::~BrowserPluginGuest() {
 // static
 BrowserPluginGuest* BrowserPluginGuest::Create(
     int instance_id,
+    SiteInstance* guest_site_instance,
     WebContentsImpl* web_contents,
     scoped_ptr<base::DictionaryValue> extra_params) {
   RecordAction(UserMetricsAction("BrowserPlugin.Guest.Create"));
@@ -649,7 +650,7 @@ BrowserPluginGuest* BrowserPluginGuest::Create(
   web_contents->SetBrowserPluginGuest(guest);
   BrowserPluginGuestDelegate* delegate = NULL;
   GetContentClient()->browser()->GuestWebContentsCreated(
-      web_contents, NULL, &delegate, extra_params.Pass());
+      guest_site_instance, web_contents, NULL, &delegate, extra_params.Pass());
   guest->SetDelegate(delegate);
   return guest;
 }
@@ -666,6 +667,7 @@ BrowserPluginGuest* BrowserPluginGuest::CreateWithOpener(
   web_contents->SetBrowserPluginGuest(guest);
   BrowserPluginGuestDelegate* delegate = NULL;
   GetContentClient()->browser()->GuestWebContentsCreated(
+      opener->GetWebContents()->GetSiteInstance(),
       web_contents, opener->GetWebContents(), &delegate,
       scoped_ptr<base::DictionaryValue>());
   guest->SetDelegate(delegate);

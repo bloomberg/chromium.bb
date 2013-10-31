@@ -60,6 +60,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual content::WebContentsViewDelegate* GetWebContentsViewDelegate(
       content::WebContents* web_contents) OVERRIDE;
   virtual void GuestWebContentsCreated(
+      content::SiteInstance* guest_site_instance,
       content::WebContents* guest_web_contents,
       content::WebContents* opener_web_contents,
       content::BrowserPluginGuestDelegate** guest_delegate,
@@ -67,7 +68,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual void GuestWebContentsAttached(
       content::WebContents* guest_web_contents,
       content::WebContents* embedder_web_contents,
-      const GURL& embedder_frame_url,
       const base::DictionaryValue& extra_params) OVERRIDE;
   virtual void RenderProcessHostCreated(
       content::RenderProcessHost* host) OVERRIDE;

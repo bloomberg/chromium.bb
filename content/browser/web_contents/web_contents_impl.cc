@@ -450,7 +450,7 @@ BrowserPluginGuest* WebContentsImpl::CreateGuest(
   // This makes |new_contents| act as a guest.
   // For more info, see comment above class BrowserPluginGuest.
   BrowserPluginGuest::Create(
-      guest_instance_id, new_contents, extra_params.Pass());
+      guest_instance_id, site_instance, new_contents, extra_params.Pass());
 
   WebContents::CreateParams create_params(browser_context, site_instance);
   new_contents->Init(create_params);

@@ -178,11 +178,6 @@ void BrowserPluginEmbedder::OnAttach(
       GetBrowserPluginGuestManager()->GetGuestByInstanceID(
           instance_id, web_contents()->GetRenderProcessHost()->GetID());
 
-  RenderProcessHost* render_process_host =
-      web_contents()->GetRenderProcessHost();
-  GURL validated_frame_url(params.embedder_frame_url);
-  RenderViewHost::FilterURL(render_process_host, false, &validated_frame_url);
-
   if (guest) {
     // There is an implicit order expectation here:
     // 1. The content embedder is made aware of the attachment.
@@ -192,7 +187,6 @@ void BrowserPluginEmbedder::OnAttach(
     GetContentClient()->browser()->GuestWebContentsAttached(
         guest->GetWebContents(),
         web_contents(),
-        validated_frame_url,
         extra_params);
     guest->Attach(
         static_cast<WebContentsImpl*>(web_contents()), params, extra_params);
@@ -208,7 +202,6 @@ void BrowserPluginEmbedder::OnAttach(
     GetContentClient()->browser()->GuestWebContentsAttached(
         guest->GetWebContents(),
         web_contents(),
-        validated_frame_url,
         extra_params);
     guest->Initialize(static_cast<WebContentsImpl*>(web_contents()), params);
   }

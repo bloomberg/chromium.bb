@@ -107,8 +107,9 @@ void AttachWebViewHelpers(WebContents* contents) {
 
 }  // namespace
 
-WebViewGuest::WebViewGuest(WebContents* guest_web_contents)
-    : GuestView(guest_web_contents),
+WebViewGuest::WebViewGuest(WebContents* guest_web_contents,
+                           const std::string& extension_id)
+    : GuestView(guest_web_contents, extension_id),
       WebContentsObserver(guest_web_contents),
       script_executor_(new extensions::ScriptExecutor(guest_web_contents,
                                                       &script_observers_)),
@@ -141,7 +142,6 @@ WebViewGuest* WebViewGuest::FromWebContents(WebContents* contents) {
 }
 
 void WebViewGuest::Attach(WebContents* embedder_web_contents,
-                          const std::string& extension_id,
                           const base::DictionaryValue& args) {
   std::string user_agent_override;
   if (args.GetString(webview::kParameterUserAgentOverride,
@@ -151,8 +151,7 @@ void WebViewGuest::Attach(WebContents* embedder_web_contents,
     SetUserAgentOverride("");
   }
 
-  GuestView::Attach(
-      embedder_web_contents, extension_id, args);
+  GuestView::Attach(embedder_web_contents, args);
 
   AddWebViewToExtensionRendererState();
 }

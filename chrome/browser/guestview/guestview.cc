@@ -41,9 +41,11 @@ scoped_ptr<DictionaryValue> GuestView::Event::GetArguments() {
   return args_.Pass();
 }
 
-GuestView::GuestView(WebContents* guest_web_contents)
+GuestView::GuestView(WebContents* guest_web_contents,
+                     const std::string& extension_id)
     : guest_web_contents_(guest_web_contents),
       embedder_web_contents_(NULL),
+      extension_id_(extension_id),
       embedder_render_process_id_(0),
       browser_context_(guest_web_contents->GetBrowserContext()),
       guest_instance_id_(guest_web_contents->GetEmbeddedInstanceID()),
@@ -64,12 +66,13 @@ GuestView::Type GuestView::GetViewTypeFromString(const std::string& api_type) {
 
 // static
 GuestView* GuestView::Create(WebContents* guest_web_contents,
+                             const std::string& extension_id,
                              GuestView::Type view_type) {
   switch (view_type) {
     case GuestView::WEBVIEW:
-      return new WebViewGuest(guest_web_contents);
+      return new WebViewGuest(guest_web_contents, extension_id);
     case GuestView::ADVIEW:
-      return new AdViewGuest(guest_web_contents);
+      return new AdViewGuest(guest_web_contents, extension_id);
     default:
       NOTREACHED();
       return NULL;
@@ -92,12 +95,10 @@ GuestView* GuestView::From(int embedder_process_id, int guest_instance_id) {
 }
 
 void GuestView::Attach(content::WebContents* embedder_web_contents,
-                       const std::string& extension_id,
                        const base::DictionaryValue& args) {
   embedder_web_contents_ = embedder_web_contents;
   embedder_render_process_id_ =
       embedder_web_contents->GetRenderProcessHost()->GetID();
-  extension_id_ = extension_id;
   args.GetInteger(guestview::kParameterInstanceId, &view_instance_id_);
 
   std::pair<int, int> key(embedder_render_process_id_, guest_instance_id_);
