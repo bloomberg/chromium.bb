@@ -212,7 +212,7 @@ define UPLOAD_RULE
 .PHONY: upload-$(1)
 upload-$(1): revision-check
 	@echo "Uploading $$(notdir $$($(1)_UPLOADS)) to $$($(1)_CONTINUOUS_DIR)"
-	@$(GSUTIL) -q cp -a public-read $$($(1)_UPLOADS) $$($(1)_CONTINUOUS_DIR)
+	@$(GSUTIL) cp -q -a public-read $$($(1)_UPLOADS) $$($(1)_CONTINUOUS_DIR)
 
 upload: upload-$(1)
 endef
@@ -236,7 +236,7 @@ publish-$(1): revision-check
 	    exit 1; \
 	  fi;
 	@echo "Publishing..."
-	@$(GSUTIL) -q cp -p $$($(1)_CONTINUOUS_UPLOADS) $$($(1)_PUBLISH_DIR)
+	@$(GSUTIL) cp -q -p $$($(1)_CONTINUOUS_UPLOADS) $$($(1)_PUBLISH_DIR)
 	@echo "Done."
 
 publish: publish-$(1)
