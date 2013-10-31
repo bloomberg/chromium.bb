@@ -13,7 +13,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
@@ -130,39 +129,6 @@ DBInitStatus LevelDBStatusToDBInitStatus(const leveldb::Status status) {
   if (status.IsIOError())
     return DB_INIT_IO_ERROR;
   return DB_INIT_FAILED;
-}
-
-// Returns true when the status indicates an unrecoverable error.
-bool IsUnrecoverableError(const leveldb::Status& status) {
-  leveldb_env::MethodID method;
-  int error = 0;
-  leveldb_env::ErrorParsingResult result = leveldb_env::ParseMethodAndError(
-      status.ToString().c_str(), &method, &error);
-  switch (result) {
-    case leveldb_env::METHOD_ONLY:
-    case leveldb_env::NONE:
-      return false;
-    case leveldb_env::METHOD_AND_PFE:
-      switch (static_cast<base::PlatformFileError>(error)) {
-        case base::PLATFORM_FILE_ERROR_TOO_MANY_OPENED:
-        case base::PLATFORM_FILE_ERROR_NO_MEMORY:
-        case base::PLATFORM_FILE_ERROR_NO_SPACE:
-          return true;
-        default:
-          return false;
-      }
-    case leveldb_env::METHOD_AND_ERRNO:
-      switch (error) {
-        case EMFILE:
-        case ENOMEM:
-        case ENOSPC:
-          return true;
-        default:
-          return false;
-      }
-  }
-  NOTREACHED();
-  return false;
 }
 
 ResourceMetadataHeader GetDefaultHeaderEntry() {
@@ -451,9 +417,6 @@ bool ResourceMetadataStorage::Initialize() {
   UMA_HISTOGRAM_ENUMERATION("Drive.MetadataDBOpenExistingResult",
                             open_existing_result,
                             DB_INIT_MAX_VALUE);
-
-  if (IsUnrecoverableError(status))
-    return false;
 
   DBInitStatus init_result = DB_INIT_SUCCESS;
 
