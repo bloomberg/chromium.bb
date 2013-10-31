@@ -296,4 +296,6 @@ interface TestObjectPython {
     void voidMethodDefaultUndefinedLongArg([Default=Undefined] optional long defaultUndefinedLongArg);
     void voidMethodDefaultUndefinedStringArg([Default=Undefined] optional DOMString defaultUndefinedStringArg);
     void voidMethodDefaultNullStringStringArg([Default=NullString] optional DOMString defaultNullStringStringArg);
+    // [EnforceRange]
+    void voidMethodEnforceRangeLongArg([EnforceRange] long enforceRangeLongArg);
 };
