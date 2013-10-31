@@ -6,6 +6,7 @@ import logging
 import os
 import posixpath
 
+from compiled_file_system import SingleFile
 from file_system import FileNotFoundError
 from future import Gettable, Future
 from schema_util import ProcessSchema
@@ -13,6 +14,7 @@ from svn_constants import API_PATH
 from third_party.json_schema_compiler.model import Namespace, UnixName
 
 
+@SingleFile
 def _CreateAPIModel(path, data):
   schema = ProcessSchema(path, data)
   if os.path.splitext(path)[1] == '.json':

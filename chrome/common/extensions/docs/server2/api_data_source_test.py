@@ -76,11 +76,8 @@ class APIDataSourceTest(unittest.TestCase):
     self._base_path = os.path.join(sys.path[0], 'test_data', 'test_json')
     self._compiled_fs_factory = CompiledFileSystem.Factory(
         ObjectStoreCreator.ForTest())
-    self._json_cache = self._compiled_fs_factory.Create(
-        TestFileSystem(CANNED_TEST_FILE_SYSTEM_DATA),
-        lambda _, json: json_parse.Parse(json),
-        APIDataSourceTest,
-        'test')
+    self._json_cache = self._compiled_fs_factory.ForJson(
+        TestFileSystem(CANNED_TEST_FILE_SYSTEM_DATA))
 
   def _ReadLocalFile(self, filename):
     with open(os.path.join(self._base_path, filename), 'r') as f:

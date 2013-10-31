@@ -8,6 +8,7 @@ import posixpath
 import traceback
 
 from branch_utility import BranchUtility
+from compiled_file_system import CompiledFileSystem, SingleFile
 from file_system import FileNotFoundError
 from third_party.json_schema_compiler.model import UnixName
 import svn_constants
@@ -26,6 +27,7 @@ class PathCanonicalizer(object):
   '''
   def __init__(self, compiled_fs_factory, file_system):
     # Map of simplified API names (for typo detection) to their real paths.
+    @SingleFile
     def make_public_apis(_, file_names):
       return dict((_SimplifyFileName(name), name) for name in file_names)
     self._public_apis = compiled_fs_factory.Create(file_system,

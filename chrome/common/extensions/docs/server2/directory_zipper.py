@@ -6,6 +6,8 @@ from io import BytesIO
 import posixpath
 from zipfile import ZipFile
 
+from compiled_file_system import SingleFile
+
 
 class DirectoryZipper(object):
   '''Creates zip files of whole directories.
@@ -17,6 +19,10 @@ class DirectoryZipper(object):
                                                  self._MakeZipFile,
                                                  DirectoryZipper)
 
+  # NOTE: It's ok to specify SingleFile here even though this method reads
+  # multiple files. All files are underneath |base_dir|. If any file changes its
+  # stat will change, so the stat of |base_dir| will also change.
+  @SingleFile
   def _MakeZipFile(self, base_dir, files):
     base_dir = base_dir.strip('/')
     zip_bytes = BytesIO()

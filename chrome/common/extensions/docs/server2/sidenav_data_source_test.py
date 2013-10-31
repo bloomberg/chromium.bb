@@ -7,6 +7,7 @@ import json
 import unittest
 
 from compiled_file_system import CompiledFileSystem
+from mock_file_system import MockFileSystem
 from object_store_creator import ObjectStoreCreator
 from server_instance import ServerInstance
 from servlet import Request
@@ -101,7 +102,7 @@ class SamplesDataSourceTest(unittest.TestCase):
     self.assertEqual(2, len(log_output))
 
   def testSidenavDataSource(self):
-    file_system = TestFileSystem({
+    file_system = MockFileSystem(TestFileSystem({
       'apps_sidenav.json': json.dumps([{
         'title': 'H1',
         'href': 'H1.html',
@@ -110,7 +111,7 @@ class SamplesDataSourceTest(unittest.TestCase):
           'href': '/H2.html'
         }]
       }])
-    }, relative_to='docs/templates/json')
+    }, relative_to='docs/templates/json'))
 
     expected = [{
       'level': 2,
@@ -127,6 +128,7 @@ class SamplesDataSourceTest(unittest.TestCase):
 
     sidenav_data_source = SidenavDataSource(
         ServerInstance.ForTest(file_system), Request.ForTest('/H2.html'))
+    self.assertTrue(*file_system.CheckAndReset())
 
     log_output = CaptureLogging(
         lambda: self.assertEqual(expected, sidenav_data_source.get('apps')))
@@ -134,6 +136,11 @@ class SamplesDataSourceTest(unittest.TestCase):
     self.assertEqual(1, len(log_output))
     self.assertTrue(
         log_output[0].msg.startswith('Paths in sidenav must be qualified.'))
+
+    # Test that only a single file is read when creating the sidenav, so that
+    # we can be confident in the compiled_file_system.SingleFile annotation.
+    self.assertTrue(*file_system.CheckAndReset(
+        read_count=1, stat_count=1, read_resolve_count=1))
 
   def testCron(self):
     file_system = TestFileSystem({

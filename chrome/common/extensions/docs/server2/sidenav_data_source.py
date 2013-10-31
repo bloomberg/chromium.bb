@@ -5,6 +5,7 @@
 import copy
 import logging
 
+from compiled_file_system import SingleFile
 from data_source import DataSource
 from future import Gettable, Future
 from third_party.json_schema_compiler.json_parse import Parse
@@ -50,6 +51,7 @@ class SidenavDataSource(DataSource):
     self._server_instance = server_instance
     self._request = request
 
+  @SingleFile
   def _CreateSidenavDict(self, _, content):
     items = Parse(content)
     # Start at level 2, the top <ul> element is level 1.

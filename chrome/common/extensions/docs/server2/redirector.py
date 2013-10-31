@@ -6,14 +6,12 @@ import posixpath
 from urlparse import urlsplit
 
 from file_system import FileNotFoundError
-from third_party.json_schema_compiler.json_parse import Parse
 
 class Redirector(object):
   def __init__(self, compiled_fs_factory, file_system, root_path):
     self._root_path = root_path
     self._file_system = file_system
-    self._cache = compiled_fs_factory.Create(
-        file_system, lambda _, rules: Parse(rules), Redirector)
+    self._cache = compiled_fs_factory.ForJson(file_system)
 
   def Redirect(self, host, path):
     ''' Check if a path should be redirected, first according to host

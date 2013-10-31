@@ -12,6 +12,19 @@ from third_party.json_schema_compiler import json_parse
 from third_party.json_schema_compiler.memoize import memoize
 
 
+_SINGLE_FILE_FUNCTIONS = set()
+
+
+def SingleFile(fn):
+  '''A decorator which can be optionally applied to the compilation function
+  passed to CompiledFileSystem.Create, indicating that the function only
+  needs access to the file which is given in the function's callback. When
+  this is the case some optimisations can be done.
+  '''
+  _SINGLE_FILE_FUNCTIONS.add(fn)
+  return fn
+
+
 class _CacheEntry(object):
   def __init__(self, cache_data, version):
 
@@ -30,10 +43,10 @@ class CompiledFileSystem(object):
     def __init__(self, object_store_creator):
       self._object_store_creator = object_store_creator
 
-    def Create(self, file_system, populate_function, cls, category=None):
+    def Create(self, file_system, compilation_function, cls, category=None):
       '''Creates a CompiledFileSystem view over |file_system| that populates
-      its cache by calling |populate_function| with (path, data), where |data|
-      is the data that was fetched from |path| in |file_system|.
+      its cache by calling |compilation_function| with (path, data), where
+      |data| is the data that was fetched from |path| in |file_system|.
 
       The namespace for the compiled file system is derived similar to
       ObjectStoreCreator: from |cls| along with an optional |category|.
@@ -44,10 +57,18 @@ class CompiledFileSystem(object):
       if category is not None:
         full_name.append(category)
       def create_object_store(my_category):
+        # The read caches can start populated (start_empty=False) because file
+        # updates are picked up by the stat - but only if the compilation
+        # function is affected by a single file. If the compilation function is
+        # affected by other files (e.g. compiling a list of APIs available to
+        # extensions may be affected by both a features file and the list of
+        # files in the API directory) then this optimisation won't work.
         return self._object_store_creator.Create(
-            CompiledFileSystem, category='/'.join(full_name + [my_category]))
+            CompiledFileSystem,
+            category='/'.join(full_name + [my_category]),
+            start_empty=compilation_function not in _SINGLE_FILE_FUNCTIONS)
       return CompiledFileSystem(file_system,
-                                populate_function,
+                                compilation_function,
                                 create_object_store('file'),
                                 create_object_store('list'))
 
@@ -57,7 +78,7 @@ class CompiledFileSystem(object):
       These are memoized over file systems tied to different branches.
       '''
       return self.Create(file_system,
-                         lambda _, data: json_parse.Parse(data),
+                         SingleFile(lambda _, data: json_parse.Parse(data)),
                          CompiledFileSystem,
                          category='json')
 
@@ -68,7 +89,7 @@ class CompiledFileSystem(object):
       as Model and APISchemaGraph.
       '''
       return self.Create(file_system,
-                         schema_util.ProcessSchema,
+                         SingleFile(schema_util.ProcessSchema),
                          CompiledFileSystem,
                          category='api-schema')
 
@@ -76,17 +97,18 @@ class CompiledFileSystem(object):
     def ForTemplates(self, file_system):
       '''Creates a CompiledFileSystem for parsing templates.
       '''
-      return self.Create(file_system,
-                         lambda path, text: Handlebar(text, name=path),
-                         CompiledFileSystem)
+      return self.Create(
+          file_system,
+          SingleFile(lambda path, text: Handlebar(text, name=path)),
+          CompiledFileSystem)
 
   def __init__(self,
                file_system,
-               populate_function,
+               compilation_function,
                file_object_store,
                list_object_store):
     self._file_system = file_system
-    self._populate_function = populate_function
+    self._compilation_function = compilation_function
     self._file_object_store = file_object_store
     self._list_object_store = list_object_store
 
@@ -146,7 +168,7 @@ class CompiledFileSystem(object):
     return Future(delegate=Gettable(resolve))
 
   def GetFromFile(self, path, binary=False):
-    '''Calls |populate_function| on the contents of the file at |path|.  If
+    '''Calls |compilation_function| on the contents of the file at |path|.  If
     |binary| is True then the file will be read as binary - but this will only
     apply for the first time the file is fetched; if already cached, |binary|
     will be ignored.
@@ -162,13 +184,13 @@ class CompiledFileSystem(object):
 
     future_files = self._file_system.ReadSingle(path, binary=binary)
     def resolve():
-      cache_data = self._populate_function(path, future_files.Get())
+      cache_data = self._compilation_function(path, future_files.Get())
       self._file_object_store.Set(path, _CacheEntry(cache_data, version))
       return cache_data
     return Future(delegate=Gettable(resolve))
 
   def GetFromFileListing(self, path):
-    '''Calls |populate_function| on the listing of the files at |path|.
+    '''Calls |compilation_function| on the listing of the files at |path|.
     Assumes that the path given is to a directory.
     '''
     if not path.endswith('/'):
@@ -185,7 +207,7 @@ class CompiledFileSystem(object):
 
     recursive_list_future = self._RecursiveList(path)
     def resolve():
-      cache_data = self._populate_function(path, recursive_list_future.Get())
+      cache_data = self._compilation_function(path, recursive_list_future.Get())
       self._list_object_store.Set(path, _CacheEntry(cache_data, version))
       return cache_data
     return Future(delegate=Gettable(resolve))

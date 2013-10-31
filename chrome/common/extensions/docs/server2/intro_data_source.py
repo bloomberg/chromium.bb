@@ -79,6 +79,10 @@ class IntroDataSource(object):
       api_name = os.path.splitext(intro_path.split('/')[-1])[0]
       intro_with_links = self._ref_resolver.ResolveAllLinks(intro,
                                                             namespace=api_name)
+      # TODO(kalman): Do $ref replacement after rendering the template, not
+      # before, so that (a) $ref links can contain template annotations, and (b)
+      # we can use CompiledFileSystem.ForTemplates to create the templates and
+      # save ourselves some effort.
       apps_parser = _IntroParser()
       apps_parser.feed(Handlebar(intro_with_links).render(
           { 'is_apps': True }).text)

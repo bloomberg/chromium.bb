@@ -528,10 +528,8 @@ class APIDataSource(object):
       self._base_path = base_path
       self._availability_finder = availability_finder
       self._branch_utility = branch_utility
-      self._parse_cache = create_compiled_fs(
-          lambda _, json: json_parse.Parse(json),
-          'intro-cache')
 
+      self._parse_cache = compiled_fs_factory.ForJson(file_system)
       self._template_cache = compiled_fs_factory.ForTemplates(file_system)
 
       # These must be set later via the SetFooDataSourceFactory methods.
