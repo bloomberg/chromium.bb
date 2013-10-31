@@ -10,6 +10,7 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_implementation_linux.h"
 #include "ui/gl/gl_osmesa_api_implementation.h"
+#include "ui/ozone/ozone_platform.h"
 
 namespace gfx {
 
@@ -42,6 +43,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
     case kGLImplementationOSMesaGL:
       return InitializeGLBindingsOSMesaGL();
     case kGLImplementationEGLGLES2:
+      ui::OzonePlatform::Initialize();
       if (!gfx::SurfaceFactoryOzone::GetInstance()->LoadEGLGLES2Bindings(
               base::Bind(&AddGLNativeLibrary),
               base::Bind(&SetGLGetProcAddressProc)))

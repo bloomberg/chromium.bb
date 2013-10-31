@@ -407,7 +407,7 @@
           'chrome/browser/ui/webui/options/',
     },
     'ozone': {
-      'filepath': 'ui/base/ozone/|'\
+      'filepath': 'ui/ozone/|'\
         'ui/events/ozone/|'\
         'ui/gfx/ozone/|'\
         'ui/gl/gl_.*egl.*|'\

@@ -282,6 +282,11 @@
         ['OS!="android"', {
           'sources/': [ ['exclude', '^android/'] ],
         }],
+        ['use_ozone==1', {
+          'dependencies': [
+            '../ozone/ozone.gyp:ozone',
+          ],
+        }],
       ],
     },
     {

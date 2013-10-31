@@ -3,4 +3,5 @@ include_rules = [
   "+third_party/mesa/src/include",
   "+third_party/skia",
   "+ui/gfx",
+  "+ui/ozone",
 ]

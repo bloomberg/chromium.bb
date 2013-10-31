@@ -6,14 +6,14 @@
 
 #include "ui/aura/root_window.h"
 #include "ui/gfx/ozone/surface_factory_ozone.h"
+#include "ui/ozone/ozone_platform.h"
 
 namespace aura {
 
 RootWindowHostOzone::RootWindowHostOzone(const gfx::Rect& bounds)
-   : delegate_(NULL),
-      widget_(0),
-      bounds_(bounds),
-      factory_(ui::EventFactoryOzone::GetInstance()) {
+    : delegate_(NULL), widget_(0), bounds_(bounds) {
+  ui::OzonePlatform::Initialize();
+  factory_.reset(ui::EventFactoryOzone::GetInstance());
   factory_->StartProcessingEvents();
   gfx::SurfaceFactoryOzone* surface_factory =
       gfx::SurfaceFactoryOzone::GetInstance();

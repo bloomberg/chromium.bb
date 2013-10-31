@@ -1792,6 +1792,10 @@
       [ 'chromeos==1', {
         'use_brlapi%': 1,
       }],
+
+      ['use_ozone==1', {
+        'ozone_platform%': "test",
+      }],
     ],
 
 

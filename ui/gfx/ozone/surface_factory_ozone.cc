@@ -50,20 +50,7 @@ SurfaceFactoryOzone::~SurfaceFactoryOzone() {
 }
 
 SurfaceFactoryOzone* SurfaceFactoryOzone::GetInstance() {
-  if (!impl_) {
-    const char kOzoneFileSurface[] = "ozone-dump-file";
-    CommandLine* cmd = CommandLine::ForCurrentProcess();
-    if (cmd->HasSwitch(kOzoneFileSurface)) {
-      base::FilePath location = cmd->GetSwitchValuePath(kOzoneFileSurface);
-      if (location.empty())
-        location = base::FilePath("/dev/null");
-      impl_ = new FileSurfaceFactoryOzone(location);
-    } else {
-      LOG(WARNING) << "No SurfaceFactoryOzone implementation set. Using default"
-                      " gfx::SoftwareSurfaceFactoryOzone.";
-      impl_ = new SoftwareSurfaceFactoryOzone();
-    }
-  }
+  CHECK(impl_) << "No SurfaceFactoryOzone implementation set.";
   return impl_;
 }
 
