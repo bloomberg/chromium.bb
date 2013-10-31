@@ -1285,7 +1285,6 @@ internal_paladin.add_config('parrot-paladin',
 internal_paladin.add_config('rambi-paladin',
   boards=['rambi'],
   paladin_builder_name='rambi paladin',
-  important=False,
 )
 
 internal_paladin.add_config('samus-paladin',
