@@ -688,3 +688,20 @@ TEST_F('OptionsWebUINavigationTest', 'OverlayShowDoesntShift', function() {
   var numFrozenPages = frozenPages.length;
   expectGT(numFrozenPages, 0);
 });
+
+// Verify history changes properly while the page is loading.
+TEST_F('OptionsWebUINavigationTest', 'HistoryUpdatedAfterLoading', function() {
+  var loc = location.href;
+
+  document.documentElement.classList.add('loading');
+  assertTrue(OptionsPage.isLoading());
+  OptionsPage.navigateToPage('searchEngines');
+  expectNotEquals(loc, location.href);
+
+  document.documentElement.classList.remove('loading');
+  assertFalse(OptionsPage.isLoading());
+  OptionsPage.showDefaultPage();
+  expectEquals(loc, location.href);
+
+  testDone();
+});

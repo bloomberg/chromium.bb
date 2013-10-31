@@ -226,7 +226,7 @@ cr.define('options', function() {
 
     // The page is already in history (the user may have clicked the same link
     // twice). Do nothing.
-    if (path == page.name && this.loading)
+    if (path == page.name && !OptionsPage.isLoading())
       return;
 
     var hash = opt_params && opt_params.ignoreHash ? '' : window.location.hash;
@@ -744,6 +744,14 @@ cr.define('options', function() {
     return document.documentElement.classList.contains('settings-app');
   };
 
+  /**
+   * Whether the page is still loading (i.e. onload hasn't finished running).
+   * @return {boolean} Whether the page is still loading.
+   */
+  OptionsPage.isLoading = function() {
+    return document.documentElement.classList.contains('loading');
+  };
+
   OptionsPage.prototype = {
     __proto__: cr.EventTarget.prototype,
 
@@ -799,15 +807,6 @@ cr.define('options', function() {
     get container() {
       assert(this.isOverlay);
       return this.pageDiv.parentNode;
-    },
-
-    /**
-     * Whether the page is still loading (i.e. onload hasn't finished running).
-     * @return {boolean} Whether the page is still loading.
-     * @private
-     */
-    get loading() {
-      return document.documentElement.classList.contains('loading');
     },
 
     /**
@@ -881,7 +880,7 @@ cr.define('options', function() {
       }
 
       var self = this;
-      var loading = this.loading;
+      var loading = OptionsPage.isLoading();
       if (!loading) {
         // TODO(flackr): Use an event delegate to avoid having to subscribe and
         // unsubscribe for webkitTransitionEnd events.
