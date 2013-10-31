@@ -339,30 +339,29 @@ LayerTreeTest::LayerTreeTest()
 LayerTreeTest::~LayerTreeTest() {}
 
 void LayerTreeTest::EndTest() {
-  // For the case where we EndTest during BeginTest(), set a flag to indicate
-  // that the test should end the second BeginTest regains control.
+  if (ended_)
+    return;
   ended_ = true;
 
+  // For the case where we EndTest during BeginTest(), set a flag to indicate
+  // that the test should end the second BeginTest regains control.
   if (beginning_) {
     end_when_begin_returns_ = true;
-  } else if (proxy()) {
-    // Racy timeouts and explicit EndTest calls might have cleaned up
-    // the tree host. Should check proxy first.
-    proxy()->MainThreadTaskRunner()->PostTask(
+  } else {
+    main_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&LayerTreeTest::RealEndTest, main_thread_weak_ptr_));
   }
 }
 
 void LayerTreeTest::EndTestAfterDelay(int delay_milliseconds) {
-  proxy()->MainThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&LayerTreeTest::EndTest, main_thread_weak_ptr_));
+  main_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&LayerTreeTest::EndTest, main_thread_weak_ptr_));
 }
 
 void LayerTreeTest::PostAddAnimationToMainThread(
     Layer* layer_to_receive_animation) {
-  proxy()->MainThreadTaskRunner()->PostTask(
+  main_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&LayerTreeTest::DispatchAddAnimation,
                  main_thread_weak_ptr_,
@@ -371,7 +370,7 @@ void LayerTreeTest::PostAddAnimationToMainThread(
 
 void LayerTreeTest::PostAddInstantAnimationToMainThread(
     Layer* layer_to_receive_animation) {
-  proxy()->MainThreadTaskRunner()->PostTask(
+  main_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&LayerTreeTest::DispatchAddInstantAnimation,
                  main_thread_weak_ptr_,
@@ -379,49 +378,47 @@ void LayerTreeTest::PostAddInstantAnimationToMainThread(
 }
 
 void LayerTreeTest::PostSetNeedsCommitToMainThread() {
-  proxy()->MainThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&LayerTreeTest::DispatchSetNeedsCommit,
-                 main_thread_weak_ptr_));
+  main_task_runner_->PostTask(FROM_HERE,
+                              base::Bind(&LayerTreeTest::DispatchSetNeedsCommit,
+                                         main_thread_weak_ptr_));
 }
 
 void LayerTreeTest::PostReadbackToMainThread() {
-  proxy()->MainThreadTaskRunner()->PostTask(
+  main_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&LayerTreeTest::DispatchReadback, main_thread_weak_ptr_));
 }
 
 void LayerTreeTest::PostAcquireLayerTextures() {
-  proxy()->MainThreadTaskRunner()->PostTask(
+  main_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&LayerTreeTest::DispatchAcquireLayerTextures,
                  main_thread_weak_ptr_));
 }
 
 void LayerTreeTest::PostSetNeedsRedrawToMainThread() {
-  proxy()->MainThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&LayerTreeTest::DispatchSetNeedsRedraw,
-                 main_thread_weak_ptr_));
+  main_task_runner_->PostTask(FROM_HERE,
+                              base::Bind(&LayerTreeTest::DispatchSetNeedsRedraw,
+                                         main_thread_weak_ptr_));
 }
 
 void LayerTreeTest::PostSetNeedsRedrawRectToMainThread(gfx::Rect damage_rect) {
-  proxy()->MainThreadTaskRunner()->PostTask(
+  main_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&LayerTreeTest::DispatchSetNeedsRedrawRect,
-                 main_thread_weak_ptr_, damage_rect));
+                 main_thread_weak_ptr_,
+                 damage_rect));
 }
 
 void LayerTreeTest::PostSetVisibleToMainThread(bool visible) {
-  proxy()->MainThreadTaskRunner()->PostTask(
+  main_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&LayerTreeTest::DispatchSetVisible,
-                 main_thread_weak_ptr_,
-                 visible));
+      base::Bind(
+          &LayerTreeTest::DispatchSetVisible, main_thread_weak_ptr_, visible));
 }
 
 void LayerTreeTest::PostSetNextCommitForcesRedrawToMainThread() {
-  proxy()->MainThreadTaskRunner()->PostTask(
+  main_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&LayerTreeTest::DispatchSetNextCommitForcesRedraw,
                  main_thread_weak_ptr_));
@@ -479,14 +476,14 @@ void LayerTreeTest::ScheduleComposite() {
   if (!started_ || scheduled_)
     return;
   scheduled_ = true;
-  proxy()->MainThreadTaskRunner()->PostTask(
+  main_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&LayerTreeTest::DispatchComposite, main_thread_weak_ptr_));
 }
 
 void LayerTreeTest::RealEndTest() {
   if (layer_tree_host_ && proxy()->CommitPendingForTesting()) {
-    proxy()->MainThreadTaskRunner()->PostTask(
+    main_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&LayerTreeTest::RealEndTest, main_thread_weak_ptr_));
     return;
