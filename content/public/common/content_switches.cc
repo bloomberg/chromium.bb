@@ -489,6 +489,10 @@ const char kEnablePruneGpuCommandBuffers[] =
 const char kEnableRegionBasedColumns[] =
     "enable-region-based-columns";
 
+// Enables the new layout/paint system which paints after layout is complete.
+const char kEnableRepaintAfterLayout[] =
+    "enable-repaint-after-layout";
+
 // Cause the OS X sandbox write to syslog every time an access to a resource
 // is denied by the sandbox.
 const char kEnableSandboxLogging[]          = "enable-sandbox-logging";

@@ -150,6 +150,7 @@ extern const char kEnablePreparsedJsCaching[];
 CONTENT_EXPORT extern const char kEnablePrivilegedWebGLExtensions[];
 extern const char kEnablePruneGpuCommandBuffers[];
 CONTENT_EXPORT extern const char kEnableRegionBasedColumns[];
+extern const char kEnableRepaintAfterLayout[];
 extern const char kEnableSandboxLogging[];
 extern const char kEnableSkiaBenchmarking[];
 CONTENT_EXPORT extern const char kEnableSmoothScrolling[];

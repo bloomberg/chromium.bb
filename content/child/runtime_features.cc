@@ -154,6 +154,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   if (command_line.HasSwitch(switches::kEnableFastTextAutosizing))
     WebRuntimeFeatures::enableFastTextAutosizing(true);
+
+  if (command_line.HasSwitch(switches::kEnableRepaintAfterLayout))
+    WebRuntimeFeatures::enableRepaintAfterLayout(true);
 }
 
 }  // namespace content
