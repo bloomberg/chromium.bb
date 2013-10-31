@@ -243,7 +243,7 @@ capabilities, including:
 
 * :doc:`Talking to the JavaScript code in your application
   <devguide/coding/message-system>` from the C++ code in your NaCl module.
-* :doc:`Doing file I/O <devguide/coding/FileIO>`.
+* :doc:`Doing file I/O <devguide/coding/file-io>`.
 * :doc:`Playing audio <devguide/coding/audio>`.
 * :doc:`Rendering 3D graphics <devguide/coding/3D-graphics>`.
 

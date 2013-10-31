@@ -23,7 +23,7 @@ can be used by the application. For example, the Chrome browser supports the
 <http://www.html5rocks.com/en/tutorials/file/filesystem/>`_ which provides
 access to a protected area of the local file system. This filesystem can
 be accessed by an HTML page using JavaScript commands, and also by a Native
-Client module using the Pepper :doc:`File IO API <FileIO>`. With nacl_io
+Client module using the Pepper :doc:`File IO API <file-io>`. With nacl_io
 a Native Client application can mount an HTML5 filesystem and access it via
 standard POSIX I/O function such as ``fopen``, ``fseek``, ``fread``,
 ``fwrite``, and ``fclose``, or their low level UNIX counterparts ``open``,
