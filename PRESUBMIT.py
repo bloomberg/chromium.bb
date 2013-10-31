@@ -167,7 +167,6 @@ def GetPreferredTrySlaves(_, change):
       'nacl-precise_64-newlib-arm_qemu-pnacl',
       'nacl-precise_64-newlib-x86_32-pnacl',
       'nacl-precise_64-newlib-x86_64-pnacl',
-      'nacl-precise_64-newlib-x86_64-pnacl',
       # pnacl spec2k bots
       'nacl-arm_perf_panda',
       'nacl-precise_64-newlib-x86_32-pnacl-spec',

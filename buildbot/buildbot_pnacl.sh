@@ -373,55 +373,6 @@ llvm-regression() {
   ${LLVM_TEST} --llvm-regression --check-excludes || handle-error
 }
 
-# This function is shared between x86-32 and x86-64. All building and testing
-# is done on the same bot. Try runs are identical to buildbot runs
-#
-# Note: unlike its arm counterparts we do not run trusted tests on these bots.
-# Trusted tests get plenty of coverage by other bots, e.g. nacl-gcc bots.
-# We make the assumption here that there are no "exotic tests" which
-# are trusted in nature but are somehow depedent on the untrusted TC.
-mode-buildbot-x86() {
-  local arch="x86-$1"
-  FAIL_FAST=false
-  clobber
-
-  local flags_build="skip_trusted_tests=1 -k -j8 do_not_run_tests=1"
-  local flags_run="skip_trusted_tests=1 -k -j4"
-  # Normal pexe tests. Build all targets, then run (-j4 is a compromise to try
-  # to reduce cycle times without making output too difficult to follow)
-  # We also intentionally build more than we run for "coverage".
-  # specifying "" as the target which means "build everything"
-
-  scons-stage-noirt "${arch}" "${flags_build}" "${SCONS_EVERYTHING}"
-  scons-stage-noirt "${arch}" "${flags_run}"   "${SCONS_S_M}"
-  # Large tests cannot be run in parallel
-  scons-stage-noirt "${arch}" "${flags_run} -j1"  "large_tests"
-
-  # non-pexe tests (Do the build-everything step just to make sure it all still
-  # builds as non-pexe)
-  scons-stage-noirt "${arch}" "${flags_build} pnacl_generate_pexe=0" \
-      "${SCONS_EVERYTHING}"
-  scons-stage-noirt "${arch}" "${flags_run} pnacl_generate_pexe=0" \
-      "nonpexe_tests"
-
-  # also run some tests with the irt
-  scons-stage-irt "${arch}" "${flags_run}" "${SCONS_S_M_IRT}"
-
-  # sandboxed translation
-  build-sbtc-prerequisites ${arch}
-  scons-stage-irt "${arch}" "${flags_build} use_sandboxed_translator=1" \
-    "${SCONS_EVERYTHING}"
-  scons-stage-irt "${arch}" "${flags_run} use_sandboxed_translator=1" \
-    "${SCONS_S_M_IRT}"
-  scons-stage-irt "${arch}" \
-    "${flags_run} use_sandboxed_translator=1 translate_fast=1" \
-    "toolchain_tests"
-
-  # translator memory consumption regression test
-  scons-stage-irt "${arch}" "${flags_run} use_sandboxed_translator=1" \
-      "large_code"
-}
-
 # QEMU upload bot runs this function, and the hardware download bot runs
 # mode-buildbot-arm-hw
 mode-buildbot-arm() {

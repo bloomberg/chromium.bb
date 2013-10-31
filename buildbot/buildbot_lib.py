@@ -89,7 +89,7 @@ def ParseStandardCommandLine(context):
   if arch not in ARCH_MAP:
     parser.error('Invalid arch %r' % arch)
 
-  if clib not in ('newlib', 'glibc'):
+  if clib not in ('newlib', 'glibc', 'pnacl'):
     parser.error('Invalid clib %r' % clib)
 
   # TODO(ncbray) allow a command-line override
@@ -120,6 +120,7 @@ def ParseStandardCommandLine(context):
   if arch != 'arm' or platform == 'linux':
     context['default_scons_mode'] += [mode + '-host']
   context['use_glibc'] = clib == 'glibc'
+  context['pnacl'] = clib == 'pnacl'
   context['max_jobs'] = 8
   context['dry_run'] = options.dry_run
   context['inside_toolchain'] = options.inside_toolchain
@@ -235,6 +236,28 @@ def FileCanBeFound(name, paths):
   return False
 
 
+def RemoveGypBuildDirectories():
+  # Remove all directories on all platforms.  Overkill, but it allows for
+  # straight-line code.
+  # Windows
+  RemoveDirectory('build/Debug')
+  RemoveDirectory('build/Release')
+  RemoveDirectory('build/Debug-Win32')
+  RemoveDirectory('build/Release-Win32')
+  RemoveDirectory('build/Debug-x64')
+  RemoveDirectory('build/Release-x64')
+
+  # Linux and Mac
+  RemoveDirectory('../xcodebuild')
+  RemoveDirectory('../out')
+  RemoveDirectory('src/third_party/nacl_sdk/arm-newlib')
+
+
+def RemoveSconsBuildDirectories():
+  RemoveDirectory('scons-out')
+  RemoveDirectory('breakpad-out')
+
+
 # Execute a command using Python's subprocess module.
 def Command(context, cmd, cwd=None):
   print 'Running command: %s' % ' '.join(cmd)
@@ -304,6 +327,7 @@ def SCons(context, mode=None, platform=None, parallel=False, browser_test=False,
   if context['clang']: cmd.append('--clang')
   if context['asan']: cmd.append('--asan')
   if context['use_glibc']: cmd.append('--nacl_glibc')
+  if context['pnacl']: cmd.append('bitcode=1')
   if context['use_breakpad_tools']:
     cmd.append('breakpad_tools_dir=breakpad-out')
   # Append used-specified arguments.
