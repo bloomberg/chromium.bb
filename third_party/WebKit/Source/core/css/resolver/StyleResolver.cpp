@@ -1225,7 +1225,10 @@ bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Ani
             continue;
         RELEASE_ASSERT_WITH_MESSAGE(!iter->value->dependsOnUnderlyingValue(), "Web Animations not yet implemented: An interface for compositing onto the underlying value.");
         RefPtr<AnimatableValue> animatableValue = iter->value->compositeOnto(0);
-        AnimatedStyleBuilder::applyProperty(property, state, animatableValue.get());
+        if (pass == HighPriorityProperties && property == CSSPropertyLineHeight)
+            state.setLineHeightValue(toAnimatableLength(animatableValue.get())->toCSSValue().get());
+        else
+            AnimatedStyleBuilder::applyProperty(property, state, animatableValue.get());
         didApply = true;
     }
     return didApply;

@@ -79,6 +79,7 @@ crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Fai
 
 # The implementation of CSS Animations on the Web Animations model is still in progress
 # These can't be rebaselined because they're crashes.
+crbug.com/258896 virtual/web-animations-css/animations/line-height-animation.html [ Crash ]
 crbug.com/303430 virtual/web-animations-css/transitions/bad-transition-shorthand-crash.html [ Crash ]
 crbug.com/303430 virtual/web-animations-css/transitions/color-transition-all.html [ Crash ]
 crbug.com/303430 virtual/web-animations-css/transitions/equivalent-background-image-no-transition.html [ Crash ]
@@ -111,9 +112,6 @@ crbug.com/309963 animations/play-state-initially-paused.html [ Timeout ]
 crbug.com/309963 animations/play-state-initially-paused-start-event.html [ Timeout ]
 crbug.com/309963 virtual/threaded/animations/play-state-initially-paused.html [ Timeout ]
 crbug.com/309963 virtual/threaded/animations/play-state-initially-paused-start-event.html [ Timeout ]
-
-crbug.com/303430 [ Debug ] animations/interpolation/line-height-interpolation.html [ Crash ]
-crbug.com/303430 [ Debug ] virtual/threaded/animations/interpolation/line-height-interpolation.html [ Crash ]
 
 # This test is slow due to Mesa slowness.
 crbug.com/244481 virtual/gpu/canvas/philip/tests/2d.shadow.blur.low.html [ Skip ]
