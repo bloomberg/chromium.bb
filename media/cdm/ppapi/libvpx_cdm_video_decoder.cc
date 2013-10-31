@@ -27,7 +27,7 @@ namespace media {
 
 static const int kDecodeThreads = 2;
 
-LibvpxCdmVideoDecoder::LibvpxCdmVideoDecoder(cdm::Host* host)
+LibvpxCdmVideoDecoder::LibvpxCdmVideoDecoder(CdmHost* host)
     : is_initialized_(false),
       host_(host),
       vpx_codec_(NULL),
@@ -155,7 +155,7 @@ bool LibvpxCdmVideoDecoder::CopyVpxImageTo(cdm::VideoFrame* cdm_video_frame) {
   DCHECK(!cdm_video_frame->FrameBuffer());
   cdm_video_frame->SetFrameBuffer(host_->Allocate(space_required));
   if (!cdm_video_frame->FrameBuffer()) {
-    LOG(ERROR) << "CopyVpxImageTo() cdm::Host::Allocate failed.";
+    LOG(ERROR) << "CopyVpxImageTo() CdmHost::Allocate failed.";
     return false;
   }
   cdm_video_frame->FrameBuffer()->SetSize(space_required);

@@ -83,6 +83,7 @@
         'cdm/ppapi/cdm_video_decoder.h',
         'cdm/ppapi/clear_key_cdm.cc',
         'cdm/ppapi/clear_key_cdm.h',
+        'cdm/ppapi/clear_key_cdm_common.h',
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
