@@ -35,14 +35,6 @@ namespace WebCore {
 class HTMLTrackElement;
 class LoadableTextTrack;
 
-class LoadableTextTrackClient : public TextTrackClient {
-public:
-    virtual ~LoadableTextTrackClient() { }
-
-    virtual bool canLoadUrl(LoadableTextTrack*, const KURL&) { return false; }
-    virtual void loadingCompleted(LoadableTextTrack*, bool /* loadingFailed */) { }
-};
-
 class LoadableTextTrack : public TextTrack, private TextTrackLoaderClient {
 public:
     static PassRefPtr<LoadableTextTrack> create(HTMLTrackElement* track, const String& kind, const String& label, const String& language)
