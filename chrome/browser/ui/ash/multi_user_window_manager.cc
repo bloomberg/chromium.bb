@@ -172,6 +172,10 @@ void MultiUserWindowManager::SetWindowOwner(aura::Window* window,
   window->AddObserver(this);
   ash::wm::GetWindowState(window)->AddObserver(this);
 
+  // Add all transient children to our set of windows. Note that the function
+  // will add the children but not the owner to the transient children map.
+  AddTransientOwnerRecursive(window, window);
+
   if (user_id != current_user_id_)
     SetWindowVisibility(window, false);
 }
@@ -282,7 +286,12 @@ void MultiUserWindowManager::ActiveUserChanged(const std::string& user_id) {
 }
 
 void MultiUserWindowManager::OnWindowDestroyed(aura::Window* window) {
-  DCHECK(!GetWindowOwner(window).empty());
+  if (GetWindowOwner(window).empty()) {
+    // This must be a window in the transient chain - remove it and its
+    // children from the owner.
+    RemoveTransientOwnerRecursive(window);
+    return;
+  }
   // Remove the state and the window observer.
   ash::wm::GetWindowState(window)->RemoveObserver(this);
   window->RemoveObserver(this);
@@ -298,22 +307,62 @@ void MultiUserWindowManager::OnWindowVisibilityChanging(
   // not ourselves issuing the call.
   // Note also that using the OnWindowVisibilityChanged callback cannot be
   // used for this.
-  if (!suppress_visibility_changes_) {
-    WindowToEntryMap::iterator it = window_to_entry_.find(window);
-    // If the window is not owned by anyone it is shown on all desktops.
-    if (it != window_to_entry_.end()) {
-      // Remember what was asked for so that we can restore this when the users
-      // desktop gets restored.
-      it->second->set_show(visible);
-    }
+  if (suppress_visibility_changes_)
+    return;
+
+  WindowToEntryMap::iterator it = window_to_entry_.find(window);
+  // If the window is not owned by anyone it is shown on all desktops.
+  if (it != window_to_entry_.end()) {
+    // Remember what was asked for so that we can restore this when the user's
+    // desktop gets restored.
+    it->second->set_show(visible);
+  } else {
+    TransientWindowToVisibility::iterator it =
+        transient_window_to_visibility_.find(window);
+    if (it != transient_window_to_visibility_.end())
+      it->second = visible;
   }
 }
 
 void MultiUserWindowManager::OnWindowVisibilityChanged(
     aura::Window* window, bool visible) {
+  if (suppress_visibility_changes_)
+    return;
+
   // Don't allow to make the window visible if it shouldn't be.
-  if (visible && !IsWindowOnDesktopOfUser(window, current_user_id_))
+  if (visible && !IsWindowOnDesktopOfUser(window, current_user_id_)) {
     SetWindowVisibility(window, false);
+    return;
+  }
+  aura::Window* owned_parent = GetOwningWindowInTransientChain(window);
+  if (owned_parent && owned_parent != window && visible &&
+      !IsWindowOnDesktopOfUser(owned_parent, current_user_id_))
+    SetWindowVisibility(window, false);
+}
+
+void MultiUserWindowManager::OnAddTransientChild(
+    aura::Window* window,
+    aura::Window* transient_window) {
+  if (!GetWindowOwner(window).empty()) {
+    AddTransientOwnerRecursive(transient_window, window);
+    return;
+  }
+  aura::Window* owned_parent =
+      GetOwningWindowInTransientChain(transient_window);
+  if (!owned_parent)
+    return;
+
+  AddTransientOwnerRecursive(transient_window, owned_parent);
+}
+
+void MultiUserWindowManager::OnRemoveTransientChild(
+    aura::Window* window,
+    aura::Window* transient_window) {
+  // Remove the transient child if the window itself is owned, or one of the
+  // windows in its transient parents chain.
+  if (!GetWindowOwner(window).empty() ||
+      GetOwningWindowInTransientChain(window))
+    RemoveTransientOwnerRecursive(transient_window);
 }
 
 void MultiUserWindowManager::OnWindowShowTypeChanged(
@@ -436,9 +485,93 @@ void MultiUserWindowManager::SetWindowVisibility(
   base::AutoReset<bool> suppressor(&suppress_visibility_changes_, true);
 
   if (visible)
-    window->Show();
+    ShowWithTransientChildrenRecursive(window);
   else
     window->Hide();
+}
+
+void MultiUserWindowManager::ShowWithTransientChildrenRecursive(
+    aura::Window* window) {
+  aura::Window::Windows::const_iterator it =
+      window->transient_children().begin();
+  for (; it !=  window->transient_children().end(); ++it)
+    ShowWithTransientChildrenRecursive(*it);
+
+  // We show all children which were not explicitly hidden.
+  TransientWindowToVisibility::iterator it2 =
+      transient_window_to_visibility_.find(window);
+  if (it2 == transient_window_to_visibility_.end() || it2->second)
+    window->Show();
+}
+
+aura::Window* MultiUserWindowManager::GetOwningWindowInTransientChain(
+    aura::Window* window) {
+  if (!GetWindowOwner(window).empty())
+    return NULL;
+  aura::Window* parent = window->transient_parent();
+  while (parent) {
+    if (!GetWindowOwner(parent).empty())
+      return parent;
+    parent = parent->transient_parent();
+  }
+  return NULL;
+}
+
+void MultiUserWindowManager::AddTransientOwnerRecursive(
+    aura::Window* window,
+    aura::Window* owned_parent) {
+  // First add all child windows.
+  aura::Window::Windows::const_iterator it =
+      window->transient_children().begin();
+  for (; it !=  window->transient_children().end(); ++it)
+    AddTransientOwnerRecursive(*it, owned_parent);
+
+  // If this window is the owned window, we do not have to handle it again.
+  if (window == owned_parent)
+    return;
+
+  // Remember the current visibility.
+  DCHECK(transient_window_to_visibility_.find(window) ==
+             transient_window_to_visibility_.end());
+  transient_window_to_visibility_[window] = window->IsVisible();
+
+  // Add a window observer to make sure that we catch status changes.
+  window->AddObserver(this);
+
+  // Hide the window if it should not be shown. Note that this hide operation
+  // will hide recursively this and all children - but we have already collected
+  // their initial view state.
+  if (!IsWindowOnDesktopOfUser(owned_parent, current_user_id_))
+    SetWindowVisibility(window, false);
+}
+
+void MultiUserWindowManager::RemoveTransientOwnerRecursive(
+    aura::Window* window) {
+  // First remove all child windows.
+  aura::Window::Windows::const_iterator it =
+      window->transient_children().begin();
+  for (; it !=  window->transient_children().end(); ++it)
+    RemoveTransientOwnerRecursive(*it);
+
+  // Find from transient window storage the visibility for the given window,
+  // set the visibility accordingly and delete the window from the map.
+  TransientWindowToVisibility::iterator visibility_item =
+      transient_window_to_visibility_.find(window);
+  DCHECK(visibility_item != transient_window_to_visibility_.end());
+
+  // Remove the window observer.
+  window->RemoveObserver(this);
+
+  bool unowned_view_state = visibility_item->second;
+  transient_window_to_visibility_.erase(visibility_item);
+  if (unowned_view_state && !window->IsVisible()) {
+    // To prevent these commands from being recorded as any other commands, we
+    // are suppressing any window entry changes while this is going on.
+    // Instead of calling SetWindowVisible, only show gets called here since all
+    // dependents have been shown previously already.
+    base::AutoReset<bool> suppressor(&suppress_visibility_changes_, true);
+    window->Show();
+  }
 }
 
 }  // namespace chrome

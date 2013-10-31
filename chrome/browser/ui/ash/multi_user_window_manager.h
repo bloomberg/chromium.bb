@@ -48,6 +48,13 @@ class AppObserver;
 //   clean automatically all references of that window upon destruction.
 // - User changes will be tracked via observer. No need to call.
 // - All child windows will be owned by the same owner as its parent.
+// - aura::Window::Hide() is currently hiding the window and all owned transient
+//   children. However aura::Window::Show() is only showing the window itself.
+//   To address that, all transient children (and their children) are remembered
+//   in |transient_window_to_visibility_| and monitored to keep track of the
+//   visibility changes from the owning user. This way the visibility can be
+//   changed back to its requested state upon showing by us - or when the window
+//   gets detached from its current owning parent.
 // TODO(skuhne): Split this class into a generic (non Chrome OS) utility
 // function list and a pure virtual class. Then create two implementations of
 // it: One for Chrome OS and for all other OS'ses. Then remove the
@@ -141,6 +148,10 @@ class MultiUserWindowManager : public ash::SessionStateObserver,
                                           bool visible) OVERRIDE;
   virtual void OnWindowVisibilityChanged(aura::Window* window,
                                          bool visible) OVERRIDE;
+  virtual void OnAddTransientChild(aura::Window* window,
+                                   aura::Window* transient) OVERRIDE;
+  virtual void OnRemoveTransientChild(aura::Window* window,
+                                      aura::Window* transient) OVERRIDE;
 
   // Window .. overrides:
   virtual void OnWindowShowTypeChanged(
@@ -201,6 +212,7 @@ class MultiUserWindowManager : public ash::SessionStateObserver,
 
   typedef std::map<aura::Window*, WindowEntry*> WindowToEntryMap;
   typedef std::map<std::string, AppObserver*> UserIDToShellWindowObserver;
+  typedef std::map<aura::Window*, bool> TransientWindowToVisibility;
 
   // Create the manager and use |active_user_id| as the active user.
   explicit MultiUserWindowManager(const std::string& active_user_id);
@@ -215,12 +227,33 @@ class MultiUserWindowManager : public ash::SessionStateObserver,
   // performed by the others.
   void SetWindowVisibility(aura::Window* window, bool visible);
 
+  // Show the window and its transient children. However - if a transient child
+  // was turned invisible by some other operation, it will stay invisible.
+  void ShowWithTransientChildrenRecursive(aura::Window* window);
+
+  // Find the first owned window in the chain.
+  // Returns NULL when the window itself is owned.
+  aura::Window* GetOwningWindowInTransientChain(aura::Window* window);
+
+  // A |window| and its children were attached as transient children to an
+  // |owning_parent| and need to be registered. Note that the |owning_parent|
+  // itself will not be registered, but its children will.
+  void AddTransientOwnerRecursive(aura::Window* window,
+                                  aura::Window* owning_parent);
+
+  // A window and its children were removed from its parent and can be
+  // unregistered.
+  void RemoveTransientOwnerRecursive(aura::Window* window);
+
   // A lookup to see to which user the given window belongs to, where and if it
   // should get shown.
   WindowToEntryMap window_to_entry_;
 
   // A list of all known users and their shell window observers.
   UserIDToShellWindowObserver user_id_to_app_observer_;
+
+  // A map which remembers for owned transient windows their own visibility.
+  TransientWindowToVisibility transient_window_to_visibility_;
 
   // The currently selected active user. It is used to find the proper
   // visibility state in various cases. The state is stored here instead of
