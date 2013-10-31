@@ -1,3 +1,4 @@
+ PASS repainted when expected
 PASS repainted when expected
 PASS repainted when expected
 PASS did not repaint as expected

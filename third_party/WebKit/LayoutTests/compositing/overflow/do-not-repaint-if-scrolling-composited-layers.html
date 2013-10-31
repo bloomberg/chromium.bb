@@ -22,8 +22,12 @@
 
     function testRepaint() {
         var result = "";
-        for (var testIteration = 0; testIteration < 2; ++testIteration) {
+        for (var testIteration = 0; testIteration < 3; ++testIteration) {
             var container = document.getElementById("container");
+            var marquee = document.getElementById("marquee");
+            var span = document.getElementById("span");
+
+            var toScroll = container;
             if (testIteration == 0) {
                 var selection = getSelection();
 
@@ -38,9 +42,10 @@
                 document.body.offsetTop;
                 if (window.testRunner)
                     testRunner.displayInvalidatedRegion();
+            } else if (testIteration == 1) {
+                marquee.style.display = "block";
+                toScroll = marquee;
             } else {
-                // This should also cause repainting.
-                var span = document.getElementById("span");
                 span.style.display = "inline";
             }
 
@@ -49,10 +54,10 @@
             if (window.internals)
                 window.internals.startTrackingRepaints(document);
 
-            container.scrollTop = 100;
+            toScroll.scrollTop = 100;
 
             if (window.internals) {
-                var repaintRects = window.internals.repaintRects(container);
+                var repaintRects = window.internals.repaintRects(toScroll);
                 var repainted = hasNonScrollbarRepaint(repaintRects);
                 if (repainted === true)
                     result += "PASS repainted when expected\n";
@@ -62,8 +67,9 @@
             }
 
             // Do all cleanup here (so as not to affect repaint rects).
-            document.getElementById("span").style.display = "none";
-            document.getElementById("container").scrollTop = 0;
+            toScroll.scrollTop = 0;
+            span.style.display = "none";
+            marquee.style.display = "none";
             getSelection().removeAllRanges();
         }
 
@@ -95,6 +101,8 @@
     }
 
     function doTests() {
+        var marquee = document.getElementById("marquee");
+        marquee.stop();
         var result = testRepaint();
         result += testNoRepaint();
         var pre = document.createElement('pre');
@@ -144,6 +152,13 @@
     #description {
         display: none;
     }
+
+    marquee {
+        width: 60px;
+        height: 60px;
+        -webkit-backface-visibility: hidden;
+        position: relative;
+    }
 </style>
 </head>
 <body>
@@ -166,5 +181,14 @@
         <div class="scrolled"></div>
         <div class="scrolled"></div>
     </div>
+    <marquee id="marquee" direction="up" scrollamount="1">
+        <p>Lorem ipsum dolor amet</p>
+        <p>Lorem ipsum dolor amet</p>
+        <p>Lorem ipsum dolor amet</p>
+        <p>Lorem ipsum dolor amet</p>
+        <p>Lorem ipsum dolor amet</p>
+        <p>Lorem ipsum dolor amet</p>
+        <p>Lorem ipsum dolor amet</p>
+    </marquee>
 </body>
 </html>
