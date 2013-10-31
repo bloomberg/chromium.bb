@@ -47,6 +47,9 @@ using content_settings::SETTING_SOURCE_USER;
 using content_settings::SETTING_SOURCE_NONE;
 
 namespace {
+
+const int kAllowButtonIndex = 0;
+
 struct ContentSettingsTypeIdEntry {
   ContentSettingsType type;
   int id;
@@ -220,6 +223,7 @@ class ContentSettingSingleRadioGroup
 
  protected:
   bool settings_changed() const;
+  int selected_item() const { return selected_item_; }
 
  private:
   void SetRadioGroup();
@@ -246,7 +250,9 @@ ContentSettingSingleRadioGroup::ContentSettingSingleRadioGroup(
 ContentSettingSingleRadioGroup::~ContentSettingSingleRadioGroup() {
   if (settings_changed()) {
     ContentSetting setting =
-        selected_item_ == 0 ? CONTENT_SETTING_ALLOW : block_setting_;
+        selected_item_ == kAllowButtonIndex ?
+                          CONTENT_SETTING_ALLOW :
+                          block_setting_;
     const std::set<std::string>& resources =
         bubble_content().resource_identifiers;
     if (resources.empty()) {
@@ -420,7 +426,7 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
     // whitelist.
     radio_group.default_item = 1;
   } else if (most_restrictive_setting == CONTENT_SETTING_ALLOW) {
-    radio_group.default_item = 0;
+    radio_group.default_item = kAllowButtonIndex;
     // |block_setting_| is already set to |CONTENT_SETTING_BLOCK|.
   } else {
     radio_group.default_item = 1;
@@ -503,7 +509,7 @@ class ContentSettingPluginBubbleModel : public ContentSettingSingleRadioGroup {
                                   Profile* profile,
                                   ContentSettingsType content_type);
 
-  virtual ~ContentSettingPluginBubbleModel() {}
+  virtual ~ContentSettingPluginBubbleModel();
 
  private:
   virtual void OnCustomLinkClicked() OVERRIDE;
@@ -520,6 +526,14 @@ ContentSettingPluginBubbleModel::ContentSettingPluginBubbleModel(
   set_custom_link_enabled(web_contents &&
                           TabSpecificContentSettings::FromWebContents(
                               web_contents)->load_plugins_link_enabled());
+}
+
+ContentSettingPluginBubbleModel::~ContentSettingPluginBubbleModel() {
+  if (settings_changed()) {
+    // If the user elected to allow all plugins then run plugins at this time.
+    if (selected_item() == kAllowButtonIndex)
+      OnCustomLinkClicked();
+  }
 }
 
 void ContentSettingPluginBubbleModel::OnCustomLinkClicked() {
