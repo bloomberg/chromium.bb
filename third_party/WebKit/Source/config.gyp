@@ -89,7 +89,7 @@
           # timesNewRoman.unstatic.3258 and colorTransparent.unstatic.4879.
           'cflags': ['-Wno-uninitialized'],
         }],
-        ['OS=="mac" or OS=="linux"', {
+        ['OS=="mac" or (OS!="win" and clang==0)', {
           # TODO: Turn this on on all platforms, http://crbug.com/312287
           'variables': {
             'chromium_code': 1,
