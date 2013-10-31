@@ -1267,6 +1267,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Chrome.Browser.ExecutionPhase" enum="ExecutionPhase">
+  <summary>
+    Indicates the execution phase the browser was in when browser didn't exit
+    cleanly.
+  </summary>
+</histogram>
+
 <histogram name="Chrome.BrowserCrashDumpAttempts">
   <summary>
     The total number of times the browser process has attempted to generate a
@@ -21561,6 +21568,16 @@ other types of suffix sets.
   <int value="11002" label="WSATRY_AGAIN"/>
   <int value="11003" label="WSA_ANO_RECOVERY"/>
   <int value="11004" label="WSANO_DATA"/>
+</enum>
+
+<enum name="ExecutionPhase" type="int">
+  <int value="0" label="CLEAN_SHUTDOWN"/>
+  <int value="100" label="START_METRICS_RECORDING"/>
+  <int value="200" label="CREATE_PROFILE"/>
+  <int value="300" label="STARTUP_TIMEBOMB_ARM"/>
+  <int value="400" label="THREAD_WATCHER_START"/>
+  <int value="500" label="MAIN_MESSAGE_LOOP_RUN"/>
+  <int value="600" label="SHUTDOWN_TIMEBOMB_ARM"/>
 </enum>
 
 <enum name="ExtensionBackgroundPageType" type="int">
