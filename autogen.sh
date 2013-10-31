@@ -1,3 +1,5 @@
+#!/bin/sh
+#
 # liblouis Braille Translation and Back-Translation 
 # Library
 #
@@ -9,6 +11,8 @@
 #   and
 #   abilitiessoft, Inc. www.abilitiessoft.com
 #   All rights reserved
+#
+#   Copyright (C) 2006--2013 by The Liblouis Team
 #
 #   This file is free software; you can redistribute it and/or modify it
 #   under the terms of the Lesser or Library GNU General Public License 
@@ -26,10 +30,6 @@
 # write to
 #   the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 #   Boston, MA 02110-1301, USA.
-#
-#   Maintained by John J. Boyer john.boyer@abilitiessoft.com
-#
-#!/bin/sh
 #
 # autogen.sh glue for liblouis
 #
