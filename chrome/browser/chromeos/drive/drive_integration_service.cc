@@ -40,6 +40,8 @@
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/common/user_agent/user_agent_util.h"
 
@@ -96,7 +98,8 @@ FileError InitializeMetadata(
     internal::ResourceMetadataStorage* metadata_storage,
     internal::FileCache* cache,
     internal::ResourceMetadata* resource_metadata,
-    const ResourceIdCanonicalizer& id_canonicalizer) {
+    const ResourceIdCanonicalizer& id_canonicalizer,
+    const base::FilePath& downloads_directory) {
   if (!file_util::CreateDirectory(cache_root_directory.Append(
           kMetadataDirectory)) ||
       !file_util::CreateDirectory(cache_root_directory.Append(
@@ -126,6 +129,26 @@ FileError InitializeMetadata(
   if (!cache->Initialize()) {
     LOG(WARNING) << "Failed to initialize the cache.";
     return FILE_ERROR_FAILED;
+  }
+
+  if (metadata_storage->cache_file_scan_is_needed()) {
+    // Generate unique directory name.
+    const std::string& dest_directory_name = l10n_util::GetStringUTF8(
+        IDS_FILE_BROWSER_RECOVERED_FILES_FROM_GOOGLE_DRIVE_DIRECTORY_NAME);
+    base::FilePath dest_directory = downloads_directory.Append(
+        base::FilePath::FromUTF8Unsafe(dest_directory_name));
+    for (int uniquifier = 1; base::PathExists(dest_directory); ++uniquifier) {
+      dest_directory = downloads_directory.Append(
+          base::FilePath::FromUTF8Unsafe(dest_directory_name))
+          .InsertBeforeExtensionASCII(base::StringPrintf(" (%d)", uniquifier));
+    }
+
+    LOG(INFO) << "DB could not be opened for some reasons. "
+              << "Recovering cache files to " << dest_directory.value();
+    if (!cache->RecoverFilesFromCacheDirectory(dest_directory)) {
+      LOG(WARNING) << "Failed to recover cache files.";
+      return FILE_ERROR_FAILED;
+    }
   }
 
   FileError error = resource_metadata->Initialize();
@@ -431,7 +454,8 @@ void DriveIntegrationService::Initialize() {
                  metadata_storage_.get(),
                  cache_.get(),
                  resource_metadata_.get(),
-                 drive_service_->GetResourceIdCanonicalizer()),
+                 drive_service_->GetResourceIdCanonicalizer(),
+                 DownloadPrefs::GetDefaultDownloadDirectory()),
       base::Bind(&DriveIntegrationService::InitializeAfterMetadataInitialized,
                  weak_ptr_factory_.GetWeakPtr()));
 }

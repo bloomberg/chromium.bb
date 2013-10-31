@@ -12437,6 +12437,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
         My Photos
       </message>
 
+      <message name="IDS_FILE_BROWSER_RECOVERED_FILES_FROM_GOOGLE_DRIVE_DIRECTORY_NAME" desc="The name of the direcotry which stores files recovered from Google Drive directory when the locally stored Google Drive data is found to be broken.">
+        Recovered files from Google Drive
+      </message>
+
       <message name="IDS_FILE_BROWSER_CONFLICT_DIALOG_TITLE" desc="Title of the conflict dialog shown when a file transfer operation is conflicted.">
         Conflict
       </message>

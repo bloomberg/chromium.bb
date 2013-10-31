@@ -155,6 +155,10 @@ class FileCache {
   // Must be called on the UI thread.
   void Destroy();
 
+  // Moves files in the cache directory which are not manged by FileCache to
+  // |dest_directory|.
+  bool RecoverFilesFromCacheDirectory(const base::FilePath& dest_directory);
+
  private:
   friend class FileCacheTest;
   friend class FileCacheTestOnUIThread;

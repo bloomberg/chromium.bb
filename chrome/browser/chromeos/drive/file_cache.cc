@@ -19,6 +19,9 @@
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chromeos/chromeos_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/mime_sniffer.h"
+#include "net/base/mime_util.h"
+#include "net/base/net_util.h"
 
 using content::BrowserThread;
 
@@ -26,36 +29,9 @@ namespace drive {
 namespace internal {
 namespace {
 
-typedef std::map<std::string, FileCacheEntry> CacheMap;
-
 // Returns ID extracted from the path.
 std::string GetIdFromPath(const base::FilePath& path) {
   return util::UnescapeCacheFileName(path.BaseName().AsUTF8Unsafe());
-}
-
-// Scans cache subdirectory and insert found files to |cache_map|.
-void ScanCacheDirectory(const base::FilePath& directory_path,
-                        CacheMap* cache_map) {
-  base::FileEnumerator enumerator(directory_path,
-                                  false,  // not recursive
-                                  base::FileEnumerator::FILES);
-  for (base::FilePath current = enumerator.Next(); !current.empty();
-       current = enumerator.Next()) {
-    std::string id = GetIdFromPath(current);
-
-    // Calculate MD5.
-    std::string md5 = util::GetMd5Digest(current);
-    if (md5.empty())
-      continue;
-
-    // Determine cache state.
-    FileCacheEntry cache_entry;
-    cache_entry.set_md5(md5);
-    cache_entry.set_is_present(true);
-
-    // Create and insert new entry into cache map.
-    cache_map->insert(std::make_pair(id, cache_entry));
-  }
 }
 
 // Runs callback with pointers dereferenced.
@@ -394,15 +370,6 @@ bool FileCache::Initialize() {
 
   if (!RenameCacheFilesToNewFormat())
     return false;
-
-  if (storage_->cache_file_scan_is_needed()) {
-    CacheMap cache_map;
-    ScanCacheDirectory(cache_file_directory_, &cache_map);
-    for (CacheMap::const_iterator it = cache_map.begin();
-         it != cache_map.end(); ++it) {
-      storage_->PutCacheEntry(it->first, it->second);
-    }
-  }
   return true;
 }
 
@@ -423,6 +390,75 @@ void FileCache::Destroy() {
 void FileCache::DestroyOnBlockingPool() {
   AssertOnSequencedWorkerPool();
   delete this;
+}
+
+bool FileCache::RecoverFilesFromCacheDirectory(
+    const base::FilePath& dest_directory) {
+  int file_number = 1;
+
+  base::FileEnumerator enumerator(cache_file_directory_,
+                                  false,  // not recursive
+                                  base::FileEnumerator::FILES);
+  for (base::FilePath current = enumerator.Next(); !current.empty();
+       current = enumerator.Next()) {
+    const std::string& id = GetIdFromPath(current);
+    FileCacheEntry entry;
+    if (storage_->GetCacheEntry(id, &entry)) {
+      // This file is managed by FileCache, no need to recover it.
+      continue;
+    }
+
+    // Read file contents to sniff mime type.
+    std::vector<char> content(net::kMaxBytesToSniff);
+    const int read_result =
+        file_util::ReadFile(current, &content[0], content.size());
+    if (read_result < 0) {
+      LOG(WARNING) << "Cannot read: " << current.value();
+      return false;
+    }
+    if (read_result == 0)  // Skip empty files.
+      continue;
+
+    // Decide file name with sniffed mime type.
+    base::FilePath dest_base_name(FILE_PATH_LITERAL("file"));
+    std::string mime_type;
+    if (net::SniffMimeType(&content[0], read_result,
+                           net::FilePathToFileURL(current), std::string(),
+                           &mime_type) ||
+        net::SniffMimeTypeFromLocalData(&content[0], read_result, &mime_type)) {
+      // Change base name for common mime types.
+      if (net::MatchesMimeType("image/*", mime_type)) {
+        dest_base_name = base::FilePath(FILE_PATH_LITERAL("image"));
+      } else if (net::MatchesMimeType("video/*", mime_type)) {
+        dest_base_name = base::FilePath(FILE_PATH_LITERAL("video"));
+      } else if (net::MatchesMimeType("audio/*", mime_type)) {
+        dest_base_name = base::FilePath(FILE_PATH_LITERAL("audio"));
+      }
+
+      // Estimate extension from mime type.
+      std::vector<base::FilePath::StringType> extensions;
+      base::FilePath::StringType extension;
+      if (net::GetPreferredExtensionForMimeType(mime_type, &extension))
+        extensions.push_back(extension);
+      else
+        net::GetExtensionsForMimeType(mime_type, &extensions);
+
+      // Add extension if possible.
+      if (!extensions.empty())
+        dest_base_name = dest_base_name.AddExtension(extensions[0]);
+    }
+
+    // Add file number to the file name and move.
+    const base::FilePath& dest_path = dest_directory.Append(dest_base_name)
+        .InsertBeforeExtensionASCII(base::StringPrintf("%08d", file_number++));
+    if (!file_util::CreateDirectory(dest_directory) ||
+        !base::Move(current, dest_path)) {
+      LOG(WARNING) << "Failed to move: " << current.value()
+                   << " to " << dest_path.value();
+      return false;
+    }
+  }
+  return true;
 }
 
 FileError FileCache::StoreInternal(const std::string& id,

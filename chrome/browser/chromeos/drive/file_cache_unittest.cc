@@ -11,6 +11,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/md5.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
@@ -751,34 +752,33 @@ class FileCacheTest : public testing::Test {
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
 };
 
-TEST_F(FileCacheTest, ScanCacheFile) {
-  // Set up files in the cache directory.
+TEST_F(FileCacheTest, RecoverFilesFromCacheDirectory) {
+  base::FilePath dir_source_root;
+  EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &dir_source_root));
+  const base::FilePath src_path =
+      dir_source_root.AppendASCII("chrome/test/data/chromeos/drive/image.png");
+
+  // Store files. This file should not be moved.
+  EXPECT_EQ(FILE_ERROR_OK, cache_->Store("id_foo", "md5", src_path,
+                                         FileCache::FILE_OPERATION_COPY));
+
+  // Set up files in the cache directory. These files should be moved.
   const base::FilePath file_directory =
       temp_dir_.path().AppendASCII(kCacheFileDirectory);
-  ASSERT_TRUE(google_apis::test_util::WriteStringToFile(
-      file_directory.AppendASCII("id_foo"), "foo"));
+  ASSERT_TRUE(base::CopyFile(src_path, file_directory.AppendASCII("id_bar")));
+  ASSERT_TRUE(base::CopyFile(src_path, file_directory.AppendASCII("id_baz")));
 
-  // Remove the existing DB.
-  const base::FilePath metadata_directory =
-      temp_dir_.path().AppendASCII("meta");
-  ASSERT_TRUE(base::DeleteFile(metadata_directory, true /* recursive */));
+  // Recover files.
+  const base::FilePath dest_directory = temp_dir_.path().AppendASCII("dest");
+  EXPECT_TRUE(cache_->RecoverFilesFromCacheDirectory(dest_directory));
 
-  // Create a new cache and initialize it.
-  metadata_storage_.reset(new ResourceMetadataStorage(
-      metadata_directory, base::MessageLoopProxy::current().get()));
-  ASSERT_TRUE(metadata_storage_->Initialize());
-
-  cache_.reset(new FileCache(metadata_storage_.get(),
-                             file_directory,
-                             base::MessageLoopProxy::current().get(),
-                             fake_free_disk_space_getter_.get()));
-  ASSERT_TRUE(cache_->Initialize());
-
-  // Check contents of the cache.
-  FileCacheEntry cache_entry;
-  EXPECT_TRUE(cache_->GetCacheEntry("id_foo", &cache_entry));
-  EXPECT_TRUE(cache_entry.is_present());
-  EXPECT_EQ(base::MD5String("foo"), cache_entry.md5());
+  // Only two files should be recovered.
+  EXPECT_TRUE(base::PathExists(dest_directory));
+  EXPECT_TRUE(base::ContentsEqual(src_path,
+                                  dest_directory.Append("image00000001.png")));
+  EXPECT_TRUE(base::ContentsEqual(src_path,
+                                  dest_directory.Append("image00000002.png")));
+  EXPECT_FALSE(base::PathExists(dest_directory.Append("image00000003.png")));
 }
 
 TEST_F(FileCacheTest, Iterator) {
