@@ -17,7 +17,7 @@ namespace media {
 
 class LibvpxCdmVideoDecoder : public CdmVideoDecoder {
  public:
-  explicit LibvpxCdmVideoDecoder(cdm::Host* host);
+  explicit LibvpxCdmVideoDecoder(CdmHost* host);
   virtual ~LibvpxCdmVideoDecoder();
 
   // CdmVideoDecoder implementation.
@@ -42,7 +42,7 @@ class LibvpxCdmVideoDecoder : public CdmVideoDecoder {
 
   bool is_initialized_;
 
-  cdm::Host* const host_;
+  CdmHost* const host_;
 
   vpx_codec_ctx* vpx_codec_;
   vpx_image* vpx_image_;

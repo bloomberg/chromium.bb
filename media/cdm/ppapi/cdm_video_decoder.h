@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/cdm/ppapi/api/content_decryption_module.h"
+#include "media/cdm/ppapi/clear_key_cdm_common.h"
 
 namespace media {
 
@@ -36,7 +37,7 @@ class CdmVideoDecoder {
 // |config.codec|. Returns a scoped_ptr containing a non-null initialized
 // CdmVideoDecoder* upon success.
 scoped_ptr<CdmVideoDecoder> CreateVideoDecoder(
-    cdm::Host* host, const cdm::VideoDecoderConfig& config);
+    CdmHost* host, const cdm::VideoDecoderConfig& config);
 
 }  // namespace media
 

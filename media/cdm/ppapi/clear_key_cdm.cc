@@ -136,12 +136,11 @@ void* CreateCdmInstance(
     return NULL;
   }
 
-  if (cdm_interface_version != cdm::ContentDecryptionModule_2::kVersion)
+  if (cdm_interface_version != media::CdmInterface::kVersion)
     return NULL;
 
-  cdm::ContentDecryptionModule_2::Host* host =
-      static_cast<cdm::ContentDecryptionModule_2::Host*>(get_cdm_host_func(
-          cdm::ContentDecryptionModule_2::Host::kVersion, user_data));
+  media::CdmHost* host = static_cast<media::CdmHost*>(
+      get_cdm_host_func(media::CdmHost::kVersion, user_data));
   if (!host)
     return NULL;
 
@@ -186,7 +185,7 @@ void ClearKeyCdm::Client::KeyMessage(const std::string& session_id,
   default_url_ = default_url;
 }
 
-ClearKeyCdm::ClearKeyCdm(cdm::Host* host)
+ClearKeyCdm::ClearKeyCdm(CdmHost* host)
     : decryptor_(base::Bind(&Client::KeyAdded, base::Unretained(&client_)),
                  base::Bind(&Client::KeyError, base::Unretained(&client_)),
                  base::Bind(&Client::KeyMessage, base::Unretained(&client_))),
