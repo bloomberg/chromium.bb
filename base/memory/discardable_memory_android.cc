@@ -83,7 +83,6 @@ LockDiscardableMemoryStatus LockAshmemRegion(int fd,
                                              size_t size,
                                              const void* address) {
   const int result = ashmem_pin_region(fd, off, size);
-  DCHECK_EQ(0, mprotect(address, size, PROT_READ | PROT_WRITE));
   return result == ASHMEM_WAS_PURGED ?
       DISCARDABLE_MEMORY_PURGED : DISCARDABLE_MEMORY_SUCCESS;
 }
@@ -92,8 +91,6 @@ bool UnlockAshmemRegion(int fd, size_t off, size_t size, const void* address) {
   const int failed = ashmem_unpin_region(fd, off, size);
   if (failed)
     DLOG(ERROR) << "Failed to unpin memory.";
-  // This allows us to catch accesses to unlocked memory.
-  DCHECK_EQ(0, mprotect(address, size, PROT_NONE));
   return !failed;
 }
 
@@ -113,20 +110,45 @@ class DiscardableMemoryAndroid : public DiscardableMemory {
 
   // DiscardableMemory:
   virtual LockDiscardableMemoryStatus Lock() OVERRIDE {
+    if (!memory_ && !MapRegion())
+      return DISCARDABLE_MEMORY_FAILED;
     return LockAshmemRegion(fd_, 0, size_, memory_);
   }
 
   virtual void Unlock() OVERRIDE {
+    UnmapRegion();
     UnlockAshmemRegion(fd_, 0, size_, memory_);
   }
 
   virtual void* Memory() const OVERRIDE {
+    DCHECK(memory_) << "Trying to access unmapped memory";
     return memory_;
   }
 
  private:
+  // TODO(pliard): http://crbug.com/311633. Remove the two methods below once
+  // memory measurement infrastructure supports unpinned ashmem purging.
+  bool MapRegion() {
+    DCHECK(!memory_) << "Region already mapped";
+    void* const address = mmap(
+        NULL, size_, PROT_READ | PROT_WRITE, MAP_SHARED, fd_, 0);
+    if (address == MAP_FAILED) {
+      DPLOG(ERROR) << "Failed to map memory.";
+      return false;
+    }
+    memory_ = address;
+    return true;
+  }
+
+  void UnmapRegion() {
+    DCHECK(memory_) << "Region already unmapped";
+    if (munmap(memory_, size_) == -1)
+      DPLOG(ERROR) << "Failed to unmap memory.";
+    memory_ = NULL;
+  }
+
   const int fd_;
-  void* const memory_;
+  void* memory_;
   const size_t size_;
 
   DISALLOW_COPY_AND_ASSIGN(DiscardableMemoryAndroid);
