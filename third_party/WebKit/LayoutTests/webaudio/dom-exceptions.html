@@ -121,7 +121,12 @@ function runTest() {
     // Start/stop for AudioBufferSourceNodes
     buffer = context.createBuffer(1,1, context.sampleRate);
     shouldNotThrow("source = context.createBufferSource()");
-    source.buffer = buffer;
+    shouldNotThrow("source.buffer = buffer");
+    shouldNotThrow("source.start()");
+    shouldNotThrow("source.stop()");
+
+    // It's valid to start a source that has no associated buffer.
+    shouldNotThrow("source = context.createBufferSource()");
     shouldNotThrow("source.start()");
     shouldNotThrow("source.stop()");
 

@@ -383,12 +383,12 @@ unsigned AudioBufferSourceNode::numberOfChannels()
 
 void AudioBufferSourceNode::start(double when)
 {
-    startPlaying(false, when, 0, buffer()->duration());
+    startPlaying(false, when, 0, buffer() ? buffer()->duration() : 0);
 }
 
 void AudioBufferSourceNode::start(double when, double grainOffset)
 {
-    startPlaying(true, when, grainOffset, buffer()->duration());
+    startPlaying(true, when, grainOffset, buffer() ? buffer()->duration() : 0);
 }
 
 void AudioBufferSourceNode::start(double when, double grainOffset, double grainDuration)
