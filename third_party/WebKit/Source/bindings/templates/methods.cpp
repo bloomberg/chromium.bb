@@ -10,7 +10,7 @@ static void {{method.name}}Method(const v8::FunctionCallbackInfo<v8::Value>& arg
     {% endif %}
     {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(args.Holder());
     {% for argument in method.arguments %}
-    {% if argument.is_optional %}
+    {% if argument.is_optional and not argument.has_default %}
     if (UNLIKELY(args.Length() <= {{argument.index}})) {
         {{argument.cpp_method}};
         return;

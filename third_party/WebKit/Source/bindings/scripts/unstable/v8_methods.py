@@ -65,6 +65,7 @@ def generate_argument(method, argument, index):
         'cpp_method': cpp_method(method, index),
         'cpp_type': v8_types.cpp_type(idl_type),
         'enum_validation_expression': v8_utilities.enum_validation_expression(idl_type),
+        'has_default': 'Default' in extended_attributes,
         'idl_type': argument.idl_type,
         'index': index,
         'is_clamp': 'Clamp' in extended_attributes,
@@ -104,7 +105,9 @@ def custom_signature(arguments):
             return 'V8PerIsolateData::from(isolate)->rawTemplate(&V8{idl_type}::wrapperTypeInfo, currentWorldType)'.format(idl_type=idl_type)
         return 'v8::Handle<v8::FunctionTemplate>()'
 
-    if (any(argument.is_optional for argument in arguments) or
+    if (any(argument.is_optional and
+            'Default' not in argument.extended_attributes
+            for argument in arguments) or
         all(not v8_types.is_wrapper_type(argument.idl_type)
             for argument in arguments)):
         return None
@@ -112,11 +115,17 @@ def custom_signature(arguments):
 
 
 def v8_value_to_local_cpp_value(argument, index):
+    extended_attributes = argument.extended_attributes
     idl_type = argument.idl_type
     name = argument.name
     if argument.is_variadic:
         return 'V8TRYCATCH_VOID(Vector<{cpp_type}>, {name}, toNativeArguments<{cpp_type}>(args, {index}))'.format(
                 cpp_type=v8_types.cpp_type(idl_type), name=name, index=index)
+    if (argument.is_optional and idl_type == 'DOMString' and
+        extended_attributes.get('Default') == 'NullString'):
+        v8_value = 'argumentOrNull(args, %s)' % index
+    else:
+        v8_value = 'args[%s]' % index
     return v8_types.v8_value_to_local_cpp_value(
-        idl_type, argument.extended_attributes,
-        'args[%s]' % index, name, 'args.GetIsolate()', index=index)
+        idl_type, argument.extended_attributes, v8_value, name,
+        'args.GetIsolate()', index=index)

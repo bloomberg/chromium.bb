@@ -2478,7 +2478,6 @@ sub GenerateParametersCheck
         my $nativeType = GetNativeType($parameter->type, $parameter->extendedAttributes, "parameter");
 
         # Optional arguments without [Default=...] should generate an early call with fewer arguments.
-        # Optional arguments with [Optional=...] should not generate the early call.
         # Optional Dictionary arguments always considered to have default of empty dictionary.
         if ($parameter->isOptional && !$parameter->extendedAttributes->{"Default"} && $nativeType ne "Dictionary" && !IsCallbackInterface($parameter->type)) {
             $parameterCheckString .= <<END;
