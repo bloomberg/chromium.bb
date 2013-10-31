@@ -499,6 +499,10 @@ crbug.com/310323 [ Debug ] http/tests/security/contentSecurityPolicy/report-mult
 
 crbug.com/231880 [ Win7 Debug ] fast/dom/Window/open-window-min-size.html [ Failure Pass ]
 
+Bug(ojan) fast/forms/form-hides-table.html [ NeedsRebaseline ]
+Bug(ojan) fast/table/form-with-table-style.html [ NeedsRebaseline ]
+Bug(ojan) ietestcenter/css3/bordersbackgrounds/border-radius-applies-to-004.htm [ NeedsRebaseline ]
+
 crbug.com/311164 fast/js/mozilla/strict/15.4.4.6.html [ Failure Pass ]
 
 crbug.com/311301 fast/history/history_reload.html [ Failure Pass ]

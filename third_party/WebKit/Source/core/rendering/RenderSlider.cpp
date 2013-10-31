@@ -44,11 +44,6 @@ RenderSlider::~RenderSlider()
 {
 }
 
-bool RenderSlider::canBeReplacedWithInlineRunIn() const
-{
-    return false;
-}
-
 int RenderSlider::baselinePosition(FontBaseline, bool /*firstLine*/, LineDirectionMode, LinePositionMode linePositionMode) const
 {
     ASSERT(linePositionMode == PositionOnContainingLine);

@@ -28,73 +28,69 @@ layer at (0,0) size 800x600
           RenderText {#text} at (0,0) size 96x19
             text run at (0,0) width 96: "display: list-item"
       RenderBlock {DIV} at (0,164) size 784x20
-        RenderBlock (run-in) {FORM} at (0,0) size 784x20
-          RenderText {#text} at (0,0) size 84x19
-            text run at (0,0) width 84: "display: run-in"
-      RenderBlock {DIV} at (0,200) size 784x20
         RenderBlock {FORM} at (0,0) size 784x20
           RenderText {#text} at (0,0) size 101x19
             text run at (0,0) width 101: "display: compact"
-      RenderBlock {DIV} at (0,236) size 784x36
+      RenderBlock {DIV} at (0,200) size 784x36
         RenderBlock {FORM} at (0,0) size 119x20
           RenderText {#text} at (0,0) size 119x19
             text run at (0,0) width 119: "display: inline-block"
-      RenderBlock {DIV} at (0,272) size 784x20
+      RenderBlock {DIV} at (0,236) size 784x20
         RenderTable {FORM} at (0,0) size 78x20
           RenderTableSection (anonymous) at (0,0) size 78x20
             RenderTableRow (anonymous) at (0,0) size 78x20
               RenderTableCell (anonymous) at (0,0) size 78x20 [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (0,0) size 78x19
                   text run at (0,0) width 78: "display: table"
-      RenderBlock {DIV} at (0,308) size 784x36
+      RenderBlock {DIV} at (0,272) size 784x36
         RenderTable {FORM} at (0,0) size 114x20
           RenderTableSection (anonymous) at (0,0) size 114x20
             RenderTableRow (anonymous) at (0,0) size 114x20
               RenderTableCell (anonymous) at (0,0) size 114x20 [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (0,0) size 114x19
                   text run at (0,0) width 114: "display: inline-table"
-      RenderBlock {DIV} at (0,344) size 784x20
+      RenderBlock {DIV} at (0,308) size 784x20
         RenderTable at (0,0) size 149x20
           RenderTableSection {FORM} at (0,0) size 149x20
             RenderTableRow (anonymous) at (0,0) size 149x20
               RenderTableCell (anonymous) at (0,0) size 149x20 [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (0,0) size 149x19
                   text run at (0,0) width 149: "display: table-row-group"
-      RenderBlock {DIV} at (0,364) size 784x20
+      RenderBlock {DIV} at (0,328) size 784x20
         RenderTable at (0,0) size 166x20
           RenderTableSection {FORM} at (0,0) size 166x20
             RenderTableRow (anonymous) at (0,0) size 166x20
               RenderTableCell (anonymous) at (0,0) size 166x20 [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (0,0) size 166x19
                   text run at (0,0) width 166: "display: table-header-group"
-      RenderBlock {DIV} at (0,384) size 784x20
+      RenderBlock {DIV} at (0,348) size 784x20
         RenderTable at (0,0) size 161x20
           RenderTableSection {FORM} at (0,0) size 161x20
             RenderTableRow (anonymous) at (0,0) size 161x20
               RenderTableCell (anonymous) at (0,0) size 161x20 [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (0,0) size 161x19
                   text run at (0,0) width 161: "display: table-footer-group"
-      RenderBlock {DIV} at (0,404) size 784x20
+      RenderBlock {DIV} at (0,368) size 784x20
         RenderTable at (0,0) size 108x20
           RenderTableSection (anonymous) at (0,0) size 108x20
             RenderTableRow {FORM} at (0,0) size 108x20
               RenderTableCell (anonymous) at (0,0) size 108x20 [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (0,0) size 108x19
                   text run at (0,0) width 108: "display: table-row"
-      RenderBlock {DIV} at (0,424) size 784x0
+      RenderBlock {DIV} at (0,388) size 784x0
         RenderTable at (0,0) size 0x0
           RenderTableCol {FORM} at (0,0) size 0x0
-      RenderBlock {DIV} at (0,424) size 784x0
+      RenderBlock {DIV} at (0,388) size 784x0
         RenderTable at (0,0) size 0x0
           RenderTableCol {FORM} at (0,0) size 0x0
-      RenderBlock {DIV} at (0,424) size 784x20
+      RenderBlock {DIV} at (0,388) size 784x20
         RenderTable at (0,0) size 104x20
           RenderTableSection (anonymous) at (0,0) size 104x20
             RenderTableRow (anonymous) at (0,0) size 104x20
               RenderTableCell {FORM} at (0,0) size 104x20 [r=0 c=0 rs=1 cs=1]
                 RenderText {#text} at (0,0) size 104x19
                   text run at (0,0) width 104: "display: table-cell"
-      RenderBlock {DIV} at (0,444) size 784x76
+      RenderBlock {DIV} at (0,408) size 784x76
         RenderTable at (0,0) size 45x76
           RenderBlock {FORM} at (0,0) size 45x60
             RenderText {#text} at (0,0) size 45x59

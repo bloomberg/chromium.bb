@@ -209,8 +209,6 @@ const char* RenderMarquee::renderName() const
         return "RenderMarquee (generated)";
     if (isRelPositioned())
         return "RenderMarquee (relative positioned)";
-    if (isRunIn())
-        return "RenderMarquee (run-in)";
     return "RenderMarquee";
 
 }

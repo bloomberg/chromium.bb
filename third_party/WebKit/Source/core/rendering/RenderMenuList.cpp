@@ -74,11 +74,6 @@ RenderMenuList::~RenderMenuList()
     m_popup = 0;
 }
 
-bool RenderMenuList::canBeReplacedWithInlineRunIn() const
-{
-    return false;
-}
-
 void RenderMenuList::createInnerBlock()
 {
     if (m_innerBlock) {

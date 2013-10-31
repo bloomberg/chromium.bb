@@ -58,11 +58,6 @@ void RenderProgress::updateFromElement()
     RenderBlock::updateFromElement();
 }
 
-bool RenderProgress::canBeReplacedWithInlineRunIn() const
-{
-    return false;
-}
-
 double RenderProgress::animationProgress() const
 {
     return m_animating ? (fmod((currentTime() - m_animationStartTime), m_animationDuration) / m_animationDuration) : 0;

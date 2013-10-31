@@ -1242,9 +1242,6 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EDisplay e)
     case LIST_ITEM:
         m_value.valueID = CSSValueListItem;
         break;
-    case RUN_IN:
-        m_value.valueID = CSSValueRunIn;
-        break;
     case COMPACT:
         m_value.valueID = CSSValueCompact;
         break;

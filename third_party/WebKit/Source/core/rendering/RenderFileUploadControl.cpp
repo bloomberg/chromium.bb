@@ -55,11 +55,6 @@ RenderFileUploadControl::~RenderFileUploadControl()
 {
 }
 
-bool RenderFileUploadControl::canBeReplacedWithInlineRunIn() const
-{
-    return false;
-}
-
 void RenderFileUploadControl::updateFromElement()
 {
     HTMLInputElement* input = toHTMLInputElement(node());

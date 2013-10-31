@@ -398,9 +398,6 @@ public:
 
     LayoutUnit computeStartPositionDeltaForChildAvoidingFloats(const RenderBox* child, LayoutUnit childMarginStart, RenderRegion* = 0);
 
-    void placeRunInIfNeeded(RenderObject* newChild);
-    bool runInIsPlacedIntoSiblingBlock(RenderObject* runIn);
-
 #ifndef NDEBUG
     void checkPositionedObjectsNeedLayout();
     void showLineTreeAndMark(const InlineBox* = 0, const char* = 0, const InlineBox* = 0, const char* = 0, const RenderObject* = 0) const;
@@ -664,9 +661,6 @@ private:
     RenderBlock* containingColumnsBlock(bool allowAnonymousColumnBlock = true);
     RenderBlock* columnsBlockForSpanningElement(RenderObject* newChild);
 
-    RenderBoxModelObject* createReplacementRunIn(RenderBoxModelObject* runIn);
-    void moveRunInUnderSiblingBlockIfNeeded(RenderObject* runIn);
-    void moveRunInToOriginalPosition(RenderObject* runIn);
     // End helper functions and structs used by layoutBlockChildren.
 
 protected:

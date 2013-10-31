@@ -172,9 +172,7 @@ RenderObject* RenderObject::createObject(Element* element, RenderStyle* style)
     if (RuntimeEnabledFeatures::cssRegionsEnabled() && style->isDisplayRegionType() && style->hasFlowFrom() && doc.renderView())
         return new RenderRegion(element, 0);
 
-    if (style->display() == RUN_IN)
-        UseCounter::count(doc, UseCounter::CSSDisplayRunIn);
-    else if (style->display() == COMPACT)
+    if (style->display() == COMPACT)
         UseCounter::count(doc, UseCounter::CSSDisplayCompact);
 
     switch (style->display()) {
@@ -184,7 +182,6 @@ RenderObject* RenderObject::createObject(Element* element, RenderStyle* style)
         return new RenderInline(element);
     case BLOCK:
     case INLINE_BLOCK:
-    case RUN_IN:
     case COMPACT:
         if ((!style->hasAutoColumnCount() || !style->hasAutoColumnWidth()) && doc.regionBasedColumnsEnabled())
             return new RenderMultiColumnBlock(element);
@@ -3301,11 +3298,6 @@ bool RenderObject::canUpdateSelectionOnRootLineBoxes()
 bool RenderObject::canHaveGeneratedChildren() const
 {
     return canHaveChildren();
-}
-
-bool RenderObject::canBeReplacedWithInlineRunIn() const
-{
-    return true;
 }
 
 void RenderObject::setNeedsBoundariesUpdate()

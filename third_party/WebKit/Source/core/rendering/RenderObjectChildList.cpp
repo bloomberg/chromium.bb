@@ -38,12 +38,8 @@ namespace WebCore {
 void RenderObjectChildList::destroyLeftoverChildren()
 {
     while (firstChild()) {
-        if (firstChild()->isListMarker() || (firstChild()->style()->styleType() == FIRST_LETTER && !firstChild()->isText()))
+        if (firstChild()->isListMarker() || (firstChild()->style()->styleType() == FIRST_LETTER && !firstChild()->isText())) {
             firstChild()->remove();  // List markers are owned by their enclosing list and so don't get destroyed by this container. Similarly, first letters are destroyed by their remaining text fragment.
-        else if (firstChild()->isRunIn() && firstChild()->node()) {
-            firstChild()->node()->setRenderer(0);
-            firstChild()->node()->setNeedsStyleRecalc();
-            firstChild()->destroy();
         } else {
             // Destroy any anonymous children remaining in the render tree, as well as implicit (shadow) DOM elements like those used in the engine-based text fields.
             if (firstChild()->node())
