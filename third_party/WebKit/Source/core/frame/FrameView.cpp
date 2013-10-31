@@ -1018,7 +1018,18 @@ void FrameView::layout(bool allowSubtree)
         TemporaryChange<bool> changeSchedulingEnabled(m_layoutSchedulingEnabled, false);
 
         m_nestedLayoutCount++;
-
+        if (!m_layoutRoot) {
+            Document* document = m_frame->document();
+            Node* body = document->body();
+            if (body && body->renderer()) {
+                if (body->hasTagName(framesetTag)) {
+                    body->renderer()->setChildNeedsLayout();
+                } else if (body->hasTagName(bodyTag)) {
+                    if (!m_firstLayout && m_size.height() != layoutSize().height() && body->renderer()->enclosingBox()->stretchesToViewport())
+                        body->renderer()->setChildNeedsLayout();
+                }
+            }
+        }
         updateCounters();
         autoSizeIfEnabled();
 
