@@ -91,8 +91,9 @@ camera.views.Dialog.prototype.onEnter = function(opt_arguments) {
   }
 
   this.messageElement_.textContent = opt_arguments.message;
-  this.positiveButton_.focus();
+
   document.body.classList.add('dialog');
+  this.positiveButton_.focus();
 };
 
 /**
@@ -101,6 +102,14 @@ camera.views.Dialog.prototype.onEnter = function(opt_arguments) {
  */
 camera.views.Dialog.prototype.onLeave = function() {
   document.body.classList.remove('dialog');
+};
+
+/**
+ * @override
+ */
+camera.views.Dialog.prototype.onInactivate = function() {
+  // Remove focus from the buttons (if focused).
+  document.activeElement.blur();
 };
 
 /**

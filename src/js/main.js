@@ -241,6 +241,7 @@ camera.Camera.prototype.start = function() {
   queue.run(function(callback) {
     this.tooltipManager_.initialize();
     this.viewsStack_.push(this.cameraView_);
+    camera.util.makeEmptyButtonsUnfocusable();
     callback();
   }.bind(this));
 };

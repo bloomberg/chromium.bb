@@ -176,6 +176,9 @@ camera.views.GalleryBase.prototype.deleteSelection = function() {
  * @protected
  */
 camera.views.GalleryBase.prototype.currentPicture = function() {
+  if (this.model.currentIndex === null)
+    return null;
+
   return this.pictures[this.model.currentIndex];
 };
 
@@ -206,21 +209,30 @@ camera.views.GalleryBase.prototype.onKeyPressed = function(event) {
   var currentPicture = this.currentPicture();
   switch (camera.util.getShortcutIdentifier(event)) {
     case 'Right':
-      this.model.currentIndex = Math.max(0, this.model.currentIndex - 1);
-      event.preventDefault();
+      if (this.model.length) {
+        if (!currentPicture)
+          this.model.currentIndex = this.model.length - 1;
+        else
+          this.model.currentIndex = Math.max(0, this.model.currentIndex - 1);
+      }
       break;
     case 'Left':
-      this.model.currentIndex =
-          Math.min(this.model.length - 1, this.model.currentIndex + 1);
-      event.preventDefault();
+      if (this.model.length) {
+        if (!currentPicture) {
+          this.model.currentIndex = 0;
+        } else {
+          this.model.currentIndex =
+              Math.min(this.model.length - 1, this.model.currentIndex + 1);
+        }
+      }
       break;
-    case 'End':
-      this.model.currentIndex = 0;
-      event.preventDefault();
+     case 'End':
+      if (this.model.length)
+        this.model.currentIndex = 0;
       break;
     case 'Home':
-      this.model.currentIndex = this.model.length - 1;
-      event.preventDefault();
+      if (this.model.length)
+        this.model.currentIndex = this.model.length - 1;
       break;
     case 'U+007F':  // Delete.
       event.preventDefault();

@@ -630,13 +630,14 @@ body.controls-visible #tooltip.visible {
   position: absolute;
   right: 0;
   top: 0;
-  transition: opacity 200ms;
+  transition: opacity 200ms, visibility 0;
   z-index: 1;
 }
 
 body:not(.dialog) #dialog {
   opacity: 0;
-  pointer-events: none;
+  transition: opacity 200ms, visibility 0 200ms;
+  visibility: hidden;
 }
 
 #dialog #dialog-popup {

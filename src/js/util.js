@@ -1003,7 +1003,6 @@ camera.util.PerformanceMonitor.prototype.finishMeasuring_ = function(
   this.timesSum_ += (performance.now() - startTime) / 1000;
 };
 
-
 /**
  * Returns a shortcut string, such as Ctrl-Alt-U+0041.
  * @param {Event} event Keyboard event.
@@ -1015,5 +1014,17 @@ camera.util.getShortcutIdentifier = function(event) {
          (event.shiftKey ? 'Shift-' : '') +
          (event.metaKey ? 'Meta-' : '') +
          event.keyIdentifier;
+};
+
+/**
+ * Makes all buttons which do not have text unfocusable.
+ */
+camera.util.makeEmptyButtonsUnfocusable = function() {
+  var buttons = document.querySelectorAll('button:empty');
+  for (var index = 0; index < buttons.length; index++) {
+    buttons[index].addEventListener('mousedown', function(event) {
+      event.preventDefault();
+    });
+  }
 };
 
