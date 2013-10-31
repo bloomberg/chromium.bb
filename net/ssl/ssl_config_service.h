@@ -100,6 +100,11 @@ struct NET_EXPORT SSLConfig {
   bool channel_id_enabled;   // True if TLS channel ID extension is enabled.
   bool false_start_enabled;  // True if we'll use TLS False Start.
 
+  // require_forward_secrecy, if true, causes only (EC)DHE cipher suites to be
+  // enabled. NOTE: this only applies to server sockets currently, although
+  // that could be extended if needed.
+  bool require_forward_secrecy;
+
   // If |unrestricted_ssl3_fallback_enabled| is true, SSL 3.0 fallback will be
   // enabled for all sites.
   // If |unrestricted_ssl3_fallback_enabled| is false, SSL 3.0 fallback will be
@@ -170,6 +175,7 @@ class NET_EXPORT SSLConfigService
     //     disabled_cipher_suites
     //     channel_id_enabled
     //     false_start_enabled
+    //     require_forward_secrecy
     virtual void OnSSLConfigChanged() = 0;
 
    protected:

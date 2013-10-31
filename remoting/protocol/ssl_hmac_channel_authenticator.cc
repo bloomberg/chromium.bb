@@ -73,11 +73,14 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
       return;
     }
 
+    net::SSLConfig ssl_config;
+    ssl_config.require_forward_secrecy = true;
+
     scoped_ptr<net::SSLServerSocket> server_socket =
         net::CreateSSLServerSocket(socket.Pass(),
                                    cert.get(),
                                    local_key_pair_->private_key(),
-                                   net::SSLConfig());
+                                   ssl_config);
     net::SSLServerSocket* raw_server_socket = server_socket.get();
     socket_ = server_socket.Pass();
     result = raw_server_socket->Handshake(
