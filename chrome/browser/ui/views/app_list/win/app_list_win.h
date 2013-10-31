@@ -10,10 +10,6 @@
 #include "chrome/browser/ui/views/app_list/win/activation_tracker_win.h"
 #include "ui/app_list/views/app_list_view.h"
 
-namespace content {
-class BrowserContext;
-}
-
 // Responsible for positioning, hiding and showing an AppListView on Windows.
 // This includes watching window activation/deactivation messages to determine
 // if the user has clicked away from it.
@@ -31,8 +27,7 @@ class AppListWin : public AppList {
   virtual void Prerender() OVERRIDE;
   virtual void RegainNextLostFocus() OVERRIDE;
   virtual gfx::NativeWindow GetWindow() OVERRIDE;
-  virtual void SetBrowserContext(
-      content::BrowserContext* browser_context) OVERRIDE;
+  virtual void SetProfile(Profile* profile) OVERRIDE;
 
   app_list::AppListModel* model() {
     return view_->model();

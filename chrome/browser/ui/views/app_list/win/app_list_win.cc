@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/app_list/win/app_list_win.h"
 
-#include "content/public/browser/browser_context.h"
+#include "chrome/browser/profiles/profile.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
@@ -158,6 +158,6 @@ gfx::NativeWindow AppListWin::GetWindow() {
   return view_->GetWidget()->GetNativeWindow();
 }
 
-void AppListWin::SetBrowserContext(content::BrowserContext* browser_context) {
-  view_->SetProfileByPath(browser_context->GetPath());
+void AppListWin::SetProfile(Profile* profile) {
+  view_->SetProfileByPath(profile->GetPath());
 }

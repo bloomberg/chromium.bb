@@ -5,39 +5,36 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/ui/app_list/app_list_shower.h"
-#include "content/public/browser/browser_context.h"
 
 AppListShower::AppListShower(scoped_ptr<AppListFactory> factory,
                              scoped_ptr<KeepAliveService> keep_alive)
     : factory_(factory.Pass()),
       keep_alive_service_(keep_alive.Pass()),
-      browser_context_(NULL),
+      profile_(NULL),
       can_close_app_list_(true) {
 }
 
 AppListShower::~AppListShower() {
 }
 
-void AppListShower::ShowAndReacquireFocus(
-    content::BrowserContext* requested_context) {
-  ShowForBrowserContext(requested_context);
+void AppListShower::ShowAndReacquireFocus(Profile* requested_profile) {
+  ShowForProfile(requested_profile);
   app_list_->RegainNextLostFocus();
 }
 
-void AppListShower::ShowForBrowserContext(
-    content::BrowserContext* requested_context) {
-  // If the app list is already displaying |requested_context| just activate it
-  // (in case we have lost focus).
-  if (IsAppListVisible() && (requested_context == browser_context_)) {
+void AppListShower::ShowForProfile(Profile* requested_profile) {
+  // If the app list is already displaying |profile| just activate it (in case
+  // we have lost focus).
+  if (IsAppListVisible() && (requested_profile == profile_)) {
     app_list_->Show();
     return;
   }
 
   if (!app_list_) {
-    CreateViewForBrowserContext(requested_context);
-  } else if (requested_context != browser_context_) {
-    browser_context_ = requested_context;
-    app_list_->SetBrowserContext(requested_context);
+    CreateViewForProfile(requested_profile);
+  } else if (requested_profile != profile_) {
+    profile_ = requested_profile;
+    app_list_->SetProfile(requested_profile);
   }
 
   keep_alive_service_->EnsureKeepAlive();
@@ -52,21 +49,20 @@ gfx::NativeWindow AppListShower::GetWindow() {
   return app_list_->GetWindow();
 }
 
-void AppListShower::CreateViewForBrowserContext(
-    content::BrowserContext* requested_context) {
+void AppListShower::CreateViewForProfile(Profile* requested_profile) {
   // Aura has problems with layered windows and bubble delegates. The app
   // launcher has a trick where it only hides the window when it is dismissed,
   // reshowing it again later. This does not work with win aura for some
   // reason. This change temporarily makes it always get recreated, only on
   // win aura. See http://crbug.com/176186.
 #if !defined(USE_AURA)
-  if (requested_context == browser_context_)
+  if (requested_profile == profile_)
     return;
 #endif
 
-  browser_context_ = requested_context;
+  profile_ = requested_profile;
   app_list_.reset(factory_->CreateAppList(
-      browser_context_,
+      profile_,
       base::Bind(&AppListShower::DismissAppList, base::Unretained(this))));
 }
 
@@ -79,7 +75,7 @@ void AppListShower::DismissAppList() {
 
 void AppListShower::CloseAppList() {
   app_list_.reset();
-  browser_context_ = NULL;
+  profile_ = NULL;
 
   // We may end up here as the result of the OS deleting the AppList's
   // widget (WidgetObserver::OnWidgetDestroyed). If this happens and there
@@ -103,9 +99,9 @@ bool AppListShower::IsAppListVisible() const {
   return app_list_ && app_list_->IsVisible();
 }
 
-void AppListShower::WarmupForProfile(content::BrowserContext* context) {
-  DCHECK(!browser_context_);
-  CreateViewForBrowserContext(context);
+void AppListShower::WarmupForProfile(Profile* profile) {
+  DCHECK(!profile_);
+  CreateViewForProfile(profile);
   app_list_->Prerender();
 }
 

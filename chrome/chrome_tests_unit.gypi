@@ -2896,6 +2896,7 @@
           'sources': [
             'browser/ui/app_list/app_list_service_unittest.cc',
             'browser/ui/app_list/profile_loader_unittest.cc',
+            'browser/ui/app_list/test/app_list_shower_unittest.cc',
             'browser/ui/app_list/test/fake_keep_alive_service.cc',
             'browser/ui/app_list/test/fake_keep_alive_service.h',
             'browser/ui/app_list/test/fake_profile.cc',
@@ -2903,26 +2904,6 @@
             'browser/ui/app_list/test/fake_profile_store.cc',
             'browser/ui/app_list/test/fake_profile_store.h',
             'browser/ui/app_list/test/fast_show_pickler_unittest.cc',
-          ],
-        },
-        {
-          # Like chrome_app_list_unittests, but for code that has minimal
-          # dependencies (ie: not browser_ui). Tests in
-          # chrome_app_list_unittests should be migrated to this target.
-          'target_name': 'fast_chrome_app_list_unittests',
-          'type': '<(gtest_target_type)',
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../base/base.gyp:run_all_unittests',
-            '../testing/gtest.gyp:gtest',
-            'chrome_app_list',
-          ],
-          'sources': [
-            'browser/ui/app_list/test/app_list_shower_unittest.cc',
-            'browser/ui/app_list/test/fake_browser_context.cc',
-            'browser/ui/app_list/test/fake_browser_context.h',
-            'browser/ui/app_list/test/fake_keep_alive_service.cc',
-            'browser/ui/app_list/test/fake_keep_alive_service.h',
           ],
         },
       ],
