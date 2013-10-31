@@ -77,6 +77,7 @@
 #include "core/plugins/PluginData.h"
 #include "core/rendering/HitTestResult.h"
 #include "modules/device_orientation/DeviceMotionController.h"
+#include "modules/device_orientation/NewDeviceOrientationController.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/exported/WrappedResourceResponse.h"
@@ -128,6 +129,8 @@ void FrameLoaderClientImpl::dispatchDidClearWindowObjectInWorld(DOMWrapperWorld*
             WheelController::from(document);
             if (RuntimeEnabledFeatures::deviceMotionEnabled())
                 DeviceMotionController::from(document);
+            if (RuntimeEnabledFeatures::deviceOrientationEnabled())
+                NewDeviceOrientationController::from(document);
         }
     }
 }

@@ -1551,9 +1551,6 @@ bool DOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<Event
             // Subframes return false from allowsBeforeUnloadListeners.
             UseCounter::count(this, UseCounter::SubFrameBeforeUnloadRegistered);
         }
-    } else if (eventType == EventTypeNames::deviceorientation && RuntimeEnabledFeatures::deviceOrientationEnabled()) {
-        if (NewDeviceOrientationController* controller = NewDeviceOrientationController::from(document()))
-            controller->startUpdating();
     }
 
     return true;
@@ -1575,9 +1572,6 @@ bool DOMWindow::removeEventListener(const AtomicString& eventType, EventListener
         removeUnloadEventListener(this);
     } else if (eventType == EventTypeNames::beforeunload && allowsBeforeUnloadListeners(this)) {
         removeBeforeUnloadEventListener(this);
-    } else if (eventType == EventTypeNames::deviceorientation) {
-        if (NewDeviceOrientationController* controller = NewDeviceOrientationController::from(document()))
-            controller->stopUpdating();
     }
 
     return true;
@@ -1633,8 +1627,6 @@ void DOMWindow::removeAllEventListeners()
 
     lifecycleNotifier().notifyRemoveAllEventListeners(this);
 
-    if (NewDeviceOrientationController* controller = NewDeviceOrientationController::from(document()))
-        controller->stopUpdating();
     if (Document* document = this->document())
         document->didRemoveEventTargetNode(document);
 
