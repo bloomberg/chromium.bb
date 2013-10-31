@@ -65,22 +65,22 @@ public:
 private:
     HTMLVideoElement(const QualifiedName&, Document&, bool);
 
-    virtual bool rendererIsNeeded(const RenderStyle&);
-    virtual RenderObject* createRenderer(RenderStyle*);
+    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
-    virtual bool isVideo() const { return true; }
-    virtual bool hasVideo() const { return player() && player()->hasVideo(); }
-    virtual bool supportsFullscreen() const;
+    virtual bool isVideo() const OVERRIDE { return true; }
+    virtual bool hasVideo() const OVERRIDE { return player() && player()->hasVideo(); }
+    virtual bool supportsFullscreen() const OVERRIDE;
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
     virtual const AtomicString imageSourceURL() const OVERRIDE;
 
     virtual bool hasAvailableVideoFrame() const;
-    virtual void updateDisplayState();
+    virtual void updateDisplayState() OVERRIDE;
     virtual void didMoveToNewDocument(Document& oldDocument) OVERRIDE;
-    virtual void setDisplayMode(DisplayMode);
+    virtual void setDisplayMode(DisplayMode) OVERRIDE;
 
     OwnPtr<HTMLImageLoader> m_imageLoader;
 

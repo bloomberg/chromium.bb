@@ -79,11 +79,11 @@ public:
     MediaPlayer* player() const { return m_player.get(); }
 
     virtual bool isVideo() const = 0;
-    virtual bool hasVideo() const { return false; }
-    virtual bool hasAudio() const;
+    virtual bool hasVideo() const OVERRIDE { return false; }
+    virtual bool hasAudio() const OVERRIDE;
 
     // Eventually overloaded in HTMLVideoElement
-    virtual bool supportsFullscreen() const { return false; };
+    virtual bool supportsFullscreen() const OVERRIDE { return false; };
 
     virtual bool supportsSave() const;
 
@@ -230,12 +230,12 @@ public:
 
     // TextTrackClient
     virtual void textTrackReadyStateChanged(TextTrack*);
-    virtual void textTrackKindChanged(TextTrack*);
-    virtual void textTrackModeChanged(TextTrack*);
-    virtual void textTrackAddCues(TextTrack*, const TextTrackCueList*);
-    virtual void textTrackRemoveCues(TextTrack*, const TextTrackCueList*);
-    virtual void textTrackAddCue(TextTrack*, PassRefPtr<TextTrackCue>);
-    virtual void textTrackRemoveCue(TextTrack*, PassRefPtr<TextTrackCue>);
+    virtual void textTrackKindChanged(TextTrack*) OVERRIDE;
+    virtual void textTrackModeChanged(TextTrack*) OVERRIDE;
+    virtual void textTrackAddCues(TextTrack*, const TextTrackCueList*) OVERRIDE;
+    virtual void textTrackRemoveCues(TextTrack*, const TextTrackCueList*) OVERRIDE;
+    virtual void textTrackAddCue(TextTrack*, PassRefPtr<TextTrackCue>) OVERRIDE;
+    virtual void textTrackRemoveCue(TextTrack*, PassRefPtr<TextTrackCue>) OVERRIDE;
 
     // EventTarget function.
     // Both Node (via HTMLElement) and ActiveDOMObject define this method, which
@@ -286,7 +286,7 @@ protected:
     virtual ~HTMLMediaElement();
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual void finishParsingChildren();
+    virtual void finishParsingChildren() OVERRIDE;
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
 
@@ -296,7 +296,7 @@ protected:
     DisplayMode displayMode() const { return m_displayMode; }
     virtual void setDisplayMode(DisplayMode mode) { m_displayMode = mode; }
 
-    virtual bool isMediaElement() const { return true; }
+    virtual bool isMediaElement() const OVERRIDE { return true; }
 
     // Restrictions to change default behaviors.
     enum BehaviorRestrictionFlags {
@@ -327,21 +327,21 @@ private:
     virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
 
     virtual bool hasCustomFocusLogic() const OVERRIDE;
-    virtual bool supportsFocus() const;
-    virtual bool isMouseFocusable() const;
-    virtual bool rendererIsNeeded(const RenderStyle&);
-    virtual RenderObject* createRenderer(RenderStyle*);
+    virtual bool supportsFocus() const OVERRIDE;
+    virtual bool isMouseFocusable() const OVERRIDE;
+    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
     virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE;
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;
-    virtual void didRecalcStyle(StyleRecalcChange);
+    virtual void didRecalcStyle(StyleRecalcChange) OVERRIDE;
 
-    virtual void didBecomeFullscreenElement();
-    virtual void willStopBeingFullscreenElement();
+    virtual void didBecomeFullscreenElement() OVERRIDE;
+    virtual void willStopBeingFullscreenElement() OVERRIDE;
     virtual bool isInteractiveContent() const OVERRIDE;
 
     // ActiveDOMObject functions.
-    virtual void stop();
+    virtual void stop() OVERRIDE;
 
     virtual void updateDisplayState() { }
 
@@ -445,7 +445,7 @@ private:
     void prepareMediaFragmentURI();
     void applyMediaFragmentURI();
 
-    virtual void* preDispatchEventHandler(Event*);
+    virtual void* preDispatchEventHandler(Event*) OVERRIDE;
 
     void changeNetworkStateFromLoadingToIdle();
 
