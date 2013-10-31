@@ -20,7 +20,6 @@ const int kPendingUserActionTimeout = 5;  // in seconds
 
 const char kPrivetInfo[] = "/privet/info";
 const char kPrivetRegister[] = "/privet/register";
-const char kPrivetAccessToken[] = "/privet/accesstoken";
 const char kPrivetCapabilities[] = "/privet/capabilities";
 const char kPrivetPrinterCreateJob[] = "/privet/printer/createjob";
 const char kPrivetPrinterSubmitDoc[] = "/privet/printer/submitdoc";
@@ -503,4 +502,3 @@ void PrivetHttpServer::ProcessRegistrationStatus(
       NOTREACHED();
   };
 }
-

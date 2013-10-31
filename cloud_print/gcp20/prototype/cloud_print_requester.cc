@@ -31,6 +31,16 @@ const char kPrinterCapsHashValue[] = "capsHash";
 const char kPrinterUserValue[] = "user";
 const char kPrinterGcpVersion[] = "gcp_version";
 const char kPrinterLocalSettings[] = "local_settings";
+const char kPrinterFirmware[] = "firmware";
+const char kPrinterManufacturer[] = "manufacturer";
+const char kPrinterModel[] = "model";
+const char kPrinterSetupUrl[] = "setup_url";
+const char kPrinterSupportUrl[] = "support_url";
+const char kPrinterUpdateUrl[] = "update_url";
+
+const char kFirmwareValue[] = "2.0";
+const char kManufacturerValue[] = "Google";
+const char kModelValue[] = "GCPPrototype";
 
 // TODO(maksymb): Replace GCP Version with "2.0" once GCP Server will support it
 const char kGcpVersion[] = "1.5";
@@ -139,6 +149,24 @@ void CloudPrintRequester::StartRegistration(const std::string& proxy_id,
                                   mime_boundary, std::string(), &data);
   net::AddMultipartValueForUpload(kPrinterLocalSettings,
                                   LocalSettingsToJson(settings),
+                                  mime_boundary, std::string(), &data);
+  net::AddMultipartValueForUpload(kPrinterFirmware,
+                                  kFirmwareValue,
+                                  mime_boundary, std::string(), &data);
+  net::AddMultipartValueForUpload(kPrinterManufacturer,
+                                  kManufacturerValue,
+                                  mime_boundary, std::string(), &data);
+  net::AddMultipartValueForUpload(kPrinterModel,
+                                  kModelValue,
+                                  mime_boundary, std::string(), &data);
+  net::AddMultipartValueForUpload(kPrinterSetupUrl,
+                                  kCloudPrintUrl,
+                                  mime_boundary, std::string(), &data);
+  net::AddMultipartValueForUpload(kPrinterSupportUrl,
+                                  kCloudPrintUrl,
+                                  mime_boundary, std::string(), &data);
+  net::AddMultipartValueForUpload(kPrinterUpdateUrl,
+                                  kCloudPrintUrl,
                                   mime_boundary, std::string(), &data);
   net::AddMultipartFinalDelimiterForUpload(mime_boundary, &data);
 
@@ -438,4 +466,3 @@ void CloudPrintRequester::ParseLocalSettingUpdated(
     const std::string& response) {
   delegate_->OnLocalSettingsUpdated();
 }
-
