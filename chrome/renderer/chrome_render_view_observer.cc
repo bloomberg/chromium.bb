@@ -754,6 +754,15 @@ bool ChromeRenderViewObserver::allowRunningInsecureContent(
   return true;
 }
 
+bool ChromeRenderViewObserver::allowWebGLDebugRendererInfo(WebFrame* frame) {
+  bool allowed = false;
+  Send(new ChromeViewHostMsg_IsWebGLDebugRendererInfoAllowed(
+      routing_id(),
+      GURL(frame->top()->document().securityOrigin().toString().utf8()),
+      &allowed));
+  return allowed;
+}
+
 void ChromeRenderViewObserver::didNotAllowPlugins(WebFrame* frame) {
   content_settings_->DidNotAllowPlugins();
 }

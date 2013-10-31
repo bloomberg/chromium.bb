@@ -8,6 +8,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
@@ -23,10 +25,12 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -147,6 +151,8 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnCanTriggerClipboardRead)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CanTriggerClipboardWrite,
                         OnCanTriggerClipboardWrite)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_IsWebGLDebugRendererInfoAllowed,
+                        OnIsWebGLDebugRendererInfoAllowed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -624,6 +630,28 @@ void ChromeRenderMessageFilter::OnCanTriggerClipboardWrite(
   *allowed = (origin.SchemeIs(extensions::kExtensionScheme) ||
       extension_info_map_->SecurityOriginHasAPIPermission(
           origin, render_process_id_, APIPermission::kClipboardWrite));
+}
+
+void ChromeRenderMessageFilter::OnIsWebGLDebugRendererInfoAllowed(
+    const GURL& origin, bool* allowed) {
+  *allowed = false;
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kDisableWebGLDebugRendererInfo))
+    return;
+
+  // TODO(zmo): in this experimental stage, we only expose WebGL extension
+  // WEBGL_debug_renderer_info for Google domains. Once we finish the experiment
+  // and make a decision, this extension should be avaiable to all or none.
+  if (!google_util::IsGoogleDomainUrl(origin, google_util::ALLOW_SUBDOMAIN,
+                                      google_util::ALLOW_NON_STANDARD_PORTS)) {
+    return;
+  }
+
+  const char kWebGLDebugRendererInfoFieldTrialName[] = "WebGLDebugRendererInfo";
+  const char kWebGLDebugRendererInfoFieldTrialEnabledName[] = "enabled";
+  *allowed = (base::FieldTrialList::FindFullName(
+      kWebGLDebugRendererInfoFieldTrialName) ==
+      kWebGLDebugRendererInfoFieldTrialEnabledName);
 }
 
 void ChromeRenderMessageFilter::OnGetCookies(

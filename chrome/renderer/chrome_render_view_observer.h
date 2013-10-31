@@ -110,6 +110,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   virtual bool allowMutationEvents(const WebKit::WebDocument&,
                                    bool default_value);
   virtual bool allowPushState(const WebKit::WebDocument&);
+  virtual bool allowWebGLDebugRendererInfo(WebKit::WebFrame* frame);
   virtual void didNotAllowPlugins(WebKit::WebFrame* frame);
   virtual void didNotAllowScript(WebKit::WebFrame* frame);
   virtual bool allowDisplayingInsecureContent(

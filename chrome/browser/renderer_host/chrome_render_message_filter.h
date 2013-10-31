@@ -179,6 +179,7 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
                         bool* allowed);
   void OnCanTriggerClipboardRead(const GURL& origin, bool* allowed);
   void OnCanTriggerClipboardWrite(const GURL& origin, bool* allowed);
+  void OnIsWebGLDebugRendererInfoAllowed(const GURL& origin, bool* allowed);
   void OnGetCookies(const GURL& url,
                     const GURL& first_party_for_cookies,
                     IPC::Message* reply_msg);
