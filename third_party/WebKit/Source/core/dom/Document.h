@@ -840,8 +840,6 @@ public:
 
     void finishedParsing();
 
-    void documentWillBecomeInactive();
-
     void setDecoder(PassRefPtr<TextResourceDecoder>);
     TextResourceDecoder* decoder() const { return m_decoder.get(); }
 
