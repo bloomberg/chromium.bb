@@ -364,12 +364,12 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     ],
 
     # https://code.google.com/p/colorama/issues/detail?id=44
-    'tools/swarm_client/third_party/colorama': [
+    'tools/swarming_client/third_party/colorama': [
         'UNKNOWN',
     ],
 
     # https://github.com/kennethreitz/requests/issues/1610
-    'tools/swarm_client/third_party/requests': [
+    'tools/swarming_client/third_party/requests': [
         'UNKNOWN',
     ],
 

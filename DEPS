@@ -54,9 +54,9 @@ vars = {
   "jsoncpp_revision": "248",
   "nss_revision": "231937",
   # Three lines of non-changing comments so that
-  # the commit queue can handle CLs rolling swarm_client
+  # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
-  "swarm_revision": "230741",
+  "swarming_revision": "141ef86f4abf255e578320bfe6e42006c251bc39",
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling openssl
   # and whatever else without interference from each other.
@@ -117,8 +117,9 @@ deps = {
   "src/tools/gyp":
     (Var("googlecode_url") % "gyp") + "/trunk@1773",
 
-  "src/tools/swarm_client":
-    "/trunk/tools/swarm_client@" + Var("swarm_revision"),
+  "src/tools/swarming_client":
+    Var("chromium_git") + "/external/swarming.client.git@" +
+        Var("swarming_revision"),
 
   "src/v8":
     (Var("googlecode_url") % "v8") + "/trunk@" + Var("v8_revision"),

@@ -31,7 +31,7 @@
           '../third_party/pyftpdlib/',
           '../third_party/pywebsocket/',
           '../third_party/tlslite/',
-          '../tools/swarm_client/',
+          '../tools/swarming_client/',
           '<(PRODUCT_DIR)/pyproto/',
           'tools/testserver/',
         ],
