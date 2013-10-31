@@ -507,8 +507,6 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
     case Resource::LinkSubresource:
         break;
     case Resource::TextTrack:
-        // Cues aren't called out in the CSP spec yet, but they only work with a media element
-        // so use the media policy.
         if (!shouldBypassMainWorldContentSecurityPolicy && !m_document->contentSecurityPolicy()->allowMediaFromSource(url))
             return false;
         break;
