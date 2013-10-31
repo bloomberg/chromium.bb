@@ -131,7 +131,7 @@ camera.views.Album.prototype.onCurrentIndexChanged = function(
  */
 camera.views.Album.prototype.onKeyPressed = function(event) {
   var currentPicture = this.currentPicture();
-  switch (event.keyIdentifier) {
+  switch (camera.util.getShortcutIdentifier(event)) {
    case 'Down':
       for (var index = this.model.currentIndex - 1; index >= 0; index--) {
         if (currentPicture.element.offsetLeft ==
@@ -153,10 +153,11 @@ camera.views.Album.prototype.onKeyPressed = function(event) {
         }
       }
       event.preventDefault();
-      retunr;
+      return;
     case 'Enter':
       if (this.model.length)
         this.router.navigate(camera.Router.ViewIdentifier.BROWSER);
+      event.preventDefault();
       return;
   }
 

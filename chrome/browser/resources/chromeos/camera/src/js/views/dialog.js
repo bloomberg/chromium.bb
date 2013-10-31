@@ -125,9 +125,10 @@ camera.views.Dialog.prototype.onNegativeButtonClicked_ = function(event) {
  * @override
  */
 camera.views.Dialog.prototype.onKeyPressed = function(event) {
-  switch (event.keyIdentifier) {
-    case 'U+001B':
+  switch (camera.util.getShortcutIdentifier(event)) {
+    case 'U+001B':  // Escape.
       this.router.back({isPositive: false});
+      event.preventDefault();
       break;
   }
 };
