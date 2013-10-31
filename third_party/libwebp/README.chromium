@@ -28,3 +28,4 @@ Cherry-picks:
   40ae352 Fix memleak in WebPIDelete()
   92d47e4 improve VP8L signature detection by checking the version bits too
   dde91fd Demux: Correct the extended format validation
+  96ad0e0 VPLBitReader: Catch error if bit_pos > LBITS.
