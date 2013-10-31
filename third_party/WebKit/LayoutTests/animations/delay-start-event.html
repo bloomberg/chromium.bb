@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style type="text/css">
+    .target {
+      position: relative;
+      height: 100px;
+      width: 100px;
+      background-color: red;
+      margin-bottom: 10px;
+    }
+    .animated {
+      -webkit-animation: test 1s linear;
+      animation: test 1s linear;
+    }
+    #negative-delay {
+      -webkit-animation-delay: -200ms;
+      animation-delay: -200ms;
+    }
+    #zero-delay {
+      -webkit-animation-delay: 0ms;
+      animation-delay: 0ms;
+    }
+    #positive-delay {
+      -webkit-animation-delay: 200ms;
+      animation-delay: 200ms;
+    }
+    @-webkit-keyframes test {
+        from { left: 100px; }
+        to   { left: 300px; }
+    }
+    @keyframes test {
+        from { left: 100px; }
+        to   { left: 300px; }
+    }
+  </style>
+  <script type="text/javascript">
+    if (window.testRunner) {
+      testRunner.dumpAsText();
+      testRunner.waitUntilDone();
+    }
+
+    function log(message) {
+      var div = document.createElement('div');
+      div.textContent = message;
+      document.body.appendChild(div);
+    }
+
+    function startNextAnimation(currentId) {
+      // Running animations serially avoids flakiness due to overlap.
+      if (currentId === 'negative-delay') {
+        start(document.getElementById('zero-delay'), true);
+      } else if (currentId === 'zero-delay') {
+        start(document.getElementById('positive-delay'), false);
+      } else if (currentId === 'positive-delay' && window.testRunner) {
+        testRunner.notifyDone();
+      }
+    }
+
+    function onStartEventFired(expectStartEventImmediately, e) {
+      var id = e.target.id;
+      var pass = (expectStartEventImmediately !== timeoutFired);
+      log((pass ? 'PASS' : 'FAIL') + ': ' + id + ': Start event ' + (timeoutFired ? 'did not fire' : 'fired') + ' immediately');
+      startNextAnimation(id);
+    }
+
+    var lastTimeoutId;
+    var timeoutFired;
+    function start(target, expectStartEventImmediately) {
+      clearTimeout(lastTimeoutId);
+      timeoutFired = false;
+      lastTimeoutId = setTimeout(function() {
+        timeoutFired = true;
+      }, 100);
+      target.addEventListener('webkitAnimationStart', onStartEventFired.bind(null, expectStartEventImmediately));
+      target.classList.add('animated');
+    }
+
+    function go() {
+      start(document.getElementById('negative-delay'), true);
+    }
+  </script>
+</head>
+<body onload="go()">
+  <p>Tests that the start event is fired at the correct time with different start delays.</p>
+  <div class="target" id="negative-delay"></div>
+  <div class="target" id="zero-delay"></div>
+  <div class="target" id="positive-delay"></div>
+  <div id="result"></div>
+</body>
+</html>
