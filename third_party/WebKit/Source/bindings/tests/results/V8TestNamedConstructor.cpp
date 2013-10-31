@@ -67,15 +67,15 @@ template <typename T> void V8_USE(T) { }
 
 const WrapperTypeInfo V8TestNamedConstructorConstructor::wrapperTypeInfo = { V8TestNamedConstructorConstructor::GetTemplate, V8TestNamedConstructor::derefObject, V8TestNamedConstructor::toActiveDOMObject, 0, 0, V8TestNamedConstructor::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
-static void V8TestNamedConstructorConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void V8TestNamedConstructorConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (!args.IsConstructCall()) {
-        throwTypeError(ExceptionMessages::failedToConstruct("Audio", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), args.GetIsolate());
+    if (!info.IsConstructCall()) {
+        throwTypeError(ExceptionMessages::failedToConstruct("Audio", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), info.GetIsolate());
         return;
     }
 
     if (ConstructorMode::current() == ConstructorMode::WrapExistingObject) {
-        args.GetReturnValue().Set(args.Holder());
+        info.GetReturnValue().Set(info.Holder());
         return;
     }
 
@@ -84,24 +84,24 @@ static void V8TestNamedConstructorConstructorCallback(const v8::FunctionCallback
 
     // Make sure the document is added to the DOM Node map. Otherwise, the TestNamedConstructor instance
     // may end up being the only node in the map and get garbage-collected prematurely.
-    toV8(document, args.Holder(), args.GetIsolate());
+    toV8(document, info.Holder(), info.GetIsolate());
 
-    if (UNLIKELY(args.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("NamedConstructor", "TestNamedConstructor", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("NamedConstructor", "TestNamedConstructor", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    ExceptionState es(args.GetIsolate());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str1, args[0]);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str2, args[1]);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str3, argumentOrNull(args, 2));
+    ExceptionState es(info.GetIsolate());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str1, info[0]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str2, info[1]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str3, argumentOrNull(info, 2));
 
     RefPtr<TestNamedConstructor> impl = TestNamedConstructor::createForJSConstructor(*document, str1, str2, str3, es);
-    v8::Handle<v8::Object> wrapper = args.Holder();
+    v8::Handle<v8::Object> wrapper = info.Holder();
     if (es.throwIfNeeded())
         return;
 
-    V8DOMWrapper::associateObjectWithWrapper<V8TestNamedConstructor>(impl.release(), &V8TestNamedConstructorConstructor::wrapperTypeInfo, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
-    args.GetReturnValue().Set(wrapper);
+    V8DOMWrapper::associateObjectWithWrapper<V8TestNamedConstructor>(impl.release(), &V8TestNamedConstructorConstructor::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
+    info.GetReturnValue().Set(wrapper);
 }
 
 v8::Handle<v8::FunctionTemplate> V8TestNamedConstructorConstructor::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)

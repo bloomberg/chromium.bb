@@ -41,35 +41,35 @@
 
 namespace WebCore {
 
-void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (!args.Length()) {
+    if (!info.Length()) {
         RefPtr<Blob> blob = Blob::create();
-        args.GetReturnValue().Set(toV8(blob.get(), args.Holder(), args.GetIsolate()));
+        info.GetReturnValue().Set(toV8(blob.get(), info.Holder(), info.GetIsolate()));
         return;
     }
 
-    v8::Local<v8::Value> firstArg = args[0];
+    v8::Local<v8::Value> firstArg = info[0];
     if (!firstArg->IsArray()) {
-        throwTypeError("First argument of the constructor is not of type Array", args.GetIsolate());
+        throwTypeError("First argument of the constructor is not of type Array", info.GetIsolate());
         return;
     }
 
     String type;
     String endings = "transparent";
 
-    if (args.Length() > 1) {
-        if (!args[1]->IsObject()) {
-            throwTypeError("Second argument of the constructor is not of type Object", args.GetIsolate());
+    if (info.Length() > 1) {
+        if (!info[1]->IsObject()) {
+            throwTypeError("Second argument of the constructor is not of type Object", info.GetIsolate());
             return;
         }
 
-        V8TRYCATCH_VOID(Dictionary, dictionary, Dictionary(args[1], args.GetIsolate()));
+        V8TRYCATCH_VOID(Dictionary, dictionary, Dictionary(info[1], info.GetIsolate()));
 
         V8TRYCATCH_VOID(bool, containsEndings, dictionary.get("endings", endings));
         if (containsEndings) {
             if (endings != "transparent" && endings != "native") {
-                throwTypeError("The endings property must be either \"transparent\" or \"native\"", args.GetIsolate());
+                throwTypeError("The endings property must be either \"transparent\" or \"native\"", info.GetIsolate());
                 return;
             }
         }
@@ -77,7 +77,7 @@ void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
         V8TRYCATCH_VOID(bool, containsType, dictionary.get("type", type));
         UNUSED_PARAM(containsType);
         if (!type.containsOnlyASCII()) {
-            throwError(v8SyntaxError, "type must consist of ASCII characters", args.GetIsolate());
+            throwError(v8SyntaxError, "type must consist of ASCII characters", info.GetIsolate());
             return;
         }
         type = type.lower();
@@ -91,17 +91,17 @@ void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
     uint32_t length = blobParts->Length();
 
     for (uint32_t i = 0; i < length; ++i) {
-        v8::Local<v8::Value> item = blobParts->Get(v8::Uint32::New(i, args.GetIsolate()));
+        v8::Local<v8::Value> item = blobParts->Get(v8::Uint32::New(i, info.GetIsolate()));
         ASSERT(!item.IsEmpty());
-        if (V8ArrayBuffer::HasInstance(item, args.GetIsolate(), worldType(args.GetIsolate()))) {
+        if (V8ArrayBuffer::HasInstance(item, info.GetIsolate(), worldType(info.GetIsolate()))) {
             ArrayBuffer* arrayBuffer = V8ArrayBuffer::toNative(v8::Handle<v8::Object>::Cast(item));
             ASSERT(arrayBuffer);
             blobBuilder.append(arrayBuffer);
-        } else if (V8ArrayBufferView::HasInstance(item, args.GetIsolate(), worldType(args.GetIsolate()))) {
+        } else if (V8ArrayBufferView::HasInstance(item, info.GetIsolate(), worldType(info.GetIsolate()))) {
             ArrayBufferView* arrayBufferView = V8ArrayBufferView::toNative(v8::Handle<v8::Object>::Cast(item));
             ASSERT(arrayBufferView);
             blobBuilder.append(arrayBufferView);
-        } else if (V8Blob::HasInstance(item, args.GetIsolate(), worldType(args.GetIsolate()))) {
+        } else if (V8Blob::HasInstance(item, info.GetIsolate(), worldType(info.GetIsolate()))) {
             Blob* blob = V8Blob::toNative(v8::Handle<v8::Object>::Cast(item));
             ASSERT(blob);
             blobBuilder.append(blob);
@@ -112,7 +112,7 @@ void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
     }
 
     RefPtr<Blob> blob = blobBuilder.getBlob(type);
-    args.GetReturnValue().Set(toV8(blob.get(), args.Holder(), args.GetIsolate()));
+    info.GetReturnValue().Set(toV8(blob.get(), info.Holder(), info.GetIsolate()));
 }
 
 } // namespace WebCore

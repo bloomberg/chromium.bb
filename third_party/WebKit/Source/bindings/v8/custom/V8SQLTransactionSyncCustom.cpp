@@ -44,25 +44,25 @@ using namespace WTF;
 
 namespace WebCore {
 
-void V8SQLTransactionSync::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8SQLTransactionSync::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (!args.Length()) {
-        setDOMException(SyntaxError, args.GetIsolate());
+    if (!info.Length()) {
+        setDOMException(SyntaxError, info.GetIsolate());
         return;
     }
 
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, statement, args[0]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, statement, info[0]);
 
     Vector<SQLValue> sqlValues;
 
-    if (args.Length() > 1 && !isUndefinedOrNull(args[1])) {
-        if (!args[1]->IsObject()) {
-            setDOMException(TypeMismatchError, args.GetIsolate());
+    if (info.Length() > 1 && !isUndefinedOrNull(info[1])) {
+        if (!info[1]->IsObject()) {
+            setDOMException(TypeMismatchError, info.GetIsolate());
             return;
         }
 
         uint32_t sqlArgsLength = 0;
-        v8::Local<v8::Object> sqlArgsObject = args[1]->ToObject();
+        v8::Local<v8::Object> sqlArgsObject = info[1]->ToObject();
         V8TRYCATCH_VOID(v8::Local<v8::Value>, length, sqlArgsObject->Get(v8::String::New("length")));
 
         if (isUndefinedOrNull(length))
@@ -71,7 +71,7 @@ void V8SQLTransactionSync::executeSqlMethodCustom(const v8::FunctionCallbackInfo
             sqlArgsLength = length->Uint32Value();
 
         for (unsigned int i = 0; i < sqlArgsLength; ++i) {
-            v8::Handle<v8::Integer> key = v8::Integer::New(i, args.GetIsolate());
+            v8::Handle<v8::Integer> key = v8::Integer::New(i, info.GetIsolate());
             V8TRYCATCH_VOID(v8::Local<v8::Value>, value, sqlArgsObject->Get(key));
 
             if (value.IsEmpty() || value->IsNull())
@@ -86,14 +86,14 @@ void V8SQLTransactionSync::executeSqlMethodCustom(const v8::FunctionCallbackInfo
         }
     }
 
-    SQLTransactionSync* transaction = V8SQLTransactionSync::toNative(args.Holder());
+    SQLTransactionSync* transaction = V8SQLTransactionSync::toNative(info.Holder());
 
-    ExceptionState es(args.GetIsolate());
-    v8::Handle<v8::Value> result = toV8(transaction->executeSQL(statement, sqlValues, es), args.Holder(), args.GetIsolate());
+    ExceptionState es(info.GetIsolate());
+    v8::Handle<v8::Value> result = toV8(transaction->executeSQL(statement, sqlValues, es), info.Holder(), info.GetIsolate());
     if (es.throwIfNeeded())
         return;
 
-    v8SetReturnValue(args, result);
+    v8SetReturnValue(info, result);
 }
 
 } // namespace WebCore

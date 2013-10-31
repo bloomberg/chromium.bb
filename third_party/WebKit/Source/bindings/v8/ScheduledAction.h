@@ -60,7 +60,7 @@ private:
 
     ScopedPersistent<v8::Context> m_context;
     ScopedPersistent<v8::Function> m_function;
-    Vector<UnsafePersistent<v8::Value> > m_args;
+    Vector<UnsafePersistent<v8::Value> > m_info;
     ScriptSourceCode m_code;
     v8::Isolate* m_isolate;
 };

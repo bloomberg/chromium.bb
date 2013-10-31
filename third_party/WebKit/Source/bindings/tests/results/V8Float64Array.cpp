@@ -70,33 +70,33 @@ namespace Float64ArrayV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
-static void fooMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void fooMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(args.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("foo", "Float64Array", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("foo", "Float64Array", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    Float64Array* imp = V8Float64Array::toNative(args.Holder());
-    V8TRYCATCH_VOID(Float32Array*, array, args[0]->IsFloat32Array() ? V8Float32Array::toNative(v8::Handle<v8::Float32Array>::Cast(args[0])) : 0);
-    v8SetReturnValue(args, imp->foo(array));
+    Float64Array* imp = V8Float64Array::toNative(info.Holder());
+    V8TRYCATCH_VOID(Float32Array*, array, info[0]->IsFloat32Array() ? V8Float32Array::toNative(v8::Handle<v8::Float32Array>::Cast(info[0])) : 0);
+    v8SetReturnValue(info, imp->foo(array));
 }
 
-static void fooMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void fooMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    Float64ArrayV8Internal::fooMethod(args);
+    Float64ArrayV8Internal::fooMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void setMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void setMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    setWebGLArrayHelper<Float64Array, V8Float64Array>(args);
+    setWebGLArrayHelper<Float64Array, V8Float64Array>(info);
 }
 
-static void setMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void setMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    Float64ArrayV8Internal::setMethod(args);
+    Float64ArrayV8Internal::setMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -129,20 +129,20 @@ static const V8DOMConfiguration::MethodConfiguration V8Float64ArrayMethods[] = {
     {"set", Float64ArrayV8Internal::setMethodCallback, 0, 0},
 };
 
-void V8Float64Array::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8Float64Array::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "DOMConstructor");
-    if (!args.IsConstructCall()) {
-        throwTypeError(ExceptionMessages::failedToConstruct("Float64Array", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), args.GetIsolate());
+    if (!info.IsConstructCall()) {
+        throwTypeError(ExceptionMessages::failedToConstruct("Float64Array", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), info.GetIsolate());
         return;
     }
 
     if (ConstructorMode::current() == ConstructorMode::WrapExistingObject) {
-        args.GetReturnValue().Set(args.Holder());
+        info.GetReturnValue().Set(info.Holder());
         return;
     }
 
-    Float64ArrayV8Internal::constructor(args);
+    Float64ArrayV8Internal::constructor(info);
 }
 
 static v8::Handle<v8::FunctionTemplate> ConfigureV8Float64ArrayTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)

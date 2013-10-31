@@ -66,22 +66,22 @@ struct IdentifierRep {
 
 // FIXME: need comments.
 // Params: holder could be HTMLEmbedElement or NPObject
-static void npObjectInvokeImpl(const v8::FunctionCallbackInfo<v8::Value>& args, InvokeFunctionType functionId)
+static void npObjectInvokeImpl(const v8::FunctionCallbackInfo<v8::Value>& info, InvokeFunctionType functionId)
 {
     NPObject* npObject;
 
-    WrapperWorldType currentWorldType = worldType(args.GetIsolate());
+    WrapperWorldType currentWorldType = worldType(info.GetIsolate());
     // These three types are subtypes of HTMLPlugInElement.
-    if (V8HTMLAppletElement::HasInstance(args.Holder(), args.GetIsolate(), currentWorldType) || V8HTMLEmbedElement::HasInstance(args.Holder(), args.GetIsolate(), currentWorldType)
-        || V8HTMLObjectElement::HasInstance(args.Holder(), args.GetIsolate(), currentWorldType)) {
+    if (V8HTMLAppletElement::HasInstance(info.Holder(), info.GetIsolate(), currentWorldType) || V8HTMLEmbedElement::HasInstance(info.Holder(), info.GetIsolate(), currentWorldType)
+        || V8HTMLObjectElement::HasInstance(info.Holder(), info.GetIsolate(), currentWorldType)) {
         // The holder object is a subtype of HTMLPlugInElement.
         HTMLPlugInElement* element;
-        if (V8HTMLAppletElement::HasInstance(args.Holder(), args.GetIsolate(), currentWorldType))
-            element = V8HTMLAppletElement::toNative(args.Holder());
-        else if (V8HTMLEmbedElement::HasInstance(args.Holder(), args.GetIsolate(), currentWorldType))
-            element = V8HTMLEmbedElement::toNative(args.Holder());
+        if (V8HTMLAppletElement::HasInstance(info.Holder(), info.GetIsolate(), currentWorldType))
+            element = V8HTMLAppletElement::toNative(info.Holder());
+        else if (V8HTMLEmbedElement::HasInstance(info.Holder(), info.GetIsolate(), currentWorldType))
+            element = V8HTMLEmbedElement::toNative(info.Holder());
         else
-            element = V8HTMLObjectElement::toNative(args.Holder());
+            element = V8HTMLObjectElement::toNative(info.Holder());
         if (RefPtr<SharedPersistent<v8::Object> > wrapper = element->pluginWrapper()) {
             v8::Isolate* isolate = v8::Isolate::GetCurrent();
             v8::HandleScope handleScope(isolate);
@@ -91,26 +91,26 @@ static void npObjectInvokeImpl(const v8::FunctionCallbackInfo<v8::Value>& args, 
     } else {
         // The holder object is not a subtype of HTMLPlugInElement, it must be an NPObject which has three
         // internal fields.
-        if (args.Holder()->InternalFieldCount() != npObjectInternalFieldCount) {
-            throwError(v8ReferenceError, "NPMethod called on non-NPObject", args.GetIsolate());
+        if (info.Holder()->InternalFieldCount() != npObjectInternalFieldCount) {
+            throwError(v8ReferenceError, "NPMethod called on non-NPObject", info.GetIsolate());
             return;
         }
 
-        npObject = v8ObjectToNPObject(args.Holder());
+        npObject = v8ObjectToNPObject(info.Holder());
     }
 
     // Verify that our wrapper wasn't using a NPObject which has already been deleted.
     if (!npObject || !_NPN_IsAlive(npObject)) {
-        throwError(v8ReferenceError, "NPObject deleted", args.GetIsolate());
+        throwError(v8ReferenceError, "NPObject deleted", info.GetIsolate());
         return;
     }
 
     // Wrap up parameters.
-    int numArgs = args.Length();
+    int numArgs = info.Length();
     OwnPtr<NPVariant[]> npArgs = adoptArrayPtr(new NPVariant[numArgs]);
 
     for (int i = 0; i < numArgs; i++)
-        convertV8ObjectToNPVariant(args[i], npObject, &npArgs[i], args.GetIsolate());
+        convertV8ObjectToNPVariant(info[i], npObject, &npArgs[i], info.GetIsolate());
 
     NPVariant result;
     VOID_TO_NPVARIANT(result);
@@ -119,7 +119,7 @@ static void npObjectInvokeImpl(const v8::FunctionCallbackInfo<v8::Value>& args, 
     switch (functionId) {
     case InvokeMethod:
         if (npObject->_class->invoke) {
-            v8::Handle<v8::String> functionName = v8::Handle<v8::String>::Cast(args.Data());
+            v8::Handle<v8::String> functionName = v8::Handle<v8::String>::Cast(info.Data());
             NPIdentifier identifier = getStringIdentifier(functionName);
             retval = npObject->_class->invoke(npObject, identifier, npArgs.get(), numArgs, &result);
         }
@@ -137,7 +137,7 @@ static void npObjectInvokeImpl(const v8::FunctionCallbackInfo<v8::Value>& args, 
     }
 
     if (!retval)
-        throwError(v8GeneralError, "Error calling method on NPObject.", args.GetIsolate());
+        throwError(v8GeneralError, "Error calling method on NPObject.", info.GetIsolate());
 
     for (int i = 0; i < numArgs; i++)
         _NPN_ReleaseVariantValue(&npArgs[i]);
@@ -145,27 +145,27 @@ static void npObjectInvokeImpl(const v8::FunctionCallbackInfo<v8::Value>& args, 
     // Unwrap return values.
     v8::Handle<v8::Value> returnValue;
     if (_NPN_IsAlive(npObject))
-        returnValue = convertNPVariantToV8Object(&result, npObject, args.GetIsolate());
+        returnValue = convertNPVariantToV8Object(&result, npObject, info.GetIsolate());
     _NPN_ReleaseVariantValue(&result);
 
-    v8SetReturnValue(args, returnValue);
+    v8SetReturnValue(info, returnValue);
 }
 
 
-void npObjectMethodHandler(const v8::FunctionCallbackInfo<v8::Value>& args)
+void npObjectMethodHandler(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    return npObjectInvokeImpl(args, InvokeMethod);
+    return npObjectInvokeImpl(info, InvokeMethod);
 }
 
 
-void npObjectInvokeDefaultHandler(const v8::FunctionCallbackInfo<v8::Value>& args)
+void npObjectInvokeDefaultHandler(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (args.IsConstructCall()) {
-        npObjectInvokeImpl(args, InvokeConstruct);
+    if (info.IsConstructCall()) {
+        npObjectInvokeImpl(info, InvokeConstruct);
         return;
     }
 
-    npObjectInvokeImpl(args, InvokeDefault);
+    npObjectInvokeImpl(info, InvokeDefault);
 }
 
 class V8NPTemplateMap {

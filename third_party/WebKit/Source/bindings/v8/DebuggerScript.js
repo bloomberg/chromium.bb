@@ -161,22 +161,22 @@ DebuggerScript._formatScript = function(script)
     };
 }
 
-DebuggerScript.setBreakpoint = function(execState, args)
+DebuggerScript.setBreakpoint = function(execState, info)
 {
-    var positionAlignment = args.interstatementLocation ? Debug.BreakPositionAlignment.BreakPosition : Debug.BreakPositionAlignment.Statement;
-    var breakId = Debug.setScriptBreakPointById(args.sourceID, args.lineNumber, args.columnNumber, args.condition, undefined, positionAlignment);
+    var positionAlignment = info.interstatementLocation ? Debug.BreakPositionAlignment.BreakPosition : Debug.BreakPositionAlignment.Statement;
+    var breakId = Debug.setScriptBreakPointById(info.sourceID, info.lineNumber, info.columnNumber, info.condition, undefined, positionAlignment);
 
     var locations = Debug.findBreakPointActualLocations(breakId);
     if (!locations.length)
         return undefined;
-    args.lineNumber = locations[0].line;
-    args.columnNumber = locations[0].column;
+    info.lineNumber = locations[0].line;
+    info.columnNumber = locations[0].column;
     return breakId.toString();
 }
 
-DebuggerScript.removeBreakpoint = function(execState, args)
+DebuggerScript.removeBreakpoint = function(execState, info)
 {
-    Debug.findBreakPoint(args.breakpointId, true);
+    Debug.findBreakPoint(info.breakpointId, true);
 }
 
 DebuggerScript.pauseOnExceptionsState = function()
@@ -262,14 +262,14 @@ DebuggerScript.liveEditScriptSource = function(scriptId, newSource, preview)
     }
 }
 
-DebuggerScript.clearBreakpoints = function(execState, args)
+DebuggerScript.clearBreakpoints = function(execState, info)
 {
     Debug.clearAllBreakPoints();
 }
 
-DebuggerScript.setBreakpointsActivated = function(execState, args)
+DebuggerScript.setBreakpointsActivated = function(execState, info)
 {
-    Debug.debuggerFlags().breakPointsActive.setValue(args.enabled);
+    Debug.debuggerFlags().breakPointsActive.setValue(info.enabled);
 }
 
 DebuggerScript.getScriptSource = function(eventData)

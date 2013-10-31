@@ -61,21 +61,21 @@ namespace TestCustomAccessorsV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
-static void anotherFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void anotherFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(args.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("anotherFunction", "TestCustomAccessors", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("anotherFunction", "TestCustomAccessors", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    TestCustomAccessors* imp = V8TestCustomAccessors::toNative(args.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str, args[0]);
+    TestCustomAccessors* imp = V8TestCustomAccessors::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str, info[0]);
     imp->anotherFunction(str);
 }
 
-static void anotherFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void anotherFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestCustomAccessorsV8Internal::anotherFunctionMethod(args);
+    TestCustomAccessorsV8Internal::anotherFunctionMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 

@@ -532,67 +532,67 @@ static void Node15AttributeSetterCallback(v8::Local<v8::String> name, v8::Local<
 }
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
-static void implementsMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void implementsMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TestInterface* imp = V8TestInterface::toNative(args.Holder());
+    TestInterface* imp = V8TestInterface::toNative(info.Holder());
     TestImplements::implementsMethod1(imp);
 }
 
-static void implementsMethod1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void implementsMethod1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestInterfaceV8Internal::implementsMethod1Method(args);
+    TestInterfaceV8Internal::implementsMethod1Method(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void implementsMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void implementsMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(args.Length() < 2)) {
-        throwTypeError(ExceptionMessages::failedToExecute("implementsMethod2", "TestInterface", ExceptionMessages::notEnoughArguments(2, args.Length())), args.GetIsolate());
+    if (UNLIKELY(info.Length() < 2)) {
+        throwTypeError(ExceptionMessages::failedToExecute("implementsMethod2", "TestInterface", ExceptionMessages::notEnoughArguments(2, info.Length())), info.GetIsolate());
         return;
     }
-    TestInterface* imp = V8TestInterface::toNative(args.Holder());
-    ExceptionState es(args.GetIsolate());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, args[0]);
-    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::HasInstance(args[1], args.GetIsolate(), worldType(args.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(args[1])) : 0);
+    TestInterface* imp = V8TestInterface::toNative(info.Holder());
+    ExceptionState es(info.GetIsolate());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
+    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::HasInstance(info[1], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
     ExecutionContext* scriptContext = getExecutionContext();
     RefPtr<TestObj> result = TestImplements::implementsMethod2(scriptContext, imp, strArg, objArg, es);
     if (es.throwIfNeeded())
         return;
-    v8SetReturnValue(args, result.release());
+    v8SetReturnValue(info, result.release());
 }
 
-static void implementsMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void implementsMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestInterfaceV8Internal::implementsMethod2Method(args);
+    TestInterfaceV8Internal::implementsMethod2Method(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void implementsMethod3MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void implementsMethod3MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    V8TestInterface::implementsMethod3MethodCustom(args);
+    V8TestInterface::implementsMethod3MethodCustom(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void implementsMethod4Method(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void implementsMethod4Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestImplements::implementsMethod4();
 }
 
-static void implementsMethod4MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void implementsMethod4MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestInterfaceV8Internal::implementsMethod4Method(args);
+    TestInterfaceV8Internal::implementsMethod4Method(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void supplementalMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TestInterface* imp = V8TestInterface::toNative(args.Holder());
+    TestInterface* imp = V8TestInterface::toNative(info.Holder());
     TestPartialInterface::supplementalMethod1(imp);
 }
 
@@ -600,10 +600,10 @@ static void supplementalMethod1Method(const v8::FunctionCallbackInfo<v8::Value>&
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalMethod1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void supplementalMethod1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestInterfaceV8Internal::supplementalMethod1Method(args);
+    TestInterfaceV8Internal::supplementalMethod1Method(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -611,31 +611,31 @@ static void supplementalMethod1MethodCallback(const v8::FunctionCallbackInfo<v8:
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(args.Length() < 2)) {
-        throwTypeError(ExceptionMessages::failedToExecute("supplementalMethod2", "TestInterface", ExceptionMessages::notEnoughArguments(2, args.Length())), args.GetIsolate());
+    if (UNLIKELY(info.Length() < 2)) {
+        throwTypeError(ExceptionMessages::failedToExecute("supplementalMethod2", "TestInterface", ExceptionMessages::notEnoughArguments(2, info.Length())), info.GetIsolate());
         return;
     }
-    TestInterface* imp = V8TestInterface::toNative(args.Holder());
-    ExceptionState es(args.GetIsolate());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, args[0]);
-    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::HasInstance(args[1], args.GetIsolate(), worldType(args.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(args[1])) : 0);
+    TestInterface* imp = V8TestInterface::toNative(info.Holder());
+    ExceptionState es(info.GetIsolate());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
+    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::HasInstance(info[1], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
     ExecutionContext* scriptContext = getExecutionContext();
     RefPtr<TestObj> result = TestPartialInterface::supplementalMethod2(scriptContext, imp, strArg, objArg, es);
     if (es.throwIfNeeded())
         return;
-    v8SetReturnValue(args, result.release());
+    v8SetReturnValue(info, result.release());
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void supplementalMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestInterfaceV8Internal::supplementalMethod2Method(args);
+    TestInterfaceV8Internal::supplementalMethod2Method(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -643,10 +643,10 @@ static void supplementalMethod2MethodCallback(const v8::FunctionCallbackInfo<v8:
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalMethod3MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void supplementalMethod3MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    V8TestInterface::supplementalMethod3MethodCustom(args);
+    V8TestInterface::supplementalMethod3MethodCustom(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -654,7 +654,7 @@ static void supplementalMethod3MethodCallback(const v8::FunctionCallbackInfo<v8:
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalMethod4Method(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void supplementalMethod4Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestPartialInterface::supplementalMethod4();
 }
@@ -663,33 +663,33 @@ static void supplementalMethod4Method(const v8::FunctionCallbackInfo<v8::Value>&
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
-static void supplementalMethod4MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void supplementalMethod4MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestInterfaceV8Internal::supplementalMethod4Method(args);
+    TestInterfaceV8Internal::supplementalMethod4Method(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
-static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(args.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("Constructor", "TestInterface", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("Constructor", "TestInterface", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    ExceptionState es(args.GetIsolate());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str1, args[0]);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str2, args[1]);
+    ExceptionState es(info.GetIsolate());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str1, info[0]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str2, info[1]);
 
     ExecutionContext* context = getExecutionContext();
     RefPtr<TestInterface> impl = TestInterface::create(context, str1, str2, es);
-    v8::Handle<v8::Object> wrapper = args.Holder();
+    v8::Handle<v8::Object> wrapper = info.Holder();
     if (es.throwIfNeeded())
         return;
 
-    V8DOMWrapper::associateObjectWithWrapper<V8TestInterface>(impl.release(), &V8TestInterface::wrapperTypeInfo, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
-    args.GetReturnValue().Set(wrapper);
+    V8DOMWrapper::associateObjectWithWrapper<V8TestInterface>(impl.release(), &V8TestInterface::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
+    info.GetReturnValue().Set(wrapper);
 }
 
 static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -824,20 +824,20 @@ static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 };
 
-void V8TestInterface::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8TestInterface::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "DOMConstructor");
-    if (!args.IsConstructCall()) {
-        throwTypeError(ExceptionMessages::failedToConstruct("TestInterface", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), args.GetIsolate());
+    if (!info.IsConstructCall()) {
+        throwTypeError(ExceptionMessages::failedToConstruct("TestInterface", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), info.GetIsolate());
         return;
     }
 
     if (ConstructorMode::current() == ConstructorMode::WrapExistingObject) {
-        args.GetReturnValue().Set(args.Holder());
+        info.GetReturnValue().Set(info.Holder());
         return;
     }
 
-    TestInterfaceV8Internal::constructor(args);
+    TestInterfaceV8Internal::constructor(info);
 }
 
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)

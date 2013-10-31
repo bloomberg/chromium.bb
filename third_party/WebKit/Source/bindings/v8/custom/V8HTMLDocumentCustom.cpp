@@ -52,37 +52,37 @@ namespace WebCore {
 
 // HTMLDocument ----------------------------------------------------------------
 
-// Concatenates "args" to a string. If args is empty, returns empty string.
+// Concatenates "info" to a string. If info is empty, returns empty string.
 // Firefox/Safari/IE support non-standard arguments to document.write, ex:
 //   document.write("a", "b", "c") --> document.write("abc")
 //   document.write() --> document.write("")
-static String writeHelperGetString(const v8::FunctionCallbackInfo<v8::Value>& args)
+static String writeHelperGetString(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     StringBuilder builder;
-    for (int i = 0; i < args.Length(); ++i) {
-        V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringArgument, args[i], String());
+    for (int i = 0; i < info.Length(); ++i) {
+        V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringArgument, info[i], String());
         builder.append(stringArgument);
     }
     return builder.toString();
 }
 
-void V8HTMLDocument::writeMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8HTMLDocument::writeMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    HTMLDocument* htmlDocument = V8HTMLDocument::toNative(args.Holder());
-    htmlDocument->write(writeHelperGetString(args), activeDOMWindow()->document());
+    HTMLDocument* htmlDocument = V8HTMLDocument::toNative(info.Holder());
+    htmlDocument->write(writeHelperGetString(info), activeDOMWindow()->document());
 }
 
-void V8HTMLDocument::writelnMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8HTMLDocument::writelnMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    HTMLDocument* htmlDocument = V8HTMLDocument::toNative(args.Holder());
-    htmlDocument->writeln(writeHelperGetString(args), activeDOMWindow()->document());
+    HTMLDocument* htmlDocument = V8HTMLDocument::toNative(info.Holder());
+    htmlDocument->writeln(writeHelperGetString(info), activeDOMWindow()->document());
 }
 
-void V8HTMLDocument::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8HTMLDocument::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    HTMLDocument* htmlDocument = V8HTMLDocument::toNative(args.Holder());
+    HTMLDocument* htmlDocument = V8HTMLDocument::toNative(info.Holder());
 
-    if (args.Length() > 2) {
+    if (info.Length() > 2) {
         if (RefPtr<Frame> frame = htmlDocument->frame()) {
             // Fetch the global object for the frame.
             v8::Local<v8::Context> context = frame->script().currentWorldContext();
@@ -94,21 +94,21 @@ void V8HTMLDocument::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
             v8::Local<v8::Value> function = global->Get(v8::String::NewSymbol("open"));
             // If the open property is not a function throw a type error.
             if (!function->IsFunction()) {
-                throwTypeError("open is not a function", args.GetIsolate());
+                throwTypeError("open is not a function", info.GetIsolate());
                 return;
             }
             // Wrap up the arguments and call the function.
-            OwnPtr<v8::Local<v8::Value>[]> params = adoptArrayPtr(new v8::Local<v8::Value>[args.Length()]);
-            for (int i = 0; i < args.Length(); i++)
-                params[i] = args[i];
+            OwnPtr<v8::Local<v8::Value>[]> params = adoptArrayPtr(new v8::Local<v8::Value>[info.Length()]);
+            for (int i = 0; i < info.Length(); i++)
+                params[i] = info[i];
 
-            v8SetReturnValue(args, frame->script().callFunction(v8::Local<v8::Function>::Cast(function), global, args.Length(), params.get()));
+            v8SetReturnValue(info, frame->script().callFunction(v8::Local<v8::Function>::Cast(function), global, info.Length(), params.get()));
             return;
         }
     }
 
     htmlDocument->open(activeDOMWindow()->document());
-    v8SetReturnValue(args, args.Holder());
+    v8SetReturnValue(info, info.Holder());
 }
 
 } // namespace WebCore

@@ -146,11 +146,11 @@ void ScriptController::updateSecurityOrigin()
     m_windowShell->updateSecurityOrigin();
 }
 
-v8::Local<v8::Value> ScriptController::callFunction(v8::Handle<v8::Function> function, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> args[])
+v8::Local<v8::Value> ScriptController::callFunction(v8::Handle<v8::Function> function, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> info[])
 {
     // Keep Frame (and therefore ScriptController) alive.
     RefPtr<Frame> protect(m_frame);
-    return ScriptController::callFunction(m_frame->document(), function, receiver, argc, args, m_isolate);
+    return ScriptController::callFunction(m_frame->document(), function, receiver, argc, info, m_isolate);
 }
 
 static void resourceInfo(const v8::Handle<v8::Function> function, String& resourceName, int& lineNumber)
@@ -165,7 +165,7 @@ static void resourceInfo(const v8::Handle<v8::Function> function, String& resour
     }
 }
 
-v8::Local<v8::Value> ScriptController::callFunction(ExecutionContext* context, v8::Handle<v8::Function> function, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> args[], v8::Isolate* isolate)
+v8::Local<v8::Value> ScriptController::callFunction(ExecutionContext* context, v8::Handle<v8::Function> function, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> info[], v8::Isolate* isolate)
 {
     InspectorInstrumentationCookie cookie;
     if (InspectorInstrumentation::timelineAgentEnabled(context)) {
@@ -175,7 +175,7 @@ v8::Local<v8::Value> ScriptController::callFunction(ExecutionContext* context, v
         cookie = InspectorInstrumentation::willCallFunction(context, resourceName, lineNumber);
     }
 
-    v8::Local<v8::Value> result = V8ScriptRunner::callFunction(function, context, receiver, argc, args, isolate);
+    v8::Local<v8::Value> result = V8ScriptRunner::callFunction(function, context, receiver, argc, info, isolate);
 
     InspectorInstrumentation::didCallFunction(cookie);
     return result;

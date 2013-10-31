@@ -74,22 +74,22 @@ void V8SVGLength::valueAttributeSetterCustom(v8::Local<v8::String> name, v8::Loc
     wrapper->commitChange();
 }
 
-void V8SVGLength::convertToSpecifiedUnitsMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8SVGLength::convertToSpecifiedUnitsMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    SVGPropertyTearOff<SVGLength>* wrapper = V8SVGLength::toNative(args.Holder());
+    SVGPropertyTearOff<SVGLength>* wrapper = V8SVGLength::toNative(info.Holder());
     if (wrapper->isReadOnly()) {
-        setDOMException(NoModificationAllowedError, args.GetIsolate());
+        setDOMException(NoModificationAllowedError, info.GetIsolate());
         return;
     }
 
-    if (args.Length() < 1) {
-        throwTypeError(ExceptionMessages::failedToExecute("convertToSpecifiedUnits", "SVGLength", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+    if (info.Length() < 1) {
+        throwTypeError(ExceptionMessages::failedToExecute("convertToSpecifiedUnits", "SVGLength", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
 
     SVGLength& imp = wrapper->propertyReference();
-    ExceptionState es(args.GetIsolate());
-    V8TRYCATCH_VOID(int, unitType, toUInt32(args[0]));
+    ExceptionState es(info.GetIsolate());
+    V8TRYCATCH_VOID(int, unitType, toUInt32(info[0]));
     SVGLengthContext lengthContext(wrapper->contextElement());
     imp.convertToSpecifiedUnits(unitType, lengthContext, es);
     if (es.throwIfNeeded())

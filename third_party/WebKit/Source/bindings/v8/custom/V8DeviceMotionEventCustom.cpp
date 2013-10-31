@@ -100,17 +100,17 @@ RefPtr<DeviceMotionData::RotationRate> readRotationRateArgument(v8::Local<v8::Va
 
 } // namespace
 
-void V8DeviceMotionEvent::initDeviceMotionEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8DeviceMotionEvent::initDeviceMotionEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    DeviceMotionEvent* imp = V8DeviceMotionEvent::toNative(args.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, args[0]);
-    bool bubbles = args[1]->BooleanValue();
-    bool cancelable = args[2]->BooleanValue();
-    RefPtr<DeviceMotionData::Acceleration> acceleration = readAccelerationArgument(args[3]);
-    RefPtr<DeviceMotionData::Acceleration> accelerationIncludingGravity = readAccelerationArgument(args[4]);
-    RefPtr<DeviceMotionData::RotationRate> rotationRate = readRotationRateArgument(args[5]);
-    bool intervalProvided = !isUndefinedOrNull(args[6]);
-    double interval = args[6]->NumberValue();
+    DeviceMotionEvent* imp = V8DeviceMotionEvent::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, info[0]);
+    bool bubbles = info[1]->BooleanValue();
+    bool cancelable = info[2]->BooleanValue();
+    RefPtr<DeviceMotionData::Acceleration> acceleration = readAccelerationArgument(info[3]);
+    RefPtr<DeviceMotionData::Acceleration> accelerationIncludingGravity = readAccelerationArgument(info[4]);
+    RefPtr<DeviceMotionData::RotationRate> rotationRate = readRotationRateArgument(info[5]);
+    bool intervalProvided = !isUndefinedOrNull(info[6]);
+    double interval = info[6]->NumberValue();
     RefPtr<DeviceMotionData> deviceMotionData = DeviceMotionData::create(acceleration, accelerationIncludingGravity, rotationRate, intervalProvided, interval);
     imp->initDeviceMotionEvent(type, bubbles, cancelable, deviceMotionData.get());
 }

@@ -262,211 +262,211 @@ static void TestTypedefsReplaceableAttributeSetterCallback(v8::Local<v8::String>
     TestTypedefsV8Internal::TestTypedefsReplaceableAttributeSetter(name, jsValue, info);
 }
 
-static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
-    if (UNLIKELY(args.Length() <= 0)) {
+    TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
+    if (UNLIKELY(info.Length() <= 0)) {
         imp->func();
         return;
     }
-    V8TRYCATCH_VOID(Vector<int>, x, toNativeArray<int>(args[0], 1, args.GetIsolate()));
+    V8TRYCATCH_VOID(Vector<int>, x, toNativeArray<int>(info[0], 1, info.GetIsolate()));
     imp->func(x);
 }
 
-static void funcMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void funcMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestTypedefsV8Internal::funcMethod(args);
+    TestTypedefsV8Internal::funcMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void setShadowMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void setShadowMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(args.Length() < 3)) {
-        throwTypeError(ExceptionMessages::failedToExecute("setShadow", "TestTypedefs", ExceptionMessages::notEnoughArguments(3, args.Length())), args.GetIsolate());
+    if (UNLIKELY(info.Length() < 3)) {
+        throwTypeError(ExceptionMessages::failedToExecute("setShadow", "TestTypedefs", ExceptionMessages::notEnoughArguments(3, info.Length())), info.GetIsolate());
         return;
     }
-    TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
-    V8TRYCATCH_VOID(float, width, static_cast<float>(args[0]->NumberValue()));
-    V8TRYCATCH_VOID(float, height, static_cast<float>(args[1]->NumberValue()));
-    V8TRYCATCH_VOID(float, blur, static_cast<float>(args[2]->NumberValue()));
-    if (UNLIKELY(args.Length() <= 3)) {
+    TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
+    V8TRYCATCH_VOID(float, width, static_cast<float>(info[0]->NumberValue()));
+    V8TRYCATCH_VOID(float, height, static_cast<float>(info[1]->NumberValue()));
+    V8TRYCATCH_VOID(float, blur, static_cast<float>(info[2]->NumberValue()));
+    if (UNLIKELY(info.Length() <= 3)) {
         imp->setShadow(width, height, blur);
         return;
     }
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, color, args[3]);
-    if (UNLIKELY(args.Length() <= 4)) {
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, color, info[3]);
+    if (UNLIKELY(info.Length() <= 4)) {
         imp->setShadow(width, height, blur, color);
         return;
     }
-    V8TRYCATCH_VOID(float, alpha, static_cast<float>(args[4]->NumberValue()));
+    V8TRYCATCH_VOID(float, alpha, static_cast<float>(info[4]->NumberValue()));
     imp->setShadow(width, height, blur, color, alpha);
 }
 
-static void setShadowMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void setShadowMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestTypedefsV8Internal::setShadowMethod(args);
+    TestTypedefsV8Internal::setShadowMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void methodWithSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void methodWithSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(args.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("methodWithSequenceArg", "TestTypedefs", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("methodWithSequenceArg", "TestTypedefs", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
-    V8TRYCATCH_VOID(Vector<RefPtr<SerializedScriptValue> >, sequenceArg, (toRefPtrNativeArray<SerializedScriptValue, V8SerializedScriptValue>(args[0], 1, args.GetIsolate())));
-    v8SetReturnValue(args, static_cast<double>(imp->methodWithSequenceArg(sequenceArg)));
+    TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
+    V8TRYCATCH_VOID(Vector<RefPtr<SerializedScriptValue> >, sequenceArg, (toRefPtrNativeArray<SerializedScriptValue, V8SerializedScriptValue>(info[0], 1, info.GetIsolate())));
+    v8SetReturnValue(info, static_cast<double>(imp->methodWithSequenceArg(sequenceArg)));
 }
 
-static void methodWithSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void methodWithSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestTypedefsV8Internal::methodWithSequenceArgMethod(args);
+    TestTypedefsV8Internal::methodWithSequenceArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void nullableArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void nullableArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(args.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("nullableArrayArg", "TestTypedefs", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("nullableArrayArg", "TestTypedefs", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
-    bool arrayArgIsNull = args[0]->IsNull();
-    V8TRYCATCH_VOID(Vector<String>, arrayArg, toNativeArray<String>(args[0], 1, args.GetIsolate()));
+    TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
+    bool arrayArgIsNull = info[0]->IsNull();
+    V8TRYCATCH_VOID(Vector<String>, arrayArg, toNativeArray<String>(info[0], 1, info.GetIsolate()));
     imp->nullableArrayArg(arrayArgIsNull ? 0 : &arrayArg);
 }
 
-static void nullableArrayArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void nullableArrayArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestTypedefsV8Internal::nullableArrayArgMethod(args);
+    TestTypedefsV8Internal::nullableArrayArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void funcWithClampMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void funcWithClampMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(args.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("funcWithClamp", "TestTypedefs", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("funcWithClamp", "TestTypedefs", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
+    TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
     unsigned long long arg1 = 0;
-    V8TRYCATCH_VOID(double, arg1NativeValue, args[0]->NumberValue());
+    V8TRYCATCH_VOID(double, arg1NativeValue, info[0]->NumberValue());
     if (!std::isnan(arg1NativeValue))
         arg1 = clampTo<unsigned long long>(arg1NativeValue);
-    if (UNLIKELY(args.Length() <= 1)) {
+    if (UNLIKELY(info.Length() <= 1)) {
         imp->funcWithClamp(arg1);
         return;
     }
     unsigned long long arg2 = 0;
-    V8TRYCATCH_VOID(double, arg2NativeValue, args[1]->NumberValue());
+    V8TRYCATCH_VOID(double, arg2NativeValue, info[1]->NumberValue());
     if (!std::isnan(arg2NativeValue))
         arg2 = clampTo<unsigned long long>(arg2NativeValue);
     imp->funcWithClamp(arg1, arg2);
 }
 
-static void funcWithClampMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void funcWithClampMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestTypedefsV8Internal::funcWithClampMethod(args);
+    TestTypedefsV8Internal::funcWithClampMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void immutablePointFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void immutablePointFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
-    v8SetReturnValue(args, WTF::getPtr(SVGPropertyTearOff<SVGPoint>::create(imp->immutablePointFunction())));
+    TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
+    v8SetReturnValue(info, WTF::getPtr(SVGPropertyTearOff<SVGPoint>::create(imp->immutablePointFunction())));
 }
 
-static void immutablePointFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void immutablePointFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestTypedefsV8Internal::immutablePointFunctionMethod(args);
+    TestTypedefsV8Internal::immutablePointFunctionMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void stringArrayFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void stringArrayFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(args.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("stringArrayFunction", "TestTypedefs", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("stringArrayFunction", "TestTypedefs", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
-    ExceptionState es(args.GetIsolate());
-    V8TRYCATCH_VOID(Vector<String>, values, toNativeArray<String>(args[0], 1, args.GetIsolate()));
+    TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
+    ExceptionState es(info.GetIsolate());
+    V8TRYCATCH_VOID(Vector<String>, values, toNativeArray<String>(info[0], 1, info.GetIsolate()));
     Vector<String> result = imp->stringArrayFunction(values, es);
     if (es.throwIfNeeded())
         return;
-    v8SetReturnValue(args, v8Array(result, args.GetIsolate()));
+    v8SetReturnValue(info, v8Array(result, info.GetIsolate()));
 }
 
-static void stringArrayFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void stringArrayFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestTypedefsV8Internal::stringArrayFunctionMethod(args);
+    TestTypedefsV8Internal::stringArrayFunctionMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void stringArrayFunction2Method(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void stringArrayFunction2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(args.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("stringArrayFunction2", "TestTypedefs", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("stringArrayFunction2", "TestTypedefs", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
-    ExceptionState es(args.GetIsolate());
-    V8TRYCATCH_VOID(Vector<String>, values, toNativeArray<String>(args[0], 1, args.GetIsolate()));
+    TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
+    ExceptionState es(info.GetIsolate());
+    V8TRYCATCH_VOID(Vector<String>, values, toNativeArray<String>(info[0], 1, info.GetIsolate()));
     Vector<String> result = imp->stringArrayFunction2(values, es);
     if (es.throwIfNeeded())
         return;
-    v8SetReturnValue(args, v8Array(result, args.GetIsolate()));
+    v8SetReturnValue(info, v8Array(result, info.GetIsolate()));
 }
 
-static void stringArrayFunction2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void stringArrayFunction2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestTypedefsV8Internal::stringArrayFunction2Method(args);
+    TestTypedefsV8Internal::stringArrayFunction2Method(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void methodWithExceptionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void methodWithExceptionMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
-    ExceptionState es(args.GetIsolate());
+    TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
+    ExceptionState es(info.GetIsolate());
     imp->methodWithException(es);
     if (es.throwIfNeeded())
         return;
 }
 
-static void methodWithExceptionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void methodWithExceptionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestTypedefsV8Internal::methodWithExceptionMethod(args);
+    TestTypedefsV8Internal::methodWithExceptionMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(args.Length() < 2)) {
-        throwTypeError(ExceptionMessages::failedToExecute("Constructor", "TestTypedefs", ExceptionMessages::notEnoughArguments(2, args.Length())), args.GetIsolate());
+    if (UNLIKELY(info.Length() < 2)) {
+        throwTypeError(ExceptionMessages::failedToExecute("Constructor", "TestTypedefs", ExceptionMessages::notEnoughArguments(2, info.Length())), info.GetIsolate());
         return;
     }
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, hello, args[0]);
-    if (args.Length() <= 1 || !args[1]->IsFunction()) {
-        throwTypeError(ExceptionMessages::failedToExecute("Constructor", "TestTypedefs", "The callback provided as parameter 2 is not a function."), args.GetIsolate());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, hello, info[0]);
+    if (info.Length() <= 1 || !info[1]->IsFunction()) {
+        throwTypeError(ExceptionMessages::failedToExecute("Constructor", "TestTypedefs", "The callback provided as parameter 2 is not a function."), info.GetIsolate());
         return;
     }
-    RefPtr<TestCallback> testCallback = V8TestCallback::create(args[1], getExecutionContext());
+    RefPtr<TestCallback> testCallback = V8TestCallback::create(info[1], getExecutionContext());
 
     RefPtr<TestTypedefs> impl = TestTypedefs::create(hello, testCallback);
-    v8::Handle<v8::Object> wrapper = args.Holder();
+    v8::Handle<v8::Object> wrapper = info.Holder();
 
-    V8DOMWrapper::associateObjectWithWrapper<V8TestTypedefs>(impl.release(), &V8TestTypedefs::wrapperTypeInfo, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
-    args.GetReturnValue().Set(wrapper);
+    V8DOMWrapper::associateObjectWithWrapper<V8TestTypedefs>(impl.release(), &V8TestTypedefs::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
+    info.GetReturnValue().Set(wrapper);
 }
 
 } // namespace TestTypedefsV8Internal
@@ -492,20 +492,20 @@ static const V8DOMConfiguration::MethodConfiguration V8TestTypedefsMethods[] = {
     {"methodWithException", TestTypedefsV8Internal::methodWithExceptionMethodCallback, 0, 0},
 };
 
-void V8TestTypedefs::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8TestTypedefs::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "DOMConstructor");
-    if (!args.IsConstructCall()) {
-        throwTypeError(ExceptionMessages::failedToConstruct("TestTypedefs", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), args.GetIsolate());
+    if (!info.IsConstructCall()) {
+        throwTypeError(ExceptionMessages::failedToConstruct("TestTypedefs", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), info.GetIsolate());
         return;
     }
 
     if (ConstructorMode::current() == ConstructorMode::WrapExistingObject) {
-        args.GetReturnValue().Set(args.Holder());
+        info.GetReturnValue().Set(info.Holder());
         return;
     }
 
-    TestTypedefsV8Internal::constructor(args);
+    TestTypedefsV8Internal::constructor(info);
 }
 
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestTypedefsTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)

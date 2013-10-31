@@ -62,21 +62,21 @@ namespace TestMediaQueryListListenerV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
-static void methodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void methodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(args.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("method", "TestMediaQueryListListener", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("method", "TestMediaQueryListListener", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    TestMediaQueryListListener* imp = V8TestMediaQueryListListener::toNative(args.Holder());
-    V8TRYCATCH_VOID(RefPtr<MediaQueryListListener>, listener, MediaQueryListListener::create(ScriptValue(args[0], args.GetIsolate())));
+    TestMediaQueryListListener* imp = V8TestMediaQueryListListener::toNative(info.Holder());
+    V8TRYCATCH_VOID(RefPtr<MediaQueryListListener>, listener, MediaQueryListListener::create(ScriptValue(info[0], info.GetIsolate())));
     imp->method(listener);
 }
 
-static void methodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void methodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestMediaQueryListListenerV8Internal::methodMethod(args);
+    TestMediaQueryListListenerV8Internal::methodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 

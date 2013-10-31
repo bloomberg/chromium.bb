@@ -40,27 +40,27 @@
 
 namespace WebCore {
 
-void V8MutationObserver::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8MutationObserver::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (args.Length() < 1) {
-        throwTypeError(ExceptionMessages::failedToConstruct("MutationObserver", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+    if (info.Length() < 1) {
+        throwTypeError(ExceptionMessages::failedToConstruct("MutationObserver", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
 
-    v8::Local<v8::Value> arg = args[0];
+    v8::Local<v8::Value> arg = info[0];
     if (!arg->IsFunction()) {
-        throwTypeError("Callback argument must be a function", args.GetIsolate());
+        throwTypeError("Callback argument must be a function", info.GetIsolate());
         return;
     }
 
     ExecutionContext* context = getExecutionContext();
-    v8::Handle<v8::Object> wrapper = args.Holder();
+    v8::Handle<v8::Object> wrapper = info.Holder();
 
-    RefPtr<MutationCallback> callback = V8MutationCallback::create(v8::Handle<v8::Function>::Cast(arg), context, wrapper, args.GetIsolate());
+    RefPtr<MutationCallback> callback = V8MutationCallback::create(v8::Handle<v8::Function>::Cast(arg), context, wrapper, info.GetIsolate());
     RefPtr<MutationObserver> observer = MutationObserver::create(callback.release());
 
-    V8DOMWrapper::associateObjectWithWrapper<V8MutationObserver>(observer.release(), &wrapperTypeInfo, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
-    args.GetReturnValue().Set(wrapper);
+    V8DOMWrapper::associateObjectWithWrapper<V8MutationObserver>(observer.release(), &wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
+    info.GetReturnValue().Set(wrapper);
 }
 
 } // namespace WebCore

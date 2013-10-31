@@ -65,39 +65,39 @@ namespace TestEventTargetV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
-static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(args.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("item", "TestEventTarget", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("item", "TestEventTarget", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    TestEventTarget* imp = V8TestEventTarget::toNative(args.Holder());
-    V8TRYCATCH_VOID(unsigned, index, toUInt32(args[0]));
-    v8SetReturnValue(args, imp->item(index));
+    TestEventTarget* imp = V8TestEventTarget::toNative(info.Holder());
+    V8TRYCATCH_VOID(unsigned, index, toUInt32(info[0]));
+    v8SetReturnValue(info, imp->item(index));
 }
 
-static void itemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void itemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestEventTargetV8Internal::itemMethod(args);
+    TestEventTargetV8Internal::itemMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(args.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("namedItem", "TestEventTarget", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("namedItem", "TestEventTarget", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    TestEventTarget* imp = V8TestEventTarget::toNative(args.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, args[0]);
-    v8SetReturnValue(args, imp->namedItem(name));
+    TestEventTarget* imp = V8TestEventTarget::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, info[0]);
+    v8SetReturnValue(info, imp->namedItem(name));
 }
 
-static void namedItemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void namedItemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestEventTargetV8Internal::namedItemMethod(args);
+    TestEventTargetV8Internal::namedItemMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 

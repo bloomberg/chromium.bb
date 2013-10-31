@@ -92,25 +92,25 @@ static void keyLocationAttributeGetterCallback(v8::Local<v8::String> name, const
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (args.Length() < 1) {
-        throwTypeError(ExceptionMessages::failedToConstruct("TestExtendedEvent", "An event name must be provided."), args.GetIsolate());
+    if (info.Length() < 1) {
+        throwTypeError(ExceptionMessages::failedToConstruct("TestExtendedEvent", "An event name must be provided."), info.GetIsolate());
         return;
     }
 
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, args[0]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, info[0]);
     EventInit eventInit;
-    if (args.Length() >= 2) {
-        V8TRYCATCH_VOID(Dictionary, options, Dictionary(args[1], args.GetIsolate()));
+    if (info.Length() >= 2) {
+        V8TRYCATCH_VOID(Dictionary, options, Dictionary(info[1], info.GetIsolate()));
         if (!fillEventInit(eventInit, options))
             return;
     }
 
     RefPtr<Event> event = Event::create(type, eventInit);
-    v8::Handle<v8::Object> wrapper = args.Holder();
-    V8DOMWrapper::associateObjectWithWrapper<V8TestExtendedEvent>(event.release(), &V8TestExtendedEvent::wrapperTypeInfo, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
-    v8SetReturnValue(args, wrapper);
+    v8::Handle<v8::Object> wrapper = info.Holder();
+    V8DOMWrapper::associateObjectWithWrapper<V8TestExtendedEvent>(event.release(), &V8TestExtendedEvent::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
+    v8SetReturnValue(info, wrapper);
 }
 } // namespace EventV8Internal
 
@@ -130,20 +130,20 @@ bool fillEventInit(EventInit& eventInit, const Dictionary& options)
     return true;
 }
 
-void V8TestExtendedEvent::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8TestExtendedEvent::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "DOMConstructor");
-    if (!args.IsConstructCall()) {
-        throwTypeError(ExceptionMessages::failedToConstruct("TestExtendedEvent", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), args.GetIsolate());
+    if (!info.IsConstructCall()) {
+        throwTypeError(ExceptionMessages::failedToConstruct("TestExtendedEvent", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), info.GetIsolate());
         return;
     }
 
     if (ConstructorMode::current() == ConstructorMode::WrapExistingObject) {
-        args.GetReturnValue().Set(args.Holder());
+        info.GetReturnValue().Set(info.Holder());
         return;
     }
 
-    EventV8Internal::constructor(args);
+    EventV8Internal::constructor(info);
 }
 
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestExtendedEventTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)

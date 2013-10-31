@@ -42,30 +42,25 @@
 
 namespace WebCore {
 
-void V8Worker::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8Worker::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    Worker* worker = V8Worker::toNative(args.Holder());
+    Worker* worker = V8Worker::toNative(info.Holder());
     MessagePortArray ports;
     ArrayBufferArray arrayBuffers;
-    if (args.Length() > 1) {
+    if (info.Length() > 1) {
         const int transferablesArgIndex = 1;
         bool notASequence = false;
-        if (!extractTransferables(args[transferablesArgIndex], ports, arrayBuffers, notASequence, args.GetIsolate())) {
+        if (!extractTransferables(info[transferablesArgIndex], ports, arrayBuffers, notASequence, info.GetIsolate())) {
             if (notASequence)
-                throwTypeError(ExceptionMessages::failedToExecute("postMessage", "Worker", ExceptionMessages::notAnArrayTypeArgumentOrValue(transferablesArgIndex + 1)), args.GetIsolate());
+                throwTypeError(ExceptionMessages::failedToExecute("postMessage", "Worker", ExceptionMessages::notAnArrayTypeArgumentOrValue(transferablesArgIndex + 1)), info.GetIsolate());
             return;
         }
     }
     bool didThrow = false;
-    RefPtr<SerializedScriptValue> message =
-        SerializedScriptValue::create(args[0],
-                                      &ports,
-                                      &arrayBuffers,
-                                      didThrow,
-                                      args.GetIsolate());
+    RefPtr<SerializedScriptValue> message = SerializedScriptValue::create(info[0], &ports, &arrayBuffers, didThrow, info.GetIsolate());
     if (didThrow)
         return;
-    ExceptionState es(args.GetIsolate());
+    ExceptionState es(info.GetIsolate());
     worker->postMessage(message.release(), &ports, es);
     es.throwIfNeeded();
 }

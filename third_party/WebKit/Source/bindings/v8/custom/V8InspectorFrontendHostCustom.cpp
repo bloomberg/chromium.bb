@@ -41,14 +41,14 @@
 
 namespace WebCore {
 
-void V8InspectorFrontendHost::platformMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8InspectorFrontendHost::platformMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
 #if OS(MACOSX)
-    v8SetReturnValue(args, v8::String::NewSymbol("mac"));
+    v8SetReturnValue(info, v8::String::NewSymbol("mac"));
 #elif OS(WIN)
-    v8SetReturnValue(args, v8::String::NewSymbol("windows"));
+    v8SetReturnValue(info, v8::String::NewSymbol("windows"));
 #else // Unix-like systems
-    v8SetReturnValue(args, v8::String::NewSymbol("linux"));
+    v8SetReturnValue(info, v8::String::NewSymbol("linux"));
 #endif
 }
 
@@ -95,51 +95,51 @@ static void populateContextMenuItems(v8::Local<v8::Array>& itemArray, ContextMen
     }
 }
 
-void V8InspectorFrontendHost::showContextMenuMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8InspectorFrontendHost::showContextMenuMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (args.Length() < 2)
+    if (info.Length() < 2)
         return;
 
-    v8::Local<v8::Object> eventWrapper = v8::Local<v8::Object>::Cast(args[0]);
+    v8::Local<v8::Object> eventWrapper = v8::Local<v8::Object>::Cast(info[0]);
     if (!V8MouseEvent::wrapperTypeInfo.equals(toWrapperTypeInfo(eventWrapper)))
         return;
 
     Event* event = V8Event::toNative(eventWrapper);
-    if (!args[1]->IsArray())
+    if (!info[1]->IsArray())
         return;
 
-    v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(args[1]);
+    v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(info[1]);
     ContextMenu menu;
     populateContextMenuItems(array, menu);
 
-    InspectorFrontendHost* frontendHost = V8InspectorFrontendHost::toNative(args.Holder());
+    InspectorFrontendHost* frontendHost = V8InspectorFrontendHost::toNative(info.Holder());
     Vector<ContextMenuItem> items = menu.items();
     frontendHost->showContextMenu(event, items);
 }
 
-static void histogramEnumeration(const char* name, const v8::FunctionCallbackInfo<v8::Value>& args, int boundaryValue)
+static void histogramEnumeration(const char* name, const v8::FunctionCallbackInfo<v8::Value>& info, int boundaryValue)
 {
-    if (args.Length() < 1 || !args[0]->IsInt32())
+    if (info.Length() < 1 || !info[0]->IsInt32())
         return;
 
-    int sample = args[0]->ToInt32()->Value();
+    int sample = info[0]->ToInt32()->Value();
     if (sample < boundaryValue)
         WebKit::Platform::current()->histogramEnumeration(name, sample, boundaryValue);
 }
 
-void V8InspectorFrontendHost::recordActionTakenMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8InspectorFrontendHost::recordActionTakenMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    histogramEnumeration("DevTools.ActionTaken", args, 100);
+    histogramEnumeration("DevTools.ActionTaken", info, 100);
 }
 
-void V8InspectorFrontendHost::recordPanelShownMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8InspectorFrontendHost::recordPanelShownMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    histogramEnumeration("DevTools.PanelShown", args, 20);
+    histogramEnumeration("DevTools.PanelShown", info, 20);
 }
 
-void V8InspectorFrontendHost::recordSettingChangedMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8InspectorFrontendHost::recordSettingChangedMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    histogramEnumeration("DevTools.SettingChanged", args, 100);
+    histogramEnumeration("DevTools.SettingChanged", info, 100);
 }
 
 } // namespace WebCore

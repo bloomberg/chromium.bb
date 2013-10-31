@@ -78,22 +78,22 @@ void V8CustomEvent::detailAttributeGetterCustom(v8::Local<v8::String> name, cons
     v8SetReturnValue(info, cacheState(info.Holder(), v8::Null(info.GetIsolate()), info.GetIsolate()));
 }
 
-void V8CustomEvent::initCustomEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8CustomEvent::initCustomEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    CustomEvent* event = V8CustomEvent::toNative(args.Holder());
+    CustomEvent* event = V8CustomEvent::toNative(info.Holder());
     ASSERT(!event->serializedDetail());
 
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, typeArg, args[0]);
-    V8TRYCATCH_VOID(bool, canBubbleArg, args[1]->BooleanValue());
-    V8TRYCATCH_VOID(bool, cancelableArg, args[2]->BooleanValue());
-    v8::Handle<v8::Value> detailsArg = args[3];
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, typeArg, info[0]);
+    V8TRYCATCH_VOID(bool, canBubbleArg, info[1]->BooleanValue());
+    V8TRYCATCH_VOID(bool, cancelableArg, info[2]->BooleanValue());
+    v8::Handle<v8::Value> detailsArg = info[3];
 
     event->initEvent(typeArg, canBubbleArg, cancelableArg);
 
     if (!detailsArg.IsEmpty()) {
-        args.Holder()->SetHiddenValue(V8HiddenPropertyName::detail(args.GetIsolate()), detailsArg);
-        if (isolatedWorldForIsolate(args.GetIsolate()))
-            event->setSerializedDetail(SerializedScriptValue::createAndSwallowExceptions(detailsArg, args.GetIsolate()));
+        info.Holder()->SetHiddenValue(V8HiddenPropertyName::detail(info.GetIsolate()), detailsArg);
+        if (isolatedWorldForIsolate(info.GetIsolate()))
+            event->setSerializedDetail(SerializedScriptValue::createAndSwallowExceptions(detailsArg, info.GetIsolate()));
     }
 }
 

@@ -43,44 +43,44 @@
 
 namespace WebCore {
 
-void V8XSLTProcessor::setParameterMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8XSLTProcessor::setParameterMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (isUndefinedOrNull(args[1]) || isUndefinedOrNull(args[2]))
+    if (isUndefinedOrNull(info[1]) || isUndefinedOrNull(info[2]))
         return;
 
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, namespaceURI, args[0]);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, localName, args[1]);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, value, args[2]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, namespaceURI, info[0]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, localName, info[1]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, value, info[2]);
 
-    XSLTProcessor* imp = V8XSLTProcessor::toNative(args.Holder());
+    XSLTProcessor* imp = V8XSLTProcessor::toNative(info.Holder());
     imp->setParameter(namespaceURI, localName, value);
 }
 
-void V8XSLTProcessor::getParameterMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8XSLTProcessor::getParameterMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (isUndefinedOrNull(args[1]))
+    if (isUndefinedOrNull(info[1]))
         return;
 
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, namespaceURI, args[0]);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, localName, args[1]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, namespaceURI, info[0]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, localName, info[1]);
 
-    XSLTProcessor* imp = V8XSLTProcessor::toNative(args.Holder());
+    XSLTProcessor* imp = V8XSLTProcessor::toNative(info.Holder());
     String result = imp->getParameter(namespaceURI, localName);
     if (result.isNull())
         return;
 
-    v8SetReturnValueString(args, result, args.GetIsolate());
+    v8SetReturnValueString(info, result, info.GetIsolate());
 }
 
-void V8XSLTProcessor::removeParameterMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8XSLTProcessor::removeParameterMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (isUndefinedOrNull(args[1]))
+    if (isUndefinedOrNull(info[1]))
         return;
 
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, namespaceURI, args[0]);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, localName, args[1]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, namespaceURI, info[0]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, localName, info[1]);
 
-    XSLTProcessor* imp = V8XSLTProcessor::toNative(args.Holder());
+    XSLTProcessor* imp = V8XSLTProcessor::toNative(info.Holder());
     imp->removeParameter(namespaceURI, localName);
 }
 

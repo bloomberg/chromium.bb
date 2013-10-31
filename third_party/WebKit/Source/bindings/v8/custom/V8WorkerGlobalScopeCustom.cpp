@@ -47,15 +47,15 @@
 
 namespace WebCore {
 
-void SetTimeoutOrInterval(const v8::FunctionCallbackInfo<v8::Value>& args, bool singleShot)
+void SetTimeoutOrInterval(const v8::FunctionCallbackInfo<v8::Value>& info, bool singleShot)
 {
-    WorkerGlobalScope* workerGlobalScope = V8WorkerGlobalScope::toNative(args.Holder());
+    WorkerGlobalScope* workerGlobalScope = V8WorkerGlobalScope::toNative(info.Holder());
 
-    int argumentCount = args.Length();
+    int argumentCount = info.Length();
     if (argumentCount < 1)
         return;
 
-    v8::Handle<v8::Value> function = args[0];
+    v8::Handle<v8::Value> function = info[0];
 
     WorkerScriptController* script = workerGlobalScope->script();
     if (!script)
@@ -66,42 +66,42 @@ void SetTimeoutOrInterval(const v8::FunctionCallbackInfo<v8::Value>& args, bool 
     if (function->IsString()) {
         if (ContentSecurityPolicy* policy = workerGlobalScope->contentSecurityPolicy()) {
             if (!policy->allowEval()) {
-                v8SetReturnValue(args, 0);
+                v8SetReturnValue(info, 0);
                 return;
             }
         }
-        action = adoptPtr(new ScheduledAction(v8Context, toWebCoreString(function.As<v8::String>()), workerGlobalScope->url(), args.GetIsolate()));
+        action = adoptPtr(new ScheduledAction(v8Context, toWebCoreString(function.As<v8::String>()), workerGlobalScope->url(), info.GetIsolate()));
     } else if (function->IsFunction()) {
         size_t paramCount = argumentCount >= 2 ? argumentCount - 2 : 0;
         OwnPtr<v8::Local<v8::Value>[]> params;
         if (paramCount > 0) {
             params = adoptArrayPtr(new v8::Local<v8::Value>[paramCount]);
             for (size_t i = 0; i < paramCount; ++i)
-                params[i] = args[i+2];
+                params[i] = info[i+2];
         }
         // ScheduledAction takes ownership of actual params and releases them in its destructor.
-        action = adoptPtr(new ScheduledAction(v8Context, v8::Handle<v8::Function>::Cast(function), paramCount, params.get(), args.GetIsolate()));
+        action = adoptPtr(new ScheduledAction(v8Context, v8::Handle<v8::Function>::Cast(function), paramCount, params.get(), info.GetIsolate()));
     } else
         return;
 
-    int32_t timeout = argumentCount >= 2 ? args[1]->Int32Value() : 0;
+    int32_t timeout = argumentCount >= 2 ? info[1]->Int32Value() : 0;
     int timerId;
     if (singleShot)
         timerId = DOMWindowTimers::setTimeout(workerGlobalScope, action.release(), timeout);
     else
         timerId = DOMWindowTimers::setInterval(workerGlobalScope, action.release(), timeout);
 
-    v8SetReturnValue(args, timerId);
+    v8SetReturnValue(info, timerId);
 }
 
-void V8WorkerGlobalScope::setTimeoutMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8WorkerGlobalScope::setTimeoutMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    return SetTimeoutOrInterval(args, true);
+    return SetTimeoutOrInterval(info, true);
 }
 
-void V8WorkerGlobalScope::setIntervalMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8WorkerGlobalScope::setIntervalMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    return SetTimeoutOrInterval(args, false);
+    return SetTimeoutOrInterval(info, false);
 }
 
 v8::Handle<v8::Value> toV8(WorkerGlobalScope* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

@@ -97,43 +97,43 @@ void V8MessageEvent::dataAttributeGetterCustom(v8::Local<v8::String> name, const
     v8SetReturnValue(info, result);
 }
 
-void V8MessageEvent::initMessageEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8MessageEvent::initMessageEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    MessageEvent* event = V8MessageEvent::toNative(args.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, typeArg, args[0]);
-    V8TRYCATCH_VOID(bool, canBubbleArg, args[1]->BooleanValue());
-    V8TRYCATCH_VOID(bool, cancelableArg, args[2]->BooleanValue());
-    v8::Handle<v8::Value> dataArg = args[3];
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, originArg, args[4]);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, lastEventIdArg, args[5]);
+    MessageEvent* event = V8MessageEvent::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, typeArg, info[0]);
+    V8TRYCATCH_VOID(bool, canBubbleArg, info[1]->BooleanValue());
+    V8TRYCATCH_VOID(bool, cancelableArg, info[2]->BooleanValue());
+    v8::Handle<v8::Value> dataArg = info[3];
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, originArg, info[4]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, lastEventIdArg, info[5]);
 
     DOMWindow* sourceArg = 0;
-    if (args[6]->IsObject()) {
-        v8::Handle<v8::Object> wrapper = v8::Handle<v8::Object>::Cast(args[6]);
-        v8::Handle<v8::Object> window = wrapper->FindInstanceInPrototypeChain(V8Window::GetTemplate(args.GetIsolate(), worldTypeInMainThread(args.GetIsolate())));
+    if (info[6]->IsObject()) {
+        v8::Handle<v8::Object> wrapper = v8::Handle<v8::Object>::Cast(info[6]);
+        v8::Handle<v8::Object> window = wrapper->FindInstanceInPrototypeChain(V8Window::GetTemplate(info.GetIsolate(), worldTypeInMainThread(info.GetIsolate())));
         if (!window.IsEmpty())
             sourceArg = V8Window::toNative(window);
     }
     OwnPtr<MessagePortArray> portArray;
 
     const int portArrayIndex = 7;
-    if (!isUndefinedOrNull(args[portArrayIndex])) {
+    if (!isUndefinedOrNull(info[portArrayIndex])) {
         portArray = adoptPtr(new MessagePortArray);
-        if (!getMessagePortArray(args[portArrayIndex], portArrayIndex + 1, *portArray, args.GetIsolate()))
+        if (!getMessagePortArray(info[portArrayIndex], portArrayIndex + 1, *portArray, info.GetIsolate()))
             return;
     }
     event->initMessageEvent(typeArg, canBubbleArg, cancelableArg, originArg, lastEventIdArg, sourceArg, portArray.release());
 
     if (!dataArg.IsEmpty()) {
-        args.Holder()->SetHiddenValue(V8HiddenPropertyName::data(args.GetIsolate()), dataArg);
-        if (isolatedWorldForIsolate(args.GetIsolate()))
-            event->setSerializedData(SerializedScriptValue::createAndSwallowExceptions(dataArg, args.GetIsolate()));
+        info.Holder()->SetHiddenValue(V8HiddenPropertyName::data(info.GetIsolate()), dataArg);
+        if (isolatedWorldForIsolate(info.GetIsolate()))
+            event->setSerializedData(SerializedScriptValue::createAndSwallowExceptions(dataArg, info.GetIsolate()));
     }
 }
 
-void V8MessageEvent::webkitInitMessageEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8MessageEvent::webkitInitMessageEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    initMessageEventMethodCustom(args);
+    initMessageEventMethodCustom(info);
 }
 
 

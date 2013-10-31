@@ -64,28 +64,28 @@ static void getNamedItems(HTMLOptionsCollection* collection, const AtomicString&
     v8SetReturnValueFast(callbackInfo, NamedNodesCollection::create(namedItems), collection);
 }
 
-void V8HTMLOptionsCollection::namedItemMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8HTMLOptionsCollection::namedItemMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, args[0]);
-    HTMLOptionsCollection* imp = V8HTMLOptionsCollection::toNative(args.Holder());
-    getNamedItems(imp, name, args);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, info[0]);
+    HTMLOptionsCollection* imp = V8HTMLOptionsCollection::toNative(info.Holder());
+    getNamedItems(imp, name, info);
 }
 
-void V8HTMLOptionsCollection::addMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8HTMLOptionsCollection::addMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (!V8HTMLOptionElement::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate()))) {
-        setDOMException(TypeMismatchError, args.GetIsolate());
+    if (!V8HTMLOptionElement::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) {
+        setDOMException(TypeMismatchError, info.GetIsolate());
         return;
     }
-    HTMLOptionsCollection* imp = V8HTMLOptionsCollection::toNative(args.Holder());
-    HTMLOptionElement* option = V8HTMLOptionElement::toNative(v8::Handle<v8::Object>(v8::Handle<v8::Object>::Cast(args[0])));
+    HTMLOptionsCollection* imp = V8HTMLOptionsCollection::toNative(info.Holder());
+    HTMLOptionElement* option = V8HTMLOptionElement::toNative(v8::Handle<v8::Object>(v8::Handle<v8::Object>::Cast(info[0])));
 
-    ExceptionState es(args.GetIsolate());
-    if (args.Length() < 2)
+    ExceptionState es(info.GetIsolate());
+    if (info.Length() < 2)
         imp->add(option, es);
     else {
         bool ok;
-        V8TRYCATCH_VOID(int, index, toInt32(args[1], ok));
+        V8TRYCATCH_VOID(int, index, toInt32(info[1], ok));
         if (!ok)
             es.throwDOMException(TypeMismatchError, ExceptionMessages::failedToExecute("add", "HTMLOptionsCollection", "The index provided could not be interpreted as an integer."));
         else

@@ -251,32 +251,32 @@ bool CustomElementConstructorBuilder::hasValidPrototypeChainFor(const WrapperTyp
     return false;
 }
 
-static void constructCustomElement(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void constructCustomElement(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    v8::Isolate* isolate = args.GetIsolate();
+    v8::Isolate* isolate = info.GetIsolate();
 
-    if (!args.IsConstructCall()) {
+    if (!info.IsConstructCall()) {
         throwTypeError("DOM object constructor cannot be called as a function.", isolate);
         return;
     }
 
-    if (args.Length() > 0) {
+    if (info.Length() > 0) {
         throwUninformativeAndGenericTypeError(isolate);
         return;
     }
 
-    Document* document = V8Document::toNative(args.Callee()->GetHiddenValue(V8HiddenPropertyName::customElementDocument(isolate)).As<v8::Object>());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, namespaceURI, args.Callee()->GetHiddenValue(V8HiddenPropertyName::customElementNamespaceURI(isolate)));
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, tagName, args.Callee()->GetHiddenValue(V8HiddenPropertyName::customElementTagName(isolate)));
-    v8::Handle<v8::Value> maybeType = args.Callee()->GetHiddenValue(V8HiddenPropertyName::customElementType(isolate));
+    Document* document = V8Document::toNative(info.Callee()->GetHiddenValue(V8HiddenPropertyName::customElementDocument(isolate)).As<v8::Object>());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, namespaceURI, info.Callee()->GetHiddenValue(V8HiddenPropertyName::customElementNamespaceURI(isolate)));
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, tagName, info.Callee()->GetHiddenValue(V8HiddenPropertyName::customElementTagName(isolate)));
+    v8::Handle<v8::Value> maybeType = info.Callee()->GetHiddenValue(V8HiddenPropertyName::customElementType(isolate));
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, maybeType);
 
-    ExceptionState es(args.GetIsolate());
+    ExceptionState es(info.GetIsolate());
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     RefPtr<Element> element = document->createElementNS(namespaceURI, tagName, maybeType->IsNull() ? nullAtom : type, es);
     if (es.throwIfNeeded())
         return;
-    v8SetReturnValueFast(args, element.release(), document);
+    v8SetReturnValueFast(info, element.release(), document);
 }
 
 } // namespace WebCore

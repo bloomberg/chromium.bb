@@ -77,9 +77,9 @@ namespace WebCore {
 
     v8::Handle<v8::Value> toV8Sequence(v8::Handle<v8::Value>, uint32_t& length, bool& notASequence, v8::Isolate*);
 
-    inline v8::Handle<v8::Value> argumentOrNull(const v8::FunctionCallbackInfo<v8::Value>& args, int index)
+    inline v8::Handle<v8::Value> argumentOrNull(const v8::FunctionCallbackInfo<v8::Value>& info, int index)
     {
-        return index >= args.Length() ? v8::Local<v8::Value>() : args[index];
+        return index >= info.Length() ? v8::Local<v8::Value>() : info[index];
     }
 
     // Since v8::Null(isolate) crashes if we pass a null isolate,
@@ -92,45 +92,45 @@ namespace WebCore {
     }
 
     template<typename CallbackInfo, typename V>
-    inline void v8SetReturnValue(const CallbackInfo& args, V v)
+    inline void v8SetReturnValue(const CallbackInfo& info, V v)
     {
-        args.GetReturnValue().Set(v);
+        info.GetReturnValue().Set(v);
     }
 
     template<typename CallbackInfo>
-    inline void v8SetReturnValueBool(const CallbackInfo& args, bool v)
+    inline void v8SetReturnValueBool(const CallbackInfo& info, bool v)
     {
-        args.GetReturnValue().Set(v);
+        info.GetReturnValue().Set(v);
     }
 
     template<typename CallbackInfo>
-    inline void v8SetReturnValueInt(const CallbackInfo& args, int v)
+    inline void v8SetReturnValueInt(const CallbackInfo& info, int v)
     {
-        args.GetReturnValue().Set(v);
+        info.GetReturnValue().Set(v);
     }
 
     template<typename CallbackInfo>
-    inline void v8SetReturnValueUnsigned(const CallbackInfo& args, unsigned v)
+    inline void v8SetReturnValueUnsigned(const CallbackInfo& info, unsigned v)
     {
-        args.GetReturnValue().Set(v);
+        info.GetReturnValue().Set(v);
     }
 
     template<typename CallbackInfo>
-    inline void v8SetReturnValueNull(const CallbackInfo& args)
+    inline void v8SetReturnValueNull(const CallbackInfo& info)
     {
-        args.GetReturnValue().SetNull();
+        info.GetReturnValue().SetNull();
     }
 
     template<typename CallbackInfo>
-    inline void v8SetReturnValueUndefined(const CallbackInfo& args)
+    inline void v8SetReturnValueUndefined(const CallbackInfo& info)
     {
-        args.GetReturnValue().SetUndefined();
+        info.GetReturnValue().SetUndefined();
     }
 
     template<typename CallbackInfo>
-    inline void v8SetReturnValueEmptyString(const CallbackInfo& args)
+    inline void v8SetReturnValueEmptyString(const CallbackInfo& info)
     {
-        args.GetReturnValue().SetEmptyString();
+        info.GetReturnValue().SetEmptyString();
     }
 
     template <class CallbackInfo>
@@ -528,19 +528,19 @@ namespace WebCore {
     }
 
     template <class T>
-    Vector<T> toNativeArguments(const v8::FunctionCallbackInfo<v8::Value>& args, int startIndex)
+    Vector<T> toNativeArguments(const v8::FunctionCallbackInfo<v8::Value>& info, int startIndex)
     {
-        ASSERT(startIndex <= args.Length());
+        ASSERT(startIndex <= info.Length());
         Vector<T> result;
         typedef NativeValueTraits<T> TraitsType;
-        int length = args.Length();
+        int length = info.Length();
         result.reserveInitialCapacity(length);
         for (int i = startIndex; i < length; ++i)
-            result.uncheckedAppend(TraitsType::nativeValue(args[i]));
+            result.uncheckedAppend(TraitsType::nativeValue(info[i]));
         return result;
     }
 
-    Vector<v8::Handle<v8::Value> > toVectorOfArguments(const v8::FunctionCallbackInfo<v8::Value>& args);
+    Vector<v8::Handle<v8::Value> > toVectorOfArguments(const v8::FunctionCallbackInfo<v8::Value>&);
 
     // Validates that the passed object is a sequence type per WebIDL spec
     // http://www.w3.org/TR/2012/CR-WebIDL-20120419/#es-sequence

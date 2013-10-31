@@ -103,9 +103,9 @@ v8::Local<v8::Value> V8LazyEventListener::callListenerFunction(ExecutionContext*
     return frame->script().callFunction(handlerFunction, receiver, WTF_ARRAY_LENGTH(parameters), parameters);
 }
 
-static void V8LazyEventListenerToString(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void V8LazyEventListenerToString(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    v8SetReturnValue(args, args.Holder()->GetHiddenValue(V8HiddenPropertyName::toStringString(args.GetIsolate())));
+    v8SetReturnValue(info, info.Holder()->GetHiddenValue(V8HiddenPropertyName::toStringString(info.GetIsolate())));
 }
 
 void V8LazyEventListener::prepareListenerObject(ExecutionContext* context)

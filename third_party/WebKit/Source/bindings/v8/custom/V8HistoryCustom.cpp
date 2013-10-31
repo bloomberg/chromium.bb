@@ -59,37 +59,37 @@ void V8History::stateAttributeGetterCustom(v8::Local<v8::String> name, const v8:
     v8SetReturnValue(info, value);
 }
 
-void V8History::pushStateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8History::pushStateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     bool didThrow = false;
-    RefPtr<SerializedScriptValue> historyState = SerializedScriptValue::create(args[0], 0, 0, didThrow, args.GetIsolate());
+    RefPtr<SerializedScriptValue> historyState = SerializedScriptValue::create(info[0], 0, 0, didThrow, info.GetIsolate());
     if (didThrow)
         return;
 
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, title, args[1]);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, url, argumentOrNull(args, 2));
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, title, info[1]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, url, argumentOrNull(info, 2));
 
-    ExceptionState es(args.GetIsolate());
-    History* history = V8History::toNative(args.Holder());
+    ExceptionState es(info.GetIsolate());
+    History* history = V8History::toNative(info.Holder());
     history->stateObjectAdded(historyState.release(), title, url, SameDocumentNavigationPushState, es);
-    args.Holder()->DeleteHiddenValue(V8HiddenPropertyName::state(args.GetIsolate()));
+    info.Holder()->DeleteHiddenValue(V8HiddenPropertyName::state(info.GetIsolate()));
     es.throwIfNeeded();
 }
 
-void V8History::replaceStateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8History::replaceStateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     bool didThrow = false;
-    RefPtr<SerializedScriptValue> historyState = SerializedScriptValue::create(args[0], 0, 0, didThrow, args.GetIsolate());
+    RefPtr<SerializedScriptValue> historyState = SerializedScriptValue::create(info[0], 0, 0, didThrow, info.GetIsolate());
     if (didThrow)
         return;
 
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, title, args[1]);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, url, argumentOrNull(args, 2));
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, title, info[1]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, url, argumentOrNull(info, 2));
 
-    ExceptionState es(args.GetIsolate());
-    History* history = V8History::toNative(args.Holder());
+    ExceptionState es(info.GetIsolate());
+    History* history = V8History::toNative(info.Holder());
     history->stateObjectAdded(historyState.release(), title, url, SameDocumentNavigationReplaceState, es);
-    args.Holder()->DeleteHiddenValue(V8HiddenPropertyName::state(args.GetIsolate()));
+    info.Holder()->DeleteHiddenValue(V8HiddenPropertyName::state(info.GetIsolate()));
     es.throwIfNeeded();
 }
 

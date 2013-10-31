@@ -103,25 +103,25 @@ void V8HTMLObjectElement::namedPropertySetterCustom(v8::Local<v8::String> name, 
     return npObjectNamedSetter<V8HTMLObjectElement>(name, value, info);
 }
 
-void V8HTMLAppletElement::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8HTMLAppletElement::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    HTMLPlugInElement* imp = V8HTMLAppletElement::toNative(args.Holder());
+    HTMLPlugInElement* imp = V8HTMLAppletElement::toNative(info.Holder());
     UseCounter::count(imp->document(), UseCounter::HTMLAppletElementLegacyCall);
-    npObjectInvokeDefaultHandler(args);
+    npObjectInvokeDefaultHandler(info);
 }
 
-void V8HTMLEmbedElement::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8HTMLEmbedElement::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    HTMLPlugInElement* imp = V8HTMLEmbedElement::toNative(args.Holder());
+    HTMLPlugInElement* imp = V8HTMLEmbedElement::toNative(info.Holder());
     UseCounter::count(imp->document(), UseCounter::HTMLEmbedElementLegacyCall);
-    npObjectInvokeDefaultHandler(args);
+    npObjectInvokeDefaultHandler(info);
 }
 
-void V8HTMLObjectElement::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8HTMLObjectElement::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    HTMLPlugInElement* imp = V8HTMLObjectElement::toNative(args.Holder());
+    HTMLPlugInElement* imp = V8HTMLObjectElement::toNative(info.Holder());
     UseCounter::count(imp->document(), UseCounter::HTMLObjectElementLegacyCall);
-    npObjectInvokeDefaultHandler(args);
+    npObjectInvokeDefaultHandler(info);
 }
 
 template <class C>

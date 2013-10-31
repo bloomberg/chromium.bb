@@ -54,18 +54,18 @@ static v8::Handle<v8::Value> getNamedItems(HTMLFormControlsCollection* collectio
     return toV8(collection->ownerNode()->radioNodeList(name).get(), callbackInfo.Holder(), callbackInfo.GetIsolate());
 }
 
-void V8HTMLFormControlsCollection::namedItemMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8HTMLFormControlsCollection::namedItemMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, args[0]);
-    HTMLFormControlsCollection* imp = V8HTMLFormControlsCollection::toNative(args.Holder());
-    v8::Handle<v8::Value> result = getNamedItems(imp, name, args);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, info[0]);
+    HTMLFormControlsCollection* imp = V8HTMLFormControlsCollection::toNative(info.Holder());
+    v8::Handle<v8::Value> result = getNamedItems(imp, name, info);
 
     if (result.IsEmpty()) {
-        v8SetReturnValueNull(args);
+        v8SetReturnValueNull(info);
         return;
     }
 
-    v8SetReturnValue(args, result);
+    v8SetReturnValue(info, result);
 }
 
 } // namespace WebCore

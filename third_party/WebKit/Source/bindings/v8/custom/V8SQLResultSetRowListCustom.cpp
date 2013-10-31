@@ -36,23 +36,23 @@
 
 namespace WebCore {
 
-void V8SQLResultSetRowList::itemMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8SQLResultSetRowList::itemMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (!args.Length()) {
-        throwError(v8SyntaxError, "Item index is required.", args.GetIsolate());
+    if (!info.Length()) {
+        throwError(v8SyntaxError, "Item index is required.", info.GetIsolate());
         return;
     }
 
-    if (!args[0]->IsNumber()) {
-        throwTypeError("Item index must be a number.", args.GetIsolate());
+    if (!info[0]->IsNumber()) {
+        throwTypeError("Item index must be a number.", info.GetIsolate());
         return;
     }
 
-    SQLResultSetRowList* rowList = V8SQLResultSetRowList::toNative(args.Holder());
+    SQLResultSetRowList* rowList = V8SQLResultSetRowList::toNative(info.Holder());
 
-    unsigned long index = args[0]->IntegerValue();
+    unsigned long index = info[0]->IntegerValue();
     if (index >= rowList->length()) {
-        throwError(v8RangeError, "Item index is out of range.", args.GetIsolate());
+        throwError(v8RangeError, "Item index is out of range.", info.GetIsolate());
         return;
     }
 
@@ -65,22 +65,22 @@ void V8SQLResultSetRowList::itemMethodCustom(const v8::FunctionCallbackInfo<v8::
         v8::Handle<v8::Value> value;
         switch(sqlValue.type()) {
             case SQLValue::StringValue:
-                value = v8String(sqlValue.string(), args.GetIsolate());
+                value = v8String(sqlValue.string(), info.GetIsolate());
                 break;
             case SQLValue::NullValue:
-                value = v8::Null(args.GetIsolate());
+                value = v8::Null(info.GetIsolate());
                 break;
             case SQLValue::NumberValue:
-                value = v8::Number::New(args.GetIsolate(), sqlValue.number());
+                value = v8::Number::New(info.GetIsolate(), sqlValue.number());
                 break;
             default:
                 ASSERT_NOT_REACHED();
         }
 
-        item->Set(v8String(rowList->columnNames()[i], args.GetIsolate()), value, static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::ReadOnly));
+        item->Set(v8String(rowList->columnNames()[i], info.GetIsolate()), value, static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::ReadOnly));
     }
 
-    v8SetReturnValue(args, item);
+    v8SetReturnValue(info, item);
 }
 
 } // namespace WebCore

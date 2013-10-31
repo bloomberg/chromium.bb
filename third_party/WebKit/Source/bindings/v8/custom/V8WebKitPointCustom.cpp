@@ -38,26 +38,26 @@
 
 namespace WebCore {
 
-void V8WebKitPoint::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8WebKitPoint::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     float x = 0;
     float y = 0;
-    if (args.Length() > 1) {
-        if (!args[0]->IsUndefined()) {
-            x = toFloat(args[0]);
+    if (info.Length() > 1) {
+        if (!info[0]->IsUndefined()) {
+            x = toFloat(info[0]);
             if (std::isnan(x))
                 x = 0;
         }
-        if (!args[1]->IsUndefined()) {
-            y = toFloat(args[1]);
+        if (!info[1]->IsUndefined()) {
+            y = toFloat(info[1]);
             if (std::isnan(y))
                 y = 0;
         }
     }
     RefPtr<DOMPoint> point = DOMPoint::create(x, y);
-    v8::Handle<v8::Object> wrapper = args.Holder();
-    V8DOMWrapper::associateObjectWithWrapper<V8WebKitPoint>(point.release(), &wrapperTypeInfo, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
-    args.GetReturnValue().Set(wrapper);
+    v8::Handle<v8::Object> wrapper = info.Holder();
+    V8DOMWrapper::associateObjectWithWrapper<V8WebKitPoint>(point.release(), &wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
+    info.GetReturnValue().Set(wrapper);
 }
 
 } // namespace WebCore

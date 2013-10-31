@@ -57,31 +57,31 @@
 
 namespace WebCore {
 
-void V8Document::evaluateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8Document::evaluateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    RefPtr<Document> document = V8Document::toNative(args.Holder());
-    ExceptionState es(args.GetIsolate());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, expression, args[0]);
+    RefPtr<Document> document = V8Document::toNative(info.Holder());
+    ExceptionState es(info.GetIsolate());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, expression, info[0]);
     RefPtr<Node> contextNode;
-    if (V8Node::HasInstance(args[1], args.GetIsolate(), worldType(args.GetIsolate())))
-        contextNode = V8Node::toNative(v8::Handle<v8::Object>::Cast(args[1]));
+    if (V8Node::HasInstance(info[1], info.GetIsolate(), worldType(info.GetIsolate())))
+        contextNode = V8Node::toNative(v8::Handle<v8::Object>::Cast(info[1]));
 
-    RefPtr<XPathNSResolver> resolver = toXPathNSResolver(args[2], args.GetIsolate());
-    if (!resolver && !args[2]->IsNull() && !args[2]->IsUndefined()) {
-        setDOMException(TypeMismatchError, args.GetIsolate());
+    RefPtr<XPathNSResolver> resolver = toXPathNSResolver(info[2], info.GetIsolate());
+    if (!resolver && !info[2]->IsNull() && !info[2]->IsUndefined()) {
+        setDOMException(TypeMismatchError, info.GetIsolate());
         return;
     }
 
-    int type = toInt32(args[3]);
+    int type = toInt32(info[3]);
     RefPtr<XPathResult> inResult;
-    if (V8XPathResult::HasInstance(args[4], args.GetIsolate(), worldType(args.GetIsolate())))
-        inResult = V8XPathResult::toNative(v8::Handle<v8::Object>::Cast(args[4]));
+    if (V8XPathResult::HasInstance(info[4], info.GetIsolate(), worldType(info.GetIsolate())))
+        inResult = V8XPathResult::toNative(v8::Handle<v8::Object>::Cast(info[4]));
 
     V8TRYCATCH_VOID(RefPtr<XPathResult>, result, DocumentXPathEvaluator::evaluate(document.get(), expression, contextNode.get(), resolver.get(), type, inResult.get(), es));
     if (es.throwIfNeeded())
         return;
 
-    v8SetReturnValueFast(args, result.release(), document.get());
+    v8SetReturnValueFast(info, result.release(), document.get());
 }
 
 } // namespace WebCore

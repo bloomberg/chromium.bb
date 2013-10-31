@@ -35,9 +35,9 @@
 
 namespace WebCore {
 
-void V8WorkerCrypto::getRandomValuesMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8WorkerCrypto::getRandomValuesMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    V8Crypto::getRandomValuesMethodCustom(args);
+    V8Crypto::getRandomValuesMethodCustom(info);
 }
 
 } // namespace WebCore

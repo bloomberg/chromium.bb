@@ -117,39 +117,39 @@ static void bAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::V
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void func1Method(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void func1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(args.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("func1", "TestInterfaceImplementedAs", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("func1", "TestInterfaceImplementedAs", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    RealClass* imp = V8TestInterfaceImplementedAs::toNative(args.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, a, args[0]);
-    v8SetReturnValueString(args, imp->func1(a), args.GetIsolate());
+    RealClass* imp = V8TestInterfaceImplementedAs::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, a, info[0]);
+    v8SetReturnValueString(info, imp->func1(a), info.GetIsolate());
 }
 
-static void func1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void func1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    RealClassV8Internal::func1Method(args);
+    RealClassV8Internal::func1Method(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void funcTestInterfaceImplementedAsParamMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void funcTestInterfaceImplementedAsParamMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(args.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("funcTestInterfaceImplementedAsParam", "TestInterfaceImplementedAs", ExceptionMessages::notEnoughArguments(1, args.Length())), args.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("funcTestInterfaceImplementedAsParam", "TestInterfaceImplementedAs", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    RealClass* imp = V8TestInterfaceImplementedAs::toNative(args.Holder());
-    V8TRYCATCH_VOID(RealClass*, orange, V8TestInterfaceImplementedAs::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8TestInterfaceImplementedAs::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0);
-    v8SetReturnValueString(args, imp->funcTestInterfaceImplementedAsParam(orange), args.GetIsolate());
+    RealClass* imp = V8TestInterfaceImplementedAs::toNative(info.Holder());
+    V8TRYCATCH_VOID(RealClass*, orange, V8TestInterfaceImplementedAs::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceImplementedAs::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    v8SetReturnValueString(info, imp->funcTestInterfaceImplementedAsParam(orange), info.GetIsolate());
 }
 
-static void funcTestInterfaceImplementedAsParamMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+static void funcTestInterfaceImplementedAsParamMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    RealClassV8Internal::funcTestInterfaceImplementedAsParamMethod(args);
+    RealClassV8Internal::funcTestInterfaceImplementedAsParamMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 

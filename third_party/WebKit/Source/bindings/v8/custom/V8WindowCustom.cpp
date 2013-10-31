@@ -73,14 +73,14 @@ namespace WebCore {
 
 // FIXME: There is a lot of duplication with SetTimeoutOrInterval() in V8WorkerGlobalScopeCustom.cpp.
 // We should refactor this.
-void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& args, bool singleShot, ExceptionState& es)
+void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool singleShot, ExceptionState& es)
 {
-    int argumentCount = args.Length();
+    int argumentCount = info.Length();
 
     if (argumentCount < 1)
         return;
 
-    DOMWindow* imp = V8Window::toNative(args.Holder());
+    DOMWindow* imp = V8Window::toNative(info.Holder());
     ExecutionContext* scriptContext = static_cast<ExecutionContext*>(imp->document());
 
     if (!scriptContext) {
@@ -88,7 +88,7 @@ void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& args, bool 
         return;
     }
 
-    v8::Handle<v8::Value> function = args[0];
+    v8::Handle<v8::Value> function = info[0];
     String functionString;
     if (!function->IsFunction()) {
         if (function->IsString()) {
@@ -120,23 +120,23 @@ void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& args, bool 
             params = adoptArrayPtr(new v8::Local<v8::Value>[paramCount]);
             for (int i = 0; i < paramCount; i++) {
                 // parameters must be globalized
-                params[i] = args[i+2];
+                params[i] = info[i+2];
             }
         }
 
         // params is passed to action, and released in action's destructor
         ASSERT(imp->frame());
-        action = adoptPtr(new ScheduledAction(imp->frame()->script().currentWorldContext(), v8::Handle<v8::Function>::Cast(function), paramCount, params.get(), args.GetIsolate()));
+        action = adoptPtr(new ScheduledAction(imp->frame()->script().currentWorldContext(), v8::Handle<v8::Function>::Cast(function), paramCount, params.get(), info.GetIsolate()));
     } else {
         if (imp->document() && !imp->document()->contentSecurityPolicy()->allowEval()) {
-            v8SetReturnValue(args, 0);
+            v8SetReturnValue(info, 0);
             return;
         }
         ASSERT(imp->frame());
-        action = adoptPtr(new ScheduledAction(imp->frame()->script().currentWorldContext(), functionString, KURL(), args.GetIsolate()));
+        action = adoptPtr(new ScheduledAction(imp->frame()->script().currentWorldContext(), functionString, KURL(), info.GetIsolate()));
     }
 
-    int32_t timeout = argumentCount >= 2 ? args[1]->Int32Value() : 0;
+    int32_t timeout = argumentCount >= 2 ? info[1]->Int32Value() : 0;
     int timerId;
     if (singleShot)
         timerId = DOMWindowTimers::setTimeout(imp, action.release(), timeout);
@@ -150,7 +150,7 @@ void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& args, bool 
         V8GCForContextDispose::instance().notifyIdleSooner(maximumFireInterval);
     }
 
-    v8SetReturnValue(args, timerId);
+    v8SetReturnValue(info, timerId);
 }
 
 void V8Window::eventAttributeGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -234,16 +234,16 @@ static bool isLegacyTargetOriginDesignation(v8::Handle<v8::Value> value)
 }
 
 
-void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    // None of these need to be RefPtr because args and context are guaranteed
+    // None of these need to be RefPtr because info and context are guaranteed
     // to hold on to them.
-    DOMWindow* window = V8Window::toNative(args.Holder());
+    DOMWindow* window = V8Window::toNative(info.Holder());
     DOMWindow* source = activeDOMWindow();
 
     // If called directly by WebCore we don't have a calling context.
     if (!source) {
-        throwUninformativeAndGenericTypeError(args.GetIsolate());
+        throwUninformativeAndGenericTypeError(info.GetIsolate());
         return;
     }
 
@@ -256,28 +256,28 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
     MessagePortArray portArray;
     ArrayBufferArray arrayBufferArray;
     int targetOriginArgIndex = 1;
-    if (args.Length() > 2) {
+    if (info.Length() > 2) {
         int transferablesArgIndex = 2;
-        if (isLegacyTargetOriginDesignation(args[2])) {
+        if (isLegacyTargetOriginDesignation(info[2])) {
             targetOriginArgIndex = 2;
             transferablesArgIndex = 1;
         }
         bool notASequence = false;
-        if (!extractTransferables(args[transferablesArgIndex], portArray, arrayBufferArray, notASequence, args.GetIsolate())) {
+        if (!extractTransferables(info[transferablesArgIndex], portArray, arrayBufferArray, notASequence, info.GetIsolate())) {
             if (notASequence)
-                throwTypeError(ExceptionMessages::failedToExecute("postMessage", "Window", ExceptionMessages::notAnArrayTypeArgumentOrValue(transferablesArgIndex + 1)), args.GetIsolate());
+                throwTypeError(ExceptionMessages::failedToExecute("postMessage", "Window", ExceptionMessages::notAnArrayTypeArgumentOrValue(transferablesArgIndex + 1)), info.GetIsolate());
             return;
         }
     }
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, targetOrigin, args[targetOriginArgIndex]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, targetOrigin, info[targetOriginArgIndex]);
 
     bool didThrow = false;
     RefPtr<SerializedScriptValue> message =
-        SerializedScriptValue::create(args[0], &portArray, &arrayBufferArray, didThrow, args.GetIsolate());
+        SerializedScriptValue::create(info[0], &portArray, &arrayBufferArray, didThrow, info.GetIsolate());
     if (didThrow)
         return;
 
-    ExceptionState es(args.GetIsolate());
+    ExceptionState es(info.GetIsolate());
     window->postMessage(message.release(), &portArray, targetOrigin, source, es);
     es.throwIfNeeded();
 }
@@ -286,14 +286,14 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
 // fix this by calling toString function on the receiver.
 // However, V8 implements toString in JavaScript, which requires
 // switching context of receiver. I consider it is dangerous.
-void V8Window::toStringMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8Window::toStringMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Object> domWrapper = args.This()->FindInstanceInPrototypeChain(V8Window::GetTemplate(args.GetIsolate(), worldTypeInMainThread(args.GetIsolate())));
+    v8::Handle<v8::Object> domWrapper = info.This()->FindInstanceInPrototypeChain(V8Window::GetTemplate(info.GetIsolate(), worldTypeInMainThread(info.GetIsolate())));
     if (domWrapper.IsEmpty()) {
-        v8SetReturnValue(args, args.This()->ObjectProtoToString());
+        v8SetReturnValue(info, info.This()->ObjectProtoToString());
         return;
     }
-    v8SetReturnValue(args, domWrapper->ObjectProtoToString());
+    v8SetReturnValue(info, domWrapper->ObjectProtoToString());
 }
 
 class DialogHandler {
@@ -338,44 +338,44 @@ static void setUpDialog(DOMWindow* dialog, void* handler)
     static_cast<DialogHandler*>(handler)->dialogCreated(dialog);
 }
 
-void V8Window::showModalDialogMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8Window::showModalDialogMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    DOMWindow* impl = V8Window::toNative(args.Holder());
-    ExceptionState es(args.GetIsolate());
+    DOMWindow* impl = V8Window::toNative(info.Holder());
+    ExceptionState es(info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToFrame(impl->frame(), es)) {
         es.throwIfNeeded();
         return;
     }
 
     // FIXME: Handle exceptions properly.
-    String urlString = toWebCoreStringWithUndefinedOrNullCheck(args[0]);
-    DialogHandler handler(args[1]);
-    String dialogFeaturesString = toWebCoreStringWithUndefinedOrNullCheck(args[2]);
+    String urlString = toWebCoreStringWithUndefinedOrNullCheck(info[0]);
+    DialogHandler handler(info[1]);
+    String dialogFeaturesString = toWebCoreStringWithUndefinedOrNullCheck(info[2]);
 
     impl->showModalDialog(urlString, dialogFeaturesString, activeDOMWindow(), firstDOMWindow(), setUpDialog, &handler);
 
-    v8SetReturnValue(args, handler.returnValue(args.GetIsolate()));
+    v8SetReturnValue(info, handler.returnValue(info.GetIsolate()));
 }
 
-void V8Window::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8Window::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    DOMWindow* impl = V8Window::toNative(args.Holder());
-    ExceptionState es(args.GetIsolate());
+    DOMWindow* impl = V8Window::toNative(info.Holder());
+    ExceptionState es(info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToFrame(impl->frame(), es)) {
         es.throwIfNeeded();
         return;
     }
 
     // FIXME: Handle exceptions properly.
-    String urlString = toWebCoreStringWithUndefinedOrNullCheck(args[0]);
-    AtomicString frameName = (args[1]->IsUndefined() || args[1]->IsNull()) ? "_blank" : toWebCoreAtomicString(args[1]);
-    String windowFeaturesString = toWebCoreStringWithUndefinedOrNullCheck(args[2]);
+    String urlString = toWebCoreStringWithUndefinedOrNullCheck(info[0]);
+    AtomicString frameName = (info[1]->IsUndefined() || info[1]->IsNull()) ? "_blank" : toWebCoreAtomicString(info[1]);
+    String windowFeaturesString = toWebCoreStringWithUndefinedOrNullCheck(info[2]);
 
     RefPtr<DOMWindow> openedWindow = impl->open(urlString, frameName, windowFeaturesString, activeDOMWindow(), firstDOMWindow());
     if (!openedWindow)
         return;
 
-    v8SetReturnValueFast(args, openedWindow.release(), impl);
+    v8SetReturnValueFast(info, openedWindow.release(), impl);
 }
 
 void V8Window::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -421,18 +421,18 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::P
 }
 
 
-void V8Window::setTimeoutMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8Window::setTimeoutMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState es(args.GetIsolate());
-    WindowSetTimeoutImpl(args, true, es);
+    ExceptionState es(info.GetIsolate());
+    WindowSetTimeoutImpl(info, true, es);
     es.throwIfNeeded();
 }
 
 
-void V8Window::setIntervalMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8Window::setIntervalMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState es(args.GetIsolate());
-    WindowSetTimeoutImpl(args, false, es);
+    ExceptionState es(info.GetIsolate());
+    WindowSetTimeoutImpl(info, false, es);
     es.throwIfNeeded();
 }
 
