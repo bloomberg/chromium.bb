@@ -18,6 +18,7 @@ import file_tools
 import gsd_storage
 import log_tools
 import once
+import repo_tools
 import local_storage_cache
 
 
@@ -106,36 +107,23 @@ class PackageBuilder(object):
       logging.getLogger().setLevel(logging.INFO)
     logging.basicConfig(format='%(levelname)s: %(message)s')
 
-  def SyncGitRepo(self, package):
-    """Sync the git repo for a package.
+  def SyncPackageGitRepo(self, package):
+    """Sync the git repo specified by a package.
 
     Args:
       package: Package name to sync.
     """
+
     PrintFlush('@@@BUILD_STEP sync %s@@@' % package)
     package_info = self._packages[package]
     url = package_info['git_url']
     revision = package_info['git_revision']
     destination = os.path.join(self._options.source, package)
     logging.info('Syncing %s...' % package)
-    if self._options.reclone:
-      file_tools.RemoveDirectoryIfPresent(destination)
-    if sys.platform == 'win32':
-      # On windows, we want to use the depot_tools version of git, which has
-      # git.bat as an entry point. When running through the msys command
-      # prompt, subprocess does not handle batch files. Explicitly invoking
-      # cmd.exe to be sure we run the correct git in this case.
-      git = ['cmd.exe', '/c', 'git.bat']
-    else:
-      git = ['git']
-    if not os.path.exists(destination):
-      logging.info('Cloning %s...' % package)
-      log_tools.CheckCall(git + ['clone', '-n', url, destination])
-    if self._options.pinned:
-      logging.info('Checking out pinned revision...')
-      log_tools.CheckCall(git + ['fetch', '--all'], cwd=destination)
-      log_tools.CheckCall(git + ['checkout', '-f', revision], cwd=destination)
-      log_tools.CheckCall(git + ['clean', '-dffx'], cwd=destination)
+    repo_tools.SyncGitRepo(url,
+                           destination,
+                           revision if self._options.pinned else None,
+                           reclone=self._options.reclone)
     logging.info('Done syncing %s.' % package)
 
   def BuildPackage(self, package):
@@ -215,7 +203,7 @@ class PackageBuilder(object):
     for target in self._targets:
       # Only packages using git repos need to be synced.
       if 'git_url' in self._packages[target]:
-        self.SyncGitRepo(target)
+        self.SyncPackageGitRepo(target)
 
   def BuildAll(self):
     """Build all packages selected and their dependencies."""
