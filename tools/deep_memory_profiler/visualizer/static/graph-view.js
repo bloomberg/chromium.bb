@@ -155,10 +155,12 @@ GraphView.prototype.redraw_ = function(models) {
       }
 
       // If pos.y is higher than all lines, return.
-      if (i === lines.length)
+      if (i === lines.length) {
+        self.profiler_.setSelected(null);
         return;
+      }
 
-      self.profiler_.setSelected(lines[i].id);
+      self.profiler_.setSelected(lines[i].id, pos);
     });
   } else {
     this.graph_.setData(data);

@@ -18,14 +18,20 @@ var MenuView = function(profiler) {
 
 /**
  * Highlight the node being selected.
- * @param {string} id Model id.
+ * @param {string|null} id Model id.
+ * @param {Object} pos Clicked position. Not used
  * @private
  */
 MenuView.prototype.selectNode_ = function(id) {
   var $tree = this.$tree_;
+
+  if (id == null) {
+    $tree.tree('selectNode', null);
+    return;
+  }
+
   var node = $tree.tree('getNodeById', id);
   $tree.tree('selectNode', node);
-  $tree.tree('scrollToNode', node);
 };
 
 /**

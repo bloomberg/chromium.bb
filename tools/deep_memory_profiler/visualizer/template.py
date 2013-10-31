@@ -42,8 +42,8 @@ _TEMPLATE = """<!DOCTYPE html>
   <h2>Deep Memory Profiler Visulaizer</h2>
   <div id="graph-div"></div>
   <div id="info-div">
-    <div id="subs-dropdown"></div>
     <div id="category-menu"></div>
+    <div id="subs-dropdown"></div>
   </div>
 </body>
 """

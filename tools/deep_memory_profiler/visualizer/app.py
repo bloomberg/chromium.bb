@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# This file is expected to be used under another directory to use,
+# so we disable checking import path of GAE tools from this directory.
+# pylint: disable=F0401,E0611,W0232
+
 import jinja2
 import json
 import os

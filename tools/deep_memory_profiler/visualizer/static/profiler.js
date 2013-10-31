@@ -80,10 +80,12 @@ Profiler.prototype.getRunId = function() {
 /**
  * To be called by view when new model being selected.
  * And then triggers all relative views to update.
+ * @param {string} id Model id.
+ * @param {Object} pos Clicked position.
  */
-Profiler.prototype.setSelected = function(id) {
+Profiler.prototype.setSelected = function(id, pos) {
   this.selected_ = id;
-  this.emit('changed:selected', id);
+  this.emit('changed:selected', id, pos);
 };
 
 /**
@@ -274,7 +276,7 @@ Profiler.prototype.accumulate_ = function(
             name: categoryName + '-remaining',
             size: size - retVal.totalSize
           });
-        } else {
+        } else if (size < retVal.totalSize) {
           // Output WARNING when sub-breakdown size is larger.
           console.log('WARNING: size of sub-breakdown is larger');
         }

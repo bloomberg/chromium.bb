@@ -32,19 +32,14 @@ h1 {
 }
 
 #graph-div {
-  width: 1024px;
-  height: 600px;
   float: left;
+  height: 600px;
+  width: 1024px;
 }
 
 #info-div {
-  width: 240px;
-  height: 600px;
   float: left;
   margin-left: 50px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-  outline: 1px solid rgba(0,0,0,0.2);
-  overflow: auto;
 }
 
 ul.jqtree-tree .jqtree-title {
@@ -53,9 +48,23 @@ ul.jqtree-tree .jqtree-title {
 }
 
 #category-menu {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  outline: 1px solid rgba(0,0,0,0.2);
+  overflow: auto;
+  padding-bottom: 15px;
   padding-left: 15px;
+  width: 240px;
 }
 
 #subs-dropdown {
+  background: rgb(255, 255, 255);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  display: none;
+  margin-top: 10px;
+  outline: 1px solid rgba(0,0,0,0.2);
+  overflow: auto;
+  padding-bottom: 15px;
   padding-left: 15px;
+  position: fixed;
+  width: 240px;
 }

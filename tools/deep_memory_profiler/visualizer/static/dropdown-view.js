@@ -37,15 +37,22 @@ DropdownView.prototype.redraw_ = function() {
     });
   } else {
     this.$tree_.tree('loadData', data);
+    $(this.placeholder_).css('display', 'none');
   }
 };
 
 /**
  * Update dropdown view when new model is selected in menu view.
  * @param {string} id Model id.
+ * @param {Object} pos Clicked position.
  * @private
  */
-DropdownView.prototype.update_ = function(id) {
+DropdownView.prototype.update_ = function(id, pos) {
+  if (id == null) {
+    $(this.placeholder_).css('display', 'none');
+    return;
+  }
+
   var self = this;
 
   // Get all subs of selected model.
@@ -83,6 +90,19 @@ DropdownView.prototype.update_ = function(id) {
   if (curSub) {
     var node = $tree.tree('getNodeById', curSub);
     $tree.tree('selectNode', node);
-    $tree.tree('scrollToNode', node);
+  }
+
+  // If selected category has subs, display subs box.
+  $(this.placeholder_).css('display', 'none');
+  if (children.length > 0) {
+    var view = $(this.placeholder_);
+    view.css('display', 'block');
+    if (pos != undefined) {
+      view.css('position', 'fixed');
+      view.css('top', pos.pageY);
+      view.css('left', pos.pageX);
+    } else {
+      view.css('position', 'static');
+    }
   }
 };
