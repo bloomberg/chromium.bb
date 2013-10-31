@@ -1,0 +1,18 @@
+.testDiv {
+    width: 300px;
+    border: 1px solid #000000;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 12px;
+}
+
+.alignStart {
+    text-align: start;
+}
+
+.alignJustify {
+    text-align: justify;
+}
+
+.justifyNone {
+    text-justify: none;
+}

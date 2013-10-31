@@ -1013,6 +1013,7 @@ BidiRun* RenderBlockFlow::computeInlineDirectionPositionsForSegment(RootInlineBo
     bool isAfterExpansion = true;
     Vector<unsigned, 16> expansionOpportunities;
     RenderObject* previousObject = 0;
+    TextJustify textJustify = style()->textJustify();
 
     BidiRun* r = firstRun;
     for (; r; r = r->next()) {
@@ -1026,7 +1027,7 @@ BidiRun* RenderBlockFlow::computeInlineDirectionPositionsForSegment(RootInlineBo
                       // Similarly, line break boxes have no effect on the width.
         if (r->m_object->isText()) {
             RenderText* rt = toRenderText(r->m_object);
-            if (textAlign == JUSTIFY && r != trailingSpaceRun) {
+            if (textAlign == JUSTIFY && r != trailingSpaceRun && textJustify != TextJustifyNone) {
                 if (!isAfterExpansion)
                     toInlineTextBox(r->m_box)->setCanHaveLeadingExpansion(true);
                 unsigned opportunitiesInRun;
