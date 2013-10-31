@@ -118,6 +118,11 @@ const int kPopupMessageOffset = 25;
 
 // Switch to a user with the given |user_index|.
 void SwitchUser(ash::MultiProfileIndex user_index) {
+  // Do not switch users when the log screen is presented.
+  if (ash::Shell::GetInstance()->session_state_delegate()->
+          IsUserSessionBlocked())
+    return;
+
   DCHECK(user_index > 0);
   ash::SessionStateDelegate* delegate =
       ash::Shell::GetInstance()->session_state_delegate();
@@ -1033,7 +1038,10 @@ void UserView::ToggleAddUserMenuOption() {
 }
 
 bool UserView::SupportsMultiProfile() {
-  return Shell::GetInstance()->delegate()->IsMultiProfilesEnabled();
+  // We do not want to see any multi profile additions to a user view when the
+  // log in screen is shown.
+  return Shell::GetInstance()->delegate()->IsMultiProfilesEnabled() &&
+      !Shell::GetInstance()->session_state_delegate()->IsUserSessionBlocked();
 }
 
 AddUserView::AddUserView(UserCard* owner, views::ButtonListener* listener)
@@ -1177,11 +1185,15 @@ views::View* TrayUser::CreateTrayView(user::LoginStatus status) {
 views::View* TrayUser::CreateDefaultView(user::LoginStatus status) {
   if (status == user::LOGGED_IN_NONE)
     return NULL;
+  const SessionStateDelegate* session_state_delegate =
+      Shell::GetInstance()->session_state_delegate();
+
+  // If the screen is locked show only the currently active user.
+  if (multiprofile_index_ && session_state_delegate->IsUserSessionBlocked())
+    return NULL;
 
   CHECK(user_ == NULL);
 
-  const SessionStateDelegate* session_state_delegate =
-      Shell::GetInstance()->session_state_delegate();
   int logged_in_users = session_state_delegate->NumberOfLoggedInUsers();
 
   // If there are multiple users logged in, the users will be separated from the
