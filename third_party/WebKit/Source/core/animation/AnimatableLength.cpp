@@ -143,7 +143,7 @@ static bool isCompatibleWithRange(const CSSPrimitiveValue* primitiveValue, Numbe
 
 PassRefPtr<CSSPrimitiveValue> AnimatableLength::toCSSPrimitiveValue(NumberRange range) const
 {
-    ASSERT(m_unitType != UnitTypeInvalid);
+    ASSERT(m_isCalc || m_unitType != UnitTypeInvalid);
     if (!m_cachedCSSPrimitiveValue || !isCompatibleWithRange(m_cachedCSSPrimitiveValue.get(), range)) {
         if (m_isCalc)
             m_cachedCSSPrimitiveValue = CSSPrimitiveValue::create(CSSCalcValue::create(m_calcExpression, range == AllValues ? ValueRangeAll : ValueRangeNonNegative));
