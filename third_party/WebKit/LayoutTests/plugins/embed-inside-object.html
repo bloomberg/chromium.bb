@@ -16,10 +16,10 @@
             testRunner.waitUntilDone();
         }
         
-        var plugin = document.plugin;
+        var plugins = document.plugin;
     
-        debug('plugin object is: ' + plugin);
-        plugin.getURL('javascript:pluginCallback()', '_self')
+        debug('plugin object is: ' + plugins[1]);
+        plugins[1].getURL('javascript:pluginCallback()', '_self')
     }
 </script>
 <body onload="runTest()">

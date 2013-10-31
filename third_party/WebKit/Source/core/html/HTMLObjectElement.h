@@ -35,8 +35,6 @@ public:
     static PassRefPtr<HTMLObjectElement> create(const QualifiedName&, Document&, HTMLFormElement*, bool createdByParser);
     virtual ~HTMLObjectElement();
 
-    bool isDocNamedItem() const { return m_docNamedItem; }
-
     const String& classId() const { return m_classId; }
 
     bool containsJavaApplet() const;
@@ -89,7 +87,6 @@ private:
     virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
 
     virtual void updateWidget(PluginCreationOption);
-    void updateDocNamedItem();
 
     void reattachFallbackContent();
 
@@ -106,11 +103,10 @@ private:
     virtual void derefFormAssociatedElement() { deref(); }
     virtual HTMLFormElement* virtualForm() const;
 
-    virtual bool shouldRegisterAsNamedItem() const OVERRIDE { return isDocNamedItem(); }
-    virtual bool shouldRegisterAsExtraNamedItem() const OVERRIDE { return isDocNamedItem(); }
+    virtual bool shouldRegisterAsNamedItem() const OVERRIDE { return true; }
+    virtual bool shouldRegisterAsExtraNamedItem() const OVERRIDE { return true; }
 
     String m_classId;
-    bool m_docNamedItem : 1;
     bool m_useFallbackContent : 1;
 };
 

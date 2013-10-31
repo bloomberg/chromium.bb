@@ -1,8 +1,7 @@
 <body>
 
 <p>This tests when object elements are accessible by name or id directly as properties of the
-document object. IE allows this only if the object has not child nodes other than param and
-whitespace anonymous text. A PASS result means that behavior matches IE. WebKit&rsquo;s results for comments differ.
+document object. A PASS result means that behavior matches IE and Firefox.
 </p>
 
 <hr>
@@ -52,18 +51,18 @@ print("By name:<br>");
 testProperty("no children", "object1", true);
 testProperty("param", "object2", true);
 testProperty("param and whitespace", "object5", true);
-testProperty("param and empty comment", "object9", false);
-testProperty("param and non-empty comment", "object11", false);
-testProperty("param and text", "object6", false);
-testProperty("param and img", "object13", false);
+testProperty("param and empty comment", "object9", true);
+testProperty("param and non-empty comment", "object11", true);
+testProperty("param and text", "object6", true);
+testProperty("param and img", "object13", true);
 print("<br>By id:<br>");
 testProperty("no children", "object3", true);
 testProperty("param", "object4", true);
 testProperty("param and whitespace", "object8", true);
-testProperty("param and empty comment", "object10", false);
-testProperty("param and non-empty comment", "object12", false);
-testProperty("param and text", "object7", false);
-testProperty("param and img", "object14", false);
+testProperty("param and empty comment", "object10", true);
+testProperty("param and non-empty comment", "object12", true);
+testProperty("param and text", "object7", true);
+testProperty("param and img", "object14", true);
 
 </script>
 </body>

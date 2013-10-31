@@ -16,8 +16,8 @@ plugin <embed> nested in empty <object> nested in plugin <object>: should not ha
 
 standalone plugin <embed>: should have a plugin and does
 
-plugin <object> with nested plugin <embed> of the same name should have a plugin and does
+plugin <object> with nested plugin <embed> of the same name should not have a plugin and does not
 
-empty <object> with nested plugin <embed> of the same name should have a plugin and does
+empty <object> with nested plugin <embed> of the same name should not have a plugin and does not
 
             

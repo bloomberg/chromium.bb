@@ -21,8 +21,8 @@ function test()
     print("plugin <embed> nested in image <object>: should not have a plugin and does " + (document.getElementById('myE3').testCallback ? "" : "not"));
     print("plugin <embed> nested in empty <object> nested in plugin <object>: should not have a plugin and does " + (document.getElementById('myE4').testCallback ? "" : "not"));
     print("standalone plugin <embed>: should have a plugin and does " + (document.getElementById('myE5').testCallback ? "" : "not"));
-    print("plugin <object> with nested plugin <embed> of the same name should have a plugin and does " + (document.Plugin.testCallback ? "" : "not"));
-    print("empty <object> with nested plugin <embed> of the same name should have a plugin and does " + (document.Plugin2.testCallback ? "" : "not"));
+    print("plugin <object> with nested plugin <embed> of the same name should not have a plugin and does " + (document.Plugin.testCallback ? "" : "not"));
+    print("empty <object> with nested plugin <embed> of the same name should not have a plugin and does " + (document.Plugin2.testCallback ? "" : "not"));
 }
 </script>
 </head>

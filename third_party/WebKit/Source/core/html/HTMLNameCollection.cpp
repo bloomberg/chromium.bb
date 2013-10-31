@@ -27,7 +27,6 @@
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeRareData.h"
-#include "core/html/HTMLObjectElement.h"
 
 namespace WebCore {
 
@@ -82,12 +81,8 @@ Element* HTMLNameCollection::virtualItemAfter(unsigned& offsetInArray, Element* 
             if (current->hasTagName(formTag) || current->hasTagName(embedTag) || current->hasTagName(iframeTag)) {
                 if (current->getNameAttribute() == m_name)
                     return current;
-            } else if (current->hasTagName(appletTag)) {
+            } else if (current->hasTagName(appletTag) || current->hasTagName(objectTag)) {
                 if (current->getNameAttribute() == m_name || current->getIdAttribute() == m_name)
-                    return current;
-            } else if (current->hasTagName(objectTag)) {
-                if ((current->getNameAttribute() == m_name || current->getIdAttribute() == m_name)
-                    && toHTMLObjectElement(current)->isDocNamedItem())
                     return current;
             } else if (current->hasTagName(imgTag)) {
                 if (current->getNameAttribute() == m_name || (current->getIdAttribute() == m_name && current->hasName()))
