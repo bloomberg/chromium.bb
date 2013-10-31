@@ -47,7 +47,6 @@ class WebLayerImpl;
 namespace content {
 class WebMediaPlayerDelegate;
 class RendererMediaPlayerManager;
-class WebMediaPlayerProxyAndroid;
 
 #if defined(GOOGLE_TV)
 class MediaStreamAudioRenderer;
@@ -76,7 +75,6 @@ class WebMediaPlayerAndroid
       WebKit::WebMediaPlayerClient* client,
       base::WeakPtr<WebMediaPlayerDelegate> delegate,
       RendererMediaPlayerManager* manager,
-      WebMediaPlayerProxyAndroid* proxy,
       StreamTextureFactory* factory,
       const scoped_refptr<base::MessageLoopProxy>& media_loop,
       media::MediaLog* media_log);
@@ -340,7 +338,8 @@ class WebMediaPlayerAndroid
   // Whether loading has progressed since the last call to didLoadingProgress.
   mutable bool did_loading_progress_;
 
-  // Manager for managing this object.
+  // Manager for managing this object and for delegating method calls on
+  // Render Thread.
   RendererMediaPlayerManager* manager_;
 
   // Player ID assigned by the |manager_|.
@@ -367,7 +366,7 @@ class WebMediaPlayerAndroid
   // Whether the mediaplayer is playing.
   bool is_playing_;
 
-  // Wether the mediaplayer has already started playing.
+  // Whether the mediaplayer has already started playing.
   bool playing_started_;
 
   // Whether media player needs to re-establish the surface texture peer.
@@ -423,11 +422,6 @@ class WebMediaPlayerAndroid
   bool pending_playback_;
 
   MediaPlayerHostMsg_Initialize_Type player_type_;
-
-  // Proxy object that delegates method calls on Render Thread.
-  // This object is created on the Render Thread and is only called in the
-  // destructor.
-  WebMediaPlayerProxyAndroid* proxy_;
 
   // The current playing time. Because the media player is in the browser
   // process, it will regularly update the |current_time_| by calling

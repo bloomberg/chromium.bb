@@ -220,7 +220,6 @@
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/android/stream_texture_factory_android_impl.h"
 #include "content/renderer/media/android/webmediaplayer_android.h"
-#include "content/renderer/media/android/webmediaplayer_proxy_android.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
@@ -865,7 +864,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
 #if defined(OS_ANDROID)
       body_background_color_(SK_ColorWHITE),
       expected_content_intent_id_(0),
-      media_player_proxy_(NULL),
+      media_player_manager_(NULL),
 #endif
 #if defined(OS_WIN)
       focused_plugin_id_(-1),
@@ -985,7 +984,7 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   new SharedWorkerRepository(this);
 
 #if defined(OS_ANDROID)
-  media_player_manager_.reset(new RendererMediaPlayerManager());
+  media_player_manager_ = new RendererMediaPlayerManager(this);
   new JavaBridgeDispatcher(this);
 #endif
 
@@ -3120,18 +3119,12 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
         context_provider->Context3d(), gpu_channel_host, routing_id_));
   }
 
-  if (!media_player_proxy_) {
-    media_player_proxy_ = new WebMediaPlayerProxyAndroid(
-        this, media_player_manager_.get());
-  }
-
   scoped_ptr<WebMediaPlayerAndroid> web_media_player_android(
       new WebMediaPlayerAndroid(
           frame,
           client,
           AsWeakPtr(),
-          media_player_manager_.get(),
-          media_player_proxy_,
+          media_player_manager_,
           stream_texture_factory.release(),
           RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy(),
           new RenderMediaLog()));

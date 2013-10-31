@@ -21,7 +21,7 @@ class WebMediaPlayerClient;
 
 namespace content {
 
-class WebMediaPlayerProxyAndroid;
+class RendererMediaPlayerManager;
 
 class ContentDecryptionModuleFactory {
  public:
@@ -33,7 +33,7 @@ class ContentDecryptionModuleFactory {
       WebKit::WebFrame* web_frame,
       const base::Closure& destroy_plugin_cb,
 #elif defined(OS_ANDROID)
-      WebMediaPlayerProxyAndroid* proxy,
+      RendererMediaPlayerManager* manager,
       int media_keys_id,
       const GURL& frame_url,
 #endif  // defined(ENABLE_PEPPER_CDMS)

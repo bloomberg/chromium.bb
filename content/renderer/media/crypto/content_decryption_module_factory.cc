@@ -17,7 +17,7 @@
 #include "third_party/WebKit/public/web/WebMediaPlayerClient.h"
 #elif defined(OS_ANDROID)
 #include "content/renderer/media/android/proxy_media_keys.h"
-#include "content/renderer/media/android/webmediaplayer_proxy_android.h"
+#include "content/renderer/media/android/renderer_media_player_manager.h"
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
 namespace content {
@@ -94,7 +94,7 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
     WebKit::WebFrame* web_frame,
     const base::Closure& destroy_plugin_cb,
 #elif defined(OS_ANDROID)
-    WebMediaPlayerProxyAndroid* proxy,
+    RendererMediaPlayerManager* manager,
     int media_keys_id,
     const GURL& frame_url,
 #endif  // defined(ENABLE_PEPPER_CDMS)
@@ -117,7 +117,7 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
       destroy_plugin_cb, web_media_player_client, web_frame);
 #elif defined(OS_ANDROID)
   scoped_ptr<ProxyMediaKeys> proxy_media_keys(new ProxyMediaKeys(
-      proxy, media_keys_id, key_added_cb, key_error_cb, key_message_cb));
+      manager, media_keys_id, key_added_cb, key_error_cb, key_message_cb));
   proxy_media_keys->InitializeCDM(key_system, frame_url);
   return proxy_media_keys.PassAs<media::MediaKeys>();
 #else

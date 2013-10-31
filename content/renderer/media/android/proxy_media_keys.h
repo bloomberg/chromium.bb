@@ -12,15 +12,15 @@ class GURL;
 
 namespace content {
 
-class WebMediaPlayerProxyAndroid;
+class RendererMediaPlayerManager;
 
-// MediaKeys wrapper of the WebMediaPlayerProxyAndroid.
-// TODO(xhwang): Remove |player_id| from WebMediaPlayerProxyAndroid, make
-// WebMediaPlayerProxyAndroid a subclass of media::MediaKeys, then remove this
-// class!
+// A MediaKeys proxy that wraps the EME part of RendererMediaPlayerManager.
+// TODO(xhwang): Instead of accessing RendererMediaPlayerManager directly, let
+// RendererMediaPlayerManager return a MediaKeys object that can be used by
+// ProxyDecryptor directly. Then we can remove this class!
 class ProxyMediaKeys : public media::MediaKeys {
  public:
-  ProxyMediaKeys(WebMediaPlayerProxyAndroid* proxy,
+  ProxyMediaKeys(RendererMediaPlayerManager* proxy,
                  int media_keys_id,
                  const media::KeyAddedCB& key_added_cb,
                  const media::KeyErrorCB& key_error_cb,
@@ -48,13 +48,13 @@ class ProxyMediaKeys : public media::MediaKeys {
                     const std::string& destination_url);
 
  private:
-  WebMediaPlayerProxyAndroid* proxy_;
+  RendererMediaPlayerManager* manager_;
   int media_keys_id_;
   media::KeyAddedCB key_added_cb_;
   media::KeyErrorCB key_error_cb_;
   media::KeyMessageCB key_message_cb_;
 
-  DISALLOW_COPY_AND_ASSIGN (ProxyMediaKeys);
+  DISALLOW_COPY_AND_ASSIGN(ProxyMediaKeys);
 };
 
 }  // namespace content

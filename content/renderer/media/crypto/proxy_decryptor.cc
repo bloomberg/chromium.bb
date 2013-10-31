@@ -8,6 +8,9 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "content/renderer/media/crypto/content_decryption_module_factory.h"
+#if defined(OS_ANDROID)
+#include "content/renderer/media/android/renderer_media_player_manager.h"
+#endif  // defined(OS_ANDROID)
 
 namespace content {
 
@@ -23,7 +26,7 @@ ProxyDecryptor::ProxyDecryptor(
     WebKit::WebMediaPlayerClient* web_media_player_client,
     WebKit::WebFrame* web_frame,
 #elif defined(OS_ANDROID)
-    WebMediaPlayerProxyAndroid* proxy,
+    RendererMediaPlayerManager* manager,
     int media_keys_id,
 #endif  // defined(ENABLE_PEPPER_CDMS)
     const media::KeyAddedCB& key_added_cb,
@@ -34,7 +37,7 @@ ProxyDecryptor::ProxyDecryptor(
       web_media_player_client_(web_media_player_client),
       web_frame_(web_frame),
 #elif defined(OS_ANDROID)
-      proxy_(proxy),
+      manager_(manager),
       media_keys_id_(media_keys_id),
 #endif  // defined(ENABLE_PEPPER_CDMS)
       key_added_cb_(key_added_cb),
@@ -131,7 +134,7 @@ scoped_ptr<media::MediaKeys> ProxyDecryptor::CreateMediaKeys(
       base::Bind(&ProxyDecryptor::DestroyHelperPlugin,
                  weak_ptr_factory_.GetWeakPtr()),
 #elif defined(OS_ANDROID)
-      proxy_,
+      manager_,
       media_keys_id_,
       frame_url,
 #endif  // defined(ENABLE_PEPPER_CDMS)

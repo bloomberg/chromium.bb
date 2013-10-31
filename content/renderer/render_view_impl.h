@@ -236,12 +236,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   RendererWebCookieJarImpl* cookie_jar() { return &cookie_jar_; }
 
-#if defined(OS_ANDROID)
-  RendererMediaPlayerManager* media_player_manager() {
-    return media_player_manager_.get();
-  }
-#endif
-
   // Lazily initialize this view's BrowserPluginManager and return it.
   BrowserPluginManager* GetBrowserPluginManager();
 
@@ -1431,12 +1425,9 @@ class CONTENT_EXPORT RenderViewImpl
   typedef std::vector< linked_ptr<ContentDetector> > ContentDetectorList;
   ContentDetectorList content_detectors_;
 
-  // Proxy class for WebMediaPlayer to communicate with the real media player
-  // objects in browser process.
-  WebMediaPlayerProxyAndroid* media_player_proxy_;
-
-  // The media player manager for managing all the media players on this view.
-  scoped_ptr<RendererMediaPlayerManager> media_player_manager_;
+  // The media player manager for managing all the media players on this view
+  // for communicating with the real media player objects in browser process.
+  RendererMediaPlayerManager* media_player_manager_;
 
   // A date/time picker object for date and time related input elements.
   scoped_ptr<RendererDateTimePicker> date_time_picker_client_;
