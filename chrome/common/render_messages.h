@@ -333,6 +333,10 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxSubmit,
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxThemeChanged,
                     ThemeBackgroundInfo /* value */)
 
+IPC_MESSAGE_ROUTED2(ChromeViewMsg_ChromeIdentityCheckResult,
+                    string16 /* identity */,
+                    bool /* identity_match */)
+
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_SearchBoxToggleVoiceSearch)
 
 // Toggles visual muting of the render view area. This is on when a constrained
@@ -711,6 +715,11 @@ IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_FPS,
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_LogEvent,
                     int /* page_id */,
                     NTPLoggingEventType /* event */)
+
+// The Instant page asks for Chrome identity check against |identity|.
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_ChromeIdentityCheck,
+                    int /* page_id */,
+                    string16 /* identity */)
 
 // Tells InstantExtended to set the omnibox focus state.
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_FocusOmnibox,

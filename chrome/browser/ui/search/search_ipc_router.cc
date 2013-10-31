@@ -60,6 +60,18 @@ void SearchIPCRouter::SendMostVisitedItems(
       routing_id(), items));
 }
 
+void SearchIPCRouter::SendChromeIdentityCheckResult(
+    const string16& identity,
+    bool identity_match) {
+  if (!policy_->ShouldProcessChromeIdentityCheck())
+    return;
+
+  Send(new ChromeViewMsg_ChromeIdentityCheckResult(
+      routing_id(),
+      identity,
+      identity_match));
+}
+
 void SearchIPCRouter::SetSuggestionToPrefetch(
     const InstantSuggestion& suggestion) {
   if (!policy_->ShouldSendSetSuggestionToPrefetch())
@@ -103,6 +115,8 @@ bool SearchIPCRouter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_LogEvent, OnLogEvent);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_PasteAndOpenDropdown,
                         OnPasteAndOpenDropDown);
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ChromeIdentityCheck,
+                        OnChromeIdentityCheck);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -212,6 +226,18 @@ void SearchIPCRouter::OnPasteAndOpenDropDown(int page_id,
     return;
 
   delegate_->PasteIntoOmnibox(text);
+}
+
+void SearchIPCRouter::OnChromeIdentityCheck(int page_id,
+                                            const string16& identity) const {
+  if (!web_contents()->IsActiveEntry(page_id))
+    return;
+
+  delegate_->OnInstantSupportDetermined(true);
+  if (!policy_->ShouldProcessChromeIdentityCheck())
+    return;
+
+  delegate_->OnChromeIdentityCheck(identity);
 }
 
 void SearchIPCRouter::set_delegate(Delegate* delegate) {

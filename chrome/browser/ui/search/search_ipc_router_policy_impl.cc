@@ -55,6 +55,10 @@ bool SearchIPCRouterPolicyImpl::ShouldProcessPasteIntoOmnibox(
   return is_active_tab && !is_incognito_ && chrome::IsInstantNTP(web_contents_);
 }
 
+bool SearchIPCRouterPolicyImpl::ShouldProcessChromeIdentityCheck() {
+  return !is_incognito_ && chrome::IsInstantNTP(web_contents_);
+}
+
 bool SearchIPCRouterPolicyImpl::ShouldSendSetPromoInformation() {
   return !is_incognito_ && chrome::IsInstantNTP(web_contents_);
 }

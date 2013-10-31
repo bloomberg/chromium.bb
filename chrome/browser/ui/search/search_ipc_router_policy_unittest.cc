@@ -102,6 +102,19 @@ TEST_F(SearchIPCRouterPolicyTest, DoNotProcessLogEvent) {
       ShouldProcessLogEvent());
 }
 
+TEST_F(SearchIPCRouterPolicyTest, ProcessChromeIdentityCheck) {
+  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
+  EXPECT_TRUE(GetSearchTabHelper()->ipc_router().policy()->
+      ShouldProcessChromeIdentityCheck());
+}
+
+TEST_F(SearchIPCRouterPolicyTest, DoNotProcessChromeIdentityCheck) {
+  // Process message only if the underlying page is an InstantNTP.
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
+  EXPECT_FALSE(GetSearchTabHelper()->ipc_router().policy()->
+      ShouldProcessChromeIdentityCheck());
+}
+
 TEST_F(SearchIPCRouterPolicyTest, ProcessNavigateToURL) {
   NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
   EXPECT_TRUE(GetSearchTabHelper()->ipc_router().policy()->

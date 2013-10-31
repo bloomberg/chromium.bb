@@ -5,6 +5,7 @@
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 
 #include "base/i18n/rtl.h"
+#include "base/json/string_escape.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -193,6 +194,18 @@ static const char kSupportsInstantScript[] =
     "  false;"
     "}";
 
+static const char kDispatchChromeIdentityCheckResult[] =
+    "if (window.chrome &&"
+    "    window.chrome.embeddedSearch &&"
+    "    window.chrome.embeddedSearch.newTabPage &&"
+    "    window.chrome.embeddedSearch.newTabPage.onsignedincheckdone &&"
+    "    typeof window.chrome.embeddedSearch.newTabPage"
+    "        .onsignedincheckdone === 'function') {"
+    "  window.chrome.embeddedSearch.newTabPage.onsignedincheckdone(%s, %s);"
+    "  true;"
+    "}";
+
+
 static const char kDispatchFocusChangedScript[] =
     "if (window.chrome &&"
     "    window.chrome.embeddedSearch &&"
@@ -317,6 +330,10 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   // Helper function to find the RenderView. May return NULL.
   static content::RenderView* GetRenderView();
 
+  // Sends a Chrome identity check to the browser.
+  static void CheckIsUserSignedInToChromeAs(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
+
   // Deletes a Most Visited item.
   static void DeleteMostVisitedItem(
       const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -422,6 +439,18 @@ bool SearchBoxExtension::PageSupportsInstant(WebKit::WebFrame* frame) {
 }
 
 // static
+void SearchBoxExtension::DispatchChromeIdentityCheckResult(
+    WebKit::WebFrame* frame, const string16& identity, bool identity_match) {
+  std::string escaped_identity;
+  base::JsonDoubleQuote(identity, true, &escaped_identity);
+  WebKit::WebString script(UTF8ToUTF16(base::StringPrintf(
+      kDispatchChromeIdentityCheckResult,
+      escaped_identity.c_str(),
+      identity_match ? "true" : "false")));
+  Dispatch(frame, script);
+}
+
+// static
 void SearchBoxExtension::DispatchFocusChange(WebKit::WebFrame* frame) {
   Dispatch(frame, kDispatchFocusChangedScript);
 }
@@ -480,6 +509,8 @@ SearchBoxExtensionWrapper::SearchBoxExtensionWrapper(
 
 v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     v8::Handle<v8::String> name) {
+  if (name->Equals(v8::String::New("CheckIsUserSignedInToChromeAs")))
+    return v8::FunctionTemplate::New(CheckIsUserSignedInToChromeAs);
   if (name->Equals(v8::String::New("DeleteMostVisitedItem")))
     return v8::FunctionTemplate::New(DeleteMostVisitedItem);
   if (name->Equals(v8::String::New("Focus")))
@@ -536,6 +567,18 @@ content::RenderView* SearchBoxExtensionWrapper::GetRenderView() {
   if (!webview) return NULL;  // can happen during closing
 
   return content::RenderView::FromWebView(webview);
+}
+
+// static
+void SearchBoxExtensionWrapper::CheckIsUserSignedInToChromeAs(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view || args.Length() == 0 || args[0]->IsUndefined()) return;
+
+  DVLOG(1) << render_view << " CheckIsUserSignedInToChromeAs";
+
+  SearchBox::Get(render_view)->CheckIsUserSignedInToChromeAs(
+      V8ValueToUTF16(args[0]));
 }
 
 // static

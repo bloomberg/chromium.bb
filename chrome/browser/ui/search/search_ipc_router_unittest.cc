@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/tuple.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
@@ -52,6 +53,7 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
   MOCK_METHOD0(OnUndoAllMostVisitedDeletions, void());
   MOCK_METHOD1(OnLogEvent, void(NTPLoggingEventType event));
   MOCK_METHOD1(PasteIntoOmnibox, void(const string16&));
+  MOCK_METHOD1(OnChromeIdentityCheck, void(const string16& identity));
 };
 
 class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
@@ -66,6 +68,7 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
   MOCK_METHOD0(ShouldProcessUndoAllMostVisitedDeletions, bool());
   MOCK_METHOD0(ShouldProcessLogEvent, bool());
   MOCK_METHOD1(ShouldProcessPasteIntoOmnibox, bool(bool));
+  MOCK_METHOD0(ShouldProcessChromeIdentityCheck, bool());
   MOCK_METHOD0(ShouldSendSetPromoInformation, bool());
   MOCK_METHOD0(ShouldSendSetDisplayInstantResults, bool());
   MOCK_METHOD0(ShouldSendSetSuggestionToPrefetch, bool());
@@ -363,6 +366,47 @@ TEST_F(SearchIPCRouterTest, IgnoreLogEventMsg) {
       contents->GetRoutingID(),
       contents->GetController().GetVisibleEntry()->GetPageID(),
       NTP_MOUSEOVER));
+  GetSearchTabHelper(contents)->ipc_router().OnMessageReceived(*message);
+}
+
+TEST_F(SearchIPCRouterTest, ProcessChromeIdentityCheckMsg) {
+  const string16 test_identity = ASCIIToUTF16("foo@bar.com");
+  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
+  process()->sink().ClearMessages();
+  EXPECT_CALL(*mock_delegate(), OnChromeIdentityCheck(test_identity)).Times(1);
+
+  content::WebContents* contents = web_contents();
+  SetupMockDelegateAndPolicy(contents);
+  MockSearchIPCRouterPolicy* policy =
+      GetSearchIPCRouterPolicy(contents);
+
+  EXPECT_CALL(*policy, ShouldProcessChromeIdentityCheck()).Times(1)
+      .WillOnce(testing::Return(true));
+
+  scoped_ptr<IPC::Message> message(new ChromeViewHostMsg_ChromeIdentityCheck(
+      contents->GetRoutingID(),
+      contents->GetController().GetVisibleEntry()->GetPageID(),
+      test_identity));
+  GetSearchTabHelper(contents)->ipc_router().OnMessageReceived(*message);
+}
+
+TEST_F(SearchIPCRouterTest, IgnoreChromeIdentityCheckMsg) {
+  const string16 test_identity = ASCIIToUTF16("foo@bar.com");
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
+  process()->sink().ClearMessages();
+  EXPECT_CALL(*mock_delegate(), OnChromeIdentityCheck(test_identity)).Times(0);
+
+  content::WebContents* contents = web_contents();
+  SetupMockDelegateAndPolicy(contents);
+  MockSearchIPCRouterPolicy* policy =
+      GetSearchIPCRouterPolicy(contents);
+  EXPECT_CALL(*policy, ShouldProcessChromeIdentityCheck()).Times(1)
+      .WillOnce(testing::Return(false));
+
+  scoped_ptr<IPC::Message> message(new ChromeViewHostMsg_ChromeIdentityCheck(
+      contents->GetRoutingID(),
+      contents->GetController().GetVisibleEntry()->GetPageID(),
+      test_identity));
   GetSearchTabHelper(contents)->ipc_router().OnMessageReceived(*message);
 }
 

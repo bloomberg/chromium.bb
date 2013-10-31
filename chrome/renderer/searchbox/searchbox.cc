@@ -162,6 +162,11 @@ void SearchBox::LogEvent(NTPLoggingEventType event) {
       render_view()->GetRoutingID(), render_view()->GetPageId(), event));
 }
 
+void SearchBox::CheckIsUserSignedInToChromeAs(const string16& identity) {
+  render_view()->Send(new ChromeViewHostMsg_ChromeIdentityCheck(
+      render_view()->GetRoutingID(), render_view()->GetPageId(), identity));
+}
+
 void SearchBox::DeleteMostVisitedItem(
     InstantRestrictedID most_visited_item_id) {
   render_view()->Send(new ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem(
@@ -273,6 +278,8 @@ void SearchBox::UndoMostVisitedDeletion(
 bool SearchBox::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SearchBox, message)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_ChromeIdentityCheckResult,
+                        OnChromeIdentityCheckResult)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_DetermineIfPageSupportsInstant,
                         OnDetermineIfPageSupportsInstant)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxFocusChanged, OnFocusChanged)
@@ -295,6 +302,14 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void SearchBox::OnChromeIdentityCheckResult(const string16& identity,
+                                            bool identity_match) {
+  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
+    extensions_v8::SearchBoxExtension::DispatchChromeIdentityCheckResult(
+        render_view()->GetWebView()->mainFrame(), identity, identity_match);
+  }
 }
 
 void SearchBox::OnDetermineIfPageSupportsInstant() {

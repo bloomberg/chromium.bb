@@ -31,6 +31,9 @@ class SearchBox : public content::RenderViewObserver,
   // Sends ChromeViewHostMsg_LogEvent to the browser.
   void LogEvent(NTPLoggingEventType event);
 
+  // Sends ChromeViewHostMsg_ChromeIdentityCheck to the browser.
+  void CheckIsUserSignedInToChromeAs(const string16& identity);
+
   // Sends ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem to the browser.
   void DeleteMostVisitedItem(InstantRestrictedID most_visited_item_id);
 
@@ -107,6 +110,8 @@ class SearchBox : public content::RenderViewObserver,
   // Overridden from content::RenderViewObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
+  void OnChromeIdentityCheckResult(const string16& identity,
+                                   bool identity_match);
   void OnDetermineIfPageSupportsInstant();
   void OnFocusChanged(OmniboxFocusState new_focus_state,
                       OmniboxFocusChangeReason reason);

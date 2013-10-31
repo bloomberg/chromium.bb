@@ -65,6 +65,11 @@ class SearchIPCRouter : public content::WebContentsObserver {
     // Called when the page wants to paste the |text| (or the clipboard contents
     // if the |text| is empty) into the omnibox.
     virtual void PasteIntoOmnibox(const string16& text) = 0;
+
+    // Called when the SearchBox wants to verify the signed-in Chrome identity
+    // against the provided |identity|. Will make a round-trip to the browser
+    // and eventually return the result through SendChromeIdentityCheckResult.
+    virtual void OnChromeIdentityCheck(const string16& identity) = 0;
   };
 
   // An interface to be implemented by consumers of SearchIPCRouter objects to
@@ -84,6 +89,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
     virtual bool ShouldProcessUndoAllMostVisitedDeletions() = 0;
     virtual bool ShouldProcessLogEvent() = 0;
     virtual bool ShouldProcessPasteIntoOmnibox(bool is_active_tab) = 0;
+    virtual bool ShouldProcessChromeIdentityCheck() = 0;
     virtual bool ShouldSendSetPromoInformation() = 0;
     virtual bool ShouldSendSetDisplayInstantResults() = 0;
     virtual bool ShouldSendSetSuggestionToPrefetch() = 0;
@@ -109,6 +115,10 @@ class SearchIPCRouter : public content::WebContentsObserver {
 
   // Tells the renderer about the most visited items.
   void SendMostVisitedItems(const std::vector<InstantMostVisitedItem>& items);
+
+  // Tells the renderer about the result of the Chrome identity check.
+  void SendChromeIdentityCheckResult(const string16& identity,
+                                     bool identity_match);
 
   // Tells the renderer about the current theme background.
   void SendThemeBackgroundInfo(const ThemeBackgroundInfo& theme_info);
@@ -137,6 +147,10 @@ class SearchIPCRouter : public content::WebContentsObserver {
                            ProcessVoiceSearchSupportMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, ProcessLogEvent);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, DoNotProcessLogEvent);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           ProcessChromeIdentityCheck);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           DoNotProcessChromeIdentityCheck);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            SendSetDisplayInstantResults);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
@@ -182,6 +196,8 @@ class SearchIPCRouter : public content::WebContentsObserver {
                            DoNotSendSetPromoInformationMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessLogEventMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnoreLogEventMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessChromeIdentityCheckMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnoreChromeIdentityCheckMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessNavigateToURLMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnoreNavigateToURLMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
@@ -217,6 +233,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
   void OnUndoAllMostVisitedDeletions(int page_id) const;
   void OnLogEvent(int page_id, NTPLoggingEventType event) const;
   void OnPasteAndOpenDropDown(int page_id, const string16& text) const;
+  void OnChromeIdentityCheck(int page_id, const string16& identity) const;
 
   // Used by unit tests to set a fake delegate.
   void set_delegate(Delegate* delegate);

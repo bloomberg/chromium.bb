@@ -6,6 +6,9 @@
 
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/signin/fake_signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/search/search_ipc_router.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/ntp_logging_events.h"
@@ -13,6 +16,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -38,6 +42,7 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
   MOCK_METHOD0(OnUndoAllMostVisitedDeletions, void());
   MOCK_METHOD1(OnLogEvent, void(NTPLoggingEventType event));
   MOCK_METHOD1(PasteIntoOmnibox, void(const string16&));
+  MOCK_METHOD1(OnChromeIdentityCheck, void(const string16& identity));
 };
 
 }  // namespace
@@ -49,6 +54,20 @@ class SearchTabHelperTest : public ChromeRenderViewHostTestHarness {
         switches::kEnableInstantExtendedAPI);
     ChromeRenderViewHostTestHarness::SetUp();
     SearchTabHelper::CreateForWebContents(web_contents());
+  }
+
+  // Creates a sign-in manager for tests.  If |username| is not empty, the
+  // testing profile of the WebContents will be connected to the given account.
+  void CreateSigninManager(const std::string& username) {
+    SigninManagerBase* signin_manager = static_cast<SigninManagerBase*>(
+        SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
+            profile(), FakeSigninManagerBase::Build));
+    signin_manager->Initialize(profile(), NULL);
+
+    if (!username.empty()) {
+      ASSERT_TRUE(signin_manager);
+      signin_manager->SetAuthenticatedUsername(username);
+    }
   }
 
   bool MessageWasSent(uint32 id) {
@@ -107,4 +126,84 @@ TEST_F(SearchTabHelperTest, PageURLDoesntBelongToInstantRenderer) {
   search_tab_helper->DetermineIfPageSupportsInstant();
   ASSERT_FALSE(MessageWasSent(
       ChromeViewMsg_DetermineIfPageSupportsInstant::ID));
+}
+
+TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMatch) {
+  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  CreateSigninManager(std::string("foo@bar.com"));
+  SearchTabHelper* search_tab_helper =
+      SearchTabHelper::FromWebContents(web_contents());
+  ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
+
+  const string16 test_identity = ASCIIToUTF16("foo@bar.com");
+  search_tab_helper->OnChromeIdentityCheck(test_identity);
+
+  const IPC::Message* message = process()->sink().GetUniqueMessageMatching(
+      ChromeViewMsg_ChromeIdentityCheckResult::ID);
+  ASSERT_TRUE(message != NULL);
+
+  ChromeViewMsg_ChromeIdentityCheckResult::Param params;
+  ChromeViewMsg_ChromeIdentityCheckResult::Read(message, &params);
+  EXPECT_EQ(test_identity, params.a);
+  ASSERT_TRUE(params.b);
+}
+
+TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMismatch) {
+  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  CreateSigninManager(std::string("foo@bar.com"));
+  SearchTabHelper* search_tab_helper =
+      SearchTabHelper::FromWebContents(web_contents());
+  ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
+
+  const string16 test_identity = ASCIIToUTF16("bar@foo.com");
+  search_tab_helper->OnChromeIdentityCheck(test_identity);
+
+  const IPC::Message* message = process()->sink().GetUniqueMessageMatching(
+      ChromeViewMsg_ChromeIdentityCheckResult::ID);
+  ASSERT_TRUE(message != NULL);
+
+  ChromeViewMsg_ChromeIdentityCheckResult::Param params;
+  ChromeViewMsg_ChromeIdentityCheckResult::Read(message, &params);
+  EXPECT_EQ(test_identity, params.a);
+  ASSERT_FALSE(params.b);
+}
+
+TEST_F(SearchTabHelperTest, OnChromeIdentityCheckSignedOutMatch) {
+  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  // This test does not sign in.
+  SearchTabHelper* search_tab_helper =
+      SearchTabHelper::FromWebContents(web_contents());
+  ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
+
+  const string16 test_identity;
+  search_tab_helper->OnChromeIdentityCheck(test_identity);
+
+  const IPC::Message* message = process()->sink().GetUniqueMessageMatching(
+      ChromeViewMsg_ChromeIdentityCheckResult::ID);
+  ASSERT_TRUE(message != NULL);
+
+  ChromeViewMsg_ChromeIdentityCheckResult::Param params;
+  ChromeViewMsg_ChromeIdentityCheckResult::Read(message, &params);
+  EXPECT_EQ(test_identity, params.a);
+  ASSERT_TRUE(params.b);
+}
+
+TEST_F(SearchTabHelperTest, OnChromeIdentityCheckSignedOutMismatch) {
+  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  // This test does not sign in.
+  SearchTabHelper* search_tab_helper =
+      SearchTabHelper::FromWebContents(web_contents());
+  ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
+
+  const string16 test_identity = ASCIIToUTF16("bar@foo.com");
+  search_tab_helper->OnChromeIdentityCheck(test_identity);
+
+  const IPC::Message* message = process()->sink().GetUniqueMessageMatching(
+      ChromeViewMsg_ChromeIdentityCheckResult::ID);
+  ASSERT_TRUE(message != NULL);
+
+  ChromeViewMsg_ChromeIdentityCheckResult::Param params;
+  ChromeViewMsg_ChromeIdentityCheckResult::Read(message, &params);
+  EXPECT_EQ(test_identity, params.a);
+  ASSERT_FALSE(params.b);
 }

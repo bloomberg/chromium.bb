@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/history/most_visited_tiles_experiment.h"
 #include "chrome/browser/history/top_sites.h"
@@ -16,6 +17,8 @@
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -505,6 +508,15 @@ void SearchTabHelper::PasteIntoOmnibox(const string16& text) {
   omnibox_view->SetUserText(text_to_paste);
   omnibox_view->OnAfterPossibleChange();
 #endif
+}
+
+void SearchTabHelper::OnChromeIdentityCheck(const string16& identity) {
+  SigninManagerBase* manager = SigninManagerFactory::GetForProfile(profile());
+  if (manager) {
+    const string16 username = UTF8ToUTF16(manager->GetAuthenticatedUsername());
+    ipc_router_.SendChromeIdentityCheckResult(identity,
+                                              identity == username);
+  }
 }
 
 void SearchTabHelper::UpdateMode(bool update_origin, bool is_preloaded_ntp) {

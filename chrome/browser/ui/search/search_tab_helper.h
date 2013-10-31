@@ -92,12 +92,24 @@ class SearchTabHelper : public content::NotificationObserver,
                            DetermineIfPageSupportsInstant_NonLocal);
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
                            PageURLDoesntBelongToInstantRenderer);
+  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
+                           OnChromeIdentityCheckMatch);
+  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
+                           OnChromeIdentityCheckMismatch);
+  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
+                           OnChromeIdentityCheckSignedOutMatch);
+  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
+                           OnChromeIdentityCheckSignedOutMismatch);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            ProcessVoiceSearchSupportMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, ProcessFocusOmnibox);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, DoNotProcessFocusOmnibox);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, ProcessLogEvent);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, DoNotProcessLogEvent);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           ProcessChromeIdentityCheck);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
+                           DoNotProcessChromeIdentityCheck);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, SendSetPromoInformation);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
                            DoNotSendSetPromoInformation);
@@ -141,6 +153,8 @@ class SearchTabHelper : public content::NotificationObserver,
                            DoNotSendSetPromoInformationMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessLogEventMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnoreLogEventMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessChromeIdentityCheckMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnoreChromeIdentityCheckMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessNavigateToURLMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnoreNavigateToURLMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
@@ -215,6 +229,7 @@ class SearchTabHelper : public content::NotificationObserver,
   virtual void OnUndoAllMostVisitedDeletions() OVERRIDE;
   virtual void OnLogEvent(NTPLoggingEventType event) OVERRIDE;
   virtual void PasteIntoOmnibox(const string16& text) OVERRIDE;
+  virtual void OnChromeIdentityCheck(const string16& identity) OVERRIDE;
 
   // Overridden from InstantServiceObserver:
   virtual void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) OVERRIDE;

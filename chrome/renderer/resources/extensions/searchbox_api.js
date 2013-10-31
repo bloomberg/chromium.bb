@@ -80,6 +80,7 @@ if (!chrome.embeddedSearch) {
       // =======================================================================
       //                            Private functions
       // =======================================================================
+      native function CheckIsUserSignedInToChromeAs();
       native function DeleteMostVisitedItem();
       native function GetAppLauncherEnabled();
       native function GetMostVisitedItems();
@@ -123,6 +124,10 @@ if (!chrome.embeddedSearch) {
         DeleteMostVisitedItem(restrictedId);
       };
 
+      this.checkIsUserSignedIntoChromeAs = function(identity) {
+        CheckIsUserSignedInToChromeAs(identity);
+      };
+
       // This method is restricted to chrome-search://most-visited pages by
       // checking the invoking context's origin in searchbox_extension.cc.
       this.logEvent = function(histogram_name) {
@@ -141,6 +146,7 @@ if (!chrome.embeddedSearch) {
         UndoMostVisitedDeletion(restrictedId);
       };
 
+      this.onsignedincheckdone = null;
       this.oninputcancel = null;
       this.oninputstart = null;
       this.onmostvisitedchange = null;
