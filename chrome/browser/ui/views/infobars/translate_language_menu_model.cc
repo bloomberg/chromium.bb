@@ -4,10 +4,8 @@
 
 #include "chrome/browser/ui/views/infobars/translate_language_menu_model.h"
 
-#include "base/metrics/histogram.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/ui/views/infobars/translate_infobar_base.h"
-#include "components/translate/common/translate_metrics.h"
 
 TranslateLanguageMenuModel::TranslateLanguageMenuModel(
     LanguageType language_type,
@@ -48,15 +46,11 @@ bool TranslateLanguageMenuModel::GetAcceleratorForCommandId(
 void TranslateLanguageMenuModel::ExecuteCommand(int command_id,
                                                 int event_flags) {
   size_t command_id_size_t = static_cast<size_t>(command_id);
-  if (language_type_ == ORIGINAL) {
-    UMA_HISTOGRAM_BOOLEAN(
-        translate::GetMetricsName(translate::UMA_MODIFY_ORIGINAL_LANG), true);
-    infobar_delegate_->set_original_language_index(command_id_size_t);
-  } else {
-    UMA_HISTOGRAM_BOOLEAN(
-        translate::GetMetricsName(translate::UMA_MODIFY_TARGET_LANG), true);
-    infobar_delegate_->set_target_language_index(command_id_size_t);
-  }
+  if (language_type_ == ORIGINAL)
+    infobar_delegate_->UpdateOriginalLanguageIndex(command_id_size_t);
+  else
+    infobar_delegate_->UpdateTargetLanguageIndex(command_id_size_t);
+
   infobar_->UpdateLanguageButtonText(button_,
       infobar_delegate_->language_name_at(GetLanguageIndex()));
   if (translate_on_change_)

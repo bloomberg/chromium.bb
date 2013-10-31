@@ -450,7 +450,7 @@ TEST_F(TranslateManagerBrowserTest, NormalTranslate) {
   // Simulate changing the original language and translating.
   process()->sink().ClearMessages();
   std::string new_original_lang = infobar->language_code_at(0);
-  infobar->set_original_language_index(0);
+  infobar->UpdateOriginalLanguageIndex(0);
   infobar->Translate();
   EXPECT_TRUE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
   EXPECT_EQ(new_original_lang, original_lang);
@@ -465,7 +465,7 @@ TEST_F(TranslateManagerBrowserTest, NormalTranslate) {
   // Simulate changing the target language and translating.
   process()->sink().ClearMessages();
   std::string new_target_lang = infobar->language_code_at(1);
-  infobar->set_target_language_index(1);
+  infobar->UpdateTargetLanguageIndex(1);
   infobar->Translate();
   EXPECT_TRUE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
   EXPECT_EQ(new_original_lang, original_lang);

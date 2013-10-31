@@ -4,11 +4,9 @@
 
 #include "chrome/browser/ui/gtk/infobars/before_translate_infobar_gtk.h"
 
-#include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "components/translate/common/translate_metrics.h"
 #include "grit/generated_resources.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
@@ -89,9 +87,7 @@ bool BeforeTranslateInfoBar::ShowOptionsMenuButton() const {
 }
 
 void BeforeTranslateInfoBar::OnLanguageModified(GtkWidget* sender) {
-  UMA_HISTOGRAM_BOOLEAN(
-      translate::GetMetricsName(translate::UMA_MODIFY_ORIGINAL_LANG), true);
-  GetDelegate()->set_original_language_index(
+  GetDelegate()->UpdateOriginalLanguageIndex(
       GetLanguageComboboxActiveId(GTK_COMBO_BOX(sender)));
 }
 

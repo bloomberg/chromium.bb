@@ -27,9 +27,9 @@ class TranslateBubbleModelImpl : public TranslateBubbleModel {
   virtual int GetNumberOfLanguages() const OVERRIDE;
   virtual string16 GetLanguageNameAt(int index) const OVERRIDE;
   virtual int GetOriginalLanguageIndex() const OVERRIDE;
-  virtual void SetOriginalLanguageIndex(int index) OVERRIDE;
+  virtual void UpdateOriginalLanguageIndex(int index) OVERRIDE;
   virtual int GetTargetLanguageIndex() const OVERRIDE;
-  virtual void SetTargetLanguageIndex(int index) OVERRIDE;
+  virtual void UpdateTargetLanguageIndex(int index) OVERRIDE;
   virtual void SetNeverTranslateLanguage(bool value) OVERRIDE;
   virtual void SetNeverTranslateSite(bool value) OVERRIDE;
   virtual bool ShouldAlwaysTranslate() const OVERRIDE;

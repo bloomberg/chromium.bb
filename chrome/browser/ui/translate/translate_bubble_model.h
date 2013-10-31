@@ -51,14 +51,14 @@ class TranslateBubbleModel {
   // Returns the original language index.
   virtual int GetOriginalLanguageIndex() const = 0;
 
-  // Sets the original language index.
-  virtual void SetOriginalLanguageIndex(int index) = 0;
+  // Updates the original language index.
+  virtual void UpdateOriginalLanguageIndex(int index) = 0;
 
   // Returns the target language index.
   virtual int GetTargetLanguageIndex() const = 0;
 
-  // Sets the target language index.
-  virtual void SetTargetLanguageIndex(int index) = 0;
+  // Updates the target language index.
+  virtual void UpdateTargetLanguageIndex(int index) = 0;
 
   // Sets the value if the user doesn't want to have the page translated in the
   // current page's language.

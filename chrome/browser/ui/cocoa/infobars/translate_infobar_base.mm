@@ -125,7 +125,7 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   DCHECK_NE(TranslateInfoBarDelegate::kNoIndex, newLanguageIdxSizeT);
   if (newLanguageIdxSizeT == [self delegate]->original_language_index())
     return;
-  [self delegate]->set_original_language_index(newLanguageIdxSizeT);
+  [self delegate]->UpdateOriginalLanguageIndex(newLanguageIdxSizeT);
   if ([self delegate]->infobar_type() ==
       TranslateInfoBarDelegate::AFTER_TRANSLATE)
     [self delegate]->Translate();
@@ -139,7 +139,7 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   DCHECK_NE(TranslateInfoBarDelegate::kNoIndex, newLanguageIdxSizeT);
   if (newLanguageIdxSizeT == [self delegate]->target_language_index())
     return;
-  [self delegate]->set_target_language_index(newLanguageIdxSizeT);
+  [self delegate]->UpdateTargetLanguageIndex(newLanguageIdxSizeT);
   if ([self delegate]->infobar_type() ==
       TranslateInfoBarDelegate::AFTER_TRANSLATE)
     [self delegate]->Translate();

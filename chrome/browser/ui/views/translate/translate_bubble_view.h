@@ -122,6 +122,9 @@ class TranslateBubbleView : public views::BubbleDelegateView,
   // Handles the event when the user clicks a link.
   void HandleLinkClicked(LinkID sender_id);
 
+  // Handles the event when the user changes an index of a combobox.
+  void HandleComboboxSelectedIndexChanged(ComboboxID sender_id);
+
   // Updates the visibilities of child views according to the current view type.
   void UpdateChildVisibilities();
 
@@ -160,8 +163,10 @@ class TranslateBubbleView : public views::BubbleDelegateView,
   scoped_ptr<LanguageComboboxModel> source_language_combobox_model_;
   scoped_ptr<LanguageComboboxModel> target_language_combobox_model_;
 
+  views::Combobox* denial_combobox_;
   views::Combobox* source_language_combobox_;
   views::Combobox* target_language_combobox_;
+
   views::Checkbox* always_translate_checkbox_;
 
   scoped_ptr<TranslateBubbleModel> model_;

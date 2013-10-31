@@ -26,8 +26,10 @@ const char kPerformTranslate[] = "Translate.Translate";
 const char kNeverTranslateLang[] = "Translate.NeverTranslateLang";
 const char kNeverTranslateSite[] = "Translate.NeverTranslateSite";
 const char kAlwaysTranslateLang[] = "Translate.AlwaysTranslateLang";
+const char kModifyOriginalLang[] = "Translate.ModifyOriginalLang";
+const char kModifyTargetLang[] = "Translate.ModifyTargetLang";
 
-}
+}  // namespace
 
 TranslateUIDelegate::TranslateUIDelegate(content::WebContents* web_contents,
                                          const std::string& original_language,
@@ -90,7 +92,11 @@ size_t TranslateUIDelegate::GetOriginalLanguageIndex() const {
   return original_language_index_;
 }
 
-void TranslateUIDelegate::SetOriginalLanguageIndex(size_t language_index) {
+void TranslateUIDelegate::UpdateOriginalLanguageIndex(size_t language_index) {
+  if (original_language_index_ == language_index)
+    return;
+
+  UMA_HISTOGRAM_BOOLEAN(kModifyOriginalLang, true);
   original_language_index_ = language_index;
 }
 
@@ -98,8 +104,12 @@ size_t TranslateUIDelegate::GetTargetLanguageIndex() const {
   return target_language_index_;
 }
 
-void TranslateUIDelegate::SetTargetLanguageIndex(size_t language_index) {
+void TranslateUIDelegate::UpdateTargetLanguageIndex(size_t language_index) {
+  if (target_language_index_ == language_index)
+    return;
+
   DCHECK_LT(language_index, GetNumberOfLanguages());
+  UMA_HISTOGRAM_BOOLEAN(kModifyTargetLang, true);
   target_language_index_ = language_index;
 }
 

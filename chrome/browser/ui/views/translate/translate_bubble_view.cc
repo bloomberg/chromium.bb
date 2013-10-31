@@ -112,9 +112,6 @@ class TranslateDenialComboboxModel : public ui::ComboboxModel {
   DISALLOW_COPY_AND_ASSIGN(TranslateDenialComboboxModel);
 };
 
-const char* kUMATranslateModifyOriginalLang = "Translate.ModifyOriginalLang";
-const char* kUMATranslateModifyTargetLang = "Translate.ModifyTargetLang";
-
 }  // namespace
 
 // static
@@ -247,44 +244,7 @@ gfx::Size TranslateBubbleView::GetPreferredSize() {
 }
 
 void TranslateBubbleView::OnSelectedIndexChanged(views::Combobox* combobox) {
-  switch (static_cast<ComboboxID>(combobox->id())) {
-    case COMBOBOX_ID_DENIAL: {
-      int index = combobox->selected_index();
-      switch (index) {
-        case TranslateDenialComboboxModel::INDEX_NOPE:
-          if (!translate_executed_)
-            model_->TranslationDeclined();
-          StartFade(false);
-          break;
-        case TranslateDenialComboboxModel::INDEX_NEVER_TRANSLATE_LANGUAGE:
-          model_->SetNeverTranslateLanguage(true);
-          StartFade(false);
-          break;
-        case TranslateDenialComboboxModel::INDEX_NEVER_TRANSLATE_SITE:
-          model_->SetNeverTranslateSite(true);
-          StartFade(false);
-          break;
-        default:
-          NOTREACHED();
-          break;
-      }
-      break;
-    }
-    case COMBOBOX_ID_SOURCE_LANGUAGE: {
-      // TODO(hajimehoshi): This UMA should be counted at a model or a delegate
-      // not to dependent on platforms. However, this UMA has not been used at
-      // some platforms. See crbug/306365.
-      UMA_HISTOGRAM_BOOLEAN(kUMATranslateModifyOriginalLang, true);
-      UpdateAdvancedView();
-      break;
-    }
-    case COMBOBOX_ID_TARGET_LANGUAGE: {
-      // TODO(hajimehoshi): Ditto.
-      UMA_HISTOGRAM_BOOLEAN(kUMATranslateModifyTargetLang, true);
-      UpdateAdvancedView();
-      break;
-    }
-  }
+  HandleComboboxSelectedIndexChanged(static_cast<ComboboxID>(combobox->id()));
 }
 
 void TranslateBubbleView::LinkClicked(views::Link* source, int event_flags) {
@@ -301,6 +261,12 @@ TranslateBubbleView::TranslateBubbleView(
     bool is_in_incognito_window,
     Browser* browser)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
+      before_translate_view_(NULL),
+      translating_view_(NULL),
+      after_translate_view_(NULL),
+      error_view_(NULL),
+      advanced_view_(NULL),
+      denial_combobox_(NULL),
       source_language_combobox_(NULL),
       target_language_combobox_(NULL),
       always_translate_checkbox_(NULL),
@@ -346,13 +312,6 @@ void TranslateBubbleView::HandleButtonPressed(
     }
     case BUTTON_ID_DONE: {
       translate_executed_ = true;
-      DCHECK(source_language_combobox_);
-      DCHECK(target_language_combobox_);
-
-      model_->SetOriginalLanguageIndex(
-          source_language_combobox_->selected_index());
-      model_->SetTargetLanguageIndex(
-          target_language_combobox_->selected_index());
       model_->Translate();
       break;
     }
@@ -400,6 +359,46 @@ void TranslateBubbleView::HandleLinkClicked(
   }
 }
 
+void TranslateBubbleView::HandleComboboxSelectedIndexChanged(
+    TranslateBubbleView::ComboboxID sender_id) {
+  switch (sender_id) {
+    case COMBOBOX_ID_DENIAL: {
+      int index = denial_combobox_->selected_index();
+      switch (index) {
+        case TranslateDenialComboboxModel::INDEX_NOPE:
+          if (!translate_executed_)
+            model_->TranslationDeclined();
+          StartFade(false);
+          break;
+        case TranslateDenialComboboxModel::INDEX_NEVER_TRANSLATE_LANGUAGE:
+          model_->SetNeverTranslateLanguage(true);
+          StartFade(false);
+          break;
+        case TranslateDenialComboboxModel::INDEX_NEVER_TRANSLATE_SITE:
+          model_->SetNeverTranslateSite(true);
+          StartFade(false);
+          break;
+        default:
+          NOTREACHED();
+          break;
+      }
+      break;
+    }
+    case COMBOBOX_ID_SOURCE_LANGUAGE: {
+      model_->UpdateOriginalLanguageIndex(
+          source_language_combobox_->selected_index());
+      UpdateAdvancedView();
+      break;
+    }
+    case COMBOBOX_ID_TARGET_LANGUAGE: {
+      model_->UpdateTargetLanguageIndex(
+          target_language_combobox_->selected_index());
+      UpdateAdvancedView();
+      break;
+    }
+  }
+}
+
 void TranslateBubbleView::UpdateChildVisibilities() {
   for (int i = 0; i < child_count(); i++) {
     views::View* view = child_at(i);
@@ -413,10 +412,10 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
 
   string16 original_language_name =
       model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex());
-  views::Combobox* denial_combobox = new views::Combobox(
+  denial_combobox_ = new views::Combobox(
       new TranslateDenialComboboxModel(original_language_name));
-  denial_combobox->set_id(COMBOBOX_ID_DENIAL);
-  denial_combobox->set_listener(this);
+  denial_combobox_->set_id(COMBOBOX_ID_DENIAL);
+  denial_combobox_->set_listener(this);
 
   views::View* view = new views::View();
   views::GridLayout* layout = new views::GridLayout(view);
@@ -459,7 +458,7 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
   layout->AddView(CreateLink(this,
                              IDS_TRANSLATE_BUBBLE_LEARN_MORE,
                              LINK_ID_LEARN_MORE));
-  layout->AddView(denial_combobox);
+  layout->AddView(denial_combobox_);
   layout->AddView(CreateLabelButton(
       this,
       l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ACCEPT),
@@ -736,11 +735,6 @@ void TranslateBubbleView::SwitchView(
 void TranslateBubbleView::UpdateAdvancedView() {
   DCHECK(source_language_combobox_);
   DCHECK(target_language_combobox_);
-
-  model_->SetOriginalLanguageIndex(
-      source_language_combobox_->selected_index());
-  model_->SetTargetLanguageIndex(
-      target_language_combobox_->selected_index());
 
   string16 source_language_name =
       model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex());

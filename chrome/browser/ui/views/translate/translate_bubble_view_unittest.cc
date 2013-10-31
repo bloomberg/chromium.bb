@@ -55,7 +55,7 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
     return original_language_index_;
   }
 
-  virtual void SetOriginalLanguageIndex(int index) OVERRIDE {
+  virtual void UpdateOriginalLanguageIndex(int index) OVERRIDE {
     original_language_index_ = index;
   }
 
@@ -63,7 +63,7 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
     return target_language_index_;
   }
 
-  virtual void SetTargetLanguageIndex(int index) OVERRIDE {
+  virtual void UpdateTargetLanguageIndex(int index) OVERRIDE {
     target_language_index_ = index;
   }
 
@@ -216,7 +216,11 @@ TEST_F(TranslateBubbleViewTest, DoneButton) {
   // are applied.
   EXPECT_FALSE(mock_model_->translate_called_);
   bubble_->source_language_combobox_->SetSelectedIndex(10);
+  bubble_->HandleComboboxSelectedIndexChanged(
+      TranslateBubbleView::COMBOBOX_ID_SOURCE_LANGUAGE);
   bubble_->target_language_combobox_->SetSelectedIndex(20);
+  bubble_->HandleComboboxSelectedIndexChanged(
+      TranslateBubbleView::COMBOBOX_ID_TARGET_LANGUAGE);
   bubble_->HandleButtonPressed(TranslateBubbleView::BUTTON_ID_DONE);
   EXPECT_TRUE(mock_model_->translate_called_);
   EXPECT_EQ(10, mock_model_->original_language_index_);

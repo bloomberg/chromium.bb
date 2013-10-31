@@ -89,15 +89,12 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   size_t original_language_index() const {
     return ui_delegate_.GetOriginalLanguageIndex();
   }
-  void set_original_language_index(size_t language_index) {
-    ui_delegate_.SetOriginalLanguageIndex(language_index);
-  }
+  void UpdateOriginalLanguageIndex(size_t language_index);
+
   size_t target_language_index() const {
     return ui_delegate_.GetTargetLanguageIndex();
   }
-  void set_target_language_index(size_t language_index) {
-    ui_delegate_.SetTargetLanguageIndex(language_index);
-  }
+  void UpdateTargetLanguageIndex(size_t language_index);
 
   // Convenience methods.
   std::string original_language_code() const {

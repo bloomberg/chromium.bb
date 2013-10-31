@@ -40,14 +40,14 @@ class TranslateUIDelegate {
   // Returns the original language index.
   size_t GetOriginalLanguageIndex() const;
 
-  // Sets the original language index.
-  void SetOriginalLanguageIndex(size_t language_index);
+  // Updates the original language index.
+  void UpdateOriginalLanguageIndex(size_t language_index);
 
   // Returns the target language index.
   size_t GetTargetLanguageIndex() const;
 
-  // Sets the target language index.
-  void SetTargetLanguageIndex(size_t language_index);
+  // Updates the target language index.
+  void UpdateTargetLanguageIndex(size_t language_index);
 
   // Returns the ISO code for the language at |index|.
   std::string GetLanguageCodeAt(size_t index) const;

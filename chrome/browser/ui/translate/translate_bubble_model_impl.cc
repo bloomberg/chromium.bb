@@ -41,16 +41,16 @@ int TranslateBubbleModelImpl::GetOriginalLanguageIndex() const {
   return ui_delegate_->GetOriginalLanguageIndex();
 }
 
-void TranslateBubbleModelImpl::SetOriginalLanguageIndex(int index) {
-  ui_delegate_->SetOriginalLanguageIndex(index);
+void TranslateBubbleModelImpl::UpdateOriginalLanguageIndex(int index) {
+  ui_delegate_->UpdateOriginalLanguageIndex(index);
 }
 
 int TranslateBubbleModelImpl::GetTargetLanguageIndex() const {
   return ui_delegate_->GetTargetLanguageIndex();
 }
 
-void TranslateBubbleModelImpl::SetTargetLanguageIndex(int index) {
-  ui_delegate_->SetTargetLanguageIndex(index);
+void TranslateBubbleModelImpl::UpdateTargetLanguageIndex(int index) {
+  ui_delegate_->UpdateTargetLanguageIndex(index);
 }
 
 void TranslateBubbleModelImpl::SetNeverTranslateLanguage(bool value) {

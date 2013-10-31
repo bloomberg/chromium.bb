@@ -100,6 +100,17 @@ void TranslateInfoBarDelegate::Create(
   }
 }
 
+
+void TranslateInfoBarDelegate::UpdateOriginalLanguageIndex(
+    size_t language_index) {
+  ui_delegate_.UpdateOriginalLanguageIndex(language_index);
+}
+
+void TranslateInfoBarDelegate::UpdateTargetLanguageIndex(
+    size_t language_index) {
+  ui_delegate_.UpdateTargetLanguageIndex(language_index);
+}
+
 void TranslateInfoBarDelegate::Translate() {
   ui_delegate_.Translate();
 }
