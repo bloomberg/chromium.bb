@@ -12,8 +12,10 @@
     dimensions increase by 10x10.</p>
 </div>
 <script>
-    if (window.testRunner)
+    if (window.testRunner) {
+        testRunner.useUnfortunateSynchronousResizeMode();
         testRunner.dumpAsText();
+    }
     var referenceNode = document.getElementById('reference');
     console.log('Initial reference node dimensions ' +
         referenceNode.offsetWidth + ' x ' + referenceNode.offsetHeight);

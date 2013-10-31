@@ -18,6 +18,8 @@ function log(message)
 function zoomPage()
 {
     var newwindow = window.open("resources/dice.png");
+    if (window.testRunner)
+        testRunner.useUnfortunateSynchronousResizeMode();
     newwindow.onload = function() {
         newwindow.onresize = function() {
             var image = newwindow.document.querySelector("img");
