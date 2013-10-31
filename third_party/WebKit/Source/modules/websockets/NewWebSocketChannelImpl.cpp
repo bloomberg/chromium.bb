@@ -302,7 +302,7 @@ void NewWebSocketChannelImpl::sendInternal()
             WebSocketHandle::MessageType type =
                 m_sentSizeOfTopMessage ? WebSocketHandle::MessageTypeContinuation : WebSocketHandle::MessageTypeText;
             size_t size = std::min(static_cast<size_t>(m_sendingQuota), message.text.length() - m_sentSizeOfTopMessage);
-            final = (static_cast<size_t>(m_sendingQuota) == size);
+            final = (m_sentSizeOfTopMessage + size == message.text.length());
             m_handle->send(final, type, message.text.data() + m_sentSizeOfTopMessage, size);
             m_sentSizeOfTopMessage += size;
             m_sendingQuota -= size;
@@ -316,7 +316,7 @@ void NewWebSocketChannelImpl::sendInternal()
             WebSocketHandle::MessageType type =
                 m_sentSizeOfTopMessage ? WebSocketHandle::MessageTypeContinuation : WebSocketHandle::MessageTypeBinary;
             size_t size = std::min(static_cast<size_t>(m_sendingQuota), message.arrayBuffer->byteLength() - m_sentSizeOfTopMessage);
-            final = (static_cast<size_t>(m_sendingQuota) == size);
+            final = (m_sentSizeOfTopMessage + size == message.arrayBuffer->byteLength());
             m_handle->send(final, type, static_cast<const char*>(message.arrayBuffer->data()) + m_sentSizeOfTopMessage, size);
             m_sentSizeOfTopMessage += size;
             m_sendingQuota -= size;
