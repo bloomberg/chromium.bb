@@ -83,11 +83,18 @@ class ChangeNotInManifestException(Exception):
   """Raised if we try to apply a not-in-manifest change."""
 
 
-class DependencyNotReadyForCommit(cros_patch.PatchException):
+class DependencyNotCommitReady(cros_patch.PatchException):
   """Exception thrown when a required dep isn't satisfied."""
 
   def __str__(self):
-    return "%s isn't committed, or marked as Commit-Ready." % (self.patch,)
+    return '%s isn\'t marked as Commit-Ready yet.' % (self.patch,)
+
+
+class DependencyRejected(cros_patch.PatchException):
+  """Exception thrown when a required dep was rejected."""
+
+  def __str__(self):
+    return '%s was rejected by the CQ.' % (self.patch,)
 
 
 class PatchSeriesTooLong(cros_patch.PatchException):
@@ -273,8 +280,23 @@ class PatchSeries(object):
   """Class representing a set of patches applied to a single git repository."""
 
   def __init__(self, path, helper_pool=None, force_content_merging=False,
-               forced_manifest=None, deps_filter_fn=None):
+               forced_manifest=None, deps_filter_fn=None, is_submitting=False):
+    """Constructor.
 
+    Args:
+      path: Path to the buildroot.
+      helper_pool: Pool of allowed GerritHelpers to be used for fetching
+        patches. Defaults to allowing both internal and external fetches.
+      force_content_merging: Allow merging of trivial conflicts, even if they
+        are disabled by Gerrit.
+      forced_manifest: A manifest object to use for mapping projects to
+        repositories. Defaults to the buildroot.
+      deps_filter_fn: A function which specifies what patches you would
+        like to accept. It is passed a patch and is expected to return
+        True or False.
+      is_submitting: Whether we are currently submitting patchsets. This is
+        used to print better error messages.
+    """
     self.manifest = forced_manifest
     self._content_merging_projects = {}
     self.force_content_merging = force_content_merging
@@ -286,6 +308,7 @@ class PatchSeries(object):
     if deps_filter_fn is None:
       deps_filter_fn = lambda x:x
     self.deps_filter_fn = deps_filter_fn
+    self._is_submitting = is_submitting
 
     self.applied = []
     self.failed = []
@@ -469,7 +492,10 @@ class PatchSeries(object):
       if getattr(dep_change, 'IsAlreadyMerged', lambda: False)():
         continue
       elif limit_to is not None and dep_change not in limit_to:
-        raise DependencyNotReadyForCommit(dep_change)
+        if self._is_submitting:
+          raise DependencyRejected(dep_change)
+        else:
+          raise DependencyNotCommitReady(dep_change)
 
       unsatisfied.append(dep_change)
 
@@ -780,6 +806,7 @@ class PatchSeries(object):
           s.add(x)
 
     applied = list(_uniq(applied))
+    self._is_submitting = True
 
     failed = [x for x in failed if x.patch not in applied]
     failed_tot = [x for x in failed if not x.inflight]
@@ -1539,8 +1566,7 @@ class ValidationPool(object):
 
     True if we managed to apply any changes.
     """
-    patch_series = PatchSeries(self.build_root,
-                               helper_pool=self._helper_pool)
+    patch_series = PatchSeries(self.build_root, helper_pool=self._helper_pool)
     try:
       # pylint: disable=E1123
       applied, failed_tot, failed_inflight = patch_series.Apply(
@@ -1641,9 +1667,13 @@ class ValidationPool(object):
     changes = list(self.ReloadChanges(changes))
     changes_that_failed_to_submit = []
 
-    patch_series = PatchSeries(self.build_root,
-                               helper_pool=self._helper_pool)
-    plans, _ = patch_series.CreateDisjointTransactions(changes)
+    patch_series = PatchSeries(self.build_root, helper_pool=self._helper_pool,
+                               is_submitting=True)
+    plans, failed = patch_series.CreateDisjointTransactions(changes)
+
+    # Explain that we can't submit the patch.
+    for error in failed:
+      self.HandleDependencyRejected(error)
 
     for plan in plans:
       # First, verify that all changes have their approvals. We do this up front
@@ -1662,6 +1692,7 @@ class ValidationPool(object):
         if submit_changes:
           was_change_submitted = self._SubmitChange(change)
           submitted_changes += int(was_change_submitted)
+
         if not was_change_submitted and not self.dryrun:
           changes_that_failed_to_submit.append(change)
           submit_changes = False
@@ -2040,6 +2071,14 @@ class ValidationPool(object):
     if not self.pre_cq or status == self.STATUS_LAUNCHING:
       self.UpdateCLStatus(self.bot, change, self.STATUS_INFLIGHT,
                           dry_run=self.dryrun)
+
+  def HandleDependencyRejected(self, error):
+    """Handler for when the deps of a patch were rejected."""
+    msg = ('A dependency of your CL was rejected by %(queue)s. '
+           '%(build_log)s . %(error)s')
+    change = error.patch
+    self.SendNotification(change, msg, error=str(error))
+    self.RemoveCommitReady(change)
 
   @classmethod
   def GetCLStatusURL(cls, bot, change, latest_patchset_only=True):
