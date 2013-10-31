@@ -59,7 +59,7 @@ podrow.images-loading {
 }
 
 podrow[ncolumns='6'] .pod {
-  -webkit-transform: scale(0.8);
+  -webkit-transform: scale3d(0.8, 0.8, 0.8);
   margin: 0 6px;
 }
 
@@ -85,7 +85,7 @@ podrow[ncolumns='6'] .pod {
 }
 
 .pod.init {
-  -webkit-transform: scale(2.4);
+  -webkit-transform: scale3d(2.4, 2.4, 2.4);
   opacity: 0;
 }
 
@@ -100,7 +100,7 @@ podrow[ncolumns='6'] .pod {
 }
 
 .pod.zoom {
-  -webkit-transform: scale(2.2);
+  -webkit-transform: scale3d(2.2, 2.2, 2.2);
   opacity: 0;
 }
 
