@@ -47,8 +47,16 @@ void MappedHostResolver::CancelRequest(RequestHandle req) {
   impl_->CancelRequest(req);
 }
 
+void MappedHostResolver::SetDnsClientEnabled(bool enabled) {
+  impl_->SetDnsClientEnabled(enabled);
+}
+
 HostCache* MappedHostResolver::GetHostCache() {
   return impl_->GetHostCache();
+}
+
+base::Value* MappedHostResolver::GetDnsConfigAsValue() const {
+  return impl_->GetDnsConfigAsValue();
 }
 
 int MappedHostResolver::ApplyRules(RequestInfo* info) const {
