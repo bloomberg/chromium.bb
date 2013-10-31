@@ -1017,7 +1017,7 @@ void NativeAppWindowCocoa::UpdateWindowMinMaxSize() {
   gfx::Size min_size = shell_window_->size_constraints().GetMinimumSize();
   [window() setContentMinSize:NSMakeSize(min_size.width(), min_size.height())];
 
-  gfx::Size max_size = shell_window_->size_constraints().GetMinimumSize();
+  gfx::Size max_size = shell_window_->size_constraints().GetMaximumSize();
   const int kUnboundedSize = ShellWindow::SizeConstraints::kUnboundedSize;
   CGFloat max_width = max_size.width() == kUnboundedSize ?
       CGFLOAT_MAX : max_size.width();
