@@ -27,23 +27,24 @@
  * SUCH DAMAGE.
  */
 
-#ifndef CustomFilterProgramClient_h
-#define CustomFilterProgramClient_h
+#include "config.h"
+#include "platform/graphics/filters/custom/CustomFilterNumberParameter.h"
+
+#include "platform/animation/AnimationUtilities.h"
 
 namespace WebCore {
 
-class CustomFilterProgram;
-
-class CustomFilterProgramClient {
-public:
-    virtual ~CustomFilterProgramClient()
-    {
-    }
-
-    virtual void notifyCustomFilterProgramLoaded(CustomFilterProgram*) = 0;
-};
-
+PassRefPtr<CustomFilterParameter> CustomFilterNumberParameter::blend(const CustomFilterParameter* from, double progress)
+{
+    if (!from || !isSameType(*from))
+        return this;
+    const CustomFilterNumberParameter* fromNumber = static_cast<const CustomFilterNumberParameter*>(from);
+    if (size() != fromNumber->size())
+        return this;
+    RefPtr<CustomFilterNumberParameter> result = CustomFilterNumberParameter::create(name());
+    for (size_t i = 0; i < size(); ++i)
+        result->addValue(WebCore::blend(fromNumber->valueAt(i), valueAt(i), progress));
+    return result.release();
 }
 
-
-#endif // CustomFilterProgramClient_h
+} // namespace WebCore

@@ -28,7 +28,6 @@
  */
 
 #include "config.h"
-
 #include "core/platform/graphics/filters/custom/CustomFilterProgramInfo.h"
 
 #include "wtf/HashFunctions.h"
@@ -79,7 +78,7 @@ unsigned CustomFilterProgramInfo::hash() const
     // At least one of the shaders needs to be non-null.
     ASSERT(!m_vertexShaderString.isNull() || !m_fragmentShaderString.isNull());
 
-    bool blendsElementTexture = (m_programType == PROGRAM_TYPE_BLENDS_ELEMENT_TEXTURE);
+    bool blendsElementTexture = (m_programType == ProgramTypeBlendsElementTexture);
     uintptr_t hashCodes[6] = {
         hashPossiblyNullString(m_vertexShaderString),
         hashPossiblyNullString(m_fragmentShaderString),
@@ -97,7 +96,7 @@ bool CustomFilterProgramInfo::operator==(const CustomFilterProgramInfo& o) const
     ASSERT(!o.isHashTableDeletedValue());
 
     return m_programType == o.m_programType
-        && (m_programType != PROGRAM_TYPE_BLENDS_ELEMENT_TEXTURE || m_mixSettings == o.m_mixSettings)
+        && (m_programType != ProgramTypeBlendsElementTexture || m_mixSettings == o.m_mixSettings)
         && m_meshType == o.m_meshType
         && m_vertexShaderString == o.m_vertexShaderString
         && m_fragmentShaderString == o.m_fragmentShaderString;

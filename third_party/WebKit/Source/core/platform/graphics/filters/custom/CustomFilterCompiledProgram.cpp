@@ -28,7 +28,6 @@
  */
 
 #include "config.h"
-
 #include "core/platform/graphics/filters/custom/CustomFilterCompiledProgram.h"
 
 namespace WebCore {
@@ -125,7 +124,7 @@ void CustomFilterCompiledProgram::initializeParameterLocations(CustomFilterProgr
     m_projectionMatrixLocation = m_context->getUniformLocation(m_program, "u_projectionMatrix");
     m_samplerSizeLocation = m_context->getUniformLocation(m_program, "u_textureSize");
     m_contentSamplerLocation = m_context->getUniformLocation(m_program, "u_contentTexture");
-    if (programType == PROGRAM_TYPE_BLENDS_ELEMENT_TEXTURE) {
+    if (programType == ProgramTypeBlendsElementTexture) {
         // When the author uses the CSS mix function in a custom filter, WebKit adds the internal
         // symbol css_u_texture to the shader code, which references the texture of the element.
         m_samplerLocation = m_context->getUniformLocation(m_program, "css_u_texture");

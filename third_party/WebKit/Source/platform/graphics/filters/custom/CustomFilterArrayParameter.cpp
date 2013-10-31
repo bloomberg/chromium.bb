@@ -13,7 +13,7 @@
  *    disclaimer in the documentation and/or other materials
  *    provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER "AS IS" AND ANY
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER “AS IS” AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE
@@ -27,28 +27,28 @@
  * SUCH DAMAGE.
  */
 
-#ifndef CustomFilterParameterList_h
-#define CustomFilterParameterList_h
+#include "config.h"
+#include "platform/graphics/filters/custom/CustomFilterArrayParameter.h"
 
-#include "platform/geometry/LayoutSize.h"
-#include "wtf/Vector.h"
+#include "platform/animation/AnimationUtilities.h"
 
 namespace WebCore {
 
-class CustomFilterParameter;
-typedef Vector<RefPtr<CustomFilterParameter> > CustomFilterParameterListBase;
+PassRefPtr<CustomFilterParameter> CustomFilterArrayParameter::blend(const CustomFilterParameter* from, double progress)
+{
+    if (!from || !isSameType(*from))
+        return this;
 
-class CustomFilterParameterList : public CustomFilterParameterListBase {
-public:
-    CustomFilterParameterList();
-    explicit CustomFilterParameterList(size_t);
+    const CustomFilterArrayParameter* fromArray = static_cast<const CustomFilterArrayParameter*>(from);
 
-    bool checkAlphabeticalOrder() const;
-    void blend(const CustomFilterParameterList& from, double progress, CustomFilterParameterList& resultList) const;
-    bool operator==(const CustomFilterParameterList&) const;
-};
+    if (size() != fromArray->size())
+        return this;
+
+    RefPtr<CustomFilterArrayParameter> result = CustomFilterArrayParameter::create(name());
+    for (size_t i = 0; i < size(); ++i)
+        result->addValue(WebCore::blend(fromArray->valueAt(i), valueAt(i), progress));
+
+    return result.release();
+}
 
 } // namespace WebCore
-
-
-#endif // CustomFilterParameterList_h

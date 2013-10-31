@@ -28,14 +28,13 @@
  */
 
 #include "config.h"
-
 #include "core/platform/graphics/filters/custom/CustomFilterValidatedProgram.h"
 
-#include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
 #include "core/platform/graphics/filters/custom/CustomFilterGlobalContext.h"
 #include "core/platform/graphics/filters/custom/CustomFilterProgramInfo.h"
 #include "platform/NotImplemented.h"
 #include "platform/graphics/angle/ANGLEPlatformBridge.h"
+#include "platform/graphics/filters/custom/CustomFilterConstants.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringHash.h"
@@ -171,7 +170,7 @@ CustomFilterValidatedProgram::CustomFilterValidatedProgram(CustomFilterGlobalCon
         originalFragmentShader = defaultFragmentShaderString();
 
     // Shaders referenced from the CSS mix function use a different validator than regular WebGL shaders. See core/platform/graphics/filters/custom/CustomFilterGlobalContext.h for more details.
-    bool blendsElementTexture = (programInfo.programType() == PROGRAM_TYPE_BLENDS_ELEMENT_TEXTURE);
+    bool blendsElementTexture = (programInfo.programType() == ProgramTypeBlendsElementTexture);
     ANGLEPlatformBridge* validator = blendsElementTexture ? m_globalContext->mixShaderValidator() : m_globalContext->webglShaderValidator();
     String vertexShaderLog, fragmentShaderLog;
     Vector<ANGLEShaderSymbol> symbols;
@@ -211,14 +210,14 @@ PassRefPtr<CustomFilterCompiledProgram> CustomFilterValidatedProgram::compiledPr
 
 bool CustomFilterValidatedProgram::needsInputTexture() const
 {
-    return m_programInfo.programType() == PROGRAM_TYPE_BLENDS_ELEMENT_TEXTURE
+    return m_programInfo.programType() == ProgramTypeBlendsElementTexture
         && m_programInfo.mixSettings().compositeOperator != CompositeClear
         && m_programInfo.mixSettings().compositeOperator != CompositeCopy;
 }
 
 void CustomFilterValidatedProgram::rewriteMixVertexShader(const Vector<ANGLEShaderSymbol>& symbols)
 {
-    ASSERT(m_programInfo.programType() == PROGRAM_TYPE_BLENDS_ELEMENT_TEXTURE);
+    ASSERT(m_programInfo.programType() == ProgramTypeBlendsElementTexture);
 
     // If the author defined a_texCoord, we can use it to shuttle the texture coordinate to the fragment shader.
     // Note that vertex attributes are read-only in GLSL, so the author could not have changed a_texCoord's value.
@@ -248,7 +247,7 @@ void CustomFilterValidatedProgram::rewriteMixVertexShader(const Vector<ANGLEShad
 
 void CustomFilterValidatedProgram::rewriteMixFragmentShader()
 {
-    ASSERT(m_programInfo.programType() == PROGRAM_TYPE_BLENDS_ELEMENT_TEXTURE);
+    ASSERT(m_programInfo.programType() == ProgramTypeBlendsElementTexture);
 
     StringBuilder builder;
     // ANGLE considered these symbols as built-ins during validation under the SH_CSS_SHADERS_SPEC flag.

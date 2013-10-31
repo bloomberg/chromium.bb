@@ -13,7 +13,7 @@
  *    disclaimer in the documentation and/or other materials
  *    provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER "AS IS" AND ANY
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER “AS IS” AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE
@@ -28,34 +28,12 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/filters/custom/ValidatedCustomFilterOperation.h"
-
-#include "core/platform/graphics/filters/custom/CustomFilterValidatedProgram.h"
-#include "platform/graphics/filters/custom/CustomFilterParameter.h"
-#include "wtf/UnusedParam.h"
+#include "platform/graphics/filters/custom/CustomFilterProgramClient.h"
 
 namespace WebCore {
 
-ValidatedCustomFilterOperation::ValidatedCustomFilterOperation(PassRefPtr<CustomFilterValidatedProgram> validatedProgram,
-    const CustomFilterParameterList& sortedParameters, unsigned meshRows, unsigned meshColumns, CustomFilterMeshType meshType)
-    : FilterOperation(VALIDATED_CUSTOM)
-    , m_validatedProgram(validatedProgram)
-    , m_parameters(sortedParameters)
-    , m_meshRows(meshRows)
-    , m_meshColumns(meshColumns)
-    , m_meshType(meshType)
+CustomFilterProgramClient::~CustomFilterProgramClient()
 {
-}
-
-ValidatedCustomFilterOperation::~ValidatedCustomFilterOperation()
-{
-}
-
-PassRefPtr<FilterOperation> ValidatedCustomFilterOperation::blend(const FilterOperation*, double) const
-{
-    ASSERT_NOT_REACHED();
-    return const_cast<ValidatedCustomFilterOperation*>(this);
 }
 
 } // namespace WebCore
-

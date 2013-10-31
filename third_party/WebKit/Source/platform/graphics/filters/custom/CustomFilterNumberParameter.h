@@ -27,20 +27,20 @@
  * SUCH DAMAGE.
  */
 
-#ifndef CustomFilterArrayParameter_h
-#define CustomFilterArrayParameter_h
+#ifndef CustomFilterNumberParameter_h
+#define CustomFilterNumberParameter_h
 
-#include "core/platform/graphics/filters/custom/CustomFilterParameter.h"
-#include "platform/animation/AnimationUtilities.h"
+#include "platform/PlatformExport.h"
+#include "platform/graphics/filters/custom/CustomFilterParameter.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
-class CustomFilterArrayParameter : public CustomFilterParameter {
+class PLATFORM_EXPORT CustomFilterNumberParameter : public CustomFilterParameter {
 public:
-    static PassRefPtr<CustomFilterArrayParameter> create(const String& name)
+    static PassRefPtr<CustomFilterNumberParameter> create(const String& name)
     {
-        return adoptRef(new CustomFilterArrayParameter(name));
+        return adoptRef(new CustomFilterNumberParameter(name));
     }
 
     unsigned size() const { return m_data.size(); }
@@ -48,42 +48,26 @@ public:
 
     void addValue(double value) { m_data.append(value); }
 
-    virtual PassRefPtr<CustomFilterParameter> blend(const CustomFilterParameter* from, double progress)
-    {
-        if (!from || !isSameType(*from))
-            return this;
-
-        const CustomFilterArrayParameter* fromArray = static_cast<const CustomFilterArrayParameter*>(from);
-
-        if (size() != fromArray->size())
-            return this;
-
-        RefPtr<CustomFilterArrayParameter> result = CustomFilterArrayParameter::create(name());
-        for (size_t i = 0; i < size(); ++i)
-            result->addValue(WebCore::blend(fromArray->valueAt(i), valueAt(i), progress));
-
-        return result.release();
-    }
+    virtual PassRefPtr<CustomFilterParameter> blend(const CustomFilterParameter* from, double progress);
 
     virtual bool operator==(const CustomFilterParameter& o) const
     {
         if (!isSameType(o))
             return false;
-
-        const CustomFilterArrayParameter* other = static_cast<const CustomFilterArrayParameter*>(&o);
+        const CustomFilterNumberParameter* other = static_cast<const CustomFilterNumberParameter*>(&o);
         return m_data == other->m_data;
     }
 
 private:
-    CustomFilterArrayParameter(const String& name)
-        : CustomFilterParameter(ARRAY, name)
+    CustomFilterNumberParameter(const String& name)
+        : CustomFilterParameter(Number, name)
     {
     }
 
-    Vector<double> m_data;
+    Vector<double, 4> m_data;
 };
 
 } // namespace WebCore
 
 
-#endif // CustomFilterArrayParameter_h
+#endif // CustomFilterNumberParameter_h

@@ -31,10 +31,10 @@
 #define CustomFilterOperation_h
 
 #include "core/platform/graphics/filters/FilterOperation.h"
-#include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
-#include "core/platform/graphics/filters/custom/CustomFilterParameterList.h"
 #include "core/platform/graphics/filters/custom/CustomFilterProgram.h"
 #include "platform/geometry/LayoutSize.h"
+#include "platform/graphics/filters/custom/CustomFilterConstants.h"
+#include "platform/graphics/filters/custom/CustomFilterParameterList.h"
 
 namespace WebCore {
 

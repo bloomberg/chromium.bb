@@ -28,12 +28,11 @@
  */
 
 #include "config.h"
-
 #include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
 
 #include "core/platform/graphics/filters/FilterOperation.h"
-#include "core/platform/graphics/filters/custom/CustomFilterParameter.h"
 #include "core/platform/graphics/filters/custom/CustomFilterProgram.h"
+#include "platform/graphics/filters/custom/CustomFilterParameter.h"
 
 namespace WebCore {
 
@@ -45,8 +44,6 @@ CustomFilterOperation::CustomFilterOperation(PassRefPtr<CustomFilterProgram> pro
     , m_meshColumns(meshColumns)
     , m_meshType(meshType)
 {
-    // Make sure that the parameters are alwyas sorted by name. We use that to merge two CustomFilterOperations in animations.
-    ASSERT(m_parameters.checkAlphabeticalOrder());
 }
 
 CustomFilterOperation::~CustomFilterOperation()

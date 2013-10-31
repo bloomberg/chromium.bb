@@ -30,13 +30,14 @@
 #ifndef CustomFilterParameter_h
 #define CustomFilterParameter_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class CustomFilterParameter : public RefCounted<CustomFilterParameter> {
+class PLATFORM_EXPORT CustomFilterParameter : public RefCounted<CustomFilterParameter> {
 public:
     // FIXME: Implement other parameters types:
     // booleans: https://bugs.webkit.org/show_bug.cgi?id=76438
@@ -44,9 +45,9 @@ public:
     // 3d-transforms: https://bugs.webkit.org/show_bug.cgi?id=71443
     // mat2, mat3, mat4: https://bugs.webkit.org/show_bug.cgi?id=71444
     enum ParameterType {
-        ARRAY,
-        NUMBER,
-        TRANSFORM
+        Array,
+        Number,
+        Transform
     };
 
     virtual ~CustomFilterParameter() { }

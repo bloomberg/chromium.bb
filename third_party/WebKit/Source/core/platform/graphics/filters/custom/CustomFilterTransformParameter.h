@@ -30,8 +30,8 @@
 #ifndef CustomFilterTransformParameter_h
 #define CustomFilterTransformParameter_h
 
-#include "core/platform/graphics/filters/custom/CustomFilterParameter.h"
 #include "platform/geometry/FloatSize.h"
+#include "platform/graphics/filters/custom/CustomFilterParameter.h"
 #include "platform/transforms/TransformOperations.h"
 
 namespace WebCore {
@@ -84,7 +84,7 @@ public:
 
 private:
     CustomFilterTransformParameter(const String& name)
-        : CustomFilterParameter(TRANSFORM, name)
+        : CustomFilterParameter(Transform, name)
     {
     }
     virtual ~CustomFilterTransformParameter()

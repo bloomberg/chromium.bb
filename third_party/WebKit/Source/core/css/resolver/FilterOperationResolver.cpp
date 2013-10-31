@@ -36,16 +36,16 @@
 #include "core/css/CSSShaderValue.h"
 #include "core/css/CSSShadowValue.h"
 #include "core/css/resolver/TransformBuilder.h"
-#include "core/platform/graphics/filters/custom/CustomFilterArrayParameter.h"
-#include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
-#include "core/platform/graphics/filters/custom/CustomFilterNumberParameter.h"
 #include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
-#include "core/platform/graphics/filters/custom/CustomFilterParameter.h"
 #include "core/platform/graphics/filters/custom/CustomFilterProgramInfo.h"
 #include "core/platform/graphics/filters/custom/CustomFilterTransformParameter.h"
 #include "core/rendering/style/StyleCustomFilterProgram.h"
 #include "core/rendering/style/StyleShader.h"
 #include "core/svg/SVGURIReference.h"
+#include "platform/graphics/filters/custom/CustomFilterArrayParameter.h"
+#include "platform/graphics/filters/custom/CustomFilterConstants.h"
+#include "platform/graphics/filters/custom/CustomFilterNumberParameter.h"
+#include "platform/graphics/filters/custom/CustomFilterParameter.h"
 
 namespace WebCore {
 
@@ -85,11 +85,6 @@ static FilterOperation::OperationType filterOperationForType(CSSFilterValue::Fil
         return FilterOperation::NONE;
     }
     return FilterOperation::NONE;
-}
-
-static bool sortParametersByNameComparator(const RefPtr<CustomFilterParameter>& a, const RefPtr<CustomFilterParameter>& b)
-{
-    return codePointCompareLessThan(a->name(), b->name());
 }
 
 static StyleShader* styleShader(CSSValue* value)
@@ -209,7 +204,7 @@ static bool parseCustomFilterParameterList(CSSValue* parametersValue, CustomFilt
     }
 
     // Make sure we sort the parameters before passing them down to the CustomFilterOperation.
-    std::sort(parameterList.begin(), parameterList.end(), sortParametersByNameComparator);
+    parameterList.sortParametersByName();
 
     return true;
 }
@@ -253,7 +248,7 @@ static PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithInlineSy
     if (shadersList->itemWithoutBoundsCheck(0)->isShaderValue())
         vertexShader = toCSSShaderValue(shadersList->itemWithoutBoundsCheck(0));
 
-    CustomFilterProgramType programType = PROGRAM_TYPE_BLENDS_ELEMENT_TEXTURE;
+    CustomFilterProgramType programType = ProgramTypeBlendsElementTexture;
     CustomFilterProgramMixSettings mixSettings;
 
     if (shadersListLength > 1) {
@@ -280,7 +275,7 @@ static PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithInlineSy
                 iterator.advance();
             }
         } else {
-            programType = PROGRAM_TYPE_NO_ELEMENT_TEXTURE;
+            programType = ProgramTypeNoElementTexture;
             if (fragmentShaderOrMixFunction->isShaderValue())
                 fragmentShader = toCSSShaderValue(fragmentShaderOrMixFunction);
         }

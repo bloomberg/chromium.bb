@@ -28,10 +28,9 @@
  */
 
 #include "config.h"
+#include "platform/graphics/filters/custom/CustomFilterParameterList.h"
 
-#include "core/platform/graphics/filters/custom/CustomFilterParameterList.h"
-
-#include "core/platform/graphics/filters/custom/CustomFilterParameter.h"
+#include "platform/graphics/filters/custom/CustomFilterParameter.h"
 #include "wtf/text/StringHash.h"
 
 namespace WebCore {
@@ -41,7 +40,7 @@ CustomFilterParameterList::CustomFilterParameterList()
 }
 
 CustomFilterParameterList::CustomFilterParameterList(size_t size)
-    : CustomFilterParameterListBase(size)
+    : m_parameters(size)
 {
 }
 
@@ -57,6 +56,7 @@ bool CustomFilterParameterList::operator==(const CustomFilterParameterList& othe
     return true;
 }
 
+#ifndef NDEBUG
 bool CustomFilterParameterList::checkAlphabeticalOrder() const
 {
     for (unsigned i = 1; i < size(); ++i) {
@@ -66,13 +66,16 @@ bool CustomFilterParameterList::checkAlphabeticalOrder() const
     }
     return true;
 }
+#endif
 
 void CustomFilterParameterList::blend(const CustomFilterParameterList& fromList,
     double progress, CustomFilterParameterList& resultList) const
 {
+#ifndef NDEBUG
     // This method expects both lists to be sorted by parameter name and the result list is also sorted.
     ASSERT(checkAlphabeticalOrder());
     ASSERT(fromList.checkAlphabeticalOrder());
+#endif
     size_t fromListIndex = 0, toListIndex = 0;
     while (fromListIndex < fromList.size() && toListIndex < size()) {
         CustomFilterParameter* paramFrom = fromList.at(fromListIndex).get();
@@ -95,7 +98,19 @@ void CustomFilterParameterList::blend(const CustomFilterParameterList& fromList,
         resultList.append(fromList.at(fromListIndex));
     for (; toListIndex < size(); ++toListIndex)
         resultList.append(at(toListIndex));
+#ifndef NDEBUG
     ASSERT(resultList.checkAlphabeticalOrder());
+#endif
+}
+
+static bool sortParametersByNameComparator(const RefPtr<CustomFilterParameter>& a, const RefPtr<CustomFilterParameter>& b)
+{
+    return codePointCompareLessThan(a->name(), b->name());
+}
+
+void CustomFilterParameterList::sortParametersByName()
+{
+    std::sort(m_parameters.begin(), m_parameters.end(), sortParametersByNameComparator);
 }
 
 } // namespace WebCore

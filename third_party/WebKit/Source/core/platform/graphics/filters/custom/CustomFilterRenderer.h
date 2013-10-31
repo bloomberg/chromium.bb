@@ -32,10 +32,10 @@
 #ifndef CustomFilterRenderer_h
 #define CustomFilterRenderer_h
 
-#include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
-#include "core/platform/graphics/filters/custom/CustomFilterParameterList.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/GraphicsTypes3D.h"
+#include "platform/graphics/filters/custom/CustomFilterConstants.h"
+#include "platform/graphics/filters/custom/CustomFilterParameterList.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 

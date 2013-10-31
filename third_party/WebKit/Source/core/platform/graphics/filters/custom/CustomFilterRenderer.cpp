@@ -30,17 +30,16 @@
  */
 
 #include "config.h"
-
 #include "core/platform/graphics/filters/custom/CustomFilterRenderer.h"
 
 #include "core/platform/graphics/GraphicsContext3D.h"
-#include "core/platform/graphics/filters/custom/CustomFilterArrayParameter.h"
 #include "core/platform/graphics/filters/custom/CustomFilterCompiledProgram.h"
-#include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
 #include "core/platform/graphics/filters/custom/CustomFilterMesh.h"
-#include "core/platform/graphics/filters/custom/CustomFilterNumberParameter.h"
-#include "core/platform/graphics/filters/custom/CustomFilterParameter.h"
 #include "core/platform/graphics/filters/custom/CustomFilterTransformParameter.h"
+#include "platform/graphics/filters/custom/CustomFilterArrayParameter.h"
+#include "platform/graphics/filters/custom/CustomFilterConstants.h"
+#include "platform/graphics/filters/custom/CustomFilterNumberParameter.h"
+#include "platform/graphics/filters/custom/CustomFilterParameter.h"
 #include "platform/transforms/TransformationMatrix.h"
 
 namespace WebCore {
@@ -90,7 +89,7 @@ CustomFilterRenderer::~CustomFilterRenderer()
 
 bool CustomFilterRenderer::premultipliedAlpha() const
 {
-    return m_programType == PROGRAM_TYPE_BLENDS_ELEMENT_TEXTURE;
+    return m_programType == ProgramTypeBlendsElementTexture;
 }
 
 bool CustomFilterRenderer::programNeedsInputTexture() const
@@ -211,13 +210,13 @@ void CustomFilterRenderer::bindProgramParameters()
         if (uniformLocation == -1)
             continue;
         switch (parameter->parameterType()) {
-        case CustomFilterParameter::ARRAY:
+        case CustomFilterParameter::Array:
             bindProgramArrayParameters(uniformLocation, static_cast<CustomFilterArrayParameter*>(parameter));
             break;
-        case CustomFilterParameter::NUMBER:
+        case CustomFilterParameter::Number:
             bindProgramNumberParameters(uniformLocation, static_cast<CustomFilterNumberParameter*>(parameter));
             break;
-        case CustomFilterParameter::TRANSFORM:
+        case CustomFilterParameter::Transform:
             bindProgramTransformParameter(uniformLocation, static_cast<CustomFilterTransformParameter*>(parameter));
             break;
         }
@@ -232,7 +231,7 @@ void CustomFilterRenderer::bindProgramAndBuffers(Platform3DObject inputTexture)
 
     if (programNeedsInputTexture()) {
         // We should be binding the DOM element texture sampler only if the author is using the CSS mix function.
-        ASSERT(m_programType == PROGRAM_TYPE_BLENDS_ELEMENT_TEXTURE);
+        ASSERT(m_programType == ProgramTypeBlendsElementTexture);
         ASSERT(m_compiledProgram->samplerLocation() != -1);
 
         m_context->activeTexture(GraphicsContext3D::TEXTURE0);

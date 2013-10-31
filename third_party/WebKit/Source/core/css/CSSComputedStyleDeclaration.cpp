@@ -70,13 +70,12 @@
 #include "platform/fonts/FontFeatureSettings.h"
 #include "wtf/text/StringBuilder.h"
 
-#include "core/platform/graphics/filters/custom/CustomFilterArrayParameter.h"
-#include "core/platform/graphics/filters/custom/CustomFilterNumberParameter.h"
 #include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
-#include "core/platform/graphics/filters/custom/CustomFilterParameter.h"
 #include "core/platform/graphics/filters/custom/CustomFilterTransformParameter.h"
-
 #include "core/rendering/style/StyleCustomFilterProgram.h"
+#include "platform/graphics/filters/custom/CustomFilterArrayParameter.h"
+#include "platform/graphics/filters/custom/CustomFilterNumberParameter.h"
+#include "platform/graphics/filters/custom/CustomFilterParameter.h"
 
 namespace WebCore {
 
@@ -830,11 +829,11 @@ static PassRefPtr<CSSValue> valueForCustomFilterParameter(const RenderObject* re
     // FIXME: Add here computed style for the other types: boolean, transform, matrix, texture.
     ASSERT(parameter);
     switch (parameter->parameterType()) {
-    case CustomFilterParameter::ARRAY:
+    case CustomFilterParameter::Array:
         return valueForCustomFilterArrayParameter(static_cast<const CustomFilterArrayParameter*>(parameter));
-    case CustomFilterParameter::NUMBER:
+    case CustomFilterParameter::Number:
         return valueForCustomFilterNumberParameter(static_cast<const CustomFilterNumberParameter*>(parameter));
-    case CustomFilterParameter::TRANSFORM:
+    case CustomFilterParameter::Transform:
         return valueForCustomFilterTransformParameter(renderer, style, static_cast<const CustomFilterTransformParameter*>(parameter));
     }
 
@@ -944,7 +943,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(const RenderObj
 
             const CustomFilterProgramMixSettings mixSettings = program->mixSettings();
             if (program->fragmentShader()) {
-                if (program->programType() == PROGRAM_TYPE_BLENDS_ELEMENT_TEXTURE) {
+                if (program->programType() == ProgramTypeBlendsElementTexture) {
                     RefPtr<CSSMixFunctionValue> mixFunction = CSSMixFunctionValue::create();
                     mixFunction->append(program->fragmentShader()->cssValue());
                     mixFunction->append(cssValuePool().createValue(mixSettings.blendMode));

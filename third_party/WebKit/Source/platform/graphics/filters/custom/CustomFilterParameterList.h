@@ -13,7 +13,7 @@
  *    disclaimer in the documentation and/or other materials
  *    provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER “AS IS” AND ANY
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE
@@ -27,34 +27,37 @@
  * SUCH DAMAGE.
  */
 
-#ifndef CustomFilterConstants_h
-#define CustomFilterConstants_h
+#ifndef CustomFilterParameterList_h
+#define CustomFilterParameterList_h
+
+#include "platform/PlatformExport.h"
+#include "platform/geometry/LayoutSize.h"
+#include "platform/graphics/filters/custom/CustomFilterParameter.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
-enum CustomFilterMeshConstants {
-    // Vertex attribute sizes
-    PositionAttribSize = 4,
-    TexAttribSize = 2,
-    MeshAttribSize = 2,
-    TriangleAttribSize = 3,
-    // Vertex attribute offsets
-    PositionAttribOffset = 0,
-    TexAttribOffset = PositionAttribOffset + PositionAttribSize * sizeof(float),
-    MeshAttribOffset = TexAttribOffset + TexAttribSize * sizeof(float),
-    TriangleAttribOffset = MeshAttribOffset + MeshAttribSize * sizeof(float)
-};
+class PLATFORM_EXPORT CustomFilterParameterList {
+public:
+    CustomFilterParameterList();
+    explicit CustomFilterParameterList(size_t);
 
-enum CustomFilterMeshType {
-    MeshTypeAttached,
-    MeshTypeDetached
-};
+    void blend(const CustomFilterParameterList& from, double progress, CustomFilterParameterList& resultList) const;
+    bool operator==(const CustomFilterParameterList&) const;
 
-enum CustomFilterProgramType {
-    PROGRAM_TYPE_NO_ELEMENT_TEXTURE,
-    PROGRAM_TYPE_BLENDS_ELEMENT_TEXTURE
+    PassRefPtr<CustomFilterParameter> at(size_t index) const { return m_parameters.at(index); }
+    size_t size() const { return m_parameters.size(); }
+    void append(const PassRefPtr<CustomFilterParameter>& parameter) { m_parameters.append(parameter); }
+    void sortParametersByName();
+private:
+#ifndef NDEBUG
+    bool checkAlphabeticalOrder() const;
+#endif
+    typedef Vector<RefPtr<CustomFilterParameter> > CustomFilterParameterVector;
+    CustomFilterParameterVector m_parameters;
 };
 
 } // namespace WebCore
 
-#endif // CustomFilterConstants_h
+
+#endif // CustomFilterParameterList_h

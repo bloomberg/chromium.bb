@@ -30,8 +30,8 @@
 #ifndef CustomFilterProgramInfo_h
 #define CustomFilterProgramInfo_h
 
-#include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
 #include "platform/graphics/GraphicsTypes.h"
+#include "platform/graphics/filters/custom/CustomFilterConstants.h"
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/HashTraits.h"
 #include "wtf/text/WTFString.h"
