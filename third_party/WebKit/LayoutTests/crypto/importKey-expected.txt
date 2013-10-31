@@ -16,10 +16,7 @@ PASS key.type is 'secret'
 PASS key.extractable is false
 PASS key.algorithm.name is 'AES-CBC'
 PASS key.usages.join(',') is ''
-PASS key.type is 'secret'
-PASS key.extractable is false
-PASS key.algorithm.name is 'AES-CBC'
-PASS key.usages.join(',') is ''
+rejected with null
 rejected with null
 PASS crypto.subtle.importKey('invalid format', data, algorithm, extractable, keyUsages) threw exception TypeError: Invalid keyFormat argument.
 PASS crypto.subtle.importKey(keyFormat, data, algorithm, extractable, ['SIGN']) threw exception TypeError: Invalid keyUsages argument.

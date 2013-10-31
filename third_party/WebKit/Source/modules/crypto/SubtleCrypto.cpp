@@ -31,6 +31,7 @@
 #include "config.h"
 #include "modules/crypto/SubtleCrypto.h"
 
+#include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/crypto/CryptoResultImpl.h"
@@ -167,8 +168,9 @@ ScriptPromise SubtleCrypto::importKey(const String& rawFormat, ArrayBufferView* 
     if (!Key::parseUsageMask(rawKeyUsages, keyUsages, es))
         return ScriptPromise();
 
+    // The algorithm is optional.
     WebKit::WebCryptoAlgorithm algorithm;
-    if (!normalizeAlgorithm(rawAlgorithm, ImportKey, algorithm, es))
+    if (!rawAlgorithm.isUndefinedOrNull() && !normalizeAlgorithm(rawAlgorithm, ImportKey, algorithm, es))
         return ScriptPromise();
 
     const unsigned char* keyDataBytes = static_cast<unsigned char*>(keyData->baseAddress());

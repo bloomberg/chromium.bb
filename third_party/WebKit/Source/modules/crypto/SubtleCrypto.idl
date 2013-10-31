@@ -38,7 +38,7 @@
     [RaisesException] Promise digest(Dictionary algorithm, ArrayBufferView data);
 
     [RaisesException] Promise generateKey(Dictionary algorithm, boolean extractable, DOMString[] keyUsages);
-    [RaisesException] Promise importKey(DOMString format, ArrayBufferView keyData, Dictionary algorithm, boolean extractable, DOMString[] keyUsages);
+    [RaisesException] Promise importKey(DOMString format, ArrayBufferView keyData, Dictionary? algorithm, boolean extractable, DOMString[] keyUsages);
     [RaisesException] Promise exportKey(DOMString format, Key key);
 };
 
