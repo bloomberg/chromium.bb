@@ -385,9 +385,7 @@ PassRefPtr<Document> DOMWindow::installNewDocument(const String& mimeType, const
 
     m_document = createDocument(mimeType, init, forceXHTML);
     m_eventQueue = DOMWindowEventQueue::create(m_document.get());
-
-    if (!m_document->confusingAndOftenMisusedAttached())
-        m_document->attach();
+    m_document->attach();
 
     if (!m_frame)
         return m_document;
