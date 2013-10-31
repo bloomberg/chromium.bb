@@ -1242,5 +1242,61 @@ TEST_F(RootWindowTest, DontResetHeldEvent) {
   EXPECT_EQ(2, delegate.mouse_event_count());
 }
 
-}  // namespace aura
+namespace {
 
+// See description above DeleteRootFromHeldMouseEvent for details.
+class DeleteRootFromHeldMouseEventDelegate : public test::TestWindowDelegate {
+ public:
+  explicit DeleteRootFromHeldMouseEventDelegate(aura::Window* root)
+      : root_(root),
+        got_mouse_event_(false),
+        got_destroy_(false) {
+  }
+  virtual ~DeleteRootFromHeldMouseEventDelegate() {}
+
+  bool got_mouse_event() const { return got_mouse_event_; }
+  bool got_destroy() const { return got_destroy_; }
+
+  // TestWindowDelegate:
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+    if ((event->flags() & ui::EF_SHIFT_DOWN) != 0) {
+      got_mouse_event_ = true;
+      delete root_;
+    }
+  }
+  virtual void OnWindowDestroyed() OVERRIDE {
+    got_destroy_ = true;
+  }
+
+ private:
+  Window* root_;
+  bool got_mouse_event_;
+  bool got_destroy_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeleteRootFromHeldMouseEventDelegate);
+};
+
+}  // namespace
+
+// Verifies if a RootWindow is deleted from dispatching a held mouse event we
+// don't crash.
+TEST_F(RootWindowTest, DeleteRootFromHeldMouseEvent) {
+  // Should be deleted by |delegate|.
+  RootWindow* r2 =
+      new RootWindow(RootWindow::CreateParams(gfx::Rect(0, 0, 100, 100)));
+  r2->Init();
+  DeleteRootFromHeldMouseEventDelegate delegate(r2);
+  // Owned by |r2|.
+  Window* w1 = CreateNormalWindow(1, r2, &delegate);
+  w1->SetBounds(gfx::Rect(0, 0, 40, 40));
+  ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED,
+                         gfx::Point(10, 10), gfx::Point(10, 10),
+                         ui::EF_SHIFT_DOWN);
+  r2->GetDispatcher()->RepostEvent(pressed);
+  // RunAllPendingInMessageLoop() to make sure the |pressed| is run.
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(delegate.got_mouse_event());
+  EXPECT_TRUE(delegate.got_destroy());
+}
+
+}  // namespace aura

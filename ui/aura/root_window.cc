@@ -148,9 +148,8 @@ RootWindow::RootWindow(const CreateParams& params)
       event_dispatch_target_(NULL),
       synthesize_mouse_move_(false),
       move_hold_count_(0),
-      event_factory_(this),
-      held_event_factory_(this),
-      repostable_event_factory_(this) {
+      weak_factory_(this),
+      held_event_factory_(this) {
   set_dispatcher(this);
   SetName("RootWindow");
 
@@ -235,7 +234,7 @@ void RootWindow::RepostEvent(const ui::LocatedEvent& event) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&RootWindow::DispatchHeldEvents,
-                   repostable_event_factory_.GetWeakPtr()));
+                   weak_factory_.GetWeakPtr()));
   } else {
     DCHECK(event.type() == ui::ET_GESTURE_TAP_DOWN);
     held_repostable_event_.reset();
@@ -967,15 +966,14 @@ bool RootWindow::DispatchMouseEventToTarget(ui::MouseEvent* event,
       ui::EF_RIGHT_MOUSE_BUTTON;
   // WARNING: because of nested message loops |this| may be deleted after
   // dispatching any event. Do not use AutoReset or the like here.
-  WindowTracker destroyed_tracker;
-  destroyed_tracker.Add(this);
+  base::WeakPtr<RootWindow> ref(weak_factory_.GetWeakPtr());
   SetLastMouseLocation(this, event->location());
   synthesize_mouse_move_ = false;
   switch (event->type()) {
     case ui::ET_MOUSE_EXITED:
       if (!target) {
         DispatchMouseEnterOrExit(*event, ui::ET_MOUSE_EXITED);
-        if (!destroyed_tracker.Contains(this))
+        if (!ref)
           return false;
         mouse_moved_handler_ = NULL;
       }
@@ -986,10 +984,11 @@ bool RootWindow::DispatchMouseEventToTarget(ui::MouseEvent* event,
       // dispatch.
       if (target != mouse_moved_handler_) {
         aura::Window* old_mouse_moved_handler = mouse_moved_handler_;
+        WindowTracker destroyed_tracker;
         if (target)
           destroyed_tracker.Add(target);
         DispatchMouseEnterOrExit(*event, ui::ET_MOUSE_EXITED);
-        if (!destroyed_tracker.Contains(this))
+        if (!ref)
           return false;
         // If the |mouse_moved_handler_| changes out from under us, assume a
         // nested message loop ran and we don't need to do anything.
@@ -999,7 +998,7 @@ bool RootWindow::DispatchMouseEventToTarget(ui::MouseEvent* event,
           destroyed_tracker.Remove(target);
           mouse_moved_handler_ = target;
           DispatchMouseEnterOrExit(*event, ui::ET_MOUSE_ENTERED);
-          if (!destroyed_tracker.Contains(this))
+          if (!ref)
             return false;
         } else {
           mouse_moved_handler_ = NULL;
@@ -1031,7 +1030,7 @@ bool RootWindow::DispatchMouseEventToTarget(ui::MouseEvent* event,
     if (IsNonClientLocation(target, event->location()))
       event->set_flags(event->flags() | ui::EF_IS_NON_CLIENT);
     ProcessEvent(target, event);
-    if (!destroyed_tracker.Contains(this))
+    if (!ref)
       return false;
     result = event->handled();
   } else {
@@ -1108,6 +1107,7 @@ bool RootWindow::DispatchTouchEventImpl(ui::TouchEvent* event) {
 
 void RootWindow::DispatchHeldEvents() {
   if (held_repostable_event_) {
+    base::WeakPtr<RootWindow> ref(weak_factory_.GetWeakPtr());
     if (held_repostable_event_->type() == ui::ET_MOUSE_PRESSED) {
       scoped_ptr<ui::MouseEvent> mouse_event(
           static_cast<ui::MouseEvent*>(held_repostable_event_.release()));
@@ -1116,6 +1116,8 @@ void RootWindow::DispatchHeldEvents() {
       // TODO(rbyers): GESTURE_TAP_DOWN not yet supported: crbug.com/170987.
       NOTREACHED();
     }
+    if (!ref)
+      return;
   }
   if (held_move_event_ && held_move_event_->IsMouseEvent()) {
     // If a mouse move has been synthesized, the target location is suspect,
@@ -1138,7 +1140,7 @@ void RootWindow::PostMouseMoveEventAfterWindowChange() {
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&RootWindow::SynthesizeMouseMoveEvent,
-                 event_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr()));
 }
 
 void RootWindow::SynthesizeMouseMoveEvent() {

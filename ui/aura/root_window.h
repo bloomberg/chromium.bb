@@ -399,13 +399,11 @@ class AURA_EXPORT RootWindow : public Window,
 
   scoped_ptr<RootWindowTransformer> transformer_;
 
-  // Use to post mouse move event.
-  base::WeakPtrFactory<RootWindow> event_factory_;
+  // Used for references we don't need to invalidate.
+  base::WeakPtrFactory<RootWindow> weak_factory_;
 
   // Used to schedule DispatchHeldEvents() when |move_hold_count_| goes to 0.
   base::WeakPtrFactory<RootWindow> held_event_factory_;
-
-  base::WeakPtrFactory<RootWindow> repostable_event_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindow);
 };
