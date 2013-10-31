@@ -106,6 +106,29 @@ public:
         else
             floatingObject->setHeight(logicalWidth);
     }
+
+    static bool shouldSkipCreatingRunsForObject(RenderObject* obj)
+    {
+        return obj->isFloating() || (obj->isOutOfFlowPositioned() && !obj->style()->isOriginalDisplayInlineType() && !obj->container()->isRenderInline());
+    }
+
+    static TextRun constructTextRun(RenderObject* context, const Font&, const String&, RenderStyle*,
+        TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion, TextRunFlags = DefaultTextRunFlags);
+
+    static TextRun constructTextRun(RenderObject* context, const Font&, const RenderText*, RenderStyle*,
+        TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
+
+    static TextRun constructTextRun(RenderObject* context, const Font&, const RenderText*, unsigned offset, unsigned length, RenderStyle*,
+        TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
+
+    static TextRun constructTextRun(RenderObject* context, const Font&, const RenderText*, unsigned offset, RenderStyle*,
+        TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
+
+    static TextRun constructTextRun(RenderObject* context, const Font&, const LChar* characters, int length, RenderStyle*,
+        TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
+
+    static TextRun constructTextRun(RenderObject* context, const Font&, const UChar* characters, int length, RenderStyle*,
+        TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
 protected:
     // Only used by RenderSVGText, which explicitly overrides RenderBlock::layoutBlock(), do NOT use for anything else.
     void forceLayoutInlineChildren()

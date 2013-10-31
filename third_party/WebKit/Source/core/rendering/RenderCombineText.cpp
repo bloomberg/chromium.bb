@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/rendering/RenderCombineText.h"
 
-#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderBlockFlow.h"
 
 namespace WebCore {
 
@@ -96,7 +96,7 @@ void RenderCombineText::combineText()
     if (style()->isHorizontalWritingMode())
         return;
 
-    TextRun run = RenderBlock::constructTextRun(this, originalFont(), this, style());
+    TextRun run = RenderBlockFlow::constructTextRun(this, originalFont(), this, style());
     FontDescription description = originalFont().fontDescription();
     float emWidth = description.computedSize() * textCombineMargin;
     bool shouldUpdateFont = false;

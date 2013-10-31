@@ -37,7 +37,9 @@
 #include "core/rendering/LineWidth.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderNamedFlowThread.h"
+#include "core/rendering/RenderText.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/svg/SVGTextRunRenderingContext.h"
 
 using namespace std;
 
@@ -2284,6 +2286,76 @@ LayoutUnit RenderBlockFlow::logicalRightFloatOffsetForLine(LayoutUnit logicalTop
         return m_floatingObjects->logicalRightOffset(fixedOffset, logicalTop, logicalHeight, offsetMode, heightRemaining);
 
     return fixedOffset;
+}
+
+template <typename CharacterType>
+static inline TextRun constructTextRunInternal(RenderObject* context, const Font& font, const CharacterType* characters, int length, RenderStyle* style, TextRun::ExpansionBehavior expansion)
+{
+    ASSERT(style);
+
+    TextDirection textDirection = LTR;
+    bool directionalOverride = style->rtlOrdering() == VisualOrder;
+
+    TextRun run(characters, length, 0, 0, expansion, textDirection, directionalOverride);
+    if (textRunNeedsRenderingContext(font))
+        run.setRenderingContext(SVGTextRunRenderingContext::create(context));
+
+    return run;
+}
+
+template <typename CharacterType>
+static inline TextRun constructTextRunInternal(RenderObject* context, const Font& font, const CharacterType* characters, int length, RenderStyle* style, TextRun::ExpansionBehavior expansion, TextRunFlags flags)
+{
+    ASSERT(style);
+
+    TextDirection textDirection = LTR;
+    bool directionalOverride = style->rtlOrdering() == VisualOrder;
+    if (flags != DefaultTextRunFlags) {
+        if (flags & RespectDirection)
+            textDirection = style->direction();
+        if (flags & RespectDirectionOverride)
+            directionalOverride |= isOverride(style->unicodeBidi());
+    }
+    TextRun run(characters, length, 0, 0, expansion, textDirection, directionalOverride);
+    if (textRunNeedsRenderingContext(font))
+        run.setRenderingContext(SVGTextRunRenderingContext::create(context));
+
+    return run;
+}
+
+TextRun RenderBlockFlow::constructTextRun(RenderObject* context, const Font& font, const LChar* characters, int length, RenderStyle* style, TextRun::ExpansionBehavior expansion)
+{
+    return constructTextRunInternal(context, font, characters, length, style, expansion);
+}
+
+TextRun RenderBlockFlow::constructTextRun(RenderObject* context, const Font& font, const UChar* characters, int length, RenderStyle* style, TextRun::ExpansionBehavior expansion)
+{
+    return constructTextRunInternal(context, font, characters, length, style, expansion);
+}
+
+TextRun RenderBlockFlow::constructTextRun(RenderObject* context, const Font& font, const RenderText* text, RenderStyle* style, TextRun::ExpansionBehavior expansion)
+{
+    if (text->is8Bit())
+        return constructTextRunInternal(context, font, text->characters8(), text->textLength(), style, expansion);
+    return constructTextRunInternal(context, font, text->characters16(), text->textLength(), style, expansion);
+}
+
+TextRun RenderBlockFlow::constructTextRun(RenderObject* context, const Font& font, const RenderText* text, unsigned offset, unsigned length, RenderStyle* style, TextRun::ExpansionBehavior expansion)
+{
+    ASSERT(offset + length <= text->textLength());
+    if (text->is8Bit())
+        return constructTextRunInternal(context, font, text->characters8() + offset, length, style, expansion);
+    return constructTextRunInternal(context, font, text->characters16() + offset, length, style, expansion);
+}
+
+TextRun RenderBlockFlow::constructTextRun(RenderObject* context, const Font& font, const String& string, RenderStyle* style, TextRun::ExpansionBehavior expansion, TextRunFlags flags)
+{
+    unsigned length = string.length();
+    if (!length)
+        return constructTextRunInternal(context, font, static_cast<const LChar*>(0), length, style, expansion, flags);
+    if (string.is8Bit())
+        return constructTextRunInternal(context, font, string.characters8(), length, style, expansion, flags);
+    return constructTextRunInternal(context, font, string.characters16(), length, style, expansion, flags);
 }
 
 } // namespace WebCore

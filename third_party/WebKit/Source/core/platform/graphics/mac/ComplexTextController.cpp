@@ -27,7 +27,7 @@
 
 #include <ApplicationServices/ApplicationServices.h>
 #include "core/platform/graphics/Font.h"
-#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderText.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/graphics/TextRun.h"
@@ -43,7 +43,7 @@ class TextLayout {
 public:
     static bool isNeeded(RenderText* text, const Font& font)
     {
-        TextRun run = RenderBlock::constructTextRun(text, font, text, text->style());
+        TextRun run = RenderBlockFlow::constructTextRun(text, font, text, text->style());
         return font.codePath(run) == Font::Complex;
     }
 
@@ -68,7 +68,7 @@ public:
 private:
     static TextRun constructTextRun(RenderText* text, const Font& font, float xPos)
     {
-        TextRun run = RenderBlock::constructTextRun(text, font, text, text->style());
+        TextRun run = RenderBlockFlow::constructTextRun(text, font, text, text->style());
         run.setCharactersLength(text->textLength());
         ASSERT(run.charactersLength() >= run.length());
 

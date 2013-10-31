@@ -24,7 +24,6 @@
 #define InlineIterator_h
 
 #include "core/rendering/BidiRun.h"
-#include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderText.h"
 #include "wtf/StdLibExtras.h"
@@ -327,7 +326,7 @@ inline void InlineIterator::fastIncrementInTextNode()
         m_pos++;
 }
 
-// FIXME: This is used by RenderBlock for simplified layout, and has nothing to do with bidi
+// FIXME: This is used by RenderBlockFlow for simplified layout, and has nothing to do with bidi
 // it shouldn't use functions called bidiFirst and bidiNext.
 class InlineWalker {
 public:
@@ -491,7 +490,7 @@ enum AppendRunBehavior {
 
 static void adjustMidpointsAndAppendRunsForObjectIfNeeded(RenderObject* obj, unsigned start, unsigned end, InlineBidiResolver& resolver, AppendRunBehavior behavior = AppendingFakeRun, BidiRunList<BidiRun>* runs = 0)
 {
-    if (start > end || RenderBlock::shouldSkipCreatingRunsForObject(obj))
+    if (start > end || RenderBlockFlow::shouldSkipCreatingRunsForObject(obj))
         return;
 
     LineMidpointState& lineMidpointState = resolver.midpointState();
@@ -561,7 +560,7 @@ public:
         // We only need to add a fake run for a given isolated span once during each call to createBidiRunsForLine.
         // We'll be called for every span inside the isolated span so we just ignore subsequent calls.
         // We also avoid creating a fake run until we hit a child that warrants one, e.g. we skip floats.
-        if (RenderBlock::shouldSkipCreatingRunsForObject(obj))
+        if (RenderBlockFlow::shouldSkipCreatingRunsForObject(obj))
             return;
         if (!m_haveAddedFakeRunForRootIsolate) {
             addPlaceholderRunForIsolatedInline(resolver, obj, pos);

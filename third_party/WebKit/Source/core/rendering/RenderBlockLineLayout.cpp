@@ -744,7 +744,7 @@ void RenderBlockFlow::setMarginsForRubyRun(BidiRun* run, RenderRubyRun* renderer
 static inline float measureHyphenWidth(RenderText* renderer, const Font& font)
 {
     RenderStyle* style = renderer->style();
-    return font.width(RenderBlock::constructTextRun(renderer, font, style->hyphenString().string(), style));
+    return font.width(RenderBlockFlow::constructTextRun(renderer, font, style->hyphenString().string(), style));
 }
 
 class WordMeasurement {
@@ -2558,7 +2558,7 @@ static ALWAYS_INLINE float textWidth(RenderText* text, unsigned from, unsigned l
     if (layout)
         return Font::width(*layout, from, len, fallbackFonts);
 
-    TextRun run = RenderBlock::constructTextRun(text, font, text, from, len, text->style());
+    TextRun run = RenderBlockFlow::constructTextRun(text, font, text, from, len, text->style());
     run.setCharactersLength(text->textLength() - from);
     ASSERT(run.charactersLength() >= run.length());
 
@@ -2960,7 +2960,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
 
     // Non-zero only when kerning is enabled and TextLayout isn't used, in which case we measure
     // words with their trailing space, then subtract its width.
-    float wordTrailingSpaceWidth = (font.typesettingFeatures() & Kerning) && !textLayout ? font.width(RenderBlock::constructTextRun(renderText, font, &space, 1, style)) + wordSpacing : 0;
+    float wordTrailingSpaceWidth = (font.typesettingFeatures() & Kerning) && !textLayout ? font.width(RenderBlockFlow::constructTextRun(renderText, font, &space, 1, style)) + wordSpacing : 0;
 
     UChar lastCharacter = m_renderTextInfo.m_lineBreakIterator.lastCharacter();
     UChar secondToLastCharacter = m_renderTextInfo.m_lineBreakIterator.secondToLastCharacter();
