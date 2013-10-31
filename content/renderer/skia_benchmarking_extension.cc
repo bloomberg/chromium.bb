@@ -195,10 +195,12 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
 
     // Raster the requested command subset into the bitmap-backed canvas.
     int last_index = debug_canvas.getSize() - 1;
-    debug_canvas.setOverdrawViz(overdraw);
-    debug_canvas.drawTo(&canvas, stop_index < 0
-                        ? last_index
-                        : std::min(last_index, stop_index));
+    if (last_index >= 0) {
+        debug_canvas.setOverdrawViz(overdraw);
+        debug_canvas.drawTo(&canvas, stop_index < 0
+                            ? last_index
+                            : std::min(last_index, stop_index));
+    }
 
     WebKit::WebArrayBuffer buffer =
         WebKit::WebArrayBuffer::create(bitmap.getSize(), 1);
