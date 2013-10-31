@@ -28,10 +28,6 @@ sys.path.insert(1, os.path.join(chrome_src, 'native_client', 'build'))
 sys.path.insert(1, os.path.join(chrome_src, 'remoting', 'tools', 'build'))
 sys.path.insert(1, os.path.join(chrome_src, 'third_party', 'WebKit',
     'Source', 'build', 'scripts'))
-# FIXME schenney: Remove this once we remove Source/core/scripts
-sys.path.insert(1, os.path.join(chrome_src, 'third_party', 'WebKit',
-    'Source', 'core', 'scripts'))
-
 
 # On Windows, Psyco shortens warm runs of build/gyp_chromium by about
 # 20 seconds on a z600 machine with 12 GB of RAM, from 90 down to 70
