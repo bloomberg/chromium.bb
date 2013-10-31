@@ -10,6 +10,8 @@
 #include <float.h>
 #endif
 
+#include <algorithm>
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "ui/gfx/safe_integer_conversions.h"
