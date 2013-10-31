@@ -181,6 +181,9 @@ _OS_NEGATIVE_FILTER['android'] = [
 
     # https://code.google.com/p/chromedriver/issues/detail?id=527
     'ClickTest.testCanClickOnALinkThatContainsEmbeddedBlockElements',
+
+    # https://code.google.com/p/chromedriver/issues/detail?id=604
+    'I18nTest.*',
 ]
 
 
