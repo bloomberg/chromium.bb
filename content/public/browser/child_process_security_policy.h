@@ -66,12 +66,8 @@ class ChildProcessSecurityPolicy {
   // created for a set of native files/directories (like dropped files)
   // using fileapi::IsolatedContext. A child process needs to be granted
   // permission to the file system to access the files in it using
-  // file system URL.
-  //
-  // Note: to grant read access to the content of files you also need
-  // to give permission directly to the file paths using GrantReadFile.
-  // TODO(kinuko): We should unify this file-level and file-system-level
-  // permission when a file is accessed via a file system.
+  // file system URL. You do NOT need to give direct permission to
+  // individual file paths.
   //
   // Note: files/directories in the same file system share the same
   // permission as far as they are accessed via the file system, i.e.
@@ -82,18 +78,18 @@ class ChildProcessSecurityPolicy {
 
   // Grants write access permission to the given isolated file system
   // identified by |filesystem_id|.  See comments for GrantReadFileSystem
-  // for more details.  For writing you do NOT need to give direct permission
-  // to individual file paths.
+  // for more details.  You do NOT need to give direct permission to
+  // individual file paths.
   //
   // This must be called with a great care as this gives write permission
   // to all files/directories included in the file system.
   virtual void GrantWriteFileSystem(int child_id,
                                     const std::string& filesystem_id) = 0;
 
-  // Grant create file permission to the given isolated file system identified
-  // by |filesystem_id|.
-  // See comments for GrantReadFileSystem for more details.  For creating you
-  // do NOT need to give direct permission to individual file paths.
+  // Grants create file permission to the given isolated file system
+  // identified by |filesystem_id|.  See comments for GrantReadFileSystem
+  // for more details.  You do NOT need to give direct permission to
+  // individual file paths.
   //
   // This must be called with a great care as this gives create permission
   // within all directories included in the file system.
@@ -134,6 +130,6 @@ class ChildProcessSecurityPolicy {
                                        const std::string& filesystem_id) = 0;
 };
 
-};  // namespace content
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_BROWSER_CHILD_PROCESS_SECURITY_POLICY_H_
