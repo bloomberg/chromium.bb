@@ -79,15 +79,15 @@ private:
     HTMLMediaElement* mediaElement() const;
 
     // TextTrackClient
-    virtual void textTrackModeChanged(TextTrack*);
-    virtual void textTrackKindChanged(TextTrack*);
-    virtual void textTrackAddCues(TextTrack*, const TextTrackCueList*);
-    virtual void textTrackRemoveCues(TextTrack*, const TextTrackCueList*);
-    virtual void textTrackAddCue(TextTrack*, PassRefPtr<TextTrackCue>);
-    virtual void textTrackRemoveCue(TextTrack*, PassRefPtr<TextTrackCue>);
+    virtual void textTrackModeChanged(TextTrack*) OVERRIDE;
+    virtual void textTrackKindChanged(TextTrack*) OVERRIDE;
+    virtual void textTrackAddCues(TextTrack*, const TextTrackCueList*) OVERRIDE;
+    virtual void textTrackRemoveCues(TextTrack*, const TextTrackCueList*) OVERRIDE;
+    virtual void textTrackAddCue(TextTrack*, PassRefPtr<TextTrackCue>) OVERRIDE;
+    virtual void textTrackRemoveCue(TextTrack*, PassRefPtr<TextTrackCue>) OVERRIDE;
 
     LoadableTextTrack* ensureTrack();
-    virtual bool canLoadUrl(const KURL&);
+    bool canLoadUrl(const KURL&);
 
     RefPtr<LoadableTextTrack> m_track;
     Timer<HTMLTrackElement> m_loadTimer;
