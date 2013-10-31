@@ -225,8 +225,6 @@ void ToolbarView::Init() {
   app_menu_->SetTooltipText(l10n_util::GetStringUTF16(IDS_APPMENU_TOOLTIP));
   app_menu_->set_id(VIEW_ID_APP_MENU);
 
-  // Add any necessary badges to the menu item based on the system state.
-  UpdateAppMenuState();
   LoadImages();
 
   // Always add children in order from left to right, for accessibility.
@@ -237,6 +235,11 @@ void ToolbarView::Init() {
   AddChildView(location_bar_);
   AddChildView(browser_actions_);
   AddChildView(app_menu_);
+
+  // Add any necessary badges to the menu item based on the system state.
+  // Do this after |app_menu_| has been added as a bubble may be shown that
+  // needs the widget (widget found by way of app_menu_->GetWidget()).
+  UpdateAppMenuState();
 
   location_bar_->Init();
   show_home_button_.Init(prefs::kShowHomeButton,
@@ -763,6 +766,10 @@ void ToolbarView::UpdateAppMenuState() {
 }
 
 void ToolbarView::UpdateWrenchButtonSeverity() {
+  // Showing the bubble requires |app_menu_| to be in a widget. See comment
+  // in ConflictingModuleView for details.
+  DCHECK(app_menu_->GetWidget());
+
   // Keep track of whether we were showing the badge before, so we don't send
   // multiple UMA events for example when multiple Chrome windows are open.
   static bool incompatibility_badge_showing = false;
