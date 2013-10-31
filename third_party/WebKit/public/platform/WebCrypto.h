@@ -93,6 +93,7 @@ public:
     //
     //   * WebCryptoAlgorithms parameters are guaranteed to be !isNull(),
     //     unless noted otherwise.
+    //   * WebCryptoKey parameters are guaranteeed to be !isNull().
     //   * const unsigned char* data buffers are not valid after return.
     virtual void encrypt(const WebCryptoAlgorithm&, const WebCryptoKey&, const unsigned char* data, unsigned dataSize, WebCryptoResult result) { result.completeWithError(); }
     virtual void decrypt(const WebCryptoAlgorithm&, const WebCryptoKey&, const unsigned char* data, unsigned dataSize, WebCryptoResult result) { result.completeWithError(); }

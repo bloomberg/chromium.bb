@@ -84,6 +84,9 @@ class WebCryptoKeyHandle;
 // safely assume any details regarding the type of the wrapped
 // WebCryptoKeyHandle*.
 //
+// If WebCryptoKey "isNull()" then it is invalid to call any of the other
+// methods on it (other than destruction, assignment, or isNull()).
+//
 // FIXME: Define the interface to use for structured clone.
 //        Cloning across a process boundary will need serialization,
 //        however cloning for in-process workers could just share the same
@@ -105,6 +108,8 @@ public:
     // Note that the caller is passing ownership of the WebCryptoKeyHandle*.
     BLINK_PLATFORM_EXPORT static WebCryptoKey create(WebCryptoKeyHandle*, WebCryptoKeyType, bool extractable, const WebCryptoAlgorithm&, WebCryptoKeyUsageMask);
 
+    BLINK_PLATFORM_EXPORT static WebCryptoKey createNull();
+
     // Returns the opaque key handle that was set by the embedder.
     //   * Safe to downcast to known type (since embedder creates all the keys)
     //   * Returned pointer's lifetime is bound to |this|
@@ -114,6 +119,8 @@ public:
     BLINK_PLATFORM_EXPORT bool extractable() const;
     BLINK_PLATFORM_EXPORT const WebCryptoAlgorithm& algorithm() const;
     BLINK_PLATFORM_EXPORT WebCryptoKeyUsageMask usages() const;
+
+    BLINK_PLATFORM_EXPORT bool isNull() const;
 
 private:
     WebCryptoKey() { }

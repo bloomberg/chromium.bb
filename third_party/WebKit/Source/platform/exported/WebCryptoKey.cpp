@@ -63,29 +63,44 @@ WebCryptoKey WebCryptoKey::create(WebCryptoKeyHandle* handle, WebCryptoKeyType t
     return key;
 }
 
+WebCryptoKey WebCryptoKey::createNull()
+{
+    return WebCryptoKey();
+}
+
 WebCryptoKeyHandle* WebCryptoKey::handle() const
 {
+    ASSERT(!isNull());
     return m_private->handle.get();
 }
 
 WebCryptoKeyType WebCryptoKey::type() const
 {
+    ASSERT(!isNull());
     return m_private->type;
 }
 
 bool WebCryptoKey::extractable() const
 {
+    ASSERT(!isNull());
     return m_private->extractable;
 }
 
 const WebCryptoAlgorithm& WebCryptoKey::algorithm() const
 {
+    ASSERT(!isNull());
     return m_private->algorithm;
 }
 
 WebCryptoKeyUsageMask WebCryptoKey::usages() const
 {
+    ASSERT(!isNull());
     return m_private->usages;
+}
+
+bool WebCryptoKey::isNull() const
+{
+    return m_private.isNull();
 }
 
 void WebCryptoKey::assign(const WebCryptoKey& other)
