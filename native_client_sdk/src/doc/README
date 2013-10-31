@@ -40,16 +40,22 @@ To emit docs suitable for pushing to production use::
 
   make devsite-prod
 
-Production mode contains devsite-specific templating and non-HTML constructs.
-The ``devsite-staging`` target is exactly the same except that the html pages
-are all rooted under a folder called $USER, which allows each user to stage his
-own copy of the docs.
+Note that "production use" (and the staging target) are closely tied to the
+Google documentation infrastructure, so it will be of very limited use outside
+Google. Links to related documents here can be google.com specific. Production
+mode contains devsite-specific templating and non-HTML constructs. The
+``devsite-staging`` target is exactly the same except that the html pages are
+all rooted under a folder called $USER, which allows each user to stage his own
+copy of the docs.
 
 When building in production mode you can specify the name of the subfolder in
 which the docs are rooted by specifying ``SPHINXOPTS=-Ddevsite_foldername=``.
 For example::
 
   make devsite-prod SPHINXOPTS=-Ddevsite_foldername=pepper_32
+
+See https://sites.google.com/a/google.com/nativeclient/documents/how-to-update-developer-documentation#TOC-Staging-ReStructuredText-output-on-devsite
+for more information on staging.
 
 Local HTTP server to view the docs
 ----------------------------------

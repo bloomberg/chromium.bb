@@ -192,6 +192,7 @@ devsite-staging:
 	$(SPHINXBUILD) -b devsite -D devsite_foldername=$(USER) -D devsite_production_mode=1 $(ALLSPHINXOPTS) $(BUILDDIR)/devsite-staging
 	rm -rf $(BUILDDIR)/devsite-staging/images
 	cp -r $(BUILDDIR)/devsite-staging/_images $(BUILDDIR)/devsite-staging/images
+	cp _reference_toc.yaml $(BUILDDIR)/devsite-staging/
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/devsite-staging."
 

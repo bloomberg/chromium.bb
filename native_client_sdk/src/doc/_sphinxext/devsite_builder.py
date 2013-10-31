@@ -412,7 +412,8 @@ def generate_yaml_tree(app, rst_tree, rootpath=None, title=None):
     template_path = None
     toclines.append('- title: "%s"' % title)
     toclines.append('  path: /native-client/${folder}%s' % rootpath)
-    toclines.append('  section:')
+    if rst_tree:
+      toclines.append('  section:')
     indent = 4
 
   def add_tocline(s):
@@ -431,6 +432,9 @@ def generate_yaml_tree(app, rst_tree, rootpath=None, title=None):
       assert isinstance(item, RstDirInfo)
       add_tocline('- include: /native-client/${folder}%s/_toc.yaml' % item.path)
       subtrees.append(item)
+
+  # ensure a \n in the end
+  toclines.append('')
 
   if template_path is not None:
     toc = '\n'.join(toclines)
