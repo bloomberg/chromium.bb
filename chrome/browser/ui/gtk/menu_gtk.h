@@ -70,11 +70,19 @@ class MenuGtk {
   GtkWidget* AppendCheckMenuItemWithLabel(int command_id,
                                           const std::string& label);
   GtkWidget* AppendSeparator();
+  GtkWidget* InsertSeparator(int position);
   GtkWidget* AppendMenuItem(int command_id, GtkWidget* menu_item);
+  GtkWidget* InsertMenuItem(int command_id, GtkWidget* menu_item, int position);
   GtkWidget* AppendMenuItemToMenu(int index,
                                   ui::MenuModel* model,
                                   GtkWidget* menu_item,
                                   GtkWidget* menu,
+                                  bool connect_to_activate);
+  GtkWidget* InsertMenuItemToMenu(int index,
+                                  ui::MenuModel* model,
+                                  GtkWidget* menu_item,
+                                  GtkWidget* menu,
+                                  int position,
                                   bool connect_to_activate);
 
   // Displays the menu near a widget, as if the widget were a menu bar.

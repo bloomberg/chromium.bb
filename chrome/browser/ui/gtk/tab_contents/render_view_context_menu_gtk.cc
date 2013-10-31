@@ -106,8 +106,16 @@ void RenderViewContextMenuGtk::PlatformInit() {
       GtkWidget* menuitem = gtk_menu_item_new_with_mnemonic(label.c_str());
       GtkWidget* submenu = rwhv->BuildInputMethodsGtkMenu();
       gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), submenu);
-      menu->AppendSeparator();
-      menu->AppendMenuItem(IDC_INPUT_METHODS_MENU, menuitem);
+      int inspect_element_index =
+          menu_model_.GetIndexOfCommandId(IDC_CONTENT_CONTEXT_INSPECTELEMENT);
+      if (inspect_element_index != -1) {
+        menu->InsertSeparator(inspect_element_index - 1);
+        menu->InsertMenuItem(IDC_INPUT_METHODS_MENU, menuitem,
+            inspect_element_index);
+      } else {
+        menu->AppendSeparator();
+        menu->AppendMenuItem(IDC_INPUT_METHODS_MENU, menuitem);
+      }
     }
   }
 }

@@ -349,6 +349,13 @@ GtkWidget* MenuGtk::AppendSeparator() {
   return menu_item;
 }
 
+GtkWidget* MenuGtk::InsertSeparator(int position) {
+  GtkWidget* menu_item = gtk_separator_menu_item_new();
+  gtk_widget_show(menu_item);
+  gtk_menu_shell_insert(GTK_MENU_SHELL(menu_), menu_item, position);
+  return menu_item;
+}
+
 GtkWidget* MenuGtk::AppendMenuItem(int command_id, GtkWidget* menu_item) {
   if (delegate_ && delegate_->AlwaysShowIconForCmd(command_id) &&
       GTK_IS_IMAGE_MENU_ITEM(menu_item))
@@ -357,10 +364,31 @@ GtkWidget* MenuGtk::AppendMenuItem(int command_id, GtkWidget* menu_item) {
   return AppendMenuItemToMenu(command_id, NULL, menu_item, menu_, true);
 }
 
+GtkWidget* MenuGtk::InsertMenuItem(int command_id, GtkWidget* menu_item,
+                                   int position) {
+  if (delegate_ && delegate_->AlwaysShowIconForCmd(command_id) &&
+      GTK_IS_IMAGE_MENU_ITEM(menu_item))
+    gtk_util::SetAlwaysShowImage(menu_item);
+
+  return InsertMenuItemToMenu(command_id, NULL, menu_item, menu_, position,
+      true);
+}
+
 GtkWidget* MenuGtk::AppendMenuItemToMenu(int index,
                                          ui::MenuModel* model,
                                          GtkWidget* menu_item,
                                          GtkWidget* menu,
+                                         bool connect_to_activate) {
+  int children_count = g_list_length(GTK_MENU_SHELL(menu)->children);
+  return InsertMenuItemToMenu(index, model, menu_item, menu,
+      children_count, connect_to_activate);
+}
+
+GtkWidget* MenuGtk::InsertMenuItemToMenu(int index,
+                                         ui::MenuModel* model,
+                                         GtkWidget* menu_item,
+                                         GtkWidget* menu,
+                                         int position,
                                          bool connect_to_activate) {
   SetMenuItemID(menu_item, index);
 
@@ -380,7 +408,7 @@ GtkWidget* MenuGtk::AppendMenuItemToMenu(int index,
   } else {
     gtk_widget_show(menu_item);
   }
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+  gtk_menu_shell_insert(GTK_MENU_SHELL(menu), menu_item, position);
   return menu_item;
 }
 
