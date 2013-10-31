@@ -311,9 +311,13 @@ def _CleanTmpDir():
   tmp_dir = tempfile.gettempdir()
   print 'cleaning temp directory:', tmp_dir
   for file_name in os.listdir(tmp_dir):
-    if os.path.isdir(os.path.join(tmp_dir, file_name)):
-      print 'deleting sub-directory', file_name
-      shutil.rmtree(os.path.join(tmp_dir, file_name), True)
+    file_path = os.path.join(tmp_dir, file_name)
+    if os.path.isdir(file_path):
+      print 'deleting sub-directory', file_path
+      shutil.rmtree(file_path, True)
+    if file_name.startswith('chromedriver_'):
+      print 'deleting file', file_path
+      os.remove(file_path)
 
 
 def _WaitForLatestSnapshot(revision):
