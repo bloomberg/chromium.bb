@@ -39,7 +39,6 @@ for localizable strings
       <if expr="not pp_ifdef('_google_chrome')">
         <include name="IDI_CHROME_FRAME_ICON" file="../../chrome/app/theme/chromium/chromium.ico" type="ICON" />
       </if>
-      <include name="IDB_TURNDOWN_PROMPT_CLOSE_BUTTON" file="../../chrome/app/theme/default_100_percent/common/cf_close_strip.bmp" type="BITMAP" />
     </includes>
   </release>
 </grit>

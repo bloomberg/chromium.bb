@@ -769,8 +769,6 @@
         'registry_list_preferences_holder.h',
         'stream_impl.cc',
         'stream_impl.h',
-        'turndown_prompt/reshow_state.cc',
-        'turndown_prompt/reshow_state.h',
         'turndown_prompt/turndown_prompt.cc',
         'turndown_prompt/turndown_prompt.h',
         'turndown_prompt/turndown_prompt_content.cc',

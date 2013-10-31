@@ -26,16 +26,12 @@
 #include "chrome_frame/ready_mode/internal/ready_mode_web_browser_adapter.h"
 #include "chrome_frame/ready_mode/internal/url_launcher.h"
 #include "chrome_frame/simple_resource_loader.h"
-#include "chrome_frame/turndown_prompt/reshow_state.h"
 #include "chrome_frame/turndown_prompt/turndown_prompt_content.h"
 #include "chrome_frame/utils.h"
 #include "grit/chromium_strings.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 namespace {
-
-// Time between showings of the turndown prompt.
-const int kTurndownPromptReshowDeltaMinutes = 60 * 24 * 1;
 
 void OnUninstallClicked(UrlLauncher* url_launcher);
 
@@ -52,8 +48,7 @@ class BrowserObserver : public ReadyModeWebBrowserAdapter::Observer {
   virtual void OnRenderInHost(const string16& url);
 
  private:
-  // Shows the turndown prompt if it hasn't been seen since
-  // kTurndownPromptReshowDeltaMinutes.
+  // Shows the turndown prompt.
   void ShowPrompt();
   void Hide();
   // Returns a self-managed pointer that is not guaranteed to survive handling
@@ -122,13 +117,6 @@ void BrowserObserver::OnRenderInHost(const string16& url) {
 }
 
 void BrowserObserver::ShowPrompt() {
-  turndown_prompt::ReshowState reshow_state(
-      base::TimeDelta::FromMinutes(kTurndownPromptReshowDeltaMinutes));
-
-  // Short-circuit if the prompt shouldn't be shown again yet.
-  if (!reshow_state.HasReshowDeltaExpired(base::Time::Now()))
-    return;
-
   // This pointer is self-managed and not guaranteed to survive handling of
   // Windows events. For safety's sake, retrieve this pointer for each use and
   // do not store it for use outside of scope.
@@ -144,10 +132,7 @@ void BrowserObserver::ShowPrompt() {
         base::Bind(&OnUninstallClicked,
                    base::Owned(new UrlLauncherImpl(web_browser_)))));
 
-    if (infobar_manager->Show(infobar_content.release(), TOP_INFOBAR)) {
-      // Update state in the registry that the prompt was shown.
-      reshow_state.MarkShown(base::Time::Now());
-    }
+    infobar_manager->Show(infobar_content.release(), TOP_INFOBAR);
   }
 }
 

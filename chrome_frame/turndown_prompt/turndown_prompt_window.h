@@ -28,10 +28,7 @@ class UrlLauncher;
 
 namespace WTL {
 class CHyperLink;
-class CBitmapButton;
 }  // namespace WTL
-
-class CFBitmapButton;
 
 // Implements a dialog with text and buttons notifying the user that Chrome
 // Frame is being turned down, offering them a link to learn more about moving
@@ -64,12 +61,10 @@ class TurndownPromptWindow
     MSG_WM_INITDIALOG(OnInitDialog)
     NOTIFY_HANDLER(IDC_TD_PROMPT_LINK, NM_CLICK, OnLearnMore)
     COMMAND_HANDLER(IDUNINSTALL, BN_CLICKED, OnUninstall)
-    COMMAND_HANDLER(IDDISMISS, BN_CLICKED, OnDismiss)
     CHAIN_MSG_MAP(CDialogResize<TurndownPromptWindow>)
   END_MSG_MAP()
 
   BEGIN_DLGRESIZE_MAP(InfobarWindow)
-    DLGRESIZE_CONTROL(IDDISMISS, DLSZ_CENTER_Y | DLSZ_MOVE_X)
     DLGRESIZE_CONTROL(IDUNINSTALL, DLSZ_CENTER_Y | DLSZ_MOVE_X)
     DLGRESIZE_CONTROL(IDC_TD_PROMPT_LINK, DLSZ_CENTER_Y | DLSZ_MOVE_X)
     DLGRESIZE_CONTROL(IDC_TD_PROMPT_MESSAGE, DLSZ_SIZE_Y | DLSZ_SIZE_X)
@@ -86,9 +81,6 @@ class TurndownPromptWindow
   // The TurndownPromptWindow manages its own destruction.
   virtual ~TurndownPromptWindow();
 
-  // Performs the necessary configuration to initialize a bitmap button.
-  static void SetupBitmapButton(TurndownPromptWindow* window);
-
   // Event handlers.
   void OnDestroy();
   BOOL OnInitDialog(CWindow wndFocus, LPARAM lInitParam);
@@ -97,17 +89,12 @@ class TurndownPromptWindow
                       WORD wID,
                       HWND hWndCtl,
                       BOOL& bHandled);
-  LRESULT OnDismiss(WORD wNotifyCode,
-                    WORD wID,
-                    HWND hWndCtl,
-                    BOOL& bHandled);
 
   // Returns the prompt text for the current version of IE.
   static string16 GetPromptText();
 
   InfobarContent::Frame* frame_;  // Not owned by this instance
   scoped_ptr<WTL::CHyperLink> link_;
-  scoped_ptr<CFBitmapButton> close_button_;
   scoped_ptr<UrlLauncher> url_launcher_;
   base::Closure uninstall_closure_;
 

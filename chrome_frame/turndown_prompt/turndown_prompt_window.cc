@@ -13,7 +13,6 @@
 #include "chrome_frame/simple_resource_loader.h"
 #include "chrome_frame/utils.h"
 #include "grit/chrome_frame_dialogs.h"
-#include "grit/chrome_frame_resources.h"
 #include "grit/chromium_strings.h"
 
 // atlctrlx.h requires 'min' and 'max' macros, the definition of which conflicts
@@ -22,34 +21,6 @@
 // file.
 #include <minmax.h>  // NOLINT
 #include <atlctrlx.h>  // NOLINT
-
-namespace {
-const uint32 kBitmapImageSize = 18;
-}  // namespace
-
-// WTL's CBitmapButton's drawing code is horribly broken when using transparent
-// images (specifically, it doesn't clear the background between redraws).
-// Fix it here.
-class CFBitmapButton: public CBitmapButtonImpl<CFBitmapButton>
-{
- public:
-  DECLARE_WND_SUPERCLASS(_T("WTL_BitmapButton"), GetWndClassName())
-
-  CFBitmapButton()
-      : CBitmapButtonImpl<CFBitmapButton>(BMPBTN_AUTOSIZE | BMPBTN_HOVER,
-                                          NULL) {}
-
-  // "Overridden" from CBitmapButtonImpl via template hackery. See
-  // CBitmapButtonImpl::OnPaint() in atlctrlx.h for details.
-  void DoPaint(CDCHandle dc) {
-    RECT rc = {0};
-    GetClientRect(&rc);
-    dc.FillRect(&rc, reinterpret_cast<HBRUSH>(COLOR_BTNFACE + 1));
-
-    // Call original implementation.
-    CBitmapButtonImpl<CFBitmapButton>::DoPaint(dc);
-  }
-};
 
 // static
 base::WeakPtr<TurndownPromptWindow> TurndownPromptWindow::CreateInstance(
@@ -78,8 +49,6 @@ base::WeakPtr<TurndownPromptWindow> TurndownPromptWindow::CreateInstance(
   instance->link_->SetHyperLinkExtendedStyle(HLINK_NOTIFYBUTTON,
                                              HLINK_NOTIFYBUTTON);
 
-  SetupBitmapButton(instance.get());
-
   // Substitute the proper text given the current IE version.
   CWindow text = instance->GetDlgItem(IDC_TD_PROMPT_MESSAGE);
   string16 prompt_text(GetPromptText());
@@ -101,62 +70,11 @@ TurndownPromptWindow::TurndownPromptWindow(
 
 TurndownPromptWindow::~TurndownPromptWindow() {}
 
-// static
-void TurndownPromptWindow::SetupBitmapButton(TurndownPromptWindow* instance) {
-  DCHECK(instance);
-  CWindow close_window = instance->GetDlgItem(IDDISMISS);
-  instance->close_button_.reset(new CFBitmapButton());
-
-  // Set the resource instance to the current dll which contains the bitmap.
-  HINSTANCE old_res_module = _AtlBaseModule.GetResourceInstance();
-  HINSTANCE this_module = _AtlBaseModule.GetModuleInstance();
-  _AtlBaseModule.SetResourceInstance(this_module);
-
-  HBITMAP close_bitmap = static_cast<HBITMAP>(
-      LoadImage(this_module, MAKEINTRESOURCE(IDB_TURNDOWN_PROMPT_CLOSE_BUTTON),
-                IMAGE_BITMAP, 0, 0, 0));
-
-  // Restore the module's resource instance.
-  _AtlBaseModule.SetResourceInstance(old_res_module);
-
-  // Create the image list with the appropriate size and colour mask.
-  instance->close_button_->m_ImageList.Create(kBitmapImageSize,
-                                              kBitmapImageSize,
-                                              ILC_COLOR8 | ILC_MASK, 4, 0);
-  instance->close_button_->m_ImageList.Add(close_bitmap, RGB(255, 0, 255));
-  instance->close_button_->m_ImageList.SetBkColor(CLR_NONE);
-
-  // Free up the original bitmap.
-  DeleteObject(close_bitmap);
-
-  // Configure the button states and initialize the button.
-  instance->close_button_->SetImages(0, 1, 2, 3);
-  instance->close_button_->SubclassWindow(close_window);
-
-  // The CDialogResize() implementation incorrectly captures the size
-  // of the bitmap image button. Reset it here to ensure that resizing works
-  // as desired.
-
-  // Find the resize data. The parameters here must match the resize map in
-  // turndown_prompt_window.h.
-  _AtlDlgResizeData resize_params = { IDDISMISS, DLSZ_CENTER_Y | DLSZ_MOVE_X };
-  int resize_index = instance->m_arrData.Find(resize_params);
-  DCHECK(resize_index > -1 && resize_index < instance->m_arrData.GetSize());
-
-  // Fiddle CDialogResize's internal data to fix up the size for the image
-  // control.
-  _AtlDlgResizeData& resize_data = instance->m_arrData[resize_index];
-  resize_data.m_rect.right = resize_data.m_rect.left + kBitmapImageSize;
-  resize_data.m_rect.top = 0;
-  resize_data.m_rect.bottom = kBitmapImageSize;
-}
-
 void TurndownPromptWindow::OnFinalMessage(HWND) {
   delete this;
 }
 
 void TurndownPromptWindow::OnDestroy() {
-  close_button_->m_ImageList.Destroy();
   frame_ = NULL;
 }
 
@@ -180,14 +98,6 @@ LRESULT TurndownPromptWindow::OnUninstall(WORD /*wNotifyCode*/,
   frame_->CloseInfobar();
   if (!uninstall_closure_.is_null())
     uninstall_closure_.Run();
-  return 0;
-}
-
-LRESULT TurndownPromptWindow::OnDismiss(WORD /*wNotifyCode*/,
-                                        WORD /*wID*/,
-                                        HWND /*hWndCtl*/,
-                                        BOOL& /*bHandled*/) {
-  frame_->CloseInfobar();
   return 0;
 }
 
