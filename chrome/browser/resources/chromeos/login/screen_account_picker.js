@@ -26,7 +26,8 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       'updateUserImage',
       'updateUserGaiaNeeded',
       'setCapsLockState',
-      'forceLockedUserPodFocus'
+      'forceLockedUserPodFocus',
+      'onWallpaperLoaded'
     ],
 
     /** @override */
@@ -179,6 +180,13 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       var row = $('pod-row');
       if (row.lockedPod)
         row.focusPod(row.lockedPod, true);
+    },
+
+    /**
+     * Mark wallpaper loaded
+     */
+    onWallpaperLoaded: function(email) {
+      $('pod-row').onWallpaperLoaded(email);
     }
   };
 });
