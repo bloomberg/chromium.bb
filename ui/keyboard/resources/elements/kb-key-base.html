@@ -121,7 +121,7 @@
         clearTimeout(this.longPressTimer);
       },
       up: function(event) {
-        this.autoRelease();
+        this.generateKeyup();
       },
 
       /**
@@ -130,15 +130,7 @@
        * released yet.
        */
       autoRelease: function() {
-        if (this.pointerId === undefined)
-          return;
-
-        // Invalidates the pointerId so the subsequent pointerup event is a
-        // noop.
-        this.pointerId = undefined;
-        clearTimeout(this.longPressTimer);
-        var detail = this.populateDetails('up');
-        this.fire('key-up', detail);
+        this.generateKeyup();
       },
 
       /**
@@ -148,6 +140,21 @@
         this.classList.remove('active');
         clearTimeout(this.longPressTimer);
         this.pointerId = undefined;
+      },
+
+      /**
+       * Populates details for this key, and then fires a key-up event.
+       */
+      generateKeyup: function() {
+        if (this.pointerId === undefined)
+          return;
+
+        // Invalidates the pointerId so the subsequent pointerup event is a
+        // noop.
+        this.pointerId = undefined;
+        clearTimeout(this.longPressTimer);
+        var detail = this.populateDetails('up');
+        this.fire('key-up', detail);
       },
 
       /**

@@ -372,6 +372,10 @@
             // Notify shift key.
             if (this.shift)
               this.shift.onNonControlKeyDown();
+            if (this.ctrl)
+              this.ctrl.onNonControlKeyDown();
+            if (this.alt)
+              this.alt.onNonControlKeyDown();
             break;
         }
         if(this.changeKeyset(detail))

@@ -4,7 +4,8 @@
   -- found in the LICENSE file.
   -->
 
-<polymer-element name="kb-modifier-key" class="unlocked dark" extends="kb-key">
+<polymer-element name="kb-modifier-key" class="unlocked dark" extends="kb-key"
+    on-pointerout="out">
   <script>
     (function () {
 
@@ -17,6 +18,7 @@
         PRESSED: "pressed", // Key-down.
         UNLOCKED: "unlocked", // Default state.
         TAPPED: "tapped", // Key-down followed by key-up.
+        CHORDING: "chording", // Chording mode.
       };
 
       /**
@@ -45,6 +47,7 @@
               this.state = KEY_STATES.UNLOCKED;
               break;
             case KEY_STATES.PRESSED:
+            case KEY_STATES.CHORDING:
               // We pressed another key at the same time,
               // so ignore second press.
               return;
@@ -64,6 +67,18 @@
         },
 
         /**
+         * Notifies key that a non-control keyed down.
+         * A control key is defined as one of shift, control or alt.
+         */
+        onNonControlKeyDown: function() {
+          switch(this.state) {
+            case (KEY_STATES.PRESSED):
+              this.state = KEY_STATES.CHORDING;
+              break;
+          }
+        },
+
+        /**
          * Notifies key that a non-control keyed was typed.
          * A control key is defined as one of shift, control or alt.
          */
@@ -73,6 +88,24 @@
                this.state = KEY_STATES.UNLOCKED;
                break;
            }
+        },
+
+        /**
+         * Called on a pointer-out event. Ends chording.
+         * @param {event} event The pointer-out event.
+         */
+        out: function(event) {
+          // TODO(rsadam): Add chording event so that we don't reset
+          // when shift-chording.
+          if (this.state == KEY_STATES.CHORDING) {
+            this.state = KEY_STATES.UNLOCKED;
+          }
+        },
+
+        /*
+         * Overrides the autoRelease function to enable chording.
+         */
+        autoRelease: function() {
         },
 
         populateDetails: function(caller) {
