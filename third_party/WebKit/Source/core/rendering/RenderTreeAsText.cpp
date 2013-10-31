@@ -562,6 +562,8 @@ static void write(TextStream& ts, RenderLayer& l,
         if (!adjustedOutlineClipRect.contains(adjustedLayoutBounds))
             ts << " outlineClip " << adjustedOutlineClipRect;
     }
+    if (l.isTransparent())
+        ts << " transparent";
 
     if (l.renderer()->hasOverflowClip()) {
         if (l.scrollableArea()->scrollXOffset())

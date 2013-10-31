@@ -34,7 +34,7 @@ layer at (0,0) size 800x448
         RenderBR {BR} at (0,0) size 0x19
       RenderBlock {DIV} at (0,282) size 222x142 [border: (1px solid #0000FF)]
         RenderBlock {DIV} at (11,21) size 200x60
-layer at (29,157) size 180x40
+layer at (29,157) size 180x40 transparent
   RenderBlock {DIV} at (10,0) size 180x40 [bgcolor=#008080]
-layer at (29,319) size 180x60
+layer at (29,319) size 180x60 transparent
   RenderBlock {DIV} at (10,0) size 180x60 [bgcolor=#008080]

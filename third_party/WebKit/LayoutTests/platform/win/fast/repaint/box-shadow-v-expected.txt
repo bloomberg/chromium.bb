@@ -97,7 +97,7 @@ layer at (8,128) size 60x60
   RenderBlock (relative positioned) {DIV} at (0,120) size 60x60
 layer at (18,138) size 40x40 backgroundClip at (13,133) size 5x5 clip at (13,133) size 5x5 outlineClip at (13,133) size 5x5
   RenderBlock (positioned) {DIV} at (10,10) size 40x40 [bgcolor=#FFFF77]
-layer at (18,198) size 40x40
+layer at (18,198) size 40x40 transparent
   RenderBlock {DIV} at (10,190) size 40x40 [bgcolor=#FFFF77]
 layer at (133,68) size 60x60
   RenderBlock (relative positioned) {DIV} at (0,60) size 60x60
@@ -107,7 +107,7 @@ layer at (133,128) size 60x60
   RenderBlock (relative positioned) {DIV} at (0,120) size 60x60
 layer at (143,138) size 40x40 backgroundClip at (138,178) size 5x5 clip at (138,178) size 5x5 outlineClip at (138,178) size 5x5
   RenderBlock (positioned) {DIV} at (10,10) size 40x40 [bgcolor=#FFFF77]
-layer at (143,198) size 40x40
+layer at (143,198) size 40x40 transparent
   RenderBlock {DIV} at (10,190) size 40x40 [bgcolor=#FFFF77]
 layer at (258,68) size 60x60
   RenderBlock (relative positioned) {DIV} at (0,60) size 60x60
@@ -117,7 +117,7 @@ layer at (258,128) size 60x60
   RenderBlock (relative positioned) {DIV} at (0,120) size 60x60
 layer at (268,138) size 40x40 backgroundClip at (308,178) size 5x5 clip at (308,178) size 5x5 outlineClip at (308,178) size 5x5
   RenderBlock (positioned) {DIV} at (10,10) size 40x40 [bgcolor=#FFFF77]
-layer at (268,198) size 40x40
+layer at (268,198) size 40x40 transparent
   RenderBlock {DIV} at (10,190) size 40x40 [bgcolor=#FFFF77]
 layer at (383,68) size 60x60
   RenderBlock (relative positioned) {DIV} at (0,60) size 60x60
@@ -127,7 +127,7 @@ layer at (383,128) size 60x60
   RenderBlock (relative positioned) {DIV} at (0,120) size 60x60
 layer at (393,138) size 40x40 backgroundClip at (433,133) size 5x5 clip at (433,133) size 5x5 outlineClip at (433,133) size 5x5
   RenderBlock (positioned) {DIV} at (10,10) size 40x40 [bgcolor=#FFFF77]
-layer at (393,198) size 40x40
+layer at (393,198) size 40x40 transparent
   RenderBlock {DIV} at (10,190) size 40x40 [bgcolor=#FFFF77]
 layer at (508,68) size 60x60
   RenderBlock (relative positioned) {DIV} at (0,60) size 60x60
@@ -135,5 +135,5 @@ layer at (518,78) size 40x40
   RenderBlock (positioned) {DIV} at (10,10) size 40x40 [bgcolor=#FFFF77]
 layer at (508,128) size 60x60
   RenderBlock (relative positioned) {DIV} at (0,120) size 60x60
-layer at (518,198) size 40x40
+layer at (518,198) size 40x40 transparent
   RenderBlock {DIV} at (10,190) size 40x40 [bgcolor=#FFFF77]

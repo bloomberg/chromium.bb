@@ -44,7 +44,7 @@ layer at (143,32) size 514x146 clip at (144,33) size 497x144 scrollHeight 333
         text run at (0,144) width 449: "nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit"
         text run at (0,160) width 465: "qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem"
         text run at (0,176) width 219: "eum fugiat quo voluptas nulla pariatur?"
-layer at (0,0) size 38x36
+layer at (0,0) size 38x36 transparent
   RenderBlock (positioned) {P} at (0,0) size 38x36 [bgcolor=#FF0000]
     RenderText {#text} at (8,8) size 22x19
       text run at (8,8) width 22: "hi 1"
@@ -77,7 +77,7 @@ layer at (143,210) size 514x146 clip at (144,211) size 497x144 scrollHeight 369
         text run at (0,144) width 449: "nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit"
         text run at (0,160) width 465: "qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem"
         text run at (0,176) width 219: "eum fugiat quo voluptas nulla pariatur?"
-layer at (144,211) size 38x36
+layer at (144,211) size 38x36 transparent
   RenderBlock (positioned) {P} at (1,1) size 38x36 [bgcolor=#FF0000]
     RenderText {#text} at (8,8) size 22x19
       text run at (8,8) width 22: "hi 2"

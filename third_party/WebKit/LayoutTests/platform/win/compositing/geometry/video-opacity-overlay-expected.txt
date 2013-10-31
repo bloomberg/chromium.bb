@@ -12,7 +12,7 @@ layer at (8,52) size 402x302
       RenderText {#text} at (0,0) size 0x0
 layer at (9,53) size 400x300
   RenderVideo {VIDEO} at (0,0) size 400x300
-layer at (9,358) size 10x10
+layer at (9,358) size 10x10 transparent
   RenderBlock {DIV} at (1,306) size 10x10 [bgcolor=#008000]
 layer at (9,293) size 400x60
   RenderBlock (positioned) {DIV} at (1,241) size 400x60 [bgcolor=#FFA500]

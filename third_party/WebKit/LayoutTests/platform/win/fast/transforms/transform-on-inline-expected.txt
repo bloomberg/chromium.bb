@@ -21,11 +21,11 @@ layer at (0,0) size 800x600
           text run at (0,0) width 27: "The "
         RenderText {#text} at (158,0) size 519x19
           text run at (158,0) width 519: " has a transform and opacity, and is an inline-block. So it should respect the transform."
-layer at (8,44) size 131x19
+layer at (8,44) size 131x19 transparent
   RenderInline {SPAN} at (0,0) size 131x19
     RenderText {#text} at (27,0) size 131x19
       text run at (27,0) width 131: "span in this paragraph"
-layer at (35,80) size 131x20
+layer at (35,80) size 131x20 transparent
   RenderBlock {SPAN} at (27,0) size 131x20
     RenderText {#text} at (0,0) size 131x19
       text run at (0,0) width 131: "span in this paragraph"

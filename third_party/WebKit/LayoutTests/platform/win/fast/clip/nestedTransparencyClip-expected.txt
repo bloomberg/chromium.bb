@@ -9,17 +9,17 @@ layer at (0,0) size 800x600
           text run at (0,20) width 554: "\"Peach,\" \"Plum,\" and \"Pear\" should appear. Before, we were clipping out \"Plum\" and \"Pear.\""
         RenderBR {BR} at (554,35) size 0x0
         RenderBR {BR} at (0,40) size 0x19
-layer at (8,68) size 784x20
+layer at (8,68) size 784x20 transparent
   RenderBlock {DIV} at (0,60) size 784x20
     RenderText {#text} at (0,0) size 37x19
       text run at (0,0) width 37: "Peach"
     RenderText {#text} at (0,0) size 0x0
-layer at (8,88) size 30x20
+layer at (8,88) size 30x20 transparent
   RenderBlock (positioned) {DIV} at (8,88) size 30x20
     RenderText {#text} at (0,0) size 30x19
       text run at (0,0) width 30: "Plum"
     RenderText {#text} at (0,0) size 0x0
-layer at (8,108) size 28x20
+layer at (8,108) size 28x20 transparent
   RenderBlock (positioned) {DIV} at (0,20) size 28x20
     RenderText {#text} at (0,0) size 28x19
       text run at (0,0) width 28: "Pear"

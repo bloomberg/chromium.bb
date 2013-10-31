@@ -34,39 +34,39 @@ layer at (0,0) size 800x564
       RenderBlock {P} at (0,466) size 784x20
         RenderText {#text} at (0,0) size 376x19
           text run at (0,0) width 376: "Element with mask image starting at (13, 13) with repeat-x set:"
-layer at (14,114) size 34x34
+layer at (14,114) size 34x34 transparent
   RenderBlock (floating) {DIV} at (6,98) size 34x34 [bgcolor=#000000] [border: (1px dotted #008000)]
-layer at (60,114) size 29x29
+layer at (60,114) size 29x29 transparent
   RenderBlock (floating) {DIV} at (52,98) size 29x29 [bgcolor=#000000] [border: (1px dotted #008000)]
-layer at (101,114) size 24x24
+layer at (101,114) size 24x24 transparent
   RenderBlock (floating) {DIV} at (93,98) size 24x24 [bgcolor=#000000] [border: (1px dotted #008000)]
-layer at (14,196) size 34x34
+layer at (14,196) size 34x34 transparent
   RenderBlock (floating) {DIV} at (6,180) size 34x34 [bgcolor=#000000] [border: (1px dotted #008000)]
-layer at (60,196) size 29x29
+layer at (60,196) size 29x29 transparent
   RenderBlock (floating) {DIV} at (52,180) size 29x29 [bgcolor=#000000] [border: (1px dotted #008000)]
-layer at (101,196) size 24x24
+layer at (101,196) size 24x24 transparent
   RenderBlock (floating) {DIV} at (93,180) size 24x24 [bgcolor=#000000] [border: (1px dotted #008000)]
-layer at (14,278) size 34x34
+layer at (14,278) size 34x34 transparent
   RenderBlock (floating) {DIV} at (6,262) size 34x34 [bgcolor=#000000] [border: (1px dotted #008000)]
-layer at (60,278) size 29x29
+layer at (60,278) size 29x29 transparent
   RenderBlock (floating) {DIV} at (52,262) size 29x29 [bgcolor=#000000] [border: (1px dotted #008000)]
-layer at (101,278) size 24x24
+layer at (101,278) size 24x24 transparent
   RenderBlock (floating) {DIV} at (93,262) size 24x24 [bgcolor=#000000] [border: (1px dotted #008000)]
-layer at (14,360) size 34x34
+layer at (14,360) size 34x34 transparent
   RenderBlock (floating) {DIV} at (6,344) size 34x34 [bgcolor=#000000] [border: (1px dotted #008000)]
-layer at (60,360) size 29x29
+layer at (60,360) size 29x29 transparent
   RenderBlock (floating) {DIV} at (52,344) size 29x29 [bgcolor=#000000] [border: (1px dotted #008000)]
-layer at (101,360) size 24x24
+layer at (101,360) size 24x24 transparent
   RenderBlock (floating) {DIV} at (93,344) size 24x24 [bgcolor=#000000] [border: (1px dotted #008000)]
-layer at (14,442) size 34x34
+layer at (14,442) size 34x34 transparent
   RenderBlock (floating) {DIV} at (6,426) size 34x34 [bgcolor=#000000] [border: (1px dotted #008000)]
-layer at (60,442) size 29x29
+layer at (60,442) size 29x29 transparent
   RenderBlock (floating) {DIV} at (52,426) size 29x29 [bgcolor=#000000] [border: (1px dotted #008000)]
-layer at (101,442) size 24x24
+layer at (101,442) size 24x24 transparent
   RenderBlock (floating) {DIV} at (93,426) size 24x24 [bgcolor=#000000] [border: (1px dotted #008000)]
-layer at (14,524) size 34x34
+layer at (14,524) size 34x34 transparent
   RenderBlock (floating) {DIV} at (6,508) size 34x34 [bgcolor=#000000] [border: (1px dotted #008000)]
-layer at (60,524) size 29x29
+layer at (60,524) size 29x29 transparent
   RenderBlock (floating) {DIV} at (52,508) size 29x29 [bgcolor=#000000] [border: (1px dotted #008000)]
-layer at (101,524) size 24x24
+layer at (101,524) size 24x24 transparent
   RenderBlock (floating) {DIV} at (93,508) size 24x24 [bgcolor=#000000] [border: (1px dotted #008000)]

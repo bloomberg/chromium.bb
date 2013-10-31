@@ -82,7 +82,7 @@ layer at (0,0) size 785x1282
       RenderBlock {ADDRESS} at (0,1239.78) size 769x17
         RenderText {#text} at (0,0) size 704x17
           text run at (0,0) width 704: "CSS2 Table Backgrounds Test Suite designed and written by fantasai <fantasai@escape.com>"
-layer at (9,353) size 616x100
+layer at (9,353) size 616x100 transparent
   RenderTableRow {TR} at (0,7) size 616x100 [bgcolor=#FF0000]
     RenderTableCell {TH} at (144,31) size 220x51 [border: (13px dotted #000000)] [r=0 c=1 rs=1 cs=1]
       RenderText {#text} at (87,14) size 46x22
@@ -91,13 +91,13 @@ layer at (9,353) size 616x100
     RenderTableCell {TH} at (496,43) size 113x27 [border: (1px dotted #000000)] [r=0 c=3 rs=1 cs=1]
       RenderText {#text} at (34,2) size 45x22
         text run at (34,2) width 45: "TH D"
-layer at (16,353) size 130x100
+layer at (16,353) size 130x100 transparent
   RenderTableCell {TH} at (7,43) size 130x27 [bgcolor=#0000FF] [border: (1px dotted #000000)] [r=0 c=0 rs=1 cs=1]
     RenderText {#text} at (43,2) size 44x22
       text run at (43,2) width 44: "TH A"
-layer at (9,666) size 616x122
+layer at (9,666) size 616x122 transparent
   RenderTableSection {TFOOT} at (1,344) size 616x122 [bgcolor=#FFFF00]
-layer at (9,666) size 616x115
+layer at (9,666) size 616x115 transparent
   RenderTableRow {TR} at (0,0) size 616x115 [bgcolor=#FF0000]
     RenderTableCell {TD} at (7,44) size 357x27 [border: (1px dotted #000000)] [r=0 c=0 rs=1 cs=2]
       RenderText {#text} at (2,2) size 49x22
@@ -105,11 +105,11 @@ layer at (9,666) size 616x115
     RenderTableCell {TD} at (371,44) size 118x27 [border: (1px dotted #000000)] [r=0 c=2 rs=1 cs=1]
       RenderText {#text} at (2,2) size 47x22
         text run at (2,2) width 47: "TD O"
-layer at (505,666) size 113x115
+layer at (505,666) size 113x115 transparent
   RenderTableCell {TD} at (496,44) size 113x27 [bgcolor=#0000FF] [border: (1px dotted #000000)] [r=0 c=3 rs=1 cs=1]
     RenderText {#text} at (2,2) size 45x22
       text run at (2,2) width 45: "TD P"
-layer at (9,460) size 616x108
+layer at (9,460) size 616x108 transparent
   RenderTableRow {TR} at (0,0) size 616x108 [bgcolor=#FF0000]
     RenderTableCell {TD} at (7,74) size 130x51 [border: (13px dotted #000000)] [r=0 c=0 rs=2 cs=1]
       RenderText {#text} at (14,14) size 45x22
@@ -123,7 +123,7 @@ layer at (9,460) size 616x108
     RenderTableCell {TD} at (496,40) size 113x27 [border: (1px dotted #000000)] [r=0 c=3 rs=1 cs=1]
       RenderText {#text} at (2,2) size 45x22
         text run at (2,2) width 45: "TD H"
-layer at (9,575) size 616x84
+layer at (9,575) size 616x84 transparent
   RenderTableRow {TR} at (0,115) size 616x84 [bgcolor=#FF0000]
     RenderTableCell {TD} at (144,143) size 220x27 [border: (1px dotted #000000)] [r=1 c=1 rs=1 cs=1]
       RenderText {#text} at (2,2) size 43x22
@@ -134,7 +134,7 @@ layer at (9,575) size 616x84
     RenderTableCell {TD} at (496,143) size 113x27 [border: (1px dotted #000000)] [r=1 c=3 rs=1 cs=1]
       RenderText {#text} at (2,2) size 44x22
         text run at (2,2) width 44: "TD L"
-layer at (8,818) size 577x99
+layer at (8,818) size 577x99 transparent
   RenderTableRow {TR} at (0,0) size 577x99 [bgcolor=#FF0000]
     RenderTableCell {TH} at (135,30) size 207x38 [border: (7px dotted #000000)] [r=0 c=1 rs=1 cs=1]
       RenderText {#text} at (81,8) size 46x22
@@ -143,13 +143,13 @@ layer at (8,818) size 577x99
     RenderTableCell {TH} at (465,36) size 112x26 [border: (1px dotted #000000)] [r=0 c=3 rs=1 cs=1]
       RenderText {#text} at (34,2) size 45x22
         text run at (34,2) width 45: "TH D"
-layer at (8,818) size 135x99
+layer at (8,818) size 135x99 transparent
   RenderTableCell {TH} at (0,33) size 135x32 [bgcolor=#0000FF] [border: (1px dotted #000000)] [r=0 c=0 rs=1 cs=1]
     RenderText {#text} at (43,2) size 44x22
       text run at (43,2) width 44: "TH A"
-layer at (8,1107) size 577x114
+layer at (8,1107) size 577x114 transparent
   RenderTableSection {TFOOT} at (0,318) size 577x114 [bgcolor=#FFFF00]
-layer at (8,1107) size 577x114
+layer at (8,1107) size 577x114 transparent
   RenderTableRow {TR} at (0,0) size 577x114 [bgcolor=#FF0000]
     RenderTableCell {TD} at (0,41) size 342x32 [border: (7px dotted #000000)] [r=0 c=0 rs=1 cs=2]
       RenderText {#text} at (2,8) size 49x22
@@ -157,11 +157,11 @@ layer at (8,1107) size 577x114
     RenderTableCell {TD} at (342,44) size 123x26 [border: (1px dotted #000000)] [r=0 c=2 rs=1 cs=1]
       RenderText {#text} at (2,2) size 47x22
         text run at (2,2) width 47: "TD O"
-layer at (473,1107) size 112x114
+layer at (473,1107) size 112x114 transparent
   RenderTableCell {TD} at (465,44) size 112x26 [bgcolor=#0000FF] [border: (1px dotted #000000)] [r=0 c=3 rs=1 cs=1]
     RenderText {#text} at (2,2) size 45x22
       text run at (2,2) width 45: "TD P"
-layer at (8,917) size 577x107
+layer at (8,917) size 577x107 transparent
   RenderTableRow {TR} at (0,0) size 577x107 [bgcolor=#FF0000]
     RenderTableCell {TD} at (0,76) size 135x38 [border: (7px dotted #000000)] [r=0 c=0 rs=2 cs=1]
       RenderText {#text} at (8,8) size 45x22
@@ -175,7 +175,7 @@ layer at (8,917) size 577x107
     RenderTableCell {TD} at (465,40) size 112x26 [border: (1px dotted #000000)] [r=0 c=3 rs=1 cs=1]
       RenderText {#text} at (2,2) size 45x22
         text run at (2,2) width 45: "TD H"
-layer at (8,1024) size 577x83
+layer at (8,1024) size 577x83 transparent
   RenderTableRow {TR} at (0,107) size 577x83 [bgcolor=#FF0000]
     RenderTableCell {TD} at (135,135) size 207x26 [border: (1px dotted #000000)] [r=1 c=1 rs=1 cs=1]
       RenderText {#text} at (8,2) size 43x22
