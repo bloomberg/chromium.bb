@@ -34,13 +34,6 @@ namespace {
 // Marker for accelerators in the text.
 const gunichar kAcceleratorChar = '&';
 
-// Multiply by the text height to determine how much text should be faded
-// when elliding.
-const double kFadeWidthFactor = 1.5;
-
-// End state of the elliding fade.
-const double kFadeFinalAlpha = 0.15;
-
 // Return |cairo_font_options|. If needed, allocate and update it.
 // TODO(derat): Return font-specific options: http://crbug.com/125235
 cairo_font_options_t* GetCairoFontOptions() {
@@ -321,28 +314,10 @@ void DrawPangoLayout(cairo_t* cr,
 
   cairo_save(cr);
 
-  // If we're not eliding, use a fixed color.
-  // Otherwise, create a gradient pattern to use as the source.
-  if (text_direction == base::i18n::RIGHT_TO_LEFT ||
-      (flags & gfx::Canvas::NO_ELLIPSIS) ||
-      text_rect.width() <= bounds.width()) {
-    cairo_set_source_rgba(cr, r, g, b, a);
-  } else {
-    // Fade to semi-transparent to elide.
-    int fade_width = static_cast<double>(text_rect.height()) * kFadeWidthFactor;
-    if (fade_width > bounds.width() / 2) {
-      // Don't fade more than half the text.
-      fade_width = bounds.width() / 2;
-    }
-    int fade_x = bounds.x() + bounds.width() - fade_width;
-
-    pattern = cairo_pattern_create_linear(
-        fade_x, bounds.y(), bounds.x() + bounds.width(), bounds.y());
-    cairo_pattern_add_color_stop_rgba(pattern, 0, r, g, b, a);
-    cairo_pattern_add_color_stop_rgba(pattern, 1, r, g, b, kFadeFinalAlpha);
-    cairo_set_source(cr, pattern);
-  }
-
+  // Use a fixed color.
+  // Note: We do not elide (fade out the text) here, due to a bug in certain
+  // Linux environments (http://crbug.com/123104).
+  cairo_set_source_rgba(cr, r, g, b, a);
   cairo_move_to(cr, text_rect.x(), text_rect.y());
   pango_cairo_show_layout(cr, layout);
 
