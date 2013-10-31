@@ -51,7 +51,6 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 #include <v8-debug.h>
-#include <v8-defaults.h>
 
 namespace WebCore {
 
@@ -174,7 +173,6 @@ void V8Initializer::initializeMainThreadIfNeeded(v8::Isolate* isolate)
     v8::V8::AddMessageListener(messageHandlerInMainThread);
     v8::V8::SetFailedAccessCheckCallbackFunction(failedAccessCheckCallbackInMainThread);
     v8::V8::SetAllowCodeGenerationFromStringsCallback(codeGenerationCheckCallbackInMainThread);
-    v8::SetDefaultResourceConstraintsForCurrentPlatform();
     ScriptProfiler::initialize();
     V8PerIsolateData::ensureInitialized(isolate);
 }
@@ -218,7 +216,6 @@ void V8Initializer::initializeWorker(v8::Isolate* isolate)
     v8::V8::SetFatalErrorHandler(reportFatalErrorInWorker);
 
     v8::ResourceConstraints resourceConstraints;
-    v8::ConfigureResourceConstraintsForCurrentPlatform(&resourceConstraints);
     uint32_t here;
     resourceConstraints.set_stack_limit(&here - kWorkerMaxStackSize / sizeof(uint32_t*));
     v8::SetResourceConstraints(&resourceConstraints);

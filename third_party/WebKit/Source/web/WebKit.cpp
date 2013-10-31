@@ -56,6 +56,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebPrerenderingSupport.h"
 #include "public/platform/WebThread.h"
+#include <v8-defaults.h>
 #include <v8.h>
 
 namespace WebKit {
@@ -101,6 +102,7 @@ void initialize(Platform* platform)
 
     v8::V8::SetEntropySource(&generateEntropy);
     v8::V8::SetArrayBufferAllocator(WebCore::v8ArrayBufferAllocator());
+    v8::SetDefaultResourceConstraintsForCurrentPlatform();
     v8::V8::Initialize();
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     WebCore::setMainThreadIsolate(isolate);
