@@ -115,7 +115,7 @@ class LinuxPort(base.Port):
 
     def check_build(self, needs_http, printer):
         result = super(LinuxPort, self).check_build(needs_http, printer)
-        if not result:
+        if result:
             _log.error('For complete Linux build requirements, please see:')
             _log.error('')
             _log.error('    http://code.google.com/p/chromium/wiki/LinuxBuildInstructions')

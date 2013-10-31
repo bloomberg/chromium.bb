@@ -93,7 +93,7 @@ class WinPort(base.Port):
 
     def check_build(self, needs_http, printer):
         result = super(WinPort, self).check_build(needs_http, printer)
-        if not result:
+        if result:
             _log.error('For complete Windows build requirements, please see:')
             _log.error('')
             _log.error('    http://dev.chromium.org/developers/how-tos/build-instructions-windows')

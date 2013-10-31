@@ -103,7 +103,29 @@ class PortTestCase(unittest.TestCase):
 
     def test_check_build(self):
         port = self.make_port()
-        port.check_build(needs_http=True, printer=FakePrinter())
+        port._check_file_exists = lambda path, desc: True
+        port._options.build = True
+        port._check_driver_build_up_to_date = lambda config: True
+        oc = OutputCapture()
+        try:
+            oc.capture_output()
+            self.assertEqual(port.check_build(needs_http=True, printer=FakePrinter()),
+                             test_run_results.OK_EXIT_STATUS)
+        finally:
+            out, err, logs = oc.restore_output()
+            self.assertIn('pretty patches', logs)         # We should get a warning about PrettyPatch being missing,
+            self.assertNotIn('build requirements', logs)  # but not the driver itself.
+
+        port._check_file_exists = lambda path, desc: False
+        port._check_driver_build_up_to_date = lambda config: False
+        try:
+            oc.capture_output()
+            self.assertEqual(port.check_build(needs_http=True, printer=FakePrinter()),
+                            test_run_results.UNEXPECTED_ERROR_EXIT_STATUS)
+        finally:
+            out, err, logs = oc.restore_output()
+            self.assertIn('pretty patches', logs)        # And, hereere we should get warnings about both.
+            self.assertIn('build requirements', logs)
 
     def test_default_max_locked_shards(self):
         port = self.make_port()
