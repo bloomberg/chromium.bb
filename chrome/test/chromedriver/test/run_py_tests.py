@@ -38,8 +38,7 @@ if util.IsLinux():
   from pylib import valgrind_tools
 
 
-_NEGATIVE_FILTER = {}
-_NEGATIVE_FILTER['HEAD'] = [
+_NEGATIVE_FILTER = [
     # https://code.google.com/p/chromedriver/issues/detail?id=213
     'ChromeDriverTest.testClickElementInSubFrame',
     # This test is flaky since it uses setTimeout.
@@ -47,50 +46,53 @@ _NEGATIVE_FILTER['HEAD'] = [
     'ChromeDriverTest.testAlert',
 ]
 
-_DESKTOP_OS_SPECIFIC_FILTER = []
-if util.IsWindows():
-  _DESKTOP_OS_SPECIFIC_FILTER = [
-      # https://code.google.com/p/chromedriver/issues/detail?id=214
-      'ChromeDriverTest.testCloseWindow',
-      # https://code.google.com/p/chromedriver/issues/detail?id=299
-      'ChromeLogPathCapabilityTest.testChromeLogPath',
-  ]
-elif util.IsLinux():
-  _DESKTOP_OS_SPECIFIC_FILTER = [
-      # Xvfb doesn't support maximization.
-      'ChromeDriverTest.testWindowMaximize',
-      # https://code.google.com/p/chromedriver/issues/detail?id=302
-      'ChromeDriverTest.testWindowPosition',
-      'ChromeDriverTest.testWindowSize',
-  ]
-elif util.IsMac():
-  _DESKTOP_OS_SPECIFIC_FILTER = [
-      # https://code.google.com/p/chromedriver/issues/detail?id=304
-      'ChromeDriverTest.testGoBackAndGoForward',
-  ]
+_VERSION_SPECIFIC_FILTER = {}
+_VERSION_SPECIFIC_FILTER['HEAD'] = [
+    # These tests rely on the reference chromedriver which is currently broken.
+    # Re-enable once we have uploaded a new reference chromedriver (see
+    # https://code.google.com/p/chromedriver/issues/detail?id=602).
+    'PerfTest.*',
+]
 
+_OS_SPECIFIC_FILTER = {}
+_OS_SPECIFIC_FILTER['win'] = [
+    # https://code.google.com/p/chromedriver/issues/detail?id=214
+    'ChromeDriverTest.testCloseWindow',
+    # https://code.google.com/p/chromedriver/issues/detail?id=299
+    'ChromeLogPathCapabilityTest.testChromeLogPath',
+]
+_OS_SPECIFIC_FILTER['linux'] = [
+    # Xvfb doesn't support maximization.
+    'ChromeDriverTest.testWindowMaximize',
+    # https://code.google.com/p/chromedriver/issues/detail?id=302
+    'ChromeDriverTest.testWindowPosition',
+    'ChromeDriverTest.testWindowSize',
+]
+_OS_SPECIFIC_FILTER['mac'] = [
+    # https://code.google.com/p/chromedriver/issues/detail?id=304
+    'ChromeDriverTest.testGoBackAndGoForward',
+]
 
-_DESKTOP_NEGATIVE_FILTER = {}
-_DESKTOP_NEGATIVE_FILTER['HEAD'] = (
-    _NEGATIVE_FILTER['HEAD'] +
-    _DESKTOP_OS_SPECIFIC_FILTER + [
-        # Desktop doesn't support touch (without --touch-events).
-        'ChromeDriverTest.testSingleTapElement',
-        'ChromeDriverTest.testTouchDownUpElement',
-        'ChromeDriverTest.testTouchMovedElement',
-    ]
-)
+_DESKTOP_NEGATIVE_FILTER = [
+    # Desktop doesn't support touch (without --touch-events).
+    'ChromeDriverTest.testSingleTapElement',
+    'ChromeDriverTest.testTouchDownUpElement',
+    'ChromeDriverTest.testTouchMovedElement',
+]
 
 
 def _GetDesktopNegativeFilter(version_name):
-  if version_name in _DESKTOP_NEGATIVE_FILTER:
-    return _DESKTOP_NEGATIVE_FILTER[version_name]
-  return _DESKTOP_NEGATIVE_FILTER['HEAD']
-
+  filter = _NEGATIVE_FILTER + _DESKTOP_NEGATIVE_FILTER
+  os = util.GetPlatformName();
+  if os in _OS_SPECIFIC_FILTER:
+    filter += _OS_SPECIFIC_FILTER[os]
+  if version_name in _VERSION_SPECIFIC_FILTER:
+    filter += _VERSION_SPECIFIC_FILTER[version_name]
+  return filter
 
 _ANDROID_NEGATIVE_FILTER = {}
 _ANDROID_NEGATIVE_FILTER['com.google.android.apps.chrome'] = (
-    _NEGATIVE_FILTER['HEAD'] + [
+    _NEGATIVE_FILTER + [
         # TODO(chrisgao): fix hang of tab crash test on android.
         'ChromeDriverTest.testTabCrash',
         # Android doesn't support switches and extensions.
