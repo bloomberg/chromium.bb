@@ -21,20 +21,16 @@ import platform_tools
 import repo_tools
 import toolchain_main
 
-GIT_REVISIONS = {
-    # These keys are named such that they match up with the existing directory
-    # names used by gclient and build.sh
-    'binutils': 'c926f7f27f42ae8bfda0fe3aefc51d6401f979e7',
-    'clang': '5b8e932d70fcf281e193aebfd0d3ac55d057f2da',
-    'llvm': 'a6df9e3ab2ab7b43a6097edec19990b25ccf15b7',
-    'gcc': 'e986927b16bb536bc85c907ec6eff4add42437e8',
-    'libcxx': '95d245f185b2facd0297f0249ca90f0bd51d6f7f',
-    'libcxxabi': '19222a8f373a6db1b13c4308988fd9cf1c02cb1b',
-    'nacl-newlib': '07af971728e84f28114c3492854ee8e68764051c',
-    'llvm-test-suite': '2a15755f5c587f48ded9d94d4a3f33a8f1abda3d',
-    'compiler-rt': '8fc63ab2a0e0ccca85b9c3cc515fd291cbbb96e9',
-    }
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+NACL_DIR = os.path.dirname(SCRIPT_DIR)
+# Use the argparse from third_party to ensure it's the same on all platorms
+python_lib_dir = os.path.join(os.path.dirname(NACL_DIR), 'third_party',
+                              'python_libs', 'argparse')
+sys.path.insert(0, python_lib_dir)
+import argparse
 
+# For backward compatibility, these key names match the directory names
+# previously used with gclient
 GIT_REPOS = {
     'binutils': 'nacl-binutils.git',
     'clang': 'pnacl-clang.git',
@@ -49,8 +45,7 @@ GIT_REPOS = {
 
 GIT_BASE_URL = 'https://chromium.googlesource.com/native_client/'
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-NACL_DIR = os.path.dirname(SCRIPT_DIR)
+GIT_DEPS_FILE = os.path.join(NACL_DIR, 'pnacl', 'COMPONENT_REVISIONS')
 
 CONFIGURE_CMD = ['sh', '%(src)s/configure']
 MAKE_PARALLEL_CMD = [ 'make', '-j%(cores)s']
@@ -69,11 +64,11 @@ elif platform_tools.IsWindows():
   MAKE_BINUTILS_EXTRA = ['-j1']
 MAKE_DESTDIR_CMD = ['make', 'DESTDIR=%(abs_output)s']
 
-def HostTools():
+def HostTools(revisions):
   tools = {
       'binutils_pnacl': {
           'git_url': GIT_BASE_URL + '/nacl-binutils.git',
-          'git_revision': GIT_REVISIONS['binutils'],
+          'git_revision': revisions['binutils'],
           'commands': [
               command.Command(CONFIGURE_CMD + [
                   '--prefix=',
@@ -98,21 +93,38 @@ def HostTools():
       }
   return tools
 
-PACKAGES = HostTools()
+
+def ParseComponentRevisionsFile(filename):
+  ''' Parse a simple-format deps file, with fields of the form:
+key=value
+Keys should match the keys in GIT_REPOS above, which match the previous
+directory names used by gclient (with the exception that '_' in the file is
+replaced by '-' in the returned key name).
+Values are the git hashes for each repo.
+Empty lines or lines beginning with '#' are ignored.
+This function returns a dictionary mapping the keys found in the file to their
+values.
+'''
+  with open(filename) as f:
+    deps = {}
+    for line in f:
+      stripped = line.strip()
+      if stripped.startswith('#') or len(stripped) == 0:
+        continue
+      tokens = stripped.split('=')
+      if len(tokens) != 2:
+        raise Exception('Malformed component revisions file: ' + filename)
+      deps[tokens[0].replace('_', '-')] = tokens[1]
+  return deps
 
 # This is to replace build.sh's use of gclient, which will eliminate the issues
 # with msys vs cygwin git checkouts, and make testing easier. Note that the new
 # build scripts will not share source directories with build.sh.
-def SyncPNaClRepos():
+def SyncPNaClRepos(revisions):
   print '@@@BUILD_STEP sync PNaCl repos@@@'
   sys.stdout.flush()
-  for repo, revision in GIT_REVISIONS.iteritems():
+  for repo, revision in revisions.iteritems():
     destination = os.path.join(NACL_DIR, 'pnacl', 'git', repo)
-    # The windows bots currently have their checkouts from cygwin git.
-    # This will cause them to get re-cloned with depot_tools git.
-    # TODO(dschuff): remove this once all the bot slaves have run it once.
-    if platform_tools.IsWindows() and '--trybot' in sys.argv:
-      file_tools.RemoveDirectoryIfPresent(destination)
     # This replaces build.sh's newlib-nacl-headers-clean step by cleaning the
     # the newlib repo on checkout (while silently blowing away any local
     # changes). TODO(dschuff): find a better way to handle nacl newlib headers.
@@ -127,9 +139,17 @@ if __name__ == '__main__':
   # This sets the logging for gclient-alike repo sync. It will be overridden
   # by the package builder based on the command-line flags.
   logging.getLogger().setLevel(logging.DEBUG)
-  SyncPNaClRepos()
-  tb = toolchain_main.PackageBuilder(PACKAGES,
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--sync-only', action='store_true')
+  args, leftover_args = parser.parse_known_args()
+  print args, leftover_args
+  revisions = ParseComponentRevisionsFile(GIT_DEPS_FILE)
+  SyncPNaClRepos(revisions)
+  if args.sync_only:
+    sys.exit(0)
+  packages = HostTools(revisions)
+  tb = toolchain_main.PackageBuilder(packages,
                                      ['--no-cache-results',
                                       '--no-use-cached-results'] +
-                                     sys.argv[1:])
+                                     leftover_args)
   tb.Main()

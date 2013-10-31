@@ -39,6 +39,8 @@ readonly SCONS_OUT="${NACL_ROOT}/scons-out"
 SetScriptPath "${PNACL_ROOT}/build.sh"
 SetLogDirectory "${PNACL_ROOT}/build/log"
 
+readonly TOOLCHAIN_BUILD="${NACL_ROOT}/toolchain_build/toolchain_build_pnacl.py"
+
 # For different levels of make parallelism change this in your env
 readonly PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-8}
 # Concurrency for builds using the host's system compiler (which might be goma)
@@ -335,10 +337,7 @@ ArgumentToAbsolutePath() {
 #@ sync-sources          - check out repos needed to build toolchain
 sync-sources() {
   StepBanner "SYNC SOURCES"
-  mkdir -p "${INSTALL_ROOT}"
-  llvm-unlink-clang # TODO(dschuff): check if this is still necessary
-  git-sync
-  llvm-link-clang
+  python ${TOOLCHAIN_BUILD} --sync-only
 }
 
 git-sync() {
