@@ -14,13 +14,11 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "grit/generated_resources.h"
-#include "policy/policy_constants.h"
 #include "url/gurl.h"
 
 namespace policy {

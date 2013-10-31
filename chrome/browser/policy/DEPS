@@ -15,6 +15,7 @@ include_rules = [
 specific_include_rules = {
   # These files will stay.
   r"(browser_policy_connector|"
+  r"configuration_policy_handler_android|"
   r"configuration_policy_handler_list|"
   r"file_selection_dialogs_policy_handler|"
   r"file_selection_dialogs_policy_handler_unittest|"
@@ -41,19 +42,5 @@ specific_include_rules = {
     "+content/public/common",
     "+content/public/test",
     "+content/test/net",
-  ],
-
-  # TODO(joaodasilva): remove these exceptions.
-  r"configuration_policy_handler_android\.cc": [
-    "+chrome/common/net/url_fixer_upper.h",
-    "+chrome/common/pref_names.h",
-  ],
-
-  r"configuration_policy_handler\.cc": [
-    "+chrome/browser/chrome_notification_types.h",
-  ],
-
-  r"configuration_policy_pref_store_unittest\.cc": [
-    "+chrome/common/pref_names.h",
   ],
 }

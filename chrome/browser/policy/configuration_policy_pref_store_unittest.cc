@@ -15,7 +15,6 @@
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_service_impl.h"
-#include "chrome/common/pref_names.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
