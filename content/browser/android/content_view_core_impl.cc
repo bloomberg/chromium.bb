@@ -492,6 +492,14 @@ void ContentViewCoreImpl::UnhandledFlingStartEvent() {
   Java_ContentViewCore_unhandledFlingStartEvent(env, j_obj.obj());
 }
 
+void ContentViewCoreImpl::OnScrollUpdateGestureConsumed() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
+  if (j_obj.is_null())
+    return;
+  Java_ContentViewCore_onScrollUpdateGestureConsumed(env, j_obj.obj());
+}
+
 void ContentViewCoreImpl::HasTouchEventHandlers(bool need_touch_events) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);

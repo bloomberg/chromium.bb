@@ -258,6 +258,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   bool HasFocus();
   void ConfirmTouchEvent(InputEventAckState ack_result);
   void UnhandledFlingStartEvent();
+  void OnScrollUpdateGestureConsumed();
   void HasTouchEventHandlers(bool need_touch_events);
   void OnSelectionChanged(const std::string& text);
   void OnSelectionBoundsChanged(

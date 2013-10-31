@@ -279,9 +279,6 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
         final int targetScrollYPix = (int) Math.ceil(targetScrollYCss * deviceDIPScale);
         final JavascriptEventObserver onscrollObserver = new JavascriptEventObserver();
 
-        Log.w("AndroidScrollIntegrationTest", String.format("scroll in Js (%d, %d) -> (%d, %d)",
-                    targetScrollXCss, targetScrollYCss, targetScrollXPix, targetScrollYPix));
-
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
@@ -689,5 +686,78 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
             if (checkScrollOnMainSync(testContainerView, 0, 0))
                 break;
         }
+    }
+
+    private static class TestGestureStateListener implements ContentViewCore.GestureStateListener {
+        private CallbackHelper mOnScrollUpdateGestureConsumedHelper = new CallbackHelper();
+
+        public CallbackHelper getOnScrollUpdateGestureConsumedHelper() {
+            return mOnScrollUpdateGestureConsumedHelper;
+        }
+
+        @Override
+        public void onPinchGestureStart() {
+        }
+
+        @Override
+        public void onPinchGestureEnd() {
+        }
+
+        @Override
+        public void onFlingStartGesture(int velocityX, int velocityY) {
+        }
+
+        @Override
+        public void onFlingCancelGesture() {
+        }
+
+        @Override
+        public void onUnhandledFlingStartEvent() {
+        }
+
+        @Override
+        public void onScrollUpdateGestureConsumed() {
+            mOnScrollUpdateGestureConsumedHelper.notifyCalled();
+        }
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testTouchScrollingConsumesScrollByGesture() throws Throwable {
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final ScrollTestContainerView testContainerView =
+            (ScrollTestContainerView) createAwTestContainerViewOnMainSync(contentsClient);
+        final TestGestureStateListener testGestureStateListener = new TestGestureStateListener();
+        enableJavaScriptOnUiThread(testContainerView.getAwContents());
+
+        final int dragSteps = 10;
+        final int dragStepSize = 24;
+        // Watch out when modifying - if the y or x delta aren't big enough vertical or horizontal
+        // scroll snapping will kick in.
+        final int targetScrollXPix = dragStepSize * dragSteps;
+        final int targetScrollYPix = dragStepSize * dragSteps;
+
+        loadTestPageAndWaitForFirstFrame(testContainerView, contentsClient, null,
+                "<div>" +
+                "  <div style=\"width:10000px; height: 10000px;\"> force scrolling </div>" +
+                "</div>");
+
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                testContainerView.getContentViewCore().setGestureStateListener(
+                        testGestureStateListener);
+            }
+        });
+        final CallbackHelper onScrollUpdateGestureConsumedHelper =
+            testGestureStateListener.getOnScrollUpdateGestureConsumedHelper();
+
+        final int callCount = onScrollUpdateGestureConsumedHelper.getCallCount();
+        AwTestTouchUtils.dragCompleteView(testContainerView,
+                0, -targetScrollXPix, // these need to be negative as we're scrolling down.
+                0, -targetScrollYPix,
+                dragSteps,
+                null /* completionLatch */);
+        onScrollUpdateGestureConsumedHelper.waitForCallback(callCount);
     }
 }

@@ -8,14 +8,18 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.accessibility.AccessibilityEvent;
+import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.accessibility.AccessibilityNodeProvider;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.FrameLayout;
-import android.util.Log;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.content.browser.ContentViewCore;
@@ -145,6 +149,32 @@ public class AwTestContainerView extends FrameLayout {
     public void onDraw(Canvas canvas) {
         mAwContents.onDraw(canvas);
         super.onDraw(canvas);
+    }
+
+    @Override
+    public AccessibilityNodeProvider getAccessibilityNodeProvider() {
+        AccessibilityNodeProvider provider =
+            mAwContents.getAccessibilityNodeProvider();
+        return provider == null ? super.getAccessibilityNodeProvider() : provider;
+    }
+
+    @Override
+    public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
+        super.onInitializeAccessibilityNodeInfo(info);
+        info.setClassName(AwContents.class.getName());
+        mAwContents.onInitializeAccessibilityNodeInfo(info);
+    }
+
+    @Override
+    public void onInitializeAccessibilityEvent(AccessibilityEvent event) {
+        super.onInitializeAccessibilityEvent(event);
+        event.setClassName(AwContents.class.getName());
+        mAwContents.onInitializeAccessibilityEvent(event);
+    }
+
+    @Override
+    public boolean performAccessibilityAction(int action, Bundle arguments) {
+        return mAwContents.performAccessibilityAction(action, arguments);
     }
 
     // TODO: AwContents could define a generic class that holds an implementation similar to

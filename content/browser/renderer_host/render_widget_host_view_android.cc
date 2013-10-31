@@ -1027,6 +1027,10 @@ void RenderWidgetHostViewAndroid::UnhandledWheelEvent(
 void RenderWidgetHostViewAndroid::GestureEventAck(
     int gesture_event_type,
     InputEventAckState ack_result) {
+  if (gesture_event_type == WebKit::WebInputEvent::GestureScrollUpdate &&
+      ack_result == INPUT_EVENT_ACK_STATE_CONSUMED) {
+    content_view_core_->OnScrollUpdateGestureConsumed();
+  }
   if (gesture_event_type == WebKit::WebInputEvent::GestureFlingStart &&
       ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS) {
     content_view_core_->UnhandledFlingStartEvent();
