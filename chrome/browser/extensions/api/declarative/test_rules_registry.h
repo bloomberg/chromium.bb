@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_TEST_RULES_REGISTRY_H__
 #define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_TEST_RULES_REGISTRY_H__
 
-#include "chrome/browser/extensions/api/declarative/rules_registry_with_cache.h"
+#include "chrome/browser/extensions/api/declarative/rules_registry.h"
 
 namespace extensions {
 
 // This is a trivial test RulesRegistry that can only store and retrieve rules.
-class TestRulesRegistry : public RulesRegistryWithCache {
+class TestRulesRegistry : public RulesRegistry {
  public:
   TestRulesRegistry(content::BrowserThread::ID owner_thread,
                     const std::string& event_name);
@@ -18,9 +18,9 @@ class TestRulesRegistry : public RulesRegistryWithCache {
       Profile* profile,
       const std::string& event_name,
       content::BrowserThread::ID owner_thread,
-      scoped_ptr<RulesRegistryWithCache::RuleStorageOnUI>* ui_part);
+      scoped_ptr<RulesCacheDelegate>* ui_part);
 
-  // RulesRegistryWithCache implementation:
+  // RulesRegistry implementation:
   virtual std::string AddRulesImpl(
       const std::string& extension_id,
       const std::vector<linked_ptr<RulesRegistry::Rule> >& rules) OVERRIDE;
@@ -39,7 +39,7 @@ class TestRulesRegistry : public RulesRegistryWithCache {
 
  private:
   // The string that gets returned by the implementation functions of
-  // RulesRegistryWithCache. Defaults to "".
+  // RulesRegistry. Defaults to "".
   std::string result_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRulesRegistry);

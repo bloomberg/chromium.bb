@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/declarative/rules_registry_with_cache.h"
+#include "chrome/browser/extensions/api/declarative/rules_registry.h"
 
 // Here we test the TestRulesRegistry which is the simplest possible
 // implementation of RulesRegistryWithCache as a proxy for
@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "chrome/browser/extensions/api/declarative/rules_cache_delegate.h"
 #include "chrome/browser/extensions/api/declarative/test_rules_registry.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -109,7 +110,7 @@ TEST_F(RulesRegistryWithCacheTest, AddRules) {
   registry_->SetResult(std::string());
 
   // Check that rules can be inserted.
-  EXPECT_EQ("", AddRule(kExtensionId, kRuleId));
+  EXPECT_EQ("", AddRule(kExtensionId, kRule2Id));
   EXPECT_EQ(1, GetNumberOfRules(kExtensionId));
 
   // Check that rules cannot be inserted twice with the same kRuleId.
@@ -229,10 +230,10 @@ TEST_F(RulesRegistryWithCacheTest, DeclarativeRulesStored) {
 
   const std::string event_name("testEvent");
   const std::string rules_stored_key(
-      RulesRegistryWithCache::RuleStorageOnUI::GetRulesStoredKey(
+      RulesCacheDelegate::GetRulesStoredKey(
           event_name, profile.IsOffTheRecord()));
-  scoped_ptr<RulesRegistryWithCache::RuleStorageOnUI> ui_part;
-  scoped_refptr<RulesRegistryWithCache> registry(new TestRulesRegistry(
+  scoped_ptr<RulesCacheDelegate> ui_part;
+  scoped_refptr<RulesRegistry> registry(new TestRulesRegistry(
       &profile, event_name, content::BrowserThread::UI, &ui_part));
 
   // 1. Test the handling of preferences.
@@ -301,16 +302,16 @@ TEST_F(RulesRegistryWithCacheTest, RulesStoredFlagMultipleRegistries) {
   const std::string event_name1("testEvent1");
   const std::string event_name2("testEvent2");
   const std::string rules_stored_key1(
-      RulesRegistryWithCache::RuleStorageOnUI::GetRulesStoredKey(
+      RulesCacheDelegate::GetRulesStoredKey(
           event_name1, profile.IsOffTheRecord()));
   const std::string rules_stored_key2(
-      RulesRegistryWithCache::RuleStorageOnUI::GetRulesStoredKey(
+      RulesCacheDelegate::GetRulesStoredKey(
           event_name2, profile.IsOffTheRecord()));
-  scoped_ptr<RulesRegistryWithCache::RuleStorageOnUI> ui_part1;
-  scoped_refptr<RulesRegistryWithCache> registry1(new TestRulesRegistry(
+  scoped_ptr<RulesCacheDelegate> ui_part1;
+  scoped_refptr<RulesRegistry> registry1(new TestRulesRegistry(
       &profile, event_name1, content::BrowserThread::UI, &ui_part1));
-  scoped_ptr<RulesRegistryWithCache::RuleStorageOnUI> ui_part2;
-  scoped_refptr<RulesRegistryWithCache> registry2(new TestRulesRegistry(
+  scoped_ptr<RulesCacheDelegate> ui_part2;
+  scoped_refptr<RulesRegistry> registry2(new TestRulesRegistry(
       &profile, event_name2, content::BrowserThread::UI, &ui_part2));
 
   // Checkt the correct default values.
@@ -349,7 +350,7 @@ TEST_F(RulesRegistryWithCacheTest, RulesPreservedAcrossRestart) {
   system->SetReady();
 
   // 2. First run, adding a rule for the extension.
-  scoped_ptr<RulesRegistryWithCache::RuleStorageOnUI> ui_part;
+  scoped_ptr<RulesCacheDelegate> ui_part;
   scoped_refptr<TestRulesRegistry> registry(new TestRulesRegistry(
       &profile, "testEvent", content::BrowserThread::UI, &ui_part));
   AddRule(kExtensionId, kRuleId, registry.get());

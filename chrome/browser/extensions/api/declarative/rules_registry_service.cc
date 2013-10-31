@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/api/declarative/initializing_rules_registry.h"
+#include "chrome/browser/extensions/api/declarative/rules_cache_delegate.h"
 #include "chrome/browser/extensions/api/declarative_content/content_rules_registry.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rules_registry.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
@@ -45,7 +45,7 @@ RulesRegistryService::RulesRegistryService(Profile* profile)
 RulesRegistryService::~RulesRegistryService() {}
 
 void RulesRegistryService::RegisterDefaultRulesRegistries() {
-  scoped_ptr<RulesRegistryWithCache::RuleStorageOnUI> ui_part;
+  scoped_ptr<RulesCacheDelegate> ui_part;
   scoped_refptr<WebRequestRulesRegistry> web_request_rules_registry(
       new WebRequestRulesRegistry(profile_, &ui_part));
   ui_parts_of_registries_.push_back(ui_part.release());
@@ -98,8 +98,7 @@ void RulesRegistryService::RegisterRulesRegistry(
     scoped_refptr<RulesRegistry> rule_registry) {
   const std::string event_name(rule_registry->event_name());
   DCHECK(rule_registries_.find(event_name) == rule_registries_.end());
-  rule_registries_[event_name] =
-      make_scoped_refptr(new InitializingRulesRegistry(rule_registry));
+  rule_registries_[event_name] = rule_registry;
 }
 
 scoped_refptr<RulesRegistry> RulesRegistryService::GetRulesRegistry(

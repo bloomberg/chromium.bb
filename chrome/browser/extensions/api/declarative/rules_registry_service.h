@@ -12,7 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/extensions/api/declarative/rules_registry_with_cache.h"
+#include "chrome/browser/extensions/api/declarative/rules_registry.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/notification_observer.h"
@@ -73,7 +73,8 @@ class RulesRegistryService : public ProfileKeyedAPI,
   friend class ProfileKeyedAPIFactory<RulesRegistryService>;
 
   // Maps event names to RuleRegistries that handle these events.
-  typedef std::map<std::string, scoped_refptr<RulesRegistry> > RulesRegistryMap;
+  typedef std::map<std::string, scoped_refptr<RulesRegistry> >
+      RulesRegistryMap;
 
   // Notifies all RulesRegistries that |extension_id| was unloaded.
   // It is not guaranteed that this notification is processed synchronously.
@@ -95,7 +96,7 @@ class RulesRegistryService : public ProfileKeyedAPI,
   RulesRegistryMap rule_registries_;
 
   // We own the parts of the registries which need to run on the UI thread.
-  ScopedVector<RulesRegistryWithCache::RuleStorageOnUI> ui_parts_of_registries_;
+  ScopedVector<RulesCacheDelegate> ui_parts_of_registries_;
 
   // Weak pointer into rule_registries_ to make it easier to handle content rule
   // conditions.

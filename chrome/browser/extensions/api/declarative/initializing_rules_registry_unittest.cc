@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/declarative/initializing_rules_registry.h"
+#include "chrome/browser/extensions/api/declarative/rules_registry.h"
 
 #include <algorithm>
 
@@ -23,10 +23,8 @@ TEST(InitializingRulesRegistryTest, FillOptionalIdentifiers) {
   content::TestBrowserThread thread(content::BrowserThread::UI, &message_loop);
 
   std::string error;
-  scoped_refptr<RulesRegistry> registry = new InitializingRulesRegistry(
-      new TestRulesRegistry(content::BrowserThread::UI, "" /*event_name*/));
-  InitializingRulesRegistry* init_registry =
-      static_cast<InitializingRulesRegistry*>(registry.get());
+  scoped_refptr<RulesRegistry> registry =
+      new TestRulesRegistry(content::BrowserThread::UI, "" /*event_name*/);
 
   // Add rules and check that their identifiers are filled and unique.
 
@@ -51,7 +49,7 @@ TEST(InitializingRulesRegistryTest, FillOptionalIdentifiers) {
   EXPECT_NE(*get_rules[0]->id, *get_rules[1]->id);
 
   EXPECT_EQ(1u /*extensions*/ + 2u /*rules*/,
-            init_registry->GetNumberOfUsedRuleIdentifiersForTesting());
+            registry->GetNumberOfUsedRuleIdentifiersForTesting());
 
   // Check that we cannot add a new rule with the same ID.
 
@@ -66,7 +64,7 @@ TEST(InitializingRulesRegistryTest, FillOptionalIdentifiers) {
   EXPECT_TRUE(error.empty());
   ASSERT_EQ(2u, get_rules_2.size());
   EXPECT_EQ(1u /*extensions*/ + 2u /*rules*/,
-            init_registry->GetNumberOfUsedRuleIdentifiersForTesting());
+            registry->GetNumberOfUsedRuleIdentifiersForTesting());
 
   // Check that we can register the old rule IDs once they were unregistered.
 
@@ -76,7 +74,7 @@ TEST(InitializingRulesRegistryTest, FillOptionalIdentifiers) {
   EXPECT_TRUE(error.empty());
 
   EXPECT_EQ(1u /*extensions*/ + 1u /*rules*/,
-            init_registry->GetNumberOfUsedRuleIdentifiersForTesting());
+            registry->GetNumberOfUsedRuleIdentifiersForTesting());
 
   std::vector<linked_ptr<RulesRegistry::Rule> > get_rules_3a;
   error = registry->GetAllRules(kExtensionId, &get_rules_3a);
@@ -89,7 +87,7 @@ TEST(InitializingRulesRegistryTest, FillOptionalIdentifiers) {
   error = registry->AddRules(kExtensionId, add_rules_3);
   EXPECT_TRUE(error.empty());
   EXPECT_EQ(1u /*extensions*/ + 2u /*rules*/,
-            init_registry->GetNumberOfUsedRuleIdentifiersForTesting());
+            registry->GetNumberOfUsedRuleIdentifiersForTesting());
 
   std::vector<linked_ptr<RulesRegistry::Rule> > get_rules_3b;
   error = registry->GetAllRules(kExtensionId, &get_rules_3b);
@@ -101,7 +99,7 @@ TEST(InitializingRulesRegistryTest, FillOptionalIdentifiers) {
   error = registry->RemoveAllRules(kExtensionId);
   EXPECT_TRUE(error.empty());
   EXPECT_EQ(0u /*extensions*/ + 0u /*rules*/,
-            init_registry->GetNumberOfUsedRuleIdentifiersForTesting());
+            registry->GetNumberOfUsedRuleIdentifiersForTesting());
 
   std::vector<linked_ptr<RulesRegistry::Rule> > get_rules_4a;
   error = registry->GetAllRules(kExtensionId, &get_rules_4a);
@@ -115,7 +113,7 @@ TEST(InitializingRulesRegistryTest, FillOptionalIdentifiers) {
   EXPECT_TRUE(error.empty());
 
   EXPECT_EQ(1u /*extensions*/ + 1u /*rules*/,
-            init_registry->GetNumberOfUsedRuleIdentifiersForTesting());
+            registry->GetNumberOfUsedRuleIdentifiersForTesting());
 
   std::vector<linked_ptr<RulesRegistry::Rule> > get_rules_4b;
   error = registry->GetAllRules(kExtensionId, &get_rules_4b);
@@ -128,7 +126,7 @@ TEST(InitializingRulesRegistryTest, FillOptionalIdentifiers) {
 
   registry->OnExtensionUnloaded(kExtensionId);
   EXPECT_EQ(0u /*extensions*/ + 0u /*rules*/,
-            init_registry->GetNumberOfUsedRuleIdentifiersForTesting());
+            registry->GetNumberOfUsedRuleIdentifiersForTesting());
 
   // Make sure that deletion traits of registry are executed.
   registry = NULL;
@@ -140,8 +138,8 @@ TEST(InitializingRulesRegistryTest, FillOptionalPriority) {
   content::TestBrowserThread thread(content::BrowserThread::UI, &message_loop);
 
   std::string error;
-  scoped_refptr<RulesRegistry> registry = new InitializingRulesRegistry(
-      new TestRulesRegistry(content::BrowserThread::UI, "" /*event_name*/));
+  scoped_refptr<RulesRegistry> registry =
+      new TestRulesRegistry(content::BrowserThread::UI, "" /*event_name*/);
 
   // Add rules and check that their priorities are filled if they are empty.
 
@@ -162,9 +160,9 @@ TEST(InitializingRulesRegistryTest, FillOptionalPriority) {
   ASSERT_TRUE(get_rules[1]->priority.get());
 
   // Verify the precondition so that the following EXPECT_EQ statements work.
-  EXPECT_GT(InitializingRulesRegistry::DEFAULT_PRIORITY, 2);
+  EXPECT_GT(RulesRegistry::DEFAULT_PRIORITY, 2);
   EXPECT_EQ(2, std::min(*get_rules[0]->priority, *get_rules[1]->priority));
-  EXPECT_EQ(InitializingRulesRegistry::DEFAULT_PRIORITY,
+  EXPECT_EQ(RulesRegistry::DEFAULT_PRIORITY,
             std::max(*get_rules[0]->priority, *get_rules[1]->priority));
 
   // Make sure that deletion traits of registry are executed.

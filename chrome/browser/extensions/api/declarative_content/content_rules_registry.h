@@ -15,7 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/api/declarative/declarative_rule.h"
-#include "chrome/browser/extensions/api/declarative/rules_registry_with_cache.h"
+#include "chrome/browser/extensions/api/declarative/rules_registry.h"
 #include "chrome/browser/extensions/api/declarative_content/content_action.h"
 #include "chrome/browser/extensions/api/declarative_content/content_condition.h"
 #include "chrome/browser/extensions/extension_info_map.h"
@@ -59,14 +59,13 @@ typedef DeclarativeRule<ContentCondition, ContentAction> ContentRule;
 // The evaluation of URL related condition attributes (host_suffix, path_prefix)
 // is delegated to a URLMatcher, because this is capable of evaluating many
 // of such URL related condition attributes in parallel.
-class ContentRulesRegistry : public RulesRegistryWithCache,
+class ContentRulesRegistry : public RulesRegistry,
                              public content::NotificationObserver {
  public:
   // For testing, |ui_part| can be NULL. In that case it constructs the
   // registry with storage functionality suspended.
-  ContentRulesRegistry(
-      Profile* profile,
-      scoped_ptr<RulesRegistryWithCache::RuleStorageOnUI>* ui_part);
+  ContentRulesRegistry(Profile* profile,
+                       scoped_ptr<RulesCacheDelegate>* ui_part);
 
   // Applies all content rules given an update (CSS match change or
   // page navigation, for now) from the renderer.
@@ -78,7 +77,7 @@ class ContentRulesRegistry : public RulesRegistryWithCache,
                             const content::LoadCommittedDetails& details,
                             const content::FrameNavigateParams& params);
 
-  // Implementation of RulesRegistryWithCache:
+  // Implementation of RulesRegistry:
   virtual std::string AddRulesImpl(
       const std::string& extension_id,
       const std::vector<linked_ptr<RulesRegistry::Rule> >& rules) OVERRIDE;

@@ -23,12 +23,12 @@ namespace extensions {
 
 ContentRulesRegistry::ContentRulesRegistry(
     Profile* profile,
-    scoped_ptr<RulesRegistryWithCache::RuleStorageOnUI>* ui_part)
-    : RulesRegistryWithCache((ui_part ? profile : NULL),
-                             declarative_content_constants::kOnPageChanged,
-                             content::BrowserThread::UI,
-                             false /*log_storage_init_delay*/,
-                             ui_part),
+    scoped_ptr<RulesCacheDelegate>* cache_delegate)
+    : RulesRegistry((cache_delegate ? profile : NULL),
+                    declarative_content_constants::kOnPageChanged,
+                    content::BrowserThread::UI,
+                    false /*log_storage_init_delay*/,
+                    cache_delegate),
       profile_(profile) {
   extension_info_map_ = ExtensionSystem::Get(profile)->info_map();
 
