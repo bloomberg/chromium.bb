@@ -23,16 +23,6 @@ class ChromeNewWindowDelegate : public ash::NewWindowDelegate {
   virtual void ShowTaskManager() OVERRIDE;
   virtual void OpenFeedbackPage() OVERRIDE;
 
-  // Returns the browser for active ash window if any. Otherwise it searches
-  // for a browser or create one for default profile and returns it.
-  static Browser* GetTargetBrowser();
-
- protected:
-  // This returns the active ash window if any. Unlike the method above, it
-  // does not create a window if one isn't available, instead it returns NULL
-  // in that case.
-  static Browser* GetTargetBrowserIfAvailable();
-
  private:
   class TabRestoreHelper;
 

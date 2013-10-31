@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -243,13 +244,13 @@ void AppListViewDelegate::OpenSettings() {
 void AppListViewDelegate::OpenHelp() {
   chrome::HostDesktopType desktop = chrome::GetHostDesktopTypeForNativeWindow(
       controller_->GetAppListWindow());
-  Browser* browser = chrome::FindOrCreateTabbedBrowser(
-      profile_, desktop);
-  browser->OpenURL(content::OpenURLParams(GURL(chrome::kAppLauncherHelpURL),
-                                          content::Referrer(),
-                                          NEW_FOREGROUND_TAB,
-                                          content::PAGE_TRANSITION_LINK,
-                                          false));
+  chrome::ScopedTabbedBrowserDisplayer displayer(profile_, desktop);
+  content::OpenURLParams params(GURL(chrome::kAppLauncherHelpURL),
+                                content::Referrer(),
+                                NEW_FOREGROUND_TAB,
+                                content::PAGE_TRANSITION_LINK,
+                                false);
+  displayer.browser()->OpenURL(params);
 }
 
 void AppListViewDelegate::OpenFeedback() {

@@ -11,8 +11,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
@@ -23,10 +23,11 @@
 
 namespace message_center {
 void WebNotificationTray::OnBalloonClicked() {
-  Browser* browser = chrome::FindOrCreateTabbedBrowser(
+  chrome::ScopedTabbedBrowserDisplayer displayer(
       ProfileManager::GetLastUsedProfileAllowedByPolicy(),
       chrome::GetActiveDesktop());
-  chrome::ShowSingletonTab(browser, GURL(chrome::kNotificationsHelpURL));
+  chrome::ShowSingletonTab(displayer.browser(),
+                           GURL(chrome::kNotificationsHelpURL));
 }
 
 void WebNotificationTray::DisplayFirstRunBalloon() {

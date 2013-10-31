@@ -7,6 +7,7 @@
 #include "ash/accessibility_delegate.h"
 #include "ash/magnifier/magnifier_constants.h"
 #include "ash/system/tray/default_system_tray_delegate.h"
+#include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -15,10 +16,12 @@
 #include "chrome/browser/ui/ash/chrome_new_window_delegate.h"
 #include "chrome/browser/ui/ash/session_state_delegate_views.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
@@ -195,9 +198,17 @@ void ChromeShellDelegate::Observe(int type,
                             true,
                             chrome::HOST_DESKTOP_TYPE_ASH);
       } else {
-        Browser* browser = ChromeNewWindowDelegate::GetTargetBrowser();
-        chrome::AddBlankTabAt(browser, -1, true);
-        browser->window()->Show();
+        Browser* browser =
+            chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow());
+        if (browser && browser->is_type_tabbed()) {
+          chrome::AddBlankTabAt(browser, -1, true);
+          return;
+        }
+
+        chrome::ScopedTabbedBrowserDisplayer displayer(
+            ProfileManager::GetDefaultProfileOrOffTheRecord(),
+            chrome::HOST_DESKTOP_TYPE_ASH);
+        chrome::AddBlankTabAt(displayer.browser(), -1, true);
       }
       break;
     }

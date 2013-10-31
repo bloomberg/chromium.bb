@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "chrome/browser/chromeos/file_manager/open_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -23,13 +22,12 @@ const char kGmailComposeUrl[] =
 
 void OpenURL(const std::string& url) {
   // TODO(beng): improve this to locate context from call stack.
-  Browser* browser = chrome::FindOrCreateTabbedBrowser(
-      ProfileManager::GetDefaultProfileOrOffTheRecord(),
-      chrome::HOST_DESKTOP_TYPE_ASH);
   chrome::NavigateParams params(
-      browser, GURL(url), content::PAGE_TRANSITION_LINK);
+      ProfileManager::GetDefaultProfileOrOffTheRecord(),
+      GURL(url),
+      content::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
-  params.window_action = chrome::NavigateParams::SHOW_WINDOW;
+  params.host_desktop_type = chrome::HOST_DESKTOP_TYPE_ASH;
   chrome::Navigate(&params);
 }
 

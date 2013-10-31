@@ -13,9 +13,9 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/browser_thread.h"
@@ -72,21 +72,13 @@ void FindOrOpenCloudPrintPage(const std::string& /* vendor */,
 
   GURL url(kCloudPrintLearnUrl);
 
-  Browser* browser = ActivateAndGetBrowserForUrl(url);
-  if (!browser) {
-    browser = chrome::FindOrCreateTabbedBrowser(profile,
-                                                chrome::HOST_DESKTOP_TYPE_ASH);
-    if (!browser)
-      return;
+  if (!ActivateAndGetBrowserForUrl(url)) {
+    chrome::ScopedTabbedBrowserDisplayer displayer(
+        profile, chrome::HOST_DESKTOP_TYPE_ASH);
     UMA_HISTOGRAM_ENUMERATION("PrinterService.PrinterServiceEvent",
                               PAGE_DISPLAYED, PRINTER_SERVICE_EVENT_MAX);
-    chrome::AddSelectedTabWithURL(browser, url,
+    chrome::AddSelectedTabWithURL(displayer.browser(), url,
                                   content::PAGE_TRANSITION_LINK);
-  }
-  aura::Window* window = browser->window()->GetNativeWindow();
-  if (window) {
-    window->Show();
-    ash::wm::ActivateWindow(window);
   }
 }
 

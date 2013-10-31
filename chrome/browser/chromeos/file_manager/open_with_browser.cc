@@ -16,9 +16,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -111,12 +111,10 @@ void OpenNewTab(Profile* profile, const GURL& url) {
   if (!g_browser_process->profile_manager()->IsValidProfile(profile))
     return;
 
-  Browser* browser = chrome::FindOrCreateTabbedBrowser(
+  chrome::ScopedTabbedBrowserDisplayer displayer(
       profile, chrome::HOST_DESKTOP_TYPE_ASH);
-  chrome::AddSelectedTabWithURL(browser, url, content::PAGE_TRANSITION_LINK);
-  // If the current browser is not tabbed then the new tab will be created
-  // in a different browser. Make sure it is visible.
-  browser->window()->Show();
+  chrome::AddSelectedTabWithURL(displayer.browser(), url,
+      content::PAGE_TRANSITION_LINK);
 }
 
 // Reads the alternate URL from a GDoc file. When it fails, returns a file URL

@@ -12,9 +12,9 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
@@ -45,7 +45,10 @@ void ChromeNewWindowDelegateChromeos::OpenCrosh() {
       ProfileManager::GetDefaultProfileOrOffTheRecord());
   if (!crosh_url.is_valid())
     return;
-  Browser* browser = GetTargetBrowser();
+  chrome::ScopedTabbedBrowserDisplayer displayer(
+      ProfileManager::GetDefaultProfileOrOffTheRecord(),
+      chrome::HOST_DESKTOP_TYPE_ASH);
+  Browser* browser = displayer.browser();
   content::WebContents* page = browser->OpenURL(
       content::OpenURLParams(crosh_url,
                              content::Referrer(),

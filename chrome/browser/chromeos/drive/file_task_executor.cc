@@ -13,9 +13,9 @@
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
@@ -104,15 +104,14 @@ void FileTaskExecutor::OnAppAuthorized(const std::string& resource_id,
     return;
   }
 
-  Browser* browser = chrome::FindOrCreateTabbedBrowser(
-      profile_ ? profile_ : ProfileManager::GetDefaultProfileOrOffTheRecord(),
-      chrome::HOST_DESKTOP_TYPE_ASH);
-
-  chrome::AddSelectedTabWithURL(browser, open_link,
-                                content::PAGE_TRANSITION_LINK);
-  // If the current browser is not tabbed then the new tab will be created
-  // in a different browser. Make sure it is visible.
-  browser->window()->Show();
+  {
+    Profile* profile = profile_ ?
+        profile_ : ProfileManager::GetDefaultProfileOrOffTheRecord();
+    chrome::ScopedTabbedBrowserDisplayer displayer(
+         profile, chrome::HOST_DESKTOP_TYPE_ASH);
+    chrome::AddSelectedTabWithURL(displayer.browser(), open_link,
+                                  content::PAGE_TRANSITION_LINK);
+  }
 
   // We're done with this file.  If this is the last one, then we're done.
   current_index_--;

@@ -36,7 +36,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -47,6 +46,7 @@
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -316,10 +316,10 @@ void OpenWindowWithRestoredTabs(Profile* profile,
 void OpenURLOffTheRecord(Profile* profile,
                          const GURL& url,
                          chrome::HostDesktopType desktop_type) {
-  Browser* browser = chrome::FindOrCreateTabbedBrowser(
-      profile->GetOffTheRecordProfile(), desktop_type);
-  AddSelectedTabWithURL(browser, url, content::PAGE_TRANSITION_LINK);
-  browser->window()->Show();
+  ScopedTabbedBrowserDisplayer displayer(profile->GetOffTheRecordProfile(),
+                                         desktop_type);
+  AddSelectedTabWithURL(displayer.browser(), url,
+      content::PAGE_TRANSITION_LINK);
 }
 
 bool CanGoBack(const Browser* browser) {
@@ -486,9 +486,9 @@ void NewTab(Browser* browser) {
     browser->tab_strip_model()->GetActiveWebContents()->GetView()->
         RestoreFocus();
   } else {
-    Browser* b =
-        chrome::FindOrCreateTabbedBrowser(browser->profile(),
-                                          browser->host_desktop_type());
+    ScopedTabbedBrowserDisplayer displayer(browser->profile(),
+                                           browser->host_desktop_type());
+    Browser* b = displayer.browser();
     AddBlankTabAt(b, -1, true);
     b->window()->Show();
     // The call to AddBlankTabAt above did not set the focus to the tab as its

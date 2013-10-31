@@ -12,11 +12,11 @@
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/web_contents.h"
@@ -117,10 +117,9 @@ void BrowserCloseManager::OnReportDownloadsCancellable(bool proceed) {
     DownloadService* download_service =
         DownloadServiceFactory::GetForBrowserContext(*it);
     if (download_service->NonMaliciousDownloadCount() > 0) {
-      Browser* browser =
-          chrome::FindOrCreateTabbedBrowser(*it, chrome::GetActiveDesktop());
-      DCHECK(browser);
-      chrome::ShowDownloads(browser);
+      chrome::ScopedTabbedBrowserDisplayer displayer(
+          *it, chrome::GetActiveDesktop());
+      chrome::ShowDownloads(displayer.browser());
     }
   }
 }

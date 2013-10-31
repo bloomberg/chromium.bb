@@ -102,8 +102,7 @@ bool AdjustNavigateParamsForURL(chrome::NavigateParams* params) {
     }
 
     params->disposition = SINGLETON_TAB;
-    params->browser =
-        chrome::FindOrCreateTabbedBrowser(profile, params->host_desktop_type);
+    params->browser = GetOrCreateBrowser(profile, params->host_desktop_type);
     params->window_action = chrome::NavigateParams::SHOW_WINDOW;
   }
 
@@ -272,12 +271,12 @@ void LoadURLInContents(WebContents* target_contents,
 
 // This class makes sure the Browser object held in |params| is made visible
 // by the time it goes out of scope, provided |params| wants it to be shown.
-class ScopedBrowserDisplayer {
+class ScopedBrowserShower {
  public:
-  explicit ScopedBrowserDisplayer(chrome::NavigateParams* params)
+  explicit ScopedBrowserShower(chrome::NavigateParams* params)
       : params_(params) {
   }
-  ~ScopedBrowserDisplayer() {
+  ~ScopedBrowserShower() {
     if (params_->window_action == chrome::NavigateParams::SHOW_WINDOW_INACTIVE)
       params_->browser->window()->ShowInactive();
     else if (params_->window_action == chrome::NavigateParams::SHOW_WINDOW)
@@ -285,7 +284,7 @@ class ScopedBrowserDisplayer {
   }
  private:
   chrome::NavigateParams* params_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedBrowserDisplayer);
+  DISALLOW_COPY_AND_ASSIGN(ScopedBrowserShower);
 };
 
 // This class manages the lifetime of a WebContents created by the
@@ -505,7 +504,7 @@ void Navigate(NavigateParams* params) {
   }
 
   // Make sure the Browser is shown if params call for it.
-  ScopedBrowserDisplayer displayer(params);
+  ScopedBrowserShower shower(params);
 
   // Makes sure any WebContents created by this function is destroyed if
   // not properly added to a tab strip.
@@ -514,7 +513,7 @@ void Navigate(NavigateParams* params) {
   // Some dispositions need coercion to base types.
   NormalizeDisposition(params);
 
-  // If a new window has been created, it needs to be displayed.
+  // If a new window has been created, it needs to be shown.
   if (params->window_action == NavigateParams::NO_ACTION &&
       source_browser != params->browser &&
       params->browser->tab_strip_model()->empty()) {

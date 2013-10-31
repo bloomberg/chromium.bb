@@ -11,7 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -59,10 +59,8 @@ class WelcomeNotificationDelegate
   }
 
   void OpenNotificationLearnMoreTab() {
-    Browser* browser = chrome::FindOrCreateTabbedBrowser(
-        profile_, chrome::GetActiveDesktop());
     chrome::NavigateParams params(
-        browser,
+        profile_,
         GURL(chrome::kNotificationWelcomeLearnMoreURL),
         content::PAGE_TRANSITION_LINK);
     params.disposition = NEW_FOREGROUND_TAB;

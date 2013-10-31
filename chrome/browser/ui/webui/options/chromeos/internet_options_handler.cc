@@ -42,9 +42,9 @@
 #include "chrome/browser/chromeos/ui_proxy_config_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/webui/options/chromeos/core_chromeos_options_handler.h"
 #include "chromeos/chromeos_switches.h"
@@ -1085,7 +1085,10 @@ void InternetOptionsHandler::EnableCellularCallback(
       if (locale_config) {
         std::string setup_url = locale_config->setup_url();
         if (!setup_url.empty()) {
-          chrome::ShowSingletonTab(GetAppropriateBrowser(), GURL(setup_url));
+          chrome::ScopedTabbedBrowserDisplayer displayer(
+               ProfileManager::GetDefaultProfileOrOffTheRecord(),
+               chrome::HOST_DESKTOP_TYPE_ASH);
+          chrome::ShowSingletonTab(displayer.browser(), GURL(setup_url));
           return;
         }
       }
@@ -1899,12 +1902,6 @@ void PopulateCellularDetails(const NetworkState* cellular,
 
 gfx::NativeWindow InternetOptionsHandler::GetNativeWindow() const {
   return web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow();
-}
-
-Browser* InternetOptionsHandler::GetAppropriateBrowser() {
-  return chrome::FindOrCreateTabbedBrowser(
-      ProfileManager::GetDefaultProfileOrOffTheRecord(),
-      chrome::HOST_DESKTOP_TYPE_ASH);
 }
 
 void InternetOptionsHandler::NetworkCommandCallback(

@@ -125,13 +125,6 @@ Browser* FindTabbedBrowser(Profile* profile,
                                         match_original_profiles);
 }
 
-Browser* FindOrCreateTabbedBrowser(Profile* profile, HostDesktopType type) {
-  Browser* browser = FindTabbedBrowser(profile, false, type);
-  if (!browser)
-    browser = new Browser(Browser::CreateParams(profile, type));
-  return browser;
-}
-
 Browser* FindAnyBrowser(Profile* profile,
                         bool match_original_profiles,
                         HostDesktopType type) {

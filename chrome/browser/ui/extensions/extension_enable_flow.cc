@@ -7,8 +7,9 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 
@@ -175,7 +176,7 @@ void ExtensionEnableFlow::InstallUIAbort(bool user_initiated) {
 
 content::WebContents* ExtensionEnableFlow::OpenURL(
     const content::OpenURLParams& params) {
-  Browser* browser = chrome::FindOrCreateTabbedBrowser(
+  chrome::ScopedTabbedBrowserDisplayer displayer(
       profile_, chrome::GetActiveDesktop());
-  return browser->OpenURL(params);
+  return displayer.browser()->OpenURL(params);
 }

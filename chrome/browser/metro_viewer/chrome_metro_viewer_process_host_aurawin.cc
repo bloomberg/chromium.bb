@@ -14,8 +14,8 @@
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/ui/ash/ash_init.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -47,12 +47,13 @@ void CloseOpenAshBrowsers() {
 }
 
 void OpenURL(const GURL& url) {
-  Browser* browser = chrome::FindOrCreateTabbedBrowser(
+  chrome::NavigateParams params(
       ProfileManager::GetDefaultProfileOrOffTheRecord(),
-      chrome::HOST_DESKTOP_TYPE_ASH);
-  browser->OpenURL(content::OpenURLParams(
-    GURL(url), content::Referrer(), NEW_FOREGROUND_TAB,
-    content::PAGE_TRANSITION_TYPED, false));
+      GURL(url),
+      content::PAGE_TRANSITION_TYPED);
+  params.disposition = NEW_FOREGROUND_TAB;
+  params.host_desktop_type = chrome::HOST_DESKTOP_TYPE_ASH;
+  chrome::Navigate(&params);
 }
 
 }  // namespace

@@ -9,8 +9,8 @@
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
 #include "chrome/browser/notifications/sync_notifier/synced_notification.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
 
@@ -74,20 +74,14 @@ void ChromeNotifierDelegate::NavigateToUrl(const GURL& destination) const {
   if (!destination.is_valid())
     return;
 
-  content::OpenURLParams openParams(destination, content::Referrer(),
+  // Navigate to the URL in a new tab.
+  content::OpenURLParams open_params(destination, content::Referrer(),
                                     NEW_FOREGROUND_TAB,
                                     content::PAGE_TRANSITION_LINK, false);
-  Browser* browser = chrome::FindOrCreateTabbedBrowser(
-      chrome_notifier_->profile(),
-      chrome::GetActiveDesktop());
-  // Navigate to the URL in a new tab.
-  if (browser != NULL) {
-    browser->OpenURL(openParams);
-    browser->window()->Activate();
-  } else {
-    DVLOG(2) << "NavigateToUrl failed to create a browser.";
-  }
-
+  chrome::ScopedTabbedBrowserDisplayer displayer(
+      chrome_notifier_->profile(), chrome::GetActiveDesktop());
+  displayer.browser()->OpenURL(open_params);
+  displayer.browser()->window()->Activate();
 }
 
 void ChromeNotifierDelegate::Close(bool by_user) {

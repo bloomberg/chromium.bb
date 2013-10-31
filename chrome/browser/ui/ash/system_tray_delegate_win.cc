@@ -17,7 +17,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/upgrade_detector.h"
@@ -130,7 +129,10 @@ class SystemTrayDelegateWin : public ash::SystemTrayDelegate,
   }
 
   virtual void ShowHelp() OVERRIDE {
-    chrome::ShowHelp(GetAppropriateBrowser(), chrome::HELP_SOURCE_MENU);
+    chrome::ShowHelpForProfile(
+        ProfileManager::GetDefaultProfileOrOffTheRecord(),
+        chrome::HOST_DESKTOP_TYPE_ASH,
+        chrome::HELP_SOURCE_MENU);
   }
 
   virtual void ShowAccessibilityHelp() OVERRIDE {
@@ -269,14 +271,6 @@ class SystemTrayDelegateWin : public ash::SystemTrayDelegate,
  private:
   ash::SystemTrayNotifier* GetSystemTrayNotifier() {
     return ash::Shell::GetInstance()->system_tray_notifier();
-  }
-
-  // Returns the last active browser. If there is no such browser, creates a new
-  // browser window with an empty tab and returns it.
-  Browser* GetAppropriateBrowser() {
-    return chrome::FindOrCreateTabbedBrowser(
-        ProfileManager::GetDefaultProfileOrOffTheRecord(),
-        chrome::HOST_DESKTOP_TYPE_ASH);
   }
 
   void UpdateClockType() {

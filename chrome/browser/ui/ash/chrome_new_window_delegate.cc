@@ -14,12 +14,18 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 
 namespace {
 
 void RestoreTabUsingProfile(Profile* profile) {
   TabRestoreService* service = TabRestoreServiceFactory::GetForProfile(profile);
   service->RestoreMostRecentEntry(NULL, chrome::HOST_DESKTOP_TYPE_ASH);
+}
+
+// Returns the browser for the active window, if any.
+Browser* GetBrowserForActiveWindow() {
+  return chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow());
 }
 
 }  // namespace
@@ -72,14 +78,16 @@ class ChromeNewWindowDelegate::TabRestoreHelper
 };
 
 void ChromeNewWindowDelegate::NewTab() {
-  Browser* browser = GetTargetBrowser();
+  Browser* browser = GetBrowserForActiveWindow();
+  if (browser && browser->is_type_tabbed()) {
+    chrome::NewTab(browser);
+    return;
+  }
 
-  // If the browser was not active, we call BrowserWindow::Show to make it
-  // visible. Otherwise, we let Browser::NewTab handle the active window change.
-  const bool was_active = browser->window()->IsActive();
-  chrome::NewTab(browser);
-  if (!was_active)
-    browser->window()->Show();
+  chrome::ScopedTabbedBrowserDisplayer displayer(
+      ProfileManager::GetDefaultProfileOrOffTheRecord(),
+      chrome::HOST_DESKTOP_TYPE_ASH);
+  chrome::NewTab(displayer.browser());
 }
 
 void ChromeNewWindowDelegate::NewWindow(bool is_incognito) {
@@ -95,7 +103,7 @@ void ChromeNewWindowDelegate::RestoreTab() {
     return;
   }
 
-  Browser* browser = chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow());
+  Browser* browser = GetBrowserForActiveWindow();
   Profile* profile = browser ? browser->profile() : NULL;
   if (!profile)
     profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
@@ -119,20 +127,5 @@ void ChromeNewWindowDelegate::ShowTaskManager() {
 }
 
 void ChromeNewWindowDelegate::OpenFeedbackPage() {
-  chrome::OpenFeedbackDialog(GetTargetBrowserIfAvailable());
-}
-
-// static
-Browser* ChromeNewWindowDelegate::GetTargetBrowser() {
-  Browser* browser = GetTargetBrowserIfAvailable();
-  if (browser)
-    return browser;
-  return chrome::FindOrCreateTabbedBrowser(
-      ProfileManager::GetDefaultProfileOrOffTheRecord(),
-      chrome::HOST_DESKTOP_TYPE_ASH);
-}
-
-// static
-Browser* ChromeNewWindowDelegate::GetTargetBrowserIfAvailable() {
-  return chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow());
+  chrome::OpenFeedbackDialog(GetBrowserForActiveWindow());
 }

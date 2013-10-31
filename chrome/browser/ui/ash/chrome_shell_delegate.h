@@ -26,7 +26,6 @@ class KeyboardControllerProxy;
 }
 
 class ChromeLauncherController;
-class ChromeNewWindowDelegate;
 
 class ChromeShellDelegate : public ash::ShellDelegate,
                             public content::NotificationObserver {

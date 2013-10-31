@@ -78,6 +78,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/chromeos/mobile_setup_dialog.h"
@@ -214,15 +215,21 @@ void BluetoothDeviceConnectError(
   // TODO(sad): Do something?
 }
 
+// Shows the settings sub page in the last active browser. If there is no such
+// browser, creates a new browser with the settings sub page.
+void ShowSettingsSubPageForAppropriateBrowser(const std::string& sub_page) {
+  chrome::ScopedTabbedBrowserDisplayer displayer(
+      ProfileManager::GetDefaultProfileOrOffTheRecord(),
+      chrome::HOST_DESKTOP_TYPE_ASH);
+  chrome::ShowSettingsSubPage(displayer.browser(), sub_page);
+}
+
 void ShowNetworkSettingsPage(const std::string& service_path) {
   std::string page = chrome::kInternetOptionsSubPage;
   page += "?servicePath=" + net::EscapeUrlEncodedData(service_path, true);
   content::RecordAction(
       content::UserMetricsAction("OpenInternetOptionsDialog"));
-  Browser* browser = chrome::FindOrCreateTabbedBrowser(
-      ProfileManager::GetDefaultProfileOrOffTheRecord(),
-      chrome::HOST_DESKTOP_TYPE_ASH);
-  chrome::ShowSettingsSubPage(browser, page);
+  ShowSettingsSubPageForAppropriateBrowser(page);
 }
 
 class SystemTrayDelegate : public ash::SystemTrayDelegate,
@@ -409,8 +416,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   virtual void ChangeProfilePicture() OVERRIDE {
     content::RecordAction(
         content::UserMetricsAction("OpenChangeProfilePictureDialog"));
-    chrome::ShowSettingsSubPage(GetAppropriateBrowser(),
-                                chrome::kChangeProfilePictureSubPage);
+    ShowSettingsSubPageForAppropriateBrowser(
+        chrome::kChangeProfilePictureSubPage);
   }
 
   virtual const std::string GetEnterpriseDomain() const OVERRIDE {
@@ -457,7 +464,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void ShowSettings() OVERRIDE {
-    chrome::ShowSettings(GetAppropriateBrowser());
+    chrome::ScopedTabbedBrowserDisplayer displayer(
+         ProfileManager::GetDefaultProfileOrOffTheRecord(),
+         chrome::HOST_DESKTOP_TYPE_ASH);
+    chrome::ShowSettings(displayer.browser());
   }
 
   virtual bool ShouldShowSettings() OVERRIDE {
@@ -468,7 +478,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     content::RecordAction(content::UserMetricsAction("ShowDateOptions"));
     std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
         l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME);
-    chrome::ShowSettingsSubPage(GetAppropriateBrowser(), sub_page);
+    ShowSettingsSubPageForAppropriateBrowser(sub_page);
   }
 
   virtual void ShowNetworkSettings(const std::string& service_path) OVERRIDE {
@@ -483,12 +493,14 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void ShowDisplaySettings() OVERRIDE {
     content::RecordAction(content::UserMetricsAction("ShowDisplayOptions"));
-    chrome::ShowSettingsSubPage(GetAppropriateBrowser(),
-                                kDisplaySettingsSubPageName);
+    ShowSettingsSubPageForAppropriateBrowser(kDisplaySettingsSubPageName);
   }
 
   virtual void ShowChromeSlow() OVERRIDE {
-    chrome::ShowSlow(GetAppropriateBrowser());
+    chrome::ScopedTabbedBrowserDisplayer displayer(
+         ProfileManager::GetDefaultProfileOrOffTheRecord(),
+         chrome::HOST_DESKTOP_TYPE_ASH);
+    chrome::ShowSlow(displayer.browser());
   }
 
   virtual bool ShouldShowDisplayNotification() OVERRIDE {
@@ -520,14 +532,13 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     // For now just show search result for downoads settings.
     std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
         l10n_util::GetStringUTF8(IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME);
-    chrome::ShowSettingsSubPage(GetAppropriateBrowser(), sub_page);
+    ShowSettingsSubPageForAppropriateBrowser(sub_page);
   }
 
   virtual void ShowIMESettings() OVERRIDE {
     content::RecordAction(
         content::UserMetricsAction("OpenLanguageOptionsDialog"));
-    chrome::ShowSettingsSubPage(GetAppropriateBrowser(),
-                                chrome::kLanguageOptionsSubPage);
+    ShowSettingsSubPageForAppropriateBrowser(chrome::kLanguageOptionsSubPage);
   }
 
   virtual void ShowHelp() OVERRIDE {
@@ -538,7 +549,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void ShowAccessibilityHelp() OVERRIDE {
-    accessibility::ShowAccessibilityHelp(GetAppropriateBrowser());
+    chrome::ScopedTabbedBrowserDisplayer displayer(
+         ProfileManager::GetDefaultProfileOrOffTheRecord(),
+         chrome::HOST_DESKTOP_TYPE_ASH);
+    accessibility::ShowAccessibilityHelp(displayer.browser());
   }
 
   virtual void ShowAccessibilitySettings() OVERRIDE {
@@ -547,11 +561,14 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
         l10n_util::GetStringUTF8(
             IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY);
-    chrome::ShowSettingsSubPage(GetAppropriateBrowser(), sub_page);
+    ShowSettingsSubPageForAppropriateBrowser(sub_page);
   }
 
   virtual void ShowPublicAccountInfo() OVERRIDE {
-    chrome::ShowPolicy(GetAppropriateBrowser());
+    chrome::ScopedTabbedBrowserDisplayer displayer(
+         ProfileManager::GetDefaultProfileOrOffTheRecord(),
+         chrome::HOST_DESKTOP_TYPE_ASH);
+    chrome::ShowPolicy(displayer.browser());
   }
 
   virtual void ShowLocallyManagedUserInfo() OVERRIDE {
@@ -569,7 +586,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     } else {
       GURL url(google_util::StringAppendGoogleLocaleParam(
           chrome::kLearnMoreEnterpriseURL));
-      chrome::ShowSingletonTab(GetAppropriateBrowser(), url);
+      chrome::ScopedTabbedBrowserDisplayer displayer(
+          ProfileManager::GetDefaultProfileOrOffTheRecord(),
+          chrome::HOST_DESKTOP_TYPE_ASH);
+      chrome::ShowSingletonTab(displayer.browser(), url);
     }
   }
 
@@ -752,7 +772,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         content::UserMetricsAction("ShowBluetoothSettingsPage"));
     std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
         l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SECTION_TITLE_BLUETOOTH);
-    chrome::ShowSettingsSubPage(GetAppropriateBrowser(), sub_page);
+    ShowSettingsSubPageForAppropriateBrowser(sub_page);
   }
 
   virtual void ToggleBluetooth() OVERRIDE {
@@ -829,14 +849,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   ash::SystemTrayNotifier* GetSystemTrayNotifier() {
     return ash::Shell::GetInstance()->system_tray_notifier();
-  }
-
-  // Returns the last active browser. If there is no such browser, creates a new
-  // browser window with an empty tab and returns it.
-  Browser* GetAppropriateBrowser() {
-    return chrome::FindOrCreateTabbedBrowser(
-        ProfileManager::GetDefaultProfileOrOffTheRecord(),
-        chrome::HOST_DESKTOP_TYPE_ASH);
   }
 
   void SetProfile(Profile* profile) {

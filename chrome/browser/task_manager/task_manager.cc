@@ -29,7 +29,7 @@
 #include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/task_manager/tab_contents_resource_provider.h"
 #include "chrome/browser/task_manager/worker_resource_provider.h"
-#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -1550,12 +1550,12 @@ TaskManager* TaskManager::GetInstance() {
 }
 
 void TaskManager::OpenAboutMemory(chrome::HostDesktopType desktop_type) {
-  Browser* browser = chrome::FindOrCreateTabbedBrowser(
-      ProfileManager::GetLastUsedProfileAllowedByPolicy(), desktop_type);
-  chrome::NavigateParams params(browser, GURL(chrome::kChromeUIMemoryURL),
-                                content::PAGE_TRANSITION_LINK);
+  chrome::NavigateParams params(
+      ProfileManager::GetLastUsedProfileAllowedByPolicy(),
+      GURL(chrome::kChromeUIMemoryURL),
+      content::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
-  params.window_action = chrome::NavigateParams::SHOW_WINDOW;
+  params.host_desktop_type = desktop_type;
   chrome::Navigate(&params);
 }
 

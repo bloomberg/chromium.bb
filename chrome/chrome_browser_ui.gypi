@@ -1441,6 +1441,8 @@
         'browser/ui/sad_tab_helper.cc',
         'browser/ui/sad_tab_helper.h',
         'browser/ui/sad_tab_types.h',
+        'browser/ui/scoped_tabbed_browser_displayer.cc',
+        'browser/ui/scoped_tabbed_browser_displayer.h',
         'browser/ui/screen_capture_notification_ui.h',
         'browser/ui/screen_capture_notification_ui_stub.cc',
         'browser/ui/search/instant_controller.cc',

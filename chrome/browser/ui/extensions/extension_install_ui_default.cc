@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -50,7 +51,6 @@ using extensions::Extension;
 
 namespace {
 
-
 // Helpers --------------------------------------------------------------------
 
 Browser* FindOrCreateVisibleBrowser(Profile* profile) {
@@ -58,11 +58,11 @@ Browser* FindOrCreateVisibleBrowser(Profile* profile) {
   // after fixing http://crbug.com/38676.
   if (!IncognitoModePrefs::CanOpenBrowser(profile))
     return NULL;
-  Browser* browser =
-      chrome::FindOrCreateTabbedBrowser(profile, chrome::GetActiveDesktop());
+  chrome::ScopedTabbedBrowserDisplayer displayer(
+      profile, chrome::GetActiveDesktop());
+  Browser* browser = displayer.browser();
   if (browser->tab_strip_model()->count() == 0)
     chrome::AddBlankTabAt(browser, -1, true);
-  browser->window()->Show();
   return browser;
 }
 

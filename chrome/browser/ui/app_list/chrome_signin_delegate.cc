@@ -9,11 +9,11 @@
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/common/page_transition_types.h"
 #include "grit/chromium_strings.h"
@@ -52,10 +52,9 @@ bool ChromeSigninDelegate::NeedSignin()  {
 
 void ChromeSigninDelegate::ShowSignin() {
   DCHECK(profile_);
-
-  Browser* browser = FindOrCreateTabbedBrowser(profile_,
-                                               chrome::GetActiveDesktop());
-  chrome::ShowBrowserSignin(browser, signin::SOURCE_APP_LAUNCHER);
+  chrome::ScopedTabbedBrowserDisplayer displayer(
+      profile_, chrome::GetActiveDesktop());
+  chrome::ShowBrowserSignin(displayer.browser(), signin::SOURCE_APP_LAUNCHER);
 }
 
 void ChromeSigninDelegate::OpenLearnMore() {

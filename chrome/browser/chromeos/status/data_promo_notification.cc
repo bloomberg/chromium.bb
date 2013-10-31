@@ -15,8 +15,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/login/login_state.h"
@@ -124,12 +124,10 @@ void NotificationClicked(const std::string& service_path,
   if (info_url.empty())
     ash::network_connect::ShowNetworkSettings(service_path);
 
-  Browser* browser = chrome::FindOrCreateTabbedBrowser(
+  chrome::ScopedTabbedBrowserDisplayer displayer(
       ProfileManager::GetDefaultProfileOrOffTheRecord(),
       chrome::HOST_DESKTOP_TYPE_ASH);
-  if (!browser)
-    return;
-  chrome::ShowSingletonTab(browser, GURL(info_url));
+  chrome::ShowSingletonTab(displayer.browser(), GURL(info_url));
 }
 
 }  // namespace

@@ -11,9 +11,9 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -109,14 +109,14 @@ void ChromeShellWindowDelegate::AddNewContents(
     new_contents->SetDelegate(shell_window_link_delegate_.get());
     return;
   }
-  Browser* browser =
-      chrome::FindOrCreateTabbedBrowser(profile, chrome::GetActiveDesktop());
+  chrome::ScopedTabbedBrowserDisplayer displayer(
+      profile, chrome::GetActiveDesktop());
   // Force all links to open in a new tab, even if they were trying to open a
   // new window.
   disposition =
       disposition == NEW_BACKGROUND_TAB ? disposition : NEW_FOREGROUND_TAB;
-  chrome::AddWebContents(browser, NULL, new_contents, disposition, initial_pos,
-                         user_gesture, was_blocked);
+  chrome::AddWebContents(displayer.browser(), NULL, new_contents, disposition,
+                         initial_pos, user_gesture, was_blocked);
 }
 
 content::ColorChooser* ChromeShellWindowDelegate::ShowColorChooser(

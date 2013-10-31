@@ -57,7 +57,7 @@ TEST_F(BookmarkBubbleSignInDelegateTest, OnSignInLinkClicked) {
   // A new tab should have been opened and the browser should be visible.
   int tab_count = browser()->tab_strip_model()->count();
   EXPECT_EQ(starting_tab_count + 1, tab_count);
-  EXPECT_EQ(1,
+  EXPECT_LE(1,
             static_cast<BookmarkBubbleSignInDelegateTest::Window*>(
                 browser()->window())->show_count());
 }
@@ -92,7 +92,7 @@ TEST_F(BookmarkBubbleSignInDelegateTest, OnSignInLinkClickedIncognito) {
   // visible.
   int tab_count_normal = browser()->tab_strip_model()->count();
   EXPECT_EQ(starting_tab_count_normal + 1, tab_count_normal);
-  EXPECT_EQ(1,
+  EXPECT_LE(1,
             static_cast<BookmarkBubbleSignInDelegateTest::Window*>(
                 browser()->window())->show_count());
 
@@ -133,7 +133,7 @@ TEST_F(BookmarkBubbleSignInDelegateTest, BrowserRemoved) {
   // visible.
   int tab_count = extra_browser->tab_strip_model()->count();
   EXPECT_EQ(starting_tab_count + 1, tab_count);
-  EXPECT_EQ(1,
+  EXPECT_LE(1,
             static_cast<BookmarkBubbleSignInDelegateTest::Window*>(
                 extra_window.get())->show_count());
 

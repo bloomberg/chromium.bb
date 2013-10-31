@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension.h"
@@ -340,9 +341,12 @@ void ExtensionTabUtil::OpenOptionsPage(const Extension* extension,
 
   // Force the options page to open in non-OTR window, because it won't be
   // able to save settings from OTR.
+  scoped_ptr<chrome::ScopedTabbedBrowserDisplayer> displayer;
   if (browser->profile()->IsOffTheRecord()) {
-    browser = chrome::FindOrCreateTabbedBrowser(
-        browser->profile()->GetOriginalProfile(), browser->host_desktop_type());
+    displayer.reset(new chrome::ScopedTabbedBrowserDisplayer(
+        browser->profile()->GetOriginalProfile(),
+        browser->host_desktop_type()));
+    browser = displayer->browser();
   }
 
   content::OpenURLParams params(

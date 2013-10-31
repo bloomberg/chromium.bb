@@ -14,9 +14,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_icon_win.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -35,13 +35,14 @@ void AppMetroInfoBarDelegateWin::Create(
 
   // Chrome should never get here via the Ash desktop, so only look for browsers
   // on the native desktop.
-  Browser* browser = FindOrCreateTabbedBrowser(
+  chrome::ScopedTabbedBrowserDisplayer displayer(
       profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
 
   // Create a new tab at about:blank, and add the infobar.
-  content::WebContents* web_contents = browser->OpenURL(content::OpenURLParams(
-      GURL(content::kAboutBlankURL), content::Referrer(), NEW_FOREGROUND_TAB,
-      content::PAGE_TRANSITION_LINK, false));
+  content::OpenURLParams params(GURL(content::kAboutBlankURL),
+      content::Referrer(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK,
+      false);
+  content::WebContents* web_contents = displayer.browser()->OpenURL(params);
   InfoBarService* info_bar_service =
       InfoBarService::FromWebContents(web_contents);
   info_bar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(

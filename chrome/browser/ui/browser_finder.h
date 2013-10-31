@@ -19,6 +19,9 @@ class WebContents;
 
 namespace chrome {
 
+// If you want to find the last active tabbed browser and create a new browser
+// if there are no tabbed browsers, use ScopedTabbedBrowserDisplayer.
+
 // Retrieve the last active tabbed browser with a profile matching |profile|.
 // If |match_original_profiles| is true, matching is done based on the
 // original profile, eg profile->GetOriginalProfile() ==
@@ -29,11 +32,6 @@ namespace chrome {
 Browser* FindTabbedBrowser(Profile* profile,
                            bool match_original_profiles,
                            HostDesktopType type);
-
-// Returns the first tabbed browser matching |profile|. If there is no tabbed
-// browser a new one is created and returned for the desktop specified by
-// |type|. If a new browser is created it is not made visible.
-Browser* FindOrCreateTabbedBrowser(Profile* profile, HostDesktopType type);
 
 // Finds an existing browser window of any kind.
 // |type| refers to the host desktop the returned browser should belong to.

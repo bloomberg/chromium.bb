@@ -123,10 +123,6 @@ class InternetOptionsHandler
   // Gets the native window for hosting dialogs, etc.
   gfx::NativeWindow GetNativeWindow() const;
 
-  // Returns the last active browser. If there is no such browser, creates a new
-  // browser window with an empty tab and returns it.
-  Browser* GetAppropriateBrowser();
-
   // Handle various network commands and clicks on a network item
   // in the network list.
   // |args| must be { network_type, service_path, command } with 'command'

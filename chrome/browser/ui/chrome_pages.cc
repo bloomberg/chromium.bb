@@ -15,10 +15,10 @@
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
@@ -98,8 +98,12 @@ void ShowHelpImpl(Browser* browser,
     default:
       NOTREACHED() << "Unhandled help source " << source;
   }
-  if (!browser)
-    browser = chrome::FindOrCreateTabbedBrowser(profile, host_desktop_type);
+  scoped_ptr<ScopedTabbedBrowserDisplayer> displayer;
+  if (!browser) {
+    displayer.reset(
+        new ScopedTabbedBrowserDisplayer(profile, host_desktop_type));
+    browser = displayer->browser();
+  }
   ShowSingletonTab(browser, url);
 }
 
@@ -262,10 +266,11 @@ void ShowBrowserSignin(Browser* browser, signin::Source source) {
     // If the browser's profile is an incognito profile, make sure to use
     // a browser window from the original profile.  The user cannot sign in
     // from an incognito window.
+    scoped_ptr<ScopedTabbedBrowserDisplayer> displayer;
     if (browser->profile()->IsOffTheRecord()) {
-      browser =
-          chrome::FindOrCreateTabbedBrowser(original_profile,
-                                            chrome::HOST_DESKTOP_TYPE_NATIVE);
+      displayer.reset(new ScopedTabbedBrowserDisplayer(
+          original_profile, chrome::HOST_DESKTOP_TYPE_NATIVE));
+      browser = displayer->browser();
     }
 
     NavigateToSingletonTab(browser,
