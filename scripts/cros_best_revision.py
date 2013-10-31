@@ -189,7 +189,7 @@ class ChromeCommitter(object):
 
 def _GetParser():
   """Returns the parser to use for this module."""
-  parser = commandline.ArgumentParser(usage=__doc__, caching=True)
+  parser = commandline.ArgumentParser(usage=__doc__)
   parser.add_argument('--dryrun', action='store_true', default=False,
                       help="Find the next LKGM but don't commit it.")
   return parser

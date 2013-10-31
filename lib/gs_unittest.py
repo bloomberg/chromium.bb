@@ -98,7 +98,8 @@ class CopyTest(AbstractGSContextTest):
 
   LOCAL_PATH = '/tmp/file'
   GIVEN_REMOTE = EXPECTED_REMOTE = 'gs://test/path/file'
-  ACL = 'public-read'
+  ACL_FILE = '/my/file/acl'
+  ACL_FILE2 = '/my/file/other'
 
   def _Copy(self, ctx, src, dst, **kwargs):
     return ctx.Copy(src, dst, **kwargs)
@@ -114,22 +115,22 @@ class CopyTest(AbstractGSContextTest):
     self.gs_mock.assertCommandContains(
         ['cp', '--', self.LOCAL_PATH, self.EXPECTED_REMOTE])
 
-  def testWithACL(self):
+  def testWithACLFile(self):
     """ACL specified during init."""
-    ctx = gs.GSContext(acl=self.ACL)
+    ctx = gs.GSContext(acl_file=self.ACL_FILE)
     self.Copy(ctx=ctx)
-    self.gs_mock.assertCommandContains(['cp', '-a', self.ACL])
+    self.gs_mock.assertCommandContains(['cp', '-a', self.ACL_FILE])
 
-  def testWithACL2(self):
+  def testWithACLFile2(self):
     """ACL specified during invocation."""
-    self.Copy(acl=self.ACL)
-    self.gs_mock.assertCommandContains(['cp', '-a', self.ACL])
+    self.Copy(acl=self.ACL_FILE)
+    self.gs_mock.assertCommandContains(['cp', '-a', self.ACL_FILE])
 
-  def testWithACL3(self):
+  def testWithACLFile3(self):
     """ACL specified during invocation that overrides init."""
-    ctx = gs.GSContext(acl=self.ACL)
-    self.Copy(ctx=ctx, acl=self.ACL)
-    self.gs_mock.assertCommandContains(['cp', '-a', self.ACL])
+    ctx = gs.GSContext(acl_file=self.ACL_FILE)
+    self.Copy(ctx=ctx, acl=self.ACL_FILE2)
+    self.gs_mock.assertCommandContains(['cp', '-a', self.ACL_FILE2])
 
   def testVersion(self):
     """Test version field."""
@@ -211,9 +212,11 @@ class GSContextInitTest(cros_test_lib.MockTempDirTestCase):
 
   def testInitAclFile(self):
     """Test ACL selection logic in __init__."""
-    self.assertEqual(gs.GSContext().acl, None)
-    self.assertEqual(gs.GSContext(acl=self.acl_file).acl,
+    self.assertEqual(gs.GSContext().acl_file, None)
+    self.assertEqual(gs.GSContext(acl_file=self.acl_file).acl_file,
                      self.acl_file)
+    self.assertRaises(gs.GSContextException, gs.GSContext,
+                      acl_file=self.bad_path)
 
 
 class GSDoCommandTest(cros_test_lib.TestCase):
@@ -267,7 +270,7 @@ class GSContextTest(AbstractGSContextTest):
 
   def testSetAcl(self):
     """Base ACL setting functionality."""
-    ctx = gs.GSContext(acl='/my/file/acl')
+    ctx = gs.GSContext(acl_file='/my/file/acl')
     ctx.SetACL('gs://abc/1')
     self.gs_mock.assertCommandContains(['setacl', '/my/file/acl',
                                         'gs://abc/1'])
@@ -286,13 +289,13 @@ class GSContextTest(AbstractGSContextTest):
 
   def testCreateCached(self):
     """Test that the function runs through."""
-    gs.GSContext(cache_dir=self.tempdir)
+    gs.GSContext.Cached(self.tempdir)
 
   def testReuseCached(self):
     """Test that second fetch is a cache hit."""
-    gs.GSContext(cache_dir=self.tempdir)
+    gs.GSContext.Cached(self.tempdir)
     gs.GSUTIL_URL = None
-    gs.GSContext(cache_dir=self.tempdir)
+    gs.GSContext.Cached(self.tempdir)
 
 
 class NetworkGSContextTest(cros_test_lib.TempDirTestCase):

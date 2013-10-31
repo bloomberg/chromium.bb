@@ -172,15 +172,24 @@ def _GsUpload(local_file, remote_file, acl):
   CANNED_ACLS = ['public-read', 'private', 'bucket-owner-read',
                  'authenticated-read', 'bucket-owner-full-control',
                  'public-read-write']
-  gs_context = gs.GSContext(retries=_RETRIES, sleep=_SLEEP_TIME)
   if acl in CANNED_ACLS:
-    gs_context.Copy(local_file, remote_file, acl=acl)
+    cmd = [gs.GSUTIL_BIN, 'cp', '-a', acl, local_file, remote_file]
+    acl_cmd = None
   else:
     # For private uploads we assume that the overlay board is set up properly
     # and a googlestore_acl.xml is present. Otherwise, this script errors.
-    gs_context.Copy(local_file, remote_file, acl='private')
+    cmd = [gs.GSUTIL_BIN, 'cp', '-a', 'private', local_file, remote_file]
+    acl_cmd = [gs.GSUTIL_BIN, 'setacl', acl, remote_file]
+
+  cros_build_lib.RunCommandWithRetries(_RETRIES, cmd, print_cmd=True,
+                                       sleep=_SLEEP_TIME,
+                                       redirect_stdout=True,
+                                       redirect_stderr=True)
+  if acl_cmd:
     # Apply the passed in ACL xml file to the uploaded object.
-    gs_context.SetACL(remote_file, acl=acl)
+    cros_build_lib.RunCommandWithRetries(_RETRIES, acl_cmd, print_cmd=False,
+                                         sleep=_SLEEP_TIME)
+
 
 def RemoteUpload(acl, files, pool=10):
   """Upload to google storage.

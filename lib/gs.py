@@ -18,6 +18,12 @@ from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 
 
+# Default pathway; stored here rather than usual buildbot.constants since
+# we don't want to import buildbot code from here.
+# Note that this value is reset after GSContext via the GetDefaultGSUtilBin
+# method; we set it initially here just for the sake of making clear it
+# exists.
+GSUTIL_BIN = None
 PUBLIC_BASE_HTTPS_URL = 'https://commondatastorage.googleapis.com/'
 PRIVATE_BASE_HTTPS_URL = 'https://storage.cloud.google.com/'
 BASE_GS_URL = 'gs://'
@@ -130,45 +136,56 @@ class GSContext(object):
   GSUTIL_URL = PUBLIC_BASE_HTTPS_URL + 'pub/%s' % GSUTIL_TAR
 
   @classmethod
-  def GetDefaultGSUtilBin(cls, cache_dir=None):
+  def GetDefaultGSUtilBin(cls):
     if cls.DEFAULT_GSUTIL_BIN is None:
-      if cache_dir is None:
-        # Import here to avoid circular imports (commandline imports gs).
-        from chromite.lib import commandline
-        cache_dir = commandline.GetCacheDir()
-      if cache_dir is not None:
-        common_path = os.path.join(cache_dir, constants.COMMON_CACHE)
-        tar_cache = cache.TarballCache(common_path)
-        key = (cls.GSUTIL_TAR,)
-        # The common cache will not be LRU, removing the need to hold a read
-        # lock on the cached gsutil.
-        ref = tar_cache.Lookup(key)
-        ref.SetDefault(cls.GSUTIL_URL)
-        cls.DEFAULT_GSUTIL_BIN = os.path.join(ref.path, 'gsutil', 'gsutil')
-      else:
-        # Check if the default gsutil path for builders exists. If
-        # not, try locating gsutil. If none exists, simply use 'gsutil'.
-        gsutil_bin = cls.DEFAULT_GSUTIL_BUILDER_BIN
-        if not os.path.exists(gsutil_bin):
-          gsutil_bin = osutils.Which('gsutil')
-        if gsutil_bin is None:
-          gsutil_bin = 'gsutil'
-        cls.DEFAULT_GSUTIL_BIN = gsutil_bin
-
+      gsutil_bin = cls.DEFAULT_GSUTIL_BUILDER_BIN
+      if not os.path.exists(gsutil_bin):
+        gsutil_bin = osutils.Which('gsutil')
+      if gsutil_bin is None:
+        gsutil_bin = 'gsutil'
+      cls.DEFAULT_GSUTIL_BIN = gsutil_bin
     return cls.DEFAULT_GSUTIL_BIN
 
-  def __init__(self, boto_file=None, cache_dir=None, acl=None,
-               dry_run=False, gsutil_bin=None, init_boto=False, retries=None,
-               sleep=None):
+  @classmethod
+  def Cached(cls, cache_dir, *args, **kwargs):
+    """Reuses previously fetched GSUtil, performing the fetch if necessary.
+
+    Arguments:
+      cache_dir: The toplevel cache dir.
+      *args, **kwargs:  Arguments that are passed through to the GSContext()
+        constructor.
+
+    Returns:
+      An initialized GSContext() object.
+    """
+    common_path = os.path.join(cache_dir, constants.COMMON_CACHE)
+    tar_cache = cache.TarballCache(common_path)
+    key = (cls.GSUTIL_TAR,)
+
+    # The common cache will not be LRU, removing the need to hold a read
+    # lock on the cached gsutil.
+    ref = tar_cache.Lookup(key)
+    if ref.Exists():
+      logging.debug('Reusing cached gsutil.')
+    else:
+      logging.debug('Fetching gsutil.')
+      with osutils.TempDir(base_dir=tar_cache.staging_dir) as tempdir:
+        gsutil_tar = os.path.join(tempdir, cls.GSUTIL_TAR)
+        cros_build_lib.RunCurl([cls.GSUTIL_URL, '-o', gsutil_tar],
+                               debug_level=logging.DEBUG)
+        ref.SetDefault(gsutil_tar)
+
+    gsutil_bin = os.path.join(ref.path, 'gsutil', 'gsutil')
+    return cls(*args, gsutil_bin=gsutil_bin, **kwargs)
+
+  def __init__(self, boto_file=None, acl_file=None, dry_run=False,
+               gsutil_bin=None, init_boto=False, retries=None, sleep=None):
     """Constructor.
 
     Args:
       boto_file: Fully qualified path to user's .boto credential file.
-      cache_dir: The absolute path to the cache directory. Use the default
-        fallback if not given.
-      acl: If given, a canned ACL. It is not valid to pass in an ACL file
-        here, because most gsutil commands do not accept ACL files. If you
-        would like to use an ACL file, use the SetACL command instead.
+      acl_file: A permission file capable of setting different permissions
+        for different sets of users.
       dry_run: Testing mode that prints commands that would be run.
       gsutil_bin: If given, the absolute path to the gsutil binary.  Else
         the default fallback will be used.
@@ -179,7 +196,7 @@ class GSContext(object):
       sleep: Amount of time to sleep between failures.
     """
     if gsutil_bin is None:
-      gsutil_bin = self.GetDefaultGSUtilBin(cache_dir)
+      gsutil_bin = self.GetDefaultGSUtilBin()
     else:
       self._CheckFile('gsutil not found', gsutil_bin)
     self.gsutil_bin = gsutil_bin
@@ -193,7 +210,9 @@ class GSContext(object):
         boto_file = self.DEFAULT_BOTO_FILE
     self.boto_file = boto_file
 
-    self.acl = acl
+    if acl_file is not None:
+      self._CheckFile('Not a valid permissions file', acl_file)
+    self.acl_file = acl_file
 
     self.dry_run = dry_run
     self.retries = self.DEFAULT_RETRIES if retries is None else int(retries)
@@ -370,7 +389,7 @@ class GSContext(object):
 
     cmd.append('cp')
 
-    acl = self.acl if acl is None else acl
+    acl = self.acl_file if acl is None else acl
     if acl is not None:
       cmd += ['-a', acl]
 
@@ -403,10 +422,10 @@ class GSContext(object):
       acl: An ACL permissions file or canned ACL.
     """
     if acl is None:
-      if not self.acl:
+      if not self.acl_file:
         raise GSContextException(
             "SetAcl invoked w/out a specified acl, nor a default acl.")
-      acl = self.acl
+      acl = self.acl_file
 
     self.DoCommand(['setacl', acl, upload_url])
 
@@ -485,3 +504,7 @@ def TemporaryURL(prefix):
     yield url
   finally:
     ctx.Remove(url, ignore_missing=True)
+
+
+# Set GSUTIL_BIN now.
+GSUTIL_BIN = GSContext.GetDefaultGSUtilBin()

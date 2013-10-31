@@ -101,7 +101,7 @@ class SDKFetcher(object):
     # For external configs, there is no need to run 'gsutil config', because
     # the necessary files are all accessible to anonymous users.
     internal = self.config['internal']
-    self.gs_ctx = gs.GSContext(cache_dir=cache_dir, init_boto=internal)
+    self.gs_ctx = gs.GSContext.Cached(cache_dir, init_boto=internal)
 
     if self.sdk_path is None:
       self.sdk_path = os.environ.get(self.SDK_PATH_ENV)

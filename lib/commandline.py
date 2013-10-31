@@ -77,21 +77,6 @@ def DetermineCheckout(cwd):
   return CheckoutInfo(checkout_type, root, chrome_src_dir)
 
 
-def GetCacheDir():
-  """Calculate the current cache dir.
-
-  Users can configure the cache dir using the --cache-dir argument and it is
-  shared between cbuildbot and all child processes. If no cache dir is
-  specified, FindCacheDir finds an alternative location to store the cache.
-
-  Returns:
-    The path to the cache dir.
-  """
-  return os.environ.get(
-      constants.SHARED_CACHE_ENVVAR,
-      BaseParser.FindCacheDir(None, None))
-
-
 def AbsolutePath(_option, _opt, value):
   """Expand paths and make them absolute."""
   return osutils.ExpandPath(value)

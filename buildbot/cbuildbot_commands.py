@@ -40,6 +40,7 @@ _FACTORY_HWID = 'hwid'
 _FULL_BINHOST = 'FULL_BINHOST'
 _PRIVATE_BINHOST_CONF_DIR = ('src/private-overlays/chromeos-partner-overlay/'
                              'chromeos/binhost')
+_GSUTIL_PATH = '/b/build/scripts/slave/gsutil'
 _BINHOST_PACKAGE_FILE = ('/usr/share/dev-install/portage/make.profile/'
                          'package.installable')
 _AUTOTEST_RPC_CLIENT = ('/b/build_internal/scripts/slave-internal/autotest_rpc/'
@@ -47,7 +48,6 @@ _AUTOTEST_RPC_CLIENT = ('/b/build_internal/scripts/slave-internal/autotest_rpc/'
 _AUTOTEST_RPC_HOSTNAME = 'master2'
 _LOCAL_BUILD_FLAGS = ['--nousepkg', '--reuse_pkgs_from_local_boards']
 UPLOADED_LIST_FILENAME = 'UPLOADED'
-
 
 class TestFailure(results_lib.StepFailure):
   pass
@@ -1138,7 +1138,7 @@ def AppendToFile(file_path, string):
   osutils.WriteFile(file_path, string, mode='a')
 
 
-def UpdateUploadedList(last_uploaded, archive_path, upload_url,
+def UpdateUploadedList(buildroot, last_uploaded, archive_path, upload_url,
                        debug):
   """Updates the list of files uploaded to Google Storage.
 
@@ -1149,20 +1149,22 @@ def UpdateUploadedList(last_uploaded, archive_path, upload_url,
      upload_url: Location where tarball should be uploaded.
      debug: Whether we are in debug mode.
   """
+
   # Append to the uploaded list.
   filename = UPLOADED_LIST_FILENAME
   AppendToFile(os.path.join(archive_path, filename), last_uploaded + '\n')
 
   # Upload the updated list to Google Storage.
-  UploadArchivedFile(archive_path, upload_url, filename, debug,
+  UploadArchivedFile(buildroot, archive_path, upload_url, filename, debug,
                      update_list=False)
 
 
-def UploadArchivedFile(archive_path, upload_url, filename, debug,
+def UploadArchivedFile(buildroot, archive_path, upload_url, filename, debug,
                        update_list=False, timeout=60 * 60, acl=None):
   """Upload the specified tarball from the archive dir to Google Storage.
 
   Args:
+    buildroot: The root directory where the build occurs.
     archive_path: Path to archive dir.
     upload_url: Location where tarball should be uploaded.
     debug: Whether we are in debug mode.
@@ -1172,18 +1174,33 @@ def UploadArchivedFile(archive_path, upload_url, filename, debug,
     acl: Canned gsutil acl to use (e.g. 'public-read'), otherwise the internal
          (private) one is used.
   """
-  local_path = os.path.join(archive_path, filename)
-  gs_context = gs.GSContext(acl=acl, dry_run=debug)
 
-  try:
-    with cros_build_lib.SubCommandTimeout(timeout):
-      gs_context.CopyInto(local_path, upload_url)
-  except cros_build_lib.TimeoutError:
-    raise cros_build_lib.TimeoutError('Timed out uploading %s' % filename)
-  else:
-    # Update the list of uploaded files.
-    if update_list:
-      UpdateUploadedList(filename, archive_path, upload_url, debug)
+  if upload_url:
+    full_filename = os.path.join(archive_path, filename)
+    full_url = '%s/%s' % (upload_url, filename)
+    if acl:
+      cmds = (
+          [_GSUTIL_PATH, 'cp', '-a', acl, full_filename, full_url],
+      )
+    else:
+      cmds = (
+          [_GSUTIL_PATH, 'cp', full_filename, full_url],
+      )
+
+    try:
+      for cmd in cmds:
+        if debug:
+          cros_build_lib.Info('UploadArchivedFile would run: %s', ' '.join(cmd))
+        else:
+          with cros_build_lib.SubCommandTimeout(timeout):
+            _RunBuildScript(buildroot, cmd, debug_level=logging.DEBUG,
+                            possibly_flaky=True)
+    except cros_build_lib.TimeoutError:
+      raise cros_build_lib.TimeoutError('Timed out uploading %s' % filename)
+    else:
+      # Update the list of uploaded files.
+      if update_list:
+        UpdateUploadedList(buildroot, filename, archive_path, upload_url, debug)
 
 
 def UploadSymbols(buildroot, board, official, cnt):
@@ -1381,7 +1398,8 @@ def BuildAUTestTarball(buildroot, board, work_dir, version, archive_url):
          '--dump_dir', autotest_dir, '--archive_url', archive_url,
          basic_version, board, '--log=debug']
 
-  gs_context_dir = gs.GSContext.GetDefaultGSUtilBin()
+
+  gs_context_dir = os.path.dirname(gs.GSUTIL_BIN)
   run_env = None
   if not gs_context_dir in os.environ['PATH']:
     run_env = os.environ.copy()

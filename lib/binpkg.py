@@ -314,10 +314,11 @@ def GrabRemotePackageIndex(binhost_url):
         return None
       raise
   elif binhost_url.startswith('gs://'):
+    cmd = [gs.GSUTIL_BIN, 'cat', url]
     try:
-      gs_context = gs.GSContext()
-      output = gs_context.Cat(url).output
-    except (cros_build_lib.RunCommandError, gs.GSNoSuchKey) as e:
+      output = cros_build_lib.RunCommand(cmd, redirect_stdout=True,
+                                         print_cmd=False).output
+    except cros_build_lib.RunCommandError as e:
       cros_build_lib.PrintBuildbotStepWarnings()
       cros_build_lib.Error('Cannot GET %s: %s' % (url, str(e)))
       return None
