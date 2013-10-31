@@ -10,7 +10,11 @@ static void {{method.name}}Method(const v8::FunctionCallbackInfo<v8::Value>& arg
     {% endif %}
     {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(args.Holder());
     {% for argument in method.arguments %}
-    {% if argument.is_optional and not argument.has_default %}
+    {% if argument.is_optional and not argument.has_default and
+          argument.idl_type != 'Dictionary' %}
+    {# Optional arguments without a default value generate an early call with
+       fewer arguments if they are omitted.
+       Optional Dictionary arguments default to empty dictionary. #}
     if (UNLIKELY(args.Length() <= {{argument.index}})) {
         {{argument.cpp_method}};
         return;
@@ -49,9 +53,9 @@ static void {{method.name}}Method(const v8::FunctionCallbackInfo<v8::Value>& arg
         return;
     }
     {% endif %}
-    {% if argument.idl_type == 'Dictionary' %}
-    if (!dictionaryArg.isUndefinedOrNull() && !dictionaryArg.isObject()) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodDictionaryArg", "TestObjectPython", "parameter 1 ('dictionaryArg') is not an object."), args.GetIsolate());
+    {% if argument.idl_type in ['Dictionary', 'Promise'] %}
+    if (!{{argument.name}}.isUndefinedOrNull() && !{{argument.name}}.isObject()) {
+        throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", "parameter {{argument.index + 1}} ('{{argument.name}}') is not an object."), args.GetIsolate());
         return;
     }
     {% endif %}
