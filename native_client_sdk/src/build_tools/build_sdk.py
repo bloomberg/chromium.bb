@@ -890,6 +890,15 @@ def main(args):
   parser.add_option('--mac-sdk',
       help='Set the mac-sdk (e.g. 10.6) to use when building with ninja.')
 
+  # To setup bash completion for this command first install optcomplete
+  # and then add this line to your .bashrc:
+  #  complete -F _optcomplete build_sdk.py
+  try:
+    import optcomplete
+    optcomplete.autocomplete(parser)
+  except ImportError:
+    pass
+
   global options
   options, args = parser.parse_args(args[1:])
 

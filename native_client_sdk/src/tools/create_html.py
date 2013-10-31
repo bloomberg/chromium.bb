@@ -155,9 +155,8 @@ def CreateHTML(filenames, options):
 
 def main(argv):
   usage = 'Usage: %prog [options] <.nexe/.pexe or .nmf>'
-  description = __doc__
   epilog = 'Example: create_html.py -o index.html my_nexe.nexe'
-  parser = optparse.OptionParser(usage, description=description, epilog=epilog)
+  parser = optparse.OptionParser(usage, description=__doc__, epilog=epilog)
   parser.add_option('-v', '--verbose', action='store_true',
                     help='Verbose output')
   parser.add_option('-d', '--debug-libs', action='store_true',
@@ -166,6 +165,15 @@ def main(argv):
                     help='Name of html file to write (default is '
                          'input name with .html extension)',
                     metavar='FILE')
+
+  # To enable bash completion for this command first install optcomplete
+  # and then add this line to your .bashrc:
+  #  complete -F _optcomplete create_html.py
+  try:
+    import optcomplete
+    optcomplete.autocomplete(parser)
+  except ImportError:
+    pass
 
   options, args = parser.parse_args(argv)
 

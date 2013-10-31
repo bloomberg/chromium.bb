@@ -221,6 +221,15 @@ def main(argv):
       action='append')
   parser.add_option('-v', '--verbose', action='store_true')
 
+  # To setup bash completion for this command first install optcomplete
+  # and then add this line to your .bashrc:
+  #  complete -F _optcomplete build_projects.py
+  try:
+    import optcomplete
+    optcomplete.autocomplete(parser)
+  except ImportError:
+    pass
+
   options, args = parser.parse_args(argv[1:])
   if options.project:
     parser.error('The -p/--project option is deprecated.\n'

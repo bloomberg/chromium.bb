@@ -131,6 +131,15 @@ def main(args):
     # of the build.
     del os.environ['NACL_SDK_ROOT']
 
+  # To setup bash completion for this command first install optcomplete
+  # and then add this line to your .bashrc:
+  #  complete -F _optcomplete test_sdk.py
+  try:
+    import optcomplete
+    optcomplete.autocomplete(parser)
+  except ImportError:
+    pass
+
   options, args = parser.parse_args(args[1:])
 
   pepper_ver = str(int(build_version.ChromeMajorVersion()))

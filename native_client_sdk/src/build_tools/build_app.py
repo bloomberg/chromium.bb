@@ -80,6 +80,16 @@ def main(args):
   parser = optparse.OptionParser()
   parser.add_option('-c', '--channel',
       help='Channel to display in the name of the package.')
+
+  # To setup bash completion for this command first install optcomplete
+  # and then add this line to your .bashrc:
+  #  complete -F _optcomplete build_app.py
+  try:
+    import optcomplete
+    optcomplete.autocomplete(parser)
+  except ImportError:
+    pass
+
   options, args = parser.parse_args(args[1:])
 
   if options.channel:

@@ -292,6 +292,16 @@ def main(args):
       help='Listen for posts to /ok or /fail and shut down the server with '
           ' errorcodes 0 and 1 respectively.',
       action='store_true')
+
+  # To enable bash completion for this command first install optcomplete
+  # and then add this line to your .bashrc:
+  #  complete -F _optcomplete httpd.py
+  try:
+    import optcomplete
+    optcomplete.autocomplete(parser)
+  except ImportError:
+    pass
+
   options, args = parser.parse_args(args)
   if options.do_safe_check:
     SanityCheckDirectory(options.serve_dir)

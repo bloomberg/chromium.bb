@@ -34,9 +34,8 @@ Log.verbose = False
 
 def main(argv):
   usage = 'Usage: %prog [options] <.nexe>'
-  description = __doc__
   epilog = 'Example: sel_ldr.py my_nexe.nexe'
-  parser = optparse.OptionParser(usage, description=description, epilog=epilog)
+  parser = optparse.OptionParser(usage, description=__doc__, epilog=epilog)
   parser.add_option('-v', '--verbose', action='store_true',
                     help='Verbose output')
   parser.add_option('-d', '--debug', action='store_true',
@@ -44,6 +43,16 @@ def main(argv):
   parser.add_option('--debug-libs', action='store_true',
                     help='For dynamic executables, reference debug '
                          'libraries rather then release')
+
+  # To enable bash completion for this command first install optcomplete
+  # and then add this line to your .bashrc:
+  #  complete -F _optcomplete sel_ldr.py
+  try:
+    import optcomplete
+    optcomplete.autocomplete(parser)
+  except ImportError:
+    pass
+
   options, args = parser.parse_args(argv)
   if not args:
     parser.error('No executable file specified')
