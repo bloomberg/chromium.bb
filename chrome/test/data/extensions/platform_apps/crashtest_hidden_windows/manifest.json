@@ -1,0 +1,9 @@
+{
+  "name" : "Apps Crash Tests - Hidden Windows",
+  "version" : "0.1",
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}

@@ -312,6 +312,7 @@ GdkFilterReturn NativeAppWindowGtk::OnXEvent(GdkXEvent* gdk_x_event,
 
   if (x_event->type == PropertyNotify &&
       x_event->xproperty.atom == atom_cache_.GetAtom("_NET_WM_STATE") &&
+      GTK_WIDGET(window_)->window &&
       ui::GetAtomArrayProperty(GDK_WINDOW_XWINDOW(GTK_WIDGET(window_)->window),
                                "_NET_WM_STATE",
                                &atom_list)) {
