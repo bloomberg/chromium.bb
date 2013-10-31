@@ -137,6 +137,10 @@ function sendAutomationMessage(msg) {
   }
 }
 
+function LogTestTime(test_time) {
+  console.log(test_time);
+}
+
 // If something goes really wrong, the test running inside the plugin may not
 // terminate.  For example, if the plugin does not load, the test will never
 // send "PASS" to the browser.  In this case we should explicitly use the
@@ -209,6 +213,8 @@ function handleTestingMessage(message_event) {
       RemovePluginWhenFinished();
     else if (type === "ReportProgress")
       sendAutomationMessage(contents);
+    else if (type === "LogTestTime")
+      LogTestTime(contents);
   }
 }
 

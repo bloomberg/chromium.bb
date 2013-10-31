@@ -112,6 +112,10 @@ pp::InstancePrivate {
 
   void ReportProgress(const std::string& progress_value);
 
+  // Logs the amount of time that a given test took to run. This is to help
+  // debug test timeouts that occur in automated testing.
+  void LogTestTime(const std::string& test_time);
+
   // Add a post-condition to the JavaScript on the test_case.html page. This
   // JavaScript code will be run after the instance is shut down and must
   // evaluate to |true| or the test will fail.

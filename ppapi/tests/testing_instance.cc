@@ -157,6 +157,13 @@ void TestingInstance::LogTest(const std::string& test_name,
 
   html.append("</div>");
   LogHTML(html);
+
+  std::string test_time;
+  test_time.append(test_name);
+  test_time.append(" finished in ");
+  test_time.append(time_string);
+  test_time.append(" seconds.");
+  LogTestTime(test_time);
 }
 
 void TestingInstance::AppendError(const std::string& message) {
@@ -295,6 +302,10 @@ void TestingInstance::ReportProgress(const std::string& progress_value) {
 
 void TestingInstance::AddPostCondition(const std::string& script) {
   SendTestCommand("AddPostCondition", script);
+}
+
+void TestingInstance::LogTestTime(const std::string& test_time) {
+  SendTestCommand("LogTestTime", test_time);
 }
 
 class Module : public pp::Module {
