@@ -255,8 +255,8 @@ enum KeyLocationCode {
 }
 
 EventSender::EventSender(TestInterfaces* interfaces)
-    : m_delegate(0)
-    , m_testInterfaces(interfaces)
+    : m_testInterfaces(interfaces)
+    , m_delegate(0)
 {
     // Initialize the map that associates methods of this class with the names
     // they will use when called by JavaScript. The actual binding of those

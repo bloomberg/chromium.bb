@@ -31,6 +31,7 @@
 #include "config.h"
 #include "wtf/PageAllocator.h"
 
+#include "wtf/Assertions.h"
 #include "wtf/ProcessID.h"
 #include "wtf/SpinLock.h"
 
@@ -69,7 +70,7 @@ void* allocSuperPages(void* addr, size_t len)
     // correct alignment within the allocation.
     if (UNLIKELY(reinterpret_cast<uintptr_t>(ptr) & kSuperPageOffsetMask)) {
         int ret = munmap(ptr, len);
-        ASSERT(!ret);
+        ASSERT_UNUSED(ret, !ret);
         ptr = reinterpret_cast<char*>(mmap(0, len + kSuperPageSize - kSystemPageSize, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0));
         RELEASE_ASSERT(ptr != MAP_FAILED);
         int numSystemPagesToUnmap = kNumSystemPagesPerSuperPage - 1;

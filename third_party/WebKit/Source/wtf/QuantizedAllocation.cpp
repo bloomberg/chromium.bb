@@ -40,7 +40,6 @@ void QuantizedAllocation::init()
     size_t currAllocation = 0;
     size_t currRounding = kMinRounding;
     size_t currRoundingLimit = kMinRoundingLimit / 2;
-    size_t numCurrRounding = 0;
     for (size_t i = 0; i < kTableSize; ++i) {
         table[i] = currRounding - 1;
         currAllocation += kMinRoundingLimit;
