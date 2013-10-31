@@ -108,19 +108,18 @@ namespace app.window {
     // multiple windows of this kind, the currently focused window will be in
     // the foreground. Defaults to false. Call <code>setAlwaysOnTop()</code> on
     // the window to change this property after creation.
-    // Currently available in the Dev channel only.
     boolean? alwaysOnTop;
   };
 
   // Called in the creating window (parent) before the load event is called in
   // the created window (child). The parent can set fields or functions on the
   // child usable from onload. E.g. background.js:<br>
-  // <code>function(created_window) { created_window.contentWindow.foo =
+  // <code>function(createdWindow) { createdWindow.contentWindow.foo =
   // function () { }; };</code>
   // <br>window.js:<br>
   // <code>window.onload = function () { foo(); }</code>
   callback CreateWindowCallback =
-      void ([instanceOf=AppWindow] object created_window);
+      void ([instanceOf=AppWindow] object createdWindow);
 
   [noinline_doc] dictionary AppWindow {
     // Focus the window.
@@ -209,15 +208,13 @@ namespace app.window {
     // Set the app icon for the window (experimental).
     // Currently this is only being implemented on Ash.
     // TODO(stevenjb): Investigate implementing this on Windows and OSX.
-    [nodoc] static void setIcon(DOMString icon_url);
+    [nodoc] static void setIcon(DOMString iconUrl);
 
     // Is the window always on top?
-    // Currently available in the Dev channel only.
     static boolean isAlwaysOnTop();
 
     // Set whether the window should stay above most other windows.
-    // Currently available in the Dev channel only.
-    static void setAlwaysOnTop(boolean always_on_top);
+    static void setAlwaysOnTop(boolean alwaysOnTop);
 
     // The JavaScript 'window' object for the created child.
     [instanceOf=Window] object contentWindow;
