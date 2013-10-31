@@ -387,31 +387,6 @@ void HTMLObjectElement::renderFallbackContent()
     reattachFallbackContent();
 }
 
-// FIXME: This should be removed, all callers are almost certainly wrong.
-static bool isRecognizedTagName(const QualifiedName& tagName)
-{
-    DEFINE_STATIC_LOCAL(HashSet<StringImpl*>, tagList, ());
-    if (tagList.isEmpty()) {
-        const QualifiedName* const* tags = HTMLNames::getHTMLTags();
-        for (size_t i = 0; i < HTMLNames::HTMLTagsCount; i++) {
-            if (*tags[i] == bgsoundTag
-                || *tags[i] == commandTag
-                || *tags[i] == detailsTag
-                || *tags[i] == figcaptionTag
-                || *tags[i] == figureTag
-                || *tags[i] == summaryTag
-                || *tags[i] == trackTag) {
-                // Even though we have atoms for these tags, we don't want to
-                // treat them as "recognized tags" for the purpose of parsing
-                // because that changes how we parse documents.
-                continue;
-            }
-            tagList.add(tags[i]->localName().impl());
-        }
-    }
-    return tagList.contains(tagName.localName().impl());
-}
-
 bool HTMLObjectElement::containsJavaApplet() const
 {
     if (MIMETypeRegistry::isJavaAppletMIMEType(getAttribute(typeAttr)))
