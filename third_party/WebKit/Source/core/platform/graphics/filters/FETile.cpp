@@ -30,7 +30,6 @@
 #include "core/platform/graphics/Pattern.h"
 #include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
-#include "core/rendering/RenderTreeAsText.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "platform/text/TextStream.h"
 #include "platform/transforms/AffineTransform.h"

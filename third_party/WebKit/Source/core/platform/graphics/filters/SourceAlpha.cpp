@@ -24,7 +24,6 @@
 
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/filters/Filter.h"
-#include "core/rendering/RenderTreeAsText.h"
 #include "platform/graphics/Color.h"
 #include "platform/text/TextStream.h"
 #include "wtf/StdLibExtras.h"

@@ -26,6 +26,11 @@
 #include "config.h"
 #include "platform/text/TextStream.h"
 
+#include "platform/geometry/FloatPoint.h"
+#include "platform/geometry/FloatRect.h"
+#include "platform/geometry/FloatSize.h"
+#include "platform/geometry/IntPoint.h"
+#include "platform/geometry/IntRect.h"
 #include "wtf/MathExtras.h"
 #include "wtf/StringExtras.h"
 #include "wtf/text/WTFString.h"
@@ -130,6 +135,46 @@ String TextStream::release()
     String result = m_text.toString();
     m_text.clear();
     return result;
+}
+
+TextStream& operator<<(TextStream& ts, const IntRect& r)
+{
+    return ts << "at (" << r.x() << "," << r.y() << ") size " << r.width() << "x" << r.height();
+}
+
+TextStream& operator<<(TextStream& ts, const IntPoint& p)
+{
+    return ts << "(" << p.x() << "," << p.y() << ")";
+}
+
+TextStream& operator<<(TextStream& ts, const FloatPoint& p)
+{
+    ts << "(" << TextStream::FormatNumberRespectingIntegers(p.x());
+    ts << "," << TextStream::FormatNumberRespectingIntegers(p.y());
+    ts << ")";
+    return ts;
+}
+
+TextStream& operator<<(TextStream& ts, const FloatSize& s)
+{
+    ts << "width=" << TextStream::FormatNumberRespectingIntegers(s.width());
+    ts << " height=" << TextStream::FormatNumberRespectingIntegers(s.height());
+    return ts;
+}
+
+TextStream& operator<<(TextStream& ts, const FloatRect& r)
+{
+    ts << "at (" << TextStream::FormatNumberRespectingIntegers(r.x());
+    ts << "," << TextStream::FormatNumberRespectingIntegers(r.y());
+    ts << ") size " << TextStream::FormatNumberRespectingIntegers(r.width());
+    ts << "x" << TextStream::FormatNumberRespectingIntegers(r.height());
+    return ts;
+}
+
+void writeIndent(TextStream& ts, int indent)
+{
+    for (int i = 0; i != indent; ++i)
+        ts << "  ";
 }
 
 }

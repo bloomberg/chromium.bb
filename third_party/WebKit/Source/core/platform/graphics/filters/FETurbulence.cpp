@@ -30,7 +30,6 @@
 #include "SkRectShaderImageFilter.h"
 #include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
-#include "core/rendering/RenderTreeAsText.h"
 #include "platform/text/TextStream.h"
 #include "wtf/MathExtras.h"
 #include "wtf/ParallelJobs.h"

@@ -334,8 +334,6 @@ private:
 
     int incrementPaintCount() { return ++m_paintCount; }
 
-    static void writeIndent(TextStream&, int indent);
-
     void dumpProperties(TextStream&, int indent, LayerTreeFlags) const;
     void dumpAdditionalProperties(TextStream&, int /*indent*/, LayerTreeFlags) const { }
 
