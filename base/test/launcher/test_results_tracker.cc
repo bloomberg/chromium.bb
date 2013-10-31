@@ -228,8 +228,21 @@ void TestResultsTracker::PrintSummaryOfAllIterations() const {
   fflush(stdout);
 }
 
+void TestResultsTracker::AddGlobalTag(const std::string& tag) {
+  global_tags_.insert(tag);
+}
+
 bool TestResultsTracker::SaveSummaryAsJSON(const FilePath& path) const {
   scoped_ptr<DictionaryValue> summary_root(new DictionaryValue);
+
+  ListValue* global_tags = new ListValue;
+  summary_root->Set("global_tags", global_tags);
+
+  for (std::set<std::string>::const_iterator i = global_tags_.begin();
+       i != global_tags_.end();
+       ++i) {
+    global_tags->AppendString(*i);
+  }
 
   ListValue* per_iteration_data = new ListValue;
   summary_root->Set("per_iteration_data", per_iteration_data);

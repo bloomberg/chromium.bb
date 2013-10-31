@@ -6,6 +6,7 @@
 #define BASE_TEST_LAUNCHER_TEST_RESULTS_TRACKER_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -49,6 +50,10 @@ class TestResultsTracker {
   // Prints a summary of all test iterations (not just the last one) to stdout.
   void PrintSummaryOfAllIterations() const;
 
+  // Adds a string tag to the JSON summary. This is intended to indicate
+  // conditions that affect the entire test run, as opposed to individual tests.
+  void AddGlobalTag(const std::string& tag);
+
   // Saves a JSON summary of all test iterations results to |path|. Returns
   // true on success.
   bool SaveSummaryAsJSON(const FilePath& path) const WARN_UNUSED_RESULT;
@@ -71,6 +76,10 @@ class TestResultsTracker {
   };
 
   ThreadChecker thread_checker_;
+
+  // Set of global tags, i.e. strings indicating conditions that apply to
+  // the entire test run.
+  std::set<std::string> global_tags_;
 
   // Store test results for each iteration.
   std::vector<PerIterationData> per_iteration_data_;

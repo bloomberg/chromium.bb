@@ -99,6 +99,9 @@ class TestLauncher {
 
   void OnAllTestsStarted();
 
+  // Saves test results summary as JSON if requested from command line.
+  void MaybeSaveSummaryAsJSON();
+
   TestLauncherDelegate* launcher_delegate_;
 
   // Support for outer sharding, just like gtest does.
@@ -119,6 +122,10 @@ class TestLauncher {
 
   // Number of tests successfully finished in this iteration.
   size_t test_success_count_;
+
+  // Number of tests either timing out or having an unknown result,
+  // likely indicating a more systemic problem if widespread.
+  size_t test_broken_count_;
 
   // Number of retries in this iteration.
   size_t retry_count_;

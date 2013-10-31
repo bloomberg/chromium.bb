@@ -90,8 +90,6 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
   WrapperTestLauncherDelegate(content::TestLauncherDelegate* launcher_delegate,
                               size_t jobs)
       : launcher_delegate_(launcher_delegate),
-        timeout_count_(0),
-        printed_timeout_message_(false),
         parallel_launcher_(jobs) {
     CHECK(temp_dir_.CreateUniqueTempDir());
   }
@@ -129,13 +127,6 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
       const std::string& output);
 
   content::TestLauncherDelegate* launcher_delegate_;
-
-  // Number of times a test timeout occurred.
-  size_t timeout_count_;
-
-  // True after a message about too many timeouts has been printed,
-  // to avoid doing it more than once.
-  bool printed_timeout_message_;
 
   base::ParallelTestLauncher parallel_launcher_;
 
@@ -188,15 +179,6 @@ bool WrapperTestLauncherDelegate::ShouldRunTest(
   if (StartsWithASCII(test_info->name(), kPreTestPrefix, true)) {
     // We will actually run PRE_ tests, but to ensure they run on the same shard
     // as dependent tests, handle all these details internally.
-    return false;
-  }
-
-  // Stop test execution after too many timeouts.
-  if (timeout_count_ > 5) {
-    if (!printed_timeout_message_) {
-      printed_timeout_message_ = true;
-      printf("Too many timeouts, aborting test\n");
-    }
     return false;
   }
 

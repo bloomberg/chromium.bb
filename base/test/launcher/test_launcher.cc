@@ -62,6 +62,48 @@ void ShutdownPipeSignalHandler(int signal) {
   HANDLE_EINTR(write(g_shutdown_pipe[1], "q", 1));
 }
 
+void KillSpawnedTestProcesses() {
+  // Keep the lock until exiting the process to prevent further processes
+  // from being spawned.
+  AutoLock lock(g_live_process_handles_lock.Get());
+
+  fprintf(stdout,
+          "Sending SIGTERM to %" PRIuS " child processes... ",
+          g_live_process_handles.Get().size());
+  fflush(stdout);
+
+  for (std::set<ProcessHandle>::iterator i =
+           g_live_process_handles.Get().begin();
+       i != g_live_process_handles.Get().end();
+       ++i) {
+    kill((-1) * (*i), SIGTERM);  // Send the signal to entire process group.
+  }
+
+  fprintf(stdout,
+          "done.\nGiving processes a chance to terminate cleanly... ");
+  fflush(stdout);
+
+  PlatformThread::Sleep(TimeDelta::FromMilliseconds(500));
+
+  fprintf(stdout, "done.\n");
+  fflush(stdout);
+
+  fprintf(stdout,
+          "Sending SIGKILL to %" PRIuS " child processes... ",
+          g_live_process_handles.Get().size());
+  fflush(stdout);
+
+  for (std::set<ProcessHandle>::iterator i =
+           g_live_process_handles.Get().begin();
+       i != g_live_process_handles.Get().end();
+       ++i) {
+    kill((-1) * (*i), SIGKILL);  // Send the signal to entire process group.
+  }
+
+  fprintf(stdout, "done.\n");
+  fflush(stdout);
+}
+
 // I/O watcher for the reading end of the self-pipe above.
 // Terminates any launched child processes and exits the process.
 class SignalFDWatcher : public MessageLoopForIO::Watcher {
@@ -73,45 +115,7 @@ class SignalFDWatcher : public MessageLoopForIO::Watcher {
     fprintf(stdout, "\nCaught signal. Killing spawned test processes...\n");
     fflush(stdout);
 
-    // Keep the lock until exiting the process to prevent further processes
-    // from being spawned.
-    AutoLock lock(g_live_process_handles_lock.Get());
-
-    fprintf(stdout,
-            "Sending SIGTERM to %" PRIuS " child processes... ",
-            g_live_process_handles.Get().size());
-    fflush(stdout);
-
-    for (std::set<ProcessHandle>::iterator i =
-             g_live_process_handles.Get().begin();
-         i != g_live_process_handles.Get().end();
-         ++i) {
-      kill((-1) * (*i), SIGTERM);  // Send the signal to entire process group.
-    }
-
-    fprintf(stdout,
-            "done.\nGiving processes a chance to terminate cleanly... ");
-    fflush(stdout);
-
-    PlatformThread::Sleep(TimeDelta::FromMilliseconds(500));
-
-    fprintf(stdout, "done.\n");
-    fflush(stdout);
-
-    fprintf(stdout,
-            "Sending SIGKILL to %" PRIuS " child processes... ",
-            g_live_process_handles.Get().size());
-    fflush(stdout);
-
-    for (std::set<ProcessHandle>::iterator i =
-             g_live_process_handles.Get().begin();
-         i != g_live_process_handles.Get().end();
-         ++i) {
-      kill((-1) * (*i), SIGKILL);  // Send the signal to entire process group.
-    }
-
-    fprintf(stdout, "done.\n");
-    fflush(stdout);
+    KillSpawnedTestProcesses();
 
     // The signal would normally kill the process, so exit now.
     exit(1);
@@ -210,6 +214,7 @@ TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate)
       test_started_count_(0),
       test_finished_count_(0),
       test_success_count_(0),
+      test_broken_count_(0),
       retry_count_(0),
       retry_limit_(3),  // TODO(phajdan.jr): Make a flag control this.
       run_result_(true) {
@@ -254,14 +259,7 @@ bool TestLauncher::Run(int argc, char** argv) {
   if (cycles_ != 1)
     results_tracker_.PrintSummaryOfAllIterations();
 
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kTestLauncherSummaryOutput)) {
-    FilePath summary_path(command_line->GetSwitchValuePath(
-                              switches::kTestLauncherSummaryOutput));
-    if (!results_tracker_.SaveSummaryAsJSON(summary_path)) {
-      LOG(ERROR) << "Failed to save test launcher output summary.";
-    }
-  }
+  MaybeSaveSummaryAsJSON();
 
   return run_result_;
 }
@@ -384,6 +382,30 @@ void TestLauncher::OnTestFinished(const TestResult& result) {
           Bind(&TestLauncher::RunTestIteration, Unretained(this)));
     }
   }
+
+  // Do not waste time on timeouts. We include tests with unknown results here
+  // because sometimes (e.g. hang in between unit tests) that's how a timeout
+  // gets reported.
+  if (result.status == TestResult::TEST_TIMEOUT ||
+      result.status == TestResult::TEST_UNKNOWN) {
+    test_broken_count_++;
+  }
+  size_t broken_threshold =
+      std::max(static_cast<size_t>(10), test_started_count_ / 10);
+  if (test_broken_count_ >= broken_threshold) {
+    fprintf(stdout, "Too many badly broken tests (%" PRIuS "), exiting now.\n",
+            test_broken_count_);
+    fflush(stdout);
+
+#if defined(OS_POSIX)
+    KillSpawnedTestProcesses();
+#endif  // defined(OS_POSIX)
+
+    results_tracker_.AddGlobalTag("BROKEN_TEST_EARLY_EXIT");
+    MaybeSaveSummaryAsJSON();
+
+    exit(1);
+  }
 }
 
 bool TestLauncher::Init() {
@@ -505,6 +527,7 @@ void TestLauncher::RunTestIteration() {
   test_started_count_ = 0;
   test_finished_count_ = 0;
   test_success_count_ = 0;
+  test_broken_count_ = 0;
   retry_count_ = 0;
   tests_to_retry_.clear();
   results_tracker_.OnTestIterationStarting();
@@ -515,6 +538,17 @@ void TestLauncher::RunTestIteration() {
 }
 
 void TestLauncher::OnAllTestsStarted() {
+}
+
+void TestLauncher::MaybeSaveSummaryAsJSON() {
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kTestLauncherSummaryOutput)) {
+    FilePath summary_path(command_line->GetSwitchValuePath(
+                              switches::kTestLauncherSummaryOutput));
+    if (!results_tracker_.SaveSummaryAsJSON(summary_path)) {
+      LOG(ERROR) << "Failed to save test launcher output summary.";
+    }
+  }
 }
 
 std::string GetTestOutputSnippet(const TestResult& result,
