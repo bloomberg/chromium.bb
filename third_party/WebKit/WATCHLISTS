@@ -55,9 +55,7 @@
       'filepath': 'OWNERS',
     },
     'public_api': {
-      'filepath': 'public' \
-                  '|Source/WebKit/chromium/public' \
-                  '|Tools/DumpRenderTree/chromium/TestRunner/public/',
+      'filepath': 'public'
     },
     'spellcheck' : {
       'filepath':  'Source/core/editing/Editor.*' \
@@ -83,9 +81,10 @@
     },
     'indexed_db': {
       'filepath': 'Source/modules/indexeddb/' \
-                  '|Source/WebKit/chromium/.*IDB' \
                   '|Source/core/platform/leveldb' \
-                  '|LayoutTests/storage/indexeddb'
+                  '|Source/web/.*IDB' \
+                  '|LayoutTests/storage/indexeddb' \
+                  '|public/.*IDB'
     },
     'rendering': {
       'filepath': 'Source/core/rendering'
@@ -120,7 +119,8 @@
                   '|Source/core/html/shadow/MediaControl.*' \
                   '|Source/core/rendering/RenderMedia.*' \
                   '|Source/modules/(encryptedmedia|mediasource)' \
-                  '|Source/WebKit/chromium/.*Media.*' \
+                  '|Source/web/.*Media' \
+                  '|public/.*Media'
     },
     'media_queries': {
         'filepath': 'Source/core/css/CSSMediaRule.*' \
@@ -130,13 +130,15 @@
     'fileapi': {
       'filepath': 'Source/modules/filesystem/' \
                   '|Source/core/fileapi/' \
-                  '|Source/WebKit/chromium/.*File.*' \
                   '|Source/core/platform/.*File.*' \
-                  '|LayoutTests/fast/file'
+                  '|Source/web/.*File' \
+                  '|LayoutTests/fast/file' \
+                  '|public/.*File'
     },
     'quota': {
       'filepath': 'Source/modules/quota/' \
-                  '|Source/WebKit/chromium/.*Quota.*'
+                  '|Source/web/.*Quota' \
+                  '|public/.*Quota'
     },
     'viewport_interaction': {
       'filepath': 'Source/core/css/.*Viewport.*' \
