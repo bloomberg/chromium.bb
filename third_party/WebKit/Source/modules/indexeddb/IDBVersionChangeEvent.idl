@@ -27,7 +27,8 @@ interface IDBVersionChangeEvent : Event {
     readonly attribute IDBAny oldVersion;
     readonly attribute IDBAny newVersion;
 
-    // FIXME: This is non-standard, see
+    // FIXME: These are non-standard, see
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=22370
     readonly attribute DOMString dataLoss;
+    readonly attribute DOMString dataLossMessage;
 };

@@ -114,10 +114,10 @@ void WebIDBCallbacksImpl::onBlocked(long long oldVersion)
     m_callbacks->onBlocked(oldVersion);
 }
 
-void WebIDBCallbacksImpl::onUpgradeNeeded(long long oldVersion, WebIDBDatabase* database, const WebIDBMetadata& metadata, DataLoss dataLoss)
+void WebIDBCallbacksImpl::onUpgradeNeeded(long long oldVersion, WebIDBDatabase* database, const WebIDBMetadata& metadata, DataLoss dataLoss, WebString dataLossMessage)
 {
     m_databaseProxy = IDBDatabaseBackendProxy::create(adoptPtr(database));
-    m_callbacks->onUpgradeNeeded(oldVersion, m_databaseProxy, metadata, dataLoss);
+    m_callbacks->onUpgradeNeeded(oldVersion, m_databaseProxy, metadata, dataLoss, dataLossMessage);
 }
 
 } // namespace WebKit

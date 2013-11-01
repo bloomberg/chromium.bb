@@ -55,7 +55,7 @@ public:
     virtual void onSuccess(long long);
     virtual void onSuccess();
     virtual void onBlocked(long long oldVersion);
-    virtual void onUpgradeNeeded(long long oldVersion, WebIDBDatabase*, const WebIDBMetadata&, DataLoss);
+    virtual void onUpgradeNeeded(long long oldVersion, WebIDBDatabase*, const WebIDBMetadata&, DataLoss, WebString dataLossMessage);
 
 private:
     RefPtr<WebCore::IDBCallbacks> m_callbacks;

@@ -71,7 +71,7 @@ void IDBOpenDBRequest::onBlocked(int64_t oldVersion)
     enqueueEvent(IDBVersionChangeEvent::create(IDBAny::create(oldVersion), newVersionAny.release(), EventTypeNames::blocked));
 }
 
-void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, PassRefPtr<IDBDatabaseBackendInterface> prpDatabaseBackend, const IDBDatabaseMetadata& metadata, WebKit::WebIDBCallbacks::DataLoss dataLoss)
+void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, PassRefPtr<IDBDatabaseBackendInterface> prpDatabaseBackend, const IDBDatabaseMetadata& metadata, WebKit::WebIDBCallbacks::DataLoss dataLoss, String dataLossMessage)
 {
     IDB_TRACE("IDBOpenDBRequest::onUpgradeNeeded()");
     if (m_contextStopped || !executionContext()) {
@@ -104,7 +104,7 @@ void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, PassRefPtr<IDBDatabas
 
     if (m_version == IDBDatabaseMetadata::NoIntVersion)
         m_version = 1;
-    enqueueEvent(IDBVersionChangeEvent::create(IDBAny::create(oldVersion), IDBAny::create(m_version), EventTypeNames::upgradeneeded, dataLoss));
+    enqueueEvent(IDBVersionChangeEvent::create(IDBAny::create(oldVersion), IDBAny::create(m_version), EventTypeNames::upgradeneeded, dataLoss, dataLossMessage));
 }
 
 void IDBOpenDBRequest::onSuccess(PassRefPtr<IDBDatabaseBackendInterface> prpBackend, const IDBDatabaseMetadata& metadata)
