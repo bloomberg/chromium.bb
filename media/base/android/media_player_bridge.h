@@ -81,9 +81,9 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
 
  protected:
   void SetJavaMediaPlayerBridge(jobject j_media_player_bridge);
+  base::android::ScopedJavaLocalRef<jobject> GetJavaMediaPlayerBridge();
   void SetMediaPlayerListener();
   void SetDuration(base::TimeDelta time);
-
 
   virtual void PendingSeekInternal(const base::TimeDelta& time);
 
@@ -95,6 +95,9 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
 
   // Create the corresponding Java class instance.
   virtual void CreateJavaMediaPlayerBridge();
+
+  // Get allowed operations from the player.
+  virtual base::android::ScopedJavaLocalRef<jobject> GetAllowedOperations();
 
  private:
   // Set the data source for the media player.
@@ -108,8 +111,8 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   // Called when |time_update_timer_| fires.
   void OnTimeUpdateTimerFired();
 
-  // Get allowed operations from the player.
-  void GetAllowedOperations();
+  // Update allowed operations from the player.
+  void UpdateAllowedOperations();
 
   // Callback function passed to |resource_getter_|. Called when the cookies
   // are retrieved.

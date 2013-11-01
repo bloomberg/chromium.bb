@@ -85,6 +85,13 @@ void MediaPlayerBridge::SetJavaMediaPlayerBridge(
   j_media_player_bridge_.Reset(env, j_media_player_bridge);
 }
 
+base::android::ScopedJavaLocalRef<jobject> MediaPlayerBridge::
+    GetJavaMediaPlayerBridge() {
+  base::android::ScopedJavaLocalRef<jobject> j_bridge(
+      j_media_player_bridge_);
+  return j_bridge;
+}
+
 void MediaPlayerBridge::SetMediaPlayerListener() {
   jobject j_context = base::android::GetApplicationContext();
   DCHECK(j_context);
@@ -320,18 +327,25 @@ void MediaPlayerBridge::OnMediaPrepared() {
     pending_play_ = false;
   }
 
-  GetAllowedOperations();
+  UpdateAllowedOperations();
   manager()->OnMediaMetadataChanged(
       player_id(), duration_, width_, height_, true);
 }
 
-void MediaPlayerBridge::GetAllowedOperations() {
+ScopedJavaLocalRef<jobject> MediaPlayerBridge::GetAllowedOperations() {
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
 
-  ScopedJavaLocalRef<jobject> allowedOperations =
-      Java_MediaPlayerBridge_getAllowedOperations(
-          env, j_media_player_bridge_.obj());
+  return Java_MediaPlayerBridge_getAllowedOperations(
+      env, j_media_player_bridge_.obj());
+}
+
+void MediaPlayerBridge::UpdateAllowedOperations() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  CHECK(env);
+
+  ScopedJavaLocalRef<jobject> allowedOperations = GetAllowedOperations();
+
   can_pause_ = Java_AllowedOperations_canPause(env, allowedOperations.obj());
   can_seek_forward_ = Java_AllowedOperations_canSeekForward(
       env, allowedOperations.obj());
