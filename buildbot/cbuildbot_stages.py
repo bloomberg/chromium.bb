@@ -1364,11 +1364,21 @@ class CommitQueueCompletionStage(LKGMCandidateSyncCompletionStage):
     if self._build_config['master']:
       # Even if there was a failure, we can submit the changes that indicate
       # that they don't care about this failure.
-      rejected = self.sync_stage.pool.SubmitPartialPool(tracebacks)
-      self.sync_stage.pool.changes = rejected
+      messages = [self._slave_statuses[x].message for x in failing]
+
+      if failing and not inflight:
+        tracebacks = set()
+        for message in messages:
+          # If there are no tracebacks, that means that the builder did not
+          # report its status properly. Don't submit anything.
+          if not message.tracebacks:
+            break
+          tracebacks.update(message.tracebacks)
+        else:
+          rejected = self.sync_stage.pool.SubmitPartialPool(tracebacks)
+          self.sync_stage.pool.changes = rejected
 
       if failing:
-        messages = [self._slave_statuses[x].message for x in failing]
         self.sync_stage.pool.HandleValidationFailure(messages)
       elif inflight:
         self.sync_stage.pool.HandleValidationTimeout()
