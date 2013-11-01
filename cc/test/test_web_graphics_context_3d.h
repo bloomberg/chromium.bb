@@ -215,10 +215,13 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
 
   static const WebKit::WebGLId kExternalTextureId;
   virtual WebKit::WebGLId NextTextureId();
+  virtual void RetireTextureId(WebKit::WebGLId id);
 
   virtual WebKit::WebGLId NextBufferId();
+  virtual void RetireBufferId(WebKit::WebGLId id);
 
   virtual WebKit::WebGLId NextImageId();
+  virtual void RetireImageId(WebKit::WebGLId id);
 
   size_t GetTransferBufferMemoryUsedBytes() const;
   void SetMaxTransferBufferUsageBytes(size_t max_transfer_buffer_usage_bytes);

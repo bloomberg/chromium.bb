@@ -216,13 +216,8 @@ void TestWebGraphicsContext3D::genTextures(WGC3Dsizei count, WebGLId* ids) {
 }
 
 void TestWebGraphicsContext3D::deleteBuffers(WGC3Dsizei count, WebGLId* ids) {
-  base::AutoLock lock(namespace_->lock);
-  for (int i = 0; i < count; ++i) {
-    unsigned context_id = ids[i] >> 17;
-    unsigned buffer_id = ids[i] & 0x1ffff;
-    DCHECK(buffer_id && buffer_id < namespace_->next_buffer_id);
-    DCHECK_EQ(context_id, context_id_);
-  }
+  for (int i = 0; i < count; ++i)
+    RetireBufferId(ids[i]);
 }
 
 void TestWebGraphicsContext3D::deleteFramebuffers(
@@ -238,6 +233,8 @@ void TestWebGraphicsContext3D::deleteRenderbuffers(
 }
 
 void TestWebGraphicsContext3D::deleteTextures(WGC3Dsizei count, WebGLId* ids) {
+  for (int i = 0; i < count; ++i)
+    RetireTextureId(ids[i]);
   base::AutoLock lock(namespace_->lock);
   for (int i = 0; i < count; ++i) {
     namespace_->textures.Remove(ids[i]);
@@ -459,10 +456,11 @@ void TestWebGraphicsContext3D::bindBuffer(WebKit::WGC3Denum target,
   bound_buffer_ = buffer;
   if (!bound_buffer_)
     return;
-  unsigned context_id = buffer >> 17;
-  unsigned buffer_id = buffer & 0x1ffff;
+  unsigned context_id = buffer >> 16;
+  unsigned buffer_id = buffer & 0xffff;
   base::AutoLock lock(namespace_->lock);
-  DCHECK(buffer_id && buffer_id < namespace_->next_buffer_id);
+  DCHECK(buffer_id);
+  DCHECK_LT(buffer_id, namespace_->next_buffer_id);
   DCHECK_EQ(context_id, context_id_);
 
   base::ScopedPtrHashMap<unsigned, Buffer>& buffers = namespace_->buffers;
@@ -531,11 +529,7 @@ WebKit::WGC3Duint TestWebGraphicsContext3D::createImageCHROMIUM(
 
 void TestWebGraphicsContext3D::destroyImageCHROMIUM(
     WebKit::WGC3Duint id) {
-  base::AutoLock lock(namespace_->lock);
-  unsigned context_id = id >> 17;
-  unsigned image_id = id & 0x1ffff;
-  DCHECK(image_id && image_id < namespace_->next_image_id);
-  DCHECK_EQ(context_id, context_id_);
+  RetireImageId(id);
 }
 
 void TestWebGraphicsContext3D::getImageParameterivCHROMIUM(
@@ -586,20 +580,47 @@ WebGLId TestWebGraphicsContext3D::NextTextureId() {
   return texture_id;
 }
 
+void TestWebGraphicsContext3D::RetireTextureId(WebGLId id) {
+  base::AutoLock lock(namespace_->lock);
+  unsigned context_id = id >> 16;
+  unsigned texture_id = id & 0xffff;
+  DCHECK(texture_id);
+  DCHECK_LT(texture_id, namespace_->next_texture_id);
+  DCHECK_EQ(context_id, context_id_);
+}
+
 WebGLId TestWebGraphicsContext3D::NextBufferId() {
   base::AutoLock lock(namespace_->lock);
   WebGLId buffer_id = namespace_->next_buffer_id++;
-  DCHECK(buffer_id < (1 << 17));
-  buffer_id |= context_id_ << 17;
+  DCHECK(buffer_id < (1 << 16));
+  buffer_id |= context_id_ << 16;
   return buffer_id;
+}
+
+void TestWebGraphicsContext3D::RetireBufferId(WebGLId id) {
+  base::AutoLock lock(namespace_->lock);
+  unsigned context_id = id >> 16;
+  unsigned buffer_id = id & 0xffff;
+  DCHECK(buffer_id);
+  DCHECK_LT(buffer_id, namespace_->next_buffer_id);
+  DCHECK_EQ(context_id, context_id_);
 }
 
 WebKit::WGC3Duint TestWebGraphicsContext3D::NextImageId() {
   base::AutoLock lock(namespace_->lock);
   WGC3Duint image_id = namespace_->next_image_id++;
-  DCHECK(image_id < (1 << 17));
-  image_id |= context_id_ << 17;
+  DCHECK(image_id < (1 << 16));
+  image_id |= context_id_ << 16;
   return image_id;
+}
+
+void TestWebGraphicsContext3D::RetireImageId(WebGLId id) {
+  base::AutoLock lock(namespace_->lock);
+  unsigned context_id = id >> 16;
+  unsigned image_id = id & 0xffff;
+  DCHECK(image_id);
+  DCHECK_LT(image_id, namespace_->next_image_id);
+  DCHECK_EQ(context_id, context_id_);
 }
 
 size_t TestWebGraphicsContext3D::GetTransferBufferMemoryUsedBytes() const {

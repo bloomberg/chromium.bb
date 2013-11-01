@@ -74,7 +74,7 @@ class TiledLayerTest : public testing::Test {
     DebugScopedSetImplThreadAndMainThreadBlocked
         impl_thread_and_main_thread_blocked(proxy_);
     resource_provider_ =
-        ResourceProvider::Create(output_surface_.get(), NULL, 0, false);
+        ResourceProvider::Create(output_surface_.get(), NULL, 0, false, 1);
     host_impl_ = make_scoped_ptr(new FakeLayerTreeHostImpl(proxy_));
   }
 

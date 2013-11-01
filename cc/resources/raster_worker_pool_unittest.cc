@@ -67,8 +67,8 @@ class RasterWorkerPoolTest : public testing::Test,
     output_surface_ = FakeOutputSurface::Create3d(context_provider_).Pass();
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
-    resource_provider_ =
-        ResourceProvider::Create(output_surface_.get(), NULL, 0, false).Pass();
+    resource_provider_ = ResourceProvider::Create(
+        output_surface_.get(), NULL, 0, false, 1).Pass();
   }
   virtual ~RasterWorkerPoolTest() {
     resource_provider_.reset();

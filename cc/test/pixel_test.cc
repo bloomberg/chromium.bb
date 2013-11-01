@@ -167,7 +167,7 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend) {
   output_surface_->BindToClient(fake_client_.get());
 
   resource_provider_ =
-      ResourceProvider::Create(output_surface_.get(), NULL, 0, false);
+      ResourceProvider::Create(output_surface_.get(), NULL, 0, false, 1);
 
   texture_mailbox_deleter_ = make_scoped_ptr(new TextureMailboxDeleter);
 
@@ -210,7 +210,7 @@ void PixelTest::SetUpSoftwareRenderer() {
   output_surface_.reset(new PixelTestOutputSurface(device.Pass()));
   output_surface_->BindToClient(fake_client_.get());
   resource_provider_ =
-      ResourceProvider::Create(output_surface_.get(), NULL, 0, false);
+      ResourceProvider::Create(output_surface_.get(), NULL, 0, false, 1);
   renderer_ = SoftwareRenderer::Create(fake_client_.get(),
                                        &settings_,
                                        output_surface_.get(),

@@ -1091,7 +1091,11 @@ class LayerTreeHostContextTestDontUseLostResources
     child_output_surface_ = FakeOutputSurface::Create3d();
     child_output_surface_->BindToClient(&output_surface_client_);
     child_resource_provider_ =
-        ResourceProvider::Create(child_output_surface_.get(), NULL, 0, false);
+        ResourceProvider::Create(child_output_surface_.get(),
+                                 NULL,
+                                 0,
+                                 false,
+                                 1);
   }
 
   static void EmptyReleaseCallback(unsigned sync_point, bool lost) {}
@@ -1799,6 +1803,9 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 class UIResourceLostTest : public LayerTreeHostContextTest {
  public:
   UIResourceLostTest() : time_step_(0) {}
+  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+    settings->texture_id_allocation_chunk_size = 1;
+  }
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
   virtual void AfterTest() OVERRIDE {}
 

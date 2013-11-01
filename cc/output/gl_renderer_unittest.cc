@@ -220,8 +220,8 @@ class GLRendererTest : public testing::Test {
         context3d.PassAs<TestWebGraphicsContext3D>()).Pass();
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
-    resource_provider_ =
-        ResourceProvider::Create(output_surface_.get(), NULL, 0, false).Pass();
+    resource_provider_ = ResourceProvider::Create(
+        output_surface_.get(), NULL, 0, false, 1).Pass();
     renderer_ = make_scoped_ptr(new FakeRendererGL(&renderer_client_,
                                                    &settings_,
                                                    output_surface_.get(),
@@ -312,8 +312,8 @@ class GLRendererShaderTest : public testing::Test {
             new ShaderCreatorMockGraphicsContext())).Pass();
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
-    resource_provider_ =
-        ResourceProvider::Create(output_surface_.get(), NULL, 0, false).Pass();
+    resource_provider_ = ResourceProvider::Create(
+        output_surface_.get(), NULL, 0, false, 1).Pass();
     renderer_.reset(new FakeRendererGL(&renderer_client_,
                                        &settings_,
                                        output_surface_.get(),
@@ -616,7 +616,7 @@ TEST(GLRendererTest2, InitializationDoesNotMakeSynchronousCalls) {
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), NULL, 0, false));
+      ResourceProvider::Create(output_surface.get(), NULL, 0, false, 1));
 
   LayerTreeSettings settings;
   FakeRendererClient renderer_client;
@@ -661,7 +661,7 @@ TEST(GLRendererTest2, InitializationWithQuicklyLostContextDoesNotAssert) {
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), NULL, 0, false));
+      ResourceProvider::Create(output_surface.get(), NULL, 0, false, 1));
 
   LayerTreeSettings settings;
   FakeRendererClient renderer_client;
@@ -696,7 +696,7 @@ TEST(GLRendererTest2, OpaqueBackground) {
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), NULL, 0, false));
+      ResourceProvider::Create(output_surface.get(), NULL, 0, false, 1));
 
   LayerTreeSettings settings;
   FakeRendererClient renderer_client;
@@ -734,7 +734,7 @@ TEST(GLRendererTest2, TransparentBackground) {
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), NULL, 0, false));
+      ResourceProvider::Create(output_surface.get(), NULL, 0, false, 1));
 
   LayerTreeSettings settings;
   FakeRendererClient renderer_client;
@@ -766,7 +766,7 @@ TEST(GLRendererTest2, OffscreenOutputSurface) {
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), NULL, 0, false));
+      ResourceProvider::Create(output_surface.get(), NULL, 0, false, 1));
 
   LayerTreeSettings settings;
   FakeRendererClient renderer_client;
@@ -842,7 +842,7 @@ TEST(GLRendererTest2, VisibilityChangeIsLastCall) {
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), NULL, 0, false));
+      ResourceProvider::Create(output_surface.get(), NULL, 0, false, 1));
 
   LayerTreeSettings settings;
   FakeRendererClient renderer_client;
@@ -902,7 +902,7 @@ TEST(GLRendererTest2, ActiveTextureState) {
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), NULL, 0, false));
+      ResourceProvider::Create(output_surface.get(), NULL, 0, false, 1));
 
   LayerTreeSettings settings;
   FakeRendererClient renderer_client;
@@ -989,7 +989,7 @@ TEST(GLRendererTest2, ShouldClearRootRenderPass) {
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), NULL, 0, false));
+      ResourceProvider::Create(output_surface.get(), NULL, 0, false, 1));
 
   LayerTreeSettings settings;
   settings.should_clear_root_render_pass = false;
@@ -1077,7 +1077,7 @@ TEST(GLRendererTest2, ScissorTestWhenClearing) {
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), NULL, 0, false));
+      ResourceProvider::Create(output_surface.get(), NULL, 0, false, 1));
 
   LayerTreeSettings settings;
   FakeRendererClient renderer_client;
@@ -1163,7 +1163,7 @@ TEST(GLRendererTest2, NoDiscardOnPartialUpdates) {
   output_surface->set_fixed_size(gfx::Size(100, 100));
 
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), NULL, 0, false));
+      ResourceProvider::Create(output_surface.get(), NULL, 0, false, 1));
 
   LayerTreeSettings settings;
   settings.partial_swap_enabled = true;
@@ -1342,7 +1342,7 @@ TEST(GLRendererTest2, ScissorAndViewportWithinNonreshapableSurface) {
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), NULL, 0, false));
+      ResourceProvider::Create(output_surface.get(), NULL, 0, false, 1));
 
   LayerTreeSettings settings;
   FakeRendererClient renderer_client;
@@ -1696,7 +1696,7 @@ class MockOutputSurfaceTest : public testing::Test, public FakeRendererClient {
     CHECK(output_surface_.BindToClient(&output_surface_client_));
 
     resource_provider_ =
-        ResourceProvider::Create(&output_surface_, NULL, 0, false).Pass();
+        ResourceProvider::Create(&output_surface_, NULL, 0, false, 1).Pass();
 
     renderer_.reset(new FakeRendererGL(
         this, &settings_, &output_surface_, resource_provider_.get()));
