@@ -739,6 +739,6 @@
  "xp-release/sizes/chrome.exe/chrome.exe": {"reva": 183841, "revb": 184954, "type": "absolute", "better": "lower", "improve": 720358, "regress": 796186, "sha1": "b5aa4523"},
  "xp-release/sizes/mini_installer.exe/mini_installer.exe": {"reva": 223825, "revb": 224162, "type": "absolute", "better": "lower", "improve": 30193766, "regress": 33489255, "sha1": "1cd4e3aa"},
  "xp-release/sizes/npchrome_frame.dll/npchrome_frame.dll": {"reva": 230662, "revb": 230712, "type": "absolute", "better": "lower", "improve": 2426649, "regress": 2723482, "sha1": "1f39fef7"},
- "xp-release/sizes/setup.exe/setup.exe": {"reva": 183841, "revb": 184954, "type": "absolute", "better": "lower", "improve": 1080780, "regress": 1195085, "sha1": "c56e884e"},
+ "xp-release/sizes/setup.exe/setup.exe": {"reva": 232254, "revb": 232331, "type": "absolute", "better": "lower", "improve": 1135744, "regress": 1255296, "sha1": "624e0761"},
  "load": true
 }
