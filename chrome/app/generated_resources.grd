@@ -4371,6 +4371,15 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PROMPT_WARNING_NETWORK_STATE" desc="Permission string for network list access.">
         Access list of network connections
       </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_SEARCH_SETTINGS_OVERRIDE" desc="Permission string for search settings override.">
+        Change your search settings to: <ph name="SEARCH_HOST">$1<ex>url.search.com</ex></ph>
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_HOME_PAGE_SETTING_OVERRIDE" desc="Permission string for home page override.">
+        Change your home page to: <ph name="START_PAGE">$1<ex>home.page.com/home.html</ex></ph>
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_START_PAGE_SETTING_OVERRIDE" desc="Permission string for start page override.">
+        Change your start page to: <ph name="START_PAGE">$1<ex>start.page.com/start.html</ex></ph>
+      </message>
 
       <!-- Extension/App error messages -->
       <message name="IDS_EXTENSION_CANT_GET_ABSOLUTE_PATH" desc="Warning displayed in pack dialog when the absolute path to the extension directory can not be found.">
@@ -10636,6 +10645,12 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_OPTIONS_CONTROLLED_SETTING_EXTENSION" desc="Text displayed in the controlled settings bubble when a setting's value is enforced by an extension.">
         This setting is enforced by an extension.
       </message>
+      <message name="IDS_OPTIONS_CONTROLLED_SETTING_EXTENSION_WITH_NAME" desc="Text displayed in the controlled settings bubble when a setting's value is enforced by an extension. The name of the extension would be displayed on the following line, thus the ending with ':'.">
+        This setting is controlled by:
+      </message>
+      <message name="IDS_OPTIONS_CONTROLLED_SETTING_MANAGE_EXTENSIONS" desc="Text displayed for a link to manage extensions from the controlled settings bubble.">
+        Manage extensions
+      </message>
       <message name="IDS_OPTIONS_CONTROLLED_SETTING_RECOMMENDED" desc="Text displayed in the controlled settings bubble when a value is recommended for a setting through policy and the user has not overridden this recommendation.">
         You are following the administrator's recommendation for this setting.
       </message>
@@ -10650,6 +10665,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       </message>
       <message name="IDS_OPTIONS_CONTROLLED_SETTINGS_EXTENSION" desc="Text displayed in the controlled settings bubble when it is shown for a group of settings whose values are enforced by an extension.">
         These settings are enforced by an extension.
+      </message>
+      <message name="IDS_OPTIONS_CONTROLLED_SETTINGS_EXTENSION_WITH_NAME" desc="Text displayed in the controlled settings bubble when it is shown for a group of settings whose values are enforced by an extension. The name of the extension would be displayed on the following line, thus the ending with ':'.">
+        These settings are controlled by:
       </message>
 
       <!-- Extension install location strings -->
