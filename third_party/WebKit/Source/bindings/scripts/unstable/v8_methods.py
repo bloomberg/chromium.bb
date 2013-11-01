@@ -91,7 +91,7 @@ def cpp_method(method, number_of_arguments):
     idl_type = method.idl_type
     if idl_type == 'void':
         return cpp_value
-    return v8_types.v8_set_return_value(idl_type, cpp_value, callback_info='args', isolate='args.GetIsolate()')
+    return v8_types.v8_set_return_value(idl_type, cpp_value)
 
 
 def custom_signature(arguments):
@@ -119,13 +119,12 @@ def v8_value_to_local_cpp_value(argument, index):
     idl_type = argument.idl_type
     name = argument.name
     if argument.is_variadic:
-        return 'V8TRYCATCH_VOID(Vector<{cpp_type}>, {name}, toNativeArguments<{cpp_type}>(args, {index}))'.format(
+        return 'V8TRYCATCH_VOID(Vector<{cpp_type}>, {name}, toNativeArguments<{cpp_type}>(info, {index}))'.format(
                 cpp_type=v8_types.cpp_type(idl_type), name=name, index=index)
     if (argument.is_optional and idl_type == 'DOMString' and
         extended_attributes.get('Default') == 'NullString'):
-        v8_value = 'argumentOrNull(args, %s)' % index
+        v8_value = 'argumentOrNull(info, %s)' % index
     else:
-        v8_value = 'args[%s]' % index
+        v8_value = 'info[%s]' % index
     return v8_types.v8_value_to_local_cpp_value(
-        idl_type, argument.extended_attributes, v8_value, name,
-        'args.GetIsolate()', index=index)
+        idl_type, argument.extended_attributes, v8_value, name, index=index)

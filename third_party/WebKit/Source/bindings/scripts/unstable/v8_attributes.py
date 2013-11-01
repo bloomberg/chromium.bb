@@ -114,7 +114,7 @@ def generate_getter(interface, attribute, contents):
         v8_set_return_value_statement = 'v8SetReturnValue(info, wrapper)'
         includes.add('bindings/v8/V8HiddenPropertyName.h')
     else:
-        v8_set_return_value_statement = v8_types.v8_set_return_value(idl_type, cpp_value, callback_info='info', isolate='info.GetIsolate()', extended_attributes=extended_attributes, script_wrappable='imp')
+        v8_set_return_value_statement = v8_types.v8_set_return_value(idl_type, cpp_value, extended_attributes=extended_attributes, script_wrappable='imp')
     contents['v8_set_return_value'] = v8_set_return_value_statement
 
     if (idl_type == 'EventHandler' and
@@ -219,7 +219,8 @@ def generate_setter(interface, attribute, contents):
         'enum_validation_expression': v8_utilities.enum_validation_expression(idl_type),
         'has_strict_type_checking': 'StrictTypeChecking' in extended_attributes and v8_types.is_interface_type(idl_type),
         'is_reflect': is_reflect,
-        'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(idl_type, extended_attributes, 'jsValue', 'cppValue', 'info.GetIsolate()'),
+        'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(
+            idl_type, extended_attributes, 'jsValue', 'cppValue'),
     })
 
 
