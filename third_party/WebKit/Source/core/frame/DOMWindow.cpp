@@ -1838,6 +1838,8 @@ void DOMWindow::showModalDialog(const String& urlString, const String& dialogFea
     if (!canShowModalDialogNow(m_frame) || !firstWindow->allowPopUp())
         return;
 
+    UseCounter::countDeprecation(this, UseCounter::ShowModalDialog);
+
     WindowFeatures windowFeatures(dialogFeaturesString, screenAvailableRect(m_frame->view()));
     Frame* dialogFrame = createWindow(urlString, emptyAtom, windowFeatures,
         activeWindow, firstFrame, m_frame, function, functionContext);

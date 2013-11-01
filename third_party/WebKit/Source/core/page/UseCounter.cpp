@@ -681,6 +681,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case ScrollLeftBodyNotQuirksMode:
         return "body.scrollLeft is deprecated in strict mode. Please use 'documentElement.scrollLeft' if in strict mode and 'body.scrollLeft' only if in quirks mode.";
 
+    case ShowModalDialog:
+        return "Chromium is considering deprecating showModalDialog. Please use window.open and postMessage instead.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
