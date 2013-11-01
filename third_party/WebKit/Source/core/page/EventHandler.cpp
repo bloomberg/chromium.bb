@@ -3875,17 +3875,23 @@ bool EventHandler::handleWheelEventAsEmulatedGesture(const PlatformWheelEvent& e
         return false;
 
     // Only convert vertical wheel w/ shift into pinch for touch-enabled device convenience.
-    if (event.shiftKey() && event.deltaY()) {
-        Page* page = m_frame->page();
-        IntPoint centerAnchorCss(m_frame->view()->visibleSize());
-        centerAnchorCss.scale(0.5f, 0.5f);
-        float magnifyDelta = exp(event.deltaY() * 0.002f);
-        IntPoint anchorCss(centerAnchorCss);
-        anchorCss.scale(magnifyDelta, magnifyDelta);
-        page->inspectorController().requestPageScaleFactor(page->pageScaleFactor() * magnifyDelta, m_frame->view()->scrollPosition() + anchorCss - toIntSize(centerAnchorCss));
-        return true;
-    }
-    return false;
+    if (!event.shiftKey() || !event.deltaY())
+        return false;
+
+    Page* page = m_frame->page();
+    FrameView* view = m_frame->view();
+    float pageScaleFactor = page->pageScaleFactor();
+    IntPoint anchorBeforeCss(view->scrollPosition() + event.position());
+    IntPoint anchorBeforeDip(event.position());
+    anchorBeforeDip.scale(pageScaleFactor, pageScaleFactor);
+
+    float magnifyDelta = exp(event.deltaY() * 0.002f);
+    float newPageScaleFactor = pageScaleFactor * magnifyDelta;
+
+    IntPoint anchorAfterCss(anchorBeforeDip);
+    anchorAfterCss.scale(1.f / newPageScaleFactor, 1.f / newPageScaleFactor);
+    page->inspectorController().requestPageScaleFactor(newPageScaleFactor, anchorBeforeCss - toIntSize(anchorAfterCss));
+    return true;
 }
 
 void EventHandler::setLastKnownMousePosition(const PlatformMouseEvent& event)
