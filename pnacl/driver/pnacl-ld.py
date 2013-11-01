@@ -49,8 +49,6 @@ EXTRA_ENV = {
   'OPT_STRIP_debug': '-disable-opt --strip-debug',
 
   'TRANSLATE_FLAGS': '${PIC ? -fPIC} ${!USE_STDLIB ? -nostdlib} ' +
-                     '${STATIC ? -static} ' +
-                     '${SHARED ? -shared} ' +
                      '${#SONAME ? -Wl,--soname=${SONAME}} ' +
                      '${#OPT_LEVEL ? -O${OPT_LEVEL}} ' +
                      '--allow-llvm-bitcode-input ' +
