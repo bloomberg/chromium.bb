@@ -180,6 +180,11 @@ class MasterPreferences {
     return multi_install_;
   }
 
+  // Returns a reference to this MasterPreferences' root dictionary of values.
+  const base::DictionaryValue& master_dictionary() const {
+    return *master_dictionary_.get();
+  }
+
   // Returns a static preference object that has been initialized with the
   // CommandLine object for the current process.
   // NOTE: Must not be called before CommandLine::Init() is called!

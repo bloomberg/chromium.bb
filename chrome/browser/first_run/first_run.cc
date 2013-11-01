@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
@@ -412,26 +413,22 @@ void FirstRunBubbleLauncher::Observe(
   delete this;
 }
 
-}  // namespace
-
-namespace first_run {
-namespace internal {
-
-FirstRunState first_run_ = FIRST_RUN_UNKNOWN;
-
 static base::LazyInstance<base::FilePath> master_prefs_path_for_testing
     = LAZY_INSTANCE_INITIALIZER;
 
-installer::MasterPreferences*
-    LoadMasterPrefs(base::FilePath* master_prefs_path) {
+// Loads master preferences from the master preference file into the installer
+// master preferences. Returns the pointer to installer::MasterPreferences
+// object if successful; otherwise, returns NULL.
+installer::MasterPreferences* LoadMasterPrefs() {
+  base::FilePath master_prefs_path;
   if (!master_prefs_path_for_testing.Get().empty())
-    *master_prefs_path = master_prefs_path_for_testing.Get();
+    master_prefs_path = master_prefs_path_for_testing.Get();
   else
-    *master_prefs_path = base::FilePath(MasterPrefsPath());
-  if (master_prefs_path->empty())
+    master_prefs_path = base::FilePath(first_run::internal::MasterPrefsPath());
+  if (master_prefs_path.empty())
     return NULL;
   installer::MasterPreferences* install_prefs =
-      new installer::MasterPreferences(*master_prefs_path);
+      new installer::MasterPreferences(master_prefs_path);
   if (!install_prefs->read_from_file()) {
     delete install_prefs;
     return NULL;
@@ -440,15 +437,30 @@ installer::MasterPreferences*
   return install_prefs;
 }
 
-bool CopyPrefFile(const base::FilePath& user_data_dir,
-                  const base::FilePath& master_prefs_path) {
+}  // namespace
+
+namespace first_run {
+namespace internal {
+
+FirstRunState first_run_ = FIRST_RUN_UNKNOWN;
+
+bool GeneratePrefFile(const base::FilePath& user_data_dir,
+                      const installer::MasterPreferences& master_prefs) {
   base::FilePath user_prefs = GetDefaultPrefFilePath(true, user_data_dir);
   if (user_prefs.empty())
     return false;
 
-  // The master prefs are regular prefs so we can just copy the file
-  // to the default place and they just work.
-  return base::CopyFile(master_prefs_path, user_prefs);
+  const base::DictionaryValue& master_prefs_dict =
+      master_prefs.master_dictionary();
+
+  JSONFileValueSerializer serializer(user_prefs);
+
+  // Call Serialize (which does IO) on the main thread, which would _normally_
+  // be verboten. In this case however, we require this IO to synchronously
+  // complete before Chrome can start (as master preferences seed the Local
+  // State and Preferences files). This won't trip ThreadIORestrictions as they
+  // won't have kicked in yet on the main thread.
+  return serializer.Serialize(master_prefs_dict);
 }
 
 void SetupMasterPrefsFromInstallPrefs(
@@ -678,7 +690,7 @@ void LogFirstRunMetric(FirstRunBubbleMetric metric) {
 }
 
 void SetMasterPrefsPathForTesting(const base::FilePath& master_prefs) {
-  internal::master_prefs_path_for_testing.Get() = master_prefs;
+  master_prefs_path_for_testing.Get() = master_prefs;
 }
 
 ProcessMasterPreferencesResult ProcessMasterPreferences(
@@ -686,9 +698,7 @@ ProcessMasterPreferencesResult ProcessMasterPreferences(
     MasterPrefs* out_prefs) {
   DCHECK(!user_data_dir.empty());
 
-  base::FilePath master_prefs_path;
-  scoped_ptr<installer::MasterPreferences>
-      install_prefs(internal::LoadMasterPrefs(&master_prefs_path));
+  scoped_ptr<installer::MasterPreferences> install_prefs(LoadMasterPrefs());
 
   // Default value in case master preferences is missing or corrupt, or
   // ping_delay is missing.
@@ -697,8 +707,8 @@ ProcessMasterPreferencesResult ProcessMasterPreferences(
     if (!internal::ShowPostInstallEULAIfNeeded(install_prefs.get()))
       return EULA_EXIT_NOW;
 
-    if (!internal::CopyPrefFile(user_data_dir, master_prefs_path))
-      DLOG(ERROR) << "Failed to copy master_preferences to user data dir.";
+    if (!internal::GeneratePrefFile(user_data_dir, *install_prefs.get()))
+      DLOG(ERROR) << "Failed to generate master_preferences in user data dir.";
 
     DoDelayedInstallExtensionsIfNeeded(install_prefs.get());
 

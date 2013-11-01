@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/util_constants.h"
@@ -432,4 +433,73 @@ TEST_F(MasterPreferencesTest, DontEnforceLegacyCreateAllShortcutsNotSpecified) {
     EXPECT_FALSE(do_not_create_desktop_shortcut);
     EXPECT_FALSE(do_not_create_quick_launch_shortcut);
     EXPECT_FALSE(do_not_create_taskbar_shortcut);
+}
+
+TEST_F(MasterPreferencesTest, MigrateOldStartupUrlsPref) {
+  static const char kOldMasterPrefs[] =
+      "{ \n"
+      "  \"distribution\": { \n"
+      "     \"show_welcome_page\": true,\n"
+      "     \"import_search_engine\": true,\n"
+      "     \"import_history\": true,\n"
+      "     \"import_bookmarks\": true\n"
+      "  },\n"
+      "  \"session\": {\n"
+      "     \"urls_to_restore_on_startup\": [\"http://www.google.com\"]\n"
+      "  }\n"
+      "} \n";
+
+  const installer::MasterPreferences prefs(kOldMasterPrefs);
+  const base::DictionaryValue& master_dictionary =
+      prefs.master_dictionary();
+
+  const base::ListValue* old_startup_urls_list = NULL;
+  EXPECT_TRUE(master_dictionary.GetList(prefs::kURLsToRestoreOnStartupOld,
+                                        &old_startup_urls_list));
+  EXPECT_TRUE(old_startup_urls_list != NULL);
+
+  // The MasterPreferences dictionary should also conjure up the new setting
+  // as per EnforceLegacyPreferences.
+  const base::ListValue* new_startup_urls_list = NULL;
+  EXPECT_TRUE(master_dictionary.GetList(prefs::kURLsToRestoreOnStartup,
+                                        &new_startup_urls_list));
+  EXPECT_TRUE(new_startup_urls_list != NULL);
+}
+
+TEST_F(MasterPreferencesTest, DontMigrateOldStartupUrlsPrefWhenNewExists) {
+  static const char kOldAndNewMasterPrefs[] =
+      "{ \n"
+      "  \"distribution\": { \n"
+      "     \"show_welcome_page\": true,\n"
+      "     \"import_search_engine\": true,\n"
+      "     \"import_history\": true,\n"
+      "     \"import_bookmarks\": true\n"
+      "  },\n"
+      "  \"session\": {\n"
+      "     \"urls_to_restore_on_startup\": [\"http://www.google.com\"],\n"
+      "     \"startup_urls\": [\"http://www.example.com\"]\n"
+      "  }\n"
+      "} \n";
+
+  const installer::MasterPreferences prefs(kOldAndNewMasterPrefs);
+  const base::DictionaryValue& master_dictionary =
+      prefs.master_dictionary();
+
+  const base::ListValue* old_startup_urls_list = NULL;
+  EXPECT_TRUE(master_dictionary.GetList(prefs::kURLsToRestoreOnStartupOld,
+                                        &old_startup_urls_list));
+  ASSERT_TRUE(old_startup_urls_list != NULL);
+  std::string url_value;
+  EXPECT_TRUE(old_startup_urls_list->GetString(0, &url_value));
+  EXPECT_EQ("http://www.google.com", url_value);
+
+  // The MasterPreferences dictionary should also conjure up the new setting
+  // as per EnforceLegacyPreferences.
+  const base::ListValue* new_startup_urls_list = NULL;
+  EXPECT_TRUE(master_dictionary.GetList(prefs::kURLsToRestoreOnStartup,
+                                        &new_startup_urls_list));
+  ASSERT_TRUE(new_startup_urls_list != NULL);
+  std::string new_url_value;
+  EXPECT_TRUE(new_startup_urls_list->GetString(0, &new_url_value));
+  EXPECT_EQ("http://www.example.com", new_url_value);
 }
