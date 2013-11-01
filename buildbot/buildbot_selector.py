@@ -24,24 +24,16 @@ BOT_ASSIGNMENT = {
     'xp-bare-glibc-opt':
         python + ' buildbot\\buildbot_standard.py opt 32 glibc --no-gyp',
 
-    'lucid-64-validator-opt':
-        python + ' buildbot/buildbot_standard.py opt 64 glibc --validator',
     'precise-64-validator-opt':
         python + ' buildbot/buildbot_standard.py opt 64 glibc --validator',
 
     # Clang.
-    'lucid_64-newlib-dbg-clang':
-        'echo "TODO(mcgrathr): linux clang disabled pending bot upgrades"',
-      #python + ' buildbot/buildbot_standard.py dbg 64 newlib --clang',
     'precise_64-newlib-dbg-clang':
       python + ' buildbot/buildbot_standard.py dbg 64 newlib --clang',
     'mac10.7-newlib-dbg-clang':
       python + ' buildbot/buildbot_standard.py dbg 32 newlib --clang',
 
     # ASan.
-    'lucid_64-newlib-dbg-asan':
-        'echo "TODO(mcgrathr): linux asan disabled pending bot upgrades"',
-      #python + ' buildbot/buildbot_standard.py opt 64 newlib --asan',
     'precise_64-newlib-dbg-asan':
       python + ' buildbot/buildbot_standard.py opt 64 newlib --asan',
     'mac10.7-newlib-dbg-asan':
@@ -80,8 +72,6 @@ BOT_ASSIGNMENT = {
       'bash buildbot/buildbot_spec2k.sh nacl-x8664',
 
     # Valgrind bots.
-    'lucid-64-newlib-dbg-valgrind': 'bash buildbot/buildbot_valgrind.sh newlib',
-    'lucid-64-glibc-dbg-valgrind': 'bash buildbot/buildbot_valgrind.sh glibc',
     'precise-64-newlib-dbg-valgrind':
         'bash buildbot/buildbot_valgrind.sh newlib',
     'precise-64-glibc-dbg-valgrind':
@@ -90,12 +80,6 @@ BOT_ASSIGNMENT = {
     'mac10.6-newlib-coverage':
          python + (' buildbot/buildbot_standard.py '
                    'coverage 64 newlib --coverage --clang'),
-    'lucid-64-32-newlib-coverage':
-         python + (' buildbot/buildbot_standard.py '
-                   'coverage 32 newlib --coverage'),
-    'lucid-64-64-newlib-coverage':
-         python + (' buildbot/buildbot_standard.py '
-                   'coverage 64 newlib --coverage'),
     'precise-64-32-newlib-coverage':
          python + (' buildbot/buildbot_standard.py '
                    'coverage 32 newlib --coverage'),
@@ -105,11 +89,6 @@ BOT_ASSIGNMENT = {
     'xp-newlib-coverage':
          python + (' buildbot/buildbot_standard.py '
                    'coverage 32 newlib --coverage'),
-    # PPAPI Integration.
-    'lucid64-m32-n32-opt-ppapi':
-        python + ' buildbot/buildbot_standard.py opt 32 newlib',
-    'lucid64-m64-n64-dbg-ppapi':
-        python + ' buildbot/buildbot_standard.py dbg 64 newlib',
 
     ######################################################################
     # Trybots.
@@ -162,14 +141,12 @@ BOT_ASSIGNMENT = {
     'nacl-arm_hw_perf_panda':
         'bash buildbot/buildbot_spec2k.sh pnacl-trybot-arm-hw',
     # Toolchain glibc.
-    'lucid64-glibc': 'bash buildbot/buildbot_linux-glibc-makefile.sh',
     'precise64-glibc': 'bash buildbot/buildbot_linux-glibc-makefile.sh',
     'mac-glibc': 'bash buildbot/buildbot_mac-glibc-makefile.sh',
     'win7-glibc': 'buildbot\\buildbot_windows-glibc-makefile.bat',
     # Toolchain newlib x86.
     'win7-toolchain_x86': 'buildbot\\buildbot_toolchain_win.bat',
     'mac-toolchain_x86': 'bash buildbot/buildbot_toolchain.sh mac',
-    'lucid64-toolchain_x86': 'bash buildbot/buildbot_toolchain.sh linux',
     'precise64-toolchain_x86': 'bash buildbot/buildbot_toolchain.sh linux',
     # Toolchain newlib arm.
     'win7-toolchain_arm':
@@ -177,8 +154,6 @@ BOT_ASSIGNMENT = {
     'mac-toolchain_arm':
         python + ' buildbot/buildbot_toolchain_build.py --buildbot',
     'precise64-toolchain_arm':
-        python + ' buildbot/buildbot_toolchain_build.py --buildbot',
-    'lucid64-toolchain_arm':
         python + ' buildbot/buildbot_toolchain_build.py --buildbot',
 
     # Pnacl toolchain builders.
@@ -277,7 +252,7 @@ for platform in [
     # the nacl-win32_glibc_opt trybot). There are other builders that test
     # Windows builds via gyp, so the reduced test coverage should be slight.
     if arch == 'arm' or (platform == 'win' and arch == '32'):
-      arch_flags += ' --no-gyp'
+      pass#arch_flags += ' --no-gyp'
     if arch == '':
       arch_part = ''
       real_arch = '32'
