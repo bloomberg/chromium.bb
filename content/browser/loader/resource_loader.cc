@@ -30,6 +30,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/ssl/client_cert_store.h"
+#include "net/url_request/url_request_status.h"
 #include "webkit/browser/appcache/appcache_interceptor.h"
 
 using base::TimeDelta;
@@ -630,6 +631,7 @@ void ResourceLoader::CompleteRead(int bytes_read) {
 
 void ResourceLoader::ResponseCompleted() {
   VLOG(1) << "ResponseCompleted: " << request_->url().spec();
+  RecordHistograms();
   ResourceRequestInfoImpl* info = GetRequestInfo();
 
   std::string security_info;
@@ -655,6 +657,39 @@ void ResourceLoader::ResponseCompleted() {
 
 void ResourceLoader::CallDidFinishLoading() {
   delegate_->DidFinishLoading(this);
+}
+
+void ResourceLoader::RecordHistograms() {
+  ResourceRequestInfoImpl* info = GetRequestInfo();
+
+  if (info->GetResourceType() == ResourceType::PREFETCH) {
+    PrefetchStatus status = STATUS_UNDEFINED;
+    TimeDelta total_time = base::TimeTicks::Now() - request_->creation_time();
+
+    switch (request_->status().status()) {
+      case net::URLRequestStatus::SUCCESS:
+        if (request_->was_cached()) {
+          status = STATUS_SUCCESS_FROM_CACHE;
+          UMA_HISTOGRAM_TIMES("Net.Prefetch.TimeSpentPrefetchingFromCache",
+                              total_time);
+        } else {
+          status = STATUS_SUCCESS_FROM_NETWORK;
+          UMA_HISTOGRAM_TIMES("Net.Prefetch.TimeSpentPrefetchingFromNetwork",
+                              total_time);
+        }
+        break;
+      case net::URLRequestStatus::CANCELED:
+        status = STATUS_CANCELED;
+        UMA_HISTOGRAM_TIMES("Net.Prefetch.TimeBeforeCancel", total_time);
+        break;
+      case net::URLRequestStatus::IO_PENDING:
+      case net::URLRequestStatus::FAILED:
+        status = STATUS_UNDEFINED;
+        break;
+    }
+
+    UMA_HISTOGRAM_ENUMERATION("Net.Prefetch.Pattern", status, STATUS_MAX);
+  }
 }
 
 }  // namespace content

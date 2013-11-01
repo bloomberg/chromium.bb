@@ -99,8 +99,20 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   void CompleteRead(int bytes_read);
   void ResponseCompleted();
   void CallDidFinishLoading();
+  void RecordHistograms();
 
   bool is_deferred() const { return deferred_stage_ != DEFERRED_NONE; }
+
+  // Used for categorizing loading of prefetches for reporting in histograms.
+  // NOTE: This enumeration is used in histograms, so please do not add entries
+  // in the middle.
+  enum PrefetchStatus {
+    STATUS_UNDEFINED,
+    STATUS_SUCCESS_FROM_CACHE,
+    STATUS_SUCCESS_FROM_NETWORK,
+    STATUS_CANCELED,
+    STATUS_MAX,
+  };
 
   enum DeferredStage {
     DEFERRED_NONE,

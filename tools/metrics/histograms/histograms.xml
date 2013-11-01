@@ -8268,6 +8268,47 @@ other types of suffix sets.
   </details>
 </histogram>
 
+<histogram name="Net.Prefetch.Pattern" enum="PrefetchStatus">
+  <summary>
+    The completion status of prefetches that have finished loading.
+  </summary>
+  <details>
+    Measurement occurs at ResourceLoader::ResponseCompleted so requests canceled
+    before that point are not registered.
+
+    Note that &quot;success from cache&quot; means that the
+    UrlRequest::was_cached() was true, and &quot;success from network&quot;
+    means that was_cached() was false.  Validated results are considered cached,
+    even though a conditional network request is made.
+  </details>
+</histogram>
+
+<histogram name="Net.Prefetch.PrefilterBytesReadFromNetwork" units="bytes">
+  <summary>
+    Number of bytes read from the network on behalf of prefetch requests.  This
+    is prefilter, so before any decompression.
+  </summary>
+</histogram>
+
+<histogram name="Net.Prefetch.TimeBeforeCancel" units="milliseconds">
+  <summary>
+    Time spent on prefetch requests before the request was canceled.
+  </summary>
+</histogram>
+
+<histogram name="Net.Prefetch.TimeSpentPrefetchingFromCache"
+    units="milliseconds">
+  <summary>Time spent on prefetch requests when fetched from cache.</summary>
+</histogram>
+
+<histogram name="Net.Prefetch.TimeSpentPrefetchingFromNetwork"
+    units="milliseconds">
+  <summary>
+    Time spent on prefetch requests when fetched from the network, including
+    validation time.
+  </summary>
+</histogram>
+
 <histogram name="Net.Priority_High_Latency" units="milliseconds">
   <obsolete>
     Replaced by Net.Priority_High_Latency_b.
@@ -26261,6 +26302,13 @@ other types of suffix sets.
 <enum name="PreconnectTriggerUsed" type="int">
   <int value="0" label="The pre-connect triggered host was not accessed"/>
   <int value="1" label="The pre-connect triggered host was accessed"/>
+</enum>
+
+<enum name="PrefetchStatus" type="int">
+  <int value="0" label="undefined"/>
+  <int value="1" label="success from cache"/>
+  <int value="2" label="success from network"/>
+  <int value="3" label="canceled in-flight"/>
 </enum>
 
 <enum name="PrerenderFinalStatus" type="int">
