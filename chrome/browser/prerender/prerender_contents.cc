@@ -34,6 +34,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/favicon_url.h"
+#include "content/public/common/frame_navigate_params.h"
 #include "ui/gfx/rect.h"
 
 using content::DownloadItem;
@@ -492,7 +493,7 @@ bool PrerenderContents::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-bool PrerenderContents::AddAliasURL(const GURL& url) {
+bool PrerenderContents::CheckURL(const GURL& url) {
   const bool http = url.SchemeIs(content::kHttpScheme);
   const bool https = url.SchemeIs(content::kHttpsScheme);
   if (!http && !https) {
@@ -510,6 +511,12 @@ bool PrerenderContents::AddAliasURL(const GURL& url) {
     Destroy(FINAL_STATUS_RECENTLY_VISITED);
     return false;
   }
+  return true;
+}
+
+bool PrerenderContents::AddAliasURL(const GURL& url) {
+  if (!CheckURL(url))
+    return false;
 
   alias_urls_.push_back(url);
 
@@ -554,7 +561,7 @@ void PrerenderContents::DidStartProvisionalLoadForFrame(
     bool is_iframe_srcdoc,
     RenderViewHost* render_view_host) {
   if (is_main_frame) {
-    if (!AddAliasURL(validated_url))
+    if (!CheckURL(validated_url))
       return;
 
     // Usually, this event fires if the user clicks or enters a new URL.
@@ -575,6 +582,20 @@ void PrerenderContents::DidFinishLoad(int64 frame_id,
     has_finished_loading_ = true;
 }
 
+void PrerenderContents::DidNavigateMainFrame(
+    const content::LoadCommittedDetails& details,
+    const content::FrameNavigateParams& params) {
+  // Add each redirect as an alias. |params.url| is included in
+  // |params.redirects|.
+  //
+  // TODO(davidben): We do not correctly patch up history for renderer-initated
+  // navigations which add history entries. http://crbug.com/305660.
+  for (size_t i = 0; i < params.redirects.size(); i++) {
+    if (!AddAliasURL(params.redirects[i]))
+      return;
+  }
+}
+
 void PrerenderContents::DidGetRedirectForResourceRequest(
     const content::ResourceRedirectDetails& details) {
   // DidGetRedirectForResourceRequest can come for any resource on a page.  If
@@ -583,7 +604,7 @@ void PrerenderContents::DidGetRedirectForResourceRequest(
   // be canceled. If a subresource is redirected, nothing changes.
   if (details.resource_type != ResourceType::MAIN_FRAME)
     return;
-  AddAliasURL(details.new_url);
+  CheckURL(details.new_url);
 }
 
 void PrerenderContents::Destroy(FinalStatus final_status) {

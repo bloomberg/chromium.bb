@@ -228,6 +228,9 @@ class PrerenderContents : public content::NotificationObserver,
       const GURL& validated_url,
       bool is_main_frame,
       content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) OVERRIDE;
   virtual void DidGetRedirectForResourceRequest(
       const content::ResourceRedirectDetails& details) OVERRIDE;
   virtual void DidUpdateFaviconURL(int32 page_id,
@@ -241,11 +244,14 @@ class PrerenderContents : public content::NotificationObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Adds an alias URL, for one of the many redirections. If the URL can not
-  // be prerendered - for example, it's an ftp URL - |this| will be destroyed
-  // and false is returned. Otherwise, true is returned and the alias is
-  // remembered.
-  virtual bool AddAliasURL(const GURL& url);
+  // Checks that a URL may be prerendered, for one of the many redirections. If
+  // the URL can not be prerendered - for example, it's an ftp URL - |this| will
+  // be destroyed and false is returned. Otherwise, true is returned.
+  virtual bool CheckURL(const GURL& url);
+
+  // Adds an alias URL. If the URL can not be prerendered, |this| will be
+  // destroyed and false is returned.
+  bool AddAliasURL(const GURL& url);
 
   // The prerender WebContents (may be NULL).
   content::WebContents* prerender_contents() const {

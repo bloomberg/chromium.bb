@@ -301,11 +301,11 @@ class TestPrerenderContents : public PrerenderContents {
     PrerenderContents::RenderProcessGone(status);
   }
 
-  virtual bool AddAliasURL(const GURL& url) OVERRIDE {
+  virtual bool CheckURL(const GURL& url) OVERRIDE {
     // Prevent FINAL_STATUS_UNSUPPORTED_SCHEME when navigating to about:crash in
     // the PrerenderRendererCrash test.
     if (url.spec() != content::kChromeUICrashURL)
-      return PrerenderContents::AddAliasURL(url);
+      return PrerenderContents::CheckURL(url);
     return true;
   }
 
@@ -847,6 +847,12 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
                                     WindowOpenDisposition disposition,
                                     bool expect_swap_to_succeed) const {
     GURL dest_url = test_server()->GetURL(dest_html_file);
+    NavigateToURLWithDisposition(dest_url, disposition, expect_swap_to_succeed);
+  }
+
+  void NavigateToURLWithDisposition(const GURL& dest_url,
+                                    WindowOpenDisposition disposition,
+                                    bool expect_swap_to_succeed) const {
     NavigateToURLWithParams(
         content::OpenURLParams(dest_url, Referrer(), disposition,
                                content::PAGE_TRANSITION_TYPED, false),
@@ -1533,6 +1539,21 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoCommitNoSwap) {
 
   // Navigate to the URL, but assume the contents won't be swapped in.
   NavigateToDestURLWithDisposition(CURRENT_TAB, false);
+}
+
+// Checks that client redirects don't add alias URLs until after they commit.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoCommitNoSwap2) {
+  // Navigate to a page that then navigates to a URL that never commits.
+  const GURL kNoCommitUrl("http://never-respond.example.com");
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&CreateNeverStartProtocolHandlerOnIO, kNoCommitUrl));
+  DisableJavascriptCalls();
+  PrerenderTestURL(CreateClientRedirect(kNoCommitUrl.spec()),
+                   FINAL_STATUS_APP_TERMINATING, 1);
+
+  // Navigating to the second URL should not swap.
+  NavigateToURLWithDisposition(kNoCommitUrl, CURRENT_TAB, false);
 }
 
 // Checks that the prerendering of a page is canceled correctly when a
