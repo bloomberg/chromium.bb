@@ -37,8 +37,7 @@ Tile::Tile(TileManager* tile_manager,
 
 Tile::~Tile() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
-      TRACE_DISABLED_BY_DEFAULT("cc.debug") ","
-          TRACE_DISABLED_BY_DEFAULT("cc.debug.quads"),
+      TRACE_DISABLED_BY_DEFAULT("cc.debug"),
       "cc::Tile", this);
 }
 
@@ -60,7 +59,8 @@ void Tile::MarkRequiredForActivation() {
 
 scoped_ptr<base::Value> Tile::AsValue() const {
   scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
-  TracedValue::MakeDictIntoImplicitSnapshot(res.get(), "cc::Tile", this);
+  TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
+      TRACE_DISABLED_BY_DEFAULT("cc.debug"), res.get(), "cc::Tile", this);
   res->Set("picture_pile",
            TracedValue::CreateIDRef(picture_pile_.get()).release());
   res->SetDouble("contents_scale", contents_scale_);
