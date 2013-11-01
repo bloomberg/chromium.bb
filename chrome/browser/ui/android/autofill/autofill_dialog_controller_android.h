@@ -15,10 +15,6 @@
 
 class Profile;
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-
 namespace autofill {
 
 // This class defines the form-filling host and JNI glue for the Java-side
@@ -31,9 +27,6 @@ class AutofillDialogControllerAndroid : public AutofillDialogController {
       const FormData& form_structure,
       const GURL& source_url,
       const base::Callback<void(const FormStructure*)>& callback);
-
-  // Registers profile preferences for the AutofillDialogControllerAndroid.
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   virtual ~AutofillDialogControllerAndroid();
 

@@ -264,6 +264,10 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   TaskManager::RegisterPrefs(registry);
 #endif  // defined(ENABLE_TASK_MANAGER)
 
+#if defined(ENABLE_AUTOFILL_DIALOG)
+  autofill::AutofillDialogController::RegisterPrefs(registry);
+#endif
+
 #if defined(TOOLKIT_VIEWS)
   RegisterBrowserViewPrefs(registry);
   RegisterTabStripLayoutTypePrefs(registry);

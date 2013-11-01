@@ -21,6 +21,9 @@ AutofillDialogController::Create(
 }
 
 // static
+void AutofillDialogController::RegisterPrefs(PrefRegistrySimple* registry) {}
+
+// static
 void AutofillDialogController::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {}
 #endif  //  !defined(ENABLE_AUTOFILL_DIALOG)

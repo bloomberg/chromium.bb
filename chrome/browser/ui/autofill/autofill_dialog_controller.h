@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/form_structure.h"
 
 class GURL;
+class PrefRegistrySimple;
 
 namespace content {
 class WebContents;
@@ -36,6 +37,9 @@ class AutofillDialogController {
       const FormData& form_structure,
       const GURL& source_url,
       const base::Callback<void(const FormStructure*)>& callback);
+
+  // Registers device preferences.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Registers profile preferences.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);

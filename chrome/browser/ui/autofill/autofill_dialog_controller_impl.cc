@@ -16,6 +16,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/rand_util.h"
@@ -580,7 +581,12 @@ base::WeakPtr<AutofillDialogControllerImpl>
 }
 
 // static
-void AutofillDialogControllerImpl::RegisterProfilePrefs(
+void AutofillDialogController::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterListPref(::prefs::kAutofillDialogWalletLocationAcceptance);
+}
+
+// static
+void AutofillDialogController::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   // TODO(estade): this pref is no longer used, but may prove to be valuable.
   // Remove it if we don't wind up using it at some point.
@@ -617,12 +623,6 @@ base::WeakPtr<AutofillDialogController> AutofillDialogController::Create(
                                               form_structure,
                                               source_url,
                                               callback);
-}
-
-// static
-void AutofillDialogController::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  AutofillDialogControllerImpl::RegisterProfilePrefs(registry);
 }
 
 void AutofillDialogControllerImpl::Show() {
@@ -1074,9 +1074,30 @@ void AutofillDialogControllerImpl::OnWalletFormFieldError(
 }
 
 void AutofillDialogControllerImpl::ConstructLegalDocumentsText() {
-  if (!wallet_items_ || wallet_items_->legal_documents().empty())
+  legal_documents_text_.clear();
+  legal_document_link_ranges_.clear();
+
+  if (!wallet_items_)
     return;
-  NOTIMPLEMENTED();
+
+  PrefService* local_state = g_browser_process->local_state();
+  // List of users who have accepted location sharing for fraud protection
+  // on this device.
+  const base::ListValue* accepted =
+      local_state->GetList(::prefs::kAutofillDialogWalletLocationAcceptance);
+  bool has_accepted_location_sharing =
+      accepted->Find(base::StringValue(
+          account_chooser_model_.GetActiveWalletAccountName())) !=
+      accepted->end();
+
+  if (wallet_items_->legal_documents().empty()) {
+    if (!has_accepted_location_sharing) {
+      legal_documents_text_ = l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_DIALOG_LOCATION_DISCLOSURE);
+    }
+
+    return;
+  }
 
   const std::vector<wallet::WalletItems::LegalDocument*>& documents =
       wallet_items_->legal_documents();
@@ -1121,9 +1142,18 @@ void AutofillDialogControllerImpl::ConstructLegalDocumentsText() {
 
   std::vector<size_t> offsets;
   string16 text = l10n_util::GetStringFUTF16(resource_id, link_names, &offsets);
-  legal_document_link_ranges_.clear();
+
+  // Tack on the location string if need be.
+  size_t base_offset = 0;
+  if (!has_accepted_location_sharing) {
+    text = l10n_util::GetStringFUTF16(
+        IDS_AUTOFILL_DIALOG_LOCATION_DISCLOSURE_WITH_LEGAL_DOCS,
+        text,
+        &base_offset);
+  }
+
   for (size_t i = 0; i < documents.size(); ++i) {
-    size_t link_start = offsets[i];
+    size_t link_start = offsets[i] + base_offset;
     legal_document_link_ranges_.push_back(gfx::Range(
         link_start, link_start + documents[i]->display_name().size()));
   }
@@ -2094,7 +2124,7 @@ bool AutofillDialogControllerImpl::OnAccept() {
         active_instrument_id_,
         UTF16ToUTF8(view_->GetCvc()));
   } else if (IsPayingWithWallet()) {
-    AcceptLegalDocuments();
+    AcceptLegalTerms();
   } else {
     FinishSubmit();
   }
@@ -2368,8 +2398,8 @@ void AutofillDialogControllerImpl::OnDidGetWalletItems(
   has_accepted_legal_documents_ = false;
 
   wallet_items_ = wallet_items.Pass();
-  OnWalletOrSigninUpdate();
   ConstructLegalDocumentsText();
+  OnWalletOrSigninUpdate();
 }
 
 void AutofillDialogControllerImpl::OnDidSaveToWallet(
@@ -3105,10 +3135,15 @@ bool AutofillDialogControllerImpl::AreLegalDocumentsCurrent() const {
       (wallet_items_ && wallet_items_->legal_documents().empty());
 }
 
-void AutofillDialogControllerImpl::AcceptLegalDocuments() {
+void AutofillDialogControllerImpl::AcceptLegalTerms() {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&UserDidOptIntoLocationServices));
+  PrefService* local_state = g_browser_process->local_state();
+  ListPrefUpdate accepted(
+      local_state, ::prefs::kAutofillDialogWalletLocationAcceptance);
+  accepted->AppendIfNotPresent(new base::StringValue(
+      account_chooser_model_.GetActiveWalletAccountName()));
 
   if (AreLegalDocumentsCurrent()) {
     LoadRiskFingerprintData();

@@ -47,10 +47,6 @@ namespace content {
 class WebContents;
 }
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-
 namespace autofill {
 
 class AutofillDataModel;
@@ -88,8 +84,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
       const FormData& form_structure,
       const GURL& source_url,
       const base::Callback<void(const FormStructure*)>& callback);
-
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // AutofillDialogController implementation.
   virtual void Show() OVERRIDE;
@@ -504,7 +498,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   bool AreLegalDocumentsCurrent() const;
 
   // Accepts any pending legal documents now that the user has pressed Submit.
-  void AcceptLegalDocuments();
+  void AcceptLegalTerms();
 
   // Start the submit proccess to interact with Online Wallet (might do various
   // things like accept documents, save details, update details, respond to

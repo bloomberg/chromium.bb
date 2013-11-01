@@ -23,6 +23,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
 #include "components/autofill/content/browser/wallet/full_wallet.h"
@@ -400,6 +402,11 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
                                       true);
     profile()->GetPrefs()->ClearPref(::prefs::kAutofillDialogSaveData);
 
+    // We have to clear the old local state before creating a new one.
+    scoped_local_state_.reset();
+    scoped_local_state_.reset(new ScopedTestingLocalState(
+        TestingBrowserProcess::GetGlobal()));
+
     SetUpControllerWithFormData(DefaultFormData());
   }
 
@@ -612,6 +619,8 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
   // Used to record when new card bubbles would show. Created in |Reset()|.
   scoped_ptr<MockNewCreditCardBubbleController>
       mock_new_card_bubble_controller_;
+
+  scoped_ptr<ScopedTestingLocalState> scoped_local_state_;
 };
 
 }  // namespace
@@ -1221,37 +1230,130 @@ TEST_F(AutofillDialogControllerTest, BillingVsShippingPhoneNumber) {
 }
 
 TEST_F(AutofillDialogControllerTest, AcceptLegalDocuments) {
-  EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              AcceptLegalDocuments(_, _));
-  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetFullWallet(_));
-  EXPECT_CALL(*controller(), LoadRiskFingerprintData());
+  for (size_t i = 0; i < 2; ++i) {
+    SCOPED_TRACE(testing::Message() << "Case " << i);
 
-  EXPECT_TRUE(controller()->LegalDocumentsText().empty());
-  controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
-  EXPECT_TRUE(controller()->LegalDocumentsText().empty());
+    EXPECT_CALL(*controller()->GetTestingWalletClient(),
+                AcceptLegalDocuments(_, _));
+    EXPECT_CALL(*controller()->GetTestingWalletClient(), GetFullWallet(_));
+    EXPECT_CALL(*controller(), LoadRiskFingerprintData());
 
-  scoped_ptr<wallet::WalletItems> wallet_items = CompleteAndValidWalletItems();
-  wallet_items->AddLegalDocument(wallet::GetTestLegalDocument());
-  wallet_items->AddLegalDocument(wallet::GetTestLegalDocument());
-  controller()->OnDidGetWalletItems(wallet_items.Pass());
-  EXPECT_FALSE(controller()->LegalDocumentsText().empty());
+    EXPECT_TRUE(controller()->LegalDocumentLinks().empty());
+    controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
+    EXPECT_TRUE(controller()->LegalDocumentLinks().empty());
 
-  controller()->OnAccept();
-  controller()->OnDidAcceptLegalDocuments();
-  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
+    scoped_ptr<wallet::WalletItems> wallet_items =
+        CompleteAndValidWalletItems();
+    wallet_items->AddLegalDocument(wallet::GetTestLegalDocument());
+    wallet_items->AddLegalDocument(wallet::GetTestLegalDocument());
+    controller()->OnDidGetWalletItems(wallet_items.Pass());
+    EXPECT_FALSE(controller()->LegalDocumentLinks().empty());
+
+    controller()->OnAccept();
+    controller()->OnDidAcceptLegalDocuments();
+    controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
+
+    // Now try it all over again with the location disclosure already accepted.
+    // Nothing should change.
+    Reset();
+    ListValue preexisting_list;
+    preexisting_list.AppendString(kFakeEmail);
+    g_browser_process->local_state()->Set(
+        ::prefs::kAutofillDialogWalletLocationAcceptance,
+        preexisting_list);
+  }
 }
 
 TEST_F(AutofillDialogControllerTest, RejectLegalDocuments) {
-  EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              AcceptLegalDocuments(_, _)).Times(0);
+  for (size_t i = 0; i < 2; ++i) {
+    SCOPED_TRACE(testing::Message() << "Case " << i);
 
-  scoped_ptr<wallet::WalletItems> wallet_items = CompleteAndValidWalletItems();
-  wallet_items->AddLegalDocument(wallet::GetTestLegalDocument());
-  wallet_items->AddLegalDocument(wallet::GetTestLegalDocument());
-  controller()->OnDidGetWalletItems(wallet_items.Pass());
+    EXPECT_CALL(*controller()->GetTestingWalletClient(),
+                AcceptLegalDocuments(_, _)).Times(0);
+
+    scoped_ptr<wallet::WalletItems> wallet_items =
+        CompleteAndValidWalletItems();
+    wallet_items->AddLegalDocument(wallet::GetTestLegalDocument());
+    wallet_items->AddLegalDocument(wallet::GetTestLegalDocument());
+    controller()->OnDidGetWalletItems(wallet_items.Pass());
+    EXPECT_FALSE(controller()->LegalDocumentLinks().empty());
+
+    controller()->OnCancel();
+
+    // Now try it all over again with the location disclosure already accepted.
+    // Nothing should change.
+    Reset();
+    ListValue preexisting_list;
+    preexisting_list.AppendString(kFakeEmail);
+    g_browser_process->local_state()->Set(
+        ::prefs::kAutofillDialogWalletLocationAcceptance,
+        preexisting_list);
+  }
+}
+
+TEST_F(AutofillDialogControllerTest, AcceptLocationDisclosure) {
+  // Check that accepting the dialog registers the user's name in the list
+  // of users who have accepted the geolocation terms.
+  EXPECT_TRUE(g_browser_process->local_state()->GetList(
+      ::prefs::kAutofillDialogWalletLocationAcceptance)->empty());
+
+  controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
   EXPECT_FALSE(controller()->LegalDocumentsText().empty());
+  EXPECT_TRUE(controller()->LegalDocumentLinks().empty());
+  controller()->OnAccept();
 
+  const ListValue* list = g_browser_process->local_state()->GetList(
+      ::prefs::kAutofillDialogWalletLocationAcceptance);
+  ASSERT_EQ(1U, list->GetSize());
+  std::string accepted_username;
+  EXPECT_TRUE(list->GetString(0, &accepted_username));
+  EXPECT_EQ(kFakeEmail, accepted_username);
+
+  // Now check it still works if that list starts off with some other username
+  // in it.
+  Reset();
+  list = g_browser_process->local_state()->GetList(
+      ::prefs::kAutofillDialogWalletLocationAcceptance);
+  ASSERT_TRUE(list->empty());
+
+  std::string kOtherUsername("spouse@example.com");
+  ListValue preexisting_list;
+  preexisting_list.AppendString(kOtherUsername);
+  g_browser_process->local_state()->Set(
+      ::prefs::kAutofillDialogWalletLocationAcceptance,
+      preexisting_list);
+
+  controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
+  EXPECT_FALSE(controller()->LegalDocumentsText().empty());
+  EXPECT_TRUE(controller()->LegalDocumentLinks().empty());
+  controller()->OnAccept();
+
+  list = g_browser_process->local_state()->GetList(
+      ::prefs::kAutofillDialogWalletLocationAcceptance);
+  ASSERT_EQ(2U, list->GetSize());
+  EXPECT_NE(list->end(), list->Find(base::StringValue(kFakeEmail)));
+  EXPECT_NE(list->end(), list->Find(base::StringValue(kOtherUsername)));
+
+  // Now check the list doesn't change if the user cancels out of the dialog.
+  Reset();
+  list = g_browser_process->local_state()->GetList(
+      ::prefs::kAutofillDialogWalletLocationAcceptance);
+  ASSERT_TRUE(list->empty());
+
+  g_browser_process->local_state()->Set(
+      ::prefs::kAutofillDialogWalletLocationAcceptance,
+      preexisting_list);
+
+  controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
+  EXPECT_FALSE(controller()->LegalDocumentsText().empty());
+  EXPECT_TRUE(controller()->LegalDocumentLinks().empty());
   controller()->OnCancel();
+
+  list = g_browser_process->local_state()->GetList(
+      ::prefs::kAutofillDialogWalletLocationAcceptance);
+  ASSERT_EQ(1U, list->GetSize());
+  EXPECT_NE(list->end(), list->Find(base::StringValue(kOtherUsername)));
+  EXPECT_EQ(list->end(), list->Find(base::StringValue(kFakeEmail)));
 }
 
 TEST_F(AutofillDialogControllerTest, LegalDocumentOverflow) {
