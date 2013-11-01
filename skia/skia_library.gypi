@@ -434,6 +434,8 @@
     'SK_GDI_ALWAYS_USE_TEXTMETRICS_FOR_FONT_METRICS',
 
     'SK_DEFAULT_FONT_CACHE_LIMIT=<(default_font_cache_limit)',
+
+    'SK_ATTR_DEPRECATED=SK_NOTHING_ARG1',
   ],
 
   'direct_dependent_settings': {
