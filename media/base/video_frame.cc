@@ -46,8 +46,8 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrame(
 // static
 std::string VideoFrame::FormatToString(VideoFrame::Format format) {
   switch (format) {
-    case VideoFrame::INVALID:
-      return "INVALID";
+    case VideoFrame::UNKNOWN:
+      return "UNKNOWN";
     case VideoFrame::RGB32:
       return "RGB32";
     case VideoFrame::YV12:
@@ -76,7 +76,7 @@ bool VideoFrame::IsValidConfig(VideoFrame::Format format,
                                const gfx::Size& coded_size,
                                const gfx::Rect& visible_rect,
                                const gfx::Size& natural_size) {
-  return (format != VideoFrame::INVALID &&
+  return (format != VideoFrame::UNKNOWN &&
           !coded_size.IsEmpty() &&
           coded_size.GetArea() <= limits::kMaxCanvas &&
           coded_size.width() <= limits::kMaxDimension &&
@@ -240,7 +240,7 @@ size_t VideoFrame::NumPlanes(Format format) {
     case VideoFrame::YV12A:
       return 4;
     case VideoFrame::EMPTY:
-    case VideoFrame::INVALID:
+    case VideoFrame::UNKNOWN:
       break;
   }
   NOTREACHED() << "Unsupported video frame format: " << format;
@@ -274,7 +274,7 @@ size_t VideoFrame::AllocationSize(Format format, const gfx::Size& coded_size) {
           RoundUp(coded_size.width(), 2) * RoundUp(coded_size.height(), 2);
       return rounded_size * 2;
     }
-    case VideoFrame::INVALID:
+    case VideoFrame::UNKNOWN:
     case VideoFrame::EMPTY:
     case VideoFrame::NATIVE_TEXTURE:
 #if defined(GOOGLE_TV)

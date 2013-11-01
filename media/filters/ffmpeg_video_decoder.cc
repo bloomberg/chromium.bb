@@ -69,7 +69,7 @@ int FFmpegVideoDecoder::GetVideoBuffer(AVCodecContext* codec_context,
   // updated width/height/pix_fmt, which can change for adaptive
   // content.
   VideoFrame::Format format = PixelFormatToVideoFormat(codec_context->pix_fmt);
-  if (format == VideoFrame::INVALID)
+  if (format == VideoFrame::UNKNOWN)
     return AVERROR(EINVAL);
   DCHECK(format == VideoFrame::YV12 || format == VideoFrame::YV16);
 

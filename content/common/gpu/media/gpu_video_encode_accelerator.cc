@@ -26,7 +26,7 @@ GpuVideoEncodeAccelerator::GpuVideoEncodeAccelerator(GpuChannel* gpu_channel,
     : weak_this_factory_(this),
       channel_(gpu_channel),
       route_id_(route_id),
-      input_format_(media::VideoFrame::INVALID),
+      input_format_(media::VideoFrame::UNKNOWN),
       output_buffer_size_(0) {}
 
 GpuVideoEncodeAccelerator::~GpuVideoEncodeAccelerator() {

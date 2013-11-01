@@ -12,7 +12,7 @@ namespace media {
 VideoDecoderConfig::VideoDecoderConfig()
     : codec_(kUnknownVideoCodec),
       profile_(VIDEO_CODEC_PROFILE_UNKNOWN),
-      format_(VideoFrame::INVALID),
+      format_(VideoFrame::UNKNOWN),
       is_encrypted_(false) {
 }
 

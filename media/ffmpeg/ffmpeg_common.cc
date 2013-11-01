@@ -500,7 +500,7 @@ VideoFrame::Format PixelFormatToVideoFormat(PixelFormat pixel_format) {
     default:
       DVLOG(1) << "Unsupported PixelFormat: " << pixel_format;
   }
-  return VideoFrame::INVALID;
+  return VideoFrame::UNKNOWN;
 }
 
 PixelFormat VideoFormatToPixelFormat(VideoFrame::Format video_format) {

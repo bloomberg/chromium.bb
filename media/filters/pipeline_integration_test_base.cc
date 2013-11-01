@@ -31,7 +31,7 @@ PipelineIntegrationTestBase::PipelineIntegrationTestBase()
                              new MediaLog())),
       ended_(false),
       pipeline_status_(PIPELINE_OK),
-      last_video_frame_format_(VideoFrame::INVALID) {
+      last_video_frame_format_(VideoFrame::UNKNOWN) {
   base::MD5Init(&md5_context_);
   EXPECT_CALL(*this, OnSetOpaque(true)).Times(AnyNumber());
 }
