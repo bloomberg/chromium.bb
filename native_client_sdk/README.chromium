@@ -1,0 +1,5 @@
+Name: Native Client SDK
+URL: http://code.google.com/chrome/nativeclient
+License: BSD
+License File: src/LICENSE
+Security Critical: yes
