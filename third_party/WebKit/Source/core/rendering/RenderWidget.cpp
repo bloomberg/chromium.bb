@@ -28,7 +28,6 @@
 #include "core/frame/Frame.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/CompositedLayerMapping.h"
-#include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
