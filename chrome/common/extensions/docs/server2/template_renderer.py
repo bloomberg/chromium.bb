@@ -23,6 +23,7 @@ class TemplateRenderer(object):
       'api_list': server_instance.api_list_data_source_factory.Create(),
       'apis': server_instance.api_data_source_factory.Create(request),
       'apps_samples_url': GITHUB_BASE,
+      'base_path': server_instance.base_path,
       'extensions_samples_url': EXTENSIONS_SAMPLES,
       'false': False,
       'intros': server_instance.intro_data_source_factory.Create(),
