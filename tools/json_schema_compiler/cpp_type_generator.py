@@ -65,7 +65,7 @@ class CppTypeGenerator(object):
     e.g VAR_STRING
     """
     value = '%s_%s' % (self.FollowRef(type_).unix_name.upper(),
-                       cpp_util.Classname(enum_value.upper()))
+                       cpp_util.Classname(enum_value.name.upper()))
     # To avoid collisions with built-in OS_* preprocessor definitions, we add a
     # trailing slash to enum names that start with OS_.
     if value.startswith("OS_"):

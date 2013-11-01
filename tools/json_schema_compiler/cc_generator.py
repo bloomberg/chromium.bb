@@ -784,7 +784,9 @@ class _Generator(object):
                                  self._type_helper.GetEnumNoneValue(type_)))
       .Concat(self._GenerateError(
         '\"\'%%(key)s\': expected \\"' +
-        '\\" or \\"'.join(self._type_helper.FollowRef(type_).enum_values) +
+        '\\" or \\"'.join(
+            enum_value.name
+            for enum_value in self._type_helper.FollowRef(type_).enum_values) +
         '\\", got \\"" + %s + "\\""' % enum_as_string))
       .Append('return %s;' % failure_value)
       .Eblock('}')
@@ -820,7 +822,7 @@ class _Generator(object):
     c.Sblock('switch (enum_param) {')
     for enum_value in self._type_helper.FollowRef(type_).enum_values:
       (c.Append('case %s: ' % self._type_helper.GetEnumValue(type_, enum_value))
-        .Append('  return "%s";' % enum_value))
+        .Append('  return "%s";' % enum_value.name))
     (c.Append('case %s:' % self._type_helper.GetEnumNoneValue(type_))
       .Append('  return "";')
       .Eblock('}')
@@ -848,7 +850,7 @@ class _Generator(object):
       # This is broken up into all ifs with no else ifs because we get
       # "fatal error C1061: compiler limit : blocks nested too deeply"
       # on Windows.
-      (c.Append('if (enum_string == "%s")' % enum_value)
+      (c.Append('if (enum_string == "%s")' % enum_value.name)
         .Append('  return %s;' %
             self._type_helper.GetEnumValue(type_, enum_value)))
     (c.Append('return %s;' % self._type_helper.GetEnumNoneValue(type_))

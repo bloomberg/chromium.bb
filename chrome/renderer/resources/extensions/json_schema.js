@@ -53,6 +53,13 @@ function isOptionalValue(value) {
   return typeof(value) === 'undefined' || value === null;
 }
 
+function enumToString(enumValue) {
+  if (enumValue.name === undefined)
+    return enumValue;
+
+  return enumValue.name;
+}
+
 /**
  * Validates an instance against a schema and accumulates errors. Usage:
  *
@@ -317,11 +324,12 @@ JSONSchemaValidator.prototype.validateChoices =
  */
 JSONSchemaValidator.prototype.validateEnum = function(instance, schema, path) {
   for (var i = 0; i < schema.enum.length; i++) {
-    if (instance === schema.enum[i])
+    if (instance === enumToString(schema.enum[i]))
       return true;
   }
 
-  this.addError(path, "invalidEnum", [schema.enum.join(", ")]);
+  this.addError(path, "invalidEnum",
+                [schema.enum.map(enumToString).join(", ")]);
   return false;
 };
 

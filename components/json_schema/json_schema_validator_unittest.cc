@@ -77,8 +77,14 @@ TEST(JSONSchemaValidator, IsValidSchema) {
   EXPECT_FALSE(JSONSchemaValidator::IsValidSchema(
       "{"
       "  \"type\": \"string\","
-      "  \"enum\": [ {} ],"  // "enum" must contain simple values.
+      "  \"enum\": [ {} ]"  // "enum" dict values must contain "name".
       "}", &error));
+  EXPECT_FALSE(JSONSchemaValidator::IsValidSchema(
+      "{"
+      "  \"type\": \"string\","
+      "  \"enum\": [ { \"name\": {} } ]"  // "enum" name must be a simple value.
+      "}",
+      &error));
   EXPECT_FALSE(JSONSchemaValidator::IsValidSchema(
       "{"
       "  \"type\": \"array\","
@@ -106,7 +112,7 @@ TEST(JSONSchemaValidator, IsValidSchema) {
       "    },"
       "    \"enum-property\": {"
       "      \"type\": \"integer\","
-      "      \"enum\": [0, 1, 10, 100]"
+      "      \"enum\": [0, 1, {\"name\": 10}, 100]"
       "    },"
       "    \"items-property\": {"
       "      \"type\": \"array\","
