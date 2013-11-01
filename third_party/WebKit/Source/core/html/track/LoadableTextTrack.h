@@ -45,7 +45,8 @@ public:
 
     void scheduleLoad(const KURL&);
 
-    virtual void clearClient();
+    // This shadows TextTrack::clearClient, but need not be virtual.
+    void clearClient();
 
     size_t trackElementIndex();
     HTMLTrackElement* trackElement() { return m_trackElement; }
