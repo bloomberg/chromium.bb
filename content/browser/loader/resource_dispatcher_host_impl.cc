@@ -916,6 +916,9 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
   IncrementOutstandingRequestsMemory(1, *info);
   if (old_routing_id != new_routing_id) {
     if (offline_policy_map_.find(old_routing_id) != offline_policy_map_.end()) {
+      if (offline_policy_map_.find(new_routing_id) !=
+          offline_policy_map_.end())
+        delete offline_policy_map_[new_routing_id];
       offline_policy_map_[new_routing_id] = offline_policy_map_[old_routing_id];
       offline_policy_map_.erase(old_routing_id);
     }
