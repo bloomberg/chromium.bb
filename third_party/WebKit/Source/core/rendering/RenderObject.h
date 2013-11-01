@@ -917,9 +917,8 @@ public:
      */
     virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = 0);
 
-    // When performing a global document tear-down, the renderer of the document is cleared. We use this
-    // as a hook to detect the case of document destruction and don't waste time doing unnecessary work.
-    bool documentBeingDestroyed() const;
+    // When performing a global document tear-down we use this as a hook to not waste time doing unnecessary work.
+    bool documentBeingDestroyed() const { return document().isStopping(); }
 
     void destroyAndCleanupAnonymousWrappers();
     virtual void destroy();
@@ -1197,11 +1196,6 @@ private:
     // Store state between styleWillChange and styleDidChange
     static bool s_affectsParentBlock;
 };
-
-inline bool RenderObject::documentBeingDestroyed() const
-{
-    return !document().renderer();
-}
 
 inline bool RenderObject::isBeforeContent() const
 {

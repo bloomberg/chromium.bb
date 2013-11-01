@@ -1012,7 +1012,7 @@ bool Document::cssCompositingEnabled() const
 
 PassRefPtr<DOMNamedFlowCollection> Document::webkitGetNamedFlows()
 {
-    if (!RuntimeEnabledFeatures::cssRegionsEnabled() || !renderView())
+    if (!RuntimeEnabledFeatures::cssRegionsEnabled() || !isActive())
         return 0;
 
     updateStyleIfNeeded();
@@ -1187,7 +1187,7 @@ String Document::suggestedMIMEType() const
 
 Element* Document::elementFromPoint(int x, int y) const
 {
-    if (!renderView())
+    if (!isActive())
         return 0;
 
     return TreeScope::elementFromPoint(x, y);
@@ -1195,7 +1195,7 @@ Element* Document::elementFromPoint(int x, int y) const
 
 PassRefPtr<Range> Document::caretRangeFromPoint(int x, int y)
 {
-    if (!renderView())
+    if (!isActive())
         return 0;
     LayoutPoint localPoint;
     RenderObject* renderer = rendererFromPoint(this, x, y, &localPoint);
@@ -1778,7 +1778,7 @@ void Document::updateLayout()
     updateStyleIfNeeded();
 
     // Only do a layout if changes have occurred that make it necessary.
-    if (frameView && renderView() && (frameView->layoutPending() || renderView()->needsLayout()))
+    if (frameView && isActive() && (frameView->layoutPending() || renderView()->needsLayout()))
         frameView->layout();
 
     if (frameView)
@@ -1985,20 +1985,13 @@ void Document::detach(const AttachContext& context)
     if (svgExtensions())
         accessSVGExtensions()->pauseAnimations();
 
-    RenderView* renderView = m_renderView;
+    m_renderView->setIsInWindow(false);
 
-    if (renderView)
-        renderView->setIsInWindow(false);
-
+    // FIXME: How can the frame be null here?
     if (m_frame) {
-        FrameView* view = m_frame->view();
-        if (view)
+        if (FrameView* view = m_frame->view())
             view->detachCustomScrollbars();
     }
-
-    // indicate destruction mode, i.e. confusingAndOftenMisusedAttached() but renderer == 0
-    setRenderer(0);
-    m_renderView = 0;
 
     m_hoverNode = 0;
     m_focusedElement = 0;
@@ -2011,9 +2004,6 @@ void Document::detach(const AttachContext& context)
     unscheduleStyleRecalc();
 
     clearStyleResolver();
-
-    if (renderView)
-        renderView->destroy();
 
     if (m_touchEventTargets && m_touchEventTargets->size() && parentDocument())
         parentDocument()->didRemoveEventTargetNode(this);
@@ -2070,7 +2060,7 @@ AXObjectCache* Document::existingAXObjectCache() const
 
     // If the renderer is gone then we are in the process of destruction.
     // This method will be called before m_frame = 0.
-    if (!topDocument()->renderView())
+    if (!topDocument()->isActive())
         return 0;
 
     return topDocument()->m_axObjectCache.get();
@@ -2088,7 +2078,7 @@ AXObjectCache* Document::axObjectCache() const
     Document* topDocument = this->topDocument();
 
     // If the document has already been detached, do not make a new axObjectCache.
-    if (!topDocument->renderView())
+    if (!topDocument->isActive())
         return 0;
 
     ASSERT(topDocument == this || !m_axObjectCache);
@@ -2972,15 +2962,13 @@ void Document::processReferrerPolicy(const String& policy)
 
 MouseEventWithHitTestResults Document::prepareMouseEvent(const HitTestRequest& request, const LayoutPoint& documentPoint, const PlatformMouseEvent& event)
 {
-    ASSERT(!renderView() || renderView()->isRenderView());
-
     // RenderView::hitTest causes a layout, and we don't want to hit that until the first
     // layout because until then, there is nothing shown on the screen - the user can't
     // have intentionally clicked on something belonging to this page. Furthermore,
     // mousemove events before the first layout should not lead to a premature layout()
     // happening, which could show a flash of white.
     // See also the similar code in EventHandler::hitTestResultAtPoint.
-    if (!renderView() || !view() || !view()->didFirstLayout())
+    if (!isActive() || !view() || !view()->didFirstLayout())
         return MouseEventWithHitTestResults(event, HitTestResult(LayoutPoint()));
 
     HitTestResult result(documentPoint);
