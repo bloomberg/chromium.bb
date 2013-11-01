@@ -49,8 +49,6 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
                                       size_t bytes_visible_and_nearby,
                                       size_t bytes_allocated) OVERRIDE;
 
-  virtual void SetDiscardBackBufferWhenNotVisible(bool discard) OVERRIDE;
-
  private:
   DelegatingRenderer(RendererClient* client,
                      const LayerTreeSettings* settings,

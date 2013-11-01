@@ -25,9 +25,4 @@ void FakeOutputSurfaceClient::SetMemoryPolicy(
   memory_policy_ = policy;
 }
 
-void FakeOutputSurfaceClient::SetDiscardBackBufferWhenNotVisible(bool discard) {
-  discard_backbuffer_when_not_visible_ = discard;
-}
-
-
 }  // namespace cc

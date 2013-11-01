@@ -192,8 +192,4 @@ void DelegatingRenderer::SendManagedMemoryStats(size_t bytes_visible,
   context_provider->ContextSupport()->SendManagedMemoryStats(stats);
 }
 
-void DelegatingRenderer::SetDiscardBackBufferWhenNotVisible(bool discard) {
-  // Nothing to do, we don't have a back buffer.
-}
-
 }  // namespace cc

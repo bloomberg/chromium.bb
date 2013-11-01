@@ -204,11 +204,7 @@ void ContextProviderCommandBuffer::OnMemoryAllocationChanged(
   if (memory_policy_changed_callback_.is_null())
     return;
 
-  bool discard_backbuffer_when_not_visible =
-      !allocation.have_backbuffer_when_not_visible;
-
-  memory_policy_changed_callback_.Run(
-      cc::ManagedMemoryPolicy(allocation), discard_backbuffer_when_not_visible);
+  memory_policy_changed_callback_.Run(cc::ManagedMemoryPolicy(allocation));
 }
 
 bool ContextProviderCommandBuffer::InitializeCapabilities() {

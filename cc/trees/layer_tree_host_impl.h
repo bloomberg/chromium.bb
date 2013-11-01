@@ -230,7 +230,6 @@ class CC_EXPORT LayerTreeHostImpl
   virtual void OnSwapBuffersComplete() OVERRIDE;
   virtual void ReclaimResources(const CompositorFrameAck* ack) OVERRIDE;
   virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE;
-  virtual void SetDiscardBackBufferWhenNotVisible(bool discard) OVERRIDE;
   virtual void SetTreeActivationCallback(const base::Closure& callback)
       OVERRIDE;
 

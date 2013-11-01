@@ -166,7 +166,6 @@ GLRenderer::GLRenderer(RendererClient* client,
       context_support_(output_surface->context_provider()->ContextSupport()),
       texture_mailbox_deleter_(texture_mailbox_deleter),
       is_backbuffer_discarded_(false),
-      discard_backbuffer_when_not_visible_(false),
       is_using_bind_uniform_(false),
       visible_(true),
       is_scissor_enabled_(false),
@@ -2103,17 +2102,11 @@ void GLRenderer::SwapBuffers() {
   resource_provider_->SetReadLockFence(new SimpleSwapFence());
 }
 
-void GLRenderer::SetDiscardBackBufferWhenNotVisible(bool discard) {
-  discard_backbuffer_when_not_visible_ = discard;
-  EnforceMemoryPolicy();
-}
-
 void GLRenderer::EnforceMemoryPolicy() {
   if (!visible_) {
     TRACE_EVENT0("cc", "GLRenderer::EnforceMemoryPolicy dropping resources");
     ReleaseRenderPassTextures();
-    if (discard_backbuffer_when_not_visible_)
-      DiscardBackbuffer();
+    DiscardBackbuffer();
     resource_provider_->ReleaseCachedData();
     GLC(context_, context_->flush());
   }

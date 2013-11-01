@@ -93,7 +93,6 @@ class CONTENT_EXPORT GpuMemoryManagerClientState {
   // The allocation for this client, used transiently during memory policy
   // calculation.
   uint64 bytes_allocation_when_visible_;
-  uint64 bytes_allocation_when_nonvisible_;
 
   // The ideal allocation for this client for three performance levels, used
   // transiently during memory policy calculation.

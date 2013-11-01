@@ -116,7 +116,6 @@ class CONTENT_EXPORT GpuMemoryManager :
 
   // Compute the allocation for clients when visible and not visible.
   void ComputeVisibleSurfacesAllocations();
-  void ComputeNonvisibleSurfacesAllocations();
   void DistributeRemainingMemoryToVisibleSurfaces();
 
   // Compute the budget for a client. Allow at most bytes_above_required_cap
@@ -128,8 +127,6 @@ class CONTENT_EXPORT GpuMemoryManager :
       uint64 bytes_above_required_cap,
       uint64 bytes_above_minimum_cap,
       uint64 bytes_overall_cap);
-  uint64 ComputeClientAllocationWhenNonvisible(
-      GpuMemoryManagerClientState* client_state);
 
   // Update the amount of GPU memory we think we have in the system, based
   // on what the stubs' contexts report.
@@ -232,17 +229,12 @@ class CONTENT_EXPORT GpuMemoryManager :
   uint64 bytes_available_gpu_memory_;
   bool bytes_available_gpu_memory_overridden_;
 
-  // Whether or not clients can be allocated memory when nonvisible.
-  bool allow_nonvisible_memory_;
-
   // The minimum and default allocations for a single client.
   uint64 bytes_minimum_per_client_;
   uint64 bytes_default_per_client_;
 
   // The current total memory usage, and historical maximum memory usage
   uint64 bytes_allocated_managed_current_;
-  uint64 bytes_allocated_managed_visible_;
-  uint64 bytes_allocated_managed_nonvisible_;
   uint64 bytes_allocated_unmanaged_current_;
   uint64 bytes_allocated_historical_max_;
 

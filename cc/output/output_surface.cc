@@ -489,17 +489,14 @@ void OutputSurface::PostSwapBuffersComplete() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void OutputSurface::SetMemoryPolicy(const ManagedMemoryPolicy& policy,
-                                    bool discard_backbuffer) {
-  TRACE_EVENT2("cc", "OutputSurface::SetMemoryPolicy",
-               "bytes_limit_when_visible", policy.bytes_limit_when_visible,
-               "discard_backbuffer", discard_backbuffer);
+void OutputSurface::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
+  TRACE_EVENT1("cc", "OutputSurface::SetMemoryPolicy",
+               "bytes_limit_when_visible", policy.bytes_limit_when_visible);
   // Just ignore the memory manager when it says to set the limit to zero
   // bytes. This will happen when the memory manager thinks that the renderer
   // is not visible (which the renderer knows better).
   if (policy.bytes_limit_when_visible)
     client_->SetMemoryPolicy(policy);
-  client_->SetDiscardBackBufferWhenNotVisible(discard_backbuffer);
 }
 
 }  // namespace cc

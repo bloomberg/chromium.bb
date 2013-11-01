@@ -199,8 +199,7 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
 
   void SetUpContext3d();
   void ResetContext3d();
-  void SetMemoryPolicy(const ManagedMemoryPolicy& policy,
-                       bool discard_backbuffer_when_not_visible);
+  void SetMemoryPolicy(const ManagedMemoryPolicy& policy);
   void UpdateAndMeasureGpuLatency();
 
   // check_for_retroactive_begin_impl_frame_pending_ is used to avoid posting

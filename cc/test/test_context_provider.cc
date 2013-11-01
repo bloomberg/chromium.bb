@@ -191,12 +191,10 @@ TestWebGraphicsContext3D* TestContextProvider::UnboundTestContext3d() {
 }
 
 void TestContextProvider::SetMemoryAllocation(
-    const ManagedMemoryPolicy& policy,
-    bool discard_backbuffer_when_not_visible) {
+    const ManagedMemoryPolicy& policy) {
   if (memory_policy_changed_callback_.is_null())
     return;
-  memory_policy_changed_callback_.Run(
-      policy, discard_backbuffer_when_not_visible);
+  memory_policy_changed_callback_.Run(policy);
 }
 
 void TestContextProvider::SetLostContextCallback(

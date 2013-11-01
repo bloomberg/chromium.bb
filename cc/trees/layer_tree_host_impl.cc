@@ -208,8 +208,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       cached_managed_memory_policy_(
           PrioritizedResourceManager::DefaultMemoryAllocationLimit(),
           gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
-          0,
-          gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING,
           ManagedMemoryPolicy::kDefaultNumResourcesLimit),
       pinch_gesture_active_(false),
       pinch_gesture_end_should_clear_scrolling_layer_(false),
@@ -1066,11 +1064,10 @@ void LayerTreeHostImpl::EnforceManagedMemoryPolicy(
     const ManagedMemoryPolicy& policy) {
 
   bool evicted_resources = client_->ReduceContentsTextureMemoryOnImplThread(
-      visible_ ? policy.bytes_limit_when_visible
-               : policy.bytes_limit_when_not_visible,
+      visible_ ? policy.bytes_limit_when_visible : 0,
       ManagedMemoryPolicy::PriorityCutoffToValue(
           visible_ ? policy.priority_cutoff_when_visible
-                   : policy.priority_cutoff_when_not_visible));
+                   : gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING));
   if (evicted_resources) {
     active_tree_->SetContentsTexturesPurged();
     if (pending_tree_)
@@ -1093,8 +1090,7 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
   // possible. crbug.com/224475
   global_tile_state_.memory_limit_in_bytes =
       visible_ ?
-      policy.bytes_limit_when_visible :
-      policy.bytes_limit_when_not_visible;
+      policy.bytes_limit_when_visible : 0;
   global_tile_state_.unused_memory_limit_in_bytes = static_cast<size_t>(
       (static_cast<int64>(global_tile_state_.memory_limit_in_bytes) *
        settings_.max_unused_resource_memory_percentage) / 100);
@@ -1102,7 +1098,7 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
       ManagedMemoryPolicy::PriorityCutoffToTileMemoryLimitPolicy(
           visible_ ?
           policy.priority_cutoff_when_visible :
-          policy.priority_cutoff_when_not_visible);
+          gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING);
   global_tile_state_.num_resources_limit = policy.num_resources_limit;
 
   DidModifyTilePriorities();
@@ -1129,11 +1125,6 @@ void LayerTreeHostImpl::NotifyReadyToActivate() {
 
 void LayerTreeHostImpl::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
   SetManagedMemoryPolicy(policy, zero_budget_);
-}
-
-void LayerTreeHostImpl::SetDiscardBackBufferWhenNotVisible(bool discard) {
-  DCHECK(renderer_);
-  renderer_->SetDiscardBackBufferWhenNotVisible(discard);
 }
 
 void LayerTreeHostImpl::SetTreeActivationCallback(
@@ -1560,15 +1551,12 @@ void LayerTreeHostImpl::SetVisible(bool visible) {
 ManagedMemoryPolicy LayerTreeHostImpl::ActualManagedMemoryPolicy() const {
   ManagedMemoryPolicy actual = cached_managed_memory_policy_;
   if (debug_state_.rasterize_only_visible_content) {
-    actual.priority_cutoff_when_not_visible =
-        gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING;
     actual.priority_cutoff_when_visible =
         gpu::MemoryAllocation::CUTOFF_ALLOW_REQUIRED_ONLY;
   }
 
   if (zero_budget_) {
     actual.bytes_limit_when_visible = 0;
-    actual.bytes_limit_when_not_visible = 0;
   }
 
   return actual;

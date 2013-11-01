@@ -321,7 +321,6 @@ class LayerTreeHostImplTest : public testing::Test,
     set_reduce_memory_result(false);
     host_impl_->SetMemoryPolicy(ManagedMemoryPolicy(
         host_impl_->memory_allocation_limit_bytes() - 1));
-    host_impl_->SetDiscardBackBufferWhenNotVisible(true);
     EXPECT_TRUE(host_impl_->CanDraw());
     EXPECT_FALSE(on_can_draw_state_changed_called_);
     on_can_draw_state_changed_called_ = false;
@@ -330,7 +329,6 @@ class LayerTreeHostImplTest : public testing::Test,
     set_reduce_memory_result(true);
     host_impl_->SetMemoryPolicy(ManagedMemoryPolicy(
         host_impl_->memory_allocation_limit_bytes() - 1));
-    host_impl_->SetDiscardBackBufferWhenNotVisible(true);
     if (always_draw) {
       EXPECT_TRUE(host_impl_->CanDraw());
     } else {
@@ -4082,7 +4080,6 @@ TEST_F(LayerTreeHostImplTest, ReleaseContentsTextureShouldTriggerCommit) {
       host_impl_->memory_allocation_limit_bytes() - 1);
   host_impl_->SetMemoryPolicy(ManagedMemoryPolicy(
       host_impl_->memory_allocation_limit_bytes() - 1));
-    host_impl_->SetDiscardBackBufferWhenNotVisible(true);
   EXPECT_FALSE(did_request_commit_);
   did_request_commit_ = false;
 
@@ -4094,7 +4091,6 @@ TEST_F(LayerTreeHostImplTest, ReleaseContentsTextureShouldTriggerCommit) {
       host_impl_->memory_allocation_limit_bytes());
   host_impl_->SetMemoryPolicy(ManagedMemoryPolicy(
       host_impl_->memory_allocation_limit_bytes() - 1));
-  host_impl_->SetDiscardBackBufferWhenNotVisible(true);
   EXPECT_TRUE(did_request_commit_);
   did_request_commit_ = false;
 
@@ -4104,7 +4100,6 @@ TEST_F(LayerTreeHostImplTest, ReleaseContentsTextureShouldTriggerCommit) {
   host_impl_->set_max_memory_needed_bytes(1);
   host_impl_->SetMemoryPolicy(ManagedMemoryPolicy(
       host_impl_->memory_allocation_limit_bytes() - 1));
-  host_impl_->SetDiscardBackBufferWhenNotVisible(true);
   EXPECT_TRUE(did_request_commit_);
   did_request_commit_ = false;
 
@@ -4112,7 +4107,6 @@ TEST_F(LayerTreeHostImplTest, ReleaseContentsTextureShouldTriggerCommit) {
   // re-commit.
   host_impl_->SetMemoryPolicy(ManagedMemoryPolicy(
       host_impl_->memory_allocation_limit_bytes()));
-  host_impl_->SetDiscardBackBufferWhenNotVisible(true);
   EXPECT_FALSE(did_request_commit_);
 }
 
@@ -5215,25 +5209,24 @@ TEST_F(LayerTreeHostImplTest, DefaultMemoryAllocation) {
 
 TEST_F(LayerTreeHostImplTest, MemoryPolicy) {
   ManagedMemoryPolicy policy1(
-      456, gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
-      123, gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE, 1000);
-  int visible_cutoff_value = ManagedMemoryPolicy::PriorityCutoffToValue(
-      policy1.priority_cutoff_when_visible);
-  int not_visible_cutoff_value = ManagedMemoryPolicy::PriorityCutoffToValue(
-      policy1.priority_cutoff_when_not_visible);
+      456, gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING, 1000);
+  int everything_cutoff_value = ManagedMemoryPolicy::PriorityCutoffToValue(
+      gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING);
+  int nothing_cutoff_value = ManagedMemoryPolicy::PriorityCutoffToValue(
+      gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING);
 
   host_impl_->SetVisible(true);
   host_impl_->SetMemoryPolicy(policy1);
   EXPECT_EQ(policy1.bytes_limit_when_visible, current_limit_bytes_);
-  EXPECT_EQ(visible_cutoff_value, current_priority_cutoff_value_);
+  EXPECT_EQ(everything_cutoff_value, current_priority_cutoff_value_);
 
   host_impl_->SetVisible(false);
-  EXPECT_EQ(policy1.bytes_limit_when_not_visible, current_limit_bytes_);
-  EXPECT_EQ(not_visible_cutoff_value, current_priority_cutoff_value_);
+  EXPECT_EQ(0u, current_limit_bytes_);
+  EXPECT_EQ(nothing_cutoff_value, current_priority_cutoff_value_);
 
   host_impl_->SetVisible(true);
   EXPECT_EQ(policy1.bytes_limit_when_visible, current_limit_bytes_);
-  EXPECT_EQ(visible_cutoff_value, current_priority_cutoff_value_);
+  EXPECT_EQ(everything_cutoff_value, current_priority_cutoff_value_);
 }
 
 class LayerTreeHostImplTestManageTiles : public LayerTreeHostImplTest {

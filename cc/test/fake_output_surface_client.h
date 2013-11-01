@@ -17,8 +17,7 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
         deferred_initialize_result_(true),
         deferred_initialize_called_(false),
         did_lose_output_surface_called_(false),
-        memory_policy_(0),
-        discard_backbuffer_when_not_visible_(false) {}
+        memory_policy_(0) {}
 
   virtual bool DeferredInitialize(
       scoped_refptr<ContextProvider> offscreen_context_provider) OVERRIDE;
@@ -34,7 +33,6 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
       gfx::Rect clip,
       bool valid_for_tile_management) OVERRIDE {}
   virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE;
-  virtual void SetDiscardBackBufferWhenNotVisible(bool discard) OVERRIDE;
   virtual void SetTreeActivationCallback(const base::Closure&) OVERRIDE {}
 
   int begin_impl_frame_count() {
@@ -55,17 +53,12 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
 
   const ManagedMemoryPolicy& memory_policy() const { return memory_policy_; }
 
-  bool discard_backbuffer_when_not_visible() const {
-    return discard_backbuffer_when_not_visible_;
-  }
-
  private:
   int begin_impl_frame_count_;
   bool deferred_initialize_result_;
   bool deferred_initialize_called_;
   bool did_lose_output_surface_called_;
   ManagedMemoryPolicy memory_policy_;
-  bool discard_backbuffer_when_not_visible_;
 };
 
 }  // namespace cc

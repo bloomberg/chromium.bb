@@ -1903,7 +1903,6 @@ class LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit
         // surface. This prevents any contents drawing into surfaces
         // from being allocated.
         host_impl->SetMemoryPolicy(ManagedMemoryPolicy(100 * 100 * 4 * 2));
-        host_impl->SetDiscardBackBufferWhenNotVisible(true);
         break;
       case 1:
         EXPECT_FALSE(renderer->HasAllocatedResourcesForTesting(
@@ -2431,9 +2430,17 @@ class LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted
 
   virtual void DidSetVisibleOnImplTree(LayerTreeHostImpl* host_impl,
                                        bool visible) OVERRIDE {
-    // One backing should remain unevicted.
-    EXPECT_EQ(100u * 100u * 4u * 1u,
-              layer_tree_host()->contents_texture_manager()->MemoryUseBytes());
+    if (visible) {
+      // One backing should remain unevicted.
+      EXPECT_EQ(
+          100u * 100u * 4u * 1u,
+          layer_tree_host()->contents_texture_manager()->MemoryUseBytes());
+    } else {
+      EXPECT_EQ(
+          0u,
+          layer_tree_host()->contents_texture_manager()->MemoryUseBytes());
+    }
+
     // Make sure that contents textures are marked as having been
     // purged.
     EXPECT_TRUE(host_impl->active_tree()->ContentsTexturesPurged());
@@ -2454,10 +2461,7 @@ class LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted
         host_impl->SetMemoryPolicy(
             ManagedMemoryPolicy(100 * 100 * 4 * 2,
                                 gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
-                                100 * 100 * 4 * 1,
-                                gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
                                 1000));
-        host_impl->SetDiscardBackBufferWhenNotVisible(true);
         break;
       case 2:
         // Only two backings should have memory.
@@ -4978,8 +4982,6 @@ class LayerTreeHostTestMemoryLimits : public LayerTreeHostTest {
         impl->SetMemoryPolicy(ManagedMemoryPolicy(
             16u*1024u*1024u,
             gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
-            0,
-            gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING,
             1000));
         break;
       case 2:
@@ -4988,8 +4990,6 @@ class LayerTreeHostTestMemoryLimits : public LayerTreeHostTest {
         impl->SetMemoryPolicy(ManagedMemoryPolicy(
             32u*1024u*1024u,
             gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
-            0,
-            gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING,
             1000));
         break;
       case 3:
@@ -5142,8 +5142,6 @@ class LayerTreeHostTestSetMemoryPolicyOnLostOutputSurface
                 second_output_surface_memory_limit_ :
                 first_output_surface_memory_limit_,
             gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
-            0,
-            gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING,
             ManagedMemoryPolicy::kDefaultNumResourcesLimit)));
     return output_surface.PassAs<OutputSurface>();
   }

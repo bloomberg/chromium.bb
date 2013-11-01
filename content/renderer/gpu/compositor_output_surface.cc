@@ -104,8 +104,6 @@ bool CompositorOutputSurface::BindToClient(
     client->SetMemoryPolicy(cc::ManagedMemoryPolicy(
         64 * 1024 * 1024,
         gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
-        0,
-        gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING,
         cc::ManagedMemoryPolicy::kDefaultNumResourcesLimit));
   }
 

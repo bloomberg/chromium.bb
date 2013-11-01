@@ -31,36 +31,20 @@ struct MemoryAllocation {
   uint64 bytes_limit_when_visible;
   PriorityCutoff priority_cutoff_when_visible;
 
-  // Limits when this renderer is not visible.
-  uint64 bytes_limit_when_not_visible;
-  PriorityCutoff priority_cutoff_when_not_visible;
-  bool have_backbuffer_when_not_visible;
-
   MemoryAllocation()
       : bytes_limit_when_visible(0),
-        priority_cutoff_when_visible(CUTOFF_ALLOW_NOTHING),
-        bytes_limit_when_not_visible(0),
-        priority_cutoff_when_not_visible(CUTOFF_ALLOW_NOTHING),
-        have_backbuffer_when_not_visible(false) {
+        priority_cutoff_when_visible(CUTOFF_ALLOW_NOTHING) {
   }
 
   MemoryAllocation(uint64 bytes_limit_when_visible)
       : bytes_limit_when_visible(bytes_limit_when_visible),
-        priority_cutoff_when_visible(CUTOFF_ALLOW_EVERYTHING),
-        bytes_limit_when_not_visible(0),
-        priority_cutoff_when_not_visible(CUTOFF_ALLOW_NOTHING),
-        have_backbuffer_when_not_visible(false) {
+        priority_cutoff_when_visible(CUTOFF_ALLOW_EVERYTHING) {
   }
 
   bool Equals(const MemoryAllocation& other) const {
     return bytes_limit_when_visible ==
                other.bytes_limit_when_visible &&
-        priority_cutoff_when_visible == other.priority_cutoff_when_visible &&
-        bytes_limit_when_not_visible == other.bytes_limit_when_not_visible &&
-        priority_cutoff_when_not_visible ==
-            other.priority_cutoff_when_not_visible &&
-        have_backbuffer_when_not_visible ==
-            other.have_backbuffer_when_not_visible;
+        priority_cutoff_when_visible == other.priority_cutoff_when_visible;
   }
 };
 

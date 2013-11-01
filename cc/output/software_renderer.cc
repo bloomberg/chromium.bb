@@ -558,8 +558,4 @@ void SoftwareRenderer::SetVisible(bool visible) {
     DiscardBackbuffer();
 }
 
-void SoftwareRenderer::SetDiscardBackBufferWhenNotVisible(bool discard) {
-  // The software renderer always discards the backbuffer when not visible.
-}
-
 }  // namespace cc

@@ -385,18 +385,6 @@ class GLRendererShaderTest : public testing::Test {
 
 namespace {
 
-// Test GLRenderer discardBackbuffer functionality:
-// Suggest recreating framebuffer when one already exists.
-// Expected: it does nothing.
-TEST_F(GLRendererTest, SuggestBackbufferYesWhenItAlreadyExistsShouldDoNothing) {
-  renderer_->SetDiscardBackBufferWhenNotVisible(false);
-  EXPECT_EQ(0, renderer_client_.set_full_root_layer_damage_count());
-  EXPECT_FALSE(renderer_->IsBackbufferDiscarded());
-
-  SwapBuffers();
-  EXPECT_EQ(1, context3d_->frame_count());
-}
-
 // Test GLRenderer DiscardBackbuffer functionality:
 // Suggest discarding framebuffer when one exists and the renderer is not
 // visible.
@@ -405,7 +393,6 @@ TEST_F(
     GLRendererTest,
     SuggestBackbufferNoShouldDiscardBackbufferAndDamageRootLayerIfNotVisible) {
   renderer_->SetVisible(false);
-  renderer_->SetDiscardBackBufferWhenNotVisible(true);
   EXPECT_EQ(1, renderer_client_.set_full_root_layer_damage_count());
   EXPECT_TRUE(renderer_->IsBackbufferDiscarded());
 }
@@ -415,7 +402,6 @@ TEST_F(
 // Expected: the allocation is ignored.
 TEST_F(GLRendererTest, SuggestBackbufferNoDoNothingWhenVisible) {
   renderer_->SetVisible(true);
-  renderer_->SetDiscardBackBufferWhenNotVisible(true);
   EXPECT_EQ(0, renderer_client_.set_full_root_layer_damage_count());
   EXPECT_FALSE(renderer_->IsBackbufferDiscarded());
 }
@@ -425,11 +411,9 @@ TEST_F(GLRendererTest, SuggestBackbufferNoDoNothingWhenVisible) {
 // Expected: it does nothing.
 TEST_F(GLRendererTest, SuggestBackbufferNoWhenItDoesntExistShouldDoNothing) {
   renderer_->SetVisible(false);
-  renderer_->SetDiscardBackBufferWhenNotVisible(true);
   EXPECT_EQ(1, renderer_client_.set_full_root_layer_damage_count());
   EXPECT_TRUE(renderer_->IsBackbufferDiscarded());
 
-  renderer_->SetDiscardBackBufferWhenNotVisible(true);
   EXPECT_EQ(1, renderer_client_.set_full_root_layer_damage_count());
   EXPECT_TRUE(renderer_->IsBackbufferDiscarded());
 }
@@ -439,7 +423,6 @@ TEST_F(GLRendererTest, SuggestBackbufferNoWhenItDoesntExistShouldDoNothing) {
 // Expected: will recreate framebuffer.
 TEST_F(GLRendererTest, DiscardedBackbufferIsRecreatedForScopeDuration) {
   renderer_->SetVisible(false);
-  renderer_->SetDiscardBackBufferWhenNotVisible(true);
   EXPECT_TRUE(renderer_->IsBackbufferDiscarded());
   EXPECT_EQ(1, renderer_client_.set_full_root_layer_damage_count());
 
@@ -454,7 +437,6 @@ TEST_F(GLRendererTest, DiscardedBackbufferIsRecreatedForScopeDuration) {
 
 TEST_F(GLRendererTest, FramebufferDiscardedAfterReadbackWhenNotVisible) {
   renderer_->SetVisible(false);
-  renderer_->SetDiscardBackBufferWhenNotVisible(true);
   EXPECT_TRUE(renderer_->IsBackbufferDiscarded());
   EXPECT_EQ(1, renderer_client_.set_full_root_layer_damage_count());
 

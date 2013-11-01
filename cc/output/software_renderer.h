@@ -45,7 +45,6 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
       size_t bytes_allocated) OVERRIDE  {}
   virtual void ReceiveSwapBuffersAck(
       const CompositorFrameAck& ack) OVERRIDE;
-  virtual void SetDiscardBackBufferWhenNotVisible(bool discard) OVERRIDE;
   virtual void DiscardBackbuffer() OVERRIDE;
   virtual void EnsureBackbuffer() OVERRIDE;
 

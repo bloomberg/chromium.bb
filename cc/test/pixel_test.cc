@@ -64,7 +64,6 @@ class PixelTest::PixelTestRendererClient
     device_clip_ = clip;
   }
   virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE {}
-  virtual void SetDiscardBackBufferWhenNotVisible(bool discard) OVERRIDE {}
   virtual void SetTreeActivationCallback(const base::Closure&) OVERRIDE {}
 
  private:

@@ -21,16 +21,12 @@ struct CC_EXPORT ManagedMemoryPolicy {
   ManagedMemoryPolicy(
       size_t bytes_limit_when_visible,
       gpu::MemoryAllocation::PriorityCutoff priority_cutoff_when_visible,
-      size_t bytes_limit_when_not_visible,
-      gpu::MemoryAllocation::PriorityCutoff priority_cutoff_when_not_visible,
       size_t num_resources_limit);
   bool operator==(const ManagedMemoryPolicy&) const;
   bool operator!=(const ManagedMemoryPolicy&) const;
 
   size_t bytes_limit_when_visible;
   gpu::MemoryAllocation::PriorityCutoff priority_cutoff_when_visible;
-  size_t bytes_limit_when_not_visible;
-  gpu::MemoryAllocation::PriorityCutoff priority_cutoff_when_not_visible;
   size_t num_resources_limit;
 
   static int PriorityCutoffToValue(
