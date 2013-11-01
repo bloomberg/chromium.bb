@@ -14,6 +14,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/views/border.h"
 #include "ui/views/painter.h"
 
@@ -38,6 +39,19 @@ views::TextButtonDefaultBorder* CreateBorder(const int normal_image_set[],
   return border;
 }
 
+string16 GetElidedText(const string16& original_text) {
+  // Maximum characters the button can be before the text will get elided.
+  const int kMaxCharactersToDisplay = 15;
+
+  gfx::FontList font_list = ui::ResourceBundle::GetSharedInstance().GetFontList(
+      ui::ResourceBundle::BaseFont);
+  return gfx::ElideText(
+      original_text,
+      font_list,
+      font_list.GetExpectedTextWidth(kMaxCharactersToDisplay),
+      gfx::ELIDE_AT_END);
+}
+
 }  // namespace
 
 NewAvatarButton::NewAvatarButton(
@@ -45,7 +59,7 @@ NewAvatarButton::NewAvatarButton(
     const string16& profile_name,
     AvatarButtonStyle button_style,
     Browser* browser)
-    : MenuButton(listener, profile_name, NULL, true),
+    : MenuButton(listener, GetElidedText(profile_name), NULL, true),
       browser_(browser) {
   set_animate_on_state_change(false);
 
@@ -110,8 +124,8 @@ void NewAvatarButton::OnPaint(gfx::Canvas* canvas) {
 
   canvas->DrawStringRectWithHalo(
       text(),
-      gfx::FontList(ui::ResourceBundle::GetSharedInstance().GetFont(
-          ui::ResourceBundle::BaseFont)),
+      ui::ResourceBundle::GetSharedInstance().GetFontList(
+          ui::ResourceBundle::BaseFont),
       SK_ColorWHITE,
       SK_ColorDKGRAY,
       rect,
@@ -122,7 +136,7 @@ void NewAvatarButton::OnPaint(gfx::Canvas* canvas) {
 }
 
 void NewAvatarButton::OnAvatarMenuChanged(AvatarMenu* avatar_menu) {
-  SetText(profiles::GetActiveProfileDisplayName(browser_));
-  // We need to redraw the entire button because the width might have changed.
-  SchedulePaint();
+  // We want the button to resize if the new text is shorter.
+  ClearMaxTextSize();
+  SetText(GetElidedText(profiles::GetActiveProfileDisplayName(browser_)));
 }
