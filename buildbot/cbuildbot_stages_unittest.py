@@ -1392,6 +1392,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
       except parallel.BackgroundFailure as ex:
         error = ex
     self.assertTrue(error)
+    self.assertFalse(error.possibly_flaky)
     expectedResults = [
         ('Pass', results_lib.Results.SUCCESS),
         ('Fail', FailStage.FAIL_EXCEPTION),
@@ -1400,6 +1401,26 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
         ('Suicide', error),
     ]
     self._verifyRunResults(expectedResults)
+
+  def testFlakyParallelStages(self):
+    """Verify that stages that die with kill -9 are treated as flaky."""
+    stage_objs = [stage(self.options, self.build_config) for stage in
+                  (PassStage, SuicideStage)]
+    error = None
+    with cros_test_lib.OutputCapturer():
+      with cros_test_lib.LoggingCapturer(parallel.__name__):
+        with mock.patch.multiple(parallel._BackgroundTask, PRINT_INTERVAL=0.01):
+          try:
+            cbuildbot.SimpleBuilder._RunParallelStages(stage_objs)
+          except parallel.BackgroundFailure as ex:
+            error = ex
+        self.assertTrue(error)
+        self.assertTrue(error.possibly_flaky)
+        expectedResults = [
+            ('Pass', results_lib.Results.SUCCESS),
+            ('Suicide', error),
+        ]
+        self._verifyRunResults(expectedResults)
 
   def testStagesReportSuccess(self):
     """Tests Stage reporting."""
