@@ -14,3 +14,6 @@ CloudPrintURLFetcherOverloadTest.Protect
 
 # Hangs every once in a while. http://crbug.com/309149
 ExtensionUpdaterTest.TestMultipleManifestDownloading
+
+# Test fail: crbug.com/314216
+ExtensionIconManagerTest.LoadComponentExtensionResource
