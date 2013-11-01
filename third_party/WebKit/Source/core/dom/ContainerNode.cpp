@@ -81,7 +81,7 @@ void ContainerNode::removeDetachedChildren()
         for (Node* child = firstChild(); child; child = child->nextSibling())
             child->updateAncestorConnectedSubframeCountForRemoval();
     }
-    // FIXME: We should be able to ASSERT(!confusingAndOftenMisusedAttached()) here: https://bugs.webkit.org/show_bug.cgi?id=107801
+    ASSERT(needsAttach());
     removeDetachedChildrenInContainer<Node, ContainerNode>(*this);
 }
 

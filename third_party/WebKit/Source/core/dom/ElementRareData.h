@@ -30,7 +30,6 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/html/ClassList.h"
 #include "core/html/ime/InputMethodContext.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/rendering/style/StyleInheritedData.h"
 #include "wtf/OwnPtr.h"
 
@@ -147,6 +146,8 @@ public:
         return m_inputMethodContext.get();
     }
 
+    bool hasPseudoElements() const;
+
 private:
     short m_tabIndex;
     unsigned short m_childIndex;
@@ -188,7 +189,6 @@ private:
     RefPtr<PseudoElement> m_backdrop;
 
     ElementRareData(RenderObject*);
-    void releasePseudoElement(PseudoElement*);
 };
 
 inline IntSize defaultMinimumSizeForResizing()
@@ -229,26 +229,32 @@ inline ElementRareData::~ElementRareData()
     ASSERT(!m_backdrop);
 }
 
-inline void ElementRareData::setPseudoElement(PseudoId pseudoId, PassRefPtr<PseudoElement> prpElement)
+inline bool ElementRareData::hasPseudoElements() const
 {
-    RefPtr<PseudoElement> element = prpElement;
+    return m_generatedBefore || m_generatedAfter || m_backdrop;
+}
+
+inline void ElementRareData::setPseudoElement(PseudoId pseudoId, PassRefPtr<PseudoElement> element)
+{
     switch (pseudoId) {
     case BEFORE:
-        releasePseudoElement(m_generatedBefore.get());
+        if (m_generatedBefore)
+            m_generatedBefore->dispose();
         m_generatedBefore = element;
         break;
     case AFTER:
-        releasePseudoElement(m_generatedAfter.get());
+        if (m_generatedAfter)
+            m_generatedAfter->dispose();
         m_generatedAfter = element;
         break;
     case BACKDROP:
-        releasePseudoElement(m_backdrop.get());
+        if (m_backdrop)
+            m_backdrop->dispose();
         m_backdrop = element;
         break;
     default:
         ASSERT_NOT_REACHED();
     }
-    InspectorInstrumentation::pseudoElementCreated(element.get());
 }
 
 inline PseudoElement* ElementRareData::pseudoElement(PseudoId pseudoId) const
@@ -263,21 +269,6 @@ inline PseudoElement* ElementRareData::pseudoElement(PseudoId pseudoId) const
     default:
         return 0;
     }
-}
-
-inline void ElementRareData::releasePseudoElement(PseudoElement* element)
-{
-    if (!element)
-        return;
-
-    InspectorInstrumentation::pseudoElementDestroyed(element);
-
-    ASSERT(!element->nextSibling());
-    ASSERT(!element->previousSibling());
-
-    element->detach();
-    element->document().removeFromTopLayer(element);
-    element->setParentOrShadowHostNode(0);
 }
 
 inline void ElementRareData::resetStyleState()

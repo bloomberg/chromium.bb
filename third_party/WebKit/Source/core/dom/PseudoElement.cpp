@@ -27,6 +27,7 @@
 #include "config.h"
 #include "core/dom/PseudoElement.h"
 
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderQuote.h"
 #include "core/rendering/style/ContentData.h"
@@ -65,6 +66,19 @@ PseudoElement::PseudoElement(Element* parent, PseudoId pseudoId)
 PassRefPtr<RenderStyle> PseudoElement::customStyleForRenderer()
 {
     return parentOrShadowHostElement()->renderer()->getCachedPseudoStyle(m_pseudoId);
+}
+
+void PseudoElement::dispose()
+{
+    InspectorInstrumentation::pseudoElementDestroyed(this);
+
+    ASSERT(!nextSibling());
+    ASSERT(!previousSibling());
+
+    detach();
+    RefPtr<Element> parent = parentOrShadowHostElement();
+    setParentOrShadowHostNode(0);
+    removedFrom(parent.get());
 }
 
 void PseudoElement::attach(const AttachContext& context)

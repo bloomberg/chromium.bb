@@ -53,6 +53,8 @@ public:
 
     static String pseudoElementNameForEvents(PseudoId);
 
+    void dispose();
+
 private:
     PseudoElement(Element*, PseudoId);
 

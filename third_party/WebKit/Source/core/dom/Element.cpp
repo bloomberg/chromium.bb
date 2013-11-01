@@ -1274,14 +1274,7 @@ Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertio
     if (containsFullScreenElement() && parentElement() && !parentElement()->containsFullScreenElement())
         setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(true);
 
-    if (Element* before = pseudoElement(BEFORE))
-        before->insertedInto(insertionPoint);
-
-    if (Element* after = pseudoElement(AFTER))
-        after->insertedInto(insertionPoint);
-
-    if (Element* backdrop = pseudoElement(BACKDROP))
-        backdrop->insertedInto(insertionPoint);
+    ASSERT(!hasRareData() || !elementRareData()->hasPseudoElements());
 
     if (!insertionPoint->isInTreeScope())
         return InsertionDone;
@@ -1319,15 +1312,7 @@ void Element::removedFrom(ContainerNode* insertionPoint)
 {
     bool wasInDocument = insertionPoint->inDocument();
 
-    if (Element* before = pseudoElement(BEFORE))
-        before->removedFrom(insertionPoint);
-
-    if (Element* after = pseudoElement(AFTER))
-        after->removedFrom(insertionPoint);
-
-    if (Element* backdrop = pseudoElement(BACKDROP))
-        backdrop->removedFrom(insertionPoint);
-    document().removeFromTopLayer(this);
+    ASSERT(!hasRareData() || !elementRareData()->hasPseudoElements());
 
     if (containsFullScreenElement())
         setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
@@ -1361,6 +1346,8 @@ void Element::removedFrom(ContainerNode* insertionPoint)
         if (isUpgradedCustomElement())
             CustomElement::didLeaveDocument(this, insertionPoint->document());
     }
+
+    document().removeFromTopLayer(this);
 
     if (hasRareData())
         elementRareData()->setIsInCanvasSubtree(false);
@@ -2626,7 +2613,10 @@ void Element::createPseudoElement(PseudoId pseudoId)
     RefPtr<PseudoElement> element = PseudoElement::create(this, pseudoId);
     if (pseudoId == BACKDROP)
         document().addToTopLayer(element.get(), this);
+    element->insertedInto(this);
     element->attach();
+
+    InspectorInstrumentation::pseudoElementCreated(element.get());
 
     ensureElementRareData().setPseudoElement(pseudoId, element.release());
 }
