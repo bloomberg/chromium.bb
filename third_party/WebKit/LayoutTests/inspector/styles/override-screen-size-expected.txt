@@ -1,7 +1,6 @@
 Tests that screen dimension overrides affect media rules, body dimensions, and window.screen.
 
 Override: 1000x1200
-Page reloaded.
 Screen from page: 1000x1200
 Window from page: 1000x1200
 Body from page: 1000x1200
@@ -53,5 +52,4 @@ Current dimensions:
 Screen from page: 1200x1000
 Window from page: 1200x1000
 Body from page: 1200x1000
-Page reloaded.
 

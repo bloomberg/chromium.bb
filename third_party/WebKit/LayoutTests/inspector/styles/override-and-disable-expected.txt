@@ -1,7 +1,6 @@
 Tests that disabling page agent cancels device metrics override.
 
 Override: 1000x1200
-Page reloaded.
 Screen from page: 1000x1200
 Window from page: 1000x1200
 Body from page: 1000x1200

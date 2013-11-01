@@ -115,19 +115,15 @@ function test()
 
     function applyOverride(width, height, userCallback)
     {
-        function callback(reload, error)
+        function callback(error)
         {
             if (error)
                 InspectorTest.addResult("Override: " + width + "x" + height + " => ERROR");
-            if (reload && !error) {
-                InspectorTest.reloadPage(userCallback);
-            } else {
-                userCallback();
-            }
+            userCallback();
         }
         
         var enabled = width != 0 || height != 0;
-        PageAgent.setDeviceMetricsOverride(width, height, 1, true, callback.bind(null, enabled != overridesEnabled));
+        PageAgent.setDeviceMetricsOverride(width, height, 1, true, callback);
         overridesEnabled = enabled;
     }
 
