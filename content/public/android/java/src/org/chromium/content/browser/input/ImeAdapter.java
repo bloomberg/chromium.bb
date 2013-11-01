@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -120,8 +120,7 @@ public class ImeAdapter {
     }
 
     public static class AdapterInputConnectionFactory {
-        public AdapterInputConnection get(View view, ImeAdapter imeAdapter,
-                EditorInfo outAttrs) {
+        public AdapterInputConnection get(View view, ImeAdapter imeAdapter, EditorInfo outAttrs) {
             return new AdapterInputConnection(view, imeAdapter, outAttrs);
         }
     }
@@ -264,14 +263,6 @@ public class ImeAdapter {
         }
     }
 
-    /**
-     * Used to check whether the native counterpart of the ImeAdapter has been attached yet.
-     * @return Whether native ImeAdapter has been attached and its pointer is currently nonzero.
-     */
-    public boolean isNativeImeAdapterAttached() {
-        return mNativeImeAdapterAndroid != 0;
-    }
-
     private void showKeyboard() {
         mIsShowWithoutHideOutstanding = true;
         mInputMethodManagerWrapper.showSoftInput(mViewEmbedder.getAttachedView(), 0,
@@ -279,24 +270,20 @@ public class ImeAdapter {
     }
 
     private void dismissInput(boolean unzoomIfNeeded) {
-        hideKeyboard(unzoomIfNeeded);
-        mViewEmbedder.onDismissInput();
-    }
-
-    private void hideKeyboard(boolean unzoomIfNeeded) {
         mIsShowWithoutHideOutstanding  = false;
         View view = mViewEmbedder.getAttachedView();
         if (mInputMethodManagerWrapper.isActive(view)) {
             mInputMethodManagerWrapper.hideSoftInputFromWindow(view.getWindowToken(), 0,
                     unzoomIfNeeded ? mViewEmbedder.getNewShowKeyboardReceiver() : null);
         }
+        mViewEmbedder.onDismissInput();
     }
 
     private boolean hasInputType() {
         return mTextInputType != sTextInputTypeNone;
     }
 
-    static boolean isTextInputType(int type) {
+    private static boolean isTextInputType(int type) {
         return type != sTextInputTypeNone && !InputDialogContainer.isDialogInputType(type);
     }
 
@@ -330,7 +317,6 @@ public class ImeAdapter {
 
     // Calls from Java to C++
 
-    @VisibleForTesting
     boolean checkCompositionQueueAndCallNative(String text, int newCursorPosition,
             boolean isCommit) {
         if (mNativeImeAdapterAndroid == 0) return false;
@@ -397,24 +383,16 @@ public class ImeAdapter {
         return true;
     }
 
-    boolean deleteSurroundingText(int leftLength, int rightLength) {
+    boolean deleteSurroundingText(int beforeLength, int afterLength) {
         if (mNativeImeAdapterAndroid == 0) return false;
-        nativeDeleteSurroundingText(mNativeImeAdapterAndroid, leftLength, rightLength);
+        nativeDeleteSurroundingText(mNativeImeAdapterAndroid, beforeLength, afterLength);
         return true;
     }
 
-    @VisibleForTesting
-    protected boolean setEditableSelectionOffsets(int start, int end) {
+    boolean setEditableSelectionOffsets(int start, int end) {
         if (mNativeImeAdapterAndroid == 0) return false;
         nativeSetEditableSelectionOffsets(mNativeImeAdapterAndroid, start, end);
         return true;
-    }
-
-    void commitText() {
-        cancelComposition();
-        if (mNativeImeAdapterAndroid != 0) {
-            nativeCommitText(mNativeImeAdapterAndroid, "");
-        }
     }
 
     /**
