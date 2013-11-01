@@ -372,6 +372,7 @@ InspectUI::InspectUI(content::WebUI* web_ui)
 
 InspectUI::~InspectUI() {
   StopListeningNotifications();
+  STLDeleteValues(&render_view_host_targets_);
 }
 
 void InspectUI::InitUI() {
@@ -424,7 +425,7 @@ void InspectUI::PopulateWebContentsTargets() {
   STLDeleteValues(&render_view_host_targets_);
   for (DevToolsTargetImpl::List::iterator it = targets.begin();
       it != targets.end(); ++it) {
-    DevToolsTargetImpl* target = *it;
+    scoped_ptr<DevToolsTargetImpl> target(*it);
     RenderViewHost* rvh = target->GetRenderViewHost();
     if (!rvh)
       continue;
@@ -432,11 +433,12 @@ void InspectUI::PopulateWebContentsTargets() {
     if (!web_contents)
       continue;
 
-    render_view_host_targets_[target->GetId()] = target;
+    DevToolsTargetImpl* target_ptr = target.get();
+    render_view_host_targets_[target_ptr->GetId()] = target.release();
     if (rvh->GetProcess()->IsGuest()) {
-      guest_targets.push_back(target);
+      guest_targets.push_back(target_ptr);
     } else {
-      DictionaryValue* descriptor = BuildTargetDescriptor(*target);
+      DictionaryValue* descriptor = BuildTargetDescriptor(*target_ptr);
       list_value.Append(descriptor);
       web_contents_to_descriptor_[web_contents] = descriptor;
     }
