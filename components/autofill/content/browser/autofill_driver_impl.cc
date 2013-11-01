@@ -59,10 +59,9 @@ AutofillDriverImpl::AutofillDriverImpl(
     AutofillManager::AutofillDownloadManagerState enable_download_manager)
     : content::WebContentsObserver(web_contents),
       autofill_manager_(new AutofillManager(
-          this, delegate, app_locale, enable_download_manager)) {
-  SetAutofillExternalDelegate(scoped_ptr<AutofillExternalDelegate>(
-      new AutofillExternalDelegate(web_contents, autofill_manager_.get(),
-                                   this)));
+          this, delegate, app_locale, enable_download_manager)),
+      autofill_external_delegate_(web_contents, autofill_manager_.get(), this) {
+  autofill_manager_->SetExternalDelegate(&autofill_external_delegate_);
 }
 
 AutofillDriverImpl::~AutofillDriverImpl() {}
@@ -189,16 +188,10 @@ void AutofillDriverImpl::DidNavigateMainFrame(
     autofill_manager_->Reset();
 }
 
-void AutofillDriverImpl::SetAutofillExternalDelegate(
-    scoped_ptr<AutofillExternalDelegate> delegate) {
-  autofill_external_delegate_ = delegate.Pass();
-  autofill_manager_->SetExternalDelegate(autofill_external_delegate_.get());
-}
-
 void AutofillDriverImpl::SetAutofillManager(
     scoped_ptr<AutofillManager> manager) {
   autofill_manager_ = manager.Pass();
-  autofill_manager_->SetExternalDelegate(autofill_external_delegate_.get());
+  autofill_manager_->SetExternalDelegate(&autofill_external_delegate_);
 }
 
 void AutofillDriverImpl::NavigationEntryCommitted(

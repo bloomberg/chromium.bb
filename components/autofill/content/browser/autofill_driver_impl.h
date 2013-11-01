@@ -55,13 +55,8 @@ class AutofillDriverImpl : public AutofillDriver,
   virtual void RendererShouldClearPreviewedForm() OVERRIDE;
 
   AutofillExternalDelegate* autofill_external_delegate() {
-    return autofill_external_delegate_.get();
+    return &autofill_external_delegate_;
   }
-
-  // Sets the external delegate to |delegate| both within this class and in the
-  // shared Autofill code. Takes ownership of |delegate|.
-  void SetAutofillExternalDelegate(
-      scoped_ptr<AutofillExternalDelegate> delegate);
 
   AutofillManager* autofill_manager() { return autofill_manager_.get(); }
 
@@ -87,13 +82,13 @@ class AutofillDriverImpl : public AutofillDriver,
   void SetAutofillManager(scoped_ptr<AutofillManager> manager);
 
  private:
-  // AutofillExternalDelegate instance that this object instantiates in the
-  // case where the autofill native UI is enabled.
-  scoped_ptr<AutofillExternalDelegate> autofill_external_delegate_;
-
   // AutofillManager instance via which this object drives the shared Autofill
   // code.
   scoped_ptr<AutofillManager> autofill_manager_;
+
+  // AutofillExternalDelegate instance that this object instantiates in the
+  // case where the Autofill native UI is enabled.
+  AutofillExternalDelegate autofill_external_delegate_;
 };
 
 }  // namespace autofill
