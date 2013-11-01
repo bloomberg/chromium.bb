@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/frame/global_menu_bar_registrar_x11.h"
 
 #include "base/bind.h"
+#include "base/debug/leak_annotations.h"
 #include "base/logging.h"
 #include "chrome/browser/ui/views/frame/global_menu_bar_x11.h"
 #include "content/public/browser/browser_thread.h"
@@ -71,6 +72,7 @@ void GlobalMenuBarRegistrarX11::RegisterXID(unsigned long xid) {
   DCHECK(registrar_proxy_);
   std::string path = GlobalMenuBarX11::GetPathForWindow(xid);
 
+  ANNOTATE_SCOPED_MEMORY_LEAK; // http://crbug.com/314087
   // TODO(erg): The mozilla implementation goes to a lot of callback trouble
   // just to make sure that they react to make sure there's some sort of
   // cancelable object; including making a whole callback just to handle the
@@ -91,6 +93,7 @@ void GlobalMenuBarRegistrarX11::UnregisterXID(unsigned long xid) {
   DCHECK(registrar_proxy_);
   std::string path = GlobalMenuBarX11::GetPathForWindow(xid);
 
+  ANNOTATE_SCOPED_MEMORY_LEAK; // http://crbug.com/314087
   // TODO(erg): The mozilla implementation goes to a lot of callback trouble
   // just to make sure that they react to make sure there's some sort of
   // cancelable object; including making a whole callback just to handle the

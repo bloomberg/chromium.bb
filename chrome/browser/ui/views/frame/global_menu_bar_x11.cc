@@ -7,6 +7,7 @@
 #include <dlfcn.h>
 #include <glib-object.h>
 
+#include "base/debug/leak_annotations.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
@@ -367,7 +368,10 @@ DbusmenuMenuitem* GlobalMenuBarX11::BuildMenuItem(
 
 void GlobalMenuBarX11::InitServer(unsigned long xid) {
   std::string path = GetPathForWindow(xid);
-  server_ = server_new(path.c_str());
+  {
+    ANNOTATE_SCOPED_MEMORY_LEAK; // http://crbug.com/314087
+    server_ = server_new(path.c_str());
+  }
 
   root_item_ = menuitem_new();
   menuitem_property_set(root_item_, kPropertyLabel, "Root");
