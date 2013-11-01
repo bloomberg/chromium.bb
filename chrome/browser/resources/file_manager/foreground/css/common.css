@@ -346,8 +346,8 @@ div.import-photos-to-drive-icon {
 
 div.view-files-icon {
   background-image: -webkit-image-set(
-    url('../images/icon32.png') 1x,
-    url('../images/icon64.png') 2x);
+    url('../../common/images/icon32.png') 1x,
+    url('../../common/images/icon64.png') 2x);
 }
 
 div.watch-single-video-icon {

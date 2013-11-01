@@ -69,15 +69,15 @@ button:focus {
 
 .device-type[device-type=usb] {
   background-image: -webkit-image-set(
-    url('../images/files/volumes/device_usb_large.png') 1x,
-    url('../images/files/volumes/2x/device_usb_large.png') 2x);
+    url('../images/volumes/device_usb_large.png') 1x,
+    url('../images/volumes/2x/device_usb_large.png') 2x);
 }
 
 .device-type[device-type=sd] {
   -webkit-transform: rotate(-90deg);
   background-image: -webkit-image-set(
-    url('../images/files/volumes/device_sd_large.png') 1x,
-    url('../images/files/volumes/2x/device_sd_large.png') 2x);
+    url('../images/volumes/device_sd_large.png') 1x,
+    url('../images/volumes/2x/device_sd_large.png') 2x);
   bottom: 10px; /* Adjust the rotated image to not overlap with element below */
 }
 

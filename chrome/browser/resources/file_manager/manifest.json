@@ -7,13 +7,13 @@
   "description": "File Manager",
   "incognito" : "split",
   "icons": {
-    "16": "images/icon16.png",
-    "32": "images/icon32.png",
-    "48": "images/icon48.png",
-    "64": "images/icon64.png",
-    "96": "images/icon96.png",
-    "128": "images/icon128.png",
-    "256": "images/icon256.png"
+    "16": "common/images/icon16.png",
+    "32": "common/images/icon32.png",
+    "48": "common/images/icon48.png",
+    "64": "common/images/icon64.png",
+    "96": "common/images/icon96.png",
+    "128": "common/images/icon128.png",
+    "256": "common/images/icon256.png"
   },
   "permissions": [
     "contextMenus",
@@ -44,7 +44,7 @@
     {
       "id": "play",
       "default_title": "__MSG_PLAY_MEDIA__",
-      "default_icon": "images/filetype_audio.png",
+      "default_icon": "common/images/file_types/200/audio.png",
       "file_filters": [
         "filesystem:*.amr",
         "filesystem:*.flac",
@@ -58,7 +58,7 @@
     {
       "id": "watch",
       "default_title": "__MSG_PLAY_MEDIA__",
-      "default_icon": "images/filetype_video.png",
+      "default_icon": "common/images/file_types/200/video.png",
       "file_filters": [
         "filesystem:*.3gp",
         "filesystem:*.avi",
@@ -79,7 +79,7 @@
     {
       "id": "mount-archive",
       "default_title": "__MSG_MOUNT_ARCHIVE__",
-      "default_icon": "images/filetype_archive.png",
+      "default_icon": "common/images/file_types/200/archive.png",
       "file_filters": [
         "filesystem:*.rar",
         "filesystem:*.tar",
@@ -94,7 +94,7 @@
     {
       "id": "view-pdf",
       "default_title": "__MSG_OPEN_ACTION__",
-      "default_icon": "images/filetype_pdf.png",
+      "default_icon": "common/images/file_types/200/pdf.png",
       "file_filters": [
         "filesystem:*.pdf"
       ]
@@ -102,7 +102,7 @@
     {
       "id": "view-swf",
       "default_title": "__MSG_OPEN_ACTION__",
-      "default_icon": "images/filetype_generic.png",
+      "default_icon": "common/images/file_types/200/generic.png",
       "file_filters": [
         "filesystem:*.swf"
       ]
@@ -110,7 +110,7 @@
     {
       "id": "view-in-browser",
       "default_title": "__MSG_OPEN_ACTION__",
-      "default_icon": "images/filetype_generic.png",
+      "default_icon": "common/images/file_types/200/generic.png",
       "file_filters": [
         "filesystem:*.htm",
         "filesystem:*.html",
@@ -122,7 +122,7 @@
     {
       "id": "gallery",
       "default_title": "__MSG_OPEN_ACTION__",
-      "default_icon": "images/filetype_image.png",
+      "default_icon": "common/images/file_types/200/image.png",
       "file_filters": [
         // Image formats
         "filesystem:*.bmp",
@@ -151,7 +151,7 @@
     {
       "id": "open-hosted-generic",
       "default_title": "__MSG_HOSTED__",
-      "default_icon": "images/filetype_generic.png",
+      "default_icon": "common/images/file_types/200generic.png",
       "file_filters": [
         "filesystem:*.gdraw",
         "filesystem:*.gtable",
@@ -161,7 +161,7 @@
     {
       "id": "open-hosted-gdoc",
       "default_title": "__MSG_HOSTED__",
-      "default_icon": "images/filetype_generic.png",
+      "default_icon": "common/images/file_types/200/generic.png",
       "file_filters": [
         "filesystem:*.gdoc"
       ]
@@ -169,7 +169,7 @@
     {
       "id": "open-hosted-gsheet",
       "default_title": "__MSG_HOSTED__",
-      "default_icon": "images/filetype_generic.png",
+      "default_icon": "common/images/file_types/200/generic.png",
       "file_filters": [
         "filesystem:*.gsheet"
       ]
@@ -177,7 +177,7 @@
     {
       "id": "open-hosted-gslides",
       "default_title": "__MSG_HOSTED__",
-      "default_icon": "images/filetype_generic.png",
+      "default_icon": "common/images/file_types/200/generic.png",
       "file_filters": [
         "filesystem:*.gslides"
       ]
@@ -188,21 +188,21 @@
     {
       "id": "auto-open",
       "default_title": "__MSG_OPEN_ACTION__",
-      "default_icon": "images/filetype_generic.png",
+      "default_icon": "common/images/file_types/200/generic.png",
       "file_filters": []
     },
     // Selects the passed file after launching Files.app.
     {
       "id": "select",
       "default_title": "__MSG_OPEN_ACTION__",
-      "default_icon": "images/filetype_generic.png",
+      "default_icon": "common/images/file_types/200/generic.png",
       "file_filters": []
     },
     // Opens the passed directory after launching Files.app.
     {
       "id": "open",
       "default_title": "__MSG_OPEN_ACTION__",
-      "default_icon": "images/filetype_generic.png",
+      "default_icon": "common/images/file_types/200/generic.png",
       "file_filters": []
     }
   ],
