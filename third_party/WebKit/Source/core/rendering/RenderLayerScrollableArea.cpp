@@ -886,11 +886,22 @@ void RenderLayerScrollableArea::positionOverflowControls(const IntSize& offsetFr
     if (m_resizer)
         m_resizer->setFrameRect(resizerCornerRect(borderBox, ResizerForPointer));
 
-    // FIXME, this should eventually be removed, once we are certain that composited
-    // controls get correctly positioned on a compositor update. For now, conservatively
-    // leaving this unchanged.
     if (m_box->compositedLayerMapping())
         m_box->compositedLayerMapping()->positionOverflowControlsLayers(offsetFromRoot);
+}
+
+void RenderLayerScrollableArea::positionNewlyCreatedOverflowControls()
+{
+    if (!m_box->compositedLayerMapping()->hasUnpositionedOverflowControlsLayers())
+        return;
+
+    RenderGeometryMap geometryMap(UseTransforms);
+    RenderView* view = m_box->view();
+    if (this != view->layer()->scrollableArea() && m_box->layer()->parent())
+        geometryMap.pushMappingsToAncestor(m_box->layer()->parent(), 0);
+
+    LayoutPoint offsetFromRoot = LayoutPoint(geometryMap.absolutePoint(FloatPoint()));
+    positionOverflowControls(toIntSize(roundedIntPoint(offsetFromRoot)));
 }
 
 bool RenderLayerScrollableArea::scrollsOverflow() const

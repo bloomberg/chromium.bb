@@ -260,6 +260,4 @@
     [RaisesException] ClientRect selectionBounds();
 
     boolean loseSharedGraphicsContext3D();
-
-    [RaisesException] void forceCompositingUpdate(Document document);
 };

@@ -62,7 +62,7 @@ PASS
         "offsetX": 0,
         "offsetY": 0,
         "width": "number",
-        "height": 60,
+        "height": "number",
         "paintCount": "number",
         "nodeId": "number",
         "parentLayerId": "string"

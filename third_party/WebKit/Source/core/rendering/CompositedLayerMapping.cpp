@@ -758,9 +758,6 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
         }
     }
 
-    if (m_owningLayer->scrollableArea())
-        m_owningLayer->scrollableArea()->positionOverflowControls();
-
     // If this layer was created just for clipping or to apply perspective, it doesn't need its own backing store.
     setRequiresOwnBackingStore(compositor()->requiresOwnBackingStore(m_owningLayer, compAncestor));
 

@@ -88,8 +88,6 @@ PassRefPtr<ScrollingCoordinator> ScrollingCoordinator::create(Page* page)
 
 ScrollingCoordinator::ScrollingCoordinator(Page* page)
     : m_page(page)
-    , m_scrollGestureRegionIsDirty(false)
-    , m_touchEventTargetRectsAreDirty(false)
 {
 }
 
@@ -121,41 +119,29 @@ void ScrollingCoordinator::setShouldHandleScrollGestureOnMainThreadRegion(const 
     }
 }
 
-void ScrollingCoordinator::notifyLayoutUpdated()
+void ScrollingCoordinator::frameViewLayoutUpdated(FrameView* frameView)
 {
-    // These computations need to happen after compositing is updated.
-    m_scrollGestureRegionIsDirty = true;
-    m_touchEventTargetRectsAreDirty = true;
-}
+    TRACE_EVENT0("input", "ScrollingCoordinator::frameViewLayoutUpdated");
 
-void ScrollingCoordinator::updateAfterCompositingChange()
-{
-    TRACE_EVENT0("input", "ScrollingCoordinator::updateAfterCompositingChange");
+    // Compute the region of the page where we can't handle scroll gestures and mousewheel events
+    // on the impl thread. This currently includes:
+    // 1. All scrollable areas, such as subframes, overflow divs and list boxes, whose composited
+    // scrolling are not enabled. We need to do this even if the frame view whose layout was updated
+    // is not the main frame.
+    // 2. Resize control areas, e.g. the small rect at the right bottom of div/textarea/iframe when
+    // CSS property "resize" is enabled.
+    // 3. Plugin areas.
+    Region shouldHandleScrollGestureOnMainThreadRegion = computeShouldHandleScrollGestureOnMainThreadRegion(m_page->mainFrame(), IntPoint());
+    setShouldHandleScrollGestureOnMainThreadRegion(shouldHandleScrollGestureOnMainThreadRegion);
 
-    if (m_scrollGestureRegionIsDirty) {
-        // Compute the region of the page where we can't handle scroll gestures and mousewheel events
-        // on the impl thread. This currently includes:
-        // 1. All scrollable areas, such as subframes, overflow divs and list boxes, whose composited
-        // scrolling are not enabled. We need to do this even if the frame view whose layout was updated
-        // is not the main frame.
-        // 2. Resize control areas, e.g. the small rect at the right bottom of div/textarea/iframe when
-        // CSS property "resize" is enabled.
-        // 3. Plugin areas.
-        Region shouldHandleScrollGestureOnMainThreadRegion = computeShouldHandleScrollGestureOnMainThreadRegion(m_page->mainFrame(), IntPoint());
-        setShouldHandleScrollGestureOnMainThreadRegion(shouldHandleScrollGestureOnMainThreadRegion);
-        m_scrollGestureRegionIsDirty = false;
+    if (touchHitTestingEnabled()) {
+        LayerHitTestRects touchEventTargetRects;
+        computeTouchEventTargetRects(touchEventTargetRects);
+        setTouchEventTargetRects(touchEventTargetRects);
     }
 
-    if (m_touchEventTargetRectsAreDirty) {
-        updateTouchEventTargetRectsIfNeeded();
-        m_touchEventTargetRectsAreDirty = false;
-    }
-
-    const FrameTree& tree = m_page->mainFrame()->tree();
-    for (const Frame* child = tree.firstChild(); child; child = child->tree().nextSibling()) {
-        if (WebLayer* scrollLayer = scrollingWebLayerForScrollableArea(child->view()))
-            scrollLayer->setBounds(child->view()->contentsSize());
-    }
+    if (WebLayer* scrollLayer = scrollingWebLayerForScrollableArea(frameView))
+        scrollLayer->setBounds(frameView->contentsSize());
 }
 
 void ScrollingCoordinator::setLayerIsContainerForFixedPositionLayers(GraphicsLayer* layer, bool enable)
@@ -481,18 +467,6 @@ static void convertLayerRectsToEnclosingCompositedLayer(Frame* mainFrame, const 
     convertLayerRectsToEnclosingCompositedLayerRecursive(mainFrame->contentRenderer()->layer(), layerRects, compositorRects, geometryMap, layersWithRects, layerChildFrameMap);
 }
 
-void ScrollingCoordinator::updateTouchEventTargetRectsIfNeeded()
-{
-    TRACE_EVENT0("input", "ScrollingCoordinator::updateTouchEventTargetRectsIfNeeded");
-
-    if (!touchHitTestingEnabled())
-        return;
-
-    LayerHitTestRects touchEventTargetRects;
-    computeTouchEventTargetRects(touchEventTargetRects);
-    setTouchEventTargetRects(touchEventTargetRects);
-}
-
 // Note that in principle this could be called more often than computeTouchEventTargetRects, for
 // example during a non-composited scroll (although that's not yet implemented - crbug.com/261307).
 void ScrollingCoordinator::setTouchEventTargetRects(const LayerHitTestRects& layerRects)
@@ -541,13 +515,11 @@ void ScrollingCoordinator::touchEventTargetRectsDidChange(const Document*)
     if (m_page->mainFrame()->view()->needsLayout())
         return;
 
-    // FIXME: scheduleAnimation() is just a method of forcing the compositor to realize that it
-    // needs to commit here. We should expose a cleaner API for this.
-    RenderView* renderView = m_page->mainFrame()->contentRenderer();
-    if (renderView && renderView->compositor() && renderView->compositor()->inCompositingMode())
-        m_page->mainFrame()->view()->scheduleAnimation();
+    TRACE_EVENT0("input", "ScrollingCoordinator::touchEventTargetRectsDidChange");
 
-    m_touchEventTargetRectsAreDirty = true;
+    LayerHitTestRects touchEventTargetRects;
+    computeTouchEventTargetRects(touchEventTargetRects);
+    setTouchEventTargetRects(touchEventTargetRects);
 }
 
 void ScrollingCoordinator::updateScrollParentForGraphicsLayer(GraphicsLayer* child, RenderLayer* parent)
@@ -807,7 +779,7 @@ void ScrollingCoordinator::frameViewRootLayerDidChange(FrameView* frameView)
     if (!coordinatesScrollingForFrameView(frameView))
         return;
 
-    notifyLayoutUpdated();
+    frameViewLayoutUpdated(frameView);
     recomputeWheelEventHandlerCountForFrameView(frameView);
     updateShouldUpdateScrollLayerPositionOnMainThread();
 }

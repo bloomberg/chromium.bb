@@ -481,7 +481,6 @@ function runTest(enableWatchDogWhileDebugging)
 
     testRunner.dumpAsText();
     testRunner.waitUntilDone();
-    testRunner.display();
 
     function initializeFrontend(initializationFunctions)
     {

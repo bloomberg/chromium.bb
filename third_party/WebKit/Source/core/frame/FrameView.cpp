@@ -2280,7 +2280,7 @@ void FrameView::performPostLayoutTasks()
 
     if (Page* page = m_frame->page()) {
         if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
-            scrollingCoordinator->notifyLayoutUpdated();
+            scrollingCoordinator->frameViewLayoutUpdated(this);
     }
 
     scrollToAnchor();

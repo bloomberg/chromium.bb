@@ -516,7 +516,7 @@ void WebPluginContainerImpl::setWantsWheelEvents(bool wantsWheelEvents)
     if (Page* page = m_element->document().page()) {
         if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator()) {
             if (parent() && parent()->isFrameView())
-                scrollingCoordinator->notifyLayoutUpdated();
+                scrollingCoordinator->frameViewLayoutUpdated(toFrameView(parent()));
         }
     }
 }

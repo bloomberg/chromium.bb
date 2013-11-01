@@ -60,13 +60,8 @@ public:
     // Return whether this scrolling coordinator handles scrolling for the given frame view.
     bool coordinatesScrollingForFrameView(FrameView*) const;
 
-    // Called when any frame has done its layout.
-    void notifyLayoutUpdated();
-
-    // Should be called after compositing has been updated.
-    void updateAfterCompositingChange();
-
-    bool needsToUpdateAfterCompositingChange() const { return m_scrollGestureRegionIsDirty || m_touchEventTargetRectsAreDirty; }
+    // Should be called whenever the given frame view has been laid out.
+    void frameViewLayoutUpdated(FrameView*);
 
     // Should be called whenever a wheel event handler is added or removed in the
     // frame view's underlying document.
@@ -113,8 +108,6 @@ public:
     String mainThreadScrollingReasonsAsText() const;
     Region computeShouldHandleScrollGestureOnMainThreadRegion(const Frame*, const IntPoint& frameLocation) const;
 
-    void updateTouchEventTargetRectsIfNeeded();
-
 protected:
     explicit ScrollingCoordinator(Page*);
 
@@ -128,10 +121,6 @@ protected:
     GraphicsLayer* counterScrollingLayerForFrameView(FrameView*);
 
     Page* m_page;
-
-    // Dirty flags used to idenfity what really needs to be computed after compositing is updated.
-    bool m_scrollGestureRegionIsDirty;
-    bool m_touchEventTargetRectsAreDirty;
 
 private:
     void recomputeWheelEventHandlerCountForFrameView(FrameView*);
