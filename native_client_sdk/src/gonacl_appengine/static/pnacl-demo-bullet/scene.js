@@ -213,6 +213,7 @@ function init() {
 
   rendererContainer.addEventListener('mousedown', onMouseDown, false);
   rendererContainer.addEventListener('mouseup', onMouseUp, false);
+  rendererContainer.addEventListener('mouseleave', onMouseUp, false);
   renderer.domElement.addEventListener('mousemove', onMouseMove, false);
 
   // Add the OrbitControls after our own listeners -- that way we can prevent
@@ -237,6 +238,8 @@ function pollForRendererResize() {
 }
 
 function onMouseDown(event) {
+  event.preventDefault();
+
   var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
   projector.unprojectVector( vector, camera );
   var ray = new THREE.Ray( camera.position, vector.subSelf( camera.position ).normalize() );
@@ -267,12 +270,14 @@ function onMouseUp(event) {
 function onMouseMove( event ) {
   event.preventDefault();
 
-  var rendererContainer = $('rendererContainer');
-  var w = rendererContainer.clientWidth;
-  var h = rendererContainer.clientHeight;
+  var clientRect = $('rendererContainer').getClientRects()[0];
+  var x = event.clientX - clientRect.left;
+  var y = event.clientY - clientRect.top;
+  var w = clientRect.width;
+  var h = clientRect.height;
 
-  mouse.x = ( event.clientX / w ) * 2 - 1;
-  mouse.y = - ( event.clientY / h ) * 2 + 1;
+  mouse.x = ( x / w ) * 2 - 1;
+  mouse.y = -( y / h ) * 2 + 1;
   var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
   projector.unprojectVector( vector, camera );
   offset.x = vector.x;
