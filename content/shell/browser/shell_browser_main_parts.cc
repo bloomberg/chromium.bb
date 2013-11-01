@@ -42,6 +42,9 @@
 
 #if defined(USE_AURA) && defined(USE_X11)
 #include "ui/events/x/touch_factory_x11.h"
+#if !defined(OS_CHROMEOS)
+#include "ui/base/ime/input_method_initializer.h"
+#endif
 #endif
 
 #if defined(OS_MACOSX)
@@ -118,6 +121,9 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
 }
 
 void ShellBrowserMainParts::PreEarlyInitialization() {
+#if !defined(OS_CHROMEOS) && defined(USE_AURA) && defined(USE_X11)
+  ui::InitializeInputMethodForTesting();
+#endif
 #if defined(OS_ANDROID)
   net::NetworkChangeNotifier::SetFactory(
       new net::NetworkChangeNotifierFactoryAndroid());
