@@ -1436,22 +1436,28 @@ void ShelfView::LauncherItemRemoved(int model_index, LauncherID id) {
   }
   views::View* view = view_model_->view_at(model_index);
   view_model_->Remove(model_index);
-  // The first animation fades out the view. When done we'll animate the rest of
-  // the views to their target location.
-  bounds_animator_->AnimateViewTo(view, view->bounds());
-  bounds_animator_->SetAnimationDelegate(
-      view, new FadeOutAnimationDelegate(this, view), true);
 
-  // If overflow bubble is visible, sanitize overflow range first and when the
-  // above animation finishes, CalculateIdealBounds will be called to get
-  // correct overflow range. CalculateIdealBounds could hide overflow bubble
-  // and triggers LauncherItemChanged. And since we are still in the middle
-  // of LauncherItemRemoved, ShelfView in overflow bubble is not synced
-  // with LauncherModel and will crash.
+  // When the overflow bubble is visible, the overflow range needs to be set
+  // before CalculateIdealBounds() gets called. Otherwise CalculateIdealBounds()
+  // could trigger a LauncherItemChanged() by hiding the overflow bubble and
+  // since the overflow bubble is not yet synced with the LauncherModel this
+  // could cause a crash.
   if (overflow_bubble_ && overflow_bubble_->IsShowing()) {
     last_hidden_index_ = std::min(last_hidden_index_,
                                   view_model_->view_size() - 1);
     UpdateOverflowRange(overflow_bubble_->shelf_view());
+  }
+
+  if (view->visible()) {
+    // The first animation fades out the view. When done we'll animate the rest
+    // of the views to their target location.
+    bounds_animator_->AnimateViewTo(view, view->bounds());
+    bounds_animator_->SetAnimationDelegate(
+        view, new FadeOutAnimationDelegate(this, view), true);
+  } else {
+    // We don't need to show a fade out animation for invisible |view|. When an
+    // item is ripped out from the shelf, its |view| is already invisible.
+    AnimateToIdealBounds();
   }
 
   // Close the tooltip because it isn't needed any longer and its anchor view
