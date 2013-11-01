@@ -1,3 +1,15 @@
 include_rules = [
-  "+third_party/re2"
+  "+third_party/re2",
+
+  # Temporarily allowed includes as part of the app shell/extensions refactor.
+  #
+  # NOTE: Please do not add includes without talking to the app shell team;
+  # see OWNERS for this directory.
+  #
+  # TODO(benwells): Remove these. http://crbug.com/162530
+  "+chrome/common/extensions/api/generated_schemas.h",
+  "+chrome/common/extensions/extension.h",
+  "+chrome/common/extensions/permissions/permissions_data.h",
+  "+grit/common_resources.h",
+  "+grit/extensions_api_resources.h"
 ]

@@ -28,7 +28,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/extensions/api/extension_api.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -37,6 +36,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/lazy_background_task_queue.h"
+#include "extensions/common/extension_api.h"
 #include "extensions/common/extension_urls.h"
 
 using base::DictionaryValue;

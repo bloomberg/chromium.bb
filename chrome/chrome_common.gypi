@@ -127,9 +127,6 @@
         'common/extensions/api/extension_action/page_action_handler.h',
         'common/extensions/api/extension_action/script_badge_handler.cc',
         'common/extensions/api/extension_action/script_badge_handler.h',
-        'common/extensions/api/extension_api.cc',
-        'common/extensions/api/extension_api.h',
-        'common/extensions/api/extension_api_stub.cc',
         'common/extensions/api/file_browser_handlers/file_browser_handler.cc',
         'common/extensions/api/file_browser_handlers/file_browser_handler.h',
         'common/extensions/api/file_handlers/file_handlers_parser.cc',
@@ -414,9 +411,6 @@
       ],
       'conditions': [
         ['enable_extensions==1', {
-          'sources!': [
-            'common/extensions/api/extension_api_stub.cc',
-          ],
           'dependencies': [
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
             '../device/usb/usb.gyp:device_usb',
@@ -424,7 +418,6 @@
         }, {  # enable_extensions == 0
           'sources/': [
             ['exclude', '^common/extensions/api/'],
-            ['include', 'common/extensions/api/extension_api_stub.cc'],
             ['include', 'common/extensions/api/extension_action/action_info.cc'],
             ['include', 'common/extensions/api/extension_action/action_info.h'],
             ['include', 'common/extensions/api/i18n/default_locale_handler.cc'],
@@ -457,7 +450,6 @@
         ['OS != "ios"', {
           'dependencies': [
             '<(DEPTH)/chrome/app/policy/cloud_policy_codegen.gyp:policy',
-            '<(DEPTH)/chrome/common/extensions/api/api.gyp:api',
             '<(DEPTH)/components/components.gyp:autofill_core_common',
             '<(DEPTH)/components/nacl_common.gyp:nacl_common',
             '<(DEPTH)/ipc/ipc.gyp:ipc',

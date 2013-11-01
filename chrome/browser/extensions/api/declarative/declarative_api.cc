@@ -12,8 +12,8 @@
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/events.h"
-#include "chrome/common/extensions/api/extension_api.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/common/extension_api.h"
 
 using extensions::api::events::Rule;
 

@@ -11,7 +11,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/value_store/value_store_util.h"
-#include "chrome/common/extensions/api/extension_api.h"
+#include "extensions/common/extension_api.h"
 
 namespace util = value_store_util;
 

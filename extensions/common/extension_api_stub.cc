@@ -1,11 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // Stub methods to be used when extensions are disabled
 // i.e. ENABLE_EXTENSIONS is not defined
 
-#include "chrome/common/extensions/api/extension_api.h"
+#include "extensions/common/extension_api.h"
 
 #include "extensions/common/features/feature.h"
 
