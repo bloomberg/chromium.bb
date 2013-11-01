@@ -20,6 +20,9 @@ namespace mojo {
 namespace services {
 
 struct MojoViewportInit {
+  MojoViewportInit();
+  ~MojoViewportInit();
+
   scoped_refptr<base::SingleThreadTaskRunner> ui_runner;
   base::WeakPtr<NativeViewportAndroid> native_viewport;
 };

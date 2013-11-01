@@ -14,6 +14,12 @@
 namespace mojo {
 namespace services {
 
+MojoViewportInit::MojoViewportInit() {
+}
+
+MojoViewportInit::~MojoViewportInit() {
+}
+
 static jint Init(JNIEnv* env, jclass obj, jint jinit) {
   MojoViewportInit* init = reinterpret_cast<MojoViewportInit*>(jinit);
   MojoViewport* viewport = new MojoViewport(init);
