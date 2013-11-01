@@ -71,7 +71,7 @@ public:
     size_t numberOfServers() { return m_servers.size(); }
     RTCIceServer* server(size_t index) { return m_servers[index].get(); }
 
- private:
+private:
     RTCConfiguration() { }
 
     Vector<RefPtr<RTCIceServer> > m_servers;
