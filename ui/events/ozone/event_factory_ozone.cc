@@ -10,37 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "ui/events/event_switches.h"
 
-#if defined(USE_OZONE_EVDEV)
-#include "ui/events/ozone/evdev/event_factory.h"
-#endif
-
 namespace ui {
-
-namespace {
-
-EventFactoryOzone* CreateFactory(const std::string& event_factory) {
-#if defined(USE_OZONE_EVDEV)
-  if (event_factory == "evdev" || event_factory == "default")
-    return new EventFactoryEvdev;
-#endif
-
-  if (event_factory == "none" || event_factory == "default") {
-    LOG(WARNING) << "No ozone events implementation - limited input support";
-    return new EventFactoryOzone;
-  }
-
-  LOG(FATAL) << "Invalid ozone events implementation: " << event_factory;
-  return NULL;  // not reached
-}
-
-std::string GetRequestedFactory() {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kOzoneEvents))
-    return "default";
-  return CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kOzoneEvents);
-}
-
-}  // namespace
 
 // static
 EventFactoryOzone* EventFactoryOzone::impl_ = NULL;
@@ -54,10 +24,6 @@ EventFactoryOzone::~EventFactoryOzone() {
 }
 
 EventFactoryOzone* EventFactoryOzone::GetInstance() {
-  if (!impl_) {
-    std::string requested = GetRequestedFactory();
-    impl_ = CreateFactory(requested);
-  }
   CHECK(impl_) << "No EventFactoryOzone implementation set.";
   return impl_;
 }
