@@ -4424,6 +4424,71 @@ TEST_F(WebFrameTest, ReloadPost)
     EXPECT_EQ(WebNavigationTypeFormResubmitted, frame->dataSource()->navigationType());
 }
 
+
+class TestCachePolicyWebFrameClient : public WebFrameClient {
+public:
+    TestCachePolicyWebFrameClient()
+        : m_policy(WebURLRequest::UseProtocolCachePolicy)
+        , m_client(0)
+        , m_willSendRequestCallCount(0)
+        , m_childFrameCreationCount(0)
+    {
+    }
+
+    void setChildWebFrameClient(WebFrameClient* client) { m_client = client; }
+    WebURLRequest::CachePolicy cachePolicy() const { return m_policy; }
+    int willSendRequestCallCount() const { return m_willSendRequestCallCount; }
+    int childFrameCreationCount() const { return m_childFrameCreationCount; }
+
+    virtual WebFrame* createChildFrame(WebFrame*, const WebString&)
+    {
+        m_childFrameCreationCount++;
+        return WebFrame::create(m_client);
+    }
+
+    virtual void willSendRequest(WebFrame* frame, unsigned, WebURLRequest& request, const WebURLResponse&)
+    {
+        m_policy = request.cachePolicy();
+        m_willSendRequestCallCount++;
+    }
+
+private:
+    WebURLRequest::CachePolicy m_policy;
+    WebFrameClient* m_client;
+    int m_willSendRequestCallCount;
+    int m_childFrameCreationCount;
+};
+
+TEST_F(WebFrameTest, ReloadIframe)
+{
+    registerMockedHttpURLLoad("iframe_reload.html");
+    registerMockedHttpURLLoad("visible_iframe.html");
+    TestCachePolicyWebFrameClient mainClient;
+    TestCachePolicyWebFrameClient childClient;
+    mainClient.setChildWebFrameClient(&childClient);
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "iframe_reload.html", true, &mainClient);
+
+    WebFrameImpl* mainFrame = webViewHelper.webViewImpl()->mainFrameImpl();
+    WebFrameImpl* childFrame = toWebFrameImpl(mainFrame->firstChild());
+    ASSERT_EQ(childFrame->client(), &childClient);
+    EXPECT_EQ(mainClient.childFrameCreationCount(), 1);
+    EXPECT_EQ(childClient.willSendRequestCallCount(), 1);
+    EXPECT_EQ(childClient.cachePolicy(), WebURLRequest::UseProtocolCachePolicy);
+
+    mainFrame->reload(false);
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+
+    // A new WebFrame should have been created, but the child WebFrameClient should be reused.
+    ASSERT_FALSE(childFrame == toWebFrameImpl(mainFrame->firstChild()));
+    ASSERT_EQ(toWebFrameImpl(mainFrame->firstChild())->client(), &childClient);
+
+    EXPECT_EQ(mainClient.childFrameCreationCount(), 2);
+    EXPECT_EQ(childClient.willSendRequestCallCount(), 2);
+    EXPECT_EQ(childClient.cachePolicy(), WebURLRequest::ReloadIgnoringCacheData);
+}
+
 class TestSameDocumentWebFrameClient : public WebFrameClient {
 public:
     TestSameDocumentWebFrameClient()
