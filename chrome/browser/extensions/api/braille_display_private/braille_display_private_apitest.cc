@@ -177,7 +177,7 @@ class BrailleDisplayPrivateApiTest : public ExtensionApiTest {
   StubBrailleController stub_braille_controller_;
 };
 
-IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateApiTest, WriteDots) {
+IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateApiTest, DISABLED_WriteDots) {
   connection_data_.display_size = 11;
   ASSERT_TRUE(RunComponentExtensionTest("braille_display_private/write_dots"))
       << message_;
@@ -192,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateApiTest, WriteDots) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateApiTest, KeyEvents) {
+IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateApiTest, DISABLED_KeyEvents) {
   connection_data_.display_size = 11;
   connection_data_.pending_keys.push_back(
       BRLAPI_KEY_TYPE_CMD | BRLAPI_KEY_CMD_LNUP);
