@@ -4,6 +4,8 @@
 
 #import "ui/message_center/cocoa/settings_controller.h"
 
+#include <algorithm>
+
 #include "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/stl_util.h"
@@ -11,100 +13,59 @@
 #include "grit/ui_strings.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
+#import "ui/message_center/cocoa/settings_entry_view.h"
 #import "ui/message_center/cocoa/tray_view_controller.h"
 #include "ui/message_center/message_center_style.h"
 
-const int kMarginWidth = 16;
-const int kEntryHeight = 38;
-const int kIconSize = 16;
-const int kIconTextPadding = 8;
-const int kCheckmarkIconPadding = 16;
+using message_center::settings::kHorizontalMargin;
+using message_center::settings::kEntryHeight;
 
-const int kIntrinsicCheckmarkPadding = 4;  // Padding already provided by Cocoa.
-const int kCorrectedCheckmarkPadding =
-    kCheckmarkIconPadding - kIntrinsicCheckmarkPadding;
+// Intrinsic padding pixels out of our control.
+const int kIntrinsicHeaderTextTopPadding = 3;
+const int kIntrinsicSubheaderTextTopPadding = 5;
+const int kIntrinsicSubheaderTextBottomPadding = 3;
+const int kIntrinsicDropDownVerticalPadding = 2;
+const int kIntrinsicDropDownHorizontalPadding = 3;
 
-@interface MCSettingsButtonCell : NSButtonCell {
-  // A checkbox's regular image is the checkmark image. This additional image
-  // is used for the favicon or app icon shown next to the checkmark.
-  base::scoped_nsobject<NSImage> extraImage_;
-}
-- (void)setExtraImage:(NSImage*)extraImage;
-@end
+// Corrected padding values used in layout.
+// Calculated additional blank space above the header text, including
+// the intrinsic blank space above the header label.
+const int kCorrectedHeaderTextTopPadding =
+    message_center::settings::kTopMargin - kIntrinsicHeaderTextTopPadding;
 
-@implementation MCSettingsButtonCell
-- (void)setExtraImage:(NSImage*)extraImage {
-  extraImage_.reset([extraImage retain]);
-}
+// Calculated additional blank space above the subheader text, including
+// the intrinsic blank space above the subheader label.
+const int kCorrectedSubheaderTextTopPadding =
+    message_center::settings::kTitleToDescriptionSpace -
+    kIntrinsicSubheaderTextTopPadding;
 
-- (NSRect)drawTitle:(NSAttributedString*)title
-          withFrame:(NSRect)frame
-             inView:(NSView*)controlView {
-  CGFloat inset = kCorrectedCheckmarkPadding;
-  // drawTitle:withFrame:inView: draws the checkmark image. Draw the extra
-  // image as part of the checkbox's text.
-  if (extraImage_) {
-    NSRect imageRect = frame;
-    imageRect.origin.x += inset;
-    imageRect.size = NSMakeSize(kIconSize, kIconSize);
-    [extraImage_ drawInRect:imageRect
-                   fromRect:NSZeroRect
-                  operation:NSCompositeSourceOver
-                   fraction:1.0
-             respectFlipped:YES
-                      hints:nil];
+// Calcoulated additional vertical padding for the drop-down, including the
+// blank space included with the drop-down control.
+const int kCorrectedDropDownTopPadding =
+    message_center::settings::kDescriptionToSwitcherSpace -
+    kIntrinsicDropDownVerticalPadding - kIntrinsicSubheaderTextBottomPadding;
 
-    inset += kIconSize + kIconTextPadding;
-  }
-  frame.origin.x += inset;
-  frame.size.width -= inset;
-  return [super drawTitle:title withFrame:frame inView:controlView];
-}
-
-- (NSUInteger)hitTestForEvent:(NSEvent*)event
-                       inRect:(NSRect)cellFrame
-                       ofView:(NSView*)controlView {
-  NSUInteger result =
-      [super hitTestForEvent:event inRect:cellFrame ofView:controlView];
-  if (result == NSCellHitNone) {
-    // The default button cell does hit testing on the attributed string. Since
-    // this cell draws additional spacing and an icon in front of the string,
-    // tweak the hit testing result.
-    NSPoint point =
-        [controlView convertPoint:[event locationInWindow] fromView:nil];
-
-    NSRect rect = [self titleRectForBounds:[controlView bounds]];
-    rect.size = [[self attributedTitle] size];
-    rect.size.width += kCorrectedCheckmarkPadding;
-
-    if (extraImage_) {
-      rect.size.width +=
-          kIconSize + kIconTextPadding + kCorrectedCheckmarkPadding;
-    }
-
-    if (NSPointInRect(point, rect))
-      result = NSCellHitContentArea | NSCellHitTrackableArea;
-  }
-  return result;
-}
-@end
+// Calculated additional horizontal blank space for the drop down, including
+// the blank space included with the drop-down control.
+const int kCorrectedDropDownMargin =
+    kHorizontalMargin - kIntrinsicDropDownHorizontalPadding;
 
 @interface MCSettingsController (Private)
 // Sets the icon on the checkbox corresponding to |notifiers_[index]|.
 - (void)setIcon:(NSImage*)icon forNotifierIndex:(size_t)index;
 
 - (void)setIcon:(NSImage*)icon
-  forNotifierId:(const message_center::NotifierId&)id;
+    forNotifierId:(const message_center::NotifierId&)id;
 
 // Returns the NSButton corresponding to the checkbox for |notifiers_[index]|.
-- (NSButton*)buttonForNotifierAtIndex:(size_t)index;
+- (MCSettingsEntryView*)entryForNotifierAtIndex:(size_t)index;
 
 // Update the contents view.
 - (void)updateView;
 
 // Handler for the notifier group dropdown menu.
 - (void)notifierGroupSelectionChanged:(id)sender;
+
 @end
 
 namespace message_center {
@@ -175,32 +136,36 @@ void NotifierSettingsObserverMac::NotifierGroupChanged() {
   [self setView:view];
 
   // "Settings" text.
-  NSRect headerFrame = NSMakeRect(
-      kMarginWidth, kMarginWidth, NSWidth(fullFrame), NSHeight(fullFrame));
+  NSRect headerFrame = NSMakeRect(kHorizontalMargin,
+                                  kHorizontalMargin,
+                                  NSWidth(fullFrame),
+                                  NSHeight(fullFrame));
   settingsText_.reset([self newLabelWithFrame:headerFrame]);
   [settingsText_ setAutoresizingMask:NSViewMinYMargin];
-  [settingsText_ setTextColor:gfx::SkColorToCalibratedNSColor(
-      message_center::kRegularTextColor)];
-  [settingsText_ setFont:
-      [NSFont messageFontOfSize:message_center::kTitleFontSize]];
+  [settingsText_ setTextColor:
+          gfx::SkColorToCalibratedNSColor(message_center::kRegularTextColor)];
+  [settingsText_
+      setFont:[NSFont messageFontOfSize:message_center::kTitleFontSize]];
 
   [settingsText_ setStringValue:
-      l10n_util::GetNSString(IDS_MESSAGE_CENTER_SETTINGS_BUTTON_LABEL)];
+          l10n_util::GetNSString(IDS_MESSAGE_CENTER_SETTINGS_BUTTON_LABEL)];
   [settingsText_ sizeToFit];
   headerFrame = [settingsText_ frame];
-  headerFrame.origin.y =
-      NSMaxY(fullFrame) - kMarginWidth - NSHeight(headerFrame);
+  headerFrame.origin.y = NSMaxY(fullFrame) - kCorrectedHeaderTextTopPadding -
+                         NSHeight(headerFrame);
   [[self view] addSubview:settingsText_];
 
   // Subheader.
-  NSRect subheaderFrame = NSMakeRect(
-      kMarginWidth, kMarginWidth, NSWidth(fullFrame), NSHeight(fullFrame));
+  NSRect subheaderFrame = NSMakeRect(kHorizontalMargin,
+                                     kHorizontalMargin,
+                                     NSWidth(fullFrame),
+                                     NSHeight(fullFrame));
   detailsText_.reset([self newLabelWithFrame:subheaderFrame]);
   [detailsText_ setAutoresizingMask:NSViewMinYMargin];
-  [detailsText_ setTextColor:gfx::SkColorToCalibratedNSColor(
-      message_center::kDimTextColor)];
-  [detailsText_ setFont:
-      [NSFont messageFontOfSize:message_center::kMessageFontSize]];
+  [detailsText_ setTextColor:
+      gfx::SkColorToCalibratedNSColor(message_center::kDimTextColor)];
+  [detailsText_
+      setFont:[NSFont messageFontOfSize:message_center::kMessageFontSize]];
 
   size_t groupCount = provider_->GetNotifierGroupCount();
   [detailsText_ setStringValue:l10n_util::GetNSString(
@@ -209,15 +174,17 @@ void NotifierSettingsObserverMac::NotifierGroupChanged() {
   [detailsText_ sizeToFit];
   subheaderFrame = [detailsText_ frame];
   subheaderFrame.origin.y =
-      NSMinY(headerFrame) - message_center::kTextTopPadding -
+      NSMinY(headerFrame) - kCorrectedSubheaderTextTopPadding -
       NSHeight(subheaderFrame);
   [[self view] addSubview:detailsText_];
 
   // Profile switcher is only needed for more than one profile.
   NSRect dropDownButtonFrame = subheaderFrame;
   if (groupCount > 1) {
-    dropDownButtonFrame = NSMakeRect(
-        kMarginWidth, kMarginWidth, NSWidth(fullFrame), NSHeight(fullFrame));
+    dropDownButtonFrame = NSMakeRect(kCorrectedDropDownMargin,
+                                     kHorizontalMargin,
+                                     NSWidth(fullFrame),
+                                     NSHeight(fullFrame));
     groupDropDownButton_.reset(
         [[NSPopUpButton alloc] initWithFrame:dropDownButtonFrame
                                    pullsDown:YES]);
@@ -240,9 +207,10 @@ void NotifierSettingsObserverMac::NotifierGroupChanged() {
     [groupDropDownButton_ sizeToFit];
     dropDownButtonFrame = [groupDropDownButton_ frame];
     dropDownButtonFrame.origin.y =
-        NSMinY(subheaderFrame) - message_center::kTextTopPadding -
+        NSMinY(subheaderFrame) - kCorrectedDropDownTopPadding -
         NSHeight(dropDownButtonFrame);
-    dropDownButtonFrame.size.width = NSWidth(fullFrame) - 2 * kMarginWidth;
+    dropDownButtonFrame.size.width =
+        NSWidth(fullFrame) - 2 * kCorrectedDropDownMargin;
     [[self view] addSubview:groupDropDownButton_];
   }
 
@@ -251,40 +219,32 @@ void NotifierSettingsObserverMac::NotifierGroupChanged() {
   NSRect documentFrame = NSMakeRect(0, 0, NSWidth(fullFrame), 0);
   base::scoped_nsobject<NSView> documentView(
       [[NSView alloc] initWithFrame:documentFrame]);
-  for (int i = notifiers_.size() - 1; i >= 0; --i) {
+  int notifierCount = notifiers_.size();
+  for (int i = notifierCount - 1; i >= 0; --i) {
     message_center::Notifier* notifier = notifiers_[i];
-
     // TODO(thakis): Use a custom button cell.
-    NSRect frame = NSMakeRect(
-        kMarginWidth, y, NSWidth(documentFrame) - kMarginWidth, kEntryHeight);
-    base::scoped_nsobject<NSButton> button(
-        [[NSButton alloc] initWithFrame:frame]);
-    base::scoped_nsobject<MCSettingsButtonCell> cell(
-        [[MCSettingsButtonCell alloc]
-            initTextCell:base::SysUTF16ToNSString(notifier->name)]);
-    if (!notifier->icon.IsEmpty())
-      [cell setExtraImage:notifier->icon.AsNSImage()];
-    [button setCell:cell];
-    [button setButtonType:NSSwitchButton];
+    NSRect frame = NSMakeRect(kHorizontalMargin,
+                              y,
+                              NSWidth(documentFrame) - kHorizontalMargin * 2,
+                              kEntryHeight);
 
-    [button setState:notifier->enabled ? NSOnState : NSOffState];
-    [button setTag:i];
-    [button setTarget:self];
-    [button setAction:@selector(checkboxClicked:)];
-
-    [documentView addSubview:button.release()];
-
+    base::scoped_nsobject<MCSettingsEntryView> entryView(
+        [[MCSettingsEntryView alloc]
+            initWithController:self
+                      notifier:notifier
+                         frame:frame
+                  hasSeparator:(i != notifierCount - 1)]);
+    [documentView addSubview:entryView];
     y += NSHeight(frame);
   }
-  documentFrame.size.height = y;
+
+  documentFrame.size.height = y - kIntrinsicDropDownVerticalPadding;
   [documentView setFrame:documentFrame];
 
   // Scroll view for the notifier settings.
   NSRect scrollFrame = documentFrame;
-  scrollFrame.origin.y = kMarginWidth;
-  CGFloat remainingHeight =
-      NSMinY(dropDownButtonFrame) - message_center::kTextTopPadding -
-      NSMinY(scrollFrame);
+  scrollFrame.origin.y = 0;
+  CGFloat remainingHeight = NSMinY(dropDownButtonFrame) - NSMinY(scrollFrame);
 
   if (NSHeight(documentFrame) < remainingHeight) {
     // Everything fits without scrolling.
@@ -320,9 +280,13 @@ void NotifierSettingsObserverMac::NotifierGroupChanged() {
   [groupDropDownButton_ setFrame:dropDownButtonFrame];
 }
 
-- (void)checkboxClicked:(id)sender {
-  provider_->SetNotifierEnabled(*notifiers_[[sender tag]],
-                                [sender state] == NSOnState);
+- (void)setSettingsNotifier:(message_center::Notifier*)notifier
+                    enabled:(BOOL)enabled {
+  provider_->SetNotifierEnabled(*notifier, enabled);
+}
+
+- (void)learnMoreClicked:(message_center::Notifier*)notifier {
+  provider_->OnNotifierAdvancedSettingsRequested(notifier->notifier_id, NULL);
 }
 
 // Testing API /////////////////////////////////////////////////////////////////
@@ -338,13 +302,12 @@ void NotifierSettingsObserverMac::NotifierGroupChanged() {
 // Private API /////////////////////////////////////////////////////////////////
 
 - (void)setIcon:(NSImage*)icon forNotifierIndex:(size_t)index {
-  NSButton* button = [self buttonForNotifierAtIndex:index];
-  [[button cell] setExtraImage:icon];
-  [button setNeedsDisplay:YES];
+  MCSettingsEntryView* entry = [self entryForNotifierAtIndex:index];
+  [entry setNotifierIcon:icon];
 }
 
 - (void)setIcon:(NSImage*)icon
-  forNotifierId:(const message_center::NotifierId&)id {
+    forNotifierId:(const message_center::NotifierId&)id {
   for (size_t i = 0; i < notifiers_.size(); ++i) {
     if (notifiers_[i]->notifier_id == id) {
       [self setIcon:icon forNotifierIndex:i];
@@ -353,12 +316,13 @@ void NotifierSettingsObserverMac::NotifierGroupChanged() {
   }
 }
 
-- (NSButton*)buttonForNotifierAtIndex:(size_t)index {
+- (MCSettingsEntryView*)entryForNotifierAtIndex:(size_t)index {
   NSArray* subviews = [[scrollView_ documentView] subviews];
   // The checkboxes are in bottom-top order, the checkbox for notifiers_[0] is
   // last.
+  DCHECK_LT(notifiers_.size() - 1 - index, [subviews count]);
   NSView* view = [subviews objectAtIndex:notifiers_.size() - 1 - index];
-  return base::mac::ObjCCastStrict<NSButton>(view);
+  return base::mac::ObjCCastStrict<MCSettingsEntryView>(view);
 }
 
 - (void)notifierGroupSelectionChanged:(id)sender {
@@ -366,6 +330,10 @@ void NotifierSettingsObserverMac::NotifierGroupChanged() {
   NSPopUpButton* button = static_cast<NSPopUpButton*>(sender);
   // The first item is a dummy item.
   provider_->SwitchToNotifierGroup([button indexOfSelectedItem] - 1);
+}
+
+- (BOOL)notifierHasAdvancedSettings:(const message_center::NotifierId&)id {
+  return provider_->NotifierHasAdvancedSettings(id);
 }
 
 @end

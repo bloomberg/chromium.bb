@@ -158,6 +158,9 @@ namespace notifications {
 
     // The user changes the permission level.
     static void onPermissionLevelChanged(PermissionLevel level);
+
+    // The user clicked on a link for the app's notification settings.
+    static void onShowSettings();
   };
 
 };

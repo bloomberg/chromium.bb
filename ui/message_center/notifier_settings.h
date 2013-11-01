@@ -157,6 +157,16 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsProvider {
 
   // Called when the settings window is closed.
   virtual void OnNotifierSettingsClosing() = 0;
+
+  // Called to determine if a particular notifier can respond to a request for
+  // more information.
+  virtual bool NotifierHasAdvancedSettings(const NotifierId& notifier_id)
+      const = 0;
+
+  // Called upon request for more information about a particular notifier.
+  virtual void OnNotifierAdvancedSettingsRequested(
+      const NotifierId& notifier_id,
+      const std::string* notification_id) = 0;
 };
 
 }  // namespace message_center
