@@ -85,7 +85,7 @@ public:
     // Eventually overloaded in HTMLVideoElement
     virtual bool supportsFullscreen() const OVERRIDE { return false; };
 
-    virtual bool supportsSave() const;
+    bool supportsSave() const;
 
     WebKit::WebLayer* platformLayer() const;
 
@@ -192,8 +192,8 @@ public:
     void closeCaptionTracksChanged();
     void notifyMediaPlayerOfTextTrackChanges();
 
-    virtual void didAddTrack(HTMLTrackElement*);
-    virtual void didRemoveTrack(HTMLTrackElement*);
+    void didAddTrack(HTMLTrackElement*);
+    void didRemoveTrack(HTMLTrackElement*);
 
     virtual void mediaPlayerDidAddTrack(PassRefPtr<InbandTextTrackPrivate>) OVERRIDE;
     virtual void mediaPlayerDidRemoveTrack(PassRefPtr<InbandTextTrackPrivate>) OVERRIDE;
@@ -227,9 +227,9 @@ public:
     };
     void configureTextTrackDisplay(VisibilityChangeAssumption);
     void updateTextTrackDisplay();
+    void textTrackReadyStateChanged(TextTrack*);
 
     // TextTrackClient
-    virtual void textTrackReadyStateChanged(TextTrack*);
     virtual void textTrackKindChanged(TextTrack*) OVERRIDE;
     virtual void textTrackModeChanged(TextTrack*) OVERRIDE;
     virtual void textTrackAddCues(TextTrack*, const TextTrackCueList*) OVERRIDE;

@@ -77,7 +77,7 @@ private:
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
     virtual const AtomicString imageSourceURL() const OVERRIDE;
 
-    virtual bool hasAvailableVideoFrame() const;
+    bool hasAvailableVideoFrame() const;
     virtual void updateDisplayState() OVERRIDE;
     virtual void didMoveToNewDocument(Document& oldDocument) OVERRIDE;
     virtual void setDisplayMode(DisplayMode) OVERRIDE;
