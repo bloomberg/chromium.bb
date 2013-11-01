@@ -950,7 +950,6 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     switch (propertyId) {
     case CSSPropertyMixBlendMode:
     case CSSPropertyIsolation:
-        return RuntimeEnabledFeatures::cssCompositingEnabled();
     case CSSPropertyBorderBottomStyle:
     case CSSPropertyBorderCollapse:
     case CSSPropertyBorderLeftStyle:
@@ -2333,12 +2332,6 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
             return false;
         }
         break;
-    case CSSPropertyMixBlendMode:
-    case CSSPropertyIsolation:
-        if (!RuntimeEnabledFeatures::cssCompositingEnabled())
-            return false;
-        validPrimitive = true;
-        break;
     case CSSPropertyFlex: {
         ShorthandScope scope(this, propId);
         if (id == CSSValueNone) {
@@ -2902,6 +2895,8 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWhiteSpace:
     case CSSPropertyWordBreak:
     case CSSPropertyWordWrap:
+    case CSSPropertyMixBlendMode:
+    case CSSPropertyIsolation:
         // These properties should be handled before in isValidKeywordPropertyAndValue().
         ASSERT_NOT_REACHED();
         return false;
