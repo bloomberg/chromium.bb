@@ -40,8 +40,6 @@ namespace WebCore {
 DeviceMotionController::DeviceMotionController(Document* document)
     : DeviceSensorEventController(document)
     , DOMWindowLifecycleObserver(document->domWindow())
-    , PageLifecycleObserver(document->page())
-    , m_hasEventListener(false)
 {
 }
 
@@ -116,17 +114,6 @@ void DeviceMotionController::didRemoveAllEventListeners(DOMWindow*)
 {
     stopUpdating();
     m_hasEventListener = false;
-}
-
-void DeviceMotionController::pageVisibilityChanged()
-{
-    if (!m_hasEventListener)
-        return;
-
-    if (page()->visibilityState() == PageVisibilityStateVisible)
-        startUpdating();
-    else
-        stopUpdating();
 }
 
 } // namespace WebCore

@@ -1,0 +1,15 @@
+Tests to check that deviceorientation events are not fired when the page is not visible.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+* Page is visible
+PASS Received a deviceorientation event
+* Page is hidden
+PASS Did not receive a deviceorientation event
+* Page is visible
+PASS Received a deviceorientation event
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

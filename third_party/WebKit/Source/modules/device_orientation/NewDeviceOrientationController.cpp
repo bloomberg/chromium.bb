@@ -30,6 +30,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
 #include "core/events/ThreadLocalEventNames.h"
+#include "core/page/Page.h"
 #include "modules/device_orientation/DeviceOrientationData.h"
 #include "modules/device_orientation/DeviceOrientationDispatcher.h"
 #include "modules/device_orientation/DeviceOrientationEvent.h"
@@ -95,19 +96,25 @@ bool NewDeviceOrientationController::isNullEvent(Event* event)
 
 void NewDeviceOrientationController::didAddEventListener(DOMWindow* window, const AtomicString& eventType)
 {
-    if (eventType == EventTypeNames::deviceorientation && RuntimeEnabledFeatures::deviceOrientationEnabled())
-        startUpdating();
+    if (eventType == EventTypeNames::deviceorientation && RuntimeEnabledFeatures::deviceOrientationEnabled()) {
+        if (page() && page()->visibilityState() == PageVisibilityStateVisible)
+            startUpdating();
+        m_hasEventListener = true;
+    }
 }
 
 void NewDeviceOrientationController::didRemoveEventListener(DOMWindow* window, const AtomicString& eventType)
 {
-    if (eventType == EventTypeNames::deviceorientation)
+    if (eventType == EventTypeNames::deviceorientation) {
         stopUpdating();
+        m_hasEventListener = false;
+    }
 }
 
 void NewDeviceOrientationController::didRemoveAllEventListeners(DOMWindow* window)
 {
     stopUpdating();
+    m_hasEventListener = false;
 }
 
 } // namespace WebCore
