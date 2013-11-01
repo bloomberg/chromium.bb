@@ -617,11 +617,11 @@ WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, Pa
     registerExtension<WebGLCompressedTexturePVRTC>(m_webglCompressedTexturePVRTC, PrefixedExtension, webkitPrefix);
     registerExtension<WebGLCompressedTextureS3TC>(m_webglCompressedTextureS3TC, PrefixedExtension, bothPrefixes);
     registerExtension<WebGLDepthTexture>(m_webglDepthTexture, PrefixedExtension, bothPrefixes);
+    registerExtension<WebGLDrawBuffers>(m_webglDrawBuffers);
     registerExtension<WebGLLoseContext>(m_webglLoseContext, ApprovedExtension, bothPrefixes);
 
     // Register draft extensions.
     registerExtension<EXTFragDepth>(m_extFragDepth, DraftExtension);
-    registerExtension<WebGLDrawBuffers>(m_webglDrawBuffers, DraftExtension);
 
     // Register privileged extensions.
     registerExtension<WebGLDebugRendererInfo>(m_webglDebugRendererInfo, WebGLDebugRendererInfoExtension);
