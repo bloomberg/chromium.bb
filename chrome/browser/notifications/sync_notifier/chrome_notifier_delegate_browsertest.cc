@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_delegate.h"
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
@@ -47,7 +48,11 @@ class StubChromeNotifierService : public notifier::ChromeNotifierService {
                                                 read_state);
     // Set enough fields in sync_data, including specifics, for our tests
     // to pass.
-    return new notifier::SyncedNotification(sync_data);
+    notifier::SyncedNotification* notification =
+        new notifier::SyncedNotification(sync_data);
+    // Retain ownership to avoid memory leaks in tests.
+    owned_notifications_.push_back(notification);
+    return notification;
   }
 
   // For testing, just return our test notification no matter what key the
@@ -62,6 +67,7 @@ class StubChromeNotifierService : public notifier::ChromeNotifierService {
 
  private:
   std::string read_id_;
+  ScopedVector<notifier::SyncedNotification> owned_notifications_;
 };
 
 class ChromeNotifierDelegateBrowserTest : public InProcessBrowserTest {};
@@ -78,8 +84,8 @@ class ChromeNotifierDelegateBrowserTest : public InProcessBrowserTest {};
 IN_PROC_BROWSER_TEST_F(ChromeNotifierDelegateBrowserTest, MAYBE_ClickTest) {
   std::string id(kTestNotificationId);
   StubChromeNotifierService notifier;
-  notifier::ChromeNotifierDelegate* delegate =
-      new notifier::ChromeNotifierDelegate(id, &notifier);
+  scoped_refptr<notifier::ChromeNotifierDelegate> delegate(
+      new notifier::ChromeNotifierDelegate(id, &notifier));
 
   // Set up an observer to wait for the navigation
   content::WindowedNotificationObserver observer(
@@ -111,8 +117,8 @@ IN_PROC_BROWSER_TEST_F(ChromeNotifierDelegateBrowserTest,
                        MAYBE_ButtonClickTest) {
   std::string id(kTestNotificationId);
   StubChromeNotifierService notifier;
-  notifier::ChromeNotifierDelegate* delegate =
-      new notifier::ChromeNotifierDelegate(id, &notifier);
+  scoped_refptr<notifier::ChromeNotifierDelegate> delegate(
+      new notifier::ChromeNotifierDelegate(id, &notifier));
 
   // Set up an observer to wait for the navigation
   content::WindowedNotificationObserver observer(
@@ -145,8 +151,8 @@ IN_PROC_BROWSER_TEST_F(ChromeNotifierDelegateBrowserTest,
 IN_PROC_BROWSER_TEST_F(ChromeNotifierDelegateBrowserTest, CloseTest) {
   std::string id(kTestNotificationId);
   StubChromeNotifierService notifier;
-  notifier::ChromeNotifierDelegate* delegate =
-      new notifier::ChromeNotifierDelegate(id, &notifier);
+  scoped_refptr<notifier::ChromeNotifierDelegate> delegate(
+      new notifier::ChromeNotifierDelegate(id, &notifier));
 
   delegate->Close(false);
   ASSERT_EQ("", notifier.read_id());
