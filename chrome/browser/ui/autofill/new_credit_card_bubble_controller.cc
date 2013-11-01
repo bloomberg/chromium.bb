@@ -18,6 +18,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -35,10 +36,10 @@ NewCreditCardBubbleController::~NewCreditCardBubbleController() {
 
 // static
 void NewCreditCardBubbleController::Show(
-    Profile* profile,
+    content::WebContents* web_contents,
     scoped_ptr<CreditCard> new_card,
     scoped_ptr<AutofillProfile> billing_profile) {
-  (new NewCreditCardBubbleController(profile))->SetupAndShow(
+  (new NewCreditCardBubbleController(web_contents))->SetupAndShow(
       new_card.Pass(),
       billing_profile.Pass());
 }
@@ -69,8 +70,10 @@ void NewCreditCardBubbleController::OnLinkClicked() {
   Hide();
 }
 
-NewCreditCardBubbleController::NewCreditCardBubbleController(Profile* profile)
-    : profile_(profile),
+NewCreditCardBubbleController::NewCreditCardBubbleController(
+    content::WebContents* web_contents)
+    : profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
+      web_contents_(web_contents),
       title_text_(l10n_util::GetStringUTF16(
           IDS_AUTOFILL_NEW_CREDIT_CARD_BUBBLE_TITLE)),
       link_text_(l10n_util::GetStringUTF16(

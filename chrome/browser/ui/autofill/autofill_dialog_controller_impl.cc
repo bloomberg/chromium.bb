@@ -2525,7 +2525,7 @@ void AutofillDialogControllerImpl::ShowNewCreditCardBubble(
     scoped_ptr<CreditCard> new_card,
     scoped_ptr<AutofillProfile> billing_profile) {
 #if !defined(OS_ANDROID)
-  NewCreditCardBubbleController::Show(profile(),
+  NewCreditCardBubbleController::Show(web_contents(),
                                       new_card.Pass(),
                                       billing_profile.Pass());
 #endif

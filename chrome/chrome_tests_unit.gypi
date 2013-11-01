@@ -1471,6 +1471,7 @@
         'browser/ui/cocoa/autofill/autofill_suggestion_container_unittest.mm',
         'browser/ui/cocoa/autofill/down_arrow_popup_menu_cell_unittest.mm',
         'browser/ui/cocoa/autofill/layout_view_unittest.mm',
+        'browser/ui/cocoa/autofill/new_credit_card_bubble_cocoa_unittest.mm',
         'browser/ui/cocoa/autofill/simple_grid_layout_unittest.mm',
         'browser/ui/cocoa/background_gradient_view_unittest.mm',
         'browser/ui/cocoa/base_bubble_controller_unittest.mm',

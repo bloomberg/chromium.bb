@@ -11,7 +11,7 @@ NewCreditCardBubbleView::~NewCreditCardBubbleView() {}
 // static
 const int NewCreditCardBubbleView::kContentsWidth = 400;
 
-#if !defined(TOOLKIT_VIEWS)
+#if !defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
 // static
 base::WeakPtr<NewCreditCardBubbleView> NewCreditCardBubbleView::Create(
     NewCreditCardBubbleController* controller) {

@@ -14,6 +14,10 @@
 
 class Profile;
 
+namespace content {
+class WebContents;
+}
+
 namespace autofill {
 
 class NewCreditCardBubbleView;
@@ -58,7 +62,7 @@ class NewCreditCardBubbleController {
   // Show a bubble informing the user that new credit card data has been saved.
   // This bubble points to the settings menu. Ownership of |new_card|
   // and |billing_profile| are transferred by this call.
-  static void Show(Profile* profile,
+  static void Show(content::WebContents* web_contents,
                    scoped_ptr<CreditCard> new_card,
                    scoped_ptr<AutofillProfile> billing_profile);
 
@@ -80,9 +84,12 @@ class NewCreditCardBubbleController {
   // Returns the profile this bubble is associated with.
   Profile* profile() { return profile_; }
 
+  // Returns the WebContents this bubble is associated with.
+  content::WebContents* web_contents() { return web_contents_; }
+
  protected:
   // Create a bubble attached to |profile|.
-  explicit NewCreditCardBubbleController(Profile* profile);
+  explicit NewCreditCardBubbleController(content::WebContents* web_contents);
 
   // Creates and returns an Autofill credit card bubble. Exposed for testing.
   virtual base::WeakPtr<NewCreditCardBubbleView> CreateBubble();
@@ -96,11 +103,17 @@ class NewCreditCardBubbleController {
                             scoped_ptr<AutofillProfile> billing_profile);
 
  private:
+  friend class NewCreditCardBubbleCocoaUnitTest;
+
   // Hides |bubble_| if it exists.
   void Hide();
 
   // The profile this bubble is associated with.
+  // TODO(dbeam): Break Views dependency on Profile and remove |profile_|.
   Profile* const profile_;
+
+  // The web contents associated with this bubble.
+  content::WebContents* const web_contents_;
 
   // The newly saved credit card and assocated billing information.
   scoped_ptr<CreditCard> new_card_;
