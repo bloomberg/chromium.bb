@@ -97,7 +97,10 @@ class TabAndroid : public CoreTabHelperDelegate,
       int r_value, int g_value, int b_value) = 0;
 
   // Called when a bookmark node should be edited.
-  virtual void EditBookmark(int64 node_id, bool is_folder) = 0;
+  virtual void EditBookmark(int64 node_id,
+                            const base::string16& node_title,
+                            bool is_folder,
+                            bool is_partner_bookmark) = 0;
 
   // Called to determine if chrome://welcome should contain links to the terms
   // of service and the privacy notice.

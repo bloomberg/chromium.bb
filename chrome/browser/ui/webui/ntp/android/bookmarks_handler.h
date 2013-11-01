@@ -87,6 +87,7 @@ class BookmarksHandler : public content::WebUIMessageHandler,
                                    const BookmarkNode* node) OVERRIDE;
 
   // Override the methods of PartnerBookmarksShim::Observer
+  virtual void PartnerShimChanged(PartnerBookmarksShim* shim) OVERRIDE;
   virtual void PartnerShimLoaded(PartnerBookmarksShim* shim) OVERRIDE;
   virtual void ShimBeingDeleted(PartnerBookmarksShim* shim) OVERRIDE;
 
@@ -151,6 +152,12 @@ class BookmarksHandler : public content::WebUIMessageHandler,
 
   // Returns the parent of |node|, or NULL if it's the root node.
   const BookmarkNode* GetParentOf(const BookmarkNode* node) const;
+
+  // Returns the title of |node|, possibly remapped (if a partner bookmark).
+  base::string16 GetTitle(const BookmarkNode* node) const;
+
+  // Returns true if the node is reachable.
+  bool IsReachable(const BookmarkNode* node) const;
 
   // Returns true if |node| can be modified by the user.
   bool IsEditable(const BookmarkNode* node) const;

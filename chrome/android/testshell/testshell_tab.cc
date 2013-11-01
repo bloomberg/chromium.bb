@@ -58,7 +58,10 @@ void TestShellTab::AddShortcutToBookmark(
   NOTIMPLEMENTED();
 }
 
-void TestShellTab::EditBookmark(int64 node_id, bool is_folder) {
+void TestShellTab::EditBookmark(int64 node_id,
+                                const base::string16& node_title,
+                                bool is_folder,
+                                bool is_partner_bookmark) {
   NOTIMPLEMENTED();
 }
 

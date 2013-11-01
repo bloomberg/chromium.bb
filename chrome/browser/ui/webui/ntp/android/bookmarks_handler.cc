@@ -13,6 +13,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
@@ -99,7 +100,9 @@ void BookmarksHandler::RegisterMessages() {
 
   // Create the partner Bookmarks shim as early as possible (but don't attach).
   if (!partner_bookmarks_shim_) {
-    partner_bookmarks_shim_ = PartnerBookmarksShim::GetInstance();
+    partner_bookmarks_shim_ = PartnerBookmarksShim::BuildForBrowserContext(
+        chrome::GetBrowserContextRedirectedInIncognito(
+            web_ui()->GetWebContents()->GetBrowserContext()));
     partner_bookmarks_shim_->AddObserver(this);
   }
 
@@ -130,13 +133,6 @@ void BookmarksHandler::HandleGetBookmarks(const ListValue* args) {
   if (!BookmarkModelFactory::GetForProfile(profile)->loaded())
     return;  // is handled in Loaded().
 
-  // Attach the Partner Bookmarks shim under the Mobile Bookmarks.
-  // Cannot do this earlier because mobile_node is not yet set.
-  DCHECK(partner_bookmarks_shim_ != NULL);
-  if (bookmark_model_) {
-    partner_bookmarks_shim_->AttachTo(
-        bookmark_model_, bookmark_model_->mobile_node());
-  }
   if (!partner_bookmarks_shim_->IsLoaded())
     return;  // is handled with a PartnerShimLoaded() callback
 
@@ -158,6 +154,11 @@ void BookmarksHandler::HandleDeleteBookmark(const ListValue* args) {
     return;
   }
 
+  if (partner_bookmarks_shim_->IsPartnerBookmark(node)) {
+    partner_bookmarks_shim_->RemoveBookmark(node);
+    return;
+  }
+
   const BookmarkNode* parent_node = node->parent();
   bookmark_model_->Remove(parent_node, parent_node->GetIndexOf(node));
 }
@@ -174,8 +175,12 @@ void BookmarksHandler::HandleEditBookmark(const ListValue* args) {
   }
 
   TabAndroid* tab = TabAndroid::FromWebContents(web_ui()->GetWebContents());
-  if (tab)
-    tab->EditBookmark(node->id(), node->is_folder());
+  if (tab) {
+    tab->EditBookmark(node->id(),
+                      GetTitle(node),
+                      node->is_folder(),
+                      partner_bookmarks_shim_->IsPartnerBookmark(node));
+  }
 }
 
 std::string BookmarksHandler::GetBookmarkIdForNtp(const BookmarkNode* node) {
@@ -197,8 +202,11 @@ void BookmarksHandler::PopulateBookmark(const BookmarkNode* node,
   if (!result)
     return;
 
+  if (!IsReachable(node))
+    return;
+
   DictionaryValue* filler_value = new DictionaryValue();
-  filler_value->SetString("title", node->GetTitle());
+  filler_value->SetString("title", GetTitle(node));
   filler_value->SetBoolean("editable", IsEditable(node));
   if (node->is_url()) {
     filler_value->SetBoolean("folder", false);
@@ -214,6 +222,9 @@ void BookmarksHandler::PopulateBookmark(const BookmarkNode* node,
 void BookmarksHandler::PopulateBookmarksInFolder(
     const BookmarkNode* folder,
     DictionaryValue* result) {
+  DCHECK(partner_bookmarks_shim_ != NULL);
+  DCHECK(IsReachable(folder));
+
   ListValue* bookmarks = new ListValue();
 
   // If this is the Mobile bookmarks folder then add the "Managed bookmarks"
@@ -230,11 +241,10 @@ void BookmarksHandler::PopulateBookmarksInFolder(
   }
 
   // Make sure we iterate over the partner's attach point
-  DCHECK(partner_bookmarks_shim_ != NULL);
-  if (partner_bookmarks_shim_->HasPartnerBookmarks() &&
-      folder == partner_bookmarks_shim_->get_attach_point()) {
-    PopulateBookmark(
-        partner_bookmarks_shim_->GetPartnerBookmarksRoot(), bookmarks);
+  if (bookmark_model_ && folder == bookmark_model_->mobile_node() &&
+      partner_bookmarks_shim_->HasPartnerBookmarks()) {
+    PopulateBookmark(partner_bookmarks_shim_->GetPartnerBookmarksRoot(),
+                     bookmarks);
   }
 
   ListValue* folder_hierarchy = new ListValue();
@@ -245,13 +255,13 @@ void BookmarksHandler::PopulateBookmarksInFolder(
     if (IsRoot(parent))
       hierarchy_entry->SetBoolean("root", true);
 
-    hierarchy_entry->SetString("title", parent->GetTitle());
+    hierarchy_entry->SetString("title", GetTitle(parent));
     hierarchy_entry->SetString("id", GetBookmarkIdForNtp(parent));
     folder_hierarchy->Append(hierarchy_entry);
     parent = GetParentOf(parent);
   }
 
-  result->SetString("title", folder->GetTitle());
+  result->SetString("title", GetTitle(folder));
   result->SetString("id", GetBookmarkIdForNtp(folder));
   result->SetBoolean("root", IsRoot(folder));
   result->Set("bookmarks", bookmarks);
@@ -259,7 +269,7 @@ void BookmarksHandler::PopulateBookmarksInFolder(
 }
 
 void BookmarksHandler::QueryBookmarkFolder(const BookmarkNode* node) {
-  if (node->is_folder()) {
+  if (node->is_folder() && IsReachable(node)) {
     DictionaryValue result;
     PopulateBookmarksInFolder(node, &result);
     SendResult(result);
@@ -272,15 +282,7 @@ void BookmarksHandler::QueryBookmarkFolder(const BookmarkNode* node) {
 
 void BookmarksHandler::QueryInitialBookmarks() {
   DictionaryValue result;
-  DCHECK(partner_bookmarks_shim_ != NULL);
-
-  if (partner_bookmarks_shim_->HasPartnerBookmarks()) {
-    PopulateBookmarksInFolder(
-        partner_bookmarks_shim_->GetPartnerBookmarksRoot(), &result);
-  } else {
-    PopulateBookmarksInFolder(bookmark_model_->mobile_node(), &result);
-  }
-
+  PopulateBookmarksInFolder(bookmark_model_->mobile_node(), &result);
   SendResult(result);
 }
 
@@ -289,6 +291,10 @@ void BookmarksHandler::SendResult(const DictionaryValue& result) {
 }
 
 void BookmarksHandler::Loaded(BookmarkModel* model, bool ids_reassigned) {
+  BookmarkModelChanged();
+}
+
+void BookmarksHandler::PartnerShimChanged(PartnerBookmarksShim* shim) {
   BookmarkModelChanged();
 }
 
@@ -397,7 +403,8 @@ void BookmarksHandler::OnShortcutFaviconDataAvailable(
   }
   TabAndroid* tab = TabAndroid::FromWebContents(web_ui()->GetWebContents());
   if (tab) {
-    tab->AddShortcutToBookmark(node->url(), node->GetTitle(),
+    tab->AddShortcutToBookmark(node->url(),
+                               GetTitle(node),
                                favicon_bitmap, SkColorGetR(color),
                                SkColorGetG(color), SkColorGetB(color));
   }
@@ -432,29 +439,60 @@ const BookmarkNode* BookmarksHandler::GetNodeByID(
 
   if (is_managed)
     return managed_bookmarks_shim_->GetNodeByID(id);
-  else
-    return partner_bookmarks_shim_->GetNodeByID(id, is_partner);
+
+  if (is_partner)
+    return partner_bookmarks_shim_->GetNodeByID(id);
+
+  return bookmark_model_->GetNodeByID(id);
 }
 
 const BookmarkNode* BookmarksHandler::GetParentOf(
     const BookmarkNode* node) const {
-  if (node == managed_bookmarks_shim_->GetManagedBookmarksRoot())
+  if (node == managed_bookmarks_shim_->GetManagedBookmarksRoot() ||
+      node == partner_bookmarks_shim_->GetPartnerBookmarksRoot()) {
     return bookmark_model_->mobile_node();
-  return partner_bookmarks_shim_->GetParentOf(node);
+  }
+
+  return node->parent();
+}
+
+base::string16 BookmarksHandler::GetTitle(const BookmarkNode* node) const {
+  if (partner_bookmarks_shim_->IsPartnerBookmark(node))
+    return partner_bookmarks_shim_->GetTitle(node);
+
+  return node->GetTitle();
+}
+
+bool BookmarksHandler::IsReachable(const BookmarkNode* node) const {
+  if (!partner_bookmarks_shim_->IsPartnerBookmark(node))
+    return true;
+
+  return partner_bookmarks_shim_->IsReachable(node);
 }
 
 bool BookmarksHandler::IsEditable(const BookmarkNode* node) const {
-  // Reserved system nodes, partner bookmarks and managed bookmarks are not
-  // editable. Additionally, bookmark editing may be completely disabled via
-  // a managed preference.
+  // Reserved system nodes and managed bookmarks are not editable.
+  // Additionally, bookmark editing may be completely disabled
+  // via a managed preference.
+  if (!node ||
+      (node->type() != BookmarkNode::FOLDER &&
+          node->type() != BookmarkNode::URL)) {
+    return false;
+  }
+
   const PrefService* pref = Profile::FromBrowserContext(
       web_ui()->GetWebContents()->GetBrowserContext())->GetPrefs();
-  return partner_bookmarks_shim_->IsBookmarkEditable(node) &&
-         !managed_bookmarks_shim_->IsManagedBookmark(node) &&
-         pref->GetBoolean(prefs::kEditBookmarksEnabled);
+  if (!pref->GetBoolean(prefs::kEditBookmarksEnabled))
+    return false;
+
+  if (partner_bookmarks_shim_->IsPartnerBookmark(node))
+    return true;
+
+  return !managed_bookmarks_shim_->IsManagedBookmark(node);
 }
 
 bool BookmarksHandler::IsRoot(const BookmarkNode* node) const {
-  return partner_bookmarks_shim_->IsRootNode(node) &&
+  return node->is_root() &&
+         node != partner_bookmarks_shim_->GetPartnerBookmarksRoot() &&
          node != managed_bookmarks_shim_->GetManagedBookmarksRoot();
 }

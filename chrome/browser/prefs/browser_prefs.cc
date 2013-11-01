@@ -170,6 +170,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/ui/webui/ntp/android/partner_bookmarks_shim.h"
 #include "chrome/browser/ui/webui/ntp/android/promo_handler.h"
 #else
 #include "chrome/browser/profile_resetter/automatic_profile_resetter_factory.h"
@@ -394,6 +395,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #endif
 
 #if defined(OS_ANDROID)
+  PartnerBookmarksShim::RegisterProfilePrefs(registry);
   PromoHandler::RegisterProfilePrefs(registry);
 #endif
 

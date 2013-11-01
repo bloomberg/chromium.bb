@@ -7,71 +7,114 @@
 
 #include "base/android/jni_helper.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string16.h"
+#include "base/supports_user_data.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "url/gurl.h"
+
+class PrefService;
+
+namespace content {
+class WebContents;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
 
 // A shim that lives on top of a BookmarkModel that allows the injection of
-// Partner bookmarks without submitting changes to the user configured bookmark
-// model.
-// Partner bookmarks folder is pseudo-injected as a subfolder to "attach node".
-// Because we cannot modify the BookmarkModel, the following needs to
-// be done on a client side:
-// 1. bookmark_node->is_root() -> shim->IsRootNode(bookmark_node)
-// 2. bookmark_node->parent() -> shim->GetParentOf(bookmark_node)
-// 3. bookmark_model->GetNodeByID(id) -> shim->GetNodeByID(id)
-class PartnerBookmarksShim {
+// partner bookmarks without submitting changes to the bookmark model.
+// The shim persists bookmark renames/deletions in a user profile and could be
+// queried via shim->GetTitle(node) and shim->IsReachable(node).
+// Note that node->GetTitle() returns an original (unmodified) title.
+class PartnerBookmarksShim : public base::SupportsUserData::Data {
  public:
-  // Constructor is public for LazyInstance; DON'T CALL; use ::GetInstance().
-  PartnerBookmarksShim();
-  // Destructor is public for LazyInstance;
-  ~PartnerBookmarksShim();
+  // Returns an instance of the shim for a given |browser_context|.
+  static PartnerBookmarksShim* BuildForBrowserContext(
+      content::BrowserContext* browser_context);
 
-  // Returns the active instance of the shim.
-  static PartnerBookmarksShim* GetInstance();
+  // Registers preferences.
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // Resets back to the initial state.  Clears any attached observers, deletes
-  // the partner bookmarks if any, and returns back to the unloaded state.
-  void Reset();
-
-  // Pseudo-injects partner bookmarks (if any) under the "attach_node".
-  void AttachTo(BookmarkModel* bookmark_model,
-                const BookmarkNode* attach_node);
-  // Returns true if everything got loaded and attached
+  // Returns true if everything got loaded.
   bool IsLoaded() const;
-  // Returns true if there are partner bookmarks
+
+  // Returns true if there are partner bookmarks.
   bool HasPartnerBookmarks() const;
 
-  // For "Loaded" and "ShimBeingDeleted" notifications
+  // Returns true if a given bookmark is reachable (i.e. neither the bookmark,
+  // nor any of its parents were "removed").
+  bool IsReachable(const BookmarkNode* node) const;
+
+  // Removes a given bookmark.
+  // Makes the |node| (and, consequently, all its children) unreachable.
+  void RemoveBookmark(const BookmarkNode* node);
+
+  // Renames a given bookmark.
+  void RenameBookmark(const BookmarkNode* node, const base::string16& title);
+
+  // For Loaded/Changed/ShimBeingDeleted notifications
   class Observer {
    public:
-    // Called when everything is loaded and attached
+    // Called when the set of bookmarks, or their values/visibility changes
+    virtual void PartnerShimChanged(PartnerBookmarksShim*) {}
+    // Called when everything is loaded
     virtual void PartnerShimLoaded(PartnerBookmarksShim*) {}
     // Called just before everything got destroyed
     virtual void ShimBeingDeleted(PartnerBookmarksShim*) {}
    protected:
     virtual ~Observer() {}
   };
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Replacements for BookmarkModel/BookmarkNode methods
-  bool IsBookmarkEditable(const BookmarkNode* node);
-  bool IsRootNode(const BookmarkNode* node) const;
-  const BookmarkNode* GetNodeByID(int64 id, bool is_partner) const;
-  const BookmarkNode* GetParentOf(const BookmarkNode* node) const;
-  const BookmarkNode* get_attach_point() const { return attach_point_; }
-  bool IsPartnerBookmark(const BookmarkNode* node);
+  // PartnerBookmarksShim versions of BookmarkModel/BookmarkNode methods
+  const BookmarkNode* GetNodeByID(int64 id) const;
+  base::string16 GetTitle(const BookmarkNode* node) const;
+
+  bool IsPartnerBookmark(const BookmarkNode* node) const;
   const BookmarkNode* GetPartnerBookmarksRoot() const;
+
   // Sets the root node of the partner bookmarks and notifies any observers that
   // the shim has now been loaded.  Takes ownership of |root_node|.
   void SetPartnerBookmarksRoot(BookmarkNode* root_node);
 
+  // Used as a "unique" identifier of the partner bookmark node for the purposes
+  // of node deletion and title editing. Two bookmarks with the same URLs and
+  // titles are considered indistinguishable.
+  class NodeRenamingMapKey {
+   public:
+    NodeRenamingMapKey(const GURL& url, const base::string16& provider_title);
+    ~NodeRenamingMapKey();
+    const GURL& url() const { return url_; }
+    const base::string16& provider_title() const { return provider_title_; }
+    friend bool operator<(const NodeRenamingMapKey& a,
+                          const NodeRenamingMapKey& b);
+   private:
+    GURL url_;
+    base::string16 provider_title_;
+  };
+  typedef std::map<NodeRenamingMapKey, base::string16> NodeRenamingMap;
+
+  // For testing: clears an instance of the shim in a given |browser_context|.
+  static void ClearInBrowserContextForTesting(
+      content::BrowserContext* browser_context);
+
+  // For testing: clears partner bookmark model data.
+  static void ClearPartnerModelForTesting();
+
  private:
+  explicit PartnerBookmarksShim(PrefService* prefs);
+  virtual ~PartnerBookmarksShim();
+
   const BookmarkNode* GetNodeByID(const BookmarkNode* parent, int64 id) const;
+  void ReloadNodeMapping();
+  void SaveNodeMapping();
 
   scoped_ptr<BookmarkNode> partner_bookmarks_root_;
-  BookmarkModel* bookmark_model_;
-  const BookmarkNode* attach_point_;
-  bool loaded_;  // Set only on UI thread
+  PrefService* prefs_;
+  NodeRenamingMap node_rename_remove_map_;
 
   // The observers.
   ObserverList<Observer> observers_;

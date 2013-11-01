@@ -5,42 +5,103 @@
 #include "chrome/browser/ui/webui/ntp/android/partner_bookmarks_shim.h"
 
 #include "base/lazy_instance.h"
+#include "base/prefs/pref_service.h"
+#include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
+#include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 
-using base::LazyInstance;
 using content::BrowserThread;
 
 namespace {
 
-static LazyInstance<PartnerBookmarksShim> g_partner_bookmarks_shim_instance =
+// PartnerModelKeeper is used as a singleton to store an immutable hierarchy
+// of partner bookmarks.  The hierarchy is retrieved from the partner bookmarks
+// provider and doesn't depend on the user profile.
+// The retrieved hierarchy persists
+// PartnerBookmarksShim is responsible to applying and storing the user changes
+// (deletions/renames) in the user profile, thus keeping the hierarchy intact.
+struct PartnerModelKeeper {
+  scoped_ptr<BookmarkNode> partner_bookmarks_root;
+  bool loaded;
+
+  PartnerModelKeeper()
+    : loaded(false) {}
+};
+
+base::LazyInstance<PartnerModelKeeper> g_partner_model_keeper =
     LAZY_INSTANCE_INITIALIZER;
+
+const void* kPartnerBookmarksShimUserDataKey =
+    &kPartnerBookmarksShimUserDataKey;
+
+// Dictionary keys for entries in the kPartnerBookmarksMapping pref.
+static const char kMappingUrl[] = "url";
+static const char kMappingProviderTitle[] = "provider_title";
+static const char kMappingTitle[] = "mapped_title";
 
 }  // namespace
 
-PartnerBookmarksShim::PartnerBookmarksShim()
-    : bookmark_model_(NULL),
-      attach_point_(NULL),
-      loaded_(false),
-      observers_(
-          ObserverList<PartnerBookmarksShim::Observer>::NOTIFY_EXISTING_ONLY) {
+// static
+PartnerBookmarksShim* PartnerBookmarksShim::BuildForBrowserContext(
+    content::BrowserContext* browser_context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  PartnerBookmarksShim* data =
+      reinterpret_cast<PartnerBookmarksShim*>(
+          browser_context->GetUserData(kPartnerBookmarksShimUserDataKey));
+  if (data)
+    return data;
+
+  data = new PartnerBookmarksShim(
+      Profile::FromBrowserContext(browser_context)->GetPrefs());
+  browser_context->SetUserData(kPartnerBookmarksShimUserDataKey, data);
+  data->ReloadNodeMapping();
+  return data;
 }
 
-PartnerBookmarksShim::~PartnerBookmarksShim() {
+// static
+void PartnerBookmarksShim::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterListPref(
+      prefs::kPartnerBookmarkMappings,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+}
+
+bool PartnerBookmarksShim::IsLoaded() const {
+  return g_partner_model_keeper.Get().loaded;
+}
+
+bool PartnerBookmarksShim::HasPartnerBookmarks() const {
+  DCHECK(IsLoaded());
+  return g_partner_model_keeper.Get().partner_bookmarks_root.get() != NULL;
+}
+
+bool PartnerBookmarksShim::IsReachable(const BookmarkNode* node) const {
+  DCHECK(HasPartnerBookmarks());
+  DCHECK(IsPartnerBookmark(node));
+  for (const BookmarkNode* i = node; i != NULL; i = i->parent()) {
+    const NodeRenamingMapKey key(i->url(), i->GetTitle());
+    NodeRenamingMap::const_iterator remap = node_rename_remove_map_.find(key);
+    if (remap != node_rename_remove_map_.end() && remap->second.empty())
+      return false;
+  }
+  return true;
+}
+
+void PartnerBookmarksShim::RemoveBookmark(const BookmarkNode* node) {
+  RenameBookmark(node, base::string16());
+}
+
+void PartnerBookmarksShim::RenameBookmark(const BookmarkNode* node,
+                                          const base::string16& title) {
+  const NodeRenamingMapKey key(node->url(), node->GetTitle());
+  node_rename_remove_map_[key] = title;
+  SaveNodeMapping();
   FOR_EACH_OBSERVER(PartnerBookmarksShim::Observer, observers_,
-                    ShimBeingDeleted(this));
-}
-
-PartnerBookmarksShim* PartnerBookmarksShim::GetInstance() {
-  return g_partner_bookmarks_shim_instance.Pointer();
-}
-
-void PartnerBookmarksShim::Reset() {
-  partner_bookmarks_root_.reset();
-  bookmark_model_ = NULL;
-  attach_point_ = NULL;
-  loaded_ = false;
-  observers_.Clear();
+                    PartnerShimChanged(this));
 }
 
 void PartnerBookmarksShim::AddObserver(
@@ -53,12 +114,32 @@ void PartnerBookmarksShim::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-bool PartnerBookmarksShim::IsPartnerBookmark(const BookmarkNode* node) {
+const BookmarkNode* PartnerBookmarksShim::GetNodeByID(int64 id) const {
+  DCHECK(IsLoaded());
+  DCHECK(HasPartnerBookmarks());
+  if (!HasPartnerBookmarks())
+    return NULL;
+  return GetNodeByID(GetPartnerBookmarksRoot(), id);
+}
+
+base::string16 PartnerBookmarksShim::GetTitle(const BookmarkNode* node) const {
+  DCHECK(node);
+  DCHECK(IsPartnerBookmark(node));
+
+  const NodeRenamingMapKey key(node->url(), node->GetTitle());
+  NodeRenamingMap::const_iterator i = node_rename_remove_map_.find(key);
+  if (i != node_rename_remove_map_.end())
+    return i->second;
+
+  return node->GetTitle();
+}
+
+bool PartnerBookmarksShim::IsPartnerBookmark(const BookmarkNode* node) const {
   DCHECK(IsLoaded());
   if (!HasPartnerBookmarks())
     return false;
   const BookmarkNode* parent = node;
-  while (parent != NULL) {
+  while (parent) {
     if (parent == GetPartnerBookmarksRoot())
       return true;
     parent = parent->parent();
@@ -66,56 +147,52 @@ bool PartnerBookmarksShim::IsPartnerBookmark(const BookmarkNode* node) {
   return false;
 }
 
-bool PartnerBookmarksShim::IsBookmarkEditable(const BookmarkNode* node) {
-  return node && !IsPartnerBookmark(node) &&
-      (node->type() == BookmarkNode::FOLDER ||
-          node->type() == BookmarkNode::URL);
+const BookmarkNode* PartnerBookmarksShim::GetPartnerBookmarksRoot() const {
+  return g_partner_model_keeper.Get().partner_bookmarks_root.get();
 }
 
-void PartnerBookmarksShim::AttachTo(
-    BookmarkModel* bookmark_model,
-    const BookmarkNode* attach_point) {
-  if (bookmark_model_ == bookmark_model && attach_point_ == attach_point)
-    return;
-  if (attach_point && (attach_point->type() == BookmarkNode::FOLDER ||
-      attach_point->type() == BookmarkNode::URL)) {
-    DCHECK(false) << "Can not attach partner bookmarks to node of type: "
-        << attach_point->type();
-    return;
-  }
-  DCHECK(!bookmark_model_ || !bookmark_model);
-  DCHECK(!attach_point_ || !attach_point);
-  bookmark_model_ = bookmark_model;
-  attach_point_ = attach_point;
+void PartnerBookmarksShim::SetPartnerBookmarksRoot(BookmarkNode* root_node) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  g_partner_model_keeper.Get().partner_bookmarks_root.reset(root_node);
+  g_partner_model_keeper.Get().loaded = true;
+  FOR_EACH_OBSERVER(PartnerBookmarksShim::Observer, observers_,
+                    PartnerShimLoaded(this));
 }
 
-const BookmarkNode* PartnerBookmarksShim::GetParentOf(
-    const BookmarkNode* node) const {
-  DCHECK(IsLoaded());
-  DCHECK(node != NULL);
-  if (HasPartnerBookmarks() && node == GetPartnerBookmarksRoot())
-    return get_attach_point();
-  return node->parent();
+PartnerBookmarksShim::NodeRenamingMapKey::NodeRenamingMapKey(
+    const GURL& url, const base::string16& provider_title)
+    : url_(url), provider_title_(provider_title) {}
+
+PartnerBookmarksShim::NodeRenamingMapKey::~NodeRenamingMapKey() {}
+
+bool operator<(const PartnerBookmarksShim::NodeRenamingMapKey& a,
+               const PartnerBookmarksShim::NodeRenamingMapKey& b) {
+  return (a.url_ < b.url_) ||
+      (a.url_ == b.url_ && a.provider_title_ < b.provider_title_);
 }
 
-bool PartnerBookmarksShim::IsRootNode(const BookmarkNode* node) const {
-  DCHECK(node != NULL);
-  return node->is_root()
-      && (!HasPartnerBookmarks() || node != GetPartnerBookmarksRoot());
+// static
+void PartnerBookmarksShim::ClearInBrowserContextForTesting(
+    content::BrowserContext* browser_context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  browser_context->SetUserData(kPartnerBookmarksShimUserDataKey, 0);
 }
 
-const BookmarkNode* PartnerBookmarksShim::GetNodeByID(int64 id,
-                                                      bool is_partner) const {
-  DCHECK(IsLoaded());
-  if (is_partner) {
-    DCHECK(HasPartnerBookmarks());
-    if (!HasPartnerBookmarks())
-      return NULL;
-    return GetNodeByID(GetPartnerBookmarksRoot(), id);
-  }
-  if (bookmark_model_)
-    return bookmark_model_->GetNodeByID(id);
-  return NULL;
+// static
+void PartnerBookmarksShim::ClearPartnerModelForTesting() {
+  g_partner_model_keeper.Get().loaded = false;
+  g_partner_model_keeper.Get().partner_bookmarks_root.reset(0);
+}
+
+PartnerBookmarksShim::PartnerBookmarksShim(PrefService* prefs)
+    : prefs_(prefs),
+      observers_(
+          ObserverList<PartnerBookmarksShim::Observer>::NOTIFY_EXISTING_ONLY) {
+}
+
+PartnerBookmarksShim::~PartnerBookmarksShim() {
+  FOR_EACH_OBSERVER(PartnerBookmarksShim::Observer, observers_,
+                    ShimBeingDeleted(this));
 }
 
 const BookmarkNode* PartnerBookmarksShim::GetNodeByID(
@@ -130,24 +207,55 @@ const BookmarkNode* PartnerBookmarksShim::GetNodeByID(
   return NULL;
 }
 
-bool PartnerBookmarksShim::IsLoaded() const {
-  return loaded_;
-}
-
-bool PartnerBookmarksShim::HasPartnerBookmarks() const {
-  DCHECK(IsLoaded());
-  return partner_bookmarks_root_.get() != NULL;
-}
-
-const BookmarkNode* PartnerBookmarksShim::GetPartnerBookmarksRoot() const {
-  DCHECK(HasPartnerBookmarks());
-  return partner_bookmarks_root_.get();
-}
-
-void PartnerBookmarksShim::SetPartnerBookmarksRoot(BookmarkNode* root_node) {
+void PartnerBookmarksShim::ReloadNodeMapping() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  partner_bookmarks_root_.reset(root_node);
-  loaded_ = true;
-  FOR_EACH_OBSERVER(PartnerBookmarksShim::Observer, observers_,
-                    PartnerShimLoaded(this));
+
+  node_rename_remove_map_.clear();
+  if (!prefs_)
+    return;
+
+  const base::ListValue* list =
+      prefs_->GetList(prefs::kPartnerBookmarkMappings);
+  if (!list)
+    return;
+
+  for (base::ListValue::const_iterator it = list->begin();
+       it != list->end(); ++it) {
+    const base::DictionaryValue* dict = NULL;
+    if (!*it || !(*it)->GetAsDictionary(&dict)) {
+      NOTREACHED();
+      continue;
+    }
+
+    std::string url;
+    base::string16 provider_title;
+    base::string16 mapped_title;
+    if (!dict->GetString(kMappingUrl, &url) ||
+        !dict->GetString(kMappingProviderTitle, &provider_title) ||
+        !dict->GetString(kMappingTitle, &mapped_title)) {
+      NOTREACHED();
+      continue;
+    }
+
+    const NodeRenamingMapKey key(GURL(url), provider_title);
+    node_rename_remove_map_[key] = mapped_title;
+  }
+}
+
+void PartnerBookmarksShim::SaveNodeMapping() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!prefs_)
+    return;
+
+  base::ListValue list;
+  for (NodeRenamingMap::const_iterator i = node_rename_remove_map_.begin();
+       i != node_rename_remove_map_.end();
+       ++i) {
+    base::DictionaryValue* dict = new base::DictionaryValue();
+    dict->SetString(kMappingUrl, i->first.url().spec());
+    dict->SetString(kMappingProviderTitle, i->first.provider_title());
+    dict->SetString(kMappingTitle, i->second);
+    list.Append(dict);
+  }
+  prefs_->Set(prefs::kPartnerBookmarkMappings, list);
 }
