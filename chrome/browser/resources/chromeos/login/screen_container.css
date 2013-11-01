@@ -162,7 +162,7 @@ html[build=chromium] #header-sections {
   font-size: 23px;
   line-height: 31px;
   text-transform: lowercase;
-  width: 20em;
+  width: 23em;
 }
 
 .header-section::before {
