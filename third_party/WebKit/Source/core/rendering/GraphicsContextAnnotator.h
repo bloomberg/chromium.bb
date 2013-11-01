@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Samsung Electronics. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,50 +29,40 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/platform/graphics/GraphicsContextAnnotation.h"
+#ifndef GraphicsContextAnnotator_h
+#define GraphicsContextAnnotator_h
 
-#include "core/platform/graphics/GraphicsContext.h"
-
-namespace {
-
-const char* AnnotationKeyRendererName  = "RENDERER";
-const char* AnnotationKeyPaintPhase    = "PHASE";
-const char* AnnotationKeyElementId     = "ID";
-const char* AnnotationKeyElementClass  = "CLASS";
-const char* AnnotationKeyElementTag    = "TAG";
-
-}
+#define ANNOTATE_GRAPHICS_CONTEXT(paintInfo, renderer) \
+    GraphicsContextAnnotator scopedGraphicsContextAnnotator; \
+    if (UNLIKELY(paintInfo.context->annotationMode())) \
+        scopedGraphicsContextAnnotator.annotate(paintInfo, renderer)
 
 namespace WebCore {
 
-GraphicsContextAnnotation::GraphicsContextAnnotation(const char* rendererName, const char* paintPhase, const String& elementId, const String& elementClass, const String& elementTag)
-    : m_rendererName(rendererName)
-    , m_paintPhase(paintPhase)
-    , m_elementId(elementId)
-    , m_elementClass(elementClass)
-    , m_elementTag(elementTag)
-{
-}
+class GraphicsContext;
+struct PaintInfo;
+class RenderObject;
 
-void GraphicsContextAnnotation::asAnnotationList(AnnotationList &list) const
-{
-    list.clear();
+class GraphicsContextAnnotator {
+public:
+    GraphicsContextAnnotator()
+        : m_context(0)
+    { }
 
-    if (m_rendererName)
-        list.append(std::make_pair(AnnotationKeyRendererName, m_rendererName));
+    ~GraphicsContextAnnotator()
+    {
+        if (UNLIKELY(m_context != 0))
+            finishAnnotation();
+    }
 
-    if (m_paintPhase)
-        list.append(std::make_pair(AnnotationKeyPaintPhase, m_paintPhase));
+    void annotate(const PaintInfo&, const RenderObject*);
 
-    if (!m_elementId.isEmpty())
-        list.append(std::make_pair(AnnotationKeyElementId, m_elementId));
+private:
+    void finishAnnotation();
 
-    if (!m_elementClass.isEmpty())
-        list.append(std::make_pair(AnnotationKeyElementClass, m_elementClass));
+    GraphicsContext* m_context;
+};
 
-    if (!m_elementTag.isEmpty())
-        list.append(std::make_pair(AnnotationKeyElementTag, m_elementTag));
-}
+} // namespace WebCore
 
-}
+#endif // GraphicsContextAnnotator_h

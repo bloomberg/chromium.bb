@@ -30,6 +30,7 @@
 #include "core/rendering/svg/RenderSVGShape.h"
 
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
+#include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/PointerEventsHitRules.h"

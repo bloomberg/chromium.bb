@@ -28,6 +28,7 @@
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/fetch/ImageResource.h"
+#include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderTableCell.h"
