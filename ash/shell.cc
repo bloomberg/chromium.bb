@@ -33,7 +33,6 @@
 #include "ash/launcher/launcher_item_delegate.h"
 #include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/launcher/launcher_model.h"
-#include "ash/launcher/launcher_model_util.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/media_delegate.h"
@@ -43,6 +42,7 @@
 #include "ash/session_state_delegate.h"
 #include "ash/shelf/app_list_shelf_item_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_model_util.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_factory.h"
@@ -499,7 +499,7 @@ LauncherDelegate* Shell::GetLauncherDelegate() {
     // Finding the launcher model's location of the app list and setting its
     // LauncherItemDelegate.
     int app_list_index =
-        ash::GetLauncherItemIndexForType(ash::TYPE_APP_LIST, *launcher_model_);
+        GetShelfItemIndexForType(ash::TYPE_APP_LIST, *launcher_model_);
     DCHECK_GE(app_list_index, 0);
     ash::LauncherID app_list_id = launcher_model_->items()[app_list_index].id;
     DCHECK(app_list_id);

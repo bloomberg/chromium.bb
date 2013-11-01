@@ -8,7 +8,7 @@
 
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
-#include "ash/launcher/launcher_model_util.h"
+#include "ash/shelf/shelf_model_util.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -61,7 +61,7 @@ void BrowserShortcutLauncherItemController::UpdateBrowserItemState() {
 
   // Determine the new browser's active state and change if necessary.
   int browser_index =
-      ash::GetLauncherItemIndexForType(ash::TYPE_BROWSER_SHORTCUT, *model);
+      ash::GetShelfItemIndexForType(ash::TYPE_BROWSER_SHORTCUT, *model);
   DCHECK_GE(browser_index, 0);
   ash::LauncherItem browser_item = model->items()[browser_index];
   ash::LauncherItemStatus browser_status = ash::STATUS_CLOSED;

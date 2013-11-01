@@ -12,7 +12,7 @@
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_model.h"
-#include "ash/launcher/launcher_model_util.h"
+#include "ash/shelf/shelf_model_util.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/test/app_list_controller_test_api.h"
@@ -268,8 +268,8 @@ class LauncherAppBrowserTest : public ExtensionBrowserTest {
   }
 
   // Get the index of an item which has the given type.
-  int GetIndexOfLauncherItemType(ash::LauncherItemType type) {
-    return ash::GetLauncherItemIndexForType(type, *model_);
+  int GetIndexOfShelfItemType(ash::LauncherItemType type) {
+    return ash::GetShelfItemIndexForType(type, *model_);
   }
 
   // Try to rip off |item_index|.
@@ -1027,7 +1027,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, Navigation) {
 IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, TabDragAndDrop) {
   TabStripModel* tab_strip_model1 = browser()->tab_strip_model();
   EXPECT_EQ(1, tab_strip_model1->count());
-  int browser_index = GetIndexOfLauncherItemType(ash::TYPE_BROWSER_SHORTCUT);
+  int browser_index = GetIndexOfShelfItemType(ash::TYPE_BROWSER_SHORTCUT);
   EXPECT_TRUE(browser_index >= 0);
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 
@@ -1170,7 +1170,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, RefocusFilterLaunch) {
 IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, ActivationStateCheck) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   // Get the browser item index
-  int browser_index = GetIndexOfLauncherItemType(ash::TYPE_BROWSER_SHORTCUT);
+  int browser_index = GetIndexOfShelfItemType(ash::TYPE_BROWSER_SHORTCUT);
   EXPECT_TRUE(browser_index >= 0);
 
   // Even though we are just comming up, the browser should be active.
@@ -1670,13 +1670,13 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DragOffShelf) {
   EXPECT_EQ(3, model_->item_count());
 
   // Test #1: Ripping out the browser item should not change anything.
-  int browser_index = GetIndexOfLauncherItemType(ash::TYPE_BROWSER_SHORTCUT);
+  int browser_index = GetIndexOfShelfItemType(ash::TYPE_BROWSER_SHORTCUT);
   EXPECT_LE(0, browser_index);
   RipOffItemIndex(browser_index, &generator, &test, RIP_OFF_ITEM);
   // => It should not have been removed and the location should be unchanged.
   EXPECT_EQ(3, model_->item_count());
   EXPECT_EQ(browser_index,
-            GetIndexOfLauncherItemType(ash::TYPE_BROWSER_SHORTCUT));
+            GetIndexOfShelfItemType(ash::TYPE_BROWSER_SHORTCUT));
   // Make sure that the hide state has been unset after the snap back animation
   // finished.
   ash::internal::LauncherButton* button = test.GetButton(browser_index);
@@ -1684,12 +1684,12 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DragOffShelf) {
 
   // Test #2: Ripping out the application and canceling the operation should
   // not change anything.
-  int app_index = GetIndexOfLauncherItemType(ash::TYPE_APP_SHORTCUT);
+  int app_index = GetIndexOfShelfItemType(ash::TYPE_APP_SHORTCUT);
   EXPECT_LE(0, app_index);
   RipOffItemIndex(app_index, &generator, &test, RIP_OFF_ITEM_AND_CANCEL);
   // => It should not have been removed and the location should be unchanged.
   ASSERT_EQ(3, model_->item_count());
-  EXPECT_EQ(app_index, GetIndexOfLauncherItemType(ash::TYPE_APP_SHORTCUT));
+  EXPECT_EQ(app_index, GetIndexOfShelfItemType(ash::TYPE_APP_SHORTCUT));
 
   // Test #3: Ripping out the application and moving it back in should not
   // change anything.
@@ -1697,18 +1697,18 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DragOffShelf) {
   // => It should not have been removed and the location should be unchanged.
   ASSERT_EQ(3, model_->item_count());
   // Through the operation the index might have changed.
-  app_index = GetIndexOfLauncherItemType(ash::TYPE_APP_SHORTCUT);
+  app_index = GetIndexOfShelfItemType(ash::TYPE_APP_SHORTCUT);
 
   // Test #4: Ripping out the application should remove the item.
   RipOffItemIndex(app_index, &generator, &test, RIP_OFF_ITEM);
   // => It should not have been removed and the location should be unchanged.
   EXPECT_EQ(2, model_->item_count());
-  EXPECT_EQ(-1, GetIndexOfLauncherItemType(ash::TYPE_APP_SHORTCUT));
+  EXPECT_EQ(-1, GetIndexOfShelfItemType(ash::TYPE_APP_SHORTCUT));
 
   // Test #5: Uninstalling an application while it is being ripped off should
   // not crash.
   ash::LauncherID app_id = CreateShortcut("app2");
-  int app2_index = GetIndexOfLauncherItemType(ash::TYPE_APP_SHORTCUT);
+  int app2_index = GetIndexOfShelfItemType(ash::TYPE_APP_SHORTCUT);
   EXPECT_EQ(3, model_->item_count());  // And it remains that way.
   RipOffItemIndex(app2_index,
                   &generator,
@@ -1719,7 +1719,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DragOffShelf) {
   generator.ReleaseLeftButton();
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(2, model_->item_count());  // And it remains that way.
-  EXPECT_EQ(-1, GetIndexOfLauncherItemType(ash::TYPE_APP_SHORTCUT));
+  EXPECT_EQ(-1, GetIndexOfShelfItemType(ash::TYPE_APP_SHORTCUT));
 
   // Test #6: Ripping out the application when the overflow button exists.
   // After ripping out, overflow button should be removed.
@@ -1739,7 +1739,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DragOffShelf) {
   PinFakeApp(fake_app_id);
 
   int total_count = model_->item_count();
-  app_index = GetIndexOfLauncherItemType(ash::TYPE_APP_SHORTCUT);
+  app_index = GetIndexOfShelfItemType(ash::TYPE_APP_SHORTCUT);
   RipOffItemIndex(app_index, &generator, &test, RIP_OFF_ITEM);
   // When an item is ripped off from the launcher that has overflow button
   // (see crbug.com/3050787), it was hidden accidentally and was then
@@ -1834,7 +1834,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, MatchingLauncherIDandActiveTab) {
 
   aura::Window* window = browser()->window()->GetNativeWindow();
 
-  int browser_index = GetIndexOfLauncherItemType(ash::TYPE_BROWSER_SHORTCUT);
+  int browser_index = GetIndexOfShelfItemType(ash::TYPE_BROWSER_SHORTCUT);
   ash::LauncherID browser_id = model_->items()[browser_index].id;
   EXPECT_EQ(browser_id, controller_->GetIDByWindow(window));
 

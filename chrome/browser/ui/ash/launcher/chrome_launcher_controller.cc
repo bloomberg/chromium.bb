@@ -11,9 +11,9 @@
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/launcher/launcher_model.h"
-#include "ash/launcher/launcher_model_util.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_model_util.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
@@ -1066,7 +1066,7 @@ void ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
 
 ash::LauncherID ChromeLauncherController::GetIDByWindow(aura::Window* window) {
   int browser_index =
-      ash::GetLauncherItemIndexForType(ash::TYPE_BROWSER_SHORTCUT, *model_);
+      ash::GetShelfItemIndexForType(ash::TYPE_BROWSER_SHORTCUT, *model_);
   DCHECK_GE(browser_index, 0);
   ash::LauncherID browser_id = model_->items()[browser_index].id;
 
