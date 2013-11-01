@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLER_H_
-#define CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLER_H_
+#ifndef EXTENSIONS_COMMON_MANIFEST_HANDLER_H_
+#define EXTENSIONS_COMMON_MANIFEST_HANDLER_H_
 
 #include <set>
 #include <string>
@@ -135,4 +135,4 @@ class ManifestHandlerRegistry {
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLER_H_
+#endif  // EXTENSIONS_COMMON_MANIFEST_HANDLER_H_

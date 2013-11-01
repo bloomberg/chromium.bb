@@ -6,7 +6,7 @@
 #define CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_THEME_HANDLER_H_
 
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/manifest_handler.h"
+#include "extensions/common/manifest_handler.h"
 
 namespace base {
 class DictionaryValue;

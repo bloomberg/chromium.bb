@@ -10,8 +10,8 @@
 
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/manifest_handler.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/manifest_handler.h"
 #include "url/gurl.h"
 
 namespace extensions {
