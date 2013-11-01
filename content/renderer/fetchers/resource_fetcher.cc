@@ -26,12 +26,14 @@ namespace content {
 ResourceFetcher::ResourceFetcher(const GURL& url, WebFrame* frame,
                                  WebURLRequest::TargetType target_type,
                                  const Callback& callback)
-    : completed_(false),
+    : url_(url),
+      target_type_(target_type),
+      completed_(false),
       callback_(callback) {
   // Can't do anything without a frame.  However, delegate can be NULL (so we
   // can do a http request and ignore the results).
   DCHECK(frame);
-  Start(url, frame, target_type);
+  Start(frame);
 }
 
 ResourceFetcher::~ResourceFetcher() {
@@ -39,17 +41,16 @@ ResourceFetcher::~ResourceFetcher() {
     loader_->cancel();
 }
 
-void ResourceFetcher::SetTimeout(base::TimeDelta timeout) {
-  DCHECK(loader_);
-  DCHECK(!completed_);
-  timeout_timer_.Start(FROM_HERE, timeout, this,
-                       &ResourceFetcher::TimeoutFired);
+void ResourceFetcher::Cancel() {
+  if (!completed_) {
+    loader_->cancel();
+    completed_ = true;
+  }
 }
 
-void ResourceFetcher::Start(const GURL& url, WebFrame* frame,
-                            WebURLRequest::TargetType target_type) {
-  WebURLRequest request(url);
-  request.setTargetType(target_type);
+void ResourceFetcher::Start(WebFrame* frame) {
+  WebURLRequest request(url_);
+  request.setTargetType(target_type_);
   request.setFirstPartyForCookies(frame->document().firstPartyForCookies());
   frame->dispatchWillSendRequest(request);
 
@@ -59,8 +60,6 @@ void ResourceFetcher::Start(const GURL& url, WebFrame* frame,
 
 void ResourceFetcher::RunCallback(const WebURLResponse& response,
                                   const std::string& data) {
-  completed_ = true;
-  timeout_timer_.Stop();
   if (callback_.is_null())
     return;
 
@@ -68,12 +67,6 @@ void ResourceFetcher::RunCallback(const WebURLResponse& response,
   // destruction.
   Callback callback = callback_;
   callback.Run(response, data);
-}
-
-void ResourceFetcher::TimeoutFired() {
-  DCHECK(!completed_);
-  loader_->cancel();
-  RunCallback(WebURLResponse(), data_);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -115,15 +108,38 @@ void ResourceFetcher::didReceiveCachedMetadata(
 void ResourceFetcher::didFinishLoading(
     WebURLLoader* loader, double finishTime) {
   DCHECK(!completed_);
+  completed_ = true;
 
   RunCallback(response_, data_);
 }
 
 void ResourceFetcher::didFail(WebURLLoader* loader, const WebURLError& error) {
   DCHECK(!completed_);
+  completed_ = true;
 
   // Go ahead and tell our delegate that we're done.
   RunCallback(WebURLResponse(), std::string());
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// A resource fetcher with a timeout
+
+ResourceFetcherWithTimeout::ResourceFetcherWithTimeout(
+    const GURL& url, WebFrame* frame, WebURLRequest::TargetType target_type,
+    int timeout_secs, const Callback& callback)
+    : ResourceFetcher(url, frame, target_type, callback) {
+  timeout_timer_.Start(FROM_HERE, TimeDelta::FromSeconds(timeout_secs), this,
+                       &ResourceFetcherWithTimeout::TimeoutFired);
+}
+
+ResourceFetcherWithTimeout::~ResourceFetcherWithTimeout() {
+}
+
+void ResourceFetcherWithTimeout::TimeoutFired() {
+  if (!completed_) {
+    loader_->cancel();
+    didFail(NULL, WebURLError());
+  }
 }
 
 }  // namespace content

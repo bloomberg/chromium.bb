@@ -17,7 +17,7 @@ class WebURLResponse;
 }
 
 namespace content {
-class ResourceFetcher;
+class ResourceFetcherWithTimeout;
 
 // Used for downloading alternate dns error pages. Once downloading is done
 // (or fails), the webview delegate is notified.
@@ -39,12 +39,15 @@ class AltErrorPageResourceFetcher {
       const Callback& callback);
   ~AltErrorPageResourceFetcher();
 
+  // Stop any pending loads.
+  void Cancel();
+
  private:
   void OnURLFetchComplete(const WebKit::WebURLResponse& response,
                           const std::string& data);
 
   // Does the actual fetching.
-  scoped_ptr<ResourceFetcher> fetcher_;
+  scoped_ptr<ResourceFetcherWithTimeout> fetcher_;
 
   WebKit::WebFrame* frame_;
   Callback callback_;
