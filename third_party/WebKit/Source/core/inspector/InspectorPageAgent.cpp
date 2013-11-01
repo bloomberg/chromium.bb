@@ -66,6 +66,7 @@
 #include "core/page/Settings.h"
 #include "core/platform/Cookie.h"
 #include "core/platform/text/RegularExpression.h"
+#include "modules/device_orientation/DeviceOrientationData.h"
 #include "modules/device_orientation/NewDeviceOrientationController.h"
 #include "modules/geolocation/GeolocationController.h"
 #include "platform/JSONValues.h"
@@ -1135,23 +1136,12 @@ void InspectorPageAgent::setDeviceOrientationOverride(ErrorString* error, double
         return;
     }
 
-    ErrorString clearError;
-    clearDeviceOrientationOverride(&clearError);
-
-    m_deviceOrientation = DeviceOrientationData::create(true, alpha, true, beta, true, gamma);
-    controller->didChangeDeviceOrientation(m_deviceOrientation.get());
+    controller->didChangeDeviceOrientation(DeviceOrientationData::create(true, alpha, true, beta, true, gamma).get());
 }
 
-void InspectorPageAgent::clearDeviceOrientationOverride(ErrorString*)
+void InspectorPageAgent::clearDeviceOrientationOverride(ErrorString* error)
 {
-    m_deviceOrientation.clear();
-}
-
-DeviceOrientationData* InspectorPageAgent::overrideDeviceOrientation(DeviceOrientationData* deviceOrientation)
-{
-    if (m_deviceOrientation)
-        deviceOrientation = m_deviceOrientation.get();
-    return deviceOrientation;
+    setDeviceOrientationOverride(error, 0, 0, 0);
 }
 
 bool InspectorPageAgent::overrideTextAutosizing(bool textAutosizing)

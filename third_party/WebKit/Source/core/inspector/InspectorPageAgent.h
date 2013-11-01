@@ -34,7 +34,6 @@
 
 #include "InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
-#include "modules/device_orientation/DeviceOrientationData.h"
 #include "modules/geolocation/GeolocationPosition.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/WTFString.h"
@@ -126,9 +125,6 @@ public:
     // Geolocation override helper.
     GeolocationPosition* overrideGeolocationPosition(GeolocationPosition*);
 
-    // DeviceOrientation helper.
-    DeviceOrientationData* overrideDeviceOrientation(DeviceOrientationData*);
-
     // Text autosizing helpers.
     bool overrideTextAutosizing(bool);
     float overrideTextAutosizingFontScaleFactor(float);
@@ -212,7 +208,6 @@ private:
     bool m_didForceCompositingMode;
     RefPtr<GeolocationPosition> m_geolocationPosition;
     RefPtr<GeolocationPosition> m_platformGeolocationPosition;
-    RefPtr<DeviceOrientationData> m_deviceOrientation;
 };
 
 

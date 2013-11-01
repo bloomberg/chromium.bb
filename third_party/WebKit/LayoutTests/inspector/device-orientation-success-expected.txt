@@ -1,4 +1,6 @@
+CONSOLE MESSAGE: line 23: alpha: 1.1 beta: 2.2 gamma: 3.3
 CONSOLE MESSAGE: line 23: alpha: 20 beta: 30 gamma: 40
+CONSOLE MESSAGE: line 23: alpha: 0 beta: 0 gamma: 0
 
 Running: setUp
 
