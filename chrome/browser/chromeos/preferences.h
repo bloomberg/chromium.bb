@@ -47,7 +47,9 @@ class Preferences : public PrefServiceSyncableObserver,
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // This method will initialize Chrome OS settings to values in user prefs.
-  void Init(PrefServiceSyncable* prefs);
+  // |is_primary_user| is true if preferences are initialized for primary user
+  // in multi-profile session.
+  void Init(PrefServiceSyncable* prefs, bool is_primary_user);
 
   void InitUserPrefsForTesting(PrefServiceSyncable* prefs);
   void SetInputMethodListForTesting();
@@ -127,6 +129,9 @@ class Preferences : public PrefServiceSyncableObserver,
   BooleanPrefMember xkb_auto_repeat_enabled_;
   IntegerPrefMember xkb_auto_repeat_delay_pref_;
   IntegerPrefMember xkb_auto_repeat_interval_pref_;
+
+  // True if this preferences instance is for primary user.
+  bool is_primary_user_prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(Preferences);
 };

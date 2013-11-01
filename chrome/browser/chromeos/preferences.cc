@@ -50,7 +50,8 @@ static const char kEnableTouchpadThreeFingerSwipe[] =
 
 Preferences::Preferences()
     : prefs_(NULL),
-      input_method_manager_(input_method::InputMethodManager::Get()) {
+      input_method_manager_(input_method::InputMethodManager::Get()),
+      is_primary_user_prefs_(true) {
   // Do not observe shell, if there is no shell instance; e.g., in some unit
   // tests.
   if (ash::Shell::HasInstance())
@@ -59,7 +60,8 @@ Preferences::Preferences()
 
 Preferences::Preferences(input_method::InputMethodManager* input_method_manager)
     : prefs_(NULL),
-      input_method_manager_(input_method_manager) {
+      input_method_manager_(input_method_manager),
+      is_primary_user_prefs_(true) {
   // Do not observe shell, if there is no shell instance; e.g., in some unit
   // tests.
   if (ash::Shell::HasInstance())
@@ -368,7 +370,8 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
   prefs->ClearPref(kEnableTouchpadThreeFingerSwipe);
 }
 
-void Preferences::Init(PrefServiceSyncable* prefs) {
+void Preferences::Init(PrefServiceSyncable* prefs, bool is_primary_user) {
+  is_primary_user_prefs_ = is_primary_user;
   InitUserPrefs(prefs);
 
   // This causes OnIsSyncingChanged to be called when the value of
@@ -405,7 +408,8 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     else
       tracing_manager_.reset();
   }
-  if (!pref_name || *pref_name == prefs::kTapToClickEnabled) {
+  if ((!pref_name && is_primary_user_prefs_) ||
+      (pref_name && *pref_name == prefs::kTapToClickEnabled)) {
     const bool enabled = tap_to_click_enabled_.GetValue();
     system::touchpad_settings::SetTapToClick(enabled);
     if (pref_name)
@@ -420,7 +424,8 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
         prefs->SetBoolean(prefs::kOwnerTapToClickEnabled, enabled);
     }
   }
-  if (!pref_name || *pref_name == prefs::kTapDraggingEnabled) {
+  if ((!pref_name && is_primary_user_prefs_) ||
+      (pref_name && *pref_name == prefs::kTapDraggingEnabled)) {
     const bool enabled = tap_dragging_enabled_.GetValue();
     system::touchpad_settings::SetTapDragging(enabled);
     if (pref_name)
@@ -428,7 +433,8 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     else
       UMA_HISTOGRAM_BOOLEAN("Touchpad.TapDragging.Started", enabled);
   }
-  if (!pref_name || *pref_name == prefs::kEnableTouchpadThreeFingerClick) {
+  if ((!pref_name && is_primary_user_prefs_) ||
+      (pref_name && *pref_name == prefs::kEnableTouchpadThreeFingerClick)) {
     const bool enabled = three_finger_click_enabled_.GetValue();
     system::touchpad_settings::SetThreeFingerClick(enabled);
     if (pref_name)
@@ -436,7 +442,8 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     else
       UMA_HISTOGRAM_BOOLEAN("Touchpad.ThreeFingerClick.Started", enabled);
   }
-  if (!pref_name || *pref_name == prefs::kNaturalScroll) {
+  if ((!pref_name && is_primary_user_prefs_) ||
+      (pref_name && *pref_name == prefs::kNaturalScroll)) {
     // Force natural scroll default if we've sync'd and if the cmd line arg is
     // set.
     ForceNaturalScrollDefault();
@@ -449,7 +456,8 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     else
       UMA_HISTOGRAM_BOOLEAN("Touchpad.NaturalScroll.Started", enabled);
   }
-  if (!pref_name || *pref_name == prefs::kMouseSensitivity) {
+  if ((!pref_name && is_primary_user_prefs_) ||
+      (pref_name && *pref_name == prefs::kMouseSensitivity)) {
     const int sensitivity = mouse_sensitivity_.GetValue();
     system::mouse_settings::SetSensitivity(sensitivity);
     if (pref_name) {
@@ -462,7 +470,8 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
                                 system::kMaxPointerSensitivity + 1);
     }
   }
-  if (!pref_name || *pref_name == prefs::kTouchpadSensitivity) {
+  if ((!pref_name && is_primary_user_prefs_) ||
+      (pref_name && *pref_name == prefs::kTouchpadSensitivity)) {
     const int sensitivity = touchpad_sensitivity_.GetValue();
     system::touchpad_settings::SetSensitivity(sensitivity);
     if (pref_name) {
@@ -475,7 +484,8 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
                                 system::kMaxPointerSensitivity + 1);
     }
   }
-  if (!pref_name || *pref_name == prefs::kPrimaryMouseButtonRight) {
+  if ((!pref_name && is_primary_user_prefs_) ||
+      (pref_name && *pref_name == prefs::kPrimaryMouseButtonRight)) {
     const bool right = primary_mouse_button_right_.GetValue();
     system::mouse_settings::SetPrimaryButtonRight(right);
     if (pref_name)
@@ -502,7 +512,8 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
           "FileBrowser.DownloadDestination.IsGoogleDrive.Started",
           default_download_to_drive);
   }
-  if (!pref_name || *pref_name == prefs::kTouchHudProjectionEnabled) {
+  if ((!pref_name && is_primary_user_prefs_) ||
+      (pref_name && *pref_name == prefs::kTouchHudProjectionEnabled)) {
     const bool enabled = touch_hud_projection_enabled_.GetValue();
     ash::Shell::GetInstance()->SetTouchHudProjectionEnabled(enabled);
   }
