@@ -247,7 +247,7 @@ private:
     void rebuildCompositingLayerTree(RenderLayer*, Vector<GraphicsLayer*>& childGraphicsLayersOfEnclosingLayer, int depth);
 
     // Recurses down the tree, updating layer geometry only.
-    void updateLayerTreeGeometry(RenderLayer*, int depth);
+    void updateLayerTreeGeometry(RenderLayer*);
 
     // Hook compositing layers together
     void setCompositingParent(RenderLayer* childLayer, RenderLayer* parentLayer);
@@ -304,11 +304,6 @@ private:
     bool requiresOverhangLayers() const;
 #endif
 
-#if !LOG_DISABLED
-    const char* logReasonsForCompositing(const RenderLayer*);
-    void logLayerInfo(const RenderLayer*, int depth);
-#endif
-
 private:
     RenderView* m_renderView;
     OwnPtr<GraphicsLayer> m_rootContentLayer;
@@ -353,14 +348,6 @@ private:
     OwnPtr<GraphicsLayer> m_layerForScrollCorner;
 #if USE(RUBBER_BANDING)
     OwnPtr<GraphicsLayer> m_layerForOverhangShadow;
-#endif
-
-#if !LOG_DISABLED
-    int m_rootLayerUpdateCount;
-    int m_obligateCompositedLayerCount; // count of layer that have to be composited.
-    int m_secondaryCompositedLayerCount; // count of layers that have to be composited because of stacking or overlap.
-    double m_obligatoryBackingStoreBytes;
-    double m_secondaryBackingStoreBytes;
 #endif
 };
 
