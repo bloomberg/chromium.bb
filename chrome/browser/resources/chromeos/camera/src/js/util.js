@@ -463,8 +463,11 @@ camera.util.SmoothScroller.prototype.scrollTo = function(x, y, opt_mode) {
       var transformString =
           'translate(' + -dx + 'px, ' + -dy + 'px)';
 
-      if (this.padder_.style.webkitTransform == transformString)
+      // If nothing to change, then return.
+      if (this.padder_.style.webkitTransform == transformString ||
+          (dx == 0 && dy == 0 && !this.padder_.style.webkitTransform)) {
         return;
+      }
 
       // Invalidate previous invocations.
       var currentAnimationId = ++this.animationId_;
