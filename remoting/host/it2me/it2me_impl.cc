@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/it2me/it2me_host.h"
+#include "remoting/host/it2me/it2me_impl.h"
 
 #include "base/bind.h"
 #include "base/strings/string_util.h"
@@ -32,10 +32,10 @@ const int kMaxLoginAttempts = 5;
 
 }  // namespace
 
-It2MeHost::It2MeHost(
+It2MeImpl::It2MeImpl(
     scoped_ptr<ChromotingHostContext> host_context,
     scoped_refptr<base::SingleThreadTaskRunner> plugin_task_runner,
-    base::WeakPtr<It2MeHost::Observer> observer,
+    base::WeakPtr<It2MeImpl::Observer> observer,
     const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
     const std::string& directory_bot_jid)
   : host_context_(host_context.Pass()),
@@ -50,11 +50,11 @@ It2MeHost::It2MeHost(
   DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 }
 
-void It2MeHost::Connect() {
+void It2MeImpl::Connect() {
   if (!host_context_->ui_task_runner()->BelongsToCurrentThread()) {
     DCHECK(plugin_task_runner_->BelongsToCurrentThread());
     host_context_->ui_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&It2MeHost::Connect, this));
+        FROM_HERE, base::Bind(&It2MeImpl::Connect, this));
     return;
   }
 
@@ -67,18 +67,18 @@ void It2MeHost::Connect() {
   policy_watcher_.reset(
       policy_hack::PolicyWatcher::Create(host_context_->network_task_runner()));
   policy_watcher_->StartWatching(
-      base::Bind(&It2MeHost::OnPolicyUpdate, this));
+      base::Bind(&It2MeImpl::OnPolicyUpdate, this));
 
   // Switch to the network thread to start the actual connection.
   host_context_->network_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&It2MeHost::ReadPolicyAndConnect, this));
+      FROM_HERE, base::Bind(&It2MeImpl::ReadPolicyAndConnect, this));
 }
 
-void It2MeHost::Disconnect() {
+void It2MeImpl::Disconnect() {
   if (!host_context_->network_task_runner()->BelongsToCurrentThread()) {
     DCHECK(plugin_task_runner_->BelongsToCurrentThread());
     host_context_->network_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&It2MeHost::Disconnect, this));
+        FROM_HERE, base::Bind(&It2MeImpl::Disconnect, this));
     return;
   }
 
@@ -109,16 +109,16 @@ void It2MeHost::Disconnect() {
       // SignalStrategy::Listener handlers are not allowed to destroy
       // SignalStrategy, so post task to destroy the host later.
       host_context_->network_task_runner()->PostTask(
-          FROM_HERE, base::Bind(&It2MeHost::ShutdownOnNetworkThread, this));
+          FROM_HERE, base::Bind(&It2MeImpl::ShutdownOnNetworkThread, this));
       return;
   }
 }
 
-void It2MeHost::RequestNatPolicy() {
+void It2MeImpl::RequestNatPolicy() {
   if (!host_context_->network_task_runner()->BelongsToCurrentThread()) {
     DCHECK(plugin_task_runner_->BelongsToCurrentThread());
     host_context_->network_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&It2MeHost::RequestNatPolicy, this));
+        FROM_HERE, base::Bind(&It2MeImpl::RequestNatPolicy, this));
     return;
   }
 
@@ -126,7 +126,7 @@ void It2MeHost::RequestNatPolicy() {
     UpdateNatPolicy(nat_traversal_enabled_);
 }
 
-void It2MeHost::ReadPolicyAndConnect() {
+void It2MeImpl::ReadPolicyAndConnect() {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   SetState(kStarting);
@@ -138,11 +138,11 @@ void It2MeHost::ReadPolicyAndConnect() {
   } else {
     // Otherwise, create the policy watcher, and thunk the connect.
     pending_connect_ =
-        base::Bind(&It2MeHost::FinishConnect, this);
+        base::Bind(&It2MeImpl::FinishConnect, this);
   }
 }
 
-void It2MeHost::FinishConnect() {
+void It2MeImpl::FinishConnect() {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   if (state_ != kStarting) {
@@ -172,7 +172,7 @@ void It2MeHost::FinishConnect() {
   scoped_ptr<RegisterSupportHostRequest> register_request(
       new RegisterSupportHostRequest(
           signal_strategy.get(), host_key_pair_, directory_bot_jid_,
-          base::Bind(&It2MeHost::OnReceivedSupportID,
+          base::Bind(&It2MeImpl::OnReceivedSupportID,
                      base::Unretained(this))));
 
   // Beyond this point nothing can fail, so save the config and request.
@@ -231,7 +231,7 @@ void It2MeHost::FinishConnect() {
   return;
 }
 
-void It2MeHost::ShutdownOnNetworkThread() {
+void It2MeImpl::ShutdownOnNetworkThread() {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
   DCHECK(state_ == kDisconnecting || state_ == kDisconnected);
 
@@ -247,10 +247,10 @@ void It2MeHost::ShutdownOnNetworkThread() {
   }
 
   host_context_->ui_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&It2MeHost::ShutdownOnUiThread, this));
+      FROM_HERE, base::Bind(&It2MeImpl::ShutdownOnUiThread, this));
 }
 
-void It2MeHost::ShutdownOnUiThread() {
+void It2MeImpl::ShutdownOnUiThread() {
   DCHECK(host_context_->ui_task_runner()->BelongsToCurrentThread());
 
   // Destroy the DesktopEnvironmentFactory, to free thread references.
@@ -265,7 +265,7 @@ void It2MeHost::ShutdownOnUiThread() {
   }
 }
 
-void It2MeHost::OnAccessDenied(const std::string& jid) {
+void It2MeImpl::OnAccessDenied(const std::string& jid) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   ++failed_login_attempts_;
@@ -274,7 +274,8 @@ void It2MeHost::OnAccessDenied(const std::string& jid) {
   }
 }
 
-void It2MeHost::OnClientAuthenticated(const std::string& jid) {
+void It2MeImpl::OnClientAuthenticated(
+    const std::string& jid) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   if (state_ == kDisconnecting) {
@@ -299,19 +300,21 @@ void It2MeHost::OnClientAuthenticated(const std::string& jid) {
 
   // Pass the client user name to the script object before changing state.
   plugin_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&It2MeHost::Observer::OnClientAuthenticated,
+      FROM_HERE, base::Bind(&It2MeImpl::Observer::OnClientAuthenticated,
                             observer_, client_username));
 
   SetState(kConnected);
 }
 
-void It2MeHost::OnClientDisconnected(const std::string& jid) {
+void It2MeImpl::OnClientDisconnected(
+    const std::string& jid) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   Disconnect();
 }
 
-void It2MeHost::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
+void It2MeImpl::OnPolicyUpdate(
+    scoped_ptr<base::DictionaryValue> policies) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   bool nat_policy;
@@ -333,7 +336,8 @@ void It2MeHost::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
   }
 }
 
-void It2MeHost::UpdateNatPolicy(bool nat_traversal_enabled) {
+void It2MeImpl::UpdateNatPolicy(
+    bool nat_traversal_enabled) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   VLOG(2) << "UpdateNatPolicy: " << nat_traversal_enabled;
@@ -348,11 +352,12 @@ void It2MeHost::UpdateNatPolicy(bool nat_traversal_enabled) {
 
   // Notify the web-app of the policy setting.
   plugin_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&It2MeHost::Observer::OnNatPolicyChanged,
+      FROM_HERE, base::Bind(&It2MeImpl::Observer::OnNatPolicyChanged,
                             observer_, nat_traversal_enabled_));
 }
 
-void It2MeHost::UpdateHostDomainPolicy(const std::string& host_domain) {
+void It2MeImpl::UpdateHostDomainPolicy(
+    const std::string& host_domain) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   VLOG(2) << "UpdateHostDomainPolicy: " << host_domain;
@@ -365,13 +370,13 @@ void It2MeHost::UpdateHostDomainPolicy(const std::string& host_domain) {
   required_host_domain_ = host_domain;
 }
 
-It2MeHost::~It2MeHost() {
+It2MeImpl::~It2MeImpl() {
   // Check that resources that need to be torn down on the UI thread are gone.
   DCHECK(!desktop_environment_factory_.get());
   DCHECK(!policy_watcher_.get());
 }
 
-void It2MeHost::SetState(It2MeHostState state) {
+void It2MeImpl::SetState(It2MeHostState state) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   switch (state_) {
@@ -415,16 +420,16 @@ void It2MeHost::SetState(It2MeHostState state) {
 
   // Post a state-change notification to the web-app.
   plugin_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&It2MeHost::Observer::OnStateChanged,
+      FROM_HERE, base::Bind(&It2MeImpl::Observer::OnStateChanged,
                             observer_, state));
 }
 
-bool It2MeHost::IsConnected() const {
+bool It2MeImpl::IsConnected() const {
   return state_ == kRequestedAccessCode || state_ == kReceivedAccessCode ||
       state_ == kConnected;
 }
 
-void It2MeHost::OnReceivedSupportID(
+void It2MeImpl::OnReceivedSupportID(
     bool success,
     const std::string& support_id,
     const base::TimeDelta& lifetime) {
@@ -454,7 +459,7 @@ void It2MeHost::OnReceivedSupportID(
 
   // Pass the Access Code to the script object before changing state.
   plugin_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&It2MeHost::Observer::OnStoreAccessCode,
+      FROM_HERE, base::Bind(&It2MeImpl::Observer::OnStoreAccessCode,
                             observer_, access_code, lifetime));
 
   SetState(kReceivedAccessCode);
