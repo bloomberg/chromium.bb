@@ -112,6 +112,12 @@
 - (void)setText:(NSString*)string {
   [textfield_ setStringValue:string];
   [checkbox_ setAttributedTitle:[textfield_ attributedStringValue]];
+
+  // Update the size that preferredSizeForWidth will use. Do this here because
+  //   (1) preferredSizeForWidth is logically const, and so shouldn't have a
+  //       side-effect of updating the checkbox's frame, and
+  //   (2) this way, the sizing computation can be cached.
+  [checkbox_ sizeToFit];
 }
 
 - (NSTextField*)textfield {
@@ -139,9 +145,19 @@
 }
 
 - (NSSize)preferredSizeForWidth:(CGFloat)width {
-  NSCell* cell = [checkbox_ isHidden] ? [textfield_ cell] : [checkbox_ cell];
-  NSSize preferredSize =
-      [cell cellSizeForBounds:NSMakeRect(0, 0, width, CGFLOAT_MAX)];
+  NSSize preferredSize;
+  if (![textfield_ isHidden]) {
+    NSRect bounds = NSMakeRect(0, 0, width, CGFLOAT_MAX);
+    preferredSize = [[textfield_ cell] cellSizeForBounds:bounds];
+  } else {
+    // Unlike textfields, checkboxes (NSButtons, really) are not designed to
+    // support multi-line labels. Hence, ignore the |width| and simply use the
+    // size that fits fit the checkbox's contents.
+    // NOTE: This logic will need to be updated if there is ever a need to
+    // support checkboxes with multi-line labels.
+    DCHECK(![checkbox_ isHidden]);
+    preferredSize = [checkbox_ frame].size;
+  }
 
   if ([[self notificationView] hasArrow])
       preferredSize.height += autofill::kArrowHeight;
