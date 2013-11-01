@@ -213,7 +213,7 @@ public:
     // https://bugs.webkit.org/show_bug.cgi?id=108890
     void appendAuthorStyleSheets(unsigned firstNew, const Vector<RefPtr<CSSStyleSheet> >&);
     void resetAuthorStyle(const ContainerNode*);
-    void resetAtHostRules(const ContainerNode*);
+    void resetAtHostRules(const ShadowRoot*);
     void finishAppendAuthorStyleSheets();
 
     DocumentRuleSets& ruleSets() { return m_ruleSets; }

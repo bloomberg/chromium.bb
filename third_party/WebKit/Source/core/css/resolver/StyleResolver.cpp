@@ -228,8 +228,8 @@ void StyleResolver::resetAuthorStyle(const ContainerNode* scopingNode)
     if (!scopingNode)
         return;
 
-    if (scopingNode->isShadowRoot())
-        resetAtHostRules(scopingNode);
+    if (scopingNode->isInShadowTree())
+        resetAtHostRules(scopingNode->containingShadowRoot());
 
     if (!resolver->hasOnlyEmptyRuleSets())
         return;
@@ -237,15 +237,14 @@ void StyleResolver::resetAuthorStyle(const ContainerNode* scopingNode)
     m_styleTree.remove(scopingNode);
 }
 
-void StyleResolver::resetAtHostRules(const ContainerNode* scopingNode)
+void StyleResolver::resetAtHostRules(const ShadowRoot* shadowRoot)
 {
-    ASSERT(scopingNode);
-    ASSERT(scopingNode->isShadowRoot());
+    if (!shadowRoot)
+        return;
 
-    const ShadowRoot* shadowRoot = toShadowRoot(scopingNode);
     const ContainerNode* shadowHost = shadowRoot->shadowHost();
     ASSERT(shadowHost);
-    ScopedStyleResolver* resolver = m_styleTree.scopedStyleResolverFor(*shadowHost);
+    ScopedStyleResolver* resolver = m_styleTree.lookupScopedStyleResolverFor(shadowHost);
     if (!resolver)
         return;
 
