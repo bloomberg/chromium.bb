@@ -233,10 +233,8 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     [CheckSecurityForNode] readonly attribute Document contentDocument;
     [CheckSecurityForNode, RaisesException] SVGDocument getSVGDocument();
 
-    void convert1([TreatReturnedNullStringAs=Null] TestNode value);
-    void convert2([TreatReturnedNullStringAs=Undefined] TestNode value);
-    void convert4([TreatNullAs=NullString] TestNode value);
-    void convert5([TreatNullAs=NullString, TreatUndefinedAs=NullString] TestNode value);
+    void convert1([TreatNullAs=NullString] TestNode value);
+    void convert2([TreatNullAs=NullString, TreatUndefinedAs=NullString] TestNode value);
 
     attribute SVGPoint mutablePoint;
     [Immutable] attribute SVGPoint immutablePoint;
