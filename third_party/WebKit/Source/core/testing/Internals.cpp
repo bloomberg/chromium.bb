@@ -1364,9 +1364,11 @@ PassRefPtr<LayerRectList> Internals::touchEventTargetLayerRects(Document* docume
         return 0;
     }
 
-    // Do any pending layouts (which may call touchEventTargetRectsChange) to ensure this
+    // Do any pending layout and compositing update (which may call touchEventTargetRectsChange) to ensure this
     // really takes any previous changes into account.
-    document->updateLayout();
+    forceCompositingUpdate(document, es);
+    if (es.hadException())
+        return 0;
 
     if (RenderView* view = document->renderView()) {
         if (RenderLayerCompositor* compositor = view->compositor()) {
@@ -1827,6 +1829,12 @@ String Internals::mainThreadScrollingReasons(Document* document, ExceptionState&
         return String();
     }
 
+    // Force a re-layout and a compositing update.
+    document->updateLayout();
+    RenderView* view = document->renderView();
+    if (view->compositor())
+        view->compositor()->updateCompositingLayers(CompositingUpdateFinishAllDeferredWork);
+
     Page* page = document->page();
     if (!page)
         return String();
@@ -2252,6 +2260,20 @@ bool Internals::loseSharedGraphicsContext3D()
     // synchronously (i.e. before returning).
     sharedContext->finish();
     return true;
+}
+
+void Internals::forceCompositingUpdate(Document* document, ExceptionState& es)
+{
+    if (!document || !document->renderView()) {
+        es.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        return;
+    }
+
+    document->updateLayout();
+
+    RenderView* view = document->renderView();
+    if (view->compositor())
+        view->compositor()->updateCompositingLayers(CompositingUpdateFinishAllDeferredWork);
 }
 
 }

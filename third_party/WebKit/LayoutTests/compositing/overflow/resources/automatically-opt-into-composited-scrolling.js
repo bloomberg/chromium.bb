@@ -164,6 +164,8 @@ function testOptInPermutation(count, ordering, hasPositionedAncestor, containerI
   if (!window.internals)
     return;
 
+  window.internals.forceCompositingUpdate(document);
+
   var container = document.getElementById('container');
   var containerOptedIn = didOptIn(container);
 

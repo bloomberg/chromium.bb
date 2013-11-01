@@ -108,8 +108,6 @@ InspectorLayerTreeAgent::InspectorLayerTreeAgent(InstrumentingAgents* instrument
     , m_frontend(0)
     , m_page(page)
     , m_domAgent(domAgent)
-    , m_notificationTimer(this, &InspectorLayerTreeAgent::notificationTimerFired)
-    , m_notifyAfterNextLayersUpdate(false)
 {
 }
 
@@ -144,30 +142,10 @@ void InspectorLayerTreeAgent::enable(ErrorString*)
 void InspectorLayerTreeAgent::disable(ErrorString*)
 {
     m_instrumentingAgents->setInspectorLayerTreeAgent(0);
-    m_notificationTimer.stop();
 }
 
 void InspectorLayerTreeAgent::layerTreeDidChange()
 {
-    if (m_notificationTimer.isActive())
-        return;
-    if (m_notifyAfterNextLayersUpdate) {
-        m_notifyAfterNextLayersUpdate = false;
-        m_frontend->layerTreeDidChange(buildLayerTree());
-        return;
-    }
-    const double layerTreeUpdateDelayInSeconds = 0.1;
-    m_notificationTimer.startOneShot(layerTreeUpdateDelayInSeconds);
-}
-
-void InspectorLayerTreeAgent::notificationTimerFired(Timer<InspectorLayerTreeAgent>*)
-{
-    RenderLayerCompositor* compositor = renderLayerCompositor();
-    if (compositor && compositor->compositingLayersNeedRebuild()) {
-        // Bad time for building layer tree -- let's do it as soon as it gets rebuild.
-        m_notifyAfterNextLayersUpdate = true;
-        return;
-    }
     m_frontend->layerTreeDidChange(buildLayerTree());
 }
 
@@ -192,8 +170,6 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > InspectorLayerTre
     RenderLayerCompositor* compositor = renderLayerCompositor();
     if (!compositor || !compositor->inCompositingMode())
         return 0;
-    // Caller is responsible for only calling this when layer tree is up to date (preferrably just in the end of RenderLayerCompositor::updateCompositingLayers()
-    ASSERT(!compositor->compositingLayersNeedRebuild());
     LayerIdToNodeIdMap layerIdToNodeIdMap;
     RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > layers = TypeBuilder::Array<TypeBuilder::LayerTree::Layer>::create();
     buildLayerIdToNodeIdMap(compositor->rootRenderLayer(), layerIdToNodeIdMap);

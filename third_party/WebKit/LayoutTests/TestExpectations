@@ -38,6 +38,10 @@ crbug.com/233124 http/tests/inspector/network/network-size.html [ Skip ]
 crbug.com/233124 http/tests/inspector/network/network-size-chunked.html [ Skip ]
 crbug.com/233124 http/tests/inspector/network/network-size-sync.html [ Skip ]
 
+# These tests are sensitive to the number of compositing updates between portions of the test.
+crbug.com/313922 [ Mac ] inspector/layer-tree-model.html [ Failure ]
+crbug.com/313922 [ Mac XP ] inspector-protocol/layers/get-layers.html [ Failure ]
+
 # -----------------------------------------------------------------
 # Plugin tests
 # -----------------------------------------------------------------

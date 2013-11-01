@@ -132,8 +132,13 @@ if (window.internals) {
 window.onload = function() {
     // Run each general test case.
     var tests = document.querySelectorAll('.testcase');
-    for ( var i = 0; i < tests.length; i++)
+    for ( var i = 0; i < tests.length; i++) {
+        // Force a compositing update before testing each case to ensure that
+        // any subsequent touch rect updates are actually done because of
+        // the event handler changes in the test itself.
+        window.internals.forceCompositingUpdate(document);
         testElement(tests[i]);
+    }
 
     if (window.additionalTests)
         additionalTests();
