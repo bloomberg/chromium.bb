@@ -76,12 +76,6 @@
 #include "core/rendering/RenderTreeAsText.h"
 #endif
 
-#define WTF_USE_COMPOSITING_FOR_SMALL_CANVASES 1
-
-#if !USE(COMPOSITING_FOR_SMALL_CANVASES)
-static const int canvasAreaThresholdRequiringCompositing = 50 * 100;
-#endif
-
 namespace WebCore {
 
 using namespace HTMLNames;
@@ -1834,12 +1828,7 @@ bool RenderLayerCompositor::requiresCompositingForCanvas(RenderObject* renderer)
 
     if (renderer->isCanvas()) {
         HTMLCanvasElement* canvas = toHTMLCanvasElement(renderer->node());
-#if USE(COMPOSITING_FOR_SMALL_CANVASES)
-        bool isCanvasLargeEnoughToForceCompositing = true;
-#else
-        bool isCanvasLargeEnoughToForceCompositing = canvas->size().area() >= canvasAreaThresholdRequiringCompositing;
-#endif
-        return canvas->renderingContext() && canvas->renderingContext()->isAccelerated() && (canvas->renderingContext()->is3d() || isCanvasLargeEnoughToForceCompositing);
+        return canvas->renderingContext() && canvas->renderingContext()->isAccelerated();
     }
     return false;
 }
