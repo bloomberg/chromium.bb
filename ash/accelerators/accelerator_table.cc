@@ -148,7 +148,11 @@ const AcceleratorData kAcceleratorData[] = {
   // c/b/ui/views/accelerator_table.cc in order for the web page to
   // intercept and process this shortcut. This accelerator is used if the
   // focused window isn't browser window nor web content.
+  // TODO(stevet/jamescook): Remove this in M33, as well as the copy
+  // referenced above. We want to move away from shortcuts bound to Ctrl
+  // because web content often uses them.
   { true, ui::VKEY_M, ui::EF_CONTROL_DOWN, WINDOW_MINIMIZE },
+  { true, ui::VKEY_OEM_MINUS, ui::EF_ALT_DOWN, WINDOW_MINIMIZE },
   { true, ui::VKEY_OEM_PLUS, ui::EF_ALT_DOWN, TOGGLE_MAXIMIZED },
   { true, ui::VKEY_OEM_PLUS, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
     WINDOW_POSITION_CENTER },

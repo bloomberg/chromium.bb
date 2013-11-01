@@ -15764,6 +15764,7 @@ var keyboardOverlayData = {
     '+<>ALT<>SHIFT': 'keyboardOverlayCenterWindow',
     '+<>CTRL': 'keyboardOverlayZoomIn',
     '+<>CTRL<>SHIFT': 'keyboardOverlayZoomScreenIn',
+    '-<>ALT': 'keyboardOverlayMinimizeWindow',
     '-<>CTRL': 'keyboardOverlayZoomOut',
     '-<>CTRL<>SHIFT': 'keyboardOverlayZoomScreenOut',
     '-<>SEARCH': 'keyboardOverlayF11',
