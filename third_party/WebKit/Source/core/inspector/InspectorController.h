@@ -114,7 +114,7 @@ public:
     void willProcessTask();
     void didProcessTask();
 
-    void didBeginFrame();
+    void didBeginFrame(int frameId);
     void didCancelFrame();
     void willComposite();
     void didComposite();

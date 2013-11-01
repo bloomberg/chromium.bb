@@ -138,7 +138,7 @@ public:
     void didDispatchEvent();
     void didDispatchEventOnWindow();
 
-    void didBeginFrame();
+    void didBeginFrame(int frameId);
     void didCancelFrame();
 
     void didInvalidateLayout(Frame*);

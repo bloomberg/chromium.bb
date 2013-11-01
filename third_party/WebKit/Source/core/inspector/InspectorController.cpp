@@ -397,10 +397,10 @@ void InspectorController::didProcessTask()
         domDebuggerAgent->didProcessTask();
 }
 
-void InspectorController::didBeginFrame()
+void InspectorController::didBeginFrame(int frameId)
 {
     if (InspectorTimelineAgent* timelineAgent = m_instrumentingAgents->inspectorTimelineAgent())
-        timelineAgent->didBeginFrame();
+        timelineAgent->didBeginFrame(frameId);
     if (InspectorCanvasAgent* canvasAgent = m_instrumentingAgents->inspectorCanvasAgent())
         canvasAgent->didBeginFrame();
 }

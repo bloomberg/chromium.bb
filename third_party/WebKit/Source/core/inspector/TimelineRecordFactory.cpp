@@ -254,6 +254,13 @@ PassRefPtr<JSONObject> TimelineRecordFactory::createPaintData(const FloatQuad& q
     return data.release();
 }
 
+PassRefPtr<JSONObject> TimelineRecordFactory::createFrameData(int frameId)
+{
+    RefPtr<JSONObject> data = JSONObject::create();
+    data->setNumber("id", frameId);
+    return data.release();
+}
+
 void TimelineRecordFactory::appendLayoutRoot(JSONObject* data, const FloatQuad& quad, long long rootNodeId)
 {
     data->setArray("root", createQuad(quad));

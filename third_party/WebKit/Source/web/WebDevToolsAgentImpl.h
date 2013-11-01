@@ -84,7 +84,7 @@ public:
     virtual void reattach(const WebString& savedState);
     virtual void detach();
     virtual void didNavigate();
-    virtual void didBeginFrame();
+    virtual void didBeginFrame(int frameId);
     virtual void didCancelFrame();
     virtual void willComposite();
     virtual void didComposite();

@@ -143,7 +143,7 @@
         unsigned long topPadding, unsigned long rightPadding, unsigned long bottomPadding, unsigned long leftPadding,
         boolean ignoreClipping, boolean allowShadowContent, boolean allowChildFrameContent);
 
-    void emitInspectorDidBeginFrame();
+    void emitInspectorDidBeginFrame(optional long frameId);
     void emitInspectorDidCancelFrame();
 
     [RaisesException] boolean hasSpellingMarker(Document document, long from, long length);

@@ -307,10 +307,11 @@ void InspectorTimelineAgent::innerStop(bool fromConsole)
     m_frontend->stopped(&fromConsole);
 }
 
-void InspectorTimelineAgent::didBeginFrame()
+void InspectorTimelineAgent::didBeginFrame(int frameId)
 {
     TRACE_EVENT_INSTANT0(InternalEventCategory, InstrumentationEvents::BeginFrame);
     m_pendingFrameRecord = TimelineRecordFactory::createGenericRecord(timestamp(), 0, TimelineRecordType::BeginFrame);
+    m_pendingFrameRecord->setObject("data", TimelineRecordFactory::createFrameData(frameId));
 }
 
 void InspectorTimelineAgent::didCancelFrame()
@@ -904,8 +905,6 @@ void InspectorTimelineAgent::commitFrameRecord()
 {
     if (!m_pendingFrameRecord)
         return;
-
-    m_pendingFrameRecord->setObject("data", JSONObject::create());
     innerAddRecordToTimeline(m_pendingFrameRecord.release());
 }
 

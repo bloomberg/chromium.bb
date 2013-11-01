@@ -1431,9 +1431,9 @@ PassRefPtr<NodeList> Internals::nodesFromRect(Document* document, int centerX, i
     return StaticNodeList::adopt(matches);
 }
 
-void Internals::emitInspectorDidBeginFrame()
+void Internals::emitInspectorDidBeginFrame(int frameId)
 {
-    contextDocument()->page()->inspectorController().didBeginFrame();
+    contextDocument()->page()->inspectorController().didBeginFrame(frameId);
 }
 
 void Internals::emitInspectorDidCancelFrame()

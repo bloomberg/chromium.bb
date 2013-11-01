@@ -96,6 +96,8 @@ namespace WebCore {
 
         static PassRefPtr<JSONObject> createPaintData(const FloatQuad&, long long layerRootNodeId);
 
+        static PassRefPtr<JSONObject> createFrameData(int frameId);
+
         static void appendLayoutRoot(JSONObject* data, const FloatQuad&, long long rootNodeId);
 
         static void appendStyleRecalcDetails(JSONObject* data, unsigned elementCount);

@@ -69,7 +69,7 @@ public:
     virtual void setProcessId(long) = 0;
     virtual void setLayerTreeId(int) = 0;
 
-    virtual void didBeginFrame() = 0;
+    virtual void didBeginFrame(int frameId = 0) = 0;
     virtual void didCancelFrame() = 0;
     virtual void willComposite() = 0;
     virtual void didComposite() = 0;

@@ -186,7 +186,7 @@ public:
     PassRefPtr<NodeList> nodesFromRect(Document*, int x, int y, unsigned topPadding, unsigned rightPadding,
         unsigned bottomPadding, unsigned leftPadding, bool ignoreClipping, bool allowShadowContent, bool allowChildFrameContent, ExceptionState&) const;
 
-    void emitInspectorDidBeginFrame();
+    void emitInspectorDidBeginFrame(int frameId = 0);
     void emitInspectorDidCancelFrame();
 
     bool hasSpellingMarker(Document*, int from, int length, ExceptionState&);

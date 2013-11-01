@@ -249,10 +249,10 @@ void WebDevToolsAgentImpl::didNavigate()
     ClientMessageLoopAdapter::didNavigate();
 }
 
-void WebDevToolsAgentImpl::didBeginFrame()
+void WebDevToolsAgentImpl::didBeginFrame(int frameId)
 {
     if (InspectorController* ic = inspectorController())
-        ic->didBeginFrame();
+        ic->didBeginFrame(frameId);
 }
 
 void WebDevToolsAgentImpl::didCancelFrame()
