@@ -183,13 +183,13 @@ int PlatformFontPango::GetBaseline() const {
 }
 
 int PlatformFontPango::GetCapHeight() const {
-  // Return the height as an approximation because Pango doesn't support cap
+  // Return the ascent as an approximation because Pango doesn't support cap
   // height.
   // TODO(yukishiino): Come up with a better approximation of cap height, or
   // support cap height metrics.  Another option is to have a hard-coded table
   // of cap height for major fonts used in Chromium/Chrome.
   // See http://crbug.com/249507
-  return height_pixels_;
+  return ascent_pixels_;
 }
 
 int PlatformFontPango::GetAverageCharacterWidth() const {

@@ -33,11 +33,6 @@ SizeF RenderTextMac::GetStringSizeF() {
   return string_size_;
 }
 
-int RenderTextMac::GetBaseline() {
-  EnsureLayout();
-  return common_baseline_;
-}
-
 SelectionModel RenderTextMac::FindCursorPosition(const Point& point) {
   // TODO(asvitkine): Implement this. http://crbug.com/131618
   return SelectionModel();
@@ -57,6 +52,11 @@ std::vector<RenderText::FontSpan> RenderTextMac::GetFontSpansForTesting() {
   }
 
   return spans;
+}
+
+int RenderTextMac::GetLayoutTextBaseline() {
+  EnsureLayout();
+  return common_baseline_;
 }
 
 SelectionModel RenderTextMac::AdjacentCharSelectionModel(

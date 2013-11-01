@@ -91,15 +91,6 @@ Size RenderTextLinux::GetStringSize() {
   return Size(width, std::max(height, font_list().GetHeight()));
 }
 
-int RenderTextLinux::GetBaseline() {
-  EnsureLayout();
-  // Keep a consistent baseline between this particular string's PangoLayout and
-  // potentially larger text supported by the FontList.
-  // See the example in GetStringSize().
-  return std::max(PANGO_PIXELS(pango_layout_get_baseline(layout_)),
-                  font_list().GetBaseline());
-}
-
 SelectionModel RenderTextLinux::FindCursorPosition(const Point& point) {
   EnsureLayout();
 
@@ -144,6 +135,11 @@ std::vector<RenderText::FontSpan> RenderTextLinux::GetFontSpansForTesting() {
   }
 
   return spans;
+}
+
+int RenderTextLinux::GetLayoutTextBaseline() {
+  EnsureLayout();
+  return PANGO_PIXELS(pango_layout_get_baseline(layout_));
 }
 
 SelectionModel RenderTextLinux::AdjacentCharSelectionModel(
@@ -381,7 +377,7 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
   DCHECK(layout_);
 
   // Skia will draw glyphs with respect to the baseline.
-  Vector2d offset(GetLineOffset(0) + Vector2d(0, GetBaseline()));
+  Vector2d offset(GetLineOffset(0) + Vector2d(0, GetLayoutTextBaseline()));
 
   SkScalar x = SkIntToScalar(offset.x());
   SkScalar y = SkIntToScalar(offset.y());

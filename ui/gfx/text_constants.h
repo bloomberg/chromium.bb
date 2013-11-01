@@ -28,16 +28,6 @@ enum HorizontalAlignment {
   ALIGN_RIGHT,
 };
 
-// Vertical text alignment modes.
-enum VerticalAlignment {
-  // Align the text's top edge with that of its display area.
-  ALIGN_TOP = 0,
-  // Align the text's center with that of its display area.
-  ALIGN_VCENTER,
-  // Align the text's bottom edge with that of its display area.
-  ALIGN_BOTTOM,
-};
-
 // The directionality modes used to determine the base text direction.
 enum DirectionalityMode {
   // Use the first strong character's direction.

@@ -34,7 +34,6 @@ ContentSettingImageView::ContentSettingImageView(
     ContentSettingsType content_type,
     LocationBarView* parent,
     const gfx::FontList& font_list,
-    int font_y_offset,
     SkColor text_color,
     SkColor parent_background_color)
     : parent_(parent),
@@ -53,8 +52,6 @@ ContentSettingImageView::ContentSettingImageView(
   AddChildView(icon_);
 
   text_label_->SetVisible(false);
-  text_label_->set_border(
-      views::Border::CreateEmptyBorder(font_y_offset, 0, 0, 0));
   text_label_->SetEnabledColor(text_color);
   // Calculate the actual background color for the label.  The background images
   // are painted atop |parent_background_color|.  We grab the color of the
@@ -210,7 +207,7 @@ void ContentSettingImageView::Layout() {
   text_label_->SetBounds(
       icon_->bounds().right() + LocationBarView::GetItemPadding(), 0,
       std::max(width() - GetTotalSpacingWhileAnimating() - icon_width, 0),
-      text_label_->GetPreferredSize().height());
+      height());
 }
 
 bool ContentSettingImageView::OnMousePressed(const ui::MouseEvent& event) {
@@ -280,4 +277,3 @@ void ContentSettingImageView::CreateBubble(content::WebContents* web_contents) {
   bubble_widget_->AddObserver(this);
   bubble_widget_->Show();
 }
-

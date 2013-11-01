@@ -32,17 +32,16 @@ OmniboxView* CreateOmniboxView(OmniboxEditController* controller,
                                CommandUpdater* command_updater,
                                bool popup_window_mode,
                                LocationBarView* location_bar,
-                               const gfx::FontList& font_list,
-                               int font_y_offset) {
+                               const gfx::FontList& font_list) {
 #if defined(OS_WIN) && !defined(USE_AURA)
   if (!views::Textfield::IsViewsTextfieldEnabled()) {
     return new OmniboxViewWin(controller, location_bar, command_updater,
-                              popup_window_mode, font_list, font_y_offset);
+                              popup_window_mode, font_list);
   }
 #endif
   OmniboxViewViews* omnibox = new OmniboxViewViews(
       controller, profile, command_updater, popup_window_mode, location_bar,
-      font_list, font_y_offset);
+      font_list);
   omnibox->Init();
   return omnibox;
 }

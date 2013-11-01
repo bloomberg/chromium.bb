@@ -33,7 +33,6 @@ OmniboxView* CreateOmniboxView(OmniboxEditController* controller,
                                CommandUpdater* command_updater,
                                bool popup_window_mode,
                                LocationBarView* location_bar,
-                               const gfx::FontList& font_list,
-                               int font_y_offset);
+                               const gfx::FontList& font_list);
 
 #endif  // CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_VIEWS_H_
