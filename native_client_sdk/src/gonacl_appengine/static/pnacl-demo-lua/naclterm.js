@@ -30,6 +30,8 @@ function NaClTerm(argv) {
 };
 
 var embed;
+var ansiCyan = '\x1b[36m';
+var ansiReset = '\x1b[0m';
 
 /**
  * Static initialier called from index.html.
@@ -75,7 +77,7 @@ NaClTerm.prototype.handleMessage_ = function(e) {
  * Handle load error event from NaCl.
  */
 NaClTerm.prototype.handleLoadAbort_ = function(e) {
-  term_.io.print("Load aborted.\n");
+  term_.io.print('Load aborted.\n');
 }
 
 /**
@@ -85,13 +87,27 @@ NaClTerm.prototype.handleLoadError_ = function(e) {
   term_.io.print(embed.lastError + '\n');
 }
 
+NaClTerm.prototype.doneLoadingUrl = function() {
+  var width = term_.io.terminal_.screenSize.width;
+  term_.io.print('\r' + Array(width+1).join(' '));
+  var message = '\rLoaded ' + this.lastUrl;
+  if (this.lastTotal) {
+    var kbsize = Math.round(this.lastTotal/1024)
+    message += ' ['+ kbsize + ' KiB]';
+  }
+  term_.io.print(message.slice(0, width) + '\n')
+}
+
 /**
  * Handle load end event from NaCl.
  */
 NaClTerm.prototype.handleLoad_ = function(e) {
-  if (typeof(this.lastUrl) != 'undefined')
-    term_.io.print("\n");
-  term_.io.print("Loaded.\n");
+  if (this.lastUrl)
+    this.doneLoadingUrl();
+  else
+    term_.io.print('Loaded.\n');
+
+  term_.io.print(ansiReset);
 
   // Now that have completed loading and displaying
   // loading messages we output any messages from the
@@ -106,27 +122,36 @@ NaClTerm.prototype.handleLoad_ = function(e) {
  */
 NaClTerm.prototype.handleProgress_ = function(e) {
   var url = e.url.substring(e.url.lastIndexOf('/') + 1);
-  if (this.lastUrl != url) {
-    if (url != '') {
-      if (this.lastUrl)
-        term_.io.print("\n");
-      term_.io.print("Loading " + url + " .");
-    }
-  } else {
-    term_.io.print(".");
+
+  if (this.lastUrl && this.lastUrl != url)
+    this.doneLoadingUrl()
+
+  if (!url)
+    return;
+
+  var message = 'Loading ' + url;
+  if (e.lengthComputable && e.total) {
+    var percent = Math.round(e.loaded * 100 / e.total);
+    var kbloaded = Math.round(e.loaded / 1024);
+    var kbtotal = Math.round(e.total / 1024);
+    message += ' [' + kbloaded + ' KiB/' + kbtotal + ' KiB ' + percent + '%]';
   }
-  if (url)
+
+  var width = term_.io.terminal_.screenSize.width;
+  term_.io.print('\r' + message.slice(-width));
   this.lastUrl = url;
+  this.lastTotal = e.total;
 }
 
 /**
  * Handle crash event from NaCl.
  */
 NaClTerm.prototype.handleCrash_ = function(e) {
+ term_.io.print(ansiCyan)
  if (embed.exitStatus == -1) {
-   term_.io.print("Program crashed (exit status -1)\n")
+   term_.io.print('Program crashed (exit status -1)\n')
  } else {
-   term_.io.print("Program exited (status=" + embed.exitStatus + ")\n");
+   term_.io.print('Program exited (status=' + embed.exitStatus + ')\n');
  }
 }
 
@@ -150,12 +175,22 @@ NaClTerm.prototype.run = function() {
   this.io = this.argv_.io.push();
   this.bufferedOutput = '';
   this.loaded = false;
+  this.io.print(ansiCyan);
+
+  var mimetype = 'application/x-pnacl';
+  if (navigator.mimeTypes[mimetype] === undefined) {
+    if (mimetype.indexOf('pnacl') != -1)
+      this.io.print('Browser does not support PNaCl or PNaCl is disabled\n');
+    else
+      this.io.print('Browser does not support NaCl or NaCl is disabled\n');
+    return;
+  }
 
   embed = document.createElement('object');
   embed.width = 0;
   embed.height = 0;
   embed.data = NaClTerm.nmf;
-  embed.type = 'application/x-pnacl';
+  embed.type = mimetype;
   embed.addEventListener('message', this.handleMessage_.bind(this));
   embed.addEventListener('progress', this.handleProgress_.bind(this));
   embed.addEventListener('load', this.handleLoad_.bind(this));
@@ -189,7 +224,7 @@ NaClTerm.prototype.run = function() {
     argn = argn + 1;
   }
 
-  term_.io.print("Loading NaCl module.\n")
+  this.io.print('Loading NaCl module.\n')
   document.body.appendChild(embed);
 
   this.io.onVTKeystroke = this.onVTKeystroke_.bind(this);

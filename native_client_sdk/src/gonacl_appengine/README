@@ -24,7 +24,7 @@ To Update App Engine (HTML/JS)
 
 To upload, run this from the root directory of the App Engine SDK::
 
-    $ ./appcfg.py update <path-to-this-dir>
+  $ ./appcfg.py update <path-to-this-dir>
 
 It probably makes sense to bump the application version in app.yaml for each
 upload, as it lets us use App Engine's versioning. The newly uploaded version
@@ -44,22 +44,25 @@ To publish a new version:
 1. Make and land your change to the demo, found in ``src/<demo-name>``.
 
 2. Wait for the linux SDK builder to build and upload your change. You can see
-   what's available by using gsutil::
+   what's available in the browser at::
 
-       $ gsutil ls gs://gonacl/demos/continuous
+     http://gsdview.appspot.com/gonacl/demos/continuous/
 
-       gs://gonacl/demos/continuous/229855/
-       gs://gonacl/demos/continuous/229860/
-       ...
+   Or by using gsutil::
 
-3. Update the URLs to use this new revision in each demo's JavaScript files:
+     $ gsutil ls gs://gonacl/demos/continuous/
+
+3. Use 'make publish REVISION=<REV>' in the ``src`` directory to publish the
+   revision.
+
+4. Update the URLs to use this new revision in each demo's JavaScript files:
 
   * For ``earth``, this is found in ``/static/pnacl-demo-earth/example.js``, in
     the ``getDataURL`` function.
-
   * For ``bullet``, this is found in ``/static/pnacl-demo-bullet/main.js``, in
     the ``pageDidLoad`` function.
+  * For ``lua``, this is found in ``/static/pnacl-demo-lua/lua.js``.
 
-4. Land a CL with these changes.
+5. Land a CL with these changes.
 
-5. Update App Engine, using the instructions above.
+6. Update App Engine, using the instructions above.

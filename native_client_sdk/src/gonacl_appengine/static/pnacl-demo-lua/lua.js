@@ -5,4 +5,4 @@
  */
 
 NaClTerm.prefix = 'lua'
-NaClTerm.nmf = 'http://commondatastorage.googleapis.com/gonacl/demos/publish/231022/lua/lua.nmf'
+NaClTerm.nmf = 'http://commondatastorage.googleapis.com/gonacl/demos/publish/232428/lua/lua.nmf'
