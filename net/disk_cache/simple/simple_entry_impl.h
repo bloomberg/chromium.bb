@@ -188,6 +188,21 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
                          const CompletionCallback& callback,
                          bool truncate);
 
+  void ReadSparseDataInternal(int64 sparse_offset,
+                              net::IOBuffer* buf,
+                              int buf_len,
+                              const CompletionCallback& callback);
+
+  void WriteSparseDataInternal(int64 sparse_offset,
+                               net::IOBuffer* buf,
+                               int buf_len,
+                               const CompletionCallback& callback);
+
+  void GetAvailableRangeInternal(int64 sparse_offset,
+                                 int len,
+                                 int64* out_start,
+                                 const CompletionCallback& callback);
+
   void DoomEntryInternal(const CompletionCallback& callback);
 
   // Called after a SimpleSynchronousEntry has completed CreateEntry() or
@@ -208,8 +223,7 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
 
   // Internal utility method used by other completion methods. Calls
   // |completion_callback| after updating state and dooming on errors.
-  void EntryOperationComplete(int stream_index,
-                              const CompletionCallback& completion_callback,
+  void EntryOperationComplete(const CompletionCallback& completion_callback,
                               const SimpleEntryStat& entry_stat,
                               scoped_ptr<int> result);
 
@@ -226,6 +240,20 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
                               const CompletionCallback& completion_callback,
                               scoped_ptr<SimpleEntryStat> entry_stat,
                               scoped_ptr<int> result);
+
+  void ReadSparseOperationComplete(
+      const CompletionCallback& completion_callback,
+      scoped_ptr<base::Time> last_used,
+      scoped_ptr<int> result);
+
+  void WriteSparseOperationComplete(
+      const CompletionCallback& completion_callback,
+      scoped_ptr<SimpleEntryStat> entry_stat,
+      scoped_ptr<int> result);
+
+  void GetAvailableRangeOperationComplete(
+      const CompletionCallback& completion_callback,
+      scoped_ptr<int> result);
 
   // Called after an asynchronous doom completes.
   void DoomOperationComplete(const CompletionCallback& callback,
@@ -287,6 +315,7 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   base::Time last_used_;
   base::Time last_modified_;
   int32 data_size_[kSimpleEntryStreamCount];
+  int32 sparse_data_size_;
 
   // Number of times this object has been returned from Backend::OpenEntry() and
   // Backend::CreateEntry() without subsequent Entry::Close() calls. Used to

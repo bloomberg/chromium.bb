@@ -6,6 +6,7 @@
 #define NET_DISK_CACHE_SIMPLE_SIMPLE_SYNCHRONOUS_ENTRY_H_
 
 #include <algorithm>
+#include <map>
 #include <string>
 #include <utility>
 #include <vector>
@@ -35,7 +36,8 @@ class NET_EXPORT_PRIVATE SimpleEntryStat {
  public:
   SimpleEntryStat(base::Time last_used,
                   base::Time last_modified,
-                  const int32 data_size[]);
+                  const int32 data_size[],
+                  const int32 sparse_data_size);
 
   int GetOffsetInFile(const std::string& key,
                       int offset,
@@ -56,10 +58,16 @@ class NET_EXPORT_PRIVATE SimpleEntryStat {
     data_size_[stream_index] = data_size;
   }
 
+  int32 sparse_data_size() const { return sparse_data_size_; }
+  void set_sparse_data_size(int32 sparse_data_size) {
+    sparse_data_size_ = sparse_data_size;
+  }
+
  private:
   base::Time last_used_;
   base::Time last_modified_;
   int32 data_size_[kSimpleEntryStreamCount];
+  int32 sparse_data_size_;
 };
 
 struct SimpleEntryCreationResults {
@@ -94,9 +102,11 @@ class SimpleSynchronousEntry {
                        int buf_len_p,
                        bool truncate_p,
                        bool doomed_p);
+    EntryOperationData(int64 sparse_offset_p, int buf_len_p);
 
     int index;
     int offset;
+    int64 sparse_offset;
     int buf_len;
     bool truncate;
     bool doomed;
@@ -142,6 +152,19 @@ class SimpleSynchronousEntry {
                       uint32 expected_crc32,
                       int* out_result) const;
 
+  void ReadSparseData(const EntryOperationData& in_entry_op,
+                      net::IOBuffer* out_buf,
+                      base::Time* out_last_used,
+                      int* out_result);
+  void WriteSparseData(const EntryOperationData& in_entry_op,
+                       net::IOBuffer* in_buf,
+                       int64 max_sparse_data_size,
+                       SimpleEntryStat* out_entry_stat,
+                       int* out_result);
+  void GetAvailableRange(const EntryOperationData& in_entry_op,
+                         int64* out_start,
+                         int* out_result);
+
   // Close all streams, and add write EOF records to streams indicated by the
   // CRCRecord entries in |crc32s_to_write|.
   void Close(const SimpleEntryStat& entry_stat,
@@ -163,6 +186,17 @@ class SimpleSynchronousEntry {
   enum FileRequired {
     FILE_NOT_REQUIRED,
     FILE_REQUIRED
+  };
+
+  struct SparseRange {
+    int64 offset;
+    int64 length;
+    uint32 data_crc32;
+    int64 file_offset;
+
+    bool operator<(const SparseRange& other) const {
+      return offset < other.offset;
+    }
   };
 
   SimpleSynchronousEntry(
@@ -227,6 +261,39 @@ class SimpleSynchronousEntry {
                        int* out_data_size) const;
   void Doom() const;
 
+  // Opens the sparse data file and scans it if it exists.
+  bool OpenSparseFileIfExists(int32* out_sparse_data_size);
+
+  // Creates and initializes the sparse data file.
+  bool CreateSparseFile();
+
+  // Closes the sparse data file.
+  bool CloseSparseFile();
+
+  // Writes the header to the (newly-created) sparse file.
+  bool InitializeSparseFile();
+
+  // Removes all but the header of the sparse file.
+  bool TruncateSparseFile();
+
+  // Scans the existing ranges in the sparse file. Populates |sparse_ranges_|
+  // and sets |*out_sparse_data_size| to the total size of all the ranges (not
+  // including headers).
+  bool ScanSparseFile(int32* out_sparse_data_size);
+
+  // Reads from a single sparse range. If asked to read the entire range, also
+  // verifies the CRC32.
+  bool ReadSparseRange(const SparseRange* range,
+                       int offset, int len, char* buf);
+
+  // Writes to a single (existing) sparse range. If asked to write the entire
+  // range, also updates the CRC32; otherwise, invalidates it.
+  bool WriteSparseRange(SparseRange* range,
+                        int offset, int len, const char* buf);
+
+  // Appends a new sparse range to the sparse data file.
+  bool AppendSparseRange(int64 offset, int len, const char* buf);
+
   static bool DeleteFileForEntryHash(const base::FilePath& path,
                                      uint64 entry_hash,
                                      int file_index);
@@ -236,6 +303,10 @@ class SimpleSynchronousEntry {
   void RecordSyncCreateResult(CreateEntryResult result, bool had_index);
 
   base::FilePath GetFilenameFromFileIndex(int file_index);
+
+  bool sparse_file_open() const {
+    return sparse_file_ != base::kInvalidPlatformFileValue;
+  }
 
   const net::CacheType cache_type_;
   const base::FilePath path_;
@@ -250,6 +321,14 @@ class SimpleSynchronousEntry {
   // True if the corresponding stream is empty and therefore no on-disk file
   // was created to store it.
   bool empty_file_omitted_[kSimpleEntryFileCount];
+
+  typedef std::map<int64, SparseRange> SparseRangeOffsetMap;
+  typedef SparseRangeOffsetMap::iterator SparseRangeIterator;
+  SparseRangeOffsetMap sparse_ranges_;
+  base::PlatformFile sparse_file_;
+  // Offset of the end of the sparse file (where the next sparse range will be
+  // written).
+  int64 sparse_tail_offset_;
 
   // True if the entry was created, or false if it was opened. Used to log
   // SimpleCache.*.EntryCreatedWithStream2Omitted only for created entries.

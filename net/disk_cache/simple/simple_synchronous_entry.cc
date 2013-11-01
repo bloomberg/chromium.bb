@@ -34,6 +34,7 @@ using base::PLATFORM_FILE_ERROR_EXISTS;
 using base::PLATFORM_FILE_ERROR_NOT_FOUND;
 using base::PLATFORM_FILE_OK;
 using base::PLATFORM_FILE_OPEN;
+using base::PLATFORM_FILE_OPEN_ALWAYS;
 using base::PLATFORM_FILE_READ;
 using base::PLATFORM_FILE_WRITE;
 using base::ReadPlatformFile;
@@ -53,7 +54,8 @@ enum OpenEntryResult {
   OPEN_ENTRY_CANT_READ_KEY = 5,
   // OPEN_ENTRY_KEY_MISMATCH = 6, Deprecated.
   OPEN_ENTRY_KEY_HASH_MISMATCH = 7,
-  OPEN_ENTRY_MAX = 8,
+  OPEN_ENTRY_SPARSE_OPEN_FAILED = 8,
+  OPEN_ENTRY_MAX = 9,
 };
 
 // Used in histograms, please only add entries at the end.
@@ -128,15 +130,18 @@ namespace disk_cache {
 
 using simple_util::GetEntryHashKey;
 using simple_util::GetFilenameFromEntryHashAndFileIndex;
+using simple_util::GetSparseFilenameFromEntryHash;
 using simple_util::GetDataSizeFromKeyAndFileSize;
 using simple_util::GetFileSizeFromKeyAndDataSize;
 using simple_util::GetFileIndexFromStreamIndex;
 
 SimpleEntryStat::SimpleEntryStat(base::Time last_used,
                                  base::Time last_modified,
-                                 const int32 data_size[])
+                                 const int32 data_size[],
+                                 const int32 sparse_data_size)
     : last_used_(last_used),
-      last_modified_(last_modified) {
+      last_modified_(last_modified),
+      sparse_data_size_(sparse_data_size) {
   memcpy(data_size_, data_size, sizeof(data_size_));
 }
 
@@ -210,6 +215,12 @@ SimpleSynchronousEntry::EntryOperationData::EntryOperationData(int index_p,
       buf_len(buf_len_p),
       truncate(truncate_p),
       doomed(doomed_p) {}
+
+SimpleSynchronousEntry::EntryOperationData::EntryOperationData(
+    int64 sparse_offset_p,
+    int buf_len_p)
+    : sparse_offset(sparse_offset_p),
+      buf_len(buf_len_p) {}
 
 // static
 void SimpleSynchronousEntry::OpenEntry(
@@ -391,6 +402,213 @@ void SimpleSynchronousEntry::WriteData(const EntryOperationData& in_entry_op,
   *out_result = buf_len;
 }
 
+void SimpleSynchronousEntry::ReadSparseData(
+    const EntryOperationData& in_entry_op,
+    net::IOBuffer* out_buf,
+    base::Time* out_last_used,
+    int* out_result) {
+  DCHECK(initialized_);
+  int64 offset = in_entry_op.sparse_offset;
+  int buf_len = in_entry_op.buf_len;
+
+  char* buf = out_buf->data();
+  int read_so_far = 0;
+
+  // Find the first sparse range at or after the requested offset.
+  SparseRangeIterator it = sparse_ranges_.lower_bound(offset);
+
+  if (it != sparse_ranges_.begin()) {
+    // Hop back one range and read the one overlapping with the start.
+    --it;
+    SparseRange* found_range = &it->second;
+    DCHECK_EQ(it->first, found_range->offset);
+    if (found_range->offset + found_range->length > offset) {
+      DCHECK_LE(0, found_range->length);
+      DCHECK_GE(kint32max, found_range->length);
+      DCHECK_LE(0, offset - found_range->offset);
+      DCHECK_GE(kint32max, offset - found_range->offset);
+      int range_len_after_offset = found_range->length -
+                                   (offset - found_range->offset);
+      DCHECK_LE(0, range_len_after_offset);
+
+      int len_to_read = std::min(buf_len, range_len_after_offset);
+      if (!ReadSparseRange(found_range,
+                           offset - found_range->offset,
+                           len_to_read,
+                           buf)) {
+        *out_result = net::ERR_CACHE_READ_FAILURE;
+        return;
+      }
+      read_so_far += len_to_read;
+    }
+    ++it;
+  }
+
+  // Keep reading until the buffer is full or there is not another contiguous
+  // range.
+  while (read_so_far < buf_len &&
+         it != sparse_ranges_.end() &&
+         it->second.offset == offset + read_so_far) {
+    SparseRange* found_range = &it->second;
+    DCHECK_EQ(it->first, found_range->offset);
+    int range_len = (found_range->length > kint32max) ?
+                    kint32max : found_range->length;
+    int len_to_read = std::min(buf_len - read_so_far, range_len);
+    if (!ReadSparseRange(found_range, 0, len_to_read, buf + read_so_far)) {
+      *out_result = net::ERR_CACHE_READ_FAILURE;
+      return;
+    }
+    read_so_far += len_to_read;
+    ++it;
+  }
+
+  *out_result = read_so_far;
+}
+
+void SimpleSynchronousEntry::WriteSparseData(
+    const EntryOperationData& in_entry_op,
+    net::IOBuffer* in_buf,
+    int64 max_sparse_data_size,
+    SimpleEntryStat* out_entry_stat,
+    int* out_result) {
+  DCHECK(initialized_);
+  int64 offset = in_entry_op.sparse_offset;
+  int buf_len = in_entry_op.buf_len;
+
+  const char* buf = in_buf->data();
+  int written_so_far = 0;
+  int appended_so_far = 0;
+
+  if (!sparse_file_open() && !CreateSparseFile()) {
+    *out_result = net::ERR_CACHE_WRITE_FAILURE;
+    return;
+  }
+
+  int64 sparse_data_size = out_entry_stat->sparse_data_size();
+  // This is a pessimistic estimate; it assumes the entire buffer is going to
+  // be appended as a new range, not written over existing ranges.
+  if (sparse_data_size + buf_len > max_sparse_data_size) {
+    DLOG(INFO) << "Truncating sparse data file (" << sparse_data_size << " + "
+               << buf_len << " > " << max_sparse_data_size << ")";
+    TruncateSparseFile();
+  }
+
+  SparseRangeIterator it = sparse_ranges_.lower_bound(offset);
+
+  if (it != sparse_ranges_.begin()) {
+    --it;
+    SparseRange* found_range = &it->second;
+    if (found_range->offset + found_range->length > offset) {
+      DCHECK_LE(0, found_range->length);
+      DCHECK_GE(kint32max, found_range->length);
+      DCHECK_LE(0, offset - found_range->offset);
+      DCHECK_GE(kint32max, offset - found_range->offset);
+      int range_len_after_offset = found_range->length -
+                                   (offset - found_range->offset);
+      DCHECK_LE(0, range_len_after_offset);
+
+      int len_to_write = std::min(buf_len, range_len_after_offset);
+      if (!WriteSparseRange(found_range,
+                            offset - found_range->offset,
+                            len_to_write,
+                            buf)) {
+        *out_result = net::ERR_CACHE_WRITE_FAILURE;
+        return;
+      }
+      written_so_far += len_to_write;
+    }
+    ++it;
+  }
+
+  while (written_so_far < buf_len &&
+         it != sparse_ranges_.end() &&
+         it->second.offset < offset + buf_len) {
+    SparseRange* found_range = &it->second;
+    if (offset + written_so_far < found_range->offset) {
+      int len_to_append = found_range->offset - (offset + written_so_far);
+      if (!AppendSparseRange(offset + written_so_far,
+                             len_to_append,
+                             buf + written_so_far)) {
+        *out_result = net::ERR_CACHE_WRITE_FAILURE;
+        return;
+      }
+      written_so_far += len_to_append;
+      appended_so_far += len_to_append;
+    }
+    int range_len = (found_range->length > kint32max) ?
+                    kint32max : found_range->length;
+    int len_to_write = std::min(buf_len - written_so_far, range_len);
+    if (!WriteSparseRange(found_range,
+                          0,
+                          len_to_write,
+                          buf + written_so_far)) {
+      *out_result = net::ERR_CACHE_WRITE_FAILURE;
+      return;
+    }
+    written_so_far += len_to_write;
+    ++it;
+  }
+
+  if (written_so_far < buf_len) {
+    int len_to_append = buf_len - written_so_far;
+    if (!AppendSparseRange(offset + written_so_far,
+                           len_to_append,
+                           buf + written_so_far)) {
+      *out_result = net::ERR_CACHE_WRITE_FAILURE;
+      return;
+    }
+    written_so_far += len_to_append;
+    appended_so_far += len_to_append;
+  }
+
+  DCHECK_EQ(buf_len, written_so_far);
+
+  base::Time modification_time = Time::Now();
+  out_entry_stat->set_last_used(modification_time);
+  out_entry_stat->set_last_modified(modification_time);
+  int32 old_sparse_data_size = out_entry_stat->sparse_data_size();
+  out_entry_stat->set_sparse_data_size(old_sparse_data_size + appended_so_far);
+  *out_result = written_so_far;
+}
+
+void SimpleSynchronousEntry::GetAvailableRange(
+    const EntryOperationData& in_entry_op,
+    int64* out_start,
+    int* out_result) {
+  DCHECK(initialized_);
+  int64 offset = in_entry_op.sparse_offset;
+  int len = in_entry_op.buf_len;
+
+  SparseRangeIterator it = sparse_ranges_.lower_bound(offset);
+
+  int64 start = offset;
+  int avail_so_far = 0;
+
+  if (it != sparse_ranges_.end() && it->second.offset < offset + len)
+    start = it->second.offset;
+
+  if ((it == sparse_ranges_.end() || it->second.offset > offset) &&
+      it != sparse_ranges_.begin()) {
+    --it;
+    if (it->second.offset + it->second.length > offset) {
+      start = offset;
+      avail_so_far = (it->second.offset + it->second.length) - offset;
+    }
+    ++it;
+  }
+
+  while (start + avail_so_far < offset + len &&
+         it != sparse_ranges_.end() &&
+         it->second.offset == start + avail_so_far) {
+    avail_so_far += it->second.length;
+    ++it;
+  }
+
+  int len_from_start = len - (start - offset);
+  *out_start = start;
+  *out_result = std::min(avail_so_far, len_from_start);
+}
+
 void SimpleSynchronousEntry::CheckEOFRecord(int index,
                                             const SimpleEntryStat& entry_stat,
                                             uint32 expected_crc32,
@@ -482,12 +700,16 @@ void SimpleSynchronousEntry::Close(
                      cluster_loss * 100 / (cluster_loss + file_size));
   }
 
+  if (sparse_file_open()) {
+    bool did_close_file = ClosePlatformFile(sparse_file_);
+    CHECK(did_close_file);
+  }
+
   if (files_created_) {
     const int stream2_file_index = GetFileIndexFromStreamIndex(2);
     SIMPLE_CACHE_UMA(BOOLEAN, "EntryCreatedAndStream2Omitted", cache_type_,
                      empty_file_omitted_[stream2_file_index]);
   }
-
   RecordCloseResult(cache_type_, CLOSE_RESULT_SUCCESS);
   have_open_files_ = false;
   delete this;
@@ -502,7 +724,8 @@ SimpleSynchronousEntry::SimpleSynchronousEntry(net::CacheType cache_type,
       entry_hash_(entry_hash),
       key_(key),
       have_open_files_(false),
-      initialized_(false) {
+      initialized_(false),
+      sparse_file_(kInvalidPlatformFileValue) {
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
     files_[i] = kInvalidPlatformFileValue;
     empty_file_omitted_[i] = false;
@@ -683,6 +906,11 @@ void SimpleSynchronousEntry::CloseFile(int index) {
     DCHECK(did_close);
     files_[index] = kInvalidPlatformFileValue;
   }
+
+  if (sparse_file_open()) {
+    bool did_close = CloseSparseFile();
+    DCHECK(did_close);
+  }
 }
 
 void SimpleSynchronousEntry::CloseFiles() {
@@ -763,6 +991,14 @@ int SimpleSynchronousEntry::InitializeForOpen(
       return net::ERR_FAILED;
     }
   }
+
+  int32 sparse_data_size = 0;
+  if (!OpenSparseFileIfExists(&sparse_data_size)) {
+    RecordSyncOpenResult(
+        cache_type_, OPEN_ENTRY_SPARSE_OPEN_FAILED, had_index);
+    return net::ERR_FAILED;
+  }
+  out_entry_stat->set_sparse_data_size(sparse_data_size);
 
   bool removed_stream2 = false;
   const int stream2_file_index = GetFileIndexFromStreamIndex(2);
@@ -939,6 +1175,9 @@ bool SimpleSynchronousEntry::DeleteFilesForEntryHash(
     if (!DeleteFileForEntryHash(path, entry_hash, i) && !CanOmitEmptyFile(i))
       result = false;
   }
+  FilePath to_delete = path.AppendASCII(
+      GetSparseFilenameFromEntryHash(entry_hash));
+  base::DeleteFile(to_delete, false);
   return result;
 }
 
@@ -961,6 +1200,279 @@ void SimpleSynchronousEntry::RecordSyncCreateResult(CreateEntryResult result,
 FilePath SimpleSynchronousEntry::GetFilenameFromFileIndex(int file_index) {
   return path_.AppendASCII(
       GetFilenameFromEntryHashAndFileIndex(entry_hash_, file_index));
+}
+
+bool SimpleSynchronousEntry::OpenSparseFileIfExists(
+    int32* out_sparse_data_size) {
+  DCHECK(!sparse_file_open());
+
+  FilePath filename = path_.AppendASCII(
+      GetSparseFilenameFromEntryHash(entry_hash_));
+  int flags = PLATFORM_FILE_OPEN | PLATFORM_FILE_READ | PLATFORM_FILE_WRITE;
+  bool created;
+  PlatformFileError error;
+  sparse_file_ = CreatePlatformFile(filename, flags, &created, &error);
+  if (error == PLATFORM_FILE_ERROR_NOT_FOUND)
+    return true;
+
+  return ScanSparseFile(out_sparse_data_size);
+}
+
+bool SimpleSynchronousEntry::CreateSparseFile() {
+  DCHECK(!sparse_file_open());
+
+  FilePath filename = path_.AppendASCII(
+      GetSparseFilenameFromEntryHash(entry_hash_));
+  int flags = PLATFORM_FILE_CREATE | PLATFORM_FILE_READ | PLATFORM_FILE_WRITE;
+  bool created;
+  PlatformFileError error;
+  sparse_file_ = CreatePlatformFile(filename, flags, &created, &error);
+  if (error != PLATFORM_FILE_OK)
+    return false;
+
+  return InitializeSparseFile();
+}
+
+bool SimpleSynchronousEntry::CloseSparseFile() {
+  DCHECK(sparse_file_open());
+
+  bool did_close = ClosePlatformFile(sparse_file_);
+  if (did_close)
+    sparse_file_ = kInvalidPlatformFileValue;
+  return did_close;
+}
+
+bool SimpleSynchronousEntry::TruncateSparseFile() {
+  DCHECK(sparse_file_open());
+
+  int64 header_and_key_length = sizeof(SimpleFileHeader) + key_.size();
+  if (!TruncatePlatformFile(sparse_file_, header_and_key_length)) {
+    DLOG(WARNING) << "Could not truncate sparse file";
+    return false;
+  }
+
+  sparse_ranges_.clear();
+
+  return true;
+}
+
+bool SimpleSynchronousEntry::InitializeSparseFile() {
+  DCHECK(sparse_file_open());
+
+  SimpleFileHeader header;
+  header.initial_magic_number = kSimpleInitialMagicNumber;
+  header.version = kSimpleVersion;
+  header.key_length = key_.size();
+  header.key_hash = base::Hash(key_);
+
+  int header_write_result =
+      WritePlatformFile(sparse_file_, 0, reinterpret_cast<char*>(&header),
+                        sizeof(header));
+  if (header_write_result != sizeof(header)) {
+    DLOG(WARNING) << "Could not write sparse file header";
+    return false;
+  }
+
+  int key_write_result = WritePlatformFile(sparse_file_, sizeof(header),
+                                           key_.data(), key_.size());
+  if (key_write_result != implicit_cast<int>(key_.size())) {
+    DLOG(WARNING) << "Could not write sparse file key";
+    return false;
+  }
+
+  sparse_ranges_.clear();
+  sparse_tail_offset_ = sizeof(header) + key_.size();
+
+  return true;
+}
+
+bool SimpleSynchronousEntry::ScanSparseFile(int32* out_sparse_data_size) {
+  DCHECK(sparse_file_open());
+
+  int32 sparse_data_size = 0;
+
+  SimpleFileHeader header;
+  int header_read_result =
+      ReadPlatformFile(sparse_file_, 0, reinterpret_cast<char*>(&header),
+                       sizeof(header));
+  if (header_read_result != sizeof(header)) {
+    DLOG(WARNING) << "Could not read header from sparse file.";
+    return false;
+  }
+
+  if (header.initial_magic_number != kSimpleInitialMagicNumber) {
+    DLOG(WARNING) << "Sparse file magic number did not match.";
+    return false;
+  }
+
+  if (header.version != kSimpleVersion) {
+    DLOG(WARNING) << "Sparse file unreadable version.";
+    return false;
+  }
+
+  sparse_ranges_.clear();
+
+  int64 range_header_offset = sizeof(header) + key_.size();
+  while (1) {
+    SimpleFileSparseRangeHeader range_header;
+    int range_header_read_result =
+        ReadPlatformFile(sparse_file_,
+                         range_header_offset,
+                         reinterpret_cast<char*>(&range_header),
+                         sizeof(range_header));
+    if (range_header_read_result == 0)
+      break;
+    if (range_header_read_result != sizeof(range_header)) {
+      DLOG(WARNING) << "Could not read sparse range header.";
+      return false;
+    }
+
+    if (range_header.sparse_range_magic_number !=
+        kSimpleSparseRangeMagicNumber) {
+      DLOG(WARNING) << "Invalid sparse range header magic number.";
+      return false;
+    }
+
+    SparseRange range;
+    range.offset = range_header.offset;
+    range.length = range_header.length;
+    range.data_crc32 = range_header.data_crc32;
+    range.file_offset = range_header_offset + sizeof(range_header);
+    sparse_ranges_.insert(std::make_pair(range.offset, range));
+
+    range_header_offset += sizeof(range_header) + range.length;
+
+    DCHECK_LE(sparse_data_size, sparse_data_size + range.length);
+    sparse_data_size += range.length;
+  }
+
+  *out_sparse_data_size = sparse_data_size;
+  sparse_tail_offset_ = range_header_offset;
+
+  return true;
+}
+
+bool SimpleSynchronousEntry::ReadSparseRange(const SparseRange* range,
+                                             int offset, int len, char* buf) {
+  DCHECK(range);
+  DCHECK(buf);
+  DCHECK_GE(range->length, offset);
+  DCHECK_GE(range->length, offset + len);
+
+  int bytes_read = ReadPlatformFile(sparse_file_,
+                                    range->file_offset + offset,
+                                    buf, len);
+  if (bytes_read < len) {
+    DLOG(WARNING) << "Could not read sparse range.";
+    return false;
+  }
+
+  // If we read the whole range and we have a crc32, check it.
+  if (offset == 0 && len == range->length && range->data_crc32 != 0) {
+    uint32 actual_crc32 = crc32(crc32(0L, Z_NULL, 0),
+                                reinterpret_cast<const Bytef*>(buf),
+                                len);
+    if (actual_crc32 != range->data_crc32) {
+      DLOG(WARNING) << "Sparse range crc32 mismatch.";
+      return false;
+    }
+  }
+  // TODO(ttuttle): Incremental crc32 calculation?
+
+  return true;
+}
+
+bool SimpleSynchronousEntry::WriteSparseRange(SparseRange* range,
+                                              int offset, int len,
+                                              const char* buf) {
+  DCHECK(range);
+  DCHECK(buf);
+  DCHECK_GE(range->length, offset);
+  DCHECK_GE(range->length, offset + len);
+
+  uint32 new_crc32 = 0;
+  if (offset == 0 && len == range->length) {
+    new_crc32 = crc32(crc32(0L, Z_NULL, 0),
+                      reinterpret_cast<const Bytef*>(buf),
+                      len);
+  }
+
+  if (new_crc32 != range->data_crc32) {
+    range->data_crc32 = new_crc32;
+
+    SimpleFileSparseRangeHeader header;
+    header.sparse_range_magic_number = kSimpleSparseRangeMagicNumber;
+    header.offset = range->offset;
+    header.length = range->length;
+    header.data_crc32 = range->data_crc32;
+
+    int bytes_written = WritePlatformFile(sparse_file_,
+                                          range->file_offset - sizeof(header),
+                                          reinterpret_cast<char*>(&header),
+                                          sizeof(header));
+    if (bytes_written != implicit_cast<int>(sizeof(header))) {
+      DLOG(WARNING) << "Could not rewrite sparse range header.";
+      return false;
+    }
+  }
+
+  int bytes_written = WritePlatformFile(sparse_file_,
+                                        range->file_offset + offset,
+                                        buf, len);
+  if (bytes_written < len) {
+    DLOG(WARNING) << "Could not write sparse range.";
+    return false;
+  }
+
+  return true;
+}
+
+bool SimpleSynchronousEntry::AppendSparseRange(int64 offset,
+                                               int len,
+                                               const char* buf) {
+  DCHECK_LE(0, offset);
+  DCHECK_LT(0, len);
+  DCHECK(buf);
+
+  uint32 data_crc32 = crc32(crc32(0L, Z_NULL, 0),
+                            reinterpret_cast<const Bytef*>(buf),
+                            len);
+
+  SimpleFileSparseRangeHeader header;
+  header.sparse_range_magic_number = kSimpleSparseRangeMagicNumber;
+  header.offset = offset;
+  header.length = len;
+  header.data_crc32 = data_crc32;
+
+  int bytes_written = WritePlatformFile(sparse_file_,
+                                        sparse_tail_offset_,
+                                        reinterpret_cast<char*>(&header),
+                                        sizeof(header));
+  if (bytes_written != implicit_cast<int>(sizeof(header))) {
+    DLOG(WARNING) << "Could not append sparse range header.";
+    return false;
+  }
+  sparse_tail_offset_ += bytes_written;
+
+  bytes_written = WritePlatformFile(sparse_file_,
+                                    sparse_tail_offset_,
+                                    buf,
+                                    len);
+  if (bytes_written < len) {
+    DLOG(WARNING) << "Could not append sparse range data.";
+    return false;
+  }
+  int64 data_file_offset = sparse_tail_offset_;
+  sparse_tail_offset_ += bytes_written;
+
+  SparseRange range;
+  range.offset = offset;
+  range.length = len;
+  range.data_crc32 = data_crc32;
+  range.file_offset = data_file_offset;
+  sparse_ranges_.insert(std::make_pair(offset, range));
+
+  return true;
 }
 
 }  // namespace disk_cache

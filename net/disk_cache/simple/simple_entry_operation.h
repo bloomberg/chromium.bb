@@ -31,7 +31,10 @@ class SimpleEntryOperation {
     TYPE_CLOSE = 2,
     TYPE_READ = 3,
     TYPE_WRITE = 4,
-    TYPE_DOOM = 5,
+    TYPE_READ_SPARSE = 5,
+    TYPE_WRITE_SPARSE = 6,
+    TYPE_GET_AVAILABLE_RANGE = 7,
+    TYPE_DOOM = 8,
   };
 
   SimpleEntryOperation(const SimpleEntryOperation& other);
@@ -63,7 +66,24 @@ class SimpleEntryOperation {
       bool truncate,
       bool optimistic,
       const CompletionCallback& callback);
-
+  static SimpleEntryOperation ReadSparseOperation(
+      SimpleEntryImpl* entry,
+      int64 sparse_offset,
+      int length,
+      net::IOBuffer* buf,
+      const CompletionCallback& callback);
+  static SimpleEntryOperation WriteSparseOperation(
+      SimpleEntryImpl* entry,
+      int64 sparse_offset,
+      int length,
+      net::IOBuffer* buf,
+      const CompletionCallback& callback);
+  static SimpleEntryOperation GetAvailableRangeOperation(
+      SimpleEntryImpl* entry,
+      int64 sparse_offset,
+      int length,
+      int64* out_start,
+      const CompletionCallback& callback);
   static SimpleEntryOperation DoomOperation(
       SimpleEntryImpl* entry,
       const CompletionCallback& callback);
@@ -81,7 +101,9 @@ class SimpleEntryOperation {
   bool have_index() const { return have_index_; }
   int index() const { return index_; }
   int offset() const { return offset_; }
+  int64 sparse_offset() const { return sparse_offset_; }
   int length() const { return length_; }
+  int64* out_start() { return out_start_; }
   net::IOBuffer* buf() { return buf_.get(); }
   bool truncate() const { return truncate_; }
   bool optimistic() const { return optimistic_; }
@@ -93,7 +115,9 @@ class SimpleEntryOperation {
                        const CompletionCallback& callback,
                        Entry** out_entry,
                        int offset,
+                       int64 sparse_offset,
                        int length,
+                       int64* out_start,
                        EntryOperationType type,
                        bool have_index,
                        int index,
@@ -111,18 +135,22 @@ class SimpleEntryOperation {
 
   // Used in write and read operations.
   const int offset_;
+  const int64 sparse_offset_;
   const int length_;
 
-  const unsigned int type_ : 3;           /* 3 */
+  // Used in get available range operations.
+  int64* const out_start_;
+
+  const EntryOperationType type_;
   // Used in open and create operations.
-  const unsigned int have_index_ : 1;     /* 4 */
+  const bool have_index_;
   // Used in write and read operations.
-  const unsigned int index_ : 2;          /* 6 */
+  const unsigned int index_;
   // Used only in write operations.
-  const unsigned int truncate_ : 1;       /* 7 */
-  const unsigned int optimistic_ : 1;     /* 8 */
+  const bool truncate_;
+  const bool optimistic_;
   // Used only in SimpleCache.ReadIsParallelizable histogram.
-  const unsigned int alone_in_queue_ : 1; /* 9 */
+  const bool alone_in_queue_;
 };
 
 }  // namespace disk_cache

@@ -1931,7 +1931,7 @@ void DiskCacheEntryTest::UpdateSparseEntry() {
   entry1->Close();
   entry2->Close();
   FlushQueueForTest();
-  if (memory_only_)
+  if (memory_only_ || simple_cache_mode_)
     EXPECT_EQ(2, cache_->GetEntryCount());
   else
     EXPECT_EQ(3, cache_->GetEntryCount());
@@ -1964,20 +1964,15 @@ void DiskCacheEntryTest::DoomSparseEntry() {
   int64 offset = 1024;
   // Write to a bunch of ranges.
   for (int i = 0; i < 12; i++) {
-    EXPECT_EQ(kSize,
-              entry1->WriteSparseData(
-                  offset, buf.get(), kSize, net::CompletionCallback()));
+    EXPECT_EQ(kSize, WriteSparseData(entry1, offset, buf.get(), kSize));
     // Keep the second map under the default size.
-    if (i < 9) {
-      EXPECT_EQ(kSize,
-                entry2->WriteSparseData(
-                    offset, buf.get(), kSize, net::CompletionCallback()));
-    }
+    if (i < 9)
+      EXPECT_EQ(kSize, WriteSparseData(entry2, offset, buf.get(), kSize));
 
     offset *= 4;
   }
 
-  if (memory_only_)
+  if (memory_only_ || simple_cache_mode_)
     EXPECT_EQ(2, cache_->GetEntryCount());
   else
     EXPECT_EQ(15, cache_->GetEntryCount());
@@ -2110,7 +2105,7 @@ void DiskCacheEntryTest::PartialSparseEntry() {
   int rv;
   int64 start;
   net::TestCompletionCallback cb;
-  if (memory_only_) {
+  if (memory_only_ || simple_cache_mode_) {
     rv = entry->GetAvailableRange(0, 600, &start, cb.callback());
     EXPECT_EQ(100, cb.GetResult(rv));
     EXPECT_EQ(500, start);
@@ -2129,7 +2124,7 @@ void DiskCacheEntryTest::PartialSparseEntry() {
   // 1. Query before a filled 1KB block.
   // 2. Query within a filled 1KB block.
   // 3. Query beyond a filled 1KB block.
-  if (memory_only_) {
+  if (memory_only_ || simple_cache_mode_) {
     rv = entry->GetAvailableRange(19400, kSize, &start, cb.callback());
     EXPECT_EQ(3496, cb.GetResult(rv));
     EXPECT_EQ(20000, start);
@@ -3527,8 +3522,9 @@ TEST_F(DiskCacheEntryTest, SimpleCacheStream1SizeChanges) {
   ASSERT_TRUE(entry_file0 != base::kInvalidPlatformFileValue);
 
   int data_size[disk_cache::kSimpleEntryStreamCount] = {kSize, stream1_size, 0};
+  int sparse_data_size = 0;
   disk_cache::SimpleEntryStat entry_stat(
-      base::Time::Now(), base::Time::Now(), data_size);
+      base::Time::Now(), base::Time::Now(), data_size, sparse_data_size);
   int eof_offset = entry_stat.GetEOFOffsetInFile(key, 0);
   disk_cache::SimpleFileEOF eof_record;
   ASSERT_EQ(static_cast<int>(sizeof(eof_record)), base::ReadPlatformFile(
@@ -3810,6 +3806,96 @@ TEST_F(DiskCacheEntryTest, SimpleCacheDoomOptimisticWritesRace) {
     entry->Close();
     entry = NULL;
   }
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheBasicSparseIO) {
+  SetSimpleCacheMode();
+  InitCache();
+  BasicSparseIO();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheHugeSparseIO) {
+  SetSimpleCacheMode();
+  InitCache();
+  HugeSparseIO();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheGetAvailableRange) {
+  SetSimpleCacheMode();
+  InitCache();
+  GetAvailableRange();
+}
+
+TEST_F(DiskCacheEntryTest, DISABLED_SimpleCacheCouldBeSparse) {
+  SetSimpleCacheMode();
+  InitCache();
+  CouldBeSparse();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheUpdateSparseEntry) {
+  SetSimpleCacheMode();
+  InitCache();
+  UpdateSparseEntry();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheDoomSparseEntry) {
+  SetSimpleCacheMode();
+  InitCache();
+  DoomSparseEntry();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCachePartialSparseEntry) {
+  SetSimpleCacheMode();
+  InitCache();
+  PartialSparseEntry();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheTruncateLargeSparseFile) {
+  const int kSize = 1024;
+
+  SetSimpleCacheMode();
+  // An entry is allowed sparse data 1/10 the size of the cache, so this size
+  // allows for one |kSize|-sized range plus overhead, but not two ranges.
+  SetMaxSize(kSize * 15);
+  InitCache();
+
+  const char key[] = "key";
+  disk_cache::Entry* null = NULL;
+  disk_cache::Entry* entry;
+  ASSERT_EQ(net::OK, CreateEntry(key, &entry));
+  EXPECT_NE(null, entry);
+
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
+  CacheTestFillBuffer(buffer->data(), kSize, false);
+  net::TestCompletionCallback callback;
+  int ret;
+
+  // Verify initial conditions.
+  ret = entry->ReadSparseData(0, buffer, kSize, callback.callback());
+  EXPECT_EQ(0, callback.GetResult(ret));
+
+  ret = entry->ReadSparseData(kSize, buffer, kSize, callback.callback());
+  EXPECT_EQ(0, callback.GetResult(ret));
+
+  // Write a range and make sure it reads back.
+  ret = entry->WriteSparseData(0, buffer, kSize, callback.callback());
+  EXPECT_EQ(kSize, callback.GetResult(ret));
+
+  ret = entry->ReadSparseData(0, buffer, kSize, callback.callback());
+  EXPECT_EQ(kSize, callback.GetResult(ret));
+
+  // Write another range and make sure it reads back.
+  ret = entry->WriteSparseData(kSize, buffer, kSize, callback.callback());
+  EXPECT_EQ(kSize, callback.GetResult(ret));
+
+  ret = entry->ReadSparseData(kSize, buffer, kSize, callback.callback());
+  EXPECT_EQ(kSize, callback.GetResult(ret));
+
+  // Make sure the first range was removed when the second was written.
+  ret = entry->ReadSparseData(0, buffer, kSize, callback.callback());
+  EXPECT_EQ(0, callback.GetResult(ret));
+
+  entry->Close();
 }
 
 #endif  // defined(OS_POSIX)

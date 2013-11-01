@@ -48,6 +48,9 @@ NET_EXPORT_PRIVATE std::string GetFilenameFromKeyAndFileIndex(
 std::string GetFilenameFromEntryHashAndFileIndex(uint64 entry_hash,
                                                  int file_index);
 
+// Given a |key| for an entry, returns the name of the sparse data file.
+std::string GetSparseFilenameFromEntryHash(uint64 entry_hash);
+
 // Given the size of a file holding a stream in the simple backend and the key
 // to an entry, returns the number of bytes in the stream.
 NET_EXPORT_PRIVATE int32 GetDataSizeFromKeyAndFileSize(const std::string& key,

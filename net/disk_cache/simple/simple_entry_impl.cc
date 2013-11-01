@@ -31,6 +31,10 @@
 namespace disk_cache {
 namespace {
 
+// An entry can store sparse data taking up to 1 / kMaxSparseDataSizeDivisor of
+// the cache.
+const int64 kMaxSparseDataSizeDivisor = 10;
+
 // Used in histograms, please only add entries at the end.
 enum ReadResult {
   READ_RESULT_SUCCESS = 0,
@@ -170,6 +174,7 @@ SimpleEntryImpl::SimpleEntryImpl(net::CacheType cache_type,
       use_optimistic_operations_(operations_mode == OPTIMISTIC_OPERATIONS),
       last_used_(Time::Now()),
       last_modified_(last_used_),
+      sparse_data_size_(0),
       open_count_(0),
       doomed_(false),
       state_(STATE_UNINITIALIZED),
@@ -463,9 +468,11 @@ int SimpleEntryImpl::ReadSparseData(int64 offset,
                                     int buf_len,
                                     const CompletionCallback& callback) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  // TODO(gavinp): Determine if the simple backend should support sparse data.
-  NOTIMPLEMENTED();
-  return net::ERR_FAILED;
+
+  ScopedOperationRunner operation_runner(this);
+  pending_operations_.push(SimpleEntryOperation::ReadSparseOperation(
+      this, offset, buf_len, buf, callback));
+  return net::ERR_IO_PENDING;
 }
 
 int SimpleEntryImpl::WriteSparseData(int64 offset,
@@ -473,9 +480,11 @@ int SimpleEntryImpl::WriteSparseData(int64 offset,
                                      int buf_len,
                                      const CompletionCallback& callback) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  // TODO(gavinp): Determine if the simple backend should support sparse data.
-  NOTIMPLEMENTED();
-  return net::ERR_FAILED;
+
+  ScopedOperationRunner operation_runner(this);
+  pending_operations_.push(SimpleEntryOperation::WriteSparseOperation(
+      this, offset, buf_len, buf, callback));
+  return net::ERR_IO_PENDING;
 }
 
 int SimpleEntryImpl::GetAvailableRange(int64 offset,
@@ -483,28 +492,32 @@ int SimpleEntryImpl::GetAvailableRange(int64 offset,
                                        int64* start,
                                        const CompletionCallback& callback) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  // TODO(gavinp): Determine if the simple backend should support sparse data.
-  NOTIMPLEMENTED();
-  return net::ERR_FAILED;
+
+  ScopedOperationRunner operation_runner(this);
+  pending_operations_.push(SimpleEntryOperation::GetAvailableRangeOperation(
+      this, offset, len, start, callback));
+  return net::ERR_IO_PENDING;
 }
 
 bool SimpleEntryImpl::CouldBeSparse() const {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  // TODO(gavinp): Determine if the simple backend should support sparse data.
-  return false;
+  // TODO(ttuttle): Actually check.
+  return true;
 }
 
 void SimpleEntryImpl::CancelSparseIO() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  // TODO(gavinp): Determine if the simple backend should support sparse data.
-  NOTIMPLEMENTED();
+  // The Simple Cache does not return distinct objects for the same non-doomed
+  // entry, so there's no need to coordinate which object is performing sparse
+  // I/O.  Therefore, CancelSparseIO and ReadyForSparseIO succeed instantly.
 }
 
 int SimpleEntryImpl::ReadyForSparseIO(const CompletionCallback& callback) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  // TODO(gavinp): Determine if the simple backend should support sparse data.
-  NOTIMPLEMENTED();
-  return net::ERR_NOT_IMPLEMENTED;
+  // The simple Cache does not return distinct objects for the same non-doomed
+  // entry, so there's no need to coordinate which object is performing sparse
+  // I/O.  Therefore, CancelSparseIO and ReadyForSparseIO succeed instantly.
+  return net::OK;
 }
 
 SimpleEntryImpl::~SimpleEntryImpl() {
@@ -608,6 +621,24 @@ void SimpleEntryImpl::RunNextOperationIfNeeded() {
                           operation->callback(),
                           operation->truncate());
         break;
+      case SimpleEntryOperation::TYPE_READ_SPARSE:
+        ReadSparseDataInternal(operation->sparse_offset(),
+                               operation->buf(),
+                               operation->length(),
+                               operation->callback());
+        break;
+      case SimpleEntryOperation::TYPE_WRITE_SPARSE:
+        WriteSparseDataInternal(operation->sparse_offset(),
+                                operation->buf(),
+                                operation->length(),
+                                operation->callback());
+        break;
+      case SimpleEntryOperation::TYPE_GET_AVAILABLE_RANGE:
+        GetAvailableRangeInternal(operation->sparse_offset(),
+                                  operation->length(),
+                                  operation->out_start(),
+                                  operation->callback());
+        break;
       case SimpleEntryOperation::TYPE_DOOM:
         DoomEntryInternal(operation->callback());
         break;
@@ -651,7 +682,8 @@ void SimpleEntryImpl::OpenEntryInternal(bool have_index,
   const base::TimeTicks start_time = base::TimeTicks::Now();
   scoped_ptr<SimpleEntryCreationResults> results(
       new SimpleEntryCreationResults(
-          SimpleEntryStat(last_used_, last_modified_, data_size_)));
+          SimpleEntryStat(last_used_, last_modified_, data_size_,
+                          sparse_data_size_)));
   Closure task = base::Bind(&SimpleSynchronousEntry::OpenEntry,
                             cache_type_,
                             path_,
@@ -699,7 +731,8 @@ void SimpleEntryImpl::CreateEntryInternal(bool have_index,
   const base::TimeTicks start_time = base::TimeTicks::Now();
   scoped_ptr<SimpleEntryCreationResults> results(
       new SimpleEntryCreationResults(
-          SimpleEntryStat(last_used_, last_modified_, data_size_)));
+          SimpleEntryStat(last_used_, last_modified_, data_size_,
+                          sparse_data_size_)));
   Closure task = base::Bind(&SimpleSynchronousEntry::CreateEntry,
                             cache_type_,
                             path_,
@@ -746,7 +779,8 @@ void SimpleEntryImpl::CloseInternal() {
     Closure task =
         base::Bind(&SimpleSynchronousEntry::Close,
                    base::Unretained(synchronous_entry_),
-                   SimpleEntryStat(last_used_, last_modified_, data_size_),
+                   SimpleEntryStat(last_used_, last_modified_, data_size_,
+                                   sparse_data_size_),
                    base::Passed(&crc32s_to_write),
                    stream_0_data_);
     Closure reply = base::Bind(&SimpleEntryImpl::CloseOperationComplete, this);
@@ -825,7 +859,8 @@ void SimpleEntryImpl::ReadDataInternal(int stream_index,
   scoped_ptr<uint32> read_crc32(new uint32());
   scoped_ptr<int> result(new int());
   scoped_ptr<SimpleEntryStat> entry_stat(
-      new SimpleEntryStat(last_used_, last_modified_, data_size_));
+      new SimpleEntryStat(last_used_, last_modified_, data_size_,
+                          sparse_data_size_));
   Closure task = base::Bind(
       &SimpleSynchronousEntry::ReadData,
       base::Unretained(synchronous_entry_),
@@ -908,7 +943,8 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
 
   // |entry_stat| needs to be initialized before modifying |data_size_|.
   scoped_ptr<SimpleEntryStat> entry_stat(
-      new SimpleEntryStat(last_used_, last_modified_, data_size_));
+      new SimpleEntryStat(last_used_, last_modified_, data_size_,
+                          sparse_data_size_));
   if (truncate) {
     data_size_[stream_index] = offset + buf_len;
   } else {
@@ -941,6 +977,100 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
                              callback,
                              base::Passed(&entry_stat),
                              base::Passed(&result));
+  worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
+}
+
+void SimpleEntryImpl::ReadSparseDataInternal(
+    int64 sparse_offset,
+    net::IOBuffer* buf,
+    int buf_len,
+    const CompletionCallback& callback) {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  ScopedOperationRunner operation_runner(this);
+
+  DCHECK_EQ(STATE_READY, state_);
+  state_ = STATE_IO_PENDING;
+
+  scoped_ptr<int> result(new int());
+  scoped_ptr<base::Time> last_used(new base::Time());
+  Closure task = base::Bind(&SimpleSynchronousEntry::ReadSparseData,
+                            base::Unretained(synchronous_entry_),
+                            SimpleSynchronousEntry::EntryOperationData(
+                                sparse_offset, buf_len),
+                            make_scoped_refptr(buf),
+                            last_used.get(),
+                            result.get());
+  Closure reply = base::Bind(&SimpleEntryImpl::ReadSparseOperationComplete,
+                             this,
+                             callback,
+                             base::Passed(&last_used),
+                             base::Passed(&result));
+  worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
+}
+
+void SimpleEntryImpl::WriteSparseDataInternal(
+    int64 sparse_offset,
+    net::IOBuffer* buf,
+    int buf_len,
+    const CompletionCallback& callback) {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  ScopedOperationRunner operation_runner(this);
+
+  DCHECK_EQ(STATE_READY, state_);
+  state_ = STATE_IO_PENDING;
+
+  int64 max_sparse_data_size = kint64max;
+  if (backend_.get()) {
+    int64 max_cache_size = backend_->index()->max_size();
+    max_sparse_data_size = max_cache_size / kMaxSparseDataSizeDivisor;
+  }
+
+  scoped_ptr<SimpleEntryStat> entry_stat(
+      new SimpleEntryStat(last_used_, last_modified_, data_size_,
+                          sparse_data_size_));
+
+  last_used_ = last_modified_ = base::Time::Now();
+
+  scoped_ptr<int> result(new int());
+  Closure task = base::Bind(&SimpleSynchronousEntry::WriteSparseData,
+                            base::Unretained(synchronous_entry_),
+                            SimpleSynchronousEntry::EntryOperationData(
+                                sparse_offset, buf_len),
+                            make_scoped_refptr(buf),
+                            max_sparse_data_size,
+                            entry_stat.get(),
+                            result.get());
+  Closure reply = base::Bind(&SimpleEntryImpl::WriteSparseOperationComplete,
+                             this,
+                             callback,
+                             base::Passed(&entry_stat),
+                             base::Passed(&result));
+  worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
+}
+
+void SimpleEntryImpl::GetAvailableRangeInternal(
+    int64 sparse_offset,
+    int len,
+    int64* out_start,
+    const CompletionCallback& callback) {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  ScopedOperationRunner operation_runner(this);
+
+  DCHECK_EQ(STATE_READY, state_);
+  state_ = STATE_IO_PENDING;
+
+  scoped_ptr<int> result(new int());
+  Closure task = base::Bind(&SimpleSynchronousEntry::GetAvailableRange,
+                            base::Unretained(synchronous_entry_),
+                            SimpleSynchronousEntry::EntryOperationData(
+                                sparse_offset, len),
+                            out_start,
+                            result.get());
+  Closure reply = base::Bind(
+      &SimpleEntryImpl::GetAvailableRangeOperationComplete,
+      this,
+      callback,
+      base::Passed(&result));
   worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
 }
 
@@ -1007,7 +1137,6 @@ void SimpleEntryImpl::CreationOperationComplete(
 }
 
 void SimpleEntryImpl::EntryOperationComplete(
-    int stream_index,
     const CompletionCallback& completion_callback,
     const SimpleEntryStat& entry_stat,
     scoped_ptr<int> result) {
@@ -1015,12 +1144,11 @@ void SimpleEntryImpl::EntryOperationComplete(
   DCHECK(synchronous_entry_);
   DCHECK_EQ(STATE_IO_PENDING, state_);
   DCHECK(result);
-  state_ = STATE_READY;
   if (*result < 0) {
-    MarkAsDoomed();
     state_ = STATE_FAILURE;
-    crc32s_end_offset_[stream_index] = 0;
+    MarkAsDoomed();
   } else {
+    state_ = STATE_READY;
     UpdateDataFromEntryStat(entry_stat);
   }
 
@@ -1086,6 +1214,10 @@ void SimpleEntryImpl::ReadOperationComplete(
   }
 
   if (*result < 0) {
+    crc32s_end_offset_[stream_index] = 0;
+  }
+
+  if (*result < 0) {
     RecordReadResult(cache_type_, READ_RESULT_SYNC_READ_FAILURE);
   } else {
     RecordReadResult(cache_type_, READ_RESULT_SUCCESS);
@@ -1100,8 +1232,7 @@ void SimpleEntryImpl::ReadOperationComplete(
         CreateNetLogReadWriteCompleteCallback(*result));
   }
 
-  EntryOperationComplete(
-      stream_index, completion_callback, *entry_stat, result.Pass());
+  EntryOperationComplete(completion_callback, *entry_stat, result.Pass());
 }
 
 void SimpleEntryImpl::WriteOperationComplete(
@@ -1118,8 +1249,47 @@ void SimpleEntryImpl::WriteOperationComplete(
         CreateNetLogReadWriteCompleteCallback(*result));
   }
 
-  EntryOperationComplete(
-      stream_index, completion_callback, *entry_stat, result.Pass());
+  if (*result < 0) {
+    crc32s_end_offset_[stream_index] = 0;
+  }
+
+  EntryOperationComplete(completion_callback, *entry_stat, result.Pass());
+}
+
+void SimpleEntryImpl::ReadSparseOperationComplete(
+    const CompletionCallback& completion_callback,
+    scoped_ptr<base::Time> last_used,
+    scoped_ptr<int> result) {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK(synchronous_entry_);
+  DCHECK(result);
+
+  SimpleEntryStat entry_stat(*last_used, last_modified_, data_size_,
+                             sparse_data_size_);
+  EntryOperationComplete(completion_callback, entry_stat, result.Pass());
+}
+
+void SimpleEntryImpl::WriteSparseOperationComplete(
+    const CompletionCallback& completion_callback,
+    scoped_ptr<SimpleEntryStat> entry_stat,
+    scoped_ptr<int> result) {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK(synchronous_entry_);
+  DCHECK(result);
+
+  EntryOperationComplete(completion_callback, *entry_stat, result.Pass());
+}
+
+void SimpleEntryImpl::GetAvailableRangeOperationComplete(
+    const CompletionCallback& completion_callback,
+    scoped_ptr<int> result) {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK(synchronous_entry_);
+  DCHECK(result);
+
+  SimpleEntryStat entry_stat(last_used_, last_modified_, data_size_,
+                             sparse_data_size_);
+  EntryOperationComplete(completion_callback, entry_stat, result.Pass());
 }
 
 void SimpleEntryImpl::DoomOperationComplete(
@@ -1164,11 +1334,9 @@ void SimpleEntryImpl::ChecksumOperationComplete(
         CreateNetLogReadWriteCompleteCallback(*result));
   }
 
-  EntryOperationComplete(
-      stream_index,
-      completion_callback,
-      SimpleEntryStat(last_used_, last_modified_, data_size_),
-      result.Pass());
+  SimpleEntryStat entry_stat(last_used_, last_modified_, data_size_,
+                             sparse_data_size_);
+  EntryOperationComplete(completion_callback, entry_stat, result.Pass());
 }
 
 void SimpleEntryImpl::CloseOperationComplete() {
@@ -1193,6 +1361,7 @@ void SimpleEntryImpl::UpdateDataFromEntryStat(
   for (int i = 0; i < kSimpleEntryStreamCount; ++i) {
     data_size_[i] = entry_stat.data_size(i);
   }
+  sparse_data_size_ = entry_stat.sparse_data_size();
   if (!doomed_ && backend_.get())
     backend_->index()->UpdateEntrySize(entry_hash_, GetDiskUsage());
 }
@@ -1203,6 +1372,7 @@ int64 SimpleEntryImpl::GetDiskUsage() const {
     file_size +=
         simple_util::GetFileSizeFromKeyAndDataSize(key_, data_size_[i]);
   }
+  file_size += sparse_data_size_;
   return file_size;
 }
 
@@ -1286,7 +1456,8 @@ int SimpleEntryImpl::ReadStream0Data(net::IOBuffer* buf,
   }
   memcpy(buf->data(), stream_0_data_->data() + offset, buf_len);
   UpdateDataFromEntryStat(
-      SimpleEntryStat(base::Time::Now(), last_modified_, data_size_));
+      SimpleEntryStat(base::Time::Now(), last_modified_, data_size_,
+                      sparse_data_size_));
   RecordReadResult(cache_type_, READ_RESULT_SUCCESS);
   return buf_len;
 }
@@ -1324,7 +1495,8 @@ int SimpleEntryImpl::SetStream0Data(net::IOBuffer* buf,
   base::Time modification_time = base::Time::Now();
   AdvanceCrc(buf, offset, buf_len, 0);
   UpdateDataFromEntryStat(
-      SimpleEntryStat(modification_time, modification_time, data_size_));
+      SimpleEntryStat(modification_time, modification_time, data_size_,
+                      sparse_data_size_));
   RecordWriteResult(cache_type_, WRITE_RESULT_SUCCESS);
   return buf_len;
 }

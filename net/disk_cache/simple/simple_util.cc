@@ -82,6 +82,10 @@ std::string GetFilenameFromEntryHashAndFileIndex(uint64 entry_hash,
   return base::StringPrintf("%016" PRIx64 "_%1d", entry_hash, file_index);
 }
 
+std::string GetSparseFilenameFromEntryHash(uint64 entry_hash) {
+  return base::StringPrintf("%016" PRIx64 "_s", entry_hash);
+}
+
 std::string GetFilenameFromKeyAndFileIndex(const std::string& key,
                                            int file_index) {
   return GetEntryHashKeyAsHexString(key) +

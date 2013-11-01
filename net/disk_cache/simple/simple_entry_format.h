@@ -18,6 +18,7 @@ namespace disk_cache {
 
 const uint64 kSimpleInitialMagicNumber = GG_UINT64_C(0xfcfb6d1ba7725c30);
 const uint64 kSimpleFinalMagicNumber = GG_UINT64_C(0xf4fa6f45970d41d8);
+const uint64 kSimpleSparseRangeMagicNumber = GG_UINT64_C(0xeb97bf016553676b);
 
 // A file containing stream 0 and stream 1 in the Simple cache consists of:
 //   - a SimpleFileHeader.
@@ -56,6 +57,13 @@ struct NET_EXPORT_PRIVATE SimpleFileEOF {
   uint32 data_crc32;
   // |stream_size| is only used in the EOF record for stream 0.
   uint32 stream_size;
+};
+
+struct SimpleFileSparseRangeHeader {
+  uint64 sparse_range_magic_number;
+  int64 offset;
+  int64 length;
+  uint32 data_crc32;
 };
 
 }  // namespace disk_cache
