@@ -40,10 +40,10 @@
       'filepath': 'Source/core/dom/'
     },
     'events': {
-      'filepath': 'Source/core/page/.*Event.*' \
-                  '|Source/core/dom/.*Event.*' \
-                  '|Source/core/css/.*Event.*' \
-                  '|Source/core/platform/.*Event.*'
+      'filepath': 'Source/core/page/.*Event' \
+                  '|Source/core/dom/.*Event' \
+                  '|Source/core/css/.*Event' \
+                  '|Source/core/platform/.*Event'
     },
     'html': {
       'filepath': 'Source/core/html/'
@@ -58,11 +58,11 @@
       'filepath': 'public'
     },
     'spellcheck' : {
-      'filepath':  'Source/core/editing/Editor.*' \
-                   '|Source/core/editing/Spell.*' \
-                   '|Source/core/editing/TextCheckingHelper.*' \
-                   '|Source/core/platform/Text/TextCheck.*' \
-                   '|Source/web/EditorClientImpl.*' \
+      'filepath':  'Source/core/editing/Editor' \
+                   '|Source/core/editing/Spell' \
+                   '|Source/core/editing/TextCheckingHelper' \
+                   '|Source/core/platform/Text/TextCheck' \
+                   '|Source/web/EditorClientImpl' \
                    '|LayoutTests/editing/spelling' \
                    '|public/web/WebSpellCheckClient.h',
     },
@@ -90,9 +90,9 @@
       'filepath': 'Source/core/rendering'
     },
     'layers': {
-      'filepath': 'Source/core/page/scrolling/ScrollingCoordinator.*' \
-                  '|Source/core/platform/graphics/GraphicsLayer.*' \
-                  '|Source/core/rendering/RenderLayer.*'
+      'filepath': 'Source/core/page/scrolling/ScrollingCoordinator' \
+                  '|Source/core/platform/graphics/GraphicsLayer' \
+                  '|Source/core/rendering/RenderLayer'
     },
     "content_security_policy": {
       'filepath': 'Source/core/page/.*SecurityPolicy' \
@@ -113,24 +113,24 @@
                   '|LayoutTests/media/track/'
     },
     'media': {
-      'filepath': 'Source/core/css/mediaControls.*' \
-                  '|Source/core/platform/graphics/.*Media.*' \
-                  '|Source/core/html/.*(Audio|Media|Video).*' \
-                  '|Source/core/html/shadow/MediaControl.*' \
-                  '|Source/core/rendering/RenderMedia.*' \
+      'filepath': 'Source/core/css/mediaControls' \
+                  '|Source/core/platform/graphics/.*Media' \
+                  '|Source/core/html/.*(Audio|Media|Video)' \
+                  '|Source/core/html/shadow/MediaControl' \
+                  '|Source/core/rendering/RenderMedia' \
                   '|Source/modules/(encryptedmedia|mediasource)' \
                   '|Source/web/.*Media' \
                   '|public/.*Media'
     },
     'media_queries': {
-        'filepath': 'Source/core/css/CSSMediaRule.*' \
-                    '|Source/core/css/MediaList.*' \
-                    '|Source/core/css/MediaQuery.*'
+        'filepath': 'Source/core/css/CSSMediaRule' \
+                    '|Source/core/css/MediaList' \
+                    '|Source/core/css/MediaQuery'
     },
     'fileapi': {
       'filepath': 'Source/modules/filesystem/' \
                   '|Source/core/fileapi/' \
-                  '|Source/core/platform/.*File.*' \
+                  '|Source/core/platform/.*File' \
                   '|Source/web/.*File' \
                   '|LayoutTests/fast/file' \
                   '|public/.*File'
@@ -141,17 +141,17 @@
                   '|public/.*Quota'
     },
     'viewport_interaction': {
-      'filepath': 'Source/core/css/.*Viewport.*' \
-                  '|Source/core/dom/ViewportArguments.*' \
-                  '|Source/core/html/HTMLMetaElement.*' \
-                  '|Source/core/page/FrameView.*' \
+      'filepath': 'Source/core/css/.*Viewport' \
+                  '|Source/core/dom/ViewportArguments' \
+                  '|Source/core/html/HTMLMetaElement' \
+                  '|Source/core/page/FrameView' \
                   '|Source/core/page/scrolling'
     },
     'css_regions': {
-      'filepath': 'Source/core/rendering/.*(Region|FlowThread).*' \
-                  '|Source/core/dom/NodeRendering.*' \
-                  '|Source/core/dom/.*NamedFlow.*' \
-                  '|Source/core/css/.*Region.*' \
+      'filepath': 'Source/core/rendering/.*(Region|FlowThread)' \
+                  '|Source/core/dom/NodeRendering' \
+                  '|Source/core/dom/.*NamedFlow' \
+                  '|Source/core/css/.*Region' \
                   '|LayoutTests/compositing/regions/' \
                   '|LayoutTests/fast/regions/' \
                   '|LayoutTests/platform/chromium.*/fast/regions/'
@@ -160,10 +160,10 @@
       'filepath': 'Source/core/.*\.idl'
     },
     'webcomponents': {
-      'filepath': 'Source/core/dom/shadow/.*' \
-                  '|Source/core/dom/CustomElement.*' \
-                  '|Source/bindings/v8/custom/V8CustomElementConstructorCustom.*' \
-                  '|Source/bindings/v8/CustomElementHelpers.*'
+      'filepath': 'Source/core/dom/shadow/' \
+                  '|Source/core/dom/CustomElement' \
+                  '|Source/bindings/v8/custom/V8CustomElementConstructorCustom' \
+                  '|Source/bindings/v8/CustomElementHelpers'
     },
     'mediastream': {
       'filepath': 'Source/core/platform/mediastream/' \
