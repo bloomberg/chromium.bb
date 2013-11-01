@@ -112,18 +112,17 @@ void PicturePileImpl::RasterToBitmap(
     gfx::SizeF total_content_size = gfx::ScaleSize(tiling_.total_size(),
                                                    contents_scale);
     gfx::Rect content_rect(gfx::ToCeiledSize(total_content_size));
-    gfx::Rect deflated_content_rect = content_rect;
-    content_rect.Intersect(canvas_rect);
 
     // The final texel of content may only be partially covered by a
     // rasterization; this rect represents the content rect that is fully
     // covered by content.
+    gfx::Rect deflated_content_rect = content_rect;
     deflated_content_rect.Inset(0, 0, 1, 1);
-    deflated_content_rect.Intersect(canvas_rect);
     if (!deflated_content_rect.Contains(canvas_rect)) {
       // Drawing at most 2 x 2 x (canvas width + canvas height) texels is 2-3X
       // faster than clearing, so special case this.
       canvas->save();
+      canvas->translate(-canvas_rect.x(), -canvas_rect.y());
       gfx::Rect inflated_content_rect = content_rect;
       inflated_content_rect.Inset(0, 0, -1, -1);
       canvas->clipRect(gfx::RectToSkRect(inflated_content_rect),

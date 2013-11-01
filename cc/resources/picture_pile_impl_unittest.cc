@@ -635,49 +635,76 @@ TEST(PicturePileImplTest, PixelRefIteratorLazyRefsBaseNonLazy) {
   }
 }
 
+// Note: this test will always pass in debug because the canvas is cleared
+// to the NonPaintedFillColor first.
 TEST(PicturePileImpl, RasterContentsOpaque) {
   gfx::Size tile_size(1000, 1000);
   gfx::Size layer_bounds(3, 5);
   float contents_scale = 1.5f;
+  float raster_divisions = 2.f;
 
   scoped_refptr<FakePicturePileImpl> pile =
       FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
   // Because the caller sets content opaque, it also promises that it
   // has at least filled in layer_bounds opaquely.
-  SkPaint red_paint;
-  red_paint.setColor(SK_ColorRED);
-  pile->add_draw_rect_with_paint(gfx::Rect(layer_bounds), red_paint);
+  SkPaint white_paint;
+  white_paint.setColor(SK_ColorWHITE);
+  pile->add_draw_rect_with_paint(gfx::Rect(layer_bounds), white_paint);
 
   pile->SetMinContentsScale(contents_scale);
-  pile->set_background_color(SK_ColorRED);
+  pile->set_background_color(SK_ColorBLACK);
   pile->set_contents_opaque(true);
   pile->RerecordPile();
 
   gfx::Size content_bounds(
       gfx::ToCeiledSize(gfx::ScaleSize(layer_bounds, contents_scale)));
 
-  // Simulate a canvas rect larger than the content bounds.  Every pixel
-  // up to one pixel outside the content bounds is guaranteed to be opaque.
-  // Outside of that is undefined.
-  gfx::Rect canvas_rect(content_bounds);
-  canvas_rect.Inset(0, 0, -1, -1);
+  // Simulate drawing into different tiles at different offsets.
+  int step_x = std::ceil(content_bounds.width() / raster_divisions);
+  int step_y = std::ceil(content_bounds.height() / raster_divisions);
+  for (int offset_x = 0; offset_x < content_bounds.width();
+       offset_x += step_x) {
+    for (int offset_y = 0; offset_y < content_bounds.height();
+         offset_y += step_y) {
+      gfx::Rect content_rect(offset_x, offset_y, step_x, step_y);
+      content_rect.Intersect(gfx::Rect(content_bounds));
 
-  SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                   canvas_rect.width(),
-                   canvas_rect.height());
-  bitmap.allocPixels();
-  SkCanvas canvas(bitmap);
+      // Simulate a canvas rect larger than the content rect.  Every pixel
+      // up to one pixel outside the content rect is guaranteed to be opaque.
+      // Outside of that is undefined.
+      gfx::Rect canvas_rect(content_rect);
+      canvas_rect.Inset(0, 0, -1, -1);
 
-  FakeRenderingStatsInstrumentation rendering_stats_instrumentation;
+      SkBitmap bitmap;
+      bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                       canvas_rect.width(),
+                       canvas_rect.height());
+      bitmap.allocPixels();
+      SkCanvas canvas(bitmap);
+      canvas.clear(SK_ColorTRANSPARENT);
 
-  pile->RasterToBitmap(
-      &canvas, canvas_rect, contents_scale, &rendering_stats_instrumentation);
+      FakeRenderingStatsInstrumentation rendering_stats_instrumentation;
 
-  SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
-  int num_pixels = bitmap.width() * bitmap.height();
-  for (int i = 0; i < num_pixels; ++i) {
-    EXPECT_EQ(SkColorGetA(pixels[i]), 255u);
+      pile->RasterToBitmap(&canvas,
+                           canvas_rect,
+                           contents_scale,
+                           &rendering_stats_instrumentation);
+
+      SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
+      int num_pixels = bitmap.width() * bitmap.height();
+      bool all_white = true;
+      for (int i = 0; i < num_pixels; ++i) {
+        EXPECT_EQ(SkColorGetA(pixels[i]), 255u);
+        all_white &= (SkColorGetR(pixels[i]) == 255);
+        all_white &= (SkColorGetG(pixels[i]) == 255);
+        all_white &= (SkColorGetB(pixels[i]) == 255);
+      }
+
+      // If the canvas doesn't extend past the edge of the content,
+      // it should be entirely white. Otherwise, the edge of the content
+      // will be non-white.
+      EXPECT_EQ(all_white, gfx::Rect(content_bounds).Contains(canvas_rect));
+    }
   }
 }
 
