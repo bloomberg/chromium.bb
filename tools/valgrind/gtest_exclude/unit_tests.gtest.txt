@@ -32,6 +32,3 @@ NativeMessagingTest.*
 # Timing out all over the place. Disabling for now. http://crbug.com/164589
 StorageInfoProviderTest.*
 
-# Fail under Memcheck, see http://crbug.com/311564
-MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest.V1AppMenuGenerationTwoUsers
-MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest.BrowserMenuGenerationTwoUsers
