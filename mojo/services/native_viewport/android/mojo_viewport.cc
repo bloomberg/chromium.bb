@@ -39,7 +39,7 @@ void MojoViewport::CreateForActivity(
     jobject activity,
     MojoViewportInit* init) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_MojoViewport_CreateForActivity(
+  Java_MojoViewport_createForActivity(
       env, activity, reinterpret_cast<jint>(init));
 }
 

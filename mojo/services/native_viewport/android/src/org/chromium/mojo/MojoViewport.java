@@ -22,7 +22,7 @@ public class MojoViewport extends SurfaceView {
 
     @SuppressWarnings("unused")
     @CalledByNative
-    public static void CreateForActivity(Activity activity, int init) {
+    public static void createForActivity(Activity activity, int init) {
         activity.setContentView(new MojoViewport(activity, init));
     }
 
