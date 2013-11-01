@@ -10,8 +10,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/lazy_background_page_test_util.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
-#include "extensions/common/switches.h"
 #include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/message_center_util.h"
 
@@ -20,10 +20,8 @@ class NotificationIdleTest : public ExtensionApiTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
 
-    command_line->AppendSwitchASCII(
-        extensions::switches::kEventPageIdleTime, "1");
-    command_line->AppendSwitchASCII(
-        extensions::switches::kEventPageSuspendingTime, "1");
+    command_line->AppendSwitchASCII(switches::kEventPageIdleTime, "1");
+    command_line->AppendSwitchASCII(switches::kEventPageSuspendingTime, "1");
   }
 
   const extensions::Extension* LoadExtensionAndWait(

@@ -18,10 +18,6 @@ namespace base {
 class Version;
 }
 
-namespace content {
-class BrowserContext;
-}
-
 namespace extensions {
 class Extension;
 class ExtensionHost;
@@ -29,7 +25,7 @@ class ExtensionHost;
 class RuntimeEventRouter {
  public:
   // Dispatches the onStartup event to all currently-loaded extensions.
-  static void DispatchOnStartupEvent(content::BrowserContext* context,
+  static void DispatchOnStartupEvent(Profile* profile,
                                      const std::string& extension_id);
 
   // Dispatches the onInstalled event to the given extension.

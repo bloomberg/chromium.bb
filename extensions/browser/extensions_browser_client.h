@@ -29,7 +29,7 @@ class ExtensionsBrowserClient {
   virtual bool IsSameContext(content::BrowserContext* first,
                              content::BrowserContext* second) = 0;
 
-  // Returns true if |context| has an off-the-record context associated with it.
+  // Returns true if |context| has an off-the-record content associated with it.
   virtual bool HasOffTheRecordContext(content::BrowserContext* context) = 0;
 
   // Returns the off-the-record context associated with |context|. If |context|
@@ -38,15 +38,6 @@ class ExtensionsBrowserClient {
   // another context, check HasOffTheRecordContext() first.
   virtual content::BrowserContext* GetOffTheRecordContext(
       content::BrowserContext* context) = 0;
-
-  // Return the original "recording" context. This method returns |context| if
-  // |context| is not incognito.
-  virtual content::BrowserContext* GetOriginalContext(
-      content::BrowserContext* context) = 0;
-
-  // Returns true if loading background pages should be deferred.
-  virtual bool DeferLoadingBackgroundHosts(
-      content::BrowserContext* context) const = 0;
 
   // Returns the single instance of |this|.
   static ExtensionsBrowserClient* Get();

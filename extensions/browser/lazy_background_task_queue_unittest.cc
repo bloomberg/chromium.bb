@@ -21,7 +21,7 @@ namespace extensions {
 class TestExtensionProcessManager : public ExtensionProcessManager {
  public:
   explicit TestExtensionProcessManager(Profile* profile)
-      : ExtensionProcessManager(profile, profile->GetOriginalProfile()),
+      : ExtensionProcessManager(profile),
         create_count_(0) {}
   virtual ~TestExtensionProcessManager() {}
 

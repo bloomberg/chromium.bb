@@ -132,9 +132,7 @@ std::string GetUninstallUrl(ExtensionPrefs* prefs,
 
 // static
 void RuntimeEventRouter::DispatchOnStartupEvent(
-    content::BrowserContext* context, const std::string& extension_id) {
-  // TODO(jamescook): Convert to BrowserContext all the way down.
-  Profile* profile = static_cast<Profile*>(context);
+    Profile* profile, const std::string& extension_id) {
   DispatchOnStartupEventImpl(profile, extension_id, true, NULL);
 }
 
