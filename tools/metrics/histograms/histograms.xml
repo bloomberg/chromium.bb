@@ -23499,6 +23499,14 @@ other types of suffix sets.
   <int value="11" label="OpenAttemptDiskFull">
     An open failed on a machine with a full disk. No cleanup was attempted.
   </int>
+  <int value="12" label="OpenAttemptPathTooLong">
+    Open failed because either a path component or the overall path was too
+    long.
+  </int>
+  <int value="13" label="OpenAttemptNoRecovery">
+    An open attempt failed with an I/O error that doesn't necessitate a recovery
+    attempt.
+  </int>
 </enum>
 
 <enum name="ImporterType" type="int">
@@ -29112,6 +29120,7 @@ other types of suffix sets.
 
 <fieldtrial name="LevelDBEnvPlatformFileErrors" separator="">
   <group name="CreateDir" label="ChromiumEnv::CreateDir"/>
+  <group name="GetChildren" label="ChromiumEnv::GetChildren"/>
   <group name="LockFile" label="ChromiumEnv::LockFile"/>
   <group name="NewRandomAccessFile" label="ChromiumEnv::NewRandomAccessFile"/>
   <group name="RenameFile" label="ChromiumEnv::RenameFile"/>
