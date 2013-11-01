@@ -2,6 +2,10 @@
   "description": "Self-driven Canvas2D animation examples",
   "archive_data_file": "data/tough_canvas_cases.json",
   "make_javascript_deterministic": false,
+  "navigate_steps": [
+    { "action": "navigate" },
+    { "action": "wait", "javascript": "document.readyState == 'complete'" }
+  ],
   "smoothness": { "action": "wait", "seconds": 5 },
   "pages": [
     { "url":"http://mudcu.be/labs/JS1k/BreathingGalaxies.html" },
@@ -13,7 +17,10 @@
     { "url":"http://acko.net/dumpx/996b.html" },
     { "url":"http://www.kevs3d.co.uk/dev/canvask3d/k3d_test.html" },
     { "url":"http://www.megidish.net/awjs/" },
-    { "url":"http://ie.microsoft.com/testdrive/Performance/Fireflies/Default.html" },
+    {
+      "disabled": "Crashes on Galaxy Nexus. crbug.com/314131",
+      "url":"http://ie.microsoft.com/testdrive/Performance/Fireflies/Default.html"
+    },
     { "url":"http://themaninblue.com/experiment/AnimationBenchmark/canvas/" },
     { "url":"http://mix10k.visitmix.com/Entry/Details/169" },
     { "url":"http://www.craftymind.com/factory/guimark2/HTML5ChartingTest.html" },
