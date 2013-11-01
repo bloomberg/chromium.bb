@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/sessions2/sessions_sync_manager.h"
 
 #include "base/strings/string_util.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sessions/session_types.h"
@@ -16,6 +17,9 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/sessions/serialized_navigation_entry_test_helper.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "sync/api/sync_error_factory_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -24,6 +28,7 @@
 using content::WebContents;
 using sessions::SerializedNavigationEntry;
 using sessions::SerializedNavigationEntryTestHelper;
+using syncer::SyncChange;
 using syncer::SyncData;
 
 namespace browser_sync {
@@ -49,6 +54,43 @@ class TestSyncProcessorStub : public syncer::SyncChangeProcessor {
  private:
   syncer::SyncChangeList* output_;
 };
+
+syncer::SyncChange MakeRemoteChange(
+    int64 id,
+    const sync_pb::SessionSpecifics& specifics,
+    SyncChange::SyncChangeType type) {
+  sync_pb::EntitySpecifics entity;
+  entity.mutable_session()->CopyFrom(specifics);
+  return syncer::SyncChange(
+      FROM_HERE, type,
+      syncer::SyncData::CreateRemoteData(id, entity, base::Time()));
+}
+
+void AddTabsToChangeList(
+      const std::vector<sync_pb::SessionSpecifics>& batch,
+      SyncChange::SyncChangeType type,
+      syncer::SyncChangeList* change_list) {
+  std::vector<sync_pb::SessionSpecifics>::const_iterator iter;
+  for (iter = batch.begin();
+       iter != batch.end(); ++iter) {
+    sync_pb::EntitySpecifics entity;
+    entity.mutable_session()->CopyFrom(*iter);
+    change_list->push_back(syncer::SyncChange(
+        FROM_HERE, type,
+        syncer::SyncData::CreateRemoteData(iter->tab_node_id(),
+                                           entity, base::Time())));
+  }
+}
+
+void AddTabsToSyncDataList(const std::vector<sync_pb::SessionSpecifics> tabs,
+                           syncer::SyncDataList* list) {
+  for (size_t i = 0; i < tabs.size(); i++) {
+    sync_pb::EntitySpecifics entity;
+    entity.mutable_session()->CopyFrom(tabs[i]);
+    list->push_back(SyncData::CreateRemoteData(
+        i + 2, entity, base::Time()));
+  }
+}
 
 }  // namespace
 
@@ -109,8 +151,8 @@ class SessionsSyncManagerTest
     bool found = false;
     while (it != list->end()) {
       if (it->sync_data().GetTag() == manager_->current_machine_tag()) {
-        EXPECT_TRUE(syncer::SyncChange::ACTION_ADD == it->change_type() ||
-                    syncer::SyncChange::ACTION_UPDATE == it->change_type());
+        EXPECT_TRUE(SyncChange::ACTION_ADD == it->change_type() ||
+                    SyncChange::ACTION_UPDATE == it->change_type());
         it = list->erase(it);
         found = true;
       } else {
@@ -455,7 +497,7 @@ TEST_F(SessionsSyncManagerTest, MergeLocalSessionNoTabs) {
 
   EXPECT_EQ(2U, out.size());
   EXPECT_TRUE(out[0].IsValid());
-  EXPECT_EQ(syncer::SyncChange::ACTION_ADD, out[0].change_type());
+  EXPECT_EQ(SyncChange::ACTION_ADD, out[0].change_type());
   const SyncData data(out[0].sync_data());
   EXPECT_EQ(manager()->current_machine_tag(), data.GetTag());
   const sync_pb::SessionSpecifics& specifics(data.GetSpecifics().session());
@@ -467,7 +509,7 @@ TEST_F(SessionsSyncManagerTest, MergeLocalSessionNoTabs) {
   EXPECT_EQ(0, header_s.window_size());
 
   EXPECT_TRUE(out[1].IsValid());
-  EXPECT_EQ(syncer::SyncChange::ACTION_UPDATE, out[1].change_type());
+  EXPECT_EQ(SyncChange::ACTION_UPDATE, out[1].change_type());
   const SyncData data_2(out[1].sync_data());
   EXPECT_EQ(manager()->current_machine_tag(), data_2.GetTag());
   const sync_pb::SessionSpecifics& specifics2(data_2.GetSpecifics().session());
@@ -493,7 +535,7 @@ TEST_F(SessionsSyncManagerTest, MergeLocalSessionNoTabs) {
   ASSERT_FALSE(result.error().IsSet());
 
   EXPECT_EQ(1U, out.size());
-  EXPECT_EQ(syncer::SyncChange::ACTION_UPDATE, out[0].change_type());
+  EXPECT_EQ(SyncChange::ACTION_UPDATE, out[0].change_type());
   EXPECT_TRUE(out[0].sync_data().GetSpecifics().session().has_header());
 }
 
@@ -515,12 +557,8 @@ TEST_F(SessionsSyncManagerTest, MergeWithInitialForeignSession) {
   sync_pb::EntitySpecifics entity;
   entity.mutable_session()->CopyFrom(meta);
   initial_data.push_back(SyncData::CreateRemoteData(1, entity, base::Time()));
-  for (size_t i = 0; i < tabs1.size(); i++) {
-    sync_pb::EntitySpecifics entity;
-    entity.mutable_session()->CopyFrom(tabs1[i]);
-    initial_data.push_back(SyncData::CreateRemoteData(
-        i + 2, entity, base::Time()));
-  }
+  AddTabsToSyncDataList(tabs1, &initial_data);
+
   for (size_t i = 0; i < tab_list2.size(); ++i) {
     sync_pb::EntitySpecifics entity;
     helper()->BuildTabSpecifics(tag, 0, tab_list2[i],
@@ -535,10 +573,178 @@ TEST_F(SessionsSyncManagerTest, MergeWithInitialForeignSession) {
 
   std::vector<const SyncedSession*> foreign_sessions;
   ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_EQ(1U, foreign_sessions.size());
   std::vector<std::vector<SessionID::id_type> > session_reference;
   session_reference.push_back(tab_list1);
   session_reference.push_back(tab_list2);
   helper()->VerifySyncedSession(tag, session_reference, *(foreign_sessions[0]));
+}
+
+// This is a combination of MergeWithInitialForeignSession and
+// MergeLocalSessionExistingTabs. We repeat some checks performed in each of
+// those tests to ensure the common mixed scenario works.
+TEST_F(SessionsSyncManagerTest, MergeWithLocalAndForeignTabs) {
+  // Local.
+  AddTab(browser(), GURL("http://foo1"));
+  NavigateAndCommitActiveTab(GURL("http://foo2"));
+
+  // Foreign.
+  std::string tag = "tag1";
+  SessionID::id_type n1[] = {5, 10, 13, 17};
+  std::vector<SessionID::id_type> tab_list1(n1, n1 + arraysize(n1));
+  std::vector<sync_pb::SessionSpecifics> tabs1;
+  sync_pb::SessionSpecifics meta(helper()->BuildForeignSession(
+      tag, tab_list1, &tabs1));
+  syncer::SyncDataList foreign_data;
+  sync_pb::EntitySpecifics entity;
+  entity.mutable_session()->CopyFrom(meta);
+  foreign_data.push_back(SyncData::CreateRemoteData(1, entity, base::Time()));
+  AddTabsToSyncDataList(tabs1, &foreign_data);
+
+  syncer::SyncChangeList output;
+  InitWithSyncDataTakeOutput(foreign_data, &output);
+  ASSERT_EQ(4U, output.size());
+
+  // Verify the local header.
+  EXPECT_TRUE(output[0].IsValid());
+  EXPECT_EQ(SyncChange::ACTION_ADD, output[0].change_type());
+  const SyncData data(output[0].sync_data());
+  EXPECT_EQ(manager()->current_machine_tag(), data.GetTag());
+  const sync_pb::SessionSpecifics& specifics(data.GetSpecifics().session());
+  EXPECT_EQ(manager()->current_machine_tag(), specifics.session_tag());
+  EXPECT_TRUE(specifics.has_header());
+  const sync_pb::SessionHeader& header_s = specifics.header();
+  EXPECT_TRUE(header_s.has_device_type());
+  EXPECT_EQ(GetLocalDeviceInfo()->client_name(), header_s.client_name());
+  EXPECT_EQ(0, header_s.window_size());
+
+  // Verify the tab node creations and updates with content.
+  for (int i = 1; i < 3; i++) {
+    EXPECT_TRUE(output[i].IsValid());
+    const SyncData data(output[i].sync_data());
+    EXPECT_TRUE(StartsWithASCII(data.GetTag(),
+                                manager()->current_machine_tag(), true));
+    const sync_pb::SessionSpecifics& specifics(data.GetSpecifics().session());
+    EXPECT_EQ(manager()->current_machine_tag(), specifics.session_tag());
+  }
+  EXPECT_EQ(SyncChange::ACTION_ADD, output[1].change_type());
+  EXPECT_EQ(SyncChange::ACTION_UPDATE, output[2].change_type());
+  EXPECT_TRUE(output[2].sync_data().GetSpecifics().session().has_tab());
+
+  // Verify the header was updated to reflect window state.
+  EXPECT_TRUE(output[3].IsValid());
+  EXPECT_EQ(SyncChange::ACTION_UPDATE, output[3].change_type());
+  const SyncData data_2(output[3].sync_data());
+  EXPECT_EQ(manager()->current_machine_tag(), data_2.GetTag());
+  const sync_pb::SessionSpecifics& specifics2(data_2.GetSpecifics().session());
+  EXPECT_EQ(manager()->current_machine_tag(), specifics2.session_tag());
+  EXPECT_TRUE(specifics2.has_header());
+  const sync_pb::SessionHeader& header_s2 = specifics2.header();
+  EXPECT_EQ(1, header_s2.window_size());
+
+  // Verify foreign data.
+  std::vector<const SyncedSession*> foreign_sessions;
+  ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  std::vector<std::vector<SessionID::id_type> > session_reference;
+  session_reference.push_back(tab_list1);
+  helper()->VerifySyncedSession(tag, session_reference, *(foreign_sessions[0]));
+  // There should be one and only one foreign session. If VerifySyncedSession
+  // was successful above this EXPECT call ensures the local session didn't
+  // get mistakenly added to foreign tracking (Similar to ExistingTabs test).
+  EXPECT_EQ(1U, foreign_sessions.size());
+}
+
+TEST_F(SessionsSyncManagerTest, UpdatesAfterMixedMerge) {
+  // Add local and foreign data.
+  AddTab(browser(), GURL("http://foo1"));
+  NavigateAndCommitActiveTab(GURL("http://foo2"));
+
+  std::string tag1 = "tag1";
+  syncer::SyncDataList foreign_data1;
+  std::vector<std::vector<SessionID::id_type> > meta1_reference;
+  sync_pb::SessionSpecifics meta1;
+
+  SessionID::id_type n1[] = {5, 10, 13, 17};
+  std::vector<SessionID::id_type> tab_list1(n1, n1 + arraysize(n1));
+  meta1_reference.push_back(tab_list1);
+  std::vector<sync_pb::SessionSpecifics> tabs1;
+  meta1 = helper()->BuildForeignSession(tag1, tab_list1, &tabs1);
+  sync_pb::EntitySpecifics entity;
+  entity.mutable_session()->CopyFrom(meta1);
+  foreign_data1.push_back(SyncData::CreateRemoteData(
+      1, entity, base::Time()));
+  AddTabsToSyncDataList(tabs1, &foreign_data1);
+
+  syncer::SyncChangeList output1;
+  InitWithSyncDataTakeOutput(foreign_data1, &output1);
+  ASSERT_EQ(4U, output1.size());
+
+  // Add a second window to the foreign session.
+  // TODO(tim): Bug 98892. Add local window too when observers are hooked up.
+  SessionID::id_type tab_nums2[] = {7, 15, 18, 20};
+  std::vector<SessionID::id_type> tab_list2(
+      tab_nums2, tab_nums2 + arraysize(tab_nums2));
+  meta1_reference.push_back(tab_list2);
+  helper()->AddWindowSpecifics(1, tab_list2, &meta1);
+  std::vector<sync_pb::SessionSpecifics> tabs2;
+  tabs2.resize(tab_list2.size());
+  for (size_t i = 0; i < tab_list2.size(); ++i) {
+    helper()->BuildTabSpecifics(tag1, 0, tab_list2[i], &tabs2[i]);
+  }
+
+  syncer::SyncChangeList changes;
+  changes.push_back(MakeRemoteChange(1, meta1, SyncChange::ACTION_UPDATE));
+  AddTabsToChangeList(tabs2, SyncChange::ACTION_ADD, &changes);
+  manager()->ProcessSyncChanges(FROM_HERE, changes);
+  changes.clear();
+
+  // Check that the foreign session was associated and retrieve the data.
+  std::vector<const SyncedSession*> foreign_sessions;
+  ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_EQ(1U, foreign_sessions.size());
+  ASSERT_EQ(4U, foreign_sessions[0]->windows.find(0)->second->tabs.size());
+  ASSERT_EQ(4U, foreign_sessions[0]->windows.find(1)->second->tabs.size());
+  helper()->VerifySyncedSession(tag1, meta1_reference, *(foreign_sessions[0]));
+
+  // Add a new foreign session.
+  std::string tag2 = "tag2";
+  SessionID::id_type n2[] = {107, 115};
+  std::vector<SessionID::id_type> tag2_tab_list(n2, n2 + arraysize(n2));
+  std::vector<sync_pb::SessionSpecifics> tag2_tabs;
+  sync_pb::SessionSpecifics meta2(helper()->BuildForeignSession(
+      tag2, tag2_tab_list, &tag2_tabs));
+  changes.push_back(MakeRemoteChange(100, meta2, SyncChange::ACTION_ADD));
+  AddTabsToChangeList(tag2_tabs, SyncChange::ACTION_ADD, &changes);
+
+  manager()->ProcessSyncChanges(FROM_HERE, changes);
+  changes.clear();
+
+  ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  std::vector<std::vector<SessionID::id_type> > meta2_reference;
+  meta2_reference.push_back(tag2_tab_list);
+  ASSERT_EQ(2U, foreign_sessions.size());
+  ASSERT_EQ(2U, foreign_sessions[1]->windows.find(0)->second->tabs.size());
+  helper()->VerifySyncedSession(tag2, meta2_reference, *(foreign_sessions[1]));
+  foreign_sessions.clear();
+
+  // Remove a tab from a window.
+  meta1_reference[0].pop_back();
+  tab_list1.pop_back();
+  sync_pb::SessionWindow* win = meta1.mutable_header()->mutable_window(0);
+  win->clear_tab();
+  for (std::vector<int>::const_iterator iter = tab_list1.begin();
+       iter != tab_list1.end(); ++iter) {
+    win->add_tab(*iter);
+  }
+  syncer::SyncChangeList removal;
+  removal.push_back(MakeRemoteChange(1, meta1, SyncChange::ACTION_UPDATE));
+  AddTabsToChangeList(tabs1, SyncChange::ACTION_UPDATE, &removal);
+  manager()->ProcessSyncChanges(FROM_HERE, removal);
+
+  ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_EQ(2U, foreign_sessions.size());
+  ASSERT_EQ(3U, foreign_sessions[0]->windows.find(0)->second->tabs.size());
+  helper()->VerifySyncedSession(tag1, meta1_reference, *(foreign_sessions[0]));
 }
 
 TEST_F(SessionsSyncManagerTest, DeleteForeignSession) {
@@ -580,7 +786,7 @@ TEST_F(SessionsSyncManagerTest, DeleteForeignSession) {
   for (int i = 0; i < 5; i++) {
     SCOPED_TRACE(changes[i].ToString());
     EXPECT_TRUE(changes[i].IsValid());
-    EXPECT_EQ(syncer::SyncChange::ACTION_DELETE, changes[i].change_type());
+    EXPECT_EQ(SyncChange::ACTION_DELETE, changes[i].change_type());
     EXPECT_TRUE(changes[i].sync_data().IsValid());
     EXPECT_EQ(1U, expected_tags.erase(changes[i].sync_data().GetTag()));
   }
@@ -599,13 +805,11 @@ TEST_F(SessionsSyncManagerTest, WriteForeignSessionToNodeTabsFirst) {
   sync_pb::SessionSpecifics meta(helper()->BuildForeignSession(
       tag, tab_list1, &tabs1));
 
-  // Add tabs for first window.
-  for (std::vector<sync_pb::SessionSpecifics>::iterator iter = tabs1.begin();
-       iter != tabs1.end(); ++iter) {
-    manager()->UpdateTrackerWithForeignSession(*iter, base::Time());
-  }
-  // Update associator with the session's meta node containing one window.
-  manager()->UpdateTrackerWithForeignSession(meta, base::Time());
+  syncer::SyncChangeList adds;
+  // Add tabs for first window, then the meta node.
+  AddTabsToChangeList(tabs1, SyncChange::ACTION_ADD, &adds);
+  adds.push_back(MakeRemoteChange(1, meta, SyncChange::ACTION_ADD));
+  manager()->ProcessSyncChanges(FROM_HERE, adds);
 
   // Check that the foreign session was associated and retrieve the data.
   std::vector<const SyncedSession*> foreign_sessions;
@@ -639,18 +843,12 @@ TEST_F(SessionsSyncManagerTest, WriteForeignSessionToNodeMissingTabs) {
     helper()->BuildTabSpecifics(tag, 0, tab_list2[i], &tabs2[i]);
   }
 
-  // Update associator with the session's meta node containing two windows.
-  manager()->UpdateTrackerWithForeignSession(meta, base::Time());
-  // Add tabs for first window.
-  for (std::vector<sync_pb::SessionSpecifics>::iterator iter = tabs1.begin();
-       iter != tabs1.end(); ++iter) {
-    manager()->UpdateTrackerWithForeignSession(*iter, base::Time());
-  }
-  // Add tabs for second window.
-  for (std::vector<sync_pb::SessionSpecifics>::iterator iter = tabs2.begin();
-       iter != tabs2.end(); ++iter) {
-    manager()->UpdateTrackerWithForeignSession(*iter, base::Time());
-  }
+  syncer::SyncChangeList changes;
+  changes.push_back(MakeRemoteChange(1, meta, SyncChange::ACTION_ADD));
+  AddTabsToChangeList(tabs1, SyncChange::ACTION_ADD, &changes);
+  AddTabsToChangeList(tabs2, SyncChange::ACTION_ADD, &changes);
+  manager()->ProcessSyncChanges(FROM_HERE, changes);
+  changes.clear();
 
   // Check that the foreign session was associated and retrieve the data.
   std::vector<const SyncedSession*> foreign_sessions;
@@ -663,9 +861,9 @@ TEST_F(SessionsSyncManagerTest, WriteForeignSessionToNodeMissingTabs) {
   // Close the second window.
   meta.mutable_header()->clear_window();
   helper()->AddWindowSpecifics(0, tab_list1, &meta);
-
+  changes.push_back(MakeRemoteChange(1, meta, SyncChange::ACTION_UPDATE));
   // Update associator with the session's meta node containing one window.
-  manager()->UpdateTrackerWithForeignSession(meta, base::Time());
+  manager()->ProcessSyncChanges(FROM_HERE, changes);
 
   // Check that the foreign session was associated and retrieve the data.
   foreign_sessions.clear();
@@ -675,6 +873,31 @@ TEST_F(SessionsSyncManagerTest, WriteForeignSessionToNodeMissingTabs) {
   std::vector<std::vector<SessionID::id_type> > session_reference;
   session_reference.push_back(tab_list1);
   helper()->VerifySyncedSession(tag, session_reference, *(foreign_sessions[0]));
+}
+
+TEST_F(SessionsSyncManagerTest, ProcessForeignDelete) {
+  InitWithNoSyncData();
+  SessionID::id_type n[] = {5};
+  std::vector<sync_pb::SessionSpecifics> tabs1;
+  std::vector<SessionID::id_type> tab_list(n, n + arraysize(n));
+  sync_pb::SessionSpecifics meta(helper()->BuildForeignSession(
+      "tag1", tab_list, &tabs1));
+
+  syncer::SyncChangeList changes;
+  changes.push_back(MakeRemoteChange(1, meta, SyncChange::ACTION_ADD));
+  AddTabsToChangeList(tabs1, SyncChange::ACTION_ADD, &changes);
+  manager()->ProcessSyncChanges(FROM_HERE, changes);
+
+  std::vector<const SyncedSession*> foreign_sessions;
+  ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_EQ(1U, foreign_sessions.size());
+
+  changes.clear();
+  foreign_sessions.clear();
+  changes.push_back(MakeRemoteChange(1, meta, SyncChange::ACTION_DELETE));
+  manager()->ProcessSyncChanges(FROM_HERE, changes);
+
+  EXPECT_FALSE(manager()->GetAllForeignSessions(&foreign_sessions));
 }
 
 // TODO(shashishekhar): "Move this to TabNodePool unittests."
@@ -723,7 +946,7 @@ TEST_F(SessionsSyncManagerTest, MergeDeletesCorruptNode) {
   SetUp();
   InitWithSyncDataTakeOutput(in, &changes);
   EXPECT_EQ(1U, FilterOutLocalHeaderChanges(&changes)->size());
-  EXPECT_EQ(syncer::SyncChange::ACTION_DELETE, changes[0].change_type());
+  EXPECT_EQ(SyncChange::ACTION_DELETE, changes[0].change_type());
   EXPECT_EQ(TabNodePool2::TabIdToTag(local_tag, tab_node_id),
             changes[0].sync_data().GetTag());
 }
@@ -753,14 +976,14 @@ TEST_F(SessionsSyncManagerTest, AssociateWindowsDontReloadTabs) {
                               manager()->current_machine_tag(), true));
   EXPECT_EQ(manager()->current_machine_tag(),
             out[0].sync_data().GetSpecifics().session().session_tag());
-  EXPECT_EQ(syncer::SyncChange::ACTION_ADD, out[0].change_type());
+  EXPECT_EQ(SyncChange::ACTION_ADD, out[0].change_type());
 
   EXPECT_TRUE(StartsWithASCII(out[1].sync_data().GetTag(),
                               manager()->current_machine_tag(), true));
   EXPECT_EQ(manager()->current_machine_tag(),
             out[1].sync_data().GetSpecifics().session().session_tag());
   EXPECT_TRUE(out[1].sync_data().GetSpecifics().session().has_tab());
-  EXPECT_EQ(syncer::SyncChange::ACTION_UPDATE, out[1].change_type());
+  EXPECT_EQ(SyncChange::ACTION_UPDATE, out[1].change_type());
 
   out.clear();
   manager()->AssociateWindows(SessionsSyncManager::DONT_RELOAD_TABS,
@@ -768,7 +991,7 @@ TEST_F(SessionsSyncManagerTest, AssociateWindowsDontReloadTabs) {
 
   EXPECT_EQ(1U, out.size());
   EXPECT_TRUE(out[0].IsValid());
-  EXPECT_EQ(syncer::SyncChange::ACTION_UPDATE, out[0].change_type());
+  EXPECT_EQ(SyncChange::ACTION_UPDATE, out[0].change_type());
   const SyncData data(out[0].sync_data());
   EXPECT_EQ(manager()->current_machine_tag(), data.GetTag());
   const sync_pb::SessionSpecifics& specifics(data.GetSpecifics().session());
@@ -793,11 +1016,10 @@ TEST_F(SessionsSyncManagerTest, MergeLocalSessionExistingTabs) {
   // Check that this machine's data is not included in the foreign windows.
   std::vector<const SyncedSession*> foreign_sessions;
   ASSERT_FALSE(manager()->GetAllForeignSessions(&foreign_sessions));
-  ASSERT_EQ(foreign_sessions.size(), 0U);
 
   // Verify the header.
   EXPECT_TRUE(out[0].IsValid());
-  EXPECT_EQ(syncer::SyncChange::ACTION_ADD, out[0].change_type());
+  EXPECT_EQ(SyncChange::ACTION_ADD, out[0].change_type());
   const SyncData data(out[0].sync_data());
   EXPECT_EQ(manager()->current_machine_tag(), data.GetTag());
   const sync_pb::SessionSpecifics& specifics(data.GetSpecifics().session());
@@ -817,16 +1039,16 @@ TEST_F(SessionsSyncManagerTest, MergeLocalSessionExistingTabs) {
     const sync_pb::SessionSpecifics& specifics(data.GetSpecifics().session());
     EXPECT_EQ(manager()->current_machine_tag(), specifics.session_tag());
     if (i % 2 == 1) {
-      EXPECT_EQ(syncer::SyncChange::ACTION_ADD, out[i].change_type());
+      EXPECT_EQ(SyncChange::ACTION_ADD, out[i].change_type());
     } else {
-      EXPECT_EQ(syncer::SyncChange::ACTION_UPDATE, out[i].change_type());
+      EXPECT_EQ(SyncChange::ACTION_UPDATE, out[i].change_type());
       EXPECT_TRUE(specifics.has_tab());
     }
   }
 
   // Verify the header was updated to reflect new window state.
   EXPECT_TRUE(out[5].IsValid());
-  EXPECT_EQ(syncer::SyncChange::ACTION_UPDATE, out[5].change_type());
+  EXPECT_EQ(SyncChange::ACTION_UPDATE, out[5].change_type());
   const SyncData data_2(out[5].sync_data());
   EXPECT_EQ(manager()->current_machine_tag(), data_2.GetTag());
   const sync_pb::SessionSpecifics& specifics2(data_2.GetSpecifics().session());
@@ -883,8 +1105,8 @@ TEST_F(SessionsSyncManagerTest, CheckPrerenderedWebContentsSwap) {
 
   manager()->AssociateWindows(SessionsSyncManager::RELOAD_TABS, &out);
   ASSERT_EQ(7U, out.size());
-  EXPECT_EQ(syncer::SyncChange::ACTION_ADD, out[4].change_type());
-  EXPECT_EQ(syncer::SyncChange::ACTION_UPDATE, out[5].change_type());
+  EXPECT_EQ(SyncChange::ACTION_ADD, out[4].change_type());
+  EXPECT_EQ(SyncChange::ACTION_UPDATE, out[5].change_type());
 
   // Navigate away.
   NavigateAndCommitActiveTab(GURL("http://bar2"));
@@ -905,6 +1127,61 @@ TEST_F(SessionsSyncManagerTest, CheckPrerenderedWebContentsSwap) {
   NavigateAndCommitActiveTab(GURL("http://bar5"));
   manager()->AssociateWindows(SessionsSyncManager::RELOAD_TABS, &out);
   ASSERT_EQ(20U, out.size());
+}
+
+namespace {
+class SessionNotificationObserver : public content::NotificationObserver {
+ public:
+  SessionNotificationObserver() : notified_of_update_(false) {
+    registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
+                   content::NotificationService::AllSources());
+  }
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
+    switch (type) {
+      case chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED:
+        notified_of_update_ = true;
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+  bool notified_of_update() const { return notified_of_update_; }
+  void Reset() { notified_of_update_ = false; }
+ private:
+  content::NotificationRegistrar registrar_;
+  bool notified_of_update_;
+};
+}  // namespace
+
+TEST_F(SessionsSyncManagerTest, NotifiedOfUpdates) {
+  SessionNotificationObserver observer;
+  InitWithNoSyncData();
+
+  SessionID::id_type n[] = {5};
+  std::vector<sync_pb::SessionSpecifics> tabs1;
+  std::vector<SessionID::id_type> tab_list(n, n + arraysize(n));
+  sync_pb::SessionSpecifics meta(helper()->BuildForeignSession(
+      "tag1", tab_list, &tabs1));
+
+  syncer::SyncChangeList changes;
+  changes.push_back(MakeRemoteChange(1, meta, SyncChange::ACTION_ADD));
+  manager()->ProcessSyncChanges(FROM_HERE, changes);
+  EXPECT_TRUE(observer.notified_of_update());
+
+  changes.clear();
+  observer.Reset();
+  AddTabsToChangeList(tabs1, SyncChange::ACTION_ADD, &changes);
+  manager()->ProcessSyncChanges(FROM_HERE, changes);
+  EXPECT_TRUE(observer.notified_of_update());
+
+  changes.clear();
+  observer.Reset();
+  changes.push_back(MakeRemoteChange(1, meta, SyncChange::ACTION_DELETE));
+  manager()->ProcessSyncChanges(FROM_HERE, changes);
+  EXPECT_TRUE(observer.notified_of_update());
 }
 
 }  // namespace browser_sync

@@ -158,10 +158,6 @@ class SessionsSyncManager : public syncer::SyncableService {
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, BlockedNavigations);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, DeleteForeignSession);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest,
-                           WriteForeignSessionToNodeTabsFirst);
-  FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest,
-                           WriteForeignSessionToNodeMissingTabs);
-  FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest,
                            SaveUnassociatedNodesForReassociation);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, MergeDeletesCorruptNode);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest,

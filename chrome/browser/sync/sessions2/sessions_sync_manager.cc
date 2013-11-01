@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/sessions2/sessions_sync_manager.h"
 
+#include "chrome/browser/chrome_notification_types.h"
 #if !defined(OS_ANDROID)
 #include "chrome/browser/network_time/navigation_time_helper.h"
 #endif
@@ -12,6 +13,9 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/common/url_constants.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/sync_error_factory.h"
@@ -359,7 +363,59 @@ syncer::SyncDataList SessionsSyncManager::GetAllSyncData(
 syncer::SyncError SessionsSyncManager::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
     const syncer::SyncChangeList& change_list) {
-  NOTIMPLEMENTED();
+  if (!sync_processor_.get()) {
+    syncer::SyncError error(FROM_HERE,
+                            syncer::SyncError::DATATYPE_ERROR,
+                            "Models not yet associated.",
+                            syncer::SESSIONS);
+    return error;
+  }
+
+  for (syncer::SyncChangeList::const_iterator it = change_list.begin();
+       it != change_list.end(); ++it) {
+    DCHECK(it->IsValid());
+    DCHECK(it->sync_data().GetSpecifics().has_session());
+    const sync_pb::SessionSpecifics& session =
+        it->sync_data().GetSpecifics().session();
+    switch (it->change_type()) {
+      case syncer::SyncChange::ACTION_DELETE:
+        // Deletions are all or nothing (since we only ever delete entire
+        // sessions). Therefore we don't care if it's a tab node or meta node,
+        // and just ensure we've disassociated.
+        if (current_machine_tag() == session.session_tag()) {
+          // Another client has attempted to delete our local data (possibly by
+          // error or a clock is inaccurate). Just ignore the deletion for now
+          // to avoid any possible ping-pong delete/reassociate sequence.
+          LOG(WARNING) << "Local session data deleted. Ignoring until next "
+                       << "local navigation event.";
+        } else if (session.has_header()) {
+          // Disassociate only when header node is deleted. For tab node
+          // deletions, the header node will be updated and foreign tab will
+          // get deleted.
+          DisassociateForeignSession(session.session_tag());
+        }
+        continue;
+      case syncer::SyncChange::ACTION_ADD:
+      case syncer::SyncChange::ACTION_UPDATE:
+        if (current_machine_tag() == session.session_tag()) {
+          // We should only ever receive a change to our own machine's session
+          // info if encryption was turned on. In that case, the data is still
+          // the same, so we can ignore.
+          LOG(WARNING) << "Dropping modification to local session.";
+          return syncer::SyncError();
+        }
+        UpdateTrackerWithForeignSession(
+            session, it->sync_data().GetRemoteModifiedTime());
+        break;
+      default:
+        NOTREACHED() << "Processing sync changes failed, unknown change type.";
+    }
+  }
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
+      content::Source<Profile>(profile_),
+      content::NotificationService::NoDetails());
   return syncer::SyncError();
 }
 
