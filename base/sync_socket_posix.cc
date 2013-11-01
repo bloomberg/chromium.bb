@@ -40,6 +40,15 @@ size_t SendHelper(SyncSocket::Handle handle,
   return len < 0 ? 0 : static_cast<size_t>(len);
 }
 
+bool CloseHandle(SyncSocket::Handle handle) {
+  if (handle != SyncSocket::kInvalidHandle && close(handle) < 0) {
+    DPLOG(ERROR) << "close";
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace
 
 const SyncSocket::Handle SyncSocket::kInvalidHandle = -1;
@@ -61,8 +70,11 @@ bool SyncSocket::CreatePair(SyncSocket* socket_a, SyncSocket* socket_b) {
 #endif  // defined(OS_MACOSX)
 
   Handle handles[2] = { kInvalidHandle, kInvalidHandle };
-  if (socketpair(AF_UNIX, SOCK_STREAM, 0, handles) != 0)
-    goto cleanup;
+  if (socketpair(AF_UNIX, SOCK_STREAM, 0, handles) != 0) {
+    CloseHandle(handles[0]);
+    CloseHandle(handles[1]);
+    return false;
+  }
 
 #if defined(OS_MACOSX)
   // On OSX an attempt to read or write to a closed socket may generate a
@@ -71,7 +83,9 @@ bool SyncSocket::CreatePair(SyncSocket* socket_a, SyncSocket* socket_b) {
                       &nosigpipe, sizeof nosigpipe) ||
       0 != setsockopt(handles[1], SOL_SOCKET, SO_NOSIGPIPE,
                       &nosigpipe, sizeof nosigpipe)) {
-    goto cleanup;
+    CloseHandle(handles[0]);
+    CloseHandle(handles[1]);
+    return false;
   }
 #endif
 
@@ -80,27 +94,12 @@ bool SyncSocket::CreatePair(SyncSocket* socket_a, SyncSocket* socket_b) {
   socket_b->handle_ = handles[1];
 
   return true;
-
- cleanup:
-  if (handles[0] != kInvalidHandle) {
-    if (HANDLE_EINTR(close(handles[0])) < 0)
-      DPLOG(ERROR) << "close";
-  }
-  if (handles[1] != kInvalidHandle) {
-    if (HANDLE_EINTR(close(handles[1])) < 0)
-      DPLOG(ERROR) << "close";
-  }
-
-  return false;
 }
 
 bool SyncSocket::Close() {
-  if (handle_ == kInvalidHandle)
-    return true;
-  const int retval = HANDLE_EINTR(close(handle_));
-  DPLOG_IF(ERROR, retval < 0) << "close";
+  const bool retval = CloseHandle(handle_);
   handle_ = kInvalidHandle;
-  return retval == 0;
+  return retval;
 }
 
 size_t SyncSocket::Send(const void* buffer, size_t length) {
@@ -126,7 +125,7 @@ size_t SyncSocket::ReceiveWithTimeout(void* buffer,
   DCHECK_GT(length, 0u);
   DCHECK_LE(length, kMaxMessageLength);
   DCHECK_NE(handle_, kInvalidHandle);
-  DCHECK_LT(handle_, FD_SETSIZE);
+  CHECK_LT(handle_, FD_SETSIZE);
 
   // Only timeouts greater than zero and less than one second are allowed.
   DCHECK_GT(timeout.InMicroseconds(), 0);
