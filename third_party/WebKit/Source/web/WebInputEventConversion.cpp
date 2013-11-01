@@ -66,14 +66,27 @@ static float widgetInputEventsScaleFactor(const Widget* widget)
     return rootView->inputEventsScaleFactor();
 }
 
+static IntSize widgetInputEventsOffset(const Widget* widget)
+{
+    if (!widget)
+        return IntSize();
+    ScrollView* rootView =  toScrollView(widget->root());
+    if (!rootView)
+        return IntSize();
+
+    return rootView->inputEventsOffsetForEmulation();
+}
+
 // MakePlatformMouseEvent -----------------------------------------------------
 
 PlatformMouseEventBuilder::PlatformMouseEventBuilder(Widget* widget, const WebMouseEvent& e)
 {
     float scale = widgetInputEventsScaleFactor(widget);
+    IntSize offset = widgetInputEventsOffset(widget);
+
     // FIXME: Widget is always toplevel, unless it's a popup. We may be able
     // to get rid of this once we abstract popups into a WebKit API.
-    m_position = widget->convertFromContainingWindow(IntPoint(e.x / scale, e.y / scale));
+    m_position = widget->convertFromContainingWindow(IntPoint((e.x - offset.width()) / scale, (e.y - offset.height()) / scale));
     m_globalPosition = IntPoint(e.globalX, e.globalY);
     m_movementDelta = IntPoint(e.movementX / scale, e.movementY / scale);
     m_button = static_cast<MouseButton>(e.button);
@@ -116,7 +129,9 @@ PlatformMouseEventBuilder::PlatformMouseEventBuilder(Widget* widget, const WebMo
 PlatformWheelEventBuilder::PlatformWheelEventBuilder(Widget* widget, const WebMouseWheelEvent& e)
 {
     float scale = widgetInputEventsScaleFactor(widget);
-    m_position = widget->convertFromContainingWindow(IntPoint(e.x / scale, e.y / scale));
+    IntSize offset = widgetInputEventsOffset(widget);
+
+    m_position = widget->convertFromContainingWindow(IntPoint((e.x - offset.width()) / scale, (e.y - offset.height()) / scale));
     m_globalPosition = IntPoint(e.globalX, e.globalY);
     m_deltaX = e.deltaX;
     m_deltaY = e.deltaY;
@@ -153,6 +168,8 @@ PlatformWheelEventBuilder::PlatformWheelEventBuilder(Widget* widget, const WebMo
 PlatformGestureEventBuilder::PlatformGestureEventBuilder(Widget* widget, const WebGestureEvent& e)
 {
     float scale = widgetInputEventsScaleFactor(widget);
+    IntSize offset = widgetInputEventsOffset(widget);
+
     switch (e.type) {
     case WebInputEvent::GestureScrollBegin:
         m_type = PlatformEvent::GestureScrollBegin;
@@ -226,7 +243,7 @@ PlatformGestureEventBuilder::PlatformGestureEventBuilder(Widget* widget, const W
     default:
         ASSERT_NOT_REACHED();
     }
-    m_position = widget->convertFromContainingWindow(IntPoint(e.x / scale, e.y / scale));
+    m_position = widget->convertFromContainingWindow(IntPoint((e.x - offset.width()) / scale, (e.y - offset.height()) / scale));
     m_globalPosition = IntPoint(e.globalX, e.globalY);
     m_timestamp = e.timeStampSeconds;
 
@@ -387,9 +404,10 @@ inline WebTouchPoint::State toWebTouchPointState(const AtomicString& type)
 PlatformTouchPointBuilder::PlatformTouchPointBuilder(Widget* widget, const WebTouchPoint& point)
 {
     float scale = widgetInputEventsScaleFactor(widget);
+    IntSize offset = widgetInputEventsOffset(widget);
     m_id = point.id;
     m_state = toPlatformTouchPointState(point.state);
-    m_pos = widget->convertFromContainingWindow(IntPoint(point.position.x / scale, point.position.y / scale));
+    m_pos = widget->convertFromContainingWindow(IntPoint((point.position.x - offset.width()) / scale, (point.position.y - offset.height()) / scale));
     m_screenPos = point.screenPosition;
     m_radiusY = point.radiusY / scale;
     m_radiusX = point.radiusX / scale;

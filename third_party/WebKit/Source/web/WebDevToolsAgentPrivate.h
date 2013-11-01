@@ -52,6 +52,9 @@ public:
 
     // DevTools may handle input event from WebViewImpl.
     virtual bool handleInputEvent(WebCore::Page*, const WebInputEvent&) = 0;
+
+    // Tells whether emulation engaged.
+    virtual WebSize deviceMetricsOffset() = 0;
 };
 
 } // namespace WebKit

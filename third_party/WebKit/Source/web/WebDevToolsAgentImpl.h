@@ -117,6 +117,8 @@ public:
     // WebPageOverlay
     virtual void paintPageOverlay(WebCanvas*);
 
+    virtual WebSize deviceMetricsOffset() OVERRIDE;
+
 private:
     // WebThread::TaskObserver
     virtual void willProcessTask();

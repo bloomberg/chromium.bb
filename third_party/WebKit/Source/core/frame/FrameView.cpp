@@ -2565,12 +2565,15 @@ void FrameView::setVisibleContentScaleFactor(float visibleContentScaleFactor)
     updateScrollbars(scrollOffset());
 }
 
-void FrameView::setInputEventsScaleFactorForEmulation(float contentScaleFactor)
+void FrameView::setInputEventsTransformForEmulation(const IntSize& offset, float contentScaleFactor)
 {
-    if (m_inputEventsScaleFactorForEmulation == contentScaleFactor)
-        return;
-
+    m_inputEventsOffsetForEmulation = offset;
     m_inputEventsScaleFactorForEmulation = contentScaleFactor;
+}
+
+IntSize FrameView::inputEventsOffsetForEmulation() const
+{
+    return m_inputEventsOffsetForEmulation;
 }
 
 float FrameView::inputEventsScaleFactor() const

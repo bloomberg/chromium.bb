@@ -2246,7 +2246,7 @@ void WebFrameImpl::createFrameView()
     if (webView->shouldAutoResize() && isMainFrame)
         frame()->view()->enableAutoSizeMode(true, webView->minAutoSize(), webView->maxAutoSize());
 
-    frame()->view()->setInputEventsScaleFactorForEmulation(m_inputEventsScaleFactorForEmulation);
+    frame()->view()->setInputEventsTransformForEmulation(m_inputEventsOffsetForEmulation, m_inputEventsScaleFactorForEmulation);
 
     if (isMainFrame)
         webView->suppressInvalidations(false);
@@ -2364,11 +2364,12 @@ void WebFrameImpl::setCanHaveScrollbars(bool canHaveScrollbars)
     frame()->view()->setCanHaveScrollbars(canHaveScrollbars);
 }
 
-void WebFrameImpl::setInputEventsScaleFactorForEmulation(float contentScaleFactor)
+void WebFrameImpl::setInputEventsTransformForEmulation(const IntSize& offset, float contentScaleFactor)
 {
+    m_inputEventsOffsetForEmulation = offset;
     m_inputEventsScaleFactorForEmulation = contentScaleFactor;
     if (frame()->view())
-        frame()->view()->setInputEventsScaleFactorForEmulation(m_inputEventsScaleFactorForEmulation);
+        frame()->view()->setInputEventsTransformForEmulation(m_inputEventsOffsetForEmulation, m_inputEventsScaleFactorForEmulation);
 }
 
 void WebFrameImpl::invalidateArea(AreaToInvalidate area)

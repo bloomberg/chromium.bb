@@ -3397,6 +3397,7 @@ void WebViewImpl::inspectElementAt(const WebPoint& point)
 
         FrameView* frameView = m_page->mainFrame()->view();
         IntPoint transformedPoint(point);
+        transformedPoint = transformedPoint - frameView->inputEventsOffsetForEmulation();
         transformedPoint.scale(1 / frameView->inputEventsScaleFactor(), 1 / frameView->inputEventsScaleFactor());
         HitTestResult result(m_page->mainFrame()->view()->windowToContents(transformedPoint));
         m_page->mainFrame()->contentRenderer()->hitTest(request, result);
@@ -3442,8 +3443,10 @@ void WebViewImpl::setCompositorDeviceScaleFactorOverride(float deviceScaleFactor
 void WebViewImpl::setRootLayerScaleTransform(float rootLayerScale)
 {
     m_rootLayerScale = rootLayerScale;
-    if (mainFrameImpl())
-        mainFrameImpl()->setInputEventsScaleFactorForEmulation(m_rootLayerScale);
+    if (mainFrameImpl()) {
+        WebSize offset = m_devToolsAgent ? m_devToolsAgent->deviceMetricsOffset() : WebSize();
+        mainFrameImpl()->setInputEventsTransformForEmulation(offset, m_rootLayerScale);
+    }
     updateRootLayerTransform();
 }
 
@@ -4055,6 +4058,10 @@ void WebViewImpl::updateRootLayerTransform()
 {
     if (m_rootGraphicsLayer) {
         WebCore::TransformationMatrix transform;
+        if (m_devToolsAgent) {
+            IntSize offset = m_devToolsAgent->deviceMetricsOffset();
+            transform.translate(offset.width(), offset.height());
+        }
         transform = transform.scale(m_rootLayerScale);
         m_rootGraphicsLayer->setChildrenTransform(transform);
     }

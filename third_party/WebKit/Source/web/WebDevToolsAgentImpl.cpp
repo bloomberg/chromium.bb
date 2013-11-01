@@ -318,6 +318,7 @@ void WebDevToolsAgentImpl::overrideDeviceMetrics(int width, int height, float de
 {
     if (!width && !height) {
         if (m_deviceMetricsEnabled) {
+            m_deviceMetricsEnabled = false;
             m_webViewImpl->setBackgroundColorOverride(Color::transparent);
             RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(m_isOverlayScrollbarsEnabled);
 
@@ -328,9 +329,9 @@ void WebDevToolsAgentImpl::overrideDeviceMetrics(int width, int height, float de
 
             m_client->disableDeviceEmulation();
         }
-        m_deviceMetricsEnabled = false;
     } else {
         if (!m_deviceMetricsEnabled) {
+            m_deviceMetricsEnabled = true;
             m_webViewImpl->setBackgroundColorOverride(Color::darkGray);
             m_isOverlayScrollbarsEnabled = RuntimeEnabledFeatures::overlayScrollbarsEnabled();
             RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
@@ -342,7 +343,6 @@ void WebDevToolsAgentImpl::overrideDeviceMetrics(int width, int height, float de
             m_webViewImpl->setPageScaleFactorLimits(-1, -1);
         }
         m_client->enableDeviceEmulation(IntSize(width, height), IntRect(0, 0, width, height), deviceScaleFactor, fitWindow);
-        m_deviceMetricsEnabled = true;
     }
 }
 
@@ -560,6 +560,11 @@ void WebDevToolsAgentImpl::didProcessTask()
 {
     if (InspectorController* ic = inspectorController())
         ic->didProcessTask();
+}
+
+WebSize WebDevToolsAgentImpl::deviceMetricsOffset()
+{
+    return m_deviceMetricsEnabled ? WebSize(10, 10) : WebSize();
 }
 
 WebString WebDevToolsAgent::inspectorProtocolVersion()

@@ -130,6 +130,9 @@ public:
     IntSize unscaledVisibleContentSize(IncludeScrollbarsInRect = ExcludeScrollbars) const;
     virtual float visibleContentScaleFactor() const { return 1; }
 
+    // Offset used to convert incoming input events while emulating device metics.
+    virtual IntSize inputEventsOffsetForEmulation() const { return IntSize(); }
+
     // Scale used to convert incoming input events. Usually the same as visibleContentScaleFactor(), unless specifically changed.
     virtual float inputEventsScaleFactor() const { return visibleContentScaleFactor(); }
 
