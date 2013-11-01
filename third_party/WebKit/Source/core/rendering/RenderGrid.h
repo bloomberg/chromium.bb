@@ -83,6 +83,8 @@ private:
     TrackSizingDirection autoPlacementMajorAxisDirection() const;
     TrackSizingDirection autoPlacementMinorAxisDirection() const;
 
+    void checkGridCoherency() const;
+
     void layoutGridItems();
     void populateGridPositions(const GridSizingData&);
 
