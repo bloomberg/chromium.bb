@@ -145,45 +145,45 @@ layer at (0,0) size 785x1728
         RenderText {#text} at (0,0) size 447x18
           text run at (0,0) width 447: "The next line tests a large negative line spacing, and it should be blank."
       RenderBlock {P} at (0,1678) size 769x18 [bgcolor=#EEEEEE]
-layer at (8,722) size 80x18
+layer at (8,722) size 80x18 transparent
   RenderInline {SPAN} at (0,0) size 80x18 [bgcolor=#CCCCFF]
     RenderText {#text} at (160,0) size 80x18
       text run at (160,0) width 80: "Hello, world"
-layer at (8,790) size 176x18
+layer at (8,790) size 176x18 transparent
   RenderInline {SPAN} at (0,0) size 176x18 [bgcolor=#CCCCFF]
     RenderText {#text} at (160,0) size 176x18
       text run at (160,0) width 176: "Hello, world"
-layer at (8,858) size 19399x36
+layer at (8,858) size 19399x36 transparent
   RenderInline {SPAN} at (0,0) size 19399x36 [bgcolor=#CCCCFF]
     RenderText {#text} at (160,0) size 19399x36
       text run at (160,0) width 19239: "Hello,"
       text run at (0,18) width 16037: "world"
-layer at (8,944) size 9600199x36
+layer at (8,944) size 9600199x36 transparent
   RenderInline {SPAN} at (0,0) size 9600199x36 [bgcolor=#CCCCFF]
     RenderText {#text} at (160,0) size 9600199x36
       text run at (160,0) width 9600039: "Hello,"
       text run at (0,18) width 8000037: "world"
-layer at (8,1030) size 0x18
+layer at (8,1030) size 0x18 transparent
   RenderInline {SPAN} at (0,0) size 0x18 [bgcolor=#CCCCFF]
     RenderText {#text} at (160,0) size 0x18
       text run at (160,0) width 0: "Hello, world"
-layer at (8,1098) size 0x18
+layer at (8,1098) size 0x18 transparent
   RenderInline {SPAN} at (0,0) size 0x18 [bgcolor=#CCCCFF]
     RenderText {#text} at (160,0) size 0x18
       text run at (160,0) width 0: "Hello, world"
-layer at (8,1166) size 0x18
+layer at (8,1166) size 0x18 transparent
   RenderInline {SPAN} at (0,0) size 0x18 [bgcolor=#CCCCFF]
     RenderText {#text} at (160,0) size 0x18
       text run at (160,0) width 0: "Hello, world"
-layer at (8,1558) size 176x18
+layer at (8,1558) size 176x18 transparent
   RenderInline {SPAN} at (0,0) size 176x18 [bgcolor=#CCCCFF]
     RenderText {#text} at (160,0) size 176x18
       text run at (160,0) width 176 RTL override: "Hello, world"
-layer at (8,1626) size 0x18
+layer at (8,1626) size 0x18 transparent
   RenderInline {SPAN} at (0,0) size 0x18 [bgcolor=#CCCCFF]
     RenderText {#text} at (160,0) size 0x18
       text run at (160,0) width 0 RTL override: "Hello, world"
-layer at (8,1694) size 0x18
+layer at (8,1694) size 0x18 transparent
   RenderInline {SPAN} at (0,0) size 0x18 [bgcolor=#CCCCFF]
     RenderText {#text} at (160,0) size 0x18
       text run at (160,0) width 0 RTL override: "Hello, world"

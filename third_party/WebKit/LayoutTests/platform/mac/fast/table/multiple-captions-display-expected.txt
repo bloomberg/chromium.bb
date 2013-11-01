@@ -34,7 +34,7 @@ layer at (0,0) size 800x280
         RenderBlock {caption} at (0,72) size 126x54
           RenderText {#text} at (0,0) size 0x0
         RenderBlock {caption} at (0,126) size 126x0
-layer at (8,218) size 126x54
+layer at (8,218) size 126x54 transparent
   RenderBlock {caption} at (0,210) size 126x54
     RenderText {#text} at (25,0) size 116x54
       text run at (25,0) width 76: "PASS: First"
@@ -44,22 +44,22 @@ layer at (10,156) size 230x18
   RenderBlock (positioned) {caption} at (10,156) size 230x18
     RenderText {#text} at (0,0) size 230x18
       text run at (0,0) width 230: "PASS: Caption with a fixed position"
-layer at (8,8) size 126x36
+layer at (8,8) size 126x36 transparent
   RenderBlock {caption} at (0,0) size 126x36
     RenderText {#text} at (14,0) size 102x36
       text run at (14,0) width 98: "PASS: Caption"
       text run at (12,18) width 102: "with opacity 0.7"
-layer at (10,196) size 331x18
+layer at (10,196) size 331x18 transparent
   RenderBlock (positioned) {caption} at (10,196) size 331x18
     RenderText {#text} at (0,0) size 331x18
       text run at (0,0) width 331: "PASS: Caption with a fixed position and opacity 0.6"
-layer at (8,80) size 118x54
+layer at (8,80) size 118x54 transparent
   RenderInline {a} at (0,0) size 118x54
     RenderText {#text} at (14,0) size 118x54
       text run at (14,0) width 98: "PASS: Caption"
       text run at (4,18) width 118: "with opacity 0.5 in"
       text run at (14,36) width 98: "one of its child."
-layer at (71,134) size 443x18
+layer at (71,134) size 443x18 transparent
   RenderBlock (positioned) {a} at (71,134) size 443x18
     RenderText {#text} at (0,0) size 443x18
       text run at (0,0) width 443: "PASS: Caption with opacity 0.4 and fixed position of one of the child."

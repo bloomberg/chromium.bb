@@ -12,7 +12,7 @@ layer at (13,36) size 104x13
   RenderBlock {DIV} at (0,0) size 104x13
     RenderText {#text} at (0,0) size 14x13
       text run at (0,0) width 14: "10"
-layer at (10,10) size 123x19
+layer at (10,10) size 123x19 transparent
   RenderTextControl {INPUT} at (2,2) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
     RenderFlexibleBox {DIV} at (3,3) size 117x13
       RenderBlock {DIV} at (0,0) size 104x13
