@@ -712,6 +712,9 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
     if (roleValue() == ListItemRole)
         return false;
 
+    if (roleValue() == DialogRole)
+        return false;
+
     // if this element has aria attributes on it, it should not be ignored.
     if (supportsARIAAttributes())
         return false;
