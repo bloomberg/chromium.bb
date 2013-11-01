@@ -151,9 +151,11 @@ chrome.test.runTests([
       chrome.test.assertEq('Alice', voices[0].voiceName);
       chrome.test.assertEq('en-US', voices[0].lang);
       chrome.test.assertEq('female', voices[0].gender);
+      chrome.test.assertEq(false, voices[0].remote);
 
       chrome.test.assertEq('Pat', voices[1].voiceName);
       chrome.test.assertEq('en-US', voices[1].lang);
+      chrome.test.assertEq(false, voices[1].remote);
       chrome.test.succeed();
     });
   }

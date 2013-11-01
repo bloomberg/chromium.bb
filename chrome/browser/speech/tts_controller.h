@@ -66,6 +66,10 @@ struct VoiceData {
   std::string extension_id;
   std::set<TtsEventType> events;
 
+  // If true, the synthesis engine is a remote network resource.
+  // It may be higher latency and may incur bandwidth costs.
+  bool remote;
+
   // If true, this is implemented by this platform's subclass of
   // TtsPlatformImpl. If false, this is implemented by an extension.
   bool native;
