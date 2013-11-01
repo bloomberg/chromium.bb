@@ -11,6 +11,9 @@ This test checks that text controls with percentage heights within table cells h
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS getWidth('input-password-75') is getWidth('input-password-100')
 PASS getFullHeight('input-password-75') != '0px' is true
 FAIL getFullHeight('input-password-75') [14.25px] is not 75% of getFullHeight('input-password-100') [19px].
