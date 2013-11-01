@@ -5,11 +5,12 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_FRAMEBUFFER_MANAGER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_FRAMEBUFFER_MANAGER_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/observer_list.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/gpu_export.h"
 
@@ -245,11 +246,15 @@ class GPU_EXPORT FramebufferManager {
   }
 
   void AddObserver(TextureDetachObserver* observer) {
-    texture_detach_observers_.AddObserver(observer);
+    texture_detach_observers_.push_back(observer);
   }
 
   void RemoveObserver(TextureDetachObserver* observer) {
-    texture_detach_observers_.RemoveObserver(observer);
+    texture_detach_observers_.erase(
+        std::remove(texture_detach_observers_.begin(),
+                    texture_detach_observers_.end(),
+                    observer),
+        texture_detach_observers_.end());
   }
 
  private:
@@ -278,7 +283,8 @@ class GPU_EXPORT FramebufferManager {
   uint32 max_draw_buffers_;
   uint32 max_color_attachments_;
 
-  ObserverList<TextureDetachObserver> texture_detach_observers_;
+  typedef std::vector<TextureDetachObserver*> TextureDetachObserverVector;
+  TextureDetachObserverVector texture_detach_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(FramebufferManager);
 };

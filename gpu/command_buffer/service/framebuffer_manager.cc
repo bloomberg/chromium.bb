@@ -632,9 +632,13 @@ bool FramebufferManager::IsComplete(
 }
 
 void FramebufferManager::OnTextureRefDetached(TextureRef* texture) {
-  FOR_EACH_OBSERVER(TextureDetachObserver,
-                    texture_detach_observers_,
-                    OnTextureRefDetachedFromFramebuffer(texture));
+  for (TextureDetachObserverVector::iterator it =
+           texture_detach_observers_.begin();
+       it != texture_detach_observers_.end();
+       ++it) {
+    TextureDetachObserver* observer = *it;
+    observer->OnTextureRefDetachedFromFramebuffer(texture);
+  }
 }
 
 }  // namespace gles2
