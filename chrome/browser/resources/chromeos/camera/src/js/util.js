@@ -62,15 +62,17 @@ camera.util.TooltipManager.prototype.initialize = function() {
  *
  * @param {HTMLElement} element Element to be the tooltip positioned to.
  * @param {boolean} visible True for visible, false for hidden.
+ * @param {function()} callback Completion callback for changing visibility.
  * @private
  */
 camera.util.TooltipManager.prototype.setTooltipVisibility_ = function(
-    element, visible) {
+    element, visible, callback) {
   var tooltip = document.querySelector('#tooltip');
 
   // Hide the tooltip.
   if (!visible) {
     tooltip.classList.remove('visible');
+    callback();  // No animation, finish immediately.
     return;
   }
 
@@ -96,6 +98,7 @@ camera.util.TooltipManager.prototype.setTooltipVisibility_ = function(
 
   // Show the tooltip element.
   tooltip.classList.add('visible');
+  camera.util.waitForTransitionCompletion(tooltip, 1000, callback);
 };
 
 /**
