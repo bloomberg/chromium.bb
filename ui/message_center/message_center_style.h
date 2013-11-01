@@ -33,6 +33,22 @@ MESSAGE_CENTER_EXPORT extern const int kNotificationWidth;  // H size of the
 MESSAGE_CENTER_EXPORT extern const SkColor kMessageCenterBorderColor;
 MESSAGE_CENTER_EXPORT extern const SkColor kMessageCenterShadowColor;
 
+// Settings dialog constants.
+namespace settings {
+
+extern const SkColor kEntrySeparatorColor;
+extern const int kEntryHeight;
+extern const int kEntrySeparatorHeight;
+extern const int kHorizontalMargin;
+extern const int kTopMargin;
+extern const int kTitleToDescriptionSpace;
+extern const int kEntryIconSize;
+extern const int kDescriptionToSwitcherSpace;
+extern const int kInternalHorizontalSpacing;
+extern const int kCheckboxSizeWithPadding;
+
+}  // namespace
+
 // Within a notification ///////////////////////////////////////////////////////
 
 // DIP dimensions (H = horizontal, V = vertical).

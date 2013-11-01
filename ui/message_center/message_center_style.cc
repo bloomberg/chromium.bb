@@ -26,6 +26,23 @@ const size_t kMaxVisiblePopupNotifications = 3;
 const SkColor kMessageCenterBorderColor = SkColorSetRGB(0xC7, 0xCA, 0xCE);
 const SkColor kMessageCenterShadowColor = SkColorSetARGB(0.5 * 255, 0, 0, 0);
 
+// Within the settings page ////////////////////////////////////////////////////
+
+namespace settings {
+
+const SkColor kEntrySeparatorColor = SkColorSetARGB(0.1 * 255, 0, 0, 0);
+const int kEntryHeight = 45;
+const int kEntrySeparatorHeight = 1;
+const int kHorizontalMargin = 10;
+const int kTopMargin = 20;
+const int kTitleToDescriptionSpace = 20;
+const int kEntryIconSize = 16;
+const int kDescriptionToSwitcherSpace = 15;
+const int kInternalHorizontalSpacing = 10;
+const int kCheckboxSizeWithPadding = 24;
+
+}  // namespace settings
+
 // Within a notification ///////////////////////////////////////////////////////
 
 // Pixel dimensions.
