@@ -175,6 +175,8 @@ class SystemDisplayApiTest: public ExtensionApiTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     ExtensionApiTest::SetUpOnMainThread();
+    scoped_ptr<Screen> old_screen(
+        gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE));
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
     DisplayInfoProvider::InitializeForTesting(provider_.get());
   }
