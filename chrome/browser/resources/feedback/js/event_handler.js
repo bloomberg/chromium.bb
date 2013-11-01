@@ -89,7 +89,9 @@ function startFeedbackUI(feedbackInfo) {
       height: windowHeight,
       hidden: true,
       singleton: true },
-      function(appWindow) {});
+      function(appWindow) {
+        appWindow.resizeTo(FEEDBACK_WIDTH, windowHeight);
+      });
 }
 
 chrome.runtime.onMessage.addListener(feedbackReadyHandler);
