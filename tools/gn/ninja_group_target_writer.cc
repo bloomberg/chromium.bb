@@ -24,16 +24,16 @@ void NinjaGroupTargetWriter::Run() {
        << helper_.GetRulePrefix(target_->settings()->toolchain())
        << "stamp";
 
-  const std::vector<const Target*>& deps = target_->deps();
+  const LabelTargetVector& deps = target_->deps();
   for (size_t i = 0; i < deps.size(); i++) {
     out_ << " ";
-    path_output_.WriteFile(out_, helper_.GetTargetOutputFile(deps[i]));
+    path_output_.WriteFile(out_, helper_.GetTargetOutputFile(deps[i].ptr));
   }
 
-  const std::vector<const Target*>& datadeps = target_->datadeps();
+  const LabelTargetVector& datadeps = target_->datadeps();
   for (size_t i = 0; i < datadeps.size(); i++) {
     out_ << " ";
-    path_output_.WriteFile(out_, helper_.GetTargetOutputFile(datadeps[i]));
+    path_output_.WriteFile(out_, helper_.GetTargetOutputFile(datadeps[i].ptr));
   }
   out_ << std::endl;
 }

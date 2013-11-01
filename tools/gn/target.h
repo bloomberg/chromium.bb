@@ -16,6 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "tools/gn/config_values.h"
 #include "tools/gn/item.h"
+#include "tools/gn/label_ptr.h"
 #include "tools/gn/ordered_set.h"
 #include "tools/gn/script_values.h"
 #include "tools/gn/source_file.h"
@@ -84,42 +85,42 @@ class Target : public Item {
   void set_hard_dep(bool hd) { hard_dep_ = hd; }
 
   // Linked dependencies.
-  const std::vector<const Target*>& deps() const { return deps_; }
-  std::vector<const Target*>& deps() { return deps_; }
+  const LabelTargetVector& deps() const { return deps_; }
+  LabelTargetVector& deps() { return deps_; }
 
   // Non-linked dependencies.
-  const std::vector<const Target*>& datadeps() const { return datadeps_; }
-  std::vector<const Target*>& datadeps() { return datadeps_; }
+  const LabelTargetVector& datadeps() const { return datadeps_; }
+  LabelTargetVector& datadeps() { return datadeps_; }
 
   // List of configs that this class inherits settings from.
-  const std::vector<const Config*>& configs() const { return configs_; }
-  std::vector<const Config*>& configs() { return configs_; }
+  const LabelConfigVector& configs() const { return configs_; }
+  LabelConfigVector& configs() { return configs_; }
 
   // List of configs that all dependencies (direct and indirect) of this
   // target get. These configs are not added to this target. Note that due
   // to the way this is computed, there may be duplicates in this list.
-  const std::vector<const Config*>& all_dependent_configs() const {
+  const LabelConfigVector& all_dependent_configs() const {
     return all_dependent_configs_;
   }
-  std::vector<const Config*>& all_dependent_configs() {
+  LabelConfigVector& all_dependent_configs() {
     return all_dependent_configs_;
   }
 
   // List of configs that targets depending directly on this one get. These
   // configs are not added to this target.
-  const std::vector<const Config*>& direct_dependent_configs() const {
+  const LabelConfigVector& direct_dependent_configs() const {
     return direct_dependent_configs_;
   }
-  std::vector<const Config*>& direct_dependent_configs() {
+  LabelConfigVector& direct_dependent_configs() {
     return direct_dependent_configs_;
   }
 
   // A list of a subset of deps where we'll re-export direct_dependent_configs
   // as direct_dependent_configs of this target.
-  const std::vector<const Target*>& forward_dependent_configs() const {
+  const LabelTargetVector& forward_dependent_configs() const {
     return forward_dependent_configs_;
   }
-  std::vector<const Target*>& forward_dependent_configs() {
+  LabelTargetVector& forward_dependent_configs() {
     return forward_dependent_configs_;
   }
 
@@ -169,13 +170,13 @@ class Target : public Item {
   // so we also need the group in the list so we find these things. But you
   // shouldn't need to look inside the deps of the group since those will
   // already be added.
-  std::vector<const Target*> deps_;
-  std::vector<const Target*> datadeps_;
+  LabelTargetVector deps_;
+  LabelTargetVector datadeps_;
 
-  std::vector<const Config*> configs_;
-  std::vector<const Config*> all_dependent_configs_;
-  std::vector<const Config*> direct_dependent_configs_;
-  std::vector<const Target*> forward_dependent_configs_;
+  LabelConfigVector configs_;
+  LabelConfigVector all_dependent_configs_;
+  LabelConfigVector direct_dependent_configs_;
+  LabelTargetVector forward_dependent_configs_;
 
   bool external_;
 

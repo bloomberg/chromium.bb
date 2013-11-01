@@ -55,15 +55,17 @@ struct RelativeDirConverter {
   const SourceDir& current_dir;
 };
 
-struct LabelResolver {
+// Fills the label part of a LabelPtrPair, leaving the pointer null.
+template<typename T> struct LabelResolver {
   LabelResolver(const SourceDir& current_dir_in,
                 const Label& current_toolchain_in)
       : current_dir(current_dir_in),
         current_toolchain(current_toolchain_in) {}
-  bool operator()(const Value& v, Label* out, Err* err) const {
+  bool operator()(const Value& v, LabelPtrPair<T>* out, Err* err) const {
     if (!v.VerifyTypeIs(Value::STRING, err))
       return false;
-    *out = Label::Resolve(current_dir, current_toolchain, v, err);
+    out->label = Label::Resolve(current_dir, current_toolchain, v, err);
+    out->origin = v.origin();
     return !err->has_error();
   }
   const SourceDir& current_dir;
@@ -108,8 +110,19 @@ bool ExtractListOfRelativeDirs(const BuildSettings* build_settings,
 bool ExtractListOfLabels(const Value& value,
                          const SourceDir& current_dir,
                          const Label& current_toolchain,
-                         std::vector<Label>* dest,
+                         LabelConfigVector* dest,
                          Err* err) {
   return ListValueExtractor(value, dest, err,
-                            LabelResolver(current_dir, current_toolchain));
+                            LabelResolver<Config>(current_dir,
+                                                  current_toolchain));
+}
+
+bool ExtractListOfLabels(const Value& value,
+                         const SourceDir& current_dir,
+                         const Label& current_toolchain,
+                         LabelTargetVector* dest,
+                         Err* err) {
+  return ListValueExtractor(value, dest, err,
+                            LabelResolver<Target>(current_dir,
+                                                  current_toolchain));
 }

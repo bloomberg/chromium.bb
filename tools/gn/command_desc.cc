@@ -21,12 +21,6 @@ namespace commands {
 
 namespace {
 
-struct CompareTargetLabel {
-  bool operator()(const Target* a, const Target* b) const {
-    return a->label() < b->label();
-  }
-};
-
 void RecursiveCollectChildDeps(const Target* target, std::set<Label>* result);
 
 void RecursiveCollectDeps(const Target* target, std::set<Label>* result) {
@@ -38,30 +32,30 @@ void RecursiveCollectDeps(const Target* target, std::set<Label>* result) {
 }
 
 void RecursiveCollectChildDeps(const Target* target, std::set<Label>* result) {
-  const std::vector<const Target*>& deps = target->deps();
+  const LabelTargetVector& deps = target->deps();
   for (size_t i = 0; i < deps.size(); i++)
-    RecursiveCollectDeps(deps[i], result);
+    RecursiveCollectDeps(deps[i].ptr, result);
 
-  const std::vector<const Target*>& datadeps = target->datadeps();
+  const LabelTargetVector& datadeps = target->datadeps();
   for (size_t i = 0; i < datadeps.size(); i++)
-    RecursiveCollectDeps(datadeps[i], result);
+    RecursiveCollectDeps(datadeps[i].ptr, result);
 }
 
 // Prints dependencies of the given target (not the target itself).
 void RecursivePrintDeps(const Target* target,
                         const Label& default_toolchain,
                         int indent_level) {
-  std::vector<const Target*> sorted_deps = target->deps();
-  const std::vector<const Target*> datadeps = target->datadeps();
-  for (size_t i = 0; i < datadeps.size(); i++)
-    sorted_deps.push_back(datadeps[i]);
-  std::sort(sorted_deps.begin(), sorted_deps.end(), CompareTargetLabel());
+  LabelTargetVector sorted_deps = target->deps();
+  const LabelTargetVector& datadeps = target->datadeps();
+  sorted_deps.insert(sorted_deps.end(), datadeps.begin(), datadeps.end());
+  std::sort(sorted_deps.begin(), sorted_deps.end(),
+            LabelPtrLabelLess<Target>());
 
   std::string indent(indent_level * 2, ' ');
   for (size_t i = 0; i < sorted_deps.size(); i++) {
     OutputString(indent +
-        sorted_deps[i]->label().GetUserVisibleName(default_toolchain) + "\n");
-    RecursivePrintDeps(sorted_deps[i], default_toolchain, indent_level + 1);
+        sorted_deps[i].label.GetUserVisibleName(default_toolchain) + "\n");
+    RecursivePrintDeps(sorted_deps[i].ptr, default_toolchain, indent_level + 1);
   }
 }
 
@@ -94,13 +88,13 @@ void PrintDeps(const Target* target, bool display_header) {
                    "(try also \"--all\" and \"--tree\"):\n");
     }
 
-    const std::vector<const Target*>& target_deps = target->deps();
+    const LabelTargetVector& target_deps = target->deps();
     for (size_t i = 0; i < target_deps.size(); i++)
-      deps.push_back(target_deps[i]->label());
+      deps.push_back(target_deps[i].label);
 
-    const std::vector<const Target*>& target_datadeps = target->datadeps();
+    const LabelTargetVector& target_datadeps = target->datadeps();
     for (size_t i = 0; i < target_datadeps.size(); i++)
-      deps.push_back(target_datadeps[i]->label());
+      deps.push_back(target_datadeps[i].label);
   }
 
   std::sort(deps.begin(), deps.end());
@@ -141,10 +135,10 @@ void PrintConfigs(const Target* target, bool display_header) {
     OutputString("\nConfigs (in order applying):\n");
 
   Label toolchain_label = target->label().GetToolchainLabel();
-  const std::vector<const Config*>& configs = target->configs();
+  const LabelConfigVector& configs = target->configs();
   for (size_t i = 0; i < configs.size(); i++) {
     OutputString("  " +
-        configs[i]->label().GetUserVisibleName(toolchain_label) + "\n");
+        configs[i].label.GetUserVisibleName(toolchain_label) + "\n");
   }
 }
 
@@ -158,29 +152,12 @@ void PrintSources(const Target* target, bool display_header) {
     OutputString("  " + sources[i].value() + "\n");
 }
 
-// Attempts to attribute the gen dependency of the given target to some source
-// code and outputs the string to the output stream.
-//
-// The attribution of the source of the dependencies is stored in the ItemNode
-// which is the parallel structure to the target dependency map, so we have
-// to jump through a few loops to find everything.
-void OutputSourceOfDep(const Target* target,
-                       const Label& dep_label,
-                       std::ostream& out) {
-  ItemTree& item_tree = target->settings()->build_settings()->item_tree();
-  base::AutoLock lock(item_tree.lock());
-
-  const ItemNode* target_node = target->item_node();
-  CHECK(target_node);
-  ItemNode* dep_node = item_tree.GetExistingNodeLocked(dep_label);
-  CHECK(dep_node);
-
-  const ItemNode::ItemNodeMap& direct_deps = target_node->direct_dependencies();
-  ItemNode::ItemNodeMap::const_iterator found = direct_deps.find(dep_node);
-  if (found == direct_deps.end())
+// Attribute the origin for attributing from where a target came from. Does
+// nothing if the input is null or it does not have a location.
+void OutputSourceOfDep(const ParseNode* origin, std::ostream& out) {
+  if (!origin)
     return;
-
-  const Location& location = found->second.begin();
+  Location location = origin->GetRange().begin();
   out << "       (Added by " + location.file()->name().value() << ":"
       << location.line_number() << ")\n";
 }
@@ -224,7 +201,7 @@ template<typename T> void OutputRecursiveTargetConfig(
       if (config) {
         // Source of this value is a config.
         out << "  From " << config->label().GetUserVisibleName(false) << "\n";
-        OutputSourceOfDep(target, config->label(), out);
+        OutputSourceOfDep(iter.origin(), out);
       } else {
         // Source of this value is the target itself.
         out << "  From " << target->label().GetUserVisibleName(false) << "\n";

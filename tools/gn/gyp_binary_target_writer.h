@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "tools/gn/gyp_target_writer.h"
+#include "tools/gn/target.h"
 #include "tools/gn/toolchain.h"
 
 // Writes a portion of a .gyp file for a binary target type (an executable, a
@@ -75,7 +76,7 @@ class GypBinaryTargetWriter : public GypTargetWriter {
 
   // Fills the given flags structure.
   Flags FlagsFromTarget(const Target* target) const;
-  Flags FlagsFromConfigList(const std::vector<const Config*>& configs) const;
+  Flags FlagsFromConfigList(const LabelConfigVector& configs) const;
 
   // All associated targets.
   TargetGroup group_;

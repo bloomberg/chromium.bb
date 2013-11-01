@@ -144,14 +144,14 @@ void TargetGenerator::FillSourcePrereqs() {
 }
 
 void TargetGenerator::FillConfigs() {
-  FillGenericConfigs(variables::kConfigs, &Target::configs);
+  FillGenericConfigs(variables::kConfigs, &target_->configs());
 }
 
 void TargetGenerator::FillDependentConfigs() {
   FillGenericConfigs(variables::kAllDependentConfigs,
-                     &Target::all_dependent_configs);
+                     &target_->all_dependent_configs());
   FillGenericConfigs(variables::kDirectDependentConfigs,
-                     &Target::direct_dependent_configs);
+                     &target_->direct_dependent_configs());
 }
 
 void TargetGenerator::FillData() {
@@ -169,8 +169,8 @@ void TargetGenerator::FillData() {
 }
 
 void TargetGenerator::FillDependencies() {
-  FillGenericDeps(variables::kDeps, &Target::deps);
-  FillGenericDeps(variables::kDatadeps, &Target::datadeps);
+  FillGenericDeps(variables::kDeps, &target_->deps());
+  FillGenericDeps(variables::kDatadeps, &target_->datadeps());
 
   // This is a list of dependent targets to have their configs fowarded, so
   // it goes here rather than in FillConfigs.
@@ -240,53 +240,41 @@ void TargetGenerator::SetToolchainDependency() {
       GetBuildSettings(), function_token_.range(), tc_node, err_);
 }
 
-void TargetGenerator::FillGenericConfigs(
-    const char* var_name,
-    std::vector<const Config*>& (Target::*accessor)()) {
+void TargetGenerator::FillGenericConfigs(const char* var_name,
+                                         LabelConfigVector* dest) {
   const Value* value = scope_->GetValue(var_name, true);
   if (!value)
     return;
-
-  std::vector<Label> labels;
   if (!ExtractListOfLabels(*value, scope_->GetSourceDir(),
-                           ToolchainLabelForScope(scope_), &labels, err_))
+                           ToolchainLabelForScope(scope_), dest, err_))
     return;
 
-  std::vector<const Config*> dest_configs;
-  dest_configs.resize(labels.size());
-  for (size_t i = 0; i < labels.size(); i++) {
-    dest_configs[i] = Config::GetConfig(
-        scope_->settings(),
-        value->list_value()[i].origin()->GetRange(),
-        labels[i], target_, err_);
+  for (size_t i = 0; i < dest->size(); i++) {
+    LabelConfigPair& cur = (*dest)[i];
+    cur.ptr = Config::GetConfig(scope_->settings(),
+                                value->list_value()[i].origin()->GetRange(),
+                                cur.label, target_, err_);
     if (err_->has_error())
       return;
   }
-  (target_->*accessor)().swap(dest_configs);
 }
 
-void TargetGenerator::FillGenericDeps(
-    const char* var_name,
-    std::vector<const Target*>& (Target::*accessor)()) {
+void TargetGenerator::FillGenericDeps(const char* var_name,
+                                      LabelTargetVector* dest) {
   const Value* value = scope_->GetValue(var_name, true);
   if (!value)
     return;
-
-  std::vector<Label> labels;
   if (!ExtractListOfLabels(*value, scope_->GetSourceDir(),
-                           ToolchainLabelForScope(scope_), &labels, err_))
+                           ToolchainLabelForScope(scope_), dest, err_))
     return;
 
-  std::vector<const Target*> dest_deps;
-  dest_deps.resize(labels.size());
-  for (size_t i = 0; i < labels.size(); i++) {
-    dest_deps[i] = GetBuildSettings()->target_manager().GetTarget(
-        labels[i], value->list_value()[i].origin()->GetRange(), target_, err_);
+  for (size_t i = 0; i < dest->size(); i++) {
+    LabelTargetPair& cur = (*dest)[i];
+    cur.ptr = GetBuildSettings()->target_manager().GetTarget(
+        cur.label, value->list_value()[i].origin()->GetRange(), target_, err_);
     if (err_->has_error())
       return;
   }
-
-  (target_->*accessor)().swap(dest_deps);
 }
 
 void TargetGenerator::FillForwardDependentConfigs() {
@@ -295,36 +283,31 @@ void TargetGenerator::FillForwardDependentConfigs() {
   if (!value)
     return;
 
-  std::vector<Label> labels;
+  LabelTargetVector& dest = target_->forward_dependent_configs();
   if (!ExtractListOfLabels(*value, scope_->GetSourceDir(),
-                           ToolchainLabelForScope(scope_), &labels, err_))
+                           ToolchainLabelForScope(scope_), &dest, err_))
     return;
-
-  const std::vector<const Target*>& deps = target_->deps();
 
   // We currently assume that the list is very small and do a brute-force
   // search in the deps for the labeled target. This could be optimized.
+  const LabelTargetVector& deps = target_->deps();
   std::vector<const Target*> forward_from_list;
-  for (size_t label_index = 0; label_index < labels.size(); label_index++) {
-    const Target* forward_from = NULL;
+  for (size_t dest_index = 0; dest_index < dest.size(); dest_index++) {
+    LabelTargetPair& cur_dest = dest[dest_index];
     for (size_t dep_index = 0; dep_index < deps.size(); dep_index++) {
-      if (deps[dep_index]->label() == labels[label_index]) {
-        forward_from = deps[dep_index];
+      if (deps[dep_index].label == cur_dest.label) {
+        cur_dest.ptr = deps[dep_index].ptr;
         break;
       }
     }
-    if (!forward_from) {
-      *err_ = Err(value->list_value()[label_index],
+    if (!cur_dest.ptr) {
+      *err_ = Err(cur_dest.origin,
           "Can't forward from this target.",
           "forward_dependent_configs_from must contain a list of labels that\n"
           "must all appear in the deps of the same target.");
       return;
     }
-
-    forward_from_list.push_back(forward_from);
   }
-
-  target_->forward_dependent_configs().swap(forward_from_list);
 }
 
 

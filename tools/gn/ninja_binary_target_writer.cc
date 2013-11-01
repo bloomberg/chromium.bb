@@ -374,14 +374,14 @@ void NinjaBinaryTargetWriter::GetDeps(
     std::set<OutputFile>* extra_object_files,
     std::vector<const Target*>* linkable_deps,
     std::vector<const Target*>* non_linkable_deps) const {
-  const std::vector<const Target*>& deps = target_->deps();
+  const LabelTargetVector& deps = target_->deps();
   const std::set<const Target*>& inherited = target_->inherited_libraries();
 
   // Normal deps.
   for (size_t i = 0; i < deps.size(); i++) {
-    if (inherited.find(deps[i]) != inherited.end())
+    if (inherited.find(deps[i].ptr) != inherited.end())
       continue;  // Don't add dupes.
-    ClassifyDependency(deps[i], extra_object_files,
+    ClassifyDependency(deps[i].ptr, extra_object_files,
                        linkable_deps, non_linkable_deps);
   }
 
@@ -393,9 +393,9 @@ void NinjaBinaryTargetWriter::GetDeps(
   }
 
   // Data deps.
-  const std::vector<const Target*>& datadeps = target_->datadeps();
+  const LabelTargetVector& datadeps = target_->datadeps();
   for (size_t i = 0; i < datadeps.size(); i++)
-    non_linkable_deps->push_back(datadeps[i]);
+    non_linkable_deps->push_back(datadeps[i].ptr);
 }
 
 void NinjaBinaryTargetWriter::ClassifyDependency(

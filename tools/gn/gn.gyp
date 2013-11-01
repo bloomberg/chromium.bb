@@ -78,6 +78,7 @@
         'item_tree.h',
         'label.cc',
         'label.h',
+        'label_ptr.h',
         'location.cc',
         'location.h',
         'ninja_binary_target_writer.cc',

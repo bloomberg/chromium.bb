@@ -96,11 +96,11 @@ bool EnsureTargetsMatch(const TargetGroup& group, Err* err) {
     return false;
   }
   for (size_t i = 0; i < group.debug->deps().size(); i++) {
-    if (group.debug->deps()[i]->label() != group.release->deps()[i]->label()) {
+    if (group.debug->deps()[i].label != group.release->deps()[i].label) {
       *err = Err(Location(), "The debug and release version of the target \n" +
           group.debug->label().GetUserVisibleName(true) +
           "\ndon't agree on the dep\n" +
-          group.debug->deps()[i]->label().GetUserVisibleName(true));
+          group.debug->deps()[i].label.GetUserVisibleName(true));
       return false;
     }
   }

@@ -40,7 +40,15 @@ class ConfigValuesIterator {
   const ConfigValues& cur() const {
     if (cur_index_ == -1)
       return target_->config_values();
-    return target_->configs()[cur_index_]->config_values();
+    return target_->configs()[cur_index_].ptr->config_values();
+  }
+
+  // Returns the origin of who added this config, if any. This will alwsya be
+  // null for the config values of a target itself.
+  const ParseNode* origin() const {
+    if (cur_index_ == -1)
+      return NULL;
+    return target_->configs()[cur_index_].origin;
   }
 
   void Next() {
@@ -52,7 +60,7 @@ class ConfigValuesIterator {
   const Config* GetCurrentConfig() const {
     if (cur_index_ == -1)
       return NULL;
-    return target_->configs()[cur_index_];
+    return target_->configs()[cur_index_].ptr;
   }
 
  private:

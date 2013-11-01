@@ -102,12 +102,12 @@ std::string NinjaTargetWriter::GetSourcesImplicitDeps() const {
   }
 
   // Add on any direct deps marked as "hard".
-  const std::vector<const Target*>& deps = target_->deps();
+  const LabelTargetVector& deps = target_->deps();
   for (size_t i = 0; i < deps.size(); i++) {
-    if (deps[i]->hard_dep()) {
+    if (deps[i].ptr->hard_dep()) {
       has_files = true;
       ret << " ";
-      path_output_.WriteFile(ret, helper_.GetTargetOutputFile(deps[i]));
+      path_output_.WriteFile(ret, helper_.GetTargetOutputFile(deps[i].ptr));
     }
   }
 

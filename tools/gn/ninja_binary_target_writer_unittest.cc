@@ -50,7 +50,7 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
   // A shared library that depends on the source set.
   Target shlib_target(setup.settings(), Label(SourceDir("//foo/"), "shlib"));
   shlib_target.set_output_type(Target::SHARED_LIBRARY);
-  shlib_target.deps().push_back(&target);
+  shlib_target.deps().push_back(LabelTargetPair(&target));
   shlib_target.OnResolved();
 
   {

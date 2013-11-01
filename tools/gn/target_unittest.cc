@@ -39,8 +39,8 @@ TEST_F(TargetTest, GroupDeps) {
   // Make a group for both x and y.
   Target g(&settings_, Label(SourceDir("//group/"), "g"));
   g.set_output_type(Target::GROUP);
-  g.deps().push_back(&x);
-  g.deps().push_back(&y);
+  g.deps().push_back(LabelTargetPair(&x));
+  g.deps().push_back(LabelTargetPair(&y));
 
   // Random placeholder target so we can see the group's deps get inserted at
   // the right place.
@@ -49,17 +49,17 @@ TEST_F(TargetTest, GroupDeps) {
   // Make a target depending on the group and "b". OnResolved will expand.
   Target a(&settings_, Label(SourceDir("//app/"), "a"));
   a.set_output_type(Target::EXECUTABLE);
-  a.deps().push_back(&g);
-  a.deps().push_back(&b);
+  a.deps().push_back(LabelTargetPair(&g));
+  a.deps().push_back(LabelTargetPair(&b));
   a.OnResolved();
 
   // The group's deps should be inserted after the group itself in the deps
   // list, so we should get "g, x, y, b"
   ASSERT_EQ(4u, a.deps().size());
-  EXPECT_EQ(&g, a.deps()[0]);
-  EXPECT_EQ(&x, a.deps()[1]);
-  EXPECT_EQ(&y, a.deps()[2]);
-  EXPECT_EQ(&b, a.deps()[3]);
+  EXPECT_EQ(&g, a.deps()[0].ptr);
+  EXPECT_EQ(&x, a.deps()[1].ptr);
+  EXPECT_EQ(&y, a.deps()[2].ptr);
+  EXPECT_EQ(&b, a.deps()[3].ptr);
 }
 
 // Tests that lib[_dir]s are inherited across deps boundaries for static
@@ -89,7 +89,7 @@ TEST_F(TargetTest, LibInheritance) {
   shared.set_output_type(Target::SHARED_LIBRARY);
   shared.config_values().libs().push_back(second_lib);
   shared.config_values().lib_dirs().push_back(second_libdir);
-  shared.deps().push_back(&z);
+  shared.deps().push_back(LabelTargetPair(&z));
   shared.OnResolved();
 
   ASSERT_EQ(2u, shared.all_libs().size());
@@ -102,7 +102,7 @@ TEST_F(TargetTest, LibInheritance) {
   // Executable target shouldn't get either by depending on shared.
   Target exec(&settings_, Label(SourceDir("//foo/"), "exec"));
   exec.set_output_type(Target::EXECUTABLE);
-  exec.deps().push_back(&shared);
+  exec.deps().push_back(LabelTargetPair(&shared));
   exec.OnResolved();
   EXPECT_EQ(0u, exec.all_libs().size());
   EXPECT_EQ(0u, exec.all_lib_dirs().size());
@@ -118,20 +118,20 @@ TEST_F(TargetTest, DependentConfigs) {
   b.set_output_type(Target::STATIC_LIBRARY);
   Target c(&settings_, Label(SourceDir("//foo/"), "c"));
   c.set_output_type(Target::STATIC_LIBRARY);
-  a.deps().push_back(&b);
-  b.deps().push_back(&c);
+  a.deps().push_back(LabelTargetPair(&b));
+  b.deps().push_back(LabelTargetPair(&c));
 
   // Normal non-inherited config.
   Config config(Label(SourceDir("//foo/"), "config"));
-  c.configs().push_back(&config);
+  c.configs().push_back(LabelConfigPair(&config));
 
   // All dependent config.
   Config all(Label(SourceDir("//foo/"), "all"));
-  c.all_dependent_configs().push_back(&all);
+  c.all_dependent_configs().push_back(LabelConfigPair(&all));
 
   // Direct dependent config.
   Config direct(Label(SourceDir("//foo/"), "direct"));
-  c.direct_dependent_configs().push_back(&direct);
+  c.direct_dependent_configs().push_back(LabelConfigPair(&direct));
 
   c.OnResolved();
   b.OnResolved();
@@ -139,32 +139,32 @@ TEST_F(TargetTest, DependentConfigs) {
 
   // B should have gotten both dependent configs from C.
   ASSERT_EQ(2u, b.configs().size());
-  EXPECT_EQ(&all, b.configs()[0]);
-  EXPECT_EQ(&direct, b.configs()[1]);
+  EXPECT_EQ(&all, b.configs()[0].ptr);
+  EXPECT_EQ(&direct, b.configs()[1].ptr);
   ASSERT_EQ(1u, b.all_dependent_configs().size());
-  EXPECT_EQ(&all, b.all_dependent_configs()[0]);
+  EXPECT_EQ(&all, b.all_dependent_configs()[0].ptr);
 
   // A should have just gotten the "all" dependent config from C.
   ASSERT_EQ(1u, a.configs().size());
-  EXPECT_EQ(&all, a.configs()[0]);
-  EXPECT_EQ(&all, a.all_dependent_configs()[0]);
+  EXPECT_EQ(&all, a.configs()[0].ptr);
+  EXPECT_EQ(&all, a.all_dependent_configs()[0].ptr);
 
   // Making an an alternate A and B with B forwarding the direct dependents.
   Target a_fwd(&settings_, Label(SourceDir("//foo/"), "a_fwd"));
   a_fwd.set_output_type(Target::EXECUTABLE);
   Target b_fwd(&settings_, Label(SourceDir("//foo/"), "b_fwd"));
   b_fwd.set_output_type(Target::STATIC_LIBRARY);
-  a_fwd.deps().push_back(&b_fwd);
-  b_fwd.deps().push_back(&c);
-  b_fwd.forward_dependent_configs().push_back(&c);
+  a_fwd.deps().push_back(LabelTargetPair(&b_fwd));
+  b_fwd.deps().push_back(LabelTargetPair(&c));
+  b_fwd.forward_dependent_configs().push_back(LabelTargetPair(&c));
 
   b_fwd.OnResolved();
   a_fwd.OnResolved();
 
   // A_fwd should now have both configs.
   ASSERT_EQ(2u, a_fwd.configs().size());
-  EXPECT_EQ(&all, a_fwd.configs()[0]);
-  EXPECT_EQ(&direct, a_fwd.configs()[1]);
+  EXPECT_EQ(&all, a_fwd.configs()[0].ptr);
+  EXPECT_EQ(&direct, a_fwd.configs()[1].ptr);
   ASSERT_EQ(1u, a_fwd.all_dependent_configs().size());
-  EXPECT_EQ(&all, a_fwd.all_dependent_configs()[0]);
+  EXPECT_EQ(&all, a_fwd.all_dependent_configs()[0].ptr);
 }

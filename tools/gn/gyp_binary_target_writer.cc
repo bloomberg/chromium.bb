@@ -98,12 +98,12 @@ std::string GetVCOptimization(std::vector<std::string>* cflags) {
 // and adds them to the given result vector.
 template<typename T>
 void FillConfigListValues(
-    const std::vector<const Config*>& configs,
+    const LabelConfigVector& configs,
     const std::vector<T>& (ConfigValues::* getter)() const,
     std::vector<T>* result) {
   for (size_t config_i = 0; config_i < configs.size(); config_i++) {
     const std::vector<T>& values =
-        (configs[config_i]->config_values().*getter)();
+        (configs[config_i].ptr->config_values().*getter)();
     for (size_t val_i = 0; val_i < values.size(); val_i++)
       result->push_back(values[val_i]);
   }
@@ -446,7 +446,7 @@ void GypBinaryTargetWriter::WriteSources(const Target* target, int indent) {
 }
 
 void GypBinaryTargetWriter::WriteDeps(const Target* target, int indent) {
-  const std::vector<const Target*>& deps = target->deps();
+  const LabelTargetVector& deps = target->deps();
   if (deps.empty())
     return;
 
@@ -456,7 +456,7 @@ void GypBinaryTargetWriter::WriteDeps(const Target* target, int indent) {
   Indent(indent) << "'dependencies': [\n";
   for (size_t i = 0; i < deps.size(); i++) {
     Indent(indent + kExtraIndent) << "'";
-    EscapeStringToStream(out_, helper_.GetFullRefForTarget(deps[i]),
+    EscapeStringToStream(out_, helper_.GetFullRefForTarget(deps[i].ptr),
                          escape_options);
     out_ << "',\n";
   }
@@ -546,7 +546,7 @@ GypBinaryTargetWriter::Flags GypBinaryTargetWriter::FlagsFromTarget(
 }
 
 GypBinaryTargetWriter::Flags GypBinaryTargetWriter::FlagsFromConfigList(
-    const std::vector<const Config*>& configs) const {
+    const LabelConfigVector& configs) const {
   Flags ret;
 
   #define EXTRACT(type, name) \

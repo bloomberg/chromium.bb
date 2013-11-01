@@ -72,10 +72,8 @@ class TargetGenerator {
 
   // Reads configs/deps from the given var name, and uses the given setting on
   // the target to save them.
-  void FillGenericConfigs(const char* var_name,
-                          std::vector<const Config*>& (Target::*accessor)());
-  void FillGenericDeps(const char* var_name,
-                       std::vector<const Target*>& (Target::*accessor)());
+  void FillGenericConfigs(const char* var_name, LabelConfigVector* dest);
+  void FillGenericDeps(const char* var_name, LabelTargetVector* dest);
 
   void FillForwardDependentConfigs();
 
