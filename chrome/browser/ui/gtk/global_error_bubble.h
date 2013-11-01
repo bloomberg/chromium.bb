@@ -16,14 +16,14 @@
 
 typedef struct _GtkWidget GtkWidget;
 
-class GlobalError;
+class GlobalErrorWithStandardBubble;
 class Profile;
 
 class GlobalErrorBubble : public BubbleDelegateGtk,
                           public GlobalErrorBubbleViewBase {
  public:
   GlobalErrorBubble(Browser* browser,
-                    const base::WeakPtr<GlobalError>& error,
+                    const base::WeakPtr<GlobalErrorWithStandardBubble>& error,
                     GtkWidget* anchor);
   virtual ~GlobalErrorBubble();
 
@@ -40,7 +40,7 @@ class GlobalErrorBubble : public BubbleDelegateGtk,
 
   Browser* browser_;
   BubbleGtk* bubble_;
-  base::WeakPtr<GlobalError> error_;
+  base::WeakPtr<GlobalErrorWithStandardBubble> error_;
   std::vector<GtkWidget*> message_labels_;
   int message_width_;
 

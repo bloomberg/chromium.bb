@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/profile_resetter/profile_reset_callback.h"
+#include "chrome/browser/ui/global_error/global_error_bubble_view_base.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
@@ -25,19 +25,21 @@ class LabelButton;
 class Link;
 }
 
+class Browser;
 class Profile;
+class ProfileResetGlobalError;
 
 // ProfileResetBubbleView warns the user that a settings reset might be needed.
 // It is intended to be used as the content of a bubble anchored off of the
 // Chrome toolbar.
 class ProfileResetBubbleView : public views::BubbleDelegateView,
-                                public views::ButtonListener,
-                                public views::LinkListener {
+                               public views::ButtonListener,
+                               public views::LinkListener,
+                               public GlobalErrorBubbleViewBase {
  public:
-  static void ShowBubble(views::View* anchor_view,
-                         content::PageNavigator* navigator,
-                         Profile* profile,
-                         const ProfileResetCallback& reset_callback);
+  static ProfileResetBubbleView* ShowBubble(
+      const base::WeakPtr<ProfileResetGlobalError>& global_error,
+      Browser* browser);
 
   // views::BubbleDelegateView methods.
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
@@ -46,15 +48,17 @@ class ProfileResetBubbleView : public views::BubbleDelegateView,
   // views::WidgetDelegate method.
   virtual void WindowClosing() OVERRIDE;
 
+  // GlobalErrorBubbleViewBase:
+  virtual void CloseBubbleView() OVERRIDE;
+
  private:
-  ProfileResetBubbleView(views::View* anchor_view,
-                         content::PageNavigator* navigator,
-                         Profile* profile,
-                         const ProfileResetCallback& reset_callback);
+  ProfileResetBubbleView(
+      const base::WeakPtr<ProfileResetGlobalError>& global_error,
+      views::View* anchor_view,
+      content::PageNavigator* navigator,
+      Profile* profile);
 
   virtual ~ProfileResetBubbleView();
-
-  static bool IsShowing() { return reset_bubble_ != NULL; }
 
   // Reset all child views members and remove children from view hierarchy.
   void ResetAllChildren();
@@ -69,16 +73,6 @@ class ProfileResetBubbleView : public views::BubbleDelegateView,
 
   // views::LinkListener method.
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
-
-  // Callback from the profile resetter, once it's done.
-  void OnResetProfileSettingsDone();
-
-  // The reset bubble, if we're showing one.
-  static ProfileResetBubbleView* reset_bubble_;
-
-  // The numer of times the user ignored the bubble before finally choosing to
-  // reset.
-  static int num_ignored_bubbles_;
 
   struct Controls {
     Controls() {
@@ -114,8 +108,8 @@ class ProfileResetBubbleView : public views::BubbleDelegateView,
   // feedback.
   Profile* profile_;
 
-  // Callback to the code that takes care of the profile reset.
-  ProfileResetCallback reset_callback_;
+  // The GlobalError this Bubble belongs to.
+  base::WeakPtr<ProfileResetGlobalError> global_error_;
 
   // Remembers if we are currently resetting or not.
   bool resetting_;

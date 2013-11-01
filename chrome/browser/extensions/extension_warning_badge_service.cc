@@ -32,13 +32,9 @@ class ErrorBadge : public GlobalError {
   virtual void ExecuteMenuItem(Browser* browser) OVERRIDE;
 
   virtual bool HasBubbleView() OVERRIDE;
-  virtual string16 GetBubbleViewTitle() OVERRIDE;
-  virtual std::vector<string16> GetBubbleViewMessages() OVERRIDE;
-  virtual string16 GetBubbleViewAcceptButtonLabel() OVERRIDE;
-  virtual string16 GetBubbleViewCancelButtonLabel() OVERRIDE;
-  virtual void OnBubbleViewDidClose(Browser* browser) OVERRIDE;
-  virtual void BubbleViewAcceptButtonPressed(Browser* browser) OVERRIDE;
-  virtual void BubbleViewCancelButtonPressed(Browser* browser) OVERRIDE;
+  virtual bool HasShownBubbleView() OVERRIDE;
+  virtual void ShowBubbleView(Browser* browser) OVERRIDE;
+  virtual GlobalErrorBubbleViewBase* GetBubbleView() OVERRIDE;
 
   static int GetMenuItemCommandID();
 
@@ -73,35 +69,14 @@ void ErrorBadge::ExecuteMenuItem(Browser* browser) {
   chrome::ExecuteCommand(browser, IDC_MANAGE_EXTENSIONS);
 }
 
-bool ErrorBadge::HasBubbleView() {
-  return false;
-}
+bool ErrorBadge::HasBubbleView() { return false; }
 
-string16 ErrorBadge::GetBubbleViewTitle() {
-  return string16();
-}
+bool ErrorBadge::HasShownBubbleView() { return false; }
 
-std::vector<string16> ErrorBadge::GetBubbleViewMessages() {
-  return std::vector<string16>();
-}
+void ErrorBadge::ShowBubbleView(Browser* browser) { NOTREACHED(); }
 
-string16 ErrorBadge::GetBubbleViewAcceptButtonLabel() {
-  return string16();
-}
-
-string16 ErrorBadge::GetBubbleViewCancelButtonLabel() {
-  return string16();
-}
-
-void ErrorBadge::OnBubbleViewDidClose(Browser* browser) {
-}
-
-void ErrorBadge::BubbleViewAcceptButtonPressed(Browser* browser) {
-  NOTREACHED();
-}
-
-void ErrorBadge::BubbleViewCancelButtonPressed(Browser* browser) {
-  NOTREACHED();
+GlobalErrorBubbleViewBase* ErrorBadge::GetBubbleView() {
+  return NULL;
 }
 
 // static
@@ -168,4 +143,4 @@ void ExtensionWarningBadgeService::ShowBadge(bool show) {
   }
 }
 
-}  // extensions
+}  // namespace extensions

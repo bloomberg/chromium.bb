@@ -55,7 +55,7 @@ class Bridge : public GlobalErrorBubbleViewBase {
 @implementation GlobalErrorBubbleController
 
 + (GlobalErrorBubbleViewBase*)showForBrowser:(Browser*)browser
-    error:(const base::WeakPtr<GlobalError>&)error {
+    error:(const base::WeakPtr<GlobalErrorWithStandardBubble>&)error {
   NSWindow* parentWindow = browser->window()->GetNativeWindow();
   BrowserWindowController* bwc = [BrowserWindowController
       browserWindowControllerForWindow:parentWindow];
@@ -161,8 +161,8 @@ class Bridge : public GlobalErrorBubbleViewBase {
 
 @end
 
-GlobalErrorBubbleViewBase* GlobalErrorBubbleViewBase::ShowBubbleView(
+GlobalErrorBubbleViewBase* GlobalErrorBubbleViewBase::ShowStandardBubbleView(
     Browser* browser,
-    const base::WeakPtr<GlobalError>& error) {
+    const base::WeakPtr<GlobalErrorWithStandardBubble>& error) {
   return [GlobalErrorBubbleController showForBrowser:browser error:error];
 }

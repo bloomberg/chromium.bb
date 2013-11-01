@@ -90,7 +90,7 @@ class ExternalInstallDialogDelegate
 
 // Only shows a menu item, no bubble. Clicking the menu item shows
 // an external install dialog.
-class ExternalInstallMenuAlert : public GlobalError,
+class ExternalInstallMenuAlert : public GlobalErrorWithStandardBubble,
                                  public content::NotificationObserver {
  public:
   ExternalInstallMenuAlert(ExtensionService* service,
@@ -355,7 +355,7 @@ bool ExternalInstallGlobalError::HasBubbleView() {
 
 gfx::Image ExternalInstallGlobalError::GetBubbleViewIcon() {
   if (prompt_->icon().IsEmpty())
-    return GlobalError::GetBubbleViewIcon();
+    return GlobalErrorWithStandardBubble::GetBubbleViewIcon();
   // Scale icon to a reasonable size.
   return gfx::Image(gfx::ImageSkiaOperations::CreateResizedImage(
       *prompt_->icon().ToImageSkia(),

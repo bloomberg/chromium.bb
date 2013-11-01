@@ -18,7 +18,7 @@ class Profile;
 // register an AuthStatusProvider to report their current authentication state,
 // and should invoke AuthStatusChanged() when their authentication state may
 // have changed.
-class SigninGlobalError : public GlobalError {
+class SigninGlobalError : public GlobalErrorWithStandardBubble {
  public:
   class AuthStatusProvider {
    public:

@@ -15,7 +15,7 @@
 namespace {
 
 // An error that has a bubble view.
-class BubbleViewError : public GlobalError {
+class BubbleViewError : public GlobalErrorWithStandardBubble {
  public:
   BubbleViewError() : bubble_view_close_count_(0) { }
 

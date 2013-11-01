@@ -9,13 +9,13 @@
 #include "base/memory/weak_ptr.h"
 
 class Browser;
-class GlobalError;
+class GlobalErrorWithStandardBubble;
 
 class GlobalErrorBubbleViewBase {
  public:
-  static GlobalErrorBubbleViewBase* ShowBubbleView(
+  static GlobalErrorBubbleViewBase* ShowStandardBubbleView(
       Browser* browser,
-      const base::WeakPtr<GlobalError>& error);
+      const base::WeakPtr<GlobalErrorWithStandardBubble>& error);
 
   virtual ~GlobalErrorBubbleViewBase() {}
 

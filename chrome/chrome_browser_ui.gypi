@@ -1488,8 +1488,8 @@
         'browser/ui/search_engines/template_url_fetcher_ui_callbacks.h',
         'browser/ui/search_engines/template_url_table_model.cc',
         'browser/ui/search_engines/template_url_table_model.h',
-        'browser/ui/show_profile_reset_bubble.h',
-        'browser/ui/show_profile_reset_bubble_stub.cc',
+        'browser/ui/profile_reset_bubble.h',
+        'browser/ui/profile_reset_bubble_stub.cc',
         'browser/ui/simple_message_box.h',
         'browser/ui/singleton_tabs.cc',
         'browser/ui/singleton_tabs.h',
@@ -2680,7 +2680,7 @@
         }],
         ['toolkit_views == 1', {
           'sources!': [
-            'browser/ui/show_profile_reset_bubble_stub.cc',
+            'browser/ui/profile_reset_bubble_stub.cc',
           ],
         }],
         ['OS=="linux"', {

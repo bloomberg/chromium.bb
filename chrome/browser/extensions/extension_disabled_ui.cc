@@ -135,7 +135,7 @@ void ExtensionDisabledDialogDelegate::InstallUIAbort(bool user_initiated) {
 
 // ExtensionDisabledGlobalError -----------------------------------------------
 
-class ExtensionDisabledGlobalError : public GlobalError,
+class ExtensionDisabledGlobalError : public GlobalErrorWithStandardBubble,
                                      public content::NotificationObserver,
                                      public ExtensionUninstallDialog::Delegate {
  public:
@@ -150,7 +150,6 @@ class ExtensionDisabledGlobalError : public GlobalError,
   virtual int MenuItemCommandID() OVERRIDE;
   virtual string16 MenuItemLabel() OVERRIDE;
   virtual void ExecuteMenuItem(Browser* browser) OVERRIDE;
-  virtual bool HasBubbleView() OVERRIDE;
   virtual gfx::Image GetBubbleViewIcon() OVERRIDE;
   virtual string16 GetBubbleViewTitle() OVERRIDE;
   virtual std::vector<string16> GetBubbleViewMessages() OVERRIDE;
@@ -242,10 +241,6 @@ string16 ExtensionDisabledGlobalError::MenuItemLabel() {
 
 void ExtensionDisabledGlobalError::ExecuteMenuItem(Browser* browser) {
   ShowBubbleView(browser);
-}
-
-bool ExtensionDisabledGlobalError::HasBubbleView() {
-   return true;
 }
 
 gfx::Image ExtensionDisabledGlobalError::GetBubbleViewIcon() {

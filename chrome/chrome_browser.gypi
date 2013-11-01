@@ -1734,7 +1734,6 @@
         'browser/profile_resetter/brandcoded_default_settings.cc',
         'browser/profile_resetter/brandcode_config_fetcher.h',
         'browser/profile_resetter/brandcode_config_fetcher.cc',
-        'browser/profile_resetter/profile_reset_callback.h',
         'browser/profile_resetter/profile_reset_global_error.h',
         'browser/profile_resetter/profile_reset_global_error.cc',
         'browser/profile_resetter/profile_resetter.h',

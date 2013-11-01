@@ -11,16 +11,17 @@
 #include "ui/views/controls/button/button.h"
 
 class Browser;
-class GlobalError;
+class GlobalErrorWithStandardBubble;
 
 class GlobalErrorBubbleView : public views::ButtonListener,
                               public views::BubbleDelegateView,
                               public GlobalErrorBubbleViewBase {
  public:
-  GlobalErrorBubbleView(views::View* anchor_view,
-                        views::BubbleBorder::Arrow arrow,
-                        Browser* browser,
-                        const base::WeakPtr<GlobalError>& error);
+  GlobalErrorBubbleView(
+      views::View* anchor_view,
+      views::BubbleBorder::Arrow arrow,
+      Browser* browser,
+      const base::WeakPtr<GlobalErrorWithStandardBubble>& error);
   virtual ~GlobalErrorBubbleView();
 
   // views::ButtonListener implementation.
@@ -35,7 +36,7 @@ class GlobalErrorBubbleView : public views::ButtonListener,
 
  private:
   Browser* browser_;
-  base::WeakPtr<GlobalError> error_;
+  base::WeakPtr<GlobalErrorWithStandardBubble> error_;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalErrorBubbleView);
 };

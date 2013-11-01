@@ -70,10 +70,6 @@ void ExtensionErrorUIDefault::ExtensionGlobalError::ExecuteMenuItem(
   NOTREACHED();
 }
 
-bool ExtensionErrorUIDefault::ExtensionGlobalError::HasBubbleView() {
-  return true;
-}
-
 string16 ExtensionErrorUIDefault::ExtensionGlobalError::GetBubbleViewTitle() {
   return error_ui_->GetBubbleViewTitle();
 }

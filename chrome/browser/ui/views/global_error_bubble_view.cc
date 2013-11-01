@@ -40,9 +40,9 @@ const int kBubblePadding = 6;
 // GlobalErrorBubbleViewBase ---------------------------------------------------
 
 // static
-GlobalErrorBubbleViewBase* GlobalErrorBubbleViewBase::ShowBubbleView(
+GlobalErrorBubbleViewBase* GlobalErrorBubbleViewBase::ShowStandardBubbleView(
     Browser* browser,
-    const base::WeakPtr<GlobalError>& error) {
+    const base::WeakPtr<GlobalErrorWithStandardBubble>& error) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   views::View* wrench_button = browser_view->toolbar()->app_menu();
   GlobalErrorBubbleView* bubble_view =
@@ -61,7 +61,7 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
     views::View* anchor_view,
     views::BubbleBorder::Arrow arrow,
     Browser* browser,
-    const base::WeakPtr<GlobalError>& error)
+    const base::WeakPtr<GlobalErrorWithStandardBubble>& error)
     : BubbleDelegateView(anchor_view, arrow),
       browser_(browser),
       error_(error) {

@@ -6,39 +6,51 @@
 #define CHROME_BROWSER_PROFILE_RESETTER_PROFILE_RESET_GLOBAL_ERROR_H_
 
 #include "base/basictypes.h"
-#include "base/callback.h"
-#include "chrome/browser/profile_resetter/profile_reset_callback.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/global_error/global_error.h"
+
+class GlobalErrorBubbleViewBase;
+class Profile;
 
 // Shows preferences reset errors on the wrench menu and exposes a menu item to
 // launch a bubble view.
-class ProfileResetGlobalError : public GlobalError {
+class ProfileResetGlobalError
+    : public GlobalError,
+      public base::SupportsWeakPtr<ProfileResetGlobalError> {
  public:
-  ProfileResetGlobalError();
+  explicit ProfileResetGlobalError(Profile* profile);
   virtual ~ProfileResetGlobalError();
 
-  // GlobalError overrides.
+  // Called by the bubble view when it is closed.
+  void OnBubbleViewDidClose();
+
+  // Called when the user clicks on the 'Reset' button. The user can choose to
+  // send feedback containing the old settings that are now being reset, this is
+  // indicated by |send_feedback|.
+  void OnBubbleViewResetButtonPressed(bool send_feedback);
+
+  // Called when the user clicks the 'No, thanks' button.
+  void OnBubbleViewNoThanksButtonPressed();
+
+  // GlobalError:
   virtual bool HasMenuItem() OVERRIDE;
   virtual int MenuItemCommandID() OVERRIDE;
   virtual string16 MenuItemLabel() OVERRIDE;
   virtual void ExecuteMenuItem(Browser* browser) OVERRIDE;
   virtual bool HasBubbleView() OVERRIDE;
-  virtual string16 GetBubbleViewTitle() OVERRIDE;
-  virtual std::vector<string16> GetBubbleViewMessages() OVERRIDE;
-  virtual string16 GetBubbleViewAcceptButtonLabel() OVERRIDE;
-  virtual string16 GetBubbleViewCancelButtonLabel() OVERRIDE;
-  virtual void OnBubbleViewDidClose(Browser* browser) OVERRIDE;
-  virtual void BubbleViewAcceptButtonPressed(Browser* browser) OVERRIDE;
-  virtual void BubbleViewCancelButtonPressed(Browser* browser) OVERRIDE;
-
-  // Sets a callback to be given to the bubble to be called when the user
-  // chooses to reset the settings.
-  void set_reset_callback(const ProfileResetCallback& reset_callback) {
-    reset_callback_ = reset_callback;
-  }
+  virtual bool HasShownBubbleView() OVERRIDE;
+  virtual void ShowBubbleView(Browser* browser) OVERRIDE;
+  virtual GlobalErrorBubbleViewBase* GetBubbleView() OVERRIDE;
 
  private:
-  ProfileResetCallback reset_callback_;
+  Profile* profile_;
+
+  // The number of times we have shown the bubble so far. This can be >1 if the
+  // user dismissed the bubble, then selected the menu item to show it again.
+  int num_times_bubble_view_shown_;
+
+  // The reset bubble, if we're currently showing one.
+  GlobalErrorBubbleViewBase* bubble_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileResetGlobalError);
 };

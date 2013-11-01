@@ -15,7 +15,7 @@ class SigninManagerBase;
 
 // Shows sync errors on the wrench menu using a bubble view and a
 // menu item.
-class SyncGlobalError : public GlobalError,
+class SyncGlobalError : public GlobalErrorWithStandardBubble,
                         public ProfileSyncServiceObserver {
  public:
   SyncGlobalError(ProfileSyncService* service, SigninManagerBase* signin);

@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/profile_reset_bubble_view.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "base/metrics/histogram.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/google/google_util.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/profile_resetter/resettable_settings_snapshot.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
+#include "chrome/browser/ui/profile_reset_bubble.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/common/url_constants.h"
@@ -71,13 +71,6 @@ const int kInterFeedbackValuePadding = 4;
 // to bring the separation visually in line with the row separation
 // height.
 const int kButtonPadding = views::kRelatedButtonHSpacing - 2;
-
-// The maximum number of ignored bubbles we track in the NumNoThanksPerReset
-// histogram.
-const int kMaxIgnored = 50;
-
-// The number of buckets we want the NumNoThanksPerReset histogram to use.
-const int kNumIgnoredBuckets = 5;
 
 // The color of the background of the sub panel to report current settings.
 const SkColor kLightGrayBackgroundColor = 0xFFF5F5F5;
@@ -154,50 +147,39 @@ class FeedbackView : public views::View {
 // ProfileResetBubbleView ---------------------------------------------------
 
 // static
-ProfileResetBubbleView* ProfileResetBubbleView::reset_bubble_ = NULL;
-int ProfileResetBubbleView::num_ignored_bubbles_ = 0;
-
-// static
-void ProfileResetBubbleView::ShowBubble(
-    views::View* anchor_view,
-    content::PageNavigator* navigator,
-    Profile* profile,
-    const ProfileResetCallback& reset_callback) {
-  if (IsShowing())
-    return;
-  reset_bubble_ = new ProfileResetBubbleView(
-      anchor_view, navigator, profile, reset_callback);
-  views::BubbleDelegateView::CreateBubble(reset_bubble_);
-  reset_bubble_->StartFade(true);
+ProfileResetBubbleView* ProfileResetBubbleView::ShowBubble(
+    const base::WeakPtr<ProfileResetGlobalError>& global_error,
+    Browser* browser) {
+  views::View* anchor_view =
+      BrowserView::GetBrowserViewForBrowser(browser)->toolbar()->app_menu();
+  ProfileResetBubbleView* reset_bubble = new ProfileResetBubbleView(
+      global_error, anchor_view, browser, browser->profile());
+  views::BubbleDelegateView::CreateBubble(reset_bubble);
+  reset_bubble->StartFade(true);
   content::RecordAction(content::UserMetricsAction("SettingsResetBubble.Show"));
+  return reset_bubble;
 }
 
-ProfileResetBubbleView::~ProfileResetBubbleView() {
-  if (!chose_to_reset_ && num_ignored_bubbles_ < kMaxIgnored)
-    ++num_ignored_bubbles_;
-}
+ProfileResetBubbleView::~ProfileResetBubbleView() {}
 
 views::View* ProfileResetBubbleView::GetInitiallyFocusedView() {
   return controls_.reset_button;
 }
 
 void ProfileResetBubbleView::WindowClosing() {
-  // Reset |reset_bubble_| here, not in destructor, because destruction is
-  // asynchronous and ShowBubble may be called before full destruction and
-  // would attempt to show a bubble that is closing.
-  DCHECK_EQ(reset_bubble_, this);
-  reset_bubble_ = NULL;
+  if (global_error_)
+    global_error_->OnBubbleViewDidClose();
 }
 
 ProfileResetBubbleView::ProfileResetBubbleView(
+    const base::WeakPtr<ProfileResetGlobalError>& global_error,
     views::View* anchor_view,
     content::PageNavigator* navigator,
-    Profile* profile,
-    const ProfileResetCallback& reset_callback)
+    Profile* profile)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       navigator_(navigator),
       profile_(profile),
-      reset_callback_(reset_callback),
+      global_error_(global_error),
       resetting_(false),
       chose_to_reset_(false),
       show_help_pane_(false),
@@ -395,9 +377,6 @@ void ProfileResetBubbleView::ButtonPressed(views::Button* sender,
                                            const ui::Event& event) {
   if (sender == controls_.reset_button) {
     DCHECK(!resetting_);
-    UMA_HISTOGRAM_CUSTOM_COUNTS("SettingsResetBubble.NumNoThanksPerReset",
-                                num_ignored_bubbles_, 0, kMaxIgnored,
-                                kNumIgnoredBuckets);
     content::RecordAction(content::UserMetricsAction(
         "SettingsResetBubble.Reset"));
 
@@ -410,14 +389,17 @@ void ProfileResetBubbleView::ButtonPressed(views::Button* sender,
     controls_.no_thanks_button->SetEnabled(false);
     SchedulePaint();
 
-    reset_callback_.Run(
-        controls_.report_settings_checkbox->checked(),
-        base::Bind(&ProfileResetBubbleView::OnResetProfileSettingsDone,
-                   weak_factory_.GetWeakPtr()));
+    if (global_error_) {
+      global_error_->OnBubbleViewResetButtonPressed(
+          controls_.report_settings_checkbox->checked());
+    }
   } else if (sender == controls_.no_thanks_button) {
     DCHECK(!resetting_);
     content::RecordAction(content::UserMetricsAction(
         "SettingsResetBubble.NoThanks"));
+
+    if (global_error_)
+      global_error_->OnBubbleViewNoThanksButtonPressed();
     StartFade(false);
     return;
   } else if (sender == controls_.help_button) {
@@ -436,14 +418,17 @@ void ProfileResetBubbleView::LinkClicked(views::Link* source, int flags) {
       NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false));
 }
 
-void ProfileResetBubbleView::OnResetProfileSettingsDone() {
+void ProfileResetBubbleView::CloseBubbleView() {
   resetting_ = false;
   StartFade(false);
 }
 
-void ShowProfileResetBubble(Browser* browser,
-                            const ProfileResetCallback& reset_callback) {
-  ProfileResetBubbleView::ShowBubble(
-      BrowserView::GetBrowserViewForBrowser(browser)->toolbar()->app_menu(),
-      browser, browser->profile(), reset_callback);
+bool IsProfileResetBubbleSupported() {
+  return true;
+}
+
+GlobalErrorBubbleViewBase* ShowProfileResetBubble(
+    const base::WeakPtr<ProfileResetGlobalError>& global_error,
+    Browser* browser) {
+  return ProfileResetBubbleView::ShowBubble(global_error, browser);
 }

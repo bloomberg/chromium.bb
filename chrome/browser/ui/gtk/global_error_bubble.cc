@@ -30,9 +30,10 @@ const int kMinMessageLabelWidth = 250;
 
 }  // namespace
 
-GlobalErrorBubble::GlobalErrorBubble(Browser* browser,
-                                     const base::WeakPtr<GlobalError>& error,
-                                     GtkWidget* anchor)
+GlobalErrorBubble::GlobalErrorBubble(
+    Browser* browser,
+    const base::WeakPtr<GlobalErrorWithStandardBubble>& error,
+    GtkWidget* anchor)
     : browser_(browser),
       bubble_(NULL),
       error_(error),
@@ -153,9 +154,9 @@ void GlobalErrorBubble::CloseBubbleView() {
   bubble_->Close();
 }
 
-GlobalErrorBubbleViewBase* GlobalErrorBubbleViewBase::ShowBubbleView(
+GlobalErrorBubbleViewBase* GlobalErrorBubbleViewBase::ShowStandardBubbleView(
     Browser* browser,
-    const base::WeakPtr<GlobalError>& error) {
+    const base::WeakPtr<GlobalErrorWithStandardBubble>& error) {
   BrowserWindowGtk* browser_window =
       BrowserWindowGtk::GetBrowserWindowForNativeWindow(
           browser->window()->GetNativeWindow());

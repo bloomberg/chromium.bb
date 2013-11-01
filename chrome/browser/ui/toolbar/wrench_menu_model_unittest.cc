@@ -39,31 +39,9 @@ class MenuError : public GlobalError {
   virtual void ExecuteMenuItem(Browser* browser) OVERRIDE { execute_count_++; }
 
   virtual bool HasBubbleView() OVERRIDE { return false; }
-  virtual string16 GetBubbleViewTitle() OVERRIDE {
-    ADD_FAILURE();
-    return string16();
-  }
-  virtual std::vector<string16> GetBubbleViewMessages() OVERRIDE {
-    ADD_FAILURE();
-    return std::vector<string16>();
-  }
-  virtual string16 GetBubbleViewAcceptButtonLabel() OVERRIDE {
-    ADD_FAILURE();
-    return string16();
-  }
-  virtual string16 GetBubbleViewCancelButtonLabel() OVERRIDE {
-    ADD_FAILURE();
-    return string16();
-  }
-  virtual void OnBubbleViewDidClose(Browser* browser) OVERRIDE {
-    ADD_FAILURE();
-  }
-  virtual void BubbleViewAcceptButtonPressed(Browser* browser) OVERRIDE {
-    ADD_FAILURE();
-  }
-  virtual void BubbleViewCancelButtonPressed(Browser* browser) OVERRIDE {
-    ADD_FAILURE();
-  }
+  virtual bool HasShownBubbleView() OVERRIDE { return false; }
+  virtual void ShowBubbleView(Browser* browser) OVERRIDE { ADD_FAILURE(); }
+  virtual GlobalErrorBubbleViewBase* GetBubbleView() OVERRIDE { return NULL; }
 
  private:
   int command_id_;

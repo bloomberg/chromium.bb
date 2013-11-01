@@ -12,7 +12,7 @@
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 
 class Browser;
-class GlobalError;
+class GlobalErrorWithStandardBubble;
 @class GTMUILocalizerAndLayoutTweaker;
 @class GTMWidthBasedTweaker;
 class Profile;
@@ -25,7 +25,7 @@ class Bridge;
 // about a global error.
 @interface GlobalErrorBubbleController : BaseBubbleController {
  @private
-  base::WeakPtr<GlobalError> error_;
+  base::WeakPtr<GlobalErrorWithStandardBubble> error_;
   scoped_ptr<GlobalErrorBubbleControllerInternal::Bridge> bridge_;
   Browser* browser_;
 
