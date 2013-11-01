@@ -114,7 +114,7 @@ int UmaPolicy::MatchActionToStatus(scoped_refptr<Action> action) {
   if (action->api_name() == "HTMLDocument.write" ||
       action->api_name() == "HTMLDocument.writeln") {
     ret_bit |= kDocumentWrite;
-  } else if (action->api_name() == "HTMLElement.innerHTML") {
+  } else if (action->api_name() == "Element.innerHTML") {
     ret_bit |= kInnerHtml;
   } else if (action->api_name() == "Document.createElement") {
     std::string arg;
