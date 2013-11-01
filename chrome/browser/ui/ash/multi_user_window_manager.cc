@@ -240,39 +240,47 @@ void MultiUserWindowManager::ActiveUserChanged(const std::string& user_id) {
   DCHECK(user_id != current_user_id_);
   std::string old_user = current_user_id_;
   current_user_id_ = user_id;
-  // When a user has changed, we need to show only the windows which are visible
-  // to that user. Additionally we need to restore the activation state of the
-  // windows. Changing the activation state however triggers the window position
-  // manager to auto position the windows. To avoid that we disable it
-  // temporarily.
-
   // Disable the window position manager and the MRU window tracker temporarily.
   scoped_ptr<UserChangeActionDisabler> disabler(new UserChangeActionDisabler);
 
+  // We need to show/hide the windows in the same order as they were created in
+  // their parent window(s) to keep the layer / window hierarchy in sync. To
+  // achieve that we first collect all parent windows and then enumerate all
+  // windows in those parent windows and show or hide them accordingly.
+
+  // Create a list of all parent windows we have to check and their parents.
+  std::set<aura::Window*> parent_list;
   for (WindowToEntryMap::iterator it = window_to_entry_.begin();
        it != window_to_entry_.end(); ++it) {
-    aura::Window* window = it->first;
-    bool should_be_visible =
-        it->second->show_for_user() == user_id && it->second->show();
-    bool is_visible = window->IsVisible();
-    if (should_be_visible != is_visible)
-      SetWindowVisibility(window, should_be_visible);
+    aura::Window* parent = it->first->parent();
+    if (parent_list.find(parent) == parent_list.end())
+      parent_list.insert(parent);
   }
 
-  // Retrieve the list of visible windows in their order. Use the list to
-  // traverse the windows and activate them, thus restoring the previous state.
-  // TODO(skuhne): Unfortunately the MruWindowTracker does not let us get the
-  // full list (visible and invisible) and after our visibility changes the
-  // actual order of windows can be changed. A workaround would be to implement
-  // our own aura::client::ActivationChangeObserver and track the activations
-  // from our known windows. But that should be part of another CL.
-  ash::MruWindowTracker* tracker =
-      ash::Shell::GetInstance()->mru_window_tracker();
-  ash::MruWindowTracker::WindowList mru_list = tracker->BuildWindowList(true);
-  for (ash::MruWindowTracker::WindowList::iterator mru_iterator =
-           mru_list.begin();
-       mru_iterator != mru_list.end(); mru_iterator++) {
-    aura::Window* window = *mru_iterator;
+  // Traverse the found parent windows to handle their child windows in order of
+  // their appearance.
+  for (std::set<aura::Window*>::iterator it_parents = parent_list.begin();
+       it_parents != parent_list.end(); ++it_parents) {
+    const aura::Window::Windows window_list = (*it_parents)->children();
+    for (aura::Window::Windows::const_iterator it_window = window_list.begin();
+         it_window != window_list.end(); ++it_window) {
+      aura::Window* window = *it_window;
+      WindowToEntryMap::iterator it_map = window_to_entry_.find(window);
+      if (it_map != window_to_entry_.end()) {
+        bool should_be_visible = it_map->second->show_for_user() == user_id &&
+                                 it_map->second->show();
+        bool is_visible = window->IsVisible();
+        if (should_be_visible != is_visible)
+          SetWindowVisibility(window, should_be_visible);
+      }
+    }
+  }
+
+  // Finally we need to restore the previously active window.
+  ash::MruWindowTracker::WindowList mru_list =
+      ash::Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList();
+  if (mru_list.size()) {
+    aura::Window* window = mru_list[0];
     ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
     if (IsWindowOnDesktopOfUser(window, user_id) &&
         !window_state->IsMinimized()) {
