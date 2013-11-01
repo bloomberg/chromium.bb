@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/braille_display_private/brlapi_connection.h"
 
+#include <errno.h>
+
 #include "base/message_loop/message_loop.h"
 #include "base/sys_info.h"
 
@@ -35,7 +37,8 @@ class BrlapiConnectionImpl : public BrlapiConnection,
     Disconnect();
   }
 
-  virtual bool Connect(const OnDataReadyCallback& on_data_ready) OVERRIDE;
+  virtual ConnectResult Connect(const OnDataReadyCallback& on_data_ready)
+      OVERRIDE;
   virtual void Disconnect() OVERRIDE;
   virtual bool Connected() OVERRIDE { return handle_; }
   virtual brlapi_error_t* BrlapiError() OVERRIDE;
@@ -53,6 +56,7 @@ class BrlapiConnectionImpl : public BrlapiConnection,
 
  private:
   bool CheckConnected();
+  ConnectResult ConnectResultForError();
 
   LibBrlapiLoader* libbrlapi_loader_;
   scoped_ptr<brlapi_handle_t, base::FreeDeleter> handle_;
@@ -74,15 +78,16 @@ scoped_ptr<BrlapiConnection> BrlapiConnection::Create(
   return scoped_ptr<BrlapiConnection>(new BrlapiConnectionImpl(loader));
 }
 
-bool BrlapiConnectionImpl::Connect(const OnDataReadyCallback& on_data_ready) {
+BrlapiConnection::ConnectResult BrlapiConnectionImpl::Connect(
+    const OnDataReadyCallback& on_data_ready) {
   DCHECK(!handle_);
   handle_.reset((brlapi_handle_t*) malloc(
       libbrlapi_loader_->brlapi_getHandleSize()));
   int fd = libbrlapi_loader_->brlapi__openConnection(handle_.get(), NULL, NULL);
   if (fd < 0) {
     handle_.reset();
-    LOG(ERROR) << "Error connecting to brlapi: " << BrlapiStrError();
-    return false;
+    VLOG(1) << "Error connecting to brlapi: " << BrlapiStrError();
+    return ConnectResultForError();
   }
   int path[2] = {0, 0};
   int pathElements = 0;
@@ -96,24 +101,23 @@ bool BrlapiConnectionImpl::Connect(const OnDataReadyCallback& on_data_ready) {
           handle_.get(), path, pathElements, NULL) < 0) {
     LOG(ERROR) << "brlapi: couldn't enter tty mode: " << BrlapiStrError();
     Disconnect();
-    return false;
+    return CONNECT_ERROR_RETRY;
   }
 
   size_t size;
   if (!GetDisplaySize(&size)) {
     // Error already logged.
     Disconnect();
-    return false;
+    return CONNECT_ERROR_RETRY;
   }
 
   // A display size of 0 means no display connected.  We can't reliably
-
   // detect when a display gets connected, so fail and let the caller
   // retry connecting.
   if (size == 0) {
-    LOG(ERROR) << "No braille display connected";
+    VLOG(1) << "No braille display connected";
     Disconnect();
-    return false;
+    return CONNECT_ERROR_RETRY;
   }
 
   const brlapi_keyCode_t extraKeys[] = {
@@ -124,19 +128,19 @@ bool BrlapiConnectionImpl::Connect(const OnDataReadyCallback& on_data_ready) {
           arraysize(extraKeys)) < 0) {
     LOG(ERROR) << "Couldn't acceptKeys: " << BrlapiStrError();
     Disconnect();
-    return false;
+    return CONNECT_ERROR_RETRY;
   }
 
   if (!MessageLoopForIO::current()->WatchFileDescriptor(
           fd, true, MessageLoopForIO::WATCH_READ, &fd_controller_, this)) {
     LOG(ERROR) << "Couldn't watch file descriptor " << fd;
     Disconnect();
-    return false;
+    return CONNECT_ERROR_RETRY;
   }
 
   on_data_ready_ = on_data_ready;
 
-  return true;
+  return CONNECT_SUCCESS;
 }
 
 void BrlapiConnectionImpl::Disconnect() {
@@ -175,7 +179,7 @@ bool BrlapiConnectionImpl::WriteDots(const unsigned char* cells) {
   if (!CheckConnected())
     return false;
   if (libbrlapi_loader_->brlapi__writeDots(handle_.get(), cells) < 0) {
-    LOG(ERROR) << "Couldn't write to brlapi: " << BrlapiStrError();
+    VLOG(1) << "Couldn't write to brlapi: " << BrlapiStrError();
     return false;
   }
   return true;
@@ -194,6 +198,19 @@ bool BrlapiConnectionImpl::CheckConnected() {
     return false;
   }
   return true;
+}
+
+BrlapiConnection::ConnectResult BrlapiConnectionImpl::ConnectResultForError() {
+  const brlapi_error_t* error = BrlapiError();
+  // For the majority of users, the socket file will never exist because
+  // the daemon is never run.  Avoid retrying in this case, relying on
+  // the socket directory to change and trigger further tries if the
+  // daemon comes up later on.
+  if (error->brlerrno == BRLAPI_ERROR_LIBCERR
+      && error->libcerrno == ENOENT) {
+    return CONNECT_ERROR_NO_RETRY;
+  }
+  return CONNECT_ERROR_RETRY;
 }
 
 }  // namespace braille_display_private

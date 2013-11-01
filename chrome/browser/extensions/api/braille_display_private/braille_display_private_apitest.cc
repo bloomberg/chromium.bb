@@ -65,7 +65,8 @@ class MockBrlapiConnection : public BrlapiConnection {
  public:
   explicit MockBrlapiConnection(MockBrlapiConnectionData* data)
       : data_(data) {}
-  virtual bool Connect(const OnDataReadyCallback& on_data_ready) OVERRIDE {
+  virtual ConnectResult Connect(const OnDataReadyCallback& on_data_ready)
+      OVERRIDE {
     data_->connected = true;
     on_data_ready_ = on_data_ready;
     if (!data_->pending_keys.empty()) {
@@ -73,7 +74,7 @@ class MockBrlapiConnection : public BrlapiConnection {
                               base::Bind(&MockBrlapiConnection::NotifyDataReady,
                                         base::Unretained(this)));
     }
-    return true;
+    return CONNECT_SUCCESS;
   }
 
   virtual void Disconnect() OVERRIDE {

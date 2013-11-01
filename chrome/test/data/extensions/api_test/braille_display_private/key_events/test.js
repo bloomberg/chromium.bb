@@ -24,14 +24,31 @@ function eventListener(event) {
   console.log("Event number: " + event_number);
 }
 
+function waitForDisplay(callback) {
+  var callbackCompleted = chrome.test.callbackAdded();
+  var displayStateHandler = function(state) {
+    chrome.test.assertTrue(state.available, "Display not available");
+    chrome.test.assertEq(11, state.textCellCount);
+    callback(state);
+    callbackCompleted();
+    chrome.brailleDisplayPrivate.onDisplayStateChanged.removeListener(
+        displayStateHandler);
+  };
+  chrome.brailleDisplayPrivate.onDisplayStateChanged.addListener(
+      displayStateHandler);
+  chrome.brailleDisplayPrivate.getDisplayState(pass(function(state) {
+    if (state.available) {
+      displayStateHandler(state);
+    } else {
+      console.log("Display not ready yet");
+    }
+  }));
+}
+
 chrome.test.runTests([
   function testKeyEvents() {
     chrome.brailleDisplayPrivate.onKeyEvent.addListener(eventListener);
     callbackCompleted = chrome.test.callbackAdded();
-    chrome.brailleDisplayPrivate.getDisplayState(pass(
-        function(state) {
-          chrome.test.assertTrue(state.available, "Display not available");
-          chrome.test.assertEq(11, state.textCellCount);
-        }));
+    waitForDisplay(pass());
   }
 ]);

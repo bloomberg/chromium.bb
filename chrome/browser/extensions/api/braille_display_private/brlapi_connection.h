@@ -20,11 +20,17 @@ class BrlapiConnection {
  public:
   typedef base::Closure OnDataReadyCallback;
 
+  enum ConnectResult {
+    CONNECT_ERROR_RETRY,
+    CONNECT_ERROR_NO_RETRY,
+    CONNECT_SUCCESS,
+  };
+
   static scoped_ptr<BrlapiConnection> Create(LibBrlapiLoader* loader);
 
   virtual ~BrlapiConnection();
 
-  virtual bool Connect(const OnDataReadyCallback& onDataReady) = 0;
+  virtual ConnectResult Connect(const OnDataReadyCallback& onDataReady) = 0;
 
   virtual void Disconnect() = 0;
 

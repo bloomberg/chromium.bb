@@ -15,27 +15,42 @@ function createBuffer(size, element) {
   return buf.buffer;
 }
 
+function waitForDisplay(callback) {
+  var callbackCompleted = chrome.test.callbackAdded();
+  var displayStateHandler = function(state) {
+    chrome.test.assertTrue(state.available, "Display not available");
+    chrome.test.assertEq(11, state.textCellCount);
+    callback(state);
+    callbackCompleted();
+    chrome.brailleDisplayPrivate.onDisplayStateChanged.removeListener(
+        displayStateHandler);
+  };
+  chrome.brailleDisplayPrivate.onDisplayStateChanged.addListener(
+      displayStateHandler);
+  chrome.brailleDisplayPrivate.getDisplayState(pass(function(state) {
+    if (state.available) {
+      displayStateHandler(state);
+    } else {
+      console.log("Display not ready yet");
+    }
+  }));
+}
+
 chrome.test.runTests([
   function testWriteEmptyCells() {
-    chrome.brailleDisplayPrivate.getDisplayState(pass(
-        function(state) {
-          chrome.test.assertTrue(state.available, "Display not available");
-          chrome.test.assertEq(11, state.textCellCount);
-          chrome.brailleDisplayPrivate.writeDots(new ArrayBuffer(0));
-          chrome.brailleDisplayPrivate.getDisplayState(pass());
-        }));
+    waitForDisplay(pass(function() {
+      chrome.brailleDisplayPrivate.writeDots(new ArrayBuffer(0));
+      chrome.brailleDisplayPrivate.getDisplayState(pass());
+    }));
   },
 
   function testWriteOversizedCells() {
-    chrome.brailleDisplayPrivate.getDisplayState(pass(
-        function(state) {
-          chrome.test.assertTrue(state.available, "Display not available");
-          chrome.test.assertEq(11, state.textCellCount);
-          chrome.brailleDisplayPrivate.writeDots(
-              createBuffer(state.textCellCount + 1, 1));
-          chrome.brailleDisplayPrivate.writeDots(
-              createBuffer(1000000, 2));
-          chrome.brailleDisplayPrivate.getDisplayState(pass());
-        }));
+    waitForDisplay(pass(function(state) {
+      chrome.brailleDisplayPrivate.writeDots(
+          createBuffer(state.textCellCount + 1, 1));
+      chrome.brailleDisplayPrivate.writeDots(
+          createBuffer(1000000, 2));
+      chrome.brailleDisplayPrivate.getDisplayState(pass());
+    }));
   }
 ]);
