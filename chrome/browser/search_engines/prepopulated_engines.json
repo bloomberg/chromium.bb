@@ -26,7 +26,7 @@
 
     // Increment this if you change the data in ways that mean users with
     // existing data should get a new version.
-    "kCurrentDataVersion": 66
+    "kCurrentDataVersion": 67
   },
 
   // The following engines are included in country lists and are added to the
@@ -487,7 +487,7 @@
       "keyword": "google.com",
       "favicon_url": "http://www.google.com/favicon.ico",
       "search_url": "{google:baseURL}search?q={searchTerms}&{google:RLZ}{google:originalQueryForSuggestion}{google:assistedQueryStats}{google:searchFieldtrialParameter}{google:bookmarkBarPinned}{google:searchClient}{google:sourceId}{google:instantExtendedEnabledParameter}{google:omniboxStartMarginParameter}ie={inputEncoding}",
-      "suggest_url": "{google:baseSuggestURL}search?{google:searchFieldtrialParameter}client={google:suggestClient}&q={searchTerms}&{google:cursorPosition}{google:zeroPrefixUrl}{google:pageClassification}sugkey={google:suggestAPIKeyParameter}",
+      "suggest_url": "{google:baseSuggestURL}search?{google:searchFieldtrialParameter}client={google:suggestClient}&xssi=t&q={searchTerms}&{google:cursorPosition}{google:zeroPrefixUrl}{google:pageClassification}sugkey={google:suggestAPIKeyParameter}",
       "instant_url": "{google:baseURL}webhp?sourceid=chrome-instant&{google:RLZ}{google:forceInstantResults}{google:instantExtendedEnabledParameter}{google:ntpIsThemedParameter}{google:omniboxStartMarginParameter}ie={inputEncoding}",
       "image_url": "{google:baseURL}searchbyimage/upload",
       "new_tab_url": "{google:baseURL}_/chrome/newtab?{google:RLZ}{google:instantExtendedEnabledParameter}{google:ntpIsThemedParameter}ie={inputEncoding}",
