@@ -315,11 +315,6 @@ void ComponentLoader::AddBookmarksExtensions() {
 #endif
 }
 
-void ComponentLoader::AddNetworkSpeechSynthesisExtension() {
-  Add(IDR_NETWORK_SPEECH_SYNTHESIS_MANIFEST,
-      base::FilePath(FILE_PATH_LITERAL("network_speech_synthesis")));
-}
-
 void ComponentLoader::AddWithName(int manifest_resource_id,
                                   const base::FilePath& root_directory,
                                   const std::string& name) {
@@ -531,10 +526,6 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
         base::FilePath(FILE_PATH_LITERAL("google_now")));
   }
 #endif
-
-#if defined(GOOGLE_CHROME_BUILD)
-  AddNetworkSpeechSynthesisExtension();
-#endif  // defined(GOOGLE_CHROME_BUILD)
 }
 
 void ComponentLoader::UnloadComponent(ComponentExtensionInfo* component) {

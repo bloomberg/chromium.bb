@@ -6,10 +6,7 @@
 #include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/speech/tts_platform.h"
@@ -34,8 +31,6 @@ using ::testing::_;
 namespace {
 int g_saved_utterance_id;
 }
-
-namespace extensions {
 
 class MockTtsPlatformImpl : public TtsPlatformImpl {
  public:
@@ -380,16 +375,7 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, LangMatching) {
   ASSERT_TRUE(RunExtensionTest("tts_engine/lang_matching")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(TtsApiTest, NetworkSpeechEngine) {
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      profile())->extension_service();
-  service->component_loader()->AddNetworkSpeechSynthesisExtension();
-  ASSERT_TRUE(RunExtensionTest("tts_engine/network_speech_engine")) << message_;
-}
-
 // http://crbug.com/122474
 IN_PROC_BROWSER_TEST_F(TtsApiTest, EngineApi) {
   ASSERT_TRUE(RunExtensionTest("tts_engine/engine_api")) << message_;
 }
-
-}  // namespace extensions

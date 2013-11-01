@@ -91,7 +91,6 @@ void GetExtensionVoices(Profile* profile, std::vector<VoiceData>* out_voices) {
       result_voice.native = false;
       result_voice.name = voice.voice_name;
       result_voice.lang = voice.lang;
-      result_voice.remote = voice.remote;
       result_voice.extension_id = extension->id();
       if (voice.gender == constants::kGenderMale)
         result_voice.gender = TTS_GENDER_MALE;

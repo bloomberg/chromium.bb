@@ -39,18 +39,6 @@ class SystemPrivateGetUpdateStatusFunction
   virtual bool RunImpl() OVERRIDE;
 };
 
-// API function which returns the Google API key.
-class SystemPrivateGetApiKeyFunction : public SyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("systemPrivate.getApiKey", SYSTEMPRIVATE_GETAPIKEY)
-
- protected:
-  virtual ~SystemPrivateGetApiKeyFunction() {}
-
-  // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
-};
-
 // Dispatches systemPrivate.onBrightnessChanged event for extensions.
 void DispatchBrightnessChangedEvent(int brightness, bool user_initiated);
 

@@ -11,7 +11,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/system_private.h"
 #include "chrome/common/pref_names.h"
-#include "google_apis/google_api_keys.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -130,11 +129,6 @@ bool SystemPrivateGetUpdateStatusFunction::RunImpl() {
   dict->SetDouble(kDownloadProgressKey, download_progress);
   SetResult(dict);
 
-  return true;
-}
-
-bool SystemPrivateGetApiKeyFunction::RunImpl() {
-  SetResult(new base::StringValue(google_apis::GetAPIKey()));
   return true;
 }
 

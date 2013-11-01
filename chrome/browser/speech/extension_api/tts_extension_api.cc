@@ -307,7 +307,6 @@ bool TtsGetVoicesFunction::RunImpl() {
     const VoiceData& voice = voices[i];
     DictionaryValue* result_voice = new DictionaryValue();
     result_voice->SetString(constants::kVoiceNameKey, voice.name);
-    result_voice->SetBoolean(constants::kRemoteKey, voice.remote);
     if (!voice.lang.empty())
       result_voice->SetString(constants::kLangKey, voice.lang);
     if (voice.gender == TTS_GENDER_MALE)

@@ -115,7 +115,6 @@ class ComponentLoader {
   void AddHangoutServicesExtension();
   void AddImageLoaderExtension();
   void AddBookmarksExtensions();
-  void AddNetworkSpeechSynthesisExtension();
 
   void AddWithName(int manifest_resource_id,
                    const base::FilePath& root_directory,
@@ -135,8 +134,6 @@ class ComponentLoader {
   // List of registered component extensions (see Manifest::Location).
   typedef std::vector<ComponentExtensionInfo> RegisteredComponentExtensions;
   RegisteredComponentExtensions component_extensions_;
-
-  FRIEND_TEST_ALL_PREFIXES(TtsApiTest, NetworkSpeechEngine);
 
   DISALLOW_COPY_AND_ASSIGN(ComponentLoader);
 };
