@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 
@@ -22,14 +23,50 @@ int64 AmountOfMemory(int pages_name) {
   return static_cast<int64>(pages) * page_size;
 }
 
+size_t MaxSharedMemorySize() {
+  std::string contents;
+  base::ReadFileToString(base::FilePath("/proc/sys/kernel/shmmax"), &contents);
+  DCHECK(!contents.empty());
+  if (!contents.empty() && contents[contents.length() - 1] == '\n') {
+    contents.erase(contents.length() - 1);
+  }
+
+  int64 limit;
+  if (!base::StringToInt64(contents, &limit)) {
+    limit = 0;
+  }
+  if (limit < 0 ||
+      static_cast<uint64>(limit) > std::numeric_limits<size_t>::max()) {
+    limit = 0;
+  }
+  DCHECK(limit > 0);
+  return static_cast<size_t>(limit);
+}
+
+class LazySysInfo {
+ public:
+  LazySysInfo()
+      : kPhysicalMemory_(AmountOfMemory(_SC_PHYS_PAGES)),
+        kMaxSharedMemorySize_(MaxSharedMemorySize()) { }
+
+  ~LazySysInfo() { }
+
+  int64 physical_memory() { return kPhysicalMemory_; }
+  size_t max_shared_memory_size() { return kMaxSharedMemorySize_; }
+
+ private:
+  const int64 kPhysicalMemory_;
+  const size_t kMaxSharedMemorySize_;
+
+  DISALLOW_COPY_AND_ASSIGN(LazySysInfo);
+};
+
+base::LazyInstance<LazySysInfo>::Leaky
+    g_lazy_sys_info = LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
 namespace base {
-
-// static
-int64 SysInfo::AmountOfPhysicalMemory() {
-  return AmountOfMemory(_SC_PHYS_PAGES);
-}
 
 // static
 int64 SysInfo::AmountOfAvailablePhysicalMemory() {
@@ -37,26 +74,13 @@ int64 SysInfo::AmountOfAvailablePhysicalMemory() {
 }
 
 // static
+int64 SysInfo::AmountOfPhysicalMemory() {
+  return g_lazy_sys_info.Get().physical_memory();
+}
+
+// static
 size_t SysInfo::MaxSharedMemorySize() {
-  static int64 limit;
-  static bool limit_valid = false;
-  if (!limit_valid) {
-    std::string contents;
-    ReadFileToString(FilePath("/proc/sys/kernel/shmmax"), &contents);
-    DCHECK(!contents.empty());
-    if (!contents.empty() && contents[contents.length() - 1] == '\n') {
-      contents.erase(contents.length() - 1);
-    }
-    if (base::StringToInt64(contents, &limit)) {
-      DCHECK(limit >= 0);
-      DCHECK(static_cast<uint64>(limit) <= std::numeric_limits<size_t>::max());
-      limit_valid = true;
-    } else {
-      NOTREACHED();
-      return 0;
-    }
-  }
-  return static_cast<size_t>(limit);
+  return g_lazy_sys_info.Get().max_shared_memory_size();
 }
 
 // static
