@@ -414,7 +414,24 @@ private:
     // Returns a hit-tested VisiblePosition for the given point
     WebCore::VisiblePosition visiblePositionForWindowPoint(const WebPoint&);
 
-    FrameLoaderClientImpl m_frameLoaderClient;
+    class WebFrameInit : public WebCore::FrameInit {
+    public:
+        static PassRefPtr<WebFrameInit> create(WebFrameImpl* webFrameImpl, int64_t frameID)
+        {
+            return adoptRef(new WebFrameInit(webFrameImpl, frameID));
+        }
+
+    private:
+        WebFrameInit(WebFrameImpl* webFrameImpl, int64_t frameID)
+            : WebCore::FrameInit(frameID)
+            , m_frameLoaderClientImpl(webFrameImpl)
+        {
+            setFrameLoaderClient(&m_frameLoaderClientImpl);
+        }
+
+        FrameLoaderClientImpl m_frameLoaderClientImpl;
+    };
+    RefPtr<WebFrameInit> m_frameInit;
 
     WebFrameClient* m_client;
 
@@ -494,9 +511,6 @@ private:
     // Valid between calls to BeginPrint() and EndPrint(). Containts the print
     // information. Is used by PrintPage().
     OwnPtr<ChromePrintContext> m_printContext;
-
-    // The identifier of this frame.
-    long long m_embedderIdentifier;
 
     // Ensure we don't overwrite valid history data during same document loads
     // from HistoryItems

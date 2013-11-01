@@ -50,6 +50,7 @@ HistoryItem::HistoryItem()
     : m_pageScaleFactor(0)
     , m_itemSequenceNumber(generateSequenceNumber())
     , m_documentSequenceNumber(generateSequenceNumber())
+    , m_targetFrameID(0)
 {
 }
 
@@ -67,6 +68,8 @@ inline HistoryItem::HistoryItem(const HistoryItem& item)
     , m_pageScaleFactor(item.m_pageScaleFactor)
     , m_itemSequenceNumber(item.m_itemSequenceNumber)
     , m_documentSequenceNumber(item.m_documentSequenceNumber)
+    , m_targetFrameID(item.m_targetFrameID)
+    , m_stateObject(item.m_stateObject)
     , m_formContentType(item.m_formContentType)
 {
     if (item.m_formData)
@@ -92,6 +95,7 @@ void HistoryItem::reset()
     m_itemSequenceNumber = generateSequenceNumber();
     m_stateObject = 0;
     m_documentSequenceNumber = generateSequenceNumber();
+    m_targetFrameID = 0;
     m_formData = 0;
     m_formContentType = String();
     clearChildren();

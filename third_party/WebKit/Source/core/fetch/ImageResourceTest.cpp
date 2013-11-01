@@ -126,7 +126,7 @@ TEST(ImageResourceTest, CancelOnDetach)
     fillWithEmptyClients(pageClients);
     EmptyFrameLoaderClient frameLoaderClient;
     Page page(pageClients);
-    RefPtr<Frame> frame = Frame::create(&page, 0, &frameLoaderClient);
+    RefPtr<Frame> frame = Frame::create(FrameInit::create(0, &page, &frameLoaderClient));
     frame->setView(FrameView::create(frame.get()));
     frame->init();
     RefPtr<DocumentLoader> documentLoader = DocumentLoader::create(ResourceRequest(testURL), SubstituteData());

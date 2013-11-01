@@ -357,6 +357,7 @@ void HistoryController::initializeItem(HistoryItem* item)
 
     item->setURL(url);
     item->setTarget(m_frame->tree().uniqueName());
+    item->setTargetFrameID(m_frame->frameID());
     item->setOriginalURLString(originalURL.string());
 
     // Save form state if this is a POST

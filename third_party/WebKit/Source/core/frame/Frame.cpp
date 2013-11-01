@@ -100,12 +100,11 @@ static inline float parentTextZoomFactor(Frame* frame)
     return parent->textZoomFactor();
 }
 
-inline Frame::Frame(Page* page, HTMLFrameOwnerElement* ownerElement, FrameLoaderClient* frameLoaderClient)
-    : m_page(page)
-    , m_treeNode(this, parentFromOwnerElement(ownerElement))
-    , m_loader(this, frameLoaderClient)
+inline Frame::Frame(PassRefPtr<FrameInit> frameInit)
+    : m_page(frameInit->page())
+    , m_treeNode(this, parentFromOwnerElement(frameInit->ownerElement()))
+    , m_loader(this, frameInit->frameLoaderClient())
     , m_navigationScheduler(this)
-    , m_ownerElement(ownerElement)
     , m_script(adoptPtr(new ScriptController(this)))
     , m_editor(Editor::create(*this))
     , m_spellChecker(SpellChecker::create(*this))
@@ -113,6 +112,7 @@ inline Frame::Frame(Page* page, HTMLFrameOwnerElement* ownerElement, FrameLoader
     , m_eventHandler(adoptPtr(new EventHandler(this)))
     , m_animationController(adoptPtr(new AnimationController(this)))
     , m_inputMethodController(InputMethodController::create(*this))
+    , m_frameInit(frameInit)
     , m_pageZoomFactor(parentPageZoomFactor(this))
     , m_textZoomFactor(parentTextZoomFactor(this))
 #if ENABLE(ORIENTATION_EVENTS)
@@ -120,11 +120,11 @@ inline Frame::Frame(Page* page, HTMLFrameOwnerElement* ownerElement, FrameLoader
 #endif
     , m_inViewSourceMode(false)
 {
-    ASSERT(page);
+    ASSERT(m_page);
 
-    if (ownerElement) {
-        page->incrementSubframeCount();
-        ownerElement->setContentFrame(*this);
+    if (ownerElement()) {
+        m_page->incrementSubframeCount();
+        ownerElement()->setContentFrame(*this);
     }
 
 #ifndef NDEBUG
@@ -132,11 +132,11 @@ inline Frame::Frame(Page* page, HTMLFrameOwnerElement* ownerElement, FrameLoader
 #endif
 }
 
-PassRefPtr<Frame> Frame::create(Page* page, HTMLFrameOwnerElement* ownerElement, FrameLoaderClient* client)
+PassRefPtr<Frame> Frame::create(PassRefPtr<FrameInit> frameInit)
 {
-    RefPtr<Frame> frame = adoptRef(new Frame(page, ownerElement, client));
-    if (!ownerElement)
-        page->setMainFrame(frame);
+    RefPtr<Frame> frame = adoptRef(new Frame(frameInit));
+    if (!frame->ownerElement())
+        frame->page()->setMainFrame(frame);
     InspectorInstrumentation::frameAttachedToParent(frame.get());
     return frame.release();
 }
@@ -289,15 +289,14 @@ RenderView* Frame::contentRenderer() const
 
 RenderPart* Frame::ownerRenderer() const
 {
-    HTMLFrameOwnerElement* ownerElement = m_ownerElement;
-    if (!ownerElement)
+    if (!ownerElement())
         return 0;
-    RenderObject* object = ownerElement->renderer();
+    RenderObject* object = ownerElement()->renderer();
     if (!object)
         return 0;
     // FIXME: If <object> is ever fixed to disassociate itself from frames
     // that it has started but canceled, then this can turn into an ASSERT
-    // since m_ownerElement would be 0 when the load is canceled.
+    // since ownerElement() would be 0 when the load is canceled.
     // https://bugs.webkit.org/show_bug.cgi?id=18585
     if (!object->isRenderPart())
         return 0;
@@ -349,14 +348,14 @@ void Frame::detachFromPage()
 
 void Frame::disconnectOwnerElement()
 {
-    if (m_ownerElement) {
+    if (ownerElement()) {
         if (Document* doc = document())
             doc->topDocument()->clearAXObjectCache();
-        m_ownerElement->clearContentFrame();
+        ownerElement()->clearContentFrame();
         if (m_page)
             m_page->decrementSubframeCount();
     }
-    m_ownerElement = 0;
+    m_frameInit->setOwnerElement(0);
 }
 
 String Frame::documentTypeString() const

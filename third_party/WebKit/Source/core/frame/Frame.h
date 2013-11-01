@@ -68,9 +68,44 @@ namespace WebCore {
     class VisiblePosition;
     class Widget;
 
+    class FrameInit : public RefCounted<FrameInit> {
+    public:
+        // For creating a dummy Frame
+        static PassRefPtr<FrameInit> create(int64_t frameID, Page* page, FrameLoaderClient* client)
+        {
+            return adoptRef(new FrameInit(frameID, page, client));
+        }
+
+        void setFrameLoaderClient(FrameLoaderClient* client) { m_client = client; }
+        FrameLoaderClient* frameLoaderClient() const { return m_client; }
+
+        int64_t frameID() const { return m_frameID; }
+
+        void setPage(Page* page) { m_page = page; }
+        Page* page() const { return m_page; }
+
+        void setOwnerElement(HTMLFrameOwnerElement* ownerElement) { m_ownerElement = ownerElement; }
+        HTMLFrameOwnerElement* ownerElement() const { return m_ownerElement; }
+
+    protected:
+        FrameInit(int64_t frameID, Page* page = 0, FrameLoaderClient* client = 0)
+            : m_frameID(frameID)
+            , m_client(client)
+            , m_page(page)
+            , m_ownerElement(0)
+        {
+        }
+
+    private:
+        int64_t m_frameID;
+        FrameLoaderClient* m_client;
+        Page* m_page;
+        HTMLFrameOwnerElement* m_ownerElement;
+    };
+
     class Frame : public RefCounted<Frame> {
     public:
-        static PassRefPtr<Frame> create(Page*, HTMLFrameOwnerElement*, FrameLoaderClient*);
+        static PassRefPtr<Frame> create(PassRefPtr<FrameInit>);
 
         void init();
         void setView(PassRefPtr<FrameView>);
@@ -111,6 +146,8 @@ namespace WebCore {
         RenderPart* ownerRenderer() const; // Renderer for the element that contains this frame.
 
         void dispatchVisibilityStateChangeEvent();
+
+        int64_t frameID() const { return m_frameInit->frameID(); }
 
     // ======== All public functions below this point are candidates to move out of Frame into another class. ========
 
@@ -166,7 +203,7 @@ namespace WebCore {
     // ========
 
     private:
-        Frame(Page*, HTMLFrameOwnerElement*, FrameLoaderClient*);
+        Frame(PassRefPtr<FrameInit>);
 
         HashSet<FrameDestructionObserver*> m_destructionObservers;
 
@@ -175,7 +212,6 @@ namespace WebCore {
         mutable FrameLoader m_loader;
         mutable NavigationScheduler m_navigationScheduler;
 
-        HTMLFrameOwnerElement* m_ownerElement;
         RefPtr<FrameView> m_view;
         RefPtr<DOMWindow> m_domWindow;
 
@@ -186,6 +222,8 @@ namespace WebCore {
         const OwnPtr<EventHandler> m_eventHandler;
         OwnPtr<AnimationController> m_animationController;
         OwnPtr<InputMethodController> m_inputMethodController;
+
+        RefPtr<FrameInit> m_frameInit;
 
         float m_pageZoomFactor;
         float m_textZoomFactor;
@@ -254,7 +292,7 @@ namespace WebCore {
 
     inline HTMLFrameOwnerElement* Frame::ownerElement() const
     {
-        return m_ownerElement;
+        return m_frameInit->ownerElement();
     }
 
     inline bool Frame::inViewSourceMode() const

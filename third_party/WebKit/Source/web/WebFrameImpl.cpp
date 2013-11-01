@@ -545,7 +545,7 @@ void WebFrameImpl::setName(const WebString& name)
 
 long long WebFrameImpl::embedderIdentifier() const
 {
-    return m_embedderIdentifier;
+    return m_frameInit->frameID();
 }
 
 WebVector<WebIconURL> WebFrameImpl::iconURLs(int iconTypesMask) const
@@ -2096,7 +2096,7 @@ WebFrameImpl* WebFrameImpl::create(WebFrameClient* client, long long embedderIde
 
 WebFrameImpl::WebFrameImpl(WebFrameClient* client, long long embedderIdentifier)
     : FrameDestructionObserver(0)
-    , m_frameLoaderClient(this)
+    , m_frameInit(WebFrameInit::create(this, embedderIdentifier))
     , m_client(client)
     , m_currentActiveMatchFrame(0)
     , m_activeMatchIndexInCurrentFrame(-1)
@@ -2111,7 +2111,6 @@ WebFrameImpl::WebFrameImpl(WebFrameClient* client, long long embedderIdentifier)
     , m_nextInvalidateAfter(0)
     , m_findMatchMarkersVersion(0)
     , m_findMatchRectsAreValid(false)
-    , m_embedderIdentifier(embedderIdentifier)
     , m_inSameDocumentHistoryLoad(false)
     , m_inputEventsScaleFactorForEmulation(1)
 {
@@ -2135,7 +2134,8 @@ void WebFrameImpl::setWebCoreFrame(WebCore::Frame* frame)
 
 void WebFrameImpl::initializeAsMainFrame(WebCore::Page* page)
 {
-    RefPtr<Frame> mainFrame = Frame::create(page, 0, &m_frameLoaderClient);
+    m_frameInit->setPage(page);
+    RefPtr<Frame> mainFrame = Frame::create(m_frameInit);
     setWebCoreFrame(mainFrame.get());
 
     // Add reference on behalf of FrameLoader. See comments in
@@ -2173,7 +2173,9 @@ PassRefPtr<Frame> WebFrameImpl::createChildFrame(const FrameLoadRequest& request
     // of this file for more info.
     webframe->ref();
 
-    RefPtr<Frame> childFrame = Frame::create(frame()->page(), ownerElement, &webframe->m_frameLoaderClient);
+    webframe->m_frameInit->setPage(frame()->page());
+    webframe->m_frameInit->setOwnerElement(ownerElement);
+    RefPtr<Frame> childFrame = Frame::create(webframe->m_frameInit);
     webframe->setWebCoreFrame(childFrame.get());
 
     childFrame->tree().setName(request.frameName());

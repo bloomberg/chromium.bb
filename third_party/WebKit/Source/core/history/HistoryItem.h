@@ -91,6 +91,9 @@ public:
     void setDocumentSequenceNumber(long long number) { m_documentSequenceNumber = number; }
     long long documentSequenceNumber() const { return m_documentSequenceNumber; }
 
+    void setTargetFrameID(int64_t id) { m_targetFrameID = id; }
+    int64_t targetFrameID() const { return m_targetFrameID; }
+
     void setFormInfoFromRequest(const ResourceRequest&);
     void setFormData(PassRefPtr<FormData>);
     void setFormContentType(const String&);
@@ -139,6 +142,8 @@ private:
     // refer to the same instance of a document.  Traversing history from one
     // such HistoryItem to another preserves the document.
     int64_t m_documentSequenceNumber;
+
+    int64_t m_targetFrameID;
 
     // Support for HTML5 History
     RefPtr<SerializedScriptValue> m_stateObject;
