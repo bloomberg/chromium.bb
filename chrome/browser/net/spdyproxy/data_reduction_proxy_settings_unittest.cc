@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings_android.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/metrics/variations/variations_util.h"
@@ -24,8 +25,13 @@
 #include "net/http/http_auth.h"
 #include "net/http/http_auth_cache.h"
 #include "net/url_request/test_url_fetcher_factory.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+using testing::_;
+using testing::AnyNumber;
+using testing::Return;
 
 const char kDataReductionProxyOrigin[] = "https://foo.com:443/";
 const char kDataReductionProxyFallback[] = "http://bar.com:80";
@@ -35,57 +41,6 @@ const char kProbeURLWithOKResponse[] = "http://ok.org/";
 const char kProbeURLWithBadResponse[] = "http://bad.org/";
 const char kProbeURLWithNoResponse[] = "http://no.org/";
 
-class TestDataReductionProxySettings
-    : public DataReductionProxySettings {
- public:
-  TestDataReductionProxySettings(PrefService* profile_prefs,
-                                 PrefService* local_state_prefs)
-      : DataReductionProxySettings(),
-        success_(false),
-        fake_fetcher_request_count_(0),
-        profile_prefs_(profile_prefs),
-        local_state_prefs_(local_state_prefs) {
-  }
-
-  // TODO(marq): Replace virtual methods with MOCKs. Also mock LogProxyState.
-  // DataReductionProxySettings implementation:
-  virtual net::URLFetcher* GetURLFetcher() OVERRIDE {
-    if (test_url_.empty())
-      return NULL;
-    net::URLFetcher* fetcher =
-        new net::FakeURLFetcher(GURL(test_url_), this, response_, success_);
-    fake_fetcher_request_count_++;
-    return fetcher;
-  }
-
-  virtual PrefService* GetOriginalProfilePrefs() OVERRIDE {
-    return profile_prefs_;
-  }
-
-  virtual PrefService* GetLocalStatePrefs() OVERRIDE {
-    return local_state_prefs_;
-  }
-
-  void set_probe_result(const std::string& test_url,
-                        const std::string& response,
-                        bool success) {
-    test_url_ = test_url;
-    response_ = response;
-    success_ = success;
-  }
-
-  const int fake_fetcher_request_count() {
-    return fake_fetcher_request_count_;
-  }
-
- private:
-  std::string test_url_;
-  std::string response_;
-  bool success_;
-  int fake_fetcher_request_count_;
-  PrefService* profile_prefs_;
-  PrefService* local_state_prefs_;
-};
 
 DataReductionProxySettingsTestBase::DataReductionProxySettingsTestBase()
     : testing::Test() {
@@ -128,6 +83,62 @@ void DataReductionProxySettingsTestBase::SetUp() {
       last_update_time_.ToInternalValue());
 }
 
+template <class C>
+void DataReductionProxySettingsTestBase::ResetSettings() {
+  MockDataReductionProxySettings<C>* settings =
+      new MockDataReductionProxySettings<C>;
+  EXPECT_CALL(*settings, GetOriginalProfilePrefs())
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(&pref_service_));
+  EXPECT_CALL(*settings, GetLocalStatePrefs())
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(&pref_service_));
+  EXPECT_CALL(*settings, GetURLFetcher()).Times(0);
+  EXPECT_CALL(*settings, LogProxyState(_, _)).Times(0);
+  settings_.reset(settings);
+}
+
+// Explicitly generate required instantiations.
+template void
+DataReductionProxySettingsTestBase::ResetSettings<DataReductionProxySettings>();
+template void
+DataReductionProxySettingsTestBase::ResetSettings<
+    DataReductionProxySettingsAndroid>();
+
+template <class C>
+void DataReductionProxySettingsTestBase::SetProbeResult(
+    const std::string& test_url,
+    const std::string& response,
+    bool success,
+    int expected_calls)  {
+  MockDataReductionProxySettings<C>* settings =
+      static_cast<MockDataReductionProxySettings<C>*>(settings_.get());
+  if (0 == expected_calls) {
+    EXPECT_CALL(*settings, GetURLFetcher()).Times(0);
+  } else {
+    EXPECT_CALL(*settings, GetURLFetcher())
+        .Times(expected_calls)
+        .WillRepeatedly(Return(new net::FakeURLFetcher(GURL(test_url),
+                                                       settings,
+                                                       response,
+                                                       success)));
+  }
+}
+
+// Explicitly generate required instantiations.
+template void
+DataReductionProxySettingsTestBase::SetProbeResult<DataReductionProxySettings>(
+    const std::string& test_url,
+    const std::string& response,
+    bool success,
+    int expected_calls);
+template void
+DataReductionProxySettingsTestBase::SetProbeResult<
+    DataReductionProxySettingsAndroid>(const std::string& test_url,
+                                       const std::string& response,
+                                       bool success,
+                                       int expected_calls);
+
 void DataReductionProxySettingsTestBase::CheckProxyPref(
     const std::string& expected_servers,
     const std::string& expected_mode) {
@@ -154,14 +165,17 @@ void DataReductionProxySettingsTestBase::CheckProxyConfigs(
   }
 }
 
-void DataReductionProxySettingsTestBase::CheckProbe(bool initially_enabled,
-                                                const std::string& probe_url,
-                                                const std::string& response,
-                                                bool request_success,
-                                                bool expected_enabled) {
+void DataReductionProxySettingsTestBase::CheckProbe(
+    bool initially_enabled,
+    const std::string& probe_url,
+    const std::string& response,
+    bool request_success,
+    bool expected_enabled) {
   pref_service_.SetBoolean(prefs::kSpdyProxyAuthEnabled, initially_enabled);
-  SetProbeResult(probe_url, response, request_success);
-  Settings()->MaybeActivateDataReductionProxy(false);
+  settings_->disabled_by_carrier_ = false;
+  SetProbeResult(
+      probe_url, response, request_success, initially_enabled ? 1 : 0);
+  settings_->MaybeActivateDataReductionProxy(false);
   base::MessageLoop::current()->RunUntilIdle();
   CheckProxyConfigs(expected_enabled);
 }
@@ -171,8 +185,8 @@ void DataReductionProxySettingsTestBase::CheckProbeOnIPChange(
     const std::string& response,
     bool request_success,
     bool expected_enabled) {
-  SetProbeResult(probe_url, response, request_success);
-  Settings()->OnIPAddressChanged();
+  SetProbeResult(probe_url, response, request_success, 1);
+  settings_->OnIPAddressChanged();
   base::MessageLoop::current()->RunUntilIdle();
   CheckProxyConfigs(expected_enabled);
 }
@@ -183,7 +197,8 @@ void DataReductionProxySettingsTestBase::CheckOnPrefChange(
     const std::string& response,
     bool request_success,
     bool expected_enabled) {
-  SetProbeResult(probe_url, response, request_success);
+  SetProbeResult(
+      probe_url, response, request_success, expected_enabled ? 1 : 0);
   pref_service_.SetBoolean(prefs::kSpdyProxyAuthEnabled, enabled);
   base::MessageLoop::current()->RunUntilIdle();
   CheckProxyConfigs(expected_enabled);
@@ -194,8 +209,9 @@ void DataReductionProxySettingsTestBase::CheckInitDataReductionProxy(
   AddProxyToCommandLine();
   base::MessageLoop loop(base::MessageLoop::TYPE_UI);
   pref_service_.SetBoolean(prefs::kSpdyProxyAuthEnabled, enabled_at_startup);
-  SetProbeResult(kProbeURLWithOKResponse, "OK", true);
-  Settings()->InitDataReductionProxySettings();
+  SetProbeResult(
+      kProbeURLWithOKResponse, "OK", true, enabled_at_startup ? 1 : 0);
+  settings_->InitDataReductionProxySettings();
   base::MessageLoop::current()->RunUntilIdle();
   if (enabled_at_startup) {
     CheckProxyConfigs(enabled_at_startup);
@@ -205,26 +221,12 @@ void DataReductionProxySettingsTestBase::CheckInitDataReductionProxy(
   }
 }
 
-class DataReductionProxySettingsTest:
-    public DataReductionProxySettingsTestBase {
- public:
-  virtual void ResetSettings() OVERRIDE {
-    settings_.reset(new TestDataReductionProxySettings(&pref_service_,
-                                                       &pref_service_));
-  }
 
-  virtual TestDataReductionProxySettings* Settings() OVERRIDE {
-    return settings_.get();
-  }
-
-  virtual void SetProbeResult(const std::string& test_url,
-                              const std::string& response,
-                              bool success) OVERRIDE {
-    settings_->set_probe_result(test_url, response, success);
-  }
-
-  scoped_ptr<TestDataReductionProxySettings> settings_;
+class DataReductionProxySettingsTest
+    : public ConcreteDataReductionProxySettingsTest<
+        DataReductionProxySettings> {
 };
+
 
 TEST_F(DataReductionProxySettingsTest, TestAuthenticationInit) {
   AddProxyToCommandLine();
@@ -233,18 +235,16 @@ TEST_F(DataReductionProxySettingsTest, TestAuthenticationInit) {
   DataReductionProxySettings::DataReductionProxyList proxies =
       DataReductionProxySettings::GetDataReductionProxies();
   for (DataReductionProxySettings::DataReductionProxyList::iterator it =
-          proxies.begin();  it != proxies.end(); ++it) {
-    //GURL server = (*it).GetOrigin();
-    net::HttpAuthCache::Entry* entry =
-        cache.LookupByPath(*it, std::string());
+           proxies.begin();  it != proxies.end(); ++it) {
+    net::HttpAuthCache::Entry* entry = cache.LookupByPath(*it, std::string());
     EXPECT_TRUE(entry != NULL);
     EXPECT_EQ(net::HttpAuth::AUTH_SCHEME_SPDYPROXY, entry->scheme());
     EXPECT_EQ("SpdyProxy", entry->auth_challenge().substr(0,9));
   }
   GURL bad_server = GURL("https://bad.proxy.com/");
-    net::HttpAuthCache::Entry* entry =
-        cache.LookupByPath(bad_server, std::string());
-    EXPECT_TRUE(entry == NULL);
+  net::HttpAuthCache::Entry* entry =
+      cache.LookupByPath(bad_server, std::string());
+  EXPECT_TRUE(entry == NULL);
 }
 
 TEST_F(DataReductionProxySettingsTest, TestGetDataReductionProxyOrigin) {
@@ -451,9 +451,18 @@ TEST_F(DataReductionProxySettingsTest, TestContentLengths) {
   EXPECT_EQ(expected_total_received_content_length, received_content_length);
 }
 
+// TODO(marq): Add a test to verify that MaybeActivateDataReductionProxy
+// is called when the pref in |settings_| is enabled.
 TEST_F(DataReductionProxySettingsTest, TestMaybeActivateDataReductionProxy) {
   AddProxyToCommandLine();
-  settings_->InitPrefMembers();
+
+  // Initialize the pref member in |settings_| without the usual callback
+  // so it won't trigger MaybeActivateDataReductionProxy when the pref value
+  // is set.
+  settings_->spdy_proxy_auth_enabled_.Init(
+      prefs::kSpdyProxyAuthEnabled,
+      settings_->GetOriginalProfilePrefs());
+
   // TODO(bengr): Test enabling/disabling while a probe is outstanding.
   base::MessageLoop loop(base::MessageLoop::TYPE_UI);
   // The proxy is enabled initially.
@@ -463,12 +472,9 @@ TEST_F(DataReductionProxySettingsTest, TestMaybeActivateDataReductionProxy) {
   CheckProbe(true, kProbeURLWithOKResponse, "OK", true, true);
   // Request failed, expect proxy to be disabled.
   CheckProbe(true, kProbeURLWithNoResponse, "", false, false);
-
   // The proxy is disabled initially. Probes should not be emitted to change
   // state.
-  EXPECT_EQ(3, settings_->fake_fetcher_request_count());
   CheckProbe(false, kProbeURLWithOKResponse, "OK", true, false);
-  EXPECT_EQ(3, settings_->fake_fetcher_request_count());
 }
 
 TEST_F(DataReductionProxySettingsTest, TestOnIPAddressChanged) {
@@ -485,7 +491,6 @@ TEST_F(DataReductionProxySettingsTest, TestOnIPAddressChanged) {
   CheckProbeOnIPChange(kProbeURLWithBadResponse, "Bad", true, false);
   // IP address change triggers a probe that succeed. Proxy is enabled.
   CheckProbeOnIPChange(kProbeURLWithBadResponse, "OK", true, true);
-  EXPECT_EQ(4, settings_->fake_fetcher_request_count());
 }
 
 TEST_F(DataReductionProxySettingsTest, TestOnProxyEnabledPrefChange) {
@@ -499,7 +504,6 @@ TEST_F(DataReductionProxySettingsTest, TestOnProxyEnabledPrefChange) {
   CheckOnPrefChange(false, kProbeURLWithOKResponse, "OK", true, false);
   // The pref is enabled, so correspondingly should be the proxy.
   CheckOnPrefChange(true, kProbeURLWithOKResponse, "OK", true, true);
-  EXPECT_EQ(1, settings_->fake_fetcher_request_count());
 }
 
 TEST_F(DataReductionProxySettingsTest, TestInitDataReductionProxyOn) {
@@ -507,6 +511,10 @@ TEST_F(DataReductionProxySettingsTest, TestInitDataReductionProxyOn) {
 }
 
 TEST_F(DataReductionProxySettingsTest, TestInitDataReductionProxyOff) {
+  // InitDataReductionProxySettings with the preference off will directly call
+  // LogProxyState.
+  MockSettings* settings = static_cast<MockSettings*>(settings_.get());
+  EXPECT_CALL(*settings, LogProxyState(false, true)).Times(1);
   CheckInitDataReductionProxy(false);
 }
 

@@ -76,6 +76,8 @@ DataReductionProxySettingsAndroid::DataReductionProxySettingsAndroid(
     JNIEnv* env, jobject obj): DataReductionProxySettings() {
 }
 
+DataReductionProxySettingsAndroid::DataReductionProxySettingsAndroid() {}
+
 DataReductionProxySettingsAndroid::~DataReductionProxySettingsAndroid() {}
 
 void DataReductionProxySettingsAndroid::InitDataReductionProxySettings(

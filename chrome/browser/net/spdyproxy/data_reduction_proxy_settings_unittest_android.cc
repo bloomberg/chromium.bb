@@ -4,7 +4,6 @@
 
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings_unittest.h"
 
-
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
@@ -22,6 +21,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/variations/entropy_provider.h"
 #include "net/url_request/test_url_fetcher_factory.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -29,79 +29,10 @@ const char kDataReductionProxyOrigin[] = "https://foo.com:443/";
 const char kDataReductionProxyOriginPAC[] = "HTTPS foo.com:443;";
 const char kDataReductionProxyFallbackPAC[] = "HTTP bar.com:80;";
 
-class TestDataReductionProxySettingsAndroid
-    : public DataReductionProxySettingsAndroid {
- public:
-  TestDataReductionProxySettingsAndroid(JNIEnv* env,
-                                        jobject obj,
-                                        PrefService* profile_prefs,
-                                        PrefService* local_state_prefs)
-      : DataReductionProxySettingsAndroid(env, obj),
-        success_(false),
-        fake_fetcher_request_count_(0),
-        profile_prefs_(profile_prefs),
-        local_state_prefs_(local_state_prefs) {
-  }
-
-  // TODO(marq): Replace virtual methods with MOCKs.
-  // DataReductionProxySettingsAndroid implementation:
-  virtual net::URLFetcher* GetURLFetcher() OVERRIDE {
-    if (test_url_.empty())
-      return NULL;
-    net::URLFetcher* fetcher =
-        new net::FakeURLFetcher(GURL(test_url_), this, response_, success_);
-    fake_fetcher_request_count_++;
-    return fetcher;
-  }
-
-  virtual PrefService* GetOriginalProfilePrefs() OVERRIDE {
-    return profile_prefs_;
-  }
-
-  virtual PrefService* GetLocalStatePrefs() OVERRIDE {
-    return local_state_prefs_;
-  }
-
-  void set_probe_result(const std::string& test_url,
-                        const std::string& response,
-                        bool success) {
-    test_url_ = test_url;
-    response_ = response;
-    success_ = success;
-  }
-
-  const int fake_fetcher_request_count() {
-    return fake_fetcher_request_count_;
-  }
-
- private:
-  std::string test_url_;
-  std::string response_;
-  bool success_;
-  int fake_fetcher_request_count_;
-  PrefService* profile_prefs_;
-  PrefService* local_state_prefs_;
-};
-
 class DataReductionProxySettingsAndroidTest
-    : public DataReductionProxySettingsTestBase {
+    : public ConcreteDataReductionProxySettingsTest<
+        DataReductionProxySettingsAndroid> {
  public:
-  virtual void ResetSettings() OVERRIDE{
-    settings_.reset(new TestDataReductionProxySettingsAndroid(NULL, NULL,
-                                                              &pref_service_,
-                                                              &pref_service_));
-  }
-
-  virtual TestDataReductionProxySettingsAndroid* Settings() OVERRIDE {
-    return settings_.get();
-  }
-
-  virtual void SetProbeResult(const std::string& test_url,
-                              const std::string& response,
-                              bool success) OVERRIDE {
-    settings_->set_probe_result(test_url, response, success);
-  }
-
   // DataReductionProxySettingsTest implementation:
   virtual void SetUp() OVERRIDE {
     env_ = base::android::AttachCurrentThread();
@@ -120,7 +51,10 @@ class DataReductionProxySettingsAndroidTest
     ASSERT_EQ(expected_pac_url, pac_url);
   }
 
-  scoped_ptr<TestDataReductionProxySettingsAndroid> settings_;
+  DataReductionProxySettingsAndroid* Settings() {
+    return static_cast<DataReductionProxySettingsAndroid*>(settings_.get());
+  }
+
   JNIEnv* env_;
 };
 
@@ -128,7 +62,7 @@ TEST_F(DataReductionProxySettingsAndroidTest, TestGetDataReductionProxyOrigin) {
   AddProxyToCommandLine();
   // SetUp() adds the origin to the command line, which should be returned here.
   ScopedJavaLocalRef<jstring> result =
-      settings_->GetDataReductionProxyOrigin(env_, NULL);
+      Settings()->GetDataReductionProxyOrigin(env_, NULL);
   ASSERT_TRUE(result.obj());
   const base::android::JavaRef<jstring>& str_ref = result;
   EXPECT_EQ(kDataReductionProxyOrigin, ConvertJavaStringToUTF8(str_ref));
@@ -137,21 +71,21 @@ TEST_F(DataReductionProxySettingsAndroidTest, TestGetDataReductionProxyOrigin) {
 // Confirm that the bypass rule functions generate the intended JavaScript
 // code for the Proxy PAC.
 TEST_F(DataReductionProxySettingsAndroidTest, TestBypassPACRules) {
-  settings_->AddURLPatternToBypass("http://foo.com/*");
-  settings_->AddHostPatternToBypass("bar.com");
+  Settings()->AddURLPatternToBypass("http://foo.com/*");
+  Settings()->AddHostPatternToBypass("bar.com");
 
-  EXPECT_EQ(settings_->pac_bypass_rules_.size(), 1u);
+  EXPECT_EQ(Settings()->pac_bypass_rules_.size(), 1u);
   EXPECT_EQ("shExpMatch(url, 'http://foo.com/*')",
-            settings_->pac_bypass_rules_[0]);
+            Settings()->pac_bypass_rules_[0]);
 
-  EXPECT_EQ(settings_->BypassRules().size(), 1u);
-  EXPECT_EQ("bar.com", settings_->BypassRules()[0]);
+  EXPECT_EQ(Settings()->BypassRules().size(), 1u);
+  EXPECT_EQ("bar.com", Settings()->BypassRules()[0]);
 }
 
 TEST_F(DataReductionProxySettingsAndroidTest, TestSetProxyPac) {
   AddProxyToCommandLine();
-  settings_->AddDefaultProxyBypassRules();
-  std::string raw_pac = settings_->GetProxyPacScript();
+  Settings()->AddDefaultProxyBypassRules();
+  std::string raw_pac = Settings()->GetProxyPacScript();
   EXPECT_NE(raw_pac.find(kDataReductionProxyOriginPAC), std::string::npos);
   EXPECT_NE(raw_pac.find(kDataReductionProxyFallbackPAC), std::string::npos);;
   std::string pac;
@@ -159,19 +93,19 @@ TEST_F(DataReductionProxySettingsAndroidTest, TestSetProxyPac) {
   std::string expected_pac_url =
       "data:application/x-ns-proxy-autoconfig;base64," + pac;
   // Test setting the PAC, without generating histograms.
-  settings_->SetHasTurnedOn();
-  settings_->SetProxyConfigs(true, false);
+  Settings()->SetHasTurnedOn();
+  Settings()->SetProxyConfigs(true, false);
   CheckProxyPacPref(expected_pac_url,
                     ProxyModeToString(ProxyPrefs::MODE_PAC_SCRIPT));
 
   // Test disabling the PAC, without generating histograms.
-  settings_->SetHasTurnedOff();
-  settings_->SetProxyConfigs(false, false);
+  Settings()->SetHasTurnedOff();
+  Settings()->SetProxyConfigs(false, false);
   CheckProxyPacPref(std::string(), ProxyModeToString(ProxyPrefs::MODE_SYSTEM));
 }
 
 TEST_F(DataReductionProxySettingsAndroidTest, TestGetDailyContentLengths) {
-  ScopedJavaLocalRef<jlongArray> result = settings_->GetDailyContentLengths(
+  ScopedJavaLocalRef<jlongArray> result = Settings()->GetDailyContentLengths(
         env_, prefs::kDailyHttpOriginalContentLength);
   ASSERT_TRUE(result.obj());
 

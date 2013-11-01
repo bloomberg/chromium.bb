@@ -25,6 +25,9 @@ using base::android::ScopedJavaLocalRef;
 class DataReductionProxySettingsAndroid : public DataReductionProxySettings {
  public:
   DataReductionProxySettingsAndroid(JNIEnv* env, jobject obj);
+  // Parameter-free constructor for C++ unit tests.
+  DataReductionProxySettingsAndroid();
+
   virtual ~DataReductionProxySettingsAndroid();
 
   void InitDataReductionProxySettings(JNIEnv* env, jobject obj);
