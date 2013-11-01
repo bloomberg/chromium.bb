@@ -12,6 +12,7 @@
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_file_io.h"
+#include "ppapi/cpp/dev/var_resource_dev.h"
 #include "ppapi/cpp/file_io.h"
 #include "ppapi/cpp/file_ref.h"
 #include "ppapi/cpp/file_system.h"
@@ -166,18 +167,6 @@ TestPostMessage::~TestPostMessage() {
 
 bool TestPostMessage::Init() {
   bool success = CheckTestingInterface();
-
-  core_interface_ = static_cast<const PPB_Core*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_CORE_INTERFACE));
-  file_system_interface_ = static_cast<const PPB_FileSystem*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_FILESYSTEM_INTERFACE));
-  var_interface_ = static_cast<const PPB_Var*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_VAR_INTERFACE));
-  var_resource_interface_ = static_cast<const PPB_VarResource_Dev*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_VAR_RESOURCE_DEV_INTERFACE));
-  if (!core_interface_ || !file_system_interface_ || !var_interface_ ||
-      !var_resource_interface_)
-    return false;
 
   // Set up a special listener that only responds to a FINISHED_WAITING string.
   // This is for use by WaitForMessages.
@@ -609,12 +598,13 @@ std::string TestPostMessage::TestSendingResource() {
       "  }, function() { callback(null); });"
       "}";
   ASSERT_EQ(PostAsyncMessageFromJavaScriptAndWait(js_code), 1);
-  // TODO(mgiuca): Use the C++ API instead of the C API, when it is available.
-  PP_Var var = message_data_.back().Detach();
-  PP_Resource result = var_resource_interface_->VarToResource(var);
-  ASSERT_TRUE(file_system_interface_->IsFileSystem(result));
+  pp::Var var = message_data_.back();
+  ASSERT_TRUE(var.is_resource());
+  pp::VarResource_Dev var_resource(var);
+  pp::Resource result = var_resource.AsResource();
+  ASSERT_TRUE(pp::FileSystem::IsFileSystem(result));
   {
-    pp::FileSystem file_system(pp::PASS_REF, result);
+    pp::FileSystem file_system(result);
     std::string file_path("/");
     file_path += kTestFilename;
     pp::FileRef file_ref(file_system, file_path.c_str());
@@ -639,7 +629,6 @@ std::string TestPostMessage::TestSendingResource() {
     ASSERT_EQ(length, callback.result());
     ASSERT_EQ(0, memcmp(buffer, kTestString, length));
   }
-  var_interface_->Release(var);
 
   WaitForMessages();
   message_data_.clear();

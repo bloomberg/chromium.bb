@@ -52,4 +52,11 @@ void Resource::PassRefFromConstructor(PP_Resource resource) {
   pp_resource_ = resource;
 }
 
+void Resource::Clear() {
+  if (is_null())
+    return;
+  Module::Get()->core()->ReleaseResource(pp_resource_);
+  pp_resource_ = 0;
+}
+
 }  // namespace pp

@@ -135,6 +135,11 @@ class Var {
   /// @return true if this <code>Var</code> is a dictionary, otherwise false.
   bool is_dictionary() const { return var_.type == PP_VARTYPE_DICTIONARY; }
 
+  /// This function determines if this <code>Var</code> is a resource.
+  ///
+  /// @return true if this <code>Var</code> is a resource, otherwise false.
+  bool is_resource() const { return var_.type == PP_VARTYPE_RESOURCE; }
+
   /// This function determines if this <code>Var</code> is an integer value.
   /// The <code>is_int</code> function returns the internal representation.
   /// The JavaScript runtime may convert between the two as needed, so the

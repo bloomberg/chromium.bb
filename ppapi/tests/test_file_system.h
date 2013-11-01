@@ -20,6 +20,7 @@ class TestFileSystem : public TestCase {
  private:
   std::string TestOpen();
   std::string TestMultipleOpens();
+  std::string TestResourceConversion();
 };
 
 #endif  // PAPPI_TESTS_TEST_FILE_SYSTEM_H_

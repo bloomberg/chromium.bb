@@ -8,9 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "ppapi/c/dev/ppb_var_resource_dev.h"
-#include "ppapi/c/ppb_file_system.h"
-#include "ppapi/c/ppb_var.h"
 #include "ppapi/tests/test_case.h"
 
 class TestPostMessage : public TestCase {
@@ -107,12 +104,6 @@ class TestPostMessage : public TestCase {
   // This is used to store pp::Var objects we receive via a call to
   // HandleMessage.
   VarVector message_data_;
-
-  // Interfaces for C APIs.
-  const PPB_Core* core_interface_;
-  const PPB_FileSystem* file_system_interface_;
-  const PPB_Var* var_interface_;
-  const PPB_VarResource_Dev* var_resource_interface_;
 };
 
 #endif  // PPAPI_TESTS_TEST_POST_MESSAGE_H_

@@ -7,7 +7,9 @@
 #include <string.h>
 
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/cpp/file_io.h"
 #include "ppapi/cpp/file_system.h"
+#include "ppapi/cpp/resource.h"
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
 
@@ -20,6 +22,7 @@ bool TestFileSystem::Init() {
 void TestFileSystem::RunTests(const std::string& filter) {
   RUN_CALLBACK_TEST(TestFileSystem, Open, filter);
   RUN_CALLBACK_TEST(TestFileSystem, MultipleOpens, filter);
+  RUN_CALLBACK_TEST(TestFileSystem, ResourceConversion, filter);
 }
 
 std::string TestFileSystem::TestOpen() {
@@ -64,6 +67,24 @@ std::string TestFileSystem::TestMultipleOpens() {
   callback_3.WaitForResult(file_system.Open(1024, callback_3.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback_3);
   ASSERT_NE(PP_OK, callback_3.result());
+
+  PASS();
+}
+
+std::string TestFileSystem::TestResourceConversion() {
+  // Test conversion from file system Resource to FileSystem.
+  pp::FileSystem file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
+  pp::Resource file_system_resource(file_system);
+  ASSERT_TRUE(pp::FileSystem::IsFileSystem(file_system_resource));
+  pp::FileSystem file_system_resource_file_system(file_system_resource);
+  ASSERT_FALSE(file_system_resource_file_system.is_null());
+
+  // Test conversion that a non-file system Resource does not register as a
+  // FileSystem. (We cannot test conversion, since this is an assertion on a
+  // debug build.)
+  pp::FileIO non_file_system(instance_);
+  pp::Resource non_file_system_resource(non_file_system);
+  ASSERT_FALSE(pp::FileSystem::IsFileSystem(non_file_system_resource));
 
   PASS();
 }

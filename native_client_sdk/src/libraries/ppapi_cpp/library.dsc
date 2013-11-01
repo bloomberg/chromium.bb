@@ -85,6 +85,7 @@
         'scrollbar_dev.cc',
         'graphics_2d_dev.cc',
         'widget_dev.cc',
+        'var_resource_dev.cc',
 
         # ppapi/cpp/extensions
         'event_base.cc',
@@ -182,6 +183,7 @@
         'text_input_dev.h',
         'truetype_font_dev.h',
         'url_util_dev.h',
+        'var_resource_dev.h',
         'video_capture_client_dev.h',
         'video_capture_dev.h',
         'video_decoder_client_dev.h',

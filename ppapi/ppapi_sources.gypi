@@ -270,6 +270,8 @@
       'cpp/dev/truetype_font_dev.h',
       'cpp/dev/url_util_dev.cc',
       'cpp/dev/url_util_dev.h',
+      'cpp/dev/var_resource_dev.cc',
+      'cpp/dev/var_resource_dev.h',
       'cpp/dev/video_capture_client_dev.cc',
       'cpp/dev/video_capture_client_dev.h',
       'cpp/dev/video_capture_dev.cc',
