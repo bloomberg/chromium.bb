@@ -1508,13 +1508,19 @@ bool AutofillDialogViews::SaveDetailsLocally() {
 }
 
 const content::NavigationController* AutofillDialogViews::ShowSignIn() {
+  // The initial minimum width and height are set such that the dialog
+  // won't change size before the page is loaded.
+  int min_width = GetContentsBounds().width();
+  // The height has to include the button strip.
+  int min_height = GetDialogClientView()->GetContentsBounds().height();
+
   // TODO(abodenha): We should be able to use the WebContents of the WebView
   // to navigate instead of LoadInitialURL. Figure out why it doesn't work.
   sign_in_delegate_.reset(
       new AutofillDialogSignInDelegate(
           this, sign_in_web_view_->GetWebContents(),
           delegate_->GetWebContents()->GetDelegate(),
-          GetMinimumSignInViewSize(), GetMaximumSignInViewSize()));
+          gfx::Size(min_width, min_height), GetMaximumSignInViewSize()));
   sign_in_web_view_->LoadInitialURL(delegate_->SignInUrl());
 
   ShowDialogInMode(SIGN_IN);
