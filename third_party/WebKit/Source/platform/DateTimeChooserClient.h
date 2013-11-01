@@ -31,11 +31,14 @@
 #ifndef DateTimeChooserClient_h
 #define DateTimeChooserClient_h
 
+#include "platform/PlatformExport.h"
+#include "wtf/text/WTFString.h"
+
 namespace WebCore {
 
-class DateTimeChooserClient {
+class PLATFORM_EXPORT DateTimeChooserClient {
 public:
-    virtual ~DateTimeChooserClient() { }
+    virtual ~DateTimeChooserClient();
 
     // Called when user picked a value.
     virtual void didChooseValue(const String&) = 0;

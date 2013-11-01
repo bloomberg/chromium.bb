@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,50 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DateTimeChooserImpl_h
-#define DateTimeChooserImpl_h
-
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-#include "core/page/PagePopupClient.h"
+#include "config.h"
 #include "platform/DateTimeChooser.h"
 
 namespace WebCore {
-class PagePopup;
-class DateTimeChooserClient;
+
+DateTimeChooser::~DateTimeChooser()
+{
 }
 
-namespace WebKit {
-
-class ChromeClientImpl;
-
-class DateTimeChooserImpl : public WebCore::DateTimeChooser, public WebCore::PagePopupClient {
-public:
-    static PassRefPtr<DateTimeChooserImpl> create(ChromeClientImpl*, WebCore::DateTimeChooserClient*, const WebCore::DateTimeChooserParameters&);
-    virtual ~DateTimeChooserImpl();
-
-    // DateTimeChooser functions:
-    virtual void endChooser() OVERRIDE;
-
-private:
-    DateTimeChooserImpl(ChromeClientImpl*, WebCore::DateTimeChooserClient*, const WebCore::DateTimeChooserParameters&);
-    // PagePopupClient functions:
-    virtual WebCore::IntSize contentSize() OVERRIDE;
-    virtual void writeDocument(WebCore::DocumentWriter&) OVERRIDE;
-    virtual WebCore::Locale& locale() OVERRIDE;
-    virtual void setValueAndClosePopup(int, const String&) OVERRIDE;
-    virtual void setValue(const String&) OVERRIDE;
-    virtual void closePopup() OVERRIDE;
-    virtual void didClosePopup() OVERRIDE;
-
-    ChromeClientImpl* m_chromeClient;
-    WebCore::DateTimeChooserClient* m_client;
-    WebCore::PagePopup* m_popup;
-    WebCore::DateTimeChooserParameters m_parameters;
-    OwnPtr<WebCore::Locale> m_locale;
-};
-
-}
-
-#endif // ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-
-#endif // DateTimeChooserImpl_h
+} // namespace WebCore

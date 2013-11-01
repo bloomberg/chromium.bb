@@ -27,7 +27,7 @@
 #define ExternalDateTimeChooser_h
 
 #if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-#include "core/platform/DateTimeChooser.h"
+#include "platform/DateTimeChooser.h"
 
 namespace WebCore {
 class DateTimeChooserClient;

@@ -31,6 +31,7 @@
 #ifndef DateTimeChooser_h
 #define DateTimeChooser_h
 
+#include "platform/PlatformExport.h"
 #include "platform/geometry/IntRect.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -57,9 +58,9 @@ struct DateTimeChooserParameters {
 };
 
 // For pickers like color pickers and date pickers.
-class DateTimeChooser : public RefCounted<DateTimeChooser> {
+class PLATFORM_EXPORT DateTimeChooser : public RefCounted<DateTimeChooser> {
 public:
-    virtual ~DateTimeChooser() { }
+    virtual ~DateTimeChooser();
 
     virtual void endChooser() = 0;
 };

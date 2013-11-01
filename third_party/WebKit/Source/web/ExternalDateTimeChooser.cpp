@@ -32,7 +32,7 @@
 #include "WebDateTimeChooserParams.h"
 #include "WebViewClient.h"
 #include "core/html/forms/InputTypeNames.h"
-#include "core/platform/DateTimeChooserClient.h"
+#include "platform/DateTimeChooserClient.h"
 #include "wtf/text/AtomicString.h"
 
 using namespace WebCore;
