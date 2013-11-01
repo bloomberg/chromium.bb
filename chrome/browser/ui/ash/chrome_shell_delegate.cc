@@ -218,6 +218,10 @@ void ChromeShellDelegate::RecordUserMetricsAction(
       content::RecordAction(
           content::UserMetricsAction("Caption_GestureTogglesMaximize"));
       break;
+    case ash::UMA_TOUCHPAD_GESTURE_OVERVIEW:
+      content::RecordAction(
+          content::UserMetricsAction("Touchpad_Gesture_Overview"));
+      break;
     case ash::UMA_TOUCHSCREEN_TAP_DOWN:
       content::RecordAction(content::UserMetricsAction("Touchscreen_Down"));
       break;

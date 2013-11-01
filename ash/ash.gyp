@@ -807,6 +807,7 @@
         'wm/dock/docked_window_layout_manager_unittest.cc',
         'wm/dock/docked_window_resizer_unittest.cc',
         'wm/drag_window_resizer_unittest.cc',
+        'wm/gestures/overview_gesture_handler_unittest.cc',
         'wm/header_painter_unittest.cc',
         'wm/lock_state_controller_unittest.cc',
         'wm/mru_window_tracker_unittest.cc',

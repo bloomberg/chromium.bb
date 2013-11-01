@@ -13,6 +13,7 @@ class Window;
 
 namespace ui {
 class GestureEvent;
+class ScrollEvent;
 }
 
 namespace ash {
@@ -25,6 +26,10 @@ class OverviewGestureHandler {
   OverviewGestureHandler();
   virtual ~OverviewGestureHandler();
 
+  // Processes a scroll event and may start overview. Returns true if the event
+  // has been handled and should not be processed further, false otherwise.
+  bool ProcessScrollEvent(const ui::ScrollEvent& event);
+
   // Processes a gesture event and may start overview. Returns true if the event
   // has been handled and should not be processed any farther, false otherwise.
   bool ProcessGestureEvent(const ui::GestureEvent& event);
@@ -32,6 +37,10 @@ class OverviewGestureHandler {
  private:
   // True if the current/last gesture began in the top bezel.
   bool in_top_bezel_gesture_;
+
+  // The total distance scrolled with three fingers.
+  float scroll_x_;
+  float scroll_y_;
 
   DISALLOW_COPY_AND_ASSIGN(OverviewGestureHandler);
 };

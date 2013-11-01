@@ -64,6 +64,14 @@ void SystemGestureEventFilter::OnMouseEvent(ui::MouseEvent* event) {
 #endif
 }
 
+void SystemGestureEventFilter::OnScrollEvent(ui::ScrollEvent* event) {
+  if (overview_gesture_handler_ &&
+      overview_gesture_handler_->ProcessScrollEvent(*event)) {
+    event->StopPropagation();
+    return;
+  }
+}
+
 void SystemGestureEventFilter::OnTouchEvent(ui::TouchEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   ash::TouchUMA::GetInstance()->RecordTouchEvent(target, *event);

@@ -23,13 +23,58 @@ namespace {
 // prevent entering overview with a swipe down.
 const int kTopBezelExtraPixels = 5;
 
+// The threshold before engaging overview on a three finger swipe on the
+// touchpad.
+const float kSwipeThresholdPixels = 300;
+
 }  // namespace;
 
 OverviewGestureHandler::OverviewGestureHandler()
-    : in_top_bezel_gesture_(false) {
+    : in_top_bezel_gesture_(false),
+      scroll_x_(0),
+      scroll_y_(0) {
 }
 
 OverviewGestureHandler::~OverviewGestureHandler() {
+}
+
+bool OverviewGestureHandler::ProcessScrollEvent(const ui::ScrollEvent& event) {
+  if (event.type() == ui::ET_SCROLL_FLING_START ||
+      event.type() == ui::ET_SCROLL_FLING_CANCEL ||
+      event.finger_count() != 3) {
+    scroll_x_ = scroll_y_ = 0;
+    return false;
+  }
+
+  scroll_x_ += event.x_offset();
+  scroll_y_ += event.y_offset();
+
+  // Horizontal swiping is ignored.
+  if (std::fabs(scroll_x_) >= std::fabs(scroll_y_)) {
+    scroll_x_ = scroll_y_ = 0;
+    return false;
+  }
+
+  // Only allow swipe up to enter overview, down to exit. Ignore extra swiping
+  // in the wrong direction.
+  Shell* shell = Shell::GetInstance();
+  if (shell->window_selector_controller()->IsSelecting()) {
+    if (scroll_y_ < 0)
+      scroll_x_ = scroll_y_ = 0;
+    if (scroll_y_ < kSwipeThresholdPixels)
+      return false;
+  } else {
+    if (scroll_y_ > 0)
+      scroll_x_ = scroll_y_ = 0;
+    if (scroll_y_ > -kSwipeThresholdPixels)
+      return false;
+  }
+
+  // Reset scroll amount on toggling.
+  scroll_x_ = scroll_y_ = 0;
+  shell->delegate()->RecordUserMetricsAction(UMA_TOUCHPAD_GESTURE_OVERVIEW);
+  shell->window_selector_controller()->ToggleOverview();
+  return true;
 }
 
 bool OverviewGestureHandler::ProcessGestureEvent(
