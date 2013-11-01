@@ -6,13 +6,13 @@ package org.chromium.content.browser;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Handler;
 import android.test.AndroidTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import java.util.HashSet;
 import java.util.Set;
-
 
 /**
  * Test suite for DeviceMotionAndOrientation.
@@ -205,6 +205,102 @@ public class DeviceMotionAndOrientationTest extends AndroidTestCase {
         mDeviceMotionAndOrientation.sensorChanged(Sensor.TYPE_MAGNETIC_FIELD, values);
         mDeviceMotionAndOrientation.verifyCalls("");
     }
+
+    // Tests for correct Device Orientation angles.
+
+    @SmallTest
+    public void testOrientationAnglesFromRotationMatrixIdentity() {
+        float[] gravity = {0, 0, 1};
+        float[] magnetic = {0, 1, 0};
+        double[] expectedAngles = {0, 0, 0};
+
+        verifyOrientationAngles(gravity, magnetic, expectedAngles);
+    }
+
+    @SmallTest
+    public void testOrientationAnglesFromRotationMatrix45DegreesX() {
+        float[] gravity = {0, (float)Math.sin(Math.PI / 4), (float)Math.cos(Math.PI / 4)};
+        float[] magnetic = {0, 1, 0};
+        double[] expectedAngles = {0, Math.PI / 4, 0};
+
+        verifyOrientationAngles(gravity, magnetic, expectedAngles);
+    }
+
+    @SmallTest
+    public void testOrientationAnglesFromRotationMatrix45DegreesY() {
+        float[] gravity = {-(float)Math.sin(Math.PI / 4), 0, (float)Math.cos(Math.PI / 4)};
+        float[] magnetic = {0, 1, 0};
+        double[] expectedAngles = {0, 0, Math.PI / 4};
+
+        verifyOrientationAngles(gravity, magnetic, expectedAngles);
+    }
+
+    @SmallTest
+    public void testOrientationAnglesFromRotationMatrix45DegreesZ() {
+        float[] gravity = {0, 0, 1};
+        float[] magnetic = {(float)Math.sin(Math.PI / 4), (float)Math.cos(Math.PI / 4), 0};
+        double[] expectedAngles = {Math.PI / 4, 0, 0};
+
+        verifyOrientationAngles(gravity, magnetic, expectedAngles);
+    }
+
+    @SmallTest
+    public void testOrientationAnglesFromRotationMatrixGimbalLock() {
+        float[] gravity = {0, 1, 0};
+        float[] magnetic = {(float)Math.sin(Math.PI / 4), 0, -(float)Math.cos(Math.PI / 4)};
+        double[] expectedAngles = {Math.PI / 4, Math.PI / 2, 0};  // favor yaw instead of roll
+
+        verifyOrientationAngles(gravity, magnetic, expectedAngles);
+    }
+
+    @SmallTest
+    public void testOrientationAnglesFromRotationMatrixPitchGreaterThan90() {
+        final double largePitchAngle = Math.PI / 2 + Math.PI / 4;
+        float[] gravity = {0, (float)Math.cos(largePitchAngle - Math.PI / 2),
+                -(float)Math.sin(largePitchAngle - Math.PI / 2)};
+        float[] magnetic = {0, 0, -1};
+        double[] expectedAngles = {0, largePitchAngle, 0};
+
+        verifyOrientationAngles(gravity, magnetic, expectedAngles);
+    }
+
+    @SmallTest
+    public void testOrientationAnglesFromRotationMatrixRoll90() {
+        float[] gravity = {-1, 0, 0};
+        float[] magnetic = {0, 1, 0};
+        double[] expectedAngles = {Math.PI, -Math.PI, -Math.PI / 2};
+
+        verifyOrientationAngles(gravity, magnetic, expectedAngles);
+    }
+
+    /**
+     * Helper method for verifying angles obtained from rotation matrix.
+     *
+     * @param gravity
+     *        gravity vector in the device frame
+     * @param magnetic
+     *        magnetic field vector in the device frame
+     * @param expectedAngles
+     *        expectedAngles[0] rotation angle in radians around the Z-axis
+     *        expectedAngles[1] rotation angle in radians around the X-axis
+     *        expectedAngles[2] rotation angle in radians around the Y-axis
+     */
+    private void verifyOrientationAngles(float[] gravity, float[] magnetic,
+            double[] expectedAngles) {
+        float[] R = new float[9];
+        double[] values = new double[3];
+        SensorManager.getRotationMatrix(R, null, gravity, magnetic);
+        mDeviceMotionAndOrientation.computeDeviceOrientationFromRotationMatrix(R, values);
+
+        assertEquals(expectedAngles.length, values.length);
+        final double epsilon = 0.001;
+        for (int i = 0; i < expectedAngles.length; ++i) {
+            assertEquals(expectedAngles[i], values[i], epsilon);
+        }
+
+    }
+
+    // -- End Tests for correct Device Orientation angles.
 
     private static class DeviceMotionAndOrientationForTests extends DeviceMotionAndOrientation {
 
