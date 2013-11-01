@@ -6,6 +6,7 @@
 
 #include "ash/accessibility_delegate.h"
 #include "ash/magnifier/magnifier_constants.h"
+#include "ash/media_delegate.h"
 #include "ash/system/tray/default_system_tray_delegate.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
@@ -45,6 +46,18 @@ class NewWindowDelegateImpl : public ChromeNewWindowDelegate {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NewWindowDelegateImpl);
+};
+
+class MediaDelegateImpl : public ash::MediaDelegate {
+ public:
+  MediaDelegateImpl() {}
+  virtual ~MediaDelegateImpl() {}
+  virtual void HandleMediaNextTrack() OVERRIDE {}
+  virtual void HandleMediaPlayPause() OVERRIDE {}
+  virtual void HandleMediaPrevTrack() OVERRIDE {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MediaDelegateImpl);
 };
 
 class EmptyAccessibilityDelegate : public ash::AccessibilityDelegate {
@@ -129,6 +142,10 @@ ash::NewWindowDelegate* ChromeShellDelegate::CreateNewWindowDelegate() {
   return new NewWindowDelegateImpl;
 }
 
+ash::MediaDelegate* ChromeShellDelegate::CreateMediaDelegate() {
+  return new MediaDelegateImpl;
+}
+
 ash::CapsLockDelegate* ChromeShellDelegate::CreateCapsLockDelegate() {
   return new CapsLockDelegate();
 }
@@ -155,15 +172,6 @@ ash::UserWallpaperDelegate* ChromeShellDelegate::CreateUserWallpaperDelegate() {
 #else
   return NULL;
 #endif
-}
-
-void ChromeShellDelegate::HandleMediaNextTrack() {
-}
-
-void ChromeShellDelegate::HandleMediaPlayPause() {
-}
-
-void ChromeShellDelegate::HandleMediaPrevTrack() {
 }
 
 void ChromeShellDelegate::Observe(int type,

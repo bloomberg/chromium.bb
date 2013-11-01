@@ -42,6 +42,7 @@ class CapsLockDelegate;
 class LauncherDelegate;
 class LauncherModel;
 struct LauncherItem;
+class MediaDelegate;
 class NewWindowDelegate;
 class RootWindowHostFactory;
 class AccessibilityDelegate;
@@ -168,20 +169,14 @@ class ASH_EXPORT ShellDelegate {
   // Creates an application delegate. Shell takes ownership of the delegate.
   virtual NewWindowDelegate* CreateNewWindowDelegate() = 0;
 
+  // Creates a media delegate. Shell takes ownership of the delegate.
+  virtual MediaDelegate* CreateMediaDelegate() = 0;
+
   // Creates a user action client. Shell takes ownership of the object.
   virtual aura::client::UserActionClient* CreateUserActionClient() = 0;
 
   // Records that the user performed an action.
   virtual void RecordUserMetricsAction(UserMetricsAction action) = 0;
-
-  // Handles the Next Track Media shortcut key.
-  virtual void HandleMediaNextTrack() = 0;
-
-  // Handles the Play/Pause Toggle Media shortcut key.
-  virtual void HandleMediaPlayPause() = 0;
-
-  // Handles the Previous Track Media shortcut key.
-  virtual void HandleMediaPrevTrack() = 0;
 
   // Creates a menu model of the context for the |root_window|.
   virtual ui::MenuModel* CreateContextMenu(aura::Window* root_window) = 0;

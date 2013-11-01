@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 
 #include "ash/accessibility_delegate.h"
+#include "ash/media_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
@@ -145,6 +146,33 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
   DISALLOW_COPY_AND_ASSIGN(AccessibilityDelegateImpl);
 };
 
+class MediaDelegateImpl : public ash::MediaDelegate {
+ public:
+  MediaDelegateImpl() {}
+  virtual ~MediaDelegateImpl() {}
+
+  virtual void HandleMediaNextTrack() OVERRIDE {
+    extensions::MediaPlayerAPI::Get(
+        ProfileManager::GetDefaultProfileOrOffTheRecord())->
+            media_player_event_router()->NotifyNextTrack();
+  }
+
+  virtual void HandleMediaPlayPause() OVERRIDE {
+    extensions::MediaPlayerAPI::Get(
+        ProfileManager::GetDefaultProfileOrOffTheRecord())->
+            media_player_event_router()->NotifyTogglePlayState();
+  }
+
+  virtual void HandleMediaPrevTrack() OVERRIDE {
+    extensions::MediaPlayerAPI::Get(
+        ProfileManager::GetDefaultProfileOrOffTheRecord())->
+            media_player_event_router()->NotifyPrevTrack();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MediaDelegateImpl);
+};
+
 }  // anonymous namespace
 
 bool ChromeShellDelegate::IsFirstRunAfterBoot() const {
@@ -180,30 +208,16 @@ ash::NewWindowDelegate* ChromeShellDelegate::CreateNewWindowDelegate() {
   return new ChromeNewWindowDelegateChromeos;
 }
 
+ash::MediaDelegate* ChromeShellDelegate::CreateMediaDelegate() {
+  return new MediaDelegateImpl;
+}
+
 ash::SystemTrayDelegate* ChromeShellDelegate::CreateSystemTrayDelegate() {
   return chromeos::CreateSystemTrayDelegate();
 }
 
 ash::UserWallpaperDelegate* ChromeShellDelegate::CreateUserWallpaperDelegate() {
   return chromeos::CreateUserWallpaperDelegate();
-}
-
-void ChromeShellDelegate::HandleMediaNextTrack() {
-  extensions::MediaPlayerAPI::Get(
-      ProfileManager::GetDefaultProfileOrOffTheRecord())->
-          media_player_event_router()->NotifyNextTrack();
-}
-
-void ChromeShellDelegate::HandleMediaPlayPause() {
-  extensions::MediaPlayerAPI::Get(
-      ProfileManager::GetDefaultProfileOrOffTheRecord())->
-          media_player_event_router()->NotifyTogglePlayState();
-}
-
-void ChromeShellDelegate::HandleMediaPrevTrack() {
-  extensions::MediaPlayerAPI::Get(
-      ProfileManager::GetDefaultProfileOrOffTheRecord())->
-          media_player_event_router()->NotifyPrevTrack();
 }
 
 void ChromeShellDelegate::Observe(int type,

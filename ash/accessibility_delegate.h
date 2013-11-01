@@ -18,7 +18,6 @@ enum AccessibilityNotificationVisibility {
 // A deletate class to control accessibility features.
 class ASH_EXPORT AccessibilityDelegate {
  public:
-  AccessibilityDelegate() {}
   virtual ~AccessibilityDelegate() {}
 
   // Invoked to toggle spoken feedback for accessibility

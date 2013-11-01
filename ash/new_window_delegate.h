@@ -11,7 +11,6 @@ namespace ash {
 // ash.
 class NewWindowDelegate {
  public:
-  NewWindowDelegate() {}
   virtual ~NewWindowDelegate() {}
 
   // Invoked when the user uses Ctrl+T to open a new tab.
