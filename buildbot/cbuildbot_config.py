@@ -1641,6 +1641,7 @@ _arm_release = _release.derive(arm)
 
 _arm_release.add_config('beaglebone-release',
   boards=['beaglebone'],
+  build_tests=False,
   packages=['chromeos-base/chromeos'],
   hw_tests=[],
   images=['base'],
