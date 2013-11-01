@@ -110,11 +110,19 @@ void PageActionController::DidNavigateMainFrame(
 }
 
 Profile* PageActionController::profile() const {
-  return Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  content::WebContents* web_contents = this->web_contents();
+  if (web_contents)
+    return Profile::FromBrowserContext(web_contents->GetBrowserContext());
+
+  return NULL;
 }
 
 ExtensionService* PageActionController::GetExtensionService() const {
-  return ExtensionSystem::Get(profile())->extension_service();
+  Profile* profile = this->profile();
+  if (profile)
+    return ExtensionSystem::Get(profile)->extension_service();
+
+  return NULL;
 }
 
 }  // namespace extensions

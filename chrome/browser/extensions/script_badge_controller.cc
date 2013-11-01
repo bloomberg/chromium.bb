@@ -167,11 +167,19 @@ void ScriptBadgeController::OnScriptsExecuted(
 }
 
 Profile* ScriptBadgeController::profile() const {
-  return Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  content::WebContents* web_contents = this->web_contents();
+  if (web_contents)
+    return Profile::FromBrowserContext(web_contents->GetBrowserContext());
+
+  return NULL;
 }
 
 ExtensionService* ScriptBadgeController::GetExtensionService() const {
-  return ExtensionSystem::Get(profile())->extension_service();
+  Profile* profile = this->profile();
+  if (profile)
+    return ExtensionSystem::Get(profile)->extension_service();
+
+  return NULL;
 }
 
 int32 ScriptBadgeController::GetPageID() {
