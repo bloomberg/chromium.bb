@@ -95,9 +95,10 @@ provider = ScopedTempFileProvider()
 
 
 class BindingsTests(object):
-    def __init__(self, reset_results, test_python, executive):
+    def __init__(self, reset_results, test_python, verbose, executive):
         self.reset_results = reset_results
         self.test_python = test_python
+        self.verbose = verbose
         self.executive = executive
         _, self.interface_dependencies_filename = provider.newtempfile()
         _, self.derived_sources_list_filename = provider.newtempfile()
@@ -211,7 +212,8 @@ class BindingsTests(object):
             print 'FAIL: %s' % reference_basename
             print output
             return False
-        print 'PASS: %s' % reference_basename
+        if self.verbose:
+            print 'PASS: %s' % reference_basename
         return True
 
     def identical_output_directory(self, work_directory):
@@ -235,13 +237,15 @@ class BindingsTests(object):
             if self.generate_from_idl_pl(idl_path, work_directory):
                 return False
             if self.reset_results:
-                print 'Reset results: %s' % input_file
+                if self.verbose:
+                    print 'Reset results: %s' % input_file
                 return True
             return self.identical_output_directory(work_directory)
 
         def generate_and_check_output_py(idl_filename):
             if idl_filename in SKIP_PYTHON:
-                print 'SKIP: %s' % idl_filename
+                if self.verbose:
+                    print 'SKIP: %s' % idl_filename
                 return True
             work_directory = provider.newtempdir()
             idl_path = os.path.join(input_directory, idl_filename)
@@ -259,9 +263,10 @@ class BindingsTests(object):
             passed &= all([generate_and_check_output_pl(input_file, directory)
                            for input_file in os.listdir(directory)
                            if input_file.endswith('.idl')])
-        print
         if self.test_python:
-            print 'Python:'
+            if self.verbose:
+                print
+                print 'Python:'
             passed &= all([generate_and_check_output_py(input_file)
                            for input_file in os.listdir(input_directory)
                            if input_file.endswith('.idl')])
@@ -276,9 +281,11 @@ class BindingsTests(object):
             return -1
 
         all_tests_passed = self.run_tests()
-        print
         if all_tests_passed:
-            print PASS_MESSAGE
+            if self.verbose:
+                print
+                print PASS_MESSAGE
             return 0
+        print
         print FAIL_MESSAGE
         return -1
