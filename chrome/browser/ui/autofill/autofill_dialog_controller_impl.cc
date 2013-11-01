@@ -696,13 +696,12 @@ void AutofillDialogControllerImpl::Show() {
   view_->Show();
   GetManager()->AddObserver(this);
 
-  // Try to see if the user is already signed-in. If signed-in, fetch the user's
-  // Wallet data. Otherwise, see if the user could be signed in passively.
-  // TODO(aruslan): UMA metrics for sign-in.
-  FetchWalletCookieAndUserName();
-
-  if (!account_chooser_model_.WalletIsSelected())
+  if (!account_chooser_model_.WalletIsSelected()) {
     LogDialogLatencyToShow();
+  } else {
+    // TODO(aruslan): UMA metrics for sign-in.
+    FetchWalletCookieAndUserName();
+  }
 }
 
 void AutofillDialogControllerImpl::Hide() {
@@ -747,9 +746,12 @@ string16 AutofillDialogControllerImpl::AccountChooserText() const {
 }
 
 string16 AutofillDialogControllerImpl::SignInLinkText() const {
-  return l10n_util::GetStringUTF16(
+  int ids = SignedInState() == NOT_CHECKED ?
+      IDS_AUTOFILL_DIALOG_USE_WALLET_LINK :
       signin_registrar_.IsEmpty() ? IDS_AUTOFILL_DIALOG_SIGN_IN :
-                                    IDS_AUTOFILL_DIALOG_CANCEL_SIGN_IN);
+                                    IDS_AUTOFILL_DIALOG_CANCEL_SIGN_IN;
+
+  return l10n_util::GetStringUTF16(ids);
 }
 
 string16 AutofillDialogControllerImpl::SpinnerText() const {
@@ -816,7 +818,7 @@ int AutofillDialogControllerImpl::GetDialogButtons() const {
   if (waiting_for_explicit_sign_in_response_)
     return ui::DIALOG_BUTTON_NONE;
 
-  if (ShouldShowSpinner())
+  if (ShouldShowSpinner() && !handling_use_wallet_link_click_)
     return ui::DIALOG_BUTTON_CANCEL;
 
   return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
@@ -933,6 +935,8 @@ bool AutofillDialogControllerImpl::SectionIsActive(DialogSection section)
 void AutofillDialogControllerImpl::GetWalletItems() {
   ScopedViewUpdates updates(view_.get());
 
+  wallet_items_requested_ = true;
+
   previously_selected_instrument_id_.clear();
   previously_selected_shipping_address_id_.clear();
   if (wallet_items_) {
@@ -970,8 +974,11 @@ AutofillDialogControllerImpl::DialogSignedInState
   if (wallet_error_notification_)
     return SIGN_IN_DISABLED;
 
-  if (signin_helper_ || !wallet_items_)
+  if (signin_helper_ || (wallet_items_requested_ && !wallet_items_))
     return REQUIRES_RESPONSE;
+
+  if (!wallet_items_requested_)
+    return NOT_CHECKED;
 
   if (wallet_items_->HasRequiredAction(wallet::GAIA_AUTH))
     return REQUIRES_SIGN_IN;
@@ -1005,11 +1012,15 @@ void AutofillDialogControllerImpl::SignedInStateUpdated() {
       break;
 
     case REQUIRES_SIGN_IN:
+      if (handling_use_wallet_link_click_)
+        SignInLinkClicked();
+      // Fall through.
     case SIGN_IN_DISABLED:
       // Switch to the local account and refresh the dialog.
       signin_helper_.reset();
       username_fetcher_.reset();
       OnWalletSigninError();
+      handling_use_wallet_link_click_ = false;
       break;
 
     case REQUIRES_PASSIVE_SIGN_IN:
@@ -1025,6 +1036,7 @@ void AutofillDialogControllerImpl::SignedInStateUpdated() {
       signin_helper_->StartPassiveSignin();
       break;
 
+    case NOT_CHECKED:
     case REQUIRES_RESPONSE:
       break;
   }
@@ -2039,7 +2051,12 @@ void AutofillDialogControllerImpl::LinkClicked(const GURL& url) {
 void AutofillDialogControllerImpl::SignInLinkClicked() {
   ScopedViewUpdates updates(view_.get());
 
-  if (signin_registrar_.IsEmpty()) {
+  if (SignedInState() == NOT_CHECKED) {
+    handling_use_wallet_link_click_ = true;
+    account_chooser_model_.SelectActiveWalletAccount();
+    FetchWalletCookieAndUserName();
+    view_->UpdateAccountChooser();
+  } else if (signin_registrar_.IsEmpty()) {
     // Start sign in.
     DCHECK(!IsPayingWithWallet());
 
@@ -2554,8 +2571,10 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       invoked_from_same_origin_(true),
       source_url_(source_url),
       callback_(callback),
-      account_chooser_model_(this, profile_->GetPrefs(), metric_logger_),
+      account_chooser_model_(this, profile_, metric_logger_),
       wallet_client_(profile_->GetRequestContext(), this, source_url),
+      wallet_items_requested_(false),
+      handling_use_wallet_link_click_(false),
       country_combobox_model_(*GetManager()),
       suggested_cc_(this),
       suggested_billing_(this),

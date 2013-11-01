@@ -15,7 +15,7 @@
 #include "ui/base/models/simple_menu_model.h"
 
 class AutofillMetrics;
-class PrefService;
+class Profile;
 
 namespace autofill {
 
@@ -47,7 +47,7 @@ class AccountChooserModel : public ui::SimpleMenuModel,
                             public ui::SimpleMenuModel::Delegate {
  public:
   AccountChooserModel(AccountChooserModelDelegate* delegate,
-                      PrefService* prefs,
+                      Profile* profile,
                       const AutofillMetrics& metric_logger);
   virtual ~AccountChooserModel();
 

@@ -231,6 +231,30 @@ scoped_ptr<Address> GetTestNonDefaultShippingAddress() {
   return address.Pass();
 }
 
+scoped_ptr<WalletItems> GetTestWalletItems(
+    const std::vector<RequiredAction>& required_actions,
+    const std::string& default_instrument_id,
+    const std::string& default_address_id,
+    AmexPermission amex_permission) {
+  return scoped_ptr<WalletItems>(
+      new wallet::WalletItems(required_actions,
+                              "google_transaction_id",
+                              default_instrument_id,
+                              default_address_id,
+                              "obfuscated_gaia_id",
+                              amex_permission));
+}
+
+scoped_ptr<WalletItems> GetTestWalletItemsWithRequiredAction(
+    RequiredAction action) {
+  std::vector<RequiredAction> required_actions;
+  required_actions.push_back(action);
+  return GetTestWalletItems(required_actions,
+                            "default_instrument_id",
+                            "default_address_id",
+                            AMEX_ALLOWED);
+}
+
 scoped_ptr<WalletItems> GetTestWalletItems(AmexPermission amex_permission) {
   return GetTestWalletItemsWithDefaultIds("default_instrument_id",
                                           "default_address_id",
@@ -241,13 +265,10 @@ scoped_ptr<WalletItems> GetTestWalletItemsWithDefaultIds(
     const std::string& default_instrument_id,
     const std::string& default_address_id,
     AmexPermission amex_permission) {
-  return scoped_ptr<WalletItems>(
-      new wallet::WalletItems(std::vector<RequiredAction>(),
-                              "google_transaction_id",
-                              default_instrument_id,
-                              default_address_id,
-                              "obfuscated_gaia_id",
-                              amex_permission));
+  return GetTestWalletItems(std::vector<RequiredAction>(),
+                            default_instrument_id,
+                            default_address_id,
+                            amex_permission);
 }
 
 }  // namespace wallet

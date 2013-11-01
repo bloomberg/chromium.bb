@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "grit/generated_resources.h"
@@ -26,16 +27,20 @@ AccountChooserModelDelegate::~AccountChooserModelDelegate() {}
 
 AccountChooserModel::AccountChooserModel(
     AccountChooserModelDelegate* delegate,
-    PrefService* prefs,
+    Profile* profile,
     const AutofillMetrics& metric_logger)
     : ui::SimpleMenuModel(this),
       delegate_(delegate),
-      checked_item_(
-          prefs->GetBoolean(::prefs::kAutofillDialogPayWithoutWallet) ?
-              kAutofillItemId : kWalletAccountsStartId),
+      checked_item_(kWalletAccountsStartId),
       active_wallet_account_(0U),
       had_wallet_error_(false),
       metric_logger_(metric_logger) {
+  if (profile->GetPrefs()->GetBoolean(
+          ::prefs::kAutofillDialogPayWithoutWallet) ||
+      profile->IsOffTheRecord()) {
+    checked_item_ = kAutofillItemId;
+  }
+
   ReconstructMenuItems();
 }
 

@@ -47,6 +47,8 @@ scoped_ptr<WalletItems::MaskedInstrument> GetTestMaskedInstrumentWithDetails(
 scoped_ptr<Address> GetTestSaveableAddress();
 scoped_ptr<Address> GetTestShippingAddress();
 scoped_ptr<Address> GetTestNonDefaultShippingAddress();
+scoped_ptr<WalletItems> GetTestWalletItemsWithRequiredAction(
+    RequiredAction action);
 scoped_ptr<WalletItems> GetTestWalletItems(AmexPermission amex_permission);
 scoped_ptr<WalletItems> GetTestWalletItemsWithDefaultIds(
     const std::string& default_instrument_id,

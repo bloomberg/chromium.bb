@@ -227,6 +227,15 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
  protected:
+  enum DialogSignedInState {
+    NOT_CHECKED,
+    REQUIRES_RESPONSE,
+    REQUIRES_SIGN_IN,
+    REQUIRES_PASSIVE_SIGN_IN,
+    SIGNED_IN,
+    SIGN_IN_DISABLED,
+  };
+
   // Exposed for testing.
   AutofillDialogControllerImpl(
       content::WebContents* contents,
@@ -310,15 +319,10 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // Returns whether |url| matches the sign in continue URL.
   virtual bool IsSignInContinueUrl(const GURL& url) const;
 
- private:
-  enum DialogSignedInState {
-    REQUIRES_RESPONSE,
-    REQUIRES_SIGN_IN,
-    REQUIRES_PASSIVE_SIGN_IN,
-    SIGNED_IN,
-    SIGN_IN_DISABLED,
-  };
+  // Whether the user is known to be signed in.
+  DialogSignedInState SignedInState() const;
 
+ private:
   // Whether or not the current request wants credit info back.
   bool RequestingCreditCardInfo() const;
 
@@ -330,9 +334,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
 
   // Stop showing sign in flow.
   void HideSignIn();
-
-  // Whether the user is known to be signed in.
-  DialogSignedInState SignedInState() const;
 
   // Handles the SignedInState() on Wallet or sign-in state update.
   // Triggers the user name fetch and passive sign-in.
@@ -601,6 +602,13 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
 
   // A client to talk to the Online Wallet API.
   wallet::WalletClient wallet_client_;
+
+  // True if |this| has ever called GetWalletItems().
+  bool wallet_items_requested_;
+
+  // True when the user has clicked the "Use Wallet" link and we're waiting to
+  // figure out whether we need to ask them to actively sign in.
+  bool handling_use_wallet_link_click_;
 
   // Recently received items retrieved via |wallet_client_|.
   scoped_ptr<wallet::WalletItems> wallet_items_;

@@ -226,22 +226,6 @@ class TestAutofillDialogView : public AutofillDialogView {
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDialogView);
 };
 
-// Bring over command-ids from AccountChooserModel.
-class TestAccountChooserModel : public AccountChooserModel {
- public:
-  TestAccountChooserModel(AccountChooserModelDelegate* delegate,
-                          PrefService* prefs,
-                          const AutofillMetrics& metric_logger)
-      : AccountChooserModel(delegate, prefs, metric_logger) {}
-  virtual ~TestAccountChooserModel() {}
-
-  using AccountChooserModel::kAutofillItemId;
-  using AccountChooserModel::kWalletAccountsStartId;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestAccountChooserModel);
-};
-
 class TestAutofillDialogController
     : public AutofillDialogControllerImpl,
       public base::SupportsWeakPtr<TestAutofillDialogController> {
@@ -317,6 +301,8 @@ class TestAutofillDialogController
   using AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData;
   using AutofillDialogControllerImpl::IsEditingExistingData;
   using AutofillDialogControllerImpl::IsSubmitPausedOn;
+  using AutofillDialogControllerImpl::NOT_CHECKED;
+  using AutofillDialogControllerImpl::SignedInState;
 
  protected:
   virtual PersonalDataManager* GetManager() OVERRIDE {
@@ -420,7 +406,8 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
     return form_data;
   }
 
-  void SetUpControllerWithFormData(const FormData& form_data) {
+  // Creates a new controller for |form_data|.
+  void ResetControllerWithFormData(const FormData& form_data) {
     if (controller_)
       controller_->ViewClosed();
 
@@ -436,6 +423,12 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
         mock_new_card_bubble_controller_.get()))->AsWeakPtr();
     controller_->Init(profile());
     controller_->Show();
+  }
+
+  // Creates a new controller for |form_data| and sets up some initial wallet
+  // data for it.
+  void SetUpControllerWithFormData(const FormData& form_data) {
+    ResetControllerWithFormData(form_data);
     std::vector<std::string> usernames;
     usernames.push_back(kFakeEmail);
     controller_->OnUserNameFetchSuccess(usernames);
@@ -2675,6 +2668,34 @@ TEST_F(AutofillDialogControllerTest, InputEditability) {
         EXPECT_TRUE(controller()->InputIsEditable(inputs[j], sections[i]));
     }
   }
+}
+
+TEST_F(AutofillDialogControllerTest, DontGetWalletTillNecessary) {
+  // When starting on local data mode, the dialog will provide a "Use Google
+  // Wallet" link.
+  profile()->GetPrefs()->SetBoolean(
+      ::prefs::kAutofillDialogPayWithoutWallet, true);
+  ResetControllerWithFormData(DefaultFormData());
+  EXPECT_FALSE(controller()->ShouldDisableSignInLink());
+  base::string16 use_wallet_text = controller()->SignInLinkText();
+  EXPECT_EQ(TestAutofillDialogController::NOT_CHECKED,
+            controller()->SignedInState());
+
+  // When clicked, this link will ask for wallet items. If there's a signin
+  // failure, the link will switch to "Sign in to use Google Wallet".
+  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
+  controller()->SignInLinkClicked();
+  EXPECT_NE(TestAutofillDialogController::NOT_CHECKED,
+            controller()->SignedInState());
+  std::vector<std::string> usernames;
+  usernames.push_back(kFakeEmail);
+  controller()->OnUserNameFetchSuccess(usernames);
+  controller()->OnDidFetchWalletCookieValue(std::string());
+  controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
+  controller()->OnPassiveSigninFailure(GoogleServiceAuthError(
+      GoogleServiceAuthError::CONNECTION_FAILED));
+  EXPECT_FALSE(controller()->ShouldDisableSignInLink());
+  EXPECT_NE(use_wallet_text, controller()->SignInLinkText());
 }
 
 }  // namespace autofill

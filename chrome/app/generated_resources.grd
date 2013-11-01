@@ -10330,6 +10330,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_AUTOFILL_DIALOG_USE_WALLET" desc="Text that shows on top of the autofill dialog when using data Google Wallet already knows about the user.">
         Protect my payment with Google Wallet.
       </message>
+      <message name="IDS_AUTOFILL_DIALOG_USE_WALLET_LINK" desc="Text that shows as a link at the top of the autofill dialog to select to use Google wallet.">
+        Use Google Wallet
+      </message>
       <message name="IDS_AUTOFILL_DIALOG_SAVE_DETAILS_IN_WALLET" desc="Text that shows on the top of the autofill dialog promoting saving info in Google Wallet.">
         Save and protect my details with Google Wallet.
       </message>

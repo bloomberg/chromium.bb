@@ -905,20 +905,22 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, SignInNoCrash) {
 
   InitializeController();
 
+  const AccountChooserModel& account_chooser_model =
+      controller()->AccountChooserModelForTesting();
+  EXPECT_FALSE(account_chooser_model.WalletIsSelected());
+
   ui_test_utils::UrlLoadObserver observer(
       controller()->SignInUrl(),
       content::NotificationService::AllSources());
 
   controller()->SignInLinkClicked();
+  controller()->OnDidFetchWalletCookieValue(std::string());
+  controller()->OnDidGetWalletItems(
+      wallet::GetTestWalletItemsWithRequiredAction(wallet::GAIA_AUTH));
 
   TestableAutofillDialogView* view = controller()->GetTestableView();
   EXPECT_TRUE(view->GetSignInWebContents());
   EXPECT_TRUE(controller()->ShouldShowSignInWebView());
-
-  const AccountChooserModel& account_chooser_model =
-      controller()->AccountChooserModelForTesting();
-  EXPECT_FALSE(account_chooser_model.WalletIsSelected());
-
   observer.Wait();
 
   // Wallet should now be selected and Chrome shouldn't have crashed.
