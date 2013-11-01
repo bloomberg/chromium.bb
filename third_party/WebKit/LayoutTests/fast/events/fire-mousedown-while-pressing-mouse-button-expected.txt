@@ -4,6 +4,9 @@ For each mouse button that is pressed and held, iterates through the possible se
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS received mousedown for the middle mouse button while pressing the left mouse button.
 PASS received mousedown for the right mouse button while pressing the left mouse button.
 

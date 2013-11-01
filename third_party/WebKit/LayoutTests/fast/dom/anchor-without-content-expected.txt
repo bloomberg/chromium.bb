@@ -1,5 +1,8 @@
 PASS Clicking link 1 scrolled to block 1.
 PASS Clicking link 2 scrolled to block 2.
+PASS successfullyParsed is true
+
+TEST COMPLETE
 This test verifies that links to anchors without content work as expected.
 
 Block 1

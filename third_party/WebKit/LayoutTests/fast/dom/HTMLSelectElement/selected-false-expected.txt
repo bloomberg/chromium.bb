@@ -24,4 +24,7 @@ PASS selectElement.selectedIndex is 1
 PASS optionElements[0].selected is false
 PASS optionElements[1].selected is true
 PASS optionElements[2].selected is false
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

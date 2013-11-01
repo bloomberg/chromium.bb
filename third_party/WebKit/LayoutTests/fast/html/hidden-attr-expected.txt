@@ -18,10 +18,10 @@ PASS getComputedStyle(test4, false).display is "block"
 test4.setAttribute("hidden", "")
 PASS getComputedStyle(test4, false).display is "none"
 
+
+
+
 PASS successfullyParsed is true
 
 TEST COMPLETE
-
-
-
 a

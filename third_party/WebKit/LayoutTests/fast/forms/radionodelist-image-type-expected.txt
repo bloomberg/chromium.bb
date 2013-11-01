@@ -8,4 +8,7 @@ nodeList = form.elements.namedItem('someName');
 PASS nodeList.length is 3
 PASS document.getElementsByTagName('input')[2].type = 'image'; nodeList.length is 2
 PASS document.getElementsByTagName('input')[2].type = 'radio'; nodeList.length is 3
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

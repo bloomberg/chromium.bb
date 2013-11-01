@@ -3,6 +3,9 @@ This tests that scrollable areas with the appropriate overflow mode set are in f
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 ===overflow:scroll with overflow
 PASS div.scrollTop is window.pixelsPerWheelTick
 PASS div.scrollLeft is window.pixelsPerWheelTick

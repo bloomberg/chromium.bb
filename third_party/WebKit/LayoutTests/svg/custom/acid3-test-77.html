@@ -31,6 +31,7 @@
 <script>
   description("Acid3 test 77, checking text metric functionality");
 
+  window.jsTestIsAsync = true;
   if (window.testRunner)
     testRunner.waitUntilDone();
 
@@ -52,9 +53,9 @@
     text.setAttribute("font-size", "4000");
     executeTest();
   }
-    
+
   function executeTest() {
-    // The font-size 4000 was chosen because that matches the unitsPerEm value in the svgfont, 
+    // The font-size 4000 was chosen because that matches the unitsPerEm value in the svgfont,
     // which makes it easy to check the glyph advances since they will then be exactly what was specified in the svgfont.
     shouldBe("text.getNumberOfChars()", "3");
     shouldBe("text.getComputedTextLength()", "4711+42+23");
@@ -78,15 +79,7 @@
     shouldThrow("text.getEndPositionOfChar(-17)");
     shouldThrow("text.getEndPositionOfChar(4)");
 
-    var script = document.createElement('script');
-    script.onload = completeTest;
-    script.src = "../../fast/js/resources/js-test-post.js";
-    document.body.appendChild(script);
-  }
-
-  function completeTest() {
-    if (window.testRunner)
-      testRunner.notifyDone();
+    finishJSTest();
   }
 
   startTest();

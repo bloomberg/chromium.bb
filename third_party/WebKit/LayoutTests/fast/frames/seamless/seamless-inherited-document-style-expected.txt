@@ -1,4 +1,7 @@
 Test that seamless iframes inherit styles from their parent iframe instead of using StyleResolver::styleForDocument defaults.
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS window.getComputedStyle(rootElement)['-webkit-rtl-ordering'] is "visual"
 PASS window.getComputedStyle(rootElement)['-webkit-locale'] is "en_US"
 PASS window.getComputedStyle(rootElement)['writing-mode'] is "lr"

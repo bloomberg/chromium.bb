@@ -2,6 +2,9 @@ Testcase for bug 106452: Caret positioned at the end of a text line (followed by
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS caretRectAtEnd.width is caretRectAtStart.width
 PASS caretRectAtEnd.height is caretRectAtStart.height
 PASS caretRectRightKey.width is caretRectAtEnd.width

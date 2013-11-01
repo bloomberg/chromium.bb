@@ -16,6 +16,7 @@ function initNonKhronosFramework(waitUntilDone) {
     testRunner.overridePreference("WebKitWebGLEnabled", "1");
     testRunner.dumpAsText();
     if (waitUntilDone) {
+      window.jsTestIsAsync = true;
       testRunner.waitUntilDone();
     }
   }
@@ -28,14 +29,7 @@ function nonKhronosFrameworkNotifyDone() {
 }
 
 function finishTest() {
-  var epilogue = document.createElement("script")
-  epilogue.onload = function() {
-    if (window.nonKhronosFrameworkNotifyDone) {
-      window.nonKhronosFrameworkNotifyDone();
-    }
-  };
-  epilogue.src = "../../js/resources/js-test-post.js";
-  document.body.appendChild(epilogue);
+  finishJSTest();
 }
 
 //

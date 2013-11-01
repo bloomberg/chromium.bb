@@ -10,6 +10,9 @@ This tests that if an iframe loads new content after its accessibility object ha
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS iframe.isEqual(newIframe) is true
 PASS scrollarea.isEqual(newScrollarea) is false
 PASS subwebarea.isEqual(newSubwebarea) is false

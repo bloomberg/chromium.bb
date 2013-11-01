@@ -19,10 +19,10 @@ PASS root.olderShadowRoot is null
 PASS roots[1].olderShadowRoot is roots[0]
 PASS root.olderShadowRoot is null
 
+
+
+
 PASS successfullyParsed is true
 
 TEST COMPLETE
-
-
-
 

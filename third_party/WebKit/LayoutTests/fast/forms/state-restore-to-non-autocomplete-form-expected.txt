@@ -1,5 +1,8 @@
 Test to NOT restore form state to a form with autocomplete=off.
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 Controls in the first form should have their default values:
 PASS document.getElementById("input1").value is ""
 PASS document.getElementById("textarea1").value is ""

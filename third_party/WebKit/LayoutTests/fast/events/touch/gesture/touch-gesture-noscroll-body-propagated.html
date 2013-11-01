@@ -123,6 +123,7 @@ function secondGestureScroll()
     finishTest();
 }
 
+window.jsTestIsAsync = true;
 if (window.testRunner)
     testRunner.waitUntilDone();
 
@@ -148,9 +149,7 @@ function finishTest()
         if (gesturesOccurred == expectedGesturesTotal) {
             shouldBe('scrollEventsOccurred', expectedScrollEventsOccurred);
             successfullyParsed = true;
-            isSuccessfullyParsed();
-            if (window.testRunner)
-                testRunner.notifyDone();
+            finishJSTest();
         }
     }
 }

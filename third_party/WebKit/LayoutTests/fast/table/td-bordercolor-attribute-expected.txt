@@ -30,4 +30,7 @@ PASS document.defaultView.getComputedStyle(col7, null).getPropertyValue("border-
 PASS document.defaultView.getComputedStyle(col7, null).getPropertyValue("border-top-width") is "0px"
 PASS document.defaultView.getComputedStyle(table7, null).getPropertyValue("border-top-color") is "rgb(128, 128, 128)"
 PASS document.defaultView.getComputedStyle(table7, null).getPropertyValue("border-top-width") is "2px"
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

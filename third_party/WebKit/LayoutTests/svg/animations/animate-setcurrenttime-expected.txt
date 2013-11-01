@@ -1,6 +1,9 @@
 SVG 1.1 dynamic animation tests
 
- PASS plain.x.animVal.value is 0
+ PASS successfullyParsed is true
+
+TEST COMPLETE
+PASS plain.x.animVal.value is 0
 PASS sequential.x.animVal.value is 0
 PASS accumulating.x.animVal.value is 0
 PASS repeating.x.animVal.value is 0

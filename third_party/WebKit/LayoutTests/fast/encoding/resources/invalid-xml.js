@@ -21,17 +21,14 @@ var encodingTests = [
 function runNextTest()
 {
     if (currentTest >= encodingTests.length) {
-        var script = document.createElement("script");
-        script.src = "../js/resources/js-test-post.js";
-        if (window.testRunner)
-            script.setAttribute("onload", "testRunner.notifyDone()");
-        document.body.appendChild(script);
         iframe.parentNode.removeChild(iframe);
+        finishJSTest();
         return;
     }
     iframe.src = "resources/" + encodingTests[currentTest++];
 }
 
+window.jsTestIsAsync = true;
 if (window.testRunner)
     testRunner.waitUntilDone();
 

@@ -9,4 +9,7 @@ PASS slider.value is "0"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

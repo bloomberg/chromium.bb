@@ -265,11 +265,11 @@ PASS internals.treeScopeRootNode(window.getSelection().anchorNode) is internals.
 SPAN 3 INYOUNGER: double click
 PASS internals.treeScopeRootNode(window.getSelection().anchorNode) is internals.treeScopeRootNode(window.getSelection().focusNode)
 
+
+
+
+
 PASS successfullyParsed is true
 
 TEST COMPLETE
-
-
-
-
 

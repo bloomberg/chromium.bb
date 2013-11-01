@@ -1,2 +1,5 @@
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS frames[0].frames[0].document.body.textContent is "DONE\n"
 

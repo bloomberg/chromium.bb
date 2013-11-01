@@ -40,4 +40,7 @@ PASS badParamsTouch.webkitForce is NaN
 PASS successfullyParsed is true
 
 TEST COMPLETE
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

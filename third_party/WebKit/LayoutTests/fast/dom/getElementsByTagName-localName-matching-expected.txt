@@ -22,4 +22,7 @@ PASS container.getElementsByTagNameNS('http://www.w3.org/1999/xhtml', 'foo').len
 PASS container.getElementsByTagNameNS('http://www.w3.org/1999/xhtml', 'Foo').length is 0
 PASS container.getElementsByTagNameNS('http://www.w3.org/1999/xhtml', 'img').length is 1
 PASS container.getElementsByTagNameNS('http://www.w3.org/1999/xhtml', 'IMG').length is 0
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

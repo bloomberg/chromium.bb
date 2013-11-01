@@ -7,4 +7,7 @@ PASS appendImageWithId('firstImage'); nodeList = container.getElementsByTagNameN
 PASS nodeList.length is 1
 PASS appendImageWithId('secondImage'); container.removeChild(container.firstChild); nodeList.item(0).id is 'secondImage'
 PASS nodeList.length is 1
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

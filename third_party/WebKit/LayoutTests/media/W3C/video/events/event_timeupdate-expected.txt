@@ -3,6 +3,9 @@ setting src attribute on a sufficiently long autoplay video should trigger timeu
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS true is true
 
 TEST COMPLETE

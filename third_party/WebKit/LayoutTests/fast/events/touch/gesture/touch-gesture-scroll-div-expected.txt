@@ -3,6 +3,9 @@ This tests gesture event scrolling of an overflow div.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 first gesture
 PASS movingdiv.scrollTop is 0
 PASS movingdiv.scrollLeft is 90

@@ -32,4 +32,7 @@ PASS
 Should move from summary-1 to input-1 in backward
 PASS
 Test finished.
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

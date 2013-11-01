@@ -118,4 +118,7 @@ PASS element.name in window is false
 <object>: After changing its name attribute into re-renamed_object by using '.name=', the name should not still be in document.
 PASS element.name in document is false
 PASS element.name in window is false
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

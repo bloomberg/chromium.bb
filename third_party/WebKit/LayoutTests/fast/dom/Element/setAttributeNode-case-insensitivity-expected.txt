@@ -3,6 +3,9 @@ This test verifies that the setAttributeNode() API checks for existing attribute
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS test.getAttribute('style') is test.getAttribute('STYLE')
 PASS test.getAttributeNode('style').value is test.getAttributeNode('STYLE').value
 Verifying that attributes with the same name but different namespaces are treated as unique entities. For the following test two different attribute values should be returned.

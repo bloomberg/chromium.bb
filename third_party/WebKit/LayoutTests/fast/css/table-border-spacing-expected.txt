@@ -3,6 +3,9 @@ This test checks that style.borderSpacing returns the correct result for valid, 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 Valid values:
 PASS document.getElementById("infer-vertical-border-spacing").style.borderSpacing is "4px"
 PASS document.getElementById("explicit-border-spacing").style.borderSpacing is "4px 5px"

@@ -21,4 +21,7 @@ PASS before l
 PASS before l
 PASS before o
 PASS after "hello"
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

@@ -1,3 +1,6 @@
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS !!ctx.getImageData(0, 0, width, height) is true
  
 request access to local media

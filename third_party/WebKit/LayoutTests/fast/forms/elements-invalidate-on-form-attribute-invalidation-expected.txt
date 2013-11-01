@@ -7,4 +7,7 @@ collection = document.getElementById('someForm').elements;
 PASS collection.length is 1
 PASS collection.length; input.setAttribute('form', 'otherForm'); collection.length is 0
 PASS collection.length; input.setAttribute('form', 'someForm'); collection.length is 1
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

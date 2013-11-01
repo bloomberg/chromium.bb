@@ -23,4 +23,7 @@ PASS event.changedTouches.length is 3
 PASS successfullyParsed is true
 
 TEST COMPLETE
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

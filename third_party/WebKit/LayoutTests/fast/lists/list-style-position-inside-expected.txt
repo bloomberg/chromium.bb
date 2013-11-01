@@ -6,4 +6,7 @@ PASS All items in block ul has the expected height.
 PASS Width of first item in block ul is affected by list marker as expected.
 PASS All items in block ol has the expected height.
 PASS Width of first item in block ol is affected by list marker as expected.
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

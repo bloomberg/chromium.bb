@@ -9,4 +9,7 @@ PASS targetFrame3.contentWindow == undefined is true
 PASS successfullyParsed is true
 
 TEST COMPLETE
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

@@ -12,4 +12,7 @@ PASS new webkitSpeechRecognitionEvent('eventType', { bubbles: true }).bubbles is
 PASS new webkitSpeechRecognitionEvent('eventType', { cancelable: false }).cancelable is false
 PASS new webkitSpeechRecognitionEvent('eventType', { cancelable: true }).cancelable is true
 PASS new webkitSpeechRecognitionEvent('eventType', { resultIndex: 42 }).resultIndex is 42
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

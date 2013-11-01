@@ -18,6 +18,38 @@ crbug.com/305303 http/tests/security/mixedContent/insecure-xhr-in-main-frame.htm
 
 crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pass Failure ]
 
+Bug(ojan) svg/as-object/embedded-svg-immediate-offsetWidth-query.html [ NeedsManualRebaseline ]
+# FIXME: Uncomment after the rebaseline above is done.
+# crbug.com/305853 [ SnowLeopard ] svg/as-object/embedded-svg-immediate-offsetWidth-query.html [ Pass ImageOnlyFailure ]
+
+Bug(ojan) compositing/gestures/gesture-tapHighlight-pixel-rotated-div.html [ NeedsRebaseline ]
+Bug(ojan) compositing/gestures/gesture-tapHighlight-pixel-rotated-link.html [ NeedsRebaseline ]
+Bug(ojan) compositing/gestures/gesture-tapHighlight-pixel-transparent.html [ NeedsRebaseline ]
+Bug(ojan) fast/events/touch/gesture/touch-gesture-scroll-sideways.html [ NeedsRebaseline ]
+Bug(ojan) svg/as-object/nested-embedded-svg-size-changes.html [ NeedsRebaseline ]
+Bug(ojan) svg/custom/use-instanceRoot-event-bubbling.xhtml [ NeedsRebaseline ]
+Bug(ojan) svg/custom/use-instanceRoot-event-listeners.xhtml [ NeedsRebaseline ]
+Bug(ojan) svg/dom/SVGPathSegList-xml-dom-synchronization.xhtml [ NeedsRebaseline ]
+Bug(ojan) svg/dynamic-updates/SVGUseElement-dom-href1-attr.html [ NeedsRebaseline ]
+Bug(ojan) svg/dynamic-updates/SVGUseElement-svgdom-href1-prop.html [ NeedsRebaseline ]
+Bug(ojan) [ Win Linux Android ] svg/zoom/page/zoom-zoom-coords.xhtml [ NeedsManualRebaseline ]
+Bug(ojan) fast/dom/Window/new-window-opener.html [ NeedsRebaseline ]
+Bug(ojan) fast/dom/Window/webkitConvertPoint.html [ NeedsRebaseline ]
+Bug(ojan) fast/forms/cursor-at-editable-content-boundary.html [ NeedsRebaseline ]
+Bug(ojan) fast/forms/focus-selection-textarea.html [ NeedsRebaseline ]
+Bug(ojan) fast/replaced/table-percent-height.html [ NeedsRebaseline ]
+Bug(ojan) fast/replaced/table-percent-height-text-controls.html [ NeedsRebaseline ]
+Bug(ojan) fast/events/panScroll-click-hyperlink.html [ NeedsRebaseline ]
+Bug(ojan) fast/events/scale-and-scroll-body.html [ NeedsRebaseline ]
+Bug(ojan) fast/events/touch/gesture/touch-gesture-noscroll-body-propagated.html [ NeedsRebaseline ]
+Bug(ojan) fast/events/platform-wheelevent-paging-x-in-scrolling-page.html [ NeedsRebaseline ]
+Bug(ojan) fast/sub-pixel/inline-block-with-padding.html [ NeedsRebaseline ]
+Bug(ojan) fast/events/touch/gesture/touch-gesture-noscroll-body-yhidden.html [ NeedsRebaseline ]
+Bug(ojan) fast/events/platform-wheelevent-paging-y-in-scrolling-page.html [ NeedsRebaseline ]
+Bug(ojan) fast/events/platform-wheelevent-paging-xy-in-scrolling-page.html [ NeedsRebaseline ]
+Bug(ojan) svg/zoom/page/zoom-get-screen-ctm.html [ NeedsRebaseline ]
+
+
 # -----------------------------------------------------------------
 # Inspector tests
 # -----------------------------------------------------------------
@@ -481,8 +513,6 @@ crbug.com/305290 [ XP ] fast/text/international/plane2.html [ Failure ]
 crbug.com/306249 media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 
 crbug.com/306280 http/tests/pointer-lock/iframe-sandboxed-allow-pointer-lock.html [ Crash Pass ]
-
-crbug.com/305853 [ SnowLeopard ] svg/as-object/embedded-svg-immediate-offsetWidth-query.html [ Pass ImageOnlyFailure ]
 
 crbug.com/306595 svg/W3C-SVG-1.1-SE/struct-dom-11-f.svg [ Pass Timeout ]
 crbug.com/306595 svg/W3C-SVG-1.1-SE/types-dom-03-b.svg [ Pass Timeout ]

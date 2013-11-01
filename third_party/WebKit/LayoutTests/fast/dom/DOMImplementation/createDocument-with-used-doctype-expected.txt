@@ -6,6 +6,9 @@ PASS doc = document.implementation.createDocument(null, null, document.doctype) 
 PASS doc.doctype is doctype
 PASS doc.firstChild is doctype
 PASS document.doctype is null
+PASS successfullyParsed is true
+
+TEST COMPLETE
 
 
 

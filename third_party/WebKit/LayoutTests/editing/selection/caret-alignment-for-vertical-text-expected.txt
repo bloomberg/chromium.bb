@@ -4,6 +4,9 @@ Testcase for bug 102359: Caret is painted horizontally in vertical writing mode 
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 The carets on the empty editable boxes should have the same orientation as that on the editable box containing some text. We thus compare the width and the height of the caret rects for verification. Width and height for all the three caret rects should be the same for the test to pass.
 PASS emptyDivCaretRect.width is textDivCaretRect.width
 PASS emptyDivCaretRect.height is textDivCaretRect.height

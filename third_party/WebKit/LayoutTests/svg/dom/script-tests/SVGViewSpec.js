@@ -1,17 +1,10 @@
 description("This test checks the SVGViewSpec API, operating on a parsed viewSpec");
-if (window.testRunner)
+window.jsTestIsAsync = true;
+if (window.testRunner) {
     testRunner.waitUntilDone();
 
 function completeTest() {
-    var script = document.createElement("script");
-
-    script.onload = function() {
-        if (window.testRunner)
-            testRunner.notifyDone();
-    };
-
-    script.src = "../../fast/js/resources/js-test-post.js";
-    document.body.appendChild(script);
+    finishJSTest();
 }
 
 // Load an external file to test svgView() handling.

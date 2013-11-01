@@ -9,4 +9,7 @@ PASS window.internals.touchEventHandlerCount(document) is 2
 PASS window.internals.touchEventHandlerCount(document) is 3
 PASS window.internals.touchEventHandlerCount(document) is 2
 PASS window.internals.touchEventHandlerCount(document) is 0
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

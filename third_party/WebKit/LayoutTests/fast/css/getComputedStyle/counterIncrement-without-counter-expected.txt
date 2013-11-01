@@ -1,3 +1,6 @@
 PASS style.counterIncrement is '';
 PASS style.counterReset is '';
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

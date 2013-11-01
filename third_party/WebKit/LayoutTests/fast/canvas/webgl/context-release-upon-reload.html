@@ -14,6 +14,7 @@
 <script>
 description("This test ensures that WebGL contexts are released properly upon page reload");
 
+window.jsTestIsAsync = true;
 if (window.testRunner) {
     testRunner.dumpAsText();
     testRunner.waitUntilDone();

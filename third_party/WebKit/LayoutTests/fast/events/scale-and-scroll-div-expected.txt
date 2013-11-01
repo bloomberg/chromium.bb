@@ -3,6 +3,9 @@ This tests that a div scrolled by gesture touch while the page is scaled still s
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 Scrolling unscaled div
 PASS scrollBox.scrollTop is expectedScrollDistance
 PASS scrollBox.scrollTop is expectedScrollDistance

@@ -1,3 +1,6 @@
+PASS successfullyParsed is true
+
+TEST COMPLETE
 This test checks that a long press gesture selects word when touch editing is enabled.
 
 Testing

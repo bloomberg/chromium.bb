@@ -16,6 +16,7 @@
 
 <script>
 // Setting up the testcase
+window.jsTestIsAsync = true;
 if (window.testRunner)
     testRunner.waitUntilDone();
 
@@ -211,7 +212,7 @@ function eventTestThree()
 function eventTestFour()
 {
     debug("");
-    debug("Test #4: Verify that a click event got dispatched to the original tree as defined in the markup, when sent to the 'rectElement'"); 
+    debug("Test #4: Verify that a click event got dispatched to the original tree as defined in the markup, when sent to the 'rectElement'");
     debug("");
 
     verifyClickEventOnReferenced();
@@ -222,7 +223,7 @@ function eventTestFour()
 function eventTestFive()
 {
     debug("");
-    debug("Test #5: Verify that a click event got dispatched to the instance tree when sent to the 'useElement.instanceRoot' with an event listener attached to 'rectElement'"); 
+    debug("Test #5: Verify that a click event got dispatched to the instance tree when sent to the 'useElement.instanceRoot' with an event listener attached to 'rectElement'");
     debug("");
 
     verifyClickEvent();
@@ -282,17 +283,7 @@ function eventTestEight()
     // Indicate finish
     rectElement.setAttribute("fill", "green");
 
-    // Load test finishing script
-    var script = document.createElement('script');
-    script.onload = completeTest;
-    script.src = "../../fast/js/resources/js-test-post.js";
-    document.body.appendChild(script);
-}
-
-function completeTest()
-{
-    if (window.testRunner)
-        testRunner.notifyDone();
+    finishJSTest();
 }
 </script>
 

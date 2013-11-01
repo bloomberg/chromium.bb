@@ -10,6 +10,7 @@
             var event;
             var div;
 
+            window.jsTestIsAsync = true;
             if (window.testRunner)
                 testRunner.waitUntilDone();
 
@@ -29,9 +30,7 @@
             {
                 shouldBe("document.body.scrollTop", "window.expectedScrollTop");
                 shouldBe("document.body.scrollLeft", "window.expectedScrollLeft");
-
-                if (window.testRunner)
-                    window.testRunner.notifyDone();
+                finishJSTest();
             }
 
             function mousewheelHandler(e)

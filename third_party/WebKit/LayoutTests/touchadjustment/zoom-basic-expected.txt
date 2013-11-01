@@ -3,6 +3,9 @@ Test basic cases of tap-to-zoom mechanics.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS zoomableArea.top is 100
 PASS zoomableArea.left is 100
 PASS zoomableArea.width is 200

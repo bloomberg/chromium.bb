@@ -9,4 +9,7 @@ PASS nameAttrNode.childNodes[0].data is "oldName"
 PASS nameAttrNode.value = 'newName'; nameAttrNode.value is "newName"
 PASS nameAttrNode.childNodes[0] is not oldValue
 PASS nameAttrNode.childNodes[0].data is "newName"
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

@@ -20,4 +20,7 @@ PASS 10 is 10
 PASS 10 is 10
 
 PASS 10 is 10
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

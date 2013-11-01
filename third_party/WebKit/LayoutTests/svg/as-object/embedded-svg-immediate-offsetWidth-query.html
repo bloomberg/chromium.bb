@@ -4,22 +4,7 @@
 <script src="../../fast/js/resources/js-test-pre.js"></script>
 <script src="../../fast/repaint/resources/repaint.js"></script>
 <script type="text/javascript">
-    function completeTest() {
-        var script = document.createElement("script");
-
-        script.onload = function() {
-            if (window.testRunner)
-                testRunner.notifyDone();
-        };
-
-        script.src = "../../fast/js/resources/js-test-post.js";
-        document.body.appendChild(script);
-    }
-
     function repaintTest() {
-        if (window.testRunner)
-            testRunner.waitUntilDone();
-
         // Test initial reported offsetWidth is 0, as we're not in the tree yet.
         newObject = document.createElement("object");
         newObject.setAttribute("style", "border: 1px black solid; background: red");
@@ -36,8 +21,6 @@
         newObject.setAttribute("data", "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMjAwIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iZ3JlZW4iLz48L3N2Zz4=");
         shouldBe("newObject.offsetWidth", "502");
         shouldBe("newObject.offsetWidth", "502");
-
-        completeTest();
     }
 </script>
 </head>

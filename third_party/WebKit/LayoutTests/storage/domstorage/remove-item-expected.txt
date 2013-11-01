@@ -62,4 +62,7 @@ PASS storage.getItem('foo3') is null
 PASS successfullyParsed is true
 
 TEST COMPLETE
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

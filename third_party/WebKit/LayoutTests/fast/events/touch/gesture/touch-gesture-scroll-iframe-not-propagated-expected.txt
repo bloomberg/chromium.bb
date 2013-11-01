@@ -4,6 +4,9 @@ This tests that a gesture scroll is not propagated from an iframe to an outer di
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 first gesture
 PASS iframeBody.scrollHeight - iframeDocumentElement.scrollTop is iframe.clientHeight
 PASS movedbox.scrollTop is 0

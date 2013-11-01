@@ -60,4 +60,7 @@ PASS getError was expected value: NO_ERROR : there should be no errors
 PASS successfullyParsed is true
 
 TEST COMPLETE
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

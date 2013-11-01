@@ -18,4 +18,7 @@ PASS fieldsetElement.form is form1
 PASS legendElement.form is form1
 PASS fieldsetElement.form is form2
 PASS legendElement.form is form2
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

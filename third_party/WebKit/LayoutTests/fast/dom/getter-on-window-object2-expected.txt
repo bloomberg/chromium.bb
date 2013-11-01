@@ -22,4 +22,7 @@ PASS typeof Object.getOwnPropertyDescriptor(window, 'y').get is 'function'
 PASS window.z is undefined.
 PASS typeof window.__lookupSetter__('z') is 'function'
 PASS typeof Object.getOwnPropertyDescriptor(window, 'z').set is 'function'
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

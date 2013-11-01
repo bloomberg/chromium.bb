@@ -12,22 +12,10 @@ function repaintTest() {
     if (!window.postZoomCallback)
         return;
 
+    window.jsTestIsAsync = true;
     if (window.testRunner)
         testRunner.waitUntilDone();
 
     window.postZoomCallback();
-    completeDynamicTest();
-}
-
-function completeDynamicTest() {
-    var script = document.createElement("script");
-
-    script.onload = function() {
-        if (window.testRunner)
-            testRunner.notifyDone();
-    };
-
-    script.src = "../../../fast/js/resources/js-test-post.js";
-    successfullyParsed = true;
-    document.body.appendChild(script);
+    finishJSTest();
 }

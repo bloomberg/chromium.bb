@@ -86,4 +86,7 @@ PASS testPropertyUnit('hidden', 'padding-right') is 'px'
 PASS testPropertyUnit('hidden', 'padding-bottom') is 'px'
 PASS testPropertyUnit('hidden', 'padding-left') is 'px'
 PASS testPropertyUnit('hidden', 'text-indent') is 'px'
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

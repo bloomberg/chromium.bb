@@ -8,6 +8,9 @@ storage.clear()
 PASS storage.length is 0
 iframe.onload = step1
 iframe.src = 'resources/body-event-handler.html'
+PASS successfullyParsed is true
+
+TEST COMPLETE
 Reset storage event list
 storageEventList = new Array()
 storage.setItem('FOO', 'BAR')

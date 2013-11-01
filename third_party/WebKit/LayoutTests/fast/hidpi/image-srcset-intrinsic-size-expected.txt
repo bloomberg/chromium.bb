@@ -1,3 +1,6 @@
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS document.getElementById("foo").clientWidth==200 is true
 PASS document.getElementById("foo2").clientWidth==400 is true
 PASS document.getElementById("foo3").clientWidth==100 is true

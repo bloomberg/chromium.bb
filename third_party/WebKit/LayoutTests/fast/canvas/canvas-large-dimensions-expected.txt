@@ -30,4 +30,7 @@ PASS Actual: 255 Expected: 255
 PASS Actual: 255 Expected: 255
 PASS Actual: 255 Expected: 255
 PASS Actual: 255 Expected: 255
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

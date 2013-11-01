@@ -4,6 +4,9 @@ This tests that a fling gesture sent to an iframe with no remaining scroll offse
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS iframeBody.scrollHeight - iframeDocumentElement.scrollTop is iframe.clientHeight
 PASS movedbox.scrollTop is 50
 PASS movedbox.scrollLeft is 0

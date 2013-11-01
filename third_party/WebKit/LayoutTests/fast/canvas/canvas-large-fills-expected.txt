@@ -32,4 +32,7 @@ PASS Fill Size 100000, destination-atop: #00FF00
 PASS Fill Size 100000, lighter: #00FFFF
 PASS Fill Size 100000, copy: #0000FF
 PASS Fill Size 100000, xor: #000000
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

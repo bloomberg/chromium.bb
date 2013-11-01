@@ -3,6 +3,9 @@ This test checks whether exceptions in SharedWorkers are logged to the parent do
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS: Received ping message
 
 TEST COMPLETE

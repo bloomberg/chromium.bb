@@ -84,4 +84,7 @@ PASS getComputedStyle(gridItem, '').getPropertyValue('grid-row-start') is "auto"
 PASS getComputedStyle(gridItem, '').getPropertyValue('grid-column-start') is "auto"
 PASS getComputedStyle(gridItem, '').getPropertyValue('grid-row-end') is "auto"
 PASS getComputedStyle(gridItem, '').getPropertyValue('grid-column-end') is "auto"
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

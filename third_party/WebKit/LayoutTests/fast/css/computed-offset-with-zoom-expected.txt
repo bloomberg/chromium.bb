@@ -34,6 +34,9 @@ PASS window.getComputedStyle(viewportElement).top is '60px'
 PASS window.getComputedStyle(viewportElement).right is '80px'
 PASS window.getComputedStyle(viewportElement).bottom is '60px'
 PASS window.getComputedStyle(viewportElement).left is '80px'
+PASS successfullyParsed is true
+
+TEST COMPLETE
 Reported computed offset should not change with zoom level.
 
 

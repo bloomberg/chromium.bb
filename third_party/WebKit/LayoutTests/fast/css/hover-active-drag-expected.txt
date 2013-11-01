@@ -12,6 +12,9 @@ PASS background is "rgb(0, 255, 0)"
 PASS background is "rgb(0, 0, 0)"
 PASS background is "rgb(0, 0, 0)"
 PASS background is "rgb(0, 0, 0)"
+PASS successfullyParsed is true
+
+TEST COMPLETE
 
 
 

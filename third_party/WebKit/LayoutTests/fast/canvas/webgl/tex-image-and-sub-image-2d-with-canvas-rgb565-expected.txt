@@ -2,6 +2,9 @@ Verify texImage2D and texSubImage2D code paths taking canvas elements (RGB/UNSIG
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 Testing texImage2D with flipY=true
 Checking lower left corner
 PASS shouldBe 0,255,0

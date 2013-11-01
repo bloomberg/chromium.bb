@@ -71,4 +71,7 @@ PASS lastEvent.touches[0].target.tagName is "DIV"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

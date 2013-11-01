@@ -10,4 +10,7 @@ PASS clone.content.firstChild is not template.content.firstChild
 PASS clone.content is not template.content
 PASS clone.firstChild.tagName is "DIV"
 PASS clone.firstChild is not div
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

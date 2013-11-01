@@ -19,7 +19,6 @@ PASS should be blue
 PASS area outside fbo should be transparent black
 PASS should be green
 PASS area outside fbo should be transparent black
-PASS getError was expected value: NO_ERROR : Should be no errors.
 PASS successfullyParsed is true
 
 TEST COMPLETE

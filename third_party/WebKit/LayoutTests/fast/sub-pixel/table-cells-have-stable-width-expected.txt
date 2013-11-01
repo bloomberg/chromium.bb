@@ -1,5 +1,8 @@
 PASS Cell in AutoTable has expected size
 PASS Cell in FixedTable has expected size
+PASS successfullyParsed is true
+
+TEST COMPLETE
 Cc:	AutoTableLayout	
 foo
 FixedTableLayout

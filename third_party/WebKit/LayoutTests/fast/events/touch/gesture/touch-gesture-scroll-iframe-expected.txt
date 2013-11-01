@@ -4,6 +4,9 @@ This tests gesture event scrolling in iframes. Red-green strip is scrolled on pa
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 first gesture
 PASS touchtarget.contentDocument.body.scrollTop is 140
 PASS touchtarget.contentDocument.body.scrollLeft is 0

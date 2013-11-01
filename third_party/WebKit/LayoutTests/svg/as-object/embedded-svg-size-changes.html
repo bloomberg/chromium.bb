@@ -42,18 +42,7 @@
         debug("");
         debug("Test passed if you see two green rectangles");
 
-        completeTest();
-    }
-
-    function completeTest() {
-        var script = document.createElement("script");
-        script.onload = function() {
-            if (window.testRunner)
-                testRunner.notifyDone();
-        };
-
-        script.src = "../../fast/js/resources/js-test-post.js";
-        document.body.appendChild(script);
+        finishJSTest();
     }
 </script>
 
@@ -62,6 +51,7 @@
 <div id="console"></div>
 
 <script>
+    window.jsTestIsAsync = true;
     if (window.testRunner)
         testRunner.waitUntilDone();
     description("This test checks that intrinsic size changes of an embedded SVG cause immediate updates of the object that embeds it.");

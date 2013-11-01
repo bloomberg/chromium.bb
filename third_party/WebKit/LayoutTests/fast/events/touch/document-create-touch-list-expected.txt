@@ -21,4 +21,7 @@ PASS An exception was thrown: Failed to execute 'createTouchList' on 'Document':
 PASS successfullyParsed is true
 
 TEST COMPLETE
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

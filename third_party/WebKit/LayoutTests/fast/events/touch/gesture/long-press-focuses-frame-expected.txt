@@ -1,3 +1,6 @@
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS document.activeElement == frame1 is true
 PASS document.activeElement == frame2 is true
 PASS document.activeElement == document.body is true

@@ -2,7 +2,7 @@
 <head>
 <script src="../js/resources/js-test-pre.js"></script>
 <script>
-
+window.jsTestIsAsync = true;
 if (window.testRunner)
     testRunner.waitUntilDone()
 
@@ -43,14 +43,12 @@ function runTest()
 
 function finished()
 {
-    debug('<br /><span class="pass">TEST COMPLETE</span>');
     document.body.removeChild(document.getElementById("test-container"));
-    if (window.testRunner)
-        testRunner.notifyDone();
+    finishJSTest();
 }
 
 function clickHyperlinksIfScrolledToBottomOtherwiseFail()
-{   
+{
     var didScrollToBottom = testContainer.scrollTop === testContainer.scrollHeight - testContainer.clientHeight;
     if (!didScrollToBottom) {
         testFailed("either pan scrolling is disabled or this platform doesn't support pan scrolling.");

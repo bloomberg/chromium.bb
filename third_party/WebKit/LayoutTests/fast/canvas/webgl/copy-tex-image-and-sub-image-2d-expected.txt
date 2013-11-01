@@ -3,6 +3,9 @@ Verify copyTexImage2D and copyTexSubImage2D
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 Testing with antialias on
 Testing copyTexImage2D
 PASS getError was expected value: NO_ERROR : 

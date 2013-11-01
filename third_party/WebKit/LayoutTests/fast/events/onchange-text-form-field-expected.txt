@@ -29,4 +29,7 @@ PASS simulateTextEntry(elements[4], 'foo', BEFORE); is false
 PASS simulateTextEntry(elements[4], 'foo', BEFORE | AFTER); is true
 PASS simulateTextEntry(elements[4], '', AFTER); is false
 PASS simulateTextEntry(elements[4], 'foo', AFTER); is false
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

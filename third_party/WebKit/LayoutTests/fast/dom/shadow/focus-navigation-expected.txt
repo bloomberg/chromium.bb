@@ -105,6 +105,9 @@ PASS
 Should move from input-B-1 to input-A-1 in backward
 PASS
 Test finished.
+PASS successfullyParsed is true
+
+TEST COMPLETE
 
 
 

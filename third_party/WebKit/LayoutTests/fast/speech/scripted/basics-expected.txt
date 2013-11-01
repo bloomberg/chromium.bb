@@ -33,4 +33,7 @@ PASS 'dispatchEvent' in speechReco is true
 PASS speechReco.lang is ''
 PASS speechReco.continuous is false
 PASS speechReco.maxAlternatives is 1
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

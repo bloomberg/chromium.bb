@@ -3,6 +3,9 @@ Test for http://bugs.webkit.org/show_bug.cgi?id=13203: REGRESSION: Repro crash i
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 destroyStream() returns zero to indicate success, or a non-zero error code to indicate failure
 PASS document.getElementById('plugin').hasStream is true
 PASS document.getElementById('plugin').destroyStream() is 2

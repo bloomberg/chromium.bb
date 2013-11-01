@@ -1,5 +1,8 @@
 Bug 45205: Test that <xml-stylesheet> processing instructions only have stylesheets when in document.
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS sheet.ownerNode is pi
 PASS pi.sheet === sheet is true
 Removing <pi>...

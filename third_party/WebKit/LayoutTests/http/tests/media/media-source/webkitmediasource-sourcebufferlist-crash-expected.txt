@@ -1,3 +1,6 @@
+PASS successfullyParsed is true
+
+TEST COMPLETE
 Verify that we don't crash on close if the MediaSource.sourceBuffers holds the last reference to its SourceBuffer objects.
 
 Calling addSourceBuffer()

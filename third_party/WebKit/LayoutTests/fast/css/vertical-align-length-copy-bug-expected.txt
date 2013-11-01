@@ -8,4 +8,7 @@ PASS test.offsetTop is 10
 PASS successfullyParsed is true
 
 TEST COMPLETE
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

@@ -20,5 +20,8 @@ It has a visible link_1.
 
 This link should NOT get focused.
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS gFocusedDocument.activeElement.getAttribute("id") is "start"
 

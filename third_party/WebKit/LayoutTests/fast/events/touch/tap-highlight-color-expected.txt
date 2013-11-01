@@ -14,4 +14,7 @@ PASS div.ownerDocument.defaultView.getComputedStyle(div, null).getPropertyValue(
 PASS successfullyParsed is true
 
 TEST COMPLETE
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

@@ -4,4 +4,7 @@ onbeforeload defer
 onbeforeload external
 external
 defer
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

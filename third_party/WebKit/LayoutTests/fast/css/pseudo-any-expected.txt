@@ -94,4 +94,7 @@ PASS document.defaultView.getComputedStyle(element, null).getPropertyValue('back
 
 #test-last-child :last-child
 PASS document.defaultView.getComputedStyle(element, null).getPropertyValue('background-color') is 'rgb(0, 128, 0)'
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

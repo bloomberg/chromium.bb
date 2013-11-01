@@ -1,4 +1,7 @@
 CONSOLE ERROR: line 8: WebSocket connection to 'ws://localhost:8000/websocket/tests/hybi/does_not_exist' failed: Error during WebSocket handshake: Unexpected response code: 404
+PASS successfullyParsed is true
+
+TEST COMPLETE
 Closed.
 Tests that WebSocketFrames errors are visible to Web Inspector.
 

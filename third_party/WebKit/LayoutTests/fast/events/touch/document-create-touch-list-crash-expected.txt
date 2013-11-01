@@ -12,4 +12,7 @@ PASS document.createTouchList(undefined).item(0) threw exception TypeError: Fail
 PASS successfullyParsed is true
 
 TEST COMPLETE
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

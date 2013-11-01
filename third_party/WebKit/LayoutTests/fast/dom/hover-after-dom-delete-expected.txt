@@ -1,5 +1,8 @@
 Test for http://crbug.com/240722. If the mouse cursor is not visible, no new hover effects should be invoked when the currently hovered node is removed from the DOM. Press any key to delete the red div.
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 Adding the red and blue divs.
 PASS blueDiv.offsetTop is 200
 PASS redDiv.offsetTop is 50

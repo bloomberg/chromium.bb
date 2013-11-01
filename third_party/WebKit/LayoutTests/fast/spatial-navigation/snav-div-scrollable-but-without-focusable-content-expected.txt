@@ -2,6 +2,9 @@
 
 
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS gFocusedDocument.activeElement.getAttribute("id") is "start"
 PASS gFocusedDocument.activeElement.getAttribute("id") is "start"
 PASS gFocusedDocument.activeElement.getAttribute("id") is "start"

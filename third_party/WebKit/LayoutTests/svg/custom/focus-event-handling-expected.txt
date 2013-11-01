@@ -16,4 +16,7 @@ PASS focusinSeen is "switch"
 PASS focusoutSeen is "switch"
 PASS focusinSeen is "img"
 PASS focusoutSeen is "img"
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

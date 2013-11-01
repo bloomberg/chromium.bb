@@ -5,4 +5,10 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS text = serializer.serializeToString(docType) did not throw exception.
 PASS text is "<!DOCTYPE aDocTypeName PUBLIC \"aPublicID\" \"aSystemID\">"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

@@ -3,6 +3,9 @@ Verify that adding a sandbox attribute at runtime does not effect the iframe's c
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS disallowedExecuted is 0
 PASS allowedExecuted is 2
 PASS successfullyParsed is true

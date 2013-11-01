@@ -1,3 +1,6 @@
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS window.internals.counterValue(document.getElementById('test3')) is '-2147483648'
 PASS window.internals.counterValue(document.getElementById('test4')) is '-2147483647'
 PASS window.internals.counterValue(document.getElementById('test5')) is '0'

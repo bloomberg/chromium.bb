@@ -27,6 +27,9 @@ PASS
 Should move from host to A in backward
 PASS
 Test finished.
+PASS successfullyParsed is true
+
+TEST COMPLETE
 
 
 

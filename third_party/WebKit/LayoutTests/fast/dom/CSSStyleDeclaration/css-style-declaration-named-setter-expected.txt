@@ -6,4 +6,7 @@ PASS document.body.style.__proto__.margin is 777
 PASS document.body.style.margin is "1px"
 PASS document.body.style.margin = 2 is 2
 PASS document.body.style.margin is "2px"
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

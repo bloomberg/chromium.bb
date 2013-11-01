@@ -1,3 +1,6 @@
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS window.internals.counterValue(document.getElementById('wrapper90')) is '5'
 PASS window.internals.counterValue(document.getElementById('test90')) is '10'
 PASS window.internals.counterValue(document.getElementById('test90a')) is '15'

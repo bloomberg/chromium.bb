@@ -204,4 +204,7 @@ PASS storage.getItem('foo12') is "ÿ찡\u0000hello"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

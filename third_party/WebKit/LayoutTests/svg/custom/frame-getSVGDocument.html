@@ -9,6 +9,7 @@
 <script>
   description("Tests that HTMLFrameElement and HTMLIFrameElement expose a getSVGDocument accessor");
 
+  window.jsTestIsAsync = true;
   if (window.testRunner)
     testRunner.waitUntilDone();
 
@@ -16,7 +17,7 @@
   var iframe;
   var embed;
   var object;
-  
+
   function startTest() {
     frame = document.createElement("frame");
     frame.onload = continueTest1;
@@ -24,7 +25,7 @@
     document.documentElement.appendChild(frame);
     shouldBeTrue("!!frame.getSVGDocument");
   }
-  
+
   var continueTest1 = function() {
     shouldBeEqualToString("frame.getSVGDocument().toString()", "[object SVGDocument]");
     frame.parentNode.removeChild(frame);
@@ -35,7 +36,7 @@
     document.documentElement.appendChild(iframe);
     shouldBeTrue("!!iframe.getSVGDocument");
   }
-  
+
   var continueTest2 = function() {
     shouldBeEqualToString("iframe.getSVGDocument().toString()", "[object SVGDocument]");
     iframe.parentNode.removeChild(iframe);
@@ -46,7 +47,7 @@
     document.documentElement.appendChild(embed);
     shouldBeTrue("!!embed.getSVGDocument");
   }
-  
+
   var continueTest3 = function(event) {
     shouldBeEqualToString("embed.getSVGDocument().toString()", "[object SVGDocument]");
     embed.parentNode.removeChild(embed);
@@ -61,18 +62,10 @@
   function continueTest4() {
     shouldBeEqualToString("object.getSVGDocument().toString()", "[object SVGDocument]");
     object.parentNode.removeChild(object);
-    
-    var script = document.createElement('script');
-    script.src = "../../fast/js/resources/js-test-post.js";
-    script.onload = completeTest;
-    document.body.appendChild(script);
+
+    finishJSTest();
   }
 
-  function completeTest() {
-    if (window.testRunner)
-      testRunner.notifyDone();
-  }
-  
   startTest();
 </script>
 </body>

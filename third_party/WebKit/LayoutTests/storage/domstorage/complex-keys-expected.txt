@@ -234,4 +234,7 @@ PASS storage.length is 13
 PASS successfullyParsed is true
 
 TEST COMPLETE
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

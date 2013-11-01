@@ -3,6 +3,9 @@ Verify texImage2D and texSubImage2D code paths taking ImageData (RGBA/UNSIGNED_S
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 Testing texImage2D with flipY=true and premultiplyAlpha=false
 Checking bottom pixel
 PASS shouldBe 0,255,0,255

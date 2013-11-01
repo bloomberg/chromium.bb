@@ -4,4 +4,7 @@ The caret is placed at 5th pos and the empty html is added. The test passes if t
 
 abcdefghijklmnopqrstuvwxyz
 PASS window.getSelection().baseOffset is 5
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

@@ -19,6 +19,7 @@ function shouldHaveBBox(element, width, height)
 }
 
 function createSVGTestCase() {
+    window.jsTestIsAsync = true;
     if (window.testRunner)
         testRunner.waitUntilDone();
 
@@ -31,6 +32,7 @@ function createSVGTestCase() {
 }
 
 function embedSVGTestCase(uri) {
+    window.jsTestIsAsync = true;
     if (window.testRunner)
         testRunner.waitUntilDone();
 
@@ -60,13 +62,5 @@ function clickAt(x, y) {
 }
 
 function completeTest() {
-    var script = document.createElement("script");
-
-    script.onload = function() {
-        if (window.testRunner)
-            testRunner.notifyDone();
-    };
-
-    script.src = "../../fast/js/resources/js-test-post.js";
-    document.body.appendChild(script);
+    finishJSTest();
 }

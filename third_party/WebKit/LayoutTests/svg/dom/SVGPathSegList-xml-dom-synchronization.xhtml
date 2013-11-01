@@ -4,19 +4,8 @@
 <script src="../../fast/js/resources/js-test-pre.js"></script>
 <script src="../../fast/repaint/resources/repaint.js"></script>
 <script type="text/javascript">
-    function completeTest() {
-        var script = document.createElement("script");
-
-        script.onload = function() {
-            if (window.testRunner)
-                testRunner.notifyDone();
-        };
-
-        script.src = "../../fast/js/resources/js-test-post.js";
-        document.body.appendChild(script);
-    }
-
     function repaintTest() {
+        window.jsTestIsAsync = true;
         if (window.testRunner)
             testRunner.waitUntilDone();
 
@@ -34,11 +23,11 @@
         path.pathSegList.getItem(0).x -= 100;
         shouldBeEqualToString("path.getAttribute('d').formatDAttribute()", "M 100 0 L 100 0 L 100 100 L 0 100");
 
-        // Modify first item, check 'd' attribute changed, now a green rectangle should be visible. 
+        // Modify first item, check 'd' attribute changed, now a green rectangle should be visible.
         path.pathSegList.getItem(0).x -= 100;
         shouldBeEqualToString("path.getAttribute('d').formatDAttribute()", "M 0 0 L 100 0 L 100 100 L 0 100");
-        
-        completeTest();
+
+        finishJSTest();
     }
 </script>
 </head>
@@ -57,8 +46,8 @@
     String.prototype.formatDAttribute = function() {
         return this.replace(/,/g, " ")          // Remove Firefox commas
                    .replace(/([A-Z])/g, " $1 ") // "M 100 0L 50 0" -> " M 100 0 L 50 0"
-                   .replace(/^\s/, "")          // " M 100 0" -> "M 100 0" 
-                   .replace(/\s\s/g, " ");      // If there was already whitespace between coordinates & commands, fix it up again.      
+                   .replace(/^\s/, "")          // " M 100 0" -> "M 100 0"
+                   .replace(/\s\s/g, " ");      // If there was already whitespace between coordinates & commands, fix it up again.
     }
 ]]>
 </script>

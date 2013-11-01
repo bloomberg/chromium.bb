@@ -90,5 +90,8 @@ PASS getSize(2).imageWidth is 250
 PASS getSize(2).imageHeight is 166
 PASS getSize(2).wrapWidth is 250
 PASS getSize(2).wrapHeight is 166
+PASS successfullyParsed is true
+
+TEST COMPLETE
 
 Image should return a size of 250x166 regardless of zoom level.

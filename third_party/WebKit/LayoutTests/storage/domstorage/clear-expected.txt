@@ -32,4 +32,7 @@ PASS storage['BAR'] is undefined
 PASS successfullyParsed is true
 
 TEST COMPLETE
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

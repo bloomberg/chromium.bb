@@ -1,4 +1,7 @@
         
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS selectElement.selectedIndex is -1
 PASS selectElement.selectedIndex is -1
 PASS selectElement.selectedIndex is 0

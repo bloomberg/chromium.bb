@@ -4,6 +4,9 @@ This tests that navigating in a multiselect list updates selection and the activ
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS accessibleOne.isSelected is true
 PASS accessibleOne.isSelectedOptionActive is true
 PASS accessibleTwo.isSelected is false

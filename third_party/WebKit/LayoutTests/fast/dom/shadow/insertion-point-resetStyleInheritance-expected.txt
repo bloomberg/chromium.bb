@@ -1,3 +1,6 @@
+PASS successfullyParsed is true
+
+TEST COMPLETE
 Test case: no reset-style-inheritance. color value should be inherited from the shadow host.
 PASS window.getComputedStyle(document.getElementById("no-reset-style-inheritance").firstChild).color is "rgb(255, 238, 238)"
 PASS window.getComputedStyle(document.getElementById("no-reset-style-inheritance").firstChild).backgroundColor is "rgba(0, 0, 0, 0)"

@@ -10,4 +10,7 @@ PASS labels[0] is label0
 PASS label0.parentNode.appendChild(label1); labels.length is 2
 PASS labels[0] is label0
 PASS labels[1] is label1
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

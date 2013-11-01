@@ -94,4 +94,7 @@ PASS lastEvent.changedTouches[1].identifier is 1
 PASS successfullyParsed is true
 
 TEST COMPLETE
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

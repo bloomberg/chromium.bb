@@ -73,8 +73,23 @@ var description, debug, successfullyParsed, errorMessage;
         (document.head || document.documentElement).appendChild(styleElement);
     }
 
-    if (!isWorker())
+    function handleTestFinished()
+    {
+        // FIXME: Get rid of this boolean.
+        wasPostTestScriptParsed = true;
+        if (window.jsTestIsAsync) {
+            if (window.testRunner)
+                testRunner.waitUntilDone();
+            if (window.wasFinishJSTestCalled)
+                finishJSTest();
+        } else
+            finishJSTest();
+    }
+
+    if (!isWorker()) {
+        window.addEventListener('DOMContentLoaded', handleTestFinished, false);
         insertStyleSheet();
+    }
 
     if (!self.isOnErrorTest) {
         self.onerror = function(message)
@@ -82,7 +97,6 @@ var description, debug, successfullyParsed, errorMessage;
             errorMessage = message;
         };
     }
-
 })();
 
 function isWorker()

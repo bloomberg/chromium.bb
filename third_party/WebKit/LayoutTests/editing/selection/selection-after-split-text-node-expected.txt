@@ -4,4 +4,10 @@ PASS selection.anchorOffset is 3
 PASS selection.focusNode is newText
 PASS selection.focusOffset is 6
 PASS selection.toString() is "baz"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

@@ -1,3 +1,6 @@
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS iframe1.seamless is true
 PASS iframe2.seamless is true
 PASS window.getComputedStyle(iframe1).width is "200px"

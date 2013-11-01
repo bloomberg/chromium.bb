@@ -4,4 +4,7 @@ PASS style.marginBottom is '2.5px'
 PASS style.marginLeft is '3.5px'
 PASS style.marginLeft is '0.5px'
 PASS style.marginRight is '0.5px'
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

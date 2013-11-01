@@ -12,7 +12,13 @@ Focusable
 
 Result
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS gave focus to focusable element
 PASS gave focus to focusable element
 PASS gave focus to focusable element
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

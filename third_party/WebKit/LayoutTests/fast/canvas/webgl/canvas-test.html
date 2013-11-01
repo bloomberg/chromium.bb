@@ -173,18 +173,10 @@ if (!gl) {
       checkCanvasContentIs(0, 0, 0, 0);
 
       debug("");
-      var epilogue = document.createElement("script");
-      epilogue.onload = finish;
-      epilogue.src = "../../js/resources/js-test-post.js";
-      document.body.appendChild(epilogue);
+
+      finishJSTest();
     }
    }, 1000/30);
-}
-
-function finish() {
-  if (window.nonKhronosFrameworkNotifyDone) {
-    window.nonKhronosFrameworkNotifyDone();
-  }
 }
 
 </script>

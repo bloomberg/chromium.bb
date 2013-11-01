@@ -13,4 +13,7 @@ PASS new webkitSpeechRecognitionError('eventType', { cancelable: false }).cancel
 PASS new webkitSpeechRecognitionError('eventType', { cancelable: true }).cancelable is true
 PASS new webkitSpeechRecognitionError('eventType', { error: 'bar' }).error is "bar"
 PASS new webkitSpeechRecognitionError('eventType', { message: 'foo' }).message is "foo"
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

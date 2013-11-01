@@ -3,5 +3,8 @@ Tests to ensure that an img element receives a load event, but an inner image el
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS event.currentTarget.id is "host"
 

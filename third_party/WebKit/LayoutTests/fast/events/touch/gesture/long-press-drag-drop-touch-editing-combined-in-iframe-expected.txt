@@ -1,3 +1,6 @@
+PASS successfullyParsed is true
+
+TEST COMPLETE
 
 This test checks long press behavior inside an iframe when both touch drag/drop and touch editing are enabled.
 1. Check that long press on a draggable element starts drag.
@@ -6,4 +9,4 @@ This test checks long press behavior inside an iframe when both touch drag/drop 
 
 Testing
 PASS
-PASS
+FAIL

@@ -75,4 +75,7 @@ Test that nested Documents' touch handlers are properly removed from their paren
 PASS window.internals.touchEventHandlerCount(document) is 0
 PASS window.internals.touchEventHandlerCount(document) is 1
 PASS window.internals.touchEventHandlerCount(document) is 0
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

@@ -4,6 +4,9 @@ Test NPN_RemoveProperty
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS 'property' in obj is true
 FAIL 'property' in obj should be false. Was true.
 PASS array[1] is 2

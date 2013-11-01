@@ -6,4 +6,7 @@ X
 PASS elementRect('s1').top is 0
 PASS elementRect('s2').top is 20
 PASS elementRect('s3').top is 40
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

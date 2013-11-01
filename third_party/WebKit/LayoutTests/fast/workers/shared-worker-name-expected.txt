@@ -4,6 +4,9 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS created SharedWorker with no name
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS setting self.foo
 PASS creating worker with no name
 PASS creating worker with empty name

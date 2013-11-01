@@ -7,4 +7,7 @@ autowrap text area with dir=ltr.
 vertical text.
 
 PASS 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

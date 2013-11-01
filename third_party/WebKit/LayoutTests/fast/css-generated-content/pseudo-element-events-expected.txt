@@ -1,3 +1,6 @@
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS event.target.tagName is "DIV"
 PASS successfullyParsed is true
 

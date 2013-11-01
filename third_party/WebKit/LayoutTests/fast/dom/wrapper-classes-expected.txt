@@ -3,6 +3,9 @@ This tests wrapper class names for JavaScript.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 Basics
 
 PASS classString(document.createAttribute()) is "Attr"

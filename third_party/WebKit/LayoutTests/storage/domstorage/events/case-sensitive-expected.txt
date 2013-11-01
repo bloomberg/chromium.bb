@@ -9,6 +9,9 @@ PASS storage.length is 0
 
 Verify storage events are case sensitive
 storage.foo = 'test'
+PASS successfullyParsed is true
+
+TEST COMPLETE
 Reset storage event list
 storageEventList = new Array()
 storage.foo = 'test'
