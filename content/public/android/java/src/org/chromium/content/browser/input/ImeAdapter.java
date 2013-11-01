@@ -499,6 +499,7 @@ public class ImeAdapter {
 
     @CalledByNative
     void detach() {
+        if (mDismissInput != null) mHandler.removeCallbacks(mDismissInput);
         mNativeImeAdapterAndroid = 0;
         mTextInputType = 0;
     }
