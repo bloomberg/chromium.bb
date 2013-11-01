@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/prefs/pref_service.h"
+#include "base/win/metro.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/common/pref_names.h"
@@ -16,7 +17,6 @@
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "base/win/metro.h"
 #include "chrome/browser/metro_utils/metro_chrome_win.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/chrome_constants.h"
