@@ -1650,22 +1650,6 @@ TEST_F(ShelfLayoutManagerTest, ShelfFlickerOnTrayActivation) {
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
   EXPECT_TRUE(GetSystemTray()->HasSystemBubble());
-
-  // Now activate the tray (using the keyboard, instead of using the mouse to
-  // make sure the mouse does not alter the auto-hide state in the shelf).
-  // This should not trigger any auto-hide state change in the shelf.
-  ShelfLayoutObserverTest observer;
-  shelf->AddObserver(&observer);
-
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
-  generator.PressKey(ui::VKEY_SPACE, 0);
-  generator.ReleaseKey(ui::VKEY_SPACE, 0);
-  EXPECT_TRUE(GetSystemTray()->HasSystemBubble());
-  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
-  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
-  EXPECT_FALSE(observer.changed_auto_hide_state());
-
-  shelf->RemoveObserver(&observer);
 }
 
 TEST_F(ShelfLayoutManagerTest, WorkAreaChangeWorkspace) {
