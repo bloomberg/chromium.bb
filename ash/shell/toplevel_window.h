@@ -38,6 +38,7 @@ class ToplevelWindow : public views::WidgetDelegateView {
       const gfx::Rect& bounds,
       ui::WindowShowState show_state) OVERRIDE;
   virtual bool GetSavedWindowPlacement(
+      const views::Widget* widget,
       gfx::Rect* bounds,
       ui::WindowShowState* show_state) const OVERRIDE;
   virtual View* GetContentsView() OVERRIDE;

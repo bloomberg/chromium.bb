@@ -76,6 +76,7 @@ void ToplevelWindow::SaveWindowPlacement(const gfx::Rect& bounds,
 }
 
 bool ToplevelWindow::GetSavedWindowPlacement(
+    const views::Widget* widget,
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
   bool is_saved_bounds = !!saved_state;

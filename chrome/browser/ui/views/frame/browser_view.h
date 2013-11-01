@@ -407,6 +407,7 @@ class BrowserView : public BrowserWindow,
   virtual void SaveWindowPlacement(const gfx::Rect& bounds,
                                    ui::WindowShowState show_state) OVERRIDE;
   virtual bool GetSavedWindowPlacement(
+      const views::Widget* widget,
       gfx::Rect* bounds,
       ui::WindowShowState* show_state) const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;

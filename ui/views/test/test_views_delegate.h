@@ -33,6 +33,7 @@ class TestViewsDelegate : public ViewsDelegate {
                                    const gfx::Rect& bounds,
                                    ui::WindowShowState show_state) OVERRIDE;
   virtual bool GetSavedWindowPlacement(
+      const Widget* window,
       const std::string& window_name,
       gfx::Rect* bounds,
       ui::WindowShowState* show_state) const OVERRIDE;

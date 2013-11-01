@@ -1396,7 +1396,7 @@ bool Widget::GetSavedWindowPlacement(gfx::Rect* bounds,
   // track maximized state independently of sizing information.
 
   // Restore the window's placement from the controller.
-  if (widget_delegate_->GetSavedWindowPlacement(bounds, show_state)) {
+  if (widget_delegate_->GetSavedWindowPlacement(this, bounds, show_state)) {
     if (!widget_delegate_->ShouldRestoreWindowSize()) {
       bounds->set_size(non_client_view_->GetPreferredSize());
     } else {

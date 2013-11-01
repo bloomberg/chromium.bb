@@ -148,6 +148,18 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
     animate_to_fullscreen_ = value;
   }
 
+  // If the minimum visibilty is true, ash will try to keep a
+  // minimum amount of the window is always visible on the work area
+  // when shown.
+  // TODO(oshima): Consolidate this and window_position_managed
+  // into single parameter to control the window placement.
+  bool minimum_visibility() const {
+    return minimum_visibility_;
+  }
+  void set_minimum_visibility(bool minimum_visibility) {
+    minimum_visibility_ = minimum_visibility;
+  }
+
   // Gets/Sets the bounds of the window before it was moved by the auto window
   // management. As long as it was not auto-managed, it will return NULL.
   const gfx::Rect* pre_auto_manage_window_bounds() const {
@@ -262,6 +274,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool always_restores_to_restore_bounds_;
   bool hide_shelf_when_fullscreen_;
   bool animate_to_fullscreen_;
+  bool minimum_visibility_;
 
   // A property to remember the window position which was set before the
   // auto window position manager changed the window bounds, so that it can get

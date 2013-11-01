@@ -283,11 +283,23 @@ bool WindowPositioner::DisableAutoPositioning(bool ignore) {
 void WindowPositioner::RearrangeVisibleWindowOnShow(
     aura::Window* added_window) {
   wm::WindowState* added_window_state = wm::GetWindowState(added_window);
+  if (!added_window->TargetVisibility())
+    return;
 
   if (!UseAutoWindowManager(added_window) ||
-      added_window_state->bounds_changed_by_user() ||
-      !added_window->TargetVisibility())
+      added_window_state->bounds_changed_by_user()) {
+    if (added_window_state->minimum_visibility()) {
+      // Guarante minimum visibility within the work area.
+      gfx::Rect work_area = GetWorkAreaForWindowInParent(added_window);
+      gfx::Rect bounds = added_window->bounds();
+      gfx::Rect new_bounds = bounds;
+      ash::wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area,
+                                                           &new_bounds);
+      if (new_bounds != bounds)
+        added_window->SetBounds(new_bounds);
+    }
     return;
+  }
   // Find a single open managed window.
   bool single_window;
   aura::Window* other_shown_window = GetReferenceWindow(

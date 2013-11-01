@@ -118,6 +118,7 @@ void WidgetDelegate::SaveWindowPlacement(const gfx::Rect& bounds,
 }
 
 bool WidgetDelegate::GetSavedWindowPlacement(
+    const Widget* widget,
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
   std::string window_name = GetWindowName();
@@ -125,7 +126,7 @@ bool WidgetDelegate::GetSavedWindowPlacement(
     return false;
 
   return ViewsDelegate::views_delegate->GetSavedWindowPlacement(
-      window_name, bounds, show_state);
+      widget, window_name, bounds, show_state);
 }
 
 bool WidgetDelegate::ShouldRestoreWindowSize() const {

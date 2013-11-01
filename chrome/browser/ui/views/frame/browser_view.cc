@@ -1626,6 +1626,7 @@ void BrowserView::SaveWindowPlacement(const gfx::Rect& bounds,
 }
 
 bool BrowserView::GetSavedWindowPlacement(
+    const views::Widget* widget,
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
   if (!ShouldSaveOrRestoreWindowPos())

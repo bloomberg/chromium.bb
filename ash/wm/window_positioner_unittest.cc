@@ -11,6 +11,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace ash {
 
@@ -47,6 +48,56 @@ TEST_F(WindowPositionerTest, OpenDefaultWindowOnSecondDisplay) {
   EXPECT_EQ("300x300", bounds.size().ToString());
   EXPECT_TRUE(Shell::GetScreen()->GetDisplayNearestWindow(
       second_root_window).bounds().Contains(bounds));
+}
+
+namespace {
+
+// A WidgetDelegate that returns the out of display saved bounds.
+class OutOfDisplayDelegate : public views::WidgetDelegate {
+ public:
+  explicit OutOfDisplayDelegate(views::Widget* widget) : widget_(widget) {}
+  virtual ~OutOfDisplayDelegate() {}
+
+  // Overridden from WidgetDelegate:
+  virtual void DeleteDelegate() OVERRIDE {
+    delete this;
+  }
+  virtual views::Widget* GetWidget() OVERRIDE {
+    return widget_;
+  }
+  virtual const views::Widget* GetWidget() const OVERRIDE {
+    return widget_;
+  }
+  virtual bool GetSavedWindowPlacement(
+      const views::Widget* widget,
+      gfx::Rect* bounds,
+      ui::WindowShowState* show_state) const OVERRIDE {
+    bounds->SetRect(450, 10, 100, 100);
+    *show_state = ui::SHOW_STATE_NORMAL;
+    return true;
+  }
+
+ private:
+  views::Widget* widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(OutOfDisplayDelegate);
+};
+
+}  // namespace
+
+TEST_F(WindowPositionerTest, EnsureMinimumVisibility) {
+  UpdateDisplay("400x400");
+  views::Widget* widget = new views::Widget();
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  params.delegate = new OutOfDisplayDelegate(widget);
+  params.context = Shell::GetPrimaryRootWindow();
+  widget->Init(params);
+  widget->SetBounds(gfx::Rect(450,10, 100, 100));
+  wm::GetWindowState(widget->GetNativeView())->set_minimum_visibility(true);
+  widget->Show();
+  // Make sure the bounds is adjusted to be inside the work area.
+  EXPECT_EQ("390,10 100x100", widget->GetWindowBoundsInScreen().ToString());
+  widget->CloseNow();
 }
 
 }  // namespace

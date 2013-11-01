@@ -36,6 +36,7 @@ void TestViewsDelegate::SaveWindowPlacement(const Widget* window,
 }
 
 bool TestViewsDelegate::GetSavedWindowPlacement(
+    const Widget* window,
     const std::string& window_name,
     gfx::Rect* bounds,
     ui:: WindowShowState* show_state) const {

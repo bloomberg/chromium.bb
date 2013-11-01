@@ -33,6 +33,7 @@ class MaximizeDelegateView : public views::WidgetDelegateView {
   virtual ~MaximizeDelegateView() {}
 
   virtual bool GetSavedWindowPlacement(
+      const views::Widget* widget,
       gfx::Rect* bounds,
       ui::WindowShowState* show_state) const OVERRIDE {
     *bounds = initial_bounds_;

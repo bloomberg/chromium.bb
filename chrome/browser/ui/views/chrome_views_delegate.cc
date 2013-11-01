@@ -39,6 +39,7 @@
 
 #if defined(USE_ASH)
 #include "ash/shell.h"
+#include "ash/wm/window_state.h"
 #include "chrome/browser/ui/ash/ash_init.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #endif
@@ -92,6 +93,7 @@ void ChromeViewsDelegate::SaveWindowPlacement(const views::Widget* window,
 }
 
 bool ChromeViewsDelegate::GetSavedWindowPlacement(
+    const views::Widget* widget,
     const std::string& window_name,
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
@@ -115,6 +117,18 @@ bool ChromeViewsDelegate::GetSavedWindowPlacement(
     dictionary->GetBoolean("maximized", &maximized);
   *show_state = maximized ? ui::SHOW_STATE_MAXIMIZED : ui::SHOW_STATE_NORMAL;
 
+#if defined(USE_ASH)
+  // On Ash environment, a window won't span across displays.  Adjust
+  // the bounds to fit the work area.
+  gfx::NativeView window = widget->GetNativeView();
+  if (chrome::GetHostDesktopTypeForNativeView(window) ==
+      chrome::HOST_DESKTOP_TYPE_ASH) {
+    gfx::Display display = gfx::Screen::GetScreenFor(window)->
+        GetDisplayMatching(*bounds);
+    bounds->AdjustToFit(display.work_area());
+    ash::wm::GetWindowState(window)->set_minimum_visibility(true);
+  }
+#endif
   return true;
 }
 

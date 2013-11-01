@@ -104,7 +104,8 @@ class VIEWS_EXPORT WidgetDelegate {
 
   // Retrieves the window's bounds and "show" states.
   // This behavior can be overridden to provide additional functionality.
-  virtual bool GetSavedWindowPlacement(gfx::Rect* bounds,
+  virtual bool GetSavedWindowPlacement(const Widget* widget,
+                                       gfx::Rect* bounds,
                                        ui::WindowShowState* show_state) const;
 
   // Returns true if the window's size should be restored. If this is false,
