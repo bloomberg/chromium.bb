@@ -60,6 +60,4 @@ SingleSource/Regression/C++/EH/throw_rethrow_test
 # New failures in updated LLVM test suite, still to be triaged
 ############################################################################
 # exec failures on ARM
-SingleSource/Benchmarks/SmallPT/smallpt arm
 MultiSource/Benchmarks/SciMark2-C/scimark2 arm
-SingleSource/Benchmarks/CoyoteBench/almabench arm
