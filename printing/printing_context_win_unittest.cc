@@ -170,5 +170,5 @@ TEST_F(PrintingContextTest, PrintAll) {
                                    base::Unretained(this)));
   EXPECT_EQ(printing::PrintingContext::OK, result());
   printing::PrintSettings settings = context.settings();
-  EXPECT_EQ(settings.ranges.size(), 0);
+  EXPECT_EQ(settings.ranges().size(), 0);
 }
