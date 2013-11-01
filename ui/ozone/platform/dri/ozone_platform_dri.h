@@ -30,6 +30,9 @@ class OzonePlatformDri : public OzonePlatform {
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformDri);
 };
 
+// Constructor hook for use in ozone_platform_list.cc
+OzonePlatform* CreateOzonePlatformDri();
+
 }  // namespace ui
 
 #endif  // UI_OZONE_PLATFORM_DRI_OZONE_PLATFORM_DRI_H_

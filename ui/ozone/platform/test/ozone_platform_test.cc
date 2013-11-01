@@ -24,7 +24,7 @@ ui::EventFactoryOzone* OzonePlatformTest::GetEventFactoryOzone() {
   return &event_factory_ozone_;
 }
 
-OzonePlatform* CreateDefaultOzonePlatform() {
+OzonePlatform* CreateOzonePlatformTest() {
   CommandLine* cmd = CommandLine::ForCurrentProcess();
   base::FilePath location = base::FilePath("/dev/null");
   if (cmd->HasSwitch(switches::kOzoneDumpFile))

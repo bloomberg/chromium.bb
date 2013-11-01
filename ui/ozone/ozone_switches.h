@@ -10,6 +10,8 @@
 
 namespace switches {
 
+OZONE_EXPORT extern const char kOzonePlatform[];
+
 OZONE_EXPORT extern const char kOzoneDumpFile[];
 
 }  // namespace switches

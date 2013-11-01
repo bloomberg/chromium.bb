@@ -1794,7 +1794,12 @@
       }],
 
       ['use_ozone==1', {
+        # This is the default platform
         'ozone_platform%': "test",
+
+        # Enable built-in ozone platforms if ozone is enabled.
+        'ozone_platform_dri%': 1,
+        'ozone_platform_test%': 1,
       }],
     ],
 

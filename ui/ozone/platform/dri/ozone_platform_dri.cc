@@ -20,6 +20,6 @@ ui::EventFactoryOzone* OzonePlatformDri::GetEventFactoryOzone() {
   return &event_factory_ozone_;
 }
 
-OzonePlatform* CreateDefaultOzonePlatform() { return new OzonePlatformDri; }
+OzonePlatform* CreateOzonePlatformDri() { return new OzonePlatformDri; }
 
 }  // namespace ui

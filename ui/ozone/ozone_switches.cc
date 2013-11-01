@@ -6,6 +6,9 @@
 
 namespace switches {
 
+// Specify ozone platform implementation to use.
+const char kOzonePlatform[] = "ozone-platform";
+
 // Specify location for image dumps.
 const char kOzoneDumpFile[] = "ozone-dump-file";
 

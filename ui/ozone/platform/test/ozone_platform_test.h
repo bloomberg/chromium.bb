@@ -30,6 +30,9 @@ class OzonePlatformTest : public OzonePlatform {
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformTest);
 };
 
+// Constructor hook for use in ozone_platform_list.cc
+OzonePlatform* CreateOzonePlatformTest();
+
 }  // namespace ui
 
 #endif  // UI_OZONE_PLATFORM_TEST_OZONE_PLATFORM_TEST_H_

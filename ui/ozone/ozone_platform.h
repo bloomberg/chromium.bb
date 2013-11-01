@@ -47,9 +47,6 @@ class OZONE_EXPORT OzonePlatform {
   DISALLOW_COPY_AND_ASSIGN(OzonePlatform);
 };
 
-// Hook to be provided by the built-in default implementation.
-OzonePlatform* CreateDefaultOzonePlatform();
-
 }  // namespace ui
 
 #endif  // UI_OZONE_OZONE_PLATFORM_H_
