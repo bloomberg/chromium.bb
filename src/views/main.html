@@ -42,22 +42,25 @@
   <body class="controls-visible">
    <div id="main-canvas-wrapper"></div>
     <div id="main-fast-canvas-wrapper"></div>
-    <div id="toolbar" class="dynamic">
-      <div id="toolbar-stripe">
-        <div id="buttons">
-          <button id="take-picture" tabIndex="-1"></button>
+    <div id="toolbar-puller-wrapper">
+      <div id="toolbar" class="dynamic">
+        <div id="toolbar-background"></div>
+        <div id="toolbar-stripe">
+          <div id="buttons">
+            <button id="take-picture" tabIndex="-1"></button>
+          </div>
+          <div class="buttons opposite-side">
+            <button id="filters-toggle" tabIndex="-1"
+                    i18n-label="filtersButton"></button>
+          </div>
+          <div class="buttons">
+            <button id="album-enter" tabIndex="-1"
+                    i18n-label="galleryButton"></button>
+          </div>
         </div>
-        <div class="buttons opposite-side">
-          <button id="filters-toggle" tabIndex="-1"
-                  i18n-label="filtersButton"></button>
+        <div id="effects">
+          <ul class="padder"></ul>
         </div>
-        <div class="buttons">
-          <button id="album-enter" tabIndex="-1"
-                  i18n-label="galleryButton"></button>
-        </div>
-      </div>
-      <div id="effects">
-        <ul class="padder"></ul>
       </div>
     </div>
     <div id="picture-preview">
