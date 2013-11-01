@@ -20,31 +20,6 @@ void ReleaseMailbox(scoped_refptr<content::SoftwareFrame> frame,
 
 namespace content {
 
-// Keep a count of how many memory buffers are in existence.
-// TODO(jbauman): remove once we have enough info.
-static int g_outstanding_buffers;
-
-#if defined(OS_WIN)
-unsigned int g_crash_count;
-
-// Capture a stack dump.
-// TODO(jbauman): Remove this terrible layering violation once we have some
-// dumps. http://crbug.com/311792
-void DumpWithoutCrashing() {
-  if (++g_crash_count > 2)
-    return;
-  int saved_buffers = g_outstanding_buffers;
-  base::debug::Alias(static_cast<void*>(&saved_buffers));
-  // Get the breakpad pointer from chrome.exe
-  typedef void(__cdecl * DumpProcessFunction)();
-  DumpProcessFunction DumpProcess =
-      reinterpret_cast<DumpProcessFunction>(::GetProcAddress(
-          ::GetModuleHandle(L"chrome.exe"), "DumpProcessWithoutCrash"));
-  if (DumpProcess)
-    DumpProcess();
-}
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////
 // SoftwareFrame
 
@@ -84,12 +59,9 @@ SoftwareFrame::SoftwareFrame(
       frame_id_(frame_id),
       frame_size_dip_(frame_size_dip),
       frame_size_pixels_(frame_size_pixels),
-      shared_memory_(shared_memory.Pass()) {
-  ++g_outstanding_buffers;
-}
+      shared_memory_(shared_memory.Pass()) {}
 
 SoftwareFrame::~SoftwareFrame() {
-  --g_outstanding_buffers;
   if (frame_manager_client_) {
     frame_manager_client_->SoftwareFrameWasFreed(
         output_surface_id_, frame_id_);
@@ -127,7 +99,6 @@ bool SoftwareFrameManager::SwapToNewFrame(
     const size_t size_in_bytes = 4 * frame_data->size.GetArea();
 #ifdef OS_WIN
     if (!shared_memory->Map(0)) {
-      DumpWithoutCrashing();
       DLOG(ERROR) << "Unable to map renderer memory.";
       RecordAction(
           UserMetricsAction("BadMessageTerminate_SharedMemoryManager1"));
@@ -135,7 +106,6 @@ bool SoftwareFrameManager::SwapToNewFrame(
     }
 
     if (shared_memory->mapped_size() < size_in_bytes) {
-      DumpWithoutCrashing();
       DLOG(ERROR) << "Shared memory too small for given rectangle";
       RecordAction(
           UserMetricsAction("BadMessageTerminate_SharedMemoryManager2"));
