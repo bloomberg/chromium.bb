@@ -60,7 +60,7 @@ public:
 
     void removeChildNodeList(ChildNodeList* list)
     {
-        ASSERT(m_childNodeList = list);
+        ASSERT(m_childNodeList == list);
         if (deleteThisAndUpdateNodeRareDataIfAboutToRemoveLastList(list->ownerNode()))
             return;
         m_childNodeList = 0;
