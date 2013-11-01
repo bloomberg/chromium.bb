@@ -79,6 +79,12 @@ var DISMISS_RETENTION_TIME_MS = 20 * 60 * 1000;  // 20 minutes
 var DEFAULT_OPTIN_CHECK_PERIOD_SECONDS = 60 * 60 * 24 * 7; // 1 week
 
 /**
+ * URL to open when the user clicked on a link for the our notification
+ * settings.
+ */
+var SETTINGS_URL = 'https://support.google.com/chrome/?p=ib_google_now_welcome';
+
+/**
  * Names for tasks that can be created by the extension.
  */
 var UPDATE_CARDS_TASK_NAME = 'update-cards';
@@ -164,6 +170,8 @@ wrapper.instrumentChromeApiFunction('notifications.onClicked.addListener', 0);
 wrapper.instrumentChromeApiFunction('notifications.onClosed.addListener', 0);
 wrapper.instrumentChromeApiFunction(
     'notifications.onPermissionLevelChanged.addListener', 0);
+wrapper.instrumentChromeApiFunction(
+    'notifications.onShowSettings.addListener', 0);
 wrapper.instrumentChromeApiFunction(
     'preferencesPrivate.googleGeolocationAccessEnabled.get',
     1);
@@ -842,6 +850,19 @@ function retryPendingDismissals() {
 }
 
 /**
+ * Opens a URL in a new tab.
+ * @param {string} url URL to open.
+ */
+function openUrl(url) {
+  instrumented.tabs.create({url: url}, function(tab) {
+    if (tab)
+      chrome.windows.update(tab.windowId, {focused: true});
+    else
+      chrome.windows.create({url: url, focused: true});
+  });
+}
+
+/**
  * Opens URL corresponding to the clicked part of the notification.
  * @param {string} chromeNotificationId chrome.notifications ID of the card.
  * @param {function(Object): string} selector Function that extracts the url for
@@ -860,12 +881,7 @@ function onNotificationClicked(chromeNotificationId, selector) {
     if (!url)
       return;
 
-    instrumented.tabs.create({url: url}, function(tab) {
-      if (tab)
-        chrome.windows.update(tab.windowId, {focused: true});
-      else
-        chrome.windows.create({url: url, focused: true});
-    });
+    openUrl(url);
   });
 }
 
@@ -1143,6 +1159,10 @@ instrumented.notifications.onPermissionLevelChanged.addListener(
       console.log('Notifications permissionLevel Change');
       onStateChange();
     });
+
+instrumented.notifications.onShowSettings.addListener(function() {
+  openUrl(SETTINGS_URL);
+});
 
 instrumented.location.onLocationUpdate.addListener(function(position) {
   recordEvent(GoogleNowEvent.LOCATION_UPDATE);
