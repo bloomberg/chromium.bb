@@ -257,6 +257,7 @@ def AddAndroidActions(actions):
   actions.add('MobileNewTabOpened')
   actions.add('MobileOmniboxSearch')
   actions.add('MobileOmniboxVoiceSearch')
+  actions.add('MobileOmniboxRefineSuggestion')
   actions.add('MobilePageLoaded')
   actions.add('MobilePageLoadedDesktopUserAgent')
   actions.add('MobilePageLoadedWithKeyboard')

@@ -1136,6 +1136,7 @@
 0x46c727e82f8494bc	MobileNTPSwitchToMostVisited
 0x2f3ff7588b15e4b5	MobileNTPSwitchToOpenTabs
 0xd6643e725ce30ed4	MobileNewTabOpened
+0x5e3971df3da04b41	MobileOmniboxRefineSuggestion
 0x90071ab23ccdcd96	MobileOmniboxSearch
 0x23037bbea96a8ceb	MobileOmniboxVoiceSearch
 0xb1249f32bf64d5e8	MobilePageLoaded
