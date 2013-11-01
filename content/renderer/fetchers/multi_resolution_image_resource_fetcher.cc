@@ -34,6 +34,8 @@ MultiResolutionImageResourceFetcher::MultiResolutionImageResourceFetcher(
 }
 
 MultiResolutionImageResourceFetcher::~MultiResolutionImageResourceFetcher() {
+  if (!fetcher_->completed())
+    fetcher_->Cancel();
 }
 
 void MultiResolutionImageResourceFetcher::OnURLFetchComplete(

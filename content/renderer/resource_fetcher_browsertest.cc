@@ -8,7 +8,6 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
-#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -187,10 +186,9 @@ class ResourceFetcherTests : public ContentBrowserTest {
     WebFrame* frame = GetRenderView()->GetWebView()->mainFrame();
 
     scoped_ptr<FetcherDelegate> delegate(new FetcherDelegate);
-    scoped_ptr<ResourceFetcher> fetcher(new ResourceFetcher(
+    scoped_ptr<ResourceFetcher> fetcher(new ResourceFetcherWithTimeout(
         url, frame, WebURLRequest::TargetIsMainFrame,
-        delegate->NewCallback()));
-    fetcher->SetTimeout(base::TimeDelta());
+        0, delegate->NewCallback()));
 
     delegate->WaitForResponse();
 
@@ -206,10 +204,9 @@ class ResourceFetcherTests : public ContentBrowserTest {
     WebFrame* frame = GetRenderView()->GetWebView()->mainFrame();
 
     scoped_ptr<EvilFetcherDelegate> delegate(new EvilFetcherDelegate);
-    scoped_ptr<ResourceFetcher> fetcher(new ResourceFetcher(
+    scoped_ptr<ResourceFetcher> fetcher(new ResourceFetcherWithTimeout(
         url, frame, WebURLRequest::TargetIsMainFrame,
-        delegate->NewCallback()));
-    fetcher->SetTimeout(base::TimeDelta());
+        0, delegate->NewCallback()));
     delegate->SetFetcher(fetcher.release());
 
     delegate->WaitForResponse();
