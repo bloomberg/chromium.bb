@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
 import sys
 import time
 
@@ -15,6 +16,7 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
   def __init__(self):
     super(RasterizeAndRecord, self).__init__('', True)
     self._metrics = None
+    self._compositing_features_enabled = False
 
   def AddCommandLineOptions(self, parser):
     parser.add_option('--raster-record-repeat', dest='raster_record_repeat',
@@ -32,12 +34,6 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
                       '(must be long enough to render one frame)')
 
   def CustomizeBrowserOptions(self, options):
-    # rasterize_and_record fails on the Linux perf bot.
-    # TODO(ernstm): Re-enable this test when crbug.com/311389 is fixed.
-    if 'linux' in sys.platform:
-      print 'This benchmark is temporarily disabled on Linux. Skipping test.'
-      sys.exit(0)
-
     # Run each raster task N times. This allows us to report the time for the
     # best run, effectively excluding cache effects and time when the thread is
     # de-scheduled.
@@ -52,7 +48,21 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
         '--enable-threaded-compositing'
     ])
 
+  def DidStartBrowser(self, browser):
+    # Check if the we actually have threaded forced compositing enabled.
+    system_info = browser.GetSystemInfo()
+    if (system_info.gpu.feature_status
+        and system_info.gpu.feature_status.get(
+            'compositing', None) == 'enabled_force_threaded'):
+      self._compositing_features_enabled = True
+
   def MeasurePage(self, page, tab, results):
+    # Exit if threaded forced compositing is not enabled.
+    if (not self._compositing_features_enabled):
+      logging.warning('Warning: compositing feature status unknown or not '+
+                      'forced and threaded. Skipping measurement.')
+      sys.exit(0)
+
     # TODO(ernstm): Remove this temporary workaround when reference build has
     # been updated to branch 1671 or later.
     backend = tab.browser._browser_backend # pylint: disable=W0212
