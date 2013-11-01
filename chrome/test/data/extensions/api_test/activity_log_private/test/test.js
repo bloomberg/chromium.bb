@@ -231,7 +231,7 @@ var domExpectedActivity = [
     //'Document.location',
     'HTMLDocument.write',
     'HTMLDocument.writeln',
-    'Element.innerHTML',
+    'HTMLElement.innerHTML',
     // Navigator access
     'Window.navigator',
     'Geolocation.getCurrentPosition',
