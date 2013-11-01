@@ -260,11 +260,11 @@ layer at (0,0) size 785x1516
         RenderBlock {CAPTION} at (0,0) size 737x20
           RenderText {#text} at (312,0) size 113x19
             text run at (312,0) width 113: "This is the caption."
-        RenderTableCol {COLGROUP} at (0,0) size 0x0
-          RenderTableCol {COL} at (0,0) size 0x0
-        RenderTableCol {COLGROUP} at (0,0) size 0x0
-          RenderTableCol {COL} at (0,0) size 0x0
-          RenderTableCol {COL} at (0,0) size 0x0
+        RenderTableCol {COLGROUP} at (0,0) size 0x0 [border: (3px solid #FF0000)]
+          RenderTableCol {COL} at (0,0) size 0x0 [border: (3px solid #FF0000)]
+        RenderTableCol {COLGROUP} at (0,0) size 0x0 [border: (3px solid #FF0000)]
+          RenderTableCol {COL} at (0,0) size 0x0 [border: (3px solid #FF0000)]
+          RenderTableCol {COL} at (0,0) size 0x0 [border: (3px solid #FF0000)]
         RenderTableSection {THEAD} at (0,20) size 737x34 [border: (3px solid #FF0000)]
           RenderTableRow {TR} at (0,2) size 737x30 [border: (3px solid #FF0000)]
             RenderTableCell {TH} at (2,2) size 121x30 [r=0 c=0 rs=1 cs=1]

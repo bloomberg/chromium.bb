@@ -36,17 +36,17 @@ namespace WebCore {
 using namespace HTMLNames;
 
 RenderTableCol::RenderTableCol(Element* element)
-    : RenderObject(element)
+    : RenderBox(element)
     , m_span(1)
 {
     // init RenderObject attributes
-    setInline(false); // our object is not Inline
+    setInline(true); // our object is not Inline
     updateFromElement();
 }
 
 void RenderTableCol::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
-    RenderObject::styleDidChange(diff, oldStyle);
+    RenderBox::styleDidChange(diff, oldStyle);
 
     // If border was changed, notify table.
     if (parent()) {
@@ -71,13 +71,13 @@ void RenderTableCol::updateFromElement()
 
 void RenderTableCol::insertedIntoTree()
 {
-    RenderObject::insertedIntoTree();
+    RenderBox::insertedIntoTree();
     table()->addColumn(this);
 }
 
 void RenderTableCol::willBeRemovedFromTree()
 {
-    RenderObject::willBeRemovedFromTree();
+    RenderBox::willBeRemovedFromTree();
     table()->removeColumn(this);
 }
 

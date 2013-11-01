@@ -67,6 +67,15 @@ void HTMLTableColElement::parseAttribute(const QualifiedName& name, const Atomic
         m_span = !value.isNull() ? value.toInt() : 1;
         if (renderer() && renderer()->isRenderTableCol())
             renderer()->updateFromElement();
+    } else if (name == widthAttr) {
+        if (!value.isEmpty()) {
+            if (renderer() && renderer()->isRenderTableCol()) {
+                RenderTableCol* col = toRenderTableCol(renderer());
+                int newWidth = width().toInt();
+                if (newWidth != col->width())
+                    col->setNeedsLayoutAndPrefWidthsRecalc();
+            }
+        }
     } else
         HTMLTablePartElement::parseAttribute(name, value);
 }
@@ -83,6 +92,11 @@ const StylePropertySet* HTMLTableColElement::additionalPresentationAttributeStyl
 void HTMLTableColElement::setSpan(int n)
 {
     setAttribute(spanAttr, String::number(n));
+}
+
+String HTMLTableColElement::width() const
+{
+    return getAttribute(widthAttr);
 }
 
 }

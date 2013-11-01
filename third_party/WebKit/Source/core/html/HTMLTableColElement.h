@@ -37,6 +37,8 @@ public:
     int span() const { return m_span; }
     void setSpan(int);
 
+    String width() const;
+
 private:
     HTMLTableColElement(const QualifiedName& tagName, Document&);
 

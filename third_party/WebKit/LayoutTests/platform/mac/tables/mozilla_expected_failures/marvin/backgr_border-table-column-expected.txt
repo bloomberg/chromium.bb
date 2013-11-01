@@ -64,9 +64,9 @@ layer at (0,0) size 785x1464
           RenderText {#text} at (169,0) size 292x22
             text run at (169,0) width 292: "With 'border-collapse: separate'"
         RenderTableCol {COLGROUP} at (0,0) size 0x0
-          RenderTableCol {COL} at (0,0) size 0x0 [bgcolor=#000000]
-          RenderTableCol {COL} at (0,0) size 0x0 [bgcolor=#000000]
-          RenderTableCol {COL} at (0,0) size 0x0 [bgcolor=#000000]
+          RenderTableCol {COL} at (0,0) size 0x0 [bgcolor=#000000] [border: (5px dashed #FFFFFF)]
+          RenderTableCol {COL} at (0,0) size 0x0 [bgcolor=#000000] [border: (9px dashed #FFFFFF)]
+          RenderTableCol {COL} at (0,0) size 0x0 [bgcolor=#000000] [border: (5px dashed #FFFFFF)]
         RenderTableCol {COLGROUP} at (0,0) size 0x0
           RenderTableCol {COL} at (0,0) size 0x0
         RenderTableSection {THEAD} at (3,25) size 624x114
@@ -123,9 +123,9 @@ layer at (0,0) size 785x1464
           RenderText {#text} at (149,0) size 290x22
             text run at (149,0) width 290: "With 'border-collapse: collapse'"
         RenderTableCol {COLGROUP} at (0,0) size 0x0
-          RenderTableCol {COL} at (0,0) size 0x0 [bgcolor=#000000]
-          RenderTableCol {COL} at (0,0) size 0x0 [bgcolor=#000000]
-          RenderTableCol {COL} at (0,0) size 0x0 [bgcolor=#000000]
+          RenderTableCol {COL} at (0,0) size 0x0 [bgcolor=#000000] [border: (5px dashed #FFFFFF)]
+          RenderTableCol {COL} at (0,0) size 0x0 [bgcolor=#000000] [border: (9px dashed #FFFFFF)]
+          RenderTableCol {COL} at (0,0) size 0x0 [bgcolor=#000000] [border: (5px dashed #FFFFFF)]
         RenderTableCol {COLGROUP} at (0,0) size 0x0
           RenderTableCol {COL} at (0,0) size 0x0
         RenderTableSection {THEAD} at (2,28) size 584x100

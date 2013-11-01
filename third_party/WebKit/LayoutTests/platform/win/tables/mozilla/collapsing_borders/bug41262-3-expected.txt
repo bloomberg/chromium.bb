@@ -35,7 +35,7 @@ layer at (0,0) size 785x679
           text run at (243,0) width 113: " for following tests:"
       RenderTable {TABLE} at (0,162) size 158x282 [border: (2px solid #FFFF00)]
         RenderTableCol {COLGROUP} at (0,0) size 0x0
-          RenderTableCol {COL} at (0,0) size 0x0
+          RenderTableCol {COL} at (0,0) size 0x0 [border: (3px solid #000000)]
           RenderTableCol {COL} at (0,0) size 0x0
           RenderTableCol {COL} at (0,0) size 0x0
         RenderTableSection {TBODY} at (2,2) size 153x277
