@@ -141,8 +141,6 @@ static bool GetPsshData(const uint8* data, int data_size,
   return false;
 }
 
-bool MediaDrmBridge::can_use_media_drm_ = false;
-
 static MediaDrmBridge::SecurityLevel GetSecurityLevelFromString(
     const std::string& security_level_str) {
   if (0 == security_level_str.compare("L1"))
@@ -175,8 +173,7 @@ scoped_ptr<MediaDrmBridge> MediaDrmBridge::Create(
 
 // static
 bool MediaDrmBridge::IsAvailable() {
-  return can_use_media_drm_ &&
-      base::android::BuildInfo::GetInstance()->sdk_int() >= 18;
+  return base::android::BuildInfo::GetInstance()->sdk_int() >= 19;
 }
 
 // static

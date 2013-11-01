@@ -102,14 +102,8 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
 
   GURL frame_url() const { return frame_url_; }
 
-  static void set_can_use_media_drm(bool can_use_media_drm) {
-    can_use_media_drm_ = can_use_media_drm;
-  }
-
  private:
   static bool IsSecureDecoderRequired(SecurityLevel security_level);
-
-  static bool can_use_media_drm_;
 
   MediaDrmBridge(int media_keys_id,
                  const std::vector<uint8>& scheme_uuid,
