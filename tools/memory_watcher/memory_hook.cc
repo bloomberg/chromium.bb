@@ -217,7 +217,7 @@ static LPVOID WINAPI Perftools_HeapReAlloc(HANDLE hHeap, DWORD dwFlags,
   // block via Perftools_HeapAlloc.
 
   LPVOID rv = Perftools_HeapAlloc(hHeap, dwFlags, dwBytes);
-  DCHECK_EQ((HEAP_REALLOC_IN_PLACE_ONLY & dwFlags), 0);
+  DCHECK_EQ((HEAP_REALLOC_IN_PLACE_ONLY & dwFlags), 0u);
 
   // If there was an old buffer, now copy the data to the new buffer.
   if (lpMem != 0) {
@@ -266,7 +266,7 @@ static BOOL WINAPI Perftools_VirtualFreeEx(HANDLE process, LPVOID address,
   CHECK(VirtualQuery(address, &info, sizeof(info)));
   if (chunk_size == 0)
     chunk_size = info.RegionSize;
-  bool decommit = (info.State & MEM_COMMIT);
+  bool decommit = (info.State & MEM_COMMIT) != 0;
 
   if (decommit)
       MemoryHook::hook()->OnUntrack(0, reinterpret_cast<int32>(address),
