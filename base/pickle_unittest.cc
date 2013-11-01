@@ -182,6 +182,10 @@ TEST(PickleTest, FindNextWithIncompleteHeader) {
   EXPECT_TRUE(NULL == Pickle::FindNext(header_size, start, end));
 }
 
+#if defined(COMPILER_MSVC)
+#pragma warning(push)
+#pragma warning(disable: 4146)
+#endif
 TEST(PickleTest, FindNextOverflow) {
   size_t header_size = sizeof(Pickle::Header);
   size_t header_size2 = 2 * header_size;
@@ -205,6 +209,9 @@ TEST(PickleTest, FindNextOverflow) {
   end = start + header_size;
   EXPECT_TRUE(NULL == Pickle::FindNext(header_size2, start, end));
 }
+#if defined(COMPILER_MSVC)
+#pragma warning(pop)
+#endif
 
 TEST(PickleTest, GetReadPointerAndAdvance) {
   Pickle pickle;
