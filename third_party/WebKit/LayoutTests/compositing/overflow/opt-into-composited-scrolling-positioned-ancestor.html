@@ -65,6 +65,8 @@
       document.body.offsetTop;
 
       if (window.internals) {
+        window.internals.forceCompositingUpdate(document);
+
         if (didOptIn(container))
           write('Passed - correctly opted into composited scrolling with a positioned ancestor.')
         else

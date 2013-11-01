@@ -77,7 +77,6 @@ private:
 
     RenderLayerCompositor* renderLayerCompositor();
     GraphicsLayer* layerById(ErrorString*, const String& layerId);
-    void notificationTimerFired(Timer<InspectorLayerTreeAgent>*);
     PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > buildLayerTree();
     void buildLayerIdToNodeIdMap(RenderLayer*, LayerIdToNodeIdMap&);
     int idForNode(Node*);
@@ -85,8 +84,6 @@ private:
     InspectorFrontend::LayerTree* m_frontend;
     Page* m_page;
     InspectorDOMAgent* m_domAgent;
-    Timer<InspectorLayerTreeAgent> m_notificationTimer;
-    bool m_notifyAfterNextLayersUpdate;
 
     HashMap<const RenderLayer*, String> m_documentLayerToIdMap;
 };

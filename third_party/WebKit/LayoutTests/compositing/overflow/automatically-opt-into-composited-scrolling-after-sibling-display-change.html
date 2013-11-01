@@ -51,6 +51,7 @@
             var predecessor = document.getElementById('predecessor');
             var container = document.getElementById('container');
             predecessor.style.display = 'none';
+            window.internals.forceCompositingUpdate(document);
 
             var pass = true;
             if (!didOptIn(container)) {
@@ -59,6 +60,7 @@
             }
 
             predecessor.style.display = '';
+            window.internals.forceCompositingUpdate(document);
 
             if (didOptIn(container)) {
                 pass = false;

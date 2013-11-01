@@ -297,6 +297,8 @@ public:
 
     bool loseSharedGraphicsContext3D();
 
+    void forceCompositingUpdate(Document*, ExceptionState&);
+
 private:
     explicit Internals(Document*);
     Document* contextDocument() const;

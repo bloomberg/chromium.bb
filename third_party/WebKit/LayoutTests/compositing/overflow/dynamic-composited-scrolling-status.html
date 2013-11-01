@@ -25,10 +25,11 @@
     function doTest()
     {
       document.getElementById('content').style.height = '1000px';
-      document.body.offsetHeight;
 
-      if (window.internals)
+      if (window.internals) {
+        window.internals.forceCompositingUpdate(document);
         document.getElementById('result').innerText = window.internals.nonFastScrollableRects(document).length ? "FAIL" : "PASS";
+      }
     }
 
     window.addEventListener('load', doTest, false);

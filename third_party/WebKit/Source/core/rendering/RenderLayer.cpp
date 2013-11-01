@@ -1768,7 +1768,7 @@ void RenderLayer::didUpdateNeedsCompositedScrolling()
 
     m_stackingNode->dirtyStackingContainerZOrderLists();
 
-    compositor()->setShouldReevaluateCompositingAfterLayout();
+    compositor()->setNeedsToRecomputeCompositingRequirements();
     compositor()->setCompositingLayersNeedRebuild();
 }
 
