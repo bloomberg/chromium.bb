@@ -1122,6 +1122,7 @@
         'browser/extensions/api/braille_display_private/braille_display_private_apitest.cc',
         'browser/extensions/api/bookmarks/bookmark_apitest.cc',
         'browser/extensions/api/browsing_data/browsing_data_test.cc',
+        'browser/extensions/api/cast_channel/cast_channel_apitest.cc',
         'browser/extensions/api/cloud_print_private/cloud_print_private_apitest.cc',
         'browser/extensions/api/command_line_private/command_line_private_apitest.cc',
         'browser/extensions/api/commands/command_service_browsertest.cc',

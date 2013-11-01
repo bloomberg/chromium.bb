@@ -15,7 +15,9 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/extensions/api/cast_channel.h"
 
+class GURL;
 class Profile;
+class CastChannelAPITest;
 
 namespace extensions {
 
@@ -32,9 +34,20 @@ class CastChannelAPI : public ProfileKeyedAPI,
   // ProfileKeyedAPI implementation.
   static ProfileKeyedAPIFactory<CastChannelAPI>* GetFactoryInstance();
 
+  // Returns a new CastSocket that connects to |url| and is to be owned by
+  // |extension_id|.
+  scoped_ptr<cast_channel::CastSocket> CreateCastSocket(
+      const std::string& extension_id, const GURL& gurl);
+
+  // Sets the CastSocket instance to be returned by CreateCastSocket for
+  // testing.
+  void SetSocketForTest(scoped_ptr<cast_channel::CastSocket> socket_for_test);
+
  private:
-  virtual ~CastChannelAPI();
   friend class ProfileKeyedAPIFactory<CastChannelAPI>;
+  friend class ::CastChannelAPITest;
+
+  virtual ~CastChannelAPI();
 
   // CastSocket::Delegate.  Called on IO thread.
   virtual void OnError(const cast_channel::CastSocket* socket,
@@ -48,6 +61,7 @@ class CastChannelAPI : public ProfileKeyedAPI,
   }
 
   Profile* const profile_;
+  scoped_ptr<cast_channel::CastSocket> socket_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(CastChannelAPI);
 };
@@ -83,11 +97,11 @@ class CastChannelAsyncApiFunction : public AsyncApiFunction {
   // Sets the function result to a ChannelInfo with |error|.
   void SetResultFromError(cast_channel::ChannelError error);
 
- private:
   // Returns the socket corresponding to |channel_id| if one exists, or null
   // otherwise.
   cast_channel::CastSocket* GetSocket(int channel_id);
 
+ private:
   // Sets the function result from |channel_info|.
   void SetResultFromChannelInfo(
       const cast_channel::ChannelInfo& channel_info);

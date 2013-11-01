@@ -613,6 +613,10 @@ void CastSocket::FillChannelInfo(ChannelInfo* channel_info) const {
   channel_info->error_state = error_state_;
 }
 
+bool CastSocket::CalledOnValidThread() const {
+  return thread_checker_.CalledOnValidThread();
+}
+
 CastSocket::MessageHeader::MessageHeader() : message_size(0) { }
 
 void CastSocket::MessageHeader::SetMessageSize(size_t size) {

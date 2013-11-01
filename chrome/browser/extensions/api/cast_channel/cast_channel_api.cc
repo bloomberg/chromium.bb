@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/cast_channel/cast_channel_api.h"
 
 #include "base/json/json_writer.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/cast_channel/cast_socket.h"
@@ -59,6 +60,21 @@ static base::LazyInstance<ProfileKeyedAPIFactory<CastChannelAPI> > g_factory =
 // static
 ProfileKeyedAPIFactory<CastChannelAPI>* CastChannelAPI::GetFactoryInstance() {
   return &g_factory.Get();
+}
+
+scoped_ptr<CastSocket> CastChannelAPI::CreateCastSocket(
+    const std::string& extension_id, const GURL& url) {
+  if (socket_for_test_.get()) {
+    return socket_for_test_.Pass();
+  } else {
+    return scoped_ptr<CastSocket>(
+        new CastSocket(extension_id, url, this,
+                       g_browser_process->net_log()));
+  }
+}
+
+void CastChannelAPI::SetSocketForTest(scoped_ptr<CastSocket> socket_for_test) {
+  socket_for_test_ = socket_for_test.Pass();
 }
 
 void CastChannelAPI::OnError(const CastSocket* socket,
@@ -122,7 +138,9 @@ int CastChannelAsyncApiFunction::AddSocket(CastSocket* socket) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(socket);
   DCHECK(manager_);
-  return manager_->Add(socket);
+  const int id = manager_->Add(socket);
+  socket->set_id(id);
+  return id;
 }
 
 void CastChannelAsyncApiFunction::RemoveSocket(int channel_id) {
@@ -180,11 +198,11 @@ bool CastChannelOpenFunction::Prepare() {
 
 void CastChannelOpenFunction::AsyncWorkStart() {
   DCHECK(api_);
-  CastSocket* socket = new CastSocket(extension_->id(), GURL(params_->url),
-                                      api_, g_browser_process->net_log());
-  new_channel_id_ = AddSocket(socket);
-  socket->set_id(new_channel_id_);
-  socket->Connect(base::Bind(&CastChannelOpenFunction::OnOpen, this));
+  scoped_ptr<CastSocket> socket = api_->CreateCastSocket(extension_->id(),
+                                                         GURL(params_->url));
+  new_channel_id_ = AddSocket(socket.release());
+  GetSocket(new_channel_id_)->Connect(
+      base::Bind(&CastChannelOpenFunction::OnOpen, this));
 }
 
 void CastChannelOpenFunction::OnOpen(int result) {

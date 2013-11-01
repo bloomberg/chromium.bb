@@ -13,7 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/browser/extensions/api/api_resource.h"
 #include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/common/extensions/api/cast_channel.h"
@@ -48,8 +48,7 @@ extern const uint32 kMaxMessageSize;
 // NOTE: Not called "CastChannel" to reduce confusion with the generated API
 // code.
 class CastSocket : public ApiResource,
-                   public base::SupportsWeakPtr<CastSocket>,
-                   public base::NonThreadSafe {
+                   public base::SupportsWeakPtr<CastSocket> {
  public:
   // Object to be informed of incoming messages and errors.
   class Delegate {
@@ -79,17 +78,17 @@ class CastSocket : public ApiResource,
   bool auth_required() const { return auth_required_; }
 
   // Channel id for the ApiResourceManager.
-  long id() const { return channel_id_; }
+  int id() const { return channel_id_; }
 
   // Sets the channel id.
-  void set_id(long channel_id) { channel_id_ = channel_id; }
+  void set_id(int channel_id) { channel_id_ = channel_id; }
 
   // Returns the state of the channel.
-  const ReadyState& ready_state() const { return ready_state_; }
+  ReadyState ready_state() const { return ready_state_; }
 
   // Returns the last error that occurred on this channel, or CHANNEL_ERROR_NONE
-  // if no error has occurred..
-  const ChannelError& error_state() const { return error_state_; }
+  // if no error has occurred.
+  ChannelError error_state() const { return error_state_; }
 
   // Connects the channel to the peer. If successful, the channel will be in
   // READY_STATE_OPEN.
@@ -105,7 +104,7 @@ class CastSocket : public ApiResource,
   virtual void Close(const net::CompletionCallback& callback);
 
   // Fills |channel_info| with the status of this channel.
-  void FillChannelInfo(ChannelInfo* channel_info) const;
+  virtual void FillChannelInfo(ChannelInfo* channel_info) const;
 
  protected:
   // Creates an instance of TCPClientSocket.
@@ -124,6 +123,9 @@ class CastSocket : public ApiResource,
   // 1. Signature in the reply is valid.
   // 2. Certificate is rooted to a trusted CA.
   virtual bool VerifyChallengeReply();
+
+  // Returns whether we are executing in a valid thread.
+  virtual bool CalledOnValidThread() const;
 
  private:
   friend class ApiResourceManager<CastSocket>;
@@ -213,8 +215,10 @@ class CastSocket : public ApiResource,
   // |delegate_|.
   void CloseWithError(ChannelError error);
 
+  base::ThreadChecker thread_checker_;
+
   // The id of the channel.
-  long channel_id_;
+  int channel_id_;
 
   // The URL of the peer (cast:// or casts://).
   GURL url_;
