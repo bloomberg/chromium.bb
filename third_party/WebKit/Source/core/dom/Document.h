@@ -883,6 +883,9 @@ public:
     bool processingLoadEvent() const { return m_loadEventProgress == LoadEventInProgress; }
     bool loadEventFinished() const { return m_loadEventProgress >= LoadEventCompleted; }
 
+    void setContainsPlugins() { m_containsPlugins = true; }
+    bool containsPlugins() const { return m_containsPlugins; }
+
     virtual bool isContextThread() const;
     virtual bool isJSExecutionForbidden() const { return false; }
 
@@ -1192,6 +1195,7 @@ private:
     bool m_haveExplicitlyDisabledDNSPrefetch;
     bool m_containsValidityStyleRules;
     bool m_updateFocusAppearanceRestoresSelection;
+    bool m_containsPlugins;
 
     // http://www.whatwg.org/specs/web-apps/current-work/#ignore-destructive-writes-counter
     unsigned m_ignoreDestructiveWriteCount;

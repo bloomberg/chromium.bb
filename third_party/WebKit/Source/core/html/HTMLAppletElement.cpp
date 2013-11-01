@@ -176,7 +176,7 @@ void HTMLAppletElement::updateWidget(PluginCreationOption)
             renderer->setPluginUnavailabilityReason(RenderEmbeddedObject::PluginMissing);
         return;
     }
-    frame->loader().setContainsPlugins();
+    document().setContainsPlugins();
     renderer->setWidget(widget);
 }
 

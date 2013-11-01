@@ -203,8 +203,6 @@ public:
 
     void started();
 
-    void setContainsPlugins() { m_containsPlugins = true; }
-    bool containsPlugins() const { return m_containsPlugins; }
     bool allowPlugins(ReasonForCallingAllowPlugins);
 
     enum UpdateBackForwardListPolicy {
@@ -286,8 +284,6 @@ private:
 
     // FIXME: This is only used in checkCompleted(). Figure out a way to disentangle it.
     bool m_isComplete;
-
-    bool m_containsPlugins;
 
     Timer<FrameLoader> m_checkTimer;
     bool m_shouldCallCheckCompleted;

@@ -150,7 +150,6 @@ FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
     , m_fetchContext(FrameFetchContext::create(frame))
     , m_inStopAllLoaders(false)
     , m_isComplete(false)
-    , m_containsPlugins(false)
     , m_checkTimer(this, &FrameLoader::checkTimerFired)
     , m_shouldCallCheckCompleted(false)
     , m_opener(0)
@@ -276,8 +275,6 @@ void FrameLoader::clear(ClearOptions options)
         // as some destructors might still try to access the document.
         m_frame->setDOMWindow(0);
     }
-
-    m_containsPlugins = false;
 
     if (options & ClearScriptObjects)
         m_frame->script().clearScriptObjects();

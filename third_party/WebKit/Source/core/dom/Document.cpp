@@ -407,6 +407,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_gotoAnchorNeededAfterStylesheetsLoad(false)
     , m_containsValidityStyleRules(false)
     , m_updateFocusAppearanceRestoresSelection(false)
+    , m_containsPlugins(false)
     , m_ignoreDestructiveWriteCount(0)
     , m_titleSetExplicitly(false)
     , m_markers(adoptPtr(new DocumentMarkerController))

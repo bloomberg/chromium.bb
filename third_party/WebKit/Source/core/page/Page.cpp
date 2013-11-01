@@ -298,7 +298,7 @@ void Page::refreshPlugins(bool reload)
             continue;
 
         for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree().traverseNext()) {
-            if (frame->loader().containsPlugins())
+            if (frame->document()->containsPlugins())
                 framesNeedingReload.append(frame);
         }
     }

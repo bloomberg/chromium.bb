@@ -436,7 +436,7 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
     m_loadedUrl = url;
 
     IntSize contentSize = roundedIntSize(LayoutSize(renderer->contentWidth(), renderer->contentHeight()));
-    bool loadManually = document().isPluginDocument() && !frame->loader().containsPlugins() && toPluginDocument(document()).shouldLoadPluginManually();
+    bool loadManually = document().isPluginDocument() && !document().containsPlugins() && toPluginDocument(document()).shouldLoadPluginManually();
     RefPtr<Widget> widget = frame->loader().client()->createPlugin(contentSize, this, url, paramNames, paramValues, mimeType, loadManually);
 
     if (!widget) {
@@ -446,7 +446,7 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
     }
 
     renderer->setWidget(widget);
-    frame->loader().setContainsPlugins();
+    document().setContainsPlugins();
     setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);
     return true;
 }
