@@ -155,8 +155,9 @@ class ContentViewGestureHandler implements LongPressDelegate {
     private boolean mSentGestureNeedsVSync;
     private long mLastVSyncGestureTimeMs;
 
-    // If the page scale is fixed, double tap gesture detection can be disabled.
-    private boolean mHasFixedPageScale;
+    // The page's viewport and scale sometimes allow us to disable double tap gesture detection,
+    // according to the logic in ContentViewCore.onRenderCoordinatesUpdated().
+    private boolean mShouldDisableDoubleTap;
 
     // Incremented and decremented when the methods onTouchEvent() and confirmTouchEvent() start
     // and finish execution, respectively. This provides accounting for synchronous calls to
@@ -980,7 +981,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                 // then |event| will have been recycled. Only start the timer if the sent event has
                 // not yet been confirmed.
                 if (!mJavaScriptIsConsumingGesture
-                        && !mHasFixedPageScale
+                        && !mShouldDisableDoubleTap
                         && event == mPendingMotionEvents.peekFirst()
                         && event.getAction() != MotionEvent.ACTION_UP
                         && event.getAction() != MotionEvent.ACTION_CANCEL) {
@@ -1221,8 +1222,8 @@ class ContentViewGestureHandler implements LongPressDelegate {
 
     /**
      * Update whether double-tap gestures are supported. This allows
-     * double-tap gesture suppression independent of whether or not the page
-     * scale is fixed.
+     * double-tap gesture suppression independent of whether or not the page's
+     * viewport and scale would normally prevent double-tap.
      * Note: This should never be called while a double-tap gesture is in progress.
      * @param supportDoubleTap Whether double-tap gestures are supported.
      */
@@ -1236,20 +1237,19 @@ class ContentViewGestureHandler implements LongPressDelegate {
     }
 
     /**
-     * Update whether the current page has a fixed page scale.
-     * A fixed page scale will suppress double-tap gesture detection, allowing
-     * for rapid and responsive single-tap gestures.
-     * @param hasFixedPageScale Whether the page scale is fixed.
+     * Update whether double-tap gesture detection should be suppressed due to
+     * the viewport or scale of the current page. Suppressing double-tap gesture
+     * detection allows for rapid and responsive single-tap gestures.
+     * @param shouldDisableDoubleTap Whether double-tap should be suppressed.
      */
-    public void updateHasFixedPageScale(boolean hasFixedPageScale) {
-        if (mHasFixedPageScale == hasFixedPageScale) return;
-        mHasFixedPageScale = hasFixedPageScale;
+    public void updateShouldDisableDoubleTap(boolean shouldDisableDoubleTap) {
+        if (mShouldDisableDoubleTap == shouldDisableDoubleTap) return;
+        mShouldDisableDoubleTap = shouldDisableDoubleTap;
         updateDoubleTapListener();
     }
 
     private boolean isDoubleTapDisabled() {
-        return mDoubleTapMode == DOUBLE_TAP_MODE_DISABLED ||
-               mHasFixedPageScale;
+        return mDoubleTapMode == DOUBLE_TAP_MODE_DISABLED || mShouldDisableDoubleTap;
     }
 
     private boolean isDoubleTapActive() {

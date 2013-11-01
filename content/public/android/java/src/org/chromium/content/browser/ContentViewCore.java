@@ -1496,7 +1496,14 @@ public class ContentViewCore
 
     private void onRenderCoordinatesUpdated() {
         if (mContentViewGestureHandler == null) return;
-        mContentViewGestureHandler.updateHasFixedPageScale(mRenderCoordinates.hasFixedPageScale());
+
+        // We disable double tap zoom for pages that have a width=device-width
+        // or narrower viewport (indicating that this is a mobile-optimized or
+        // responsive web design, so text will be legible without zooming).
+        // We also disable it for pages that disallow the user from zooming in
+        // or out (even if they don't have a device-width or narrower viewport).
+        mContentViewGestureHandler.updateShouldDisableDoubleTap(
+                mRenderCoordinates.hasMobileViewport() || mRenderCoordinates.hasFixedPageScale());
     }
 
     private void hidePopupDialog() {

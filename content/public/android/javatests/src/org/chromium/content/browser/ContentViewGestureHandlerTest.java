@@ -1806,13 +1806,14 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
    }
 
     /**
-     * Verify that no double tap gestures are created if the page has a fixed
-     * page scale.
+     * Verify that no double tap gestures are created if the gesture handler is
+     * told to disable double tap gesture detection (according to the logic in
+     * ContentViewCore.onRenderCoordinatesUpdated).
      * @throws Exception
      */
     @SmallTest
     @Feature({"Gestures"})
-    public void testNoDoubleTapWhenPageScaleFixed() throws Exception {
+    public void testNoDoubleTapWhenDoubleTapDisabled() throws Exception {
         final long downTime = SystemClock.uptimeMillis();
         final long eventTime = SystemClock.uptimeMillis();
 
@@ -1821,7 +1822,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         mGestureHandler = new ContentViewGestureHandler(
                 getInstrumentation().getTargetContext(), mockDelegate, mMockZoomManager,
                 ContentViewCore.INPUT_EVENTS_DELIVERED_AT_VSYNC);
-        mGestureHandler.updateHasFixedPageScale(true);
+        mGestureHandler.updateShouldDisableDoubleTap(true);
 
         MotionEvent event = MotionEvent.obtain(
                 downTime, downTime, MotionEvent.ACTION_DOWN,
@@ -1865,14 +1866,15 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
     }
 
     /**
-     * Verify that double tap drag zoom feature is not invoked
-     * when the page scale is fixed. The second tap sequence should be
-     * treated just as the first would be.
+     * Verify that double tap drag zoom feature is not invoked when the gesture
+     * handler is told to disable double tap gesture detection (according to the
+     * logic in ContentViewCore.onRenderCoordinatesUpdated).
+     * The second tap sequence should be treated just as the first would be.
      * @throws Exception
      */
     @SmallTest
     @Feature({"Gestures"})
-    public void testNoDoubleTapDragZoomWhenPageScaleFixed() throws Exception {
+    public void testNoDoubleTapDragZoomWhenDoubleTapDisabled() throws Exception {
         final long downTime1 = SystemClock.uptimeMillis();
         final long downTime2 = downTime1 + 100;
 
@@ -1881,7 +1883,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         mGestureHandler = new ContentViewGestureHandler(
                 getInstrumentation().getTargetContext(), mockDelegate, mMockZoomManager,
                 ContentViewCore.INPUT_EVENTS_DELIVERED_AT_VSYNC);
-        mGestureHandler.updateHasFixedPageScale(true);
+        mGestureHandler.updateShouldDisableDoubleTap(true);
 
         MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime1, downTime1);
         assertTrue(mGestureHandler.onTouchEvent(event));
@@ -1934,8 +1936,8 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
     }
 
     /**
-     * Verify that setting a fixed page scale during a double tap drag zoom disables
-     * double tap detection after the gesture has ended.
+     * Verify that setting a fixed page scale (or a mobile viewport) during a double
+     * tap drag zoom disables double tap detection after the gesture has ended.
      * @throws Exception
      */
     @SmallTest
@@ -1975,8 +1977,9 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
                 ContentViewGestureHandler.GESTURE_PINCH_BEGIN,
                 mockDelegate.mMostRecentGestureEvent.mType);
 
-        // Set a fixed page scale; this should not disrupt the current double-tap gesture.
-        mGestureHandler.updateHasFixedPageScale(true);
+        // Simulate setting a fixed page scale (or a mobile viewport);
+        // this should not disrupt the current double-tap gesture.
+        mGestureHandler.updateShouldDisableDoubleTap(true);
 
         // Double tap zoom updates should continue.
         event = MotionEvent.obtain(
