@@ -8,15 +8,16 @@
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
+#if defined(OS_CHROMEOS)
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_types.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/test/base/ui_test_utils.h"
-
-#if defined(OS_CHROMEOS)
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -30,6 +31,7 @@
 #include "policy/policy_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #endif  // OS_CHROMEOS
+
 using testing::AnyNumber;
 using testing::Return;
 using testing::_;
@@ -39,7 +41,6 @@ namespace chromeos {
 #if defined(OS_CHROMEOS)
 const char kUser1ProfilePath[] = "/profile/user1/shill";
 #endif  // defined(OS_CHROMEOS)
-
 
 class ExtensionNetworkingPrivateApiTest :
     public ExtensionApiTest,
@@ -52,10 +53,12 @@ class ExtensionNetworkingPrivateApiTest :
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+#if defined(OS_CHROMEOS)
     EXPECT_CALL(provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
     EXPECT_CALL(provider_, RegisterPolicyDomain(_)).Times(AnyNumber());
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
+#endif
 
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
   }
@@ -224,8 +227,10 @@ class ExtensionNetworkingPrivateApiTest :
 #endif  // OS_CHROMEOS
 
  protected:
+#if defined(OS_CHROMEOS)
   policy::MockConfigurationPolicyProvider provider_;
   std::string userhash_;
+#endif
 };
 
 // Place each subtest into a separate browser test so that the stub networking

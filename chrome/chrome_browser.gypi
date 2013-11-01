@@ -2732,7 +2732,7 @@
             'browser/media_galleries/fileapi/safe_picasa_albums_indexer.h',
           ],
         }],
-        ['OS!="android" and OS!="ios" and chromeos==0', {
+        ['OS!="android" and OS!="ios" and chromeos==0 and configuration_policy==1', {
           'sources': [
             'browser/download/download_dir_policy_handler.cc',
             'browser/download/download_dir_policy_handler.h',
@@ -2844,6 +2844,16 @@
             ['exclude', '^browser/policy/'],
             ['exclude', 'browser/net/disk_cache_dir_policy_handler.cc'],
             ['exclude', 'browser/net/disk_cache_dir_policy_handler.h'],
+            ['exclude', 'browser/net/proxy_policy_handler.cc'],
+            ['exclude', 'browser/net/proxy_policy_handler.h'],
+            ['exclude', 'browser/profiles/incognito_mode_policy_handler.cc'],
+            ['exclude', 'browser/profiles/incognito_mode_policy_handler.h'],
+            ['exclude', 'browser/search_engines/default_search_policy_handler.cc'],
+            ['exclude', 'browser/search_engines/default_search_policy_handler.h'],
+            ['exclude', 'browser/sessions/restore_on_startup_policy_handler.cc'],
+            ['exclude', 'browser/sessions/restore_on_startup_policy_handler.h'],
+            ['exclude', 'browser/sync/sync_policy_handler.cc'],
+            ['exclude', 'browser/sync/sync_policy_handler.h'],
             ['include', 'browser/policy/external_data_fetcher.cc'],
             ['include', 'browser/policy/external_data_fetcher.h'],
             ['include', 'browser/policy/external_data_manager.h'],

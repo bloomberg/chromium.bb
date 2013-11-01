@@ -1045,6 +1045,8 @@
             'browser/extensions/api/storage/managed_value_store_cache.h',
             'browser/extensions/api/storage/policy_value_store.cc',
             'browser/extensions/api/storage/policy_value_store.h',
+            'browser/extensions/policy_handlers.cc',
+            'browser/extensions/policy_handlers.h',
           ],
         }],
         ['OS=="win"', {

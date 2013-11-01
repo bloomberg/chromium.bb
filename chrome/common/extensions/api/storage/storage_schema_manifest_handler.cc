@@ -14,11 +14,14 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/extension.h"
-#include "components/policy/core/common/schema.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/api_permission.h"
+
+#if defined(ENABLE_CONFIGURATION_POLICY)
+#include "components/policy/core/common/schema.h"
+#endif
 
 using extensions::manifest_keys::kStorageManagedSchema;
 
@@ -28,6 +31,7 @@ StorageSchemaManifestHandler::StorageSchemaManifestHandler() {}
 
 StorageSchemaManifestHandler::~StorageSchemaManifestHandler() {}
 
+#if defined(ENABLE_CONFIGURATION_POLICY)
 // static
 scoped_ptr<policy::SchemaOwner> StorageSchemaManifestHandler::GetSchema(
     const Extension* extension,
@@ -58,6 +62,7 @@ scoped_ptr<policy::SchemaOwner> StorageSchemaManifestHandler::GetSchema(
   }
   return policy::SchemaOwner::Parse(content, error);
 }
+#endif
 
 bool StorageSchemaManifestHandler::Parse(Extension* extension,
                                          string16* error) {
@@ -74,7 +79,11 @@ bool StorageSchemaManifestHandler::Validate(
     const Extension* extension,
     std::string* error,
     std::vector<InstallWarning>* warnings) const {
+#if defined(ENABLE_CONFIGURATION_POLICY)
   return !!GetSchema(extension, error);
+#else
+  return true;
+#endif
 }
 
 const std::vector<std::string> StorageSchemaManifestHandler::Keys() const {

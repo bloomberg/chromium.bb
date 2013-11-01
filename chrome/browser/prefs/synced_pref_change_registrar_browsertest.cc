@@ -8,9 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
-#include "chrome/browser/policy/mock_configuration_policy_provider.h"
-#include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/prefs/synced_pref_change_registrar.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
@@ -18,12 +15,18 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_utils.h"
-#include "policy/policy_constants.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/sync_error_factory_mock.h"
 #include "sync/api/syncable_service.h"
 #include "sync/protocol/sync.pb.h"
+
+#if defined(ENABLE_CONFIGURATION_POLICY)
+#include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/mock_configuration_policy_provider.h"
+#include "chrome/browser/policy/policy_map.h"
+#include "policy/policy_constants.h"
+#endif
 
 namespace {
 
@@ -49,12 +52,14 @@ class SyncedPrefChangeRegistrarTest : public InProcessBrowserTest {
   SyncedPrefChangeRegistrarTest() : next_sync_data_id_(0) {}
   virtual ~SyncedPrefChangeRegistrarTest() {}
 
+#if defined(ENABLE_CONFIGURATION_POLICY)
   void UpdateChromePolicy(const policy::PolicyMap& policies) {
     policy_provider_.UpdateChromePolicy(policies);
     DCHECK(base::MessageLoop::current());
     base::RunLoop loop;
     loop.RunUntilIdle();
   }
+#endif
 
   void SetBooleanPrefValueFromSync(const std::string& name, bool value) {
     std::string serialized_value;
@@ -95,6 +100,7 @@ class SyncedPrefChangeRegistrarTest : public InProcessBrowserTest {
   }
 
  private:
+#if defined(ENABLE_CONFIGURATION_POLICY)
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     EXPECT_CALL(policy_provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
@@ -102,6 +108,7 @@ class SyncedPrefChangeRegistrarTest : public InProcessBrowserTest {
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
         &policy_provider_);
   }
+#endif
 
   virtual void SetUpOnMainThread() OVERRIDE {
     prefs_ = PrefServiceSyncable::FromProfile(browser()->profile());
@@ -123,7 +130,9 @@ class SyncedPrefChangeRegistrarTest : public InProcessBrowserTest {
   int next_sync_data_id_;
 
   scoped_ptr<SyncedPrefChangeRegistrar> registrar_;
+#if defined(ENABLE_CONFIGURATION_POLICY)
   policy::MockConfigurationPolicyProvider policy_provider_;
+#endif
 };
 
 struct TestSyncedPrefObserver {
@@ -179,6 +188,7 @@ IN_PROC_BROWSER_TEST_F(SyncedPrefChangeRegistrarTest,
   EXPECT_FALSE(observer.last_seen_value);
 }
 
+#if defined(ENABLE_CONFIGURATION_POLICY)
 IN_PROC_BROWSER_TEST_F(SyncedPrefChangeRegistrarTest,
                        IgnoreLocalChangesToManagedPrefs) {
   TestSyncedPrefObserver observer = {};
@@ -219,3 +229,4 @@ IN_PROC_BROWSER_TEST_F(SyncedPrefChangeRegistrarTest,
   EXPECT_FALSE(observer.has_been_notified);
   EXPECT_TRUE(GetBooleanPrefValue(prefs::kShowHomeButton));
 }
+#endif

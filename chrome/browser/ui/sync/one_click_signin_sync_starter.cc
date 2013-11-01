@@ -199,13 +199,6 @@ void OneClickSigninSyncStarter::OnRegisteredForPolicy(
       new SigninDialogDelegate(weak_pointer_factory_.GetWeakPtr()));
 }
 
-void OneClickSigninSyncStarter::CancelSigninAndDelete() {
-  SigninManagerFactory::GetForProfile(profile_)->SignOut();
-  // The statement above results in a call to SigninFailed() which will free
-  // this object, so do not refer to the OneClickSigninSyncStarter object
-  // after this point.
-}
-
 void OneClickSigninSyncStarter::LoadPolicyWithCachedClient() {
   DCHECK(policy_client_);
   policy::UserPolicySigninService* policy_service =
@@ -305,6 +298,13 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
   }
 }
 #endif
+
+void OneClickSigninSyncStarter::CancelSigninAndDelete() {
+  SigninManagerFactory::GetForProfile(profile_)->SignOut();
+  // The statement above results in a call to SigninFailed() which will free
+  // this object, so do not refer to the OneClickSigninSyncStarter object
+  // after this point.
+}
 
 void OneClickSigninSyncStarter::ConfirmAndSignin() {
   SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);

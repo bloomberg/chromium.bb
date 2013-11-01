@@ -2223,7 +2223,13 @@
         ['configuration_policy==0', {
           'sources!': [
             'browser/extensions/api/storage/policy_value_store_unittest.cc',
+            'browser/extensions/policy_handlers_unittest.cc',
+            'browser/net/proxy_policy_handler_unittest.cc',
             'browser/prefs/proxy_policy_unittest.cc',
+            'browser/profiles/incognito_mode_policy_handler_unittest.cc',
+            'browser/search_engines/default_search_policy_handler_unittest.cc',
+            'browser/sessions/restore_on_startup_policy_handler_unittest.cc',
+            'browser/sync/sync_policy_handler_unittest.cc',
           ],
           'sources/': [
             ['exclude', '^browser/policy/'],
@@ -2681,7 +2687,7 @@
             }],
           ],
         }],  # OS == android
-        ['OS!="android" and OS!="ios" and chromeos==0', {
+        ['OS!="android" and OS!="ios" and chromeos==0 and configuration_policy==1', {
           'sources': [
             'browser/download/download_dir_policy_handler_unittest.cc',
             'browser/net/disk_cache_dir_policy_handler_unittest.cc',

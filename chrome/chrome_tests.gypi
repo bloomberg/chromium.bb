@@ -1773,8 +1773,9 @@
             ['exclude', '^browser/policy/'],
           ],
           'sources!': [
-            'browser/ui/webui/policy_ui_browsertest.cc',
+            'browser/ui/webui/options/certificate_manager_browsertest.cc',
             'browser/ui/webui/options/preferences_browsertest.cc',
+            'browser/ui/webui/policy_ui_browsertest.cc',
           ],
         }],
         ['input_speech==0', {

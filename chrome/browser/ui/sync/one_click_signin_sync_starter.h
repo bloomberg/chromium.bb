@@ -155,9 +155,10 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
                                  Profile* profile,
                                  Profile::CreateStatus status);
 
+#endif  // defined(ENABLE_CONFIGURATION_POLICY)
+
   // Cancels the in-progress signin for this profile.
   void CancelSigninAndDelete();
-#endif  // defined(ENABLE_CONFIGURATION_POLICY)
 
   // Callback invoked to check whether the user needs policy or if a
   // confirmation is required (in which case we have to prompt the user first).
