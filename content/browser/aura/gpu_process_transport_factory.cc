@@ -231,9 +231,7 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
     swap_client_weak_ptr = data->swap_client->AsWeakPtr();
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kUIEnableSoftwareCompositing) &&
-      (!compositor->use_software_renderer() ||
-       ui::Compositor::WasInitializedWithThread())) {
+  if (!command_line->HasSwitch(switches::kUIEnableSoftwareCompositing)) {
     context_provider = ContextProviderCommandBuffer::Create(
         GpuProcessTransportFactory::CreateContextCommon(
             swap_client_weak_ptr,

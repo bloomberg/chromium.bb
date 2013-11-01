@@ -219,16 +219,27 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
        chrome::GetHostDesktopTypeForNativeView(params->parent) !=
           chrome::HOST_DESKTOP_TYPE_NATIVE);
 
-  // We can use toplevel windows for most things. On Vista+ with DWM, they get
-  // blended via WS_EX_COMPOSITED. Otherwise, they're rendered by the software
-  // compositor and the hwnd is converted to a WS_EX_LAYERED.
-  if (chrome::GetActiveDesktop() != chrome::HOST_DESKTOP_TYPE_ASH &&
-      params->parent &&
-      params->type != views::Widget::InitParams::TYPE_CONTROL &&
-      params->type != views::Widget::InitParams::TYPE_WINDOW) {
-    // When we set this to false, we get a DesktopNativeWidgetAura from the
-    // default case (not handled in this function).
-    use_non_toplevel_window = false;
+  if (!ui::win::IsAeroGlassEnabled()) {
+    // If we don't have composition (either because Glass is not enabled or
+    // because it was disabled at the command line), anything that requires
+    // transparency will be broken with a toplevel window, so force the use of
+    // a non toplevel window.
+    if (params->opacity == views::Widget::InitParams::TRANSLUCENT_WINDOW &&
+        params->type != views::Widget::InitParams::TYPE_MENU)
+      use_non_toplevel_window = true;
+  } else {
+    // If we're on Vista+ with composition enabled, then we can use toplevel
+    // windows for most things (they get blended via WS_EX_COMPOSITED, which
+    // allows for animation effects, but also exceeding the bounds of the parent
+    // window).
+    if (chrome::GetActiveDesktop() != chrome::HOST_DESKTOP_TYPE_ASH &&
+        params->parent &&
+        params->type != views::Widget::InitParams::TYPE_CONTROL &&
+        params->type != views::Widget::InitParams::TYPE_WINDOW) {
+      // When we set this to false, we get a DesktopNativeWidgetAura from the
+      // default case (not handled in this function).
+      use_non_toplevel_window = false;
+    }
   }
 #endif  // OS_WIN
 #endif  // USE_AURA

@@ -119,8 +119,6 @@ void DesktopRootWindowHostWin::Init(
   message_handler_->Init(parent_hwnd, pixel_bounds);
 
   rw_create_params->host = this;
-  rw_create_params->use_software_renderer =
-      params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW;
 }
 
 void DesktopRootWindowHostWin::OnRootWindowCreated(
@@ -134,8 +132,8 @@ void DesktopRootWindowHostWin::OnRootWindowCreated(
       content_window_->type() != aura::client::WINDOW_TYPE_NORMAL &&
       !views::corewm::WindowAnimationsDisabled(content_window_);
 
-  root_window_->compositor()->SetHostHasTransparentBackground(true);
-  root_window_->SetTransparent(true);
+// TODO this is not invoked *after* Init(), but should be ok.
+  SetWindowTransparency();
 }
 
 scoped_ptr<corewm::Tooltip> DesktopRootWindowHostWin::CreateTooltip() {
@@ -316,6 +314,7 @@ bool DesktopRootWindowHostWin::ShouldUseNativeFrame() {
 
 void DesktopRootWindowHostWin::FrameTypeChanged() {
   message_handler_->FrameTypeChanged();
+  SetWindowTransparency();
 }
 
 NonClientFrameView* DesktopRootWindowHostWin::CreateNonClientFrameView() {
@@ -325,6 +324,7 @@ NonClientFrameView* DesktopRootWindowHostWin::CreateNonClientFrameView() {
 
 void DesktopRootWindowHostWin::SetFullscreen(bool fullscreen) {
   message_handler_->fullscreen_handler()->SetFullscreen(fullscreen);
+  SetWindowTransparency();
 }
 
 bool DesktopRootWindowHostWin::IsFullscreen() const {
@@ -391,6 +391,7 @@ void DesktopRootWindowHostWin::Hide() {
 }
 
 void DesktopRootWindowHostWin::ToggleFullScreen() {
+  SetWindowTransparency();
 }
 
 // GetBounds and SetBounds work in pixel coordinates, whereas other get/set
@@ -849,6 +850,12 @@ const Widget* DesktopRootWindowHostWin::GetWidget() const {
 
 HWND DesktopRootWindowHostWin::GetHWND() const {
   return message_handler_->hwnd();
+}
+
+void DesktopRootWindowHostWin::SetWindowTransparency() {
+  bool transparent = ShouldUseNativeFrame() && !IsFullscreen();
+  root_window_->compositor()->SetHostHasTransparentBackground(transparent);
+  root_window_->SetTransparent(transparent);
 }
 
 bool DesktopRootWindowHostWin::IsModalWindowActive() const {

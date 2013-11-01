@@ -65,8 +65,6 @@ void CalculateWindowStylesFromInitParams(
 #if defined(USE_AURA)
     if (ui::win::IsAeroGlassEnabled())
       *ex_style |= WS_EX_COMPOSITED;
-    else
-      *ex_style |= WS_EX_LAYERED;
 #else
     *ex_style |= WS_EX_LAYERED;
 #endif

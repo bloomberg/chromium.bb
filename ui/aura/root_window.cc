@@ -132,8 +132,8 @@ class SimpleRootWindowTransformer : public RootWindowTransformer {
 
 RootWindow::CreateParams::CreateParams(const gfx::Rect& a_initial_bounds)
     : initial_bounds(a_initial_bounds),
-      use_software_renderer(false),
-      host(NULL) {}
+      host(NULL) {
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, public:
@@ -153,8 +153,7 @@ RootWindow::RootWindow(const CreateParams& params)
   set_dispatcher(this);
   SetName("RootWindow");
 
-  compositor_.reset(new ui::Compositor(params.use_software_renderer,
-                                       host_->GetAcceleratedWidget()));
+  compositor_.reset(new ui::Compositor(host_->GetAcceleratedWidget()));
   DCHECK(compositor_.get());
 
   prop_.reset(new ui::ViewProp(host_->GetAcceleratedWidget(),

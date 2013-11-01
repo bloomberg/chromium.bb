@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/theme_image_mapper.h"
 #include "grit/theme_resources.h"
-#include "ui/aura/root_window.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/win/dpi.h"
 #include "ui/views/controls/menu/native_menu_win.h"
@@ -94,12 +93,6 @@ BrowserDesktopRootWindowHostWin::BrowserDesktopRootWindowHostWin(
 BrowserDesktopRootWindowHostWin::~BrowserDesktopRootWindowHostWin() {
 }
 
-void BrowserDesktopRootWindowHostWin::SetWindowTransparency() {
-  bool transparent = ShouldUseNativeFrame() && !IsFullscreen();
-  GetRootWindow()->compositor()->SetHostHasTransparentBackground(transparent);
-  GetRootWindow()->SetTransparent(transparent);
-}
-
 views::NativeMenuWin* BrowserDesktopRootWindowHostWin::GetSystemMenu() {
   if (!system_menu_.get()) {
     SystemMenuInsertionDelegateWin insertion_delegate;
@@ -129,13 +122,6 @@ bool BrowserDesktopRootWindowHostWin::UsesNativeSystemMenu() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserDesktopRootWindowHostWin, views::DesktopRootWindowHostWin overrides:
-
-void BrowserDesktopRootWindowHostWin::OnRootWindowCreated(
-    aura::RootWindow* root,
-    const views::Widget::InitParams& params) {
-  DesktopRootWindowHostWin::OnRootWindowCreated(root, params);
-  SetWindowTransparency();
-}
 
 int BrowserDesktopRootWindowHostWin::GetInitialShowState() const {
   STARTUPINFO si = {0};
@@ -281,12 +267,6 @@ bool BrowserDesktopRootWindowHostWin::ShouldUseNativeFrame() {
 void BrowserDesktopRootWindowHostWin::FrameTypeChanged() {
   views::DesktopRootWindowHostWin::FrameTypeChanged();
   did_gdi_clear_ = false;
-  SetWindowTransparency();
-}
-
-void BrowserDesktopRootWindowHostWin::SetFullscreen(bool fullscreen) {
-  DesktopRootWindowHostWin::SetFullscreen(fullscreen);
-  SetWindowTransparency();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -335,11 +315,6 @@ MARGINS BrowserDesktopRootWindowHostWin::GetDWMFrameMargins() const {
     }
   }
   return margins;
-}
-
-void BrowserDesktopRootWindowHostWin::ToggleFullScreen() {
-  DesktopRootWindowHostWin::ToggleFullScreen();
-  SetWindowTransparency();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

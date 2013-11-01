@@ -16,7 +16,7 @@ class TestCompositorHostWin : public TestCompositorHost,
  public:
   TestCompositorHostWin(const gfx::Rect& bounds) {
     Init(NULL, bounds);
-    compositor_.reset(new ui::Compositor(false, hwnd()));
+    compositor_.reset(new ui::Compositor(hwnd()));
     compositor_->SetScaleAndSize(1.0f, GetSize());
   }
 

@@ -215,6 +215,8 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   HWND GetHWND() const;
 
  private:
+  void SetWindowTransparency();
+
   // Returns true if a modal window is active in the current root window chain.
   bool IsModalWindowActive() const;
 

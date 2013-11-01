@@ -66,9 +66,6 @@ class AURA_EXPORT RootWindow : public Window,
 
     gfx::Rect initial_bounds;
 
-    // If true, should try avoiding the use of a GPU for this window.
-    bool use_software_renderer;
-
     // A host to use in place of the default one that RootWindow will create.
     // NULL by default.
     RootWindowHost* host;

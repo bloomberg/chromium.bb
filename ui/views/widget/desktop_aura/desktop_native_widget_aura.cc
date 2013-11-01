@@ -326,7 +326,6 @@ void DesktopNativeWidgetAura::InitNativeWidget(
     content_window_->SetProperty(aura::client::kAnimationsDisabledKey, true);
   }
   content_window_->SetType(GetAuraWindowTypeForWidgetType(params.type));
-  content_window_->SetTransparent(true);
   content_window_->Init(params.layer_type);
   corewm::SetShadowType(content_window_, corewm::SHADOW_TYPE_NONE);
 
@@ -366,6 +365,8 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   desktop_root_window_host_->OnRootWindowCreated(root_window_.get(), params);
 
   native_widget_delegate_->OnNativeWidgetCreated(true);
+
+  UpdateWindowTransparency();
 
   capture_client_.reset(new DesktopCaptureClient(root_window_.get()));
 
@@ -457,6 +458,7 @@ bool DesktopNativeWidgetAura::ShouldUseNativeFrame() const {
 
 void DesktopNativeWidgetAura::FrameTypeChanged() {
   desktop_root_window_host_->FrameTypeChanged();
+  UpdateWindowTransparency();
 }
 
 Widget* DesktopNativeWidgetAura::GetWidget() {
@@ -1083,6 +1085,10 @@ void DesktopNativeWidgetAura::InstallInputMethodEventFilter() {
   input_method_event_filter_->SetInputMethodPropertyInRootWindow(
       root_window_.get());
   root_window_event_filter_->AddHandler(input_method_event_filter_.get());
+}
+
+void DesktopNativeWidgetAura::UpdateWindowTransparency() {
+  content_window_->SetTransparent(ShouldUseNativeFrame());
 }
 
 }  // namespace views
