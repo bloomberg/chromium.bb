@@ -382,6 +382,15 @@ void FakeCryptohomeClient::TpmAttestationSetKeyPayload(
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, false));
 }
 
+void FakeCryptohomeClient::TpmAttestationDeleteKeys(
+    attestation::AttestationKeyType key_type,
+    const std::string& user_id,
+    const std::string& key_prefix,
+    const BoolDBusMethodCallback& callback) {
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, false));
+}
+
 void FakeCryptohomeClient::SetServiceIsAvailable(bool is_available) {
   service_is_available_ = is_available;
   if (is_available) {

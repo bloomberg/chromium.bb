@@ -19,6 +19,12 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/chrome_notification_types.h"
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/mock_user_manager.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#endif
 #include "chrome/browser/extensions/mock_extension_special_storage_policy.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -26,6 +32,11 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#if defined(OS_CHROMEOS)
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/mock_cryptohome_client.h"
+#include "chromeos/dbus/mock_dbus_thread_manager.h"
+#endif
 #include "components/autofill/core/browser/autofill_common_test.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -43,12 +54,16 @@
 #include "net/ssl/ssl_client_cert_type.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/quota/mock_quota_manager.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/quota/quota_types.h"
 
 using content::BrowserThread;
+using testing::_;
+using testing::Invoke;
+using testing::WithArgs;
 
 namespace {
 
@@ -162,6 +177,14 @@ class AwaitCompletionHelper : public BrowsingDataRemover::Observer {
 
   DISALLOW_COPY_AND_ASSIGN(AwaitCompletionHelper);
 };
+
+#if defined(OS_CHROMEOS)
+void FakeDBusCall(const chromeos::BoolDBusMethodCallback& callback) {
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, chromeos::DBUS_METHOD_CALL_SUCCESS, true));
+}
+#endif
 
 }  // namespace
 
@@ -1391,3 +1414,27 @@ TEST_F(BrowsingDataRemoverTest, AutofillOriginsRemovedWithHistory) {
   EXPECT_FALSE(tester.HasOrigin(kWebOrigin));
   EXPECT_TRUE(tester.HasOrigin(kChromeOrigin));
 }
+
+#if defined(OS_CHROMEOS)
+TEST_F(BrowsingDataRemoverTest, ContentProtectionPlatformKeysRemoval) {
+  chromeos::ScopedTestDeviceSettingsService test_device_settings_service;
+  chromeos::ScopedTestCrosSettings test_cros_settings;
+  chromeos::MockUserManager* mock_user_manager =
+      new testing::NiceMock<chromeos::MockUserManager>();
+  mock_user_manager->SetActiveUser("test@example.com");
+  chromeos::ScopedUserManagerEnabler user_manager_enabler(mock_user_manager);
+  chromeos::MockDBusThreadManager mock_dbus_manager;
+  chromeos::DBusThreadManager::InitializeForTesting(&mock_dbus_manager);
+  chromeos::MockCryptohomeClient* cryptohome_client =
+      mock_dbus_manager.mock_cryptohome_client();
+
+  // Expect exactly one call.  No calls means no attempt to delete keys and more
+  // than one call means a significant performance problem.
+  EXPECT_CALL(*cryptohome_client, TpmAttestationDeleteKeys(_, _, _, _))
+      .WillOnce(WithArgs<3>(Invoke(FakeDBusCall)));
+
+  BlockUntilBrowsingDataRemoved(
+      BrowsingDataRemover::EVERYTHING,
+      BrowsingDataRemover::REMOVE_CONTENT_LICENSES, false);
+}
+#endif

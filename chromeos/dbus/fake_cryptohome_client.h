@@ -152,6 +152,11 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
       const std::string& key_name,
       const std::string& payload,
       const BoolDBusMethodCallback& callback) OVERRIDE;
+  virtual void TpmAttestationDeleteKeys(
+      attestation::AttestationKeyType key_type,
+      const std::string& user_id,
+      const std::string& key_prefix,
+      const BoolDBusMethodCallback& callback) OVERRIDE;
 
   // Changes the behavior of WaitForServiceToBeAvailable(). This method runs
   // pending callbacks if is_available is true.

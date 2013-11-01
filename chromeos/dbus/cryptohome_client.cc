@@ -675,6 +675,23 @@ class CryptohomeClientImpl : public CryptohomeClient {
     CallBoolMethod(&method_call, callback);
   }
 
+  // CryptohomeClient override.
+  virtual void TpmAttestationDeleteKeys(
+      attestation::AttestationKeyType key_type,
+      const std::string& user_id,
+      const std::string& key_prefix,
+      const BoolDBusMethodCallback& callback) OVERRIDE {
+    dbus::MethodCall method_call(
+        cryptohome::kCryptohomeInterface,
+        cryptohome::kCryptohomeTpmAttestationDeleteKeys);
+    dbus::MessageWriter writer(&method_call);
+    bool is_user_specific = (key_type == attestation::KEY_USER);
+    writer.AppendBool(is_user_specific);
+    writer.AppendString(user_id);
+    writer.AppendString(key_prefix);
+    CallBoolMethod(&method_call, callback);
+  }
+
  protected:
   virtual void Init(dbus::Bus* bus) OVERRIDE {
     proxy_ = bus->GetObjectProxy(

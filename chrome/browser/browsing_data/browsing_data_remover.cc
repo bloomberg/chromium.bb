@@ -17,6 +17,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/chrome_notification_types.h"
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
@@ -46,6 +50,11 @@
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#if defined(OS_CHROMEOS)
+#include "chromeos/attestation/attestation_constants.h"
+#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#endif
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/nacl/browser/nacl_browser.h"
@@ -178,6 +187,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       waiting_for_clear_shader_cache_(false),
       waiting_for_clear_webrtc_identity_store_(false),
       waiting_for_clear_keyword_data_(false),
+      waiting_for_clear_platform_keys_(false),
       remove_mask_(0),
       remove_origin_(GURL()),
       origin_set_mask_(0) {
@@ -588,6 +598,23 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     }
     deauthorize_content_licenses_request_id_ =
         pepper_flash_settings_manager_->DeauthorizeContentLicenses(prefs);
+#if defined(OS_CHROMEOS)
+    // On Chrome OS, also delete any content protection platform keys.
+    chromeos::User* user = chromeos::UserManager::Get()->
+        GetUserByProfile(profile_);
+    if (!user) {
+      LOG(WARNING) << "Failed to find user for current profile.";
+    } else {
+      chromeos::DBusThreadManager::Get()->GetCryptohomeClient()->
+          TpmAttestationDeleteKeys(
+              chromeos::attestation::KEY_USER,
+              user->email(),
+              chromeos::attestation::kContentProtectionKeyPrefix,
+              base::Bind(&BrowsingDataRemover::OnClearPlatformKeys,
+                         base::Unretained(this)));
+      waiting_for_clear_platform_keys_ = true;
+    }
+#endif
   }
 #endif
 
@@ -662,7 +689,8 @@ bool BrowsingDataRemover::AllDone() {
          !waiting_for_clear_hostname_resolution_cache_ &&
          !waiting_for_clear_network_predictor_ &&
          !waiting_for_clear_shader_cache_ &&
-         !waiting_for_clear_webrtc_identity_store_;
+         !waiting_for_clear_webrtc_identity_store_ &&
+         !waiting_for_clear_platform_keys_;
 }
 
 void BrowsingDataRemover::OnKeywordsLoaded() {
@@ -1110,6 +1138,19 @@ void BrowsingDataRemover::OnDeauthorizeContentLicensesCompleted(
   DCHECK_EQ(request_id, deauthorize_content_licenses_request_id_);
 
   waiting_for_clear_content_licenses_ = false;
+  NotifyAndDeleteIfDone();
+}
+#endif
+
+#if defined(OS_CHROMEOS)
+void BrowsingDataRemover::OnClearPlatformKeys(
+    chromeos::DBusMethodCallStatus call_status,
+    bool result) {
+  DCHECK(waiting_for_clear_platform_keys_);
+  if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS || !result) {
+    LOG(ERROR) << "Failed to clear platform keys.";
+  }
+  waiting_for_clear_platform_keys_ = false;
   NotifyAndDeleteIfDone();
 }
 #endif

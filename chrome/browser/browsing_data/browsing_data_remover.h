@@ -17,6 +17,9 @@
 #include "chrome/browser/pepper_flash_settings_manager.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/cancelable_task_tracker.h"
+#if defined(OS_CHROMEOS)
+#include "chromeos/dbus/dbus_method_call_status.h"
+#endif
 #include "url/gurl.h"
 #include "webkit/common/quota/quota_types.h"
 
@@ -224,6 +227,11 @@ class BrowsingDataRemover
   // PepperFlashSettingsManager::Client implementation.
   virtual void OnDeauthorizeContentLicensesCompleted(uint32 request_id,
                                                      bool success) OVERRIDE;
+#endif
+
+#if defined (OS_CHROMEOS)
+  void OnClearPlatformKeys(chromeos::DBusMethodCallStatus call_status,
+                           bool result);
 #endif
 
   // Removes the specified items related to browsing for a specific host. If the
@@ -436,6 +444,7 @@ class BrowsingDataRemover
   bool waiting_for_clear_shader_cache_;
   bool waiting_for_clear_webrtc_identity_store_;
   bool waiting_for_clear_keyword_data_;
+  bool waiting_for_clear_platform_keys_;
 
   // Tracking how many origins need to be deleted, and whether we're finished
   // gathering origins.

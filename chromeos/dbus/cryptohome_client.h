@@ -413,6 +413,20 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
       const std::string& payload,
       const BoolDBusMethodCallback& callback) = 0;
 
+  // Deletes certified keys as specified by |key_type| and |key_prefix|.  The
+  // |callback| will be called when the operation completes.  If the operation
+  // succeeds, the callback |result| parameter will be true.  If |key_type| is
+  // KEY_USER, a |user_id| must be provided.  Otherwise |user_id| is ignored.
+  // For normal GAIA users the |user_id| is a canonical email address.  All keys
+  // where the key name has a prefix matching |key_prefix| will be deleted.  All
+  // meta-data associated with the key, including certificates, will also be
+  // deleted.
+  virtual void TpmAttestationDeleteKeys(
+      attestation::AttestationKeyType key_type,
+      const std::string& user_id,
+      const std::string& key_prefix,
+      const BoolDBusMethodCallback& callback) = 0;
+
  protected:
   // Create() should be used instead.
   CryptohomeClient();

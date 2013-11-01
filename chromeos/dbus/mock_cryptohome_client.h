@@ -156,6 +156,11 @@ class MockCryptohomeClient : public CryptohomeClient {
                     const std::string& key_name,
                     const std::string& payload,
                     const BoolDBusMethodCallback& callback));
+  MOCK_METHOD4(TpmAttestationDeleteKeys,
+               void(attestation::AttestationKeyType key_type,
+                    const std::string& user_id,
+                    const std::string& key_prefix,
+                    const BoolDBusMethodCallback& callback));
 };
 
 }  // namespace chromeos
