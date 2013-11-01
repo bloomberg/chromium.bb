@@ -23,13 +23,13 @@
 
 namespace {
 
-// Feedback bucket label.
-const char kProfileResetFeedbackBucket[] = "ProfileResetReport";
+// Feedback bucket labels.
+const char kProfileResetPromptBucket[] = "SamplingOfSettingsResetPrompt";
+const char kProfileResetWebUIBucket[] = "ProfileResetReport";
 
 // Dictionary keys for feedback report.
 const char kDefaultSearchEnginePath[] = "default_search_engine";
 const char kEnabledExtensions[] = "enabled_extensions";
-const char kFeedbackCaller[] = "initiator";
 const char kHomepageIsNewTabPage[] = "homepage_is_ntp";
 const char kHomepagePath[] = "homepage";
 const char kStartupTypePath[] = "startup_type";
@@ -109,8 +109,7 @@ int ResettableSettingsSnapshot::FindDifferentFields(
 }
 
 std::string SerializeSettingsReport(const ResettableSettingsSnapshot& snapshot,
-                                    int field_mask,
-                                    SnapshotCaller source) {
+                                    int field_mask) {
   DictionaryValue dict;
 
   if (field_mask & ResettableSettingsSnapshot::STARTUP_MODE) {
@@ -148,16 +147,25 @@ std::string SerializeSettingsReport(const ResettableSettingsSnapshot& snapshot,
   COMPILE_ASSERT(ResettableSettingsSnapshot::ALL_FIELDS == 15,
                  serialize_new_field_here);
 
-  dict.SetInteger(kFeedbackCaller, source);
-
   std::string json;
   base::JSONWriter::Write(&dict, &json);
   return json;
 }
 
-void SendSettingsFeedback(const std::string& report, Profile* profile) {
+void SendSettingsFeedback(const std::string& report,
+                          Profile* profile,
+                          SnapshotCaller caller) {
   scoped_refptr<FeedbackData> feedback_data = new FeedbackData();
-  feedback_data->set_category_tag(kProfileResetFeedbackBucket);
+  std::string bucket;
+  switch (caller) {
+    case PROFILE_RESET_WEBUI:
+      bucket = kProfileResetWebUIBucket;
+      break;
+    case PROFILE_RESET_PROMPT:
+      bucket = kProfileResetPromptBucket;
+      break;
+  }
+  feedback_data->set_category_tag(bucket);
   feedback_data->set_description(report);
 
   feedback_data->set_image(scoped_ptr<std::string>(new std::string));

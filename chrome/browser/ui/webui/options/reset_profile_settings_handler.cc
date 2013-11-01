@@ -99,9 +99,8 @@ void ResetProfileSettingsHandler::OnResetProfileSettingsDone() {
     if (difference) {
       setting_snapshot_->Subtract(current_snapshot);
       std::string report = SerializeSettingsReport(*setting_snapshot_,
-                                                   difference,
-                                                   PROFILE_RESET_WEBUI);
-      SendSettingsFeedback(report, profile);
+                                                   difference);
+      SendSettingsFeedback(report, profile, PROFILE_RESET_WEBUI);
     }
     setting_snapshot_.reset();
   }
