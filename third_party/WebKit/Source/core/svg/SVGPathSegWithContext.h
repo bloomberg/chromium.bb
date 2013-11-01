@@ -64,7 +64,6 @@ protected:
             return;
         }
 
-        ASSERT(m_role != PathSegUndefinedRole);
         m_element->pathSegListChanged(m_role);
     }
 
