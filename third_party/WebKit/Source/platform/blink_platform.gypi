@@ -300,6 +300,8 @@
       'graphics/Color.cpp',
       'graphics/Color.h',
       'graphics/ColorSpace.h',
+      'graphics/DisplayList.cpp',
+      'graphics/DisplayList.h',
       'graphics/DrawLooper.cpp',
       'graphics/DrawLooper.h',
       'graphics/GraphicsTypes.cpp',

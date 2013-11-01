@@ -54,6 +54,7 @@ struct SkRect;
 
 namespace WebCore {
 
+class DisplayList;
 class ImageBuffer;
 class KURL;
 
@@ -242,6 +243,8 @@ public:
 
     void strokeRect(const FloatRect&, float lineWidth);
 
+    void drawDisplayList(DisplayList*);
+
     void drawImage(Image*, const IntPoint&, CompositeOperator = CompositeSourceOver, RespectImageOrientationEnum = DoNotRespectImageOrientation);
     void drawImage(Image*, const IntRect&, CompositeOperator = CompositeSourceOver, RespectImageOrientationEnum = DoNotRespectImageOrientation, bool useLowQualityScale = false);
     void drawImage(Image*, const IntPoint& destPoint, const IntRect& srcRect, CompositeOperator = CompositeSourceOver, RespectImageOrientationEnum = DoNotRespectImageOrientation);
@@ -303,6 +306,11 @@ public:
     void beginTransparencyLayer(float opacity, const FloatRect* = 0);
     void beginLayer(float opacity, CompositeOperator, const FloatRect* = 0, ColorFilter = ColorFilterNone);
     void endLayer();
+
+    // Instead of being dispatched to the active canvas, draw commands following beginRecording()
+    // are stored in a display list that can be replayed at a later time.
+    void beginRecording(const FloatRect& bounds);
+    PassRefPtr<DisplayList> endRecording();
 
     bool hasShadow() const;
     void setShadow(const FloatSize& offset, float blur, const Color&,
@@ -452,6 +460,9 @@ private:
     Vector<DeferredSaveState> m_saveStateStack;
 
     AnnotationModeFlags m_annotationMode;
+
+    struct RecordingState;
+    Vector<RecordingState> m_recordingStateStack;
 
 #if !ASSERT_DISABLED
     unsigned m_annotationCount;

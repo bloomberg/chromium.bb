@@ -25,6 +25,8 @@
 
 namespace WebCore {
 
+class DisplayList;
+
 struct ClipperContext {
     WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -73,9 +75,11 @@ public:
     static const RenderSVGResourceType s_resourceType;
 private:
     bool tryPathOnlyClipping(GraphicsContext*, const AffineTransform&, const FloatRect&);
-    void drawMaskContent(GraphicsContext*, const FloatRect& targetBoundingBox);
+    void drawClipMaskContent(GraphicsContext*, const FloatRect& targetBoundingBox);
+    PassRefPtr<DisplayList> asDisplayList(GraphicsContext*, const AffineTransform&);
     void calculateClipContentRepaintRect();
 
+    RefPtr<DisplayList> m_clipContentDisplayList;
     FloatRect m_clipBoundaries;
 
     // Reference cycle detection.

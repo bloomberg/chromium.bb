@@ -84,6 +84,8 @@ crbug.com/258991 [ XP ] svg/batik/paints/patternRegions.svg [ Failure Pass ]
 # Text::inDocument() returns false but should not.
 crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Failure ]
 
+Bug(fmalita) [ Win ] svg/W3C-SVG-1.1/masking-intro-01-f.svg [ NeedsRebaseline ]
+
 # -----------------------------------------------------------------
 # End SVG TESTS
 # -----------------------------------------------------------------

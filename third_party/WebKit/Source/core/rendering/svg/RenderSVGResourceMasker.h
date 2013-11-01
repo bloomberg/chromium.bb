@@ -33,6 +33,8 @@
 
 namespace WebCore {
 
+class DisplayList;
+
 class RenderSVGResourceMasker FINAL : public RenderSVGResourceContainer {
 public:
     explicit RenderSVGResourceMasker(SVGMaskElement*);
@@ -54,8 +56,10 @@ public:
 
 private:
     void calculateMaskContentRepaintRect();
-    void drawMaskContent(GraphicsContext*, const FloatRect& targetBoundingBox);
+    void drawMaskForRenderer(GraphicsContext*, const FloatRect& targetBoundingBox);
+    PassRefPtr<DisplayList> asDisplayList(GraphicsContext*, const AffineTransform&);
 
+    RefPtr<DisplayList> m_maskContentDisplayList;
     FloatRect m_maskContentBoundaries;
 };
 

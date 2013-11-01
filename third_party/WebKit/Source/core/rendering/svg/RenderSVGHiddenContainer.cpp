@@ -32,6 +32,7 @@ void RenderSVGHiddenContainer::layout()
 {
     ASSERT(needsLayout());
     SVGRenderSupport::layoutChildren(this, selfNeedsLayout());
+    updateCachedBoundaries();
     clearNeedsLayout();
 }
 

@@ -33,12 +33,14 @@
 #include "core/platform/graphics/skia/SkiaUtils.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/RoundedRect.h"
+#include "platform/graphics/DisplayList.h"
 #include "platform/graphics/TextRunIterator.h"
 #include "platform/text/BidiResolver.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkDevice.h"
+#include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkRRect.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
@@ -61,6 +63,17 @@ struct GraphicsContext::DeferredSaveState {
 
     unsigned m_flags;
     int m_restoreCount;
+};
+
+struct GraphicsContext::RecordingState {
+    RecordingState(SkCanvas* oldCanvas, PassRefPtr<DisplayList> displayList)
+        : m_savedCanvas(oldCanvas)
+        , m_displayList(displayList)
+    {
+    }
+
+    SkCanvas* m_savedCanvas;
+    RefPtr<DisplayList> m_displayList;
 };
 
 GraphicsContext::GraphicsContext(SkCanvas* canvas)
@@ -88,6 +101,7 @@ GraphicsContext::~GraphicsContext()
     ASSERT(m_stateStack.size() == 1);
     ASSERT(!m_annotationCount);
     ASSERT(!m_layerCount);
+    ASSERT(m_recordingStateStack.isEmpty());
 }
 
 const SkBitmap* GraphicsContext::bitmap() const
@@ -463,6 +477,53 @@ void GraphicsContext::endLayer()
 #if !ASSERT_DISABLED
     --m_layerCount;
 #endif
+}
+
+void GraphicsContext::beginRecording(const FloatRect& bounds)
+{
+    RefPtr<DisplayList> displayList = adoptRef(new DisplayList(bounds));
+    m_recordingStateStack.append(RecordingState(m_canvas, displayList));
+
+    IntRect recordingRect = enclosingIntRect(displayList->bounds());
+    m_canvas = displayList->picture()->beginRecording(recordingRect.width(), recordingRect.height());
+
+    // We want the bounds offset mapped to (0, 0), such that the display list content
+    // is fully contained within the SkPictureRecord's bounds.
+    if (bounds.x() || bounds.y())
+        m_canvas->translate(-bounds.x(), -bounds.y());
+}
+
+PassRefPtr<DisplayList> GraphicsContext::endRecording()
+{
+    ASSERT(!m_recordingStateStack.isEmpty());
+
+    RecordingState recording = m_recordingStateStack.last();
+    ASSERT(recording.m_displayList->picture()->getRecordingCanvas());
+    recording.m_displayList->picture()->endRecording();
+
+    m_recordingStateStack.removeLast();
+    m_canvas = recording.m_savedCanvas;
+
+    return recording.m_displayList.release();
+}
+
+void GraphicsContext::drawDisplayList(DisplayList* displayList)
+{
+    ASSERT(!displayList->picture()->getRecordingCanvas());
+
+    if (paintingDisabled() || !displayList)
+        return;
+
+    realizeSave(SkCanvas::kMatrixClip_SaveFlag);
+
+    const FloatRect& bounds = displayList->bounds();
+    if (bounds.x() || bounds.y())
+        m_canvas->translate(bounds.x(), bounds.y());
+
+    m_canvas->drawPicture(*displayList->picture());
+
+    if (bounds.x() || bounds.y())
+        m_canvas->translate(-bounds.x(), -bounds.y());
 }
 
 void GraphicsContext::setupPaintForFilling(SkPaint* paint) const

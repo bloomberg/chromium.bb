@@ -30,6 +30,7 @@
 #include "core/svg/SVGMaskElement.h"
 #include "core/svg/SVGUnitTypes.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/graphics/DisplayList.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/UnusedParam.h"
 #include "wtf/Vector.h"
@@ -49,6 +50,7 @@ RenderSVGResourceMasker::~RenderSVGResourceMasker()
 
 void RenderSVGResourceMasker::removeAllClientsFromCache(bool markForInvalidation)
 {
+    m_maskContentDisplayList.clear();
     m_maskContentBoundaries = FloatRect();
     markAllClientsForInvalidation(markForInvalidation ? LayoutAndBoundariesInvalidation : ParentOnlyInvalidation);
 }
@@ -103,7 +105,7 @@ void RenderSVGResourceMasker::postApplyResource(RenderObject* object, GraphicsCo
         GraphicsContextStateSaver maskContentSaver(*context);
         context->setColorFilter(maskContentFilter);
 
-        drawMaskContent(context, object->objectBoundingBox());
+        drawMaskForRenderer(context, object->objectBoundingBox());
     }
 
     // Transfer mask layer -> content layer (DstIn)
@@ -112,18 +114,30 @@ void RenderSVGResourceMasker::postApplyResource(RenderObject* object, GraphicsCo
     context->endLayer();
 }
 
-void RenderSVGResourceMasker::drawMaskContent(GraphicsContext* context, const FloatRect& targetBoundingBox)
+void RenderSVGResourceMasker::drawMaskForRenderer(GraphicsContext* context, const FloatRect& targetBoundingBox)
 {
     ASSERT(context);
 
-    // Adjust the mask image context according to the target objectBoundingBox.
-    AffineTransform maskContentTransformation;
-    if (toSVGMaskElement(element())->maskContentUnitsCurrentValue() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
-        maskContentTransformation.translate(targetBoundingBox.x(), targetBoundingBox.y());
-        maskContentTransformation.scaleNonUniform(targetBoundingBox.width(), targetBoundingBox.height());
-        context->concatCTM(maskContentTransformation);
+    AffineTransform contentTransformation;
+    SVGUnitTypes::SVGUnitType contentUnits = toSVGMaskElement(element())->maskContentUnitsCurrentValue();
+    if (contentUnits == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
+        contentTransformation.translate(targetBoundingBox.x(), targetBoundingBox.y());
+        contentTransformation.scaleNonUniform(targetBoundingBox.width(), targetBoundingBox.height());
+        context->concatCTM(contentTransformation);
     }
 
+    if (!m_maskContentDisplayList)
+        m_maskContentDisplayList = asDisplayList(context, contentTransformation);
+    ASSERT(m_maskContentDisplayList);
+    context->drawDisplayList(m_maskContentDisplayList.get());
+}
+
+PassRefPtr<DisplayList> RenderSVGResourceMasker::asDisplayList(GraphicsContext* context,
+    const AffineTransform& contentTransform)
+{
+    ASSERT(context);
+
+    context->beginRecording(repaintRectInLocalCoordinates());
     for (Node* childNode = element()->firstChild(); childNode; childNode = childNode->nextSibling()) {
         RenderObject* renderer = childNode->renderer();
         if (!childNode->isSVGElement() || !renderer)
@@ -132,8 +146,10 @@ void RenderSVGResourceMasker::drawMaskContent(GraphicsContext* context, const Fl
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
             continue;
 
-        SVGRenderingContext::renderSubtree(context, renderer, maskContentTransformation);
+        SVGRenderingContext::renderSubtree(context, renderer, contentTransform);
     }
+
+    return context->endRecording();
 }
 
 void RenderSVGResourceMasker::calculateMaskContentRepaintRect()
