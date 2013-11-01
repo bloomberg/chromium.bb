@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "url/gurl.h"
 
+class HostContentSettingsMap;
 class PrefService;
 
 namespace content {
@@ -36,6 +37,7 @@ class User;
 namespace attestation {
 
 class AttestationFlow;
+class PlatformVerificationFlowTest;
 
 // This class allows platform verification for the content protection use case.
 // All methods must only be called on the UI thread.  Example:
@@ -55,17 +57,10 @@ class PlatformVerificationFlow {
     POLICY_REJECTED,        // The operation is not allowed by policy/settings.
   };
 
-  enum ConsentType {
-    CONSENT_TYPE_NONE,         // No consent necessary.
-    CONSENT_TYPE_ATTESTATION,  // Consent to use attestation.
-    CONSENT_TYPE_ALWAYS,       // Consent because 'Always Ask' was requested.
-  };
-
   enum ConsentResponse {
     CONSENT_RESPONSE_NONE,
     CONSENT_RESPONSE_ALLOW,
     CONSENT_RESPONSE_DENY,
-    CONSENT_RESPONSE_ALWAYS_ASK,
   };
 
   // An interface which allows settings and UI to be abstracted for testing
@@ -78,10 +73,11 @@ class PlatformVerificationFlow {
     // consent request of the specified |type|.
     typedef base::Callback<void(ConsentResponse response)> ConsentCallback;
 
-    // Invokes consent UI of the given |type| within the context of
-    // |web_contents| and calls |callback| when the user responds.
-    virtual void ShowConsentPrompt(ConsentType type,
-                                   content::WebContents* web_contents,
+    // Invokes consent UI within the context of |web_contents| and calls
+    // |callback| when the user responds.
+    // Precondition: The last committed URL for |web_contents| has a valid
+    //               origin.
+    virtual void ShowConsentPrompt(content::WebContents* web_contents,
                                    const ConsentCallback& callback) = 0;
   };
 
@@ -130,15 +126,9 @@ class PlatformVerificationFlow {
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* prefs);
 
-  void set_testing_prefs(PrefService* testing_prefs) {
-    testing_prefs_ = testing_prefs;
-  }
-
-  void set_testing_url(const GURL& testing_url) {
-    testing_url_ = testing_url;
-  }
-
  private:
+  friend class PlatformVerificationFlowTest;
+
   // Checks whether we need to prompt the user for consent before proceeding and
   // invokes the consent UI if so.  All parameters are the same as in
   // ChallengePlatformKey except for the additional |attestation_enrolled| which
@@ -151,14 +141,15 @@ class PlatformVerificationFlow {
 
   // A callback called when the user has given their consent response.  All
   // parameters are the same as in ChallengePlatformKey except for the
-  // additional |consent_type| and |consent_response| which indicate the consent
-  // type and user response, respectively.  If the response indicates that the
-  // operation should proceed, this method invokes a certificate request.
+  // additional |consent_required| and |consent_response| which indicate that
+  // user interaction was required and the user response, respectively.  If the
+  // response indicates that the operation should proceed, this method invokes a
+  // certificate request.
   void OnConsentResponse(content::WebContents* web_contents,
                          const std::string& service_id,
                          const std::string& challenge,
                          const ChallengeCallback& callback,
-                         ConsentType consent_type,
+                         bool consent_required,
                          ConsentResponse consent_response);
 
   // A callback called when an attestation certificate request operation
@@ -201,37 +192,44 @@ class PlatformVerificationFlow {
   // current active user will be returned.
   User* GetUser(content::WebContents* web_contents);
 
+  // Gets the content settings map associated with the given |web_contents|.  If
+  // |testing_content_settings_| is set, then this is always returned.
+  HostContentSettingsMap* GetContentSettings(
+      content::WebContents* web_contents);
+
   // Checks whether policy or profile settings associated with |web_contents|
   // have attestation for content protection explicitly disabled.
   bool IsAttestationEnabled(content::WebContents* web_contents);
 
-  // Checks whether this is the first use on this device for the user associated
-  // with |web_contents|.
-  bool IsFirstUse(content::WebContents* web_contents);
-
-  // Checks if settings indicate that consent is required for the web origin
-  // represented by |web_contents| because the user requested to be prompted.
-  bool IsAlwaysAskRequired(content::WebContents* web_contents);
-
   // Updates user settings for the profile associated with |web_contents| based
   // on the |consent_response| to the request of type |consent_type|.
   bool UpdateSettings(content::WebContents* web_contents,
-                      ConsentType consent_type,
                       ConsentResponse consent_response);
 
-  // Finds the domain-specific consent pref for the domain associated with
-  // |web_contents|.  If a pref exists for the domain, returns true and sets
-  // |pref_value| if it is not NULL.
-  //
-  // Precondition: A valid PrefService must be available via GetPrefs().
-  bool GetDomainPref(content::WebContents* web_contents, bool* pref_value);
+  // Finds the domain-specific consent pref in |content_settings| for |url|.  If
+  // a pref exists for the domain, returns true and sets |pref_value| if it is
+  // not NULL.
+  bool GetDomainPref(HostContentSettingsMap* content_settings,
+                     const GURL& url,
+                     bool* pref_value);
 
-  // Records the domain-specific consent pref for the domain associated with
-  // |web_contents|.  The pref will be set to |allow_domain|.
-  //
-  // Precondition: A valid PrefService must be available via GetPrefs().
-  void RecordDomainConsent(content::WebContents* web_contents,
+  // Records the domain-specific consent pref in |content_settings| for |url|.
+  // The pref will be set to |allow_domain|.
+  void RecordDomainConsent(HostContentSettingsMap* content_settings,
+                           const GURL& url,
                            bool allow_domain);
+
+  void set_testing_prefs(PrefService* testing_prefs) {
+    testing_prefs_ = testing_prefs;
+  }
+
+  void set_testing_url(const GURL& testing_url) {
+    testing_url_ = testing_url;
+  }
+
+  void set_testing_content_settings(HostContentSettingsMap* settings) {
+    testing_content_settings_ = settings;
+  }
 
   AttestationFlow* attestation_flow_;
   scoped_ptr<AttestationFlow> default_attestation_flow_;
@@ -242,6 +240,7 @@ class PlatformVerificationFlow {
   scoped_ptr<Delegate> default_delegate_;
   PrefService* testing_prefs_;
   GURL testing_url_;
+  HostContentSettingsMap* testing_content_settings_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

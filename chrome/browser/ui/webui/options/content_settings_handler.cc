@@ -713,6 +713,10 @@ void ContentSettingsHandler::UpdateExceptionsViewFromModel(
     case CONTENT_SETTINGS_TYPE_METRO_SWITCH_TO_DESKTOP:
       break;
 #endif
+#if defined(OS_CHROMEOS)
+    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
+      break;
+#endif
     default:
       UpdateExceptionsViewFromHostContentSettingsMap(type);
       break;

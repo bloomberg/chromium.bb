@@ -47,7 +47,7 @@ const char* kPrefToManageType[] = {
   NULL,  // No policy for default value of save password
 #if defined(OS_WIN)
   NULL,  // No policy for default value of "switch to desktop"
-#elif defined(OS_ANDROID)
+#elif defined(OS_ANDROID) || defined(OS_CHROMEOS)
   NULL,  // No policy for default value of protected media identifier
 #endif
 };

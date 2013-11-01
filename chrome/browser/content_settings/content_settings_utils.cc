@@ -44,7 +44,7 @@ const char* kTypeNames[] = {
   "save-password",
 #if defined(OS_WIN)
   "metro-switch-to-desktop",
-#elif defined(OS_ANDROID)
+#elif defined(OS_ANDROID) || defined(OS_CHROMEOS)
   "protected-media-identifier",
 #endif
 };
