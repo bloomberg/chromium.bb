@@ -339,6 +339,7 @@ OperationID FileSystemOperationRunner::TouchFile(
 OperationID FileSystemOperationRunner::OpenFile(
     const FileSystemURL& url,
     int file_flags,
+    base::ProcessHandle peer_handle,
     const OpenFileCallback& callback) {
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   FileSystemOperation* operation =
@@ -347,7 +348,7 @@ OperationID FileSystemOperationRunner::OpenFile(
   OperationHandle handle = BeginOperation(operation, scope.AsWeakPtr());
   if (!operation) {
     DidOpenFile(handle, callback, error, base::kInvalidPlatformFileValue,
-                base::Closure());
+                base::Closure(), base::ProcessHandle());
     return handle.id;
   }
   if (file_flags &
@@ -361,7 +362,7 @@ OperationID FileSystemOperationRunner::OpenFile(
     PrepareForRead(handle.id, url);
   }
   operation->OpenFile(
-      url, file_flags,
+      url, file_flags, peer_handle,
       base::Bind(&FileSystemOperationRunner::DidOpenFile, AsWeakPtr(),
                  handle, callback));
   return handle.id;
@@ -577,16 +578,17 @@ void FileSystemOperationRunner::DidOpenFile(
     const OpenFileCallback& callback,
     base::PlatformFileError rv,
     base::PlatformFile file,
-    const base::Closure& on_close_callback) {
+    const base::Closure& on_close_callback,
+    base::ProcessHandle peer_handle) {
   if (handle.scope) {
     finished_operations_.insert(handle.id);
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE, base::Bind(&FileSystemOperationRunner::DidOpenFile,
                               AsWeakPtr(), handle, callback, rv, file,
-                              on_close_callback));
+                              on_close_callback, peer_handle));
     return;
   }
-  callback.Run(rv, file, on_close_callback);
+  callback.Run(rv, file, on_close_callback, peer_handle);
   FinishOperation(handle.id);
 }
 

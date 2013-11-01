@@ -10,6 +10,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/pepper/pepper_audio_input_host.h"
 #include "content/renderer/pepper/pepper_file_chooser_host.h"
+#include "content/renderer/pepper/pepper_file_io_host.h"
 #include "content/renderer/pepper/pepper_file_ref_renderer_host.h"
 #include "content/renderer/pepper/pepper_file_system_host.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
@@ -72,6 +73,9 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
 
   // Public interfaces.
   switch (message.type()) {
+    case PpapiHostMsg_FileIO_Create::ID:
+      return scoped_ptr<ResourceHost>(new PepperFileIOHost(
+          host_, instance, params.pp_resource()));
     case PpapiHostMsg_FileRef_CreateInternal::ID: {
       PP_Resource file_system;
       std::string internal_path;

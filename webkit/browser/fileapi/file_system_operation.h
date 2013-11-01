@@ -80,7 +80,8 @@ class FileSystemOperation {
   typedef base::Callback<
       void(base::PlatformFileError result,
            base::PlatformFile file,
-           const base::Closure& on_close_callback)> OpenFileCallback;
+           const base::Closure& on_close_callback,
+           base::ProcessHandle peer_handle)> OpenFileCallback;
 
   // Used for ReadDirectoryCallback.
   typedef std::vector<DirectoryEntry> FileEntryList;
@@ -354,9 +355,13 @@ class FileSystemOperation {
   // Opens a file at |path| with |file_flags|, where flags are OR'ed
   // values of base::PlatformFileFlags.
   //
+  // |peer_handle| is the process handle of a pepper plugin process, which
+  // is necessary for underlying IPC calls with Pepper plugins.
+  //
   // This function is used only by Pepper as of writing.
   virtual void OpenFile(const FileSystemURL& path,
                         int file_flags,
+                        base::ProcessHandle peer_handle,
                         const OpenFileCallback& callback) = 0;
 
   // Creates a local snapshot file for a given |path| and returns the

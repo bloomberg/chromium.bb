@@ -53,14 +53,15 @@ PepperFileRefHost::PepperFileRefHost(BrowserPpapiHost* host,
     return;
   }
 
-  if (!fs_resource_host->IsFileSystemHost()) {
+  PepperFileSystemBrowserHost* fs_host = NULL;
+  if (fs_resource_host->IsFileSystemHost())
+    fs_host = static_cast<PepperFileSystemBrowserHost*>(fs_resource_host);
+  if (fs_host == NULL) {
     DLOG(ERROR) << "Filesystem PP_Resource is not PepperFileSystemBrowserHost";
     return;
   }
 
-  PepperFileSystemBrowserHost* file_system_host =
-      static_cast<PepperFileSystemBrowserHost*>(fs_resource_host);
-  fs_type_ = file_system_host->GetType();
+  fs_type_ = fs_host->GetType();
   if ((fs_type_ != PP_FILESYSTEMTYPE_LOCALPERSISTENT) &&
       (fs_type_ != PP_FILESYSTEMTYPE_LOCALTEMPORARY) &&
       (fs_type_ != PP_FILESYSTEMTYPE_ISOLATED)) {
@@ -71,7 +72,7 @@ PepperFileRefHost::PepperFileRefHost(BrowserPpapiHost* host,
   backend_.reset(new PepperInternalFileRefBackend(
       host->GetPpapiHost(),
       render_process_id,
-      file_system_host->AsWeakPtr(),
+      base::AsWeakPtr(fs_host),
       path));
 }
 
