@@ -10681,6 +10681,17 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Installed by enterprise policy.
       </message>
 
+      <!-- Extension blacklist state -->
+      <message name="IDS_OPTIONS_BLACKLISTED_SECURITY_VULNERABILITY" desc="The text explaining the reason for disabling extension or app. The extension in question has a security vulnerability.">
+        This extension contains a serious security vulnerability.
+      </message>
+      <message name="IDS_OPTIONS_BLACKLISTED_CWS_POLICY_VIOLATION" desc="The text explaining the reason for disabling extension or app. The extension in question violates Chrome Web Store policy.">
+        This extension violates the Chrome Web Store policy.
+      </message>
+      <message name="IDS_OPTIONS_BLACKLISTED_POTENTIALLY_UNWANTED" desc="The text explaining the reason for disabling extension or app. The extension in question might have been installed without user consent.">
+        This extension may have been added without your knowledge.
+      </message>
+
       <!-- Options search page strings. -->
       <message name="IDS_OPTIONS_SEARCH_PAGE_TITLE" desc="Title of the settings search page.">
         Search results
