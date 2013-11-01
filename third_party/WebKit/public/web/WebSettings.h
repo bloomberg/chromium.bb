@@ -193,12 +193,7 @@ public:
     virtual void setXSSAuditorEnabled(bool) = 0;
 
     // DEPRECATED: Delete after Chromium-side calls deleted.
-    void setApplyPageScaleFactorInCompositor(bool enabled) { }
-    void setApplyDefaultDeviceScaleFactorInCompositor(bool enabled) { }
-    void setFixedElementsLayoutRelativeToFrame(bool) { }
     void setInitializeAtMinimumPageScale(bool enabled) { setLoadWithOverviewMode(enabled); }
-    void setCSSStickyPositionEnabled(bool) { }
-    void setExperimentalCSSCustomFilterEnabled(bool) { }
 
 protected:
     ~WebSettings() { }
