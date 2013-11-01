@@ -613,6 +613,15 @@ bool HarfBuzzShaper::collectHarfBuzzRuns()
     return !m_harfBuzzRuns.isEmpty();
 }
 
+static const uint16_t* toUint16(const UChar* src)
+{
+    // FIXME: This relies on undefined behavior however it works on the
+    // current versions of all compilers we care about and avoids making
+    // a copy of the string.
+    COMPILE_ASSERT(sizeof(UChar) == sizeof(uint16_t), UChar_is_the_same_size_as_uint16_t);
+    return reinterpret_cast<const uint16_t*>(src);
+}
+
 bool HarfBuzzShaper::shapeHarfBuzzRuns(bool shouldSetDirection)
 {
     HarfBuzzScopedPtr<hb_buffer_t> harfBuzzBuffer(hb_buffer_create(), hb_buffer_destroy);
@@ -670,9 +679,10 @@ bool HarfBuzzShaper::shapeHarfBuzzRuns(bool shouldSetDirection)
             String upperText = String(m_normalizedBuffer.get() + currentRun->startIndex(), currentRun->numCharacters()).upper();
             currentFontData = m_font->glyphDataForCharacter(upperText[0], false, SmallCapsVariant).fontData;
             ASSERT(!upperText.is8Bit()); // m_normalizedBuffer is 16 bit, therefore upperText is 16 bit, even after we call makeUpper().
-            hb_buffer_add_utf16(harfBuzzBuffer.get(), upperText.characters16(), currentRun->numCharacters(), 0, currentRun->numCharacters());
-        } else
-            hb_buffer_add_utf16(harfBuzzBuffer.get(), m_normalizedBuffer.get() + currentRun->startIndex(), currentRun->numCharacters(), 0, currentRun->numCharacters());
+            hb_buffer_add_utf16(harfBuzzBuffer.get(), toUint16(upperText.characters16()), currentRun->numCharacters(), 0, currentRun->numCharacters());
+        } else {
+            hb_buffer_add_utf16(harfBuzzBuffer.get(), toUint16(m_normalizedBuffer.get() + currentRun->startIndex()), currentRun->numCharacters(), 0, currentRun->numCharacters());
+        }
 
         if (m_font->fontDescription().orientation() == Vertical)
             face->setScriptForVerticalGlyphSubstitution(harfBuzzBuffer.get());
