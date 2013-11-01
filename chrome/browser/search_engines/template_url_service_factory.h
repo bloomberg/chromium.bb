@@ -36,10 +36,6 @@ class TemplateURLServiceFactory : public BrowserContextKeyedServiceFactory {
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
-  virtual void BrowserContextShutdown(
-      content::BrowserContext* profile) OVERRIDE;
-  virtual void BrowserContextDestroyed(
-      content::BrowserContext* profile) OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_FACTORY_H_

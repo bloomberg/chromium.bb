@@ -134,18 +134,3 @@ content::BrowserContext* TemplateURLServiceFactory::GetBrowserContextToUse(
 bool TemplateURLServiceFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }
-
-void TemplateURLServiceFactory::BrowserContextShutdown(
-    content::BrowserContext* profile) {
-  // We shutdown AND destroy the TemplateURLService during this pass.
-  // TemplateURLService schedules a task on the WebDataService from its
-  // destructor. Delete it first to ensure the task gets scheduled before we
-  // shut down the database.
-  BrowserContextKeyedServiceFactory::BrowserContextShutdown(profile);
-  BrowserContextKeyedServiceFactory::BrowserContextDestroyed(profile);
-}
-
-void TemplateURLServiceFactory::BrowserContextDestroyed(
-    content::BrowserContext* profile) {
-  // Don't double delete.
-}

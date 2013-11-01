@@ -341,8 +341,8 @@ TemplateURLService::TemplateURLService(const Initializer* initializers,
 }
 
 TemplateURLService::~TemplateURLService() {
-  if (service_.get())
-    Shutdown();
+  // |service_| should be deleted during Shutdown().
+  DCHECK(!service_);
   STLDeleteElements(&template_urls_);
 }
 
