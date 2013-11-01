@@ -12,11 +12,14 @@
         '<(DEPTH)/',
       ],
       'sources': [
-        'logging.cc',
-        'logging.h',
+        'logging_defines.cc',
         'logging_defines.h',
-        'logging_internal.cc',
-        'logging_internal.h',
+        'logging_impl.cc',
+        'logging_impl.h',
+        'logging_raw.cc',
+        'logging_raw.h',
+        'logging_stats.cc',
+        'logging_stats.h',
       ],
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',

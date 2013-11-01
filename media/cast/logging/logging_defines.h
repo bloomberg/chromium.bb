@@ -5,7 +5,12 @@
 #ifndef MEDIA_CAST_LOGGING_LOGGING_DEFINES_H_
 #define MEDIA_CAST_LOGGING_LOGGING_DEFINES_H_
 
-#include "base/logging.h"
+#include <map>
+#include <string>
+#include <vector>
+
+#include "base/memory/linked_ptr.h"
+#include "base/time/time.h"
 
 namespace media {
 namespace cast {
@@ -39,51 +44,65 @@ enum CastLoggingEvent {
   kPacketReceived,
 };
 
-std::string CastEnumToString(CastLoggingEvent event) {
-  switch (event) {
-    case(kRtt):
-      return "Rtt";
-    case(kPacketLoss):
-      return "PacketLoss";
-    case(kJitter):
-      return "Jitter";
-    case(kAckReceived):
-      return "AckReceived";
-    case(kAckSent):
-      return "AckSent";
-    case(kLastEvent):
-      return "LastEvent";
-    case(kAudioFrameCaptured):
-      return "AudioFrameCaptured";
-    case(kAudioFrameEncoded):
-      return "AudioFrameEncoded";
-    case(kAudioPlayoutDelay):
-      return "AudioPlayoutDelay";
-    case(kAudioFrameDecoded):
-      return "AudioFrameDecoded";
-    case(kVideoFrameCaptured):
-      return "VideoFrameCaptured";
-    case(kVideoFrameSentToEncoder):
-      return "VideoFrameSentToEncoder";
-    case(kVideoFrameEncoded):
-      return "VideoFrameEncoded";
-    case(kVideoFrameDecoded):
-      return "VideoFrameDecoded";
-    case(kVideoRenderDelay):
-      return "VideoRenderDelay";
-    case(kPacketSentToPacer):
-      return "PacketSentToPacer";
-    case(kPacketSentToNetwork):
-      return "PacketSentToNetwork";
-    case(kPacketRetransmited):
-      return "PacketRetransmited";
-    case(kPacketReceived):
-      return "PacketReceived";
-    default:
-      NOTREACHED();
-      return "";
-  }
-}
+std::string CastLoggingToString(CastLoggingEvent event);
+
+struct FrameEvent {
+  FrameEvent();
+  ~FrameEvent();
+
+  uint8 frame_id;
+  int size;  // Encoded size only.
+  std::vector<base::TimeTicks> timestamp;
+  std::vector<CastLoggingEvent> type;
+  base::TimeDelta delay_delta;  // Render/playout delay.
+};
+
+// Internal map sorted by packet id.
+struct BasePacketInfo {
+  BasePacketInfo();
+  ~BasePacketInfo();
+
+  int size;
+  std::vector<base::TimeTicks> timestamp;
+  std::vector<CastLoggingEvent> type;
+};
+
+typedef std::map<uint16, BasePacketInfo> BasePacketMap;
+
+struct PacketEvent {
+  PacketEvent();
+  ~PacketEvent();
+  uint8 frame_id;
+  int max_packet_id;
+  BasePacketMap packet_map;
+};
+
+struct GenericEvent {
+  GenericEvent();
+  ~GenericEvent();
+  std::vector<int> value;
+  std::vector<base::TimeTicks> timestamp;
+};
+
+struct FrameLogStats {
+  FrameLogStats();
+  ~FrameLogStats();
+
+  double framerate_fps;
+  double bitrate_kbps;
+  int max_delay_ms;
+  int min_delay_ms;
+  int avg_delay_ms;
+};
+
+// Store all log types in a map based on the event.
+typedef std::map<uint32, FrameEvent> FrameRawMap;
+typedef std::map<uint32, PacketEvent> PacketRawMap;
+typedef std::map<CastLoggingEvent, GenericEvent> GenericRawMap;
+
+typedef std::map<CastLoggingEvent, linked_ptr<FrameLogStats > > FrameStatsMap;
+typedef std::map<CastLoggingEvent, double> PacketStatsMap;
+typedef std::map<CastLoggingEvent, double> GenericStatsMap;
 
 }  // namespace cast
 }  // namespace media
