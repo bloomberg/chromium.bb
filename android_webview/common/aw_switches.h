@@ -17,6 +17,9 @@ extern const char kDisableWebViewGLMode[];
 // displays that a single layer will have enough memory for.
 extern const char kTileMemoryMultiplier[];
 
+// Maximum number of gralloc allocations per webview.
+extern const char kNumGrallocBuffersPerWebview[];
+
 }  // namespace switches
 
 #endif  // ANDROID_WEBVIEW_COMMON_AW_SWITCHES_H_

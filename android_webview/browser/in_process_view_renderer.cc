@@ -147,7 +147,7 @@ const int64 kFallbackTickTimeoutInMilliseconds = 20;
 
 // Used to calculate memory and resource allocation. Determined experimentally.
 size_t g_memory_multiplier = 10;
-const size_t kMaxNumTilesToFillDisplay = 20;
+size_t g_num_gralloc_limit = 150;
 const size_t kBytesPerPixel = 4;
 const size_t kMemoryAllocationStep = 5 * 1024 * 1024;
 
@@ -283,23 +283,29 @@ void InProcessViewRenderer::CalculateTileMemoryPolicy() {
   if (cl->HasSwitch(switches::kTileMemoryMultiplier)) {
     std::string string_value =
         cl->GetSwitchValueASCII(switches::kTileMemoryMultiplier);
-    int int_value;
+    int int_value = 0;
     if (base::StringToInt(string_value, &int_value) &&
         int_value >= 2 && int_value <= 50) {
       g_memory_multiplier = int_value;
     }
   }
 
-  if (cl->HasSwitch(switches::kDefaultTileWidth) ||
-      cl->HasSwitch(switches::kDefaultTileHeight)) {
-    return;
+  if (cl->HasSwitch(switches::kNumGrallocBuffersPerWebview)) {
+    std::string string_value =
+        cl->GetSwitchValueASCII(switches::kNumGrallocBuffersPerWebview);
+    int int_value = 0;
+    if (base::StringToInt(string_value, &int_value) &&
+        int_value >= 50 && int_value <= 500) {
+      g_num_gralloc_limit = int_value;
+    }
   }
 
-  const int default_tile_size = 512;
-  std::stringstream size;
-  size << default_tile_size;
-  cl->AppendSwitchASCII(switches::kDefaultTileWidth, size.str());
-  cl->AppendSwitchASCII(switches::kDefaultTileHeight, size.str());
+  const char kDefaultTileSize[] = "384";
+  if (!cl->HasSwitch(switches::kDefaultTileWidth))
+    cl->AppendSwitchASCII(switches::kDefaultTileWidth, kDefaultTileSize);
+
+  if (!cl->HasSwitch(switches::kDefaultTileHeight))
+    cl->AppendSwitchASCII(switches::kDefaultTileHeight, kDefaultTileSize);
 }
 
 bool InProcessViewRenderer::RequestProcessGL() {
@@ -471,7 +477,7 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   // Round up to a multiple of kMemoryAllocationStep.
   policy.bytes_limit =
       (policy.bytes_limit / kMemoryAllocationStep + 1) * kMemoryAllocationStep;
-  policy.num_resources_limit = kMaxNumTilesToFillDisplay * g_memory_multiplier;
+  policy.num_resources_limit = g_num_gralloc_limit;
   SetMemoryPolicy(policy);
 
   DCHECK(gl_surface_);
