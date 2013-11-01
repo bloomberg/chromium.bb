@@ -49,7 +49,7 @@ class TextTrackCue;
 
 // ----------------------------
 
-class TextTrackCueBox : public HTMLDivElement {
+class TextTrackCueBox FINAL : public HTMLDivElement {
 public:
     static PassRefPtr<TextTrackCueBox> create(Document& document, TextTrackCue* cue)
     {
@@ -57,7 +57,7 @@ public:
     }
 
     TextTrackCue* getCue() const;
-    virtual void applyCSSProperties(const IntSize& videoSize);
+    void applyCSSProperties(const IntSize& videoSize);
 
     static const AtomicString& textTrackCueBoxShadowPseudoId();
 
@@ -110,13 +110,13 @@ public:
     void setSnapToLines(bool);
 
     int line() const { return m_linePosition; }
-    virtual void setLine(int, ExceptionState&);
+    void setLine(int, ExceptionState&);
 
     int position() const { return m_textPosition; }
-    virtual void setPosition(int, ExceptionState&);
+    void setPosition(int, ExceptionState&);
 
     int size() const { return m_cueSize; }
-    virtual void setSize(int, ExceptionState&);
+    void setSize(int, ExceptionState&);
 
     const String& align() const;
     void setAlign(const String&, ExceptionState&);
@@ -181,19 +181,11 @@ public:
     };
     CueAlignment getAlignment() const { return m_cueAlignment; }
 
-    virtual void videoSizeDidChange(const IntSize&) { }
-
-    virtual bool operator==(const TextTrackCue&) const;
-    virtual bool operator!=(const TextTrackCue& cue) const
+    bool operator==(const TextTrackCue&) const;
+    bool operator!=(const TextTrackCue& cue) const
     {
         return !(*this == cue);
     }
-
-    enum CueType {
-        Generic,
-        WebVTT
-    };
-    virtual CueType cueType() const { return WebVTT; }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(enter);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(exit);

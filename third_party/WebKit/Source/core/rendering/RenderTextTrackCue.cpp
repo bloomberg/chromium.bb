@@ -50,12 +50,10 @@ void RenderTextTrackCue::layout()
 
     LayoutStateMaintainer statePusher(view(), this, locationOffset(), hasTransform() || hasReflection() || style()->isFlippedBlocksWritingMode());
 
-    if (m_cue->cueType() == TextTrackCue::WebVTT) {
-        if (m_cue->snapToLines())
-            repositionCueSnapToLinesSet();
-        else
-            repositionCueSnapToLinesNotSet();
-    }
+    if (m_cue->snapToLines())
+        repositionCueSnapToLinesSet();
+    else
+        repositionCueSnapToLinesNotSet();
 
     statePusher.pop();
 }

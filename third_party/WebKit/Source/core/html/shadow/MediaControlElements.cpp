@@ -792,12 +792,6 @@ void MediaControlTextTrackContainerElement::updateSizes(bool forceUpdate)
         m_fontSize = fontSize;
         setInlineStyleProperty(CSSPropertyFontSize, fontSize, CSSPrimitiveValue::CSS_PX);
     }
-
-    CueList activeCues = mediaElement->currentlyActiveCues();
-    for (size_t i = 0; i < activeCues.size(); ++i) {
-        TextTrackCue* cue = activeCues[i].data();
-        cue->videoSizeDidChange(m_videoDisplaySize.size());
-    }
 }
 
 // ----------------------------
