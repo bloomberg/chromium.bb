@@ -47,6 +47,8 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
       WebKit::WebFrame* frame,
       WebKit::WebApplicationCacheHostClient* client);
+  virtual WebKit::WebWorkerPermissionClientProxy*
+      createWorkerPermissionClientProxy(WebKit::WebFrame* frame);
   virtual WebKit::WebCookieJar* cookieJar(WebKit::WebFrame* frame);
   virtual WebKit::WebServiceWorkerProvider* createServiceWorkerProvider(
       WebKit::WebFrame* frame,

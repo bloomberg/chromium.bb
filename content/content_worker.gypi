@@ -16,6 +16,8 @@
     'worker/websharedworkerclient_proxy.cc',
     'worker/websharedworkerclient_proxy.h',
     'worker/worker_main.cc',
+    'worker/shared_worker_permission_client_proxy.cc',
+    'worker/shared_worker_permission_client_proxy.h',
     'worker/worker_thread.cc',
     'worker/worker_thread.h',
     'worker/worker_webapplicationcachehost_impl.cc',

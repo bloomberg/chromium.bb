@@ -351,6 +351,8 @@
         'renderer/web_apps.h',
         'renderer/webview_color_overlay.cc',
         'renderer/webview_color_overlay.h',
+        'renderer/worker_permission_client_proxy.cc',
+        'renderer/worker_permission_client_proxy.h',
       ],
       'conditions': [
         ['disable_nacl!=1', {

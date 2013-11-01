@@ -195,4 +195,10 @@ bool ContentRendererClient::ShouldEnableSiteIsolationPolicy() const {
   return true;
 }
 
+WebKit::WebWorkerPermissionClientProxy*
+ContentRendererClient::CreateWorkerPermissionClientProxy(
+    RenderView* render_view, WebKit::WebFrame* frame) {
+  return NULL;
+}
+
 }  // namespace content

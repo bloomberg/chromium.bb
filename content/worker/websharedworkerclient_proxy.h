@@ -14,6 +14,7 @@ namespace WebKit {
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebFrame;
+class WebSecurityOrigin;
 }
 
 namespace content {
@@ -39,13 +40,18 @@ class WebSharedWorkerClientProxy : public WebKit::WebSharedWorkerClient {
 
   virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
       WebKit::WebApplicationCacheHostClient* client);
+  virtual WebKit::WebWorkerPermissionClientProxy*
+      createWorkerPermissionClientProxy(
+          const WebKit::WebSecurityOrigin& origin);
 
+  // TODO(kinuko): Deprecate these methods.
   virtual bool allowDatabase(WebKit::WebFrame* frame,
                              const WebKit::WebString& name,
                              const WebKit::WebString& display_name,
                              unsigned long estimated_size);
   virtual bool allowFileSystem();
   virtual bool allowIndexedDB(const WebKit::WebString&);
+
   virtual void dispatchDevToolsMessage(const WebKit::WebString&);
   virtual void saveDevToolsAgentState(const WebKit::WebString&);
 

@@ -1,0 +1,45 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CONTENT_WORKER_SHARED_WORKER_PERMISSION_CLIENT_PROXY_H_
+#define CONTENT_WORKER_SHARED_WORKER_PERMISSION_CLIENT_PROXY_H_
+
+#include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
+#include "third_party/WebKit/public/web/WebWorkerPermissionClientProxy.h"
+#include "url/gurl.h"
+
+namespace content {
+
+class ThreadSafeSender;
+
+// This proxy is created on the main renderer thread then passed onto
+// the blink's worker thread.
+class SharedWorkerPermissionClientProxy
+    : public WebKit::WebWorkerPermissionClientProxy {
+ public:
+  SharedWorkerPermissionClientProxy(
+      const GURL& origin_url,
+      int routing_id,
+      ThreadSafeSender* thread_safe_sender);
+  virtual ~SharedWorkerPermissionClientProxy();
+
+  // WebWorkerPermissionClientProxy overrides.
+  virtual bool allowDatabase(const WebKit::WebString& name,
+                             const WebKit::WebString& display_name,
+                             unsigned long estimated_size);
+  virtual bool allowFileSystem();
+  virtual bool allowIndexedDB(const WebKit::WebString& name);
+
+ private:
+  const GURL origin_url_;
+  const int routing_id_;
+  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
+
+  DISALLOW_COPY_AND_ASSIGN(SharedWorkerPermissionClientProxy);
+};
+
+}  // namespace content
+
+#endif  // CONTENT_WORKER_SHARED_WORKER_PERMISSION_CLIENT_PROXY_H_

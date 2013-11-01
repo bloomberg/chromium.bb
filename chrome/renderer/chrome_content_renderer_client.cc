@@ -63,6 +63,7 @@
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 #include "chrome/renderer/tts_dispatcher.h"
 #include "chrome/renderer/validation_message_agent.h"
+#include "chrome/renderer/worker_permission_client_proxy.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/content/renderer/password_generation_agent.h"
@@ -1394,6 +1395,13 @@ bool ChromeContentRendererClient::ShouldEnableSiteIsolationPolicy() const {
   // flag on.
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   return !command_line->HasSwitch(switches::kExtensionProcess);
+}
+
+WebKit::WebWorkerPermissionClientProxy*
+ChromeContentRendererClient::CreateWorkerPermissionClientProxy(
+    content::RenderView* render_view,
+    WebKit::WebFrame* frame) {
+  return new WorkerPermissionClientProxy(render_view, frame);
 }
 
 }  // namespace chrome

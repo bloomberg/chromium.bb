@@ -142,6 +142,9 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   virtual bool ShouldReportDetailedMessageForSource(
       const base::string16& source) const OVERRIDE;
   virtual bool ShouldEnableSiteIsolationPolicy() const OVERRIDE;
+  virtual WebKit::WebWorkerPermissionClientProxy*
+      CreateWorkerPermissionClientProxy(content::RenderView* render_view,
+                                        WebKit::WebFrame* frame) OVERRIDE;
   virtual bool AllowPepperMediaStreamAPI(const GURL& url) OVERRIDE;
   virtual void AddKeySystems(
       std::vector<content::KeySystemInfo>* key_systems) OVERRIDE;

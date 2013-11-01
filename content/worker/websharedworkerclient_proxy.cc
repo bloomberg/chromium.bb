@@ -11,6 +11,7 @@
 #include "content/common/worker_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/worker/shared_worker_devtools_agent.h"
+#include "content/worker/shared_worker_permission_client_proxy.h"
 #include "content/worker/websharedworker_stub.h"
 #include "content/worker/worker_thread.h"
 #include "content/worker/worker_webapplicationcachehost_impl.h"
@@ -77,36 +78,30 @@ WebApplicationCacheHost* WebSharedWorkerClientProxy::createApplicationCacheHost(
   return host;
 }
 
-// TODO(abarth): Security checks should use WebDocument or WebSecurityOrigin,
-// not WebFrame as the context object because WebFrames can contain different
-// WebDocuments at different times.
+WebKit::WebWorkerPermissionClientProxy*
+WebSharedWorkerClientProxy::createWorkerPermissionClientProxy(
+    const WebKit::WebSecurityOrigin& origin) {
+  if (origin.isUnique())
+    return NULL;
+  return new SharedWorkerPermissionClientProxy(
+      GURL(origin.toString()), route_id_,
+      ChildThread::current()->thread_safe_sender());
+}
+
+// TODO(kinuko): Deprecate these methods.
 bool WebSharedWorkerClientProxy::allowDatabase(WebFrame* frame,
                                          const WebString& name,
                                          const WebString& display_name,
                                          unsigned long estimated_size) {
-  WebSecurityOrigin origin = frame->document().securityOrigin();
-  if (origin.isUnique())
-    return false;
-
-  bool result = false;
-  Send(new WorkerProcessHostMsg_AllowDatabase(
-      route_id_, GURL(origin.toString().utf8()), name, display_name,
-      estimated_size, &result));
-  return result;
+  return false;
 }
 
 bool WebSharedWorkerClientProxy::allowFileSystem() {
-  bool result = false;
-  Send(new WorkerProcessHostMsg_AllowFileSystem(
-      route_id_, stub_->url().GetOrigin(), &result));
-  return result;
+  return false;
 }
 
 bool WebSharedWorkerClientProxy::allowIndexedDB(const WebKit::WebString& name) {
-  bool result = false;
-  Send(new WorkerProcessHostMsg_AllowIndexedDB(
-      route_id_, stub_->url().GetOrigin(), name, &result));
-  return result;
+  return false;
 }
 
 void WebSharedWorkerClientProxy::dispatchDevToolsMessage(

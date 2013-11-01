@@ -43,6 +43,7 @@ class WebSpeechSynthesizer;
 class WebSpeechSynthesizerClient;
 class WebThemeEngine;
 class WebURLRequest;
+class WebWorkerPermissionClientProxy;
 struct WebPluginParams;
 struct WebURLError;
 }
@@ -265,6 +266,11 @@ class CONTENT_EXPORT ContentRendererClient {
   // this renderer process. Currently, we apply the policy only to a renderer
   // process running on a normal page from the web.
   virtual bool ShouldEnableSiteIsolationPolicy() const;
+
+  // Creates a permission client proxy for in-renderer worker.
+  virtual WebKit::WebWorkerPermissionClientProxy*
+      CreateWorkerPermissionClientProxy(RenderView* render_view,
+                                        WebKit::WebFrame* frame);
 };
 
 }  // namespace content

@@ -193,6 +193,14 @@ WebKit::WebApplicationCacheHost* RenderFrameImpl::createApplicationCacheHost(
       RenderThreadImpl::current()->appcache_dispatcher()->backend_proxy());
 }
 
+WebKit::WebWorkerPermissionClientProxy*
+RenderFrameImpl::createWorkerPermissionClientProxy(WebFrame* frame) {
+  if (!frame || !frame->view())
+    return NULL;
+  return GetContentClient()->renderer()->CreateWorkerPermissionClientProxy(
+      RenderViewImpl::FromWebView(frame->view()), frame);
+}
+
 WebKit::WebCookieJar* RenderFrameImpl::cookieJar(WebKit::WebFrame* frame) {
   return render_view_->cookieJar(frame);
 }
