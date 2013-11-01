@@ -1015,7 +1015,6 @@
         'browser/metrics/variations/variations_request_scheduler_unittest.cc',
         'browser/nacl_host/nacl_file_host_unittest.cc',
         'browser/nacl_host/nacl_process_host_unittest.cc',
-        'browser/nacl_host/nacl_validation_cache_unittest.cc',
         'browser/nacl_host/pnacl_translation_cache_unittest.cc',
         'browser/nacl_host/pnacl_host_unittest.cc',
         'browser/net/chrome_fraudulent_certificate_reporter_unittest.cc',
@@ -2109,7 +2108,6 @@
           'sources!':[
             'browser/nacl_host/nacl_file_host_unittest.cc',
             'browser/nacl_host/nacl_process_host_unittest.cc',
-            'browser/nacl_host/nacl_validation_cache_unittest.cc',
             'browser/nacl_host/pnacl_host_unittest.cc',
             'browser/nacl_host/pnacl_translation_cache_unittest.cc',
             # TODO(yael): Move to //components/components_tests.gypi once

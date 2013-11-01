@@ -71,7 +71,6 @@
 #include "chrome/browser/metrics/tracking_synchronizer.h"
 #include "chrome/browser/metrics/variations/variations_http_header_provider.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
-#include "chrome/browser/nacl_host/nacl_browser.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/net/chrome_net_log.h"
@@ -116,6 +115,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profiling.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "components/nacl/browser/nacl_browser.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
@@ -1289,7 +1289,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #if !defined(DISABLE_NACL)
   NaClBrowserDelegateImpl* delegate = new NaClBrowserDelegateImpl(
     extensions::ExtensionSystem::Get(profile_)->info_map());
-  NaClBrowser::SetDelegate(delegate);
+  nacl::NaClBrowser::SetDelegate(delegate);
 #endif
 
   // TODO(stevenjb): Move WIN and MACOSX specific code to appropriate Parts.

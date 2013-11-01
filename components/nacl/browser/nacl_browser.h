@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NACL_HOST_NACL_BROWSER_H_
-#define CHROME_BROWSER_NACL_HOST_NACL_BROWSER_H_
+#ifndef COMPONENTS_NACL_BROWSER_NACL_BROWSER_H_
+#define COMPONENTS_NACL_BROWSER_NACL_BROWSER_H_
 
 #include <deque>
 
@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "base/time/time.h"
-#include "chrome/browser/nacl_host/nacl_validation_cache.h"
+#include "components/nacl/browser/nacl_validation_cache.h"
 #include "components/nacl/common/nacl_browser_delegate.h"
 
 class URLPattern;
@@ -26,8 +26,6 @@ namespace nacl {
 // This function should only be called on a thread that can perform file IO.
 void OpenNaClExecutableImpl(const base::FilePath& file_path,
                             base::PlatformFile* file);
-
-}
 
 // Represents shared state for all NaClProcessHost objects in the browser.
 class NaClBrowser {
@@ -186,4 +184,6 @@ class NaClBrowser {
   DISALLOW_COPY_AND_ASSIGN(NaClBrowser);
 };
 
-#endif  // CHROME_BROWSER_NACL_HOST_NACL_BROWSER_H_
+} // namespace nacl
+
+#endif  // COMPONENTS_NACL_BROWSER_NACL_BROWSER_H_

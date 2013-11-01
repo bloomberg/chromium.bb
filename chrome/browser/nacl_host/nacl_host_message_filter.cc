@@ -4,10 +4,10 @@
 
 #include "chrome/browser/nacl_host/nacl_host_message_filter.h"
 
-#include "chrome/browser/nacl_host/nacl_browser.h"
 #include "chrome/browser/nacl_host/nacl_file_host.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/nacl_host/pnacl_host.h"
+#include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/common/nacl_host_messages.h"
 #include "ipc/ipc_platform_file.h"
 #include "net/url_request/url_request_context.h"
@@ -82,7 +82,7 @@ void NaClHostMessageFilter::OnLaunchNaCl(
   // We're calling MapUrlToLocalFilePath with the non-blocking API
   // because we're running in the I/O thread. Ideally we'd use the other path,
   // which would cover more cases.
-  NaClBrowser::GetDelegate()->MapUrlToLocalFilePath(
+  nacl::NaClBrowser::GetDelegate()->MapUrlToLocalFilePath(
       manifest_url, false /* use_blocking_api */, &manifest_path);
   host->Launch(this, reply_msg, manifest_path);
 }
@@ -183,8 +183,8 @@ void NaClHostMessageFilter::OnTranslationFinished(int instance, bool success) {
 
 void NaClHostMessageFilter::OnNaClErrorStatus(int render_view_id,
                                               int error_id) {
-  NaClBrowser::GetDelegate()->ShowNaClInfobar(render_process_id_,
-                                              render_view_id, error_id);
+  nacl::NaClBrowser::GetDelegate()->ShowNaClInfobar(render_process_id_,
+                                                    render_view_id, error_id);
 }
 
 void NaClHostMessageFilter::OnOpenNaClExecutable(int render_view_id,

@@ -10,7 +10,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_path_override.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/nacl_host/nacl_browser.h"
+#include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/common/nacl_browser_delegate.h"
 #include "components/nacl/common/pnacl_types.h"
 #include "content/public/browser/browser_thread.h"
@@ -100,11 +100,12 @@ class NaClFileHostTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     nacl_browser_delegate_ = new TestNaClBrowserDelegate;
-    NaClBrowser::SetDelegate(nacl_browser_delegate_);
+    nacl::NaClBrowser::SetDelegate(nacl_browser_delegate_);
   }
 
   virtual void TearDown() OVERRIDE {
-    NaClBrowser::SetDelegate(NULL);  // This deletes nacl_browser_delegate_
+    // This deletes nacl_browser_delegate_.
+    nacl::NaClBrowser::SetDelegate(NULL);
   }
 
   TestNaClBrowserDelegate* nacl_browser_delegate() {
@@ -172,7 +173,8 @@ TEST_F(NaClFileHostTest, TestFilenamesWithPnaclPath) {
   base::FilePath kTestPnaclPath = scoped_tmp_dir.path();
 
   nacl_browser_delegate()->SetPnaclDirectory(kTestPnaclPath);
-  ASSERT_TRUE(NaClBrowser::GetDelegate()->GetPnaclDirectory(&kTestPnaclPath));
+  ASSERT_TRUE(nacl::NaClBrowser::GetDelegate()->GetPnaclDirectory(
+      &kTestPnaclPath));
 
   // Check allowed strings, and check that the expected prefix is added.
   base::FilePath out_path;
@@ -228,7 +230,8 @@ TEST_F(NaClFileHostTest, TestEnsureInstalledAlreadyInstalled) {
 
   base::FilePath kTestPnaclPath = scoped_tmp_dir.path();
   nacl_browser_delegate()->SetPnaclDirectory(kTestPnaclPath);
-  ASSERT_TRUE(NaClBrowser::GetDelegate()->GetPnaclDirectory(&kTestPnaclPath));
+  ASSERT_TRUE(nacl::NaClBrowser::GetDelegate()->GetPnaclDirectory(
+      &kTestPnaclPath));
 
   EnsurePnaclInstalled(
       base::Bind(&NaClFileHostTest::CallbackInstall, base::Unretained(this)),

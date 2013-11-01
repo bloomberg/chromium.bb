@@ -98,6 +98,21 @@
             ],
           },
         },
+        {
+          'target_name': 'nacl_browser',
+          'type': 'static_library',
+          'sources': [
+            'nacl/browser/nacl_browser.cc',
+            'nacl/browser/nacl_browser.h',
+            'nacl/browser/nacl_validation_cache.cc',
+            'nacl/browser/nacl_validation_cache.h',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [4267, ],
+        },
       ],
       'conditions': [
         ['OS=="win" and target_arch=="ia32"', {

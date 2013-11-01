@@ -8,8 +8,8 @@
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/nacl_host/nacl_browser.h"
 #include "chrome/test/ppapi/ppapi_test.h"
+#include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/test/test_utils.h"
 
@@ -51,14 +51,14 @@ void NaClGdbDebugStubTest::RunDebugStubTest(const std::string& nacl_module,
                                             const std::string& test_name) {
   base::ProcessHandle test_script;
   scoped_ptr<base::Environment> env(base::Environment::Create());
-  NaClBrowser::GetInstance()->SetGdbDebugStubPortListener(
+  nacl::NaClBrowser::GetInstance()->SetGdbDebugStubPortListener(
       base::Bind(&NaClGdbDebugStubTest::StartTestScript,
                  base::Unretained(this), &test_script, test_name));
   // Turn on debug stub logging.
   env->SetVar("NACLVERBOSITY", "1");
   RunTestViaHTTP(nacl_module);
   env->UnSetVar("NACLVERBOSITY");
-  NaClBrowser::GetInstance()->ClearGdbDebugStubPortListener();
+  nacl::NaClBrowser::GetInstance()->ClearGdbDebugStubPortListener();
   int exit_code;
   base::WaitForExitCode(test_script, &exit_code);
   EXPECT_EQ(0, exit_code);

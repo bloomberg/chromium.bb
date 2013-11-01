@@ -9,7 +9,7 @@
 #include "base/path_service.h"
 #include "ipc/ipc_switches.h"
 #include "chrome/browser/nacl_host/nacl_broker_service_win.h"
-#include "chrome/browser/nacl_host/nacl_browser.h"
+#include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/common/nacl_cmd_line.h"
 #include "components/nacl/common/nacl_messages.h"
 #include "components/nacl/common/nacl_process_type.h"
@@ -53,7 +53,7 @@ bool NaClBrokerHost::Init() {
 
   // Create the path to the nacl broker/loader executable.
   base::FilePath nacl_path;
-  if (!NaClBrowser::GetInstance()->GetNaCl64ExePath(&nacl_path))
+  if (!nacl::NaClBrowser::GetInstance()->GetNaCl64ExePath(&nacl_path))
     return false;
 
   CommandLine* cmd_line = new CommandLine(nacl_path);
@@ -62,7 +62,7 @@ bool NaClBrokerHost::Init() {
   cmd_line->AppendSwitchASCII(switches::kProcessType,
                               switches::kNaClBrokerProcess);
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
-  if (NaClBrowser::GetDelegate()->DialogsAreSuppressed())
+  if (nacl::NaClBrowser::GetDelegate()->DialogsAreSuppressed())
     cmd_line->AppendSwitch(switches::kNoErrorDialogs);
 
   process_->Launch(new NaClBrokerSandboxedProcessLauncherDelegate, cmd_line);

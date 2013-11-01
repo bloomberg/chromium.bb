@@ -25,9 +25,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
-#include "chrome/browser/nacl_host/nacl_browser.h"
 #include "chrome/browser/nacl_host/nacl_host_message_filter.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/common/nacl_cmd_line.h"
 #include "components/nacl/common/nacl_host_messages.h"
 #include "components/nacl/common/nacl_messages.h"
@@ -306,18 +306,18 @@ void NaClProcessHost::OnProcessCrashed(int exit_status) {
   if (enable_crash_throttling_ &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisablePnaclCrashThrottling)) {
-    NaClBrowser::GetInstance()->OnProcessCrashed();
+    nacl::NaClBrowser::GetInstance()->OnProcessCrashed();
   }
 }
 
 // This is called at browser startup.
 // static
 void NaClProcessHost::EarlyStartup() {
-  NaClBrowser::GetInstance()->EarlyStartup();
+  nacl::NaClBrowser::GetInstance()->EarlyStartup();
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Open the IRT file early to make sure that it isn't replaced out from
   // under us by autoupdate.
-  NaClBrowser::GetInstance()->EnsureIrtAvailable();
+  nacl::NaClBrowser::GetInstance()->EnsureIrtAvailable();
 #endif
   CommandLine* cmd = CommandLine::ForCurrentProcess();
   UMA_HISTOGRAM_BOOLEAN(
@@ -329,7 +329,7 @@ void NaClProcessHost::EarlyStartup() {
   UMA_HISTOGRAM_BOOLEAN(
       "NaCl.enable-nacl-debug",
       cmd->HasSwitch(switches::kEnableNaClDebug));
-  NaClBrowser::GetDelegate()->SetDebugPatterns(
+  nacl::NaClBrowser::GetDelegate()->SetDebugPatterns(
       cmd->GetSwitchValueASCII(switches::kNaClDebugMask));
 }
 
@@ -346,7 +346,7 @@ void NaClProcessHost::Launch(
   if (enable_crash_throttling_ &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisablePnaclCrashThrottling) &&
-      NaClBrowser::GetInstance()->IsThrottled()) {
+      nacl::NaClBrowser::GetInstance()->IsThrottled()) {
     SendErrorToRenderer("Process creation was throttled due to excessive"
                         " crashes");
     delete this;
@@ -371,7 +371,7 @@ void NaClProcessHost::Launch(
 
   // Start getting the IRT open asynchronously while we launch the NaCl process.
   // We'll make sure this actually finished in StartWithLaunchedProcess, below.
-  NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
+  nacl::NaClBrowser* nacl_browser = nacl::NaClBrowser::GetInstance();
   nacl_browser->EnsureAllResourcesAvailable();
   if (!nacl_browser->IsOk()) {
     SendErrorToRenderer("could not find all the resources needed"
@@ -450,7 +450,7 @@ bool NaClProcessHost::LaunchNaClGdb() {
 #endif
   cmd_line.AppendArg("--eval-command");
   base::FilePath::StringType irt_path(
-      NaClBrowser::GetInstance()->GetIrtFilePath().value());
+      nacl::NaClBrowser::GetInstance()->GetIrtFilePath().value());
   // Avoid back slashes because nacl-gdb uses posix escaping rules on Windows.
   // See issue https://code.google.com/p/nativeclient/issues/detail?id=3482.
   std::replace(irt_path.begin(), irt_path.end(), '\\', '/');
@@ -512,7 +512,7 @@ bool NaClProcessHost::LaunchSelLdr() {
 #if defined(OS_WIN)
   // On Windows 64-bit NaCl loader is called nacl64.exe instead of chrome.exe
   if (RunningOnWOW64()) {
-    if (!NaClBrowser::GetInstance()->GetNaCl64ExePath(&exe_path)) {
+    if (!nacl::NaClBrowser::GetInstance()->GetNaCl64ExePath(&exe_path)) {
       SendErrorToRenderer("could not get path to nacl64.exe");
       return false;
     }
@@ -525,7 +525,7 @@ bool NaClProcessHost::LaunchSelLdr() {
   cmd_line->AppendSwitchASCII(switches::kProcessType,
                               switches::kNaClLoaderProcess);
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
-  if (NaClBrowser::GetDelegate()->DialogsAreSuppressed())
+  if (nacl::NaClBrowser::GetDelegate()->DialogsAreSuppressed())
     cmd_line->AppendSwitch(switches::kNoErrorDialogs);
 
   if (!nacl_loader_prefix.empty())
@@ -579,7 +579,7 @@ void NaClProcessHost::OnProcessLaunched() {
 
 // Called when the NaClBrowser singleton has been fully initialized.
 void NaClProcessHost::OnResourcesReady() {
-  NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
+  nacl::NaClBrowser* nacl_browser = nacl::NaClBrowser::GetInstance();
   if (!nacl_browser->IsReady()) {
     SendErrorToRenderer("could not acquire shared resources needed by NaCl");
     delete this;
@@ -665,7 +665,7 @@ static const int kDebugStubPort = 4014;
 
 #if defined(OS_POSIX)
 net::SocketDescriptor NaClProcessHost::GetDebugStubSocketHandle() {
-  NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
+  nacl::NaClBrowser* nacl_browser = nacl::NaClBrowser::GetInstance();
   net::SocketDescriptor s = net::kInvalidSocket;
   // We allocate currently unused TCP port for debug stub tests. The port
   // number is passed to the test via debug stub port listener.
@@ -693,15 +693,15 @@ net::SocketDescriptor NaClProcessHost::GetDebugStubSocketHandle() {
 #endif
 
 bool NaClProcessHost::StartNaClExecution() {
-  NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
+  nacl::NaClBrowser* nacl_browser = nacl::NaClBrowser::GetInstance();
 
   nacl::NaClStartParams params;
   params.validation_cache_enabled = nacl_browser->ValidationCacheIsEnabled();
   params.validation_cache_key = nacl_browser->GetValidationCacheKey();
-  params.version = NaClBrowser::GetDelegate()->GetVersionString();
+  params.version = nacl::NaClBrowser::GetDelegate()->GetVersionString();
   params.enable_exception_handling = enable_exception_handling_;
   params.enable_debug_stub = enable_debug_stub_ &&
-      NaClBrowser::GetDelegate()->URLMatchesDebugPatterns(manifest_url_);
+      nacl::NaClBrowser::GetDelegate()->URLMatchesDebugPatterns(manifest_url_);
   // Enable PPAPI proxy channel creation only for renderer processes.
   params.enable_ipc_proxy = enable_ppapi_proxy();
   params.uses_irt = uses_irt_;
@@ -813,7 +813,7 @@ void NaClProcessHost::OnPpapiChannelCreated(
 
     ppapi_host_->GetPpapiHost()->AddHostFactoryFilter(
         scoped_ptr<ppapi::host::HostFactory>(
-            NaClBrowser::GetDelegate()->CreatePpapiHostFactory(
+            nacl::NaClBrowser::GetDelegate()->CreatePpapiHostFactory(
                 ppapi_host_.get())));
 
     // Send a message to create the NaCl-Renderer channel. The handle is just
@@ -847,7 +847,7 @@ bool NaClProcessHost::OnUntrustedMessageForwarded(const IPC::Message& msg) {
 }
 
 bool NaClProcessHost::StartWithLaunchedProcess() {
-  NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
+  nacl::NaClBrowser* nacl_browser = nacl::NaClBrowser::GetInstance();
 
   if (nacl_browser->IsReady()) {
     return SendStart();
@@ -864,12 +864,13 @@ bool NaClProcessHost::StartWithLaunchedProcess() {
 
 void NaClProcessHost::OnQueryKnownToValidate(const std::string& signature,
                                              bool* result) {
-  NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
+  nacl::NaClBrowser* nacl_browser = nacl::NaClBrowser::GetInstance();
   *result = nacl_browser->QueryKnownToValidate(signature, off_the_record_);
 }
 
 void NaClProcessHost::OnSetKnownToValidate(const std::string& signature) {
-  NaClBrowser::GetInstance()->SetKnownToValidate(signature, off_the_record_);
+  nacl::NaClBrowser::GetInstance()->SetKnownToValidate(
+      signature, off_the_record_);
 }
 
 void NaClProcessHost::FileResolved(
@@ -921,8 +922,8 @@ void NaClProcessHost::OnResolveFileToken(uint64 file_token_lo,
   // TODO(ncbray): track behavior with UMA. If entries are getting evicted or
   // bogus keys are getting queried, this would be good to know.
   base::FilePath file_path;
-  if (!NaClBrowser::GetInstance()->GetFilePath(file_token_lo, file_token_hi,
-                                               &file_path)) {
+  if (!nacl::NaClBrowser::GetInstance()->GetFilePath(
+        file_token_lo, file_token_hi, &file_path)) {
     NaClProcessMsg_ResolveFileToken::WriteReplyParams(
         reply_msg,
         IPC::InvalidPlatformFileForTransit(),

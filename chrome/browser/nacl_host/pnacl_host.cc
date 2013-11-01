@@ -11,8 +11,8 @@
 #include "base/logging.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/nacl_host/nacl_browser.h"
 #include "chrome/browser/nacl_host/pnacl_translation_cache.h"
+#include "components/nacl/browser/nacl_browser.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -61,7 +61,7 @@ bool PnaclHost::TranslationMayBeCached(
 /////////////////////////////////////// Initialization
 
 static base::FilePath GetCachePath() {
-  NaClBrowserDelegate* browser_delegate = NaClBrowser::GetDelegate();
+  NaClBrowserDelegate* browser_delegate = nacl::NaClBrowser::GetDelegate();
   // Determine where the translation cache resides in the file system.  It
   // exists in Chrome's cache directory and is not tied to any specific
   // profile. If we fail, return an empty path.

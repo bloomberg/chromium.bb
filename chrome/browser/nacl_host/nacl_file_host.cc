@@ -11,8 +11,8 @@
 #include "base/platform_file.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/nacl_host/nacl_browser.h"
 #include "chrome/browser/nacl_host/nacl_host_message_filter.h"
+#include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/common/nacl_browser_delegate.h"
 #include "components/nacl/common/nacl_host_messages.h"
 #include "components/nacl/common/pnacl_types.h"
@@ -45,7 +45,7 @@ void TryInstallPnacl(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // TODO(jvoung): Figure out a way to get progress events and
   // call progress_callback.
-  NaClBrowser::GetDelegate()->TryInstallPnacl(done_callback);
+  nacl::NaClBrowser::GetDelegate()->TryInstallPnacl(done_callback);
 }
 
 void DoEnsurePnaclInstalled(
@@ -54,7 +54,7 @@ void DoEnsurePnaclInstalled(
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   // If already installed, return reply w/ success immediately.
   base::FilePath pnacl_dir;
-  if (NaClBrowser::GetDelegate()->GetPnaclDirectory(&pnacl_dir)
+  if (nacl::NaClBrowser::GetDelegate()->GetPnaclDirectory(&pnacl_dir)
       && !pnacl_dir.empty()
       && base::PathExists(pnacl_dir)) {
     done_callback.Run(true);
@@ -93,7 +93,7 @@ void DoOpenPnaclFile(
 
   // PNaCl must be installed.
   base::FilePath pnacl_dir;
-  if (!NaClBrowser::GetDelegate()->GetPnaclDirectory(&pnacl_dir) ||
+  if (!nacl::NaClBrowser::GetDelegate()->GetPnaclDirectory(&pnacl_dir) ||
       !base::PathExists(pnacl_dir)) {
     NotifyRendererOfError(nacl_host_message_filter.get(), reply_msg);
     return;
@@ -134,7 +134,7 @@ void DoRegisterOpenedNaClExecutableFile(
   // IO thread owns the NaClBrowser singleton.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
+  nacl::NaClBrowser* nacl_browser = nacl::NaClBrowser::GetInstance();
   uint64 file_token_lo = 0;
   uint64 file_token_hi = 0;
   nacl_browser->PutFilePath(file_path, &file_token_lo, &file_token_hi);
@@ -159,7 +159,7 @@ void DoOpenNaClExecutableOnThreadPool(
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   base::FilePath file_path;
-  if (!NaClBrowser::GetDelegate()->MapUrlToLocalFilePath(
+  if (!nacl::NaClBrowser::GetDelegate()->MapUrlToLocalFilePath(
           file_url, true /* use_blocking_api */, &file_path)) {
     NotifyRendererOfError(nacl_host_message_filter.get(), reply_msg);
     return;
@@ -234,7 +234,7 @@ bool PnaclCanOpenFile(const std::string& filename,
 
   // PNaCl must be installed.
   base::FilePath pnacl_dir;
-  if (!NaClBrowser::GetDelegate()->GetPnaclDirectory(&pnacl_dir) ||
+  if (!nacl::NaClBrowser::GetDelegate()->GetPnaclDirectory(&pnacl_dir) ||
       pnacl_dir.empty())
     return false;
 

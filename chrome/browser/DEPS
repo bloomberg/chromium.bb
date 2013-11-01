@@ -9,6 +9,7 @@ include_rules = [
   "+components/autofill/core/common",
   "+components/breakpad",
   "+components/browser_context_keyed_service",
+  "+components/nacl/browser",
   "+components/nacl/common",
   "+components/navigation_interception",
   "+components/navigation_metrics",

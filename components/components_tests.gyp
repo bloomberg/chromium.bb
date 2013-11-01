@@ -124,6 +124,14 @@
                 'visitedlink_renderer',
               ],
             }],
+            ['disable_nacl==0', {
+              'sources': [
+                'nacl/browser/nacl_validation_cache_unittest.cc',
+              ],
+              'dependencies': [
+                'nacl.gyp:nacl_browser',
+              ],
+            }],
             ['OS == "android"', {
               'sources!': [
                 'web_modal/web_contents_modal_dialog_manager_unittest.cc',

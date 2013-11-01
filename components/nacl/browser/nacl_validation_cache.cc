@@ -1,13 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/nacl_host/nacl_validation_cache.h"
+#include "components/nacl/browser/nacl_validation_cache.h"
 
 #include "base/pickle.h"
 #include "base/rand_util.h"
 
-namespace {
+namespace nacl {
 
 // For the moment, choose an arbitrary cache size.
 const size_t kValidationCacheCacheSize = 200;
@@ -18,8 +18,6 @@ const size_t kValidationCacheEntrySize = 32;
 
 const char kValidationCacheBeginMagic[] = "NaCl";
 const char kValidationCacheEndMagic[] = "Done";
-
-}  // namespace
 
 NaClValidationCache::NaClValidationCache()
     : validation_cache_(kValidationCacheCacheSize) {
@@ -126,4 +124,6 @@ bool NaClValidationCache::DeserializeImpl(const Pickle* pickle) {
   // Success!
   return true;
 }
+
+} // namespace nacl
 

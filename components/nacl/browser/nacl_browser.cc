@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/nacl_host/nacl_browser.h"
+#include "components/nacl/browser/nacl_browser.h"
 
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -148,8 +148,6 @@ void OpenNaClExecutableImpl(const base::FilePath& file_path,
     return;
   }
 }
-
-} // namespace nacl
 
 NaClBrowser::NaClBrowser()
     : weak_factory_(this),
@@ -567,3 +565,5 @@ bool NaClBrowser::IsThrottled() {
   base::TimeDelta delta = base::Time::Now() - crash_times_.front();
   return delta.InSeconds() <= kCrashesIntervalInSeconds;
 }
+
+}  // namespace nacl

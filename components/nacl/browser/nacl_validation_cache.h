@@ -1,15 +1,17 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NACL_HOST_NACL_VALIDATION_CACHE_H_
-#define CHROME_BROWSER_NACL_HOST_NACL_VALIDATION_CACHE_H_
+#ifndef COMPONENTS_NACL_BROWSER_NACL_VALIDATION_CACHE_H_
+#define COMPONENTS_NACL_BROWSER_NACL_VALIDATION_CACHE_H_
 
 #include <vector>
 
 #include "base/containers/mru_cache.h"
 
 class Pickle;
+
+namespace nacl {
 
 class NaClValidationCache {
  public:
@@ -61,4 +63,6 @@ class NaClValidationCache {
   DISALLOW_COPY_AND_ASSIGN(NaClValidationCache);
 };
 
-#endif  // CHROME_BROWSER_NACL_HOST_NACL_VALIDATION_CACHE_H_
+} // namespace nacl
+
+#endif  // COMPONENTS_NACL_BROWSER_NACL_VALIDATION_CACHE_H_
