@@ -50,6 +50,24 @@ void AdjustWindowToFit(HWND hwnd, const RECT& bounds, bool fit_to_monitor) {
                  SWP_NOACTIVATE | SWP_NOZORDER);
 }
 
+// Turn off optimizations for these functions so they show up in crash reports.
+MSVC_DISABLE_OPTIMIZE();
+
+void CrashOutOfMemory() {
+  LOG_GETLASTERROR(FATAL);
+}
+
+void CrashAccessDenied() {
+  LOG_GETLASTERROR(FATAL);
+}
+
+// Crash isn't one of the ones we commonly see.
+void CrashOther() {
+  LOG_GETLASTERROR(FATAL);
+}
+
+MSVC_ENABLE_OPTIMIZE();
+
 }  // namespace
 
 string16 GetClassName(HWND window) {
@@ -170,8 +188,20 @@ void CenterAndSizeWindow(HWND parent,
 }
 
 void CheckWindowCreated(HWND hwnd) {
-  if (!hwnd)
+  if (!hwnd) {
+    switch (GetLastError()) {
+      case ERROR_NOT_ENOUGH_MEMORY:
+        CrashOutOfMemory();
+        break;
+      case ERROR_ACCESS_DENIED:
+        CrashAccessDenied();
+        break;
+      default:
+        CrashOther();
+        break;
+    }
     LOG_GETLASTERROR(FATAL);
+  }
 }
 
 void ShowSystemMenu(HWND window) {
