@@ -41,6 +41,12 @@
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "crypto/sha2.h"
 
+#if defined(OS_POSIX)
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#endif
+
 namespace {
 
 const char* kCommonSwitches[] = {
@@ -240,6 +246,21 @@ Status LaunchDesktopChrome(
     options.environ["CHROME_LOG_FILE"] = capabilities.log_path;
   if (capabilities.detach)
     options.new_process_group = true;
+#endif
+
+#if defined(OS_POSIX)
+  base::FileHandleMappingVector no_stderr;
+  int devnull = -1;
+  file_util::ScopedFD scoped_devnull(&devnull);
+  if (!CommandLine::ForCurrentProcess()->HasSwitch("verbose")) {
+    // Redirect stderr to /dev/null, so that Chrome log spew doesn't confuse
+    // users.
+    devnull = open("/dev/null", O_WRONLY);
+    if (devnull == -1)
+      return Status(kUnknownError, "couldn't open /dev/null");
+    no_stderr.push_back(std::make_pair(devnull, STDERR_FILENO));
+    options.fds_to_remap = &no_stderr;
+  }
 #endif
 
 #if defined(OS_WIN)

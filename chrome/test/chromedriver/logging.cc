@@ -200,14 +200,8 @@ bool InitLogging() {
   if (cmd_line->HasSwitch("silent"))
     g_log_level = Log::kOff;
 
-  if (cmd_line->HasSwitch("verbose")) {
+  if (cmd_line->HasSwitch("verbose"))
     g_log_level = Log::kAll;
-  } else {
-#if defined(OS_POSIX)
-    // Close stderr on exec, so that Chrome log spew doesn't confuse users.
-    fcntl(STDERR_FILENO, F_SETFD, FD_CLOEXEC);
-#endif
-  }
 
   // Turn on VLOG for chromedriver. This is parsed during logging::InitLogging.
   cmd_line->AppendSwitchASCII("vmodule", "*/chrome/test/chromedriver/*=3");
