@@ -242,7 +242,7 @@
     'content_security_policy': [ 'mkwst+watchlist@chromium.org' ],
     'prerender': [ 'gavinp+prerender@chromium.org' ],
     'track': [ 'vcarbune@chromium.org', 'silviapf@chromium.org', 'philipj@opera.com' ],
-    'media': [ 'feature-media-reviews@chromium.org' ],
+    'media': [ 'feature-media-reviews@chromium.org', 'philipj@opera.com' ],
     'media_queries': [ 'kenneth.christiansen@gmail.com' ],
     'fileapi': [ 'kinuko@chromium.org' ],
     'quota': [ 'kinuko@chromium.org' ],
