@@ -1028,7 +1028,7 @@ void ApplyStyleCommand::pushDownInlineStyleAroundNode(EditingStyle* style, Node*
     Vector<RefPtr<Element> > elementsToPushDown;
     while (current && current != targetNode && current->contains(targetNode)) {
         NodeVector currentChildren;
-        getChildNodes(current.get(), currentChildren);
+        getChildNodes(*current, currentChildren);
         RefPtr<Element> styledElement;
         if (current->isStyledElement() && isStyledInlineElementToRemove(toElement(current))) {
             styledElement = toElement(current);

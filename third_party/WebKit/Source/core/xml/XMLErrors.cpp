@@ -151,7 +151,7 @@ void XMLErrors::insertErrorMessageBlock()
 
     Node* firstChild = documentElement->firstChild();
     if (firstChild)
-        documentElement->parserInsertBefore(reportElement, documentElement->firstChild());
+        documentElement->parserInsertBefore(reportElement, *firstChild);
     else
         documentElement->parserAppendChild(reportElement);
 

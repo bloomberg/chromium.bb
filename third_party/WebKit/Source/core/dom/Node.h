@@ -500,7 +500,7 @@ public:
     bool isDescendantOf(const Node*) const;
     bool contains(const Node*) const;
     bool containsIncludingShadowDOM(const Node*) const;
-    bool containsIncludingHostElements(const Node*) const;
+    bool containsIncludingHostElements(const Node&) const;
 
     // FIXME: Remove this when crbug.com/265716 cleans up contains semantics.
     bool bindingsContains(const Node* node) const { return containsIncludingShadowDOM(node); }
@@ -921,10 +921,10 @@ inline bool operator==(const Node* a, const Node& b) { return a == &b; }
 inline bool operator!=(const Node& a, const Node& b) { return !(a == b); }
 inline bool operator!=(const Node& a, const Node* b) { return !(a == b); }
 inline bool operator!=(const Node* a, const Node& b) { return !(a == b); }
-inline bool operator==(const RefPtr<Node>& a, const Node& b) { return a.get() == &b; }
-inline bool operator==(const Node& a, const RefPtr<Node>& b) { return &a == b.get(); }
-inline bool operator!=(const RefPtr<Node>& a, const Node& b) { return !(a == b); }
-inline bool operator!=(const Node& a, const RefPtr<Node>& b) { return !(a == b); }
+inline bool operator==(const PassRefPtr<Node>& a, const Node& b) { return a.get() == &b; }
+inline bool operator==(const Node& a, const PassRefPtr<Node>& b) { return &a == b.get(); }
+inline bool operator!=(const PassRefPtr<Node>& a, const Node& b) { return !(a == b); }
+inline bool operator!=(const Node& a, const PassRefPtr<Node>& b) { return !(a == b); }
 
 
 #define DEFINE_NODE_TYPE_CASTS(thisType, predicate) \

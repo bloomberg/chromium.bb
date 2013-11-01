@@ -917,16 +917,17 @@ bool Node::containsIncludingShadowDOM(const Node* node) const
     return false;
 }
 
-bool Node::containsIncludingHostElements(const Node* node) const
+bool Node::containsIncludingHostElements(const Node& node) const
 {
-    while (node) {
-        if (node == this)
+    const Node* current = &node;
+    do {
+        if (current == this)
             return true;
-        if (node->isDocumentFragment() && toDocumentFragment(node)->isTemplateContent())
-            node = static_cast<const TemplateContentDocumentFragment*>(node)->host();
+        if (current->isDocumentFragment() && toDocumentFragment(current)->isTemplateContent())
+            current = static_cast<const TemplateContentDocumentFragment*>(current)->host();
         else
-            node = node->parentOrShadowHostNode();
-    }
+            current = current->parentOrShadowHostNode();
+    } while (current);
     return false;
 }
 

@@ -48,11 +48,11 @@ ReplaceNodeWithSpanCommand::ReplaceNodeWithSpanCommand(PassRefPtr<HTMLElement> e
     ASSERT(m_elementToReplace);
 }
 
-static void swapInNodePreservingAttributesAndChildren(HTMLElement* newNode, HTMLElement* nodeToReplace)
+static void swapInNodePreservingAttributesAndChildren(HTMLElement* newNode, HTMLElement& nodeToReplace)
 {
-    ASSERT(nodeToReplace->inDocument());
-    RefPtr<ContainerNode> parentNode = nodeToReplace->parentNode();
-    parentNode->insertBefore(newNode, nodeToReplace);
+    ASSERT(nodeToReplace.inDocument());
+    RefPtr<ContainerNode> parentNode = nodeToReplace.parentNode();
+    parentNode->insertBefore(newNode, &nodeToReplace);
 
     NodeVector children;
     getChildNodes(nodeToReplace, children);
@@ -60,9 +60,9 @@ static void swapInNodePreservingAttributesAndChildren(HTMLElement* newNode, HTML
         newNode->appendChild(children[i]);
 
     // FIXME: Fix this to send the proper MutationRecords when MutationObservers are present.
-    newNode->cloneDataFromElement(*nodeToReplace);
+    newNode->cloneDataFromElement(nodeToReplace);
 
-    parentNode->removeChild(nodeToReplace, ASSERT_NO_EXCEPTION);
+    parentNode->removeChild(&nodeToReplace, ASSERT_NO_EXCEPTION);
 }
 
 void ReplaceNodeWithSpanCommand::doApply()
@@ -71,14 +71,14 @@ void ReplaceNodeWithSpanCommand::doApply()
         return;
     if (!m_spanElement)
         m_spanElement = createHTMLElement(m_elementToReplace->document(), spanTag);
-    swapInNodePreservingAttributesAndChildren(m_spanElement.get(), m_elementToReplace.get());
+    swapInNodePreservingAttributesAndChildren(m_spanElement.get(), *m_elementToReplace);
 }
 
 void ReplaceNodeWithSpanCommand::doUnapply()
 {
     if (!m_spanElement->inDocument())
         return;
-    swapInNodePreservingAttributesAndChildren(m_elementToReplace.get(), m_spanElement.get());
+    swapInNodePreservingAttributesAndChildren(m_elementToReplace.get(), *m_spanElement);
 }
 
 } // namespace WebCore

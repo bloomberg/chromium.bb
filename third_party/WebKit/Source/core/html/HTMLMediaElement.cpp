@@ -2849,7 +2849,7 @@ KURL HTMLMediaElement::selectNextSourceChild(ContentType* contentType, String* k
     bool okToLoadSourceURL;
 
     NodeVector potentialSourceNodes;
-    getChildNodes(this, potentialSourceNodes);
+    getChildNodes(*this, potentialSourceNodes);
 
     for (unsigned i = 0; !canUseSourceElement && i < potentialSourceNodes.size(); ++i) {
         node = potentialSourceNodes[i].get();

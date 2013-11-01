@@ -102,7 +102,7 @@ static inline void insert(HTMLConstructionSiteTask& task)
         parent->parserRemoveChild(*task.child);
 
     if (task.nextChild)
-        task.parent->parserInsertBefore(task.child.get(), task.nextChild.get());
+        task.parent->parserInsertBefore(task.child.get(), *task.nextChild);
     else
         task.parent->parserAppendChild(task.child.get());
 }
@@ -140,7 +140,7 @@ static inline void executeTakeAllChildrenTask(HTMLConstructionSiteTask& task)
 {
     ASSERT(task.operation == HTMLConstructionSiteTask::TakeAllChildren);
 
-    task.parent->parserTakeAllChildrenFrom(task.oldParent());
+    task.parent->parserTakeAllChildrenFrom(*task.oldParent());
 }
 
 void HTMLConstructionSite::executeTask(HTMLConstructionSiteTask& task)

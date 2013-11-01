@@ -3008,13 +3008,9 @@ bool Document::childTypeAllowed(NodeType type) const
     return false;
 }
 
-bool Document::canReplaceChild(Node* newChild, Node* oldChild)
+bool Document::canReplaceChild(Node& newChild, Node& oldChild)
 {
-    if (!oldChild)
-        // ContainerNode::replaceChild will raise a NotFoundError.
-        return true;
-
-    if (oldChild->nodeType() == newChild->nodeType())
+    if (oldChild.nodeType() == newChild.nodeType())
         return true;
 
     int numDoctypes = 0;
@@ -3039,8 +3035,8 @@ bool Document::canReplaceChild(Node* newChild, Node* oldChild)
     }
 
     // Then, see how many doctypes and elements might be added by the new child.
-    if (newChild->nodeType() == DOCUMENT_FRAGMENT_NODE) {
-        for (Node* c = newChild->firstChild(); c; c = c->nextSibling()) {
+    if (newChild.nodeType() == DOCUMENT_FRAGMENT_NODE) {
+        for (Node* c = newChild.firstChild(); c; c = c->nextSibling()) {
             switch (c->nodeType()) {
             case ATTRIBUTE_NODE:
             case CDATA_SECTION_NODE:
@@ -3063,7 +3059,7 @@ bool Document::canReplaceChild(Node* newChild, Node* oldChild)
             }
         }
     } else {
-        switch (newChild->nodeType()) {
+        switch (newChild.nodeType()) {
         case ATTRIBUTE_NODE:
         case CDATA_SECTION_NODE:
         case DOCUMENT_FRAGMENT_NODE:

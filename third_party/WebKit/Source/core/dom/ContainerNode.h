@@ -106,8 +106,8 @@ public:
     // However, arbitrary code may be run by beforeload handlers.
     void parserAppendChild(PassRefPtr<Node>);
     void parserRemoveChild(Node&);
-    void parserInsertBefore(PassRefPtr<Node> newChild, Node* refChild);
-    void parserTakeAllChildrenFrom(ContainerNode*);
+    void parserInsertBefore(PassRefPtr<Node> newChild, Node& refChild);
+    void parserTakeAllChildrenFrom(ContainerNode&);
 
     void removeChildren();
 
@@ -235,10 +235,10 @@ inline Node* Node::highestAncestor() const
 const int initialNodeVectorSize = 11;
 typedef Vector<RefPtr<Node>, initialNodeVectorSize> NodeVector;
 
-inline void getChildNodes(Node* node, NodeVector& nodes)
+inline void getChildNodes(Node& node, NodeVector& nodes)
 {
     ASSERT(!nodes.size());
-    for (Node* child = node->firstChild(); child; child = child->nextSibling())
+    for (Node* child = node.firstChild(); child; child = child->nextSibling())
         nodes.append(child);
 }
 
