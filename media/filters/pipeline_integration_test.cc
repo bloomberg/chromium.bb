@@ -1050,10 +1050,12 @@ TEST_F(PipelineIntegrationTest, ChunkDemuxerAbortRead_VideoOnly) {
 
 // Verify that Opus audio in WebM containers can be played back.
 TEST_F(PipelineIntegrationTest, BasicPlayback_AudioOnly_Opus_WebM) {
-  ASSERT_TRUE(Start(GetTestDataFilePath("bear-opus.webm"),
+  ASSERT_TRUE(Start(GetTestDataFilePath("bear-opus-end-trimming.webm"),
                     PIPELINE_OK));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_EQ(kOpusEndTrimmingWebMFileAudioBytes,
+            pipeline_->GetStatistics().audio_bytes_decoded);
 }
 
 // Verify that VP9 video in WebM containers can be played back.

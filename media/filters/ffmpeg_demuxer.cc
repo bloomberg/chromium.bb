@@ -18,6 +18,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/sys_byteorder.h"
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "media/base/audio_decoder_config.h"
@@ -129,6 +130,23 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
                                      side_data, side_data_size);
   } else {
     buffer = DecoderBuffer::CopyFrom(packet.get()->data, packet.get()->size);
+  }
+
+  int skip_samples_size = 0;
+  uint8* skip_samples = av_packet_get_side_data(packet.get(),
+                                                AV_PKT_DATA_SKIP_SAMPLES,
+                                                &skip_samples_size);
+  const int kSkipSamplesValidSize = 10;
+  const int kSkipSamplesOffset = 4;
+  if (skip_samples_size >= kSkipSamplesValidSize) {
+    int discard_padding_samples = base::ByteSwapToLE32(
+        *(reinterpret_cast<const uint32*>(skip_samples +
+                                          kSkipSamplesOffset)));
+    // TODO(vigneshv): Change decoder buffer to use number of samples so that
+    // this conversion can be avoided.
+    buffer->set_discard_padding(base::TimeDelta::FromMicroseconds(
+        discard_padding_samples * 1000000.0 /
+        audio_decoder_config().samples_per_second()));
   }
 
   if ((type() == DemuxerStream::AUDIO && audio_config_.is_encrypted()) ||

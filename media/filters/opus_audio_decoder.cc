@@ -477,25 +477,21 @@ bool OpusAudioDecoder::ConfigureDecoder() {
                           &opus_extra_data))
     return false;
 
-  if (!config.codec_delay().InMicroseconds()) {
-    // TODO(vigneshv): Replace this with return false once ffmpeg demuxer code
-    // starts populating the config correctly. Also, timestamp is not being
-    // offset in this case as this code path will go away in a subsequent CL.
-    frames_to_discard_ = opus_extra_data.skip_samples;
-  } else {
-    // Convert from seconds to samples.
-    timestamp_offset_ = config.codec_delay();
-    frame_delay_at_start_ = TimeDeltaToAudioFrames(config.codec_delay(),
-                                                   config.samples_per_second());
-    if (frame_delay_at_start_ < 0) {
-      DVLOG(1) << "Invalid file. Incorrect value for codec delay.";
-      return false;
-    }
-    if (frame_delay_at_start_ != opus_extra_data.skip_samples) {
-      DVLOG(1) << "Invalid file. Codec Delay in container does not match the "
-               << "value in Opus Extra Data.";
-      return false;
-    }
+  if (!config.codec_delay().InMicroseconds())
+    return false;
+
+  // Convert from seconds to samples.
+  timestamp_offset_ = config.codec_delay();
+  frame_delay_at_start_ = TimeDeltaToAudioFrames(config.codec_delay(),
+                                                 config.samples_per_second());
+  if (frame_delay_at_start_ < 0) {
+    DVLOG(1) << "Invalid file. Incorrect value for codec delay.";
+    return false;
+  }
+  if (frame_delay_at_start_ != opus_extra_data.skip_samples) {
+    DVLOG(1) << "Invalid file. Codec Delay in container does not match the "
+             << "value in Opus Extra Data.";
+    return false;
   }
 
   uint8 channel_mapping[kMaxVorbisChannels];
@@ -579,7 +575,7 @@ bool OpusAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& input,
   // TODO(vigneshv): This should be checked for start of stream rather than
   // input timestamp of zero to accomodate streams that don't start at zero.
   if (input->timestamp() == base::TimeDelta())
-      frames_to_discard_ = frame_delay_at_start_;
+    frames_to_discard_ = frame_delay_at_start_;
 
   if (bytes_decoded > 0 && frames_decoded > frames_to_discard_) {
     // Copy the audio samples into an output buffer.

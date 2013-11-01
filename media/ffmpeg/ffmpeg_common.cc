@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
@@ -284,6 +285,18 @@ static void AVCodecContextToAudioDecoderConfig(
     sample_format = kSampleFormatS16;
   }
 
+  base::TimeDelta seek_preroll;
+  if (codec_context->seek_preroll > 0) {
+    seek_preroll = base::TimeDelta::FromMicroseconds(
+        codec_context->seek_preroll * 1000000.0 / codec_context->sample_rate);
+  }
+
+  base::TimeDelta codec_delay;
+  if (codec_context->delay > 0) {
+    codec_delay = base::TimeDelta::FromMicroseconds(
+        codec_context->delay * 1000000.0 / codec_context->sample_rate);
+  }
+
   config->Initialize(codec,
                      sample_format,
                      channel_layout,
@@ -292,8 +305,8 @@ static void AVCodecContextToAudioDecoderConfig(
                      codec_context->extradata_size,
                      is_encrypted,
                      record_stats,
-                     base::TimeDelta(),
-                     base::TimeDelta());
+                     seek_preroll,
+                     codec_delay);
   if (codec != kCodecOpus) {
     DCHECK_EQ(av_get_bytes_per_sample(codec_context->sample_fmt) * 8,
               config->bits_per_channel());
