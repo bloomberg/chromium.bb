@@ -240,16 +240,14 @@ CPP_SPECIAL_CONVERSION_RULES = {
 
 def cpp_type(idl_type, extended_attributes=None, used_as_argument=False):
     """Returns C++ type corresponding to IDL type."""
-    def cpp_string_type():
-        if not used_as_argument:
-            return 'String'
+    def string_mode():
         # FIXME: the Web IDL spec requires 'EmptyString', not 'NullString',
         # but we use NullString for performance.
-        if extended_attributes.get('TreatNullAs') == 'NullString':
-            mode = 'WithNullCheck'
-        else:
-            mode = ''
-        return 'V8StringResource<%s>' % mode
+        if extended_attributes.get('TreatNullAs') != 'NullString':
+            return ''
+        if extended_attributes.get('TreatUndefinedAs') != 'NullString':
+            return 'WithNullCheck'
+        return 'WithUndefinedOrNullCheck'
 
     extended_attributes = extended_attributes or {}
     idl_type = preprocess_idl_type(idl_type)
@@ -266,7 +264,9 @@ def cpp_type(idl_type, extended_attributes=None, used_as_argument=False):
         idl_type == 'XPathNSResolver'):  # FIXME: eliminate this special case
         return 'RefPtr<%s>' % idl_type
     if idl_type == 'DOMString':
-        return cpp_string_type()
+        if not used_as_argument:
+            return 'String'
+        return 'V8StringResource<%s>' % string_mode()
     if is_union_type(idl_type):
         raise Exception('UnionType is not supported')
     this_array_or_sequence_type = array_or_sequence_type(idl_type)

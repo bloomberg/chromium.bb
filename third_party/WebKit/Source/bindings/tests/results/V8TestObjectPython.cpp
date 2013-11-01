@@ -4887,6 +4887,42 @@ static void voidMethodEnforceRangeLongArgMethodCallback(const v8::FunctionCallba
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void voidMethodTreatNullAsNullStringStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodTreatNullAsNullStringStringArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, treatNullAsNullStringStringArg, info[0]);
+    imp->voidMethodTreatNullAsNullStringStringArg(treatNullAsNullStringStringArg);
+}
+
+static void voidMethodTreatNullAsNullStringStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodTreatNullAsNullStringStringArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, treatNullAsNullStringStringArg, info[0]);
+    imp->voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArg(treatNullAsNullStringStringArg);
+}
+
+static void voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 } // namespace TestObjectPythonV8Internal
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttributes[] = {
@@ -5090,6 +5126,8 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"voidMethodDefaultUndefinedStringArg", TestObjectPythonV8Internal::voidMethodDefaultUndefinedStringArgMethodCallback, 0, 0},
     {"voidMethodDefaultNullStringStringArg", TestObjectPythonV8Internal::voidMethodDefaultNullStringStringArgMethodCallback, 0, 0},
     {"voidMethodEnforceRangeLongArg", TestObjectPythonV8Internal::voidMethodEnforceRangeLongArgMethodCallback, 0, 1},
+    {"voidMethodTreatNullAsNullStringStringArg", TestObjectPythonV8Internal::voidMethodTreatNullAsNullStringStringArgMethodCallback, 0, 1},
+    {"voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArg", TestObjectPythonV8Internal::voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArgMethodCallback, 0, 1},
 };
 
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)

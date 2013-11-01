@@ -295,4 +295,7 @@ interface TestObjectPython {
     void voidMethodDefaultNullStringStringArg([Default=NullString] optional DOMString defaultNullStringStringArg);
     // [EnforceRange]
     void voidMethodEnforceRangeLongArg([EnforceRange] long enforceRangeLongArg);
+    // [TreatNullAs], [TreatUndefinedAs]
+    void voidMethodTreatNullAsNullStringStringArg([TreatNullAs=NullString] DOMString treatNullAsNullStringStringArg);
+    void voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArg([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString treatNullAsNullStringStringArg);
 };
