@@ -34,6 +34,7 @@
 #include "PageOverlayList.h"
 #include "WebInputEvent.h"
 #include "WebInputEventConversion.h"
+#include "core/page/AutoscrollController.h"
 #include "core/page/EventHandler.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
@@ -61,6 +62,7 @@ void PageWidgetDelegate::animate(Page* page, double monotonicFrameBeginTime)
     FrameView* view = mainFrameView(page);
     if (!view)
         return;
+    page->autoscrollController().animate(monotonicFrameBeginTime);
     view->serviceScriptedAnimations(monotonicFrameBeginTime);
 }
 

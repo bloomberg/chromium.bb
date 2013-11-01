@@ -266,7 +266,7 @@ void FocusController::setFocused(bool focused)
     m_isFocused = focused;
 
     if (!m_isFocused)
-        focusedOrMainFrame()->eventHandler().stopAutoscrollTimer();
+        focusedOrMainFrame()->eventHandler().stopAutoscroll();
 
     if (!m_focusedFrame)
         setFocusedFrame(m_page->mainFrame());

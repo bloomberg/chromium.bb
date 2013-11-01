@@ -43,6 +43,7 @@
 
 namespace WebCore {
 
+class AutoscrollController;
 class Clipboard;
 class Document;
 class Element;
@@ -98,7 +99,7 @@ public:
     void startPanScrolling(RenderObject*);
 #endif
 
-    void stopAutoscrollTimer();
+    void stopAutoscroll();
 
     void dispatchFakeMouseMoveEventSoon();
     void dispatchFakeMouseMoveEventSoonInQuad(const FloatQuad&);
@@ -290,6 +291,7 @@ private:
     bool sendScrollEventToView(const PlatformGestureEvent&, const FloatSize&);
     Frame* getSubFrameForGestureEvent(const IntPoint& touchAdjustedPoint, const PlatformGestureEvent&);
 
+    AutoscrollController* autoscrollController() const;
     bool panScrollInProgress() const;
     void setLastKnownMousePosition(const PlatformMouseEvent&);
 

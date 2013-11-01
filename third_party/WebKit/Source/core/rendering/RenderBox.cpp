@@ -38,6 +38,7 @@
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/page/AutoscrollController.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
@@ -525,7 +526,7 @@ static inline bool frameElementAndViewPermitScroll(HTMLFrameElementBase* frameEl
     Page* page = frameView->frame().page();
     if (!page)
         return false;
-    return !page->autoscrollInProgress();
+    return !page->autoscrollController().autoscrollInProgress();
 }
 
 void RenderBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
@@ -582,7 +583,7 @@ void RenderBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignmen
         }
     }
 
-    if (frame()->page()->autoscrollInProgress())
+    if (frame()->page()->autoscrollController().autoscrollInProgress())
         parentBox = enclosingScrollableBox();
 
     if (parentBox)
@@ -874,7 +875,7 @@ void RenderBox::autoscroll(const IntPoint& position)
 
 bool RenderBox::autoscrollInProgress() const
 {
-    return frame() && frame()->page() && frame()->page()->autoscrollInProgress(this);
+    return frame() && frame()->page() && frame()->page()->autoscrollController().autoscrollInProgress(this);
 }
 
 // There are two kinds of renderer that can autoscroll.
@@ -995,7 +996,7 @@ void RenderBox::scrollByRecursively(const IntSize& delta, ScrollOffsetClamping c
 
             Frame* frame = this->frame();
             if (frame && frame->page())
-                frame->page()->updateAutoscrollRenderer();
+                frame->page()->autoscrollController().updateAutoscrollRenderer();
         }
     } else if (view()->frameView()) {
         // If we are here, we were called on a renderer that can be programmatically scrolled, but doesn't

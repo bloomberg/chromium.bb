@@ -57,6 +57,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/page/AutoscrollController.h"
 #include "core/page/BackForwardClient.h"
 #include "core/page/Chrome.h"
 #include "core/page/DragController.h"
@@ -704,8 +705,8 @@ bool EventHandler::handleMouseDraggedEvent(const MouseEventWithHitTestResults& e
     m_mouseDownMayStartDrag = false;
 
     if (m_mouseDownMayStartAutoscroll && !panScrollInProgress()) {
-        if (Page* page = m_frame->page()) {
-            page->startAutoscrollForSelection(renderer);
+        if (AutoscrollController* controller = autoscrollController()) {
+            controller->startAutoscrollForSelection(renderer);
             m_mouseDownMayStartAutoscroll = false;
         }
     }
@@ -802,9 +803,9 @@ void EventHandler::updateSelectionForMouseDrag(const HitTestResult& hitTestResul
 
 bool EventHandler::handleMouseReleaseEvent(const MouseEventWithHitTestResults& event)
 {
-    Page* page = m_frame->page();
-    if (page && page->autoscrollInProgress())
-        stopAutoscrollTimer();
+    AutoscrollController* controller = autoscrollController();
+    if (controller && controller->autoscrollInProgress())
+        stopAutoscroll();
 
     // Used to prevent mouseMoveEvent from initiating a drag before
     // the mouse is pressed again.
@@ -856,19 +857,25 @@ void EventHandler::startPanScrolling(RenderObject* renderer)
 {
     if (!renderer->isBox())
         return;
-    Page* page = m_frame->page();
-    if (!page)
+    AutoscrollController* controller = autoscrollController();
+    if (!controller)
         return;
-    page->startPanScrolling(toRenderBox(renderer), lastKnownMousePosition());
+    controller->startPanScrolling(toRenderBox(renderer), lastKnownMousePosition());
     invalidateClick();
 }
 
 #endif // OS(WIN)
 
+AutoscrollController* EventHandler::autoscrollController() const
+{
+    if (Page* page = m_frame->page())
+        return &page->autoscrollController();
+    return 0;
+}
+
 bool EventHandler::panScrollInProgress() const
 {
-    Page* page = m_frame->page();
-    return page && page->panScrollInProgress();
+    return autoscrollController() && autoscrollController()->panScrollInProgress();
 }
 
 HitTestResult EventHandler::hitTestResultAtPoint(const LayoutPoint& point, HitTestRequest::HitTestRequestType hitType, const LayoutSize& padding)
@@ -910,12 +917,10 @@ HitTestResult EventHandler::hitTestResultAtPoint(const LayoutPoint& point, HitTe
     return result;
 }
 
-void EventHandler::stopAutoscrollTimer()
+void EventHandler::stopAutoscroll()
 {
-    Page* page = m_frame->page();
-    if (!page)
-        return;
-    page->stopAutoscrollTimer();
+    if (AutoscrollController* controller = autoscrollController())
+        controller->stopAutoscroll();
 }
 
 Node* EventHandler::mousePressNode() const
@@ -1356,10 +1361,10 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
     }
 
 #if OS(WIN)
-    // We store whether pan scrolling is in progress before calling stopAutoscrollTimer()
+    // We store whether pan scrolling is in progress before calling stopAutoscroll()
     // because it will set m_autoscrollType to NoAutoscroll on return.
     bool isPanScrollInProgress = panScrollInProgress();
-    stopAutoscrollTimer();
+    stopAutoscroll();
     if (isPanScrollInProgress) {
         // We invalidate the click when exiting pan scrolling so that we don't inadvertently navigate
         // away from the current page (e.g. the click was on a hyperlink). See <rdar://problem/6095023>.
@@ -1654,7 +1659,7 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
 
 #if OS(WIN)
     if (Page* page = m_frame->page())
-        page->handleMouseReleaseForPanScrolling(m_frame, mouseEvent);
+        page->autoscrollController().handleMouseReleaseForPanScrolling(m_frame, mouseEvent);
 #endif
 
     m_mousePressed = false;
@@ -1825,8 +1830,8 @@ bool EventHandler::updateDragAndDrop(const PlatformMouseEvent& event, Clipboard*
     if (newTarget && newTarget->isTextNode())
         newTarget = EventPath::parent(newTarget.get());
 
-    if (Page* page = m_frame->page())
-        page->updateDragAndDrop(newTarget.get(), event.position(), event.timestamp());
+    if (AutoscrollController* controller = autoscrollController())
+        controller->updateDragAndDrop(newTarget.get(), event.position(), event.timestamp());
 
     if (m_dragTarget != newTarget) {
         // FIXME: this ordering was explicitly chosen to match WinIE. However,
@@ -1911,7 +1916,7 @@ bool EventHandler::performDragAndDrop(const PlatformMouseEvent& event, Clipboard
 
 void EventHandler::clearDragState()
 {
-    stopAutoscrollTimer();
+    stopAutoscroll();
     m_dragTarget = 0;
     m_capturingMouseEventsNode = 0;
     m_shouldOnlyFireDragOverEvent = false;
@@ -3023,7 +3028,7 @@ bool EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
     if (panScrollInProgress()) {
         // If a key is pressed while the panScroll is in progress then we want to stop
         if (initialKeyEvent.type() == PlatformEvent::KeyDown || initialKeyEvent.type() == PlatformEvent::RawKeyDown)
-            stopAutoscrollTimer();
+            stopAutoscroll();
 
         // If we were in panscroll mode, we swallow the key event
         return true;

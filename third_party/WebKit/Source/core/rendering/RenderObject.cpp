@@ -39,6 +39,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLTableElement.h"
+#include "core/page/AutoscrollController.h"
 #include "core/page/EventHandler.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
@@ -2551,10 +2552,10 @@ void RenderObject::willBeDestroyed()
     if (children)
         children->destroyLeftoverChildren();
 
-    // If this renderer is being autoscrolled, stop the autoscroll timer
+    // If this renderer is being autoscrolled, stop the autoscrolling.
     if (Frame* frame = this->frame()) {
         if (frame->page())
-            frame->page()->stopAutoscrollIfNeeded(this);
+            frame->page()->autoscrollController().stopAutoscrollIfNeeded(this);
         frame->animation().cancelAnimations(this);
     }
 

@@ -566,7 +566,7 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
     // If we were in the autoscroll/panScroll mode we want to stop it before following the link to the anchor
     bool hashChange = equalIgnoringFragmentIdentifier(url, oldURL) && url.fragmentIdentifier() != oldURL.fragmentIdentifier();
     if (hashChange) {
-        m_frame->eventHandler().stopAutoscrollTimer();
+        m_frame->eventHandler().stopAutoscroll();
         m_frame->domWindow()->enqueueHashchangeEvent(oldURL, url);
     }
     m_documentLoader->setIsClientRedirect((clientRedirect == ClientRedirect && !isNewNavigation) || !UserGestureIndicator::processingUserGesture());

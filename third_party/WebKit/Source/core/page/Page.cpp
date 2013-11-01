@@ -96,7 +96,7 @@ float deviceScaleFactor(Frame* frame)
 }
 
 Page::Page(PageClients& pageClients)
-    : m_autoscrollController(AutoscrollController::create())
+    : m_autoscrollController(AutoscrollController::create(*this))
     , m_chrome(Chrome::create(this, pageClients.chromeClient))
     , m_dragCaretController(DragCaretController::create())
     , m_dragController(DragController::create(this, pageClients.dragClient))
@@ -164,60 +164,6 @@ ViewportDescription Page::viewportDescription() const
 {
     return mainFrame() && mainFrame()->document() ? mainFrame()->document()->viewportDescription() : ViewportDescription();
 }
-
-bool Page::autoscrollInProgress() const
-{
-    return m_autoscrollController->autoscrollInProgress();
-}
-
-bool Page::autoscrollInProgress(const RenderBox* renderer) const
-{
-    return m_autoscrollController->autoscrollInProgress(renderer);
-}
-
-bool Page::panScrollInProgress() const
-{
-    return m_autoscrollController->panScrollInProgress();
-}
-
-void Page::startAutoscrollForSelection(RenderObject* renderer)
-{
-    return m_autoscrollController->startAutoscrollForSelection(renderer);
-}
-
-void Page::stopAutoscrollIfNeeded(RenderObject* renderer)
-{
-    m_autoscrollController->stopAutoscrollIfNeeded(renderer);
-}
-
-
-void Page::stopAutoscrollTimer()
-{
-    m_autoscrollController->stopAutoscrollTimer();
-}
-
-void Page::updateAutoscrollRenderer()
-{
-    m_autoscrollController->updateAutoscrollRenderer();
-}
-
-void Page::updateDragAndDrop(Node* dropTargetNode, const IntPoint& eventPosition, double eventTime)
-{
-    m_autoscrollController->updateDragAndDrop(dropTargetNode, eventPosition, eventTime);
-}
-
-#if OS(WIN)
-void Page::handleMouseReleaseForPanScrolling(Frame* frame, const PlatformMouseEvent& point)
-{
-    m_autoscrollController->handleMouseReleaseForPanScrolling(frame, point);
-}
-
-void Page::startPanScrolling(RenderBox* renderer, const IntPoint& point)
-{
-    m_autoscrollController->startPanScrolling(renderer, point);
-}
-#endif
-
 
 ScrollingCoordinator* Page::scrollingCoordinator()
 {

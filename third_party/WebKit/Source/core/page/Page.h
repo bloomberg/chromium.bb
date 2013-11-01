@@ -139,6 +139,7 @@ public:
     int subframeCount() const { checkSubframeCountConsistency(); return m_subframeCount; }
 
     Chrome& chrome() const { return *m_chrome; }
+    AutoscrollController& autoscrollController() const { return *m_autoscrollController; }
     DragCaretController& dragCaretController() const { return *m_dragCaretController; }
     DragController& dragController() const { return *m_dragController; }
     FocusController& focusController() const { return *m_focusController; }
@@ -149,19 +150,6 @@ public:
     void setValidationMessageClient(ValidationMessageClient* client) { m_validationMessageClient = client; }
     SharedWorkerRepositoryClient* sharedWorkerRepositoryClient() { return m_sharedWorkerRepositoryClient; }
     void setSharedWorkerRepositoryClient(SharedWorkerRepositoryClient* client) { m_sharedWorkerRepositoryClient = client; }
-
-    bool autoscrollInProgress() const;
-    bool autoscrollInProgress(const RenderBox*) const;
-    bool panScrollInProgress() const;
-    void startAutoscrollForSelection(RenderObject*);
-    void stopAutoscrollIfNeeded(RenderObject*);
-    void stopAutoscrollTimer();
-    void updateAutoscrollRenderer();
-    void updateDragAndDrop(Node* targetNode, const IntPoint& eventPosition, double eventTime);
-#if OS(WIN)
-    void handleMouseReleaseForPanScrolling(Frame*, const PlatformMouseEvent&);
-    void startPanScrolling(RenderBox*, const IntPoint&);
-#endif
 
     ScrollingCoordinator* scrollingCoordinator();
 
