@@ -651,6 +651,165 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
       FuzzyForSoftwareOnlyPixelComparator<TypeParam>(false)));
 }
 
+TYPED_TEST(RendererPixelTest, FastPassSaturateFilter) {
+  gfx::Rect viewport_rect(this->device_viewport_size_);
+
+  RenderPass::Id root_pass_id(1, 1);
+  scoped_ptr<RenderPass> root_pass =
+      CreateTestRootRenderPass(root_pass_id, viewport_rect);
+
+  RenderPass::Id child_pass_id(2, 2);
+  gfx::Rect pass_rect(this->device_viewport_size_);
+  gfx::Transform transform_to_root;
+  scoped_ptr<RenderPass> child_pass =
+      CreateTestRenderPass(child_pass_id, pass_rect, transform_to_root);
+
+  gfx::Transform content_to_target_transform;
+  scoped_ptr<SharedQuadState> shared_state =
+      CreateTestSharedQuadState(content_to_target_transform, viewport_rect);
+  shared_state->opacity = 0.5f;
+
+  scoped_ptr<SolidColorDrawQuad> blue = SolidColorDrawQuad::Create();
+  blue->SetNew(shared_state.get(),
+               gfx::Rect(0,
+                         0,
+                         this->device_viewport_size_.width(),
+                         this->device_viewport_size_.height() / 2),
+               SK_ColorBLUE,
+               false);
+  scoped_ptr<SolidColorDrawQuad> yellow = SolidColorDrawQuad::Create();
+  yellow->SetNew(shared_state.get(),
+                 gfx::Rect(0,
+                           this->device_viewport_size_.height() / 2,
+                           this->device_viewport_size_.width(),
+                           this->device_viewport_size_.height() / 2),
+                 SK_ColorYELLOW,
+                 false);
+
+  scoped_ptr<SharedQuadState> blank_state =
+      CreateTestSharedQuadState(content_to_target_transform, viewport_rect);
+
+  scoped_ptr<SolidColorDrawQuad> white = SolidColorDrawQuad::Create();
+  white->SetNew(blank_state.get(),
+                viewport_rect,
+                SK_ColorWHITE,
+                false);
+
+  child_pass->quad_list.push_back(blue.PassAs<DrawQuad>());
+  child_pass->quad_list.push_back(yellow.PassAs<DrawQuad>());
+  child_pass->quad_list.push_back(white.PassAs<DrawQuad>());
+
+  scoped_ptr<SharedQuadState> pass_shared_state =
+      CreateTestSharedQuadState(gfx::Transform(), pass_rect);
+
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateSaturateFilter(0.5f));
+
+  scoped_ptr<RenderPassDrawQuad> render_pass_quad =
+      RenderPassDrawQuad::Create();
+  render_pass_quad->SetNew(pass_shared_state.get(),
+                           pass_rect,
+                           child_pass_id,
+                           false,
+                           0,
+                           pass_rect,
+                           gfx::RectF(),
+                           filters,
+                           FilterOperations());
+
+  root_pass->quad_list.push_back(render_pass_quad.PassAs<DrawQuad>());
+
+  RenderPassList pass_list;
+  pass_list.push_back(child_pass.Pass());
+  pass_list.push_back(root_pass.Pass());
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      PixelTest::NoOffscreenContext,
+      base::FilePath(FILE_PATH_LITERAL("blue_yellow_alpha.png")),
+      ExactPixelComparator(true)));
+}
+
+TYPED_TEST(RendererPixelTest, FastPassFilterChain) {
+  gfx::Rect viewport_rect(this->device_viewport_size_);
+
+  RenderPass::Id root_pass_id(1, 1);
+  scoped_ptr<RenderPass> root_pass =
+      CreateTestRootRenderPass(root_pass_id, viewport_rect);
+
+  RenderPass::Id child_pass_id(2, 2);
+  gfx::Rect pass_rect(this->device_viewport_size_);
+  gfx::Transform transform_to_root;
+  scoped_ptr<RenderPass> child_pass =
+      CreateTestRenderPass(child_pass_id, pass_rect, transform_to_root);
+
+  gfx::Transform content_to_target_transform;
+  scoped_ptr<SharedQuadState> shared_state =
+      CreateTestSharedQuadState(content_to_target_transform, viewport_rect);
+  shared_state->opacity = 0.5f;
+
+  scoped_ptr<SolidColorDrawQuad> blue = SolidColorDrawQuad::Create();
+  blue->SetNew(shared_state.get(),
+               gfx::Rect(0,
+                         0,
+                         this->device_viewport_size_.width(),
+                         this->device_viewport_size_.height() / 2),
+               SK_ColorBLUE,
+               false);
+  scoped_ptr<SolidColorDrawQuad> yellow = SolidColorDrawQuad::Create();
+  yellow->SetNew(shared_state.get(),
+                 gfx::Rect(0,
+                           this->device_viewport_size_.height() / 2,
+                           this->device_viewport_size_.width(),
+                           this->device_viewport_size_.height() / 2),
+                 SK_ColorYELLOW,
+                 false);
+
+  scoped_ptr<SharedQuadState> blank_state =
+      CreateTestSharedQuadState(content_to_target_transform, viewport_rect);
+
+  scoped_ptr<SolidColorDrawQuad> white = SolidColorDrawQuad::Create();
+  white->SetNew(blank_state.get(),
+                viewport_rect,
+                SK_ColorWHITE,
+                false);
+
+  child_pass->quad_list.push_back(blue.PassAs<DrawQuad>());
+  child_pass->quad_list.push_back(yellow.PassAs<DrawQuad>());
+  child_pass->quad_list.push_back(white.PassAs<DrawQuad>());
+
+  scoped_ptr<SharedQuadState> pass_shared_state =
+      CreateTestSharedQuadState(gfx::Transform(), pass_rect);
+
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateGrayscaleFilter(1.f));
+  filters.Append(FilterOperation::CreateBrightnessFilter(0.5f));
+
+  scoped_ptr<RenderPassDrawQuad> render_pass_quad =
+      RenderPassDrawQuad::Create();
+  render_pass_quad->SetNew(pass_shared_state.get(),
+                           pass_rect,
+                           child_pass_id,
+                           false,
+                           0,
+                           pass_rect,
+                           gfx::RectF(),
+                           filters,
+                           FilterOperations());
+
+  root_pass->quad_list.push_back(render_pass_quad.PassAs<DrawQuad>());
+
+  RenderPassList pass_list;
+  pass_list.push_back(child_pass.Pass());
+  pass_list.push_back(root_pass.Pass());
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      PixelTest::NoOffscreenContext,
+      base::FilePath(FILE_PATH_LITERAL("blue_yellow_filter_chain.png")),
+      ExactPixelComparator(true)));
+}
+
 TYPED_TEST(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
