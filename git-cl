@@ -21,7 +21,7 @@ fi
 # "$base_dir"/update_depot_tools
 
 if [ -e "$base_dir/python.bat" -a $MINGW = 0 ]; then
-  PYTHONDONTWRITEBYTECODE=1 cmd.exe //c $base_dir\\python.bat $base_dir\\git_cl.py $@
+  PYTHONDONTWRITEBYTECODE=1 cmd.exe //c "$base_dir\\python.bat" "$base_dir\\git_cl.py" "$@"
 else
   PYTHONDONTWRITEBYTECODE=1 exec "$base_dir/git_cl.py" "$@"
 fi

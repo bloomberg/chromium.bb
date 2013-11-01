@@ -15,7 +15,7 @@ else
 fi
 
 if [ -e "$base_dir/python.bat" -a $MINGW = 0 ]; then
-  PYTHONDONTWRITEBYTECODE=1 cmd.exe //c $base_dir\\python.bat $base_dir\\git_try.py $@
+  PYTHONDONTWRITEBYTECODE=1 cmd.exe //c "$base_dir\\python.bat" "$base_dir\\git_try.py" "$@"
 else
   PYTHONDONTWRITEBYTECODE=1 exec "$base_dir/git_try.py" "$@"
 fi
