@@ -83,7 +83,7 @@ def decode_results(results, include_expected=False):
             expected_results = result['expected'].split()
             if len(actual_results) > 1:
                 if actual_results[1] in expected_results:
-                    flakes[test] = actual_result[0]
+                    flakes[test] = actual_results[0]
                 else:
                     # We report the first failure type back, even if the second
                     # was more severe.
