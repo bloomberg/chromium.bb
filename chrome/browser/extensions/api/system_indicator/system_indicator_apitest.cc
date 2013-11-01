@@ -11,8 +11,8 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/lazy_background_page_test_util.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "extensions/common/switches.h"
 
 class SystemIndicatorApiTest : public ExtensionApiTest {
  public:
@@ -20,8 +20,10 @@ class SystemIndicatorApiTest : public ExtensionApiTest {
     ExtensionApiTest::SetUpCommandLine(command_line);
     // Set shorter delays to prevent test timeouts in tests that need to wait
     // for the event page to unload.
-    command_line->AppendSwitchASCII(switches::kEventPageIdleTime, "1");
-    command_line->AppendSwitchASCII(switches::kEventPageSuspendingTime, "1");
+    command_line->AppendSwitchASCII(
+        extensions::switches::kEventPageIdleTime, "1");
+    command_line->AppendSwitchASCII(
+        extensions::switches::kEventPageSuspendingTime, "1");
   }
 
   const extensions::Extension* LoadExtensionAndWait(
