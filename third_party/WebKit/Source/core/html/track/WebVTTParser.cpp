@@ -180,6 +180,11 @@ void WebVTTParser::parseBytes(const char* data, unsigned length)
             break;
 
         case TimingsAndSettings:
+            if (line.isEmpty()) {
+                m_state = Id;
+                break;
+            }
+
             // 40 - Collect cue timings and settings.
             m_state = collectTimingsAndSettings(line);
             break;
