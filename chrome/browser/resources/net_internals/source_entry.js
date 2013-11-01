@@ -218,11 +218,13 @@ var SourceEntry = (function() {
         if (this.entries_[0].type == EventType.REQUEST_ALIVE &&
             this.entries_[0].params == undefined) {
           var startIndex = 1;
-          // Skip over URL_REQUEST_BLOCKED_ON_DELEGATE events for URL_REQUESTs.
-          while (startIndex + 1 < this.entries_.length &&
-                 this.entries_[startIndex].type ==
-                     EventType.URL_REQUEST_BLOCKED_ON_DELEGATE) {
-            ++startIndex;
+          // Skip over delegate events for URL_REQUESTs.
+          for (; startIndex + 1 < this.entries_.length; ++startIndex) {
+            var type = this.entries_[startIndex].type;
+            if (type != EventType.URL_REQUEST_DELEGATE &&
+                type != EventType.DELEGATE_INFO) {
+              break;
+            }
           }
           return this.entries_[startIndex];
         }
