@@ -1,27 +1,23 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// demuxer_bench is a standalone benchmarking tool for FFmpegDemuxer. It
-// simulates the reading requirements for playback by reading from the stream
-// that has the earliest timestamp.
-
-#include <iostream>
 
 #include "base/at_exit.h"
 #include "base/bind.h"
-#include "base/command_line.h"
-#include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/time.h"
 #include "media/base/media.h"
 #include "media/base/media_log.h"
+#include "media/base/test_data_util.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/file_data_source.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "testing/perf/perf_test.h"
 
-namespace switches {
-const char kEnableBitstreamConverter[] = "enable-bitstream-converter";
-}  // namespace switches
+namespace media {
+
+static const int kBenchmarkIterations = 5000;
 
 class DemuxerHostImpl : public media::DemuxerHost {
  public:
@@ -42,7 +38,7 @@ class DemuxerHostImpl : public media::DemuxerHost {
   DISALLOW_COPY_AND_ASSIGN(DemuxerHostImpl);
 };
 
-void QuitLoopWithStatus(base::MessageLoop* message_loop,
+static void QuitLoopWithStatus(base::MessageLoop* message_loop,
                         media::PipelineStatus status) {
   CHECK_EQ(status, media::PIPELINE_OK);
   message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
@@ -170,71 +166,61 @@ int StreamReader::GetNextStreamIndexToRead() {
   return index;
 }
 
-int main(int argc, char** argv) {
-  base::AtExitManager at_exit;
-  media::InitializeMediaLibraryForTesting();
+static void RunDemuxerBenchmark(const std::string& filename) {
+  base::FilePath file_path(GetTestDataFilePath(filename));
+  double total_time = 0.0;
+  for (int i = 0; i < kBenchmarkIterations; ++i) {
+    // Setup.
+    base::MessageLoop message_loop;
+    DemuxerHostImpl demuxer_host;
+    FileDataSource data_source;
+    ASSERT_TRUE(data_source.Initialize(file_path));
 
-  CommandLine::Init(argc, argv);
-  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+    Demuxer::NeedKeyCB need_key_cb = base::Bind(&NeedKey);
+    FFmpegDemuxer demuxer(message_loop.message_loop_proxy(),
+                          &data_source,
+                          need_key_cb,
+                          new MediaLog());
 
-  if (cmd_line->GetArgs().empty()) {
-    std::cerr << "Usage: " << argv[0] << " [file]\n\n"
-              << "Options:\n"
-              << "  --" << switches::kEnableBitstreamConverter
-              << " Enables H.264 Annex B bitstream conversion"
-              << std::endl;
-    return 1;
-  }
+    demuxer.Initialize(&demuxer_host, base::Bind(
+        &QuitLoopWithStatus, &message_loop));
+    message_loop.Run();
+    StreamReader stream_reader(&demuxer, false);
 
-  base::MessageLoop message_loop;
-  DemuxerHostImpl demuxer_host;
-  base::FilePath file_path(cmd_line->GetArgs()[0]);
-
-  // Setup.
-  media::FileDataSource data_source;
-  CHECK(data_source.Initialize(file_path));
-
-  media::Demuxer::NeedKeyCB need_key_cb = base::Bind(&NeedKey);
-  media::FFmpegDemuxer demuxer(message_loop.message_loop_proxy(),
-                               &data_source,
-                               need_key_cb,
-                               new media::MediaLog());
-
-  demuxer.Initialize(&demuxer_host, base::Bind(
-      &QuitLoopWithStatus, &message_loop));
-  message_loop.Run();
-
-  StreamReader stream_reader(
-      &demuxer, cmd_line->HasSwitch(switches::kEnableBitstreamConverter));
-
-  // Benchmark.
-  base::TimeTicks start = base::TimeTicks::HighResNow();
-  while (!stream_reader.IsDone()) {
-    stream_reader.Read();
-  }
-  base::TimeTicks end = base::TimeTicks::HighResNow();
-
-  // Results.
-  std::cout << "Time: " << (end - start).InMillisecondsF() << " ms\n";
-  for (int i = 0; i < stream_reader.number_of_streams(); ++i) {
-    media::DemuxerStream* stream = stream_reader.streams()[i];
-    std::cout << "Stream #" << i << ": ";
-
-    if (stream->type() == media::DemuxerStream::AUDIO) {
-      std::cout << "audio";
-    } else if (stream->type() == media::DemuxerStream::VIDEO) {
-      std::cout << "video";
-    } else {
-      std::cout << "unknown";
+    // Benchmark.
+    base::TimeTicks start = base::TimeTicks::HighResNow();
+    while (!stream_reader.IsDone()) {
+      stream_reader.Read();
     }
-
-    std::cout << ", " << stream_reader.counts()[i] << " packets" << std::endl;
+    base::TimeTicks end = base::TimeTicks::HighResNow();
+    total_time += (end - start).InSecondsF();
+    demuxer.Stop(base::Bind(
+        &QuitLoopWithStatus, &message_loop, PIPELINE_OK));
+    message_loop.Run();
   }
 
-  // Teardown.
-  demuxer.Stop(base::Bind(
-      &QuitLoopWithStatus, &message_loop, media::PIPELINE_OK));
-  message_loop.Run();
-
-  return 0;
+  perf_test::PrintResult("demuxer_bench",
+                         "",
+                         filename,
+                         kBenchmarkIterations / total_time,
+                         "runs/s",
+                         true);
 }
+
+TEST(DemuxerPerfTest, Demuxer) {
+  RunDemuxerBenchmark("media/test/data/bear.ogv");
+  RunDemuxerBenchmark("media/test/data/bear-640x360.webm");
+  RunDemuxerBenchmark("media/test/data/sfx_s16le.wav");
+#if defined(USE_PROPRIETARY_CODECS)
+  RunDemuxerBenchmark("media/test/data/bear-1280x720.mp4");
+  RunDemuxerBenchmark("media/test/data/sfx.mp3");
+#endif
+#if defined(OS_CHROMEOS)
+  RunDemuxerBenchmark("media/test/data/bear.flac");
+#endif
+#if defined(USE_PROPRIETARY_CODECS) && defined(OS_CHROMEOS)
+  RunDemuxerBenchmark("media/test/data/bear.avi");
+#endif
+}
+
+}  // namespace media

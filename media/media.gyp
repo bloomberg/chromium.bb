@@ -1080,8 +1080,10 @@
       'sources': [
         'base/audio_bus_perftest.cc',
         'base/audio_converter_perftest.cc',
-        'base/sinc_resampler_perftest.cc',
+        'base/demuxer_perftest.cc',
         'base/run_all_unittests.cc',
+        'base/sinc_resampler_perftest.cc',
+        'base/test_data_util.cc',
         'base/vector_math_perftest.cc',
       ],
     },
@@ -1155,19 +1157,6 @@
           ],
         }],
       ],
-    },
-    {
-      'target_name': 'demuxer_bench',
-      'type': 'executable',
-      'dependencies': [
-        'media',
-        '../base/base.gyp:base',
-      ],
-      'sources': [
-        'tools/demuxer_bench/demuxer_bench.cc',
-      ],
-      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-      'msvs_disabled_warnings': [ 4267, ],
     },
   ],
   'conditions': [
