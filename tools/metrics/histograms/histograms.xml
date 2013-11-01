@@ -6839,6 +6839,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="MultiProfile.SessionMode" enum="MultiProfileSessionMode">
+  <summary>
+    The session counter for different multi profile modes which gets stored once
+    per session at the beginning of the session.
+  </summary>
+</histogram>
+
 <histogram name="MultiProfile.SigninUserUIPath"
     enum="MultiProfileSigninUserAction">
   <summary>
@@ -6854,6 +6861,14 @@ other types of suffix sets.
     Count the number of times each UI path is taken for switching the active
     account in a ChromeOS multiprofile session. UI paths include the system tray
     and the keyboard shortcut.
+  </summary>
+</histogram>
+
+<histogram name="MultiProfile.TeleportWindow"
+    enum="MultiProfileTeleportWindowAction">
+  <summary>
+    Counts the number of window teleportations when using separated desktop
+    mode.
   </summary>
 </histogram>
 
@@ -24959,6 +24974,12 @@ other types of suffix sets.
   <int value="9" label="OPUS"/>
 </enum>
 
+<enum name="MultiProfileSessionMode" type="int">
+  <int value="0" label="Single user mode"/>
+  <int value="1" label="Side by side mode"/>
+  <int value="2" label="Separate desktop mode"/>
+</enum>
+
 <enum name="MultiProfileSigninUserAction" type="int">
   <int value="0" label="System tray"/>
   <int value="1" label="Browser frame"/>
@@ -24967,6 +24988,13 @@ other types of suffix sets.
 <enum name="MultiProfileSwitchActiveUserAction" type="int">
   <int value="0" label="System tray"/>
   <int value="1" label="Keyboard accelerator"/>
+</enum>
+
+<enum name="MultiProfileTeleportWindowAction" type="int">
+  <int value="0" label="Drag and drop"/>
+  <int value="1" label="Caption context menu"/>
+  <int value="2" label="Return by minimize"/>
+  <int value="3" label="Return by launcher"/>
 </enum>
 
 <enum name="NavigationScheme" type="int">

@@ -81,6 +81,7 @@
 #include "ui/views/corewm/window_animations.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/multi_profile_uma.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
@@ -1041,6 +1042,8 @@ void ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
     const std::string& current_user =
         manager->GetUserIDFromProfile(profile());
     if (!manager->IsWindowOnDesktopOfUser(native_window, current_user)) {
+      ash::MultiProfileUMA::RecordTeleportAction(
+          ash::MultiProfileUMA::TELEPORT_WINDOW_RETURN_BY_LAUNCHER);
       manager->ShowWindowForUser(native_window, current_user);
       window->Activate();
       return;

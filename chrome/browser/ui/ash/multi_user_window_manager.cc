@@ -7,6 +7,7 @@
 #include "apps/shell_window.h"
 #include "apps/shell_window_registry.h"
 #include "ash/ash_switches.h"
+#include "ash/multi_profile_uma.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -95,17 +96,22 @@ MultiUserWindowManager* MultiUserWindowManager::GetInstance() {
 }
 
 MultiUserWindowManager* MultiUserWindowManager::CreateInstance() {
+  ash::MultiProfileUMA::SessionMode mode =
+      ash::MultiProfileUMA::SESSION_SINGLE_USER_MODE;
   if (!g_instance &&
       ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled() &&
       !ash::switches::UseFullMultiProfileMode()) {
     g_instance = CreateInstanceInternal(
         ash::Shell::GetInstance()->session_state_delegate()->GetUserID(0));
     multi_user_mode_ = MULTI_PROFILE_MODE_SEPARATED;
+    mode = ash::MultiProfileUMA::SESSION_SEPARATE_DESKTOP_MODE;
   } else if (ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled()) {
     multi_user_mode_ = MULTI_PROFILE_MODE_MIXED;
+    mode = ash::MultiProfileUMA::SESSION_SIDE_BY_SIDE_MODE;
   } else {
     multi_user_mode_ = MULTI_PROFILE_MODE_OFF;
   }
+  ash::MultiProfileUMA::RecordSessionMode(mode);
   return g_instance;
 }
 
@@ -198,6 +204,9 @@ void MultiUserWindowManager::ShowWindowForUser(aura::Window* window,
   // Check that we are not trying to transfer ownership of a minimized window.
   if (user_id != owner && ash::wm::GetWindowState(window)->IsMinimized())
     return;
+
+  ash::MultiProfileUMA::RecordTeleportAction(
+      ash::MultiProfileUMA::TELEPORT_WINDOW_RETURN_BY_MINIMIZE);
 
   WindowToEntryMap::iterator it = window_to_entry_.find(window);
   it->second->set_show_for_user(user_id);

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/session_state_delegate_chromeos.h"
 
+#include "ash/multi_profile_uma.h"
 #include "ash/session_state_observer.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -174,6 +175,10 @@ bool SessionStateDelegateChromeos::TransferWindowToDesktopOfUser(
       chrome::MultiUserWindowManager::GetInstance();
   if (!window_manager || window_manager->GetWindowOwner(window).empty())
     return false;
+
+  ash::MultiProfileUMA::RecordTeleportAction(
+      ash::MultiProfileUMA::TELEPORT_WINDOW_DRAG_AND_DROP);
+
   DCHECK_LT(index, NumberOfLoggedInUsers());
   window_manager->ShowWindowForUser(window,
       chromeos::UserManager::Get()->GetLRULoggedInUsers()[index]->email());

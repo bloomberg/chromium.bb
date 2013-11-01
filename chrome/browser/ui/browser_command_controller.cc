@@ -57,6 +57,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "ash/multi_profile_uma.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "chrome/browser/ui/ash/multi_user_window_manager.h"
@@ -462,6 +463,8 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
 #if defined(OS_CHROMEOS)
     case IDC_VISIT_DESKTOP_OF_LRU_USER_2:
     case IDC_VISIT_DESKTOP_OF_LRU_USER_3: {
+        ash::MultiProfileUMA::RecordTeleportAction(
+            ash::MultiProfileUMA::TELEPORT_WINDOW_CAPTION_MENU);
         // When running the multi user mode on Chrome OS, windows can "visit"
         // another user's desktop.
         const std::string& user_id =
