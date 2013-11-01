@@ -268,7 +268,7 @@ BookmarkBubbleView::BookmarkBubbleView(
   set_background(views::Background::CreateSolidBackground(background_color));
   set_margins(gfx::Insets(views::kPanelVertMargin, 0, 0, 0));
   // Compensate for built-in vertical padding in the anchor view's image.
-  set_anchor_view_insets(gfx::Insets(7, 0, 7, 0));
+  set_anchor_view_insets(gfx::Insets(2, 0, 2, 0));
 }
 
 string16 BookmarkBubbleView::GetTitle() {

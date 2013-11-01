@@ -233,8 +233,6 @@ TEST_F(BubbleDelegateTest, NonClientHitTest) {
     const int hit;
   } cases[] = {
     { border,      HTNOWHERE },
-    { border + 5,  HTNOWHERE },
-    { border + 6,  HTCLIENT  },
     { border + 50, HTCLIENT  },
     { 1000,        HTNOWHERE },
   };
