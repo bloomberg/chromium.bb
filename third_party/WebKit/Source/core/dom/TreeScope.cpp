@@ -230,7 +230,7 @@ RenderObject* rendererFromPoint(Document* document, int x, int y, LayoutPoint* l
     if (!frameView->visibleContentRect().contains(point))
         return 0;
 
-    HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::DisallowShadowContent);
+    HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent);
     HitTestResult result(point);
     document->renderView()->hitTest(request, result);
 

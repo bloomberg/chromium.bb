@@ -231,7 +231,7 @@ private:
     bool dispatchSyntheticTouchEventIfEnabled(const PlatformMouseEvent&);
     bool handleMouseEventAsEmulatedGesture(const PlatformMouseEvent&);
     bool handleWheelEventAsEmulatedGesture(const PlatformWheelEvent&);
-    HitTestResult hitTestResultInFrame(Frame*, const LayoutPoint&, HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::DisallowShadowContent);
+    HitTestResult hitTestResultInFrame(Frame*, const LayoutPoint&, HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent);
 
     void invalidateClick();
 

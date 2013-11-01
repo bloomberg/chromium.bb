@@ -312,7 +312,7 @@ public:
      */
     PassRefPtr<NodeList> nodesFromRect(int centerX, int centerY,
         unsigned topPadding, unsigned rightPadding, unsigned bottomPadding, unsigned leftPadding,
-        HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::DisallowShadowContent) const;
+        HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent) const;
     Element* elementFromPoint(int x, int y) const;
     PassRefPtr<Range> caretRangeFromPoint(int x, int y);
 

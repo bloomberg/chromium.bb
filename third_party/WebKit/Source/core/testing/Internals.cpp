@@ -1405,7 +1405,7 @@ PassRefPtr<NodeList> Internals::nodesFromRect(Document* document, int centerX, i
     if (ignoreClipping)
         hitType |= HitTestRequest::IgnoreClipping;
     if (!allowShadowContent)
-        hitType |= HitTestRequest::DisallowShadowContent;
+        hitType |= HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent;
     if (allowChildFrameContent)
         hitType |= HitTestRequest::AllowChildFrameContent;
 

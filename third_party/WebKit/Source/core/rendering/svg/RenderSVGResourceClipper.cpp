@@ -316,7 +316,7 @@ bool RenderSVGResourceClipper::hitTestClipContent(const FloatRect& objectBoundin
             continue;
         IntPoint hitPoint;
         HitTestResult result(hitPoint);
-        if (renderer->nodeAtFloatPoint(HitTestRequest(HitTestRequest::SVGClipContent | HitTestRequest::DisallowShadowContent), result, point, HitTestForeground))
+        if (renderer->nodeAtFloatPoint(HitTestRequest(HitTestRequest::SVGClipContent | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent), result, point, HitTestForeground))
             return true;
     }
 

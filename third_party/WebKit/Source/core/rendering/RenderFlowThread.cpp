@@ -336,7 +336,7 @@ bool RenderFlowThread::hitTestFlowThreadPortionInRegion(RenderRegion* region, co
     }
 
     // Always ignore clipping, since the RenderFlowThread has nothing to do with the bounds of the FrameView.
-    HitTestRequest newRequest(request.type() | HitTestRequest::IgnoreClipping | HitTestRequest::DisallowShadowContent);
+    HitTestRequest newRequest(request.type() | HitTestRequest::IgnoreClipping | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent);
 
     // Make a new temporary HitTestLocation in the new region.
     HitTestLocation newHitTestLocation(locationInContainer, -renderFlowThreadOffset, region);

@@ -109,7 +109,7 @@ PassOwnPtr<ContextMenu> ContextMenuController::createContextMenu(Event* event)
     HitTestResult result(mouseEvent->absoluteLocation());
 
     if (Frame* frame = event->target()->toNode()->document().frame())
-        result = frame->eventHandler().hitTestResultAtPoint(mouseEvent->absoluteLocation(), HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::DisallowShadowContent);
+        result = frame->eventHandler().hitTestResultAtPoint(mouseEvent->absoluteLocation(), HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent);
 
     if (!result.innerNonSharedNode())
         return nullptr;

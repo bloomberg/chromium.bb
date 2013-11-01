@@ -318,7 +318,7 @@ static Element* elementUnderMouse(Document* documentUnderMouse, const IntPoint& 
     float zoomFactor = frame ? frame->pageZoomFactor() : 1;
     LayoutPoint point = roundedLayoutPoint(FloatPoint(p.x() * zoomFactor, p.y() * zoomFactor));
 
-    HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::DisallowShadowContent);
+    HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent);
     HitTestResult result(point);
     documentUnderMouse->renderView()->hitTest(request, result);
 

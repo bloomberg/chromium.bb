@@ -1078,7 +1078,7 @@ WebRect WebViewImpl::computeBlockBounds(const WebRect& rect, bool ignoreClipping
 
     // Use the rect-based hit test to find the node.
     IntPoint point = mainFrameImpl()->frameView()->windowToContents(IntPoint(rect.x, rect.y));
-    HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::DisallowShadowContent | (ignoreClipping ? HitTestRequest::IgnoreClipping : 0);
+    HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent | (ignoreClipping ? HitTestRequest::IgnoreClipping : 0);
     HitTestResult result = mainFrameImpl()->frame()->eventHandler().hitTestResultAtPoint(point, hitType, IntSize(rect.width, rect.height));
 
     Node* node = result.innerNonSharedNode();
@@ -1223,7 +1223,7 @@ Node* WebViewImpl::bestTapNode(const PlatformGestureEvent& tapEvent)
     m_page->mainFrame()->eventHandler().adjustGesturePosition(tapEvent, touchEventLocation);
 
     IntPoint hitTestPoint = m_page->mainFrame()->view()->windowToContents(touchEventLocation);
-    HitTestResult result = m_page->mainFrame()->eventHandler().hitTestResultAtPoint(hitTestPoint, HitTestRequest::TouchEvent | HitTestRequest::DisallowShadowContent);
+    HitTestResult result = m_page->mainFrame()->eventHandler().hitTestResultAtPoint(hitTestPoint, HitTestRequest::TouchEvent | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent);
     bestTouchNode = result.targetNode();
 
     Node* firstUncontainedNode = 0;
@@ -3769,7 +3769,7 @@ Element* WebViewImpl::focusedElement()
 HitTestResult WebViewImpl::hitTestResultForWindowPos(const IntPoint& pos)
 {
     IntPoint docPoint(m_page->mainFrame()->view()->windowToContents(pos));
-    return m_page->mainFrame()->eventHandler().hitTestResultAtPoint(docPoint, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::DisallowShadowContent);
+    return m_page->mainFrame()->eventHandler().hitTestResultAtPoint(docPoint, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent);
 }
 
 void WebViewImpl::setTabsToLinks(bool enable)
