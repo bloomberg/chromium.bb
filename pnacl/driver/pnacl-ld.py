@@ -24,7 +24,6 @@ EXTRA_ENV = {
   'INPUTS'   : '',
   'OUTPUT'   : '',
 
-  'SHARED'   : '0',
   'STATIC'   : '0',
   'PIC'      : '0',
   'USE_STDLIB': '1',
@@ -61,7 +60,7 @@ EXTRA_ENV = {
                       '-plugin-opt=emit-llvm',
 
   'LD_FLAGS'       : '-nostdlib ${@AddPrefix:-L:SEARCH_DIRS} ' +
-                     '${SHARED ? -shared} ${STATIC ? -static} ' +
+                     '${STATIC ? -static} ' +
                      '${RELOCATABLE ? -relocatable} ' +
                      '${#SONAME ? --soname=${SONAME}}',
 
@@ -117,7 +116,7 @@ EXTRA_ENV = {
 
   'BCLD_FLAGS':
     '--oformat ${BCLD_OFORMAT} -Ttext=0x20000 ' +
-    '${!SHARED && !RELOCATABLE ? --undef-sym-check ${BCLD_ALLOW_UNRESOLVED}} ' +
+    '${!RELOCATABLE ? --undef-sym-check ${BCLD_ALLOW_UNRESOLVED}} ' +
     '${GOLD_PLUGIN_ARGS} ${LD_FLAGS}',
   'RUN_BCLD': ('${LD} ${BCLD_FLAGS} ${inputs} -o ${output}'),
 
@@ -171,7 +170,6 @@ LDPatterns = [
   ( '-o(.+)',          "env.set('OUTPUT', pathtools.normalize($0))"),
   ( ('-o', '(.+)'),    "env.set('OUTPUT', pathtools.normalize($0))"),
 
-  ( '-shared',         "env.set('SHARED', '1')"),
   ( '-static',         "env.set('STATIC', '1')"),
   ( '-nostdlib',       "env.set('USE_STDLIB', '0')"),
   ( '-r',              "env.set('RELOCATABLE', '1')"),
@@ -184,20 +182,13 @@ LDPatterns = [
   ( ('--library-path', '(.+)'),
     "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))\n"),
 
-  # We just ignore undefined symbols in shared objects, so
-  # -rpath-link should not be necessary.
-  #
-  # However, libsrpc.so still needs to be linked in directly (in non-IRT mode)
-  # or it malfunctions. This is the only way that -rpath-link is still used.
-  # There's a corresponding hack in pnacl-translate to recognize libsrpc.so
-  # and link it in directly.
-  # TODO(pdox): Investigate this situation.
+  # -rpath and -rpath-link are only relevant to dynamic linking.
+  # Ignore them for compatibility with build scripts that expect to be
+  # able to pass them.
   ( ('(-rpath)','(.*)'), ""),
   ( ('(-rpath)=(.*)'), ""),
-  ( ('(-rpath-link)','(.*)'),
-    "env.append('TRANSLATE_FLAGS', $0+'='+pathtools.normalize($1))"),
-  ( ('(-rpath-link)=(.*)'),
-    "env.append('TRANSLATE_FLAGS', $0+'='+pathtools.normalize($1))"),
+  ( ('(-rpath-link)','(.*)'), ""),
+  ( ('(-rpath-link)=(.*)'), ""),
 
   # This overrides the builtin linker script.
   ( ('(-T)', '(.*)'),    AddToNativeFlags),
@@ -304,8 +295,6 @@ def main(argv):
     env.set('BASE_LIB', "${BASE_LIB_ARCH}")
 
   if env.getbool('RELOCATABLE'):
-    if env.getbool('SHARED'):
-      Log.Fatal("-r and -shared may not be used together")
     env.set('STATIC', '0')
 
   inputs = env.get('INPUTS')
@@ -344,10 +333,7 @@ def main(argv):
 
   inputs = ReorderPrivateLibs(inputs)
 
-  if env.getbool('SHARED'):
-    bitcode_type = 'pso'
-    native_type = 'so'
-  elif env.getbool('RELOCATABLE'):
+  if env.getbool('RELOCATABLE'):
     bitcode_type = 'po'
     native_type = 'o'
   else:

@@ -212,8 +212,6 @@ TranslatorPatterns = [
 
   ( '--allow-llvm-bitcode-input', "env.set('ALLOW_LLVM_BITCODE_INPUT', '1')"),
 
-  ( '-rpath-link=(.+)', "env.append('LD_FLAGS', '-L'+$0)"),
-
   ( '-fPIC',           "env.set('PIC', '1')"),
 
   ( '(--build-id)',    "env.append('LD_FLAGS', $0)"),
