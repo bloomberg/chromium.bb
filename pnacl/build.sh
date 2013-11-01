@@ -338,6 +338,7 @@ ArgumentToAbsolutePath() {
 sync-sources() {
   StepBanner "SYNC SOURCES"
   python ${TOOLCHAIN_BUILD} --sync-only
+  newlib-nacl-headers
 }
 
 git-sync() {

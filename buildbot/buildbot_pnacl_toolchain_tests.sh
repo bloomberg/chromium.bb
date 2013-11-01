@@ -31,6 +31,7 @@ ARCHIVED_PEXE_TRANSLATOR_REV=12177
 ARCHIVED_TOOLCHAIN_REV=12276
 
 readonly PNACL_BUILD="pnacl/build.sh"
+readonly TOOLCHAIN_BUILD="toolchain_build/toolchain_build_pnacl.py"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
 readonly TORTURE_TEST="tools/toolchain_tester/torture_test.py"
 readonly LLVM_TESTSUITE="pnacl/scripts/llvm-test.py"
@@ -382,10 +383,14 @@ tc-test-bot() {
   echo "@@@BUILD_STEP show-config@@@"
   ${PNACL_BUILD} show-config
 
+  ${PNACL_BUILD} clean
+  python ${TOOLCHAIN_BUILD} --sync-only # outputs its own BUILD_STEP annotation
+  ${PNACL_BUILD} newlib-nacl-headers
+
   # Build the un-sandboxed toolchain
   echo "@@@BUILD_STEP compile_toolchain@@@"
-  ${PNACL_BUILD} clean
-  HOST_ARCH=x86_32 ${PNACL_BUILD} all
+
+  HOST_ARCH=x86_32 ${PNACL_BUILD} build-all
   # Make 64-bit versions of the build tools such as fpcmp (used for llvm
   # test suite and for some reason it matters that they match the build machine)
   ${PNACL_BUILD} llvm-configure
