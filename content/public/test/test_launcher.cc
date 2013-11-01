@@ -21,7 +21,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/launcher/parallel_test_launcher.h"
 #include "base/test/launcher/test_launcher.h"
 #include "base/test/test_suite.h"
 #include "base/test/test_switches.h"
@@ -87,10 +86,9 @@ void PrintUsage() {
 // wrapping a lower-level test launcher with content-specific code.
 class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
  public:
-  WrapperTestLauncherDelegate(content::TestLauncherDelegate* launcher_delegate,
-                              size_t jobs)
-      : launcher_delegate_(launcher_delegate),
-        parallel_launcher_(jobs) {
+  explicit WrapperTestLauncherDelegate(
+      content::TestLauncherDelegate* launcher_delegate)
+      : launcher_delegate_(launcher_delegate) {
     CHECK(temp_dir_.CreateUniqueTempDir());
   }
 
@@ -127,8 +125,6 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
       const std::string& output);
 
   content::TestLauncherDelegate* launcher_delegate_;
-
-  base::ParallelTestLauncher parallel_launcher_;
 
   // Store dependent test name (map is indexed by full test name).
   typedef std::map<std::string, std::string> DependentTestMap;
@@ -331,7 +327,7 @@ void WrapperTestLauncherDelegate::DoRunTest(base::TestLauncher* test_launcher,
 
   char* browser_wrapper = getenv("BROWSER_WRAPPER");
 
-  parallel_launcher_.LaunchChildGTestProcess(
+  test_launcher->LaunchChildGTestProcess(
       new_cmd_line,
       browser_wrapper ? browser_wrapper : std::string(),
       TestTimeouts::action_max_timeout(),
@@ -401,7 +397,6 @@ void WrapperTestLauncherDelegate::GTestCallback(
   }
 
   test_launcher->OnTestFinished(result);
-  parallel_launcher_.ResetOutputWatchdog();
 }
 
 bool GetSwitchValueAsInt(const std::string& switch_name, int* result) {
@@ -515,8 +510,8 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
 
   base::MessageLoopForIO message_loop;
 
-  WrapperTestLauncherDelegate delegate(launcher_delegate, jobs);
-  base::TestLauncher launcher(&delegate);
+  WrapperTestLauncherDelegate delegate(launcher_delegate);
+  base::TestLauncher launcher(&delegate, jobs);
   bool success = launcher.Run(argc, argv);
   return (success ? 0 : 1);
 }

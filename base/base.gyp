@@ -899,8 +899,6 @@
         'test/expectations/parser.h',
         'test/gtest_xml_util.cc',
         'test/gtest_xml_util.h',
-        'test/launcher/parallel_test_launcher.cc',
-        'test/launcher/parallel_test_launcher.h',
         'test/launcher/test_launcher.cc',
         'test/launcher/test_launcher.h',
         'test/launcher/test_result.cc',

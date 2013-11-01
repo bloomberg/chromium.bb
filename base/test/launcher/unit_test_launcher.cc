@@ -17,7 +17,6 @@
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/test/gtest_xml_util.h"
-#include "base/test/launcher/parallel_test_launcher.h"
 #include "base/test/launcher/test_launcher.h"
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
@@ -79,9 +78,8 @@ CommandLine GetCommandLineForChildGTestProcess(
 
 class UnitTestLauncherDelegate : public TestLauncherDelegate {
  public:
-  UnitTestLauncherDelegate(size_t jobs, size_t batch_limit)
-      : parallel_launcher_(jobs),
-        batch_limit_(batch_limit) {
+  explicit UnitTestLauncherDelegate(size_t batch_limit)
+      : batch_limit_(batch_limit) {
   }
 
   virtual ~UnitTestLauncherDelegate() {
@@ -173,7 +171,7 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
     callback_state.test_names = current_test_names;
     callback_state.output_file = output_file;
 
-    parallel_launcher_.LaunchChildGTestProcess(
+    test_launcher->LaunchChildGTestProcess(
         cmd_line,
         std::string(),
         TestTimeouts::test_launcher_timeout(),
@@ -215,7 +213,7 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
     callback_state.test_names = test_names;
     callback_state.output_file = output_file;
 
-    parallel_launcher_.LaunchChildGTestProcess(
+    test_launcher->LaunchChildGTestProcess(
         cmd_line,
         std::string(),
         timeout,
@@ -231,20 +229,16 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
                      const std::string& output) {
     DCHECK(thread_checker_.CalledOnValidThread());
     std::vector<std::string> tests_to_relaunch_after_interruption;
-    bool called_any_callbacks =
-        ProcessTestResults(callback_state.test_launcher,
-                           callback_state.test_names,
-                           callback_state.output_file,
-                           output,
-                           exit_code,
-                           was_timeout,
-                           &tests_to_relaunch_after_interruption);
+    ProcessTestResults(callback_state.test_launcher,
+                       callback_state.test_names,
+                       callback_state.output_file,
+                       output,
+                       exit_code,
+                       was_timeout,
+                       &tests_to_relaunch_after_interruption);
 
     RunBatch(callback_state.test_launcher,
              tests_to_relaunch_after_interruption);
-
-    if (called_any_callbacks)
-      parallel_launcher_.ResetOutputWatchdog();
 
     // The temporary file's directory is also temporary.
     DeleteFile(callback_state.output_file.DirName(), true);
@@ -271,12 +265,8 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
     // due to a crash.
     DCHECK(tests_to_relaunch_after_interruption.empty());
 
-    if (called_any_callbacks) {
-      parallel_launcher_.ResetOutputWatchdog();
-    } else {
-      // There is only one test, we should have called back with its result.
-      NOTREACHED();
-    }
+    // There is only one test, we should have called back with its result.
+    DCHECK(called_any_callbacks);
 
     // The temporary file's directory is also temporary.
     DeleteFile(callback_state.output_file.DirName(), true);
@@ -389,8 +379,6 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
 
   ThreadChecker thread_checker_;
 
-  ParallelTestLauncher parallel_launcher_;
-
   // Maximum number of tests to run in a single batch.
   size_t batch_limit_;
 };
@@ -449,8 +437,8 @@ int LaunchUnitTests(int argc,
 
   MessageLoopForIO message_loop;
 
-  base::UnitTestLauncherDelegate delegate(jobs, batch_limit);
-  base::TestLauncher launcher(&delegate);
+  base::UnitTestLauncherDelegate delegate(batch_limit);
+  base::TestLauncher launcher(&delegate, jobs);
   bool success = launcher.Run(argc, argv);
 
   fprintf(stdout,

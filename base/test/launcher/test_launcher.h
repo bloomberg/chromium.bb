@@ -14,6 +14,7 @@
 #include "base/test/launcher/test_result.h"
 #include "base/test/launcher/test_results_tracker.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 
 class CommandLine;
 
@@ -25,6 +26,7 @@ class TestInfo;
 namespace base {
 
 struct LaunchOptions;
+class SequencedWorkerPoolOwner;
 class TestLauncher;
 
 // Constants for GTest command-line flags.
@@ -80,11 +82,30 @@ class TestLauncherDelegate {
 // Launches tests using a TestLauncherDelegate.
 class TestLauncher {
  public:
-  explicit TestLauncher(TestLauncherDelegate* launcher_delegate);
+  // Constructor. |parallel_jobs| is the limit of simultaneous parallel test
+  // jobs.
+  TestLauncher(TestLauncherDelegate* launcher_delegate, size_t parallel_jobs);
   ~TestLauncher();
 
   // Runs the launcher. Must be called at most once.
   bool Run(int argc, char** argv) WARN_UNUSED_RESULT;
+
+  // Callback called after a child process finishes. First argument is the exit
+  // code, second one is child process elapsed time, third one is true if
+  // the child process was terminated because of a timeout, and fourth one
+  // contains output of the child (stdout and stderr together).
+  typedef Callback<void(int, const TimeDelta&, bool, const std::string&)>
+      LaunchChildGTestProcessCallback;
+
+  // Launches a child process (assumed to be gtest-based binary) using
+  // |command_line|. If |wrapper| is not empty, it is prepended to the final
+  // command line. If the child process is still running after |timeout|, it
+  // is terminated. After the child process finishes |callback| is called
+  // on the same thread this method was called.
+  void LaunchChildGTestProcess(const CommandLine& command_line,
+                               const std::string& wrapper,
+                               base::TimeDelta timeout,
+                               const LaunchChildGTestProcessCallback& callback);
 
   // Called when a test has finished running.
   void OnTestFinished(const TestResult& result);
@@ -97,10 +118,26 @@ class TestLauncher {
 
   void RunTestIteration();
 
-  void OnAllTestsStarted();
-
   // Saves test results summary as JSON if requested from command line.
   void MaybeSaveSummaryAsJSON();
+
+  // Called on a worker thread after a child process finishes.
+  void OnLaunchTestProcessFinished(
+      const LaunchChildGTestProcessCallback& callback,
+      int exit_code,
+      const TimeDelta& elapsed_time,
+      bool was_timeout,
+      const std::string& output);
+
+  // Called by the delay timer when no output was made for a while.
+  void OnOutputTimeout();
+
+  // Make sure we don't accidentally call the wrong methods e.g. on the worker
+  // pool thread. With lots of callbacks used this is non-trivial.
+  // Should be the first member so that it's destroyed last: when destroying
+  // other members, especially the worker pool, we may check the code is running
+  // on the correct thread.
+  ThreadChecker thread_checker_;
 
   TestLauncherDelegate* launcher_delegate_;
 
@@ -140,6 +177,12 @@ class TestLauncher {
   bool run_result_;
 
   TestResultsTracker results_tracker_;
+
+  // Watchdog timer to make sure we do not go without output for too long.
+  DelayTimer<TestLauncher> watchdog_timer_;
+
+  // Worker pool used to launch processes in parallel.
+  scoped_ptr<SequencedWorkerPoolOwner> worker_pool_owner_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLauncher);
 };
