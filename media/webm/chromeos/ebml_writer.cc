@@ -7,7 +7,7 @@
 #include "media/base/media_export.h"
 
 extern "C" {
-#include "third_party/libvpx/source/libvpx/libmkv/EbmlWriter.h"
+#include "third_party/libvpx/source/libvpx/third_party/libmkv/EbmlWriter.h"
 
 EbmlGlobal::EbmlGlobal() {
 }
