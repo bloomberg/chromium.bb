@@ -1381,7 +1381,7 @@ def BuildAUTestTarball(buildroot, board, work_dir, version, archive_url):
          '--dump_dir', autotest_dir, '--archive_url', archive_url,
          basic_version, board, '--log=debug']
 
-  gs_context_dir = gs.GSContext.GetDefaultGSUtilBin()
+  gs_context_dir = os.path.dirname(gs.GSContext.GetDefaultGSUtilBin())
   run_env = None
   if not gs_context_dir in os.environ['PATH']:
     run_env = os.environ.copy()
