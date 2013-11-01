@@ -199,17 +199,14 @@ void FileSystemOperationImpl::TouchFile(const FileSystemURL& url,
 
 void FileSystemOperationImpl::OpenFile(const FileSystemURL& url,
                                        int file_flags,
-                                       base::ProcessHandle peer_handle,
                                        const OpenFileCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationOpenFile));
-  peer_handle_ = peer_handle;
 
   if (file_flags &
       (base::PLATFORM_FILE_TEMPORARY | base::PLATFORM_FILE_HIDDEN)) {
     callback.Run(base::PLATFORM_FILE_ERROR_FAILED,
                  base::kInvalidPlatformFileValue,
-                 base::Closure(),
-                 base::kNullProcessHandle);
+                 base::Closure());
     return;
   }
   GetUsageAndQuotaThenRunTask(
@@ -219,8 +216,7 @@ void FileSystemOperationImpl::OpenFile(const FileSystemURL& url,
                  url, callback, file_flags),
       base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED,
                  base::kInvalidPlatformFileValue,
-                 base::Closure(),
-                 base::kNullProcessHandle));
+                 base::Closure()));
 }
 
 // We can only get here on a write or truncate that's not yet completed.
@@ -335,7 +331,6 @@ FileSystemOperationImpl::FileSystemOperationImpl(
     : file_system_context_(file_system_context),
       operation_context_(operation_context.Pass()),
       async_file_util_(NULL),
-      peer_handle_(base::kNullProcessHandle),
       pending_operation_(kOperationNone),
       weak_factory_(this) {
   DCHECK(operation_context_.get());
@@ -553,9 +548,7 @@ void FileSystemOperationImpl::DidOpenFile(
     base::PlatformFileError rv,
     base::PassPlatformFile file,
     const base::Closure& on_close_callback) {
-  if (rv == base::PLATFORM_FILE_OK)
-    CHECK_NE(base::kNullProcessHandle, peer_handle_);
-  callback.Run(rv, file.ReleaseValue(), on_close_callback, peer_handle_);
+  callback.Run(rv, file.ReleaseValue(), on_close_callback);
 }
 
 bool FileSystemOperationImpl::SetPendingOperationType(OperationType type) {

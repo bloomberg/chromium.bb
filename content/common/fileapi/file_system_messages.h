@@ -164,16 +164,6 @@ IPC_MESSAGE_CONTROL2(FileSystemHostMsg_CancelWrite,
                      int /* request id */,
                      int /* id of request to cancel */)
 
-// Pepper's OpenFile message.
-IPC_MESSAGE_CONTROL3(FileSystemHostMsg_OpenPepperFile,
-                     int /* request id */,
-                     GURL /* file path */,
-                     int /* pp_open_flags */)
-
-// Pepper's NotifyCloseFile message.
-IPC_MESSAGE_CONTROL1(FileSystemHostMsg_NotifyCloseFile,
-                     int /* file_open_id */)
-
 // WebFileSystem::createSnapshotFileAndReadMetadata() message.
 IPC_MESSAGE_CONTROL2(FileSystemHostMsg_CreateSnapshotFile,
                      int /* request_id */,
@@ -189,11 +179,3 @@ IPC_MESSAGE_CONTROL1(FileSystemHostMsg_DidReceiveSnapshotFile,
 IPC_SYNC_MESSAGE_CONTROL1_1(FileSystemHostMsg_SyncGetPlatformPath,
                             GURL /* file path */,
                             base::FilePath /* platform_path */)
-
-// Pre- and post-update notifications for ppapi implementation.
-IPC_MESSAGE_CONTROL1(FileSystemHostMsg_WillUpdate,
-                     GURL /* file_path */)
-
-IPC_MESSAGE_CONTROL2(FileSystemHostMsg_DidUpdate,
-                     GURL /* file_path */,
-                     int64 /* delta */)
