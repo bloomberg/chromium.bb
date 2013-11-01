@@ -27,7 +27,6 @@ WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()
       initialized_(false),
       playing_(false),
       recording_(false),
-      agc_is_enabled_(false),
       microphone_volume_(0) {
   DVLOG(1) << "WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()";
 }
@@ -318,37 +317,6 @@ bool WebRtcAudioDeviceImpl::Recording() const {
   return recording_;
 }
 
-int32_t WebRtcAudioDeviceImpl::SetAGC(bool enable) {
-  DVLOG(1) <<  "WebRtcAudioDeviceImpl::SetAGC(enable=" << enable << ")";
-  DCHECK(initialized_);
-
-  // Return early if we are not changing the AGC state.
-  if (enable == agc_is_enabled_)
-    return 0;
-
-  // Set the AGC on all the capturers. It depends on the source of the
-  // capturer whether AGC is supported or not.
-  // The current implementation does not support changing the AGC state while
-  // recording. Using this approach simplifies the design and it is also
-  // inline with the latest WebRTC standard.
-  for (CapturerList::const_iterator iter = capturers_.begin();
-       iter != capturers_.end(); ++iter) {
-    if (!(*iter)->is_recording())
-      (*iter)->SetAutomaticGainControl(enable);
-  }
-
-  agc_is_enabled_ = enable;
-  return 0;
-}
-
-bool WebRtcAudioDeviceImpl::AGC() const {
-  DVLOG(1) << "WebRtcAudioDeviceImpl::AGC()";
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // To reduce the usage of IPC messages, an internal AGC state is used.
-  // TODO(henrika): investigate if there is a need for a "deeper" getter.
-  return agc_is_enabled_;
-}
-
 int32_t WebRtcAudioDeviceImpl::SetMicrophoneVolume(uint32_t volume) {
   DVLOG(1) << "WebRtcAudioDeviceImpl::SetMicrophoneVolume(" << volume << ")";
   DCHECK(initialized_);
@@ -374,6 +342,7 @@ int32_t WebRtcAudioDeviceImpl::MicrophoneVolume(uint32_t* volume) const {
     return -1;
 
   *volume = static_cast<uint32_t>(capturer->Volume());
+
   return 0;
 }
 
@@ -457,10 +426,6 @@ void WebRtcAudioDeviceImpl::AddAudioCapturer(
   DVLOG(1) << "WebRtcAudioDeviceImpl::AddAudioCapturer()";
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(capturer.get());
-
-  // Enable/disable the AGC on the new capture.
-  DCHECK(!capturer->is_recording());
-  capturer->SetAutomaticGainControl(agc_is_enabled_);
 
   // We only support one microphone today, which means the list can contain
   // only one capturer with a valid device id.

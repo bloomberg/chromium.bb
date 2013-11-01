@@ -197,7 +197,6 @@ bool WebRtcAudioCapturer::Initialize(int render_view_id,
 WebRtcAudioCapturer::WebRtcAudioCapturer()
     : source_(NULL),
       running_(false),
-      agc_is_enabled_(false),
       render_view_id_(-1),
       hardware_buffer_size_(0),
       session_id_(0),
@@ -342,7 +341,7 @@ void WebRtcAudioCapturer::Start() {
   // Note that, the source does not have to be a microphone.
   if (source_.get()) {
     // We need to set the AGC control before starting the stream.
-    source_->SetAutomaticGainControl(agc_is_enabled_);
+    source_->SetAutomaticGainControl(true);
     source_->Start();
   }
 
@@ -381,16 +380,6 @@ int WebRtcAudioCapturer::Volume() const {
 
 int WebRtcAudioCapturer::MaxVolume() const {
   return WebRtcAudioDeviceImpl::kMaxVolumeLevel;
-}
-
-void WebRtcAudioCapturer::SetAutomaticGainControl(bool enable) {
-  base::AutoLock auto_lock(lock_);
-  // Store the setting since SetAutomaticGainControl() can be called before
-  // Initialize(), in this case stored setting will be applied in Start().
-  agc_is_enabled_ = enable;
-
-  if (source_.get())
-    source_->SetAutomaticGainControl(enable);
 }
 
 void WebRtcAudioCapturer::Capture(media::AudioBus* audio_source,

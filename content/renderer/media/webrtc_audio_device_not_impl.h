@@ -106,6 +106,8 @@ class CONTENT_EXPORT WebRtcAudioDeviceNotImpl
   virtual int32_t ResetAudioDevice() OVERRIDE;
   virtual int32_t SetLoudspeakerStatus(bool enable) OVERRIDE;
   virtual int32_t GetLoudspeakerStatus(bool* enabled) const OVERRIDE;
+  virtual int32_t SetAGC(bool enable) OVERRIDE;
+  virtual bool AGC() const OVERRIDE;
 
  protected:
   virtual ~WebRtcAudioDeviceNotImpl() {};

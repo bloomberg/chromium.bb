@@ -278,11 +278,6 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   virtual int32_t StopRecording() OVERRIDE;
   virtual bool Recording() const OVERRIDE;
 
-  // Called on the main render thread and libJingle worker thread.
-  virtual int32_t SetAGC(bool enable) OVERRIDE;
-
-  virtual bool AGC() const OVERRIDE;
-
   // Called on the AudioInputDevice worker thread.
   virtual int32_t SetMicrophoneVolume(uint32_t volume) OVERRIDE;
 
@@ -391,9 +386,6 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   bool initialized_;
   bool playing_;
   bool recording_;
-
-  // Local copy of the current Automatic Gain Control state.
-  bool agc_is_enabled_;
 
   // Used for histograms of total recording and playout times.
   base::Time start_capture_time_;

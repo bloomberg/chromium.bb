@@ -88,10 +88,6 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   int Volume() const;
   int MaxVolume() const;
 
-  // Enables or disables the WebRtc AGC control.
-  // Called from a Libjingle working thread.
-  void SetAutomaticGainControl(bool enable);
-
   bool is_recording() const { return running_; }
 
   // Audio parameters utilized by the audio capturer. Can be utilized by
@@ -154,7 +150,7 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   base::ThreadChecker thread_checker_;
 
   // Protects |source_|, |audio_tracks_|, |running_|, |loopback_fifo_|,
-  // |params_|, |buffering_| and |agc_is_enabled_|.
+  // |params_| and |buffering_|.
   mutable base::Lock lock_;
 
   // A list of audio tracks that the audio data is fed to.
@@ -167,9 +163,6 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   media::AudioParameters params_;
 
   bool running_;
-
-  // True when automatic gain control is enabled, false otherwise.
-  bool agc_is_enabled_;
 
   int render_view_id_;
 

@@ -148,7 +148,7 @@ class WebRtcLocalAudioTrackTest : public ::testing::Test {
                                  params_.channel_layout(),
                                  params_.sample_rate());
 
-    EXPECT_CALL(*capturer_source_.get(), SetAutomaticGainControl(false))
+    EXPECT_CALL(*capturer_source_.get(), SetAutomaticGainControl(true))
         .WillOnce(Return());
 
     // Start the audio thread used by the |capturer_source_|.
@@ -431,7 +431,7 @@ TEST_F(WebRtcLocalAudioTrackTest, SetNewSourceForCapturerAfterStartTrack) {
   // Setting new source to the capturer and the track should still get packets.
   scoped_refptr<MockCapturerSource> new_source(new MockCapturerSource());
   EXPECT_CALL(*capturer_source_.get(), Stop());
-  EXPECT_CALL(*new_source.get(), SetAutomaticGainControl(false));
+  EXPECT_CALL(*new_source.get(), SetAutomaticGainControl(true));
   EXPECT_CALL(*new_source.get(), Initialize(_, capturer_.get(), 0))
       .WillOnce(Return());
   EXPECT_CALL(*new_source.get(), Start()).WillOnce(Return());
@@ -482,7 +482,7 @@ TEST_F(WebRtcLocalAudioTrackTest, ConnectTracksToDifferentCapturers) {
   scoped_refptr<MockCapturerSource> new_source(new MockCapturerSource());
   EXPECT_CALL(*new_source.get(), Initialize(_, new_capturer.get(), 0))
       .WillOnce(Return());
-  EXPECT_CALL(*new_source.get(), SetAutomaticGainControl(false))
+  EXPECT_CALL(*new_source.get(), SetAutomaticGainControl(true))
       .WillOnce(Return());
   new_capturer->SetCapturerSource(new_source,
                                   media::CHANNEL_LAYOUT_MONO,
