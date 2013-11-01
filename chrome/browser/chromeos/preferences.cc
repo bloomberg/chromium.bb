@@ -491,13 +491,6 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     }
   }
   if (!pref_name || *pref_name == prefs::kDownloadDefaultDirectory) {
-    const base::FilePath pref_path = download_default_directory_.GetValue();
-    // TODO(haruki): Remove this when migration completes. crbug.com/229304.
-    if (drive::util::NeedsNamespaceMigration(pref_path)) {
-      prefs_->SetFilePath(prefs::kDownloadDefaultDirectory,
-                          drive::util::ConvertToMyDriveNamespace(pref_path));
-    }
-
     const bool default_download_to_drive = drive::util::IsUnderDriveMountPoint(
         download_default_directory_.GetValue());
     if (pref_name)
@@ -508,26 +501,6 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
       UMA_HISTOGRAM_BOOLEAN(
           "FileBrowser.DownloadDestination.IsGoogleDrive.Started",
           default_download_to_drive);
-  }
-  if (!pref_name || *pref_name == prefs::kSelectFileLastDirectory) {
-    const base::FilePath pref_path = select_file_last_directory_.GetValue();
-    // This pref can contain a Drive path, which needs to be updated due to
-    // namespaces introduced by crbug.com/174233.
-    // TODO(haruki): Remove this when migration completes. crbug.com/229304.
-    if (drive::util::NeedsNamespaceMigration(pref_path)) {
-      prefs_->SetFilePath(prefs::kSelectFileLastDirectory,
-                          drive::util::ConvertToMyDriveNamespace(pref_path));
-    }
-  }
-  if (!pref_name || *pref_name == prefs::kSaveFileDefaultDirectory) {
-    const base::FilePath pref_path = save_file_default_directory_.GetValue();
-    // This pref can contain a Drive path, which needs to be updated due to
-    // namespaces introduced by crbug.com/174233.
-    // TODO(haruki): Remove this when migration completes. crbug.com/229304.
-    if (drive::util::NeedsNamespaceMigration(pref_path)) {
-      prefs_->SetFilePath(prefs::kSaveFileDefaultDirectory,
-                          drive::util::ConvertToMyDriveNamespace(pref_path));
-    }
   }
   if (!pref_name || *pref_name == prefs::kTouchHudProjectionEnabled) {
     const bool enabled = touch_hud_projection_enabled_.GetValue();
