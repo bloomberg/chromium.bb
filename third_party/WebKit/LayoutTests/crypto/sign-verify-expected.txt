@@ -3,6 +3,54 @@ Tests cypto.subtle.sign and crypto.subtle.verify
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS tmpKey.type is 'secret'
+PASS tmpKey.extractable is false
+PASS tmpKey.algorithm.name is 'HMAC'
+PASS tmpKey.algorithm.hash.name is tmpHashName
+PASS tmpKey.usages.join(',') is 'sign,verify'
+PASS tmpKey.type is 'secret'
+PASS tmpKey.extractable is false
+PASS tmpKey.algorithm.name is 'HMAC'
+PASS tmpKey.algorithm.hash.name is tmpHashName
+PASS tmpKey.usages.join(',') is 'sign,verify'
+PASS tmpKey.type is 'secret'
+PASS tmpKey.extractable is false
+PASS tmpKey.algorithm.name is 'HMAC'
+PASS tmpKey.algorithm.hash.name is tmpHashName
+PASS tmpKey.usages.join(',') is 'sign,verify'
+PASS tmpKey.type is 'secret'
+PASS tmpKey.extractable is false
+PASS tmpKey.algorithm.name is 'HMAC'
+PASS tmpKey.algorithm.hash.name is tmpHashName
+PASS tmpKey.usages.join(',') is 'sign,verify'
+PASS tmpKey.type is 'secret'
+PASS tmpKey.extractable is false
+PASS tmpKey.algorithm.name is 'HMAC'
+PASS tmpKey.algorithm.hash.name is tmpHashName
+PASS tmpKey.usages.join(',') is 'sign,verify'
+PASS tmpKey.type is 'secret'
+PASS tmpKey.extractable is false
+PASS tmpKey.algorithm.name is 'HMAC'
+PASS tmpKey.algorithm.hash.name is tmpHashName
+PASS tmpKey.usages.join(',') is 'sign,verify'
+PASS: Mac should be [fbdb1d1b18aa6c08324b7d64b71fb76370690e1d] and was
+PASS: Mac should be [b613679a0814d9ec772f95d778c35fc5ff1697c493715653c6c712144292c5ad] and was
+PASS: Mac should be [3c8162589aafaee024fc9a5ca50dd2336fe3eb28] and was
+PASS: Mac should be [4ac41ab89f625c60125ed65ffa958c6b490ea670] and was
+PASS: Mac should be [769f00d3e6a6cc1fb426a14a4f76c6462e6149726e0dee0ec0cf97a16605ac8b] and was
+PASS: Mac should be [4f1ee7cb36c58803a8721d4ac8c4cf8cae5d8832392eed2a96dc59694252801b] and was
+PASS verifyResult is true
+PASS verifyResult is true
+PASS verifyResult is true
+PASS verifyResult is true
+PASS verifyResult is true
+PASS verifyResult is true
+PASS verifyResult is false
+PASS verifyResult is false
+PASS verifyResult is false
+PASS verifyResult is false
+PASS verifyResult is false
+PASS verifyResult is false
 PASS crypto.subtle.verify(hmacSha1, keys.hmacSha1, null, data) threw exception TypeError: Invalid signature argument.
 PASS crypto.subtle.verify(hmacSha1, keys.hmacSha1, 'a', data) threw exception TypeError: Invalid signature argument.
 PASS crypto.subtle.verify(hmacSha1, keys.hmacSha1, [], data) threw exception TypeError: Invalid signature argument.
@@ -15,9 +63,6 @@ PASS crypto.subtle.sign({name: 'hmac', hash: null}, keys.hmacSha1, data) threw e
 PASS crypto.subtle.sign({name: 'hmac', hash: {}}, keys.hmacSha1, data) threw exception TypeError: Algorithm: HMAC: HmacParams: hash: Algorithm: name: Missing or not a string.
 PASS crypto.subtle.sign({name: 'hmac', hash: {name: 'foo'}}, keys.hmacSha1, data) threw exception NotSupportedError: Algorithm: HMAC: HmacParams: hash: Algorithm: Unrecognized algorithm name.
 PASS crypto.subtle.sign({name: 'hmac', hash: {name: 'AES-CBC'}}, keys.hmacSha1, data) threw exception NotSupportedError: Algorithm: HMAC: HmacParams: hash: Algorithm: AES-CBC: Unsupported operation.
-PASS: HMAC SHA1 signature should be [890d9b894b239769ac77250466dce42af926ed76] and was
-PASS verifyResult is true
-PASS verifyResult is false
 PASS successfullyParsed is true
 
 TEST COMPLETE
