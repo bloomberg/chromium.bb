@@ -18,12 +18,7 @@ crbug.com/305303 http/tests/security/mixedContent/insecure-xhr-in-main-frame.htm
 
 crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pass Failure ]
 
-Bug(ojan) svg/as-object/embedded-svg-immediate-offsetWidth-query.html [ NeedsManualRebaseline ]
-# FIXME: Uncomment after the rebaseline above is done.
-# crbug.com/305853 [ SnowLeopard ] svg/as-object/embedded-svg-immediate-offsetWidth-query.html [ Pass ImageOnlyFailure ]
-
-Bug(ojan) [ Win Linux Android ] svg/zoom/page/zoom-zoom-coords.xhtml [ NeedsManualRebaseline ]
-
+crbug.com/305853 [ SnowLeopard ] svg/as-object/embedded-svg-immediate-offsetWidth-query.html [ Pass ImageOnlyFailure ]
 
 # -----------------------------------------------------------------
 # Inspector tests
