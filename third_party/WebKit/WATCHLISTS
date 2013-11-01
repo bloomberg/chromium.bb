@@ -108,6 +108,7 @@
       'filepath': 'Source/core/html/track/' \
                   '|Source/core/loader/TextTrack' \
                   '|Source/core/html/HTMLMediaElement' \
+                  '|Source/core/html/HTMLTrackElement' \
                   '|Source/core/html/shadow/MediaControl' \
                   '|Source/core/css/mediaControl' \
                   '|LayoutTests/media/track/'
@@ -120,6 +121,8 @@
                   '|Source/core/rendering/RenderMedia' \
                   '|Source/modules/(encryptedmedia|mediasource)' \
                   '|Source/web/.*Media' \
+                  '|LayoutTests/fast/media/' \
+                  '|LayoutTests/media/' \
                   '|public/.*Media'
     },
     'media_queries': {
