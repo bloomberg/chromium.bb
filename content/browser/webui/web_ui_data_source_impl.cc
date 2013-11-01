@@ -52,6 +52,9 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
   virtual bool ShouldReplaceExistingSource() const OVERRIDE {
     return parent_->replace_existing_source_;
   }
+  virtual bool AllowCaching() const OVERRIDE {
+    return false;
+  }
   virtual bool ShouldAddContentSecurityPolicy() const OVERRIDE {
     return parent_->add_csp_;
   }
