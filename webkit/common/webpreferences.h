@@ -167,7 +167,8 @@ struct WEBKIT_COMMON_EXPORT WebPreferences {
 
 #if defined(OS_ANDROID)
   bool text_autosizing_enabled;
-  float text_autosizing_font_scale_factor;
+  float font_scale_factor;
+  float device_scale_adjustment;
   bool force_enable_zoom;
   bool double_tap_to_zoom_enabled;
   bool user_gesture_required_for_media_playback;
