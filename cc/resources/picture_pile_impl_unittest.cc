@@ -635,8 +635,6 @@ TEST(PicturePileImplTest, PixelRefIteratorLazyRefsBaseNonLazy) {
   }
 }
 
-// Note: this test will always pass in debug because the canvas is cleared
-// to the NonPaintedFillColor first.
 TEST(PicturePileImpl, RasterContentsOpaque) {
   gfx::Size tile_size(1000, 1000);
   gfx::Size layer_bounds(3, 5);
@@ -654,6 +652,7 @@ TEST(PicturePileImpl, RasterContentsOpaque) {
   pile->SetMinContentsScale(contents_scale);
   pile->set_background_color(SK_ColorBLACK);
   pile->set_contents_opaque(true);
+  pile->set_clear_canvas_with_debug_color(false);
   pile->RerecordPile();
 
   gfx::Size content_bounds(
@@ -718,6 +717,7 @@ TEST(PicturePileImpl, RasterContentsTransparent) {
   pile->set_background_color(SK_ColorTRANSPARENT);
   pile->set_contents_opaque(false);
   pile->SetMinContentsScale(contents_scale);
+  pile->set_clear_canvas_with_debug_color(false);
   pile->RerecordPile();
 
   gfx::Size content_bounds(

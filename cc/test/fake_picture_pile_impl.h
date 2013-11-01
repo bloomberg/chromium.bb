@@ -59,6 +59,10 @@ class FakePicturePileImpl : public PicturePileImpl {
     contents_opaque_ = contents_opaque;
   }
 
+  void set_clear_canvas_with_debug_color(bool clear) {
+    clear_canvas_with_debug_color_ = clear;
+  }
+
  protected:
   FakePicturePileImpl();
   virtual ~FakePicturePileImpl();

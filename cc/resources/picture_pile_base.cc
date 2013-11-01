@@ -20,16 +20,22 @@ namespace {
 // the base picture in each tile.
 const int kBasePictureSize = 512;
 const int kTileGridBorderPixels = 1;
-}
+#ifdef NDEBUG
+const bool kDefaultClearCanvasSetting = false;
+#else
+const bool kDefaultClearCanvasSetting = true;
+#endif
+}  // namespace
 
 namespace cc {
 
 PicturePileBase::PicturePileBase()
     : min_contents_scale_(0),
       background_color_(SkColorSetARGBInline(0, 0, 0, 0)),
-      contents_opaque_(false),
       slow_down_raster_scale_factor_for_debug_(0),
+      contents_opaque_(false),
       show_debug_picture_borders_(false),
+      clear_canvas_with_debug_color_(kDefaultClearCanvasSetting),
       num_raster_threads_(0) {
   tiling_.SetMaxTextureSize(gfx::Size(kBasePictureSize, kBasePictureSize));
   tile_grid_info_.fTileInterval.setEmpty();
@@ -44,10 +50,11 @@ PicturePileBase::PicturePileBase(const PicturePileBase* other)
       min_contents_scale_(other->min_contents_scale_),
       tile_grid_info_(other->tile_grid_info_),
       background_color_(other->background_color_),
-      contents_opaque_(other->contents_opaque_),
       slow_down_raster_scale_factor_for_debug_(
           other->slow_down_raster_scale_factor_for_debug_),
+      contents_opaque_(other->contents_opaque_),
       show_debug_picture_borders_(other->show_debug_picture_borders_),
+      clear_canvas_with_debug_color_(other->clear_canvas_with_debug_color_),
       num_raster_threads_(other->num_raster_threads_) {
 }
 
@@ -58,10 +65,11 @@ PicturePileBase::PicturePileBase(
       min_contents_scale_(other->min_contents_scale_),
       tile_grid_info_(other->tile_grid_info_),
       background_color_(other->background_color_),
-      contents_opaque_(other->contents_opaque_),
       slow_down_raster_scale_factor_for_debug_(
           other->slow_down_raster_scale_factor_for_debug_),
+      contents_opaque_(other->contents_opaque_),
       show_debug_picture_borders_(other->show_debug_picture_borders_),
+      clear_canvas_with_debug_color_(other->clear_canvas_with_debug_color_),
       num_raster_threads_(other->num_raster_threads_) {
   for (PictureMap::const_iterator it = other->picture_map_.begin();
        it != other->picture_map_.end();

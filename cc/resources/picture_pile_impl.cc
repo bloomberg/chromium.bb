@@ -92,10 +92,10 @@ void PicturePileImpl::RasterToBitmap(
     gfx::Rect canvas_rect,
     float contents_scale,
     RenderingStatsInstrumentation* rendering_stats_instrumentation) {
-#ifndef NDEBUG
-  // Any non-painted areas will be left in this color.
-  canvas->clear(DebugColors::NonPaintedFillColor());
-#endif  // NDEBUG
+  if (clear_canvas_with_debug_color_) {
+    // Any non-painted areas will be left in this color.
+    canvas->clear(DebugColors::NonPaintedFillColor());
+  }
 
   // If this picture has opaque contents, it is guaranteeing that it will
   // draw an opaque rect the size of the layer.  If it is not, then we must
