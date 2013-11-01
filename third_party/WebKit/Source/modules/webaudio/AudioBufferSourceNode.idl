@@ -43,14 +43,14 @@
     attribute double loopStart;
     attribute double loopEnd;
 
-    [MeasureAs=WebAudioStart] void start(optional double when, optional double grainOffset, optional double grainDuration);
-    void stop(optional double when);
+    [RaisesException, MeasureAs=WebAudioStart] void start(optional double when, optional double grainOffset, optional double grainDuration);
+    [RaisesException] void stop(optional double when);
 
     [DeprecateAs=WebAudioLooping, ImplementedAs=loop] attribute boolean looping; // This is an alias for the .loop attribute for backwards compatibility.
 
-    [MeasureAs=LegacyWebAudio] void noteOn(double when);
-    [MeasureAs=LegacyWebAudio] void noteGrainOn(double when, double grainOffset, double grainDuration);
-    void noteOff(double when);
+    [RaisesException, ImplementedAs=start, MeasureAs=LegacyWebAudio] void noteOn(double when);
+    [RaisesException, MeasureAs=LegacyWebAudio] void noteGrainOn(double when, double grainOffset, double grainDuration);
+    [RaisesException, ImplementedAs=stop] void noteOff(double when);
 
     attribute EventHandler onended;
 };

@@ -61,11 +61,12 @@ public:
     unsigned numberOfChannels();
 
     // Play-state
-    void start(double when = 0);
-    void start(double when, double grainOffset);
-    void start(double when, double grainOffset, double grainDuration);
+    void start(ExceptionState&);
+    void start(double when, ExceptionState&);
+    void start(double when, double grainOffset, ExceptionState&);
+    void start(double when, double grainOffset, double grainDuration, ExceptionState&);
 
-    void noteGrainOn(double when, double grainOffset, double grainDuration);
+    void noteGrainOn(double when, double grainOffset, double grainDuration, ExceptionState&);
 
     // Note: the attribute was originally exposed as .looping, but to be more consistent in naming with <audio>
     // and with how it's described in the specification, the proper attribute name is .loop
@@ -95,7 +96,7 @@ public:
 private:
     AudioBufferSourceNode(AudioContext*, float sampleRate);
 
-    void startPlaying(bool isGrain, double when, double grainOffset, double grainDuration);
+    void startPlaying(bool isGrain, double when, double grainOffset, double grainDuration, ExceptionState&);
 
     // Returns true on success.
     bool renderFromBuffer(AudioBus*, unsigned destinationFrameOffset, size_t numberOfFrames);

@@ -89,6 +89,7 @@ public:
     };
 
     NodeType nodeType() const { return m_nodeType; }
+    String nodeTypeName() const;
     void setNodeType(NodeType);
 
     // We handle our own ref-counting because of the threading issues and subtle nature of

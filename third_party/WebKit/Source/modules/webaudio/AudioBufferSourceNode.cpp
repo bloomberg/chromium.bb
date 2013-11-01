@@ -28,7 +28,9 @@
 
 #include "modules/webaudio/AudioBufferSourceNode.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/page/PageConsole.h"
 #include "platform/audio/AudioUtilities.h"
 #include "modules/webaudio/AudioContext.h"
@@ -381,27 +383,39 @@ unsigned AudioBufferSourceNode::numberOfChannels()
     return output(0)->numberOfChannels();
 }
 
-void AudioBufferSourceNode::start(double when)
+void AudioBufferSourceNode::start(ExceptionState& es)
 {
-    startPlaying(false, when, 0, buffer() ? buffer()->duration() : 0);
+    startPlaying(false, 0, 0, buffer() ? buffer()->duration() : 0, es);
 }
 
-void AudioBufferSourceNode::start(double when, double grainOffset)
+void AudioBufferSourceNode::start(double when, ExceptionState& es)
 {
-    startPlaying(true, when, grainOffset, buffer() ? buffer()->duration() : 0);
+    startPlaying(false, when, 0, buffer() ? buffer()->duration() : 0, es);
 }
 
-void AudioBufferSourceNode::start(double when, double grainOffset, double grainDuration)
+void AudioBufferSourceNode::start(double when, double grainOffset, ExceptionState& es)
 {
-    startPlaying(true, when, grainOffset, grainDuration);
+    startPlaying(true, when, grainOffset, buffer() ? buffer()->duration() : 0, es);
 }
 
-void AudioBufferSourceNode::startPlaying(bool isGrain, double when, double grainOffset, double grainDuration)
+void AudioBufferSourceNode::start(double when, double grainOffset, double grainDuration, ExceptionState& es)
+{
+    startPlaying(true, when, grainOffset, grainDuration, es);
+}
+
+void AudioBufferSourceNode::startPlaying(bool isGrain, double when, double grainOffset, double grainDuration, ExceptionState& es)
 {
     ASSERT(isMainThread());
 
-    if (m_playbackState != UNSCHEDULED_STATE)
+    if (m_playbackState != UNSCHEDULED_STATE) {
+        es.throwDOMException(
+            InvalidStateError,
+            ExceptionMessages::failedToExecute(
+                "start",
+                nodeTypeName(),
+                "cannot call start more than once."));
         return;
+    }
 
     if (!buffer())
         return;
@@ -419,12 +433,6 @@ void AudioBufferSourceNode::startPlaying(bool isGrain, double when, double grain
         grainDuration = max(0.0, grainDuration);
         grainDuration = min(maxDuration, grainDuration);
         m_grainDuration = grainDuration;
-
-    } else {
-        // Until crbug.com/306139 is implemented, we initialize m_grainOffset and m_grainDuration
-        // again.
-        m_grainOffset = 0.0;
-        m_grainDuration = DefaultGrainDuration;
     }
 
     m_isGrain = isGrain;
@@ -439,12 +447,12 @@ void AudioBufferSourceNode::startPlaying(bool isGrain, double when, double grain
     m_playbackState = SCHEDULED_STATE;
 }
 
-void AudioBufferSourceNode::noteGrainOn(double when, double grainOffset, double grainDuration)
+void AudioBufferSourceNode::noteGrainOn(double when, double grainOffset, double grainDuration, ExceptionState& es)
 {
     // Handle unspecified duration where 0 means the rest of the buffer.
-    if (!grainDuration)
+    if (!grainDuration && buffer())
         grainDuration = buffer()->duration();
-    startPlaying(true, when, grainOffset, grainDuration);
+    startPlaying(true, when, grainOffset, grainDuration, es);
 }
 
 double AudioBufferSourceNode::totalPitchRate()

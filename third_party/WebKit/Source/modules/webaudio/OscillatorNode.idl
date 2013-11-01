@@ -47,11 +47,11 @@
     readonly attribute AudioParam frequency; // in Hertz
     readonly attribute AudioParam detune; // in Cents
 
-    void start(optional double when);
-    void stop(optional double when);
+    [RaisesException] void start(optional double when);
+    [RaisesException] void stop(optional double when);
 
-    void noteOn(double when);
-    void noteOff(double when);
+    [RaisesException, ImplementedAs=start] void noteOn(double when);
+    [RaisesException, ImplementedAs=stop] void noteOff(double when);
 
     void setPeriodicWave(PeriodicWave periodicWave);
 

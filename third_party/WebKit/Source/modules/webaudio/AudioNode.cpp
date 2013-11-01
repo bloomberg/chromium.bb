@@ -86,6 +86,51 @@ void AudioNode::uninitialize()
     m_isInitialized = false;
 }
 
+String AudioNode::nodeTypeName() const
+{
+    switch (m_nodeType) {
+    case NodeTypeDestination:
+        return "AudioDestinationNode";
+    case NodeTypeOscillator:
+        return "OscillatorNode";
+    case NodeTypeAudioBufferSource:
+        return "AudioBufferSourceNode";
+    case NodeTypeMediaElementAudioSource:
+        return "MediaElementAudioSourceNode";
+    case NodeTypeMediaStreamAudioDestination:
+        return "MediaStreamAudioDestinationNode";
+    case NodeTypeMediaStreamAudioSource:
+        return "MediaStreamAudioSourceNode";
+    case NodeTypeJavaScript:
+        return "ScriptProcessorNode";
+    case NodeTypeBiquadFilter:
+        return "BiquadFilterNode";
+    case NodeTypePanner:
+        return "PannerNode";
+    case NodeTypeConvolver:
+        return "ConvolverNode";
+    case NodeTypeDelay:
+        return "DelayNode";
+    case NodeTypeGain:
+        return "GainNode";
+    case NodeTypeChannelSplitter:
+        return "ChannelSplitterNode";
+    case NodeTypeChannelMerger:
+        return "ChannelMergerNode";
+    case NodeTypeAnalyser:
+        return "AnalyserNode";
+    case NodeTypeDynamicsCompressor:
+        return "DynamicsCompressorNode";
+    case NodeTypeWaveShaper:
+        return "WaveShaperNode";
+    case NodeTypeUnknown:
+    case NodeTypeEnd:
+    default:
+        ASSERT_NOT_REACHED();
+        return "UnknownNode";
+    }
+}
+
 void AudioNode::setNodeType(NodeType type)
 {
     m_nodeType = type;

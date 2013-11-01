@@ -125,15 +125,42 @@ function runTest() {
     shouldNotThrow("source.start()");
     shouldNotThrow("source.stop()");
 
-    // It's valid to start a source that has no associated buffer.
+    // It's not clear from the spec, but I think it's valid to call start(). The spec is silent on
+    // what happens if we call stop() afterwards, so don't call it.
     shouldNotThrow("source = context.createBufferSource()");
     shouldNotThrow("source.start()");
-    shouldNotThrow("source.stop()");
 
+    buffer = context.createBuffer(1,1, context.sampleRate);
+    shouldNotThrow("source = context.createBufferSource()");
+    shouldNotThrow("source.buffer = buffer");
+    shouldThrow("source.stop()");
+
+    buffer = context.createBuffer(1,1, context.sampleRate);
+    shouldNotThrow("source = context.createBufferSource()");
+    shouldNotThrow("source.buffer = buffer");
+    shouldNotThrow("source.start()");
+    shouldThrow("source.start()");
+
+    buffer = context.createBuffer(1,1, context.sampleRate);
+    shouldNotThrow("source = context.createBufferSource()");
+    shouldNotThrow("source.buffer = buffer");
+    shouldNotThrow("source.start()");
+    shouldNotThrow("source.stop()");
+    shouldThrow("source.stop()");
+
+    
     // Start/stop for OscillatorNodes
     shouldNotThrow("source = context.createOscillator()");
     shouldNotThrow("source.start()");
     shouldNotThrow("source.stop()");
+
+    shouldNotThrow("osc = context.createOscillator()");
+    shouldThrow("osc.stop()");
+    shouldNotThrow("osc1 = context.createOscillator()");
+    shouldNotThrow("osc1.start()");
+    shouldNotThrow("osc1.stop()");
+    shouldThrow("osc1.stop()");
+
 }
 
 runTest();
