@@ -1058,18 +1058,16 @@ void RenderWidgetHostViewAndroid::OnSetNeedsFlushInput() {
 
 void RenderWidgetHostViewAndroid::OnAccessibilityEvents(
     const std::vector<AccessibilityHostMsg_EventParams>& params) {
-  if (!host_ ||
-      host_->accessibility_mode() != AccessibilityModeComplete ||
-      !content_view_core_) {
+  if (!host_ || host_->accessibility_mode() != AccessibilityModeComplete)
     return;
-  }
 
   if (!GetBrowserAccessibilityManager()) {
+    base::android::ScopedJavaLocalRef<jobject> obj;
+    if (content_view_core_)
+      obj = content_view_core_->GetJavaObject();
     SetBrowserAccessibilityManager(
         new BrowserAccessibilityManagerAndroid(
-            content_view_core_->GetJavaObject(),
-            BrowserAccessibilityManagerAndroid::GetEmptyDocument(),
-            this));
+            obj, BrowserAccessibilityManagerAndroid::GetEmptyDocument(), this));
   }
   GetBrowserAccessibilityManager()->OnAccessibilityEvents(params);
 }
@@ -1253,6 +1251,14 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
     RemoveLayers();
 
   content_view_core_ = content_view_core;
+
+  if (GetBrowserAccessibilityManager()) {
+    base::android::ScopedJavaLocalRef<jobject> obj;
+    if (content_view_core_)
+      obj = content_view_core_->GetJavaObject();
+    GetBrowserAccessibilityManager()->ToBrowserAccessibilityManagerAndroid()->
+        SetContentViewCore(obj);
+  }
 
   if (are_layers_attached_)
     AttachLayers();

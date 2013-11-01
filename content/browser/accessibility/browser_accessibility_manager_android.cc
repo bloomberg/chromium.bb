@@ -49,19 +49,18 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
                                                 src, delegate, factory);
 }
 
+BrowserAccessibilityManagerAndroid*
+BrowserAccessibilityManager::ToBrowserAccessibilityManagerAndroid() {
+  return static_cast<BrowserAccessibilityManagerAndroid*>(this);
+}
+
 BrowserAccessibilityManagerAndroid::BrowserAccessibilityManagerAndroid(
     ScopedJavaLocalRef<jobject> content_view_core,
     const AccessibilityNodeData& src,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
     : BrowserAccessibilityManager(src, delegate, factory) {
-  if (content_view_core.is_null())
-    return;
-
-  JNIEnv* env = AttachCurrentThread();
-  java_ref_ = JavaObjectWeakGlobalRef(
-      env, Java_BrowserAccessibilityManager_create(
-          env, reinterpret_cast<jint>(this), content_view_core.obj()).obj());
+  SetContentViewCore(content_view_core);
 }
 
 BrowserAccessibilityManagerAndroid::~BrowserAccessibilityManagerAndroid() {
@@ -80,6 +79,17 @@ AccessibilityNodeData BrowserAccessibilityManagerAndroid::GetEmptyDocument() {
   empty_document.role = WebKit::WebAXRoleRootWebArea;
   empty_document.state = 1 << WebKit::WebAXStateReadonly;
   return empty_document;
+}
+
+void BrowserAccessibilityManagerAndroid::SetContentViewCore(
+    ScopedJavaLocalRef<jobject> content_view_core) {
+  if (content_view_core.is_null())
+    return;
+
+  JNIEnv* env = AttachCurrentThread();
+  java_ref_ = JavaObjectWeakGlobalRef(
+      env, Java_BrowserAccessibilityManager_create(
+          env, reinterpret_cast<jint>(this), content_view_core.obj()).obj());
 }
 
 void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(

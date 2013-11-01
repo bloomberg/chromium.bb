@@ -19,6 +19,9 @@ struct AccessibilityHostMsg_EventParams;
 
 namespace content {
 class BrowserAccessibility;
+#if defined(OS_ANDROID)
+class BrowserAccessibilityManagerAndroid;
+#endif
 #if defined(OS_WIN)
 class BrowserAccessibilityManagerWin;
 #endif
@@ -128,6 +131,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
 
 #if defined(OS_WIN)
   BrowserAccessibilityManagerWin* ToBrowserAccessibilityManagerWin();
+#endif
+
+#if defined(OS_ANDROID)
+  BrowserAccessibilityManagerAndroid* ToBrowserAccessibilityManagerAndroid();
 #endif
 
   // Return the object that has focus, if it's a descandant of the
