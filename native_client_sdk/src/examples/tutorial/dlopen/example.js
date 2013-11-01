@@ -19,7 +19,7 @@ function askBall(event) {
   var questionEl = document.getElementById('question');
   var query = questionEl.value;
   questionEl.value = '';
-  common.logMessage('You asked: ' + query + '\n');
+  common.logMessage('You asked: ' + query);
   common.naclModule.postMessage('eightball');
   event.preventDefault();
 }
@@ -28,6 +28,6 @@ function reverseString(event) {
   var questionEl = document.getElementById('question');
   var query = questionEl.value;
   questionEl.value = '';
-  common.logMessage('Reversing: ' + query + '\n');
+  common.logMessage('Reversing: ' + query);
   common.naclModule.postMessage('reverse:' + query);
 }

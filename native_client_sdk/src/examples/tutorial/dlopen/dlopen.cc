@@ -50,6 +50,7 @@ class DlOpenInstance : public pp::Instance {
   void logmsg(const char* pStr) {
     PostMessage(pp::Var(std::string("log:") + pStr));
     fprintf(stdout, pStr);
+    fprintf(stdout, "\n");
   }
 
   // Initialize the module, staring a worker thread to load the shared object.
@@ -60,9 +61,9 @@ class DlOpenInstance : public pp::Instance {
     // server.
     mount("", "/http", "httpfs", 0, "");
 
-    logmsg("Spawning thread to cache .so files...\n");
+    logmsg("Spawning thread to cache .so files...");
     if (pthread_create(&tid_, NULL, LoadLibrariesOnWorker, this)) {
-      logmsg("ERROR; pthread_create() failed.\n");
+      logmsg("ERROR; pthread_create() failed.");
       return false;
     }
     return true;
@@ -72,73 +73,62 @@ class DlOpenInstance : public pp::Instance {
   // the shared object.  In addition, note that this function does NOT call
   // dlclose, which would close the shared object and unload it from memory.
   void LoadLibrary() {
-    const char reverse_so_path[] =
-        "/http/glibc/" CONFIG_NAME "/libreverse_" NACL_ARCH ".so";
-    const int32_t IMMEDIATELY = 0;
     eightball_so_ = dlopen("libeightball.so", RTLD_LAZY);
-    reverse_so_ = dlopen(reverse_so_path, RTLD_LAZY);
-    pp::CompletionCallback cc(LoadDoneCB, this);
-    pp::Module::Get()->core()->CallOnMainThread(IMMEDIATELY, cc, 0);
-  }
-
-  // This function will run on the main thread and use the handle it stored by
-  // the worker thread, assuming it successfully loaded, to get a pointer to the
-  // message function in the shared object.
-  void UseLibrary() {
     if (eightball_so_ != NULL) {
       intptr_t offset = (intptr_t) dlsym(eightball_so_, "Magic8Ball");
       eightball_ = (TYPE_eightball) offset;
       if (NULL == eightball_) {
         std::string message = "dlsym() returned NULL: ";
         message += dlerror();
-        message += "\n";
         logmsg(message.c_str());
         return;
       }
 
-      logmsg("Loaded libeightball.so\n");
+      logmsg("Loaded libeightball.so");
     } else {
-      logmsg("libeightball.so did not load\n");
+      logmsg("libeightball.so did not load");
     }
 
+    const char reverse_so_path[] =
+        "/http/glibc/" CONFIG_NAME "/libreverse_" NACL_ARCH ".so";
+    reverse_so_ = dlopen(reverse_so_path, RTLD_LAZY);
     if (reverse_so_ != NULL) {
       intptr_t offset = (intptr_t) dlsym(reverse_so_, "Reverse");
       reverse_ = (TYPE_reverse) offset;
       if (NULL == reverse_) {
         std::string message = "dlsym() returned NULL: ";
         message += dlerror();
-        message += "\n";
         logmsg(message.c_str());
         return;
       }
-      logmsg("Loaded libreverse.so\n");
+      logmsg("Loaded libreverse.so");
     } else {
-      logmsg("libreverse.so did not load\n");
+      logmsg("libreverse.so did not load");
     }
   }
 
   // Called by the browser to handle the postMessage() call in Javascript.
   virtual void HandleMessage(const pp::Var& var_message) {
     if (!var_message.is_string()) {
-      logmsg("Message is not a string.\n");
+      logmsg("Message is not a string.");
       return;
     }
 
     std::string message = var_message.AsString();
     if (message == "eightball") {
       if (NULL == eightball_) {
-        logmsg("Eightball library not loaded\n");
+        logmsg("Eightball library not loaded");
         return;
       }
 
       std::string ballmessage = "The Magic 8-Ball says: ";
       ballmessage += eightball_();
-      ballmessage += "!\n";
+      ballmessage += "!";
 
       logmsg(ballmessage.c_str());
     } else if (message.find("reverse:") == 0) {
       if (NULL == reverse_) {
-        logmsg("Reverse library not loaded\n");
+        logmsg("Reverse library not loaded");
         return;
       }
 
@@ -147,14 +137,14 @@ class DlOpenInstance : public pp::Instance {
 
       std::string message = "Your string reversed: \"";
       message += result;
-      message += "\"\n";
+      message += "\"";
 
       free(result);
 
       logmsg(message.c_str());
     } else {
       std::string errormsg = "Unexpected message: ";
-      errormsg += message + "\n";
+      errormsg += message;
       logmsg(errormsg.c_str());
     }
   }
@@ -163,11 +153,6 @@ class DlOpenInstance : public pp::Instance {
     DlOpenInstance* inst = static_cast<DlOpenInstance*>(pInst);
     inst->LoadLibrary();
     return NULL;
-  }
-
-  static void LoadDoneCB(void* pInst, int32_t result) {
-    DlOpenInstance* inst = static_cast<DlOpenInstance*>(pInst);
-    inst->UseLibrary();
   }
 
  private:
