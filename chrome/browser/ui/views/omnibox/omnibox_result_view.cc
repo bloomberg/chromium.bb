@@ -495,33 +495,35 @@ void OmniboxResultView::Elide(Runs* runs, int remaining_width) const {
   // we know we definitely need to elide, and then in this function we move
   // backward again until we find a string that we can successfully do the
   // eliding on.
-  bool first_classification = true;
+  bool on_trailing_classification = true;
   for (Runs::reverse_iterator i(runs->rbegin()); i != runs->rend(); ++i) {
     for (Classifications::reverse_iterator j(i->classifications.rbegin());
          j != i->classifications.rend(); ++j) {
-      if (!first_classification) {
+      if (!on_trailing_classification) {
         // We also add this classification's width (sans ellipsis) back to the
         // available width since we want to consider the available space we'll
         // have when we draw this classification.
         remaining_width += (*j)->GetStringSize().width();
 
-        // For all but the first classification we consider, we need to append
-        // an ellipsis, since there isn't enough room to draw it after this
-        // classification.
+        // If we reached here, we couldn't fit an ellipsis in the space taken by
+        // the previous classifications we looped over (see comments at bottom
+        // of loop).  Append one here to represent those elided portions.
         (*j)->SetText((*j)->text() + kEllipsis);
       }
-      first_classification = false;
+      on_trailing_classification = false;
 
       // Can we fit at least an ellipsis?
       gfx::Font font((*j)->GetStyle(gfx::BOLD) ?
           (*j)->GetPrimaryFont().DeriveFont(0, gfx::Font::BOLD) :
           (*j)->GetPrimaryFont());
       string16 elided_text(
-          gfx::ElideText((*j)->text(), font, remaining_width, gfx::ELIDE_AT_END));
+          gfx::ElideText((*j)->text(), font, remaining_width,
+          gfx::ELIDE_AT_END));
       Classifications::reverse_iterator prior(j + 1);
-      const bool on_first_classification = (prior == i->classifications.rend());
+      const bool on_leading_classification =
+          (prior == i->classifications.rend());
       if (elided_text.empty() && (remaining_width >= ellipsis_width_) &&
-          on_first_classification) {
+          on_leading_classification) {
         // Edge case: This classification is bold, we can't fit a bold ellipsis
         // but we can fit a normal one, and this is the first classification in
         // the run.  We should display a lone normal ellipsis, because appending
@@ -540,7 +542,7 @@ void OmniboxResultView::Elide(Runs* runs, int remaining_width) const {
         // an immediate prior classification in this run that was also bold, or
         // it will look orphaned.
         if ((*j)->GetStyle(gfx::BOLD) && (elided_text.length() == 1) &&
-            (on_first_classification || !(*prior)->GetStyle(gfx::BOLD)))
+            (on_leading_classification || !(*prior)->GetStyle(gfx::BOLD)))
           (*j)->SetStyle(gfx::BOLD, false);
 
         // Erase any other classifications that come after the elided one.
