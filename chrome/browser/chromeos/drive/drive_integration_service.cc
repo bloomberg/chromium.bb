@@ -143,9 +143,14 @@ FileError InitializeMetadata(
           .InsertBeforeExtensionASCII(base::StringPrintf(" (%d)", uniquifier));
     }
 
+    std::map<std::string, FileCacheEntry> recovered_cache_entries;
+    metadata_storage->RecoverCacheEntriesFromTrashedResourceMap(
+        &recovered_cache_entries);
+
     LOG(INFO) << "DB could not be opened for some reasons. "
               << "Recovering cache files to " << dest_directory.value();
-    if (!cache->RecoverFilesFromCacheDirectory(dest_directory)) {
+    if (!cache->RecoverFilesFromCacheDirectory(dest_directory,
+                                               recovered_cache_entries)) {
       LOG(WARNING) << "Failed to recover cache files.";
       return FILE_ERROR_FAILED;
     }

@@ -440,6 +440,43 @@ TEST_F(ResourceMetadataStorageTest, WrongPath) {
   ASSERT_FALSE(storage_->Initialize());
 }
 
+TEST_F(ResourceMetadataStorageTest, RecoverCacheEntriesFromTrashedResourceMap) {
+  // Put some cache entries.
+  FileCacheEntry cache_entry;
+  cache_entry.set_md5("md5_foo");
+  EXPECT_TRUE(storage_->PutCacheEntry("id_foo", cache_entry));
+  cache_entry.set_md5("md5_bar");
+  EXPECT_TRUE(storage_->PutCacheEntry("id_bar", cache_entry));
+
+  // Put entry with id_foo.
+  ResourceEntry entry;
+  entry.set_local_id("id_foo");
+  entry.set_base_name("foo");
+  EXPECT_TRUE(storage_->PutEntry(entry));
+
+  // Put entry with id_bar as a id_foo's child.
+  entry.set_local_id("id_bar");
+  entry.set_parent_local_id("id_foo");
+  entry.set_base_name("bar");
+  EXPECT_TRUE(storage_->PutEntry(entry));
+
+  // Remove parent-child relationship to make the DB invalid.
+  RemoveChild("id_foo", "bar");
+  EXPECT_FALSE(CheckValidity());
+
+  // Reopen. This should result in trashing the DB.
+  storage_.reset(new ResourceMetadataStorage(
+      temp_dir_.path(), base::MessageLoopProxy::current().get()));
+  ASSERT_TRUE(storage_->Initialize());
+
+  // Recover cache entries from the trashed DB.
+  std::map<std::string, FileCacheEntry> recovered_cache_entries;
+  storage_->RecoverCacheEntriesFromTrashedResourceMap(&recovered_cache_entries);
+  EXPECT_EQ(2U, recovered_cache_entries.size());
+  EXPECT_EQ("md5_foo", recovered_cache_entries["id_foo"].md5());
+  EXPECT_EQ("md5_bar", recovered_cache_entries["id_bar"].md5());
+}
+
 TEST_F(ResourceMetadataStorageTest, CheckValidity) {
   const std::string key1 = "foo";
   const std::string name1 = "hoge";

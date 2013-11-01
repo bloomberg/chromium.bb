@@ -393,7 +393,8 @@ void FileCache::DestroyOnBlockingPool() {
 }
 
 bool FileCache::RecoverFilesFromCacheDirectory(
-    const base::FilePath& dest_directory) {
+    const base::FilePath& dest_directory,
+    const std::map<std::string, FileCacheEntry>& recovered_cache_entries) {
   int file_number = 1;
 
   base::FileEnumerator enumerator(cache_file_directory_,
@@ -406,6 +407,22 @@ bool FileCache::RecoverFilesFromCacheDirectory(
     if (storage_->GetCacheEntry(id, &entry)) {
       // This file is managed by FileCache, no need to recover it.
       continue;
+    }
+
+    // If a cache entry which is non-dirty and has matching MD5 is found in
+    // |recovered_cache_entries|, it means the current file is already uploaded
+    // to the server. Just delete it instead of recovering it.
+    std::map<std::string, FileCacheEntry>::const_iterator it =
+        recovered_cache_entries.find(id);
+    if (it != recovered_cache_entries.end()) {
+      const FileCacheEntry& recovered_entry = it->second;
+      // Due to the DB corruption, |recovered_entry| might be recovered from old
+      // revision. Perform MD5 check even when is_dirty() is false just in case.
+      if (!recovered_entry.is_dirty() &&
+          recovered_entry.md5() == util::GetMd5Digest(current)) {
+        base::DeleteFile(current, false /* recursive */);
+        continue;
+      }
     }
 
     // Read file contents to sniff mime type.

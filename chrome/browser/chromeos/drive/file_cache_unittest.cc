@@ -768,9 +768,15 @@ TEST_F(FileCacheTest, RecoverFilesFromCacheDirectory) {
   ASSERT_TRUE(base::CopyFile(src_path, file_directory.AppendASCII("id_bar")));
   ASSERT_TRUE(base::CopyFile(src_path, file_directory.AppendASCII("id_baz")));
 
+  // Insert a dirty entry with "id_baz" to |recovered_cache_entries|.
+  // This should not prevent the file from being recovered.
+  std::map<std::string, FileCacheEntry> recovered_cache_entries;
+  recovered_cache_entries["id_baz"].set_is_dirty(true);
+
   // Recover files.
   const base::FilePath dest_directory = temp_dir_.path().AppendASCII("dest");
-  EXPECT_TRUE(cache_->RecoverFilesFromCacheDirectory(dest_directory));
+  EXPECT_TRUE(cache_->RecoverFilesFromCacheDirectory(dest_directory,
+                                                     recovered_cache_entries));
 
   // Only two files should be recovered.
   EXPECT_TRUE(base::PathExists(dest_directory));

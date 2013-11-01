@@ -41,6 +41,10 @@ const base::FilePath::CharType kResourceMapDBName[] =
 const base::FilePath::CharType kPreservedResourceMapDBName[] =
     FILE_PATH_LITERAL("resource_metadata_preserved_resource_map.db");
 
+// The name of the DB which couldn't be opened, and was replaced with a new one.
+const base::FilePath::CharType kTrashedResourceMapDBName[] =
+    FILE_PATH_LITERAL("resource_metadata_trashed_resource_map.db");
+
 // Meant to be a character which never happen to be in real IDs.
 const char kDBKeyDelimeter = '\0';
 
@@ -135,6 +139,10 @@ ResourceMetadataHeader GetDefaultHeaderEntry() {
   ResourceMetadataHeader header;
   header.set_version(ResourceMetadataStorage::kDBVersion);
   return header;
+}
+
+bool MoveIfPossible(const base::FilePath& from, const base::FilePath& to) {
+  return !base::PathExists(from) || base::Move(from, to);
 }
 
 }  // namespace
@@ -374,6 +382,15 @@ bool ResourceMetadataStorage::Initialize() {
       directory_path_.Append(kResourceMapDBName);
   const base::FilePath preserved_resource_map_path =
       directory_path_.Append(kPreservedResourceMapDBName);
+  const base::FilePath trashed_resource_map_path =
+      directory_path_.Append(kTrashedResourceMapDBName);
+
+  // Discard unneeded DBs.
+  if (!base::DeleteFile(preserved_resource_map_path, true /* recursive */) ||
+      !base::DeleteFile(trashed_resource_map_path, true /* recursive */)) {
+    LOG(ERROR) << "Failed to remove unneeded DBs.";
+    return false;
+  }
 
   // Try to open the existing DB.
   leveldb::DB* db = NULL;
@@ -425,9 +442,7 @@ bool ResourceMetadataStorage::Initialize() {
     // Move the existing DB to the preservation path. The moved old DB is
     // deleted once the new DB creation succeeds, or is restored later in
     // UpgradeOldDB() when the creation fails.
-    if (base::PathExists(resource_map_path) &&
-        base::DeleteFile(preserved_resource_map_path, true /* recursive */))
-      base::Move(resource_map_path, preserved_resource_map_path);
+    MoveIfPossible(resource_map_path, preserved_resource_map_path);
 
     // Create DB.
     options.max_open_files = 0;  // Use minimum.
@@ -439,8 +454,8 @@ bool ResourceMetadataStorage::Initialize() {
       resource_map_.reset(db);
 
       if (!PutHeader(GetDefaultHeaderEntry()) ||  // Set up header.
-          !base::DeleteFile(preserved_resource_map_path,
-                            true /* recursive */)) {  // Remove the old DB.
+          !MoveIfPossible(preserved_resource_map_path,  // Trash the old DB.
+                          trashed_resource_map_path)) {
         init_result = DB_INIT_FAILED;
         resource_map_.reset();
       }
@@ -454,6 +469,61 @@ bool ResourceMetadataStorage::Initialize() {
                             init_result,
                             DB_INIT_MAX_VALUE);
   return resource_map_;
+}
+
+void ResourceMetadataStorage::RecoverCacheEntriesFromTrashedResourceMap(
+    std::map<std::string, FileCacheEntry>* out_entries) {
+  const base::FilePath trashed_resource_map_path =
+      directory_path_.Append(kTrashedResourceMapDBName);
+
+  if (!base::PathExists(trashed_resource_map_path))
+    return;
+
+  leveldb::Options options;
+  options.max_open_files = 0;  // Use minimum.
+  options.create_if_missing = false;
+
+  // Trashed DB may be broken, repair it first.
+  leveldb::Status status;
+  status = leveldb::RepairDB(trashed_resource_map_path.AsUTF8Unsafe(), options);
+  if (!status.ok()) {
+    LOG(ERROR) << "Failed to repair trashed DB: " << status.ToString();
+    return;
+  }
+
+  // Open it.
+  leveldb::DB* db = NULL;
+  status = leveldb::DB::Open(options, trashed_resource_map_path.AsUTF8Unsafe(),
+                             &db);
+  if (!status.ok()) {
+    LOG(ERROR) << "Failed to open trashed DB: " << status.ToString();
+    return;
+  }
+  scoped_ptr<leveldb::DB> resource_map(db);
+
+  // Check DB version.
+  std::string serialized_header;
+  ResourceMetadataHeader header;
+  if (!resource_map->Get(leveldb::ReadOptions(),
+                         leveldb::Slice(GetHeaderDBKey()),
+                         &serialized_header).ok() ||
+      !header.ParseFromString(serialized_header) ||
+      header.version() != kDBVersion) {
+    LOG(ERROR) << "Incompatible DB version: " << header.version();
+    return;
+  }
+
+  // Collect cache entries.
+  scoped_ptr<leveldb::Iterator> it(
+      resource_map->NewIterator(leveldb::ReadOptions()));
+  for (it->SeekToFirst(); it->Valid(); it->Next()) {
+    if (IsCacheEntryKey(it->key())) {
+      const std::string& id = GetIdFromCacheEntryKey(it->key());
+      FileCacheEntry cache_entry;
+      if (cache_entry.ParseFromArray(it->value().data(), it->value().size()))
+        (*out_entries)[id] = cache_entry;
+    }
+  }
 }
 
 bool ResourceMetadataStorage::SetLargestChangestamp(

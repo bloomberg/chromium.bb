@@ -124,6 +124,10 @@ class ResourceMetadataStorage {
   // Initializes this object.
   bool Initialize();
 
+  // Collects FileCacheEntry from trashed resource map DB.
+  void RecoverCacheEntriesFromTrashedResourceMap(
+      std::map<std::string, FileCacheEntry>* out_entries);
+
   // Sets the largest changestamp.
   bool SetLargestChangestamp(int64 largest_changestamp);
 
