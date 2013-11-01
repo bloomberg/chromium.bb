@@ -7,16 +7,19 @@
   "manifest_version": 2,
   "content_security_policy": "default-src 'self'; connect-src 'self' https://chromeos-registration.googleapis.com",
   "permissions": [
+      "alarms",
       "cookies",
       "chromeosInfoPrivate",
       "echoPrivate",
-      "experimental",  // Needed for the infobar API.
+      "experimental",  // TODO(andycai) remove this.
+      "notifications",
       "https://*/*"
    ],
   "icons": {
     "16": "chrome16.png",
-    "32": "chrome32.png"
-    },
+    "32": "chrome32.png",
+    "128": "chrome128.png"
+  },
   "default_locale": "en",
   "web_accessible_resources": [
     "broker.html",
