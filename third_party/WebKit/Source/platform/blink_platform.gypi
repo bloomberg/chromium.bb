@@ -4,6 +4,7 @@
       'AsyncFileSystemCallbacks.h',
       'CalculationValue.cpp',
       'CalculationValue.h',
+      'CheckedInt.h',
       'Clock.cpp',
       'Clock.h',
       'ColorChooser.cpp',

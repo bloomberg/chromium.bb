@@ -28,7 +28,7 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/html/canvas/CheckedInt.h"
+#include "platform/CheckedInt.h"
 #include "wtf/CPU.h"
 
 namespace {

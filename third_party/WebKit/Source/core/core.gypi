@@ -2359,7 +2359,6 @@
             'html/canvas/CanvasRenderingContext2D.h',
             'html/canvas/CanvasStyle.cpp',
             'html/canvas/CanvasStyle.h',
-            'html/canvas/CheckedInt.h',
             'html/canvas/DataView.cpp',
             'html/canvas/DataView.h',
             'html/canvas/DOMPath.h',
