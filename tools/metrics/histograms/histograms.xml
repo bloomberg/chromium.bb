@@ -21149,6 +21149,9 @@ other types of suffix sets.
   <int value="4" label="Failed to open DB for unknown reason"/>
   <int value="5" label="Incompatible DB format"/>
   <int value="6" label="DB is broken"/>
+  <int value="7" label="Opened existing DB."/>
+  <int value="8" label="No existing DB was found. Created new DB."/>
+  <int value="9" label="Cannot open existing DB. Created new DB."/>
 </enum>
 
 <enum name="EAPInnerProtocol" type="int">

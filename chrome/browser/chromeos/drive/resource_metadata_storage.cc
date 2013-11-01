@@ -30,6 +30,9 @@ enum DBInitStatus {
   DB_INIT_FAILED,
   DB_INIT_INCOMPATIBLE,
   DB_INIT_BROKEN,
+  DB_INIT_OPENED_EXISTING_DB,
+  DB_INIT_CREATED_NEW_DB,
+  DB_INIT_REPLACED_EXISTING_DB_WITH_NEW_DB,
   DB_INIT_MAX_VALUE,
 };
 
@@ -435,7 +438,7 @@ bool ResourceMetadataStorage::Initialize() {
                             open_existing_result,
                             DB_INIT_MAX_VALUE);
 
-  DBInitStatus init_result = DB_INIT_SUCCESS;
+  DBInitStatus init_result = DB_INIT_OPENED_EXISTING_DB;
 
   // Failed to open the existing DB, create new DB.
   if (!resource_map_) {
@@ -453,9 +456,12 @@ bool ResourceMetadataStorage::Initialize() {
     if (status.ok()) {
       resource_map_.reset(db);
 
-      if (!PutHeader(GetDefaultHeaderEntry()) ||  // Set up header.
-          !MoveIfPossible(preserved_resource_map_path,  // Trash the old DB.
-                          trashed_resource_map_path)) {
+      if (PutHeader(GetDefaultHeaderEntry()) &&  // Set up header.
+          MoveIfPossible(preserved_resource_map_path,  // Trash the old DB.
+                         trashed_resource_map_path)) {
+        init_result = open_existing_result == DB_INIT_NOT_FOUND ?
+            DB_INIT_CREATED_NEW_DB : DB_INIT_REPLACED_EXISTING_DB_WITH_NEW_DB;
+      } else {
         init_result = DB_INIT_FAILED;
         resource_map_.reset();
       }
