@@ -78,6 +78,9 @@ const CommandLinePrefStore::IntegerSwitchToPreferenceMapEntry
     CommandLinePrefStore::integer_switch_map_[] = {
       { switches::kDiskCacheSize, prefs::kDiskCacheSize },
       { switches::kMediaCacheSize, prefs::kMediaCacheSize },
+#if defined(OS_CHROMEOS)
+      { chromeos::switches::kDeviceRegistered, prefs::kDeviceRegistered },
+#endif
     };
 
 CommandLinePrefStore::CommandLinePrefStore(const CommandLine* command_line)

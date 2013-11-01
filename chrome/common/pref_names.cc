@@ -2198,6 +2198,16 @@ extern const char kEchoCheckedOffers[] = "EchoCheckedOffers";
 // Key name of a dictionary in local state to store cached multiprofle user
 // behavior policy value.
 const char kCachedMultiProfileUserBehavior[] = "CachedMultiProfileUserBehavior";
+
+// A string pref with initial locale set in VPD or manifest.
+const char kInitialLocale[] = "intl.initial_locale";
+
+// A boolean pref of the OOBE complete flag (first OOBE part before login).
+const char kOobeComplete[] = "OobeComplete";
+
+// A boolean pref of the device registered flag (second part after first login).
+const char kDeviceRegistered[] = "DeviceRegistered";
+
 #endif
 
 // Whether there is a Flash version installed that supports clearing LSO data.

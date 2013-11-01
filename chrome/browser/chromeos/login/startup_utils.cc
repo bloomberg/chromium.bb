@@ -21,15 +21,6 @@ using content::BrowserThread;
 
 namespace {
 
-// A string pref with initial locale set in VPD or manifest.
-const char kInitialLocale[] = "intl.initial_locale";
-
-// A boolean pref of the OOBE complete flag (first OOBE part before login).
-const char kOobeComplete[] = "OobeComplete";
-
-// A boolean pref of the device registered flag (second part after first login).
-const char kDeviceRegistered[] = "DeviceRegistered";
-
 // Saves boolean "Local State" preference and forces its persistence to disk.
 void SaveBoolPreferenceForced(const char* pref_name, bool value) {
   PrefService* prefs = g_browser_process->local_state();
@@ -58,9 +49,9 @@ namespace chromeos {
 
 // static
 void StartupUtils::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(kOobeComplete, false);
-  registry->RegisterIntegerPref(kDeviceRegistered, -1);
-  registry->RegisterStringPref(kInitialLocale, "en-US");
+  registry->RegisterBooleanPref(prefs::kOobeComplete, false);
+  registry->RegisterIntegerPref(prefs::kDeviceRegistered, -1);
+  registry->RegisterStringPref(prefs::kInitialLocale, "en-US");
 }
 
 // static
@@ -70,7 +61,7 @@ bool StartupUtils::IsEulaAccepted() {
 
 // static
 bool StartupUtils::IsOobeCompleted() {
-  return g_browser_process->local_state()->GetBoolean(kOobeComplete);
+  return g_browser_process->local_state()->GetBoolean(prefs::kOobeComplete);
 }
 
 // static
@@ -80,7 +71,7 @@ void StartupUtils::MarkEulaAccepted() {
 
 // static
 void StartupUtils::MarkOobeCompleted() {
-  SaveBoolPreferenceForced(kOobeComplete, true);
+  SaveBoolPreferenceForced(prefs::kOobeComplete, true);
 }
 
 // Returns the path to flag file indicating that both parts of OOBE were
@@ -114,7 +105,8 @@ static void CreateOobeCompleteFlagFile() {
 
 // static
 bool StartupUtils::IsDeviceRegistered() {
-  int value = g_browser_process->local_state()->GetInteger(kDeviceRegistered);
+  int value =
+      g_browser_process->local_state()->GetInteger(prefs::kDeviceRegistered);
   if (value > 0) {
     // Recreate flag file in case it was lost.
     BrowserThread::PostTask(
@@ -130,14 +122,14 @@ bool StartupUtils::IsDeviceRegistered() {
     base::ThreadRestrictions::ScopedAllowIO allow_io;
     base::FilePath oobe_complete_flag_file_path = GetOobeCompleteFlagPath();
     bool file_exists = base::PathExists(oobe_complete_flag_file_path);
-    SaveIntegerPreferenceForced(kDeviceRegistered, file_exists ? 1 : 0);
+    SaveIntegerPreferenceForced(prefs::kDeviceRegistered, file_exists ? 1 : 0);
     return file_exists;
   }
 }
 
 // static
 void StartupUtils::MarkDeviceRegistered() {
-  SaveIntegerPreferenceForced(kDeviceRegistered, 1);
+  SaveIntegerPreferenceForced(prefs::kDeviceRegistered, 1);
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
@@ -147,7 +139,7 @@ void StartupUtils::MarkDeviceRegistered() {
 // static
 std::string StartupUtils::GetInitialLocale() {
   std::string locale =
-      g_browser_process->local_state()->GetString(kInitialLocale);
+      g_browser_process->local_state()->GetString(prefs::kInitialLocale);
   if (!l10n_util::IsValidLocaleSyntax(locale))
     locale = "en-US";
   return locale;
@@ -156,7 +148,7 @@ std::string StartupUtils::GetInitialLocale() {
 // static
 void StartupUtils::SetInitialLocale(const std::string& locale) {
   if (l10n_util::IsValidLocaleSyntax(locale))
-    SaveStringPreferenceForced(kInitialLocale, locale);
+    SaveStringPreferenceForced(prefs::kInitialLocale, locale);
   else
     NOTREACHED();
 }

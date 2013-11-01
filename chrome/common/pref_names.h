@@ -765,6 +765,9 @@ extern const char kDeviceEnrollmentCanExit[];
 extern const char kUsersLRUInputMethod[];
 extern const char kEchoCheckedOffers[];
 extern const char kCachedMultiProfileUserBehavior[];
+extern const char kInitialLocale[];
+extern const char kOobeComplete[];
+extern const char kDeviceRegistered[];
 #endif
 
 extern const char kClearPluginLSODataEnabled[];

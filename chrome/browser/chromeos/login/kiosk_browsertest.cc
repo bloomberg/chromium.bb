@@ -5,6 +5,9 @@
 #include "apps/shell_window.h"
 #include "apps/shell_window_registry.h"
 #include "apps/ui/native_app_window.h"
+#include "ash/desktop_background/desktop_background_controller.h"
+#include "ash/desktop_background/desktop_background_controller_observer.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -23,6 +26,7 @@
 #include "chrome/browser/chromeos/login/app_launch_controller.h"
 #include "chrome/browser/chromeos/login/app_launch_signin_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/fake_user_manager.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
@@ -771,6 +775,87 @@ IN_PROC_BROWSER_TEST_P(KioskEnterpriseTest, EnterpriseKioskApp) {
 // Disabled due to failures; http://crbug.com/306611.
 INSTANTIATE_TEST_CASE_P(DISABLED_KioskEnterpriseTestInstantiation,
                         KioskEnterpriseTest,
+                        testing::Bool());
+
+// Specialized test fixture for testing kiosk mode on the
+// hidden WebUI initialization flow for slow hardware.
+class KioskHiddenWebUITest : public KioskTest,
+                             public ash::DesktopBackgroundControllerObserver {
+ public:
+  KioskHiddenWebUITest() : wallpaper_loaded_(false) {}
+
+  // KioskTest overrides:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    KioskTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(switches::kDeviceRegistered, "1");
+    command_line->AppendSwitch(switches::kDisableBootAnimation);
+    command_line->AppendSwitch(switches::kDisableOobeAnimation);
+  }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    KioskTest::SetUpOnMainThread();
+    ash::Shell::GetInstance()->desktop_background_controller()
+        ->AddObserver(this);
+  }
+
+  virtual void TearDownOnMainThread() OVERRIDE {
+    ash::Shell::GetInstance()->desktop_background_controller()
+        ->RemoveObserver(this);
+    KioskTest::TearDownOnMainThread();
+  }
+
+  void WaitForWallpaper() {
+    if (!wallpaper_loaded_) {
+      runner_ = new content::MessageLoopRunner;
+      runner_->Run();
+    }
+  }
+
+  bool wallpaper_loaded() const { return wallpaper_loaded_; }
+
+  // ash::DesktopBackgroundControllerObserver overrides:
+  virtual void OnWallpaperDataChanged() OVERRIDE {
+    wallpaper_loaded_ = true;
+    if (runner_.get())
+      runner_->Quit();
+  }
+
+  bool wallpaper_loaded_;
+  scoped_refptr<content::MessageLoopRunner> runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(KioskHiddenWebUITest);
+};
+
+IN_PROC_BROWSER_TEST_P(KioskHiddenWebUITest, AutolaunchWarning) {
+  // Add a device owner.
+  FakeUserManager* user_manager = new FakeUserManager();
+  user_manager->AddUser(kTestOwnerEmail);
+  ScopedUserManagerEnabler enabler(user_manager);
+
+  // Set kiosk app to autolaunch.
+  EnableConsumerKioskMode();
+  chromeos::WizardController::SkipPostLoginScreensForTesting();
+  chromeos::WizardController* wizard_controller =
+      chromeos::WizardController::default_controller();
+  CHECK(wizard_controller);
+  ReloadAutolaunchKioskApps();
+  wizard_controller->SkipToLoginForTesting();
+
+  EXPECT_FALSE(KioskAppManager::Get()->GetAutoLaunchApp().empty());
+  EXPECT_FALSE(KioskAppManager::Get()->IsAutoLaunchEnabled());
+
+  // Wait for the auto launch warning come up.
+  content::WindowedNotificationObserver(
+      chrome::NOTIFICATION_KIOSK_AUTOLAUNCH_WARNING_VISIBLE,
+      content::NotificationService::AllSources()).Wait();
+
+  // Wait for the wallpaper to load.
+  WaitForWallpaper();
+  EXPECT_TRUE(wallpaper_loaded());
+}
+
+INSTANTIATE_TEST_CASE_P(KioskHiddenWebUITestInstantiation,
+                        KioskHiddenWebUITest,
                         testing::Bool());
 
 }  // namespace chromeos
