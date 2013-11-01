@@ -91,14 +91,12 @@ void TouchFactory::UpdateDeviceList(Display* display) {
   // With XI2.1 or older, we allow only single touch devices.
   XDeviceList dev_list =
       DeviceListCacheX::GetInstance()->GetXDeviceList(display);
+  Atom xi_touchscreen = XInternAtom(display, XI_TOUCHSCREEN, false);
   for (int i = 0; i < dev_list.count; i++) {
-    if (dev_list[i].type) {
-      XScopedString devtype(XGetAtomName(display, dev_list[i].type));
-      if (devtype.string() && !strcmp(devtype.string(), XI_TOUCHSCREEN)) {
-        touch_device_lookup_[dev_list[i].id] = true;
-        touch_device_list_[dev_list[i].id] = false;
-        touch_device_available_ = true;
-      }
+    if (dev_list[i].type == xi_touchscreen) {
+      touch_device_lookup_[dev_list[i].id] = true;
+      touch_device_list_[dev_list[i].id] = false;
+      touch_device_available_ = true;
     }
   }
 #endif
