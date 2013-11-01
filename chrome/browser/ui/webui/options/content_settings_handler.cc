@@ -103,6 +103,9 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
   {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, "multiple-automatic-downloads"},
   {CONTENT_SETTINGS_TYPE_MIDI_SYSEX, "midi-sysex"},
   {CONTENT_SETTINGS_TYPE_SAVE_PASSWORD, "save-password"},
+#if defined(OS_CHROMEOS)
+  {CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER, "protectedContent"},
+#endif
 };
 
 ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name) {
@@ -354,7 +357,8 @@ void ContentSettingsHandler::GetLocalizedValues(
     // Protected Content filter
     { "protectedContentTabLabel", IDS_PROTECTED_CONTENT_TAB_LABEL },
     { "protectedContentInfo", IDS_PROTECTED_CONTENT_INFO },
-    { "protectedContentEnable", IDS_PROTECTED_CONTENT_ENABLE},
+    { "protectedContentEnable", IDS_PROTECTED_CONTENT_ENABLE },
+    { "protectedContent_header", IDS_PROTECTED_CONTENT_HEADER },
 #endif  // defined(OS_CHROMEOS) || defined(OS_WIN)
     // Media stream capture device filter.
     { "mediaStreamTabLabel", IDS_MEDIA_STREAM_TAB_LABEL },
@@ -423,6 +427,10 @@ void ContentSettingsHandler::GetLocalizedValues(
                 IDS_FULLSCREEN_TAB_LABEL);
   RegisterTitle(localized_strings, "mouselock",
                 IDS_MOUSE_LOCK_TAB_LABEL);
+#if defined(OS_CHROMEOS)
+  RegisterTitle(localized_strings, "protectedContent",
+                IDS_PROTECTED_CONTENT_TAB_LABEL);
+#endif
   RegisterTitle(localized_strings, "media-stream",
                 IDS_MEDIA_STREAM_TAB_LABEL);
   RegisterTitle(localized_strings, "ppapi-broker",
@@ -713,10 +721,6 @@ void ContentSettingsHandler::UpdateExceptionsViewFromModel(
     case CONTENT_SETTINGS_TYPE_METRO_SWITCH_TO_DESKTOP:
       break;
 #endif
-#if defined(OS_CHROMEOS)
-    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
-      break;
-#endif
     default:
       UpdateExceptionsViewFromHostContentSettingsMap(type);
       break;
@@ -970,6 +974,12 @@ void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
   // http://crbug.com/104683
   if (type == CONTENT_SETTINGS_TYPE_FULLSCREEN)
     return;
+
+#if defined(OS_CHROMEOS)
+  // Also the default for protected contents is managed in another place.
+  if (type == CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER)
+    return;
+#endif
 
   // The default may also have changed (we won't get a separate notification).
   // If it hasn't changed, this call will be harmless.
