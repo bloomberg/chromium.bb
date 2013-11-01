@@ -5,6 +5,7 @@
 #include "media/base/audio_bus.h"
 
 #include "base/logging.h"
+#include "base/safe_numerics.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/limits.h"
 #include "media/base/vector_math.h"
@@ -82,9 +83,10 @@ static void ToInterleavedInternal(const AudioBus* source, int start_frame,
   }
 }
 
-static void ValidateConfig(size_t channels, int frames) {
+static void ValidateConfig(int channels, int frames) {
   CHECK_GT(frames, 0);
-  CHECK_LE(channels, static_cast<size_t>(limits::kMaxChannels));
+  CHECK_GT(channels, 0);
+  CHECK_LE(channels, static_cast<int>(limits::kMaxChannels));
 }
 
 static void CheckOverflow(int start_frame, int frames, int total_frames) {
@@ -127,7 +129,8 @@ AudioBus::AudioBus(int frames, const std::vector<float*>& channel_data)
     : channel_data_(channel_data),
       frames_(frames),
       can_set_channel_data_(false) {
-  ValidateConfig(channel_data_.size(), frames_);
+  ValidateConfig(
+      base::checked_numeric_cast<int>(channel_data_.size()), frames_);
 
   // Sanity check wrapped vector for alignment and channel count.
   for (size_t i = 0; i < channel_data_.size(); ++i)
@@ -138,6 +141,7 @@ AudioBus::AudioBus(int channels)
     : channel_data_(channels),
       frames_(0),
       can_set_channel_data_(true) {
+  CHECK_GT(channels, 0);
   for (size_t i = 0; i < channel_data_.size(); ++i)
     channel_data_[i] = NULL;
 }
@@ -190,6 +194,7 @@ void AudioBus::SetChannelData(int channel, float* data) {
 
 void AudioBus::set_frames(int frames) {
   CHECK(can_set_channel_data_);
+  ValidateConfig(static_cast<int>(channel_data_.size()), frames);
   frames_ = frames;
 }
 
