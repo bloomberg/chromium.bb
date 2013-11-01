@@ -17,6 +17,7 @@
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/task_runner.h"
@@ -199,8 +200,10 @@ bool ForceKeyboardDrivenUINavigation() {
   if (!policy_manager)
     return false;
 
-  if (policy_manager->GetDeviceRequisition() == kRemoraRequisition)
+  if (base::strcasecmp(policy_manager->GetDeviceRequisition().c_str(),
+                       kRemoraRequisition) == 0) {
     return true;
+  }
 
   bool keyboard_driven = false;
   if (chromeos::system::StatisticsProvider::GetInstance()->GetMachineFlag(

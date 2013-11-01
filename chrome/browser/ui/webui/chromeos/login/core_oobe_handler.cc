@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_constants.h"
@@ -222,6 +223,8 @@ void CoreOobeHandler::HandleSetDeviceRequisition(
     const std::string& requisition) {
   g_browser_process->browser_policy_connector()->GetDeviceCloudPolicyManager()->
       SetDeviceRequisition(requisition);
+  // Exit Chrome to force the restart as soon as a new requisition is set.
+  chrome::ExitCleanly();
 }
 
 void CoreOobeHandler::HandleSkipToLoginForTesting() {
