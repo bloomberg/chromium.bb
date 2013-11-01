@@ -3,12 +3,20 @@
 # found in the LICENSE file.
 import gpu_process_expectations as expectations
 
-import os
-
 from telemetry import test
 from telemetry.page import page_set
 from telemetry.page import page_test
 
+test_harness_script = r"""
+  var domAutomationController = {};
+  domAutomationController._finished = false;
+  domAutomationController.setAutomationId = function(id) {}
+  domAutomationController.send = function(msg) {
+    domAutomationController._finished = true;
+  }
+
+  window.domAutomationController = domAutomationController;
+"""
 
 class GpuProcessValidator(page_test.PageTest):
   def __init__(self):
@@ -17,9 +25,6 @@ class GpuProcessValidator(page_test.PageTest):
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
-
-  def InjectJavascript(self):
-    return [os.path.join(os.path.dirname(__file__), 'gpu_process.js')]
 
   def ValidatePage(self, page, tab, results):
     has_gpu_process_js = 'chrome.gpuBenchmarking.hasGpuProcess()'
@@ -34,3 +39,9 @@ class GpuProcess(test.Test):
 
   def CreateExpectations(self, page_set):
     return expectations.GpuProcessExpectations()
+
+  def CreatePageSet(self, options):
+    page_set = super(GpuProcess, self).CreatePageSet(options)
+    for page in page_set.pages:
+      page.script_to_evaluate_on_commit = test_harness_script
+    return page_set

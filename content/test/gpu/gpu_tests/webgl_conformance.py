@@ -16,6 +16,40 @@ from telemetry.page import page_test
 conformance_path = os.path.join(
     util.GetChromiumSrcDir(), 'third_party', 'webgl_conformance')
 
+conformance_harness_script = r"""
+  var testHarness = {};
+  testHarness._allTestSucceeded = true;
+  testHarness._messages = '';
+  testHarness._failures = 0;
+  testHarness._finished = false;
+  testHarness._originalLog = window.console.log;
+
+  testHarness.log = function(msg) {
+    testHarness._messages += msg + "\n";
+    testHarness._originalLog.apply(window.console, [msg]);
+  }
+
+  testHarness.reportResults = function(success, msg) {
+    testHarness._allTestSucceeded = testHarness._allTestSucceeded && !!success;
+    if(!success) {
+      testHarness._failures++;
+      if(msg) {
+        testHarness.log(msg);
+      }
+    }
+  };
+  testHarness.notifyFinished = function() {
+    testHarness._finished = true;
+  };
+  testHarness.navigateToPage = function(src) {
+    var testFrame = document.getElementById("test-frame");
+    testFrame.src = src;
+  };
+
+  window.webglTestHarness = testHarness;
+  window.parent.webglTestHarness = testHarness;
+  window.console.log = testHarness.log;
+"""
 
 def _DidWebGLTestSucceed(tab):
   return tab.EvaluateJavaScript('webglTestHarness._allTestSucceeded')
@@ -67,9 +101,7 @@ class WebglConformance(test_module.Test):
             test.replace('/', '_').replace('-', '_').
             replace('\\', '_').rpartition('.')[0].replace('.', '_'),
         'url': 'file://' + test,
-        'inject_scripts': [
-          os.path.join(os.path.dirname(__file__), 'webgl_conformance.js')
-        ],
+        'script_to_evaluate_on_commit': conformance_harness_script,
         'navigate_steps': [
           {'action': 'navigate'},
           {

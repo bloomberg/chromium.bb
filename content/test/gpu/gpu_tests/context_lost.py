@@ -13,6 +13,31 @@ data_path = os.path.join(
 
 wait_timeout = 20  # seconds
 
+harness_script = r"""
+  var domAutomationController = {};
+
+  domAutomationController._loaded = false;
+  domAutomationController._succeeded = false;
+  domAutomationController._finished = false;
+
+  domAutomationController.setAutomationId = function(id) {}
+
+  domAutomationController.send = function(msg) {
+    msg = msg.toLowerCase()
+    if (msg == "loaded") {
+      domAutomationController._loaded = true;
+    } else if (msg == "success") {
+      domAutomationController._succeeded = true;
+      domAutomationController._finished = true;
+    } else {
+      domAutomationController._succeeded = false;
+      domAutomationController._finished = true;
+    }
+  }
+
+  window.domAutomationController = domAutomationController;
+  console.log("Harness injected.");
+"""
 
 class _ContextLostValidator(page_test.PageTest):
   def __init__(self):
@@ -27,9 +52,6 @@ class _ContextLostValidator(page_test.PageTest):
         '--disable-domain-blocking-for-3d-apis')
     # Required for about:gpucrash handling from Telemetry.
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
-
-  def InjectJavascript(self):
-    return [os.path.join(os.path.dirname(__file__), 'context_lost.js')]
 
   def ValidatePage(self, page, tab, results):
     if page.kill_gpu_process:
@@ -69,6 +91,7 @@ class ContextLost(test_module.Test):
         {
           'name': 'ContextLost.WebGLContextLostFromGPUProcessExit',
           'url': 'file://webgl.html?query=kill_after_notification',
+          'script_to_evaluate_on_commit': harness_script,
           'navigate_steps': [
             { 'action': 'navigate' },
             { 'action': 'wait',
@@ -79,6 +102,7 @@ class ContextLost(test_module.Test):
         {
           'name': 'ContextLost.WebGLContextLostFromLoseContextExtension',
           'url': 'file://webgl.html?query=WEBGL_lose_context',
+          'script_to_evaluate_on_commit': harness_script,
           'navigate_steps': [
             { 'action': 'navigate' },
             { 'action': 'wait',

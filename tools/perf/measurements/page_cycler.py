@@ -30,6 +30,11 @@ from telemetry.page import page_measurement
 class PageCycler(page_measurement.PageMeasurement):
   def __init__(self, *args, **kwargs):
     super(PageCycler, self).__init__(*args, **kwargs)
+
+    with open(os.path.join(os.path.dirname(__file__),
+                           'page_cycler.js'), 'r') as f:
+      self._page_cycler_js = f.read()
+
     self._record_v8_object_stats = False
     self._report_speed_index = False
     self._speedindex_metric = speedindex.SpeedIndexMetric()
@@ -73,10 +78,8 @@ class PageCycler(page_measurement.PageMeasurement):
     # page cyclers which use the filesystem.
     tab.Navigate(tab.browser.http_server.UrlOf('nonexistent.html'))
 
-  def InjectJavascript(self):
-    return [os.path.join(os.path.dirname(__file__), 'page_cycler.js')]
-
   def WillNavigateToPage(self, page, tab):
+    page.script_to_evaluate_on_commit = self._page_cycler_js
     if self.ShouldRunCold(page.url):
       tab.ClearCache()
     if self._report_speed_index:
