@@ -1048,7 +1048,6 @@
             ['use_aura==1', {
               'sources!': [
                 'browser/accessibility/accessibility_win_browsertest.cc',
-                'browser/accessibility/dump_accessibility_tree_browsertest.cc',
                 'browser/plugin_browsertest.cc',
               ],
             }, {
