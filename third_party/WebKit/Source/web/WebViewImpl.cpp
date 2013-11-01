@@ -3395,7 +3395,10 @@ void WebViewImpl::inspectElementAt(const WebPoint& point)
         HitTestRequest::HitTestRequestType hitType = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::AllowChildFrameContent | HitTestRequest::IgnorePointerEventsNone;
         HitTestRequest request(hitType);
 
-        HitTestResult result(m_page->mainFrame()->view()->windowToContents(point));
+        FrameView* frameView = m_page->mainFrame()->view();
+        IntPoint transformedPoint(point);
+        transformedPoint.scale(1 / frameView->inputEventsScaleFactor(), 1 / frameView->inputEventsScaleFactor());
+        HitTestResult result(m_page->mainFrame()->view()->windowToContents(transformedPoint));
         m_page->mainFrame()->contentRenderer()->hitTest(request, result);
         Node* node = result.innerNode();
         if (!node && m_page->mainFrame()->document())

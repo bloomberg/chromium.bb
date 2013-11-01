@@ -189,7 +189,9 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
     Frame* selectedFrame = r.innerNodeFrame();
 
     WebContextMenuData data;
-    data.mousePosition = selectedFrame->view()->contentsToWindow(r.roundedPointInInnerNodeFrame());
+    IntPoint mousePoint = selectedFrame->view()->contentsToWindow(r.roundedPointInInnerNodeFrame());
+    mousePoint.scale(m_webView->pageScaleFactor(), m_webView->pageScaleFactor());
+    data.mousePosition = mousePoint;
 
     // Compute edit flags.
     data.editFlags = WebContextMenuData::CanDoNone;
