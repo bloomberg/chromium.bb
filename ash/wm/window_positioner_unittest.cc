@@ -86,6 +86,9 @@ class OutOfDisplayDelegate : public views::WidgetDelegate {
 }  // namespace
 
 TEST_F(WindowPositionerTest, EnsureMinimumVisibility) {
+  if (!SupportsHostWindowResize())
+    return;
+
   UpdateDisplay("400x400");
   views::Widget* widget = new views::Widget();
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
