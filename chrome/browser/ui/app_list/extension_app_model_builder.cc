@@ -10,15 +10,14 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_sorting.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/extension_app_item.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "ui/gfx/image/image_skia.h"
@@ -167,10 +166,7 @@ void ExtensionAppModelBuilder::SwitchProfile(Profile* profile) {
   if (tracker_)
     tracker_->RemoveObserver(this);
 
-  if (extensions::ExtensionSystem::Get(profile_)->extension_service())
-    tracker_ = extensions::InstallTrackerFactory::GetForProfile(profile_);
-  else
-    tracker_ = NULL;
+  tracker_ = controller_->GetInstallTrackerFor(profile_);
 
   PopulateApps();
   UpdateHighlight();
@@ -181,15 +177,10 @@ void ExtensionAppModelBuilder::SwitchProfile(Profile* profile) {
 }
 
 void ExtensionAppModelBuilder::PopulateApps() {
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  if (!service)
-    return;
-
+  ExtensionSet extensions;
+  controller_->GetApps(profile_, &extensions);
   ExtensionAppList apps;
-  AddApps(service->extensions(), &apps);
-  AddApps(service->disabled_extensions(), &apps);
-  AddApps(service->terminated_extensions(), &apps);
+  AddApps(&extensions, &apps);
 
   if (apps.empty())
     return;

@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "ui/gfx/native_widget_types.h"
 
+class ExtensionSet;
 class Profile;
 
 namespace base {
@@ -18,6 +19,7 @@ class FilePath;
 
 namespace extensions {
 class Extension;
+class InstallTracker;
 }
 
 namespace gfx {
@@ -134,6 +136,10 @@ class AppListControllerDelegate {
   // Returns true if the given extension is installed.
   bool IsExtensionInstalled(Profile* profile, const std::string& app_id);
 
+  extensions::InstallTracker* GetInstallTrackerFor(Profile* profile);
+
+  // Get the list of installed apps for the given profile.
+  void GetApps(Profile* profile, ExtensionSet* out_apps);
 };
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_APP_LIST_CONTROLLER_DELEGATE_H_
