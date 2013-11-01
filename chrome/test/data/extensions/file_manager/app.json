@@ -2,5 +2,5 @@
   "name": "test",
   "version": "1",
   "manifest_version": 2,
-  "icons": { "16": "images/icon16.png" }
+  "icons": { "16": "common/images/icon16.png" }
 }
