@@ -3395,6 +3395,37 @@ TEST(HttpCache, RangeGET_NoStrongValidators) {
   RemoveMockTransaction(&transaction);
 }
 
+// Tests that we cache partial responses that lack content-length.
+TEST(HttpCache, RangeGET_NoContentLength) {
+  MockHttpCache cache;
+  std::string headers;
+
+  // Attempt to write to the cache (40-49).
+  MockTransaction transaction(kRangeGET_TransactionOK);
+  AddMockTransaction(&transaction);
+  transaction.response_headers = "ETag: \"foo\"\n"
+                                 "Accept-Ranges: bytes\n"
+                                 "Content-Range: bytes 40-49/80\n";
+  transaction.handler = NULL;
+  RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
+
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  // Now verify that there's no cached data.
+  transaction.handler = &RangeTransactionServer::RangeHandler;
+  RunTransactionTestWithResponse(cache.http_cache(), kRangeGET_TransactionOK,
+                                 &headers);
+
+  Verify206Response(headers, 40, 49);
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  RemoveMockTransaction(&transaction);
+}
+
 // Tests that we can cache range requests and fetch random blocks from the
 // cache and the network.
 TEST(HttpCache, RangeGET_OK) {

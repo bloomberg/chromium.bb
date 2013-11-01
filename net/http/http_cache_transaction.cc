@@ -2399,6 +2399,8 @@ bool HttpCache::Transaction::CanResume(bool has_data) {
   if (request_->method != "GET")
     return false;
 
+  // Note that if this is a 206, content-length was already fixed after calling
+  // PartialData::ResponseHeadersOK().
   if (response_.headers->GetContentLength() <= 0 ||
       response_.headers->HasHeaderValue("Accept-Ranges", "none") ||
       !response_.headers->HasStrongValidators()) {

@@ -337,8 +337,12 @@ bool PartialData::ResponseHeadersOK(const HttpResponseHeaders* headers) {
   if (total_length <= 0)
     return false;
 
+  DCHECK_EQ(headers->response_code(), 206);
+
+  // A server should return a valid content length with a 206 (per the standard)
+  // but relax the requirement because some servers don't do that.
   int64 content_length = headers->GetContentLength();
-  if (content_length < 0 || content_length != end - start + 1)
+  if (content_length > 0 && content_length != end - start + 1)
     return false;
 
   if (!resource_size_) {
