@@ -82,13 +82,14 @@ void ReturnResourcesOnThread(ReturnCallback callback,
                              const ReturnedResourceArray& resources,
                              base::WaitableEvent* event) {
   callback.Run(resources);
-  event->Wait();
+  if (event)
+    event->Wait();
 }
 
 // Tests that the ReturnCallback can run safely on threads even after the
 // last references to the collection were dropped.
 // Flaky: crbug.com/313441
-TEST_F(DelegatedFrameResourceCollectionTest, DISABLED_Thread) {
+TEST_F(DelegatedFrameResourceCollectionTest, Thread) {
   base::Thread thread("test thread");
   thread.Start();
 
@@ -145,12 +146,12 @@ TEST_F(DelegatedFrameResourceCollectionTest, DISABLED_Thread) {
   EXPECT_TRUE(returned_resources_[0].lost);
   returned_resources_.clear();
 
+  base::WaitableEvent* null_event = NULL;
   thread.message_loop()->PostTask(FROM_HERE,
                                   base::Bind(&ReturnResourcesOnThread,
                                              return_callback,
                                              returned_resources,
-                                             &event));
-  event.Signal();
+                                             null_event));
 
   thread.Stop();
 }
