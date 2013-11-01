@@ -1979,85 +1979,93 @@ Even if you have downloaded files from this website before, the website might ha
       <!-- Download Context Menu Items -->
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_DOWNLOAD_MENU_OPEN_WHEN_COMPLETE"
-                 desc="Download context menu open when download is finished">
+                 desc="Download context menu: Open when download is finished">
           Open when &amp;done
         </message>
         <message name="IDS_DOWNLOAD_MENU_OPEN"
-                 desc="Download context menu open download">
+                 desc="Download context menu: Open download">
           &amp;Open
         </message>
         <message name="IDS_DOWNLOAD_MENU_ALWAYS_OPEN_TYPE"
-                 desc="Download context menu open when download is finished">
+                 desc="Download context menu: Open when download is finished">
           &amp;Always open files of this type
         </message>
+        <message name="IDS_DOWNLOAD_MENU_PLATFORM_OPEN"
+        desc="Download context menu: Open the download using the default handler for the platform.">
+          Open with system viewer
+        </message>
         <message name="IDS_DOWNLOAD_MENU_CANCEL"
-                 desc="Download context menu cancel">
+                 desc="Download context menu: Cancel">
           &amp;Cancel
         </message>
         <message name="IDS_DOWNLOAD_MENU_PAUSE_ITEM"
-                 desc="Download context menu pause download">
+                 desc="Download context menu: Pause download">
           &amp;Pause
         </message>
         <message name="IDS_DOWNLOAD_MENU_RESUME_ITEM"
-                 desc="Download context menu resume download">
+                 desc="Download context menu: Resume download">
           &amp;Resume
         </message>
         <message name="IDS_DOWNLOAD_MENU_DISCARD"
-                 desc="Download context menu discard malicious download">
+                 desc="Download context menu: Discard malicious download">
           &amp;Discard
         </message>
         <message name="IDS_DOWNLOAD_MENU_KEEP"
-                 desc="Download context menu keep malicious download">
+                 desc="Download context menu: Keep malicious download">
           &amp;Keep
         </message>
         <message name="IDS_DOWNLOAD_MENU_LEARN_MORE_SCANNING"
-                 desc="Download context menu show information about download scanning">
+                 desc="Download context menu: Show information about download scanning">
           &amp;Learn more
         </message>
         <message name="IDS_DOWNLOAD_MENU_LEARN_MORE_INTERRUPTED"
-                 desc="Download context menu show information about interrupted downloads">
+                 desc="Download context menu: Show information about interrupted downloads">
           &amp;More information
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_DOWNLOAD_MENU_OPEN_WHEN_COMPLETE"
-                 desc="In Title Case: Download context menu open when download is finished">
+                 desc="In Title Case: Download context menu: Open when download is finished">
           Open When &amp;Done
         </message>
         <message name="IDS_DOWNLOAD_MENU_OPEN"
-                 desc="In Title Case: Download context menu open download">
+                 desc="In Title Case: Download context menu: Open download">
           &amp;Open
         </message>
         <message name="IDS_DOWNLOAD_MENU_ALWAYS_OPEN_TYPE"
-                 desc="In Title Case: Download context menu open when download is finished">
+                 desc="In Title Case: Download context menu: Open when download is finished">
           &amp;Always Open Files of This Type
         </message>
+        <message name="IDS_DOWNLOAD_MENU_PLATFORM_OPEN"
+                 desc="In Title Case: Download context menu: Open the download using the default handler for the platform.">
+          Open With System Viewer
+        </message>
         <message name="IDS_DOWNLOAD_MENU_CANCEL"
-                 desc="In Title Case: Download context menu cancel">
+                 desc="In Title Case: Download context menu: Cancel">
           &amp;Cancel
         </message>
         <message name="IDS_DOWNLOAD_MENU_PAUSE_ITEM"
-                 desc="In Title Case: Download context menu pause download">
+                 desc="In Title Case: Download context menu: Pause download">
           &amp;Pause
         </message>
         <message name="IDS_DOWNLOAD_MENU_RESUME_ITEM"
-                 desc="In Title Case: Download context menu resume download">
+                 desc="In Title Case: Download context menu: Resume download">
           &amp;Resume
         </message>
         <message name="IDS_DOWNLOAD_MENU_DISCARD"
-                 desc="In Title Case: Download context menu discard malicious download">
+                 desc="In Title Case: Download context menu: Discard malicious download">
           &amp;Discard
         </message>
         <message name="IDS_DOWNLOAD_MENU_KEEP"
-                 desc="In Title Case: Download context menu keep malicious download">
+                 desc="In Title Case: Download context menu: Keep malicious download">
           &amp;Keep
         </message>
         <message name="IDS_DOWNLOAD_MENU_LEARN_MORE_SCANNING"
-                 desc="In Title Case: Download context menu show information about download scanning">
+                 desc="In Title Case: Download context menu: Show information about download scanning">
           &amp;Learn More
         </message>
         <message name="IDS_DOWNLOAD_MENU_LEARN_MORE_INTERRUPTED"
-                 desc="Download context menu show information about interrupted downloads">
+                 desc="In Title Case: Download context menu: Show information about interrupted downloads">
           &amp;More Information
         </message>
       </if>
