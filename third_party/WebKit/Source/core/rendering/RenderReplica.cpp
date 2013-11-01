@@ -29,6 +29,7 @@
 #include "config.h"
 #include "core/rendering/RenderReplica.h"
 
+#include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/RenderLayer.h"
 
 namespace WebCore {

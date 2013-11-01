@@ -28,6 +28,7 @@
 #include "core/rendering/svg/RenderSVGImage.h"
 
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
+#include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/ImageQualityController.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/PointerEventsHitRules.h"

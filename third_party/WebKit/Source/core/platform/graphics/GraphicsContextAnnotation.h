@@ -34,16 +34,7 @@
 #ifndef GraphicsContextAnnotation_h
 #define GraphicsContextAnnotation_h
 
-#define ANNOTATE_GRAPHICS_CONTEXT(paintInfo, renderer) \
-    GraphicsContextAnnotator scopedGraphicsContextAnnotator; \
-    if (UNLIKELY(paintInfo.context->annotationMode())) \
-        scopedGraphicsContextAnnotator.annotate(paintInfo, renderer)
-
 namespace WebCore {
-
-class GraphicsContext;
-class RenderObject;
-struct PaintInfo;
 
 enum AnnotationMode {
     AnnotateRendererName    = 1 << 0,
@@ -60,7 +51,7 @@ typedef Vector<std::pair<const char*, String> > AnnotationList;
 
 class GraphicsContextAnnotation {
 public:
-    GraphicsContextAnnotation(const PaintInfo&, const RenderObject*);
+    GraphicsContextAnnotation(const char*, const char*, const String&, const String&, const String&);
 
     String rendererName() const { return m_rendererName; }
     String paintPhase() const { return m_paintPhase; }
@@ -76,26 +67,6 @@ private:
     String m_elementId;
     String m_elementClass;
     String m_elementTag;
-};
-
-class GraphicsContextAnnotator {
-public:
-    GraphicsContextAnnotator()
-        : m_context(0)
-    { }
-
-    ~GraphicsContextAnnotator()
-    {
-        if (UNLIKELY(m_context != 0))
-            finishAnnotation();
-    }
-
-    void annotate(const PaintInfo&, const RenderObject*);
-
-private:
-    void finishAnnotation();
-
-    GraphicsContext* m_context;
 };
 
 } // namespace WebCore

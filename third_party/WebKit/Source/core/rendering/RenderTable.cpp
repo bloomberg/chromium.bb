@@ -33,6 +33,7 @@
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/AutoTableLayout.h"
 #include "core/rendering/FixedTableLayout.h"
+#include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderLayer.h"

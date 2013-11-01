@@ -38,6 +38,7 @@
 #include "core/page/Settings.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/ColumnInfo.h"
+#include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestLocation.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineIterator.h"

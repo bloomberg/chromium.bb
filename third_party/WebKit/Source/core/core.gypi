@@ -1362,6 +1362,8 @@
             'rendering/FloatingObjects.h',
             'rendering/FlowThreadController.cpp',
             'rendering/FlowThreadController.h',
+            'rendering/GraphicsContextAnnotator.cpp',
+            'rendering/GraphicsContextAnnotator.h',
             'rendering/TextAutosizer.cpp',
             'rendering/TextAutosizer.h',
             'rendering/HitTestingTransformState.cpp',

@@ -26,6 +26,7 @@
 #include "core/rendering/svg/RenderSVGContainer.h"
 
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
+#include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
