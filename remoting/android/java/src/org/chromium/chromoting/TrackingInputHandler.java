@@ -32,22 +32,13 @@ public class TrackingInputHandler implements TouchInputHandler {
 
     private GestureDetector mScroller;
     private ScaleGestureDetector mZoomer;
+    private TapGestureDetector mTapDetector;
 
     /**
      * The current cursor position is stored here as floats, so that the desktop image can be
      * positioned with sub-pixel accuracy, to give a smoother panning animation at high zoom levels.
      */
     private PointF mCursorPosition;
-
-    private int mMouseButton;
-
-    /**
-     * Distinguish between finger tap and swipe. One-finger down then up should inject a
-     * left-click event. But if the finger is dragged before being released, this should move
-     * the cursor without injecting any button event. This flag is set when a motion event is
-     * detected.
-     */
-    private boolean mFingerMoved = false;
 
     public TrackingInputHandler(DesktopViewInterface viewer, Context context,
                                 RenderData renderData) {
@@ -64,11 +55,9 @@ public class TrackingInputHandler implements TouchInputHandler {
         mScroller.setIsLongpressEnabled(false);
 
         mZoomer = new ScaleGestureDetector(context, listener);
+        mTapDetector = new TapGestureDetector(context, listener);
 
         mCursorPosition = new PointF();
-
-        mMouseButton = BUTTON_UNDEFINED;
-        mFingerMoved = false;
     }
 
     /**
@@ -190,52 +179,7 @@ public class TrackingInputHandler implements TouchInputHandler {
         // that they generate correct notifications.
         boolean handled = mScroller.onTouchEvent(event);
         handled = mZoomer.onTouchEvent(event) || handled;
-
-        int pointerCount = event.getPointerCount();
-
-        switch (event.getActionMasked()) {
-            case MotionEvent.ACTION_DOWN:
-            case MotionEvent.ACTION_POINTER_DOWN:
-                switch (pointerCount) {
-                    case 1:
-                        mFingerMoved = false;
-                        mMouseButton = BUTTON_LEFT;
-                        break;
-                    case 2:
-                        mMouseButton = BUTTON_RIGHT;
-                        break;
-                    case 3:
-                        mMouseButton = BUTTON_UNDEFINED;
-                        // TODO(lambroslambrou): Add 3-finger-tap for middle-click, and use 3-finger
-                        // swipe to show the action-bar or keyboard.
-                        break;
-                    default:
-                        break;
-                }
-                break;
-            case MotionEvent.ACTION_UP:
-                if (mFingerMoved) {
-                    // Don't inject anything.
-                    mFingerMoved = false;
-                } else {
-                    // The user pressed and released without moving. Inject a click event for a
-                    // mouse button according to how many fingers were used.
-                    injectButtonEvent(mMouseButton, true);
-                    injectButtonEvent(mMouseButton, false);
-                    handled = true;
-                }
-                break;
-            case MotionEvent.ACTION_POINTER_UP:
-                // |pointerCount| is the number of fingers that were on the screen prior to the UP
-                // event.
-                if (pointerCount == 3) {
-                    mViewer.showActionBar();
-                    handled = true;
-                }
-                break;
-            default:
-                break;
-        }
+        handled = mTapDetector.onTouchEvent(event) || handled;
         return handled;
     }
 
@@ -256,7 +200,8 @@ public class TrackingInputHandler implements TouchInputHandler {
 
     /** Responds to touch events filtered by the gesture detectors. */
     private class GestureListener extends GestureDetector.SimpleOnGestureListener
-            implements ScaleGestureDetector.OnScaleGestureListener {
+            implements ScaleGestureDetector.OnScaleGestureListener,
+                       TapGestureDetector.OnTapListener {
         /**
          * Called when the user drags one or more fingers across the touchscreen.
          */
@@ -265,7 +210,6 @@ public class TrackingInputHandler implements TouchInputHandler {
             if (e2.getPointerCount() != 1) {
                 return false;
             }
-            mFingerMoved = true;
 
             float[] delta = {distanceX, distanceY};
             synchronized (mRenderData) {
@@ -284,7 +228,6 @@ public class TrackingInputHandler implements TouchInputHandler {
             if (Math.abs(detector.getScaleFactor() - 1) < MIN_ZOOM_DELTA) {
                 return false;
             }
-            mFingerMoved = true;
 
             float scaleFactor = detector.getScaleFactor();
             synchronized (mRenderData) {
@@ -314,6 +257,28 @@ public class TrackingInputHandler implements TouchInputHandler {
         @Override
         public void onScaleEnd(ScaleGestureDetector detector) {
             onScale(detector);
+        }
+
+        /** Called when the user taps the screen with one or more fingers. */
+        @Override
+        public boolean onTap(int pointerCount) {
+            switch (pointerCount) {
+                case 1:
+                    injectButtonEvent(BUTTON_LEFT, true);
+                    injectButtonEvent(BUTTON_LEFT, false);
+                    return true;
+                case 2:
+                    injectButtonEvent(BUTTON_RIGHT, true);
+                    injectButtonEvent(BUTTON_RIGHT, false);
+                    return true;
+                case 3:
+                    // TODO(lambroslambrou): Add 3-finger-tap for middle-click, and use 3-finger
+                    // swipe to show the action-bar or keyboard.
+                    mViewer.showActionBar();
+                    return true;
+                default:
+                    return false;
+            }
         }
     }
 }
