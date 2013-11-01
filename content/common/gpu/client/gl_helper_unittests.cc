@@ -457,10 +457,23 @@ class GLHelperTest : public testing::Test {
     }
   }
 
+  void FlipSKBitmap(SkBitmap* bitmap) {
+    int top_line = 0;
+    int bottom_line = bitmap->height() - 1;
+    while (top_line < bottom_line) {
+      for (int x = 0; x < bitmap->width(); x++) {
+        std::swap(*bitmap->getAddr32(x, top_line),
+                  *bitmap->getAddr32(x, bottom_line));
+      }
+      top_line++;
+      bottom_line--;
+    }
+  }
 
   // gl_helper scales recursively, so we'll need to do that
   // in the reference implementation too.
-  void ScaleSlowRecursive(SkBitmap* input, SkBitmap* output,
+  void ScaleSlowRecursive(SkBitmap* input,
+                          SkBitmap* output,
                           content::GLHelper::ScalerQuality quality) {
     if (quality == content::GLHelper::SCALER_QUALITY_FAST ||
         quality == content::GLHelper::SCALER_QUALITY_GOOD) {
@@ -512,7 +525,8 @@ class GLHelperTest : public testing::Test {
   void TestScale(int xsize, int ysize,
                  int scaled_xsize, int scaled_ysize,
                  int test_pattern,
-                 size_t quality) {
+                 size_t quality,
+                 bool flip) {
     WebGLId src_texture = context_->createTexture();
     WebGLId framebuffer = context_->createFramebuffer();
     SkBitmap input_pixels;
@@ -572,7 +586,7 @@ class GLHelperTest : public testing::Test {
         gfx::Size(xsize, ysize),
         gfx::Rect(0, 0, xsize, ysize),
         gfx::Size(scaled_xsize, scaled_ysize),
-        false,
+        flip,
         false,
         &stages);
     ValidateScalerStages(kQualities[quality], stages, message);
@@ -581,7 +595,7 @@ class GLHelperTest : public testing::Test {
         src_texture,
         gfx::Size(xsize, ysize),
         gfx::Size(scaled_xsize, scaled_ysize),
-        false,
+        flip,
         kQualities[quality]);
 
     SkBitmap output_pixels;
@@ -594,7 +608,10 @@ class GLHelperTest : public testing::Test {
         dst_texture,
         gfx::Rect(0, 0, scaled_xsize, scaled_ysize),
         static_cast<unsigned char *>(output_pixels.getPixels()));
-
+    if (flip) {
+      // Flip the pixels back.
+      FlipSKBitmap(&output_pixels);
+    }
     if (xsize == scaled_xsize && ysize == scaled_ysize) {
       Compare(&input_pixels,
               &output_pixels,
@@ -739,6 +756,7 @@ class GLHelperTest : public testing::Test {
                     int ysize,
                     SkBitmap* source,
                     std::string message) {
+    int truth_stride = stride;
     for (int x = 0; x < xsize; x++) {
       for (int y = 0; y < ysize; y++) {
         int a = other[y * stride + x];
@@ -749,7 +767,7 @@ class GLHelperTest : public testing::Test {
             << " " << message;
         if (std::abs(a - b) > maxdiff) {
           printf("-------expected--------\n");
-          PrintPlane(truth, xsize, stride, ysize);
+          PrintPlane(truth, xsize, truth_stride, ysize);
           printf("-------actual--------\n");
           PrintPlane(other, xsize, stride, ysize);
           if (source) {
@@ -776,6 +794,7 @@ class GLHelperTest : public testing::Test {
                        int xmargin,
                        int ymargin,
                        int test_pattern,
+                       bool flip,
                        bool use_mrt) {
     WebGLId src_texture = context_->createTexture();
     SkBitmap input_pixels;
@@ -828,11 +847,13 @@ class GLHelperTest : public testing::Test {
     std::string message = base::StringPrintf("input size: %dx%d "
                                              "output size: %dx%d "
                                              "margin: %dx%d "
-                                             "pattern: %d",
+                                             "pattern: %d %s %s",
                                              xsize, ysize,
                                              output_xsize, output_ysize,
                                              xmargin, ymargin,
-                                             test_pattern);
+                                             test_pattern,
+                                             flip ? "flip" : "noflip",
+                                             flip ? "mrt" : "nomrt");
     scoped_ptr<ReadbackYUVInterface> yuv_reader(
         helper_->CreateReadbackPipelineYUV(
             content::GLHelper::SCALER_QUALITY_GOOD,
@@ -840,7 +861,7 @@ class GLHelperTest : public testing::Test {
             gfx::Rect(0, 0, xsize, ysize),
             gfx::Size(output_xsize, output_ysize),
             gfx::Rect(xmargin, ymargin, xsize, ysize),
-            false,
+            flip,
             use_mrt));
 
     scoped_refptr<media::VideoFrame> output_frame =
@@ -865,6 +886,10 @@ class GLHelperTest : public testing::Test {
         output_frame.get(),
         base::Bind(&callcallback, run_loop.QuitClosure()));
     run_loop.Run();
+
+    if (flip) {
+      FlipSKBitmap(&input_pixels);
+    }
 
     unsigned char* Y = truth_frame->data(media::VideoFrame::kYPlane);
     unsigned char* U = truth_frame->data(media::VideoFrame::kUPlane);
@@ -903,16 +928,25 @@ class GLHelperTest : public testing::Test {
       }
     }
 
-    ComparePlane(Y, output_frame->data(media::VideoFrame::kYPlane), 2,
-                 output_xsize, y_stride, output_ysize,
+    ComparePlane(Y,
+                 output_frame->data(media::VideoFrame::kYPlane), 2,
+                 output_xsize,
+                 y_stride,
+                 output_ysize,
                  &input_pixels,
                  message + " Y plane");
-    ComparePlane(U, output_frame->data(media::VideoFrame::kUPlane), 2,
-                 output_xsize / 2, u_stride, output_ysize / 2,
+    ComparePlane(U,
+                 output_frame->data(media::VideoFrame::kUPlane), 2,
+                 output_xsize / 2,
+                 u_stride,
+                 output_ysize / 2,
                  &input_pixels,
                  message + " U plane");
-    ComparePlane(V, output_frame->data(media::VideoFrame::kVPlane), 2,
-                 output_xsize / 2, v_stride, output_ysize / 2,
+    ComparePlane(V,
+                 output_frame->data(media::VideoFrame::kVPlane), 2,
+                 output_xsize / 2,
+                 v_stride,
+                 output_ysize / 2,
                  &input_pixels,
                  message + " V plane");
 
@@ -1117,34 +1151,36 @@ class GLHelperTest : public testing::Test {
   std::deque<GLHelperScaling::ScaleOp> x_ops_, y_ops_;
 };
 
-// Reenable once http://crbug.com/162291 is fixed.
 TEST_F(GLHelperTest, YUVReadbackTest) {
   int sizes[] = { 2, 4, 14 };
-  for (int use_mrt = 0; use_mrt <= 1 ; use_mrt++) {
-    for (unsigned int x = 0; x < arraysize(sizes); x++) {
-      for (unsigned int y = 0; y < arraysize(sizes); y++) {
-        for (unsigned int ox = x; ox < arraysize(sizes); ox++) {
-          for (unsigned int oy = y; oy < arraysize(sizes); oy++) {
-            // If output is a subsection of the destination frame, (letterbox)
-            // then try different variations of where the subsection goes.
-            for (Margin xm = x < ox ? MarginLeft : MarginRight;
-                 xm <= MarginRight;
-                 xm = NextMargin(xm)) {
-              for (Margin ym = y < oy ? MarginLeft : MarginRight;
-                   ym <= MarginRight;
-                   ym = NextMargin(ym)) {
-                for (int pattern = 0; pattern < 3; pattern++) {
-                  TestYUVReadback(
-                      sizes[x],
-                      sizes[y],
-                      sizes[ox],
-                      sizes[oy],
-                      compute_margin(sizes[x], sizes[ox], xm),
-                      compute_margin(sizes[y], sizes[oy], ym),
-                      pattern,
-                      use_mrt == 1);
-                  if (HasFailure()) {
-                    return;
+  for (int flip = 0; flip <= 1; flip++) {
+    for (int use_mrt = 0; use_mrt <= 1; use_mrt++) {
+      for (unsigned int x = 0; x < arraysize(sizes); x++) {
+        for (unsigned int y = 0; y < arraysize(sizes); y++) {
+          for (unsigned int ox = x; ox < arraysize(sizes); ox++) {
+            for (unsigned int oy = y; oy < arraysize(sizes); oy++) {
+              // If output is a subsection of the destination frame, (letterbox)
+              // then try different variations of where the subsection goes.
+              for (Margin xm = x < ox ? MarginLeft : MarginRight;
+                   xm <= MarginRight;
+                   xm = NextMargin(xm)) {
+                for (Margin ym = y < oy ? MarginLeft : MarginRight;
+                     ym <= MarginRight;
+                     ym = NextMargin(ym)) {
+                  for (int pattern = 0; pattern < 3; pattern++) {
+                    TestYUVReadback(
+                        sizes[x],
+                        sizes[y],
+                        sizes[ox],
+                        sizes[oy],
+                        compute_margin(sizes[x], sizes[ox], xm),
+                        compute_margin(sizes[y], sizes[oy], ym),
+                        pattern,
+                        flip == 1,
+                        use_mrt == 1);
+                    if (HasFailure()) {
+                      return;
+                    }
                   }
                 }
               }
@@ -1161,20 +1197,23 @@ TEST_F(GLHelperTest, YUVReadbackTest) {
 // out the generated bitmaps.
 TEST_F(GLHelperTest, ScaleTest) {
   int sizes[] = {3, 6, 16};
-  for (size_t q = 0; q < arraysize(kQualities); q++) {
-    for (int x = 0; x < 3; x++) {
-      for (int y = 0; y < 3; y++) {
-        for (int dst_x = 0; dst_x < 3; dst_x++) {
-          for (int dst_y = 0; dst_y < 3; dst_y++) {
-            for (int pattern = 0; pattern < 3; pattern++) {
-              TestScale(sizes[x],
-                        sizes[y],
-                        sizes[dst_x],
-                        sizes[dst_y],
-                        pattern,
-                        q);
-              if (HasFailure()) {
-                return;
+  for (int flip = 0; flip <= 1; flip++) {
+    for (size_t q = 0; q < arraysize(kQualities); q++) {
+      for (int x = 0; x < 3; x++) {
+        for (int y = 0; y < 3; y++) {
+          for (int dst_x = 0; dst_x < 3; dst_x++) {
+            for (int dst_y = 0; dst_y < 3; dst_y++) {
+              for (int pattern = 0; pattern < 3; pattern++) {
+                TestScale(sizes[x],
+                          sizes[y],
+                          sizes[dst_x],
+                          sizes[dst_y],
+                          pattern,
+                          q,
+                          flip == 1);
+                if (HasFailure()) {
+                  return;
+                }
               }
             }
           }
