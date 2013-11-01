@@ -846,8 +846,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_PreservedSections) {
 
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
                        GeneratedCardLastFourAfterVerifyCvv) {
-  std::vector<std::string> usernames;
-  usernames.push_back("user@example.com");
+  std::vector<std::string> usernames(1, "user@example.com");
   controller()->OnUserNameFetchSuccess(usernames);
   controller()->OnDidFetchWalletCookieValue(std::string());
 
@@ -914,6 +913,8 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, SignInNoCrash) {
       content::NotificationService::AllSources());
 
   controller()->SignInLinkClicked();
+  std::vector<std::string> usernames(1, "user@example.com");
+  controller()->OnUserNameFetchSuccess(usernames);
   controller()->OnDidFetchWalletCookieValue(std::string());
   controller()->OnDidGetWalletItems(
       wallet::GetTestWalletItemsWithRequiredAction(wallet::GAIA_AUTH));
