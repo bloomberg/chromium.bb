@@ -21,6 +21,7 @@ struct TtsVoice {
   std::string voice_name;
   std::string lang;
   std::string gender;
+  bool remote;
   std::set<std::string> event_types;
 
   static const std::vector<TtsVoice>* GetTtsVoices(const Extension* extension);

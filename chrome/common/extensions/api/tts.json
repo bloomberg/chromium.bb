@@ -62,6 +62,11 @@
             "description": "This voice's gender.",
             "enum": ["male", "female"]
           },
+          "remote": {
+            "type": "boolean",
+            "optional": true,
+            "description": "If true, the synthesis engine is a remote network resource. It may be higher latency and may incur bandwidth costs."
+          },
           "extensionId": {
             "type": "string",
             "optional": true,

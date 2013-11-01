@@ -57,6 +57,7 @@ UtteranceContinuousParameters::UtteranceContinuousParameters()
 
 VoiceData::VoiceData()
     : gender(TTS_GENDER_NONE),
+      remote(false),
       native(false) {}
 
 VoiceData::~VoiceData() {}
@@ -419,4 +420,3 @@ void TtsController::RemoveVoicesChangedDelegate(
     VoicesChangedDelegate* delegate) {
   voices_changed_delegates_.erase(delegate);
 }
-

@@ -146,6 +146,7 @@ const char kTtsVoicesEventTypeWord[] = "word";
 const char kTtsVoicesEventTypes[] = "event_types";
 const char kTtsVoicesGender[] = "gender";
 const char kTtsVoicesLang[] = "lang";
+const char kTtsVoicesRemote[] = "remote";
 const char kTtsVoicesVoiceName[] = "voice_name";
 const char kType[] = "type";
 const char kUpdateURL[] = "update_url";
@@ -573,6 +574,8 @@ const char kInvalidTtsVoicesGender[] =
     "Invalid value for 'tts_engine.voices[*].gender'.";
 const char kInvalidTtsVoicesLang[] =
     "Invalid value for 'tts_engine.voices[*].lang'.";
+const char kInvalidTtsVoicesRemote[] =
+    "Invalid value for 'tts_engine.voices[*].remote'.";
 const char kInvalidTtsVoicesVoiceName[] =
     "Invalid value for 'tts_engine.voices[*].voice_name'.";
 const char kInvalidUpdateURL[] =

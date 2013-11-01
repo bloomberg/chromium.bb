@@ -29,7 +29,8 @@ struct TtsVoices : public Extension::ManifestData {
 
 }  // namespace
 
-TtsVoice::TtsVoice() {}
+TtsVoice::TtsVoice() : remote(false) {}
+
 TtsVoice::~TtsVoice() {}
 
 // static
@@ -92,6 +93,13 @@ bool TtsEngineManifestHandler::Parse(Extension* extension, string16* error) {
           (voice_data.gender != keys::kTtsGenderMale &&
            voice_data.gender != keys::kTtsGenderFemale)) {
         *error = ASCIIToUTF16(errors::kInvalidTtsVoicesGender);
+        return false;
+      }
+    }
+    if (one_tts_voice->HasKey(keys::kTtsVoicesRemote)) {
+      if (!one_tts_voice->GetBoolean(
+              keys::kTtsVoicesRemote, &voice_data.remote)) {
+        *error = ASCIIToUTF16(errors::kInvalidTtsVoicesRemote);
         return false;
       }
     }
