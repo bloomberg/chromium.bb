@@ -46,7 +46,7 @@ const int kValuatorNum = 3;
 const int kTouchValuatorMap[kValuatorNum][4] = {
   // { valuator_index, valuator_type, min_val, max_val }
   { 0, DeviceDataManager::DT_TOUCH_MAJOR, 0, 1000},
-  { 1, DeviceDataManager::DT_TOUCH_ORIENTATION, 0, 1.0},
+  { 1, DeviceDataManager::DT_TOUCH_ORIENTATION, 0, 1},
   { 2, DeviceDataManager::DT_TOUCH_PRESSURE, 0, 1000},
 };
 
