@@ -1203,17 +1203,19 @@ void OneClickSigninHelper::DidStopLoading(
   // sync.
   if (email_.empty()) {
     VLOG(1) << "OneClickSigninHelper::DidStopLoading: nothing to do";
-    if (continue_url_match && auto_accept_ == AUTO_ACCEPT_EXPLICIT)
-      RedirectToSignin();
-    std::string unused_value;
-    if (net::GetValueForKeyInQuery(url, "ntp", &unused_value)) {
-      signin::SetUserSkippedPromo(profile);
-      RedirectToNtpOrAppsPage(web_contents(), source_);
-    }
-
-    if (!continue_url_match && !IsValidGaiaSigninRedirectOrResponseURL(url) &&
-        ++untrusted_navigations_since_signin_visit_ > kMaxNavigationsSince) {
-      CleanTransientState();
+    if (continue_url_match) {
+      if (auto_accept_ == AUTO_ACCEPT_EXPLICIT)
+        RedirectToSignin();
+      std::string unused_value;
+      if (net::GetValueForKeyInQuery(url, "ntp", &unused_value)) {
+        signin::SetUserSkippedPromo(profile);
+        RedirectToNtpOrAppsPage(web_contents(), source_);
+      }
+    } else {
+      if (!IsValidGaiaSigninRedirectOrResponseURL(url) &&
+          ++untrusted_navigations_since_signin_visit_ > kMaxNavigationsSince) {
+        CleanTransientState();
+      }
     }
 
     return;
