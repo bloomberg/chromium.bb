@@ -43,8 +43,7 @@ class NfcAdapterClientImpl
       public nfc_client_helpers::DBusObjectMap::Delegate {
  public:
   explicit NfcAdapterClientImpl(NfcManagerClient* manager_client)
-      : initial_adapters_received_(false),
-        bus_(NULL),
+      : bus_(NULL),
         manager_client_(manager_client),
         weak_ptr_factory_(this) {
     DCHECK(manager_client);
@@ -138,51 +137,23 @@ class NfcAdapterClientImpl
 
  private:
   // NfcManagerClient::Observer override.
-  virtual void AdapterAdded(const dbus::ObjectPath& object_path) OVERRIDE {
-    VLOG(1) << "AdapterAdded: " << object_path.value();
-    // Initialize the object proxy here, so that observers can start receiving
-    // notifications for it and it is cached for reuse. Note that, even if we
-    // miss this signal, a proxy will be created on demand for any object paths
-    // that are passed to the public methods later.
-    object_map_->AddObject(object_path);
-    FOR_EACH_OBSERVER(NfcAdapterClient::Observer, observers_,
-                      AdapterAdded(object_path));
-  }
-
-  // NfcManagerClient::Observer override.
-  virtual void AdapterRemoved(const dbus::ObjectPath& object_path) OVERRIDE {
-    VLOG(1) << "AdapterRemoved: " << object_path.value();
-    // Remove the object proxy, as we know that the adapter no longer exists.
-    // Note that this doesn't prevent a client from recreating a proxy for an
-    // object path that is no longer valid, as proxies are created on demand as
-    // necessary by the public methods.
-    object_map_->RemoveObject(object_path);
-    FOR_EACH_OBSERVER(NfcAdapterClient::Observer, observers_,
-                      AdapterRemoved(object_path));
-  }
-
-  // NfcManagerClient::Observer override.
   virtual void ManagerPropertyChanged(
       const std::string& property_name) OVERRIDE {
+    // Update the adapter proxies.
+    DCHECK(manager_client_);
     NfcManagerClient::Properties* manager_properties =
         manager_client_->GetProperties();
-    if (!initial_adapters_received_ &&
-        property_name == manager_properties->adapters.name()) {
-      initial_adapters_received_ = true;
-      VLOG(1) << "Initial set of adapters received.";
-      // Create proxies for all adapters that are known to the manager, so that
-      // observers can start getting notified for any signals emitted by
-      // adapters. We use the PropertyChanged signal from manager only to
-      // create proxies for the initial fetch. We rely on the AdapterAdded and
-      // AdapterRemoved signals after that.
-      std::vector<dbus::ObjectPath> adapters =
-          manager_properties->adapters.value();
-      for (std::vector<dbus::ObjectPath>::iterator iter = adapters.begin();
-           iter != adapters.end(); ++iter) {
-        VLOG(1) << "Creating proxy for: " << iter->value();
-        object_map_->AddObject(*iter);
-      }
-    }
+
+    // Ignore changes to properties other than "Adapters".
+    if (property_name != manager_properties->adapters.name())
+      return;
+
+    VLOG(1) << "NFC adapters changed.";
+
+    // Update the known adapters.
+    const std::vector<dbus::ObjectPath>& received_adapters =
+        manager_properties->adapters.value();
+    object_map_->UpdateObjects(received_adapters);
   }
 
   // nfc_client_helpers::DBusObjectMap::Delegate override.
@@ -195,6 +166,17 @@ class NfcAdapterClientImpl
                    object_proxy->object_path()));
   }
 
+  // nfc_client_helpers::DBusObjectMap::Delegate override.
+  virtual void ObjectAdded(const dbus::ObjectPath& object_path) OVERRIDE {
+    FOR_EACH_OBSERVER(NfcAdapterClient::Observer, observers_,
+                      AdapterAdded(object_path));
+  }
+
+  virtual void ObjectRemoved(const dbus::ObjectPath& object_path) OVERRIDE {
+    FOR_EACH_OBSERVER(NfcAdapterClient::Observer, observers_,
+                      AdapterRemoved(object_path));
+  }
+
   // Called by NfcPropertySet when a property value is changed, either by
   // result of a signal or response to a GetAll() or Get() call.
   void OnPropertyChanged(const dbus::ObjectPath& object_path,
@@ -204,11 +186,6 @@ class NfcAdapterClientImpl
     FOR_EACH_OBSERVER(NfcAdapterClient::Observer, observers_,
                       AdapterPropertyChanged(object_path, property_name));
   }
-
-  // This variable stores whether or not we have ever been notified of
-  // ManagerPropertiesChanged. This is used to bootstrap adapter proxies
-  // after receiving the initial set of properties from the NFC manager.
-  bool initial_adapters_received_;
 
   // We maintain a pointer to the bus to be able to request proxies for
   // new NFC adapters that appear.

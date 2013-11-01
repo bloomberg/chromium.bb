@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/nfc_client_helpers.h"
 
+#include "base/stl_util.h"
+
 namespace chromeos {
 namespace nfc_client_helpers {
 
@@ -61,12 +63,50 @@ NfcPropertySet* DBusObjectMap::GetObjectProperties(
   return GetObjectPropertyPair(object_path).second;
 }
 
+void DBusObjectMap::UpdateObjects(
+    const std::vector<dbus::ObjectPath>& object_paths) {
+  // This set is used to query if an object path was removed, while updating
+  // the removed paths below. The iterator is used as a hint to accelerate
+  // insertion.
+  std::set<dbus::ObjectPath> object_path_set;
+  std::set<dbus::ObjectPath>::iterator object_path_set_iter =
+      object_path_set.begin();
+
+  // Add all objects.
+  for (std::vector<dbus::ObjectPath>::const_iterator iter =
+          object_paths.begin();
+       iter != object_paths.end(); ++iter) {
+    const dbus::ObjectPath &object_path = *iter;
+    AddObject(object_path);
+    // Neard usually returns object paths in ascending order. Give a hint here
+    // to make insertion amortized constant.
+    object_path_set_iter =
+        object_path_set.insert(object_path_set_iter, object_path);
+  }
+
+  // Remove all objects that are not in |object_paths|.
+  ObjectMap::const_iterator iter = object_map_.begin();
+  while (iter != object_map_.end()) {
+    // Make a copy here, as the iterator will be invalidated by
+    // DBusObjectMap::RemoveObject below, but |object_path| is needed to
+    // notify observers right after. We want to make sure that we notify
+    // the observers AFTER we remove the object, so that method calls
+    // to the removed object paths in observer implementations fail
+    // gracefully.
+    dbus::ObjectPath object_path = iter->first;
+    ++iter;
+    if (!ContainsKey(object_path_set, object_path))
+      RemoveObject(object_path);
+  }
+}
+
 bool DBusObjectMap::AddObject(const dbus::ObjectPath& object_path) {
   ObjectMap::iterator iter = object_map_.find(object_path);
   if (iter != object_map_.end())
     return false;
 
   DCHECK(bus_);
+  DCHECK(delegate_);
   dbus::ObjectProxy* object_proxy = bus_->GetObjectProxy(service_name_,
                                                          object_path);
 
@@ -74,15 +114,17 @@ bool DBusObjectMap::AddObject(const dbus::ObjectPath& object_path) {
   NfcPropertySet* properties = delegate_->CreateProperties(object_proxy);
   properties->ConnectSignals();
   properties->GetAll();
-  VLOG(1) << "Created proxy for object with Path: " << object_path.value()
-          << ", Service: " << service_name_;
   ObjectPropertyPair object = std::make_pair(object_proxy, properties);
   object_map_[object_path] = object;
+  VLOG(1) << "Created proxy for object with Path: " << object_path.value()
+          << ", Service: " << service_name_;
+  delegate_->ObjectAdded(object_path);
   return true;
 }
 
 void DBusObjectMap::RemoveObject(const dbus::ObjectPath& object_path) {
   DCHECK(bus_);
+  DCHECK(delegate_);
   ObjectMap::iterator iter = object_map_.find(object_path);
   if (iter == object_map_.end())
     return;
@@ -90,6 +132,9 @@ void DBusObjectMap::RemoveObject(const dbus::ObjectPath& object_path) {
   ObjectPropertyPair pair = iter->second;
   CleanUpObjectPropertyPair(pair);
   object_map_.erase(iter);
+  VLOG(1) << "Object proxy removed for object path: "
+          << object_path.value();
+  delegate_->ObjectRemoved(object_path);
 }
 
 DBusObjectMap::ObjectPropertyPair DBusObjectMap::GetObjectPropertyPair(

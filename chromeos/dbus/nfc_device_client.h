@@ -23,7 +23,7 @@ namespace chromeos {
 class NfcAdapterClient;
 
 // NfcDeviceClient is used to communicate with objects representing remote NFC
-// adapters that can be communicated with.
+// devices that can be communicated with.
 class CHROMEOS_EXPORT NfcDeviceClient : public DBusClient {
  public:
   // Structure of properties associated with an NFC device.
@@ -42,16 +42,12 @@ class CHROMEOS_EXPORT NfcDeviceClient : public DBusClient {
     virtual ~Observer() {}
 
     // Called when a remote NFC device with the object |object_path| is added
-    // to the set of known devices associated with the adapter with object path
-    // |adapter_path|.
-    virtual void DeviceFound(const dbus::ObjectPath& object_path,
-                             const dbus::ObjectPath& adapter_path) {}
+    // to the set of known devices.
+    virtual void DeviceFound(const dbus::ObjectPath& object_path) {}
 
     // Called when a remote NFC device with the object path |object_path| is
-    // removed from the set of known devices associated with the adapter with
-    // object path |adapter_path|.
-    virtual void DeviceLost(const dbus::ObjectPath& object_path,
-                            const dbus::ObjectPath& adapter_path) {}
+    // removed from the set of known devices.
+    virtual void DeviceLost(const dbus::ObjectPath& object_path) {}
 
     // Called when the device property with the name |property_name| on device
     // with object path |object_path| has acquired a new value.

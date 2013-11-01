@@ -53,20 +53,16 @@ class MockNfcAdapterObserver : public NfcAdapterClient::Observer {
 
 class MockNfcDeviceObserver : public NfcDeviceClient::Observer {
  public:
-  MOCK_METHOD2(DeviceFound, void(const dbus::ObjectPath&,
-                                 const dbus::ObjectPath&));
-  MOCK_METHOD2(DeviceLost, void(const dbus::ObjectPath&,
-                                const dbus::ObjectPath&));
+  MOCK_METHOD1(DeviceFound, void(const dbus::ObjectPath&));
+  MOCK_METHOD1(DeviceLost, void(const dbus::ObjectPath&));
   MOCK_METHOD2(DevicePropertyChanged, void(const dbus::ObjectPath&,
                                            const std::string&));
 };
 
 class MockNfcTagObserver : public NfcTagClient::Observer {
  public:
-  MOCK_METHOD2(TagFound, void(const dbus::ObjectPath&,
-                              const dbus::ObjectPath&));
-  MOCK_METHOD2(TagLost, void(const dbus::ObjectPath&,
-                             const dbus::ObjectPath&));
+  MOCK_METHOD1(TagFound, void(const dbus::ObjectPath&));
+  MOCK_METHOD1(TagLost, void(const dbus::ObjectPath&));
   MOCK_METHOD2(TagPropertyChanged, void(const dbus::ObjectPath&,
                                         const std::string&));
 };
@@ -189,28 +185,19 @@ class NfcClientTest : public testing::Test {
     mock_bus_->ShutdownAndBlock();
   }
 
-  void SimulateAdapterAdded(const dbus::ObjectPath& object_path) {
-    EXPECT_CALL(mock_manager_observer_, AdapterAdded(object_path));
-    EXPECT_CALL(mock_adapter_observer_, AdapterAdded(object_path));
-    dbus::Signal signal(nfc_manager::kNfcManagerInterface,
-                        nfc_manager::kAdapterAddedSignal);
-    dbus::MessageWriter writer(&signal);
-    writer.AppendObjectPath(object_path);
-    ASSERT_FALSE(manager_adapter_added_signal_callback_.is_null());
-    manager_adapter_added_signal_callback_.Run(&signal);
-  }
-
-  void SimulateAdapterRemoved(const dbus::ObjectPath& object_path) {
-    EXPECT_CALL(mock_manager_observer_, AdapterRemoved(object_path));
-    EXPECT_CALL(mock_adapter_observer_, AdapterRemoved(object_path));
-    dbus::Signal signal(nfc_manager::kNfcManagerInterface,
-                        nfc_manager::kAdapterRemovedSignal);
-    dbus::MessageWriter writer(&signal);
-    writer.AppendObjectPath(object_path);
-    ASSERT_FALSE(manager_adapter_removed_signal_callback_.is_null());
-    manager_adapter_removed_signal_callback_.Run(&signal);
+  void SimulateAdaptersChanged(
+      const std::vector<dbus::ObjectPath>& adapter_paths) {
+    NfcManagerClient::Properties* properties =
+        manager_client_->GetProperties();
+    ASSERT_TRUE(properties);
+    EXPECT_CALL(mock_manager_observer_,
+                ManagerPropertyChanged(nfc_manager::kAdaptersProperty));
+    SendArrayPropertyChangedSignal(
+        properties,
+        nfc_manager::kNfcManagerInterface,
+        nfc_manager::kAdaptersProperty,
+        adapter_paths);
     Mock::VerifyAndClearExpectations(&mock_manager_observer_);
-    Mock::VerifyAndClearExpectations(&mock_adapter_observer_);
   }
 
   void SimulateTagsChanged(const std::vector<dbus::ObjectPath>& tag_paths,
@@ -328,7 +315,11 @@ TEST_F(NfcClientTest, AdaptersAddedAndRemoved) {
   Mock::VerifyAndClearExpectations(this);
 
   // Add adapter 0.
-  SimulateAdapterAdded(dbus::ObjectPath(kTestAdapterPath0));
+  std::vector<dbus::ObjectPath> adapter_paths;
+  adapter_paths.push_back(dbus::ObjectPath(kTestAdapterPath0));
+  EXPECT_CALL(mock_adapter_observer_,
+              AdapterAdded(dbus::ObjectPath(kTestAdapterPath0)));
+  SimulateAdaptersChanged(adapter_paths);
 
   // Invoking methods should succeed on adapter 0 but fail on adapter 1.
   EXPECT_CALL(*mock_adapter0_proxy_, CallMethodWithErrorCallback(_, _, _, _));
@@ -351,7 +342,10 @@ TEST_F(NfcClientTest, AdaptersAddedAndRemoved) {
   Mock::VerifyAndClearExpectations(&mock_adapter1_proxy_);
 
   // Add adapter 1.
-  SimulateAdapterAdded(dbus::ObjectPath(kTestAdapterPath1));
+  adapter_paths.push_back(dbus::ObjectPath(kTestAdapterPath1));
+  EXPECT_CALL(mock_adapter_observer_,
+              AdapterAdded(dbus::ObjectPath(kTestAdapterPath1)));
+  SimulateAdaptersChanged(adapter_paths);
 
   // Invoking methods should succeed on both adapters.
   EXPECT_CALL(*mock_adapter0_proxy_, CallMethodWithErrorCallback(_, _, _, _));
@@ -370,7 +364,10 @@ TEST_F(NfcClientTest, AdaptersAddedAndRemoved) {
   Mock::VerifyAndClearExpectations(&mock_adapter1_proxy_);
 
   // Remove adapter 0.
-  SimulateAdapterRemoved(dbus::ObjectPath(kTestAdapterPath0));
+  adapter_paths.erase(adapter_paths.begin());
+  EXPECT_CALL(mock_adapter_observer_,
+              AdapterRemoved(dbus::ObjectPath(kTestAdapterPath0)));
+  SimulateAdaptersChanged(adapter_paths);
 
   // Invoking methods should succeed on adapter 1 but fail on adapter 0.
   EXPECT_CALL(*this,
@@ -394,7 +391,10 @@ TEST_F(NfcClientTest, AdaptersAddedAndRemoved) {
   Mock::VerifyAndClearExpectations(&mock_adapter1_proxy_);
 
   // Remove adapter 1.
-  SimulateAdapterRemoved(dbus::ObjectPath(kTestAdapterPath1));
+  adapter_paths.clear();
+  EXPECT_CALL(mock_adapter_observer_,
+              AdapterRemoved(dbus::ObjectPath(kTestAdapterPath1)));
+  SimulateAdaptersChanged(adapter_paths);
 
   // Invoking methods should fail on both adapters.
   EXPECT_CALL(*this,
@@ -433,14 +433,17 @@ TEST_F(NfcClientTest, TagsAddedAndRemoved) {
   Mock::VerifyAndClearExpectations(this);
 
   // Add adapter 0.
-  SimulateAdapterAdded(dbus::ObjectPath(kTestAdapterPath0));
+  std::vector<dbus::ObjectPath> adapter_paths;
+  adapter_paths.push_back(dbus::ObjectPath(kTestAdapterPath0));
+  EXPECT_CALL(mock_adapter_observer_,
+              AdapterAdded(dbus::ObjectPath(kTestAdapterPath0)));
+  SimulateAdaptersChanged(adapter_paths);
 
   // Add tag 0.
   std::vector<dbus::ObjectPath> tag_paths;
   tag_paths.push_back(dbus::ObjectPath(kTestTagPath0));
   EXPECT_CALL(mock_tag_observer_,
-              TagFound(dbus::ObjectPath(kTestTagPath0),
-                       dbus::ObjectPath(kTestAdapterPath0)));
+              TagFound(dbus::ObjectPath(kTestTagPath0)));
   SimulateTagsChanged(tag_paths, dbus::ObjectPath(kTestAdapterPath0));
   Mock::VerifyAndClearExpectations(&mock_tag_observer_);
 
@@ -467,8 +470,7 @@ TEST_F(NfcClientTest, TagsAddedAndRemoved) {
   // Add tag 1.
   tag_paths.push_back(dbus::ObjectPath(kTestTagPath1));
   EXPECT_CALL(mock_tag_observer_,
-              TagFound(dbus::ObjectPath(kTestTagPath1),
-                       dbus::ObjectPath(kTestAdapterPath0)));
+              TagFound(dbus::ObjectPath(kTestTagPath1)));
   SimulateTagsChanged(tag_paths, dbus::ObjectPath(kTestAdapterPath0));
   Mock::VerifyAndClearExpectations(&mock_tag_observer_);
 
@@ -491,8 +493,7 @@ TEST_F(NfcClientTest, TagsAddedAndRemoved) {
   // Remove tag 0.
   tag_paths.erase(tag_paths.begin());
   EXPECT_CALL(mock_tag_observer_,
-              TagLost(dbus::ObjectPath(kTestTagPath0),
-                      dbus::ObjectPath(kTestAdapterPath0)));
+              TagLost(dbus::ObjectPath(kTestTagPath0)));
   SimulateTagsChanged(tag_paths, dbus::ObjectPath(kTestAdapterPath0));
   Mock::VerifyAndClearExpectations(&mock_tag_observer_);
 
@@ -519,8 +520,7 @@ TEST_F(NfcClientTest, TagsAddedAndRemoved) {
   // Remove tag 1.
   tag_paths.clear();
   EXPECT_CALL(mock_tag_observer_,
-              TagLost(dbus::ObjectPath(kTestTagPath1),
-                      dbus::ObjectPath(kTestAdapterPath0)));
+              TagLost(dbus::ObjectPath(kTestTagPath1)));
   SimulateTagsChanged(tag_paths, dbus::ObjectPath(kTestAdapterPath0));
   Mock::VerifyAndClearExpectations(&mock_tag_observer_);
 
@@ -561,14 +561,17 @@ TEST_F(NfcClientTest, DevicesAddedAndRemoved) {
   Mock::VerifyAndClearExpectations(this);
 
   // Add adapter 0.
-  SimulateAdapterAdded(dbus::ObjectPath(kTestAdapterPath0));
+  std::vector<dbus::ObjectPath> adapter_paths;
+  adapter_paths.push_back(dbus::ObjectPath(kTestAdapterPath0));
+  EXPECT_CALL(mock_adapter_observer_,
+              AdapterAdded(dbus::ObjectPath(kTestAdapterPath0)));
+  SimulateAdaptersChanged(adapter_paths);
 
   // Add device 0.
   std::vector<dbus::ObjectPath> device_paths;
   device_paths.push_back(dbus::ObjectPath(kTestDevicePath0));
   EXPECT_CALL(mock_device_observer_,
-              DeviceFound(dbus::ObjectPath(kTestDevicePath0),
-                          dbus::ObjectPath(kTestAdapterPath0)));
+              DeviceFound(dbus::ObjectPath(kTestDevicePath0)));
   SimulateDevicesChanged(device_paths, dbus::ObjectPath(kTestAdapterPath0));
   Mock::VerifyAndClearExpectations(&mock_device_observer_);
 
@@ -595,8 +598,7 @@ TEST_F(NfcClientTest, DevicesAddedAndRemoved) {
   // Add device 1.
   device_paths.push_back(dbus::ObjectPath(kTestDevicePath1));
   EXPECT_CALL(mock_device_observer_,
-              DeviceFound(dbus::ObjectPath(kTestDevicePath1),
-                          dbus::ObjectPath(kTestAdapterPath0)));
+              DeviceFound(dbus::ObjectPath(kTestDevicePath1)));
   SimulateDevicesChanged(device_paths, dbus::ObjectPath(kTestAdapterPath0));
   Mock::VerifyAndClearExpectations(&mock_device_observer_);
 
@@ -619,8 +621,7 @@ TEST_F(NfcClientTest, DevicesAddedAndRemoved) {
   // Remove device 0.
   device_paths.erase(device_paths.begin());
   EXPECT_CALL(mock_device_observer_,
-              DeviceLost(dbus::ObjectPath(kTestDevicePath0),
-                         dbus::ObjectPath(kTestAdapterPath0)));
+              DeviceLost(dbus::ObjectPath(kTestDevicePath0)));
   SimulateDevicesChanged(device_paths, dbus::ObjectPath(kTestAdapterPath0));
   Mock::VerifyAndClearExpectations(&mock_device_observer_);
 
@@ -647,8 +648,7 @@ TEST_F(NfcClientTest, DevicesAddedAndRemoved) {
   // Remove device 1.
   device_paths.clear();
   EXPECT_CALL(mock_device_observer_,
-              DeviceLost(dbus::ObjectPath(kTestDevicePath1),
-                         dbus::ObjectPath(kTestAdapterPath0)));
+              DeviceLost(dbus::ObjectPath(kTestDevicePath1)));
   SimulateDevicesChanged(device_paths, dbus::ObjectPath(kTestAdapterPath0));
   Mock::VerifyAndClearExpectations(&mock_device_observer_);
 

@@ -53,16 +53,12 @@ class CHROMEOS_EXPORT NfcTagClient : public DBusClient {
     virtual ~Observer() {}
 
     // Called when a remote NFC tag with the object path |object_path| is added
-    // to the set of known tags associated with the adapter with object path
-    // |adapter_path|.
-    virtual void TagFound(const dbus::ObjectPath& object_path,
-                          const dbus::ObjectPath& adapter_path) {}
+    // to the set of known tags.
+    virtual void TagFound(const dbus::ObjectPath& object_path) {}
 
     // Called when a remote NFC tag with the object path |object_path| is
-    // removed from the set of known tags associated with the adapter with the
-    // object path |adapter_path|.
-    virtual void TagLost(const dbus::ObjectPath& object_path,
-                         const dbus::ObjectPath& adapter_path) {}
+    // removed from the set of known tags.
+    virtual void TagLost(const dbus::ObjectPath& object_path) {}
 
     // Called when the tag property with the name |property_name| on tag with
     // object path |object_path| has acquired a new value.

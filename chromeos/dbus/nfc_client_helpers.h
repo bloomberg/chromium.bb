@@ -62,10 +62,15 @@ class CHROMEOS_EXPORT DBusObjectMap {
     // signals and update the properties.
     virtual NfcPropertySet* CreateProperties(
         dbus::ObjectProxy* object_proxy) = 0;
-  };
 
-  typedef std::pair<dbus::ObjectProxy*, NfcPropertySet*> ObjectPropertyPair;
-  typedef std::map<dbus::ObjectPath, ObjectPropertyPair> ObjectMap;
+    // Notifies the delegate that an object was added with object path
+    // |object_path|.
+    virtual void ObjectAdded(const dbus::ObjectPath& object_path) {}
+
+    // Notifies the delegate that an object was removed with object path
+    // |object_path|.
+    virtual void ObjectRemoved(const dbus::ObjectPath& object_path) {}
+  };
 
   // Constructor takes in the D-Bus service name the proxies belong to and
   // the delegate which will be used to construct properties structures.
@@ -85,6 +90,11 @@ class CHROMEOS_EXPORT DBusObjectMap {
   // returns NULL.
   NfcPropertySet* GetObjectProperties(const dbus::ObjectPath& object_path);
 
+  // Updates the object proxies from the given list of object paths
+  // |object_paths|. It notifies the delegate of each added and removed object
+  // via |Delegate::ObjectAdded| and |Delegate::ObjectRemoved|.
+  void UpdateObjects(const std::vector<dbus::ObjectPath>& object_paths);
+
   // Creates and stores an object proxy and properties structure for a remote
   // object with object path |object_path|. If an object proxy was already
   // created, this operation returns false; returns true otherwise.
@@ -94,10 +104,10 @@ class CHROMEOS_EXPORT DBusObjectMap {
   // remote object with object path |object_path|.
   void RemoveObject(const dbus::ObjectPath& object_path);
 
-  // Returns the underlying map.
-  const ObjectMap& object_map() const { return object_map_; }
-
  private:
+  typedef std::pair<dbus::ObjectProxy*, NfcPropertySet*> ObjectPropertyPair;
+  typedef std::map<dbus::ObjectPath, ObjectPropertyPair> ObjectMap;
+
   // Returns an instance of ObjectPropertyPair by looking up |object_path| in
   // |object_map_|. If no entry is found, returns an instance that contains
   // NULL pointers.

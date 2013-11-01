@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chromeos/dbus/fake_nfc_tag_client.h"
 #include "chromeos/dbus/nfc_adapter_client.h"
@@ -20,12 +19,6 @@
 using chromeos::nfc_client_helpers::DBusObjectMap;
 
 namespace chromeos {
-
-namespace {
-
-typedef std::vector<dbus::ObjectPath> ObjectPathVector;
-
-}  // namespace
 
 NfcTagClient::Properties::Properties(
     dbus::ObjectProxy* object_proxy,
@@ -153,41 +146,10 @@ class NfcTagClientImpl : public NfcTagClient,
 
     VLOG(1) << "NFC tags changed.";
 
-    // Add all the new tags.
-    const ObjectPathVector& received_tags =
+    // Update the known tags.
+    const std::vector<dbus::ObjectPath>& received_tags =
         adapter_properties->tags.value();
-    for (ObjectPathVector::const_iterator iter = received_tags.begin();
-         iter != received_tags.end(); ++iter) {
-      const dbus::ObjectPath &tag_path = *iter;
-      if (object_map_->AddObject(tag_path)) {
-        VLOG(1) << "Found NFC tag: " << tag_path.value();
-        FOR_EACH_OBSERVER(NfcTagClient::Observer, observers_,
-                          TagFound(tag_path, object_path));
-      }
-    }
-
-    // Remove all tags that were lost.
-    const DBusObjectMap::ObjectMap& known_tags =
-        object_map_->object_map();
-    std::set<dbus::ObjectPath> tags_set(received_tags.begin(),
-                                        received_tags.end());
-    DBusObjectMap::ObjectMap::const_iterator iter = known_tags.begin();
-    while (iter != known_tags.end()) {
-      // Make a copy here, as the iterator will be invalidated by
-      // DBusObjectMap::RemoveObject below, but |device_path| is needed to
-      // notify observers right after. We want to make sure that we notify
-      // the observers AFTER we remove the object, so that method calls
-      // to the removed object paths in observer implementations fail
-      // gracefully.
-      dbus::ObjectPath tag_path = iter->first;
-      ++iter;
-      if (!ContainsKey(tags_set, tag_path)) {
-        VLOG(1) << "Lost NFC tag: " << tag_path.value();
-        object_map_->RemoveObject(tag_path);
-        FOR_EACH_OBSERVER(NfcTagClient::Observer, observers_,
-                          TagLost(tag_path, object_path));
-      }
-    }
+    object_map_->UpdateObjects(received_tags);
   }
 
   // nfc_client_helpers::DBusObjectMap::Delegate override.
@@ -198,6 +160,17 @@ class NfcTagClientImpl : public NfcTagClient,
         base::Bind(&NfcTagClientImpl::OnPropertyChanged,
                    weak_ptr_factory_.GetWeakPtr(),
                    object_proxy->object_path()));
+  }
+
+  // nfc_client_helpers::DBusObjectMap::Delegate override.
+  virtual void ObjectAdded(const dbus::ObjectPath& object_path) OVERRIDE {
+    FOR_EACH_OBSERVER(NfcTagClient::Observer, observers_,
+                      TagFound(object_path));
+  }
+
+  virtual void ObjectRemoved(const dbus::ObjectPath& object_path) OVERRIDE {
+    FOR_EACH_OBSERVER(NfcTagClient::Observer, observers_,
+                      TagLost(object_path));
   }
 
   // Called by NfcPropertySet when a property value is changed, either by

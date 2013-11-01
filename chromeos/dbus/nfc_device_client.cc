@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chromeos/dbus/fake_nfc_device_client.h"
 #include "chromeos/dbus/nfc_adapter_client.h"
@@ -20,12 +19,6 @@
 using chromeos::nfc_client_helpers::DBusObjectMap;
 
 namespace chromeos {
-
-namespace {
-
-typedef std::vector<dbus::ObjectPath> ObjectPathVector;
-
-}  // namespace
 
 NfcDeviceClient::Properties::Properties(
     dbus::ObjectProxy* object_proxy,
@@ -150,41 +143,10 @@ class NfcDeviceClientImpl : public NfcDeviceClient,
 
     VLOG(1) << "NFC devices changed.";
 
-    // Add all the new devices.
-    const ObjectPathVector& received_devices =
+    // Update the known devices.
+    const std::vector<dbus::ObjectPath>& received_devices =
         adapter_properties->devices.value();
-    for (ObjectPathVector::const_iterator iter = received_devices.begin();
-         iter != received_devices.end(); ++iter) {
-      const dbus::ObjectPath &device_path = *iter;
-      if (object_map_->AddObject(device_path)) {
-        VLOG(1) << "Found NFC device: " << device_path.value();
-        FOR_EACH_OBSERVER(NfcDeviceClient::Observer, observers_,
-                          DeviceFound(device_path, object_path));
-      }
-    }
-
-    // Remove all devices that were lost.
-    const DBusObjectMap::ObjectMap& known_devices =
-        object_map_->object_map();
-    std::set<dbus::ObjectPath> devices_set(received_devices.begin(),
-                                           received_devices.end());
-    DBusObjectMap::ObjectMap::const_iterator iter = known_devices.begin();
-    while (iter != known_devices.end()) {
-      // Make a copy here, as the iterator will be invalidated by
-      // DBusObjectMap::RemoveObject below, but |device_path| is needed to
-      // notify observers right after. We want to make sure that we notify
-      // the observers AFTER we remove the object, so that method calls
-      // to the removed object paths in observer implementations fail
-      // gracefully.
-      dbus::ObjectPath device_path = iter->first;
-      ++iter;
-      if (!ContainsKey(devices_set, device_path)) {
-        VLOG(1) << "Lost NFC device: " << device_path.value();
-        object_map_->RemoveObject(device_path);
-        FOR_EACH_OBSERVER(NfcDeviceClient::Observer, observers_,
-                          DeviceLost(device_path, object_path));
-      }
-    }
+    object_map_->UpdateObjects(received_devices);
   }
 
   // nfc_client_helpers::DBusObjectMap::Delegate override.
@@ -195,6 +157,17 @@ class NfcDeviceClientImpl : public NfcDeviceClient,
         base::Bind(&NfcDeviceClientImpl::OnPropertyChanged,
                    weak_ptr_factory_.GetWeakPtr(),
                    object_proxy->object_path()));
+  }
+
+  // nfc_client_helpers::DBusObjectMap::Delegate override.
+  virtual void ObjectAdded(const dbus::ObjectPath& object_path) OVERRIDE {
+    FOR_EACH_OBSERVER(NfcDeviceClient::Observer, observers_,
+                      DeviceFound(object_path));
+  }
+
+  virtual void ObjectRemoved(const dbus::ObjectPath& object_path) OVERRIDE {
+    FOR_EACH_OBSERVER(NfcDeviceClient::Observer, observers_,
+                      DeviceLost(object_path));
   }
 
   // Called by NfcPropertySet when a property value is changed, either by
