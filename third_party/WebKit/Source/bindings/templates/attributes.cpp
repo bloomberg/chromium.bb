@@ -1,7 +1,7 @@
 {##############################################################################}
 {% macro attribute_getter(attribute, world_suffix) %}
 {% filter conditional(attribute.conditional_string) %}
-static void {{attribute.name}}AttributeGetter{{world_suffix}}(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void {{attribute.name}}AttributeGetter{{world_suffix}}(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     {% if attribute.is_unforgeable %}
     v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain({{v8_class_name}}::GetTemplate(info.GetIsolate(), worldType(info.GetIsolate())));
@@ -77,7 +77,7 @@ static void {{attribute.name}}AttributeGetter{{world_suffix}}(v8::Local<v8::Stri
 {##############################################################################}
 {% macro attribute_getter_callback(attribute, world_suffix) %}
 {% filter conditional(attribute.conditional_string) %}
-static void {{attribute.name}}AttributeGetterCallback{{world_suffix}}(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void {{attribute.name}}AttributeGetterCallback{{world_suffix}}(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     {% if attribute.deprecate_as %}
@@ -92,9 +92,9 @@ static void {{attribute.name}}AttributeGetterCallback{{world_suffix}}(v8::Local<
         contextData->activityLogger()->log("{{interface_name}}.{{attribute.name}}", 0, 0, "Getter");
     {% endif %}
     {% if attribute.has_custom_getter %}
-    {{v8_class_name}}::{{attribute.name}}AttributeGetterCustom(name, info);
+    {{v8_class_name}}::{{attribute.name}}AttributeGetterCustom(info);
     {% else %}
-    {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeGetter{{world_suffix}}(name, info);
+    {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeGetter{{world_suffix}}(info);
     {% endif %}
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
@@ -105,7 +105,7 @@ static void {{attribute.name}}AttributeGetterCallback{{world_suffix}}(v8::Local<
 {##############################################################################}
 {% macro attribute_setter(attribute, world_suffix) %}
 {% filter conditional(attribute.conditional_string) %}
-static void {{attribute.name}}AttributeSetter{{world_suffix}}(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void {{attribute.name}}AttributeSetter{{world_suffix}}(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     {% if attribute.has_strict_type_checking %}
     {# Type checking for interface types (if interface not implemented, throw
@@ -157,7 +157,7 @@ static void {{attribute.name}}AttributeSetter{{world_suffix}}(v8::Local<v8::Stri
 {##############################################################################}
 {% macro attribute_setter_callback(attribute, world_suffix) %}
 {% filter conditional(attribute.conditional_string) %}
-static void {{attribute.name}}AttributeSetterCallback{{world_suffix}}(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void {{attribute.name}}AttributeSetterCallback{{world_suffix}}(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     {% if attribute.deprecate_as %}
@@ -177,9 +177,9 @@ static void {{attribute.name}}AttributeSetterCallback{{world_suffix}}(v8::Local<
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     {% endif %}
     {% if attribute.has_custom_setter %}
-    {{v8_class_name}}::{{attribute.name}}AttributeSetterCustom(name, jsValue, info);
+    {{v8_class_name}}::{{attribute.name}}AttributeSetterCustom(jsValue, info);
     {% else %}
-    {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeSetter{{world_suffix}}(name, jsValue, info);
+    {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeSetter{{world_suffix}}(jsValue, info);
     {% endif %}
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }

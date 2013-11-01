@@ -16,7 +16,7 @@
 {##############################################################################}
 {% block constructor_getter %}
 {% if has_constructor_attributes %}
-static void {{interface_name}}ConstructorGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void {{interface_name}}ConstructorGetter(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Value> data = info.Data();
     ASSERT(data->IsExternal());
