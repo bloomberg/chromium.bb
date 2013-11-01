@@ -160,6 +160,9 @@ public:
     virtual bool isSelectionEditable() const;
     virtual WebColor backgroundColor() const;
     virtual bool selectionBounds(WebRect& anchor, WebRect& focus) const;
+    virtual void didShowCandidateWindow();
+    virtual void didUpdateCandidateWindow();
+    virtual void didHideCandidateWindow();
     virtual bool selectionTextDirection(WebTextDirection& start, WebTextDirection& end) const;
     virtual bool isSelectionAnchorFirst() const;
     virtual bool caretOrSelectionRange(size_t* location, size_t* length);
@@ -635,6 +638,8 @@ private:
     virtual bool handleCharEvent(const WebKeyboardEvent&) OVERRIDE;
 
     void closePendingHelperPlugins(WebCore::Timer<WebViewImpl>*);
+
+    WebCore::InputMethodContext* inputMethodContext();
 
     WebViewClient* m_client; // Can be 0 (e.g. unittests, shared workers, etc.)
     WebAutofillClient* m_autofillClient;

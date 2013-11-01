@@ -3232,6 +3232,11 @@ InputMethodContext* Element::inputMethodContext()
     return ensureElementRareData().ensureInputMethodContext(toHTMLElement(this));
 }
 
+bool Element::hasInputMethodContext() const
+{
+    return hasRareData() && elementRareData()->hasInputMethodContext();
+}
+
 bool Element::hasPendingResources() const
 {
     return hasRareData() && elementRareData()->hasPendingResources();

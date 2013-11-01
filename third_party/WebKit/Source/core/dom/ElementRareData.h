@@ -139,6 +139,7 @@ public:
     bool hasPendingResources() const { return m_hasPendingResources; }
     void setHasPendingResources(bool has) { m_hasPendingResources = has; }
 
+    bool hasInputMethodContext() const { return m_inputMethodContext; }
     InputMethodContext* ensureInputMethodContext(HTMLElement* element)
     {
         if (!m_inputMethodContext)

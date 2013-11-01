@@ -506,6 +506,7 @@ public:
     bool hasActiveAnimations() const;
 
     InputMethodContext* inputMethodContext();
+    bool hasInputMethodContext() const;
 
     virtual void setPrefix(const AtomicString&, ExceptionState&) OVERRIDE FINAL;
 

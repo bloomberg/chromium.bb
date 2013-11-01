@@ -90,6 +90,7 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/html/HTMLVideoElement.h"
+#include "core/html/ime/InputMethodContext.h"
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
@@ -2325,6 +2326,40 @@ bool WebViewImpl::selectionBounds(WebRect& anchor, WebRect& focus) const
     if (!selection.selection().isBaseFirst())
         std::swap(anchor, focus);
     return true;
+}
+
+InputMethodContext* WebViewImpl::inputMethodContext()
+{
+    if (!m_imeAcceptEvents)
+        return 0;
+
+    Frame* focusedFrame = focusedWebCoreFrame();
+    if (!focusedFrame)
+        return 0;
+
+    Element* target = focusedFrame->document()->focusedElement();
+    if (target && target->hasInputMethodContext())
+        return target->inputMethodContext();
+
+    return 0;
+}
+
+void WebViewImpl::didShowCandidateWindow()
+{
+    if (InputMethodContext* context = inputMethodContext())
+        context->dispatchCandidateWindowShowEvent();
+}
+
+void WebViewImpl::didUpdateCandidateWindow()
+{
+    if (InputMethodContext* context = inputMethodContext())
+        context->dispatchCandidateWindowUpdateEvent();
+}
+
+void WebViewImpl::didHideCandidateWindow()
+{
+    if (InputMethodContext* context = inputMethodContext())
+        context->dispatchCandidateWindowHideEvent();
 }
 
 bool WebViewImpl::selectionTextDirection(WebTextDirection& start, WebTextDirection& end) const
