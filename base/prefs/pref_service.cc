@@ -172,29 +172,29 @@ bool PrefService::HasPrefPath(const char* path) const {
   return pref && !pref->IsDefaultValue();
 }
 
-base::DictionaryValue* PrefService::GetPreferenceValues() const {
+scoped_ptr<base::DictionaryValue> PrefService::GetPreferenceValues() const {
   DCHECK(CalledOnValidThread());
-  base::DictionaryValue* out = new base::DictionaryValue;
+  scoped_ptr<base::DictionaryValue> out(new base::DictionaryValue);
   PrefRegistry::const_iterator i = pref_registry_->begin();
   for (; i != pref_registry_->end(); ++i) {
     const base::Value* value = GetPreferenceValue(i->first);
     DCHECK(value);
     out->Set(i->first, value->DeepCopy());
   }
-  return out;
+  return out.Pass();
 }
 
-base::DictionaryValue* PrefService::GetPreferenceValuesWithoutPathExpansion()
-    const {
+scoped_ptr<base::DictionaryValue>
+PrefService::GetPreferenceValuesWithoutPathExpansion() const {
   DCHECK(CalledOnValidThread());
-  base::DictionaryValue* out = new base::DictionaryValue;
+  scoped_ptr<base::DictionaryValue> out(new base::DictionaryValue);
   PrefRegistry::const_iterator i = pref_registry_->begin();
   for (; i != pref_registry_->end(); ++i) {
     const base::Value* value = GetPreferenceValue(i->first);
     DCHECK(value);
     out->SetWithoutPathExpansion(i->first, value->DeepCopy());
   }
-  return out;
+  return out.Pass();
 }
 
 const PrefService::Preference* PrefService::FindPreference(

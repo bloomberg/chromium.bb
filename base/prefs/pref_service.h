@@ -229,7 +229,7 @@ class BASE_PREFS_EXPORT PrefService : public base::NonThreadSafe {
 
   // Returns a dictionary with effective preference values. The ownership
   // is passed to the caller.
-  base::DictionaryValue* GetPreferenceValues() const;
+  scoped_ptr<base::DictionaryValue> GetPreferenceValues() const;
 
   // Returns a dictionary with effective preference values. Contrary to
   // GetPreferenceValues(), the paths of registered preferences are not split on
@@ -239,7 +239,8 @@ class BASE_PREFS_EXPORT PrefService : public base::NonThreadSafe {
   // like this:
   //   {"foo.bar": {"a": {"b": true}}}.
   // The ownership is passed to the caller.
-  base::DictionaryValue* GetPreferenceValuesWithoutPathExpansion() const;
+  scoped_ptr<base::DictionaryValue> GetPreferenceValuesWithoutPathExpansion()
+      const;
 
   bool ReadOnly() const;
 
