@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
@@ -79,9 +80,18 @@ const char kUrlQueryName[] = "u";
 // loading before giving up the translation
 const int kMaxTranslateLoadCheckAttempts = 20;
 
+// The field trial name to compare Translate infobar and bubble.
+const char kFieldTrialNameForUX[] = "TranslateInfobarVsBubble";
+
 bool IsEnabledTranslateNewUX() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableTranslateNewUX);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableTranslateNewUX)) {
+    return true;
+  }
+
+  std::string group_name = base::FieldTrialList::FindFullName(
+      kFieldTrialNameForUX);
+  return group_name == "Bubble";
 }
 
 }  // namespace
