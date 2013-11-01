@@ -15,7 +15,7 @@
 
 namespace net {
 
-class HttpStream;
+class HttpStreamBase;
 class IOBuffer;
 
 class NET_EXPORT_PRIVATE HttpResponseBodyDrainer {
@@ -27,7 +27,7 @@ class NET_EXPORT_PRIVATE HttpResponseBodyDrainer {
   static const int kDrainBodyBufferSize = 16384;
   static const int kTimeoutInSeconds = 5;
 
-  explicit HttpResponseBodyDrainer(HttpStream* stream);
+  explicit HttpResponseBodyDrainer(HttpStreamBase* stream);
   ~HttpResponseBodyDrainer();
 
   // Starts reading the body until completion, or we hit the buffer limit, or we
@@ -56,7 +56,7 @@ class NET_EXPORT_PRIVATE HttpResponseBodyDrainer {
 
   int read_size_;
   scoped_refptr<IOBuffer> read_buf_;
-  const scoped_ptr<HttpStream> stream_;
+  const scoped_ptr<HttpStreamBase> stream_;
   State next_state_;
   int total_read_;
   CompletionCallback user_callback_;
