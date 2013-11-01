@@ -101,6 +101,7 @@ public:
     bool handleTouchEvent(Frame*, const PlatformTouchEvent&);
 
     void requestPageScaleFactor(float scale, const IntPoint& origin);
+    bool deviceEmulationEnabled();
 
     bool isUnderTest();
     void evaluateForTestInFrontend(long callId, const String& script);

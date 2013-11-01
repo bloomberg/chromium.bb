@@ -176,6 +176,7 @@ public:
     Frame* assertFrame(ErrorString*, const String& frameId);
     String scriptPreprocessorSource() { return m_scriptPreprocessorSource; }
     String resourceSourceMapURL(const String& url);
+    bool deviceMetricsOverrideEnabled();
     static DocumentLoader* assertDocumentLoader(ErrorString*, Frame*);
 
 private:

@@ -365,6 +365,13 @@ void InspectorController::requestPageScaleFactor(float scale, const IntPoint& or
     m_inspectorClient->requestPageScaleFactor(scale, origin);
 }
 
+bool InspectorController::deviceEmulationEnabled()
+{
+    if (InspectorPageAgent* pageAgent = m_instrumentingAgents->inspectorPageAgent())
+        return pageAgent->deviceMetricsOverrideEnabled();
+    return false;
+}
+
 void InspectorController::resume()
 {
     if (InspectorDebuggerAgent* debuggerAgent = m_instrumentingAgents->inspectorDebuggerAgent()) {

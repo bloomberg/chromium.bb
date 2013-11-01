@@ -913,6 +913,11 @@ String InspectorPageAgent::resourceSourceMapURL(const String& url)
     return resource->response().httpHeaderField(sourceMapHttpHeader);
 }
 
+bool InspectorPageAgent::deviceMetricsOverrideEnabled()
+{
+    return m_enabled && m_state->getLong(PageAgentState::pageAgentScreenWidthOverride);
+}
+
 // static
 DocumentLoader* InspectorPageAgent::assertDocumentLoader(ErrorString* errorString, Frame* frame)
 {

@@ -34,13 +34,14 @@
 #include "core/dom/Document.h"
 #include "core/history/HistoryItem.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/inspector/InspectorController.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/FrameLoaderStateMachine.h"
 #include "core/frame/Frame.h"
-#include "core/page/FrameTree.h"
 #include "core/frame/FrameView.h"
+#include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "platform/Logging.h"
@@ -123,7 +124,7 @@ void HistoryController::saveDocumentAndScrollState()
     m_currentItem->setScrollPoint(m_frame->view()->scrollPosition());
 
     Page* page = m_frame->page();
-    if (page && page->mainFrame() == m_frame)
+    if (page && page->mainFrame() == m_frame && !page->inspectorController().deviceEmulationEnabled())
         m_currentItem->setPageScaleFactor(page->pageScaleFactor());
 }
 
