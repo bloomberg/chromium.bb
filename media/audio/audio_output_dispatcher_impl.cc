@@ -72,10 +72,6 @@ bool AudioOutputDispatcherImpl::StartStream(
 
   close_timer_.Reset();
 
-  // Schedule task to allocate streams for other proxies if we need to.
-  message_loop_->PostTask(FROM_HERE, base::Bind(
-      &AudioOutputDispatcherImpl::OpenTask, weak_this_.GetWeakPtr()));
-
   double volume = 0;
   stream_proxy->GetVolume(&volume);
   physical_stream->SetVolume(volume);
@@ -179,18 +175,6 @@ bool AudioOutputDispatcherImpl::CreateAndOpenStream() {
   }
   idle_streams_.push_back(stream);
   return true;
-}
-
-void AudioOutputDispatcherImpl::OpenTask() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-  // Make sure that we have at least one stream allocated if there
-  // are paused streams.
-  if (paused_proxies_ > 0 && idle_streams_.empty() &&
-      pausing_streams_.empty()) {
-    CreateAndOpenStream();
-  }
-
-  close_timer_.Reset();
 }
 
 // This method is called by |close_timer_|.

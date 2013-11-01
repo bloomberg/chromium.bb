@@ -71,10 +71,6 @@ class MEDIA_EXPORT AudioOutputDispatcherImpl : public AudioOutputDispatcher {
   // opened.
   bool CreateAndOpenStream();
 
-  // A task scheduled by StartStream(). Opens a new stream and puts
-  // it in |idle_streams_|.
-  void OpenTask();
-
   // Before a stream is reused, it should sit idle for a bit.  This task is
   // called once that time has elapsed.
   void StopStreamTask();

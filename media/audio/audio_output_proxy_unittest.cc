@@ -356,9 +356,9 @@ class AudioOutputProxyTest : public testing::Test {
     AudioOutputProxy* proxy1 = new AudioOutputProxy(dispatcher);
     AudioOutputProxy* proxy2 = new AudioOutputProxy(dispatcher);
     EXPECT_TRUE(proxy1->Open());
-    EXPECT_TRUE(proxy2->Open());
 
     proxy1->Start(&callback_);
+    EXPECT_TRUE(proxy2->Open());
     message_loop_.RunUntilIdle();
     OnStart();
     proxy1->Stop();
