@@ -189,13 +189,17 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
   CreateBrowserModalDialogViews(dialog.get(), parent)->Show();
 
 #if defined(USE_AURA)
-  // Use the widget's window itself so that the message loop
-  // exists when the dialog is closed by some other means than
-  // |Cancel| or |Accept|.
-  aura::Window* anchor = parent ?
-      parent : dialog->GetWidget()->GetNativeWindow();
-  aura::client::GetDispatcherClient(anchor->GetRootWindow())
-      ->RunWithDispatcher(dialog.get(), anchor, true);
+  aura::Window* anchor = parent;
+  aura::client::DispatcherClient* client = anchor ?
+      aura::client::GetDispatcherClient(anchor->GetRootWindow()) : NULL;
+  if (!client) {
+    // Use the widget's window itself so that the message loop
+    // exists when the dialog is closed by some other means than
+    // |Cancel| or |Accept|.
+    anchor = dialog->GetWidget()->GetNativeWindow();
+    client = aura::client::GetDispatcherClient(anchor->GetRootWindow());
+  }
+  client->RunWithDispatcher(dialog.get(), anchor, true);
 #else
   {
     base::MessageLoop::ScopedNestableTaskAllower allow(
