@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/pref_names.h"
@@ -514,14 +515,23 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
   std::string enable_prefix(kEnablePrefix);
   std::string field_trial_result =
       base::FieldTrialList::FindFullName(kFieldTrialName);
-  if (((field_trial_result.compare(
-          0,
-          enable_prefix.length(),
-          enable_prefix) == 0) &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableGoogleNowIntegration)) ||
-       CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableGoogleNowIntegration)) {
+
+  bool enabled_via_field_trial = field_trial_result.compare(
+      0,
+      enable_prefix.length(),
+      enable_prefix) == 0;
+
+  bool enabled_via_flag =
+      chrome::VersionInfo::GetChannel() !=
+          chrome::VersionInfo::CHANNEL_STABLE &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableGoogleNowIntegration);
+
+  bool disabled_via_flag =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGoogleNowIntegration);
+
+  if ((enabled_via_field_trial && !disabled_via_flag) || enabled_via_flag) {
     Add(IDR_GOOGLE_NOW_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("google_now")));
   }
