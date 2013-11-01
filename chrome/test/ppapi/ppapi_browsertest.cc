@@ -735,7 +735,8 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_PostMessage) {
       LIST_TEST(PostMessage_SendingArrayBuffer)
       LIST_TEST(PostMessage_SendingArray)
       LIST_TEST(PostMessage_SendingDictionary)
-      LIST_TEST(PostMessage_SendingResource)
+      // TODO(mgiuca): Re-enable after http://crbug.com/314007 is fixed.
+      LIST_TEST(DISABLED_PostMessage_SendingResource)
       LIST_TEST(PostMessage_SendingComplexVar)
       LIST_TEST(PostMessage_MessageEvent)
       LIST_TEST(PostMessage_NoHandler)
@@ -750,7 +751,8 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, PostMessage) {
       LIST_TEST(PostMessage_SendingArrayBuffer)
       LIST_TEST(PostMessage_SendingArray)
       LIST_TEST(PostMessage_SendingDictionary)
-      LIST_TEST(PostMessage_SendingResource)
+      // TODO(mgiuca): Re-enable after http://crbug.com/314007 is fixed.
+      LIST_TEST(DISABLED_PostMessage_SendingResource)
       LIST_TEST(PostMessage_SendingComplexVar)
       LIST_TEST(PostMessage_MessageEvent)
       LIST_TEST(PostMessage_NoHandler)
@@ -765,7 +767,8 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(PostMessage)) {
       LIST_TEST(PostMessage_SendingArrayBuffer)
       LIST_TEST(PostMessage_SendingArray)
       LIST_TEST(PostMessage_SendingDictionary)
-      LIST_TEST(PostMessage_SendingResource)
+      // TODO(mgiuca): Re-enable after http://crbug.com/314007 is fixed.
+      LIST_TEST(DISABLED_PostMessage_SendingResource)
       LIST_TEST(PostMessage_SendingComplexVar)
       LIST_TEST(PostMessage_MessageEvent)
       LIST_TEST(PostMessage_NoHandler)
@@ -780,7 +783,8 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, PostMessage) {
       LIST_TEST(PostMessage_SendingArrayBuffer)
       LIST_TEST(PostMessage_SendingArray)
       LIST_TEST(PostMessage_SendingDictionary)
-      LIST_TEST(PostMessage_SendingResource)
+      // TODO(mgiuca): Re-enable after http://crbug.com/314007 is fixed.
+      LIST_TEST(DISABLED_PostMessage_SendingResource)
       LIST_TEST(PostMessage_SendingComplexVar)
       LIST_TEST(PostMessage_MessageEvent)
       LIST_TEST(PostMessage_NoHandler)
