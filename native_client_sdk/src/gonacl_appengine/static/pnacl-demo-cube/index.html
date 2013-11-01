@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<!--
+Copyright (c) 2013 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<head>
+  <meta charset="UTF-8">
+  <title>Rotating Cube</title>
+  <script type="text/javascript" src="example.js"></script>
+  <link href="/static/common.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+  <div class="absolute-fill">
+    <div class="flex-container">
+      <div class="main absolute-fill-parent">
+        <div class="absolute-fill">
+          <div class="flex-container flex-column flex-justify-center">
+            <div id="message">
+              <div id="statusField"></div>
+              <progress id="progress"></progress>
+            </div>
+          </div>
+        </div>
+        <div id="listener" class="absolute-fill"></div>
+      </div>
+      <div class="sidebar">
+        <h1>Rotating Cube</h1>
+        <table id="config">
+          <tbody>
+            <tr>
+              <td class="name">X Angle:</td>
+              <td class="value">
+                <input type="range" id="xAngle" min="0" max="360" step="1"
+                    value="0">
+              </td>
+            </tr>
+            <tr>
+              <td class="name">Y Angle:</td>
+              <td class="value">
+                <input type="range" id="yAngle" min="0" max="360" step="1"
+                    value="0">
+              </td>
+            </tr>
+            <tr>
+              <td class="name">Animating:</td>
+              <td class="value">
+                <label>
+                  off
+                  <input type="radio" id="animateOff" value="false">
+                </label>
+                <label>
+                  on
+                  <input type="radio" id="animateOn" value="true"
+                      checked="true">
+                </label>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

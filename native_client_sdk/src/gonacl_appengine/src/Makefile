@@ -53,7 +53,7 @@ all:
 #
 # All projects built by this Makefile
 #
-PROJECTS = earth voronoi life bullet lua smoothlife
+PROJECTS = earth voronoi life bullet lua smoothlife cube
 
 GS_URL_CONTINUOUS = gs://gonacl/demos/continuous
 GS_URL_PUBLISH = gs://gonacl/demos/publish
@@ -153,6 +153,23 @@ smoothlife_TGTS = $(smoothlife_TGT_DIR)/smoothnacl.pexe \
 
 $(smoothlife_TGTS): $(smoothlife_SRCS)
 	smoothlife/build.sh
+
+
+#
+# Rotating Cube
+#
+cube_SRC_DIR = cube
+cube_TGT_DIR = cube/pnacl/Release
+cube_SRCS = $(cube_SRC_DIR)/cube.cc \
+            $(cube_SRC_DIR)/matrix.cc \
+            $(cube_SRC_DIR)/matrix.h \
+            $(cube_SRC_DIR)/texture.cc \
+            $(cube_SRC_DIR)/Makefile
+cube_TGTS = $(cube_TGT_DIR)/cube.pexe \
+            $(cube_TGT_DIR)/cube.nmf
+
+$(cube_TGTS): $(cube_SRCS)
+	$(MAKE) -C cube TOOLCHAIN=pnacl CONFIG=Release
 
 ###############################################################################
 
