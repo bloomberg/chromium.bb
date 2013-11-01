@@ -61,8 +61,7 @@ def determine_result_type(failure_list):
           FailureMissingAudio in failure_types):
         return test_expectations.MISSING
     else:
-        is_text_failure = (FailureTextMismatch in failure_types or
-                           FailureTestHarnessAssertion in failure_types)
+        is_text_failure = FailureTextMismatch in failure_types
         is_image_failure = (FailureImageHashIncorrect in failure_types or
                             FailureImageHashMismatch in failure_types)
         is_audio_failure = (FailureAudioMismatch in failure_types)
@@ -142,15 +141,9 @@ class FailureMissingResult(TestFailure):
         return "-expected.txt was missing"
 
 
-class FailureTestHarnessAssertion(TestFailure):
-    def message(self):
-        return "asserts failed"
-
-
 class FailureTextMismatch(TestFailure):
     def message(self):
         return "text diff"
-
 
 class FailureMissingImageHash(TestFailure):
     def message(self):
@@ -217,7 +210,6 @@ class FailureEarlyExit(TestFailure):
 # Convenient collection of all failure classes for anything that might
 # need to enumerate over them all.
 ALL_FAILURE_CLASSES = (FailureTimeout, FailureCrash, FailureMissingResult,
-                       FailureTestHarnessAssertion,
                        FailureTextMismatch, FailureMissingImageHash,
                        FailureMissingImage, FailureImageHashMismatch,
                        FailureImageHashIncorrect, FailureReftestMismatch,
