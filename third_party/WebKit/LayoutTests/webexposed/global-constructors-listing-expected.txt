@@ -423,7 +423,6 @@ TextTrack
 TextTrackCue
 TextTrackCueList
 TextTrackList
-TextTrackRegion
 TimeRanges
 Touch
 TouchEvent
@@ -439,6 +438,8 @@ Uint16Array
 Uint32Array
 Uint8Array
 Uint8ClampedArray
+VTTRegion
+VTTRegionList
 ValidityState
 VideoPlaybackQuality
 WaveShaperNode

@@ -39,8 +39,8 @@ class HTMLMediaElement;
 class TextTrack;
 class TextTrackCue;
 class TextTrackCueList;
-class TextTrackRegion;
-class TextTrackRegionList;
+class VTTRegion;
+class VTTRegionList;
 
 class TextTrackClient {
 public:
@@ -101,9 +101,9 @@ public:
     void removeCue(TextTrackCue*, ExceptionState&);
     bool hasCue(TextTrackCue*);
 
-    TextTrackRegionList* regions();
-    void addRegion(PassRefPtr<TextTrackRegion>);
-    void removeRegion(TextTrackRegion*, ExceptionState&);
+    VTTRegionList* regions();
+    void addRegion(PassRefPtr<VTTRegion>);
+    void removeRegion(VTTRegion*, ExceptionState&);
 
     void cueWillChange(TextTrackCue*);
     void cueDidChange(TextTrackCue*);
@@ -145,8 +145,8 @@ protected:
     RefPtr<TextTrackCueList> m_cues;
 
 private:
-    TextTrackRegionList* ensureTextTrackRegionList();
-    RefPtr<TextTrackRegionList> m_regions;
+    VTTRegionList* ensureVTTRegionList();
+    RefPtr<VTTRegionList> m_regions;
 
     TextTrackCueList* ensureTextTrackCueList();
 

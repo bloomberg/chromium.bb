@@ -42,7 +42,7 @@
 #include "core/html/HTMLDivElement.h"
 #include "core/html/track/TextTrack.h"
 #include "core/html/track/TextTrackCueList.h"
-#include "core/html/track/TextTrackRegionList.h"
+#include "core/html/track/VTTRegionList.h"
 #include "core/html/track/WebVTTElement.h"
 #include "core/html/track/WebVTTParser.h"
 #include "core/rendering/RenderTextTrackCue.h"
@@ -872,7 +872,7 @@ void TextTrackCue::removeDisplayTree()
 {
     if (m_notifyRegion && m_track->regions()) {
         // The region needs to be informed about the cue removal.
-        TextTrackRegion* region = m_track->regions()->getRegionById(m_regionId);
+        VTTRegion* region = m_track->regions()->getRegionById(m_regionId);
         if (region)
             region->willRemoveTextTrackCueBox(m_displayTree.get());
     }

@@ -24,12 +24,11 @@
  */
 
 [
-    NoInterfaceObject,
     RuntimeEnabled=VideoTrack,
     RuntimeEnabled=WebVTTRegions
-] interface TextTrackRegionList {
+] interface VTTRegionList {
     readonly attribute unsigned long length;
-    getter TextTrackRegion item(unsigned long index);
-    TextTrackRegion getRegionById(DOMString id);
+    getter VTTRegion item(unsigned long index);
+    VTTRegion getRegionById(DOMString id);
 };
 

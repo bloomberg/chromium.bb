@@ -63,7 +63,7 @@ public:
     State loadState() { return m_state; }
 
     void getNewCues(Vector<RefPtr<TextTrackCue> >& outputCues);
-    void getNewRegions(Vector<RefPtr<TextTrackRegion> >& outputRegions);
+    void getNewRegions(Vector<RefPtr<VTTRegion> >& outputRegions);
 private:
 
     // RawResourceClient

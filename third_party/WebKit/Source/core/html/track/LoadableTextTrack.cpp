@@ -28,7 +28,7 @@
 
 #include "core/html/HTMLTrackElement.h"
 #include "core/html/track/TextTrackCueList.h"
-#include "core/html/track/TextTrackRegionList.h"
+#include "core/html/track/VTTRegionList.h"
 
 namespace WebCore {
 
@@ -126,7 +126,7 @@ void LoadableTextTrack::newRegionsAvailable(TextTrackLoader* loader)
 {
     ASSERT_UNUSED(loader, m_loader == loader);
 
-    Vector<RefPtr<TextTrackRegion> > newRegions;
+    Vector<RefPtr<VTTRegion> > newRegions;
     m_loader->getNewRegions(newRegions);
 
     for (size_t i = 0; i < newRegions.size(); ++i) {

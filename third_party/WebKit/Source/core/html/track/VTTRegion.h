@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TextTrackRegion_h
-#define TextTrackRegion_h
+#ifndef VTTRegion_h
+#define VTTRegion_h
 
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/html/track/TextTrack.h"
@@ -44,14 +44,14 @@ class ExceptionState;
 class HTMLDivElement;
 class TextTrackCueBox;
 
-class TextTrackRegion : public RefCounted<TextTrackRegion> {
+class VTTRegion : public RefCounted<VTTRegion> {
 public:
-    static PassRefPtr<TextTrackRegion> create()
+    static PassRefPtr<VTTRegion> create()
     {
-        return adoptRef(new TextTrackRegion());
+        return adoptRef(new VTTRegion());
     }
 
-    virtual ~TextTrackRegion();
+    virtual ~VTTRegion();
 
     TextTrack* track() const { return m_track; }
     void setTrack(TextTrack*);
@@ -80,7 +80,7 @@ public:
     const AtomicString scroll() const;
     void setScroll(const AtomicString&, ExceptionState&);
 
-    void updateParametersFromRegion(TextTrackRegion*);
+    void updateParametersFromRegion(VTTRegion*);
 
     const String& regionSettings() const { return m_settings; }
     void setRegionSettings(const String&);
@@ -94,14 +94,14 @@ public:
     void willRemoveTextTrackCueBox(TextTrackCueBox*);
 
 private:
-    TextTrackRegion();
+    VTTRegion();
 
     void prepareRegionDisplayTree();
 
     // The timer is needed to continue processing when cue scrolling ended.
     void startTimer();
     void stopTimer();
-    void scrollTimerFired(Timer<TextTrackRegion>*);
+    void scrollTimerFired(Timer<VTTRegion>*);
 
     enum RegionSetting {
         None,
@@ -147,7 +147,7 @@ private:
     // soon as the animation for rolling out one line has finished, but
     // currently it is used also for non-scrolling regions to use a single
     // code path.
-    Timer<TextTrackRegion> m_scrollTimer;
+    Timer<VTTRegion> m_scrollTimer;
 };
 
 } // namespace WebCore

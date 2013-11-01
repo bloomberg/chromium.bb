@@ -36,7 +36,7 @@
 #include "core/dom/DocumentFragment.h"
 #include "core/fetch/TextResourceDecoder.h"
 #include "core/html/track/TextTrackCue.h"
-#include "core/html/track/TextTrackRegion.h"
+#include "core/html/track/VTTRegion.h"
 #include "core/html/track/WebVTTTokenizer.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
@@ -108,7 +108,7 @@ public:
 
     // Transfers ownership of last parsed cues to caller.
     void getNewCues(Vector<RefPtr<TextTrackCue> >&);
-    void getNewRegions(Vector<RefPtr<TextTrackRegion> >&);
+    void getNewRegions(Vector<RefPtr<VTTRegion> >&);
 
 private:
     WebVTTParser(WebVTTParserClient*, Document&);
@@ -146,7 +146,7 @@ private:
 
     Vector<RefPtr<TextTrackCue> > m_cuelist;
 
-    Vector<RefPtr<TextTrackRegion> > m_regionList;
+    Vector<RefPtr<VTTRegion> > m_regionList;
 };
 
 } // namespace WebCore

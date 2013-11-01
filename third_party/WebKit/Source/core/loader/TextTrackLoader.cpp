@@ -174,7 +174,7 @@ void TextTrackLoader::getNewCues(Vector<RefPtr<TextTrackCue> >& outputCues)
         m_cueParser->getNewCues(outputCues);
 }
 
-void TextTrackLoader::getNewRegions(Vector<RefPtr<TextTrackRegion> >& outputRegions)
+void TextTrackLoader::getNewRegions(Vector<RefPtr<VTTRegion> >& outputRegions)
 {
     ASSERT(m_cueParser);
     if (m_cueParser)

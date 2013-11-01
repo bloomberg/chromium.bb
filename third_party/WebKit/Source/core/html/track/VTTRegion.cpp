@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/html/track/TextTrackRegion.h"
+#include "core/html/track/VTTRegion.h"
 
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
@@ -37,9 +37,9 @@
 #include "core/dom/DOMTokenList.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/track/WebVTTParser.h"
-#include "platform/Logging.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderObject.h"
+#include "platform/Logging.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -67,7 +67,7 @@ static const float lineHeight = 5.33;
 // Default scrolling animation time period (s).
 static const float scrollTime = 0.433;
 
-TextTrackRegion::TextTrackRegion()
+VTTRegion::VTTRegion()
     : m_id(emptyString())
     , m_width(defaultWidth)
     , m_heightInLines(defaultHeightInLines)
@@ -76,25 +76,25 @@ TextTrackRegion::TextTrackRegion()
     , m_scroll(defaultScroll)
     , m_track(0)
     , m_currentTop(0)
-    , m_scrollTimer(this, &TextTrackRegion::scrollTimerFired)
+    , m_scrollTimer(this, &VTTRegion::scrollTimerFired)
 {
 }
 
-TextTrackRegion::~TextTrackRegion()
+VTTRegion::~VTTRegion()
 {
 }
 
-void TextTrackRegion::setTrack(TextTrack* track)
+void VTTRegion::setTrack(TextTrack* track)
 {
     m_track = track;
 }
 
-void TextTrackRegion::setId(const String& id)
+void VTTRegion::setId(const String& id)
 {
     m_id = id;
 }
 
-void TextTrackRegion::setWidth(double value, ExceptionState& es)
+void VTTRegion::setWidth(double value, ExceptionState& es)
 {
     if (std::isinf(value) || std::isnan(value)) {
         es.throwUninformativeAndGenericTypeError();
@@ -109,7 +109,7 @@ void TextTrackRegion::setWidth(double value, ExceptionState& es)
     m_width = value;
 }
 
-void TextTrackRegion::setHeight(long value, ExceptionState& es)
+void VTTRegion::setHeight(long value, ExceptionState& es)
 {
     if (value < 0) {
         es.throwUninformativeAndGenericDOMException(IndexSizeError);
@@ -119,7 +119,7 @@ void TextTrackRegion::setHeight(long value, ExceptionState& es)
     m_heightInLines = value;
 }
 
-void TextTrackRegion::setRegionAnchorX(double value, ExceptionState& es)
+void VTTRegion::setRegionAnchorX(double value, ExceptionState& es)
 {
     if (std::isinf(value) || std::isnan(value)) {
         es.throwUninformativeAndGenericTypeError();
@@ -134,7 +134,7 @@ void TextTrackRegion::setRegionAnchorX(double value, ExceptionState& es)
     m_regionAnchor.setX(value);
 }
 
-void TextTrackRegion::setRegionAnchorY(double value, ExceptionState& es)
+void VTTRegion::setRegionAnchorY(double value, ExceptionState& es)
 {
     if (std::isinf(value) || std::isnan(value)) {
         es.throwUninformativeAndGenericTypeError();
@@ -149,7 +149,7 @@ void TextTrackRegion::setRegionAnchorY(double value, ExceptionState& es)
     m_regionAnchor.setY(value);
 }
 
-void TextTrackRegion::setViewportAnchorX(double value, ExceptionState& es)
+void VTTRegion::setViewportAnchorX(double value, ExceptionState& es)
 {
     if (std::isinf(value) || std::isnan(value)) {
         es.throwUninformativeAndGenericTypeError();
@@ -164,7 +164,7 @@ void TextTrackRegion::setViewportAnchorX(double value, ExceptionState& es)
     m_viewportAnchor.setX(value);
 }
 
-void TextTrackRegion::setViewportAnchorY(double value, ExceptionState& es)
+void VTTRegion::setViewportAnchorY(double value, ExceptionState& es)
 {
     if (std::isinf(value) || std::isnan(value)) {
         es.throwUninformativeAndGenericTypeError();
@@ -179,7 +179,7 @@ void TextTrackRegion::setViewportAnchorY(double value, ExceptionState& es)
     m_viewportAnchor.setY(value);
 }
 
-const AtomicString TextTrackRegion::scroll() const
+const AtomicString VTTRegion::scroll() const
 {
     DEFINE_STATIC_LOCAL(const AtomicString, upScrollValueKeyword, ("up", AtomicString::ConstructFromLiteral));
 
@@ -189,7 +189,7 @@ const AtomicString TextTrackRegion::scroll() const
     return "";
 }
 
-void TextTrackRegion::setScroll(const AtomicString& value, ExceptionState& es)
+void VTTRegion::setScroll(const AtomicString& value, ExceptionState& es)
 {
     DEFINE_STATIC_LOCAL(const AtomicString, upScrollValueKeyword, ("up", AtomicString::ConstructFromLiteral));
 
@@ -201,7 +201,7 @@ void TextTrackRegion::setScroll(const AtomicString& value, ExceptionState& es)
     m_scroll = value == upScrollValueKeyword;
 }
 
-void TextTrackRegion::updateParametersFromRegion(TextTrackRegion* region)
+void VTTRegion::updateParametersFromRegion(VTTRegion* region)
 {
     m_heightInLines = region->height();
     m_width = region->width();
@@ -212,7 +212,7 @@ void TextTrackRegion::updateParametersFromRegion(TextTrackRegion* region)
     setScroll(region->scroll(), ASSERT_NO_EXCEPTION);
 }
 
-void TextTrackRegion::setRegionSettings(const String& input)
+void VTTRegion::setRegionSettings(const String& input)
 {
     m_settings = input;
     unsigned position = 0;
@@ -228,7 +228,7 @@ void TextTrackRegion::setRegionSettings(const String& input)
     }
 }
 
-TextTrackRegion::RegionSetting TextTrackRegion::getSettingFromString(const String& setting)
+VTTRegion::RegionSetting VTTRegion::getSettingFromString(const String& setting)
 {
     DEFINE_STATIC_LOCAL(const AtomicString, idKeyword, ("id", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, heightKeyword, ("height", AtomicString::ConstructFromLiteral));
@@ -253,7 +253,7 @@ TextTrackRegion::RegionSetting TextTrackRegion::getSettingFromString(const Strin
     return None;
 }
 
-void TextTrackRegion::parseSettingValue(RegionSetting setting, const String& value)
+void VTTRegion::parseSettingValue(RegionSetting setting, const String& value)
 {
     DEFINE_STATIC_LOCAL(const AtomicString, scrollUpValueKeyword, ("up", AtomicString::ConstructFromLiteral));
 
@@ -273,7 +273,7 @@ void TextTrackRegion::parseSettingValue(RegionSetting setting, const String& val
         if (isValidSetting)
             m_width = number;
         else
-            LOG(Media, "TextTrackRegion::parseSettingValue, invalid Width");
+            LOG(Media, "VTTRegion::parseSettingValue, invalid Width");
         break;
     case Height:
         position = 0;
@@ -284,34 +284,34 @@ void TextTrackRegion::parseSettingValue(RegionSetting setting, const String& val
         if (isValidSetting && number >= 0)
             m_heightInLines = number;
         else
-            LOG(Media, "TextTrackRegion::parseSettingValue, invalid Height");
+            LOG(Media, "VTTRegion::parseSettingValue, invalid Height");
         break;
     case RegionAnchor:
         anchorPosition = WebVTTParser::parseFloatPercentageValuePair(value, ',', isValidSetting);
         if (isValidSetting)
             m_regionAnchor = anchorPosition;
         else
-            LOG(Media, "TextTrackRegion::parseSettingValue, invalid RegionAnchor");
+            LOG(Media, "VTTRegion::parseSettingValue, invalid RegionAnchor");
         break;
     case ViewportAnchor:
         anchorPosition = WebVTTParser::parseFloatPercentageValuePair(value, ',', isValidSetting);
         if (isValidSetting)
             m_viewportAnchor = anchorPosition;
         else
-            LOG(Media, "TextTrackRegion::parseSettingValue, invalid ViewportAnchor");
+            LOG(Media, "VTTRegion::parseSettingValue, invalid ViewportAnchor");
         break;
     case Scroll:
         if (value == scrollUpValueKeyword)
             m_scroll = true;
         else
-            LOG(Media, "TextTrackRegion::parseSettingValue, invalid Scroll");
+            LOG(Media, "VTTRegion::parseSettingValue, invalid Scroll");
         break;
     case None:
         break;
     }
 }
 
-void TextTrackRegion::parseSetting(const String& input, unsigned* position)
+void VTTRegion::parseSetting(const String& input, unsigned* position)
 {
     String setting = WebVTTParser::collectWord(input, position);
 
@@ -325,7 +325,7 @@ void TextTrackRegion::parseSetting(const String& input, unsigned* position)
     parseSettingValue(name, value);
 }
 
-const AtomicString& TextTrackRegion::textTrackCueContainerShadowPseudoId()
+const AtomicString& VTTRegion::textTrackCueContainerShadowPseudoId()
 {
     DEFINE_STATIC_LOCAL(const AtomicString, trackRegionCueContainerPseudoId,
         ("-webkit-media-text-track-region-container", AtomicString::ConstructFromLiteral));
@@ -333,7 +333,7 @@ const AtomicString& TextTrackRegion::textTrackCueContainerShadowPseudoId()
     return trackRegionCueContainerPseudoId;
 }
 
-const AtomicString& TextTrackRegion::textTrackCueContainerScrollingClass()
+const AtomicString& VTTRegion::textTrackCueContainerScrollingClass()
 {
     DEFINE_STATIC_LOCAL(const AtomicString, trackRegionCueContainerScrollingClass,
         ("scrolling", AtomicString::ConstructFromLiteral));
@@ -341,7 +341,7 @@ const AtomicString& TextTrackRegion::textTrackCueContainerScrollingClass()
     return trackRegionCueContainerScrollingClass;
 }
 
-const AtomicString& TextTrackRegion::textTrackRegionShadowPseudoId()
+const AtomicString& VTTRegion::textTrackRegionShadowPseudoId()
 {
     DEFINE_STATIC_LOCAL(const AtomicString, trackRegionShadowPseudoId,
         ("-webkit-media-text-track-region", AtomicString::ConstructFromLiteral));
@@ -349,7 +349,7 @@ const AtomicString& TextTrackRegion::textTrackRegionShadowPseudoId()
     return trackRegionShadowPseudoId;
 }
 
-PassRefPtr<HTMLDivElement> TextTrackRegion::getDisplayTree(Document& document)
+PassRefPtr<HTMLDivElement> VTTRegion::getDisplayTree(Document& document)
 {
     if (!m_regionDisplayTree) {
         m_regionDisplayTree = HTMLDivElement::create(document);
@@ -359,9 +359,9 @@ PassRefPtr<HTMLDivElement> TextTrackRegion::getDisplayTree(Document& document)
     return m_regionDisplayTree;
 }
 
-void TextTrackRegion::willRemoveTextTrackCueBox(TextTrackCueBox* box)
+void VTTRegion::willRemoveTextTrackCueBox(TextTrackCueBox* box)
 {
-    LOG(Media, "TextTrackRegion::willRemoveTextTrackCueBox");
+    LOG(Media, "VTTRegion::willRemoveTextTrackCueBox");
     ASSERT(m_cueContainer->contains(box));
 
     double boxHeight = box->getBoundingClientRect()->bottom() - box->getBoundingClientRect()->top();
@@ -373,7 +373,7 @@ void TextTrackRegion::willRemoveTextTrackCueBox(TextTrackCueBox* box)
 }
 
 
-void TextTrackRegion::appendTextTrackCueBox(PassRefPtr<TextTrackCueBox> displayBox)
+void VTTRegion::appendTextTrackCueBox(PassRefPtr<TextTrackCueBox> displayBox)
 {
     ASSERT(m_cueContainer);
 
@@ -384,9 +384,9 @@ void TextTrackRegion::appendTextTrackCueBox(PassRefPtr<TextTrackCueBox> displayB
     displayLastTextTrackCueBox();
 }
 
-void TextTrackRegion::displayLastTextTrackCueBox()
+void VTTRegion::displayLastTextTrackCueBox()
 {
-    LOG(Media, "TextTrackRegion::displayLastTextTrackCueBox");
+    LOG(Media, "VTTRegion::displayLastTextTrackCueBox");
     ASSERT(m_cueContainer);
 
     // FIXME: This should not be causing recalc styles in a loop to set the "top" css
@@ -419,7 +419,7 @@ void TextTrackRegion::displayLastTextTrackCueBox()
     }
 }
 
-void TextTrackRegion::prepareRegionDisplayTree()
+void VTTRegion::prepareRegionDisplayTree()
 {
     ASSERT(m_regionDisplayTree);
 
@@ -473,9 +473,9 @@ void TextTrackRegion::prepareRegionDisplayTree()
     m_regionDisplayTree->setPart(textTrackRegionShadowPseudoId());
 }
 
-void TextTrackRegion::startTimer()
+void VTTRegion::startTimer()
 {
-    LOG(Media, "TextTrackRegion::startTimer");
+    LOG(Media, "VTTRegion::startTimer");
 
     if (m_scrollTimer.isActive())
         return;
@@ -484,17 +484,17 @@ void TextTrackRegion::startTimer()
     m_scrollTimer.startOneShot(duration);
 }
 
-void TextTrackRegion::stopTimer()
+void VTTRegion::stopTimer()
 {
-    LOG(Media, "TextTrackRegion::stopTimer");
+    LOG(Media, "VTTRegion::stopTimer");
 
     if (m_scrollTimer.isActive())
         m_scrollTimer.stop();
 }
 
-void TextTrackRegion::scrollTimerFired(Timer<TextTrackRegion>*)
+void VTTRegion::scrollTimerFired(Timer<VTTRegion>*)
 {
-    LOG(Media, "TextTrackRegion::scrollTimerFired");
+    LOG(Media, "VTTRegion::scrollTimerFired");
 
     stopTimer();
     displayLastTextTrackCueBox();

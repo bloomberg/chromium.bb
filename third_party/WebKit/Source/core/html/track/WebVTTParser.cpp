@@ -126,7 +126,7 @@ void WebVTTParser::getNewCues(Vector<RefPtr<TextTrackCue> >& outputCues)
     m_cuelist.clear();
 }
 
-void WebVTTParser::getNewRegions(Vector<RefPtr<TextTrackRegion> >& outputRegions)
+void WebVTTParser::getNewRegions(Vector<RefPtr<VTTRegion> >& outputRegions)
 {
     outputRegions = m_regionList;
     m_regionList.clear();
@@ -381,7 +381,7 @@ void WebVTTParser::createNewRegion()
     if (!m_currentHeaderValue.length())
         return;
 
-    RefPtr<TextTrackRegion> region = TextTrackRegion::create();
+    RefPtr<VTTRegion> region = VTTRegion::create();
     region->setRegionSettings(m_currentHeaderValue);
 
     // 15.5.10 If the text track list of regions regions contains a region

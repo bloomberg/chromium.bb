@@ -23,40 +23,59 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TextTrackRegionList_h
-#define TextTrackRegionList_h
-
-#include "core/html/track/TextTrackRegion.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
+#include "config.h"
+#include "core/html/track/VTTRegionList.h"
 
 namespace WebCore {
 
-class TextTrackRegionList : public RefCounted<TextTrackRegionList> {
-public:
-    static PassRefPtr<TextTrackRegionList> create()
-    {
-        return adoptRef(new TextTrackRegionList());
+VTTRegionList::VTTRegionList()
+{
+}
+
+unsigned long VTTRegionList::length() const
+{
+    return m_list.size();
+}
+
+VTTRegion* VTTRegionList::item(unsigned index) const
+{
+    if (index < m_list.size())
+        return m_list[index].get();
+
+    return 0;
+}
+
+VTTRegion* VTTRegionList::getRegionById(const String& id) const
+{
+    if (id.isEmpty())
+        return 0;
+
+    for (size_t i = 0; i < m_list.size(); ++i) {
+        if (m_list[i]->id() == id)
+            return m_list[i].get();
     }
 
-    ~TextTrackRegionList() { }
+    return 0;
+}
 
-    unsigned long length() const;
+void VTTRegionList::add(PassRefPtr<VTTRegion> region)
+{
+    m_list.append(region);
+}
 
-    TextTrackRegion* item(unsigned index) const;
-    TextTrackRegion* getRegionById(const String&) const;
+bool VTTRegionList::remove(VTTRegion* region)
+{
+    size_t index = m_list.find(region);
+    if (index == kNotFound)
+        return false;
 
-    void add(PassRefPtr<TextTrackRegion>);
-    bool remove(TextTrackRegion*);
+    m_list.remove(index);
+    return true;
+}
 
-private:
-    TextTrackRegionList();
-    void clear();
-
-    Vector<RefPtr<TextTrackRegion> > m_list;
-};
+void VTTRegionList::clear()
+{
+    m_list.clear();
+}
 
 } // namespace WebCore
-
-#endif
