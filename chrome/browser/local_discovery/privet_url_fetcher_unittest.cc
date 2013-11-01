@@ -41,6 +41,11 @@ class MockPrivetURLFetcherDelegate : public PrivetURLFetcher::Delegate {
 
   MOCK_METHOD1(OnParsedJsonInternal, void(bool has_error));
 
+  virtual void OnNeedPrivetToken(
+      PrivetURLFetcher* fetcher,
+      const PrivetURLFetcher::TokenCallback& callback) {
+  }
+
   const DictionaryValue* saved_value() { return saved_value_.get(); }
 
  private:
@@ -150,7 +155,9 @@ TEST_F(PrivetURLFetcherTest, Header2) {
       request_context_.get(),
       &delegate_));
 
+  privet_urlfetcher_->AllowEmptyPrivetToken();
   privet_urlfetcher_->Start();
+
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher != NULL);
   net::HttpRequestHeaders headers;

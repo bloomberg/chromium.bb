@@ -602,8 +602,8 @@ TEST_F(PrivetRegisterTest, InfoFailure) {
 
   EXPECT_CALL(register_delegate_,
               OnPrivetRegisterErrorInternal(
-                  "info",
-                  PrivetRegisterOperation::FAILURE_NETWORK,
+                  "start",
+                  PrivetRegisterOperation::FAILURE_TOKEN,
                   -1));
 
   EXPECT_TRUE(SuccessfulResponseToURL(

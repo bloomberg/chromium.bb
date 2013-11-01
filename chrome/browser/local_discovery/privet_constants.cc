@@ -15,6 +15,8 @@ const char kPrivetKeyClaimURL[] = "claim_url";
 const char kPrivetKeyClaimToken[] = "token";
 const char kPrivetKeyTimeout[] = "timeout";
 
+const char kPrivetActionNameInfo[] = "info";
+
 const char kPrivetErrorDeviceBusy[] = "device_busy";
 const char kPrivetErrorPendingUserAction[] = "pending_user_action";
 const char kPrivetErrorInvalidXPrivetToken[] = "invalid_x_privet_token";
@@ -25,8 +27,6 @@ const char kPrivetActionStart[] = "start";
 const char kPrivetActionGetClaimToken[] = "getClaimToken";
 const char kPrivetActionComplete[] = "complete";
 const char kPrivetActionCancel[] = "cancel";
-
-const char kPrivetActionNameInfo[] = "info";
 
 extern const char kPrivetDefaultDeviceType[] = "_privet._tcp.local";
 extern const char kPrivetSubtypeTemplate[] = "%s._sub._privet._tcp.local";

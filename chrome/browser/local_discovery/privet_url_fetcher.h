@@ -27,13 +27,21 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
     JSON_PARSE_ERROR,
     URL_FETCH_ERROR,
     RESPONSE_CODE_ERROR,
-    RETRY_ERROR
+    RETRY_ERROR,
+    TOKEN_ERROR
   };
+
+  typedef base::Callback<void(const std::string& /*token*/)> TokenCallback;
 
   class Delegate {
    public:
     virtual ~Delegate() {}
 
+    // If you do not implement this method, you will always get a
+    // TOKEN_ERROR error when your token is invalid.
+    virtual void OnNeedPrivetToken(
+        PrivetURLFetcher* fetcher,
+        const TokenCallback& callback);
     virtual void OnError(PrivetURLFetcher* fetcher, ErrorType error) = 0;
     virtual void OnParsedJson(PrivetURLFetcher* fetcher,
                               const base::DictionaryValue* value,
@@ -47,6 +55,10 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
       net::URLRequestContextGetter* request_context,
       Delegate* delegate);
   virtual ~PrivetURLFetcher();
+
+  void DoNotRetryOnTransientError();
+
+  void AllowEmptyPrivetToken();
 
   void Start();
 
@@ -62,12 +74,17 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
   void Try();
   void ScheduleRetry(int timeout_seconds);
   bool PrivetErrorTransient(const std::string& error);
+  void RequestTokenRefresh();
+  void RefreshToken(const std::string& token);
 
   std::string privet_access_token_;
   GURL url_;
   net::URLFetcher::RequestType request_type_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
   Delegate* delegate_;
+
+  bool do_not_retry_on_transient_error_;
+  bool allow_empty_privet_token_;
 
   int tries_;
   std::string upload_data_;

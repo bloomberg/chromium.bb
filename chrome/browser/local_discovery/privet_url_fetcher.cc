@@ -21,6 +21,12 @@ const char kXPrivetEmptyToken[] = "\"\"";
 const int kPrivetMaxRetries = 20;
 }
 
+void PrivetURLFetcher::Delegate::OnNeedPrivetToken(
+    PrivetURLFetcher* fetcher,
+    const TokenCallback& callback) {
+  OnError(fetcher, TOKEN_ERROR);
+}
+
 PrivetURLFetcher::PrivetURLFetcher(
     const std::string& token,
     const GURL& url,
@@ -28,22 +34,34 @@ PrivetURLFetcher::PrivetURLFetcher(
     net::URLRequestContextGetter* request_context,
     PrivetURLFetcher::Delegate* delegate)
     : privet_access_token_(token), url_(url), request_type_(request_type),
-      request_context_(request_context), delegate_(delegate), tries_(0),
-      weak_factory_(this) {
-  if (privet_access_token_.empty())
-    privet_access_token_ = kXPrivetEmptyToken;
+      request_context_(request_context), delegate_(delegate),
+      do_not_retry_on_transient_error_(false), allow_empty_privet_token_(false),
+      tries_(0), weak_factory_(this) {
 }
 
 PrivetURLFetcher::~PrivetURLFetcher() {
 }
 
+void PrivetURLFetcher::DoNotRetryOnTransientError() {
+  do_not_retry_on_transient_error_ = true;
+}
+
+void PrivetURLFetcher::AllowEmptyPrivetToken() {
+  allow_empty_privet_token_ = true;
+}
+
 void PrivetURLFetcher::Try() {
   tries_++;
   if (tries_ < kPrivetMaxRetries) {
+    std::string token = privet_access_token_;
+
+    if (token.empty())
+      token = kXPrivetEmptyToken;
+
     url_fetcher_.reset(net::URLFetcher::Create(url_, request_type_, this));
     url_fetcher_->SetRequestContext(request_context_);
     url_fetcher_->AddExtraRequestHeader(std::string(kXPrivetTokenHeaderPrefix) +
-                                        privet_access_token_);
+                                        token);
 
     // URLFetcher requires us to set upload data for POST requests.
     if (request_type_ == net::URLFetcher::POST)
@@ -57,7 +75,12 @@ void PrivetURLFetcher::Try() {
 
 void PrivetURLFetcher::Start() {
   DCHECK_EQ(tries_, 0);  // We haven't called |Start()| yet.
-  Try();
+
+  if (privet_access_token_.empty() && !allow_empty_privet_token_) {
+    RequestTokenRefresh();
+  } else {
+    Try();
+  }
 }
 
 void PrivetURLFetcher::SetUploadData(const std::string& upload_content_type,
@@ -103,15 +126,21 @@ void PrivetURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
 
   std::string error;
   if (dictionary_value->GetString(kPrivetKeyError, &error)) {
-    if (PrivetErrorTransient(error) ||
-        dictionary_value->HasKey(kPrivetKeyTimeout)) {
-      int timeout_seconds;
-      if (!dictionary_value->GetInteger(kPrivetKeyTimeout, &timeout_seconds)) {
-        timeout_seconds = kPrivetDefaultTimeout;
-      }
-
-      ScheduleRetry(timeout_seconds);
+    if (error == kPrivetErrorInvalidXPrivetToken) {
+      RequestTokenRefresh();
       return;
+    } else if (PrivetErrorTransient(error) ||
+        dictionary_value->HasKey(kPrivetKeyTimeout)) {
+      if (!do_not_retry_on_transient_error_) {
+        int timeout_seconds;
+        if (!dictionary_value->GetInteger(kPrivetKeyTimeout,
+                                          &timeout_seconds)) {
+          timeout_seconds = kPrivetDefaultTimeout;
+        }
+
+        ScheduleRetry(timeout_seconds);
+        return;
+      }
     }
   }
 
@@ -132,6 +161,21 @@ void PrivetURLFetcher::ScheduleRetry(int timeout_seconds) {
       base::TimeDelta::FromSeconds(timeout_seconds_randomized));
 }
 
+void PrivetURLFetcher::RequestTokenRefresh() {
+  delegate_->OnNeedPrivetToken(
+      this,
+      base::Bind(&PrivetURLFetcher::RefreshToken, weak_factory_.GetWeakPtr()));
+}
+
+void PrivetURLFetcher::RefreshToken(const std::string& token) {
+  if (token.empty()) {
+    delegate_->OnError(this, TOKEN_ERROR);
+  } else {
+    privet_access_token_ = token;
+    Try();
+  }
+}
+
 bool PrivetURLFetcher::PrivetErrorTransient(const std::string& error) {
   return (error == kPrivetErrorDeviceBusy) ||
          (error == kPrivetErrorPendingUserAction);
@@ -149,8 +193,8 @@ scoped_ptr<PrivetURLFetcher> PrivetURLFetcherFactory::CreateURLFetcher(
     const GURL& url, net::URLFetcher::RequestType request_type,
     PrivetURLFetcher::Delegate* delegate) const {
   return scoped_ptr<PrivetURLFetcher>(
-      new PrivetURLFetcher(token_, url, request_type,
-                           request_context_.get(), delegate));
+      new PrivetURLFetcher(token_, url, request_type, request_context_.get(),
+                           delegate));
 }
 
 }  // namespace local_discovery
