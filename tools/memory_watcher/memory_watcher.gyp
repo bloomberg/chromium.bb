@@ -10,7 +10,6 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../ui/gfx/gfx.gyp:gfx',
-        '../../ui/ui.gyp:ui',
       ],
       'defines': [
         'BUILD_MEMORY_WATCHER',

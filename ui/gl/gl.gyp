@@ -19,7 +19,6 @@
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/mesa/mesa.gyp:mesa_headers',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
-        '<(DEPTH)/ui/ui.gyp:ui',
       ],
       'variables': {
         'gl_binding_output_dir': '<(SHARED_INTERMEDIATE_DIR)/ui/gl',
@@ -235,6 +234,21 @@
             '<(gl_binding_output_dir)/gl_bindings_autogen_wgl.cc',
             '<(gl_binding_output_dir)/gl_bindings_autogen_wgl.h',
           ],
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'DelayLoadDLLs': [
+                'dwmapi.dll',
+              ],
+              'AdditionalDependencies': [
+                'dwmapi.lib',
+              ],
+            },
+          },
+          'link_settings': {
+            'libraries': [
+              '-ldwmapi.lib',
+            ],
+          },
         }],
         ['OS=="mac"', {
           'sources': [

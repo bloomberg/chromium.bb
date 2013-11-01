@@ -19,7 +19,6 @@
         '<(DEPTH)/ui/events/events.gyp:events',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
         '<(DEPTH)/ui/gl/gl.gyp:gl',
-        '<(DEPTH)/ui/ui.gyp:ui',
       ],
       'defines': [
         'COMPOSITOR_IMPLEMENTATION',
