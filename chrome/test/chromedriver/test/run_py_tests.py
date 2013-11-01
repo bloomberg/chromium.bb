@@ -112,6 +112,8 @@ _ANDROID_NEGATIVE_FILTER['com.google.android.apps.chrome'] = (
         'PerfTest.testSessionStartTime',
         'PerfTest.testSessionStopTime',
         'PerfTest.testColdExecuteScript',
+        # https://code.google.com/p/chromedriver/issues/detail?id=459
+        'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['com.android.chrome'] = (
