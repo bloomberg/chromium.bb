@@ -55,7 +55,8 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
   enum ResponseType {
     NO_RESPONSE = 0,
     REMEMBER_PASSWORD,
-    DONT_REMEMBER_PASSWORD,
+    NEVER_REMEMBER_PASSWORD,
+    INFOBAR_DISMISSED,
     NUM_RESPONSE_TYPES,
   };
 
@@ -71,6 +72,7 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
+  virtual void InfoBarDismissed() OVERRIDE;
 
   virtual InfoBarAutomationType GetInfoBarAutomationType() const OVERRIDE;
 
@@ -182,8 +184,13 @@ bool SavePasswordInfoBarDelegate::Accept() {
 bool SavePasswordInfoBarDelegate::Cancel() {
   DCHECK(form_to_save_.get());
   form_to_save_->PermanentlyBlacklist();
-  infobar_response_ = DONT_REMEMBER_PASSWORD;
+  infobar_response_ = NEVER_REMEMBER_PASSWORD;
   return true;
+}
+
+void SavePasswordInfoBarDelegate::InfoBarDismissed() {
+  DCHECK(form_to_save_.get());
+  infobar_response_ = INFOBAR_DISMISSED;
 }
 
 InfoBarDelegate::InfoBarAutomationType

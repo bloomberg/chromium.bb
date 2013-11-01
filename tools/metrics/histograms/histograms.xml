@@ -23502,6 +23502,7 @@ other types of suffix sets.
   <int value="0" label="No Response selected"/>
   <int value="1" label="Save Password"/>
   <int value="2" label="Never for this site (blacklist / exception)"/>
+  <int value="3" label="InfoBar dismissed by clicking the 'X'"/>
 </enum>
 
 <enum name="InstantControllerEvent" type="int">
