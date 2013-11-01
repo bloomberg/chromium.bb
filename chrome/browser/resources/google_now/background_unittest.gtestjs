@@ -432,7 +432,7 @@ TEST_F(
               storageGetSavedArgs, 1, {notificationGroups: storedGroups}));
 
       this.mockGlobals.expects(once()).
-          scheduleNextPoll(eqJSON(expectedUpdatedGroups));
+          scheduleNextPoll(eqJSON(expectedUpdatedGroups), true);
 
       this.mockApis.expects(once()).
           chrome_storage_local_set(

@@ -74,6 +74,11 @@ var MAXIMUM_DISMISSAL_AGE_MS = 24 * 60 * 60 * 1000; // 1 day
 var DISMISS_RETENTION_TIME_MS = 20 * 60 * 1000;  // 20 minutes
 
 /**
+ * Default period for checking whether the user is opted in to Google Now.
+ */
+var DEFAULT_OPTIN_CHECK_PERIOD_SECONDS = 60 * 60 * 24 * 7; // 1 week
+
+/**
  * Names for tasks that can be created by the extension.
  */
 var UPDATE_CARDS_TASK_NAME = 'update-cards';
@@ -423,25 +428,36 @@ function mergeGroup(mergedCards, storageGroup) {
  * Schedules next cards poll.
  * @param {Object.<string, StorageGroup>} groups Map from group name to group
  *     information.
+ * @param {boolean} isOptedIn True if the user is opted in to Google Now.
  */
-function scheduleNextPoll(groups) {
-  var nextPollTime = null;
+function scheduleNextPoll(groups, isOptedIn) {
+  if (isOptedIn) {
+    var nextPollTime = null;
 
-  for (var groupName in groups) {
-    var group = groups[groupName];
-    if (group.nextPollTime !== undefined) {
-      nextPollTime = nextPollTime == null ?
-          group.nextPollTime : Math.min(group.nextPollTime, nextPollTime);
+    for (var groupName in groups) {
+      var group = groups[groupName];
+      if (group.nextPollTime !== undefined) {
+        nextPollTime = nextPollTime == null ?
+            group.nextPollTime : Math.min(group.nextPollTime, nextPollTime);
+      }
     }
+
+    // At least one of the groups must have nextPollTime.
+    verify(nextPollTime != null, 'scheduleNextPoll: nextPollTime is null');
+
+    var nextPollDelaySeconds = Math.max(
+        (nextPollTime - Date.now()) / MS_IN_SECOND,
+        MINIMUM_POLLING_PERIOD_SECONDS);
+    updateCardsAttempts.start(nextPollDelaySeconds);
+  } else {
+    instrumented.metricsPrivate.getVariationParams(
+        'GoogleNow', function(params) {
+      var optinPollPeriodSeconds =
+          parseInt(params && params.optinPollPeriodSeconds, 10) ||
+          DEFAULT_OPTIN_CHECK_PERIOD_SECONDS;
+      updateCardsAttempts.start(optinPollPeriodSeconds);
+    });
   }
-
-  // At least one of the groups must have nextPollTime.
-  verify(nextPollTime != null, 'scheduleNextPoll: nextPollTime is null');
-
-  var nextPollDelaySeconds = Math.max(
-      (nextPollTime - Date.now()) / MS_IN_SECOND,
-      MINIMUM_POLLING_PERIOD_SECONDS);
-  updateCardsAttempts.start(nextPollDelaySeconds);
 }
 
 /**
@@ -466,6 +482,13 @@ function mergeAndShowNotificationCards(notificationGroups) {
 function parseAndShowNotificationCards(response) {
   console.log('parseAndShowNotificationCards ' + response);
   var parsedResponse = JSON.parse(response);
+
+  if (parsedResponse.googleNowDisabled) {
+    chrome.storage.local.set({googleNowEnabled: false});
+    // TODO(vadimt): Remove the line below once the server stops sending groups
+    // with 'googleNowDisabled' responses.
+    parsedResponse.groups = {};
+  }
 
   var receivedGroups = parsedResponse.groups;
 
@@ -524,7 +547,7 @@ function parseAndShowNotificationCards(response) {
       updatedGroups[groupName] = storageGroup;
     }
 
-    scheduleNextPoll(updatedGroups);
+    scheduleNextPoll(updatedGroups, !parsedResponse.googleNowDisabled);
     chrome.storage.local.set({notificationGroups: updatedGroups});
     mergeAndShowNotificationCards(updatedGroups);
     recordEvent(GoogleNowEvent.CARDS_PARSE_SUCCESS);
@@ -567,13 +590,44 @@ function requestNotificationGroups(groupNames) {
 }
 
 /**
+ * Requests the account opted-in state from the server.
+ * @param {function()} optedInCallback Function that will be called if
+ *     opted-in state is 'true'.
+ */
+function requestOptedIn(optedInCallback) {
+  console.log('requestOptedIn from ' + NOTIFICATION_CARDS_URL);
+
+  var request = buildServerRequest('GET', 'settings/optin');
+
+  request.onloadend = function(event) {
+    console.log(
+        'requestOptedIn-onloadend ' + request.status + ' ' + request.response);
+    if (request.status == HTTP_OK) {
+      var parsedResponse = JSON.parse(request.response);
+      if (parsedResponse.value) {
+        chrome.storage.local.set({googleNowEnabled: true});
+        optedInCallback();
+      } else {
+        scheduleNextPoll({}, false);
+      }
+    }
+  };
+
+  setAuthorization(request, function(success) {
+    if (success)
+      request.send();
+  });
+}
+
+/**
  * Requests notification cards from the server.
  * @param {Location} position Location of this computer.
  */
 function requestNotificationCards(position) {
   console.log('requestNotificationCards ' + JSON.stringify(position));
 
-  instrumented.storage.local.get('notificationGroups', function(items) {
+  instrumented.storage.local.get(
+      ['notificationGroups', 'googleNowEnabled'], function(items) {
     console.log('requestNotificationCards-storage-get ' +
                 JSON.stringify(items));
     items = items || {};
@@ -590,7 +644,13 @@ function requestNotificationCards(position) {
       }
     }
 
-    requestNotificationGroups(groupsToRequest);
+    if (items.googleNowEnabled) {
+      requestNotificationGroups(groupsToRequest);
+    } else {
+      requestOptedIn(function() {
+        requestNotificationGroups(groupsToRequest);
+      });
+    }
   });
 }
 
@@ -1081,7 +1141,8 @@ instrumented.pushMessaging.onMessage.addListener(function(message) {
   console.log('pushMessaging.onMessage ' + JSON.stringify(message));
   if (message.payload.indexOf('REQUEST_CARDS') == 0) {
     tasks.add(ON_PUSH_MESSAGE_START_TASK_NAME, function() {
-      instrumented.storage.local.get('lastPollNowPayloads', function(items) {
+      instrumented.storage.local.get(
+          ['lastPollNowPayloads', 'notificationGroups'], function(items) {
         // If storage.get fails, it's safer to do nothing, preventing polling
         // the server when the payload really didn't change.
         if (!items)
@@ -1093,13 +1154,19 @@ instrumented.pushMessaging.onMessage.addListener(function(message) {
         if (items.lastPollNowPayloads[message.subchannelId] !=
             message.payload) {
           items.lastPollNowPayloads[message.subchannelId] = message.payload;
-          chrome.storage.local.set(
-              {lastPollNowPayloads: items.lastPollNowPayloads});
 
-          updateCardsAttempts.isRunning(function(running) {
-            if (running)
-              requestNotificationGroups(['PUSH' + message.subchannelId]);
+          items.notificationGroups = items.notificationGroups || {};
+          items.notificationGroups['PUSH' + message.subchannelId] = {
+            cards: [],
+            nextPollTime: Date.now()
+          };
+
+          chrome.storage.local.set({
+            lastPollNowPayloads: items.lastPollNowPayloads,
+            notificationGroups: items.notificationGroups
           });
+
+          updateNotificationsCards();
         }
       });
     });
