@@ -44,6 +44,7 @@
 #include "core/workers/WorkerThread.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
+#include "wtf/WeakPtr.h"
 
 
 namespace WebKit {
@@ -112,12 +113,12 @@ public:
 
     // WebWorkerBase methods:
     WebCore::WorkerLoaderProxy* workerLoaderProxy() { return this; }
-    WebCommonWorkerClient* commonClient() { return m_client; }
+    WebCommonWorkerClient* commonClient() { return m_client->get(); }
 
 private:
     virtual ~WebSharedWorkerImpl();
 
-    WebSharedWorkerClient* client() { return m_client; }
+    WebSharedWorkerClient* client() { return m_client->get(); }
 
     void setWorkerThread(PassRefPtr<WebCore::WorkerThread> thread) { m_workerThread = thread; }
     WebCore::WorkerThread* workerThread() { return m_workerThread.get(); }
@@ -131,41 +132,8 @@ private:
 
     static void connectTask(WebCore::ExecutionContext*, PassOwnPtr<WebCore::MessagePortChannel>);
     // Tasks that are run on the main thread.
-    static void postMessageTask(
-        WebCore::ExecutionContext*,
-        WebSharedWorkerImpl* thisPtr,
-        WTF::String message,
-        PassOwnPtr<WebCore::MessagePortChannelArray> channels);
-    static void postExceptionTask(
-        WebCore::ExecutionContext*,
-        WebSharedWorkerImpl* thisPtr,
-        const WTF::String& message,
-        int lineNumber,
-        const WTF::String& sourceURL);
-    static void postConsoleMessageTask(
-        WebCore::ExecutionContext*,
-        WebSharedWorkerImpl* thisPtr,
-        int source,
-        int level,
-        const WTF::String& message,
-        int lineNumber,
-        const WTF::String& sourceURL);
-    static void postMessageToPageInspectorTask(WebCore::ExecutionContext*, WebSharedWorkerImpl*, const WTF::String&);
-    static void updateInspectorStateCookieTask(WebCore::ExecutionContext*, WebSharedWorkerImpl* thisPtr, const WTF::String& cookie);
-    static void confirmMessageTask(
-        WebCore::ExecutionContext*,
-        WebSharedWorkerImpl* thisPtr,
-        bool hasPendingActivity);
-    static void reportPendingActivityTask(
-        WebCore::ExecutionContext*,
-        WebSharedWorkerImpl* thisPtr,
-        bool hasPendingActivity);
-    static void workerGlobalScopeClosedTask(
-        WebCore::ExecutionContext*,
-        WebSharedWorkerImpl* thisPtr);
-    static void workerGlobalScopeDestroyedTask(
-        WebCore::ExecutionContext*,
-        WebSharedWorkerImpl* thisPtr);
+    void workerGlobalScopeClosedOnMainThread();
+    void workerGlobalScopeDestroyedOnMainThread();
 
     // 'shadow page' - created to proxy loading requests from the worker.
     RefPtr<WebCore::ExecutionContext> m_loadingDocument;
@@ -175,7 +143,14 @@ private:
 
     RefPtr<WebCore::WorkerThread> m_workerThread;
 
-    WebSharedWorkerClient* m_client;
+    // This one's initialized and bound to the main thread.
+    RefPtr<WeakReference<WebSharedWorkerClient> > m_client;
+
+    // Usually WeakPtr is created by WeakPtrFactory exposed by Client
+    // class itself, but here it's implemented by Chrome so we create
+    // our own WeakPtr.
+    WeakPtr<WebSharedWorkerClient> m_clientWeakPtr;
+
     bool m_pauseWorkerContextOnStart;
 };
 

@@ -68,6 +68,7 @@
 #include "public/web/WebWorkerPermissionClientProxy.h"
 #include "weborigin/KURL.h"
 #include "weborigin/SecurityOrigin.h"
+#include "wtf/Functional.h"
 
 using namespace WebCore;
 
@@ -95,7 +96,8 @@ WebSharedWorkerImpl::WebSharedWorkerImpl(WebSharedWorkerClient* client)
     : m_webView(0)
     , m_mainFrame(0)
     , m_askedToTerminate(false)
-    , m_client(client)
+    , m_client(WeakReference<WebSharedWorkerClient>::create(client))
+    , m_clientWeakPtr(WeakPtr<WebSharedWorkerClient>(m_client))
     , m_pauseWorkerContextOnStart(false)
 {
     initializeWebKitStaticValues();
@@ -181,56 +183,38 @@ void WebSharedWorkerImpl::postConsoleMessageToWorkerObject(MessageSource source,
 
 void WebSharedWorkerImpl::postMessageToPageInspector(const String& message)
 {
-    WebWorkerBase::dispatchTaskToMainThread(createCallbackTask(&postMessageToPageInspectorTask, AllowCrossThreadAccess(this), message));
+    callOnMainThread(bind(&WebSharedWorkerClient::dispatchDevToolsMessage, m_clientWeakPtr, message.isolatedCopy()));
 }
 
-void WebSharedWorkerImpl::postMessageToPageInspectorTask(ExecutionContext*, WebSharedWorkerImpl* thisPtr, const String& message)
+void WebSharedWorkerImpl::updateInspectorStateCookie(const String& cookie)
 {
-    if (!thisPtr->client())
-        return;
-    thisPtr->client()->dispatchDevToolsMessage(message);
-}
-
-void WebSharedWorkerImpl::updateInspectorStateCookie(const WTF::String& cookie)
-{
-    WebWorkerBase::dispatchTaskToMainThread(createCallbackTask(&updateInspectorStateCookieTask, AllowCrossThreadAccess(this), cookie));
-}
-
-void WebSharedWorkerImpl::updateInspectorStateCookieTask(ExecutionContext*, WebSharedWorkerImpl* thisPtr, const String& cookie)
-{
-    if (!thisPtr->client())
-        return;
-    thisPtr->client()->saveDevToolsAgentState(cookie);
+    callOnMainThread(bind(&WebSharedWorkerClient::saveDevToolsAgentState, m_clientWeakPtr, cookie.isolatedCopy()));
 }
 
 void WebSharedWorkerImpl::workerGlobalScopeClosed()
 {
-    WebWorkerBase::dispatchTaskToMainThread(createCallbackTask(&workerGlobalScopeClosedTask,
-                                            AllowCrossThreadAccess(this)));
+    callOnMainThread(bind(&WebSharedWorkerImpl::workerGlobalScopeClosedOnMainThread, this));
 }
 
-void WebSharedWorkerImpl::workerGlobalScopeClosedTask(ExecutionContext* context,
-                                                  WebSharedWorkerImpl* thisPtr)
+void WebSharedWorkerImpl::workerGlobalScopeClosedOnMainThread()
 {
-    if (thisPtr->client())
-        thisPtr->client()->workerContextClosed();
+    if (client())
+        client()->workerContextClosed();
 
-    thisPtr->stopWorkerThread();
+    stopWorkerThread();
 }
 
 void WebSharedWorkerImpl::workerGlobalScopeDestroyed()
 {
-    WebWorkerBase::dispatchTaskToMainThread(createCallbackTask(&workerGlobalScopeDestroyedTask,
-                                                               AllowCrossThreadAccess(this)));
+    callOnMainThread(bind(&WebSharedWorkerImpl::workerGlobalScopeDestroyedOnMainThread, this));
 }
 
-void WebSharedWorkerImpl::workerGlobalScopeDestroyedTask(ExecutionContext* context,
-                                                     WebSharedWorkerImpl* thisPtr)
+void WebSharedWorkerImpl::workerGlobalScopeDestroyedOnMainThread()
 {
-    if (thisPtr->client())
-        thisPtr->client()->workerContextDestroyed();
+    if (client())
+        client()->workerContextDestroyed();
     // The lifetime of this proxy is controlled by the worker context.
-    delete thisPtr;
+    delete this;
 }
 
 // WorkerLoaderProxy -----------------------------------------------------------
@@ -288,7 +272,7 @@ void WebSharedWorkerImpl::startWorkerContext(const WebURL& url, const WebString&
     OwnPtr<WorkerClients> workerClients = WorkerClients::create();
     provideLocalFileSystemToWorker(workerClients.get(), WorkerFileSystemClient::create());
     WebSecurityOrigin webSecurityOrigin(m_loadingDocument->securityOrigin());
-    providePermissionClientToWorker(workerClients.get(), adoptPtr(m_client->createWorkerPermissionClientProxy(webSecurityOrigin)));
+    providePermissionClientToWorker(workerClients.get(), adoptPtr(client()->createWorkerPermissionClientProxy(webSecurityOrigin)));
     OwnPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(url, userAgent, sourceCode, startMode, contentSecurityPolicy, static_cast<WebCore::ContentSecurityPolicy::HeaderType>(policyType), workerClients.release());
     setWorkerThread(SharedWorkerThread::create(name, *this, *this, startupData.release()));
 
@@ -302,7 +286,7 @@ void WebSharedWorkerImpl::terminateWorkerContext()
 
 void WebSharedWorkerImpl::clientDestroyed()
 {
-    m_client = 0;
+    m_client.clear();
 }
 
 void WebSharedWorkerImpl::pauseWorkerContextOnStart()
