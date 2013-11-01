@@ -60,6 +60,7 @@ PassRefPtr<SkTypeface> CreateTypefaceFromHFont(HFONT, int* size, int* paintTextF
 
 class FontDescription;
 class GraphicsContext;
+class HarfBuzzFace;
 
 class FontPlatformData {
 public:
@@ -91,6 +92,7 @@ public:
     HFONT hfont() const { return m_font ? m_font->hfont() : 0; }
     float size() const { return m_textSize; }
     SkTypeface* typeface() const { return m_typeface.get(); }
+    SkFontID uniqueID() const { return m_typeface->uniqueID(); }
     int paintTextFlags() const { return m_paintTextFlags; }
 
     String fontFamilyName() const;
@@ -128,6 +130,10 @@ public:
     SCRIPT_CACHE* scriptCache() const { return &m_scriptCache; }
 
     static bool ensureFontLoaded(HFONT);
+
+#if USE(HARFBUZZ)
+    HarfBuzzFace* harfBuzzFace() const;
+#endif
 
 private:
     // We refcount the internal HFONT so that FontPlatformData can be
@@ -174,6 +180,10 @@ private:
 
     mutable SCRIPT_CACHE m_scriptCache;
     mutable OwnPtr<SCRIPT_FONTPROPERTIES> m_scriptFontProperties;
+
+#if USE(HARFBUZZ)
+    mutable RefPtr<HarfBuzzFace> m_harfBuzzFace;
+#endif
 
     bool m_isHashTableDeletedValue;
 };

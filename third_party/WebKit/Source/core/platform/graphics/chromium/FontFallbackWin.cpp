@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/platform/graphics/chromium/FontFallbackWin.h"
 
-#include "core/platform/graphics/chromium/UniscribeHelper.h"
 #include "platform/win/HWndDC.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/StringHash.h"

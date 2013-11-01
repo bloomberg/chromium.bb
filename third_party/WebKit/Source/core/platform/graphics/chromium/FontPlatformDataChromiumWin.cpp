@@ -38,6 +38,9 @@
 #include "SkTypeface_win.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#if USE(HARFBUZZ)
+#include "core/platform/graphics/harfbuzz/HarfBuzzFace.h"
+#endif
 #include "core/platform/graphics/skia/SkiaFontWin.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/SharedBuffer.h"
@@ -393,5 +396,15 @@ bool FontPlatformData::ensureFontLoaded(HFONT font)
     // was able to be loaded successfully already
     return sandboxSupport ? sandboxSupport->ensureFontLoaded(font) : true;
 }
+
+#if USE(HARFBUZZ)
+HarfBuzzFace* FontPlatformData::harfBuzzFace() const
+{
+    if (!m_harfBuzzFace)
+        m_harfBuzzFace = HarfBuzzFace::create(const_cast<FontPlatformData*>(this), uniqueID());
+
+    return m_harfBuzzFace.get();
+}
+#endif
 
 }

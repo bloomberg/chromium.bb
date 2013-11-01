@@ -767,6 +767,20 @@
                 ['exclude', 'platform/graphics/win/FontCustomPlatformDataWin\\.cpp$'],
               ],
             }],
+            ['"ENABLE_HARFBUZZ_ON_WINDOWS=1" in feature_defines', {
+              'sources/': [
+                ['include', 'platform/graphics/harfbuzz/FontHarfBuzz\\.cpp$'],
+                ['include', 'platform/graphics/harfbuzz/HarfBuzzFace\\.(cpp|h)$'],
+                ['include', 'platform/graphics/harfbuzz/HarfBuzzShaper\\.(cpp|h)$'],
+                ['include', 'platform/graphics/harfbuzz/HarfBuzzShaperBase\\.(cpp|h)$'],
+                ['include', 'platform/graphics/harfbuzz/HarfBuzzFaceSkia\\.cpp$'],
+                ['exclude', 'platform/graphics/chromium/FontChromiumWin\\.cpp$'],
+                ['exclude', '/(Uniscribe)[^/]*\\.(cpp|h)$'],
+              ],
+              'dependencies': [
+                '<(DEPTH)/third_party/harfbuzz-ng/harfbuzz.gyp:harfbuzz-ng',
+              ],
+            }],
           ],
         },{ # OS!="win"
           'sources/': [
