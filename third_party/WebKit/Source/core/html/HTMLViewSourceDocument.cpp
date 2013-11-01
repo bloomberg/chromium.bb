@@ -35,6 +35,7 @@
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLHtmlElement.h"
+#include "core/html/HTMLSpanElement.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/html/HTMLTableRowElement.h"
@@ -181,7 +182,7 @@ PassRefPtr<Element> HTMLViewSourceDocument::addSpanWithClassName(const AtomicStr
         return m_current;
     }
 
-    RefPtr<HTMLElement> span = HTMLElement::create(spanTag, *this);
+    RefPtr<HTMLSpanElement> span = HTMLSpanElement::create(*this);
     span->setAttribute(classAttr, className);
     m_current->parserAppendChild(span);
     return span.release();

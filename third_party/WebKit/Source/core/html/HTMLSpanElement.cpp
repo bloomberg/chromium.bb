@@ -39,6 +39,11 @@ HTMLSpanElement::HTMLSpanElement(const QualifiedName& tagName, Document& documen
     ScriptWrappable::init(this);
 }
 
+PassRefPtr<HTMLSpanElement> HTMLSpanElement::create(Document& document)
+{
+    return adoptRef(new HTMLSpanElement(spanTag, document));
+}
+
 PassRefPtr<HTMLSpanElement> HTMLSpanElement::create(const QualifiedName& tagName, Document& document)
 {
     return adoptRef(new HTMLSpanElement(tagName, document));
