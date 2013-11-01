@@ -12,6 +12,7 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/views/corewm/window_animations.h"
 #include "ui/views/widget/widget.h"
 
@@ -29,6 +30,7 @@ class WindowSelectorAnimationSettings
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     SetTransitionDuration(base::TimeDelta::FromMilliseconds(
         ScopedTransformOverviewWindow::kTransitionMilliseconds));
+    SetTweenType(gfx::Tween::EASE_OUT);
   }
 
   virtual ~WindowSelectorAnimationSettings() {
@@ -82,7 +84,7 @@ aura::Window* GetModalTransientParent(aura::Window* window) {
 
 }  // namespace
 
-const int ScopedTransformOverviewWindow::kTransitionMilliseconds = 100;
+const int ScopedTransformOverviewWindow::kTransitionMilliseconds = 200;
 
 ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(
         aura::Window* window)
