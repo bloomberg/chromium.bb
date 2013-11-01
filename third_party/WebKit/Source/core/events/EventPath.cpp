@@ -128,53 +128,56 @@ void EventPath::resetWith(Node* node)
     calculateAdjustedEventPathForEachNode();
 }
 
+void EventPath::addEventContext(Node* node, bool isMouseOrFocusEvent, bool isTouchEvent)
+{
+    if (isMouseOrFocusEvent)
+        m_eventContexts.append(adoptPtr(new MouseOrFocusEventContext(node, eventTargetRespectingTargetRules(node), 0)));
+    else if (isTouchEvent)
+        m_eventContexts.append(adoptPtr(new TouchEventContext(node, eventTargetRespectingTargetRules(node), 0)));
+    else
+        m_eventContexts.append(adoptPtr(new EventContext(node, eventTargetRespectingTargetRules(node), 0)));
+}
+
 void EventPath::calculatePath()
 {
     ASSERT(m_node);
     ASSERT(m_eventContexts.isEmpty());
     m_node->document().updateDistributionForNodeIfNeeded(const_cast<Node*>(m_node));
 
-    bool inDocument = m_node->inDocument();
     bool isMouseOrFocusEvent = m_event && (m_event->isMouseEvent() || m_event->isFocusEvent());
     bool isTouchEvent = m_event && m_event->isTouchEvent();
 
     Node* current = m_node;
-    Node* distributedNode = m_node;
-
+    addEventContext(current, isMouseOrFocusEvent, isTouchEvent);
+    if (!m_node->inDocument())
+        return;
     while (current) {
-        if (isMouseOrFocusEvent)
-            m_eventContexts.append(adoptPtr(new MouseOrFocusEventContext(current, eventTargetRespectingTargetRules(current), 0)));
-        else if (isTouchEvent)
-            m_eventContexts.append(adoptPtr(new TouchEventContext(current, eventTargetRespectingTargetRules(current), 0)));
-        else
-            m_eventContexts.append(adoptPtr(new EventContext(current, eventTargetRespectingTargetRules(current), 0)));
-
-        if (!inDocument)
-            break;
         if (current->isShadowRoot() && m_event && determineDispatchBehavior(m_event, toShadowRoot(current), m_node) == StayInsideShadowDOM)
             break;
-
-        if (ElementShadow* shadow = shadowOfParent(current)) {
-            if (InsertionPoint* insertionPoint = shadow->findInsertionPointFor(distributedNode)) {
-                current = insertionPoint;
-                continue;
+        Vector<InsertionPoint*, 8> insertionPoints;
+        collectDestinationInsertionPoints(*current, insertionPoints);
+        if (!insertionPoints.isEmpty()) {
+            for (size_t i = 0; i < insertionPoints.size(); ++i) {
+                InsertionPoint* insertionPoint = insertionPoints[i];
+                if (insertionPoint->isShadowInsertionPoint()) {
+                    ShadowRoot* containingShadowRoot = insertionPoint->containingShadowRoot();
+                    ASSERT(containingShadowRoot);
+                    if (!containingShadowRoot->isOldest())
+                        addEventContext(containingShadowRoot->olderShadowRoot(), isMouseOrFocusEvent, isTouchEvent);
+                }
+                addEventContext(insertionPoint, isMouseOrFocusEvent, isTouchEvent);
             }
+            current = insertionPoints.last();
+            continue;
         }
-        if (!current->isShadowRoot()) {
+        if (current->isShadowRoot()) {
+            current = current->shadowHost();
+            addEventContext(current, isMouseOrFocusEvent, isTouchEvent);
+        } else {
             current = current->parentNode();
-            if (!(current && current->isShadowRoot() && toShadowRoot(current)->shadowInsertionPointOfYoungerShadowRoot()))
-                distributedNode = current;
-            continue;
+            if (current)
+                addEventContext(current, isMouseOrFocusEvent, isTouchEvent);
         }
-
-        const ShadowRoot* shadowRoot = toShadowRoot(current);
-        if (HTMLShadowElement* shadowInsertionPoint = shadowRoot->shadowInsertionPointOfYoungerShadowRoot()) {
-            current = shadowInsertionPoint;
-            continue;
-        }
-
-        current = shadowRoot->host();
-        distributedNode = current;
     }
 }
 
@@ -200,20 +203,28 @@ void EventPath::calculateAdjustedEventPathForEachNode()
     }
 }
 
-static inline bool movedFromParentToChild(const TreeScope* lastTreeScope, const TreeScope* currentTreeScope)
+#ifndef NDEBUG
+static inline bool movedFromChildToParent(const TreeScope& lastTreeScope, const TreeScope& currentTreeScope)
 {
-    return currentTreeScope->parentTreeScope() == lastTreeScope;
+    return lastTreeScope.parentTreeScope() == &currentTreeScope;
 }
 
-static inline bool movedFromChildToParent(const TreeScope* lastTreeScope, const TreeScope* currentTreeScope)
+static inline bool movedFromOlderToYounger(const TreeScope& lastTreeScope, const TreeScope& currentTreeScope)
 {
-    return lastTreeScope->parentTreeScope() == currentTreeScope;
+    Node* rootNode = lastTreeScope.rootNode();
+    return rootNode->isShadowRoot() && toShadowRoot(rootNode)->youngerShadowRoot() == currentTreeScope.rootNode();
+}
+#endif
+
+static inline bool movedFromParentToChild(const TreeScope& lastTreeScope, const TreeScope& currentTreeScope)
+{
+    return currentTreeScope.parentTreeScope() == &lastTreeScope;
 }
 
-static inline bool movedFromOlderToYounger(const TreeScope* lastTreeScope, const TreeScope* currentTreeScope)
+static inline bool movedFromYoungerToOlder(const TreeScope& lastTreeScope, const TreeScope& currentTreeScope)
 {
-    Node* rootNode = lastTreeScope->rootNode();
-    return rootNode->isShadowRoot() && toShadowRoot(rootNode)->youngerShadowRoot() == currentTreeScope->rootNode();
+    Node* rootNode = lastTreeScope.rootNode();
+    return rootNode->isShadowRoot() && toShadowRoot(rootNode)->olderShadowRoot() == currentTreeScope.rootNode();
 }
 
 void EventPath::calculateAdjustedTargets()
@@ -221,32 +232,25 @@ void EventPath::calculateAdjustedTargets()
     Vector<Node*, 32> targetStack;
     const TreeScope* lastTreeScope = 0;
     bool isSVGElement = at(0).node()->isSVGElement();
+
     for (size_t i = 0; i < size(); ++i) {
-        Node& current = *at(i).node();
-        TreeScope* currentTreeScope = &current.treeScope();
+        Node* current = at(i).node();
+        const TreeScope& currentTreeScope = current->treeScope();
         if (targetStack.isEmpty()) {
-            targetStack.append(&current);
-        } else if (lastTreeScope != currentTreeScope && !isSVGElement) {
-            if (movedFromParentToChild(lastTreeScope, currentTreeScope)) {
+            targetStack.append(current);
+        } else if (*lastTreeScope != currentTreeScope && !isSVGElement) {
+            if (movedFromParentToChild(*lastTreeScope, currentTreeScope) || movedFromYoungerToOlder(*lastTreeScope, currentTreeScope)) {
                 targetStack.append(targetStack.last());
-            } else if (movedFromChildToParent(lastTreeScope, currentTreeScope)) {
-                ASSERT(!targetStack.isEmpty());
-                targetStack.removeLast();
-                if (targetStack.isEmpty())
-                    targetStack.append(&current);
-            } else if (movedFromOlderToYounger(lastTreeScope, currentTreeScope)) {
-                ASSERT(!targetStack.isEmpty());
-                targetStack.removeLast();
-                if (targetStack.isEmpty())
-                    targetStack.append(&current);
-                else
-                    targetStack.append(targetStack.last());
             } else {
-                ASSERT_NOT_REACHED();
+                ASSERT(movedFromChildToParent(*lastTreeScope, currentTreeScope) || movedFromOlderToYounger(*lastTreeScope, currentTreeScope));
+                ASSERT(!targetStack.isEmpty());
+                targetStack.removeLast();
+                if (targetStack.isEmpty())
+                    targetStack.append(current);
             }
         }
         at(i).setTarget(eventTargetRespectingTargetRules(targetStack.last()));
-        lastTreeScope = currentTreeScope;
+        lastTreeScope = &currentTreeScope;
     }
 }
 

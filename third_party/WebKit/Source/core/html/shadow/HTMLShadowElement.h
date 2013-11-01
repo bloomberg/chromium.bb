@@ -57,11 +57,6 @@ inline bool isHTMLShadowElement(const Node* node)
 
 DEFINE_NODE_TYPE_CASTS(HTMLShadowElement, hasTagName(HTMLNames::shadowTag));
 
-inline bool isActiveShadowInsertionPoint(const Node* node)
-{
-    return isHTMLShadowElement(node) && toHTMLShadowElement(node)->isActive();
-}
-
 } // namespace WebCore
 
 #endif // HTMLShadowElement_h

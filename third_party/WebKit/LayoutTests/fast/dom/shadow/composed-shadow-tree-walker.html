@@ -100,7 +100,8 @@ testComposedShadowTree(
                                createDOM('content'),
                                createDOM('div', {'id': 'c'})),
               createShadowRoot(createDOM('div', {'id': 'd'}),
-                               createDOM('shadow'),
+                               createDOM('shadow', {},
+                                         createDOM('content')),
                                createDOM('div', {'id': 'e'})),
               createDOM('div', {'id': 'f'})));
 

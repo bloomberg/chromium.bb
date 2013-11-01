@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <div>A shadow element with a content element</div>
+  <div>before1 before0 host-child after0 after1</div>
+
+  <div>A shadow element without a content element</div>
+  <div><div>before1 before0 after0 after1</div></div>
+
+  <div>A shadow element with a parameter</div>
+  <div>before1 before0 shadow-child after0 after1</div>
+
+  <div>A shadow element with a content element and a parameter</div>
+  <div>before1 before0 host-child shadow-child after0 after1</div>
+
+  <div>A shadow element as a descendant of a content element</div>
+  <div>before1 host-child after1</div>
+
+  <div>A shadow element as a descendant of a shadow element</div>
+  <div>before1 before0 <shadow>inactive-shadow-child</shadow> after0 after1</div>
+
+  <div>A complex case</div>
+  <div>before2 before1 before0 shadow-1-child-1 shadow-2-child-1 host-child shadow-2-child-2 shadow-1-child-2 after0 after1 after2</div>
+</body>
+</html>

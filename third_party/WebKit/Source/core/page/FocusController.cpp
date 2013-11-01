@@ -100,9 +100,10 @@ FocusNavigationScope FocusNavigationScope::focusNavigationScopeOf(Node* node)
 
 FocusNavigationScope FocusNavigationScope::ownedByNonFocusableFocusScopeOwner(Node* node)
 {
+    ASSERT(node);
     if (isShadowHost(node))
         return FocusNavigationScope::ownedByShadowHost(node);
-    ASSERT(isActiveShadowInsertionPoint(node));
+    ASSERT(isActiveShadowInsertionPoint(*node));
     return FocusNavigationScope::ownedByShadowInsertionPoint(toHTMLShadowElement(node));
 }
 
@@ -194,7 +195,7 @@ static inline bool isKeyboardFocusableShadowHost(Node* node)
 static inline bool isNonFocusableFocusScopeOwner(Node* node)
 {
     ASSERT(node);
-    return isNonKeyboardFocusableShadowHost(node) || isActiveShadowInsertionPoint(node);
+    return isNonKeyboardFocusableShadowHost(node) || isActiveShadowInsertionPoint(*node);
 }
 
 static inline int adjustedTabIndex(Node* node)

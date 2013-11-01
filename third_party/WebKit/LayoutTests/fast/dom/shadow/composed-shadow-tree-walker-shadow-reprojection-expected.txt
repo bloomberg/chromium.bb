@@ -105,8 +105,9 @@ Composed Shadow Tree:
 	#i
 		#k
 		#c
-		#b
-		#g
+		#e
+		#f
+			#g
 		#h
 		#m
 
@@ -115,7 +116,8 @@ Traverse in forward.
 #i
 #k
 #c
-#b
+#e
+#f
 #g
 #h
 #m
@@ -123,7 +125,8 @@ Traverse in backward.
 #m
 #h
 #g
-#b
+#f
+#e
 #c
 #k
 #i
@@ -142,7 +145,6 @@ Composed Shadow Tree:
 		#l
 		#m
 		#n
-		#p
 		#q
 		#r
 		#w
@@ -159,7 +161,6 @@ Traverse in forward.
 #l
 #m
 #n
-#p
 #q
 #r
 #w
@@ -167,7 +168,6 @@ Traverse in backward.
 #w
 #r
 #q
-#p
 #n
 #m
 #l

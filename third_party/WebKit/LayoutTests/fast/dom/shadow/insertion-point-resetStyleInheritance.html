@@ -49,7 +49,7 @@ function testShadowResetStyleInheritanceWithAttribute() {
     var div = document.getElementById('reset-style-inheritance');
 
     var shadowRoot = div.createShadowRoot();
-    shadowRoot.innerHTML = '<shadow id="content" reset-style-inheritance></content>';
+    shadowRoot.innerHTML = '<shadow id="content" reset-style-inheritance><content></content></shadow>';
 
     shouldBe('window.getComputedStyle(document.getElementById("reset-style-inheritance").firstChild).color', '"rgb(0, 0, 0)"');
     shouldBe('window.getComputedStyle(document.getElementById("reset-style-inheritance").firstChild).backgroundColor', '"rgba(0, 0, 0, 0)"');
@@ -94,10 +94,10 @@ function testResetStyleInheritanceWithMultipleShadowRoots() {
     oldestShadowRoot.innerHTML = '<content id="content"></content>';
 
     var youngerShadowRoot = div.createShadowRoot();
-    youngerShadowRoot.innerHTML = '<shadow id="shadow"></shadow>';
+    youngerShadowRoot.innerHTML = '<shadow id="shadow"><content></content></shadow>';
 
     var youngestShadowRoot = div.createShadowRoot();
-    youngestShadowRoot.innerHTML = '<shadow id="shadow"></shadow>';
+    youngestShadowRoot.innerHTML = '<shadow id="shadow"><content></content></shadow>';
 
     oldestShadowRoot.getElementById('content').resetStyleInheritance = false;
     youngerShadowRoot.getElementById('shadow').resetStyleInheritance = false;
@@ -113,7 +113,7 @@ function testResetStyleInheritanceWithMultipleInsertionPoints() {
     oldestShadowRoot.innerHTML = '<content id="content"></content>';
 
     var youngestShadowRoot = div.createShadowRoot();
-    youngestShadowRoot.innerHTML = '<content select=":first-child" id="content"></content><shadow id="shadow"></shadow>';
+    youngestShadowRoot.innerHTML = '<content select=":first-child" id="content"></content><shadow id="shadow"><content></content></shadow>';
 
     youngestShadowRoot.getElementById('content').resetStyleInheritance = false;
     youngestShadowRoot.getElementById('shadow').resetStyleInheritance = true;

@@ -39,7 +39,8 @@ void ContentDistribution::swap(ContentDistribution& other)
 
 void ContentDistribution::append(PassRefPtr<Node> node)
 {
-    ASSERT(!isActiveInsertionPoint(node.get()));
+    ASSERT(node);
+    ASSERT(!isActiveInsertionPoint(*node));
     size_t size = m_nodes.size();
     m_indices.set(node.get(), size);
     m_nodes.append(node);

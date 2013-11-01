@@ -116,7 +116,7 @@ inline int DOMSiblingTraversalStrategy::countElementsOfTypeAfter(Element* elemen
 }
 
 struct ShadowDOMSiblingTraversalStrategy {
-    ShadowDOMSiblingTraversalStrategy(const Vector<Node*>& siblings, int nth)
+    ShadowDOMSiblingTraversalStrategy(const Vector<Node*, 32>& siblings, int nth)
         : m_siblings(siblings)
         , m_nth(nth)
     {
@@ -133,7 +133,7 @@ struct ShadowDOMSiblingTraversalStrategy {
     int countElementsOfTypeAfter(Element*, const QualifiedName&) const;
 
 private:
-    const Vector<Node*>& m_siblings;
+    const Vector<Node*, 32>& m_siblings;
     int m_nth;
 };
 

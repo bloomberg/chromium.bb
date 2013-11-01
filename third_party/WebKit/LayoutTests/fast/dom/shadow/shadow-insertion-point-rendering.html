@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="resources/shadow-dom.js"></script>
+</head>
+<body>
+<script>
+function description(text) {
+    return createDOM("h1", {},
+                     document.createTextNode(text));
+}
+
+function createDivWithText(text) {
+    return createDOM("div", {},
+                     document.createTextNode(text));
+}
+
+var testcases = [
+    description('A shadow element with a content element'),
+    createDOM('div', {},
+              createDivWithText("host-child"),
+              createShadowRoot(
+                  createDivWithText("before"),
+                  createDOM("shadow", {},
+                            createDOM("content", {})),
+                  createDivWithText("after"))),
+
+    description('A shadow element without a content element'),
+    createDOM('div', {},
+              createDivWithText("host-child"),
+              createShadowRoot(
+                  createDivWithText("before"),
+                  createDOM("shadow", {}),
+                  createDivWithText("after"))),
+
+    description('A shadow element with a parameter'),
+    createDOM('div', {},
+              createDivWithText("host-child"),
+              createShadowRoot(
+                  createDivWithText("before"),
+                  createDOM("shadow", {},
+                            createDivWithText("shadow-child")),
+                  createDivWithText("after"))),
+
+    description('An inactive shadow element'),
+    createDOM('div', {},
+              createDivWithText("host-child"),
+              createShadowRoot(
+                  createDivWithText("before"),
+                  createDOM("shadow", {},
+                            createDOM("content", {})),
+                  createDivWithText("middle"),
+                  createDOM("shadow", {},
+                            createDivWithText("shadow-child")),
+                  createDivWithText("after"))),
+
+    description('A shadow element comes before a content element'),
+    createDOM('div', {},
+              createDivWithText("host-child"),
+              createShadowRoot(
+                  createDivWithText("before"),
+                  createDOM("shadow", {},
+                            createDOM("content", {})),
+                  createDivWithText("middle"),
+                  createDOM("content", {}),
+                  createDivWithText("after"))),
+
+    description('A shadow element comes after a content element'),
+    createDOM('div', {},
+              createDivWithText("host-child"),
+              createShadowRoot(
+                  createDivWithText("before"),
+                  createDOM("content", {}),
+                  createDivWithText("middle"),
+                  createDOM("shadow", {},
+                            createDOM("content", {})),
+                  createDivWithText("after"))),
+];
+
+testcases.forEach(function(element) {
+    document.body.appendChild(element);
+});
+</script>
+</html>

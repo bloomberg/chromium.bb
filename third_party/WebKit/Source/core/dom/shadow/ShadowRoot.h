@@ -86,6 +86,8 @@ public:
     bool containsInsertionPoints() const { return containsShadowElements() || containsContentElements(); }
     bool containsShadowRoots() const;
 
+    unsigned descendantShadowElementCount() const;
+
     // For Internals, don't use this.
     unsigned childShadowRootCount() const;
 

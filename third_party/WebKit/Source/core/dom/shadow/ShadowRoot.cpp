@@ -337,6 +337,11 @@ bool ShadowRoot::containsShadowRoots() const
     return m_shadowRootRareData ? m_shadowRootRareData->containsShadowRoots() : 0;
 }
 
+unsigned ShadowRoot::descendantShadowElementCount() const
+{
+    return m_shadowRootRareData ? m_shadowRootRareData->descendantShadowElementCount() : 0;
+}
+
 HTMLShadowElement* ShadowRoot::shadowInsertionPointOfYoungerShadowRoot() const
 {
     return m_shadowRootRareData ? m_shadowRootRareData->shadowInsertionPointOfYoungerShadowRoot() : 0;

@@ -27,6 +27,7 @@
 #ifndef ElementShadow_h
 #define ElementShadow_h
 
+#include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/SelectRuleFeatureSet.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "wtf/DoublyLinkedList.h"
@@ -37,8 +38,6 @@
 #include "wtf/Vector.h"
 
 namespace WebCore {
-
-class InsertionPoint;
 
 class ElementShadow {
     WTF_MAKE_NONCOPYABLE(ElementShadow); WTF_MAKE_FAST_ALLOCATED;
@@ -69,7 +68,8 @@ public:
     void distributeIfNeeded();
     void setNeedsDistributionRecalc();
 
-    InsertionPoint* findInsertionPointFor(const Node*) const;
+    const InsertionPoint* finalDestinationInsertionPointFor(const Node*) const;
+    const DestinationInsertionPoints* destinationInsertionPointsFor(const Node*) const;
 
     void didDistributeNode(const Node*, InsertionPoint*);
 
@@ -81,13 +81,16 @@ private:
 
     void distribute();
     void clearDistribution();
+
     void collectSelectFeatureSetFrom(ShadowRoot*);
     void distributeNodeChildrenTo(InsertionPoint*, ContainerNode*);
 
     bool needsSelectFeatureSet() const { return m_needsSelectFeatureSet; }
     void setNeedsSelectFeatureSet() { m_needsSelectFeatureSet = true; }
 
-    HashMap<const Node*, RefPtr<InsertionPoint> > m_nodeToInsertionPoint;
+    typedef HashMap<const Node*, DestinationInsertionPoints> NodeToDestinationInsertionPoints;
+    NodeToDestinationInsertionPoints m_nodeToInsertionPoints;
+
     SelectRuleFeatureSet m_selectFeatures;
     DoublyLinkedList<ShadowRoot> m_shadowRoots;
     bool m_needsDistributionRecalc;
@@ -122,16 +125,6 @@ inline void ElementShadow::distributeIfNeeded()
     if (m_needsDistributionRecalc)
         distribute();
     m_needsDistributionRecalc = false;
-}
-
-inline ElementShadow* shadowOfParent(const Node* node)
-{
-    if (!node)
-        return 0;
-    if (Node* parent = node->parentNode())
-        if (parent->isElementNode())
-            return toElement(parent)->shadow();
-    return 0;
 }
 
 } // namespace

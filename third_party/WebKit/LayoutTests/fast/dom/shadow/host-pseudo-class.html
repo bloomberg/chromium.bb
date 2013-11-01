@@ -187,7 +187,8 @@ sandbox.appendChild(
                 createDOM('content', {}))),
         createShadowRoot(
             createDOM('span', {'id': 'spanC'},
-                createDOM('shadow', {}))),
+                createDOM('shadow', {},
+                         createDOM('content')))),
         createDOM('div', {'id': 'host'},
             createShadowRoot(
                 createDOM('style', {},

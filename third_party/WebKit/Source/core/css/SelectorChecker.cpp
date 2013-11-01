@@ -297,8 +297,9 @@ SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& con
 template<typename SiblingTraversalStrategy>
 SelectorChecker::Match SelectorChecker::matchForShadowDistributed(const Element* element, const SiblingTraversalStrategy& siblingTraversalStrategy, PseudoId& dynamicPseudo, SelectorCheckingContext& nextContext) const
 {
+    ASSERT(element);
     Vector<InsertionPoint*, 8> insertionPoints;
-    collectInsertionPointsWhereNodeIsDistributed(element, insertionPoints);
+    collectDestinationInsertionPoints(*element, insertionPoints);
     for (size_t i = 0; i < insertionPoints.size(); ++i) {
         nextContext.element = insertionPoints[i];
         nextContext.isSubSelector = false;

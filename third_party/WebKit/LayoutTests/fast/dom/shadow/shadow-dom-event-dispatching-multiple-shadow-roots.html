@@ -19,11 +19,12 @@
                                                  createDOM('content', {'id': 'C'}),
                                                  createDOM('div', {'id': 'D'})),
                                 createShadowRoot({'id': 'younger-shadow-root'},
-                                                 createDOM('shadow', {'id': 'E'}),
+                                                 createDOM('shadow', {'id': 'E'},
+                                                            createDOM('content', {'id': 'EC'})),
                                                  createDOM('div', {'id': 'F'})),
                                 createDOM('div', {'id': 'B'}))));
 
-        addEventListeners(['top', 'A', 'B', 'A/', 'A/C', 'A/D', 'A//', 'A//E', 'A//F']);
+        addEventListeners(['top', 'A', 'B', 'A/', 'A/C', 'A/D', 'A//', 'A//E', 'A//EC', 'A//F']);
         showSandboxTree();
 
         moveMouse('B', 'A');

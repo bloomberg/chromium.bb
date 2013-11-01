@@ -962,7 +962,7 @@ static bool checkNeedsStyleInvalidationForIdChange(const AtomicString& oldId, co
 
 void Element::attributeChanged(const QualifiedName& name, const AtomicString& newValue, AttributeModificationReason reason)
 {
-    if (ElementShadow* parentElementShadow = shadowOfParentForDistribution(this)) {
+    if (ElementShadow* parentElementShadow = shadowWhereNodeCanBeDistributed(*this)) {
         if (shouldInvalidateDistributionWhenAttributeChanged(parentElementShadow, name, newValue))
             parentElementShadow->setNeedsDistributionRecalc();
     }
@@ -1518,7 +1518,7 @@ bool Element::recalcStyle(StyleRecalcChange change)
     }
 
     // Active InsertionPoints have no renderers so they never need to go through a recalc.
-    if ((change >= Inherit || needsStyleRecalc()) && parentRenderStyle() && !isActiveInsertionPoint(this))
+    if ((change >= Inherit || needsStyleRecalc()) && parentRenderStyle() && !isActiveInsertionPoint(*this))
         change = recalcOwnStyle(change);
 
     // If we reattached we don't need to recalc the style of our descendants anymore.
@@ -1680,7 +1680,7 @@ ElementShadow& Element::ensureShadow()
 void Element::didAffectSelector(AffectedSelectorMask mask)
 {
     setNeedsStyleRecalc();
-    if (ElementShadow* elementShadow = shadowOfParentForDistribution(this))
+    if (ElementShadow* elementShadow = shadowWhereNodeCanBeDistributed(*this))
         elementShadow->didAffectSelector(mask);
 }
 

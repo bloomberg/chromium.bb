@@ -29,7 +29,7 @@ ul {
 //   <li>B
 //      #document-fragment
 //        <li>X</li>
-//        <ul><shadow></shadow></ul>
+//        <ul><shadow><content></content></shadow></ul>
 //        <li>Y</li>
 //   </li>
 //   <li>C</li>
@@ -37,7 +37,7 @@ ul {
 var host = document.getElementById("host");
 var shadow = host.createShadowRoot();
 shadow.applyAuthorStyles = true;
-shadow.innerHTML = "<li>X</li><ul><shadow></shadow></ul><li>Y</li>";
+shadow.innerHTML = "<li>X</li><ul><shadow><content></content></shadow></ul><li>Y</li>";
 </script>
 </body>
 </html>

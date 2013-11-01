@@ -2511,7 +2511,7 @@ PassRefPtr<NodeList> Node::getDestinationInsertionPoints()
 {
     document().updateDistributionForNodeIfNeeded(this);
     Vector<InsertionPoint*, 8> insertionPoints;
-    collectInsertionPointsWhereNodeIsDistributed(this, insertionPoints);
+    collectDestinationInsertionPoints(*this, insertionPoints);
     Vector<RefPtr<Node> > filteredInsertionPoints;
     for (size_t i = 0; i < insertionPoints.size(); ++i) {
         InsertionPoint* insertionPoint = insertionPoints[i];

@@ -40,28 +40,23 @@ public:
     ParentDetails()
         : m_insertionPoint(0)
         , m_resetStyleInheritance(false)
-        , m_outOfComposition(false)
     { }
 
-    InsertionPoint* insertionPoint() const { return m_insertionPoint; }
+    const InsertionPoint* insertionPoint() const { return m_insertionPoint; }
     bool resetStyleInheritance() const { return m_resetStyleInheritance; }
-    bool outOfComposition() const { return m_outOfComposition; }
 
-    void didTraverseInsertionPoint(InsertionPoint*);
+    void didTraverseInsertionPoint(const InsertionPoint*);
     void didTraverseShadowRoot(const ShadowRoot*);
-    void childWasOutOfComposition() { m_outOfComposition = true; }
 
     bool operator==(const ParentDetails& other)
     {
         return m_insertionPoint == other.m_insertionPoint
-            && m_resetStyleInheritance == other.m_resetStyleInheritance
-            && m_outOfComposition == other.m_outOfComposition;
+            && m_resetStyleInheritance == other.m_resetStyleInheritance;
     }
 
 private:
-    InsertionPoint* m_insertionPoint;
+    const InsertionPoint* m_insertionPoint;
     bool m_resetStyleInheritance;
-    bool m_outOfComposition;
 };
 
 ContainerNode* parent(const Node*);

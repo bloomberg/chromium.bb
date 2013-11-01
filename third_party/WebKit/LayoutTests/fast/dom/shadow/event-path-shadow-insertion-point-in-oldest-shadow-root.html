@@ -17,13 +17,14 @@ sandbox.appendChild(
                         createDOM('div', {'id': 'C'})),
               createShadowRoot({'id': 'D'},
                                createDOM('div', {'id': 'E'},
-                                         createDOM('content', {'id': 'F'}))),
+                                         createDOM('shadow', {'id': 'X'},
+                                                   createDOM('content', {'id': 'F'})))),
               createShadowRoot({'id': 'G'},
                                createDOM('div', {'id': 'H'},
                                          createDOM('shadow', {'id': 'I'},
                                                    createDOM('content', {'id': 'J'}))))));
 
-['A', 'B', 'C', 'A/', 'A/E', 'A/F', 'A//', 'A//H', 'A//I', 'A//J'].forEach(function(path) {
+['A', 'B', 'C', 'A/', 'A/E', 'A/F', 'A/X', 'A//', 'A//H', 'A//I', 'A//J'].forEach(function(path) {
     getNodeInTreeOfTrees(path).addEventListener('click', function(event) {
         debug('\nevent.path on node ' + dumpNode(event.currentTarget));
         debug(dumpNodeList(event.path));

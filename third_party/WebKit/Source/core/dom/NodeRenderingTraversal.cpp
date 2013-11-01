@@ -34,7 +34,7 @@ namespace WebCore {
 
 namespace NodeRenderingTraversal {
 
-void ParentDetails::didTraverseInsertionPoint(InsertionPoint* insertionPoint)
+void ParentDetails::didTraverseInsertionPoint(const InsertionPoint* insertionPoint)
 {
     if (!m_insertionPoint) {
         m_insertionPoint = insertionPoint;
@@ -49,10 +49,12 @@ void ParentDetails::didTraverseShadowRoot(const ShadowRoot* root)
 
 ContainerNode* parent(const Node* node, ParentDetails* details)
 {
+    ASSERT(node);
+    if (isActiveInsertionPoint(*node))
+        return 0;
     // FIXME: Once everything lazy attaches we should assert that we don't need a distribution recalc here.
     ComposedTreeWalker walker(node, ComposedTreeWalker::CanStartFromShadowBoundary);
-    ContainerNode* found = toContainerNode(walker.traverseParent(walker.get(), details));
-    return details->outOfComposition() ? 0 : found;
+    return toContainerNode(walker.traverseParent(walker.get(), details));
 }
 
 Node* nextSibling(const Node* node)

@@ -45,7 +45,7 @@ public:
 
     virtual bool canAffectSelector() const OVERRIDE { return true; }
 
-    bool canSelectNode(const Vector<Node*>& siblings, int nth) const;
+    bool canSelectNode(const Vector<Node*, 32>& siblings, int nth) const;
 
     const CSSSelectorList& selectorList() const;
     bool isSelectValid() const;
@@ -58,7 +58,7 @@ private:
     bool validateSelect() const;
     void parseSelect();
 
-    bool matchSelector(const Vector<Node*>& siblings, int nth) const;
+    bool matchSelector(const Vector<Node*, 32>& siblings, int nth) const;
 
     bool m_shouldParseSelect;
     bool m_isValidSelector;
@@ -80,7 +80,7 @@ inline bool HTMLContentElement::isSelectValid() const
     return m_isValidSelector;
 }
 
-inline bool HTMLContentElement::canSelectNode(const Vector<Node*>& siblings, int nth) const
+inline bool HTMLContentElement::canSelectNode(const Vector<Node*, 32>& siblings, int nth) const
 {
     if (m_select.isNull() || m_select.isEmpty())
         return true;

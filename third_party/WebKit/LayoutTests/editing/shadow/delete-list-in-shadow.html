@@ -23,7 +23,9 @@ var shadowRoot = host.createShadowRoot();
 var li = document.createElement('li');
 li.innerHTML = 'hogehoge';
 shadowRoot.appendChild(li);
-shadowRoot.appendChild(document.createElement('shadow'));
+var shadow = document.createElement('shadow');
+shadow.appendChild(document.createElement('content'));
+shadowRoot.appendChild(shadow);
 
 if (window.eventSender) {
     eventSender.mouseMoveTo(list1.offsetLeft + 20, list1.offsetTop + list1.offsetHeight / 2);

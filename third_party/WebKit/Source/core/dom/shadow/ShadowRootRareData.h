@@ -58,6 +58,8 @@ public:
     bool containsContentElements() const { return m_descendantContentElementCount; }
     bool containsShadowRoots() const { return m_childShadowRootCount; }
 
+    unsigned descendantShadowElementCount() const { return m_descendantShadowElementCount; }
+
     void didAddChildShadowRoot() { ++m_childShadowRootCount; }
     void didRemoveChildShadowRoot() { ASSERT(m_childShadowRootCount > 0); --m_childShadowRootCount; }
 

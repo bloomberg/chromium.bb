@@ -44,12 +44,20 @@ prepareTree(
               createShadowRoot(
                   createDOM('shadow', {'id': 'shadow'},
                             createDOM('div', {'id': 'shadow-child'})))));
-assertDistributedNodes('host/shadow', []);
+assertDistributedNodes('host/shadow', ['host/shadow-child']);
 
 prepareTree(
     createDOM('div', {'id': 'host'},
               createShadowRoot(
                   createDOM('shadow', {'id': 'shadow'})),
+              createDOM('div', {'id': 'host-child'})));
+assertDistributedNodes('host/shadow', []);
+
+prepareTree(
+    createDOM('div', {'id': 'host'},
+              createShadowRoot(
+                  createDOM('shadow', {'id': 'shadow'},
+                            createDOM('content'))),
               createDOM('div', {'id': 'host-child'})));
 assertDistributedNodes('host/shadow', ['host-child']);
 
@@ -79,6 +87,18 @@ prepareTree(
               createShadowRoot(
                   createDOM('shadow', {'id': 'shadow'})),
               createDOM('div', {'id': 'host-child'})));
+assertDistributedNodes('host//shadow', ['host/older-child-1', 'host/older-child-2']);
+
+prepareTree(
+    createDOM('div', {'id': 'host'},
+              createShadowRoot(
+                  createDOM('div', {'id': 'older-child-1'}),
+                  createDOM('content', {'id': 'content'}),
+                  createDOM('div', {'id': 'older-child-2'})),
+              createShadowRoot(
+                  createDOM('shadow', {'id': 'shadow'},
+                            createDOM('content'))),
+              createDOM('div', {'id': 'host-child'})));
 assertDistributedNodes('host//shadow', ['host/older-child-1', 'host-child', 'host/older-child-2']);
 
 prepareTree(
@@ -99,7 +119,8 @@ prepareTree(
                             createDOM('div', {'id': 'older-content-child'})),
                   createDOM('div', {'id': 'older-child-2'})),
               createShadowRoot(
-                  createDOM('shadow', {'id': 'shadow'}))));
+                  createDOM('shadow', {'id': 'shadow'},
+                            createDOM('content')))));
 assertDistributedNodes('host//shadow', ['host/older-child-1', 'host/older-content-child', 'host/older-child-2']);
 
 prepareTree(
@@ -110,10 +131,12 @@ prepareTree(
                   createDOM('div', {'id': 'oldest-child-2'})),
               createShadowRoot(
                   createDOM('div', {'id': 'older-child-1'}),
-                  createDOM('shadow', {'id': 'older-shadow'}),
+                  createDOM('shadow', {'id': 'older-shadow'},
+                            createDOM('content')),
                   createDOM('div', {'id': 'older-child-2'})),
               createShadowRoot(
-                  createDOM('shadow', {'id': 'shadow'})),
+                  createDOM('shadow', {'id': 'shadow'},
+                            createDOM('content'))),
               createDOM('div', {'id': 'host-child'})));
 assertDistributedNodes('host//older-shadow', ['host/oldest-child-1', 'host-child', 'host/oldest-child-2']);
 assertDistributedNodes('host///shadow', ['host//older-child-1', 'host/oldest-child-1', 'host-child', 'host/oldest-child-2', 'host//older-child-2']);

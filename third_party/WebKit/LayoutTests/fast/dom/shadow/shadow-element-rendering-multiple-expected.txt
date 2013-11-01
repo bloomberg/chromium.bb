@@ -1,15 +1,3 @@
-renderingDoubleShadowRoot
-PASS
-renderingDoubleShadowRootWithOneShadowElement
-PASS
-renderingTripleShadowRoot
-PASS
-renderingTwoShadowRoots
-PASS
-testWithDoubleShadowRootWithContent1
-PASS
-testWithDoubleShadowRootWithContent2
-PASS
 renderingDoubleShadowRootDynamicallyAdded1
 PASS
 renderingDoubleShadowRootDynamicallyAdded2

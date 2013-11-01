@@ -33,7 +33,8 @@ onload = function() {
         createDOM('div', {},
             createDOM('style', {'scoped': 'scoped'},
                 document.createTextNode('@host { div { color: red; } }')),
-            createDOM('shadow', {}),
+            createDOM('shadow', {},
+                  createDOM('content', {})),
             createDOM('div', {},
                 createDOM('style', {'scoped': 'scoped'},
                     document.createTextNode('@host { div { color: blue; } }')))));
@@ -53,4 +54,3 @@ onload = function() {
 </script>
 </body>
 </html>
-

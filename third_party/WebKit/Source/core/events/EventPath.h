@@ -65,6 +65,8 @@ private:
 
     EventContext& at(size_t index) { return *m_eventContexts[index]; }
 
+    void addEventContext(Node*, bool isMouseOrFocusEvent, bool isTouchEvent);
+
     void calculatePath();
     void calculateAdjustedTargets();
     void calculateAdjustedEventPathForEachNode();

@@ -18,6 +18,7 @@ Moving mouse from B to A
 
   mouseout
      @B (target: B) (related: A)
+     @EC (target: B) (related: A)
      @C (target: B) (related: A)
      @older-shadow-root (target: B) (related: A)
      @E (target: B) (related: A)
