@@ -182,6 +182,30 @@ TEST(PickleTest, FindNextWithIncompleteHeader) {
   EXPECT_TRUE(NULL == Pickle::FindNext(header_size, start, end));
 }
 
+TEST(PickleTest, FindNextOverflow) {
+  size_t header_size = sizeof(Pickle::Header);
+  size_t header_size2 = 2 * header_size;
+  size_t payload_received = 100;
+  scoped_ptr<char[]> buffer(new char[header_size2 + payload_received]);
+  const char* start = buffer.get();
+  Pickle::Header* header = reinterpret_cast<Pickle::Header*>(buffer.get());
+  const char* end = start + header_size2 + payload_received;
+  // It is impossible to construct an overflow test otherwise.
+  if (sizeof(size_t) > sizeof(header->payload_size) ||
+      sizeof(uintptr_t) > sizeof(header->payload_size))
+    return;
+
+  header->payload_size = -(reinterpret_cast<uintptr_t>(start) + header_size2);
+  EXPECT_TRUE(NULL == Pickle::FindNext(header_size2, start, end));
+
+  header->payload_size = -header_size2;
+  EXPECT_TRUE(NULL == Pickle::FindNext(header_size2, start, end));
+
+  header->payload_size = 0;
+  end = start + header_size;
+  EXPECT_TRUE(NULL == Pickle::FindNext(header_size2, start, end));
+}
+
 TEST(PickleTest, GetReadPointerAndAdvance) {
   Pickle pickle;
 

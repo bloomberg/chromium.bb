@@ -286,16 +286,14 @@ const char* Pickle::FindNext(size_t header_size,
   DCHECK_EQ(header_size, AlignInt(header_size, sizeof(uint32)));
   DCHECK_LE(header_size, static_cast<size_t>(kPayloadUnit));
 
-  if (static_cast<size_t>(end - start) < sizeof(Header))
+  size_t length = static_cast<size_t>(end - start);
+  if (length < sizeof(Header))
     return NULL;
 
   const Header* hdr = reinterpret_cast<const Header*>(start);
-  const char* payload_base = start + header_size;
-  const char* payload_end = payload_base + hdr->payload_size;
-  if (payload_end < payload_base)
+  if (length < header_size || length - header_size < hdr->payload_size)
     return NULL;
-
-  return (payload_end > end) ? NULL : payload_end;
+  return start + header_size + hdr->payload_size;
 }
 
 template <size_t length> void Pickle::WriteBytesStatic(const void* data) {
