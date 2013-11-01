@@ -17,6 +17,8 @@
   <script src="chrome://resources/js/util.js"></script>
   <script src="chrome://resources/js/cr/ui.js"></script>
   <script src="chrome://resources/js/cr/ui/focus_manager.js"></script>
+  <script src="chrome://help-frame/help_focus_manager.js"></script>
+  <script src="chrome://help-frame/help_base_page.js"></script>
 <if expr="pp_ifdef('chromeos')">
   <script src="chrome://resources/js/cr/ui/bubble.js"></script>
   <script src="chrome://resources/js/cr/ui/overlay.js"></script>
@@ -32,7 +34,7 @@
     <include src="channel_change_page.html">
 </if>
   </div>
-  <div class="page">
+  <div id="help-page" class="page">
     <header>
       <h1 i18n-content="aboutTitle"></h1>
     </header>

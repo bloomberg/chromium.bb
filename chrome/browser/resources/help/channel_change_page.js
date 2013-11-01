@@ -11,7 +11,7 @@ cr.define('help', function() {
   cr.addSingletonGetter(ChannelChangePage);
 
   ChannelChangePage.prototype = {
-    __proto__: HTMLDivElement.prototype,
+    __proto__: help.HelpBasePage.prototype,
 
     /**
      * Name of the channel the device is currently on.
@@ -50,6 +50,8 @@ cr.define('help', function() {
      * Perform initial setup.
      */
     initialize: function() {
+      help.HelpBasePage.prototype.initialize.call(this, 'channel-change-page');
+
       var self = this;
 
       $('channel-change-page-cancel-button').onclick = function() {

@@ -133,6 +133,8 @@
       <include name="IDR_FLAGS_JS" file="resources\flags.js" type="BINDATA" />
       <include name="IDR_HANGOUT_SERVICES_MANIFEST" file="resources\hangout_services\manifest.json" type="BINDATA" />
       <include name="IDR_HELP_JS" file="resources\help\help.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_HELP_FOCUS_MANAGER_JS" file="resources\help\help_focus_manager.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_HELP_BASE_PAGE_JS" file="resources\help\help_base_page.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_CHANNEL_CHANGE_PAGE_JS" file="resources\help\channel_change_page.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_HISTORY_HTML" file="resources\history\history.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_HISTORY_JS" file="resources\history\history.js" flattenhtml="true" type="BINDATA" />

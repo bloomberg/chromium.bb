@@ -13,7 +13,7 @@ cr.define('help', function() {
   cr.addSingletonGetter(HelpPage);
 
   HelpPage.prototype = {
-    __proto__: HTMLDivElement.prototype,
+    __proto__: help.HelpBasePage.prototype,
 
     /**
      * True if after update powerwash button should be displayed.
@@ -49,6 +49,8 @@ cr.define('help', function() {
      * Perform initial setup.
      */
     initialize: function() {
+      help.HelpBasePage.prototype.initialize.call(this, 'help-page');
+
       var self = this;
 
       uber.onContentFrameLoaded();
@@ -114,13 +116,16 @@ cr.define('help', function() {
       }
 
       if (cr.isChromeOS) {
+        help.ChannelChangePage.getInstance().initialize();
+        this.registerOverlay(help.ChannelChangePage.getInstance());
+
         cr.ui.overlay.setupOverlay($('overlay-container'));
         cr.ui.overlay.globalInitialization();
         $('overlay-container').addEventListener('cancelOverlay', function() {
-          self.showOverlay_(null);
+          self.closeOverlay();
         });
         $('change-channel').onclick = function() {
-          self.showOverlay_($('channel-change-page'));
+          self.showOverlay('channel-change-page');
         };
 
         var channelChangeDisallowedError = document.createElement('div');
@@ -146,6 +151,7 @@ cr.define('help', function() {
       }
 
       cr.ui.FocusManager.disableMouseFocusOnButtons();
+      help.HelpFocusManager.getInstance().initialize();
 
       // Attempt to update.
       chrome.send('onPageLoaded');
@@ -214,15 +220,6 @@ cr.define('help', function() {
      */
     setUpdateImage_: function(state) {
       $('update-status-icon').className = 'help-page-icon ' + state;
-    },
-
-    /**
-     * Returns current overlay.
-     * @return {HTMLElement} Current overlay
-     * @private
-     */
-    getCurrentOverlay_: function() {
-      return document.querySelector('#overlay .page.showing');
     },
 
     /**
@@ -359,21 +356,6 @@ cr.define('help', function() {
     },
 
     /**
-     * Sets the given overlay to show. This hides whatever overlay is currently
-     * showing, if any.
-     * @param {HTMLElement} node The overlay page to show. If null, all
-     *     overlays are hidden.
-     */
-    showOverlay_: function(node) {
-      var currentlyShowingOverlay = this.getCurrentOverlay_();
-      if (currentlyShowingOverlay)
-        currentlyShowingOverlay.classList.remove('showing');
-      if (node)
-        node.classList.add('showing');
-      $('overlay-container').hidden = !node;
-    },
-
-    /**
      * Updates name of the current channel, i.e. the name of the
      * channel the device is currently on.
      * @param {string} channel The name of the current channel
@@ -486,12 +468,16 @@ cr.define('help', function() {
     HelpPage.getInstance().setOSFirmware_(firmware);
   };
 
-  HelpPage.showOverlay = function(node) {
-    HelpPage.getInstance().showOverlay_(node);
+  HelpPage.showOverlay = function(name) {
+    HelpPage.getInstance().showOverlay(name);
   };
 
   HelpPage.cancelOverlay = function() {
-    HelpPage.getInstance().showOverlay_(null);
+    HelpPage.getInstance().closeOverlay();
+  };
+
+  HelpPage.getTopmostVisiblePage = function() {
+    return HelpPage.getInstance().getTopmostVisiblePage();
   };
 
   HelpPage.updateIsEnterpriseManaged = function(isEnterpriseManaged) {
@@ -539,6 +525,4 @@ cr.define('help', function() {
  */
 window.onload = function() {
   help.HelpPage.getInstance().initialize();
-  if (cr.isChromeOS)
-    help.ChannelChangePage.getInstance().initialize();
 };
