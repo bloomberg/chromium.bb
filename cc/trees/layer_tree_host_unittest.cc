@@ -1131,18 +1131,27 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestFrameTimeUpdatesAfterDraw);
 
 // Verifies that StartPageScaleAnimation events propagate correctly
 // from LayerTreeHost to LayerTreeHostImpl in the MT compositor.
-class DISABLED_LayerTreeHostTestStartPageScaleAnimation
+class LayerTreeHostTestStartPageScaleAnimation
     : public LayerTreeHostTest {
  public:
-  DISABLED_LayerTreeHostTestStartPageScaleAnimation() {}
+  LayerTreeHostTestStartPageScaleAnimation() {}
 
   virtual void SetupTree() OVERRIDE {
     LayerTreeHostTest::SetupTree();
 
-    scroll_layer_ = FakeContentLayer::Create(&client_);
+    if (layer_tree_host()->settings().impl_side_painting) {
+      scoped_refptr<FakePictureLayer> layer =
+          FakePictureLayer::Create(&client_);
+      layer->set_always_update_resources(true);
+      scroll_layer_ = layer;
+    } else {
+      scroll_layer_ = FakeContentLayer::Create(&client_);
+    }
+
     scroll_layer_->SetScrollable(true);
     scroll_layer_->SetScrollOffset(gfx::Vector2d());
     layer_tree_host()->root_layer()->AddChild(scroll_layer_);
+    layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 0.5f, 2.f);
   }
 
   virtual void BeginTest() OVERRIDE {
@@ -1157,7 +1166,6 @@ class DISABLED_LayerTreeHostTestStartPageScaleAnimation
   }
 
   virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    impl->ProcessScrollDeltas();
     // We get one commit before the first draw, and the animation doesn't happen
     // until the second draw.
     switch (impl->active_tree()->source_frame_number()) {
@@ -1167,7 +1175,6 @@ class DISABLED_LayerTreeHostTestStartPageScaleAnimation
         break;
       case 1:
         EXPECT_EQ(1.f, impl->active_tree()->page_scale_factor());
-        PostSetNeedsRedrawToMainThread();
         break;
       case 2:
         EXPECT_EQ(1.25f, impl->active_tree()->page_scale_factor());
@@ -1181,7 +1188,6 @@ class DISABLED_LayerTreeHostTestStartPageScaleAnimation
   virtual void DidCommitAndDrawFrame() OVERRIDE {
     switch (layer_tree_host()->source_frame_number()) {
       case 1:
-        layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 0.5f, 2.f);
         layer_tree_host()->StartPageScaleAnimation(
             gfx::Vector2d(), false, 1.25f, base::TimeDelta());
         break;
@@ -1191,11 +1197,10 @@ class DISABLED_LayerTreeHostTestStartPageScaleAnimation
   virtual void AfterTest() OVERRIDE {}
 
   FakeContentLayerClient client_;
-  scoped_refptr<FakeContentLayer> scroll_layer_;
+  scoped_refptr<Layer> scroll_layer_;
 };
 
-// Disabled. See: crbug.com/280508
-MULTI_THREAD_NOIMPL_TEST_F(DISABLED_LayerTreeHostTestStartPageScaleAnimation);
+MULTI_THREAD_TEST_F(LayerTreeHostTestStartPageScaleAnimation);
 
 class LayerTreeHostTestSetVisible : public LayerTreeHostTest {
  public:
