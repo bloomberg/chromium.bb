@@ -12,6 +12,8 @@
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "components/autofill/core/browser/autofill_popup_delegate.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/webkit_resources.h"
 #include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "ui/events/event.h"
@@ -67,12 +69,14 @@ const DataResource kDataResources[] = {
 WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::GetOrCreate(
     WeakPtr<AutofillPopupControllerImpl> previous,
     WeakPtr<AutofillPopupDelegate> delegate,
+    content::WebContents* web_contents,
     gfx::NativeView container_view,
     const gfx::RectF& element_bounds,
     base::i18n::TextDirection text_direction) {
   DCHECK(!previous.get() || previous->delegate_.get() == delegate.get());
 
-  if (previous.get() && previous->container_view() == container_view &&
+  if (previous.get() && previous->web_contents_ == web_contents &&
+      previous->container_view() == container_view &&
       previous->element_bounds() == element_bounds) {
     previous->ClearState();
     return previous;
@@ -83,20 +87,24 @@ WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::GetOrCreate(
 
   AutofillPopupControllerImpl* controller =
       new AutofillPopupControllerImpl(
-          delegate, container_view, element_bounds, text_direction);
+          delegate, web_contents, container_view, element_bounds,
+          text_direction);
   return controller->GetWeakPtr();
 }
 
 AutofillPopupControllerImpl::AutofillPopupControllerImpl(
     base::WeakPtr<AutofillPopupDelegate> delegate,
+    content::WebContents* web_contents,
     gfx::NativeView container_view,
     const gfx::RectF& element_bounds,
     base::i18n::TextDirection text_direction)
     : view_(NULL),
       delegate_(delegate),
+      web_contents_(web_contents),
       container_view_(container_view),
       element_bounds_(element_bounds),
       text_direction_(text_direction),
+      registered_key_press_event_callback_with_(NULL),
       hide_on_outside_click_(false),
       key_press_event_callback_(
           base::Bind(&AutofillPopupControllerImpl::HandleKeyPressEvent,
@@ -168,7 +176,13 @@ void AutofillPopupControllerImpl::Show(
     UpdateBoundsAndRedrawPopup();
   }
 
-  delegate_->OnPopupShown(&key_press_event_callback_);
+  delegate_->OnPopupShown();
+  if (web_contents_ && !registered_key_press_event_callback_with_) {
+    registered_key_press_event_callback_with_ =
+        web_contents_->GetRenderViewHost();
+    registered_key_press_event_callback_with_->AddKeyPressEventCallback(
+        key_press_event_callback_);
+  }
 }
 
 void AutofillPopupControllerImpl::UpdateDataListValues(
@@ -228,8 +242,16 @@ void AutofillPopupControllerImpl::UpdateDataListValues(
 }
 
 void AutofillPopupControllerImpl::Hide() {
+  if (web_contents_ && (!web_contents_->IsBeingDestroyed()) &&
+      (registered_key_press_event_callback_with_ ==
+          web_contents_->GetRenderViewHost())) {
+    web_contents_->GetRenderViewHost()->RemoveKeyPressEventCallback(
+        key_press_event_callback_);
+  }
+  registered_key_press_event_callback_with_ = NULL;
+
   if (delegate_.get())
-    delegate_->OnPopupHidden(&key_press_event_callback_);
+    delegate_->OnPopupHidden();
 
   if (view_)
     view_->Hide();

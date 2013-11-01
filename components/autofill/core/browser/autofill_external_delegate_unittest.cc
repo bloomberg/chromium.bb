@@ -272,9 +272,9 @@ TEST_F(AutofillExternalDelegateUnitTest, UpdateDataListWhileShowingPopup) {
                                             autofill_item,
                                             autofill_ids);
 
-  // This would normally get called from ShowAutofillPopup, but it is mocked
+  // This would normally get called from ShowAutofillPopup, but it is mocked so
   // we need to call OnPopupShown ourselves.
-  external_delegate_->OnPopupShown(NULL);
+  external_delegate_->OnPopupShown();
 
   // Update the current data list and ensure the popup is updated.
   data_list_items.push_back(base::string16());

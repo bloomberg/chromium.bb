@@ -31,21 +31,19 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
         popup_hidden_(true) {}
   virtual ~TestAutofillExternalDelegate() {}
 
-  virtual void OnPopupShown(
-      content::RenderWidgetHost::KeyPressEventCallback* callback) OVERRIDE {
+  virtual void OnPopupShown() OVERRIDE {
     popup_hidden_ = false;
 
-    AutofillExternalDelegate::OnPopupShown(callback);
+    AutofillExternalDelegate::OnPopupShown();
   }
 
-  virtual void OnPopupHidden(
-      content::RenderWidgetHost::KeyPressEventCallback* callback) OVERRIDE {
+  virtual void OnPopupHidden() OVERRIDE {
     popup_hidden_ = true;
 
     if (message_loop_runner_.get())
       message_loop_runner_->Quit();
 
-    AutofillExternalDelegate::OnPopupHidden(callback);
+    AutofillExternalDelegate::OnPopupHidden();
   }
 
   void WaitForPopupHidden() {

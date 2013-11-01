@@ -68,7 +68,7 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
       base::WeakPtr<AutofillExternalDelegate> external_delegate,
       const gfx::RectF& element_bounds)
       : AutofillPopupControllerImpl(
-            external_delegate, NULL, element_bounds,
+            external_delegate, NULL, NULL, element_bounds,
             base::i18n::UNKNOWN_DIRECTION) {}
   virtual ~TestAutofillPopupController() {}
 
@@ -142,7 +142,7 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
 
     autofill_popup_controller_ =
         new testing::NiceMock<TestAutofillPopupController>(
-            external_delegate_->GetWeakPtr(), gfx::Rect());
+            external_delegate_->GetWeakPtr(),gfx::Rect());
   }
 
   virtual void TearDown() OVERRIDE {
@@ -429,20 +429,21 @@ TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
 
   WeakPtr<AutofillPopupControllerImpl> controller =
       AutofillPopupControllerImpl::GetOrCreate(
-          WeakPtr<AutofillPopupControllerImpl>(), delegate.GetWeakPtr(), NULL,
-          gfx::Rect(), base::i18n::UNKNOWN_DIRECTION);
+          WeakPtr<AutofillPopupControllerImpl>(), delegate.GetWeakPtr(),
+          NULL, NULL, gfx::Rect(), base::i18n::UNKNOWN_DIRECTION);
   EXPECT_TRUE(controller.get());
 
   controller->Hide();
 
   controller = AutofillPopupControllerImpl::GetOrCreate(
-      WeakPtr<AutofillPopupControllerImpl>(), delegate.GetWeakPtr(), NULL,
-      gfx::Rect(), base::i18n::UNKNOWN_DIRECTION);
+      WeakPtr<AutofillPopupControllerImpl>(), delegate.GetWeakPtr(),
+      NULL, NULL, gfx::Rect(), base::i18n::UNKNOWN_DIRECTION);
   EXPECT_TRUE(controller.get());
 
   WeakPtr<AutofillPopupControllerImpl> controller2 =
       AutofillPopupControllerImpl::GetOrCreate(controller,
                                                delegate.GetWeakPtr(),
+                                               NULL,
                                                NULL,
                                                gfx::Rect(),
                                                base::i18n::UNKNOWN_DIRECTION);
@@ -459,6 +460,7 @@ TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
       AutofillPopupControllerImpl::GetOrCreate(
           test_controller->GetWeakPtr(),
           delegate.GetWeakPtr(),
+          NULL,
           NULL,
           bounds,
           base::i18n::UNKNOWN_DIRECTION);
@@ -483,6 +485,7 @@ TEST_F(AutofillPopupControllerUnitTest, ProperlyResetController) {
       AutofillPopupControllerImpl::GetOrCreate(
           popup_controller()->GetWeakPtr(),
           delegate()->GetWeakPtr(),
+          NULL,
           NULL,
           gfx::Rect(),
           base::i18n::UNKNOWN_DIRECTION);

@@ -17,6 +17,8 @@
 
 namespace content {
 struct NativeWebKeyboardEvent;
+class RenderViewHost;
+class WebContents;
 }
 
 namespace gfx {
@@ -37,12 +39,14 @@ class AutofillPopupView;
 // other, public functions are available to its instantiator.
 class AutofillPopupControllerImpl : public AutofillPopupController {
  public:
-  // Creates a new |AutofillPopupControllerImpl|, or reuses |previous| if
-  // the construction arguments are the same. |previous| may be invalidated by
-  // this call.
+  // Creates a new |AutofillPopupControllerImpl|, or reuses |previous| if the
+  // construction arguments are the same. |previous| may be invalidated by this
+  // call. The controller will listen for keyboard input routed to
+  // |web_contents| while the popup is showing, unless |web_contents| is NULL.
   static base::WeakPtr<AutofillPopupControllerImpl> GetOrCreate(
       base::WeakPtr<AutofillPopupControllerImpl> previous,
       base::WeakPtr<AutofillPopupDelegate> delegate,
+      content::WebContents* web_contents,
       gfx::NativeView container_view,
       const gfx::RectF& element_bounds,
       base::i18n::TextDirection text_direction);
@@ -76,6 +80,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
                            ProperlyResetController);
 
   AutofillPopupControllerImpl(base::WeakPtr<AutofillPopupDelegate> delegate,
+                              content::WebContents* web_contents,
                               gfx::NativeView container_view,
                               const gfx::RectF& element_bounds,
                               base::i18n::TextDirection text_direction);
@@ -197,6 +202,12 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
 
   AutofillPopupView* view_;  // Weak reference.
   base::WeakPtr<AutofillPopupDelegate> delegate_;
+
+  // The WebContents in which this object should listen for keyboard events
+  // while showing the popup. Can be NULL, in which case this object will not
+  // listen for keyboard events.
+  content::WebContents* web_contents_;
+
   gfx::NativeView container_view_;  // Weak reference.
 
   // The bounds of the text element that is the focus of the Autofill.
@@ -208,6 +219,10 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
 
   // The text direction of the popup.
   base::i18n::TextDirection text_direction_;
+
+  // The RenderViewHost that this object has registered its keyboard press
+  // callback with.
+  content::RenderViewHost* registered_key_press_event_callback_with_;
 
   // The current Autofill query values.
   std::vector<string16> names_;

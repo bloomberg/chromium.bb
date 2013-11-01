@@ -1949,6 +1949,7 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
   popup_controller_ = AutofillPopupControllerImpl::GetOrCreate(
       popup_controller_,
       weak_ptr_factory_.GetWeakPtr(),
+      NULL,
       parent_view,
       content_bounds,
       base::i18n::IsRTL() ?
@@ -2163,16 +2164,14 @@ content::WebContents* AutofillDialogControllerImpl::GetWebContents() {
 ////////////////////////////////////////////////////////////////////////////////
 // AutofillPopupDelegate implementation.
 
-void AutofillDialogControllerImpl::OnPopupShown(
-    content::RenderWidgetHost::KeyPressEventCallback* callback) {
+void AutofillDialogControllerImpl::OnPopupShown() {
   ScopedViewUpdates update(view_.get());
   view_->UpdateErrorBubble();
 
   GetMetricLogger().LogDialogPopupEvent(AutofillMetrics::DIALOG_POPUP_SHOWN);
 }
 
-void AutofillDialogControllerImpl::OnPopupHidden(
-    content::RenderWidgetHost::KeyPressEventCallback* callback) {}
+void AutofillDialogControllerImpl::OnPopupHidden() {}
 
 bool AutofillDialogControllerImpl::ShouldRepostEvent(
     const ui::MouseEvent& event) {
