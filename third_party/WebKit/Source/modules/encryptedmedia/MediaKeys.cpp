@@ -29,10 +29,10 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/html/HTMLMediaElement.h"
-#include "core/platform/graphics/ContentDecryptionModule.h"
 #include "modules/encryptedmedia/MediaKeyMessageEvent.h"
 #include "modules/encryptedmedia/MediaKeySession.h"
 #include "platform/UUID.h"
+#include "platform/drm/ContentDecryptionModule.h"
 #include "wtf/HashSet.h"
 
 namespace WebCore {

@@ -28,57 +28,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ContentDecryptionModuleSession_h
-#define ContentDecryptionModuleSession_h
+#ifndef ContentDecryptionModule_h
+#define ContentDecryptionModule_h
 
-#include "public/platform/WebContentDecryptionModuleSession.h"
+#include "platform/PlatformExport.h"
+#include "public/platform/WebContentDecryptionModule.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebKit {
-class WebContentDecryptionModule;
-}
-
-namespace WTF {
-class Uint8Array;
-}
-
 namespace WebCore {
 
-class KURL;
+class ContentDecryptionModuleSession;
+class ContentDecryptionModuleSessionClient;
 
-class ContentDecryptionModuleSessionClient {
+class PLATFORM_EXPORT ContentDecryptionModule {
+    WTF_MAKE_NONCOPYABLE(ContentDecryptionModule);
 public:
-    enum MediaKeyErrorCode { UnknownError = 1, ClientError };
-    virtual void keyAdded() = 0;
-    virtual void keyError(MediaKeyErrorCode, unsigned long systemCode) = 0;
-    virtual void keyMessage(const unsigned char* message, size_t messageLength, const KURL& destinationURL) = 0;
-};
+    static bool supportsKeySystem(const String&);
+    static PassOwnPtr<ContentDecryptionModule> create(const String& keySystem);
 
-class ContentDecryptionModuleSession : private WebKit::WebContentDecryptionModuleSession::Client {
-public:
-    static PassOwnPtr<ContentDecryptionModuleSession> create(ContentDecryptionModuleSessionClient*);
+    ContentDecryptionModule(PassOwnPtr<WebKit::WebContentDecryptionModule>);
+    ~ContentDecryptionModule();
 
-    ContentDecryptionModuleSession(WebKit::WebContentDecryptionModule*, ContentDecryptionModuleSessionClient*);
-    ~ContentDecryptionModuleSession();
-
-    String sessionId() const;
-    void generateKeyRequest(const String& mimeType, const WTF::Uint8Array& initData);
-    void update(const WTF::Uint8Array& key);
-    void close();
+    // ContentDecryptionModule
+    bool supportsMIMEType(const String&);
+    PassOwnPtr<ContentDecryptionModuleSession> createSession(ContentDecryptionModuleSessionClient*);
 
 private:
-    // WebKit::WebContentDecryptionModuleSession::Client
-    virtual void keyAdded() OVERRIDE;
-    virtual void keyError(MediaKeyErrorCode, unsigned long systemCode) OVERRIDE;
-    virtual void keyMessage(const unsigned char* message, size_t messageLength, const WebKit::WebURL& destinationURL) OVERRIDE;
-
-    OwnPtr<WebKit::WebContentDecryptionModuleSession> m_session;
-
-    ContentDecryptionModuleSessionClient* m_client;
+    OwnPtr<WebKit::WebContentDecryptionModule> m_cdm;
 };
 
 } // namespace WebCore
 
-#endif // ContentDecryptionModuleSession_h
+#endif // ContentDecryptionModule_h

@@ -35,9 +35,9 @@
 
 namespace WebKit {
 
-class WebContentDecryptionModule {
+class BLINK_PLATFORM_EXPORT WebContentDecryptionModule {
 public:
-    virtual ~WebContentDecryptionModule() { }
+    virtual ~WebContentDecryptionModule();
 
     // Must return non-null.
     virtual WebContentDecryptionModuleSession* createSession(WebContentDecryptionModuleSession::Client*) = 0;

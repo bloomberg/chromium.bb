@@ -50,4 +50,17 @@
 #define PLATFORM_EXPORT
 #endif
 
+#if defined(_MSC_VER)
+// MSVC Compiler warning C4275:
+// non dll-interface class 'Bar' used as base for dll-interface class 'Foo'.
+// Note that this is intended to be used only when no access to the base class'
+// static data is done through derived classes or inline methods. For more info,
+// see http://msdn.microsoft.com/en-us/library/3tdb471s(VS.80).aspx
+//
+// This pragma will allow exporting a class that inherits from a non-exported
+// base class, anywhere in the Blink platform component. This is only
+// a problem when using the MSVC compiler on Windows.
+#pragma warning(suppress:4275)
+#endif
+
 #endif // PlatformExport_h

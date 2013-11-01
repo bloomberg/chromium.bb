@@ -29,52 +29,60 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/ContentDecryptionModule.h"
+#include "platform/drm/ContentDecryptionModuleSession.h"
 
-#include "platform/NotImplemented.h"
-#include "core/platform/graphics/ContentDecryptionModuleSession.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebContentDecryptionModule.h"
+#include "public/platform/WebURL.h"
+#include "weborigin/KURL.h"
+#include "wtf/Uint8Array.h"
 
 namespace WebCore {
 
-bool ContentDecryptionModule::supportsKeySystem(const String& keySystem)
+ContentDecryptionModuleSession::ContentDecryptionModuleSession(WebKit::WebContentDecryptionModule* contentDecryptionModule, ContentDecryptionModuleSessionClient* client)
+    : m_client(client)
 {
-    // FIXME: Chromium should handle this, possibly using
-    // MIMETypeRegistry::isSupportedEncryptedMediaMIMEType().
-    notImplemented();
-    return keySystem == "org.w3.clearkey";
+    m_session = adoptPtr(contentDecryptionModule->createSession(this));
+    ASSERT(m_session);
 }
 
-PassOwnPtr<ContentDecryptionModule> ContentDecryptionModule::create(const String& keySystem)
-{
-    ASSERT(!keySystem.isEmpty());
-    OwnPtr<WebKit::WebContentDecryptionModule> cdm = adoptPtr(WebKit::Platform::current()->createContentDecryptionModule(keySystem));
-    if (!cdm)
-        return nullptr;
-    return adoptPtr(new ContentDecryptionModule(cdm.release()));
-}
-
-ContentDecryptionModule::ContentDecryptionModule(PassOwnPtr<WebKit::WebContentDecryptionModule> cdm)
-    : m_cdm(cdm)
-{
-    ASSERT(m_cdm);
-}
-
-ContentDecryptionModule::~ContentDecryptionModule()
+ContentDecryptionModuleSession::~ContentDecryptionModuleSession()
 {
 }
 
-bool ContentDecryptionModule::supportsMIMEType(const String& mimeType)
+String ContentDecryptionModuleSession::sessionId() const
 {
-    // FIXME: Chromium should handle this, possibly using
-    // MIMETypeRegistry::isSupportedEncryptedMediaMIMEType().
-    notImplemented();
-    return mimeType == "video/webm";
+    return m_session->sessionId();
 }
 
-PassOwnPtr<ContentDecryptionModuleSession> ContentDecryptionModule::createSession(ContentDecryptionModuleSessionClient* client)
+void ContentDecryptionModuleSession::generateKeyRequest(const String& mimeType, const Uint8Array& initData)
 {
-    return adoptPtr(new ContentDecryptionModuleSession(m_cdm.get(), client));
+    m_session->generateKeyRequest(mimeType, initData.data(), initData.length());
+}
+
+void ContentDecryptionModuleSession::update(const Uint8Array& key)
+{
+    m_session->update(key.data(), key.length());
+}
+
+void ContentDecryptionModuleSession::close()
+{
+    m_session->close();
+}
+
+void ContentDecryptionModuleSession::keyAdded()
+{
+    m_client->keyAdded();
+}
+
+void ContentDecryptionModuleSession::keyError(MediaKeyErrorCode errorCode, unsigned long systemCode)
+{
+    m_client->keyError(static_cast<ContentDecryptionModuleSessionClient::MediaKeyErrorCode>(errorCode), systemCode);
+}
+
+void ContentDecryptionModuleSession::keyMessage(const unsigned char* message, size_t messageLength, const WebKit::WebURL& destinationURL)
+{
+    m_client->keyMessage(message, messageLength, destinationURL);
 }
 
 } // namespace WebCore

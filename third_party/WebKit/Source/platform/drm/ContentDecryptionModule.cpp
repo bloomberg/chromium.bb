@@ -28,35 +28,53 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ContentDecryptionModule_h
-#define ContentDecryptionModule_h
+#include "config.h"
+#include "platform/drm/ContentDecryptionModule.h"
 
-#include "public/platform/WebContentDecryptionModule.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/text/WTFString.h"
+#include "platform/NotImplemented.h"
+#include "platform/drm/ContentDecryptionModuleSession.h"
+#include "public/platform/Platform.h"
 
 namespace WebCore {
 
-class ContentDecryptionModuleSession;
-class ContentDecryptionModuleSessionClient;
+bool ContentDecryptionModule::supportsKeySystem(const String& keySystem)
+{
+    // FIXME: Chromium should handle this, possibly using
+    // MIMETypeRegistry::isSupportedEncryptedMediaMIMEType().
+    notImplemented();
+    return keySystem == "org.w3.clearkey";
+}
 
-class ContentDecryptionModule {
-public:
-    static bool supportsKeySystem(const String&);
-    static PassOwnPtr<ContentDecryptionModule> create(const String& keySystem);
+PassOwnPtr<ContentDecryptionModule> ContentDecryptionModule::create(const String& keySystem)
+{
+    ASSERT(!keySystem.isEmpty());
+    OwnPtr<WebKit::WebContentDecryptionModule> cdm = adoptPtr(WebKit::Platform::current()->createContentDecryptionModule(keySystem));
+    if (!cdm)
+        return nullptr;
+    return adoptPtr(new ContentDecryptionModule(cdm.release()));
+}
 
-    ContentDecryptionModule(PassOwnPtr<WebKit::WebContentDecryptionModule>);
-    ~ContentDecryptionModule();
+ContentDecryptionModule::ContentDecryptionModule(PassOwnPtr<WebKit::WebContentDecryptionModule> cdm)
+    : m_cdm(cdm)
+{
+    ASSERT(m_cdm);
+}
 
-    // ContentDecryptionModule
-    bool supportsMIMEType(const String&);
-    PassOwnPtr<ContentDecryptionModuleSession> createSession(ContentDecryptionModuleSessionClient*);
+ContentDecryptionModule::~ContentDecryptionModule()
+{
+}
 
-private:
-    OwnPtr<WebKit::WebContentDecryptionModule> m_cdm;
-};
+bool ContentDecryptionModule::supportsMIMEType(const String& mimeType)
+{
+    // FIXME: Chromium should handle this, possibly using
+    // MIMETypeRegistry::isSupportedEncryptedMediaMIMEType().
+    notImplemented();
+    return mimeType == "video/webm";
+}
+
+PassOwnPtr<ContentDecryptionModuleSession> ContentDecryptionModule::createSession(ContentDecryptionModuleSessionClient* client)
+{
+    return adoptPtr(new ContentDecryptionModuleSession(m_cdm.get(), client));
+}
 
 } // namespace WebCore
-
-#endif // ContentDecryptionModule_h

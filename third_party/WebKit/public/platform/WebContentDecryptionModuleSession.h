@@ -31,14 +31,16 @@
 #ifndef WebContentDecryptionModuleSession_h
 #define WebContentDecryptionModuleSession_h
 
+#include "WebCommon.h"
+
 namespace WebKit {
 
 class WebString;
 class WebURL;
 
-class WebContentDecryptionModuleSession {
+class BLINK_PLATFORM_EXPORT WebContentDecryptionModuleSession {
 public:
-    class Client {
+    class BLINK_PLATFORM_EXPORT Client {
     public:
         enum MediaKeyErrorCode {
             MediaKeyErrorCodeUnknown = 1,
@@ -50,10 +52,10 @@ public:
         virtual void keyMessage(const unsigned char* message, size_t messageLength, const WebKit::WebURL& destinationURL) = 0;
 
     protected:
-        virtual ~Client() { }
+        virtual ~Client();
     };
 
-    virtual ~WebContentDecryptionModuleSession() { }
+    virtual ~WebContentDecryptionModuleSession();
 
     virtual WebString sessionId() const = 0;
     virtual void generateKeyRequest(const WebString& mimeType, const unsigned char* initData, size_t initDataLength) = 0;

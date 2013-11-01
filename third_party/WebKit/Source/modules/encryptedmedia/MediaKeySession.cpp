@@ -31,9 +31,9 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/events/GenericEventQueue.h"
 #include "core/html/MediaKeyError.h"
-#include "core/platform/graphics/ContentDecryptionModule.h"
 #include "modules/encryptedmedia/MediaKeyMessageEvent.h"
 #include "modules/encryptedmedia/MediaKeys.h"
+#include "platform/drm/ContentDecryptionModule.h"
 
 namespace WebCore {
 
