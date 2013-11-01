@@ -81,6 +81,10 @@ PrintingContext::Result PrintingContextNoSystemDialog::UseDefaultSettings() {
 PrintingContext::Result PrintingContextNoSystemDialog::UpdatePrinterSettings(
     bool target_is_pdf,
     bool external_preview) {
+
+  if (settings_.dpi() == 0)
+    UseDefaultSettings();
+
   return OK;
 }
 

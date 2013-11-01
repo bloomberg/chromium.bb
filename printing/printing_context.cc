@@ -47,9 +47,6 @@ PrintingContext::Result PrintingContext::UpdatePrintSettings(
     const PageRanges& ranges) {
   ResetSettings();
 
-  if (settings_.dpi() == 0)
-    UseDefaultSettings();
-
   if (!PrintSettingsInitializer::InitSettings(job_settings, ranges,
                                               &settings_)) {
     NOTREACHED();
