@@ -17,8 +17,8 @@ function test()
 {
     var documentNode;
     var initialLayers;
+    var modifiedLayers;
 
-    setTimeout(InspectorTest.completeTest.bind(InspectorTest), 3000);
     getDocument();
 
     function getDocument()
@@ -47,8 +47,6 @@ function test()
         InspectorTest.eventHandler["LayerTree.layerTreeDidChange"] = gotModifiedLayerTree;
         initialLayers = message.params.layers;
 
-        dumpLayers(initialLayers);
-
         step({
             name: "Message the page to add a new composited layer",
             command: "Runtime.evaluate",
@@ -59,10 +57,9 @@ function test()
     function gotModifiedLayerTree(message)
     {
         InspectorTest.eventHandler["LayerTree.layerTreeDidChange"] = null;
-        var layers = message.params.layers;
-        dumpLayers(layers);
+        modifiedLayers = message.params.layers;
 
-        var mutations = layerMutations(initialLayers, layers);
+        var mutations = layerMutations(initialLayers, modifiedLayers);
         var newLayer = mutations.additions[0];
 
         step({
@@ -79,7 +76,8 @@ function test()
         if (attributes.id !== "last-element")
             InspectorTest.log("FAIL: Did not obtain the expected element for the last inserted layer.");
 
-
+        dumpLayers(initialLayers);
+        dumpLayers(modifiedLayers);
         InspectorTest.log("DONE!");
         InspectorTest.completeTest();
     };
@@ -135,7 +133,6 @@ function test()
 
     function step(test)
     {
-        InspectorTest.log("\n=== " + test.name + " ===\n")
         InspectorTest.sendCommand(test.command, test.parameters, function(messageObject) {
             if (messageObject.hasOwnProperty("error")) {
                 InspectorTest.log("FAIL: " + messageObject.error.message + " (" + messageObject.error.code + ")");
@@ -143,10 +140,8 @@ function test()
                 return;
             }
 
-            if (!test.callback)
-                return;
-            InspectorTest.log("PASS");
-            test.callback(messageObject.result);
+            if (test.callback)
+               test.callback(messageObject.result);
         });
     };
 

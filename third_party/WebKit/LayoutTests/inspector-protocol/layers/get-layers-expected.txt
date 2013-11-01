@@ -1,10 +1,56 @@
 
-=== Get the Document ===
-
-PASS
-
-=== Enable the LayerTree agent ===
-
+[
+    {
+        "layerId": "string",
+        "offsetX": 0,
+        "offsetY": 0,
+        "width": "number",
+        "height": "number",
+        "paintCount": "number",
+        "nodeId": "number",
+        "parentLayerId": "string"
+    },
+    {
+        "layerId": "string",
+        "offsetX": 25,
+        "offsetY": 25,
+        "width": 50,
+        "height": 50,
+        "paintCount": "number",
+        "nodeId": "number",
+        "parentLayerId": "string"
+    },
+    {
+        "layerId": "string",
+        "offsetX": 25,
+        "offsetY": 25,
+        "width": 50,
+        "height": 50,
+        "paintCount": "number",
+        "nodeId": "number",
+        "parentLayerId": "string"
+    },
+    {
+        "layerId": "string",
+        "offsetX": 200,
+        "offsetY": 0,
+        "width": 100,
+        "height": 100,
+        "paintCount": "number",
+        "nodeId": "number",
+        "parentLayerId": "string"
+    },
+    {
+        "layerId": "string",
+        "offsetX": 25,
+        "offsetY": 25,
+        "width": 50,
+        "height": 50,
+        "paintCount": "number",
+        "nodeId": "number",
+        "parentLayerId": "string"
+    }
+]
 
 [
     {
@@ -59,82 +105,6 @@ PASS
     },
     {
         "layerId": "string",
-        "offsetX": 0,
-        "offsetY": 0,
-        "width": "number",
-        "height": 60,
-        "paintCount": "number",
-        "nodeId": "number",
-        "parentLayerId": "string"
-    }
-]
-
-=== Message the page to add a new composited layer ===
-
-
-[
-    {
-        "layerId": "string",
-        "offsetX": 0,
-        "offsetY": 0,
-        "width": "number",
-        "height": "number",
-        "paintCount": "number",
-        "nodeId": "number",
-        "parentLayerId": "string"
-    },
-    {
-        "layerId": "string",
-        "offsetX": 25,
-        "offsetY": 25,
-        "width": 50,
-        "height": 50,
-        "paintCount": "number",
-        "nodeId": "number",
-        "parentLayerId": "string"
-    },
-    {
-        "layerId": "string",
-        "offsetX": 25,
-        "offsetY": 25,
-        "width": 50,
-        "height": 50,
-        "paintCount": "number",
-        "nodeId": "number",
-        "parentLayerId": "string"
-    },
-    {
-        "layerId": "string",
-        "offsetX": 200,
-        "offsetY": 0,
-        "width": 100,
-        "height": 100,
-        "paintCount": "number",
-        "nodeId": "number",
-        "parentLayerId": "string"
-    },
-    {
-        "layerId": "string",
-        "offsetX": 25,
-        "offsetY": 25,
-        "width": 50,
-        "height": 50,
-        "paintCount": "number",
-        "nodeId": "number",
-        "parentLayerId": "string"
-    },
-    {
-        "layerId": "string",
-        "offsetX": 0,
-        "offsetY": 0,
-        "width": "number",
-        "height": "number",
-        "paintCount": "number",
-        "nodeId": "number",
-        "parentLayerId": "string"
-    },
-    {
-        "layerId": "string",
         "offsetX": 25,
         "offsetY": 25,
         "width": 50,
@@ -144,9 +114,5 @@ PASS
         "parentLayerId": "string"
     }
 ]
-
-=== Get attributes for the newly inserted node ===
-
-PASS
 DONE!
 
