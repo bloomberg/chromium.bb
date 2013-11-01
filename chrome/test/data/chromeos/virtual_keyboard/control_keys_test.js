@@ -30,6 +30,20 @@ function getShiftKeys(alignment) {
 }
 
 /**
+ * Retrieves the specified modifier key from the system-qwerty layout.
+ * @param {string} modifier Which modifier key to return.
+ * @return {Object} The modifier key.
+ */
+function getModifierKey(modifier) {
+  var keyset = keyboard.querySelector('#system-qwerty-lower');
+  assertTrue(!!keyset, "Cannot find keyset: " + keyset);
+  var modifierKey = keyset.querySelector('kb-modifier-key[char="' +
+      modifier + '"]');
+  assertTrue(!!modifierKey, "Modifier key not found: " + modifierKey);
+  return modifierKey;
+}
+
+/**
  * Tests chording with a single shift key.
  * @param {Object} lowerShift, a shift key in the lower key set.
  * @param {Object} uppserShift, the same shift key in the upper key set.
@@ -167,6 +181,7 @@ function checkShiftDoubleClick(lowerShift, upperShift) {
       "Did not revert to lower case on shift down.");
   lowerShift.up(mockEvent);
 }
+
 /**
  * Asynchronously tests highlighting of the left and right shift keys.
  * @param {function} testDoneCallBack The function to be called
@@ -251,6 +266,51 @@ function testShiftChordingAsync(testDoneCallback) {
     checkShiftChording(right['lower'], right['upper']);
    }
   onKeyboardReady('testShiftChordingAsync', runTest, testDoneCallback);
+}
+
+/**
+ * Asynchronously tests modifier keys on the keyboard.
+ * @param {function} testDoneCallBack The callback function to be called
+ * on completion.
+ */
+function testModifierKeysAsync(testDoneCallback) {
+  var setupWork = function() {
+    keyboard.layout = 'system-qwerty';
+  }
+  var subtasks = [];
+  subtasks.push( function() {
+    assertEquals("system-qwerty-lower",
+        keyboard.activeKeysetId, "Unexpected layout transition.");
+    var ctrl = getModifierKey('Ctrl');
+    var alt = getModifierKey('Alt');
+    var mockEvent = {pointerId: 1};
+    // Test 'ctrl' + 'a'.
+    ctrl.down(mockEvent);
+    ctrl.up(mockEvent);
+    mockTypeCharacter('a', 0x41, 4);
+    mockTypeCharacter('a', 0x41, 0);
+    // Test 'ctrl' + 'alt' + 'a'.
+    ctrl.down(mockEvent);
+    ctrl.up(mockEvent);
+    alt.down(mockEvent);
+    alt.up(mockEvent);
+    mockTypeCharacter('a', 0x41, 12);
+    mockTypeCharacter('a', 0x41, 0);
+    // Test chording control.
+    ctrl.down(mockEvent);
+    mockTypeCharacter('a', 0x41, 4);
+    mockTypeCharacter('a', 0x41, 4);
+    ctrl.up(mockEvent);
+    mockTypeCharacter('a', 0x41, 0);
+    keyboard.layout = 'qwerty';
+  });
+  // Make sure we end in a stable state.
+  subtasks.push(function() {
+    assertEquals("qwerty-lower", keyboard.activeKeysetId,
+        "Unexpected final keyset.");
+  });
+  onKeyboardReady('testModifierKeysAsync', setupWork, testDoneCallback,
+      subtasks);
 }
 
 /**
