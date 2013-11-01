@@ -8,12 +8,31 @@
 
   var gFirstConnection = null;
   var gSecondConnection = null;
-  var gTestWithoutMsidAndBundle = false;
+  var gTestWithoutMsid = false;
 
   var gLocalStream = null;
   var gSentTones = '';
 
   var gRemoteStreams = {};
+
+  // Default transform functions, overridden by some test cases.
+  var transformSdp = function(sdp) { return sdp; };
+  var transformRemoteSdp = function(sdp) { return sdp; };
+  var transformCandidate = function(candidate) { return candidate; };
+
+  // When using external SDES, the crypto key is chosen by javascript.
+  var EXTERNAL_SDES_LINES = {
+    'audio': 'a=crypto:1 AES_CM_128_HMAC_SHA1_80 ' +
+        'inline:PS1uQCVeeCFCanVmcjkpPywjNWhcYD0mXXtxaVBR',
+    'video': 'a=crypto:1 AES_CM_128_HMAC_SHA1_80 ' +
+        'inline:d0RmdmcmVCspeEc3QGZiNWpVLFJhQX1cfHAwJSoj',
+    'data': 'a=crypto:1 AES_CM_128_HMAC_SHA1_80 ' +
+        'inline:NzB4d1BINUAvLEw6UzF3WSJ+PSdFcGdUJShpX1Zj'
+  };
+
+  // When using GICE, the ICE credentials can be chosen by javascript.
+  var EXTERNAL_GICE_UFRAG = '1234567890123456';
+  var EXTERNAL_GICE_PWD = '123456789012345678901234';
 
   setAllEventsOccuredHandler(function() {
     document.title = 'OK';
@@ -91,9 +110,27 @@
   // simulate that the remote peer don't support MSID.
   function callWithoutMsidAndBundle() {
     createConnections(null);
-    gTestWithoutMsidAndBundle = true;
+    transformSdp = removeBundle;
+    transformRemoteSdp = removeMsid;
+    gTestWithoutMsid = true;
     navigator.webkitGetUserMedia({audio: true, video: true},
       addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
+    waitForVideo('remote-view-1');
+    waitForVideo('remote-view-2');
+  }
+
+  // Test that we can setup call with legacy settings.
+  function callWithLegacySdp() {
+    transformSdp = function(sdp) {
+      return removeBundle(useGice(useExternalSdes(sdp)));
+    };
+    transformCandidate = addGiceCredsToCandidate;
+    createConnections({
+      'mandatory': {'RtpDataChannels': true, 'DtlsSrtpKeyAgreement': false}
+    });
+    setupDataChannel({reliable: false});
+    navigator.webkitGetUserMedia({audio: true, video: true},
+        addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
     waitForVideo('remote-view-1');
     waitForVideo('remote-view-2');
   }
@@ -467,16 +504,19 @@
 
     caller.createOffer(
         function (offer) {
-          caller.setLocalDescription(offer);
-          expectEquals('have-local-offer', caller.signalingState);
-          receiveOffer(offer.sdp, caller, callee);
+          onOfferCreated(offer, caller, callee);
         });
   }
 
+  function onOfferCreated(offer, caller, callee) {
+    offer.sdp = transformSdp(offer.sdp);
+    caller.setLocalDescription(offer);
+    expectEquals('have-local-offer', caller.signalingState);
+    receiveOffer(offer.sdp, caller, callee);
+  }
+
   function receiveOffer(offerSdp, caller, callee) {
-    if (gTestWithoutMsidAndBundle) {
-      offerSdp = removeMsidAndBundle(offerSdp);
-    }
+    offerSdp = transformRemoteSdp(offerSdp);
 
     var parsedOffer = new RTCSessionDescription({ type: 'offer',
                                                   sdp: offerSdp });
@@ -487,25 +527,49 @@
     expectEquals('have-remote-offer', callee.signalingState);
   }
 
-  function removeMsidAndBundle(offerSdp) {
+  function removeMsid(offerSdp) {
     offerSdp = offerSdp.replace(/a=msid-semantic.*\r\n/g, '');
-    offerSdp = offerSdp.replace('a=group:BUNDLE audio video\r\n', '');
     offerSdp = offerSdp.replace('a=mid:audio\r\n', '');
     offerSdp = offerSdp.replace('a=mid:video\r\n', '');
     offerSdp = offerSdp.replace(/a=ssrc.*\r\n/g, '');
     return offerSdp;
   }
 
+  function removeBundle(sdp) {
+    return sdp.replace(/a=group:BUNDLE .*\r\n/g, '');
+  }
+
+  function useGice(sdp) {
+    sdp = sdp.replace(/t=.*\r\n/g, function(subString) {
+      return subString + 'a=ice-options:google-ice\r\n';
+    });
+    sdp = sdp.replace(/a=ice-ufrag:.*\r\n/g,
+                      'a=ice-ufrag:' + EXTERNAL_GICE_UFRAG + '\r\n');
+    sdp = sdp.replace(/a=ice-pwd:.*\r\n/g,
+                      'a=ice-pwd:' + EXTERNAL_GICE_PWD + '\r\n');
+    return sdp;
+  }
+
+  function useExternalSdes(sdp) {
+    // Remove current crypto specification.
+    sdp = sdp.replace(/a=crypto.*\r\n/g, '');
+    sdp = sdp.replace(/a=fingerprint.*\r\n/g, '');
+    // Add external crypto.  This is not compatible with |removeMsid|.
+    sdp = sdp.replace(/a=mid:(\w+)\r\n/g, function(subString, group) {
+      return subString + EXTERNAL_SDES_LINES[group] + '\r\n';
+    });
+    return sdp;
+  }
+
   function onAnswerCreated(answer, caller, callee) {
+    answer.sdp = transformSdp(answer.sdp);
     callee.setLocalDescription(answer);
     expectEquals('stable', callee.signalingState);
     receiveAnswer(answer.sdp, caller);
   }
 
   function receiveAnswer(answerSdp, caller) {
-    if (gTestWithoutMsidAndBundle) {
-      answerSdp = removeMsidAndBundle(answerSdp);
-    }
+    answerSdp = transformRemoteSdp(answerSdp);
     var parsedAnswer = new RTCSessionDescription({ type: 'answer',
                                                    sdp: answerSdp });
     caller.setRemoteDescription(parsedAnswer);
@@ -517,15 +581,21 @@
     callee.onicecandidate = function(event) { onIceCandidate(event, caller); }
   }
 
+  function addGiceCredsToCandidate(candidate) {
+    return candidate.trimRight() +
+        ' username ' + EXTERNAL_GICE_UFRAG + ' password ' + EXTERNAL_GICE_PWD;
+  }
+
   function onIceCandidate(event, target) {
     if (event.candidate) {
       var candidate = new RTCIceCandidate(event.candidate);
+      candidate.candidate = transformCandidate(candidate.candidate);
       target.addIceCandidate(candidate);
     }
   }
 
   function onRemoteStream(e, target) {
-    if (gTestWithoutMsidAndBundle && e.stream.id != "default") {
+    if (gTestWithoutMsid && e.stream.id != "default") {
       document.title = 'a default remote stream was expected but instead ' +
           e.stream.id + ' was received.';
       return;

@@ -233,6 +233,28 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
   ExpectTitle("OK");
 }
 
+// This test will make a complete PeerConnection-based call using legacy SDP
+// settings: GIce, external SDES, and no BUNDLE.
+#if defined(OS_WIN) && defined(USE_AURA)
+// Disabled for win7_aura, see http://crbug.com/235089.
+#define MAYBE_CanSetupLegacyCall DISABLED_CanSetupLegacyCall
+#elif defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+// Timing out on ARM linux, see http://crbug.com/240373
+#define MAYBE_CanSetupLegacyCall DISABLED_CanSetupLegacyCall
+#else
+#define MAYBE_CanSetupLegacyCall CanSetupLegacyCall
+#endif
+
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CanSetupLegacyCall) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
+  NavigateToURL(shell(), url);
+
+  EXPECT_TRUE(ExecuteJavascript("callWithLegacySdp();"));
+  ExpectTitle("OK");
+}
+
 // This test will make a PeerConnection-based call and test an unreliable text
 // dataChannel.
 // TODO(mallinath) - Remove this test after rtp based data channel is disabled.
