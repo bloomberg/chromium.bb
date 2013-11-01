@@ -18,7 +18,8 @@ class NativeViewportController : public services::NativeViewportDelegate {
   // TODO(beng): Currently, pipe is just the single pipe that exists between
   //             mojo_shell and the loaded app. This should really be hidden
   //             behind the bindings layer, when that comes up.
-  explicit NativeViewportController(Handle pipe);
+  NativeViewportController(shell::Context* context,
+                           Handle pipe);
   virtual ~NativeViewportController();
 
   void Close();

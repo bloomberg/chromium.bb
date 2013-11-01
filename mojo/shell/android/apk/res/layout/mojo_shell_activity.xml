@@ -10,8 +10,4 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
-    <org.chromium.mojo_shell_apk.MojoView
-        android:id="@+id/mojo_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
 </LinearLayout>

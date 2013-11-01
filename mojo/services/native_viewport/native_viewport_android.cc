@@ -2,37 +2,46 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/native_viewport/native_viewport.h"
+#include "mojo/services/native_viewport/native_viewport_android.h"
+
+#include "mojo/services/native_viewport/android/mojo_viewport.h"
+#include "mojo/shell/context.h"
 
 namespace mojo {
 namespace services {
 
-class NativeViewportAndroid : public NativeViewport {
- public:
-  NativeViewportAndroid(NativeViewportDelegate* delegate)
-      : delegate_(delegate) {
-  }
-  virtual ~NativeViewportAndroid() {
-  }
+NativeViewportAndroid::NativeViewportAndroid(NativeViewportDelegate* delegate)
+    : delegate_(delegate),
+      weak_factory_(this) {
+}
 
- private:
-  // Overridden from NativeViewport:
-  virtual void Close() OVERRIDE {
-    // TODO(beng): close activity containing MojoView?
+NativeViewportAndroid::~NativeViewportAndroid() {
+}
 
-    // TODO(beng): perform this in response to view destruction.
-    delegate_->OnDestroyed();
-  }
+void NativeViewportAndroid::Close() {
+  // TODO(beng): close activity containing MojoView?
 
-  NativeViewportDelegate* delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(NativeViewportAndroid);
-};
+  // TODO(beng): perform this in response to view destruction.
+  delegate_->OnDestroyed();
+}
 
 // static
 scoped_ptr<NativeViewport> NativeViewport::Create(
+    shell::Context* context,
     NativeViewportDelegate* delegate) {
-  return scoped_ptr<NativeViewport>(new NativeViewportAndroid(delegate)).Pass();
+  scoped_ptr<NativeViewportAndroid> native_viewport(
+      new NativeViewportAndroid(delegate));
+
+  MojoViewportInit* init = new MojoViewportInit();
+  init->ui_runner = context->task_runners()->ui_runner();
+  init->native_viewport = native_viewport->GetWeakPtr();
+
+  context->task_runners()->java_runner()->PostTask(FROM_HERE,
+      base::Bind(MojoViewport::CreateForActivity,
+                 context->activity(),
+                 init));
+
+   return scoped_ptr<NativeViewport>(native_viewport.Pass());
 }
 
 }  // namespace services

@@ -12,9 +12,10 @@
 namespace mojo {
 namespace services {
 
-NativeViewportController::NativeViewportController(Handle pipe)
+NativeViewportController::NativeViewportController(
+    shell::Context* context, Handle pipe)
     : pipe_(pipe) {
-  native_viewport_ = NativeViewport::Create(this);
+  native_viewport_ = NativeViewport::Create(context, this);
 }
 NativeViewportController::~NativeViewportController() {
 }

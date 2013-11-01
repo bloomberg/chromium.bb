@@ -30,6 +30,7 @@ class NativeViewportStub : public NativeViewport {
 
 // static
 scoped_ptr<NativeViewport> NativeViewport::Create(
+    shell::Context* context,
     NativeViewportDelegate* delegate) {
   return scoped_ptr<NativeViewport>(new NativeViewportStub(delegate)).Pass();
 }

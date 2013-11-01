@@ -30,10 +30,24 @@ class TaskRunners {
     return file_thread_->message_loop_proxy();
   }
 
+#if defined(OS_ANDROID)
+  void set_java_runner(base::SingleThreadTaskRunner* java_runner) {
+    java_runner_ = java_runner;
+  }
+
+  base::SingleThreadTaskRunner* java_runner() const {
+    return java_runner_.get();
+  }
+#endif // defined(OS_ANDROID)
+
  private:
   scoped_refptr<base::SingleThreadTaskRunner> ui_runner_;
   scoped_ptr<base::Thread> io_thread_;
   scoped_ptr<base::Thread> file_thread_;
+
+#if defined(OS_ANDROID)
+  scoped_refptr<base::SingleThreadTaskRunner> java_runner_;
+#endif // defined(OS_ANDROID)
 
   DISALLOW_COPY_AND_ASSIGN(TaskRunners);
 };

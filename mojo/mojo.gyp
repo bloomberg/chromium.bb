@@ -251,9 +251,12 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../ui/gfx/gfx.gyp:gfx',
+        '../ui/gl/gl.gyp:gl',
         '../ui/events/events.gyp:events'
       ],
       'sources': [
+        'services/native_viewport/android/mojo_viewport.cc',
+        'services/native_viewport/android/mojo_viewport.h',
         'services/native_viewport/native_viewport.h',
         'services/native_viewport/native_viewport_android.cc',
         'services/native_viewport/native_viewport_controller.cc',
@@ -267,13 +270,29 @@
           'sources!': [
             'services/native_viewport/native_viewport_stub.cc',
           ],
-        }]
+        }],
+        ['OS=="android"', {
+          'dependencies': [
+            'mojo_jni_headers',
+          ],
+        }],
       ],
     },
   ],
   'conditions': [
     ['OS=="android"', {
       'targets': [
+        {
+          'target_name': 'native_viewport_java',
+          'type': 'none',
+          'dependencies': [
+            '../base/base.gyp:base_java',
+          ],
+          'variables': {
+            'java_in_dir': '<(DEPTH)/mojo/services/native_viewport/android',
+          },
+          'includes': [ '../build/java.gypi' ],
+        },
         {
           'target_name': 'java_set_jni_headers',
           'type': 'none',
@@ -295,8 +314,8 @@
             ],
           },
           'sources': [
+            'services/native_viewport/android/src/org/chromium/mojo/MojoViewport.java',
             'shell/android/apk/src/org/chromium/mojo_shell_apk/MojoMain.java',
-            'shell/android/apk/src/org/chromium/mojo_shell_apk/MojoView.java',
           ],
           'variables': {
             'jni_gen_package': 'mojo'
@@ -318,8 +337,6 @@
             'shell/android/library_loader.cc',
             'shell/android/mojo_main.cc',
             'shell/android/mojo_main.h',
-            'shell/android/mojo_view.cc',
-            'shell/android/mojo_view.h',
           ],
         },
         {
@@ -328,6 +345,7 @@
           'dependencies': [
             '../base/base.gyp:base_java',
             '../net/net.gyp:net_java',
+            'native_viewport_java',
             'libmojo_shell',
           ],
           'variables': {

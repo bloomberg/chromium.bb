@@ -72,6 +72,7 @@ class NativeViewportWin : public gfx::WindowImpl,
 
 // static
 scoped_ptr<NativeViewport> NativeViewport::Create(
+    shell::Context* context,
     NativeViewportDelegate* delegate) {
   return scoped_ptr<NativeViewport>(new NativeViewportWin(delegate)).Pass();
 }

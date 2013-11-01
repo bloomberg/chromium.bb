@@ -11,7 +11,6 @@ import android.util.Log;
 
 import org.chromium.mojo_shell_apk.LibraryLoader;
 import org.chromium.mojo_shell_apk.MojoMain;
-import org.chromium.mojo_shell_apk.MojoView;
 
 /**
  * Activity for managing the Mojo Shell.
@@ -32,7 +31,6 @@ public class MojoShellActivity extends Activity {
         }
 
         MojoMain.init(this);
-        setContentView(R.layout.mojo_shell_activity);
 
         String appUrl = getUrlFromIntent(getIntent());
         MojoMain.start(this, appUrl);

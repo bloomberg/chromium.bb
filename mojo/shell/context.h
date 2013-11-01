@@ -9,6 +9,10 @@
 #include "mojo/shell/storage.h"
 #include "mojo/shell/task_runners.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/scoped_java_ref.h"
+#endif  // defined(OS_ANDROID)
+
 namespace mojo {
 namespace shell {
 
@@ -21,10 +25,19 @@ class Context {
   Storage* storage() { return &storage_; }
   Loader* loader() { return &loader_; }
 
+#if defined(OS_ANDROID)
+  jobject activity() const { return activity_.obj(); }
+  void set_activity(jobject activity) { activity_.Reset(NULL, activity); }
+#endif  // defined(OS_ANDROID)
+
  private:
   TaskRunners task_runners_;
   Storage storage_;
   Loader loader_;
+
+#if defined(OS_ANDROID)
+  base::android::ScopedJavaGlobalRef<jobject> activity_;
+#endif  // defined(OS_ANDROID)
 
   DISALLOW_COPY_AND_ASSIGN(Context);
 };

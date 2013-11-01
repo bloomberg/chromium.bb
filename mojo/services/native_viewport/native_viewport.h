@@ -16,6 +16,10 @@ class Event;
 }
 
 namespace mojo {
+namespace shell {
+class Context;
+}
+
 namespace services {
 
 class NativeViewportDelegate {
@@ -36,7 +40,8 @@ class NativeViewport {
 
   virtual void Close() = 0;
 
-  static scoped_ptr<NativeViewport> Create(NativeViewportDelegate* delegate);
+  static scoped_ptr<NativeViewport> Create(shell::Context* context,
+                                           NativeViewportDelegate* delegate);
 };
 
 }  // namespace services

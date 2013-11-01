@@ -94,7 +94,7 @@ void AppContainer::DidCompleteLoad(const GURL& app_url,
   // TODO(beng): This should be created on demand by the NativeViewportService
   //             when it is retrieved by the app.
   native_viewport_controller_.reset(
-      new services::NativeViewportController(shell_handle_));
+      new services::NativeViewportController(context_, shell_handle_));
 }
 
 void AppContainer::AppCompleted() {
