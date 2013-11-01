@@ -421,12 +421,15 @@ class MediaDrmBridge {
                     postTask.execute(request.getDefaultUrl());
                     break;
                 case MediaDrm.EVENT_KEY_REQUIRED:
+                    Log.d(TAG, "MediaDrm.EVENT_KEY_REQUIRED.");
                     generateKeyRequest(data, mMimeType);
                     break;
                 case MediaDrm.EVENT_KEY_EXPIRED:
+                    Log.d(TAG, "MediaDrm.EVENT_KEY_EXPIRED.");
                     onKeyError();
                     break;
                 case MediaDrm.EVENT_VENDOR_DEFINED:
+                    Log.d(TAG, "MediaDrm.EVENT_VENDOR_DEFINED.");
                     assert(false);
                     break;
                 default:
