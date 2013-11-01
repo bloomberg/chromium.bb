@@ -937,10 +937,10 @@ TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
   RunTest(true, true, true);
 }
 
-class LayerTreeHostContextTestLostContextWhileUpdatingResources
+class DISABLED_LayerTreeHostContextTestLostContextWhileUpdatingResources
     : public LayerTreeHostContextTest {
  public:
-  LayerTreeHostContextTestLostContextWhileUpdatingResources()
+  DISABLED_LayerTreeHostContextTestLostContextWhileUpdatingResources()
       : parent_(FakeContentLayer::Create(&client_)),
         num_children_(50),
         times_to_lose_on_end_query_(3) {}
@@ -994,8 +994,9 @@ class LayerTreeHostContextTestLostContextWhileUpdatingResources
   int times_to_lose_on_end_query_;
 };
 
+// Disabled (crbug.com/313790)
 SINGLE_AND_MULTI_THREAD_NOIMPL_TEST_F(
-    LayerTreeHostContextTestLostContextWhileUpdatingResources);
+    DISABLED_LayerTreeHostContextTestLostContextWhileUpdatingResources);
 
 class LayerTreeHostContextTestLayersNotified
     : public LayerTreeHostContextTest {
