@@ -258,6 +258,8 @@ AppsGridView::AppsGridView(AppsGridViewDelegate* delegate,
         new views::WebView(start_page_contents->GetBrowserContext());
     start_page_view_->SetWebContents(start_page_contents);
     AddChildView(start_page_view_);
+    start_page_contents->GetWebUI()->CallJavascriptFunction(
+        "appList.startPage.onAppListShown");
   }
 }
 
@@ -275,6 +277,11 @@ AppsGridView::~AppsGridView() {
 
   if (item_list_)
     item_list_->RemoveObserver(this);
+
+  if (start_page_view_) {
+    start_page_view_->GetWebContents()->GetWebUI()->CallJavascriptFunction(
+        "appList.startPage.onAppListHidden");
+  }
 }
 
 void AppsGridView::SetLayout(int icon_size, int cols, int rows_per_page) {

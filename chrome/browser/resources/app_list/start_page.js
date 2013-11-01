@@ -7,9 +7,12 @@
  */
 
 <include src="recommended_apps.js"/>
+<include src="speech_manager.js"/>
 
 cr.define('appList.startPage', function() {
   'use strict';
+
+  var speechManager = null;
 
   /**
    * Creates a StartPage object.
@@ -51,6 +54,7 @@ cr.define('appList.startPage', function() {
    */
   function initialize() {
     StartPage.decorate($('start-page'));
+    speechManager = new speech.SpeechManager();
     chrome.send('initialize');
   }
 
@@ -62,9 +66,19 @@ cr.define('appList.startPage', function() {
     $('start-page').setRecommendedApps(apps);
   }
 
+  function onAppListShown() {
+    speechManager.start();
+  }
+
+  function onAppListHidden() {
+    speechManager.stop();
+  }
+
   return {
     initialize: initialize,
-    setRecommendedApps: setRecommendedApps
+    setRecommendedApps: setRecommendedApps,
+    onAppListShown: onAppListShown,
+    onAppListHidden: onAppListHidden
   };
 });
 
