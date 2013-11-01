@@ -139,8 +139,7 @@ ShellWindow::ShellWindow(Profile* profile,
       delegate_(delegate),
       image_loader_ptr_factory_(this),
       fullscreen_for_window_api_(false),
-      fullscreen_for_tab_(false),
-      is_content_visible_(false) {
+      fullscreen_for_tab_(false) {
 }
 
 void ShellWindow::Init(const GURL& url,
@@ -300,16 +299,6 @@ void ShellWindow::OnNativeWindowChanged() {
   SaveWindowPosition();
   if (shell_window_contents_ && native_app_window_)
     shell_window_contents_->NativeWindowChanged(native_app_window_.get());
-
-  bool was_content_visible = is_content_visible_;
-  NativeAppWindow* window = GetBaseWindow();
-  if (window) {
-    is_content_visible_ = window->IsVisible() && !window->IsMinimized();
-    if (was_content_visible && !is_content_visible_)
-      shell_window_contents_->GetWebContents()->WasHidden();
-    else if (!was_content_visible && is_content_visible_)
-      shell_window_contents_->GetWebContents()->WasShown();
-  }
 }
 
 void ShellWindow::OnNativeWindowActivated() {

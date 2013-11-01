@@ -80,7 +80,6 @@ class NativeAppWindowGtk : public apps::NativeAppWindow,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual bool IsFrameless() const OVERRIDE;
   virtual gfx::Insets GetFrameInsets() const OVERRIDE;
-  virtual bool IsVisible() const OVERRIDE;
   virtual void HideWithApp() OVERRIDE;
   virtual void ShowWithApp() OVERRIDE;
   // Calls gtk_window_set_geometry_hints with the current size constraints.

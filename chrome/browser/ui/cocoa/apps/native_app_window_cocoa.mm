@@ -535,19 +535,16 @@ void NativeAppWindowCocoa::Show() {
 
   [window_controller_ showWindow:nil];
   [window() makeKeyAndOrderFront:window_controller_];
-  shell_window_->OnNativeWindowChanged();
 }
 
 void NativeAppWindowCocoa::ShowInactive() {
   is_hidden_ = false;
   [window() orderFront:window_controller_];
-  shell_window_->OnNativeWindowChanged();
 }
 
 void NativeAppWindowCocoa::Hide() {
   is_hidden_ = true;
   HideWithoutMarkingHidden();
-  shell_window_->OnNativeWindowChanged();
 }
 
 void NativeAppWindowCocoa::Close() {
@@ -841,10 +838,6 @@ gfx::Insets NativeAppWindowCocoa::GetFrameInsets() const {
   return frame_rect.InsetsFrom(content_rect);
 }
 
-bool NativeAppWindowCocoa::IsVisible() const {
-  return [window() isVisible];
-}
-
 gfx::NativeView NativeAppWindowCocoa::GetHostView() const {
   NOTIMPLEMENTED();
   return NULL;
@@ -979,14 +972,12 @@ bool NativeAppWindowCocoa::IsWithinDraggableRegion(NSPoint point) const {
 void NativeAppWindowCocoa::HideWithApp() {
   is_hidden_with_app_ = true;
   HideWithoutMarkingHidden();
-  shell_window_->OnNativeWindowChanged();
 }
 
 void NativeAppWindowCocoa::ShowWithApp() {
   is_hidden_with_app_ = false;
   if (!is_hidden_)
     ShowInactive();
-  shell_window_->OnNativeWindowChanged();
 }
 
 void NativeAppWindowCocoa::SetAlwaysOnTop(bool always_on_top) {
