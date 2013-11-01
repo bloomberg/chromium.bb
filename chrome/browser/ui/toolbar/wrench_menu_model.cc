@@ -64,6 +64,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/enumerate_modules_model_win.h"
 #include "chrome/browser/ui/metro_pin_tab_helper_win.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "win8/util/win8_util.h"
 #endif
 
@@ -534,15 +535,11 @@ void WrenchMenuModel::Build(bool is_new_menu) {
   }
 
 #if defined(OS_WIN)
- if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+
 #if defined(USE_AURA)
-    bool in_desktop_mode =
-        browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH ?
-            false : true;
-#else
-    bool in_desktop_mode = !base::win::IsMetroProcess();
-#endif
-    if (!in_desktop_mode) {
+ if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+     content::GpuDataManager::GetInstance()->CanUseGpuBrowserCompositor()) {
+    if (browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH) {
       // Metro mode, add the 'Relaunch Chrome in desktop mode'.
       AddSeparator(ui::NORMAL_SEPARATOR);
       AddItemWithStringId(IDC_WIN8_DESKTOP_RESTART, IDS_WIN8_DESKTOP_RESTART);
@@ -552,6 +549,18 @@ void WrenchMenuModel::Build(bool is_new_menu) {
       AddItemWithStringId(IDC_WIN8_METRO_RESTART, IDS_WIN8_METRO_RESTART);
     }
   }
+#else
+  if (base::win::IsMetroProcess()) {
+    // Metro mode, add the 'Relaunch Chrome in desktop mode'.
+    AddSeparator(ui::NORMAL_SEPARATOR);
+    AddItemWithStringId(IDC_WIN8_DESKTOP_RESTART, IDS_WIN8_DESKTOP_RESTART);
+  } else {
+    // In Windows 8 desktop, add the 'Relaunch Chrome in Windows 8 mode'.
+    AddSeparator(ui::NORMAL_SEPARATOR);
+    AddItemWithStringId(IDC_WIN8_METRO_RESTART, IDS_WIN8_METRO_RESTART);
+  }
+#endif
+
 #endif
 
   // Append the full menu including separators. The final separator only gets

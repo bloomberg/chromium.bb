@@ -49,6 +49,7 @@
 #include "base/win/metro.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/ui/apps/apps_metro_handler_win.h"
+#include "content/public/browser/gpu_data_manager.h"
 #endif
 
 #if defined(USE_ASH)
