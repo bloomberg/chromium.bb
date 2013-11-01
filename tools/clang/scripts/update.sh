@@ -8,7 +8,7 @@
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://code.google.com/p/chromium/wiki/UpdatingClang
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION=193323
+CLANG_REVISION=192869
 
 THIS_DIR="$(dirname "${0}")"
 LLVM_DIR="${THIS_DIR}/../../../third_party/llvm"
@@ -141,7 +141,7 @@ for DIR in "${XCODEBUILD_DIR}" "${MAKE_DIR}/Debug" "${MAKE_DIR}/Release"; do
     find "${DIR}" -name '*.o' -exec rm {} +
     find "${DIR}" -name '*.o.d' -exec rm {} +
     find "${DIR}" -name '*.gch' -exec rm {} +
-    find "${DIR}" -name '*.dylib' -exec rm -rf {} +
+    find "${DIR}" -name '*.dylib' -exec rm {} +
     find "${DIR}" -name 'SharedPrecompiledHeaders' -exec rm -rf {} +
   fi
 done
