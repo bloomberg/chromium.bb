@@ -488,6 +488,8 @@ function parseAndShowNotificationCards(response) {
     // TODO(vadimt): Remove the line below once the server stops sending groups
     // with 'googleNowDisabled' responses.
     parsedResponse.groups = {};
+    // Google Now was enabled; now it's disabled. This is a state change.
+    onStateChange();
   }
 
   var receivedGroups = parsedResponse.groups;
@@ -607,6 +609,8 @@ function requestOptedIn(optedInCallback) {
       if (parsedResponse.value) {
         chrome.storage.local.set({googleNowEnabled: true});
         optedInCallback();
+        // Google Now was disabled, now it's enabled. This is a state change.
+        onStateChange();
       } else {
         scheduleNextPoll({}, false);
       }
@@ -928,10 +932,11 @@ function startPollingCards() {
  */
 function stopPollingCards() {
   stopRequestLocation();
-
   updateCardsAttempts.stop();
-
   removeAllCards();
+  // Mark the Google Now as disabled to start with checking the opt-in state
+  // next time startPollingCards() is called.
+  chrome.storage.local.set({googleNowEnabled: false});
 }
 
 /**
@@ -988,21 +993,25 @@ function setBackgroundEnable(backgroundEnable) {
  * @param {boolean} signedIn true if the user is signed in.
  * @param {boolean} geolocationEnabled true if
  *     the geolocation option is enabled.
- * @param {boolean} enableBackground true if
- *     the background permission should be requested.
+ * @param {boolean} canEnableBackground true if
+ *     the background permission can be requested.
  * @param {boolean} notificationEnabled true if
  *     Google Now for Chrome is allowed to show notifications.
+ * @param {boolean} googleNowEnabled true if
+ *     the Google Now is enabled for the user.
  */
 function updateRunningState(
     signedIn,
     geolocationEnabled,
-    enableBackground,
-    notificationEnabled) {
+    canEnableBackground,
+    notificationEnabled,
+    googleNowEnabled) {
   console.log(
       'State Update signedIn=' + signedIn + ' ' +
       'geolocationEnabled=' + geolocationEnabled + ' ' +
-      'enableBackground=' + enableBackground + ' ' +
-      'notificationEnabled=' + notificationEnabled);
+      'canEnableBackground=' + canEnableBackground + ' ' +
+      'notificationEnabled=' + notificationEnabled + ' ' +
+      'googleNowEnabled=' + googleNowEnabled);
 
   // TODO(vadimt): Remove this line once state machine design is finalized.
   geolocationEnabled = true;
@@ -1012,7 +1021,7 @@ function updateRunningState(
 
   if (signedIn && notificationEnabled) {
     if (geolocationEnabled) {
-      if (enableBackground)
+      if (canEnableBackground && googleNowEnabled)
         shouldSetBackground = true;
 
       shouldPollCards = true;
@@ -1039,8 +1048,8 @@ function onStateChange() {
       instrumented.metricsPrivate.getVariationParams(
           'GoogleNow',
           function(response) {
-            var enableBackground =
-                (!response || (response.enableBackground != 'false'));
+            var canEnableBackground =
+                (!response || (response.canEnableBackground != 'false'));
             instrumented.notifications.getPermissionLevel(function(level) {
               var notificationEnabled = (level == 'granted');
               instrumented.
@@ -1048,11 +1057,18 @@ function onStateChange() {
                 googleGeolocationAccessEnabled.
                 get({}, function(prefValue) {
                   var geolocationEnabled = !!prefValue.value;
-                  updateRunningState(
-                      signedIn,
-                      geolocationEnabled,
-                      enableBackground,
-                      notificationEnabled);
+                  instrumented.storage.local.get(
+                      'googleNowEnabled',
+                      function(items) {
+                        var googleNowEnabled =
+                            items && !!items.googleNowEnabled;
+                        updateRunningState(
+                            signedIn,
+                            geolocationEnabled,
+                            canEnableBackground,
+                            notificationEnabled,
+                            googleNowEnabled);
+                      });
                 });
             });
           });
