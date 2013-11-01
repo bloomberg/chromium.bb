@@ -1489,6 +1489,10 @@ void URLRequestHttpJob::RecordPerfHistograms(CompletionCause reason) {
     }
   }
 
+  if (request_info_.load_flags & LOAD_PREFETCH && !request_->was_cached())
+    UMA_HISTOGRAM_COUNTS("Net.Prefetch.PrefilterBytesReadFromNetwork",
+                         prefilter_bytes_read());
+
   start_time_ = base::TimeTicks();
 }
 
