@@ -308,8 +308,9 @@ TEST_F('NetInternalsTest', 'netInternalsHSTSViewAddDelete', function() {
 TEST_F('NetInternalsTest', 'netInternalsHSTSViewAddFail', function() {
   NetInternalsTest.switchToView('hsts');
   taskQueue = new NetInternalsTest.TaskQueue(true);
-  taskQueue.addTask(new AddTask('~', false, false, '',
-                                QueryResultType.NOT_FOUND));
+  taskQueue.addTask(new AddTask('0123456789012345678901234567890' +
+                                '012345678901234567890123456789012345',
+                                false, false, '', QueryResultType.NOT_FOUND));
   taskQueue.run();
 });
 

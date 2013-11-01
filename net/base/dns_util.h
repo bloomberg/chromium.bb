@@ -26,10 +26,6 @@ NET_EXPORT_PRIVATE bool DNSDomainFromDot(const base::StringPiece& dotted,
 NET_EXPORT_PRIVATE std::string DNSDomainToString(
     const base::StringPiece& domain);
 
-// Returns true iff the given character is in the set of valid DNS label
-// characters as given in RFC 3490, 4.1, 3(a)
-NET_EXPORT_PRIVATE bool IsSTD3ASCIIValidCharacter(char c);
-
 // Returns the hostname by trimming the ending dot, if one exists.
 NET_EXPORT std::string TrimEndingDot(const base::StringPiece& host);
 

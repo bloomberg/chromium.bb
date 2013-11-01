@@ -70,17 +70,4 @@ TEST_F(DNSUtilTest, DNSDomainToString) {
   EXPECT_EQ("", DNSDomainToString("\x06"));
 }
 
-TEST_F(DNSUtilTest, STD3ASCII) {
-  EXPECT_TRUE(IsSTD3ASCIIValidCharacter('a'));
-  EXPECT_TRUE(IsSTD3ASCIIValidCharacter('b'));
-  EXPECT_TRUE(IsSTD3ASCIIValidCharacter('c'));
-  EXPECT_TRUE(IsSTD3ASCIIValidCharacter('1'));
-  EXPECT_TRUE(IsSTD3ASCIIValidCharacter('2'));
-  EXPECT_TRUE(IsSTD3ASCIIValidCharacter('3'));
-
-  EXPECT_FALSE(IsSTD3ASCIIValidCharacter('.'));
-  EXPECT_FALSE(IsSTD3ASCIIValidCharacter('/'));
-  EXPECT_FALSE(IsSTD3ASCIIValidCharacter('\x00'));
-}
-
 }  // namespace net

@@ -244,17 +244,7 @@ std::string TransportSecurityState::CanonicalizeHost(const std::string& host) {
       break;
 
     for (size_t j = 0; j < label_length; ++j) {
-      // RFC 3490, 4.1, step 3
-      if (!IsSTD3ASCIIValidCharacter(new_host[i + 1 + j]))
-        return std::string();
-
       new_host[i + 1 + j] = tolower(new_host[i + 1 + j]);
-    }
-
-    // step 3(b)
-    if (new_host[i + 1] == '-' ||
-        new_host[i + label_length] == '-') {
-      return std::string();
     }
   }
 

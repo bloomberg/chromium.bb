@@ -117,6 +117,19 @@ TEST_F(TransportSecurityStateTest, SubdomainMatches) {
   EXPECT_FALSE(state.GetDomainState("com", true, &domain_state));
 }
 
+TEST_F(TransportSecurityStateTest, InvalidDomains) {
+  TransportSecurityState state;
+  TransportSecurityState::DomainState domain_state;
+  const base::Time current_time(base::Time::Now());
+  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+
+  EXPECT_FALSE(state.GetDomainState("yahoo.com", true, &domain_state));
+  bool include_subdomains = true;
+  state.AddHSTS("yahoo.com", expiry, include_subdomains);
+  EXPECT_TRUE(state.GetDomainState("www-.foo.yahoo.com", true, &domain_state));
+  EXPECT_TRUE(state.GetDomainState("2\x01.foo.yahoo.com", true, &domain_state));
+}
+
 TEST_F(TransportSecurityStateTest, DeleteAllDynamicDataSince) {
   TransportSecurityState state;
   TransportSecurityState::DomainState domain_state;

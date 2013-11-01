@@ -80,20 +80,6 @@ std::string DNSDomainToString(const base::StringPiece& domain) {
   return ret;
 }
 
-bool IsSTD3ASCIIValidCharacter(char c) {
-  if (c <= 0x2c)
-    return false;
-  if (c >= 0x7b)
-    return false;
-  if (c >= 0x2e && c <= 0x2f)
-    return false;
-  if (c >= 0x3a && c <= 0x40)
-    return false;
-  if (c >= 0x5b && c <= 0x60)
-    return false;
-  return true;
-}
-
 std::string TrimEndingDot(const base::StringPiece& host) {
   base::StringPiece host_trimmed = host;
   size_t len = host_trimmed.length();
