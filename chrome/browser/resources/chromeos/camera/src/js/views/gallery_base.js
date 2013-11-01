@@ -215,6 +215,7 @@ camera.views.GalleryBase.prototype.onKeyPressed = function(event) {
         else
           this.model.currentIndex = Math.max(0, this.model.currentIndex - 1);
       }
+      event.preventDefault();
       break;
     case 'Left':
       if (this.model.length) {
@@ -225,22 +226,25 @@ camera.views.GalleryBase.prototype.onKeyPressed = function(event) {
               Math.min(this.model.length - 1, this.model.currentIndex + 1);
         }
       }
+      event.preventDefault();
       break;
      case 'End':
       if (this.model.length)
         this.model.currentIndex = 0;
+      event.preventDefault();
       break;
     case 'Home':
       if (this.model.length)
         this.model.currentIndex = this.model.length - 1;
+      event.preventDefault();
       break;
     case 'U+007F':  // Delete.
-      event.preventDefault();
       this.deleteSelection();
+      event.preventDefault();
       break;
     case 'U+001B':  // Escape.
-      event.preventDefault();
       this.router.back();
+      event.preventDefault();
       break;
   }
 };
