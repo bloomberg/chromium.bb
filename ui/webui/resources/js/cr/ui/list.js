@@ -1283,9 +1283,15 @@ cr.define('cr.ui', function() {
    * @param {MouseEvent} e The mouse event object.
    */
   function handleMouseDown(e) {
+    var listItem = this.getListItemAncestor(e.target);
+    var wasSelected = listItem && listItem.selected;
     this.handlePointerDownUp_(e);
 
-    if (e.defaultPrevented)
+    if (e.defaultPrevented || e.button != 0)
+      return;
+
+    // The following hack is required only if the listItem gets selected.
+    if (!listItem || wasSelected || !listItem.selected)
       return;
 
     // If non-focusable area in a list item is clicked and the item still
@@ -1294,8 +1300,7 @@ cr.define('cr.ui', function() {
     //
     // [1] For example, clicking non-focusable area gives focus on the first
     // form control in the item.
-    var listItem = this.getListItemAncestor(e.target);
-    if (listItem && !tryFocusOnAncestor(e.target, listItem) &&
+    if (!tryFocusOnAncestor(e.target, listItem) &&
         listItem.contains(listItem.ownerDocument.activeElement)) {
       e.preventDefault();
     }
