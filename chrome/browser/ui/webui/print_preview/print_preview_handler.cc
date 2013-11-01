@@ -695,7 +695,8 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     settings->SetBoolean(printing::kSettingShouldPrintSelectionOnly, false);
 
 #if defined(USE_CUPS)
-    ConvertColorSettingToCUPSColorModel(settings.get());
+    if (!open_pdf_in_preview)  // We can get here even for cloud printers.
+      ConvertColorSettingToCUPSColorModel(settings.get());
 #endif
 
     // Set ID to know whether printing is for preview.
