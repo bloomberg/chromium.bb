@@ -436,6 +436,8 @@ bool GetNoDisplayFromDesktopFile(const std::string& shortcut_contents) {
     if (!g_strcmp0(nodisplay_c_string, "true"))
       nodisplay = true;
     g_free(nodisplay_c_string);
+  } else {
+    g_error_free(err);
   }
 
   g_key_file_free(key_file);
