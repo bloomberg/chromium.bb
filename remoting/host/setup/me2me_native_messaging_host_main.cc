@@ -5,7 +5,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "remoting/host/logging.h"
-#include "remoting/host/setup/native_messaging_host.h"
+#include "remoting/host/setup/me2me_native_messaging_host.h"
 
 int main(int argc, char** argv) {
   // This object instance is required by Chrome code (such as MessageLoop).

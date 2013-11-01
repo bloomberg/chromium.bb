@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_SETUP_NATIVE_MESSAGING_WRITER_H_
-#define REMOTING_HOST_SETUP_NATIVE_MESSAGING_WRITER_H_
+#ifndef REMOTING_HOST_NATIVE_MESSAGING_NATIVE_MESSAGING_WRITER_H_
+#define REMOTING_HOST_NATIVE_MESSAGING_NATIVE_MESSAGING_WRITER_H_
 
 #include "base/platform_file.h"
 #include "net/base/file_stream.h"
@@ -34,4 +34,4 @@ class NativeMessagingWriter {
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_SETUP_NATIVE_MESSAGING_WRITER_H_
+#endif  // REMOTING_HOST_NATIVE_MESSAGING_NATIVE_MESSAGING_WRITER_H_

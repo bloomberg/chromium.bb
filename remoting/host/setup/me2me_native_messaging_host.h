@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_SETUP_NATIVE_MESSAGING_HOST_H_
-#define REMOTING_HOST_SETUP_NATIVE_MESSAGING_HOST_H_
+#ifndef REMOTING_HOST_SETUP_ME2ME_NATIVE_MESSAGING_HOST_H_
+#define REMOTING_HOST_SETUP_ME2ME_NATIVE_MESSAGING_HOST_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "remoting/host/native_messaging/native_messaging_channel.h"
 #include "remoting/host/setup/daemon_controller.h"
-#include "remoting/host/setup/native_messaging_channel.h"
 #include "remoting/host/setup/oauth_client.h"
 
 namespace base {
@@ -155,4 +155,4 @@ int NativeMessagingHostMain();
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_SETUP_NATIVE_MESSAGING_HOST_H_
+#endif  // REMOTING_HOST_SETUP_ME2ME_NATIVE_MESSAGING_HOST_H_

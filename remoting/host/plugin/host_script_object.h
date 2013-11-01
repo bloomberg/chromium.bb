@@ -13,7 +13,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "remoting/base/auto_thread_task_runner.h"
-#include "remoting/host/it2me/it2me_impl.h"
+#include "remoting/host/it2me/it2me_host.h"
 #include "remoting/host/plugin/host_plugin_utils.h"
 #include "remoting/host/setup/daemon_controller.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
@@ -25,7 +25,7 @@ namespace remoting {
 // HostNPScriptObject creates threads that are required to run
 // ChromotingHost and starts/stops the host on those threads. When
 // destroyed it synchronously shuts down the host and all threads.
-class HostNPScriptObject : public It2MeImpl::Observer {
+class HostNPScriptObject : public It2MeHost::Observer {
  public:
   HostNPScriptObject(NPP plugin,
                      NPObject* parent,
@@ -157,7 +157,7 @@ class HostNPScriptObject : public It2MeImpl::Observer {
   bool StopDaemon(const NPVariant* args, uint32_t arg_count, NPVariant* result);
 
   //////////////////////////////////////////////////////////
-  // Implementation of It2MeImpl::Observer methods.
+  // Implementation of It2MeHost::Observer methods.
 
   // Notifies OnStateChanged handler of a state change.
   virtual void OnStateChanged(It2MeHostState state) OVERRIDE;
@@ -266,21 +266,21 @@ class HostNPScriptObject : public It2MeImpl::Observer {
   // It2Me host state.
 
   // Internal implementation of the It2Me host function.
-  scoped_refptr<It2MeImpl> it2me_impl_;
+  scoped_refptr<It2MeHost> it2me_host_;
 
-  // Cached, read-only copies of |it2me_impl_| session state.
+  // Cached, read-only copies of |it2me_host_| session state.
   It2MeHostState state_;
   std::string access_code_;
   base::TimeDelta access_code_lifetime_;
   std::string client_username_;
 
-  // IT2Me Talk server configuration used by |it2me_impl_| to connect.
+  // IT2Me Talk server configuration used by |it2me_host_| to connect.
   XmppSignalStrategy::XmppServerConfig xmpp_server_config_;
 
-  // Chromoting Bot JID used by |it2me_impl_| to register the host.
+  // Chromoting Bot JID used by |it2me_host_| to register the host.
   std::string directory_bot_jid_;
 
-  // Callbacks to notify in response to |it2me_impl_| events.
+  // Callbacks to notify in response to |it2me_host_| events.
   ScopedRefNPObject on_nat_traversal_policy_changed_func_;
   ScopedRefNPObject on_state_changed_func_;
 
