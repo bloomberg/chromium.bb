@@ -252,7 +252,7 @@ for platform in [
     # the nacl-win32_glibc_opt trybot). There are other builders that test
     # Windows builds via gyp, so the reduced test coverage should be slight.
     if arch == 'arm' or (platform == 'win' and arch == '32'):
-      pass#arch_flags += ' --no-gyp'
+      arch_flags += ' --no-gyp'
     if arch == '':
       arch_part = ''
       real_arch = '32'
