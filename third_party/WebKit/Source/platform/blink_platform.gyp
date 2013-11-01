@@ -41,11 +41,13 @@
     'dependencies': [
       '../config.gyp:config',
       '../wtf/wtf.gyp:wtf',
-      # FIXME: Can we remove the dependency on Skia?
+      # FIXME: Can we remove the dependencies on V8 and Skia?
       '<(DEPTH)/skia/skia.gyp:skia',
+      '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
     ],
     'export_dependent_settings': [
       '<(DEPTH)/skia/skia.gyp:skia',
+      '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
     ],
     'defines': [
       'BLINK_COMMON_IMPLEMENTATION=1',
