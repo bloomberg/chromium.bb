@@ -184,20 +184,30 @@ this::
 Set the CHROME_PATH environment variable to the location of your Chrome
 executable.
 
-On Windows::
+* On Windows:
 
-  > set CHROME_PATH=<Path to chrome.exe>
+  The default install location of Chrome is
+  ``C:\Program Files (x86)\Google\Chrome\Application\chrome.exe`` for Chrome
+  stable and
+  ``C:\Users\<username>\AppData\Local\Google\Chrome SxS\Application\chrome.exe``
+  for Chrome Canary; try looking in those directories first::
 
-On Linux::
+    > set CHROME_PATH=<Path to chrome.exe>
 
-  $ export CHROME_PATH=<Path to google-chrome>
+* On Linux::
 
-On Mac::
+    $ export CHROME_PATH=<Path to google-chrome>
 
-  $ export CHROME_PATH=<Path to chrome>
+* On Mac:
 
-.. **TODO(binji):** use default Chrome paths here, especially
-.. important for Mac:
+  The default install location of Chrome is
+  ``/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`` for
+  Chrome Stable and
+  ``Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary``
+  for Chrome Canary. Note that you have to reference the executable inside the
+  application bundle, not the top-level ``.app`` directory::
+
+    $ export CHROME_PATH=<Path to Google Chrome>
 
 You can run via a different toolchain or configuration by using the
 ``TOOLCHAIN`` and ``CONFIG`` parameters to make::
