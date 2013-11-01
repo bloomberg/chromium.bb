@@ -337,6 +337,7 @@ public:
     bool hasFilter() const { return renderer()->hasFilter(); }
 
     bool hasBlendMode() const;
+    bool paintsWithBlendMode() const { return hasBlendMode() && compositingState() != PaintsIntoOwnBacking; }
 
     void* operator new(size_t);
     // Only safe to call from RenderLayerModelObject::destroyLayer()

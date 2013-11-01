@@ -865,7 +865,7 @@ void RenderLayer::updateDescendantDependentFlags()
             if (!child->stackingNode()->isStackingContext())
                 child->updateDescendantDependentFlags();
 
-            bool childLayerHasBlendMode = child->hasBlendMode() || (child->m_childLayerHasBlendMode && !child->stackingNode()->isStackingContext());
+            bool childLayerHasBlendMode = child->paintsWithBlendMode() || (child->m_childLayerHasBlendMode && !child->stackingNode()->isStackingContext());
             m_childLayerHasBlendMode |= childLayerHasBlendMode;
 
             if (m_childLayerHasBlendMode)
@@ -1338,19 +1338,19 @@ LayoutRect RenderLayer::paintingExtent(const RenderLayer* rootLayer, const Layou
 void RenderLayer::beginTransparencyLayers(GraphicsContext* context, const RenderLayer* rootLayer, const LayoutRect& paintDirtyRect, PaintBehavior paintBehavior)
 {
     bool createTransparencyLayerForBlendMode = m_stackingNode->isStackingContext() && m_childLayerHasBlendMode;
-    if (context->paintingDisabled() || ((paintsWithTransparency(paintBehavior) || hasBlendMode() || createTransparencyLayerForBlendMode) && m_usedTransparency))
+    if (context->paintingDisabled() || ((paintsWithTransparency(paintBehavior) || paintsWithBlendMode() || createTransparencyLayerForBlendMode) && m_usedTransparency))
         return;
 
     RenderLayer* ancestor = transparentPaintingAncestor();
     if (ancestor)
         ancestor->beginTransparencyLayers(context, rootLayer, paintDirtyRect, paintBehavior);
 
-    if (paintsWithTransparency(paintBehavior) || hasBlendMode() || createTransparencyLayerForBlendMode) {
+    if (paintsWithTransparency(paintBehavior) || paintsWithBlendMode() || createTransparencyLayerForBlendMode) {
         m_usedTransparency = true;
         context->save();
         LayoutRect clipRect = paintingExtent(rootLayer, paintDirtyRect, paintBehavior);
         context->clip(clipRect);
-        if (hasBlendMode())
+        if (paintsWithBlendMode())
             context->setCompositeOperation(context->compositeOperation(), m_blendMode);
 
         context->beginTransparencyLayer(renderer()->opacity());
@@ -1407,7 +1407,7 @@ void RenderLayer::addChild(RenderLayer* child, RenderLayer* beforeChild)
     if (child->isSelfPaintingLayer() || child->hasSelfPaintingLayerDescendant())
         setAncestorChainHasSelfPaintingLayerDescendant();
 
-    if (child->hasBlendMode() || child->childLayerHasBlendMode())
+    if (child->paintsWithBlendMode() || child->childLayerHasBlendMode())
         setAncestorChainBlendedDescendant();
 
     if (subtreeContainsOutOfFlowPositionedLayer(child)) {
@@ -1468,7 +1468,7 @@ RenderLayer* RenderLayer::removeChild(RenderLayer* oldChild)
     if (oldChild->m_hasVisibleContent || oldChild->m_hasVisibleDescendant)
         dirtyAncestorChainVisibleDescendantStatus();
 
-    if (oldChild->hasBlendMode() || oldChild->childLayerHasBlendMode())
+    if (oldChild->paintsWithBlendMode() || oldChild->childLayerHasBlendMode())
         dirtyAncestorChainBlendedDescendantStatus();
 
     if (oldChild->isSelfPaintingLayer() || oldChild->hasSelfPaintingLayerDescendant())
@@ -2216,7 +2216,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
     }
 
     // End our transparency layer
-    if ((haveTransparency || hasBlendMode() || createTransparencyLayerForBlendMode) && m_usedTransparency && !(m_reflectionInfo && m_reflectionInfo->isPaintingInsideReflection())) {
+    if ((haveTransparency || paintsWithBlendMode() || createTransparencyLayerForBlendMode) && m_usedTransparency && !(m_reflectionInfo && m_reflectionInfo->isPaintingInsideReflection())) {
         context->endLayer();
         context->restore();
         m_usedTransparency = false;
@@ -2401,7 +2401,7 @@ void RenderLayer::paintBackgroundForFragments(const LayerFragments& layerFragmen
             continue;
 
         // Begin transparency layers lazily now that we know we have to paint something.
-        if (haveTransparency || hasBlendMode())
+        if (haveTransparency || paintsWithBlendMode())
             beginTransparencyLayers(transparencyLayerContext, localPaintingInfo.rootLayer, transparencyPaintDirtyRect, localPaintingInfo.paintBehavior);
 
         if (localPaintingInfo.clipToDirtyRect) {
@@ -2425,7 +2425,7 @@ void RenderLayer::paintForegroundForFragments(const LayerFragments& layerFragmen
     RenderObject* paintingRootForRenderer, bool selectionOnly, bool forceBlackText)
 {
     // Begin transparency if we have something to paint.
-    if (haveTransparency || hasBlendMode()) {
+    if (haveTransparency || paintsWithBlendMode()) {
         for (size_t i = 0; i < layerFragments.size(); ++i) {
             const LayerFragment& fragment = layerFragments.at(i);
             if (fragment.shouldPaintContent && !fragment.foregroundRect.isEmpty()) {
