@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_DATABASE_H_
 #define CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_DATABASE_H_
 
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
 
+#include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -39,7 +41,8 @@ class SafeBrowsingDatabaseFactory {
       bool enable_client_side_whitelist,
       bool enable_download_whitelist,
       bool enable_extension_blacklist,
-      bool enable_side_effect_free_whitelist) = 0;
+      bool enable_side_effect_free_whitelist,
+      bool enable_ip_blacklist) = 0;
  private:
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingDatabaseFactory);
 };
@@ -67,11 +70,14 @@ class SafeBrowsingDatabase {
   // database feature.
   // |enable_download_whitelist| is used to control the download whitelist
   // database feature.
+  // |enable_ip_blacklist| is used to control the csd malware IP blacklist
+  // database feature.
   static SafeBrowsingDatabase* Create(bool enable_download_protection,
                                       bool enable_client_side_whitelist,
                                       bool enable_download_whitelist,
                                       bool enable_extension_blacklist,
-                                      bool side_effect_free_whitelist);
+                                      bool side_effect_free_whitelist,
+                                      bool enable_ip_blacklist);
 
   // Makes the passed |factory| the factory used to instantiate
   // a SafeBrowsingDatabase. This is used for tests.
@@ -135,6 +141,9 @@ class SafeBrowsingDatabase {
   // Returns false unless the hash of |url| is on the side-effect free
   // whitelist.
   virtual bool ContainsSideEffectFreeWhitelistUrl(const GURL& url) = 0;
+
+  // Returns true iff the given IP is currently on the csd malware IP blacklist.
+  virtual bool ContainsMalwareIP(const std::string& ip_address) = 0;
 
   // A database transaction should look like:
   //
@@ -207,6 +216,10 @@ class SafeBrowsingDatabase {
   static base::FilePath SideEffectFreeWhitelistDBFilename(
       const base::FilePath& side_effect_free_whitelist_base_filename);
 
+  // Filename for the csd malware IP blacklist database.
+  static base::FilePath IpBlacklistDBFilename(
+      const base::FilePath& ip_blacklist_base_filename);
+
   // Enumerate failures for histogramming purposes.  DO NOT CHANGE THE
   // ORDERING OF THESE VALUES.
   enum FailureType {
@@ -237,6 +250,10 @@ class SafeBrowsingDatabase {
     FAILURE_SIDE_EFFECT_FREE_WHITELIST_PREFIX_SET_READ,
     FAILURE_SIDE_EFFECT_FREE_WHITELIST_PREFIX_SET_WRITE,
     FAILURE_SIDE_EFFECT_FREE_WHITELIST_PREFIX_SET_DELETE,
+    FAILURE_IP_BLACKLIST_UPDATE_BEGIN,
+    FAILURE_IP_BLACKLIST_UPDATE_FINISH,
+    FAILURE_IP_BLACKLIST_UPDATE_INVALID,
+    FAILURE_IP_BLACKLIST_DELETE,
 
     // Memory space for histograms is determined by the max.  ALWAYS
     // ADD NEW VALUES BEFORE THIS ONE.
@@ -258,13 +275,15 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // csd whitelist store objects. Takes ownership of all the store objects.
   // When |download_store| is NULL, the database will ignore any operations
   // related download (url hashes and binary hashes).  The same is true for
-  // the |csd_whitelist_store| and |download_whitelist_store|.
+  // the |csd_whitelist_store|, |download_whitelist_store| and
+  // |ip_blacklist_store|.
   SafeBrowsingDatabaseNew(SafeBrowsingStore* browse_store,
                           SafeBrowsingStore* download_store,
                           SafeBrowsingStore* csd_whitelist_store,
                           SafeBrowsingStore* download_whitelist_store,
                           SafeBrowsingStore* extension_blacklist_store,
-                          SafeBrowsingStore* side_effect_free_whitelist_store);
+                          SafeBrowsingStore* side_effect_free_whitelist_store,
+                          SafeBrowsingStore* ip_blacklist_store);
 
   // Create a database with a browse store. This is a legacy interface that
   // useds Sqlite.
@@ -291,6 +310,7 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
       const std::vector<SBPrefix>& prefixes,
       std::vector<SBPrefix>* prefix_hits) OVERRIDE;
   virtual bool ContainsSideEffectFreeWhitelistUrl(const GURL& url)  OVERRIDE;
+  virtual bool ContainsMalwareIP(const std::string& ip_address) OVERRIDE;
   virtual bool UpdateStarted(std::vector<SBListChunkRanges>* lists) OVERRIDE;
   virtual void InsertChunks(const std::string& list_name,
                             const SBChunkList& chunks) OVERRIDE;
@@ -312,6 +332,11 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // in a sorted vector) as well as a boolean flag indicating whether all
   // lookups in the whitelist should be considered matches for safety.
   typedef std::pair<std::vector<SBFullHash>, bool> SBWhitelist;
+
+  // This map holds a csd malware IP blacklist which maps a prefix mask
+  // to a set of hashed blacklisted IP prefixes.  Each IP prefix is a hashed
+  // IPv6 IP prefix using SHA-1.
+  typedef std::map<std::string, base::hash_set<std::string> > IPBlacklist;
 
   // Returns true if the whitelist is disabled or if any of the given hashes
   // matches the whitelist.
@@ -341,6 +366,9 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // result in all lookups to the whitelist to return true.
   void WhitelistEverything(SBWhitelist* whitelist);
 
+  // Parses the IP blacklist from the given full-length hashes.
+  void LoadIpBlacklist(const std::vector<SBAddFullHash>& full_hashes);
+
   // Helpers for handling database corruption.
   // |OnHandleCorruptDatabase()| runs |ResetDatabase()| and sets
   // |corruption_detected_|, |HandleCorruptDatabase()| posts
@@ -368,6 +396,7 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   void UpdateWhitelistStore(const base::FilePath& store_filename,
                             SafeBrowsingStore* store,
                             SBWhitelist* whitelist);
+  void UpdateIpBlacklistStore();
 
   // Used to verify that various calls are made from the thread the
   // object was created on.
@@ -405,9 +434,16 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   base::FilePath side_effect_free_whitelist_filename_;
   scoped_ptr<SafeBrowsingStore> side_effect_free_whitelist_store_;
 
+  // For IP blacklist.
+  base::FilePath ip_blacklist_filename_;
+  scoped_ptr<SafeBrowsingStore> ip_blacklist_store_;
+
   SBWhitelist csd_whitelist_;
   SBWhitelist download_whitelist_;
   SBWhitelist extension_blacklist_;
+
+  // The IP blacklist should be small.  At most a couple hundred IPs.
+  IPBlacklist ip_blacklist_;
 
   // Cached browse store related full-hash items, ordered by prefix for
   // efficient scanning.

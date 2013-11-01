@@ -162,6 +162,10 @@ class SafeBrowsingDatabaseManager
   // thread.
   virtual bool MatchCsdWhitelistUrl(const GURL& url);
 
+  // Check if the given IP address (either IPv4 or IPv6) matches the malware
+  // IP blacklist.
+  virtual bool MatchMalwareIP(const std::string& ip_address);
+
   // Check if the |url| matches any of the full-length hashes from the
   // download whitelist.  Returns true if there was a match and false otherwise.
   // To make sure we are conservative we will return true if an error occurs.
@@ -391,6 +395,9 @@ class SafeBrowsingDatabaseManager
 
   // Indicate if the side effect free whitelist should be enabled.
   bool enable_side_effect_free_whitelist_;
+
+  // Indicate if the csd malware IP blacklist should be enabled.
+  bool enable_ip_blacklist_;
 
   // The SafeBrowsing thread that runs database operations.
   //

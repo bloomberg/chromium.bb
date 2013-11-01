@@ -8,12 +8,14 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/sha1.h"
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_unittest_helper.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "crypto/sha2.h"
+#include "net/base/net_util.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,6 +35,18 @@ SBPrefix Sha256Prefix(const std::string& str) {
 SBFullHash Sha256Hash(const std::string& str) {
   SBFullHash hash;
   crypto::SHA256HashString(str, &hash, sizeof(hash));
+  return hash;
+}
+
+std::string HashedIpPrefix(const std::string& ip_prefix, size_t prefix_size) {
+  net::IPAddressNumber ip_number;
+  EXPECT_TRUE(net::ParseIPLiteralToNumber(ip_prefix, &ip_number));
+  EXPECT_EQ(net::kIPv6AddressSize, ip_number.size());
+  const std::string hashed_ip_prefix = base::SHA1HashString(
+      net::IPAddressToPackedString(ip_number));
+  std::string hash(crypto::kSHA256Length, '\0');
+  hash.replace(0, hashed_ip_prefix.size(), hashed_ip_prefix);
+  hash[base::kSHA1Length] = static_cast<char>(prefix_size);
   return hash;
 }
 
@@ -75,6 +89,25 @@ void InsertAddChunkHostFullHashes(SBChunk* chunk,
   host.entry = SBEntry::Create(SBEntry::ADD_FULL_HASH, 1);
   host.entry->set_chunk_id(chunk->chunk_number);
   host.entry->SetFullHashAt(0, Sha256Hash(url));
+  chunk->hosts.push_back(host);
+}
+
+void InsertAddChunkFullHash(SBChunk* chunk,
+                            int chunk_number,
+                            const std::string& ip_str,
+                            size_t prefix_size) {
+  const std::string full_hash_str = HashedIpPrefix(ip_str, prefix_size);
+  EXPECT_EQ(sizeof(SBFullHash), full_hash_str.size());
+  SBFullHash full_hash;
+  std::memcpy(&(full_hash.full_hash), full_hash_str.data(), sizeof(SBFullHash));
+
+  chunk->chunk_number = chunk_number;
+  chunk->is_add = true;
+  SBChunkHost host;
+  host.host = full_hash.prefix;
+  host.entry = SBEntry::Create(SBEntry::ADD_FULL_HASH, 1);
+  host.entry->set_chunk_id(chunk->chunk_number);
+  host.entry->SetFullHashAt(0, full_hash);
   chunk->hosts.push_back(host);
 }
 
@@ -369,12 +402,14 @@ TEST_F(SafeBrowsingDatabaseTest, ListNameForBrowseAndDownload) {
   SafeBrowsingStoreFile* download_whitelist_store = new SafeBrowsingStoreFile();
   SafeBrowsingStoreFile* extension_blacklist_store =
       new SafeBrowsingStoreFile();
+  SafeBrowsingStoreFile* ip_blacklist_store = new SafeBrowsingStoreFile();
   database_.reset(new SafeBrowsingDatabaseNew(browse_store,
                                               download_store,
                                               csd_whitelist_store,
                                               download_whitelist_store,
                                               extension_blacklist_store,
-                                              NULL));
+                                              NULL,
+                                              ip_blacklist_store));
   database_->Init(database_filename_);
 
   SBChunkList chunks;
@@ -424,7 +459,6 @@ TEST_F(SafeBrowsingDatabaseTest, ListNameForBrowseAndDownload) {
   chunks.push_back(chunk);
   database_->InsertChunks(safe_browsing_util::kDownloadWhiteList, chunks);
 
-
   chunk.hosts.clear();
   InsertAddChunkHostFullHashes(&chunk, 8,
                                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
@@ -434,10 +468,17 @@ TEST_F(SafeBrowsingDatabaseTest, ListNameForBrowseAndDownload) {
   chunks.push_back(chunk);
   database_->InsertChunks(safe_browsing_util::kExtensionBlacklist, chunks);
 
+  chunk.hosts.clear();
+  InsertAddChunkFullHash(&chunk, 9, "::ffff:192.168.1.0", 120);
+
+  chunks.clear();
+  chunks.push_back(chunk);
+  database_->InsertChunks(safe_browsing_util::kIPBlacklist, chunks);
+
   database_->UpdateFinished(true);
 
   GetListsInfo(&lists);
-  ASSERT_EQ(6U, lists.size());
+  ASSERT_EQ(7U, lists.size());
   EXPECT_TRUE(lists[0].name == safe_browsing_util::kMalwareList);
   EXPECT_EQ(lists[0].adds, "1");
   EXPECT_TRUE(lists[0].subs.empty());
@@ -457,6 +498,10 @@ TEST_F(SafeBrowsingDatabaseTest, ListNameForBrowseAndDownload) {
   EXPECT_TRUE(lists[5].name == safe_browsing_util::kExtensionBlacklist);
   EXPECT_EQ(lists[5].adds, "8");
   EXPECT_TRUE(lists[5].subs.empty());
+  EXPECT_TRUE(lists[6].name == safe_browsing_util::kIPBlacklist);
+  EXPECT_EQ(lists[6].adds, "9");
+  EXPECT_TRUE(lists[6].subs.empty());
+
   database_.reset();
 }
 
@@ -1081,7 +1126,7 @@ TEST_F(SafeBrowsingDatabaseTest, DISABLED_FileCorruptionHandling) {
   base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
   SafeBrowsingStoreFile* store = new SafeBrowsingStoreFile();
   database_.reset(new SafeBrowsingDatabaseNew(store, NULL, NULL, NULL, NULL,
-                                              NULL));
+                                              NULL, NULL));
   database_->Init(database_filename_);
 
   // This will cause an empty database to be created.
@@ -1154,6 +1199,7 @@ TEST_F(SafeBrowsingDatabaseTest, ContainsDownloadUrl) {
   database_.reset(new SafeBrowsingDatabaseNew(browse_store,
                                               download_store,
                                               csd_whitelist_store,
+                                              NULL,
                                               NULL,
                                               NULL,
                                               NULL));
@@ -1257,7 +1303,8 @@ TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
 
   // If the whitelist is disabled everything should match the whitelist.
   database_.reset(new SafeBrowsingDatabaseNew(new SafeBrowsingStoreFile(),
-                                              NULL, NULL, NULL, NULL, NULL));
+                                              NULL, NULL, NULL, NULL, NULL,
+                                              NULL));
   database_->Init(database_filename_);
   EXPECT_TRUE(database_->ContainsDownloadWhitelistedUrl(
       GURL(std::string("http://www.phishing.com/"))));
@@ -1274,7 +1321,7 @@ TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
                                               csd_whitelist_store,
                                               download_whitelist_store,
                                               extension_blacklist_store,
-                                              NULL));
+                                              NULL, NULL));
   database_->Init(database_filename_);
 
   const char kGood1Host[] = "www.good1.com/";
@@ -1686,4 +1733,102 @@ TEST_F(SafeBrowsingDatabaseTest, FilterFile) {
   EXPECT_FALSE(database_->ContainsBrowseUrl(
       GURL("http://www.good.com/goodware.html"),
       &matching_list, &prefix_hits, &full_hashes, now));
+}
+
+TEST_F(SafeBrowsingDatabaseTest, MalwareIpBlacklist) {
+  database_.reset();
+  SafeBrowsingStoreFile* browse_store = new SafeBrowsingStoreFile();
+  SafeBrowsingStoreFile* ip_blacklist_store = new SafeBrowsingStoreFile();
+  database_.reset(new SafeBrowsingDatabaseNew(browse_store,
+                                              NULL,
+                                              NULL,
+                                              NULL,
+                                              NULL,
+                                              NULL,
+                                              ip_blacklist_store));
+  database_->Init(database_filename_);
+  std::vector<SBListChunkRanges> lists;
+  EXPECT_TRUE(database_->UpdateStarted(&lists));
+
+  // IPv4 prefix match for ::ffff:192.168.1.0/120.
+  SBChunkList chunks;
+  SBChunk chunk;
+  InsertAddChunkFullHash(&chunk, 1, "::ffff:192.168.1.0", 120);
+  chunks.push_back(chunk);
+  database_->InsertChunks(safe_browsing_util::kIPBlacklist, chunks);
+
+  // IPv4 exact match for ::ffff:192.1.1.1.
+  chunks.clear();
+  chunk.hosts.clear();
+  InsertAddChunkFullHash(&chunk, 2, "::ffff:192.1.1.1", 128);
+  chunks.push_back(chunk);
+  database_->InsertChunks(safe_browsing_util::kIPBlacklist, chunks);
+
+  // IPv6 exact match for: fe80::31a:a0ff:fe10:786e/128.
+  chunks.clear();
+  chunk.hosts.clear();
+  InsertAddChunkFullHash(&chunk, 3, "fe80::31a:a0ff:fe10:786e", 128);
+  chunks.push_back(chunk);
+  database_->InsertChunks(safe_browsing_util::kIPBlacklist, chunks);
+
+  // IPv6 prefix match for: 2620:0:1000:3103::/64.
+  chunks.clear();
+  chunk.hosts.clear();
+  InsertAddChunkFullHash(&chunk, 4, "2620:0:1000:3103::", 64);
+  chunks.push_back(chunk);
+  database_->InsertChunks(safe_browsing_util::kIPBlacklist, chunks);
+
+  // IPv4 prefix match for ::ffff:192.1.122.0/119.
+  chunks.clear();
+  chunk.hosts.clear();
+  InsertAddChunkFullHash(&chunk, 5, "::ffff:192.1.122.0", 119);
+  chunks.push_back(chunk);
+  database_->InsertChunks(safe_browsing_util::kIPBlacklist, chunks);
+
+  // IPv4 prefix match for ::ffff:192.1.128.0/113.
+  chunks.clear();
+  chunk.hosts.clear();
+  InsertAddChunkFullHash(&chunk, 6, "::ffff:192.1.128.0", 113);
+  chunks.push_back(chunk);
+  database_->InsertChunks(safe_browsing_util::kIPBlacklist, chunks);
+
+  database_->UpdateFinished(true);
+
+  EXPECT_FALSE(database_->ContainsMalwareIP("192.168.0.255"));
+  EXPECT_TRUE(database_->ContainsMalwareIP("192.168.1.0"));
+  EXPECT_TRUE(database_->ContainsMalwareIP("192.168.1.255"));
+  EXPECT_TRUE(database_->ContainsMalwareIP("192.168.1.10"));
+  EXPECT_TRUE(database_->ContainsMalwareIP("::ffff:192.168.1.2"));
+  EXPECT_FALSE(database_->ContainsMalwareIP("192.168.2.0"));
+
+  EXPECT_FALSE(database_->ContainsMalwareIP("192.1.1.0"));
+  EXPECT_TRUE(database_->ContainsMalwareIP("192.1.1.1"));
+  EXPECT_FALSE(database_->ContainsMalwareIP("192.1.1.2"));
+
+  EXPECT_FALSE(database_->ContainsMalwareIP(
+      "2620:0:1000:3102:ffff:ffff:ffff:ffff"));
+  EXPECT_TRUE(database_->ContainsMalwareIP("2620:0:1000:3103::"));
+  EXPECT_TRUE(database_->ContainsMalwareIP(
+      "2620:0:1000:3103:ffff:ffff:ffff:ffff"));
+  EXPECT_FALSE(database_->ContainsMalwareIP("2620:0:1000:3104::"));
+
+  EXPECT_FALSE(database_->ContainsMalwareIP("fe80::21a:a0ff:fe10:786d"));
+  EXPECT_TRUE(database_->ContainsMalwareIP("fe80::31a:a0ff:fe10:786e"));
+  EXPECT_FALSE(database_->ContainsMalwareIP("fe80::21a:a0ff:fe10:786f"));
+
+  EXPECT_FALSE(database_->ContainsMalwareIP("192.1.121.255"));
+  EXPECT_TRUE(database_->ContainsMalwareIP("192.1.122.0"));
+  EXPECT_TRUE(database_->ContainsMalwareIP("::ffff:192.1.122.1"));
+  EXPECT_TRUE(database_->ContainsMalwareIP("192.1.122.255"));
+  EXPECT_TRUE(database_->ContainsMalwareIP("192.1.123.0"));
+  EXPECT_TRUE(database_->ContainsMalwareIP("192.1.123.255"));
+  EXPECT_FALSE(database_->ContainsMalwareIP("192.1.124.0"));
+
+  EXPECT_FALSE(database_->ContainsMalwareIP("192.1.127.255"));
+  EXPECT_TRUE(database_->ContainsMalwareIP("192.1.128.0"));
+  EXPECT_TRUE(database_->ContainsMalwareIP("::ffff:192.1.128.1"));
+  EXPECT_TRUE(database_->ContainsMalwareIP("192.1.128.255"));
+  EXPECT_TRUE(database_->ContainsMalwareIP("192.1.255.0"));
+  EXPECT_TRUE(database_->ContainsMalwareIP("192.1.255.255"));
+  EXPECT_FALSE(database_->ContainsMalwareIP("192.2.0.0"));
 }

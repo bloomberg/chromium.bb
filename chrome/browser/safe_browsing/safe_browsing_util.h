@@ -299,6 +299,8 @@ extern const char kDownloadWhiteList[];
 extern const char kExtensionBlacklist[];
 // SafeBrowsing side-effect free whitelist name.
 extern const char kSideEffectFreeWhitelist[];
+// SafeBrowsing csd malware IP blacklist name.
+extern const char kIPBlacklist[];
 
 enum ListType {
   INVALID = -1,
@@ -316,6 +318,8 @@ enum ListType {
   // See above comment. Leave 9 available.
   SIDEEFFECTFREEWHITELIST = 10,
   // See above comment. Leave 11 available.
+  IPBLACKLIST = 12,
+  // See above comment.  Leave 13 available.
 };
 
 // Maps a list name to ListType.

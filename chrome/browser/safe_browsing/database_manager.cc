@@ -150,6 +150,7 @@ SafeBrowsingDatabaseManager::SafeBrowsingDatabaseManager(
       enable_download_whitelist_(false),
       enable_extension_blacklist_(false),
       enable_side_effect_free_whitelist_(false),
+      enable_ip_blacklist_(false),
       update_in_progress_(false),
       database_update_in_progress_(false),
       closing_database_(false),
@@ -178,6 +179,10 @@ SafeBrowsingDatabaseManager::SafeBrowsingDatabaseManager(
   enable_side_effect_free_whitelist_ =
       prerender::IsSideEffectFreeWhitelistEnabled() &&
       !cmdline->HasSwitch(switches::kSbDisableSideEffectFreeWhitelist);
+
+  // The client-side IP blacklist feature is tightly integrated with client-side
+  // phishing protection for now.
+  enable_ip_blacklist_ = enable_csd_whitelist_;
 
   enum SideEffectFreeWhitelistStatus {
     SIDE_EFFECT_FREE_WHITELIST_ENABLED,
@@ -292,6 +297,15 @@ bool SafeBrowsingDatabaseManager::CheckSideEffectFreeWhitelistUrl(
     return false;
 
   return database_->ContainsSideEffectFreeWhitelistUrl(url);
+}
+
+bool SafeBrowsingDatabaseManager::MatchMalwareIP(
+    const std::string& ip_address) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!enabled_ || !enable_ip_blacklist_ || !MakeDatabaseAvailable()) {
+    return false;  // Fail open.
+  }
+  return database_->ContainsMalwareIP(ip_address);
 }
 
 bool SafeBrowsingDatabaseManager::MatchCsdWhitelistUrl(const GURL& url) {
@@ -664,7 +678,8 @@ SafeBrowsingDatabase* SafeBrowsingDatabaseManager::GetDatabase() {
                                    enable_csd_whitelist_,
                                    enable_download_whitelist_,
                                    enable_extension_blacklist_,
-                                   enable_side_effect_free_whitelist_);
+                                   enable_side_effect_free_whitelist_,
+                                   enable_ip_blacklist_);
 
   database->Init(SafeBrowsingService::GetBaseFilename());
   {

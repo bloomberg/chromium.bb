@@ -165,6 +165,7 @@ const char kCsdWhiteList[] = "goog-csdwhite-sha256";
 const char kDownloadWhiteList[] = "goog-downloadwhite-digest256";
 const char kExtensionBlacklist[] = "goog-badcrxids-digestvar";
 const char kSideEffectFreeWhitelist[] = "goog-sideeffectfree-shavar";
+const char kIPBlacklist[] = "goog-badip-digest256";
 
 ListType GetListId(const std::string& name) {
   ListType id;
@@ -184,6 +185,8 @@ ListType GetListId(const std::string& name) {
     id = EXTENSIONBLACKLIST;
   } else if (name == safe_browsing_util::kSideEffectFreeWhitelist) {
     id = SIDEEFFECTFREEWHITELIST;
+  } else if (name == safe_browsing_util::kIPBlacklist) {
+    id = IPBLACKLIST;
   } else {
     id = INVALID;
   }
@@ -215,6 +218,9 @@ bool GetListName(ListType list_id, std::string* list) {
       break;
     case SIDEEFFECTFREEWHITELIST:
       *list = safe_browsing_util::kSideEffectFreeWhitelist;
+      break;
+    case IPBLACKLIST:
+      *list = safe_browsing_util::kIPBlacklist;
       break;
     default:
       return false;
