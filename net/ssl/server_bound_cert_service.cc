@@ -98,15 +98,13 @@ scoped_ptr<ServerBoundCertStore::ServerBoundCert> GenerateCert(
       not_valid_before + base::TimeDelta::FromDays(kValidityPeriodInDays);
   std::string der_cert;
   std::vector<uint8> private_key_info;
-  scoped_ptr<crypto::ECPrivateKey> key(crypto::ECPrivateKey::Create());
-  if (!key.get()) {
-    DLOG(ERROR) << "Unable to create key pair for client";
-    *error = ERR_KEY_GENERATION_FAILED;
-    return result.Pass();
-  }
-  if (!x509_util::CreateDomainBoundCertEC(key.get(), server_identifier,
-                                          serial_number, not_valid_before,
-                                          not_valid_after, &der_cert)) {
+  scoped_ptr<crypto::ECPrivateKey> key;
+  if (!x509_util::CreateKeyAndDomainBoundCertEC(server_identifier,
+                                                serial_number,
+                                                not_valid_before,
+                                                not_valid_after,
+                                                &key,
+                                                &der_cert)) {
     DLOG(ERROR) << "Unable to create x509 cert for client";
     *error = ERR_ORIGIN_BOUND_CERT_GENERATION_FAILED;
     return result.Pass();

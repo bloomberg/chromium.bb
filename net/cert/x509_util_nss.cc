@@ -134,6 +134,16 @@ CERTCertificate* CreateCertificate(
   return cert;
 }
 
+SECOidTag ToSECOid(x509_util::DigestAlgorithm alg) {
+  switch (alg) {
+    case x509_util::DIGEST_SHA1:
+      return SEC_OID_SHA1;
+    case x509_util::DIGEST_SHA256:
+      return SEC_OID_SHA256;
+  }
+  return SEC_OID_UNKNOWN;
+}
+
 // Signs a certificate object, with |key| generating a new X509Certificate
 // and destroying the passed certificate object (even when NULL is returned).
 // The logic of this method references SignCert() in NSS utility certutil:
@@ -142,11 +152,12 @@ CERTCertificate* CreateCertificate(
 // certificate signing process.
 bool SignCertificate(
     CERTCertificate* cert,
-    SECKEYPrivateKey* key) {
+    SECKEYPrivateKey* key,
+    SECOidTag hash_algorithm) {
   // |arena| is used to encode the cert.
   PLArenaPool* arena = cert->arena;
   SECOidTag algo_id = SEC_GetSignatureAlgorithmOidTag(key->keyType,
-                                                      SEC_OID_SHA1);
+                                                      hash_algorithm);
   if (algo_id == SEC_OID_UNKNOWN)
     return false;
 
@@ -240,6 +251,7 @@ CERTName* CreateCertNameFromEncoded(PLArenaPool* arena,
 namespace x509_util {
 
 bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
+                          DigestAlgorithm alg,
                           const std::string& subject,
                           uint32 serial_number,
                           base::Time not_valid_before,
@@ -255,7 +267,7 @@ bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
   if (!cert)
     return false;
 
-  if (!SignCertificate(cert, key->key())) {
+  if (!SignCertificate(cert, key->key(), ToSECOid(alg))) {
     CERT_DestroyCertificate(cert);
     return false;
   }
@@ -280,6 +292,7 @@ bool IsSupportedValidityRange(base::Time not_valid_before,
 }
 
 bool CreateDomainBoundCertEC(crypto::ECPrivateKey* key,
+                             DigestAlgorithm alg,
                              const std::string& domain,
                              uint32 serial_number,
                              base::Time not_valid_before,
@@ -341,7 +354,7 @@ bool CreateDomainBoundCertEC(crypto::ECPrivateKey* key,
     return false;
   }
 
-  if (!SignCertificate(cert, key->key())) {
+  if (!SignCertificate(cert, key->key(), ToSECOid(alg))) {
     CERT_DestroyCertificate(cert);
     return false;
   }

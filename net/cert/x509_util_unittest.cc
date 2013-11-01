@@ -52,22 +52,21 @@ TEST(X509UtilTest, SortClientCertificates) {
   ASSERT_FALSE(certs[5].get());
 }
 
-// This test creates a self-signed cert from a private key and then verify the
+// This test creates a self-signed cert and a private key and then verifies the
 // content of the certificate.
-TEST(X509UtilTest, CreateSelfSigned) {
-  scoped_ptr<crypto::RSAPrivateKey> private_key(
-      crypto::RSAPrivateKey::Create(1024));
-
-  ASSERT_TRUE(private_key.get());
+TEST(X509UtilTest, CreateKeyAndSelfSigned) {
+  scoped_ptr<crypto::RSAPrivateKey> private_key;
 
   std::string der_cert;
-  ASSERT_TRUE(x509_util::CreateSelfSignedCert(
-      private_key.get(),
+  ASSERT_TRUE(x509_util::CreateKeyAndSelfSignedCert(
       "CN=subject",
       1,
       base::Time::Now(),
       base::Time::Now() + base::TimeDelta::FromDays(1),
+      &private_key,
       &der_cert));
+
+  ASSERT_TRUE(private_key.get());
 
   scoped_refptr<X509Certificate> cert(X509Certificate::CreateFromBytes(
       der_cert.data(), der_cert.size()));
@@ -75,9 +74,11 @@ TEST(X509UtilTest, CreateSelfSigned) {
 
   EXPECT_EQ("subject", cert->subject().GetDisplayName());
   EXPECT_FALSE(cert->HasExpired());
+}
 
-  cert = NULL;
-
+// This test creates a self-signed cert from a private key and then verifies the
+// content of the certificate.
+TEST(X509UtilTest, CreateSelfSigned) {
   const uint8 private_key_info[] = {
     0x30, 0x82, 0x02, 0x78, 0x02, 0x01, 0x00, 0x30,
     0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86, 0xf7,
@@ -165,18 +166,22 @@ TEST(X509UtilTest, CreateSelfSigned) {
   input.resize(sizeof(private_key_info));
   memcpy(&input.front(), private_key_info, sizeof(private_key_info));
 
-  private_key.reset(crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(input));
+  scoped_ptr<crypto::RSAPrivateKey> private_key(
+      crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(input));
   ASSERT_TRUE(private_key.get());
 
+  std::string der_cert;
   ASSERT_TRUE(x509_util::CreateSelfSignedCert(
       private_key.get(),
+      x509_util::DIGEST_SHA1,
       "CN=subject",
       1,
       base::Time::Now(),
       base::Time::Now() + base::TimeDelta::FromDays(1),
       &der_cert));
 
-  cert = X509Certificate::CreateFromBytes(der_cert.data(), der_cert.size());
+  scoped_refptr<X509Certificate> cert =
+      X509Certificate::CreateFromBytes(der_cert.data(), der_cert.size());
   ASSERT_TRUE(cert.get());
 
   EXPECT_EQ("subject", cert->subject().GetDisplayName());

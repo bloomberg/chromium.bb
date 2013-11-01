@@ -122,6 +122,7 @@ TEST(X509UtilOpenSSLTest, CreateDomainBoundCertEC) {
   std::string der_cert;
   ASSERT_TRUE(
       x509_util::CreateDomainBoundCertEC(private_key.get(),
+                                         x509_util::DIGEST_SHA1,
                                          domain,
                                          1,
                                          now,

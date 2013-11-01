@@ -227,6 +227,7 @@ class AttestationPolicyObserverTest : public ::testing::Test {
     if (!test_key.get())
       return false;
     return net::x509_util::CreateSelfSignedCert(test_key.get(),
+                                                net::x509_util::DIGEST_SHA256,
                                                 "CN=subject",
                                                 12345,
                                                 valid_start,

@@ -39,20 +39,16 @@ static void GenerateIdentityWorker(const std::string& common_name,
   result->error = net::OK;
   int serial_number = base::RandInt(0, std::numeric_limits<int>::max());
 
-  scoped_ptr<crypto::RSAPrivateKey> key(crypto::RSAPrivateKey::Create(1024));
-  if (!key.get()) {
-    DLOG(ERROR) << "Unable to create key pair for client";
-    result->error = net::ERR_KEY_GENERATION_FAILED;
-    return;
-  }
-
+  scoped_ptr<crypto::RSAPrivateKey> key;
   base::Time now = base::Time::Now();
-  bool success = net::x509_util::CreateSelfSignedCert(key.get(),
-                                                      "CN=" + common_name,
-                                                      serial_number,
-                                                      now,
-                                                      now + validity_period,
-                                                      &result->certificate);
+  bool success = net::x509_util::CreateKeyAndSelfSignedCert(
+      "CN=" + common_name,
+      serial_number,
+      now,
+      now + validity_period,
+      &key,
+      &result->certificate);
+
   if (!success) {
     DLOG(ERROR) << "Unable to create x509 cert for client";
     result->error = net::ERR_SELF_SIGNED_CERT_GENERATION_FAILED;

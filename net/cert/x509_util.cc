@@ -4,12 +4,23 @@
 
 #include "net/cert/x509_util.h"
 
+#include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
+#include "crypto/ec_private_key.h"
+#include "crypto/rsa_private_key.h"
 #include "net/cert/x509_certificate.h"
 
 namespace net {
 
 namespace x509_util {
+
+// RSA keys created by CreateKeyAndSelfSignedCert will be of this length.
+static const uint16 kRSAKeyLength = 1024;
+
+// Certificates made by CreateKeyAndSelfSignedCert and
+//  CreateKeyAndDomainBoundCertEC will be signed using this digest algorithm.
+static const DigestAlgorithm kSignatureDigestAlgorithm = DIGEST_SHA256;
 
 ClientCertSorter::ClientCertSorter() : now_(base::Time::Now()) {}
 
@@ -42,6 +53,53 @@ bool ClientCertSorter::operator()(
   const X509Certificate::OSCertHandles& b_intermediates =
       b->GetIntermediateCertificates();
   return a_intermediates.size() < b_intermediates.size();
+}
+
+bool CreateKeyAndDomainBoundCertEC(const std::string& domain,
+                                   uint32 serial_number,
+                                   base::Time not_valid_before,
+                                   base::Time not_valid_after,
+                                   scoped_ptr<crypto::ECPrivateKey>* key,
+                                   std::string* der_cert) {
+  scoped_ptr<crypto::ECPrivateKey> new_key(crypto::ECPrivateKey::Create());
+  if (!new_key.get())
+    return false;
+
+  bool success = CreateDomainBoundCertEC(new_key.get(),
+                                         kSignatureDigestAlgorithm,
+                                         domain,
+                                         serial_number,
+                                         not_valid_before,
+                                         not_valid_after,
+                                         der_cert);
+  if (success)
+    key->reset(new_key.release());
+
+  return success;
+}
+
+bool CreateKeyAndSelfSignedCert(const std::string& subject,
+                                uint32 serial_number,
+                                base::Time not_valid_before,
+                                base::Time not_valid_after,
+                                scoped_ptr<crypto::RSAPrivateKey>* key,
+                                std::string* der_cert) {
+  scoped_ptr<crypto::RSAPrivateKey> new_key(
+      crypto::RSAPrivateKey::Create(kRSAKeyLength));
+  if (!new_key.get())
+    return false;
+
+  bool success = CreateSelfSignedCert(new_key.get(),
+                                      kSignatureDigestAlgorithm,
+                                      subject,
+                                      serial_number,
+                                      not_valid_before,
+                                      not_valid_after,
+                                      der_cert);
+  if (success)
+    key->reset(new_key.release());
+
+  return success;
 }
 
 }  // namespace x509_util

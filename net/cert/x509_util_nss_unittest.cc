@@ -141,21 +141,20 @@ void VerifyDomainBoundCert(const std::string& domain,
 
 }  // namespace
 
-// This test creates a domain-bound cert from an EC private key and
+// This test creates a domain-bound cert and an EC private key and
 // then verifies the content of the certificate.
-TEST(X509UtilNSSTest, CreateDomainBoundCertEC) {
+TEST(X509UtilNSSTest, CreateKeyAndDomainBoundCertEC) {
   // Create a sample ASCII weborigin.
   std::string domain = "weborigin.com";
   base::Time now = base::Time::Now();
 
-  scoped_ptr<crypto::ECPrivateKey> private_key(
-      crypto::ECPrivateKey::Create());
+  scoped_ptr<crypto::ECPrivateKey> private_key;
   std::string der_cert;
-  ASSERT_TRUE(x509_util::CreateDomainBoundCertEC(
-      private_key.get(),
+  ASSERT_TRUE(x509_util::CreateKeyAndDomainBoundCertEC(
       domain, 1,
       now,
       now + base::TimeDelta::FromDays(1),
+      &private_key,
       &der_cert));
 
   VerifyDomainBoundCert(domain, der_cert);

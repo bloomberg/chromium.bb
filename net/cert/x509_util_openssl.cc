@@ -18,11 +18,26 @@
 
 namespace net {
 
+namespace {
+
+const EVP_MD* ToEVP(x509_util::DigestAlgorithm alg) {
+  switch (alg) {
+    case x509_util::DIGEST_SHA1:
+      return EVP_sha1();
+    case x509_util::DIGEST_SHA256:
+      return EVP_sha256();
+  }
+  return NULL;
+}
+
+}  // namespace
+
 namespace x509_util {
 
 namespace {
 
 X509* CreateCertificate(EVP_PKEY* key,
+                        DigestAlgorithm alg,
                         const std::string& common_name,
                         uint32_t serial_number,
                         base::Time not_valid_before,
@@ -100,9 +115,19 @@ X509* CreateCertificate(EVP_PKEY* key,
   return cert.release();
 }
 
-bool SignAndDerEncodeCert(X509* cert, EVP_PKEY* key, std::string* der_encoded) {
+bool SignAndDerEncodeCert(X509* cert,
+                          EVP_PKEY* key,
+                          DigestAlgorithm alg,
+                          std::string* der_encoded) {
+  // Get the message digest algorithm
+  const EVP_MD* md = ToEVP(alg);
+  if (!md) {
+    LOG(ERROR) << "Unrecognized hash algorithm.";
+    return false;
+  }
+
   // Sign it with the private key.
-  if (!X509_sign(cert, key, EVP_sha1())) {
+  if (!X509_sign(cert, key, md)) {
     LOG(ERROR) << "Could not sign certificate with key.";
     return false;
   }
@@ -188,6 +213,7 @@ bool IsSupportedValidityRange(base::Time not_valid_before,
 
 bool CreateDomainBoundCertEC(
     crypto::ECPrivateKey* key,
+    DigestAlgorithm alg,
     const std::string& domain,
     uint32 serial_number,
     base::Time not_valid_before,
@@ -197,6 +223,7 @@ bool CreateDomainBoundCertEC(
   // Create certificate.
   crypto::ScopedOpenSSL<X509, X509_free> cert(
       CreateCertificate(key->key(),
+                        alg,
                         "CN=anonymous.invalid",
                         serial_number,
                         not_valid_before,
@@ -237,10 +264,11 @@ bool CreateDomainBoundCertEC(
   }
 
   // Sign and encode it.
-  return SignAndDerEncodeCert(cert.get(), key->key(), der_cert);
+  return SignAndDerEncodeCert(cert.get(), key->key(), alg, der_cert);
 }
 
 bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
+                          DigestAlgorithm alg,
                           const std::string& common_name,
                           uint32 serial_number,
                           base::Time not_valid_before,
@@ -249,6 +277,7 @@ bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
   crypto::ScopedOpenSSL<X509, X509_free> cert(
       CreateCertificate(key->key(),
+                        alg,
                         common_name,
                         serial_number,
                         not_valid_before,
@@ -256,7 +285,7 @@ bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
   if (!cert.get())
     return false;
 
-  return SignAndDerEncodeCert(cert.get(), key->key(), der_encoded);
+  return SignAndDerEncodeCert(cert.get(), key->key(), alg, der_encoded);
 }
 
 bool ParsePrincipalKeyAndValueByIndex(X509_NAME* name,

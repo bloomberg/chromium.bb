@@ -93,8 +93,12 @@ std::string RsaKeyPair::SignMessage(const std::string& message) const {
 
 std::string RsaKeyPair::GenerateCertificate() const {
   std::string der_cert;
+  // Certificates are SHA1-signed because |key_| has likely been used to sign
+  // with SHA1 previously, and you should not re-use a key for signing data with
+  // multiple signature algorithms.
   net::x509_util::CreateSelfSignedCert(
       key_.get(),
+      net::x509_util::DIGEST_SHA1,
       "CN=chromoting",
       base::RandInt(1, std::numeric_limits<int>::max()),
       base::Time::Now(),
