@@ -194,10 +194,14 @@ bool appendKeyframeWithCustomBezierTimingFunction<TransformAnimationValue, WebTr
 template <>
 bool appendKeyframeWithStandardTimingFunction<FilterAnimationValue, WebFilterKeyframe, WebFilterAnimationCurve>(WebFilterAnimationCurve* curve, double keyTime, const FilterAnimationValue* value, const FilterAnimationValue* lastValue, WebKit::WebAnimationCurve::TimingFunctionType timingFunctionType, const FloatSize& boxSize)
 {
+    // FIXME(ajuma): In order to animate pixel-moving filters on the compositor thread, we need
+    // to update overlap testing to take into account the bounds within which the animation
+    // will be contained, and we need the compositor to update layer bounds as the animation
+    // progresses.
+    if (value->value()->hasFilterThatMovesPixels())
+        return false;
     SkiaImageFilterBuilder builder;
     OwnPtr<WebFilterOperations> operations = adoptPtr(Platform::current()->compositorSupport()->createFilterOperations());
-    if (!operations)
-        return false;
     FilterOutsets outsets = value->value()->outsets();
     builder.setCropOffset(FloatSize(outsets.left(), outsets.top()));
     if (!builder.buildFilterOperations(*value->value(), operations.get()))
@@ -209,10 +213,14 @@ bool appendKeyframeWithStandardTimingFunction<FilterAnimationValue, WebFilterKey
 template <>
 bool appendKeyframeWithCustomBezierTimingFunction<FilterAnimationValue, WebFilterKeyframe, WebFilterAnimationCurve>(WebFilterAnimationCurve* curve, double keyTime, const FilterAnimationValue* value, const FilterAnimationValue* lastValue, double x1, double y1, double x2, double y2, const FloatSize& boxSize)
 {
+    // FIXME(ajuma): In order to animate pixel-moving filters on the compositor thread, we need
+    // to update overlap testing to take into account the bounds within which the animation
+    // will be contained, and we need the compositor to update layer bounds as the animation
+    // progresses.
+    if (value->value()->hasFilterThatMovesPixels())
+        return false;
     SkiaImageFilterBuilder builder;
     OwnPtr<WebFilterOperations> operations = adoptPtr(Platform::current()->compositorSupport()->createFilterOperations());
-    if (!operations)
-        return false;
     FilterOutsets outsets = value->value()->outsets();
     builder.setCropOffset(FloatSize(outsets.left(), outsets.top()));
     if (!builder.buildFilterOperations(*value->value(), operations.get()))
