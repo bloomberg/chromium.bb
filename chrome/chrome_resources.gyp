@@ -5,6 +5,7 @@
   'variables': {
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
     'about_credits_file': '<(SHARED_INTERMEDIATE_DIR)/about_credits.html',
+    'additional_modules_list_file': '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/internal/additional_modules_list.txt',
     'repack_locales_cmd': ['python', 'tools/build/repack_locales.py'],
   },
   'targets': [
@@ -109,6 +110,38 @@
       ],
     },
     {
+      'target_name': 'chrome_internal_resources_gen',
+      'type': 'none',
+      'conditions': [
+        ['branding=="Chrome"', {
+          'actions': [
+            {
+              'action_name': 'transform_additional_modules_list',
+              'variables': {
+                'additional_modules_input_path':
+                  'browser/internal/resources/additional_modules_list.input',
+                'additional_modules_py_path':
+                  'browser/internal/transform_additional_modules_list.py',
+              },
+              'inputs': [
+                '<(additional_modules_input_path)',
+              ],
+              'outputs': [
+                '<(additional_modules_list_file)',
+              ],
+              'action': [
+                'python',
+                '<(additional_modules_py_path)',
+                '<(additional_modules_input_path)',
+                '<@(_outputs)',
+              ],
+              'message': 'Transforming additional modules list.',
+            }
+          ],
+        }],
+      ],
+    },
+    {
       # TODO(mark): It would be better if each static library that needed
       # to run grit would list its own .grd files, but unfortunately some
       # of the static libraries currently have circular dependencies among
@@ -117,6 +150,7 @@
       'type': 'none',
       'dependencies': [
         'about_credits',
+        'chrome_internal_resources_gen',
       ],
       'actions': [
         # Data resources.
@@ -126,6 +160,7 @@
             'grit_grd_file': 'browser/browser_resources.grd',
             'grit_additional_defines': [
               '-E', 'about_credits_file=<(about_credits_file)',
+              '-E', 'additional_modules_list_file=<(additional_modules_list_file)',
             ],
           },
           'includes': [ '../build/grit_action.gypi' ],
