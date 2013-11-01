@@ -15,21 +15,11 @@ is_glibc = env.Bit('nacl_glibc')
 
 env.Replace(LIBS=[],
             EXTRA_LIBS=[],
-            LINKFLAGS=['-nostdlib'],
-            TRANSLATEFLAGS=['-nostdlib'])
+            LINKFLAGS=['-nostdlib'])
 
 # This setting will affect the barebones_regs.c test
 if env.Bit('build_arm'):
   env.Append(CPPDEFINES='SMALL_REGS_TEST')
-
-# The barebones_reloc test need symbols preserved, since it provides
-# a stub function for something that normally comes from the system libraries.
-# TODO(jvoung): That can be fixed by removing -nostdlib from TRANSLATEFLAGS.
-# Then the translator will get the required functions from system libs.
-# However, removing -nostdlib from TRANSLATEFLAGS will break due to:
-# https://code.google.com/p/nativeclient/issues/detail?id=3069
-if not env.AllowNonStableBitcode():
-  Return()
 
 # NOTE: the x86 linker wants _start() to be the very first function
 FAKE_STARTUP = env.ComponentObject('fake_startup', 'fake_startup.c')
