@@ -33,8 +33,10 @@ To participate, you will need to:
   yourself (or your team)
 * `Download <http://code.google.com/p/nativeclient/wiki/Downloads?tm=2>`_
   our latest build
-* `Join <mailing_list_>`_ the Native Client discussion group
-* `Report <nacl_bugs_>`_ the exploits you find to our team
+* `Join <https://groups.google.com/group/native-client-discuss>`_ the Native
+  Client discussion group
+* `Report <https://code.google.com/p/nativeclient/issues>`_ the exploits you
+  find to our team
 
 When
 ====

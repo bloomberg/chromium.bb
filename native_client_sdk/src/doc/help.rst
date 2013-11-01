@@ -28,9 +28,9 @@ Forums
   great resource --- check this forum first for answers to your
   questions.
 * For in-depth technical discussions: `native-client-discuss mailing
-  list <mailing_list_>`_ is a good group for detailed technical discussions
-  about bugs and other Native Client issues.
-* For announcements, follow the `native-client-announce mailing list
+  list <https://groups.google.com/group/native-client-discuss>`_ is a good
+  group for detailed technical discussions about bugs and other Native Client
+  issues.  * For announcements, follow the `native-client-announce mailing list
   <http://groups.google.com/group/native-client-announce>`_.
 * For 140 character goodness follow `@nativeclient
   <https://twitter.com/nativeclient>`_ on Twitter.
@@ -42,9 +42,10 @@ Issue tracker
 
 To report a new issue:
 
-#. Go to the `Native Client issue tracker <nacl_bugs_>`_ for a Native Client
-   bug, or the `Chromium issue tracker <chrome_bugs_>`_ for a Chrome/Chromium
-   bug.
+#. Go to the `Native Client issue tracker
+   <https://code.google.com/p/nativeclient/issues>`_ for a Native Client
+   bug, or the `Chromium issue tracker
+   <https://code.google.com/p/chromium/issues>`_ for a Chrome/Chromium bug.
 #. Before you report an issue, search to see if your issue has already
    been reported. You can add a comment to an existing issue if you have
    additional information.
@@ -61,6 +62,3 @@ To report a new issue:
    * A `Native Client + Chrome integration security issue
      <https://code.google.com/p/chromium/issues/entry?template=Security%20Bug>`_
      (only visible to the security team).
-
-.. _nacl_bugs: https://code.google.com/p/nativeclient/issues
-.. _chrome_bugs: https://code.google.com/p/chromium/issues

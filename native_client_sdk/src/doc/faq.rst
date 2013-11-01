@@ -116,9 +116,9 @@ lower overheads whereas very branch-heavy code often performs worse.
 For details, see:
 
 * `Adapting Software Fault Isolation to Contemporary CPU Architectures
-  <sfi_paper_>`_ (PDF).
-* `Native Client: A Sandbox for Portable, Untrusted x86 Code <nacl_paper_>`_
-  (PDF).
+  <https://nativeclient.googlecode.com/svn/data/site/NaCl_SFI.pdf>`_ (PDF).
+* `Native Client: A Sandbox for Portable, Untrusted x86 Code
+  <http://research.google.com/pubs/pub34913.html>`_ (PDF).
 
 If your code isn't performing as close to native speed as you'd expect,
 :doc:`let us know <help>`!
@@ -157,7 +157,7 @@ What development environment and development operating system do you recommend?
 You can develop on Windows, Mac, or Linux, and the resulting Native
 Client or Portable Native Client application will run inside the Google
 Chrome browser on all those platforms as well as ChromeOS. You can also
-develop on ChromeOS with `Crouton`_, and we're working on
+develop on ChromeOS with Crouton_, and we're working on
 self-hosting a full development environment on Portable Native Client.
 
 Any editor+shell combination should work as well as IDEs like Eclipse,
@@ -236,7 +236,7 @@ transpile languages to C/C++ (source-to-source compilation).
 
 If you're interested in getting other languages working, please contact the
 Native Client team by way of the `native-client-discuss mailing list
-<mailing_list_>`_.
+<https://groups.google.com/group/native-client-discuss>`_.
 
 Will you only support Chrome? What about other browsers?
 --------------------------------------------------------
@@ -378,7 +378,8 @@ output.
 In addition to static analysis of untrusted code, the Native Client
 runtime also includes an outer sandbox that mediates system calls. For
 more details about both sandboxes, see `Native Client: A Sandbox for
-Portable, Untrusted x86 Code <nacl_paper_>`_ (PDF).
+Portable, Untrusted x86 Code <http://research.google.com/pubs/pub34913.html>`_
+(PDF).
 
 How does Google know that the safety measures in Native Client are sufficient?
 ------------------------------------------------------------------------------
@@ -394,7 +395,7 @@ works, including:
 Google is committed to making Native Client safer than JavaScript and
 other popular browser technologies. If you have suggestions for security
 improvements, let the team know, by way of the `native-client-discuss
-mailing list <mailing_list_>`_.
+mailing list <https://groups.google.com/group/native-client-discuss>`_.
 
 Development
 ===========
@@ -454,7 +455,7 @@ Google has ported several third-party libraries to Native Client; such
 libraries are available in the naclports_ project. We encourage you to
 contribute libraries to naclports, and/or to host your own ported
 libraries, and to `let the team know about it
-<mailing_list_>`_ when you do.
+<https://groups.google.com/group/native-client-discuss>`_ when you do.
 
 Do all the files in an application need to be served from the same domain?
 --------------------------------------------------------------------------
@@ -567,7 +568,4 @@ Here are ways to resolve some common problems that can prevent loading:
 
 .. _CORS: http://en.wikipedia.org/wiki/Cross-origin_resource_sharing
 .. _naclports: https://code.google.com/p/naclports
-.. _mailing_list: https://groups.google.com/group/native-client-discuss
-.. _nacl_paper: http://research.google.com/pubs/pub34913.html
-.. _sfi_paper: https://nativeclient.googlecode.com/svn/data/site/NaCl_SFI.pdf
 .. _Crouton: https://github.com/dnschneid/crouton

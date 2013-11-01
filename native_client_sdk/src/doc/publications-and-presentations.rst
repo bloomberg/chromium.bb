@@ -93,7 +93,7 @@ Publications
        <http://research.google.com/pubs/author37895.html>`_
      - 19th USENIX Security Symposium, 2010, pp. 1-11
    * - `Native Client: A Sandbox for Portable, Untrusted x86 Native Code
-       <nacl_paper_>`_
+       <http://research.google.com/pubs/pub34913.html>`_
      - Bennet S. Yee, David Sehr, Greg Dardyk, `Brad Chen
        <http://research.google.com/pubs/author37895.html>`_, Robert
        Muth, Tavis Ormandy, Shiki Okasaka, Neha Narula, Nicholas
