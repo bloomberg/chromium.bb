@@ -40,7 +40,7 @@
 namespace WebCore {
 
 template<typename CallbackInfo>
-static v8::Handle<v8::Value> getNamedItems(HTMLFormControlsCollection* collection, const AtomicString& name, const CallbackInfo& callbackInfo)
+static v8::Handle<v8::Value> getNamedItems(HTMLFormControlsCollection* collection, const AtomicString& name, const CallbackInfo& info)
 {
     Vector<RefPtr<Node> > namedItems;
     collection->namedItems(name, namedItems);
@@ -49,9 +49,9 @@ static v8::Handle<v8::Value> getNamedItems(HTMLFormControlsCollection* collectio
         return v8Undefined();
 
     if (namedItems.size() == 1)
-        return toV8(namedItems.at(0).release(), callbackInfo.Holder(), callbackInfo.GetIsolate());
+        return toV8(namedItems.at(0).release(), info.Holder(), info.GetIsolate());
 
-    return toV8(collection->ownerNode()->radioNodeList(name).get(), callbackInfo.Holder(), callbackInfo.GetIsolate());
+    return toV8(collection->ownerNode()->radioNodeList(name).get(), info.Holder(), info.GetIsolate());
 }
 
 void V8HTMLFormControlsCollection::namedItemMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)

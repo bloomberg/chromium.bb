@@ -74,21 +74,21 @@ inline v8::Handle<v8::Value> toV8(DataView* impl, v8::Handle<v8::Object> creatio
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, DataView* impl)
+inline void v8SetReturnValue(const CallbackInfo& info, DataView* impl)
 {
-    V8TypedArray<DataView>::v8SetReturnValue(callbackInfo, impl);
+    V8TypedArray<DataView>::v8SetReturnValue(info, impl);
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, DataView* impl)
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& info, DataView* impl)
 {
-    V8TypedArray<DataView>::v8SetReturnValueForMainWorld(callbackInfo, impl);
+    V8TypedArray<DataView>::v8SetReturnValueForMainWorld(info, impl);
 }
 
 template<class CallbackInfo, class Wrappable>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, DataView* impl, Wrappable* wrappable)
+inline void v8SetReturnValueFast(const CallbackInfo& info, DataView* impl, Wrappable* wrappable)
 {
-    V8TypedArray<DataView>::v8SetReturnValueFast(callbackInfo, impl, wrappable);
+    V8TypedArray<DataView>::v8SetReturnValueFast(info, impl, wrappable);
 }
 
 inline v8::Handle<v8::Value> toV8(PassRefPtr< DataView > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -97,21 +97,21 @@ inline v8::Handle<v8::Value> toV8(PassRefPtr< DataView > impl, v8::Handle<v8::Ob
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtr<DataView> impl)
+inline void v8SetReturnValue(const CallbackInfo& info, PassRefPtr<DataView> impl)
 {
-    v8SetReturnValue(callbackInfo, impl.get());
+    v8SetReturnValue(info, impl.get());
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassRefPtr<DataView> impl)
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& info, PassRefPtr<DataView> impl)
 {
-    v8SetReturnValueForMainWorld(callbackInfo, impl.get());
+    v8SetReturnValueForMainWorld(info, impl.get());
 }
 
 template<class CallbackInfo, class Wrappable>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<DataView> impl, Wrappable* wrappable)
+inline void v8SetReturnValueFast(const CallbackInfo& info, PassRefPtr<DataView> impl, Wrappable* wrappable)
 {
-    v8SetReturnValueFast(callbackInfo, impl.get(), wrappable);
+    v8SetReturnValueFast(info, impl.get(), wrappable);
 }
 
 } // namespace WebCore

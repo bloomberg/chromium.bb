@@ -41,7 +41,7 @@
 namespace WebCore {
 
 template<class CallbackInfo>
-static v8::Handle<v8::Value> getNamedItems(HTMLAllCollection* collection, AtomicString name, const CallbackInfo& callbackInfo)
+static v8::Handle<v8::Value> getNamedItems(HTMLAllCollection* collection, AtomicString name, const CallbackInfo& info)
 {
     Vector<RefPtr<Node> > namedItems;
     collection->namedItems(name, namedItems);
@@ -50,29 +50,29 @@ static v8::Handle<v8::Value> getNamedItems(HTMLAllCollection* collection, Atomic
         return v8Undefined();
 
     if (namedItems.size() == 1)
-        return toV8(namedItems.at(0).release(), callbackInfo.Holder(), callbackInfo.GetIsolate());
+        return toV8(namedItems.at(0).release(), info.Holder(), info.GetIsolate());
 
     // FIXME: HTML5 specification says this should be a HTMLCollection.
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#htmlallcollection
-    return toV8(NamedNodesCollection::create(namedItems), callbackInfo.Holder(), callbackInfo.GetIsolate());
+    return toV8(NamedNodesCollection::create(namedItems), info.Holder(), info.GetIsolate());
 }
 
 template<class CallbackInfo>
-static v8::Handle<v8::Value> getItem(HTMLAllCollection* collection, v8::Handle<v8::Value> argument, const CallbackInfo& callbackInfo)
+static v8::Handle<v8::Value> getItem(HTMLAllCollection* collection, v8::Handle<v8::Value> argument, const CallbackInfo& info)
 {
     v8::Local<v8::Uint32> index = argument->ToArrayIndex();
     if (index.IsEmpty()) {
-        V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, name, argument, v8::Undefined(callbackInfo.GetIsolate()));
-        v8::Handle<v8::Value> result = getNamedItems(collection, name, callbackInfo);
+        V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, name, argument, v8::Undefined(info.GetIsolate()));
+        v8::Handle<v8::Value> result = getNamedItems(collection, name, info);
 
         if (result.IsEmpty())
-            return v8::Undefined(callbackInfo.GetIsolate());
+            return v8::Undefined(info.GetIsolate());
 
         return result;
     }
 
     RefPtr<Node> result = collection->item(index->Uint32Value());
-    return toV8(result.release(), callbackInfo.Holder(), callbackInfo.GetIsolate());
+    return toV8(result.release(), info.Holder(), info.GetIsolate());
 }
 
 void V8HTMLAllCollection::itemMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)

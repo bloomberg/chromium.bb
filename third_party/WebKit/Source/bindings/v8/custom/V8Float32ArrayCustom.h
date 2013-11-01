@@ -74,21 +74,21 @@ inline v8::Handle<v8::Value> toV8(Float32Array* impl, v8::Handle<v8::Object> cre
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, Float32Array* impl)
+inline void v8SetReturnValue(const CallbackInfo& info, Float32Array* impl)
 {
-    V8TypedArray<Float32Array>::v8SetReturnValue(callbackInfo, impl);
+    V8TypedArray<Float32Array>::v8SetReturnValue(info, impl);
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, Float32Array* impl)
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& info, Float32Array* impl)
 {
-    V8TypedArray<Float32Array>::v8SetReturnValueForMainWorld(callbackInfo, impl);
+    V8TypedArray<Float32Array>::v8SetReturnValueForMainWorld(info, impl);
 }
 
 template<class CallbackInfo, class Wrappable>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, Float32Array* impl, Wrappable* wrappable)
+inline void v8SetReturnValueFast(const CallbackInfo& info, Float32Array* impl, Wrappable* wrappable)
 {
-    V8TypedArray<Float32Array>::v8SetReturnValueFast(callbackInfo, impl, wrappable);
+    V8TypedArray<Float32Array>::v8SetReturnValueFast(info, impl, wrappable);
 }
 
 inline v8::Handle<v8::Value> toV8(PassRefPtr< Float32Array > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -97,21 +97,21 @@ inline v8::Handle<v8::Value> toV8(PassRefPtr< Float32Array > impl, v8::Handle<v8
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtr< Float32Array > impl)
+inline void v8SetReturnValue(const CallbackInfo& info, PassRefPtr< Float32Array > impl)
 {
-    v8SetReturnValue(callbackInfo, impl.get());
+    v8SetReturnValue(info, impl.get());
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassRefPtr< Float32Array > impl)
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& info, PassRefPtr< Float32Array > impl)
 {
-    v8SetReturnValueForMainWorld(callbackInfo, impl.get());
+    v8SetReturnValueForMainWorld(info, impl.get());
 }
 
 template<class CallbackInfo, class Wrappable>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr< Float32Array > impl, Wrappable* wrappable)
+inline void v8SetReturnValueFast(const CallbackInfo& info, PassRefPtr< Float32Array > impl, Wrappable* wrappable)
 {
-    v8SetReturnValueFast(callbackInfo, impl.get(), wrappable);
+    v8SetReturnValueFast(info, impl.get(), wrappable);
 }
 
 } // namespace WebCore

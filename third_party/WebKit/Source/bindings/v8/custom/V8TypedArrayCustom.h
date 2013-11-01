@@ -80,43 +80,43 @@ public:
     }
 
     template<typename CallbackInfo>
-    static void v8SetReturnValue(const CallbackInfo& callbackInfo, TypedArray* impl)
+    static void v8SetReturnValue(const CallbackInfo& info, TypedArray* impl)
     {
         if (UNLIKELY(!impl)) {
-            v8SetReturnValueNull(callbackInfo);
+            v8SetReturnValueNull(info);
             return;
         }
-        if (DOMDataStore::setReturnValueFromWrapper<Binding>(callbackInfo.GetReturnValue(), impl))
+        if (DOMDataStore::setReturnValueFromWrapper<Binding>(info.GetReturnValue(), impl))
             return;
-        v8::Handle<v8::Object> wrapper = wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
-        callbackInfo.GetReturnValue().Set(wrapper);
+        v8::Handle<v8::Object> wrapper = wrap(impl, info.Holder(), info.GetIsolate());
+        info.GetReturnValue().Set(wrapper);
     }
 
     template<typename CallbackInfo>
-    static void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, TypedArray* impl)
+    static void v8SetReturnValueForMainWorld(const CallbackInfo& info, TypedArray* impl)
     {
-        ASSERT(worldType(callbackInfo.GetIsolate()) == MainWorld);
+        ASSERT(worldType(info.GetIsolate()) == MainWorld);
         if (UNLIKELY(!impl)) {
-            v8SetReturnValueNull(callbackInfo);
+            v8SetReturnValueNull(info);
             return;
         }
-        if (DOMDataStore::setReturnValueFromWrapperForMainWorld<Binding>(callbackInfo.GetReturnValue(), impl))
+        if (DOMDataStore::setReturnValueFromWrapperForMainWorld<Binding>(info.GetReturnValue(), impl))
             return;
-        v8::Handle<v8::Value> wrapper = wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
-        callbackInfo.GetReturnValue().Set(wrapper);
+        v8::Handle<v8::Value> wrapper = wrap(impl, info.Holder(), info.GetIsolate());
+        info.GetReturnValue().Set(wrapper);
     }
 
     template<class CallbackInfo, class Wrappable>
-    static void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TypedArray* impl, Wrappable* wrappable)
+    static void v8SetReturnValueFast(const CallbackInfo& info, TypedArray* impl, Wrappable* wrappable)
     {
         if (UNLIKELY(!impl)) {
-            v8SetReturnValueNull(callbackInfo);
+            v8SetReturnValueNull(info);
             return;
         }
-        if (DOMDataStore::setReturnValueFromWrapperFast<Binding>(callbackInfo.GetReturnValue(), impl, callbackInfo.Holder(), wrappable))
+        if (DOMDataStore::setReturnValueFromWrapperFast<Binding>(info.GetReturnValue(), impl, info.Holder(), wrappable))
             return;
-        v8::Handle<v8::Object> wrapper = wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
-        callbackInfo.GetReturnValue().Set(wrapper);
+        v8::Handle<v8::Object> wrapper = wrap(impl, info.Holder(), info.GetIsolate());
+        info.GetReturnValue().Set(wrapper);
     }
 
     static inline void* toInternalPointer(TypedArray* impl)

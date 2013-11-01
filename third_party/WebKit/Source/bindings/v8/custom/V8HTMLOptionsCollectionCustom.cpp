@@ -46,22 +46,22 @@
 namespace WebCore {
 
 template<typename CallbackInfo>
-static void getNamedItems(HTMLOptionsCollection* collection, const AtomicString& name, const CallbackInfo& callbackInfo)
+static void getNamedItems(HTMLOptionsCollection* collection, const AtomicString& name, const CallbackInfo& info)
 {
     Vector<RefPtr<Node> > namedItems;
     collection->namedItems(name, namedItems);
 
     if (!namedItems.size()) {
-        v8SetReturnValueNull(callbackInfo);
+        v8SetReturnValueNull(info);
         return;
     }
 
     if (namedItems.size() == 1) {
-        v8SetReturnValueFast(callbackInfo, namedItems.at(0).release(), collection);
+        v8SetReturnValueFast(info, namedItems.at(0).release(), collection);
         return;
     }
 
-    v8SetReturnValueFast(callbackInfo, NamedNodesCollection::create(namedItems), collection);
+    v8SetReturnValueFast(info, NamedNodesCollection::create(namedItems), collection);
 }
 
 void V8HTMLOptionsCollection::namedItemMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
