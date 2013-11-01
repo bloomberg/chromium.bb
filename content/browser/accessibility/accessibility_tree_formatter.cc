@@ -66,10 +66,8 @@ void AccessibilityTreeFormatter::RecursiveBuildAccessibilityTree(
 
   base::ListValue* children = new base::ListValue;
   dict->Set(kChildrenDictAttr, children);
-  if (!IncludeChildren(node))
-    return;
 
-  for (size_t i = 0; i < node.children().size(); ++i) {
+  for (size_t i = 0; i < node.PlatformChildCount(); ++i) {
     BrowserAccessibility* child_node = node.children()[i];
     base::DictionaryValue* child_dict = new base::DictionaryValue;
     children->Append(child_dict);
@@ -92,13 +90,6 @@ void AccessibilityTreeFormatter::RecursiveFormatAccessibilityTree(
     RecursiveFormatAccessibilityTree(*child_dict, contents, depth + 1);
   }
 }
-
-#if !defined(OS_ANDROID)
-bool AccessibilityTreeFormatter::IncludeChildren(
-    const BrowserAccessibility& node) {
-  return true;
-}
-#endif
 
 #if (!defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_ANDROID) && \
      !defined(TOOLKIT_GTK))

@@ -77,13 +77,6 @@ void AccessibilityTreeFormatter::AddProperties(
   dict->SetInteger("item_count", android_node->GetItemCount());
 }
 
-bool AccessibilityTreeFormatter::IncludeChildren(
-    const BrowserAccessibility& node) {
-  const BrowserAccessibilityAndroid* android_node =
-      static_cast<const BrowserAccessibilityAndroid*>(&node);
-  return !android_node->IsLeaf();
-}
-
 string16 AccessibilityTreeFormatter::ToString(const DictionaryValue& dict,
                                               const string16& indent) {
   string16 line;

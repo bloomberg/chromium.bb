@@ -332,8 +332,8 @@ TEST_F(RendererAccessibilityTest,
   scoped_ptr<TestRendererAccessibilityComplete> accessibility(
       new TestRendererAccessibilityComplete(view()));
   accessibility->SendPendingAccessibilityEvents();
-  EXPECT_EQ(3, accessibility->browser_tree_node_count());
-  EXPECT_EQ(3, CountAccessibilityNodesSentToBrowser());
+  EXPECT_EQ(5, accessibility->browser_tree_node_count());
+  EXPECT_EQ(5, CountAccessibilityNodesSentToBrowser());
 
   // Post a "value changed" event, but then swap out
   // before sending it. It shouldn't send the event while
@@ -479,8 +479,8 @@ TEST_F(RendererAccessibilityTest, DetachAccessibilityObject) {
   scoped_ptr<TestRendererAccessibilityComplete> accessibility(
       new TestRendererAccessibilityComplete(view()));
   accessibility->SendPendingAccessibilityEvents();
-  EXPECT_EQ(5, accessibility->browser_tree_node_count());
-  EXPECT_EQ(5, CountAccessibilityNodesSentToBrowser());
+  EXPECT_EQ(7, accessibility->browser_tree_node_count());
+  EXPECT_EQ(7, CountAccessibilityNodesSentToBrowser());
 
   // Initially, the accessibility tree looks like this:
   //
@@ -488,7 +488,9 @@ TEST_F(RendererAccessibilityTest, DetachAccessibilityObject) {
   //   +--Body
   //      +--Anonymous Block
   //         +--Static Text "1"
+  //            +--Inline Text Box "1"
   //      +--Static Text "2"
+  //         +--Inline Text Box "2"
   WebDocument document = view()->GetWebView()->mainFrame()->document();
   WebAXObject root_obj = document.accessibilityObject();
   WebAXObject body = root_obj.childAt(0);
@@ -516,17 +518,19 @@ TEST_F(RendererAccessibilityTest, DetachAccessibilityObject) {
   //   Document
   //   +--Body
   //      +--Static Text "1"
+  //         +--Inline Text Box "1"
   //      +--Static Text "2"
+  //         +--Inline Text Box "2"
   //
   // We just assert that there are now four nodes in the
   // accessibility tree and that only three nodes needed
   // to be updated (the body, the static text 1, and
   // the static text 2).
-  EXPECT_EQ(4, accessibility->browser_tree_node_count());
+  EXPECT_EQ(6, accessibility->browser_tree_node_count());
 
   AccessibilityHostMsg_EventParams event;
   GetLastAccEvent(&event);
-  ASSERT_EQ(3U, event.nodes.size());
+  ASSERT_EQ(5U, event.nodes.size());
 
   EXPECT_EQ(body.axID(), event.nodes[0].id);
   EXPECT_EQ(text_1.axID(), event.nodes[1].id);

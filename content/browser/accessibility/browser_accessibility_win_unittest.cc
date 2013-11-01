@@ -347,7 +347,7 @@ TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
   BrowserAccessibilityWin* root_obj =
       manager->GetRoot()->ToBrowserAccessibilityWin();
   BrowserAccessibilityWin* text1_obj =
-      root_obj->GetChild(0)->ToBrowserAccessibilityWin();
+      root_obj->PlatformGetChild(0)->ToBrowserAccessibilityWin();
 
   long text1_len;
   ASSERT_EQ(S_OK, text1_obj->get_nCharacters(&text1_len));

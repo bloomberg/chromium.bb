@@ -358,7 +358,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_accChildCount(LONG* child_count) {
   if (!child_count)
     return E_INVALIDARG;
 
-  *child_count = children_.size();
+  *child_count = PlatformChildCount();
+
   return S_OK;
 }
 
@@ -875,7 +876,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_groupPosition(
       parent_ &&
       parent_->role() == WebKit::WebAXRoleListBox) {
     *group_level = 0;
-    *similar_items_in_group = parent_->child_count();
+    *similar_items_in_group = parent_->PlatformChildCount();
     *position_in_group = index_in_parent_ + 1;
     return S_OK;
   }
@@ -2618,12 +2619,13 @@ STDMETHODIMP BrowserAccessibilityWin::get_childAt(
   if (!node)
     return E_INVALIDARG;
 
-  if (child_index < children_.size()) {
+  BrowserAccessibility* child = PlatformGetChild(child_index);
+  if (!child) {
     *node = NULL;
     return S_FALSE;
   }
 
-  *node = children_[child_index]->ToBrowserAccessibilityWin()->NewReference();
+  *node = child->ToBrowserAccessibilityWin()->NewReference();
   return S_OK;
 }
 
@@ -2803,7 +2805,7 @@ void BrowserAccessibilityWin::PreInitialize() {
       parent_ &&
       parent_->role() == WebKit::WebAXRoleListBox) {
     ia2_attributes_.push_back(
-        L"setsize:" + base::IntToString16(parent_->child_count()));
+        L"setsize:" + base::IntToString16(parent_->PlatformChildCount()));
     ia2_attributes_.push_back(
         L"setsize:" + base::IntToString16(index_in_parent_ + 1));
   }
@@ -2970,8 +2972,8 @@ void BrowserAccessibilityWin::PostInitialize() {
   hyperlink_offset_to_index_.clear();
   hyperlinks_.clear();
   hypertext_.clear();
-  for (unsigned int i = 0; i < children().size(); ++i) {
-    BrowserAccessibility* child = children()[i];
+  for (unsigned int i = 0; i < PlatformChildCount(); ++i) {
+    BrowserAccessibility* child = PlatformGetChild(i);
     if (child->role() == WebKit::WebAXRoleStaticText) {
       hypertext_ += UTF8ToUTF16(child->name());
     } else {
@@ -3065,8 +3067,8 @@ BrowserAccessibilityWin* BrowserAccessibilityWin::GetTargetFromChildID(
   if (child_id == CHILDID_SELF)
     return this;
 
-  if (child_id >= 1 && child_id <= static_cast<LONG>(children_.size()))
-    return children_[child_id - 1]->ToBrowserAccessibilityWin();
+  if (child_id >= 1 && child_id <= static_cast<LONG>(PlatformChildCount()))
+    return PlatformGetChild(child_id - 1)->ToBrowserAccessibilityWin();
 
   return manager_->ToBrowserAccessibilityManagerWin()->
       GetFromUniqueIdWin(child_id);

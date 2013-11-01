@@ -24,7 +24,7 @@ bool BrowserAccessibilityAndroid::IsNative() const {
   return true;
 }
 
-bool BrowserAccessibilityAndroid::IsLeaf() const {
+bool BrowserAccessibilityAndroid::PlatformIsLeaf() const {
   if (child_count() == 0)
     return true;
 
@@ -52,7 +52,7 @@ bool BrowserAccessibilityAndroid::IsLeaf() const {
   if (HasOnlyStaticTextChildren())
     return true;
 
-  return false;
+  return BrowserAccessibility::PlatformIsLeaf();
 }
 
 bool BrowserAccessibilityAndroid::IsCheckable() const {
@@ -75,7 +75,7 @@ bool BrowserAccessibilityAndroid::IsChecked() const {
 }
 
 bool BrowserAccessibilityAndroid::IsClickable() const {
-  return (IsLeaf() && !GetText().empty());
+  return (PlatformIsLeaf() && !GetText().empty());
 }
 
 bool BrowserAccessibilityAndroid::IsEnabled() const {
@@ -185,8 +185,8 @@ string16 BrowserAccessibilityAndroid::GetText() const {
     text = base::UTF8ToUTF16(value());
 
   if (text.empty() && HasOnlyStaticTextChildren()) {
-    for (uint32 i = 0; i < child_count(); i++) {
-      BrowserAccessibility* child = GetChild(i);
+    for (uint32 i = 0; i < PlatformChildCount(); i++) {
+      BrowserAccessibility* child = PlatformGetChild(i);
       text += static_cast<BrowserAccessibilityAndroid*>(child)->GetText();
     }
   }
@@ -233,7 +233,7 @@ int BrowserAccessibilityAndroid::GetItemCount() const {
   switch(role()) {
     case WebKit::WebAXRoleList:
     case WebKit::WebAXRoleListBox:
-      count = child_count();
+      count = PlatformChildCount();
       break;
     case WebKit::WebAXRoleSlider:
     case WebKit::WebAXRoleProgressIndicator: {
@@ -339,8 +339,8 @@ int BrowserAccessibilityAndroid::GetEditableTextLength() const {
 }
 
 bool BrowserAccessibilityAndroid::HasFocusableChild() const {
-  for (uint32 i = 0; i < child_count(); i++) {
-    BrowserAccessibility* child = GetChild(i);
+  for (uint32 i = 0; i < PlatformChildCount(); i++) {
+    BrowserAccessibility* child = PlatformGetChild(i);
     if (child->HasState(WebKit::WebAXStateFocusable))
       return true;
     if (static_cast<BrowserAccessibilityAndroid*>(child)->HasFocusableChild())
@@ -350,8 +350,8 @@ bool BrowserAccessibilityAndroid::HasFocusableChild() const {
 }
 
 bool BrowserAccessibilityAndroid::HasOnlyStaticTextChildren() const {
-  for (uint32 i = 0; i < child_count(); i++) {
-    BrowserAccessibility* child = GetChild(i);
+  for (uint32 i = 0; i < PlatformChildCount(); i++) {
+    BrowserAccessibility* child = PlatformGetChild(i);
     if (child->role() != WebKit::WebAXRoleStaticText)
       return false;
   }

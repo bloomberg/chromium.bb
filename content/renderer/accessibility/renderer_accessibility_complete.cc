@@ -36,6 +36,7 @@ RendererAccessibilityComplete::RendererAccessibilityComplete(
       last_scroll_offset_(gfx::Size()),
       ack_pending_(false) {
   WebAXObject::enableAccessibility();
+  WebAXObject::enableInlineTextBoxAccessibility();
 
   const WebDocument& document = GetMainDocument();
   if (!document.isNull()) {

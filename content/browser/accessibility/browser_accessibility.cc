@@ -43,6 +43,14 @@ BrowserAccessibility::BrowserAccessibility()
 BrowserAccessibility::~BrowserAccessibility() {
 }
 
+bool BrowserAccessibility::PlatformIsLeaf() const {
+  return role_ == WebKit::WebAXRoleStaticText || child_count() == 0;
+}
+
+uint32 BrowserAccessibility::PlatformChildCount() const {
+  return PlatformIsLeaf() ? 0 : children_.size();
+}
+
 void BrowserAccessibility::DetachTree(
     std::vector<BrowserAccessibility*>* nodes) {
   nodes->push_back(this);
@@ -112,7 +120,8 @@ bool BrowserAccessibility::IsDescendantOf(
   return false;
 }
 
-BrowserAccessibility* BrowserAccessibility::GetChild(uint32 child_index) const {
+BrowserAccessibility* BrowserAccessibility::PlatformGetChild(
+    uint32 child_index) const {
   DCHECK(child_index < children_.size());
   return children_[child_index];
 }

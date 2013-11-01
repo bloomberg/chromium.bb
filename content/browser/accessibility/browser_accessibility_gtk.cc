@@ -208,7 +208,8 @@ static gint browser_accessibility_get_n_children(AtkObject* atk_object) {
   BrowserAccessibilityGtk* obj = ToBrowserAccessibilityGtk(atk_object);
   if (!obj)
     return 0;
-  return obj->children().size();
+
+  return obj->PlatformChildCount();
 }
 
 static AtkObject* browser_accessibility_ref_child(
@@ -216,6 +217,10 @@ static AtkObject* browser_accessibility_ref_child(
   BrowserAccessibilityGtk* obj = ToBrowserAccessibilityGtk(atk_object);
   if (!obj)
     return NULL;
+
+  if (index < 0 || index >= static_cast<gint>(obj->PlatformChildCount()))
+    return NULL;
+
   AtkObject* result =
       obj->children()[index]->ToBrowserAccessibilityGtk()->GetAtkObject();
   g_object_ref(result);

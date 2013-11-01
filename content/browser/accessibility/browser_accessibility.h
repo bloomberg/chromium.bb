@@ -89,8 +89,21 @@ class CONTENT_EXPORT BrowserAccessibility {
   // Returns the number of children of this object.
   uint32 child_count() const { return children_.size(); }
 
-  // Return a pointer to the child with the given index.
-  BrowserAccessibility* GetChild(uint32 child_index) const;
+  // Returns true if this is a leaf node on this platform, meaning any
+  // children should not be exposed to this platform's native accessibility
+  // layer. Each platform subclass should implement this itself.
+  // The definition of a leaf may vary depending on the platform,
+  // but a leaf node should never have children that are focusable or
+  // that might send notifications.
+  virtual bool PlatformIsLeaf() const;
+
+  // Returns the number of children of this object, or 0 if PlatformIsLeaf()
+  // returns true.
+  uint32 PlatformChildCount() const;
+
+  // Return a pointer to the child at the given index, or NULL for an
+  // invalid index. Returns NULL if PlatformIsLeaf() returns true.
+  BrowserAccessibility* PlatformGetChild(uint32 child_index) const;
 
   // Return the previous sibling of this object, or NULL if it's the first
   // child of its parent.

@@ -70,6 +70,10 @@ void AccessibilityNodeData::SetName(std::string name) {
   string_attributes.push_back(std::make_pair(ATTR_NAME, name));
 }
 
+void AccessibilityNodeData::SetValue(std::string value) {
+  string_attributes.push_back(std::make_pair(ATTR_VALUE, value));
+}
+
 AccessibilityNodeDataTreeNode::AccessibilityNodeDataTreeNode()
   : AccessibilityNodeData() {
 }
@@ -180,6 +184,7 @@ std::string AccessibilityNodeData::DebugString(bool recursive) const {
     case WebKit::WebAXRoleImageMap: result += " IMAGE_MAP"; break;
     case WebKit::WebAXRoleImageMapLink: result += " IMAGE_MAP_LINK"; break;
     case WebKit::WebAXRoleIncrementor: result += " INCREMENTOR"; break;
+    case WebKit::WebAXRoleInlineTextBox: result += " INLINE_TEXT_BOX"; break;
     case WebKit::WebAXRoleLabel: result += " LABEL"; break;
     case WebKit::WebAXRoleLink: result += " LINK"; break;
     case WebKit::WebAXRoleList: result += " LIST"; break;
@@ -374,6 +379,23 @@ std::string AccessibilityNodeData::DebugString(bool recursive) const {
       case ATTR_COLOR_VALUE_BLUE:
         result += " color_value_blue=" + value;
         break;
+      case ATTR_TEXT_DIRECTION:
+        switch (int_attributes[i].second) {
+          case WebKit::WebAXTextDirectionLR:
+          default:
+            result += " text_direction=lr";
+            break;
+          case WebKit::WebAXTextDirectionRL:
+            result += " text_direction=rl";
+            break;
+          case WebKit::WebAXTextDirectionTB:
+            result += " text_direction=tb";
+            break;
+          case WebKit::WebAXTextDirectionBT:
+            result += " text_direction=bt";
+            break;
+        }
+        break;
     }
   }
 
@@ -508,6 +530,15 @@ std::string AccessibilityNodeData::DebugString(bool recursive) const {
         break;
       case ATTR_UNIQUE_CELL_IDS:
         result += " unique_cell_ids=" + IntVectorToString(values);
+        break;
+      case ATTR_CHARACTER_OFFSETS:
+        result += " character_offsets=" + IntVectorToString(values);
+        break;
+      case ATTR_WORD_STARTS:
+        result += " word_starts=" + IntVectorToString(values);
+        break;
+      case ATTR_WORD_ENDS:
+        result += " word_ends=" + IntVectorToString(values);
         break;
     }
   }

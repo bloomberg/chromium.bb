@@ -151,6 +151,32 @@ void SerializeAccessibilityNode(
     dst->AddIntAttribute(dst->ATTR_COLOR_VALUE_BLUE, b);
   }
 
+  if (dst->role == WebKit::WebAXRoleInlineTextBox) {
+    dst->AddIntAttribute(dst->ATTR_TEXT_DIRECTION, src.textDirection());
+
+    WebVector<int> src_character_offsets;
+    src.characterOffsets(src_character_offsets);
+    std::vector<int32> character_offsets;
+    character_offsets.reserve(src_character_offsets.size());
+    for (size_t i = 0; i < src_character_offsets.size(); ++i)
+      character_offsets.push_back(src_character_offsets[i]);
+    dst->AddIntListAttribute(dst->ATTR_CHARACTER_OFFSETS, character_offsets);
+
+    WebVector<int> src_word_starts;
+    WebVector<int> src_word_ends;
+    src.wordBoundaries(src_word_starts, src_word_ends);
+    std::vector<int32> word_starts;
+    std::vector<int32> word_ends;
+    word_starts.reserve(src_word_starts.size());
+    word_ends.reserve(src_word_starts.size());
+    for (size_t i = 0; i < src_word_starts.size(); ++i) {
+      word_starts.push_back(src_word_starts[i]);
+      word_ends.push_back(src_word_ends[i]);
+    }
+    dst->AddIntListAttribute(dst->ATTR_WORD_STARTS, word_starts);
+    dst->AddIntListAttribute(dst->ATTR_WORD_ENDS, word_ends);
+  }
+
   if (src.accessKey().length())
     dst->AddStringAttribute(dst->ATTR_ACCESS_KEY, UTF16ToUTF8(src.accessKey()));
   if (src.actionVerb().length())
