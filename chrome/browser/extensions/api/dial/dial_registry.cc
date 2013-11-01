@@ -63,7 +63,7 @@ base::Time DialRegistry::Now() const {
 void DialRegistry::OnListenerAdded() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (++num_listeners_ == 1) {
-    DVLOG(1) << "Listener added; starting periodic discovery.";
+    VLOG(2) << "Listener added; starting periodic discovery.";
     StartPeriodicDiscovery();
   }
 }
@@ -72,7 +72,7 @@ void DialRegistry::OnListenerRemoved() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(num_listeners_ > 0);
   if (--num_listeners_ == 0) {
-    DVLOG(1) << "Listeners removed; stopping periodic discovery.";
+    VLOG(2) << "Listeners removed; stopping periodic discovery.";
     StopPeriodicDiscovery();
   }
 }
@@ -128,7 +128,7 @@ void DialRegistry::DoDiscovery() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(dial_.get());
   discovery_generation_++;
-  DVLOG(1) << "About to discover! Generation = " << discovery_generation_;
+  VLOG(2) << "About to discover! Generation = " << discovery_generation_;
   dial_->Discover();
 }
 
@@ -149,7 +149,7 @@ bool DialRegistry::PruneExpiredDevices() {
   while (i != device_by_label_map_.end()) {
     linked_ptr<DialDeviceData> device = i->second;
     if (IsDeviceExpired(*device)) {
-      DVLOG(1) << "Device " << device->label() << " expired, removing";
+      VLOG(2) << "Device " << device->label() << " expired, removing";
       const size_t num_erased_by_id =
           device_by_id_map_.erase(device->device_id());
       DCHECK_EQ(num_erased_by_id, 1u);
@@ -196,11 +196,11 @@ void DialRegistry::MaybeSendEvent() {
   bool needs_event =
       (last_event_discovery_generation_ < discovery_generation_ ||
        last_event_registry_generation_ < registry_generation_);
-  DVLOG(1) << "ledg = " << last_event_discovery_generation_ << ", dg = "
-           << discovery_generation_
-           << ", lerg = " << last_event_registry_generation_ << ", rg = "
-           << registry_generation_
-           << ", needs_event = " << needs_event;
+  VLOG(2) << "ledg = " << last_event_discovery_generation_ << ", dg = "
+          << discovery_generation_
+          << ", lerg = " << last_event_registry_generation_ << ", rg = "
+          << registry_generation_
+          << ", needs_event = " << needs_event;
   if (!needs_event)
     return;
 
@@ -242,7 +242,7 @@ void DialRegistry::OnDeviceDiscovered(DialService* service,
       device_by_id_map_.find(device_data->device_id());
 
   if (lookup_result != device_by_id_map_.end()) {
-    DVLOG(1) << "Found device " << device_data->device_id() << ", merging";
+    VLOG(2) << "Found device " << device_data->device_id() << ", merging";
 
     // Already have previous response.  Merge in data from this response and
     // track if there were any API visible changes.
@@ -254,8 +254,8 @@ void DialRegistry::OnDeviceDiscovered(DialService* service,
   if (did_modify_list)
     registry_generation_++;
 
-  DVLOG(1) << "did_modify_list = " << did_modify_list
-           << ", generation = " << registry_generation_;
+  VLOG(2) << "did_modify_list = " << did_modify_list
+          << ", generation = " << registry_generation_;
 }
 
 bool DialRegistry::MaybeAddDevice(
@@ -268,8 +268,8 @@ bool DialRegistry::MaybeAddDevice(
   device_data->set_label(NextLabel());
   device_by_id_map_[device_data->device_id()] = device_data;
   device_by_label_map_[device_data->label()] = device_data;
-  DVLOG(1) << "Added device, id = " << device_data->device_id()
-           << ", label = " << device_data->label();
+  VLOG(2) << "Added device, id = " << device_data->device_id()
+          << ", label = " << device_data->label();
   return true;
 }
 
@@ -302,8 +302,8 @@ void DialRegistry::OnNetworkChanged(
   switch (type) {
     case NetworkChangeNotifier::CONNECTION_NONE:
       if (dial_.get()) {
-        DVLOG(1) << "Lost connection, shutting down discovery and clearing"
-                 << " list.";
+        VLOG(2) << "Lost connection, shutting down discovery and clearing"
+                << " list.";
         dial_api_->OnDialError(DIAL_NETWORK_DISCONNECTED);
 
         StopPeriodicDiscovery();
@@ -321,7 +321,7 @@ void DialRegistry::OnNetworkChanged(
     case NetworkChangeNotifier::CONNECTION_WIFI:
     case NetworkChangeNotifier::CONNECTION_UNKNOWN:
       if (!dial_.get()) {
-        DVLOG(1) << "Connection detected, restarting discovery.";
+        VLOG(2) << "Connection detected, restarting discovery.";
         StartPeriodicDiscovery();
       }
       break;
