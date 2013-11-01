@@ -271,6 +271,16 @@ camera.views.Camera = function(context, router) {
    */
   this.performanceMonitor_ = new camera.util.PerformanceMonitor();
 
+  /**
+   * Makes the toolbar pullable.
+   * @type {camera.util.Puller}
+   * @private
+   */
+  this.puller_ = new camera.util.Puller(
+      document.querySelector('#toolbar-puller-wrapper'),
+      document.querySelector('#toolbar-stripe'),
+      this.onRibbonPullReleased_.bind(this));
+
   // End of properties, seal the object.
   Object.seal(this);
 
@@ -452,6 +462,18 @@ camera.views.Camera.prototype.onAlbumEnterClicked_ = function(event) {
  */
 camera.views.Camera.prototype.onFiltersToggleClicked_ = function(event) {
   this.setExpanded_(!this.expanded_);
+};
+
+/**
+ * Handles releasing the puller on the ribbon, and toggles it.
+ * @param {number} distance Pulled distance in pixels.
+ * @private
+ */
+camera.views.Camera.prototype.onRibbonPullReleased_ = function(distance) {
+  if (distance < -50)
+    this.setExpanded_(!this.expanded_);
+  else if (distance > 25)
+    this.setExpanded_(false);
 };
 
 /**
