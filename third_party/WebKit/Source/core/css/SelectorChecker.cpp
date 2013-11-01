@@ -806,7 +806,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                 subContext.behaviorAtBoundary = CrossesBoundary;
                 subContext.scope = 0;
                 // Use NodeRenderingTraversal to traverse a composed ancestor list of a given element.
-                for (Element* nextElement = NodeRenderingTraversal::parentElement(&element); nextElement; nextElement = NodeRenderingTraversal::parentElement(nextElement)) {
+                for (Element* nextElement = &element; nextElement; nextElement = NodeRenderingTraversal::parentElement(nextElement)) {
                     // If one of simple selectors matches an element, returns SelectorMatches. Just "OR".
                     for (subContext.selector = selector->selectorList()->first(); subContext.selector; subContext.selector = CSSSelectorList::next(subContext.selector)) {
                         PseudoId ignoreDynamicPseudo = NOPSEUDO;
