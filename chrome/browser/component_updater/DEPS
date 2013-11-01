@@ -1,4 +1,5 @@
 include_rules = [
+  "+media/cdm/ppapi/supported_cdm_versions.h",
   "+ppapi/shared_impl/ppapi_permissions.h",
   "+ppapi/thunk",
   "+third_party/widevine"

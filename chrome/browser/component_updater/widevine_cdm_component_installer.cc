@@ -16,6 +16,8 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -28,6 +30,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/pepper_plugin_info.h"
+#include "media/cdm/ppapi/supported_cdm_versions.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
@@ -67,6 +70,23 @@ const char kWidevineCdmArch[] =
 #else  // TODO(viettrungluu): Support an ARM check?
     "???";
 #endif
+
+// The CDM manifest includes several custom values, all beginning with "x-cdm-".
+// All values are strings.
+// All values that are lists are delimited by commas. No trailing commas.
+// For example, "1,2,4".
+const char kCdmValueDelimiter = ',';
+COMPILE_ASSERT(kCdmValueDelimiter == kCdmSupportedCodecsValueDelimiter,
+               cdm_delimiters_do_not_match);
+// The following entries are required.
+//  Interface versions are lists of integers (e.g. "1" or "1,2,4").
+//  These are checked in this file before registering the CDM.
+const char kCdmModuleVersionsName[] = "x-cdm-module-versions";
+const char kCdmInstanceVersionsName[] = "x-cdm-instance-versions";
+const char kCdmHostVersionsName[] = "x-cdm-host-versions";
+//  The codecs list is a list of simple codec names (e.g. "vp8,vorbis").
+//  The list is passed to other parts of Chrome.
+const char kCdmCodecsListName[] = "x-cdm-codecs";
 
 // Widevine CDM is packaged as a multi-CRX. Widevine CDM binaries are located in
 // _platform_specific/<platform_arch> folder in the package. This function
@@ -109,11 +129,67 @@ bool MakeWidevineCdmPluginInfo(
   return true;
 }
 
+typedef bool (*VersionCheckFunc)(int version);
+
+bool CheckForCompatibleVersion(const base::DictionaryValue& manifest,
+                               const std::string version_name,
+                               VersionCheckFunc version_check_func) {
+  std::string versions_string;
+  if (!manifest.GetString(version_name, &versions_string)) {
+    DLOG(WARNING)
+        << "Widevine CDM component manifest is missing " << version_name;
+    // TODO(ddorwin): Remove this once all users have been updated.
+    // The original manifests did not include this string, so add its version.
+    if (version_name == kCdmModuleVersionsName)
+      versions_string = "4";
+    else if (version_name == kCdmInstanceVersionsName)
+      versions_string = "1";
+    else if (version_name == kCdmHostVersionsName)
+      versions_string = "1";
+  }
+  DLOG_IF(WARNING, versions_string.empty())
+      << "Widevine CDM component manifest has empty " << version_name;
+
+  std::vector<std::string> versions;
+  base::SplitString(versions_string,
+                    kCdmValueDelimiter,
+                    &versions);
+
+  for (size_t i = 0; i < versions.size(); ++i) {
+    int version = 0;
+    if (base::StringToInt(versions[i], &version))
+      if (version_check_func(version))
+        return true;
+  }
+
+  DLOG(WARNING) << "Widevine CDM component manifest has no supported "
+                << version_name << " in '" << versions_string << "'";
+  return false;
+}
+
+// Returns whether the CDM's API versions, as specified in the manifest, are
+// compatible with this Chrome binary.
+// Checks the module API, CDM instance API, and Host API.
+// This should never fail except in rare cases where the component has not been
+// updated recently or the user downgrades Chrome.
+bool IsCompatibleWithChrome(const base::DictionaryValue& manifest) {
+  return
+      CheckForCompatibleVersion(manifest,
+                                kCdmModuleVersionsName,
+                                media::IsSupportedCdmModuleVersion) &&
+      CheckForCompatibleVersion(manifest,
+                                kCdmInstanceVersionsName,
+                                media::IsSupportedCdmInterfaceVersion) &&
+      CheckForCompatibleVersion(manifest,
+                                kCdmHostVersionsName,
+                                media::IsSupportedCdmHostVersion);
+}
+
 void GetAdditionalParams(const base::DictionaryValue& manifest,
                          std::vector<base::string16>* additional_param_names,
                          std::vector<base::string16>* additional_param_values) {
   base::string16 codecs;
-  if (manifest.GetString("x-cdm-codecs", &codecs)) {
+  if (manifest.GetString(kCdmCodecsListName, &codecs)) {
     DLOG_IF(WARNING, codecs.empty())
         << "Widevine CDM component manifest has empty codecs list";
     additional_param_names->push_back(
@@ -199,7 +275,11 @@ void WidevineCdmComponentInstallerTraits::ComponentReady(
     const base::Version& version,
     const base::FilePath& path,
     scoped_ptr<base::DictionaryValue> manifest) {
-  // TODO(ddorwin): Check API version compatibility. Return if fails.
+  if (!IsCompatibleWithChrome(*manifest)) {
+    DLOG(WARNING) << "Installed Widevine CDM component is incompatible.";
+    return;
+  }
+
   base::FilePath adapter_install_path = GetPlatformDirectory(path)
       .AppendASCII(kWidevineCdmAdapterFileName);
   RegisterWidevineCdmWithChrome(version,

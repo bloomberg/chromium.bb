@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "media/cdm/ppapi/api/content_decryption_module.h"
 #include "media/cdm/ppapi/cdm_helpers.h"
+#include "media/cdm/ppapi/supported_cdm_versions.h"
 #include "ppapi/cpp/logging.h"
 
 namespace media {
@@ -215,22 +216,40 @@ CdmWrapper* CdmWrapper::Create(const char* key_system,
                                uint32_t key_system_size,
                                GetCdmHostFunc get_cdm_host_func,
                                void* user_data) {
+  COMPILE_ASSERT(cdm::ContentDecryptionModule::kVersion ==
+                 cdm::ContentDecryptionModule_2::kVersion,
+                 update_code_below);
+
+  // Ensure IsSupportedCdmInterfaceVersion matches this implementation.
+  // Always update this DCHECK when updating this function.
+  // If this check fails, update this function and DCHECK or update
+  // IsSupportedCdmInterfaceVersion.
+  PP_DCHECK(
+      !IsSupportedCdmInterfaceVersion(
+          cdm::ContentDecryptionModule::kVersion + 1) &&
+      IsSupportedCdmInterfaceVersion(cdm::ContentDecryptionModule::kVersion) &&
+      IsSupportedCdmInterfaceVersion(
+          cdm::ContentDecryptionModule_1::kVersion) &&
+      !IsSupportedCdmInterfaceVersion(
+          cdm::ContentDecryptionModule_1::kVersion - 1));
+
   // Try to create the CDM using the latest CDM interface version.
-  CdmWrapper* cdm_adapter =
+  CdmWrapper* cdm_wrapper =
       CdmWrapperImpl<cdm::ContentDecryptionModule>::Create(
           key_system, key_system_size, get_cdm_host_func, user_data);
-  if (cdm_adapter)
-    return cdm_adapter;
+  if (cdm_wrapper)
+    return cdm_wrapper;
 
-  // Try to see if the CDM supports older version(s) of CDM interface(s).
-  cdm_adapter = CdmWrapperImpl<cdm::ContentDecryptionModule_1>::Create(
+  // Try to see if the CDM supports older version(s) of the CDM interface.
+  cdm_wrapper = CdmWrapperImpl<cdm::ContentDecryptionModule_1>::Create(
       key_system, key_system_size, get_cdm_host_func, user_data);
-  return cdm_adapter;
+  return cdm_wrapper;
 }
 
 // When updating the CdmAdapter, ensure you've updated the CdmWrapper to contain
 // stub implementations for new or modified methods that the older CDM interface
 // does not have.
+// Also update supported_cdm_versions.h.
 COMPILE_ASSERT(cdm::ContentDecryptionModule::kVersion ==
                    cdm::ContentDecryptionModule_2::kVersion,
                ensure_cdm_wrapper_templates_have_old_version_support);

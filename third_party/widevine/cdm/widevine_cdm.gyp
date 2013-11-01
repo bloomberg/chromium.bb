@@ -67,6 +67,7 @@
             '<(DEPTH)/media/cdm/ppapi/cdm_helpers.h',
             '<(DEPTH)/media/cdm/ppapi/cdm_wrapper.h',
             '<(DEPTH)/media/cdm/ppapi/linked_ptr.h',
+            '<(DEPTH)/media/cdm/ppapi/supported_cdm_versions.h',
           ],
           'conditions': [
             [ 'os_posix == 1 and OS != "mac"', {

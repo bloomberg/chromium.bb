@@ -5,6 +5,7 @@
 #include "media/cdm/ppapi/cdm_adapter.h"
 
 #include "media/cdm/ppapi/cdm_helpers.h"
+#include "media/cdm/ppapi/supported_cdm_versions.h"
 
 #if defined(CHECK_DOCUMENT_URL)
 #include "ppapi/cpp/dev/url_util_dev.h"
@@ -912,12 +913,34 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
   if (!host_interface_version || !user_data)
     return NULL;
 
+  COMPILE_ASSERT(cdm::ContentDecryptionModule::Host::kVersion ==
+                 cdm::ContentDecryptionModule_2::Host::kVersion,
+                 update_code_below);
+
+  // Ensure IsSupportedCdmHostVersion matches implementation of this function.
+  // Always update this DCHECK when updating this function.
+  // If this check fails, update this function and DCHECK or update
+  // IsSupportedCdmHostVersion.
+  PP_DCHECK(
+      // Future version is not supported.
+      !IsSupportedCdmHostVersion(
+          cdm::ContentDecryptionModule::Host::kVersion + 1) &&
+      // Current version is supported.
+      IsSupportedCdmHostVersion(cdm::ContentDecryptionModule::Host::kVersion) &&
+      // Include all previous supported versions here.
+      IsSupportedCdmHostVersion(cdm::Host_1::kVersion) &&
+      // One older than the oldest supported version is not supported.
+      !IsSupportedCdmHostVersion(cdm::Host_1::kVersion - 1));
+  PP_DCHECK(IsSupportedCdmHostVersion(host_interface_version));
+
   CdmAdapter* cdm_adapter = static_cast<CdmAdapter*>(user_data);
   switch (host_interface_version) {
-    case cdm::ContentDecryptionModule_1::Host::kVersion:
-      return static_cast<cdm::ContentDecryptionModule_1::Host*>(cdm_adapter);
-    case cdm::ContentDecryptionModule_2::Host::kVersion:
-      return static_cast<cdm::ContentDecryptionModule_2::Host*>(cdm_adapter);
+    // The latest CDM host version.
+    case cdm::ContentDecryptionModule::Host::kVersion:
+      return static_cast<cdm::ContentDecryptionModule::Host*>(cdm_adapter);
+    // Older supported version(s) of the CDM host.
+    case cdm::Host_1::kVersion:
+      return static_cast<cdm::Host_1*>(cdm_adapter);
     default:
       PP_NOTREACHED();
       return NULL;

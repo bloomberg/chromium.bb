@@ -105,6 +105,7 @@
         'cdm/ppapi/cdm_helpers.h',
         'cdm/ppapi/cdm_wrapper.h',
         'cdm/ppapi/linked_ptr.h',
+        'cdm/ppapi/supported_cdm_versions.h',
       ],
       'conditions': [
         ['os_posix == 1 and OS != "mac" and enable_pepper_cdms==1', {
