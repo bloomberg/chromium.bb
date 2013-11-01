@@ -5,7 +5,7 @@ layer at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
       RenderTable {TABLE} at (0,0) size 113x104 [border: (2px solid #0000FF)]
         RenderTableCol {COLGROUP} at (0,0) size 0x0
-          RenderTableCol {COL} at (0,0) size 0x0
+          RenderTableCol {COL} at (0,0) size 0x0 [border: (4px solid #FFFF00)]
           RenderTableCol {COL} at (0,0) size 0x0
         RenderTableSection {TBODY} at (2,2) size 110x100
           RenderTableRow {TR} at (0,0) size 110x50

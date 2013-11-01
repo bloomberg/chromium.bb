@@ -6,7 +6,7 @@ layer at (0,0) size 785x622
       RenderBlock {P} at (0,0) size 769x598
         RenderTable {TABLE} at (0,0) size 282x158 [border: (2px solid #FFFF00)]
           RenderTableCol {COLGROUP} at (0,0) size 0x0
-            RenderTableCol {COL} at (0,0) size 0x0
+            RenderTableCol {COL} at (0,0) size 0x0 [border: (3px solid #000000)]
             RenderTableCol {COL} at (0,0) size 0x0
             RenderTableCol {COL} at (0,0) size 0x0
           RenderTableSection {TBODY} at (2,2) size 277x153
@@ -62,7 +62,7 @@ layer at (0,0) size 785x622
                   text run at (16,17) width 16: "15"
         RenderTable {TABLE} at (0,158) size 282x158 [border: (2px solid #FFFF00)]
           RenderTableCol {COLGROUP} at (0,0) size 0x0
-            RenderTableCol {COL} at (0,0) size 0x0
+            RenderTableCol {COL} at (0,0) size 0x0 [border: (3px solid #000000)]
             RenderTableCol {COL} at (0,0) size 0x0
             RenderTableCol {COL} at (0,0) size 0x0
           RenderTableSection {TBODY} at (2,2) size 277x153
@@ -118,7 +118,7 @@ layer at (0,0) size 785x622
                   text run at (17,17) width 16: "15"
         RenderTable {TABLE} at (0,316) size 158x282 [border: (3px solid #FFFF00)]
           RenderTableCol {COLGROUP} at (0,0) size 0x0
-            RenderTableCol {COL} at (0,0) size 0x0
+            RenderTableCol {COL} at (0,0) size 0x0 [border: (3px solid #000000)]
             RenderTableCol {COL} at (0,0) size 0x0
             RenderTableCol {COL} at (0,0) size 0x0
           RenderTableSection {TBODY} at (2,2) size 153x277
