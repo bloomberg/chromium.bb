@@ -20,24 +20,13 @@ camera.util = camera.util || {};
  */
 camera.util.TooltipManager = function() {
   /**
-   * @type {camera.util.Queue}
-   * @private
-   */
-  this.queue_ = new camera.util.Queue();
-
-  /**
    * @type {camera.util.StyleEffect}
    * @private
    */
   this.effect_ = new camera.util.StyleEffect(
       function(args, callback) {
-        if (args)
-          document.querySelector('#tooltip').classList.add('visible');
-        else
-          document.querySelector('#tooltip').classList.remove('visible');
-        camera.util.waitForTransitionCompletion(
-            document.querySelector('#tooltip'), 1000, callback);
-      });
+        this.setTooltipVisibility_(args.element, args.visibility, callback);
+      }.bind(this));
 
   // No more properties. Freeze the object.
   Object.freeze(this);
@@ -69,53 +58,77 @@ camera.util.TooltipManager.prototype.initialize = function() {
 };
 
 /**
+ * Positions the tooltip on the screen and toggles its visibility.
+ *
+ * @param {HTMLElement} element Element to be the tooltip positioned to.
+ * @param {boolean} visible True for visible, false for hidden.
+ * @private
+ */
+camera.util.TooltipManager.prototype.setTooltipVisibility_ = function(
+    element, visible) {
+  var tooltip = document.querySelector('#tooltip');
+
+  // Hide the tooltip.
+  if (!visible) {
+    tooltip.classList.remove('visible');
+    return;
+  }
+
+  // Show the tooltip.
+  // TODO(mtomasz): Support showing near the top edge.
+  var tooltipMsg = tooltip.querySelector('#tooltip-msg');
+  var tooltipArrow = tooltip.querySelector('#tooltip-arrow');
+
+  var elementRect = element.getBoundingClientRect();
+  var elementCenter = elementRect.left + element.offsetWidth / 2;
+  tooltip.style.top = elementRect.top - tooltip.offsetHeight + 'px';
+
+  // Center over the element, but avoid touching edges.
+  var left = Math.min(
+      Math.max(elementCenter - tooltip.clientWidth / 2,
+               camera.util.TooltipManager.EDGE_MARGIN),
+      document.body.offsetWidth - tooltip.offsetWidth -
+          camera.util.TooltipManager.EDGE_MARGIN);
+  tooltip.style.left = Math.round(left) + 'px';
+
+  // Align the arrow to point to the element.
+  tooltipArrow.style.left = Math.round(elementCenter - left) + 'px';
+
+  // Show the tooltip element.
+  tooltip.classList.add('visible');
+};
+
+/**
  * Shows a tooltip over the element.
  * @param {HTMLElement} element Element to be shown.
  * @private
  */
 camera.util.TooltipManager.prototype.showTooltip_ = function(element) {
-  this.queue_.run(function(callback) {
-    var tooltip = document.querySelector('#tooltip');
-    var tooltipMsg = tooltip.querySelector('#tooltip-msg');
-    var tooltipArrow = tooltip.querySelector('#tooltip-arrow');
+  var tooltip = document.querySelector('#tooltip');
+  var tooltipMsg = tooltip.querySelector('#tooltip-msg');
+  var tooltipArrow = tooltip.querySelector('#tooltip-arrow');
 
-    this.effect_.invoke(false, function() {});
-    tooltipMsg.textContent = chrome.i18n.getMessage(
-        element.getAttribute('i18n-label'));
+  this.effect_.invoke(false, function() {});
+  tooltipMsg.textContent = chrome.i18n.getMessage(
+      element.getAttribute('i18n-label'));
 
-    var hideTooltip = function() {
-      this.effect_.invoke(false, function() {});
-      element.removeEventListener('mouseout', hideTooltip);
-      element.removeEventListener('click', hideTooltip);
-    }.bind(this);
+  var hideTooltip = function() {
+    this.effect_.invoke({
+      element: element,
+      visibility: false
+    }, function() {});
+    element.removeEventListener('mouseout', hideTooltip);
+    element.removeEventListener('click', hideTooltip);
+  }.bind(this);
 
-    element.addEventListener('mouseout', hideTooltip);
-    element.addEventListener('click', hideTooltip);
+  element.addEventListener('mouseout', hideTooltip);
+  element.addEventListener('click', hideTooltip);
 
-    // Set the position. Wait for DOM refresh to get accurate tooltip dimensions
-    // for the new text.
-    // TODO(mtomasz): Support showing near the top edge.
-    setTimeout(function() {
-      var elementRect = element.getBoundingClientRect();
-      var elementCenter = elementRect.left + element.offsetWidth / 2;
-      tooltip.style.top = elementRect.top - tooltip.offsetHeight + 'px';
-
-      // Center over the element, but avoid touching edges.
-      var left = Math.min(
-          Math.max(elementCenter - tooltip.clientWidth / 2,
-                   camera.util.TooltipManager.EDGE_MARGIN),
-          document.body.offsetWidth - tooltip.offsetWidth -
-              camera.util.TooltipManager.EDGE_MARGIN);
-      tooltip.style.left = Math.round(left) + 'px';
-
-      // Align the arrow to point to the element.
-      tooltipArrow.style.left = Math.round(elementCenter - left) + 'px';
-
-      // Show the tooltip after 500ms.
-      this.effect_.invoke(true, function() {}, 500);
-      callback();
-    }.bind(this), 0);
-  }.bind(this));
+  // Show the tooltip after 500ms.
+  this.effect_.invoke({
+    element: element,
+    visibility: true
+  }, function() {}, 500);
 };
 
 /**
