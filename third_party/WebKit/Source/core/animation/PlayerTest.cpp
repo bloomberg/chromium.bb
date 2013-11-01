@@ -56,7 +56,7 @@ protected:
 
     bool updateTimeline(double time, double* timeToEffectChange = 0)
     {
-        timeline->serviceAnimations(time);
+        document->animationClock().updateTime(time);
         // The timeline does not know about our player, so we have to explicitly call update().
         return player->update(timeToEffectChange);
     }

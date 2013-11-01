@@ -1,0 +1,3 @@
+Tests that having stopped a transition before it completes, a subsequent transition starts correctly.
+
+PASS

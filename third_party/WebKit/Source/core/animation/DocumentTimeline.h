@@ -60,7 +60,8 @@ public:
     };
 
     static PassRefPtr<DocumentTimeline> create(Document*, PassOwnPtr<PlatformTiming> = nullptr);
-    void serviceAnimations(double);
+    // Returns whether style recalc was triggered.
+    bool serviceAnimations();
     PassRefPtr<Player> play(TimedItem*);
     // Called from setReadyState() in Document.cpp to set m_zeroTime to
     // performance.timing.domInteractive

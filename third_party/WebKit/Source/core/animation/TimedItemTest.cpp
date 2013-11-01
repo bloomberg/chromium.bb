@@ -75,7 +75,7 @@ public:
         TimedItem::updateInheritedTime(time);
     }
 
-    void updateChildrenAndEffects() const FINAL OVERRIDE { }
+    bool updateChildrenAndEffects() const FINAL OVERRIDE { return false; }
     void willDetach() { }
     TestTimedItemEventDelegate* eventDelegate() { return m_eventDelegate; }
     double calculateTimeToEffectChange(double inheritedTime, double activeTime, Phase) const FINAL OVERRIDE { return -1; }

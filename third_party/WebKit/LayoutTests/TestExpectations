@@ -249,6 +249,7 @@ crbug.com/248938 virtual/threaded/animations/animation-direction-normal.html [ P
 crbug.com/248938 virtual/threaded/animations/combo-transform-translate+scale.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/change-one-anim.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/delay-start-event.html [ Pass Failure ]
+crbug.com/248938 virtual/threaded/transitions/cancel-and-start-new.html [ Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-nested.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/interrupted-all-transition.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-multiple-03.html [ Pass Failure ]

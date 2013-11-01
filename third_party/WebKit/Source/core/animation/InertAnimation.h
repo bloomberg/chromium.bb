@@ -46,7 +46,7 @@ public:
     bool paused() const { return m_paused; }
 
 protected:
-    virtual void updateChildrenAndEffects() const OVERRIDE { };
+    virtual bool updateChildrenAndEffects() const OVERRIDE { return false; };
     virtual void willDetach() OVERRIDE { };
     virtual double calculateTimeToEffectChange(double inheritedTime, double activeTime, Phase) const OVERRIDE FINAL;
 

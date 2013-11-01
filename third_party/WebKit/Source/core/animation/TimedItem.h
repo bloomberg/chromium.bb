@@ -92,10 +92,12 @@ protected:
     // When TimedItem receives a new inherited time via updateInheritedTime
     // it will (if necessary) recalculate timings and (if necessary) call
     // updateChildrenAndEffects.
-    void updateInheritedTime(double inheritedTime) const;
+    // Returns whether style recalc was triggered.
+    bool updateInheritedTime(double inheritedTime) const;
 
 private:
-    virtual void updateChildrenAndEffects() const = 0;
+    // Returns whether style recalc was triggered.
+    virtual bool updateChildrenAndEffects() const = 0;
     virtual double intrinsicIterationDuration() const { return 0; };
     virtual void willDetach() = 0;
     virtual double calculateTimeToEffectChange(double inheritedTime, double activeTime, Phase) const = 0;

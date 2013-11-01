@@ -62,11 +62,11 @@ static AnimationStack& ensureAnimationStack(Element* element)
     return element->ensureActiveAnimations()->defaultStack();
 }
 
-void Animation::applyEffects(bool previouslyInEffect)
+bool Animation::applyEffects(bool previouslyInEffect)
 {
     ASSERT(player());
     if (!m_target || !m_effect)
-        return;
+        return false;
 
     if (!previouslyInEffect) {
         ensureAnimationStack(m_target.get()).add(this);
@@ -75,6 +75,7 @@ void Animation::applyEffects(bool previouslyInEffect)
 
     m_compositableValues = m_effect->sample(currentIteration(), timeFraction());
     m_target->setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);
+    return true;
 }
 
 void Animation::clearEffects()
@@ -87,15 +88,19 @@ void Animation::clearEffects()
     m_target->setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);
 }
 
-void Animation::updateChildrenAndEffects() const
+bool Animation::updateChildrenAndEffects() const
 {
     if (!m_effect)
-        return;
+        return false;
 
     if (isInEffect())
-        const_cast<Animation*>(this)->applyEffects(m_activeInAnimationStack);
-    else if (m_activeInAnimationStack)
+        return const_cast<Animation*>(this)->applyEffects(m_activeInAnimationStack);
+
+    if (m_activeInAnimationStack) {
         const_cast<Animation*>(this)->clearEffects();
+        return true;
+    }
+    return false;
 }
 
 double Animation::calculateTimeToEffectChange(double inheritedTime, double activeTime, Phase phase) const

@@ -49,7 +49,7 @@ public:
     //  infinity  - if this player is no longer in effect
     //  0         - if this player requires an update on the next frame
     //  n         - if this player requires an update after 'n' units of time
-    bool update(double* timeToEffectChange = 0);
+    bool update(double* timeToEffectChange = 0, bool* didTriggerStyleRecalc = 0);
 
     void cancel();
     double currentTime() const;

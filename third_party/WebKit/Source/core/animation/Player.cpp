@@ -90,18 +90,22 @@ double Player::currentTime() const
     return currentTimeBeforeDrift() - timeDrift();
 }
 
-bool Player::update(double* timeToEffectChange)
+bool Player::update(double* timeToEffectChange, bool* didTriggerStyleRecalc)
 {
     if (!m_content) {
         if (timeToEffectChange)
             *timeToEffectChange = std::numeric_limits<double>::infinity();
+        if (didTriggerStyleRecalc)
+            *didTriggerStyleRecalc = false;
         return false;
     }
 
     double newTime = isNull(m_timeline.currentTime()) ? nullValue() : currentTime();
-    m_content->updateInheritedTime(newTime);
+    bool didTriggerStyleRecalcLocal = m_content->updateInheritedTime(newTime);
     if (timeToEffectChange)
         *timeToEffectChange = m_content->timeToEffectChange();
+    if (didTriggerStyleRecalc)
+        *didTriggerStyleRecalc = didTriggerStyleRecalcLocal;
     return m_content->isCurrent() || m_content->isInEffect();
 }
 

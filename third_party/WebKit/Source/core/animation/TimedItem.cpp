@@ -46,7 +46,7 @@ TimedItem::TimedItem(const Timing& timing, PassOwnPtr<EventDelegate> eventDelega
     timing.assertValid();
 }
 
-void TimedItem::updateInheritedTime(double inheritedTime) const
+bool TimedItem::updateInheritedTime(double inheritedTime) const
 {
     const double localTime = inheritedTime - m_startTime;
     const double iterationDuration = m_specified.hasIterationDuration
@@ -106,9 +106,10 @@ void TimedItem::updateInheritedTime(double inheritedTime) const
     m_isFirstSample = false;
 
     // FIXME: This probably shouldn't be recursive.
-    updateChildrenAndEffects();
+    bool didTriggerStyleRecalc = updateChildrenAndEffects();
 
     m_calculated.timeToEffectChange = calculateTimeToEffectChange(localTime, m_startTime + m_specified.startDelay, m_calculated.phase);
+    return didTriggerStyleRecalc;
 }
 
 } // namespace WebCore
