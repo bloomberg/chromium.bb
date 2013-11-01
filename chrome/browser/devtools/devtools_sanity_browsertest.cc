@@ -137,7 +137,7 @@ class DevToolsSanityTest : public InProcessBrowserTest {
         content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
         content::Source<content::WebContents>(window_->web_contents()));
     DevToolsWindow::ToggleDevToolsWindow(inspected_rvh_, false,
-        DEVTOOLS_TOGGLE_ACTION_TOGGLE);
+        DevToolsToggleAction::Toggle());
     close_observer.Wait();
   }
 
@@ -403,7 +403,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
   void OpenDevToolsWindowForSharedWorker(WorkerData* worker_data) {
     Profile* profile = browser()->profile();
     window_ = DevToolsWindow::CreateDevToolsWindowForWorker(profile);
-    window_->Show(DEVTOOLS_TOGGLE_ACTION_SHOW);
+    window_->Show(DevToolsToggleAction::Show());
     scoped_refptr<DevToolsAgentHost> agent_host(
         DevToolsAgentHost::GetForWorker(
             worker_data->worker_process_id,

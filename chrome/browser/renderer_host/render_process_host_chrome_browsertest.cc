@@ -315,7 +315,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   EXPECT_EQ(host_count, RenderProcessHostCount());
 
   // DevTools start in docked mode (no new tab), in a separate process.
-  chrome::ToggleDevToolsWindow(browser(), DEVTOOLS_TOGGLE_ACTION_INSPECT);
+  chrome::ToggleDevToolsWindow(browser(), DevToolsToggleAction::Inspect());
   host_count++;
   EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
   EXPECT_EQ(host_count, RenderProcessHostCount());
@@ -325,7 +325,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
 
   // DevTools start in a separate process.
   DevToolsWindow::ToggleDevToolsWindow(
-      devtools, true, DEVTOOLS_TOGGLE_ACTION_INSPECT);
+      devtools, true, DevToolsToggleAction::Inspect());
   host_count++;
   EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
   EXPECT_EQ(host_count, RenderProcessHostCount());
@@ -335,7 +335,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
       content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::Source<WebContents>(WebContents::FromRenderViewHost(devtools)));
 
-  chrome::ToggleDevToolsWindow(browser(), DEVTOOLS_TOGGLE_ACTION_TOGGLE);
+  chrome::ToggleDevToolsWindow(browser(), DevToolsToggleAction::Toggle());
   close_observer.Wait();
 }
 
@@ -363,7 +363,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   EXPECT_EQ(host_count, RenderProcessHostCount());
 
   // DevTools start in docked mode (no new tab), in a separate process.
-  chrome::ToggleDevToolsWindow(browser(), DEVTOOLS_TOGGLE_ACTION_INSPECT);
+  chrome::ToggleDevToolsWindow(browser(), DevToolsToggleAction::Inspect());
   host_count++;
   EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
   EXPECT_EQ(host_count, RenderProcessHostCount());
@@ -373,7 +373,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
 
   // DevTools start in a separate process.
   DevToolsWindow::ToggleDevToolsWindow(
-      devtools, true, DEVTOOLS_TOGGLE_ACTION_INSPECT);
+      devtools, true, DevToolsToggleAction::Inspect());
   host_count++;
   EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
   EXPECT_EQ(host_count, RenderProcessHostCount());
@@ -383,7 +383,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
       content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::Source<content::WebContents>(
           WebContents::FromRenderViewHost(devtools)));
-  chrome::ToggleDevToolsWindow(browser(), DEVTOOLS_TOGGLE_ACTION_TOGGLE);
+  chrome::ToggleDevToolsWindow(browser(), DevToolsToggleAction::Toggle());
   close_observer.Wait();
 }
 

@@ -66,7 +66,7 @@ class DevToolsRestorer : public content::NotificationObserver {
         DevToolsWindow::ToggleDevToolsWindow(
             created_view,
             true /* force_open */,
-            DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE);
+            DevToolsToggleAction::ShowConsole());
 
     registrar_.Add(
         this,

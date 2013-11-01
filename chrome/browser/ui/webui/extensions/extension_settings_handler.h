@@ -242,6 +242,9 @@ class ExtensionSettingsHandler
   // it is removed from the process). Keep a pointer to it so we can exclude
   // it from the active views.
   content::RenderViewHost* deleting_rvh_;
+  // Do the same for a deleting RenderWidgetHost ID and RenderProcessHost ID.
+  int deleting_rwh_id_;
+  int deleting_rph_id_;
 
   // We want to register for notifications only after we've responded at least
   // once to the page, otherwise we'd be calling JavaScript functions on objects

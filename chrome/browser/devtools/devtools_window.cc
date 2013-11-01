@@ -11,6 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -64,6 +65,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using base::DictionaryValue;
+using content::BrowserThread;
 using content::DevToolsAgentHost;
 
 
@@ -289,7 +292,7 @@ void DevToolsWindow::RegisterProfilePrefs(
       prefs::kDevToolsFileSystemPaths,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterStringPref(
-      prefs::kDevToolsAdbKey, std::string(),
+      prefs::kDevToolsAdbKey, EmptyString(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   registry->RegisterDictionaryPref(
@@ -316,13 +319,20 @@ void DevToolsWindow::RegisterProfilePrefs(
 // static
 DevToolsWindow* DevToolsWindow::GetDockedInstanceForInspectedTab(
     content::WebContents* inspected_web_contents) {
-  if (!inspected_web_contents ||
-      !DevToolsAgentHost::HasFor(inspected_web_contents->GetRenderViewHost()))
-    return NULL;
-  scoped_refptr<DevToolsAgentHost> agent(DevToolsAgentHost::GetOrCreateFor(
-      inspected_web_contents->GetRenderViewHost()));
-  DevToolsWindow* window = FindDevToolsWindow(agent.get());
+  DevToolsWindow* window = GetInstanceForInspectedRenderViewHost(
+      inspected_web_contents->GetRenderViewHost());
   return (window && window->IsDocked()) ? window : NULL;
+}
+
+// static
+DevToolsWindow* DevToolsWindow::GetInstanceForInspectedRenderViewHost(
+      content::RenderViewHost* inspected_rvh) {
+  if (!inspected_rvh || !DevToolsAgentHost::HasFor(inspected_rvh))
+    return NULL;
+
+  scoped_refptr<DevToolsAgentHost> agent(DevToolsAgentHost::GetOrCreateFor(
+      inspected_rvh));
+  return FindDevToolsWindow(agent.get());
 }
 
 // static
@@ -341,7 +351,7 @@ DevToolsWindow* DevToolsWindow::OpenDevToolsWindowForWorker(
     content::DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
         worker_agent, window->frontend_host_.get());
   }
-  window->Show(DEVTOOLS_TOGGLE_ACTION_SHOW);
+  window->Show(DevToolsToggleAction::Show());
   return window;
 }
 
@@ -355,22 +365,23 @@ DevToolsWindow* DevToolsWindow::CreateDevToolsWindowForWorker(
 // static
 DevToolsWindow* DevToolsWindow::OpenDevToolsWindow(
     content::RenderViewHost* inspected_rvh) {
-  return ToggleDevToolsWindow(inspected_rvh, true,
-                              DEVTOOLS_TOGGLE_ACTION_SHOW);
+  return ToggleDevToolsWindow(
+      inspected_rvh, true, DevToolsToggleAction::Show());
 }
 
 // static
 DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
     Browser* browser,
-    DevToolsToggleAction action) {
-  if (action == DEVTOOLS_TOGGLE_ACTION_TOGGLE && browser->is_devtools()) {
+    const DevToolsToggleAction& action) {
+  if (action.type() == DevToolsToggleAction::kToggle &&
+      browser->is_devtools()) {
     browser->tab_strip_model()->CloseAllTabs();
     return NULL;
   }
 
   return ToggleDevToolsWindow(
       browser->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
-      action == DEVTOOLS_TOGGLE_ACTION_INSPECT, action);
+      action.type() == DevToolsToggleAction::kInspect, action);
 }
 
 // static
@@ -385,14 +396,14 @@ void DevToolsWindow::OpenExternalFrontend(
     content::DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
         agent_host, window->frontend_host_.get());
   }
-  window->Show(DEVTOOLS_TOGGLE_ACTION_SHOW);
+  window->Show(DevToolsToggleAction::Show());
 }
 
 // static
 DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
     content::RenderViewHost* inspected_rvh,
     bool force_open,
-    DevToolsToggleAction action) {
+    const DevToolsToggleAction& action) {
   scoped_refptr<DevToolsAgentHost> agent(
       DevToolsAgentHost::GetOrCreateFor(inspected_rvh));
   content::DevToolsManager* manager = content::DevToolsManager::GetInstance();
@@ -514,7 +525,7 @@ void DevToolsWindow::SetHeight(int height) {
   profile_->GetPrefs()->SetInteger(prefs::kDevToolsHSplitLocation, height);
 }
 
-void DevToolsWindow::Show(DevToolsToggleAction action) {
+void DevToolsWindow::Show(const DevToolsToggleAction& action) {
   if (IsDocked()) {
     Browser* inspected_browser = NULL;
     int inspected_tab_index = -1;
@@ -542,7 +553,7 @@ void DevToolsWindow::Show(DevToolsToggleAction action) {
   // Avoid consecutive window switching if the devtools window has been opened
   // and the Inspect Element shortcut is pressed in the inspected tab.
   bool should_show_window =
-      !browser_ || (action != DEVTOOLS_TOGGLE_ACTION_INSPECT);
+      !browser_ || (action.type() != DevToolsToggleAction::kInspect);
 
   if (!browser_)
     CreateDevToolsBrowser();
@@ -563,7 +574,7 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
       browser_(NULL),
       dock_side_(dock_side),
       is_loaded_(false),
-      action_on_load_(DEVTOOLS_TOGGLE_ACTION_SHOW),
+      action_on_load_(DevToolsToggleAction::Show()),
       width_(-1),
       height_(-1),
       dock_side_before_minimized_(dock_side),
@@ -573,7 +584,7 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
   frontend_contents_observer_.reset(new FrontendWebContentsObserver(this));
 
   web_contents_->GetController().LoadURL(url, content::Referrer(),
-      content::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
+      content::PAGE_TRANSITION_AUTO_TOPLEVEL, EmptyString());
 
   frontend_host_.reset(content::DevToolsClientHost::CreateDevToolsFrontendHost(
       web_contents_, this));
@@ -977,7 +988,7 @@ void DevToolsWindow::SetDockSide(const std::string& side) {
     profile_->GetPrefs()->SetString(prefs::kDevToolsDockSide, pref_value);
   }
 
-  Show(DEVTOOLS_TOGGLE_ACTION_SHOW);
+  Show(DevToolsToggleAction::Show());
 }
 
 void DevToolsWindow::OpenInNewTab(const std::string& url) {
@@ -1049,7 +1060,7 @@ void DevToolsWindow::RemoveFileSystem(const std::string& file_system_path) {
 
 void DevToolsWindow::IndexPath(int request_id,
                                const std::string& file_system_path) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK(web_contents_->GetURL().SchemeIs(chrome::kChromeDevToolsScheme));
   if (!file_helper_->IsFileSystemAdded(file_system_path)) {
     IndexingDone(request_id, file_system_path);
@@ -1074,7 +1085,7 @@ void DevToolsWindow::IndexPath(int request_id,
 }
 
 void DevToolsWindow::StopIndexing(int request_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   IndexingJobsMap::iterator it = indexing_jobs_.find(request_id);
   if (it == indexing_jobs_.end())
     return;
@@ -1085,7 +1096,7 @@ void DevToolsWindow::StopIndexing(int request_id) {
 void DevToolsWindow::SearchInPath(int request_id,
                                   const std::string& file_system_path,
                                   const std::string& query) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK(web_contents_->GetURL().SchemeIs(chrome::kChromeDevToolsScheme));
   if (!file_helper_->IsFileSystemAdded(file_system_path)) {
     SearchCompleted(request_id, file_system_path, std::vector<std::string>());
@@ -1121,7 +1132,7 @@ void DevToolsWindow::FileSystemsLoaded(
 
 void DevToolsWindow::FileSystemAdded(
     const DevToolsFileHelper::FileSystem& file_system) {
-  StringValue error_string_value((std::string()));
+  StringValue error_string_value(EmptyString());
   DictionaryValue* file_system_value = NULL;
   if (!file_system.file_system_path.empty())
     file_system_value = CreateFileSystemValue(file_system);
@@ -1135,7 +1146,7 @@ void DevToolsWindow::IndexingTotalWorkCalculated(
     int request_id,
     const std::string& file_system_path,
     int total_work) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::FundamentalValue request_id_value(request_id);
   StringValue file_system_path_value(file_system_path);
   base::FundamentalValue total_work_value(total_work);
@@ -1147,7 +1158,7 @@ void DevToolsWindow::IndexingTotalWorkCalculated(
 void DevToolsWindow::IndexingWorked(int request_id,
                                     const std::string& file_system_path,
                                     int worked) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::FundamentalValue request_id_value(request_id);
   StringValue file_system_path_value(file_system_path);
   base::FundamentalValue worked_value(worked);
@@ -1158,7 +1169,7 @@ void DevToolsWindow::IndexingWorked(int request_id,
 void DevToolsWindow::IndexingDone(int request_id,
                                   const std::string& file_system_path) {
   indexing_jobs_.erase(request_id);
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::FundamentalValue request_id_value(request_id);
   StringValue file_system_path_value(file_system_path);
   CallClientFunction("InspectorFrontendAPI.indexingDone", &request_id_value,
@@ -1169,7 +1180,7 @@ void DevToolsWindow::SearchCompleted(
     int request_id,
     const std::string& file_system_path,
     const std::vector<std::string>& file_paths) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ListValue file_paths_value;
   for (std::vector<std::string>::const_iterator it(file_paths.begin());
        it != file_paths.end(); ++it) {
@@ -1257,7 +1268,7 @@ void DevToolsWindow::UpdateFrontendDockSide() {
                      NULL);
 }
 
-void DevToolsWindow::ScheduleAction(DevToolsToggleAction action) {
+void DevToolsWindow::ScheduleAction(const DevToolsToggleAction& action) {
   action_on_load_ = action;
   if (is_loaded_)
     DoAction();
@@ -1265,26 +1276,40 @@ void DevToolsWindow::ScheduleAction(DevToolsToggleAction action) {
 
 void DevToolsWindow::DoAction() {
   UpdateFrontendDockSide();
-  switch (action_on_load_) {
-    case DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE:
+  switch (action_on_load_.type()) {
+    case DevToolsToggleAction::kShowConsole:
       CallClientFunction("InspectorFrontendAPI.showConsole", NULL, NULL, NULL);
       break;
 
-    case DEVTOOLS_TOGGLE_ACTION_INSPECT:
+    case DevToolsToggleAction::kInspect:
       CallClientFunction("InspectorFrontendAPI.enterInspectElementMode", NULL,
                          NULL, NULL);
       break;
 
-    case DEVTOOLS_TOGGLE_ACTION_SHOW:
-    case DEVTOOLS_TOGGLE_ACTION_TOGGLE:
+    case DevToolsToggleAction::kShow:
+    case DevToolsToggleAction::kToggle:
       // Do nothing.
       break;
 
+    case DevToolsToggleAction::kReveal: {
+      const DevToolsToggleAction::RevealParams* params =
+          action_on_load_.params();
+      CHECK(params);
+      base::StringValue url_value(params->url);
+      base::FundamentalValue line_value(static_cast<int>(params->line_number));
+      base::FundamentalValue column_value(
+          static_cast<int>(params->column_number));
+      CallClientFunction("InspectorFrontendAPI.revealSourceLine",
+                         &url_value,
+                         &line_value,
+                         &column_value);
+      break;
+    }
     default:
       NOTREACHED();
       break;
   }
-  action_on_load_ = DEVTOOLS_TOGGLE_ACTION_SHOW;
+  action_on_load_ = DevToolsToggleAction::Show();
 }
 
 void DevToolsWindow::UpdateTheme() {
@@ -1297,7 +1322,7 @@ void DevToolsWindow::UpdateTheme() {
       SkColorToRGBAString(tp->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT)) +
       "\")");
   web_contents_->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
-      string16(), ASCIIToUTF16(command));
+      EmptyString16(), ASCIIToUTF16(command));
 }
 
 void DevToolsWindow::AddDevToolsExtensionsToClient() {
@@ -1359,7 +1384,7 @@ void DevToolsWindow::CallClientFunction(const std::string& function_name,
   }
   string16 javascript = ASCIIToUTF16(function_name + "(" + params + ");");
   web_contents_->GetRenderViewHost()->
-      ExecuteJavascriptInWebFrame(string16(), javascript);
+      ExecuteJavascriptInWebFrame(EmptyString16(), javascript);
 }
 
 void DevToolsWindow::UpdateBrowserToolbar() {

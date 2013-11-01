@@ -43,6 +43,8 @@ class ExtensionErrorHandler : public content::WebUIMessageHandler {
 
   // Handle the "requestFileSource" call.
   void HandleRequestFileSource(const base::ListValue* args);
+  // Handle the "openDevTools" call.
+  void HandleOpenDevTools(const base::ListValue* args);
 
   // Populate the results for a manifest file's content in response to the
   // "requestFileSource" call. Highlight the part of the manifest which

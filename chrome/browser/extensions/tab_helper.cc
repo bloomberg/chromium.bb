@@ -363,6 +363,7 @@ void TabHelper::OnDetailedConsoleMessageAdded(
     const StackTrace& stack_trace,
     int32 severity_level) {
   if (IsSourceFromAnExtension(source)) {
+    content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
     ErrorConsole::Get(profile_)->ReportError(
         scoped_ptr<ExtensionError>(new RuntimeError(
             extension_app_ ? extension_app_->id() : EmptyString(),
@@ -372,7 +373,9 @@ void TabHelper::OnDetailedConsoleMessageAdded(
             stack_trace,
             web_contents() ?
                 web_contents()->GetLastCommittedURL() : GURL::EmptyGURL(),
-            static_cast<logging::LogSeverity>(severity_level))));
+            static_cast<logging::LogSeverity>(severity_level),
+            rvh->GetRoutingID(),
+            rvh->GetProcess()->GetID())));
   }
 }
 

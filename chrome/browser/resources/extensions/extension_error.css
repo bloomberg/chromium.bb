@@ -71,8 +71,29 @@
 }
 
 .extension-error-view-source {
-  -webkit-margin-start: 0 !important;
+  display: inline-block;
+}
+
+a.extension-error-view-source {
+  -webkit-margin-start: 0;  /* Needed to override rule 'extension-list-item' */
+}
+
+.extension-error-links {
+  display: inline-block;
   float: right;
+}
+
+.extension-error-inspect {
+  content: url('extension_error_inspect.png');
+  width: 10px;
+}
+
+.extension-error-links .extension-error-inspect {
+  -webkit-margin-end: 10px;
+}
+
+.extension-error-links > .extension-error-view-source:first-child {
+  -webkit-margin-start: 20px;
 }
 
 .extension-error-details {
@@ -83,6 +104,10 @@
   -webkit-padding-start: 20px;
 }
 
-.extension-error-stack-trace-list .extension-error-view-source {
+.extension-error-context-wrapper .extension-error-inspect {
+  -webkit-margin-start: 10px;
+}
+
+.extension-error-stack-trace-list .extension-error-links {
   float: none;
 }

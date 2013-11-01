@@ -11,11 +11,17 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "extensions/browser/extension_error.h"
@@ -55,6 +61,9 @@ void ExtensionErrorHandler::GetLocalizedValues(
       "extensionErrorViewSource",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_VIEW_SOURCE));
   source->AddString(
+      "extensionErrorInspect",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_INSPECT));
+  source->AddString(
       "extensionErrorContext",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_CONTEXT));
   source->AddString(
@@ -69,6 +78,10 @@ void ExtensionErrorHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "extensionErrorRequestFileSource",
       base::Bind(&ExtensionErrorHandler::HandleRequestFileSource,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "extensionErrorOpenDevTools",
+      base::Bind(&ExtensionErrorHandler::HandleOpenDevTools,
                  base::Unretained(this)));
 }
 
@@ -154,6 +167,67 @@ void ExtensionErrorHandler::HandleRequestFileSource(
                  path,
                  contents),
       closure);
+}
+
+void ExtensionErrorHandler::HandleOpenDevTools(const base::ListValue* args) {
+  CHECK(args->GetSize() == 1);
+
+  const base::DictionaryValue* dict = NULL;
+  int render_process_id = 0;
+  int render_view_id = 0;
+
+  // The render view and render process ids are required.
+  if (!args->GetDictionary(0, &dict) ||
+      !dict->GetInteger(RuntimeError::kRenderProcessIdKey,
+                        &render_process_id) ||
+      !dict->GetInteger(RuntimeError::kRenderViewIdKey, &render_view_id)) {
+    NOTREACHED();
+    return;
+  }
+
+  content::RenderViewHost* rvh =
+      content::RenderViewHost::FromID(render_process_id, render_view_id);
+
+  // It's possible that the render view was closed since we last updated the
+  // links. Handle this gracefully.
+  if (!rvh)
+    return;
+
+  // Check if we already have an inspector for the given RenderViewHost. If not,
+  // create one.
+  DevToolsWindow* window =
+      DevToolsWindow::GetInstanceForInspectedRenderViewHost(rvh);
+  if (!window)
+    window = DevToolsWindow::OpenDevToolsWindow(rvh);
+
+  // If we include a url, we should inspect it specifically (and not just the
+  // render view).
+  base::string16 url;
+  if (dict->GetString(RuntimeError::kUrlKey, &url)) {
+    // Line and column numbers are optional; default to the first line.
+    int line_number = 1;
+    int column_number = 1;
+    dict->GetInteger(RuntimeError::kLineNumberKey, &line_number);
+    dict->GetInteger(RuntimeError::kColumnNumberKey, &column_number);
+
+    // Line/column numbers are reported in display-friendly 1-based numbers,
+    // but are inspected in zero-based numbers.
+    window->Show(
+        DevToolsToggleAction::Reveal(url, line_number - 1, column_number - 1));
+  }
+
+  // Once we open the inspector, we focus on the appropriate tab...
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderViewHost(rvh);
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  // ... but background pages have no associated browser (and the inspector
+  // opens in its own window), so our work is done.
+  if (!browser)
+    return;
+
+  TabStripModel* tab_strip = browser->tab_strip_model();
+  tab_strip->ActivateTabAt(tab_strip->GetIndexOfWebContents(web_contents),
+                           false);  // Not through direct user gesture.
 }
 
 void ExtensionErrorHandler::GetManifestFileCallback(

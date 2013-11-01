@@ -606,7 +606,9 @@ void ExtensionHost::OnDetailedConsoleMessageAdded(
             message,
             stack_trace,
             context_url,
-            static_cast<logging::LogSeverity>(severity_level))));
+            static_cast<logging::LogSeverity>(severity_level),
+            render_view_host_->GetRoutingID(),
+            render_view_host_->GetProcess()->GetID())));
   }
 }
 

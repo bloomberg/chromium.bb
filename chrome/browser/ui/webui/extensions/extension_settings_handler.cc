@@ -148,6 +148,8 @@ ExtensionSettingsHandler::ExtensionSettingsHandler()
       management_policy_(NULL),
       ignore_notifications_(false),
       deleting_rvh_(NULL),
+      deleting_rwh_id_(-1),
+      deleting_rph_id_(-1),
       registered_for_notifications_(false),
       warning_service_observer_(this),
       error_console_observer_(this) {
@@ -166,6 +168,8 @@ ExtensionSettingsHandler::ExtensionSettingsHandler(ExtensionService* service,
       management_policy_(policy),
       ignore_notifications_(false),
       deleting_rvh_(NULL),
+      deleting_rwh_id_(-1),
+      deleting_rph_id_(-1),
       registered_for_notifications_(false),
       warning_service_observer_(this),
       error_console_observer_(this) {
@@ -299,10 +303,19 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
       scoped_ptr<ListValue> runtime_errors(new ListValue);
       for (ErrorConsole::ErrorList::const_iterator iter = errors.begin();
            iter != errors.end(); ++iter) {
-        if ((*iter)->type() == ExtensionError::MANIFEST_ERROR)
+        if ((*iter)->type() == ExtensionError::MANIFEST_ERROR) {
           manifest_errors->Append((*iter)->ToValue().release());
-        else
-          runtime_errors->Append((*iter)->ToValue().release());
+        } else {  // Handle runtime error.
+          const RuntimeError* error = static_cast<const RuntimeError*>(*iter);
+          scoped_ptr<DictionaryValue> value = error->ToValue();
+          bool can_inspect =
+              !(deleting_rwh_id_ == error->render_view_id() &&
+                deleting_rph_id_ == error->render_process_id()) &&
+              RenderViewHost::FromID(error->render_process_id(),
+                                     error->render_view_id()) != NULL;
+          value->SetBoolean("canInspect", can_inspect);
+          runtime_errors->Append(value.release());
+        }
       }
       if (!manifest_errors->empty())
         extension_data->Set("manifestErrors", manifest_errors.release());
@@ -425,7 +438,7 @@ void ExtensionSettingsHandler::GetLocalizedValues(
 }
 
 void ExtensionSettingsHandler::RenderViewDeleted(
-    content::RenderViewHost* render_view_host) {
+    RenderViewHost* render_view_host) {
   deleting_rvh_ = render_view_host;
   Profile* source_profile = Profile::FromBrowserContext(
       render_view_host->GetSiteInstance()->GetBrowserContext());
@@ -542,6 +555,14 @@ void ExtensionSettingsHandler::Observe(
           return;
       MaybeUpdateAfterNotification();
       break;
+    case content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED: {
+      content::RenderWidgetHost* rwh =
+          content::Source<content::RenderWidgetHost>(source).ptr();
+      deleting_rwh_id_ = rwh->GetRoutingID();
+      deleting_rph_id_ = rwh->GetProcess()->GetID();
+      MaybeUpdateAfterNotification();
+      break;
+    }
     case chrome::NOTIFICATION_EXTENSION_LOADED:
     case chrome::NOTIFICATION_EXTENSION_UNLOADED:
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED:
@@ -1031,6 +1052,10 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
           profile->GetExtensionService()->extension_prefs()));
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+                 content::NotificationService::AllBrowserContextsAndSources());
+
+  registrar_.Add(this,
+                 content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
                  content::NotificationService::AllBrowserContextsAndSources());
 
   content::WebContentsObserver::Observe(web_ui()->GetWebContents());

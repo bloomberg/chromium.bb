@@ -130,6 +130,8 @@ const char RuntimeError::kFunctionNameKey[] = "functionName";
 const char RuntimeError::kLineNumberKey[] = "lineNumber";
 const char RuntimeError::kStackTraceKey[] = "stackTrace";
 const char RuntimeError::kUrlKey[] = "url";
+const char RuntimeError::kRenderProcessIdKey[] = "renderProcessId";
+const char RuntimeError::kRenderViewIdKey[] = "renderViewId";
 
 RuntimeError::RuntimeError(const std::string& extension_id,
                            bool from_incognito,
@@ -137,7 +139,9 @@ RuntimeError::RuntimeError(const std::string& extension_id,
                            const string16& message,
                            const StackTrace& stack_trace,
                            const GURL& context_url,
-                           logging::LogSeverity level)
+                           logging::LogSeverity level,
+                           int render_view_id,
+                           int render_process_id)
     : ExtensionError(ExtensionError::RUNTIME_ERROR,
                      !extension_id.empty() ? extension_id : GURL(source).host(),
                      from_incognito,
@@ -145,7 +149,9 @@ RuntimeError::RuntimeError(const std::string& extension_id,
                      source,
                      message),
       context_url_(context_url),
-      stack_trace_(stack_trace) {
+      stack_trace_(stack_trace),
+      render_view_id_(render_view_id),
+      render_process_id_(render_process_id) {
   CleanUpInit();
 }
 
@@ -155,8 +161,10 @@ RuntimeError::~RuntimeError() {
 scoped_ptr<DictionaryValue> RuntimeError::ToValue() const {
   scoped_ptr<DictionaryValue> value = ExtensionError::ToValue();
   value->SetString(kContextUrlKey, context_url_.spec());
+  value->SetInteger(kRenderViewIdKey, render_view_id_);
+  value->SetInteger(kRenderProcessIdKey, render_process_id_);
 
-  ListValue* trace_value = new ListValue;
+  base::ListValue* trace_value = new base::ListValue;
   for (StackTrace::const_iterator iter = stack_trace_.begin();
        iter != stack_trace_.end(); ++iter) {
     DictionaryValue* frame_value = new DictionaryValue;

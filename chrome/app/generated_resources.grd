@@ -4765,6 +4765,9 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSIONS_ERROR_VIEW_SOURCE" desc="The link to view the source code for a file relating to an extension error.">
         View source
       </message>
+      <message name="IDS_EXTENSIONS_ERROR_INSPECT" desc="The link to open the inspector (developer tools) for the location of a particular error.">
+        Inspect
+      </message>
       <message name="IDS_EXTENSIONS_ERROR_CONTEXT" desc="The label for the context of an extension's error.">
         Context:
       </message>

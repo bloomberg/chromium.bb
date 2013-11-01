@@ -649,19 +649,19 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       CreateApplicationShortcuts(browser_);
       break;
     case IDC_DEV_TOOLS:
-      ToggleDevToolsWindow(browser_, DEVTOOLS_TOGGLE_ACTION_SHOW);
+      ToggleDevToolsWindow(browser_, DevToolsToggleAction::Show());
       break;
     case IDC_DEV_TOOLS_CONSOLE:
-      ToggleDevToolsWindow(browser_, DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE);
+      ToggleDevToolsWindow(browser_, DevToolsToggleAction::ShowConsole());
       break;
     case IDC_DEV_TOOLS_DEVICES:
       InspectUI::InspectDevices(browser_);
       break;
     case IDC_DEV_TOOLS_INSPECT:
-      ToggleDevToolsWindow(browser_, DEVTOOLS_TOGGLE_ACTION_INSPECT);
+      ToggleDevToolsWindow(browser_, DevToolsToggleAction::Inspect());
       break;
     case IDC_DEV_TOOLS_TOGGLE:
-      ToggleDevToolsWindow(browser_, DEVTOOLS_TOGGLE_ACTION_TOGGLE);
+      ToggleDevToolsWindow(browser_, DevToolsToggleAction::Toggle());
       break;
     case IDC_TASK_MANAGER:
       OpenTaskManager(browser_);

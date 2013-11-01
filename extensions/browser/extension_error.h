@@ -126,7 +126,9 @@ class RuntimeError : public ExtensionError {
                const base::string16& message,
                const StackTrace& stack_trace,
                const GURL& context_url,
-               logging::LogSeverity level);
+               logging::LogSeverity level,
+               int render_view_id,
+               int render_process_id);
   virtual ~RuntimeError();
 
   virtual scoped_ptr<base::DictionaryValue> ToValue() const OVERRIDE;
@@ -135,6 +137,8 @@ class RuntimeError : public ExtensionError {
 
   const GURL& context_url() const { return context_url_; }
   const StackTrace& stack_trace() const { return stack_trace_; }
+  int render_view_id() const { return render_view_id_; }
+  int render_process_id() const { return render_process_id_; }
 
   // Keys used for retrieving JSON values.
   static const char kColumnNumberKey[];
@@ -143,6 +147,8 @@ class RuntimeError : public ExtensionError {
   static const char kLineNumberKey[];
   static const char kStackTraceKey[];
   static const char kUrlKey[];
+  static const char kRenderProcessIdKey[];
+  static const char kRenderViewIdKey[];
 
  private:
   virtual bool IsEqualImpl(const ExtensionError* rhs) const OVERRIDE;
@@ -154,6 +160,11 @@ class RuntimeError : public ExtensionError {
 
   GURL context_url_;
   StackTrace stack_trace_;
+
+  // Keep track of the render process which caused the error in order to
+  // inspect the view later, if possible.
+  int render_view_id_;
+  int render_process_id_;
 
   DISALLOW_COPY_AND_ASSIGN(RuntimeError);
 };

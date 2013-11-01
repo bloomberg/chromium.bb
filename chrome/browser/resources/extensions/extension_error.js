@@ -63,11 +63,11 @@ cr.define('extensions', function() {
 
       // Add an additional class for the severity level.
       if (this.error_.level == 0)
-        metadata.className += ' extension-error-severity-info';
+        metadata.classList.add('extension-error-severity-info');
       else if (this.error_.level == 1)
-        metadata.className += ' extension-error-severity-warning';
+        metadata.classList.add('extension-error-severity-warning');
       else
-        metadata.className += ' extension-error-severity-fatal';
+        metadata.classList.add('extension-error-severity-fatal');
 
       var iconNode = document.createElement('img');
       iconNode.className = 'extension-error-icon';
@@ -81,7 +81,7 @@ cr.define('extensions', function() {
       metadata.querySelector('.extension-error-message').textContent =
           this.error_.message;
 
-      metadata.appendChild(this.getViewSourceOrPlain_(
+      metadata.appendChild(this.createViewSourceAndInspect_(
           getRelativeUrl(this.error_.source, this.extensionUrl_),
           this.error_.source));
 
@@ -92,29 +92,41 @@ cr.define('extensions', function() {
 
       var detailsNode = this.querySelector('.extension-error-details');
       if (detailsNode && this.error_.contextUrl)
-        detailsNode.appendChild(this.getContextNode_());
-      if (detailsNode && this.error_.stackTrace)
-        detailsNode.appendChild(this.getStackNode_());
+        detailsNode.appendChild(this.createContextNode_());
+      if (detailsNode && this.error_.stackTrace) {
+        var stackNode = this.createStackNode_();
+        if (stackNode)
+          detailsNode.appendChild(this.createStackNode_());
+      }
     },
 
     /**
      * Return a div with text |description|. If it's possible to view the source
-     * for |url|, linkify the div to do so.
+     * for |url|, linkify the div to do so. Attach an inspect button if it's
+     * possible to open the inspector for |url|.
      * @param {string} description a human-friendly description the location
      *     (e.g., filename, line).
      * @param {string} url The url of the resource to view.
      * @param {?number} line An optional line number of the resource.
+     * @param {?number} column An optional column number of the resource.
      * @return {HTMLElement} The created node, either a link or plaintext.
      * @private
      */
-    getViewSourceOrPlain_: function(description, url, line) {
+    createViewSourceAndInspect_: function(description, url, line, column) {
+      var errorLinks = document.createElement('div');
+      errorLinks.className = 'extension-error-links';
+
+      if (this.error_.canInspect)
+        errorLinks.appendChild(this.createInspectLink_(url, line, column));
+
       if (this.canViewSource_(url))
-        var node = this.getViewSourceLink_(url, line);
+        var viewSource = this.createViewSourceLink_(url, line);
       else
-        var node = document.createElement('div');
-      node.className = 'extension-error-view-source';
-      node.textContent = description;
-      return node;
+        var viewSource = document.createElement('div');
+      viewSource.className = 'extension-error-view-source';
+      viewSource.textContent = description;
+      errorLinks.appendChild(viewSource);
+      return errorLinks;
     },
 
     /**
@@ -128,6 +140,19 @@ cr.define('extensions', function() {
     },
 
     /**
+     * Determine whether or not we should display the url to the user. We don't
+     * want to include any of our own code in stack traces.
+     * @param {string} url The url in question.
+     * @return {boolean} True if the url should be displayed, and false
+     *     otherwise (i.e., if it is an internal script).
+     */
+    shouldDisplayForUrl_: function(url) {
+      var extensionsNamespace = 'extensions::';
+      // All our internal scripts are in the 'extensions::' namespace.
+      return url.substr(0, extensionsNamespace.length) != extensionsNamespace;
+    },
+
+    /**
      * Create a clickable node to view the source for the given url.
      * @param {string} url The url to the resource to view.
      * @param {?number} line An optional line number of the resource (for
@@ -135,8 +160,9 @@ cr.define('extensions', function() {
      * @return {HTMLElement} The clickable node to view the source.
      * @private
      */
-    getViewSourceLink_: function(url, line) {
-      var node = document.createElement('a');
+    createViewSourceLink_: function(url, line) {
+      var viewSource = document.createElement('a');
+      viewSource.href = 'javascript:void(0)';
       var relativeUrl = getRelativeUrl(url, this.extensionUrl_);
       var requestFileSourceArgs = { 'extensionId': this.error_.extensionId,
                                     'message': this.error_.message,
@@ -147,19 +173,57 @@ cr.define('extensions', function() {
       } else {
         // Prefer |line| if available, or default to the line of the last stack
         // frame.
-        if (line) {
-          requestFileSourceArgs.lineNumber = line;
-        } else if (this.error_.stackTrace) {
-          requestFileSourceArgs.lineNumber =
-              this.error_.stackTrace[0].lineNumber;
-        }
+        requestFileSourceArgs.lineNumber =
+            line ? line : this.getLastPosition_('lineNumber');
       }
 
-      node.addEventListener('click', function(e) {
+      viewSource.addEventListener('click', function(e) {
         chrome.send('extensionErrorRequestFileSource', [requestFileSourceArgs]);
       });
-      node.title = loadTimeData.getString('extensionErrorViewSource');
-      return node;
+      viewSource.title = loadTimeData.getString('extensionErrorViewSource');
+      return viewSource;
+    },
+
+    /**
+     * Check the most recent stack frame to get the last position in the code.
+     * @param {string} type The position type, i.e. '[line|column]Number'.
+     * @return {?number} The last position of the given |type|, or undefined if
+     *     there is no stack trace to check.
+     * @private
+     */
+    getLastPosition_: function(type) {
+      var stackTrace = this.error_.stackTrace;
+      return stackTrace && stackTrace[0] ? stackTrace[0][type] : undefined;
+    },
+
+    /**
+     * Create an "Inspect" link, in the form of an icon.
+     * @param {?string} url The url of the resource to inspect; if absent, the
+     *     render view (and no particular resource) is inspected.
+     * @param {?number} line An optional line number of the resource.
+     * @param {?number} column An optional column number of the resource.
+     * @return {HTMLImageElement} The created "Inspect" link for the resource.
+     * @private
+     */
+    createInspectLink_: function(url, line, column) {
+      var linkWrapper = document.createElement('a');
+      linkWrapper.href = 'javascript:void(0)';
+      var inspectIcon = document.createElement('img');
+      inspectIcon.className = 'extension-error-inspect';
+      inspectIcon.title = loadTimeData.getString('extensionErrorInspect');
+
+      inspectIcon.addEventListener('click', function(e) {
+          chrome.send('extensionErrorOpenDevTools',
+                      [{'renderProcessId': this.error_.renderProcessId,
+                        'renderViewId': this.error_.renderViewId,
+                        'url': url,
+                        'lineNumber': line ? line :
+                            this.getLastPosition_('lineNumber'),
+                        'columnNumber': column ? column :
+                            this.getLastPosition_('columnNumber')}]);
+      }.bind(this));
+      linkWrapper.appendChild(inspectIcon);
+      return linkWrapper;
     },
 
     /**
@@ -170,7 +234,7 @@ cr.define('extensions', function() {
      *     label and a link to the context.
      * @private
      */
-    getContextNode_: function() {
+    createContextNode_: function() {
       var node = cloneTemplate('extension-error-context-wrapper');
       var linkNode = node.querySelector('a');
       if (isExtensionUrl(this.error_.contextUrl, this.extensionUrl_)) {
@@ -179,6 +243,11 @@ cr.define('extensions', function() {
       } else {
         linkNode.textContent = this.error_.contextUrl;
       }
+
+      // Prepend a link to inspect the context page, if possible.
+      if (this.error_.canInspect)
+        node.insertBefore(this.createInspectLink_(), linkNode);
+
       linkNode.href = this.error_.contextUrl;
       linkNode.target = '_blank';
       return node;
@@ -188,15 +257,17 @@ cr.define('extensions', function() {
      * Get a node for the stack trace for this error. Each stack frame will
      * include a resource url, line number, and function name (possibly
      * anonymous). If possible, these frames will also be linked for viewing the
-     * source.
+     * source and inspection.
      * @return {HTMLDetailsElement} The stack trace node for this error, with
      *     all stack frames nested in a details-summary object.
      * @private
      */
-    getStackNode_: function() {
+    createStackNode_: function() {
       var node = cloneTemplate('extension-error-stack-trace');
       var listNode = node.querySelector('.extension-error-stack-trace-list');
       this.error_.stackTrace.forEach(function(frame) {
+        if (!this.shouldDisplayForUrl_(frame.url))
+          return;
         var frameNode = document.createElement('div');
         var description = getRelativeUrl(frame.url, this.extensionUrl_) +
                           ':' + frame.lineNumber;
@@ -206,11 +277,14 @@ cr.define('extensions', function() {
               frame.functionName;
           description += ' (' + functionName + ')';
         }
-        frameNode.appendChild(this.getViewSourceOrPlain_(
-            description, frame.url, frame.lineNumber));
+        frameNode.appendChild(this.createViewSourceAndInspect_(
+            description, frame.url, frame.lineNumber, frame.columnNumber));
         listNode.appendChild(
             document.createElement('li')).appendChild(frameNode);
       }, this);
+
+      if (listNode.childElementCount == 0)
+        return undefined;
 
       return node;
     },

@@ -516,7 +516,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeInTabDevToolsWindow) {
   DevToolsWindow* dev_tools = DevToolsWindow::ToggleDevToolsWindow(
       model()->GetResourceWebContents(1)->GetRenderViewHost(),
       true,
-      DEVTOOLS_TOGGLE_ACTION_INSPECT);
+      DevToolsToggleAction::Inspect());
   // Dock side bottom should be the default.
   ASSERT_EQ(DEVTOOLS_DOCK_SIDE_BOTTOM, dev_tools->dock_side());
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
@@ -530,7 +530,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerNoShowBrowserTest,
   DevToolsWindow* dev_tools = DevToolsWindow::ToggleDevToolsWindow(
       browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
       true,
-      DEVTOOLS_TOGGLE_ACTION_INSPECT);
+      DevToolsToggleAction::Inspect());
   // Dock side bottom should be the default.
   ASSERT_EQ(DEVTOOLS_DOCK_SIDE_BOTTOM, dev_tools->dock_side());
   // Make sure that the devtools window is loaded before starting the task

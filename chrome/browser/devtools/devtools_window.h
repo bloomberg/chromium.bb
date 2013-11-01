@@ -67,6 +67,10 @@ class DevToolsWindow : private content::NotificationObserver,
 
   static std::string GetDevToolsWindowPlacementPrefKey();
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+  // Return the DevToolsWindow for the given RenderViewHost if one exists,
+  // otherwise NULL.
+  static DevToolsWindow* GetInstanceForInspectedRenderViewHost(
+      content::RenderViewHost* inspected_rvh);
   static DevToolsWindow* GetDockedInstanceForInspectedTab(
       content::WebContents* inspected_tab);
   static bool IsDevToolsWindow(content::RenderViewHost* window_rvh);
@@ -78,7 +82,7 @@ class DevToolsWindow : private content::NotificationObserver,
       content::RenderViewHost* inspected_rvh);
   static DevToolsWindow* ToggleDevToolsWindow(
       Browser* browser,
-      DevToolsToggleAction action);
+      const DevToolsToggleAction& action);
   static void OpenExternalFrontend(Profile* profile,
                                    const std::string& frontend_uri,
                                    content::DevToolsAgentHost* agent_host);
@@ -87,7 +91,8 @@ class DevToolsWindow : private content::NotificationObserver,
   static DevToolsWindow* ToggleDevToolsWindow(
       content::RenderViewHost* inspected_rvh,
       bool force_open,
-      DevToolsToggleAction action);
+      const DevToolsToggleAction& action);
+
   static void InspectElement(
       content::RenderViewHost* inspected_rvh, int x, int y);
 
@@ -123,7 +128,7 @@ class DevToolsWindow : private content::NotificationObserver,
   // Stores preferred devtools window height for this instance.
   void SetHeight(int height);
 
-  void Show(DevToolsToggleAction action);
+  void Show(const DevToolsToggleAction& action);
 
  private:
   friend class DevToolsControllerTest;
@@ -236,7 +241,7 @@ class DevToolsWindow : private content::NotificationObserver,
   BrowserWindow* GetInspectedBrowserWindow();
   bool IsInspectedBrowserPopup();
   void UpdateFrontendDockSide();
-  void ScheduleAction(DevToolsToggleAction action);
+  void ScheduleAction(const DevToolsToggleAction& action);
   void DoAction();
   void UpdateTheme();
   void AddDevToolsExtensionsToClient();

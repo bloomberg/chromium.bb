@@ -57,7 +57,8 @@ scoped_ptr<ExtensionError> CreateNewRuntimeError(
       message,
       GetDefaultStackTrace(),
       GURL::EmptyGURL(),  // no context url
-      logging::LOG_INFO));
+      logging::LOG_INFO,
+      0, 0 /* Render [View|Process] ID */ ));
 }
 
 }  // namespace

@@ -201,6 +201,6 @@ void ExtensionPopup::ShowBubble() {
   if (inspect_with_devtools_) {
     DevToolsWindow::ToggleDevToolsWindow(host()->render_view_host(),
         true,
-        DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE);
+        DevToolsToggleAction::ShowConsole());
   }
 }
