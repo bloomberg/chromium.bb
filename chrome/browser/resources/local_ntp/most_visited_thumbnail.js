@@ -16,7 +16,8 @@ window.addEventListener('DOMContentLoaded', function() {
     }
     function showDomainElement() {
       logEvent(NTP_LOGGING_EVENT_TYPE.NTP_THUMBNAIL_ERROR);
-      var link = createMostVisitedLink(params, data.url, data.title);
+      var link = createMostVisitedLink(
+          params, data.url, data.title, undefined, data.ping);
       var domain = document.createElement('div');
       domain.textContent = data.domain;
       link.appendChild(domain);
@@ -27,7 +28,8 @@ window.addEventListener('DOMContentLoaded', function() {
       image.onload = function() {
         var shadow = document.createElement('span');
         shadow.classList.add('shadow');
-        var link = createMostVisitedLink(params, data.url, data.title);
+        var link = createMostVisitedLink(
+            params, data.url, data.title, undefined, data.ping);
         link.appendChild(shadow);
         link.appendChild(image);
         // We add 'position: absolute' in anticipation that there could be more

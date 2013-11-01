@@ -61,9 +61,12 @@ function parseQueryParams(location) {
  * @param {string} href The destination for the link.
  * @param {string} title The title for the link.
  * @param {string|undefined} text The text for the link or none.
+ * @param {string|undefined} ping If specified, a location relative to the
+ *     referrer of this iframe, to ping when the link is clicked. Only works if
+ *     the referrer is HTTPS.
  * @return {HTMLAnchorElement} A new link element.
  */
-function createMostVisitedLink(params, href, title, text) {
+function createMostVisitedLink(params, href, title, text, ping) {
   var styles = getMostVisitedStyles(params, !!text);
   var link = document.createElement('a');
   link.style.color = styles.color;
@@ -71,8 +74,18 @@ function createMostVisitedLink(params, href, title, text) {
   if (styles.fontFamily)
     link.style.fontFamily = styles.fontFamily;
   link.href = href;
-  if ('pos' in params && isFinite(params.pos))
+  if ('pos' in params && isFinite(params.pos)) {
     link.ping = '/log.html?pos=' + params.pos;
+    // If a ping parameter was specified, add it to the list of pings, relative
+    // to the referrer of this iframe, which is the default search provider.
+    if (ping) {
+      var parentUrl = document.createElement('a');
+      parentUrl.href = document.referrer;
+      if (parentUrl.protocol == 'https:') {
+        link.ping += ' ' + parentUrl.origin + '/' + ping;
+      }
+    }
+  }
   link.title = title;
   link.target = '_top';
   // Exclude links from the tab order.  The tabIndex is added to the thumbnail
@@ -138,11 +151,13 @@ function fillMostVisited(location, fill) {
     data.title = params.ti || '';
     data.direction = params.di || '';
     data.domain = params.dom || '';
+    data.ping = params.ping || '';
   } else {
     var apiHandle = chrome.embeddedSearch.searchBox;
     data = apiHandle.getMostVisitedItemData(params.rid);
     if (!data)
       return;
+    delete data.ping;
   }
   if (/^javascript:/i.test(data.url) ||
       /^javascript:/i.test(data.thumbnailUrl) ||
