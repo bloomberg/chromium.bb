@@ -157,7 +157,6 @@ FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
     , m_didAccessInitialDocument(false)
     , m_didAccessInitialDocumentTimer(this, &FrameLoader::didAccessInitialDocumentTimerFired)
     , m_suppressOpenerInNewFrame(false)
-    , m_startingClientRedirect(false)
     , m_forcedSandboxFlags(SandboxNone)
 {
 }
@@ -558,7 +557,7 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
         m_client->postProgressFinishedNotification();
 }
 
-void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScriptValue> stateObject, bool isNewNavigation)
+void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScriptValue> stateObject, bool isNewNavigation, ClientRedirectPolicy clientRedirect)
 {
     // If we have a state object, we cannot also be a new navigation.
     ASSERT(!stateObject || (stateObject && !isNewNavigation));
@@ -570,7 +569,7 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
         m_frame->eventHandler().stopAutoscrollTimer();
         m_frame->domWindow()->enqueueHashchangeEvent(oldURL, url);
     }
-    m_documentLoader->setIsClientRedirect((m_startingClientRedirect && !isNewNavigation) || !UserGestureIndicator::processingUserGesture());
+    m_documentLoader->setIsClientRedirect((clientRedirect == ClientRedirect && !isNewNavigation) || !UserGestureIndicator::processingUserGesture());
     m_documentLoader->setReplacesCurrentHistoryItem(!isNewNavigation);
     UpdateBackForwardListPolicy updateBackForwardList = isNewNavigation && !shouldTreatURLAsSameAsCurrent(url) && !stateObject ? UpdateBackForwardList : DoNotUpdateBackForwardList;
     updateForSameDocumentNavigation(url, SameDocumentNavigationDefault, 0, updateBackForwardList);
@@ -736,13 +735,12 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
         return;
     }
 
-    TemporaryChange<bool> changeClientRedirect(m_startingClientRedirect, request.clientRedirect());
     if (shouldPerformFragmentNavigation(request.formState(), request.resourceRequest().httpMethod(), newLoadType, request.resourceRequest().url())) {
-        checkNavigationPolicyAndContinueFragmentScroll(action, newLoadType != FrameLoadTypeRedirectWithLockedBackForwardList);
+        checkNavigationPolicyAndContinueFragmentScroll(action, newLoadType != FrameLoadTypeRedirectWithLockedBackForwardList, request.clientRedirect());
         return;
     }
     bool sameURL = shouldTreatURLAsSameAsCurrent(request.resourceRequest().url());
-    loadWithNavigationAction(request.resourceRequest(), action, newLoadType, request.formState(), request.substituteData());
+    loadWithNavigationAction(request.resourceRequest(), action, newLoadType, request.formState(), request.substituteData(), request.clientRedirect());
     // Example of this case are sites that reload the same URL with a different cookie
     // driving the generated content, or a master frame with links that drive a target
     // frame, where the user has clicked on the same link repeatedly.
@@ -789,7 +787,7 @@ void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, con
 
     FrameLoadType type = reloadPolicy == EndToEndReload ? FrameLoadTypeReloadFromOrigin : FrameLoadTypeReload;
     NavigationAction action(request, type, request.httpMethod() == "POST");
-    loadWithNavigationAction(request, action, type, 0, SubstituteData(), overrideEncoding);
+    loadWithNavigationAction(request, action, type, 0, SubstituteData(), NotClientRedirect, overrideEncoding);
 }
 
 void FrameLoader::stopAllLoaders()
@@ -1226,7 +1224,7 @@ void FrameLoader::receivedMainResourceError(const ResourceError& error)
         checkLoadComplete();
 }
 
-void FrameLoader::checkNavigationPolicyAndContinueFragmentScroll(const NavigationAction& action, bool isNewNavigation)
+void FrameLoader::checkNavigationPolicyAndContinueFragmentScroll(const NavigationAction& action, bool isNewNavigation, ClientRedirectPolicy clientRedirect)
 {
     m_documentLoader->setTriggeringAction(action);
 
@@ -1242,7 +1240,7 @@ void FrameLoader::checkNavigationPolicyAndContinueFragmentScroll(const Navigatio
         m_provisionalDocumentLoader = 0;
     }
     history()->setProvisionalItem(0);
-    loadInSameDocument(request.url(), 0, isNewNavigation);
+    loadInSameDocument(request.url(), 0, isNewNavigation, clientRedirect);
 }
 
 bool FrameLoader::shouldPerformFragmentNavigation(bool isFormSubmission, const String& httpMethod, FrameLoadType loadType, const KURL& url)
@@ -1310,7 +1308,7 @@ bool FrameLoader::shouldClose()
     return shouldClose;
 }
 
-void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const NavigationAction& action, FrameLoadType type, PassRefPtr<FormState> formState, const SubstituteData& substituteData, const String& overrideEncoding)
+void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const NavigationAction& action, FrameLoadType type, PassRefPtr<FormState> formState, const SubstituteData& substituteData, ClientRedirectPolicy clientRedirect, const String& overrideEncoding)
 {
     ASSERT(m_client->hasWebView());
     if (m_frame->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal)
@@ -1339,7 +1337,7 @@ void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const
     m_policyDocumentLoader->setFrame(m_frame);
     m_policyDocumentLoader->setTriggeringAction(action);
     m_policyDocumentLoader->setReplacesCurrentHistoryItem(replacesCurrentHistoryItem);
-    m_policyDocumentLoader->setIsClientRedirect(m_startingClientRedirect);
+    m_policyDocumentLoader->setIsClientRedirect(clientRedirect == ClientRedirect);
 
     if (Frame* parent = m_frame->tree().parent())
         m_policyDocumentLoader->setOverrideEncoding(parent->loader().documentLoader()->overrideEncoding());
@@ -1533,7 +1531,7 @@ void FrameLoader::loadHistoryItem(HistoryItem* item)
 
     if (currentItem && item->shouldDoSameDocumentNavigationTo(currentItem)) {
         history()->setCurrentItem(item);
-        loadInSameDocument(item->url(), item->stateObject(), false);
+        loadInSameDocument(item->url(), item->stateObject(), false, NotClientRedirect);
         return;
     }
 

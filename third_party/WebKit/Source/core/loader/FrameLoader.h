@@ -230,7 +230,7 @@ private:
 
     SubstituteData defaultSubstituteDataForURL(const KURL&);
 
-    void checkNavigationPolicyAndContinueFragmentScroll(const NavigationAction&, bool isNewNavigation);
+    void checkNavigationPolicyAndContinueFragmentScroll(const NavigationAction&, bool isNewNavigation, ClientRedirectPolicy);
     void checkNewWindowPolicyAndContinue(PassRefPtr<FormState>, const String& frameName, const NavigationAction&);
 
     bool shouldPerformFragmentNavigation(bool isFormSubmission, const String& httpMethod, FrameLoadType, const KURL&);
@@ -242,12 +242,12 @@ private:
 
     // Calls continueLoadAfterNavigationPolicy
     void loadWithNavigationAction(const ResourceRequest&, const NavigationAction&,
-        FrameLoadType, PassRefPtr<FormState>, const SubstituteData&, const String& overrideEncoding = String());
+        FrameLoadType, PassRefPtr<FormState>, const SubstituteData&, ClientRedirectPolicy = NotClientRedirect, const String& overrideEncoding = String());
 
     void detachChildren();
     void closeAndRemoveChild(Frame*);
 
-    void loadInSameDocument(const KURL&, PassRefPtr<SerializedScriptValue> stateObject, bool isNewNavigation);
+    void loadInSameDocument(const KURL&, PassRefPtr<SerializedScriptValue> stateObject, bool isNewNavigation, ClientRedirectPolicy);
 
     void scheduleCheckCompleted();
     void startCheckCompleteTimer();
@@ -298,7 +298,6 @@ private:
     bool m_didAccessInitialDocument;
     Timer<FrameLoader> m_didAccessInitialDocumentTimer;
     bool m_suppressOpenerInNewFrame;
-    bool m_startingClientRedirect;
 
     SandboxFlags m_forcedSandboxFlags;
 };

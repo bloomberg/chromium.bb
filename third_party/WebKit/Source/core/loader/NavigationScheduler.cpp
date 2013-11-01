@@ -112,7 +112,7 @@ protected:
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
         FrameLoadRequest request(m_securityOrigin.get(), ResourceRequest(KURL(ParsedURLString, m_url), m_referrer), "_self");
         request.setLockBackForwardList(lockBackForwardList());
-        request.setClientRedirect(true);
+        request.setClientRedirect(ClientRedirect);
         frame->loader().load(request);
     }
 
@@ -155,7 +155,7 @@ public:
         request.setLockBackForwardList(lockBackForwardList());
         if (equalIgnoringFragmentIdentifier(frame->document()->url(), request.resourceRequest().url()))
             request.resourceRequest().setCachePolicy(ReloadIgnoringCacheData);
-        request.setClientRedirect(true);
+        request.setClientRedirect(ClientRedirect);
         frame->loader().load(request);
     }
 };
@@ -178,7 +178,7 @@ public:
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
         FrameLoadRequest request(securityOrigin(), ResourceRequest(KURL(ParsedURLString, url()), referrer(), ReloadIgnoringCacheData), "_self");
         request.setLockBackForwardList(lockBackForwardList());
-        request.setClientRedirect(true);
+        request.setClientRedirect(ClientRedirect);
         frame->loader().load(request);
     }
 };
@@ -331,7 +331,7 @@ void NavigationScheduler::scheduleLocationChange(SecurityOrigin* securityOrigin,
         if (parsedURL.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(m_frame->document()->url(), parsedURL)) {
             FrameLoadRequest request(securityOrigin, ResourceRequest(m_frame->document()->completeURL(url), referrer), "_self");
             request.setLockBackForwardList(lockBackForwardList);
-            request.setClientRedirect(true);
+            request.setClientRedirect(ClientRedirect);
             m_frame->loader().load(request);
             return;
         }
