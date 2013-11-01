@@ -477,16 +477,6 @@
               ],
             },
             {
-              'postbuild_name': 'Fix Framework Link',
-              'action': [
-                'install_name_tool',
-                '-change',
-                '/Library/Frameworks/<(content_shell_product_name) Framework.framework/Versions/A/<(content_shell_product_name) Framework',
-                '@executable_path/../Frameworks/<(content_shell_product_name) Framework.framework/<(content_shell_product_name) Framework',
-                '${BUILT_PRODUCTS_DIR}/${EXECUTABLE_PATH}'
-              ],
-            },
-            {
               # Modify the Info.plist as needed.
               'postbuild_name': 'Tweak Info.plist',
               'action': ['../build/mac/tweak_info_plist.py',
@@ -557,6 +547,16 @@
             'shell/app/framework-Info.plist',
           ],
           'xcode_settings': {
+            # The framework is placed within the .app's Framework
+            # directory.  DYLIB_INSTALL_NAME_BASE and
+            # LD_DYLIB_INSTALL_NAME affect -install_name.
+            'DYLIB_INSTALL_NAME_BASE':
+                '@executable_path/../Frameworks',
+            # See /build/mac/copy_framework_unversioned.sh for
+            # information on LD_DYLIB_INSTALL_NAME.
+            'LD_DYLIB_INSTALL_NAME':
+                '$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(WRAPPER_NAME)/$(PRODUCT_NAME)',
+
             'INFOPLIST_FILE': 'shell/app/framework-Info.plist',
           },
           'dependencies': [
@@ -659,8 +659,8 @@
               'action': [
                 'install_name_tool',
                 '-change',
-                '/Library/Frameworks/<(content_shell_product_name) Framework.framework/Versions/A/<(content_shell_product_name) Framework',
-                '@executable_path/../../../../Frameworks/<(content_shell_product_name) Framework.framework/<(content_shell_product_name) Framework',
+                '@executable_path/../Frameworks/<(content_shell_product_name) Framework.framework/<(content_shell_product_name) Framework',
+                '@executable_path/../../../<(content_shell_product_name) Framework.framework/<(content_shell_product_name) Framework',
                 '${BUILT_PRODUCTS_DIR}/${EXECUTABLE_PATH}'
               ],
             },
