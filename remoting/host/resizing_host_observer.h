@@ -14,7 +14,6 @@
 #include "base/timer/timer.h"
 #include "remoting/host/screen_controls.h"
 #include "remoting/host/screen_resolution.h"
-#include "third_party/skia/include/core/SkSize.h"
 
 namespace remoting {
 
@@ -42,7 +41,7 @@ class ResizingHostObserver : public ScreenControls {
 
  private:
   scoped_ptr<DesktopResizer> desktop_resizer_;
-  SkISize original_size_;
+  ScreenResolution original_resolution_;
 
   // State to manage rate-limiting of desktop resizes.
   base::OneShotTimer<ResizingHostObserver> deferred_resize_timer_;

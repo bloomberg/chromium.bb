@@ -12,6 +12,7 @@
 #include "remoting/host/desktop_resizer.h"
 #include "remoting/host/screen_resolution.h"
 
+namespace remoting {
 namespace {
 
 // Minimum amount of time to wait between desktop resizes. Note that this
@@ -19,22 +20,25 @@ namespace {
 // unit-test and must be kept in sync.
 const int kMinimumResizeIntervalMs = 1000;
 
-class CandidateSize {
+class CandidateResolution {
  public:
-  CandidateSize(const SkISize& candidate, const SkISize& preferred)
-      : size_(candidate) {
+  CandidateResolution(const ScreenResolution& candidate,
+                      const ScreenResolution& preferred)
+      : resolution_(candidate) {
     // Protect against division by zero.
-    CHECK(!candidate.isEmpty());
-    DCHECK(!preferred.isEmpty());
+    CHECK(!candidate.IsEmpty());
+    DCHECK(!preferred.IsEmpty());
 
     // The client scale factor is the smaller of the candidate:preferred ratios
     // for width and height.
-    if ((candidate.width() > preferred.width()) ||
-        (candidate.height() > preferred.height())) {
+    if ((candidate.dimensions().width() > preferred.dimensions().width()) ||
+        (candidate.dimensions().height() > preferred.dimensions().height())) {
       const float width_ratio =
-          static_cast<float>(preferred.width()) / candidate.width();
+          static_cast<float>(preferred.dimensions().width()) /
+          candidate.dimensions().width();
       const float height_ratio =
-          static_cast<float>(preferred.height()) / candidate.height();
+          static_cast<float>(preferred.dimensions().height()) /
+          candidate.dimensions().height();
       client_scale_factor_ = std::min(width_ratio, height_ratio);
     } else {
       // Since clients do not scale up, 1.0 is the maximum.
@@ -48,9 +52,11 @@ class CandidateSize {
     // By keeping the values < 1.0, it allows ratios that differ in opposite
     // directions to be compared numerically.
     float candidate_aspect_ratio =
-        static_cast<float>(candidate.width()) / candidate.height();
+        static_cast<float>(candidate.dimensions().width()) /
+        candidate.dimensions().height();
     float preferred_aspect_ratio =
-        static_cast<float>(preferred.width()) / preferred.height();
+        static_cast<float>(preferred.dimensions().width()) /
+        preferred.dimensions().height();
     if (candidate_aspect_ratio > preferred_aspect_ratio) {
       aspect_ratio_goodness_ = preferred_aspect_ratio / candidate_aspect_ratio;
     } else {
@@ -58,64 +64,67 @@ class CandidateSize {
     }
   }
 
-  const SkISize& size() const { return size_; }
+  const ScreenResolution& resolution() const { return resolution_; }
   float client_scale_factor() const { return client_scale_factor_; }
   float aspect_ratio_goodness() const { return aspect_ratio_goodness_; }
   int64 area() const {
-    return static_cast<int64>(size_.width()) * size_.height();
+    return static_cast<int64>(resolution_.dimensions().width()) *
+        resolution_.dimensions().height();
   }
 
-  bool IsBetterThan(const CandidateSize& other) const {
-    // If either size would require down-scaling, prefer the one that down-
-    // scales the least (since the client scale factor is at most 1.0, this
-    // does not differentiate between sizes that don't require down-scaling).
+  // TODO(jamiewalch): Also compare the DPI: http://crbug.com/172405
+  bool IsBetterThan(const CandidateResolution& other) const {
+    // If either resolution would require down-scaling, prefer the one that
+    // down-scales the least (since the client scale factor is at most 1.0,
+    // this does not differentiate between resolutions that don't require
+    // down-scaling).
     if (client_scale_factor() < other.client_scale_factor()) {
       return false;
     } else if (client_scale_factor() > other.client_scale_factor()) {
       return true;
     }
 
-    // If the scale factors are the same, pick the size with the largest area.
+    // If the scale factors are the same, pick the resolution with the largest
+    // area.
     if (area() < other.area()) {
       return false;
     } else if (area() > other.area()) {
       return true;
     }
 
-    // If the areas are equal, pick the size with the "best" aspect ratio.
+    // If the areas are equal, pick the resolution with the "best" aspect ratio.
     if (aspect_ratio_goodness() < other.aspect_ratio_goodness()) {
       return false;
     } else if (aspect_ratio_goodness() > other.aspect_ratio_goodness()) {
       return true;
     }
 
-    // If the aspect ratios are equally good (for example, comparing 640x480
-    // to 480x640 w.r.t. 640x640), just pick the widest, since desktop UIs
-    // are typically designed for landscape aspect ratios.
-    return size().width() > other.size().width();
+    // All else being equal (for example, comparing 640x480 to 480x640 w.r.t.
+    // 640x640), just pick the widest, since desktop UIs are typically designed
+    // for landscape aspect ratios.
+    return resolution().dimensions().width() >
+        other.resolution().dimensions().width();
   }
 
  private:
   float client_scale_factor_;
   float aspect_ratio_goodness_;
-  SkISize size_;
+  ScreenResolution resolution_;
 };
 
 }  // namespace
 
-namespace remoting {
-
 ResizingHostObserver::ResizingHostObserver(
     scoped_ptr<DesktopResizer> desktop_resizer)
     : desktop_resizer_(desktop_resizer.Pass()),
-      original_size_(desktop_resizer_->GetCurrentSize()),
+      original_resolution_(desktop_resizer_->GetCurrentResolution()),
       now_function_(base::Bind(base::Time::Now)),
       weak_factory_(this) {
 }
 
 ResizingHostObserver::~ResizingHostObserver() {
-  if (!original_size_.isZero())
-    desktop_resizer_->RestoreSize(original_size_);
+  if (!original_resolution_.IsEmpty())
+    desktop_resizer_->RestoreResolution(original_resolution_);
 }
 
 void ResizingHostObserver::SetScreenResolution(
@@ -143,24 +152,24 @@ void ResizingHostObserver::SetScreenResolution(
     return;
   }
 
-  // If the implementation returns any sizes, pick the best one according to
-  // the algorithm described in CandidateSize::IsBetterThen.
-  SkISize dimensions = SkISize::Make(
-      resolution.dimensions().width(), resolution.dimensions().height());
-  std::list<SkISize> sizes = desktop_resizer_->GetSupportedSizes(dimensions);
-  if (sizes.empty())
+  // If the implementation returns any resolutions, pick the best one according
+  // to the algorithm described in CandidateResolution::IsBetterThen.
+  std::list<ScreenResolution> resolutions =
+      desktop_resizer_->GetSupportedResolutions(resolution);
+  if (resolutions.empty())
     return;
-  CandidateSize best_size(sizes.front(), dimensions);
-  for (std::list<SkISize>::const_iterator i = ++sizes.begin();
-       i != sizes.end(); ++i) {
-    CandidateSize candidate_size(*i, dimensions);
-    if (candidate_size.IsBetterThan(best_size)) {
-      best_size = candidate_size;
+  CandidateResolution best_candidate(resolutions.front(), resolution);
+  for (std::list<ScreenResolution>::const_iterator i = ++resolutions.begin();
+       i != resolutions.end(); ++i) {
+    CandidateResolution candidate(*i, resolution);
+    if (candidate.IsBetterThan(best_candidate)) {
+      best_candidate = candidate;
     }
   }
-  SkISize current_size = desktop_resizer_->GetCurrentSize();
-  if (best_size.size() != current_size)
-    desktop_resizer_->SetSize(best_size.size());
+  ScreenResolution current_resolution =
+      desktop_resizer_->GetCurrentResolution();
+  if (!best_candidate.resolution().Equals(current_resolution))
+    desktop_resizer_->SetResolution(best_candidate.resolution());
 
   // Update the time of last resize to allow it to be rate-limited.
   previous_resize_time_ = now;

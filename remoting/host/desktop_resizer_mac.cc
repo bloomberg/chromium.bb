@@ -12,6 +12,11 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 
+namespace {
+// TODO(jamiewalch): Use the correct DPI for the mode: http://crbug.com/172405.
+const int kDefaultDPI = 96;
+}  // namespace
+
 namespace remoting {
 
 class DesktopResizerMac : public DesktopResizer {
@@ -19,59 +24,61 @@ class DesktopResizerMac : public DesktopResizer {
   DesktopResizerMac();
 
   // DesktopResizer interface
-  virtual SkISize GetCurrentSize() OVERRIDE;
-  virtual std::list<SkISize> GetSupportedSizes(
-      const SkISize& preferred) OVERRIDE;
-  virtual void SetSize(const SkISize& size) OVERRIDE;
-  virtual void RestoreSize(const SkISize& original) OVERRIDE;
+  virtual ScreenResolution GetCurrentResolution() OVERRIDE;
+  virtual std::list<ScreenResolution> GetSupportedResolutions(
+      const ScreenResolution& preferred) OVERRIDE;
+  virtual void SetResolution(const ScreenResolution& resolution) OVERRIDE;
+  virtual void RestoreResolution(const ScreenResolution& original) OVERRIDE;
 
  private:
   // If there is a single display, get its id and return true, otherwise return
   // false. We don't currently support resize-to-client on multi-monitor Macs.
   bool GetSoleDisplayId(CGDirectDisplayID* display);
 
-  void GetSupportedModesAndSizes(
+  void GetSupportedModesAndResolutions(
       base::ScopedCFTypeRef<CFMutableArrayRef>* modes,
-      std::list<SkISize>* sizes);
+      std::list<ScreenResolution>* resolutions);
 
   DISALLOW_COPY_AND_ASSIGN(DesktopResizerMac);
 };
 
 DesktopResizerMac::DesktopResizerMac() {}
 
-SkISize DesktopResizerMac::GetCurrentSize() {
+ScreenResolution DesktopResizerMac::GetCurrentResolution() {
   CGDirectDisplayID display;
   if (!base::mac::IsOSSnowLeopard() && GetSoleDisplayId(&display)) {
     CGRect rect = CGDisplayBounds(display);
-    return SkISize::Make(rect.size.width, rect.size.height);
+    return ScreenResolution(
+        webrtc::DesktopSize(rect.size.width, rect.size.height),
+        webrtc::DesktopVector(kDefaultDPI, kDefaultDPI));
   }
-  return SkISize::Make(0, 0);
+  return ScreenResolution();
 }
 
-std::list<SkISize> DesktopResizerMac::GetSupportedSizes(
-    const SkISize& preferred) {
+std::list<ScreenResolution> DesktopResizerMac::GetSupportedResolutions(
+    const ScreenResolution& preferred) {
   base::ScopedCFTypeRef<CFMutableArrayRef> modes;
-  std::list<SkISize> sizes;
-  GetSupportedModesAndSizes(&modes, &sizes);
-  return sizes;
+  std::list<ScreenResolution> resolutions;
+  GetSupportedModesAndResolutions(&modes, &resolutions);
+  return resolutions;
 }
 
-void DesktopResizerMac::SetSize(const SkISize& size) {
+void DesktopResizerMac::SetResolution(const ScreenResolution& resolution) {
   CGDirectDisplayID display;
   if (base::mac::IsOSSnowLeopard() || !GetSoleDisplayId(&display)) {
     return;
   }
 
   base::ScopedCFTypeRef<CFMutableArrayRef> modes;
-  std::list<SkISize> sizes;
-  GetSupportedModesAndSizes(&modes, &sizes);
-  // There may be many modes with the requested size. Pick the one with the
-  // highest color depth.
+  std::list<ScreenResolution> resolutions;
+  GetSupportedModesAndResolutions(&modes, &resolutions);
+  // There may be many modes with the requested resolution. Pick the one with
+  // the highest color depth.
   int index = 0, best_depth = 0;
   CGDisplayModeRef best_mode = NULL;
-  for (std::list<SkISize>::const_iterator i = sizes.begin(); i != sizes.end();
-       ++i, ++index) {
-    if (*i == size) {
+  for (std::list<ScreenResolution>::const_iterator i = resolutions.begin();
+       i != resolutions.end(); ++i, ++index) {
+    if (!i->Equals(resolution)) {
       CGDisplayModeRef mode = const_cast<CGDisplayModeRef>(
           static_cast<const CGDisplayMode*>(
               CFArrayGetValueAtIndex(modes, index)));
@@ -97,19 +104,22 @@ void DesktopResizerMac::SetSize(const SkISize& size) {
     }
   }
   if (best_mode) {
-    LOG(INFO) << "Changing mode to " << best_mode << " (" << size.width()
-              << "x" << size.height() << "x" << best_depth << ")";
+    LOG(INFO) << "Changing mode to " << best_mode << " ("
+              << resolution.dimensions().width() << "x"
+              << "x" << resolution.dimensions().height() << "x"
+              << best_depth << " @ "
+              << resolution.dpi().x() << "x" << resolution.dpi().y() << " dpi)";
     CGDisplaySetDisplayMode(display, best_mode, NULL);
   }
 }
 
-void DesktopResizerMac::RestoreSize(const SkISize& original) {
-  SetSize(original);
+void DesktopResizerMac::RestoreResolution(const ScreenResolution& original) {
+  SetResolution(original);
 }
 
-void DesktopResizerMac::GetSupportedModesAndSizes(
+void DesktopResizerMac::GetSupportedModesAndResolutions(
     base::ScopedCFTypeRef<CFMutableArrayRef>* modes,
-    std::list<SkISize>* sizes) {
+    std::list<ScreenResolution>* resolutions) {
   CGDirectDisplayID display;
   if (!GetSoleDisplayId(&display)) {
     return;
@@ -128,9 +138,12 @@ void DesktopResizerMac::GetSupportedModesAndSizes(
         static_cast<const CGDisplayMode*>(
             CFArrayGetValueAtIndex(*modes, i)));
     if (CGDisplayModeIsUsableForDesktopGUI(mode)) {
-      SkISize size = SkISize::Make(CGDisplayModeGetWidth(mode),
-                                   CGDisplayModeGetHeight(mode));
-      sizes->push_back(size);
+      // TODO(jamiewalch): Get the correct DPI: http://crbug.com/172405.
+      ScreenResolution resolution(
+          webrtc::DesktopSize(CGDisplayModeGetWidth(mode),
+                              CGDisplayModeGetHeight(mode)),
+          webrtc::DesktopVector(kDefaultDPI, kDefaultDPI));
+      resolutions->push_back(resolution);
     } else {
       CFArrayRemoveValueAtIndex(*modes, i);
       --count;

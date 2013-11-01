@@ -12,35 +12,36 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 
-// On Linux, we use the xrandr extension to change the desktop size. For now,
-// we only support resize-to-client for Xvfb-based servers that can match the
-// client size exactly. To support best-size matching, it would be necessary
-// to implement |GetSupportedSizes|, but it's not considered a priority now.
+// On Linux, we use the xrandr extension to change the desktop resolution. For
+// now, we only support resize-to-client for Xvfb-based servers that can match
+// the client resolution exactly. To support best-resolution matching, it would
+// be necessary to implement |GetSupportedResolutions|, but it's not considered
+// a priority now.
 //
 // Xrandr has a number of restrictions that make this code more complex:
 //
-//   1. It's not possible to change the size of an existing mode. Instead, the
-//      mode must be deleted and recreated.
+//   1. It's not possible to change the resolution of an existing mode. Instead,
+//      the mode must be deleted and recreated.
 //   2. It's not possible to delete a mode that's in use.
 //   3. Errors are communicated via Xlib's spectacularly unhelpful mechanism
 //      of terminating the process unless you install an error handler.
 //
 // The basic approach is as follows:
 //
-//   1. Create a new mode with the correct size;
+//   1. Create a new mode with the correct resolution;
 //   2. Switch to the new mode;
 //   3. Delete the old mode.
 //
 // Since the new mode must have a different name, and we want the current mode
 // name to be consistent, we then additionally:
 //
-//   4. Recreate the old mode at the new size;
+//   4. Recreate the old mode at the new resolution;
 //   5. Switch to the old mode;
 //   6. Delete the temporary mode.
 //
 // Name consistency will allow a future CL to disable resize-to-client if the
 // user has changed the mode to something other than "Chrome Remote Desktop
-// client size". It doesn't make the code significantly more complex.
+// client resolution". It doesn't make the code significantly more complex.
 
 namespace {
 
@@ -54,6 +55,9 @@ int PixelsToMillimeters(int pixels, int dpi) {
   // avoid integer division.
   return static_cast<int>(kMillimetersPerInch * pixels / dpi);
 }
+
+// TODO(jamiewalch): Use the correct DPI for the mode: http://crbug.com/172405.
+const int kDefaultDPI = 96;
 
 }  // namespace
 
@@ -123,11 +127,11 @@ class DesktopResizerLinux : public DesktopResizer {
   virtual ~DesktopResizerLinux();
 
   // DesktopResizer interface
-  virtual SkISize GetCurrentSize() OVERRIDE;
-  virtual std::list<SkISize> GetSupportedSizes(
-      const SkISize& preferred) OVERRIDE;
-  virtual void SetSize(const SkISize& size) OVERRIDE;
-  virtual void RestoreSize(const SkISize& original) OVERRIDE;
+  virtual ScreenResolution GetCurrentResolution() OVERRIDE;
+  virtual std::list<ScreenResolution> GetSupportedResolutions(
+      const ScreenResolution& preferred) OVERRIDE;
+  virtual void SetResolution(const ScreenResolution& resolution) OVERRIDE;
+  virtual void RestoreResolution(const ScreenResolution& original) OVERRIDE;
 
  private:
   // Create a mode, and attach it to the primary output. If the mode already
@@ -140,7 +144,7 @@ class DesktopResizerLinux : public DesktopResizer {
 
   // Switch the primary output to the specified mode. If name is NULL, the
   // primary output is disabled instead, which is required before changing
-  // its size.
+  // its resolution.
   void SwitchToMode(const char* name);
 
   Display* display_;
@@ -165,11 +169,11 @@ DesktopResizerLinux::~DesktopResizerLinux() {
   XCloseDisplay(display_);
 }
 
-SkISize DesktopResizerLinux::GetCurrentSize() {
+ScreenResolution DesktopResizerLinux::GetCurrentResolution() {
   if (!exact_resize_) {
     // TODO(jamiewalch): Remove this early return if we decide to support
     // non-Xvfb servers.
-    return SkISize::Make(0, 0);
+    return ScreenResolution();
   }
 
   // TODO(lambroslambrou): Xrandr requires that we process RRScreenChangeNotify
@@ -187,35 +191,41 @@ SkISize DesktopResizerLinux::GetCurrentSize() {
     XRRUpdateConfiguration(&event);
   }
 
-  SkISize result = SkISize::Make(
-      DisplayWidth (display_, DefaultScreen(display_)),
-      DisplayHeight(display_, DefaultScreen(display_)));
+  ScreenResolution result(
+      webrtc::DesktopSize(
+          DisplayWidth(display_, DefaultScreen(display_)),
+          DisplayHeight(display_, DefaultScreen(display_))),
+      webrtc::DesktopVector(kDefaultDPI, kDefaultDPI));
   return result;
 }
 
-std::list<SkISize> DesktopResizerLinux::GetSupportedSizes(
-    const SkISize& preferred) {
-  std::list<SkISize> result;
+std::list<ScreenResolution> DesktopResizerLinux::GetSupportedResolutions(
+    const ScreenResolution& preferred) {
+  std::list<ScreenResolution> result;
   if (exact_resize_) {
     // Clamp the specified size to something valid for the X server.
     int min_width = 0, min_height = 0, max_width = 0, max_height = 0;
     XRRGetScreenSizeRange(display_, root_,
                           &min_width, &min_height,
                           &max_width, &max_height);
-    int width = std::min(std::max(preferred.width(), min_width), max_width);
-    int height = std::min(std::max(preferred.height(), min_height), max_height);
+    int width = std::min(std::max(preferred.dimensions().width(), min_width),
+                         max_width);
+    int height = std::min(std::max(preferred.dimensions().height(), min_height),
+                          max_height);
     // Additionally impose a minimum size of 640x480, since anything smaller
     // doesn't seem very useful.
-    SkISize actual = SkISize::Make(std::max(640, width), std::max(480, height));
+    ScreenResolution actual(
+        webrtc::DesktopSize(std::max(640, width), std::max(480, height)),
+        webrtc::DesktopVector(kDefaultDPI, kDefaultDPI));
     result.push_back(actual);
   } else {
-    // TODO(jamiewalch): Return the list of supported sizes if we can't support
-    // exact-size matching.
+    // TODO(jamiewalch): Return the list of supported resolutions if we can't
+    // support exact-size matching.
   }
   return result;
 }
 
-void DesktopResizerLinux::SetSize(const SkISize& size) {
+void DesktopResizerLinux::SetResolution(const ScreenResolution& resolution) {
   if (!exact_resize_) {
     // TODO(jamiewalch): Remove this early return if we decide to support
     // non-Xvfb servers.
@@ -224,47 +234,51 @@ void DesktopResizerLinux::SetSize(const SkISize& size) {
 
   // Ignore X errors encountered while resizing the display. We might hit an
   // error, for example if xrandr has been used to add a mode with the same
-  // name as our temporary mode, or to remove the "client size" mode. We don't
-  // want to terminate the process if this happens.
+  // name as our temporary mode, or to remove the "client resolution" mode. We
+  // don't want to terminate the process if this happens.
   ScopedXErrorHandler handler(ScopedXErrorHandler::Ignore());
 
-  // Grab the X server while we're changing the display size. This ensures
+  // Grab the X server while we're changing the display resolution. This ensures
   // that the display configuration doesn't change under our feet.
   ScopedXGrabServer grabber(display_);
 
-  // The name of the mode representing the current client view size and the
-  // temporary mode used for the reasons described at the top of this file.
+  // The name of the mode representing the current client view resolution and
+  // the temporary mode used for the reasons described at the top of this file.
   // The former should be localized if it's user-visible; the latter only
   // exists briefly and does not need to localized.
-  const char* kModeName = "Chrome Remote Desktop client size";
+  const char* kModeName = "Chrome Remote Desktop client resolution";
   const char* kTempModeName = "Chrome Remote Desktop temporary mode";
 
   // Actually do the resize operation, preserving the current mode name. Note
   // that we have to detach the output from any mode in order to resize it
   // (strictly speaking, this is only required when reducing the size, but it
   // seems safe to do it regardless).
-  LOG(INFO) << "Changing desktop size to " << size.width()
-            << "x" << size.height();
+  LOG(INFO) << "Changing desktop size to " << resolution.dimensions().width()
+            << "x" << resolution.dimensions().height();
 
   // TODO(lambroslambrou): Use the DPI from client size information.
-  const int kDPI = 96;
-  int width_mm = PixelsToMillimeters(size.width(), kDPI);
-  int height_mm = PixelsToMillimeters(size.height(), kDPI);
-  CreateMode(kTempModeName, size.width(), size.height());
+  int width_mm = PixelsToMillimeters(resolution.dimensions().width(),
+                                     kDefaultDPI);
+  int height_mm = PixelsToMillimeters(resolution.dimensions().height(),
+                                      kDefaultDPI);
+  CreateMode(kTempModeName, resolution.dimensions().width(),
+             resolution.dimensions().height());
   SwitchToMode(NULL);
-  XRRSetScreenSize(display_, root_, size.width(), size.height(), width_mm,
-                   height_mm);
+  XRRSetScreenSize(display_, root_, resolution.dimensions().width(),
+                   resolution.dimensions().height(), width_mm, height_mm);
   SwitchToMode(kTempModeName);
   DeleteMode(kModeName);
-  CreateMode(kModeName, size.width(), size.height());
+  CreateMode(kModeName, resolution.dimensions().width(),
+             resolution.dimensions().height());
   SwitchToMode(kModeName);
   DeleteMode(kTempModeName);
 }
 
-void DesktopResizerLinux::RestoreSize(const SkISize& original) {
+void DesktopResizerLinux::RestoreResolution(const ScreenResolution& original) {
   // Since the desktop is only visible via a remote connection, the original
-  // size of the desktop will never been seen and there's no point restoring
-  // it; if we did, we'd just risk messing up the user's window layout.
+  // resolution of the desktop will never been seen and there's no point
+  // restoring it; if we did, we'd just risk messing up the user's window
+  // layout.
 }
 
 void DesktopResizerLinux::CreateMode(const char* name, int width, int height) {

@@ -8,14 +8,25 @@
 
 #include "base/logging.h"
 
-// Provide comparison operation for SkISize so we can use it in std::map.
-static inline bool operator <(const SkISize& a, const SkISize& b) {
-  if (a.width() != b.width())
-    return a.width() < b.width();
-  return a.height() < b.height();
-}
+namespace {
+// TODO(jamiewalch): Use the correct DPI for the mode: http://crbug.com/172405.
+const int kDefaultDPI = 96;
+}  // namespace
 
 namespace remoting {
+
+// Provide comparison operation for ScreenResolution so we can use it in
+// std::map.
+static inline bool operator <(const ScreenResolution& a,
+                              const ScreenResolution& b) {
+  if (a.dimensions().width() != b.dimensions().width())
+    return a.dimensions().width() < b.dimensions().width();
+  if (a.dimensions().height() != b.dimensions().height())
+    return a.dimensions().height() < b.dimensions().height();
+  if (a.dpi().x() != b.dpi().x())
+    return a.dpi().x() < b.dpi().x();
+  return a.dpi().y() < b.dpi().y();
+}
 
 class DesktopResizerWin : public DesktopResizer {
  public:
@@ -23,11 +34,11 @@ class DesktopResizerWin : public DesktopResizer {
   virtual ~DesktopResizerWin();
 
   // DesktopResizer interface.
-  virtual SkISize GetCurrentSize() OVERRIDE;
-  virtual std::list<SkISize> GetSupportedSizes(
-      const SkISize& preferred) OVERRIDE;
-  virtual void SetSize(const SkISize& size) OVERRIDE;
-  virtual void RestoreSize(const SkISize& original) OVERRIDE;
+  virtual ScreenResolution GetCurrentResolution() OVERRIDE;
+  virtual std::list<ScreenResolution> GetSupportedResolutions(
+      const ScreenResolution& preferred) OVERRIDE;
+  virtual void SetResolution(const ScreenResolution& resolution) OVERRIDE;
+  virtual void RestoreResolution(const ScreenResolution& original) OVERRIDE;
 
  private:
   static bool IsResizeSupported();
@@ -42,9 +53,9 @@ class DesktopResizerWin : public DesktopResizer {
   static bool IsModeValid(const DEVMODE& mode);
 
   // Returns the width & height of |mode|, or 0x0 if they are missing.
-  static SkISize GetModeSize(const DEVMODE& mode);
+  static ScreenResolution GetModeResolution(const DEVMODE& mode);
 
-  std::map<SkISize, DEVMODE> best_mode_for_size_;
+  std::map<ScreenResolution, DEVMODE> best_mode_for_resolution_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopResizerWin);
 };
@@ -55,29 +66,29 @@ DesktopResizerWin::DesktopResizerWin() {
 DesktopResizerWin::~DesktopResizerWin() {
 }
 
-SkISize DesktopResizerWin::GetCurrentSize() {
+ScreenResolution DesktopResizerWin::GetCurrentResolution() {
   DEVMODE current_mode;
   if (GetPrimaryDisplayMode(ENUM_CURRENT_SETTINGS, 0, &current_mode) &&
       IsModeValid(current_mode))
-    return GetModeSize(current_mode);
-  return SkISize::Make(0, 0);
+    return GetModeResolution(current_mode);
+  return ScreenResolution();
 }
 
-std::list<SkISize> DesktopResizerWin::GetSupportedSizes(
-    const SkISize& preferred) {
+std::list<ScreenResolution> DesktopResizerWin::GetSupportedResolutions(
+    const ScreenResolution& preferred) {
   if (!IsResizeSupported())
-    return std::list<SkISize>();
+    return std::list<ScreenResolution>();
 
-  // Enumerate the sizes to return, and where there are multiple modes of
-  // the same size, store the one most closely matching the current mode
-  // in |best_mode_for_size_|.
+  // Enumerate the resolutions to return, and where there are multiple modes of
+  // the same resolution, store the one most closely matching the current mode
+  // in |best_mode_for_resolution_|.
   DEVMODE current_mode;
   if (!GetPrimaryDisplayMode(ENUM_CURRENT_SETTINGS, 0, &current_mode) ||
       !IsModeValid(current_mode))
-    return std::list<SkISize>();
+    return std::list<ScreenResolution>();
 
-  std::list<SkISize> sizes;
-  best_mode_for_size_.clear();
+  std::list<ScreenResolution> resolutions;
+  best_mode_for_resolution_.clear();
   for (DWORD i = 0; ; ++i) {
     DEVMODE candidate_mode;
     if (!GetPrimaryDisplayMode(i, EDS_ROTATEDMODE, &candidate_mode))
@@ -95,9 +106,9 @@ std::list<SkISize> DesktopResizerWin::GetSupportedSizes(
     // - Prefer the modes which match the current rotation.
     // - Among those, prefer modes which match the current frequency.
     // - Otherwise, prefer modes with a higher frequency.
-    SkISize candidate_size = GetModeSize(candidate_mode);
-    if (best_mode_for_size_.count(candidate_size) != 0) {
-      DEVMODE best_mode = best_mode_for_size_[candidate_size];
+    ScreenResolution candidate_resolution = GetModeResolution(candidate_mode);
+    if (best_mode_for_resolution_.count(candidate_resolution) != 0) {
+      DEVMODE best_mode = best_mode_for_resolution_[candidate_resolution];
 
       if ((candidate_mode.dmDisplayOrientation !=
            current_mode.dmDisplayOrientation) &&
@@ -113,31 +124,31 @@ std::list<SkISize> DesktopResizerWin::GetSupportedSizes(
         continue;
       }
     } else {
-      // If we haven't seen this size before, add it to those we return.
-      sizes.push_back(candidate_size);
+      // If we haven't seen this resolution before, add it to those we return.
+      resolutions.push_back(candidate_resolution);
     }
 
-    best_mode_for_size_[candidate_size] = candidate_mode;
+    best_mode_for_resolution_[candidate_resolution] = candidate_mode;
   }
 
-  return sizes;
+  return resolutions;
 }
 
-void DesktopResizerWin::SetSize(const SkISize& size) {
-  if (best_mode_for_size_.count(size) == 0)
+void DesktopResizerWin::SetResolution(const ScreenResolution& resolution) {
+  if (best_mode_for_resolution_.count(resolution) == 0)
     return;
 
-  DEVMODE new_mode = best_mode_for_size_[size];
+  DEVMODE new_mode = best_mode_for_resolution_[resolution];
   DWORD result = ChangeDisplaySettings(&new_mode, CDS_FULLSCREEN);
   if (result != DISP_CHANGE_SUCCESSFUL)
-    LOG(ERROR) << "SetSize failed: " << result;
+    LOG(ERROR) << "SetResolution failed: " << result;
 }
 
-void DesktopResizerWin::RestoreSize(const SkISize& original) {
+void DesktopResizerWin::RestoreResolution(const ScreenResolution& original) {
   // Restore the display mode based on the registry configuration.
   DWORD result = ChangeDisplaySettings(NULL, 0);
   if (result != DISP_CHANGE_SUCCESSFUL)
-    LOG(ERROR) << "RestoreSize failed: " << result;
+    LOG(ERROR) << "RestoreResolution failed: " << result;
 }
 
 // static
@@ -165,9 +176,11 @@ bool DesktopResizerWin::IsModeValid(const DEVMODE& mode) {
 }
 
 // static
-SkISize DesktopResizerWin::GetModeSize(const DEVMODE& mode) {
+ScreenResolution DesktopResizerWin::GetModeResolution(const DEVMODE& mode) {
   DCHECK(IsModeValid(mode));
-  return SkISize::Make(mode.dmPelsWidth, mode.dmPelsHeight);
+  return ScreenResolution(
+      webrtc::DesktopSize(mode.dmPelsWidth, mode.dmPelsHeight),
+      webrtc::DesktopVector(kDefaultDPI, kDefaultDPI));
 }
 
 scoped_ptr<DesktopResizer> DesktopResizer::Create() {

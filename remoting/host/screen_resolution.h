@@ -32,6 +32,9 @@ class ScreenResolution {
   // IsValid() returns false.
   bool IsEmpty() const;
 
+  // Returns true if the dimensions and DPI of the two resolutions match.
+  bool Equals(const ScreenResolution& other) const;
+
  private:
   webrtc::DesktopSize dimensions_;
   webrtc::DesktopVector dpi_;

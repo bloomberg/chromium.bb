@@ -43,4 +43,8 @@ bool ScreenResolution::IsEmpty() const {
   return dimensions_.is_empty() || dpi_.is_zero();
 }
 
+bool ScreenResolution::Equals(const ScreenResolution& other) const {
+  return dimensions_.equals(other.dimensions()) && dpi_.equals(other.dpi());
+}
+
 }  // namespace remoting
