@@ -586,6 +586,35 @@
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_POPUP_BORDER_TOP_LEFT" file="common/omnibox_popup_border_top_left.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_POPUP_BORDER_TOP_RIGHT" file="common/omnibox_popup_border_top_right.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH" file="common/omnibox_search.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_BOTTOM" file="common/omnibox_search_button_bottom_middle.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_BOTTOM_LEFT" file="common/omnibox_search_button_bottom_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_BOTTOM_RIGHT" file="common/omnibox_search_button_bottom_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_CENTER" file="common/omnibox_search_button_center_middle.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_LEFT" file="common/omnibox_search_button_center_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_RIGHT" file="common/omnibox_search_button_center_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_TOP" file="common/omnibox_search_button_top_middle.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_TOP_LEFT" file="common/omnibox_search_button_top_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_TOP_RIGHT" file="common/omnibox_search_button_top_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_HOVER_BOTTOM" file="common/omnibox_search_button_bottom_middle_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_HOVER_BOTTOM_LEFT" file="common/omnibox_search_button_bottom_left_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_HOVER_BOTTOM_RIGHT" file="common/omnibox_search_button_bottom_right_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_HOVER_CENTER" file="common/omnibox_search_button_center_middle_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_HOVER_LEFT" file="common/omnibox_search_button_center_left_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_HOVER_RIGHT" file="common/omnibox_search_button_center_right_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_HOVER_TOP" file="common/omnibox_search_button_top_middle_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_HOVER_TOP_LEFT" file="common/omnibox_search_button_top_left_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_HOVER_TOP_RIGHT" file="common/omnibox_search_button_top_right_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_PRESSED_BOTTOM" file="common/omnibox_search_button_bottom_middle_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_PRESSED_BOTTOM_LEFT" file="common/omnibox_search_button_bottom_left_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_PRESSED_BOTTOM_RIGHT" file="common/omnibox_search_button_bottom_right_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_PRESSED_CENTER" file="common/omnibox_search_button_center_middle_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_PRESSED_LEFT" file="common/omnibox_search_button_center_left_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_PRESSED_RIGHT" file="common/omnibox_search_button_center_right_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_PRESSED_TOP" file="common/omnibox_search_button_top_middle_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_PRESSED_TOP_LEFT" file="common/omnibox_search_button_top_left_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_PRESSED_TOP_RIGHT" file="common/omnibox_search_button_top_right_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_ARROW" file="common/omnibox_search_button_arrow.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_BUTTON_LOUPE" file="common/omnibox_search_button_loupe.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_DARK" file="common/omnibox_search_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_SECURED" file="common/omnibox_search_secured.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_SELECTED" file="common/omnibox_search_selected.png" />
