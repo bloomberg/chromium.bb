@@ -50,14 +50,14 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
   // if an error or timeout occurs.
   bool WaitUntilDataIsReady();
 
-  base::SharedMemory* shared_memory_;
+  const base::SharedMemory* const shared_memory_;
 
   // Number of input channels for synchronized I/O.
-  int input_channels_;
+  const int input_channels_;
 
   // Mutes all incoming samples. This is used to prevent audible sound
   // during automated testing.
-  bool mute_audio_;
+  const bool mute_audio_;
 
   // Socket for transmitting audio data.
   scoped_ptr<base::CancelableSyncSocket> socket_;
@@ -73,7 +73,7 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
   scoped_ptr<media::AudioBus> input_bus_;
 
   // Maximum amount of audio data which can be transferred in one Read() call.
-  int packet_size_;
+  const int packet_size_;
 
   // Track the number of times the renderer missed its real-time deadline and
   // report a UMA stat during destruction.
