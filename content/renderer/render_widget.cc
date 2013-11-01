@@ -803,6 +803,8 @@ void RenderWidget::OnWasShown(bool needs_repainting) {
   if (!is_accelerated_compositing_active_) {
     didInvalidateRect(gfx::Rect(size_.width(), size_.height()));
   } else {
+    if (compositor_)
+      compositor_->SetNeedsForcedRedraw();
     scheduleComposite();
   }
 }
