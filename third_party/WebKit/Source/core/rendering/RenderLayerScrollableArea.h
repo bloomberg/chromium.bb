@@ -59,8 +59,6 @@ class RenderLayer;
 class RenderScrollbarPart;
 
 class RenderLayerScrollableArea FINAL : public ScrollableArea {
-    // FIXME: Remove once the bits from RenderLayer have been moved here.
-    friend class RenderLayer;
 public:
     RenderLayerScrollableArea(RenderBox*);
     virtual ~RenderLayerScrollableArea();
@@ -157,6 +155,8 @@ public:
     bool isPointInResizeControl(const IntPoint& absolutePoint, ResizerHitTestType) const;
     bool hitTestOverflowControls(HitTestResult&, const IntPoint& localPoint);
 
+    bool hitTestResizerInFragments(const LayerFragments&, const HitTestLocation&) const;
+
     LayoutRect exposeRect(const LayoutRect&, const ScrollAlignment& alignX, const ScrollAlignment& alignY);
 
     bool scrollsOverflow() const;
@@ -193,7 +193,6 @@ private:
     // See comments on isPointInResizeControl.
     IntRect resizerCornerRect(const IntRect&, ResizerHitTestType) const;
     bool overflowControlsIntersectRect(const IntRect& localRect) const;
-    bool hitTestResizerInFragments(const LayerFragments&, const HitTestLocation&) const;
     void updateResizerAreaSet();
     void updateResizerStyle();
     void drawPlatformResizerImage(GraphicsContext*, IntRect resizerCornerRect);
