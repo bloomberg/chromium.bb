@@ -674,7 +674,10 @@ TEST_F(End2EndTest, LoopNoLossOpus) {
 }
 
 // This tests start sending audio and video before the receiver is ready.
-TEST_F(End2EndTest, StartSenderBeforeReceiver) {
+//
+// TODO(miu): Test disabled because of non-determinism.
+// http://crbug.com/314233
+TEST_F(End2EndTest, DISABLED_StartSenderBeforeReceiver) {
   SetupConfig(kOpus, kAudioSamplingFrequency, false, 1);
   Create();
   test_receiver_audio_callback_->SetExpectedResult(
