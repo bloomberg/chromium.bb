@@ -80,8 +80,9 @@ bool PartnerBookmarksShim::HasPartnerBookmarks() const {
 }
 
 bool PartnerBookmarksShim::IsReachable(const BookmarkNode* node) const {
-  DCHECK(HasPartnerBookmarks());
   DCHECK(IsPartnerBookmark(node));
+  if (!HasPartnerBookmarks())
+    return false;
   for (const BookmarkNode* i = node; i != NULL; i = i->parent()) {
     const NodeRenamingMapKey key(i->url(), i->GetTitle());
     NodeRenamingMap::const_iterator remap = node_rename_remove_map_.find(key);
@@ -116,7 +117,6 @@ void PartnerBookmarksShim::RemoveObserver(
 
 const BookmarkNode* PartnerBookmarksShim::GetNodeByID(int64 id) const {
   DCHECK(IsLoaded());
-  DCHECK(HasPartnerBookmarks());
   if (!HasPartnerBookmarks())
     return NULL;
   return GetNodeByID(GetPartnerBookmarksRoot(), id);
