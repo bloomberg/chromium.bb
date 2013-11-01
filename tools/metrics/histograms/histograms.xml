@@ -3101,6 +3101,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Drive.NumberOfCacheFilesRecoveredAfterDBCorruption">
+  <summary>
+    Number of files recovered from Drive cache directory. Recorded when file
+    recovery takes place after metadata DB corruption is found during metadata
+    DB initialization.
+  </summary>
+</histogram>
+
 <histogram name="Drive.NumberOfHostedDocuments">
   <summary>
     Number of hosted documents (spreadsheets etc.) on Drive. Logged when Drive

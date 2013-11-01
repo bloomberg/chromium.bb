@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
@@ -475,6 +476,8 @@ bool FileCache::RecoverFilesFromCacheDirectory(
       return false;
     }
   }
+  UMA_HISTOGRAM_COUNTS("Drive.NumberOfCacheFilesRecoveredAfterDBCorruption",
+                       file_number - 1);
   return true;
 }
 
