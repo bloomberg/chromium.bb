@@ -266,6 +266,13 @@ void WindowOverview::OnMouseEvent(ui::MouseEvent* event) {
   window_selector_->SelectWindow(target);
 }
 
+void WindowOverview::OnScrollEvent(ui::ScrollEvent* event) {
+  // Set the handled flag to prevent delivering scroll events to the window but
+  // still allowing other pretarget handlers to process the scroll event.
+  if (GetTargetedWindow(static_cast<aura::Window*>(event->target())))
+    event->SetHandled();
+}
+
 void WindowOverview::OnTouchEvent(ui::TouchEvent* event) {
   // Existing touches should be allowed to continue. This prevents getting
   // stuck in a gesture or with pressed fingers being tracked elsewhere.
