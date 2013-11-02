@@ -258,8 +258,8 @@ base::SharedMemoryHandle GpuChannelHost::ShareToGpuProcess(
   if (!BrokerDuplicateHandle(source_handle,
                              channel_->peer_pid(),
                              &target_handle,
-                             0,
-                             DUPLICATE_SAME_ACCESS)) {
+                             FILE_GENERIC_READ | FILE_GENERIC_WRITE,
+                             0)) {
     return base::SharedMemory::NULLHandle();
   }
 
