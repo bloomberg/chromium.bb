@@ -375,8 +375,10 @@ function checkExpectedTransitionValue(expected, index)
             for (var i = 0; i < computedStyle.length; ++i) {
                 switch (computedStyle[i].cssValueType) {
                   case CSSValue.CSS_PRIMITIVE_VALUE:
-                    if (computedStyle[i].primitiveType == CSSPrimitiveValue.CSS_STRING)
+                    if (computedStyle[i].primitiveType === CSSPrimitiveValue.CSS_STRING)
                         values.push(computedStyle[i].getStringValue());
+                    else if (computedStyle[i].primitiveType === CSSPrimitiveValue.CSS_IDENT)
+                        values.push(computedStyle[i].cssText);
                     else
                         values.push(computedStyle[i].getFloatValue(CSSPrimitiveValue.CSS_NUMBER));
                     break;

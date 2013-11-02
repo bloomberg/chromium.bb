@@ -601,16 +601,11 @@ static PassRefPtr<CSSValue> valueForReflection(const StyleReflection* reflection
 
 static PassRefPtr<CSSValueList> createPositionListForLayer(CSSPropertyID propertyID, const FillLayer* layer, const RenderStyle* style)
 {
+    ASSERT_UNUSED(propertyID, propertyID == CSSPropertyBackgroundPosition || propertyID == CSSPropertyWebkitMaskPosition);
     RefPtr<CSSValueList> positionList = CSSValueList::createSpaceSeparated();
-    if (layer->isBackgroundXOriginSet()) {
-        ASSERT_UNUSED(propertyID, propertyID == CSSPropertyBackgroundPosition || propertyID == CSSPropertyWebkitMaskPosition);
-        positionList->append(cssValuePool().createValue(layer->backgroundXOrigin()));
-    }
+    positionList->append(cssValuePool().createValue(layer->backgroundXOrigin()));
     positionList->append(zoomAdjustedPixelValueForLength(layer->xPosition(), style));
-    if (layer->isBackgroundYOriginSet()) {
-        ASSERT(propertyID == CSSPropertyBackgroundPosition || propertyID == CSSPropertyWebkitMaskPosition);
-        positionList->append(cssValuePool().createValue(layer->backgroundYOrigin()));
-    }
+    positionList->append(cssValuePool().createValue(layer->backgroundYOrigin()));
     positionList->append(zoomAdjustedPixelValueForLength(layer->yPosition(), style));
     return positionList.release();
 }

@@ -2,7 +2,7 @@ Checks that getComputedStyle() on a zoomed element returns the right thing.
 Results while display:block
 
 Property	Pass?	Set Value	Computed Value
-background-position	PASS	10px 10px	10px 10px
+background-position	PASS	left 10px top 10px	left 10px top 10px
 background-size	PASS	400px 300px	400px 300px
 -webkit-border-horizontal-spacing	PASS	10px	10px
 -webkit-border-vertical-spacing	PASS	10px	10px
@@ -24,7 +24,7 @@ outline-width	PASS	2px	2px
 -webkit-column-rule-style	PASS	solid	solid
 -webkit-column-width	PASS	80px	80px
 -webkit-column-gap	PASS	20px	20px
--webkit-mask-position	PASS	10px 10px	10px 10px
+-webkit-mask-position	PASS	left 10px top 10px	left 10px top 10px
 -webkit-mask-size	PASS	10px 10px	10px 10px
 -webkit-perspective	PASS	400px	400px
 -webkit-perspective-origin	PASS	20px 20px	20px 20px
@@ -56,7 +56,7 @@ text-indent	PASS	10px	10px
 Results while display:none
 
 Hidden Property	Pass?	Set Value	Computed Value
-background-position	PASS	10px 10px	10px 10px
+background-position	PASS	left 10px top 10px	left 10px top 10px
 background-size	PASS	400px 300px	400px 300px
 -webkit-border-horizontal-spacing	PASS	10px	10px
 -webkit-border-vertical-spacing	PASS	10px	10px
@@ -78,7 +78,7 @@ outline-width	PASS	2px	2px
 -webkit-column-rule-style	PASS	solid	solid
 -webkit-column-width	PASS	80px	80px
 -webkit-column-gap	PASS	20px	20px
--webkit-mask-position	PASS	10px 10px	10px 10px
+-webkit-mask-position	PASS	left 10px top 10px	left 10px top 10px
 -webkit-mask-size	PASS	10px 10px	10px 10px
 -webkit-perspective	PASS	400px	400px
 -webkit-perspective-origin	PASS	20px 20px	20px 20px

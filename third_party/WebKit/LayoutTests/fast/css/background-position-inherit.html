@@ -12,5 +12,5 @@
 
     var targetBackgroundPosition = getComputedStyle(document.getElementById("target")).backgroundPosition,cssText;
 
-    document.getElementById("result").innerText = targetBackgroundPosition == "25% 75%" ? "PASS" : "FAIL: The inherited value was " + targetBackgroundPosition;
+    document.getElementById("result").innerText = targetBackgroundPosition == "left 25% top 75%" ? "PASS" : "FAIL: The inherited value was " + targetBackgroundPosition;
 </script>
