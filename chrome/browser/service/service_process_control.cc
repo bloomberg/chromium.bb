@@ -114,6 +114,9 @@ void ServiceProcessControl::Launch(const base::Closure& success_task,
     return;
   }
 
+  UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents", SERVICE_EVENT_LAUNCH,
+                            SERVICE_EVENT_MAX);
+
   // A service process should have a different mechanism for starting, but now
   // we start it as if it is a child process.
 
@@ -163,10 +166,14 @@ void ServiceProcessControl::Disconnect() {
 void ServiceProcessControl::OnProcessLaunched() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (launcher_->launched()) {
+    UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
+                              SERVICE_EVENT_LAUNCHED, SERVICE_EVENT_MAX);
     // After we have successfully created the service process we try to connect
     // to it. The launch task is transfered to a connect task.
     ConnectInternal();
   } else {
+    UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
+                              SERVICE_EVENT_LAUNCH_FAILED, SERVICE_EVENT_MAX);
     // If we don't have process handle that means launching the service process
     // has failed.
     RunConnectDoneTasks();
@@ -190,6 +197,9 @@ bool ServiceProcessControl::OnMessageReceived(const IPC::Message& message) {
 void ServiceProcessControl::OnChannelConnected(int32 peer_pid) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
+                            SERVICE_EVENT_CHANNEL_CONNECTED, SERVICE_EVENT_MAX);
+
   // We just established a channel with the service process. Notify it if an
   // upgrade is available.
   if (UpgradeDetector::GetInstance()->notify_upgrade()) {
@@ -204,6 +214,10 @@ void ServiceProcessControl::OnChannelConnected(int32 peer_pid) {
 
 void ServiceProcessControl::OnChannelError() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
+                            SERVICE_EVENT_CHANNEL_ERROR, SERVICE_EVENT_MAX);
+
   channel_.reset();
   RunConnectDoneTasks();
 }
@@ -228,6 +242,8 @@ void ServiceProcessControl::Observe(
 void ServiceProcessControl::OnCloudPrintProxyInfo(
     const cloud_print::CloudPrintProxyInfo& proxy_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
+                            SERVICE_EVENT_INFO_REPLY, SERVICE_EVENT_MAX);
   if (!cloud_print_info_callback_.is_null()) {
     cloud_print_info_callback_.Run(proxy_info);
     cloud_print_info_callback_.Reset();
@@ -236,6 +252,8 @@ void ServiceProcessControl::OnCloudPrintProxyInfo(
 
 void ServiceProcessControl::OnHistograms(
     const std::vector<std::string>& pickled_histograms) {
+  UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
+                            SERVICE_EVENT_HISTOGRAMS_REPLY, SERVICE_EVENT_MAX);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::HistogramDeltaSerialization::DeserializeAndAddSamples(
       pickled_histograms);
@@ -256,6 +274,8 @@ bool ServiceProcessControl::GetCloudPrintProxyInfo(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!cloud_print_info_callback.is_null());
   cloud_print_info_callback_.Reset();
+  UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
+                            SERVICE_EVENT_INFO_REQUEST, SERVICE_EVENT_MAX);
   if (!Send(new ServiceMsg_GetCloudPrintProxyInfo()))
     return false;
   cloud_print_info_callback_ = cloud_print_info_callback;
@@ -273,6 +293,11 @@ bool ServiceProcessControl::GetHistograms(
   if (!CheckServiceProcessReady())
     return false;
   ConnectInternal();
+
+  UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
+                            SERVICE_EVENT_HISTOGRAMS_REQUEST,
+                            SERVICE_EVENT_MAX);
+
   if (!Send(new ServiceMsg_GetHistograms()))
     return false;
 

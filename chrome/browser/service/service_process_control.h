@@ -43,6 +43,24 @@ class ServiceProcessControl : public IPC::Sender,
                               public IPC::Listener,
                               public content::NotificationObserver {
  public:
+  enum ServiceProcessEvent {
+    SERVICE_EVENT_INITIALIZE,
+    SERVICE_EVENT_ENABLED_ON_LAUNCH,
+    SERVICE_EVENT_ENABLE,
+    SERVICE_EVENT_DISABLE,
+    SERVICE_EVENT_DISABLE_BY_POLICY,
+    SERVICE_EVENT_LAUNCH,
+    SERVICE_EVENT_LAUNCHED,
+    SERVICE_EVENT_LAUNCH_FAILED,
+    SERVICE_EVENT_CHANNEL_CONNECTED,
+    SERVICE_EVENT_CHANNEL_ERROR,
+    SERVICE_EVENT_INFO_REQUEST,
+    SERVICE_EVENT_INFO_REPLY,
+    SERVICE_EVENT_HISTOGRAMS_REQUEST,
+    SERVICE_EVENT_HISTOGRAMS_REPLY,
+    SERVICE_EVENT_MAX,
+  };
+
   typedef IDMap<ServiceProcessControl>::iterator iterator;
   typedef std::queue<IPC::Message> MessageQueue;
   typedef base::Callback<void(const cloud_print::CloudPrintProxyInfo&)>
