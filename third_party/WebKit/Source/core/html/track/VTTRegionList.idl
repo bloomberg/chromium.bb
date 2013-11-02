@@ -24,7 +24,6 @@
  */
 
 [
-    RuntimeEnabled=VideoTrack,
     RuntimeEnabled=WebVTTRegions
 ] interface VTTRegionList {
     readonly attribute unsigned long length;
