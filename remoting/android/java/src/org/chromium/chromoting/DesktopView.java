@@ -6,6 +6,7 @@ package org.chromium.chromoting;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -14,6 +15,7 @@ import android.graphics.Point;
 import android.os.Looper;
 import android.text.InputType;
 import android.util.Log;
+import android.view.inputmethod.InputMethodManager;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -218,7 +220,9 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface, Ru
 
     @Override
     public void showKeyboard() {
-        // TODO(lambroslambrou): Implement this.
+        InputMethodManager inputManager =
+                (InputMethodManager)getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputManager.showSoftInput(this, 0);
     }
 
     @Override

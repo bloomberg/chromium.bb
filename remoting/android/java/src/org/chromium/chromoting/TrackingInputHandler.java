@@ -40,6 +40,24 @@ public class TrackingInputHandler implements TouchInputHandler {
      */
     private PointF mCursorPosition;
 
+    /**
+     * Used for tracking swipe gestures. Only the Y-direction is needed for responding to swipe-up
+     * or swipe-down.
+     */
+    private float mTotalMotionY = 0;
+
+    /**
+     * Set to true during the middle of a swipe gesture to prevent the remainder of the swipe
+     * motion triggering further actions.
+     */
+    private boolean mSwipeCompleted = false;
+
+    /**
+     * Distance in pixels beyond which a motion gesture is considered to be a swipe. This is
+     * initialized using the Context passed into the ctor.
+     */
+    private float mSwipeThreshold;
+
     public TrackingInputHandler(DesktopViewInterface viewer, Context context,
                                 RenderData renderData) {
         mViewer = viewer;
@@ -58,6 +76,12 @@ public class TrackingInputHandler implements TouchInputHandler {
         mTapDetector = new TapGestureDetector(context, listener);
 
         mCursorPosition = new PointF();
+
+        // The threshold needs to be bigger than the ScaledTouchSlop used by the gesture-detectors,
+        // so that a gesture cannot be both a tap and a swipe. It also needs to be small enough so
+        // that intentional swipes are usually detected.
+        float density = context.getResources().getDisplayMetrics().density;
+        mSwipeThreshold = 40 * density;
     }
 
     /**
@@ -173,13 +197,33 @@ public class TrackingInputHandler implements TouchInputHandler {
         mViewer.injectMouseEvent((int)mCursorPosition.x, (int)mCursorPosition.y, button, pressed);
     }
 
+    /** Processes a (multi-finger) swipe gesture. */
+    private boolean onSwipe() {
+        if (mTotalMotionY > mSwipeThreshold) {
+            // Swipe down occurred.
+            mViewer.showActionBar();
+            return true;
+        } else if (mTotalMotionY < -mSwipeThreshold) {
+            // Swipe up occurred.
+            mViewer.showKeyboard();
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         // Avoid short-circuit logic evaluation - ensure both gesture detectors see all events so
         // that they generate correct notifications.
         boolean handled = mScroller.onTouchEvent(event);
-        handled = mZoomer.onTouchEvent(event) || handled;
-        handled = mTapDetector.onTouchEvent(event) || handled;
+        handled |= mZoomer.onTouchEvent(event);
+        handled |= mTapDetector.onTouchEvent(event);
+
+        if (event.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN) {
+            mTotalMotionY = 0;
+            mSwipeCompleted = false;
+        }
+
         return handled;
     }
 
@@ -207,6 +251,17 @@ public class TrackingInputHandler implements TouchInputHandler {
          */
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            if (e2.getPointerCount() == 3) {
+                // Note that distance values are reversed. For example, dragging a finger in the
+                // direction of increasing Y coordinate (downwards) results in distanceY being
+                // negative.
+                mTotalMotionY -= distanceY;
+                if (!mSwipeCompleted) {
+                    mSwipeCompleted = onSwipe();
+                    return mSwipeCompleted;
+                }
+            }
+
             if (e2.getPointerCount() != 1) {
                 return false;
             }
@@ -262,23 +317,24 @@ public class TrackingInputHandler implements TouchInputHandler {
         /** Called when the user taps the screen with one or more fingers. */
         @Override
         public boolean onTap(int pointerCount) {
+            int button;
             switch (pointerCount) {
                 case 1:
-                    injectButtonEvent(BUTTON_LEFT, true);
-                    injectButtonEvent(BUTTON_LEFT, false);
-                    return true;
+                    button = BUTTON_LEFT;
+                    break;
                 case 2:
-                    injectButtonEvent(BUTTON_RIGHT, true);
-                    injectButtonEvent(BUTTON_RIGHT, false);
-                    return true;
+                    button = BUTTON_RIGHT;
+                    break;
                 case 3:
-                    // TODO(lambroslambrou): Add 3-finger-tap for middle-click, and use 3-finger
-                    // swipe to show the action-bar or keyboard.
-                    mViewer.showActionBar();
-                    return true;
+                    button = BUTTON_MIDDLE;
+                    break;
                 default:
                     return false;
             }
+
+            injectButtonEvent(button, true);
+            injectButtonEvent(button, false);
+            return true;
         }
     }
 }
