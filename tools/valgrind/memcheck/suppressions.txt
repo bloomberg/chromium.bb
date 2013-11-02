@@ -6448,13 +6448,3 @@
    fun:_Znw*
    fun:_ZN8app_list32AppListModelTest_FolderItem_Test8TestBodyEv
 }
-{
-   bug_314091
-   Memcheck:Param
-   pwrite64(buf)
-   ...
-   fun:_ZN4base12_GLOBAL__N_1L8DoPwriteEiPKcil
-   fun:_ZN4base17WritePlatformFileEilPKci
-   fun:_ZN10disk_cache22SimpleSynchronousEntry1*
-   fun:_ZN10disk_cache22SimpleSynchronousEntry15WriteSparseDataERKNS0_18EntryOperationDataEPN3net8IOBufferElPNS_15SimpleEntryStatEPi
-}

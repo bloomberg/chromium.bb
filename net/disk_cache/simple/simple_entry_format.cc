@@ -18,4 +18,9 @@ SimpleFileEOF::SimpleFileEOF() {
   std::memset(this, 0, sizeof(*this));
 }
 
+SimpleFileSparseRangeHeader::SimpleFileSparseRangeHeader() {
+  // Make hashing repeatable: leave no padding bytes untouched.
+  std::memset(this, 0, sizeof(*this));
+}
+
 }  // namespace disk_cache

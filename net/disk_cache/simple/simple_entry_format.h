@@ -60,6 +60,8 @@ struct NET_EXPORT_PRIVATE SimpleFileEOF {
 };
 
 struct SimpleFileSparseRangeHeader {
+  SimpleFileSparseRangeHeader();
+
   uint64 sparse_range_magic_number;
   int64 offset;
   int64 length;
