@@ -33,11 +33,17 @@ public class ArchiveTest extends AwTestBase {
         mTestContainerView = createAwTestContainerViewOnMainSync(mContentsClient);
     }
 
+    private void deleteFile(String path) {
+        File file = new File(path);
+        if (file.exists())
+            assertTrue(file.delete());
+        assertFalse(file.exists());
+    }
+
     private void doArchiveTest(final AwContents contents, final String path,
             final boolean autoName, String expectedPath) throws InterruptedException {
         if (expectedPath != null) {
-            File file = new File(expectedPath);
-            file.delete();
+            deleteFile(expectedPath);
         }
 
         // Set up a handler to handle the completion callback
@@ -78,9 +84,7 @@ public class ArchiveTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     public void testExplicitGoodPath() throws Throwable {
         final String path = new File(getActivity().getFilesDir(), "test.mht").getAbsolutePath();
-        File file = new File(path);
-        file.delete();
-        assertFalse(file.exists());
+        deleteFile(path);
 
         loadUrlSync(mTestContainerView.getAwContents(),
                 mContentsClient.getOnPageFinishedHelper(), TEST_PAGE);
@@ -113,9 +117,7 @@ public class ArchiveTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     public void testExplicitBadPath() throws Throwable {
         final String path = new File("/foo/bar/baz.mht").getAbsolutePath();
-        File file = new File(path);
-        file.delete();
-        assertFalse(file.exists());
+        deleteFile(path);
 
         loadUrlSync(mTestContainerView.getAwContents(),
                 mContentsClient.getOnPageFinishedHelper(), TEST_PAGE);
@@ -127,9 +129,7 @@ public class ArchiveTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     public void testAutoBadPath() throws Throwable {
         final String path = new File("/foo/bar/").getAbsolutePath();
-        File file = new File(path);
-        file.delete();
-        assertFalse(file.exists());
+        deleteFile(path);
 
         loadUrlSync(mTestContainerView.getAwContents(),
                 mContentsClient.getOnPageFinishedHelper(), TEST_PAGE);

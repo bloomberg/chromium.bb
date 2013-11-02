@@ -1,10 +1,6 @@
 H C EC: Using pointer equality to compare a JavaBridgeCoercionTest$CustomType with a JavaBridgeCoercionTest$CustomType2 in org.chromium.content.browser.JavaBridgeCoercionTest.testPassJavaObject()  At JavaBridgeCoercionTest.java
 M B DE: org.chromium.net.X509Util.clearTestRootCertificates() might ignore java.io.IOException  At X509Util.java
 M B Nm: The method name org.chromium.base.test.util.ScalableTimeout.ScaleTimeout(long) doesn't start with a lower case letter  At ScalableTimeout.java
-M B RV: exceptional return value of java.io.File.delete() ignored in org.chromium.android_webview.test.ArchiveTest.doArchiveTest(AwContents, String, boolean, String)  At ArchiveTest.java
-M B RV: exceptional return value of java.io.File.delete() ignored in org.chromium.android_webview.test.ArchiveTest.testAutoBadPath()  At ArchiveTest.java
-M B RV: exceptional return value of java.io.File.delete() ignored in org.chromium.android_webview.test.ArchiveTest.testExplicitBadPath()  At ArchiveTest.java
-M B RV: exceptional return value of java.io.File.delete() ignored in org.chromium.android_webview.test.ArchiveTest.testExplicitGoodPath()  At ArchiveTest.java
 M B RV: exceptional return value of java.io.File.delete() ignored in org.chromium.base.test.util.TestFileUtil.deleteFile(String)  At TestFileUtil.java
 M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At HttpAuthDatabase.java
 M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At JavaBridgeArrayCoercionTest.java
