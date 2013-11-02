@@ -6448,3 +6448,10 @@
    fun:_Znw*
    fun:_ZN8app_list32AppListModelTest_FolderItem_Test8TestBodyEv
 }
+{
+   bug_314392
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN14message_center20NotifierSettingsView14NotifierButtonC1EPNS_24NotifierSettingsProviderEPNS_8NotifierEPN5views14ButtonListenerE
+   fun:_ZN14message_center20NotifierSettingsView18UpdateContentsViewERKSt6vectorIPNS_8NotifierESaIS3_EE
+}
