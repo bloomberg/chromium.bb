@@ -659,10 +659,8 @@ PrintingContext::Result PrintingContextWin::ParseDialogResultEx(
           reinterpret_cast<DEVNAMES*>(GlobalLock(dialog_options.hDevNames));
       DCHECK(dev_names);
       if (dev_names) {
-        device_name =
-            reinterpret_cast<const wchar_t*>(
-                reinterpret_cast<const wchar_t*>(dev_names) +
-                    dev_names->wDeviceOffset);
+        device_name = reinterpret_cast<const wchar_t*>(dev_names) +
+                      dev_names->wDeviceOffset;
         GlobalUnlock(dialog_options.hDevNames);
       }
     }

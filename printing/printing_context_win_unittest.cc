@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/run_loop.h"
 #include "printing/backend/printing_info_win.h"
 #include "printing/printing_test.h"
 #include "printing/printing_context.h"
@@ -22,6 +23,7 @@ class PrintingContextTest : public PrintingTest<testing::Test> {
  public:
   void PrintSettingsCallback(printing::PrintingContext::Result result) {
     result_ = result;
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
  protected:
@@ -105,13 +107,15 @@ HRESULT WINAPI PrintDlgExMock(LPPRINTDLGEX lppd) {
   }
   DEVNAMES* dev_names = reinterpret_cast<DEVNAMES*>(dev_names_ptr);
   dev_names->wDefault = 1;
-  dev_names->wDriverOffset = sizeof(DEVNAMES);
+  dev_names->wDriverOffset = sizeof(DEVNAMES) / sizeof(wchar_t);
   memcpy(reinterpret_cast<uint8*>(dev_names_ptr) + dev_names->wDriverOffset,
          info_2.get()->pDriverName, driver_size);
-  dev_names->wDeviceOffset = dev_names->wDriverOffset + driver_size;
+  dev_names->wDeviceOffset = dev_names->wDriverOffset +
+                             driver_size / sizeof(wchar_t);
   memcpy(reinterpret_cast<uint8*>(dev_names_ptr) + dev_names->wDeviceOffset,
          info_2.get()->pPrinterName, printer_size);
-  dev_names->wOutputOffset = dev_names->wDeviceOffset + printer_size;
+  dev_names->wOutputOffset = dev_names->wDeviceOffset +
+                             printer_size / sizeof(wchar_t);
   memcpy(reinterpret_cast<uint8*>(dev_names_ptr) + dev_names->wOutputOffset,
          info_2.get()->pPortName, port_size);
   GlobalUnlock(lppd->hDevNames);
@@ -139,7 +143,6 @@ Cleanup:
 }
 
 TEST_F(PrintingContextTest, Base) {
-  // Sometimes ::GetDefaultPrinter() fails? bug 61509.
   if (IsTestCaseDisabled())
     return;
 
@@ -158,7 +161,7 @@ TEST_F(PrintingContextTest, Base) {
 }
 
 TEST_F(PrintingContextTest, PrintAll) {
-  // Sometimes ::GetDefaultPrinter() fails? bug 61509.
+  base::MessageLoopForUI loop;
   if (IsTestCaseDisabled())
     return;
 
@@ -168,7 +171,9 @@ TEST_F(PrintingContextTest, PrintAll) {
   context.AskUserForSettings(
       NULL, 123, false, base::Bind(&PrintingContextTest::PrintSettingsCallback,
                                    base::Unretained(this)));
+  base::RunLoop().Run();
   EXPECT_EQ(printing::PrintingContext::OK, result());
+
   printing::PrintSettings settings = context.settings();
   EXPECT_EQ(settings.ranges().size(), 0);
 }
