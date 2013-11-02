@@ -4,8 +4,11 @@
 
 #include "chrome/browser/profile_resetter/automatic_profile_resetter_delegate.h"
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/md5.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -20,7 +23,6 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/enumerate_modules_model_win.h"
-#include "chrome/browser/install_module_verifier_win.h"
 #endif
 
 namespace {
@@ -57,6 +59,35 @@ scoped_ptr<base::DictionaryValue> BuildSubTreeFromTemplateURL(
   tree->Set("alternate_urls", alternate_urls);
   return tree.Pass();
 }
+
+#if defined(OS_WIN)
+void ExtractLoadedModuleNameDigests(
+    const base::ListValue& module_list,
+    base::ListValue* module_name_digests) {
+  DCHECK(module_name_digests);
+
+  // EnumerateModulesModel produces a list of dictionaries.
+  // Each dictionary corresponds to a module and exposes a number of properties.
+  // We care only about 'type' and 'name'.
+  for (size_t i = 0; i < module_list.GetSize(); ++i) {
+    const base::DictionaryValue* module_dictionary = NULL;
+    if (!module_list.GetDictionary(i, &module_dictionary))
+      continue;
+    ModuleEnumerator::ModuleType module_type =
+        ModuleEnumerator::LOADED_MODULE;
+    if (!module_dictionary->GetInteger(
+            "type", reinterpret_cast<int*>(&module_type)) ||
+        module_type != ModuleEnumerator::LOADED_MODULE) {
+      continue;
+    }
+    std::string module_name;
+    if (!module_dictionary->GetString("name", &module_name))
+      continue;
+    StringToLowerASCII(&module_name);
+    module_name_digests->AppendString(base::MD5String(module_name));
+  }
+}
+#endif
 
 }  // namespace
 
@@ -123,15 +154,11 @@ void AutomaticProfileResetterDelegateImpl::
 scoped_ptr<base::ListValue> AutomaticProfileResetterDelegateImpl::
     GetLoadedModuleNameDigests() const {
   DCHECK(modules_have_been_enumerated_event_.is_signaled());
-  std::set<std::string> module_name_digests;
+  scoped_ptr<base::ListValue> result(new base::ListValue);
 #if defined(OS_WIN)
   if (module_list_)
-    ExtractLoadedModuleNameDigests(*module_list_, &module_name_digests);
+    ExtractLoadedModuleNameDigests(*module_list_, result.get());
 #endif
-  scoped_ptr<base::ListValue> result(new base::ListValue);
-  for (std::set<std::string>::const_iterator it = module_name_digests.begin();
-       it != module_name_digests.end(); ++it)
-    result->AppendString(*it);
   return result.Pass();
 }
 
