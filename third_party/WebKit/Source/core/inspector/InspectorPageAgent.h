@@ -120,7 +120,6 @@ public:
     virtual void startScreencast(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight);
     virtual void stopScreencast(ErrorString*);
     virtual void handleJavaScriptDialog(ErrorString*, bool accept, const String* promptText);
-    virtual void queryUsageAndQuota(ErrorString*, const String&, RefPtr<TypeBuilder::Page::Quota>&, RefPtr<TypeBuilder::Page::Usage>&);
     virtual void setShowViewportSizeOnResize(ErrorString*, bool show, const bool* showGrid);
 
     // Geolocation override helper.
