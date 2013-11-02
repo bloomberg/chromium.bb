@@ -16,7 +16,6 @@ namespace switches {
 // alongside the definition of their values in the .cc file.
 CONTENT_EXPORT extern const char kAcceleratedCanvas2dMSAASampleCount[];
 CONTENT_EXPORT extern const char kAllowFileAccessFromFiles[];
-CONTENT_EXPORT extern const char kAllowFiltersOverIPC[];
 CONTENT_EXPORT extern const char kAllowNoSandboxJob[];
 extern const char kAllowSandboxDebugging[];
 extern const char kAllowWebUICompositing[];
@@ -60,6 +59,7 @@ extern const char kDisableDirectNPAPIRequests[];
 extern const char kDisableDomainBlockingFor3DAPIs[];
 CONTENT_EXPORT extern const char kDisableExperimentalWebGL[];
 CONTENT_EXPORT extern const char kDisableFileSystem[];
+CONTENT_EXPORT extern const char kDisableFiltersOverIPC[];
 CONTENT_EXPORT extern const char kDisableFixedPositionCreatesStackingContext[];
 CONTENT_EXPORT extern const char kDisableFlash3d[];
 CONTENT_EXPORT extern const char kDisableFlashStage3d[];

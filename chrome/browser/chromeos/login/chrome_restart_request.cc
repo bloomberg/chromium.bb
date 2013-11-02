@@ -65,7 +65,6 @@ std::string DeriveCommandLine(const GURL& start_url,
   DCHECK_NE(&base_command_line, command_line);
 
   static const char* kForwardSwitches[] = {
-      ::switches::kAllowFiltersOverIPC,
       ::switches::kAllowWebUICompositing,
       ::switches::kDeviceManagementUrl,
       ::switches::kDisableAccelerated2dCanvas,
@@ -75,6 +74,7 @@ std::string DeriveCommandLine(const GURL& start_url,
       ::switches::kDisableBrowserPluginCompositing,
       ::switches::kDisableDeadlineScheduling,
       ::switches::kDisableDelegatedRenderer,
+      ::switches::kDisableFiltersOverIPC,
       ::switches::kDisableForceCompositingMode,
       ::switches::kDisableGpuShaderDiskCache,
       ::switches::kDisableGpuWatchdog,
