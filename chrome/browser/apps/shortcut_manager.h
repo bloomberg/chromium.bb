@@ -30,6 +30,10 @@ class AppShortcutManager : public BrowserContextKeyedService,
 
   virtual ~AppShortcutManager();
 
+  // Checks if kShortcutsEnabled is set in prefs. If not, this sets it and
+  // creates shortcuts for all apps.
+  void OnceOffCreateShortcuts();
+
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -40,10 +44,6 @@ class AppShortcutManager : public BrowserContextKeyedService,
       const base::FilePath& profile_path) OVERRIDE;
 
  private:
-  // Checks if kShortcutsEnabled is set in prefs. If not, this sets it and
-  // creates shortcuts for all apps.
-  void OnceOffCreateShortcuts();
-
   void DeleteApplicationShortcuts(const extensions::Extension* extension);
 
   content::NotificationRegistrar registrar_;

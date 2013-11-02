@@ -12,6 +12,8 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "chrome/browser/apps/shortcut_manager.h"
+#include "chrome/browser/apps/shortcut_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/keep_alive_service.h"
@@ -261,6 +263,8 @@ void AppListServiceImpl::EnableAppList(Profile* initial_profile) {
 
   local_state_->SetBoolean(prefs::kAppLauncherHasBeenEnabled, true);
   CreateShortcut();
+  AppShortcutManagerFactory::GetForProfile(initial_profile)->
+      OnceOffCreateShortcuts();
 }
 
 void AppListServiceImpl::InvalidatePendingProfileLoads() {
