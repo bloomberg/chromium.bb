@@ -2,7 +2,7 @@
   "name": "com.google.chrome.remote_desktop",
   "description": "{% trans %}REMOTING_HOST_PLUGIN_NAME{% endtrans %}",
   "type": "stdio",
-  "path": "{{ NATIVE_MESSAGING_HOST_PATH }}",
+  "path": "{{ ME2ME_NATIVE_MESSAGING_HOST_PATH }}",
   "allowed_origins": [
     "chrome-extension://ljacajndfccfgnfohlgkdphmbnpkjflk/",
     "chrome-extension://gbchcmhmhahfdphkhkmpfmihenigjmpp/",

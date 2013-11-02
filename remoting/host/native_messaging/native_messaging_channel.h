@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_SETUP_NATIVE_MESSAGING_CHANNEL_H_
-#define REMOTING_HOST_SETUP_NATIVE_MESSAGING_CHANNEL_H_
+#ifndef REMOTING_HOST_NATIVE_MESSAGING_NATIVE_MESSAGING_CHANNEL_H_
+#define REMOTING_HOST_NATIVE_MESSAGING_NATIVE_MESSAGING_CHANNEL_H_
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
@@ -11,8 +11,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "base/threading/non_thread_safe.h"
-#include "remoting/host/setup/native_messaging_reader.h"
-#include "remoting/host/setup/native_messaging_writer.h"
+#include "remoting/host/native_messaging/native_messaging_reader.h"
+#include "remoting/host/native_messaging/native_messaging_writer.h"
 
 namespace base {
 class DictionaryValue;
@@ -45,7 +45,7 @@ class NativeMessagingChannel : public base::NonThreadSafe {
   };
 
   // Constructs an object taking the ownership of |input| and |output|. Closes
-  // |input| and |output| to prevent the caller frmo using them.
+  // |input| and |output| to prevent the caller from using them.
   NativeMessagingChannel(
       scoped_ptr<Delegate> delegate,
       base::PlatformFile input,
@@ -91,4 +91,4 @@ class NativeMessagingChannel : public base::NonThreadSafe {
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_SETUP_NATIVE_MESSAGING_CHANNEL_H_
+#endif  // REMOTING_HOST_NATIVE_MESSAGING_NATIVE_MESSAGING_CHANNEL_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/setup/native_messaging_host.h"
+#include "remoting/host/setup/me2me_native_messaging_host.h"
 
 #include <string>
 

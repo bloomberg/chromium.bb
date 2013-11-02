@@ -21,7 +21,7 @@
 #include "remoting/base/resources.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/logging.h"
-#include "remoting/host/setup/native_messaging_host.h"
+#include "remoting/host/setup/me2me_native_messaging_host.h"
 #include "remoting/host/usage_stats_consent.h"
 
 #if defined(OS_MACOSX)
@@ -155,7 +155,10 @@ int RdpDesktopSessionMain() {
 MainRoutineFn SelectMainRoutine(const std::string& process_type) {
   MainRoutineFn main_routine = NULL;
 
-  if (process_type == kProcessTypeDaemon) {
+  if (process_type == kProcessTypeHost) {
+    main_routine = &HostProcessMain;
+#if defined(OS_WIN)
+  } else if (process_type == kProcessTypeDaemon) {
     main_routine = &DaemonProcessMain;
   } else if (process_type == kProcessTypeDesktop) {
     main_routine = &DesktopProcessMain;
@@ -163,10 +166,9 @@ MainRoutineFn SelectMainRoutine(const std::string& process_type) {
     main_routine = &ElevatedControllerMain;
   } else if (process_type == kProcessTypeRdpDesktopSession) {
     main_routine = &RdpDesktopSessionMain;
-  } else if (process_type == kProcessTypeHost) {
-    main_routine = &HostProcessMain;
   } else if (process_type == kProcessTypeNativeMessagingHost) {
     main_routine = &NativeMessagingHostMain;
+#endif  // defined(OS_WIN)
   }
 
   return main_routine;

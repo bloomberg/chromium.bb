@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_SETUP_NATIVE_MESSAGING_READER_H_
-#define REMOTING_HOST_SETUP_NATIVE_MESSAGING_READER_H_
+#ifndef REMOTING_HOST_NATIVE_MESSAGING_NATIVE_MESSAGING_READER_H_
+#define REMOTING_HOST_NATIVE_MESSAGING_NATIVE_MESSAGING_READER_H_
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -73,4 +73,4 @@ class NativeMessagingReader {
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_SETUP_NATIVE_MESSAGING_READER_H_
+#endif  // REMOTING_HOST_NATIVE_MESSAGING_NATIVE_MESSAGING_READER_H_

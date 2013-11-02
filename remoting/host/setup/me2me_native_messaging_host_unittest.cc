@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/setup/native_messaging_host.h"
+#include "remoting/host/setup/me2me_native_messaging_host.h"
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -17,8 +17,8 @@
 #include "net/base/file_stream.h"
 #include "net/base/net_util.h"
 #include "remoting/base/auto_thread_task_runner.h"
+#include "remoting/host/native_messaging/native_messaging_channel.h"
 #include "remoting/host/pin_hash.h"
-#include "remoting/host/setup/native_messaging_channel.h"
 #include "remoting/host/setup/test_util.h"
 #include "remoting/protocol/pairing_registry.h"
 #include "remoting/protocol/protocol_mock_objects.h"

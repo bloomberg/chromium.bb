@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_IT2ME__IT2ME_IMPL_H_
-#define REMOTING_HOST_IT2ME__IT2ME_IMPL_H_
+#ifndef REMOTING_HOST_IT2ME_IT2ME_HOST_H_
+#define REMOTING_HOST_IT2ME_IT2ME_HOST_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -40,8 +40,8 @@ enum It2MeHostState {
 };
 
 // Internal implementation of the plugin's It2Me host function.
-class It2MeImpl
-    : public base::RefCountedThreadSafe<It2MeImpl>,
+class It2MeHost
+    : public base::RefCountedThreadSafe<It2MeHost>,
       public HostStatusObserver {
  public:
 
@@ -54,10 +54,10 @@ class It2MeImpl
     virtual void OnStateChanged(It2MeHostState state) = 0;
   };
 
-  It2MeImpl(
+  It2MeHost(
       scoped_ptr<ChromotingHostContext> context,
       scoped_refptr<base::SingleThreadTaskRunner> plugin_task_runner,
-      base::WeakPtr<It2MeImpl::Observer> observer,
+      base::WeakPtr<It2MeHost::Observer> observer,
       const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
       const std::string& directory_bot_jid);
 
@@ -79,9 +79,9 @@ class It2MeImpl
   virtual void OnClientDisconnected(const std::string& jid) OVERRIDE;
 
  private:
-  friend class base::RefCountedThreadSafe<It2MeImpl>;
+  friend class base::RefCountedThreadSafe<It2MeHost>;
 
-  virtual ~It2MeImpl();
+  virtual ~It2MeHost();
 
   // Updates state of the host. Can be called only on the network thread.
   void SetState(It2MeHostState state);
@@ -118,7 +118,7 @@ class It2MeImpl
   // Caller supplied fields.
   scoped_ptr<ChromotingHostContext> host_context_;
   scoped_refptr<base::SingleThreadTaskRunner> plugin_task_runner_;
-  base::WeakPtr<It2MeImpl::Observer> observer_;
+  base::WeakPtr<It2MeHost::Observer> observer_;
   XmppSignalStrategy::XmppServerConfig xmpp_server_config_;
   std::string directory_bot_jid_;
 
@@ -153,9 +153,9 @@ class It2MeImpl
   // variable contains the thunk if it is necessary.
   base::Closure pending_connect_;
 
-  DISALLOW_COPY_AND_ASSIGN(It2MeImpl);
+  DISALLOW_COPY_AND_ASSIGN(It2MeHost);
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_IT2ME__IT2ME_IMPL_H_
+#endif  // REMOTING_HOST_IT2ME_IT2ME_HOST_H_

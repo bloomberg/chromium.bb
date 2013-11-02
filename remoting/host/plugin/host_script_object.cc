@@ -130,9 +130,9 @@ HostNPScriptObject::~HostNPScriptObject() {
   HostLogHandler::UnregisterLoggingScriptObject(this);
 
   // Stop the It2Me host if the caller forgot to.
-  if (it2me_impl_.get()) {
-    it2me_impl_->Disconnect();
-    it2me_impl_ = NULL;
+  if (it2me_host_.get()) {
+    it2me_host_->Disconnect();
+    it2me_host_ = NULL;
   }
 }
 
@@ -315,9 +315,9 @@ bool HostNPScriptObject::SetProperty(const std::string& property_name,
   if (property_name == kAttrNameOnNatTraversalPolicyChanged) {
     if (NPVARIANT_IS_OBJECT(*value)) {
       on_nat_traversal_policy_changed_func_ = NPVARIANT_TO_OBJECT(*value);
-      if (it2me_impl_.get()) {
-        // Ask the It2Me implementation to notify the web-app of the policy.
-        it2me_impl_->RequestNatPolicy();
+      if (it2me_host_.get()) {
+        // Ask the It2Me host to notify the web-app of the policy.
+        it2me_host_->RequestNatPolicy();
       }
       return true;
     } else {
@@ -454,7 +454,7 @@ bool HostNPScriptObject::Connect(const NPVariant* args,
     return false;
   }
 
-  if (it2me_impl_.get()) {
+  if (it2me_host_.get()) {
     SetException("connect: can be called only when disconnected");
     return false;
   }
@@ -483,11 +483,11 @@ bool HostNPScriptObject::Connect(const NPVariant* args,
     return false;
   }
 
-  // Create the It2Me host implementation and start connecting.
-  it2me_impl_ = new It2MeImpl(
+  // Create the It2Me host and start connecting.
+  it2me_host_ = new It2MeHost(
       host_context.Pass(), plugin_task_runner_, weak_ptr_,
       xmpp_config, directory_bot_jid_);
-  it2me_impl_->Connect();
+  it2me_host_->Connect();
 
   return true;
 }
@@ -501,9 +501,9 @@ bool HostNPScriptObject::Disconnect(const NPVariant* args,
     return false;
   }
 
-  if (it2me_impl_.get()) {
-    it2me_impl_->Disconnect();
-    it2me_impl_ = NULL;
+  if (it2me_host_.get()) {
+    it2me_host_->Disconnect();
+    it2me_host_ = NULL;
   }
 
   return true;
