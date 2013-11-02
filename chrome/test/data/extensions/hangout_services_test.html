@@ -3,79 +3,94 @@ Copyright 2013 The Chromium Authors. All rights reserved.
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 
-A file intended for both manual and automated end-to-end testing of
-the Hangout Services component extension.
+A web page intended for both manual and automated end-to-end testing of
+the Hangout Services component extension and the APIs it uses.
 -->
 <html>
 <head>
 <title>Hangout Services Test Page</title>
+<script src="hangout_services_test.js">
+</script>
 <script>
-// ID of the Hangout Services component extension.
-var EXTENSION_ID = "nkeimhogjdpnpccoofpliimaahmaaome";
+//
+// UI glue, leaving in HTML file with the UI elements it is using.
+//
 
-// Sends a message to the Hangout Services extension, expecting
-// success, and unwraps the value returned.
-function sendMessage(message, callback) {
-  function unwrapValue(result) {
-    if (callback)
-      callback(result.value);
-  }
-  window.top.chrome.runtime.sendMessage(EXTENSION_ID, message, unwrapValue);
-}
-
-// Will call |callback(sinkList)| on completion.
-function getSinks(callback) {
-  sendMessage({'method': 'getSinks'}, callback);
-}
-
-// Will call |callback(activeSink)| on completion.
-function getActiveSink(callback) {
-  sendMessage({'method': 'getActiveSink'}, callback);
-}
-
-// Will call |callback()| on completion.
-function setActiveSink(sinkId, callback) {
-  sendMessage({'method': 'setActiveSink', 'sinkId': sinkId}, callback);
-}
-
-// Will call |callback(sinkId)| on completion.
-function getAssociatedSink(sourceId, callback) {
-  sendMessage({'method': 'getAssociatedSink', 'sourceId': sourceId},
-	      callback);
+// Populates UI elements with initial contents.
+function populate() {
+  populateSinks();
+  MediaStreamTrack.getSources(populateSources);
 }
 
 // Populates the select box with information on all sinks and the
 // currently selected sink.
 function populateSinks() {
-  var select = document.getElementById("select");
+  var select = document.getElementById('select');
   while (select.length > 0)
     select.remove(0);
   getSinks(function(sinks) {
       for (var i = 0; i < sinks.length; ++i) {
-	var option = document.createElement("option");
-	option.value = sinks[i].sinkId;
-	option.text = sinks[i].sinkLabel + " (" + sinks[i].sinkId + ")";
-	select.add(option);
+        var option = document.createElement('option');
+        option.value = sinks[i].sinkId;
+        option.text = sinks[i].sinkLabel + ' (' + sinks[i].sinkId + ')';
+        select.add(option);
       }
       getActiveSink(function(sinkId) {
-	  select.value = sinkId;
-	});
+          select.value = sinkId;
+        });
     });
+}
+
+function populateSources(sources) {
+  var select = document.getElementById('selectSource');
+  for (var i = 0; i < sources.length; ++i) {
+    var source = sources[i];
+    if (source.kind == 'audio') {
+      var option = document.createElement('option');
+      option.value = source.id;
+      option.text = source.label + ' (' + source.id + ')';
+      select.add(option);
+    }
+  }
 }
 
 // Sets the currently active sink to the one selected in the select
 // box.
 function setActiveSinkFromSelection() {
-  var select = document.getElementById("select");
+  var select = document.getElementById('select');
   setActiveSink(select.value, function() {
       populateSinks();
     });
 }
+
+function getAssociatedDeviceFromSelection() {
+  var select = document.getElementById('selectSource');
+  getAssociatedSink(select.value, function(sinkId) {
+      alert('Associated sink ID: ' + sinkId);
+    });
+}
 </script>
 </head>
-<body onload="populateSinks()">
+<body onload="populate()">
 <audio id="audio" src="long_audio.ogg" controls autoplay></audio>
 <br/>
-<select style="width:100%" id="select" size=10 onClick="setActiveSinkFromSelection()"></select>
+
+Audio output devices, along with currently selected device. Click to change:<br/>
+<select style="width:100%" id="select" size=10
+        onClick="setActiveSinkFromSelection()"></select>
+<br/>
+
+Audio input devices. Click to get associated output device ID:<br/>
+<select size=10 id="selectSource" onClick="getAssociatedDeviceFromSelection()">
+</select>
+
+<p>
+Run all automated tests manually (empty results indicate success):
+<input type="submit" value="Run"
+       onclick="runAllTests(function(results) { alert('Results:\n' +
+       results); });"><br/>
+Manually test choosing desktop media:
+<input type="submit" value="Choose Media"
+       onclick="manualTestChooseDesktopMedia();"><br/>
 </body>
 </html>

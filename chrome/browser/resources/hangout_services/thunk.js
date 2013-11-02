@@ -17,16 +17,31 @@ chrome.runtime.onMessageExternal.addListener(
     // deleted once it's gone out of scope.
     var a = document.createElement('a');
     a.href = url;
-    return a.hostname;
+    var origin = a.protocol + '//' + a.hostname;
+    if (a.port != '')
+      origin = origin + ':' + a.port;
+    origin = origin + '/';
+    return origin;
   }
 
   try {
     var method = message['method'];
     var origin = getHost(sender.url);
     if (method == 'chooseDesktopMedia') {
-      chrome.desktopCapture.chooseDesktopMedia(
-          ['screen', 'window'], sender.tab, doSendResponse);
+      var cancelId;
+      function sendResponseWithCancelId(streamId) {
+        var value = {'cancelId': cancelId,
+                     'streamId': streamId};
+        doSendResponse(value);
+      }
+      cancelId = chrome.desktopCapture.chooseDesktopMedia(
+          ['screen', 'window'], sender.tab, sendResponseWithCancelId);
       return true;
+    } else if (method == 'cancelChooseDesktopMedia') {
+      var cancelId = message['cancelId'];
+      chrome.desktopCapture.cancelChooseDesktopMedia(cancelId);
+      doSendResponse();
+      return false;
     } else if (method == 'cpu.getInfo') {
       chrome.system.cpu.getInfo(doSendResponse);
       return true;
@@ -41,6 +56,11 @@ chrome.runtime.onMessageExternal.addListener(
     } else if (method == 'logging.uploadOnRenderClose') {
       chrome.webrtcLoggingPrivate.setUploadOnRenderClose(
           sender.tab.id, origin, true);
+      doSendResponse();
+      return false;
+    } else if (method == 'logging.noUploadOnRenderClose') {
+      chrome.webrtcLoggingPrivate.setUploadOnRenderClose(
+          sender.tab.id, origin, false);
       doSendResponse();
       return false;
     } else if (method == 'logging.stop') {
@@ -69,6 +89,15 @@ chrome.runtime.onMessageExternal.addListener(
       chrome.webrtcAudioPrivate.getAssociatedSink(
           origin, sourceId, doSendResponse);
       return true;
+    } else if (method == 'isExtensionEnabled') {
+      // This method is necessary because there may be more than one
+      // version of this extension, under different extension IDs. By
+      // first calling this method on the extension ID, the client can
+      // check if it's loaded; if it's not, the extension system will
+      // call the callback with no arguments and set
+      // chrome.runtime.lastError.
+      doSendResponse();
+      return false;
     }
     throw new Error('Unknown method: ' + method);
   } catch (e) {
