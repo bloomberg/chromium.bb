@@ -15,5 +15,4 @@
     if (window.testRunner)
       testRunner.dumpAsText();
   </script>
-  <script src="../../fast/js/resources/js-test-post.js"></script>
 </svg>

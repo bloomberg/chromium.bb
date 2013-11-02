@@ -5,6 +5,5 @@
 </head>
 <body>
 <script src="resources/garbage-collect-after-string-appends.js"></script>
-<script src="resources/js-test-post.js"></script>
 </body>
 </html>

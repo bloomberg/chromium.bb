@@ -58,7 +58,6 @@ successfullyParsed = true;
 <body onload = dump() >
 <marquee id="marquee" width=30 behavior="alternate" scrollamount=1 scrolldelay=1><img src="resources/images/lime.png" width="29" height="29" alt="lime"></marquee>
 <pre id="console"></pre>
-<script src="../js/resources/js-test-post.js"></script>
 </body>
 </body>
 </html>

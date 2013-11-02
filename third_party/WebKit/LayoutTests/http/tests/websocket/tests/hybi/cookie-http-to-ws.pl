@@ -82,7 +82,6 @@ for (var i = cases.length - 1; i >= 0; i -= 1) {
 }
 runs[0]();
 </script>
-<script src="/js-test-resources/js-test-post.js"></script>
 </body>
 </html>
 HTML

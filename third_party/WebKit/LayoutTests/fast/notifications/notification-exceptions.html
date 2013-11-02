@@ -12,6 +12,5 @@
         testRunner.grantWebNotificationPermission("file://");
         shouldThrow('window.webkitNotifications.createNotification("http:///", "Title", "Message");', '"SyntaxError: Failed to execute \'createNotification\' on \'NotificationCenter\': \'http:///\' is not a valid icon URL."');
     </script>
-    <script src="../js/resources/js-test-post.js"></script>
 </body>
 </html>

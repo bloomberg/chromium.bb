@@ -3,6 +3,7 @@
 <head>
 <script src="../../js/resources/js-test-pre.js"></script>
 <script>
+window.jsTestIsAsync = true;
 testRunner.waitUntilDone();
 
 var givenLoadEventTargets = [];
@@ -11,7 +12,7 @@ function handleError(event)
     givenLoadEventTargets.push(event.target.id);
     if (givenLoadEventTargets.length == 3) {
         shouldBe("['invalid', 'notFound', 'notFoundShared']", "givenLoadEventTargets.sort()");
-        testRunner.notifyDone();
+        finishJSTest();
     }
 }
 </script>
@@ -20,5 +21,4 @@ function handleError(event)
 <link id="invalid" rel="import" href="" onerror="handleError(event)">
 </head>
 <body></body>
-<script src="../../js/resources/js-test-post.js"></script>
 </html>

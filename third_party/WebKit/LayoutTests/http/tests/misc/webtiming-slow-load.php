@@ -20,7 +20,6 @@ shouldBeNonZero("timing.responseStart");
 shouldBe("timing.responseEnd", "0");
 
 </script>
-<script src="../../js-test-resources/js-test-post.js"></script>
 <?php
     echo str_repeat(" ", 100000);
     flush();

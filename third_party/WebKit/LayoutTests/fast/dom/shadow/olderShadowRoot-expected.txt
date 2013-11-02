@@ -21,7 +21,6 @@ PASS root.olderShadowRoot is null
 
 
 
-
 PASS successfullyParsed is true
 
 TEST COMPLETE

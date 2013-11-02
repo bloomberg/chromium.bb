@@ -118,6 +118,5 @@ shouldBe("new ErrorEvent('eventType', { bubbles: true, cancelable: true, message
 shouldBe("new ErrorEvent('eventType', { bubbles: true, cancelable: true, message: 'sakuranbo', filename: 'amaenbo', lineno: 12345, colno: 23456, error: { message: 'hi' } }).colno", "23456");
 shouldBeEqualToString("new ErrorEvent('eventType', { bubbles: true, cancelable: true, message: 'sakuranbo', filename: 'amaenbo', lineno: 12345, colno: 23456, error: { message: 'hi' } }).error.message", "hi");
 </script>
-<script src="../../js/resources/js-test-post.js"></script>
 </body>
 </html>

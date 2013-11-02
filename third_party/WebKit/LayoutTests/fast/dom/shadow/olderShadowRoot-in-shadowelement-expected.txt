@@ -33,7 +33,6 @@ PASS shadow.olderShadowRoot is oldestShadowRoot
 
 
 
-
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -20,6 +20,5 @@ Extract HTTP Content-Language header.</p>
   shouldBe('window.getComputedStyle(document.getElementById("y")).webkitLocale', '"ar"')
   debug('==> All done...');
 </script>
-<script src="../../js-test-resources/js-test-post.js"></script>
 </body>
 </html>

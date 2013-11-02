@@ -30,6 +30,5 @@ window.callbacksCalled = [];
 container.innerHTML = "<x-foo id='a'><div id='b' is='x-bar'><x-baz id='c'></x-baz></div></x-foo>";
 shouldBe("window.callbacksCalled", "['c', 'b', 'a']");
 </script>
-<script src="../../js/resources/js-test-post.js"></script>
 </body>
 </html>

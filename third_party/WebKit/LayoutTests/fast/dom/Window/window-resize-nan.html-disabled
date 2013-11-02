@@ -146,6 +146,5 @@
     shouldBe('window.screenY', 'screen.availTop * 4'); // FIXME this should just be screen.availTop
     shouldBe('window.screenX', 'screen.availLeft');
 </script>
-<script src="../../js/resources/js-test-post.js"></script>
 </body>
 </html>

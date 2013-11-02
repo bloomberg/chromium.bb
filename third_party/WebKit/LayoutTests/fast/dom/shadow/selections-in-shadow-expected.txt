@@ -268,7 +268,6 @@ PASS internals.treeScopeRootNode(window.getSelection().anchorNode) is internals.
 
 
 
-
 PASS successfullyParsed is true
 
 TEST COMPLETE

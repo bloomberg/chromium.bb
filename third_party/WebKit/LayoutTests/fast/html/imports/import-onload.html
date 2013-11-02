@@ -3,6 +3,7 @@
 <head>
 <script src="../../js/resources/js-test-pre.js"></script>
 <script>
+window.jsTestIsAsync = true;
 testRunner.waitUntilDone();
 
 var givenLoadEventTargets = [];
@@ -11,7 +12,7 @@ function handleLoad(event)
     givenLoadEventTargets.push(event.target.id);
     if (givenLoadEventTargets.length == 4) {
         shouldBe("['bye', 'hello1', 'hello2', 'hello3']", "givenLoadEventTargets.sort()");
-        testRunner.notifyDone();
+        finishJSTest();
     }
 }
 </script>
@@ -28,6 +29,5 @@ linkToInsert.onload = handleLoad;
 document.head.appendChild(linkToInsert);
 </script>
 <link id="hello3" rel="import" href="resources/hello.html" onload="handleLoad(event)">
-<script src="../../js/resources/js-test-post.js"></script>
 </body>
 </html>

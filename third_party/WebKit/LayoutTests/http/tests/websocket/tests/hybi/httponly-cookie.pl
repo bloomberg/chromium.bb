@@ -59,7 +59,6 @@ ws.onclose = function() {
 };
 
 </script>
-<script src="/js-test-resources/js-test-post.js"></script>
 </body>
 </html>
 HTML

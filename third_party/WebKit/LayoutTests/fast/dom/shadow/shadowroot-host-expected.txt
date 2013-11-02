@@ -16,7 +16,6 @@ PASS root.host is host
 
 
 
-
 PASS successfullyParsed is true
 
 TEST COMPLETE
