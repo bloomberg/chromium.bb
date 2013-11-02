@@ -83,6 +83,10 @@ crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Fai
 # End SVG TESTS
 # -----------------------------------------------------------------
 
+crbug.com/314092 fast/borders/border-styles-split.html [ NeedsRebaseline ]
+crbug.com/314092 fast/borders/border-radius-wide-border-03.html [ NeedsRebaseline ]
+crbug.com/314092 fast/borders/borderRadiusDouble05.html [ NeedsRebaseline ]
+
 # The implementation of CSS Animations on the Web Animations model is still in progress
 # These can't be rebaselined because they're crashes.
 crbug.com/258896 virtual/web-animations-css/animations/line-height-animation.html [ Crash ]
