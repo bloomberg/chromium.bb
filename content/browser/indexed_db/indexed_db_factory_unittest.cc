@@ -42,9 +42,14 @@ class MockIDBFactory : public IndexedDBFactory {
       const base::FilePath& data_directory) {
     WebKit::WebIDBCallbacks::DataLoss data_loss =
         WebKit::WebIDBCallbacks::DataLossNone;
+    std::string data_loss_message;
     bool disk_full;
     scoped_refptr<IndexedDBBackingStore> backing_store =
-        OpenBackingStore(origin, data_directory, &data_loss, &disk_full);
+        OpenBackingStore(origin,
+                         data_directory,
+                         &data_loss,
+                         &data_loss_message,
+                         &disk_full);
     EXPECT_EQ(WebKit::WebIDBCallbacks::DataLossNone, data_loss);
     return backing_store;
   }
@@ -183,6 +188,7 @@ class DiskFullFactory : public IndexedDBFactory {
       const GURL& origin_url,
       const base::FilePath& data_directory,
       WebKit::WebIDBCallbacks::DataLoss* data_loss,
+      std::string* data_loss_message,
       bool* disk_full) OVERRIDE {
     *disk_full = true;
     return scoped_refptr<IndexedDBBackingStore>();

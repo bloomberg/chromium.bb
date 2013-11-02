@@ -1238,6 +1238,7 @@ void IndexedDBDatabase::VersionChangeOperation(
     scoped_refptr<IndexedDBCallbacks> callbacks,
     scoped_ptr<IndexedDBConnection> connection,
     WebKit::WebIDBCallbacks::DataLoss data_loss,
+    std::string data_loss_message,
     IndexedDBTransaction* transaction) {
   IDB_TRACE("IndexedDBDatabase::VersionChangeOperation");
   int64 old_version = metadata_.int_version;
@@ -1260,7 +1261,7 @@ void IndexedDBDatabase::VersionChangeOperation(
   pending_second_half_open_.reset(new PendingSuccessCall(
       callbacks, connection.get(), transaction->id(), version));
   callbacks->OnUpgradeNeeded(
-      old_version, connection.Pass(), metadata(), data_loss);
+      old_version, connection.Pass(), metadata(), data_loss, data_loss_message);
 }
 
 void IndexedDBDatabase::TransactionStarted(IndexedDBTransaction* transaction) {
@@ -1423,7 +1424,7 @@ void IndexedDBDatabase::OpenConnection(
   const WebKit::WebIDBCallbacks::DataLoss kDataLoss =
       WebKit::WebIDBCallbacks::DataLossNone;
   OpenConnection(
-      callbacks, database_callbacks, transaction_id, version, kDataLoss);
+      callbacks, database_callbacks, transaction_id, version, kDataLoss, "");
 }
 
 void IndexedDBDatabase::OpenConnection(
@@ -1431,7 +1432,8 @@ void IndexedDBDatabase::OpenConnection(
     scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
     int64 transaction_id,
     int64 version,
-    WebKit::WebIDBCallbacks::DataLoss data_loss) {
+    WebKit::WebIDBCallbacks::DataLoss data_loss,
+    std::string data_loss_message) {
   DCHECK(backing_store_);
 
   // TODO(jsbell): Should have a priority queue so that higher version
@@ -1499,8 +1501,12 @@ void IndexedDBDatabase::OpenConnection(
 
   if (version > metadata_.int_version) {
     connections_.insert(connection.get());
-    RunVersionChangeTransaction(
-        callbacks, connection.Pass(), transaction_id, version, data_loss);
+    RunVersionChangeTransaction(callbacks,
+                                connection.Pass(),
+                                transaction_id,
+                                version,
+                                data_loss,
+                                data_loss_message);
     return;
   }
   if (version < metadata_.int_version) {
@@ -1521,7 +1527,8 @@ void IndexedDBDatabase::RunVersionChangeTransaction(
     scoped_ptr<IndexedDBConnection> connection,
     int64 transaction_id,
     int64 requested_version,
-    WebKit::WebIDBCallbacks::DataLoss data_loss) {
+    WebKit::WebIDBCallbacks::DataLoss data_loss,
+    std::string data_loss_message) {
 
   DCHECK(callbacks);
   DCHECK(connections_.count(connection.get()));
@@ -1551,7 +1558,8 @@ void IndexedDBDatabase::RunVersionChangeTransaction(
                                    connection.Pass(),
                                    transaction_id,
                                    requested_version,
-                                   data_loss);
+                                   data_loss,
+                                   data_loss_message);
 }
 
 void IndexedDBDatabase::RunVersionChangeTransactionFinal(
@@ -1565,7 +1573,8 @@ void IndexedDBDatabase::RunVersionChangeTransactionFinal(
                                    connection.Pass(),
                                    transaction_id,
                                    requested_version,
-                                   kDataLoss);
+                                   kDataLoss,
+                                   "");
 }
 
 void IndexedDBDatabase::RunVersionChangeTransactionFinal(
@@ -1573,7 +1582,8 @@ void IndexedDBDatabase::RunVersionChangeTransactionFinal(
     scoped_ptr<IndexedDBConnection> connection,
     int64 transaction_id,
     int64 requested_version,
-    WebKit::WebIDBCallbacks::DataLoss data_loss) {
+    WebKit::WebIDBCallbacks::DataLoss data_loss,
+    std::string data_loss_message) {
 
   std::vector<int64> object_store_ids;
   CreateTransaction(transaction_id,
@@ -1589,7 +1599,8 @@ void IndexedDBDatabase::RunVersionChangeTransactionFinal(
                  requested_version,
                  callbacks,
                  base::Passed(&connection),
-                 data_loss),
+                 data_loss,
+                 data_loss_message),
       base::Bind(&IndexedDBDatabase::VersionChangeAbortOperation,
                  this,
                  metadata_.version,

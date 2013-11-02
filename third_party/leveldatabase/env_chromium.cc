@@ -428,7 +428,7 @@ const char* patterns[] = {
 };
 
 // Returns 1-based index into the above array or 0 if nothing matches.
-int ParseCorruptionMessage(const leveldb::Status& status) {
+int GetCorruptionCode(const leveldb::Status& status) {
   DCHECK(!status.IsIOError());
   DCHECK(!status.ok());
   const int kOtherError = 0;
@@ -444,13 +444,20 @@ int ParseCorruptionMessage(const leveldb::Status& status) {
   return error;
 }
 
-int GetNumCorruptionPatterns() {
+int GetNumCorruptionCodes() {
   // + 1 for the "other" error that is returned when a corruption message
   // doesn't match any of the patterns.
   return arraysize(patterns) + 1;
 }
 
-bool IndicatesDiskFull(leveldb::Status status) {
+std::string GetCorruptionMessage(const leveldb::Status& status) {
+  int code = GetCorruptionCode(status);
+  if (code == 0)
+    return "Unknown corruption";
+  return patterns[code - 1];
+}
+
+bool IndicatesDiskFull(const leveldb::Status& status) {
   if (status.ok())
     return false;
   leveldb_env::MethodID method;
@@ -463,12 +470,18 @@ bool IndicatesDiskFull(leveldb::Status status) {
          (result == leveldb_env::METHOD_AND_ERRNO && error == ENOSPC);
 }
 
-bool IsIOError(leveldb::Status status) {
+bool IsIOError(const leveldb::Status& status) {
   leveldb_env::MethodID method;
   int error = -1;
   leveldb_env::ErrorParsingResult result = leveldb_env::ParseMethodAndError(
       status.ToString().c_str(), &method, &error);
   return result != leveldb_env::NONE;
+}
+
+bool IsCorruption(const leveldb::Status& status) {
+  // LevelDB returns InvalidArgument when an sst file is truncated but there is
+  // no IsInvalidArgument() accessor defined.
+  return status.IsCorruption() || (!status.ok() && !IsIOError(status));
 }
 
 std::string FilePathToString(const base::FilePath& file_path) {

@@ -425,11 +425,16 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     const GURL& origin_url,
     const base::FilePath& path_base,
     WebKit::WebIDBCallbacks::DataLoss* data_loss,
+    std::string* data_loss_message,
     bool* disk_full) {
   *data_loss = WebKit::WebIDBCallbacks::DataLossNone;
   DefaultLevelDBFactory leveldb_factory;
-  return IndexedDBBackingStore::Open(
-      origin_url, path_base, data_loss, disk_full, &leveldb_factory);
+  return IndexedDBBackingStore::Open(origin_url,
+                                     path_base,
+                                     data_loss,
+                                     data_loss_message,
+                                     disk_full,
+                                     &leveldb_factory);
 }
 
 static void HistogramOpenStatus(IndexedDBBackingStoreOpenResult result) {
@@ -473,11 +478,13 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     const GURL& origin_url,
     const base::FilePath& path_base,
     WebKit::WebIDBCallbacks::DataLoss* data_loss,
+    std::string* data_loss_message,
     bool* is_disk_full,
     LevelDBFactory* leveldb_factory) {
   IDB_TRACE("IndexedDBBackingStore::Open");
   DCHECK(!path_base.empty());
   *data_loss = WebKit::WebIDBCallbacks::DataLossNone;
+  *data_loss_message = "";
   *is_disk_full = false;
 
   scoped_ptr<LevelDBComparator> comparator(new Comparator());
@@ -504,27 +511,39 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
   leveldb::Status status = leveldb_factory->OpenLevelDB(
       file_path, comparator.get(), &db, is_disk_full);
 
-  if (!status.ok() && leveldb_env::IndicatesDiskFull(status)) {
-    DCHECK(!db);
-    *is_disk_full = true;
+  DCHECK(!db == !status.ok());
+  if (!status.ok()) {
+    if (leveldb_env::IndicatesDiskFull(status)) {
+      *is_disk_full = true;
+    } else if (leveldb_env::IsCorruption(status)) {
+      *data_loss = WebKit::WebIDBCallbacks::DataLossTotal;
+      *data_loss_message = leveldb_env::GetCorruptionMessage(status);
+    }
   }
 
+  bool is_schema_known = false;
   if (db) {
-    bool known = false;
-    bool ok = IsSchemaKnown(db.get(), &known);
+    bool ok = IsSchemaKnown(db.get(), &is_schema_known);
     if (!ok) {
       LOG(ERROR) << "IndexedDB had IO error checking schema, treating it as "
                     "failure to open";
       HistogramOpenStatus(
           INDEXED_DB_BACKING_STORE_OPEN_FAILED_IO_ERROR_CHECKING_SCHEMA);
       db.reset();
-    } else if (!known) {
+      *data_loss = WebKit::WebIDBCallbacks::DataLossTotal;
+      *data_loss_message = "I/O error checking schema";
+    } else if (!is_schema_known) {
       LOG(ERROR) << "IndexedDB backing store had unknown schema, treating it "
                     "as failure to open";
       HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_FAILED_UNKNOWN_SCHEMA);
       db.reset();
+      *data_loss = WebKit::WebIDBCallbacks::DataLossTotal;
+      *data_loss_message = "Unknown schema";
     }
   }
+
+  DCHECK(status.ok() || !is_schema_known || leveldb_env::IsIOError(status) ||
+         leveldb_env::IsCorruption(status));
 
   if (db) {
     HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_SUCCESS);
@@ -534,8 +553,8 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_NO_RECOVERY);
     return scoped_refptr<IndexedDBBackingStore>();
   } else {
+    DCHECK(!is_schema_known || leveldb_env::IsCorruption(status));
     LOG(ERROR) << "IndexedDB backing store open failed, attempting cleanup";
-    *data_loss = WebKit::WebIDBCallbacks::DataLossTotal;
     bool success = leveldb_factory->DestroyLevelDB(file_path);
     if (!success) {
       LOG(ERROR) << "IndexedDB backing store cleanup failed";

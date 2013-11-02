@@ -69,10 +69,12 @@ enum ErrorParsingResult {
 ErrorParsingResult ParseMethodAndError(const char* string,
                                        MethodID* method,
                                        int* error);
-int ParseCorruptionMessage(const leveldb::Status& status);
-int GetNumCorruptionPatterns();
-bool IndicatesDiskFull(leveldb::Status status);
-bool IsIOError(leveldb::Status status);
+int GetCorruptionCode(const leveldb::Status& status);
+int GetNumCorruptionCodes();
+std::string GetCorruptionMessage(const leveldb::Status& status);
+bool IndicatesDiskFull(const leveldb::Status& status);
+bool IsIOError(const leveldb::Status& status);
+bool IsCorruption(const leveldb::Status& status);
 std::string FilePathToString(const base::FilePath& file_path);
 
 class UMALogger {

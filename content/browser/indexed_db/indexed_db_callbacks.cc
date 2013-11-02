@@ -107,7 +107,8 @@ void IndexedDBCallbacks::OnUpgradeNeeded(
     int64 old_version,
     scoped_ptr<IndexedDBConnection> connection,
     const IndexedDBDatabaseMetadata& metadata,
-    WebIDBCallbacks::DataLoss data_loss) {
+    WebIDBCallbacks::DataLoss data_loss,
+    std::string data_loss_message) {
   DCHECK(dispatcher_host_.get());
 
   DCHECK_EQ(kNoCursor, ipc_cursor_id_);
@@ -129,6 +130,7 @@ void IndexedDBCallbacks::OnUpgradeNeeded(
   params.old_version = old_version;
   params.idb_metadata = IndexedDBDispatcherHost::ConvertMetadata(metadata);
   params.data_loss = data_loss;
+  params.data_loss_message = data_loss_message;
   dispatcher_host_->Send(new IndexedDBMsg_CallbacksUpgradeNeeded(params));
 }
 

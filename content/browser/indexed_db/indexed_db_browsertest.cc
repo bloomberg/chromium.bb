@@ -334,7 +334,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithMissingSSTFile,
                        DestroyTest) {
   int64 original_size = RequestDiskUsage();
   EXPECT_GT(original_size, 0);
-  SimpleTest(GetTestUrl("indexeddb", "open_bad_db.html"));
+  SimpleTest(GetTestUrl("indexeddb", "open_missing_table.html"));
   int64 new_size = RequestDiskUsage();
   EXPECT_NE(original_size, new_size);
 }

@@ -69,6 +69,7 @@ class CONTENT_EXPORT IndexedDBFactory
       const GURL& origin_url,
       const base::FilePath& data_directory,
       WebKit::WebIDBCallbacks::DataLoss* data_loss,
+      std::string* data_loss_reason,
       bool* disk_full);
 
   void ReleaseBackingStore(const GURL& origin_url, bool immediate);

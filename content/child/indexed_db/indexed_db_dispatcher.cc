@@ -640,7 +640,8 @@ void IndexedDBDispatcher::OnUpgradeNeeded(
       p.old_version,
       databases_[p.ipc_database_id],
       metadata,
-      static_cast<WebIDBCallbacks::DataLoss>(p.data_loss));
+      static_cast<WebIDBCallbacks::DataLoss>(p.data_loss),
+      WebString::fromUTF8(p.data_loss_message));
 }
 
 void IndexedDBDispatcher::OnError(int32 ipc_thread_id,

@@ -213,11 +213,11 @@ static void ParseAndHistogramIOErrorDetails(const std::string& histogram_name,
 static void ParseAndHistogramCorruptionDetails(
     const std::string& histogram_name,
     const leveldb::Status& status) {
-  int error = leveldb_env::ParseCorruptionMessage(status);
+  int error = leveldb_env::GetCorruptionCode(status);
   DCHECK(error >= 0);
   std::string corruption_histogram_name(histogram_name);
   corruption_histogram_name.append(".Corruption");
-  const int kNumPatterns = leveldb_env::GetNumCorruptionPatterns();
+  const int kNumPatterns = leveldb_env::GetNumCorruptionCodes();
   base::LinearHistogram::FactoryGet(
       corruption_histogram_name,
       1,

@@ -62,7 +62,8 @@ class CONTENT_EXPORT IndexedDBCallbacks
       int64 old_version,
       scoped_ptr<IndexedDBConnection> connection,
       const content::IndexedDBDatabaseMetadata& metadata,
-      WebKit::WebIDBCallbacks::DataLoss data_loss);
+      WebKit::WebIDBCallbacks::DataLoss data_loss,
+      std::string data_loss_message);
   virtual void OnSuccess(scoped_ptr<IndexedDBConnection> connection,
                          const content::IndexedDBDatabaseMetadata& metadata);
 
