@@ -61,26 +61,26 @@
       },
 
       function checkAutosizedWithDeviceMetrics(next) {
-        PageAgent.setDeviceMetricsOverride(1920, 1200, 2, true, true, function() {
+        PageAgent.setDeviceMetricsOverride(1920, 1200, 2, false, true, true, function() {
           assertAutosizingResult(true, next);
         });
       },
 
       function checkNotAutosizedWithDeviceMetrics(next) {
-        PageAgent.setDeviceMetricsOverride(1920, 1200, 2, true, false, function() {
+        PageAgent.setDeviceMetricsOverride(1920, 1200, 2, false, true, false, function() {
           assertAutosizingResult(false, next);
         });
       },
 
       function checkAutosizedWithoutDeviceMetrics(next) {
-        PageAgent.setDeviceMetricsOverride(0, 0, 2, true, function() {
+        PageAgent.setDeviceMetricsOverride(0, 0, 2, false, false, true, function() {
           assertAutosizingResult(true, next);
         });
       },
 
       function checkAutosizedWhenDeviceMetricsOverrideSettings(next) {
         InspectorTest.evaluateInPage("forceAutosizing(false)", function() {
-          PageAgent.setDeviceMetricsOverride(1920, 1200, 2, true, true, function() {
+          PageAgent.setDeviceMetricsOverride(1920, 1200, 2, false, true, true, function() {
             assertAutosizingResult(true, next);
           });
         });

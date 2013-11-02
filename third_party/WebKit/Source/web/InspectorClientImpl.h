@@ -59,7 +59,7 @@ public:
     virtual void clearBrowserCache();
     virtual void clearBrowserCookies();
 
-    virtual void overrideDeviceMetrics(int, int, float, bool);
+    virtual void overrideDeviceMetrics(int, int, float, bool, bool);
 
     virtual bool overridesShowPaintRects();
     virtual void setShowPaintRects(bool);

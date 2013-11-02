@@ -103,7 +103,7 @@ public:
     virtual void clearBrowserCache();
     virtual void clearBrowserCookies();
 
-    virtual void overrideDeviceMetrics(int width, int height, float deviceScaleFactor, bool fitWindow);
+    virtual void overrideDeviceMetrics(int width, int height, float deviceScaleFactor, bool emulateViewport, bool fitWindow);
 
     virtual void getAllocatedObjects(HashSet<const void*>&);
     virtual void dumpUncountedAllocatedObjects(const HashMap<const void*, size_t>&);
@@ -124,6 +124,9 @@ private:
     virtual void willProcessTask();
     virtual void didProcessTask();
 
+    void enableViewportEmulation();
+    void disableViewportEmulation();
+
     WebCore::InspectorController* inspectorController();
     WebCore::Frame* mainFrame();
 
@@ -133,8 +136,9 @@ private:
     bool m_attached;
     bool m_generatingEvent;
     bool m_deviceMetricsEnabled;
+    bool m_emulateViewportEnabled;
+    bool m_originalViewportEnabled;
     bool m_isOverlayScrollbarsEnabled;
-    bool m_isCSSViewportEnabled;
 };
 
 } // namespace WebKit

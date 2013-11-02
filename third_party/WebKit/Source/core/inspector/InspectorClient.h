@@ -52,7 +52,7 @@ public:
         unsigned char flags, double timestamp);
     virtual void setTraceEventCallback(TraceEventCallback) { }
 
-    virtual void overrideDeviceMetrics(int /*width*/, int /*height*/, float /*deviceScaleFactor*/, bool /*fitWindow*/) { }
+    virtual void overrideDeviceMetrics(int /*width*/, int /*height*/, float /*deviceScaleFactor*/, bool /*emulateViewport*/, bool /*fitWindow*/) { }
 
     virtual bool overridesShowPaintRects() { return false; }
     virtual void setShowPaintRects(bool) { }

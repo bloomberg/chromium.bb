@@ -106,7 +106,7 @@ function test()
         }
         
         var enabled = width > 0 && height > 0;
-        PageAgent.setDeviceMetricsOverride(width, height, 1, true, callback);
+        PageAgent.setDeviceMetricsOverride(width, height, 1, false, true, callback);
         overridesEnabled = enabled;
     }
 
