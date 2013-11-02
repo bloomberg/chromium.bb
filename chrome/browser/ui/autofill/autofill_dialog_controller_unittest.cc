@@ -1727,6 +1727,8 @@ TEST_F(AutofillDialogControllerTest, VerifyCvv) {
   EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
 
   controller()->OnAccept();
+
+  EXPECT_FALSE(controller()->GetDialogOverlay().image.IsEmpty());
 }
 
 TEST_F(AutofillDialogControllerTest, ErrorDuringSubmit) {

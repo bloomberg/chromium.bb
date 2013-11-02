@@ -38,6 +38,9 @@ class TestableAutofillDialogView {
 
   // Get the web contents used to sign in to Google.
   virtual content::WebContents* GetSignInWebContents() = 0;
+
+  // Whether the overlay is visible.
+  virtual bool IsShowingOverlay() const = 0;
 };
 
 }  // namespace autofill

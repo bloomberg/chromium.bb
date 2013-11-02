@@ -859,8 +859,11 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
       wallet_items->instruments()[0]->TypeAndLastFourDigits();
   controller()->OnDidGetWalletItems(wallet_items.Pass());
 
+  TestableAutofillDialogView* test_view = controller()->GetTestableView();
+  EXPECT_FALSE(test_view->IsShowingOverlay());
   EXPECT_CALL(*controller(), LoadRiskFingerprintData());
   controller()->OnAccept();
+  EXPECT_TRUE(test_view->IsShowingOverlay());
 
   EXPECT_CALL(*controller()->GetTestingWalletClient(), GetFullWallet(_));
   scoped_ptr<risk::Fingerprint> fingerprint(new risk::Fingerprint());
@@ -875,13 +878,14 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   ASSERT_TRUE(controller()->IsSubmitPausedOn(wallet::VERIFY_CVV));
 
   std::string fake_cvc("123");
-  TestableAutofillDialogView* test_view = controller()->GetTestableView();
   test_view->SetTextContentsOfSuggestionInput(SECTION_CC_BILLING,
                                               ASCIIToUTF16(fake_cvc));
 
+  EXPECT_FALSE(test_view->IsShowingOverlay());
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
               AuthenticateInstrument(_, fake_cvc));
   controller()->OnAccept();
+  EXPECT_TRUE(test_view->IsShowingOverlay());
 
   EXPECT_CALL(*controller()->GetTestingWalletClient(), GetFullWallet(_));
   controller()->OnDidAuthenticateInstrument(true);

@@ -216,6 +216,11 @@ content::WebContents* AutofillDialogCocoa::GetSignInWebContents() {
   return [sheet_delegate_ getSignInWebContents];
 }
 
+
+bool AutofillDialogCocoa::IsShowingOverlay() const {
+  return [sheet_delegate_ IsShowingOverlay];
+}
+
 void AutofillDialogCocoa::OnConstrainedWindowClosed(
     ConstrainedWindowMac* window) {
   constrained_window_.reset();
@@ -633,6 +638,10 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 
 - (content::WebContents*)getSignInWebContents {
   return [signInContainer_ webContents];
+}
+
+- (BOOL)IsShowingOverlay {
+  return ![[overlayController_ view] isHidden];
 }
 
 @end

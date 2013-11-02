@@ -113,6 +113,7 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void ActivateInput(const DetailInput& input) OVERRIDE;
   virtual gfx::Size GetSize() const OVERRIDE;
   virtual content::WebContents* GetSignInWebContents() OVERRIDE;
+  virtual bool IsShowingOverlay() const OVERRIDE;
 
   // views::View implementation.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -303,7 +304,7 @@ class AutofillDialogViews : public AutofillDialogView,
     // Child View. Front and center.
     views::ImageView* image_view_;
     // Child View. When visible, below |image_view_|.
-    views::View* message_stack_;
+    views::Label* message_view_;
 
     DISALLOW_COPY_AND_ASSIGN(OverlayView);
   };

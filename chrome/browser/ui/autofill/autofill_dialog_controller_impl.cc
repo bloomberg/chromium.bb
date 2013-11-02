@@ -862,7 +862,6 @@ DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() {
   const SkColor final_top_color = SkColorSetRGB(0x52, 0x9F, 0xF8);
   const SkColor final_bottom_color = SkColorSetRGB(0x22, 0x75, 0xE5);
 
-  // First-run, post-submit, Wallet expository page.
   if (full_wallet_ && full_wallet_->required_actions().empty()) {
     card_scrambling_delay_.Stop();
     card_scrambling_refresher_.Stop();
@@ -2109,6 +2108,7 @@ bool AutofillDialogControllerImpl::OnCancel() {
 }
 
 bool AutofillDialogControllerImpl::OnAccept() {
+  ScopedViewUpdates updates(view_.get());
   choose_another_instrument_or_address_ = false;
   wallet_server_validation_recoverable_ = true;
   HidePopup();
@@ -2141,9 +2141,11 @@ bool AutofillDialogControllerImpl::OnAccept() {
 
   if (IsSubmitPausedOn(wallet::VERIFY_CVV)) {
     DCHECK(!active_instrument_id_.empty());
+    full_wallet_.reset();
     GetWalletClient()->AuthenticateInstrument(
         active_instrument_id_,
         UTF16ToUTF8(view_->GetCvc()));
+    view_->UpdateOverlay();
   } else if (IsPayingWithWallet()) {
     AcceptLegalTerms();
   } else {
@@ -3305,7 +3307,6 @@ void AutofillDialogControllerImpl::HandleSaveOrUpdateRequiredActions(
 
 void AutofillDialogControllerImpl::FinishSubmit() {
   if (IsPayingWithWallet()) {
-    // To get past this point, the view must call back OverlayButtonPressed.
     ScopedViewUpdates updates(view_.get());
     view_->UpdateOverlay();
 

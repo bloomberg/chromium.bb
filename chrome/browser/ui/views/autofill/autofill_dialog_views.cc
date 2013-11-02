@@ -69,9 +69,6 @@ namespace autofill {
 
 namespace {
 
-// The default height of the stack of messages in the overlay view.
-const int kDefaultMessageStackHeight = 90;
-
 // The width for the section container.
 const int kSectionContainerWidth = 440;
 
@@ -118,8 +115,8 @@ SkColor kSubtleBorderColor = SkColorSetARGB(10, 0, 0, 0);
 const int kMenuButtonTopInset = 3;
 const int kMenuButtonBottomInset = 6;
 
-// Spacing between lines of text in the overlay view.
-const int kOverlayTextInterlineSpacing = 10;
+// The height in pixels of the padding above and below the overlay message view.
+const int kOverlayMessageVerticalPadding = 34;
 
 // Spacing below image and above text messages in overlay view.
 const int kOverlayImageBottomMargin = 100;
@@ -677,28 +674,27 @@ AutofillDialogViews::OverlayView::OverlayView(
     AutofillDialogViewDelegate* delegate)
     : delegate_(delegate),
       image_view_(new views::ImageView()),
-      message_stack_(new views::View()) {
+      message_view_(new views::Label()) {
+  message_view_->SetAutoColorReadabilityEnabled(false);
+  message_view_->SetMultiLine(true);
+
   set_background(views::Background::CreateSolidBackground(GetNativeTheme()->
       GetSystemColor(ui::NativeTheme::kColorId_DialogBackground)));
 
   AddChildView(image_view_);
-
-  AddChildView(message_stack_);
-  message_stack_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
-                           kOverlayTextInterlineSpacing));
+  AddChildView(message_view_);
 }
 
 AutofillDialogViews::OverlayView::~OverlayView() {}
 
 int AutofillDialogViews::OverlayView::GetHeightForContentsForWidth(int width) {
   // In this case, 0 means "no preference".
-  if (!message_stack_->visible())
+  if (!message_view_->visible())
     return 0;
 
   return kOverlayImageBottomMargin +
       views::kButtonVEdgeMarginNew +
-      message_stack_->GetHeightForWidth(width) +
+      message_view_->GetHeightForWidth(width) +
       image_view_->GetHeightForWidth(width);
 }
 
@@ -712,34 +708,17 @@ void AutofillDialogViews::OverlayView::UpdateState() {
 
   image_view_->SetImage(state.image.ToImageSkia());
 
-  int label_height = 0;
-  message_stack_->RemoveAllChildViews(true);
-
-  if (!state.string.text.empty()) {
-    views::Label* label = new views::Label();
-    label->SetAutoColorReadabilityEnabled(false);
-    label->SetMultiLine(true);
-    label->SetText(state.string.text);
-    label->SetFont(state.string.font);
-    label->SetEnabledColor(state.string.text_color);
-    message_stack_->AddChildView(label);
-    label_height = label->GetPreferredSize().height();
-  }
-
-  message_stack_->SetVisible(message_stack_->child_count() > 0);
-
-  const int kVerticalPadding = std::max(
-      (kDefaultMessageStackHeight - label_height) / 2, kDialogEdgePadding);
-  message_stack_->set_border(
-      views::Border::CreateEmptyBorder(kVerticalPadding,
+  message_view_->SetVisible(!state.string.text.empty());
+  message_view_->SetText(state.string.text);
+  message_view_->SetFont(state.string.font);
+  message_view_->SetEnabledColor(state.string.text_color);
+  message_view_->set_border(
+      views::Border::CreateEmptyBorder(kOverlayMessageVerticalPadding,
                                        kDialogEdgePadding,
-                                       kVerticalPadding,
+                                       kOverlayMessageVerticalPadding,
                                        kDialogEdgePadding));
 
   SetVisible(true);
-  InvalidateLayout();
-  if (parent())
-    parent()->Layout();
 }
 
 gfx::Insets AutofillDialogViews::OverlayView::GetInsets() const {
@@ -748,14 +727,14 @@ gfx::Insets AutofillDialogViews::OverlayView::GetInsets() const {
 
 void AutofillDialogViews::OverlayView::Layout() {
   gfx::Rect bounds = ContentBoundsSansBubbleBorder();
-  if (!message_stack_->visible()) {
+  if (!message_view_->visible()) {
     image_view_->SetBoundsRect(bounds);
     return;
   }
 
-  int message_height = message_stack_->GetHeightForWidth(bounds.width());
+  int message_height = message_view_->GetHeightForWidth(bounds.width());
   int y = bounds.bottom() - message_height;
-  message_stack_->SetBounds(bounds.x(), y, bounds.width(), message_height);
+  message_view_->SetBounds(bounds.x(), y, bounds.width(), message_height);
 
   gfx::Size image_size = image_view_->GetPreferredSize();
   y -= image_size.height() + kOverlayImageBottomMargin;
@@ -780,10 +759,10 @@ void AutofillDialogViews::OverlayView::OnPaint(gfx::Canvas* canvas) {
   OnPaintBackground(canvas);
 
   // Draw the arrow, border, and fill for the bottom area.
-  if (message_stack_->visible()) {
+  if (message_view_->visible()) {
     const int arrow_half_width = kArrowWidth / 2.0f;
     SkPath arrow;
-    int y = message_stack_->y() - 1;
+    int y = message_view_->y() - 1;
     // Note that we purposely draw slightly outside of |rect| so that the
     // stroke is hidden on the sides.
     arrow.moveTo(rect.x() - 1, y);
@@ -1417,6 +1396,7 @@ void AutofillDialogViews::UpdateButtonStrip() {
 
 void AutofillDialogViews::UpdateOverlay() {
   overlay_view_->UpdateState();
+  ContentsPreferredSizeChanged();
 }
 
 void AutofillDialogViews::UpdateDetailArea() {
@@ -1628,6 +1608,10 @@ gfx::Size AutofillDialogViews::GetSize() const {
 
 content::WebContents* AutofillDialogViews::GetSignInWebContents() {
   return sign_in_web_view_->web_contents();
+}
+
+bool AutofillDialogViews::IsShowingOverlay() const {
+  return overlay_view_->visible();
 }
 
 gfx::Size AutofillDialogViews::GetPreferredSize() {
