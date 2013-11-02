@@ -21,7 +21,7 @@
 #include "base/task_runner.h"
 #include "ipc/ipc_listener.h"
 #include "ppapi/c/pp_stdint.h"
-#include "ppapi/proxy/handle_converter.h"
+#include "ppapi/proxy/nacl_message_scanner.h"
 
 struct NaClDesc;
 struct NaClImcTypedMsgHdr;
@@ -127,7 +127,7 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
     // to be received by the plugin.
     std::queue< scoped_refptr<RewrittenMessage> > to_be_received_;
 
-    ppapi::proxy::HandleConverter handle_converter_;
+    ppapi::proxy::NaClMessageScanner nacl_msg_scanner_;
 
     // Data that we've queued from the plugin to send, but doesn't consist of a
     // full message yet. The calling code can break apart the message into

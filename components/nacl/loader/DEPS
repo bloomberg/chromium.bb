@@ -8,8 +8,8 @@ include_rules = [
   "+native_client/src",
   "+ppapi/c",  # header files only
 
-  # For handle conversion in nacl_ipc_adapter.cc:
-  "+ppapi/proxy/handle_converter.h",
+  # For message scanning and handle conversion in nacl_ipc_adapter.cc:
+  "+ppapi/proxy/nacl_message_scanner.h",
   "+ppapi/proxy/serialized_handle.h",
 
   # For sending PpapiHostMsg_ChannelCreated in nacl_ipc_adapter.cc:

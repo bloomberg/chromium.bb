@@ -12,8 +12,8 @@
       # This part is shared between the targets defined below.
       ['ppapi_ipc_target==1', {
         'sources': [
-          'proxy/handle_converter.cc',
-          'proxy/handle_converter.h',
+          'proxy/nacl_message_scanner.cc',
+          'proxy/nacl_message_scanner.h',
           'proxy/ppapi_messages.cc',
           'proxy/ppapi_messages.h',
           'proxy/ppapi_param_traits.cc',

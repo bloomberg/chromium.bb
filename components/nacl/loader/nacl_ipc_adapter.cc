@@ -377,10 +377,8 @@ bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
 
     typedef std::vector<ppapi::proxy::SerializedHandle> Handles;
     Handles handles;
-    scoped_ptr<IPC::Message> new_msg_ptr;
-    bool success = locked_data_.handle_converter_.ConvertNativeHandlesToPosix(
-        msg, &handles, &new_msg_ptr);
-    if (!success)
+    scoped_ptr<IPC::Message> new_msg;
+    if (!locked_data_.nacl_msg_scanner_.ScanMessage(msg, &handles, &new_msg))
       return false;
 
     // Now add any descriptors we found to rewritten_msg. |handles| is usually
@@ -459,8 +457,8 @@ bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
       if (nacl_desc.get())
         rewritten_msg->AddDescriptor(nacl_desc.release());
     }
-    if (new_msg_ptr && !handles.empty())
-      SaveMessage(*new_msg_ptr, rewritten_msg.get());
+    if (new_msg)
+      SaveMessage(*new_msg, rewritten_msg.get());
     else
       SaveMessage(msg, rewritten_msg.get());
   }
@@ -514,8 +512,7 @@ bool NaClIPCAdapter::SendCompleteMessage(const char* buffer,
 
   // We actually discard the flags and only copy the ones we care about. This
   // is just because message doesn't have a constructor that takes raw flags.
-  scoped_ptr<IPC::Message> msg(
-      new IPC::Message(header->routing, header->type));
+  scoped_ptr<IPC::Message> msg(new IPC::Message(header->routing, header->type));
   if (header->flags & IPC::Message::SYNC_BIT)
     msg->set_sync();
   if (header->flags & IPC::Message::REPLY_BIT)
@@ -533,12 +530,15 @@ bool NaClIPCAdapter::SendCompleteMessage(const char* buffer,
   // unlock for us. Holding the lock for the message construction, which is
   // just some memcpys, shouldn't be a big deal.
   lock_.AssertAcquired();
-  if (locked_data_.channel_closed_)
-    return false;  // TODO(brettw) clean up handles here when we add support!
-
-  if (msg->is_sync()) {
-    locked_data_.handle_converter_.RegisterSyncMessageForReply(*msg);
+  if (locked_data_.channel_closed_) {
+    // If we ever pass handles from the plugin to the host, we should close them
+    // here before we drop the message.
+    return false;
   }
+
+  if (msg->is_sync())
+    locked_data_.nacl_msg_scanner_.RegisterSyncMessageForReply(*msg);
+
   // Actual send must be done on the I/O thread.
   task_runner_->PostTask(FROM_HERE,
       base::Bind(&NaClIPCAdapter::SendMessageOnIOThread, this,
