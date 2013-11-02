@@ -40,6 +40,8 @@ class AppLaunchController
       public AppLaunchSigninScreen::Delegate,
       public content::NotificationObserver {
  public:
+  typedef base::Callback<bool()> CanConfigureNetworkCallback;
+
   AppLaunchController(const std::string& app_id,
                       LoginDisplayHost* host,
                       OobeDisplay* oobe_display);
@@ -56,7 +58,8 @@ class AppLaunchController
   static void SkipSplashWaitForTesting();
   static void SetNetworkTimeoutCallbackForTesting(base::Closure* callback);
   static void SetNetworkWaitForTesting(int wait_time_secs);
-  static void SetUserManagerForTesting(UserManager* user_manager);
+  static void SetCanConfigureNetworkCallbackForTesting(
+      CanConfigureNetworkCallback* can_configure_network_callback);
 
  private:
   // A class to watch app window creation.
@@ -64,10 +67,12 @@ class AppLaunchController
 
   void CleanUp();
   void OnNetworkWaitTimedout();
-  UserManager* GetUserManager();
 
   // Callback of AppWindowWatcher to notify an app window is created.
   void OnAppWindowCreated();
+
+  // Whether the network could be configured during launching.
+  bool CanConfigureNetwork();
 
   // KioskProfileLoader::Delegate overrides:
   virtual void OnProfileLoaded(Profile* profile) OVERRIDE;
@@ -118,7 +123,7 @@ class AppLaunchController
   static bool skip_splash_wait_;
   static int network_wait_time_;
   static base::Closure* network_timeout_callback_;
-  static UserManager* test_user_manager_;
+  static CanConfigureNetworkCallback* can_configure_network_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLaunchController);
 };

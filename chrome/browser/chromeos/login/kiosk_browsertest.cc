@@ -132,6 +132,29 @@ void CopyTokenService(DeviceOAuth2TokenService** out_token_service,
   *out_token_service = in_token_service;
 }
 
+// Helper functions for CanConfigureNetwork mock.
+class ScopedCanConfigureNetwork {
+ public:
+  explicit ScopedCanConfigureNetwork(bool can_configure)
+      : can_configure_(can_configure),
+        callback_(base::Bind(&ScopedCanConfigureNetwork::CanConfigureNetwork,
+                             base::Unretained(this))) {
+    AppLaunchController::SetCanConfigureNetworkCallbackForTesting(&callback_);
+  }
+  ~ScopedCanConfigureNetwork() {
+    AppLaunchController::SetCanConfigureNetworkCallbackForTesting(NULL);
+  }
+
+  bool CanConfigureNetwork() {
+    return can_configure_;
+  }
+
+ private:
+  bool can_configure_;
+  AppLaunchController::CanConfigureNetworkCallback callback_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedCanConfigureNetwork);
+};
+
 }  // namespace
 
 // Fake NetworkChangeNotifier used to simulate network connectivity.
@@ -239,7 +262,7 @@ class KioskTest : public InProcessBrowserTest {
     disable_network_notifier_.reset(NULL);
 
     AppLaunchController::SetNetworkTimeoutCallbackForTesting(NULL);
-    AppLaunchController::SetUserManagerForTesting(NULL);
+    AppLaunchSigninScreen::SetUserManagerForTesting(NULL);
 
     // If the login display is still showing, exit gracefully.
     if (LoginDisplayHostImpl::default_host()) {
@@ -414,6 +437,15 @@ class KioskTest : public InProcessBrowserTest {
     return status;
   }
 
+  void JsExpect(const std::string& expression) {
+    bool result;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        GetLoginUI()->GetWebContents(),
+        "window.domAutomationController.send(!!(" + expression + "));",
+         &result));
+    ASSERT_TRUE(result) << expression;
+  }
+
   content::WebUI* GetLoginUI() {
     return static_cast<chromeos::LoginDisplayHostImpl*>(
         chromeos::LoginDisplayHostImpl::default_host())->GetOobeUI()->web_ui();
@@ -444,15 +476,21 @@ IN_PROC_BROWSER_TEST_F(KioskTest, InstallAndLaunchApp) {
 }
 
 IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkDown) {
+  // Mock network could be configured.
+  ScopedCanConfigureNetwork can_configure_network(true);
+
   // Start app launch and wait for network connectivity timeout.
   StartAppLaunchFromLoginScreen(false);
   OobeScreenWaiter splash_waiter(OobeDisplay::SCREEN_APP_LAUNCH_SPLASH);
   splash_waiter.Wait();
   WaitForAppLaunchNetworkTimeout();
 
+  // Configure network link should be visible.
+  JsExpect("$('splash-config-network').hidden == false");
+
   // Set up fake user manager with an owner for the test.
   mock_user_manager_->SetActiveUser(kTestOwnerEmail);
-  AppLaunchController::SetUserManagerForTesting(mock_user_manager_.get());
+  AppLaunchSigninScreen::SetUserManagerForTesting(mock_user_manager_.get());
   static_cast<LoginDisplayHostImpl*>(LoginDisplayHostImpl::default_host())
       ->GetOobeUI()->ShowOobeUI(false);
 
@@ -470,6 +508,23 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkDown) {
 
   ASSERT_TRUE(GetAppLaunchController()->showing_network_dialog());
 
+  WaitForAppLaunchSuccess();
+}
+
+IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkDownConfigureNotAllowed) {
+  // Mock network could not be configured.
+  ScopedCanConfigureNetwork can_configure_network(false);
+
+  // Start app launch and wait for network connectivity timeout.
+  StartAppLaunchFromLoginScreen(false);
+  OobeScreenWaiter splash_waiter(OobeDisplay::SCREEN_APP_LAUNCH_SPLASH);
+  splash_waiter.Wait();
+  WaitForAppLaunchNetworkTimeout();
+
+  // Configure network link should not be visible.
+  JsExpect("$('splash-config-network').hidden == true");
+
+  // Network becomes online and app launch is resumed.
   WaitForAppLaunchSuccess();
 }
 

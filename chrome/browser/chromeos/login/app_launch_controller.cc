@@ -40,7 +40,8 @@ const int kAppInstallSplashScreenMinTimeMS = 3000;
 bool AppLaunchController::skip_splash_wait_ = false;
 int AppLaunchController::network_wait_time_ = 10;
 base::Closure* AppLaunchController::network_timeout_callback_ = NULL;
-UserManager* AppLaunchController::test_user_manager_ = NULL;
+AppLaunchController::CanConfigureNetworkCallback*
+    AppLaunchController::can_configure_network_callback_ = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
 // AppLaunchController::AppWindowWatcher
@@ -130,20 +131,19 @@ void AppLaunchController::SetNetworkWaitForTesting(int wait_time_secs) {
 }
 
 void AppLaunchController::SetNetworkTimeoutCallbackForTesting(
-   base::Closure* callback) {
+    base::Closure* callback) {
   network_timeout_callback_ = callback;
 }
 
-void AppLaunchController::SetUserManagerForTesting(UserManager* user_manager) {
-  test_user_manager_ = user_manager;
-  AppLaunchSigninScreen::SetUserManagerForTesting(user_manager);
+void AppLaunchController::SetCanConfigureNetworkCallbackForTesting(
+    CanConfigureNetworkCallback* can_configure_network_callback) {
+  can_configure_network_callback_ = can_configure_network_callback;
 }
 
 void AppLaunchController::OnConfigureNetwork() {
   DCHECK(profile_);
   showing_network_dialog_ = true;
-  const std::string& owner_email = GetUserManager()->GetOwnerEmail();
-  if (!owner_email.empty()) {
+  if (CanConfigureNetwork()) {
     signin_screen_->Show();
   } else {
     // If kiosk mode was configured through enterprise policy, we may
@@ -211,18 +211,28 @@ void AppLaunchController::OnNetworkWaitTimedout() {
   LOG(WARNING) << "OnNetworkWaitTimedout... connection = "
                <<  net::NetworkChangeNotifier::GetConnectionType();
   network_wait_timedout_ = true;
-  app_launch_splash_screen_actor_->ToggleNetworkConfig(true);
+
+  if (CanConfigureNetwork()) {
+    app_launch_splash_screen_actor_->ToggleNetworkConfig(true);
+  } else {
+    app_launch_splash_screen_actor_->UpdateAppLaunchState(
+        AppLaunchSplashScreenActor::APP_LAUNCH_STATE_NETWORK_WAIT_TIMEOUT);
+  }
+
   if (network_timeout_callback_)
     network_timeout_callback_->Run();
-}
-
-UserManager* AppLaunchController::GetUserManager() {
-  return test_user_manager_ ? test_user_manager_ : UserManager::Get();
 }
 
 void AppLaunchController::OnAppWindowCreated() {
   DVLOG(1) << "App window created, closing splash screen.";
   CleanUp();
+}
+
+bool AppLaunchController::CanConfigureNetwork() {
+  if (can_configure_network_callback_)
+    return can_configure_network_callback_->Run();
+
+  return !UserManager::Get()->GetOwnerEmail().empty();
 }
 
 void AppLaunchController::OnLoadingOAuthFile() {
