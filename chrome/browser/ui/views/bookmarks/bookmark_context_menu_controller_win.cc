@@ -124,7 +124,10 @@ bool BookmarkContextMenuController::ExecutePlatformCommand(int command_id,
 
         chrome::OpenAll(parent_window_, navigator, selection_,
                         NEW_FOREGROUND_TAB, profile_to_use);
-        RecordBookmarkLaunch(BOOKMARK_LAUNCH_LOCATION_CONTEXT_MENU);
+        for (size_t i = 0; i < selection_.size(); ++i) {
+          RecordBookmarkLaunch(selection_[i],
+                               BOOKMARK_LAUNCH_LOCATION_CONTEXT_MENU);
+        }
         return true;
       }
 

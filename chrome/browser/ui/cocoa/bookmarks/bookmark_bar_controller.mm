@@ -673,7 +673,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
   if (!animate)
     [self closeFolderAndStopTrackingMenus];
-  RecordBookmarkLaunch([self bookmarkLaunchLocation]);
+  RecordBookmarkLaunch(node, [self bookmarkLaunchLocation]);
 }
 
 // Common function to open a bookmark folder of any type.

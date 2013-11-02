@@ -794,7 +794,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
   }
 
   if (match.starred)
-    RecordBookmarkLaunch(BOOKMARK_LAUNCH_LOCATION_OMNIBOX);
+    RecordBookmarkLaunch(NULL, BOOKMARK_LAUNCH_LOCATION_OMNIBOX);
 }
 
 bool OmniboxEditModel::AcceptKeyword(EnteredKeywordModeMethod entered_method) {

@@ -1208,7 +1208,7 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
                     disposition_from_event_flags, browser_->profile());
   }
 
-  RecordBookmarkLaunch(GetBookmarkLaunchLocation());
+  RecordBookmarkLaunch(node, GetBookmarkLaunchLocation());
 }
 
 void BookmarkBarView::ShowContextMenuForView(views::View* source,

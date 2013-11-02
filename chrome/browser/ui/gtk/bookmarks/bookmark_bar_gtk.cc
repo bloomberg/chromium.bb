@@ -1186,7 +1186,7 @@ void BookmarkBarGtk::OnClicked(GtkWidget* sender) {
                   event_utils::DispositionForCurrentButtonPressEvent(),
                   browser_->profile());
 
-  RecordBookmarkLaunch(GetBookmarkLaunchLocation());
+  RecordBookmarkLaunch(node, GetBookmarkLaunchLocation());
 }
 
 void BookmarkBarGtk::OnButtonDragBegin(GtkWidget* button,

@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/bookmark_stats.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
@@ -138,6 +139,7 @@ void BookmarkMenuController::NavigateToMenuItem(
   const BookmarkNode* node = GetNodeFromMenuItem(menu_item);
   DCHECK(node);
   DCHECK(page_navigator_);
+  RecordBookmarkLaunch(node, BOOKMARK_LAUNCH_LOCATION_BAR_SUBFOLDER);
   page_navigator_->OpenURL(OpenURLParams(
       node->url(), content::Referrer(), disposition,
       content::PAGE_TRANSITION_AUTO_BOOKMARK, false));

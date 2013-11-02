@@ -1188,6 +1188,15 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Bookmarks.LaunchDepth">
+  <summary>
+    Logs the depth of the bookmark in the bookmark tree hiearchy every time a
+    bookmark is launched. Depth indicates how many levels below a permanent
+    bookmark folder the bookmark was found in (e.g. a bookmark immediately in
+    the bookmark bar has depth 1).
+  </summary>
+</histogram>
+
 <histogram name="Canvas.ContextType" enum="CanvasContextType">
   <summary>
     Records the context type names used to create canvas rendering contexts.

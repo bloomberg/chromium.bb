@@ -10,6 +10,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/bookmark_stats.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
@@ -119,6 +120,7 @@ void BookmarkNodeMenuModel::NavigateToMenuItem(
     WindowOpenDisposition disposition) {
   const BookmarkNode* node = node_->GetChild(index);
   DCHECK(node);
+  RecordBookmarkLaunch(node, BOOKMARK_LAUNCH_LOCATION_WRENCH_MENU);
   page_navigator_->OpenURL(OpenURLParams(
       node->url(), content::Referrer(), disposition,
       content::PAGE_TRANSITION_AUTO_BOOKMARK,

@@ -521,7 +521,7 @@ bool BookmarkManagerPrivateCanEditFunction::RunImpl() {
 }
 
 bool BookmarkManagerPrivateRecordLaunchFunction::RunImpl() {
-  RecordBookmarkLaunch(BOOKMARK_LAUNCH_LOCATION_MANAGER);
+  RecordBookmarkLaunch(NULL, BOOKMARK_LAUNCH_LOCATION_MANAGER);
   return true;
 }
 

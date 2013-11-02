@@ -139,7 +139,7 @@ void BookmarkMenuDelegate::ExecuteCommand(int id, int mouse_event_flags) {
   chrome::OpenAll(parent_->GetNativeWindow(), page_navigator_, selection,
                   ui::DispositionFromEventFlags(mouse_event_flags),
                   profile_);
-  RecordBookmarkLaunch(location_);
+  RecordBookmarkLaunch(node, location_);
 }
 
 bool BookmarkMenuDelegate::ShouldExecuteCommandWithoutClosingMenu(
