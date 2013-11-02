@@ -420,6 +420,10 @@
     # SkGraphics::Init().
     'SK_ALLOW_STATIC_GLOBAL_INITIALIZERS=0',
 
+    # Forcing the unoptimized path for the offset image filter in skia until
+    # all filters used in Blink support the optimized path properly
+    'SK_DISABLE_OFFSETIMAGEFILTER_OPTIMIZATION',
+
     # Disable this check because it is too strict for some Chromium-specific
     # subclasses of SkPixelRef. See bug: crbug.com/171776.
     'SK_DISABLE_PIXELREF_LOCKCOUNT_BALANCE_CHECK',
