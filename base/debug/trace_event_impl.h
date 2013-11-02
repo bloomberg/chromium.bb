@@ -122,10 +122,7 @@ class BASE_EXPORT TraceEvent {
 
   void Reset();
 
-  void UpdateDuration() {
-    DCHECK(duration_.ToInternalValue() == -1);
-    duration_ = TimeTicks::NowFromSystemTraceTime() - timestamp_;
-  }
+  void UpdateDuration(const TimeTicks& now);
 
   // Serialize event data to JSON
   static void AppendEventsAsJSON(const std::vector<TraceEvent>& events,
@@ -664,6 +661,13 @@ class BASE_EXPORT TraceLog {
   }
   int NextGeneration() {
     return static_cast<int>(subtle::NoBarrier_AtomicIncrement(&generation_, 1));
+  }
+
+  TimeTicks OffsetNow() const {
+    return OffsetTimestamp(TimeTicks::NowFromSystemTraceTime());
+  }
+  TimeTicks OffsetTimestamp(const TimeTicks& timestamp) const {
+    return timestamp - time_offset_;
   }
 
   // This lock protects TraceLog member accesses from arbitrary threads.

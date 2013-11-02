@@ -600,6 +600,11 @@ void TraceEvent::Reset() {
     convertable_values_[i] = NULL;
 }
 
+void TraceEvent::UpdateDuration(const TimeTicks& now) {
+  DCHECK(duration_.ToInternalValue() == -1);
+  duration_ = now - timestamp_;
+}
+
 // static
 void TraceEvent::AppendValueAsJSON(unsigned char type,
                                    TraceEvent::TraceValue value,
@@ -1062,8 +1067,7 @@ void TraceLog::ThreadLocalEventBuffer::ReportOverhead(
   CheckThisIsCurrentBuffer();
 
   event_count_++;
-  TimeTicks now =
-      TimeTicks::NowFromSystemTraceTime() - trace_log_->time_offset_;
+  TimeTicks now = trace_log_->OffsetNow();
   TimeDelta overhead = now - event_timestamp;
   if (overhead.InMicroseconds() >= kOverheadReportThresholdInMicroseconds) {
     TraceEvent* trace_event = AddTraceEvent(notifier, NULL);
@@ -1074,7 +1078,7 @@ void TraceLog::ThreadLocalEventBuffer::ReportOverhead(
           TRACE_EVENT_PHASE_COMPLETE,
           &g_category_group_enabled[g_category_trace_event_overhead],
           "overhead", 0, 0, NULL, NULL, NULL, NULL, 0);
-      trace_event->UpdateDuration();
+      trace_event->UpdateDuration(now);
     }
   }
   overhead_ += overhead;
@@ -1728,7 +1732,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
   if (flags & TRACE_EVENT_FLAG_MANGLE_ID)
     id ^= process_id_hash_;
 
-  TimeTicks now = timestamp - time_offset_;
+  TimeTicks now = OffsetTimestamp(timestamp);
   TimeTicks thread_now = ThreadNow();
 
   NotificationHelper notifier(this);
@@ -1919,10 +1923,11 @@ void TraceLog::AddTraceEventEtw(char phase,
 void TraceLog::UpdateTraceEventDuration(TraceEventHandle handle) {
   OptionalAutoLock lock(lock_);
 
+  TimeTicks now = OffsetNow();
   TraceEvent* trace_event = GetEventByHandleInternal(handle, &lock);
   if (trace_event) {
     DCHECK(trace_event->phase() == TRACE_EVENT_PHASE_COMPLETE);
-    trace_event->UpdateDuration();
+    trace_event->UpdateDuration(now);
 #if defined(OS_ANDROID)
     trace_event->SendToATrace();
 #endif
@@ -1930,9 +1935,7 @@ void TraceLog::UpdateTraceEventDuration(TraceEventHandle handle) {
 
   if (trace_options() & ECHO_TO_CONSOLE) {
     lock.EnsureAcquired();
-    OutputEventToConsoleWhileLocked(TRACE_EVENT_PHASE_END,
-                                    TimeTicks::NowFromSystemTraceTime(),
-                                    trace_event);
+    OutputEventToConsoleWhileLocked(TRACE_EVENT_PHASE_END, now, trace_event);
   }
 
   EventCallback event_callback = reinterpret_cast<EventCallback>(
@@ -1943,11 +1946,9 @@ void TraceLog::UpdateTraceEventDuration(TraceEventHandle handle) {
     TraceEvent event_copy;
     event_copy.CopyFrom(*trace_event);
     lock.EnsureReleased();
-    DCHECK(event_copy.duration().InMicroseconds() >= 0);
     // TODO(wangxianzhu): Should send TRACE_EVENT_PHASE_COMPLETE directly to
     // clients if it is beneficial and feasible.
-    event_callback(event_copy.timestamp() + event_copy.duration(),
-                   TRACE_EVENT_PHASE_END,
+    event_callback(now, TRACE_EVENT_PHASE_END,
                    event_copy.category_group_enabled(),
                    event_copy.name(), event_copy.id(),
                    0, NULL, NULL, NULL, event_copy.flags());

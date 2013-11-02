@@ -2421,5 +2421,38 @@ TEST_F(TraceEventTestFixture, EchoToConsole) {
   g_log_buffer = NULL;
 }
 
+TEST_F(TraceEventTestFixture, TimeOffset) {
+  BeginTrace();
+  // Let TraceLog timer start from 0.
+  TimeDelta time_offset = TimeTicks::NowFromSystemTraceTime() - TimeTicks();
+  TraceLog::GetInstance()->SetTimeOffset(time_offset);
+
+  {
+    TRACE_EVENT0("all", "duration1");
+    TRACE_EVENT0("all", "duration2");
+  }
+  TRACE_EVENT_BEGIN_WITH_ID_TID_AND_TIMESTAMP0(
+      "all", "with_timestamp", 0, 0,
+      TimeTicks::NowFromSystemTraceTime().ToInternalValue());
+  TRACE_EVENT_END_WITH_ID_TID_AND_TIMESTAMP0(
+      "all", "with_timestamp", 0, 0,
+      TimeTicks::NowFromSystemTraceTime().ToInternalValue());
+
+  EndTraceAndFlush();
+
+  double end_time = static_cast<double>(
+      (TimeTicks::NowFromSystemTraceTime() - time_offset).ToInternalValue());
+  double last_timestamp = 0;
+  for (size_t i = 0; i < trace_parsed_.GetSize(); ++i) {
+    const DictionaryValue* item;
+    EXPECT_TRUE(trace_parsed_.GetDictionary(i, &item));
+    double timestamp;
+    EXPECT_TRUE(item->GetDouble("ts", &timestamp));
+    EXPECT_GE(timestamp, last_timestamp);
+    EXPECT_LE(timestamp, end_time);
+    last_timestamp = timestamp;
+  }
+}
+
 }  // namespace debug
 }  // namespace base
