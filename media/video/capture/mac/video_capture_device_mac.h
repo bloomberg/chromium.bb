@@ -63,6 +63,7 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
 
   VideoCaptureCapability current_settings_;
   bool sent_frame_info_;
+  bool tried_to_square_pixels_;
 
   // Only read and write state_ from inside this loop.
   const scoped_refptr<base::MessageLoopProxy> loop_proxy_;
