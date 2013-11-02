@@ -39,11 +39,20 @@
 }
 
 - (void)hideSheet {
+  // Hide the sheet window, and any of its direct child windows, by setting the
+  // alpha to 0. This technique is used instead of -orderOut: because that may
+  // cause a Spaces change or window ordering change.
   [customWindow_ setAlphaValue:0.0];
+  for (NSWindow* window : [customWindow_ childWindows]) {
+    [window setAlphaValue:0.0];
+  }
 }
 
 - (void)unhideSheet {
   [customWindow_ setAlphaValue:1.0];
+  for (NSWindow* window : [customWindow_ childWindows]) {
+    [window setAlphaValue:1.0];
+  }
 }
 
 - (void)pulseSheet {
