@@ -278,6 +278,16 @@ struct BASE_EXPORT SystemMemoryInfoKB {
 #endif
 };
 
+// Parses a string containing the contents of /proc/meminfo
+// returns true on success or false for a parsing error
+BASE_EXPORT bool ParseProcMeminfo(const std::string& input,
+                                  SystemMemoryInfoKB* meminfo);
+
+// Parses a string containing the contents of /proc/vmstat
+// returns true on success or false for a parsing error
+BASE_EXPORT bool ParseProcVmstat(const std::string& input,
+                                 SystemMemoryInfoKB* meminfo);
+
 // Retrieves data from /proc/meminfo and /proc/vmstat
 // about system-wide memory consumption.
 // Fills in the provided |meminfo| structure. Returns true on success.

@@ -538,23 +538,13 @@ scoped_ptr<Value> SystemMemoryInfoKB::ToValue() const {
   return res.PassAs<Value>();
 }
 
-bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
-  // Synchronously reading files in /proc is safe.
-  ThreadRestrictions::ScopedAllowIO allow_io;
-
-  // Used memory is: total - free - buffers - caches
-  FilePath meminfo_file("/proc/meminfo");
-  std::string meminfo_data;
-  if (!ReadFileToString(meminfo_file, &meminfo_data)) {
-    DLOG(WARNING) << "Failed to open " << meminfo_file.value();
-    return false;
-  }
+// exposed for testing
+bool ParseProcMeminfo(const std::string& meminfo_data,
+                      SystemMemoryInfoKB* meminfo) {
   std::vector<std::string> meminfo_fields;
   SplitStringAlongWhitespace(meminfo_data, &meminfo_fields);
 
   if (meminfo_fields.size() < kMemCachedIndex) {
-    DLOG(WARNING) << "Failed to parse " << meminfo_file.value()
-                  << ".  Only found " << meminfo_fields.size() << " fields.";
     return false;
   }
 
@@ -597,7 +587,44 @@ bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
     if (meminfo_fields[i] == "Slab:")
       StringToInt(meminfo_fields[i+1], &meminfo->slab);
   }
+#endif
 
+  return true;
+}
+
+// exposed for testing
+bool ParseProcVmstat(const std::string& vmstat_data,
+                     SystemMemoryInfoKB* meminfo) {
+  std::vector<std::string> vmstat_fields;
+  SplitStringAlongWhitespace(vmstat_data, &vmstat_fields);
+  if (vmstat_fields[kVMPagesSwappedIn-1] == "pswpin")
+    StringToInt(vmstat_fields[kVMPagesSwappedIn], &meminfo->pswpin);
+  if (vmstat_fields[kVMPagesSwappedOut-1] == "pswpout")
+    StringToInt(vmstat_fields[kVMPagesSwappedOut], &meminfo->pswpout);
+  if (vmstat_fields[kVMPageMajorFaults-1] == "pgmajfault")
+    StringToInt(vmstat_fields[kVMPageMajorFaults], &meminfo->pgmajfault);
+
+  return true;
+}
+
+bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
+  // Synchronously reading files in /proc is safe.
+  ThreadRestrictions::ScopedAllowIO allow_io;
+
+  // Used memory is: total - free - buffers - caches
+  FilePath meminfo_file("/proc/meminfo");
+  std::string meminfo_data;
+  if (!ReadFileToString(meminfo_file, &meminfo_data)) {
+    DLOG(WARNING) << "Failed to open " << meminfo_file.value();
+    return false;
+  }
+
+  if (!ParseProcMeminfo(meminfo_data, meminfo)) {
+    DLOG(WARNING) << "Failed to parse " << meminfo_file.value();
+    return false;
+  }
+
+#if defined(OS_CHROMEOS)
   // Report on Chrome OS GEM object graphics memory. /var/run/debugfs_gpu is a
   // bind mount into /sys/kernel/debug and synchronously reading the in-memory
   // files in /sys is fast.
@@ -640,15 +667,10 @@ bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
     DLOG(WARNING) << "Failed to open " << vmstat_file.value();
     return false;
   }
-
-  std::vector<std::string> vmstat_fields;
-  SplitStringAlongWhitespace(vmstat_data, &vmstat_fields);
-  if (vmstat_fields[kVMPagesSwappedIn-1] == "pswpin")
-    StringToInt(vmstat_fields[kVMPagesSwappedIn], &meminfo->pswpin);
-  if (vmstat_fields[kVMPagesSwappedOut-1] == "pswpout")
-    StringToInt(vmstat_fields[kVMPagesSwappedOut], &meminfo->pswpout);
-  if (vmstat_fields[kVMPageMajorFaults-1] == "pgmajfault")
-    StringToInt(vmstat_fields[kVMPageMajorFaults], &meminfo->pgmajfault);
+  if (!ParseProcVmstat(vmstat_data, meminfo)) {
+    DLOG(WARNING) << "Failed to parse " << vmstat_file.value();
+    return false;
+  }
 
   return true;
 }
