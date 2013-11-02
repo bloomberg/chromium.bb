@@ -60,6 +60,38 @@
     "  </dict>"          \
     "</plist>"
 
+ // Mismatched key/string tag at ImagePath.
+#define MALFORMED_PHOTO1(id, guid, path, caption) \
+    "  <key>" #id "</key>"             \
+    "  <dict>"                         \
+    "    <key>MediaType</key>"         \
+    "    <string>Image</string>"       \
+    "    <key>Caption<key>"            \
+    "    <string>" caption "</string>" \
+    "    <key>GUID</key>"              \
+    "    <string>" #guid "</string>"   \
+    "    <key>ImagePath</string>"      \
+    "    <string>" path "</string>"    \
+    "    <key>ThumbPath</key>"         \
+    "    <string>" path "</string>"    \
+    "  </dict>"
+
+// Missing "<" delimiter at ImagePath.
+#define MALFORMED_PHOTO2(id, guid, path, caption) \
+    "  <key>" #id "</key>"             \
+    "  <dict>"                         \
+    "    <key>MediaType</key>"         \
+    "    <string>Image</string>"       \
+    "    <key>Caption<key>"            \
+    "    <string>" caption "</string>" \
+    "    <key>GUID</key>"              \
+    "    <string>" #guid "</string>"   \
+    "    <key>ImagePath/key>"          \
+    "    <string>" path "</string>"    \
+    "    <key>ThumbPath</key>"         \
+    "    <string>" path "</string>"    \
+    "  </dict>"
+
 namespace iphoto {
 
 namespace {
@@ -196,6 +228,61 @@ TEST_F(IPhotoLibraryParserTest, Albums) {
       SIMPLE_PHOTO(5, 5, "/dir/PhotoB2.jpg", "Photo 5")
       SIMPLE_PHOTO(6, 6, "/dir2/PhotoB1.jpg", "Photo 6")
       SIMPLE_PHOTO(7, 7, "/dir2/PhotoB2.jpg", "Photo 7")
+      IMAGE_LIST_FOOTER()
+      SIMPLE_FOOTER());
+}
+
+TEST_F(IPhotoLibraryParserTest, MalformedStructure) {
+  TestParser(
+      false,
+      SIMPLE_HEADER()
+      ALBUMS_HEADER()
+      ALBUMS_HEADER()
+      ALBUMS_FOOTER()
+      SIMPLE_FOOTER());
+
+  TestParser(
+      false,
+      SIMPLE_HEADER()
+      ALBUMS_HEADER()
+      ALBUMS_FOOTER()
+      IMAGE_LIST_HEADER()
+      IMAGE_LIST_HEADER()
+      SIMPLE_PHOTO(1, 1, "/bad.jpg", "p1")
+      IMAGE_LIST_FOOTER()
+      IMAGE_LIST_FOOTER()
+      SIMPLE_FOOTER());
+
+  TestParser(
+      false,
+      SIMPLE_HEADER()
+      ALBUMS_HEADER()
+      ALBUMS_FOOTER()
+      IMAGE_LIST_HEADER()
+      ALBUMS_HEADER()
+      SIMPLE_PHOTO(1, 1, "/bad.jpg", "p1")
+      IMAGE_LIST_FOOTER()
+      SIMPLE_FOOTER());
+}
+
+TEST_F(IPhotoLibraryParserTest, MalformedSyntax) {
+  TestParser(
+      false,
+      SIMPLE_HEADER()
+      ALBUMS_HEADER()
+      ALBUMS_FOOTER()
+      IMAGE_LIST_HEADER()
+      MALFORMED_PHOTO1(1, 1, "/bad.jpg", "p1")
+      IMAGE_LIST_FOOTER()
+      SIMPLE_FOOTER());
+
+  TestParser(
+      false,
+      SIMPLE_HEADER()
+      ALBUMS_HEADER()
+      ALBUMS_FOOTER()
+      IMAGE_LIST_HEADER()
+      MALFORMED_PHOTO2(1, 1, "/bad.jpg", "p1")
       IMAGE_LIST_FOOTER()
       SIMPLE_FOOTER());
 }

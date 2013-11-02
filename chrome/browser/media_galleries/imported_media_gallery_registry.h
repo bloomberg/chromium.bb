@@ -15,6 +15,7 @@
 
 namespace iphoto {
 class IPhotoDataProvider;
+class IPhotoDataProviderTest;
 }
 
 namespace itunes {
@@ -60,6 +61,7 @@ class ImportedMediaGalleryRegistry {
 
  private:
   friend struct base::DefaultLazyInstanceTraits<ImportedMediaGalleryRegistry>;
+  friend class iphoto::IPhotoDataProviderTest;
   friend class itunes::ITunesDataProviderTest;
   friend class picasa::PicasaDataProviderTest;
 

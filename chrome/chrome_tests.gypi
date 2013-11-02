@@ -1934,6 +1934,11 @@
             'browser/media_galleries/fileapi/picasa_data_provider_browsertest.cc',
           ],
         }],
+        ['OS=="mac"', {
+          'sources': [
+            'browser/media_galleries/fileapi/iphoto_data_provider_browsertest.cc',
+          ],
+        }],
         ['os_posix == 0 or chromeos == 1', {
           'sources!': [
             'common/time_format_browsertest.cc',

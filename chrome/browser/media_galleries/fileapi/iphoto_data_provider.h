@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/memory/weak_ptr.h"
@@ -33,13 +34,26 @@ class IPhotoDataProvider : public iapps::IAppsDataProvider {
   virtual void DoParseLibrary(const base::FilePath& library_path,
                               const ReadyCallback& ready_callback) OVERRIDE;
 
+  std::vector<std::string> GetAlbumNames() const;
+  std::map<std::string, base::FilePath> GetAlbumContents(
+      const std::string& album) const;
+  base::FilePath GetPhotoLocationInAlbum(const std::string& album,
+                                         const std::string& filename) const;
+
  private:
+
+  typedef base::hash_map<std::string, base::FilePath> FileIndex;
+  // Map from album name to a map of filename to ID.
+  typedef base::hash_map<std::string, FileIndex> DirIndex;
+
   void OnLibraryParsed(const ReadyCallback& ready_callback,
                        bool result,
                        const parser::Library& library);
 
-  // The parsed and uniquified data.
-  parser::Library library_;
+  void BuildIndices(const parser::Library& library);
+
+  // Index for library data as it is presented in the virtual FS.
+  DirIndex dir_index_;
 
   scoped_refptr<iapps::SafeIAppsLibraryParser> xml_parser_;
 
