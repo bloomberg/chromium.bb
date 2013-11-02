@@ -234,7 +234,8 @@ TEST_F(SyntheticGestureControllerNewTest, SuccessiveGestures) {
   EXPECT_EQ(0, target_ptr_->num_failure());
 }
 
-TEST_F(SyntheticGestureControllerNewTest, TwoGesturesInFlight) {
+// TODO(dominikg): Started flaking around r231819 http://crbug.com/314272
+TEST_F(SyntheticGestureControllerNewTest, DISABLED_TwoGesturesInFlight) {
   bool finished_1, finished_2;
   scoped_ptr<MockSyntheticGesture> gesture_1(
       new MockSyntheticGesture(&finished_1, 2));
