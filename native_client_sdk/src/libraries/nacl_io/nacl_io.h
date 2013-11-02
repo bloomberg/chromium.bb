@@ -99,7 +99,7 @@ void nacl_io_init_ppapi(PP_Instance instance,
  *       HTTP requests.
  *
  *   "passthroughfs": A filesystem that passes all requests through to the
- *                    underlying NaCL calls. The primary use of this filesystem
+ *                    underlying NaCl calls. The primary use of this filesystem
  *                    is to allow reading NMF resources.
  *     source: Unused.
  *     data: Unused.

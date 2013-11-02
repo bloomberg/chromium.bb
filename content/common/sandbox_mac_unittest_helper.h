@@ -60,7 +60,7 @@ class MacSandboxTest : public base::MultiProcessTest {
   // processes.
   //
   // DANGER DANGER DANGER:
-  // Additional sandbox types defined by the embedder (e.g. the NaCL sandbox)
+  // Additional sandbox types defined by the embedder (e.g. the NaCl sandbox)
   // won't be covered by these tests.
   bool RunTestInAllSandboxTypes(const char* test_name,
                                 const char* test_data);

@@ -124,7 +124,7 @@ def ParseElfHeader(path):
 
   elf_magic = '\x7fELF'
   if e_ident[:4] != elf_magic:
-    raise Error('Not a valid NaCL executable: %s' % path)
+    raise Error('Not a valid NaCl executable: %s' % path)
 
   e_machine_mapping = {
     3 : 'x86-32',

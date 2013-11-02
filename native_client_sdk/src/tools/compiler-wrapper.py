@@ -2,7 +2,7 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""NaCL gcc wrapper that presents glibc and newlib as a single
+"""NaCl gcc wrapper that presents glibc and newlib as a single
 toolchain.
 
 This wraps the newlib and glibc compilers and allows users

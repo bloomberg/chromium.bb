@@ -59,7 +59,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemFileUtil {
 
   // Creates or opens a file with the given flags.
   // See header comments for AsyncFileUtil::CreateOrOpen() for more details.
-  // This is used only by Pepper/NaCL File API.
+  // This is used only by Pepper/NaCl File API.
   virtual base::PlatformFileError CreateOrOpen(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
@@ -68,7 +68,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemFileUtil {
       bool* created) = 0;
 
   // Closes the given file handle.
-  // This is used only for Pepper/NaCL File API.
+  // This is used only for Pepper/NaCl File API.
   virtual base::PlatformFileError Close(
       FileSystemOperationContext* context,
       base::PlatformFile file) = 0;

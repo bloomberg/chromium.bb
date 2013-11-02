@@ -4,7 +4,7 @@
 
 """This is a simplified Makefile generator for single-target gyp files.
 It was originally designed for generating readable Makefiles for the
-the NaCL examples.
+the NaCl examples.
 """
 
 # pylint: disable=C0301

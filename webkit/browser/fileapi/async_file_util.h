@@ -99,7 +99,7 @@ class AsyncFileUtil {
   // PLATFORM_FILE_ERROR_FILE_EXISTS if the |url| already exists.
   //
   // FileSystemOperationImpl::OpenFile calls this.
-  // This is used only by Pepper/NaCL File API.
+  // This is used only by Pepper/NaCl File API.
   //
   virtual void CreateOrOpen(
       scoped_ptr<FileSystemOperationContext> context,
@@ -185,7 +185,7 @@ class AsyncFileUtil {
   // create a file unlike 'touch' command on Linux.
   //
   // FileSystemOperationImpl::TouchFile calls this.
-  // This is used only by Pepper/NaCL File API.
+  // This is used only by Pepper/NaCl File API.
   //
   virtual void Touch(
       scoped_ptr<FileSystemOperationContext> context,
