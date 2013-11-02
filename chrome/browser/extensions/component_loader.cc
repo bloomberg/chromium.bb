@@ -526,17 +526,24 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
       enable_prefix.length(),
       enable_prefix) == 0;
 
+  // Enable the feature on trybots.
+  bool enabled_via_trunk_build = chrome::VersionInfo::GetChannel() ==
+      chrome::VersionInfo::CHANNEL_UNKNOWN;
+
   bool enabled_via_flag =
       chrome::VersionInfo::GetChannel() !=
           chrome::VersionInfo::CHANNEL_STABLE &&
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableGoogleNowIntegration);
 
+  bool enabled =
+      enabled_via_field_trial || enabled_via_trunk_build || enabled_via_flag;
+
   bool disabled_via_flag =
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGoogleNowIntegration);
 
-  if ((enabled_via_field_trial && !disabled_via_flag) || enabled_via_flag) {
+  if (enabled && !disabled_via_flag) {
     Add(IDR_GOOGLE_NOW_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("google_now")));
   }
