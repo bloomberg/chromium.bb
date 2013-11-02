@@ -5065,6 +5065,32 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="History.FaviconsRecoveredPercentage" units="%">
+  <summary>
+    Size of the recovered Favicons database relative to the original corrupt
+    database.  Recovery is VACUUM-like, so the resulting database should always
+    be smaller.  Substantial 100% results would indicate empty databases being
+    recovered, substantial low% results would indicate very little data being
+    recovered.
+  </summary>
+</histogram>
+
+<histogram name="History.FaviconsRecoveredRowsFaviconBitmaps">
+  <summary>
+    Rows recovered from [favicon_bitmaps] table in Favicons recovery.
+  </summary>
+</histogram>
+
+<histogram name="History.FaviconsRecoveredRowsFavicons">
+  <summary>Rows recovered from [favicons] table in Favicons recovery.</summary>
+</histogram>
+
+<histogram name="History.FaviconsRecoveredRowsIconMapping">
+  <summary>
+    Rows recovered from [icon_mapping] table in Favicons recovery.
+  </summary>
+</histogram>
+
 <histogram name="History.FaviconsRecovery" enum="HistoryFaviconsRecoveryEnum">
   <summary>
     Track results of SQLite database recovery code in thumbnail_database.cc.

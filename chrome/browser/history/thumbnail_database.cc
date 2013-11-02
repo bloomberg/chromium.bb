@@ -383,6 +383,13 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
   // TODO(shess): Reset back after?
   db->reset_error_callback();
 
+  // For histogram purposes.
+  size_t favicons_rows_recovered = 0;
+  size_t favicon_bitmaps_rows_recovered = 0;
+  size_t icon_mapping_rows_recovered = 0;
+  int64 original_size = 0;
+  file_util::GetFileSize(db_path, &original_size);
+
   scoped_ptr<sql::Recovery> recovery = sql::Recovery::Begin(db, db_path);
   if (!recovery) {
     // TODO(shess): Unable to create recovery connection.  This
@@ -604,6 +611,30 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
   // collection.
 
   ignore_result(sql::Recovery::Recovered(recovery.Pass()));
+
+  // Track the size of the recovered database relative to the size of
+  // the input database.  The size should almost always be smaller,
+  // unless the input database was empty to start with.  If the
+  // percentage results are very low, something is awry.
+  int64 final_size = 0;
+  if (original_size > 0 &&
+      file_util::GetFileSize(db_path, &final_size) &&
+      final_size > 0) {
+    int percentage = static_cast<int>(original_size * 100 / final_size);
+    UMA_HISTOGRAM_PERCENTAGE("History.FaviconsRecoveredPercentage",
+                             std::max(100, percentage));
+  }
+
+  // Using 10,000 because these cases mostly care about "none
+  // recovered" and "lots recovered".  More than 10,000 rows recovered
+  // probably means there's something wrong with the profile.
+  UMA_HISTOGRAM_COUNTS_10000("History.FaviconsRecoveredRowsFavicons",
+                             favicons_rows_recovered);
+  UMA_HISTOGRAM_COUNTS_10000("History.FaviconsRecoveredRowsFaviconBitmaps",
+                             favicon_bitmaps_rows_recovered);
+  UMA_HISTOGRAM_COUNTS_10000("History.FaviconsRecoveredRowsIconMapping",
+                             icon_mapping_rows_recovered);
+
   if (version == 6) {
     RecordRecoveryEvent(RECOVERY_EVENT_RECOVERED_VERSION6);
   } else {
@@ -630,16 +661,11 @@ void DatabaseErrorCallback(sql::Connection* db,
   }
 
   // Attempt to recover corrupt databases.
-  // TODO(shess): Remove the channel restriction once it becomes clear
-  // that the recovery code fails gracefully.
-  if (channel != chrome::VersionInfo::CHANNEL_STABLE &&
-      channel != chrome::VersionInfo::CHANNEL_BETA) {
-    int error = (extended_error & 0xFF);
-    if (error == SQLITE_CORRUPT ||
-        error == SQLITE_CANTOPEN ||
-        error == SQLITE_NOTADB) {
-      RecoverDatabaseOrRaze(db, db_path);
-    }
+  int error = (extended_error & 0xFF);
+  if (error == SQLITE_CORRUPT ||
+      error == SQLITE_CANTOPEN ||
+      error == SQLITE_NOTADB) {
+    RecoverDatabaseOrRaze(db, db_path);
   }
 
   // The default handling is to assert on debug and to ignore on release.
