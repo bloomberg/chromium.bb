@@ -255,10 +255,17 @@ void RenderWidget::ScreenMetricsEmulator::Apply(
     float overdraw_bottom_height, gfx::Rect resizer_rect, bool is_fullscreen) {
   if (fit_to_view_) {
     DCHECK(!original_size_.IsEmpty());
+
+    // TODO(pfeldman): pass gutter_width along with the fit_to_view flag.
+    int gutter_width = 10;
+    int width_with_gutter =
+        std::max(original_size_.width() - 2 * gutter_width, 1);
+    int height_with_gutter =
+        std::max(original_size_.height() - 2 * gutter_width, 1);
     float width_ratio =
-        static_cast<float>(widget_rect_.width()) / original_size_.width();
+        static_cast<float>(widget_rect_.width()) / width_with_gutter;
     float height_ratio =
-        static_cast<float>(widget_rect_.height()) / original_size_.height();
+        static_cast<float>(widget_rect_.height()) / height_with_gutter;
     float ratio = std::max(1.0f, std::max(width_ratio, height_ratio));
     scale_ = 1.f / ratio;
   } else {
@@ -313,8 +320,12 @@ void RenderWidget::ScreenMetricsEmulator::OnUpdateScreenRectsMessage(
 
 void RenderWidget::ScreenMetricsEmulator::OnShowContextMenu(
     ContextMenuParams* params) {
+  // TODO(pfeldman): pass gutter_width along with the fit_to_view flag.
+  int gutter_width = 10;
   params->x *= scale_;
+  params->x += gutter_width;
   params->y *= scale_;
+  params->y += gutter_width;
 }
 
 // RenderWidget ---------------------------------------------------------------
