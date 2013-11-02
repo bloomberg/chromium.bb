@@ -5,15 +5,12 @@
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/supports_user_data.h"
 #include "base/task_runner.h"
 #include "chrome/browser/safe_browsing/download_feedback.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_item.h"
 
@@ -22,20 +19,6 @@ namespace safe_browsing {
 namespace {
 
 const void* kPingKey = &kPingKey;
-
-bool IsEnabled() {
-  CommandLine* cmdline = CommandLine::ForCurrentProcess();
-  if (cmdline->HasSwitch(switches::kSbEnableDownloadFeedback))
-    return true;
-
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_UNKNOWN ||
-      channel == chrome::VersionInfo::CHANNEL_CANARY ||
-      channel == chrome::VersionInfo::CHANNEL_DEV)
-    return true;
-
-  return false;
-}
 
 class DownloadFeedbackPings : public base::SupportsUserData::Data {
  public:
@@ -108,8 +91,8 @@ void DownloadFeedbackService::MaybeStorePingsForDownload(
     content::DownloadItem* download,
     const std::string& ping,
     const std::string& response) {
-  if (!IsEnabled() || !(result == DownloadProtectionService::UNCOMMON ||
-                        result == DownloadProtectionService::DANGEROUS_HOST))
+  if (result != DownloadProtectionService::UNCOMMON &&
+      result != DownloadProtectionService::DANGEROUS_HOST)
     return;
   UMA_HISTOGRAM_COUNTS("SBDownloadFeedback.SizeEligibleKB",
                        download->GetReceivedBytes() / 1024);
@@ -140,9 +123,9 @@ bool DownloadFeedbackService::GetPingsForDownloadForTesting(
 }
 
 // static
-void DownloadFeedbackService::RecordFeedbackButtonShown(
+void DownloadFeedbackService::RecordEligibleDownloadShown(
     content::DownloadDangerType danger_type) {
-  UMA_HISTOGRAM_ENUMERATION("SBDownloadFeedback.Shown",
+  UMA_HISTOGRAM_ENUMERATION("SBDownloadFeedback.Eligible",
                             danger_type,
                             content::DOWNLOAD_DANGER_TYPE_MAX);
 }

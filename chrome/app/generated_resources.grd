@@ -2010,6 +2010,10 @@ Even if you have downloaded files from this website before, the website might ha
                  desc="Download context menu: Discard malicious download">
           &amp;Discard
         </message>
+        <message name="IDS_DOWNLOAD_MENU_REPORT"
+                 desc="Download context menu: option to upload a malicious file to Google for analysis">
+          &amp;Report to Google
+        </message>
         <message name="IDS_DOWNLOAD_MENU_KEEP"
                  desc="Download context menu: Keep malicious download">
           &amp;Keep
@@ -2059,6 +2063,10 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_DOWNLOAD_MENU_KEEP"
                  desc="In Title Case: Download context menu: Keep malicious download">
           &amp;Keep
+        </message>
+        <message name="IDS_DOWNLOAD_MENU_REPORT"
+                 desc="In Title Case: Download context menu: option to upload a malicious file to Google for analysis">
+          &amp;Report to Google
         </message>
         <message name="IDS_DOWNLOAD_MENU_LEARN_MORE_SCANNING"
                  desc="In Title Case: Download context menu: Show information about download scanning">

@@ -15679,7 +15679,17 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SBDownloadFeedback.Eligible" enum="DownloadItem.DangerType">
+  <summary>
+    Count of times eligible download notifications are shown. Broken down by
+    danger type.
+  </summary>
+</histogram>
+
 <histogram name="SBDownloadFeedback.Shown" enum="DownloadItem.DangerType">
+  <obsolete>
+    Starting with M32, replaced by SBDownloadFeedback.Eligible.
+  </obsolete>
   <summary>
     Count of times download feedback button has been shown, broken down by
     danger type.

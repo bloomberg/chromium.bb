@@ -540,17 +540,17 @@ void DownloadItemView::ButtonPressed(views::Button* sender,
     return;
   }
 
+  // WARNING: all end states after this point delete |this|.
   DCHECK_EQ(discard_button_, sender);
-  if (model_.ShouldAllowDownloadFeedback() && BeginDownloadFeedback())
-    return;
   if (model_.IsMalicious()) {
     UMA_HISTOGRAM_LONG_TIMES("clickjacking.dismiss_download", warning_duration);
     shelf_->RemoveDownloadView(this);
-  } else {
-    UMA_HISTOGRAM_LONG_TIMES("clickjacking.discard_download", warning_duration);
-    download()->Remove();
+    return;
   }
-  // WARNING: |this| has been deleted!
+  if (model_.ShouldAllowDownloadFeedback() && BeginDownloadFeedback())
+    return;
+  UMA_HISTOGRAM_LONG_TIMES("clickjacking.discard_download", warning_duration);
+  download()->Remove();
 }
 
 void DownloadItemView::AnimationProgressed(const gfx::Animation* animation) {
@@ -1086,6 +1086,10 @@ void DownloadItemView::ClearWarningDialog() {
 void DownloadItemView::ShowWarningDialog() {
   DCHECK(mode_ != DANGEROUS_MODE && mode_ != MALICIOUS_MODE);
   time_download_warning_shown_ = base::Time::Now();
+  if (model_.ShouldAllowDownloadFeedback()) {
+    safe_browsing::DownloadFeedbackService::RecordEligibleDownloadShown(
+        download()->GetDangerType());
+  }
   mode_ = model_.MightBeMalicious() ? MALICIOUS_MODE : DANGEROUS_MODE;
 
   body_state_ = NORMAL;
@@ -1098,11 +1102,8 @@ void DownloadItemView::ShowWarningDialog() {
   }
   int discard_button_message = model_.IsMalicious() ?
       IDS_DISMISS_DOWNLOAD : IDS_DISCARD_DOWNLOAD;
-  if (model_.ShouldAllowDownloadFeedback()) {
-    safe_browsing::DownloadFeedbackService::RecordFeedbackButtonShown(
-        download()->GetDangerType());
+  if (!model_.IsMalicious() && model_.ShouldAllowDownloadFeedback())
     discard_button_message = IDS_REPORT_AND_DISCARD_DOWNLOAD;
-  }
   discard_button_ = new views::LabelButton(
       this, l10n_util::GetStringUTF16(discard_button_message));
   discard_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);

@@ -59,7 +59,7 @@ class DownloadFeedbackService : public base::NonThreadSafe {
       std::string* response);
 
   // Records histogram for download feedback option shown to user.
-  static void RecordFeedbackButtonShown(
+  static void RecordEligibleDownloadShown(
       content::DownloadDangerType danger_type);
 
   // Begin download feedback for |download|. The |download| will be deleted

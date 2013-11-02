@@ -10,7 +10,6 @@
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -25,7 +24,6 @@
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/signature_util.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/test/mock_download_item.h"
@@ -158,8 +156,6 @@ class DownloadProtectionServiceTest : public testing::Test {
   }
   virtual void SetUp() {
     content::RenderProcessHost::SetRunRendererInProcess(true);
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kSbEnableDownloadFeedback);
     // Start real threads for the IO and File threads so that the DCHECKs
     // to test that we're on the correct thread work.
     sb_service_ = new StrictMock<FakeSafeBrowsingService>();

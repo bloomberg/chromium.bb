@@ -4,13 +4,11 @@
 
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
 
-#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/safe_browsing/download_feedback.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -141,8 +139,6 @@ class DownloadFeedbackServiceTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kSbEnableDownloadFeedback);
     DownloadFeedback::RegisterFactory(&download_feedback_factory_);
   }
 
