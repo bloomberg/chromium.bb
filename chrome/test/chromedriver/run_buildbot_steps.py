@@ -226,6 +226,8 @@ def _MaybeRelease(platform):
 
   # Release the first candidate build that passed Android, if any.
   for candidate in candidates:
+    if not candidate.startswith('chromedriver_%s' % platform):
+      continue
     revision = candidate.split('.')[2]
     android_result = _RevisionState(android_test_results, int(revision))
     if android_result == 'failed':
