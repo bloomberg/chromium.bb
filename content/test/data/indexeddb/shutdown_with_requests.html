@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<!--
+  Copyright 2013 The Chromium Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file.
+-->
+<head>
+<title>IndexedDB shutdown test</title>
+<script type="text/javascript" src="common.js"></script>
+<script>
+function populate()
+{
+  debug('Populating object store');
+  var db = event.target.result;
+  var store = db.createObjectStore('store');
+  for (var i = 0; i < 10000; ++i) {
+    store.put({id: i, rand: Math.random()}, i);
+  }
+  store.createIndex('idx', 'rand');
+  done();
+}
+
+function test() {
+  indexedDBTest(populate);
+}
+</script>
+</head>
+<body onLoad="test()">
+<div id="status">Starting...</div>
+</body>
+</html>
