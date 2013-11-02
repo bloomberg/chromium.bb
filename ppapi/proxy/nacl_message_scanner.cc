@@ -32,7 +32,9 @@ struct ScanningResults {
   // be less than or equal to handles.size(). After the scan it should be equal.
   int handle_index;
   // The rewritten message. This may be NULL, so all ScanParam overloads should
-  // check for NULL before writing to it.
+  // check for NULL before writing to it. In some cases, a ScanParam overload
+  // may set this to NULL when it can determine that there are no parameters
+  // that need conversion. (See the ResourceMessageReplyParams overload.)
   scoped_ptr<IPC::Message> new_msg;
 };
 
@@ -67,11 +69,7 @@ void HandleWriter(int* handle_index,
 void ScanParam(const ppapi::proxy::SerializedVar& var,
                ScanningResults* results) {
   std::vector<ppapi::proxy::SerializedHandle*> var_handles = var.GetHandles();
-  // TODO(bbudge) Remove this early out, since a subsequent SerializedVar may
-  // contain handles, and we will have dropped this one's data.
-  if (var_handles.empty())
-    return;
-
+  // Copy any handles and then rewrite the message.
   for (size_t i = 0; i < var_handles.size(); ++i)
     results->handles.push_back(*var_handles[i]);
   if (results->new_msg)
@@ -86,6 +84,15 @@ void ScanParam(const ppapi::proxy::SerializedVar& var,
 //       ResourceMessageReplyParams, so that's the only one we need to handle.
 void ScanParam(const ppapi::proxy::ResourceMessageReplyParams& params,
                ScanningResults* results) {
+  // If the resource reply params don't contain handles, NULL the new message
+  // pointer to cancel further rewriting.
+  // NOTE: This works because only handles currently need rewriting, and we
+  //       know at this point that this message has none.
+  if (params.handles().empty()) {
+    results->new_msg.reset(NULL);
+    return;
+  }
+
   // If we need to rewrite the message, write everything before the handles
   // (there's nothing after the handles).
   if (results->new_msg) {
@@ -230,8 +237,11 @@ bool NaClMessageScanner::ScanMessage(
       (msg.type() == PpapiMsg_CreateNaClChannel::ID);
 #endif
 
+
   // We can't always tell from the message ID if rewriting is needed. Therefore,
-  // scan any message types that might contain a handle.
+  // scan any message types that might contain a handle. If we later determine
+  // that there are no handles, we can cancel the rewriting by clearing the
+  // results.new_msg pointer.
   ScanningResults results;
   switch (msg.type()) {
     CASE_FOR_MESSAGE(PpapiMsg_CreateNaClChannel)
