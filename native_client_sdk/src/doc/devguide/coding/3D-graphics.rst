@@ -70,8 +70,8 @@ Check for extensions and capabilities
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Not every GPU supports every extension or has the same amount of texture units,
-vertex attributes, etc. On startup, call ``glGetString(GLEXTENSIONS)`` and check
-for the extensions and the features you need. For example:
+vertex attributes, etc. On startup, call ``glGetString(GL_EXTENSIONS)`` and
+check for the extensions and the features you need. For example:
 
 * If you are using non power-of-2 texture with mipmaps, make sure
   ``GL_OES_texture_npot`` exists.
@@ -83,6 +83,27 @@ for the extensions and the features you need. For example:
   extensions ``EXT_texture_compression_dxt1``,
   ``GL_CHROMIUM_texture_compression_dxt3``, and
   ``GL_CHROMIUM_texture_compression_dxt5`` exist.
+
+* If you are using the functions ``glDrawArraysInstancedANGLE``,
+  ``glDrawElementsInstancedANGLE``, ``glVertexAttribDivisorANGLE``, or the PPAPI
+  interface ``PPB_OpenGLES2InstancedArrays``, make sure the corresponding
+  extension ``GL_ANGLE_instanced_arrays`` exists.
+
+* If you are using the function ``glRenderbufferStorageMultisampleEXT``, or the
+  PPAPI interface ``PPB_OpenGLES2FramebufferMultisample``, make sure the
+  corresponding extension ``GL_CHROMIUM_framebuffer_multisample`` exists.
+
+* If you are using the functions ``glGenQueriesEXT``, ``glDeleteQueriesEXT``,
+  ``glIsQueryEXT``, ``glBeginQueryEXT``, ``glEndQueryEXT``, ``glGetQueryivEXT``,
+  ``glGetQueryObjectuivEXT``, or the PPAPI interface ``PPB_OpenGLES2Query``,
+  make sure the corresponding extension ``GL_EXT_occlusion_query_boolean``
+  exists.
+
+* If you are using the functions ``glMapBufferSubDataCHROMIUM``,
+  ``glUnmapBufferSubDataCHROMIUM``, ``glMapTexSubImage2DCHROMIUM``,
+  ``glUnmapTexSubImage2DCHROMIUM``, or the PPAPI interface
+  ``PPB_OpenGLES2ChromiumMapSub``, make sure the corresponding extension
+  ``GL_CHROMIUM_map_sub`` exists.
 
 Check for system capabilites with ``glGetIntegerv`` and adjust shader programs
 as well as texture and vertex data accordingly:
