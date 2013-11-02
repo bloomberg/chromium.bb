@@ -209,9 +209,7 @@ class ShellWindowObserver : public apps::ShellWindowRegistry::Observer {
   DISALLOW_COPY_AND_ASSIGN(ShellWindowObserver);
 };
 
-class KioskTest : public InProcessBrowserTest,
-                  // Param defining is multi-profiles enabled.
-                  public testing::WithParamInterface<bool> {
+class KioskTest : public InProcessBrowserTest {
  public:
   KioskTest() {
     set_exit_when_last_browser_closes(false);
@@ -256,9 +254,6 @@ class KioskTest : public InProcessBrowserTest,
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    if (GetParam())
-      command_line->AppendSwitch(::switches::kMultiProfiles);
-
     command_line->AppendSwitch(chromeos::switches::kLoginManager);
     command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
     command_line->AppendSwitch(
@@ -443,12 +438,12 @@ class KioskTest : public InProcessBrowserTest,
   scoped_ptr<MockUserManager> mock_user_manager_;
 };
 
-IN_PROC_BROWSER_TEST_P(KioskTest, InstallAndLaunchApp) {
+IN_PROC_BROWSER_TEST_F(KioskTest, InstallAndLaunchApp) {
   StartAppLaunchFromLoginScreen(true);
   WaitForAppLaunchSuccess();
 }
 
-IN_PROC_BROWSER_TEST_P(KioskTest, LaunchAppNetworkDown) {
+IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkDown) {
   // Start app launch and wait for network connectivity timeout.
   StartAppLaunchFromLoginScreen(false);
   OobeScreenWaiter splash_waiter(OobeDisplay::SCREEN_APP_LAUNCH_SPLASH);
@@ -478,7 +473,7 @@ IN_PROC_BROWSER_TEST_P(KioskTest, LaunchAppNetworkDown) {
   WaitForAppLaunchSuccess();
 }
 
-IN_PROC_BROWSER_TEST_P(KioskTest, LaunchAppUserCancel) {
+IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppUserCancel) {
   StartAppLaunchFromLoginScreen(false);
   OobeScreenWaiter splash_waiter(OobeDisplay::SCREEN_APP_LAUNCH_SPLASH);
   splash_waiter.Wait();
@@ -495,7 +490,7 @@ IN_PROC_BROWSER_TEST_P(KioskTest, LaunchAppUserCancel) {
             chromeos::KioskAppLaunchError::Get());
 }
 
-IN_PROC_BROWSER_TEST_P(KioskTest, AutolaunchWarningCancel) {
+IN_PROC_BROWSER_TEST_F(KioskTest, AutolaunchWarningCancel) {
   EnableConsumerKioskMode();
   // Start UI, find menu entry for this app and launch it.
   chromeos::WizardController::SkipPostLoginScreensForTesting();
@@ -524,7 +519,7 @@ IN_PROC_BROWSER_TEST_P(KioskTest, AutolaunchWarningCancel) {
   EXPECT_FALSE(KioskAppManager::Get()->IsAutoLaunchEnabled());
 }
 
-IN_PROC_BROWSER_TEST_P(KioskTest, AutolaunchWarningConfirm) {
+IN_PROC_BROWSER_TEST_F(KioskTest, AutolaunchWarningConfirm) {
   EnableConsumerKioskMode();
   // Start UI, find menu entry for this app and launch it.
   chromeos::WizardController::SkipPostLoginScreensForTesting();
@@ -556,7 +551,7 @@ IN_PROC_BROWSER_TEST_P(KioskTest, AutolaunchWarningConfirm) {
   WaitForAppLaunchSuccess();
 }
 
-IN_PROC_BROWSER_TEST_P(KioskTest, KioskEnableCancel) {
+IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableCancel) {
   chromeos::WizardController::SkipPostLoginScreensForTesting();
   chromeos::WizardController* wizard_controller =
       chromeos::WizardController::default_controller();
@@ -592,7 +587,7 @@ IN_PROC_BROWSER_TEST_P(KioskTest, KioskEnableCancel) {
             GetConsumerKioskModeStatus());
 }
 
-IN_PROC_BROWSER_TEST_P(KioskTest, KioskEnableConfirmed) {
+IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableConfirmed) {
   // Start UI, find menu entry for this app and launch it.
   chromeos::WizardController::SkipPostLoginScreensForTesting();
   chromeos::WizardController* wizard_controller =
@@ -628,7 +623,7 @@ IN_PROC_BROWSER_TEST_P(KioskTest, KioskEnableConfirmed) {
             GetConsumerKioskModeStatus());
 }
 
-IN_PROC_BROWSER_TEST_P(KioskTest, KioskEnableAbortedWithAutoEnrollment) {
+IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAbortedWithAutoEnrollment) {
   // Fake an auto enrollment is going to be enforced.
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kEnterpriseEnrollmentInitialModulus, "1");
@@ -664,8 +659,6 @@ IN_PROC_BROWSER_TEST_P(KioskTest, KioskEnableAbortedWithAutoEnrollment) {
       runner->QuitClosure());
   runner->Run();
 }
-
-INSTANTIATE_TEST_CASE_P(KioskTestInstantiation, KioskTest, testing::Bool());
 
 class KioskEnterpriseTest : public KioskTest {
  protected:
@@ -724,7 +717,8 @@ class KioskEnterpriseTest : public KioskTest {
   DISALLOW_COPY_AND_ASSIGN(KioskEnterpriseTest);
 };
 
-IN_PROC_BROWSER_TEST_P(KioskEnterpriseTest, EnterpriseKioskApp) {
+// Disabled due to failures; http://crbug.com/306611.
+IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, DISABLED_EnterpriseKioskApp) {
   chromeos::WizardController::SkipPostLoginScreensForTesting();
   chromeos::WizardController* wizard_controller =
       chromeos::WizardController::default_controller();
@@ -771,11 +765,6 @@ IN_PROC_BROWSER_TEST_P(KioskEnterpriseTest, EnterpriseKioskApp) {
   window->GetBaseWindow()->Close();
   content::RunAllPendingInMessageLoop();
 }
-
-// Disabled due to failures; http://crbug.com/306611.
-INSTANTIATE_TEST_CASE_P(DISABLED_KioskEnterpriseTestInstantiation,
-                        KioskEnterpriseTest,
-                        testing::Bool());
 
 // Specialized test fixture for testing kiosk mode on the
 // hidden WebUI initialization flow for slow hardware.
@@ -826,7 +815,7 @@ class KioskHiddenWebUITest : public KioskTest,
   DISALLOW_COPY_AND_ASSIGN(KioskHiddenWebUITest);
 };
 
-IN_PROC_BROWSER_TEST_P(KioskHiddenWebUITest, AutolaunchWarning) {
+IN_PROC_BROWSER_TEST_F(KioskHiddenWebUITest, AutolaunchWarning) {
   // Add a device owner.
   FakeUserManager* user_manager = new FakeUserManager();
   user_manager->AddUser(kTestOwnerEmail);
@@ -853,9 +842,5 @@ IN_PROC_BROWSER_TEST_P(KioskHiddenWebUITest, AutolaunchWarning) {
   WaitForWallpaper();
   EXPECT_TRUE(wallpaper_loaded());
 }
-
-INSTANTIATE_TEST_CASE_P(KioskHiddenWebUITestInstantiation,
-                        KioskHiddenWebUITest,
-                        testing::Bool());
 
 }  // namespace chromeos
