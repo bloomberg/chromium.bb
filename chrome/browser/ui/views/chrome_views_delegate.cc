@@ -294,9 +294,7 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
 #endif
 }
 
-#if !defined(OS_CHROMEOS)
 base::TimeDelta
 ChromeViewsDelegate::GetDefaultTextfieldObscuredRevealDuration() {
   return base::TimeDelta();
 }
-#endif
