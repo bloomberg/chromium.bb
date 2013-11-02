@@ -4,8 +4,6 @@
 
 #import "ui/message_center/cocoa/settings_entry_view.h"
 
-#include <algorithm>
-
 #include "base/strings/sys_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "skia/ext/skia_utils_mac.h"
