@@ -355,8 +355,6 @@ ExtensionService::ExtensionService(Profile* profile,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
                  content::NotificationService::AllBrowserContextsAndSources());
   pref_change_registrar_.Init(profile->GetPrefs());
@@ -2497,27 +2495,29 @@ void ExtensionService::Observe(int type,
       if (!profile_->IsSameProfile(host_profile->GetOriginalProfile()))
           break;
 
+      if (process_map_.Contains(process->GetID())) {
+        // An extension process was terminated, this might have resulted in an
+        // app or extension becoming idle.
+        std::set<std::string> extension_ids =
+            process_map_.GetExtensionsInProcess(process->GetID());
+        for (std::set<std::string>::const_iterator it = extension_ids.begin();
+             it != extension_ids.end(); ++it) {
+          if (delayed_installs_.Contains(*it)) {
+            base::MessageLoop::current()->PostDelayedTask(
+                FROM_HERE,
+                base::Bind(&ExtensionService::MaybeFinishDelayedInstallation,
+                           AsWeakPtr(), *it),
+                base::TimeDelta::FromSeconds(kUpdateIdleDelay));
+          }
+        }
+      }
+
       process_map_.RemoveAllFromProcess(process->GetID());
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::Bind(&ExtensionInfoMap::UnregisterAllExtensionsInProcess,
                      system_->info_map(),
                      process->GetID()));
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
-      extensions::ExtensionHost* host =
-          content::Details<extensions::ExtensionHost>(details).ptr();
-      std::string extension_id = host->extension_id();
-      if (delayed_installs_.Contains(extension_id)) {
-        // We were waiting for this extension to become idle, it now might have,
-        // so maybe finish installation.
-        base::MessageLoop::current()->PostDelayedTask(
-            FROM_HERE,
-            base::Bind(&ExtensionService::MaybeFinishDelayedInstallation,
-                       AsWeakPtr(), extension_id),
-            base::TimeDelta::FromSeconds(kUpdateIdleDelay));
-      }
       break;
     }
     case chrome::NOTIFICATION_UPGRADE_RECOMMENDED: {
@@ -2641,6 +2641,13 @@ bool ExtensionService::IsExtensionIdle(const std::string& extension_id) const {
       process_manager->GetBackgroundHostForExtension(extension_id);
   if (host)
     return false;
+
+  content::SiteInstance* site_instance = process_manager->GetSiteInstanceForURL(
+      Extension::GetBaseURLFromExtensionId(extension_id));
+  if (site_instance && site_instance->HasProcess()) {
+    return false;
+  }
+
   return process_manager->GetRenderViewHostsForExtension(extension_id).empty();
 }
 

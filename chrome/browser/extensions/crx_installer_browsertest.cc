@@ -4,6 +4,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/download/download_crx_util.h"
+#include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
@@ -19,6 +20,7 @@
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/test/download_test_observer.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/switches.h"
@@ -208,29 +210,6 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
             mock_prompt->extension_id());
     ASSERT_TRUE(permissions.get());
   }
-
-  // Creates and returns a popup ExtensionHost for an extension and waits
-  // for a url to load in the host's web contents.
-  // The caller is responsible for cleaning up the returned ExtensionHost.
-  ExtensionHost* OpenUrlInExtensionPopupHost(const Extension* extension,
-                                             const GURL& url) {
-    ExtensionSystem* extension_system = extensions::ExtensionSystem::Get(
-        browser()->profile());
-    ExtensionProcessManager* epm = extension_system->process_manager();
-    ExtensionHost* extension_host =
-        epm->CreatePopupHost(extension, url, browser());
-
-    extension_host->CreateRenderViewSoon();
-    if (!extension_host->IsRenderViewLive()) {
-      content::WindowedNotificationObserver observer(
-          content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-          content::Source<content::WebContents>(
-              extension_host->host_contents()));
-      observer.Wait();
-    }
-
-    return extension_host;
-  }
 };
 
 #if defined(OS_CHROMEOS)
@@ -419,10 +398,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
 
   // Make test extension non-idle by opening the extension's browser action
   // popup. This should cause the installation to be delayed.
-  std::string popup_url = std::string("chrome-extension://")
-      + extension_id + std::string("/popup.html");
-  scoped_ptr<ExtensionHost> extension_host = scoped_ptr<ExtensionHost>(
-      OpenUrlInExtensionPopupHost(extension, GURL(popup_url)));
+  content::WindowedNotificationObserver loading_observer(
+      chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+      content::Source<Profile>(profile()));
+  BrowserActionTestUtil util(browser());
+  // There is only one extension, so just click the first browser action.
+  ASSERT_EQ(1, util.NumberOfBrowserActions());
+  util.Press(0);
+  loading_observer.Wait();
+  ExtensionHost* extension_host =
+      content::Details<ExtensionHost>(loading_observer.details()).ptr();
 
   // Install version 2 of the extension and check that it is indeed delayed.
   ASSERT_TRUE(UpdateExtensionWaitForIdle(
@@ -432,10 +417,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   extension = service->GetExtensionById(extension_id, false);
   ASSERT_EQ("1.0", extension->version()->GetString());
 
-  // Make the extension idle again by navigating away from the extension's
-  // browser action page. This should not trigger the delayed install.
-  extension_system->process_manager()->UnregisterRenderViewHost(
-      extension_host->render_view_host());
+  // Make the extension idle again by closing the popup. This should not trigger
+  //the delayed install.
+  content::WindowedNotificationObserver terminated_observer(
+      content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+      content::Source<content::RenderProcessHost>(
+          extension_host->render_process_host()));
+  extension_host->render_view_host()->ClosePage();
+  terminated_observer.Wait();
   ASSERT_EQ(1u, service->delayed_installs()->size());
 
   // Install version 3 of the extension. Because the extension is idle,
