@@ -22,6 +22,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/safe_browsing/malware_details.h"
@@ -111,6 +112,7 @@ base::LazyInstance<SafeBrowsingBlockingPage::UnsafeResourceMap>
     g_unsafe_resource_map = LAZY_INSTANCE_INITIALIZER;
 
 // These are the conditions for the summer 2013 Finch experiment.
+// TODO(felt): Get rid of these now that experiment has ended.
 const char kMalwareStudyName[] = "InterstitialMalware310";
 const char kPhishingStudyName[] = "InterstitialPhishing564";
 const char kCond7MalwareFearMsg[] = "cond7MalwareFearMsg";
@@ -121,6 +123,26 @@ const char kCond11MalwareQuestion[] = "cond11MalwareQuestion";
 const char kCond12PhishingQuestion[] = "cond12PhishingQuestion";
 const char kCond13MalwareGoBack[] = "cond13MalwareGoBack";
 const char kCond14PhishingGoBack[] = "cond14PhishingGoBack";
+
+// This enum is used for a histogram.  Don't reorder, delete, or insert
+// elements.  New elements should be added before MAX_ACTION only.
+enum DetailedDecision {
+  MALWARE_SHOW_NEW_SITE = 0,
+  MALWARE_PROCEED_NEW_SITE,
+  MALWARE_SHOW_CROSS_SITE,
+  MALWARE_PROCEED_CROSS_SITE,
+  PHISHING_SHOW_NEW_SITE,
+  PHISHING_PROCEED_NEW_SITE,
+  PHISHING_SHOW_CROSS_SITE,
+  PHISHING_PROCEED_CROSS_SITE,
+  MAX_DETAILED_ACTION
+};
+
+void RecordDetailedUserAction(DetailedDecision decision) {
+  UMA_HISTOGRAM_ENUMERATION("SB2.InterstitialActionDetails",
+                            decision,
+                            MAX_DETAILED_ACTION);
+}
 
 }  // namespace
 
@@ -179,7 +201,8 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
       proceeded_(false),
       web_contents_(web_contents),
       url_(unsafe_resources[0].url),
-      has_expanded_see_more_section_(false) {
+      has_expanded_see_more_section_(false),
+      num_visits_(-1) {
   bool malware = false;
   bool phishing = false;
   for (UnsafeResourceList::const_iterator iter = unsafe_resources_.begin();
@@ -202,7 +225,19 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
     interstitial_type_ = TYPE_MALWARE;
   else
     interstitial_type_ = TYPE_PHISHING;
+
   RecordUserAction(SHOW);
+  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+          Profile::EXPLICIT_ACCESS);
+  if (history_service) {
+    history_service->GetVisibleVisitCountToHost(
+        url_,
+        &request_consumer_,
+        base::Bind(&SafeBrowsingBlockingPage::OnGotHistoryCount,
+                  base::Unretained(this)));
+  }
+
   if (!is_main_frame_load_blocked_) {
     navigation_entry_index_to_remove_ =
         web_contents->GetController().GetLastCommittedEntryIndex();
@@ -483,6 +518,14 @@ void SafeBrowsingBlockingPage::OnDontProceed() {
   }
 }
 
+void SafeBrowsingBlockingPage::OnGotHistoryCount(HistoryService::Handle handle,
+                                                 bool success,
+                                                 int num_visits,
+                                                 base::Time first_visit) {
+  if (success)
+    num_visits_ = num_visits;
+}
+
 void SafeBrowsingBlockingPage::RecordUserAction(BlockingPageEvent event) {
   // This enum is used for a histogram.  Don't reorder, delete, or insert
   // elements.  New elements should be added before MAX_ACTION only.
@@ -582,8 +625,27 @@ void SafeBrowsingBlockingPage::RecordUserAction(BlockingPageEvent event) {
                               MAX_ACTION);
   }
 
-  // TODO(mattm): now that we've added the histogram above, should we remove
-  // this old user metric at some future point?
+  if (event == PROCEED || event == DONT_PROCEED) {
+    if (num_visits_ == 0 && interstitial_type_ != TYPE_MALWARE_AND_PHISHING) {
+      RecordDetailedUserAction((interstitial_type_ == TYPE_MALWARE) ?
+                               MALWARE_SHOW_NEW_SITE : PHISHING_SHOW_NEW_SITE);
+      if (event == PROCEED) {
+        RecordDetailedUserAction((interstitial_type_ == TYPE_MALWARE) ?
+            MALWARE_PROCEED_NEW_SITE : PHISHING_PROCEED_NEW_SITE);
+      }
+    }
+    if (unsafe_resources_[0].is_subresource &&
+        interstitial_type_ != TYPE_MALWARE_AND_PHISHING) {
+      RecordDetailedUserAction((interstitial_type_ == TYPE_MALWARE) ?
+          MALWARE_SHOW_CROSS_SITE : PHISHING_SHOW_CROSS_SITE);
+      if (event == PROCEED) {
+        RecordDetailedUserAction((interstitial_type_ == TYPE_MALWARE) ?
+            MALWARE_PROCEED_CROSS_SITE : PHISHING_PROCEED_CROSS_SITE);
+      }
+    }
+  }
+
+  // TODO(felt): Get rid of the old interstitial histogram.
   std::string action = "SBInterstitial";
   switch (interstitial_type_) {
     case TYPE_MALWARE_AND_PHISHING:
@@ -952,7 +1014,7 @@ std::string SafeBrowsingBlockingPageV2::GetHTMLContents() {
   }
 
   if (unsafe_resources_.size() > 1) {
-    // TODO(mattm): Implement new multi-threat interstitial and remove
+    // TODO(felt): Implement new multi-threat interstitial and remove
     // SafeBrowsingBlockingPageV1 entirely.  (http://crbug.com/160336)
     NOTREACHED();
   } else {

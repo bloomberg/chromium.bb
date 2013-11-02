@@ -15116,6 +15116,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SB2.InterstitialActionDetails"
+    enum="SB2InterstitialActionDetails">
+  <summary>
+    Tracks the click-through rate for specific cases of the interstitial.
+  </summary>
+</histogram>
+
 <histogram name="SB2.MalwareInterstitialTimeClosed" units="milliseconds">
   <summary>
     The time between when we show the SafeBrowsing malware interstitial and the
@@ -26984,6 +26991,17 @@ other types of suffix sets.
   <int value="12" label="MALWARE_SHOW_ADVANCED"/>
   <int value="13" label="MULTIPLE_SHOW_ADVANCED"/>
   <int value="14" label="PHISHING_SHOW_ADVANCED"/>
+</enum>
+
+<enum name="SB2InterstitialActionDetails" type="int">
+  <int value="0" label="MALWARE_SHOW_NEW_SITE"/>
+  <int value="1" label="MALWARE_PROCEED_NEW_SITE"/>
+  <int value="2" label="MALWARE_SHOW_CROSS_SITE"/>
+  <int value="3" label="MALWARE_PROCEED_CROSS_SITE"/>
+  <int value="4" label="PHISHING_SHOW_NEW_SITE"/>
+  <int value="5" label="PHISHING_PROCEED_NEW_SITE"/>
+  <int value="6" label="PHISHING_SHOW_CROSS_SITE"/>
+  <int value="7" label="PHISHING_PROCEED_CROSS_SITE"/>
 </enum>
 
 <enum name="SB2PrefixSetEvent" type="int">

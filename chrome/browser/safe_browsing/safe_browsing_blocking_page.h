@@ -34,6 +34,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
+#include "chrome/browser/history/history_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "url/gurl.h"
@@ -117,6 +118,12 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   // Records a user action for this interstitial, using the form
   // SBInterstitial[Phishing|Malware|Multiple][Show|Proceed|DontProceed].
   void RecordUserAction(BlockingPageEvent event);
+
+  // Used to query the HistoryService to see if the URL is in history. For UMA.
+  void OnGotHistoryCount(HistoryService::Handle handle,
+                         bool success,
+                         int num_visits,
+                         base::Time first_visit);
 
   // Records the time it took for the user to react to the
   // interstitial.  We won't double-count if this method is called
@@ -204,6 +211,10 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   // Usefull for tests, so they can provide their own implementation of
   // SafeBrowsingBlockingPage.
   static SafeBrowsingBlockingPageFactory* factory_;
+
+  // How many times is this same URL in history? Used for histogramming.
+  int num_visits_;
+  CancelableRequestConsumer request_consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPage);
 };
