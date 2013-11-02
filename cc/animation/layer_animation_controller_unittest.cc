@@ -92,7 +92,7 @@ TEST(LayerAnimationControllerTest, DoNotClobberStartTimes) {
                                           Animation::Opacity)->start_time());
 }
 
-TEST(LayerAnimationControllerTest, SyncPauseAndResume) {
+TEST(LayerAnimationControllerTest, SyncPause) {
   FakeLayerAnimationValueObserver dummy_impl;
   scoped_refptr<LayerAnimationController> controller_impl(
       LayerAnimationController::Create(0));
@@ -106,6 +106,7 @@ TEST(LayerAnimationControllerTest, SyncPauseAndResume) {
 
   AddOpacityTransitionToController(controller.get(), 1, 0, 1, false);
   int group_id = controller->GetAnimation(Animation::Opacity)->group();
+  int animation_id = controller->GetAnimation(Animation::Opacity)->id();
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
 
@@ -128,7 +129,7 @@ TEST(LayerAnimationControllerTest, SyncPauseAndResume) {
                                      Animation::Opacity)->run_state());
 
   // Pause the main-thread animation.
-  controller->SuspendAnimations(1.0);
+  controller->PauseAnimation(animation_id, 1.0);
   EXPECT_EQ(Animation::Paused,
             controller->GetAnimation(group_id,
                                      Animation::Opacity)->run_state());

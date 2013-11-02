@@ -213,10 +213,6 @@ void WebLayerImpl::pauseAnimation(int animation_id, double time_offset) {
   layer_->PauseAnimation(animation_id, time_offset);
 }
 
-void WebLayerImpl::suspendAnimations(double monotonic_time) {
-  layer_->SuspendAnimations(monotonic_time);
-}
-
 bool WebLayerImpl::hasActiveAnimation() { return layer_->HasActiveAnimation(); }
 
 void WebLayerImpl::setForceRenderSurface(bool force_render_surface) {

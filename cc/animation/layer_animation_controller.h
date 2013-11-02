@@ -44,7 +44,6 @@ class CC_EXPORT LayerAnimationController
   virtual void RemoveAnimation(int animation_id);
   virtual void RemoveAnimation(int animation_id,
                                Animation::TargetProperty target_property);
-  virtual void SuspendAnimations(double monotonic_time);
 
   // Ensures that the list of active animations on the main thread and the impl
   // thread are kept in sync. This function does not take ownership of the impl

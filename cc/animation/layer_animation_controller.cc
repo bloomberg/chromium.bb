@@ -92,14 +92,6 @@ void LayerAnimationController::RemoveAnimation(
   UpdateActivation(NormalActivation);
 }
 
-// For testing only.
-void LayerAnimationController::SuspendAnimations(double monotonic_time) {
-  for (size_t i = 0; i < active_animations_.size(); ++i) {
-    if (!active_animations_[i]->is_finished())
-      active_animations_[i]->SetRunState(Animation::Paused, monotonic_time);
-  }
-}
-
 // Ensures that the list of active animations on the main thread and the impl
 // thread are kept in sync.
 void LayerAnimationController::PushAnimationUpdatesTo(

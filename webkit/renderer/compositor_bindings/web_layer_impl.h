@@ -93,7 +93,6 @@ class WebLayerImpl : public WebKit::WebLayer, public cc::LayerClient {
   virtual void removeAnimation(int animation_id,
                                WebKit::WebAnimation::TargetProperty);
   virtual void pauseAnimation(int animation_id, double time_offset);
-  virtual void suspendAnimations(double monotonic_time);
   virtual bool hasActiveAnimation();
   virtual void setForceRenderSurface(bool force);
   virtual void setScrollPosition(WebKit::WebPoint position);
