@@ -80,7 +80,9 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
 
     NotifierSettingsProvider* provider_;  // Weak.
     const scoped_ptr<Notifier> notifier_;
-    views::ImageView* icon_view_;
+    // |icon_view_| is owned by us because sometimes we don't leave it
+    // in the view hierarchy.
+    scoped_ptr<views::ImageView> icon_view_;
     views::Label* name_view_;
     views::Checkbox* checkbox_;
     views::ImageButton* learn_more_;

@@ -303,6 +303,10 @@ NotifierSettingsView::NotifierButton::NotifierButton(
   DCHECK(provider);
   DCHECK(notifier);
 
+  // Since there may never be an icon (but that could change at a later time),
+  // we own the icon view here.
+  icon_view_->set_owned_by_client();
+
   checkbox_->SetChecked(notifier_->enabled);
   checkbox_->set_listener(this);
   checkbox_->set_focusable(false);
@@ -344,7 +348,8 @@ NotifierSettingsView::NotifierButton::NotifierButton(
   UpdateIconImage(notifier_->icon);
 }
 
-NotifierSettingsView::NotifierButton::~NotifierButton() {}
+NotifierSettingsView::NotifierButton::~NotifierButton() {
+}
 
 void NotifierSettingsView::NotifierButton::UpdateIconImage(
     const gfx::Image& icon) {
@@ -460,7 +465,7 @@ void NotifierSettingsView::NotifierButton::GridChanged(bool has_learn_more,
   layout->StartRow(0, 0);
   layout->AddView(checkbox_);
   if (has_icon_view)
-    layout->AddView(icon_view_);
+    layout->AddView(icon_view_.get());
   layout->AddView(name_view_);
   if (has_learn_more)
     layout->AddView(learn_more_);
