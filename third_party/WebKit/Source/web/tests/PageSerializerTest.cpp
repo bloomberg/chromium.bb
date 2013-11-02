@@ -169,7 +169,7 @@ protected:
     {
         const SerializedResource* resource = getResource(url, mimeType);
         if (resource)
-            return String(resource->data->data());
+            return String(resource->data->data(), resource->data->size());
         return String();
     }
 
