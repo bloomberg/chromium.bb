@@ -76,7 +76,8 @@ class Manifest {
            location == EXTERNAL_REGISTRY ||
            location == EXTERNAL_PREF_DOWNLOAD ||
            location == EXTERNAL_POLICY ||
-           location == EXTERNAL_POLICY_DOWNLOAD;
+           location == EXTERNAL_POLICY_DOWNLOAD ||
+           location == EXTERNAL_COMPONENT;
   }
 
   // Whether the |location| is unpacked (no CRX) or not.
@@ -94,7 +95,9 @@ class Manifest {
   // Whether the |location| is a source of extensions force-installed through
   // policy.
   static inline bool IsPolicyLocation(Location location) {
-    return location == EXTERNAL_POLICY || location == EXTERNAL_POLICY_DOWNLOAD;
+    return location == EXTERNAL_POLICY ||
+           location == EXTERNAL_POLICY_DOWNLOAD ||
+           location == EXTERNAL_COMPONENT;
   }
 
   // Unpacked extensions start off with file access since they are a developer
