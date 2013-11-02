@@ -97,8 +97,10 @@ void BrowserStatusMonitor::UpdateAppItemState(
     content::WebContents* contents,
     ChromeLauncherController::AppState app_state) {
   DCHECK(contents);
-  if (launcher_controller_->IsBrowserFromActiveUser(
-          chrome::FindBrowserWithWebContents(contents)))
+  // It is possible to come here from Browser::SwapTabContent where the contents
+  // cannot be associated with a browser.
+  Browser* browser = chrome::FindBrowserWithWebContents(contents);
+  if (browser && launcher_controller_->IsBrowserFromActiveUser(browser))
     launcher_controller_->UpdateAppState(contents, app_state);
 }
 

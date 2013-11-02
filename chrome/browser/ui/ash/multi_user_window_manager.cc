@@ -15,6 +15,7 @@
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -31,9 +32,53 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/events/event.h"
 
 namespace {
 chrome::MultiUserWindowManager* g_instance = NULL;
+
+
+// Checks if a given event is a user event.
+bool IsUserEvent(ui::Event* e) {
+  if (e) {
+    ui::EventType type = e->type();
+    if (type != ui::ET_CANCEL_MODE &&
+        type != ui::ET_UMA_DATA &&
+        type != ui::ET_UNKNOWN)
+      return true;
+  }
+  return false;
+}
+
+// Test if we are currently processing a user event which might lead to a
+// browser / app creation.
+bool IsProcessingUserEvent() {
+  // When there is a nested message loop (e.g. active menu or drag and drop
+  // operation) - we are in a nested loop and can ignore this.
+  // Note: Unit tests might not have a message loop.
+  base::MessageLoop* message_loop = base::MessageLoop::current();
+  if (message_loop && message_loop->is_running() && message_loop->IsNested())
+    return false;
+
+  // TODO(skuhne): "Open link in new window" will come here after the menu got
+  // closed, executing the command from the nested menu loop. However at that
+  // time there is no active event processed. A solution for that need to be
+  // found past M-32. A global event handler filter (pre and post) might fix
+  // that problem in conjunction with a depth counter - but - for the menu
+  // execution we come here after the loop was finished (so it's not nested
+  // anymore) and the root window should therefore still have the event which
+  // lead to the menu invocation, but it is not. By fixing that problem this
+  // would "magically work".
+  ash::Shell::RootWindowList root_window_list = ash::Shell::GetAllRootWindows();
+  for (ash::Shell::RootWindowList::iterator it = root_window_list.begin();
+       it != root_window_list.end();
+       ++it) {
+    if (IsUserEvent((*it)->current_event()))
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 namespace chrome {
@@ -174,15 +219,23 @@ void MultiUserWindowManager::SetWindowOwner(aura::Window* window,
   DCHECK(GetWindowOwner(window).empty());
   window_to_entry_[window] = new WindowEntry(user_id);
 
+  // Remember the initial visibility of the window.
+  window_to_entry_[window]->set_show(window->IsVisible());
+
   // Set the window and the state observer.
   window->AddObserver(this);
   ash::wm::GetWindowState(window)->AddObserver(this);
+
+  // Check if this window was created due to a user interaction. If it was,
+  // transfer it to the current user.
+  if (IsProcessingUserEvent())
+    window_to_entry_[window]->set_show_for_user(current_user_id_);
 
   // Add all transient children to our set of windows. Note that the function
   // will add the children but not the owner to the transient children map.
   AddTransientOwnerRecursive(window, window);
 
-  if (user_id != current_user_id_)
+  if (!IsWindowOnDesktopOfUser(window, current_user_id_))
     SetWindowVisibility(window, false);
 }
 
@@ -212,10 +265,13 @@ void MultiUserWindowManager::ShowWindowForUser(aura::Window* window,
   it->second->set_show_for_user(user_id);
 
   // Show the window if the added user is the current one.
-  if (user_id == current_user_id_)
-    SetWindowVisibility(window, true);
-  else
+  if (user_id == current_user_id_) {
+    // Only show the window if it should be shown according to its state.
+    if (it->second->show())
+      SetWindowVisibility(window, true);
+  } else {
     SetWindowVisibility(window, false);
+  }
 }
 
 bool MultiUserWindowManager::AreWindowsSharedAmongUsers() {
@@ -501,10 +557,13 @@ void MultiUserWindowManager::SetWindowVisibility(
   // suppressing any window entry changes while this is going on.
   base::AutoReset<bool> suppressor(&suppress_visibility_changes_, true);
 
-  if (visible)
+  if (visible) {
     ShowWithTransientChildrenRecursive(window);
-  else
+  } else {
+    if (window->HasFocus())
+      window->Blur();
     window->Hide();
+  }
 }
 
 void MultiUserWindowManager::ShowWithTransientChildrenRecursive(

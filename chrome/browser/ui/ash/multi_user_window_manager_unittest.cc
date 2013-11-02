@@ -473,5 +473,40 @@ TEST_F(MultiUserWindowManagerTest, TransientWindows) {
   window(7)->RemoveTransientChild(window(9));
 }
 
+// Test that the initial visibility state gets remembered.
+TEST_F(MultiUserWindowManagerTest, PreserveInitialVisibility) {
+  SetUpForThisManyWindows(4);
+
+  // Set our initial show state before we assign an owner.
+  window(0)->Show();
+  window(1)->Hide();
+  window(2)->Show();
+  window(3)->Hide();
+  EXPECT_EQ("S[], H[], S[], H[]", GetStatus());
+
+  // First test: The show state gets preserved upon user switch.
+  multi_user_window_manager()->SetWindowOwner(window(0), "A");
+  multi_user_window_manager()->SetWindowOwner(window(1), "A");
+  multi_user_window_manager()->SetWindowOwner(window(2), "B");
+  multi_user_window_manager()->SetWindowOwner(window(3), "B");
+  EXPECT_EQ("S[A], H[A], H[B], H[B]", GetStatus());
+  multi_user_window_manager()->ActiveUserChanged("B");
+  EXPECT_EQ("H[A], H[A], S[B], H[B]", GetStatus());
+  multi_user_window_manager()->ActiveUserChanged("A");
+  EXPECT_EQ("S[A], H[A], H[B], H[B]", GetStatus());
+
+  // Second test: Transferring the window to another desktop preserves the
+  // show state.
+  multi_user_window_manager()->ShowWindowForUser(window(0), "B");
+  multi_user_window_manager()->ShowWindowForUser(window(1), "B");
+  multi_user_window_manager()->ShowWindowForUser(window(2), "A");
+  multi_user_window_manager()->ShowWindowForUser(window(3), "A");
+  EXPECT_EQ("H[A,B], H[A,B], S[B,A], H[B,A]", GetStatus());
+  multi_user_window_manager()->ActiveUserChanged("B");
+  EXPECT_EQ("S[A,B], H[A,B], H[B,A], H[B,A]", GetStatus());
+  multi_user_window_manager()->ActiveUserChanged("A");
+  EXPECT_EQ("H[A,B], H[A,B], S[B,A], H[B,A]", GetStatus());
+}
+
 }  // namespace test
 }  // namespace ash
