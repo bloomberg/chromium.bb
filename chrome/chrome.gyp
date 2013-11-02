@@ -703,40 +703,6 @@
     ['OS!="mac" and OS!="ios"', {
       'targets': [
         {
-          'target_name': 'convert_dict',
-          'type': 'executable',
-          'variables': { 'enable_wexit_time_destructors': 1, },
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../base/base.gyp:base_i18n',
-            'convert_dict_lib',
-            '../third_party/hunspell/hunspell.gyp:hunspell',
-          ],
-          'sources': [
-            'tools/convert_dict/convert_dict.cc',
-          ],
-        },
-        {
-          'target_name': 'convert_dict_lib',
-          'product_name': 'convert_dict',
-          'type': 'static_library',
-          'variables': { 'enable_wexit_time_destructors': 1, },
-          'include_dirs': [
-            '..',
-          ],
-          'dependencies': [
-            '../base/base.gyp:base',
-          ],
-          'sources': [
-            'tools/convert_dict/aff_reader.cc',
-            'tools/convert_dict/aff_reader.h',
-            'tools/convert_dict/dic_reader.cc',
-            'tools/convert_dict/dic_reader.h',
-            'tools/convert_dict/hunspell_reader.cc',
-            'tools/convert_dict/hunspell_reader.h',
-          ],
-        },
-        {
           'target_name': 'flush_cache',
           'type': 'executable',
           'dependencies': [

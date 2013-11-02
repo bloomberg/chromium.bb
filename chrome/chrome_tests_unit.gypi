@@ -2447,10 +2447,10 @@
         }],
         ['OS!="mac" and OS!="ios"', {
           'dependencies': [
+            '../third_party/hunspell/hunspell.gyp:hunspell',
             'chrome_resources.gyp:packed_extra_resources',
             'chrome_resources.gyp:packed_resources',
-            'convert_dict_lib',
-            '../third_party/hunspell/hunspell.gyp:hunspell',
+            'tools/convert_dict/convert_dict.gyp:convert_dict_lib',
           ],
         }],
         ['OS!="win" and OS!="mac"', {
