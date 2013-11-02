@@ -288,11 +288,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // (i.e. as part of the instance initialization process).
   void SetPersistSessionCookies(bool persist_session_cookies);
 
-  // Enables the new garbage collection algorithm where domain cookie eviction
-  // uses cookie priorities to decide which cookies to purge and which to keep.
-  void SetPriorityAwareGarbageCollection(
-      bool priority_aware_garbage_collection);
-
   // Debugging method to perform various validation checks on the map.
   // Currently just checking that there are no null CanonicalCookie pointers
   // in the map.
@@ -680,7 +675,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   bool keep_expired_cookies_;
   bool persist_session_cookies_;
-  bool priority_aware_garbage_collection_;
 
   // Static setting for whether or not file scheme cookies are allows when
   // a new CookieMonster is created, or the accepted schemes on a CookieMonster

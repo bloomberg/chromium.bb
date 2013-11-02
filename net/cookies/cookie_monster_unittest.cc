@@ -572,7 +572,6 @@ class CookieMonsterTest : public CookieStoreTest<CookieMonsterTestTraits> {
     DCHECK_EQ(70U, CookieMonster::kDomainCookiesQuotaHigh);
 
     scoped_refptr<CookieMonster> cm(new CookieMonster(NULL, NULL));
-    cm->SetPriorityAwareGarbageCollection(true);
 
     // Each test case adds 181 cookies, so 31 cookies are evicted.
     // Cookie same priority, repeated for each priority.

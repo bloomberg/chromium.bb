@@ -330,8 +330,7 @@ CookieMonster::CookieMonster(PersistentCookieStore* store, Delegate* delegate)
       delegate_(delegate),
       last_statistic_record_time_(Time::Now()),
       keep_expired_cookies_(false),
-      persist_session_cookies_(false),
-      priority_aware_garbage_collection_(false) {
+      persist_session_cookies_(false) {
   InitializeHistograms();
   SetDefaultCookieableSchemes();
 }
@@ -347,8 +346,7 @@ CookieMonster::CookieMonster(PersistentCookieStore* store,
       delegate_(delegate),
       last_statistic_record_time_(base::Time::Now()),
       keep_expired_cookies_(false),
-      persist_session_cookies_(false),
-      priority_aware_garbage_collection_(false) {
+      persist_session_cookies_(false) {
   InitializeHistograms();
   SetDefaultCookieableSchemes();
 }
@@ -1419,13 +1417,6 @@ void CookieMonster::SetPersistSessionCookies(bool persist_session_cookies) {
   persist_session_cookies_ = persist_session_cookies;
 }
 
-// This function must be called before the CookieMonster is used.
-void CookieMonster::SetPriorityAwareGarbageCollection(
-    bool priority_aware_garbage_collection) {
-  DCHECK(!initialized_);
-  priority_aware_garbage_collection_ = priority_aware_garbage_collection;
-}
-
 void CookieMonster::SetForceKeepSessionState() {
   if (store_.get()) {
     store_->SetForceKeepSessionState();
@@ -1967,11 +1958,6 @@ int CookieMonster::GarbageCollect(const Time& current,
       CookieItVector::iterator it_purge_begin = it_bdd[0];
       for (int i = 0; i < 3 && purge_goal > 0; ++i) {
         accumulated_quota += quota[i];
-
-        // If we are not using priority, only do Round 3. This reproduces the
-        // old way of indiscriminately purging least-recently accessed cookies.
-        if (!priority_aware_garbage_collection_ && i < 2)
-          continue;
 
         size_t num_considered = it_bdd[i + 1] - it_purge_begin;
         if (num_considered <= accumulated_quota)
