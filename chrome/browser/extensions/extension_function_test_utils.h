@@ -73,6 +73,10 @@ scoped_refptr<extensions::Extension> CreateExtension(
 scoped_refptr<extensions::Extension> CreateExtension(
     base::DictionaryValue* test_extension_value);
 
+scoped_refptr<extensions::Extension> CreateExtension(
+    extensions::Manifest::Location location,
+    base::DictionaryValue* test_extension_value);
+
 // Returns true if |val| contains privacy information, e.g. url,
 // title, and faviconUrl.
 bool HasPrivacySensitiveFields(base::DictionaryValue* val);
