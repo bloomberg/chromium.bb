@@ -407,6 +407,12 @@ TEST(WTF_PartitionAlloc, GenericAlloc)
     // Check that the realloc copied correctly.
     char* newCharPtr = static_cast<char*>(newPtr);
     EXPECT_EQ(*newCharPtr, 'A');
+#ifndef NDEBUG
+    // Subtle: this checks for an old bug where we copied too much from the
+    // source of the realloc. The condition can be detected by a trashing of
+    // the uninitialized value in the space of the upsized allocation.
+    EXPECT_EQ(WTF::kUninitializedByte, static_cast<unsigned char>(*(newCharPtr + WTF::QuantizedAllocation::kMinRounding)));
+#endif
     *newCharPtr = 'B';
     // The realloc moved. To check that the old allocation was freed, we can
     // do an alloc of the old allocation size and check that the old allocation

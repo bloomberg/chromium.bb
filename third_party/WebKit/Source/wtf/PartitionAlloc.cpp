@@ -462,7 +462,7 @@ void* partitionReallocGeneric(PartitionRoot* root, void* ptr, size_t newSize)
     }
 
     size_t allocSize = QuantizedAllocation::quantizedSize(newSize);
-    allocSize = partitionCookieSizeAdjust(allocSize);
+    allocSize = partitionCookieSizeAdjustAdd(allocSize);
     size_t newIndex = allocSize >> kBucketShift;
     if (newIndex > root->numBuckets)
         newIndex = root->numBuckets;
@@ -476,9 +476,9 @@ void* partitionReallocGeneric(PartitionRoot* root, void* ptr, size_t newSize)
     }
     // This realloc cannot be resized in-place. Sadness.
     void* ret = partitionAllocGeneric(root, newSize);
-    size_t oldSize = oldIndex << kBucketShift;
-    size_t copySize = oldSize;
-    if (newSize < oldSize)
+    size_t copySize = oldIndex << kBucketShift;
+    copySize = partitionCookieSizeAdjustSubtract(copySize);
+    if (newSize < copySize)
         copySize = newSize;
     memcpy(ret, ptr, copySize);
     partitionFreeGeneric(root, ptr);

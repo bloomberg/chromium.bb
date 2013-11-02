@@ -233,11 +233,20 @@ ALWAYS_INLINE PartitionFreelistEntry* partitionFreelistMask(PartitionFreelistEnt
     return reinterpret_cast<PartitionFreelistEntry*>(masked);
 }
 
-ALWAYS_INLINE size_t partitionCookieSizeAdjust(size_t size)
+ALWAYS_INLINE size_t partitionCookieSizeAdjustAdd(size_t size)
 {
 #ifndef NDEBUG
     // Add space for cookies.
     size += 2 * sizeof(uintptr_t);
+#endif
+    return size;
+}
+
+ALWAYS_INLINE size_t partitionCookieSizeAdjustSubtract(size_t size)
+{
+#ifndef NDEBUG
+    // Remove space for cookies.
+    size -= 2 * sizeof(uintptr_t);
 #endif
     return size;
 }
@@ -257,7 +266,7 @@ ALWAYS_INLINE size_t partitionBucketSize(const PartitionBucket* bucket)
     size_t index = bucket - &root->buckets()[0];
     size_t size;
     if (UNLIKELY(index == kInternalMetadataBucket))
-        size = partitionCookieSizeAdjust(sizeof(PartitionFreepagelistEntry));
+        size = partitionCookieSizeAdjustAdd(sizeof(PartitionFreepagelistEntry));
     else
         size = index << kBucketShift;
     return size;
@@ -345,7 +354,7 @@ ALWAYS_INLINE void* partitionAlloc(PartitionRoot* root, size_t size)
     RELEASE_ASSERT(result);
     return result;
 #else
-    size = partitionCookieSizeAdjust(size);
+    size = partitionCookieSizeAdjustAdd(size);
     ASSERT(root->initialized);
     size_t index = size >> kBucketShift;
     ASSERT(index < root->numBuckets);
@@ -399,7 +408,7 @@ ALWAYS_INLINE void* partitionAllocGeneric(PartitionRoot* root, size_t size)
 #else
     ASSERT(root->initialized);
     size = QuantizedAllocation::quantizedSize(size);
-    size_t realSize = partitionCookieSizeAdjust(size);
+    size_t realSize = partitionCookieSizeAdjustAdd(size);
     if (LIKELY(realSize <= root->maxAllocation)) {
         spinLockLock(&root->lock);
         void* ret = partitionAlloc(root, size);
