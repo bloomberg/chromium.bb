@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -41,7 +42,8 @@ class WebUILoginView;
 // It encapsulates controllers, background integration and flow.
 class LoginDisplayHostImpl : public LoginDisplayHost,
                              public content::NotificationObserver,
-                             public content::WebContentsObserver {
+                             public content::WebContentsObserver,
+                             public chromeos::SessionManagerClient::Observer {
  public:
   explicit LoginDisplayHostImpl(const gfx::Rect& background_bounds);
   virtual ~LoginDisplayHostImpl();
@@ -102,6 +104,9 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   // Overridden from content::WebContentsObserver:
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
+
+  // Overridden from chromeos::SessionManagerClient::Observer:
+  virtual void EmitLoginPromptVisibleCalled() OVERRIDE;
 
  private:
   // Way to restore if renderer have crashed.
@@ -164,6 +169,20 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   // Notifies the interested parties of the auto enrollment check result.
   void NotifyAutoEnrollmentCheckResult(bool should_auto_enroll);
+
+  // Tries to play startup sound. If sound can't be played right now,
+  // for instance, because cras server is not initialized, playback
+  // will be delayed. When |honor_spoken_feedback| is true, sound will
+  // be reproduced iff spoken feedback is enabled.
+  void TryToPlayStartupSound(bool honor_spoken_feedback);
+
+  // Called when login-prompt-visible signal is caught.
+  void OnLoginPromptVisible();
+
+  // Asks ChromeOSSoundsManager to play startup sound.  If
+  // |startup_sound_at_signin_| is true, sound will be played iff
+  // spoken feedback is enabled.
+  void PlayStartupSound();
 
   // Used to calculate position of the screens and background.
   gfx::Rect background_bounds_;
@@ -269,6 +288,22 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   FinalizeAnimationType finalize_animation_type_;
 
   base::WeakPtrFactory<LoginDisplayHostImpl> animation_weak_ptr_factory_;
+
+  // Time when login prompt visible signal is received. Used for
+  // calculations of delay before startup sound.
+  base::TimeTicks login_prompt_visible_time_;
+
+  // True when startup sound is requested.
+  bool startup_sound_requested_;
+
+  // True when request to play startup sound was sent to
+  // SoundsManager.
+  bool startup_sound_played_;
+
+  // When true, startup sound should be played only when spoken
+  // feedback is enabled.  Otherwise, startup sound should be played
+  // in any case.
+  bool startup_sound_honors_spoken_feedback_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostImpl);
 };

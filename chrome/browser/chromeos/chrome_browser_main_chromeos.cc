@@ -99,6 +99,7 @@
 #include "content/public/browser/power_save_blocker.h"
 #include "content/public/common/main_function_params.h"
 #include "grit/platform_locale_settings.h"
+#include "media/audio/sounds/sounds_manager.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -501,6 +502,8 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
         new default_app_order::ExternalLoader(true /* async */));
   }
 
+  media::SoundsManager::Create();
+
   // Initialize magnification manager before ash tray is created. And this must
   // be placed after UserManager::SessionStarted();
   AccessibilityManager::Initialize();
@@ -725,6 +728,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   MagnificationManager::Shutdown();
   AccessibilityManager::Shutdown();
+
+  media::SoundsManager::Shutdown();
+
   system::StatisticsProvider::GetInstance()->Shutdown();
 
   // Let the UserManager and WallpaperManager unregister itself as an observer

@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_performer.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
@@ -44,6 +45,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
+#include "media/audio/sounds/sounds_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -133,6 +135,11 @@ class ScreenLockObserver : public chromeos::SessionManagerClient::Observer,
   DISALLOW_COPY_AND_ASSIGN(ScreenLockObserver);
 };
 
+void PlaySound(media::SoundsManager::Sound sound) {
+  if (chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled())
+    media::SoundsManager::Get()->Play(sound);
+}
+
 static base::LazyInstance<ScreenLockObserver> g_screen_lock_observer =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -155,6 +162,10 @@ ScreenLocker::ScreenLocker(const UserList& users)
       weak_factory_(this) {
   DCHECK(!screen_locker_);
   screen_locker_ = this;
+
+  ash::Shell::GetInstance()->lock_state_controller()->
+      SetLockScreenDisplayedCallback(
+          base::Bind(&PlaySound, media::SoundsManager::SOUND_LOCK));
 }
 
 void ScreenLocker::Init() {
@@ -367,6 +378,9 @@ void ScreenLocker::ScheduleDeletion() {
   if (screen_locker_ == NULL)
     return;
   VLOG(1) << "Deleting ScreenLocker " << screen_locker_;
+
+  PlaySound(media::SoundsManager::SOUND_UNLOCK);
+
   delete screen_locker_;
   screen_locker_ = NULL;
 }

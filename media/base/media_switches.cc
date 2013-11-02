@@ -91,4 +91,7 @@ const char kWaveOutBuffers[] = "waveout-buffers";
 const char kUseCras[] = "use-cras";
 #endif
 
+// Disables system sounds manager.
+const char kDisableSystemSoundsManager[] = "disable-system-sounds-manager";
+
 }  // namespace switches

@@ -195,7 +195,7 @@ class ASH_EXPORT LockStateController : public aura::RootWindowObserver,
 
   // Sets up the callback that should be called once lock animation is finished.
   // Callback is guaranteed to be called once and then discarded.
-  void SetLockScreenDisplayedCallback(base::Closure& callback);
+  void SetLockScreenDisplayedCallback(const base::Closure& callback);
 
   // RootWindowObserver override:
   virtual void OnRootWindowHostCloseRequested(

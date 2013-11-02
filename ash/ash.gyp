@@ -22,6 +22,7 @@
         '../content/content.gyp:content',
         '../content/content.gyp:content_browser',
         '../ipc/ipc.gyp:ipc',
+        '../media/media.gyp:media',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',

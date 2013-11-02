@@ -4,6 +4,9 @@
 
 #include "ash/wm/lock_state_controller.h"
 
+#include <algorithm>
+
+#include "ash/accessibility_delegate.h"
 #include "ash/ash_switches.h"
 #include "ash/cancel_mode.h"
 #include "ash/shell.h"
@@ -20,11 +23,18 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/sys_info.h"
+#include "media/audio/sounds/sounds_manager.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+using media::SoundsManager;
 #endif
 
 namespace ash {
 
 namespace {
+
+const int kMaxShutdownSoundDurationMs = 1500;
 
 aura::Window* GetBackground() {
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
@@ -274,7 +284,7 @@ void LockStateController::OnLockScreenHide(
 }
 
 void LockStateController::SetLockScreenDisplayedCallback(
-    base::Closure& callback) {
+    const base::Closure& callback) {
   lock_screen_displayed_callback_ = callback;
 }
 
@@ -368,6 +378,19 @@ void LockStateController::StartRealShutdownTimer(
     duration += animator_->GetDuration(
         internal::SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN);
   }
+
+#if defined(OS_CHROMEOS)
+  const AccessibilityDelegate* const delegate =
+      Shell::GetInstance()->accessibility_delegate();
+  if (delegate->IsSpokenFeedbackEnabled()) {
+    const base::TimeDelta shutdown_sound_duration = std::min(
+        SoundsManager::Get()->GetDuration(SoundsManager::SOUND_SHUTDOWN),
+        base::TimeDelta::FromMilliseconds(kMaxShutdownSoundDurationMs));
+    duration = std::max(duration, shutdown_sound_duration);
+    SoundsManager::Get()->Play(SoundsManager::SOUND_SHUTDOWN);
+  }
+#endif
+
   real_shutdown_timer_.Start(
       FROM_HERE,
       duration,

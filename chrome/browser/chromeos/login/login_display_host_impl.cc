@@ -23,6 +23,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/first_run/first_run_controller.h"
@@ -62,6 +63,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
+#include "grit/browser_resources.h"
+#include "media/audio/sounds/sounds_manager.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
@@ -75,6 +78,8 @@
 #include "url/gurl.h"
 
 namespace {
+
+const int kStartupSoundInitialDelayMs = 500;
 
 // URL which corresponds to the login WebUI.
 const char kLoginURL[] = "chrome://oobe/login";
@@ -167,6 +172,13 @@ class AnimationObserver : public ui::ImplicitAnimationObserver {
   DISALLOW_COPY_AND_ASSIGN(AnimationObserver);
 };
 
+void PlayStartupSoundHelper(bool startup_sound_honors_spoken_feedback) {
+  if (!startup_sound_honors_spoken_feedback ||
+      chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled()) {
+    media::SoundsManager::Get()->Play(media::SoundsManager::SOUND_STARTUP);
+  }
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -196,7 +208,12 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
       restore_path_(RESTORE_UNKNOWN),
       auto_enrollment_check_done_(false),
       finalize_animation_type_(ANIMATION_WORKSPACE),
-      animation_weak_ptr_factory_(this) {
+      animation_weak_ptr_factory_(this),
+      startup_sound_requested_(false),
+      startup_sound_played_(false),
+      startup_sound_honors_spoken_feedback_(false) {
+  DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
+
   // We need to listen to CLOSE_ALL_BROWSERS_REQUEST but not APP_TERMINATING
   // because/ APP_TERMINATING will never be fired as long as this keeps
   // ref-count. CLOSE_ALL_BROWSERS_REQUEST is safe here because there will be no
@@ -284,6 +301,8 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
 }
 
 LoginDisplayHostImpl::~LoginDisplayHostImpl() {
+  DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
+
   views::FocusManager::set_arrow_key_traversal_enabled(false);
   ResetLoginWindowAndView();
 
@@ -403,6 +422,8 @@ void LoginDisplayHostImpl::GetAutoEnrollmentCheckResult(
 void LoginDisplayHostImpl::StartWizard(
     const std::string& first_screen_name,
     scoped_ptr<DictionaryValue> screen_parameters) {
+  TryToPlayStartupSound(false);
+
   // Keep parameters to restore if renderer crashes.
   restore_path_ = RESTORE_WIZARD;
   wizard_first_screen_name_ = first_screen_name;
@@ -473,6 +494,8 @@ void LoginDisplayHostImpl::StartUserAdding(
 }
 
 void LoginDisplayHostImpl::StartSignInScreen() {
+  TryToPlayStartupSound(true);
+
   restore_path_ = RESTORE_SIGN_IN;
   is_showing_login_ = true;
   finalize_animation_type_ = ANIMATION_WORKSPACE;
@@ -677,6 +700,14 @@ void LoginDisplayHostImpl::RenderProcessGone(base::TerminationStatus status) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// LoginDisplayHostImpl, chromeos::SessionManagerClient::Observer
+// implementation:
+
+void LoginDisplayHostImpl::EmitLoginPromptVisibleCalled() {
+  OnLoginPromptVisible();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // LoginDisplayHostImpl, private
 
 void LoginDisplayHostImpl::ShutdownDisplayHost(bool post_quit_task) {
@@ -848,6 +879,8 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
   login_window_->Init(params);
   login_view_ = new WebUILoginView();
   login_view_->Init();
+  if (login_view_->webui_visible())
+    OnLoginPromptVisible();
 
   views::corewm::SetWindowVisibilityAnimationDuration(
       login_window_->GetNativeView(),
@@ -895,6 +928,67 @@ void LoginDisplayHostImpl::NotifyAutoEnrollmentCheckResult(
   callbacks.swap(get_auto_enrollment_result_callbacks_);
   for (size_t i = 0; i < callbacks.size(); ++i)
     callbacks[i].Run(should_auto_enroll);
+}
+
+void LoginDisplayHostImpl::TryToPlayStartupSound(bool honor_spoken_feedback) {
+  if (startup_sound_requested_)
+    return;
+  startup_sound_requested_ = true;
+  startup_sound_honors_spoken_feedback_ = honor_spoken_feedback;
+  if (!login_prompt_visible_time_.is_null())
+    PlayStartupSound();
+}
+
+void LoginDisplayHostImpl::OnLoginPromptVisible() {
+  if (!login_prompt_visible_time_.is_null())
+    return;
+
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  std::vector<base::StringPiece> sound_resources(
+      media::SoundsManager::SOUND_COUNT);
+  sound_resources[media::SoundsManager::SOUND_STARTUP] =
+      bundle.GetRawDataResource(IDR_SOUND_STARTUP_WAV);
+  sound_resources[media::SoundsManager::SOUND_LOCK] =
+      bundle.GetRawDataResource(IDR_SOUND_LOCK_WAV);
+  sound_resources[media::SoundsManager::SOUND_UNLOCK] =
+      bundle.GetRawDataResource(IDR_SOUND_UNLOCK_WAV);
+  sound_resources[media::SoundsManager::SOUND_SHUTDOWN] =
+      bundle.GetRawDataResource(IDR_SOUND_SHUTDOWN_WAV);
+  for (size_t i = 0; i < sound_resources.size(); ++i) {
+    DCHECK(!sound_resources[i].empty()) << "System sound " << i << " "
+                                        << "missing.";
+  }
+  if (!media::SoundsManager::Get()->Initialize(sound_resources))
+    LOG(ERROR) << "Failed to initialize SoundsManager.";
+
+  login_prompt_visible_time_ = base::TimeTicks::Now();
+  if (startup_sound_requested_ && !startup_sound_played_)
+    PlayStartupSound();
+}
+
+void LoginDisplayHostImpl::PlayStartupSound() {
+  if (startup_sound_played_)
+    return;
+  startup_sound_played_ = true;
+
+  const base::TimeDelta delay =
+      base::TimeDelta::FromMilliseconds(kStartupSoundInitialDelayMs);
+  const base::TimeDelta delta =
+      base::TimeTicks::Now() - login_prompt_visible_time_;
+
+  // Cras audio server starts initialization after
+  // login-prompt-visible signal from session manager. Alas, but it
+  // doesn't send notifications after initialization. Thus, we're
+  // trying to play startup sound after some delay.
+  if (delta > delay) {
+    PlayStartupSoundHelper(startup_sound_honors_spoken_feedback_);
+  } else {
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&PlayStartupSoundHelper,
+                   startup_sound_honors_spoken_feedback_),
+        delay - delta);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

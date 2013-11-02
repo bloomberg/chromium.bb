@@ -7,6 +7,7 @@ include_rules = [
   "+grit/ash_strings.h",
   "+grit/ui_resources.h",
   "+grit/ui_strings.h",
+  "+media",
   "+skia/ext",
   "+third_party/cros_system_api",
   "+third_party/skia",
