@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_NTP_ANDROID_MANAGED_BOOKMARKS_SHIM_H_
-#define CHROME_BROWSER_UI_WEBUI_NTP_ANDROID_MANAGED_BOOKMARKS_SHIM_H_
+#ifndef CHROME_BROWSER_ANDROID_BOOKMARKS_MANAGED_BOOKMARKS_SHIM_H_
+#define CHROME_BROWSER_ANDROID_BOOKMARKS_MANAGED_BOOKMARKS_SHIM_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -53,4 +53,4 @@ class ManagedBookmarksShim {
   DISALLOW_COPY_AND_ASSIGN(ManagedBookmarksShim);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_NTP_ANDROID_MANAGED_BOOKMARKS_SHIM_H_
+#endif  // CHROME_BROWSER_ANDROID_BOOKMARKS_MANAGED_BOOKMARKS_SHIM_H_

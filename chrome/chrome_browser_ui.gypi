@@ -2939,8 +2939,6 @@
             'browser/ui/webui/ntp/android/bookmarks_handler.h',
             'browser/ui/webui/ntp/android/context_menu_handler.cc',
             'browser/ui/webui/ntp/android/context_menu_handler.h',
-            'browser/ui/webui/ntp/android/managed_bookmarks_shim.cc',
-            'browser/ui/webui/ntp/android/managed_bookmarks_shim.h',
             'browser/ui/webui/ntp/android/navigation_handler.cc',
             'browser/ui/webui/ntp/android/navigation_handler.h',
             'browser/ui/webui/ntp/android/new_tab_page_ready_handler.cc',
