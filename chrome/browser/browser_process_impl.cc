@@ -785,6 +785,8 @@ prerender::PrerenderTracker* BrowserProcessImpl::prerender_tracker() {
 
 ComponentUpdateService* BrowserProcessImpl::component_updater() {
   if (!component_updater_.get()) {
+    if (!BrowserThread::CurrentlyOn(BrowserThread::UI))
+      return NULL;
     ComponentUpdateService::Configurator* configurator =
         MakeChromeComponentUpdaterConfigurator(
             CommandLine::ForCurrentProcess(),
