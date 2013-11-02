@@ -17,13 +17,14 @@ FakeNotifierSettingsProvider::NotifierGroupItem::~NotifierGroupItem() {
 
 FakeNotifierSettingsProvider::FakeNotifierSettingsProvider()
     : closed_called_count_(0),
-      active_item_index_(0) {
-}
+      active_item_index_(0),
+      notifier_settings_requested_count_(0u) { }
 
 FakeNotifierSettingsProvider::FakeNotifierSettingsProvider(
     const std::vector<Notifier*>& notifiers)
     : closed_called_count_(0),
-      active_item_index_(0) {
+      active_item_index_(0),
+      notifier_settings_requested_count_(0u) {
   NotifierGroupItem item;
   item.group = new NotifierGroup(gfx::Image(),
                                  UTF8ToUTF16("Fake name"),
@@ -78,6 +79,19 @@ void FakeNotifierSettingsProvider::OnNotifierSettingsClosing() {
   closed_called_count_++;
 }
 
+bool FakeNotifierSettingsProvider::NotifierHasAdvancedSettings(
+    const message_center::NotifierId& notifier_id) const {
+  if (!notifier_id_with_settings_handler_)
+    return false;
+  return *notifier_id_with_settings_handler_ == notifier_id;
+}
+
+void FakeNotifierSettingsProvider::OnNotifierAdvancedSettingsRequested(
+    const NotifierId& notifier_id,
+    const std::string* notification_id) {
+  notifier_settings_requested_count_++;
+}
+
 void FakeNotifierSettingsProvider::AddObserver(
     NotifierSettingsObserver* observer) {
 }
@@ -98,8 +112,17 @@ void FakeNotifierSettingsProvider::AddGroup(
   items_.push_back(item);
 }
 
+void FakeNotifierSettingsProvider::SetNotifierHasAdvancedSettings(
+    const NotifierId& notifier_id) {
+  notifier_id_with_settings_handler_.reset(new NotifierId(notifier_id));
+}
+
 int FakeNotifierSettingsProvider::closed_called_count() {
   return closed_called_count_;
+}
+
+size_t FakeNotifierSettingsProvider::settings_requested_count() const {
+  return notifier_settings_requested_count_;
 }
 
 }  // namespace message_center

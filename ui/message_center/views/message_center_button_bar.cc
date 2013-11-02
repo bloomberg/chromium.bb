@@ -30,6 +30,8 @@ namespace message_center {
 namespace {
 const int kButtonSize = 40;
 const int kChevronWidth = 8;
+const int kFooterTopMargin = 6;
+const int kFooterBottomMargin = 3;
 const int kFooterLeftMargin = 20;
 const int kFooterRightMargin = 14;
 }  // namespace
@@ -183,8 +185,10 @@ void MessageCenterButtonBar::ViewVisibilityChanged() {
   int image_margin = std::max(0, (kButtonSize - settings_image->width()) / 2);
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
-  layout->SetInsets(
-      0, kFooterLeftMargin, 0, std::max(0, kFooterRightMargin - image_margin));
+  layout->SetInsets(kFooterTopMargin,
+                    kFooterLeftMargin,
+                    kFooterBottomMargin,
+                    std::max(0, kFooterRightMargin - image_margin));
   views::ColumnSet* column = layout->AddColumnSet(0);
   if (title_arrow_->visible()) {
     // Column for the left-arrow used to back out of settings.

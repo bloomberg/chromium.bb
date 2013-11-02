@@ -11,8 +11,10 @@
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notifier_settings.h"
 #include "ui/message_center/views/message_bubble_base.h"
+#include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -47,7 +49,44 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
   }
 
  private:
-  class NotifierButton;
+  FRIEND_TEST_ALL_PREFIXES(NotifierSettingsViewTest, TestLearnMoreButton);
+
+  class MESSAGE_CENTER_EXPORT NotifierButton : public views::CustomButton,
+                         public views::ButtonListener {
+   public:
+    NotifierButton(NotifierSettingsProvider* provider,
+                   Notifier* notifier,
+                   views::ButtonListener* listener);
+    virtual ~NotifierButton();
+
+    void UpdateIconImage(const gfx::Image& icon);
+    void SetChecked(bool checked);
+    bool checked() const;
+    bool has_learn_more() const;
+    const Notifier& notifier() const;
+
+    void SendLearnMorePressedForTest();
+
+   private:
+    // Overridden from views::ButtonListener:
+    virtual void ButtonPressed(views::Button* button,
+                               const ui::Event& event) OVERRIDE;
+    virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+
+    bool ShouldHaveLearnMoreButton() const;
+    // Helper function to reset the layout when the view has substantially
+    // changed.
+    void GridChanged(bool has_learn_more, bool has_icon_view);
+
+    NotifierSettingsProvider* provider_;  // Weak.
+    const scoped_ptr<Notifier> notifier_;
+    views::ImageView* icon_view_;
+    views::Label* name_view_;
+    views::Checkbox* checkbox_;
+    views::ImageButton* learn_more_;
+
+    DISALLOW_COPY_AND_ASSIGN(NotifierButton);
+  };
 
   // Given a new list of notifiers, updates the view to reflect it.
   void UpdateContentsView(const std::vector<Notifier*>& notifiers);
@@ -62,6 +101,8 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
+
+  // Overridden from views::MenuButtonListener:
   virtual void OnMenuButtonClicked(views::View* source,
                                    const gfx::Point& point) OVERRIDE;
 

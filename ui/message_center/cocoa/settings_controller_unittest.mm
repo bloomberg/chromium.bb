@@ -11,15 +11,16 @@
 @implementation MCSettingsController (TestingInterface)
 - (NSInteger)profileSwitcherListCount {
   // Subtract the dummy item.
-  return [self groupDropDownButton] ?
-      [[self groupDropDownButton] numberOfItems] - 1 : 0;
+  return [self groupDropDownButton]
+                 ? [[self groupDropDownButton] numberOfItems] - 1
+                 : 0;
 }
 
 - (NSUInteger)scrollViewItemCount {
   return [[[[self scrollView] documentView] subviews] count];
 }
 
-- (NSButton*)bottomMostButton {
+- (MCSettingsEntryView*)bottomMostButton {
   // The checkboxes are created bottom-to-top, so the first object is the
   // bottom-most.
   return [[[[self scrollView] documentView] subviews] objectAtIndex:0];
@@ -52,8 +53,8 @@ Notifier* NewNotifier(const std::string& id,
 TEST_F(CocoaTest, Basic) {
   // Notifiers are owned by settings controller.
   std::vector<Notifier*> notifiers;
-  notifiers.push_back(NewNotifier("id", "title", /*enabled=*/true));
-  notifiers.push_back(NewNotifier("id2", "other title", /*enabled=*/false));
+  notifiers.push_back(NewNotifier("id", "title", /*enabled=*/ true));
+  notifiers.push_back(NewNotifier("id2", "other title", /*enabled=*/ false));
 
   FakeNotifierSettingsProvider provider(notifiers);
 
@@ -68,8 +69,8 @@ TEST_F(CocoaTest, Basic) {
 TEST_F(CocoaTest, Toggle) {
   // Notifiers are owned by settings controller.
   std::vector<Notifier*> notifiers;
-  notifiers.push_back(NewNotifier("id", "title", /*enabled=*/true));
-  notifiers.push_back(NewNotifier("id2", "other title", /*enabled=*/false));
+  notifiers.push_back(NewNotifier("id", "title", /*enabled=*/ true));
+  notifiers.push_back(NewNotifier("id2", "other title", /*enabled=*/ false));
 
   FakeNotifierSettingsProvider provider(notifiers);
 
@@ -78,7 +79,8 @@ TEST_F(CocoaTest, Toggle) {
                                   trayViewController:nil]);
   [controller view];
 
-  NSButton* toggleSecond = [controller bottomMostButton];
+  MCSettingsEntryView* toggleView = [controller bottomMostButton];
+  NSButton* toggleSecond = [toggleView checkbox];
 
   [toggleSecond performClick:nil];
   EXPECT_TRUE(provider.WasEnabled(*notifiers.back()));
@@ -94,8 +96,8 @@ TEST_F(CocoaTest, Toggle) {
 TEST_F(CocoaTest, SingleProfile) {
   // Notifiers are owned by settings controller.
   std::vector<Notifier*> notifiers;
-  notifiers.push_back(NewNotifier("id", "title", /*enabled=*/true));
-  notifiers.push_back(NewNotifier("id2", "other title", /*enabled=*/false));
+  notifiers.push_back(NewNotifier("id", "title", /*enabled=*/ true));
+  notifiers.push_back(NewNotifier("id2", "other title", /*enabled=*/ false));
 
   FakeNotifierSettingsProvider provider(notifiers);
 
@@ -110,13 +112,13 @@ TEST_F(CocoaTest, SingleProfile) {
 TEST_F(CocoaTest, MultiProfile) {
   FakeNotifierSettingsProvider provider;
   std::vector<Notifier*> group1_notifiers;
-  group1_notifiers.push_back(NewNotifier("id", "title", /*enabled=*/true));
-  group1_notifiers.push_back(NewNotifier("id2", "title2", /*enabled=*/false));
+  group1_notifiers.push_back(NewNotifier("id", "title", /*enabled=*/ true));
+  group1_notifiers.push_back(NewNotifier("id2", "title2", /*enabled=*/ false));
   provider.AddGroup(NewGroup("Group1", "GroupId1"), group1_notifiers);
   std::vector<Notifier*> group2_notifiers;
-  group2_notifiers.push_back(NewNotifier("id3", "title3", /*enabled=*/true));
-  group2_notifiers.push_back(NewNotifier("id4", "title4", /*enabled=*/false));
-  group2_notifiers.push_back(NewNotifier("id5", "title5", /*enabled=*/false));
+  group2_notifiers.push_back(NewNotifier("id3", "title3", /*enabled=*/ true));
+  group2_notifiers.push_back(NewNotifier("id4", "title4", /*enabled=*/ false));
+  group2_notifiers.push_back(NewNotifier("id5", "title5", /*enabled=*/ false));
   provider.AddGroup(NewGroup("Group2", "GroupId2"), group2_notifiers);
 
   base::scoped_nsobject<MCSettingsController> controller(
@@ -125,6 +127,27 @@ TEST_F(CocoaTest, MultiProfile) {
   [controller view];
 
   EXPECT_EQ(2, [controller profileSwitcherListCount]);
+}
+
+TEST_F(CocoaTest, LearnMoreButton) {
+  std::vector<Notifier*> notifiers;
+  notifiers.push_back(NewNotifier("id", "title", /*enabled=*/ true));
+  notifiers.push_back(NewNotifier("id2", "title2", /*enabled=*/ false));
+
+  FakeNotifierSettingsProvider provider(notifiers);
+  EXPECT_EQ(0u, provider.settings_requested_count());
+  NotifierId has_settings_handler_notifier =
+      NotifierId(NotifierId::APPLICATION, "id2");
+  provider.SetNotifierHasAdvancedSettings(has_settings_handler_notifier);
+
+  base::scoped_nsobject<MCSettingsController> controller(
+      [[MCSettingsController alloc] initWithProvider:&provider
+                                  trayViewController:nil]);
+  [controller view];
+
+  [[controller bottomMostButton] clickLearnMore];
+
+  EXPECT_EQ(1u, provider.settings_requested_count());
 }
 
 }  // namespace message_center
