@@ -3016,6 +3016,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Download.ShowDangerousDownloadConfirmationPrompt"
+    enum="DownloadItem.DangerType">
+  <summary>
+    User saw the confirm prompt to save a download which was marked dangerous.
+    Grouped by the type of danger.
+  </summary>
+</histogram>
+
 <histogram name="Download.Sources" enum="DownloadSource">
   <summary>
     The initiation source (if initiated within the content layer of chrome) for

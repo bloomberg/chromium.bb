@@ -5,10 +5,10 @@
 #include "chrome/browser/download/download_danger_prompt.h"
 
 #include "base/bind.h"
-#include "base/metrics/field_trial.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
+#include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "content/public/browser/download_danger_type.h"
@@ -70,6 +70,7 @@ DownloadDangerPromptImpl::DownloadDangerPromptImpl(
       done_(done) {
   DCHECK(!done_.is_null());
   download_->AddObserver(this);
+  RecordOpenedDangerousConfirmDialog(download_->GetDangerType());
 }
 
 DownloadDangerPromptImpl::~DownloadDangerPromptImpl() {
