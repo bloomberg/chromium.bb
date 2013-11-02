@@ -27,7 +27,7 @@ using sync_pb::SyncedNotificationSpecifics;
 
 namespace {
 const int kNotificationPriority = static_cast<int>(
-    message_center::MIN_PRIORITY);
+    message_center::LOW_PRIORITY);
 
 bool UseRichNotifications() {
   return message_center::IsRichNotificationEnabled();

@@ -555,13 +555,13 @@ int SyncedNotification::GetPriority() const {
   // Convert the prioroty to the scheme used by the notification center.
   if (protobuf_priority ==
       sync_pb::CoalescedSyncedNotification_Priority_LOW) {
-    return message_center::MIN_PRIORITY;
-  } else if (protobuf_priority ==
-             sync_pb::CoalescedSyncedNotification_Priority_STANDARD) {
     return message_center::LOW_PRIORITY;
   } else if (protobuf_priority ==
-             sync_pb::CoalescedSyncedNotification_Priority_HIGH) {
+             sync_pb::CoalescedSyncedNotification_Priority_STANDARD) {
     return message_center::DEFAULT_PRIORITY;
+  } else if (protobuf_priority ==
+             sync_pb::CoalescedSyncedNotification_Priority_HIGH) {
+    return message_center::HIGH_PRIORITY;
   } else {
     // Complain if this is a new priority we have not seen before.
     DCHECK(protobuf_priority <
