@@ -1,0 +1,34 @@
+// Copyright $YEAR The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "$SERIALIZATION_HEADER"
+
+#include <string.h>
+
+#include "$CLASS_HEADER"
+
+namespace mojo {
+namespace internal {
+
+// static
+size_t ObjectTraits<$CLASS>::ComputeSizeOf(
+    const $CLASS* $NAME) {
+$SIZES
+}
+
+// static
+$CLASS* ObjectTraits<$CLASS>::Clone(
+    const $CLASS* $NAME, Buffer* buf) {
+  $CLASS* clone = $CLASS::New(buf);
+  memcpy(clone, $NAME, sizeof(*$NAME));
+
+$CLONES
+
+  return clone;
+}
+
+$SERIALIZATION
+
+}  // namespace internal
+}  // namespace mojo

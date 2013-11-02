@@ -1,0 +1,19 @@
+class $CLASS {
+ public:
+  static $CLASS* New(mojo::Buffer* buf);
+
+$SETTERS
+
+$GETTERS
+
+ private:
+  friend class mojo::internal::ObjectTraits<$CLASS>;
+
+  $CLASS();
+  ~$CLASS();  // NOT IMPLEMENTED
+
+  mojo::internal::StructHeader _header_;
+$FIELDS
+};
+MOJO_COMPILE_ASSERT(sizeof($CLASS) == $SIZE,
+                    bad_sizeof_Service_Frobinate_Params);

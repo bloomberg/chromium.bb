@@ -11,26 +11,7 @@ namespace $NAMESPACE {
 $FORWARDS
 #pragma pack(push, 1)
 
-class $CLASS {
- public:
-  static $CLASS* New(mojo::Buffer* buf);
-
-$SETTERS
-
-$GETTERS
-
- private:
-  friend class mojo::internal::ObjectTraits<$CLASS>;
-
-  $CLASS();
-  ~$CLASS();  // NOT IMPLEMENTED
-
-  mojo::internal::StructHeader _header_;
-$FIELDS
-};
-
-MOJO_COMPILE_ASSERT(sizeof($CLASS) == $SIZE, bad_sizeof_$CLASS);
-
+$DECLARATION
 #pragma pack(pop)
 
 }  // namespace $NAMESPACE

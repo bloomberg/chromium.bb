@@ -1,0 +1,20 @@
+void $CLASS::$METHOD($PARAMS_LIST) {
+  size_t payload_size =
+      mojo::internal::Align(sizeof($PARAMS));
+$COMPUTES
+
+  mojo::MessageBuilder builder($NAME, payload_size);
+
+  $PARAMS* params =
+      $PARAMS::New(builder.buffer());
+
+$SETS
+
+  mojo::Message message;
+  mojo::internal::EncodePointersAndHandles(params, &message.handles);
+
+  message.data = builder.Finish();
+
+  receiver_->Accept(&message);
+}
+

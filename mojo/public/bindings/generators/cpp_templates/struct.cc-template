@@ -6,14 +6,6 @@
 
 namespace $NAMESPACE {
 
-// static
-$CLASS* $CLASS::New(mojo::Buffer* buf) {
-  return new (buf->Allocate(sizeof($CLASS))) $CLASS();
-}
-
-$CLASS::$CLASS() {
-  _header_.num_bytes = sizeof(*this);
-  _header_.num_fields = $NUM_FIELDS;
-}
+$IMPLEMENTATION
 
 }  // namespace $NAMESPACE

@@ -1,0 +1,31 @@
+// Copyright $YEAR The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef $HEADER_GUARD
+#define $HEADER_GUARD
+
+#include <string.h>
+
+$INCLUDES
+
+namespace $NAMESPACE {
+namespace internal {
+
+$NAMES
+#pragma pack(push, 1)
+
+$PARAM_CLASSES
+#pragma pack(pop)
+
+}  // namespace internal
+}  // namespace $NAMESPACE
+
+namespace mojo {
+namespace internal {
+
+$PARAM_TEMPLATES
+}  // namespace internal
+}  // namespace mojo
+
+#endif  // $HEADER_GUARD
