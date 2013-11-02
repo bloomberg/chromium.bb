@@ -256,7 +256,7 @@ def RestartUsb():
 def KillAllAdb():
   def GetAllAdb():
     for p in psutil.process_iter():
-      if 'adb' in p.name or 'adb' in ' '.join(p.cmdline):
+      if 'adb' in p.name:
         yield p
 
   for sig in [signal.SIGTERM, signal.SIGQUIT, signal.SIGKILL]:
