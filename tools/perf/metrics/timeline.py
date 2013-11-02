@@ -4,6 +4,7 @@
 import collections
 
 from metrics import Metric
+from telemetry.page import page_measurement
 
 TRACING_MODE = 'tracing-mode'
 TIMELINE_MODE = 'timeline-mode'
@@ -24,26 +25,32 @@ class TimelineMetric(Metric):
       if not tab.browser.supports_tracing:
         raise Exception('Not supported')
       tab.browser.StartTracing()
-      # This creates an async trace event in the render process for tab that
-      # will allow us to find that tab during the AddTracingResultsForTab
-      # function.
-      tab.ExecuteJavaScript("""
-          console.time("__loading_measurement_was_here__");
-          console.timeEnd("__loading_measurement_was_here__");
-          """)
     else:
       assert self._mode == TIMELINE_MODE
       tab.StartTimelineRecording()
 
   def Stop(self, page, tab):
     if self._mode == TRACING_MODE:
+      # This creates an async trace event in the render process for tab that
+      # will allow us to find that tab during the AddTracingResultsForTab
+      # function.
+      success = tab.EvaluateJavaScript("""
+          console.time("__loading_measurement_was_here__");
+          console.timeEnd("__loading_measurement_was_here__");
+          console.time.toString().indexOf('[native code]') != -1;
+          """)
       trace_result = tab.browser.StopTracing()
+      if not success:
+        raise page_measurement.MeasurementFailure(
+            'Page stomped on console.time')
       self._model = trace_result.AsTimelineModel()
       events = [s for
                 s in self._model.GetAllEventsOfName(
                     '__loading_measurement_was_here__')
                 if s.parent_slice == None]
-      assert len(events) == 1
+      assert len(events) == 1, 'Expected one marker, got %d' % len(events)
+      # TODO(tonyg): This should be threads_for_tab and report events for both
+      # the starting thread and ending thread.
       self._thread_for_tab = events[0].start_thread
     else:
       tab.StopTimelineRecording()
