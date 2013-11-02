@@ -58,9 +58,6 @@
 #include "win8/util/win8_util.h"
 #endif
 
-#if defined(USE_ASH)
-#include "ash/wm/window_state.h"
-#endif
 using content::NavigationController;
 using content::RenderWidgetHost;
 using content::WebContents;
@@ -1085,16 +1082,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
     if (browser_ == browser)
       return;
 
-#if defined(USE_ASH)
-    // Prevent the auto window management for this window on show.
-    ash::wm::GetWindowState(browser->window()->GetNativeWindow())->
-        set_bounds_changed_by_user(true);
-#endif
     browser->window()->Show();
-#if defined(USE_ASH)
-    ash::wm::GetWindowState(browser->window()->GetNativeWindow())->
-        set_bounds_changed_by_user(false);
-#endif
     browser->set_is_session_restore(false);
 
     // TODO(jcampan): http://crbug.com/8123 we should not need to set the
