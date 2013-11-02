@@ -379,10 +379,12 @@ void EventRewriter::Rewrite(ui::KeyEvent* event) {
   if (event->native_event()->xkey.send_event)
     return;
 
-  // Keyboard driven rewriting needs to happen before RewriteExtendedKeys
-  // to handle Ctrl+Alt+Shift+(Up | Down) so that they are not translated
-  // to Home/End.
-  keyboard_driven_event_rewriter_->RewriteIfKeyboardDrivenOnLoginScreen(event);
+  // Keyboard driven rewriting happen first. Skip further processing if event is
+  // changed.
+  if (keyboard_driven_event_rewriter_->RewriteIfKeyboardDrivenOnLoginScreen(
+          event)) {
+    return;
+  }
 #endif
   RewriteModifiers(event);
   RewriteNumPadKeys(event);

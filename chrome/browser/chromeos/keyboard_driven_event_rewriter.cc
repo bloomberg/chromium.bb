@@ -33,28 +33,29 @@ KeyboardDrivenEventRewriter::KeyboardDrivenEventRewriter() {}
 
 KeyboardDrivenEventRewriter::~KeyboardDrivenEventRewriter() {}
 
-void KeyboardDrivenEventRewriter::RewriteIfKeyboardDrivenOnLoginScreen(
+bool KeyboardDrivenEventRewriter::RewriteIfKeyboardDrivenOnLoginScreen(
     ui::KeyEvent* event) {
   if (!ShouldStripModifiersForArrowKeysAndEnter())
-    return;
+    return false;
 
-  RewriteEvent(event);
+  return RewriteEvent(event);
 }
 
-void KeyboardDrivenEventRewriter::RewriteForTesting(ui::KeyEvent* event) {
-  RewriteEvent(event);
+bool KeyboardDrivenEventRewriter::RewriteForTesting(ui::KeyEvent* event) {
+  return RewriteEvent(event);
 }
 
-void KeyboardDrivenEventRewriter::RewriteEvent(ui::KeyEvent* event) {
+bool KeyboardDrivenEventRewriter::RewriteEvent(ui::KeyEvent* event) {
   if ((event->flags() & kModifierMask) != kModifierMask)
-    return;
+    return false;
 
   if (event->key_code() != ui::VKEY_LEFT &&
       event->key_code() != ui::VKEY_RIGHT &&
       event->key_code() != ui::VKEY_UP &&
       event->key_code() != ui::VKEY_DOWN &&
-      event->key_code() != ui::VKEY_RETURN) {
-    return;
+      event->key_code() != ui::VKEY_RETURN &&
+      event->key_code() != ui::VKEY_F6) {
+    return false;
   }
 
   XEvent* xev = event->native_event();
@@ -62,6 +63,7 @@ void KeyboardDrivenEventRewriter::RewriteEvent(ui::KeyEvent* event) {
   xkey->state &= ~(ControlMask | Mod1Mask | ShiftMask);
   event->set_flags(event->flags() & ~kModifierMask);
   event->NormalizeFlags();
+  return true;
 }
 
 }  // namespace chromeos

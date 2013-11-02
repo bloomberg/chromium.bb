@@ -14,23 +14,23 @@ class KeyEvent;
 namespace chromeos {
 
 // KeyboardDrivenEventRewriter removes the modifier flags from
-// Ctrl+Alt+Shift+<Arrow keys|Enter> key events. This mapping only happens
-// on login screen and only when the keyboard driven oobe flag is enabled in the
-// OEM manifest.
+// Shift+<Arrow keys|Enter|F6> key events. This mapping only happens
+// on login screen and only when the keyboard driven oobe is enabled.
 class KeyboardDrivenEventRewriter {
  public:
   KeyboardDrivenEventRewriter();
   ~KeyboardDrivenEventRewriter();
 
   // Calls RewriteEvent to modify |event| if it is on login screen and the
-  // keyboard driven flag is enabled.
-  void RewriteIfKeyboardDrivenOnLoginScreen(ui::KeyEvent* event);
+  // keyboard driven flag is enabled. Returns true if the event is changed
+  // and no further changes should happen.
+  bool RewriteIfKeyboardDrivenOnLoginScreen(ui::KeyEvent* event);
 
   // Calls RewriteEvent for testing.
-  void RewriteForTesting(ui::KeyEvent* event);
+  bool RewriteForTesting(ui::KeyEvent* event);
 
  private:
-  void RewriteEvent(ui::KeyEvent* event);
+  bool RewriteEvent(ui::KeyEvent* event);
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardDrivenEventRewriter);
 };

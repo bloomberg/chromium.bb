@@ -32,6 +32,7 @@ class AutoEnrollmentClient;
 namespace chromeos {
 
 class FocusRingController;
+class KeyboardDrivenOobeKeyHandler;
 class OobeUI;
 class WebUILoginDisplay;
 class WebUILoginView;
@@ -254,6 +255,9 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   // A focus ring controller to draw focus ring around view for keyboard
   // driven oobe.
   scoped_ptr<FocusRingController> focus_ring_controller_;
+
+  // Handles special keys for keyboard driven oobe.
+  scoped_ptr<KeyboardDrivenOobeKeyHandler> keyboard_driven_oobe_key_handler_;
 
   // Whether auto enrollment client has done the check.
   bool auto_enrollment_check_done_;

@@ -31,6 +31,7 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/keyboard_driven_oobe_key_handler.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
@@ -304,12 +305,6 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
 
 LoginDisplay* LoginDisplayHostImpl::CreateLoginDisplay(
     LoginDisplay::Delegate* delegate) {
-  if (system::keyboard_settings::ForceKeyboardDrivenUINavigation()) {
-    views::FocusManager::set_arrow_key_traversal_enabled(true);
-
-    focus_ring_controller_.reset(new FocusRingController);
-    focus_ring_controller_->SetVisible(true);
-  }
   webui_login_display_ = new WebUILoginDisplay(delegate);
   webui_login_display_->set_background_bounds(background_bounds());
   return webui_login_display_;
@@ -829,6 +824,15 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
   if (login_window_)
     return;
   ash::HeaderPainter::SetSoloWindowHeadersEnabled(false);
+
+  if (system::keyboard_settings::ForceKeyboardDrivenUINavigation()) {
+    views::FocusManager::set_arrow_key_traversal_enabled(true);
+
+    focus_ring_controller_.reset(new FocusRingController);
+    focus_ring_controller_->SetVisible(true);
+
+    keyboard_driven_oobe_key_handler_.reset(new KeyboardDrivenOobeKeyHandler);
+  }
 
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);

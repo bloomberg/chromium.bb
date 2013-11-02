@@ -463,6 +463,8 @@
         'browser/chromeos/login/enrollment/enrollment_screen_actor.h',
         'browser/chromeos/login/existing_user_controller.cc',
         'browser/chromeos/login/existing_user_controller.h',
+        'browser/chromeos/login/keyboard_driven_oobe_key_handler.cc',
+        'browser/chromeos/login/keyboard_driven_oobe_key_handler.h',
         'browser/chromeos/login/help_app_launcher.cc',
         'browser/chromeos/login/help_app_launcher.h',
         'browser/chromeos/login/helper.cc',
