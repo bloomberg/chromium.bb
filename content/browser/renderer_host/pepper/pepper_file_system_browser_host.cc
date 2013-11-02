@@ -26,12 +26,10 @@ namespace {
 scoped_refptr<fileapi::FileSystemContext>
 GetFileSystemContextFromRenderId(int render_process_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  RenderProcessHost* render_process_host =
-      RenderProcessHost::FromID(render_process_id);
-  if (!render_process_host)
+  RenderProcessHost* host = RenderProcessHost::FromID(render_process_id);
+  if (!host)
     return NULL;
-  StoragePartition* storage_partition =
-      render_process_host->GetStoragePartition();
+  StoragePartition* storage_partition = host->GetStoragePartition();
   if (!storage_partition)
     return NULL;
   return storage_partition->GetFileSystemContext();

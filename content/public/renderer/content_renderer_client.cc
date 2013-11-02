@@ -168,11 +168,6 @@ bool ContentRendererClient::IsExternalPepperPlugin(
   return false;
 }
 
-bool ContentRendererClient::IsPluginAllowedToCallRequestOSFileHandle(
-    WebKit::WebPluginContainer* container) {
-  return false;
-}
-
 bool ContentRendererClient::AllowBrowserPlugin(
     WebKit::WebPluginContainer* container) {
   return false;

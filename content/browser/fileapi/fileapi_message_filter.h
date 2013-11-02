@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/files/file_util_proxy.h"
-#include "base/id_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "base/platform_file.h"
@@ -122,12 +121,6 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
                    const base::Time& last_access_time,
                    const base::Time& last_modified_time);
   void OnCancel(int request_id, int request_to_cancel);
-#if defined(ENABLE_PLUGINS)
-  void OnOpenPepperFile(int request_id, const GURL& path, int pp_open_flags);
-#endif  // defined(ENABLE_PLUGINS)
-  void OnNotifyCloseFile(int file_open_id);
-  void OnWillUpdate(const GURL& path);
-  void OnDidUpdate(const GURL& path, int64 delta);
   void OnSyncGetPlatformPath(const GURL& path,
                              base::FilePath* platform_path);
   void OnCreateSnapshotFile(int request_id,
@@ -178,12 +171,6 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
                         base::PlatformFileError result,
                         const std::vector<fileapi::DirectoryEntry>& entries,
                         bool has_more);
-  void DidOpenFile(int request_id,
-                   quota::QuotaLimitType quota_policy,
-                   base::PlatformFileError result,
-                   base::PlatformFile file,
-                   const base::Closure& on_close_callback,
-                   base::ProcessHandle peer_handle);
   void DidWrite(int request_id,
                 base::PlatformFileError result,
                 int64 bytes,
@@ -251,11 +238,6 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
   // is being sent to the renderer.
   std::map<int, scoped_refptr<webkit_blob::ShareableFileReference> >
       in_transit_snapshot_files_;
-
-  // Keep track of file system file opened by OpenFile() in this process.
-  // Need to close all of them when the renderer process dies.
-  typedef IDMap<base::Closure, IDMapOwnPointer> OnCloseCallbackMap;
-  OnCloseCallbackMap on_close_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(FileAPIMessageFilter);
 };
