@@ -450,18 +450,16 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestBeforeUnloadEvents) {
 }
 
 // Tests scripts panel showing.
-// Disabled: http://crbug.com/309822
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestShowScriptsTab) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
   RunTest("testShowScriptsTab", kDebuggerTestPage);
 }
 
 // Tests that scripts tab is populated with inspected scripts even if it
 // hadn't been shown by the moment inspected paged refreshed.
 // @see http://crbug.com/26312
-// Disabled: http://crbug.com/309822
 IN_PROC_BROWSER_TEST_F(
     DevToolsSanityTest,
-    DISABLED_TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
+    TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
   // Clear inspector settings to ensure that Elements will be
   // current panel when DevTools window is open.
   content::BrowserContext* browser_context =
@@ -505,25 +503,22 @@ IN_PROC_BROWSER_TEST_F(DevToolsExperimentalExtensionTest,
 
 // Tests that a content script is in the scripts list.
 // http://crbug.com/114104
-// Disabled: http://crbug.com/309822
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
-                       DISABLED_TestContentScriptIsPresent) {
+                       TestContentScriptIsPresent) {
   LoadExtension("simple_content_script");
   RunTest("testContentScriptIsPresent", kPageWithContentScript);
 }
 
 // Tests that scripts are not duplicated after Scripts Panel switch.
-// Disabled: http://crbug.com/309822
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
-                       DISABLED_TestNoScriptDuplicatesOnPanelSwitch) {
+                       TestNoScriptDuplicatesOnPanelSwitch) {
   RunTest("testNoScriptDuplicatesOnPanelSwitch", kDebuggerTestPage);
 }
 
 // Tests that debugger works correctly if pause event occurs when DevTools
 // frontend is being loaded.
-// Disabled: http://crbug.com/309822
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
-                       DISABLED_TestPauseWhenLoadingDevTools) {
+                       TestPauseWhenLoadingDevTools) {
   RunTest("testPauseWhenLoadingDevTools", kPauseWhenLoadingDevTools);
 }
 
@@ -538,9 +533,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
 #else
 #define MAYBE_TestPauseWhenScriptIsRunning TestPauseWhenScriptIsRunning
 #endif
-// Disabled: http://crbug.com/309822
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
-                       DISABLED_TestPauseWhenScriptIsRunning) {
+                       MAYBE_TestPauseWhenScriptIsRunning) {
   RunTest("testPauseWhenScriptIsRunning", kPauseWhenScriptIsRunning);
 }
 
