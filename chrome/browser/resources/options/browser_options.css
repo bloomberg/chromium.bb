@@ -14,7 +14,8 @@
   vertical-align: top;
 }
 
-#default-browser-state {
+#default-browser-state,
+#profiles-supervised-dashboard-tip {
   margin-top: 6px;
 }
 

@@ -11564,6 +11564,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_PROFILES_DELETE_BUTTON_LABEL" desc="The label that appears on the profile delete button in the options dialog to allow a user to delete their profile.">
         Delete...
       </message>
+      <message name="IDS_PROFILES_SUPERVISED_USER_DASHBOARD_TIP" desc="A message that appears below the Users section on the Settings page when the current user manages supervised users on the machine, providing a link to the external management dashboard page.">
+        Manage your supervised users via the <ph name="BEGIN_LINK">&lt;a target="_blank" href="https://chrome.com/manage"&gt;</ph>Supervised Users Dashboard<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
+      </message>
       <message name="IDS_PROFILES_DELETE_SINGLE_BUTTON_LABEL" desc="The label that appears on the profile delete button in the options dialog to allow a user with only one profile to delete it.">
         Delete this user
       </message>

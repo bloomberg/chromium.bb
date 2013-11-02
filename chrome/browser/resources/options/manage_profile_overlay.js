@@ -577,6 +577,7 @@ cr.define('options', function() {
         profileInfo.custodianEmail = this.signedInEmail_;
         ManagedUserCreateConfirmOverlay.setProfileInfo(profileInfo);
         OptionsPage.showPageByName('managedUserCreateConfirm', false);
+        BrowserOptions.updateManagesSupervisedUsers(true);
       }
     },
 
