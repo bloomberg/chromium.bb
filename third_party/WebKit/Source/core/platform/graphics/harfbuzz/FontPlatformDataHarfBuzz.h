@@ -48,6 +48,7 @@ typedef uint32_t SkFontID;
 namespace WebCore {
 
 class FontDescription;
+class GraphicsContext;
 class HarfBuzzFace;
 
 // -----------------------------------------------------------------------------
@@ -81,7 +82,7 @@ public:
     // -------------------------------------------------------------------------
     // Setup a Skia painting context to use this font.
     // -------------------------------------------------------------------------
-    void setupPaint(SkPaint*) const;
+    void setupPaint(SkPaint*, GraphicsContext* = 0) const;
 
     // -------------------------------------------------------------------------
     // Return Skia's unique id for this font. This encodes both the style and

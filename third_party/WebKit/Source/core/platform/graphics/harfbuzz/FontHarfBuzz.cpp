@@ -103,7 +103,7 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
     if (textMode & TextModeFill) {
         SkPaint paint;
         gc->setupPaintForFilling(&paint);
-        font->platformData().setupPaint(&paint);
+        font->platformData().setupPaint(&paint, gc);
         gc->adjustTextRenderMode(&paint);
         paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
 
@@ -125,7 +125,7 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
 
         SkPaint paint;
         gc->setupPaintForStroking(&paint);
-        font->platformData().setupPaint(&paint);
+        font->platformData().setupPaint(&paint, gc);
         gc->adjustTextRenderMode(&paint);
         paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
 
