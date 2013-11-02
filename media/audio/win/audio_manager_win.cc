@@ -455,8 +455,12 @@ AudioParameters AudioManagerWin::GetPreferredOutputStreamParameters(
   }
 
   if (input_params.IsValid()) {
+    // If the user has enabled checking supported channel layouts or we don't
+    // have a valid channel layout yet, try to use the input layout.  See bugs
+    // http://crbug.com/259165 and http://crbug.com/311906 for more details.
     if (core_audio_supported &&
-        cmd_line->HasSwitch(switches::kTrySupportedChannelLayouts)) {
+        (cmd_line->HasSwitch(switches::kTrySupportedChannelLayouts) ||
+         channel_layout == CHANNEL_LAYOUT_UNSUPPORTED)) {
       // Check if it is possible to open up at the specified input channel
       // layout but avoid checking if the specified layout is the same as the
       // hardware (preferred) layout. We do this extra check to avoid the

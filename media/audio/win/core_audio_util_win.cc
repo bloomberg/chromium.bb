@@ -623,6 +623,16 @@ HRESULT CoreAudioUtil::GetPreferredAudioParameters(
   // Convert Microsoft's channel configuration to genric ChannelLayout.
   ChannelLayout channel_layout = ChannelConfigToChannelLayout(channel_config);
 
+  // Some devices don't appear to set a valid channel layout, so guess based on
+  // the number of channels.  See http://crbug.com/311906.
+  if (channel_layout == CHANNEL_LAYOUT_UNSUPPORTED) {
+    VLOG(1) << "Unsupported channel config: "
+            << std::hex << channel_config
+            << ".  Guessing layout by channel count: "
+            << std::dec << mix_format.Format.nChannels;
+    channel_layout = GuessChannelLayout(mix_format.Format.nChannels);
+  }
+
   // Preferred sample rate.
   int sample_rate = mix_format.Format.nSamplesPerSec;
 
