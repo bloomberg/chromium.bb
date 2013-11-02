@@ -323,6 +323,7 @@ InspectorPageAgent::InspectorPageAgent(InstrumentingAgents* instrumentingAgents,
     , m_geolocationOverridden(false)
     , m_ignoreScriptsEnabledNotification(false)
     , m_didForceCompositingMode(false)
+    , m_deviceMetricsOverridden(false)
 {
 }
 
@@ -390,6 +391,7 @@ void InspectorPageAgent::disable(ErrorString*)
     m_state->remove(PageAgentState::pageAgentScriptsToEvaluateOnLoad);
     m_overlay->hide();
     m_instrumentingAgents->setInspectorPageAgent(0);
+    m_deviceMetricsOverridden = false;
 
     setShowPaintRects(0, false);
     setShowDebugBorders(0, false);
@@ -1078,9 +1080,9 @@ void InspectorPageAgent::updateViewMetrics(int width, int height, double deviceS
     InspectorInstrumentation::mediaQueryResultChanged(document);
 
     // FIXME: allow metrics override, fps counter and continuous painting at the same time: crbug.com/299837.
-    bool override = width && height;
-    m_client->setShowFPSCounter(m_state->getBoolean(PageAgentState::pageAgentShowFPSCounter) && !override);
-    m_client->setContinuousPaintingEnabled(m_state->getBoolean(PageAgentState::pageAgentContinuousPaintingEnabled) && !override);
+    m_deviceMetricsOverridden = width && height;
+    m_client->setShowFPSCounter(m_state->getBoolean(PageAgentState::pageAgentShowFPSCounter) && !m_deviceMetricsOverridden);
+    m_client->setContinuousPaintingEnabled(m_state->getBoolean(PageAgentState::pageAgentContinuousPaintingEnabled) && !m_deviceMetricsOverridden);
 }
 
 void InspectorPageAgent::updateTouchEventEmulationInPage(bool enabled)
@@ -1151,11 +1153,15 @@ void InspectorPageAgent::clearDeviceOrientationOverride(ErrorString* error)
 
 bool InspectorPageAgent::overrideTextAutosizing(bool textAutosizing)
 {
+    if (!m_deviceMetricsOverridden)
+        return textAutosizing;
     return m_state->getBoolean(PageAgentState::pageAgentTextAutosizingOverride);
 }
 
 float InspectorPageAgent::overrideTextAutosizingFontScaleFactor(float fontScaleFactor)
 {
+    if (!m_deviceMetricsOverridden)
+        return fontScaleFactor;
     return static_cast<float>(m_state->getDouble(PageAgentState::textAutosizingFontScaleFactorOverride));
 }
 

@@ -208,6 +208,7 @@ private:
     bool m_geolocationOverridden;
     bool m_ignoreScriptsEnabledNotification;
     bool m_didForceCompositingMode;
+    bool m_deviceMetricsOverridden;
     RefPtr<GeolocationPosition> m_geolocationPosition;
     RefPtr<GeolocationPosition> m_platformGeolocationPosition;
 };
