@@ -135,6 +135,10 @@ Patches:
     https://bugzilla.mozilla.org/show_bug.cgi?id=713933
     patches/canfalsestart.patch
 
+  * Have the Null Cipher limit output to the maximum allowed
+    https://bugzilla.mozilla.org/show_bug.cgi?id=934016
+    patches/nullcipher_934016.patch
+
 Apply the patches to NSS by running the patches/applypatches.sh script.  Read
 the comments at the top of patches/applypatches.sh for instructions.
 
