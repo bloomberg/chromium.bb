@@ -34,8 +34,6 @@
         'cocoa/popup_controller.mm',
         'cocoa/settings_controller.h',
         'cocoa/settings_controller.mm',
-        'cocoa/settings_entry_view.h',
-        'cocoa/settings_entry_view.mm',
         'cocoa/status_item_view.h',
         'cocoa/status_item_view.mm',
         'cocoa/tray_controller.h',
@@ -79,8 +77,6 @@
         'views/message_center_bubble.h',
         'views/message_center_button_bar.cc',
         'views/message_center_button_bar.h',
-        'views/message_center_focus_border.h',
-        'views/message_center_focus_border.cc',
         'views/message_center_view.cc',
         'views/message_center_view.h',
         'views/message_popup_collection.cc',
@@ -166,7 +162,6 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../base/base.gyp:test_support_base',
-        '../../chrome/chrome_resources.gyp:packed_resources',
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
         '../../url/url.gyp:url_lib',
@@ -174,8 +169,6 @@
         '../gfx/gfx.gyp:gfx',
         '../ui.gyp:ui',
         '../ui_unittests.gyp:run_ui_unittests',
-        '../ui.gyp:ui_resources',
-        '../../url/url.gyp:url_lib',
         'message_center',
         'message_center_test_support',
       ],
@@ -193,11 +186,6 @@
         'test/run_all_unittests.cc',
       ],
       'conditions': [
-        ['use_glib == 1 or OS == "ios"', {
-         'dependencies': [
-           '../base/strings/ui_strings.gyp:ui_unittest_strings',
-         ],
-        }],
         ['OS=="mac"', {
           'dependencies': [
             '../ui_unittests.gyp:ui_test_support',
@@ -215,7 +203,6 @@
             'views/bounded_label_unittest.cc',
             'views/message_center_view_unittest.cc',
             'views/message_popup_collection_unittest.cc',
-            'views/notifier_settings_view_unittest.cc',
           ],
         }],
         ['notifications==0', {  # Android and iOS.

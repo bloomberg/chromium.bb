@@ -253,10 +253,10 @@ MessageListView::MessageListView(MessageCenterView* message_center_view,
   set_background(views::Background::CreateSolidBackground(
       kMessageCenterBackgroundColor));
   set_border(views::Border::CreateEmptyBorder(
-      top_down ? 0 : kMarginBetweenItems - shadow_insets.top(),    /* top */
-      kMarginBetweenItems - shadow_insets.left(),                  /* left */
-      top_down ? kMarginBetweenItems - shadow_insets.bottom() : 0, /* bottom */
-      kMarginBetweenItems - shadow_insets.right() /* right */));
+      kMarginBetweenItems - shadow_insets.top(), /* top */
+      kMarginBetweenItems - shadow_insets.left(), /* left */
+      kMarginBetweenItems - shadow_insets.bottom(),  /* bottom */
+      kMarginBetweenItems - shadow_insets.right() /* right */ ));
 }
 
 MessageListView::~MessageListView() {
@@ -753,13 +753,12 @@ void MessageCenterView::Layout() {
   int button_height = button_bar_->GetHeightForWidth(width()) +
                       button_bar_->GetInsets().height();
   // Skip unnecessary re-layout of contents during the resize animation.
-  bool animating = settings_transition_animation_ &&
-                   settings_transition_animation_->is_animating();
-  if (animating && settings_transition_animation_->current_part_index() == 0) {
-    if (!top_down_) {
+  if (settings_transition_animation_ &&
+      settings_transition_animation_->is_animating() &&
+      settings_transition_animation_->current_part_index() == 0) {
+    if (!top_down_)
       button_bar_->SetBounds(
           0, height() - button_height, width(), button_height);
-    }
     return;
   }
 
@@ -778,16 +777,18 @@ void MessageCenterView::Layout() {
   else
     is_scrollable = settings_view_->IsScrollable();
 
-  if (!animating) {
-    if (is_scrollable) {
-      // Draw separator line on the top of the button bar if it is on the bottom
-      // or draw it at the bottom if the bar is on the top.
-      button_bar_->set_border(views::Border::CreateSolidSidedBorder(
-          top_down_ ? 0 : 1, 0, top_down_ ? 1 : 0, 0, kFooterDelimiterColor));
-    } else {
-      button_bar_->set_border(views::Border::CreateEmptyBorder(
-          top_down_ ? 0 : 1, 0, top_down_ ? 1 : 0, 0));
-    }
+  if (is_scrollable && !button_bar_->border()) {
+    // Draw separator line on the top of the button bar if it is on the bottom
+    // or draw it at the bottom if the bar is on the top.
+    button_bar_->set_border(views::Border::CreateSolidSidedBorder(
+        top_down_ ? 0 : 1,
+        0,
+        top_down_ ? 1 : 0,
+        0,
+        kFooterDelimiterColor));
+    button_bar_->SchedulePaint();
+  } else if (!is_scrollable && button_bar_->border()) {
+    button_bar_->set_border(NULL);
     button_bar_->SchedulePaint();
   }
   button_bar_->SetBounds(0,

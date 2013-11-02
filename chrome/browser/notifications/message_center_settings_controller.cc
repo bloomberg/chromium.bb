@@ -12,9 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/app_icon_loader_impl.h"
-#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_types.h"
@@ -26,7 +24,6 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/cancelable_task_tracker.h"
-#include "chrome/common/extensions/api/notifications.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/favicon/favicon_types.h"
 #include "content/public/browser/notification_service.h"
@@ -341,49 +338,6 @@ void MessageCenterSettingsController::OnNotifierSettingsClosing() {
   patterns_.clear();
 }
 
-bool MessageCenterSettingsController::NotifierHasAdvancedSettings(
-    const NotifierId& notifier_id) const {
-  // TODO(dewittj): Refactor this so that notifiers have a delegate that can
-  // handle this in a more appropriate location.
-  if (notifier_id.type != NotifierId::APPLICATION)
-    return false;
-
-  const std::string& extension_id = notifier_id.id;
-
-  Profile* profile = GetCurrentProfile();
-  if (!profile)
-    return false;
-
-  extensions::EventRouter* event_router =
-      extensions::ExtensionSystem::Get(profile)->event_router();
-
-  return event_router->ExtensionHasEventListener(
-      extension_id, extensions::api::notifications::OnShowSettings::kEventName);
-}
-
-void MessageCenterSettingsController::OnNotifierAdvancedSettingsRequested(
-    const NotifierId& notifier_id,
-    const std::string* notification_id) {
-  // TODO(dewittj): Refactor this so that notifiers have a delegate that can
-  // handle this in a more appropriate location.
-  if (notifier_id.type != NotifierId::APPLICATION)
-    return;
-
-  const std::string& extension_id = notifier_id.id;
-
-  Profile* profile = GetCurrentProfile();
-  if (!profile)
-    return;
-
-  extensions::EventRouter* event_router =
-      extensions::ExtensionSystem::Get(profile)->event_router();
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-
-  scoped_ptr<extensions::Event> event(new extensions::Event(
-      extensions::api::notifications::OnShowSettings::kEventName, args.Pass()));
-  event_router->DispatchEventToExtension(extension_id, event.Pass());
-}
-
 void MessageCenterSettingsController::OnFaviconLoaded(
     const GURL& url,
     const chrome::FaviconImageResult& favicon_result) {
@@ -411,7 +365,7 @@ void MessageCenterSettingsController::Observe(
                     NotifierGroupChanged());
 }
 
-Profile* MessageCenterSettingsController::GetCurrentProfile() const {
+Profile* MessageCenterSettingsController::GetCurrentProfile() {
   if (notifier_groups_.size() > current_notifier_group_)
     return notifier_groups_[current_notifier_group_]->profile();
 

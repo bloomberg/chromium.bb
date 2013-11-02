@@ -272,9 +272,6 @@
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_ARROW" file="common/notification_arrow.png"/>
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_ARROW_HOVER" file="common/notification_arrow_hover.png"/>
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_ARROW_PRESSED" file="common/notification_arrow_pressed.png"/>
-      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_ADVANCED_SETTINGS" file="common/notification_advanced_settings.png"/>
-      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_ADVANCED_SETTINGS_HOVER" file="common/notification_advanced_settings_hover.png"/>
-      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_ADVANCED_SETTINGS_PRESSED" file="common/notification_advanced_settings_pressed.png"/>
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLEAR_ALL" file="common/notification_clear_all.png"/>
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLEAR_ALL_DISABLED" file="common/notification_clear_all_disabled.png"/>
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLEAR_ALL_HOVER" file="common/notification_clear_all_hover.png"/>

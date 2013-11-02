@@ -9,7 +9,6 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#import "ui/message_center/cocoa/settings_entry_view.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notifier_settings.h"
 
@@ -38,6 +37,7 @@ class NotifierSettingsObserverMac : public NotifierSettingsObserver {
 
 }  // namespace message_center
 
+
 // The view controller responsible for the settings sheet in the center.
 MESSAGE_CENTER_EXPORT
 @interface MCSettingsController : NSViewController {
@@ -64,17 +64,6 @@ MESSAGE_CENTER_EXPORT
 // Designated initializer.
 - (id)initWithProvider:(message_center::NotifierSettingsProvider*)provider
     trayViewController:(MCTrayViewController*)trayViewController;
-
-// Returns whether |provider_| has an advanced settings handler for the given
-// notifier; i.e. we should show the "Learn More" button.
-- (BOOL)notifierHasAdvancedSettings:(const message_center::NotifierId&)id;
-
-// Handler when a checkbox is enabled/disabled.
-- (void)setSettingsNotifier:(message_center::Notifier*)notifier
-                    enabled:(BOOL)enabled;
-
-// Handler when the learn more link is clicked.
-- (void)learnMoreClicked:(message_center::Notifier*)notifier;
 
 @end
 
