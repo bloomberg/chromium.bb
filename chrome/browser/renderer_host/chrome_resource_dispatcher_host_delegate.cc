@@ -11,6 +11,7 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_resource_throttle.h"
@@ -193,6 +194,32 @@ void ReportUnsupportedPrerenderScheme(const GURL& url) {
   }
 }
 
+void AppendComponentUpdaterThrottles(
+    net::URLRequest* request,
+    content::ResourceContext* resource_context,
+    ResourceType::Type resource_type,
+    ScopedVector<content::ResourceThrottle>* throttles) {
+  const char* crx_id = NULL;
+  ComponentUpdateService* cus = g_browser_process->component_updater();
+  if (!cus)
+    return;
+  // Check for PNaCL nexe request.
+  if (resource_type == ResourceType::OBJECT) {
+    const net::HttpRequestHeaders& headers = request->extra_request_headers();
+    std::string accept_headers;
+    if (headers.GetHeader("Accept", &accept_headers)) {
+      if (accept_headers.find("application/x-pnacl") != std::string::npos)
+        crx_id = "hnimpnehoodheedghdeeijklkeaacbdc";
+    }
+  }
+
+  if (crx_id) {
+    // We got a component we need to install, so throttle the resource
+    // until the component is installed.
+    throttles->push_back(cus->GetOnDemandResourceThrottle(request, crx_id));
+  }
+}
+
 }  // end namespace
 
 ChromeResourceDispatcherHostDelegate::ChromeResourceDispatcherHostDelegate(
@@ -319,6 +346,12 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
                                   resource_context,
                                   resource_type,
                                   throttles);
+  if (!is_prerendering) {
+    AppendComponentUpdaterThrottles(request,
+                                    resource_context,
+                                    resource_type,
+                                    throttles);
+  }
 
   if (io_data->resource_prefetch_predictor_observer()) {
     io_data->resource_prefetch_predictor_observer()->OnRequestStarted(

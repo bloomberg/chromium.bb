@@ -18,6 +18,11 @@ class FilePath;
 
 namespace net {
 class URLRequestContextGetter;
+class URLRequest;
+}
+
+namespace content {
+class ResourceThrottle;
 }
 
 class ComponentPatcher;
@@ -187,6 +192,12 @@ class ComponentUpdateService {
 
   // Returns a list of registered components.
   virtual void GetComponents(std::vector<CrxComponentInfo>* components) = 0;
+
+  // Returns a network resource throttle. It means that a component will be
+  // downloaded and installed before the resource is unthrottled. This is the
+  // only function callable from the IO thread.
+  virtual content::ResourceThrottle* GetOnDemandResourceThrottle(
+      net::URLRequest* request, const std::string& crx_id) = 0;
 
   virtual ~ComponentUpdateService() {}
 
