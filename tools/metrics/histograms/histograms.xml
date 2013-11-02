@@ -10834,6 +10834,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.BookmarkActionAndroid"
+    enum="NewTabPageBookmarkActionAndroid">
+  <summary>
+    Actions taken by users on partner bookmarks (editing / renaming) on the NTP
+    on Android.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.DefaultPageType" enum="NtpPaneType">
   <summary>The default pane when the NTP is first opened.</summary>
 </histogram>
@@ -25471,6 +25479,17 @@ other types of suffix sets.
   <int value="4" label="Opened a recently closed tab"/>
   <int value="5" label="Opened a bookmark"/>
   <int value="6" label="Opened a foreign session (from other devices section)"/>
+</enum>
+
+<enum name="NewTabPageBookmarkActionAndroid" type="int">
+  <summary>
+    These values are defined in PartnerBookmarkAction enum in
+    chrome/browser/ui/webui/ntp/android/bookmarks_handler.cc.
+  </summary>
+  <int value="0" label="Deleted partner bookmark"/>
+  <int value="1" label="Deleted root partner folder"/>
+  <int value="2" label="Renamed partner bookmark"/>
+  <int value="3" label="Renamed root partner folder"/>
 </enum>
 
 <enum name="NewTabPageMobilePromo" type="int">

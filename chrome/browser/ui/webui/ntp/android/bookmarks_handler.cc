@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -33,6 +34,23 @@ namespace {
 
 static const char* kParentIdParam = "parent_id";
 static const char* kNodeIdParam = "node_id";
+
+// Defines actions taken by the user over the partner bookmarks on NTP for
+// NewTabPage.BookmarkActionAndroid histogram.
+// Should be kept in sync with the values in histograms.xml.
+enum PartnerBookmarkAction {
+  BOOKMARK_ACTION_DELETE_BOOKMARK_PARTNER = 0,
+  BOOKMARK_ACTION_DELETE_ROOT_FOLDER_PARTNER = 1,
+  BOOKMARK_ACTION_EDIT_BOOKMARK_PARTNER = 2,
+  BOOKMARK_ACTION_EDIT_ROOT_FOLDER_PARTNER = 3,
+  BOOKMARK_ACTION_BUCKET_BOUNDARY = 4
+};
+
+// Helper to record a bookmark action in BookmarkActionAndroid histogram.
+void RecordBookmarkAction(PartnerBookmarkAction type) {
+  UMA_HISTOGRAM_ENUMERATION("NewTabPage.BookmarkActionAndroid", type,
+                            BOOKMARK_ACTION_BUCKET_BOUNDARY);
+}
 
 std::string BookmarkTypeAsString(BookmarkNode::Type type) {
   switch (type) {
@@ -155,6 +173,10 @@ void BookmarksHandler::HandleDeleteBookmark(const ListValue* args) {
   }
 
   if (partner_bookmarks_shim_->IsPartnerBookmark(node)) {
+    if (partner_bookmarks_shim_->GetPartnerBookmarksRoot() == node)
+      RecordBookmarkAction(BOOKMARK_ACTION_DELETE_ROOT_FOLDER_PARTNER);
+    else
+      RecordBookmarkAction(BOOKMARK_ACTION_DELETE_BOOKMARK_PARTNER);
     partner_bookmarks_shim_->RemoveBookmark(node);
     return;
   }
@@ -176,6 +198,12 @@ void BookmarksHandler::HandleEditBookmark(const ListValue* args) {
 
   TabAndroid* tab = TabAndroid::FromWebContents(web_ui()->GetWebContents());
   if (tab) {
+    if (partner_bookmarks_shim_->IsPartnerBookmark(node)) {
+      if (partner_bookmarks_shim_->GetPartnerBookmarksRoot() == node)
+        RecordBookmarkAction(BOOKMARK_ACTION_EDIT_ROOT_FOLDER_PARTNER);
+      else
+        RecordBookmarkAction(BOOKMARK_ACTION_EDIT_BOOKMARK_PARTNER);
+    }
     tab->EditBookmark(node->id(),
                       GetTitle(node),
                       node->is_folder(),
