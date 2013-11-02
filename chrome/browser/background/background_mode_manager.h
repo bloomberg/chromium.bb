@@ -99,6 +99,8 @@ class BackgroundModeManager
                            ProfileInfoCacheStorage);
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
                            ProfileInfoCacheObserver);
+  FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
+                           BackgroundMenuGeneration);
   FRIEND_TEST_ALL_PREFIXES(BackgroundAppBrowserTest,
                            ReloadBackgroundApp);
 
@@ -222,7 +224,7 @@ class BackgroundModeManager
 
   // Enables keep alive and the status tray icon if and only if background mode
   // is active and not suspended.
-  void UpdateKeepAliveAndTrayIcon();
+  virtual void UpdateKeepAliveAndTrayIcon();
 
   // If --no-startup-window is passed, BackgroundModeManager will manually keep
   // chrome running while waiting for apps to load. This is called when we no

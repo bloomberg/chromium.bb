@@ -4,29 +4,60 @@
 
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/background/background_mode_manager.h"
+#include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/status_icons/status_icon_menu_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
+#include "ui/message_center/message_center.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#endif
 
 class BackgroundModeManagerTest : public testing::Test {
  public:
-  BackgroundModeManagerTest()
-      : profile_manager_(TestingBrowserProcess::GetGlobal()) {}
+  BackgroundModeManagerTest() {}
   virtual ~BackgroundModeManagerTest() {}
   virtual void SetUp() {
     command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));
-    ASSERT_TRUE(profile_manager_.SetUp());
   }
   scoped_ptr<CommandLine> command_line_;
-  TestingProfileManager profile_manager_;
+
+ protected:
+  scoped_refptr<extensions::Extension> CreateExtension(
+      extensions::Manifest::Location location,
+      const std::string& data,
+      const std::string& id) {
+    return extension_function_test_utils::CreateExtension(
+        location,
+        extension_function_test_utils::ParseDictionary(data),
+        id);
+  }
+
+  TestingProfileManager* CreateTestingProfileManager() {
+    TestingProfileManager* profile_manager =
+        new TestingProfileManager(TestingBrowserProcess::GetGlobal());
+    EXPECT_TRUE(profile_manager->SetUp());
+    return profile_manager;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BackgroundModeManagerTest);
 };
 
 class TestBackgroundModeManager : public BackgroundModeManager {
@@ -44,6 +75,8 @@ class TestBackgroundModeManager : public BackgroundModeManager {
   virtual void EnableLaunchOnStartup(bool launch) OVERRIDE {
     launch_on_startup_ = launch;
   }
+  virtual void DisplayAppInstalledNotification(
+      const extensions::Extension* extension) OVERRIDE {}
   virtual void CreateStatusTrayIcon() OVERRIDE { have_status_tray_ = true; }
   virtual void RemoveStatusTrayIcon() OVERRIDE { have_status_tray_ = false; }
   virtual int GetBackgroundAppCount() const OVERRIDE { return app_count_; }
@@ -94,9 +127,11 @@ static void AssertBackgroundModeSuspended(
 }
 
 TEST_F(BackgroundModeManagerTest, BackgroundAppLoadUnload) {
-  TestingProfile* profile = profile_manager_.CreateTestingProfile("p1");
+  scoped_ptr<TestingProfileManager> profile_manager(
+      CreateTestingProfileManager());
+  TestingProfile* profile = profile_manager->CreateTestingProfile("p1");
   TestBackgroundModeManager manager(
-      command_line_.get(), profile_manager_.profile_info_cache(), true);
+      command_line_.get(), profile_manager->profile_info_cache(), true);
   manager.RegisterProfile(profile);
   EXPECT_FALSE(chrome::WillKeepAlive());
 
@@ -128,9 +163,11 @@ TEST_F(BackgroundModeManagerTest, BackgroundAppLoadUnload) {
 
 // App installs while background mode is disabled should do nothing.
 TEST_F(BackgroundModeManagerTest, BackgroundAppInstallUninstallWhileDisabled) {
-  TestingProfile* profile = profile_manager_.CreateTestingProfile("p1");
+  scoped_ptr<TestingProfileManager> profile_manager(
+      CreateTestingProfileManager());
+  TestingProfile* profile = profile_manager->CreateTestingProfile("p1");
   TestBackgroundModeManager manager(
-      command_line_.get(), profile_manager_.profile_info_cache(), true);
+      command_line_.get(), profile_manager->profile_info_cache(), true);
   manager.RegisterProfile(profile);
   // Turn off background mode.
   manager.SetEnabled(false);
@@ -158,9 +195,11 @@ TEST_F(BackgroundModeManagerTest, BackgroundAppInstallUninstallWhileDisabled) {
 // App installs while disabled should do nothing until background mode is
 // enabled..
 TEST_F(BackgroundModeManagerTest, EnableAfterBackgroundAppInstall) {
-  TestingProfile* profile = profile_manager_.CreateTestingProfile("p1");
+  scoped_ptr<TestingProfileManager> profile_manager(
+      CreateTestingProfileManager());
+  TestingProfile* profile = profile_manager->CreateTestingProfile("p1");
   TestBackgroundModeManager manager(
-      command_line_.get(), profile_manager_.profile_info_cache(), true);
+      command_line_.get(), profile_manager->profile_info_cache(), true);
   manager.RegisterProfile(profile);
 
   // Install app, should show status tray icon.
@@ -190,10 +229,12 @@ TEST_F(BackgroundModeManagerTest, EnableAfterBackgroundAppInstall) {
 }
 
 TEST_F(BackgroundModeManagerTest, MultiProfile) {
-  TestingProfile* profile1 = profile_manager_.CreateTestingProfile("p1");
-  TestingProfile* profile2 = profile_manager_.CreateTestingProfile("p2");
+  scoped_ptr<TestingProfileManager> profile_manager(
+      CreateTestingProfileManager());
+  TestingProfile* profile1 = profile_manager->CreateTestingProfile("p1");
+  TestingProfile* profile2 = profile_manager->CreateTestingProfile("p2");
   TestBackgroundModeManager manager(
-      command_line_.get(), profile_manager_.profile_info_cache(), true);
+      command_line_.get(), profile_manager->profile_info_cache(), true);
   manager.RegisterProfile(profile1);
   manager.RegisterProfile(profile2);
   EXPECT_FALSE(chrome::WillKeepAlive());
@@ -231,15 +272,17 @@ TEST_F(BackgroundModeManagerTest, MultiProfile) {
 }
 
 TEST_F(BackgroundModeManagerTest, ProfileInfoCacheStorage) {
-  TestingProfile* profile1 = profile_manager_.CreateTestingProfile("p1");
-  TestingProfile* profile2 = profile_manager_.CreateTestingProfile("p2");
+  scoped_ptr<TestingProfileManager> profile_manager(
+      CreateTestingProfileManager());
+  TestingProfile* profile1 = profile_manager->CreateTestingProfile("p1");
+  TestingProfile* profile2 = profile_manager->CreateTestingProfile("p2");
   TestBackgroundModeManager manager(
-      command_line_.get(), profile_manager_.profile_info_cache(), true);
+      command_line_.get(), profile_manager->profile_info_cache(), true);
   manager.RegisterProfile(profile1);
   manager.RegisterProfile(profile2);
   EXPECT_FALSE(chrome::WillKeepAlive());
 
-  ProfileInfoCache* cache = profile_manager_.profile_info_cache();
+  ProfileInfoCache* cache = profile_manager->profile_info_cache();
   EXPECT_EQ(2u, cache->GetNumberOfProfiles());
 
   EXPECT_FALSE(cache->GetBackgroundStatusOfProfileAtIndex(0));
@@ -278,9 +321,11 @@ TEST_F(BackgroundModeManagerTest, ProfileInfoCacheStorage) {
 }
 
 TEST_F(BackgroundModeManagerTest, ProfileInfoCacheObserver) {
-  TestingProfile* profile1 = profile_manager_.CreateTestingProfile("p1");
+  scoped_ptr<TestingProfileManager> profile_manager(
+      CreateTestingProfileManager());
+  TestingProfile* profile1 = profile_manager->CreateTestingProfile("p1");
   TestBackgroundModeManager manager(
-      command_line_.get(), profile_manager_.profile_info_cache(), true);
+      command_line_.get(), profile_manager->profile_info_cache(), true);
   manager.RegisterProfile(profile1);
   EXPECT_FALSE(chrome::WillKeepAlive());
 
@@ -297,7 +342,7 @@ TEST_F(BackgroundModeManagerTest, ProfileInfoCacheObserver) {
   EXPECT_EQ(UTF8ToUTF16("p1"),
             manager.GetBackgroundModeData(profile1)->name());
 
-  TestingProfile* profile2 = profile_manager_.CreateTestingProfile("p2");
+  TestingProfile* profile2 = profile_manager->CreateTestingProfile("p2");
   manager.RegisterProfile(profile2);
   EXPECT_EQ(2, manager.NumberOfBackgroundModeData());
 
@@ -314,10 +359,12 @@ TEST_F(BackgroundModeManagerTest, ProfileInfoCacheObserver) {
 }
 
 TEST_F(BackgroundModeManagerTest, DisableBackgroundModeUnderTestFlag) {
-  TestingProfile* profile1 = profile_manager_.CreateTestingProfile("p1");
+  scoped_ptr<TestingProfileManager> profile_manager(
+      CreateTestingProfileManager());
+  TestingProfile* profile1 = profile_manager->CreateTestingProfile("p1");
   command_line_->AppendSwitch(switches::kKeepAliveForTest);
   TestBackgroundModeManager manager(
-      command_line_.get(), profile_manager_.profile_info_cache(), true);
+      command_line_.get(), profile_manager->profile_info_cache(), true);
   manager.RegisterProfile(profile1);
   EXPECT_TRUE(manager.ShouldBeInBackgroundMode());
   manager.SetEnabled(false);
@@ -326,10 +373,143 @@ TEST_F(BackgroundModeManagerTest, DisableBackgroundModeUnderTestFlag) {
 
 TEST_F(BackgroundModeManagerTest,
        BackgroundModeDisabledPreventsKeepAliveOnStartup) {
-  TestingProfile* profile1 = profile_manager_.CreateTestingProfile("p1");
+  scoped_ptr<TestingProfileManager> profile_manager(
+      CreateTestingProfileManager());
+  TestingProfile* profile1 = profile_manager->CreateTestingProfile("p1");
   command_line_->AppendSwitch(switches::kKeepAliveForTest);
   TestBackgroundModeManager manager(
-      command_line_.get(), profile_manager_.profile_info_cache(), false);
+      command_line_.get(), profile_manager->profile_info_cache(), false);
   manager.RegisterProfile(profile1);
   EXPECT_FALSE(manager.ShouldBeInBackgroundMode());
+}
+
+TEST_F(BackgroundModeManagerTest, BackgroundMenuGeneration) {
+  // Aura clears notifications from the message center at shutdown.
+  message_center::MessageCenter::Initialize();
+
+  // Required for extension service.
+  content::TestBrowserThreadBundle thread_bundle;
+
+  scoped_ptr<TestingProfileManager> profile_manager(
+      CreateTestingProfileManager());
+
+  // BackgroundModeManager actually affects Chrome start/stop state,
+  // tearing down our thread bundle before we've had chance to clean
+  // everything up. Keeping Chrome alive prevents this.
+  // We aren't interested in if the keep alive works correctly in this test.
+  chrome::StartKeepAlive();
+  TestingProfile* profile = profile_manager->CreateTestingProfile("p");
+
+#if defined(OS_CHROMEOS)
+  // ChromeOS needs extra services to run in the following order.
+  chromeos::ScopedTestDeviceSettingsService test_device_settings_service;
+  chromeos::ScopedTestCrosSettings test_cros_settings;
+  chromeos::ScopedTestUserManager test_user_manager;
+
+  // On ChromeOS shutdown, HandleAppExitingForPlatform will call
+  // chrome::EndKeepAlive because it assumes the aura shell
+  // called chrome::StartKeepAlive. Simulate the call here.
+  chrome::StartKeepAlive();
+#endif
+
+  scoped_refptr<extensions::Extension> component_extension(
+    CreateExtension(
+        extensions::Manifest::COMPONENT,
+        "{\"name\": \"Component Extension\","
+        "\"version\": \"1.0\","
+        "\"manifest_version\": 2,"
+        "\"permissions\": [\"background\"]}",
+        "ID-1"));
+
+  scoped_refptr<extensions::Extension> component_extension_with_options(
+    CreateExtension(
+        extensions::Manifest::COMPONENT,
+        "{\"name\": \"Component Extension with Options\","
+        "\"version\": \"1.0\","
+        "\"manifest_version\": 2,"
+        "\"permissions\": [\"background\"],"
+        "\"options_page\": \"test.html\"}",
+        "ID-2"));
+
+  scoped_refptr<extensions::Extension> regular_extension(
+    CreateExtension(
+        extensions::Manifest::COMMAND_LINE,
+        "{\"name\": \"Regular Extension\", "
+        "\"version\": \"1.0\","
+        "\"manifest_version\": 2,"
+        "\"permissions\": [\"background\"]}",
+        "ID-3"));
+
+  scoped_refptr<extensions::Extension> regular_extension_with_options(
+    CreateExtension(
+        extensions::Manifest::COMMAND_LINE,
+        "{\"name\": \"Regular Extension with Options\","
+        "\"version\": \"1.0\","
+        "\"manifest_version\": 2,"
+        "\"permissions\": [\"background\"],"
+        "\"options_page\": \"test.html\"}",
+        "ID-4"));
+
+  static_cast<extensions::TestExtensionSystem*>(
+      extensions::ExtensionSystem::Get(profile))->CreateExtensionService(
+          CommandLine::ForCurrentProcess(),
+          base::FilePath(),
+          false);
+  ExtensionService* service = profile->GetExtensionService();
+  service->Init();
+
+  service->AddComponentExtension(component_extension);
+  service->AddComponentExtension(component_extension_with_options);
+  service->AddExtension(regular_extension);
+  service->AddExtension(regular_extension_with_options);
+
+  scoped_ptr<TestBackgroundModeManager> manager(new TestBackgroundModeManager(
+      command_line_.get(), profile_manager->profile_info_cache(), true));
+  manager->RegisterProfile(profile);
+
+  scoped_ptr<StatusIconMenuModel> menu(new StatusIconMenuModel(NULL));
+  scoped_ptr<StatusIconMenuModel> submenu(new StatusIconMenuModel(NULL));
+  BackgroundModeManager::BackgroundModeData* bmd =
+      manager->GetBackgroundModeData(profile);
+  bmd->BuildProfileMenu(submenu.get(), menu.get());
+  EXPECT_TRUE(
+      submenu->GetLabelAt(0) ==
+          UTF8ToUTF16("Component Extension"));
+  EXPECT_FALSE(submenu->IsCommandIdEnabled(submenu->GetCommandIdAt(0)));
+  EXPECT_TRUE(
+      submenu->GetLabelAt(1) ==
+          UTF8ToUTF16("Component Extension with Options"));
+  EXPECT_TRUE(submenu->IsCommandIdEnabled(submenu->GetCommandIdAt(1)));
+  EXPECT_TRUE(
+      submenu->GetLabelAt(2) ==
+          UTF8ToUTF16("Regular Extension"));
+  EXPECT_TRUE(submenu->IsCommandIdEnabled(submenu->GetCommandIdAt(2)));
+  EXPECT_TRUE(
+      submenu->GetLabelAt(3) ==
+          UTF8ToUTF16("Regular Extension with Options"));
+  EXPECT_TRUE(submenu->IsCommandIdEnabled(submenu->GetCommandIdAt(3)));
+
+  // We have to destroy the profile now because we created it with real thread
+  // state. This causes a lot of machinery to spin up that stops working
+  // when we tear down our thread state at the end of the test.
+  profile_manager->DeleteTestingProfile("p");
+
+  // We're getting ready to shutdown the message loop. Clear everything out!
+  base::MessageLoop::current()->RunUntilIdle();
+  chrome::EndKeepAlive(); // Matching the above chrome::StartKeepAlive().
+
+  // TestBackgroundModeManager has dependencies on the infrastructure.
+  // It should get cleared first.
+  manager.reset();
+
+  // The Profile Manager references the Browser Process.
+  // The Browser Process references the Notification UI Manager.
+  // The Notification UI Manager references the Message Center.
+  // As a result, we have to clear the browser process state here
+  // before tearing down the Message Center.
+  profile_manager.reset();
+
+  // Message Center shutdown must occur after the EndKeepAlive because
+  // EndKeepAlive will end up referencing the message center during cleanup.
+  message_center::MessageCenter::Shutdown();
 }
