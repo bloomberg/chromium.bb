@@ -597,6 +597,11 @@
             'widget/widget_hwnd_utils.h',
           ],
         }],
+        ['use_ozone==1', {
+          'dependencies': [
+            '../ozone/ozone.gyp:ozone',
+          ],
+        }],
       ],
     }, # target_name: views
     {
