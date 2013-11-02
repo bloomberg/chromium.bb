@@ -81,8 +81,13 @@ COMPILE_ASSERT(kCdmValueDelimiter == kCdmSupportedCodecsValueDelimiter,
 // The following entries are required.
 //  Interface versions are lists of integers (e.g. "1" or "1,2,4").
 //  These are checked in this file before registering the CDM.
+//  All match the interface versions from content_decryption_module.h that the
+//  CDM supports.
+//    Matches CDM_MODULE_VERSION.
 const char kCdmModuleVersionsName[] = "x-cdm-module-versions";
-const char kCdmInstanceVersionsName[] = "x-cdm-instance-versions";
+//    Matches supported ContentDecryptionModule_* version(s).
+const char kCdmInterfaceVersionsName[] = "x-cdm-interface-versions";
+//    Matches supported Host_* version(s).
 const char kCdmHostVersionsName[] = "x-cdm-host-versions";
 //  The codecs list is a list of simple codec names (e.g. "vp8,vorbis").
 //  The list is passed to other parts of Chrome.
@@ -142,7 +147,7 @@ bool CheckForCompatibleVersion(const base::DictionaryValue& manifest,
     // The original manifests did not include this string, so add its version.
     if (version_name == kCdmModuleVersionsName)
       versions_string = "4";
-    else if (version_name == kCdmInstanceVersionsName)
+    else if (version_name == kCdmInterfaceVersionsName)
       versions_string = "1";
     else if (version_name == kCdmHostVersionsName)
       versions_string = "1";
@@ -169,7 +174,7 @@ bool CheckForCompatibleVersion(const base::DictionaryValue& manifest,
 
 // Returns whether the CDM's API versions, as specified in the manifest, are
 // compatible with this Chrome binary.
-// Checks the module API, CDM instance API, and Host API.
+// Checks the module API, CDM interface API, and Host API.
 // This should never fail except in rare cases where the component has not been
 // updated recently or the user downgrades Chrome.
 bool IsCompatibleWithChrome(const base::DictionaryValue& manifest) {
@@ -178,7 +183,7 @@ bool IsCompatibleWithChrome(const base::DictionaryValue& manifest) {
                                 kCdmModuleVersionsName,
                                 media::IsSupportedCdmModuleVersion) &&
       CheckForCompatibleVersion(manifest,
-                                kCdmInstanceVersionsName,
+                                kCdmInterfaceVersionsName,
                                 media::IsSupportedCdmInterfaceVersion) &&
       CheckForCompatibleVersion(manifest,
                                 kCdmHostVersionsName,
