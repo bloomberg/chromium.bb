@@ -6,7 +6,7 @@
 #define CHROME_COMMON_EXTENSIONS_API_SPELLCHECK_SPELLCHECK_HANDLER_H_
 
 #include "chrome/common/extensions/extension.h"
-#include "extensions/common/manifest_handler.h"
+#include "chrome/common/extensions/manifest_handler.h"
 
 namespace extensions {
 

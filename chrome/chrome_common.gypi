@@ -205,6 +205,8 @@
         'common/extensions/features/simple_feature.h',
         'common/extensions/incognito_handler.cc',
         'common/extensions/incognito_handler.h',
+        'common/extensions/manifest_handler.cc',
+        'common/extensions/manifest_handler.h',
         'common/extensions/manifest_handler_helpers.cc',
         'common/extensions/manifest_handler_helpers.h',
         'common/extensions/manifest_handlers/app_isolation_info.cc',

@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/common/extensions/extension.h"
-#include "extensions/common/manifest_handler.h"
+#include "chrome/common/extensions/manifest_handler.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 #include "url/gurl.h"

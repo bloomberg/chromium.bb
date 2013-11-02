@@ -10,7 +10,7 @@
 
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
-#include "extensions/common/manifest_handler.h"
+#include "chrome/common/extensions/manifest_handler.h"
 
 namespace extensions {
 
