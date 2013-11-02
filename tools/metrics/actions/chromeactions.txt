@@ -1661,6 +1661,7 @@
 0xf3768ba285ebca7e	ViewAboutFlash
 0xd3879291d67e1389	ViewAboutNaCl
 0xfb4a178539bac6bd	ViewSource
+0x91586aefc4a53dc7	VirtualKeyboardLoaded
 0x6932875212d36f57	WP_EditImage
 0x34a770eb3bbf5632	WP_Gallery
 0x462194a5096cab5e	WebView.ClearData
