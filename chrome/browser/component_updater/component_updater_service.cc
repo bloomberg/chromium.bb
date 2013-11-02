@@ -15,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -32,8 +31,6 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/resource_controller.h"
-#include "content/public/browser/resource_throttle.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "net/base/escape.h"
@@ -41,7 +38,6 @@
 #include "net/base/net_errors.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
@@ -241,52 +237,6 @@ CrxComponentInfo::CrxComponentInfo() {
 CrxComponentInfo::~CrxComponentInfo() {
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// In charge of blocking url requests until the |crx_id| component has been
-// updated. This class is touched solely from the IO thread. The UI thread
-// can post tasks to it via weak pointers. By default the request is blocked
-// unless the CrxUpdateService calls Unblock().
-// The lifetime is controlled by Chrome's resource loader so the component
-// updater cannot touch objects from this class except via weak pointers.
-class CUResourceThrottle
-    : public content::ResourceThrottle,
-      public base::SupportsWeakPtr<CUResourceThrottle> {
- public:
-  explicit CUResourceThrottle(const net::URLRequest* request);
-  virtual ~CUResourceThrottle();
-  // Overriden from ResourceThrottle.
-  virtual void WillStartRequest(bool* defer) OVERRIDE;
-  virtual void WillRedirectRequest(const GURL& new_url, bool* defer) OVERRIDE;
-
-  // Component updater calls this function via PostTask to unblock the request.
-  void Unblock();
-
-  typedef std::vector<base::WeakPtr<CUResourceThrottle> > WeakPtrVector;
-
- private:
-   enum State {
-     NEW,
-     BLOCKED,
-     UNBLOCKED
-   };
-
-   State state_;
-};
-
-void UnblockResourceThrottle(base::WeakPtr<CUResourceThrottle> rt) {
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&CUResourceThrottle::Unblock, rt));
-}
-
-void UnblockandReapAllThrottles(CUResourceThrottle::WeakPtrVector* throttles) {
-  CUResourceThrottle::WeakPtrVector::iterator it;
-  for (it = throttles->begin(); it != throttles->end(); ++it)
-    UnblockResourceThrottle(*it);
-  throttles->clear();
-}
-
 //////////////////////////////////////////////////////////////////////////////
 // The one and only implementation of the ComponentUpdateService interface. In
 // charge of running the show. The main method is ProcessPendingItems() which
@@ -313,8 +263,6 @@ class CrxUpdateService : public ComponentUpdateService {
   virtual Status OnDemandUpdate(const std::string& component_id) OVERRIDE;
   virtual void GetComponents(
       std::vector<CrxComponentInfo>* components) OVERRIDE;
-  virtual content::ResourceThrottle* GetOnDemandResourceThrottle(
-      net::URLRequest* request, const std::string& crx_id) OVERRIDE;
 
   // The only purpose of this class is to forward the
   // UtilityProcessHostClient callbacks so CrxUpdateService does
@@ -395,8 +343,6 @@ class CrxUpdateService : public ComponentUpdateService {
 
   bool AddItemToUpdateCheck(CrxUpdateItem* item, std::string* query);
 
-  Status OnDemandUpdateInternal(CrxUpdateItem* item);
-
   void ProcessPendingItems();
 
   CrxUpdateItem* FindReadyComponent();
@@ -428,9 +374,6 @@ class CrxUpdateService : public ComponentUpdateService {
                                 int extra) const;
 
   bool HasOnDemandItems() const;
-
-  void OnNewResourceThrottle(base::WeakPtr<CUResourceThrottle> rt,
-                             const std::string& crx_id);
 
   scoped_ptr<ComponentUpdateService::Configurator> config_;
 
@@ -616,13 +559,6 @@ void CrxUpdateService::ChangeItemState(CrxUpdateItem* item,
         break;
     }
   }
-
-  // Free possible pending network requests.
-  if ((to == CrxUpdateItem::kUpdated) ||
-      (to == CrxUpdateItem::kUpToDate) ||
-      (to == CrxUpdateItem::kNoUpdate)) {
-    UnblockandReapAllThrottles(&item->throttles);
-  }
 }
 
 // Changes all the components in |work_items_| that have |from| status to
@@ -712,13 +648,11 @@ bool CrxUpdateService::AddItemToUpdateCheck(CrxUpdateItem* item,
 // |component_id| is a value returned from GetCrxComponentID().
 ComponentUpdateService::Status CrxUpdateService::OnDemandUpdate(
     const std::string& component_id) {
-  return OnDemandUpdateInternal(FindUpdateItemById(component_id));
-}
-
-ComponentUpdateService::Status CrxUpdateService::OnDemandUpdateInternal(
-    CrxUpdateItem* uit) {
+  CrxUpdateItem* uit;
+  uit = FindUpdateItemById(component_id);
   if (!uit)
     return kError;
+
   // Check if the request is too soon.
   base::TimeDelta delta = base::Time::Now() - uit->last_check;
   if (delta < base::TimeDelta::FromSeconds(config_->OnDemandDelay()))
@@ -1144,66 +1078,6 @@ void CrxUpdateService::NotifyComponentObservers(
     if (observer)
       observer->OnEvent(event, 0);
   }
-}
-
-content::ResourceThrottle* CrxUpdateService::GetOnDemandResourceThrottle(
-     net::URLRequest* request, const std::string& crx_id) {
-  // We give the raw pointer to the caller, who will delete it at will
-  // and we keep for ourselves a weak pointer to it so we can post tasks
-  // from the UI thread without having to track lifetime directly.
-  CUResourceThrottle* rt = new CUResourceThrottle(request);
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&CrxUpdateService::OnNewResourceThrottle,
-                 base::Unretained(this),
-                 rt->AsWeakPtr(),
-                 crx_id));
-  return rt;
-}
-
-void CrxUpdateService::OnNewResourceThrottle(
-    base::WeakPtr<CUResourceThrottle> rt, const std::string& crx_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Check if we can on-demand update, else unblock the request anyway.
-  CrxUpdateItem* item = FindUpdateItemById(crx_id);
-  Status status = OnDemandUpdateInternal(item);
-  if (status == kOk || status == kInProgress) {
-    item->throttles.push_back(rt);
-    return;
-  }
-  UnblockResourceThrottle(rt);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-CUResourceThrottle::CUResourceThrottle(const net::URLRequest* request)
-    : state_(NEW) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-}
-
-CUResourceThrottle::~CUResourceThrottle() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-}
-
-void CUResourceThrottle::WillStartRequest(bool* defer) {
-  if (state_ != UNBLOCKED) {
-    state_ = BLOCKED;
-    *defer = true;
-  } else {
-    *defer = false;
-  }
-}
-
-void CUResourceThrottle::WillRedirectRequest(const GURL& new_url, bool* defer) {
-  WillStartRequest(defer);
-}
-
-void CUResourceThrottle::Unblock() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (state_ == BLOCKED)
-    controller()->Resume();
-  state_ = UNBLOCKED;
 }
 
 // The component update factory. Using the component updater as a singleton

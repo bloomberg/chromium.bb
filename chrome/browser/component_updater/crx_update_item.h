@@ -9,12 +9,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/version.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
-
-class CUResourceThrottle;
 
 // This is the one and only per-item state structure. Designed to be hosted
 // in a std::vector or a std::list. The two main members are |component|
@@ -104,8 +101,6 @@ struct CrxUpdateItem {
   int diff_error_category;
   int diff_error_code;
   int diff_extra_code1;
-
-  std::vector<base::WeakPtr<CUResourceThrottle> > throttles;
 
   CrxUpdateItem();
   ~CrxUpdateItem();
