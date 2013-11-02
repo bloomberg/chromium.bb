@@ -6,9 +6,6 @@
   'variables': {
     'chromium_code': 1,
   },
-  'target_defaults': {
-    'defines': ['MOJO_IMPLEMENTATION'],
-  },
   'targets': [
     {
       'target_name': 'mojo',
