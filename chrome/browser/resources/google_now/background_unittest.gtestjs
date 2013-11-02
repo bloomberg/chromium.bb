@@ -359,13 +359,15 @@ TEST_F(
               };
           }));
       this.mockGlobals.expects(once()).
-          showNotificationCards(eqJSON({
-            card1: {testValue: 'TEST CARD VALUE 1'},
-            card2: {testValue: 'TEST CARD VALUE 2'}
-          }));
+          showNotificationCards(
+              eqJSON({
+                card1: {testValue: 'TEST CARD VALUE 1'},
+                card2: {testValue: 'TEST CARD VALUE 2'}
+              }),
+              ANYTHING);
 
       // Invoking the tested function.
-      mergeAndShowNotificationCards(testGroups);
+      mergeAndShowNotificationCards(testGroups, function() {});
     });
 
 // TODO(vadimt): Add more tests for parseAndShowNotificationCards().
@@ -439,7 +441,8 @@ TEST_F(
               eqJSON({notificationGroups: expectedUpdatedGroups}));
 
       this.mockGlobals.expects(once()).
-          mergeAndShowNotificationCards(eqJSON(expectedUpdatedGroups));
+          mergeAndShowNotificationCards(
+              eqJSON(expectedUpdatedGroups), ANYTHING);
 
       this.mockGlobals.expects(once()).
           recordEvent(GoogleNowEvent.CARDS_PARSE_SUCCESS);

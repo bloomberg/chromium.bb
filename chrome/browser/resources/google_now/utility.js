@@ -44,6 +44,12 @@ function initializeDebug() {
 initializeDebug();
 
 /**
+ * Location Card Storage.
+ */
+if (localStorage['locationCardsShown'] === undefined)
+  localStorage['locationCardsShown'] = 0;
+
+/**
  * Builds an error object with a message that may be sent to the server.
  * @param {string} message Error message. This message may be sent to the
  *     server.

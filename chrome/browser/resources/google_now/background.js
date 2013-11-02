@@ -85,6 +85,11 @@ var DEFAULT_OPTIN_CHECK_PERIOD_SECONDS = 60 * 60 * 24 * 7; // 1 week
 var SETTINGS_URL = 'https://support.google.com/chrome/?p=ib_google_now_welcome';
 
 /**
+ * Number of location cards that need an explanatory link.
+ */
+var LOCATION_CARDS_LINK_THRESHOLD = 10;
+
+/**
  * Names for tasks that can be created by the extension.
  */
 var UPDATE_CARDS_TASK_NAME = 'update-cards';
@@ -271,8 +276,10 @@ function setAuthorization(request, callbackBoolean) {
  * Shows parsed and merged cards as notifications.
  * @param {Object.<string, MergedCard>} cards Map from chromeNotificationId to
  *     the merged card, containing cards to show.
+ * @param {function(CardCreateInfo)=} onCardShown Optional parameter called when
+ *     each card is shown.
  */
-function showNotificationCards(cards) {
+function showNotificationCards(cards, onCardShown) {
   console.log('showNotificationCards ' + JSON.stringify(cards));
 
   instrumented.storage.local.get(['notificationsData', 'recentDismissals'],
@@ -324,7 +331,8 @@ function showNotificationCards(cards) {
             newNotificationsData[chromeNotificationId] = cardSet.update(
                 chromeNotificationId,
                 cards[chromeNotificationId],
-                previousVersion);
+                previousVersion,
+                onCardShown);
           }
 
           chrome.storage.local.set({
@@ -404,6 +412,9 @@ function mergeCards(
     result.version = unmergedNotification.version;
   }
 
+  result.locationBased =
+      result.locationBased || unmergedNotification.locationBased;
+
   result.notification.priority = priority;
   var dismissalData = {
     notificationId: unmergedNotification.notificationId,
@@ -472,22 +483,26 @@ function scheduleNextPoll(groups, isOptedIn) {
  * Merges notification groups into a set of Chrome notifications and shows them.
  * @param {Object.<string, StorageGroup>} notificationGroups Map from group name
  *     to group information.
+ * @param {function(CardCreateInfo)=} onCardShown Optional parameter called when
+ *     each card is shown.
  */
-function mergeAndShowNotificationCards(notificationGroups) {
+function mergeAndShowNotificationCards(notificationGroups, onCardShown) {
   var mergedCards = {};
 
   for (var groupName in notificationGroups)
     mergeGroup(mergedCards, notificationGroups[groupName]);
 
-  showNotificationCards(mergedCards);
+  showNotificationCards(mergedCards, onCardShown);
 }
 
 /**
  * Parses JSON response from the notification server, shows notifications and
  * schedules next update.
  * @param {string} response Server response.
+ * @param {function(CardCreateInfo)=} onCardShown Optional parameter called when
+ *     each card is shown.
  */
-function parseAndShowNotificationCards(response) {
+function parseAndShowNotificationCards(response, onCardShown) {
   console.log('parseAndShowNotificationCards ' + response);
   var parsedResponse = JSON.parse(response);
 
@@ -559,9 +574,19 @@ function parseAndShowNotificationCards(response) {
 
     scheduleNextPoll(updatedGroups, !parsedResponse.googleNowDisabled);
     chrome.storage.local.set({notificationGroups: updatedGroups});
-    mergeAndShowNotificationCards(updatedGroups);
+    mergeAndShowNotificationCards(updatedGroups, onCardShown);
     recordEvent(GoogleNowEvent.CARDS_PARSE_SUCCESS);
   });
+}
+
+/**
+ * Update Location Cards Shown Count.
+ * @param {Object} cardCreateInfo Card Create Info
+ */
+function countLocationCard(cardCreateInfo) {
+  if (cardCreateInfo.locationBased) {
+    localStorage['locationCardsShown']++;
+  }
 }
 
 /**
@@ -575,7 +600,13 @@ function requestNotificationGroups(groupNames) {
   recordEvent(GoogleNowEvent.REQUEST_FOR_CARDS_TOTAL);
 
   var requestParameters = '?timeZoneOffsetMs=' +
-      (-new Date().getTimezoneOffset() * MS_IN_MINUTE);
+    (-new Date().getTimezoneOffset() * MS_IN_MINUTE);
+
+  var cardShownCallback = undefined;
+  if (localStorage['locationCardsShown'] < LOCATION_CARDS_LINK_THRESHOLD) {
+    requestParameters += '&locationExplanation=true';
+    cardShownCallback = countLocationCard;
+  }
 
   groupNames.forEach(function(groupName) {
     requestParameters += ('&requestTypes=' + groupName);
@@ -589,7 +620,7 @@ function requestNotificationGroups(groupNames) {
     console.log('requestNotificationGroups-onloadend ' + request.status);
     if (request.status == HTTP_OK) {
       recordEvent(GoogleNowEvent.REQUEST_FOR_CARDS_SUCCESS);
-      parseAndShowNotificationCards(request.response);
+      parseAndShowNotificationCards(request.response, cardShownCallback);
     }
   };
 

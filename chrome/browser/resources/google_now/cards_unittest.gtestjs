@@ -30,6 +30,8 @@ var testDismissals = [
   {testDismissalField: 'TEST DISMISSAL VALUE 2'}
 ];
 var testGroupRank = 271;
+var LOCATION_CARDS_LINK_THRESHOLD = 10;
+var localStorage = {locationCardsShown: 0};
 
 function setUpCardManagerTest(fixture) {
   fixture.makeAndRegisterMockApis([
@@ -37,6 +39,7 @@ function setUpCardManagerTest(fixture) {
       'chrome.alarms.create',
       'chrome.notifications.clear',
       'chrome.storage.local.set',
+      'countLocationCard',
       'instrumented.alarms.onAlarm.addListener',
       'instrumented.notifications.create',
       'instrumented.notifications.update',
@@ -388,6 +391,11 @@ TEST_F('GoogleNowCardsUnitTest', 'onAlarmShowHasDataCreate', function() {
           tasksAddSavedArgs.match(ANYTHING)).
       will(invokeCallback(tasksAddSavedArgs,1));
 
+  var testCardCreateInfo = {
+    notification: testNotification,
+    hideTime: 1313000,
+    version: 0};
+
   var storageGetSavedArgs = new SaveMockArguments();
   this.mockApis.expects(once()).
       instrumented_storage_local_get(
@@ -400,10 +408,7 @@ TEST_F('GoogleNowCardsUnitTest', 'onAlarmShowHasDataCreate', function() {
             notificationsData: {
               'TEST CARD ID': {
               actionUrls: testActionUrls,
-              cardCreateInfo: {
-                notification: testNotification,
-                hideTime: 1313000,
-                version: 0}}}}));
+              cardCreateInfo: testCardCreateInfo}}}));
   var chromeNotificationsCreateSavedArgs = new SaveMockArguments();
   this.mockApis.expects(once()).
       instrumented_notifications_create(
@@ -411,6 +416,7 @@ TEST_F('GoogleNowCardsUnitTest', 'onAlarmShowHasDataCreate', function() {
           chromeNotificationsCreateSavedArgs.match(eqJSON(testNotification)),
           chromeNotificationsCreateSavedArgs.match(ANYTHING)).
       will(invokeCallback(chromeNotificationsCreateSavedArgs, 2, testCardId));
+  this.mockApis.expects(once()).countLocationCard(eqJSON(testCardCreateInfo));
   this.mockApis.expects(once()).
       chrome_alarms_create(expectedHideAlarmId, eqJSON({when: 1313000}));
 

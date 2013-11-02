@@ -34,7 +34,8 @@ var DismissalData;
  *   notification: Object,
  *   actionUrls: Object=,
  *   groupRank: number,
- *   dismissals: Array.<DismissalData>
+ *   dismissals: Array.<DismissalData>,
+ *   locationBased: boolean=
  * }}
  */
 var MergedCard;
@@ -46,7 +47,8 @@ var MergedCard;
  *   notification: Object,
  *   hideTime: number=,
  *   version: number,
- *   previousVersion: number=
+ *   previousVersion: number=,
+ *   locationBased: boolean=
  * }}
  */
 var CardCreateInfo;
@@ -85,8 +87,10 @@ function buildCardSet() {
    * @param {string} cardId Card ID.
    * @param {CardCreateInfo} cardCreateInfo Google Now card represented as a set
    *     of parameters for showing a Chrome notification.
+   * @param {function(CardCreateInfo)=} onCardShown Optional parameter called
+   *     when each card is shown.
    */
-  function showNotification(cardId, cardCreateInfo) {
+  function showNotification(cardId, cardCreateInfo, onCardShown) {
     console.log('cardManager.showNotification ' + cardId + ' ' +
                 JSON.stringify(cardCreateInfo));
 
@@ -111,6 +115,9 @@ function buildCardSet() {
                             ', ERROR=' + errorMessage);
               return;
             }
+
+            if (onCardShown !== undefined)
+              onCardShown(cardCreateInfo);
 
             scheduleHiding(cardId, cardCreateInfo.hideTime);
           });
@@ -139,9 +146,11 @@ function buildCardSet() {
    * @param {MergedCard} card Google Now card from the server.
    * @param {number=} previousVersion The version of the shown card with
    *     this id, if it exists, undefined otherwise.
+   * @param {function(CardCreateInfo)=} onCardShown Optional parameter called
+   *     when each card is shown.
    * @return {Object} Notification data entry for this card.
    */
-  function update(cardId, card, previousVersion) {
+  function update(cardId, card, previousVersion, onCardShown) {
     console.log('cardManager.update ' + JSON.stringify(card) + ' ' +
         previousVersion);
 
@@ -151,9 +160,11 @@ function buildCardSet() {
       notification: card.notification,
       hideTime: card.trigger.hideTime,
       version: card.version,
-      previousVersion: previousVersion
+      previousVersion: previousVersion,
+      locationBased: card.locationBased
     };
 
+    var shownImmediately = false;
     var cardShowAlarmName = cardShowPrefix + cardId;
     if (card.trigger.showTime && card.trigger.showTime > Date.now()) {
       // Card needs to be shown later.
@@ -166,7 +177,7 @@ function buildCardSet() {
       // Card needs to be shown immediately.
       console.log('cardManager.update: immediate');
       chrome.alarms.clear(cardShowAlarmName);
-      showNotification(cardId, cardCreateInfo);
+      showNotification(cardId, cardCreateInfo, onCardShown);
     }
 
     return {
@@ -229,7 +240,14 @@ function buildCardSet() {
           if (!notificationData)
             return;
 
-          showNotification(cardId, notificationData.cardCreateInfo);
+          var cardShownCallback = undefined;
+          if (localStorage['locationCardsShown'] <
+              LOCATION_CARDS_LINK_THRESHOLD) {
+             cardShownCallback = countLocationCard;
+          }
+
+          showNotification(
+              cardId, notificationData.cardCreateInfo, cardShownCallback);
         });
       });
     } else if (alarm.name.indexOf(cardHidePrefix) == 0) {
