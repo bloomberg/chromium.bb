@@ -6,8 +6,10 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
-#include "base/prefs/scoped_user_pref_update.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
 #include "chrome/browser/chromeos/attestation/attestation_signed_data.pb.h"
 #include "chrome/browser/chromeos/attestation/platform_verification_dialog.h"
@@ -33,6 +35,7 @@
 namespace {
 
 const char kDefaultHttpsPort[] = "443";
+const int kTimeoutInSeconds = 8;
 
 // A callback method to handle DBus errors.
 void DBusCallback(const base::Callback<void(bool)>& on_success,
@@ -76,6 +79,18 @@ class DefaultDelegate : public PlatformVerificationFlow::Delegate {
   DISALLOW_COPY_AND_ASSIGN(DefaultDelegate);
 };
 
+PlatformVerificationFlow::ChallengeContext::ChallengeContext(
+    content::WebContents* web_contents,
+    const std::string& service_id,
+    const std::string& challenge,
+    const ChallengeCallback& callback)
+    : web_contents(web_contents),
+      service_id(service_id),
+      challenge(challenge),
+      callback(callback) {}
+
+PlatformVerificationFlow::ChallengeContext::~ChallengeContext() {}
+
 PlatformVerificationFlow::PlatformVerificationFlow()
     : attestation_flow_(NULL),
       async_caller_(cryptohome::AsyncMethodCaller::GetInstance()),
@@ -84,7 +99,7 @@ PlatformVerificationFlow::PlatformVerificationFlow()
       delegate_(NULL),
       testing_prefs_(NULL),
       testing_content_settings_(NULL),
-      weak_factory_(this) {
+      timeout_delay_(base::TimeDelta::FromSeconds(kTimeoutInSeconds)) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   scoped_ptr<ServerProxy> attestation_ca_client(new AttestationCAClient());
   default_attestation_flow_.reset(new AttestationFlow(
@@ -109,7 +124,7 @@ PlatformVerificationFlow::PlatformVerificationFlow(
       delegate_(delegate),
       testing_prefs_(NULL),
       testing_content_settings_(NULL),
-      weak_factory_(this) {
+      timeout_delay_(base::TimeDelta::FromSeconds(kTimeoutInSeconds)) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
@@ -132,27 +147,20 @@ void PlatformVerificationFlow::ChallengePlatformKey(
     ReportError(callback, POLICY_REJECTED);
     return;
   }
+  ChallengeContext context(web_contents, service_id, challenge, callback);
   BoolDBusMethodCallback dbus_callback = base::Bind(
       &DBusCallback,
-      base::Bind(&PlatformVerificationFlow::CheckConsent,
-                 weak_factory_.GetWeakPtr(),
-                 web_contents,
-                 service_id,
-                 challenge,
-                 callback),
+      base::Bind(&PlatformVerificationFlow::CheckConsent, this, context),
       base::Bind(&ReportError, callback, INTERNAL_ERROR));
   cryptohome_client_->TpmAttestationIsEnrolled(dbus_callback);
 }
 
-void PlatformVerificationFlow::CheckConsent(content::WebContents* web_contents,
-                                            const std::string& service_id,
-                                            const std::string& challenge,
-                                            const ChallengeCallback& callback,
+void PlatformVerificationFlow::CheckConsent(const ChallengeContext& context,
                                             bool attestation_enrolled) {
-  PrefService* pref_service = GetPrefs(web_contents);
+  PrefService* pref_service = GetPrefs(context.web_contents);
   if (!pref_service) {
     LOG(ERROR) << "Failed to get user prefs.";
-    ReportError(callback, INTERNAL_ERROR);
+    ReportError(context.callback, INTERNAL_ERROR);
     return;
   }
   bool consent_required = (
@@ -162,20 +170,17 @@ void PlatformVerificationFlow::CheckConsent(content::WebContents* web_contents,
       // protection on this device.
       !pref_service->GetBoolean(prefs::kRAConsentFirstTime) ||
       // Consent required if consent has never been given for this domain.
-      !GetDomainPref(GetContentSettings(web_contents),
-                     GetURL(web_contents),
+      !GetDomainPref(GetContentSettings(context.web_contents),
+                     GetURL(context.web_contents),
                      NULL));
 
   Delegate::ConsentCallback consent_callback = base::Bind(
       &PlatformVerificationFlow::OnConsentResponse,
-      weak_factory_.GetWeakPtr(),
-      web_contents,
-      service_id,
-      challenge,
-      callback,
+      this,
+      context,
       consent_required);
   if (consent_required)
-    delegate_->ShowConsentPrompt(web_contents, consent_callback);
+    delegate_->ShowConsentPrompt(context.web_contents, consent_callback);
   else
     consent_callback.Run(CONSENT_RESPONSE_NONE);
 }
@@ -188,28 +193,25 @@ void PlatformVerificationFlow::RegisterProfilePrefs(
 }
 
 void PlatformVerificationFlow::OnConsentResponse(
-    content::WebContents* web_contents,
-    const std::string& service_id,
-    const std::string& challenge,
-    const ChallengeCallback& callback,
+    const ChallengeContext& context,
     bool consent_required,
     ConsentResponse consent_response) {
   if (consent_required) {
     if (consent_response == CONSENT_RESPONSE_NONE) {
       // No user response - do not proceed and do not modify any settings.
       LOG(WARNING) << "PlatformVerificationFlow: No response from user.";
-      ReportError(callback, USER_REJECTED);
+      ReportError(context.callback, USER_REJECTED);
       return;
     }
-    if (!UpdateSettings(web_contents, consent_response)) {
-      ReportError(callback, INTERNAL_ERROR);
+    if (!UpdateSettings(context.web_contents, consent_response)) {
+      ReportError(context.callback, INTERNAL_ERROR);
       return;
     }
     if (consent_response == CONSENT_RESPONSE_DENY) {
       LOG(INFO) << "PlatformVerificationFlow: User rejected request.";
       content::RecordAction(
           content::UserMetricsAction("PlatformVerificationRejected"));
-      ReportError(callback, USER_REJECTED);
+      ReportError(context.callback, USER_REJECTED);
       return;
     } else if (consent_response == CONSENT_RESPONSE_ALLOW) {
       content::RecordAction(
@@ -219,75 +221,96 @@ void PlatformVerificationFlow::OnConsentResponse(
 
   // At this point all user interaction is complete and we can proceed with the
   // certificate request.
-  chromeos::User* user = GetUser(web_contents);
+  chromeos::User* user = GetUser(context.web_contents);
   if (!user) {
-    ReportError(callback, INTERNAL_ERROR);
+    ReportError(context.callback, INTERNAL_ERROR);
     LOG(ERROR) << "Profile does not map to a valid user.";
     return;
   }
+
+  scoped_ptr<base::Timer> timer(new base::Timer(false,    // Don't retain.
+                                                false));  // Don't repeat.
+  base::Closure timeout_callback = base::Bind(
+      &PlatformVerificationFlow::OnCertificateTimeout,
+      this,
+      context);
+  timer->Start(FROM_HERE, timeout_delay_, timeout_callback);
+
   AttestationFlow::CertificateCallback certificate_callback = base::Bind(
       &PlatformVerificationFlow::OnCertificateReady,
-      weak_factory_.GetWeakPtr(),
+      this,
+      context,
       user->email(),
-      service_id,
-      challenge,
-      callback);
+      base::Passed(&timer));
   attestation_flow_->GetCertificate(
       PROFILE_CONTENT_PROTECTION_CERTIFICATE,
       user->email(),
-      service_id,
+      context.service_id,
       false,  // Don't force a new key.
       certificate_callback);
 }
 
 void PlatformVerificationFlow::OnCertificateReady(
+    const ChallengeContext& context,
     const std::string& user_id,
-    const std::string& service_id,
-    const std::string& challenge,
-    const ChallengeCallback& callback,
+    scoped_ptr<base::Timer> timer,
     bool operation_success,
     const std::string& certificate) {
+  // Log failure before checking the timer so all failures are logged, even if
+  // they took too long.
   if (!operation_success) {
     LOG(WARNING) << "PlatformVerificationFlow: Failed to certify platform.";
-    ReportError(callback, PLATFORM_NOT_VERIFIED);
+  }
+  if (!timer->IsRunning()) {
+    LOG(WARNING) << "PlatformVerificationFlow: Certificate ready but call has "
+                 << "already timed out.";
+    return;
+  }
+  timer->Stop();
+  if (!operation_success) {
+    ReportError(context.callback, PLATFORM_NOT_VERIFIED);
     return;
   }
   cryptohome::AsyncMethodCaller::DataCallback cryptohome_callback = base::Bind(
       &PlatformVerificationFlow::OnChallengeReady,
-      weak_factory_.GetWeakPtr(),
-      certificate,
-      challenge,
-      callback);
+      this,
+      context,
+      certificate);
   std::string key_name = kContentProtectionKeyPrefix;
-  key_name += service_id;
+  key_name += context.service_id;
   async_caller_->TpmAttestationSignSimpleChallenge(KEY_USER,
                                                    user_id,
                                                    key_name,
-                                                   challenge,
+                                                   context.challenge,
                                                    cryptohome_callback);
 }
 
+void PlatformVerificationFlow::OnCertificateTimeout(
+    const ChallengeContext& context) {
+  LOG(WARNING) << "PlatformVerificationFlow: Timing out.";
+  ReportError(context.callback, TIMEOUT);
+}
+
 void PlatformVerificationFlow::OnChallengeReady(
+    const ChallengeContext& context,
     const std::string& certificate,
-    const std::string& challenge,
-    const ChallengeCallback& callback,
     bool operation_success,
     const std::string& response_data) {
   if (!operation_success) {
     LOG(ERROR) << "PlatformVerificationFlow: Failed to sign challenge.";
-    ReportError(callback, INTERNAL_ERROR);
+    ReportError(context.callback, INTERNAL_ERROR);
     return;
   }
   SignedData signed_data_pb;
   if (response_data.empty() || !signed_data_pb.ParseFromString(response_data)) {
     LOG(ERROR) << "PlatformVerificationFlow: Failed to parse response data.";
-    ReportError(callback, INTERNAL_ERROR);
+    ReportError(context.callback, INTERNAL_ERROR);
     return;
   }
-  callback.Run(SUCCESS,
-               signed_data_pb.data(),
-               signed_data_pb.signature(),
-               certificate);
+  context.callback.Run(SUCCESS,
+                       signed_data_pb.data(),
+                       signed_data_pb.signature(),
+                       certificate);
   LOG(INFO) << "PlatformVerificationFlow: Platform successfully verified.";
 }
 

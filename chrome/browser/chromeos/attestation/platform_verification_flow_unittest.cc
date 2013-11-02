@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/scoped_user_pref_update.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/attestation/attestation_signed_data.pb.h"
@@ -132,11 +131,11 @@ class PlatformVerificationFlowTest : public ::testing::Test {
     mock_user_manager_.SetActiveUser(kTestEmail);
 
     // Create a verifier for tests to call.
-    verifier_.reset(new PlatformVerificationFlow(&mock_attestation_flow_,
-                                                 &mock_async_caller_,
-                                                 &fake_cryptohome_client_,
-                                                 &mock_user_manager_,
-                                                 &fake_delegate_));
+    verifier_ = new PlatformVerificationFlow(&mock_attestation_flow_,
+                                             &mock_async_caller_,
+                                             &fake_cryptohome_client_,
+                                             &mock_user_manager_,
+                                             &fake_delegate_);
 
     // Create callbacks for tests to use with verifier_.
     callback_ = base::Bind(&PlatformVerificationFlowTest::FakeChallengeCallback,
@@ -226,7 +225,6 @@ class PlatformVerificationFlowTest : public ::testing::Test {
   }
 
   void TearDown() {
-    verifier_.reset();
     // Restore the real DeviceSettingsProvider.
     CrosSettings* cros_settings = CrosSettings::Get();
     cros_settings->RemoveSettingsProvider(&stub_settings_provider_);
@@ -315,7 +313,7 @@ class PlatformVerificationFlowTest : public ::testing::Test {
   ScopedTestDeviceSettingsService test_device_settings_service_;
   ScopedTestCrosSettings test_cros_settings_;
   scoped_refptr<HostContentSettingsMap> test_content_settings_;
-  scoped_ptr<PlatformVerificationFlow> verifier_;
+  scoped_refptr<PlatformVerificationFlow> verifier_;
 
   // Controls result of FakeGetCertificate.
   bool certificate_success_;
@@ -451,6 +449,14 @@ TEST_F(PlatformVerificationFlowTest, ConsentPerScheme) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(PlatformVerificationFlow::USER_REJECTED, result_);
   EXPECT_EQ(2, fake_delegate_.num_consent_calls());
+}
+
+TEST_F(PlatformVerificationFlowTest, Timeout) {
+  verifier_->set_timeout_delay(base::TimeDelta::FromSeconds(0));
+  ExpectAttestationFlow();
+  verifier_->ChallengePlatformKey(NULL, kTestID, kTestChallenge, callback_);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(PlatformVerificationFlow::TIMEOUT, result_);
 }
 
 }  // namespace attestation

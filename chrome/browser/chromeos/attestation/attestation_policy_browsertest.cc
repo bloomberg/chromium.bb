@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -73,9 +74,10 @@ class AttestationDevicePolicyTest
   // Synchronously do what the content protection code path does when it wants
   // to verify a Chrome OS platform.
   PlatformVerificationFlow::Result SyncContentProtectionAttestation() {
-    PlatformVerificationFlow verifier(NULL, NULL, &fake_cryptohome_client_,
-                                      NULL, NULL);
-    verifier.ChallengePlatformKey(
+    scoped_refptr<PlatformVerificationFlow> verifier(
+        new PlatformVerificationFlow(NULL, NULL, &fake_cryptohome_client_, NULL,
+                                     NULL));
+    verifier->ChallengePlatformKey(
       browser()->tab_strip_model()->GetActiveWebContents(),
       "fake_service_id",
       "fake_challenge",

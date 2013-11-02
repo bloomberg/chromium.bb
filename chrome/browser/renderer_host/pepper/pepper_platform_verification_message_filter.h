@@ -55,7 +55,7 @@ class PepperPlatformVerificationMessageFilter
   int render_view_id_;
 
   // Must only be accessed on the UI thread.
-  scoped_ptr<chromeos::attestation::PlatformVerificationFlow> pv_;
+  scoped_refptr<chromeos::attestation::PlatformVerificationFlow> pv_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPlatformVerificationMessageFilter);
 };

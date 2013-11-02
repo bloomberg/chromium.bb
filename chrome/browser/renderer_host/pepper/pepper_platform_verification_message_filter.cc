@@ -72,7 +72,7 @@ int32_t PepperPlatformVerificationMessageFilter::OnChallengePlatform(
   }
 
   if (!pv_)
-    pv_.reset(new PlatformVerificationFlow());
+    pv_ = new PlatformVerificationFlow();
 
   pv_->ChallengePlatformKey(
       content::WebContents::FromRenderViewHost(rvh),
