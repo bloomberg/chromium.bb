@@ -33,7 +33,7 @@ bool GetLine(const char* input, int input_len, std::string* line) {
   }
   return false;
 }
-}
+}  // namespace
 
 //------------------------------------------------------------------------------
 // SafeBrowsingParser implementation
@@ -265,7 +265,8 @@ bool SafeBrowsingProtocolParser::ParseAddChunk(const std::string& list_name,
 
   if (list_name == safe_browsing_util::kBinHashList ||
       list_name == safe_browsing_util::kDownloadWhiteList ||
-      list_name == safe_browsing_util::kExtensionBlacklist) {
+      list_name == safe_browsing_util::kExtensionBlacklist ||
+      list_name == safe_browsing_util::kIPBlacklist) {
     // These lists only contain prefixes, no HOSTKEY and COUNT.
     DCHECK_EQ(0, remaining % hash_len);
     prefix_count = remaining / hash_len;
