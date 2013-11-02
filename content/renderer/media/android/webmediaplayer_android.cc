@@ -420,8 +420,8 @@ void WebMediaPlayerAndroid::setVolume(double volume) {
 
 bool WebMediaPlayerAndroid::hasVideo() const {
   // If we have obtained video size information before, use it.
-  if (has_size_info_)
-    return !natural_size_.isEmpty();
+  if (has_size_info_ && !natural_size_.isEmpty())
+    return true;
 
   // TODO(qinmin): need a better method to determine whether the current media
   // content contains video. Android does not provide any function to do
