@@ -652,7 +652,7 @@ void RenderViewContextMenu::InitMenu() {
       AppendPrintItem();
   }
 
-  if (!IsDevToolsURL(params_.page_url))
+  if (!IsDevToolsURL(params_.page_url) && !is_guest_)
     AppendAllExtensionItems();
 
   AppendDeveloperItems();
