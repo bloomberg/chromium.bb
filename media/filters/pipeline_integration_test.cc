@@ -63,9 +63,6 @@ const uint32 kOpusEndTrimmingWebMFileAudioBytes = 528676;
 const int kVP9WebMFileDurationMs = 2735;
 const int kVP8AWebMFileDurationMs = 2700;
 
-// Command line switch for runtime adjustment of audio file to be benchmarked.
-const char kBenchmarkAudioFile[] = "benchmark-audio-file";
-
 #if defined(USE_PROPRIETARY_CODECS)
 const int k640IsoFileDurationMs = 2737;
 const int k640IsoCencFileDurationMs = 2736;
@@ -440,28 +437,6 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHashed) {
 
   EXPECT_EQ("f0be120a90a811506777c99a2cdf7cc1", GetVideoHash());
   EXPECT_EQ("-3.59,-2.06,-0.43,2.15,0.77,-0.95,", GetAudioHash());
-}
-
-TEST_F(PipelineIntegrationTest, AudioPlaybackBenchmark) {
-  // Audio-only files are all that is allowed for clockless playback.
-  // Audio file can be specified on the command line
-  // (--benchmark-audio-file=id3_png_test.mp3), so check for it.
-  std::string filename(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      kBenchmarkAudioFile));
-  if (filename.empty())
-    filename = "sfx_f32le.wav";
-
-  ASSERT_TRUE(Start(GetTestDataFilePath(filename), PIPELINE_OK, kClockless));
-
-  Play();
-
-  ASSERT_TRUE(WaitUntilOnEnded());
-
-  // Call Stop() to ensure that the rendering is complete.
-  Stop();
-  printf("Clockless playback of %s took %.2f ms.\n",
-         filename.c_str(),
-         GetAudioTime().InMillisecondsF());
 }
 
 TEST_F(PipelineIntegrationTest, F32PlaybackHashed) {

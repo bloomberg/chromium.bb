@@ -1084,6 +1084,8 @@
         'base/sinc_resampler_perftest.cc',
         'base/test_data_util.cc',
         'base/vector_math_perftest.cc',
+        'filters/pipeline_integration_perftest.cc',
+        'filters/pipeline_integration_test_base.cc',
       ],
     },
     {
