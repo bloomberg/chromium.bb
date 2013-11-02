@@ -12,6 +12,18 @@
 
 namespace content {
 
+namespace {
+
+bool IsAlgorithmAsymmetric(const WebKit::WebCryptoAlgorithm& algorithm) {
+  // TODO(padolph): include all other asymmetric algorithms once they are
+  // defined, e.g. EC and DH.
+  return (algorithm.id() == WebKit::WebCryptoAlgorithmIdRsaEsPkcs1v1_5 ||
+          algorithm.id() == WebKit::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 ||
+          algorithm.id() == WebKit::WebCryptoAlgorithmIdRsaOaep);
+}
+
+}  // namespace
+
 WebCryptoImpl::WebCryptoImpl() {
   Init();
 }
@@ -94,15 +106,38 @@ void WebCryptoImpl::generateKey(
     WebKit::WebCryptoKeyUsageMask usage_mask,
     WebKit::WebCryptoResult result) {
   DCHECK(!algorithm.isNull());
-  WebKit::WebCryptoKey key = NullKey();
-  if (!GenerateKeyInternal(algorithm, extractable, usage_mask, &key)) {
-    result.completeWithError();
+  if (IsAlgorithmAsymmetric(algorithm)) {
+    WebKit::WebCryptoKey public_key = WebKit::WebCryptoKey::createNull();
+    WebKit::WebCryptoKey private_key = WebKit::WebCryptoKey::createNull();
+    if (!GenerateKeyPairInternal(
+             algorithm, extractable, usage_mask, &public_key, &private_key)) {
+      result.completeWithError();
+    } else {
+      DCHECK(public_key.handle());
+      DCHECK(private_key.handle());
+      DCHECK_EQ(algorithm.id(), public_key.algorithm().id());
+      DCHECK_EQ(algorithm.id(), private_key.algorithm().id());
+      // TODO(padolph): The public key should probably always be extractable,
+      // regardless of the input 'extractable' parameter, but that is not called
+      // out in the Web Crypto API spec.
+      // See https://www.w3.org/Bugs/Public/show_bug.cgi?id=23695
+      DCHECK_EQ(extractable, public_key.extractable());
+      DCHECK_EQ(extractable, private_key.extractable());
+      DCHECK_EQ(usage_mask, public_key.usages());
+      DCHECK_EQ(usage_mask, private_key.usages());
+      result.completeWithKeyPair(public_key, private_key);
+    }
   } else {
-    DCHECK(key.handle());
-    DCHECK_EQ(algorithm.id(), key.algorithm().id());
-    DCHECK_EQ(extractable, key.extractable());
-    DCHECK_EQ(usage_mask, key.usages());
-    result.completeWithKey(key);
+    WebKit::WebCryptoKey key = WebKit::WebCryptoKey::createNull();
+    if (!GenerateKeyInternal(algorithm, extractable, usage_mask, &key)) {
+      result.completeWithError();
+    } else {
+      DCHECK(key.handle());
+      DCHECK_EQ(algorithm.id(), key.algorithm().id());
+      DCHECK_EQ(extractable, key.extractable());
+      DCHECK_EQ(usage_mask, key.usages());
+      result.completeWithKey(key);
+    }
   }
 }
 
@@ -114,7 +149,7 @@ void WebCryptoImpl::importKey(
     bool extractable,
     WebKit::WebCryptoKeyUsageMask usage_mask,
     WebKit::WebCryptoResult result) {
-  WebKit::WebCryptoKey key = NullKey();
+  WebKit::WebCryptoKey key = WebKit::WebCryptoKey::createNull();
   if (!ImportKeyInternal(format,
                          key_data,
                          key_data_size,

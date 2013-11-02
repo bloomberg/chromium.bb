@@ -15,6 +15,7 @@
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
+#include "third_party/WebKit/public/platform/WebCryptoKey.h"
 
 namespace {
 
@@ -77,6 +78,19 @@ WebKit::WebCryptoAlgorithm CreateAesCbcAlgorithm(
       new WebKit::WebCryptoAesKeyGenParams(key_length_bits));
 }
 
+WebKit::WebCryptoAlgorithm CreateRsaAlgorithm(
+    WebKit::WebCryptoAlgorithmId algorithm_id,
+    unsigned modulus_length,
+    const std::vector<uint8>& public_exponent) {
+  DCHECK(algorithm_id == WebKit::WebCryptoAlgorithmIdRsaEsPkcs1v1_5 ||
+         algorithm_id == WebKit::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 ||
+         algorithm_id == WebKit::WebCryptoAlgorithmIdRsaOaep);
+  return WebKit::WebCryptoAlgorithm::adoptParamsAndCreate(
+      algorithm_id,
+      new WebKit::WebCryptoRsaKeyGenParams(
+          modulus_length, Start(public_exponent), public_exponent.size()));
+}
+
 }  // namespace
 
 namespace content {
@@ -89,7 +103,7 @@ class WebCryptoImplTest : public testing::Test {
       WebKit::WebCryptoKeyUsageMask usage) {
     std::vector<uint8> key_raw = HexStringToBytes(key_hex);
 
-    WebKit::WebCryptoKey key = WebCryptoImpl::NullKey();
+    WebKit::WebCryptoKey key = WebKit::WebCryptoKey::createNull();
     bool extractable = true;
     EXPECT_TRUE(crypto_.ImportKeyInternal(WebKit::WebCryptoKeyFormatRaw,
                                           Start(key_raw),
@@ -120,6 +134,16 @@ class WebCryptoImplTest : public testing::Test {
     bool extractable = true;
     WebKit::WebCryptoKeyUsageMask usage_mask = 0;
     return crypto_.GenerateKeyInternal(algorithm, extractable, usage_mask, key);
+  }
+
+  bool GenerateKeyPairInternal(
+      const WebKit::WebCryptoAlgorithm& algorithm,
+      bool extractable,
+      WebKit::WebCryptoKeyUsageMask usage_mask,
+      WebKit::WebCryptoKey* public_key,
+      WebKit::WebCryptoKey* private_key) {
+    return crypto_.GenerateKeyPairInternal(
+        algorithm, extractable, usage_mask, public_key, private_key);
   }
 
   bool ImportKeyInternal(
@@ -473,7 +497,7 @@ TEST_F(WebCryptoImplTest, AesCbcFailures) {
     std::vector<uint8> key_raw(1);
     std::vector<uint8> iv(16);
 
-    WebKit::WebCryptoKey key = WebCryptoImpl::NullKey();
+    WebKit::WebCryptoKey key = WebKit::WebCryptoKey::createNull();
     EXPECT_FALSE(ImportKeyInternal(WebKit::WebCryptoKeyFormatRaw,
                                    key_raw,
                                    CreateAesCbcAlgorithm(iv),
@@ -617,20 +641,20 @@ TEST_F(WebCryptoImplTest, AesCbcSampleSets) {
 
 
 TEST_F(WebCryptoImplTest, GenerateKeyAes) {
-  WebKit::WebCryptoKey key = WebCryptoImpl::NullKey();
+  WebKit::WebCryptoKey key = WebKit::WebCryptoKey::createNull();
   ASSERT_TRUE(GenerateKeyInternal(CreateAesCbcAlgorithm(128), &key));
   EXPECT_TRUE(key.handle());
   EXPECT_EQ(WebKit::WebCryptoKeyTypeSecret, key.type());
 }
 
 TEST_F(WebCryptoImplTest, GenerateKeyAesBadLength) {
-  WebKit::WebCryptoKey key = WebCryptoImpl::NullKey();
+  WebKit::WebCryptoKey key = WebKit::WebCryptoKey::createNull();
   EXPECT_FALSE(GenerateKeyInternal(CreateAesCbcAlgorithm(0), &key));
   EXPECT_FALSE(GenerateKeyInternal(CreateAesCbcAlgorithm(129), &key));
 }
 
 TEST_F(WebCryptoImplTest, GenerateKeyHmac) {
-  WebKit::WebCryptoKey key = WebCryptoImpl::NullKey();
+  WebKit::WebCryptoKey key = WebKit::WebCryptoKey::createNull();
   WebKit::WebCryptoAlgorithm algorithm =
       CreateHmacKeyAlgorithm(WebKit::WebCryptoAlgorithmIdSha1, 128);
   ASSERT_TRUE(GenerateKeyInternal(algorithm, &key));
@@ -639,7 +663,7 @@ TEST_F(WebCryptoImplTest, GenerateKeyHmac) {
 }
 
 TEST_F(WebCryptoImplTest, GenerateKeyHmacNoLength) {
-  WebKit::WebCryptoKey key = WebCryptoImpl::NullKey();
+  WebKit::WebCryptoKey key = WebKit::WebCryptoKey::createNull();
   WebKit::WebCryptoAlgorithm algorithm =
       CreateHmacKeyAlgorithm(WebKit::WebCryptoAlgorithmIdSha1, 0);
   ASSERT_TRUE(GenerateKeyInternal(algorithm, &key));
@@ -648,7 +672,7 @@ TEST_F(WebCryptoImplTest, GenerateKeyHmacNoLength) {
 }
 
 TEST_F(WebCryptoImplTest, ImportSecretKeyNoAlgorithm) {
-  WebKit::WebCryptoKey key = WebCryptoImpl::NullKey();
+  WebKit::WebCryptoKey key = WebKit::WebCryptoKey::createNull();
 
   // This fails because the algorithm is null.
   EXPECT_FALSE(ImportKeyInternal(
@@ -658,5 +682,114 @@ TEST_F(WebCryptoImplTest, ImportSecretKeyNoAlgorithm) {
       WebKit::WebCryptoKeyUsageSign,
       &key));
 }
+
+#if !defined(USE_OPENSSL)
+
+TEST_F(WebCryptoImplTest, GenerateKeyPairRsa) {
+
+  // Note: using unrealistic short key lengths here to avoid bogging down tests.
+
+  // Successful WebCryptoAlgorithmIdRsaEsPkcs1v1_5 key generation.
+  const unsigned modulus_length = 256;
+  const std::vector<uint8> public_exponent = HexStringToBytes("010001");
+  WebKit::WebCryptoAlgorithm algorithm =
+      CreateRsaAlgorithm(WebKit::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
+                         modulus_length,
+                         public_exponent);
+  const bool extractable = false;
+  const WebKit::WebCryptoKeyUsageMask usage_mask = 0;
+  WebKit::WebCryptoKey public_key = WebKit::WebCryptoKey::createNull();
+  WebKit::WebCryptoKey private_key = WebKit::WebCryptoKey::createNull();
+  EXPECT_TRUE(GenerateKeyPairInternal(
+      algorithm, extractable, usage_mask, &public_key, &private_key));
+  EXPECT_FALSE(public_key.isNull());
+  EXPECT_FALSE(private_key.isNull());
+  EXPECT_EQ(WebKit::WebCryptoKeyTypePublic, public_key.type());
+  EXPECT_EQ(WebKit::WebCryptoKeyTypePrivate, private_key.type());
+  EXPECT_EQ(extractable, public_key.extractable());
+  EXPECT_EQ(extractable, private_key.extractable());
+  EXPECT_EQ(usage_mask, public_key.usages());
+  EXPECT_EQ(usage_mask, private_key.usages());
+
+  // Fail with bad modulus.
+  algorithm = CreateRsaAlgorithm(
+      WebKit::WebCryptoAlgorithmIdRsaEsPkcs1v1_5, 0, public_exponent);
+  EXPECT_FALSE(GenerateKeyPairInternal(
+      algorithm, extractable, usage_mask, &public_key, &private_key));
+
+  // Fail with bad exponent: larger than unsigned long.
+  unsigned exponent_length = sizeof(unsigned long) + 1;
+  const std::vector<uint8> long_exponent(exponent_length, 0x01);
+  algorithm = CreateRsaAlgorithm(WebKit::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
+                                 modulus_length,
+                                 long_exponent);
+  EXPECT_FALSE(GenerateKeyPairInternal(
+      algorithm, extractable, usage_mask, &public_key, &private_key));
+
+  // Fail with bad exponent: empty.
+  const std::vector<uint8> empty_exponent;
+  algorithm = CreateRsaAlgorithm(WebKit::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
+                                 modulus_length,
+                                 empty_exponent);
+  EXPECT_FALSE(GenerateKeyPairInternal(
+      algorithm, extractable, usage_mask, &public_key, &private_key));
+
+  // Fail with bad exponent: all zeros.
+  std::vector<uint8> exponent_with_leading_zeros(15, 0x00);
+  algorithm = CreateRsaAlgorithm(WebKit::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
+                                 modulus_length,
+                                 exponent_with_leading_zeros);
+  EXPECT_FALSE(GenerateKeyPairInternal(
+      algorithm, extractable, usage_mask, &public_key, &private_key));
+
+  // Key generation success using exponent with leading zeros.
+  exponent_with_leading_zeros.insert(exponent_with_leading_zeros.end(),
+                                     public_exponent.begin(),
+                                     public_exponent.end());
+  algorithm = CreateRsaAlgorithm(WebKit::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
+                                 modulus_length,
+                                 exponent_with_leading_zeros);
+  EXPECT_TRUE(GenerateKeyPairInternal(
+      algorithm, extractable, usage_mask, &public_key, &private_key));
+  EXPECT_FALSE(public_key.isNull());
+  EXPECT_FALSE(private_key.isNull());
+  EXPECT_EQ(WebKit::WebCryptoKeyTypePublic, public_key.type());
+  EXPECT_EQ(WebKit::WebCryptoKeyTypePrivate, private_key.type());
+  EXPECT_EQ(extractable, public_key.extractable());
+  EXPECT_EQ(extractable, private_key.extractable());
+  EXPECT_EQ(usage_mask, public_key.usages());
+  EXPECT_EQ(usage_mask, private_key.usages());
+
+  // Successful WebCryptoAlgorithmIdRsaOaep key generation.
+  algorithm = CreateRsaAlgorithm(
+      WebKit::WebCryptoAlgorithmIdRsaOaep, modulus_length, public_exponent);
+  EXPECT_TRUE(GenerateKeyPairInternal(
+      algorithm, extractable, usage_mask, &public_key, &private_key));
+  EXPECT_FALSE(public_key.isNull());
+  EXPECT_FALSE(private_key.isNull());
+  EXPECT_EQ(WebKit::WebCryptoKeyTypePublic, public_key.type());
+  EXPECT_EQ(WebKit::WebCryptoKeyTypePrivate, private_key.type());
+  EXPECT_EQ(extractable, public_key.extractable());
+  EXPECT_EQ(extractable, private_key.extractable());
+  EXPECT_EQ(usage_mask, public_key.usages());
+  EXPECT_EQ(usage_mask, private_key.usages());
+
+  // Successful WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 key generation.
+  algorithm = CreateRsaAlgorithm(WebKit::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                                 modulus_length,
+                                 public_exponent);
+  EXPECT_TRUE(GenerateKeyPairInternal(
+      algorithm, extractable, usage_mask, &public_key, &private_key));
+  EXPECT_FALSE(public_key.isNull());
+  EXPECT_FALSE(private_key.isNull());
+  EXPECT_EQ(WebKit::WebCryptoKeyTypePublic, public_key.type());
+  EXPECT_EQ(WebKit::WebCryptoKeyTypePrivate, private_key.type());
+  EXPECT_EQ(extractable, public_key.extractable());
+  EXPECT_EQ(extractable, private_key.extractable());
+  EXPECT_EQ(usage_mask, public_key.usages());
+  EXPECT_EQ(usage_mask, private_key.usages());
+}
+
+#endif  // #if !defined(USE_OPENSSL)
 
 }  // namespace content

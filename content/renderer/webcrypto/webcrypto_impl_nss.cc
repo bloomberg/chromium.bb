@@ -24,10 +24,7 @@ namespace {
 
 class SymKeyHandle : public WebKit::WebCryptoKeyHandle {
  public:
-  explicit SymKeyHandle(crypto::ScopedPK11SymKey key) {
-    DCHECK(!key_.get());
-    key_ = key.Pass();
-  }
+  explicit SymKeyHandle(crypto::ScopedPK11SymKey key) : key_(key.Pass()) {}
 
   PK11SymKey* key() { return key_.get(); }
 
@@ -35,6 +32,32 @@ class SymKeyHandle : public WebKit::WebCryptoKeyHandle {
   crypto::ScopedPK11SymKey key_;
 
   DISALLOW_COPY_AND_ASSIGN(SymKeyHandle);
+};
+
+class PublicKeyHandle : public WebKit::WebCryptoKeyHandle {
+ public:
+  explicit PublicKeyHandle(crypto::ScopedSECKEYPublicKey key)
+      : key_(key.Pass()) {}
+
+  SECKEYPublicKey* key() { return key_.get(); }
+
+ private:
+  crypto::ScopedSECKEYPublicKey key_;
+
+  DISALLOW_COPY_AND_ASSIGN(PublicKeyHandle);
+};
+
+class PrivateKeyHandle : public WebKit::WebCryptoKeyHandle {
+ public:
+  explicit PrivateKeyHandle(crypto::ScopedSECKEYPrivateKey key)
+      : key_(key.Pass()) {}
+
+  SECKEYPrivateKey* key() { return key_.get(); }
+
+ private:
+  crypto::ScopedSECKEYPrivateKey key_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrivateKeyHandle);
 };
 
 HASH_HashType WebCryptoAlgorithmToNSSHashType(
@@ -102,7 +125,7 @@ bool AesCbcEncryptDecrypt(
   if (!context.get())
     return false;
 
-  // Oddly PK11_CipherOp takes input and output lenths as "int" rather than
+  // Oddly PK11_CipherOp takes input and output lengths as "int" rather than
   // "unsigned". Do some checks now to avoid integer overflowing.
   if (data_size >= INT_MAX - AES_BLOCK_SIZE) {
     // TODO(eroman): Handle this by chunking the input fed into NSS. Right now
@@ -191,6 +214,28 @@ unsigned int WebCryptoHmacAlgorithmToBlockSize(
     default:
       return 0;
   }
+}
+
+// Converts a (big-endian) WebCrypto BigInteger, with or without leading zeros,
+// to unsigned long.
+bool BigIntegerToLong(const uint8* data,
+                      unsigned data_size,
+                      unsigned long* result) {
+  // TODO(padolph): Is it correct to say that empty data is an error, or does it
+  // mean value 0? See https://www.w3.org/Bugs/Public/show_bug.cgi?id=23655
+  if (data_size == 0)
+    return false;
+
+  *result = 0;
+  for (size_t i = 0; i < data_size; ++i) {
+    size_t reverse_i = data_size - i - 1;
+
+    if (reverse_i >= sizeof(unsigned long) && data[i])
+      return false;  // Too large for a long.
+
+    *result |= data[i] << 8 * reverse_i;
+  }
+  return true;
 }
 
 }  // namespace
@@ -324,6 +369,97 @@ bool WebCryptoImpl::GenerateKeyInternal(
   return true;
 }
 
+bool WebCryptoImpl::GenerateKeyPairInternal(
+    const WebKit::WebCryptoAlgorithm& algorithm,
+    bool extractable,
+    WebKit::WebCryptoKeyUsageMask usage_mask,
+    WebKit::WebCryptoKey* public_key,
+    WebKit::WebCryptoKey* private_key) {
+
+  // TODO(padolph): Handle other asymmetric algorithm key generation.
+  switch (algorithm.id()) {
+    case WebKit::WebCryptoAlgorithmIdRsaEsPkcs1v1_5:
+    case WebKit::WebCryptoAlgorithmIdRsaOaep:
+    case WebKit::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5: {
+      const WebKit::WebCryptoRsaKeyGenParams* const params =
+          algorithm.rsaKeyGenParams();
+      DCHECK(params);
+
+      crypto::ScopedPK11Slot slot(PK11_GetInternalKeySlot());
+      unsigned long public_exponent;
+      if (!slot || !params->modulusLength() ||
+          !BigIntegerToLong(params->publicExponent().data(),
+                            params->publicExponent().size(),
+                            &public_exponent) ||
+          !public_exponent) {
+        return false;
+      }
+
+      PK11RSAGenParams rsa_gen_params;
+      rsa_gen_params.keySizeInBits = params->modulusLength();
+      rsa_gen_params.pe = public_exponent;
+
+      // Flags are verified at the Blink layer; here the flags are set to all
+      // possible operations for the given key type.
+      CK_FLAGS operation_flags;
+      switch (algorithm.id()) {
+        case WebKit::WebCryptoAlgorithmIdRsaEsPkcs1v1_5:
+        case WebKit::WebCryptoAlgorithmIdRsaOaep:
+          operation_flags = CKF_ENCRYPT | CKF_DECRYPT | CKF_WRAP | CKF_UNWRAP;
+          break;
+        case WebKit::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
+          operation_flags = CKF_SIGN | CKF_VERIFY;
+          break;
+        default:
+          NOTREACHED();
+          return false;
+      }
+      const CK_FLAGS operation_flags_mask = CKF_ENCRYPT | CKF_DECRYPT |
+                                            CKF_SIGN | CKF_VERIFY | CKF_WRAP |
+                                            CKF_UNWRAP;
+      const PK11AttrFlags attribute_flags = 0;  // Default all PK11_ATTR_ flags.
+
+      // Note: NSS does not generate an sec_public_key if the call below fails,
+      // so there is no danger of a leaked sec_public_key.
+      SECKEYPublicKey* sec_public_key;
+      crypto::ScopedSECKEYPrivateKey scoped_sec_private_key(
+          PK11_GenerateKeyPairWithOpFlags(slot.get(),
+                                          CKM_RSA_PKCS_KEY_PAIR_GEN,
+                                          &rsa_gen_params,
+                                          &sec_public_key,
+                                          attribute_flags,
+                                          operation_flags,
+                                          operation_flags_mask,
+                                          NULL));
+      if (!private_key) {
+        return false;
+      }
+
+      // One extractable input parameter is provided, and the Web Crypto API
+      // spec at this time says it applies to both members of the key pair.
+      // This is probably not correct: it makes more operational sense to have
+      // extractable apply only to the private key and make the public key
+      // always extractable. For now implement what the spec says and track the
+      // spec bug here: https://www.w3.org/Bugs/Public/show_bug.cgi?id=23695
+      *public_key = WebKit::WebCryptoKey::create(
+          new PublicKeyHandle(crypto::ScopedSECKEYPublicKey(sec_public_key)),
+          WebKit::WebCryptoKeyTypePublic,
+          extractable,   // probably should be 'true' always
+          algorithm,
+          usage_mask);
+      *private_key = WebKit::WebCryptoKey::create(
+          new PrivateKeyHandle(scoped_sec_private_key.Pass()),
+          WebKit::WebCryptoKeyTypePrivate,
+          extractable,
+          algorithm,
+          usage_mask);
+
+      return true;
+    }
+    default:
+      return false;
+  }
+}
 
 bool WebCryptoImpl::ImportKeyInternal(
     WebKit::WebCryptoKeyFormat format,

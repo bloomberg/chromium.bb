@@ -299,6 +299,17 @@ bool WebCryptoImpl::GenerateKeyInternal(
   return true;
 }
 
+bool WebCryptoImpl::GenerateKeyPairInternal(
+    const WebKit::WebCryptoAlgorithm& algorithm,
+    bool extractable,
+    WebKit::WebCryptoKeyUsageMask usage_mask,
+    WebKit::WebCryptoKey* public_key,
+    WebKit::WebCryptoKey* private_key) {
+  // TODO(padolph): Placeholder for OpenSSL implementation.
+  // Issue http://crbug.com/267888.
+  return false;
+}
+
 bool WebCryptoImpl::ImportKeyInternal(
     WebKit::WebCryptoKeyFormat format,
     const unsigned char* key_data,
