@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_FILE_SYSTEM_BROWSER_HOST_H_
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/host/host_message_context.h"
@@ -28,16 +29,13 @@ class PepperFileSystemBrowserHost :
                               PP_Instance instance,
                               PP_Resource resource,
                               PP_FileSystemType type);
-  // Creates a new PepperFileSystemBrowserHost with an existing file system at
-  // the given |root_url| and of the given |type|. The file system at |root_url|
-  // must already be opened. Once created, the PepperFileSystemBrowserHost may
-  // be used without being opened.
-  PepperFileSystemBrowserHost(BrowserPpapiHost* host,
-                              PP_Instance instance,
-                              PP_Resource resource,
-                              const GURL& root_url,
-                              PP_FileSystemType type);
   virtual ~PepperFileSystemBrowserHost();
+
+  // Opens the PepperFileSystemBrowserHost to use an existing file system at the
+  // given |root_url|. The file system at |root_url| must already be opened and
+  // have the type given by GetType().
+  // Calls |callback| when complete.
+  void OpenExisting(const GURL& root_url, const base::Closure& callback);
 
   // ppapi::host::ResourceHost override.
   virtual int32_t OnResourceMessageReceived(
@@ -54,6 +52,9 @@ class PepperFileSystemBrowserHost :
   }
 
  private:
+  void OpenExistingWithContext(
+      const base::Closure& callback,
+      scoped_refptr<fileapi::FileSystemContext> fs_context);
   void GotFileSystemContext(
       ppapi::host::ReplyMessageContext reply_context,
       fileapi::FileSystemType file_system_type,

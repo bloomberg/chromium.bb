@@ -50,19 +50,24 @@ PepperFileSystemBrowserHost::PepperFileSystemBrowserHost(BrowserPpapiHost* host,
       weak_factory_(this) {
 }
 
-PepperFileSystemBrowserHost::PepperFileSystemBrowserHost(BrowserPpapiHost* host,
-                                                         PP_Instance instance,
-                                                         PP_Resource resource,
-                                                         const GURL& root_url,
-                                                         PP_FileSystemType type)
-    : ResourceHost(host->GetPpapiHost(), instance, resource),
-      browser_ppapi_host_(host),
-      type_(type),
-      opened_(true),
-      root_url_(root_url),
-      fs_context_(NULL),
-      called_open_(true),
-      weak_factory_(this) {
+void PepperFileSystemBrowserHost::OpenExisting(const GURL& root_url,
+                                               const base::Closure& callback) {
+  root_url_ = root_url;
+  int render_process_id = 0;
+  int unused;
+  if (!browser_ppapi_host_->GetRenderViewIDsForInstance(
+           pp_instance(), &render_process_id, &unused)) {
+    NOTREACHED();
+  }
+  called_open_ = true;
+  // Get the file system context asynchronously, and then complete the Open
+  // operation by calling |callback|.
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&GetFileSystemContextFromRenderId, render_process_id),
+      base::Bind(&PepperFileSystemBrowserHost::OpenExistingWithContext,
+                 weak_factory_.GetWeakPtr(), callback));
 }
 
 PepperFileSystemBrowserHost::~PepperFileSystemBrowserHost() {
@@ -131,6 +136,21 @@ int32_t PepperFileSystemBrowserHost::OnHostMsgOpen(
                  context->MakeReplyMessageContext(),
                  file_system_type));
   return PP_OK_COMPLETIONPENDING;
+}
+
+void PepperFileSystemBrowserHost::OpenExistingWithContext(
+    const base::Closure& callback,
+    scoped_refptr<fileapi::FileSystemContext> fs_context) {
+  if (fs_context.get()) {
+    opened_ = true;
+  } else {
+    // If there is no file system context, we log a warning and continue with an
+    // invalid resource (which will produce errors when used), since we have no
+    // way to communicate the error to the caller.
+    LOG(WARNING) << "Could not retrieve file system context.";
+  }
+  fs_context_ = fs_context;
+  callback.Run();
 }
 
 void PepperFileSystemBrowserHost::GotFileSystemContext(

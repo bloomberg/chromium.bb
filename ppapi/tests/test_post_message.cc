@@ -610,6 +610,13 @@ std::string TestPostMessage::TestSendingResource() {
     pp::FileRef file_ref(file_system, file_path.c_str());
     ASSERT_NE(0, file_ref.pp_resource());
 
+    // Ensure that the file can be queried.
+    TestCompletionCallbackWithOutput<PP_FileInfo> cc(instance_->pp_instance(),
+                                                     callback_type());
+    cc.WaitForResult(file_ref.Query(cc.GetCallback()));
+    CHECK_CALLBACK_BEHAVIOR(cc);
+    ASSERT_EQ(PP_OK, cc.result());
+
     // Read the file and test that its contents match.
     pp::FileIO file_io(instance_);
     ASSERT_NE(0, file_io.pp_resource());
