@@ -205,11 +205,6 @@ bool IsForceCompositingModeBlacklisted() {
 }  // namespace
 
 bool IsThreadedCompositingEnabled() {
-#if defined(USE_AURA)
-  // We always want threaded compositing on Aura.
-  return true;
-#endif
-
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   // Command line switches take precedence over blacklist.
@@ -219,6 +214,11 @@ bool IsThreadedCompositingEnabled() {
   } else if (command_line.HasSwitch(switches::kEnableThreadedCompositing)) {
     return true;
   }
+
+#if defined(USE_AURA)
+  // We always want threaded compositing on Aura.
+  return true;
+#endif
 
   if (!CanDoAcceleratedCompositing() || IsForceCompositingModeBlacklisted())
     return false;
