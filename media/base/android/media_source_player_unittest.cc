@@ -11,6 +11,7 @@
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_player_manager.h"
 #include "media/base/android/media_source_player.h"
+#include "media/base/bind_to_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/test_data_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -142,6 +143,7 @@ class MediaSourcePlayerTest : public testing::Test {
       : manager_(&message_loop_),
         demuxer_(new MockDemuxerAndroid(&message_loop_)),
         player_(0, &manager_, scoped_ptr<DemuxerAndroid>(demuxer_)),
+        decoder_callback_hook_executed_(false),
         surface_texture_a_is_next_(true) {}
   virtual ~MediaSourcePlayerTest() {}
 
@@ -165,6 +167,45 @@ class MediaSourcePlayerTest : public testing::Test {
   // Get the preroll timestamp from the MediaSourcePlayer.
   base::TimeDelta GetPrerollTimestamp() {
     return player_.preroll_timestamp_;
+  }
+
+  // Simulate player has reached starvation timeout.
+  void TriggerPlayerStarvation() {
+    player_.decoder_starvation_callback_.Cancel();
+    player_.OnDecoderStarved();
+  }
+
+  // Release() the player.
+  void ReleasePlayer() {
+    EXPECT_TRUE(player_.IsPlaying());
+    player_.Release();
+    EXPECT_FALSE(player_.IsPlaying());
+    EXPECT_FALSE(GetMediaDecoderJob(true));
+    EXPECT_FALSE(GetMediaDecoderJob(false));
+  }
+
+  // Upon the next successful decode callback, post a task to call Release()
+  // on the |player_|. TEST_F's do not have access to the private player
+  // members, hence this helper method.
+  // Prevent usage creep of MSP::set_decode_callback_for_testing() by
+  // only using it for the ReleaseWithOnPrefetchDoneAlreadyPosted test.
+  void OnNextTestDecodeCallbackPostTaskToReleasePlayer() {
+    player_.set_decode_callback_for_testing(media::BindToLoop(
+      message_loop_.message_loop_proxy(),
+      base::Bind(
+          &MediaSourcePlayerTest::ReleaseWithPendingPrefetchDoneVerification,
+          base::Unretained(this))));
+  }
+
+  // Asynch test callback posted upon decode completion to verify that a pending
+  // prefetch done event is cleared across |player_|'s Release(). This helps
+  // ensure the ReleaseWithOnPrefetchDoneAlreadyPosted test scenario is met.
+  void ReleaseWithPendingPrefetchDoneVerification() {
+    EXPECT_TRUE(player_.IsEventPending(player_.PREFETCH_DONE_EVENT_PENDING));
+    ReleasePlayer();
+    EXPECT_FALSE(player_.IsEventPending(player_.PREFETCH_DONE_EVENT_PENDING));
+    EXPECT_FALSE(decoder_callback_hook_executed_);
+    decoder_callback_hook_executed_ = true;
   }
 
   DemuxerConfigs CreateAudioDemuxerConfigs() {
@@ -267,6 +308,30 @@ class MediaSourcePlayerTest : public testing::Test {
     return data;
   }
 
+  // Helper method for use at test start. It starts an audio decoder job and
+  // immediately feeds it some data to decode. Then, without letting the decoder
+  // job complete a decode cycle, it also starts player SeekTo(). Upon return,
+  // the player should not yet have sent the DemuxerSeek IPC request, though
+  // seek event should be pending. The audio decoder job will also still be
+  // decoding.
+  void StartAudioDecoderJobAndSeekToWhileDecoding(
+      const base::TimeDelta& seek_time) {
+    EXPECT_FALSE(GetMediaDecoderJob(true));
+    EXPECT_FALSE(player_.IsPlaying());
+    EXPECT_EQ(0, demuxer_->num_data_requests());
+    EXPECT_EQ(0.0, GetPrerollTimestamp().InMillisecondsF());
+    EXPECT_EQ(player_.GetCurrentTime(), GetPrerollTimestamp());
+    StartAudioDecoderJob();
+    EXPECT_TRUE(GetMediaDecoderJob(true));
+    EXPECT_FALSE(GetMediaDecoderJob(true)->is_decoding());
+    player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForAudio(0));
+    EXPECT_TRUE(GetMediaDecoderJob(true)->is_decoding());
+    player_.SeekTo(seek_time);
+    EXPECT_EQ(0.0, GetPrerollTimestamp().InMillisecondsF());
+    EXPECT_EQ(1, demuxer_->num_data_requests());
+    EXPECT_EQ(0, demuxer_->num_seek_requests());
+  }
+
   // Seek, including simulated receipt of |kAborted| read between SeekTo()
   // and OnDemuxerSeekDone(). Use this helper method only when the player
   // already has created the decoder job.
@@ -336,7 +401,7 @@ class MediaSourcePlayerTest : public testing::Test {
     EXPECT_EQ(expected_num_data_requests, demuxer_->num_data_requests());
 
     if (trigger_with_release_start) {
-      player_.Release();
+      ReleasePlayer();
 
       // Simulate demuxer's response to the video data request.
       player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo());
@@ -468,11 +533,13 @@ class MediaSourcePlayerTest : public testing::Test {
         scheme_uuid, security_level, container, codecs);
   }
 
- protected:
   base::MessageLoop message_loop_;
   MockMediaPlayerManager manager_;
   MockDemuxerAndroid* demuxer_;  // Owned by |player_|.
   MediaSourcePlayer player_;
+
+  // Track whether a possibly asynch decoder callback test hook has run.
+  bool decoder_callback_hook_executed_;
 
   // We need to keep the surface texture while the decoder is actively decoding.
   // Otherwise, it may trigger unexpected crashes on some devices. To switch
@@ -912,7 +979,7 @@ TEST_F(MediaSourcePlayerTest, DemuxerDataArrivesAfterRelease) {
   EXPECT_EQ(1, demuxer_->num_data_requests());
   EXPECT_TRUE(GetMediaDecoderJob(true));
 
-  player_.Release();
+  ReleasePlayer();
   player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForAudio(0));
 
   // The decoder job should have been released.
@@ -964,8 +1031,7 @@ TEST_F(MediaSourcePlayerTest, NoSeekForInitialReleaseAndStart) {
   EXPECT_EQ(1, demuxer_->num_data_requests());
   EXPECT_TRUE(GetMediaDecoderJob(false));
 
-  player_.Release();
-  EXPECT_FALSE(player_.IsPlaying());
+  ReleasePlayer();
 
   // Pass a new non-empty surface.
   CreateNextTextureAndSetVideoSurface();
@@ -986,7 +1052,6 @@ TEST_F(MediaSourcePlayerTest, BrowserSeek_MidStreamReleaseAndStart) {
   // Test that one browser seek is requested if player Release() + Start(), with
   // video data received between Release() and Start().
   BrowserSeekPlayer(true);
-  EXPECT_FALSE(GetMediaDecoderJob(false));
   EXPECT_EQ(1, demuxer_->num_data_requests());
 
   // Simulate browser seek is done and confirm player requests more data.
@@ -1140,7 +1205,7 @@ TEST_F(MediaSourcePlayerTest, PrerollContinuesAcrossReleaseAndStart) {
       // first request's data arrives before Start(). Though that data is not
       // seen by decoder, this assumption allows preroll continuation
       // verification and prevents multiple in-flight data requests.
-      player_.Release();
+      ReleasePlayer();
       player_.OnDemuxerDataAvailable(data);
       message_loop_.RunUntilIdle();
       EXPECT_FALSE(GetMediaDecoderJob(true));
@@ -1377,6 +1442,270 @@ TEST_F(MediaSourcePlayerTest, NewSurfaceWhileChangingConfigs) {
   EXPECT_EQ(3, demuxer_->num_data_requests());
   EXPECT_EQ(1, demuxer_->num_config_requests());
   EXPECT_EQ(0, demuxer_->num_seek_requests());
+}
+
+TEST_F(MediaSourcePlayerTest, ReleaseWithOnPrefetchDoneAlreadyPosted) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test if OnPrefetchDone() had already been posted before and is executed
+  // after Release(), then player does not DCHECK. This test is fragile to
+  // change to MediaDecoderJob::Prefetch() implementation; it assumes task
+  // is posted to run |prefetch_cb| if the job already HasData().
+  // TODO(wolenetz): Remove MSP::set_decode_callback_for_testing() if this test
+  // becomes obsolete. See http://crbug.com/304234.
+  StartAudioDecoderJob();
+
+  // Escape the original prefetch by decoding a single access unit.
+  player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForAudio(0));
+  message_loop_.Run();
+
+  // Prime the job with a few more access units, so that a later prefetch,
+  // triggered by starvation to simulate decoder underrun, can trivially
+  // post task to run OnPrefetchDone().
+  player_.OnDemuxerDataAvailable(
+      CreateReadFromDemuxerAckWithConfigChanged(true, 4));
+  EXPECT_TRUE(GetMediaDecoderJob(true) &&
+      GetMediaDecoderJob(true)->is_decoding());
+
+  // Simulate decoder underrun, so trivial prefetch starts while still decoding.
+  // The prefetch and posting of OnPrefetchDone() will not occur until next
+  // MediaDecoderCallBack() occurs.
+  TriggerPlayerStarvation();
+
+  // Upon the next successful decode callback, post a task to call Release() on
+  // the |player_|, such that the trivial OnPrefetchDone() task posting also
+  // occurs and should execute after the Release().
+  OnNextTestDecodeCallbackPostTaskToReleasePlayer();
+
+  while (GetMediaDecoderJob(true))
+    message_loop_.RunUntilIdle();
+  EXPECT_TRUE(decoder_callback_hook_executed_);
+  EXPECT_EQ(2, demuxer_->num_data_requests());
+
+  // Player should have no decoder job until after Start().
+  StartAudioDecoderJob();
+  EXPECT_TRUE(GetMediaDecoderJob(true));
+}
+
+TEST_F(MediaSourcePlayerTest, SeekToThenReleaseThenDemuxerSeekAndDone) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test if Release() occurs after SeekTo(), but the DemuxerSeek IPC request
+  // has not yet been sent, then the seek request is sent after Release(). Also,
+  // test if OnDemuxerSeekDone() occurs prior to next Start(), then the player
+  // will resume correct post-seek preroll upon Start().
+  StartAudioDecoderJobAndSeekToWhileDecoding(
+      base::TimeDelta::FromMilliseconds(100));
+  ReleasePlayer();
+  EXPECT_EQ(1, demuxer_->num_seek_requests());
+
+  player_.OnDemuxerSeekDone(kNoTimestamp());
+  EXPECT_EQ(100.0, GetPrerollTimestamp().InMillisecondsF());
+  EXPECT_FALSE(GetMediaDecoderJob(true));
+  EXPECT_FALSE(player_.IsPlaying());
+
+  // Player should begin prefetch and resume preroll upon Start().
+  EXPECT_EQ(1, demuxer_->num_data_requests());
+  StartAudioDecoderJob();
+  EXPECT_TRUE(GetMediaDecoderJob(true));
+  EXPECT_TRUE(IsPrerolling(true));
+  EXPECT_EQ(100.0, GetPrerollTimestamp().InMillisecondsF());
+  EXPECT_EQ(2, demuxer_->num_data_requests());
+
+  // No further seek should have been requested since Release(), above.
+  EXPECT_EQ(1, demuxer_->num_seek_requests());
+}
+
+TEST_F(MediaSourcePlayerTest, SeekToThenReleaseThenDemuxerSeekThenStart) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test if Release() occurs after SeekTo(), but the DemuxerSeek IPC request
+  // has not yet been sent, then the seek request is sent after Release(). Also,
+  // test if OnDemuxerSeekDone() does not occur until after the next Start(),
+  // then the player remains pending seek done until (and resumes correct
+  // post-seek preroll after) OnDemuxerSeekDone().
+  StartAudioDecoderJobAndSeekToWhileDecoding(
+      base::TimeDelta::FromMilliseconds(100));
+  ReleasePlayer();
+  EXPECT_EQ(1, demuxer_->num_seek_requests());
+
+  // Player should not prefetch upon Start() nor create the decoder job, due to
+  // awaiting DemuxerSeekDone.
+  StartAudioDecoderJob();
+  EXPECT_FALSE(GetMediaDecoderJob(true));
+  EXPECT_EQ(1, demuxer_->num_data_requests());
+
+  player_.OnDemuxerSeekDone(kNoTimestamp());
+  EXPECT_TRUE(GetMediaDecoderJob(true));
+  EXPECT_TRUE(IsPrerolling(true));
+  EXPECT_EQ(100.0, GetPrerollTimestamp().InMillisecondsF());
+  EXPECT_EQ(2, demuxer_->num_data_requests());
+
+  // No further seek should have been requested since Release(), above.
+  EXPECT_EQ(1, demuxer_->num_seek_requests());
+}
+
+TEST_F(MediaSourcePlayerTest, SeekToThenDemuxerSeekThenReleaseThenSeekDone) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test if Release() occurs after a SeekTo()'s subsequent DemuxerSeek IPC
+  // request and OnDemuxerSeekDone() arrives prior to the next Start(), then the
+  // player will resume correct post-seek preroll upon Start().
+  StartAudioDecoderJobAndSeekToWhileDecoding(
+      base::TimeDelta::FromMilliseconds(100));
+  while (GetMediaDecoderJob(true)->is_decoding())
+    message_loop_.RunUntilIdle();
+  EXPECT_EQ(1, demuxer_->num_seek_requests());
+
+  ReleasePlayer();
+  player_.OnDemuxerSeekDone(kNoTimestamp());
+  EXPECT_FALSE(player_.IsPlaying());
+  EXPECT_FALSE(GetMediaDecoderJob(true));
+  EXPECT_EQ(100.0, GetPrerollTimestamp().InMillisecondsF());
+
+  // Player should begin prefetch and resume preroll upon Start().
+  EXPECT_EQ(1, demuxer_->num_data_requests());
+  StartAudioDecoderJob();
+  EXPECT_TRUE(GetMediaDecoderJob(true));
+  EXPECT_TRUE(IsPrerolling(true));
+  EXPECT_EQ(100.0, GetPrerollTimestamp().InMillisecondsF());
+  EXPECT_EQ(2, demuxer_->num_data_requests());
+
+  // No further seek should have been requested since before Release(), above.
+  EXPECT_EQ(1, demuxer_->num_seek_requests());
+}
+
+TEST_F(MediaSourcePlayerTest, SeekToThenReleaseThenStart) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test if Release() occurs after a SeekTo()'s subsequent DemuxerSeeK IPC
+  // request OnDemuxerSeekDone() does not occur until after the next Start(),
+  // then the player remains pending seek done until (and resumes correct
+  // post-seek preroll after) OnDemuxerSeekDone().
+  StartAudioDecoderJobAndSeekToWhileDecoding(
+      base::TimeDelta::FromMilliseconds(100));
+  while (GetMediaDecoderJob(true)->is_decoding())
+    message_loop_.RunUntilIdle();
+  EXPECT_EQ(1, demuxer_->num_seek_requests());
+
+  ReleasePlayer();
+  StartAudioDecoderJob();
+  EXPECT_FALSE(GetMediaDecoderJob(true));
+  EXPECT_EQ(1, demuxer_->num_data_requests());
+
+  player_.OnDemuxerSeekDone(kNoTimestamp());
+  EXPECT_TRUE(GetMediaDecoderJob(true));
+  EXPECT_TRUE(IsPrerolling(true));
+  EXPECT_EQ(100.0, GetPrerollTimestamp().InMillisecondsF());
+  EXPECT_EQ(2, demuxer_->num_data_requests());
+
+  // No further seek should have been requested since before Release(), above.
+  EXPECT_EQ(1, demuxer_->num_seek_requests());
+}
+
+TEST_F(MediaSourcePlayerTest, ConfigChangedThenReleaseThenConfigsAvailable) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test if Release() occurs after |kConfigChanged| detected, new configs
+  // requested of demuxer, and the requested configs arrive before the next
+  // Start(), then the player completes the pending config change processing on
+  // their receipt.
+  StartConfigChange(true, true, 0);
+  ReleasePlayer();
+
+  player_.OnDemuxerConfigsAvailable(CreateAudioDemuxerConfigs());
+  EXPECT_FALSE(GetMediaDecoderJob(true));
+  EXPECT_FALSE(player_.IsPlaying());
+  EXPECT_EQ(1, demuxer_->num_data_requests());
+
+  // Player should resume upon Start(), even without further configs supplied.
+  player_.Start();
+  EXPECT_TRUE(GetMediaDecoderJob(true));
+  EXPECT_TRUE(player_.IsPlaying());
+  EXPECT_EQ(2, demuxer_->num_data_requests());
+
+  // No further config request should have occurred since StartConfigChange().
+  EXPECT_EQ(1, demuxer_->num_config_requests());
+}
+
+TEST_F(MediaSourcePlayerTest, ConfigChangedThenReleaseThenStart) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test if Release() occurs after |kConfigChanged| detected, new configs
+  // requested of demuxer, and the requested configs arrive after the next
+  // Start(), then the player pends job creation until the new configs arrive.
+  StartConfigChange(true, true, 0);
+  ReleasePlayer();
+
+  player_.Start();
+  EXPECT_TRUE(player_.IsPlaying());
+  EXPECT_FALSE(GetMediaDecoderJob(true));
+  EXPECT_EQ(1, demuxer_->num_data_requests());
+
+  player_.OnDemuxerConfigsAvailable(CreateAudioDemuxerConfigs());
+  EXPECT_TRUE(GetMediaDecoderJob(true));
+  EXPECT_EQ(2, demuxer_->num_data_requests());
+
+  // No further config request should have occurred since StartConfigChange().
+  EXPECT_EQ(1, demuxer_->num_config_requests());
+}
+
+TEST_F(MediaSourcePlayerTest, BrowserSeek_ThenReleaseThenDemuxerSeekDone) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that Release() after a browser seek's DemuxerSeek IPC request has been
+  // sent behaves similar to a regular seek: if OnDemuxerSeekDone() occurs
+  // before the next Start()+SetVideoSurface(), then the player will resume
+  // correct post-seek preroll upon Start()+SetVideoSurface().
+  BrowserSeekPlayer(false);
+  base::TimeDelta expected_preroll_timestamp = player_.GetCurrentTime();
+  ReleasePlayer();
+
+  player_.OnDemuxerSeekDone(expected_preroll_timestamp);
+  EXPECT_FALSE(player_.IsPlaying());
+  EXPECT_FALSE(GetMediaDecoderJob(false));
+  EXPECT_EQ(expected_preroll_timestamp, GetPrerollTimestamp());
+
+  // Player should begin prefetch and resume preroll upon Start().
+  EXPECT_EQ(1, demuxer_->num_data_requests());
+  StartVideoDecoderJob();
+  CreateNextTextureAndSetVideoSurface();
+  EXPECT_TRUE(GetMediaDecoderJob(false));
+  EXPECT_TRUE(IsPrerolling(false));
+  EXPECT_EQ(expected_preroll_timestamp, GetPrerollTimestamp());
+  EXPECT_EQ(expected_preroll_timestamp, player_.GetCurrentTime());
+  EXPECT_EQ(2, demuxer_->num_data_requests());
+
+  // No further seek should have been requested since BrowserSeekPlayer().
+  EXPECT_EQ(1, demuxer_->num_seek_requests());
+}
+
+TEST_F(MediaSourcePlayerTest, BrowserSeek_ThenReleaseThenStart) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that Release() after a browser seek's DemuxerSeek IPC request has been
+  // sent behaves similar to a regular seek: if OnDemuxerSeekDone() does not
+  // occur until after the next Start()+SetVideoSurface(), then the player
+  // remains pending seek done until (and resumes correct post-seek preroll
+  // after) OnDemuxerSeekDone().
+  BrowserSeekPlayer(false);
+  base::TimeDelta expected_preroll_timestamp = player_.GetCurrentTime();
+  ReleasePlayer();
+
+  StartVideoDecoderJob();
+  CreateNextTextureAndSetVideoSurface();
+  EXPECT_FALSE(GetMediaDecoderJob(false));
+  EXPECT_EQ(1, demuxer_->num_data_requests());
+
+  player_.OnDemuxerSeekDone(expected_preroll_timestamp);
+  EXPECT_TRUE(GetMediaDecoderJob(false));
+  EXPECT_TRUE(IsPrerolling(false));
+  EXPECT_EQ(expected_preroll_timestamp, GetPrerollTimestamp());
+  EXPECT_EQ(expected_preroll_timestamp, player_.GetCurrentTime());
+  EXPECT_EQ(2, demuxer_->num_data_requests());
+
+  // No further seek should have been requested since BrowserSeekPlayer().
+  EXPECT_EQ(1, demuxer_->num_seek_requests());
 }
 
 // TODO(xhwang): Enable this test when the test devices are updated.

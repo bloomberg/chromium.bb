@@ -154,6 +154,17 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // resync with audio and starts decoding.
   void OnPrefetchDone();
 
+  // Test-only method to setup hook for the completion of the next decode cycle.
+  // This callback state is cleared when it is next run.
+  // Prevent usage creep by only calling this from the
+  // ReleaseWithOnPrefetchDoneAlreadyPosted MediaSourcePlayerTest.
+  void set_decode_callback_for_testing(const base::Closure& test_decode_cb) {
+    decode_callback_for_testing_ = test_decode_cb;
+  }
+
+  // TODO(qinmin/wolenetz): Reorder these based on their priority from
+  // ProcessPendingEvents(). Release() and other routines are dependent upon
+  // priority consistency.
   enum PendingEventFlags {
     NO_EVENT_PENDING = 0,
     SEEK_EVENT_PENDING = 1 << 0,
@@ -256,6 +267,9 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // the player should pause. When a new key is added (OnKeyAdded()), we should
   // try to start playback again.
   bool is_waiting_for_key_;
+
+  // Test-only callback for hooking the completion of the next decode cycle.
+  base::Closure decode_callback_for_testing_;
 
   friend class MediaSourcePlayerTest;
   DISALLOW_COPY_AND_ASSIGN(MediaSourcePlayer);

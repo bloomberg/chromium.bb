@@ -11,6 +11,7 @@
 #include "base/barrier_closure.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -230,15 +231,39 @@ base::TimeDelta MediaSourcePlayer::GetDuration() {
 
 void MediaSourcePlayer::Release() {
   DVLOG(1) << __FUNCTION__;
+
+  // Allow pending seeks and config changes to survive this Release().
+  // If previously pending a prefetch done event, or a job was still decoding,
+  // then at end of Release() we need to ProcessPendingEvents() to process any
+  // seek or config change that was blocked by the prefetch or decode.
+  // TODO(qinmin/wolenetz): Maintain channel state to not double-request data
+  // or drop data received across Release()+Start(). See http://crbug.com/306314
+  // and http://crbug.com/304234.
+  bool process_pending_events = false;
+  process_pending_events = IsEventPending(PREFETCH_DONE_EVENT_PENDING) ||
+      (audio_decoder_job_ && audio_decoder_job_->is_decoding()) ||
+      (video_decoder_job_ && video_decoder_job_->is_decoding());
+
+  // Clear all the pending events except seeks and config changes.
+  pending_event_ &= (SEEK_EVENT_PENDING | CONFIG_CHANGE_EVENT_PENDING);
+
   audio_decoder_job_.reset();
   video_decoder_job_.reset();
+
+  // Prevent job re-creation attempts in OnDemuxerConfigsAvailable()
   reconfig_audio_decoder_ = false;
   reconfig_video_decoder_ = false;
+
+  // Prevent player restart, including job re-creation attempts.
   playing_ = false;
-  pending_event_ = NO_EVENT_PENDING;
+
   decoder_starvation_callback_.Cancel();
   surface_ = gfx::ScopedJavaSurface();
   manager()->ReleaseMediaResources(player_id());
+  if (process_pending_events) {
+    DVLOG(1) << __FUNCTION__ << " : Resuming seek or config change processing";
+    ProcessPendingEvents();
+  }
 }
 
 void MediaSourcePlayer::SetVolume(double volume) {
@@ -549,12 +574,17 @@ void MediaSourcePlayer::MediaDecoderCallback(
                            base::IntToString(status));
   }
 
+  // Let tests hook the completion of this decode cycle.
+  if (!decode_callback_for_testing_.is_null())
+    base::ResetAndReturn(&decode_callback_for_testing_).Run();
+
   bool is_clock_manager = is_audio || !HasAudio();
 
   if (is_clock_manager)
     decoder_starvation_callback_.Cancel();
 
   if (status == MEDIA_CODEC_ERROR) {
+    DVLOG(1) << __FUNCTION__ << " : decode error";
     Release();
     manager()->OnError(player_id(), MEDIA_ERROR_DECODE);
     return;
@@ -835,7 +865,17 @@ void MediaSourcePlayer::OnPrefetchDone() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(!audio_decoder_job_ || !audio_decoder_job_->is_decoding());
   DCHECK(!video_decoder_job_ || !video_decoder_job_->is_decoding());
-  DCHECK(IsEventPending(PREFETCH_DONE_EVENT_PENDING));
+
+  // A previously posted OnPrefetchDone() could race against a Release(). If
+  // Release() won the race, we should no longer have decoder jobs.
+  // TODO(qinmin/wolenetz): Maintain channel state to not double-request data
+  // or drop data received across Release()+Start(). See http://crbug.com/306314
+  // and http://crbug.com/304234.
+  if (!IsEventPending(PREFETCH_DONE_EVENT_PENDING)) {
+    DVLOG(1) << __FUNCTION__ << " : aborting";
+    DCHECK(!audio_decoder_job_ && !video_decoder_job_);
+    return;
+  }
 
   ClearPendingEvent(PREFETCH_DONE_EVENT_PENDING);
 

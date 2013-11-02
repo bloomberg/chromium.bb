@@ -67,10 +67,12 @@ void MediaDecoderJob::Prefetch(const base::Closure& prefetch_cb) {
   DCHECK(decode_cb_.is_null());
 
   if (HasData()) {
+    DVLOG(1) << __FUNCTION__ << " : using previously received data";
     ui_loop_->PostTask(FROM_HERE, prefetch_cb);
     return;
   }
 
+  DVLOG(1) << __FUNCTION__ << " : requesting data";
   RequestData(prefetch_cb);
 }
 
@@ -134,6 +136,7 @@ void MediaDecoderJob::BeginPrerolling(
 
 void MediaDecoderJob::Release() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
+  DVLOG(1) << __FUNCTION__;
 
   // If the decoder job is not waiting for data, and is still decoding, we
   // cannot delete the job immediately.
@@ -143,8 +146,10 @@ void MediaDecoderJob::Release() {
   on_data_received_cb_.Reset();
   decode_cb_.Reset();
 
-  if (destroy_pending_)
+  if (destroy_pending_) {
+    DVLOG(1) << __FUNCTION__ << " : delete is pending decode completion";
     return;
+  }
 
   delete this;
 }
@@ -372,6 +377,7 @@ void MediaDecoderJob::OnDecodeCompleted(
   DCHECK(ui_loop_->BelongsToCurrentThread());
 
   if (destroy_pending_) {
+    DVLOG(1) << __FUNCTION__ << " : completing pending deletion";
     delete this;
     return;
   }
