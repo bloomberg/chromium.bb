@@ -170,7 +170,7 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
     }
 
     void prepare(final ViewGroup layout) {
-        // Display the checkbox for supressing dialogs if necessary.
+        // Display the checkbox for suppressing dialogs if necessary.
         layout.findViewById(R.id.suppress_js_modal_dialogs).setVisibility(
                 mShouldShowSuppressCheckBox ? View.VISIBLE : View.GONE);
     }

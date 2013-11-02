@@ -210,7 +210,7 @@ class CC_EXPORT SchedulerStateMachine {
   void SetCanStart() { can_start_ = true; }
 
   // Indicates whether drawing would, at this time, make sense.
-  // CanDraw can be used to supress flashes or checkerboarding
+  // CanDraw can be used to suppress flashes or checkerboarding
   // when such behavior would be undesirable.
   void SetCanDraw(bool can);
 

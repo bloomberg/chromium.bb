@@ -1900,7 +1900,7 @@
       'nacl_untrusted_build%': 0,
 
       'pnacl_compile_flags': [
-        # pnacl uses the clang compiler so we need to supress all the
+        # pnacl uses the clang compiler so we need to suppress all the
         # same warnings as we do for clang.
         # TODO(sbc): Remove these if/when they are removed from the clang
         # build.

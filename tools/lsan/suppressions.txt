@@ -30,7 +30,8 @@ leak:crypto::ScopedTestNSSDB::ScopedTestNSSDB
 leak:error_get_my_stack
 
 # The NSS suppressions above will not fire when the fast stack unwinder is used,
-# because it can't unwind through NSS libraries. Apply blanket supressions for now.
+# because it can't unwind through NSS libraries. Apply blanket suppressions for
+# now.
 leak:libnssutil3
 leak:libnspr4
 leak:libnss3

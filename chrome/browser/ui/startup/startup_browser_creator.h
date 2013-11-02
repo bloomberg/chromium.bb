@@ -147,7 +147,7 @@ class StartupBrowserCreator {
   // Additional tabs to open during first run.
   std::vector<GURL> first_run_tabs_;
 
-  // True if the set-as-default dialog has been explicitly supressed.
+  // True if the set-as-default dialog has been explicitly suppressed.
   // This information is used to allow the default browser prompt to show on
   // first-run when the dialog has been suppressed.
   bool is_default_browser_dialog_suppressed_;
