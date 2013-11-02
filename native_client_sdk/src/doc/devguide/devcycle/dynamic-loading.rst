@@ -29,7 +29,7 @@ C standard libraries: glibc and newlib
 --------------------------------------
 
 The Native Client SDK comes with two C standard libraries --- glibc and
-newlib.  These libraries are described in the table below.
+newlib. These libraries are described in the table below.
 
 +--------+----------+-------------+--------------------------------------------+
 | Library| Linking  | License     | Description                                |
@@ -53,13 +53,9 @@ newlib.  These libraries are described in the table below.
 |        |          | software    | more suitable to link statically in        |
 |        |          | licenses    | commercial, closed-source applications. For|
 |        |          |             | documentation, FAQs, and additional        |
-|        |          |             | information about newlib, see the `newlib  |
-|        |          |             | documentation`__.                          |
+|        |          |             | information about newlib, see the newlib_  |
+|        |          |             | documentation.                             |
 +--------+----------+-------------+--------------------------------------------+
-
-.. _GLIBC: http://www.gnu.org/software/libc/index.html
-.. _POSIX: http://en.wikipedia.org/wiki/POSIX
-__ http://sourceware.org/newlib
 
 For proprietary (closed-source) applications, your options are to either
 statically link to newlib, or dynamically link to glibc. We recommend
@@ -160,14 +156,14 @@ manifest (.nmf) file, and deploy an application are provided below.
 Building a dynamically linked application
 =========================================
 
-A dynamically linked application typically includes one Native Client module
-and one or more shared libraries. (How to allocate code between Native Client
-modules and shared libraries is a question of application design that is beyond
-the scope of this document.) Each Native Client module and shared library must
-be compiled for at least the x86 32-bit and 64-bit architectures.
+Applications built with the glibc toolchain will by dynamically linked by
+default. Application that load shared libraries at runtime using ``dlopen()``
+must link with the libdl library (``-ldl``).
 
-The dlopen example in the SDK
------------------------------
+Like other gcc-based toolchains building a dynamic library for NaCl is normally
+done by linking with the ``-shared`` flag and compiling with the ``-fPIC`` flag.
+The SDK build system will do this automatically when the ``SO_RULE`` Makefile
+rule is used.
 
 The Native Client SDK includes an example that demonstrates how to build a
 shared library, and how to use the ``dlopen()`` interface to load that library
@@ -178,22 +174,26 @@ it demonstrates how to build Native Client modules (.nexe files) and shared
 libraries (.so files) with the x86 glibc toolchain, and how to generate a
 Native Client manifest file for glibc applications.
 
-The SDK example, located in the directory examples/dlopen, includes two C++
+The SDK example, located in ``examples/tutorial/dlopen``, includes three C++
 files:
 
 eightball.cc
   This file implements the function ``Magic8Ball()``, which is used to provide
-  whimsical answers to user questions. The file is compiled into a shared
-  library, ``libeightball.so``.
+  whimsical answers to user questions. This file is compiled into a shared
+  library called ``libeightball.so``. This library gets included in the
+  .nmf file and is therefore directly loadable with ``dlopen()``.
+
+reverse.cc
+  This file implements the function ``Reverse()``, which returns reversed
+  copies of strings that are passed to it. This file is compiled into a shared
+  library called ``libreverse.so``. This library is **not** included in the
+  .nmf file and is loaded via an http mount using the :ref:`nacl_io library
+  <nacl_io>`.
 
 dlopen.cc
-  This file implements the Native Client module, which loads
-  ``libeightball.so``, receives messages from JavaScript (sent in response to
-  user input), calls ``Magic8Ball()`` to generate answers, and sends messages
-  back to JavaScript with the generated answers. The file is compiled into a
-  .nexe file.
-
-.. TODO(sbc): also mention reverse.{cc,h} files
+  This file implements the Native Client module, which loads the two shared
+  libraries and handles communcation with with JavaScript. The file is compiled
+  into a Native Client executable (.nexe).
 
 Run ``make`` in the dlopen directory to see the commands the Makefile executes
 to build x86 32-bit and 64-bit .nexe and .so files, and to generate a .nmf
@@ -212,120 +212,26 @@ file. These commands are described below.
   linking and loading. Take a look at the example Makefiles and the generated
   .nmf files for details on how to build dynamically linked applications.
 
-
-Building a Native Client module (.nexe file)
---------------------------------------------
-
-.. TODO(sbc): there is a lot of redundant detail here.  Also the Makefile
-   structure has changed significantly.
-
-The Makefile in the dlopen example builds ``dlopen.cc`` into a .nexe file using
-the two commands shown below. (For simplicity, the full path to the
-compiler/linker is not shown; the tool is located in the bin directory in the
-x86 glibc toolchain, e.g. toolchain/win_x86_glibc/bin.)
-
-To compile dlopen.cc into dlopen_x86_32.o::
-
-  i686-nacl-g++ -o dlopen_x86_32.o -c dlopen.cc -m32 -g -O0 -pthread -std=gnu++98 -Wno-long-long -Wall
-
-To link dlopen_x86_32.o into dlopen_x86_32.nexe::
-
-  i686-nacl-g++ -o dlopen_x86_32.nexe dlopen_x86_32.o -m32 -g -ldl -lppapi_cpp -lppapi
-
-A few of the flags in these commands are described below:
-
-``-o`` *file*
-  put the output in *file*
-
-``-c``
-  compile the source file, but do not link it
-
-``-m32``
-  produce 32-bit code (i.e., code for the x86-32 target architecture)
-
-``-g``
-  produce debugging information
-
-``-O0``
-  use a base optimization level that minimizes compile time
-
-``-pthread``
-  support multithreading with the pthread library
-
-``-W`` *warning*
-  request or supress the specified warning
-
-``-l`` *library*
-  use the specified *library* when linking (per C library naming conventions,
-  the linker uses the file lib*library*.so, or if that file is not available,
-  lib*library*.a; e.g., -ldl corresponds to libdl.so or libdl.a)
-
-Many of these flags are optional; you need not use all of them to compile and
-link your application. For example, you only need to use -ldl if your
-application uses the dlopen() interface to open a library at runtime. The
-toolchains in the Native Client SDK are based on the gcc compiler; see `gcc
-command options <http://gcc.gnu.org/onlinedocs/gcc/Invoking-GCC.html>`_ for a
-full description of the gcc flags. For flags that are recommended with Native
-Client, see :ref:`compile flags for different development scenarios
-<compile_flags>`.
-
-Note that you can combine the compile and link steps to build a .nexe file
-using one command. Simply run i686-nacl-g++ once and use the appropriate
-combination of flags (omit the -c flag and include the -l flag with the
-required libraries)::
-
-  i686-nacl-g++ -o dlopen_x86_32.nexe dlopen.cc ^ -m32 -g -O0 -pthread -std=gnu++98 -Wno-long-long -Wall  -ldl -lppapi_cpp -lppapi
-
-(The carat ``^`` allows the command to span multiple lines on Windows; to do
-the same on Mac and Linux use a backslash instead. Or you can simply type the
-command and all its arguments on one line.)
-
-The commands above build a 32-bit .nexe. To build a 64-bit .nexe, run the same
-commands but with the **-m64** flag instead of -m32, and of course specify
-different output file names. Check the Makefile in the dlopen example to see
-the set of commands that is used to generate 32-bit and 64-bit .nexes.
-
-Building a shared library (.so file)
-------------------------------------
-
-The Makefile in the dlopen example builds eightball.cc into a .so file using
-the two commands shown below.
-
-To compile eightball.cc into eightball_x86_32.o::
-
-  i686-nacl-g++ -o eightball_x86_32.o -c eightball.cc -m32 -g -O0 -pthread -std=gnu++98 -Wno-long-long -Wall -fPIC
-
-To link eightball_x86_32.o into eightball_x86_32.so::
-
-  i686-nacl-g++ -o libeightball.so eightball_x86_32.o -m32 -g -ldl -lppapi_cpp -lppapi -shared
-
-A couple of the important flags in these commands are described below:
-
-``-fPIC``
-  generate position-independent code (PIC) suitable for use in a shared library
-  (this flag is required for all x86 64-bit modules and for 32-bit shared
-  libraries)
-``-shared``
-  produce a shared object that can be linked with other objects to form an
-  executable (this flag is required for .so files)
-  As when building a .nexe, you can combine compiling and linking into one step
-  by running i686-nacl-g++ once with the appropriate combination of flags.
-
-As with .nexes, you need to generate both 32-bit and 64-bit versions of a
-shared object -- see the dlopen example for an illustration. In the dlopen
-example, the shared objects are put into the subdirectories ``lib32`` and
-``lib64``.  These directories are used to collect all the shared libraries
-needed by the application, as discussed below.
-
 .. _dynamic_loading_manifest:
 
 Generating a Native Client manifest file for a dynamically linked application
 =============================================================================
 
-The Native Client manifest file must specify the full list of executable files
-needed by an application, including the recursive closure of shared library
-dependencies. Take a look at the manifest file in the dlopen example to see how
-a glibc-style manifest file is structured. (Run make in the dlopen directory to
+The Native Client manifest file specifies the name of the executable to run
+and must also specify any shared libraries that the application directly
+depends on. For indirect dependencies (such as libraries opened via
+``dlopen()``) it is also convenient to list libraries in the manifest file.
+However it is possile to load arbitrary shared libraries at runtime that
+are not mentioned in the manifest by using the `nacl_io library <nacl_io>`_
+to mount a filesystem that contains the shared libraries which will then
+allow ``dlopen()`` to access them.
+
+In this example we demonstrate both loading directly from via the manifest
+file (``libeightball.so``) and loading indirectly via a http mount
+(``libreverse.so``).
+
+Take a look at the manifest file in the dlopen example to see how
+a glibc-style manifest file is structured. (Run ``make`` in the dlopen directory to
 generate the manifest file if you haven't done so already.) Here is an excerpt
 from ``dlopen.nmf``::
 
@@ -359,123 +265,51 @@ from ``dlopen.nmf``::
 
 In most cases, you can use the ``create_nmf.py`` script in the SDK to generate
 a manifest file for your application. The script is located in the tools
-directory (e.g., pepper_28/tools).
+directory (e.g. ``pepper_28/tools``).
 
-.. TODO(sbc): running create_nmf.py is much simpler now.
+The Makefile in the dlopen example generates the manifest automatically using
+the ``NMF_RULE`` provided by the SDK build system. Running ``make V=1`` will
+show the full command line which is used to generate the nmf::
 
-The Makefile in the dlopen example generates the manifest file ``dlopen.nmf``
-by running the following command::
+  create_nmf.py -o dlopen.nmf glibc/Release/dlopen_x86_32.nexe \
+     glibc/Release/dlopen_x86_64.nexe glibc/Release/libeightball_x86_32.so \
+     glibc/Release/libeightball_x86_64.so  -s ./glibc/Release \
+     -n libeightball_x86_32.so,libeightball.so \
+     -n libeightball_x86_64.so,libeightball.so
 
-  python <NACL_SDK_ROOT>/tools/create_nmf.py ^
-    -D <NACL_SDK_ROOT>/toolchain/win_x86_glibc/x86_64-nacl/bin/objdump ^
-    -o dlopen.nmf ^
-    -s . ^
-    dlopen_x86_32.nexe dlopen_x86_64.nexe lib32/libeightball.so lib64/libeightball.so ^
-    -L <NACL_SDK_ROOT>/toolchain/win_x86_glibc/x86_64-nacl/lib32 ^
-    -L <NACL_SDK_ROOT>/toolchain/win_x86_glibc/x86_64-nacl/lib64
-
-(The carat ``^`` allows the command to span multiple lines on Windows; to do the
-same on Mac and Linux use a backslash instead, or you can simply type the
-command and all its arguments on one line. *<NACL_SDK_ROOT>* represents the path
-to the top-level directory of the bundle you are using, e.g.,
-*<location-where-you-installed-the-SDK>*/pepper_28.)
-
-
-Run python ``create_nmf.py --help`` to see a description of the command-line
+Run python ``create_nmf.py --help`` to see a full description of the command-line
 flags. A few of the important flags are described below.
-
-.. TODO(sbc): remove -D option which is now deprecated.
-
-``-D`` *tool*
-  use *tool* to read information about a file and determine shared library
-  dependencies (the tool must be a version of the `objdump
-  <http://en.wikipedia.org/wiki/Objdump>`_ utility)
 
 ``-s`` *directory*
   use *directory* to stage libraries (libraries are added to ``lib32`` and
   ``lib64`` subfolders)
 
 ``-L`` *directory*
-  add *directory* to the library search path
+  add *directory* to the library search path. The default search path
+  already includes the toolchain and SDK libraries directories.
 
 .. Note::
   :class: note
 
-  **Caution:** The ``create_nmf.py`` script only recognizes explicit shared
-  library dependencies (for example, dependencies specified with the -l flag
-  for the compiler/linker). The manifest file generated by create_nmf.py will
-  be incorrect in the following situations:
+  **Note:** The ``create_nmf`` script can only automatically detect explicit
+  shared library dependencies (for example, dependencies specified with the -l
+  flag for the compiler/linker). If you want to include libraries that you
+  intend to dlopen() at runtime you must explcitly list them in your call to
+  ``create_nmf``.
 
-  * You run ``create_nmf.py`` without listing as arguments all the libraries
-    that your application opens with ``dlopen()``.
-
-  * After you run ``create_nmf.py``, you subsequently add a library dependency
-    that is not mentioned in the manifest file.
-
-  * After you run ``create_nmf.py``, you subsequently change the directory
-    structure on your server or in your Chrome Web Store manifest file, such
-    that the needed libraries are no longer in the location specified in the
-    .nmf file
-
-  To handle the above situations correctly, you must re-run ``create_nmf.py``
-  (for example, if you added a new library dependency in your application or
-  changed the application directory structure), and make sure to list all the
-  libraries that your application opens at runtime with ``dlopen()`` (e.g.,
-  libeighball.so in the dlopen example).
-
-.. TODO(sbc): We probably don't want/need this next section in the docs at all.
-
-As an alternative to using ``create_nmf.py``, you can also chase down the full
-list of shared library dependencies manually and add those to your .nmf file.
-To do so, start by running the Native Client version of the objdump utility on
-your .nexe file, as shown below. (The objdump utility is located in the same
-directory as the glibc toolchain, e.g., toolchain/win_x86_glibc/bin.)
-
-::
-
-  i686-nacl-objdump -p dlopen_x86_32.nexe
-
-A .nexe file contains compiled machine code, as well as headers that describe
-the contents of the file and information about how to use the file. The objdump
-utility lets you examine the file's headers, including the "Dynamic Section,"
-which specifies shared library dependencies, as in this example output from the
-dlopen example::
-
-  Dynamic Section:
-    NEEDED               libdl.so.32d9fc17
-    NEEDED               libppapi_cpp.so
-    NEEDED               libpthread.so.32d9fc17
-    NEEDED               libstdc++.so.6
-    NEEDED               libm.so.32d9fc17
-    NEEDED               libgcc_s.so.1
-    NEEDED               libc.so.32d9fc17
-    INIT                 0x01000140
-    FINI                 0x01002560
-    HASH                 0x110025fc
-    ...
-
-
-All the files that are identified as NEEDED in the "Dynamic Section" portion of
-the objdump output are files that you need to list in your Native Client
-manifest file and distribute with your application. (The numbers listed at the
-end of the file names are version numbers, and you must list and distribute
-those exact versions.) Once you've identified the shared libraries that are
-needed by your .nexe file, you must repeat the process recursively: Run objdump
-on each of the NEEDED files, and add the newly-identified NEEDED files to your
-manifest file and to your distribution directories. To get the full list of
-libraries for an application, repeat the process until you've identified the
-recursive closure of dependencies.
+As an alternative to using ``create_nmf``, it is possible to manually calculate
+the list of shared library dependencies using tools such as ``objdump_``.
 
 Deploying a dynamically linked application
 ==========================================
 
 As described above, an application's manifest file must explicitly list all the
-executable code modules that the application requires, including modules from
-the application itself (.nexe and .so files), modules from the Native Client
-SDK (e.g., libppapi_cpp.so), and perhaps also modules from `naclports
-<http://code.google.com/p/naclports>`_ or from :doc:`middleware systems
-<../../community/middleware>` that the application uses. You must provide all of
-those modules as part of the application deployment process.
+executable code modules that the application directly depends on, including
+modules from the application itself (.nexe and .so files), modules from the
+Native Client SDK (e.g., libppapi_cpp.so), and perhaps also modules from
+`naclport <naclports_>`_ or from :doc:`middleware systems <../../community/middleware>` that
+the application uses. You must provide all of those modules as part of the
+application deployment process.
 
 As explained in :doc:`Distributing Your Application
 <../distributing>`, there are two basic ways to deploy an application:
@@ -497,7 +331,7 @@ file may be located in directories you specified with the -L option to
 ``create_nmf.py``. You are free to rename/rearrange files and directories
 referenced by the Native Client manifest file, so long as the modules are
 available in the locations indicated by the manifest file. If you move or
-rename modules, it may be easier to re-run create_nmf.py to generate a new
+rename modules, it may be easier to re-run ``create_nmf.py`` to generate a new
 manifest file rather than edit the original manifest file. For hosted
 applications, you can check for name mismatches during testing by watching the
 request log of the web server hosting your test deployment.
@@ -523,60 +357,35 @@ thread to pre-load libraries asynchronously during initialization of your
 application, so that the libraries are available when they're needed. You can
 call ``dlopen()`` a second time when you need to use a library -- per the
 specification, subsequent calls to ``dlopen()`` return a handle to the
-previously loaded library.  Note that you should only call dlclose() to close a
-library when you no longer need the library; otherwise, subsequent calls to
-``dlopen()`` could cause the library to be fetched again.
+previously loaded library. Note that you should only call ``dlclose()`` to
+close a library when you no longer need the library; otherwise, subsequent
+calls to ``dlopen()`` could cause the library to be fetched again.
 
-The dlopen example in the SDK demonstrates how to open a shared library,
-magiceightball.so, at runtime. To reiterate, the example includes two C++
-files:
+The dlopen example in the SDK demonstrates how to open a shared libraries
+at runtime. To reiterate, the example includes three C++ files:
 
-.. TODO(sbc): mention the third .cc file which is now part of this example.
-
-* eightball.cc: this is the shared library that implements the function
+* ``eightball.cc``: this is the shared library that implements the function
   ``Magic8Ball()`` (this file is compiled into libeightball.so)
-* dlopen.cc: this is the Native Client module that loads ``libeightball.so``
-  and calls ``Magic8Ball()`` to generate answers (this file is compiled into
-  dlopen_x86_{32,64}.nexe)
+* ``reverse.cc``: this is the shared library that implements the function
+  ``Reverse()`` (this file is compiled into libreverse.so)
+* ``dlopen.cc``: this is the Native Client module that loads the shared libraries
+  and makes calls to ``Magic8Ball()`` and ``Reverse()`` in response to requests
+  from JavaScript.
 
 When the Native Client module starts, it kicks off a worker thread that calls
-``dlopen()`` to load magiceightball.so. When the download of
-``libeightball.so`` completes, the worker thread schedules a callback function
-on the main thread.  The callback function calls ``dlopen()`` for
-``magiceightball.so`` a second time; this second call obtains a proper handle
-to the library. Once the module has a handle to the library, it grabs the entry
-point in libeightball.so for the ``Magic8Ball()`` function. When a user types
-in a query and clicks the 'ASK!' button, the module calls ``Magic8Ball()`` to
-generate an answer, and returns the result to the user.
-
-The sequence of calls in the dlopen module is illustrated by the pseudo-code in
-the table below:
-
-+------------------------------------------------+------------------------------------------+
-| Worker Thread                                  | Main Thread                              |
-+================================================+==========================================+
-| ::                                             | ::                                       |
-|                                                |                                          |
-|   pthread_create(.., LoadLibrariesOnWorker, ..)|   -                                      |
-|   -                                            |   LoadLibrariesOnWorker()                |
-|   -                                            |     LoadLibrary()                        |
-|   -                                            |       dlopen("libeightball.so",...)      |
-|   -                                            |       CallOnMainThread(.., LoadDone, ..) |
-|   LoadDone()                                   |   -                                      |
-|     UseLibrary()                               |   -                                      |
-|       dlopen("libeightball.so", ...)           |   -                                      |
-|       offset = dlsym(..., "Magic8Ball")        |   -                                      |
-|   HandleMessage()                              |   -                                      |
-|     _eightball = (TYPE_eightball) offset;      |   -                                      |
-|     PostMessage()                              |   -                                      |
-+------------------------------------------------+------------------------------------------+
+``dlopen()`` to load the two shared libraries. Once the module has a handle to
+the library, it fetches the addresses of the ``Magic8Ball()`` and ``Reverse()``
+functions using ``dlsym()``. When a user types in a query and clicks the 'ASK!'
+button, the module calls ``Magic8Ball()`` to generate an answer, and returns
+the result to the user. Likewise when the user clicks the 'Reverse' button
+it calls the ``Reverse()`` function to reverse the string.
 
 Troubleshooting
 ===============
 
 If your .nexe isn't loading, the best place to look for information that can
-help you troubleshoot the problem is stdout and nacllog. See the Debugging page
-for instructions about how to access those streams.
+help you troubleshoot the JavaScript console and standard output from Chrome.
+See :ref:`Debugging <devcycle-debugging>` for more information.
 
 Here are a few common error messages and explanations of what they mean:
 
@@ -617,3 +426,7 @@ Here are a few common error messages and explanations of what they mean:
   list libraries after the -o flag.
 
 .. |menu-icon| image:: /images/menu-icon.png
+.. _objdump: http://en.wikipedia.org/wiki/Objdump
+.. _GLIBC: http://www.gnu.org/software/libc/index.html
+.. _POSIX: http://en.wikipedia.org/wiki/POSIX
+.. _newlib: http://sourceware.org/newlib/

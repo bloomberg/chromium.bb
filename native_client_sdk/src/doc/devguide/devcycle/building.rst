@@ -51,30 +51,26 @@ nexe applications.
 C libraries
 -----------
 
-The PNaCl SDK has a single choice of C library:
-`newlib <http://sourceware.org/newlib/>`_.
+The PNaCl SDK has a single choice of C library: newlib_.
 
 The Native Client SDK also has a GCC-based toolchain for building
 **nexes**. The GCC-based toolchain has support for two C libraries:
-`newlib <http://sourceware.org/newlib/>`_ and
-`glibc <http://www.gnu.org/software/libc/>`_.
-See :doc:`Dynamic Linking & Loading with glibc <dynamic-loading>`
-for information about these libraries, including factors to help you
-decide which to use.
+newlib_ and glibc_.  See :doc:`Dynamic Linking & Loading with glibc
+<dynamic-loading>` for information about these libraries, including factors to
+help you decide which to use.
 
 .. _building_cpp_libraries:
 
 C++ libraries
 -------------
 
-The PNaCl SDK can use either
-`libstdc++ <http://gcc.gnu.org/libstdc++>`_ (the current default)
-or LLVM's `libc++ <http://libcxx.llvm.org/>`_ (experimental support).
-The ``-stdlib=[libstdc++|libc++]`` command line argument can be used
+The PNaCl SDK can use either `libstdc++ <http://gcc.gnu.org/libstdc++>`_ (the
+current default) or LLVM's `libc++ <http://libcxx.llvm.org/>`_ (experimental
+support).  The ``-stdlib=[libstdc++|libc++]`` command line argument can be used
 to choose which standard library to use.
 
-The GCC-based Native Client SDK only has support for
-`libstdc++ <http://gcc.gnu.org/libstdc++>`_.
+The GCC-based Native Client SDK only has support for `libstdc++
+<http://gcc.gnu.org/libstdc++>`_.
 
 C++11 library support is only complete in libc++ but other non-library
 language features should work regardless of which standard library is
@@ -656,3 +652,6 @@ When faced with a PNaCl ABI verification error, check the list of features
 that are :ref:`not supported by PNaCl <when-to-use-nacl>`.
 If the problem you face is not listed as restricted,
 :ref:`let us know <help>`!
+
+.. _glibc: http://www.gnu.org/software/libc/
+.. _newlib: http://sourceware.org/newlib/
