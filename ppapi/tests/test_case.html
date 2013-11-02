@@ -13,7 +13,7 @@ function AdjustHeight(frameWin) {
 // passed, or information about the failure if the test(s) did not pass.
 function DidExecuteTests(result) {
   var plugin = document.getElementById("plugin");
-  if (plugin.removePlugin) {
+  if (plugin.parentNode.removePlugin) {
     plugin.parentNode.removeChild(plugin);
     plugin = undefined;
   }
@@ -127,7 +127,7 @@ function LogHTML(html) {
 }
 
 function RemovePluginWhenFinished() {
-  window.document.getElementById("plugin").removePlugin = true;
+  window.document.getElementById("container").removePlugin = true;
 }
 
 function sendAutomationMessage(msg) {
