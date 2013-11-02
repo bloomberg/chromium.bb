@@ -358,7 +358,7 @@ void RenderLayerCompositor::finishCompositingUpdateForFrameTree(Frame* frame)
     }
 }
 
-void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType updateType, RenderLayer* updateRoot)
+void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType updateType)
 {
     // Avoid updating the layers with old values. Compositing layers will be updated after the layout is finished.
     if (m_renderView->needsLayout())
@@ -410,15 +410,11 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
 
     ASSERT(updateType == CompositingUpdateFinishAllDeferredWork);
 
-    bool isFullUpdate = !updateRoot;
-
     // Only clear the flags if we're updating the entire hierarchy.
     m_compositingLayersNeedRebuild = false;
     m_needsToUpdateLayerTreeGeometry = false;
-    updateRoot = rootRenderLayer();
-
-    if (isFullUpdate)
-        m_needsToRecomputeCompositingRequirements = false;
+    m_needsToRecomputeCompositingRequirements = false;
+    RenderLayer* updateRoot = rootRenderLayer();
 
     if (needCompositingRequirementsUpdate) {
         // Go through the layers in presentation order, so that we can compute which RenderLayers need compositing layers.
@@ -455,24 +451,22 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
         }
 
         // Host the document layer in the RenderView's root layer.
-        if (isFullUpdate) {
-            if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && isMainFrame()) {
-                RenderVideo* video = findFullscreenVideoRenderer(&m_renderView->document());
-                if (video) {
-                    CompositedLayerMapping* compositedLayerMapping = video->compositedLayerMapping();
-                    if (compositedLayerMapping) {
-                        childList.clear();
-                        childList.append(compositedLayerMapping->mainGraphicsLayer());
-                    }
+        if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && isMainFrame()) {
+            RenderVideo* video = findFullscreenVideoRenderer(&m_renderView->document());
+            if (video) {
+                CompositedLayerMapping* compositedLayerMapping = video->compositedLayerMapping();
+                if (compositedLayerMapping) {
+                    childList.clear();
+                    childList.append(compositedLayerMapping->mainGraphicsLayer());
                 }
             }
-            // Even when childList is empty, don't drop out of compositing mode if there are
-            // composited layers that we didn't hit in our traversal (e.g. because of visibility:hidden).
-            if (childList.isEmpty() && !hasAnyAdditionalCompositedLayers(updateRoot))
-                destroyRootLayer();
-            else
-                m_rootContentLayer->setChildren(childList);
         }
+        // Even when childList is empty, don't drop out of compositing mode if there are
+        // composited layers that we didn't hit in our traversal (e.g. because of visibility:hidden).
+        if (childList.isEmpty() && !hasAnyAdditionalCompositedLayers(updateRoot))
+            destroyRootLayer();
+        else
+            m_rootContentLayer->setChildren(childList);
     } else if (needGeometryUpdate) {
         // We just need to do a geometry update. This is only used for position:fixed scrolling;
         // most of the time, geometry is updated via RenderLayer::styleChanged().

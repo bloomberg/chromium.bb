@@ -96,7 +96,7 @@ public:
     // Main entry point for a full update. As needed, this function will compute compositing requirements,
     // rebuild the composited layer tree, and/or update all the properties assocaited with each layer of the
     // composited layer tree.
-    void updateCompositingLayers(CompositingUpdateType, RenderLayer* updateRoot = 0);
+    void updateCompositingLayers(CompositingUpdateType);
 
     // Update the compositing state of the given layer. Returns true if that state changed.
     enum CompositingChangeRepaint { CompositingChangeRepaintNow, CompositingChangeWillRepaintLater };

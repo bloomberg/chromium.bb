@@ -1425,14 +1425,13 @@ void RenderLayerScrollableArea::updateCompositingLayersAfterScroll()
 {
     RenderLayerCompositor* compositor = m_box->view()->compositor();
     if (compositor->inCompositingMode()) {
-        // Our stacking container is guaranteed to contain all of our descendants that may need
-        // repositioning, so update compositing layers from there.
-        if (RenderLayer* compositingAncestor = m_box->layer()->stackingNode()->ancestorStackingContainerNode()->layer()->enclosingCompositingLayer()) {
-            if (usesCompositedScrolling())
-                compositor->updateCompositingLayers(CompositingUpdateOnCompositedScroll, compositingAncestor);
-            else
-                compositor->updateCompositingLayers(CompositingUpdateOnScroll, compositingAncestor);
-        }
+        // FIXME: Our stacking container is guaranteed to contain all of our descendants that may need
+        // repositioning, so we should be able to enqueue a partial update compositing layers from there.
+        // this feature was overridden for now by deferred compositing updates.
+        if (usesCompositedScrolling())
+            compositor->updateCompositingLayers(CompositingUpdateOnCompositedScroll);
+        else
+            compositor->updateCompositingLayers(CompositingUpdateOnScroll);
     }
 }
 
