@@ -143,13 +143,13 @@ class GestureEventFilterTest : public testing::Test,
     sync_ack_result_.reset(new InputEventAckState(ack_result));
   }
 
-  unsigned GestureEventLastQueueEventSize() {
+  unsigned GestureEventQueueSize() {
     return filter()->coalesced_gesture_events_.size();
   }
 
   WebGestureEvent GestureEventSecondFromLastQueueEvent() {
     return filter()->coalesced_gesture_events_.at(
-      GestureEventLastQueueEventSize() - 2).event;
+        GestureEventQueueSize() - 2).event;
   }
 
   WebGestureEvent GestureEventLastQueueEvent() {
@@ -214,7 +214,7 @@ TEST_F(GestureEventFilterTest, CoalescesScrollGestureEvents) {
 
   // Make sure that the queue contains what we think it should.
   WebGestureEvent merged_event = GestureEventLastQueueEvent();
-  EXPECT_EQ(2U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(2U, GestureEventQueueSize());
   EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
 
   // Coalesced.
@@ -291,13 +291,13 @@ TEST_F(GestureEventFilterTest, CoalescesScrollAndPinchEvents) {
 
   // Make sure that the queue contains what we think it should.
   WebGestureEvent merged_event = GestureEventLastQueueEvent();
-  EXPECT_EQ(3U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(3U, GestureEventQueueSize());
   EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
 
   // Coalesced without changing event order. Note anchor at (60, 60). Anchoring
   // from a point that is not the origin should still give us the right scroll.
   SimulateGesturePinchUpdateEvent(1.5, 60, 60, 1);
-  EXPECT_EQ(4U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(4U, GestureEventQueueSize());
   merged_event = GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GesturePinchUpdate, merged_event.type);
   EXPECT_EQ(1.5, merged_event.data.pinchUpdate.scale);
@@ -312,7 +312,7 @@ TEST_F(GestureEventFilterTest, CoalescesScrollAndPinchEvents) {
   SimulateGestureScrollUpdateEvent(6, -3, 1);
 
   // Check whether coalesced correctly.
-  EXPECT_EQ(4U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(4U, GestureEventQueueSize());
   merged_event = GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GesturePinchUpdate, merged_event.type);
   EXPECT_EQ(1.5, merged_event.data.pinchUpdate.scale);
@@ -327,7 +327,7 @@ TEST_F(GestureEventFilterTest, CoalescesScrollAndPinchEvents) {
   SimulateGesturePinchUpdateEvent(2, 60, 60, 1);
 
   // Check whether coalesced correctly.
-  EXPECT_EQ(4U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(4U, GestureEventQueueSize());
   merged_event = GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GesturePinchUpdate, merged_event.type);
   EXPECT_EQ(3, merged_event.data.pinchUpdate.scale);
@@ -342,7 +342,7 @@ TEST_F(GestureEventFilterTest, CoalescesScrollAndPinchEvents) {
   SimulateGesturePinchUpdateEvent(2, 60, 60, 1);
 
   // Check whether coalesced correctly.
-  EXPECT_EQ(4U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(4U, GestureEventQueueSize());
   merged_event = GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GesturePinchUpdate, merged_event.type);
   EXPECT_EQ(6, merged_event.data.pinchUpdate.scale);
@@ -366,7 +366,7 @@ TEST_F(GestureEventFilterTest, CoalescesScrollAndPinchEvents) {
   SimulateGestureScrollUpdateEvent(6, -6, 1);
 
   // Check whether coalesced correctly.
-  EXPECT_EQ(3U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(3U, GestureEventQueueSize());
   merged_event = GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GesturePinchUpdate, merged_event.type);
   EXPECT_EQ(6, merged_event.data.pinchUpdate.scale);
@@ -393,7 +393,7 @@ TEST_F(GestureEventFilterTest, CoalescesScrollAndPinchEvents) {
   SimulateGestureScrollUpdateEvent(1, -1, 1);
 
   // Check whether coalesced correctly.
-  EXPECT_EQ(3U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(3U, GestureEventQueueSize());
   merged_event = GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
   EXPECT_EQ(1, merged_event.data.scrollUpdate.deltaX);
@@ -408,7 +408,7 @@ TEST_F(GestureEventFilterTest, CoalescesScrollAndPinchEvents) {
   SimulateGestureScrollUpdateEvent(2, -2, 1);
 
   // Coalescing scrolls should still work.
-  EXPECT_EQ(3U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(3U, GestureEventQueueSize());
   merged_event = GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
   EXPECT_EQ(3, merged_event.data.scrollUpdate.deltaX);
@@ -423,7 +423,7 @@ TEST_F(GestureEventFilterTest, CoalescesScrollAndPinchEvents) {
   SimulateGesturePinchUpdateEvent(0.5, 60, 60, 1);
 
   // Check whether coalesced correctly.
-  EXPECT_EQ(4U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(4U, GestureEventQueueSize());
   merged_event = GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GesturePinchUpdate, merged_event.type);
   EXPECT_EQ(0.5, merged_event.data.pinchUpdate.scale);
@@ -447,7 +447,7 @@ TEST_F(GestureEventFilterTest, CoalescesScrollAndPinchEvents) {
   SimulateGestureScrollUpdateEvent(2, -2, 2);
 
   // Shouldn't coalesce with different modifiers.
-  EXPECT_EQ(4U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(4U, GestureEventQueueSize());
   merged_event = GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
   EXPECT_EQ(2, merged_event.data.scrollUpdate.deltaX);
@@ -485,7 +485,7 @@ TEST_F(GestureEventFilterTest, CoalescesScrollAndPinchEvents) {
   EXPECT_EQ(WebInputEvent::GestureScrollUpdate, last_acked_event().type);
   RunUntilIdle();
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(0U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(0U, GestureEventQueueSize());
 }
 
 TEST_F(GestureEventFilterTest, CoalescesMultiplePinchEventSequences) {
@@ -502,13 +502,13 @@ TEST_F(GestureEventFilterTest, CoalescesMultiplePinchEventSequences) {
   // Make sure that the queue contains what we think it should.
   WebGestureEvent merged_event = GestureEventLastQueueEvent();
   size_t expected_events_in_queue = 3;
-  EXPECT_EQ(expected_events_in_queue, GestureEventLastQueueEventSize());
+  EXPECT_EQ(expected_events_in_queue, GestureEventQueueSize());
   EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
 
   // Coalesced without changing event order. Note anchor at (60, 60). Anchoring
   // from a point that is not the origin should still give us the right scroll.
   SimulateGesturePinchUpdateEvent(1.5, 60, 60, 1);
-  EXPECT_EQ(++expected_events_in_queue, GestureEventLastQueueEventSize());
+  EXPECT_EQ(++expected_events_in_queue, GestureEventQueueSize());
   merged_event = GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GesturePinchUpdate, merged_event.type);
   EXPECT_EQ(1.5, merged_event.data.pinchUpdate.scale);
@@ -523,7 +523,7 @@ TEST_F(GestureEventFilterTest, CoalescesMultiplePinchEventSequences) {
   SimulateGestureScrollUpdateEvent(6, -3, 1);
 
   // Check whether coalesced correctly.
-  EXPECT_EQ(expected_events_in_queue, GestureEventLastQueueEventSize());
+  EXPECT_EQ(expected_events_in_queue, GestureEventQueueSize());
   merged_event = GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GesturePinchUpdate, merged_event.type);
   EXPECT_EQ(1.5, merged_event.data.pinchUpdate.scale);
@@ -548,13 +548,13 @@ TEST_F(GestureEventFilterTest, CoalescesMultiplePinchEventSequences) {
   // Make sure that the queue contains what we think it should.
   expected_events_in_queue += 5;
   merged_event = GestureEventLastQueueEvent();
-  EXPECT_EQ(expected_events_in_queue, GestureEventLastQueueEventSize());
+  EXPECT_EQ(expected_events_in_queue, GestureEventQueueSize());
   EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
 
   // Coalesced without changing event order. Note anchor at (60, 60). Anchoring
   // from a point that is not the origin should still give us the right scroll.
   SimulateGesturePinchUpdateEvent(1.5, 30, 30, 1);
-  EXPECT_EQ(++expected_events_in_queue, GestureEventLastQueueEventSize());
+  EXPECT_EQ(++expected_events_in_queue, GestureEventQueueSize());
   merged_event = GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GesturePinchUpdate, merged_event.type);
   EXPECT_EQ(1.5, merged_event.data.pinchUpdate.scale);
@@ -569,7 +569,7 @@ TEST_F(GestureEventFilterTest, CoalescesMultiplePinchEventSequences) {
   SimulateGestureScrollUpdateEvent(6, -3, 1);
 
   // Check whether coalesced correctly.
-  EXPECT_EQ(expected_events_in_queue, GestureEventLastQueueEventSize());
+  EXPECT_EQ(expected_events_in_queue, GestureEventQueueSize());
   merged_event = GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GesturePinchUpdate, merged_event.type);
   EXPECT_EQ(1.5, merged_event.data.pinchUpdate.scale);
@@ -597,18 +597,18 @@ TEST_F(GestureEventFilterTest, CoalescesScrollAndPinchEventWithSyncAck) {
   SimulateGestureScrollUpdateEvent(8, -4, 1);
   // Make sure that the queue contains what we think it should.
   WebGestureEvent merged_event = GestureEventLastQueueEvent();
-  EXPECT_EQ(3U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(3U, GestureEventQueueSize());
   EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
 
   // Coalesced without changing event order. Note anchor at (60, 60). Anchoring
   // from a point that is not the origin should still give us the right scroll.
   SimulateGesturePinchUpdateEvent(1.5, 60, 60, 1);
-  EXPECT_EQ(4U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(4U, GestureEventQueueSize());
 
   SendInputEventACK(WebInputEvent::GestureScrollBegin,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(3U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(3U, GestureEventQueueSize());
 
   // Ack the PinchBegin, and schedule a synchronous ack for GestureScrollUpdate.
   set_synchronous_ack(INPUT_EVENT_ACK_STATE_CONSUMED);
@@ -617,14 +617,14 @@ TEST_F(GestureEventFilterTest, CoalescesScrollAndPinchEventWithSyncAck) {
 
   // Both GestureScrollUpdate and GesturePinchUpdate should have been sent.
   EXPECT_EQ(WebInputEvent::GestureScrollUpdate, last_acked_event().type);
-  EXPECT_EQ(1U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(1U, GestureEventQueueSize());
   EXPECT_EQ(2U, GetAndResetSentGestureEventCount());
 
   // Ack the final GesturePinchUpdate.
   SendInputEventACK(WebInputEvent::GesturePinchUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(WebInputEvent::GesturePinchUpdate, last_acked_event().type);
-  EXPECT_EQ(0U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(0U, GestureEventQueueSize());
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
 }
 
@@ -637,7 +637,7 @@ TEST_P(GestureEventFilterWithSourceTest, GestureFlingCancelsFiltered) {
   // GFC without previous GFS is dropped.
   SimulateGestureEvent(WebInputEvent::GestureFlingCancel, source_device);
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(0U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(0U, GestureEventQueueSize());
 
   // GFC after previous GFS is dispatched and acked.
   SimulateGestureFlingStartEvent(0, -10, source_device);
@@ -653,7 +653,7 @@ TEST_P(GestureEventFilterWithSourceTest, GestureFlingCancelsFiltered) {
                     INPUT_EVENT_ACK_STATE_CONSUMED);
   RunUntilIdle();
   EXPECT_EQ(1U, GetAndResetAckedGestureEventCount());
-  EXPECT_EQ(0U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(0U, GestureEventQueueSize());
 
   // GFC before previous GFS is acked.
   SimulateGestureFlingStartEvent(0, -10, source_device);
@@ -661,7 +661,7 @@ TEST_P(GestureEventFilterWithSourceTest, GestureFlingCancelsFiltered) {
   SimulateGestureEvent(WebInputEvent::GestureFlingCancel, source_device);
   EXPECT_FALSE(FlingInProgress());
   EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(2U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(2U, GestureEventQueueSize());
 
   // Advance state realistically.
   SendInputEventACK(WebInputEvent::GestureFlingStart,
@@ -673,50 +673,50 @@ TEST_P(GestureEventFilterWithSourceTest, GestureFlingCancelsFiltered) {
   RunUntilIdle();
   EXPECT_EQ(2U, GetAndResetAckedGestureEventCount());
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(0U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(0U, GestureEventQueueSize());
 
   // GFS is added to the queue if another event is pending
   SimulateGestureScrollUpdateEvent(8, -7, 0);
   SimulateGestureFlingStartEvent(0, -10, source_device);
-  EXPECT_EQ(2U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(2U, GestureEventQueueSize());
   EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
   WebGestureEvent merged_event = GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureFlingStart, merged_event.type);
   EXPECT_TRUE(FlingInProgress());
-  EXPECT_EQ(2U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(2U, GestureEventQueueSize());
 
   // GFS in queue means that a GFC is added to the queue
   SimulateGestureEvent(WebInputEvent::GestureFlingCancel, source_device);
   merged_event =GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureFlingCancel, merged_event.type);
   EXPECT_FALSE(FlingInProgress());
-  EXPECT_EQ(3U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(3U, GestureEventQueueSize());
 
   // Adding a second GFC is dropped.
   SimulateGestureEvent(WebInputEvent::GestureFlingCancel, source_device);
   EXPECT_FALSE(FlingInProgress());
-  EXPECT_EQ(3U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(3U, GestureEventQueueSize());
 
   // Adding another GFS will add it to the queue.
   SimulateGestureFlingStartEvent(0, -10, source_device);
   merged_event = GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureFlingStart, merged_event.type);
   EXPECT_TRUE(FlingInProgress());
-  EXPECT_EQ(4U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(4U, GestureEventQueueSize());
 
   // GFS in queue means that a GFC is added to the queue
   SimulateGestureEvent(WebInputEvent::GestureFlingCancel, source_device);
   merged_event = GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureFlingCancel, merged_event.type);
   EXPECT_FALSE(FlingInProgress());
-  EXPECT_EQ(5U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(5U, GestureEventQueueSize());
 
   // Adding another GFC with a GFC already there is dropped.
   SimulateGestureEvent(WebInputEvent::GestureFlingCancel, source_device);
   merged_event = GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureFlingCancel, merged_event.type);
   EXPECT_FALSE(FlingInProgress());
-  EXPECT_EQ(5U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(5U, GestureEventQueueSize());
 }
 
 INSTANTIATE_TEST_CASE_P(AllSources,
@@ -725,33 +725,92 @@ INSTANTIATE_TEST_CASE_P(AllSources,
                                         WebGestureEvent::Touchpad));
 #endif  // GTEST_HAS_PARAM_TEST
 
-// Test that GestureShowPress and GestureTapDown events don't wait for ACKs.
-TEST_F(GestureEventFilterTest, GestureShowPressAndTapDownIgnoreAck) {
+// Test that GestureShowPress, GestureTapDown and GestureTapCancel events don't
+// wait for ACKs.
+TEST_F(GestureEventFilterTest, GestureTypesIgnoringAck) {
+  set_debounce_interval_time_ms(0);
+
+  // The show press, tap down and tap cancel events will escape the queue
+  // immediately when they reach the queue head, since they ignore acks.
   SimulateGestureEvent(WebInputEvent::GestureShowPress,
                        WebGestureEvent::Touchscreen);
-
   EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(0U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(0U, GestureEventQueueSize());
 
   SimulateGestureEvent(WebInputEvent::GestureShowPress,
                        WebGestureEvent::Touchscreen);
-
   EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(0U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(0U, GestureEventQueueSize());
 
-  SimulateGestureEvent(WebInputEvent::GestureShowPress,
+  SimulateGestureEvent(WebInputEvent::GestureTapCancel,
                        WebGestureEvent::Touchscreen);
-
   EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(0U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(0U, GestureEventQueueSize());
+
+  // Interleave a few events that do and do not ignore acks, ensuring that
+  // ack-ignoring events remain queued until they reach the queue head.
+  SimulateGestureEvent(WebInputEvent::GesturePinchBegin,
+                       WebGestureEvent::Touchpad);
+  ASSERT_EQ(1U, GetAndResetSentGestureEventCount());
+  ASSERT_EQ(1U, GestureEventQueueSize());
 
   SimulateGestureEvent(WebInputEvent::GestureTapDown,
                        WebGestureEvent::Touchscreen);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(2U, GestureEventQueueSize());
 
+  SimulateGestureEvent(WebInputEvent::GesturePinchUpdate,
+                       WebGestureEvent::Touchpad);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(3U, GestureEventQueueSize());
+
+  SimulateGestureEvent(WebInputEvent::GestureShowPress,
+                       WebGestureEvent::Touchscreen);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(4U, GestureEventQueueSize());
+
+  SimulateGestureEvent(WebInputEvent::GesturePinchEnd,
+                       WebGestureEvent::Touchpad);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(5U, GestureEventQueueSize());
+
+  SimulateGestureEvent(WebInputEvent::GestureTapCancel,
+                       WebGestureEvent::Touchscreen);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(6U, GestureEventQueueSize());
+
+  // Now ack each event. Ack-ignoring events should remain queued until they
+  // reach the head of the queue, at which point they should be sent immediately
+  // and removed from the queue, unblocking subsequent events.
+  SendInputEventACK(WebInputEvent::GesturePinchBegin,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(2U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(4U, GestureEventQueueSize());
+
+  SendInputEventACK(WebInputEvent::GestureTapDown,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(4U, GestureEventQueueSize());
+
+  SendInputEventACK(WebInputEvent::GesturePinchUpdate,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(2U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(2U, GestureEventQueueSize());
+
+  SendInputEventACK(WebInputEvent::GestureShowPress,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(2U, GestureEventQueueSize());
+
+  SendInputEventACK(WebInputEvent::GesturePinchEnd,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
-  // The show press and tap down events will have escaped the queue, since they
-  // ignore acks.
-  EXPECT_EQ(0U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(0U, GestureEventQueueSize());
+
+  SendInputEventACK(WebInputEvent::GestureTapCancel,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(0U, GestureEventQueueSize());
 }
 
 // Test that GestureShowPress events don't get out of order due to
@@ -761,7 +820,7 @@ TEST_F(GestureEventFilterTest, GestureShowPressIsInOrder) {
                        WebGestureEvent::Touchscreen);
 
   EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(1U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(1U, GestureEventQueueSize());
 
   SimulateGestureEvent(WebInputEvent::GestureShowPress,
                        WebGestureEvent::Touchscreen);
@@ -769,14 +828,14 @@ TEST_F(GestureEventFilterTest, GestureShowPressIsInOrder) {
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
   // The ShowPress, though it ignores ack, is still stuck in the queue
   // behind the Tap which requires an ack.
-  EXPECT_EQ(2U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(2U, GestureEventQueueSize());
 
   SimulateGestureEvent(WebInputEvent::GestureShowPress,
                        WebGestureEvent::Touchscreen);
 
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
   // ShowPress has entered the queue.
-  EXPECT_EQ(3U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(3U, GestureEventQueueSize());
 
   SendInputEventACK(WebInputEvent::GestureTap,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -784,7 +843,7 @@ TEST_F(GestureEventFilterTest, GestureShowPressIsInOrder) {
   // Now that the Tap has been ACKed, the ShowPress events should fire
   // immediately.
   EXPECT_EQ(2U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(0U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(0U, GestureEventQueueSize());
 }
 
 // Test that a GestureScrollEnd | GestureFlingStart are deferred during the
@@ -796,32 +855,32 @@ TEST_F(GestureEventFilterTest, DebounceDefersFollowingGestureEvents) {
   SimulateGestureEvent(WebInputEvent::GestureScrollUpdate,
                        WebGestureEvent::Touchscreen);
   EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(1U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(1U, GestureEventQueueSize());
   EXPECT_EQ(0U, GestureEventDebouncingQueueSize());
   EXPECT_TRUE(ScrollingInProgress());
 
   SimulateGestureEvent(WebInputEvent::GestureScrollUpdate,
                        WebGestureEvent::Touchscreen);
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(2U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(2U, GestureEventQueueSize());
   EXPECT_EQ(0U, GestureEventDebouncingQueueSize());
   EXPECT_TRUE(ScrollingInProgress());
 
   SimulateGestureEvent(WebInputEvent::GestureScrollEnd,
                        WebGestureEvent::Touchscreen);
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(2U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(2U, GestureEventQueueSize());
   EXPECT_EQ(1U, GestureEventDebouncingQueueSize());
 
   SimulateGestureFlingStartEvent(0, 10, WebGestureEvent::Touchscreen);
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(2U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(2U, GestureEventQueueSize());
   EXPECT_EQ(2U, GestureEventDebouncingQueueSize());
 
   SimulateGestureEvent(WebInputEvent::GestureTapDown,
                        WebGestureEvent::Touchscreen);
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(2U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(2U, GestureEventQueueSize());
   EXPECT_EQ(3U, GestureEventDebouncingQueueSize());
 
   base::MessageLoop::current()->PostDelayedTask(
@@ -832,7 +891,7 @@ TEST_F(GestureEventFilterTest, DebounceDefersFollowingGestureEvents) {
 
   // The deferred events are correctly queued in coalescing queue.
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(5U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(5U, GestureEventQueueSize());
   EXPECT_EQ(0U, GestureEventDebouncingQueueSize());
   EXPECT_FALSE(ScrollingInProgress());
 
@@ -860,7 +919,7 @@ TEST_F(GestureEventFilterTest, DebounceDropsDeferredEvents) {
   SimulateGestureEvent(WebInputEvent::GestureScrollUpdate,
                        WebGestureEvent::Touchscreen);
   EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(1U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(1U, GestureEventQueueSize());
   EXPECT_EQ(0U, GestureEventDebouncingQueueSize());
   EXPECT_TRUE(ScrollingInProgress());
 
@@ -868,13 +927,13 @@ TEST_F(GestureEventFilterTest, DebounceDropsDeferredEvents) {
   SimulateGestureEvent(WebInputEvent::GestureScrollEnd,
                        WebGestureEvent::Touchscreen);
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(1U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(1U, GestureEventQueueSize());
   EXPECT_EQ(1U, GestureEventDebouncingQueueSize());
 
   SimulateGestureEvent(WebInputEvent::GestureScrollUpdate,
                        WebGestureEvent::Touchscreen);
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(2U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(2U, GestureEventQueueSize());
   EXPECT_EQ(0U, GestureEventDebouncingQueueSize());
   EXPECT_TRUE(ScrollingInProgress());
 
@@ -897,10 +956,10 @@ TEST_F(GestureEventFilterTest, DropZeroVelocityFlings) {
   gesture_event.data.flingStart.velocityX = 0.f;
   gesture_event.data.flingStart.velocityY = 0.f;
   ASSERT_EQ(0U, GetAndResetSentGestureEventCount());
-  ASSERT_EQ(0U, GestureEventLastQueueEventSize());
+  ASSERT_EQ(0U, GestureEventQueueSize());
   EXPECT_FALSE(SimulateGestureEvent(gesture_event));
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(0U, GestureEventLastQueueEventSize());
+  EXPECT_EQ(0U, GestureEventQueueSize());
 }
 
 }  // namespace content

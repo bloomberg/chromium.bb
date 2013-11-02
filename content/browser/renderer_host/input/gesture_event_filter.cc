@@ -378,7 +378,8 @@ void GestureEventFilter::SendEventsIgnoringAck() {
 bool GestureEventFilter::ShouldIgnoreAckForGestureType(
     WebInputEvent::Type type) {
   return type == WebInputEvent::GestureTapDown ||
-      type == WebInputEvent::GestureShowPress;
+      type == WebInputEvent::GestureShowPress ||
+      type == WebInputEvent::GestureTapCancel;
 }
 
 void GestureEventFilter::EnqueueEvent(
