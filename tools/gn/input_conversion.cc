@@ -117,9 +117,7 @@ Value ParseString(const std::string& input,
   }
 
   BuildSettings build_settings;
-  Label empty_label;
-  Toolchain toolchain(empty_label);
-  Settings settings(&build_settings, &toolchain, std::string());
+  Settings settings(&build_settings, std::string());
   Scope scope(&settings);
 
   Err nested_err;

@@ -91,7 +91,6 @@ class Setup : public CommonSetup {
   // These empty settings and toolchain are used to interpret the command line
   // and dot file.
   BuildSettings empty_build_settings_;
-  Toolchain empty_toolchain_;
   Settings empty_settings_;
   Scope dotfile_scope_;
 

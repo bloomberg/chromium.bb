@@ -6,7 +6,9 @@
 
 #include "base/logging.h"
 
-Item::Item(const Label& label) : label_(label) {
+Item::Item(const Settings* settings, const Label& label)
+    : settings_(settings),
+      label_(label) {
 }
 
 Item::~Item() {

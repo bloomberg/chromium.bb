@@ -102,7 +102,7 @@ Value RunToolchain(Scope* scope,
 
   // This object will actually be copied into the one owned by the toolchain
   // manager, but that has to be done in the lock.
-  Toolchain toolchain(label);
+  Toolchain toolchain(scope->settings(), label);
 
   Scope block_scope(scope);
   block_scope.SetProperty(&kToolchainPropertyKey, &toolchain);

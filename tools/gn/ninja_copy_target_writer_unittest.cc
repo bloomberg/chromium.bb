@@ -27,14 +27,14 @@ TEST(NinjaCopyTargetWriter, Run) {
     setup.settings()->set_target_os(Settings::LINUX);
 
     std::ostringstream out;
-    NinjaCopyTargetWriter writer(&target, out);
+    NinjaCopyTargetWriter writer(&target, setup.toolchain(), out);
     writer.Run();
 
     const char expected_linux[] =
-        "build input1.out: tc_copy ../../foo/input1.txt\n"
-        "build input2.out: tc_copy ../../foo/input2.txt\n"
+        "build input1.out: copy ../../foo/input1.txt\n"
+        "build input2.out: copy ../../foo/input2.txt\n"
         "\n"
-        "build obj/foo/bar.stamp: tc_stamp input1.out input2.out\n";
+        "build obj/foo/bar.stamp: stamp input1.out input2.out\n";
     std::string out_str = out.str();
 #if defined(OS_WIN)
     std::replace(out_str.begin(), out_str.end(), '\\', '/');
@@ -47,16 +47,16 @@ TEST(NinjaCopyTargetWriter, Run) {
     setup.settings()->set_target_os(Settings::WIN);
 
     std::ostringstream out;
-    NinjaCopyTargetWriter writer(&target, out);
+    NinjaCopyTargetWriter writer(&target, setup.toolchain(), out);
     writer.Run();
 
     // TODO(brettw) I think we'll need to worry about backslashes here
     // depending if we're on actual Windows or Linux pretending to be Windows.
     const char expected_win[] =
-        "build input1.out: tc_copy ../../foo/input1.txt\n"
-        "build input2.out: tc_copy ../../foo/input2.txt\n"
+        "build input1.out: copy ../../foo/input1.txt\n"
+        "build input2.out: copy ../../foo/input2.txt\n"
         "\n"
-        "build obj/foo/bar.stamp: tc_stamp input1.out input2.out\n";
+        "build obj/foo/bar.stamp: stamp input1.out input2.out\n";
     std::string out_str = out.str();
 #if defined(OS_WIN)
     std::replace(out_str.begin(), out_str.end(), '\\', '/');

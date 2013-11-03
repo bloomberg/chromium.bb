@@ -6,9 +6,13 @@
 
 TestWithScope::TestWithScope()
     : build_settings_(),
-      toolchain_(Label(SourceDir("//toolchain/"), "tc")),
-      settings_(&build_settings_, &toolchain_, std::string()),
+      settings_(&build_settings_, std::string()),
+      toolchain_(&settings_, Label(SourceDir("//toolchain/"), "default")),
       scope_(&settings_) {
+  build_settings_.SetBuildDir(SourceDir("//out/Debug/"));
+
+  settings_.set_toolchain_label(toolchain_.label());
+  settings_.set_is_default(true);
 }
 
 TestWithScope::~TestWithScope() {

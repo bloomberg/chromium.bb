@@ -20,12 +20,13 @@ class TestWithScope {
 
   BuildSettings* build_settings() { return &build_settings_; }
   Settings* settings() { return &settings_; }
+  Toolchain* toolchain() { return &toolchain_; }
   Scope* scope() { return &scope_; }
 
  private:
   BuildSettings build_settings_;
-  Toolchain toolchain_;
   Settings settings_;
+  Toolchain toolchain_;
   Scope scope_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWithScope);

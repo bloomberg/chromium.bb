@@ -301,7 +301,7 @@ Value RunExecScript(Scope* scope,
   }
 
   ScopedTrace trace(TraceItem::TRACE_SCRIPT_EXECUTE, script_source.value());
-  trace.SetToolchain(settings->toolchain()->label());
+  trace.SetToolchain(settings->toolchain_label());
 
   // Add all dependencies of this script, including the script itself, to the
   // build deps.

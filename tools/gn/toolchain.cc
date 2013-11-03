@@ -25,7 +25,8 @@ Toolchain::Tool::Tool() {
 Toolchain::Tool::~Tool() {
 }
 
-Toolchain::Toolchain(const Label& label) : Item(label), is_default_(false) {
+Toolchain::Toolchain(const Settings* settings, const Label& label)
+    : Item(settings, label) {
 }
 
 Toolchain::~Toolchain() {
