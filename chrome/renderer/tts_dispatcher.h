@@ -20,9 +20,13 @@ class Message;
 
 struct TtsVoice;
 
-// TtsDispatcher is a delegate for methods used by WebKit for
-// speech synthesis APIs. It's the complement of
-// TtsDispatcherHost (owned by RenderViewHost).
+// TtsDispatcher is a delegate for methods used by Blink for speech synthesis
+// APIs. It's the complement of TtsDispatcherHost (owned by RenderViewHost).
+// Each TtsDispatcher is owned by the WebSpeechSynthesizerClient in Blink;
+// it registers itself to listen to IPC upon construction and unregisters
+// itself when deleted. There can be multiple TtsDispatchers alive at once,
+// so each one routes IPC messages to its WebSpeechSynthesizerClient only if
+// the utterance id (which is globally unique) matches.
 class TtsDispatcher
     : public WebKit::WebSpeechSynthesizer,
       public content::RenderProcessObserver {

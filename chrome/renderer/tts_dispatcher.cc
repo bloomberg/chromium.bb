@@ -34,7 +34,6 @@ TtsDispatcher::~TtsDispatcher() {
 }
 
 bool TtsDispatcher::OnControlMessageReceived(const IPC::Message& message) {
-  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TtsDispatcher, message)
     IPC_MESSAGE_HANDLER(TtsMsg_SetVoiceList, OnSetVoiceList)
     IPC_MESSAGE_HANDLER(TtsMsg_DidStartSpeaking, OnDidStartSpeaking)
@@ -47,9 +46,11 @@ bool TtsDispatcher::OnControlMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(TtsMsg_WasInterrupted, OnWasInterrupted)
     IPC_MESSAGE_HANDLER(TtsMsg_WasCancelled, OnWasCancelled)
     IPC_MESSAGE_HANDLER(TtsMsg_SpeakingErrorOccurred, OnSpeakingErrorOccurred)
-    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-  return handled;
+
+  // Always return false because there may be multiple TtsDispatchers
+  // and we want them all to have a chance to handle this message.
+  return false;
 }
 
 void TtsDispatcher::updateVoiceList() {
