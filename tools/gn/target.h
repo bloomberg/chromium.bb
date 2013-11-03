@@ -58,6 +58,8 @@ class Target : public Item {
   bool HasBeenGenerated() const;
   void SetGenerated(const Token* token);
 
+  const Settings* settings() const { return settings_; }
+
   OutputType output_type() const { return output_type_; }
   void set_output_type(OutputType t) { output_type_ = t; }
 
@@ -147,6 +149,7 @@ class Target : public Item {
   // dependencies have been resolved.
   void PullDependentTargetInfo(std::set<const Config*>* unique_configs);
 
+  const Settings* settings_;
   OutputType output_type_;
   std::string output_name_;
 

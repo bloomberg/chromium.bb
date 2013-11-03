@@ -11,7 +11,6 @@
 
 class Config;
 class ItemNode;
-class Settings;
 class Target;
 class Toolchain;
 
@@ -19,10 +18,8 @@ class Toolchain;
 // graph.
 class Item {
  public:
-  Item(const Settings* settings, const Label& label);
+  Item(const Label& label);
   virtual ~Item();
-
-  const Settings* settings() const { return settings_; }
 
   // This is guaranteed to never change after construction so this can be
   // accessed from any thread with no locking once the item is constructed.
@@ -52,7 +49,6 @@ class Item {
   virtual void OnResolved() {}
 
  private:
-  const Settings* settings_;
   Label label_;
 
   ItemNode* item_node_;

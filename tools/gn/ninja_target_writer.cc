@@ -19,12 +19,9 @@
 #include "tools/gn/target.h"
 #include "tools/gn/trace.h"
 
-NinjaTargetWriter::NinjaTargetWriter(const Target* target,
-                                     const Toolchain* toolchain,
-                                     std::ostream& out)
+NinjaTargetWriter::NinjaTargetWriter(const Target* target, std::ostream& out)
     : settings_(target->settings()),
       target_(target),
-      toolchain_(toolchain),
       out_(out),
       path_output_(settings_->build_settings()->build_dir(),
                    ESCAPE_NINJA, true),
@@ -48,7 +45,7 @@ void NinjaTargetWriter::RunAndWriteFile(const Target* target) {
 
   ScopedTrace trace(TraceItem::TRACE_FILE_WRITE,
                     target->label().GetUserVisibleName(false));
-  trace.SetToolchain(settings->toolchain_label());
+  trace.SetToolchain(settings->toolchain()->label());
 
   base::FilePath ninja_file(settings->build_settings()->GetFullPath(
       helper.GetNinjaFileForTarget(target).GetSourceFile(
@@ -56,10 +53,6 @@ void NinjaTargetWriter::RunAndWriteFile(const Target* target) {
 
   if (g_scheduler->verbose_logging())
     g_scheduler->Log("Writing", FilePathToUTF8(ninja_file));
-
-  const Toolchain* tc = settings->build_settings()->toolchain_manager()
-      .GetToolchainDefinitionUnlocked(settings->toolchain_label());
-  CHECK(tc);
 
   file_util::CreateDirectory(ninja_file.DirName());
 
@@ -69,19 +62,19 @@ void NinjaTargetWriter::RunAndWriteFile(const Target* target) {
 
   // Call out to the correct sub-type of writer.
   if (target->output_type() == Target::COPY_FILES) {
-    NinjaCopyTargetWriter writer(target, tc, file);
+    NinjaCopyTargetWriter writer(target, file);
     writer.Run();
   } else if (target->output_type() == Target::CUSTOM) {
-    NinjaScriptTargetWriter writer(target, tc, file);
+    NinjaScriptTargetWriter writer(target, file);
     writer.Run();
   } else if (target->output_type() == Target::GROUP) {
-    NinjaGroupTargetWriter writer(target, tc, file);
+    NinjaGroupTargetWriter writer(target, file);
     writer.Run();
   } else if (target->output_type() == Target::EXECUTABLE ||
              target->output_type() == Target::STATIC_LIBRARY ||
              target->output_type() == Target::SHARED_LIBRARY ||
              target->output_type() == Target::SOURCE_SET) {
-    NinjaBinaryTargetWriter writer(target, tc, file);
+    NinjaBinaryTargetWriter writer(target, file);
     writer.Run();
   } else {
     CHECK(0);
@@ -90,6 +83,10 @@ void NinjaTargetWriter::RunAndWriteFile(const Target* target) {
   std::string contents = file.str();
   file_util::WriteFile(ninja_file, contents.c_str(),
                        static_cast<int>(contents.size()));
+}
+
+const Toolchain* NinjaTargetWriter::GetToolchain() const {
+  return target_->settings()->toolchain();
 }
 
 std::string NinjaTargetWriter::GetSourcesImplicitDeps() const {

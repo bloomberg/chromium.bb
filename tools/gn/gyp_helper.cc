@@ -45,10 +45,10 @@ SourceFile GypHelper::GetGypFileForTarget(const Target* target,
 }
 
 std::string GypHelper::GetNameForTarget(const Target* target) const {
-  if (target->settings()->is_default())
+  const Toolchain* toolchain = target->settings()->toolchain();
+  if (toolchain->is_default())
     return target->label().name();  // Default toolchain has no suffix.
-  return target->label().name() + "_" +
-         target->settings()->toolchain_label().name();
+  return target->label().name() + "_" + toolchain->label().name();
 }
 
 std::string GypHelper::GetFullRefForTarget(const Target* target) const {

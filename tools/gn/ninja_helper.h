@@ -52,11 +52,12 @@ class NinjaHelper {
 
   // Returns the prefix for rules on the given toolchain. We need this to
   // disambiguate a given rule for each toolchain.
-  std::string GetRulePrefix(const Settings* settings) const;
+  std::string GetRulePrefix(const Toolchain* toolchain) const;
 
   // Returns the name of the rule name for the given toolchain and file/target
   // type.  Returns the empty string for source files with no command.
   std::string GetRuleForSourceType(const Settings* settings,
+                                   const Toolchain* toolchain,
                                    SourceFileType type) const;
 
   // Returns the relative directory in either slashes or the system separator

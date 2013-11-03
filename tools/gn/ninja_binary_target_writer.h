@@ -13,9 +13,7 @@
 // library, or a static library).
 class NinjaBinaryTargetWriter : public NinjaTargetWriter {
  public:
-  NinjaBinaryTargetWriter(const Target* target,
-                          const Toolchain* toolchain,
-                          std::ostream& out);
+  NinjaBinaryTargetWriter(const Target* target, std::ostream& out);
   virtual ~NinjaBinaryTargetWriter();
 
   virtual void Run() OVERRIDE;

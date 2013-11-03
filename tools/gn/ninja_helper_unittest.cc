@@ -17,10 +17,9 @@ class HelperSetterUpper {
  public:
   HelperSetterUpper()
       : build_settings(),
-        settings(&build_settings, std::string()),
-        toolchain(&settings, Label(SourceDir("//"), "tc")),
+        toolchain(Label(SourceDir("//"), "tc")),
+        settings(&build_settings, &toolchain, std::string()),
         target(&settings, Label(SourceDir("//tools/gn/"), "name")) {
-    settings.set_toolchain_label(toolchain.label());
     settings.set_target_os(Settings::WIN);
 
     // Output going to "out/Debug".

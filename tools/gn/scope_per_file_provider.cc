@@ -43,7 +43,7 @@ const Value* ScopePerFileProvider::GetProgrammaticValue(
 const Value* ScopePerFileProvider::GetCurrentToolchain() {
   if (!current_toolchain_) {
     current_toolchain_.reset(new Value(NULL,
-        scope_->settings()->toolchain_label().GetUserVisibleName(false)));
+        scope_->settings()->toolchain()->label().GetUserVisibleName(false)));
   }
   return current_toolchain_.get();
 }

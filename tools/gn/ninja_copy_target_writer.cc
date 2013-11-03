@@ -9,9 +9,8 @@
 #include "tools/gn/string_utils.h"
 
 NinjaCopyTargetWriter::NinjaCopyTargetWriter(const Target* target,
-                                             const Toolchain* toolchain,
                                              std::ostream& out)
-    : NinjaTargetWriter(target, toolchain, out) {
+    : NinjaTargetWriter(target, out) {
 }
 
 NinjaCopyTargetWriter::~NinjaCopyTargetWriter() {
@@ -23,7 +22,8 @@ void NinjaCopyTargetWriter::Run() {
 
   std::vector<OutputFile> output_files;
 
-  std::string rule_prefix = helper_.GetRulePrefix(target_->settings());
+  std::string rule_prefix =
+      helper_.GetRulePrefix(target_->settings()->toolchain());
 
   for (size_t i = 0; i < target_->sources().size(); i++) {
     const SourceFile& input_file = target_->sources()[i];

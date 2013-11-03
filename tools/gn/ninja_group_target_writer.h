@@ -11,9 +11,7 @@
 // Writes a .ninja file for a group target type.
 class NinjaGroupTargetWriter : public NinjaTargetWriter {
  public:
-  NinjaGroupTargetWriter(const Target* target,
-                         const Toolchain* toolchain,
-                         std::ostream& out);
+  NinjaGroupTargetWriter(const Target* target, std::ostream& out);
   virtual ~NinjaGroupTargetWriter();
 
   virtual void Run() OVERRIDE;

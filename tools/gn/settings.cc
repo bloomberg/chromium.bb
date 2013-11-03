@@ -9,9 +9,10 @@
 #include "tools/gn/filesystem_utils.h"
 
 Settings::Settings(const BuildSettings* build_settings,
+                   const Toolchain* toolchain,
                    const std::string& output_subdir_name)
     : build_settings_(build_settings),
-      is_default_(false),
+      toolchain_(toolchain),
       import_manager_(),
       base_config_(this),
       greedy_target_generation_(false) {

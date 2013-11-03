@@ -202,9 +202,9 @@ bool CommonSetup::RunPostMessageLoop() {
 
 Setup::Setup()
     : CommonSetup(),
-      empty_settings_(&empty_build_settings_, std::string()),
+      empty_toolchain_(Label()),
+      empty_settings_(&empty_build_settings_, &empty_toolchain_, std::string()),
       dotfile_scope_(&empty_settings_) {
-  empty_settings_.set_toolchain_label(Label());
 }
 
 Setup::~Setup() {

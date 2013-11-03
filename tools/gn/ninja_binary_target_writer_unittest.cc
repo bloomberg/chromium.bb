@@ -22,7 +22,7 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
   // Source set itself.
   {
     std::ostringstream out;
-    NinjaBinaryTargetWriter writer(&target, setup.toolchain(), out);
+    NinjaBinaryTargetWriter writer(&target, out);
     writer.Run();
 
     // TODO(brettw) I think we'll need to worry about backslashes here
@@ -36,10 +36,10 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
         "cflags_objc =\n"
         "cflags_objcc =\n"
         "\n"
-        "build obj/foo/bar.input1.obj: cxx ../../foo/input1.cc\n"
-        "build obj/foo/bar.input2.obj: cxx ../../foo/input2.cc\n"
+        "build obj/foo/bar.input1.obj: tc_cxx ../../foo/input1.cc\n"
+        "build obj/foo/bar.input2.obj: tc_cxx ../../foo/input2.cc\n"
         "\n"
-        "build obj/foo/bar.stamp: stamp obj/foo/bar.input1.obj obj/foo/bar.input2.obj\n";
+        "build obj/foo/bar.stamp: tc_stamp obj/foo/bar.input1.obj obj/foo/bar.input2.obj\n";
     std::string out_str = out.str();
 #if defined(OS_WIN)
     std::replace(out_str.begin(), out_str.end(), '\\', '/');
@@ -55,7 +55,7 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
 
   {
     std::ostringstream out;
-    NinjaBinaryTargetWriter writer(&shlib_target, setup.toolchain(), out);
+    NinjaBinaryTargetWriter writer(&shlib_target, out);
     writer.Run();
 
     // TODO(brettw) I think we'll need to worry about backslashes here
@@ -73,7 +73,7 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
         "manifests = obj/foo/shlib.intermediate.manifest\n"
         "ldflags = /MANIFEST /ManifestFile:obj/foo/shlib.intermediate.manifest\n"
         "libs =\n"
-        "build shlib.dll shlib.dll.lib: solink obj/foo/bar.input1.obj obj/foo/bar.input2.obj\n"
+        "build shlib.dll shlib.dll.lib: tc_solink obj/foo/bar.input1.obj obj/foo/bar.input2.obj\n"
         "  soname = shlib.dll\n"
         "  lib = shlib.dll\n"
         "  dll = shlib.dll\n"

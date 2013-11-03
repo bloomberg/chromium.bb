@@ -11,9 +11,8 @@
 #include "tools/gn/target.h"
 
 NinjaScriptTargetWriter::NinjaScriptTargetWriter(const Target* target,
-                                                 const Toolchain* toolchain,
                                                  std::ostream& out)
-    : NinjaTargetWriter(target, toolchain, out),
+    : NinjaTargetWriter(target, out),
       path_output_no_escaping_(
           target->settings()->build_settings()->build_dir(),
           ESCAPE_NONE, false) {
@@ -153,7 +152,7 @@ void NinjaScriptTargetWriter::WriteStamp(
   out_ << "build ";
   path_output_.WriteFile(out_, helper_.GetTargetOutputFile(target_));
   out_ << ": "
-       << helper_.GetRulePrefix(target_->settings())
+       << helper_.GetRulePrefix(target_->settings()->toolchain())
        << "stamp";
   for (size_t i = 0; i < output_files.size(); i++) {
     out_ << " ";

@@ -134,7 +134,7 @@ bool EnsureSingleStringArg(const FunctionCallNode* function,
 }
 
 const Label& ToolchainLabelForScope(const Scope* scope) {
-  return scope->settings()->toolchain_label();
+  return scope->settings()->toolchain()->label();
 }
 
 Label MakeLabelForScope(const Scope* scope,

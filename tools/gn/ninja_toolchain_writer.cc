@@ -13,7 +13,6 @@
 #include "tools/gn/settings.h"
 #include "tools/gn/target.h"
 #include "tools/gn/toolchain.h"
-#include "tools/gn/toolchain_manager.h"
 #include "tools/gn/trace.h"
 
 NinjaToolchainWriter::NinjaToolchainWriter(
@@ -63,14 +62,11 @@ bool NinjaToolchainWriter::RunAndWriteFile(
 }
 
 void NinjaToolchainWriter::WriteRules() {
-  const Toolchain* tc = settings_->build_settings()->toolchain_manager()
-      .GetToolchainDefinitionUnlocked(settings_->toolchain_label());
-  CHECK(tc);
-
+  const Toolchain* tc = settings_->toolchain();
   std::string indent("  ");
 
   NinjaHelper helper(settings_->build_settings());
-  std::string rule_prefix = helper.GetRulePrefix(settings_);
+  std::string rule_prefix = helper.GetRulePrefix(tc);
 
   for (int i = Toolchain::TYPE_NONE + 1; i < Toolchain::TYPE_NUMTYPES; i++) {
     Toolchain::ToolType tool_type = static_cast<Toolchain::ToolType>(i);
