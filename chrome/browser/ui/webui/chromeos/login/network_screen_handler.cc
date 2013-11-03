@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
+#include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/options/chromeos/cros_language_options_handler.h"
 #include "chromeos/ime/input_method_manager.h"
@@ -28,6 +29,7 @@ const char kJsScreenPath[] = "login.NetworkScreen";
 const char kJsApiNetworkOnExit[] = "networkOnExit";
 const char kJsApiNetworkOnLanguageChanged[] = "networkOnLanguageChanged";
 const char kJsApiNetworkOnInputMethodChanged[] = "networkOnInputMethodChanged";
+const char kJsApiNetworkOnTimezoneChanged[] = "networkOnTimezoneChanged";
 
 }  // namespace
 
@@ -106,6 +108,7 @@ void NetworkScreenHandler::DeclareLocalizedValues(
   builder->Add("selectLanguage", IDS_LANGUAGE_SELECTION_SELECT);
   builder->Add("selectKeyboard", IDS_KEYBOARD_SELECTION_SELECT);
   builder->Add("selectNetwork", IDS_NETWORK_SELECTION_SELECT);
+  builder->Add("selectTimezone", IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION);
   builder->Add("proxySettings", IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON);
   builder->Add("continueButton", IDS_NETWORK_SELECTION_CONTINUE_BUTTON);
 }
@@ -114,6 +117,7 @@ void NetworkScreenHandler::GetAdditionalParameters(
     base::DictionaryValue* dict) {
   dict->Set("languageList", GetLanguageList());
   dict->Set("inputMethodsList", GetInputMethods());
+  dict->Set("timezoneList", GetTimezoneList());
 }
 
 void NetworkScreenHandler::Initialize() {
@@ -122,6 +126,12 @@ void NetworkScreenHandler::Initialize() {
     show_on_init_ = false;
     Show();
   }
+
+  timezone_subscription_ = CrosSettings::Get()->AddSettingsObserver(
+      kSystemTimezone,
+      base::Bind(&NetworkScreenHandler::OnSystemTimezoneChanged,
+                 base::Unretained(this)));
+  OnSystemTimezoneChanged();
 }
 
 // NetworkScreenHandler, WebUIMessageHandler implementation: -------------------
@@ -132,6 +142,8 @@ void NetworkScreenHandler::RegisterMessages() {
               &NetworkScreenHandler::HandleOnLanguageChanged);
   AddCallback(kJsApiNetworkOnInputMethodChanged,
               &NetworkScreenHandler::HandleOnInputMethodChanged);
+  AddCallback(kJsApiNetworkOnTimezoneChanged,
+              &NetworkScreenHandler::HandleOnTimezoneChanged);
 }
 
 // NetworkScreenHandler, private: ----------------------------------------------
@@ -163,6 +175,23 @@ void NetworkScreenHandler::HandleOnInputMethodChanged(const std::string& id) {
   input_method::InputMethodManager::Get()->ChangeInputMethod(id);
 }
 
+void NetworkScreenHandler::HandleOnTimezoneChanged(
+    const std::string& timezone_id) {
+  std::string current_timezone_id;
+  CrosSettings::Get()->GetString(kSystemTimezone, &current_timezone_id);
+  if (current_timezone_id == timezone_id)
+    return;
+
+  CrosSettings::Get()->SetString(kSystemTimezone, timezone_id);
+}
+
+void NetworkScreenHandler::OnSystemTimezoneChanged() {
+  std::string current_timezone_id;
+  CrosSettings::Get()->GetString(kSystemTimezone, &current_timezone_id);
+  CallJS("setTimezone", current_timezone_id);
+}
+
+// static
 ListValue* NetworkScreenHandler::GetLanguageList() {
   const std::string app_locale = g_browser_process->GetApplicationLocale();
   input_method::InputMethodManager* manager =
@@ -196,6 +225,7 @@ ListValue* NetworkScreenHandler::GetLanguageList() {
   return languages_list;
 }
 
+// static
 ListValue* NetworkScreenHandler::GetInputMethods() {
   ListValue* input_methods_list = new ListValue;
   input_method::InputMethodManager* manager =
@@ -216,6 +246,34 @@ ListValue* NetworkScreenHandler::GetInputMethods() {
     input_methods_list->Append(input_method);
   }
   return input_methods_list;
+}
+
+// static
+base::ListValue* NetworkScreenHandler::GetTimezoneList() {
+  std::string current_timezone_id;
+  CrosSettings::Get()->GetString(kSystemTimezone, &current_timezone_id);
+
+  scoped_ptr<base::ListValue> timezone_list(new base::ListValue);
+  scoped_ptr<base::ListValue> timezones = system::GetTimezoneList().Pass();
+  for (size_t i = 0; i < timezones->GetSize(); ++i) {
+    const base::ListValue* timezone = NULL;
+    CHECK(timezones->GetList(i, &timezone));
+
+    std::string timezone_id;
+    CHECK(timezone->GetString(0, &timezone_id));
+
+    std::string timezone_name;
+    CHECK(timezone->GetString(1, &timezone_name));
+
+    scoped_ptr<base::DictionaryValue> timezone_option(
+        new base::DictionaryValue);
+    timezone_option->SetString("value", timezone_id);
+    timezone_option->SetString("title", timezone_name);
+    timezone_option->SetBoolean("selected", timezone_id == current_timezone_id);
+    timezone_list->Append(timezone_option.release());
+  }
+
+  return timezone_list.release();
 }
 
 }  // namespace chromeos

@@ -28,3 +28,7 @@
   margin: 33px auto 82px;
   width: 435px;
 }
+
+html:not([highlight=strong]) #network-timezone-setting {
+  display: none;
+}

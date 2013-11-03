@@ -10,6 +10,7 @@ login.createScreen('NetworkScreen', 'connect', function() {
   return {
     EXTERNAL_API: [
       'enableContinueButton',
+      'setTimezone',
       'showError'
     ],
 
@@ -27,6 +28,10 @@ login.createScreen('NetworkScreen', 'connect', function() {
       Oobe.setupSelect($('keyboard-select'),
                        loadTimeData.getValue('inputMethodsList'),
                        'networkOnInputMethodChanged');
+
+      Oobe.setupSelect($('timezone-select'),
+                       loadTimeData.getValue('timezoneList'),
+                       'networkOnTimezoneChanged');
 
       this.dropdown_ = $('networks-list');
       cr.ui.DropDown.decorate(this.dropdown_);
@@ -83,6 +88,14 @@ login.createScreen('NetworkScreen', 'connect', function() {
      */
     enableContinueButton: function(enable) {
       $('continue-button').disabled = !enable;
+    },
+
+    /**
+     * Sets the current timezone.
+     * @param {string} timezoneId The timezone ID to select.
+     */
+    setTimezone: function(timezoneId) {
+      $('timezone-select').value = timezoneId;
     },
 
     /**

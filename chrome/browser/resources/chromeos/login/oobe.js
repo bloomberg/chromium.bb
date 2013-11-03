@@ -223,6 +223,7 @@ cr.define('cr.ui.Oobe', function() {
       // Update language and input method menu lists.
       Oobe.setupSelect($('language-select'), data.languageList, '');
       Oobe.setupSelect($('keyboard-select'), data.inputMethodsList, '');
+      Oobe.setupSelect($('timezone-select'), data.timezoneList, '');
 
       // Update localized content of the screens.
       Oobe.updateLocalizedContent();

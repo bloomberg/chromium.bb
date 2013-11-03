@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/login/screens/network_screen_actor.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "ui/gfx/point.h"
 
@@ -53,6 +54,12 @@ class NetworkScreenHandler : public NetworkScreenActor,
   // Handles change of the input method.
   void HandleOnInputMethodChanged(const std::string& id);
 
+  // Handles change of the time zone
+  void HandleOnTimezoneChanged(const std::string& timezone);
+
+  // Callback when the system timezone settings is changed.
+  void OnSystemTimezoneChanged();
+
   // Returns available languages. Caller gets the ownership. Note, it does
   // depend on the current locale.
   static base::ListValue* GetLanguageList();
@@ -60,6 +67,9 @@ class NetworkScreenHandler : public NetworkScreenActor,
   // Returns available input methods. Caller gets the ownership. Note, it does
   // depend on the current locale.
   static base::ListValue* GetInputMethods();
+
+  // Returns available timezones. Caller gets the ownership.
+  static base::ListValue* GetTimezoneList();
 
   NetworkScreenActor::Delegate* screen_;
   CoreOobeActor* core_oobe_actor_;
@@ -71,6 +81,8 @@ class NetworkScreenHandler : public NetworkScreenActor,
 
   // Position of the network control.
   gfx::Point network_control_pos_;
+
+  scoped_ptr<CrosSettings::ObserverSubscription> timezone_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkScreenHandler);
 };
