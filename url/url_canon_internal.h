@@ -385,7 +385,7 @@ void SetupOverrideComponents(const char* base,
 // |source| will point into this buffer, which could be invalidated if
 // additional data is added and the CanonOutput resizes its buffer.
 //
-// Returns true on success. Fales means that the input was not valid UTF-16,
+// Returns true on success. False means that the input was not valid UTF-16,
 // although we will have still done the override with "invalid characters" in
 // place of errors.
 bool SetupUTF16OverrideComponents(const char* base,

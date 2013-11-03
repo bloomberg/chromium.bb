@@ -96,7 +96,7 @@ class PermissionSet
   // Returns true if this permission set includes effective access to |url|.
   bool HasEffectiveAccessToURL(const GURL& url) const;
 
-  // Returns ture if this permission set effectively represents full access
+  // Returns true if this permission set effectively represents full access
   // (e.g. native code).
   bool HasEffectiveFullAccess() const;
 

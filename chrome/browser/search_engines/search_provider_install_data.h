@@ -41,7 +41,7 @@ class SearchProviderInstallData : public WebDataServiceConsumer,
     INSTALLED_AS_DEFAULT = 2
   };
 
-  // |ui_death_notification| and |ui_death_source| indentify a notification that
+  // |ui_death_notification| and |ui_death_source| identify a notification that
   // may be observed on the UI thread to know when this class no longer needs to
   // be kept up to date. (Note that this class may be deleted before or after
   // that notification occurs. It doesn't matter.)

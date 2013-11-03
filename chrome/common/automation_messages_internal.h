@@ -863,7 +863,7 @@ IPC_SYNC_MESSAGE_CONTROL2_2(AutomationMsg_SendJSONRequestWithBrowserHandle,
                             bool /* success */)
 
 // Resets to the default theme.
-IPC_SYNC_MESSAGE_CONTROL0_0(AutomationMsg_DEPRECIATED_ResetToDefaultTheme)
+IPC_SYNC_MESSAGE_CONTROL0_0(AutomationMsg_DEPRECATED_ResetToDefaultTheme)
 
 // This message requests the external tab identified by the tab handle
 // passed in be closed.

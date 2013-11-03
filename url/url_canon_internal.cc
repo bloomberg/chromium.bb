@@ -74,7 +74,7 @@ void DoOverrideComponent(const char* override_source,
 // not actually set the output character pointer.
 //
 // The input is converted to UTF-8 at the end of the given buffer as a temporary
-// holding place. The component indentifying the portion of the buffer used in
+// holding place. The component identifying the portion of the buffer used in
 // the |utf8_buffer| will be specified in |*dest_component|.
 //
 // This will not actually set any |dest| pointer like DoOverrideComponent
