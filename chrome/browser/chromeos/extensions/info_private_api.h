@@ -32,6 +32,20 @@ class ChromeosInfoPrivateGetFunction : public AsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("chromeosInfoPrivate.get", CHROMEOSINFOPRIVATE_GET)
 };
 
+class ChromeosInfoPrivateSetFunction : public SyncExtensionFunction {
+ public:
+  ChromeosInfoPrivateSetFunction();
+
+ protected:
+  virtual ~ChromeosInfoPrivateSetFunction();
+
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("chromeosInfoPrivate.set", CHROMEOSINFOPRIVATE_SET)
+};
+
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_INFO_PRIVATE_API_H_

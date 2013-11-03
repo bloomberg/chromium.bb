@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/options/chromeos/timezone_options_util.h"
+#include "chrome/browser/chromeos/system/timezone_util.h"
 
 #include <string>
 
@@ -121,7 +121,8 @@ string16 GetTimezoneName(const icu::TimeZone& timezone) {
 
 }  // namespace
 
-namespace options {
+namespace chromeos {
+namespace system {
 
 // Creates a list of pairs of each timezone's ID and name.
 scoped_ptr<base::ListValue> GetTimezoneList() {
@@ -140,4 +141,5 @@ scoped_ptr<base::ListValue> GetTimezoneList() {
   return timezoneList.Pass();
 }
 
-}  // namespace options
+}  // namespace system
+}  // namespace chromeos

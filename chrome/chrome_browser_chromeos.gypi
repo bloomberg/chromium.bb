@@ -803,6 +803,8 @@
         'browser/chromeos/system/pointer_device_observer.h',
         'browser/chromeos/system/syslogs_provider.cc',
         'browser/chromeos/system/syslogs_provider.h',
+        'browser/chromeos/system/timezone_util.cc',
+        'browser/chromeos/system/timezone_util.h',
         'browser/chromeos/system_key_event_listener.cc',
         'browser/chromeos/system_key_event_listener.h',
         'browser/chromeos/system_logs/about_system_logs_fetcher.cc',

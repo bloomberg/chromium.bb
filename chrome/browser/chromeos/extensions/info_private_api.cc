@@ -8,11 +8,15 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/shill_property_util.h"
+#include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/system/statistics_provider.h"
+#include "extensions/common/error_utils.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using chromeos::NetworkHandler;
@@ -35,6 +39,15 @@ const char kPropertyBoard[] = "board";
 
 // Key which corresponds to the board property in JS.
 const char kPropertyOwner[] = "isOwner";
+
+// Key which corresponds to the timezone property in JS.
+const char kPropertyTimezone[] = "timezone";
+
+// Key which corresponds to the timezone property in JS.
+const char kPropertySupportedTimezones[] = "supportedTimezones";
+
+// Property not found error message.
+const char kPropertyNotFound[] = "Property '*' does not exist.";
 
 }  // namespace
 
@@ -84,10 +97,39 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
   } else if (property_name == kPropertyOwner) {
     return Value::CreateBooleanValue(
         chromeos::UserManager::Get()->IsCurrentUserOwner());
+  } else if (property_name == kPropertyTimezone) {
+    return chromeos::CrosSettings::Get()->GetPref(
+            chromeos::kSystemTimezone)->DeepCopy();
+  } else if (property_name == kPropertySupportedTimezones) {
+    scoped_ptr<base::ListValue> values = chromeos::system::GetTimezoneList();
+    return values.release();
   }
 
   DLOG(ERROR) << "Unknown property request: " << property_name;
   return NULL;
+}
+
+
+ChromeosInfoPrivateSetFunction::ChromeosInfoPrivateSetFunction() {
+}
+
+ChromeosInfoPrivateSetFunction::~ChromeosInfoPrivateSetFunction() {
+}
+
+bool ChromeosInfoPrivateSetFunction::RunImpl() {
+  std::string param_name;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &param_name));
+  if (param_name == kPropertyTimezone) {
+    std::string param_value;
+    EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &param_value));
+    chromeos::CrosSettings::Get()->Set(chromeos::kSystemTimezone,
+                                       base::StringValue(param_value));
+  } else {
+    error_ = ErrorUtils::FormatErrorMessage(kPropertyNotFound, param_name);
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace extensions

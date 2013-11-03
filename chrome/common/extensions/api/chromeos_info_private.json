@@ -32,14 +32,42 @@
                 "type": "object",
                 "description": "Dictionary which contains all requested properties",
                 "properties": {
-                  "hwid": {"type": "string", "optional": "true", "description": "Hardware ID"},
-                  "homeProvider" : {"type": "string", "optional": "true", "description": "Home provider which is used by the cellular device"},
-                  "initialLocale" : {"type": "string", "optional": "true", "description": "Initial locale for the device"},
                   "board" : {"type": "string", "optional": "true", "description": "Board name"},
-                  "isOwner" : {"type": "boolean", "optional": "true", "description": "True if current logged in user is device owner"}
+                  "homeProvider" : {"type": "string", "optional": "true", "description": "Home provider which is used by the cellular device"},
+                  "hwid": {"type": "string", "optional": "true", "description": "Hardware ID"},
+                  "initialLocale" : {"type": "string", "optional": "true", "description": "Initial locale for the device"},
+                  "isOwner" : {"type": "boolean", "optional": "true", "description": "True if current logged in user is device owner"},
+                  "timezone" : {"type": "string", "optional": "true", "description": "Timezone"},
+                  "supportedTimezones" : {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {"type": "string"}
+                    },
+                    "optional": "true",
+                    "description": "List of supported timezones definitions."
+                  }
                 }
               }
             ]
+          }
+        ]
+      },
+      {
+        "name": "set",
+        "description": "Sets values for the given system property.",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "propertyName",
+            "type": "string",
+            "enum": ["timezone"],
+            "description": "Chrome OS system property name"
+          },
+          {
+            "name": "propertyVame",
+            "type": "string",
+            "description": "Chrome OS system property value"
           }
         ]
       }

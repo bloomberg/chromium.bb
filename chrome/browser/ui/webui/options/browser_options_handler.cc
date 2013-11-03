@@ -101,9 +101,9 @@
 #include "chrome/browser/chromeos/extensions/wallpaper_manager_util.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/webui/options/chromeos/timezone_options_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "ui/gfx/image/image_skia.h"
@@ -481,7 +481,7 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
 #if defined(OS_CHROMEOS)
   // TODO(pastarmovj): replace this with a call to the CrosSettings list
   // handling functionality to come.
-  values->Set("timezoneList", GetTimezoneList().release());
+  values->Set("timezoneList", chromeos::system::GetTimezoneList().release());
 
   values->SetString("accessibilityLearnMoreURL",
                     chrome::kChromeAccessibilityHelpURL);
