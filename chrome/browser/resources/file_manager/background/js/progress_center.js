@@ -316,15 +316,37 @@ var ProgressCenterHandler = function(fileOperationManager, progressCenter) {
    */
   this.progressCenter_ = progressCenter;
 
-  // Seal the object.
-  Object.seal(this);
+  /**
+   * Pending items of delete operation.
+   *
+   * Delete operations are usually complete quickly.
+   * So we would not like to show the progress bar at first.
+   * If the operation takes more than ProgressCenterHandler.PENDING_TIME_MS_,
+   * we adds the item to the progress center.
+   *
+   * @type {Object.<string, ProgressCenterItem>}}
+   * @private
+   */
+  this.pendingItems_ = {};
 
   // Register event.
   fileOperationManager.addEventListener('copy-progress',
                                         this.onCopyProgress_.bind(this));
   fileOperationManager.addEventListener('delete',
                                         this.onDeleteProgress_.bind(this));
+
+  // Seal the object.
+  Object.seal(this);
 };
+
+/**
+ * Pending time before a delete item is added to the progress center.
+ *
+ * @type {number}
+ * @const
+ * @private
+ */
+ProgressCenterHandler.PENDING_TIME_MS_ = 500;
 
 /**
  * Generate a progress message from the event.
@@ -488,6 +510,7 @@ ProgressCenterHandler.prototype.onCopyProgress_ = function(event) {
 ProgressCenterHandler.prototype.onDeleteProgress_ = function(event) {
   var progressCenter = this.progressCenter_;
   var item;
+  var pending;
   switch (event.reason) {
     case 'BEGIN':
       item = new ProgressCenterItem();
@@ -496,36 +519,63 @@ ProgressCenterHandler.prototype.onDeleteProgress_ = function(event) {
       item.message = ProgressCenterHandler.getDeleteMessage_(event);
       item.progressMax = 100;
       // TODO(hirono): Specify the cancel handler to the item.
-      progressCenter.updateItem(item);
+      this.pendingItems_[item.id] = item;
+      setTimeout(this.showPendingItem_.bind(this, item),
+                 ProgressCenterHandler.PENDING_TIME_MS_);
       break;
 
     case 'PROGRESS':
-      item = progressCenter.getItemById(event.taskId);
+      pending = event.taskId in this.pendingItems_;
+      item = this.pendingItems_[event.taskId] ||
+          progressCenter.getItemById(event.taskId);
       if (!item) {
         console.error('Cannot find deleting item.');
         return;
       }
       item.message = ProgressCenterHandler.getDeleteMessage_(event);
-      progressCenter.updateItem(item);
+      if (!pending)
+        progressCenter.updateItem(item);
       break;
 
     case 'SUCCESS':
     case 'ERROR':
-      item = progressCenter.getItemById(event.taskId);
+      // Obtain working variable.
+      pending = event.taskId in this.pendingItems_;
+      item = this.pendingItems_[event.taskId] ||
+          progressCenter.getItemById(event.taskId);
       if (!item) {
         console.error('Cannot find deleting item.');
         return;
       }
-      item.message =
-          ProgressCenterHandler.getDeleteMessage_(event);
-      if (event.reason === 'SUCCESS') {
 
+      // Update the item.
+      item.message = ProgressCenterHandler.getDeleteMessage_(event);
+      if (event.reason === 'SUCCESS') {
         item.state = ProgressItemState.COMPLETE;
         item.progressValue = item.progressMax;
       } else {
         item.state = ProgressItemState.ERROR;
       }
-      progressCenter.updateItem(item);
+
+      // Apply the change.
+      if (!pending || event.reason === 'ERROR')
+        progressCenter.updateItem(item);
+      if (pending)
+        delete this.pendingItems_[event.taskId];
       break;
   }
+};
+
+/**
+ * Shows the pending item.
+ *
+ * @param {ProgressCenterItem} item Pending item.
+ * @private
+ */
+ProgressCenterHandler.prototype.showPendingItem_ = function(item) {
+  // The item is already gone.
+  if (!this.pendingItems_[item.id])
+    return;
+  delete this.pendingItems_[item.id];
+  this.progressCenter_.updateItem(item);
 };

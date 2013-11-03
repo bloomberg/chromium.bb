@@ -249,15 +249,13 @@ ButterBar.prototype.showProgress_ = function(progress) {
     timeout: false
   };
 
-  var progressString = '';
-
   if (this.currentMode_ == ButterBar.Mode.COPY) {
-    this.update_(progressString, options);
+    this.update_('', options);
   } else {
     // Ignore the cancel behavior because the butter bar is already obsoleted.
     options.actions[ButterBar.ACTION_X] = function() {
     };
-    this.show(ButterBar.Mode.COPY, progressString, options);
+    this.show(ButterBar.Mode.COPY, '', options);
   }
 };
 

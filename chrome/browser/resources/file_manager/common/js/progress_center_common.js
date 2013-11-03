@@ -106,6 +106,7 @@ var ProgressCenterItem = function() {
 
   /**
    * Type of progress item.
+   * @type {ProgressItemType}
    */
   this.type = ProgressItemType.TRANSFER;
 
