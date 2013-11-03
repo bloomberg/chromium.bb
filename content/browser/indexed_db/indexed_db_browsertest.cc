@@ -431,16 +431,4 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ForceCloseEventTest) {
   EXPECT_EQ(expected_title16, title_watcher.WaitAndGetTitle());
 }
 
-class IndexedDBBrowserTestSingleProcess : public IndexedDBBrowserTest {
- public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitch(switches::kSingleProcess);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestSingleProcess,
-                       RenderThreadShutdownTest) {
-  SimpleTest(GetTestUrl("indexeddb", "shutdown_with_requests.html"));
-}
-
 }  // namespace content
