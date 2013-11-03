@@ -744,7 +744,7 @@ HistoryWebUIRealBackendTest.prototype = {
  * Simple test that verifies that the correct entries are retrieved from the
  * history database and displayed in the UI.
  */
-TEST_F('HistoryWebUIRealBackendTest', 'basic', function() {
+TEST_F('HistoryWebUIRealBackendTest', 'DISABLED_basic', function() {
   // Check that there are two days of entries, and three entries in total.
   assertEquals(2, document.querySelectorAll('.day').length);
   assertEquals(3, document.querySelectorAll('.entry').length);
