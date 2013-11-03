@@ -52,16 +52,23 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   virtual void OnSafeBrowsingHit(
       const SafeBrowsingUIManager::UnsafeResource& resource) OVERRIDE;
 
+  virtual scoped_refptr<SafeBrowsingDatabaseManager> database_manager();
+
  protected:
+  explicit ClientSideDetectionHost(content::WebContents* tab);
+
   // From content::WebContentsObserver.
   virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
+
+  // Used for testing.
+  void set_safe_browsing_managers(
+      SafeBrowsingUIManager* ui_manager,
+      SafeBrowsingDatabaseManager* database_manager);
 
  private:
   friend class ClientSideDetectionHostTest;
   class ShouldClassifyUrlRequest;
   friend class ShouldClassifyUrlRequest;
-
-  explicit ClientSideDetectionHost(content::WebContents* tab);
 
   // Verdict is an encoded ClientPhishingRequest protocol message.
   void OnPhishingDetectionDone(const std::string& verdict);
@@ -81,8 +88,11 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   // This method is responsible for deleting the request object.  Called on
   // the UI thread.
   void FeatureExtractionDone(bool success, ClientPhishingRequest* request);
+
   // Function to be called when the browser malware feature extractor is done.
-  void MalwareFeatureExtractionDone(scoped_ptr<ClientMalwareRequest> request);
+  // Called on the UI thread.
+  void MalwareFeatureExtractionDone(bool success,
+                                    scoped_ptr<ClientMalwareRequest> request);
 
   // Update the entries in browse_info_->ips map.
   void UpdateIPUrlMap(const std::string& ip, const std::string& url);
@@ -102,11 +112,6 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   // Used for testing.  This function does not take ownership of the service
   // class.
   void set_client_side_detection_service(ClientSideDetectionService* service);
-
-  // Used for testing.
-  void set_safe_browsing_managers(
-      SafeBrowsingUIManager* ui_manager,
-      SafeBrowsingDatabaseManager* database_manager);
 
   // Get/Set malware_killswitch_on_ value. These methods called on UI thread.
   bool MalwareKillSwitchIsOn();

@@ -37,7 +37,7 @@ class WebContents;
 namespace safe_browsing {
 class ClientMalwareRequest;
 class ClientPhishingRequest;
-class ClientSideDetectionService;
+class ClientSideDetectionHost;
 
 typedef std::map<std::string, std::set<std::string> > IPUrlMap;
 
@@ -72,13 +72,14 @@ class BrowserFeatureExtractor {
   // phishing request which was modified by the feature extractor.  The
   // DoneCallback takes ownership of the request object.
   typedef base::Callback<void(bool, ClientPhishingRequest*)> DoneCallback;
-  typedef base::Callback<void(bool, ClientMalwareRequest*)> MalwareDoneCallback;
+  typedef base::Callback<void(bool, scoped_ptr<ClientMalwareRequest>)>
+      MalwareDoneCallback;
 
-  // The caller keeps ownership of the tab and service objects and is
+  // The caller keeps ownership of the tab and host objects and is
   // responsible for ensuring that they stay valid for the entire
   // lifetime of this object.
   BrowserFeatureExtractor(content::WebContents* tab,
-                          ClientSideDetectionService* service);
+                          ClientSideDetectionHost* host);
 
   // The destructor will cancel any pending requests.
   virtual ~BrowserFeatureExtractor();
@@ -93,10 +94,14 @@ class BrowserFeatureExtractor {
                                ClientPhishingRequest* request,
                                const DoneCallback& callback);
 
-  // Extract the malware related features. The request object is owned by the
-  // caller.
-  virtual void ExtractMalwareFeatures(const BrowseInfo* info,
-                                      ClientMalwareRequest* request);
+  // Begins extraction of the malware related features.  We take ownership
+  // of the request object until |callback| is called.  Once feature extraction
+  // is complete, |callback| will run on the UI thread.  |info| is not expected
+  // to stay valid after ExtractMalwareFeatures returns.  All IPs stored in
+  // |info| will be cleared by calling this function.
+  virtual void ExtractMalwareFeatures(BrowseInfo* info,
+                                      ClientMalwareRequest* request,
+                                      const MalwareDoneCallback& callback);
 
  private:
   friend class base::DeleteHelper<BrowserFeatureExtractor>;
@@ -159,8 +164,14 @@ class BrowserFeatureExtractor {
   // is set it will return true and false otherwise.
   bool GetHistoryService(HistoryService** history);
 
+  // Helper function which is called when we're done filtering out benign IPs
+  // on the IO thread.  This function is called on the UI thread.
+  void FinishExtractMalwareFeatures(scoped_ptr<IPUrlMap> bad_ips,
+                                    MalwareDoneCallback callback,
+                                    scoped_ptr<ClientMalwareRequest> request);
+
   content::WebContents* tab_;
-  ClientSideDetectionService* service_;
+  ClientSideDetectionHost* host_;
   CancelableRequestConsumer request_consumer_;
   base::WeakPtrFactory<BrowserFeatureExtractor> weak_factory_;
 
@@ -171,9 +182,6 @@ class BrowserFeatureExtractor {
   // Set of pending queries (i.e., where history->Query...() was called but
   // the history callback hasn't been invoked yet).
   PendingQueriesMap pending_queries_;
-
-  // Max number of malware IPs can be sent in one malware request
-  static const int kMaxMalwareIPPerRequest;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserFeatureExtractor);
 };

@@ -123,11 +123,6 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
   // address.
   virtual bool IsPrivateIPAddress(const std::string& ip_address) const;
 
-  // Returns true if the given IP address is on the list of known bad IPs.
-  // ip_address should be a dotted IPv4 address, or an unbracketed IPv6
-  // address.
-  virtual bool IsBadIpAddress(const std::string& ip_address) const;
-
   // Returns true and sets is_phishing if url is in the cache and valid.
   virtual bool GetValidCachedResult(const GURL& url, bool* is_phishing);
 
