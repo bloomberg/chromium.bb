@@ -44,6 +44,10 @@ namespace views {
 
 DEFINE_WINDOW_PROPERTY_KEY(aura::Window*, kContentWindowForRootWindow, NULL);
 
+// Identifies the DesktopRootWindowHostWin associated with the RootWindow.
+DEFINE_WINDOW_PROPERTY_KEY(DesktopRootWindowHostWin*, kDesktopRootWindowHostKey,
+                           NULL);
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopRootWindowHostWin, public:
 
@@ -127,6 +131,7 @@ void DesktopRootWindowHostWin::OnRootWindowCreated(
   root_window_ = root;
 
   root_window_->SetProperty(kContentWindowForRootWindow, content_window_);
+  root_window_->SetProperty(kDesktopRootWindowHostKey, this);
 
   should_animate_window_close_ =
       content_window_->type() != aura::client::WINDOW_TYPE_NORMAL &&
@@ -779,6 +784,25 @@ void DesktopRootWindowHostWin::HandleTouchEvent(
   // we attempt to process them.
   if (!GetWidget()->GetNativeView())
     return;
+
+  // Currently we assume the window that has capture gets touch events too.
+  aura::RootWindow* root =
+      aura::RootWindow::GetForAcceleratedWidget(GetCapture());
+  if (root) {
+    DesktopRootWindowHostWin* target =
+        root->GetProperty(kDesktopRootWindowHostKey);
+    if (target && target->HasCapture() && target != this) {
+      POINT target_location(event.location().ToPOINT());
+      ClientToScreen(GetHWND(), &target_location);
+      ScreenToClient(target->GetHWND(), &target_location);
+      ui::TouchEvent target_event(event, static_cast<View*>(NULL),
+                                  static_cast<View*>(NULL));
+      target_event.set_location(gfx::Point(target_location));
+      target_event.set_root_location(target_event.location());
+      target->root_window_host_delegate_->OnHostTouchEvent(&target_event);
+      return;
+    }
+  }
   root_window_host_delegate_->OnHostTouchEvent(
       const_cast<ui::TouchEvent*>(&event));
 }

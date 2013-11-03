@@ -94,7 +94,6 @@ TEST_F(CompoundEventFilterTest, CursorVisibilityChange) {
   root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&exit);
   EXPECT_FALSE(cursor_client.IsCursorVisible());
 }
-#endif
 
 TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
   scoped_ptr<CompoundEventFilter> compound_filter(new CompoundEventFilter);
@@ -143,6 +142,7 @@ TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
   EXPECT_FALSE(cursor_client.IsMouseEventsEnabled());
   aura::Env::GetInstance()->RemovePreTargetHandler(compound_filter.get());
 }
+#endif
 
 // Tests that if an event filter consumes a gesture, then it doesn't focus the
 // window.
