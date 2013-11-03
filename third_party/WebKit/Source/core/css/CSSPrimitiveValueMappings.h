@@ -2497,7 +2497,6 @@ template<> inline CSSPrimitiveValue::operator TextDecorationStyle() const
     return TextDecorationStyleSolid;
 }
 
-#if ENABLE(CSS3_TEXT)
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(TextUnderlinePosition e)
     : CSSValue(PrimitiveClass)
 {
@@ -2536,7 +2535,6 @@ template<> inline CSSPrimitiveValue::operator TextUnderlinePosition() const
     ASSERT_NOT_REACHED();
     return TextUnderlinePositionAuto;
 }
-#endif // CSS3_TEXT
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ETextSecurity e)
     : CSSValue(PrimitiveClass)

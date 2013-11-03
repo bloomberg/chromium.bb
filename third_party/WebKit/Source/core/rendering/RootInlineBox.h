@@ -181,10 +181,8 @@ public:
         return InlineFlowBox::logicalBottomLayoutOverflow(lineBottom());
     }
 
-#if ENABLE(CSS3_TEXT)
     // Used to calculate the underline offset for TextUnderlinePositionUnder.
     float maxLogicalTop() const;
-#endif // CSS3_TEXT
 
     Node* getLogicalStartBoxWithNode(InlineBox*&) const;
     Node* getLogicalEndBoxWithNode(InlineBox*&) const;

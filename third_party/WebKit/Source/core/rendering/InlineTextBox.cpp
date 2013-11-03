@@ -916,12 +916,11 @@ static StrokeStyle textDecorationStyleToStrokeStyle(TextDecorationStyle decorati
     return strokeStyle;
 }
 
-#if ENABLE(CSS3_TEXT)
-static int computeUnderlineOffset(const TextUnderlinePosition underlinePosition, const FontMetrics& fontMetrics, const InlineTextBox* inlineTextBox, const int textDecorationThickness)
+static int computeUnderlineOffset(const TextUnderlinePosition underlinePosition, const FontMetrics& fontMetrics, const InlineTextBox* inlineTextBox, const float textDecorationThickness)
 {
     // Compute the gap between the font and the underline. Use at least one
     // pixel gap, if underline is thick then use a bigger gap.
-    const int gap = max<int>(1, ceilf(textDecorationThickness / 2.0));
+    const int gap = std::max<int>(1, ceilf(textDecorationThickness / 2.f));
 
     // According to the specification TextUnderlinePositionAuto should default to 'alphabetic' for horizontal text
     // and to 'under Left' for vertical text (e.g. japanese). We support only horizontal text for now.
@@ -941,7 +940,6 @@ static int computeUnderlineOffset(const TextUnderlinePosition underlinePosition,
     ASSERT_NOT_REACHED();
     return fontMetrics.ascent() + gap;
 }
-#endif // CSS3_TEXT
 
 static void adjustStepToDecorationLength(float& step, float& controlPointDistance, float length)
 {
@@ -1069,8 +1067,6 @@ void InlineTextBox::paintDecoration(GraphicsContext* context, const FloatPoint& 
 {
     GraphicsContextStateSaver stateSaver(*context);
 
-    float textDecorationThickness = 1.f;
-
     if (m_truncation == cFullTruncation)
         return;
 
@@ -1100,7 +1096,7 @@ void InlineTextBox::paintDecoration(GraphicsContext* context, const FloatPoint& 
     size_t shadowCount = shadowList ? shadowList->shadows().size() : 0;
     // Set the thick of the line to be 10% (or something else ?)of the computed font size and not less than 1px.
     // Using computedFontSize should take care of zoom as well.
-    textDecorationThickness = max(textDecorationThickness, styleToUse->computedFontSize() / 10.0f);
+    const float textDecorationThickness = std::max(1.f, styleToUse->computedFontSize() / 10.f);
     context->setStrokeThickness(textDecorationThickness);
 
     int extraOffset = 0;
@@ -1140,13 +1136,7 @@ void InlineTextBox::paintDecoration(GraphicsContext* context, const FloatPoint& 
         context->setStrokeStyle(textDecorationStyleToStrokeStyle(decorationStyle));
         if (deco & TextDecorationUnderline) {
             context->setStrokeColor(underline);
-#if ENABLE(CSS3_TEXT)
-            TextUnderlinePosition underlinePosition = styleToUse->textUnderlinePosition();
-            const int underlineOffset = computeUnderlineOffset(underlinePosition, styleToUse->fontMetrics(), this, textDecorationThickness);
-#else
-            const int underlineOffset = styleToUse->fontMetrics().ascent() + max<int>(1, ceilf(textDecorationThickness / 2.0));
-#endif // CSS3_TEXT
-
+            const int underlineOffset = computeUnderlineOffset(styleToUse->textUnderlinePosition(), styleToUse->fontMetrics(), this, textDecorationThickness);
             switch (decorationStyle) {
             case TextDecorationStyleWavy: {
                 FloatPoint start(localOrigin.x(), localOrigin.y() + underlineOffset + doubleOffset);

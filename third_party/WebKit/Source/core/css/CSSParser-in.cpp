@@ -2181,11 +2181,11 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
             validPrimitive = true;
         break;
 
-#if ENABLE(CSS3_TEXT)
-    case CSSPropertyWebkitTextUnderlinePosition:
+    case CSSPropertyTextUnderlinePosition:
         // auto | alphabetic | under
-        return parseTextUnderlinePosition(important);
-#endif // CSS3_TEXT
+        if (RuntimeEnabledFeatures::css3TextDecorationsEnabled())
+            return parseTextUnderlinePosition(important);
+        return false;
 
     case CSSPropertyZoom:          // normal | reset | document | <number> | <percentage> | inherit
         if (id == CSSValueNormal || id == CSSValueReset || id == CSSValueDocument)
@@ -9132,7 +9132,6 @@ bool CSSParser::parseTextDecoration(CSSPropertyID propId, bool important)
     return false;
 }
 
-#if ENABLE(CSS3_TEXT)
 bool CSSParser::parseTextUnderlinePosition(bool important)
 {
     // The text-underline-position property has sintax "auto | alphabetic | [ under || [ left | right ] ]".
@@ -9145,13 +9144,12 @@ bool CSSParser::parseTextUnderlinePosition(bool important)
     case CSSValueUnder:
         if (m_valueList->next())
             return false;
-
-        addProperty(CSSPropertyWebkitTextUnderlinePosition, cssValuePool().createIdentifierValue(value->id), important);
+        addProperty(CSSPropertyTextUnderlinePosition, cssValuePool().createIdentifierValue(value->id), important);
         return true;
+    default:
+        return false;
     }
-    return false;
 }
-#endif // CSS3_TEXT
 
 bool CSSParser::parseTextEmphasisStyle(bool important)
 {

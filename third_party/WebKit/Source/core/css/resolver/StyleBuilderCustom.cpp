@@ -802,8 +802,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitTextEmphasisStyle(StyleRe
     }
 }
 
-#if ENABLE(CSS3_TEXT)
-void StyleBuilderFunctions::applyValueCSSPropertyWebkitTextUnderlinePosition(StyleResolverState& state, CSSValue* value)
+void StyleBuilderFunctions::applyValueCSSPropertyTextUnderlinePosition(StyleResolverState& state, CSSValue* value)
 {
     // This is true if value is 'auto' or 'alphabetic'.
     if (value->isPrimitiveValue()) {
@@ -820,7 +819,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitTextUnderlinePosition(Sty
     }
     state.style()->setTextUnderlinePosition(static_cast<TextUnderlinePosition>(t));
 }
-#endif // CSS3_TEXT
 
 Length StyleBuilderConverter::convertLength(StyleResolverState& state, CSSValue* value)
 {
@@ -2097,9 +2095,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyWebkitRtlOrdering:
     case CSSPropertyWebkitRubyPosition:
     case CSSPropertyWebkitTextCombine:
-#if ENABLE(CSS3_TEXT)
-    case CSSPropertyWebkitTextUnderlinePosition:
-#endif // CSS3_TEXT
+    case CSSPropertyTextUnderlinePosition:
     case CSSPropertyWebkitTextEmphasisColor:
     case CSSPropertyWebkitTextEmphasisPosition:
     case CSSPropertyWebkitTextEmphasisStyle:

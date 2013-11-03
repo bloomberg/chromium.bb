@@ -82,9 +82,7 @@ StyleRareInheritedData::StyleRareInheritedData()
     , m_imageRendering(RenderStyle::initialImageRendering())
     , m_lineSnap(RenderStyle::initialLineSnap())
     , m_lineAlign(RenderStyle::initialLineAlign())
-#if ENABLE(CSS3_TEXT)
     , m_textUnderlinePosition(RenderStyle::initialTextUnderlinePosition())
-#endif // CSS3_TEXT
     , m_rubyPosition(RenderStyle::initialRubyPosition())
     , m_touchActionDelay(RenderStyle::initialTouchActionDelay())
     , hyphenationLimitBefore(-1)
@@ -136,9 +134,7 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
     , m_imageRendering(o.m_imageRendering)
     , m_lineSnap(o.m_lineSnap)
     , m_lineAlign(o.m_lineAlign)
-#if ENABLE(CSS3_TEXT)
     , m_textUnderlinePosition(o.m_textUnderlinePosition)
-#endif // CSS3_TEXT
     , m_rubyPosition(o.m_rubyPosition)
     , m_touchActionDelay(o.m_touchActionDelay)
     , hyphenationString(o.hyphenationString)
@@ -214,9 +210,7 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const
         && m_tabSize == o.m_tabSize
         && m_lineGrid == o.m_lineGrid
         && m_imageRendering == o.m_imageRendering
-#if ENABLE(CSS3_TEXT)
         && m_textUnderlinePosition == o.m_textUnderlinePosition
-#endif // CSS3_TEXT
         && m_rubyPosition == o.m_rubyPosition
         && m_lineSnap == o.m_lineSnap
         && m_variables == o.m_variables

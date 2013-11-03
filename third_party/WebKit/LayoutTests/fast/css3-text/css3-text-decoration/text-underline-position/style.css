@@ -9,39 +9,39 @@ div {
 }
 
 div.auto {
-    -webkit-text-decoration-style: solid;
-    -webkit-text-decoration-line: underline;
-    -webkit-text-underline-position: auto;
+    text-decoration-style: solid;
+    text-decoration-line: underline;
+    text-underline-position: auto;
 }
 
 div.alphabetic {
-    -webkit-text-decoration-style: solid;
-    -webkit-text-decoration-line: underline;
-    -webkit-text-underline-position: alphabetic;
+    text-decoration-style: solid;
+    text-decoration-line: underline;
+    text-underline-position: alphabetic;
 }
 
 div.under {
-    -webkit-text-decoration-style: solid;
-    -webkit-text-decoration-line: underline;
-    -webkit-text-underline-position: under;
+    text-decoration-style: solid;
+    text-decoration-line: underline;
+    text-underline-position: under;
 }
 
 span.auto {
-    -webkit-text-decoration-style: solid;
-    -webkit-text-decoration-line: underline;
-    -webkit-text-underline-position: auto;
+    text-decoration-style: solid;
+    text-decoration-line: underline;
+    text-underline-position: auto;
 }
 
 span.alphabetic {
-    -webkit-text-decoration-style: solid;
-    -webkit-text-decoration-line: underline;
-    -webkit-text-underline-position: alphabetic;
+    text-decoration-style: solid;
+    text-decoration-line: underline;
+    text-underline-position: alphabetic;
 }
 
 span.under {
-    -webkit-text-decoration-style: solid;
-    -webkit-text-decoration-line: underline;
-    -webkit-text-underline-position: under;
+    text-decoration-style: solid;
+    text-decoration-line: underline;
+    text-underline-position: under;
 }
 
 .box {

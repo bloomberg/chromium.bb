@@ -290,14 +290,12 @@ LayoutUnit RootInlineBox::alignBoxesInBlockDirection(LayoutUnit heightOfBlock, G
     return heightOfBlock + maxHeight;
 }
 
-#if ENABLE(CSS3_TEXT)
 float RootInlineBox::maxLogicalTop() const
 {
     float maxLogicalTop = 0;
     computeMaxLogicalTop(maxLogicalTop);
     return maxLogicalTop;
 }
-#endif // CSS3_TEXT
 
 LayoutUnit RootInlineBox::beforeAnnotationsAdjustment() const
 {

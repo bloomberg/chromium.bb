@@ -339,9 +339,7 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyWebkitRubyPosition:
     case CSSPropertyWebkitTapHighlightColor:
     case CSSPropertyWebkitTextCombine:
-#if ENABLE(CSS3_TEXT)
-    case CSSPropertyWebkitTextUnderlinePosition:
-#endif // CSS3_TEXT
+    case CSSPropertyTextUnderlinePosition:
     case CSSPropertyWebkitTextDecorationsInEffect:
     case CSSPropertyWebkitTextEmphasis:
     case CSSPropertyWebkitTextEmphasisColor:

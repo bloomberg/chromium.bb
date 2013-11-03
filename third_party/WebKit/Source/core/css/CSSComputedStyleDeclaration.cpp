@@ -189,9 +189,7 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyTextDecorationStyle,
     CSSPropertyTextDecorationColor,
     CSSPropertyTextJustify,
-#if ENABLE(CSS3_TEXT)
-    CSSPropertyWebkitTextUnderlinePosition,
-#endif // CSS3_TEXT
+    CSSPropertyTextUnderlinePosition,
     CSSPropertyTextIndent,
     CSSPropertyTextRendering,
     CSSPropertyTextShadow,
@@ -2246,10 +2244,8 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return currentColorOrValidColor(style.get(), style->textDecorationColor());
         case CSSPropertyTextJustify:
             return cssValuePool().createValue(style->textJustify());
-#if ENABLE(CSS3_TEXT)
-        case CSSPropertyWebkitTextUnderlinePosition:
+        case CSSPropertyTextUnderlinePosition:
             return cssValuePool().createValue(style->textUnderlinePosition());
-#endif // CSS3_TEXT
         case CSSPropertyWebkitTextDecorationsInEffect:
             return renderTextDecorationFlagsToCSSValue(style->textDecorationsInEffect());
         case CSSPropertyWebkitTextFillColor:

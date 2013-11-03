@@ -458,9 +458,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyTextDecorationStyle: return 402;
     case CSSPropertyTextDecorationColor: return 403;
     case CSSPropertyTextAlignLast: return 404;
-#if defined(ENABLE_CSS3_TEXT) && ENABLE_CSS3_TEXT
-    case CSSPropertyWebkitTextUnderlinePosition: return 405;
-#endif
+    case CSSPropertyTextUnderlinePosition: return 405;
     case CSSPropertyMaxZoom: return 406;
     case CSSPropertyMinZoom: return 407;
     case CSSPropertyOrientation: return 408;

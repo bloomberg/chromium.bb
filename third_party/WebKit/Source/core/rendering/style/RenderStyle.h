@@ -547,9 +547,7 @@ public:
     ETextTransform textTransform() const { return static_cast<ETextTransform>(inherited_flags._text_transform); }
     TextDecoration textDecorationsInEffect() const { return static_cast<TextDecoration>(inherited_flags._text_decorations); }
     TextDecoration textDecoration() const { return static_cast<TextDecoration>(visual->textDecoration); }
-#if ENABLE(CSS3_TEXT)
     TextUnderlinePosition textUnderlinePosition() const { return static_cast<TextUnderlinePosition>(rareInheritedData->m_textUnderlinePosition); }
-#endif // CSS3_TEXT
     TextDecorationStyle textDecorationStyle() const { return static_cast<TextDecorationStyle>(rareNonInheritedData->m_textDecorationStyle); }
     float wordSpacing() const;
     float letterSpacing() const;
@@ -1071,9 +1069,7 @@ public:
     void addToTextDecorationsInEffect(TextDecoration v) { inherited_flags._text_decorations |= v; }
     void setTextDecorationsInEffect(TextDecoration v) { inherited_flags._text_decorations = v; }
     void setTextDecoration(TextDecoration v) { SET_VAR(visual, textDecoration, v); }
-#if ENABLE(CSS3_TEXT)
     void setTextUnderlinePosition(TextUnderlinePosition v) { SET_VAR(rareInheritedData, m_textUnderlinePosition, v); }
-#endif // CSS3_TEXT
     void setTextDecorationStyle(TextDecorationStyle v) { SET_VAR(rareNonInheritedData, m_textDecorationStyle, v); }
     void setDirection(TextDirection v) { inherited_flags._direction = v; }
     void setLineHeight(Length specifiedLineHeight);
@@ -1559,9 +1555,7 @@ public:
     static TextAlignLast initialTextAlignLast() { return TextAlignLastAuto; }
     static TextJustify initialTextJustify() { return TextJustifyAuto; }
     static TextDecoration initialTextDecoration() { return TextDecorationNone; }
-#if ENABLE(CSS3_TEXT)
     static TextUnderlinePosition initialTextUnderlinePosition() { return TextUnderlinePositionAuto; }
-#endif // CSS3_TEXT
     static TextDecorationStyle initialTextDecorationStyle() { return TextDecorationStyleSolid; }
     static float initialZoom() { return 1.0f; }
     static int initialOutlineOffset() { return 0; }

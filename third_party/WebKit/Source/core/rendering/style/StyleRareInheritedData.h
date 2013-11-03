@@ -101,9 +101,7 @@ public:
     unsigned m_imageRendering : 2; // EImageRendering
     unsigned m_lineSnap : 2; // LineSnap
     unsigned m_lineAlign : 1; // LineAlign
-#if ENABLE(CSS3_TEXT)
     unsigned m_textUnderlinePosition : 3; // TextUnderlinePosition
-#endif // CSS3_TEXT
     unsigned m_rubyPosition : 1; // RubyPosition
     unsigned m_touchActionDelay : 1; // TouchActionDelay
 

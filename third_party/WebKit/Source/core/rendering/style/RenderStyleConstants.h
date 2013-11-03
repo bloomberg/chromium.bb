@@ -377,12 +377,10 @@ enum TextJustify {
     TextJustifyAuto, TextJustifyNone, TextJustifyInterWord, TextJustifyDistribute
 };
 
-#if ENABLE(CSS3_TEXT)
 enum TextUnderlinePosition {
     // FIXME: Implement support for 'under left' and 'under right' values.
     TextUnderlinePositionAuto = 0x1, TextUnderlinePositionAlphabetic = 0x2, TextUnderlinePositionUnder = 0x4
 };
-#endif // CSS3_TEXT
 
 enum EPageBreak {
     PBAUTO, PBALWAYS, PBAVOID

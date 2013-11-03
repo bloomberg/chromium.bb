@@ -239,7 +239,7 @@ column-fill type_name=ColumnFill
 -webkit-text-fill-color custom_all
 -webkit-text-security
 -webkit-text-stroke-color custom_all
--webkit-text-underline-position custom_value, condition=CSS3_TEXT
+text-underline-position custom_value
 -webkit-transform-origin-x type_name=Length, converter=convertLength
 -webkit-transform-origin-y type_name=Length, converter=convertLength
 -webkit-transform-origin-z type_name=float, converter=convertComputedLength<float>

@@ -71,6 +71,7 @@ static void setPropertySwitchesFromRuntimeFeatures()
         CSSPropertyTextDecorationColor,
         CSSPropertyTextDecorationLine,
         CSSPropertyTextDecorationStyle,
+        CSSPropertyTextUnderlinePosition,
     };
     setCSSPropertiesEnabled(css3TextDecorationProperties, WTF_ARRAY_LENGTH(css3TextDecorationProperties), RuntimeEnabledFeatures::css3TextDecorationsEnabled());
     CSSPropertyID css3TextProperties[] = {

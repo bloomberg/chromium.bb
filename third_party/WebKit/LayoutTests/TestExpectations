@@ -482,6 +482,13 @@ crbug.com/310992 animations/play-state.html [ Pass Failure ]
 crbug.com/310992 virtual/threaded/animations/play-state.html [ Pass Failure ]
 crbug.com/310992 virtual/web-animations-css/animations/play-state.html [ Pass Failure ]
 
+# Needs rebaseline (current results made with feature disabled)
+crbug.com/239225 fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-all.html [ NeedsRebaseline ]
+crbug.com/239225 fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-alphabetic.html [ NeedsRebaseline ]
+crbug.com/239225 fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-auto.html [ NeedsRebaseline ]
+crbug.com/239225 fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-under-out-of-flow.html [ NeedsRebaseline ]
+crbug.com/239225 fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-under.html [ NeedsRebaseline ]
+
 # This can't be rebaselined because it's a reftest.
 crbug.com/311423 animations/opacity-transform-animation.html [ ImageOnlyFailure ]
 

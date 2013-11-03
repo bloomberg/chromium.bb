@@ -230,6 +230,7 @@ textShadow
 textTransform
 textUnderlineColor
 textUnderlineMode
+textUnderlinePosition
 textUnderlineStyle
 textUnderlineWidth
 top

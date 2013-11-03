@@ -728,7 +728,6 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
     }
 }
 
-#if ENABLE(CSS3_TEXT)
 void InlineFlowBox::computeMaxLogicalTop(float& maxLogicalTop) const
 {
     for (InlineBox* curr = firstChild(); curr; curr = curr->nextOnLine()) {
@@ -745,7 +744,6 @@ void InlineFlowBox::computeMaxLogicalTop(float& maxLogicalTop) const
         maxLogicalTop = max<float>(maxLogicalTop, localMaxLogicalTop);
     }
 }
-#endif // CSS3_TEXT
 
 void InlineFlowBox::flipLinesInBlockDirection(LayoutUnit lineTop, LayoutUnit lineBottom)
 {

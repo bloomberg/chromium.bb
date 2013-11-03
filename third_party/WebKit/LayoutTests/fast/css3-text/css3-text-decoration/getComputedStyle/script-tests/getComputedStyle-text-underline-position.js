@@ -16,7 +16,7 @@ function testComputedStyle(propertyJS, propertyCSS, type, value)
     shouldBe("computedStyle.getPropertyCSSValue('" + propertyCSS + "').cssText", "'" + value + "'");
 }
 
-description("Test to make sure -webkit-text-underline-position property returns values properly.")
+description("Test to make sure text-underline-position property returns values properly.")
 
 // FIXME: This test tests property values 'auto', 'alphabetic' and 'under'. We don't fully match
 // the specification as we don't support [ left | right ] and this is left for another implementation
@@ -30,65 +30,65 @@ testContainer.innerHTML = '<div id="test">hello world</div>';
 
 debug("Initial value:");
 e = document.getElementById('test');
-testElementStyle("webkitTextUnderlinePosition", "-webkit-text-underline-position", null, '');
-testComputedStyle("webkitTextUnderlinePosition", "-webkit-text-underline-position", "[object CSSPrimitiveValue]", "auto");
+testElementStyle("textUnderlinePosition", "text-underline-position", null, '');
+testComputedStyle("textUnderlinePosition", "text-underline-position", "[object CSSPrimitiveValue]", "auto");
 debug('');
 
 debug("Value '':");
-e.style.webkitTextUnderlinePosition = '';
-testElementStyle("webkitTextUnderlinePosition", "-webkit-text-underline-position", null, '');
-testComputedStyle("webkitTextUnderlinePosition", "-webkit-text-underline-position", "[object CSSPrimitiveValue]", "auto");
+e.style.textUnderlinePosition = '';
+testElementStyle("textUnderlinePosition", "text-underline-position", null, '');
+testComputedStyle("textUnderlinePosition", "text-underline-position", "[object CSSPrimitiveValue]", "auto");
 debug('');
 
 debug("Initial value (explicit):");
-e.style.webkitTextUnderlinePosition = 'initial';
-testElementStyle("webkitTextUnderlinePosition", "-webkit-text-underline-position", "[object CSSValue]", "initial");
-testComputedStyle("webkitTextUnderlinePosition", "-webkit-text-underline-position", "[object CSSPrimitiveValue]", "auto");
+e.style.textUnderlinePosition = 'initial';
+testElementStyle("textUnderlinePosition", "text-underline-position", "[object CSSValue]", "initial");
+testComputedStyle("textUnderlinePosition", "text-underline-position", "[object CSSPrimitiveValue]", "auto");
 debug('');
 
 debug("Value 'auto':");
-e.style.webkitTextUnderlinePosition = 'auto';
-testElementStyle("webkitTextUnderlinePosition", "-webkit-text-underline-position", "[object CSSPrimitiveValue]", "auto");
-testComputedStyle("webkitTextUnderlinePosition", "-webkit-text-underline-position", "[object CSSPrimitiveValue]", "auto");
+e.style.textUnderlinePosition = 'auto';
+testElementStyle("textUnderlinePosition", "text-underline-position", "[object CSSPrimitiveValue]", "auto");
+testComputedStyle("textUnderlinePosition", "text-underline-position", "[object CSSPrimitiveValue]", "auto");
 debug('');
 
 debug("Value 'alphabetic':");
-e.style.webkitTextUnderlinePosition = 'alphabetic';
-testElementStyle("webkitTextUnderlinePosition", "-webkit-text-underline-position", "[object CSSPrimitiveValue]", "alphabetic");
-testComputedStyle("webkitTextUnderlinePosition", "-webkit-text-underline-position", "[object CSSPrimitiveValue]", "alphabetic");
+e.style.textUnderlinePosition = 'alphabetic';
+testElementStyle("textUnderlinePosition", "text-underline-position", "[object CSSPrimitiveValue]", "alphabetic");
+testComputedStyle("textUnderlinePosition", "text-underline-position", "[object CSSPrimitiveValue]", "alphabetic");
 debug('');
 
 debug("Value 'under':");
-e.style.webkitTextUnderlinePosition = 'under';
-testElementStyle("webkitTextUnderlinePosition", "-webkit-text-underline-position", "[object CSSPrimitiveValue]", "under");
-testComputedStyle("webkitTextUnderlinePosition", "-webkit-text-underline-position", "[object CSSPrimitiveValue]", "under");
+e.style.textUnderlinePosition = 'under';
+testElementStyle("textUnderlinePosition", "text-underline-position", "[object CSSPrimitiveValue]", "under");
+testComputedStyle("textUnderlinePosition", "text-underline-position", "[object CSSPrimitiveValue]", "under");
 debug('');
 
-testContainer.innerHTML = '<div id="test-parent" style="-webkit-text-underline-position: under;">hello <span id="test-ancestor">world</span></div>';
+testContainer.innerHTML = '<div id="test-parent" style="text-underline-position: under;">hello <span id="test-ancestor">world</span></div>';
 debug("Ancestor inherits values from parent:");
 e = document.getElementById('test-ancestor');
-testElementStyle("webkitTextUnderlinePosition", "-webkit-text-underline-position", null, "");
-testComputedStyle("webkitTextUnderlinePosition", "-webkit-text-underline-position", "[object CSSPrimitiveValue]", "under");
+testElementStyle("textUnderlinePosition", "text-underline-position", null, "");
+testComputedStyle("textUnderlinePosition", "text-underline-position", "[object CSSPrimitiveValue]", "under");
 debug('');
 
 debug("Value 'auto alphabetic':");
-e.style.webkitTextUnderlinePosition = 'auto alphabetic';
-testElementStyle("webkitTextUnderlinePosition", "-webkit-text-underline-position", null, "");
+e.style.textUnderlinePosition = 'auto alphabetic';
+testElementStyle("textUnderlinePosition", "text-underline-position", null, "");
 debug('');
 
 debug("Value 'auto under':");
-e.style.webkitTextUnderlinePosition = 'auto under';
-testElementStyle("webkitTextUnderlinePosition", "-webkit-text-underline-position", null, "");
+e.style.textUnderlinePosition = 'auto under';
+testElementStyle("textUnderlinePosition", "text-underline-position", null, "");
 debug('');
 
 debug("Value 'under under':");
-e.style.webkitTextUnderlinePosition = 'under under';
-testElementStyle("webkitTextUnderlinePosition", "-webkit-text-underline-position", null, "");
+e.style.textUnderlinePosition = 'under under';
+testElementStyle("textUnderlinePosition", "text-underline-position", null, "");
 debug('');
 
 debug("Value 'under under under':");
-e.style.webkitTextUnderlinePosition = 'auto alphabetic under';
-testElementStyle("webkitTextUnderlinePosition", "-webkit-text-underline-position", null, "");
+e.style.textUnderlinePosition = 'auto alphabetic under';
+testElementStyle("textUnderlinePosition", "text-underline-position", null, "");
 debug('');
 
 document.body.removeChild(testContainer);

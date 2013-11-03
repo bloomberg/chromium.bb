@@ -212,6 +212,7 @@ text-underline-color
 text-underline-mode
 text-underline-style
 text-underline-width
+text-underline-position
 top
 touch-action
 touch-action-delay
@@ -382,7 +383,6 @@ order
 -webkit-ruby-position
 -webkit-text-combine
 -epub-text-combine alias_for=-webkit-text-combine
--webkit-text-underline-position condition=CSS3_TEXT
 -webkit-text-decorations-in-effect
 -webkit-text-emphasis
 -epub-text-emphasis alias_for=-webkit-text-emphasis
