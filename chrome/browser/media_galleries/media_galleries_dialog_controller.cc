@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
 
+#include "base/base_paths.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -14,7 +15,6 @@
 #include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/permissions/media_galleries_permission.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
@@ -209,14 +209,14 @@ MediaGalleriesDialogController::UnattachedPermissions() const {
 }
 
 void MediaGalleriesDialogController::OnAddFolderClicked() {
-  base::FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  base::FilePath desktop;
+  PathService::Get(base::DIR_USER_DESKTOP, &desktop);
   select_folder_dialog_ =
       ui::SelectFileDialog::Create(this, new ChromeSelectFilePolicy(NULL));
   select_folder_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_FOLDER,
       l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY_TITLE),
-      user_data_dir,
+      desktop,
       NULL,
       0,
       base::FilePath::StringType(),
