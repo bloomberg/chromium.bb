@@ -232,58 +232,58 @@ TEST_F(RulesRegistryWithCacheTest, DeclarativeRulesStored) {
   const std::string rules_stored_key(
       RulesCacheDelegate::GetRulesStoredKey(
           event_name, profile.IsOffTheRecord()));
-  scoped_ptr<RulesCacheDelegate> ui_part;
+  scoped_ptr<RulesCacheDelegate> cache_delegate(new RulesCacheDelegate(false));
   scoped_refptr<RulesRegistry> registry(new TestRulesRegistry(
-      &profile, event_name, content::BrowserThread::UI, &ui_part));
+      &profile, event_name, content::BrowserThread::UI, cache_delegate.get()));
 
   // 1. Test the handling of preferences.
   // Default value is always true.
-  EXPECT_TRUE(ui_part->GetDeclarativeRulesStored(kExtensionId));
+  EXPECT_TRUE(cache_delegate->GetDeclarativeRulesStored(kExtensionId));
 
   extension_prefs->UpdateExtensionPref(
       kExtensionId, rules_stored_key, new base::FundamentalValue(false));
-  EXPECT_FALSE(ui_part->GetDeclarativeRulesStored(kExtensionId));
+  EXPECT_FALSE(cache_delegate->GetDeclarativeRulesStored(kExtensionId));
 
   extension_prefs->UpdateExtensionPref(
       kExtensionId, rules_stored_key, new base::FundamentalValue(true));
-  EXPECT_TRUE(ui_part->GetDeclarativeRulesStored(kExtensionId));
+  EXPECT_TRUE(cache_delegate->GetDeclarativeRulesStored(kExtensionId));
 
   // 2. Test writing behavior.
   int write_count = store->write_count();
 
   scoped_ptr<base::ListValue> value(new base::ListValue);
   value->AppendBoolean(true);
-  ui_part->WriteToStorage(kExtensionId, value.PassAs<base::Value>());
-  EXPECT_TRUE(ui_part->GetDeclarativeRulesStored(kExtensionId));
+  cache_delegate->WriteToStorage(kExtensionId, value.PassAs<base::Value>());
+  EXPECT_TRUE(cache_delegate->GetDeclarativeRulesStored(kExtensionId));
   message_loop_.RunUntilIdle();
   EXPECT_EQ(write_count + 1, store->write_count());
   write_count = store->write_count();
 
   value.reset(new base::ListValue);
-  ui_part->WriteToStorage(kExtensionId, value.PassAs<base::Value>());
-  EXPECT_FALSE(ui_part->GetDeclarativeRulesStored(kExtensionId));
+  cache_delegate->WriteToStorage(kExtensionId, value.PassAs<base::Value>());
+  EXPECT_FALSE(cache_delegate->GetDeclarativeRulesStored(kExtensionId));
   message_loop_.RunUntilIdle();
   // No rules currently, but previously there were, so we expect a write.
   EXPECT_EQ(write_count + 1, store->write_count());
   write_count = store->write_count();
 
   value.reset(new base::ListValue);
-  ui_part->WriteToStorage(kExtensionId, value.PassAs<base::Value>());
-  EXPECT_FALSE(ui_part->GetDeclarativeRulesStored(kExtensionId));
+  cache_delegate->WriteToStorage(kExtensionId, value.PassAs<base::Value>());
+  EXPECT_FALSE(cache_delegate->GetDeclarativeRulesStored(kExtensionId));
   message_loop_.RunUntilIdle();
   EXPECT_EQ(write_count, store->write_count());
 
   // 3. Test reading behavior.
   int read_count = store->read_count();
 
-  ui_part->SetDeclarativeRulesStored(kExtensionId, false);
-  ui_part->ReadFromStorage(kExtensionId);
+  cache_delegate->SetDeclarativeRulesStored(kExtensionId, false);
+  cache_delegate->ReadFromStorage(kExtensionId);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(read_count, store->read_count());
   read_count = store->read_count();
 
-  ui_part->SetDeclarativeRulesStored(kExtensionId, true);
-  ui_part->ReadFromStorage(kExtensionId);
+  cache_delegate->SetDeclarativeRulesStored(kExtensionId, true);
+  cache_delegate->ReadFromStorage(kExtensionId);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(read_count + 1, store->read_count());
 }
@@ -307,22 +307,25 @@ TEST_F(RulesRegistryWithCacheTest, RulesStoredFlagMultipleRegistries) {
   const std::string rules_stored_key2(
       RulesCacheDelegate::GetRulesStoredKey(
           event_name2, profile.IsOffTheRecord()));
-  scoped_ptr<RulesCacheDelegate> ui_part1;
+  scoped_ptr<RulesCacheDelegate> cache_delegate1(new RulesCacheDelegate(false));
   scoped_refptr<RulesRegistry> registry1(new TestRulesRegistry(
-      &profile, event_name1, content::BrowserThread::UI, &ui_part1));
-  scoped_ptr<RulesCacheDelegate> ui_part2;
+      &profile, event_name1, content::BrowserThread::UI,
+      cache_delegate1.get()));
+
+  scoped_ptr<RulesCacheDelegate> cache_delegate2(new RulesCacheDelegate(false));
   scoped_refptr<RulesRegistry> registry2(new TestRulesRegistry(
-      &profile, event_name2, content::BrowserThread::UI, &ui_part2));
+      &profile, event_name2, content::BrowserThread::UI,
+      cache_delegate2.get()));
 
   // Checkt the correct default values.
-  EXPECT_TRUE(ui_part1->GetDeclarativeRulesStored(kExtensionId));
-  EXPECT_TRUE(ui_part2->GetDeclarativeRulesStored(kExtensionId));
+  EXPECT_TRUE(cache_delegate1->GetDeclarativeRulesStored(kExtensionId));
+  EXPECT_TRUE(cache_delegate2->GetDeclarativeRulesStored(kExtensionId));
 
   // Update the flag for the first registry.
   extension_prefs->UpdateExtensionPref(
       kExtensionId, rules_stored_key1, new base::FundamentalValue(false));
-  EXPECT_FALSE(ui_part1->GetDeclarativeRulesStored(kExtensionId));
-  EXPECT_TRUE(ui_part2->GetDeclarativeRulesStored(kExtensionId));
+  EXPECT_FALSE(cache_delegate1->GetDeclarativeRulesStored(kExtensionId));
+  EXPECT_TRUE(cache_delegate2->GetDeclarativeRulesStored(kExtensionId));
 }
 
 TEST_F(RulesRegistryWithCacheTest, RulesPreservedAcrossRestart) {
@@ -350,16 +353,20 @@ TEST_F(RulesRegistryWithCacheTest, RulesPreservedAcrossRestart) {
   system->SetReady();
 
   // 2. First run, adding a rule for the extension.
-  scoped_ptr<RulesCacheDelegate> ui_part;
+  scoped_ptr<RulesCacheDelegate> cache_delegate(new RulesCacheDelegate(false));
   scoped_refptr<TestRulesRegistry> registry(new TestRulesRegistry(
-      &profile, "testEvent", content::BrowserThread::UI, &ui_part));
+      &profile, "testEvent", content::BrowserThread::UI, cache_delegate.get()));
+
   AddRule(kExtensionId, kRuleId, registry.get());
   message_loop_.RunUntilIdle();  // Posted tasks store the added rule.
   EXPECT_EQ(1, GetNumberOfRules(kExtensionId, registry.get()));
 
   // 3. Restart the TestRulesRegistry and see the rule still there.
+  cache_delegate.reset(
+      new RulesCacheDelegate(false));
   registry = new TestRulesRegistry(
-      &profile, "testEvent", content::BrowserThread::UI, &ui_part);
+      &profile, "testEvent", content::BrowserThread::UI, cache_delegate.get());
+
   message_loop_.RunUntilIdle();  // Posted tasks retrieve the stored rule.
   EXPECT_EQ(1, GetNumberOfRules(kExtensionId, registry.get()));
 }

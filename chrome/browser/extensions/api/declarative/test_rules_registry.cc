@@ -13,19 +13,17 @@ TestRulesRegistry::TestRulesRegistry(content::BrowserThread::ID owner_thread,
     : RulesRegistry(NULL /*profile*/,
                     event_name,
                     owner_thread,
-                    false /*log_storage_init_delay, this is ignored*/,
-                    NULL /*ui_part*/) {}
+                    NULL) {}
 
 TestRulesRegistry::TestRulesRegistry(
     Profile* profile,
     const std::string& event_name,
     content::BrowserThread::ID owner_thread,
-    scoped_ptr<RulesCacheDelegate>* ui_part)
+    RulesCacheDelegate* cache_delegate)
     : RulesRegistry(profile,
                     event_name,
                     owner_thread,
-                    false /*log_storage_init_delay*/,
-                    ui_part) {}
+                    cache_delegate) {}
 
 std::string TestRulesRegistry::AddRulesImpl(
     const std::string& extension_id,

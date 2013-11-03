@@ -36,12 +36,11 @@ namespace extensions {
 
 WebRequestRulesRegistry::WebRequestRulesRegistry(
     Profile* profile,
-    scoped_ptr<RulesCacheDelegate>* cache_delegate)
-    : RulesRegistry((cache_delegate ? profile : NULL),
-                         declarative_webrequest_constants::kOnRequest,
-                         content::BrowserThread::IO,
-                         true /*log_storage_init_delay*/,
-                         cache_delegate),
+    RulesCacheDelegate* cache_delegate)
+    : RulesRegistry(profile,
+                    declarative_webrequest_constants::kOnRequest,
+                    content::BrowserThread::IO,
+                    cache_delegate),
       profile_id_(profile) {
   if (profile)
     extension_info_map_ = ExtensionSystem::Get(profile)->info_map();

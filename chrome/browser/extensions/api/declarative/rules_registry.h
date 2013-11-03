@@ -44,16 +44,13 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   enum Defaults { DEFAULT_PRIORITY = 100 };
   // After the RulesCacheDelegate object (the part of the registry which runs on
   // the UI thread) is created, a pointer to it is passed to |*ui_part|.
-  // If |log_storage_init_delay| is set, the delay caused by loading and
-  // registering rules on initialization will be logged with UMA.
   // In tests, |profile| and |ui_part| can be NULL (at the same time). In that
   // case the storage functionality disabled (no RulesCacheDelegate object
-  // created) and the |log_storage_init_delay| flag is ignored.
+  // created).
   RulesRegistry(Profile* profile,
                 const std::string& event_name,
                 content::BrowserThread::ID owner_thread,
-                bool log_storage_init_delay,
-                scoped_ptr<RulesCacheDelegate>* ui_part);
+                RulesCacheDelegate* cache_delegate);
 
   const OneShotEvent& ready() const {
     return ready_;
@@ -123,6 +120,9 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   // Every ExtensionId counts as one entry, even if it contains no rules.
   size_t GetNumberOfUsedRuleIdentifiersForTesting() const;
 
+  // Returns the profile where the rules registry lives.
+  Profile* profile() const { return profile_; }
+
   // Returns the ID of the thread on which the rules registry lives.
   // It is safe to call this function from any thread.
   content::BrowserThread::ID owner_thread() const { return owner_thread_; }
@@ -164,6 +164,11 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
     NOT_SCHEDULED_FOR_PROCESSING
   };
 
+  base::WeakPtr<RulesRegistry> GetWeakPtr() {
+    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
   // Common processing after extension's rules have changed.
   void ProcessChangedRules(const std::string& extension_id);
 
@@ -171,7 +176,6 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   // NOT_SCHEDULED_FOR_PROCESSING.
   void MaybeProcessChangedRules(const std::string& extension_id);
 
-  // Process the callbacks once the registry gets ready.
   void MarkReady(base::Time storage_init_time);
 
   // Deserialize the rules from the given Value object and add them to the
@@ -179,6 +183,8 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   void DeserializeAndAddRules(const std::string& extension_id,
                               scoped_ptr<base::Value> rules);
 
+  // The profile to which this rules registry belongs.
+  Profile* profile_;
 
   // The ID of the thread on which the rules registry lives.
   const content::BrowserThread::ID owner_thread_;
@@ -203,7 +209,7 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   // destroyed on its thread, the use of the |cache_delegate_| would not be
   // safe. The registry only ever associates with one RulesCacheDelegate
   // instance.
-  const base::WeakPtr<RulesCacheDelegate> cache_delegate_;
+  base::WeakPtr<RulesCacheDelegate> cache_delegate_;
 
   ProcessChangedRulesState process_changed_rules_requested_;
 

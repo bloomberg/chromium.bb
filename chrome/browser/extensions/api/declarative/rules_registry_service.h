@@ -96,7 +96,7 @@ class RulesRegistryService : public ProfileKeyedAPI,
   RulesRegistryMap rule_registries_;
 
   // We own the parts of the registries which need to run on the UI thread.
-  ScopedVector<RulesCacheDelegate> ui_parts_of_registries_;
+  ScopedVector<RulesCacheDelegate> cache_delegates_;
 
   // Weak pointer into rule_registries_ to make it easier to handle content rule
   // conditions.

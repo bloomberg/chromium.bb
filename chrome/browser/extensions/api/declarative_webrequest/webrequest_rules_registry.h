@@ -76,7 +76,7 @@ class WebRequestRulesRegistry : public RulesRegistry {
   // |cache_delegate| can be NULL. In that case it constructs the registry with
   // storage functionality suspended.
   WebRequestRulesRegistry(Profile* profile,
-                          scoped_ptr<RulesCacheDelegate>* cache_delegate);
+                          RulesCacheDelegate* cache_delegate);
 
   // TODO(battre): This will become an implementation detail, because we need
   // a way to also execute the actions of the rules.

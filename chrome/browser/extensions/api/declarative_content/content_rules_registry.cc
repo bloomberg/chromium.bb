@@ -21,15 +21,12 @@
 
 namespace extensions {
 
-ContentRulesRegistry::ContentRulesRegistry(
-    Profile* profile,
-    scoped_ptr<RulesCacheDelegate>* cache_delegate)
-    : RulesRegistry((cache_delegate ? profile : NULL),
+ContentRulesRegistry::ContentRulesRegistry(Profile* profile,
+                                           RulesCacheDelegate* cache_delegate)
+    : RulesRegistry(profile,
                     declarative_content_constants::kOnPageChanged,
                     content::BrowserThread::UI,
-                    false /*log_storage_init_delay*/,
-                    cache_delegate),
-      profile_(profile) {
+                    cache_delegate) {
   extension_info_map_ = ExtensionSystem::Get(profile)->info_map();
 
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
@@ -46,7 +43,7 @@ void ContentRulesRegistry::Observe(
     case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
       content::RenderProcessHost* process =
           content::Source<content::RenderProcessHost>(source).ptr();
-      if (process->GetBrowserContext() == profile_)
+      if (process->GetBrowserContext() == profile())
         InstructRenderProcess(process);
       break;
     }
@@ -76,7 +73,7 @@ void ContentRulesRegistry::Apply(
 
   std::set<ContentRule*>& prev_matching_rules = active_rules_[tab_id];
   ContentAction::ApplyInfo apply_info = {
-    profile_, contents
+    profile(), contents
   };
   for (std::set<ContentRule*>::const_iterator it = matching_rules.begin();
        it != matching_rules.end(); ++it) {
@@ -139,7 +136,7 @@ std::string ContentRulesRegistry::AddRulesImpl(
     const std::string& extension_id,
     const std::vector<linked_ptr<RulesRegistry::Rule> >& rules) {
   ExtensionService* service =
-      ExtensionSystem::Get(profile_)->extension_service();
+      ExtensionSystem::Get(profile())->extension_service();
   const Extension* extension = service->GetInstalledExtension(extension_id);
   DCHECK(extension) << "Must have extension with id " << extension_id;
 
@@ -231,12 +228,12 @@ std::string ContentRulesRegistry::RemoveRulesImpl(
       if (ContainsKey(it->second, rule)) {
         content::WebContents* tab;
         if (!ExtensionTabUtil::GetTabById(
-                 it->first, profile_, true, NULL, NULL, &tab, NULL)) {
+                 it->first, profile(), true, NULL, NULL, &tab, NULL)) {
           LOG(DFATAL) << "Tab id " << it->first
                       << " still in active_rules_, but tab has been destroyed";
           continue;
         }
-        ContentAction::ApplyInfo apply_info = {profile_, tab};
+        ContentAction::ApplyInfo apply_info = {profile(), tab};
         rule->actions().Revert(rule->extension_id(), base::Time(), &apply_info);
         it->second.erase(rule);
       }
@@ -292,7 +289,7 @@ void ContentRulesRegistry::UpdateConditionCache() {
              content::RenderProcessHost::AllHostsIterator());
          !it.IsAtEnd(); it.Advance()) {
       content::RenderProcessHost* process = it.GetCurrentValue();
-      if (process->GetBrowserContext() == profile_)
+      if (process->GetBrowserContext() == profile())
         InstructRenderProcess(process);
     }
   }

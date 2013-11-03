@@ -75,29 +75,20 @@ RulesRegistry::RulesRegistry(
     Profile* profile,
     const std::string& event_name,
     content::BrowserThread::ID owner_thread,
-    bool log_storage_init_delay,
-    scoped_ptr<RulesCacheDelegate>* ui_part)
-    : owner_thread_(owner_thread),
+    RulesCacheDelegate* cache_delegate)
+    : profile_(profile),
+      owner_thread_(owner_thread),
       event_name_(event_name),
       weak_ptr_factory_(profile ? this : NULL),
-      cache_delegate_(
-          (profile ? (new RulesCacheDelegate(profile,
-                                          event_name,
-                                          owner_thread,
-                                          weak_ptr_factory_.GetWeakPtr(),
-                                          log_storage_init_delay))->GetWeakPtr()
-                   : base::WeakPtr<RulesCacheDelegate>())),
       process_changed_rules_requested_(profile ? NOT_SCHEDULED_FOR_PROCESSING
                                                : NEVER_PROCESS),
       last_generated_rule_identifier_id_(0) {
-  if (!profile) {
-    CHECK(!ui_part);
-    return;
+  if (cache_delegate) {
+    cache_delegate_ = cache_delegate->GetWeakPtr();
+    cache_delegate->Init(this);
+  } else {
+    ready_.Signal();
   }
-
-  ui_part->reset(cache_delegate_.get());
-
-  cache_delegate_->Init();
 }
 
 std::string RulesRegistry::AddRules(
@@ -231,6 +222,14 @@ size_t RulesRegistry::GetNumberOfUsedRuleIdentifiersForTesting() const {
   return entry_count;
 }
 
+void RulesRegistry::DeserializeAndAddRules(
+    const std::string& extension_id,
+    scoped_ptr<base::Value> rules) {
+  DCHECK(content::BrowserThread::CurrentlyOn(owner_thread()));
+
+  AddRules(extension_id, RulesFromValue(rules.get()));
+}
+
 RulesRegistry::~RulesRegistry() {
 }
 
@@ -243,14 +242,6 @@ void RulesRegistry::MarkReady(base::Time storage_init_time) {
   }
 
   ready_.Signal();
-}
-
-void RulesRegistry::DeserializeAndAddRules(
-    const std::string& extension_id,
-    scoped_ptr<base::Value> rules) {
-  DCHECK(content::BrowserThread::CurrentlyOn(owner_thread()));
-
-  AddRules(extension_id, RulesFromValue(rules.get()));
 }
 
 void RulesRegistry::ProcessChangedRules(const std::string& extension_id) {

@@ -18,7 +18,7 @@ class TestRulesRegistry : public RulesRegistry {
       Profile* profile,
       const std::string& event_name,
       content::BrowserThread::ID owner_thread,
-      scoped_ptr<RulesCacheDelegate>* ui_part);
+      RulesCacheDelegate* cache_delegate);
 
   // RulesRegistry implementation:
   virtual std::string AddRulesImpl(

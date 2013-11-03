@@ -21,21 +21,13 @@ namespace extensions {
 class RulesRegistry;
 
 // RulesCacheDelegate implements the part of the RulesRegistry which works on
-// the UI thread. It should only be used on the UI thread. It gets created
-// by the RulesRegistry, but right after that it changes owner to the
-// RulesRegistryService, and is deleted by the service.
+// the UI thread. It should only be used on the UI thread.
 // If |log_storage_init_delay| is set, the delay caused by loading and
 // registering rules on initialization will be logged with UMA.
 class RulesCacheDelegate : public content::NotificationObserver {
-  public:
-  // |event_name| identifies the JavaScript event for which rules are
-  // registered. For example, for WebRequestRulesRegistry the name is
-  // "declarativeWebRequest.onRequest".
-  RulesCacheDelegate(Profile* profile,
-                     const std::string& event_name,
-                     content::BrowserThread::ID rules_registry_thread,
-                     base::WeakPtr<RulesRegistry> registry,
-                     bool log_storage_init_delay);
+ public:
+
+  explicit RulesCacheDelegate(bool log_storage_init_delay);
 
   virtual ~RulesCacheDelegate();
 
@@ -46,7 +38,7 @@ class RulesCacheDelegate : public content::NotificationObserver {
                                        bool incognito);
 
   // Initialize the storage functionality.
-  void Init();
+  void Init(RulesRegistry* registry);
 
   void WriteToStorage(const std::string& extension_id,
                       scoped_ptr<base::Value> value);
@@ -56,7 +48,7 @@ class RulesCacheDelegate : public content::NotificationObserver {
     return weak_ptr_factory_.GetWeakPtr();
   }
 
-  private:
+ private:
   FRIEND_TEST_ALL_PREFIXES(RulesRegistryWithCacheTest,
                            DeclarativeRulesStored);
   FRIEND_TEST_ALL_PREFIXES(RulesRegistryWithCacheTest,
@@ -96,10 +88,10 @@ class RulesCacheDelegate : public content::NotificationObserver {
   Profile* profile_;
 
   // The key under which rules are stored.
-  const std::string storage_key_;
+  std::string storage_key_;
 
   // The key under which we store whether the rules have been stored.
-  const std::string rules_stored_key_;
+  std::string rules_stored_key_;
 
   // A set of extension IDs that have rules we are reading from storage.
   std::set<std::string> waiting_for_extensions_;
@@ -110,10 +102,10 @@ class RulesCacheDelegate : public content::NotificationObserver {
   bool log_storage_init_delay_;
 
   // Weak pointer to post tasks to the owning rules registry.
-  const base::WeakPtr<RulesRegistry> registry_;
+  base::WeakPtr<RulesRegistry> registry_;
 
   // The thread |registry_| lives on.
-  const content::BrowserThread::ID rules_registry_thread_;
+  content::BrowserThread::ID rules_registry_thread_;
 
   // We notified the RulesRegistry that the rules are loaded.
   bool notified_registry_;

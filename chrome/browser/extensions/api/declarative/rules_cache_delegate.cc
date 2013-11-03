@@ -26,6 +26,7 @@ std::string GetDeclarativeRuleStorageKey(const std::string& event_name,
     return "declarative_rules." + event_name;
 }
 
+
 }  // namespace
 
 namespace extensions {
@@ -35,22 +36,12 @@ namespace extensions {
 const char RulesCacheDelegate::kRulesStoredKey[] =
     "has_declarative_rules";
 
-RulesCacheDelegate::RulesCacheDelegate(
-    Profile* profile,
-    const std::string& event_name,
-    content::BrowserThread::ID rules_registry_thread,
-    base::WeakPtr<RulesRegistry> registry,
-    bool log_storage_init_delay)
-    : profile_(profile),
-      storage_key_(GetDeclarativeRuleStorageKey(event_name,
-                                                profile->IsOffTheRecord())),
-      rules_stored_key_(GetRulesStoredKey(event_name,
-                                          profile->IsOffTheRecord())),
+RulesCacheDelegate::RulesCacheDelegate(bool log_storage_init_delay)
+    : profile_(NULL),
       log_storage_init_delay_(log_storage_init_delay),
-      registry_(registry),
-      rules_registry_thread_(rules_registry_thread),
       notified_registry_(false),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+}
 
 RulesCacheDelegate::~RulesCacheDelegate() {}
 
@@ -68,8 +59,20 @@ std::string RulesCacheDelegate::GetRulesStoredKey(const std::string& event_name,
 // 1. calls no (in particular virtual) methods of the rules registry, and
 // 2. does not create scoped_refptr holding the registry. (A short-lived
 // scoped_refptr might delete the rules registry before it is constructed.)
-void RulesCacheDelegate::Init() {
+void RulesCacheDelegate::Init(RulesRegistry* registry) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  // WARNING: The first use of |registry_| will bind it to the calling thread
+  // so don't use this here.
+  registry_ = registry->GetWeakPtr();
+
+  profile_ = registry->profile();
+  storage_key_ =
+      GetDeclarativeRuleStorageKey(registry->event_name(),
+                                   profile_->IsOffTheRecord());
+  rules_stored_key_ = GetRulesStoredKey(registry->event_name(),
+                                        profile_->IsOffTheRecord());
+  rules_registry_thread_ = registry->owner_thread();
 
   ExtensionSystem& system = *ExtensionSystem::Get(profile_);
   extensions::StateStore* store = system.rules_store();
@@ -86,10 +89,10 @@ void RulesCacheDelegate::Init() {
   system.ready().Post(
       FROM_HERE,
       base::Bind(&RulesCacheDelegate::ReadRulesForInstalledExtensions,
-                 GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr()));
   system.ready().Post(FROM_HERE,
                       base::Bind(&RulesCacheDelegate::CheckIfReady,
-                                 GetWeakPtr()));
+                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void RulesCacheDelegate::WriteToStorage(const std::string& extension_id,
@@ -182,7 +185,8 @@ void RulesCacheDelegate::ReadFromStorage(const std::string& extension_id) {
 
   if (!GetDeclarativeRulesStored(extension_id)) {
     ExtensionSystem::Get(profile_)->ready().Post(
-        FROM_HERE, base::Bind(&RulesCacheDelegate::CheckIfReady, GetWeakPtr()));
+        FROM_HERE, base::Bind(&RulesCacheDelegate::CheckIfReady,
+                              weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -214,7 +218,8 @@ void RulesCacheDelegate::ReadFromStorageCallback(
 
   if (waiting_for_extensions_.empty())
     ExtensionSystem::Get(profile_)->ready().Post(
-        FROM_HERE, base::Bind(&RulesCacheDelegate::CheckIfReady, GetWeakPtr()));
+        FROM_HERE, base::Bind(&RulesCacheDelegate::CheckIfReady,
+                              weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool RulesCacheDelegate::GetDeclarativeRulesStored(

@@ -64,8 +64,7 @@ class ContentRulesRegistry : public RulesRegistry,
  public:
   // For testing, |ui_part| can be NULL. In that case it constructs the
   // registry with storage functionality suspended.
-  ContentRulesRegistry(Profile* profile,
-                       scoped_ptr<RulesCacheDelegate>* ui_part);
+  ContentRulesRegistry(Profile* profile, RulesCacheDelegate* cache_delegate);
 
   // Applies all content rules given an update (CSS match change or
   // page navigation, for now) from the renderer.
@@ -120,8 +119,6 @@ class ContentRulesRegistry : public RulesRegistry,
   typedef std::map<URLMatcherConditionSet::ID, ContentRule*> URLMatcherIdToRule;
   typedef std::map<ContentRule::GlobalRuleId, linked_ptr<ContentRule> >
       RulesMap;
-
-  Profile* const profile_;
 
   // Map that tells us which ContentRules may match under the condition that
   // the URLMatcherConditionSet::ID was returned by the |url_matcher_|.
