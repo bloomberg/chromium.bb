@@ -214,26 +214,6 @@ void RendererMediaPlayerManager::ExitFullscreen(int player_id) {
   Send(new MediaPlayerHostMsg_ExitFullscreen(routing_id(), player_id));
 }
 
-#if defined(GOOGLE_TV)
-void RendererMediaPlayerManager::RequestExternalSurface(
-    int player_id,
-    const gfx::RectF& geometry) {
-  Send(new MediaPlayerHostMsg_NotifyExternalSurface(
-      routing_id(), player_id, true, geometry));
-}
-
-void RendererMediaPlayerManager::DidCommitCompositorFrame() {
-  std::map<int, gfx::RectF> geometry_change;
-  manager_->RetrieveGeometryChanges(&geometry_change);
-  for (std::map<int, gfx::RectF>::iterator it = geometry_change.begin();
-       it != geometry_change.end();
-       ++it) {
-    Send(new MediaPlayerHostMsg_NotifyExternalSurface(
-        routing_id(), it->first, false, it->second));
-  }
-}
-#endif
-
 void RendererMediaPlayerManager::InitializeCDM(int media_keys_id,
                                                ProxyMediaKeys* media_keys,
                                                const std::vector<uint8>& uuid,
@@ -361,6 +341,24 @@ bool RendererMediaPlayerManager::IsInFullscreen(WebKit::WebFrame* frame) {
 }
 
 #if defined(GOOGLE_TV)
+void RendererMediaPlayerManager::RequestExternalSurface(
+    int player_id,
+    const gfx::RectF& geometry) {
+  Send(new MediaPlayerHostMsg_NotifyExternalSurface(
+      routing_id(), player_id, true, geometry));
+}
+
+void RendererMediaPlayerManager::DidCommitCompositorFrame() {
+  std::map<int, gfx::RectF> geometry_change;
+  RetrieveGeometryChanges(&geometry_change);
+  for (std::map<int, gfx::RectF>::iterator it = geometry_change.begin();
+       it != geometry_change.end();
+       ++it) {
+    Send(new MediaPlayerHostMsg_NotifyExternalSurface(
+        routing_id(), it->first, false, it->second));
+  }
+}
+
 void RendererMediaPlayerManager::RetrieveGeometryChanges(
     std::map<int, gfx::RectF>* changes) {
   DCHECK(changes->empty());
