@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/services/native_viewport/native_viewport_android.h"
-#include "ui/gl/gl_surface_egl.h"
 
 struct ANativeWindow;
 
@@ -46,10 +45,6 @@ class MojoViewport {
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_runner_;
   base::WeakPtr<NativeViewportAndroid> native_viewport_;
-
-  ANativeWindow* window_;
-  scoped_refptr<gfx::GLSurface> surface_;
-  scoped_refptr<gfx::GLContext> gl_context_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoViewport);
 };

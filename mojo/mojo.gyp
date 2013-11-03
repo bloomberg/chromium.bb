@@ -247,9 +247,10 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../gpu/gpu.gyp:command_buffer_service',
+        '../gpu/gpu.gyp:gles2_implementation',
+        '../ui/events/events.gyp:events',
         '../ui/gfx/gfx.gyp:gfx',
-        '../ui/gl/gl.gyp:gl',
-        '../ui/events/events.gyp:events'
       ],
       'sources': [
         'services/native_viewport/android/mojo_viewport.cc',

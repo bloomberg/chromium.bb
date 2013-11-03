@@ -27,8 +27,10 @@ class NativeViewportController : public services::NativeViewportDelegate {
  private:
   // Overridden from services::NativeViewportDelegate:
   virtual bool OnEvent(ui::Event* event) OVERRIDE;
-  virtual void OnResized(const gfx::Size& size) OVERRIDE;
   virtual void OnDestroyed() OVERRIDE;
+  virtual void OnGLContextAvailable(gpu::gles2::GLES2Interface*) OVERRIDE;
+  virtual void OnGLContextLost() OVERRIDE;
+  virtual void OnResized(const gfx::Size& size) OVERRIDE;
 
   void SendString(const std::string& string);
 

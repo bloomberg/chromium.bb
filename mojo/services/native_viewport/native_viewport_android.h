@@ -7,6 +7,13 @@
 
 #include "base/memory/weak_ptr.h"
 #include "mojo/services/native_viewport/native_viewport.h"
+#include "ui/gfx/size.h"
+
+namespace gpu {
+class GLInProcessContext;
+}
+
+struct ANativeWindow;
 
 namespace mojo {
 namespace services {
@@ -20,11 +27,21 @@ class NativeViewportAndroid : public NativeViewport {
     return weak_factory_.GetWeakPtr();
   }
 
+  void OnNativeWindowCreated(ANativeWindow* window);
+  void OnNativeWindowDestroyed();
+  void OnResized(const gfx::Size& size);
+
  private:
   // Overridden from NativeViewport:
   virtual void Close() OVERRIDE;
 
+  void OnGLContextLost();
+  void ReleaseWindow();
+
   NativeViewportDelegate* delegate_;
+  ANativeWindow* window_;
+  gfx::Size size_;
+  scoped_ptr<gpu::GLInProcessContext> gl_context_;
 
   base::WeakPtrFactory<NativeViewportAndroid> weak_factory_;
 

@@ -1,6 +1,6 @@
 include_rules = [
   "+base",
+  "+gpu/command_buffer/client",
   "+ui/events",
   "+ui/gfx",
-  "+ui/gl",
 ]

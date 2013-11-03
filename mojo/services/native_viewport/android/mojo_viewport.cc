@@ -6,10 +6,10 @@
 
 #include <android/native_window_jni.h>
 #include "base/android/jni_android.h"
+#include "base/bind.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "jni/MojoViewport_jni.h"
-#include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_context.h"
-#include "ui/gl/scoped_make_current.h"
 
 namespace mojo {
 namespace services {
@@ -49,29 +49,25 @@ void MojoViewport::Destroy(JNIEnv* env, jobject obj) {
 
 void MojoViewport::SurfaceCreated(JNIEnv* env, jobject obj, jobject jsurface) {
   base::android::ScopedJavaLocalRef<jobject> protector(env, jsurface);
-  DCHECK(jsurface);
-  window_ = ANativeWindow_fromSurface(env, jsurface);
-  DCHECK(window_);
+  ANativeWindow* window = ANativeWindow_fromSurface(env, jsurface);
 
-  surface_ = new gfx::NativeViewGLSurfaceEGL(window_);
-  CHECK(surface_->Initialize());
-
-  gl_context_ = gfx::GLContext::CreateGLContext(
-      0, surface_.get(), gfx::PreferDiscreteGpu);
-  ui::ScopedMakeCurrent make_current(gl_context_.get(), surface_.get());
-  glClearColor(0, 1, 0, 0);
-  glClear(GL_COLOR_BUFFER_BIT);
-  surface_->SwapBuffers();
+  ui_runner_->PostTask(FROM_HERE, base::Bind(
+      &NativeViewportAndroid::OnNativeWindowCreated,
+      native_viewport_,
+      window));
 }
 
 void MojoViewport::SurfaceDestroyed(JNIEnv* env, jobject obj) {
-  DCHECK(window_);
-  ANativeWindow_release(window_);
-  window_ = NULL;
+  ui_runner_->PostTask(FROM_HERE, base::Bind(
+      &NativeViewportAndroid::OnNativeWindowDestroyed, native_viewport_));
 }
 
 void MojoViewport::SurfaceSetSize(
     JNIEnv* env, jobject obj, jint width, jint height) {
+  ui_runner_->PostTask(FROM_HERE, base::Bind(
+      &NativeViewportAndroid::OnResized,
+      native_viewport_,
+      gfx::Size(width, height)));
 }
 
 bool MojoViewport::Register(JNIEnv* env) {

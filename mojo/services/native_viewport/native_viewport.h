@@ -11,6 +11,12 @@ namespace gfx {
 class Size;
 }
 
+namespace gpu {
+namespace gles2 {
+class GLES2Interface;
+}
+}
+
 namespace ui {
 class Event;
 }
@@ -27,10 +33,10 @@ class NativeViewportDelegate {
   virtual ~NativeViewportDelegate() {}
 
   virtual bool OnEvent(ui::Event* event) = 0;
-
-  virtual void OnResized(const gfx::Size& size) = 0;
-
   virtual void OnDestroyed() = 0;
+  virtual void OnGLContextAvailable(gpu::gles2::GLES2Interface* gl) = 0;
+  virtual void OnGLContextLost() = 0;
+  virtual void OnResized(const gfx::Size& size) = 0;
 };
 
 // Encapsulation of platform-specific Viewport.
