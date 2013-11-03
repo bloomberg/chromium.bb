@@ -1993,10 +1993,6 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
   white-space: nowrap;
 }
 
-#progress-center li.error label {
-  color: rgb(204, 102, 102);
-}
-
 #progress-center .progress-frame {
   align-items: center;
   display: flex;

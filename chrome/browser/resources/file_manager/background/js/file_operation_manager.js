@@ -1075,7 +1075,6 @@ FileOperationManager.prototype.resetQueue_ = function() {
  * @param {string} taskId ID of task to be canceled.
  */
 FileOperationManager.prototype.requestTaskCancel = function(taskId) {
-  console.debug('requestTaskCancel', taskId);
   var task = null;
   for (var i = 0; i < this.copyTasks_.length; i++) {
     task = this.copyTasks_[i];

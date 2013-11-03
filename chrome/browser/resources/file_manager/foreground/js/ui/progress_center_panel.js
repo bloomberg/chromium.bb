@@ -58,7 +58,6 @@ ProgressCenterPanel.ENABLED_ = true;
  */
 ProgressCenterPanel.updateItemElement_ = function(element, item) {
   // Sets element attributes.
-  element.querySelector('label').textContent = item.message;
   element.setAttribute('data-progress-id', item.id);
   element.setAttribute('data-progress-max', item.progressMax);
   element.setAttribute('data-progress-value', item.progressValue);
@@ -76,6 +75,8 @@ ProgressCenterPanel.updateItemElement_ = function(element, item) {
     // The attribute pre-complete means that the actual operation is already
     // done but the UI transition of progress bar is not complete.
     element.setAttribute('pre-complete', '');
+  } else {
+    element.querySelector('label').textContent = item.message;
   }
 
   // To commit the property change and to trigger the transition even if the

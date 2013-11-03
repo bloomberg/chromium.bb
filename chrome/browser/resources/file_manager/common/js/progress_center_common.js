@@ -44,6 +44,25 @@ var ProgressItemState = Object.freeze({
 });
 
 /**
+ * Type of progress items.
+ * @enum {string}
+ * @const
+ */
+var ProgressItemType = Object.freeze({
+  // The item is file copy operation.
+  COPY: 'copy',
+  // The item is file move operation.
+  MOVE: 'move',
+  // The item is file delete opeartion.
+  DELETE: 'delete',
+  // The item is file zip operation.
+  ZIP: 'zip',
+  // The item is general file transfer operation.
+  // This is used for the mixed operation of summarized item.
+  TRANSFER: 'transfer'
+});
+
+/**
  * Item of the progress center.
  * @constructor
  */
@@ -84,6 +103,11 @@ var ProgressCenterItem = function() {
    * @type {ProgressItemContainer}
    */
   this.container = ProgressItemContainer.CLIENT;
+
+  /**
+   * Type of progress item.
+   */
+  this.type = ProgressItemType.TRANSFER;
 
   /**
    * Whether the item is summarized item or not.

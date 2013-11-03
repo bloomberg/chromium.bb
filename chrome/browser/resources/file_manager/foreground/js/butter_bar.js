@@ -249,11 +249,7 @@ ButterBar.prototype.showProgress_ = function(progress) {
     timeout: false
   };
 
-  var pendingItems = progress.numRemainingItems;
-  var type = this.transferType_();
-  var progressString = (pendingItems === 1) ?
-          strf(type + '_FILE_NAME', progress.processingEntry.name) :
-          strf(type + '_ITEMS_REMAINING', pendingItems);
+  var progressString = '';
 
   if (this.currentMode_ == ButterBar.Mode.COPY) {
     this.update_(progressString, options);
@@ -295,8 +291,7 @@ ButterBar.prototype.onCopyProgress_ = function(event) {
       break;
 
     case 'CANCELLED':
-      this.show(ButterBar.Mode.DELETE,
-                str(this.transferType_() + '_CANCELLED'));
+      this.show(ButterBar.Mode.DELETE, '');
       break;
 
     case 'ERROR':
@@ -341,11 +336,11 @@ ButterBar.prototype.onDelete_ = function(event) {
 
     case 'PROGRESS':
       this.totalDeleted_ += event.urls.length;
-      var title = strf('DELETED_MESSAGE_PLURAL', this.totalDeleted_);
+      var title = '';
       if (this.totalDeleted_ == 1) {
         var fullPath = util.extractFilePath(event.urls[0]);
         var fileName = PathUtil.split(fullPath).pop();
-        title = strf('DELETED_MESSAGE', fileName);
+        title = '';
       }
 
       if (this.currentMode_ == ButterBar.Mode.DELETE)

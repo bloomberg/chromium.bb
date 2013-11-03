@@ -12577,29 +12577,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Share
       </message>
 
-      <message name="IDS_FILE_BROWSER_TRANSFER_ITEMS_REMAINING" desc="File Manager status message. 'Item' is used here as a generic term for file or directory. 'Transferring' is used in the sense 'copying or moving files'.">
-        Transferring $1 items.
-      </message>
-      <message name="IDS_FILE_BROWSER_TRANSFER_CANCELLED" desc="File Manager status message. 'Transferring' is used in the sense 'copying or moving files'.">
-        Transfer cancelled.
-      </message>
-      <message name="IDS_FILE_BROWSER_TRANSFER_TARGET_EXISTS_ERROR" desc="File Manager error message. 'Item' is used here as a generic term for file or directory. 'Transferring' is used in the sense 'copying or moving files'.">
-        Transfer failed, item exists: "$1"
-      </message>
-      <message name="IDS_FILE_BROWSER_TRANSFER_FILESYSTEM_ERROR" desc="File Manager error message. 'Transferring' is used in the sense 'copying or moving files'.">
-        Transfer failed. <ph name="ERROR_MESSAGE">$1<ex>An error occurred (code: ABORT)</ex></ph>
-      </message>
-      <message name="IDS_FILE_BROWSER_TRANSFER_UNEXPECTED_ERROR" desc="File Manager error message. 'Transferring' is used in the sense 'copying or moving files'.">
-        Transfer failed, unexpected error: $1
-      </message>
       <message name="IDS_FILE_BROWSER_COPY_FILE_NAME" desc="File Manager status message.">
-        Copying <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph>
+        Copying <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph>...
       </message>
       <message name="IDS_FILE_BROWSER_COPY_ITEMS_REMAINING" desc="File Manager status message. 'Item' is used here as a generic term for file or directory.">
-        Copying $1 items.
-      </message>
-      <message name="IDS_FILE_BROWSER_COPY_CANCELLED" desc="File Manager status message.">
-        Copy operation cancelled.
+        Copying $1 items...
       </message>
       <message name="IDS_FILE_BROWSER_COPY_TARGET_EXISTS_ERROR" desc="File Manager error message. 'Item' is used here as a generic term for file or directory.">
         Copy operation failed, item exists: "$1"
@@ -12611,13 +12593,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Copy operation failed, unexpected error: $1
       </message>
       <message name="IDS_FILE_BROWSER_MOVE_FILE_NAME" desc="File Manager status message.">
-        Moving <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph>
+        Moving <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph>...
       </message>
       <message name="IDS_FILE_BROWSER_MOVE_ITEMS_REMAINING" desc="File Manager status message. 'Item' is used here as a generic term for file or directory.">
-        Moving $1 items.
-      </message>
-      <message name="IDS_FILE_BROWSER_MOVE_CANCELLED" desc="File Manager status message.">
-        Move cancelled.
+        Moving $1 items...
       </message>
       <message name="IDS_FILE_BROWSER_MOVE_TARGET_EXISTS_ERROR" desc="File Manager error message. 'Item' is used here as a generic term for file or directory.">
         Move failed, item exists: "$1"
@@ -12629,13 +12608,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Move failed, unexpected error: $1
       </message>
       <message name="IDS_FILE_BROWSER_ZIP_FILE_NAME" desc="File Manager status message.">
-        Zipping <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph>
+        Zipping <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph>...
       </message>
       <message name="IDS_FILE_BROWSER_ZIP_ITEMS_REMAINING" desc="File Manager status message. 'Item' is used here as a generic term for file or directory.">
-        Zipping $1 items.
-      </message>
-      <message name="IDS_FILE_BROWSER_ZIP_CANCELLED" desc="File Manager status message.">
-        Zipping cancelled.
+        Zipping $1 items...
       </message>
       <message name="IDS_FILE_BROWSER_ZIP_TARGET_EXISTS_ERROR" desc="File Manager error message. 'Item' is used here as a generic term for file or directory.">
         Zipping failed, item exists: "$1"
@@ -12649,19 +12625,41 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_SHARE_ERROR" desc="File Manager error message when sharing a file or a directory on Drive fails because of internet connection problems.">
         Sharing failed. Check your connection and try again later.
       </message>
-      <message name="IDS_FILE_BROWSER_DELETED_MESSAGE_PLURAL" desc="Message informing about deleting multiple items.">
-        Deleted <ph name="COUNT">$1<ex>10</ex></ph> items
+      <message name="IDS_FILE_BROWSER_DELETE_FILE_NAME" desc="File Manager status message.">
+        Deleting "<ph name="FILENAME">$1<ex>photo.jpg</ex></ph>"...
       </message>
-      <message name="IDS_FILE_BROWSER_DELETED_MESSAGE" desc="Message informing about deleting single item.">
-        Deleted "<ph name="FILENAME">$1<ex>photo.jpg</ex></ph>"
+      <message name="IDS_FILE_BROWSER_DELETE_ITEMS_REMAINING" desc="File Manager status message. 'Item' is used here as a generic term for file or directory.">
+        Deleting <ph name="COUNT">$1<ex>10</ex></ph> items...
       </message>
       <message name="IDS_FILE_BROWSER_DELETE_ERROR" desc="Message informing about error while deleting an item or items.">
         An error occured. Some items may not have been deleted.
       </message>
+
+      <message name="IDS_FILE_BROWSER_COPY_PROGRESS_SUMMARY" desc="Summary message for multiple copying tasks above the progress bar.">
+        Copying...
+      </message>
+      <message name="IDS_FILE_BROWSER_MOVE_PROGRESS_SUMMARY" desc="Summary message for multiple moveing tasks above the progress bar.">
+        Moveing...
+      </message>
+      <message name="IDS_FILE_BROWSER_ZIP_PROGRESS_SUMMARY" desc="Summary message for multiple zipping tasks above the progress bar.">
+        Zipping...
+      </message>
+      <message name="IDS_FILE_BROWSER_DELETE_PROGRESS_SUMMARY" desc="Summary message for multiple deleting tasks above the progress bar.">
+        Deleting...
+      </message>
+      <message name="IDS_FILE_BROWSER_TRANSFER_PROGRESS_SUMMARY" desc="Summary message for mixed operation tasks above the progress bar. 'Transferring' is used here as a generic term for copying, moving, zipping, or deleting.">
+        Transferring...
+      </message>
+      <message name="IDS_FILE_BROWSER_ERROR_PROGRESS_SUMMARY" desc="Summary message for an error above the progress bar. This message may be placed at the next to ohter *_PROGERSS_SUMMARY messages.">
+        1 error.
+      </message>
+      <message name="IDS_FILE_BROWSER_ERROR_PROGRESS_SUMMARY_PLURAL" desc="Summary message for multiple errors above the progress bar. This message may be placed at the next to ohter *_PROGERSS_SUMMARY messages.">
+        <ph name="COUNT">$1<ex>10</ex></ph> errors.
+      </message>
+
       <message name="IDS_FILE_BROWSER_UNDO_DELETE" desc="Text on the button to undo the delete operation.">
         Undo
       </message>
-
       <message name="IDS_FILE_BROWSER_CANCEL_LABEL" desc="Cancel label.">
         Cancel
       </message>
