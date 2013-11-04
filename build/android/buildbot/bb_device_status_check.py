@@ -256,8 +256,11 @@ def RestartUsb():
 def KillAllAdb():
   def GetAllAdb():
     for p in psutil.process_iter():
-      if 'adb' in p.name:
-        yield p
+      try:
+        if 'adb' in p.name:
+          yield p
+      except psutil.error.NoSuchProcess:
+        pass
 
   for sig in [signal.SIGTERM, signal.SIGQUIT, signal.SIGKILL]:
     for p in GetAllAdb():
@@ -268,7 +271,10 @@ def KillAllAdb():
       except psutil.error.NoSuchProcess:
         pass
   for p in GetAllAdb():
-    print 'Unable to kill %d (%s [%s])' % (p.pid, p.name, ' '.join(p.cmdline))
+    try:
+      print 'Unable to kill %d (%s [%s])' % (p.pid, p.name, ' '.join(p.cmdline))
+    except psutil.error.NoSuchProcess:
+      pass
 
 
 def main():
