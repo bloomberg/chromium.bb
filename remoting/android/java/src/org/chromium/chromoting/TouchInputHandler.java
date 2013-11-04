@@ -13,12 +13,12 @@ import android.view.MotionEvent;
  * performs actions on the DesktopView (such as panning/zooming the display, injecting input, or
  * showing/hiding UI elements).
  */
-interface TouchInputHandler {
+public interface TouchInputHandler {
     // These constants must match those in the generated struct protoc::MouseEvent_MouseButton.
-    public static final int BUTTON_UNDEFINED = 0;
-    public static final int BUTTON_LEFT = 1;
-    public static final int BUTTON_MIDDLE = 2;
-    public static final int BUTTON_RIGHT = 3;
+    int BUTTON_UNDEFINED = 0;
+    int BUTTON_LEFT = 1;
+    int BUTTON_MIDDLE = 2;
+    int BUTTON_RIGHT = 3;
 
     /**
      * Processes a touch event. This should be called by the View in its onTouchEvent() handler.

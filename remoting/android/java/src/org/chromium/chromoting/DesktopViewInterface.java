@@ -7,19 +7,19 @@ package org.chromium.chromoting;
 /**
  * Callback interface to allow the TouchInputHandler to request actions on the DesktopView.
  */
-interface DesktopViewInterface {
+public interface DesktopViewInterface {
     /** Inject a mouse-move event, with optional button press/release. */
-    public void injectMouseEvent(int x, int y, int button, boolean pressed);
+    void injectMouseEvent(int x, int y, int button, boolean pressed);
 
     /** Shows the action bar. */
-    public void showActionBar();
+    void showActionBar();
 
     /** Shows the software keyboard. */
-    public void showKeyboard();
+    void showKeyboard();
 
     /**
      * Informs the view that its transformation matrix (for rendering the remote desktop bitmap)
      * has been changed by the TouchInputHandler, which requires repainting.
      */
-    public void transformationChanged();
+    void transformationChanged();
 }
