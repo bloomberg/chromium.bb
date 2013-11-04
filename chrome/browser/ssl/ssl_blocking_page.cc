@@ -5,7 +5,6 @@
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 
 #include "base/i18n/rtl.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -53,7 +52,6 @@ namespace {
 enum SSLBlockingPageCommands {
   CMD_DONT_PROCEED,
   CMD_PROCEED,
-  CMD_FOCUS,
   CMD_MORE,
   CMD_RELOAD,
 };
@@ -90,14 +88,12 @@ void RecordSSLBlockingPageDetailedStats(
     int cert_error,
     bool overridable,
     bool internal,
-    const base::TimeTicks& start_time,
     int num_visits) {
   UMA_HISTOGRAM_ENUMERATION("interstitial.ssl_error_type",
      SSLErrorInfo::NetErrorToErrorType(cert_error), SSLErrorInfo::END_OF_ENUM);
-  if (start_time.is_null() || !overridable) {
-    // A null start time will occur if the page never came into focus.
+  if (!overridable) {
     // Overridable is false if the user didn't have any option except to turn
-    // back. In either case, we don't want to record some of our metrics.
+    // back. If that's the case, don't record some of the metrics.
     return;
   }
   if (num_visits == 0)
@@ -183,7 +179,6 @@ SSLBlockingPage::SSLBlockingPage(
 
   interstitial_page_ = InterstitialPage::Create(
       web_contents_, true, request_url, this);
-  display_start_time_ = TimeTicks();
   interstitial_page_->Show();
 }
 
@@ -193,7 +188,6 @@ SSLBlockingPage::~SSLBlockingPage() {
                                        cert_error_,
                                        overridable_ && !strict_enforcement_,
                                        internal_,
-                                       display_start_time_,
                                        num_visits_);
     // The page is closed without the user having chosen what to do, default to
     // deny.
@@ -365,9 +359,6 @@ void SSLBlockingPage::CommandReceived(const std::string& command) {
     interstitial_page_->DontProceed();
   } else if (cmd == CMD_PROCEED) {
     interstitial_page_->Proceed();
-  } else if (cmd == CMD_FOCUS) {
-    // Start recording the time when the page is first in focus
-    display_start_time_ = base::TimeTicks::Now();
   } else if (cmd == CMD_MORE) {
     RecordSSLBlockingPageEventStats(MORE);
   } else if (cmd == CMD_RELOAD) {
@@ -389,7 +380,6 @@ void SSLBlockingPage::OnProceed() {
                                      cert_error_,
                                      overridable_ && !strict_enforcement_,
                                      internal_,
-                                     display_start_time_,
                                      num_visits_);
   // Accepting the certificate resumes the loading of the page.
   NotifyAllowCertificate();
@@ -400,7 +390,6 @@ void SSLBlockingPage::OnDontProceed() {
                                      cert_error_,
                                      overridable_ && !strict_enforcement_,
                                      internal_,
-                                     display_start_time_,
                                      num_visits_);
   NotifyDenyCertificate();
 }

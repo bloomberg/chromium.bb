@@ -5,9 +5,8 @@
 // Should match SSLBlockingPageCommands in ssl_blocking_page.cc.
 var CMD_DONT_PROCEED = 0;
 var CMD_PROCEED = 1;
-var CMD_FOCUS = 2;
-var CMD_MORE = 3;
-var CMD_RELOAD = 4;
+var CMD_MORE = 2;
+var CMD_RELOAD = 3;
 
 var keyPressState = 0;
 
