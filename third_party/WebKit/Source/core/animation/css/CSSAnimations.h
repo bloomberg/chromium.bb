@@ -58,6 +58,8 @@ private:
     Element* m_target;
 };
 
+// This class stores the CSS Animations/Transitions information we use during a style recalc.
+// This includes updates to animations/transitions as well as the CompositableValueMaps to be applied.
 class CSSAnimationUpdate FINAL {
 public:
     void startAnimation(AtomicString& animationName, const HashSet<RefPtr<InertAnimation> >& animations)
@@ -110,6 +112,12 @@ public:
     const Vector<NewTransition>& newTransitions() const { return m_newTransitions; }
     const HashSet<CSSPropertyID>& cancelledTransitions() const { return m_cancelledTransitions; }
 
+    void adoptCompositableValuesForAnimations(AnimationEffect::CompositableValueMap& newMap) { newMap.swap(m_compositableValuesForAnimations); }
+    void adoptCompositableValuesForTransitions(AnimationEffect::CompositableValueMap& newMap) { newMap.swap(m_compositableValuesForTransitions); }
+    const AnimationEffect::CompositableValueMap& compositableValuesForAnimations() const { return m_compositableValuesForAnimations; }
+    const AnimationEffect::CompositableValueMap& compositableValuesForTransitions() const { return m_compositableValuesForTransitions; }
+    AnimationEffect::CompositableValueMap& compositableValuesForAnimations() { return m_compositableValuesForAnimations; }
+
     bool isEmpty() const
     {
         return m_newAnimations.isEmpty()
@@ -117,7 +125,9 @@ public:
             && m_cancelledAnimationPlayers.isEmpty()
             && m_animationsWithPauseToggled.isEmpty()
             && m_newTransitions.isEmpty()
-            && m_cancelledTransitions.isEmpty();
+            && m_cancelledTransitions.isEmpty()
+            && m_compositableValuesForAnimations.isEmpty()
+            && m_compositableValuesForTransitions.isEmpty();
     }
 private:
     // Order is significant since it defines the order in which new animations
@@ -131,6 +141,9 @@ private:
 
     Vector<NewTransition> m_newTransitions;
     HashSet<CSSPropertyID> m_cancelledTransitions;
+
+    AnimationEffect::CompositableValueMap m_compositableValuesForAnimations;
+    AnimationEffect::CompositableValueMap m_compositableValuesForTransitions;
 };
 
 class CSSAnimations FINAL {
@@ -145,9 +158,6 @@ public:
     void maybeApplyPendingUpdate(Element*);
     bool isEmpty() const { return m_animations.isEmpty() && m_transitions.isEmpty() && !m_pendingUpdate; }
     void cancel();
-
-    static AnimationEffect::CompositableValueMap compositableValuesForAnimations(const Element*, const CSSAnimationUpdate*);
-    static AnimationEffect::CompositableValueMap compositableValuesForTransitions(const Element*, const CSSAnimationUpdate*);
 private:
     // Note that a single animation name may map to multiple players due to
     // the way in which we split up animations with incomplete keyframes.
@@ -164,9 +174,14 @@ private:
     TransitionMap m_transitions;
     OwnPtr<CSSAnimationUpdate> m_pendingUpdate;
 
+    AnimationEffect::CompositableValueMap m_previousCompositableValuesForAnimations;
+
     static void calculateAnimationUpdate(CSSAnimationUpdate*, Element*, const RenderStyle*, StyleResolver*);
     static void calculateTransitionUpdate(CSSAnimationUpdate*, const Element*, const RenderStyle*);
     static void calculateTransitionUpdateForProperty(CSSAnimationUpdate*, CSSPropertyID, const CandidateTransition&, const TransitionMap*);
+
+    static void calculateAnimationCompositableValues(CSSAnimationUpdate*, const Element*);
+    static void calculateTransitionCompositableValues(CSSAnimationUpdate*, const Element*);
 
     class AnimationEventDelegate FINAL : public TimedItem::EventDelegate {
     public:

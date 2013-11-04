@@ -97,9 +97,6 @@ crbug.com/303430 virtual/web-animations-css/transitions/visited-link-color.html 
 crbug.com/303430 [ Debug ] virtual/web-animations-css/transitions/multiple-background-size-transitions.html [ Crash ]
 crbug.com/303430 [ Debug ] virtual/web-animations-css/transitions/shorthand-transitions.html [ Crash ]
 # These can't be rebaselined because the failure involves flaky output.
-crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-1.html [ Failure ]
-crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-2.html [ Failure ]
-crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-3.html [ Failure ]
 crbug.com/303430 virtual/web-animations-css/transitions/change-values-during-transition.html [ Pass Failure ]
 crbug.com/303430 virtual/web-animations-css/transitions/extra-transition.html [ Pass Failure ]
 # This test fails due to -webkit-mask-box-image not being implemented as a shorthand property
@@ -114,6 +111,9 @@ crbug.com/309963 animations/play-state-initially-paused.html [ Timeout ]
 crbug.com/309963 animations/play-state-initially-paused-start-event.html [ Timeout ]
 crbug.com/309963 virtual/threaded/animations/play-state-initially-paused.html [ Timeout ]
 crbug.com/309963 virtual/threaded/animations/play-state-initially-paused-start-event.html [ Timeout ]
+
+# This has flaky output so can't be rebaselined.
+crbug.com/258896 animations/transition-and-animation-3.html [ Failure ]
 
 # This test is slow due to Mesa slowness.
 crbug.com/244481 virtual/gpu/canvas/philip/tests/2d.shadow.blur.low.html [ Skip ]
@@ -221,7 +221,7 @@ crbug.com/248938 virtual/threaded/animations/change-keyframes-name.html [ Pass F
 crbug.com/248938 virtual/threaded/animations/animation-welcome-safari.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/opacity-transform-animation.html [ Pass ImageOnlyFailure Timeout ]
 crbug.com/248938 [ Mac Linux ] virtual/threaded/animations/additive-transform-animations.html [ Pass ImageOnlyFailure ]
-crbug.com/248938 [ Win ] virtual/threaded/animations/transition-and-animation-3.html [ Pass Failure ]
+crbug.com/248938 virtual/threaded/animations/transition-and-animation-3.html [ Pass Failure ]
 crbug.com/248938 [ Mac Linux ] virtual/threaded/animations/missing-values-first-keyframe.html [ Pass ImageOnlyFailure ]
 crbug.com/248938 virtual/threaded/animations/animation-direction-normal.html [ Pass ImageOnlyFailure Timeout ]
 crbug.com/248938 virtual/threaded/animations/combo-transform-translate+scale.html [ Pass Failure ]

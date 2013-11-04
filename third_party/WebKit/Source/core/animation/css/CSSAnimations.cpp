@@ -204,7 +204,9 @@ PassOwnPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(Element* element, 
     ASSERT(RuntimeEnabledFeatures::webAnimationsCSSEnabled());
     OwnPtr<CSSAnimationUpdate> update = adoptPtr(new CSSAnimationUpdate());
     calculateAnimationUpdate(update.get(), element, style, resolver);
+    calculateAnimationCompositableValues(update.get(), element);
     calculateTransitionUpdate(update.get(), element, style);
+    calculateTransitionCompositableValues(update.get(), element);
     return update->isEmpty() ? nullptr : update.release();
 }
 
@@ -273,10 +275,14 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
     if (!element->renderer())
         m_pendingUpdate = nullptr;
 
-    if (!m_pendingUpdate)
+    if (!m_pendingUpdate) {
+        m_previousCompositableValuesForAnimations.clear();
         return;
+    }
 
     OwnPtr<CSSAnimationUpdate> update = m_pendingUpdate.release();
+
+    m_previousCompositableValuesForAnimations.swap(update->compositableValuesForAnimations());
 
     for (Vector<AtomicString>::const_iterator iter = update->cancelledAnimationNames().begin(); iter != update->cancelledAnimationNames().end(); ++iter) {
         const HashSet<RefPtr<Player> >& players = m_animations.take(*iter);
@@ -334,8 +340,6 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
 
 void CSSAnimations::calculateTransitionUpdateForProperty(CSSAnimationUpdate* update, CSSPropertyID id, const CandidateTransition& newTransition, const TransitionMap* existingTransitions)
 {
-    // FIXME: Skip the rest of this if there is a running animation on this property
-
     if (existingTransitions) {
         TransitionMap::const_iterator existingTransitionIter = existingTransitions->find(id);
 
@@ -381,8 +385,13 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
     if (style->display() != NONE && element->renderer() && element->renderer()->style()) {
         CandidateTransitionMap candidateMap;
         computeCandidateTransitions(element->renderer()->style(), style, candidateMap, listedProperties);
-        for (CandidateTransitionMap::const_iterator iter = candidateMap.begin(); iter != candidateMap.end(); ++iter)
-            calculateTransitionUpdateForProperty(update, iter->key, iter->value, transitions);
+        for (CandidateTransitionMap::const_iterator iter = candidateMap.begin(); iter != candidateMap.end(); ++iter) {
+            // FIXME: We should transition if an !important property changes even when an animation is running,
+            // but this is a bit hard to do with the current applyMatchedProperties system.
+            if (!update->compositableValuesForAnimations().contains(iter->key)
+                && (!activeAnimations || !activeAnimations->cssAnimations().m_previousCompositableValuesForAnimations.contains(iter->key)))
+                calculateTransitionUpdateForProperty(update, iter->key, iter->value, transitions);
+        }
     }
 
     if (transitions) {
@@ -411,13 +420,15 @@ void CSSAnimations::cancel()
     m_pendingUpdate = nullptr;
 }
 
-AnimationEffect::CompositableValueMap CSSAnimations::compositableValuesForAnimations(const Element* element, const CSSAnimationUpdate* update)
+void CSSAnimations::calculateAnimationCompositableValues(CSSAnimationUpdate* update, const Element* element)
 {
     ActiveAnimations* activeAnimations = element->activeAnimations();
     AnimationStack* animationStack = activeAnimations ? &activeAnimations->defaultStack() : 0;
 
-    if (!update)
-        return AnimationStack::compositableValues(animationStack, 0, 0, Animation::DefaultPriority);
+    if (update->newAnimations().isEmpty() && update->cancelledAnimationPlayers().isEmpty()) {
+        AnimationEffect::CompositableValueMap compositableValuesForAnimations(AnimationStack::compositableValues(animationStack, 0, 0, Animation::DefaultPriority));
+        update->adoptCompositableValuesForAnimations(compositableValuesForAnimations);
+    }
 
     Vector<InertAnimation*> newAnimations;
     for (size_t i = 0; i < update->newAnimations().size(); ++i) {
@@ -425,32 +436,41 @@ AnimationEffect::CompositableValueMap CSSAnimations::compositableValuesForAnimat
         for (HashSet<RefPtr<InertAnimation> >::const_iterator animationsIter = animations.begin(); animationsIter != animations.end(); ++animationsIter)
             newAnimations.append(animationsIter->get());
     }
-
-    return AnimationStack::compositableValues(animationStack, &newAnimations, &update->cancelledAnimationPlayers(), Animation::DefaultPriority);
+    AnimationEffect::CompositableValueMap compositableValuesForAnimations(AnimationStack::compositableValues(animationStack, &newAnimations, &update->cancelledAnimationPlayers(), Animation::DefaultPriority));
+    update->adoptCompositableValuesForAnimations(compositableValuesForAnimations);
 }
 
-AnimationEffect::CompositableValueMap CSSAnimations::compositableValuesForTransitions(const Element* element, const CSSAnimationUpdate* update)
+void CSSAnimations::calculateTransitionCompositableValues(CSSAnimationUpdate* update, const Element* element)
 {
     ActiveAnimations* activeAnimations = element->activeAnimations();
     AnimationStack* animationStack = activeAnimations ? &activeAnimations->defaultStack() : 0;
 
-    if (!update)
-        return AnimationStack::compositableValues(animationStack, 0, 0, Animation::TransitionPriority);
+    AnimationEffect::CompositableValueMap compositableValuesForTransitions;
+    if (update->newTransitions().isEmpty() && update->cancelledTransitions().isEmpty()) {
+        compositableValuesForTransitions = AnimationStack::compositableValues(animationStack, 0, 0, Animation::TransitionPriority);
+    } else {
+        Vector<InertAnimation*> newTransitions;
+        for (size_t i = 0; i < update->newTransitions().size(); ++i)
+            newTransitions.append(update->newTransitions()[i].animation.get());
 
-    Vector<InertAnimation*> newTransitions;
-    for (size_t i = 0; i < update->newTransitions().size(); ++i)
-        newTransitions.append(update->newTransitions()[i].animation.get());
-
-    HashSet<const Player*> cancelledPlayers;
-    if (!update->cancelledTransitions().isEmpty()) {
-        const TransitionMap& transitionMap = activeAnimations->cssAnimations().m_transitions;
-        for (HashSet<CSSPropertyID>::iterator iter = update->cancelledTransitions().begin(); iter != update->cancelledTransitions().end(); ++iter) {
-            ASSERT(transitionMap.contains(*iter));
-            cancelledPlayers.add(transitionMap.get(*iter).transition->player());
+        HashSet<const Player*> cancelledPlayers;
+        if (!update->cancelledTransitions().isEmpty()) {
+            const TransitionMap& transitionMap = activeAnimations->cssAnimations().m_transitions;
+            for (HashSet<CSSPropertyID>::iterator iter = update->cancelledTransitions().begin(); iter != update->cancelledTransitions().end(); ++iter) {
+                ASSERT(transitionMap.contains(*iter));
+                cancelledPlayers.add(transitionMap.get(*iter).transition->player());
+            }
         }
+
+        compositableValuesForTransitions = AnimationStack::compositableValues(animationStack, &newTransitions, &cancelledPlayers, Animation::TransitionPriority);
     }
 
-    return AnimationStack::compositableValues(animationStack, &newTransitions, &cancelledPlayers, Animation::TransitionPriority);
+    // Properties being animated by animations don't get values from transitions applied.
+    if (!update->compositableValuesForAnimations().isEmpty() && !compositableValuesForTransitions.isEmpty()) {
+        for (AnimationEffect::CompositableValueMap::const_iterator iter = update->compositableValuesForAnimations().begin(); iter != update->compositableValuesForAnimations().end(); ++iter)
+            compositableValuesForTransitions.remove(iter->key);
+    }
+    update->adoptCompositableValuesForTransitions(compositableValuesForTransitions);
 }
 
 void CSSAnimations::AnimationEventDelegate::maybeDispatch(Document::ListenerType listenerType, const AtomicString& eventName, double elapsedTime)

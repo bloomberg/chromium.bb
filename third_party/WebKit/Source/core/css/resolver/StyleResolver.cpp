@@ -1481,23 +1481,25 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
 
     if (RuntimeEnabledFeatures::webAnimationsEnabled() && !applyInheritedOnly) {
         state.setAnimationUpdate(CSSAnimations::calculateUpdate(state.element(), state.style(), this));
-        const AnimationEffect::CompositableValueMap& compositableValuesForAnimations = CSSAnimations::compositableValuesForAnimations(state.element(), state.animationUpdate());
-        const AnimationEffect::CompositableValueMap& compositableValuesForTransitions = CSSAnimations::compositableValuesForTransitions(state.element(), state.animationUpdate());
-        // Apply animated properties, then reapply any rules marked important.
-        if (applyAnimatedProperties<HighPriorityProperties>(state, compositableValuesForAnimations)) {
-            bool important = true;
-            applyMatchedProperties<HighPriorityProperties>(state, matchResult, important, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
-            applyMatchedProperties<HighPriorityProperties>(state, matchResult, important, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
-            applyMatchedProperties<HighPriorityProperties>(state, matchResult, important, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
+        if (state.animationUpdate()) {
+            const AnimationEffect::CompositableValueMap& compositableValuesForAnimations = state.animationUpdate()->compositableValuesForAnimations();
+            const AnimationEffect::CompositableValueMap& compositableValuesForTransitions = state.animationUpdate()->compositableValuesForTransitions();
+            // Apply animated properties, then reapply any rules marked important.
+            if (applyAnimatedProperties<HighPriorityProperties>(state, compositableValuesForAnimations)) {
+                bool important = true;
+                applyMatchedProperties<HighPriorityProperties>(state, matchResult, important, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
+                applyMatchedProperties<HighPriorityProperties>(state, matchResult, important, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
+                applyMatchedProperties<HighPriorityProperties>(state, matchResult, important, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
+            }
+            applyAnimatedProperties<HighPriorityProperties>(state, compositableValuesForTransitions);
+            if (applyAnimatedProperties<LowPriorityProperties>(state, compositableValuesForAnimations)) {
+                bool important = true;
+                applyMatchedProperties<LowPriorityProperties>(state, matchResult, important, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
+                applyMatchedProperties<LowPriorityProperties>(state, matchResult, important, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
+                applyMatchedProperties<LowPriorityProperties>(state, matchResult, important, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
+            }
+            applyAnimatedProperties<LowPriorityProperties>(state, compositableValuesForTransitions);
         }
-        applyAnimatedProperties<HighPriorityProperties>(state, compositableValuesForTransitions);
-        if (applyAnimatedProperties<LowPriorityProperties>(state, compositableValuesForAnimations)) {
-            bool important = true;
-            applyMatchedProperties<LowPriorityProperties>(state, matchResult, important, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
-            applyMatchedProperties<LowPriorityProperties>(state, matchResult, important, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
-            applyMatchedProperties<LowPriorityProperties>(state, matchResult, important, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
-        }
-        applyAnimatedProperties<LowPriorityProperties>(state, compositableValuesForTransitions);
     }
 
     // Start loading resources referenced by this style.
