@@ -1844,6 +1844,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialogDefaultCancel) {
              "web_view/dialog");
 }
 
+// TODO(fsamuel): This test consistently times out when run in parallel with
+// other tests, but consistently passes when retried http://crbug.com/314809
 IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialogDefaultGCCancel) {
   TestHelper("testConfirmDialogDefaultGCCancel",
              "DoneDialogTest.PASSED",
