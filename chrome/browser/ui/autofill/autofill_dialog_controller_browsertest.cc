@@ -898,10 +898,16 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   EXPECT_EQ(last_four, test_generated_bubble_controller()->backing_card_name());
 }
 
+// See http://crbug.com/314627
+#if defined(OS_WIN)
+#define MAYBE_SignInNoCrash DISABLED_SignInNoCrash
+#else
+#define MAYBE_SignInNoCrash SignInNoCrash
+
 // Simulates the user successfully signing in to the dialog for the first time.
 // The controller listens for nav entry commits and should not destroy the web
 // contents before its post load code runs (which would cause a crash).
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, SignInNoCrash) {
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_SignInNoCrash) {
   browser()->profile()->GetPrefs()->SetBoolean(
       ::prefs::kAutofillDialogPayWithoutWallet,
       true);
