@@ -40,6 +40,8 @@ DataFetcherImplAndroid* DataFetcherImplAndroid::GetInstance() {
 
 void DataFetcherImplAndroid::GotOrientation(
     JNIEnv*, jobject, double alpha, double beta, double gamma) {
+  base::AutoLock autolock(orientation_buffer_lock_);
+
   if (!device_orientation_buffer_)
     return;
 
@@ -58,6 +60,11 @@ void DataFetcherImplAndroid::GotOrientation(
 
 void DataFetcherImplAndroid::GotAcceleration(
     JNIEnv*, jobject, double x, double y, double z) {
+  base::AutoLock autolock(motion_buffer_lock_);
+
+  if (!device_motion_buffer_)
+    return;
+
   device_motion_buffer_->seqlock.WriteBegin();
   device_motion_buffer_->data.accelerationX = x;
   device_motion_buffer_->data.hasAccelerationX = true;
@@ -75,6 +82,11 @@ void DataFetcherImplAndroid::GotAcceleration(
 
 void DataFetcherImplAndroid::GotAccelerationIncludingGravity(
     JNIEnv*, jobject, double x, double y, double z) {
+  base::AutoLock autolock(motion_buffer_lock_);
+
+  if (!device_motion_buffer_)
+    return;
+
   device_motion_buffer_->seqlock.WriteBegin();
   device_motion_buffer_->data.accelerationIncludingGravityX = x;
   device_motion_buffer_->data.hasAccelerationIncludingGravityX = true;
@@ -92,6 +104,11 @@ void DataFetcherImplAndroid::GotAccelerationIncludingGravity(
 
 void DataFetcherImplAndroid::GotRotationRate(
     JNIEnv*, jobject, double alpha, double beta, double gamma) {
+  base::AutoLock autolock(motion_buffer_lock_);
+
+  if (!device_motion_buffer_)
+    return;
+
   device_motion_buffer_->seqlock.WriteBegin();
   device_motion_buffer_->data.rotationRateAlpha = alpha;
   device_motion_buffer_->data.hasRotationRateAlpha = true;
@@ -136,23 +153,32 @@ int DataFetcherImplAndroid::GetNumberActiveDeviceMotionSensors() {
 bool DataFetcherImplAndroid::StartFetchingDeviceMotionData(
     DeviceMotionHardwareBuffer* buffer) {
   DCHECK(buffer);
-  device_motion_buffer_ = buffer;
-  ClearInternalMotionBuffers();
+  {
+    base::AutoLock autolock(motion_buffer_lock_);
+    device_motion_buffer_ = buffer;
+    ClearInternalMotionBuffers();
+  }
   bool success = Start(DeviceData::kTypeMotion);
 
   // If no motion data can ever be provided, the number of active device motion
   // sensors will be zero. In that case flag the shared memory buffer
   // as ready to read, as it will not change anyway.
   number_active_device_motion_sensors_ = GetNumberActiveDeviceMotionSensors();
-  CheckMotionBufferReadyToRead();
+  {
+    base::AutoLock autolock(motion_buffer_lock_);
+    CheckMotionBufferReadyToRead();
+  }
   return success;
 }
 
 void DataFetcherImplAndroid::StopFetchingDeviceMotionData() {
   Stop(DeviceData::kTypeMotion);
-  if (device_motion_buffer_) {
-    ClearInternalMotionBuffers();
-    device_motion_buffer_ = NULL;
+  {
+    base::AutoLock autolock(motion_buffer_lock_);
+    if (device_motion_buffer_) {
+      ClearInternalMotionBuffers();
+      device_motion_buffer_ = NULL;
+    }
   }
 }
 
@@ -195,20 +221,29 @@ void DataFetcherImplAndroid::SetOrientationBufferReadyStatus(bool ready) {
 bool DataFetcherImplAndroid::StartFetchingDeviceOrientationData(
     DeviceOrientationHardwareBuffer* buffer) {
   DCHECK(buffer);
-  device_orientation_buffer_ = buffer;
+  {
+    base::AutoLock autolock(orientation_buffer_lock_);
+    device_orientation_buffer_ = buffer;
+  }
   bool success = Start(DeviceData::kTypeOrientation);
 
-  // If Start() was unsuccessful then set the buffer ready flag to true
-  // to start firing all-null events.
-  SetOrientationBufferReadyStatus(!success);
+  {
+    base::AutoLock autolock(orientation_buffer_lock_);
+    // If Start() was unsuccessful then set the buffer ready flag to true
+    // to start firing all-null events.
+    SetOrientationBufferReadyStatus(!success);
+  }
   return success;
 }
 
 void DataFetcherImplAndroid::StopFetchingDeviceOrientationData() {
   Stop(DeviceData::kTypeOrientation);
-  if (device_orientation_buffer_) {
-    SetOrientationBufferReadyStatus(false);
-    device_orientation_buffer_ = NULL;
+  {
+    base::AutoLock autolock(orientation_buffer_lock_);
+    if (device_orientation_buffer_) {
+      SetOrientationBufferReadyStatus(false);
+      device_orientation_buffer_ = NULL;
+    }
   }
 }
 
