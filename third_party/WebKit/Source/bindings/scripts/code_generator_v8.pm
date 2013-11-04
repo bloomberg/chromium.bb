@@ -2421,6 +2421,7 @@ sub GenerateCallWith
         $code .= $indent . "    return" . ($returnVoid ? "" : " v8Undefined()") . ";\n";
         $code .= $indent . "ScriptState& state = *currentState;\n";
         push(@callWithArgs, "&state");
+        AddToImplIncludes("bindings/v8/ScriptState.h");
     }
     if (ExtendedAttributeContains($callWith, "ExecutionContext")) {
         $code .= $indent . "ExecutionContext* scriptContext = getExecutionContext();\n";

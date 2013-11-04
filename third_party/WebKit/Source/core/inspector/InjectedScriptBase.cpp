@@ -34,6 +34,7 @@
 #include "core/inspector/InjectedScriptBase.h"
 
 #include "bindings/v8/ScriptFunctionCall.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "platform/JSONValues.h"
 #include "wtf/text/WTFString.h"

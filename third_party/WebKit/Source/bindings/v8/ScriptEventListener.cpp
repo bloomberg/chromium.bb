@@ -33,6 +33,7 @@
 
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptScope.h"
+#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/V8AbstractEventListener.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8WindowShell.h"

@@ -32,34 +32,14 @@
 #include "bindings/v8/ScriptValue.h"
 
 #include "bindings/v8/ScriptScope.h"
-#include "bindings/v8/SerializedScriptValue.h"
+#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/V8Binding.h"
-#include "core/dom/MessagePort.h"
 #include "platform/JSONValues.h"
-#include "wtf/ArrayBuffer.h"
 
 namespace WebCore {
 
 ScriptValue::~ScriptValue()
 {
-}
-
-PassRefPtr<SerializedScriptValue> ScriptValue::serialize(ScriptState* scriptState)
-{
-    ScriptScope scope(scriptState);
-    return SerializedScriptValue::create(v8Value(), scriptState->isolate());
-}
-
-PassRefPtr<SerializedScriptValue> ScriptValue::serialize(ScriptState* scriptState, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, bool& didThrow)
-{
-    ScriptScope scope(scriptState);
-    return SerializedScriptValue::create(v8Value(), messagePorts, arrayBuffers, didThrow, scriptState->isolate());
-}
-
-ScriptValue ScriptValue::deserialize(ScriptState* scriptState, SerializedScriptValue* value)
-{
-    ScriptScope scope(scriptState);
-    return ScriptValue(value->deserialize(), scriptState->isolate());
 }
 
 bool ScriptValue::getString(String& result) const

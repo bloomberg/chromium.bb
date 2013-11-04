@@ -37,6 +37,8 @@
 #include "V8FileList.h"
 #include "V8ImageData.h"
 #include "V8MessagePort.h"
+#include "bindings/v8/ScriptScope.h"
+#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Utilities.h"
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
@@ -2267,6 +2269,12 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValue::createAndSwallowExcepti
 {
     bool didThrow;
     return adoptRef(new SerializedScriptValue(value, 0, 0, didThrow, isolate, DoNotThrowExceptions));
+}
+
+PassRefPtr<SerializedScriptValue> SerializedScriptValue::create(const ScriptValue& value, bool& didThrow, ScriptState* state)
+{
+    ScriptScope scope(state);
+    return adoptRef(new SerializedScriptValue(value.v8Value(), 0, 0, didThrow, state->isolate()));
 }
 
 PassRefPtr<SerializedScriptValue> SerializedScriptValue::createFromWire(const String& data)

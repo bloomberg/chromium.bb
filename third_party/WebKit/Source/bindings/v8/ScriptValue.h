@@ -31,29 +31,16 @@
 #ifndef ScriptValue_h
 #define ScriptValue_h
 
-#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/SharedPersistent.h"
-#include <v8.h>
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
-
-#ifndef NDEBUG
-#include "bindings/v8/V8GCController.h"
-#endif
-
-namespace WTF {
-class ArrayBuffer;
-}
+#include <v8.h>
 
 namespace WebCore {
 
 class JSONValue;
-class MessagePort;
-class SerializedScriptValue;
-typedef Vector<RefPtr<MessagePort>, 1> MessagePortArray;
-typedef Vector<RefPtr<WTF::ArrayBuffer>, 1> ArrayBufferArray;
+class ScriptState;
 
 class ScriptValue {
 public:
@@ -161,10 +148,6 @@ public:
     {
         return !m_value.get() || m_value->isEmpty();
     }
-
-    PassRefPtr<SerializedScriptValue> serialize(ScriptState*);
-    PassRefPtr<SerializedScriptValue> serialize(ScriptState*, MessagePortArray*, ArrayBufferArray*, bool&);
-    static ScriptValue deserialize(ScriptState*, SerializedScriptValue*);
 
     void clear()
     {

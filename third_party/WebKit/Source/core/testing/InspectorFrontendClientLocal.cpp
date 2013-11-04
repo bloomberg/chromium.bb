@@ -32,6 +32,7 @@
 #include "InspectorFrontendClientLocal.h"
 
 #include "bindings/v8/ScriptObject.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorFrontendHost.h"
 #include "core/page/Page.h"

@@ -47,6 +47,7 @@ struct NPObject;
 namespace WebCore {
 
 class DOMWrapperWorld;
+class ExecutionContext;
 class Event;
 class Frame;
 class HTMLDocument;

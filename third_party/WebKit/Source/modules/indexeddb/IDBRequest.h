@@ -46,6 +46,8 @@ namespace WebCore {
 
 class ExceptionState;
 class IDBTransaction;
+class ScriptValue;
+class SerializedScriptValue;
 class SharedBuffer;
 
 class IDBRequest : public ScriptWrappable, public IDBCallbacks, public EventTargetWithInlineData, public ActiveDOMObject {

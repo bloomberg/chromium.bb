@@ -31,6 +31,7 @@
 #include "core/inspector/InspectorFrontendHost.h"
 
 #include "bindings/v8/ScriptFunctionCall.h"
+#include "bindings/v8/ScriptState.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/TextResourceDecoder.h"
 #include "core/frame/Frame.h"

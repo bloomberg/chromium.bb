@@ -36,6 +36,7 @@
 #include "V8Node.h"
 #include "V8WebGLRenderingContext.h"
 #include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/canvas/Canvas2DContextAttributes.h"

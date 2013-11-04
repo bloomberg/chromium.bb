@@ -29,6 +29,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/IDBBindingUtilities.h"
+#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/ExceptionCode.h"
@@ -159,9 +160,9 @@ PassRefPtr<IDBRequest> IDBObjectStore::put(IDBDatabaseBackendInterface::PutMode 
         return 0;
     }
 
-    // FIXME: Make serialize etc take an ExceptionState or use ScriptState::setDOMException.
+    // FIXME: Make SerializedScriptValue::create etc take an ExceptionState or use ScriptState::setDOMException.
     bool didThrow = false;
-    RefPtr<SerializedScriptValue> serializedValue = value.serialize(state, 0, 0, didThrow);
+    RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValue::create(value, didThrow, state);
     if (didThrow)
         return 0;
 

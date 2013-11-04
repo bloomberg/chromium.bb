@@ -75,6 +75,8 @@ public:
     static PassRefPtr<SerializedScriptValue> create(const String&, v8::Isolate*);
     static PassRefPtr<SerializedScriptValue> create();
 
+    static PassRefPtr<SerializedScriptValue> create(const ScriptValue&, bool& didThrow, ScriptState*);
+
     // Never throws exceptions.
     static PassRefPtr<SerializedScriptValue> createAndSwallowExceptions(v8::Handle<v8::Value>, v8::Isolate*);
 
