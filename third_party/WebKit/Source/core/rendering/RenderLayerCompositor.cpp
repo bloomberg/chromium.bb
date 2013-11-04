@@ -511,12 +511,12 @@ void RenderLayerCompositor::removeOutOfFlowPositionedLayer(RenderLayer* layer)
 
 bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* layer, CompositingChangeRepaint shouldRepaint)
 {
-    bool layerChanged = false;
+    bool compositedLayerMappingChanged = false;
     RenderLayer::ViewportConstrainedNotCompositedReason viewportConstrainedNotCompositedReason = RenderLayer::NoNotCompositedReason;
     requiresCompositingForPosition(layer->renderer(), layer, &viewportConstrainedNotCompositedReason);
 
     // FIXME: It would be nice to directly use the layer's compositing reason,
-    // but allocateCompositedLayerMappingIfNeeded() also gets called without having updated compositing
+    // but allocateOrClearCompositedLayerMapping also gets called without having updated compositing
     // requirements fully.
     if (needsToBeComposited(layer)) {
         enableCompositingMode();
@@ -527,6 +527,7 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
                 repaintOnCompositingChange(layer);
 
             layer->ensureCompositedLayerMapping();
+            compositedLayerMappingChanged = true;
 
             // At this time, the ScrollingCooridnator only supports the top-level frame.
             if (layer->isRootLayer() && !isMainFrame()) {
@@ -538,9 +539,10 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
             // the repaint container, so change when compositing changes; we need to update them here.
             if (layer->parent())
                 layer->repainter().computeRepaintRectsIncludingDescendants();
-
-            layerChanged = true;
         }
+
+        if (layer->compositedLayerMapping()->updateRequiresOwnBackingStoreForIntrinsicReasons())
+            compositedLayerMappingChanged = true;
     } else {
         if (layer->compositedLayerMapping()) {
             // If we're removing the compositedLayerMapping from a reflection, clear the source GraphicsLayer's pointer to
@@ -557,7 +559,7 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
             removeViewportConstrainedLayer(layer);
 
             layer->clearCompositedLayerMapping();
-            layerChanged = true;
+            compositedLayerMappingChanged = true;
 
             // This layer and all of its descendants have cached repaints rects that are relative to
             // the repaint container, so change when compositing changes; we need to update them here.
@@ -569,33 +571,35 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
         }
     }
 
-    if (layerChanged && layer->renderer()->isRenderPart()) {
+    if (compositedLayerMappingChanged && layer->renderer()->isRenderPart()) {
         RenderLayerCompositor* innerCompositor = frameContentsCompositor(toRenderPart(layer->renderer()));
         if (innerCompositor && innerCompositor->inCompositingMode())
             innerCompositor->updateRootLayerAttachment();
     }
 
-    if (layerChanged)
+    if (compositedLayerMappingChanged)
         layer->clipper().clearClipRectsIncludingDescendants(PaintingClipRects);
 
     // If a fixed position layer gained/lost a compositedLayerMapping or the reason not compositing it changed,
     // the scrolling coordinator needs to recalculate whether it can do fast scrolling.
+    bool nonCompositedReasonChanged = false;
     if (layer->renderer()->style()->position() == FixedPosition) {
         if (layer->viewportConstrainedNotCompositedReason() != viewportConstrainedNotCompositedReason) {
             layer->setViewportConstrainedNotCompositedReason(viewportConstrainedNotCompositedReason);
-            layerChanged = true;
+            nonCompositedReasonChanged = true;
         }
-        if (layerChanged) {
+        if (compositedLayerMappingChanged || nonCompositedReasonChanged) {
             if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
                 scrollingCoordinator->frameViewFixedObjectsDidChange(m_renderView->frameView());
         }
     }
 
-    return layerChanged;
+    return compositedLayerMappingChanged || nonCompositedReasonChanged;
 }
 
 bool RenderLayerCompositor::updateLayerCompositingState(RenderLayer* layer, CompositingChangeRepaint shouldRepaint)
 {
+    updateDirectCompositingReasons(layer);
     bool layerChanged = allocateOrClearCompositedLayerMapping(layer, shouldRepaint);
 
     // See if we need content or clipping layers. Methods called here should assume
@@ -1452,12 +1456,21 @@ bool RenderLayerCompositor::has3DContent() const
     return layerHas3DContent(rootRenderLayer());
 }
 
+void RenderLayerCompositor::updateDirectCompositingReasons(RenderLayer* layer)
+{
+    CompositingReasons layerReasons = layer->compositingReasons();
+
+    layerReasons &= ~CompositingReasonComboAllDirectReasons;
+    layerReasons |= directReasonsForCompositing(layer);
+    layer->setCompositingReasons(layerReasons);
+}
+
 bool RenderLayerCompositor::needsToBeComposited(const RenderLayer* layer) const
 {
     if (!canBeComposited(layer))
         return false;
 
-    return requiresCompositing(directReasonsForCompositing(layer)) || requiresCompositing(layer->compositingReasons()) || (inCompositingMode() && layer->isRootLayer());
+    return requiresCompositing(layer->compositingReasons()) || (inCompositingMode() && layer->isRootLayer());
 }
 
 bool RenderLayerCompositor::canBeComposited(const RenderLayer* layer) const
@@ -1465,48 +1478,6 @@ bool RenderLayerCompositor::canBeComposited(const RenderLayer* layer) const
     // FIXME: We disable accelerated compositing for elements in a RenderFlowThread as it doesn't work properly.
     // See http://webkit.org/b/84900 to re-enable it.
     return m_hasAcceleratedCompositing && layer->isSelfPaintingLayer() && layer->renderer()->flowThreadState() == RenderObject::NotInsideFlowThread;
-}
-
-bool RenderLayerCompositor::requiresOwnBackingStore(const RenderLayer* layer, const RenderLayer* compositingAncestorLayer) const
-{
-    RenderObject* renderer = layer->renderer();
-
-    // A layer definitely needs its own backing if we cannot paint into the composited ancestor.
-    if (compositingAncestorLayer
-        && !(compositingAncestorLayer->compositedLayerMapping()->mainGraphicsLayer()->drawsContent()
-            || compositingAncestorLayer->compositedLayerMapping()->paintsIntoCompositedAncestor()))
-        return true;
-
-    if (layer->isRootLayer()
-        || layer->transform() // note: excludes perspective and transformStyle3D.
-        || requiresCompositingForVideo(renderer)
-        || requiresCompositingForCanvas(renderer)
-        || requiresCompositingForPlugin(renderer)
-        || requiresCompositingForFrame(renderer)
-        || requiresCompositingForBackfaceVisibilityHidden(renderer)
-        || requiresCompositingForAnimation(renderer)
-        || requiresCompositingForTransition(renderer)
-        || requiresCompositingForFilters(renderer)
-        || requiresCompositingForPosition(renderer, layer)
-        || requiresCompositingForOverflowScrolling(layer)
-        || requiresCompositingForOverflowScrollingParent(layer)
-        || requiresCompositingForOutOfFlowClipping(layer)
-        || renderer->isTransparent()
-        || renderer->hasMask()
-        || renderer->hasReflection()
-        || renderer->hasFilter())
-        return true;
-
-    CompositingReasons indirectReasonsThatNeedBacking = CompositingReasonOverlap
-        | CompositingReasonAssumedOverlap
-        | CompositingReasonNegativeZIndexChildren
-        | CompositingReasonTransformWithCompositedDescendants
-        | CompositingReasonOpacityWithCompositedDescendants
-        | CompositingReasonMaskWithCompositedDescendants
-        | CompositingReasonFilterWithCompositedDescendants
-        | CompositingReasonBlendingWithCompositedDescendants
-        | CompositingReasonPreserve3D; // preserve-3d has to create backing store to ensure that 3d-transformed elements intersect.
-    return layer->compositingReasons() & indirectReasonsThatNeedBacking;
 }
 
 CompositingReasons RenderLayerCompositor::directReasonsForCompositing(const RenderLayer* layer) const

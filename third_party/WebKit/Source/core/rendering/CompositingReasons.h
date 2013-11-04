@@ -61,6 +61,33 @@ const uint64_t CompositingReasonOutOfFlowClipping                      = UINT64_
 
 const uint64_t CompositingReasonLayerForVideoOverlay                   = UINT64_C(1) << 34;
 
+const uint64_t CompositingReasonComboAllDirectReasons =
+    CompositingReason3DTransform
+    | CompositingReasonVideo
+    | CompositingReasonCanvas
+    | CompositingReasonPlugin
+    | CompositingReasonIFrame
+    | CompositingReasonBackfaceVisibilityHidden
+    | CompositingReasonAnimation
+    | CompositingReasonFilters
+    | CompositingReasonPositionFixed
+    | CompositingReasonPositionSticky
+    | CompositingReasonOverflowScrollingTouch
+    | CompositingReasonOverflowScrollingParent
+    | CompositingReasonOutOfFlowClipping;
+
+const uint64_t CompositingReasonComboReasonsThatRequireOwnBacking =
+    CompositingReasonComboAllDirectReasons
+    | CompositingReasonOverlap
+    | CompositingReasonAssumedOverlap
+    | CompositingReasonNegativeZIndexChildren
+    | CompositingReasonTransformWithCompositedDescendants
+    | CompositingReasonOpacityWithCompositedDescendants
+    | CompositingReasonMaskWithCompositedDescendants
+    | CompositingReasonFilterWithCompositedDescendants
+    | CompositingReasonBlendingWithCompositedDescendants
+    | CompositingReasonPreserve3D; // preserve-3d has to create backing store to ensure that 3d-transformed elements intersect.
+
 // Note: if you add more reasons here, you will need to update WebCompositingReasons as well.
 typedef uint64_t CompositingReasons;
 

@@ -162,7 +162,8 @@ CompositedLayerMapping::CompositedLayerMapping(RenderLayer* layer)
     , m_artificiallyInflatedBounds(false)
     , m_boundsConstrainedByClipping(false)
     , m_isMainFrameRenderViewLayer(false)
-    , m_requiresOwnBackingStore(true)
+    , m_requiresOwnBackingStoreForIntrinsicReasons(true)
+    , m_requiresOwnBackingStoreForAncestorReasons(true)
     , m_canCompositeFilters(false)
     , m_backgroundLayerPaintsFixedRootBackground(false)
 {
@@ -761,8 +762,9 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
     if (m_owningLayer->scrollableArea())
         m_owningLayer->scrollableArea()->positionOverflowControls();
 
-    // If this layer was created just for clipping or to apply perspective, it doesn't need its own backing store.
-    setRequiresOwnBackingStore(compositor()->requiresOwnBackingStore(m_owningLayer, compAncestor));
+    // We can't make this call in RenderLayerCompositor::allocateOrClearCompositedLayerMapping
+    // since it depends on whether compAncestor draws content, which gets updated later.
+    updateRequiresOwnBackingStoreForAncestorReasons(compAncestor);
 
     updateContentsRect(isSimpleContainer);
     updateBackgroundColor(isSimpleContainer);
@@ -1547,15 +1549,42 @@ GraphicsLayer* CompositedLayerMapping::childForSuperlayers() const
     return m_graphicsLayer.get();
 }
 
-void CompositedLayerMapping::setRequiresOwnBackingStore(bool requiresOwnBacking)
+bool CompositedLayerMapping::updateRequiresOwnBackingStoreForAncestorReasons(const RenderLayer* compositingAncestorLayer)
 {
-    if (requiresOwnBacking == m_requiresOwnBackingStore)
-        return;
+    bool previousRequiresOwnBackingStoreForAncestorReasons = m_requiresOwnBackingStoreForAncestorReasons;
+    bool previousPaintsIntoCompositedAncestor = paintsIntoCompositedAncestor();
+    bool canPaintIntoAncestor = compositingAncestorLayer
+        && (compositingAncestorLayer->compositedLayerMapping()->mainGraphicsLayer()->drawsContent()
+            || compositingAncestorLayer->compositedLayerMapping()->paintsIntoCompositedAncestor());
+    m_requiresOwnBackingStoreForAncestorReasons = !canPaintIntoAncestor;
 
-    m_requiresOwnBackingStore = requiresOwnBacking;
+    if (paintsIntoCompositedAncestor() != previousPaintsIntoCompositedAncestor)
+        paintsIntoCompositedAncestorChanged();
+    return m_requiresOwnBackingStoreForAncestorReasons != previousRequiresOwnBackingStoreForAncestorReasons;
+}
 
-    // This affects the answer to paintsIntoCompositedAncestor(), which in turn affects
-    // cached clip rects, so when it changes we have to clear clip rects on descendants.
+bool CompositedLayerMapping::updateRequiresOwnBackingStoreForIntrinsicReasons()
+{
+    bool previousRequiresOwnBackingStoreForIntrinsicReasons = m_requiresOwnBackingStoreForIntrinsicReasons;
+    bool previousPaintsIntoCompositedAncestor = paintsIntoCompositedAncestor();
+    RenderObject* renderer = m_owningLayer->renderer();
+    m_requiresOwnBackingStoreForIntrinsicReasons = m_owningLayer->isRootLayer()
+        || (m_owningLayer->compositingReasons() & CompositingReasonComboReasonsThatRequireOwnBacking)
+        || m_owningLayer->transform()
+        || renderer->isTransparent()
+        || renderer->hasMask()
+        || renderer->hasReflection()
+        || renderer->hasFilter();
+
+    if (paintsIntoCompositedAncestor() != previousPaintsIntoCompositedAncestor)
+        paintsIntoCompositedAncestorChanged();
+    return m_requiresOwnBackingStoreForIntrinsicReasons != previousRequiresOwnBackingStoreForIntrinsicReasons;
+}
+
+void CompositedLayerMapping::paintsIntoCompositedAncestorChanged()
+{
+    // The answer to paintsIntoCompositedAncestor() affects cached clip rects, so when
+    // it changes we have to clear clip rects on descendants.
     m_owningLayer->clipper().clearClipRectsIncludingDescendants(PaintingClipRects);
     m_owningLayer->repainter().computeRepaintRectsIncludingDescendants();
 

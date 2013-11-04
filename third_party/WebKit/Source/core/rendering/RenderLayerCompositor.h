@@ -136,9 +136,6 @@ public:
     // Repaint parts of all composited layers that intersect the given absolute rectangle (or the entire layer if the pointer is null).
     void repaintCompositedLayers(const IntRect* = 0);
 
-    // Returns true if the given layer needs it own backing store.
-    bool requiresOwnBackingStore(const RenderLayer*, const RenderLayer* compositingAncestorLayer) const;
-
     RenderLayer* rootRenderLayer() const;
     GraphicsLayer* rootGraphicsLayer() const;
     GraphicsLayer* scrollLayer() const;
@@ -218,6 +215,8 @@ private:
 
     // Returns all direct reasons that a layer should be composited.
     CompositingReasons directReasonsForCompositing(const RenderLayer*) const;
+
+    void updateDirectCompositingReasons(RenderLayer*);
 
     // Returns indirect reasons that a layer should be composited because of something in its subtree.
     CompositingReasons subtreeReasonsForCompositing(RenderObject*, bool hasCompositedDescendants, bool has3DTransformedDescendants) const;

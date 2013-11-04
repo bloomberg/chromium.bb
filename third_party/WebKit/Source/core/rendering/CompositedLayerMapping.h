@@ -117,9 +117,16 @@ public:
 
     // Returns true for a composited layer that has no backing store of its own, so
     // paints into some ancestor layer.
-    bool paintsIntoCompositedAncestor() const { return !m_requiresOwnBackingStore; }
+    bool paintsIntoCompositedAncestor() const { return !(m_requiresOwnBackingStoreForAncestorReasons || m_requiresOwnBackingStoreForIntrinsicReasons); }
 
-    void setRequiresOwnBackingStore(bool);
+    // Updates whether a backing store is needed based on the layer's compositing ancestor's
+    // properties; returns true if the need for a backing store for ancestor reasons changed.
+    bool updateRequiresOwnBackingStoreForAncestorReasons(const RenderLayer* compositingAncestor);
+
+    // Updates whether a backing store is needed for intrinsic reasons (that is, based on the
+    // layer's own properties or compositing reasons); returns true if the intrinsic need for
+    // a backing store changed.
+    bool updateRequiresOwnBackingStoreForIntrinsicReasons();
 
     void setContentsNeedDisplay();
     // r is in the coordinate space of the layer's render object
@@ -245,6 +252,8 @@ private:
 
     bool shouldClipCompositedBounds() const;
 
+    void paintsIntoCompositedAncestorChanged();
+
     void doPaintTask(GraphicsLayerPaintInfo&, GraphicsContext*, const IntRect& clip);
 
     RenderLayer* m_owningLayer;
@@ -324,7 +333,8 @@ private:
     bool m_artificiallyInflatedBounds; // bounds had to be made non-zero to make transform-origin work
     bool m_boundsConstrainedByClipping;
     bool m_isMainFrameRenderViewLayer;
-    bool m_requiresOwnBackingStore;
+    bool m_requiresOwnBackingStoreForIntrinsicReasons;
+    bool m_requiresOwnBackingStoreForAncestorReasons;
     bool m_canCompositeFilters;
     bool m_backgroundLayerPaintsFixedRootBackground;
 };
