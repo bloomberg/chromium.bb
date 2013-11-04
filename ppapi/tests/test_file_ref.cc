@@ -396,7 +396,7 @@ std::string TestFileRef::TestQueryAndTouchFile() {
   ASSERT_EQ(PP_FILETYPE_REGULAR, info.type);
   ASSERT_EQ(PP_FILESYSTEMTYPE_LOCALTEMPORARY, info.system_type);
 
-  // Disabled tue to DST-related failure: crbug.com/314579
+  // Disabled due to DST-related failure: crbug.com/314579
   // ASSERT_EQ(last_access_time, info.last_access_time);
   // ASSERT_EQ(last_modified_time, info.last_modified_time);
 
