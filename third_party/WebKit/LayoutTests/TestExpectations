@@ -418,12 +418,6 @@ crbug.com/100798 [ Debug ] virtual/android/fullscreen/full-screen-iframe-allowed
 crbug.com/100798 [ Debug ] virtual/android/fullscreen/full-screen-iframe-allowed-prefixed.html [ Failure Pass ]
 crbug.com/243782 virtual/android/fullscreen/full-screen-remove-ancestor.html [ Pass Timeout ]
 
-# These need to be rebaselined after http://crrev.com/24090003 lands.
-Bug(ajuma) [ Android Linux Win ] virtual/softwarecompositing/culling/filter-occlusion-alpha.html [ NeedsManualRebaseline ]
-Bug(ajuma) [ Android Linux Win ] virtual/softwarecompositing/culling/filter-occlusion-alpha-large.html [ NeedsManualRebaseline ]
-Bug(ajuma) [ Android Linux Win ] virtual/softwarecompositing/culling/filter-occlusion-blur.html [ NeedsManualRebaseline ]
-Bug(ajuma) [ Android Linux Win ] virtual/softwarecompositing/culling/filter-occlusion-blur-large.html [ NeedsManualRebaseline ]
-
 crbug.com/298045 [ Mac ] virtual/implsidepainting [ Skip ]
 
 crbug.com/267888 [ Android ] crypto [ Skip ]
