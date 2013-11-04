@@ -37,7 +37,6 @@ readonly DEBIAN_REPO=http://http.us.debian.org/debian
 readonly PACKAGE_LIST_AMD64="${DEBIAN_REPO}/dists/wheezy/main/binary-amd64/Packages.bz2"
 readonly PACKAGE_LIST_I386="${DEBIAN_REPO}/dists/wheezy/main/binary-i386/Packages.bz2"
 
-# TODO(thestig) Remove unused libbz2 packages in the next sysroot update.
 # Sysroot packages: these are the packages needed to build chrome.
 # NOTE: When DEBIAN_PACKAGES is modified, the packagelist files must be updated
 # by running this script in GeneratePackageList mode.
@@ -51,14 +50,14 @@ readonly DEBIAN_PACKAGES="\
   libatk1.0-dev \
   libavahi-client3 \
   libavahi-common3 \
-  libbz2-1.0 \
-  libbz2-dev \
   libc6 \
   libc6-dev \
   libcairo2 \
   libcairo2-dev \
   libcairo-gobject2 \
   libcairo-script-interpreter2 \
+  libcap-dev \
+  libcap2 \
   libcomerr2 \
   libcups2 \
   libcups2-dev \
