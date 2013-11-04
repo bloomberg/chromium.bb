@@ -11,32 +11,16 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/page_transition_types.h"
 
+using content::UserMetricsAction;
+
 NavigationHandler::NavigationHandler() {}
 
-NavigationHandler::~NavigationHandler() {
-  // Record an omnibox-based navigation, if there is one.
-  content::NavigationEntry* entry =
-      web_ui()->GetWebContents()->GetController().GetActiveEntry();
-  if (!entry)
-    return;
-
-  if (!(entry->GetTransitionType() &
-        content::PAGE_TRANSITION_FROM_ADDRESS_BAR) ||
-      entry->GetTransitionType() & content::PAGE_TRANSITION_FORWARD_BACK) {
-    return;
-  }
-
-  if (entry->GetURL().SchemeIs(chrome::kChromeUIScheme) &&
-      entry->GetURL().host() == chrome::kChromeUINewTabHost) {
-    return;
-  }
-
-  RecordActionForNavigation(*entry);
-}
+NavigationHandler::~NavigationHandler() {}
 
 void NavigationHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
@@ -58,36 +42,25 @@ void NavigationHandler::RegisterMessages() {
 }
 
 void NavigationHandler::HandleOpenedMostVisited(const base::ListValue* args) {
+  content::RecordAction(UserMetricsAction("MobileNTPMostVisited"));
   RecordAction(ACTION_OPENED_MOST_VISITED_ENTRY);
 }
 
 void NavigationHandler::HandleOpenedRecentlyClosed(
     const base::ListValue* args) {
+  content::RecordAction(UserMetricsAction("MobileNTPRecentlyClosed"));
   RecordAction(ACTION_OPENED_RECENTLY_CLOSED_ENTRY);
 }
 
 void NavigationHandler::HandleOpenedBookmark(const base::ListValue* args) {
+  content::RecordAction(UserMetricsAction("MobileNTPBookmark"));
   RecordAction(ACTION_OPENED_BOOKMARK);
 }
 
 void NavigationHandler::HandleOpenedForeignSession(
     const base::ListValue* args) {
+  content::RecordAction(UserMetricsAction("MobileNTPForeignSession"));
   RecordAction(ACTION_OPENED_FOREIGN_SESSION);
-}
-
-// static
-void NavigationHandler::RecordActionForNavigation(
-    const content::NavigationEntry& entry) {
-  Action action;
-  if ((entry.GetTransitionType() & content::PAGE_TRANSITION_CORE_MASK) ==
-      content::PAGE_TRANSITION_GENERATED) {
-    action = ACTION_SEARCHED_USING_OMNIBOX;
-  } else if (google_util::IsGoogleHomePageUrl(entry.GetURL())) {
-    action = ACTION_NAVIGATED_TO_GOOGLE_HOMEPAGE;
-  } else {
-    action = ACTION_NAVIGATED_USING_OMNIBOX;
-  }
-  RecordAction(action);
 }
 
 // static

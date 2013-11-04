@@ -189,4 +189,5 @@ public class UrlUtilities {
     private static native String nativeGetDomainAndRegistry(String url,
             boolean includePrivateRegistries);
     public static native boolean nativeIsGoogleSearchUrl(String url);
+    public static native boolean nativeIsGoogleHomePageUrl(String url);
 }

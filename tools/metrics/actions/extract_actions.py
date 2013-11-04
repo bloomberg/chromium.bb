@@ -250,6 +250,7 @@ def AddAndroidActions(actions):
   actions.add('MobileNTPBookmark')
   actions.add('MobileNTPForeignSession')
   actions.add('MobileNTPMostVisited')
+  actions.add('MobileNTPRecentlyClosed')
   actions.add('MobileNTPSwitchToBookmarks')
   actions.add('MobileNTPSwitchToIncognito')
   actions.add('MobileNTPSwitchToMostVisited')

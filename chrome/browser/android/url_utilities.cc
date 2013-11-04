@@ -9,6 +9,8 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
 
+using base::android::ConvertJavaStringToUTF8;
+
 namespace {
 
 net::registry_controlled_domains::PrivateRegistryFilter GetRegistryFilter(
@@ -25,8 +27,8 @@ static jboolean SameDomainOrHost(JNIEnv* env,
                                  jstring url_1_str,
                                  jstring url_2_str,
                                  jboolean include_private) {
-  GURL url_1(base::android::ConvertJavaStringToUTF8(env, url_1_str));
-  GURL url_2(base::android::ConvertJavaStringToUTF8(env, url_2_str));
+  GURL url_1(ConvertJavaStringToUTF8(env, url_1_str));
+  GURL url_2(ConvertJavaStringToUTF8(env, url_2_str));
 
   net::registry_controlled_domains::PrivateRegistryFilter filter =
       GetRegistryFilter(include_private);
@@ -40,7 +42,7 @@ static jstring GetDomainAndRegistry(JNIEnv* env,
                                     jclass clazz,
                                     jstring url,
                                     jboolean include_private) {
-  GURL gurl = GURL(base::android::ConvertJavaStringToUTF8(env, url));
+  GURL gurl = GURL(ConvertJavaStringToUTF8(env, url));
   if (gurl.is_empty())
     return NULL;
 
@@ -54,10 +56,17 @@ static jstring GetDomainAndRegistry(JNIEnv* env,
 }
 
 static jboolean IsGoogleSearchUrl(JNIEnv* env, jclass clazz, jstring url) {
-  GURL gurl = GURL(base::android::ConvertJavaStringToUTF8(env, url));
+  GURL gurl = GURL(ConvertJavaStringToUTF8(env, url));
   if (gurl.is_empty())
     return false;
   return google_util::IsGoogleSearchUrl(gurl);
+}
+
+static jboolean IsGoogleHomePageUrl(JNIEnv* env, jclass clazz, jstring url) {
+  GURL gurl = GURL(ConvertJavaStringToUTF8(env, url));
+  if (gurl.is_empty())
+    return false;
+  return google_util::IsGoogleHomePageUrl(gurl);
 }
 
 // Register native methods
