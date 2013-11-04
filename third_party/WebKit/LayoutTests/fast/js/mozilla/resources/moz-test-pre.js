@@ -297,7 +297,7 @@ function gc() {
     }
 }
 
-// It's possible for an async test to call finishJSTest() before js-test-post.js
+// It's possible for an async test to call finishJSTest() before moz-test-post.js
 // has been parsed.
 function finishJSTest()
 {
