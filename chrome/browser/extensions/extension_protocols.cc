@@ -385,6 +385,12 @@ bool AllowExtensionResourceLoad(net::URLRequest* request,
     return true;
   }
 
+  // If the request is for navigations outside of webviews, then it should be
+  // allowed. The navigation logic in CrossSiteResourceHandler will properly
+  // transfer the navigation to a privileged process before it commits.
+  if (ResourceType::IsFrame(info->GetResourceType()) && !is_guest)
+    return true;
+
   if (!content::PageTransitionIsWebTriggerable(info->GetPageTransition()))
     return false;
 
