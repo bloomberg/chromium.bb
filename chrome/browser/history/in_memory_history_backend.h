@@ -32,7 +32,8 @@ namespace history {
 
 class InMemoryDatabase;
 class InMemoryURLIndex;
-struct KeywordSearchTermDetails;
+struct KeywordSearchUpdatedDetails;
+struct KeywordSearchDeletedDetails;
 class URLDatabase;
 struct URLsDeletedDetails;
 struct URLsModifiedDetails;
@@ -74,7 +75,10 @@ class InMemoryHistoryBackend : public content::NotificationObserver {
   void OnURLsDeleted(const URLsDeletedDetails& details);
 
   // Handler for HISTORY_KEYWORD_SEARCH_TERM_UPDATED.
-  void OnKeywordSearchTermUpdated(const KeywordSearchTermDetails& details);
+  void OnKeywordSearchTermUpdated(const KeywordSearchUpdatedDetails& details);
+
+  // Handler for HISTORY_KEYWORD_SEARCH_TERM_DELETED.
+  void OnKeywordSearchTermDeleted(const KeywordSearchDeletedDetails& details);
 
   // Returns true if there is a keyword associated with the specified url.
   bool HasKeyword(const GURL& url);

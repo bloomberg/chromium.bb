@@ -62,13 +62,23 @@ struct URLsDeletedDetails : public HistoryDetails {
 };
 
 // Details for HISTORY_KEYWORD_SEARCH_TERM_UPDATED.
-struct KeywordSearchTermDetails : public HistoryDetails {
-  KeywordSearchTermDetails();
-  virtual ~KeywordSearchTermDetails();
+struct KeywordSearchUpdatedDetails : public HistoryDetails {
+  KeywordSearchUpdatedDetails(const GURL& url,
+                              TemplateURLID keyword_id,
+                              const string16& term);
+  virtual ~KeywordSearchUpdatedDetails();
 
   GURL url;
   TemplateURLID keyword_id;
   string16 term;
+};
+
+// Details for HISTORY_KEYWORD_SEARCH_TERM_DELETED.
+struct KeywordSearchDeletedDetails : public HistoryDetails {
+  explicit KeywordSearchDeletedDetails(const GURL& url);
+  virtual ~KeywordSearchDeletedDetails();
+
+  GURL url;
 };
 
 }  // namespace history

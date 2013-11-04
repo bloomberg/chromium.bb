@@ -404,6 +404,12 @@ HistoryService::Handle HistoryService::GetMostRecentKeywordSearchTerms(
                   keyword_id, prefix, max_count);
 }
 
+void HistoryService::DeleteKeywordSearchTermForURL(const GURL& url) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  ScheduleAndForget(PRIORITY_UI, &HistoryBackend::DeleteKeywordSearchTermForURL,
+                    url);
+}
+
 void HistoryService::URLsNoLongerBookmarked(const std::set<GURL>& urls) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::URLsNoLongerBookmarked,

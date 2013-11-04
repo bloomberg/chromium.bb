@@ -214,6 +214,9 @@ class URLDatabase {
   // Deletes all searches matching |term|.
   bool DeleteKeywordSearchTerm(const string16& term);
 
+  // Deletes any search corresponding to |url_id|.
+  bool DeleteKeywordSearchTermForURL(URLID url_id);
+
   // Migration -----------------------------------------------------------------
 
   // Do to a bug we were setting the favicon of about:blank. This forces

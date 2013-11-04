@@ -177,14 +177,7 @@ bool URLDatabase::DeleteURLRow(URLID id) {
     return false;
 
   // And delete any keyword visits.
-  if (!has_keyword_search_terms_)
-    return true;
-
-  sql::Statement del_keyword_visit(GetDB().GetCachedStatement(SQL_FROM_HERE,
-                          "DELETE FROM keyword_search_terms WHERE url_id=?"));
-  del_keyword_visit.BindInt64(0, id);
-
-  return del_keyword_visit.Run();
+  return !has_keyword_search_terms_ || DeleteKeywordSearchTermForURL(id);
 }
 
 bool URLDatabase::CreateTemporaryURLTable() {
@@ -535,6 +528,13 @@ bool URLDatabase::DeleteKeywordSearchTerm(const string16& term) {
       "DELETE FROM keyword_search_terms WHERE term=?"));
   statement.BindString16(0, term);
 
+  return statement.Run();
+}
+
+bool URLDatabase::DeleteKeywordSearchTermForURL(URLID url_id) {
+  sql::Statement statement(GetDB().GetCachedStatement(
+      SQL_FROM_HERE, "DELETE FROM keyword_search_terms WHERE url_id=?"));
+  statement.BindInt64(0, url_id);
   return statement.Run();
 }
 

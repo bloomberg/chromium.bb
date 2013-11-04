@@ -275,8 +275,12 @@ enum NotificationType {
   NOTIFICATION_HISTORY_URLS_DELETED,
 
   // Sent when a keyword search term is updated. The source is the Profile and
-  // the details are history::KeywordSearchTermDetails
+  // the details is history::KeywordSearchUpdatedDetails.
   NOTIFICATION_HISTORY_KEYWORD_SEARCH_TERM_UPDATED,
+
+  // Sent when a keyword search term is deleted. The source is the Profile and
+  // the details is history::KeywordSearchDeletedDetails.
+  NOTIFICATION_HISTORY_KEYWORD_SEARCH_TERM_DELETED,
 
   // Sent by history when the favicon of a URL changes.  The source is the
   // profile, and the details is FaviconChangedDetails (see

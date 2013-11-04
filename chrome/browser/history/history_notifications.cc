@@ -22,8 +22,21 @@ URLsDeletedDetails::URLsDeletedDetails()
 
 URLsDeletedDetails::~URLsDeletedDetails() {}
 
-KeywordSearchTermDetails::KeywordSearchTermDetails() : keyword_id(0) {}
+KeywordSearchUpdatedDetails::KeywordSearchUpdatedDetails(
+    const GURL& url,
+    TemplateURLID keyword_id,
+    const string16& term)
+    : url(url),
+      keyword_id(keyword_id),
+      term(term) {
+}
 
-KeywordSearchTermDetails::~KeywordSearchTermDetails() {}
+KeywordSearchUpdatedDetails::~KeywordSearchUpdatedDetails() {}
+
+KeywordSearchDeletedDetails::KeywordSearchDeletedDetails(const GURL& url)
+    : url(url) {
+}
+
+KeywordSearchDeletedDetails::~KeywordSearchDeletedDetails() {}
 
 }  // namespace history

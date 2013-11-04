@@ -520,6 +520,9 @@ class HistoryService : public CancelableRequestProvider,
       CancelableRequestConsumerBase* consumer,
       const GetMostRecentKeywordSearchTermsCallback& callback);
 
+  // Deletes any search term corresponding to |url|.
+  void DeleteKeywordSearchTermForURL(const GURL& url);
+
   // Bookmarks -----------------------------------------------------------------
 
   // Notification that a URL is no longer bookmarked.

@@ -54,9 +54,10 @@ void InMemoryHistoryBackend::AttachToHistoryService(Profile* profile) {
   registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
                  source);
   registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED, source);
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_HISTORY_KEYWORD_SEARCH_TERM_UPDATED,
-                 source);
+  registrar_.Add(
+      this, chrome::NOTIFICATION_HISTORY_KEYWORD_SEARCH_TERM_UPDATED, source);
+  registrar_.Add(
+      this, chrome::NOTIFICATION_HISTORY_KEYWORD_SEARCH_TERM_DELETED, source);
   registrar_.Add(this, chrome::NOTIFICATION_TEMPLATE_URL_REMOVED, source);
 }
 
@@ -80,7 +81,13 @@ void InMemoryHistoryBackend::Observe(
     }
     case chrome::NOTIFICATION_HISTORY_KEYWORD_SEARCH_TERM_UPDATED:
       OnKeywordSearchTermUpdated(
-          *content::Details<history::KeywordSearchTermDetails>(details).ptr());
+          *content::Details<history::KeywordSearchUpdatedDetails>(
+              details).ptr());
+      break;
+    case chrome::NOTIFICATION_HISTORY_KEYWORD_SEARCH_TERM_DELETED:
+      OnKeywordSearchTermDeleted(
+          *content::Details<history::KeywordSearchDeletedDetails>(
+              details).ptr());
       break;
     case chrome::NOTIFICATION_HISTORY_URLS_MODIFIED:
       OnTypedURLsModified(
@@ -145,7 +152,7 @@ void InMemoryHistoryBackend::OnURLsDeleted(const URLsDeletedDetails& details) {
 }
 
 void InMemoryHistoryBackend::OnKeywordSearchTermUpdated(
-    const KeywordSearchTermDetails& details) {
+    const KeywordSearchUpdatedDetails& details) {
   // The url won't exist for new search terms (as the user hasn't typed it), so
   // we force it to be added. If we end up adding a URL it won't be
   // autocompleted as the typed count is 0.
@@ -165,6 +172,13 @@ void InMemoryHistoryBackend::OnKeywordSearchTermUpdated(
   }
 
   db_->SetKeywordSearchTermsForURL(url_id, details.keyword_id, details.term);
+}
+
+void InMemoryHistoryBackend::OnKeywordSearchTermDeleted(
+    const KeywordSearchDeletedDetails& details) {
+  URLID url_id = db_->GetRowForURL(details.url, NULL);
+  if (url_id)
+    db_->DeleteKeywordSearchTermForURL(url_id);
 }
 
 bool InMemoryHistoryBackend::HasKeyword(const GURL& url) {
