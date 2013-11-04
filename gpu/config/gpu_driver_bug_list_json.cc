@@ -396,8 +396,8 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 31,
-      "cr_bugs": [154715, 10068, 269829, 294779],
-      "description": "The Mali T-6xx driver does not guarantee flush ordering.",
+      "cr_bugs": [154715, 10068, 269829],
+      "description": "The Nexus 10 Mali driver does not guarantee flush ordering.",
       "os": {
         "type": "android"
       },
@@ -406,8 +406,8 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
         "value": "ARM"
       },
       "gl_renderer": {
-        "op": "beginwith",
-        "value": "Mali-T6"
+        "op": "contains",
+        "value": "Mali-T604"
       },
       "features": [
         "use_virtualized_gl_contexts"
