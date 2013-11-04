@@ -554,8 +554,7 @@ EC_HOST_UI_MODE CommandExecuteImpl::GetLaunchMode() {
   DWORD reg_value;
   if (reg_key.ReadValueDW(chrome::kLaunchModeValue,
                           &reg_value) != ERROR_SUCCESS) {
-    launch_mode = base::win::IsTouchEnabledDevice() ?
-                      ECHUIM_IMMERSIVE : ECHUIM_DESKTOP;
+    launch_mode = ECHUIM_DESKTOP;
     AtlTrace("Launch mode forced by heuristics to %s\n", modes[launch_mode]);
   } else if (reg_value >= ECHUIM_SYSTEM_LAUNCHER) {
     AtlTrace("Invalid registry launch mode value %u\n", reg_value);
