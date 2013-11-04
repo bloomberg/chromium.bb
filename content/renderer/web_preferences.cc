@@ -318,8 +318,7 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   settings->setSupportsMultipleWindows(prefs.supports_multiple_windows);
 
   settings->setViewportEnabled(prefs.viewport_enabled);
-  settings->setInitializeAtMinimumPageScale(
-      prefs.initialize_at_minimum_page_scale);
+  settings->setLoadWithOverviewMode(prefs.initialize_at_minimum_page_scale);
 
   settings->setSmartInsertDeleteEnabled(prefs.smart_insert_delete_enabled);
 
