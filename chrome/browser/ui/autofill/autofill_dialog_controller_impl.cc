@@ -999,12 +999,9 @@ void AutofillDialogControllerImpl::SignedInStateUpdated() {
 
   switch (SignedInState()) {
     case SIGNED_IN:
-      // If we are already fetching the username, then just keep waiting.
-      if (username_fetcher_.get())
-        break;
-
       // Start fetching the user name if we don't know it yet.
       if (!account_chooser_model_.HasAccountsToChoose()) {
+        DCHECK(!username_fetcher_);
         username_fetcher_.reset(new wallet::WalletSigninHelper(
             this, profile_->GetRequestContext()));
         username_fetcher_->StartUserNameFetch();
