@@ -17,6 +17,7 @@
           'type': '<(gtest_target_type)',
           'sources': [
             'auto_login_parser/auto_login_parser_unittest.cc',
+            'autofill/core/browser/webdata/autofill_entry_unittest.cc',
             'autofill/core/common/form_data_unittest.cc',
             'autofill/core/common/form_field_data_unittest.cc',
             'autofill/core/common/password_form_fill_data_unittest.cc',
@@ -45,6 +46,7 @@
             'visitedlink/test/visitedlink_unittest.cc',
             'webdata/encryptor/encryptor_password_mac_unittest.cc',
             'webdata/encryptor/encryptor_unittest.cc',
+            'webdata/encryptor/ie7_password_unittest_win.cc',
             'web_modal/web_contents_modal_dialog_manager_unittest.cc',
           ],
           'include_dirs': [
@@ -57,6 +59,7 @@
             '../testing/gtest.gyp:gtest',
 
             # Dependencies of autofill
+            'components.gyp:autofill_core_browser',
             'components.gyp:autofill_core_common',
 
             # Dependencies of auto_login_parser

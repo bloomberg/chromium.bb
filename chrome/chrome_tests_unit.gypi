@@ -1963,7 +1963,6 @@
 
         # TODO(caitkp): Move to //components/components_tests.gypi once
         # remaining dependencies back to //chrome are eliminated.
-        '../components/autofill/core/browser/webdata/autofill_entry_unittest.cc',
         '../components/autofill/core/browser/webdata/autofill_table_unittest.cc',
         '../components/autofill/core/browser/webdata/web_data_service_unittest.cc',
 
