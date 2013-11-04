@@ -25,6 +25,10 @@ _TEST_DATA = {
     },
     '_api_features.json': json.dumps({
       'alarms': {},
+      'app': {},
+      'app.runtime': {'noparent': True},
+      'app.runtime.experimental': {},
+      'app.runtime.experimental.foo': {},
       'declarativeWebRequest': {},
       'devtools.inspectedWindow': {},
       'experimental.accessibility': {},
@@ -61,9 +65,13 @@ class APIModelsTest(unittest.TestCase):
         features_bundle, compiled_fs_factory, self._mock_file_system)
 
   def testGetNames(self):
+    # Both 'app' and 'app.runtime' appear here because 'app.runtime' has
+    # noparent:true, but 'app.runtime.experimental' etc doesn't so it's a
+    # sub-feature of 'app.runtime' not a separate API.
+    # 'devtools.inspectedWindow' is an API because there is no 'devtools'.
     self.assertEqual(
-        ['alarms', 'declarativeWebRequest', 'devtools.inspectedWindow',
-         'experimental.accessibility', 'storage'],
+        ['alarms', 'app', 'app.runtime', 'declarativeWebRequest',
+         'devtools.inspectedWindow', 'experimental.accessibility', 'storage'],
         sorted(self._api_models.GetNames()))
 
   def testGetModel(self):

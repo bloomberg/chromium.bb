@@ -32,7 +32,15 @@ class APIModels(object):
         file_system, _CreateAPIModel, APIModels)
 
   def GetNames(self):
-    return self._features_bundle.GetAPIFeatures().keys()
+    # API names appear alongside some of their methods/events/etc in the
+    # features file. APIs are those which either implicitly or explicitly have
+    # no parent feature (e.g. app, app.window, and devtools.inspectedWindow are
+    # APIs; runtime.onConnectNative is not).
+    api_features = self._features_bundle.GetAPIFeatures()
+    return [name for name, feature in api_features.iteritems()
+            if ('.' not in name or
+                name.rsplit('.', 1)[0] not in api_features or
+                feature.get('noparent'))]
 
   def GetModel(self, api_name):
     # Callers sometimes specify a filename which includes .json or .idl - if
