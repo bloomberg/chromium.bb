@@ -30,8 +30,8 @@
 #ifndef CustomFilterGlobalContext_h
 #define CustomFilterGlobalContext_h
 
-#include "core/platform/graphics/filters/custom/CustomFilterProgramInfo.h"
 #include "platform/graphics/angle/ANGLEPlatformBridge.h"
+#include "platform/graphics/filters/custom/CustomFilterProgramInfo.h"
 #include "wtf/HashMap.h"
 #include "wtf/RefPtr.h"
 

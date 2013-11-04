@@ -31,7 +31,7 @@
 #define CustomFilterValidatedProgram_h
 
 #include "core/platform/graphics/filters/custom/CustomFilterCompiledProgram.h"
-#include "core/platform/graphics/filters/custom/CustomFilterProgramInfo.h"
+#include "platform/graphics/filters/custom/CustomFilterProgramInfo.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"

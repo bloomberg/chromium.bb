@@ -310,6 +310,8 @@
       'graphics/filters/custom/CustomFilterProgramClient.cpp',
       'graphics/filters/custom/CustomFilterProgramClient.h',
       'graphics/filters/custom/CustomFilterConstants.h',
+      'graphics/filters/custom/CustomFilterProgramInfo.cpp',
+      'graphics/filters/custom/CustomFilterProgramInfo.h',
       'graphics/Color.cpp',
       'graphics/Color.h',
       'graphics/ColorSpace.h',

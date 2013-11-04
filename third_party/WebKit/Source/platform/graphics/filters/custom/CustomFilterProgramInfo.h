@@ -30,6 +30,7 @@
 #ifndef CustomFilterProgramInfo_h
 #define CustomFilterProgramInfo_h
 
+#include "platform/PlatformExport.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/filters/custom/CustomFilterConstants.h"
 #include "wtf/HashTableDeletedValueType.h"
@@ -58,7 +59,7 @@ struct CustomFilterProgramMixSettings {
 // CustomFilterProgramInfo is the key used to link CustomFilterProgram with CustomFilterCompiledProgram.
 // It can be used as a key in a HashMap, with the note that at least one of Strings needs to be non-null.
 // Null strings are placeholders for the default shader.
-class CustomFilterProgramInfo {
+class PLATFORM_EXPORT CustomFilterProgramInfo {
 public:
     CustomFilterProgramInfo(const String&, const String&, CustomFilterProgramType, const CustomFilterProgramMixSettings&, CustomFilterMeshType);
 

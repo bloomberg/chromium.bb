@@ -30,7 +30,7 @@
 #ifndef StyleCustomFilterProgramCache_h
 #define StyleCustomFilterProgramCache_h
 
-#include "core/platform/graphics/filters/custom/CustomFilterProgramInfo.h"
+#include "platform/graphics/filters/custom/CustomFilterProgramInfo.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/HashMap.h"
 

@@ -30,7 +30,7 @@
 #ifndef CustomFilterProgram_h
 #define CustomFilterProgram_h
 
-#include "core/platform/graphics/filters/custom/CustomFilterProgramInfo.h"
+#include "platform/graphics/filters/custom/CustomFilterProgramInfo.h"
 
 #include "wtf/HashCountedSet.h"
 #include "wtf/RefCounted.h"

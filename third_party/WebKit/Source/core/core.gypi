@@ -2812,8 +2812,6 @@
             'platform/graphics/filters/custom/CustomFilterOperation.h',
             'platform/graphics/filters/custom/CustomFilterProgram.cpp',
             'platform/graphics/filters/custom/CustomFilterProgram.h',
-            'platform/graphics/filters/custom/CustomFilterProgramInfo.cpp',
-            'platform/graphics/filters/custom/CustomFilterProgramInfo.h',
             'platform/graphics/filters/custom/CustomFilterRenderer.cpp',
             'platform/graphics/filters/custom/CustomFilterRenderer.h',
             'platform/graphics/filters/custom/CustomFilterTransformParameter.h',
