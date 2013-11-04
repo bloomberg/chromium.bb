@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
@@ -68,6 +69,13 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   // otherwise they will only be sent to the specified profile.
   void set_profile(void* profile) {
     profile_ = profile;
+  }
+
+  // |profile_path| is used to locate the "Downloads" folder on Chrome OS. If it
+  // is set, the location of the Downloads folder for the profile is added to
+  // the whitelist for accesses via file: scheme.
+  void set_profile_path(const base::FilePath& profile_path) {
+    profile_path_ = profile_path;
   }
 
   // If |cookie_settings| is NULL or not set, all cookies are enabled,
@@ -177,6 +185,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
 
   scoped_refptr<extensions::EventRouterForwarder> event_router_;
   void* profile_;
+  base::FilePath profile_path_;
   scoped_refptr<CookieSettings> cookie_settings_;
 
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
