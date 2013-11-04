@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chromeos/settings/cros_settings_names.h"
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeOSInfoPrivateTest) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_ChromeOSInfoPrivateTest) {
   // Set the initial timezone to a different one that JS function
   // timezoneSetTest() will attempt to set.
   base::StringValue initial_timezone("America/Los_Angeles");
