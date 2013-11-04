@@ -60,19 +60,14 @@ NavigationAction::NavigationAction(const ResourceRequest& resourceRequest, Frame
     , m_type(navigationType(frameLoadType, isFormSubmission, event))
     , m_event(event)
 {
-}
-
-bool NavigationAction::specifiesNavigationPolicy(NavigationPolicy* policy) const
-{
-    const MouseEvent* event = 0;
+    const MouseEvent* mouseEvent = 0;
     if (m_type == NavigationTypeLinkClicked && m_event->isMouseEvent())
-        event = toMouseEvent(m_event.get());
+        mouseEvent = toMouseEvent(m_event.get());
     else if (m_type == NavigationTypeFormSubmitted && m_event && m_event->underlyingEvent() && m_event->underlyingEvent()->isMouseEvent())
-        event = toMouseEvent(m_event->underlyingEvent());
+        mouseEvent = toMouseEvent(m_event->underlyingEvent());
 
-    if (!event)
-        return false;
-    return navigationPolicyFromMouseEvent(event->button(), event->ctrlKey(), event->shiftKey(), event->altKey(), event->metaKey(), policy);
+    if (!mouseEvent || !navigationPolicyFromMouseEvent(mouseEvent->button(), mouseEvent->ctrlKey(), mouseEvent->shiftKey(), mouseEvent->altKey(), mouseEvent->metaKey(), &m_policy))
+        m_policy = NavigationPolicyCurrentTab;
 }
 
 }

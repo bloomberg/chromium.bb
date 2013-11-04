@@ -688,18 +688,6 @@ bool FrameLoader::prepareRequestForThisFrame(FrameLoadRequest& request)
     return true;
 }
 
-static bool shouldOpenInNewWindow(Frame* targetFrame, const FrameLoadRequest& request, const NavigationAction& action)
-{
-    if (!targetFrame && !request.frameName().isEmpty())
-        return true;
-    if (!request.formState())
-        return false;
-    NavigationPolicy navigationPolicy = NavigationPolicyCurrentTab;
-    if (!action.specifiesNavigationPolicy(&navigationPolicy))
-        return false;
-    return navigationPolicy != NavigationPolicyCurrentTab;
-}
-
 void FrameLoader::load(const FrameLoadRequest& passedRequest)
 {
     ASSERT(!m_suppressOpenerInNewFrame);
@@ -726,7 +714,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
 
     FrameLoadType newLoadType = determineFrameLoadType(request);
     NavigationAction action(request.resourceRequest(), newLoadType, request.formState(), request.triggeringEvent());
-    if (shouldOpenInNewWindow(targetFrame.get(), request, action)) {
+    if ((!targetFrame && !request.frameName().isEmpty()) || action.shouldOpenInNewWindow()) {
         TemporaryChange<bool> changeOpener(m_suppressOpenerInNewFrame, request.shouldSendReferrer() == NeverSendReferrer);
         checkNewWindowPolicyAndContinue(request.formState(), request.frameName(), action);
         return;
@@ -1390,9 +1378,7 @@ void FrameLoader::checkNewWindowPolicyAndContinue(PassRefPtr<FormState> formStat
     if (!DOMWindow::allowPopUp(m_frame))
         return;
 
-    NavigationPolicy navigationPolicy = NavigationPolicyNewForegroundTab;
-    action.specifiesNavigationPolicy(&navigationPolicy);
-
+    NavigationPolicy navigationPolicy = action.shouldOpenInNewWindow() ? action.policy() : NavigationPolicyNewForegroundTab;
     if (navigationPolicy == NavigationPolicyDownload) {
         m_client->loadURLExternally(action.resourceRequest(), navigationPolicy);
         return;

@@ -377,8 +377,7 @@ bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& re
     if (m_frame->ownerElement() && !m_frame->ownerElement()->document().contentSecurityPolicy()->allowChildFrameFromSource(request.url()))
         return false;
 
-    NavigationPolicy policy = NavigationPolicyCurrentTab;
-    m_triggeringAction.specifiesNavigationPolicy(&policy);
+    NavigationPolicy policy = m_triggeringAction.policy();
     if (policyCheckLoadType != PolicyCheckFragment)
         policy = frameLoader()->client()->decidePolicyForNavigation(request, this, policy);
     if (policy == NavigationPolicyCurrentTab)
