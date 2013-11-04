@@ -177,6 +177,21 @@ crbug.com/192172 [ Debug ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-over
 
 crbug.com/239811 crbug.com/229113 http/tests/history/redirect-js-location-assign-0-seconds.html [ Failure Pass ]
 
+# pending functional patch
+crbug.com/306730 css3/line-break/line-break-auto-hyphens.html [ ImageOnlyFailure ]
+crbug.com/306730 css3/line-break/line-break-auto-sound-marks.html [ ImageOnlyFailure ]
+crbug.com/306730 css3/line-break/line-break-loose-centered.html [ ImageOnlyFailure ]
+crbug.com/306730 css3/line-break/line-break-loose-half-kana.html [ ImageOnlyFailure ]
+crbug.com/306730 css3/line-break/line-break-loose-hyphens.html [ ImageOnlyFailure ]
+crbug.com/306730 css3/line-break/line-break-loose-inseparables.html [ ImageOnlyFailure ]
+crbug.com/306730 css3/line-break/line-break-loose-iteration-marks.html [ ImageOnlyFailure ]
+crbug.com/306730 css3/line-break/line-break-loose-postfixes.html [ ImageOnlyFailure ]
+crbug.com/306730 css3/line-break/line-break-loose-prefixes.html [ ImageOnlyFailure ]
+crbug.com/306730 css3/line-break/line-break-loose-sound-marks.html [ ImageOnlyFailure ]
+crbug.com/306730 css3/line-break/line-break-normal-half-kana.html [ ImageOnlyFailure ]
+crbug.com/306730 css3/line-break/line-break-normal-hyphens.html [ ImageOnlyFailure ]
+crbug.com/306730 css3/line-break/line-break-normal-sound-marks.html [ ImageOnlyFailure ]
+
 crbug.com/231721 [ Win ] svg/custom/invisible-text-after-scrolling.xhtml [ Pass Timeout ]
 
 crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined.html [ Failure Pass ]

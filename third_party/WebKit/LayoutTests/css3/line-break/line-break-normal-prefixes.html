@@ -1,17 +1,7 @@
 <html>
     <head>
         <title>Line breaks using [-webkit-]line-break : normal - after prefixes</title>
-        <style>
-          div > div {
-            font-family: 'Lucida Grande';
-            font-size: 16pt;
-            width: 1.5em;
-          }
-          div > p {
-            border: solid blue 1px;
-            -webkit-line-break: normal;
-          }
-        </style>
+        <link href="resources/line-break.css" rel="stylesheet" type="text/css">
     </head>
     <body>
         <div lang="en">
@@ -39,6 +29,7 @@
             <div>
                 <p>&#xffe5;123</p>
             </div>
+            <br class="clear">
         </div>
         <div lang="ja">
             <div>
@@ -65,6 +56,7 @@
             <div>
                 <p>&#xffe5;123</p>
             </div>
+            <br class="clear">
         </div>
         <div lang="ko">
             <div>
@@ -91,6 +83,7 @@
             <div>
                 <p>&#xffe5;123</p>
             </div>
+            <br class="clear">
         </div>
         <div lang="zh">
             <div>
@@ -117,6 +110,7 @@
             <div>
                 <p>&#xffe5;123</p>
             </div>
+            <br class="clear">
         </div>
     </body>
 </html>
