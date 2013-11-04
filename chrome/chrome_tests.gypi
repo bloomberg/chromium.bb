@@ -1687,6 +1687,8 @@
                 'test/nacl/nacl_browsertest_uma.cc',
                 'test/nacl/nacl_browsertest_util.cc',
                 'test/nacl/nacl_browsertest_util.h',
+                'test/nacl/pnacl_header_test.cc',
+                'test/nacl/pnacl_header_test.h',
               ],
               'dependencies': [
                 'test/data/nacl/nacl_test_data.gyp:*',

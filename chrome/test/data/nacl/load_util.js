@@ -32,14 +32,24 @@ var load_util = {
     return a.href;
   },
 
-  crossOriginEmbed: function(manifest_url) {
+  crossOriginURL: function(manifest_url) {
     manifest_url = load_util.absoluteURL(manifest_url);
+    // The test server is only listening on a specific random port
+    // at 127.0.0.1. So, to inspect a cross-origin request from within
+    // the server code, we load from "localhost" which is a different origin,
+    // yet still served by the server. Otherwise, if we choose a host
+    // other than localhost we would need to modify the DNS/host resolver
+    // to point that host at 127.0.0.1.
     var cross_url = manifest_url.replace("127.0.0.1", "localhost");
     if (cross_url == manifest_url) {
       load_util.shutdown("Could not create a cross-origin URL.", false);
       throw "abort";
     }
-    return load_util.embed(cross_url);
+    return cross_url;
+  },
+
+  crossOriginEmbed: function(manifest_url) {
+    return load_util.embed(load_util.crossOriginURL(manifest_url));
   },
 
   expectLoadFailure: function(embed, message) {
