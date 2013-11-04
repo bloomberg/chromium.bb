@@ -92,13 +92,18 @@ void TtsExtensionEventHandler::OnTtsEvent(Utterance* utterance,
                                           TtsEventType event_type,
                                           int char_index,
                                           const std::string& error_message) {
-  if (utterance->src_id() < 0)
+  if (utterance->src_id() < 0) {
+    if (utterance->finished())
+      delete this;
     return;
+  }
 
   const std::set<TtsEventType>& desired_event_types =
       utterance->desired_event_types();
   if (desired_event_types.size() > 0 &&
       desired_event_types.find(event_type) == desired_event_types.end()) {
+    if (utterance->finished())
+      delete this;
     return;
   }
 
