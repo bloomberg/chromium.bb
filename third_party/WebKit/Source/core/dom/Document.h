@@ -485,7 +485,6 @@ public:
     void prepareForDestruction();
 
     RenderView* renderView() const { return m_renderView; }
-    void clearRenderView() { m_renderView = 0; }
 
     AXObjectCache* existingAXObjectCache() const;
     AXObjectCache* axObjectCache() const;
@@ -1000,7 +999,6 @@ public:
 
     DocumentLifecycleNotifier& lifecycleNotifier();
     bool isActive() const { return m_lifecyle.state() == DocumentLifecycle::Active; }
-    bool isStopping() const { return m_lifecyle.state() == DocumentLifecycle::Stopping; }
     bool isStopped() const { return m_lifecyle.state() == DocumentLifecycle::Stopped; }
 
     enum HttpRefreshType {
