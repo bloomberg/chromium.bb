@@ -41,6 +41,8 @@
       'SK_SUPPORT_GPU=<(skia_support_gpu)',
       'GR_GL_CUSTOM_SETUP_HEADER="GrGLConfig_chrome.h"',
       'SK_ENABLE_LEGACY_API_ALIASING=1',
+      'SK_ATTR_DEPRECATED=SK_NOTHING_ARG1',
+      'SK_SUPPORT_LEGACY_COLORTYPE=1',
     ],
 
     'default_font_cache_limit%': '(20*1024*1024)',
@@ -438,8 +440,6 @@
     'SK_GDI_ALWAYS_USE_TEXTMETRICS_FOR_FONT_METRICS',
 
     'SK_DEFAULT_FONT_CACHE_LIMIT=<(default_font_cache_limit)',
-
-    'SK_ATTR_DEPRECATED=SK_NOTHING_ARG1',
   ],
 
   'direct_dependent_settings': {
