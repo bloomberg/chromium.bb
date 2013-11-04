@@ -1479,9 +1479,10 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     applyMatchedProperties<LowPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
     applyMatchedProperties<LowPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
 
-    if (RuntimeEnabledFeatures::webAnimationsEnabled() && !applyInheritedOnly) {
+    if (RuntimeEnabledFeatures::webAnimationsEnabled()) {
         state.setAnimationUpdate(CSSAnimations::calculateUpdate(state.element(), state.style(), this));
         if (state.animationUpdate()) {
+            ASSERT(!applyInheritedOnly);
             const AnimationEffect::CompositableValueMap& compositableValuesForAnimations = state.animationUpdate()->compositableValuesForAnimations();
             const AnimationEffect::CompositableValueMap& compositableValuesForTransitions = state.animationUpdate()->compositableValuesForTransitions();
             // Apply animated properties, then reapply any rules marked important.

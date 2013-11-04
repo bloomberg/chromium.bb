@@ -154,6 +154,12 @@ bool MatchedPropertiesCache::isCacheable(const Element* element, const RenderSty
     // The cache assumes static knowledge about which properties are inherited.
     if (parentStyle->hasExplicitlyInheritedProperties())
         return false;
+    if (RuntimeEnabledFeatures::webAnimationsEnabled()) {
+        if (style->transitions() && !style->transitions()->isEmpty())
+            return false;
+        if (style->animations() && !style->animations()->isEmpty())
+            return false;
+    }
     return true;
 }
 
