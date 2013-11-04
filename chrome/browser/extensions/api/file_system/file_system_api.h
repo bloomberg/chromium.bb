@@ -22,10 +22,9 @@ namespace file_system_api {
 // chosen by the user in response to a chrome.fileSystem.chooseEntry() call for
 // the given extension.
 
-// Returns true and populates result on success; false on failure.
-bool GetLastChooseEntryDirectory(const ExtensionPrefs* prefs,
-                                 const std::string& extension_id,
-                                 base::FilePath* path);
+// Returns an empty path on failure.
+base::FilePath GetLastChooseEntryDirectory(const ExtensionPrefs* prefs,
+                                           const std::string& extension_id);
 
 void SetLastChooseEntryDirectory(ExtensionPrefs* prefs,
                                  const std::string& extension_id,

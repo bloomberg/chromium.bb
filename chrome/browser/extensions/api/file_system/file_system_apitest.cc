@@ -48,13 +48,6 @@ void SetLastChooseEntryDirectory(const base::FilePath& choose_entry_directory,
       prefs, extension->id(), choose_entry_directory);
 }
 
-void SetLastChooseEntryDirectoryToAppDirectory(
-    ExtensionPrefs* prefs,
-    const Extension* extension) {
-  file_system_api::SetLastChooseEntryDirectory(
-      prefs, extension->id(), extension->path());
-}
-
 void AddSavedEntry(const base::FilePath& path_to_save,
                    bool is_directory,
                    apps::SavedFilesService* service,
@@ -139,13 +132,11 @@ class FileSystemApiTest : public PlatformAppBrowserTest {
     ASSERT_TRUE(extension);
     std::string extension_id = extension->id();
     ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
-    base::FilePath stored_value;
+    base::FilePath stored_value =
+        file_system_api::GetLastChooseEntryDirectory(prefs, extension_id);
     if (filename.empty()) {
-      EXPECT_FALSE(file_system_api::GetLastChooseEntryDirectory(
-          prefs, extension_id, &stored_value));
+      EXPECT_TRUE(stored_value.empty());
     } else {
-      EXPECT_TRUE(file_system_api::GetLastChooseEntryDirectory(
-          prefs, extension_id, &stored_value));
       EXPECT_EQ(base::MakeAbsoluteFilePath(filename.DirName()),
                 base::MakeAbsoluteFilePath(stored_value));
     }
@@ -619,9 +610,9 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiRestoreEntry) {
       &test_file);
   AppInstallObserver observer(
       base::Bind(AddSavedEntry,
-                  test_file,
-                  false,
-                  apps::SavedFilesService::Get(profile())));
+                 test_file,
+                 false,
+                 apps::SavedFilesService::Get(profile())));
   ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/restore_entry"))
       << message_;
 }

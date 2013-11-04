@@ -279,18 +279,16 @@ namespace extensions {
 
 namespace file_system_api {
 
-bool GetLastChooseEntryDirectory(const ExtensionPrefs* prefs,
-                                 const std::string& extension_id,
-                                 base::FilePath* path) {
+base::FilePath GetLastChooseEntryDirectory(const ExtensionPrefs* prefs,
+                                           const std::string& extension_id) {
+  base::FilePath path;
   std::string string_path;
-  if (!prefs->ReadPrefAsString(extension_id,
-                               kLastChooseEntryDirectory,
-                               &string_path)) {
-    return false;
+  if (prefs->ReadPrefAsString(extension_id,
+                              kLastChooseEntryDirectory,
+                              &string_path)) {
+    path = base::FilePath::FromUTF8Unsafe(string_path);
   }
-
-  *path = base::FilePath::FromUTF8Unsafe(string_path);
-  return true;
+  return path;
 }
 
 void SetLastChooseEntryDirectory(ExtensionPrefs* prefs,
@@ -914,19 +912,20 @@ bool FileSystemChooseEntryFunction::RunImpl() {
 
   file_type_info.support_drive = true;
 
-  base::FilePath previous_path;
-  file_system_api::GetLastChooseEntryDirectory(
-      ExtensionPrefs::Get(GetProfile()), GetExtension()->id(), &previous_path);
+  base::FilePath previous_path = file_system_api::GetLastChooseEntryDirectory(
+      ExtensionPrefs::Get(GetProfile()), GetExtension()->id());
 
   content::BrowserThread::PostTaskAndReply(
       content::BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(
-          &FileSystemChooseEntryFunction::SetInitialPathOnFileThread, this,
-          suggested_name, previous_path),
-      base::Bind(
-          &FileSystemChooseEntryFunction::ShowPicker, this, file_type_info,
-          picker_type));
+      base::Bind(&FileSystemChooseEntryFunction::SetInitialPathOnFileThread,
+                 this,
+                 suggested_name,
+                 previous_path),
+      base::Bind(&FileSystemChooseEntryFunction::ShowPicker,
+                 this,
+                 file_type_info,
+                 picker_type));
   return true;
 }
 
@@ -953,8 +952,9 @@ bool FileSystemRetainEntryFunction::RunImpl() {
         FROM_HERE,
         base::Bind(&FileSystemRetainEntryFunction::SetIsDirectoryOnFileThread,
                    this),
-        base::Bind(
-            &FileSystemRetainEntryFunction::RetainFileEntry, this, entry_id));
+        base::Bind(&FileSystemRetainEntryFunction::RetainFileEntry,
+                   this,
+                   entry_id));
     return true;
   }
 
