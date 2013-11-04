@@ -171,17 +171,19 @@ void FeedbackData::AttachAndCompressFileData(
 }
 
 void FeedbackData::OnGetTraceData(
-    int trace_id_,
+    int trace_id,
     scoped_refptr<base::RefCountedString> trace_data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TracingManager* manager = TracingManager::Get();
   if (manager)
-    manager->DiscardTraceData(trace_id_);
+    manager->DiscardTraceData(trace_id);
 
-  scoped_ptr<std::string> data(new std::string(trace_data->data()));
+  scoped_ptr<std::string> data(new std::string);
+  data->swap(trace_data->data());
 
   attached_filename_ = kTraceFilename;
   attached_filedata_ = data.Pass();
+  attached_file_compression_complete_ = true;
   trace_id_ = 0;
 
   set_category_tag(kPerformanceCategoryTag);
