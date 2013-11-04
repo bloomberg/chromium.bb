@@ -1554,16 +1554,6 @@ CompositingReasons RenderLayerCompositor::directReasonsForCompositing(const Rend
     return directReasons;
 }
 
-CompositingReasons RenderLayerCompositor::reasonsForCompositing(const RenderLayer* layer) const
-{
-    CompositingReasons reasons = CompositingReasonNone;
-
-    if (!layer || !layer->compositedLayerMapping())
-        return reasons;
-
-    return layer->compositingReasons();
-}
-
 // Return true if the given layer has some ancestor in the RenderLayer hierarchy that clips,
 // up to the enclosing compositing ancestor. This is required because compositing layers are parented
 // according to the z-order hierarchy, yet clipping goes down the renderer hierarchy.
