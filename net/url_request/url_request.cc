@@ -498,6 +498,20 @@ int URLRequest::GetResponseCode() const {
   return job_->GetResponseCode();
 }
 
+void URLRequest::SetLoadFlags(int flags) {
+  if ((load_flags_ & LOAD_IGNORE_LIMITS) != (flags & LOAD_IGNORE_LIMITS)) {
+    DCHECK(!job_);
+    DCHECK(flags & LOAD_IGNORE_LIMITS);
+    DCHECK_EQ(priority_, MAXIMUM_PRIORITY);
+  }
+  load_flags_ = flags;
+
+  // This should be a no-op given the above DCHECKs, but do this
+  // anyway for release mode.
+  if ((load_flags_ & LOAD_IGNORE_LIMITS) != 0)
+    SetPriority(MAXIMUM_PRIORITY);
+}
+
 // static
 void URLRequest::SetDefaultCookiePolicyToBlock() {
   CHECK(!g_url_requests_started);
@@ -960,6 +974,14 @@ int64 URLRequest::GetExpectedContentSize() const {
 void URLRequest::SetPriority(RequestPriority priority) {
   DCHECK_GE(priority, MINIMUM_PRIORITY);
   DCHECK_LE(priority, MAXIMUM_PRIORITY);
+
+  if ((load_flags_ & LOAD_IGNORE_LIMITS) && (priority != MAXIMUM_PRIORITY)) {
+    NOTREACHED();
+    // Maintain the invariant that requests with IGNORE_LIMITS set
+    // have MAXIMUM_PRIORITY for release mode.
+    return;
+  }
+
   if (priority_ == priority)
     return;
 

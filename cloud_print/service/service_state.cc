@@ -180,7 +180,7 @@ std::string ServiceState::LoginToGoogle(const std::string& service,
   int load_flags = request.load_flags();
   load_flags = load_flags | net::LOAD_DO_NOT_SEND_COOKIES;
   load_flags = load_flags | net::LOAD_DO_NOT_SAVE_COOKIES;
-  request.set_load_flags(load_flags);
+  request.SetLoadFlags(load_flags);
 
   scoped_ptr<net::UploadElementReader> reader(
       net::UploadOwnedBytesElementReader::CreateWithString(post_body));

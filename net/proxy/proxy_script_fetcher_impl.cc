@@ -147,8 +147,8 @@ int ProxyScriptFetcherImpl::Fetch(
   // checking in order to avoid a circular dependency when attempting to fetch
   // the OCSP response or CRL. We could make the revocation check go direct but
   // the proxy might be the only way to the outside world.
-  cur_request_->set_load_flags(LOAD_BYPASS_PROXY | LOAD_DISABLE_CACHE |
-                               LOAD_DISABLE_CERT_REVOCATION_CHECKING);
+  cur_request_->SetLoadFlags(LOAD_BYPASS_PROXY | LOAD_DISABLE_CACHE |
+                             LOAD_DISABLE_CERT_REVOCATION_CHECKING);
 
   // Save the caller's info for notification on completion.
   callback_ = callback;

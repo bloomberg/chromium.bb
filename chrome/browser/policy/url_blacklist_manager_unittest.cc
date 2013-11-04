@@ -504,7 +504,7 @@ TEST_F(URLBlacklistManagerTest, DontBlockResources) {
   EXPECT_FALSE(blacklist_manager_->IsRequestBlocked(request));
 
   // Main frames are filtered.
-  request.set_load_flags(net::LOAD_MAIN_FRAME);
+  request.SetLoadFlags(net::LOAD_MAIN_FRAME);
   EXPECT_TRUE(blacklist_manager_->IsRequestBlocked(request));
 
   // On most platforms, sync gets a free pass due to signin flows.
@@ -518,7 +518,7 @@ TEST_F(URLBlacklistManagerTest, DontBlockResources) {
   GURL sync_url(GaiaUrls::GetInstance()->service_login_url().Resolve(
       "?service=chromiumsync"));
   net::URLRequest sync_request(sync_url, net::DEFAULT_PRIORITY, NULL, &context);
-  sync_request.set_load_flags(net::LOAD_MAIN_FRAME);
+  sync_request.SetLoadFlags(net::LOAD_MAIN_FRAME);
   EXPECT_EQ(block_signin_urls,
             blacklist_manager_->IsRequestBlocked(sync_request));
 }
