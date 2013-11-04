@@ -38,6 +38,7 @@
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -255,7 +256,8 @@ class TestAutofillDialogController
   }
 
   void Init(content::BrowserContext* browser_context) {
-    test_manager_.Init(browser_context);
+    test_manager_.Init(browser_context,
+                       user_prefs::UserPrefs::Get(browser_context));
   }
 
   TestAutofillDialogView* GetView() {

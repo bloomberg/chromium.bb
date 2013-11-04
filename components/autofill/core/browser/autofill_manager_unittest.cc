@@ -79,6 +79,10 @@ class TestPersonalDataManager : public PersonalDataManager {
     set_browser_context(context);
   }
 
+  void SetPrefService(PrefService* pref_service) {
+    set_pref_service(pref_service);
+  }
+
   // Factory method for keyed service.  PersonalDataManager is NULL for testing.
   static BrowserContextKeyedService* Build(content::BrowserContext* profile) {
     return NULL;
@@ -697,6 +701,7 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
     autofill::TabAutofillManagerDelegate::CreateForWebContents(web_contents());
 
     personal_data_.SetBrowserContext(profile());
+    personal_data_.SetPrefService(profile()->GetPrefs());
     autofill_driver_.reset(new MockAutofillDriver(web_contents()));
     autofill_manager_.reset(new TestAutofillManager(
         autofill_driver_.get(),

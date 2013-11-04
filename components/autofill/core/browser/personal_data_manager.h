@@ -19,6 +19,7 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service_observer.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 
+class PrefService;
 class RemoveAutofillTester;
 
 namespace content {
@@ -54,8 +55,9 @@ class PersonalDataManager : public WebDataServiceConsumer,
   explicit PersonalDataManager(const std::string& app_locale);
   virtual ~PersonalDataManager();
 
-  // Kicks off asynchronous loading of profiles and credit cards.
-  void Init(content::BrowserContext* context);
+  // Kicks off asynchronous loading of profiles and credit cards. |context| and
+  // |pref_service| must outlive this instance.
+  void Init(content::BrowserContext* context, PrefService* pref_service);
 
   // WebDataServiceConsumer:
   virtual void OnWebDataServiceRequestDone(
@@ -256,6 +258,7 @@ class PersonalDataManager : public WebDataServiceConsumer,
   const AutofillMetrics* metric_logger() const;
   void set_metric_logger(const AutofillMetrics* metric_logger);
   void set_browser_context(content::BrowserContext* context);
+  void set_pref_service(PrefService* pref_service);
 
   // The browser context this PersonalDataManager is in.
   content::BrowserContext* browser_context_;
@@ -298,6 +301,9 @@ class PersonalDataManager : public WebDataServiceConsumer,
 
   // For logging UMA metrics. Overridden by metrics tests.
   scoped_ptr<const AutofillMetrics> metric_logger_;
+
+  // The PrefService that this instance uses. Must outlive this instance.
+  PrefService* pref_service_;
 
   // Whether we have already logged the number of profiles this session.
   mutable bool has_logged_profile_count_;

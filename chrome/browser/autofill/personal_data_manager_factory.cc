@@ -33,7 +33,7 @@ PersonalDataManagerServiceImpl::PersonalDataManagerServiceImpl(
     Profile* profile) {
   personal_data_manager_.reset(new PersonalDataManager(
       g_browser_process->GetApplicationLocale()));
-  personal_data_manager_->Init(profile);
+  personal_data_manager_->Init(profile, profile->GetPrefs());
 }
 
 PersonalDataManagerServiceImpl::~PersonalDataManagerServiceImpl() {}

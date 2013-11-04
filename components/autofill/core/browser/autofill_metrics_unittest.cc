@@ -98,6 +98,10 @@ class TestPersonalDataManager : public PersonalDataManager {
     set_browser_context(context);
   }
 
+  void SetPrefService(PrefService* pref_service) {
+    set_pref_service(pref_service);
+  }
+
   // Overridden to avoid a trip to the database. This should be a no-op except
   // for the side-effect of logging the profile count.
   virtual void LoadProfiles() OVERRIDE {
@@ -287,6 +291,7 @@ void AutofillMetricsTest::SetUp() {
 
   personal_data_.reset(new TestPersonalDataManager());
   personal_data_->SetBrowserContext(profile());
+  personal_data_->SetPrefService(profile()->GetPrefs());
   autofill_driver_.reset(new TestAutofillDriver(web_contents()));
   autofill_manager_.reset(new TestAutofillManager(
       autofill_driver_.get(),
@@ -1004,7 +1009,7 @@ TEST_F(AutofillMetricsTest, AutofillIsEnabledAtStartup) {
   personal_data_->set_autofill_enabled(true);
   EXPECT_CALL(*personal_data_->metric_logger(),
               LogIsAutofillEnabledAtStartup(true)).Times(1);
-  personal_data_->Init(profile());
+  personal_data_->Init(profile(), profile()->GetPrefs());
 }
 
 // Test that we correctly log when Autofill is disabled.
@@ -1012,7 +1017,7 @@ TEST_F(AutofillMetricsTest, AutofillIsDisabledAtStartup) {
   personal_data_->set_autofill_enabled(false);
   EXPECT_CALL(*personal_data_->metric_logger(),
               LogIsAutofillEnabledAtStartup(false)).Times(1);
-  personal_data_->Init(profile());
+  personal_data_->Init(profile(), profile()->GetPrefs());
 }
 
 // Test that we log the number of Autofill suggestions when filling a form.

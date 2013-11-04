@@ -25,7 +25,6 @@
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
-#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 
 namespace autofill {
@@ -156,8 +155,10 @@ PersonalDataManager::PersonalDataManager(const std::string& app_locale)
       metric_logger_(new AutofillMetrics),
       has_logged_profile_count_(false) {}
 
-void PersonalDataManager::Init(content::BrowserContext* browser_context) {
+void PersonalDataManager::Init(content::BrowserContext* browser_context,
+                               PrefService* pref_service) {
   browser_context_ = browser_context;
+  pref_service_ = pref_service;
 
   if (!browser_context_->IsOffTheRecord())
     metric_logger_->LogIsAutofillEnabledAtStartup(IsAutofillEnabled());
@@ -549,8 +550,7 @@ bool PersonalDataManager::IsDataLoaded() const {
 }
 
 const std::vector<AutofillProfile*>& PersonalDataManager::GetProfiles() const {
-  if (!user_prefs::UserPrefs::Get(browser_context_)->GetBoolean(
-          prefs::kAutofillAuxiliaryProfilesEnabled)) {
+  if (!pref_service_->GetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled)) {
     return web_profiles();
   }
 
@@ -704,8 +704,7 @@ void PersonalDataManager::GetCreditCardSuggestions(
 }
 
 bool PersonalDataManager::IsAutofillEnabled() const {
-  return user_prefs::UserPrefs::Get(browser_context_)->GetBoolean(
-      prefs::kAutofillEnabled);
+  return pref_service_->GetBoolean(prefs::kAutofillEnabled);
 }
 
 // static
@@ -1048,6 +1047,10 @@ void PersonalDataManager::set_metric_logger(
 void PersonalDataManager::set_browser_context(
     content::BrowserContext* context) {
   browser_context_ = context;
+}
+
+void PersonalDataManager::set_pref_service(PrefService* pref_service) {
+  pref_service_ = pref_service;
 }
 
 std::string PersonalDataManager::MostCommonCountryCodeFromProfiles() const {
