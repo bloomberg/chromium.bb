@@ -35,7 +35,7 @@
 #include <windows.h>
 #endif
 
-#include "core/platform/WindowsKeyboardCodes.h"
+#include "platform/WindowsKeyboardCodes.h"
 
 namespace WebCore {
 

@@ -112,6 +112,7 @@
       'UUID.h',
       'Widget.cpp',
       'Widget.h',
+      'WindowsKeyboardCodes.h',
       'animation/AnimationUtilities.h',
       'animation/UnitBezier.h',
       'audio/AudioArray.h',
