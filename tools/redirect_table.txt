@@ -11,7 +11,7 @@ bin/i686-nacl-gccbug        x86_64-nacl-gccbug
 bin/i686-nacl-gcov          x86_64-nacl-gcov
 bin/i686-nacl-gfortran      x86_64-nacl-gfortran              -m32
 bin/i686-nacl-gprof         x86_64-nacl-gprof
-bin/i686-nacl-ld            x86_64-nacl-ld                    -melf_nacl
+bin/i686-nacl-ld            x86_64-nacl-ld                    -melf_i386_nacl
 bin/i686-nacl-nm            x86_64-nacl-nm
 bin/i686-nacl-objcopy       x86_64-nacl-objcopy
 bin/i686-nacl-objdump       x86_64-nacl-objdump
