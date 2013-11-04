@@ -27,7 +27,7 @@
     RuntimeEnabled=VideoTrack
 ] interface HTMLTrackElement : HTMLElement {
     attribute DOMString kind;
-    [Reflect, URL] attribute DOMString src;
+    [Reflect, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString src;
     attribute DOMString srclang;
     attribute DOMString label;
     [Reflect] attribute boolean default;

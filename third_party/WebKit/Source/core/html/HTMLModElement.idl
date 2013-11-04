@@ -18,7 +18,7 @@
  */
 
 interface HTMLModElement : HTMLElement {
-    [Reflect, TreatNullAs=NullString, URL] attribute DOMString cite;
+    [Reflect, TreatNullAs=NullString, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString cite;
     [Reflect, TreatNullAs=NullString] attribute DOMString dateTime;
 };
 

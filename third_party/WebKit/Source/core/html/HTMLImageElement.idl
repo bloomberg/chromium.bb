@@ -31,8 +31,8 @@
     attribute long height;
     [Reflect] attribute long hspace;
     [Reflect] attribute boolean isMap;
-    [Reflect, TreatNullAs=NullString, URL] attribute DOMString longDesc;
-    [Reflect, TreatNullAs=NullString, URL] attribute DOMString src;
+    [Reflect, TreatNullAs=NullString, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString longDesc;
+    [Reflect, TreatNullAs=NullString, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString src;
     [Reflect, TreatNullAs=NullString, RuntimeEnabled=Srcset] attribute DOMString srcset;
     [Reflect, TreatNullAs=NullString] attribute DOMString useMap;
     [Reflect] attribute long vspace;
@@ -40,7 +40,7 @@
 
     // Extensions
     readonly attribute boolean complete;
-    [Reflect, TreatNullAs=NullString,URL] attribute DOMString lowsrc;
+    [Reflect, TreatNullAs=NullString, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString lowsrc;
     readonly attribute long naturalHeight;
     readonly attribute long naturalWidth;
     readonly attribute long x;

@@ -20,7 +20,7 @@
 
 interface HTMLFormElement : HTMLElement {
     [Reflect=accept_charset, TreatNullAs=NullString] attribute DOMString acceptCharset;
-    [Reflect, TreatNullAs=NullString, URL] attribute DOMString action;
+    [Reflect, TreatNullAs=NullString, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString action;
     [Reflect, TreatNullAs=NullString] attribute DOMString autocomplete;
     [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString enctype;
     [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString encoding;
@@ -34,7 +34,7 @@ interface HTMLFormElement : HTMLElement {
     [ImplementedAs=item] getter Node(unsigned long index);
     [ImplementedAs=anonymousNamedGetter, OverrideBuiltins, NotEnumerable] getter (NodeList or Node)(DOMString name);
 
-    [ImplementedAs=submitFromJavaScript] void submit();
+    [ImplementedAs=submitFromJavaScript, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] void submit();
     [CustomElementCallbacks] void reset();
     boolean checkValidity();
 

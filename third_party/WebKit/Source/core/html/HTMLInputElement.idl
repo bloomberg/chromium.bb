@@ -33,7 +33,7 @@
     // The 'files' attribute is intentionally not readonly.
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=22682
     attribute FileList files;
-    [Reflect, TreatNullAs=NullString, URL] attribute DOMString formAction;
+    [Reflect, TreatNullAs=NullString, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString formAction;
     [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString formEnctype;
     [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString formMethod;
     [Reflect] attribute boolean formNoValidate;
@@ -51,7 +51,7 @@
     [Reflect] attribute boolean readOnly;
     [Reflect] attribute boolean required;
     [SetterRaisesException, CustomElementCallbacks] attribute unsigned long size; // Changed string -> long -> unsigned long
-    [Reflect, TreatNullAs=NullString, URL] attribute DOMString src;
+    [Reflect, TreatNullAs=NullString, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString src;
     [Reflect, TreatNullAs=NullString] attribute DOMString step;
     [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString type; // readonly dropped as part of DOM level 2
     [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString defaultValue;

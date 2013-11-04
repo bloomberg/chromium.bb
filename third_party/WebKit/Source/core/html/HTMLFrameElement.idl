@@ -27,7 +27,7 @@ interface HTMLFrameElement : HTMLElement {
     [Reflect, TreatNullAs=NullString] attribute DOMString name;
     [Reflect] attribute boolean noResize;
     [Reflect, TreatNullAs=NullString] attribute DOMString scrolling;
-    [Reflect, TreatNullAs=NullString, URL] attribute DOMString src;
+    [Reflect, TreatNullAs=NullString, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString src;
 
     // Introduced in DOM Level 2:
     [CheckSecurityForNode] readonly attribute Document contentDocument;

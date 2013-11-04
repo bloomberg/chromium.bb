@@ -24,7 +24,7 @@ interface HTMLScriptElement : HTMLElement {
     [Reflect, TreatNullAs=NullString] attribute DOMString charset;
     attribute boolean async;
     [Reflect] attribute boolean defer;
-    [Reflect, TreatNullAs=NullString, URL] attribute DOMString src;
+    [Reflect, TreatNullAs=NullString, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString src;
     [Reflect, TreatNullAs=NullString] attribute DOMString type;
     [Reflect, TreatNullAs=NullString] attribute DOMString crossOrigin;
     [Reflect, TreatNullAs=NullString, RuntimeEnabled=ExperimentalContentSecurityPolicyFeatures] attribute DOMString nonce;

@@ -29,7 +29,7 @@ interface HTMLIFrameElement : HTMLElement {
     [Reflect, TreatNullAs=NullString] attribute DOMString sandbox;
     [Reflect, RuntimeEnabled=SeamlessIFrames] attribute boolean seamless;
     [Reflect, TreatNullAs=NullString] attribute DOMString scrolling;
-    [Reflect, TreatNullAs=NullString, URL] attribute DOMString src;
+    [Reflect, TreatNullAs=NullString, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString src;
     [Reflect, TreatNullAs=NullString] attribute DOMString srcdoc;
     [Reflect, TreatNullAs=NullString] attribute DOMString width;
 

@@ -28,7 +28,7 @@
     [Reflect, TreatNullAs=NullString] attribute DOMString border;
     [Reflect, TreatNullAs=NullString] attribute DOMString codeBase;
     [Reflect, TreatNullAs=NullString] attribute DOMString codeType;
-    [Reflect, TreatNullAs=NullString, URL] attribute DOMString data;
+    [Reflect, TreatNullAs=NullString, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString data;
     [Reflect] attribute boolean declare;
     [Reflect, TreatNullAs=NullString] attribute DOMString height;
     [Reflect] attribute long hspace;

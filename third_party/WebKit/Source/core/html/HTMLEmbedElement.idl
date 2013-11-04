@@ -24,7 +24,7 @@
 [Reflect, TreatNullAs=NullString] attribute DOMString align;
 [Reflect, TreatNullAs=NullString] attribute DOMString height;
 [Reflect, TreatNullAs=NullString] attribute DOMString name;
-[Reflect, TreatNullAs=NullString, URL] attribute DOMString src;
+[Reflect, TreatNullAs=NullString, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString src;
 [Reflect, TreatNullAs=NullString] attribute DOMString type;
 [Reflect, TreatNullAs=NullString] attribute DOMString width;
 [Custom, NotEnumerable] getter boolean (unsigned long index);
