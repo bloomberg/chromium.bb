@@ -27,6 +27,11 @@ JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   if (!content::RegisterLibraryLoaderEntryHook(env))
     return -1;
 
+  // Register content JNI functions now, rather than waiting until
+  // LibraryLoadedOnMainThread, so that we can call into native code early.
+  if (!content::EnsureJniRegistered(env))
+    return -1;
+
   // Register JNI for components we depend on.
   if (!RegisterNativeMethods(
       env,

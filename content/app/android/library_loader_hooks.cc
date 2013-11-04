@@ -32,11 +32,54 @@
 #include "ui/gl/android/gl_jni_registrar.h"
 #include "ui/shell_dialogs/android/shell_dialogs_jni_registrar.h"
 
+namespace content {
+
 namespace {
 base::AtExitManager* g_at_exit_manager = NULL;
 }
 
-namespace content {
+bool EnsureJniRegistered(JNIEnv* env) {
+  static bool g_jni_init_done = false;
+
+  if (!g_jni_init_done) {
+    if (!base::android::RegisterJni(env))
+      return false;
+
+    if (!gfx::android::RegisterJni(env))
+      return false;
+
+    if (!net::android::RegisterJni(env))
+      return false;
+
+    if (!ui::android::RegisterJni(env))
+      return false;
+
+    if (!ui::gl::android::RegisterJni(env))
+      return false;
+
+    if (!ui::shell_dialogs::RegisterJni(env))
+      return false;
+
+    if (!content::android::RegisterChildJni(env))
+      return false;
+
+    if (!content::android::RegisterCommonJni(env))
+      return false;
+
+    if (!content::android::RegisterBrowserJni(env))
+      return false;
+
+    if (!content::android::RegisterAppJni(env))
+      return false;
+
+    if (!media::RegisterJni(env))
+      return false;
+
+    g_jni_init_done = true;
+  }
+
+  return true;
+}
 
 static jint LibraryLoaded(JNIEnv* env, jclass clazz,
                           jobjectArray init_command_line) {
@@ -72,37 +115,7 @@ static jint LibraryLoaded(JNIEnv* env, jclass clazz,
   VLOG(0) << "Chromium logging enabled: level = " << logging::GetMinLogLevel()
           << ", default verbosity = " << logging::GetVlogVerbosity();
 
-  if (!base::android::RegisterJni(env))
-    return RESULT_CODE_FAILED_TO_REGISTER_JNI;
-
-  if (!gfx::android::RegisterJni(env))
-    return RESULT_CODE_FAILED_TO_REGISTER_JNI;
-
-  if (!net::android::RegisterJni(env))
-    return RESULT_CODE_FAILED_TO_REGISTER_JNI;
-
-  if (!ui::android::RegisterJni(env))
-    return RESULT_CODE_FAILED_TO_REGISTER_JNI;
-
-  if (!ui::gl::android::RegisterJni(env))
-    return RESULT_CODE_FAILED_TO_REGISTER_JNI;
-
-  if (!ui::shell_dialogs::RegisterJni(env))
-    return RESULT_CODE_FAILED_TO_REGISTER_JNI;
-
-  if (!content::android::RegisterChildJni(env))
-    return RESULT_CODE_FAILED_TO_REGISTER_JNI;
-
-  if (!content::android::RegisterCommonJni(env))
-    return RESULT_CODE_FAILED_TO_REGISTER_JNI;
-
-  if (!content::android::RegisterBrowserJni(env))
-    return RESULT_CODE_FAILED_TO_REGISTER_JNI;
-
-  if (!content::android::RegisterAppJni(env))
-    return RESULT_CODE_FAILED_TO_REGISTER_JNI;
-
-  if (!media::RegisterJni(env))
+  if (!EnsureJniRegistered(env))
     return RESULT_CODE_FAILED_TO_REGISTER_JNI;
 
   return 0;
