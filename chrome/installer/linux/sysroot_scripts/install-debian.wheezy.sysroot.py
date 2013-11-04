@@ -27,7 +27,7 @@ import sys
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 URL_PREFIX = 'https://commondatastorage.googleapis.com'
 URL_PATH = 'chrome-linux-sysroot/toolchain'
-REVISION = 36982
+REVISION = 232685
 TARBALL_AMD64 = 'debian_wheezy_amd64_sysroot.tgz'
 TARBALL_I386 = 'debian_wheezy_i386_sysroot.tgz'
 SYSROOT_DIR_AMD64 = 'debian_wheezy_amd64-sysroot'
