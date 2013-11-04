@@ -32,7 +32,9 @@
 
 #include "platform/audio/HRTFDatabaseLoader.h"
 
+#include "platform/Task.h"
 #include "platform/audio/HRTFDatabase.h"
+#include "public/platform/Platform.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {
@@ -64,8 +66,7 @@ PassRefPtr<HRTFDatabaseLoader> HRTFDatabaseLoader::createAndLoadAsynchronouslyIf
 }
 
 HRTFDatabaseLoader::HRTFDatabaseLoader(float sampleRate)
-    : m_databaseLoaderThread(0)
-    , m_databaseSampleRate(sampleRate)
+    : m_databaseSampleRate(sampleRate)
 {
     ASSERT(isMainThread());
 }
@@ -82,18 +83,10 @@ HRTFDatabaseLoader::~HRTFDatabaseLoader()
         s_loaderMap->remove(m_databaseSampleRate);
 }
 
-// Asynchronously load the database in this thread.
-static void databaseLoaderEntry(void* threadData)
-{
-    HRTFDatabaseLoader* loader = reinterpret_cast<HRTFDatabaseLoader*>(threadData);
-    ASSERT(loader);
-    loader->load();
-}
-
 void HRTFDatabaseLoader::load()
 {
     ASSERT(!isMainThread());
-    if (!m_hrtfDatabase.get()) {
+    if (!m_hrtfDatabase) {
         // Load the default HRTF database.
         m_hrtfDatabase = HRTFDatabase::create(m_databaseSampleRate);
     }
@@ -105,25 +98,22 @@ void HRTFDatabaseLoader::loadAsynchronously()
 
     MutexLocker locker(m_threadLock);
 
-    if (!m_hrtfDatabase.get() && !m_databaseLoaderThread) {
+    if (!m_hrtfDatabase && !m_databaseLoaderThread) {
         // Start the asynchronous database loading process.
-        m_databaseLoaderThread = createThread(databaseLoaderEntry, this, "HRTF database loader");
+        m_databaseLoaderThread = adoptPtr(WebKit::Platform::current()->createThread("HRTF database loader"));
+        m_databaseLoaderThread->postTask(new Task(WTF::bind(&HRTFDatabaseLoader::load, this)));
     }
 }
 
 bool HRTFDatabaseLoader::isLoaded() const
 {
-    return m_hrtfDatabase.get();
+    return m_hrtfDatabase;
 }
 
 void HRTFDatabaseLoader::waitForLoaderThreadCompletion()
 {
     MutexLocker locker(m_threadLock);
-
-    // waitForThreadCompletion() should not be called twice for the same thread.
-    if (m_databaseLoaderThread)
-        waitForThreadCompletion(m_databaseLoaderThread);
-    m_databaseLoaderThread = 0;
+    m_databaseLoaderThread.clear();
 }
 
 } // namespace WebCore

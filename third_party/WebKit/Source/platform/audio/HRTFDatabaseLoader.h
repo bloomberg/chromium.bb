@@ -30,11 +30,11 @@
 #define HRTFDatabaseLoader_h
 
 #include "platform/audio/HRTFDatabase.h"
+#include "public/platform/WebThread.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
-#include "wtf/Threading.h"
 #include "wtf/ThreadingPrimitives.h"
 
 namespace WebCore {
@@ -81,9 +81,9 @@ private:
 
     OwnPtr<HRTFDatabase> m_hrtfDatabase;
 
-    // Holding a m_threadLock is required when accessing m_databaseLoaderThread.
+    // Holding a m_threadLock is required when accessing m_databaseLoaderThread since we access it from multiple threads.
     Mutex m_threadLock;
-    ThreadIdentifier m_databaseLoaderThread;
+    OwnPtr<WebKit::WebThread> m_databaseLoaderThread;
 
     float m_databaseSampleRate;
 };
