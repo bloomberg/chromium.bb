@@ -57,8 +57,7 @@ void MergeAllDependentConfigsFrom(const Target* from_target,
 }  // namespace
 
 Target::Target(const Settings* settings, const Label& label)
-    : Item(label),
-      settings_(settings),
+    : Item(settings, label),
       output_type_(UNKNOWN),
       hard_dep_(false),
       external_(false),
@@ -155,9 +154,9 @@ void Target::OnResolved() {
   }
 
   // Mark as resolved.
-  if (!settings_->build_settings()->target_resolved_callback().is_null()) {
+  if (!settings()->build_settings()->target_resolved_callback().is_null()) {
     g_scheduler->ScheduleWork(base::Bind(&TargetResolvedThunk,
-        settings_->build_settings()->target_resolved_callback(),
+        settings()->build_settings()->target_resolved_callback(),
         this));
   }
 }

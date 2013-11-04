@@ -78,11 +78,17 @@ struct ToolchainManager::Info {
        const Label& toolchain_name,
        const std::string& output_subdir_name)
       : state(TOOLCHAIN_NOT_LOADED),
-        toolchain(toolchain_name),
+        settings(build_settings, output_subdir_name),
+        toolchain(new Toolchain(&settings, toolchain_name)),
         toolchain_set(false),
-        settings(build_settings, &toolchain, output_subdir_name),
         toolchain_file_loaded(false),
         item_node(NULL) {
+    settings.set_toolchain_label(toolchain_name);
+  }
+
+  ~Info() {
+    if (!item_node)  // See toolchain definition for more.
+      delete toolchain;
   }
 
   // Makes sure that an ItemNode is created for the toolchain, which lets
@@ -95,16 +101,12 @@ struct ToolchainManager::Info {
   void EnsureItemNode() {
     if (!item_node) {
       ItemTree& tree = settings.build_settings()->item_tree();
-      item_node = new ItemNode(&toolchain);
+      item_node = new ItemNode(toolchain);
       tree.AddNodeLocked(item_node);
     }
   }
 
   ToolchainState state;
-
-  Toolchain toolchain;
-  bool toolchain_set;
-  LocationRange toolchain_definition_location;
 
   // The first place in the build that we saw a reference for this toolchain.
   // This allows us to report errors if it can't be loaded and blame some
@@ -117,6 +119,13 @@ struct ToolchainManager::Info {
   // also be done outside of the lock). This works as long as the state flag
   // is only ever read or written inside the lock.
   Settings settings;
+
+  // When we create an item node, this pointer will be owned by that node
+  // so it's lifetime is managed by the dependency graph. Before we've created
+  // the ItemNode, this class has to takre responsibility for this pointer.
+  Toolchain* toolchain;
+  bool toolchain_set;
+  LocationRange toolchain_definition_location;
 
   // Set when the file corresponding to the toolchain definition is loaded.
   // This will normally be set right after "toolchain_set". However, if the
@@ -202,7 +211,7 @@ const Toolchain* ToolchainManager::GetToolchainDefinitionUnlocked(
   // Since we don't allow defining a toolchain more than once, we know that
   // once it's set it won't be mutated, so we can safely return this pointer
   // for reading outside the lock.
-  return &found->second->toolchain;
+  return found->second->toolchain;
 }
 
 bool ToolchainManager::SetDefaultToolchainUnlocked(
@@ -261,13 +270,10 @@ bool ToolchainManager::SetToolchainDefinitionLocked(
   }
 
   // The labels should match or else we're setting the wrong one!
-  CHECK(info->toolchain.label() == tc.label());
+  CHECK(info->toolchain->label() == tc.label());
 
-  // Save the toolchain. We can just overwrite our definition, but we need to
-  // be careful to preserve the is_default flag.
-  bool is_default = info->toolchain.is_default();
-  info->toolchain = tc;
-  info->toolchain.set_is_default(is_default);
+  // Save the toolchain. We can just overwrite our definition.
+  *info->toolchain = tc;
 
   if (info->toolchain_set) {
     *err = Err(defined_from, "Duplicate toolchain definition.");
@@ -423,8 +429,9 @@ void ToolchainManager::FixupDefaultToolchainLocked() {
   // to set the label, but we can assign the toolchain to a new one. Loading
   // the build config can not change the toolchain, so we won't be overwriting
   // anything useful.
-  info->toolchain = Toolchain(default_toolchain_);
-  info->toolchain.set_is_default(true);
+  *info->toolchain = Toolchain(&info->settings, default_toolchain_);
+  info->settings.set_is_default(true);
+  info->settings.set_toolchain_label(default_toolchain_);
   info->EnsureItemNode();
 
   // The default toolchain is loaded in greedy mode so all targets we
@@ -486,8 +493,8 @@ void ToolchainManager::BackgroundLoadBuildConfig(Info* info,
     Scope* base_config = info->settings.base_config();
     base_config->set_source_dir(SourceDir("//"));
 
-    info->settings.build_settings()->build_args().SetupRootScope(base_config,
-        info->settings.toolchain()->args());
+    info->settings.build_settings()->build_args().SetupRootScope(
+        base_config, info->toolchain->args());
 
     base_config->SetProcessingBuildConfig();
     if (is_default)
@@ -495,7 +502,7 @@ void ToolchainManager::BackgroundLoadBuildConfig(Info* info,
 
     ScopedTrace trace(TraceItem::TRACE_FILE_EXECUTE,
         info->settings.build_settings()->build_config_file().value());
-    trace.SetToolchain(info->settings.toolchain()->label());
+    trace.SetToolchain(info->settings.toolchain_label());
 
     const BlockNode* root_block = root->AsBlock();
     Err err;
@@ -540,7 +547,7 @@ void ToolchainManager::BackgroundInvoke(const Info* info,
   if (root && !g_scheduler->is_failed()) {
     if (g_scheduler->verbose_logging()) {
       g_scheduler->Log("Running", file_name.value() + " with toolchain " +
-                       info->toolchain.label().GetUserVisibleName(false));
+                       info->toolchain->label().GetUserVisibleName(false));
     }
 
     Scope our_scope(info->settings.base_config());
@@ -548,7 +555,7 @@ void ToolchainManager::BackgroundInvoke(const Info* info,
     our_scope.set_source_dir(file_name.GetDir());
 
     ScopedTrace trace(TraceItem::TRACE_FILE_EXECUTE, file_name.value());
-    trace.SetToolchain(info->settings.toolchain()->label());
+    trace.SetToolchain(info->settings.toolchain_label());
 
     Err err;
     root->Execute(&our_scope, &err);

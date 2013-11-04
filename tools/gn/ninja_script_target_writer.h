@@ -17,7 +17,9 @@ class OutputFile;
 // Writes a .ninja file for a custom script target type.
 class NinjaScriptTargetWriter : public NinjaTargetWriter {
  public:
-  NinjaScriptTargetWriter(const Target* target, std::ostream& out);
+  NinjaScriptTargetWriter(const Target* target,
+                          const Toolchain* toolchain,
+                          std::ostream& out);
   virtual ~NinjaScriptTargetWriter();
 
   virtual void Run() OVERRIDE;

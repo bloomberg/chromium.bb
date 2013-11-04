@@ -189,23 +189,20 @@ OutputFile NinjaHelper::GetTargetOutputFile(const Target* target) const {
   return ret;
 }
 
-std::string NinjaHelper::GetRulePrefix(const Toolchain* toolchain) const {
-  // This code doesn't prefix the default toolchain commands. This is disabled
-  // so we can coexist with GYP's commands (which aren't prefixed). If we don't
-  // need to coexist with GYP anymore, we can uncomment this to make things a
-  // bit prettier.
-  //if (toolchain->is_default())
-  //  return std::string();  // Default toolchain has no prefix.
-  return toolchain->label().name() + "_";
+std::string NinjaHelper::GetRulePrefix(const Settings* settings) const {
+  // Don't prefix the default toolchain so it looks prettier, prefix everything
+  // else.
+  if (settings->is_default())
+    return std::string();  // Default toolchain has no prefix.
+  return settings->toolchain_label().name() + "_";
 }
 
 std::string NinjaHelper::GetRuleForSourceType(const Settings* settings,
-                                              const Toolchain* toolchain,
                                               SourceFileType type) const {
   // This function may be hot since it will be called for every source file
   // in the tree. We could cache the results to avoid making a string for
   // every invocation.
-  std::string prefix = GetRulePrefix(toolchain);
+  std::string prefix = GetRulePrefix(settings);
 
   if (type == SOURCE_C)
     return prefix + "cc";

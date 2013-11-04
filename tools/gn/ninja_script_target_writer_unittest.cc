@@ -21,7 +21,7 @@ TEST(NinjaScriptTargetWriter, WriteOutputFilesForBuildLine) {
       SourceFile("//out/Debug/gen/{{source_name_part}}.cc"));
 
   std::ostringstream out;
-  NinjaScriptTargetWriter writer(&target, out);
+  NinjaScriptTargetWriter writer(&target, setup.toolchain(), out);
 
   FileTemplate output_template = writer.GetOutputTemplate();
 
@@ -42,7 +42,7 @@ TEST(NinjaScriptTargetWriter, WriteArgsSubstitutions) {
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
 
   std::ostringstream out;
-  NinjaScriptTargetWriter writer(&target, out);
+  NinjaScriptTargetWriter writer(&target, setup.toolchain(), out);
 
   std::vector<std::string> args;
   args.push_back("-i");
@@ -88,7 +88,7 @@ TEST(NinjaScriptTargetWriter, InvokeOverSources) {
         "/usr/bin/python")));
 
     std::ostringstream out;
-    NinjaScriptTargetWriter writer(&target, out);
+    NinjaScriptTargetWriter writer(&target, setup.toolchain(), out);
     writer.Run();
 
     const char expected_linux[] =
@@ -107,7 +107,7 @@ TEST(NinjaScriptTargetWriter, InvokeOverSources) {
         "  source = ../../foo/input2.txt\n"
         "  source_name_part = input2\n"
         "\n"
-        "build obj/foo/bar.stamp: tc_stamp input1.out input2.out\n";
+        "build obj/foo/bar.stamp: stamp input1.out input2.out\n";
 
     std::string out_str = out.str();
 #if defined(OS_WIN)
@@ -125,7 +125,7 @@ TEST(NinjaScriptTargetWriter, InvokeOverSources) {
     setup.settings()->set_target_os(Settings::WIN);
 
     std::ostringstream out;
-    NinjaScriptTargetWriter writer(&target, out);
+    NinjaScriptTargetWriter writer(&target, setup.toolchain(), out);
     writer.Run();
 
     // TODO(brettw) I think we'll need to worry about backslashes here
@@ -151,7 +151,7 @@ TEST(NinjaScriptTargetWriter, InvokeOverSources) {
         "  source = ../../foo/input2.txt\n"
         "  source_name_part = input2\n"
         "\n"
-        "build obj/foo/bar.stamp: tc_stamp input1.out input2.out\n";
+        "build obj/foo/bar.stamp: stamp input1.out input2.out\n";
     std::string out_str = out.str();
 #if defined(OS_WIN)
     std::replace(out_str.begin(), out_str.end(), '\\', '/');

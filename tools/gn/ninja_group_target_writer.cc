@@ -8,8 +8,9 @@
 #include "tools/gn/string_utils.h"
 
 NinjaGroupTargetWriter::NinjaGroupTargetWriter(const Target* target,
+                                               const Toolchain* toolchain,
                                                std::ostream& out)
-    : NinjaTargetWriter(target, out) {
+    : NinjaTargetWriter(target, toolchain, out) {
 }
 
 NinjaGroupTargetWriter::~NinjaGroupTargetWriter() {
@@ -21,7 +22,7 @@ void NinjaGroupTargetWriter::Run() {
   out_ << std::endl << "build ";
   path_output_.WriteFile(out_, helper_.GetTargetOutputFile(target_));
   out_ << ": "
-       << helper_.GetRulePrefix(target_->settings()->toolchain())
+       << helper_.GetRulePrefix(target_->settings())
        << "stamp";
 
   const LabelTargetVector& deps = target_->deps();

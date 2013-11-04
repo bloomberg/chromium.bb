@@ -17,7 +17,7 @@ class Settings;
 // Represents a named config in the dependency graph.
 class Config : public Item {
  public:
-  Config(const Label& label);
+  Config(const Settings* settings, const Label& label);
   virtual ~Config();
 
   virtual Config* AsConfig() OVERRIDE;

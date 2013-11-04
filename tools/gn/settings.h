@@ -38,18 +38,17 @@ class Settings {
   // toolchain's outputs. It should have no slashes in it. The default
   // toolchain should use an empty string.
   Settings(const BuildSettings* build_settings,
-           const Toolchain* toolchain,
            const std::string& output_subdir_name);
   ~Settings();
 
   const BuildSettings* build_settings() const { return build_settings_; }
 
-  // Danger: this must only be used for getting the toolchain label until the
-  // toolchain has been resolved. Otherwise, it will be modified on an
-  // arbitrary thread when the toolchain invocation is found. Generally, you
-  // will only read this from the target generation where we know everything
-  // has been resolved and won't change.
-  const Toolchain* toolchain() const { return toolchain_; }
+  const Label& toolchain_label() const { return toolchain_label_; }
+  void set_toolchain_label(const Label& l) { toolchain_label_ = l; }
+
+  // Indicates if this corresponds to the default toolchain.
+  bool is_default() const { return is_default_; }
+  void set_is_default(bool id) { is_default_ = id; }
 
   bool IsMac() const { return target_os_ == MAC; }
   bool IsLinux() const { return target_os_ == LINUX; }
@@ -94,7 +93,8 @@ class Settings {
  private:
   const BuildSettings* build_settings_;
 
-  const Toolchain* toolchain_;
+  Label toolchain_label_;
+  bool is_default_;
 
   TargetOS target_os_;
 

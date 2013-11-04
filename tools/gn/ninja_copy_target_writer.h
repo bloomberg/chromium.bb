@@ -11,7 +11,9 @@
 // Writes a .ninja file for a copy target type.
 class NinjaCopyTargetWriter : public NinjaTargetWriter {
  public:
-  NinjaCopyTargetWriter(const Target* target, std::ostream& out);
+  NinjaCopyTargetWriter(const Target* target,
+                        const Toolchain* toolchain,
+                        std::ostream& out);
   virtual ~NinjaCopyTargetWriter();
 
   virtual void Run() OVERRIDE;

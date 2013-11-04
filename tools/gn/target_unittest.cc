@@ -15,16 +15,17 @@ class TargetTest : public testing::Test {
  public:
   TargetTest()
       : build_settings_(),
-        toolchain_(Label(SourceDir("//tc/"), "tc")),
-        settings_(&build_settings_, &toolchain_, std::string()) {
+        settings_(&build_settings_, std::string()),
+        toolchain_(&settings_, Label(SourceDir("//tc/"), "tc")) {
+    settings_.set_toolchain_label(toolchain_.label());
   }
   virtual ~TargetTest() {
   }
 
  protected:
   BuildSettings build_settings_;
-  Toolchain toolchain_;
   Settings settings_;
+  Toolchain toolchain_;
 };
 
 }  // namespace
@@ -122,15 +123,15 @@ TEST_F(TargetTest, DependentConfigs) {
   b.deps().push_back(LabelTargetPair(&c));
 
   // Normal non-inherited config.
-  Config config(Label(SourceDir("//foo/"), "config"));
+  Config config(&settings_, Label(SourceDir("//foo/"), "config"));
   c.configs().push_back(LabelConfigPair(&config));
 
   // All dependent config.
-  Config all(Label(SourceDir("//foo/"), "all"));
+  Config all(&settings_, Label(SourceDir("//foo/"), "all"));
   c.all_dependent_configs().push_back(LabelConfigPair(&all));
 
   // Direct dependent config.
-  Config direct(Label(SourceDir("//foo/"), "direct"));
+  Config direct(&settings_, Label(SourceDir("//foo/"), "direct"));
   c.direct_dependent_configs().push_back(LabelConfigPair(&direct));
 
   c.OnResolved();

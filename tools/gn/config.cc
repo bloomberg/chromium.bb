@@ -10,7 +10,8 @@
 #include "tools/gn/item_tree.h"
 #include "tools/gn/scheduler.h"
 
-Config::Config(const Label& label) : Item(label) {
+Config::Config(const Settings* settings, const Label& label)
+    : Item(settings, label) {
 }
 
 Config::~Config() {
@@ -38,7 +39,7 @@ Config* Config::GetConfig(const Settings* settings,
   ItemNode* node = tree->GetExistingNodeLocked(label);
   Config* config = NULL;
   if (!node) {
-    config = new Config(label);
+    config = new Config(settings, label);
     node = new ItemNode(config);
     node->set_originally_referenced_from_here(specified_from_here);
     tree->AddNodeLocked(node);

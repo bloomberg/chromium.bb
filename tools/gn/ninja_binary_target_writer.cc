@@ -86,8 +86,9 @@ Toolchain::ToolType GetToolTypeForTarget(const Target* target) {
 }  // namespace
 
 NinjaBinaryTargetWriter::NinjaBinaryTargetWriter(const Target* target,
+                                                 const Toolchain* toolchain,
                                                  std::ostream& out)
-    : NinjaTargetWriter(target, out),
+    : NinjaTargetWriter(target, toolchain, out),
       tool_type_(GetToolTypeForTarget(target)){
 }
 
@@ -145,7 +146,6 @@ void NinjaBinaryTargetWriter::WriteSources(
   const Target::FileList& sources = target_->sources();
   object_files->reserve(sources.size());
 
-  const Toolchain* toolchain = GetToolchain();
   std::string implicit_deps = GetSourcesImplicitDeps();
 
   for (size_t i = 0; i < sources.size(); i++) {
@@ -156,7 +156,7 @@ void NinjaBinaryTargetWriter::WriteSources(
     if (input_file_type == SOURCE_UNKNOWN)
       continue;  // Skip unknown file types.
     std::string command =
-        helper_.GetRuleForSourceType(settings_, toolchain, input_file_type);
+        helper_.GetRuleForSourceType(settings_, input_file_type);
     if (command.empty())
       continue;  // Skip files not needing compilation.
 
@@ -265,8 +265,7 @@ void NinjaBinaryTargetWriter::WriteLinkerFlags() {
   RecursiveTargetConfigStringsToStream(target_, &ConfigValues::ldflags,
                                        flag_options, out_);
 
-  const Toolchain* toolchain = GetToolchain();
-  const Toolchain::Tool& tool = toolchain->GetTool(tool_type_);
+  const Toolchain::Tool& tool = toolchain_->GetTool(tool_type_);
 
   // Followed by library search paths that have been recursively pushed
   // through the dependency tree.
@@ -306,7 +305,7 @@ void NinjaBinaryTargetWriter::WriteLinkCommand(
     path_output_.WriteFile(out_, external_output_file);
   }
   out_ << ": "
-       << helper_.GetRulePrefix(GetToolchain())
+       << helper_.GetRulePrefix(target_->settings())
        << Toolchain::ToolTypeToName(tool_type_);
 
   std::set<OutputFile> extra_object_files;
@@ -346,7 +345,7 @@ void NinjaBinaryTargetWriter::WriteSourceSetStamp(
   out_ << "build ";
   path_output_.WriteFile(out_, helper_.GetTargetOutputFile(target_));
   out_ << ": "
-       << helper_.GetRulePrefix(target_->settings()->toolchain())
+       << helper_.GetRulePrefix(target_->settings())
        << "stamp";
 
   std::set<OutputFile> extra_object_files;
