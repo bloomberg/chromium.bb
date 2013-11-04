@@ -28,7 +28,7 @@ class Server(object):
     port = self._FindOpenPort()
     chromedriver_args = [exe_path, '--port=%d' % port]
     if log_path:
-      chromedriver_args.append('--log-path=%s' % log_path)
+      chromedriver_args.extend(['--verbose', '--log-path=%s' % log_path])
     self._process = subprocess.Popen(chromedriver_args)
     self._url = 'http://127.0.0.1:%d' % port
     if self._process is None:
