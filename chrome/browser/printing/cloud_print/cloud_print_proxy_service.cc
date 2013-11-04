@@ -153,7 +153,7 @@ void CloudPrintProxyService::GetPrintersAvalibleForRegistration(
           printers->push_back(printer);
       }
     }
-    UMA_HISTOGRAM_COUNTS_10000("CloudPrint.AvaliblePrintersList",
+    UMA_HISTOGRAM_COUNTS_10000("CloudPrint.AvailablePrintersList",
                                printers->size());
   } else {
     printing::PrinterList printer_list;
@@ -163,7 +163,8 @@ void CloudPrintProxyService::GetPrintersAvalibleForRegistration(
       backend->EnumeratePrinters(&printer_list);
     for (size_t i = 0; i < printer_list.size(); ++i)
       printers->push_back(printer_list[i].printer_name);
-    UMA_HISTOGRAM_COUNTS_10000("CloudPrint.AvaliblePrinters", printers->size());
+    UMA_HISTOGRAM_COUNTS_10000("CloudPrint.AvailablePrinters",
+                               printers->size());
   }
 }
 
