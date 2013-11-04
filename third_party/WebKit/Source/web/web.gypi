@@ -126,6 +126,7 @@
       'WebDOMEventListenerPrivate.cpp',
       'WebDOMEventListenerPrivate.h',
       'WebDOMFileSystem.cpp',
+      'WebDOMMediaStreamTrack.cpp',
       'WebDOMMessageEvent.cpp',
       'WebDOMMouseEvent.cpp',
       'WebDOMProgressEvent.cpp',
