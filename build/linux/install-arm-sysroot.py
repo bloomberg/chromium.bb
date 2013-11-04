@@ -34,13 +34,8 @@ import sys
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 URL_PREFIX = 'https://commondatastorage.googleapis.com'
 URL_PATH = 'nativeclient-archive2/toolchain'
-REVISION = 12292
+REVISION = 12356
 TARBALL = 'sysroot-arm-trusted.tgz'
-
-# TODO(sbc): remove armel support once the transision to armhf
-# is complete.
-REVISION_ARMEL = 12203
-TARBALL_ARMEL = 'naclsdk_linux_arm-trusted.tgz'
 
 def main(args):
   if '--linux-only' in args:
@@ -55,10 +50,7 @@ def main(args):
 
   src_root = os.path.dirname(os.path.dirname(SCRIPT_DIR))
   sysroot = os.path.join(src_root, 'arm-sysroot')
-  if '-gnueabihf-' in os.environ.get('CC', ''):
-    url = "%s/%s/%s/%s" % (URL_PREFIX, URL_PATH, REVISION, TARBALL)
-  else:
-    url = "%s/%s/%s/%s" % (URL_PREFIX, URL_PATH, REVISION_ARMEL, TARBALL_ARMEL)
+  url = "%s/%s/%s/%s" % (URL_PREFIX, URL_PATH, REVISION, TARBALL)
 
   stamp = os.path.join(sysroot, ".stamp")
   if os.path.exists(stamp):
