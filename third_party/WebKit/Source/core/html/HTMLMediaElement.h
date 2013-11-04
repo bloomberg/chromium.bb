@@ -531,10 +531,6 @@ private:
 
     bool m_pausedInternal : 1;
 
-    // Not all media engines provide enough information about a file to be able to
-    // support progress events so setting m_sendProgressEvents disables them
-    bool m_sendProgressEvents : 1;
-
     bool m_closedCaptionsVisible : 1;
 
     bool m_loadInitiatedByUserGesture : 1;

@@ -280,7 +280,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_sentStalledEvent(false)
     , m_sentEndEvent(false)
     , m_pausedInternal(false)
-    , m_sendProgressEvents(true)
     , m_closedCaptionsVisible(false)
     , m_loadInitiatedByUserGesture(false)
     , m_completelyLoaded(false)
@@ -845,8 +844,7 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
     if (MediaStreamRegistry::registry().lookupMediaStreamDescriptor(url.string()))
       removeBehaviorRestriction(RequireUserGestureForRateChangeRestriction);
 
-    if (m_sendProgressEvents)
-        startProgressEventTimer();
+    startProgressEventTimer();
 
     // Reset display mode to force a recalculation of what to show because we are resetting the player.
     setDisplayMode(Unknown);
