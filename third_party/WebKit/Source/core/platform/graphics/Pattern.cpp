@@ -42,8 +42,9 @@ Pattern::Pattern(PassRefPtr<Image> image, bool repeatX, bool repeatY)
     , m_repeatY(repeatY)
     , m_externalMemoryAllocated(0)
 {
-    ASSERT(image);
-    m_tileImage = image->nativeImageForCurrentFrame();
+    if (image) {
+        m_tileImage = image->nativeImageForCurrentFrame();
+    }
 }
 
 Pattern::~Pattern()
