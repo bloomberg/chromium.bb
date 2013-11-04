@@ -51,9 +51,6 @@ EXTRA_ENV = {
                           # remains uset.
   'DEFAULTLIBS' : '1',    # Link with default libraries
   'DIAGNOSTIC'  : '0',    # Diagnostic flag detected
-  'SHARED'      : '0',    # Produce a shared library
-  'STATIC'      : '0',    # -static (default)
-  'DYNAMIC'     : '0',    # -dynamic
   'PIC'         : '0',    # Generate PIC
   # TODO(robertm): Switch the default to 1
   'NO_ASM'      : '0',    # Disallow use of inline assembler
@@ -114,8 +111,7 @@ EXTRA_ENV = {
 
   # Only propagate opt level to linker if explicitly set, so that the
   # linker will know if an opt level was explicitly set or not.
-  'LD_FLAGS' : '${#OPT_LEVEL ? -O${OPT_LEVEL}} ' +
-               '${STATIC ? -static} ${SHARED ? -shared} ' +
+  'LD_FLAGS' : '${#OPT_LEVEL ? -O${OPT_LEVEL}} -static ' +
                '${PIC ? -fPIC} ${@AddPrefix:-L:SEARCH_DIRS}',
 
   'SEARCH_DIRS'      : '${SEARCH_DIRS_USER} ${PREFIXES}',
@@ -123,9 +119,7 @@ EXTRA_ENV = {
   'PREFIXES'         : '', # Prefixes specified by using the -B flag.
 
   # Library Strings
-  'EMITMODE'         : '${!USE_STDLIB ? nostdlib : ' +
-                       '${STATIC ? static : ' +
-                       '${SHARED ? shared : dynamic}}}',
+  'EMITMODE'         : '${!USE_STDLIB ? nostdlib : static}',
 
   # This is setup so that LD_ARGS_xxx is evaluated lazily.
   'LD_ARGS' : '${LD_ARGS_%EMITMODE%}',
@@ -142,13 +136,6 @@ EXTRA_ENV = {
     '-l:crti.bc -l:crtbegin.bc '
     '${!ALLOW_CXX_EXCEPTIONS ? -l:unwind_stubs.bc} ' +
     '${ld_inputs} ' +
-    '--start-group ${STDLIBS} --end-group',
-
-  'LD_ARGS_shared':
-    '-l:crti.bc -l:crtbeginS.bc ${ld_inputs} ${STDLIBS}',
-
-  'LD_ARGS_dynamic':
-    '-l:crti.bc -l:crtbegin.bc ${ld_inputs} ' +
     '--start-group ${STDLIBS} --end-group',
 
   'LLVM_PASSES_TO_DISABLE': '',
@@ -351,9 +338,8 @@ GCCPatterns = [
                               "env.set('VERBOSE', '1')"),
   ( '(-pthreads?)',           "env.set('PTHREAD', '1')"),
 
-  ( '-shared',                "env.set('SHARED', '1')"),
-  ( '-static',                "env.set('STATIC', '1')"),
-  ( '-dynamic',               "env.set('DYNAMIC', '1')"),
+  # No-op: accepted for compatibility in case build scripts pass it.
+  ( '-static',                ""),
 
   ( ('-B','(.*)'),            AddBPrefix),
   ( ('-B(.+)'),               AddBPrefix),
@@ -436,12 +422,6 @@ def CheckSetup():
               'Use pnacl-clang or pnacl-clang++.')
 
 def DriverOutputTypes(driver_flag, compiling_to_native):
-  if env.getbool('SHARED'):
-    bclink_output = 'pso'
-    link_output = 'so'
-  else:
-    bclink_output = 'pexe'
-    link_output = 'nexe'
   output_type_map = {
     ('-E', False) : 'pp',
     ('-E', True)  : 'pp',
@@ -449,8 +429,8 @@ def DriverOutputTypes(driver_flag, compiling_to_native):
     ('-c', True)  : 'o',
     ('-S', False) : 'll',
     ('-S', True)  : 's',
-    ('',   False) : bclink_output,
-    ('',   True)  : link_output
+    ('',   False) : 'pexe',
+    ('',   True)  : 'nexe',
   }
   return output_type_map[(driver_flag, compiling_to_native)]
 
@@ -470,16 +450,6 @@ def main(argv):
   unmatched = env.get('UNMATCHED')
   if len(unmatched) > 0:
     UnrecognizedOption(*unmatched)
-
-  is_shared = env.getbool('SHARED')
-
-  if env.getbool('STATIC') and env.getbool('SHARED'):
-    Log.Fatal("Can't handle both -static and -shared")
-
-  # default to static.
-  if (not env.getbool('DYNAMIC') and
-      not env.getbool('SHARED')):
-    env.set('STATIC', '1')
 
   # If -arch was given, we are compiling directly to native code
   compiling_to_native = GetArch() is not None
@@ -761,8 +731,7 @@ BASIC OPTIONS:
   -Wp,<arg>             Pass <arg> to the preprocessor.
   -Xpreprocessor,<arg>  Pass <arg> to the preprocessor.
   -x <language>         Treat subsequent input files as having type <language>.
-  -static               Produce a static executable.
-  -shared               Produce a shared object.
+  -static               Produce a static executable (the default).
   -Bstatic              Link subsequent libraries statically.
   -Bdynamic             Link subsequent libraries dynamically.
   -fPIC                 Ignored (only used by translator backend)
