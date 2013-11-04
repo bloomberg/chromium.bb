@@ -1438,6 +1438,8 @@ static bool isCandidateForOpaquenessTest(RenderBox* childBox)
             return false;
         if (childLayer->hasTransform() || childLayer->isTransparent() || childLayer->hasFilter())
             return false;
+        if (childBox->hasOverflowClip() && childStyle->hasBorderRadius())
+            return false;
     }
     return true;
 }
