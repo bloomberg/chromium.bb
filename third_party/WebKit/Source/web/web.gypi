@@ -269,6 +269,7 @@
       'linux/WebFontInfo.cpp',
       'linux/WebFontRenderStyle.cpp',
       'linux/WebFontRendering.cpp',
+      'mac/WebScrollbarTheme.cpp',
       'mac/WebSubstringUtil.mm',
       'painting/ContinuousPainter.cpp',
       'painting/ContinuousPainter.h',

@@ -205,6 +205,7 @@
                 }, { # else: OS!="mac"
                     'sources/': [
                         ['exclude', 'WebInputEventFactoryMac.mm$'],
+                        ['exclude', 'mac/WebScrollbarTheme.cpp$'],
                     ],
                 }],
                 ['OS=="win"', {

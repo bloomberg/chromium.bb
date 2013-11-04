@@ -90,14 +90,11 @@ static ScrollbarSet& scrollbarSet()
     if (theme->isMockTheme())
         return;
 
-    static_cast<ScrollbarThemeMacCommon*>(ScrollbarTheme::theme())->preferencesChanged();
-    if (scrollbarSet().isEmpty())
-        return;
-    ScrollbarSet::iterator end = scrollbarSet().end();
-    for (ScrollbarSet::iterator it = scrollbarSet().begin(); it != end; ++it) {
-        (*it)->styleChanged();
-        (*it)->invalidate();
-    }
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    [defaults synchronize];
+    static_cast<ScrollbarThemeMacCommon*>(ScrollbarTheme::theme())->preferencesChanged(
+        [defaults floatForKey:@"NSScrollerButtonDelay"], [defaults floatForKey:@"NSScrollerButtonPeriod"],
+        [defaults boolForKey:@"AppleScrollerPagingBehavior"], true);
 }
 
 + (void)behaviorPrefsChanged:(NSNotification*)unusedNotification
@@ -108,7 +105,11 @@ static ScrollbarSet& scrollbarSet()
     if (theme->isMockTheme())
         return;
 
-    static_cast<ScrollbarThemeMacCommon*>(ScrollbarTheme::theme())->preferencesChanged();
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    [defaults synchronize];
+    static_cast<ScrollbarThemeMacCommon*>(ScrollbarTheme::theme())->preferencesChanged(
+        [defaults floatForKey:@"NSScrollerButtonDelay"], [defaults floatForKey:@"NSScrollerButtonPeriod"],
+        [defaults boolForKey:@"AppleScrollerPagingBehavior"], false);
 }
 
 + (void)registerAsObserver
@@ -340,7 +341,11 @@ ScrollbarThemeMacCommon::ScrollbarThemeMacCommon()
     if (!initialized) {
         initialized = true;
         [WebScrollbarPrefsObserver registerAsObserver];
-        preferencesChanged();
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        [defaults synchronize];
+        preferencesChanged(
+            [defaults floatForKey:@"NSScrollerButtonDelay"], [defaults floatForKey:@"NSScrollerButtonPeriod"],
+            [defaults boolForKey:@"AppleScrollerPagingBehavior"], false);
     }
 }
 
@@ -348,14 +353,19 @@ ScrollbarThemeMacCommon::~ScrollbarThemeMacCommon()
 {
 }
 
-void ScrollbarThemeMacCommon::preferencesChanged()
+void ScrollbarThemeMacCommon::preferencesChanged(float initialButtonDelay, float autoscrollButtonDelay, bool jumpOnTrackClick, bool redraw)
 {
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    [defaults synchronize];
     updateButtonPlacement();
-    gInitialButtonDelay = [defaults floatForKey:@"NSScrollerButtonDelay"];
-    gAutoscrollButtonDelay = [defaults floatForKey:@"NSScrollerButtonPeriod"];
-    gJumpOnTrackClick = [defaults boolForKey:@"AppleScrollerPagingBehavior"];
+    gInitialButtonDelay = initialButtonDelay;
+    gAutoscrollButtonDelay = autoscrollButtonDelay;
+    gJumpOnTrackClick = jumpOnTrackClick;
+    if (redraw && !scrollbarSet().isEmpty()) {
+        ScrollbarSet::iterator end = scrollbarSet().end();
+        for (ScrollbarSet::iterator it = scrollbarSet().begin(); it != end; ++it) {
+            (*it)->styleChanged();
+            (*it)->invalidate();
+        }
+    }
 }
 
 double ScrollbarThemeMacCommon::initialAutoscrollTimerDelay()
