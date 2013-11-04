@@ -120,8 +120,14 @@ fi
 
 if [[ $# -eq 0 ]]; then
   # List all unit test scripts that match the given pattern.
+  prune_tests=(
+    $(find "${CHROMITE_PATH}" -name .testignore \
+        -printf '-path %h -prune -o ')
+  )
   all_tests=(
-    $(find "${CHROMITE_PATH}" -name '*_unittest.py' -printf '%P ')
+    $(find "${CHROMITE_PATH}" \
+        ${prune_tests[*]} \
+        -name '*_unittest.py' -printf '%P ')
   )
   set -- "${all_tests[@]}"
 fi
