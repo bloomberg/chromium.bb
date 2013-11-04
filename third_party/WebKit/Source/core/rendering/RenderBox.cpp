@@ -164,11 +164,6 @@ void RenderBox::willBeDestroyed()
 
     ShapeOutsideInfo::removeInfo(this);
 
-    // RenderGrid keep track of its grid items, ensure that we invalidate
-    // it here. FIXME: We probably could be smarter, see RenderGrid::removeChild.
-    if (parent() && parent()->isRenderGrid())
-        toRenderGrid(parent())->dirtyGrid();
-
     RenderBoxModelObject::willBeDestroyed();
 }
 

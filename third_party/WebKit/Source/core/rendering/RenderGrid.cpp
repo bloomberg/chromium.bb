@@ -191,11 +191,6 @@ void RenderGrid::addChild(RenderObject* newChild, RenderObject* beforeChild)
     }
 
     RenderBox* newChildBox = toRenderBox(newChild);
-    // If the new box ends up wrapped under an anonymous block,
-    // the anonymous block will act as the grid item.
-    if (newChildBox->parent() != this)
-        return;
-
     OwnPtr<GridSpan> rowPositions = resolveGridPositionsFromStyle(newChildBox, ForRows);
     OwnPtr<GridSpan> columnPositions = resolveGridPositionsFromStyle(newChildBox, ForColumns);
     if (!rowPositions || !columnPositions) {
@@ -837,34 +832,9 @@ void RenderGrid::dirtyGrid()
     m_gridIsDirty = true;
 }
 
-void RenderGrid::checkGridCoherency() const
-{
-#ifndef NDEBUG
-    HashSet<RenderBox*> childrenBoxes;
-    for (RenderBox* child = firstChildBox(); child; child = child->nextSiblingBox())
-        childrenBoxes.add(child);
-
-    HashSet<RenderBox*> gridChildrenBoxes;
-    for (size_t row = 0; row < gridRowCount(); ++row) {
-        for (size_t column = 0; column < gridColumnCount(); ++column) {
-            const Vector<RenderBox*, 1>& children = m_grid[row][column];
-            for (size_t i = 0; i < children.size(); ++i)
-                gridChildrenBoxes.add(children[i]);
-        }
-    }
-
-    ASSERT(childrenBoxes.size() == gridChildrenBoxes.size());
-    HashSet<RenderBox*>::const_iterator end = gridChildrenBoxes.end();
-    for (HashSet<RenderBox*>::const_iterator it = gridChildrenBoxes.begin(); it != end; ++it)
-        ASSERT(childrenBoxes.contains(*it));
-#endif
-}
-
 void RenderGrid::layoutGridItems()
 {
     placeItemsOnGrid();
-
-    checkGridCoherency();
 
     GridSizingData sizingData(gridColumnCount(), gridRowCount());
     computedUsedBreadthOfGridTracks(ForColumns, sizingData);
