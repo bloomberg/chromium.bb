@@ -77,12 +77,18 @@ class NotificationBitmapFetcherBrowserTest : public InProcessBrowserTest {
   scoped_ptr<net::FakeURLFetcherFactory> url_fetcher_factory_;
 };
 
+#if defined(OS_WIN)
+#define MAYBE_StartTest DISABLED_StartTest
+#else
+#define MAYBE_StartTest StartTest
+#endif
+
 // WARNING:  These tests work with --single_process, but not
 // --single-process.  The reason is that the sandbox does not get created
 // for us by the test process if --single-process is used.
 
 IN_PROC_BROWSER_TEST_F(NotificationBitmapFetcherBrowserTest,
-                       StartTest) {
+                       MAYBE_StartTest) {
   GURL url("http://example.com/this-should-work");
 
   // Put some realistic looking bitmap data into the url_fetcher.
