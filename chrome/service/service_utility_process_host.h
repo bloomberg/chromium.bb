@@ -147,6 +147,8 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   base::FilePath metafile_path_;
   // The temporary folder created for the metafile.
   scoped_ptr<base::ScopedTempDir> scratch_metafile_dir_;
+  // Start time of operation.
+  base::Time start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceUtilityProcessHost);
 };

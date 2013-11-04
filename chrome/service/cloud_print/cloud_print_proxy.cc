@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
@@ -249,6 +250,8 @@ void CloudPrintProxy::OnPrintSystemUnavailable() {
 void CloudPrintProxy::OnUnregisterPrinters(
     const std::string& auth_token,
     const std::list<std::string>& printer_ids) {
+  UMA_HISTOGRAM_COUNTS_10000("CloudPrint.UnregisterPrinters",
+                             printer_ids.size());
   ShutdownBackend();
   wipeout_.reset(new CloudPrintWipeout(this, settings_.server_url()));
   wipeout_->UnregisterPrinters(auth_token, printer_ids);

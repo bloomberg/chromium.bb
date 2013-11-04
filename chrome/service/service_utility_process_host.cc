@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/metrics/histogram.h"
 #include "base/process/kill.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
@@ -33,6 +34,7 @@
 #include "printing/emf_win.h"
 
 namespace {
+
 // NOTE: changes to this class need to be reviewed by the security team.
 class ServiceSandboxedProcessLauncherDelegate
     : public content::SandboxedProcessLauncherDelegate {
@@ -50,11 +52,26 @@ class ServiceSandboxedProcessLauncherDelegate
  private:
   base::FilePath exposed_dir_;
 };
-}
+
+}  // namespace
 
 #endif  // OS_WIN
 
 using content::ChildProcessHost;
+
+namespace {
+  enum ServiceUtilityProcessHostEvent {
+  SERVICE_UTILITY_STARTED,
+  SERVICE_UTILITY_DISCONNECTED,
+  SERVICE_UTILITY_METAFILE_REQUEST,
+  SERVICE_UTILITY_METAFILE_SUCCEEDED,
+  SERVICE_UTILITY_METAFILE_FAILED,
+  SERVICE_UTILITY_CAPS_REQUEST,
+  SERVICE_UTILITY_CAPS_SUCCEEDED,
+  SERVICE_UTILITY_CAPS_FAILED,
+  SERVICE_UTILITY_EVENT_MAX,
+};
+}  // namespace
 
 ServiceUtilityProcessHost::ServiceUtilityProcessHost(
     Client* client, base::MessageLoopProxy* client_message_loop_proxy)
@@ -74,6 +91,10 @@ bool ServiceUtilityProcessHost::StartRenderPDFPagesToMetafile(
     const base::FilePath& pdf_path,
     const printing::PdfRenderSettings& render_settings,
     const std::vector<printing::PageRange>& page_ranges) {
+  UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceUtilityProcessHostEvent",
+                            SERVICE_UTILITY_METAFILE_REQUEST,
+                            SERVICE_UTILITY_EVENT_MAX);
+  start_time_ = base::Time::Now();
 #if !defined(OS_WIN)
   // This is only implemented on Windows (because currently it is only needed
   // on Windows). Will add implementations on other platforms when needed.
@@ -119,6 +140,10 @@ bool ServiceUtilityProcessHost::StartRenderPDFPagesToMetafile(
 
 bool ServiceUtilityProcessHost::StartGetPrinterCapsAndDefaults(
     const std::string& printer_name) {
+  UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceUtilityProcessHostEvent",
+                            SERVICE_UTILITY_CAPS_REQUEST,
+                            SERVICE_UTILITY_EVENT_MAX);
+  start_time_ = base::Time::Now();
   base::FilePath exposed_path;
   if (!StartProcess(true, exposed_path))
     return false;
@@ -145,7 +170,13 @@ bool ServiceUtilityProcessHost::StartProcess(
   cmd_line.AppendSwitchASCII(switches::kProcessChannelID, channel_id);
   cmd_line.AppendSwitch(switches::kLang);
 
-  return Launch(&cmd_line, no_sandbox, exposed_dir);
+  if (Launch(&cmd_line, no_sandbox, exposed_dir)) {
+    UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceUtilityProcessHostEvent",
+                              SERVICE_UTILITY_STARTED,
+                              SERVICE_UTILITY_EVENT_MAX);
+    return true;
+  }
+  return false;
 }
 
 bool ServiceUtilityProcessHost::Launch(CommandLine* cmd_line,
@@ -184,6 +215,11 @@ void ServiceUtilityProcessHost::OnChildDisconnected() {
     // child died.
     client_message_loop_proxy_->PostTask(
         FROM_HERE, base::Bind(&Client::OnChildDied, client_.get()));
+    UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceUtilityProcessHostEvent",
+                              SERVICE_UTILITY_DISCONNECTED,
+                              SERVICE_UTILITY_EVENT_MAX);
+    UMA_HISTOGRAM_TIMES("CloudPrint.ServiceUtilityDisconnectTime",
+                        base::Time::Now() - start_time_);
   }
   delete this;
 }
@@ -209,6 +245,11 @@ bool ServiceUtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
 void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafileSucceeded(
     int highest_rendered_page_number,
     double scale_factor) {
+  UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceUtilityProcessHostEvent",
+                            SERVICE_UTILITY_METAFILE_SUCCEEDED,
+                            SERVICE_UTILITY_EVENT_MAX);
+  UMA_HISTOGRAM_TIMES("CloudPrint.ServiceUtilityMetafileTime",
+                      base::Time::Now() - start_time_);
   DCHECK(waiting_for_reply_);
   waiting_for_reply_ = false;
   // If the metafile was successfully created, we need to take our hands off the
@@ -223,6 +264,11 @@ void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafileSucceeded(
 
 void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafileFailed() {
   DCHECK(waiting_for_reply_);
+  UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceUtilityProcessHostEvent",
+                            SERVICE_UTILITY_METAFILE_FAILED,
+                            SERVICE_UTILITY_EVENT_MAX);
+  UMA_HISTOGRAM_TIMES("CloudPrint.ServiceUtilityMetafileFailTime",
+                      base::Time::Now() - start_time_);
   waiting_for_reply_ = false;
   client_message_loop_proxy_->PostTask(
       FROM_HERE,
@@ -233,6 +279,11 @@ void ServiceUtilityProcessHost::OnGetPrinterCapsAndDefaultsSucceeded(
     const std::string& printer_name,
     const printing::PrinterCapsAndDefaults& caps_and_defaults) {
   DCHECK(waiting_for_reply_);
+  UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceUtilityProcessHostEvent",
+                            SERVICE_UTILITY_CAPS_SUCCEEDED,
+                            SERVICE_UTILITY_EVENT_MAX);
+  UMA_HISTOGRAM_TIMES("CloudPrint.ServiceUtilityCapsTime",
+                      base::Time::Now() - start_time_);
   waiting_for_reply_ = false;
   client_message_loop_proxy_->PostTask(
       FROM_HERE,
@@ -243,6 +294,11 @@ void ServiceUtilityProcessHost::OnGetPrinterCapsAndDefaultsSucceeded(
 void ServiceUtilityProcessHost::OnGetPrinterCapsAndDefaultsFailed(
     const std::string& printer_name) {
   DCHECK(waiting_for_reply_);
+  UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceUtilityProcessHostEvent",
+                            SERVICE_UTILITY_CAPS_FAILED,
+                            SERVICE_UTILITY_EVENT_MAX);
+  UMA_HISTOGRAM_TIMES("CloudPrint.ServiceUtilityCapsFailTime",
+                      base::Time::Now() - start_time_);
   waiting_for_reply_ = false;
   client_message_loop_proxy_->PostTask(
       FROM_HERE,

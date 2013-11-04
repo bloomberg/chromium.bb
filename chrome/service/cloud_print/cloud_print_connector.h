@@ -133,7 +133,8 @@ class CloudPrintConnector
   void StartGetRequest(const GURL& url,
                        int max_retries,
                        ResponseHandler handler);
-  void StartPostRequest(const GURL& url,
+  void StartPostRequest(CloudPrintURLFetcher::RequestType type,
+                        const GURL& url,
                         int max_retries,
                         const std::string& mime_type,
                         const std::string& post_data,
@@ -171,6 +172,9 @@ class CloudPrintConnector
   bool IsSamePrinter(const std::string& name1, const std::string& name2) const;
   bool InitPrintSystem();
 
+  void ScheduleStatsReport();
+  void ReportStats();
+
   // CloudPrintConnector client.
   Client* client_;
   // Connector settings.
@@ -192,6 +196,7 @@ class CloudPrintConnector
   scoped_refptr<CloudPrintURLFetcher> request_;
   // The CloudPrintURLFetcher instance for the user message request.
   scoped_refptr<CloudPrintURLFetcher> user_message_request_;
+  base::WeakPtrFactory<CloudPrintConnector> stats_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintConnector);
 };

@@ -5,6 +5,7 @@
 #include "chrome/service/cloud_print/connector_settings.h"
 
 #include "base/command_line.h"
+#include "base/metrics/histogram.h"
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
@@ -76,6 +77,9 @@ void ConnectorSettings::InitFrom(ServiceProcessPrefs* prefs) {
   int timeout = prefs->GetInt(
       prefs::kCloudPrintXmppPingTimeout, kDefaultXmppPingTimeoutSecs);
   SetXmppPingTimeoutSec(timeout);
+  UMA_HISTOGRAM_LONG_TIMES(
+      "CloudPrint.XmppTimeout",
+      base::TimeDelta::FromSeconds(xmpp_ping_timeout_sec_));
 
   const base::ListValue* printers = prefs->GetList(prefs::kCloudPrintPrinters);
   if (printers) {
@@ -92,6 +96,13 @@ void ConnectorSettings::InitFrom(ServiceProcessPrefs* prefs) {
         }
       }
     }
+  }
+  if (connect_new_printers_) {
+    UMA_HISTOGRAM_COUNTS_10000("CloudPrint.PrinterBlacklistSize",
+                               printers_.size());
+  } else {
+    UMA_HISTOGRAM_COUNTS_10000("CloudPrint.PrinterWhitelistSize",
+                               printers_.size());
   }
 }
 

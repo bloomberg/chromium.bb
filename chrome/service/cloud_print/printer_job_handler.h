@@ -151,14 +151,17 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
 
   // End Delegate implementations
 
+  static void ReportsStats();
+
  private:
   friend class base::RefCountedThreadSafe<PrinterJobHandler>;
 
   enum PrintJobError {
-    SUCCESS,
+    JOB_SUCCESS,
     JOB_DOWNLOAD_FAILED,
-    VALIDATE_PRINT_TICKET_FAILED,
-    PRINT_FAILED,
+    JOB_VALIDATE_TICKET_FAILED,
+    JOB_FAILED,
+    JOB_MAX,
   };
 
   // Prototype for a JSON data handler.
@@ -227,9 +230,9 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   // Run a job check as the result of a scheduled check
   void RunScheduledJobCheck();
 
-  // Sets the next response handler to the specifed JSON data handler.
+  // Sets the next response handler to the specified JSON data handler.
   void SetNextJSONHandler(JSONDataHandler handler);
-  // Sets the next response handler to the specifed data handler.
+  // Sets the next response handler to the specified data handler.
   void SetNextDataHandler(DataHandler handler);
 
   void JobFailed(PrintJobError error);
@@ -301,6 +304,10 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
 
   base::TimeTicks last_job_fetch_time_;
   base::WeakPtrFactory<PrinterJobHandler> weak_ptr_factory_;
+
+  base::Time job_start_time_;
+  base::Time spooling_start_time_;
+  base::Time last_caps_update_time_;
 
   DISALLOW_COPY_AND_ASSIGN(PrinterJobHandler);
 };

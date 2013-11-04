@@ -53,10 +53,15 @@ class JobStatusUpdater : public base::RefCountedThreadSafe<JobStatusUpdater>,
   virtual CloudPrintURLFetcher::ResponseAction OnRequestAuthError() OVERRIDE;
   virtual std::string GetAuthHeader() OVERRIDE;
 
+  base::Time start_time() const {
+    return start_time_;
+  }
+
  private:
   friend class base::RefCountedThreadSafe<JobStatusUpdater>;
   virtual ~JobStatusUpdater();
 
+  base::Time start_time_;
   std::string printer_name_;
   std::string job_id_;
   PlatformJobId local_job_id_;

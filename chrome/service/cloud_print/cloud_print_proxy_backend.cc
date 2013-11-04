@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"
@@ -464,6 +465,7 @@ void CloudPrintProxyBackend::Core::ScheduleXmppPing() {
 
 void CloudPrintProxyBackend::Core::CheckXmppPingStatus() {
   if (pending_xmpp_pings_ >= kMaxFailedXmppPings) {
+    UMA_HISTOGRAM_COUNTS_100("CloudPrint.XmppPingTry", 99);  // Max on fail.
     // Reconnect to XMPP.
     pending_xmpp_pings_ = 0;
     push_client_.reset();
@@ -554,6 +556,7 @@ void CloudPrintProxyBackend::Core::OnIncomingNotification(
 }
 
 void CloudPrintProxyBackend::Core::OnPingResponse() {
+  UMA_HISTOGRAM_COUNTS_100("CloudPrint.XmppPingTry", pending_xmpp_pings_);
   pending_xmpp_pings_ = 0;
   VLOG(1) << "CP_CONNECTOR: Ping response received.";
 }

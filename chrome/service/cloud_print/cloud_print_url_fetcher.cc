@@ -4,6 +4,7 @@
 
 #include "chrome/service/cloud_print/cloud_print_url_fetcher.h"
 
+#include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
@@ -20,7 +21,67 @@
 
 namespace cloud_print {
 
-static CloudPrintURLFetcherFactory* g_factory = NULL;
+namespace {
+
+void ReportRequestTime(CloudPrintURLFetcher::RequestType type,
+                       base::TimeDelta time) {
+  if (type == CloudPrintURLFetcher::REQUEST_REGISTER) {
+    UMA_HISTOGRAM_TIMES("CloudPrint.UrlFetcherRequestTime.Register", time);
+  } else if (type == CloudPrintURLFetcher::REQUEST_UPDATE_PRINTER) {
+    UMA_HISTOGRAM_TIMES("CloudPrint.UrlFetcherRequestTime.UpdatePrinter", time);
+  } else if (type == CloudPrintURLFetcher::REQUEST_DATA) {
+    UMA_HISTOGRAM_TIMES("CloudPrint.UrlFetcherRequestTime.DownloadData", time);
+  } else {
+    UMA_HISTOGRAM_TIMES("CloudPrint.UrlFetcherRequestTime.Other", time);
+  }
+}
+
+void ReportRetriesCount(CloudPrintURLFetcher::RequestType type,
+                        int retries) {
+  if (type == CloudPrintURLFetcher::REQUEST_REGISTER) {
+    UMA_HISTOGRAM_COUNTS_100("CloudPrint.UrlFetcherRetries.Register", retries);
+  } else if (type == CloudPrintURLFetcher::REQUEST_UPDATE_PRINTER) {
+    UMA_HISTOGRAM_COUNTS_100("CloudPrint.UrlFetcherRetries.UpdatePrinter",
+                             retries);
+  } else if (type == CloudPrintURLFetcher::REQUEST_DATA) {
+    UMA_HISTOGRAM_COUNTS_100("CloudPrint.UrlFetcherRetries.DownloadData",
+                             retries);
+  } else {
+    UMA_HISTOGRAM_COUNTS_100("CloudPrint.UrlFetcherRetries.Other", retries);
+  }
+}
+
+void ReportDownloadSize(CloudPrintURLFetcher::RequestType type, size_t size) {
+  if (type == CloudPrintURLFetcher::REQUEST_REGISTER) {
+    UMA_HISTOGRAM_MEMORY_KB("CloudPrint.UrlFetcherDownloadSize.Register", size);
+  } else if (type == CloudPrintURLFetcher::REQUEST_UPDATE_PRINTER) {
+    UMA_HISTOGRAM_MEMORY_KB("CloudPrint.UrlFetcherDownloadSize.UpdatePrinter",
+                            size);
+  } else if (type == CloudPrintURLFetcher::REQUEST_DATA) {
+    UMA_HISTOGRAM_MEMORY_KB("CloudPrint.UrlFetcherDownloadSize.DownloadData",
+                            size);
+  } else {
+    UMA_HISTOGRAM_MEMORY_KB("CloudPrint.UrlFetcherDownloadSize.Other", size);
+  }
+}
+
+void ReportUploadSize(CloudPrintURLFetcher::RequestType type, size_t size) {
+  if (type == CloudPrintURLFetcher::REQUEST_REGISTER) {
+    UMA_HISTOGRAM_MEMORY_KB("CloudPrint.UrlFetcherUploadSize.Register", size);
+  } else if (type == CloudPrintURLFetcher::REQUEST_UPDATE_PRINTER) {
+    UMA_HISTOGRAM_MEMORY_KB("CloudPrint.UrlFetcherUploadSize.UpdatePrinter",
+                            size);
+  } else if (type == CloudPrintURLFetcher::REQUEST_DATA) {
+    UMA_HISTOGRAM_MEMORY_KB("CloudPrint.UrlFetcherUploadSize.DownloadData",
+                            size);
+  } else {
+    UMA_HISTOGRAM_MEMORY_KB("CloudPrint.UrlFetcherUploadSize.Other", size);
+  }
+}
+
+CloudPrintURLFetcherFactory* g_factory = NULL;
+
+}  // namespace
 
 // virtual
 CloudPrintURLFetcherFactory::~CloudPrintURLFetcherFactory() {}
@@ -72,7 +133,8 @@ CloudPrintURLFetcher::Delegate::HandleJSONData(
 
 CloudPrintURLFetcher::CloudPrintURLFetcher()
     : delegate_(NULL),
-      num_retries_(0) {
+      num_retries_(0),
+      type_(REQUEST_MAX) {
 }
 
 bool CloudPrintURLFetcher::IsSameRequest(const net::URLFetcher* source) {
@@ -80,33 +142,25 @@ bool CloudPrintURLFetcher::IsSameRequest(const net::URLFetcher* source) {
 }
 
 void CloudPrintURLFetcher::StartGetRequest(
+    RequestType type,
     const GURL& url,
     Delegate* delegate,
     int max_retries,
     const std::string& additional_headers) {
-  StartRequestHelper(url,
-                     net::URLFetcher::GET,
-                     delegate,
-                     max_retries,
-                     std::string(),
-                     std::string(),
-                     additional_headers);
+  StartRequestHelper(type, url, net::URLFetcher::GET, delegate, max_retries,
+                     std::string(), std::string(), additional_headers);
 }
 
 void CloudPrintURLFetcher::StartPostRequest(
+    RequestType type,
     const GURL& url,
     Delegate* delegate,
     int max_retries,
     const std::string& post_data_mime_type,
     const std::string& post_data,
     const std::string& additional_headers) {
-  StartRequestHelper(url,
-                     net::URLFetcher::POST,
-                     delegate,
-                     max_retries,
-                     post_data_mime_type,
-                     post_data,
-                     additional_headers);
+  StartRequestHelper(type, url, net::URLFetcher::POST, delegate, max_retries,
+                     post_data_mime_type, post_data, additional_headers);
 }
 
 void CloudPrintURLFetcher::OnURLFetchComplete(
@@ -117,6 +171,8 @@ void CloudPrintURLFetcher::OnURLFetchComplete(
   scoped_refptr<CloudPrintURLFetcher> keep_alive(this);
   std::string data;
   source->GetResponseAsString(&data);
+  ReportRequestTime(type_, base::Time::Now() - start_time_);
+  ReportDownloadSize(type_, data.size());
   ResponseAction action = delegate_->HandleRawResponse(
       source,
       source->GetURL(),
@@ -176,18 +232,24 @@ void CloudPrintURLFetcher::OnURLFetchComplete(
         (num_retries_ > source->GetMaxRetriesOn5xx())) {
       // Retry limit reached. Give up.
       delegate_->OnRequestGiveUp();
+      action = STOP_PROCESSING;
     } else {
       // Either no retry limit specified or retry limit has not yet been
       // reached. Try again. Set up the request headers again because the token
       // may have changed.
       SetupRequestHeaders();
       request_->SetRequestContext(GetRequestContextGetter());
+      start_time_ = base::Time::Now();
       request_->Start();
     }
+  }
+  if (action != RETRY_REQUEST) {
+    ReportRetriesCount(type_, num_retries_);
   }
 }
 
 void CloudPrintURLFetcher::StartRequestHelper(
+    RequestType type,
     const GURL& url,
     net::URLFetcher::RequestType request_type,
     Delegate* delegate,
@@ -196,6 +258,9 @@ void CloudPrintURLFetcher::StartRequestHelper(
     const std::string& post_data,
     const std::string& additional_headers) {
   DCHECK(delegate);
+  type_ = type;
+  UMA_HISTOGRAM_ENUMERATION("CloudPrint.UrlFetcherRequestType", type,
+                            REQUEST_MAX);
   // Persist the additional headers in case we need to retry the request.
   additional_headers_ = additional_headers;
   request_.reset(net::URLFetcher::Create(0, url, request_type, this));
@@ -209,8 +274,9 @@ void CloudPrintURLFetcher::StartRequestHelper(
                          net::LOAD_DO_NOT_SAVE_COOKIES);
   if (request_type == net::URLFetcher::POST) {
     request_->SetUploadData(post_data_mime_type, post_data);
+    ReportUploadSize(type_, post_data.size());
   }
-
+  start_time_ = base::Time::Now();
   request_->Start();
 }
 
