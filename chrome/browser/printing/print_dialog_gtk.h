@@ -36,8 +36,7 @@ class PrintDialogGtk
 
   // printing::PrintDialogGtkInterface implementation.
   virtual void UseDefaultSettings() OVERRIDE;
-  virtual bool UpdateSettings(bool target_is_pdf,
-                              printing::PrintSettings* settings) OVERRIDE;
+  virtual bool UpdateSettings(printing::PrintSettings* settings) OVERRIDE;
   virtual void ShowDialog(
       gfx::NativeView parent_view,
       bool has_selection,

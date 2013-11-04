@@ -41,13 +41,16 @@ PrintingContext::Result PrintingContextNoSystemDialog::UseDefaultSettings() {
   DCHECK(!in_print_job_);
 
   ResetSettings();
-  // TODO(abodenha): Fetch these settings from the OS where possible.  See
-  // bug 102583.
-  // TODO(sanjeevr): We need a better feedback loop between the cloud print
-  // dialog and this code.
-  int dpi = 300;
-  gfx::Size physical_size_device_units;
-  gfx::Rect printable_area_device_units;
+  settings_.set_dpi(kDefaultPdfDpi);
+  gfx::Size physical_size = GetPdfPaperSizeDeviceUnits();
+  // Assume full page is printable for now.
+  gfx::Rect printable_area(0, 0, physical_size.width(), physical_size.height());
+  DCHECK_EQ(settings_.device_units_per_inch(), kDefaultPdfDpi);
+  settings_.SetPrinterPrintableArea(physical_size, printable_area, true);
+  return OK;
+}
+
+gfx::Size PrintingContextNoSystemDialog::GetPdfPaperSizeDeviceUnits() {
   int32_t width = 0;
   int32_t height = 0;
   UErrorCode error = U_ZERO_ERROR;
@@ -56,30 +59,22 @@ PrintingContext::Result PrintingContextNoSystemDialog::UseDefaultSettings() {
     // If the call failed, assume a paper size of 8.5 x 11 inches.
     LOG(WARNING) << "ulocdata_getPaperSize failed, using 8.5 x 11, error: "
                  << error;
-    width = static_cast<int>(8.5 * dpi);
-    height = static_cast<int>(11 * dpi);
+    width = static_cast<int>(
+        kLetterWidthInch * settings_.device_units_per_inch());
+    height = static_cast<int>(
+        kLetterHeightInch  * settings_.device_units_per_inch());
   } else {
     // ulocdata_getPaperSize returns the width and height in mm.
     // Convert this to pixels based on the dpi.
-    width = static_cast<int>(ConvertUnitDouble(width, 25.4, 1.0) * dpi);
-    height = static_cast<int>(ConvertUnitDouble(height, 25.4, 1.0) * dpi);
+    float multiplier = 100 * settings_.device_units_per_inch();
+    multiplier /= kHundrethsMMPerInch;
+    width *= multiplier;
+    height *= multiplier;
   }
-
-  physical_size_device_units.SetSize(width, height);
-
-  // Assume full page is printable for now.
-  printable_area_device_units.SetRect(0, 0, width, height);
-
-  settings_.set_dpi(dpi);
-  settings_.SetPrinterPrintableArea(physical_size_device_units,
-                                    printable_area_device_units,
-                                    dpi, true);
-
-  return OK;
+  return gfx::Size(width, height);
 }
 
 PrintingContext::Result PrintingContextNoSystemDialog::UpdatePrinterSettings(
-    bool target_is_pdf,
     bool external_preview) {
 
   if (settings_.dpi() == 0)

@@ -32,8 +32,8 @@ class PRINTING_EXPORT PrintingContextWin
       bool has_selection,
       const PrintSettingsCallback& callback) OVERRIDE;
   virtual Result UseDefaultSettings() OVERRIDE;
-  virtual Result UpdatePrinterSettings(bool target_is_pdf,
-                                       bool external_preview) OVERRIDE;
+  virtual gfx::Size GetPdfPaperSizeDeviceUnits() OVERRIDE;
+  virtual Result UpdatePrinterSettings(bool external_preview) OVERRIDE;
   virtual Result InitWithSettings(const PrintSettings& settings) OVERRIDE;
   virtual Result NewDocument(const base::string16& document_name) OVERRIDE;
   virtual Result NewPage() OVERRIDE;

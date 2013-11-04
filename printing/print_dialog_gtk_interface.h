@@ -24,11 +24,7 @@ class PrintDialogGtkInterface {
 
   // Updates the dialog to use |settings|. Only used when printing without the
   // system print dialog. E.g. for Print Preview. Returns false on error.
-  // |target_is_pdf| is true if implementation needs to generate PDF without
-  // actual printing. In this case implementation may avoid setup of native
-  // print system. Ex. "save to pdf" or Cloud Print.
-  virtual bool UpdateSettings(bool target_is_pdf,
-                              PrintSettings* settings) = 0;
+  virtual bool UpdateSettings(PrintSettings* settings) = 0;
 
   // Shows the dialog and handles the response with |callback|. Only used when
   // printing with the native print dialog.

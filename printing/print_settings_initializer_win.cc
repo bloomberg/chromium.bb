@@ -48,10 +48,10 @@ void PrintSettingsInitializerWin::InitPrintSettings(
           printable_area_device_units)) {
     printable_area_device_units = gfx::Rect(physical_size_device_units);
   }
-
+  DCHECK_EQ(print_settings->device_units_per_inch(), dpi);
   print_settings->SetPrinterPrintableArea(physical_size_device_units,
                                           printable_area_device_units,
-                                          dpi, false);
+                                          false);
 }
 
 }  // namespace printing

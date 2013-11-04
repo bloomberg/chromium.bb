@@ -43,8 +43,8 @@ void PrintSettingsInitializerGtk::InitPrintSettings(
   } else {
     // Use default values if we cannot get valid values from the print dialog.
     dpi = kPixelsPerInch;
-    double page_width_in_pixel = 8.5 * dpi;
-    double page_height_in_pixel = 11.0 * dpi;
+    double page_width_in_pixel = kLetterWidthInch * dpi;
+    double page_height_in_pixel = kLetterHeightInch * dpi;
     physical_size_device_units.SetSize(
         static_cast<int>(page_width_in_pixel),
         static_cast<int>(page_height_in_pixel));
@@ -67,10 +67,10 @@ void PrintSettingsInitializerGtk::InitPrintSettings(
   GtkPageOrientation orientation = gtk_print_settings_get_orientation(settings);
   // Set before SetPrinterPrintableArea to make it flip area if necessary.
   print_settings->SetOrientation(orientation == GTK_PAGE_ORIENTATION_LANDSCAPE);
-
+  DCHECK_EQ(print_settings->device_units_per_inch(), dpi);
   print_settings->SetPrinterPrintableArea(physical_size_device_units,
                                           printable_area_device_units,
-                                          dpi, true);
+                                          true);
 }
 
 const double PrintSettingsInitializerGtk::kTopMarginInInch = 0.25;

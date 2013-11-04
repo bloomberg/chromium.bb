@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "printing/print_settings_initializer_mac.h"
+#include "printing/units.h"
 
 namespace printing {
 
@@ -106,6 +107,25 @@ void PrintingContextMac::AskUserForSettings(
   }
 }
 
+gfx::Size PrintingContextMac::GetPdfPaperSizeDeviceUnits() {
+  // NOTE: Reset |print_info_| with a copy of |sharedPrintInfo| so as to start
+  // with a clean slate.
+  print_info_.reset([[NSPrintInfo sharedPrintInfo] copy]);
+  UpdatePageFormatWithPaperInfo();
+
+  PMPageFormat page_format =
+      static_cast<PMPageFormat>([print_info_.get() PMPageFormat]);
+  PMRect paper_rect;
+  PMGetAdjustedPaperRect(page_format, &paper_rect);
+
+  // Device units are in points. Units per inch is 72.
+  gfx::Size physical_size_device_units(
+      (paper_rect.right - paper_rect.left),
+      (paper_rect.bottom - paper_rect.top));
+  DCHECK(settings_.device_units_per_inch() == kPointsPerInch);
+  return physical_size_device_units;
+}
+
 PrintingContext::Result PrintingContextMac::UseDefaultSettings() {
   DCHECK(!in_print_job_);
 
@@ -117,7 +137,6 @@ PrintingContext::Result PrintingContextMac::UseDefaultSettings() {
 }
 
 PrintingContext::Result PrintingContextMac::UpdatePrinterSettings(
-    bool target_is_pdf,
     bool external_preview) {
   DCHECK(!in_print_job_);
 
@@ -125,7 +144,11 @@ PrintingContext::Result PrintingContextMac::UpdatePrinterSettings(
   // with a clean slate.
   print_info_.reset([[NSPrintInfo sharedPrintInfo] copy]);
 
-  if (!target_is_pdf) {
+  if (external_preview) {
+    if (!SetPrintPreviewJob())
+      return OnError();
+  } else {
+    // Don't need this for preview.
     if (!SetPrinter(UTF16ToUTF8(settings_.device_name())) ||
         !SetCopiesInPrintSettings(settings_.copies()) ||
         !SetCollateInPrintSettings(settings_.collate()) ||
@@ -135,8 +158,7 @@ PrintingContext::Result PrintingContextMac::UpdatePrinterSettings(
     }
   }
 
-  if ((external_preview && !SetPrintPreviewJob()) ||
-      !UpdatePageFormatWithPaperInfo() ||
+  if (!UpdatePageFormatWithPaperInfo() ||
       !SetOrientationIsLandscape(settings_.landscape())) {
     return OnError();
   }

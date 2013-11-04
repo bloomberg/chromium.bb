@@ -6,6 +6,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "printing/print_settings.h"
+#include "printing/units.h"
 
 namespace printing {
 
@@ -54,9 +55,10 @@ void PrintSettingsInitializerMac::InitPrintSettings(
       (page_rect.right - page_rect.left),
       (page_rect.bottom - page_rect.top));
 
+  DCHECK_EQ(print_settings->device_units_per_inch(), kPointsPerInch);
   print_settings->SetPrinterPrintableArea(physical_size_device_units,
                                           printable_area_device_units,
-                                          72, false);
+                                          false);
 }
 
 }  // namespace printing

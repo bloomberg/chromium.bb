@@ -140,10 +140,10 @@ void PrintSettings::Clear() {
 }
 
 void PrintSettings::SetPrinterPrintableArea(
-    gfx::Size const& physical_size_device_units,
-    gfx::Rect const& printable_area_device_units,
-    int units_per_inch,
+    const gfx::Size& physical_size_device_units,
+    const gfx::Rect& printable_area_device_units,
     bool landscape_needs_flip) {
+  int units_per_inch = device_units_per_inch();
   int header_footer_text_height = 0;
   if (display_header_footer_) {
     // Hard-code text_height = 0.5cm = ~1/5 of inch.

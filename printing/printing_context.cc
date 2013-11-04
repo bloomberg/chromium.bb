@@ -9,8 +9,13 @@
 #include "printing/page_setup.h"
 #include "printing/page_size_margins.h"
 #include "printing/print_settings_initializer.h"
+#include "printing/units.h"
 
 namespace printing {
+
+namespace {
+const float kCloudPrintMarginInch = 0.25;
+}
 
 PrintingContext::PrintingContext(const std::string& app_locale)
     : dialog_box_dismissed_(false),
@@ -66,9 +71,24 @@ PrintingContext::Result PrintingContext::UpdatePrintSettings(
   bool open_in_external_preview =
       job_settings.HasKey(kSettingOpenPDFInPreview);
 
-  return UpdatePrinterSettings(
-      print_to_pdf || is_cloud_dialog || print_to_cloud,
-      open_in_external_preview);
+  if (!open_in_external_preview &&
+      (print_to_pdf || print_to_cloud || is_cloud_dialog)) {
+    settings_.set_dpi(kDefaultPdfDpi);
+    // Cloud print should get size and rect from capabilities received from
+    // server.
+    gfx::Size paper_size(GetPdfPaperSizeDeviceUnits());
+    gfx::Rect paper_rect(0, 0, paper_size.width(), paper_size.height());
+    if (print_to_cloud) {
+      paper_rect.Inset(
+          kCloudPrintMarginInch * settings_.device_units_per_inch(),
+          kCloudPrintMarginInch * settings_.device_units_per_inch());
+    }
+    DCHECK_EQ(settings_.device_units_per_inch(), kDefaultPdfDpi);
+    settings_.SetPrinterPrintableArea(paper_size, paper_rect, true);
+    return OK;
+  }
+
+  return UpdatePrinterSettings(open_in_external_preview);
 }
 
 }  // namespace printing

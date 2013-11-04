@@ -36,21 +36,6 @@ using base::Time;
 
 namespace {
 
-// Constants for setting default PDF settings.
-const int kPDFDpi = 300;  // 300 dpi
-// LETTER: 8.5 x 11 inches
-const int kPDFLetterWidth = 8.5 * kPDFDpi;
-const int kPDFLetterHeight = 11 * kPDFDpi;
-// LEGAL: 8.5 x 14 inches
-const int kPDFLegalWidth = 8.5 * kPDFDpi;
-const int kPDFLegalHeight = 14 * kPDFDpi;
-// A4: 8.27 x 11.69 inches
-const int kPDFA4Width = 8.27 * kPDFDpi;
-const int kPDFA4Height = 11.69 * kPDFDpi;
-// A3: 11.69 x 16.54 inches
-const int kPDFA3Width = 11.69 * kPDFDpi;
-const int kPDFA3Height = 16.54 * kPDFDpi;
-
 HWND GetRootWindow(gfx::NativeView view) {
   HWND window = NULL;
 #if defined(USE_AURA)
@@ -307,44 +292,40 @@ PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
   return FAILED;
 }
 
+gfx::Size PrintingContextWin::GetPdfPaperSizeDeviceUnits() {
+  // Default fallback to Letter size.
+  gfx::SizeF paper_size(kLetterWidthInch, kLetterHeightInch);
+
+  // Get settings from locale. Paper type buffer length is at most 4.
+  const int paper_type_buffer_len = 4;
+  wchar_t paper_type_buffer[paper_type_buffer_len] = {0};
+  GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_IPAPERSIZE, paper_type_buffer,
+                paper_type_buffer_len);
+  if (wcslen(paper_type_buffer)) {  // The call succeeded.
+    int paper_code = _wtoi(paper_type_buffer);
+    switch (paper_code) {
+      case DMPAPER_LEGAL:
+        paper_size.SetSize(kLegalWidthInch, kLegalHeightInch);
+        break;
+      case DMPAPER_A4:
+        paper_size.SetSize(kA4WidthInch, kA4HeightInch);
+        break;
+      case DMPAPER_A3:
+        paper_size.SetSize(kA3WidthInch, kA3HeightInch);
+        break;
+      default:  // DMPAPER_LETTER is used for default fallback.
+        break;
+    }
+  }
+  return gfx::Size(
+      paper_size.width() * settings_.device_units_per_inch(),
+      paper_size.height() * settings_.device_units_per_inch());
+}
+
 PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
-    bool target_is_pdf,
     bool external_preview) {
   DCHECK(!in_print_job_);
   DCHECK(!external_preview) << "Not implemented";
-
-  if (target_is_pdf) {
-    // Default fallback to Letter size.
-    gfx::Size paper_size;
-    gfx::Rect paper_rect;
-    paper_size.SetSize(kPDFLetterWidth, kPDFLetterHeight);
-
-    // Get settings from locale. Paper type buffer length is at most 4.
-    const int paper_type_buffer_len = 4;
-    wchar_t paper_type_buffer[paper_type_buffer_len] = {0};
-    GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_IPAPERSIZE, paper_type_buffer,
-                  paper_type_buffer_len);
-    if (wcslen(paper_type_buffer)) {  // The call succeeded.
-      int paper_code = _wtoi(paper_type_buffer);
-      switch (paper_code) {
-        case DMPAPER_LEGAL:
-          paper_size.SetSize(kPDFLegalWidth, kPDFLegalHeight);
-          break;
-        case DMPAPER_A4:
-          paper_size.SetSize(kPDFA4Width, kPDFA4Height);
-          break;
-        case DMPAPER_A3:
-          paper_size.SetSize(kPDFA3Width, kPDFA3Height);
-          break;
-        default:  // DMPAPER_LETTER is used for default fallback.
-          break;
-      }
-    }
-    paper_rect.SetRect(0, 0, paper_size.width(), paper_size.height());
-    settings_.SetPrinterPrintableArea(paper_size, paper_rect, kPDFDpi, true);
-    settings_.set_dpi(kPDFDpi);
-    return OK;
-  }
 
   ScopedPrinterHandle printer;
   LPWSTR device_name_wide =

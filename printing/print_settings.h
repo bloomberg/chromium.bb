@@ -48,7 +48,6 @@ class PRINTING_EXPORT PrintSettings {
   // to false on those platforms to avoid double flipping.
   void SetPrinterPrintableArea(const gfx::Size& physical_size_device_units,
                                const gfx::Rect& printable_area_device_units,
-                               int units_per_inch,
                                bool landscape_needs_flip);
   const PageSetup& page_setup_device_units() const {
     return page_setup_device_units_;

@@ -78,8 +78,21 @@ PrintingContext::Result PrintingContextGtk::UseDefaultSettings() {
   return OK;
 }
 
+gfx::Size PrintingContextGtk::GetPdfPaperSizeDeviceUnits() {
+  GtkPageSetup* page_setup = gtk_page_setup_new();
+
+  gfx::SizeF paper_size(
+      gtk_page_setup_get_paper_width(page_setup, GTK_UNIT_INCH),
+      gtk_page_setup_get_paper_height(page_setup, GTK_UNIT_INCH));
+
+  g_object_unref(page_setup);
+
+  return gfx::Size(
+      paper_size.width() * settings_.device_units_per_inch(),
+      paper_size.height() * settings_.device_units_per_inch());
+}
+
 PrintingContext::Result PrintingContextGtk::UpdatePrinterSettings(
-    bool target_is_pdf,
     bool external_preview) {
   DCHECK(!in_print_job_);
   DCHECK(!external_preview) << "Not implemented";
@@ -89,7 +102,7 @@ PrintingContext::Result PrintingContextGtk::UpdatePrinterSettings(
     print_dialog_->AddRefToDialog();
   }
 
-  if (!print_dialog_->UpdateSettings(target_is_pdf, &settings_))
+  if (!print_dialog_->UpdateSettings(&settings_))
     return OnError();
 
   return OK;

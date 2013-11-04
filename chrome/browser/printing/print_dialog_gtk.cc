@@ -166,57 +166,54 @@ void PrintDialogGtk::UseDefaultSettings() {
   InitPrintSettings(&settings);
 }
 
-bool PrintDialogGtk::UpdateSettings(bool target_is_pdf,
-                                    printing::PrintSettings* settings) {
+bool PrintDialogGtk::UpdateSettings(printing::PrintSettings* settings) {
   if (!gtk_settings_) {
     gtk_settings_ =
         gtk_print_settings_copy(g_last_used_settings.Get().settings());
   }
 
-  if (!target_is_pdf) {
-    scoped_ptr<GtkPrinterList> printer_list(new GtkPrinterList);
-    printer_ = printer_list->GetPrinterWithName(
-        UTF16ToUTF8(settings->device_name()));
-    if (printer_) {
-      g_object_ref(printer_);
-      gtk_print_settings_set_printer(gtk_settings_,
-                                     gtk_printer_get_name(printer_));
-      if (!page_setup_) {
-        page_setup_ = gtk_printer_get_default_page_size(printer_);
-      }
+  scoped_ptr<GtkPrinterList> printer_list(new GtkPrinterList);
+  printer_ = printer_list->GetPrinterWithName(
+      UTF16ToUTF8(settings->device_name()));
+  if (printer_) {
+    g_object_ref(printer_);
+    gtk_print_settings_set_printer(gtk_settings_,
+                                   gtk_printer_get_name(printer_));
+    if (!page_setup_) {
+      page_setup_ = gtk_printer_get_default_page_size(printer_);
     }
+  }
 
-    gtk_print_settings_set_n_copies(gtk_settings_, settings->copies());
-    gtk_print_settings_set_collate(gtk_settings_, settings->collate());
+  gtk_print_settings_set_n_copies(gtk_settings_, settings->copies());
+  gtk_print_settings_set_collate(gtk_settings_, settings->collate());
 
 #if defined(USE_CUPS)
-    std::string color_value;
-    std::string color_setting_name;
-    printing::GetColorModelForMode(settings->color(), &color_setting_name,
-                                   &color_value);
-    gtk_print_settings_set(gtk_settings_, color_setting_name.c_str(),
-                           color_value.c_str());
+  std::string color_value;
+  std::string color_setting_name;
+  printing::GetColorModelForMode(settings->color(), &color_setting_name,
+                                 &color_value);
+  gtk_print_settings_set(gtk_settings_, color_setting_name.c_str(),
+                         color_value.c_str());
 
-    if (settings->duplex_mode() != printing::UNKNOWN_DUPLEX_MODE) {
-      const char* cups_duplex_mode = NULL;
-      switch (settings->duplex_mode()) {
-        case printing::LONG_EDGE:
-          cups_duplex_mode = kDuplexNoTumble;
-          break;
-        case printing::SHORT_EDGE:
-          cups_duplex_mode = kDuplexTumble;
-          break;
-        case printing::SIMPLEX:
-          cups_duplex_mode = kDuplexNone;
-          break;
-        default:  // UNKNOWN_DUPLEX_MODE
-          NOTREACHED();
-          break;
-      }
-      gtk_print_settings_set(gtk_settings_, kCUPSDuplex, cups_duplex_mode);
+  if (settings->duplex_mode() != printing::UNKNOWN_DUPLEX_MODE) {
+    const char* cups_duplex_mode = NULL;
+    switch (settings->duplex_mode()) {
+      case printing::LONG_EDGE:
+        cups_duplex_mode = kDuplexNoTumble;
+        break;
+      case printing::SHORT_EDGE:
+        cups_duplex_mode = kDuplexTumble;
+        break;
+      case printing::SIMPLEX:
+        cups_duplex_mode = kDuplexNone;
+        break;
+      default:  // UNKNOWN_DUPLEX_MODE
+        NOTREACHED();
+        break;
     }
-#endif
+    gtk_print_settings_set(gtk_settings_, kCUPSDuplex, cups_duplex_mode);
   }
+#endif
   if (!page_setup_)
     page_setup_ = gtk_page_setup_new();
 
