@@ -22,8 +22,11 @@ EXTRA_ENV = {
                            # linker line for .pexe generation.
                            # It doesn't normally make sense to do this.
 
-  'ALLOW_CXX_EXCEPTIONS': '0', # Allow exception handling. This should not be
-                               # used for stable ABI pexes.
+  # CXX_EH_MODE specifies how to deal with C++ exception handling:
+  #  * 'none':  strips out use of C++ exception handling
+  #  * 'zerocost':  enables C++ exception handling, but is not
+  #    supported in PNaCl's stable ABI
+  'CXX_EH_MODE': 'none',
 
   'FORCE_INTERMEDIATE_LL': '0',
                           # Produce an intermediate .ll file
@@ -132,9 +135,9 @@ EXTRA_ENV = {
   #             and into pnacl-translate.
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2423
   'LD_ARGS_static':
-    '${ALLOW_CXX_EXCEPTIONS ? -l:crt1_for_eh.x : -l:crt1.x} ' +
+    '${CXX_EH_MODE==zerocost ? -l:crt1_for_eh.x : -l:crt1.x} ' +
     '-l:crti.bc -l:crtbegin.bc '
-    '${!ALLOW_CXX_EXCEPTIONS ? -l:unwind_stubs.bc} ' +
+    '${CXX_EH_MODE==none ? -l:unwind_stubs.bc} ' +
     '${ld_inputs} ' +
     '--start-group ${STDLIBS} --end-group',
 
@@ -190,8 +193,8 @@ def AddBPrefix(prefix):
   if pathtools.isdir(include_dir):
     env.append('ISYSTEM_USER', include_dir)
 
-def AddAllowCXXExceptions(*args):
-  env.set('ALLOW_CXX_EXCEPTIONS', '1')
+def UseZeroCostCXXEH(*args):
+  env.set('CXX_EH_MODE', 'zerocost')
   AddLDFlag(*args)
 
 def SetTarget(*args):
@@ -249,7 +252,7 @@ CustomPatterns = [
   ( '--pnacl-frontend-triple=(.+)', SetTarget),
   ( ('-target','(.+)'),             SetTarget),
   ( ('--target=(.+)'),              SetTarget),
-  ( '(--pnacl-allow-exceptions)',   AddAllowCXXExceptions),
+  ( '(--pnacl-allow-exceptions)',   UseZeroCostCXXEH),
   ( '(--pnacl-allow-nexe-build-id)', AddLDFlag),
   ( '(--pnacl-disable-abi-check)',  AddLDFlag),
   ( '(--pnacl-disable-pass=.+)',    AddLLVMPassDisableFlag),

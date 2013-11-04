@@ -27,8 +27,9 @@ EXTRA_ENV = {
   # Determine if we should build nexes compatible with the IRT
   'USE_IRT' : '1',
 
-  # Allow C++ exception handling in the pexe.
-  'ALLOW_CXX_EXCEPTIONS' : '0',
+  # Allow zero-cost C++ exception handling in the pexe, which is not
+  # supported by PNaCl's stable ABI.
+  'ALLOW_ZEROCOST_CXX_EH' : '0',
 
   # Use the IRT shim by default. This can be disabled with an explicit
   # flag (--noirtshim) or via -nostdlib.
@@ -70,8 +71,8 @@ EXTRA_ENV = {
   # pulled in from the archive.
   'LD_ARGS_ENTRY': '--entry=__pnacl_start --undefined=_start',
 
-  'CRTBEGIN' : '${ALLOW_CXX_EXCEPTIONS ? -l:crtbegin_for_eh.o : -l:crtbegin.o}',
-  'CRTEND'   : '-l:crtend.o',
+  'CRTBEGIN': '${ALLOW_ZEROCOST_CXX_EH ? -l:crtbegin_for_eh.o : -l:crtbegin.o}',
+  'CRTEND': '-l:crtend.o',
 
   'LD_ARGS_nostdlib': '-nostdlib ${ld_inputs}',
 
@@ -84,7 +85,7 @@ EXTRA_ENV = {
     '--end-group ' +
     '${CRTEND}',
 
-  'DEFAULTLIBS': '${ALLOW_CXX_EXCEPTIONS ? -l:libgcc_eh.a} ' +
+  'DEFAULTLIBS': '${ALLOW_ZEROCOST_CXX_EH ? -l:libgcc_eh.a} ' +
                  '-l:libgcc.a -l:libcrt_platform.a ',
 
   'TRIPLE'      : '${TRIPLE_%ARCH%}',
@@ -206,9 +207,9 @@ TranslatorPatterns = [
   ( '--noirtshim',     "env.set('USE_IRT_SHIM', '0')"),
   ( '(--pnacl-nativeld=.+)', "env.append('LD_FLAGS', $0)"),
 
-  # Allowing C++ exception handling causes a specific set of native objects to
-  # get linked into the nexe.
-  ( '--pnacl-allow-exceptions', "env.set('ALLOW_CXX_EXCEPTIONS', '1')"),
+  # Allowing zero-cost C++ exception handling causes a specific set of
+  # native objects to get linked into the nexe.
+  ( '--pnacl-allow-exceptions', "env.set('ALLOW_ZEROCOST_CXX_EH', '1')"),
 
   ( '--allow-llvm-bitcode-input', "env.set('ALLOW_LLVM_BITCODE_INPUT', '1')"),
 
@@ -318,8 +319,8 @@ def RequiresNonStandardLDCommandline(inputs, infile):
     return ('No bitcode input: %s' % str(infile), True)
   if not env.getbool('USE_STDLIB'):
     return ('NOSTDLIB', True)
-  if env.getbool('ALLOW_CXX_EXCEPTIONS'):
-    return ('ALLOW_CXX_EXCEPTIONS', True)
+  if env.getbool('ALLOW_ZEROCOST_CXX_EH'):
+    return ('ALLOW_ZEROCOST_CXX_EH', True)
   if not env.getbool('USE_IRT'):
     return ('USE_IRT false when normally true', True)
   if not env.getbool('USE_IRT_SHIM'):

@@ -95,7 +95,7 @@ EXTRA_ENV = {
     '--allow-unresolved=setjmp '
     '--allow-unresolved=longjmp '
     # For exception-handling enabled tests.
-    '${ALLOW_CXX_EXCEPTIONS ? '
+    '${CXX_EH_MODE==zerocost ? '
       '--allow-unresolved=_Unwind_Backtrace '
       '--allow-unresolved=_Unwind_DeleteException '
       '--allow-unresolved=_Unwind_GetCFA '
@@ -120,7 +120,7 @@ EXTRA_ENV = {
     '${GOLD_PLUGIN_ARGS} ${LD_FLAGS}',
   'RUN_BCLD': ('${LD} ${BCLD_FLAGS} ${inputs} -o ${output}'),
 
-  'ALLOW_CXX_EXCEPTIONS': '0',
+  'CXX_EH_MODE': 'none',
   'ALLOW_NEXE_BUILD_ID': '0',
   'DISABLE_ABI_CHECK': '0',
   'LLVM_PASSES_TO_DISABLE': '',
@@ -140,8 +140,8 @@ def AddToBothFlags(*args):
   env.append('LD_FLAGS', *args)
   env.append('LD_FLAGS_NATIVE', *args)
 
-def AddAllowCXXExceptions(*args):
-  env.set('ALLOW_CXX_EXCEPTIONS', '1')
+def UseZeroCostCXXEH(*args):
+  env.set('CXX_EH_MODE', 'zerocost')
   env.append('TRANSLATE_FLAGS', *args)
 
 def SetLibTarget(*args):
@@ -155,7 +155,7 @@ def IsPortable():
 LDPatterns = [
   ( '--pnacl-allow-native', "env.set('ALLOW_NATIVE', '1')"),
   ( '--noirt',              "env.set('USE_IRT', '0')"),
-  ( '(--pnacl-allow-exceptions)', AddAllowCXXExceptions),
+  ( '(--pnacl-allow-exceptions)', UseZeroCostCXXEH),
   ( '(--pnacl-allow-nexe-build-id)', "env.set('ALLOW_NEXE_BUILD_ID', '1')"),
   ( '--pnacl-disable-abi-check', "env.set('DISABLE_ABI_CHECK', '1')"),
   # "--pnacl-disable-pass" allows an ABI simplification pass to be
@@ -366,7 +366,7 @@ def main(argv):
     # not needed.
     abi_simplify = (env.getbool('STATIC') and
                     len(native_objects) == 0 and
-                    not env.getbool('ALLOW_CXX_EXCEPTIONS') and
+                    env.getone('CXX_EH_MODE') != 'zerocost' and
                     not env.getbool('ALLOW_NEXE_BUILD_ID') and
                     IsPortable())
     still_need_expand_byval = IsPortable()
@@ -374,7 +374,7 @@ def main(argv):
     preopt_passes = []
     if abi_simplify:
       preopt_passes += ['-pnacl-abi-simplify-preopt']
-    elif not env.getbool('ALLOW_CXX_EXCEPTIONS'):
+    elif env.getone('CXX_EH_MODE') != 'zerocost':
       # '-lowerinvoke' prevents use of C++ exception handling, which
       # is not yet supported in the PNaCl ABI.  '-simplifycfg' removes
       # landingpad blocks made unreachable by '-lowerinvoke'.
