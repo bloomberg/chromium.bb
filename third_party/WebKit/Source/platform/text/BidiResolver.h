@@ -433,7 +433,7 @@ bool BidiResolver<Iterator, Run>::commitExplicitEmbedding()
                 level = nextGreaterOddLevel(level);
             else
                 level = nextGreaterEvenLevel(level);
-            if (level < 61)
+            if (level < BidiContext::kMaxLevel)
                 toContext = BidiContext::create(level, direction, override, embedding.source(), toContext.get());
         }
     }
@@ -497,7 +497,7 @@ inline void BidiResolver<Iterator, Run>::updateStatusLastFromCurrentDirection(WT
 template <class Iterator, class Run>
 inline void BidiResolver<Iterator, Run>::reorderRunsFromLevels()
 {
-    unsigned char levelLow = 128;
+    unsigned char levelLow = BidiContext::kMaxLevel;
     unsigned char levelHigh = 0;
     for (Run* run = m_runs.firstRun(); run; run = run->next()) {
         levelHigh = std::max(run->level(), levelHigh);

@@ -48,6 +48,12 @@ public:
     BidiEmbeddingSource source() const { return static_cast<BidiEmbeddingSource>(m_source); }
 
     PassRefPtr<BidiContext> copyStackRemovingUnicodeEmbeddingContexts();
+
+    // http://www.unicode.org/reports/tr9/#Modifications
+    // 6.3 raised the limit from 61 to 125.
+    // http://unicode.org/reports/tr9/#BD2
+    static const unsigned char kMaxLevel = 125;
+
 private:
     BidiContext(unsigned char level, WTF::Unicode::Direction direction, bool override, BidiEmbeddingSource source, BidiContext* parent)
         : m_level(level)
@@ -56,11 +62,12 @@ private:
         , m_source(source)
         , m_parent(parent)
     {
+        ASSERT(level <= kMaxLevel);
     }
 
     static PassRefPtr<BidiContext> createUncached(unsigned char level, WTF::Unicode::Direction, bool override, BidiEmbeddingSource, BidiContext* parent);
 
-    unsigned m_level : 6; // The maximium bidi level is 62: http://unicode.org/reports/tr9/#Explicit_Levels_and_Directions
+    unsigned m_level : 7; // The maximium bidi level is 125: http://unicode.org/reports/tr9/#Explicit_Levels_and_Directions
     unsigned m_direction : 5; // Direction
     unsigned m_override : 1;
     unsigned m_source : 1; // BidiEmbeddingSource

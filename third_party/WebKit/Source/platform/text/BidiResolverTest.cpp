@@ -52,7 +52,7 @@ TEST(BidiResolver, Basic)
     bidiResolver.setPositionIgnoringNestedIsolates(TextRunIterator(&run, 0));
     TextDirection direction = bidiResolver.determineParagraphDirectionality(&hasStrongDirectionality);
     EXPECT_TRUE(hasStrongDirectionality);
-    EXPECT_EQ(direction, LTR);
+    EXPECT_EQ(LTR, direction);
 }
 
 class BidiTestRunner {
@@ -238,11 +238,11 @@ TEST(BidiResolver, BidiTest_txt)
 
     // The unittest harness only pays attention to GTest output, so we verify
     // that the tests behaved as expected:
-    EXPECT_EQ(runner.m_testsRun, 352098u);
-    EXPECT_EQ(runner.m_testsSkipped, 418143u);
-    EXPECT_EQ(runner.m_ignoredCharFailures, 0u);
-    EXPECT_EQ(runner.m_levelFailures, 44887u);
-    EXPECT_EQ(runner.m_orderFailures, 19153u);
+    EXPECT_EQ(352098u, runner.m_testsRun);
+    EXPECT_EQ(418143u, runner.m_testsSkipped);
+    EXPECT_EQ(0u, runner.m_ignoredCharFailures);
+    EXPECT_EQ(44882u, runner.m_levelFailures);
+    EXPECT_EQ(19151u, runner.m_orderFailures);
 }
 
 }
