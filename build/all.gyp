@@ -75,6 +75,7 @@
         }, { #  'OS=="ios"'
           'dependencies': [
             '../ios/ios.gyp:*',
+            '../ui/ui_unittests.gyp:ui_unittests',
           ],
         }],
         ['OS!="android" and OS!="ios"', {
