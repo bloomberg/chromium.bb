@@ -3003,8 +3003,15 @@ void WebViewImpl::updatePageDefinedViewportConstraints(const ViewportDescription
         adjustedDescription.minWidth = adjustedDescription.maxWidth;
         adjustedDescription.minHeight = adjustedDescription.maxHeight;
     }
+    float oldInitialScale = m_pageScaleConstraintsSet.pageDefinedConstraints().initialScale;
     m_pageScaleConstraintsSet.updatePageDefinedConstraints(adjustedDescription, m_size);
     m_pageScaleConstraintsSet.adjustForAndroidWebViewQuirks(adjustedDescription, m_size, page()->settings().layoutFallbackWidth(), deviceScaleFactor(), settingsImpl()->supportDeprecatedTargetDensityDPI(), page()->settings().wideViewportQuirkEnabled(), page()->settings().useWideViewport(), page()->settings().loadWithOverviewMode());
+    float newInitialScale = m_pageScaleConstraintsSet.pageDefinedConstraints().initialScale;
+    if (oldInitialScale != newInitialScale && newInitialScale != -1) {
+        m_pageScaleConstraintsSet.setNeedsReset(true);
+        if (mainFrameImpl() && mainFrameImpl()->frameView())
+            mainFrameImpl()->frameView()->setNeedsLayout();
+    }
 
     updateMainFrameLayoutSize();
 }

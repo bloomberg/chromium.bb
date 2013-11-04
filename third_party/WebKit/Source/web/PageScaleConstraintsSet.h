@@ -73,6 +73,8 @@ public:
     bool constraintsDirty() const { return m_constraintsDirty; }
 
 private:
+    WebCore::PageScaleConstraints computeConstraintsStack() const;
+
     WebCore::PageScaleConstraints m_pageDefinedConstraints;
     WebCore::PageScaleConstraints m_userAgentConstraints;
     WebCore::PageScaleConstraints m_finalConstraints;

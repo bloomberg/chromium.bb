@@ -960,6 +960,31 @@ TEST_F(WebFrameTest, WideDocumentInitializeAtMinimumScale)
     EXPECT_EQ(userPinchPageScaleFactor, webViewHelper.webView()->pageScaleFactor());
 }
 
+TEST_F(WebFrameTest, DelayedViewportInitialScale)
+{
+    UseMockScrollbarSettings mockScrollbarSettings;
+    registerMockedHttpURLLoad("viewport-auto-initial-scale.html");
+
+    FixedLayoutTestWebViewClient client;
+    client.m_screenInfo.deviceScaleFactor = 1;
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "viewport-auto-initial-scale.html", true, 0, &client);
+    webViewHelper.webView()->settings()->setViewportEnabled(true);
+    webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
+
+    EXPECT_EQ(0.25f, webViewHelper.webView()->pageScaleFactor());
+
+    WebCore::Document* document = webViewHelper.webViewImpl()->page()->mainFrame()->document();
+    WebCore::ViewportDescription description = document->viewportDescription();
+    description.zoom = 2;
+    document->setViewportDescription(description);
+    webViewHelper.webView()->layout();
+    EXPECT_EQ(2, webViewHelper.webView()->pageScaleFactor());
+}
+
 TEST_F(WebFrameTest, setLoadWithOverviewModeToFalse)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
@@ -1192,15 +1217,15 @@ TEST_F(WebFrameTest, PermanentInitialPageScaleFactorOverridesPageViewportInitial
     client.m_screenInfo.deviceScaleFactor = 1;
     int viewportWidth = 640;
     int viewportHeight = 480;
-    float enforcedPageScalePactor = 0.5f;
+    float enforcedPageScaleFactor = 0.5f;
 
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport-wide-2x-initial-scale.html", true, 0, &client);
     webViewHelper.webView()->settings()->setViewportEnabled(true);
-    webViewHelper.webView()->setInitialPageScaleOverride(enforcedPageScalePactor);
+    webViewHelper.webView()->setInitialPageScaleOverride(enforcedPageScaleFactor);
     webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
 
-    EXPECT_EQ(enforcedPageScalePactor, webViewHelper.webView()->pageScaleFactor());
+    EXPECT_EQ(enforcedPageScaleFactor, webViewHelper.webView()->pageScaleFactor());
 }
 
 TEST_F(WebFrameTest, WideViewportInitialScaleDoesNotExpandFixedLayoutWidth)
@@ -1222,6 +1247,12 @@ TEST_F(WebFrameTest, WideViewportInitialScaleDoesNotExpandFixedLayoutWidth)
     webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
 
     EXPECT_EQ(viewportWidth, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().width());
+    EXPECT_EQ(1, webViewHelper.webView()->pageScaleFactor());
+
+    webViewHelper.webView()->setFixedLayoutSize(WebSize(2000, 1500));
+    webViewHelper.webView()->layout();
+    EXPECT_EQ(2000, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().width());
+    EXPECT_EQ(0.5f, webViewHelper.webView()->pageScaleFactor());
 }
 
 TEST_F(WebFrameTest, WideViewportAndWideContentWithInitialScale)
@@ -1346,23 +1377,6 @@ TEST_F(WebFrameTest, NonZeroValuesNoQuirk)
     webViewHelper.webView()->layout();
     EXPECT_EQ(viewportWidth / expectedPageScaleFactor, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().width());
     EXPECT_EQ(expectedPageScaleFactor, webViewHelper.webView()->pageScaleFactor());
-}
-
-TEST_F(WebFrameTest, ScaleFactorShouldNotOscillate)
-{
-    UseMockScrollbarSettings mockScrollbarSettings;
-    registerMockedHttpURLLoad("scale_oscillate.html");
-
-    FixedLayoutTestWebViewClient client;
-    client.m_screenInfo.deviceScaleFactor = static_cast<float>(1.325);
-    int viewportWidth = 800;
-    int viewportHeight = 1057;
-
-    FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initializeAndLoad(m_baseURL + "scale_oscillate.html", true, 0, &client);
-    webViewHelper.webView()->settings()->setViewportEnabled(true);
-    webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
-    webViewHelper.webView()->layout();
 }
 
 TEST_F(WebFrameTest, setPageScaleFactorDoesNotLayout)
