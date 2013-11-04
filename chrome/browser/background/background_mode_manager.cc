@@ -38,6 +38,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
@@ -114,6 +115,21 @@ void BackgroundModeManager::BackgroundModeData::BuildProfileMenu(
       menu->AddItem(position, UTF8ToUTF16(name));
       if (icon)
         menu->SetIcon(menu->GetItemCount() - 1, gfx::Image(*icon));
+
+      // Component extensions with background that do not have an options page
+      // will cause this menu item to go to the extensions page with an
+      // absent component extension.
+      //
+      // Ideally, we would remove this item, but this conflicts with the user
+      // model where this menu shows the extensions with background.
+      //
+      // The compromise is to disable the item, avoiding the non-actionable
+      // navigate to the extensions page and preserving the user model.
+      if ((*cursor)->location() == extensions::Manifest::COMPONENT) {
+        GURL options_page = extensions::ManifestURL::GetOptionsPage(*cursor);
+        if (!options_page.is_valid())
+          menu->SetCommandIdEnabled(position, false);
+      }
     }
   }
   if (containing_menu)
