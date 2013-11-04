@@ -3,6 +3,23 @@
 <head>
 <link href="resources/grid.css" rel="stylesheet">
 <style>
+.grid {
+    /* Give an explicit size to the grid so that percentage grid tracks have a consistent resolution */
+    width: 800px;
+    height: 600px;
+}
+.gridItem {
+    grid-column: 1;
+    grid-row: 1;
+    width: 7px;
+    height: 11px;
+}
+.gridItem2 {
+    grid-column: 1;
+    grid-row: 1;
+    width: 17px;
+    height: 3px;
+}
 .gridWithNone {
     grid-definition-columns: none;
     grid-definition-rows: none;
@@ -12,8 +29,8 @@
     grid-definition-rows: 15px;
 }
 .gridWithPercent {
-    grid-definition-columns: 53%;
-    grid-definition-rows: 27%;
+    grid-definition-columns: 50%;
+    grid-definition-rows: 25%;
 }
 .gridWithAuto {
     grid-definition-columns: auto;
@@ -60,14 +77,26 @@
 <div class="grid gridWithFixed" id="gridWithFixedElement"></div>
 <div class="grid gridWithPercent" id="gridWithPercentElement"></div>
 <div class="grid gridWithAuto" id="gridWithAutoElement"></div>
+<div class="grid gridWithAuto" id="gridWithAutoWithoutSizeElement"></div>
+<div class="grid gridWithAuto fontSpec" id="gridWithAutoWithChildrenElement">
+    <div class="gridItem"></div>
+</div>
 <div class="grid gridWithEM" id="gridWithEMElement"></div>
 <div class="grid gridWithViewPortPercentage" id="gridWithViewPortPercentageElement"></div>
 <div class="grid gridWithFitContent" id="gridWithFitContentElement"></div>
 <div class="grid gridWithFitAvailable" id="gridWithFitAvailableElement"></div>
-<div class="grid gridWithMinMax" id="gridWithMinMax"></div>
-<div class="grid gridWithMinContent" id="gridWithMinContent"></div>
-<div class="grid gridWithMaxContent" id="gridWithMaxContent"></div>
-<div class="grid gridWithFraction" id="gridWithFraction"></div>
+<div class="grid gridWithMinMax" id="gridWithMinMaxElement"></div>
+<div class="grid gridWithMinContent" id="gridWithMinContentElement"></div>
+<div class="grid gridWithMinContent" id="gridWithMinContentWithChildrenElement">
+    <div class="gridItem"></div>
+    <div class="gridItem2"></div>
+</div>
+<div class="grid gridWithMaxContent" id="gridWithMaxContentElement"></div>
+<div class="grid gridWithMaxContent" id="gridWithMaxContentWithChildrenElement">
+    <div class="gridItem"></div>
+    <div class="gridItem2"></div>
+</div>
+<div class="grid gridWithFraction" id="gridWithFractionElement"></div>
 <script src="resources/grid-definitions-parsing-utils.js"></script>
 <script src="resources/grid-columns-rows-get-set.js"></script>
 </body>

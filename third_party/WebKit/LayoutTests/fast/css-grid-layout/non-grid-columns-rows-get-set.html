@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<link href="resources/grid.css" rel="stylesheet">
+<style>
+.gridWithNone {
+    grid-definition-columns: none;
+    grid-definition-rows: none;
+}
+.gridWithFixed {
+    grid-definition-columns: 10px;
+    grid-definition-rows: 15px;
+}
+.gridWithPercent {
+    grid-definition-columns: 53%;
+    grid-definition-rows: 27%;
+}
+.gridWithAuto {
+    grid-definition-columns: auto;
+    grid-definition-rows: auto;
+}
+.gridWithEM {
+    grid-definition-columns: 10em;
+    grid-definition-rows: 15em;
+    font: 10px Ahem;
+}
+.gridWithViewPortPercentage {
+    grid-definition-columns: 8vw;
+    grid-definition-rows: 10vh;
+}
+.gridWithFitContent {
+    grid-definition-columns: -webkit-fit-content;
+    grid-definition-rows: -webkit-fit-content;
+}
+.gridWithFitAvailable {
+    grid-definition-columns: -webkit-fit-available;
+    grid-definition-rows: -webkit-fit-available;
+}
+.gridWithMinMax {
+    grid-definition-columns: minmax(10%, 15px);
+    grid-definition-rows: minmax(20px, 50%);
+}
+.gridWithMinContent {
+    grid-definition-columns: min-content;
+    grid-definition-rows: min-content;
+}
+.gridWithMaxContent {
+    grid-definition-columns: max-content;
+    grid-definition-rows: max-content;
+}
+.gridWithFraction {
+    grid-definition-columns: 1fr;
+    grid-definition-rows: 2fr;
+}
+</style>
+<script src="../js/resources/js-test-pre.js"></script>
+</head>
+<body>
+<div class="gridWithNone" id="gridWithNoneElement"></div>
+<div class="gridWithFixed" id="gridWithFixedElement"></div>
+<div class="gridWithPercent" id="gridWithPercentElement"></div>
+<div class="gridWithAuto" id="gridWithAutoElement"></div>
+<div class="gridWithEM" id="gridWithEMElement"></div>
+<div class="gridWithViewPortPercentage" id="gridWithViewPortPercentageElement"></div>
+<div class="gridWithFitContent" id="gridWithFitContentElement"></div>
+<div class="gridWithFitAvailable" id="gridWithFitAvailableElement"></div>
+<div class="gridWithMinMax" id="gridWithMinMax"></div>
+<div class="gridWithMinContent" id="gridWithMinContent"></div>
+<div class="gridWithMaxContent" id="gridWithMaxContent"></div>
+<div class="gridWithFraction" id="gridWithFraction"></div>
+<script src="resources/grid-definitions-parsing-utils.js"></script>
+<script src="resources/non-grid-columns-rows-get-set.js"></script>
+</body>
+</html>
