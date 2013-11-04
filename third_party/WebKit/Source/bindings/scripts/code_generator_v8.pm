@@ -5369,15 +5369,19 @@ sub JSValueToNative
     if ($intConversion ne "NormalConversion") {
         return "toInt8($value, $intConversion, ok)" if $type eq "byte";
         return "toUInt8($value, $intConversion, ok)" if $type eq "octet";
-        return "toInt32($value, $intConversion, ok)" if $type eq "long" or $type eq "short";
-        return "toUInt32($value, $intConversion, ok)" if $type eq "unsigned long" or $type eq "unsigned short";
+        return "toInt16($value, $intConversion, ok)" if $type eq "short";
+        return "toUInt16($value, $intConversion, ok)" if $type eq "unsigned short";
+        return "toInt32($value, $intConversion, ok)" if $type eq "long";
+        return "toUInt32($value, $intConversion, ok)" if $type eq "unsigned long";
         return "toInt64($value, $intConversion, ok)" if $type eq "long long";
         return "toUInt64($value, $intConversion, ok)" if $type eq "unsigned long long";
     } else {
         return "toInt8($value)" if $type eq "byte";
         return "toUInt8($value)" if $type eq "octet";
-        return "toInt32($value)" if $type eq "long" or $type eq "short";
-        return "toUInt32($value)" if $type eq "unsigned long" or $type eq "unsigned short";
+        return "toInt16($value)" if $type eq "short";
+        return "toUInt16($value)" if $type eq "unsigned short";
+        return "toInt32($value)" if $type eq "long";
+        return "toUInt32($value)" if $type eq "unsigned long";
         return "toInt64($value)" if $type eq "long long";
         return "toUInt64($value)" if $type eq "unsigned long long";
     }

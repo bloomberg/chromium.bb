@@ -144,9 +144,6 @@ PassRefPtr<NodeFilter> toNodeFilter(v8::Handle<v8::Value> callback, v8::Isolate*
     return filter.release();
 }
 
-static const int8_t kMaxInt8 = 127;
-static const int8_t kMinInt8 = -128;
-static const uint8_t kMaxUInt8 = 255;
 const int32_t kMaxInt32 = 0x7fffffff;
 const int32_t kMinInt32 = -kMaxInt32 - 1;
 const uint32_t kMaxUInt32 = 0xffffffff;
@@ -166,21 +163,53 @@ static double enforceRange(double x, double minimum, double maximum, bool& ok)
     return x;
 }
 
-int8_t toInt8(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, bool& ok)
+template <typename T>
+struct IntTypeLimits {
+};
+
+template <>
+struct IntTypeLimits<int8_t> {
+    static const int8_t minValue = -128;
+    static const int8_t maxValue = 127;
+    static const unsigned numberOfValues = 256; // 2^8
+};
+
+template <>
+struct IntTypeLimits<uint8_t> {
+    static const uint8_t maxValue = 255;
+    static const unsigned numberOfValues = 256; // 2^8
+};
+
+template <>
+struct IntTypeLimits<int16_t> {
+    static const short minValue = -32768;
+    static const short maxValue = 32767;
+    static const unsigned numberOfValues = 65536; // 2^16
+};
+
+template <>
+struct IntTypeLimits<uint16_t> {
+    static const unsigned short maxValue = 65535;
+    static const unsigned numberOfValues = 65536; // 2^16
+};
+
+template <typename T>
+static inline T toSmallerInt(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, bool& ok)
 {
+    typedef IntTypeLimits<T> LimitsTrait;
     ok = true;
 
     // Fast case. The value is already a 32-bit integer in the right range.
     if (value->IsInt32()) {
         int32_t result = value->Int32Value();
-        if (result >= kMinInt8 && result <= kMaxInt8)
-            return static_cast<int8_t>(result);
+        if (result >= LimitsTrait::minValue && result <= LimitsTrait::maxValue)
+            return static_cast<T>(result);
         if (configuration == EnforceRange) {
             ok = false;
             return 0;
         }
-        result %= 256; // 2^8.
-        return static_cast<int8_t>(result > kMaxInt8 ? result - 256 : result);
+        result %= LimitsTrait::numberOfValues;
+        return static_cast<T>(result > LimitsTrait::maxValue ? result - LimitsTrait::numberOfValues : result);
     }
 
     // Can the value be converted to a number?
@@ -191,33 +220,34 @@ int8_t toInt8(v8::Handle<v8::Value> value, IntegerConversionConfiguration config
     }
 
     if (configuration == EnforceRange)
-        return enforceRange(numberObject->Value(), kMinInt8, kMaxInt8, ok);
+        return enforceRange(numberObject->Value(), LimitsTrait::minValue, LimitsTrait::maxValue, ok);
 
     double numberValue = numberObject->Value();
     if (std::isnan(numberValue) || std::isinf(numberValue) || !numberValue)
         return 0;
 
-    numberValue = numberValue < 0 ? -floor(abs(numberValue)) : floor(abs(numberValue));
-    numberValue = fmod(numberValue, 256); // 2^8.
+    numberValue = numberValue < 0 ? -floor(fabs(numberValue)) : floor(fabs(numberValue));
+    numberValue = fmod(numberValue, LimitsTrait::numberOfValues);
 
-    return static_cast<int8_t>(numberValue > kMaxInt8 ? numberValue - 256 : numberValue);
+    return static_cast<T>(numberValue > LimitsTrait::maxValue ? numberValue - LimitsTrait::numberOfValues : numberValue);
 }
 
-uint8_t toUInt8(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, bool& ok)
+template <typename T>
+static inline T toSmallerUInt(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, bool& ok)
 {
+    typedef IntTypeLimits<T> LimitsTrait;
     ok = true;
 
     // Fast case. The value is a 32-bit signed integer - possibly positive?
     if (value->IsInt32()) {
         int32_t result = value->Int32Value();
-        if (result >= 0 && result <= kMaxUInt8)
-            return static_cast<uint8_t>(result);
+        if (result >= 0 && result <= LimitsTrait::maxValue)
+            return static_cast<T>(result);
         if (configuration == EnforceRange) {
             ok = false;
             return 0;
         }
-        // Converting to uint8_t will cause the resulting value to be the value modulo 2^8.
-        return static_cast<uint8_t>(result);
+        return static_cast<T>(result);
     }
 
     // Can the value be converted to a number?
@@ -228,15 +258,35 @@ uint8_t toUInt8(v8::Handle<v8::Value> value, IntegerConversionConfiguration conf
     }
 
     if (configuration == EnforceRange)
-        return enforceRange(numberObject->Value(), 0, kMaxUInt8, ok);
+        return enforceRange(numberObject->Value(), 0, LimitsTrait::maxValue, ok);
 
     // Does the value convert to nan or to an infinity?
     double numberValue = numberObject->Value();
     if (std::isnan(numberValue) || std::isinf(numberValue) || !numberValue)
         return 0;
 
-    numberValue = numberValue < 0 ? -floor(abs(numberValue)) : floor(abs(numberValue));
-    return static_cast<uint8_t>(fmod(numberValue, 256)); // 2^8.
+    numberValue = numberValue < 0 ? -floor(fabs(numberValue)) : floor(fabs(numberValue));
+    return static_cast<T>(fmod(numberValue, LimitsTrait::numberOfValues));
+}
+
+int8_t toInt8(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, bool& ok)
+{
+    return toSmallerInt<int8_t>(value, configuration, ok);
+}
+
+uint8_t toUInt8(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, bool& ok)
+{
+    return toSmallerUInt<uint8_t>(value, configuration, ok);
+}
+
+int16_t toInt16(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, bool& ok)
+{
+    return toSmallerInt<int16_t>(value, configuration, ok);
+}
+
+uint16_t toUInt16(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, bool& ok)
+{
+    return toSmallerUInt<uint16_t>(value, configuration, ok);
 }
 
 int32_t toInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, bool& ok)

@@ -340,6 +340,32 @@ namespace WebCore {
         return toUInt8(value, NormalConversion, ok);
     }
 
+    // Convert a value to a 16-bit signed integer. The conversion fails if the
+    // value cannot be converted to a number or the range violated per WebIDL:
+    // http://www.w3.org/TR/WebIDL/#es-short
+    int16_t toInt16(v8::Handle<v8::Value>, IntegerConversionConfiguration, bool& ok);
+    inline int16_t toInt16(v8::Handle<v8::Value> value, bool& ok) { return toInt16(value, NormalConversion, ok); }
+
+    // Convert a value to a 16-bit integer assuming the conversion cannot fail.
+    inline int16_t toInt16(v8::Handle<v8::Value> value)
+    {
+        bool ok;
+        return toInt16(value, NormalConversion, ok);
+    }
+
+    // Convert a value to a 16-bit unsigned integer. The conversion fails if the
+    // value cannot be converted to a number or the range violated per WebIDL:
+    // http://www.w3.org/TR/WebIDL/#es-unsigned-short
+    uint16_t toUInt16(v8::Handle<v8::Value>, IntegerConversionConfiguration, bool& ok);
+    inline uint16_t toUInt16(v8::Handle<v8::Value> value, bool& ok) { return toUInt16(value, NormalConversion, ok); }
+
+    // Convert a value to a 16-bit unsigned integer assuming the conversion cannot fail.
+    inline uint16_t toUInt16(v8::Handle<v8::Value> value)
+    {
+        bool ok;
+        return toUInt16(value, NormalConversion, ok);
+    }
+
     // Convert a value to a 32-bit signed integer. The conversion fails if the
     // value cannot be converted to a number or the range violated per WebIDL:
     // http://www.w3.org/TR/WebIDL/#es-long

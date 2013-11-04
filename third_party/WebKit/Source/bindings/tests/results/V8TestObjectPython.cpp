@@ -430,7 +430,7 @@ static void shortAttributeAttributeGetterCallback(v8::Local<v8::String>, const v
 static void shortAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_VOID(int, cppValue, toInt16(jsValue));
     imp->setShortAttribute(cppValue);
 }
 
@@ -511,7 +511,7 @@ static void unsignedShortAttributeAttributeGetterCallback(v8::Local<v8::String>,
 static void unsignedShortAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(unsigned, cppValue, toUInt32(jsValue));
+    V8TRYCATCH_VOID(unsigned, cppValue, toUInt16(jsValue));
     imp->setUnsignedShortAttribute(cppValue);
 }
 
@@ -2632,7 +2632,7 @@ static void reflectUnsignedShortAttributeAttributeGetterCallback(v8::Local<v8::S
 static void reflectUnsignedShortAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(unsigned, cppValue, toUInt32(jsValue));
+    V8TRYCATCH_VOID(unsigned, cppValue, toUInt16(jsValue));
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     imp->setAttribute(HTMLNames::reflectunsignedshortattributeAttr, cppValue);
 }
@@ -3590,7 +3590,7 @@ static void voidMethodShortArgMethod(const v8::FunctionCallbackInfo<v8::Value>& 
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, shortArg, toInt32(info[0]));
+    V8TRYCATCH_VOID(int, shortArg, toInt16(info[0]));
     imp->voidMethodShortArg(shortArg);
 }
 
@@ -3644,7 +3644,7 @@ static void voidMethodUnsignedShortArgMethod(const v8::FunctionCallbackInfo<v8::
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(unsigned, unsignedShortArg, toUInt32(info[0]));
+    V8TRYCATCH_VOID(unsigned, unsignedShortArg, toUInt16(info[0]));
     imp->voidMethodUnsignedShortArg(unsignedShortArg);
 }
 

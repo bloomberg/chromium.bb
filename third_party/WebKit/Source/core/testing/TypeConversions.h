@@ -38,31 +38,23 @@ public:
 
     long testLong() { return m_long; }
     void setTestLong(long value) { m_long = value; }
-    long testEnforceRangeLong() { return m_long; }
-    void setTestEnforceRangeLong(long value) { m_long = value; }
     unsigned long testUnsignedLong() { return m_unsignedLong; }
     void setTestUnsignedLong(unsigned long value) { m_unsignedLong = value; }
-    unsigned long testEnforceRangeUnsignedLong() { return m_unsignedLong; }
-    void setTestEnforceRangeUnsignedLong(unsigned long value) { m_unsignedLong = value; }
 
     long long testLongLong() { return m_longLong; }
     void setTestLongLong(long long value) { m_longLong = value; }
-    long long testEnforceRangeLongLong() { return m_longLong; }
-    void setTestEnforceRangeLongLong(long long value) { m_longLong = value; }
     unsigned long long testUnsignedLongLong() { return m_unsignedLongLong; }
     void setTestUnsignedLongLong(unsigned long long value) { m_unsignedLongLong = value; }
-    unsigned long long testEnforceRangeUnsignedLongLong() { return m_unsignedLongLong; }
-    void setTestEnforceRangeUnsignedLongLong(unsigned long long value) { m_unsignedLongLong = value; }
 
     int8_t testByte() { return m_byte; }
     void setTestByte(int8_t value) { m_byte = value; }
-    int8_t testEnforceRangeByte() { return m_byte; }
-    void setTestEnforceRangeByte(int8_t value) { m_byte = value; }
-
     uint8_t testOctet() { return m_octet; }
     void setTestOctet(uint8_t value) { m_octet = value; }
-    uint8_t testEnforceRangeOctet() { return m_octet; }
-    void setTestEnforceRangeOctet(uint8_t value) { m_octet = value; }
+
+    int16_t testShort() { return m_short; }
+    void setTestShort(int16_t value) { m_short = value; }
+    uint16_t testUnsignedShort() { return m_unsignedShort; }
+    void setTestUnsignedShort(uint16_t value) { m_unsignedShort = value; }
 
 private:
     TypeConversions()
@@ -75,6 +67,8 @@ private:
     unsigned long long m_unsignedLongLong;
     int8_t m_byte;
     uint8_t m_octet;
+    int16_t m_short;
+    uint16_t m_unsignedShort;
 };
 
 } // namespace WebCore

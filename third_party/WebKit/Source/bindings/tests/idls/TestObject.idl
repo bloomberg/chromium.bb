@@ -156,6 +156,8 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     // 'EnforceRange' extended attribute
     void    methodWithEnforceRangeInt8([EnforceRange] byte value);
     void    methodWithEnforceRangeUInt8([EnforceRange] octet value);
+    void    methodWithEnforceRangeInt16([EnforceRange] short value);
+    void    methodWithEnforceRangeUInt16([EnforceRange] unsigned short value);
     void    methodWithEnforceRangeInt32([EnforceRange] long value);
     void    methodWithEnforceRangeUInt32([EnforceRange] unsigned long value);
     void    methodWithEnforceRangeInt64([EnforceRange] long long value);
@@ -163,6 +165,8 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
 
     [EnforceRange] attribute byte enforcedRangeByteAttr;
     [EnforceRange] attribute octet enforcedRangeOctetAttr;
+    [EnforceRange] attribute short enforcedRangeShortAttr;
+    [EnforceRange] attribute unsigned short enforcedRangeUnsignedShortAttr;
     [EnforceRange] attribute long enforcedRangeLongAttr;
     [EnforceRange] attribute unsigned long enforcedRangeUnsignedLongAttr;
     [EnforceRange] attribute long long enforcedRangeLongLongAttr;

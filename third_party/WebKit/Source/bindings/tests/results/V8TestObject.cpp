@@ -302,7 +302,7 @@ static void shortAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::Pr
 static void shortAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_VOID(int, cppValue, toInt16(jsValue));
     imp->setShortAttr(cppValue);
 }
 
@@ -329,7 +329,7 @@ static void unsignedShortAttrAttributeGetterCallback(v8::Local<v8::String>, cons
 static void unsignedShortAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(unsigned, cppValue, toUInt32(jsValue));
+    V8TRYCATCH_VOID(unsigned, cppValue, toUInt16(jsValue));
     imp->setUnsignedShortAttr(cppValue);
 }
 
@@ -1328,6 +1328,60 @@ static void enforcedRangeOctetAttrAttributeSetterCallback(v8::Local<v8::String>,
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     TestObjV8Internal::enforcedRangeOctetAttrAttributeSetter(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void enforcedRangeShortAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    v8SetReturnValueInt(info, imp->enforcedRangeShortAttr());
+}
+
+static void enforcedRangeShortAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjV8Internal::enforcedRangeShortAttrAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void enforcedRangeShortAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_WITH_TYPECHECK_VOID(int, cppValue, toInt16(jsValue, EnforceRange, ok), info.GetIsolate());
+    imp->setEnforcedRangeShortAttr(cppValue);
+}
+
+static void enforcedRangeShortAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestObjV8Internal::enforcedRangeShortAttrAttributeSetter(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void enforcedRangeUnsignedShortAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    v8SetReturnValueUnsigned(info, imp->enforcedRangeUnsignedShortAttr());
+}
+
+static void enforcedRangeUnsignedShortAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjV8Internal::enforcedRangeUnsignedShortAttrAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void enforcedRangeUnsignedShortAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_WITH_TYPECHECK_VOID(unsigned, cppValue, toUInt16(jsValue, EnforceRange, ok), info.GetIsolate());
+    imp->setEnforcedRangeUnsignedShortAttr(cppValue);
+}
+
+static void enforcedRangeUnsignedShortAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestObjV8Internal::enforcedRangeUnsignedShortAttrAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -3585,6 +3639,42 @@ static void methodWithEnforceRangeUInt8MethodCallback(const v8::FunctionCallback
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void methodWithEnforceRangeInt16Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("methodWithEnforceRangeInt16", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_WITH_TYPECHECK_VOID(int, value, toInt16(info[0], EnforceRange, ok), info.GetIsolate());
+    imp->methodWithEnforceRangeInt16(value);
+}
+
+static void methodWithEnforceRangeInt16MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjV8Internal::methodWithEnforceRangeInt16Method(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void methodWithEnforceRangeUInt16Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("methodWithEnforceRangeUInt16", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_WITH_TYPECHECK_VOID(unsigned, value, toUInt16(info[0], EnforceRange, ok), info.GetIsolate());
+    imp->methodWithEnforceRangeUInt16(value);
+}
+
+static void methodWithEnforceRangeUInt16MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjV8Internal::methodWithEnforceRangeUInt16Method(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void methodWithEnforceRangeInt32Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
@@ -4938,6 +5028,8 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
     {"withExecutionContextAndScriptStateWithSpacesAttribute", TestObjV8Internal::withExecutionContextAndScriptStateWithSpacesAttributeAttributeGetterCallback, TestObjV8Internal::withExecutionContextAndScriptStateWithSpacesAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"enforcedRangeByteAttr", TestObjV8Internal::enforcedRangeByteAttrAttributeGetterCallback, TestObjV8Internal::enforcedRangeByteAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"enforcedRangeOctetAttr", TestObjV8Internal::enforcedRangeOctetAttrAttributeGetterCallback, TestObjV8Internal::enforcedRangeOctetAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"enforcedRangeShortAttr", TestObjV8Internal::enforcedRangeShortAttrAttributeGetterCallback, TestObjV8Internal::enforcedRangeShortAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"enforcedRangeUnsignedShortAttr", TestObjV8Internal::enforcedRangeUnsignedShortAttrAttributeGetterCallback, TestObjV8Internal::enforcedRangeUnsignedShortAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"enforcedRangeLongAttr", TestObjV8Internal::enforcedRangeLongAttrAttributeGetterCallback, TestObjV8Internal::enforcedRangeLongAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"enforcedRangeUnsignedLongAttr", TestObjV8Internal::enforcedRangeUnsignedLongAttrAttributeGetterCallback, TestObjV8Internal::enforcedRangeUnsignedLongAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"enforcedRangeLongLongAttr", TestObjV8Internal::enforcedRangeLongLongAttrAttributeGetterCallback, TestObjV8Internal::enforcedRangeLongLongAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
@@ -5031,6 +5123,8 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"methodWithNullableCallbackArg", TestObjV8Internal::methodWithNullableCallbackArgMethodCallback, 0, 1},
     {"methodWithEnforceRangeInt8", TestObjV8Internal::methodWithEnforceRangeInt8MethodCallback, 0, 1},
     {"methodWithEnforceRangeUInt8", TestObjV8Internal::methodWithEnforceRangeUInt8MethodCallback, 0, 1},
+    {"methodWithEnforceRangeInt16", TestObjV8Internal::methodWithEnforceRangeInt16MethodCallback, 0, 1},
+    {"methodWithEnforceRangeUInt16", TestObjV8Internal::methodWithEnforceRangeUInt16MethodCallback, 0, 1},
     {"methodWithEnforceRangeInt32", TestObjV8Internal::methodWithEnforceRangeInt32MethodCallback, 0, 1},
     {"methodWithEnforceRangeUInt32", TestObjV8Internal::methodWithEnforceRangeUInt32MethodCallback, 0, 1},
     {"methodWithEnforceRangeInt64", TestObjV8Internal::methodWithEnforceRangeInt64MethodCallback, 0, 1},
