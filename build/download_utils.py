@@ -109,9 +109,9 @@ def DoesStampMatch(stampfile, expected, index):
     stamp = f.read()
     f.close()
     if stamp.split('\n')[index] == expected:
-      return "already up-to-date."
+      return 'already up-to-date.'
     elif stamp.startswith('manual'):
-      return "manual override."
+      return 'manual override.'
     return False
   except IOError:
     return False
@@ -127,6 +127,12 @@ def WriteStamp(stampfile, data):
 def StampIsCurrent(path, stamp_name, stamp_contents, min_time=None, index=0):
   stampfile = os.path.join(path, stamp_name)
 
+  stampmatch = DoesStampMatch(stampfile, stamp_contents, index)
+
+  # If toolchain was downloaded and/or created manually then keep it untouched
+  if stampmatch == 'manual override.':
+    return stampmatch
+
   # Check if the stampfile is older than the minimum last mod time
   if min_time:
     try:
@@ -136,7 +142,7 @@ def StampIsCurrent(path, stamp_name, stamp_contents, min_time=None, index=0):
     except OSError:
       return False
 
-  return DoesStampMatch(stampfile, stamp_contents, index)
+  return stampmatch
 
 
 def WriteSourceStamp(path, url):
@@ -165,10 +171,10 @@ def Retry(op, *args):
         op(*args)
         break
       except Exception:
-        sys.stdout.write("FAILED: %s %s\n" % (op.__name__, repr(args)))
+        sys.stdout.write('FAILED: %s %s\n' % (op.__name__, repr(args)))
         count += 1
         if count < 5:
-          sys.stdout.write("RETRY: %s %s\n" % (op.__name__, repr(args)))
+          sys.stdout.write('RETRY: %s %s\n' % (op.__name__, repr(args)))
           time.sleep(pow(2, count))
         else:
           # Don't mask the exception.
@@ -239,7 +245,7 @@ def HashUrlByDownloading(url):
   try:
     fh = urllib2.urlopen(url)
   except:
-    sys.stderr.write("Failed fetching URL: %s\n" % url)
+    sys.stderr.write('Failed fetching URL: %s\n' % url)
     raise
   return _HashFileHandle(fh)
 
