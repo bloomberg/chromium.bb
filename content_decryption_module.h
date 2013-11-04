@@ -37,7 +37,15 @@ typedef __int64 int64_t;
 // The version number must be rolled when the exported functions are updated!
 // If the CDM and the adapter use different versions of these functions, the
 // adapter will fail to load or crash!
-#define INITIALIZE_CDM_MODULE InitializeCdmModule_4
+#define CDM_MODULE_VERSION 4
+
+// Build the versioned entrypoint name.
+// The extra macros are necessary to expand version to an actual value.
+#define INITIALIZE_CDM_MODULE \
+  BUILD_ENTRYPOINT(InitializeCdmModule, CDM_MODULE_VERSION)
+#define BUILD_ENTRYPOINT(name, version) \
+  BUILD_ENTRYPOINT_NO_EXPANSION(name, version)
+#define BUILD_ENTRYPOINT_NO_EXPANSION(name, version) name##_##version
 
 extern "C" {
 CDM_EXPORT void INITIALIZE_CDM_MODULE();
