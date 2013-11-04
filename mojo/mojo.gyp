@@ -142,12 +142,16 @@
         'shell/app_container.h',
         'shell/context.cc',
         'shell/context.h',
+        'shell/handle_watcher.cc',
+        'shell/handle_watcher.h',
         'shell/loader.cc',
         'shell/loader.h',
         'shell/network_delegate.cc',
         'shell/network_delegate.h',
         'shell/run.cc',
         'shell/run.h',
+        'shell/scoped_message_pipe.cc',
+        'shell/scoped_message_pipe.h',
         'shell/storage.cc',
         'shell/storage.h',
         'shell/switches.cc',
@@ -177,6 +181,29 @@
       ],
       'sources': [
         'shell/desktop/mojo_main.cc',
+      ],
+      'conditions': [
+        ['OS == "win"', {
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [
+            4267,
+          ],
+        }],
+      ],
+    },
+    {
+      'target_name': 'mojo_shell_unittests',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/base.gyp:run_all_unittests',
+        '../testing/gtest.gyp:gtest',
+        'mojo_shell_lib',
+        'mojo_system',
+      ],
+      'sources': [
+        'shell/handle_watcher_unittest.cc',
+        'shell/test/run_all_unittests.cc',
       ],
       'conditions': [
         ['OS == "win"', {

@@ -55,8 +55,8 @@ completed:
 }
 
 AppContainer::AppContainer(Context* context)
-    : context_(context)
-    , weak_factory_(this) {
+    : context_(context),
+      weak_factory_(this) {
 }
 
 AppContainer::~AppContainer() {
