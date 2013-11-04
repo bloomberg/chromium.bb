@@ -640,7 +640,7 @@ void Browser::OnWindowClosing() {
       TabRestoreServiceFactory::GetForProfile(profile());
 
 #if defined(USE_AURA)
-  if (tab_restore_service && is_app())
+  if (tab_restore_service && is_app() && !is_devtools())
     tab_restore_service->BrowserClosing(tab_restore_service_delegate());
 #endif
 
