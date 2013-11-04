@@ -44,7 +44,7 @@ class SessionRestore(startup.Startup):
       raise Exception("Invalid pageset: more than 1 WPR archive found.: " +
           ', '.join(wpr_archives.keys()))
 
-  def WillStartBrowser(self, browser):
+  def DidStartBrowser(self, browser):
     self._cpu_metric = cpu.CpuMetric(browser)
     self._cpu_metric.Start(None, None)
 
