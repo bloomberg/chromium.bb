@@ -32,7 +32,6 @@
   # The following defines turn WebKit features on and off.
   'variables': {
     'feature_defines': [
-      'ENABLE_CSS3_TEXT=0',
       'ENABLE_CUSTOM_SCHEME_HANDLER=0',
       'ENABLE_ENCRYPTED_MEDIA_V2=1',
       'ENABLE_SVG_FONTS=1',
