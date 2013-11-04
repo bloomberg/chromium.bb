@@ -201,25 +201,29 @@ class MockFileSystem(object):
         return path
 
     def listdir(self, path):
-        sep = self.sep
-        if not self.isdir(path):
-            raise OSError("%s is not a directory" % path)
+        root, dirs, files = list(self.walk(path))[0]
+        return dirs + files
 
-        if not path.endswith(sep):
-            path += sep
+    def walk(self, top):
+        sep = self.sep
+        if not self.isdir(top):
+            raise OSError("%s is not a directory" % top)
+
+        if not top.endswith(sep):
+            top += sep
 
         dirs = []
         files = []
         for f in self.files:
-            if self.exists(f) and f.startswith(path):
-                remaining = f[len(path):]
+            if self.exists(f) and f.startswith(top):
+                remaining = f[len(top):]
                 if sep in remaining:
                     dir = remaining[:remaining.index(sep)]
                     if not dir in dirs:
                         dirs.append(dir)
                 else:
                     files.append(remaining)
-        return dirs + files
+        return [(top[:-1], dirs, files)]
 
     def mtime(self, path):
         if self.exists(path):

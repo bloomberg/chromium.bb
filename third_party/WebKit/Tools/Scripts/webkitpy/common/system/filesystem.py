@@ -131,6 +131,9 @@ class FileSystem(object):
     def listdir(self, path):
         return os.listdir(path)
 
+    def walk(self, top):
+        return os.walk(top)
+
     def mkdtemp(self, **kwargs):
         """Create and return a uniquely named directory.
 

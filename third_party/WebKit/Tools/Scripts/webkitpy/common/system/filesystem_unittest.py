@@ -183,6 +183,15 @@ class RealFileSystemTest(unittest.TestCase, GenericFileSystemTests):
             self.assertEqual(fs.listdir(d), ['foo'])
             os.remove(new_file)
 
+    def test_walk(self):
+        fs = FileSystem()
+        with fs.mkdtemp(prefix='filesystem_unittest_') as d:
+            self.assertEqual(list(fs.walk(d)), [(d, [], [])])
+            new_file = os.path.join(d, 'foo')
+            fs.write_text_file(new_file, u'foo')
+            self.assertEqual(list(fs.walk(d)), [(d, [], ['foo'])])
+            os.remove(new_file)
+
     def test_maybe_make_directory__success(self):
         fs = FileSystem()
 
