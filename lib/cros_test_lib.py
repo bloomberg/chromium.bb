@@ -177,56 +177,7 @@ def VerifyTarball(tarball, dir_struct):
   _VerifyDirectoryIterables(normalized, expected)
 
 
-def _walk_mro_stacking(obj, attr, reverse=False):
-  iterator = iter if reverse else reversed
-  methods = (getattr(x, attr, None) for x in iterator(obj.__class__.__mro__))
-  seen = set()
-  for x in filter(None, methods):
-    x = getattr(x, 'im_func', x)
-    if x not in seen:
-      seen.add(x)
-      yield x
-
-
-def _stacked_setUp(self):
-  self.__test_was_run__ = False
-  try:
-    for target in _walk_mro_stacking(self, '__raw_setUp__'):
-      target(self)
-  except:
-    # TestCase doesn't trigger tearDowns if setUp failed; thus
-    # manually force it ourselves to ensure cleanup occurs.
-    _stacked_tearDown(self)
-    raise
-
-  # Now mark the object as fully setUp; this is done so that
-  # any last minute assertions in tearDown can know if they should
-  # run or not.
-  self.__test_was_run__ = True
-
-
-def _stacked_tearDown(self):
-  exc_info = None
-  for target in _walk_mro_stacking(self, '__raw_tearDown__', True):
-    #pylint: disable=W0702
-    try:
-      target(self)
-    except:
-      # Preserve the exception, throw it after running
-      # all tearDowns; we throw just the first also.  We suppress
-      # pylint's warning here since it can't understand that we're
-      # actually raising the exception, just in a nonstandard way.
-      if exc_info is None:
-        exc_info = sys.exc_info()
-
-  if exc_info:
-    # Chuck the saved exception, w/ the same TB from
-    # when it occurred.
-    raise exc_info[0], exc_info[1], exc_info[2]
-
-
 class StackedSetup(type):
-
   """Metaclass that extracts automatically stacks setUp and tearDown calls.
 
   Basically this exists to make it easier to do setUp *correctly*, while also
@@ -235,21 +186,76 @@ class StackedSetup(type):
   it.
 
   Usage of it is via usual metaclass approach; just set
-  `__metaclass__ = StackedSetup` .
+  `__metaclass__ = StackedSetup`.
 
   Note that this metaclass is designed such that because this is a metaclass,
   rather than just a scope mutator, all derivative classes derive from this
-  metaclass; thus all derivative TestCase classes get automatic stacking."""
+  metaclass; thus all derivative TestCase classes get automatic stacking.
+  """
+
   def __new__(mcs, name, bases, scope):
+    """Generate the new class with pointers to original funcs & our helpers"""
     if 'setUp' in scope:
       scope['__raw_setUp__'] = scope.pop('setUp')
-    scope['setUp'] = _stacked_setUp
+    scope['setUp'] = mcs._stacked_setUp
 
     if 'tearDown' in scope:
       scope['__raw_tearDown__'] = scope.pop('tearDown')
-    scope['tearDown'] = _stacked_tearDown
+    scope['tearDown'] = mcs._stacked_tearDown
 
     return type.__new__(mcs, name, bases, scope)
+
+  @staticmethod
+  def _walk_mro_stacking(obj, attr, reverse=False):
+    """Walk the stacked classes (python method resolution order)"""
+    iterator = iter if reverse else reversed
+    methods = (getattr(x, attr, None) for x in iterator(obj.__class__.__mro__))
+    seen = set()
+    for x in filter(None, methods):
+      x = getattr(x, 'im_func', x)
+      if x not in seen:
+        seen.add(x)
+        yield x
+
+  @staticmethod
+  def _stacked_setUp(obj):
+    """Run all the setUp funcs; if any fail, run all the tearDown funcs"""
+    obj.__test_was_run__ = False
+    try:
+      for target in StackedSetup._walk_mro_stacking(obj, '__raw_setUp__'):
+        target(obj)
+    except:
+      # TestCase doesn't trigger tearDowns if setUp failed; thus
+      # manually force it ourselves to ensure cleanup occurs.
+      StackedSetup._stacked_tearDown(obj)
+      raise
+
+    # Now mark the object as fully setUp; this is done so that
+    # any last minute assertions in tearDown can know if they should
+    # run or not.
+    obj.__test_was_run__ = True
+
+  @staticmethod
+  def _stacked_tearDown(obj):
+    """Run all the tearDown funcs; if any fail, we move on to the next one"""
+    exc_info = None
+    for target in StackedSetup._walk_mro_stacking(obj, '__raw_tearDown__',
+                                                  True):
+      #pylint: disable=W0702
+      try:
+        target(obj)
+      except:
+        # Preserve the exception, throw it after running
+        # all tearDowns; we throw just the first also.  We suppress
+        # pylint's warning here since it can't understand that we're
+        # actually raising the exception, just in a nonstandard way.
+        if exc_info is None:
+          exc_info = sys.exc_info()
+
+    if exc_info:
+      # Chuck the saved exception, w/ the same TB from
+      # when it occurred.
+      raise exc_info[0], exc_info[1], exc_info[2]
 
 
 class TruthTable(object):
