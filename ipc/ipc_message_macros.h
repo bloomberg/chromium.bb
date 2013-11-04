@@ -614,7 +614,7 @@
    public:                                                                    \
     typedef IPC::Message Schema;                                              \
     enum { ID = IPC_MESSAGE_ID() };                                           \
-    msg_class() : IPC::Message(MSG_ROUTING_CONTROL, ID) {}                    \
+    msg_class() : IPC::Message(MSG_ROUTING_CONTROL, ID, PRIORITY_NORMAL) {}   \
     static void Log(std::string* name, const Message* msg, std::string* l);   \
   };
 
@@ -624,7 +624,7 @@
     typedef IPC::Message Schema;                                              \
     enum { ID = IPC_MESSAGE_ID() };                                           \
     msg_class(int32 routing_id)                                               \
-        : IPC::Message(routing_id, ID) {}                                     \
+        : IPC::Message(routing_id, ID, PRIORITY_NORMAL) {}                    \
     static void Log(std::string* name, const Message* msg, std::string* l);   \
   };
 
@@ -713,7 +713,7 @@
 
 #define IPC_ASYNC_CONTROL_IMPL(msg_class, in_cnt, out_cnt, in_list, out_list) \
   msg_class::msg_class(IPC_TYPE_IN_##in_cnt in_list) :                        \
-      IPC::Message(MSG_ROUTING_CONTROL, ID) {                                 \
+      IPC::Message(MSG_ROUTING_CONTROL, ID, PRIORITY_NORMAL) {                \
         Schema::Write(this, IPC_NAME_IN_##in_cnt in_list);                    \
       }                                                                       \
   msg_class::~msg_class() {}                                                  \
@@ -724,7 +724,7 @@
 #define IPC_ASYNC_ROUTED_IMPL(msg_class, in_cnt, out_cnt, in_list, out_list)  \
   msg_class::msg_class(int32 routing_id IPC_COMMA_##in_cnt                    \
                        IPC_TYPE_IN_##in_cnt in_list) :                        \
-      IPC::Message(routing_id, ID) {                                          \
+      IPC::Message(routing_id, ID, PRIORITY_NORMAL) {                         \
         Schema::Write(this, IPC_NAME_IN_##in_cnt in_list);                    \
       }                                                                       \
   msg_class::~msg_class() {}                                                  \
@@ -736,7 +736,7 @@
   msg_class::msg_class(IPC_TYPE_IN_##in_cnt in_list                           \
                        IPC_COMMA_AND_##in_cnt(IPC_COMMA_##out_cnt)            \
                        IPC_TYPE_OUT_##out_cnt out_list) :                     \
-      IPC::SyncMessage(MSG_ROUTING_CONTROL, ID,                               \
+      IPC::SyncMessage(MSG_ROUTING_CONTROL, ID, PRIORITY_NORMAL,              \
                        new IPC::ParamDeserializer<Schema::ReplyParam>(        \
                            IPC_NAME_OUT_##out_cnt out_list)) {                \
         Schema::Write(this, IPC_NAME_IN_##in_cnt in_list);                    \
@@ -756,7 +756,7 @@
                        IPC_TYPE_IN_##in_cnt in_list                           \
                        IPC_COMMA_AND_##in_cnt(IPC_COMMA_##out_cnt)            \
                        IPC_TYPE_OUT_##out_cnt out_list) :                     \
-      IPC::SyncMessage(routing_id, ID,                                        \
+      IPC::SyncMessage(routing_id, ID, PRIORITY_NORMAL,                       \
                        new IPC::ParamDeserializer<Schema::ReplyParam>(        \
                            IPC_NAME_OUT_##out_cnt out_list)) {                \
         Schema::Write(this, IPC_NAME_IN_##in_cnt in_list);                    \

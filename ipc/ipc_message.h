@@ -34,11 +34,17 @@ struct LogData;
 
 class IPC_EXPORT Message : public Pickle {
  public:
+  enum PriorityValue {
+    PRIORITY_LOW = 1,
+    PRIORITY_NORMAL,
+    PRIORITY_HIGH
+  };
+
   // Bit values used in the flags field.
   // Upper 24 bits of flags store a reference number, so this enum is limited to
   // 8 bits.
   enum {
-    UNUSED            = 0x03,  // Low 2 bits are not used.
+    PRIORITY_MASK     = 0x03,  // Low 2 bits of store the priority value.
     SYNC_BIT          = 0x04,
     REPLY_BIT         = 0x08,
     REPLY_ERROR_BIT   = 0x10,
@@ -51,16 +57,21 @@ class IPC_EXPORT Message : public Pickle {
 
   Message();
 
-  // Initialize a message with routing ID and a user-defined type.
-  Message(int32 routing_id, uint32 type);
+  // Initialize a message with a user-defined type, priority value, and
+  // destination WebView ID.
+  Message(int32 routing_id, uint32 type, PriorityValue priority);
 
   // Initializes a message from a const block of data.  The data is not copied;
   // instead the data is merely referenced by this message.  Only const methods
   // should be used on the message when initialized this way.
-  Message(const char* data, size_t data_len);
+  Message(const char* data, int data_len);
 
   Message(const Message& other);
   Message& operator=(const Message& other);
+
+  PriorityValue priority() const {
+    return static_cast<PriorityValue>(header()->flags & PRIORITY_MASK);
+  }
 
   // True if this is a synchronous message.
   void set_sync() {

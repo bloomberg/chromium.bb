@@ -50,11 +50,12 @@ Message::Message()
   InitLoggingVariables();
 }
 
-Message::Message(int32 routing_id, uint32 type)
+Message::Message(int32 routing_id, uint32 type, PriorityValue priority)
     : Pickle(sizeof(Header)) {
   header()->routing = routing_id;
   header()->type = type;
-  header()->flags = GetRefNumUpper24();
+  DCHECK((priority & 0xffffff00) == 0);
+  header()->flags = priority | GetRefNumUpper24();
 #if defined(OS_POSIX)
   header()->num_fds = 0;
   header()->pad = 0;
@@ -62,8 +63,7 @@ Message::Message(int32 routing_id, uint32 type)
   InitLoggingVariables();
 }
 
-Message::Message(const char* data, size_t data_len)
-    : Pickle(data, data_len) {
+Message::Message(const char* data, int data_len) : Pickle(data, data_len) {
   InitLoggingVariables();
 }
 

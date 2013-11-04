@@ -75,7 +75,7 @@ bool ServiceListener::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void ServiceListener::OnChannelConnected(int32 peer_pid) {
-  IPC::Message* message = new IPC::Message(0, 0);
+  IPC::Message* message = new IPC::Message(0, 0, IPC::Message::PRIORITY_NORMAL);
   message->WriteString(GetEnvironment(user_data_dir_));
   channel_->Send(message);
 }

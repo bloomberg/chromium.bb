@@ -122,7 +122,7 @@ class ChannelReflectorListener : public IPC::Listener {
           base::TimeTicks::FromInternalValue(time_internal), now);
     }
 
-    IPC::Message* msg = new IPC::Message(0, 2);
+    IPC::Message* msg = new IPC::Message(0, 2, IPC::Message::PRIORITY_NORMAL);
     msg->WriteInt64(base::TimeTicks::Now().ToInternalValue());
     msg->WriteInt(msgid);
     msg->WriteString(payload);
@@ -201,7 +201,7 @@ class PerformanceChannelListener : public IPC::Listener {
       }
     }
 
-    IPC::Message* msg = new IPC::Message(0, 2);
+    IPC::Message* msg = new IPC::Message(0, 2, IPC::Message::PRIORITY_NORMAL);
     msg->WriteInt64(base::TimeTicks::Now().ToInternalValue());
     msg->WriteInt(count_down_);
     msg->WriteString(payload_);
@@ -239,7 +239,7 @@ TEST_F(IPCChannelPerfTest, Performance) {
 
     // This initial message will kick-start the ping-pong of messages.
     IPC::Message* message =
-        new IPC::Message(0, 2);
+        new IPC::Message(0, 2, IPC::Message::PRIORITY_NORMAL);
     message->WriteInt64(base::TimeTicks::Now().ToInternalValue());
     message->WriteInt(-1);
     message->WriteString("hello");
@@ -252,7 +252,7 @@ TEST_F(IPCChannelPerfTest, Performance) {
   }
 
   // Send quit message.
-  IPC::Message* message = new IPC::Message(0, 2);
+  IPC::Message* message = new IPC::Message(0, 2, IPC::Message::PRIORITY_NORMAL);
   message->WriteInt64(base::TimeTicks::Now().ToInternalValue());
   message->WriteInt(-1);
   message->WriteString("quit");

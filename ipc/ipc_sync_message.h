@@ -23,7 +23,7 @@ class MessageReplyDeserializer;
 
 class IPC_EXPORT SyncMessage : public Message {
  public:
-  SyncMessage(int32 routing_id, uint32 type,
+  SyncMessage(int32 routing_id, uint32 type, PriorityValue priority,
               MessageReplyDeserializer* deserializer);
   virtual ~SyncMessage();
 

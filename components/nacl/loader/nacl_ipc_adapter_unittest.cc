@@ -75,7 +75,7 @@ class NaClIPCAdapterTest : public testing::Test {
 TEST_F(NaClIPCAdapterTest, SimpleReceiveRewriting) {
   int routing_id = 0x89898989;
   uint32 type = 0x55555555;
-  IPC::Message input(routing_id, type);
+  IPC::Message input(routing_id, type, IPC::Message::PRIORITY_NORMAL);
   uint32 flags = input.flags();
 
   int value = 0x12345678;
@@ -175,14 +175,14 @@ TEST_F(NaClIPCAdapterTest, SendRewriting) {
 TEST_F(NaClIPCAdapterTest, PartialReceive) {
   int routing_id_1 = 0x89898989;
   uint32 type_1 = 0x55555555;
-  IPC::Message input_1(routing_id_1, type_1);
+  IPC::Message input_1(routing_id_1, type_1, IPC::Message::PRIORITY_NORMAL);
   int value_1 = 0x12121212;
   input_1.WriteInt(value_1);
   adapter_->OnMessageReceived(input_1);
 
   int routing_id_2 = 0x90909090;
   uint32 type_2 = 0x66666666;
-  IPC::Message input_2(routing_id_2, type_2);
+  IPC::Message input_2(routing_id_2, type_2, IPC::Message::PRIORITY_NORMAL);
   int value_2 = 0x23232323;
   input_2.WriteInt(value_2);
   adapter_->OnMessageReceived(input_2);

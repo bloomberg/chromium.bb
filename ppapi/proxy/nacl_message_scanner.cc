@@ -188,7 +188,8 @@ class MessageScannerImpl {
         MessageScannerImpl<MESSAGE_TYPE> scanner(&msg); \
         if (rewrite_msg) \
           results.new_msg.reset( \
-              new IPC::Message(msg.routing_id(), msg.type())); \
+              new IPC::Message(msg.routing_id(), msg.type(), \
+                               IPC::Message::PRIORITY_NORMAL)); \
         if (!scanner.ScanMessage(&results)) \
           return false; \
         break; \
@@ -198,7 +199,8 @@ class MessageScannerImpl {
         MessageScannerImpl<MESSAGE_TYPE> scanner(&msg); \
         if (rewrite_msg) \
           results.new_msg.reset( \
-              new IPC::Message(msg.routing_id(), msg.type())); \
+              new IPC::Message(msg.routing_id(), msg.type(), \
+                               IPC::Message::PRIORITY_NORMAL)); \
         if (!scanner.ScanReply(&results)) \
           return false; \
         break; \

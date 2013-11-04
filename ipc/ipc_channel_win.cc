@@ -269,7 +269,8 @@ bool Channel::ChannelImpl::CreatePipe(const IPC::ChannelHandle &channel_handle,
 
   // Create the Hello message to be sent when Connect is called
   scoped_ptr<Message> m(new Message(MSG_ROUTING_NONE,
-                                    HELLO_MESSAGE_TYPE));
+                                    HELLO_MESSAGE_TYPE,
+                                    IPC::Message::PRIORITY_NORMAL));
 
   // Don't send the secret to the untrusted process, and don't send a secret
   // if the value is zero (for IPC backwards compatability).

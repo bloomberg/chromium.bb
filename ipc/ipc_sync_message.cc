@@ -39,8 +39,9 @@ namespace IPC {
 SyncMessage::SyncMessage(
     int32 routing_id,
     uint32 type,
+    PriorityValue priority,
     MessageReplyDeserializer* deserializer)
-    : Message(routing_id, type),
+    : Message(routing_id, type, priority),
       deserializer_(deserializer),
       pump_messages_event_(NULL)
       {
@@ -95,7 +96,8 @@ int SyncMessage::GetMessageId(const Message& msg) {
 Message* SyncMessage::GenerateReply(const Message* msg) {
   DCHECK(msg->is_sync());
 
-  Message* reply = new Message(msg->routing_id(), IPC_REPLY_ID);
+  Message* reply = new Message(msg->routing_id(), IPC_REPLY_ID,
+                               msg->priority());
   reply->set_reply();
 
   SyncHeader header;

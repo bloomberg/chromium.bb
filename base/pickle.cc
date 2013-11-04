@@ -170,15 +170,15 @@ Pickle::Pickle(int header_size)
   header_->payload_size = 0;
 }
 
-Pickle::Pickle(const char* data, size_t data_len)
+Pickle::Pickle(const char* data, int data_len)
     : header_(reinterpret_cast<Header*>(const_cast<char*>(data))),
       header_size_(0),
       capacity_after_header_(kCapacityReadOnly),
       write_offset_(0) {
-  if (data_len >= sizeof(Header))
+  if (data_len >= static_cast<int>(sizeof(Header)))
     header_size_ = data_len - header_->payload_size;
 
-  if (header_size_ > data_len)
+  if (header_size_ > static_cast<unsigned int>(data_len))
     header_size_ = 0;
 
   if (header_size_ != AlignInt(header_size_, sizeof(uint32)))

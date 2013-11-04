@@ -199,7 +199,7 @@ class CCMessagesTest : public testing::Test {
 };
 
 TEST_F(CCMessagesTest, AllQuads) {
-  IPC::Message msg(1, 2);
+  IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
 
   Transform arbitrary_matrix;
   arbitrary_matrix.Scale(3, 3);
@@ -493,7 +493,7 @@ TEST_F(CCMessagesTest, AllQuads) {
 }
 
 TEST_F(CCMessagesTest, Resources) {
-  IPC::Message msg(1, 2);
+  IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   gfx::Size arbitrary_size(757, 1281);
   unsigned int arbitrary_uint1 = 71234838;
   unsigned int arbitrary_uint2 = 53589793;

@@ -512,7 +512,9 @@ bool NaClIPCAdapter::SendCompleteMessage(const char* buffer,
 
   // We actually discard the flags and only copy the ones we care about. This
   // is just because message doesn't have a constructor that takes raw flags.
-  scoped_ptr<IPC::Message> msg(new IPC::Message(header->routing, header->type));
+  scoped_ptr<IPC::Message> msg(
+      new IPC::Message(header->routing, header->type,
+                       IPC::Message::PRIORITY_NORMAL));
   if (header->flags & IPC::Message::SYNC_BIT)
     msg->set_sync();
   if (header->flags & IPC::Message::REPLY_BIT)

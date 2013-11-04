@@ -27,7 +27,7 @@ TEST(IPCMessageTest, Serialize) {
 
   for (size_t i = 0; i < arraysize(serialize_cases); i++) {
     GURL input(serialize_cases[i]);
-    IPC::Message msg(1, 2);
+    IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
     IPC::ParamTraits<GURL>::Write(&msg, input);
 
     GURL output;
@@ -58,7 +58,7 @@ TEST(IPCMessageTest, Serialize) {
   }
 
   // Also test the corrupt case.
-  IPC::Message msg(1, 2);
+  IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   msg.WriteInt(99);
   GURL output;
   PickleIterator iter(msg);
@@ -70,7 +70,7 @@ TEST(IPCMessageTest, Pair) {
   typedef std::pair<std::string, std::string> TestPair;
 
   TestPair input("foo", "bar");
-  IPC::Message msg(1, 2);
+  IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   IPC::ParamTraits<TestPair>::Write(&msg, input);
 
   TestPair output;
@@ -88,7 +88,7 @@ TEST(IPCMessageTest, Bitmap) {
   bitmap.allocPixels();
   memset(bitmap.getPixels(), 'A', bitmap.getSize());
 
-  IPC::Message msg(1, 2);
+  IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   IPC::ParamTraits<SkBitmap>::Write(&msg, bitmap);
 
   SkBitmap output;
@@ -104,7 +104,7 @@ TEST(IPCMessageTest, Bitmap) {
             0);
 
   // Also test the corrupt case.
-  IPC::Message bad_msg(1, 2);
+  IPC::Message bad_msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   // Copy the first message block over to |bad_msg|.
   const char* fixed_data;
   int fixed_data_size;
@@ -128,7 +128,7 @@ TEST(IPCMessageTest, ListValue) {
   input.Set(1, new base::StringValue("forty"));
   input.Set(2, base::Value::CreateNullValue());
 
-  IPC::Message msg(1, 2);
+  IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   IPC::WriteParam(&msg, input);
 
   base::ListValue output;
@@ -138,7 +138,7 @@ TEST(IPCMessageTest, ListValue) {
   EXPECT_TRUE(input.Equals(&output));
 
   // Also test the corrupt case.
-  IPC::Message bad_msg(1, 2);
+  IPC::Message bad_msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   bad_msg.WriteInt(99);
   iter = PickleIterator(bad_msg);
   EXPECT_FALSE(IPC::ReadParam(&bad_msg, &iter, &output));
@@ -162,7 +162,7 @@ TEST(IPCMessageTest, DictionaryValue) {
 
   input.Set("dict", subdict.release());
 
-  IPC::Message msg(1, 2);
+  IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   IPC::WriteParam(&msg, input);
 
   base::DictionaryValue output;
@@ -172,7 +172,7 @@ TEST(IPCMessageTest, DictionaryValue) {
   EXPECT_TRUE(input.Equals(&output));
 
   // Also test the corrupt case.
-  IPC::Message bad_msg(1, 2);
+  IPC::Message bad_msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   bad_msg.WriteInt(99);
   iter = PickleIterator(bad_msg);
   EXPECT_FALSE(IPC::ReadParam(&bad_msg, &iter, &output));
@@ -182,7 +182,7 @@ TEST(IPCMessageTest, DictionaryValue) {
 TEST(IPCMessageTest, HostPortPair) {
   net::HostPortPair input("host.com", 12345);
 
-  IPC::Message msg(1, 2);
+  IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   IPC::ParamTraits<net::HostPortPair>::Write(&msg, input);
 
   net::HostPortPair output;

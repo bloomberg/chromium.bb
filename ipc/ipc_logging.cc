@@ -96,7 +96,8 @@ void Logging::OnSendLogs() {
   if (!sender_)
     return;
 
-  Message* msg = new Message(MSG_ROUTING_CONTROL, IPC_LOGGING_ID);
+  Message* msg = new Message(
+      MSG_ROUTING_CONTROL, IPC_LOGGING_ID, Message::PRIORITY_NORMAL);
   WriteParam(msg, queued_logs_);
   queued_logs_.clear();
   sender_->Send(msg);
