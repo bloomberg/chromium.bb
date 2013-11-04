@@ -847,10 +847,12 @@ class NinjaWriter:
                                                   self.GypPathToNinja)])
 
     include_dirs = config.get('include_dirs', [])
+    env = self.GetSortedXcodeEnv()
     if self.flavor == 'win':
+      env = self.msvs_settings.GetVSMacroEnv('$!PRODUCT_DIR',
+                                             config=config_name)
       include_dirs = self.msvs_settings.AdjustIncludeDirs(include_dirs,
                                                           config_name)
-    env = self.GetSortedXcodeEnv()
     self.WriteVariableList(ninja_file, 'includes',
         [QuoteShellArgument('-I' + self.GypPathToNinja(i, env), self.flavor)
          for i in include_dirs])
@@ -876,6 +878,7 @@ class NinjaWriter:
                              map(self.ExpandSpecial, cflags_objcc))
     ninja_file.newline()
     outputs = []
+    has_rc_source = False
     for source in sources:
       filename, ext = os.path.splitext(source)
       ext = ext[1:]
@@ -903,6 +906,7 @@ class NinjaWriter:
       elif self.flavor == 'win' and ext == 'rc':
         command = 'rc'
         obj_ext = '.res'
+        has_rc_source = True
       else:
         # Ignore unhandled extensions.
         continue
@@ -920,6 +924,12 @@ class NinjaWriter:
                        implicit=[gch for _, _, gch in implicit],
                        order_only=predepends, variables=variables)
       outputs.append(output)
+
+    if has_rc_source:
+      resource_include_dirs = config.get('resource_include_dirs', include_dirs)
+      self.WriteVariableList(ninja_file, 'resource_includes',
+          [QuoteShellArgument('-I' + self.GypPathToNinja(i, env), self.flavor)
+           for i in resource_include_dirs])
 
     self.WritePchTargets(ninja_file, pch_commands)
 
@@ -1821,7 +1831,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       description='RC $in',
       # Note: $in must be last otherwise rc.exe complains.
       command=('%s gyp-win-tool rc-wrapper '
-               '$arch $rc $defines $includes $rcflags /fo$out $in' %
+               '$arch $rc $defines $resource_includes $rcflags /fo$out $in' %
                sys.executable))
     master_ninja.rule(
       'asm',
