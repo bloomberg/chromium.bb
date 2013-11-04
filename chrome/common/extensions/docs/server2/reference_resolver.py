@@ -51,21 +51,21 @@ class ReferenceResolver(object):
   class Factory(object):
     def __init__(self,
                  api_data_source_factory,
-                 api_list_data_source_factory,
+                 api_models,
                  object_store_creator):
       self._api_data_source_factory = api_data_source_factory
-      self._api_list_data_source_factory = api_list_data_source_factory
+      self._api_models = api_models
       self._object_store_creator = object_store_creator
 
     def Create(self):
       return ReferenceResolver(
           self._api_data_source_factory.Create(None),
-          self._api_list_data_source_factory.Create(),
+          self._api_models,
           self._object_store_creator.Create(ReferenceResolver))
 
-  def __init__(self, api_data_source, api_list_data_source, object_store):
+  def __init__(self, api_data_source, api_models, object_store):
     self._api_data_source = api_data_source
-    self._api_list_data_source = api_list_data_source
+    self._api_models = api_models
     self._object_store = object_store
 
   def _GetRefLink(self, ref, api_list, namespace, title):
@@ -128,7 +128,7 @@ class ReferenceResolver(object):
     if link is not None:
       return link
 
-    api_list = self._api_list_data_source.GetAllNames()
+    api_list = self._api_models.GetNames()
     link = self._GetRefLink(ref, api_list, namespace, title)
 
     if link is None and namespace is not None:

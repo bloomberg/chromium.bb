@@ -98,13 +98,6 @@ class APIListDataSource(object):
     self._factory = factory
     self._object_store = object_store_creator.Create(APIListDataSource)
 
-  def GetAllNames(self):
-    apis = []
-    for platform in ['apps', 'extensions']:
-      for category in ['chrome', 'experimental', 'private']:
-        apis.extend(self.get(platform).get(category))
-    return [api['name'] for api in apis]
-
   def _GetCachedAPIData(self):
     data = self._object_store.Get('api_data').Get()
     if data is None:
