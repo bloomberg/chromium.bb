@@ -403,7 +403,6 @@ void LoginDisplayHostImpl::CheckForAutoEnrollment() {
   DeviceSettingsService::Get()->GetOwnershipStatusAsync(
       base::Bind(&LoginDisplayHostImpl::OnOwnershipStatusCheckDone,
                  pointer_factory_.GetWeakPtr()));
-  auto_enrollment_check_done_ = false;
 }
 
 void LoginDisplayHostImpl::GetAutoEnrollmentCheckResult(

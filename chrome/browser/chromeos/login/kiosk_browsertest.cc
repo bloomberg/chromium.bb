@@ -63,6 +63,7 @@
 #include "google_apis/gaia/fake_gaia.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "net/base/network_change_notifier.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -256,6 +257,10 @@ class KioskTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
   virtual void CleanUpOnMainThread() OVERRIDE {
     // We need to clean up these objects in this specific order.
     fake_network_notifier_.reset(NULL);
@@ -284,17 +289,30 @@ class KioskTest : public InProcessBrowserTest {
     command_line->AppendSwitch(::switches::kDisableBackgroundNetworking);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
 
+    // Create gaia and webstore URL from test server url but using different
+    // host names. This is to avoid gaia response being tagged as from
+    // webstore in chrome_resource_dispatcher_host_delegate.cc.
     const GURL& server_url = embedded_test_server()->base_url();
-    command_line->AppendSwitchASCII(::switches::kGaiaUrl, server_url.spec());
-    command_line->AppendSwitchASCII(::switches::kLsoUrl, server_url.spec());
+
+    std::string gaia_host("gaia");
+    GURL::Replacements replace_gaia_host;
+    replace_gaia_host.SetHostStr(gaia_host);
+    GURL gaia_url = server_url.ReplaceComponents(replace_gaia_host);
+    command_line->AppendSwitchASCII(::switches::kGaiaUrl, gaia_url.spec());
+    command_line->AppendSwitchASCII(::switches::kLsoUrl, gaia_url.spec());
     command_line->AppendSwitchASCII(::switches::kGoogleApisUrl,
-                                    server_url.spec());
+                                    gaia_url.spec());
+
+    std::string webstore_host("webstore");
+    GURL::Replacements replace_webstore_host;
+    replace_webstore_host.SetHostStr(webstore_host);
+    GURL webstore_url = server_url.ReplaceComponents(replace_webstore_host);
     command_line->AppendSwitchASCII(
         ::switches::kAppsGalleryURL,
-        server_url.Resolve("/chromeos/app_mode/webstore").spec());
+        webstore_url.Resolve("/chromeos/app_mode/webstore").spec());
     command_line->AppendSwitchASCII(
         ::switches::kAppsGalleryDownloadURL,
-        server_url.Resolve(
+        webstore_url.Resolve(
             "/chromeos/app_mode/webstore/downloads/%s.crx").spec());
   }
 
@@ -713,6 +731,60 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAbortedWithAutoEnrollment) {
   GetSigninScreenHandler()->set_kiosk_enable_flow_aborted_callback_for_test(
       runner->QuitClosure());
   runner->Run();
+}
+
+IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAfter2ndSigninScreen) {
+  // Fake an auto enrollment is not going to be enforced.
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEnterpriseEnrollmentInitialModulus, "1");
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEnterpriseEnrollmentModulusLimit, "2");
+  g_browser_process->local_state()->SetBoolean(prefs::kShouldAutoEnroll, false);
+  g_browser_process->local_state()->SetInteger(
+      prefs::kAutoEnrollmentPowerLimit, -1);
+
+  chromeos::WizardController::SkipPostLoginScreensForTesting();
+  chromeos::WizardController* wizard_controller =
+      chromeos::WizardController::default_controller();
+  CHECK(wizard_controller);
+
+  // Check Kiosk mode status.
+  EXPECT_EQ(KioskAppManager::CONSUMER_KIOSK_MODE_CONFIGURABLE,
+            GetConsumerKioskModeStatus());
+
+  // Wait for the login UI to come up and switch to the kiosk_enable screen.
+  wizard_controller->SkipToLoginForTesting();
+  content::WindowedNotificationObserver(
+      chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+      content::NotificationService::AllSources()).Wait();
+  GetLoginUI()->CallJavascriptFunction("cr.ui.Oobe.handleAccelerator",
+                                       base::StringValue("kiosk_enable"));
+
+  // Wait for the kiosk_enable screen to show and cancel the screen.
+  content::WindowedNotificationObserver(
+      chrome::NOTIFICATION_KIOSK_ENABLE_WARNING_VISIBLE,
+      content::NotificationService::AllSources()).Wait();
+  GetLoginUI()->CallJavascriptFunction(
+      "login.KioskEnableScreen.enableKioskForTesting",
+      base::FundamentalValue(false));
+
+  // Wait for the kiosk_enable screen to disappear.
+  content::WindowedNotificationObserver(
+      chrome::NOTIFICATION_KIOSK_ENABLE_WARNING_COMPLETED,
+      content::NotificationService::AllSources()).Wait();
+
+  // Show signin screen again.
+  chromeos::LoginDisplayHostImpl::default_host()->StartSignInScreen();
+  OobeScreenWaiter(OobeDisplay::SCREEN_GAIA_SIGNIN).Wait();
+
+  // Show kiosk enable screen again.
+  GetLoginUI()->CallJavascriptFunction("cr.ui.Oobe.handleAccelerator",
+                                       base::StringValue("kiosk_enable"));
+
+  // And it should show up.
+  content::WindowedNotificationObserver(
+      chrome::NOTIFICATION_KIOSK_ENABLE_WARNING_VISIBLE,
+      content::NotificationService::AllSources()).Wait();
 }
 
 class KioskEnterpriseTest : public KioskTest {
