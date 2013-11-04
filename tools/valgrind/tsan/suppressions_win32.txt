@@ -242,3 +242,34 @@
   fun:NdrNonEncapsulatedUnionBufferSize
   fun:NdrNonEncapsulatedUnionBufferSize
 }
+{
+  bug_314654_a
+  ThreadSanitizer:Race
+  ...
+  fun:CoCreateInstanceEx
+  fun:CoCreateInstanceEx
+  fun:CoCreateInstanceEx
+  fun:CoCreateInstance
+  fun:base::win::ScopedComPtr::CreateInstance
+  fun:media::CoreAudioUtil::CreateDeviceEnumerator
+}
+{
+  bug_314654_b
+  ThreadSanitizer:Race
+  fun:.text
+  fun:.text
+  fun:CoSetState
+  fun:CoSetState
+  fun:CoGetComCatalog
+  fun:CoGetComCatalog
+  fun:CoGetComCatalog
+  fun:CoInitializeSecurity
+  fun:CoTaskMemFree
+  fun:CoCreateInstanceEx
+  fun:CoCreateInstanceEx
+  fun:CoCreateInstanceEx
+  fun:CoCreateInstanceEx
+  fun:CoCreateInstanceEx
+  fun:CoCreateInstance
+  fun:base::win::ScopedComPtr::CreateInstance
+}
