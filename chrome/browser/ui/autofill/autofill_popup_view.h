@@ -42,12 +42,6 @@ class AutofillPopupView {
   // Width of the delete icon in pixels.
   static const int kDeleteIconWidth = 16;
 
-  // Height of the Autofill icons in pixels.
-  static const int kAutofillIconHeight = 16;
-
-  // Width of the Autofill icons in pixels.
-  static const int kAutofillIconWidth = 25;
-
   // Displays the Autofill popup and fills it in with data from the controller.
   virtual void Show() = 0;
 

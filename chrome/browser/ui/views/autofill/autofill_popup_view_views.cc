@@ -247,13 +247,14 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
   if (!controller_->icons()[index].empty()) {
     int icon = controller_->GetIconResourceID(controller_->icons()[index]);
     DCHECK_NE(-1, icon);
-    int icon_y = entry_rect.y() + (row_height - kAutofillIconHeight) / 2;
+    const gfx::ImageSkia* image = rb.GetImageSkiaNamed(icon);
+    int icon_y = entry_rect.y() + (row_height - image->height()) / 2;
 
-    x_align_left += is_rtl ? 0 : -kAutofillIconWidth;
+    x_align_left += is_rtl ? 0 : -image->width();
 
-    canvas->DrawImageInt(*rb.GetImageSkiaNamed(icon), x_align_left, icon_y);
+    canvas->DrawImageInt(*image, x_align_left, icon_y);
 
-    x_align_left += is_rtl ? kAutofillIconWidth + kIconPadding : -kIconPadding;
+    x_align_left += is_rtl ? image->width() + kIconPadding : -kIconPadding;
   }
 
   // Draw the name text.

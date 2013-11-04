@@ -53,7 +53,7 @@ class AutofillPopupController {
 
   // Gets the resource value for the given resource, returning -1 if the
   // resource isn't recognized.
-  virtual int GetIconResourceID(const string16& resource_name) = 0;
+  virtual int GetIconResourceID(const string16& resource_name) const = 0;
 
   // Returns true if the given index refers to an element that can be deleted.
   virtual bool CanDelete(size_t index) const = 0;

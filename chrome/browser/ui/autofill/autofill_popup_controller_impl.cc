@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/webkit_resources.h"
 #include "third_party/WebKit/public/web/WebAutofillClient.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect_conversions.h"
@@ -45,7 +46,6 @@ const int kLabelFontSizeDelta = -2;
 const size_t kNamePadding = AutofillPopupView::kNamePadding;
 const size_t kIconPadding = AutofillPopupView::kIconPadding;
 const size_t kEndPadding = AutofillPopupView::kEndPadding;
-const size_t kAutofillIconWidth = AutofillPopupView::kAutofillIconWidth;
 #endif
 
 struct DataResource {
@@ -335,7 +335,7 @@ void AutofillPopupControllerImpl::AcceptSuggestion(size_t index) {
 }
 
 int AutofillPopupControllerImpl::GetIconResourceID(
-    const string16& resource_name) {
+    const string16& resource_name) const {
   for (size_t i = 0; i < arraysize(kDataResources); ++i) {
     if (resource_name == ASCIIToUTF16(kDataResources[i].name))
       return kDataResources[i].id;
@@ -624,8 +624,11 @@ int AutofillPopupControllerImpl::RowWidthWithoutText(int row) const {
     row_size += kNamePadding;
 
   // Add the Autofill icon size, if required.
-  if (!icons_[row].empty())
-    row_size += kAutofillIconWidth + kIconPadding;
+  if (!icons_[row].empty()) {
+    int icon_width = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+        GetIconResourceID(icons_[row])).Width();
+    row_size += icon_width + kIconPadding;
+  }
 
   // Add the padding at the end.
   row_size += kEndPadding;

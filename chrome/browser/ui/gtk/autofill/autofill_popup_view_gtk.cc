@@ -249,20 +249,21 @@ void AutofillPopupViewGtk::DrawAutofillEntry(cairo_t* cairo_context,
   if (!controller_->icons()[index].empty()) {
     int icon = controller_->GetIconResourceID(controller_->icons()[index]);
     DCHECK_NE(-1, icon);
-    int icon_y = entry_rect.y() + (row_height - kAutofillIconHeight) / 2;
+    const gfx::Image& image =
+        ui::ResourceBundle::GetSharedInstance().GetImageNamed(icon);
+    int icon_y = entry_rect.y() + (row_height - image.Height()) / 2;
 
-    x_align_left += is_rtl ? 0 : -kAutofillIconWidth;
+    x_align_left += is_rtl ? 0 : -image.Width();
 
     cairo_save(cairo_context);
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     gtk_util::DrawFullImage(cairo_context,
                             window_,
-                            rb.GetImageNamed(icon),
+                            image,
                             x_align_left,
                             icon_y);
     cairo_restore(cairo_context);
 
-    x_align_left += is_rtl ? kAutofillIconWidth + kIconPadding : -kIconPadding;
+    x_align_left += is_rtl ? image.Width() + kIconPadding : -kIconPadding;
   }
 
   // Draw the subtext.

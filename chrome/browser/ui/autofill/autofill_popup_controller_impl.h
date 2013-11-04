@@ -93,7 +93,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   virtual void MouseExitedPopup() OVERRIDE;
   virtual bool ShouldRepostEvent(const ui::MouseEvent& event) OVERRIDE;
   virtual void AcceptSuggestion(size_t index) OVERRIDE;
-  virtual int GetIconResourceID(const string16& resource_name) OVERRIDE;
+  virtual int GetIconResourceID(const string16& resource_name) const OVERRIDE;
   virtual bool CanDelete(size_t index) const OVERRIDE;
   virtual bool IsWarning(size_t index) const OVERRIDE;
   virtual gfx::Rect GetRowBounds(size_t index) OVERRIDE;
