@@ -4,11 +4,15 @@
 
 #include "mojo/shell/url_request_context_getter.h"
 
+#include "net/cert/cert_verifier.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
+#include "net/http/transport_security_state.h"
 #include "net/proxy/proxy_service.h"
+#include "net/ssl/default_server_bound_cert_store.h"
+#include "net/ssl/server_bound_cert_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/static_http_user_agent_settings.h"
@@ -50,6 +54,10 @@ net::URLRequestContext* URLRequestContextGetter::GetURLRequestContext() {
 
     storage_->set_proxy_service(net::ProxyService::CreateDirect());
     storage_->set_ssl_config_service(new net::SSLConfigServiceDefaults);
+    storage_->set_cert_verifier(net::CertVerifier::CreateDefault());
+    storage_->set_transport_security_state(new net::TransportSecurityState());
+    storage_->set_server_bound_cert_service(new net::ServerBoundCertService(
+        new net::DefaultServerBoundCertStore(NULL), file_task_runner_));
     storage_->set_http_server_properties(
         scoped_ptr<net::HttpServerProperties>(
             new net::HttpServerPropertiesImpl()));
@@ -57,6 +65,12 @@ net::URLRequestContext* URLRequestContextGetter::GetURLRequestContext() {
         url_request_context_->net_log()));
 
     net::HttpNetworkSession::Params network_session_params;
+    network_session_params.cert_verifier =
+        url_request_context_->cert_verifier();
+    network_session_params.transport_security_state =
+        url_request_context_->transport_security_state();
+    network_session_params.server_bound_cert_service =
+        url_request_context_->server_bound_cert_service();
     network_session_params.net_log =
         url_request_context_->net_log();
     network_session_params.proxy_service =
