@@ -104,3 +104,21 @@ chrome.runtime.onMessageExternal.addListener(
     doSendResponse(null, e.name + ': ' + e.message);
   }
 });
+
+// If Hangouts connects with a port named 'onSinksChangedListener', we
+// will register a listener and send it a message {'eventName':
+// 'onSinksChanged'} whenever the event fires.
+chrome.runtime.onConnectExternal.addListener(
+    function(port) {
+  if (port.name == 'onSinksChangedListener') {
+    function clientListener() {
+      port.postMessage({'eventName': 'onSinksChanged'});
+    }
+    chrome.webrtcAudioPrivate.onSinksChanged.addListener(clientListener);
+
+    port.onDisconnect(function() {
+        chrome.webrtcAudioPrivate.onSinksChanged.removeListener(
+            clientListener);
+      });
+  }
+});

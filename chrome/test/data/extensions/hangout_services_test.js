@@ -19,6 +19,18 @@ function sendMessage(message, callback) {
   window.top.chrome.runtime.sendMessage(EXTENSION_ID, message, unwrapValue);
 }
 
+// If connected, this port will receive events from the extension.
+var callbackPort;
+
+// Connects callbackPort to the extension, with a connectInfo.name that
+// indicates we want to receive the onSinksChanged event, and sets its
+// onMessage to |callback|.
+function listenForSinksChangedEvent(callback) {
+  callbackPort = window.top.chrome.runtime.connect(
+      EXTENSION_ID, {'name': 'onSinksChangedListener'});
+  callbackPort.onMessage.addListener(callback);
+}
+
 //
 // Helpers to invoke functions on the extension.
 //
@@ -114,6 +126,13 @@ function manualTestChooseDesktopMedia() {
   chooseDesktopMedia(function(results) {
       alert('Cancel ID: ' + results.cancelId +
             ', stream ID: ' + results.streamId);
+    });
+}
+
+function manualTestListenForSinksChangedEvent() {
+  listenForSinksChangedEvent(function(msg) {
+      if (msg['eventName'] && msg['eventName'] == 'onSinksChanged')
+        alert('Got onSinksChanged event.');
     });
 }
 
