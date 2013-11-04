@@ -10,6 +10,12 @@ import subprocess
 import sys
 import tempfile
 
+# Target architecture for PNaCl can be set through the ``-arch``
+# command-line argument, and when its value is ``env`` the following
+# program environment variable is queried to figure out which
+# architecture to target.
+ARCH_ENV_VAR_NAME = 'PNACL_RUN_ARCH'
+
 class Environment:
   pass
 env = Environment()
@@ -72,6 +78,9 @@ def SetupEnvironment():
   # Debug the nexe using the debug stub
   env.debug = False
 
+  # PNaCl (as opposed to NaCl).
+  env.is_pnacl = False
+
 def PrintBanner(output):
   if not env.quiet:
     lines = output.split('\n')
@@ -105,9 +114,9 @@ def SetupArch(arch, allow_build=True):
   env.irt = FindOrBuildIRT(allow_build=allow_build)
 
 
-def SetupLibC(arch, is_pnacl, is_dynamic):
+def SetupLibC(arch, is_dynamic):
   if is_dynamic:
-    if is_pnacl:
+    if env.is_pnacl:
       libdir = os.path.join(env.pnacl_base, 'lib-' + arch)
     else:
       libdir = os.path.join(env.nnacl_root, 'x86_64-nacl', GetMultiDir(arch))
@@ -125,15 +134,12 @@ def main(argv):
   sel_ldr_quiet_options = []
   nexe, nexe_params = ArgSplit(argv[1:])
 
-  # Translate .pexe files
-  is_pnacl = nexe.endswith('.pexe')
-
   try:
-    if is_pnacl:
+    if env.is_pnacl:
       nexe = Translate(env.arch, nexe)
 
     # Read the ELF file info
-    if is_pnacl and env.dry_run:
+    if env.is_pnacl and env.dry_run:
       # In a dry run, we don't actually run pnacl-translate, so there is
       # no nexe for readelf. Fill in the information manually.
       arch = env.arch
@@ -171,7 +177,7 @@ def main(argv):
     SetupArch(arch)
 
     # Setup LibC-specific environment variables
-    SetupLibC(arch, is_pnacl, is_dynamic)
+    SetupLibC(arch, is_dynamic)
 
     sel_ldr_args = []
 
@@ -206,7 +212,7 @@ def main(argv):
     sys.stdout.write(output or '')
     return_code = env.last_return_code
   finally:
-    if is_pnacl:
+    if env.is_pnacl:
       # Clean up the .nexe that was created.
       try:
         os.remove(nexe)
@@ -342,8 +348,6 @@ def BuildSelLdr(mode):
   Run([env.scons] + args, cwd=env.nacl_root)
 
 def Translate(arch, pexe):
-  if arch is None:
-    Fatal('Missing -arch for PNaCl translation.')
   output_file = os.path.splitext(pexe)[0] + '.' + arch + '.nexe'
   pnacl_translate = os.path.join(env.pnacl_base, 'bin', 'pnacl-translate')
   args = [ pnacl_translate, '-arch', arch, pexe, '-o', output_file,
@@ -486,22 +490,43 @@ def ArgSplit(argv):
   parser.add_argument('--debug', '-g', action='store_true', default=False,
                       help='Run sel_ldr with debugging enabled.')
   parser.add_argument('-arch', '-m', dest='arch', action='store',
-                      choices=sorted(ArchDict().keys()),
-                      help='Specify architecture for PNaCl translation.')
+                      choices=sorted(ArchDict().keys() + ['env']),
+                      help=('Specify architecture for PNaCl translation. ' +
+                            '"env" is a special value which obtains the ' +
+                            'architecture from the environment ' +
+                            'variable "%s".') % ARCH_ENV_VAR_NAME)
   parser.add_argument('remainder', nargs=argparse.REMAINDER,
                       metavar='nexe/pexe + args')
   (options, args) = parser.parse_known_args(argv)
+
   # Copy the options into env.
   for (key, value) in vars(options).iteritems():
     setattr(env, key, value)
-  # Canonicalize env.arch.  If it is None, it will be initialized later.
+
+  args += options.remainder
+  nexe = args[0] if len(args) else ''
+  env.is_pnacl = nexe.endswith('.pexe')
+
+  if env.arch == 'env':
+    # Get the architecture from the environment.
+    try:
+      env.arch = os.environ[ARCH_ENV_VAR_NAME]
+    except Exception as e:
+      Fatal(('Option "-arch env" specified, but environment variable ' +
+            '"%s" not specified: %s') % (ARCH_ENV_VAR_NAME, e))
+  if not env.arch and env.is_pnacl:
+    # For NaCl we'll figure out the architecture from the nexe's
+    # architecture, but for PNaCl we first need to translate and the
+    # user didn't tell us which architecture to translate to. Be nice
+    # and just translate to the current machine's architecture.
+    env.arch = GetBuildArch()
+  # Canonicalize env.arch.
   aliases = ArchDict()
   if env.arch in aliases:
     env.arch = aliases[env.arch]
   elif env.arch:
     Fatal('Unrecognized arch "%s"!', env.arch)
-  args += options.remainder
-  nexe = args[0] if len(args) else ''
+
   return nexe, args[1:]
 
 def Fatal(msg, *args):

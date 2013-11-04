@@ -1333,8 +1333,10 @@ lib-cpp-configure() {
     # translates pexe->nexe and executes in sel_ldr. The libc++ test
     # suite needs to be told to use pnacl-clang++'s "system library",
     # which happens to be libc++ when the -stdlib parameter is used.
+    # The target architecture is set through the PNACL_RUN_ARCH
+    # environment variable (``-arch env``).
     local litargs="--verbose"
-    litargs+=" --param shell_prefix='${NACL_ROOT}/run.py -arch ${HOST_ARCH}'"
+    litargs+=" --param shell_prefix='${NACL_ROOT}/run.py -arch env'"
     litargs+=" --param exe_suffix='.pexe'"
     litargs+=" --param use_system_lib=true"
     litargs+=" --param link_flags='-std=gnu++11 -stdlib=libc++ -lpthread'"

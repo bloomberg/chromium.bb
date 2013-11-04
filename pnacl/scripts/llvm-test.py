@@ -244,9 +244,16 @@ def RunLitTest(testdir, testarg, env, options):
   """
   with remember_cwd():
     os.chdir(testdir)
+
+    sub_env = os.environ.copy()
+    # Tell run.py to use the architecture specified by --arch, or the
+    # current host architecture if none was provided.
+    sub_env['PNACL_RUN_ARCH'] = options.arch or env['HOST_ARCH']
+
     maker = 'ninja' if os.path.isfile('./build.ninja') else 'make'
     cmd = [maker, testarg, '-v' if maker == 'ninja' else 'VERBOSE=1']
-    make_pipe = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+    make_pipe = subprocess.Popen(cmd, env=sub_env, stdout=subprocess.PIPE)
+
     lines = []
     # When run by a buildbot, we need to incrementally tee the 'make'
     # stdout to our stdout, rather than collect its entire stdout and
