@@ -143,6 +143,11 @@ bool CreateOrUpdateShortcutLink(const FilePath& shortcut_path,
     }
   }
 
+  if ((properties.options & ShortcutProperties::PROPERTIES_HOTKEY) &&
+      FAILED(i_shell_link->SetHotkey(LOWORD(properties.hotkey)))) {
+    return false;
+  }
+
   // Release the interfaces to the old shortcut to make sure it doesn't prevent
   // overwriting it if needed.
   old_i_persist_file.Release();

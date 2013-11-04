@@ -161,6 +161,9 @@ class BrowserDistribution {
 
   virtual bool HasUserExperiments();
 
+  // Returning zero means that there is no hotkey.
+  virtual uint32 GetSafeModeHotkey();
+
  protected:
   explicit BrowserDistribution(Type type);
 

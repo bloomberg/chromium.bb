@@ -51,6 +51,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/win/message_box_win.h"
 #include "ui/gfx/platform_font_win.h"
+#include "ui/gfx/switches.h"
 
 namespace {
 
@@ -85,6 +86,18 @@ class TranslationDelegate : public installer::TranslationDelegate {
  public:
   virtual string16 GetLocalizedString(int installer_string_id) OVERRIDE;
 };
+
+// There is a special shortcut that you can start Chrome with that
+// puts it in a safe mode. Used for troubleshooting end-user issues.
+bool IsSafeModeStart() {
+  STARTUPINFOW si = {0};
+  ::GetStartupInfo(&si);
+  if ((si.dwFlags & STARTF_USEHOTKEY) == 0)
+    return false;
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  return (reinterpret_cast<ULONG_PTR>(si.hStdInput) ==
+          static_cast<ULONG_PTR>(dist->GetSafeModeHotkey()));
+}
 
 }  // namespace
 
@@ -207,6 +220,12 @@ void ChromeBrowserMainPartsWin::PreMainMessageLoopStart() {
 
 int ChromeBrowserMainPartsWin::PreCreateThreads() {
   int rv = ChromeBrowserMainParts::PreCreateThreads();
+
+  if (IsSafeModeStart()) {
+    CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableGpu);
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kHighDPISupport, "0");
+  }
 
   // TODO(viettrungluu): why don't we run this earlier?
   if (!parsed_command_line().HasSwitch(switches::kNoErrorDialogs) &&

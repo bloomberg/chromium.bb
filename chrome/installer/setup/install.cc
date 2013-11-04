@@ -457,6 +457,11 @@ void CreateOrUpdateShortcuts(
            ShellUtil::SHELL_SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL)) {
     start_menu_properties.set_pin_to_taskbar(true);
   }
+  // The 'launch in safe mode' hotkey should be set only for the start menu
+  // shortcut.
+  int hotkey = dist->GetSafeModeHotkey();
+  if (hotkey)
+    start_menu_properties.set_hotkey(hotkey);
   ExecuteAndLogShortcutOperation(ShellUtil::SHORTCUT_LOCATION_START_MENU,
                                  dist, start_menu_properties,
                                  shortcut_operation);

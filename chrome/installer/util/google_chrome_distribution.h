@@ -91,6 +91,8 @@ class GoogleChromeDistribution : public BrowserDistribution {
 
   virtual bool HasUserExperiments() OVERRIDE;
 
+  virtual uint32 GetSafeModeHotkey() OVERRIDE;
+
   const string16& product_guid() { return product_guid_; }
 
  protected:

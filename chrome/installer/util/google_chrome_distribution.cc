@@ -9,6 +9,7 @@
 
 #include <windows.h>
 #include <msi.h>
+#include <commctrl.h>  // For HOTKEYF constants
 
 #include "base/files/file_path.h"
 #include "base/path_service.h"
@@ -278,6 +279,11 @@ bool GoogleChromeDistribution::GetCommandExecuteImplClsid(
 
 bool GoogleChromeDistribution::AppHostIsSupported() {
   return true;
+}
+
+uint32 GoogleChromeDistribution::GetSafeModeHotkey() {
+  // Safe mode shortcut is Ctrl+Shift+F10.
+  return MAKEWORD(VK_F10, HOTKEYF_CONTROL | HOTKEYF_SHIFT);
 }
 
 // This method checks if we need to change "ap" key in Google Update to try

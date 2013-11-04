@@ -298,6 +298,10 @@ bool BrowserDistribution::ShouldSetExperimentLabels() {
   return false;
 }
 
+uint32 BrowserDistribution::GetSafeModeHotkey() {
+  return 0;
+}
+
 bool BrowserDistribution::HasUserExperiments() {
   return false;
 }

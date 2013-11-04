@@ -995,6 +995,9 @@ base::win::ShortcutProperties TranslateShortcutProperties(
   if (properties.has_dual_mode())
     shortcut_properties.set_dual_mode(properties.dual_mode);
 
+  if (properties.has_hotkey())
+    shortcut_properties.set_hotkey(properties.hotkey);
+
   return shortcut_properties;
 }
 
