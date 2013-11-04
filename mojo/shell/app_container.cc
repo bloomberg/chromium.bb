@@ -6,12 +6,15 @@
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
+#include "base/callback_helpers.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/native_library.h"
+#include "base/scoped_native_library.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "mojo/public/system/core.h"
+#include "mojo/public/utility/scoped_handle.h"
 #include "mojo/services/native_viewport/native_viewport_controller.h"
 #include "mojo/shell/context.h"
 
@@ -22,36 +25,32 @@ namespace shell {
 
 void LaunchAppOnThread(
     const base::FilePath& app_path,
-    Handle app_handle) {
-  MojoResult result = MOJO_RESULT_OK;
-  MojoMainFunction main_function = NULL;
+    Handle app_handle_raw) {
+  base::ScopedClosureRunner app_deleter(
+      base::Bind(base::IgnoreResult(&base::DeleteFile), app_path, false));
+  ScopedHandle app_handle(app_handle_raw);
 
-  base::NativeLibrary app_library = base::LoadNativeLibrary(app_path, NULL);
-  if (!app_library) {
+  base::ScopedNativeLibrary app_library(
+      base::LoadNativeLibrary(app_path, NULL));
+  if (!app_library.is_valid()) {
     LOG(ERROR) << "Failed to load library: " << app_path.value().c_str();
-    goto completed;
+    return;
   }
 
-  main_function = reinterpret_cast<MojoMainFunction>(
-      base::GetFunctionPointerFromNativeLibrary(app_library, "MojoMain"));
+  MojoMainFunction main_function = reinterpret_cast<MojoMainFunction>(
+      app_library.GetFunctionPointer("MojoMain"));
   if (!main_function) {
     LOG(ERROR) << "Entrypoint MojoMain not found.";
-    goto completed;
+    return;
   }
 
-  result = main_function(app_handle);
+  MojoResult result = main_function(app_handle.get());
   if (result < MOJO_RESULT_OK) {
     LOG(ERROR) << "MojoMain returned an error: " << result;
-    // TODO(*): error handling?
-    goto completed;
+    return;
   }
 
   LOG(INFO) << "MojoMain succeeded: " << result;
-
-completed:
-  base::UnloadNativeLibrary(app_library);
-  base::DeleteFile(app_path, false);
-  Close(app_handle);
 }
 
 AppContainer::AppContainer(Context* context)

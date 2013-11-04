@@ -135,6 +135,7 @@
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
         'mojo_system',
+        'mojo_utility',
         'native_viewport',
       ],
       'sources': [
@@ -212,6 +213,17 @@
             4267,
           ],
         }],
+      ],
+    },
+    {
+      'target_name': 'mojo_utility',
+      'type': 'static_library',
+      'dependencies': [
+        'mojo_system'
+      ],
+      'sources': [
+        'public/utility/scoped_handle.cc',
+        'public/utility/scoped_handle.h',
       ],
     },
     {
