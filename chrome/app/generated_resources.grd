@@ -15128,7 +15128,7 @@ Do you accept?
       Enable inline signin flows
     </message>
     <message name="IDS_FLAGS_ENABLE_INLINE_SIGNIN_DESCRIPTION" desc="Description for the flag to enable inline signin flows">
-      Enables inline sign flows, still using the existing gaia template.
+      Enables inline sign flows, still using the existing full-page template for Google signin.
     </message>
     <message name="IDS_FLAGS_ENABLE_GOOGLE_PROFILE_INFO_NAME" desc="Title for the flag to enable the google profile information">
       Enable Google profile name and icon
