@@ -347,12 +347,6 @@ bool RTCPeerConnectionHandler::initialize(
 
   RTCMediaConstraints constraints(options);
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableSCTPDataChannels)) {
-    constraints.AddOptional(
-        webrtc::MediaConstraintsInterface::kEnableSctpDataChannels, "true");
-  }
-
   native_peer_connection_ =
       dependency_factory_->CreatePeerConnection(
           servers, &constraints, frame_, this);

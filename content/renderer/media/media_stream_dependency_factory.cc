@@ -305,11 +305,6 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
   ApplyFixedAudioConstraints(&native_audio_constraints);
   WebKit::WebVector<WebKit::WebMediaStreamTrack> audio_tracks;
   web_stream->audioTracks(audio_tracks);
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kEnableWebRtcAecRecordings)) {
-    native_audio_constraints.AddOptional(
-        RTCMediaConstraints::kInternalAecDump, "true");
-  }
   for (size_t i = 0; i < audio_tracks.size(); ++i) {
     const WebKit::WebMediaStreamSource& source = audio_tracks[i].source();
     MediaStreamSourceExtraData* source_data =
@@ -523,45 +518,54 @@ bool MediaStreamDependencyFactory::RemoveNativeMediaStreamTrack(
 }
 
 bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
+  DCHECK(!pc_factory_.get());
+  DCHECK(!audio_device_.get());
   DVLOG(1) << "MediaStreamDependencyFactory::CreatePeerConnectionFactory()";
-  if (!pc_factory_.get()) {
-    DCHECK(!audio_device_.get());
-    audio_device_ = new WebRtcAudioDeviceImpl();
 
-    scoped_ptr<cricket::WebRtcVideoDecoderFactory> decoder_factory;
-    scoped_ptr<cricket::WebRtcVideoEncoderFactory> encoder_factory;
+  scoped_ptr<cricket::WebRtcVideoDecoderFactory> decoder_factory;
+  scoped_ptr<cricket::WebRtcVideoEncoderFactory> encoder_factory;
 
-    const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-    scoped_refptr<RendererGpuVideoAcceleratorFactories> gpu_factories =
-        RenderThreadImpl::current()->GetGpuFactories();
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  scoped_refptr<RendererGpuVideoAcceleratorFactories> gpu_factories =
+      RenderThreadImpl::current()->GetGpuFactories();
 #if !defined(GOOGLE_TV)
-    if (!cmd_line->HasSwitch(switches::kDisableWebRtcHWDecoding)) {
-      if (gpu_factories)
-        decoder_factory.reset(new RTCVideoDecoderFactory(gpu_factories));
-    }
+  if (!cmd_line->HasSwitch(switches::kDisableWebRtcHWDecoding)) {
+    if (gpu_factories)
+      decoder_factory.reset(new RTCVideoDecoderFactory(gpu_factories));
+  }
 #else
-    // PeerConnectionFactory will hold the ownership of this
-    // VideoDecoderFactory.
-    decoder_factory.reset(decoder_factory_tv_ = new RTCVideoDecoderFactoryTv());
+  // PeerConnectionFactory will hold the ownership of this
+  // VideoDecoderFactory.
+  decoder_factory.reset(decoder_factory_tv_ = new RTCVideoDecoderFactoryTv());
 #endif
 
-    if (!cmd_line->HasSwitch(switches::kDisableWebRtcHWEncoding)) {
-      if (gpu_factories)
-        encoder_factory.reset(new RTCVideoEncoderFactory(gpu_factories));
-    }
-
-    scoped_refptr<webrtc::PeerConnectionFactoryInterface> factory(
-        webrtc::CreatePeerConnectionFactory(worker_thread_,
-                                            signaling_thread_,
-                                            audio_device_.get(),
-                                            encoder_factory.release(),
-                                            decoder_factory.release()));
-    if (factory.get())
-      pc_factory_ = factory;
-    else
-      audio_device_ = NULL;
+  if (!cmd_line->HasSwitch(switches::kDisableWebRtcHWEncoding)) {
+    if (gpu_factories)
+      encoder_factory.reset(new RTCVideoEncoderFactory(gpu_factories));
   }
-  return pc_factory_.get() != NULL;
+
+  scoped_refptr<WebRtcAudioDeviceImpl> audio_device(
+      new WebRtcAudioDeviceImpl());
+
+  scoped_refptr<webrtc::PeerConnectionFactoryInterface> factory(
+      webrtc::CreatePeerConnectionFactory(worker_thread_,
+                                          signaling_thread_,
+                                          audio_device.get(),
+                                          encoder_factory.release(),
+                                          decoder_factory.release()));
+  if (!factory.get()) {
+    return false;
+  }
+
+  audio_device_ = audio_device;
+  pc_factory_ = factory;
+  webrtc::PeerConnectionFactoryInterface::Options factory_options;
+  factory_options.enable_aec_dump =
+      cmd_line->HasSwitch(switches::kEnableWebRtcAecRecordings);
+  factory_options.disable_sctp_data_channels =
+      cmd_line->HasSwitch(switches::kDisableSCTPDataChannels);
+  pc_factory_->SetOptions(factory_options);
+  return true;
 }
 
 bool MediaStreamDependencyFactory::PeerConnectionFactoryCreated() {
