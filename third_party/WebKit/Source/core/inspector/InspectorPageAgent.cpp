@@ -663,15 +663,16 @@ void InspectorPageAgent::setDeviceMetricsOverride(ErrorString* errorString, int 
         return;
     }
 
-    if (!deviceMetricsChanged(width, height, deviceScaleFactor, emulateViewport, fitWindow, fontScaleFactor, textAutosizing))
-        return;
-
     Settings& settings = m_page->settings();
     if (width && height && !settings.acceleratedCompositingEnabled()) {
         if (errorString)
             *errorString = "Compositing mode is not supported";
         return;
     }
+
+    if (!deviceMetricsChanged(width, height, deviceScaleFactor, emulateViewport, fitWindow, fontScaleFactor, textAutosizing))
+        return;
+
 
     m_state->setLong(PageAgentState::pageAgentScreenWidthOverride, width);
     m_state->setLong(PageAgentState::pageAgentScreenHeightOverride, height);
@@ -1075,6 +1076,9 @@ PassRefPtr<TypeBuilder::Page::FrameResourceTree> InspectorPageAgent::buildObject
 
 void InspectorPageAgent::updateViewMetrics(int width, int height, double deviceScaleFactor, bool emulateViewport, bool fitWindow)
 {
+    if (width && height && !m_page->settings().acceleratedCompositingEnabled())
+        return;
+
     m_client->overrideDeviceMetrics(width, height, static_cast<float>(deviceScaleFactor), emulateViewport, fitWindow);
 
     Document* document = mainFrame()->document();
@@ -1196,11 +1200,6 @@ void InspectorPageAgent::applyEmulatedMedia(String* media)
     String emulatedMedia = m_state->getString(PageAgentState::pageAgentEmulatedMedia);
     if (!emulatedMedia.isEmpty())
         *media = emulatedMedia;
-}
-
-void InspectorPageAgent::canForceCompositingMode(ErrorString* errorString, bool* result)
-{
-    *result = m_page->settings().acceleratedCompositingEnabled();
 }
 
 void InspectorPageAgent::setForceCompositingMode(ErrorString* errorString, bool force)

@@ -113,7 +113,6 @@ public:
     virtual void clearDeviceOrientationOverride(ErrorString*);
     virtual void setTouchEmulationEnabled(ErrorString*, bool);
     virtual void setEmulatedMedia(ErrorString*, const String&);
-    virtual void canForceCompositingMode(ErrorString*, bool* result);
     virtual void setForceCompositingMode(ErrorString*, bool force);
     virtual void captureScreenshot(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight, String* data, double* deviceScaleFactor, double* pageScaleFactor, RefPtr<TypeBuilder::DOM::Rect>&);
     virtual void canScreencast(ErrorString*, bool*);
