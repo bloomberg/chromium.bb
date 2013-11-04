@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Fri Oct 18 08:23:34 2013. */
+/* From private/ppb_nacl_private.idl modified Thu Oct 31 15:10:06 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -106,13 +106,6 @@ struct PPB_NaCl_Private_1_0 {
                                    PP_FileHandle* target_handle,
                                    uint32_t desired_access,
                                    uint32_t options);
-  /* Check if PNaCl is installed and attempt to install if necessary.
-   * Callback is called when the check is done and PNaCl is already installed,
-   * or after an on-demand install is attempted. Called back with PP_OK if
-   * PNaCl is available. Called back with an error otherwise.
-   */
-  int32_t (*EnsurePnaclInstalled)(PP_Instance instance,
-                                  struct PP_CompletionCallback callback);
   /* Returns a read-only file descriptor of a file rooted in the Pnacl
    * component directory, or an invalid handle on failure.
    */

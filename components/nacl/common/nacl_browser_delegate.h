@@ -68,13 +68,6 @@ class NaClBrowserDelegate {
   virtual bool MapUrlToLocalFilePath(const GURL& url,
                                      bool use_blocking_api,
                                      base::FilePath* file_path) = 0;
-  // Install PNaCl if this operation is supported. On success, the |installed|
-  // callback should be called with true, and on failure (or not supported),
-  // the |installed| callback should be called with false.
-  // TODO(jvoung): Add the progress callback as well.
-  virtual void TryInstallPnacl(
-      const base::Callback<void(bool)>& installed) = 0;
-
   // Set match patterns which will be checked before enabling debug stub.
   virtual void SetDebugPatterns(std::string debug_patterns) = 0;
 

@@ -145,9 +145,6 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   // caching metadata.
   void BitcodeStreamDidOpen(int32_t pp_error);
 
-  // Callback for when we know PNaCl is installed.
-  void DidCheckPnaclInstalled(int32_t pp_error);
-
   // Callback for when the resource info JSON file has been read.
   void ResourceInfoWasRead(int32_t pp_error);
 

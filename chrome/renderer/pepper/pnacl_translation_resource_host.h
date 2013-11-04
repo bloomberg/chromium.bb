@@ -6,7 +6,6 @@
 #define CHROME_RENDERER_PEPPER_PNACL_TRANSLATION_RESOURCE_HOST_H_
 
 #include <map>
-#include <vector>
 
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_platform_file.h"
@@ -35,10 +34,6 @@ class PnaclTranslationResourceHost : public IPC::ChannelProxy::MessageFilter {
                      scoped_refptr<ppapi::TrackedCallback> callback);
   void ReportTranslationFinished(PP_Instance instance, PP_Bool success);
 
-  // Ensure that PNaCl resources (pnacl-llc.nexe, linker, libs) are installed.
-  void EnsurePnaclInstalled(PP_Instance instance,
-                            scoped_refptr<ppapi::TrackedCallback> callback);
-
  protected:
   virtual ~PnaclTranslationResourceHost();
 
@@ -59,9 +54,6 @@ class PnaclTranslationResourceHost : public IPC::ChannelProxy::MessageFilter {
   // Maps the instance with an outstanding cache request to the info
   // about that request.
   typedef std::map<PP_Instance, CacheRequestInfo> CacheRequestInfoMap;
-  // A list of outstanding EnsurePnaclInstalled requests.
-  typedef std::vector<scoped_refptr<ppapi::TrackedCallback> >
-      EnsurePnaclInstalledList;
   // IPC::ChannelProxy::MessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
@@ -76,22 +68,16 @@ class PnaclTranslationResourceHost : public IPC::ChannelProxy::MessageFilter {
                          scoped_refptr<ppapi::TrackedCallback> callback);
   void SendReportTranslationFinished(PP_Instance instance,
                                      PP_Bool success);
-  void SendEnsurePnaclInstalled(PP_Instance instance,
-                                scoped_refptr<ppapi::TrackedCallback> callback);
-
   void OnNexeTempFileReply(PP_Instance instance,
                            bool is_hit,
                            IPC::PlatformFileForTransit file);
   void CleanupCacheRequests();
-  void OnEnsurePnaclInstalledReply(PP_Instance instance, bool success);
-  void CleanupEnsurePnaclRequests();
 
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;
 
   // Should be accessed on the io thread.
   IPC::Channel* channel_;
   CacheRequestInfoMap pending_cache_requests_;
-  EnsurePnaclInstalledList pending_ensure_pnacl_requests_;
   DISALLOW_COPY_AND_ASSIGN(PnaclTranslationResourceHost);
 };
 

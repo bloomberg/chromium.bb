@@ -15,7 +15,6 @@ class GURL;
 namespace nacl {
 struct NaClLaunchParams;
 struct PnaclCacheInfo;
-struct PnaclInstallProgress;
 }
 
 namespace net {
@@ -50,7 +49,6 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
 #if !defined(DISABLE_NACL)
   void OnLaunchNaCl(const nacl::NaClLaunchParams& launch_params,
                     IPC::Message* reply_msg);
-  void OnEnsurePnaclInstalled(int instance);
   void OnGetReadonlyPnaclFd(const std::string& filename,
                             IPC::Message* reply_msg);
   void OnNaClCreateTemporaryFile(IPC::Message* reply_msg);
@@ -62,11 +60,6 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
   void OnOpenNaClExecutable(int render_view_id,
                             const GURL& file_url,
                             IPC::Message* reply_msg);
-
-  void ReplyEnsurePnaclInstalled(int instance, bool success);
-  void SendProgressEnsurePnaclInstalled(
-      int instance,
-      const nacl::PnaclInstallProgress& progress);
   void SyncReturnTemporaryFile(IPC::Message* reply_msg,
                                base::PlatformFile fd);
   void AsyncReturnTemporaryFile(int pp_instance,

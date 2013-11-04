@@ -14,7 +14,6 @@
 #include "base/version.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/component_updater/pnacl/pnacl_profile_observer.h"
-#include "chrome/browser/component_updater/pnacl/pnacl_updater_observer.h"
 
 class CommandLine;
 
@@ -75,22 +74,7 @@ class PnaclComponentInstaller : public ComponentInstaller {
 
   ComponentUpdateService* cus() const { return cus_; }
 
-  typedef base::Callback<void(bool)> InstallCallback;
-
-  // Ask the component updater service to do a first-install for PNaCl.
-  // The |installed| callback will be run with |true| on success,
-  // or run with |false| on an error. The callback is called on the UI thread.
-  void RequestFirstInstall(const InstallCallback& installed);
-
  private:
-  friend class PnaclUpdaterObserver;
-
-  // Called when a RequestFirstInstall completed successfully.
-  void NotifyInstallSuccess();
-
-  // Called when a RequestFirstInstall will not happen, or an error occurred.
-  void NotifyInstallError();
-
   bool per_user_;
   bool updates_disabled_;
   scoped_ptr<PnaclProfileObserver> profile_observer_;
@@ -98,11 +82,6 @@ class PnaclComponentInstaller : public ComponentInstaller {
   base::Version current_version_;
   std::string current_fingerprint_;
   ComponentUpdateService* cus_;
-  // The one callback to call when there is a RequestFirstInstall.
-  InstallCallback install_callback_;
-  // Component updater service observer, to determine when an on-demand
-  // install request failed.
-  scoped_ptr<PnaclUpdaterObserver> updater_observer_;
   DISALLOW_COPY_AND_ASSIGN(PnaclComponentInstaller);
 };
 

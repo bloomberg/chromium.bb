@@ -204,19 +204,6 @@ int32_t BrokerDuplicateHandle(PP_FileHandle source_handle,
 #endif
 }
 
-int32_t EnsurePnaclInstalled(PP_Instance instance,
-                             PP_CompletionCallback callback) {
-  ppapi::thunk::EnterInstance enter(instance, callback);
-  if (enter.failed())
-    return enter.retval();
-  if (!InitializePnaclResourceHost())
-    return enter.SetResult(PP_ERROR_FAILED);
-  g_pnacl_resource_host.Get()->EnsurePnaclInstalled(
-      instance,
-      enter.callback());
-  return enter.SetResult(PP_OK_COMPLETIONPENDING);
-}
-
 PP_FileHandle GetReadonlyPnaclFD(const char* filename) {
   IPC::PlatformFileForTransit out_fd = IPC::InvalidPlatformFileForTransit();
   IPC::Sender* sender = content::RenderThread::Get();
@@ -355,7 +342,6 @@ const PPB_NaCl_Private nacl_interface = {
   &UrandomFD,
   &Are3DInterfacesDisabled,
   &BrokerDuplicateHandle,
-  &EnsurePnaclInstalled,
   &GetReadonlyPnaclFD,
   &CreateTemporaryFile,
   &GetNexeFd,

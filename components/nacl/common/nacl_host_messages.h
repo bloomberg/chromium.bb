@@ -55,17 +55,6 @@ IPC_SYNC_MESSAGE_CONTROL1_2(NaClHostMsg_LaunchNaCl,
                             std::string /* error_message */)
 
 // A renderer sends this to the browser process when it wants to
-// ensure that PNaCl is installed.
-IPC_MESSAGE_CONTROL1(NaClHostMsg_EnsurePnaclInstalled,
-                     int /* pp_instance */)
-
-// The browser replies to the renderer's request to ensure that
-// PNaCl is installed.
-IPC_MESSAGE_CONTROL2(NaClViewMsg_EnsurePnaclInstalledReply,
-                     int /* pp_instance */,
-                     bool /* success */)
-
-// A renderer sends this to the browser process when it wants to
 // open a file for from the Pnacl component directory.
 IPC_SYNC_MESSAGE_CONTROL1_1(NaClHostMsg_GetReadonlyPnaclFD,
                             std::string /* name of requested PNaCl file */,

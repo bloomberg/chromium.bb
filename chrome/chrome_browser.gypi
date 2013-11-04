@@ -434,8 +434,6 @@
         'browser/component_updater/pnacl/pnacl_component_installer.h',
         'browser/component_updater/pnacl/pnacl_profile_observer.cc',
         'browser/component_updater/pnacl/pnacl_profile_observer.h',
-        'browser/component_updater/pnacl/pnacl_updater_observer.cc',
-        'browser/component_updater/pnacl/pnacl_updater_observer.h',
         'browser/component_updater/ppapi_utils.cc',
         'browser/component_updater/ppapi_utils.h',
         'browser/component_updater/recovery_component_installer.cc',

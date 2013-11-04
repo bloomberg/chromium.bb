@@ -426,26 +426,55 @@ void PnaclCoordinator::NexeReadDidOpen(int32_t pp_error) {
   translate_notify_callback_.Run(pp_error);
 }
 
-void PnaclCoordinator::DidCheckPnaclInstalled(int32_t pp_error) {
-  if (pp_error != PP_OK) {
+void PnaclCoordinator::OpenBitcodeStream() {
+  // Now open the pexe stream.
+  streaming_downloader_.reset(new FileDownloader());
+  streaming_downloader_->Initialize(plugin_);
+  // Mark the request as requesting a PNaCl bitcode file,
+  // so that component updater can detect this user action.
+  streaming_downloader_->set_request_headers(
+      "Accept: application/x-pnacl, */*");
+
+  // Even though we haven't started downloading, create the translation
+  // thread object immediately. This ensures that any pieces of the file
+  // that get downloaded before the compilation thread is accepting
+  // SRPCs won't get dropped.
+  translate_thread_.reset(new PnaclTranslateThread());
+  if (translate_thread_ == NULL) {
     ReportNonPpapiError(
-        ERROR_PNACL_RESOURCE_FETCH,
-        nacl::string("The Portable Native Client (pnacl) component is not "
-                     "installed. Please consult chrome://components for more "
-                     "information."));
+        ERROR_PNACL_THREAD_CREATE,
+        "PnaclCoordinator: could not allocate translation thread.");
     return;
   }
 
-  // Loading resources (e.g. llc and ld nexes) is done with PnaclResources.
-  resources_.reset(new PnaclResources(plugin_,
-                                      this,
-                                      this->manifest_.get()));
+  pp::CompletionCallback cb =
+      callback_factory_.NewCallback(&PnaclCoordinator::BitcodeStreamDidOpen);
+  if (!streaming_downloader_->OpenStream(pexe_url_, cb, this)) {
+    ReportNonPpapiError(
+        ERROR_PNACL_PEXE_FETCH_OTHER,
+        nacl::string("PnaclCoordinator: failed to open stream ") + pexe_url_);
+    return;
+  }
+}
+
+void PnaclCoordinator::BitcodeStreamDidOpen(int32_t pp_error) {
+  if (pp_error != PP_OK) {
+    BitcodeStreamDidFinish(pp_error);
+    // We have not spun up the translation process yet, so we need to call
+    // TranslateFinished here.
+    TranslateFinished(pp_error);
+    return;
+  }
+
+  // The component updater's resource throttles + OnDemand update/install
+  // should block the URL request until the compiler is present. Now we
+  // can load the resources (e.g. llc and ld nexes).
+  resources_.reset(new PnaclResources(plugin_, this, this->manifest_.get()));
   CHECK(resources_ != NULL);
 
   // The first step of loading resources: read the resource info file.
   pp::CompletionCallback resource_info_read_cb =
-      callback_factory_.NewCallback(
-          &PnaclCoordinator::ResourceInfoWasRead);
+      callback_factory_.NewCallback(&PnaclCoordinator::ResourceInfoWasRead);
   resources_->ReadResourceInfo(PnaclUrls::GetResourceInfoUrl(),
                                resource_info_read_cb);
 }
@@ -453,7 +482,8 @@ void PnaclCoordinator::DidCheckPnaclInstalled(int32_t pp_error) {
 void PnaclCoordinator::ResourceInfoWasRead(int32_t pp_error) {
   PLUGIN_PRINTF(("PluginCoordinator::ResourceInfoWasRead (pp_error=%"
                 NACL_PRId32 ")\n", pp_error));
-  // Second step of loading resources: call StartLoad.
+  // Second step of loading resources: call StartLoad to load pnacl-llc
+  // and pnacl-ld, based on the filenames found in the resource info file.
   pp::CompletionCallback resources_cb =
       callback_factory_.NewCallback(&PnaclCoordinator::ResourcesDidLoad);
   resources_->StartLoad(resources_cb);
@@ -497,56 +527,6 @@ void PnaclCoordinator::ResourcesDidLoad(int32_t pp_error) {
     ReportPpapiError(ERROR_PNACL_CREATE_TEMP, nexe_fd_err,
                      nacl::string("Call to GetNexeFd failed"));
   }
-}
-
-void PnaclCoordinator::OpenBitcodeStream() {
-  // Now open the pexe stream.
-  streaming_downloader_.reset(new FileDownloader());
-  streaming_downloader_->Initialize(plugin_);
-  // Mark the request as requesting a PNaCl bitcode file,
-  // so that component updater can detect this user action.
-  streaming_downloader_->set_request_headers(
-      "Accept: application/x-pnacl, */*");
-
-  // Even though we haven't started downloading, create the translation
-  // thread object immediately. This ensures that any pieces of the file
-  // that get downloaded before the compilation thread is accepting
-  // SRPCs won't get dropped.
-  translate_thread_.reset(new PnaclTranslateThread());
-  if (translate_thread_ == NULL) {
-    ReportNonPpapiError(
-        ERROR_PNACL_THREAD_CREATE,
-        "PnaclCoordinator: could not allocate translation thread.");
-    return;
-  }
-
-  pp::CompletionCallback cb =
-      callback_factory_.NewCallback(&PnaclCoordinator::BitcodeStreamDidOpen);
-  if (!streaming_downloader_->OpenStream(pexe_url_, cb, this)) {
-    ReportNonPpapiError(
-        ERROR_PNACL_PEXE_FETCH_OTHER,
-        nacl::string("PnaclCoordinator: failed to open stream ") + pexe_url_);
-    return;
-  }
-}
-
-void PnaclCoordinator::BitcodeStreamDidOpen(int32_t pp_error) {
-  if (pp_error != PP_OK) {
-    BitcodeStreamDidFinish(pp_error);
-    // We have not spun up the translation process yet, so we need to call
-    // TranslateFinished here.
-    TranslateFinished(pp_error);
-    return;
-  }
-
-  // Now that we've started the url request for the response headers and
-  // for tickling the component updater's On-Demand API, check that the
-  // compiler is present, or block until it is present or an error is hit.
-  pp::CompletionCallback pnacl_installed_cb =
-      callback_factory_.NewCallback(&PnaclCoordinator::DidCheckPnaclInstalled);
-  plugin_->nacl_interface()->EnsurePnaclInstalled(
-      plugin_->pp_instance(),
-      pnacl_installed_cb.pp_completion_callback());
 }
 
 void PnaclCoordinator::NexeFdDidOpen(int32_t pp_error) {

@@ -78,16 +78,6 @@ ppapi::host::HostFactory* NaClBrowserDelegateImpl::CreatePpapiHostFactory(
   return new chrome::ChromeBrowserPepperHostFactory(ppapi_host);
 }
 
-void NaClBrowserDelegateImpl::TryInstallPnacl(
-    const base::Callback<void(bool)>& installed) {
-  PnaclComponentInstaller* pci =
-      g_browser_process->pnacl_component_installer();
-  if (pci)
-    pci->RequestFirstInstall(installed);
-  else
-    installed.Run(false);
-}
-
 void NaClBrowserDelegateImpl::SetDebugPatterns(std::string debug_patterns) {
   if (!debug_patterns.empty() && debug_patterns[0] == '!') {
     inverse_debug_patterns_ = true;

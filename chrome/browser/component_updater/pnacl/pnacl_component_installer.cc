@@ -195,7 +195,6 @@ PnaclComponentInstaller::PnaclComponentInstaller()
 #if defined(OS_CHROMEOS)
   per_user_ = true;
 #endif
-  updater_observer_.reset(new PnaclUpdaterObserver(this));
 }
 
 PnaclComponentInstaller::~PnaclComponentInstaller() {
@@ -243,20 +242,17 @@ bool PnaclComponentInstaller::Install(const base::DictionaryValue& manifest,
       ReadPnaclManifest(unpack_path));
   if (pnacl_manifest == NULL) {
     LOG(WARNING) << "Failed to read pnacl manifest.";
-    NotifyInstallError();
     return false;
   }
 
   Version version;
   if (!CheckPnaclComponentManifest(manifest, *pnacl_manifest, &version)) {
     LOG(WARNING) << "CheckPnaclComponentManifest failed, not installing.";
-    NotifyInstallError();
     return false;
   }
 
   // Don't install if the current version is actually newer.
   if (current_version().CompareTo(version) > 0) {
-    NotifyInstallError();
     return false;
   }
 
@@ -265,12 +261,10 @@ bool PnaclComponentInstaller::Install(const base::DictionaryValue& manifest,
       version.GetString());
   if (base::PathExists(path)) {
     LOG(WARNING) << "Target path already exists, not installing.";
-    NotifyInstallError();
     return false;
   }
   if (!base::Move(unpack_path, path)) {
     LOG(WARNING) << "Move failed, not installing.";
-    NotifyInstallError();
     return false;
   }
 
@@ -278,7 +272,6 @@ bool PnaclComponentInstaller::Install(const base::DictionaryValue& manifest,
   // - The path service.
   // - Callbacks that requested an update.
   set_current_version(version);
-  NotifyInstallSuccess();
   OverrideDirPnaclComponent(path);
   return true;
 }
@@ -297,44 +290,11 @@ bool PnaclComponentInstaller::GetInstalledFile(
   return true;
 }
 
-void PnaclComponentInstaller::NotifyInstallError() {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&PnaclComponentInstaller::NotifyInstallError,
-                   // Unretained because installer lives until process shutdown.
-                   base::Unretained(this)));
-    return;
-  }
-  if (!install_callback_.is_null()) {
-    updater_observer_->StopObserving();
-    install_callback_.Run(false);
-    install_callback_.Reset();
-  }
-}
-
-void PnaclComponentInstaller::NotifyInstallSuccess() {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&PnaclComponentInstaller::NotifyInstallSuccess,
-                   // Unretained because installer lives until process shutdown.
-                   base::Unretained(this)));
-    return;
-  }
-  if (!install_callback_.is_null()) {
-    updater_observer_->StopObserving();
-    install_callback_.Run(true);
-    install_callback_.Reset();
-  }
-}
-
 CrxComponent PnaclComponentInstaller::GetCrxComponent() {
   CrxComponent pnacl_component;
   pnacl_component.version = current_version();
   pnacl_component.name = "pnacl";
   pnacl_component.installer = this;
-  pnacl_component.observer = updater_observer_.get();
   pnacl_component.fingerprint = current_fingerprint();
   SetPnaclHash(&pnacl_component);
 
@@ -477,23 +437,4 @@ void PnaclComponentInstaller::ReRegisterPnacl() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&GetProfileInformation, this));
-}
-
-void PnaclComponentInstaller::RequestFirstInstall(const InstallCallback& cb) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Only one request can happen at once.
-  if (!install_callback_.is_null()) {
-    cb.Run(false);
-    return;
-  }
-  set_current_version(Version(kNullVersion));
-  CrxComponent pnacl_component = GetCrxComponent();
-  ComponentUpdateService::Status status = cus_->OnDemandUpdate(
-      GetCrxComponentID(pnacl_component));
-  if (status != ComponentUpdateService::kOk) {
-    cb.Run(false);
-    return;
-  }
-  install_callback_ = cb;
-  updater_observer_->EnsureObserving();
 }

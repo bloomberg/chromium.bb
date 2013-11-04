@@ -201,10 +201,7 @@ class ComponentUpdateService {
 
   virtual ~ComponentUpdateService() {}
 
-  // TODO(waffles): Remove PNaCl as a friend once an alternative on-demand
-  // trigger is available.
   friend class ComponentsUI;
-  friend class PnaclComponentInstaller;
   friend class OnDemandTester;
 
  private:
