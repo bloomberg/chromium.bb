@@ -473,7 +473,7 @@ net::Error ResourceDispatcherHostImpl::BeginDownload(
   } else {
     extra_load_flags |= net::LOAD_DISABLE_CACHE;
   }
-  request->SetLoadFlags(request->load_flags() | extra_load_flags);
+  request->set_load_flags(request->load_flags() | extra_load_flags);
 
   // No need to get offline load flags for downloads, but make sure
   // we have an OfflinePolicy to receive request completions.
@@ -1027,15 +1027,6 @@ void ResourceDispatcherHostImpl::BeginRequest(
   load_flags |= offline_policy_map_[id]->GetAdditionalLoadFlags(
       load_flags, request_data.resource_type == ResourceType::MAIN_FRAME);
 
-  // Sync loads should have maximum priority and should be the only
-  // requets that have the ignore limits flag set.
-  if (is_sync_load) {
-    DCHECK_EQ(request_data.priority, net::MAXIMUM_PRIORITY);
-    DCHECK_NE(load_flags & net::LOAD_IGNORE_LIMITS, 0);
-  } else {
-    DCHECK_EQ(load_flags & net::LOAD_IGNORE_LIMITS, 0);
-  }
-
   // Construct the request.
   scoped_ptr<net::URLRequest> new_request;
   net::URLRequest* request;
@@ -1051,7 +1042,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
   headers.AddHeadersFromString(request_data.headers);
   request->SetExtraRequestHeaders(headers);
 
-  request->SetLoadFlags(load_flags);
+  request->set_load_flags(load_flags);
 
   // Resolve elements from request_body and prepare upload data.
   if (request_data.request_body.get()) {
@@ -1294,7 +1285,7 @@ void ResourceDispatcherHostImpl::BeginSaveFile(
 
   // So far, for saving page, we need fetch content from cache, in the
   // future, maybe we can use a configuration to configure this behavior.
-  request->SetLoadFlags(net::LOAD_PREFERRING_CACHE);
+  request->set_load_flags(net::LOAD_PREFERRING_CACHE);
 
   // No need to get offline load flags for save files, but make sure
   // we have an OfflinePolicy to receive request completions.
@@ -1581,7 +1572,7 @@ void ResourceDispatcherHostImpl::BeginRequestInternal(
 
   if ((TimeTicks::Now() - last_user_gesture_time_) <
       TimeDelta::FromMilliseconds(kUserGestureWindowMs)) {
-    request->SetLoadFlags(
+    request->set_load_flags(
         request->load_flags() | net::LOAD_MAYBE_USER_GESTURE);
   }
 

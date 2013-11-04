@@ -273,12 +273,6 @@ void ResourceScheduler::StartRequest(ScheduledResourceRequest* request,
 
 void ResourceScheduler::ReprioritizeRequest(ScheduledResourceRequest* request,
                                             net::RequestPriority new_priority) {
-  if (request->url_request()->load_flags() & net::LOAD_IGNORE_LIMITS) {
-    // We should not be re-prioritizing requests with the
-    // IGNORE_LIMITS flag.
-    NOTREACHED();
-    return;
-  }
   net::RequestPriority old_priority = request->url_request()->priority();
   DCHECK_NE(new_priority, old_priority);
   request->url_request()->SetPriority(new_priority);
@@ -296,8 +290,7 @@ void ResourceScheduler::ReprioritizeRequest(ScheduledResourceRequest* request,
   }
 
   client->pending_requests.Erase(request);
-  client->pending_requests.Insert(request,
-                                  request->url_request()->priority());
+  client->pending_requests.Insert(request, request->url_request()->priority());
 
   if (new_priority > old_priority) {
     // Check if this request is now able to load at its new priority.

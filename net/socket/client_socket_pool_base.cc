@@ -140,10 +140,7 @@ ClientSocketPoolBaseHelper::Request::Request(
       priority_(priority),
       ignore_limits_(ignore_limits),
       flags_(flags),
-      net_log_(net_log) {
-  if (ignore_limits_)
-    DCHECK_EQ(priority_, MAXIMUM_PRIORITY);
-}
+      net_log_(net_log) {}
 
 ClientSocketPoolBaseHelper::Request::~Request() {}
 
@@ -1134,7 +1131,9 @@ void ClientSocketPoolBaseHelper::TryToCloseSocketsInLayeredPools() {
 
 ClientSocketPoolBaseHelper::Group::Group()
     : unassigned_job_count_(0),
-      pending_requests_(NUM_PRIORITIES),
+      // The number of priorities is doubled since requests with
+      // |ignore_limits| are prioritized over other requests.
+      pending_requests_(2 * NUM_PRIORITIES),
       active_socket_count_(0) {}
 
 ClientSocketPoolBaseHelper::Group::~Group() {
@@ -1271,17 +1270,11 @@ bool ClientSocketPoolBaseHelper::Group::HasConnectJobForHandle(
 
 void ClientSocketPoolBaseHelper::Group::InsertPendingRequest(
     scoped_ptr<const Request> request) {
-  // This value must be cached before we release |request|.
-  RequestPriority priority = request->priority();
-  if (request->ignore_limits()) {
-    // Put requests with ignore_limits == true (which should have
-    // priority == MAXIMUM_PRIORITY) ahead of other requests with
-    // MAXIMUM_PRIORITY.
-    DCHECK_EQ(priority, MAXIMUM_PRIORITY);
-    pending_requests_.InsertAtFront(request.release(), priority);
-  } else {
-    pending_requests_.Insert(request.release(), priority);
-  }
+  RequestQueue::Priority queue_priority = request->priority();
+  // Prioritize requests with |ignore_limits| over ones that don't.
+  if (request->ignore_limits())
+    queue_priority += NUM_PRIORITIES;
+  pending_requests_.Insert(request.release(), queue_priority);
 }
 
 scoped_ptr<const ClientSocketPoolBaseHelper::Request>

@@ -550,11 +550,7 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
   // Access the LOAD_* flags modifying this request (see load_flags.h).
   int load_flags() const { return load_flags_; }
-
-  // The new flags may change the IGNORE_LIMITS flag only when called
-  // before Start() is called, it must only set the flag, and if set,
-  // the priority of this request must already be MAXIMUM_PRIORITY.
-  void SetLoadFlags(int flags);
+  void set_load_flags(int flags) { load_flags_ = flags; }
 
   // Returns true if the request is "pending" (i.e., if Start() has been called,
   // and the response has not yet been called).
@@ -655,9 +651,7 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // Returns the priority level for this request.
   RequestPriority priority() const { return priority_; }
 
-  // Sets the priority level for this request and any related
-  // jobs. Must not change the priority to anything other than
-  // MAXIMUM_PRIORITY if the IGNORE_LIMITS load flag is set.
+  // Sets the priority level for this request and any related jobs.
   void SetPriority(RequestPriority priority);
 
   // Returns true iff this request would be internally redirected to HTTPS
@@ -833,9 +827,8 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // first transaction in a request involving redirects.
   UploadProgress final_upload_progress_;
 
-  // The priority level for this request.  Objects like
-  // ClientSocketPool use this to determine which URLRequest to
-  // allocate sockets to first.
+  // The priority level for this request.  Objects like ClientSocketPool use
+  // this to determine which URLRequest to allocate sockets to first.
   RequestPriority priority_;
 
   // TODO(battre): The only consumer of the identifier_ is currently the

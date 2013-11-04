@@ -178,10 +178,10 @@ void URLRequestFtpJob::StartHttpTransaction() {
   DCHECK(!http_transaction_);
 
   // Do not cache FTP responses sent through HTTP proxy.
-  request_->SetLoadFlags(request_->load_flags() |
-                         LOAD_DISABLE_CACHE |
-                         LOAD_DO_NOT_SAVE_COOKIES |
-                         LOAD_DO_NOT_SEND_COOKIES);
+  request_->set_load_flags(request_->load_flags() |
+                           LOAD_DISABLE_CACHE |
+                           LOAD_DO_NOT_SAVE_COOKIES |
+                           LOAD_DO_NOT_SEND_COOKIES);
 
   http_request_info_.url = request_->url();
   http_request_info_.method = request_->method();

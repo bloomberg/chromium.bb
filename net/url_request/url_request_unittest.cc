@@ -1896,31 +1896,6 @@ TEST_F(URLRequestTest, SetJobPriority) {
   EXPECT_EQ(MEDIUM, job->priority());
 }
 
-// Setting the IGNORE_LIMITS load flag should be okay if the priority
-// is MAXIMUM_PRIORITY.
-TEST_F(URLRequestTest, PriorityIgnoreLimits) {
-  TestDelegate d;
-  URLRequest req(GURL("http://test_intercept/foo"),
-                 MAXIMUM_PRIORITY,
-                 &d,
-                 &default_context_);
-  EXPECT_EQ(MAXIMUM_PRIORITY, req.priority());
-
-  scoped_refptr<URLRequestTestJob> job =
-      new URLRequestTestJob(&req, &default_network_delegate_);
-  AddTestInterceptor()->set_main_intercept_job(job.get());
-
-  req.SetLoadFlags(LOAD_IGNORE_LIMITS);
-  EXPECT_EQ(MAXIMUM_PRIORITY, req.priority());
-
-  req.SetPriority(MAXIMUM_PRIORITY);
-  EXPECT_EQ(MAXIMUM_PRIORITY, req.priority());
-
-  req.Start();
-  EXPECT_EQ(MAXIMUM_PRIORITY, req.priority());
-  EXPECT_EQ(MAXIMUM_PRIORITY, job->priority());
-}
-
 // TODO(droger): Support SpawnedTestServer on iOS (see http://crbug.com/148666).
 #if !defined(OS_IOS)
 // A subclass of SpawnedTestServer that uses a statically-configured hostname.
@@ -2029,7 +2004,7 @@ TEST_F(URLRequestTest, DoNotSendCookies) {
                    DEFAULT_PRIORITY,
                    &d,
                    &default_context_);
-    req.SetLoadFlags(LOAD_DO_NOT_SEND_COOKIES);
+    req.set_load_flags(LOAD_DO_NOT_SEND_COOKIES);
     req.Start();
     base::RunLoop().Run();
 
@@ -2073,7 +2048,7 @@ TEST_F(URLRequestTest, DoNotSaveCookies) {
         DEFAULT_PRIORITY,
         &d,
         &default_context_);
-    req.SetLoadFlags(LOAD_DO_NOT_SAVE_COOKIES);
+    req.set_load_flags(LOAD_DO_NOT_SAVE_COOKIES);
     req.Start();
 
     base::RunLoop().Run();
@@ -2515,7 +2490,7 @@ TEST_F(URLRequestTest, DoNotOverrideReferrer) {
     HttpRequestHeaders headers;
     headers.SetHeader(HttpRequestHeaders::kReferer, "http://bar.com/");
     req.SetExtraRequestHeaders(headers);
-    req.SetLoadFlags(LOAD_VALIDATE_CACHE);
+    req.set_load_flags(LOAD_VALIDATE_CACHE);
 
     req.Start();
     base::RunLoop().Run();
@@ -5326,7 +5301,7 @@ TEST_F(URLRequestTestHTTP, BasicAuth) {
                  DEFAULT_PRIORITY,
                  &d,
                  &default_context_);
-    r.SetLoadFlags(LOAD_VALIDATE_CACHE);
+    r.set_load_flags(LOAD_VALIDATE_CACHE);
     r.Start();
 
     base::RunLoop().Run();
@@ -5446,7 +5421,7 @@ TEST_F(URLRequestTestHTTP, BasicAuthLoadTiming) {
                  DEFAULT_PRIORITY,
                  &d,
                  &default_context_);
-    r.SetLoadFlags(LOAD_VALIDATE_CACHE);
+    r.set_load_flags(LOAD_VALIDATE_CACHE);
     r.Start();
 
     base::RunLoop().Run();

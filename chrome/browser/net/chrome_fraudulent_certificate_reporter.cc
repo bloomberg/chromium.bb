@@ -61,8 +61,8 @@ ChromeFraudulentCertificateReporter::CreateURLRequest(
     net::URLRequestContext* context) {
   scoped_ptr<net::URLRequest> request =
       context->CreateRequest(upload_url_, net::DEFAULT_PRIORITY, this);
-  request->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                        net::LOAD_DO_NOT_SAVE_COOKIES);
+  request->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES |
+                          net::LOAD_DO_NOT_SAVE_COOKIES);
   return request.Pass();
 }
 

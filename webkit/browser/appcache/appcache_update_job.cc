@@ -108,8 +108,8 @@ AppCacheUpdateJob::URLFetcher::~URLFetcher() {
 
 void AppCacheUpdateJob::URLFetcher::Start() {
   request_->set_first_party_for_cookies(job_->manifest_url_);
-  request_->SetLoadFlags(request_->load_flags() |
-                         net::LOAD_DISABLE_INTERCEPT);
+  request_->set_load_flags(request_->load_flags() |
+                           net::LOAD_DISABLE_INTERCEPT);
   if (existing_response_headers_.get())
     AddConditionalHeaders(existing_response_headers_.get());
   request_->Start();

@@ -397,8 +397,8 @@ class OCSPRequestSession
     request_ =
         new URLRequest(url_, DEFAULT_PRIORITY, this, url_request_context);
     // To meet the privacy requirements of incognito mode.
-    request_->SetLoadFlags(LOAD_DISABLE_CACHE | LOAD_DO_NOT_SAVE_COOKIES |
-                           LOAD_DO_NOT_SEND_COOKIES);
+    request_->set_load_flags(LOAD_DISABLE_CACHE | LOAD_DO_NOT_SAVE_COOKIES |
+                             LOAD_DO_NOT_SEND_COOKIES);
 
     if (http_request_method_ == "POST") {
       DCHECK(!upload_content_.empty());
