@@ -49,9 +49,6 @@
 #include "chrome/browser/network_time/network_time_service.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification_prefs_manager.h"
-#if !defined(OS_ANDROID)
-#include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
-#endif  // OS_ANDROID
 #include "chrome/browser/password_manager/password_generation_manager.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
@@ -115,22 +112,21 @@
 #include "chrome/browser/managed_mode/managed_user_sync_service.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "chrome/browser/ui/cocoa/confirm_quit.h"
-#include "chrome/browser/ui/cocoa/extensions/browser_actions_controller_prefs.h"
-#endif
-
 #if defined(ENABLE_MDNS)
 #include "chrome/browser/ui/webui/local_discovery/local_discovery_ui.h"
 #endif
 
-#if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/ui/browser_view_prefs.h"
-#include "chrome/browser/ui/tabs/tab_strip_layout_type_prefs.h"
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+#include "chrome/browser/plugins/plugins_resource_service.h"
 #endif
 
-#if defined(TOOLKIT_GTK)
-#include "chrome/browser/ui/gtk/browser_window_gtk.h"
+#if defined(OS_ANDROID)
+#include "chrome/browser/ui/webui/ntp/android/partner_bookmarks_shim.h"
+#include "chrome/browser/ui/webui/ntp/android/promo_handler.h"
+#else
+#include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
+#include "chrome/browser/profile_resetter/automatic_profile_resetter_factory.h"
+#include "chrome/browser/ui/autofill/generated_credit_card_bubble_controller.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -165,24 +161,26 @@
 #include "chrome/browser/extensions/default_apps.h"
 #endif
 
-#if defined(USE_ASH)
-#include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
-#endif
-
-#if defined(OS_ANDROID)
-#include "chrome/browser/ui/webui/ntp/android/partner_bookmarks_shim.h"
-#include "chrome/browser/ui/webui/ntp/android/promo_handler.h"
-#else
-#include "chrome/browser/profile_resetter/automatic_profile_resetter_factory.h"
-#include "chrome/browser/ui/autofill/generated_credit_card_bubble_controller.h"
-#endif
-
-#if defined(ENABLE_PLUGIN_INSTALLATION)
-#include "chrome/browser/plugins/plugins_resource_service.h"
+#if defined(OS_MACOSX)
+#include "chrome/browser/ui/cocoa/confirm_quit.h"
+#include "chrome/browser/ui/cocoa/extensions/browser_actions_controller_prefs.h"
 #endif
 
 #if defined(OS_WIN)
 #include "chrome/browser/apps/app_launch_for_metro_restart_win.h"
+#endif
+
+#if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/ui/browser_view_prefs.h"
+#include "chrome/browser/ui/tabs/tab_strip_layout_type_prefs.h"
+#endif
+
+#if defined(TOOLKIT_GTK)
+#include "chrome/browser/ui/gtk/browser_window_gtk.h"
+#endif
+
+#if defined(USE_ASH)
+#include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #endif
 
 namespace {
@@ -219,7 +217,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   AppListService::RegisterPrefs(registry);
   browser_shutdown::RegisterPrefs(registry);
   BrowserProcessImpl::RegisterPrefs(registry);
-  RegisterScreenshotPrefs(registry);
+  chrome_variations::VariationsService::RegisterPrefs(registry);
   ExternalProtocolHandler::RegisterPrefs(registry);
   FlagsUI::RegisterPrefs(registry);
   geolocation::RegisterPrefs(registry);
@@ -237,18 +235,14 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   profiles::RegisterPrefs(registry);
   PromoResourceService::RegisterPrefs(registry);
   RegisterPrefsForRecoveryComponent(registry);
+  RegisterScreenshotPrefs(registry);
   SigninManagerFactory::RegisterPrefs(registry);
   SSLConfigServiceManager::RegisterPrefs(registry);
   UpgradeDetector::RegisterPrefs(registry);
   WebCacheManager::RegisterPrefs(registry);
-  chrome_variations::VariationsService::RegisterPrefs(registry);
 
-#if defined(ENABLE_PLUGINS)
-  PluginFinder::RegisterPrefs(registry);
-#endif
-
-#if defined(ENABLE_PLUGIN_INSTALLATION)
-  PluginsResourceService::RegisterPrefs(registry);
+#if defined(ENABLE_AUTOFILL_DIALOG)
+  autofill::AutofillDialogController::RegisterPrefs(registry);
 #endif
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
@@ -260,18 +254,17 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   NotificationPrefsManager::RegisterPrefs(registry);
 #endif
 
+#if defined(ENABLE_PLUGINS)
+  PluginFinder::RegisterPrefs(registry);
+#endif
+
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+  PluginsResourceService::RegisterPrefs(registry);
+#endif
+
 #if defined(ENABLE_TASK_MANAGER)
   TaskManager::RegisterPrefs(registry);
 #endif  // defined(ENABLE_TASK_MANAGER)
-
-#if defined(ENABLE_AUTOFILL_DIALOG)
-  autofill::AutofillDialogController::RegisterPrefs(registry);
-#endif
-
-#if defined(TOOLKIT_VIEWS)
-  RegisterBrowserViewPrefs(registry);
-  RegisterTabStripLayoutTypePrefs(registry);
-#endif
 
 #if !defined(OS_ANDROID)
   AutomaticProfileResetterFactory::RegisterPrefs(registry);
@@ -315,6 +308,11 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #if defined(OS_WIN)
   app_metro_launch::RegisterPrefs(registry);
 #endif
+
+#if defined(TOOLKIT_VIEWS)
+  RegisterBrowserViewPrefs(registry);
+  RegisterTabStripLayoutTypePrefs(registry);
+#endif
 }
 
 // Register prefs applicable to all profiles.
@@ -323,13 +321,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // User prefs. Please keep this list alphabetized.
   AlternateErrorPageTabObserver::RegisterProfilePrefs(registry);
   apps::RegisterProfilePrefs(registry);
-#if !defined(OS_ANDROID)
-  AppShortcutManager::RegisterProfilePrefs(registry);
-#endif
   autofill::AutofillManager::RegisterProfilePrefs(registry);
-#if !defined(OS_ANDROID)
-  autofill::GeneratedCreditCardBubbleController::RegisterUserPrefs(registry);
-#endif
   BookmarkPromptPrefs::RegisterProfilePrefs(registry);
   bookmark_utils::RegisterProfilePrefs(registry);
   browser_sync::SyncPrefs::RegisterProfilePrefs(registry);
@@ -349,9 +341,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   NetPrefObserver::RegisterProfilePrefs(registry);
   NetworkTimeService::RegisterProfilePrefs(registry);
   NewTabUI::RegisterProfilePrefs(registry);
-#if !defined(OS_ANDROID)
-  notifier::ChromeNotifierService::RegisterProfilePrefs(registry);
-#endif  // OS_ANDROID
   PasswordGenerationManager::RegisterProfilePrefs(registry);
   PasswordManager::RegisterProfilePrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
@@ -377,43 +366,38 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   extensions::ActivityLog::RegisterProfilePrefs(registry);
 #endif
 
-#if defined(ENABLE_MANAGED_USERS)
-  ManagedUserService::RegisterProfilePrefs(registry);
-  ManagedUserSyncService::RegisterProfilePrefs(registry);
-#endif
-
-#if defined(ENABLE_NOTIFICATIONS)
-  DesktopNotificationService::RegisterProfilePrefs(registry);
-#endif
-
-#if defined(TOOLKIT_VIEWS)
-  RegisterInvertBubbleUserPrefs(registry);
-#elif defined(TOOLKIT_GTK)
-  BrowserWindowGtk::RegisterProfilePrefs(registry);
-#endif
-
 #if defined(ENABLE_FULL_PRINTING)
   print_dialog_cloud::RegisterProfilePrefs(registry);
   printing::StickySettings::RegisterProfilePrefs(registry);
   CloudPrintURL::RegisterProfilePrefs(registry);
 #endif
 
+#if defined(ENABLE_MANAGED_USERS)
+  ManagedUserService::RegisterProfilePrefs(registry);
+  ManagedUserSyncService::RegisterProfilePrefs(registry);
+#endif
+
+#if defined(ENABLE_MDNS)
+  LocalDiscoveryUI::RegisterProfilePrefs(registry);
+#endif
+
+#if defined(ENABLE_NOTIFICATIONS)
+  DesktopNotificationService::RegisterProfilePrefs(registry);
+#endif
+
 #if defined(OS_ANDROID)
   PartnerBookmarksShim::RegisterProfilePrefs(registry);
   PromoHandler::RegisterProfilePrefs(registry);
-#endif
-
-#if defined(USE_ASH)
-  ash::RegisterChromeLauncherUserPrefs(registry);
-#endif
-
-#if !defined(OS_ANDROID)
+#else
+  AppShortcutManager::RegisterProfilePrefs(registry);
+  autofill::GeneratedCreditCardBubbleController::RegisterUserPrefs(registry);
   DeviceIDFetcher::RegisterProfilePrefs(registry);
   DevToolsWindow::RegisterProfilePrefs(registry);
   extensions::CommandService::RegisterProfilePrefs(registry);
   extensions::ExtensionSettingsHandler::RegisterProfilePrefs(registry);
   extensions::TabsCaptureVisibleTabFunction::RegisterProfilePrefs(registry);
   first_run::RegisterProfilePrefs(registry);
+  notifier::ChromeNotifierService::RegisterProfilePrefs(registry);
   PepperFlashSettingsManager::RegisterProfilePrefs(registry);
   PinnedTabCodec::RegisterProfilePrefs(registry);
   PluginsUI::RegisterProfilePrefs(registry);
@@ -438,12 +422,22 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   FlagsUI::RegisterProfilePrefs(registry);
 #endif
 
+#if defined(OS_MACOSX)
+  RegisterBrowserActionsControllerProfilePrefs(registry);
+#endif
+
 #if defined(OS_WIN)
   NetworkProfileBubble::RegisterProfilePrefs(registry);
 #endif
 
-#if defined(OS_MACOSX)
-  RegisterBrowserActionsControllerProfilePrefs(registry);
+#if defined(TOOLKIT_VIEWS)
+  RegisterInvertBubbleUserPrefs(registry);
+#elif defined(TOOLKIT_GTK)
+  BrowserWindowGtk::RegisterProfilePrefs(registry);
+#endif
+
+#if defined(USE_ASH)
+  ash::RegisterChromeLauncherUserPrefs(registry);
 #endif
 
   // Prefs registered only for migration (clearing or moving to a new
@@ -457,10 +451,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       kSyncPromoErrorMessage,
       std::string(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-#endif
-
-#if defined(ENABLE_MDNS)
- LocalDiscoveryUI::RegisterProfilePrefs(registry);
 #endif
 }
 
