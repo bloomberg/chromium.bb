@@ -108,6 +108,18 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
  public:
   typedef std::vector<View*> Views;
 
+  // TODO(tdanderson,sadrul): Becomes obsolete with the refactoring of the
+  // event targeting logic for views and windows.
+  // Specifies the source of the region used in a hit test.
+  // HIT_TEST_SOURCE_MOUSE indicates the hit test is being performed with a
+  // single point and HIT_TEST_SOURCE_TOUCH indicates the hit test is being
+  // performed with a rect larger than a single point. This value can be used,
+  // for example, to add extra padding or change the shape of the hit test mask.
+  enum HitTestSource {
+    HIT_TEST_SOURCE_MOUSE,
+    HIT_TEST_SOURCE_TOUCH
+  };
+
   struct ViewHierarchyChangedDetails {
     ViewHierarchyChangedDetails()
         : is_add(false),
@@ -1126,7 +1138,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Called by HitTestRect() to retrieve a mask for hit-testing against.
   // Subclasses override to provide custom shaped hit test regions.
-  virtual void GetHitTestMask(gfx::Path* mask) const;
+  virtual void GetHitTestMask(HitTestSource source, gfx::Path* mask) const;
 
   virtual DragInfo* GetDragInfo();
 

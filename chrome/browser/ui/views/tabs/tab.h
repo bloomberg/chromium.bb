@@ -130,6 +130,10 @@ class Tab : public gfx::AnimationDelegate,
  private:
   friend class TabTest;
   FRIEND_TEST_ALL_PREFIXES(TabTest, CloseButtonLayout);
+
+  friend class TabStripTest;
+  FRIEND_TEST_ALL_PREFIXES(TabStripTest, TabHitTestMaskWhenStacked);
+
   // The animation object used to swap the favicon with the sad tab icon.
   class FaviconCrashAnimation;
   class TabCloseButton;
@@ -171,7 +175,8 @@ class Tab : public gfx::AnimationDelegate,
   virtual void OnThemeChanged() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
   virtual bool HasHitTestMask() const OVERRIDE;
-  virtual void GetHitTestMask(gfx::Path* path) const OVERRIDE;
+  virtual void GetHitTestMask(HitTestSource source,
+                              gfx::Path* path) const OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p,
                               string16* tooltip) const OVERRIDE;
   virtual bool GetTooltipTextOrigin(const gfx::Point& p,

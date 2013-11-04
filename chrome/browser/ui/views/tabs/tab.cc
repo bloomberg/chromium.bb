@@ -39,6 +39,8 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/path.h"
+#include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/tooltip_manager.h"
@@ -242,6 +244,8 @@ const double kImmersiveTabMinThrobOpacity = 0.66;
 // Number of steps in the immersive mode loading animation.
 const int kImmersiveLoadingStepCount = 32;
 
+const char kTabCloseButtonName[] = "TabCloseButton";
+
 void DrawIconAtLocation(gfx::Canvas* canvas,
                         const gfx::ImageSkia& image,
                         int image_offset,
@@ -406,6 +410,39 @@ class Tab::TabCloseButton : public views::ImageButton {
     // start consuming gestures.
     ImageButton::OnGestureEvent(event);
     event->SetHandled();
+  }
+
+  virtual bool HasHitTestMask() const OVERRIDE {
+    return true;
+  }
+
+  virtual void GetHitTestMask(HitTestSource source,
+                              gfx::Path* path) const OVERRIDE {
+    // Use the button's contents bounds (which does not include padding)
+    // and the hit test mask of our parent |tab_| to determine if the
+    // button is hidden behind another tab.
+    gfx::Path tab_mask;
+    tab_->GetHitTestMask(source, &tab_mask);
+
+    gfx::Rect button_bounds(GetContentsBounds());
+    gfx::RectF tab_bounds_f(gfx::SkRectToRectF(tab_mask.getBounds()));
+    views::View::ConvertRectToTarget(tab_, this, &tab_bounds_f);
+    gfx::Rect tab_bounds = gfx::ToEnclosingRect(tab_bounds_f);
+
+    // If the button is hidden behind another tab, the hit test mask is empty.
+    // Otherwise set the hit test mask to be the contents bounds.
+    path->reset();
+    if (tab_bounds.Contains(button_bounds)) {
+      // Include the padding in the hit test mask for touch events.
+      if (source == HIT_TEST_SOURCE_TOUCH)
+        button_bounds = GetLocalBounds();
+
+      path->addRect(RectToSkRect(button_bounds));
+    }
+  }
+
+  virtual const char* GetClassName() const OVERRIDE {
+    return kTabCloseButtonName;
   }
 
  private:
@@ -872,7 +909,7 @@ bool Tab::HasHitTestMask() const {
   return true;
 }
 
-void Tab::GetHitTestMask(gfx::Path* path) const {
+void Tab::GetHitTestMask(HitTestSource source, gfx::Path* path) const {
   // When the window is maximized we don't want to shave off the edges or top
   // shadow of the tab, such that the user can click anywhere along the top
   // edge of the screen to select a tab. Ditto for immersive fullscreen.
@@ -880,6 +917,20 @@ void Tab::GetHitTestMask(gfx::Path* path) const {
   bool include_top_shadow =
       widget && (widget->IsMaximized() || widget->IsFullscreen());
   TabResources::GetHitTestMask(width(), height(), include_top_shadow, path);
+
+  // It is possible for a portion of the tab to be occluded if tabs are
+  // stacked, so modify the hit test mask to only include the visible
+  // region of the tab.
+  if (controller()) {
+    gfx::Rect clip;
+    controller()->ShouldPaintTab(this, &clip);
+    if (clip.size().GetArea()) {
+      SkRect intersection(path->getBounds());
+      intersection.intersect(RectToSkRect(clip));
+      path->reset();
+      path->addRect(intersection);
+    }
+  }
 }
 
 bool Tab::GetTooltipText(const gfx::Point& p, string16* tooltip) const {

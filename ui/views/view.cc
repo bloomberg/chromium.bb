@@ -38,6 +38,7 @@
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/drag_controller.h"
 #include "ui/views/layout/layout_manager.h"
+#include "ui/views/rect_based_targeting_utils.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/root_view.h"
@@ -892,7 +893,10 @@ bool View::HitTestRect(const gfx::Rect& rect) const {
   if (GetLocalBounds().Intersects(rect)) {
     if (HasHitTestMask()) {
       gfx::Path mask;
-      GetHitTestMask(&mask);
+      HitTestSource source = HIT_TEST_SOURCE_MOUSE;
+      if (!views::UsePointBasedTargeting(rect))
+        source = HIT_TEST_SOURCE_TOUCH;
+      GetHitTestMask(source, &mask);
 #if defined(USE_AURA)
       // TODO: should we use this every where?
       SkRegion clip_region;
@@ -1501,7 +1505,7 @@ bool View::HasHitTestMask() const {
   return false;
 }
 
-void View::GetHitTestMask(gfx::Path* mask) const {
+void View::GetHitTestMask(HitTestSource source, gfx::Path* mask) const {
   DCHECK(mask);
 }
 

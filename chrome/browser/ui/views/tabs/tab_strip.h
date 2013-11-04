@@ -263,6 +263,8 @@ class TabStrip : public views::View,
 
   friend class TabDragController;
   friend class TabDragControllerTest;
+  friend class TabStripTest;
+  FRIEND_TEST_ALL_PREFIXES(TabStripTest, TabHitTestMaskWhenStacked);
 
   // Used during a drop session of a url. Tracks the position of the drop as
   // well as a window used to highlight where the drop occurs.

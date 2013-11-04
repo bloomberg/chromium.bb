@@ -936,7 +936,8 @@ class HitTestView : public View {
   virtual bool HasHitTestMask() const OVERRIDE {
     return has_hittest_mask_;
   }
-  virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE {
+  virtual void GetHitTestMask(HitTestSource source,
+                              gfx::Path* mask) const OVERRIDE {
     DCHECK(has_hittest_mask_);
     DCHECK(mask);
 
