@@ -146,6 +146,15 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
     loadUsers: function(users, animated, showGuest) {
       $('pod-row').loadPods(users, animated);
       $('login-header-bar').showGuestButton = showGuest;
+
+      // The desktop User Manager can send the index of a pod that should be
+      // initially focused.
+      var hash = window.location.hash;
+      if (hash) {
+        var podIndex = hash.substr(1);
+        if (podIndex)
+          $('pod-row').focusPodByIndex(podIndex, false);
+      }
     },
 
     /**

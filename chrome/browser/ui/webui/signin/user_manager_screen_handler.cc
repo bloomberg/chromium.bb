@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "content/public/browser/web_contents.h"
@@ -55,7 +56,7 @@ const char kJsApiUserManagerLaunchGuest[] = "launchGuest";
 const char kJsApiUserManagerLaunchUser[] = "launchUser";
 const char kJsApiUserManagerRemoveUser[] = "removeUser";
 
-const size_t kAvatarIconSize = 160;
+const size_t kAvatarIconSize = 180;
 
 void HandleAndDoNothing(const base::ListValue* args) {
 }
@@ -165,7 +166,8 @@ void UserManagerScreenHandler::HandleInitialize(const base::ListValue* args) {
 }
 
 void UserManagerScreenHandler::HandleAddUser(const base::ListValue* args) {
-  profiles::CreateAndSwitchToNewProfile(desktop_type_);
+  profiles::CreateAndSwitchToNewProfile(desktop_type_,
+                                        base::Bind(&chrome::HideUserManager));
 }
 
 void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
@@ -192,7 +194,8 @@ void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
 }
 
 void UserManagerScreenHandler::HandleLaunchGuest(const base::ListValue* args) {
-  AvatarMenu::SwitchToGuestProfileWindow(desktop_type_);
+  profiles::SwitchToGuestProfile(desktop_type_,
+                                 base::Bind(&chrome::HideUserManager));
 }
 
 void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
@@ -212,7 +215,8 @@ void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
     if (info_cache.GetUserNameOfProfileAtIndex(i) == emailAddress &&
         info_cache.GetNameOfProfileAtIndex(i) == displayName) {
       base::FilePath path = info_cache.GetPathOfProfileAtIndex(i);
-      profiles::SwitchToProfile(path, desktop_type_, true);
+      profiles::SwitchToProfile(path, chrome::GetActiveDesktop(), true,
+                                base::Bind(&chrome::HideUserManager));
       break;
     }
   }

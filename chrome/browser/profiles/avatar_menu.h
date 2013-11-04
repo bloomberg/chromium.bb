@@ -67,6 +67,9 @@ class AvatarMenu : public content::NotificationObserver {
 
     // The index in the |profile_cache| for this profile.
     size_t profile_index;
+
+    // The path of this profile.
+    base::FilePath profile_path;
   };
 
   // Constructor. |observer| can be NULL. |browser| can be NULL and a new one
@@ -87,9 +90,6 @@ class AvatarMenu : public content::NotificationObserver {
 
   // Compare items by name.
   static bool CompareItems(const Item* item1, const Item* item2);
-
-  // Creates a new guest user window.
-  static void SwitchToGuestProfileWindow(chrome::HostDesktopType desktop_type);
 
   // Opens a Browser with the specified profile in response to the user
   // selecting an item. If |always_create| is true then a new window is created

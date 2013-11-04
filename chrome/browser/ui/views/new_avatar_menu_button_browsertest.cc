@@ -8,11 +8,13 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/avatar_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/new_avatar_button.h"
 #include "chrome/browser/ui/views/profile_chooser_view.h"
+#include "chrome/browser/ui/views/user_manager_view.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -120,4 +122,11 @@ IN_PROC_BROWSER_TEST_F(NewAvatarMenuButtonTest, SignOut) {
 
   window_close_observer.Wait();  // Rely on test timeout for failure indication.
   EXPECT_TRUE(browser_list->empty());
+
+  // If the User Manager hasn't shown yet, wait for it to show up.
+  if (!UserManagerView::IsShowing())
+    base::MessageLoop::current()->RunUntilIdle();
+
+  // We need to hide the User Manager or else the process can't die.
+  chrome::HideUserManager();
 }

@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/chrome_switches.h"
@@ -38,22 +39,6 @@
 using content::BrowserThread;
 
 namespace {
-
-void OnProfileCreated(bool always_create,
-                      chrome::HostDesktopType desktop_type,
-                      Profile* profile,
-                      Profile::CreateStatus status) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (status == Profile::CREATE_STATUS_INITIALIZED) {
-    profiles::FindOrCreateNewWindowForProfile(
-        profile,
-        chrome::startup::IS_NOT_PROCESS_STARTUP,
-        chrome::startup::IS_NOT_FIRST_RUN,
-        desktop_type,
-        always_create);
-  }
-}
 
 // Constants for the show profile switcher experiment
 const char kShowProfileSwitcherFieldTrialName[] = "ShowProfileSwitcher";
@@ -129,23 +114,19 @@ bool AvatarMenu::CompareItems(const Item* item1, const Item* item2) {
       base::i18n::ToLower(item2->name)) < 0;
 }
 
-// static
-void AvatarMenu::SwitchToGuestProfileWindow(
-    chrome::HostDesktopType desktop_type) {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  profile_manager->CreateProfileAsync(ProfileManager::GetGuestProfilePath(),
-                                      base::Bind(&OnProfileCreated,
-                                                 false,
-                                                 desktop_type),
-                                      string16(),
-                                      string16(),
-                                      std::string());
-}
-
 void AvatarMenu::SwitchToProfile(size_t index, bool always_create) {
   DCHECK(profiles::IsMultipleProfilesEnabled() ||
          index == GetActiveProfileIndex());
   const Item& item = GetItemAt(index);
+
+  if (profiles::IsNewProfileManagementEnabled()) {
+    // Don't open a browser window for signed-out profiles.
+    if (item.signin_required) {
+      chrome::ShowUserManager(item.profile_path);
+      return;
+    }
+  }
+
   base::FilePath path =
       profile_info_->GetPathOfProfileAtIndex(item.profile_index);
 
@@ -153,7 +134,8 @@ void AvatarMenu::SwitchToProfile(size_t index, bool always_create) {
   if (browser_)
     desktop_type = browser_->host_desktop_type();
 
-  profiles::SwitchToProfile(path, desktop_type, always_create);
+  profiles::SwitchToProfile(path, desktop_type, always_create,
+                            profiles::ProfileSwitchingDoneCallback());
   ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::SWITCH_PROFILE_ICON);
 }
 

@@ -1292,6 +1292,17 @@ cr.define('login', function() {
     },
 
     /**
+     * Focuses a given user pod by index or clear focus when given null.
+     * @param {int=} podToFocus index of User pod to focus.
+     * @param {boolean=} opt_force If true, forces focus update even when
+     *                             podToFocus is already focused.
+     */
+    focusPodByIndex: function(podToFocus, opt_force) {
+      if (podToFocus < this.pods.length)
+        this.focusPod(this.pods[podToFocus], opt_force);
+    },
+
+    /**
      * Resets wallpaper to the last active user's wallpaper, if any.
      */
     loadLastWallpaper: function() {

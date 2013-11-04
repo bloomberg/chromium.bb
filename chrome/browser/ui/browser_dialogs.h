@@ -96,6 +96,13 @@ void ShowProfileSigninConfirmationDialog(
     const std::string& username,
     ui::ProfileSigninConfirmationDelegate* delegate);
 
+
+// Shows the Desktop User Manager with the |profile_path_to_focus| user focused.
+void ShowUserManager(const base::FilePath& profile_path_to_focus);
+
+// Hides the User Manager.
+void HideUserManager();
+
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_BROWSER_DIALOGS_H_

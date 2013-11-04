@@ -60,6 +60,7 @@ void ProfileListChromeOS::RebuildMenu() {
     AvatarMenu::Item* item = new AvatarMenu::Item(i, i, icon);
     item->name = (*it)->GetDisplayName();
     item->sync_state = profile_info_->GetUserNameOfProfileAtIndex(i);
+    item->profile_path = profile_info_->GetPathOfProfileAtIndex(i);
     item->managed = false;
     item->signed_in = true;
     item->active = profile_info_->GetPathOfProfileAtIndex(i) ==

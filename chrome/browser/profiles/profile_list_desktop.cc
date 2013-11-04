@@ -53,6 +53,7 @@ void ProfileListDesktop::RebuildMenu() {
     AvatarMenu::Item* item = new AvatarMenu::Item(i, i, icon);
     item->name = profile_info_->GetNameOfProfileAtIndex(i);
     item->sync_state = profile_info_->GetUserNameOfProfileAtIndex(i);
+    item->profile_path = profile_info_->GetPathOfProfileAtIndex(i);
     item->managed = profile_info_->ProfileIsManagedAtIndex(i);
     item->signed_in = !item->sync_state.empty();
     if (!item->signed_in) {

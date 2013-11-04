@@ -14,6 +14,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/views/user_manager_view.h"
 #include "chrome/common/chrome_switches.h"
@@ -365,13 +366,22 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     sender->SetEnabled(false);
 
   if (sender == guest_button_) {
-    avatar_menu_->SwitchToGuestProfileWindow(browser_->host_desktop_type());
+    profiles::SwitchToGuestProfile(browser_->host_desktop_type(),
+                                   profiles::ProfileSwitchingDoneCallback());
   } else if (sender == end_guest_button_) {
     profiles::CloseGuestProfileWindows();
   } else if (sender == users_button_) {
-    UserManagerView::Show(browser_);
+    // Only non-guest users appear in the User Manager.
+    base::FilePath profile_path;
+    if (!end_guest_button_) {
+      size_t active_index = avatar_menu_->GetActiveProfileIndex();
+      profile_path = avatar_menu_->GetItemAt(active_index).profile_path;
+    }
+    chrome::ShowUserManager(profile_path);
   } else if (sender == add_user_button_) {
-    profiles::CreateAndSwitchToNewProfile(browser_->host_desktop_type());
+    profiles::CreateAndSwitchToNewProfile(
+        browser_->host_desktop_type(),
+        profiles::ProfileSwitchingDoneCallback());
   } else if (sender == add_account_button_) {
     ShowView(GAIA_ADD_ACCOUNT_VIEW, avatar_menu_.get());
   } else {

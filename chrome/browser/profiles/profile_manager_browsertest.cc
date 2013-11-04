@@ -23,6 +23,8 @@
 
 namespace {
 
+const profiles::ProfileSwitchingDoneCallback kOnProfileSwitchDoNothing;
+
 // An observer that returns back to test code after a new profile is
 // initialized.
 void OnUnblockOnProfileCreation(Profile* profile,
@@ -229,19 +231,22 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
   EXPECT_EQ(1U, browser_list->size());
 
   // Open a browser window for the first profile.
-  profiles::SwitchToProfile(path_profile1, desktop_type, false);
+  profiles::SwitchToProfile(path_profile1, desktop_type, false,
+                            kOnProfileSwitchDoNothing);
   EXPECT_EQ(chrome::GetTotalBrowserCount(), 1U);
   EXPECT_EQ(1U, browser_list->size());
   EXPECT_EQ(path_profile1, browser_list->get(0)->profile()->GetPath());
 
   // Open a browser window for the second profile.
-  profiles::SwitchToProfile(path_profile2, desktop_type, false);
+  profiles::SwitchToProfile(path_profile2, desktop_type, false,
+                            kOnProfileSwitchDoNothing);
   EXPECT_EQ(chrome::GetTotalBrowserCount(), 2U);
   EXPECT_EQ(2U, browser_list->size());
   EXPECT_EQ(path_profile2, browser_list->get(1)->profile()->GetPath());
 
   // Switch to the first profile without opening a new window.
-  profiles::SwitchToProfile(path_profile1, desktop_type, false);
+  profiles::SwitchToProfile(path_profile1, desktop_type, false,
+                            kOnProfileSwitchDoNothing);
   EXPECT_EQ(chrome::GetTotalBrowserCount(), 2U);
   EXPECT_EQ(2U, browser_list->size());
 
@@ -284,13 +289,15 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, EphemeralProfile) {
   EXPECT_EQ(1U, browser_list->size());
 
   // Open a browser window for the second profile.
-  profiles::SwitchToProfile(path_profile2, desktop_type, false);
+  profiles::SwitchToProfile(path_profile2, desktop_type, false,
+                            kOnProfileSwitchDoNothing);
   EXPECT_EQ(2U, chrome::GetTotalBrowserCount());
   EXPECT_EQ(2U, browser_list->size());
   EXPECT_EQ(path_profile2, browser_list->get(1)->profile()->GetPath());
 
   // Create a second window for the ephemeral profile.
-  profiles::SwitchToProfile(path_profile2, desktop_type, true);
+  profiles::SwitchToProfile(path_profile2, desktop_type, true,
+                            kOnProfileSwitchDoNothing);
   EXPECT_EQ(3U, chrome::GetTotalBrowserCount());
   EXPECT_EQ(3U, browser_list->size());
 

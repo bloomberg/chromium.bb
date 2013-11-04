@@ -8,8 +8,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "ui/views/window/dialog_delegate.h"
 
-class Browser;
-
 namespace views {
 class WebView;
 }
@@ -18,13 +16,22 @@ class WebView;
 class UserManagerView : public views::DialogDelegateView {
  public:
   // Shows the User Manager or re-activates an existing one.
-  static void Show(Browser* browser);
+  static void Show(const base::FilePath& profile_path_to_focus);
+
+  // Hide the User Manager.
+  static void Hide();
+
+  // Returns whether or not the User Manager is showing.
+  static bool IsShowing();
 
  private:
   explicit UserManagerView(Profile* profile);
   virtual ~UserManagerView();
 
-  static void OnGuestProfileCreated(Browser* browser,
+  // If the |guest_profile| has been initialized succesfully (according to
+  // |status|), creates a new UserManagerView instance with the user with path
+  // |profile_path_to_focus| focused.
+  static void OnGuestProfileCreated(const base::FilePath& profile_path_to_focus,
                                     Profile* guest_profile,
                                     Profile::CreateStatus status);
 

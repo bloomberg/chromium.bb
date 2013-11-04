@@ -4,10 +4,12 @@
 
 #include "chrome/browser/ui/views/user_manager_view.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
@@ -38,6 +40,19 @@ const int kWindowHeight = 700;
 
 }
 
+namespace chrome {
+
+// Declared in browser_dialogs.h so others don't have to depend on this header.
+void ShowUserManager(const base::FilePath& profile_path_to_focus) {
+  UserManagerView::Show(profile_path_to_focus);
+}
+
+void HideUserManager() {
+  UserManagerView::Hide();
+}
+
+}  // namespace chrome
+
 // static
 UserManagerView* UserManagerView::instance_ = NULL;
 
@@ -45,8 +60,6 @@ UserManagerView::UserManagerView(Profile* profile)
     : web_view_(new views::WebView(profile)) {
   SetLayoutManager(new views::FillLayout);
   AddChildView(web_view_);
-  // Prevent the browser process from shutting down while this window is open.
-  chrome::StartKeepAlive();
 }
 
 UserManagerView::~UserManagerView() {
@@ -54,8 +67,9 @@ UserManagerView::~UserManagerView() {
 }
 
 // static
-void UserManagerView::Show(Browser* browser) {
-  DCHECK(browser);
+void UserManagerView::Show(const base::FilePath& profile_path_to_focus) {
+  // Prevent the browser process from shutting down while this window is open.
+  chrome::StartKeepAlive();
 
   if (instance_) {
     // If there's a user manager window open already, just activate it.
@@ -69,40 +83,56 @@ void UserManagerView::Show(Browser* browser) {
   profile_manager->CreateProfileAsync(
       ProfileManager::GetGuestProfilePath(),
       base::Bind(&UserManagerView::OnGuestProfileCreated,
-                 browser),
+                 profile_path_to_focus),
       string16(),
       string16(),
       std::string());
 }
 
+// static
+void UserManagerView::Hide() {
+  if (instance_)
+    instance_->GetWidget()->Close();
+}
+
+// static
+bool UserManagerView::IsShowing() {
+  return instance_ ? instance_->GetWidget()->IsActive() : false;
+}
+
 void UserManagerView::OnGuestProfileCreated(
-    Browser* browser,
+    const base::FilePath& profile_path_to_focus,
     Profile* guest_profile,
     Profile::CreateStatus status) {
   if (status != Profile::CREATE_STATUS_INITIALIZED)
     return;
 
   instance_ = new UserManagerView(guest_profile);
-  gfx::NativeWindow context = browser->window()->GetNativeWindow();
-#if defined(USE_ASH)
-  if (!context)
-    context = ash::wm::GetActiveWindow();
-#endif
-  DialogDelegate::CreateDialogWidget(instance_, context, NULL);
+  DialogDelegate::CreateDialogWidget(instance_, NULL, NULL);
 
 #if defined(OS_WIN)
-  // Set the app id for the task manager to the app id of its parent browser. If
-  // no parent is specified, the app id will default to that of the initial
-  // process.
-  if (browser) {
-    ui::win::SetAppIdForWindow(
-        ShellIntegration::GetChromiumModelIdForProfile(
-            browser->profile()->GetPath()),
-        views::HWNDForWidget(instance_->GetWidget()));
-  }
+  // Set the app id for the task manager to the app id of its parent
+  ui::win::SetAppIdForWindow(
+      ShellIntegration::GetChromiumModelIdForProfile(
+          guest_profile->GetPath()),
+      views::HWNDForWidget(instance_->GetWidget()));
 #endif
   instance_->GetWidget()->Show();
-  instance_->web_view_->LoadInitialURL(GURL(chrome::kChromeUIUserManagerURL));
+
+  // Tell the webui which user pod should be focused.
+  std::string page = chrome::kChromeUIUserManagerURL;
+
+  if (!profile_path_to_focus.empty()) {
+    ProfileInfoCache& cache =
+        g_browser_process->profile_manager()->GetProfileInfoCache();
+    size_t index = cache.GetIndexOfProfileWithPath(profile_path_to_focus);
+    if (index != std::string::npos) {
+      page += "#";
+      page += base::IntToString(index);
+    }
+  }
+
+  instance_->web_view_->LoadInitialURL(GURL(page));
   instance_->web_view_->RequestFocus();
 }
 

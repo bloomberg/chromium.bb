@@ -9,7 +9,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/chrome_switches.h"
@@ -22,8 +26,10 @@ namespace {
 
 class SignoutTracker : public content::WebContentsObserver {
  public:
-  SignoutTracker(Profile* profile, const GURL& signout_landing_url,
-                 content::WebContents* contents);
+  SignoutTracker(Profile* profile,
+                 const GURL& signout_landing_url,
+                 content::WebContents* contents,
+                 Browser* browser);
 
   virtual void WebContentsDestroyed(content::WebContents* contents) OVERRIDE;
   virtual void DidStopLoading(content::RenderViewHost* render_view_host)
@@ -33,22 +39,29 @@ class SignoutTracker : public content::WebContentsObserver {
   scoped_ptr<content::WebContents> contents_;
   GURL signout_landing_url_;
   Profile* profile_;
+  Browser* browser_;
 
   DISALLOW_COPY_AND_ASSIGN(SignoutTracker);
 };
 
 SignoutTracker::SignoutTracker(Profile* profile,
                                const GURL& signout_landing_url,
-                               content::WebContents* contents)
+                               content::WebContents* contents,
+                               Browser* browser)
   : WebContentsObserver(contents),
     contents_(contents),
     signout_landing_url_(signout_landing_url),
-    profile_(profile) {
+    profile_(profile),
+    browser_(browser) {
 }
 
 void SignoutTracker::DidStopLoading(content::RenderViewHost* render_view_host) {
   // Only close when we reach the final landing; ignore redirects until then.
   if (web_contents()->GetURL() == signout_landing_url_) {
+    if (profiles::IsNewProfileManagementEnabled()) {
+      DCHECK(profile_);
+      chrome::ShowUserManager(profile_->GetPath());
+    }
     Observe(NULL);
     BrowserList::CloseAllBrowsersWithProfile(profile_);
     delete this;  /* success */
@@ -130,7 +143,10 @@ content::WebContents* AvatarMenuActionsDesktop::BeginSignOut() {
   content::WebContents* contents = content::WebContents::Create(create_params);
   // This object may be destructed when the menu closes but we need something
   // around to finish the sign-out process and close the profile windows.
-  new SignoutTracker(current_profile, GURL(landing_url), contents);
+  new SignoutTracker(current_profile,
+                     GURL(landing_url),
+                     contents,
+                     browser_);
   contents->GetController().LoadURL(
     logout_url, content::Referrer(),
     content::PAGE_TRANSITION_GENERATED, std::string());
