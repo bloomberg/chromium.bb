@@ -598,6 +598,7 @@ class PackageDBTest(cros_test_lib.MoxTempDirTestCase):
 
   def setUp(self):
     self.build_root = self.tempdir
+    self.fake_packages = []
     # Prepare a fake chroot.
     self.fake_chroot = os.path.join(self.build_root, 'chroot/build/amd64-host')
     fake_pkgdb_path = os.path.join(self.fake_chroot, 'var/db/pkg')
@@ -633,6 +634,15 @@ class PackageDBTest(cros_test_lib.MoxTempDirTestCase):
     packages.sort()
     self.fake_packages.sort()
     self.assertEquals(self.fake_packages, packages)
+
+  def testIsPackageInstalled(self):
+    """Test if checking the existence of an installed package works."""
+    self.assertTrue(portage_utilities.IsPackageInstalled(
+        'category1/package',
+        sysroot=self.fake_chroot))
+    self.assertFalse(portage_utilities.IsPackageInstalled(
+        'category1/foo',
+        sysroot=self.fake_chroot))
 
 
 if __name__ == '__main__':

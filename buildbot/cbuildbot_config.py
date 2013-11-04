@@ -1082,7 +1082,8 @@ chromium_info.add_config('amd64-generic-tot-asan-informational',
 incremental_arm = incremental.derive(arm)
 incremental_arm.add_config('beaglebone-incremental',
   boards=['beaglebone'],
-  images=['dev'],
+  images=['base'],
+  packages=['chromeos-base/chromeos'],
   trybot_list=True,
   build_tests=False,
   rootfs_verification=False,
@@ -1676,11 +1677,14 @@ _arm_release = _release.derive(arm)
 
 _arm_release.add_config('beaglebone-release',
   boards=['beaglebone'],
+  chrome_sdk=False,
   build_tests=False,
+  dev_installer_prebuilts=False,
   packages=['chromeos-base/chromeos'],
   hw_tests=[],
   images=['base'],
   rootfs_verification=False,
+  signer_tests=False,
   upload_hw_test_artifacts=False,
 )
 

@@ -2753,6 +2753,14 @@ class ArchiveStage(ArchivingStage):
 
   def ArchiveStrippedChrome(self):
     """Generate and upload stripped Chrome package."""
+
+    # If chrome is not installed, skip archiving.
+    chroot_path = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
+    board_path = os.path.join(chroot_path, 'build', self._current_board)
+    if not portage_utilities.IsPackageInstalled(constants.CHROME_CP,
+                                                board_path):
+      return
+
     cmd = ['strip_package', '--board', self._current_board,
            constants.CHROME_PN]
     cros_build_lib.RunCommand(cmd, cwd=self._build_root, enter_chroot=True)

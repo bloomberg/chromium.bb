@@ -835,3 +835,17 @@ def BestVisible(atom, board=None, buildroot=constants.SOURCE_ROOT):
   result = cros_build_lib.RunCommandCaptureOutput(
       cmd, cwd=buildroot, enter_chroot=True, debug_level=logging.DEBUG)
   return SplitCPV(result.output.strip())
+
+
+def IsPackageInstalled(package, sysroot=constants.SOURCE_ROOT):
+  """Return whether a portage package is in a given portage-managed root.
+
+  Args:
+    package: The CP to look for.
+    sysroot: The root being inspected.
+  """
+  for key, _version in ListInstalledPackages(sysroot):
+    if key == package:
+      return True
+
+  return False
