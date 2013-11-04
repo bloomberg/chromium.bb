@@ -970,6 +970,10 @@ class Port(object):
         except AssertionError:
             return self._build_path('layout-test-results')
 
+    def crash_dumps_directory(self):
+        """Absolute path to the default place to store crash dumps."""
+        return self._build_path('crash-dumps')
+
     def setup_test_run(self):
         """Perform port-specific work at the beginning of a test run."""
         # Delete the disk cache if any to ensure a clean test run.
