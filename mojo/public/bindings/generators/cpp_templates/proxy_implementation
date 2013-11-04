@@ -1,4 +1,4 @@
-void $CLASS::$METHOD($PARAMS_LIST) {
+void ${CLASS}Proxy::$METHOD($PARAMS_LIST) {
   size_t payload_size =
       mojo::internal::Align(sizeof($PARAMS));
 $COMPUTES

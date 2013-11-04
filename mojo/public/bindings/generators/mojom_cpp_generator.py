@@ -93,6 +93,8 @@ class CPPGenerator(object):
   bool_field_template = Template("  uint8_t ${FIELD}_ : 1;")
   setter_template = \
       Template("  void set_$FIELD($TYPE $FIELD) { ${FIELD}_ = $FIELD; }")
+  ptr_setter_template = \
+      Template("  void set_$FIELD($TYPE $FIELD) { ${FIELD}_.ptr = $FIELD; }")
   getter_template = \
       Template("  $TYPE $FIELD() const { return ${FIELD}_; }")
   ptr_getter_template = \
@@ -152,19 +154,19 @@ class CPPGenerator(object):
 
   @classmethod
   def GetGetterLine(cls, field):
-    kind = field.kind
-    template = None
-    gtype = cls.GetConstType(kind)
-    if IsPointerKind(kind):
-      template = cls.ptr_getter_template
+    subs = {'FIELD': field.name, 'TYPE': cls.GetType(field.kind)}
+    if IsPointerKind(field.kind):
+      return cls.ptr_getter_template.substitute(subs)
     else:
-      template = cls.getter_template
-    return template.substitute(FIELD=field.name, TYPE=gtype)
+      return cls.getter_template.substitute(subs)
 
   @classmethod
   def GetSetterLine(cls, field):
-    stype = cls.GetType(field.kind)
-    return cls.setter_template.substitute(FIELD=field.name, TYPE=stype)
+    subs = {'FIELD': field.name, 'TYPE': cls.GetType(field.kind)}
+    if IsPointerKind(field.kind):
+      return cls.ptr_setter_template.substitute(subs)
+    else:
+      return cls.setter_template.substitute(subs)
 
   @classmethod
   def GetFieldLine(cls, field):
@@ -175,7 +177,7 @@ class CPPGenerator(object):
     if isinstance(kind, mojom.Struct):
       itype = "mojo::internal::StructPointer<%s>" % kind.name.capitalize()
     elif isinstance(kind, mojom.Array):
-      itype = "mojo::internal::StructPointer<%s>" % cls.GetType(kind.kind)
+      itype = "mojo::internal::ArrayPointer<%s>" % cls.GetType(kind.kind)
     elif kind.spec == 's':
       itype = "mojo::internal::StringPointer"
     else:
@@ -301,7 +303,7 @@ class CPPGenerator(object):
       encode_handles.Add(substitutions)
       decode_handles.Add(substitutions)
     return self.GetTemplate("struct_serialization").substitute(
-        CLASS = "%s::%s" % (self.module.name.lower(), class_name),
+        CLASS = "%s::%s" % (self.module.namespace.lower(), class_name),
         NAME = param_name,
         ENCODES = encodes,
         DECODES = decodes,
@@ -341,6 +343,15 @@ class CPPGenerator(object):
   def GenerateStructSerializationSource(self, ps):
     struct = ps.struct
     serialization_header = self.GetHeaderFile(struct.name, "serialization")
+
+    kinds = DependentKinds()
+    for field in struct.fields:
+      kinds.AddKind(field.kind)
+    headers = \
+        map(lambda kind: self.GetHeaderFile(kind.name, "serialization"), kinds)
+    headers.append(self.GetHeaderFile(struct.name))
+    includes = map(lambda header: "#include \"%s\"" % header, sorted(headers))
+
     class_header = self.GetHeaderFile(struct.name)
     clones = Lines(self.struct_serialization_clone_template)
     sizes = "  return sizeof(*%s)" % struct.name.lower()
@@ -358,7 +369,7 @@ class CPPGenerator(object):
         CLASS = "%s::%s" % \
             (self.module.namespace.lower(), struct.name.capitalize()),
         SERIALIZATION_HEADER = serialization_header,
-        CLASS_HEADER = class_header,
+        INCLUDES = '\n'.join(includes),
         SIZES = sizes,
         CLONES = clones,
         SERIALIZATION = serialization)
@@ -372,7 +383,7 @@ class CPPGenerator(object):
         forwards.Add(param.kind)
         params.append("%s %s" % (self.GetConstType(param.kind), param.name))
       methods.append(
-          "  virtual void %s(%s) = 0" % (method.name, ", ".join(params)))
+          "  virtual void %s(%s) = 0;" % (method.name, ", ".join(params)))
 
     self.WriteTemplateToFile("interface.h", interface.name,
         HEADER_GUARD = self.GetHeaderGuard(interface.name),
@@ -406,7 +417,7 @@ class CPPGenerator(object):
         kinds.AddKind(param.kind)
     headers = \
         map(lambda kind: self.GetHeaderFile(kind.name, "serialization"), kinds)
-    headers.append(self.GetHeaderFile(interface.name, "serialization"))
+    headers.append(self.GetHeaderFile(interface.name))
     headers.append("mojo/public/bindings/lib/bindings_serialization.h")
     includes = map(lambda header: "#include \"%s\"" % header, sorted(headers))
 
@@ -442,9 +453,9 @@ class CPPGenerator(object):
       ps = mojom_pack.PackedStruct(struct)
       implementations.append(self.GetStructImplementation(struct.name, ps))
       serializations.append(
-          self.GetStructSerialization(struct.name, "params", ps))
+          self.GetStructSerialization("internal::" + struct.name, "params", ps))
     self.WriteTemplateToFile("interface_serialization.cc", interface.name,
-        HEADER = self.GetHeaderFile("interface_serialization"),
+        HEADER = self.GetHeaderFile(interface.name.lower(), "serialization"),
         IMPLEMENTATIONS = '\n'.join(implementations),
         SERIALIZATIONS = '\n'.join(serializations))
 
@@ -455,7 +466,8 @@ class CPPGenerator(object):
           lambda param: "%s %s" % (self.GetConstType(param.kind), param.name),
           method.parameters)
       methods.append(
-          "  virtual void %s(%s) OVERRIDE" % (method.name, ", ".join(params)))
+          "  virtual void %s(%s) MOJO_OVERRIDE;" \
+              % (method.name, ", ".join(params)))
 
     self.WriteTemplateToFile("interface_proxy.h", interface.name,
         HEADER_GUARD = self.GetHeaderGuard(interface.name + "_PROXY"),
@@ -482,8 +494,9 @@ class CPPGenerator(object):
           "internal::k%s_%s_Name" % (interface.name.capitalize(), method.name)
       params_name = \
           "internal::%s_%s_Params" % (interface.name.capitalize(), method.name)
+
       implementations.Add(
-          CLASS = "%sProxy" % interface.name.capitalize(),
+          CLASS = interface.name.capitalize(),
           METHOD = method.name,
           NAME = name,
           PARAMS = params_name,

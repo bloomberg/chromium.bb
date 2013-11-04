@@ -12,7 +12,7 @@
 
 namespace $NAMESPACE {
 
-$CLASS::$CLASS(mojo::MessageReceiver* receiver)
+${CLASS}Proxy::${CLASS}Proxy(mojo::MessageReceiver* receiver)
     : receiver_(receiver) {
 }
 

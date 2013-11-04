@@ -6,7 +6,7 @@
 
 #include <string.h>
 
-#include "$CLASS_HEADER"
+$INCLUDES
 
 namespace mojo {
 namespace internal {

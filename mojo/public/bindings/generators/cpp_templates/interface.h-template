@@ -9,6 +9,7 @@
 
 namespace $NAMESPACE {
 $FORWARDS
+
 class $CLASS {
  public:
 $METHODS

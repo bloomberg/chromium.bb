@@ -9,6 +9,7 @@
 
 namespace $NAMESPACE {
 $FORWARDS
+
 #pragma pack(push, 1)
 
 $DECLARATION

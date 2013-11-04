@@ -12,7 +12,7 @@ namespace $NAMESPACE {
 
 class ${CLASS}Proxy : public $CLASS {
  public:
-  explicit $CLASS(mojo::MessageReceiver* receiver);
+  explicit ${CLASS}Proxy(mojo::MessageReceiver* receiver);
 
 $METHODS
 

@@ -13,6 +13,7 @@ namespace $NAMESPACE {
 namespace internal {
 
 $NAMES
+
 #pragma pack(push, 1)
 
 $PARAM_CLASSES
