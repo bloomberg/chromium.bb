@@ -159,7 +159,6 @@ AudioContext::AudioContext(Document* document, unsigned numberOfChannels, size_t
 {
     constructCommon();
 
-    // FIXME: the passed in sampleRate MUST match the hardware sample-rate since HRTFDatabaseLoader is a singleton.
     m_hrtfDatabaseLoader = HRTFDatabaseLoader::createAndLoadAsynchronouslyIfNecessary(sampleRate);
 
     // Create a new destination for offline rendering.
