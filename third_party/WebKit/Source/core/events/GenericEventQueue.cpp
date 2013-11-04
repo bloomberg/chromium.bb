@@ -89,7 +89,7 @@ void GenericEventQueue::timerFired(Timer<GenericEventQueue>*)
     m_pendingEvents.swap(pendingEvents);
 
     RefPtr<EventTarget> protect(m_owner);
-    for (unsigned i = 0; i < pendingEvents.size(); ++i) {
+    for (size_t i = 0; i < pendingEvents.size(); ++i) {
         Event* event = pendingEvents[i].get();
         EventTarget* target = event->target() ? event->target() : m_owner;
         CString type(event->type().string().ascii());
@@ -102,14 +102,17 @@ void GenericEventQueue::timerFired(Timer<GenericEventQueue>*)
 void GenericEventQueue::close()
 {
     m_isClosed = true;
-
-    m_timer.stop();
-    m_pendingEvents.clear();
+    cancelAllEvents();
 }
 
 void GenericEventQueue::cancelAllEvents()
 {
     m_timer.stop();
+
+    for (size_t i = 0; i < m_pendingEvents.size(); ++i) {
+        Event* event = m_pendingEvents[i].get();
+        TRACE_EVENT_ASYNC_END2("event", "GenericEventQueue:enqueueEvent", event, "type", event->type().string().ascii(), "status", "cancelled");
+    }
     m_pendingEvents.clear();
 }
 
