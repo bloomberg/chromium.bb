@@ -60,10 +60,10 @@ private:
 
     class InsertedNodes {
     public:
-        void respondToNodeInsertion(Node*);
-        void willRemoveNodePreservingChildren(Node*);
-        void willRemoveNode(Node*);
-        void didReplaceNode(Node*, Node* newNode);
+        void respondToNodeInsertion(Node&);
+        void willRemoveNodePreservingChildren(Node&);
+        void willRemoveNode(Node&);
+        void didReplaceNode(Node&, Node& newNode);
 
         Node* firstNodeInserted() const { return m_firstNodeInserted.get(); }
         Node& lastLeafInserted() const { ASSERT(m_lastNodeInserted); return m_lastNodeInserted->lastDescendant(); }

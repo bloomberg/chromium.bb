@@ -322,26 +322,23 @@ void ReplacementFragment::removeInterchangeNodes(Node* container)
     }
 }
 
-inline void ReplaceSelectionCommand::InsertedNodes::respondToNodeInsertion(Node* node)
+inline void ReplaceSelectionCommand::InsertedNodes::respondToNodeInsertion(Node& node)
 {
-    if (!node)
-        return;
-
     if (!m_firstNodeInserted)
-        m_firstNodeInserted = node;
+        m_firstNodeInserted = &node;
 
-    m_lastNodeInserted = node;
+    m_lastNodeInserted = &node;
 }
 
-inline void ReplaceSelectionCommand::InsertedNodes::willRemoveNodePreservingChildren(Node* node)
+inline void ReplaceSelectionCommand::InsertedNodes::willRemoveNodePreservingChildren(Node& node)
 {
     if (m_firstNodeInserted == node)
-        m_firstNodeInserted = NodeTraversal::next(node);
+        m_firstNodeInserted = NodeTraversal::next(&node);
     if (m_lastNodeInserted == node)
-        m_lastNodeInserted = node->lastChild() ? node->lastChild() : NodeTraversal::nextSkippingChildren(node);
+        m_lastNodeInserted = node.lastChild() ? node.lastChild() : NodeTraversal::nextSkippingChildren(&node);
 }
 
-inline void ReplaceSelectionCommand::InsertedNodes::willRemoveNode(Node* node)
+inline void ReplaceSelectionCommand::InsertedNodes::willRemoveNode(Node& node)
 {
     if (m_firstNodeInserted == node && m_lastNodeInserted == node) {
         m_firstNodeInserted = 0;
@@ -352,12 +349,12 @@ inline void ReplaceSelectionCommand::InsertedNodes::willRemoveNode(Node* node)
         m_lastNodeInserted = NodeTraversal::previousSkippingChildren(m_lastNodeInserted.get());
 }
 
-inline void ReplaceSelectionCommand::InsertedNodes::didReplaceNode(Node* node, Node* newNode)
+inline void ReplaceSelectionCommand::InsertedNodes::didReplaceNode(Node& node, Node& newNode)
 {
     if (m_firstNodeInserted == node)
-        m_firstNodeInserted = newNode;
+        m_firstNodeInserted = &newNode;
     if (m_lastNodeInserted == node)
-        m_lastNodeInserted = newNode;
+        m_lastNodeInserted = &newNode;
 }
 
 ReplaceSelectionCommand::ReplaceSelectionCommand(Document& document, PassRefPtr<DocumentFragment> fragment, CommandOptions options, EditAction editAction)
@@ -483,12 +480,13 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(Insert
             if (element->isHTMLElement()) {
                 Vector<QualifiedName> attributes;
                 HTMLElement* htmlElement = toHTMLElement(element);
+                ASSERT(htmlElement);
 
                 if (newInlineStyle->conflictsWithImplicitStyleOfElement(htmlElement)) {
                     // e.g. <b style="font-weight: normal;"> is converted to <span style="font-weight: normal;">
                     node = replaceElementWithSpanPreservingChildrenAndAttributes(htmlElement);
                     element = toElement(node);
-                    insertedNodes.didReplaceNode(htmlElement, node.get());
+                    insertedNodes.didReplaceNode(*htmlElement, *node);
                 } else if (newInlineStyle->extractConflictingImplicitStyleOfAttributes(htmlElement, EditingStyle::PreserveWritingDirection, 0, attributes,
                     EditingStyle::DoNotExtractMatchingStyle)) {
                     // e.g. <font size="3" style="font-size: 20px;"> is converted to <font style="font-size: 20px;">
@@ -510,7 +508,7 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(Insert
 
         if (!inlineStyle || newInlineStyle->isEmpty()) {
             if (isStyleSpanOrSpanWithOnlyStyleAttribute(element) || isEmptyFontTag(element, AllowNonEmptyStyleAttribute)) {
-                insertedNodes.willRemoveNodePreservingChildren(element);
+                insertedNodes.willRemoveNodePreservingChildren(*element);
                 removeNodePreservingChildren(element);
                 continue;
             }
@@ -522,7 +520,7 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(Insert
         if (isNonTableCellHTMLBlockElement(element) && areIdenticalElements(element, element->parentNode())
             && VisiblePosition(firstPositionInNode(element->parentNode())) == VisiblePosition(firstPositionInNode(element))
             && VisiblePosition(lastPositionInNode(element->parentNode())) == VisiblePosition(lastPositionInNode(element))) {
-            insertedNodes.willRemoveNodePreservingChildren(element);
+            insertedNodes.willRemoveNodePreservingChildren(*element);
             removeNodePreservingChildren(element);
             continue;
         }
@@ -534,7 +532,7 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(Insert
         // Keep this code around for backward compatibility
         if (isLegacyAppleStyleSpan(element)) {
             if (!element->firstChild()) {
-                insertedNodes.willRemoveNodePreservingChildren(element);
+                insertedNodes.willRemoveNodePreservingChildren(*element);
                 removeNodePreservingChildren(element);
                 continue;
             }
@@ -671,7 +669,7 @@ void ReplaceSelectionCommand::removeUnrenderedTextNodesAtEnds(InsertedNodes& ins
     if (lastLeafInserted.isTextNode() && !nodeHasVisibleRenderText(toText(lastLeafInserted))
         && !enclosingNodeWithTag(firstPositionInOrBeforeNode(&lastLeafInserted), selectTag)
         && !enclosingNodeWithTag(firstPositionInOrBeforeNode(&lastLeafInserted), scriptTag)) {
-        insertedNodes.willRemoveNode(&lastLeafInserted);
+        insertedNodes.willRemoveNode(lastLeafInserted);
         removeNode(&lastLeafInserted);
     }
 
@@ -679,7 +677,7 @@ void ReplaceSelectionCommand::removeUnrenderedTextNodesAtEnds(InsertedNodes& ins
     // it is a top level node in the fragment and the user can't insert into those elements.
     Node* firstNodeInserted = insertedNodes.firstNodeInserted();
     if (firstNodeInserted && firstNodeInserted->isTextNode() && !nodeHasVisibleRenderText(toText(*firstNodeInserted))) {
-        insertedNodes.willRemoveNode(firstNodeInserted);
+        insertedNodes.willRemoveNode(*firstNodeInserted);
         removeNode(firstNodeInserted);
     }
 }
@@ -787,7 +785,7 @@ void ReplaceSelectionCommand::handleStyleSpans(InsertedNodes& insertedNodes)
     style->removeBlockProperties();
 
     if (style->isEmpty() || !wrappingStyleSpan->firstChild()) {
-        insertedNodes.willRemoveNodePreservingChildren(wrappingStyleSpan);
+        insertedNodes.willRemoveNodePreservingChildren(*wrappingStyleSpan);
         removeNodePreservingChildren(wrappingStyleSpan);
     } else
         setNodeAttribute(wrappingStyleSpan, styleAttr, style->style()->asText());
@@ -1067,6 +1065,7 @@ void ReplaceSelectionCommand::doApply()
 
     InsertedNodes insertedNodes;
     RefPtr<Node> refNode = fragment.firstChild();
+    ASSERT(refNode);
     RefPtr<Node> node = refNode->nextSibling();
 
     fragment.removeNode(refNode);
@@ -1077,7 +1076,7 @@ void ReplaceSelectionCommand::doApply()
         refNode = insertAsListItems(toHTMLElement(refNode), blockStart, insertionPos, insertedNodes);
     else {
         insertNodeAt(refNode, insertionPos);
-        insertedNodes.respondToNodeInsertion(refNode.get());
+        insertedNodes.respondToNodeInsertion(*refNode);
     }
 
     // Mutation events (bug 22634) may have already removed the inserted content
@@ -1089,8 +1088,8 @@ void ReplaceSelectionCommand::doApply()
     while (node) {
         RefPtr<Node> next = node->nextSibling();
         fragment.removeNode(node.get());
-        insertNodeAfter(node, refNode.get());
-        insertedNodes.respondToNodeInsertion(node.get());
+        insertNodeAfter(node, refNode);
+        insertedNodes.respondToNodeInsertion(*node);
 
         // Mutation events (bug 22634) may have already removed the inserted content
         if (!node->inDocument())
@@ -1120,10 +1119,10 @@ void ReplaceSelectionCommand::doApply()
 
     if (endBR && (plainTextFragment || shouldRemoveEndBR(endBR, originalVisPosBeforeEndBR))) {
         RefPtr<Node> parent = endBR->parentNode();
-        insertedNodes.willRemoveNode(endBR);
+        insertedNodes.willRemoveNode(*endBR);
         removeNode(endBR);
         if (Node* nodeToRemove = highestNodeToRemoveInPruning(parent.get())) {
-            insertedNodes.willRemoveNode(nodeToRemove);
+            insertedNodes.willRemoveNode(*nodeToRemove);
             removeNode(nodeToRemove);
         }
     }
@@ -1432,10 +1431,10 @@ Node* ReplaceSelectionCommand::insertAsListItems(PassRefPtr<HTMLElement> prpList
         listElement->removeChild(listItem.get(), ASSERT_NO_EXCEPTION);
         if (isStart || isMiddle) {
             insertNodeBefore(listItem, lastNode);
-            insertedNodes.respondToNodeInsertion(listItem.get());
+            insertedNodes.respondToNodeInsertion(*listItem);
         } else if (isEnd) {
             insertNodeAfter(listItem, lastNode);
-            insertedNodes.respondToNodeInsertion(listItem.get());
+            insertedNodes.respondToNodeInsertion(*listItem);
             lastNode = listItem.get();
         } else
             ASSERT_NOT_REACHED();
