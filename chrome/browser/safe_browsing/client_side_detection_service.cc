@@ -206,6 +206,35 @@ bool ClientSideDetectionService::IsPrivateIPAddress(
   return false;
 }
 
+bool ClientSideDetectionService::IsBadIpAddress(
+    const std::string& ip_address) const {
+  net::IPAddressNumber ip_number;
+  if (!net::ParseIPLiteralToNumber(ip_address, &ip_number)) {
+    VLOG(2) << "Unable to parse IP address: '" << ip_address << "'";
+    return false;
+  }
+  if (ip_number.size() == net::kIPv4AddressSize) {
+    ip_number = net::ConvertIPv4NumberToIPv6Number(ip_number);
+  }
+  if (ip_number.size() != net::kIPv6AddressSize) {
+    VLOG(2) << "Unable to convert IPv4 address to IPv6: '" << ip_address << "'";
+    return false;  // better safe than sorry.
+  }
+  for (BadSubnetMap::const_iterator it = bad_subnets_.begin();
+       it != bad_subnets_.end(); ++it) {
+    const std::string& mask = it->first;
+    DCHECK_EQ(mask.size(), ip_number.size());
+    std::string subnet(net::kIPv6AddressSize, '.');
+    for (size_t i = 0; i < net::kIPv6AddressSize; ++i) {
+      subnet[i] = ip_number[i] & mask[i];
+    }
+    if (it->second.count(crypto::SHA256HashString(subnet)) > 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void ClientSideDetectionService::OnURLFetchComplete(
     const net::URLFetcher* source) {
   std::string data;
