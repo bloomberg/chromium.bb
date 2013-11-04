@@ -109,8 +109,8 @@ class WatcherThreadManager {
   // is identified as invalid.
   void RemoveHandle(MojoHandle handle);
 
-  const MojoHandle read_handle() const { return control_pipe_.handle_0(); }
-  const MojoHandle write_handle() const { return control_pipe_.handle_1(); }
+  MojoHandle read_handle() const { return control_pipe_.handle_0(); }
+  MojoHandle write_handle() const { return control_pipe_.handle_1(); }
 
   // Returns state needed for MojoWaitMany.
   WaitState GetWaitState();
