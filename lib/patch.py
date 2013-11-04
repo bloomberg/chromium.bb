@@ -18,6 +18,14 @@ from chromite.lib import git
 from chromite.lib import gob_util
 
 
+# We import mock so that we can identify mock.MagicMock instances in tests
+# that use mock.
+try:
+  import mock
+except ImportError:
+  mock = None
+
+
 _MAXIMUM_GERRIT_NUMBER_LENGTH = 6
 REPO_NAME_RE = re.compile(r'^[a-zA-Z_][a-zA-Z0-9_\-]*(/[a-zA-Z0-9_-]+)*$')
 BRANCH_NAME_RE = re.compile(r'^(refs/heads/)?[a-zA-Z0-9_][a-zA-Z0-9_\-]*$')
@@ -30,7 +38,8 @@ class PatchException(Exception):
   inflight = False
 
   def __init__(self, patch, message=None):
-    if not isinstance(patch, GitRepoPatch):
+    is_mock = mock is not None and isinstance(patch, mock.MagicMock)
+    if not isinstance(patch, GitRepoPatch) and not is_mock:
       raise TypeError(
           "Patch must be a GitRepoPatch derivative; got type %s: %r"
           % (type(patch), patch))

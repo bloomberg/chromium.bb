@@ -12,6 +12,7 @@ import ConfigParser
 import contextlib
 import cPickle
 import functools
+import httplib
 import logging
 import os
 import sys
@@ -69,7 +70,7 @@ class TreeIsClosedException(Exception):
         'proceed.' % (status_text, opposite_status_text))
 
 
-class FailedToSubmitAllChangesException(Exception):
+class FailedToSubmitAllChangesException(results_lib.StepFailure):
   """Raised if we fail to submit any changes."""
 
   def __init__(self, changes):
@@ -84,9 +85,8 @@ class InternalCQError(cros_patch.PatchException):
   def __init__(self, patch, message):
     cros_patch.PatchException.__init__(self, patch, message=message)
 
-  def __str__(self):
-    return "Patch %s failed to apply due to a CQ issue: %s" % (
-        self.patch, self.message)
+  def ShortExplanation(self):
+    return 'failed to apply due to a CQ issue: %s' % (self.message,)
 
 
 class NoMatchingChangeFoundException(Exception):
@@ -97,18 +97,53 @@ class ChangeNotInManifestException(Exception):
   """Raised if we try to apply a not-in-manifest change."""
 
 
-class DependencyNotCommitReady(cros_patch.PatchException):
-  """Exception thrown when a required dep isn't satisfied."""
+class PatchNotCommitReady(cros_patch.PatchException):
+  """Raised if a patch is not marked as commit ready."""
 
   def ShortExplanation(self):
-    return 'isn\'t marked as Commit-Ready yet.'
+    return 'isn\'t marked as Commit-Ready anymore.'
 
 
-class DependencyRejected(cros_patch.PatchException):
-  """Exception thrown when a required dep was rejected."""
+class PatchRejected(cros_patch.PatchException):
+  """Raised if a patch was rejected by the CQ because the CQ failed."""
 
   def ShortExplanation(self):
     return 'was rejected by the CQ.'
+
+
+class PatchFailedToSubmit(cros_patch.PatchException):
+  """Raised if we fail to submit a change."""
+
+  def ShortExplanation(self):
+    error = 'could not be submitted by the CQ.'
+    if self.message:
+      error += ' The error message from Gerrit was: %s' % (self.message,)
+    else:
+      error += ' The Gerrit server might be having trouble.'
+    return error
+
+
+class PatchConflict(cros_patch.PatchException):
+  """Raised if a patch needs to be rebased."""
+
+  def ShortExplanation(self):
+    return ('no longer applies cleanly to tip of tree. Please rebase '
+            'and re-upload your patch.')
+
+
+class PatchSubmittedWithoutDeps(cros_patch.DependencyError):
+  """Exception thrown when a patch was submitted incorrectly."""
+
+  def ShortExplanation(self):
+    dep_error = cros_patch.DependencyError.ShortExplanation(self)
+    return ('was submitted, even though it %s\n'
+            '\n'
+            'You may want to revert your patch, and investigate why its'
+            'dependencies failed to submit.\n'
+            '\n'
+            'This error only occurs when we have a dependency cycle, and we '
+            'submit one change before realizing that a later change cannot '
+            'be submitted.' % (dep_error,))
 
 
 class PatchSeriesTooLong(cros_patch.PatchException):
@@ -510,9 +545,9 @@ class PatchSeries(object):
         continue
       elif limit_to is not None and dep_change not in limit_to:
         if self._is_submitting:
-          raise DependencyRejected(dep_change)
+          raise PatchRejected(dep_change)
         else:
-          raise DependencyNotCommitReady(dep_change)
+          raise PatchNotCommitReady(dep_change)
 
       unsatisfied.append(dep_change)
 
@@ -548,14 +583,16 @@ class PatchSeries(object):
       limit_to: See CreateTransaction docs.
 
     Returns:
-      A list of (change, plan) tuples for the given list of changes. Each
-      plan represents the necessary GitRepoPatch objects for a given change.
+      A list of (change, plan, e) tuples for the given list of changes. The
+      plan represents the necessary GitRepoPatch objects for a given change. If
+      an exception occurs while creating the transaction, e will contain the
+      exception. (Otherwise, e will be None.)
     """
     for change in changes:
       try:
         plan = self.CreateTransaction(change, limit_to=limit_to)
-      except cros_patch.PatchException as exc:
-        yield (change, (), exc)
+      except cros_patch.PatchException as e:
+        yield (change, (), e)
       else:
         yield (change, plan, None)
 
@@ -648,7 +685,7 @@ class PatchSeries(object):
       stack.Remove(change)
 
   @_PatchWrapException
-  def _GetDepsForChange(self, change):
+  def GetDepsForChange(self, change):
     """Look up the gerrit/paladin deps for a change
 
     Raises:
@@ -670,7 +707,7 @@ class PatchSeries(object):
     """Resolve and ultimately add a change into the plan."""
     # Pull all deps up front, then process them.  Simplifies flow, and
     # localizes the error closer to the cause.
-    gdeps, pdeps = self._GetDepsForChange(change)
+    gdeps, pdeps = self.GetDepsForChange(change)
     gdeps = self._LookupUncommittedChanges(change, gdeps, limit_to=limit_to,
                                            parent_lookup=True)
     pdeps = self._LookupUncommittedChanges(change, pdeps, limit_to=limit_to)
@@ -1153,6 +1190,8 @@ class ValidationPool(object):
   STATUS_PASSED = manifest_version.BuilderStatus.STATUS_PASSED
   STATUS_LAUNCHING = 'launching'
   STATUS_WAITING = 'waiting'
+  INCONSISTENT_SUBMIT_MSG = ('Gerrit thinks that the change was not submitted, '
+                             'even though we hit the submit button.')
 
   # The grace period (in seconds) before we reject a patch due to dependency
   # errors.
@@ -1307,7 +1346,7 @@ class ValidationPool(object):
     but the CL is still treated as if it matches the query (which it doesn't,
     anymore).
 
-    Arguments:
+    Args:
       changes: List of changes to filter.
 
     Returns:
@@ -1546,7 +1585,7 @@ class ValidationPool(object):
   def PrintLinksToChanges(self, changes):
     """Print links to the specified |changes|.
 
-    Arguments:
+    Args:
       changes: A list of cros_patch.GerritPatch instances to generate
         transactions for.
     """
@@ -1598,24 +1637,17 @@ class ValidationPool(object):
       if mox is not None and isinstance(e, mox.Error):
         raise
 
-      # Stash a copy of the tb guts, since the next set of steps can
-      # wipe it.
-      exc = sys.exc_info()
       msg = (
-          "Unhandled Exception occurred during CQ's Apply: %s\n"
-          "Failing the entire series to prevent CQ from going into an "
-          "infinite loop hanging on these CLs." % (e,))
-      cros_build_lib.Error(
-          "%s\nAffected Patches are: %s", msg,
-          ', '.join('CL:%s' % x.gerrit_number_str for x in self.changes))
-      try:
-        self._HandleApplyFailure(
-            [InternalCQError(patch, msg) for patch in self.changes])
-      except Exception as e:
-        if mox is None or not isinstance(e, mox.Error):
-          # If it's not a mox error, let it fly.
-          raise
-      raise exc[0], exc[1], exc[2]
+          'Unhandled exception occurred while applying changes: %s\n\n'
+          'To be safe, we have kicked out all of the CLs, so that the '
+          'commit queue does not go into an infinite loop retrying '
+          'patches.' % (e,)
+      )
+      links = ', '.join('CL:%s' % x.gerrit_number_str for x in self.changes)
+      cros_build_lib.Error('%s\nAffected Patches are: %s', msg, links)
+      errors = [InternalCQError(patch, msg) for patch in self.changes]
+      self._HandleApplyFailure(errors)
+      raise
 
     self.PrintLinksToChanges(applied)
 
@@ -1657,6 +1689,83 @@ class ValidationPool(object):
   # Note: All submit code, all gerrit code, and basically everything other
   # than patch resolution/applying needs to use .change_id from patch objects.
   # Basically all code from this point forward.
+  def _SubmitChangeWithDeps(self, patch_series, change, errors, limit_to):
+    """Submit |change| and its dependencies.
+
+    If you call this function multiple times with the same PatchSeries, each
+    CL will only be submitted once.
+
+    Args:
+      patch_series: A PatchSeries() object.
+      change: The change to submit.
+      errors: A dictionary. This dictionary should contain all patches that have
+        encountered errors, and map them to the associated exception object.
+      limit_to: The list of patches that were approved by this CQ run. We will
+        only consider submitting patches that are in this list.
+
+    Returns:
+      A copy of the errors object. If new errors have occurred while submitting
+      this change, and those errors have prevented a change from being
+      submitted, they will be added to the errors object.
+    """
+    # Find out what patches we need to submit.
+    errors = errors.copy()
+    try:
+      plan = patch_series.CreateTransaction(change, limit_to=limit_to)
+    except cros_patch.PatchException as e:
+      self._HandleCouldNotSubmit(change, e)
+      errors[change] = e
+      return errors
+
+    error_stack, submitted = [], []
+    for dep_change in plan:
+      # Has this change failed to submit before?
+      dep_error = errors.get(dep_change)
+      if dep_error is None and error_stack:
+        # One of the dependencies failed to submit. Report an error.
+        dep_error = cros_patch.DependencyError(dep_change, error_stack[-1])
+
+      # If there were no errors, submit the patch.
+      if dep_error is None:
+        try:
+          if self._SubmitChange(dep_change) or self.dryrun:
+            submitted.append(dep_change)
+          else:
+            msg = self.INCONSISTENT_SUBMIT_MSG
+            dep_error = PatchFailedToSubmit(dep_change, msg)
+        except (gob_util.GOBError, gerrit.GerritException) as e:
+          if getattr(e, 'http_status', None) == httplib.CONFLICT:
+            dep_error = PatchConflict(dep_change)
+          else:
+            dep_error = PatchFailedToSubmit(dep_change, str(e))
+          logging.error('%s', dep_error)
+
+      # Add any error we saw to the stack.
+      if dep_error is not None:
+        logging.info('%s', dep_error)
+        errors[dep_change] = dep_error
+        error_stack.append(dep_error)
+
+    # Track submitted patches so that we don't submit them again.
+    patch_series.InjectCommittedPatches(submitted)
+
+    # Look for incorrectly submitted patches. We only have this problem
+    # when we have a dependency cycle, and we submit one change before
+    # realizing that a later change cannot be submitted. For now, just
+    # print an error message and notify the developers.
+    #
+    # If you see this error a lot, consider implementing a best-effort
+    # attempt at reverting changes.
+    for submitted_change in submitted:
+      gdeps, pdeps = patch_series.GetDepsForChange(submitted_change)
+      for dep in gdeps + pdeps:
+        dep_error = errors.get(dep)
+        if dep_error is not None:
+          error = PatchSubmittedWithoutDeps(submitted_change, dep_error)
+          self._HandleIncorrectSubmission(error)
+          logging.error('%s was erroneously submitted.', submitted_change)
+
+    return errors
 
   def SubmitChanges(self, changes, check_tree_open=True, throttled_ok=True):
     """Submits the given changes to Gerrit.
@@ -1667,9 +1776,11 @@ class ValidationPool(object):
         changes. If this is False, TreeIsClosedException will never be raised.
       throttled_ok: if |check_tree_open|, treat a throttled tree as open
 
+    Returns:
+      A list of the changes that failed to submit.
+
     Raises:
       TreeIsClosedException: if the tree is closed.
-      FailedToSubmitAllChangesException: if we can't submit a change.
     """
     assert self.is_master, 'Non-master builder calling SubmitPool'
     assert not self.pre_cq, 'Trybot calling SubmitPool'
@@ -1684,56 +1795,25 @@ class ValidationPool(object):
         throttled_ok=throttled_ok):
       raise TreeIsClosedException(close_or_throttled=not throttled_ok)
 
-    # Reload all of the changes from the Gerrit server so that we have a fresh
-    # view of their approval status. This is needed so that our filtering that
-    # occurs below will be mostly up-to-date.
+    # First, reload all of the changes from the Gerrit server so that we have a
+    # fresh view of their approval status. This is needed so that our filtering
+    # that occurs below will be mostly up-to-date.
+    errors = {}
     changes = list(self.ReloadChanges(changes))
-    changes_that_failed_to_submit = []
+    filtered_changes = self.FilterNonMatchingChanges(changes)
+    for change in set(changes) - set(filtered_changes):
+      errors[change] = PatchNotCommitReady(change)
 
-    patch_series = PatchSeries(self.build_root, helper_pool=self._helper_pool,
-                               is_submitting=True)
-    plans, failed = patch_series.CreateDisjointTransactions(changes)
+    patch_series = PatchSeries(self.build_root, helper_pool=self._helper_pool)
+    patch_series.InjectLookupCache(changes)
+    for change in changes:
+      errors = self._SubmitChangeWithDeps(patch_series, change, errors, changes)
 
-    # Explain that we can't submit the patch.
-    for error in failed:
-      self.HandleDependencyRejected(error)
+    for patch, error in errors.iteritems():
+      logging.error('Could not submit %s', patch)
+      self._HandleCouldNotSubmit(patch, error)
 
-    for plan in plans:
-      # First, verify that all changes have their approvals. We do this up front
-      # to reduce the risk of submitting a subset of a cyclic set of changes
-      # without approvals.
-      submit_changes = True
-      filtered_plan = self.FilterNonMatchingChanges(plan)
-      for change in set(plan) - set(filtered_plan):
-        logging.error('Aborting plan due to change %s', change)
-        submit_changes = False
-
-      # Now, actually submit all of the changes.
-      submitted_changes = 0
-      for change in plan:
-        was_change_submitted = False
-        if submit_changes:
-          was_change_submitted = self._SubmitChange(change)
-          submitted_changes += int(was_change_submitted)
-
-        if not was_change_submitted and not self.dryrun:
-          changes_that_failed_to_submit.append(change)
-          submit_changes = False
-
-      if submitted_changes and not submit_changes:
-        # We can't necessarily revert our changes, because other developers
-        # might have chumped changes on top. For now, just print an error
-        # message. If you see this error a lot, consider implementing
-        # a best-effort attempt at reverting changes.
-        logging.error('Partial transaction aborted.')
-        logging.error('Some changes were erroneously submitted.')
-
-    for change in changes_that_failed_to_submit:
-      logging.error('Could not submit %s', str(change))
-      self._HandleCouldNotSubmit(change)
-
-    if changes_that_failed_to_submit:
-      raise FailedToSubmitAllChangesException(changes_that_failed_to_submit)
+    return errors.keys()
 
   def ReloadChanges(self, changes):
     """Reload the specified |changes| from the server.
@@ -1761,20 +1841,14 @@ class ValidationPool(object):
     """Submits patch using Gerrit Review."""
     logging.info('Change %s will be submitted', change)
     was_change_submitted = False
-    try:
-      helper = self._helper_pool.ForChange(change)
-      helper.SubmitChange(change, dryrun=self.dryrun)
-      updated_change = helper.QuerySingleRecord(change.gerrit_number)
-      was_change_submitted = (updated_change.status == 'MERGED')
-      if not was_change_submitted:
-        logging.warning(
-            'Change %s was successfully submitted, but has status "%s"',
-            change.gerrit_number_str, updated_change.status)
-    except gerrit.GerritException as e:
-      logging.error('Could not query gerrit for status of patch %s:\n%r',
-                    change.gerrit_number_str, e)
-    except gob_util.GOBError as e:
-      logging.error('Communication with gerrit server failed: %r', e)
+    helper = self._helper_pool.ForChange(change)
+    helper.SubmitChange(change, dryrun=self.dryrun)
+    updated_change = helper.QuerySingleRecord(change.gerrit_number)
+    was_change_submitted = (updated_change.status == 'MERGED')
+    if not was_change_submitted:
+      logging.warning(
+          'Change %s was successfully submitted, but has status "%s"',
+          change.gerrit_number_str, updated_change.status)
     return was_change_submitted
 
   def RemoveCommitReady(self, change):
@@ -1791,7 +1865,6 @@ class ValidationPool(object):
 
     Raises:
       TreeIsClosedException: if the tree is closed.
-      FailedToSubmitAllChangesException: if we can't submit a change.
     """
     self.SubmitChanges(self.non_manifest_changes,
                        check_tree_open=check_tree_open)
@@ -1814,8 +1887,10 @@ class ValidationPool(object):
     # a CQ run (since the submit state has changed, we have no way of
     # knowing).  They *likely* will still fail, but this approach tries
     # to minimize wasting the developers time.
-    self.SubmitChanges(self.changes, check_tree_open=check_tree_open,
-                       throttled_ok=throttled_ok)
+    errors = self.SubmitChanges(self.changes, check_tree_open=check_tree_open,
+                                throttled_ok=throttled_ok)
+    if errors:
+      raise FailedToSubmitAllChangesException(errors)
     if self.changes_that_failed_to_apply_earlier:
       self._HandleApplyFailure(self.changes_that_failed_to_apply_earlier)
 
@@ -1873,8 +1948,15 @@ class ValidationPool(object):
     Args:
       change: GerritPatch instance to operate upon.
     """
-    msg = '%(queue)s failed to apply your change in %(build_log)s .'
-    msg += '  %(failure)s'
+    msg = ('%(queue)s failed to apply your change in %(build_log)s .'
+           ' %(failure)s')
+    self.SendNotification(failure.patch, msg, failure=failure)
+    self.RemoveCommitReady(failure.patch)
+
+  def _HandleIncorrectSubmission(self, failure):
+    """Handler for when Paladin incorrectly submits a change."""
+    msg = ('%(queue)s incorrectly submitted your change in %(build_log)s .'
+           '  %(failure)s')
     self.SendNotification(failure.patch, msg, failure=failure)
     self.RemoveCommitReady(failure.patch)
 
@@ -1925,7 +2007,7 @@ class ValidationPool(object):
         self.UpdateCLStatus(self.bot, change, self.STATUS_PASSED,
                             dry_run=self.dryrun)
 
-  def _HandleCouldNotSubmit(self, change):
+  def _HandleCouldNotSubmit(self, change, error=''):
     """Handler that is called when Paladin can't submit a change.
 
     This should be rare, but if an admin overrides the commit queue and commits
@@ -1934,11 +2016,11 @@ class ValidationPool(object):
 
     Args:
       change: GerritPatch instance to operate upon.
+      error: The reason why the change could not be submitted.
     """
     self.SendNotification(change,
         '%(queue)s failed to submit your change in %(build_log)s . '
-        'This can happen if you submitted your change or someone else '
-        'submitted a conflicting change while your change was being tested.')
+        '%(error)s', error=error)
     self.RemoveCommitReady(change)
 
   @staticmethod
@@ -2096,14 +2178,6 @@ class ValidationPool(object):
     if not self.pre_cq or status == self.STATUS_LAUNCHING:
       self.UpdateCLStatus(self.bot, change, self.STATUS_INFLIGHT,
                           dry_run=self.dryrun)
-
-  def HandleDependencyRejected(self, error):
-    """Handler for when the deps of a patch were rejected."""
-    msg = ('A dependency of your CL was rejected by %(queue)s in '
-           '%(build_log)s . Your CL %(error)s')
-    change = error.patch
-    self.SendNotification(change, msg, error=error.ShortExplanation())
-    self.RemoveCommitReady(change)
 
   @classmethod
   def GetCLStatusURL(cls, bot, change, latest_patchset_only=True):

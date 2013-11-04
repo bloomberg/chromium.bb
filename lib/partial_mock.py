@@ -368,8 +368,15 @@ class PartialMock(object):
 
   def StartPatcher(self, patcher):
     """PartialMock will stop the patcher when stop() is called."""
-    patcher.start()
     self.external_patchers.append(patcher)
+    return patcher.start()
+
+  def PatchObject(self, *args, **kwargs):
+    """Create and start a mock.patch.object().
+
+    stop() will be called automatically during tearDown.
+    """
+    return self.StartPatcher(mock.patch.object(*args, **kwargs))
 
   def _start(self):
     if not all([self.TARGET, self.ATTRS]):

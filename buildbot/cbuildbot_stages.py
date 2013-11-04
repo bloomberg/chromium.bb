@@ -1607,10 +1607,7 @@ class PreCQLauncherStage(SyncStage):
     # Submit non-manifest changes if we can.
     if cros_build_lib.TreeOpen(
         validation_pool.ValidationPool.STATUS_URL, 0, max_timeout=0):
-      try:
-        pool.SubmitNonManifestChanges(check_tree_open=False)
-      except validation_pool.FailedToSubmitAllChangesException as e:
-        cros_build_lib.Warning(str(e))
+      pool.SubmitNonManifestChanges(check_tree_open=False)
 
     # Launch trybots for manifest changes.
     for plan in self.GetDisjointTransactionsToTest(pool, changes):

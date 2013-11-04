@@ -9,6 +9,7 @@
 import contextlib
 import copy
 import functools
+import httplib
 import itertools
 import mox
 import os
@@ -30,6 +31,7 @@ from chromite.lib import gerrit
 from chromite.lib import gob_util
 from chromite.lib import gs
 from chromite.lib import osutils
+from chromite.lib import partial_mock
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
 
@@ -94,10 +96,12 @@ class MockManifest(object):
 class Base(cros_test_lib.MockTestCase):
 
   def setUp(self):
+    self.patch_mock = None
     self._patch_counter = (itertools.count(1)).next
     self.build_root = 'fakebuildroot'
     self.PatchObject(gob_util, 'CreateHttpConn',
                      side_effect=AssertionError('Test should not contact GoB'))
+    self.PatchObject(cros_build_lib, 'TreeOpen', return_value=True)
 
   def MockPatch(self, change_id=None, patch_number=None, is_merged=False,
                 project='chromiumos/chromite', remote=constants.EXTERNAL_REMOTE,
@@ -134,11 +138,21 @@ class Base(cros_test_lib.MockTestCase):
     return [getattr(patch, x) for x in ('change_id', 'sha1', 'gerrit_number')
             if hasattr(patch, x)]
 
-  def GetPatches(self, how_many=1, **kwargs):
-    l = [self.MockPatch(**kwargs) for _ in xrange(how_many)]
-    if how_many == 1:
-      return l[0]
-    return l
+  def GetPatches(self, how_many=1, always_use_list=False, **kwargs):
+    """Get a sequential list of patches.
+
+    Args:
+      how_many: How many patches to return.
+      always_use_list: Whether to use a list for a single item list.
+      **kwargs: Keyword arguments for self.MockPatch.
+    """
+    patches = [self.MockPatch(**kwargs) for _ in xrange(how_many)]
+    if self.patch_mock:
+      for i, patch in enumerate(patches):
+        self.patch_mock.AddDependencies(patch, patches[:i + 1])
+    if how_many == 1 and not always_use_list:
+      return patches[0]
+    return patches
 
 
 class MoxBase(Base, cros_test_lib.MoxTestCase):
@@ -146,12 +160,9 @@ class MoxBase(Base, cros_test_lib.MoxTestCase):
   def setUp(self):
     self.mox.StubOutWithMock(validation_pool, '_RunCommand')
     self.mox.StubOutWithMock(time, 'sleep')
-    self.mox.StubOutWithMock(cros_build_lib, 'TreeOpen')
     # Suppress all gerrit access; having this occur is generally a sign
     # the code is either misbehaving, or that the tests are bad.
     self.mox.StubOutWithMock(gerrit.GerritOnBorgHelper, 'Query')
-    self.PatchObject(validation_pool.ValidationPool, 'ReloadChanges',
-                     side_effect=lambda x: x)
     self.PatchObject(gs.GSContext, 'Cat', side_effect=gs.GSNoSuchKey())
     self.PatchObject(gs.GSContext, 'Copy')
     self.PatchObject(gs.GSContext, 'Exists', return_value=False)
@@ -591,25 +602,52 @@ def MakePool(overlays=constants.PUBLIC_OVERLAYS, build_number=1,
   return pool
 
 
+class MockPatchSeries(partial_mock.PartialMock):
+  """Mock the PatchSeries functions."""
+  TARGET = 'chromite.buildbot.validation_pool.PatchSeries'
+  ATTRS = ('GetDepsForChange', '_GetGerritPatch', '_LookupHelper',)
+
+  def __init__(self):
+    partial_mock.PartialMock.__init__(self)
+    self.deps = {}
+
+  def AddDependencies(self, patch, deps):
+    """Add |deps| to the dependencies of |patch|."""
+    self.deps[patch] = deps
+
+  def GetDepsForChange(self, _inst, patch):
+    return self.deps.get(patch, []), []
+
+  def _GetGerritPatch(self, _inst, dep, **_kwargs):
+    return dep
+
+  _LookupHelper = mock.MagicMock()
+
+
 class TestCoreLogic(MoxBase):
   """Tests the core resolution and applying logic of
   validation_pool.ValidationPool."""
 
   def setUp(self):
     self.mox.StubOutWithMock(validation_pool.PatchSeries, 'Apply')
-    self.mox.StubOutWithMock(validation_pool.PatchSeries,
-                             'CreateDisjointTransactions')
+    self.patch_mock = self.StartPatcher(MockPatchSeries())
+    funcs = ['SendNotification', '_SubmitChange']
+    for func in funcs:
+      self.mox.StubOutWithMock(validation_pool.ValidationPool, func)
+    self.PatchObject(validation_pool.ValidationPool, 'ReloadChanges',
+                     side_effect=lambda x: x)
+
 
   def MakePool(self, *args, **kwds):
     """Helper for creating ValidationPool objects for Mox tests."""
     handlers = kwds.pop('handlers', False)
     kwds['build_root'] = self.build_root
     pool = MakePool(*args, **kwds)
-    self.mox.StubOutWithMock(pool, 'SendNotification')
+    funcs = ['_HandleApplySuccess', '_HandleApplyFailure',
+             '_HandleCouldNotApply', '_HandleCouldNotSubmit']
     if handlers:
-      self.mox.StubOutWithMock(pool, '_HandleApplySuccess')
-      self.mox.StubOutWithMock(pool, '_HandleApplyFailure')
-      self.mox.StubOutWithMock(pool, '_HandleCouldNotApply')
+      for func in funcs:
+        self.mox.StubOutWithMock(pool, func)
     return pool
 
   def MakeFailure(self, patch, inflight=True):
@@ -708,9 +746,9 @@ class TestCoreLogic(MoxBase):
     slave_pool._HandleApplyFailure(unnotified_patches)
     self.mox.VerifyAll()
 
-  def testSubmitPoolFailures(self):
-    pool = self.MakePool(dryrun=False)
-    patch1, patch2, patch3 = patches = self.GetPatches(3)
+  def _setUpSubmit(self):
+    pool = self.MakePool(dryrun=False, handlers=True)
+    patches = self.GetPatches(3)
     failed = self.GetPatches(3)
     pool.changes = patches[:]
     # While we don't do anything w/ these patches, that's
@@ -718,23 +756,17 @@ class TestCoreLogic(MoxBase):
     # if there is a failure.
     pool.changes_that_failed_to_apply_earlier = failed[:]
 
-    self.mox.StubOutWithMock(pool, '_SubmitChange')
-    self.mox.StubOutWithMock(pool, '_HandleCouldNotSubmit')
-    # pylint: disable=E1120
-    validation_pool.PatchSeries.CreateDisjointTransactions(patches
-        ).AndReturn(([[patch2, patch1, patch3]], []))
+    return (pool, patches, failed)
 
+  def testSubmitPoolFailures(self):
+    pool, patches, _failed = self._setUpSubmit()
+    patch1, patch2, patch3 = patches
+
+    pool._SubmitChange(patch1).AndReturn(True)
     pool._SubmitChange(patch2).AndReturn(False)
 
-    pool._HandleCouldNotSubmit(patch1).InAnyOrder()
-    pool._HandleCouldNotSubmit(patch2).InAnyOrder()
-    pool._HandleCouldNotSubmit(patch3).InAnyOrder()
-
-    cros_build_lib.TreeOpen(
-        validation_pool.ValidationPool.STATUS_URL,
-        validation_pool.ValidationPool.SLEEP_TIMEOUT,
-        max_timeout=mox.IgnoreArg(),
-        throttled_ok=mox.IgnoreArg()).AndReturn(True)
+    pool._HandleCouldNotSubmit(patch2, mox.IgnoreArg()).InAnyOrder()
+    pool._HandleCouldNotSubmit(patch3, mox.IgnoreArg()).InAnyOrder()
 
     self.mox.ReplayAll()
     self.assertRaises(validation_pool.FailedToSubmitAllChangesException,
@@ -742,29 +774,12 @@ class TestCoreLogic(MoxBase):
     self.mox.VerifyAll()
 
   def testSubmitPool(self):
-    pool = self.MakePool(dryrun=False)
-    passed = self.GetPatches(3)
-    failed = self.GetPatches(3)
-    pool.changes = passed
-    pool.changes_that_failed_to_apply_earlier = failed[:]
+    pool, patches, failed = self._setUpSubmit()
 
-    self.mox.StubOutWithMock(pool, '_SubmitChange')
-    self.mox.StubOutWithMock(pool, '_HandleCouldNotSubmit')
-    self.mox.StubOutWithMock(pool, '_HandleApplyFailure')
-    # pylint: disable=E1120
-    validation_pool.PatchSeries.CreateDisjointTransactions(passed
-        ).AndReturn(([passed], []))
-
-    for patch in passed:
+    for patch in patches:
       pool._SubmitChange(patch).AndReturn(True)
 
     pool._HandleApplyFailure(failed)
-
-    cros_build_lib.TreeOpen(
-        validation_pool.ValidationPool.STATUS_URL,
-        validation_pool.ValidationPool.SLEEP_TIMEOUT,
-        max_timeout=mox.IgnoreArg(),
-        throttled_ok=mox.IgnoreArg()).AndReturn(True)
 
     self.mox.ReplayAll()
     pool.SubmitPool()
@@ -772,24 +787,11 @@ class TestCoreLogic(MoxBase):
 
   def testSubmitNonManifestChanges(self):
     """Simple test to make sure we can submit non-manifest changes."""
-    pool = self.MakePool(dryrun=False)
-    patch1, patch2 = passed = self.GetPatches(2)
-    pool.non_manifest_changes = passed[:]
+    pool, patches, _failed = self._setUpSubmit()
+    pool.non_manifest_changes = patches[:]
 
-    self.mox.StubOutWithMock(pool, '_SubmitChange')
-    self.mox.StubOutWithMock(pool, '_HandleCouldNotSubmit')
-    # pylint: disable=E1120
-    validation_pool.PatchSeries.CreateDisjointTransactions(passed
-        ).AndReturn(([passed], []))
-
-    pool._SubmitChange(patch1).AndReturn(True)
-    pool._SubmitChange(patch2).AndReturn(True)
-
-    cros_build_lib.TreeOpen(
-        validation_pool.ValidationPool.STATUS_URL,
-        validation_pool.ValidationPool.SLEEP_TIMEOUT,
-        max_timeout=mox.IgnoreArg(),
-        throttled_ok=mox.IgnoreArg()).AndReturn(True)
+    for patch in patches:
+      pool._SubmitChange(patch).AndReturn(True)
 
     self.mox.ReplayAll()
     pool.SubmitNonManifestChanges()
@@ -812,25 +814,21 @@ class TestCoreLogic(MoxBase):
 
   def testUnhandledExceptions(self):
     """Test that CQ doesn't loop due to unhandled Exceptions."""
-    pool = self.MakePool(dryrun=False)
-    patches = self.GetPatches(2)
-    pool.changes = patches[:]
+    pool, patches, _failed = self._setUpSubmit()
 
     class MyException(Exception):
       pass
+
+    def VerifyCQError(patch, error):
+      cq_error = validation_pool.InternalCQError(patch, error.message)
+      return str(error) == str(cq_error)
 
     # pylint: disable=E1120,E1123
     validation_pool.PatchSeries.Apply(
         patches, dryrun=False, manifest=mox.IgnoreArg()).AndRaise(
         MyException)
-
-    def _ValidateExceptioN(changes):
-      for patch in changes:
-        self.assertTrue(isinstance(patch, validation_pool.InternalCQError),
-                        msg="Expected %s to be type InternalCQError, got %r" %
-                        (patch, type(patch)))
-      self.assertEqual(set(patches),
-                       set(x.patch for x in changes))
+    errors = [mox.Func(functools.partial(VerifyCQError, x)) for x in patches]
+    pool._HandleApplyFailure(errors).AndReturn(None)
 
     self.mox.ReplayAll()
     self.assertRaises(MyException, pool.ApplyPoolIntoRepo)
@@ -1084,14 +1082,8 @@ class SimplePatch(object):
     return str(self.id)
 
 
-class TestCreateValidationFailureMessage(cros_test_lib.TestCase):
+class TestCreateValidationFailureMessage(Base):
   """Tests validation_pool.ValidationPool._CreateValidationFailureMessage"""
-
-  def GetPatches(self, how_many=1):
-    patches = [SimplePatch() for _ in xrange(how_many)]
-    if how_many == 1:
-      return patches[0]
-    return patches
 
   def _AssertMessage(self, change, suspects, messages):
     """Call the _CreateValidationFailureMessage method.
@@ -1139,40 +1131,19 @@ class TestCreateValidationFailureMessage(cros_test_lib.TestCase):
     self._AssertMessage(patch1, [patch1], [])
 
 
-class MockCreateDisjointTransactions(Base):
-  """Mock the CreateDisjointTransactions function."""
+class TestCreateDisjointTransactions(Base):
+  """Test the CreateDisjointTransactions function."""
 
   def setUp(self):
-    self.deps = {}
-    self.PatchObject(validation_pool.PatchSeries, '_GetDepsForChange',
-                     side_effect=self.GetDepsForChange)
-    self.PatchObject(validation_pool.PatchSeries, '_GetGerritPatch',
-                     side_effect=self.GetGerritPatch)
-    self.PatchObject(validation_pool.PatchSeries, '_LookupHelper',
-                     autospec=True)
-    self.PatchObject(validation_pool.ValidationPool, 'ReloadChanges',
-                     side_effect=lambda x: x)
+    self.patch_mock = self.StartPatcher(MockPatchSeries())
 
-  def GetDepsForChange(self, patch):
-    return self.deps[patch], []
-
-  def GetGerritPatch(self, dep, **_kwargs):
-    return dep
-
-  def GetPatches(self, how_many=1, **kwargs):
-    patches = [self.MockPatch(**kwargs) for _ in xrange(how_many)]
-    for i, patch in enumerate(patches):
-      self.deps[patch] = [p for p in patches[:i]]
-    return patches
-
-
-class TestCreateDisjointTransactions(MockCreateDisjointTransactions):
-  """Test the CreateDisjointTransactions function."""
+  def GetPatches(self, how_many, **kwargs):
+    return Base.GetPatches(self, how_many, always_use_list=True, **kwargs)
 
   def verifyTransactions(self, txns, max_txn_length=None, circular=False):
     """Verify the specified list of transactions are processed correctly.
 
-    Arguments:
+    Args:
       txns: List of transactions to process.
       max_txn_length: Maximum length of any given transaction. This is passed
         to the CreateDisjointTransactions function.
@@ -1185,9 +1156,9 @@ class TestCreateDisjointTransactions(MockCreateDisjointTransactions):
       # When max_txn_length is specified, transactions should be truncated to
       # the specified length, ignoring any remaining patches.
       expected_plans = [txn[:max_txn_length] for txn in txns]
+
     pool = MakePool(changes=patches)
-    plans = pool.CreateDisjointTransactions(
-        None, max_txn_length=max_txn_length)
+    plans = pool.CreateDisjointTransactions(None, max_txn_length=max_txn_length)
 
     # If the dependencies are circular, the order of the patches is not
     # guaranteed, so compare them in sorted order.
@@ -1241,41 +1212,187 @@ class TestCreateDisjointTransactions(MockCreateDisjointTransactions):
     # It is not possible to truncate a circular plan. Verify that an error
     # is reported in this case.
     patches = self.GetPatches(5)
-    self.deps[patches[0]].append(patches[-1])
+    self.patch_mock.AddDependencies(patches[0], [patches[-1]])
     self.verifyTransactions([patches], circular=True)
     with cros_test_lib.LoggingCapturer():
       call_count = self.runUnresolvedPlan(patches, max_txn_length=3)
     self.assertEqual(5, call_count)
 
 
-class BaseSubmitPoolTestCase(MockCreateDisjointTransactions,
-                             cros_build_lib_unittest.RunCommandTestCase):
+class MockValidationPool(partial_mock.PartialMock):
+  """Mock out a ValidationPool instance."""
+
+  TARGET = 'chromite.buildbot.validation_pool.ValidationPool'
+  ATTRS = ('ReloadChanges', 'RemoveCommitReady', '_SubmitChange',
+           'SendNotification')
+
+  def __init__(self):
+    partial_mock.PartialMock.__init__(self)
+    self.submit_results = {}
+    self.max_submits = None
+
+  def GetSubmittedChanges(self):
+    calls = []
+    for call in self.patched['_SubmitChange'].call_args_list:
+      call_args, _ = call
+      calls.append(call_args[1])
+    return calls
+
+  def _SubmitChange(self, _inst, change):
+    result = self.submit_results.get(change, True)
+    if isinstance(result, Exception):
+      raise result
+    if result and self.max_submits is not None:
+      if self.max_submits <= 0:
+        return False
+      self.max_submits -= 1
+    return result
+
+  def ReloadChanges(self, _inst, changes):
+    return changes
+
+  RemoveCommitReady = None
+  SendNotification = None
+
+
+class BaseSubmitPoolTestCase(Base, cros_build_lib_unittest.RunCommandTestCase):
   """Test full ability to submit and reject CL pools."""
 
   def setUp(self):
-    self.submit = self.PatchObject(gerrit.GerritOnBorgHelper, 'SubmitChange')
+    self.pool_mock = self.StartPatcher(MockValidationPool())
+    self.patch_mock = self.StartPatcher(MockPatchSeries())
     self.PatchObject(gerrit.GerritOnBorgHelper, 'QuerySingleRecord')
     self.patches = self.GetPatches(2)
 
+    # By default, don't ignore any errors.
+    self.ignores = dict((str(patch), []) for patch in self.patches)
+
   def SetUpPatchPool(self, failed_to_apply=False):
-    pool = MakePool(changes=self.patches)
+    pool = MakePool(changes=self.patches, dryrun=False)
     if failed_to_apply:
+      # Create some phony errors and add them to the pool.
       errors = []
       for patch in self.GetPatches(2):
         errors.append(validation_pool.InternalCQError(patch, str('foo')))
       pool.changes_that_failed_to_apply_earlier = errors[:]
     return pool
 
+  def GetTracebacks(self):
+    return []
+
+  def SubmitPool(self, submitted=(), rejected=(), cyclic=False, **kwargs):
+    """Helper function for testing that we can submit a pool successfully.
+
+    Args:
+      submitted: List of changes that we expect to be submitted.
+      rejected: List of changes that we expect to be rejected.
+      cyclic: Whether the list of patches is cyclic.
+      **kwargs: Keyword arguments for SetUpPatchPool.
+    """
+    # self.ignores maps projects to a list of stages to ignore. Use it.
+    self.PatchObject(
+        validation_pool, 'GetStagesToIgnoreForProject',
+        side_effect=lambda _, project: self.ignores[project])
+
+    # Set up our pool and submit the patches.
+    pool = self.SetUpPatchPool(**kwargs)
+    tracebacks = self.GetTracebacks()
+    if tracebacks:
+      actually_rejected = sorted(pool.SubmitPartialPool(self.GetTracebacks()))
+    else:
+      actually_rejected = pool.SubmitChanges(self.patches)
+
+    # Check that the right patches were submitted and rejected.
+    self.assertItemsEqual(list(rejected), list(actually_rejected))
+    actually_submitted = self.pool_mock.GetSubmittedChanges()
+    if cyclic:
+      self.assertItemsEqual(submitted, actually_submitted)
+    else:
+      self.assertEqual(list(submitted), actually_submitted)
+
 
 class SubmitPoolTest(BaseSubmitPoolTestCase):
 
+  def GetNotifyArg(self, change, key):
+    """Look up a call to notify about |change| and grab |key| from it.
+
+    Arguments:
+      change: The change to look up.
+      key: The key to look up. If this is an integer, look up a positional
+        argument by index. Otherwise, look up a keyword argument.
+    """
+    names = []
+    for call in self.pool_mock.patched['SendNotification'].call_args_list:
+      call_args, call_kwargs = call
+      if change == call_args[1]:
+        if isinstance(key, int):
+          return call_args[key]
+        return call_kwargs[key]
+      names.append(call_args[1])
+
+    # Verify that |change| is present at all. This should always fail.
+    self.assertIn(change, names)
+
+  def assertEqualNotifyArg(self, value, change, idx):
+    """Verify that |value| equals self.GetNotifyArg(|change|, |idx|)."""
+    self.assertEqual(str(value), str(self.GetNotifyArg(change, idx)))
+
   def testSubmitPool(self):
     """Test that we can submit a pool successfully."""
-    self.SetUpPatchPool().SubmitPool()
+    self.SubmitPool(submitted=self.patches)
 
   def testRejectCLs(self):
     """Test that we can reject a CL successfully."""
-    self.SetUpPatchPool(failed_to_apply=True).SubmitPool()
+    self.SubmitPool(submitted=self.patches, failed_to_apply=True)
+
+  def testSubmitCycle(self):
+    """Submit a cyclic set of dependencies"""
+    self.patch_mock.AddDependencies(self.patches[0], [self.patches[1]])
+    self.SubmitPool(submitted=self.patches[::-1], cyclic=True)
+
+  def testSubmitPartialCycle(self):
+    """Submit a failed cyclic set of dependencies"""
+    self.pool_mock.max_submits = 1
+    self.patch_mock.AddDependencies(self.patches[0], [self.patches[1]])
+    self.SubmitPool(submitted=self.patches[::-1],
+                    rejected=[self.patches[0]], cyclic=True)
+    (submitted, rejected) = self.pool_mock.GetSubmittedChanges()
+    failed_submit = validation_pool.PatchFailedToSubmit(
+        rejected, validation_pool.ValidationPool.INCONSISTENT_SUBMIT_MSG)
+    bad_submit = validation_pool.PatchSubmittedWithoutDeps(
+        submitted, failed_submit)
+    self.assertEqualNotifyArg(failed_submit, rejected, 'error')
+    self.assertEqualNotifyArg(bad_submit, submitted, 'failure')
+
+  def testSubmitFailedCycle(self):
+    """Submit a failed cyclic set of dependencies"""
+    self.pool_mock.max_submits = 0
+    self.patch_mock.AddDependencies(self.patches[0], [self.patches[1]])
+    self.SubmitPool(submitted=[self.patches[1]],
+                    rejected=self.patches[::-1], cyclic=True)
+    (attempted,) = self.pool_mock.GetSubmittedChanges()
+    (rejected,) = [x for x in self.patches if x != attempted]
+    failed_submit = validation_pool.PatchFailedToSubmit(
+        attempted, validation_pool.ValidationPool.INCONSISTENT_SUBMIT_MSG)
+    dep_failed = cros_patch.DependencyError(rejected, failed_submit)
+    self.assertEqualNotifyArg(failed_submit, attempted, 'error')
+    self.assertEqualNotifyArg(dep_failed, rejected, 'error')
+
+  def testConflict(self):
+    """Submit a change that conflicts with TOT."""
+    error = gob_util.GOBError(httplib.CONFLICT, 'Conflict')
+    self.pool_mock.submit_results[self.patches[0]] = error
+    self.SubmitPool(submitted=[self.patches[0]], rejected=self.patches[::-1])
+    notify_error = validation_pool.PatchConflict(self.patches[0])
+    self.assertEqualNotifyArg(notify_error, self.patches[0], 'error')
+
+  def testServerError(self):
+    """Test case where GOB returns a server error."""
+    error = gerrit.GerritException('Internal server error')
+    self.pool_mock.submit_results[self.patches[0]] = error
+    self.SubmitPool(submitted=[self.patches[0]], rejected=self.patches[::-1])
+    notify_error = validation_pool.PatchFailedToSubmit(self.patches[0], error)
+    self.assertEqualNotifyArg(notify_error, self.patches[0], 'error')
 
 
 class SubmitPartialPoolTest(BaseSubmitPoolTestCase):
@@ -1286,9 +1403,6 @@ class SubmitPartialPoolTest(BaseSubmitPoolTestCase):
     # request to ignore failures for the specified patch.
     for patch in self.patches:
       patch.project = str(patch)
-
-    # By default, don't ignore any errors.
-    self.ignores = dict((str(patch), []) for patch in self.patches)
 
     self.stage_name = 'MyHWTest'
 
@@ -1302,58 +1416,25 @@ class SubmitPartialPoolTest(BaseSubmitPoolTestCase):
     """Set us up to ignore failures for the specified |patch|."""
     self.ignores[str(patch)] = [self.stage_name]
 
-  def SubmitPartialPool(self, submitted=(), rejected=(), **kwargs):
-    """Helper function for testing that we can submit a pool successfully.
-
-    Args:
-      submitted: List of changes that we expect to be submitted.
-      rejected: List of changes that we expect to be rejected.
-      **kwargs: Keyword arguments for SetUpPatchPool.
-    """
-    # self.ignores maps projects to a list of stages to ignore. Use it.
-    self.PatchObject(
-        validation_pool, 'GetStagesToIgnoreForProject',
-        side_effect=lambda _, project: self.ignores[project])
-
-    # Set up our pool and submit the patches.
-    pool = self.SetUpPatchPool(**kwargs)
-    actually_rejected = pool.SubmitPartialPool(self.GetTracebacks())
-
-    # Check that the right patches were submitted and rejected.
-    expected_calls = [mock.call(x, dryrun=True) for x in submitted]
-    self.assertEqual(expected_calls, self.submit.call_args_list)
-    self.assertEqual(list(rejected), list(actually_rejected))
-
   def testSubmitNone(self):
     """Submit no changes."""
-    self.SubmitPartialPool(submitted=(), rejected=self.patches)
+    self.SubmitPool(submitted=(), rejected=self.patches)
 
   def testSubmitAll(self):
     """Submit all changes."""
     self.IgnoreFailures(self.patches[0])
     self.IgnoreFailures(self.patches[1])
-    self.SubmitPartialPool(submitted=self.patches, rejected=[])
+    self.SubmitPool(submitted=self.patches, rejected=[])
 
   def testSubmitFirst(self):
     """Submit the first change in a series."""
     self.IgnoreFailures(self.patches[0])
-    self.SubmitPartialPool(submitted=[self.patches[0]],
-                           rejected=[self.patches[1]])
+    self.SubmitPool(submitted=[self.patches[0]], rejected=[self.patches[1]])
 
   def testSubmitSecond(self):
     """Attempt to submit the second change in a series."""
-    # Right now, when the CQ finds out that it is missing dependencies, it
-    # just sends a generic message about the prior CL not being marked commit
-    # ready. This is strictly true (we just removed the commit ready bit of
-    # a required CL, so the CL should be rejected); however, it is not very
-    # helpful.
-    #
-    # In this case, we don't reject the CLs that are missing dependencies
-    # immediately, but they will be rejected on the next CQ run.
-    #
-    # TODO(davidjames): Send a nicer error message in this case.
     self.IgnoreFailures(self.patches[1])
-    self.SubmitPartialPool(submitted=[], rejected=[self.patches[0]])
+    self.SubmitPool(submitted=[], rejected=[self.patches[0]])
 
 
 if __name__ == '__main__':
