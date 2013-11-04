@@ -42,6 +42,7 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/events/TransitionEvent.h"
 #include "core/events/WebKitAnimationEvent.h"
+#include "core/frame/animation/CSSPropertyAnimation.h"
 #include "core/platform/animation/CSSAnimationDataList.h"
 #include "core/platform/animation/TimingFunction.h"
 #include "wtf/HashSet.h"
@@ -137,13 +138,15 @@ const PassRefPtr<TimingFunction> timingFromAnimationData(const CSSAnimationData*
 
 void calculateCandidateTransitionForProperty(const CSSAnimationData* anim, CSSPropertyID id, const RenderStyle* oldStyle, const RenderStyle* newStyle, CandidateTransitionMap& candidateMap)
 {
-    RefPtr<AnimatableValue> from = CSSAnimatableValueFactory::create(id, oldStyle);
-    RefPtr<AnimatableValue> to = CSSAnimatableValueFactory::create(id, newStyle);
-    // If we have multiple transitions on the same property, we will use the
-    // last one since we iterate over them in order and this will override
-    // a previously set CandidateTransition.
-    if (!from->equals(to.get()) && from->usesNonDefaultInterpolationWith(to.get()))
-        candidateMap.add(id, CandidateTransition(from.release(), to.release(), anim));
+    if (!CSSPropertyAnimation::propertiesEqual(id, oldStyle, newStyle)) {
+        RefPtr<AnimatableValue> from = CSSAnimatableValueFactory::create(id, oldStyle);
+        RefPtr<AnimatableValue> to = CSSAnimatableValueFactory::create(id, newStyle);
+        // If we have multiple transitions on the same property, we will use the
+        // last one since we iterate over them in order and this will override
+        // a previously set CandidateTransition.
+        if (from->usesNonDefaultInterpolationWith(to.get()))
+            candidateMap.add(id, CandidateTransition(from.release(), to.release(), anim));
+    }
 }
 
 void computeCandidateTransitions(const RenderStyle* oldStyle, const RenderStyle* newStyle, CandidateTransitionMap& candidateMap, HashSet<CSSPropertyID>& listedProperties)

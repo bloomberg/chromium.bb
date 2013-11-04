@@ -940,7 +940,8 @@ void CSSPropertyAnimation::ensurePropertyMap()
     gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyMinHeight, &RenderStyle::minHeight, &RenderStyle::setMinHeight));
     gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyMaxHeight, &RenderStyle::maxHeight, &RenderStyle::setMaxHeight));
 
-    gPropertyWrappers->append(new PropertyWrapperFlex());
+    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
+        gPropertyWrappers->append(new PropertyWrapperFlex());
 
     gPropertyWrappers->append(new PropertyWrapper<unsigned>(CSSPropertyBorderLeftWidth, &RenderStyle::borderLeftWidth, &RenderStyle::setBorderLeftWidth));
     gPropertyWrappers->append(new PropertyWrapper<unsigned>(CSSPropertyBorderRightWidth, &RenderStyle::borderRightWidth, &RenderStyle::setBorderRightWidth));
@@ -1062,6 +1063,12 @@ void CSSPropertyAnimation::ensurePropertyMap()
     gPropertyWrappers->append(new PropertyWrapper<SVGLength>(CSSPropertyBaselineShift, &RenderStyle::baselineShiftValue, &RenderStyle::setBaselineShiftValue));
     gPropertyWrappers->append(new PropertyWrapper<SVGLength>(CSSPropertyKerning, &RenderStyle::kerning, &RenderStyle::setKerning));
 
+    if (RuntimeEnabledFeatures::webAnimationsCSSEnabled()) {
+        gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyFlexGrow, &RenderStyle::flexGrow, &RenderStyle::setFlexGrow));
+        gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyFlexShrink, &RenderStyle::flexShrink, &RenderStyle::setFlexShrink));
+        gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyFlexBasis, &RenderStyle::flexBasis, &RenderStyle::setFlexBasis));
+    }
+
     // TODO:
     //
     //  CSSPropertyVerticalAlign
@@ -1080,7 +1087,7 @@ void CSSPropertyAnimation::ensurePropertyMap()
     size_t n = gPropertyWrappers->size();
     for (unsigned int i = 0; i < n; ++i) {
         CSSPropertyID property = (*gPropertyWrappers)[i]->property();
-        ASSERT_WITH_MESSAGE(CSSAnimations::isAnimatableProperty(property), "%s is not whitelisted for animation", getPropertyNameString(property).utf8().data());
+        ASSERT_WITH_MESSAGE(RuntimeEnabledFeatures::webAnimationsCSSEnabled() || CSSAnimations::isAnimatableProperty(property), "%s is not whitelisted for animation", getPropertyNameString(property).utf8().data());
         ASSERT(property - firstCSSProperty < numCSSProperties);
         gPropertyWrapperMap[property - firstCSSProperty] = i;
     }
