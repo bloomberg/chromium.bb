@@ -525,6 +525,12 @@ class RedirectObserver : public content::WebContentsObserver {
     params_ = params;
   }
 
+  virtual void WebContentsDestroyed(WebContents* contents) OVERRIDE {
+    // Make sure we don't close the tab while the observer is in scope.
+    // See http://crbug.com/314036.
+    FAIL() << "WebContents closed during navigation (http://crbug.com/314036).";
+  }
+
   const content::FrameNavigateParams& params() const {
     return params_;
   }
@@ -558,27 +564,31 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NoStopDuringTransferUntilCommit) {
 
   // Navigate to a same-site page that redirects, causing a transfer.
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-  RedirectObserver redirect_observer(contents);
-  GURL dest_url(https_test_server.GetURL("files/title2.html"));
-  GURL redirect_url(test_server()->GetURL("server-redirect?" +
-      dest_url.spec()));
-  ui_test_utils::NavigateToURL(browser(), redirect_url);
 
-  // We should immediately see the new committed entry.
-  EXPECT_FALSE(contents->GetController().GetPendingEntry());
-  EXPECT_EQ(dest_url,
-            contents->GetController().GetLastCommittedEntry()->GetURL());
+  // Create a RedirectObserver that goes away before we close the tab.
+  {
+    RedirectObserver redirect_observer(contents);
+    GURL dest_url(https_test_server.GetURL("files/title2.html"));
+    GURL redirect_url(test_server()->GetURL("server-redirect?" +
+        dest_url.spec()));
+    ui_test_utils::NavigateToURL(browser(), redirect_url);
 
-  // We should keep track of the original request URL, redirect chain, and
-  // page transition type during a transfer, since these are necessary for
-  // history autocomplete to work.
-  EXPECT_EQ(redirect_url, contents->GetController().GetLastCommittedEntry()->
-                GetOriginalRequestURL());
-  EXPECT_EQ(2U, redirect_observer.params().redirects.size());
-  EXPECT_EQ(redirect_url, redirect_observer.params().redirects.at(0));
-  EXPECT_EQ(dest_url, redirect_observer.params().redirects.at(1));
-  EXPECT_TRUE(PageTransitionCoreTypeIs(redirect_observer.params().transition,
-                                       content::PAGE_TRANSITION_TYPED));
+    // We should immediately see the new committed entry.
+    EXPECT_FALSE(contents->GetController().GetPendingEntry());
+    EXPECT_EQ(dest_url,
+              contents->GetController().GetLastCommittedEntry()->GetURL());
+
+    // We should keep track of the original request URL, redirect chain, and
+    // page transition type during a transfer, since these are necessary for
+    // history autocomplete to work.
+    EXPECT_EQ(redirect_url, contents->GetController().GetLastCommittedEntry()->
+                  GetOriginalRequestURL());
+    EXPECT_EQ(2U, redirect_observer.params().redirects.size());
+    EXPECT_EQ(redirect_url, redirect_observer.params().redirects.at(0));
+    EXPECT_EQ(dest_url, redirect_observer.params().redirects.at(1));
+    EXPECT_TRUE(PageTransitionCoreTypeIs(redirect_observer.params().transition,
+                                         content::PAGE_TRANSITION_TYPED));
+  }
 
   // Restore previous browser client.
   SetBrowserClientForTesting(old_client);
