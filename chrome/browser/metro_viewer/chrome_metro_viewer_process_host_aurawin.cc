@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_aurawin.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/ui/ash/ash_init.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/env_vars.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
@@ -94,6 +96,11 @@ void ChromeMetroViewerProcessHost::OnChannelConnected(int32 /*peer_pid*/) {
   // Set environment variable to let breakpad know that metro process was
   // connected.
   ::SetEnvironmentVariableA(env_vars::kMetroConnected, "1");
+
+  if (!content::GpuDataManager::GetInstance()->GpuAccessAllowed(NULL)) {
+    DLOG(INFO) << "No GPU access, attempting to restart in Desktop\n";
+    chrome::AttemptRestartToDesktopMode();
+  }
 }
 
 void ChromeMetroViewerProcessHost::OnSetTargetSurface(
