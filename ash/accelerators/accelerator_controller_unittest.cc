@@ -572,7 +572,14 @@ TEST_F(AcceleratorControllerTest, MAYBE_ControllerContext) {
             GetController()->context()->previous_accelerator().type());
 }
 
-TEST_F(AcceleratorControllerTest, SuppressToggleMaximized) {
+#if defined(OS_WIN) && defined(USE_AURA)
+// crbug.com/314674
+#define MAYBE_SuppressToggleMaximized DISABLED_SuppressToggleMaximized
+#else
+#define MAYBE_SuppressToggleMaximized SuppressToggleMaximized
+#endif
+
+TEST_F(AcceleratorControllerTest, MAYBE_SuppressToggleMaximized) {
   scoped_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
   wm::ActivateWindow(window.get());
