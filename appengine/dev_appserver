@@ -8,7 +8,8 @@
 # https://developers.google.com/appengine/downloads#Google_App_Engine_SDK_for_Python
 SDK_VER="1.8.6"
 
-cd "${0%/*}"
+srcdir="${0%/*}"
+pushd "${srcdir}" >/dev/null
 
 if [ ! -d google_appengine ]; then
   zip="google_appengine_${SDK_VER}.zip"
@@ -17,5 +18,7 @@ if [ ! -d google_appengine ]; then
   unzip -q ${zip}
 fi
 
+popd >/dev/null
+
 HOST=$(hostname | awk -F. '{print $1}')
-exec ./google_appengine/dev_appserver.py --host ${HOST} "$@"
+exec "${srcdir}"/google_appengine/dev_appserver.py --host ${HOST} "$@"
