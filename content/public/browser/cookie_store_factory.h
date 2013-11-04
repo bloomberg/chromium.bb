@@ -19,14 +19,21 @@ class SpecialStoragePolicy;
 namespace content {
 
 // All blocking database accesses will be performed on |background_task_runner|.
-// If background_task_runner is NULL, then a background task runner will be
-// created internally.
+// Callbacks for data load events will be performed on |client_task_runner|.
 CONTENT_EXPORT net::CookieStore* CreatePersistentCookieStore(
     const base::FilePath& path,
     bool restore_old_session_cookies,
     quota::SpecialStoragePolicy* storage_policy,
     net::CookieMonster::Delegate* cookie_monster_delegate,
+    const scoped_refptr<base::SequencedTaskRunner>& client_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner);
+
+// Uses the default client_task_runner and background_task_runner.
+CONTENT_EXPORT net::CookieStore* CreatePersistentCookieStore(
+    const base::FilePath& path,
+    bool restore_old_session_cookies,
+    quota::SpecialStoragePolicy* storage_policy,
+    net::CookieMonster::Delegate* cookie_monster_delegate);
 
 }  // namespace content
 

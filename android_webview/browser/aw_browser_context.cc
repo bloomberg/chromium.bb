@@ -143,6 +143,7 @@ void AwBrowserContext::PreMainMessageLoopRun() {
       true,
       NULL,
       NULL,
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
       background_task_runner);
 
   cookie_store_->GetCookieMonster()->SetPersistSessionCookies(true);
