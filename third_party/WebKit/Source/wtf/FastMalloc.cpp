@@ -336,7 +336,10 @@ namespace WTF {
 #define MESSAGE LOG_ERROR
 #define CHECK_CONDITION ASSERT
 
+#if !OS(MACOSX)
 static const char kLLHardeningMask = 0;
+#endif
+
 template <unsigned> struct EntropySource;
 template <> struct EntropySource<4> {
     static uint32_t value()

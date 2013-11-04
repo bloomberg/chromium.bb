@@ -359,7 +359,7 @@ void* partitionAllocSlowPath(PartitionBucket* bucket)
         // slots.
         // This tags the page as full so that free'ing can tell, and move
         // the page back into the non-full page list when appropriate.
-        ASSERT(next->numAllocatedSlots == partitionBucketSlots(bucket));
+        ASSERT(next->numAllocatedSlots == static_cast<int>(partitionBucketSlots(bucket)));
         next->numAllocatedSlots = -next->numAllocatedSlots;
         partitionUnlinkPage(next);
         ++bucket->numFullPages;
@@ -372,7 +372,7 @@ void* partitionAllocSlowPath(PartitionBucket* bucket)
     // replace this single page with the new page we choose.
     ASSERT(page == page->next);
     ASSERT(page == page->prev);
-    ASSERT(page == &bucket->root->seedPage || page->numAllocatedSlots == partitionBucketSlots(bucket));
+    ASSERT(page == &bucket->root->seedPage || page->numAllocatedSlots == static_cast<int>(partitionBucketSlots(bucket)));
     if (LIKELY(page != &bucket->root->seedPage)) {
         page->numAllocatedSlots = -page->numAllocatedSlots;
         ++bucket->numFullPages;
@@ -441,7 +441,7 @@ void partitionFreeSlowPath(PartitionPageHeader* page)
         partitionLinkPageBefore(page, bucket->currPage);
         bucket->currPage = page;
         page->numAllocatedSlots = -page->numAllocatedSlots - 2;
-        ASSERT(page->numAllocatedSlots == partitionBucketSlots(bucket) - 1);
+        ASSERT(page->numAllocatedSlots == static_cast<int>(partitionBucketSlots(bucket) - 1));
         --bucket->numFullPages;
     }
 }
