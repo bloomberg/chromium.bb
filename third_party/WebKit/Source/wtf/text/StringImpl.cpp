@@ -38,8 +38,11 @@
 
 #ifdef STRING_STATS
 #include "wtf/DataLog.h"
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
 #include "wtf/ProcessID.h"
 #include "wtf/RefCounted.h"
+#include "wtf/ThreadingPrimitives.h"
 #include <unistd.h>
 #endif
 
