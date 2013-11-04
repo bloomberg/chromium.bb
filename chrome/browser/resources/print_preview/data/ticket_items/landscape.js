@@ -98,12 +98,15 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     updateValueInternal: function(value) {
+      var updateMargins = !this.isValueEqual(value);
       print_preview.ticket_items.TicketItem.prototype.updateValueInternal.call(
           this, value);
-      // Reset the user set margins when page orientation changes.
-      this.marginsType_.updateValue(
+      if (updateMargins) {
+        // Reset the user set margins when page orientation changes.
+        this.marginsType_.updateValue(
           print_preview.ticket_items.MarginsType.Value.DEFAULT);
-      this.customMargins_.updateValue(null);
+        this.customMargins_.updateValue(null);
+      }
     },
 
     /**
