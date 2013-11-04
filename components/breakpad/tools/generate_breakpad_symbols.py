@@ -141,12 +141,17 @@ def GenerateSymbols(options, binaries):
   """Dumps the symbols of binary and places them in the given directory."""
 
   queue = Queue.Queue()
+  print_lock = threading.Lock()
 
   def _Worker():
     while True:
       binary = queue.get()
 
-      syms = GetCommandOutput([GetDumpSymsBinary(options.build_dir),
+      if options.verbose:
+          with print_lock:
+              print "Generating symbols for %s" % binary
+
+      syms = GetCommandOutput([GetDumpSymsBinary(options.build_dir), '-r',
                                binary])
       module_line = re.match("MODULE [^ ]+ [^ ]+ ([0-9A-F]+) (.*)\n", syms)
       output_path = os.path.join(options.symbols_dir, module_line.group(2),
@@ -183,6 +188,8 @@ def main():
                          'symbols.')
   parser.add_option('-j', '--jobs', default=CONCURRENT_TASKS, action='store',
                     type='int', help='Number of parallel tasks to run.')
+  parser.add_option('-v', '--verbose', action='store_true',
+                    help='Print verbose status output.')
 
   (options, _) = parser.parse_args()
 
