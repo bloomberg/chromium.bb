@@ -6,6 +6,7 @@
 #include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
 #include "components/dom_distiller/core/distiller_url_fetcher.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -31,10 +32,12 @@ public:
     factory_.reset(new net::FakeURLFetcherFactory(NULL));
     factory_->SetFakeResponse(
         GURL(kTestPageA),
-        std::string(kTestPageAResponse, sizeof(kTestPageAResponse)), true);
+        std::string(kTestPageAResponse, sizeof(kTestPageAResponse)),
+        net::HTTP_OK);
     factory_->SetFakeResponse(
         GURL(kTestPageB),
-        std::string(kTestPageBResponse, sizeof(kTestPageBResponse)), false);
+        std::string(kTestPageBResponse, sizeof(kTestPageBResponse)),
+        net::HTTP_INTERNAL_SERVER_ERROR);
   }
 
   void Fetch(const std::string& url,

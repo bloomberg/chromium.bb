@@ -24,6 +24,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/http/http_auth.h"
 #include "net/http/http_auth_cache.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -118,10 +119,11 @@ void DataReductionProxySettingsTestBase::SetProbeResult(
   } else {
     EXPECT_CALL(*settings, GetURLFetcher())
         .Times(expected_calls)
-        .WillRepeatedly(Return(new net::FakeURLFetcher(GURL(test_url),
-                                                       settings,
-                                                       response,
-                                                       success)));
+        .WillRepeatedly(Return(new net::FakeURLFetcher(
+            GURL(test_url),
+            settings,
+            response,
+            success ? net::HTTP_OK : net::HTTP_INTERNAL_SERVER_ERROR)));
   }
 }
 

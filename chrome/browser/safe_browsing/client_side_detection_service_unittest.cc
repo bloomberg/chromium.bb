@@ -17,6 +17,7 @@
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "content/public/test/test_browser_thread.h"
 #include "crypto/sha2.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -105,25 +106,29 @@ class ClientSideDetectionServiceTest : public testing::Test {
     return is_malware_;
   }
 
-  void SetModelFetchResponse(std::string response_data, bool success) {
+  void SetModelFetchResponse(std::string response_data,
+                             net::HttpStatusCode response_code) {
     factory_->SetFakeResponse(GURL(ClientSideDetectionService::kClientModelUrl),
-                              response_data, success);
+                              response_data,
+                              response_code);
   }
 
   void SetClientReportPhishingResponse(std::string response_data,
-                                       bool success) {
+                                       net::HttpStatusCode response_code) {
     factory_->SetFakeResponse(
         ClientSideDetectionService::GetClientReportUrl(
             ClientSideDetectionService::kClientReportPhishingUrl),
-        response_data, success);
+        response_data,
+        response_code);
   }
 
   void SetClientReportMalwareResponse(std::string response_data,
-                                      bool success) {
+                                      net::HttpStatusCode response_code) {
     factory_->SetFakeResponse(
         ClientSideDetectionService::GetClientReportUrl(
             ClientSideDetectionService::kClientReportMalwareUrl),
-        response_data, success);
+        response_data,
+        response_code);
   }
 
   int GetNumReports(std::queue<base::Time>* report_times) {
@@ -255,7 +260,7 @@ TEST_F(ClientSideDetectionServiceTest, FetchModelTest) {
   service.SetEnabledAndRefreshState(true);
 
   // The model fetch failed.
-  SetModelFetchResponse("blamodel", false /* failure */);
+  SetModelFetchResponse("blamodel", net::HTTP_INTERNAL_SERVER_ERROR);
   EXPECT_CALL(service, EndFetchModel(
       ClientSideDetectionService::MODEL_FETCH_FAILED))
       .WillOnce(QuitCurrentMessageLoop());
@@ -264,7 +269,7 @@ TEST_F(ClientSideDetectionServiceTest, FetchModelTest) {
   Mock::VerifyAndClearExpectations(&service);
 
   // Empty model file.
-  SetModelFetchResponse(std::string(), true /* success */);
+  SetModelFetchResponse(std::string(), net::HTTP_OK);
   EXPECT_CALL(service, EndFetchModel(ClientSideDetectionService::MODEL_EMPTY))
       .WillOnce(QuitCurrentMessageLoop());
   service.StartFetchModel();
@@ -274,7 +279,7 @@ TEST_F(ClientSideDetectionServiceTest, FetchModelTest) {
   // Model is too large.
   SetModelFetchResponse(
       std::string(ClientSideDetectionService::kMaxModelSizeBytes + 1, 'x'),
-      true /* success */);
+      net::HTTP_OK);
   EXPECT_CALL(service, EndFetchModel(
       ClientSideDetectionService::MODEL_TOO_LARGE))
       .WillOnce(QuitCurrentMessageLoop());
@@ -283,7 +288,7 @@ TEST_F(ClientSideDetectionServiceTest, FetchModelTest) {
   Mock::VerifyAndClearExpectations(&service);
 
   // Unable to parse the model file.
-  SetModelFetchResponse("Invalid model file", true /* success */);
+  SetModelFetchResponse("Invalid model file", net::HTTP_OK);
   EXPECT_CALL(service, EndFetchModel(
       ClientSideDetectionService::MODEL_PARSE_ERROR))
       .WillOnce(QuitCurrentMessageLoop());
@@ -294,7 +299,7 @@ TEST_F(ClientSideDetectionServiceTest, FetchModelTest) {
   // Model that is missing some required fields (missing the version field).
   ClientSideModel model;
   model.set_max_words_per_term(4);
-  SetModelFetchResponse(model.SerializePartialAsString(), true /* success */);
+  SetModelFetchResponse(model.SerializePartialAsString(), net::HTTP_OK);
   EXPECT_CALL(service, EndFetchModel(
       ClientSideDetectionService::MODEL_MISSING_FIELDS))
       .WillOnce(QuitCurrentMessageLoop());
@@ -306,7 +311,7 @@ TEST_F(ClientSideDetectionServiceTest, FetchModelTest) {
   model.set_version(10);
   model.add_hashes("bla");
   model.add_page_term(1);  // Should be 0 instead of 1.
-  SetModelFetchResponse(model.SerializePartialAsString(), true /* success */);
+  SetModelFetchResponse(model.SerializePartialAsString(), net::HTTP_OK);
   EXPECT_CALL(service, EndFetchModel(
       ClientSideDetectionService::MODEL_BAD_HASH_IDS))
       .WillOnce(QuitCurrentMessageLoop());
@@ -317,7 +322,7 @@ TEST_F(ClientSideDetectionServiceTest, FetchModelTest) {
 
   // Model version number is wrong.
   model.set_version(-1);
-  SetModelFetchResponse(model.SerializeAsString(), true /* success */);
+  SetModelFetchResponse(model.SerializeAsString(), net::HTTP_OK);
   EXPECT_CALL(service, EndFetchModel(
       ClientSideDetectionService::MODEL_INVALID_VERSION_NUMBER))
       .WillOnce(QuitCurrentMessageLoop());
@@ -327,7 +332,7 @@ TEST_F(ClientSideDetectionServiceTest, FetchModelTest) {
 
   // Normal model.
   model.set_version(10);
-  SetModelFetchResponse(model.SerializeAsString(), true /* success */);
+  SetModelFetchResponse(model.SerializeAsString(), net::HTTP_OK);
   EXPECT_CALL(service, EndFetchModel(
       ClientSideDetectionService::MODEL_SUCCESS))
       .WillOnce(QuitCurrentMessageLoop());
@@ -339,7 +344,7 @@ TEST_F(ClientSideDetectionServiceTest, FetchModelTest) {
   // model that is currently loaded in the service object to 11.
   service.model_.reset(new ClientSideModel(model));
   service.model_->set_version(11);
-  SetModelFetchResponse(model.SerializeAsString(), true /* success */);
+  SetModelFetchResponse(model.SerializeAsString(), net::HTTP_OK);
   EXPECT_CALL(service, EndFetchModel(
       ClientSideDetectionService::MODEL_INVALID_VERSION_NUMBER))
       .WillOnce(QuitCurrentMessageLoop());
@@ -349,7 +354,7 @@ TEST_F(ClientSideDetectionServiceTest, FetchModelTest) {
 
   // Model version hasn't changed since the last reload.
   service.model_->set_version(10);
-  SetModelFetchResponse(model.SerializeAsString(), true /* success */);
+  SetModelFetchResponse(model.SerializeAsString(), net::HTTP_OK);
   EXPECT_CALL(service, EndFetchModel(
       ClientSideDetectionService::MODEL_NOT_CHANGED))
       .WillOnce(QuitCurrentMessageLoop());
@@ -359,7 +364,7 @@ TEST_F(ClientSideDetectionServiceTest, FetchModelTest) {
 }
 
 TEST_F(ClientSideDetectionServiceTest, ServiceObjectDeletedBeforeCallbackDone) {
-  SetModelFetchResponse("bogus model", true /* success */);
+  SetModelFetchResponse("bogus model", net::HTTP_OK);
   csd_service_.reset(ClientSideDetectionService::Create(NULL));
   csd_service_->SetEnabledAndRefreshState(true);
   EXPECT_TRUE(csd_service_.get() != NULL);
@@ -372,7 +377,7 @@ TEST_F(ClientSideDetectionServiceTest, ServiceObjectDeletedBeforeCallbackDone) {
 }
 
 TEST_F(ClientSideDetectionServiceTest, SendClientReportPhishingRequest) {
-  SetModelFetchResponse("bogus model", true /* success */);
+  SetModelFetchResponse("bogus model", net::HTTP_OK);
   csd_service_.reset(ClientSideDetectionService::Create(NULL));
   csd_service_->SetEnabledAndRefreshState(true);
 
@@ -382,21 +387,21 @@ TEST_F(ClientSideDetectionServiceTest, SendClientReportPhishingRequest) {
   base::Time before = base::Time::Now();
 
   // Invalid response body from the server.
-  SetClientReportPhishingResponse("invalid proto response", true /* success */);
+  SetClientReportPhishingResponse("invalid proto response", net::HTTP_OK);
   EXPECT_FALSE(SendClientReportPhishingRequest(url, score));
 
   // Normal behavior.
   ClientPhishingResponse response;
   response.set_phishy(true);
   SetClientReportPhishingResponse(response.SerializeAsString(),
-                                  true /* success */);
+                                  net::HTTP_OK);
   EXPECT_TRUE(SendClientReportPhishingRequest(url, score));
 
   // This request will fail
   GURL second_url("http://b.com/");
   response.set_phishy(false);
   SetClientReportPhishingResponse(response.SerializeAsString(),
-                                  false /* success */);
+                                  net::HTTP_INTERNAL_SERVER_ERROR);
   EXPECT_FALSE(SendClientReportPhishingRequest(second_url, score));
 
   base::Time after = base::Time::Now();
@@ -420,38 +425,38 @@ TEST_F(ClientSideDetectionServiceTest, SendClientReportPhishingRequest) {
 }
 
 TEST_F(ClientSideDetectionServiceTest, SendClientReportMalwareRequest) {
-  SetModelFetchResponse("bogus model", true /* success */);
+  SetModelFetchResponse("bogus model", net::HTTP_OK);
   csd_service_.reset(ClientSideDetectionService::Create(NULL));
   csd_service_->SetEnabledAndRefreshState(true);
   GURL url("http://a.com/");
 
   base::Time before = base::Time::Now();
   // Invalid response body from the server.
-  SetClientReportMalwareResponse("invalid proto response", true /* success */);
+  SetClientReportMalwareResponse("invalid proto response", net::HTTP_OK);
   EXPECT_FALSE(SendClientReportMalwareRequest(url));
 
   // Missing bad_url.
   ClientMalwareResponse response;
   response.set_blacklist(true);
-  SetClientReportMalwareResponse(response.SerializeAsString(), true);
+  SetClientReportMalwareResponse(response.SerializeAsString(), net::HTTP_OK);
   EXPECT_FALSE(SendClientReportMalwareRequest(url));
 
   // Normal behavior.
   response.set_blacklist(true);
   response.set_bad_url("http://response-bad.com/");
-  SetClientReportMalwareResponse(response.SerializeAsString(), true);
+  SetClientReportMalwareResponse(response.SerializeAsString(), net::HTTP_OK);
   EXPECT_TRUE(SendClientReportMalwareRequest(url));
   CheckConfirmedMalwareUrl(GURL("http://response-bad.com/"));
 
   // This request will fail
   response.set_blacklist(false);
   SetClientReportMalwareResponse(response.SerializeAsString(),
-                                 false /* success */);
+                                 net::HTTP_INTERNAL_SERVER_ERROR);
   EXPECT_FALSE(SendClientReportMalwareRequest(url));
 
   // server blacklist decision is false, and response is succesful
   response.set_blacklist(false);
-  SetClientReportMalwareResponse(response.SerializeAsString(), true);
+  SetClientReportMalwareResponse(response.SerializeAsString(), net::HTTP_OK);
   EXPECT_FALSE(SendClientReportMalwareRequest(url));
 
   // Check that we have recorded all 4 requests within the correct time range.
@@ -461,7 +466,7 @@ TEST_F(ClientSideDetectionServiceTest, SendClientReportMalwareRequest) {
 
   // Another normal behavior will fail because of the limit is hit
   response.set_blacklist(true);
-  SetClientReportMalwareResponse(response.SerializeAsString(), true);
+  SetClientReportMalwareResponse(response.SerializeAsString(), net::HTTP_OK);
   EXPECT_FALSE(SendClientReportMalwareRequest(url));
 
   report_times = GetMalwareReportTimes();
@@ -475,7 +480,7 @@ TEST_F(ClientSideDetectionServiceTest, SendClientReportMalwareRequest) {
 }
 
 TEST_F(ClientSideDetectionServiceTest, GetNumReportTest) {
-  SetModelFetchResponse("bogus model", true /* success */);
+  SetModelFetchResponse("bogus model", net::HTTP_OK);
   csd_service_.reset(ClientSideDetectionService::Create(NULL));
 
   std::queue<base::Time>& report_times = GetPhishingReportTimes();
@@ -490,14 +495,14 @@ TEST_F(ClientSideDetectionServiceTest, GetNumReportTest) {
 }
 
 TEST_F(ClientSideDetectionServiceTest, CacheTest) {
-  SetModelFetchResponse("bogus model", true /* success */);
+  SetModelFetchResponse("bogus model", net::HTTP_OK);
   csd_service_.reset(ClientSideDetectionService::Create(NULL));
 
   TestCache();
 }
 
 TEST_F(ClientSideDetectionServiceTest, IsPrivateIPAddress) {
-  SetModelFetchResponse("bogus model", true /* success */);
+  SetModelFetchResponse("bogus model", net::HTTP_OK);
   csd_service_.reset(ClientSideDetectionService::Create(NULL));
 
   EXPECT_TRUE(csd_service_->IsPrivateIPAddress("10.1.2.3"));
@@ -708,7 +713,7 @@ TEST_F(ClientSideDetectionServiceTest, SetEnabledAndRefreshState) {
   ClientSideModel model;
   model.set_version(10);
   model.set_max_words_per_term(4);
-  SetModelFetchResponse(model.SerializeAsString(), true /* success */);
+  SetModelFetchResponse(model.SerializeAsString(), net::HTTP_OK);
   EXPECT_CALL(*service, ScheduleFetchModel(_))
       .WillOnce(Invoke(service, &MockClientSideDetectionService::Schedule));
   EXPECT_CALL(*service, EndFetchModel(
@@ -741,7 +746,7 @@ TEST_F(ClientSideDetectionServiceTest, SetEnabledAndRefreshState) {
   ClientPhishingResponse response;
   response.set_phishy(true);
   SetClientReportPhishingResponse(response.SerializeAsString(),
-                                  true /* success */);
+                                  net::HTTP_OK);
   EXPECT_FALSE(SendClientReportPhishingRequest(GURL("http://a.com/"), 0.4f));
 
   // Pending requests also return false if the service is disabled before they

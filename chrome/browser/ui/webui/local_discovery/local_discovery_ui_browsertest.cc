@@ -20,6 +20,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.cc"
 #include "chrome/test/base/web_ui_browsertest.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 
@@ -292,11 +293,11 @@ class MockableFakeURLFetcherCreator {
   scoped_ptr<net::FakeURLFetcher> CreateFakeURLFetcher(
       const GURL& url,
       net::URLFetcherDelegate* delegate,
-      const std::string& response,
-      bool success) {
+      const std::string& response_data,
+      net::HttpStatusCode response_code) {
     OnCreateFakeURLFetcher(url.spec());
     return scoped_ptr<net::FakeURLFetcher>(
-        new net::FakeURLFetcher(url, delegate, response, success));
+        new net::FakeURLFetcher(url, delegate, response_data, response_code));
   }
 
   net::FakeURLFetcherFactory::FakeURLFetcherCreator callback() {
@@ -336,32 +337,32 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
     fake_fetcher_factory().SetFakeResponse(
         GURL(kURLInfo),
         kResponseInfo,
-        true);
+        net::HTTP_OK);
 
     fake_fetcher_factory().SetFakeResponse(
         GURL(kURLRegisterStart),
         kResponseRegisterStart,
-        true);
+        net::HTTP_OK);
 
     fake_fetcher_factory().SetFakeResponse(
         GURL(kURLRegisterClaimToken),
         kResponseRegisterClaimTokenNoConfirm,
-        true);
+        net::HTTP_OK);
 
     fake_fetcher_factory().SetFakeResponse(
         GURL(kURLCloudPrintConfirm),
         kResponseCloudPrintConfirm,
-        true);
+        net::HTTP_OK);
 
     fake_fetcher_factory().SetFakeResponse(
         GURL(kURLRegisterComplete),
         kResponseRegisterComplete,
-        true);
+        net::HTTP_OK);
 
     fake_fetcher_factory().SetFakeResponse(
         GURL(kURLGaiaToken),
         kResponseGaiaToken,
-        true);
+        net::HTTP_OK);
 
     EXPECT_CALL(fake_url_fetcher_creator(), OnCreateFakeURLFetcher(
         kURLGaiaToken))
@@ -481,12 +482,12 @@ IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, RegisterTest) {
   fake_fetcher_factory().SetFakeResponse(
       GURL(kURLRegisterClaimToken),
       kResponseRegisterClaimTokenConfirm,
-      true);
+      net::HTTP_OK);
 
   fake_fetcher_factory().SetFakeResponse(
       GURL(kURLInfo),
       kResponseInfoWithID,
-      true);
+      net::HTTP_OK);
 
   {
     InSequence s;

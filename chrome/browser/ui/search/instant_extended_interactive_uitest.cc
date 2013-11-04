@@ -76,6 +76,7 @@
 #include "content/public/test/test_utils.h"
 #include "grit/generated_resources.h"
 #include "net/base/network_change_notifier.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -923,7 +924,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedPrefetchTest, SetPrefetchQuery) {
       "{\"google:clientdata\":{\"phi\": 0},"
           "\"google:suggesttype\":[\"QUERY\", \"QUERY\"],"
           "\"google:suggestrelevance\":[1400, 9]}]",
-      true);
+      net::HTTP_OK);
 
   SetOmniboxText("pupp");
   while (!omnibox()->model()->autocomplete_controller()->done()) {
@@ -968,7 +969,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedPrefetchTest, ClearPrefetchedResults) {
       "[\"dogs\",[\"https://dogs.com\"],[],[],"
           "{\"google:suggesttype\":[\"NAVIGATION\"],"
           "\"google:suggestrelevance\":[2]}]",
-      true);
+      net::HTTP_OK);
 
   SetOmniboxText("dogs");
   while (!omnibox()->model()->autocomplete_controller()->done()) {

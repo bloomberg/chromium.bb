@@ -29,6 +29,7 @@
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/cert/x509_certificate.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -400,7 +401,9 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadFetchFailed) {
   net::FakeURLFetcherFactory factory(NULL);
   // HTTP request will fail.
   factory.SetFakeResponse(
-      DownloadProtectionService::GetDownloadRequestUrl(), std::string(), false);
+      DownloadProtectionService::GetDownloadRequestUrl(),
+      std::string(),
+      net::HTTP_INTERNAL_SERVER_ERROR);
 
   base::FilePath a_tmp(FILE_PATH_LITERAL("a.tmp"));
   base::FilePath a_exe(FILE_PATH_LITERAL("a.exe"));
@@ -442,7 +445,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   factory.SetFakeResponse(
       DownloadProtectionService::GetDownloadRequestUrl(),
       response.SerializeAsString(),
-      true);
+      net::HTTP_OK);
 
   base::FilePath a_tmp(FILE_PATH_LITERAL("a.tmp"));
   base::FilePath a_exe(FILE_PATH_LITERAL("a.exe"));
@@ -480,7 +483,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   factory.SetFakeResponse(
       DownloadProtectionService::GetDownloadRequestUrl(),
       response.SerializePartialAsString(),
-      true);
+      net::HTTP_OK);
 
   download_service_->CheckClientDownload(
       &item,
@@ -498,7 +501,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   factory.SetFakeResponse(
       DownloadProtectionService::GetDownloadRequestUrl(),
       response.SerializeAsString(),
-      true);
+      net::HTTP_OK);
 
   download_service_->CheckClientDownload(
       &item,
@@ -518,7 +521,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   factory.SetFakeResponse(
       DownloadProtectionService::GetDownloadRequestUrl(),
       response.SerializeAsString(),
-      true);
+      net::HTTP_OK);
 
   download_service_->CheckClientDownload(
       &item,
@@ -543,7 +546,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   factory.SetFakeResponse(
       DownloadProtectionService::GetDownloadRequestUrl(),
       response.SerializeAsString(),
-      true);
+      net::HTTP_OK);
 
   download_service_->CheckClientDownload(
       &item,
@@ -565,7 +568,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   factory.SetFakeResponse(
       DownloadProtectionService::GetDownloadRequestUrl(),
       response.SerializeAsString(),
-      true);
+      net::HTTP_OK);
 
   download_service_->CheckClientDownload(
       &item,
@@ -586,7 +589,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadHTTPS) {
   factory.SetFakeResponse(
       DownloadProtectionService::GetDownloadRequestUrl(),
       response.SerializeAsString(),
-      true);
+      net::HTTP_OK);
 
   base::FilePath a_tmp(FILE_PATH_LITERAL("a.tmp"));
   base::FilePath a_exe(FILE_PATH_LITERAL("a.exe"));
@@ -632,7 +635,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
   factory.SetFakeResponse(
       DownloadProtectionService::GetDownloadRequestUrl(),
       response.SerializeAsString(),
-      true);
+      net::HTTP_OK);
 
   base::ScopedTempDir download_dir;
   ASSERT_TRUE(download_dir.CreateUniqueTempDir());
@@ -699,7 +702,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
   factory.SetFakeResponse(
       DownloadProtectionService::GetDownloadRequestUrl(),
       response.SerializeAsString(),
-      true);
+      net::HTTP_OK);
 
   download_service_->CheckClientDownload(
       &item,
@@ -762,7 +765,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientCrxDownloadSuccess) {
   factory.SetFakeResponse(
       DownloadProtectionService::GetDownloadRequestUrl(),
       response.SerializeAsString(),
-      true);
+      net::HTTP_OK);
 
   base::FilePath a_tmp(FILE_PATH_LITERAL("a.tmp"));
   base::FilePath a_crx(FILE_PATH_LITERAL("a.crx"));

@@ -25,6 +25,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 
 namespace {
@@ -56,8 +57,10 @@ class SigninBrowserTest : public InProcessBrowserTest {
     fake_factory_->SetFakeResponse(
         GaiaUrls::GetInstance()->service_login_url(),
         std::string(),
-        true);
-    fake_factory_->SetFakeResponse(GURL(kNonSigninURL), std::string(), true);
+        net::HTTP_OK);
+    fake_factory_->SetFakeResponse(GURL(kNonSigninURL),
+                                   std::string(),
+                                   net::HTTP_OK);
     // Yield control back to the InProcessBrowserTest framework.
     InProcessBrowserTest::SetUp();
   }

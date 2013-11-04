@@ -17,6 +17,7 @@
 #include "components/precache/core/precache_switches.h"
 #include "components/precache/core/proto/precache.pb.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,11 +30,11 @@ class TestURLFetcherCallback {
  public:
   scoped_ptr<net::FakeURLFetcher> CreateURLFetcher(
       const GURL& url, net::URLFetcherDelegate* delegate,
-      const std::string& response_data, bool success) {
+      const std::string& response_data, net::HttpStatusCode response_code) {
     scoped_ptr<net::FakeURLFetcher> fetcher(
-        new net::FakeURLFetcher(url, delegate, response_data, success));
+        new net::FakeURLFetcher(url, delegate, response_data, response_code));
 
-    if (success) {
+    if (response_code == net::HTTP_OK) {
       scoped_refptr<net::HttpResponseHeaders> download_headers =
           new net::HttpResponseHeaders("");
       download_headers->AddHeader("Content-Type: text/html");
@@ -123,13 +124,19 @@ TEST_F(PrecacheFetcherTest, FullPrecache) {
   good_manifest.add_resource();  // Resource with no URL, should not be fetched.
   good_manifest.add_resource()->set_url(kGoodResourceURL);
 
-  factory_.SetFakeResponse(GURL(kConfigURL), config.SerializeAsString(), true);
-  factory_.SetFakeResponse(GURL(kManifestFetchFailureURL), "", false);
-  factory_.SetFakeResponse(GURL(kBadManifestURL), "bad protobuf", true);
+  factory_.SetFakeResponse(GURL(kConfigURL),
+                           config.SerializeAsString(),
+                           net::HTTP_OK);
+  factory_.SetFakeResponse(GURL(kManifestFetchFailureURL),
+                           "",
+                           net::HTTP_INTERNAL_SERVER_ERROR);
+  factory_.SetFakeResponse(GURL(kBadManifestURL), "bad protobuf", net::HTTP_OK);
   factory_.SetFakeResponse(GURL(kGoodManifestURL),
-                           good_manifest.SerializeAsString(), true);
-  factory_.SetFakeResponse(GURL(kResourceFetchFailureURL), "", false);
-  factory_.SetFakeResponse(GURL(kGoodResourceURL), "good", true);
+                           good_manifest.SerializeAsString(), net::HTTP_OK);
+  factory_.SetFakeResponse(GURL(kResourceFetchFailureURL),
+                           "",
+                           net::HTTP_INTERNAL_SERVER_ERROR);
+  factory_.SetFakeResponse(GURL(kGoodResourceURL), "good", net::HTTP_OK);
 
   PrecacheFetcher precache_fetcher(starting_urls, request_context_.get(),
                                    &precache_delegate_);
@@ -156,7 +163,9 @@ TEST_F(PrecacheFetcherTest, ConfigFetchFailure) {
 
   std::list<GURL> starting_urls(1, GURL("http://starting-url.com"));
 
-  factory_.SetFakeResponse(GURL(kConfigURL), "", false);
+  factory_.SetFakeResponse(GURL(kConfigURL),
+                           "",
+                           net::HTTP_INTERNAL_SERVER_ERROR);
 
   PrecacheFetcher precache_fetcher(starting_urls, request_context_.get(),
                                    &precache_delegate_);
@@ -177,7 +186,7 @@ TEST_F(PrecacheFetcherTest, BadConfig) {
 
   std::list<GURL> starting_urls(1, GURL("http://starting-url.com"));
 
-  factory_.SetFakeResponse(GURL(kConfigURL), "bad protobuf", true);
+  factory_.SetFakeResponse(GURL(kConfigURL), "bad protobuf", net::HTTP_OK);
 
   PrecacheFetcher precache_fetcher(starting_urls, request_context_.get(),
                                    &precache_delegate_);
@@ -202,7 +211,9 @@ TEST_F(PrecacheFetcherTest, Cancel) {
   config.add_whitelisted_starting_url("http://starting-url.com");
   config.set_maximum_rank_starting_url(1);
 
-  factory_.SetFakeResponse(GURL(kConfigURL), config.SerializeAsString(), true);
+  factory_.SetFakeResponse(GURL(kConfigURL),
+                           config.SerializeAsString(),
+                           net::HTTP_OK);
 
   scoped_ptr<PrecacheFetcher> precache_fetcher(new PrecacheFetcher(
       starting_urls, request_context_.get(), &precache_delegate_));
@@ -230,7 +241,7 @@ TEST_F(PrecacheFetcherTest, PrecacheUsingDefaultConfigSettingsURL) {
 
   factory_.SetFakeResponse(GURL(PRECACHE_CONFIG_SETTINGS_URL),
                            PrecacheConfigurationSettings().SerializeAsString(),
-                           true);
+                           net::HTTP_OK);
 
   PrecacheFetcher precache_fetcher(starting_urls, request_context_.get(),
                                    &precache_delegate_);
@@ -264,9 +275,12 @@ TEST_F(PrecacheFetcherTest, PrecacheUsingDefaultManifestURLPrefix) {
   GURL manifest_url(PRECACHE_MANIFEST_URL_PREFIX
                     "http%253A%252F%252Fstarting-url.com%252F");
 
-  factory_.SetFakeResponse(GURL(kConfigURL), config.SerializeAsString(), true);
-  factory_.SetFakeResponse(manifest_url, PrecacheManifest().SerializeAsString(),
-                           true);
+  factory_.SetFakeResponse(GURL(kConfigURL),
+                           config.SerializeAsString(),
+                           net::HTTP_OK);
+  factory_.SetFakeResponse(manifest_url,
+                           PrecacheManifest().SerializeAsString(),
+                           net::HTTP_OK);
 
   PrecacheFetcher precache_fetcher(starting_urls, request_context_.get(),
                                    &precache_delegate_);

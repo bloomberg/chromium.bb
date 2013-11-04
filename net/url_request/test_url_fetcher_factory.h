@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/http/http_request_headers.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
@@ -276,7 +277,7 @@ class TestURLFetcherFactory : public URLFetcherFactory,
 // Example usage:
 //  FakeURLFetcher fake_fetcher("http://a.com", some_delegate,
 //                              "<html><body>hello world</body></html>",
-//                              true);
+//                              HTTP_OK);
 //
 // // Will schedule a call to some_delegate->OnURLFetchComplete(&fake_fetcher).
 // fake_fetcher.Start();
@@ -285,7 +286,8 @@ class FakeURLFetcher : public TestURLFetcher {
   // Normal URL fetcher constructor but also takes in a pre-baked response.
   FakeURLFetcher(const GURL& url,
                  URLFetcherDelegate* d,
-                 const std::string& response_data, bool success);
+                 const std::string& response_data,
+                 HttpStatusCode response_code);
 
   // Start the request.  This will call the given delegate asynchronously
   // with the pre-baked response as parameter.
@@ -312,7 +314,7 @@ class FakeURLFetcher : public TestURLFetcher {
 //
 // This class is not thread-safe.  You should not call SetFakeResponse or
 // ClearFakeResponse at the same time you call CreateURLFetcher.  However, it is
-// OK to start URLFetcher objects while setting or clearning fake responses
+// OK to start URLFetcher objects while setting or clearing fake responses
 // since already created URLFetcher objects will not be affected by any changes
 // made to the fake responses (once a URLFetcher object is created you cannot
 // change its fake response).
@@ -320,32 +322,41 @@ class FakeURLFetcher : public TestURLFetcher {
 // Example usage:
 //  FakeURLFetcherFactory factory;
 //
-//  // You know that class SomeService will request url http://a.com/ and you
-//  // want to test the service class by returning an error.
-//  factory.SetFakeResponse("http://a.com/", "", false);
-//  // But if the service requests http://b.com/asdf you want to respond with
-//  // a simple html page and an HTTP/200 code.
-//  factory.SetFakeResponse("http://b.com/asdf",
+//  // You know that class SomeService will request http://a.com/success and you
+//  // want to respond with a simple html page and an HTTP/200 code.
+//  factory.SetFakeResponse("http://a.com/success",
 //                          "<html><body>hello world</body></html>",
-//                          true);
+//                          HTTP_OK);
+//  // You know that class SomeService will request url http://a.com/failure and
+//  // you want to test the service class by returning a server error.
+//  factory.SetFakeResponse("http://a.com/failure",
+//                          "",
+//                          HTTP_INTERNAL_SERVER_ERROR);
+//  // You know that class SomeService will request url http://a.com/error and
+//  // you want to test the service class by returning a specific error code,
+//  // say, a HTTP/401 error.
+//  factory.SetFakeResponse("http://a.com/error",
+//                          "some_response",
+//                          HTTP_UNAUTHORIZED);
 //
 //  SomeService service;
-//  service.Run();  // Will eventually request these two URLs.
+//  service.Run();  // Will eventually request these three URLs.
 class FakeURLFetcherFactory : public URLFetcherFactory,
                               public ScopedURLFetcherFactory {
  public:
-  // Parameters to FakeURLFetcherCreator: url, delegate, response_data, success
+  // Parameters to FakeURLFetcherCreator: url, delegate, response_data,
+  //                                      response_code
   // |url| URL for instantiated FakeURLFetcher
   // |delegate| Delegate for FakeURLFetcher
   // |response_data| response data for FakeURLFetcher
-  // |success| bool indicating response code. true = 200 and false = 500.
-  // These argument should by default be used in instantiating FakeURLFetcher
-  // as follows: new FakeURLFetcher(url, delegate, response_data, success)
+  // |response_code| response code for FakeURLFetcher
+  // These arguments should by default be used in instantiating FakeURLFetcher
+  // as follows: new FakeURLFetcher(url, delegate, response_data, response_code)
   typedef base::Callback<scoped_ptr<FakeURLFetcher>(
       const GURL&,
       URLFetcherDelegate*,
       const std::string&,
-      bool)> FakeURLFetcherCreator;
+      HttpStatusCode)> FakeURLFetcherCreator;
 
   // |default_factory|, which can be NULL, is a URLFetcherFactory that
   // will be used to construct a URLFetcher in case the URL being created
@@ -376,11 +387,14 @@ class FakeURLFetcherFactory : public URLFetcherFactory,
       URLFetcher::RequestType request_type,
       URLFetcherDelegate* d) OVERRIDE;
 
-  // Sets the fake response for a given URL.  If success is true we will serve
-  // an HTTP/200 and an HTTP/500 otherwise.  The |response_data| may be empty.
+  // Sets the fake response for a given URL. The |response_data| may be empty.
+  // The |response_code| may be any HttpStatusCode. For instance, HTTP_OK will
+  // return an HTTP/200 and HTTP_INTERNAL_SERVER_ERROR will return an HTTP/500.
+  // Note: The URLRequestStatus of FakeURLFetchers created by the factory will
+  // be FAILED for HttpStatusCodes HTTP/5xx, and SUCCESS for all other codes.
   void SetFakeResponse(const GURL& url,
                        const std::string& response_data,
-                       bool success);
+                       HttpStatusCode response_code);
 
   // Clear all the fake responses that were previously set via
   // SetFakeResponse().
@@ -388,15 +402,16 @@ class FakeURLFetcherFactory : public URLFetcherFactory,
 
  private:
   const FakeURLFetcherCreator creator_;
-  typedef std::map<GURL, std::pair<std::string, bool> > FakeResponseMap;
+  typedef std::map<GURL,
+                   std::pair<std::string, HttpStatusCode> > FakeResponseMap;
   FakeResponseMap fake_responses_;
   URLFetcherFactory* const default_factory_;
 
   static scoped_ptr<FakeURLFetcher> DefaultFakeURLFetcherCreator(
       const GURL& url,
       URLFetcherDelegate* delegate,
-      const std::string& response,
-      bool success);
+      const std::string& response_data,
+      HttpStatusCode response_code);
   DISALLOW_COPY_AND_ASSIGN(FakeURLFetcherFactory);
 };
 

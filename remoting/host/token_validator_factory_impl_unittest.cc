@@ -8,6 +8,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/values.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "remoting/base/rsa_key_pair.h"
@@ -94,7 +95,7 @@ TEST_F(TokenValidatorFactoryImplTest, Success) {
   token_validator_ = token_validator_factory_->CreateTokenValidator(
       kLocalJid, kRemoteJid);
   factory.SetFakeResponse(GURL(kTokenValidationUrl), CreateResponse(
-      token_validator_->token_scope()), true);
+      token_validator_->token_scope()), net::HTTP_OK);
   token_validator_->ValidateThirdPartyToken(
       kToken, base::Bind(&TokenValidatorFactoryImplTest::SuccessCallback,
                              base::Unretained(this)));
@@ -105,7 +106,9 @@ TEST_F(TokenValidatorFactoryImplTest, BadToken) {
   net::FakeURLFetcherFactory factory(NULL);
   token_validator_ = token_validator_factory_->CreateTokenValidator(
       kLocalJid, kRemoteJid);
-  factory.SetFakeResponse(GURL(kTokenValidationUrl), std::string(), false);
+  factory.SetFakeResponse(GURL(kTokenValidationUrl),
+                          std::string(),
+                          net::HTTP_INTERNAL_SERVER_ERROR);
   token_validator_->ValidateThirdPartyToken(
       kToken, base::Bind(&TokenValidatorFactoryImplTest::FailureCallback,
                              base::Unretained(this)));
@@ -117,7 +120,7 @@ TEST_F(TokenValidatorFactoryImplTest, BadScope) {
   token_validator_ = token_validator_factory_->CreateTokenValidator(
       kLocalJid, kRemoteJid);
   factory.SetFakeResponse(
-      GURL(kTokenValidationUrl), CreateResponse(kBadScope), true);
+      GURL(kTokenValidationUrl), CreateResponse(kBadScope), net::HTTP_OK);
   token_validator_->ValidateThirdPartyToken(
       kToken, base::Bind(&TokenValidatorFactoryImplTest::FailureCallback,
                          base::Unretained(this)));
@@ -128,7 +131,9 @@ TEST_F(TokenValidatorFactoryImplTest, DeleteOnFailure) {
   net::FakeURLFetcherFactory factory(NULL);
   token_validator_ = token_validator_factory_->CreateTokenValidator(
       kLocalJid, kRemoteJid);
-  factory.SetFakeResponse(GURL(kTokenValidationUrl), std::string(), false);
+  factory.SetFakeResponse(GURL(kTokenValidationUrl),
+                          std::string(),
+                          net::HTTP_INTERNAL_SERVER_ERROR);
   token_validator_->ValidateThirdPartyToken(
       kToken, base::Bind(
           &TokenValidatorFactoryImplTest::DeleteOnFailureCallback,
