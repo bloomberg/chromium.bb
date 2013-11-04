@@ -43,6 +43,7 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineIterator.h"
 #include "core/rendering/InlineTextBox.h"
+#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderCombineText.h"
@@ -1241,6 +1242,7 @@ void RenderBlock::updateScrollInfoAfterLayout()
 void RenderBlock::layout()
 {
     OverflowEventDispatcher dispatcher(this);
+    LayoutRectRecorder recorder(*this);
 
     // Update our first letter info now.
     updateFirstLetter();

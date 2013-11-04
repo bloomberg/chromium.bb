@@ -27,6 +27,7 @@
 #include "HTMLNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/html/HTMLOListElement.h"
+#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderView.h"
 #include "wtf/StdLibExtras.h"
@@ -313,6 +314,7 @@ void RenderListItem::layout()
 {
     ASSERT(needsLayout());
 
+    LayoutRectRecorder recorder(*this);
     updateMarkerLocation();
     RenderBlockFlow::layout();
 }

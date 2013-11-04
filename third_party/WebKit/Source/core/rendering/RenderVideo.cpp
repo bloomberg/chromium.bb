@@ -34,6 +34,7 @@
 #include "core/frame/FrameView.h"
 #include "core/page/Page.h"
 #include "core/platform/graphics/MediaPlayer.h"
+#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderFullScreen.h"
 
@@ -180,6 +181,7 @@ void RenderVideo::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOf
 
 void RenderVideo::layout()
 {
+    LayoutRectRecorder recorder(*this);
     updatePlayer();
     RenderMedia::layout();
 }

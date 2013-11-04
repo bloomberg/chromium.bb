@@ -990,6 +990,18 @@ public:
 
     bool isRelayoutBoundaryForInspector() const;
 
+    const LayoutRect& oldRepaintRect() const { return m_oldRepaintRect; }
+    void setOldRepaintRect(const LayoutRect& rect) { m_oldRepaintRect = rect; }
+
+    const LayoutRect& newRepaintRect() const { return m_newRepaintRect; }
+    void setNewRepaintRect(const LayoutRect& rect) { m_newRepaintRect = rect; }
+
+    void clearRepaintRects()
+    {
+        setOldRepaintRect(LayoutRect());
+        setNewRepaintRect(LayoutRect());
+    }
+
 protected:
     inline bool layerCreationAllowedForSubtree() const;
 
@@ -1195,6 +1207,9 @@ private:
 private:
     // Store state between styleWillChange and styleDidChange
     static bool s_affectsParentBlock;
+
+    LayoutRect m_oldRepaintRect;
+    LayoutRect m_newRepaintRect;
 };
 
 inline bool RenderObject::isBeforeContent() const

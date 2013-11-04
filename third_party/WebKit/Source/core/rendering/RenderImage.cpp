@@ -42,6 +42,7 @@
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/HitTestResult.h"
+#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderView.h"
 #include "core/svg/graphics/SVGImage.h"
@@ -567,6 +568,7 @@ void RenderImage::updateAltText()
 
 void RenderImage::layout()
 {
+    LayoutRectRecorder recorder(*this);
     RenderReplaced::layout();
     updateInnerContentRect();
 }

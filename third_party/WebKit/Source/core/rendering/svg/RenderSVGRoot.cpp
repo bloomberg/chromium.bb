@@ -31,6 +31,7 @@
 #include "core/page/Page.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/HitTestResult.h"
+#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
@@ -196,6 +197,8 @@ LayoutUnit RenderSVGRoot::computeReplacedLogicalHeight() const
 void RenderSVGRoot::layout()
 {
     ASSERT(needsLayout());
+
+    LayoutRectRecorder recorder(*this);
 
     // Arbitrary affine transforms are incompatible with LayoutState.
     LayoutStateDisabler layoutStateDisabler(view());

@@ -35,6 +35,7 @@
 #include "core/rendering/FlowThreadController.h"
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/HitTestResult.h"
+#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBoxRegionInfo.h"
 #include "core/rendering/RenderInline.h"
@@ -193,6 +194,7 @@ void RenderFlowThread::validateRegions()
 
 void RenderFlowThread::layout()
 {
+    LayoutRectRecorder recorder(*this);
     m_pageLogicalSizeChanged = m_regionsInvalidated && everHadLayout();
 
     // In case this is the second pass of the normal phase we need to update the auto-height regions to their initial value.

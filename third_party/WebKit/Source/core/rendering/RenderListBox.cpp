@@ -51,6 +51,7 @@
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/HitTestResult.h"
+#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderText.h"
@@ -164,6 +165,7 @@ void RenderListBox::selectionChanged()
 
 void RenderListBox::layout()
 {
+    LayoutRectRecorder recorder(*this);
     RenderBlockFlow::layout();
 
     if (m_vBar) {

@@ -32,6 +32,7 @@
 
 #include "core/rendering/RenderRubyRun.h"
 
+#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderRubyBase.h"
 #include "core/rendering/RenderRubyText.h"
 #include "core/rendering/RenderText.h"
@@ -228,6 +229,7 @@ RenderObject* RenderRubyRun::layoutSpecialExcludedChild(bool relayoutChildren, S
 
 void RenderRubyRun::layout()
 {
+    LayoutRectRecorder recorder(*this);
     RenderBlock::layout();
 
     RenderRubyText* rt = rubyText();

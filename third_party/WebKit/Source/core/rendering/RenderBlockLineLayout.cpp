@@ -24,6 +24,7 @@
 
 #include "core/rendering/InlineIterator.h"
 #include "core/rendering/InlineTextBox.h"
+#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/LineWidth.h"
 #include "core/rendering/RenderCombineText.h"
 #include "core/rendering/RenderCounter.h"
@@ -2117,6 +2118,9 @@ void RenderBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& re
         Vector<RenderBox*> replacedChildren;
         for (InlineWalker walker(this); !walker.atEnd(); walker.advance()) {
             RenderObject* o = walker.current();
+
+            LayoutRectRecorder recorder(*o, !o->isText());
+
             if (!hasInlineChild && o->isInline())
                 hasInlineChild = true;
 

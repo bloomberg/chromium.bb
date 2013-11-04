@@ -30,6 +30,7 @@
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
+#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderView.h"
@@ -1324,6 +1325,7 @@ void RenderListMarker::layout()
 {
     ASSERT(needsLayout());
 
+    LayoutRectRecorder recorder(*this);
     if (isImage()) {
         updateMarginsAndContent();
         setWidth(m_image->imageSize(this, style()->effectiveZoom()).width());

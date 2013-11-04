@@ -43,6 +43,7 @@
 #include "core/page/Page.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/HitTestResult.h"
+#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBoxRegionInfo.h"
 #include "core/rendering/RenderFlexibleBox.h"
@@ -369,6 +370,8 @@ void RenderBox::updateFromStyle()
 void RenderBox::layout()
 {
     ASSERT(needsLayout());
+
+    LayoutRectRecorder recorder(*this);
 
     RenderObject* child = firstChild();
     if (!child) {

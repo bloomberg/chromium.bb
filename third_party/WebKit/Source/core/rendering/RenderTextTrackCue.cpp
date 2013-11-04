@@ -27,6 +27,7 @@
 #include "core/rendering/RenderTextTrackCue.h"
 
 #include "core/html/track/TextTrackCue.h"
+#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderView.h"
 
 namespace WebCore {
@@ -39,6 +40,7 @@ RenderTextTrackCue::RenderTextTrackCue(TextTrackCueBox* element)
 
 void RenderTextTrackCue::layout()
 {
+    LayoutRectRecorder recorder(*this);
     RenderBlockFlow::layout();
 
     // If WebVTT Regions are used, the regular WebVTT layout algorithm is no

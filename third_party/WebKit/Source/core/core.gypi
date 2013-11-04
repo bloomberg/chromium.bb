@@ -1382,6 +1382,7 @@
             'rendering/OrderIterator.h',
             'rendering/LayoutIndicator.cpp',
             'rendering/LayoutIndicator.h',
+            'rendering/LayoutRectRecorder.cpp',
             'rendering/LayoutRepainter.cpp',
             'rendering/LineWidth.cpp',
             'rendering/LineWidth.h',

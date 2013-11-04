@@ -393,6 +393,8 @@ private:
     void scheduleOrPerformPostLayoutTasks();
     void performPostLayoutTasks();
 
+    void repaintTree(RenderObject* root);
+
     virtual void repaintContentRectangle(const IntRect&);
     virtual void contentsResized() OVERRIDE;
     virtual void scrollbarExistenceDidChange();

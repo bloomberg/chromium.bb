@@ -1089,6 +1089,7 @@ void FrameView::layout(bool allowSubtree)
         suspendOverflowEvents();
 
         performLayout(rootForThisLayout, inSubtreeLayout);
+
         m_layoutRoot = 0;
     } // Reset m_layoutSchedulingEnabled to its previous value.
 
@@ -1108,6 +1109,9 @@ void FrameView::layout(bool allowSubtree)
             // the visibleContentRect(). It just happens to work out most of the time,
             // since first layouts and printing don't have you scrolled anywhere.
             rootForThisLayout->view()->repaint();
+
+        } else if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
+            repaintTree(rootForThisLayout);
         }
 
         layer->updateLayerPositionsAfterLayout(renderView()->layer(), updateLayerPositionFlags(layer, inSubtreeLayout, m_doFullRepaint));
@@ -1152,6 +1156,27 @@ void FrameView::layout(bool allowSubtree)
     // ASSERT(frame()->page());
     if (frame().page())
         frame().page()->chrome().client().layoutUpdated(m_frame.get());
+}
+
+// The plan is to move to compositor-queried repainting, in which case this
+// method would setNeedsRedraw on the GraphicsLayers with invalidations and
+// let the compositor pick which to actually draw.
+// See http://crbug.com/306706
+void FrameView::repaintTree(RenderObject* root)
+{
+    ASSERT(RuntimeEnabledFeatures::repaintAfterLayoutEnabled());
+    ASSERT(!root->needsLayout());
+
+    for (RenderObject* renderer = root; renderer; renderer = renderer->nextInPreOrder()) {
+        const LayoutRect& oldRect = renderer->oldRepaintRect();
+        const LayoutRect& newRect = renderer->newRepaintRect();
+
+        if (oldRect != newRect) {
+            // FIXME: do repaint here.
+        }
+
+        renderer->clearRepaintRects();
+    }
 }
 
 RenderBox* FrameView::embeddedContentBox() const

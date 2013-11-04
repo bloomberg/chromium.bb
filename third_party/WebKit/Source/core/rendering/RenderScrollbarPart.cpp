@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/rendering/RenderScrollbarPart.h"
 
+#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderScrollbarTheme.h"
@@ -55,6 +56,7 @@ RenderScrollbarPart* RenderScrollbarPart::createAnonymous(Document* document, Re
 
 void RenderScrollbarPart::layout()
 {
+    LayoutRectRecorder recorder(*this);
     setLocation(LayoutPoint()); // We don't worry about positioning ourselves. We're just determining our minimum width/height.
     if (m_scrollbar->orientation() == HorizontalScrollbar)
         layoutHorizontalPart();

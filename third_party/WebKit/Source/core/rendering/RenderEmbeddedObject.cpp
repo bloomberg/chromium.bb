@@ -34,6 +34,7 @@
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/Path.h"
 #include "core/plugins/PluginView.h"
+#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
@@ -196,6 +197,7 @@ void RenderEmbeddedObject::layout()
     ASSERT(needsLayout());
 
     LayoutSize oldSize = contentBoxRect().size();
+    LayoutRectRecorder recorder(*this);
 
     updateLogicalWidth();
     updateLogicalHeight();

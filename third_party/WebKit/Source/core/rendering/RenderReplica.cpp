@@ -30,6 +30,7 @@
 #include "core/rendering/RenderReplica.h"
 
 #include "core/rendering/GraphicsContextAnnotator.h"
+#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderLayer.h"
 
 namespace WebCore {
@@ -57,6 +58,7 @@ RenderReplica::~RenderReplica()
 
 void RenderReplica::layout()
 {
+    LayoutRectRecorder recorder(*this);
     setFrameRect(parentBox()->borderBoxRect());
     updateLayerTransform();
     clearNeedsLayout();

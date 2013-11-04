@@ -33,6 +33,7 @@
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/HitTestResult.h"
+#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/PointerEventsHitRules.h"
 #include "core/rendering/style/ShadowList.h"
@@ -347,6 +348,7 @@ static inline void updateFontInAllDescendants(RenderObject* start, SVGTextLayout
 void RenderSVGText::layout()
 {
     ASSERT(needsLayout());
+    LayoutRectRecorder recorder(*this);
     LayoutRepainter repainter(*this, SVGRenderSupport::checkForSVGRepaintDuringLayout(this));
 
     bool updateCachedBoundariesInParents = false;

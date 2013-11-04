@@ -24,6 +24,7 @@
 #include "core/rendering/svg/RenderSVGResourceMarker.h"
 
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
+#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/svg/RenderSVGContainer.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/svg/SVGElement.h"
@@ -50,6 +51,7 @@ void RenderSVGResourceMarker::layout()
     if (m_isInLayout)
         return;
 
+    LayoutRectRecorder recorder(*this);
     TemporaryChange<bool> inLayoutChange(m_isInLayout, true);
 
     // Invalidate all resources if our layout changed.

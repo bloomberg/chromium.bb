@@ -51,6 +51,7 @@
 #include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/FlowThreadController.h"
 #include "core/rendering/HitTestResult.h"
+#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderCounter.h"
 #include "core/rendering/RenderDeprecatedFlexibleBox.h"
 #include "core/rendering/RenderFlexibleBox.h"
@@ -118,6 +119,7 @@ struct SameSizeAsRenderObject {
     unsigned m_debugBitfields : 2;
 #endif
     unsigned m_bitfields;
+    LayoutRect rects[2]; // Stores the old/new layout rectangles.
 };
 
 COMPILE_ASSERT(sizeof(RenderObject) == sizeof(SameSizeAsRenderObject), RenderObject_should_stay_small);
@@ -2845,6 +2847,7 @@ void RenderObject::scheduleRelayout()
 void RenderObject::layout()
 {
     ASSERT(needsLayout());
+    LayoutRectRecorder recorder(*this);
     RenderObject* child = firstChild();
     while (child) {
         child->layoutIfNeeded();
