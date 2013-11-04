@@ -106,11 +106,12 @@ def TranslateLibPath(lib):
   # If the .so is not found somewhere in CHROME_SYMBOLS_DIR, leave it
   # untranslated in case it is an Android symbol in SYMBOLS_DIR.
   library_name = os.path.basename(lib)
+  out_dir = os.environ.get('CHROMIUM_OUT_DIR', 'out')
   candidate_dirs = ['.',
-                    'out/Debug/lib',
-                    'out/Debug/lib.target',
-                    'out/Release/lib',
-                    'out/Release/lib.target',
+                    os.path.join(out_dir, 'Debug', 'lib'),
+                    os.path.join(out_dir, 'Debug', 'lib.target'),
+                    os.path.join(out_dir, 'Release', 'lib'),
+                    os.path.join(out_dir, 'Release', 'lib.target'),
                     ]
 
   candidate_libraries = map(

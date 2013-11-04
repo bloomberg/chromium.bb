@@ -13,3 +13,4 @@ Android Platform engineering tools, specifically stack symbolization scripts.
 
 Local Modifications:
 Only picked the few scripts needed by chrome.
+Updated output directories to use environment variable.
