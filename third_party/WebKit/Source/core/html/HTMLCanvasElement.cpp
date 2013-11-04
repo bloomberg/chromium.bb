@@ -468,7 +468,7 @@ void HTMLCanvasElement::createImageBuffer()
 
     RenderingMode renderingMode = shouldAccelerate(deviceSize) ? Accelerated : UnacceleratedNonPlatformBuffer;
     int msaaSampleCount = 0;
-    if (renderingMode == Accelerated && document().settings()->antialiased2dCanvasEnabled())
+    if (document().settings())
         msaaSampleCount = document().settings()->accelerated2dCanvasMSAASampleCount();
     OpacityMode opacityMode = !m_context || m_context->hasAlpha() ? NonOpaque : Opaque;
     m_imageBuffer = ImageBuffer::create(size(), m_deviceScaleFactor, renderingMode, opacityMode, msaaSampleCount);
@@ -477,7 +477,10 @@ void HTMLCanvasElement::createImageBuffer()
     setExternallyAllocatedMemory(4 * width() * height());
     m_imageBuffer->context()->setShouldClampToSourceRect(false);
     m_imageBuffer->context()->setImageInterpolationQuality(DefaultInterpolationQuality);
-    if (document().settings() && !document().settings()->antialiased2dCanvasEnabled())
+    // Enabling MSAA overrides a request to disable antialiasing. This is true regardless of whether the
+    // rendering mode is accelerated or not. For consistency, we don't want to apply AA in accelerated
+    // canvases but not in unaccelerated canvases.
+    if (!msaaSampleCount && document().settings() && !document().settings()->antialiased2dCanvasEnabled())
         m_imageBuffer->context()->setShouldAntialias(false);
     // GraphicsContext's defaults don't always agree with the 2d canvas spec.
     // See CanvasRenderingContext2D::State::State() for more information.
