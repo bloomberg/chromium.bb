@@ -141,6 +141,7 @@ const char* kTestFiles[] = {
   "dir-listing-ls-29",
   "dir-listing-ls-30",
   "dir-listing-ls-31",
+  "dir-listing-ls-32",  // busybox
 
   "dir-listing-netware-1",
   "dir-listing-netware-2",

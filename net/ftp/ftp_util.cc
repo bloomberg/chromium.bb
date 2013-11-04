@@ -245,29 +245,25 @@ bool FtpUtil::LsDateListingToTime(const base::string16& month,
     return false;
 
   if (!base::StringToInt(rest, &time_exploded.year)) {
-    // Maybe it's time. Does it look like time (HH:MM)?
-    if (rest.length() == 5 && rest[2] == ':') {
-      if (!base::StringToInt(StringPiece16(rest.begin(), rest.begin() + 2),
-                             &time_exploded.hour)) {
-        return false;
-      }
+    // Maybe it's time. Does it look like time? Note that it can be any of
+    // "HH:MM", "H:MM", "HH:M" or maybe even "H:M".
+    if (rest.length() > 5)
+      return false;
 
-      if (!base::StringToInt(StringPiece16(rest.begin() + 3, rest.begin() + 5),
-                             &time_exploded.minute)) {
-        return false;
-      }
-    } else if (rest.length() == 4 && rest[1] == ':') {
-      // Sometimes it's just H:MM.
-      if (!base::StringToInt(StringPiece16(rest.begin(), rest.begin() + 1),
-                             &time_exploded.hour)) {
-        return false;
-      }
+    size_t colon_pos = rest.find(':');
+    if (colon_pos == string16::npos)
+      return false;
+    if (colon_pos > 2)
+      return false;
 
-      if (!base::StringToInt(StringPiece16(rest.begin() + 2, rest.begin() + 4),
-                             &time_exploded.minute)) {
-        return false;
-      }
-    } else {
+    if (!base::StringToInt(
+            StringPiece16(rest.begin(), rest.begin() + colon_pos),
+            &time_exploded.hour)) {
+      return false;
+    }
+    if (!base::StringToInt(
+            StringPiece16(rest.begin() + colon_pos + 1, rest.end()),
+            &time_exploded.minute)) {
       return false;
     }
 

@@ -130,6 +130,10 @@ TEST_F(FtpDirectoryListingParserLsTest, Good) {
       FtpDirectoryListingEntry::DIRECTORY, "swetzel", -1,
       1994, 12, 22, 0, 0 },
 
+    { "drwxrwxr-x   1 500     244         660 Jan  1 00:0 bin",
+      FtpDirectoryListingEntry::DIRECTORY, "bin", -1,
+      1994, 1, 1, 0, 0 },
+
     // Garbage in date (but still parseable).
     { "lrw-rw-rw-   1 user     group         542 "
       "/t11/member/incomingFeb  8  2007 "
@@ -197,7 +201,6 @@ TEST_F(FtpDirectoryListingParserLsTest, Bad) {
     "-rw-r--r-- ftp ftp 528 Foo 01 2007 README",
     "-rw-r--r-- 1 ftp ftp",
     "-rw-r--r-- 1 ftp ftp 528 Foo 01 2007 README",
-    "drwxrwxrwx   1 owner    group               1024 Sep 13  0:3 audio",
 
     // Invalid month value (30).
     "drwxrwxrwx 2 root root  4096 2012-30-07 00:31 notas_servico",
