@@ -32,6 +32,10 @@ BOOL IsProcessDPIAwareWrapper() {
 
 float g_device_scale_factor = 0.0f;
 
+float GetUnforcedDeviceScaleFactor() {
+  return static_cast<float>(gfx::GetDPI().width()) /
+      static_cast<float>(kDefaultDPIX);
+}
 }  // namespace
 
 namespace gfx {
@@ -60,8 +64,9 @@ Size GetDPI() {
 
 float GetDPIScale() {
   if (IsHighDPIEnabled()) {
-    return static_cast<float>(GetDPI().width()) /
-        static_cast<float>(kDefaultDPIX);
+    return gfx::Display::HasForceDeviceScaleFactor() ?
+        gfx::Display::GetForcedDeviceScaleFactor() :
+        GetUnforcedDeviceScaleFactor();
   }
   return 1.0;
 }
@@ -100,7 +105,12 @@ float GetDeviceScaleFactor() {
 }
 
 Point ScreenToDIPPoint(const Point& pixel_point) {
-  return ToFlooredPoint(ScalePoint(pixel_point, 1.0f / GetDeviceScaleFactor()));
+  static float scaling_factor =
+      GetDeviceScaleFactor() > GetUnforcedDeviceScaleFactor() ?
+      1.0f / GetDeviceScaleFactor() :
+      1.0f;
+  return ToFlooredPoint(ScalePoint(pixel_point,
+      scaling_factor));
 }
 
 Point DIPToScreenPoint(const Point& dip_point) {

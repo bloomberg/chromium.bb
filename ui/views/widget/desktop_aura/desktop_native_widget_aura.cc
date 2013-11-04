@@ -1049,14 +1049,6 @@ void DesktopNativeWidgetAura::OnRootWindowHostResized(
     return;
 
   gfx::Rect new_bounds = gfx::Rect(root->bounds().size());
-  // TODO(ananta)
-  // This code by default scales the bounds rectangle by 1.
-  // We could probably get rid of this and similar logic from
-  // the DesktopNativeWidgetAura::SetBounds function.
-#if defined(OS_WIN)
-  gfx::Size dip_size = gfx::win::ScreenToDIPSize(new_bounds.size());
-  new_bounds = gfx::Rect(dip_size);
-#endif
   content_window_->SetBounds(new_bounds);
   // Can be NULL at start.
   if (content_window_container_)

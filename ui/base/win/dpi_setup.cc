@@ -12,14 +12,7 @@ namespace ui {
 namespace win {
 
 void InitDeviceScaleFactor() {
-  float scale = 1.0f;
-  if (gfx::IsHighDPIEnabled()) {
-    scale = gfx::Display::HasForceDeviceScaleFactor() ?
-        gfx::Display::GetForcedDeviceScaleFactor() : gfx::GetDPIScale();
-    // Quantize to nearest supported scale factor.
-    scale = ui::GetImageScale(ui::GetSupportedScaleFactor(scale));
-  }
-  gfx::InitDeviceScaleFactor(scale);
+  gfx::InitDeviceScaleFactor(gfx::GetDPIScale());
 }
 
 }  // namespace win
