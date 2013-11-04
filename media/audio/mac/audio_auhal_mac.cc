@@ -44,7 +44,7 @@ static void WrapBufferList(AudioBufferList* buffer_list,
   DCHECK(bus);
   const int channels = bus->channels();
   const int buffer_list_channels = buffer_list->mNumberBuffers;
-  DCHECK_EQ(channels, buffer_list_channels);
+  CHECK_EQ(channels, buffer_list_channels);
 
   // Copy pointers from AudioBufferList.
   for (int i = 0; i < channels; ++i) {
@@ -142,8 +142,12 @@ void AUHALStream::Close() {
   }
 
   if (audio_unit_) {
-    AudioUnitUninitialize(audio_unit_);
-    AudioComponentInstanceDispose(audio_unit_);
+    OSStatus result = AudioUnitUninitialize(audio_unit_);
+    OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
+        << "AudioUnitUninitialize() failed.";
+    result = AudioComponentInstanceDispose(audio_unit_);
+    OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
+        << "AudioComponentInstanceDispose() failed.";
   }
 
   // Inform the audio manager that we have been closed. This will cause our
@@ -165,14 +169,24 @@ void AUHALStream::Start(AudioSourceCallback* callback) {
     source_ = callback;
   }
 
-  AudioOutputUnitStart(audio_unit_);
+  OSStatus result = AudioOutputUnitStart(audio_unit_);
+  if (result == noErr)
+    return;
+
+  Stop();
+  OSSTATUS_DLOG(ERROR, result) << "AudioOutputUnitStart() failed.";
+  callback->OnError(this);
 }
 
 void AUHALStream::Stop() {
   if (stopped_)
     return;
 
-  AudioOutputUnitStop(audio_unit_);
+  OSStatus result = AudioOutputUnitStop(audio_unit_);
+  OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
+      << "AudioOutputUnitStop() failed.";
+  if (result != noErr)
+    source_->OnError(this);
 
   base::AutoLock auto_lock(source_lock_);
   source_ = NULL;
@@ -210,16 +224,6 @@ OSStatus AUHALStream::Render(
     // In this case either audio input or audio output will be broken,
     // so just output silence.
     ZeroBufferList(io_data);
-
-    // In case we missed a device notification, notify the AudioManager that the
-    // device has changed.  HandleDeviceChanges() will check to make sure the
-    // device has actually changed before taking any action.
-    if (!notified_for_possible_device_change_) {
-      notified_for_possible_device_change_ = true;
-      manager_->GetMessageLoop()->PostTask(FROM_HERE, base::Bind(
-          &AudioManagerMac::HandleDeviceChanges, base::Unretained(manager_)));
-    }
-
     return noErr;
   }
 
@@ -452,7 +456,7 @@ bool AUHALStream::ConfigureAUHAL() {
 
   OSStatus result = AudioComponentInstanceNew(comp, &audio_unit_);
   if (result != noErr) {
-    OSSTATUS_DLOG(WARNING, result) << "AudioComponentInstanceNew() failed.";
+    OSSTATUS_DLOG(ERROR, result) << "AudioComponentInstanceNew() failed.";
     return false;
   }
 
@@ -510,7 +514,7 @@ bool AUHALStream::ConfigureAUHAL() {
       &buffer_size,
       sizeof(buffer_size));
   if (result != noErr) {
-    OSSTATUS_DLOG(WARNING, result)
+    OSSTATUS_DLOG(ERROR, result)
         << "AudioUnitSetProperty(kAudioDevicePropertyBufferFrameSize) failed.";
     return false;
   }
@@ -531,7 +535,7 @@ bool AUHALStream::ConfigureAUHAL() {
 
   result = AudioUnitInitialize(audio_unit_);
   if (result != noErr) {
-    OSSTATUS_DLOG(WARNING, result) << "AudioUnitInitialize() failed.";
+    OSSTATUS_DLOG(ERROR, result) << "AudioUnitInitialize() failed.";
     return false;
   }
 
