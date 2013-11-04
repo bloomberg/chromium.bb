@@ -185,7 +185,6 @@ def is_keep_alive_for_gc(attribute):
     idl_type = attribute.idl_type
     extended_attributes = attribute.extended_attributes
     return (
-        'KeepAttributeAliveForGC' in extended_attributes or
         # For readonly attributes, for performance reasons we keep the attribute
         # wrapper alive while the owner wrapper is alive, because the attribute
         # never changes.

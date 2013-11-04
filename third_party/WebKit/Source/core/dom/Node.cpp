@@ -1140,6 +1140,13 @@ Element* Node::parentOrShadowHostElement() const
     return toElement(parent);
 }
 
+ContainerNode* Node::parentOrShadowHostOrTemplateHostNode() const
+{
+    if (isDocumentFragment() && toDocumentFragment(this)->isTemplateContent())
+        return static_cast<const TemplateContentDocumentFragment*>(this)->host();
+    return parentOrShadowHostNode();
+}
+
 bool Node::isBlockFlowElement() const
 {
     return isElementNode() && renderer() && renderer()->isRenderBlockFlow();

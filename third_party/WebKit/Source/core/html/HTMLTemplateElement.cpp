@@ -59,7 +59,7 @@ PassRefPtr<HTMLTemplateElement> HTMLTemplateElement::create(const QualifiedName&
 DocumentFragment* HTMLTemplateElement::content() const
 {
     if (!m_content)
-        m_content = TemplateContentDocumentFragment::create(document().ensureTemplateDocument(), this);
+        m_content = TemplateContentDocumentFragment::create(document().ensureTemplateDocument(), const_cast<HTMLTemplateElement*>(this));
 
     return m_content.get();
 }

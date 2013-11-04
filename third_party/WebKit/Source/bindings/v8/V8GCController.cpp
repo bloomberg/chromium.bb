@@ -42,9 +42,11 @@
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "core/dom/Attr.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/dom/TemplateContentDocumentFragment.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLImageElement.h"
+#include "core/html/HTMLTemplateElement.h"
 #include "platform/TraceEvent.h"
 
 namespace WebCore {
@@ -84,7 +86,7 @@ Node* V8GCController::opaqueRootForGC(Node* node, v8::Isolate*)
         node = ownerElement;
     }
 
-    while (Node* parent = node->parentOrShadowHostNode())
+    while (Node* parent = node->parentOrShadowHostOrTemplateHostNode())
         node = parent;
 
     return node;
@@ -179,6 +181,12 @@ private:
                         return false;
                 }
             }
+            // <template> has a |content| property holding a DOM fragment which we must traverse,
+            // just like we do for the shadow trees above.
+            if (node->hasTagName(HTMLNames::templateTag)) {
+                if (!traverseTree(toHTMLTemplateElement(node)->content(), newSpaceNodes))
+                    return false;
+            }
         }
         return true;
     }
@@ -188,8 +196,8 @@ private:
         Vector<Node*, initialNodeVectorSize> newSpaceNodes;
 
         Node* node = startNode;
-        while (node->parentOrShadowHostNode())
-            node = node->parentOrShadowHostNode();
+        while (Node* parent = node->parentOrShadowHostOrTemplateHostNode())
+            node = parent;
 
         if (!traverseTree(node, &newSpaceNodes))
             return;

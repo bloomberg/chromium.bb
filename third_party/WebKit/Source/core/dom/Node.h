@@ -290,6 +290,9 @@ public:
     void setParentOrShadowHostNode(ContainerNode*);
     Node* highestAncestor() const;
 
+    // Knows about all kinds of hosts.
+    ContainerNode* parentOrShadowHostOrTemplateHostNode() const;
+
     // Use when it's guaranteed to that shadowHost is 0.
     ContainerNode* parentNodeGuaranteedHostFree() const;
     // Returns the parent node, but 0 if the parent node is a ShadowRoot.

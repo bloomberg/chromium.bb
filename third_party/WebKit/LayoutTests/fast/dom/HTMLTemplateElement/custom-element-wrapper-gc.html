@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<div id="container">
+<template>
+<x-custom></x-custom>
+</template>
+</div>
+<script src="../../js/resources/js-test-pre.js"></script>
+<script>
+description('Custom element wrappers in templates should be retained');
+
+document.register('x-custom', {
+  prototype: {
+    createdCallback: function() {
+      this.expando = 'present';
+    }
+  }
+});
+
+debug("Testing major GC...");
+gc();
+
+var template = document.querySelector('template');
+var customElement = template.content.querySelector('x-custom');
+shouldBeEqualToString('customElement.expando', 'present');
+
+container.innerHTML = container.innerHTML;
+
+debug("Testing minor GC...");
+minorGC();
+
+var template = document.querySelector('template');
+var customElement = template.content.querySelector('x-custom');
+shouldBeEqualToString('customElement.expando', 'present');
+</script>
+<script src="../../js/resources/js-test-post.js"></script>

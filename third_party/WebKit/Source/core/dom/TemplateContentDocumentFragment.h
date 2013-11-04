@@ -33,16 +33,16 @@ namespace WebCore {
 
 class TemplateContentDocumentFragment FINAL : public DocumentFragment {
 public:
-    static PassRefPtr<TemplateContentDocumentFragment> create(Document& document, const Element* host)
+    static PassRefPtr<TemplateContentDocumentFragment> create(Document& document, Element* host)
     {
         return adoptRef(new TemplateContentDocumentFragment(document, host));
     }
 
-    const Element* host() const { return m_host; }
+    Element* host() const { return m_host; }
     void clearHost() { m_host = 0; }
 
 private:
-    TemplateContentDocumentFragment(Document& document, const Element* host)
+    TemplateContentDocumentFragment(Document& document, Element* host)
         : DocumentFragment(&document, CreateDocumentFragment)
         , m_host(host)
     {
@@ -50,7 +50,7 @@ private:
 
     virtual bool isTemplateContent() const OVERRIDE { return true; }
 
-    const Element* m_host;
+    Element* m_host;
 };
 
 } // namespace WebCore

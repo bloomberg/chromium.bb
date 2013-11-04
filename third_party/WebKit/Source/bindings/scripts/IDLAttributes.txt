@@ -71,7 +71,6 @@ GlobalContext=Window|WorkerGlobalScope|SharedWorkerGlobalScope|DedicatedWorkerGl
 Immutable
 ImplementedAs=*
 InitializedByEventConstructor
-KeepAttributeAliveForGC
 # FIXME: We should remove this extended attribute once the needed refactoring is complete.
 LegacyImplementedInBaseClass
 MasqueradesAsUndefined

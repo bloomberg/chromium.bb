@@ -1702,8 +1702,6 @@ sub ShouldKeepAttributeAlive
     my ($interface, $attribute, $returnType) = @_;
     my $attrName = $attribute->name;
 
-    return 1 if $attribute->extendedAttributes->{"KeepAttributeAliveForGC"};
-
     # For readonly attributes (including Replaceable), as a general rule, for
     # performance reasons we keep the attribute wrapper alive while the owner
     # wrapper is alive, because the attribute never changes.

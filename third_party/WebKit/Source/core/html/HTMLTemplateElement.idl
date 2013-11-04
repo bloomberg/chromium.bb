@@ -29,6 +29,6 @@
  */
 
 interface HTMLTemplateElement : HTMLElement {
-    [KeepAttributeAliveForGC] readonly attribute DocumentFragment content;
+    readonly attribute DocumentFragment content;
 };
 
