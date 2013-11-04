@@ -4,7 +4,7 @@ header("Content-Type: text/html; charset=utf-8");
 <!-- If the scheduler has been disabled as it should, the image will load immediately rather than waiting for this frame to finish. -->
 <html>
 <head>
-<script src="/resources/js-test-pre.js"></script>
+<script src="/js-test-resources/js-test-pre.js"></script>
 <script>
 window.jsTestIsAsync = true;
 if (self.testRunner)
@@ -44,6 +44,5 @@ ob_flush();
 flush();
 sleep(2);
 ?>
-<script src="/resources/js-test-post.js"></script>
 </body>
 </html>

@@ -7,4 +7,7 @@ PASS typeof(document.webkitGetNamedFlows) is "function"
 PASS typeof(document.body.webkitRegionOverset) is "string"
 PASS typeof(document.body.webkitGetRegionFlowRanges) is "function"
 PASS window.WebKitCSSRegionRule is defined.
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

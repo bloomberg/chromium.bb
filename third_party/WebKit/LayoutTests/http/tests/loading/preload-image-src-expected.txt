@@ -6,5 +6,8 @@ main frame - didFinishLoadForFrame
 PASS internals.isPreloaded('resources/base-image1.png'); is true
 PASS internals.isPreloaded('resources/base-image2.png'); is true
 PASS internals.isPreloaded('resources/base-image3.png'); is false
+PASS successfullyParsed is true
+
+TEST COMPLETE
 This test passes if the image (defined in the src attribute) is preloaded.
  

@@ -21,5 +21,8 @@ main frame - didFinishLoadForFrame
 PASS internals.isPreloaded('resources/base-image1.png'); is true
 PASS internals.isPreloaded('resources/empty.html'); is false
 PASS internals.isPreloaded('resources/empty.js'); is false
+PASS successfullyParsed is true
+
+TEST COMPLETE
 This test passes if the image is preloaded, but none of the non-img elements with a srcset attribute is.
  
