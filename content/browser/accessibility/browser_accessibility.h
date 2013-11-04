@@ -120,6 +120,15 @@ class CONTENT_EXPORT BrowserAccessibility {
   // Returns the bounds of this object in screen coordinates.
   gfx::Rect GetGlobalBoundsRect() const;
 
+  // Returns the bounds of the given range in coordinates relative to the
+  // top-left corner of the overall web area. Only valid when the
+  // role is WebAXRoleStaticText.
+  gfx::Rect GetLocalBoundsForRange(int start, int len) const;
+
+  // Same as GetLocalBoundsForRange, in screen coordinates. Only valid when
+  // the role is WebAXRoleStaticText.
+  gfx::Rect GetGlobalBoundsForRange(int start, int len) const;
+
   // Returns the deepest descendant that contains the specified point
   // (in global screen coordinates).
   BrowserAccessibility* BrowserAccessibilityForPoint(const gfx::Point& point);

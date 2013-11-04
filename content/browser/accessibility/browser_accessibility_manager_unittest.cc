@@ -611,4 +611,169 @@ TEST(BrowserAccessibilityManagerTest, TestFatalError) {
   ASSERT_TRUE(delegate->got_fatal_error());
 }
 
+TEST(BrowserAccessibilityManagerTest, BoundsForRange) {
+  AccessibilityNodeData root;
+  root.id = 1;
+  root.role = WebKit::WebAXRoleRootWebArea;
+
+  AccessibilityNodeData static_text;
+  static_text.id = 2;
+  static_text.SetValue("Hello, world.");
+  static_text.role = WebKit::WebAXRoleStaticText;
+  static_text.location = gfx::Rect(100, 100, 29, 18);
+  root.child_ids.push_back(2);
+
+  AccessibilityNodeData inline_text1;
+  inline_text1.id = 3;
+  inline_text1.SetValue("Hello, ");
+  inline_text1.role = WebKit::WebAXRoleInlineTextBox;
+  inline_text1.location = gfx::Rect(100, 100, 29, 9);
+  inline_text1.AddIntAttribute(AccessibilityNodeData::ATTR_TEXT_DIRECTION,
+                               WebKit::WebAXTextDirectionLR);
+  std::vector<int32> character_offsets1;
+  character_offsets1.push_back(6);   // 0
+  character_offsets1.push_back(11);  // 1
+  character_offsets1.push_back(16);  // 2
+  character_offsets1.push_back(21);  // 3
+  character_offsets1.push_back(26);  // 4
+  character_offsets1.push_back(29);  // 5
+  character_offsets1.push_back(29);  // 6 (note that the space has no width)
+  inline_text1.AddIntListAttribute(
+      AccessibilityNodeData::ATTR_CHARACTER_OFFSETS, character_offsets1);
+  static_text.child_ids.push_back(3);
+
+  AccessibilityNodeData inline_text2;
+  inline_text2.id = 4;
+  inline_text2.SetValue("world.");
+  inline_text2.role = WebKit::WebAXRoleInlineTextBox;
+  inline_text2.location = gfx::Rect(100, 109, 28, 9);
+  inline_text2.AddIntAttribute(AccessibilityNodeData::ATTR_TEXT_DIRECTION,
+                               WebKit::WebAXTextDirectionLR);
+  std::vector<int32> character_offsets2;
+  character_offsets2.push_back(5);
+  character_offsets2.push_back(10);
+  character_offsets2.push_back(15);
+  character_offsets2.push_back(20);
+  character_offsets2.push_back(25);
+  character_offsets2.push_back(28);
+  inline_text2.AddIntListAttribute(
+      AccessibilityNodeData::ATTR_CHARACTER_OFFSETS, character_offsets2);
+  static_text.child_ids.push_back(4);
+
+  scoped_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          root,
+          NULL,
+          new CountedBrowserAccessibilityFactory()));
+  manager->UpdateNodesForTesting(static_text, inline_text1, inline_text2);
+
+  BrowserAccessibility* root_accessible = manager->GetRoot();
+  BrowserAccessibility* static_text_accessible =
+      root_accessible->PlatformGetChild(0);
+
+  EXPECT_EQ(gfx::Rect(100, 100, 6, 9).ToString(),
+            static_text_accessible->GetLocalBoundsForRange(0, 1).ToString());
+
+  EXPECT_EQ(gfx::Rect(100, 100, 26, 9).ToString(),
+            static_text_accessible->GetLocalBoundsForRange(0, 5).ToString());
+
+  EXPECT_EQ(gfx::Rect(100, 109, 5, 9).ToString(),
+            static_text_accessible->GetLocalBoundsForRange(7, 1).ToString());
+
+  EXPECT_EQ(gfx::Rect(100, 109, 25, 9).ToString(),
+            static_text_accessible->GetLocalBoundsForRange(7, 5).ToString());
+
+  EXPECT_EQ(gfx::Rect(100, 100, 29, 18).ToString(),
+            static_text_accessible->GetLocalBoundsForRange(5, 3).ToString());
+
+  EXPECT_EQ(gfx::Rect(100, 100, 29, 18).ToString(),
+            static_text_accessible->GetLocalBoundsForRange(0, 13).ToString());
+
+  // Test range that's beyond the text.
+  EXPECT_EQ(gfx::Rect(100, 100, 29, 18).ToString(),
+            static_text_accessible->GetLocalBoundsForRange(-1, 999).ToString());
+}
+
+TEST(BrowserAccessibilityManagerTest, BoundsForRangeBiDi) {
+  // In this example, we assume that the string "123abc" is rendered with
+  // "123" going left-to-right and "abc" going right-to-left. In other
+  // words, on-screen it would look like "123cba". This is possible to
+  // acheive if the source string had unicode control characters
+  // to switch directions. This test doesn't worry about how, though - it just
+  // tests that if something like that were to occur, GetLocalBoundsForRange
+  // returns the correct bounds for different ranges.
+
+  AccessibilityNodeData root;
+  root.id = 1;
+  root.role = WebKit::WebAXRoleRootWebArea;
+
+  AccessibilityNodeData static_text;
+  static_text.id = 2;
+  static_text.SetValue("123abc");
+  static_text.role = WebKit::WebAXRoleStaticText;
+  static_text.location = gfx::Rect(100, 100, 60, 20);
+  root.child_ids.push_back(2);
+
+  AccessibilityNodeData inline_text1;
+  inline_text1.id = 3;
+  inline_text1.SetValue("123");
+  inline_text1.role = WebKit::WebAXRoleInlineTextBox;
+  inline_text1.location = gfx::Rect(100, 100, 30, 20);
+  inline_text1.AddIntAttribute(AccessibilityNodeData::ATTR_TEXT_DIRECTION,
+                               WebKit::WebAXTextDirectionLR);
+  std::vector<int32> character_offsets1;
+  character_offsets1.push_back(10);  // 0
+  character_offsets1.push_back(20);  // 1
+  character_offsets1.push_back(30);  // 2
+  inline_text1.AddIntListAttribute(
+      AccessibilityNodeData::ATTR_CHARACTER_OFFSETS, character_offsets1);
+  static_text.child_ids.push_back(3);
+
+  AccessibilityNodeData inline_text2;
+  inline_text2.id = 4;
+  inline_text2.SetValue("abc");
+  inline_text2.role = WebKit::WebAXRoleInlineTextBox;
+  inline_text2.location = gfx::Rect(130, 100, 30, 20);
+  inline_text2.AddIntAttribute(AccessibilityNodeData::ATTR_TEXT_DIRECTION,
+                               WebKit::WebAXTextDirectionRL);
+  std::vector<int32> character_offsets2;
+  character_offsets2.push_back(10);
+  character_offsets2.push_back(20);
+  character_offsets2.push_back(30);
+  inline_text2.AddIntListAttribute(
+      AccessibilityNodeData::ATTR_CHARACTER_OFFSETS, character_offsets2);
+  static_text.child_ids.push_back(4);
+
+  scoped_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          root,
+          NULL,
+          new CountedBrowserAccessibilityFactory()));
+  manager->UpdateNodesForTesting(static_text, inline_text1, inline_text2);
+
+  BrowserAccessibility* root_accessible = manager->GetRoot();
+  BrowserAccessibility* static_text_accessible =
+      root_accessible->PlatformGetChild(0);
+
+  EXPECT_EQ(gfx::Rect(100, 100, 60, 20).ToString(),
+            static_text_accessible->GetLocalBoundsForRange(0, 6).ToString());
+
+  EXPECT_EQ(gfx::Rect(100, 100, 10, 20).ToString(),
+            static_text_accessible->GetLocalBoundsForRange(0, 1).ToString());
+
+  EXPECT_EQ(gfx::Rect(100, 100, 30, 20).ToString(),
+            static_text_accessible->GetLocalBoundsForRange(0, 3).ToString());
+
+  EXPECT_EQ(gfx::Rect(150, 100, 10, 20).ToString(),
+            static_text_accessible->GetLocalBoundsForRange(3, 1).ToString());
+
+  EXPECT_EQ(gfx::Rect(130, 100, 30, 20).ToString(),
+            static_text_accessible->GetLocalBoundsForRange(3, 3).ToString());
+
+  // This range is only two characters, but because of the direction switch
+  // the bounds are as wide as four characters.
+  EXPECT_EQ(gfx::Rect(120, 100, 40, 20).ToString(),
+            static_text_accessible->GetLocalBoundsForRange(2, 2).ToString());
+}
+
 }  // namespace content

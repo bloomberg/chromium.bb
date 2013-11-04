@@ -54,7 +54,7 @@ uint32 BrowserAccessibility::PlatformChildCount() const {
 void BrowserAccessibility::DetachTree(
     std::vector<BrowserAccessibility*>* nodes) {
   nodes->push_back(this);
-  for (size_t i = 0; i < children_.size(); i++)
+  for (size_t i = 0; i < children_.size(); ++i)
     children_[i]->DetachTree(nodes);
   children_.clear();
   parent_ = NULL;
@@ -186,6 +186,96 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsRect() const {
 
 gfx::Rect BrowserAccessibility::GetGlobalBoundsRect() const {
   gfx::Rect bounds = GetLocalBoundsRect();
+
+  // Adjust the bounds by the top left corner of the containing view's bounds
+  // in screen coordinates.
+  bounds.Offset(manager_->GetViewBounds().OffsetFromOrigin());
+
+  return bounds;
+}
+
+gfx::Rect BrowserAccessibility::GetLocalBoundsForRange(int start, int len)
+    const {
+  DCHECK_EQ(role_, WebKit::WebAXRoleStaticText);
+  int end = start + len;
+  int child_start = 0;
+  int child_end = 0;
+
+  gfx::Rect bounds;
+  for (size_t i = 0; i < children_.size() && child_end < start + len; ++i) {
+    BrowserAccessibility* child = children_[i];
+    DCHECK_EQ(child->role(), WebKit::WebAXRoleInlineTextBox);
+    std::string child_text;
+    child->GetStringAttribute(AccessibilityNodeData::ATTR_VALUE, &child_text);
+    int child_len = static_cast<int>(child_text.size());
+    child_start = child_end;
+    child_end += child_len;
+
+    if (child_end < start)
+      continue;
+
+    int overlap_start = std::max(start, child_start);
+    int overlap_end = std::min(end, child_end);
+
+    int local_start = overlap_start - child_start;
+    int local_end = overlap_end - child_start;
+
+    gfx::Rect child_rect = child->location();
+    int text_direction = child->GetIntAttribute(
+        AccessibilityNodeData::ATTR_TEXT_DIRECTION);
+    const std::vector<int32>& character_offsets = child->GetIntListAttribute(
+        AccessibilityNodeData::ATTR_CHARACTER_OFFSETS);
+    int start_pixel_offset =
+        local_start > 0 ? character_offsets[local_start - 1] : 0;
+    int end_pixel_offset =
+        local_end > 0 ? character_offsets[local_end - 1] : 0;
+
+    gfx::Rect child_overlap_rect;
+    switch (text_direction) {
+      case WebKit::WebAXTextDirectionLR: {
+        int left = child_rect.x() + start_pixel_offset;
+        int right = child_rect.x() + end_pixel_offset;
+        child_overlap_rect = gfx::Rect(left, child_rect.y(),
+                                       right - left, child_rect.height());
+        break;
+      }
+      case WebKit::WebAXTextDirectionRL: {
+        int right = child_rect.right() - start_pixel_offset;
+        int left = child_rect.right() - end_pixel_offset;
+        child_overlap_rect = gfx::Rect(left, child_rect.y(),
+                                       right - left, child_rect.height());
+        break;
+      }
+      case WebKit::WebAXTextDirectionTB: {
+        int top = child_rect.y() + start_pixel_offset;
+        int bottom = child_rect.y() + end_pixel_offset;
+        child_overlap_rect = gfx::Rect(child_rect.x(), top,
+                                       child_rect.width(), bottom - top);
+        break;
+      }
+      case WebKit::WebAXTextDirectionBT: {
+        int bottom = child_rect.bottom() - start_pixel_offset;
+        int top = child_rect.bottom() - end_pixel_offset;
+        child_overlap_rect = gfx::Rect(child_rect.x(), top,
+                                       child_rect.width(), bottom - top);
+        break;
+      }
+      default:
+        NOTREACHED();
+    }
+
+    if (bounds.width() == 0 && bounds.height() == 0)
+      bounds = child_overlap_rect;
+    else
+      bounds.Union(child_overlap_rect);
+  }
+
+  return bounds;
+}
+
+gfx::Rect BrowserAccessibility::GetGlobalBoundsForRange(int start, int len)
+    const {
+  gfx::Rect bounds = GetLocalBoundsForRange(start, len);
 
   // Adjust the bounds by the top left corner of the containing view's bounds
   // in screen coordinates.
@@ -420,7 +510,7 @@ bool BrowserAccessibility::GetIntListAttribute(
 
 bool BrowserAccessibility::GetHtmlAttribute(
     const char* html_attr, std::string* value) const {
-  for (size_t i = 0; i < html_attributes_.size(); i++) {
+  for (size_t i = 0; i < html_attributes_.size(); ++i) {
     const std::string& attr = html_attributes_[i].first;
     if (LowerCaseEqualsASCII(attr, html_attr)) {
       *value = html_attributes_[i].second;
