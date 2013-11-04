@@ -419,12 +419,6 @@ void MediaStreamImpl::CreateWebKitSourceVector(
     WebKit::WebVector<WebKit::WebMediaStreamSource>& webkit_sources) {
   CHECK_EQ(devices.size(), webkit_sources.size());
   for (size_t i = 0; i < devices.size(); ++i) {
-    const char* track_type =
-        (type == WebKit::WebMediaStreamSource::TypeAudio) ? "a" : "v";
-    std::string source_id = base::StringPrintf("%s%s%u", label.c_str(),
-                                               track_type,
-                                               static_cast<unsigned int>(i));
-
     const WebKit::WebMediaStreamSource* existing_source =
         FindLocalSource(devices[i]);
     if (existing_source) {
@@ -434,7 +428,7 @@ void MediaStreamImpl::CreateWebKitSourceVector(
       continue;
     }
     webkit_sources[i].initialize(
-        UTF8ToUTF16(source_id),
+        UTF8ToUTF16(devices[i].device.id),
         type,
         UTF8ToUTF16(devices[i].device.name));
     MediaStreamSourceExtraData* source_extra_data(
@@ -530,7 +524,7 @@ const WebKit::WebMediaStreamSource* MediaStreamImpl::FindLocalSource(
             it->source.extraData());
     const StreamDeviceInfo& active_device = extra_data->device_info();
     if (active_device.device.id == device.device.id &&
-        active_device.session_id == device.session_id) {
+        active_device.device.type == device.device.type) {
       return &it->source;
     }
   }

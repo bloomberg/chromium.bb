@@ -133,12 +133,8 @@ void MediaStreamDispatcherHost::OnGenerateStream(
   const std::string& label = media_stream_manager_->GenerateStream(
       this, render_process_id_, render_view_id, page_request_id,
       components, security_origin);
-  if (label.empty()) {
-    Send(new MediaStreamMsg_StreamGenerationFailed(render_view_id,
-                                                   page_request_id));
-  } else {
-    StoreRequest(render_view_id, page_request_id, label);
-  }
+  CHECK(!label.empty());
+  StoreRequest(render_view_id, page_request_id, label);
 }
 
 void MediaStreamDispatcherHost::OnCancelGenerateStream(int render_view_id,
