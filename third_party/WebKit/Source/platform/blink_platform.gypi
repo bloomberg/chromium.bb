@@ -96,6 +96,7 @@
       'SharedTimer.h',
       'Supplementable.h',
       'Task.h',
+      'ThemeTypes.h',
       'ThreadTimers.cpp',
       'ThreadTimers.h',
       'Timer.cpp',

@@ -26,7 +26,7 @@
 #if USE(NEW_THEME)
 #include "core/platform/Theme.h"
 #else
-#include "core/platform/ThemeTypes.h"
+#include "platform/ThemeTypes.h"
 #endif
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/CachedUAStyle.h"
