@@ -903,6 +903,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
 #define MAYBE_SignInNoCrash DISABLED_SignInNoCrash
 #else
 #define MAYBE_SignInNoCrash SignInNoCrash
+#endif
 
 // Simulates the user successfully signing in to the dialog for the first time.
 // The controller listens for nav entry commits and should not destroy the web
