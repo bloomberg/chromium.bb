@@ -2,7 +2,7 @@ Tests that appropriate language track is loaded, according to user preferences.
 
 EVENT(canplaythrough)
 
-** Caption button should be visible and enabled because we have a captions track.
+** Caption button should be visible and enabled.
 EXPECTED (captionsButtonCoordinates[0] > '0') OK
 EXPECTED (captionsButtonCoordinates[1] > '0') OK
 EXPECTED (captionsButtonElement.disabled == 'false') OK

@@ -1,0 +1,8 @@
+Tests that the closed captions button is not visible.
+
+
+** Caption button should not be visible.
+EXPECTED (captionsButtonCoordinates[0] <= '0') OK
+EXPECTED (captionsButtonCoordinates[1] <= '0') OK
+END OF TEST
+

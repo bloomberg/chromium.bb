@@ -281,7 +281,11 @@ audio::-webkit-media-controls-return-to-realtime-button, video::-webkit-media-co
     color: inherit;
 }
 
-audio::-webkit-media-controls-toggle-closed-captions-button, video::-webkit-media-controls-toggle-closed-captions-button {
+audio::-webkit-media-controls-toggle-closed-captions-button {
+    display: none;
+}
+
+video::-webkit-media-controls-toggle-closed-captions-button {
     -webkit-appearance: media-toggle-closed-captions-button;
     display: flex;
     flex: none;

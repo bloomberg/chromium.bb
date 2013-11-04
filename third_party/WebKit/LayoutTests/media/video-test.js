@@ -46,6 +46,11 @@ function findMediaElement()
         video = document.getElementsByTagName('video')[0];
         if (video)
             mediaElement = video;
+        else {
+            audio = document.getElementsByTagName('audio')[0];
+            if (audio)
+                mediaElement = audio;
+        }
     } catch (ex) { }
 }
 

@@ -79,8 +79,8 @@ function textTrackDisplayElement(parentElement, id, cueNumber)
 function testClosedCaptionsButtonVisibility(expected)
 {
     try {
-        captionsButtonElement = mediaControlsElement(internals.shadowRoot(video).firstChild, "-webkit-media-controls-toggle-closed-captions-button");
-        captionsButtonCoordinates = mediaControlsButtonCoordinates(video, "toggle-closed-captions-button");
+        captionsButtonElement = mediaControlsElement(internals.shadowRoot(mediaElement).firstChild, "-webkit-media-controls-toggle-closed-captions-button");
+        captionsButtonCoordinates = mediaControlsButtonCoordinates(mediaElement, "toggle-closed-captions-button");
     } catch (exception) {
         consoleWrite("Failed to find a closed captions button or its coordinates: " + exception);
         if (expected)
@@ -90,12 +90,12 @@ function testClosedCaptionsButtonVisibility(expected)
 
     consoleWrite("");
     if (expected == true) {
-        consoleWrite("** Caption button should be visible and enabled because we have a captions track.");
+        consoleWrite("** Caption button should be visible and enabled.");
         testExpected("captionsButtonCoordinates[0]", 0, ">");
         testExpected("captionsButtonCoordinates[1]", 0, ">");
         testExpected("captionsButtonElement.disabled", false);
     } else {
-        consoleWrite("** Caption button should not be visible as there are no caption tracks.");
+        consoleWrite("** Caption button should not be visible.");
         testExpected("captionsButtonCoordinates[0]", 0, "<=");
         testExpected("captionsButtonCoordinates[1]", 0, "<=");
     }
