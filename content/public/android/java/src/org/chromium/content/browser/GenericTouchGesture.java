@@ -32,6 +32,7 @@ public class GenericTouchGesture {
 
     private int mNativePtr;
     private long mDownTime;
+    private long mStartTime;
 
     private final byte STATE_INITIAL = 0;
     private final byte STATE_MOVING = 1;
@@ -174,6 +175,7 @@ public class GenericTouchGesture {
     void start(int nativePtr) {
         assert mNativePtr == 0;
         mNativePtr = nativePtr;
+        mStartTime = SystemClock.uptimeMillis();
 
         Runnable runnable = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) ?
             createJBRunnable() : createPreJBRunnable();
@@ -183,7 +185,7 @@ public class GenericTouchGesture {
     boolean sendEvent(long time) {
         switch (state) {
             case STATE_INITIAL: {
-                mDownTime = SystemClock.uptimeMillis();
+                mDownTime = time;
 
                 // Touch the first pointer down. This initiates the gesture.
                 MotionEvent event = MotionEvent.obtain(mDownTime, time,
@@ -266,7 +268,7 @@ public class GenericTouchGesture {
                     @Override
                     public void onTimeUpdate(TimeAnimator animation, long totalTime,
                             long deltaTime) {
-                        if (!sendEvent(mDownTime + totalTime)) {
+                        if (!sendEvent(mStartTime + totalTime)) {
                             mTimeAnimator.end();
                         }
                     }
