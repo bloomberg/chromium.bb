@@ -308,6 +308,10 @@ void LocallyManagedUserCreationScreen::OnManagerFullyAuthenticated(
 
   last_page_ = kNameOfNewUserParametersScreen;
 
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(::switches::kAllowCreateExistingManagedUsers))
+    return;
+
   ManagedUserSyncServiceFactory::GetForProfile(manager_profile)->
       GetManagedUsersAsync(base::Bind(
           &LocallyManagedUserCreationScreen::OnGetManagedUsers,
