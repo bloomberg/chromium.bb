@@ -44,10 +44,6 @@ class StartPageService : public BrowserContextKeyedService {
   // keyed service shutdown.
   class ExitObserver;
 
-  // The WebContentsDelegate implementation for the start page. This allows
-  // getUserMedia() request from the web contents.
-  class StartPageWebContentsDelegate;
-
   explicit StartPageService(Profile* profile);
   virtual ~StartPageService();
 
@@ -56,7 +52,6 @@ class StartPageService : public BrowserContextKeyedService {
 
   Profile* profile_;
   scoped_ptr<content::WebContents> contents_;
-  scoped_ptr<StartPageWebContentsDelegate> contents_delegate_;
   scoped_ptr<ExitObserver> exit_observer_;
   scoped_ptr<RecommendedApps> recommended_apps_;
 
