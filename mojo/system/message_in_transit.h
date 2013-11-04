@@ -62,6 +62,10 @@ class MOJO_SYSTEM_EXPORT MessageInTransit {
   uint32_t user_1_;
   uint32_t user_2_;
 
+  // Intentionally unimplemented (and private): Use |Destroy()| instead (which
+  // simply frees the memory).
+  ~MessageInTransit();
+
   DISALLOW_COPY_AND_ASSIGN(MessageInTransit);
 };
 

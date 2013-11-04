@@ -7,7 +7,6 @@
 #include <string.h>
 
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "mojo/system/message_in_transit.h"
 
 namespace mojo {
@@ -68,7 +67,12 @@ void LocalMessagePipeEndpoint::CancelAllWaiters() {
 void LocalMessagePipeEndpoint::Close() {
   DCHECK(is_open_);
   is_open_ = false;
-  STLDeleteElements(&message_queue_);
+  for (std::deque<MessageInTransit*>::iterator it = message_queue_.begin();
+       it != message_queue_.end();
+       ++it) {
+    (*it)->Destroy();
+  }
+  message_queue_.clear();
 }
 
 MojoResult LocalMessagePipeEndpoint::ReadMessage(

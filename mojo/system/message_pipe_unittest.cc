@@ -206,6 +206,37 @@ TEST(MessagePipeTest, Basic) {
   mp->Close(1);
 }
 
+TEST(MessagePipeTest, CloseWithQueuedIncomingMessages) {
+  scoped_refptr<MessagePipe> mp(new MessagePipe());
+
+  int32_t buffer[1];
+  const uint32_t kBufferSize = static_cast<uint32_t>(sizeof(buffer));
+  uint32_t buffer_size;
+
+  // Write some messages from port 1 (to port 0).
+  for (size_t i = 0; i < 5; i++) {
+    buffer[0] = i;
+    EXPECT_EQ(MOJO_RESULT_OK,
+              mp->WriteMessage(1,
+                               buffer, kBufferSize,
+                               NULL, 0,
+                               MOJO_WRITE_MESSAGE_FLAG_NONE));
+  }
+
+  // Port 0 shouldn't be empty.
+  buffer_size = 0;
+  EXPECT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
+            mp->ReadMessage(0,
+                            NULL, &buffer_size,
+                            NULL, NULL,
+                            MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(kBufferSize, buffer_size);
+
+  // Close port 0 first, which should have outstanding (incoming) messages.
+  mp->Close(0);
+  mp->Close(1);
+}
+
 TEST(MessagePipeTest, DiscardMode) {
   scoped_refptr<MessagePipe> mp(new MessagePipe());
 
