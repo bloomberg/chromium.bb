@@ -16,8 +16,8 @@ extern "C" {
 // Getting the right degree of C compatibility has been a constant struggle.
 // - Stroustrup, C++ Report, 12(7), July/August 2000.
 #define private priv
-#include "third_party/libvpx/source/libvpx/libmkv/EbmlIDs.h"
-#include "third_party/libvpx/source/libvpx/libmkv/EbmlWriter.h"
+#include "third_party/libvpx/source/libvpx/third_party/libmkv/EbmlIDs.h"
+#include "third_party/libvpx/source/libvpx/third_party/libmkv/EbmlWriter.h"
 #undef private
 }
 
