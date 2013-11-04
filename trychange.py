@@ -11,6 +11,7 @@ to the server by HTTP.
 import datetime
 import errno
 import getpass
+import itertools
 import json
 import logging
 import optparse
@@ -314,7 +315,88 @@ class GIT(SCM):
         branch=self.diff_against)
 
 
-def _ParseSendChangeOptions(options):
+def _ParseBotList(botlist, testfilter):
+  """Parses bot configurations from a list of strings."""
+  bots = []
+  if testfilter:
+    for bot in itertools.chain.from_iterable(botspec.split(',')
+                                             for botspec in botlist):
+      tests = set()
+      if ':' in bot:
+        if bot.endswith(':compile'):
+          tests |= set(['compile'])
+        else:
+          raise ValueError(
+              'Can\'t use both --testfilter and --bot builder:test formats '
+              'at the same time')
+
+      bots.append((bot, tests))
+  else:
+    for botspec in botlist:
+      botname = botspec.split(':')[0]
+      tests = set()
+      if ':' in botspec:
+        tests |= set(filter(None, botspec.split(':')[1].split(',')))
+      bots.append((botname, tests))
+  return bots
+
+
+def _ApplyTestFilter(testfilter, bot_spec):
+  """Applies testfilter from CLI.
+
+  Specifying a testfilter strips off any builder-specified tests (except for
+  compile).
+  """
+  if testfilter:
+    return [(botname, set(testfilter) | (tests & set(['compile'])))
+            for botname, tests in bot_spec]
+  else:
+    return bot_spec
+
+
+def _GenTSBotSpec(checkouts, change, changed_files, options):
+  bot_spec = []
+  # Get try slaves from PRESUBMIT.py files if not specified.
+  # Even if the diff comes from options.url, use the local checkout for bot
+  # selection.
+  try:
+    import presubmit_support
+    root_presubmit = checkouts[0].ReadRootFile('PRESUBMIT.py')
+    if not change:
+      if not changed_files:
+        changed_files = checkouts[0].file_tuples
+      change = presubmit_support.Change(options.name,
+                                        '',
+                                        checkouts[0].checkout_root,
+                                        changed_files,
+                                        options.issue,
+                                        options.patchset,
+                                        options.email)
+    trybots = presubmit_support.DoGetTrySlaves(
+        change,
+        checkouts[0].GetFileNames(),
+        checkouts[0].checkout_root,
+        root_presubmit,
+        options.project,
+        options.verbose,
+        sys.stdout)
+    if trybots:
+      if isinstance(trybots[0], basestring):
+        # PRESUBMIT.py sent us an old-style string list of bots.
+        # _ParseBotList's testfilter is set to None otherwise it will complain.
+        bot_spec = _ApplyTestFilter(options.testfilter,
+                                    _ParseBotList(trybots, None))
+      else:
+        # PRESUBMIT.py sent us a new-style (bot, set()) specification.
+        bot_spec = _ApplyTestFilter(options.testfilter, trybots)
+
+  except ImportError:
+    pass
+
+  return bot_spec
+
+
+def _ParseSendChangeOptions(bot_spec, options):
   """Parse common options passed to _SendChangeHTTP and _SendChangeSVN."""
   values = [
     ('user', options.user),
@@ -339,23 +421,13 @@ def _ParseSendChangeOptions(options):
   if options.project:
     values.append(('project', options.project))
 
-  filters = ','.join(options.testfilter)
-  if filters:
-    for botlist in options.bot:
-      for bot in botlist.split(','):
-        if ':' in bot:
-          raise ValueError(
-              'Can\'t use both --testfilter and --bot builder:test formats '
-              'at the same time')
-        else:
-          values.append(('bot', '%s:%s' % (bot, filters)))
-  else:
-    for bot in options.bot:
-      values.append(('bot', bot))
+  for bot, tests in bot_spec:
+    values.append(('bot', ('%s:%s' % (bot, ','.join(tests)))))
+
   return values
 
 
-def _SendChangeHTTP(options):
+def _SendChangeHTTP(bot_spec, options):
   """Send a change to the try server using the HTTP protocol."""
   if not options.host:
     raise NoTryServerAccess('Please use the --host option to specify the try '
@@ -364,7 +436,7 @@ def _SendChangeHTTP(options):
     raise NoTryServerAccess('Please use the --port option to specify the try '
         'server port to connect to.')
 
-  values = _ParseSendChangeOptions(options)
+  values = _ParseSendChangeOptions(bot_spec, options)
   values.append(('patch', options.diff))
 
   url = 'http://%s:%s/send_try_patch' % (options.host, options.port)
@@ -389,7 +461,7 @@ def _SendChangeHTTP(options):
     logging.info('Done')
   except IOError, e:
     logging.info(str(e))
-    if options.bot and len(e.args) > 2 and e.args[2] == 'got a bad status line':
+    if bot_spec and len(e.args) > 2 and e.args[2] == 'got a bad status line':
       raise NoTryServerAccess('%s is unaccessible. Bad --bot argument?' % url)
     else:
       raise NoTryServerAccess('%s is unaccessible. Reason: %s' % (url,
@@ -403,14 +475,14 @@ def _SendChangeHTTP(options):
     raise NoTryServerAccess('%s is unaccessible. Got:\n%s' % (url, response))
 
 
-def _SendChangeSVN(options):
+def _SendChangeSVN(bot_spec, options):
   """Send a change to the try server by committing a diff file on a subversion
   server."""
   if not options.svn_repo:
     raise NoTryServerAccess('Please use the --svn_repo option to specify the'
                             ' try server svn repository to connect to.')
 
-  values = _ParseSendChangeOptions(options)
+  values = _ParseSendChangeOptions(bot_spec, options)
   description = ''.join("%s=%s\n" % (k, v) for k, v in values)
   logging.info('Sending by SVN')
   logging.info(description)
@@ -460,11 +532,12 @@ def _SendChangeSVN(options):
     shutil.rmtree(temp_dir, True)
 
 
-def PrintSuccess(options):
+def PrintSuccess(bot_spec, options):
   if not options.dry_run:
     text = 'Patch \'%s\' sent to try server' % options.name
-    if options.bot:
-      text += ': %s' % ', '.join(options.bot)
+    if bot_spec:
+      text += ': %s' % ', '.join(
+          '%s:%s' % (b[0], ','.join(b[1])) for b in bot_spec)
     print(text)
 
 
@@ -811,75 +884,47 @@ def TryChange(argv,
                    'the TRYBOT_RESULTS_EMAIL_ADDRESS environment variable.')
     print('Results will be emailed to: ' + options.email)
 
-    if not options.bot:
-      # Get try slaves from PRESUBMIT.py files if not specified.
-      # Even if the diff comes from options.url, use the local checkout for bot
-      # selection.
-      try:
-        import presubmit_support
-        root_presubmit = checkouts[0].ReadRootFile('PRESUBMIT.py')
-        if not change:
-          if not changed_files:
-            changed_files = checkouts[0].file_tuples
-          change = presubmit_support.Change(options.name,
-                                            '',
-                                            checkouts[0].checkout_root,
-                                            changed_files,
-                                            options.issue,
-                                            options.patchset,
-                                            options.email)
-        options.bot = presubmit_support.DoGetTrySlaves(
-            change,
-            checkouts[0].GetFileNames(),
-            checkouts[0].checkout_root,
-            root_presubmit,
-            options.project,
-            options.verbose,
-            sys.stdout)
-      except ImportError:
-        pass
-      if options.testfilter:
-        bots = set()
-        for bot in options.bot:
-          assert ',' not in bot
-          if bot.endswith(':compile'):
-            # Skip over compile-only builders for now.
-            continue
-          bots.add(bot.split(':', 1)[0])
-        options.bot = list(bots)
+    if options.bot:
+      bot_spec = _ApplyTestFilter(
+          options.testfilter, _ParseBotList(options.bot, options.testfilter))
+    else:
+      bot_spec = _GenTSBotSpec(checkouts, change, changed_files, options)
 
-      # If no bot is specified, either the default pool will be selected or the
-      # try server will refuse the job. Either case we don't need to interfere.
+    if options.testfilter:
+      bot_spec = _ApplyTestFilter(options.testfilter, bot_spec)
 
-    if any('triggered' in b.split(':', 1)[0] for b in options.bot):
+    if any('triggered' in b[0] for b in bot_spec):
       print >> sys.stderr, (
           'ERROR You are trying to send a job to a triggered bot.  This type of'
           ' bot requires an\ninitial job from a parent (usually a builder).  '
-          'Instead send your job to the parent.\nBot list: %s' % options.bot)
+          'Instead send your job to the parent.\nBot list: %s' % bot_spec)
       return 1
 
     if options.print_bots:
       print 'Bots which would be used:'
-      for bot in options.bot:
-        print '  %s' % bot
+      for bot in bot_spec:
+        if bot[1]:
+          print '  %s:%s' % (bot[0], ','.join(bot[1]))
+        else:
+          print '  %s' % (bot[0])
       return 0
 
     # Send the patch.
     if options.send_patch:
       # If forced.
-      options.send_patch(options)
-      PrintSuccess(options)
+      options.send_patch(bot_spec, options)
+      PrintSuccess(bot_spec, options)
       return 0
     try:
       if can_http:
-        _SendChangeHTTP(options)
-        PrintSuccess(options)
+        _SendChangeHTTP(bot_spec, options)
+        PrintSuccess(bot_spec, options)
         return 0
     except NoTryServerAccess:
       if not can_svn:
         raise
-    _SendChangeSVN(options)
-    PrintSuccess(options)
+    _SendChangeSVN(bot_spec, options)
+    PrintSuccess(bot_spec, options)
     return 0
   except (InvalidScript, NoTryServerAccess), e:
     if swallow_exception:

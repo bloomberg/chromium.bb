@@ -51,8 +51,8 @@ class TryChangeUnittest(TryChangeTestsBase):
       'PrintSuccess',
       'RunCommand', 'RunGit', 'SCM', 'SVN', 'TryChange', 'USAGE', 'breakpad',
       'datetime', 'errno', 'fix_encoding', 'gcl', 'gclient_utils', 'gen_parser',
-      'getpass', 'json', 'logging', 'optparse', 'os', 'posixpath', 're', 'scm',
-      'shutil', 'subprocess2', 'sys', 'tempfile', 'urllib']
+      'getpass', 'itertools', 'json', 'logging', 'optparse', 'os', 'posixpath',
+      're', 'scm', 'shutil', 'subprocess2', 'sys', 'tempfile', 'urllib']
     # If this test fails, you should add the relevant test.
     self.compareMembers(trychange, members)
 
@@ -70,7 +70,10 @@ class TryChangeSimpleTest(unittest.TestCase):
     options, args = trychange.gen_parser(None).parse_args(cmd)
     self.assertEquals([], args)
     # pylint: disable=W0212
-    values = trychange._ParseSendChangeOptions(options)
+    bot_spec = trychange._ParseBotList(options.bot, options.testfilter)
+    if options.testfilter:
+      bot_spec = trychange._ApplyTestFilter(options.testfilter, bot_spec)
+    values = trychange._ParseSendChangeOptions(bot_spec, options)
     self.assertEquals(
         [
           ('user', 'joe'),
@@ -90,7 +93,7 @@ class TryChangeSimpleTest(unittest.TestCase):
     self.assertEquals([], args)
     try:
       # pylint: disable=W0212
-      trychange._ParseSendChangeOptions(options)
+      trychange._ParseBotList(options.bot, options.testfilter)
       self.fail()
     except ValueError:
       pass

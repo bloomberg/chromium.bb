@@ -6,7 +6,7 @@
 """Enables directory-specific presubmit checks to run at upload and/or commit.
 """
 
-__version__ = '1.6.2'
+__version__ = '1.7.0'
 
 # TODO(joi) Add caching where appropriate/needed. The API is designed to allow
 # caching (between all different invocations of presubmit scripts for a given
@@ -1031,14 +1031,22 @@ class GetTrySlavesExecuter(object):
             'Presubmit functions must return a list, got a %s instead: %s' %
             (type(result), str(result)))
       for item in result:
-        if not isinstance(item, basestring):
-          raise PresubmitFailure('All try slaves names must be strings.')
-        if item != item.strip():
+        if isinstance(item, basestring):
+          # Old-style ['bot'] format.
+          botname = item
+        elif isinstance(item, tuple):
+          # New-style [('bot', set(['tests']))] format.
+          botname = item[0]
+        else:
+          raise PresubmitFailure('PRESUBMIT.py returned invalid tryslave/test'
+                                 ' format.')
+
+        if botname != botname.strip():
           raise PresubmitFailure(
               'Try slave names cannot start/end with whitespace')
-        if ',' in item:
+        if ',' in botname:
           raise PresubmitFailure(
-              'Do not use \',\' separated builder or test names: %s' % item)
+              'Do not use \',\' separated builder or test names: %s' % botname)
     else:
       result = []
     return result
@@ -1084,7 +1092,18 @@ def DoGetTrySlaves(change,
     results += executer.ExecPresubmitScript(
         presubmit_script, filename, project, change)
 
-  slaves = list(set(results))
+  if all(isinstance(i, tuple) for i in results):
+    # New-style [('bot', set(['tests']))] format.
+    slave_dict = {}
+    for result in results:
+      slave_dict.setdefault(result[0], set()).update(result[1])
+    slaves = list(slave_dict.iteritems())
+  elif all(isinstance(i, basestring) for i in results):
+    # Old-style ['bot'] format.
+    slaves = list(set(results))
+  else:
+    raise ValueError('PRESUBMIT.py returned invalid trybot specification!')
+
   if slaves and verbose:
     output_stream.write(', '.join(slaves))
     output_stream.write('\n')
