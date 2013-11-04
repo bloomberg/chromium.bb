@@ -2,8 +2,6 @@ main/a/alsa-lib/libasound2_1.0.25-1ubuntu10_armhf.deb
 main/a/alsa-lib/libasound2-dev_1.0.25-1ubuntu10_armhf.deb
 main/a/atk1.0/libatk1.0-0_2.4.0-0ubuntu1_armhf.deb
 main/a/atk1.0/libatk1.0-dev_2.4.0-0ubuntu1_armhf.deb
-main/b/bzip2/libbz2-1.0_1.0.6-1_armhf.deb
-main/b/bzip2/libbz2-dev_1.0.6-1_armhf.deb
 main/c/cairo/libcairo2_1.10.2-6.1ubuntu2_armhf.deb
 main/c/cairo/libcairo2-dev_1.10.2-6.1ubuntu2_armhf.deb
 main/c/cairo/libcairo-gobject2_1.10.2-6.1ubuntu2_armhf.deb
@@ -43,6 +41,8 @@ main/k/krb5/libkdb5-6_1.10+dfsg~beta1-2ubuntu0.3_armhf.deb
 main/k/krb5/libkrb5-3_1.10+dfsg~beta1-2ubuntu0.3_armhf.deb
 main/k/krb5/libkrb5-dev_1.10+dfsg~beta1-2ubuntu0.3_armhf.deb
 main/k/krb5/libkrb5support0_1.10+dfsg~beta1-2ubuntu0.3_armhf.deb
+main/libc/libcap2/libcap2_2.22-1ubuntu3_armhf.deb
+main/libc/libcap2/libcap-dev_2.22-1ubuntu3_armhf.deb
 main/libf/libffi/libffi6_3.0.11~rc1-5_armhf.deb
 main/libg/libgcrypt11/libgcrypt11_1.5.0-3ubuntu0.2_armhf.deb
 main/libg/libgcrypt11/libgcrypt11-dev_1.5.0-3ubuntu0.2_armhf.deb

@@ -113,8 +113,6 @@ readonly ARMEL_EXTRA_PACKAGES="\
   libasound2-dev \
   libatk1.0-0 \
   libatk1.0-dev \
-  libbz2-1.0 \
-  libbz2-dev \
   libcairo2 \
   libcairo2-dev \
   libcairo-gobject2 \
@@ -164,6 +162,8 @@ readonly ARMEL_EXTRA_PACKAGES="\
   libnss3-dev \
   libnss-db \
   liborbit2 \
+  libcap-dev \
+  libcap2 \
   libpam0g \
   libpam0g-dev \
   libpango1.0-0 \
