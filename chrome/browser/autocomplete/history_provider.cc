@@ -95,7 +95,7 @@ bool HistoryProvider::FixupUserInput(AutocompleteInput* input) {
   string16 output = UTF8ToUTF16(canonical_gurl_str);
   // Don't prepend a scheme when the user didn't have one.  Since the fixer
   // upper only prepends the "http" scheme, that's all we need to check for.
-  if (!HasHTTPScheme(input_text))
+  if (!AutocompleteInput::HasHTTPScheme(input_text))
     TrimHttpPrefix(&output);
 
   // Make the number of trailing slashes on the output exactly match the input.
@@ -135,7 +135,7 @@ bool HistoryProvider::FixupUserInput(AutocompleteInput* input) {
 // static
 size_t HistoryProvider::TrimHttpPrefix(string16* url) {
   // Find any "http:".
-  if (!HasHTTPScheme(*url))
+  if (!AutocompleteInput::HasHTTPScheme(*url))
     return 0;
   size_t scheme_pos =
       url->find(ASCIIToUTF16(content::kHttpScheme) + char16(':'));

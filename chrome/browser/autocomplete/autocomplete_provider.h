@@ -242,9 +242,6 @@ class AutocompleteProvider
 
   virtual ~AutocompleteProvider();
 
-  // Returns whether |input| begins "http:" or "view-source:http:".
-  static bool HasHTTPScheme(const string16& input);
-
   // Updates the starred state of each of the matches in matches_ from the
   // profile's bookmark bar model.
   void UpdateStarredStateOfMatches();

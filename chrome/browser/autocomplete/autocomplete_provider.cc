@@ -16,7 +16,6 @@
 #include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
 #include "url/gurl.h"
-#include "url/url_util.h"
 
 // static
 const size_t AutocompleteProvider::kMaxMatches = 3;
@@ -120,16 +119,6 @@ string16 AutocompleteProvider::StringForURLDisplay(const GURL& url,
 
 AutocompleteProvider::~AutocompleteProvider() {
   Stop(false);
-}
-
-// static
-bool AutocompleteProvider::HasHTTPScheme(const string16& input) {
-  std::string utf8_input(UTF16ToUTF8(input));
-  url_parse::Component scheme;
-  if (url_util::FindAndCompareScheme(utf8_input, content::kViewSourceScheme,
-                                     &scheme))
-    utf8_input.erase(0, scheme.end() + 1);
-  return url_util::FindAndCompareScheme(utf8_input, content::kHttpScheme, NULL);
 }
 
 void AutocompleteProvider::UpdateStarredStateOfMatches() {

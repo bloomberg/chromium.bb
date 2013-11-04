@@ -13,6 +13,7 @@
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/url_canon_ip.h"
+#include "url/url_util.h"
 
 namespace {
 
@@ -495,6 +496,16 @@ int AutocompleteInput::NumNonHostComponents(const url_parse::Parsed& parts) {
   if (parts.ref.is_nonempty())
     ++num_nonhost_components;
   return num_nonhost_components;
+}
+
+// static
+bool AutocompleteInput::HasHTTPScheme(const string16& input) {
+  std::string utf8_input(UTF16ToUTF8(input));
+  url_parse::Component scheme;
+  if (url_util::FindAndCompareScheme(utf8_input, content::kViewSourceScheme,
+                                     &scheme))
+    utf8_input.erase(0, scheme.end() + 1);
+  return url_util::FindAndCompareScheme(utf8_input, content::kHttpScheme, NULL);
 }
 
 void AutocompleteInput::UpdateText(const string16& text,

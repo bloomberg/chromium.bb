@@ -390,7 +390,7 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
     // |match_location| below.  StringForURLDisplay() and TrimHttpPrefix() have
     // slightly different behavior as well (the latter will strip even without
     // two slashes after the scheme).
-    DCHECK(!trim_http || !HasHTTPScheme(input.text()));
+    DCHECK(!trim_http || !AutocompleteInput::HasHTTPScheme(input.text()));
     string16 display_string(provider->StringForURLDisplay(url, false, false));
     const size_t offset = trim_http ? TrimHttpPrefix(&display_string) : 0;
     match.fill_into_edit =
@@ -673,7 +673,7 @@ void HistoryURLProvider::RunAutocompletePasses(
   // Create a match for exactly what the user typed.  This will only be used as
   // a fallback in case we can't get the history service or URL DB; otherwise,
   // we'll run this again in DoAutocomplete() and use that result instead.
-  const bool trim_http = !HasHTTPScheme(input.text());
+  const bool trim_http = !AutocompleteInput::HasHTTPScheme(input.text());
   // Don't do this for queries -- while we can sometimes mark up a match for
   // this, it's not what the user wants, and just adds noise.
   if ((input.type() != AutocompleteInput::QUERY) &&

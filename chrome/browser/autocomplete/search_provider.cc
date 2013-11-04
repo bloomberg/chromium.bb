@@ -1689,7 +1689,8 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
       untrimmed_fill_into_edit.find(input) : prefix->prefix.length();
   size_t inline_autocomplete_offset = (prefix == NULL) ?
       string16::npos : (match_start + input.length());
-  bool trim_http = !HasHTTPScheme(input) && (!prefix || (match_start != 0));
+  bool trim_http = !AutocompleteInput::HasHTTPScheme(input) &&
+      (!prefix || (match_start != 0));
 
   // Preserve the forced query '?' prefix in |match.fill_into_edit|.
   // Otherwise, user edits to a suggestion would show non-Search results.
