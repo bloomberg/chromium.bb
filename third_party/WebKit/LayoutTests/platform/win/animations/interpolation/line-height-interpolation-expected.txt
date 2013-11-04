@@ -1,0 +1,57 @@
+FAIL: line-height from [4] to [14] was [normal] at -1, expected [0]
+PASS: line-height from [4] to [14] was [1] at -0.3
+PASS: line-height from [4] to [14] was [4] at 0
+PASS: line-height from [4] to [14] was [7] at 0.3
+PASS: line-height from [4] to [14] was [10] at 0.6
+PASS: line-height from [4] to [14] was [14] at 1
+PASS: line-height from [4] to [14] was [19] at 1.5
+FAIL: line-height from [4px] to [14px] was [normal] at -1, expected [0px]
+PASS: line-height from [4px] to [14px] was [1px] at -0.3
+PASS: line-height from [4px] to [14px] was [4px] at 0
+PASS: line-height from [4px] to [14px] was [7px] at 0.3
+PASS: line-height from [4px] to [14px] was [10px] at 0.6
+PASS: line-height from [4px] to [14px] was [14px] at 1
+PASS: line-height from [4px] to [14px] was [19px] at 1.5
+PASS: line-height from [normal] to [normal] was [normal] at -0.3
+PASS: line-height from [normal] to [normal] was [normal] at 0
+PASS: line-height from [normal] to [normal] was [normal] at 0.3
+PASS: line-height from [normal] to [normal] was [normal] at 0.6
+PASS: line-height from [normal] to [normal] was [normal] at 1
+PASS: line-height from [normal] to [normal] was [normal] at 1.5
+FAIL: line-height from [4] to [14px] was [99.80000305175781px] at -0.3, expected [4]
+PASS: line-height from [4] to [14px] was [4] at 0
+FAIL: line-height from [4] to [14px] was [60.20000076293945px] at 0.3, expected [4]
+FAIL: line-height from [4] to [14px] was [40.39999771118164px] at 0.6, expected [14px]
+PASS: line-height from [4] to [14px] was [14px] at 1
+FAIL: line-height from [4] to [14px] was [-19px] at 1.5, expected [14px]
+FAIL: line-height from [14px] to [normal] was [24.200000762939453px] at -0.3, expected [14px]
+PASS: line-height from [14px] to [normal] was [14px] at 0
+FAIL: line-height from [14px] to [normal] was [3.799999713897705px] at 0.3, expected [14px]
+FAIL: line-height from [14px] to [normal] was [-6.40000057220459px] at 0.6, expected [normal]
+PASS: line-height from [14px] to [normal] was [normal] at 1
+FAIL: line-height from [14px] to [normal] was [-37px] at 1.5, expected [normal]
+PASS: line-height from [normal] to [4] was [normal] at -0.3
+PASS: line-height from [normal] to [4] was [normal] at 0
+FAIL: line-height from [normal] to [4] was [10px] at 0.3, expected [normal]
+FAIL: line-height from [normal] to [4] was [40px] at 0.6, expected [4]
+PASS: line-height from [normal] to [4] was [4] at 1
+FAIL: line-height from [normal] to [4] was [130px] at 1.5, expected [4]
+FAIL: line-height from [4] to [normal] was [110px] at -0.3, expected [4]
+PASS: line-height from [4] to [normal] was [4] at 0
+FAIL: line-height from [4] to [normal] was [50px] at 0.3, expected [4]
+FAIL: line-height from [4] to [normal] was [20px] at 0.6, expected [normal]
+PASS: line-height from [4] to [normal] was [normal] at 1
+PASS: line-height from [4] to [normal] was [normal] at 1.5
+FAIL: line-height from [normal] to [14px] was [-30.200000762939453px] at -0.3, expected [normal]
+PASS: line-height from [normal] to [14px] was [normal] at 0
+FAIL: line-height from [normal] to [14px] was [-9.799999237060547px] at 0.3, expected [normal]
+FAIL: line-height from [normal] to [14px] was [0.40000081062316895px] at 0.6, expected [14px]
+PASS: line-height from [normal] to [14px] was [14px] at 1
+FAIL: line-height from [normal] to [14px] was [31px] at 1.5, expected [14px]
+FAIL: line-height from [14px] to [4] was [-5.8000006675720215px] at -0.3, expected [14px]
+PASS: line-height from [14px] to [4] was [14px] at 0
+FAIL: line-height from [14px] to [4] was [33.79999923706055px] at 0.3, expected [14px]
+FAIL: line-height from [14px] to [4] was [53.60000228881836px] at 0.6, expected [4]
+PASS: line-height from [14px] to [4] was [4] at 1
+FAIL: line-height from [14px] to [4] was [113px] at 1.5, expected [4]
+

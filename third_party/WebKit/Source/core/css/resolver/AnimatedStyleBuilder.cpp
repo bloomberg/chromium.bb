@@ -341,6 +341,12 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyLightingColor:
         style->setLightingColor(toAnimatableColor(value)->color());
         return;
+    case CSSPropertyLineHeight:
+        if (value->isLength())
+            style->setLineHeight(animatableValueToLength(value, state, NonNegativeValues));
+        else
+            style->setLineHeight(Length(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0), Percent));
+        return;
     case CSSPropertyListStyleImage:
         style->setListStyleImage(toAnimatableImage(value)->toStyleImage());
         return;
