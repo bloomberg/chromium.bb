@@ -546,7 +546,12 @@ TEST_F(WebFrameCSSCallbackTest, DISABLED_DisplayNone)
     EXPECT_THAT(matchedSelectors(), testing::ElementsAre());
 }
 
+// Flaky on Win7 and Mac dbg: crbug.com/314554
+#if (OS(MACOSX) || OS(WIN)) && !defined(NDEBUG)
+TEST_F(WebFrameCSSCallbackTest, FLAKY_Reparenting)
+#else
 TEST_F(WebFrameCSSCallbackTest, Reparenting)
+#endif
 {
     loadHTML(
         "<div id='d1'><span></span></div>"
