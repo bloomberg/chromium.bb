@@ -74,7 +74,6 @@ public:
     // necessarily be stacking contexts.
     bool isStackingContainer() const { return isStackingContext() || needsToBeStackingContainer(); }
 
-    bool needsToBeStackingContainer() const;
     bool setNeedsToBeStackingContainer(bool);
 
     // Returns true if z ordering would not change if this layer were a stacking container.
@@ -182,6 +181,8 @@ private:
         OwnPtr<Vector<RenderLayerStackingNode*> >& posZOrderList, OwnPtr<Vector<RenderLayerStackingNode*> >& negZOrderList);
 
     bool isDirtyStackingContainer() const { return m_zOrderListsDirty && isStackingContainer(); }
+
+    bool needsToBeStackingContainer() const;
 
     RenderLayerCompositor* compositor() const;
     // FIXME: Investigate changing this to Renderbox.

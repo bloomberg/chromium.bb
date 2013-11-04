@@ -78,8 +78,10 @@ RenderLayerScrollableArea::RenderLayerScrollableArea(RenderBox* box)
     , m_inResizeMode(false)
     , m_scrollDimensionsDirty(true)
     , m_inOverflowRelayout(false)
+    , m_needsCompositedScrolling(false)
     , m_willUseCompositedScrollingHasBeenRecorded(false)
     , m_isScrollableAreaHasBeenRecorded(false)
+    , m_forceNeedsCompositedScrolling(DoNotForceCompositedScrolling)
     , m_scrollCorner(0)
     , m_resizer(0)
 {
@@ -1400,7 +1402,7 @@ void RenderLayerScrollableArea::updateNeedsCompositedScrolling()
 
 bool RenderLayerScrollableArea::setNeedsCompositedScrolling(bool needsCompositedScrolling)
 {
-    if (layer()->m_needsCompositedScrolling == needsCompositedScrolling)
+    if (m_needsCompositedScrolling == needsCompositedScrolling)
         return false;
 
     // Count the total number of RenderLayers which need composited scrolling at
@@ -1411,7 +1413,7 @@ bool RenderLayerScrollableArea::setNeedsCompositedScrolling(bool needsComposited
         m_willUseCompositedScrollingHasBeenRecorded = true;
     }
 
-    layer()->m_needsCompositedScrolling = needsCompositedScrolling;
+    m_needsCompositedScrolling = needsCompositedScrolling;
 
     return true;
 }
@@ -1442,6 +1444,35 @@ bool RenderLayerScrollableArea::usesCompositedScrolling() const
         return false;
 
     return m_box->compositedLayerMapping() && m_box->compositedLayerMapping()->scrollingLayer();
+}
+
+bool RenderLayerScrollableArea::adjustForForceCompositedScrollingMode(bool value) const
+{
+    switch (m_forceNeedsCompositedScrolling) {
+    case DoNotForceCompositedScrolling:
+        return value;
+    case CompositedScrollingAlwaysOn:
+        return true;
+    case CompositedScrollingAlwaysOff:
+        return false;
+    }
+
+    ASSERT_NOT_REACHED();
+    return value;
+}
+
+bool RenderLayerScrollableArea::needsCompositedScrolling() const
+{
+    return adjustForForceCompositedScrollingMode(m_needsCompositedScrolling);
+}
+
+void RenderLayerScrollableArea::setForceNeedsCompositedScrolling(ForceNeedsCompositedScrollingMode mode)
+{
+    if (m_forceNeedsCompositedScrolling == mode)
+        return;
+
+    m_forceNeedsCompositedScrolling = mode;
+    layer()->didUpdateNeedsCompositedScrolling();
 }
 
 } // Namespace WebCore

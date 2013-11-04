@@ -449,7 +449,7 @@ void RenderLayerStackingNode::updateIsNormalFlowOnly()
 
 bool RenderLayerStackingNode::needsToBeStackingContainer() const
 {
-    return layer()->adjustForForceCompositedScrollingMode(m_needsToBeStackingContainer);
+    return layer()->scrollableArea() && layer()->scrollableArea()->adjustForForceCompositedScrollingMode(m_needsToBeStackingContainer);
 }
 
 // Determine whether the current layer can be promoted to a stacking container.

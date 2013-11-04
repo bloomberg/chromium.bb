@@ -1781,7 +1781,7 @@ void Internals::setNeedsCompositedScrolling(Element* element, unsigned needsComp
     element->document().updateLayout();
 
     if (RenderLayer* layer = getRenderLayerForElement(element, es))
-        layer->setForceNeedsCompositedScrolling(static_cast<RenderLayer::ForceNeedsCompositedScrollingMode>(needsCompositedScrolling));
+        layer->scrollableArea()->setForceNeedsCompositedScrolling(static_cast<ForceNeedsCompositedScrollingMode>(needsCompositedScrolling));
 }
 
 String Internals::repaintRectsAsText(Document* document, ExceptionState& es) const

@@ -53,12 +53,20 @@ enum ResizerHitTestType {
     ResizerForTouch
 };
 
+enum ForceNeedsCompositedScrollingMode {
+    DoNotForceCompositedScrolling = 0,
+    CompositedScrollingAlwaysOn = 1,
+    CompositedScrollingAlwaysOff = 2
+};
+
 class PlatformEvent;
 class RenderBox;
 class RenderLayer;
 class RenderScrollbarPart;
 
 class RenderLayerScrollableArea FINAL : public ScrollableArea {
+    friend class Internals;
+
 public:
     RenderLayerScrollableArea(RenderBox*);
     virtual ~RenderLayerScrollableArea();
@@ -164,6 +172,12 @@ public:
     // Rectangle encompassing the scroll corner and resizer rect.
     IntRect scrollCornerAndResizerRect() const;
 
+    bool needsCompositedScrolling() const;
+
+    // FIXME: This needs to be exposed as forced compositing scrolling is a RenderLayerScrollableArea
+    // concept and stacking container is a RenderLayerStackingNode concept.
+    bool adjustForForceCompositedScrollingMode(bool) const;
+
 private:
     bool hasHorizontalOverflow() const;
     bool hasVerticalOverflow() const;
@@ -207,6 +221,8 @@ private:
 
     virtual void updateHasVisibleNonLayerContent() OVERRIDE;
 
+    void setForceNeedsCompositedScrolling(ForceNeedsCompositedScrollingMode);
+
     RenderBox* m_box;
 
     // Keeps track of whether the layer is currently resizing, so events can cause resizing to start and stop.
@@ -215,9 +231,12 @@ private:
     unsigned m_scrollDimensionsDirty : 1;
     unsigned m_inOverflowRelayout : 1;
 
+    unsigned m_needsCompositedScrolling : 1;
     unsigned m_willUseCompositedScrollingHasBeenRecorded : 1;
 
     unsigned m_isScrollableAreaHasBeenRecorded : 1;
+
+    ForceNeedsCompositedScrollingMode m_forceNeedsCompositedScrolling;
 
     // The width/height of our scrolled area.
     LayoutRect m_overflowRect;

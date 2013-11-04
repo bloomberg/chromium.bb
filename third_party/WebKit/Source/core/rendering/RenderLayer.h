@@ -350,11 +350,10 @@ public:
     CompositedLayerMapping* compositedLayerMapping() const { return m_compositedLayerMapping.get(); }
     CompositedLayerMapping* ensureCompositedLayerMapping();
     void clearCompositedLayerMapping(bool layerBeingDestroyed = false);
-    bool adjustForForceCompositedScrollingMode(bool) const;
 
     bool hasCompositedMask() const;
     bool hasCompositedClippingMask() const;
-    bool needsCompositedScrolling() const;
+    bool needsCompositedScrolling() const { return m_scrollableArea && m_scrollableArea->needsCompositedScrolling(); }
 
     RenderLayer* scrollParent() const;
     RenderLayer* clipParent() const;
@@ -421,14 +420,6 @@ public:
 
     bool scrollsWithRespectTo(const RenderLayer*) const;
 
-    enum ForceNeedsCompositedScrollingMode {
-        DoNotForceCompositedScrolling = 0,
-        CompositedScrollingAlwaysOn = 1,
-        CompositedScrollingAlwaysOff = 2
-    };
-
-    void setForceNeedsCompositedScrolling(ForceNeedsCompositedScrollingMode);
-
     void addLayerHitTestRects(LayerHitTestRects&) const;
 
     // FIXME: This should probably return a ScrollableArea but a lot of internal methods are mistakenly exposed.
@@ -474,7 +465,6 @@ private:
 
     void updateOutOfFlowPositioned(const RenderStyle* oldStyle);
 
-    bool setNeedsCompositedScrolling(bool);
     void didUpdateNeedsCompositedScrolling();
 
     // Returns true if the position changed.
@@ -634,8 +624,6 @@ protected:
 
     unsigned m_isUnclippedDescendant : 1;
 
-    unsigned m_needsCompositedScrolling : 1;
-
     const unsigned m_isRootLayer : 1;
 
     unsigned m_usedTransparency : 1; // Tracks whether we need to close a transparent layer, i.e., whether
@@ -721,8 +709,6 @@ protected:
     };
 
     CompositingProperties m_compositingProperties;
-
-    ForceNeedsCompositedScrollingMode m_forceNeedsCompositedScrolling;
 
 private:
     enum CompositedScrollingHistogramBuckets {

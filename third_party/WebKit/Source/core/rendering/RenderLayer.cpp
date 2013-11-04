@@ -110,7 +110,6 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
     , m_hasOutOfFlowPositionedDescendantDirty(true)
     , m_hasUnclippedDescendant(false)
     , m_isUnclippedDescendant(false)
-    , m_needsCompositedScrolling(false)
     , m_isRootLayer(renderer->isRenderView())
     , m_usedTransparency(false)
     , m_childLayerHasBlendMode(false)
@@ -136,7 +135,6 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
     , m_staticInlinePosition(0)
     , m_staticBlockPosition(0)
     , m_enclosingPaginationLayer(0)
-    , m_forceNeedsCompositedScrolling(DoNotForceCompositedScrolling)
     , m_repainter(renderer)
     , m_clipper(renderer)
 {
@@ -1677,26 +1675,6 @@ void RenderLayer::convertToLayerCoords(const RenderLayer* ancestorLayer, LayoutR
     rect.move(-delta.x(), -delta.y());
 }
 
-bool RenderLayer::adjustForForceCompositedScrollingMode(bool value) const
-{
-    switch (m_forceNeedsCompositedScrolling) {
-    case DoNotForceCompositedScrolling:
-        return value;
-    case CompositedScrollingAlwaysOn:
-        return true;
-    case CompositedScrollingAlwaysOff:
-        return false;
-    }
-
-    ASSERT_NOT_REACHED();
-    return value;
-}
-
-bool RenderLayer::needsCompositedScrolling() const
-{
-    return adjustForForceCompositedScrollingMode(m_needsCompositedScrolling);
-}
-
 RenderLayer* RenderLayer::scrollParent() const
 {
     if (!compositorDrivenAcceleratedScrollingEnabled())
@@ -1745,15 +1723,6 @@ RenderLayer* RenderLayer::clipParent() const
     }
 
     return clipParent;
-}
-
-void RenderLayer::setForceNeedsCompositedScrolling(RenderLayer::ForceNeedsCompositedScrollingMode mode)
-{
-    if (m_forceNeedsCompositedScrolling == mode)
-        return;
-
-    m_forceNeedsCompositedScrolling = mode;
-    didUpdateNeedsCompositedScrolling();
 }
 
 void RenderLayer::didUpdateNeedsCompositedScrolling()
