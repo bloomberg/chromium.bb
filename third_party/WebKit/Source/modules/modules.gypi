@@ -521,6 +521,8 @@
       'quota/WorkerNavigatorStorageQuota.h',
       'serviceworkers/ServiceWorker.cpp',
       'serviceworkers/ServiceWorker.h',
+      'serviceworkers/ServiceWorkerError.cpp',
+      'serviceworkers/ServiceWorkerError.h',
       'serviceworkers/NavigatorServiceWorker.cpp',
       'serviceworkers/NavigatorServiceWorker.h',
       'speech/DOMWindowSpeechSynthesis.cpp',

@@ -83,7 +83,7 @@ public:
 private:
     RefPtr<ScriptPromiseResolver> m_resolver;
     DOMRequestState m_requestState;
-    DISALLOW_COPY_AND_ASSIGN(CallbackPromiseAdapter);
+    WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
 };
 
 } // namespace WebCore

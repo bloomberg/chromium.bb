@@ -28,28 +28,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebServiceWorkerProvider_h
-#define WebServiceWorkerProvider_h
+#ifndef ServiceWorkerError_h
+#define ServiceWorkerError_h
 
-#include "public/platform/WebCallbacks.h"
+#include "core/dom/DOMError.h"
+#include "public/platform/WebServiceWorkerError.h"
+#include "wtf/PassOwnPtr.h"
 
-namespace WebKit {
+namespace WebCore {
 
-class WebString;
-class WebURL;
-class WebServiceWorker;
-struct WebServiceWorkerError;
-
-class WebServiceWorkerProvider {
+class ServiceWorkerError {
 public:
-    // The WebServiceWorker and WebServiceWorkerError ownership are passed to the WebServiceWorkerCallbacks implementation.
-    typedef WebCallbacks<WebServiceWorker, WebServiceWorkerError> WebServiceWorkerCallbacks;
-    virtual void registerServiceWorker(const WebURL& pattern, const WebURL& scriptUrl, WebServiceWorkerCallbacks*) { }
+    // For CallbackPromiseAdapter
+    typedef WebKit::WebServiceWorkerError WebType;
+    static PassRefPtr<DOMError> from(WebType* webErrorRaw)
+    {
+        OwnPtr<WebType> webError = adoptPtr(webErrorRaw);
+        RefPtr<DOMError> error = DOMError::create(errorString(webError->errorType), webError->message);
+        return error.release();
+    }
 
-    virtual void unregisterServiceWorker(const WebURL& pattern, WebServiceWorkerCallbacks*) { }
-    virtual ~WebServiceWorkerProvider() { }
+private:
+    static String errorString(WebKit::WebServiceWorkerError::ErrorType);
+    WTF_MAKE_NONCOPYABLE(ServiceWorkerError);
+    ServiceWorkerError() WTF_DELETED_FUNCTION;
 };
 
-} // namespace WebKit
+} // namespace WebCore
 
-#endif
+#endif // ServiceWorkerError_h

@@ -32,6 +32,7 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "V8ServiceWorker.h"
+#include "bindings/V8DOMError.h"
 #include "bindings/v8/CallbackPromiseAdapter.h"
 #include "bindings/v8/ScriptPromiseResolver.h"
 #include "core/dom/Document.h"
@@ -43,6 +44,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/workers/SharedWorker.h"
 #include "modules/serviceworkers/ServiceWorker.h"
+#include "modules/serviceworkers/ServiceWorkerError.h"
 #include "public/platform/WebServiceWorkerProvider.h"
 #include "public/platform/WebServiceWorkerProviderClient.h"
 #include "public/platform/WebString.h"
@@ -99,30 +101,30 @@ ScriptPromise NavigatorServiceWorker::registerServiceWorker(ExecutionContext* co
 ScriptPromise NavigatorServiceWorker::registerServiceWorker(ExecutionContext* executionContext, const String& pattern, const String& scriptSrc, ExceptionState& es)
 {
     ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
-    Frame* frame = m_navigator->frame();
+    ScriptPromise promise = ScriptPromise::createPending(executionContext);
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(promise, executionContext);
 
+    Frame* frame = m_navigator->frame();
     if (!frame) {
-        es.throwDOMException(InvalidStateError, "No document available.");
-        return ScriptPromise();
+        resolver->reject(DOMError::create(InvalidStateError, "No document available."));
+        return promise;
     }
 
     RefPtr<SecurityOrigin> documentOrigin = frame->document()->securityOrigin();
 
     KURL patternURL = executionContext->completeURL(pattern);
-    if (documentOrigin->canRequest(patternURL)) {
-        es.throwSecurityError("Can only register for patterns in the document's origin.");
-        return ScriptPromise();
+    if (!documentOrigin->canRequest(patternURL)) {
+        resolver->reject(DOMError::create(SecurityError, "Can only register for patterns in the document's origin."));
+        return promise;
     }
 
     KURL scriptURL = executionContext->completeURL(scriptSrc);
-    if (documentOrigin->canRequest(scriptURL)) {
-        es.throwSecurityError("Script must be in document's origin.");
-        return ScriptPromise();
+    if (!documentOrigin->canRequest(scriptURL)) {
+        resolver->reject(DOMError::create(SecurityError, "Script must be in document's origin."));
+        return promise;
     }
 
-    ScriptPromise promise = ScriptPromise::createPending(executionContext);
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(promise, executionContext);
-    ensureProvider()->registerServiceWorker(patternURL, scriptURL, new CallbackPromiseAdapter<ServiceWorker, ServiceWorker>(resolver, executionContext));
+    ensureProvider()->registerServiceWorker(patternURL, scriptURL, new CallbackPromiseAdapter<ServiceWorker, ServiceWorkerError>(resolver, executionContext));
     return promise;
 }
 
@@ -134,23 +136,25 @@ ScriptPromise NavigatorServiceWorker::unregisterServiceWorker(ExecutionContext* 
 ScriptPromise NavigatorServiceWorker::unregisterServiceWorker(ExecutionContext* executionContext, const String& pattern, ExceptionState& es)
 {
     ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
+    ScriptPromise promise = ScriptPromise::createPending(executionContext);
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(promise, executionContext);
+
     Frame* frame = m_navigator->frame();
     if (!frame) {
-        es.throwDOMException(InvalidStateError, "No document available.");
-        return ScriptPromise();
+        resolver->reject(DOMError::create(InvalidStateError, "No document available."));
+        return promise;
     }
 
     RefPtr<SecurityOrigin> documentOrigin = frame->document()->securityOrigin();
 
     KURL patternURL = executionContext->completeURL(pattern);
-    if (documentOrigin->canRequest(patternURL)) {
-        es.throwSecurityError("Can only unregister for patterns in the document's origin.");
-        return ScriptPromise();
+    if (!documentOrigin->canRequest(patternURL)) {
+        resolver->reject(DOMError::create(SecurityError, "Can only unregister for patterns in the document's origin."));
+
+        return promise;
     }
 
-    ScriptPromise promise = ScriptPromise::createPending(executionContext);
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(promise, executionContext);
-    ensureProvider()->unregisterServiceWorker(patternURL, new CallbackPromiseAdapter<ServiceWorker, ServiceWorker>(resolver, executionContext));
+    ensureProvider()->unregisterServiceWorker(patternURL, new CallbackPromiseAdapter<ServiceWorker, ServiceWorkerError>(resolver, executionContext));
     return promise;
 }
 

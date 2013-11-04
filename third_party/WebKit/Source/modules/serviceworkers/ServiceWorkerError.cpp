@@ -28,28 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebServiceWorkerProvider_h
-#define WebServiceWorkerProvider_h
+#include "config.h"
+#include "ServiceWorkerError.h"
 
-#include "public/platform/WebCallbacks.h"
+using WebKit::WebServiceWorkerError;
+namespace WebCore {
 
-namespace WebKit {
+String ServiceWorkerError::errorString(WebServiceWorkerError::ErrorType type)
+{
+    switch (type) {
+    case WebServiceWorkerError::DisabledError:
+        return "DisabledError";
+    default:
+        ASSERT_NOT_REACHED();
+    }
+    return String();
+}
 
-class WebString;
-class WebURL;
-class WebServiceWorker;
-struct WebServiceWorkerError;
-
-class WebServiceWorkerProvider {
-public:
-    // The WebServiceWorker and WebServiceWorkerError ownership are passed to the WebServiceWorkerCallbacks implementation.
-    typedef WebCallbacks<WebServiceWorker, WebServiceWorkerError> WebServiceWorkerCallbacks;
-    virtual void registerServiceWorker(const WebURL& pattern, const WebURL& scriptUrl, WebServiceWorkerCallbacks*) { }
-
-    virtual void unregisterServiceWorker(const WebURL& pattern, WebServiceWorkerCallbacks*) { }
-    virtual ~WebServiceWorkerProvider() { }
-};
-
-} // namespace WebKit
-
-#endif
+}

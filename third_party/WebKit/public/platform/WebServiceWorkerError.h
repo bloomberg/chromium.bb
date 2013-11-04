@@ -28,26 +28,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebServiceWorkerProvider_h
-#define WebServiceWorkerProvider_h
+#ifndef WebServiceWorkerError_h
+#define WebServiceWorkerError_h
 
-#include "public/platform/WebCallbacks.h"
+#include "WebString.h"
 
 namespace WebKit {
 
-class WebString;
-class WebURL;
-class WebServiceWorker;
-struct WebServiceWorkerError;
+struct WebServiceWorkerError {
+    enum ErrorType {
+        DisabledError = 0,
+        SecurityError
+    };
 
-class WebServiceWorkerProvider {
-public:
-    // The WebServiceWorker and WebServiceWorkerError ownership are passed to the WebServiceWorkerCallbacks implementation.
-    typedef WebCallbacks<WebServiceWorker, WebServiceWorkerError> WebServiceWorkerCallbacks;
-    virtual void registerServiceWorker(const WebURL& pattern, const WebURL& scriptUrl, WebServiceWorkerCallbacks*) { }
+    WebServiceWorkerError(ErrorType errorType, const WebString& message)
+        : errorType(errorType), message(message) { }
 
-    virtual void unregisterServiceWorker(const WebURL& pattern, WebServiceWorkerCallbacks*) { }
-    virtual ~WebServiceWorkerProvider() { }
+    ErrorType errorType;
+    WebString message;
 };
 
 } // namespace WebKit

@@ -1,0 +1,48 @@
+<html>
+<head>
+<script src="/js-test-resources/js-test-pre.js"></script>
+</head>
+<body>
+<script>
+      description("Tests if ServiceWorker registration is working")
+
+      function test_registerBasics() {
+          debug("Registering normal pattern");
+          return navigator.registerServiceWorker("/*", "serviceworker.js").then(
+              function(worker) {
+                  debug("Successfully registered");
+                  return worker;
+              },
+              function(e) {
+                  regError = e;
+                  shouldBe("'DisabledError'", "regError.name");
+              });
+      }
+      function test_registerPatternOutsideDomain() {
+          debug("Registering pattern outside domain");
+          return navigator.registerServiceWorker("http://foo.com/*", "serviceworker.js")
+              .catch(function(e) {
+                  regError = e;
+                  shouldBe("'SecurityError'", "regError.name");
+              });
+      }
+      function test_registerScriptOutsideDomain() {
+          debug("Registering pattern outside domain");
+          return navigator.registerServiceWorker("/*", "http://foo.com/serviceworker.js")
+              .catch(function(e) {
+                  regError = e;
+                  shouldBe("'SecurityError'", "regError.name");
+              });
+      }
+      var jsTestIsAsync = true;
+      test_registerBasics()
+      .then(test_registerPatternOutsideDomain)
+      .then(test_registerScriptOutsideDomain)
+      .then(finishJSTest, function(e) {
+          testFailed("Tests failed, exited with error:" + e.name + ": " + e.message);
+          finishJSTest();
+      });
+</script>
+<script src="/js-test-resources/js-test-post.js"></script>
+</body>
+</html>

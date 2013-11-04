@@ -206,6 +206,9 @@ crbug.com/225184 [ Debug ] scrollingcoordinator/non-fast-scrollable-region-scale
 crbug.com/231357 [ SnowLeopard Lion Win Linux Debug ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
 crbug.com/231357 [ Win Linux Debug ] virtual/softwarecompositing/video-page-visibility.html [ ImageOnlyFailure ]
 
+# Will pass once http://crrev.com/26442004 lands
+crbug.com/285976 http/tests/serviceworker/registration.html [ NeedsManualRebaseline ]
+
 crbug.com/237270 [ Win ] http/tests/history/replacestate-post-to-get-2.html [ Pass Timeout ]
 crbug.com/237270 [ Win ] http/tests/history/replacestate-post-to-get.html [ Pass Timeout ]
 crbug.com/237270 http/tests/images/jpeg-partial-load.html [ Pass Timeout ]
