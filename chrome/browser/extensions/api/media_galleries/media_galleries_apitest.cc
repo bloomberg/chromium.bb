@@ -246,8 +246,14 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
       << message_;
 }
 
+// Flaky: crbug.com/314576
+#if defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
+                       DISABLED_MediaGalleriesCopyTo) {
+#else
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
                        MediaGalleriesCopyTo) {
+#endif
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   MakeFakeMediaGalleryForTest(browser()->profile(), temp_dir.path());
