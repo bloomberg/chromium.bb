@@ -40,7 +40,7 @@
 #include "config.h"
 #include "core/platform/image-decoders/jpeg/JPEGImageDecoder.h"
 
-#include "core/platform/PlatformInstrumentation.h"
+#include "platform/PlatformInstrumentation.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/dtoa/utils.h"
 

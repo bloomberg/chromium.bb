@@ -31,11 +31,11 @@
 #include "config.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 
-#include "core/platform/PlatformInstrumentation.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/chromium/DeferredImageDecoder.h"
 #include "core/platform/graphics/skia/SkiaUtils.h"
+#include "platform/PlatformInstrumentation.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"

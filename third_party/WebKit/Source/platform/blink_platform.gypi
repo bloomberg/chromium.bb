@@ -67,6 +67,8 @@
       'PasteMode.h',
       'PlatformEvent.h',
       'PlatformGestureEvent.h',
+      'PlatformInstrumentation.cpp',
+      'PlatformInstrumentation.h',
       'PlatformKeyboardEvent.cpp',
       'PlatformKeyboardEvent.h',
       'PlatformMouseEvent.h',

@@ -2662,8 +2662,6 @@
             'platform/OverscrollTheme.h',
             'platform/Pasteboard.cpp',
             'platform/Pasteboard.h',
-            'platform/PlatformInstrumentation.cpp',
-            'platform/PlatformInstrumentation.h',
             'platform/PlatformSpeechSynthesisUtterance.cpp',
             'platform/PlatformSpeechSynthesisUtterance.h',
             'platform/PlatformSpeechSynthesisVoice.cpp',

@@ -27,8 +27,8 @@
 #include "core/platform/image-decoders/gif/GIFImageDecoder.h"
 
 #include <limits>
-#include "core/platform/PlatformInstrumentation.h"
 #include "core/platform/image-decoders/gif/GIFImageReader.h"
+#include "platform/PlatformInstrumentation.h"
 #include "wtf/NotFound.h"
 #include "wtf/PassOwnPtr.h"
 

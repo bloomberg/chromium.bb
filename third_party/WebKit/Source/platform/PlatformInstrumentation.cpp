@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "core/platform/PlatformInstrumentation.h"
+#include "platform/PlatformInstrumentation.h"
 
 namespace WebCore {
 

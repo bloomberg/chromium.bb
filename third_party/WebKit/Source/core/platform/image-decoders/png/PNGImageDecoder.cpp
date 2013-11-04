@@ -39,7 +39,7 @@
 #include "config.h"
 #include "core/platform/image-decoders/png/PNGImageDecoder.h"
 
-#include "core/platform/PlatformInstrumentation.h"
+#include "platform/PlatformInstrumentation.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 

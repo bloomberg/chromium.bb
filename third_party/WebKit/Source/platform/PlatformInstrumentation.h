@@ -31,13 +31,14 @@
 #ifndef PlatformInstrumentation_h
 #define PlatformInstrumentation_h
 
+#include "platform/PlatformExport.h"
 #include "platform/TraceEvent.h"
 #include "wtf/MainThread.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class PlatformInstrumentationClient {
+class PLATFORM_EXPORT PlatformInstrumentationClient {
 public:
     virtual ~PlatformInstrumentationClient();
 
@@ -47,7 +48,7 @@ public:
     virtual void didResizeImage() = 0;
 };
 
-class PlatformInstrumentation {
+class PLATFORM_EXPORT PlatformInstrumentation {
 public:
     class LazyPixelRefTracker: TraceEvent::TraceScopedTrackableObject<void*> {
     public:

@@ -30,7 +30,7 @@
 #include "core/platform/image-decoders/webp/WEBPImageDecoder.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "core/platform/PlatformInstrumentation.h"
+#include "platform/PlatformInstrumentation.h"
 
 #if USE(QCMSLIB)
 #include "qcms.h"
