@@ -187,13 +187,9 @@ function performanceFeedbackChanged() {
 
     $('screenshot-checkbox').disabled = true;
     $('screenshot-checkbox').checked = false;
-
-    $('sys-info-checkbox').disabled = true;
-    $('sys-info-checkbox').checked = false;
   } else {
     $('attach-file').disabled = false;
     $('screenshot-checkbox').disabled = false;
-    $('sys-info-checkbox').disabled = false;
   }
 }
 </if>
