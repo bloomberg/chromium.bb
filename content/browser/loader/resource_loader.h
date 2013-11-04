@@ -8,7 +8,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/timer/timer.h"
 #include "content/browser/loader/resource_handler.h"
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/common/content_export.h"
@@ -36,10 +35,6 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   void StartRequest();
   void CancelRequest(bool from_renderer);
 
-  // Sets the resource as detached and starts a timer to cancel the request in
-  // the future.
-  void Detach();
-
   void ReportUploadProgress();
 
   bool is_transferring() const { return is_transferring_; }
@@ -54,10 +49,6 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
 
   // IPC message handlers:
   void OnUploadProgressACK();
-
-  void set_detachable_delay_ms(int delay) {
-    detachable_delay_on_cancel_ms_ = delay;
-  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceLoaderTest, ClientCertStoreLookup);
@@ -139,9 +130,6 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   // consumer.  We are waiting for a notification to complete the transfer, at
   // which point we'll receive a new ResourceHandler.
   bool is_transferring_;
-
-  int detachable_delay_on_cancel_ms_;
-  scoped_ptr<base::OneShotTimer<ResourceLoader> > detached_timer_;
 
   base::WeakPtrFactory<ResourceLoader> weak_ptr_factory_;
 

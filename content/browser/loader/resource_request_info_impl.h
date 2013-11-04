@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -52,7 +51,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       PageTransition transition_type,
       bool is_download,
       bool is_stream,
-      bool is_detachable,
       bool allow_download,
       bool has_user_gesture,
       WebKit::WebReferrerPolicy referrer_policy,
@@ -125,17 +123,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   bool is_stream() const { return is_stream_; }
   void set_is_stream(bool stream) { is_stream_ = stream; }
 
-  // Whether this is a detachable resource. Detachable resource requests can
-  // live beyond the life of the renderer.
-  bool is_detachable() const { return is_detachable_; }
-  void set_is_detachable(bool is_detachable) { is_detachable_ = is_detachable; }
-
-  // Detached resources are detachable resources that have ignored a request by
-  // the renderer to cancel and will continue to fetch but stops sending
-  // messages to the renderer. Detached resources eventually timeout.
-  bool is_detached() const { return is_detached_; }
-  void set_detached() { is_detached_ = true; }
-
   void set_was_ignored_by_handler(bool value) {
     was_ignored_by_handler_ = value;
   }
@@ -146,10 +133,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   void set_memory_cost(int cost) { memory_cost_ = cost; }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
-                           DeletedFilterDetachable);
-  FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
-                           DeletedFilterDetachableRedirect);
   // Non-owning, may be NULL.
   CrossSiteResourceHandler* cross_site_handler_;
 
@@ -164,8 +147,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   int64 parent_frame_id_;
   bool is_download_;
   bool is_stream_;
-  bool is_detachable_;
-  bool is_detached_;
   bool allow_download_;
   bool has_user_gesture_;
   bool was_ignored_by_handler_;

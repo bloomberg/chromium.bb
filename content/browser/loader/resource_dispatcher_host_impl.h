@@ -238,10 +238,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                            TestBlockedRequestsProcessDies);
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            CalculateApproximateMemoryCost);
-  FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
-                           DetachableResourceTimesOut);
-  FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
-                           TestProcessCancelDetachableTimesOut);
 
   class ShutdownTask;
 

@@ -36,14 +36,8 @@ GURL URLRequestTestJob::test_url_2() {
 GURL URLRequestTestJob::test_url_3() {
   return GURL("test:url3");
 }
-GURL URLRequestTestJob::test_url_4() {
-  return GURL("test:url4");
-}
 GURL URLRequestTestJob::test_url_error() {
   return GURL("test:error");
-}
-GURL URLRequestTestJob::test_url_redirect_to_url_2() {
-  return GURL("test:redirect_to_2");
 }
 
 // static getters for known URL responses
@@ -55,9 +49,6 @@ std::string URLRequestTestJob::test_data_2() {
 }
 std::string URLRequestTestJob::test_data_3() {
   return std::string("<html><title>Test Three Three Three</title></html>");
-}
-std::string URLRequestTestJob::test_data_4() {
-  return std::string("<html><title>Test Four Four Four Four</title></html>");
 }
 
 // static getter for simple response headers
@@ -76,17 +67,6 @@ std::string URLRequestTestJob::test_redirect_headers() {
       "Location: somewhere\0"
       "\0";
   return std::string(kHeaders, arraysize(kHeaders));
-}
-
-// static getter for redirect response headers
-std::string URLRequestTestJob::test_redirect_to_url_2_headers() {
-  std::string headers = "HTTP/1.1 302 MOVED";
-  headers.push_back('\0');
-  headers += "Location: ";
-  headers += test_url_2().spec();
-  headers.push_back('\0');
-  headers.push_back('\0');
-  return headers;
 }
 
 // static getter for error response headers
@@ -182,11 +162,6 @@ void URLRequestTestJob::StartAsync() {
       response_data_ = test_data_2();
     } else if (request_->url().spec() == test_url_3().spec()) {
       response_data_ = test_data_3();
-    } else if (request_->url().spec() == test_url_4().spec()) {
-      response_data_ = test_data_4();
-    } else if (request_->url().spec() == test_url_redirect_to_url_2().spec()) {
-      response_headers_ =
-          new HttpResponseHeaders(test_redirect_to_url_2_headers());
     } else {
       AdvanceJob();
 

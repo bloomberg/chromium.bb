@@ -155,7 +155,6 @@ class ResourceSchedulerTest : public testing::Test {
         PAGE_TRANSITION_LINK,              // transition_type
         false,                             // is_download
         false,                             // is_stream
-        false,                             // is_detachable
         true,                              // allow_download
         false,                             // has_user_gesture
         WebKit::WebReferrerPolicyDefault,  // referrer_policy

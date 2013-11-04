@@ -135,11 +135,10 @@ void AsyncResourceHandler::OnDataReceivedACK(int request_id) {
 bool AsyncResourceHandler::OnUploadProgress(int request_id,
                                             uint64 position,
                                             uint64 size) {
-  const ResourceRequestInfoImpl* info = GetRequestInfo();
-  // Cancel the request if the renderer is gone unless it's detachable.
-  if (!info->filter())
-    return info->is_detached();
-  return info->filter()->Send(
+  ResourceMessageFilter* filter = GetFilter();
+  if (!filter)
+    return false;
+  return filter->Send(
       new ResourceMsg_UploadProgress(request_id, position, size));
 }
 
@@ -148,9 +147,8 @@ bool AsyncResourceHandler::OnRequestRedirected(int request_id,
                                                ResourceResponse* response,
                                                bool* defer) {
   const ResourceRequestInfoImpl* info = GetRequestInfo();
-  // Cancel the request if the renderer is gone unless it's detached.
   if (!info->filter())
-    return info->is_detached();
+    return false;
 
   *defer = did_defer_ = true;
 
@@ -174,11 +172,10 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
   // renderer will be able to set these precisely at the time the
   // request commits, avoiding the possibility of e.g. zooming the old content
   // or of having to layout the new content twice.
-  const ResourceRequestInfoImpl* info = GetRequestInfo();
 
-  // Cancel the request if the renderer is gone unless it's detachable.
+  const ResourceRequestInfoImpl* info = GetRequestInfo();
   if (!info->filter())
-    return info->is_detached();
+    return false;
 
   if (rdh_->delegate()) {
     rdh_->delegate()->OnResponseStarted(
@@ -251,19 +248,9 @@ bool AsyncResourceHandler::OnReadCompleted(int request_id, int bytes_read,
   if (!bytes_read)
     return true;
 
-  const ResourceRequestInfoImpl* info = GetRequestInfo();
-  // Don't send any data if the resource is detached from the renderer.
-  if (info->is_detached()) {
-    buffer_->RecycleLeastRecentlyAllocated();
-    return true;
-  }
-
   ResourceMessageFilter* filter = GetFilter();
-  // Cancel the request if the renderer is gone.
-  if (!filter) {
-    DCHECK(!info->is_detachable());
+  if (!filter)
     return false;
-  }
 
   buffer_->ShrinkLastAllocation(bytes_read);
 
@@ -322,10 +309,8 @@ bool AsyncResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
     const std::string& security_info) {
   const ResourceRequestInfoImpl* info = GetRequestInfo();
-
-  // Cancel the request if the renderer is gone unless it's detachable.
   if (!info->filter())
-    return info->is_detachable();
+    return false;
 
   // If we crash here, figure out what URL the renderer was requesting.
   // http://crbug.com/107692

@@ -127,15 +127,6 @@ const int kUserGestureWindowMs = 3500;
 // use. Arbitrarily chosen.
 const double kMaxRequestsPerProcessRatio = 0.45;
 
-bool IsDetachableResourceType(ResourceType::Type type) {
-  switch (type) {
-    case ResourceType::PREFETCH:
-      return true;
-    default:
-      return false;
-  }
-}
-
 // Aborts a request before an URLRequest has actually been created.
 void AbortRequestBeforeItStarts(ResourceMessageFilter* filter,
                                 IPC::Message* sync_result,
@@ -415,16 +406,13 @@ void ResourceDispatcherHostImpl::CancelRequestsForContext(
   for (LoaderList::iterator i = loaders_to_cancel.begin();
        i != loaders_to_cancel.end(); ++i) {
     // There is no strict requirement that this be the case, but currently
-    // downloads, streams, detachable requests, and transferred requests are the
-    // only requests that aren't cancelled when the associated processes go
-    // away. It may be OK for this invariant to change in the future, but if
-    // this assertion fires without the invariant changing, then it's indicative
-    // of a leak.
-    DCHECK(
-        (*i)->GetRequestInfo()->is_download() ||
-        (*i)->GetRequestInfo()->is_stream() ||
-        (*i)->GetRequestInfo()->is_detached() ||
-        (*i)->is_transferring());
+    // downloads, streams  and transferred requests are the only requests that
+    // aren't cancelled when the associated processes go away. It may be OK for
+    // this invariant to change in the future, but if this assertion fires
+    // without the invariant changing, then it's indicative of a leak.
+    DCHECK((*i)->GetRequestInfo()->is_download() ||
+           (*i)->GetRequestInfo()->is_stream() ||
+           (*i)->is_transferring());
   }
 #endif
 
@@ -706,19 +694,18 @@ void ResourceDispatcherHostImpl::DidReceiveRedirect(ResourceLoader* loader,
 
 void ResourceDispatcherHostImpl::DidReceiveResponse(ResourceLoader* loader) {
   ResourceRequestInfoImpl* info = loader->GetRequestInfo();
-
   // There should be an entry in the map created when we dispatched the
-  // request unless it's been detached and the renderer has died.
+  // request.
   OfflineMap::iterator policy_it(
       offline_policy_map_.find(info->GetGlobalRoutingID()));
   if (offline_policy_map_.end() != policy_it) {
     policy_it->second->UpdateStateForSuccessfullyStartedRequest(
         loader->request()->response_info());
   } else {
-    // Unless detached, we should have an entry in offline_policy_map_ from
-    // when this request traversed Begin{Download,SaveFile,Request}.
+    // We should always have an entry in offline_policy_map_ from when
+    // this request traversed Begin{Download,SaveFile,Request}.
     // TODO(rdsmith): This isn't currently true; see http://crbug.com/241176.
-    DCHECK(info->is_detached());
+    NOTREACHED();
   }
 
   int render_process_id, render_view_id;
@@ -1089,7 +1076,6 @@ void ResourceDispatcherHostImpl::BeginRequest(
           request_data.transition_type,
           false,  // is download
           false,  // is stream
-          false,  // is detachable
           allow_download,
           request_data.has_user_gesture,
           request_data.referrer_policy,
@@ -1118,8 +1104,6 @@ void ResourceDispatcherHostImpl::BeginRequest(
     handler.reset(new SyncResourceHandler(request, sync_result, this));
   } else {
     handler.reset(new AsyncResourceHandler(request, this));
-    if (IsDetachableResourceType(request_data.resource_type))
-      extra_info->set_is_detachable(true);
   }
 
   // The RedirectToFileResourceHandler depends on being next in the chain.
@@ -1238,8 +1222,7 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       ResourceType::SUB_RESOURCE,
       PAGE_TRANSITION_LINK,
       download,  // is_download
-      false,     // is_stream
-      false,     // is_detachable
+      false,  // is_stream
       download,  // allow_download
       false,     // has_user_gesture
       WebKit::WebReferrerPolicyDefault,
@@ -1335,8 +1318,8 @@ void ResourceDispatcherHostImpl::ResumeDeferredNavigation(
 }
 
 // The object died, so cancel and detach all requests associated with it except
-// for downloads and detachable resources, which belong to the browser process
-// even if initiated via a renderer.
+// for downloads, which belong to the browser process even if initiated via a
+// renderer.
 void ResourceDispatcherHostImpl::CancelRequestsForProcess(int child_id) {
   CancelRequestsForRoute(child_id, -1 /* cancel all */);
   registered_temp_files_.erase(child_id);
@@ -1361,15 +1344,14 @@ void ResourceDispatcherHostImpl::CancelRequestsForRoute(int child_id,
 
     GlobalRequestID id(child_id, i->first.request_id);
     DCHECK(id == i->first);
-    // Don't cancel navigations that are expected to live beyond this process.
+
+    // Don't cancel navigations that are transferring to another process,
+    // since they belong to another process now.
     if (IsTransferredNavigation(id))
       any_requests_transferring = true;
-
-    if (info->is_detachable()) {
-      i->second->Detach();
-    } else if (!info->is_download() && !info->is_stream() &&
-               !IsTransferredNavigation(id) &&
-               (route_id == -1 || route_id == info->GetRouteID())) {
+    if (!info->is_download() && !info->is_stream() &&
+        !IsTransferredNavigation(id) &&
+        (route_id == -1 || route_id == info->GetRouteID())) {
       matching_requests.push_back(id);
     }
   }

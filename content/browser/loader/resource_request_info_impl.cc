@@ -45,7 +45,6 @@ void ResourceRequestInfo::AllocateForTesting(
           PAGE_TRANSITION_LINK,              // transition_type
           false,                             // is_download
           false,                             // is_stream
-          false,                             // is_detachable
           true,                              // allow_download
           false,                             // has_user_gesture
           WebKit::WebReferrerPolicyDefault,  // referrer_policy
@@ -98,7 +97,6 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     PageTransition transition_type,
     bool is_download,
     bool is_stream,
-    bool is_detachable,
     bool allow_download,
     bool has_user_gesture,
     WebKit::WebReferrerPolicy referrer_policy,
@@ -117,8 +115,6 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       parent_frame_id_(parent_frame_id),
       is_download_(is_download),
       is_stream_(is_stream),
-      is_detachable_(is_detachable),
-      is_detached_(false),
       allow_download_(allow_download),
       has_user_gesture_(has_user_gesture),
       was_ignored_by_handler_(false),

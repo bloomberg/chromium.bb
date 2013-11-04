@@ -18,7 +18,7 @@ namespace net {
 // probably want to inherit from it to set up the state you want. Then install
 // it as the protocol handler for the "test" scheme.
 //
-// It will respond to several URLs, which you can retrieve using the test_url*
+// It will respond to three URLs, which you can retrieve using the test_url*
 // getters, which will in turn respond with the corresponding responses returned
 // by test_data*. Any other URLs that begin with "test:" will return an error,
 // which might also be useful, you can use test_url_error() to retreive a
@@ -57,30 +57,24 @@ class NET_EXPORT_PRIVATE URLRequestTestJob : public URLRequestJob {
                     const std::string& response_data,
                     bool auto_advance);
 
-  // The canned URLs this handler will respond to without having been
+  // The three canned URLs this handler will respond to without having been
   // explicitly initialized with response headers and data.
   // FIXME(brettw): we should probably also have a redirect one
   static GURL test_url_1();
   static GURL test_url_2();
   static GURL test_url_3();
-  static GURL test_url_4();
   static GURL test_url_error();
-  static GURL test_url_redirect_to_url_2();
 
   // The data that corresponds to each of the URLs above
   static std::string test_data_1();
   static std::string test_data_2();
   static std::string test_data_3();
-  static std::string test_data_4();
 
   // The headers that correspond to each of the URLs above
   static std::string test_headers();
 
   // The headers for a redirect response
   static std::string test_redirect_headers();
-
-  // The headers for a redirect response to the second test url.
-  static std::string test_redirect_to_url_2_headers();
 
   // The headers for a server error response
   static std::string test_error_headers();
