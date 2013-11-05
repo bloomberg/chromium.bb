@@ -131,7 +131,7 @@ void BaseLayoutManager::OnWindowActivated(aura::Window* gained_active,
   wm::WindowState* window_state = wm::GetWindowState(gained_active);
   if (window_state && window_state->IsMinimized() &&
       !gained_active->IsVisible()) {
-    gained_active->Show();
+    window_state->Unminimize();
     DCHECK(!window_state->IsMinimized());
   }
 }
@@ -172,6 +172,9 @@ void BaseLayoutManager::ShowStateChanged(
     wm::WindowState* window_state,
     ui::WindowShowState last_show_state) {
   if (window_state->IsMinimized()) {
+    if (last_show_state == ui::SHOW_STATE_MINIMIZED)
+      return;
+
     // Save the previous show state so that we can correctly restore it.
     window_state->window()->SetProperty(aura::client::kRestoreShowStateKey,
                                         last_show_state);
