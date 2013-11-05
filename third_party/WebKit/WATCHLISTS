@@ -20,7 +20,7 @@
     'audio': {
       'filepath': 'Source/platform/audio' \
                   '|Source/modules/webaudio',
-    }
+    },
     'bindings': {
       'filepath': 'Source/bindings',
     },
