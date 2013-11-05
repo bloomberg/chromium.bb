@@ -84,7 +84,7 @@ class SmoothnessMetric(Metric):
     jank = statistics.FrameDiscrepancy(self._stats.frame_timestamps)
     results.Add('jank', '', round(jank, 4))
 
-    # Are we hitting 60 fps for 95 percent of all frames? (Boolean value)
+    # Are we hitting 60 fps for 95 percent of all frames?
     # We use 17ms as a slightly looser threshold, instead of 1000.0/60.0.
-    results.Add('mostly_smooth', '',
-        statistics.Percentile(self._stats.frame_times, 95.0) < 17.0)
+    percentile_95 = statistics.Percentile(self._stats.frame_times, 95.0)
+    results.Add('mostly_smooth', '', 1.0 if percentile_95 < 17.0 else 0.0)
