@@ -8,7 +8,9 @@ static void {{method.name}}Method(const v8::FunctionCallbackInfo<v8::Value>& inf
         return;
     }
     {% endif %}
+    {% if not method.is_static %}
     {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(info.Holder());
+    {% endif %}
     {% for argument in method.arguments %}
     {% if argument.is_optional and not argument.has_default and
           argument.idl_type != 'Dictionary' %}

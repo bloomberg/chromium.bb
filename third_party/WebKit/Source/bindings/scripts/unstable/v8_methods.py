@@ -39,30 +39,44 @@ import v8_types
 import v8_utilities
 
 
-def generate_method(method):
+def generate_method(interface, method):
     arguments = method.arguments
+    is_static = method.is_static
+    name = method.name
+
+    this_custom_signature = custom_signature(arguments)
+    if this_custom_signature:
+        signature = name + 'Signature'
+    elif is_static:
+        signature = 'v8::Local<v8::Signature>()'
+    else:
+        signature = 'defaultSignature'
+
     contents = {
-        'arguments': [generate_argument(method, argument, index)
+        'arguments': [generate_argument(interface, method, argument, index)
                       for index, argument in enumerate(arguments)],
-        'cpp_method': cpp_method(method, len(arguments)),
-        'custom_signature': custom_signature(arguments),
+        'cpp_method': cpp_method(interface, method, len(arguments)),
+        'custom_signature': this_custom_signature,
         'idl_type': method.idl_type,
-        'name': method.name,
+        'is_static': is_static,
+        'name': name,
         'number_of_required_arguments': len([
             argument for argument in arguments
             if not (argument.is_optional or argument.is_variadic)]),
         'number_of_required_or_variadic_arguments': len([
             argument for argument in arguments
             if not argument.is_optional]),
+        'signature': signature,
+        'function_template': 'desc' if method.is_static else 'proto',
     }
     return contents
 
 
-def generate_argument(method, argument, index):
+def generate_argument(interface, method, argument, index):
     extended_attributes = argument.extended_attributes
     idl_type = argument.idl_type
     return {
-        'cpp_method': cpp_method(method, index),
+        'cpp_method': cpp_method(interface, method, index),
         'cpp_type': v8_types.cpp_type(idl_type),
         'enum_validation_expression': v8_utilities.enum_validation_expression(idl_type),
         'has_default': 'Default' in extended_attributes,
@@ -76,7 +90,7 @@ def generate_argument(method, argument, index):
     }
 
 
-def cpp_method(method, number_of_arguments):
+def cpp_method(interface, method, number_of_arguments):
     def cpp_argument(argument):
         if argument.idl_type in ['NodeFilter', 'XPathNSResolver']:
             # FIXME: remove this special case
@@ -86,7 +100,8 @@ def cpp_method(method, number_of_arguments):
     # Truncate omitted optional arguments
     arguments = method.arguments[:number_of_arguments]
     cpp_arguments = [cpp_argument(argument) for argument in arguments]
-    cpp_value = 'imp->%s(%s)' % (method.name, ', '.join(cpp_arguments))
+    cpp_method_name = v8_utilities.scoped_name(interface, method, method.name)
+    cpp_value = '%s(%s)' % (cpp_method_name, ', '.join(cpp_arguments))
 
     idl_type = method.idl_type
     if idl_type == 'void':

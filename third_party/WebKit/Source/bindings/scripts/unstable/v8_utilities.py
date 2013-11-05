@@ -62,6 +62,12 @@ def capitalize(name):
     return name[0].upper() + name[1:]
 
 
+def scoped_name(interface, definition, base_name):
+    if definition.is_static:
+        return '%s::%s' % (interface.name, base_name)
+    return 'imp->%s' % base_name
+
+
 def strip_suffix(string, suffix):
     if not suffix or not string.endswith(suffix):
         return string

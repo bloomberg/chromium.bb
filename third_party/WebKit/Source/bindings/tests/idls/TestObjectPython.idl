@@ -169,6 +169,7 @@ interface TestObjectPython {
 
     // Methods
     void voidMethod();
+    static void staticVoidMethod();
 
     // Types
     // Basic types

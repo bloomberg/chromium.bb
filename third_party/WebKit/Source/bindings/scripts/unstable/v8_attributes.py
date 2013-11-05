@@ -141,7 +141,7 @@ def generate_getter(interface, attribute, contents):
 def getter_expression(interface, attribute, contents):
     arguments = []
     this_getter_base_name = getter_base_name(attribute, arguments)
-    getter_name = scoped_name(interface, attribute, this_getter_base_name)
+    getter_name = v8_utilities.scoped_name(interface, attribute, this_getter_base_name)
 
     call_with = attribute.extended_attributes.get('CallWith')
     arguments.extend(v8_utilities.call_with_arguments(call_with, contents))
@@ -228,7 +228,7 @@ def setter_expression(interface, attribute, contents):
     arguments = v8_utilities.call_with_arguments(call_with, contents)
 
     this_setter_base_name = setter_base_name(attribute, arguments)
-    setter_name = scoped_name(interface, attribute, this_setter_base_name)
+    setter_name = v8_utilities.scoped_name(interface, attribute, this_setter_base_name)
 
     idl_type = attribute.idl_type
     if idl_type == 'EventHandler':

@@ -3205,6 +3205,18 @@ static void voidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& 
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void staticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython::staticVoidMethod();
+}
+
+static void staticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::staticVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void dateMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
@@ -5121,6 +5133,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::
         V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate, currentWorldType);
     }
 #endif // ENABLE(Condition)
+    desc->Set(v8::String::NewSymbol("staticVoidMethod"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::staticVoidMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
 
     // Custom Signature 'voidMethodTestInterfaceEmptyArg'
     const int voidMethodTestInterfaceEmptyArgArgc = 1;
