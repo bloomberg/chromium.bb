@@ -9,8 +9,10 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/singleton.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_base_factory.h"
+
+template <typename T>
+struct DefaultSingletonTraits;
 
 class Profile;
 

@@ -9,8 +9,9 @@
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/cloud/cloud_policy_manager.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
-#include "chrome/browser/policy/policy_service_impl.h"
+#include "chrome/browser/policy/policy_service.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/bind.h"
@@ -19,17 +20,11 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_provider.h"
 #include "chrome/browser/chromeos/policy/login_profile_policy_provider.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/policy_service.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/onc/onc_certificate_importer_impl.h"
-#else
-#include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
-#include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #endif
 
 namespace policy {
@@ -44,62 +39,52 @@ ProfilePolicyConnector::ProfilePolicyConnector(Profile* profile)
 
 ProfilePolicyConnector::~ProfilePolicyConnector() {}
 
-void ProfilePolicyConnector::Init(bool force_immediate_load) {
+void ProfilePolicyConnector::Init(
+    bool force_immediate_load,
+#if defined(OS_CHROMEOS)
+    const chromeos::User* user,
+#endif
+    CloudPolicyManager* user_cloud_policy_manager) {
   BrowserPolicyConnector* connector =
       g_browser_process->browser_policy_connector();
   // |providers| contains a list of the policy providers available for the
   // PolicyService of this connector.
   std::vector<ConfigurationPolicyProvider*> providers;
 
-#if defined(OS_CHROMEOS)
-  UserCloudPolicyManagerChromeOS* cloud_policy_manager =
-      UserCloudPolicyManagerFactoryChromeOS::GetForProfile(profile_);
-  if (cloud_policy_manager)
-    providers.push_back(cloud_policy_manager);
+  if (user_cloud_policy_manager)
+    providers.push_back(user_cloud_policy_manager);
 
+#if defined(OS_CHROMEOS)
   bool allow_trusted_certs_from_policy = false;
-  chromeos::User* user = NULL;
-  if (chromeos::ProfileHelper::IsSigninProfile(profile_)) {
-    special_user_policy_provider_.reset(new LoginProfilePolicyProvider(
-        connector->GetPolicyService()));
+  if (!user) {
+    // This case occurs for the signin profile.
+    special_user_policy_provider_.reset(
+        new LoginProfilePolicyProvider(connector->GetPolicyService()));
     special_user_policy_provider_->Init();
   } else {
     // |user| should never be NULL except for the signin profile.
-    chromeos::UserManager* user_manager = chromeos::UserManager::Get();
-    user = user_manager->GetUserByProfile(profile_);
-    CHECK(user);
-    std::string username = user->email();
-    is_primary_user_ =
-        chromeos::UserManager::Get()->GetLoggedInUsers().size() == 1;
+    is_primary_user_ = user == chromeos::UserManager::Get()->GetPrimaryUser();
     if (user->GetType() == chromeos::User::USER_TYPE_PUBLIC_ACCOUNT)
-      InitializeDeviceLocalAccountPolicyProvider(username);
+      InitializeDeviceLocalAccountPolicyProvider(user->email());
     // Allow trusted certs from policy only for managed regular accounts.
-    const bool is_managed =
-        connector->GetUserAffiliation(username) == USER_AFFILIATION_MANAGED;
+    const bool is_managed = connector->GetUserAffiliation(user->email()) ==
+                            USER_AFFILIATION_MANAGED;
     if (is_managed && user->GetType() == chromeos::User::USER_TYPE_REGULAR)
       allow_trusted_certs_from_policy = true;
   }
   if (special_user_policy_provider_)
     providers.push_back(special_user_policy_provider_.get());
-
-#else
-  UserCloudPolicyManager* cloud_policy_manager =
-      UserCloudPolicyManagerFactory::GetForProfile(profile_);
-  if (cloud_policy_manager)
-    providers.push_back(cloud_policy_manager);
 #endif
 
   policy_service_ = connector->CreatePolicyService(providers);
 
 #if defined(OS_CHROMEOS)
   if (is_primary_user_) {
-    if (cloud_policy_manager)
-      connector->SetUserPolicyDelegate(cloud_policy_manager);
+    if (user_cloud_policy_manager)
+      connector->SetUserPolicyDelegate(user_cloud_policy_manager);
     else if (special_user_policy_provider_)
       connector->SetUserPolicyDelegate(special_user_policy_provider_.get());
 
-    // A reference to |user| is stored by the NetworkConfigurationUpdater until
-    // the Updater is destructed during Shutdown.
     network_configuration_updater_ =
         UserNetworkConfigurationUpdater::CreateForUserPolicy(
             allow_trusted_certs_from_policy,
