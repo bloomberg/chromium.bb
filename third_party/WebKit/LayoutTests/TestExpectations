@@ -429,6 +429,9 @@ crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html
 
 crbug.com/305345 fast/events/mouseover-mouseout.html [ Failure Pass ]
 
+# Needs rebaseline ('alphabetic' value removed from specification).
+crbug.com/311335 fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-all.html [ NeedsRebaseline ]
+
 # Android virtual suite shares the same expectation.
 crbug.com/100798 [ Debug ] virtual/android/fullscreen/full-screen-iframe-allowed.html [ Failure Pass ]
 crbug.com/100798 [ Debug ] virtual/android/fullscreen/full-screen-iframe-allowed-prefixed.html [ Failure Pass ]

@@ -18,7 +18,7 @@ function testComputedStyle(propertyJS, propertyCSS, type, value)
 
 description("Test to make sure text-underline-position property returns values properly.")
 
-// FIXME: This test tests property values 'auto', 'alphabetic' and 'under'. We don't fully match
+// FIXME: This test tests property values 'auto' and 'under'. We don't fully match
 // the specification as we don't support [ left | right ] and this is left for another implementation
 // as the rendering will need to be added.
 
@@ -52,12 +52,6 @@ testElementStyle("textUnderlinePosition", "text-underline-position", "[object CS
 testComputedStyle("textUnderlinePosition", "text-underline-position", "[object CSSPrimitiveValue]", "auto");
 debug('');
 
-debug("Value 'alphabetic':");
-e.style.textUnderlinePosition = 'alphabetic';
-testElementStyle("textUnderlinePosition", "text-underline-position", "[object CSSPrimitiveValue]", "alphabetic");
-testComputedStyle("textUnderlinePosition", "text-underline-position", "[object CSSPrimitiveValue]", "alphabetic");
-debug('');
-
 debug("Value 'under':");
 e.style.textUnderlinePosition = 'under';
 testElementStyle("textUnderlinePosition", "text-underline-position", "[object CSSPrimitiveValue]", "under");
@@ -69,11 +63,6 @@ debug("Ancestor inherits values from parent:");
 e = document.getElementById('test-ancestor');
 testElementStyle("textUnderlinePosition", "text-underline-position", null, "");
 testComputedStyle("textUnderlinePosition", "text-underline-position", "[object CSSPrimitiveValue]", "under");
-debug('');
-
-debug("Value 'auto alphabetic':");
-e.style.textUnderlinePosition = 'auto alphabetic';
-testElementStyle("textUnderlinePosition", "text-underline-position", null, "");
 debug('');
 
 debug("Value 'auto under':");

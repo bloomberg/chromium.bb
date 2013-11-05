@@ -922,10 +922,8 @@ static int computeUnderlineOffset(const TextUnderlinePosition underlinePosition,
     // pixel gap, if underline is thick then use a bigger gap.
     const int gap = std::max<int>(1, ceilf(textDecorationThickness / 2.f));
 
-    // According to the specification TextUnderlinePositionAuto should default to 'alphabetic' for horizontal text
-    // and to 'under Left' for vertical text (e.g. japanese). We support only horizontal text for now.
+    // FIXME: We support only horizontal text for now.
     switch (underlinePosition) {
-    case TextUnderlinePositionAlphabetic:
     case TextUnderlinePositionAuto:
         return fontMetrics.ascent() + gap; // Position underline near the alphabetic baseline.
     case TextUnderlinePositionUnder: {

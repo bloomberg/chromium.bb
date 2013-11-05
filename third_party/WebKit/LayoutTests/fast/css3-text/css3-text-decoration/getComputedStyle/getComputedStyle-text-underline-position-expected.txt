@@ -31,14 +31,6 @@ PASS computedStyle.textUnderlinePosition is 'auto'
 PASS computedStyle.getPropertyCSSValue('text-underline-position').toString() is '[object CSSPrimitiveValue]'
 PASS computedStyle.getPropertyCSSValue('text-underline-position').cssText is 'auto'
 
-Value 'alphabetic':
-PASS e.style.textUnderlinePosition is 'alphabetic'
-PASS e.style.getPropertyCSSValue('text-underline-position').toString() is '[object CSSPrimitiveValue]'
-PASS e.style.getPropertyCSSValue('text-underline-position').cssText is 'alphabetic'
-PASS computedStyle.textUnderlinePosition is 'alphabetic'
-PASS computedStyle.getPropertyCSSValue('text-underline-position').toString() is '[object CSSPrimitiveValue]'
-PASS computedStyle.getPropertyCSSValue('text-underline-position').cssText is 'alphabetic'
-
 Value 'under':
 PASS e.style.textUnderlinePosition is 'under'
 PASS e.style.getPropertyCSSValue('text-underline-position').toString() is '[object CSSPrimitiveValue]'
@@ -52,9 +44,6 @@ PASS e.style.getPropertyCSSValue('text-underline-position') is null
 PASS computedStyle.textUnderlinePosition is 'under'
 PASS computedStyle.getPropertyCSSValue('text-underline-position').toString() is '[object CSSPrimitiveValue]'
 PASS computedStyle.getPropertyCSSValue('text-underline-position').cssText is 'under'
-
-Value 'auto alphabetic':
-PASS e.style.getPropertyCSSValue('text-underline-position') is null
 
 Value 'auto under':
 PASS e.style.getPropertyCSSValue('text-underline-position') is null

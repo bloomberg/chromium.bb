@@ -14,12 +14,6 @@ div.auto {
     text-underline-position: auto;
 }
 
-div.alphabetic {
-    text-decoration-style: solid;
-    text-decoration-line: underline;
-    text-underline-position: alphabetic;
-}
-
 div.under {
     text-decoration-style: solid;
     text-decoration-line: underline;
@@ -30,12 +24,6 @@ span.auto {
     text-decoration-style: solid;
     text-decoration-line: underline;
     text-underline-position: auto;
-}
-
-span.alphabetic {
-    text-decoration-style: solid;
-    text-decoration-line: underline;
-    text-underline-position: alphabetic;
 }
 
 span.under {

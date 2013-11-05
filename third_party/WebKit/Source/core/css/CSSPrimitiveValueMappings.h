@@ -2505,9 +2505,6 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(TextUnderlinePosition e)
     case TextUnderlinePositionAuto:
         m_value.valueID = CSSValueAuto;
         break;
-    case TextUnderlinePositionAlphabetic:
-        m_value.valueID = CSSValueAlphabetic;
-        break;
     case TextUnderlinePositionUnder:
         m_value.valueID = CSSValueUnder;
         break;
@@ -2522,8 +2519,6 @@ template<> inline CSSPrimitiveValue::operator TextUnderlinePosition() const
     switch (m_value.valueID) {
     case CSSValueAuto:
         return TextUnderlinePositionAuto;
-    case CSSValueAlphabetic:
-        return TextUnderlinePositionAlphabetic;
     case CSSValueUnder:
         return TextUnderlinePositionUnder;
     default:

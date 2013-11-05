@@ -2183,7 +2183,7 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         break;
 
     case CSSPropertyTextUnderlinePosition:
-        // auto | alphabetic | under
+        // auto | under | inherit
         if (RuntimeEnabledFeatures::css3TextDecorationsEnabled())
             return parseTextUnderlinePosition(important);
         return false;
@@ -9135,13 +9135,12 @@ bool CSSParser::parseTextDecoration(CSSPropertyID propId, bool important)
 
 bool CSSParser::parseTextUnderlinePosition(bool important)
 {
-    // The text-underline-position property has sintax "auto | alphabetic | [ under || [ left | right ] ]".
-    // However, values 'left' and 'right' are not implemented yet, so we will parse sintax
-    // "auto | alphabetic | under" for now.
+    // The text-underline-position property has syntax "auto | [ under || [ left | right ] ]".
+    // However, values 'left' and 'right' are not implemented yet, so we will parse syntax
+    // "auto | under" for now.
     CSSParserValue* value = m_valueList->current();
     switch (value->id) {
     case CSSValueAuto:
-    case CSSValueAlphabetic:
     case CSSValueUnder:
         if (m_valueList->next())
             return false;

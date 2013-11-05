@@ -101,7 +101,7 @@ public:
     unsigned m_imageRendering : 2; // EImageRendering
     unsigned m_lineSnap : 2; // LineSnap
     unsigned m_lineAlign : 1; // LineAlign
-    unsigned m_textUnderlinePosition : 3; // TextUnderlinePosition
+    unsigned m_textUnderlinePosition : 2; // TextUnderlinePosition
     unsigned m_rubyPosition : 1; // RubyPosition
     unsigned m_touchActionDelay : 1; // TouchActionDelay
 
