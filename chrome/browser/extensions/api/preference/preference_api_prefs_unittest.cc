@@ -151,7 +151,7 @@ void ExtensionControlledPrefsTest::EnsureExtensionInstalled(
     if (extension == extensions[i] && !installed_[i]) {
       prefs()->OnExtensionInstalled(extension,
                                     Extension::ENABLED,
-                                    Blacklist::NOT_BLACKLISTED,
+                                    false,
                                     syncer::StringOrdinal());
       installed_[i] = true;
       break;

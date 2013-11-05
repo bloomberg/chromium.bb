@@ -160,7 +160,7 @@ scoped_refptr<Extension> TestExtensionPrefs::AddExtensionWithManifestAndFlags(
   EXPECT_TRUE(Extension::IdIsValid(extension->id()));
   prefs_->OnExtensionInstalled(extension.get(),
                                Extension::ENABLED,
-                               Blacklist::NOT_BLACKLISTED,
+                               false,
                                syncer::StringOrdinal::CreateInitialOrdinal());
   return extension;
 }

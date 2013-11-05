@@ -2112,11 +2112,13 @@ void ExtensionService::OnExtensionInstalled(
     AcknowledgeExternalExtension(extension->id());
   const Extension::State initial_state =
       initial_enable ? Extension::ENABLED : Extension::DISABLED;
+  const bool blacklisted_for_malware =
+      blacklist_state == extensions::Blacklist::BLACKLISTED_MALWARE;
   if (ShouldDelayExtensionUpdate(id, wait_for_idle)) {
     extension_prefs_->SetDelayedInstallInfo(
         extension,
         initial_state,
-        blacklist_state,
+        blacklisted_for_malware,
         extensions::ExtensionPrefs::DELAY_REASON_WAIT_FOR_IDLE,
         page_ordinal);
 
@@ -2138,7 +2140,7 @@ void ExtensionService::OnExtensionInstalled(
     extension_prefs_->SetDelayedInstallInfo(
         extension,
         initial_state,
-        blacklist_state,
+        blacklisted_for_malware,
         extensions::ExtensionPrefs::DELAY_REASON_GC,
         page_ordinal);
     delayed_installs_.Insert(extension);
@@ -2147,7 +2149,7 @@ void ExtensionService::OnExtensionInstalled(
       extension_prefs_->SetDelayedInstallInfo(
           extension,
           initial_state,
-          blacklist_state,
+          blacklisted_for_malware,
           extensions::ExtensionPrefs::DELAY_REASON_WAIT_FOR_IMPORTS,
           page_ordinal);
       delayed_installs_.Insert(extension);
@@ -2166,9 +2168,11 @@ void ExtensionService::AddNewOrUpdatedExtension(
     extensions::Blacklist::BlacklistState blacklist_state,
     const syncer::StringOrdinal& page_ordinal) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  const bool blacklisted_for_malware =
+      blacklist_state == extensions::Blacklist::BLACKLISTED_MALWARE;
   extension_prefs_->OnExtensionInstalled(extension,
                                          initial_state,
-                                         blacklist_state,
+                                         blacklisted_for_malware,
                                          page_ordinal);
   delayed_installs_.Remove(extension->id());
   FinishInstallation(extension);

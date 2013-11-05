@@ -1167,13 +1167,13 @@ void ExtensionPrefs::SetKnownDisabled(const ExtensionIdSet& extension_ids) {
 void ExtensionPrefs::OnExtensionInstalled(
     const Extension* extension,
     Extension::State initial_state,
-    Blacklist::BlacklistState blacklist_state,
+    bool blacklisted_for_malware,
     const syncer::StringOrdinal& page_ordinal) {
   ScopedExtensionPrefUpdate update(prefs_, extension->id());
   DictionaryValue* extension_dict = update.Get();
   const base::Time install_time = time_provider_->GetCurrentTime();
   PopulateExtensionInfoPrefs(extension, install_time, initial_state,
-                             blacklist_state, extension_dict);
+                             blacklisted_for_malware, extension_dict);
   FinishExtensionInfoPrefs(extension->id(), install_time,
                            extension->RequiresSortOrdinal(),
                            page_ordinal, extension_dict);
@@ -1358,12 +1358,13 @@ ExtensionPrefs::GetUninstalledExtensionsInfo() const {
 void ExtensionPrefs::SetDelayedInstallInfo(
     const Extension* extension,
     Extension::State initial_state,
-    Blacklist::BlacklistState blacklist_state,
+    bool blacklisted_for_malware,
     DelayReason delay_reason,
     const syncer::StringOrdinal& page_ordinal) {
   DictionaryValue* extension_dict = new DictionaryValue();
   PopulateExtensionInfoPrefs(extension, time_provider_->GetCurrentTime(),
-                             initial_state, blacklist_state, extension_dict);
+                             initial_state, blacklisted_for_malware,
+                             extension_dict);
 
   // Add transient data that is needed by FinishDelayedInstallInfo(), but
   // should not be in the final extension prefs. All entries here should have
@@ -1830,7 +1831,7 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
     const Extension* extension,
     const base::Time install_time,
     Extension::State initial_state,
-    Blacklist::BlacklistState blacklist_state,
+    bool blacklisted_for_malware,
     DictionaryValue* extension_dict) {
   // Leave the state blank for component extensions so that old chrome versions
   // loading new profiles do not fail in GetInstalledExtensionInfo. Older
@@ -1852,7 +1853,7 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
   extension_dict->Set(kPrefInstallTime,
                       new base::StringValue(
                           base::Int64ToString(install_time.ToInternalValue())));
-  if (blacklist_state == Blacklist::BLACKLISTED_MALWARE)
+  if (blacklisted_for_malware)
     extension_dict->Set(kPrefBlacklist, new base::FundamentalValue(true));
 
   base::FilePath::StringType path = MakePathRelative(install_directory_,

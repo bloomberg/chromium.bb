@@ -74,7 +74,7 @@ scoped_refptr<extensions::Extension> AddMediaGalleriesApp(
   extension_prefs->OnExtensionInstalled(
       extension.get(),
       extensions::Extension::ENABLED,
-      extensions::Blacklist::NOT_BLACKLISTED,
+      false,
       syncer::StringOrdinal::CreateInitialOrdinal());
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();

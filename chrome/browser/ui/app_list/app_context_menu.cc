@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"

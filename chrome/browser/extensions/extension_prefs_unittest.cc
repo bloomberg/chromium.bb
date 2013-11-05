@@ -470,7 +470,7 @@ class ExtensionPrefsDelayedInstallInfo : public ExtensionPrefsTest {
     ASSERT_EQ(id, extension->id());
     prefs()->SetDelayedInstallInfo(extension.get(),
                                    Extension::ENABLED,
-                                   Blacklist::NOT_BLACKLISTED,
+                                   false,
                                    ExtensionPrefs::DELAY_REASON_WAIT_FOR_IDLE,
                                    syncer::StringOrdinal());
   }
@@ -594,7 +594,7 @@ class ExtensionPrefsFinishDelayedInstallInfo : public ExtensionPrefsTest {
     ASSERT_EQ(id_, new_extension->id());
     prefs()->SetDelayedInstallInfo(new_extension.get(),
                                    Extension::ENABLED,
-                                   Blacklist::NOT_BLACKLISTED,
+                                   false,
                                    ExtensionPrefs::DELAY_REASON_WAIT_FOR_IDLE,
                                    syncer::StringOrdinal());
 
@@ -631,7 +631,7 @@ class ExtensionPrefsOnExtensionInstalled : public ExtensionPrefsTest {
     EXPECT_FALSE(prefs()->IsExtensionDisabled(extension_->id()));
     prefs()->OnExtensionInstalled(extension_.get(),
                                   Extension::DISABLED,
-                                  Blacklist::NOT_BLACKLISTED,
+                                  false,
                                   syncer::StringOrdinal());
   }
 
@@ -652,7 +652,7 @@ class ExtensionPrefsAppDraggedByUser : public ExtensionPrefsTest {
     EXPECT_FALSE(prefs()->WasAppDraggedByUser(extension_->id()));
     prefs()->OnExtensionInstalled(extension_.get(),
                                   Extension::ENABLED,
-                                  Blacklist::NOT_BLACKLISTED,
+                                  false,
                                   syncer::StringOrdinal());
   }
 

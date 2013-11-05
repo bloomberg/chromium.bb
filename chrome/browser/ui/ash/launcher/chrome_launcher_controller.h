@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/aura/window_observer.h"
 
 class AppSyncUIState;
@@ -55,7 +56,6 @@ class Window;
 }
 
 namespace content {
-class NotificationRegistrar;
 class WebContents;
 }
 

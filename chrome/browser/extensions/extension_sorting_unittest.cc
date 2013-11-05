@@ -11,7 +11,6 @@
 #include "sync/api/string_ordinal.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using extensions::Blacklist;
 using extensions::Extension;
 using extensions::Manifest;
 
@@ -31,7 +30,7 @@ class ExtensionSortingAppLocation : public ExtensionSortingTest {
     // Non-apps should not have any app launch ordinal or page ordinal.
     prefs()->OnExtensionInstalled(extension_.get(),
                                   Extension::ENABLED,
-                                  Blacklist::NOT_BLACKLISTED,
+                                  false,
                                   syncer::StringOrdinal());
   }
 
@@ -59,7 +58,7 @@ class ExtensionSortingAppLaunchOrdinal : public ExtensionSortingTest {
     EXPECT_FALSE(prefs()->IsExtensionDisabled(extension_->id()));
     prefs()->OnExtensionInstalled(extension_.get(),
                                   Extension::ENABLED,
-                                  Blacklist::NOT_BLACKLISTED,
+                                  false,
                                   syncer::StringOrdinal());
   }
 
@@ -111,7 +110,7 @@ class ExtensionSortingPageOrdinal : public ExtensionSortingTest {
     first_page_ = syncer::StringOrdinal::CreateInitialOrdinal();
     prefs()->OnExtensionInstalled(extension_.get(),
                                   Extension::ENABLED,
-                                  Blacklist::NOT_BLACKLISTED,
+                                  false,
                                   first_page_);
     EXPECT_TRUE(first_page_.Equals(
         extension_sorting()->GetPageOrdinal(extension_->id())));
@@ -121,7 +120,7 @@ class ExtensionSortingPageOrdinal : public ExtensionSortingTest {
     // Install without any page preference.
     prefs()->OnExtensionInstalled(extension2.get(),
                                   Extension::ENABLED,
-                                  Blacklist::NOT_BLACKLISTED,
+                                  false,
                                   syncer::StringOrdinal());
     EXPECT_TRUE(first_page_.Equals(
         extension_sorting()->GetPageOrdinal(extension2->id())));
@@ -647,7 +646,7 @@ class ExtensionSortingPreinstalledAppsBase
         simple_dict, Extension::NO_FLAGS, &error);
     prefs()->OnExtensionInstalled(app1_scoped_.get(),
                                   Extension::ENABLED,
-                                  Blacklist::NOT_BLACKLISTED,
+                                  false,
                                   syncer::StringOrdinal());
 
     app2_scoped_ = Extension::Create(
@@ -655,7 +654,7 @@ class ExtensionSortingPreinstalledAppsBase
         simple_dict, Extension::NO_FLAGS, &error);
     prefs()->OnExtensionInstalled(app2_scoped_.get(),
                                   Extension::ENABLED,
-                                  Blacklist::NOT_BLACKLISTED,
+                                  false,
                                   syncer::StringOrdinal());
 
     app1_ = app1_scoped_.get();
@@ -841,7 +840,7 @@ class ExtensionSortingDefaultOrdinalsBase : public ExtensionSortingTest {
   virtual void InstallApps() {
     prefs()->OnExtensionInstalled(app_.get(),
                                   Extension::ENABLED,
-                                  Blacklist::NOT_BLACKLISTED,
+                                  false,
                                   syncer::StringOrdinal());
   }
 
@@ -889,7 +888,7 @@ class ExtensionSortingDefaultOrdinalOverriddenByInstallPage
     install_page_ = default_page_ordinal_.CreateAfter();
     prefs()->OnExtensionInstalled(app_.get(),
                                   Extension::ENABLED,
-                                  Blacklist::NOT_BLACKLISTED,
+                                  false,
                                   install_page_);
   }
 

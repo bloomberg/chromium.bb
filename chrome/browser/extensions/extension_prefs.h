@@ -14,7 +14,6 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/extension_scoped_prefs.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -181,11 +180,12 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
   void SetKnownDisabled(const ExtensionIdSet& extension_ids);
 
   // Called when an extension is installed, so that prefs get created.
-  // If |page_ordinal| is an invalid ordinal, then a page will be found
-  // for the App.
+  // |blacklisted_for_malware| should be set if the extension was included in a
+  // blacklist due to being malware. If |page_ordinal| is an invalid ordinal,
+  // then a page will be found for the App.
   void OnExtensionInstalled(const Extension* extension,
                             Extension::State initial_state,
-                            Blacklist::BlacklistState blacklist_state,
+                            bool blacklisted_for_malware,
                             const syncer::StringOrdinal& page_ordinal);
 
   // Called when an extension is uninstalled, so that prefs get cleaned up.
@@ -417,7 +417,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
   // to install it.
   void SetDelayedInstallInfo(const Extension* extension,
                              Extension::State initial_state,
-                             Blacklist::BlacklistState blacklist_state,
+                             bool blacklisted_for_malware,
                              DelayReason delay_reason,
                              const syncer::StringOrdinal& page_ordinal);
 
@@ -605,7 +605,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
   void PopulateExtensionInfoPrefs(const Extension* extension,
                                   const base::Time install_time,
                                   Extension::State initial_state,
-                                  Blacklist::BlacklistState blacklist_state,
+                                  bool blacklisted_for_malware,
                                   base::DictionaryValue* extension_dict);
 
   // Helper function to complete initialization of the values in
