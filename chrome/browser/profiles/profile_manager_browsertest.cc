@@ -254,13 +254,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
   EXPECT_EQ(path_profile2, browser_list->get(1)->profile()->GetPath());
 }
 
-#if defined(OS_WIN)
-// Flakily times out on Windows: http://crbug.com/314905
-#define MAYBE_EphemeralProfile EphemeralProfile;
-#else
-#define MAYBE_EphemeralProfile DISABLED_EphemeralProfile;
-#endif  // defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_EphemeralProfile) {
+IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, EphemeralProfile) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
