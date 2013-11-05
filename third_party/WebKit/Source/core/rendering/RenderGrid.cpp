@@ -618,10 +618,13 @@ void RenderGrid::distributeSpaceToTracks(Vector<GridTrack*>& tracks, Vector<Grid
         GridTrack& track = *tracks[i];
         LayoutUnit availableLogicalSpaceShare = availableLogicalSpace / (tracksSize - i);
         LayoutUnit trackBreadth = (tracks[i]->*trackGetter)();
-        LayoutUnit growthShare = std::max(LayoutUnit(), std::min(availableLogicalSpaceShare, track.m_maxBreadth - trackBreadth));
+        LayoutUnit growthShare = std::min(availableLogicalSpaceShare, track.m_maxBreadth - trackBreadth);
+        sizingData.distributeTrackVector[i] = trackBreadth;
         // We should never shrink any grid track or else we can't guarantee we abide by our min-sizing function.
-        sizingData.distributeTrackVector[i] = trackBreadth + growthShare;
-        availableLogicalSpace -= growthShare;
+        if (growthShare > 0) {
+            sizingData.distributeTrackVector[i] += growthShare;
+            availableLogicalSpace -= growthShare;
+        }
     }
 
     if (availableLogicalSpace > 0 && tracksForGrowthAboveMaxBreadth) {
