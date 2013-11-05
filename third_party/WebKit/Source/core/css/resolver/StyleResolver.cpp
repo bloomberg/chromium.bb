@@ -1222,7 +1222,7 @@ bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Ani
         CSSPropertyID property = iter->key;
         if (!isPropertyForPass<pass>(property))
             continue;
-        RELEASE_ASSERT_WITH_MESSAGE(!iter->value->dependsOnUnderlyingValue(), "Web Animations not yet implemented: An interface for compositing onto the underlying value.");
+        ASSERT_WITH_MESSAGE(!iter->value->dependsOnUnderlyingValue(), "Web Animations not yet implemented: An interface for compositing onto the underlying value.");
         RefPtr<AnimatableValue> animatableValue = iter->value->compositeOnto(0);
         AnimatedStyleBuilder::applyProperty(property, state, animatableValue.get());
         didApply = true;

@@ -59,8 +59,8 @@ PassRefPtr<AnimatableValue> AnimatableFilterOperations::interpolateTo(const Anim
 
 PassRefPtr<AnimatableValue> AnimatableFilterOperations::addWith(const AnimatableValue* value) const
 {
-    RELEASE_ASSERT_WITH_MESSAGE(false, "Web Animations not yet implemented: AnimatableFilterOperations::addWith()");
-    return 0;
+    ASSERT_WITH_MESSAGE(false, "Web Animations not yet implemented: AnimatableFilterOperations::addWith()");
+    return defaultAddWith(this, value);
 }
 
 bool AnimatableFilterOperations::equalTo(const AnimatableValue* value) const

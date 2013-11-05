@@ -445,9 +445,10 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
     case CSSPropertyZoom:
         return createFromDouble(style->zoom());
     default:
-        RELEASE_ASSERT_WITH_MESSAGE(!CSSAnimations::isAnimatableProperty(property), "Web Animations not yet implemented: Create AnimatableValue from render style: %s", getPropertyNameString(property).utf8().data());
+        ASSERT_WITH_MESSAGE(!CSSAnimations::isAnimatableProperty(property), "Web Animations not yet implemented: Create AnimatableValue from render style: %s", getPropertyNameString(property).utf8().data());
         ASSERT_NOT_REACHED();
-        return 0;
+        // This return value is to avoid a release crash if possible.
+        return AnimatableUnknown::create(0);
     }
 }
 

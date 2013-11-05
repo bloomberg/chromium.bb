@@ -42,8 +42,8 @@ PassRefPtr<AnimatableValue> AnimatableSVGLength::interpolateTo(const AnimatableV
 
 PassRefPtr<AnimatableValue> AnimatableSVGLength::addWith(const AnimatableValue* value) const
 {
-    RELEASE_ASSERT_WITH_MESSAGE(false, "Web Animations not yet implemented: AnimatableSVGLength::addWith()");
-    return 0;
+    ASSERT_WITH_MESSAGE(false, "Web Animations not yet implemented: AnimatableSVGLength::addWith()");
+    return defaultAddWith(this, value);
 }
 
 bool AnimatableSVGLength::equalTo(const AnimatableValue* value) const
