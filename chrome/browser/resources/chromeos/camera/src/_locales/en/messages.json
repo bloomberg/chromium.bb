@@ -151,6 +151,10 @@
     "message": "Gallery images",
     "description": "Text to speech label for the gallery list."
   },
+  "takePictureButton": {
+    "message": "Take a picture",
+    "description": "Label for the red picture taking button."
+  },
   "dialogYesButton": {
     "message": "Yes",
     "description": "Label for the accepting button in the confirmation dialog."
