@@ -166,11 +166,18 @@ void InstalledLoader::Load(const ExtensionInfo& info, bool write_to_prefs) {
   // Chrome was not running.
   const ManagementPolicy* policy = extensions::ExtensionSystem::Get(
       extension_service_->profile())->management_policy();
-  if (extension.get() && !policy->UserMayLoad(extension.get(), NULL)) {
-    // The error message from UserMayInstall() often contains the extension ID
-    // and is therefore not well suited to this UI.
-    error = errors::kDisabledByPolicy;
-    extension = NULL;
+  if (extension.get()) {
+    Extension::DisableReason disable_reason = Extension::DISABLE_NONE;
+    if (!policy->UserMayLoad(extension.get(), NULL)) {
+      // The error message from UserMayInstall() often contains the extension ID
+      // and is therefore not well suited to this UI.
+      error = errors::kDisabledByPolicy;
+      extension = NULL;
+    } else if (!extension_prefs_->IsExtensionDisabled(extension->id()) &&
+               policy->MustRemainDisabled(extension, &disable_reason, NULL)) {
+      extension_prefs_->SetExtensionState(extension->id(), Extension::DISABLED);
+      extension_prefs_->AddDisableReason(extension->id(), disable_reason);
+    }
   }
 
   if (!extension.get()) {

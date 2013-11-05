@@ -470,7 +470,9 @@ bool ManagementSetEnabledFunction::RunImpl() {
 
   const ManagementPolicy* policy =
       ExtensionSystem::Get(GetProfile())->management_policy();
-  if (!policy->UserMayModifySettings(extension, NULL)) {
+  if (!policy->UserMayModifySettings(extension, NULL) ||
+      (!params->enabled && policy->MustRemainEnabled(extension, NULL)) ||
+      (params->enabled && policy->MustRemainDisabled(extension, NULL, NULL))) {
     error_ = ErrorUtils::FormatErrorMessage(
         keys::kUserCantModifyError, extension_id_);
     return false;

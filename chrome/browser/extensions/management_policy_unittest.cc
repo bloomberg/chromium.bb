@@ -19,6 +19,9 @@ class ManagementPolicyTest : public testing::Test {
     no_load_.SetProhibitedActions(TestProvider::PROHIBIT_LOAD);
     must_remain_enabled_.SetProhibitedActions(
         TestProvider::MUST_REMAIN_ENABLED);
+    must_remain_disabled_.SetProhibitedActions(
+        TestProvider::MUST_REMAIN_DISABLED);
+    must_remain_disabled_.SetDisableReason(Extension::DISABLE_SIDELOAD_WIPEOUT);
     restrict_all_.SetProhibitedActions(TestProvider::PROHIBIT_MODIFY_STATUS |
                                        TestProvider::PROHIBIT_LOAD |
                                        TestProvider::MUST_REMAIN_ENABLED);
@@ -31,6 +34,7 @@ class ManagementPolicyTest : public testing::Test {
   TestProvider no_modify_status_;
   TestProvider no_load_;
   TestProvider must_remain_enabled_;
+  TestProvider must_remain_disabled_;
   TestProvider restrict_all_;
 };
 
@@ -139,6 +143,36 @@ TEST_F(ManagementPolicyTest, MustRemainEnabled) {
   policy_.UnregisterProvider(&must_remain_enabled_);
   error.clear();
   EXPECT_FALSE(policy_.MustRemainEnabled(NULL, &error));
+  EXPECT_TRUE(error.empty());
+}
+
+TEST_F(ManagementPolicyTest, MustRemainDisabled) {
+  // No providers registered.
+  string16 error;
+  EXPECT_FALSE(policy_.MustRemainDisabled(NULL, NULL, &error));
+  EXPECT_TRUE(error.empty());
+
+  // One provider, no relevant restriction.
+  policy_.RegisterProvider(&allow_all_);
+  EXPECT_FALSE(policy_.MustRemainDisabled(NULL, NULL, &error));
+  EXPECT_TRUE(error.empty());
+
+  // Two providers, no relevant restrictions.
+  policy_.RegisterProvider(&no_modify_status_);
+  EXPECT_FALSE(policy_.MustRemainDisabled(NULL, NULL, &error));
+  EXPECT_TRUE(error.empty());
+
+  // Three providers, one with a relevant restriction.
+  Extension::DisableReason reason = Extension::DISABLE_NONE;
+  policy_.RegisterProvider(&must_remain_disabled_);
+  EXPECT_TRUE(policy_.MustRemainDisabled(NULL, &reason, &error));
+  EXPECT_FALSE(error.empty());
+  EXPECT_EQ(Extension::DISABLE_SIDELOAD_WIPEOUT, reason);
+
+  // Remove the restriction.
+  policy_.UnregisterProvider(&must_remain_disabled_);
+  error.clear();
+  EXPECT_FALSE(policy_.MustRemainDisabled(NULL, NULL, &error));
   EXPECT_TRUE(error.empty());
 }
 

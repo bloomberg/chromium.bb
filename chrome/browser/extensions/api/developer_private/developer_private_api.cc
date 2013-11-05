@@ -716,18 +716,24 @@ bool DeveloperPrivateEnableFunction::RunImpl() {
   std::string extension_id = params->item_id;
 
   ExtensionSystem* system = ExtensionSystem::Get(GetProfile());
-  ManagementPolicy* management_policy = system->management_policy();
+  ManagementPolicy* policy = system->management_policy();
   ExtensionService* service = GetProfile()->GetExtensionService();
 
   const Extension* extension = service->GetInstalledExtension(extension_id);
-  if (!extension ||
-      !management_policy->UserMayModifySettings(extension, NULL)) {
-    LOG(ERROR) << "Attempt to enable an extension that is non-usermanagable "
-               "was made. Extension id: " << extension_id.c_str();
+  if (!extension) {
+    LOG(ERROR) << "Did not find extension with id " << extension_id;
+    return false;
+  }
+  bool enable = params->enable;
+  if (!policy->UserMayModifySettings(extension, NULL) ||
+      (!enable && policy->MustRemainEnabled(extension, NULL)) ||
+      (enable && policy->MustRemainDisabled(extension, NULL, NULL))) {
+    LOG(ERROR) << "Attempt to change enable state denied by management policy. "
+               << "Extension id: " << extension_id.c_str();
     return false;
   }
 
-  if (params->enable) {
+  if (enable) {
     ExtensionPrefs* prefs = service->extension_prefs();
     if (prefs->DidExtensionEscalatePermissions(extension_id)) {
       ShellWindowRegistry* registry = ShellWindowRegistry::Get(GetProfile());

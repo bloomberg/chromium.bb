@@ -39,6 +39,13 @@ bool ManagementPolicy::Provider::MustRemainEnabled(const Extension* extension,
   return false;
 }
 
+bool ManagementPolicy::Provider::MustRemainDisabled(
+    const Extension* extension,
+    Extension::DisableReason* reason,
+    string16* error) const {
+  return false;
+}
+
 void ManagementPolicy::RegisterProvider(Provider* provider) {
   providers_.insert(provider);
 }
@@ -63,6 +70,17 @@ bool ManagementPolicy::MustRemainEnabled(const Extension* extension,
                                          string16* error) const {
   return ApplyToProviderList(&Provider::MustRemainEnabled, "Disabling",
                              false, extension, error);
+}
+
+bool ManagementPolicy::MustRemainDisabled(const Extension* extension,
+                                          Extension::DisableReason* reason,
+                                          string16* error) const {
+  for (ProviderList::const_iterator it = providers_.begin();
+       it != providers_.end(); ++it)
+    if ((*it)->MustRemainDisabled(extension, reason, error))
+      return true;
+
+  return false;
 }
 
 void ManagementPolicy::UnregisterAllProviders() {

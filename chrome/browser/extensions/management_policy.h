@@ -68,6 +68,12 @@ class ManagementPolicy {
     virtual bool MustRemainEnabled(const Extension* extension,
                                    string16* error) const;
 
+    // Similar to MustRemainEnabled, but for whether an extension must remain
+    // disabled, and returns an error and/or reason if the caller needs it.
+    virtual bool MustRemainDisabled(const Extension* extension,
+                                    Extension::DisableReason* reason,
+                                    string16* error) const;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(Provider);
   };
@@ -96,6 +102,12 @@ class ManagementPolicy {
   // message.
   bool MustRemainEnabled(const Extension* extension,
                          string16* error) const;
+
+  // Returns true immediately if any registered provider's MustRemainDisabled
+  // function returns true.
+  bool MustRemainDisabled(const Extension* extension,
+                          Extension::DisableReason* reason,
+                          string16* error) const;
 
   // For use in testing.
   void UnregisterAllProviders();

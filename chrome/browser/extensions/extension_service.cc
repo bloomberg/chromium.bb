@@ -119,6 +119,7 @@ using extensions::Extension;
 using extensions::ExtensionIdSet;
 using extensions::ExtensionInfo;
 using extensions::FeatureSwitch;
+using extensions::ManagementPolicy;
 using extensions::Manifest;
 using extensions::PermissionMessage;
 using extensions::PermissionMessages;
@@ -889,11 +890,17 @@ void ExtensionService::EnableExtension(const std::string& extension_id) {
 
   if (IsExtensionEnabled(extension_id))
     return;
+  const Extension* extension = disabled_extensions_.GetByID(extension_id);
+
+  ManagementPolicy* policy = system_->management_policy();
+  if (extension && policy->MustRemainDisabled(extension, NULL, NULL)) {
+    UMA_HISTOGRAM_COUNTS_100("Extensions.EnableDeniedByPolicy", 1);
+    return;
+  }
 
   extension_prefs_->SetExtensionState(extension_id, Extension::ENABLED);
   extension_prefs_->ClearDisableReasons(extension_id);
 
-  const Extension* extension = disabled_extensions_.GetByID(extension_id);
   // This can happen if sync enables an extension that is not
   // installed yet.
   if (!extension)
@@ -1203,20 +1210,28 @@ extensions::ExtensionUpdater* ExtensionService::updater() {
 }
 
 void ExtensionService::CheckManagementPolicy() {
-  std::vector<std::string> to_be_removed;
+  std::vector<std::string> to_unload;
+  std::map<std::string, Extension::DisableReason> to_disable;
 
-  // Loop through extensions list, unload installed extensions.
+  // Loop through the extensions list, finding extensions we need to unload or
+  // disable.
   for (ExtensionSet::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
     const Extension* extension = (iter->get());
     if (!system_->management_policy()->UserMayLoad(extension, NULL))
-      to_be_removed.push_back(extension->id());
+      to_unload.push_back(extension->id());
+    Extension::DisableReason disable_reason = Extension::DISABLE_NONE;
+    if (system_->management_policy()->MustRemainDisabled(
+            extension, &disable_reason, NULL))
+      to_disable[extension->id()] = disable_reason;
   }
 
-  // UnloadExtension will change the extensions_ list. So, we should
-  // call it outside the iterator loop.
-  for (size_t i = 0; i < to_be_removed.size(); ++i)
-    UnloadExtension(to_be_removed[i], UnloadedExtensionInfo::REASON_DISABLE);
+  for (size_t i = 0; i < to_unload.size(); ++i)
+    UnloadExtension(to_unload[i], UnloadedExtensionInfo::REASON_DISABLE);
+
+  for (std::map<std::string, Extension::DisableReason>::const_iterator i =
+           to_disable.begin(); i != to_disable.end(); ++i)
+    DisableExtension(i->first, i->second);
 }
 
 void ExtensionService::CheckForUpdatesSoon() {

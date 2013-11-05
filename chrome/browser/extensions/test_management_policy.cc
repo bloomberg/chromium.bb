@@ -7,10 +7,13 @@
 #include "base/strings/utf_string_conversions.h"
 
 namespace extensions {
+
 TestManagementPolicyProvider::TestManagementPolicyProvider()
     : may_load_(true),
       may_modify_status_(true),
-      must_remain_enabled_(false) {
+      must_remain_enabled_(false),
+      must_remain_disabled_(false),
+      disable_reason_(Extension::DISABLE_NONE) {
   error_message_ = UTF8ToUTF16(expected_error());
 }
 
@@ -25,6 +28,12 @@ void TestManagementPolicyProvider::SetProhibitedActions(
   may_load_ = (prohibited_actions & PROHIBIT_LOAD) == 0;
   may_modify_status_ = (prohibited_actions & PROHIBIT_MODIFY_STATUS) == 0;
   must_remain_enabled_ = (prohibited_actions & MUST_REMAIN_ENABLED) != 0;
+  must_remain_disabled_ = (prohibited_actions & MUST_REMAIN_DISABLED) != 0;
+}
+
+void TestManagementPolicyProvider::SetDisableReason(
+    Extension::DisableReason reason) {
+  disable_reason_ = reason;
 }
 
 std::string TestManagementPolicyProvider::GetDebugPolicyProviderName() const {
@@ -51,4 +60,19 @@ bool TestManagementPolicyProvider::MustRemainEnabled(const Extension* extension,
     *error = error_message_;
   return must_remain_enabled_;
 }
-}  // namespace
+
+bool TestManagementPolicyProvider::MustRemainDisabled(
+    const Extension* extension,
+    Extension::DisableReason* reason,
+    string16* error) const {
+  if (must_remain_disabled_) {
+    if (error)
+      *error = error_message_;
+    if (reason)
+      *reason = disable_reason_;
+  }
+  return must_remain_disabled_;
+}
+
+
+}  // namespace extensions
