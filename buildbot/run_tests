@@ -10,7 +10,47 @@ CHROOT_CHROMITE=../../chromite
 
 set -eu
 
-LOGFILE="$(mktemp -t buildbot.run_tests.XXXXXX)"
+# List all exceptions, with a token describing what's odd here.
+# inside - inside the chroot
+# skip - don't run this test (please comment on why)
+declare -A special_tests
+special_tests=(
+  # Tests that need to run inside the chroot.
+  ['cros/commands/cros_build_unittest.py']=inside
+  ['lib/upgrade_table_unittest.py']=inside
+  ['scripts/cros_mark_as_stable_unittest.py']=inside
+  ['scripts/cros_mark_chrome_as_stable_unittest.py']=inside
+  ['scripts/sync_package_status_unittest.py']=inside
+  ['scripts/cros_portage_upgrade_unittest.py']=inside
+  ['scripts/upload_package_status_unittest.py']=inside
+
+  # Tests that need to run outside the chroot.
+  ['lib/cgroups_unittest.py']=outside
+
+  # Tests that are presently broken.
+  ['lib/gdata_lib_unittest.py']=skip
+  ['scripts/chrome_set_ver_unittest.py']=skip
+  ['scripts/check_gdata_token_unittest.py']=skip
+  ['scripts/merge_package_status_unittest.py']=skip
+  ['scripts/upload_package_status_unittest.py']=skip
+
+  # Tests that take >2 minutes to run.  All the slow tests are
+  # disabled atm though ...
+  #['scripts/cros_portage_upgrade_unittest.py']=skip
+)
+
+skip_quick_tests() {
+  # Tests that require network can be really slow.
+  special_tests['buildbot/manifest_version_unittest.py']=skip
+  special_tests['buildbot/repository_unittest.py']=skip
+  special_tests['buildbot/remote_try_unittest.py']=skip
+  special_tests['lib/cros_build_lib_unittest.py']=skip
+  special_tests['lib/gerrit_unittest.py']=skip
+  special_tests['lib/patch_unittest.py']=skip
+
+  # cgroups_unittest runs cros_sdk a lot, so is slow.
+  special_tests['lib/cgroups_unittest.py']=skip
+}
 
 # Helper function to add failed logs/tests to be printed out later.
 # $1 test that failed.
@@ -61,78 +101,6 @@ run_test() {
   rm -f "${log_file}"
 }
 
-# For some versions of 'sudo' (notably, the 'sudo' in the chroot at
-# the time of this writing), sudo -v will ask for a password whether
-# or not it's needed.  'sudo true' will do what we want.
-sudo true
-
-# List all exceptions, with a token describing what's odd here.
-# inside - inside the chroot
-# skip - don't run this test (please comment on why)
-declare -A special_tests
-special_tests=(
-  # Tests that need to run inside the chroot.
-  ['cros/commands/cros_build_unittest.py']=inside
-  ['lib/upgrade_table_unittest.py']=inside
-  ['scripts/cros_mark_as_stable_unittest.py']=inside
-  ['scripts/cros_mark_chrome_as_stable_unittest.py']=inside
-  ['scripts/sync_package_status_unittest.py']=inside
-  ['scripts/cros_portage_upgrade_unittest.py']=inside
-  ['scripts/upload_package_status_unittest.py']=inside
-
-  # Tests that need to run outside the chroot.
-  ['lib/cgroups_unittest.py']=outside
-
-  # Tests that are presently broken.
-  ['lib/gdata_lib_unittest.py']=skip
-  ['scripts/chrome_set_ver_unittest.py']=skip
-  ['scripts/check_gdata_token_unittest.py']=skip
-  ['scripts/merge_package_status_unittest.py']=skip
-  ['scripts/upload_package_status_unittest.py']=skip
-
-  # Tests that take >2 minutes to run.  All the slow tests are
-  # disabled atm though ...
-  #['scripts/cros_portage_upgrade_unittest.py']=skip
-)
-
-if [[ $# -ne 0 && $1 == "--quick" ]]; then
-  shift
-  # Tests that require network can be really slow.
-  special_tests['buildbot/manifest_version_unittest.py']=skip
-  special_tests['buildbot/repository_unittest.py']=skip
-  special_tests['buildbot/remote_try_unittest.py']=skip
-  special_tests['lib/cros_build_lib_unittest.py']=skip
-  special_tests['lib/gerrit_unittest.py']=skip
-  special_tests['lib/patch_unittest.py']=skip
-
-  # cgroups_unittest runs cros_sdk a lot, so is slow.
-  special_tests['lib/cgroups_unittest.py']=skip
-fi
-
-SKIP_CHROOT_TESTS=false
-if ! repo list | grep -q chromiumos-overlay; then
-  echo "chromiumos-overlay is not present. Skipping chroot tests..."
-  SKIP_CHROOT_TESTS=true
-
-  # cgroups_unittest requires cros_sdk, so it doesn't work.
-  special_tests['lib/cgroups_unittest.py']=skip
-fi
-
-if [[ $# -eq 0 ]]; then
-  # List all unit test scripts that match the given pattern.
-  prune_tests=(
-    $(find "${CHROMITE_PATH}" -name .testignore \
-        -printf '-path %h -prune -o ')
-  )
-  all_tests=(
-    $(find "${CHROMITE_PATH}" \
-        ${prune_tests[*]} \
-        -name '*_unittest.py' -printf '%P ')
-  )
-  set -- "${all_tests[@]}"
-fi
-
-declare -a children
 cleanup() {
   delayed_kill() {
     sleep 5
@@ -165,15 +133,56 @@ show_logs() {
   rm -f "${LOGFILE}"
 }
 
-trap cleanup INT TERM
+main() {
+  # For some versions of 'sudo' (notably, the 'sudo' in the chroot at
+  # the time of this writing), sudo -v will ask for a password whether
+  # or not it's needed.  'sudo true' will do what we want.
+  sudo true
 
-for test in "$@"; do
-  run_test ${test} &
-  children+=( $! )
-done
+  if [[ $# -ne 0 && $1 == "--quick" ]]; then
+    shift
+    skip_quick_tests
+  fi
 
-wait ${children[*]}
-trap - INT TERM
+  SKIP_CHROOT_TESTS=false
+  if ! repo list 2>/dev/null | grep -q chromiumos-overlay; then
+    echo "chromiumos-overlay is not present. Skipping chroot tests..."
+    SKIP_CHROOT_TESTS=true
 
-show_logs
-echo "All tests succeeded!"
+    # cgroups_unittest requires cros_sdk, so it doesn't work.
+    special_tests['lib/cgroups_unittest.py']=skip
+  fi
+
+  # Default to running all tests.
+  if [[ $# -eq 0 ]]; then
+    # List all unit test scripts that match the given pattern.
+    local prune_tests=(
+      $(find "${CHROMITE_PATH}" -name .testignore \
+          -printf '-path %h -prune -o ')
+    )
+    local all_tests=(
+      $(find "${CHROMITE_PATH}" \
+          ${prune_tests[*]} \
+          -name '*_unittest.py' -printf '%P ')
+    )
+    set -- "${all_tests[@]}"
+  fi
+
+  # Now do the real code.
+  LOGFILE="$(mktemp -t buildbot.run_tests.XXXXXX)"
+  trap cleanup INT TERM
+
+  local children=()
+  for test in "$@"; do
+    run_test ${test} &
+    children+=( $! )
+  done
+
+  wait ${children[*]}
+  trap - INT TERM
+
+  show_logs
+  echo "All tests succeeded!"
+}
+
+main "$@"
