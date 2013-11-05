@@ -242,6 +242,11 @@
             '../../webkit/glue/webkit_glue.gyp:glue_child',
           ],
         }],
+        ['OS=="win" and win_use_allocator_shim==1', {
+          'dependencies': [
+            '../../base/allocator/allocator.gyp:allocator',
+          ],
+        }],
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
