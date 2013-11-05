@@ -15,7 +15,7 @@
 cd "$(realpath "$(dirname "$0")")/../.."
 
 build() {
-  ninja -C "out/$1" || exit 1
+  ninja -C "out/$1" mojo || exit 1
 }
 
 unittests() {
