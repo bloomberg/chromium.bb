@@ -11,7 +11,7 @@ class WebrtcCastApiTest : public ExtensionApiTest {
 };
 
 // Test running the test extension for Cast Mirroring API.
-IN_PROC_BROWSER_TEST_F(WebrtcCastApiTest, Basics) {
+IN_PROC_BROWSER_TEST_F(WebrtcCastApiTest, DISABLED_Basics) {
   ASSERT_TRUE(RunExtensionSubtest("webrtc_cast", "basics.html"));
 }
 
