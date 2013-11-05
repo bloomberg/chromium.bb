@@ -34,6 +34,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/power_policy_controller.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "policy/policy_constants.h"
 #include "policy/proto/cloud_policy.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -168,6 +169,7 @@ void DeviceLocalAccountPolicyServiceTestBase::SetUp() {
 }
 
 void DeviceLocalAccountPolicyServiceTestBase::TearDown() {
+  service_->Shutdown();
   service_.reset();
   extension_cache_task_runner_->RunUntilIdle();
   chromeos::DeviceSettingsTestBase::TearDown();
@@ -179,7 +181,10 @@ void DeviceLocalAccountPolicyServiceTestBase::CreatePolicyService() {
       &device_settings_service_,
       &cros_settings_,
       loop_.message_loop_proxy(),
-      extension_cache_task_runner_));
+      extension_cache_task_runner_,
+      loop_.message_loop_proxy(),
+      loop_.message_loop_proxy(),
+      NULL));
 }
 
 void DeviceLocalAccountPolicyServiceTestBase::
@@ -443,13 +448,6 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, FetchPolicy) {
   EXPECT_TRUE(expected_policy_map_.Equals(
       broker->core()->store()->policy_map()));
   EXPECT_TRUE(service_->IsPolicyAvailableForUser(account_1_user_id_));
-
-  EXPECT_CALL(service_observer_, OnPolicyUpdated(account_1_user_id_))
-      .Times(0);
-  service_->Disconnect();
-  EXPECT_FALSE(broker->core()->client());
-  Mock::VerifyAndClearExpectations(&service_observer_);
-  EXPECT_TRUE(service_->IsPolicyAvailableForUser(account_1_user_id_));
 }
 
 TEST_F(DeviceLocalAccountPolicyServiceTest, RefreshPolicy) {
@@ -517,7 +515,7 @@ void DeviceLocalAccountPolicyExtensionCacheTest::SetUp() {
   DeviceLocalAccountPolicyServiceTestBase::SetUp();
   ASSERT_TRUE(cache_root_dir_.CreateUniqueTempDir());
   cache_root_dir_override_.reset(new base::ScopedPathOverride(
-      chromeos::DIR_DEVICE_LOCAL_ACCOUNT_CACHE,
+      chromeos::DIR_DEVICE_LOCAL_ACCOUNT_EXTENSIONS,
       cache_root_dir_.path()));
 
   cache_dir_1_ = GetCacheDirectoryForAccountID(kAccount1);

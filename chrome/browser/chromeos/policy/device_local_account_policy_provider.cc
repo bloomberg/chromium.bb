@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/policy/device_local_account_policy_provider.h"
 
 #include "base/bind.h"
+#include "chrome/browser/chromeos/policy/device_local_account_external_data_manager.h"
 #include "chrome/browser/policy/cloud/cloud_policy_core.h"
 #include "chrome/browser/policy/cloud/cloud_policy_service.h"
 #include "chrome/browser/policy/policy_bundle.h"
@@ -75,6 +76,7 @@ void DeviceLocalAccountPolicyProvider::UpdateFromBroker() {
       // Copy policy from the broker.
       bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
           .CopyFrom(broker->core()->store()->policy_map());
+      external_data_manager_ = broker->external_data_manager();
     } else {
       // Wait for the refresh to finish.
       return;

@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_external_policy_loader.h"
+#include "chrome/browser/chromeos/policy/device_local_account_external_data_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/policy/cloud/cloud_policy_core.h"
 #include "chrome/browser/policy/cloud/cloud_policy_store.h"
@@ -29,9 +30,14 @@ class DeviceSettingsService;
 class SessionManagerClient;
 }
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace policy {
 
 struct DeviceLocalAccount;
+class DeviceLocalAccountExternalDataService;
 class DeviceLocalAccountPolicyStore;
 class DeviceManagementService;
 
@@ -43,6 +49,8 @@ class DeviceLocalAccountPolicyBroker {
   DeviceLocalAccountPolicyBroker(
       const DeviceLocalAccount& account,
       scoped_ptr<DeviceLocalAccountPolicyStore> store,
+      scoped_refptr<DeviceLocalAccountExternalDataManager>
+          external_data_manager,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~DeviceLocalAccountPolicyBroker();
 
@@ -60,14 +68,16 @@ class DeviceLocalAccountPolicyBroker {
   CloudPolicyCore* core() { return &core_; }
   const CloudPolicyCore* core() const { return &core_; }
 
+  scoped_refptr<DeviceLocalAccountExternalDataManager> external_data_manager() {
+    return external_data_manager_;
+  }
+
   // Fire up the cloud connection for fetching policy for the account from the
   // cloud if this is an enterprise-managed device.
   void ConnectIfPossible(
       chromeos::DeviceSettingsService* device_settings_service,
-      DeviceManagementService* device_management_service);
-
-  // Destroy the cloud connection, stopping policy refreshes.
-  void Disconnect();
+      DeviceManagementService* device_management_service,
+      scoped_refptr<net::URLRequestContextGetter> request_context);
 
   // Reads the refresh delay from policy and configures the refresh scheduler.
   void UpdateRefreshDelay();
@@ -80,6 +90,7 @@ class DeviceLocalAccountPolicyBroker {
   const std::string account_id_;
   const std::string user_id_;
   const scoped_ptr<DeviceLocalAccountPolicyStore> store_;
+  scoped_refptr<DeviceLocalAccountExternalDataManager> external_data_manager_;
   scoped_refptr<chromeos::DeviceLocalAccountExternalPolicyLoader>
       extension_loader_;
   CloudPolicyCore core_;
@@ -110,14 +121,18 @@ class DeviceLocalAccountPolicyService : public CloudPolicyStore::Observer {
       chromeos::DeviceSettingsService* device_settings_service,
       chromeos::CrosSettings* cros_settings,
       scoped_refptr<base::SequencedTaskRunner> store_background_task_runner,
-      scoped_refptr<base::SequencedTaskRunner> extension_cache_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> extension_cache_task_runner,
+      scoped_refptr<base::SequencedTaskRunner>
+          external_data_service_backend_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
+      scoped_refptr<net::URLRequestContextGetter> request_context);
   virtual ~DeviceLocalAccountPolicyService();
+
+  // Shuts down the service and prevents further policy fetches from the cloud.
+  void Shutdown();
 
   // Initializes the cloud policy service connection.
   void Connect(DeviceManagementService* device_management_service);
-
-  // Prevents further policy fetches from the cloud.
-  void Disconnect();
 
   // Get the policy broker for a given |user_id|. Returns NULL if that |user_id|
   // does not belong to an existing device-local account.
@@ -175,6 +190,8 @@ class DeviceLocalAccountPolicyService : public CloudPolicyStore::Observer {
   // Find the broker for a given |store|. Returns NULL if |store| is unknown.
   DeviceLocalAccountPolicyBroker* GetBrokerForStore(CloudPolicyStore* store);
 
+  ObserverList<Observer, true> observers_;
+
   chromeos::SessionManagerClient* session_manager_client_;
   chromeos::DeviceSettingsService* device_settings_service_;
   chromeos::CrosSettings* cros_settings_;
@@ -205,7 +222,9 @@ class DeviceLocalAccountPolicyService : public CloudPolicyStore::Observer {
   const scoped_refptr<base::SequencedTaskRunner> store_background_task_runner_;
   const scoped_refptr<base::SequencedTaskRunner> extension_cache_task_runner_;
 
-  ObserverList<Observer, true> observers_;
+  scoped_ptr<DeviceLocalAccountExternalDataService> external_data_service_;
+
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   const scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
       local_accounts_subscription_;
