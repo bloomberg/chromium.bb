@@ -160,7 +160,8 @@ class PrerenderManager::OnCloseWebContentsDeleter
   OnCloseWebContentsDeleter(PrerenderManager* manager,
                             WebContents* tab)
       : manager_(manager),
-        tab_(tab) {
+        tab_(tab),
+        suppressed_dialog_(false) {
     tab_->SetDelegate(this);
     base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
         base::Bind(&OnCloseWebContentsDeleter::ScheduleWebContentsForDeletion,
@@ -179,6 +180,9 @@ class PrerenderManager::OnCloseWebContentsDeleter
   }
 
   virtual bool ShouldSuppressDialogs() OVERRIDE {
+    // Use this as a proxy for getting statistics on how often we fail to honor
+    // the beforeunload event.
+    suppressed_dialog_ = true;
     return true;
   }
 
@@ -186,13 +190,17 @@ class PrerenderManager::OnCloseWebContentsDeleter
   static const int kDeleteWithExtremePrejudiceSeconds = 3;
 
   void ScheduleWebContentsForDeletion(bool timeout) {
+    UMA_HISTOGRAM_BOOLEAN("Prerender.TabContentsDeleterTimeout", timeout);
+    UMA_HISTOGRAM_BOOLEAN("Prerender.TabContentsDeleterSuppressedDialog",
+                          suppressed_dialog_);
     tab_->SetDelegate(NULL);
     manager_->ScheduleDeleteOldWebContents(tab_.release(), this);
-    UMA_HISTOGRAM_BOOLEAN("Prerender.TabContentsDeleterTimeout", timeout);
+    // |this| is deleted at this point.
   }
 
   PrerenderManager* manager_;
   scoped_ptr<WebContents> tab_;
+  bool suppressed_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(OnCloseWebContentsDeleter);
 };
@@ -584,6 +592,7 @@ bool PrerenderManager::MaybeUsePrerenderedPage(const GURL& url,
 
   if (old_web_contents->NeedToFireBeforeUnload()) {
     // Schedule the delete to occur after the tab has run its unload handlers.
+    // TODO(davidben): Honor the beforeunload event. http://crbug.com/304932
     on_close_web_contents_deleters_.push_back(
         new OnCloseWebContentsDeleter(this, old_web_contents));
     old_web_contents->GetRenderViewHost()->

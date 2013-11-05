@@ -13880,7 +13880,16 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="Prerender.TabContentsDeleterTimeout">
+<histogram name="Prerender.TabContentsDeleterSuppressedDialog"
+    enum="BooleanSuppressed">
+  <summary>
+    A boolean that indicates how often we suppress a dialog from a tab when
+    swapping it with a prerender.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.TabContentsDeleterTimeout"
+    enum="BooleanCloseTimeout">
   <summary>
     A boolean that indicates how often we fail to delete an old prerendered tab
     before the timeout.
@@ -20378,6 +20387,11 @@ other types of suffix sets.
   <int value="1" label="Attempted"/>
 </enum>
 
+<enum name="BooleanCloseTimeout" type="int">
+  <int value="0" label="Closed normally"/>
+  <int value="1" label="Timed out"/>
+</enum>
+
 <enum name="BooleanCommonNameMatch" type="int">
   <int value="0" label="subjectAltName used"/>
   <int value="1" label="Common Name used"/>
@@ -20471,6 +20485,11 @@ other types of suffix sets.
 <enum name="BooleanSuccess" type="int">
   <int value="0" label="Failure"/>
   <int value="1" label="Success"/>
+</enum>
+
+<enum name="BooleanSuppressed" type="int">
+  <int value="0" label="No suppressions"/>
+  <int value="1" label="Suppressed"/>
 </enum>
 
 <enum name="BooleanTabDiscard" type="int">
