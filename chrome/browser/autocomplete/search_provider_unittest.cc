@@ -135,6 +135,16 @@ class SearchProviderTest : public testing::Test,
   // Be sure and wrap calls to this in ASSERT_NO_FATAL_FAILURE.
   void FinishDefaultSuggestQuery();
 
+  // Runs SearchProvider on |input|, for which the suggest server replies
+  // with |json|, and expects that the resulting matches' contents equals
+  // that in |matches|.  An empty entry in |matches| means no match should
+  // be returned in that position.  Reports any errors with a message that
+  // includes |error_description|.
+  void ForcedQueryTestHelper(const std::string& input,
+                             const std::string& json,
+                             const std::string matches[3],
+                             const std::string& error_description);
+
   void ResetFieldTrialList();
 
   void ClearAllResults();
@@ -355,6 +365,35 @@ void SearchProviderTest::FinishDefaultSuggestQuery() {
   default_fetcher->delegate()->OnURLFetchComplete(default_fetcher);
 }
 
+void SearchProviderTest::ForcedQueryTestHelper(
+    const std::string& input,
+    const std::string& json,
+    const std::string expected_matches[3],
+    const std::string& error_description) {
+  QueryForInput(ASCIIToUTF16(input), false, false);
+  net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
+      SearchProvider::kDefaultProviderURLFetcherID);
+  ASSERT_TRUE(fetcher);
+  fetcher->set_response_code(200);
+  fetcher->SetResponseString(json);
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  RunTillProviderDone();
+
+  const ACMatches& matches = provider_->matches();
+  ASSERT_LE(matches.size(), 3u);
+  size_t i = 0;
+  // Ensure that the returned matches equal the expectations.
+  for (; i < matches.size(); ++i) {
+    EXPECT_EQ(ASCIIToUTF16(expected_matches[i]), matches[i].contents) <<
+        error_description;
+  }
+  // Ensure that no expected matches are missing.
+  for (; i < 3u; ++i) {
+    EXPECT_EQ(std::string(), expected_matches[i]) <<
+        "Case #" << i << ": " << error_description;
+  }
+}
+
 void SearchProviderTest::ResetFieldTrialList() {
   // Destroy the existing FieldTrialList before creating a new one to avoid
   // a DCHECK.
@@ -554,6 +593,54 @@ TEST_F(SearchProviderTest, DontAutocompleteURLLikeTerms) {
   EXPECT_GT(wyt_match.relevance, term_match.relevance);
   EXPECT_TRUE(wyt_match.allowed_to_be_default_match);
   EXPECT_TRUE(term_match.allowed_to_be_default_match);
+}
+
+TEST_F(SearchProviderTest, DontGiveNavsuggestionsInForcedQueryMode) {
+  const std::string kEmptyMatch;
+  struct {
+    const std::string json;
+    const std::string matches_in_default_mode[3];
+    const std::string matches_in_forced_query_mode[3];
+  } cases[] = {
+    // Without suggested relevance scores.
+    { "[\"a\",[\"http://a1.com\", \"a2\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\", \"QUERY\"]}]",
+      { "a", "a1.com", "a2" },
+      { "a", "a2", kEmptyMatch } },
+
+    // With suggested relevance scores in a situation where navsuggest would
+    // go second.
+    { "[\"a\",[\"http://a1.com\", \"a2\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\", \"QUERY\"],"
+        "\"google:suggestrelevance\":[1250, 1200]}]",
+      { "a", "a1.com", "a2" },
+      { "a", "a2", kEmptyMatch } },
+
+    // With suggested relevance scores in a situation where navsuggest
+    // would go first.
+    { "[\"a\",[\"http://a1.com\", \"a2\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\", \"QUERY\"],"
+        "\"google:suggestrelevance\":[1350, 1250]}]",
+      { "a1.com", "a", "a2" },
+      { "a", "a2", kEmptyMatch } },
+
+    // With suggested relevance scores in a situation where navsuggest
+    // would go first only because verbatim has been demoted.
+    { "[\"a\",[\"http://a1.com\", \"a2\"],[],[],"
+       "{\"google:suggesttype\":[\"NAVIGATION\", \"QUERY\"],"
+        "\"google:suggestrelevance\":[1450, 1400],"
+        "\"google:verbatimrelevance\":1350}]",
+      { "a1.com", "a2", "a" },
+      { "a2", "a", kEmptyMatch } },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    ForcedQueryTestHelper("a", cases[i].json, cases[i].matches_in_default_mode,
+                           "regular input with json=" + cases[i].json);
+    ForcedQueryTestHelper("?a", cases[i].json,
+                          cases[i].matches_in_forced_query_mode,
+                          "forced query input with json=" + cases[i].json);
+  }
 }
 
 // A multiword search with one visit should not autocomplete until multiple

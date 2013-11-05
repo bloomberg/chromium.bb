@@ -1016,6 +1016,10 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
   string16 suggestion;
   std::string type;
   int relevance = -1;
+  // Prohibit navsuggest in FORCED_QUERY mode.  Users wants queries, not URLs.
+  const bool allow_navsuggest =
+      (is_keyword ? keyword_input_.type() : input_.type()) !=
+      AutocompleteInput::FORCED_QUERY;
   for (size_t index = 0; results_list->GetString(index, &suggestion); ++index) {
     // Google search may return empty suggestions for weird input characters,
     // they make no sense at all and can cause problems in our code.
@@ -1028,7 +1032,7 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
     if (types && types->GetString(index, &type) && (type == "NAVIGATION")) {
       // Do not blindly trust the URL coming from the server to be valid.
       GURL url(URLFixerUpper::FixupURL(UTF16ToUTF8(suggestion), std::string()));
-      if (url.is_valid()) {
+      if (url.is_valid() && allow_navsuggest) {
         string16 title;
         if (descriptions != NULL)
           descriptions->GetString(index, &title);
