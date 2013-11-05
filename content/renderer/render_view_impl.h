@@ -1113,7 +1113,17 @@ class CONTENT_EXPORT RenderViewImpl
 #if defined(OS_ANDROID)
   // Launch an Android content intent with the given URL.
   void LaunchAndroidContentIntent(const GURL& intent_url, size_t request_id);
+
+  WebKit::WebMediaPlayer* CreateAndroidWebMediaPlayer(
+      WebKit::WebFrame* frame,
+      const WebKit::WebURL& url,
+      WebKit::WebMediaPlayerClient* client);
 #endif
+
+  WebKit::WebMediaPlayer* CreateWebMediaPlayerForMediaStream(
+      WebKit::WebFrame* frame,
+      const WebKit::WebURL& url,
+      WebKit::WebMediaPlayerClient* client);
 
   // Sends a reply to the current find operation handling if it was a
   // synchronous find request.

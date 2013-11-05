@@ -3085,82 +3085,16 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_, WillCreateMediaPlayer(frame, client));
 
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-#if defined(ENABLE_WEBRTC)
-  if (!InitializeMediaStreamClient())
-    return NULL;
-
-#if !defined(GOOGLE_TV)
-  if (media_stream_client_->IsMediaStream(url)) {
-#if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
-    bool found_neon =
-        (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0;
-    UMA_HISTOGRAM_BOOLEAN("Platform.WebRtcNEONFound", found_neon);
-#endif  // defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
-    return new WebMediaPlayerMS(
-        frame, client, AsWeakPtr(), media_stream_client_, new RenderMediaLog());
-  }
-#endif  // !defined(GOOGLE_TV)
-#endif  // defined(ENABLE_WEBRTC)
+  WebMediaPlayer* player = CreateWebMediaPlayerForMediaStream(frame, url,
+                                                              client);
+  if (player)
+    return player;
 
 #if defined(OS_ANDROID)
-  GpuChannelHost* gpu_channel_host =
-      RenderThreadImpl::current()->EstablishGpuChannelSync(
-          CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE);
-  if (!gpu_channel_host) {
-    LOG(ERROR) << "Failed to establish GPU channel for media player";
-    return NULL;
-  }
-
-  scoped_ptr<StreamTextureFactory> stream_texture_factory;
-  if (UsingSynchronousRendererCompositor()) {
-    SynchronousCompositorFactory* factory =
-        SynchronousCompositorFactory::GetInstance();
-    stream_texture_factory = factory->CreateStreamTextureFactory(routing_id_);
-  } else {
-    scoped_refptr<cc::ContextProvider> context_provider =
-        RenderThreadImpl::current()->SharedMainThreadContextProvider();
-
-    if (!context_provider.get()) {
-      LOG(ERROR) << "Failed to get context3d for media player";
-      return NULL;
-    }
-
-    stream_texture_factory.reset(new StreamTextureFactoryImpl(
-        context_provider->Context3d(), gpu_channel_host, routing_id_));
-  }
-
-  scoped_ptr<WebMediaPlayerAndroid> web_media_player_android(
-      new WebMediaPlayerAndroid(
-          frame,
-          client,
-          AsWeakPtr(),
-          media_player_manager_,
-          stream_texture_factory.release(),
-          RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy(),
-          new RenderMediaLog()));
-#if defined(ENABLE_WEBRTC) && defined(GOOGLE_TV)
-  if (media_stream_client_->IsMediaStream(url)) {
-    RTCVideoDecoderFactoryTv* factory = RenderThreadImpl::current()
-        ->GetMediaStreamDependencyFactory()->decoder_factory_tv();
-    // |media_stream_client| and |factory| outlives |web_media_player_android|.
-    if (!factory->AcquireDemuxer() ||
-        !web_media_player_android->InjectMediaStream(
-            media_stream_client_,
-            factory,
-            base::Bind(
-                base::IgnoreResult(&RTCVideoDecoderFactoryTv::ReleaseDemuxer),
-                base::Unretained(factory)))) {
-      LOG(ERROR) << "Failed to inject media stream.";
-      return NULL;
-    }
-  }
-#endif  // defined(ENABLE_WEBRTC) && defined(GOOGLE_TV)
-  return web_media_player_android.release();
-#endif  // defined(OS_ANDROID)
-
+  return CreateAndroidWebMediaPlayer(frame, url, client);
+#else
   scoped_refptr<media::AudioRendererSink> sink;
-  if (!cmd_line->HasSwitch(switches::kDisableAudio)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableAudio)) {
     sink = RenderThreadImpl::current()->GetAudioRendererMixerManager()->
         CreateInput(routing_id_);
     DVLOG(1) << "Using AudioRendererMixerManager-provided sink: " << sink.get();
@@ -3175,6 +3109,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
       RenderThreadImpl::current()->GetGpuFactories(),
       new RenderMediaLog());
   return new WebMediaPlayerImpl(frame, client, AsWeakPtr(), params);
+#endif  // defined(OS_ANDROID)
 }
 
 WebCookieJar* RenderViewImpl::cookieJar(WebFrame* frame) {
@@ -6320,6 +6255,30 @@ void RenderViewImpl::draggableRegionsChanged() {
       DraggableRegionsChanged(webview()->mainFrame()));
 }
 
+WebMediaPlayer* RenderViewImpl::CreateWebMediaPlayerForMediaStream(
+    WebFrame* frame,
+    const WebKit::WebURL& url,
+    WebMediaPlayerClient* client) {
+#if defined(ENABLE_WEBRTC)
+  if (!InitializeMediaStreamClient()) {
+    LOG(ERROR) << "Failed to initialize MediaStreamClient";
+    return NULL;
+  }
+#if !defined(GOOGLE_TV)
+  if (media_stream_client_->IsMediaStream(url)) {
+#if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
+    bool found_neon =
+        (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0;
+    UMA_HISTOGRAM_BOOLEAN("Platform.WebRtcNEONFound", found_neon);
+#endif  // defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
+    return new WebMediaPlayerMS(frame, client, AsWeakPtr(),
+                                media_stream_client_, new RenderMediaLog());
+  }
+#endif  // !defined(GOOGLE_TV)
+#endif  // defined(ENABLE_WEBRTC)
+  return NULL;
+}
+
 #if defined(OS_ANDROID)
 WebContentDetectionResult RenderViewImpl::detectContentAround(
     const WebHitTestResult& touch_hit) {
@@ -6373,6 +6332,65 @@ bool RenderViewImpl::openDateTimeChooser(
   date_time_picker_client_.reset(
       new RendererDateTimePicker(this, params, completion));
   return date_time_picker_client_->Open();
+}
+
+WebMediaPlayer* RenderViewImpl::CreateAndroidWebMediaPlayer(
+      WebFrame* frame,
+      const WebKit::WebURL& url,
+      WebMediaPlayerClient* client) {
+  GpuChannelHost* gpu_channel_host =
+      RenderThreadImpl::current()->EstablishGpuChannelSync(
+          CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE);
+  if (!gpu_channel_host) {
+    LOG(ERROR) << "Failed to establish GPU channel for media player";
+    return NULL;
+  }
+
+  scoped_ptr<StreamTextureFactory> stream_texture_factory;
+  if (UsingSynchronousRendererCompositor()) {
+    SynchronousCompositorFactory* factory =
+        SynchronousCompositorFactory::GetInstance();
+    stream_texture_factory = factory->CreateStreamTextureFactory(routing_id_);
+  } else {
+    scoped_refptr<cc::ContextProvider> context_provider =
+        RenderThreadImpl::current()->SharedMainThreadContextProvider();
+
+    if (!context_provider.get()) {
+      LOG(ERROR) << "Failed to get context3d for media player";
+      return NULL;
+    }
+
+    stream_texture_factory.reset(new StreamTextureFactoryImpl(
+        context_provider->Context3d(), gpu_channel_host, routing_id_));
+  }
+
+  scoped_ptr<WebMediaPlayerAndroid> web_media_player_android(
+      new WebMediaPlayerAndroid(
+          frame,
+          client,
+          AsWeakPtr(),
+          media_player_manager_,
+          stream_texture_factory.release(),
+          RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy(),
+          new RenderMediaLog()));
+#if defined(ENABLE_WEBRTC) && defined(GOOGLE_TV)
+  if (media_stream_client_ && media_stream_client_->IsMediaStream(url)) {
+    RTCVideoDecoderFactoryTv* factory = RenderThreadImpl::current()
+        ->GetMediaStreamDependencyFactory()->decoder_factory_tv();
+    // |media_stream_client| and |factory| outlives |web_media_player_android|.
+    if (!factory->AcquireDemuxer() ||
+        !web_media_player_android->InjectMediaStream(
+            media_stream_client_,
+            factory,
+            base::Bind(
+                base::IgnoreResult(&RTCVideoDecoderFactoryTv::ReleaseDemuxer),
+                base::Unretained(factory)))) {
+      LOG(ERROR) << "Failed to inject media stream.";
+      return NULL;
+    }
+  }
+#endif  // defined(ENABLE_WEBRTC) && defined(GOOGLE_TV)
+  return web_media_player_android.release();
 }
 
 #endif  // defined(OS_ANDROID)
