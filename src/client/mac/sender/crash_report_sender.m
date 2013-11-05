@@ -555,13 +555,13 @@ doCommandBySelector:(SEL)commandSelector {
     displayName = [[uploader_ parameters] objectForKey:@BREAKPAD_PRODUCT];
 
   if ([self isOnDemand]) {
-    return [NSString
-             stringWithFormat:NSLocalizedString(@"noCrashDialogHeader", @""),
-             displayName];
+    // Local variable to pacify clang's -Wformat-extra-args.
+    NSString* format = NSLocalizedString(@"noCrashDialogHeader", @"");
+    return [NSString stringWithFormat:format, displayName];
   } else {
-    return [NSString 
-             stringWithFormat:NSLocalizedString(@"crashDialogHeader", @""),
-             displayName];
+    // Local variable to pacify clang's -Wformat-extra-args.
+    NSString* format = NSLocalizedString(@"crashDialogHeader", @"");
+    return [NSString stringWithFormat:format, displayName];
   }
 }
 
@@ -576,13 +576,13 @@ doCommandBySelector:(SEL)commandSelector {
     vendor = @"unknown vendor";
 
   if ([self isOnDemand]) {
-    return [NSString
-             stringWithFormat:NSLocalizedString(@"noCrashDialogMsg", @""),
-             vendor, displayName];
+    // Local variable to pacify clang's -Wformat-extra-args.
+    NSString* format = NSLocalizedString(@"noCrashDialogMsg", @"");
+    return [NSString stringWithFormat:format, vendor, displayName];
   } else {
-    return [NSString
-             stringWithFormat:NSLocalizedString(@"crashDialogMsg", @""),
-             vendor];
+    // Local variable to pacify clang's -Wformat-extra-args.
+    NSString* format = NSLocalizedString(@"crashDialogMsg", @"");
+    return [NSString stringWithFormat:format, vendor];
   }
 }
 
