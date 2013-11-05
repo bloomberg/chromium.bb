@@ -920,6 +920,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableTouchDragDrop,
     switches::kDisableTouchEditing,
     switches::kDisableUniversalAcceleratedOverflowScroll,
+    switches::kDisableUnprefixedMediaSource,
     switches::kDisableVp8AlphaPlayback,
     switches::kDisableWebAudio,
     switches::kDisableWebKitMediaSource,
