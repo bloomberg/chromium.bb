@@ -121,8 +121,8 @@ class ContentViewCoreImpl : public ContentViewCore,
                             jfloat x, jfloat y);
   void ShowPressState(JNIEnv* env, jobject obj, jlong time_ms,
                       jfloat x, jfloat y);
-  void ShowPressCancel(JNIEnv* env, jobject obj, jlong time_ms,
-                       jfloat x, jfloat y);
+  void TapCancel(JNIEnv* env, jobject obj, jlong time_ms,
+                 jfloat x, jfloat y);
   void TapDown(JNIEnv* env, jobject obj, jlong time_ms,
                jfloat x, jfloat y);
   void DoubleTap(JNIEnv* env, jobject obj, jlong time_ms,

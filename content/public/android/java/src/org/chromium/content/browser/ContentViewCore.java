@@ -1333,8 +1333,8 @@ public class ContentViewCore
             case ContentViewGestureHandler.GESTURE_SHOW_PRESSED_STATE:
                 nativeShowPressState(mNativeContentViewCore, timeMs, x, y);
                 return true;
-            case ContentViewGestureHandler.GESTURE_SHOW_PRESS_CANCEL:
-                nativeShowPressCancel(mNativeContentViewCore, timeMs, x, y);
+            case ContentViewGestureHandler.GESTURE_TAP_CANCEL:
+                nativeTapCancel(mNativeContentViewCore, timeMs, x, y);
                 return true;
             case ContentViewGestureHandler.GESTURE_TAP_DOWN:
                 nativeTapDown(mNativeContentViewCore, timeMs, x, y);
@@ -3265,7 +3265,7 @@ public class ContentViewCore
     private native void nativeShowPressState(
             int nativeContentViewCoreImpl, long timeMs, float x, float y);
 
-    private native void nativeShowPressCancel(
+    private native void nativeTapCancel(
             int nativeContentViewCoreImpl, long timeMs, float x, float y);
 
     private native void nativeTapDown(

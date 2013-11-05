@@ -1056,11 +1056,11 @@ void ContentViewCoreImpl::ShowPressState(JNIEnv* env, jobject obj,
   SendGestureEvent(event);
 }
 
-void ContentViewCoreImpl::ShowPressCancel(JNIEnv* env,
-                                          jobject obj,
-                                          jlong time_ms,
-                                          jfloat x,
-                                          jfloat y) {
+void ContentViewCoreImpl::TapCancel(JNIEnv* env,
+                                    jobject obj,
+                                    jlong time_ms,
+                                    jfloat x,
+                                    jfloat y) {
   WebGestureEvent event = MakeGestureEvent(
       WebInputEvent::GestureTapCancel, time_ms, x, y);
   SendGestureEvent(event);
