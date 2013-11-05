@@ -186,6 +186,20 @@ class NavigateAwayVisitor : public RenderViewVisitor {
   DISALLOW_COPY_AND_ASSIGN(NavigateAwayVisitor);
 };
 
+class UseSynchronousResizeModeVisitor : public RenderViewVisitor {
+ public:
+  explicit UseSynchronousResizeModeVisitor(bool enable) : enable_(enable) {}
+  virtual ~UseSynchronousResizeModeVisitor() {}
+
+  virtual bool Visit(RenderView* render_view) OVERRIDE {
+    UseSynchronousResizeMode(render_view, enable_);
+    return true;
+  }
+
+ private:
+  bool enable_;
+};
+
 }  // namespace
 
 WebKitTestRunner::WebKitTestRunner(RenderView* render_view)
@@ -350,7 +364,8 @@ std::string WebKitTestRunner::makeURLErrorDescription(
 }
 
 void WebKitTestRunner::useUnfortunateSynchronousResizeMode(bool enable) {
-  UseSynchronousResizeMode(render_view(), enable);
+  UseSynchronousResizeModeVisitor visitor(enable);
+  RenderView::ForEach(&visitor);
 }
 
 void WebKitTestRunner::enableAutoResizeMode(const WebSize& min_size,

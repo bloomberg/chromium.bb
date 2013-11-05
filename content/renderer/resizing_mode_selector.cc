@@ -11,13 +11,11 @@
 
 namespace content {
 
-ResizingModeSelector::ResizingModeSelector()
-    : is_synchronous_mode_(false) {
-  // TODO(dglazkov): Remove this re-initialization once the transition to
-  // useUnfortunateAsynchronousResizeMode is complete.
-  // See http://crbug.com/309760 for details.
-  is_synchronous_mode_ = RenderThreadImpl::current() &&
-      RenderThreadImpl::current()->layout_test_mode();
+ResizingModeSelector::ResizingModeSelector() : is_synchronous_mode_(false) {}
+
+bool ResizingModeSelector::NeverUsesSynchronousResize() const {
+  return !RenderThreadImpl::current() ||  // can be NULL when in unit tests
+         !RenderThreadImpl::current()->layout_test_mode();
 }
 
 bool ResizingModeSelector::ShouldAbortOnResize(
@@ -30,8 +28,7 @@ bool ResizingModeSelector::ShouldAbortOnResize(
 }
 
 void ResizingModeSelector::set_is_synchronous_mode(bool mode) {
-  // TODO(dglazkov): Actually set is_synchronous_mode_ once the transition to
-  // useUnfortunateAsynchronousResizeMode is complete.
+  is_synchronous_mode_ = mode;
 }
 
 bool ResizingModeSelector::is_synchronous_mode() const {

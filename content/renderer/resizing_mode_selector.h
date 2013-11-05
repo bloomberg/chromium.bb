@@ -25,7 +25,7 @@ class RenderWidget;
 class ResizingModeSelector {
  public:
   ResizingModeSelector();
-
+  bool NeverUsesSynchronousResize() const;
   bool ShouldAbortOnResize(RenderWidget* widget,
                            const ViewMsg_Resize_Params& params);
 

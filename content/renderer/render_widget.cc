@@ -648,7 +648,7 @@ void RenderWidget::Resize(const gfx::Size& new_size,
                           const gfx::Rect& resizer_rect,
                           bool is_fullscreen,
                           ResizeAck resize_ack) {
-  if (!resizing_mode_selector_->is_synchronous_mode()) {
+  if (resizing_mode_selector_->NeverUsesSynchronousResize()) {
     // A resize ack shouldn't be requested if we have not ACK'd the previous
     // one.
     DCHECK(resize_ack != SEND_RESIZE_ACK || !next_paint_is_resize_ack());
@@ -687,7 +687,7 @@ void RenderWidget::Resize(const gfx::Size& new_size,
     // send an ACK if we are resized to a non-empty rect.
     webwidget_->resize(new_size);
 
-    if (!resizing_mode_selector_->is_synchronous_mode()) {
+    if (resizing_mode_selector_->NeverUsesSynchronousResize()) {
       // Resize should have caused an invalidation of the entire view.
       DCHECK(new_size.IsEmpty() || is_accelerated_compositing_active_ ||
              paint_aggregator_.HasPendingUpdate());
