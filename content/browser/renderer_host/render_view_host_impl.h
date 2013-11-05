@@ -21,6 +21,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/javascript_message_type.h"
+#include "content/public/common/page_transition_types.h"
 #include "content/public/common/window_container_type.h"
 #include "net/base/load_states.h"
 #include "third_party/WebKit/public/web/WebAXEnums.h"
@@ -289,6 +290,18 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Whether this RenderViewHost has been swapped out to be displayed by a
   // different process.
   bool is_swapped_out() const { return is_swapped_out_; }
+
+  // Called on the pending RenderViewHost when the network response is ready to
+  // commit.  We should ensure that the old RenderViewHost runs its unload
+  // handler and determine whether a transfer to a different RenderViewHost is
+  // needed.
+  void OnCrossSiteResponse(
+      const GlobalRequestID& global_request_id,
+      bool is_transfer,
+      const std::vector<GURL>& transfer_url_chain,
+      const Referrer& referrer,
+      PageTransition page_transition,
+      int64 frame_id);
 
   // Tells the renderer that this RenderView is being swapped out for one in a
   // different renderer process.  It should run its unload handler and move to

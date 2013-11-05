@@ -34,15 +34,11 @@ void OnCrossSiteResponseHelper(int render_view_id,
                                int64 frame_id) {
   RenderViewHostImpl* rvh =
       RenderViewHostImpl::FromID(global_request_id.child_id, render_view_id);
-  if (!rvh)
-    return;
-  RenderViewHostDelegate* delegate = rvh->GetDelegate();
-  if (!delegate || !delegate->GetRendererManagementDelegate())
-    return;
-
-  delegate->GetRendererManagementDelegate()->OnCrossSiteResponse(
-      rvh, global_request_id, is_transfer, transfer_url_chain, referrer,
-      page_transition, frame_id);
+  if (rvh) {
+    rvh->OnCrossSiteResponse(
+        global_request_id, is_transfer, transfer_url_chain, referrer,
+        page_transition, frame_id);
+  }
 }
 
 }  // namespace

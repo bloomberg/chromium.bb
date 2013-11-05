@@ -655,6 +655,22 @@ void RenderViewHostImpl::FirePageBeforeUnload(bool for_cross_site_transition) {
   }
 }
 
+void RenderViewHostImpl::OnCrossSiteResponse(
+    const GlobalRequestID& global_request_id,
+    bool is_transfer,
+    const std::vector<GURL>& transfer_url_chain,
+    const Referrer& referrer,
+    PageTransition page_transition,
+    int64 frame_id) {
+  RenderViewHostDelegate::RendererManagement* manager =
+      delegate_->GetRendererManagementDelegate();
+  if (manager) {
+    manager->OnCrossSiteResponse(this, global_request_id, is_transfer,
+                                 transfer_url_chain, referrer, page_transition,
+                                 frame_id);
+  }
+}
+
 void RenderViewHostImpl::SwapOut() {
   // This will be set back to false in OnSwapOutACK, just before we replace
   // this RVH with the pending RVH.
