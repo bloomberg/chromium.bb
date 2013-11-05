@@ -64,28 +64,30 @@ class StartPageService::Factory : public BrowserContextKeyedServiceFactory {
   DISALLOW_COPY_AND_ASSIGN(Factory);
 };
 
-class StartPageService::ExitObserver : public content::NotificationObserver {
+class StartPageService::ProfileDestroyObserver
+    : public content::NotificationObserver {
  public:
-  explicit ExitObserver(StartPageService* service) : service_(service) {
+  explicit ProfileDestroyObserver(StartPageService* service)
+      : service_(service) {
     registrar_.Add(this,
-                   chrome::NOTIFICATION_APP_TERMINATING,
+                   chrome::NOTIFICATION_PROFILE_DESTROYED,
                    content::NotificationService::AllSources());
   }
-  virtual ~ExitObserver() {}
+  virtual ~ProfileDestroyObserver() {}
 
  private:
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
-    DCHECK_EQ(chrome::NOTIFICATION_APP_TERMINATING, type);
+    DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
     service_->Shutdown();
   }
 
   StartPageService* service_;  // Owner of this class.
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExitObserver);
+  DISALLOW_COPY_AND_ASSIGN(ProfileDestroyObserver);
 };
 
 // static
@@ -95,7 +97,7 @@ StartPageService* StartPageService::Get(Profile* profile) {
 
 StartPageService::StartPageService(Profile* profile)
     : profile_(profile),
-      exit_observer_(new ExitObserver(this)),
+      profile_destroy_observer_(new ProfileDestroyObserver(this)),
       recommended_apps_(new RecommendedApps(profile)) {
   contents_.reset(content::WebContents::Create(
       content::WebContents::CreateParams(profile_)));

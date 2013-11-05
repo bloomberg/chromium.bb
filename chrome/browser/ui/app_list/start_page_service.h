@@ -39,10 +39,10 @@ class StartPageService : public BrowserContextKeyedService {
   // A BrowserContextKeyedServiceFactory for this service.
   class Factory;
 
-  // ExitObserver to shutdown the service on exiting. WebContents depends
-  // on the profile and needs to be closed before the profile and its
+  // ProfileDestroyObserver to shutdown the service on exiting. WebContents
+  // depends on the profile and needs to be closed before the profile and its
   // keyed service shutdown.
-  class ExitObserver;
+  class ProfileDestroyObserver;
 
   explicit StartPageService(Profile* profile);
   virtual ~StartPageService();
@@ -52,7 +52,7 @@ class StartPageService : public BrowserContextKeyedService {
 
   Profile* profile_;
   scoped_ptr<content::WebContents> contents_;
-  scoped_ptr<ExitObserver> exit_observer_;
+  scoped_ptr<ProfileDestroyObserver> profile_destroy_observer_;
   scoped_ptr<RecommendedApps> recommended_apps_;
 
   DISALLOW_COPY_AND_ASSIGN(StartPageService);
