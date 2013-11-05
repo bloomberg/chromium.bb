@@ -1707,20 +1707,34 @@ const char kExtensionInstallForceList[] = "extensions.install.forcelist";
 const char kExtensionStorageGarbageCollect[] =
     "extensions.storage.garbagecollect";
 
+// Customized app page names that appear on the New Tab Page.
+const char kNtpAppPageNames[] = "ntp.app_page_names";
+
 // Keeps track of which sessions are collapsed in the Other Devices menu.
 const char kNtpCollapsedForeignSessions[] = "ntp.collapsed_foreign_sessions";
+
+// Keeps track of recently closed tabs collapsed state in the Other Devices
+// menu.
+const char kNtpCollapsedRecentlyClosedTabs[] =
+    "ntp.collapsed_recently_closed_tabs";
+
+// Keeps track of snapshot documents collapsed state in the Other Devices menu.
+const char kNtpCollapsedSnapshotDocument[] = "ntp.collapsed_snapshot_document";
+
+// Keeps track of sync promo collapsed state in the Other Devices menu.
+const char kNtpCollapsedSyncPromo[] = "ntp.collapsed_sync_promo";
+
+// Serves dates to determine display of elements on the NTP.
+const char kNtpDateResourceServer[] = "ntp.date_resource_server";
 
 // New Tab Page URLs that should not be shown as most visited thumbnails.
 const char kNtpMostVisitedURLsBlacklist[] = "ntp.most_visited_blacklist";
 
+// True if a desktop sync session was found for this user.
+const char kNtpPromoDesktopSessionFound[] = "ntp.promo_desktop_session_found";
+
 // Last time of update of promo_resource_cache.
 const char kNtpPromoResourceCacheUpdate[] = "ntp.promo_resource_cache_update";
-
-// Serves tips for the NTP.
-const char kNtpTipsResourceServer[] = "ntp.tips_resource_server";
-
-// Serves dates to determine display of elements on the NTP.
-const char kNtpDateResourceServer[] = "ntp.date_resource_server";
 
 // Which bookmarks folder should be visible on the new tab page v4.
 const char kNtpShownBookmarksFolder[] = "ntp.shown_bookmarks_folder";
@@ -1728,14 +1742,11 @@ const char kNtpShownBookmarksFolder[] = "ntp.shown_bookmarks_folder";
 // Which page should be visible on the new tab page v4
 const char kNtpShownPage[] = "ntp.shown_page";
 
-// True if a desktop sync session was found for this user.
-const char kNtpPromoDesktopSessionFound[] = "ntp.promo_desktop_session_found";
+// Serves tips for the NTP.
+const char kNtpTipsResourceServer[] = "ntp.tips_resource_server";
 
 // Boolean indicating whether the web store is active for the current locale.
 const char kNtpWebStoreEnabled[] = "ntp.webstore_enabled";
-
-// Customized app page names that appear on the New Tab Page.
-const char kNtpAppPageNames[] = "ntp.app_page_names";
 
 // A private RSA key for ADB handshake.
 const char kDevToolsAdbKey[] = "devtools.adb_key";

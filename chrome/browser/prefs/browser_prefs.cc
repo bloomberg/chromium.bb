@@ -170,6 +170,16 @@
 #include "chrome/browser/apps/app_launch_for_metro_restart_win.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/new_tab_page_prefs.h"
+#include "chrome/browser/ui/webui/ntp/android/partner_bookmarks_shim.h"
+#include "chrome/browser/ui/webui/ntp/android/promo_handler.h"
+#else
+#include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
+#include "chrome/browser/profile_resetter/automatic_profile_resetter_factory.h"
+#include "chrome/browser/ui/autofill/generated_credit_card_bubble_controller.h"
+#endif
+
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/browser_view_prefs.h"
 #include "chrome/browser/ui/tabs/tab_strip_layout_type_prefs.h"
@@ -386,6 +396,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #endif
 
 #if defined(OS_ANDROID)
+  NewTabPagePrefs::RegisterProfilePrefs(registry);
   PartnerBookmarksShim::RegisterProfilePrefs(registry);
   PromoHandler::RegisterProfilePrefs(registry);
 #else

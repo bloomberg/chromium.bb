@@ -187,24 +187,6 @@ public class ForeignSessionHelper {
     }
 
     /**
-     * Set the given session collapsed or uncollapsed in preferences.
-     * @param session     Session to set collapsed or uncollapsed.
-     * @param isCollapsed {@code True} iff we want the session to be collapsed.
-     */
-    public void setForeignSessionCollapsed(ForeignSession session, boolean isCollapsed) {
-        nativeSetForeignSessionCollapsed(mNativeForeignSessionHelper, session.tag, isCollapsed);
-    }
-
-    /**
-     * Get the given session collapsed or uncollapsed state in preferences.
-     * @param  session Session to fetch collapsed state.
-     * @return         {@code True} if the session is collapsed, false if expanded.
-     */
-    public boolean getForeignSessionCollapsed(ForeignSession session) {
-        return nativeGetForeignSessionCollapsed(mNativeForeignSessionHelper, session.tag);
-    }
-
-    /**
      * Remove Foreign session to display. Note that it will be reappear on the next sync.
      *
      * This is mainly for when user wants to delete very old session that won't be used or syned in
@@ -224,10 +206,6 @@ public class ForeignSessionHelper {
             List<ForeignSession> resultSessions);
     private static native boolean nativeOpenForeignSessionTab(
             int nativeForeignSessionHelper, String sessionTag, int tabId);
-    private static native void nativeSetForeignSessionCollapsed(
-            int nativeForeignSessionHelper, String sessionTag, boolean isCollapsed);
-    private static native boolean nativeGetForeignSessionCollapsed(
-            int nativeForeignSessionHelper, String sessionTag);
     private static native void nativeDeleteForeignSession(
             int nativeForeignSessionHelper, String sessionTag);
 }

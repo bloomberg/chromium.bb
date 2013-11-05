@@ -287,27 +287,6 @@ jboolean ForeignSessionHelper::OpenForeignSessionTab(JNIEnv* env,
   return true;
 }
 
-void ForeignSessionHelper::SetForeignSessionCollapsed(JNIEnv* env, jobject obj,
-                                                      jstring session_tag,
-                                                      jboolean is_collapsed) {
-  // Store session tags for collapsed sessions in a preference so that the
-  // collapsed state persists.
-  PrefService* prefs = profile_->GetPrefs();
-  DictionaryPrefUpdate update(prefs, prefs::kNtpCollapsedForeignSessions);
-  if (is_collapsed)
-    update.Get()->SetBoolean(ConvertJavaStringToUTF8(env, session_tag), true);
-  else
-    update.Get()->Remove(ConvertJavaStringToUTF8(env, session_tag), NULL);
-}
-
-jboolean ForeignSessionHelper::GetForeignSessionCollapsed(JNIEnv* env,
-                                                          jobject obj,
-                                                          jstring session_tag) {
-  const DictionaryValue* dict = profile_->GetPrefs()->GetDictionary(
-      prefs::kNtpCollapsedForeignSessions);
-  return dict && dict->HasKey(ConvertJavaStringToUTF8(env, session_tag));
-}
-
 void ForeignSessionHelper::DeleteForeignSession(JNIEnv* env, jobject obj,
                                                 jstring session_tag) {
   SessionModelAssociator* associator = GetSessionModelAssociator(profile_);

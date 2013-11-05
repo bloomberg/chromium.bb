@@ -17,6 +17,7 @@
 #include "chrome/browser/android/foreign_session_helper.h"
 #include "chrome/browser/android/intent_helper.h"
 #include "chrome/browser/android/most_visited_sites.h"
+#include "chrome/browser/android/new_tab_page_prefs.h"
 #include "chrome/browser/android/omnibox/omnibox_prerender.h"
 #include "chrome/browser/android/provider/chrome_browser_provider.h"
 #include "chrome/browser/android/recently_closed_tabs_bridge.h"
@@ -104,6 +105,8 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "MostVisitedSites", RegisterMostVisitedSites },
   { "NativeInfoBar", RegisterNativeInfoBar },
   { "NavigationPopup", NavigationPopup::RegisterNavigationPopup },
+  { "NewTabPagePrefs",
+    NewTabPagePrefs::RegisterNewTabPagePrefs },
   { "OmniboxPrerender", RegisterOmniboxPrerender },
   { "PersonalDataManagerAndroid",
     autofill::PersonalDataManagerAndroid::Register },

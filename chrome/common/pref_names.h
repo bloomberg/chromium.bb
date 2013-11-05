@@ -566,17 +566,19 @@ extern const char kExtensionInstallDenyList[];
 extern const char kExtensionInstallForceList[];
 extern const char kExtensionStorageGarbageCollect[];
 
-extern const char kNtpTipsResourceServer[];
-
+extern const char kNtpAppPageNames[];
 extern const char kNtpCollapsedForeignSessions[];
-extern const char kNtpMostVisitedURLsBlacklist[];
-extern const char kNtpPromoResourceCacheUpdate[];
+extern const char kNtpCollapsedRecentlyClosedTabs[];
+extern const char kNtpCollapsedSnapshotDocument[];
+extern const char kNtpCollapsedSyncPromo[];
 extern const char kNtpDateResourceServer[];
+extern const char kNtpMostVisitedURLsBlacklist[];
+extern const char kNtpPromoDesktopSessionFound[];
+extern const char kNtpPromoResourceCacheUpdate[];
 extern const char kNtpShownBookmarksFolder[];
 extern const char kNtpShownPage[];
-extern const char kNtpPromoDesktopSessionFound[];
+extern const char kNtpTipsResourceServer[];
 extern const char kNtpWebStoreEnabled[];
-extern const char kNtpAppPageNames[];
 
 extern const char kDevToolsAdbKey[];
 extern const char kDevToolsDisabled[];
