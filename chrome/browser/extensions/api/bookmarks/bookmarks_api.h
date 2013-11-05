@@ -114,6 +114,11 @@ class BookmarksFunction : public ChromeAsyncExtensionFunction,
   // as an int64. In case of error, doesn't change id and returns false.
   bool GetBookmarkIdAsInt64(const std::string& id_string, int64* id);
 
+  // Helper to get the bookmark node from a given string id.
+  // If the given id can't be parsed or doesn't refer to a valid node, sets
+  // error_ and returns NULL.
+  const BookmarkNode* GetBookmarkNodeFromId(const std::string& id_string);
+
   // Helper that checks if bookmark editing is enabled. If it's not, this sets
   // error_ to the appropriate error string.
   bool EditBookmarksEnabled();

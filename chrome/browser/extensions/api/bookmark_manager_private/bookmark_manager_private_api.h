@@ -205,6 +205,32 @@ class BookmarkManagerPrivateRecordLaunchFunction
   virtual bool RunImpl() OVERRIDE;
 };
 
+class BookmarkManagerPrivateGetMetaInfoFunction
+    : public extensions::BookmarksFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("bookmarkManagerPrivate.getMetaInfo",
+                             BOOKMARKMANAGERPRIVATE_GETMETAINFO)
+
+ protected:
+  virtual ~BookmarkManagerPrivateGetMetaInfoFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
+class BookmarkManagerPrivateSetMetaInfoFunction
+    : public extensions::BookmarksFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("bookmarkManagerPrivate.setMetaInfo",
+                             BOOKMARKMANAGERPRIVATE_SETMETAINFO)
+
+ protected:
+  virtual ~BookmarkManagerPrivateSetMetaInfoFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
 class BookmarkManagerPrivateCanOpenNewWindowsFunction
     : public extensions::BookmarksFunction {
  public:

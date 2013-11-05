@@ -243,6 +243,65 @@
         "description": "",
         "nodoc": "true",
         "parameters": []
+      },
+      {
+        "name": "getMetaInfo",
+        "type": "function",
+        "description": "Gets a meta info field from a bookmark node",
+        "nodoc": "true",
+        "parameters": [
+          {
+            "name": "id",
+            "description": "The id of the bookmark to retrieve meta info from",
+            "type": "string"
+          },
+          {
+            "name": "key",
+            "description": "The key for the meta info to retrieve",
+            "type": "string"
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "value",
+                "description": "The value of the meta info, if present",
+                "optional": true,
+                "type": "string"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "setMetaInfo",
+        "type": "function",
+        "description": "Sets a meta info value for a bookmark node",
+        "nodoc": "true",
+        "parameters": [
+          {
+            "name": "id",
+            "description": "The id of the bookmark node to set the meta info on",
+            "type": "string"
+          },
+          {
+            "name": "key",
+            "description": "The key of the meta info to set",
+            "type": "string"
+          },
+          {
+            "name": "value",
+            "description": "The meta info to set",
+            "type": "string"
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters": []
+          }
+        ]
       }
     ],
     "events": [

@@ -124,6 +124,20 @@ bool BookmarksFunction::GetBookmarkIdAsInt64(const std::string& id_string,
   return false;
 }
 
+const BookmarkNode* BookmarksFunction::GetBookmarkNodeFromId(
+    const std::string& id_string) {
+  int64 id;
+  if (!GetBookmarkIdAsInt64(id_string, &id))
+    return NULL;
+
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
+  const BookmarkNode* node = model->GetNodeByID(id);
+  if (!node)
+    error_ = keys::kNoNodeError;
+
+  return node;
+}
+
 bool BookmarksFunction::EditBookmarksEnabled() {
   PrefService* prefs = user_prefs::UserPrefs::Get(GetProfile());
   if (prefs->GetBoolean(prefs::kEditBookmarksEnabled))
@@ -326,32 +340,21 @@ bool BookmarksGetFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   std::vector<linked_ptr<BookmarkTreeNode> > nodes;
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
   if (params->id_or_id_list.as_strings) {
     std::vector<std::string>& ids = *params->id_or_id_list.as_strings;
     size_t count = ids.size();
     EXTENSION_FUNCTION_VALIDATE(count > 0);
     for (size_t i = 0; i < count; ++i) {
-      int64 id;
-      if (!GetBookmarkIdAsInt64(ids[i], &id))
+      const BookmarkNode* node = GetBookmarkNodeFromId(ids[i]);
+      if (!node)
         return false;
-      const BookmarkNode* node = model->GetNodeByID(id);
-      if (!node) {
-        error_ = keys::kNoNodeError;
-        return false;
-      } else {
-        bookmark_api_helpers::AddNode(node, &nodes, false);
-      }
+      bookmark_api_helpers::AddNode(node, &nodes, false);
     }
   } else {
-    int64 id;
-    if (!GetBookmarkIdAsInt64(*params->id_or_id_list.as_string, &id))
+    const BookmarkNode* node =
+        GetBookmarkNodeFromId(*params->id_or_id_list.as_string);
+    if (!node)
       return false;
-    const BookmarkNode* node = model->GetNodeByID(id);
-    if (!node) {
-      error_ = keys::kNoNodeError;
-      return false;
-    }
     bookmark_api_helpers::AddNode(node, &nodes, false);
   }
 
@@ -364,17 +367,11 @@ bool BookmarksGetChildrenFunction::RunImpl() {
       bookmarks::GetChildren::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  int64 id;
-  if (!GetBookmarkIdAsInt64(params->id, &id))
+  const BookmarkNode* node = GetBookmarkNodeFromId(params->id);
+  if (!node)
     return false;
 
   std::vector<linked_ptr<BookmarkTreeNode> > nodes;
-  const BookmarkNode* node =
-      BookmarkModelFactory::GetForProfile(GetProfile())->GetNodeByID(id);
-  if (!node) {
-    error_ = keys::kNoNodeError;
-    return false;
-  }
   int child_count = node->child_count();
   for (int i = 0; i < child_count; ++i) {
     const BookmarkNode* child = node->GetChild(i);
@@ -423,16 +420,9 @@ bool BookmarksGetSubTreeFunction::RunImpl() {
       bookmarks::GetSubTree::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  int64 id;
-  if (!GetBookmarkIdAsInt64(params->id, &id))
+  const BookmarkNode* node = GetBookmarkNodeFromId(params->id);
+  if (!node)
     return false;
-
-  const BookmarkNode* node =
-      BookmarkModelFactory::GetForProfile(GetProfile())->GetNodeByID(id);
-  if (!node) {
-    error_ = keys::kNoNodeError;
-    return false;
-  }
 
   std::vector<linked_ptr<BookmarkTreeNode> > nodes;
   bookmark_api_helpers::AddNode(node, &nodes, true);
@@ -489,10 +479,8 @@ bool BookmarksRemoveFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   int64 id;
-  if (!base::StringToInt64(params->id, &id)) {
-    error_ = keys::kInvalidIdError;
+  if (!GetBookmarkIdAsInt64(params->id, &id))
     return false;
-  }
 
   bool recursive = false;
   if (name() == BookmarksRemoveTreeFunction::function_name())
@@ -592,18 +580,11 @@ bool BookmarksMoveFunction::RunImpl() {
       bookmarks::Move::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  int64 id;
-  if (!base::StringToInt64(params->id, &id)) {
-    error_ = keys::kInvalidIdError;
+  const BookmarkNode* node = GetBookmarkNodeFromId(params->id);
+  if (!node)
     return false;
-  }
 
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
-  const BookmarkNode* node = model->GetNodeByID(id);
-  if (!node) {
-    error_ = keys::kNoNodeError;
-    return false;
-  }
   if (model->is_permanent_node(node)) {
     error_ = keys::kModifySpecialError;
     return false;
@@ -666,14 +647,6 @@ bool BookmarksUpdateFunction::RunImpl() {
       bookmarks::Update::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  int64 id;
-  if (!base::StringToInt64(params->id, &id)) {
-    error_ = keys::kInvalidIdError;
-    return false;
-  }
-
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
-
   // Optional but we need to distinguish non present from an empty title.
   string16 title;
   bool has_title = false;
@@ -692,11 +665,11 @@ bool BookmarksUpdateFunction::RunImpl() {
     return false;
   }
 
-  const BookmarkNode* node = model->GetNodeByID(id);
-  if (!node) {
-    error_ = keys::kNoNodeError;
+  const BookmarkNode* node = GetBookmarkNodeFromId(params->id);
+  if (!node)
     return false;
-  }
+
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(GetProfile());
   if (model->is_permanent_node(node)) {
     error_ = keys::kModifySpecialError;
     return false;
