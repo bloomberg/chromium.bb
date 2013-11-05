@@ -420,15 +420,15 @@ inline void InlineBidiResolver::increment()
 }
 
 template <>
-inline bool InlineBidiResolver::isEndOfParagraph(const InlineIterator& end)
+inline bool InlineBidiResolver::isEndOfLine(const InlineIterator& end)
 {
-    bool inEndOfParagraph = m_current == end || m_current.atEnd() || (inIsolate() && m_current.m_obj == end.m_obj);
-    if (inIsolate() && inEndOfParagraph) {
+    bool inEndOfLine = m_current == end || m_current.atEnd() || (inIsolate() && m_current.m_obj == end.m_obj);
+    if (inIsolate() && inEndOfLine) {
         m_current.moveTo(m_current.m_obj, end.m_pos, m_current.m_nextBreakablePosition);
         m_last = m_current;
         updateStatusLastFromCurrentDirection(WTF::Unicode::OtherNeutral);
     }
-    return inEndOfParagraph;
+    return inEndOfLine;
 }
 
 static inline bool isIsolatedInline(RenderObject* object)
@@ -588,7 +588,7 @@ inline void InlineBidiResolver::appendRun()
         IsolateTracker isolateTracker(numberOfIsolateAncestors(m_sor));
         int start = m_sor.m_pos;
         RenderObject* obj = m_sor.m_obj;
-        while (obj && obj != m_eor.m_obj && obj != endOfLine.m_obj) {
+        while (obj && obj != m_eor.m_obj && obj != m_endOfRunAtEndOfLine.m_obj) {
             if (isolateTracker.inIsolate())
                 isolateTracker.addFakeRunIfNecessary(obj, start, obj->length(), *this);
             else
@@ -597,11 +597,12 @@ inline void InlineBidiResolver::appendRun()
             start = 0;
             obj = bidiNextSkippingEmptyInlines(m_sor.root(), obj, &isolateTracker);
         }
-        if (obj) {
+        bool isEndOfLine = obj == m_endOfLine.m_obj && !m_endOfLine.m_pos;
+        if (obj && !isEndOfLine) {
             unsigned pos = obj == m_eor.m_obj ? m_eor.m_pos : INT_MAX;
-            if (obj == endOfLine.m_obj && endOfLine.m_pos <= pos) {
+            if (obj == m_endOfRunAtEndOfLine.m_obj && m_endOfRunAtEndOfLine.m_pos <= pos) {
                 m_reachedEndOfLine = true;
-                pos = endOfLine.m_pos;
+                pos = m_endOfRunAtEndOfLine.m_pos;
             }
             // It's OK to add runs for zero-length RenderObjects, just don't make the run larger than it should be
             int end = obj->length() ? pos + 1 : 0;

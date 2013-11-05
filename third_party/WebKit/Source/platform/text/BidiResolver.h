@@ -222,7 +222,7 @@ public:
 
     Vector<Run*>& isolatedRuns() { return m_isolatedRuns; }
 
-    bool isEndOfParagraph(const Iterator& end) { return m_current == end || m_current.atEnd(); }
+    bool isEndOfLine(const Iterator& end) { return m_current == end || m_current.atEnd(); }
 
     TextDirection determineParagraphDirectionality(bool* hasStrongDirectionality = 0);
 
@@ -243,7 +243,9 @@ protected:
     Iterator m_last;
     BidiStatus m_status;
     WTF::Unicode::Direction m_direction;
-    Iterator endOfLine;
+    // m_endOfRunAtEndOfLine is "the position last eor in the end of line"
+    Iterator m_endOfRunAtEndOfLine;
+    Iterator m_endOfLine;
     bool m_reachedEndOfLine;
     Iterator m_lastBeforeET; // Before a EuropeanNumberTerminator
     bool m_emptyRun;
@@ -285,9 +287,9 @@ void BidiResolver<Iterator, Run>::appendRun()
         unsigned startOffset = m_sor.offset();
         unsigned endOffset = m_eor.offset();
 
-        if (!endOfLine.atEnd() && endOffset >= endOfLine.offset()) {
+        if (!m_endOfRunAtEndOfLine.atEnd() && endOffset >= m_endOfRunAtEndOfLine.offset()) {
             m_reachedEndOfLine = true;
-            endOffset = endOfLine.offset();
+            endOffset = m_endOfRunAtEndOfLine.offset();
         }
 
         if (endOffset >= startOffset)
@@ -587,9 +589,10 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
     m_emptyRun = true;
 
     m_eor = Iterator();
+    m_endOfLine = end;
 
     m_last = m_current;
-    bool lastParagraphEnded = false;
+    bool lastLineEnded = false;
     BidiResolver<Iterator, Run> stateAtEnd;
 
     while (true) {
@@ -598,7 +601,7 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
             m_emptyRun = false;
         }
 
-        if (!lastParagraphEnded && isEndOfParagraph(end)) {
+        if (!lastLineEnded && isEndOfLine(end)) {
             if (m_emptyRun)
                 break;
 
@@ -609,11 +612,11 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
             stateAtEnd.m_reachedEndOfLine = m_reachedEndOfLine;
             stateAtEnd.m_lastBeforeET = m_lastBeforeET;
             stateAtEnd.m_emptyRun = m_emptyRun;
-            endOfLine = m_last;
-            lastParagraphEnded = true;
+            m_endOfRunAtEndOfLine = m_last;
+            lastLineEnded = true;
         }
         Direction dirCurrent;
-        if (lastParagraphEnded && (hardLineBreak || m_current.atEnd())) {
+        if (lastLineEnded && (hardLineBreak || m_current.atEnd())) {
             BidiContext* c = context();
             if (hardLineBreak) {
                 // A deviation from the Unicode Bidi Algorithm in order to match
@@ -902,9 +905,9 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
             break;
         }
 
-        if (lastParagraphEnded && m_eor == m_current) {
+        if (lastLineEnded && m_eor == m_current) {
             if (!m_reachedEndOfLine) {
-                m_eor = endOfLine;
+                m_eor = m_endOfRunAtEndOfLine;
                 switch (m_status.eor) {
                 case LeftToRight:
                 case RightToLeft:
@@ -942,7 +945,7 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
         increment();
         if (!m_currentExplicitEmbeddingSequence.isEmpty()) {
             bool committed = commitExplicitEmbedding();
-            if (committed && lastParagraphEnded) {
+            if (committed && lastLineEnded) {
                 m_current = end;
                 m_status = stateAtEnd.m_status;
                 m_sor = stateAtEnd.m_sor;
@@ -959,7 +962,8 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
 
     m_runs.setLogicallyLastRun(m_runs.lastRun());
     reorderRunsFromLevels();
-    endOfLine = Iterator();
+    m_endOfRunAtEndOfLine = Iterator();
+    m_endOfLine = Iterator();
 }
 
 template <class Iterator, class Run>

@@ -1302,11 +1302,11 @@ static inline void constructBidiRunsForSegment(InlineBidiResolver& topResolver, 
         // first run within the isolate.
         InlineIterator iter = InlineIterator(isolatedInline, startObj, isolatedRun->m_start);
         isolatedResolver.setPositionIgnoringNestedIsolates(iter);
-
         // We stop at the next end of line; we may re-enter this isolate in the next call to constructBidiRuns().
         // FIXME: What should end and previousLineBrokeCleanly be?
         // rniwa says previousLineBrokeCleanly is just a WinIE hack and could always be false here?
         isolatedResolver.createBidiRunsForLine(endOfRuns, NoVisualOverride, previousLineBrokeCleanly);
+
         // Note that we do not delete the runs from the resolver.
         // We're not guaranteed to get any BidiRuns in the previous step. If we don't, we allow the placeholder
         // itself to be turned into an InlineBox. We can't remove it here without potentially losing track of
@@ -1758,7 +1758,7 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, I
     RenderStyle* styleToUse = style();
     bool paginated = view()->layoutState() && view()->layoutState()->isPaginated();
     LineMidpointState& lineMidpointState = resolver.midpointState();
-    InlineIterator end = resolver.position();
+    InlineIterator endOfLine = resolver.position();
     bool checkForEndLineMatch = layoutState.endLine();
     RenderTextInfo renderTextInfo;
     VerticalPositionCache verticalPositionCache;
@@ -1783,7 +1783,7 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, I
         }
     }
 
-    while (!end.atEnd()) {
+    while (!endOfLine.atEnd()) {
         // FIXME: Is this check necessary before the first iteration or can it be moved to the end?
         if (checkForEndLineMatch) {
             layoutState.setEndLineMatched(matchedEndLine(layoutState, resolver, cleanLineStart, cleanLineBidiStatus));
@@ -1798,14 +1798,14 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, I
         layoutState.lineInfo().setEmpty(true);
         layoutState.lineInfo().resetRunsFromLeadingWhitespace();
 
-        const InlineIterator oldEnd = end;
+        const InlineIterator previousEndofLine = endOfLine;
         bool isNewUBAParagraph = layoutState.lineInfo().previousLineBrokeCleanly();
         FloatingObject* lastFloatFromPreviousLine = (containsFloats()) ? m_floatingObjects->set().last() : 0;
 
         updateShapeAndSegmentsForCurrentLine(shapeInsideInfo, logicalOffsetFromShapeContainer, layoutState);
 
         WordMeasurements wordMeasurements;
-        end = lineBreaker.nextLineBreak(resolver, layoutState.lineInfo(), renderTextInfo, lastFloatFromPreviousLine, consecutiveHyphenatedLines, wordMeasurements);
+        endOfLine = lineBreaker.nextLineBreak(resolver, layoutState.lineInfo(), renderTextInfo, lastFloatFromPreviousLine, consecutiveHyphenatedLines, wordMeasurements);
         renderTextInfo.m_lineBreakIterator.resetPriorContext();
         if (resolver.position().atEnd()) {
             // FIXME: We shouldn't be creating any runs in nextLineBreak to begin with!
@@ -1817,15 +1817,15 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, I
             break;
         }
 
-        if (adjustLogicalLineTopAndLogicalHeightIfNeeded(shapeInsideInfo, logicalOffsetFromShapeContainer.height(), layoutState, resolver, lastFloatFromPreviousLine, end, wordMeasurements))
+        if (adjustLogicalLineTopAndLogicalHeightIfNeeded(shapeInsideInfo, logicalOffsetFromShapeContainer.height(), layoutState, resolver, lastFloatFromPreviousLine, endOfLine, wordMeasurements))
             continue;
 
-        ASSERT(end != resolver.position());
+        ASSERT(endOfLine != resolver.position());
 
         // This is a short-cut for empty lines.
         if (layoutState.lineInfo().isEmpty()) {
             if (lastRootBox())
-                lastRootBox()->setLineBreakInfo(end.m_obj, end.m_pos, resolver.status());
+                lastRootBox()->setLineBreakInfo(endOfLine.m_obj, endOfLine.m_pos, resolver.status());
         } else {
             VisualDirectionOverride override = (styleToUse->rtlOrdering() == VisualOrder ? (styleToUse->direction() == LTR ? VisualLeftToRightOverride : VisualRightToLeftOverride) : NoVisualOverride);
 
@@ -1835,8 +1835,8 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, I
             }
             // FIXME: This ownership is reversed. We should own the BidiRunList and pass it to createBidiRunsForLine.
             BidiRunList<BidiRun>& bidiRuns = resolver.runs();
-            constructBidiRunsForLine(this, resolver, bidiRuns, end, override, layoutState.lineInfo().previousLineBrokeCleanly(), isNewUBAParagraph);
-            ASSERT(resolver.position() == end);
+            constructBidiRunsForLine(this, resolver, bidiRuns, endOfLine, override, layoutState.lineInfo().previousLineBrokeCleanly(), isNewUBAParagraph);
+            ASSERT(resolver.position() == endOfLine);
 
             BidiRun* trailingSpaceRun = !layoutState.lineInfo().previousLineBrokeCleanly() ? handleTrailingSpaces(bidiRuns, resolver.context()) : 0;
 
@@ -1851,13 +1851,13 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, I
             // inline flow boxes.
 
             LayoutUnit oldLogicalHeight = logicalHeight();
-            RootInlineBox* lineBox = createLineBoxesFromBidiRuns(resolver.status().context->level(), bidiRuns, end, layoutState.lineInfo(), verticalPositionCache, trailingSpaceRun, wordMeasurements);
+            RootInlineBox* lineBox = createLineBoxesFromBidiRuns(resolver.status().context->level(), bidiRuns, endOfLine, layoutState.lineInfo(), verticalPositionCache, trailingSpaceRun, wordMeasurements);
 
             bidiRuns.deleteRuns();
             resolver.markCurrentRunEmpty(); // FIXME: This can probably be replaced by an ASSERT (or just removed).
 
             if (lineBox) {
-                lineBox->setLineBreakInfo(end.m_obj, end.m_pos, resolver.status());
+                lineBox->setLineBreakInfo(endOfLine.m_obj, endOfLine.m_pos, resolver.status());
                 if (layoutState.usesRepaintBounds())
                     layoutState.updateRepaintRangeFromBox(lineBox);
 
@@ -1873,7 +1873,7 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, I
                         if (availableLogicalWidthForLine(oldLogicalHeight + adjustment, layoutState.lineInfo().isFirstLine()) != oldLineWidth) {
                             // We have to delete this line, remove all floats that got added, and let line layout re-run.
                             lineBox->deleteLine();
-                            end = restartLayoutRunsAndFloatsInRange(oldLogicalHeight, oldLogicalHeight + adjustment, lastFloatFromPreviousLine, resolver, oldEnd);
+                            endOfLine = restartLayoutRunsAndFloatsInRange(oldLogicalHeight, oldLogicalHeight + adjustment, lastFloatFromPreviousLine, resolver, previousEndofLine);
                             continue;
                         }
 
@@ -1917,7 +1917,7 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, I
         }
 
         lineMidpointState.reset();
-        resolver.setPosition(end, numberOfIsolateAncestors(end));
+        resolver.setPosition(endOfLine, numberOfIsolateAncestors(endOfLine));
     }
 
     // In case we already adjusted the line positions during this layout to avoid widows
