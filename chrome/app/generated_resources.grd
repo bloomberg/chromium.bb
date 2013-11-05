@@ -10074,7 +10074,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_OPTIONS_STARTUP_ADD_LABEL" desc="The text labelling the add row in the custom startup urls list">
         Add a new page
       </message>
-      <message name="IDS_OPTIONS_STARTUP_PAGES_PLACEHOLDER" desc="The placeholder text in the custom startup urls dialog">
+      <message name="IDS_OPTIONS_STARTUP_PAGES_PLACEHOLDER" desc="The placeholder text in the custom startup urls dialog" formatter_data="android_java">
         Enter URL...
       </message>
       <message name="IDS_OPTIONS_STARTUP_PAGES_DIALOG_TITLE" desc="The title of the dialog where the user chooses the set of pages that will be shown at startup">
