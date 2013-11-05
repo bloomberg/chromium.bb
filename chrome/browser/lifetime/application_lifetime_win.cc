@@ -71,9 +71,7 @@ void ActivateDesktopHelper() {
   std::string version_str;
 
   // Get the version variable and remove it from the environment.
-  if (env->GetVar(chrome::kChromeVersionEnvVar, &version_str))
-    env->UnSetVar(chrome::kChromeVersionEnvVar);
-  else
+  if (!env->GetVar(chrome::kChromeVersionEnvVar, &version_str))
     version_str.clear();
 
   base::FilePath exe_path;
