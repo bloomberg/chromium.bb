@@ -5,9 +5,9 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_GLES2_TRACE_IMPLEMENTATION_H_
 #define GPU_COMMAND_BUFFER_CLIENT_GLES2_TRACE_IMPLEMENTATION_H_
 
+#include "base/compiler_specific.h"
 #include "gles2_impl_export.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "gpu/command_buffer/common/compiler_specific.h"
 
 namespace gpu {
 namespace gles2 {

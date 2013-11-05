@@ -12,7 +12,6 @@
     'command_buffer/common/cmd_buffer_common.h',
     'command_buffer/common/cmd_buffer_common.cc',
     'command_buffer/common/command_buffer.h',
-    'command_buffer/common/compiler_specific.h',
     'command_buffer/common/constants.h',
     'command_buffer/common/debug_marker_manager.cc',
     'command_buffer/common/debug_marker_manager.h',

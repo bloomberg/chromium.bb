@@ -7,10 +7,10 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_CLIENT_TEST_HELPER_H_
 #define GPU_COMMAND_BUFFER_CLIENT_CLIENT_TEST_HELPER_H_
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "gpu/command_buffer/common/command_buffer.h"
-#include "gpu/command_buffer/common/compiler_specific.h"
 #include "gpu/command_buffer/common/gpu_control.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "testing/gmock/include/gmock/gmock.h"

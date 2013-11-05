@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "gles2_impl_export.h"
@@ -27,7 +28,6 @@
 #include "gpu/command_buffer/client/ref_counted.h"
 #include "gpu/command_buffer/client/ring_buffer.h"
 #include "gpu/command_buffer/client/share_group.h"
-#include "gpu/command_buffer/common/compiler_specific.h"
 #include "gpu/command_buffer/common/debug_marker_manager.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 

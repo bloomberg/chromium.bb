@@ -5,10 +5,10 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_TRANSFER_BUFFER_H_
 #define GPU_COMMAND_BUFFER_CLIENT_TRANSFER_BUFFER_H_
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/client/ring_buffer.h"
 #include "gpu/command_buffer/common/buffer.h"
-#include "gpu/command_buffer/common/compiler_specific.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/gpu_export.h"
 
