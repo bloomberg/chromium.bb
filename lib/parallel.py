@@ -300,6 +300,7 @@ class _BackgroundTask(multiprocessing.Process):
         error = str(ex)
         possibly_flaky = ex.possibly_flaky
       except BaseException as ex:
+        possibly_flaky = isinstance(ex, cros_build_lib.TimeoutError)
         error = traceback.format_exc()
         if self._killing.is_set():
           traceback.print_exc()
