@@ -186,7 +186,13 @@ class SyntheticGestureControllerNewTest : public testing::Test {
   const MockSyntheticGestureTarget* target_ptr_;
 };
 
-TEST_F(SyntheticGestureControllerNewTest, SingleGesture) {
+// http://crbug.com/314272
+#if defined(OS_WIN)
+#define MAYBE_SingleGesture DISABLED_SingleGesture
+#else
+#define MAYBE_SingleGesture SingleGesture
+#endif
+TEST_F(SyntheticGestureControllerNewTest, MAYBE_SingleGesture) {
   bool finished;
   scoped_ptr<MockSyntheticGesture> gesture(
       new MockSyntheticGesture(&finished, 3));
