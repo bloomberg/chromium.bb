@@ -531,6 +531,7 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
       RecordRecoveryEvent(RECOVERY_EVENT_FAILED_FAVICONS_INSERT);
       return;
     }
+    favicons_rows_recovered = recovery->db()->GetLastChangeCount();
   }
 
   // Setup favicons_bitmaps table.
@@ -567,6 +568,7 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
       RecordRecoveryEvent(RECOVERY_EVENT_FAILED_FAVICON_BITMAPS_INSERT);
       return;
     }
+    favicon_bitmaps_rows_recovered = recovery->db()->GetLastChangeCount();
   }
 
   // Setup icon_mapping table.
@@ -598,6 +600,7 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
       RecordRecoveryEvent(RECOVERY_EVENT_FAILED_ICON_MAPPING_INSERT);
       return;
     }
+    icon_mapping_rows_recovered = recovery->db()->GetLastChangeCount();
   }
 
   // TODO(shess): Is it possible/likely to have broken foreign-key
