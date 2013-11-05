@@ -714,8 +714,6 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
     if (match.transition == content::PAGE_TRANSITION_KEYWORD) {
       // The user is using a non-substituting keyword or is explicitly in
       // keyword mode.
-      const AutocompleteMatch& match = (index == OmniboxPopupModel::kNoMatch) ?
-          CurrentMatch(NULL) : result().match_at(index);
 
       // Don't increment usage count for extension keywords.
       if (delegate_->ProcessExtensionKeyword(template_url, match,
