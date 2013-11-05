@@ -141,25 +141,9 @@ GesturePrefsObserver::GesturePrefsObserver(PrefService* prefs)
   // Clear for migration.
   prefs->ClearPref(kTouchScreenFlingAccelerationAdjustment);
 
-  // TODO(mohsen): Remove following code in M32. By then, gesture prefs will
-  // have been cleared for majority of the users: crbug.com/269292.
-  // Do a one-time wipe of all gesture preferences.
-  if (!prefs->GetBoolean(prefs::kGestureConfigIsTrustworthy)) {
-    for (size_t i = 0; i < arraysize(kPrefsToObserve); ++i)
-      prefs->ClearPref(kPrefsToObserve[i]);
-
-    const std::vector<OverscrollPref>& overscroll_prefs = GetOverscrollPrefs();
-    for (size_t i = 0; i < overscroll_prefs.size(); ++i)
-      prefs->ClearPref(overscroll_prefs[i].pref_name);
-
-    for (size_t i = 0; i < arraysize(kFlingTouchpadPrefs); ++i)
-      prefs->ClearPref(kFlingTouchpadPrefs[i]);
-
-    for (size_t i = 0; i < arraysize(kFlingTouchscreenPrefs); ++i)
-      prefs->ClearPref(kFlingTouchscreenPrefs[i]);
-
-    prefs->SetBoolean(prefs::kGestureConfigIsTrustworthy, true);
-  }
+  // Clear temporary pref gesture.config_is_trustworthy, so that in M33, we can
+  // remove it completely: crbug.com/269292.
+  prefs->ClearPref(prefs::kGestureConfigIsTrustworthy);
 
   registrar_.Init(prefs);
   registrar_.RemoveAll();

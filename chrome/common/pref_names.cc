@@ -2515,8 +2515,9 @@ const char kOverscrollHorizontalResistThreshold[] =
     "overscroll.horizontal_resist_threshold";
 const char kOverscrollVerticalResistThreshold[] =
     "overscroll.vertical_resist_threshold";
-// TODO(mohsen): Remove following pref in M32. By then, gesture prefs will have
-// been cleared for majority of the users: crbug.com/269292.
+// TODO(mohsen): Remove following pref in M33. By then, it will have been
+// cleared from preferences file for majority of users and it will be ready to
+// be removed: crbug.com/269292.
 // A temporary pref to do a one-time wipe of gesture preferences.
 const char kGestureConfigIsTrustworthy[] = "gesture.config_is_trustworthy";
 #endif
