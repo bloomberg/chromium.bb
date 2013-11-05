@@ -2774,8 +2774,6 @@
             'platform/graphics/chromium/FontCacheChromiumLinux.cpp',
             'platform/graphics/chromium/FontCacheChromiumWin.cpp',
             'platform/graphics/chromium/FontChromiumWin.cpp',
-            'platform/graphics/chromium/FontFallbackWin.cpp',
-            'platform/graphics/chromium/FontFallbackWin.h',
             'platform/graphics/chromium/FontPlatformDataChromiumWin.cpp',
             'platform/graphics/chromium/FontPlatformDataChromiumWin.h',
             'platform/graphics/chromium/FontRenderStyle.h',

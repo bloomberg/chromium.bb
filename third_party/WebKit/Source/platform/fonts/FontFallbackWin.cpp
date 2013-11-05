@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/platform/graphics/chromium/FontFallbackWin.h"
+#include "platform/fonts/FontFallbackWin.h"
 
 #include "platform/win/HWndDC.h"
 #include "wtf/HashMap.h"

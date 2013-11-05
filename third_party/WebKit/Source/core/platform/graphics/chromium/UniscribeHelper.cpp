@@ -34,8 +34,8 @@
 #include <windows.h>
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/chromium/FontFallbackWin.h"
 #include "core/platform/graphics/skia/SkiaFontWin.h"
+#include "platform/fonts/FontFallbackWin.h"
 #include "platform/win/HWndDC.h"
 #include "third_party/skia/include/core/SkPoint.h"
 #include "wtf/Assertions.h"

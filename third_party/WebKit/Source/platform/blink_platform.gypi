@@ -263,6 +263,8 @@
       'fonts/FontData.cpp',
       'fonts/FontData.h',
       'fonts/FontDescription.cpp',
+      'fonts/FontFallbackWin.cpp',
+      'fonts/FontFallbackWin.h',
       'fonts/FontFamily.cpp',
       'fonts/FontFamily.h',
       'fonts/FontFeatureSettings.cpp',

@@ -36,6 +36,7 @@
 #ifndef FontFallbackWin_h
 #define FontFallbackWin_h
 
+#include "platform/PlatformExport.h"
 #include "platform/fonts/FontDescription.h"
 #include <unicode/uscript.h>
 #include <usp10.h>
@@ -47,7 +48,7 @@ namespace WebCore {
 // Return a font family that can render |characters| based on
 // what script characters belong to.
 // FIXME: This function needs a total overhaul.
-const UChar* getFallbackFamilyForFirstNonCommonCharacter(const UChar* characters,
+PLATFORM_EXPORT const UChar* getFallbackFamilyForFirstNonCommonCharacter(const UChar* characters,
     int length,
     FontDescription::GenericFamilyType);
 
@@ -55,7 +56,7 @@ const UChar* getFallbackFamilyForFirstNonCommonCharacter(const UChar* characters
 // that characters belong to.
 // When scriptChecked is non-zero, the script used to determine
 // the family is returned.
-const UChar* getFallbackFamily(UChar32 character,
+PLATFORM_EXPORT const UChar* getFallbackFamily(UChar32 character,
     FontDescription::GenericFamilyType,
     UScriptCode* scriptChecked);
 
