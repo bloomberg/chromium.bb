@@ -785,12 +785,9 @@ const char kSingleProcess[]                 = "single-process";
 // http://www.chromium.org/developers/design-documents/site-isolation
 //
 // Unlike --enable-strict-site-isolation (which allows cross-site iframes),
-// this flag blocks cross-site documents even in iframes, until out-of-process
-// iframe support is available.  Cross-site network requests do attach the
-// normal set of cookies, but a renderer process is only allowed to view or
-// modify cookies for its own site (via JavaScript).
-// TODO(irobert): Implement the cross-site document blocking in
-// http://crbug.com/159215.
+// this flag does not affect which cookies are attached to cross-site requests.
+// Support is being added to render cross-site iframes in a different process
+// than their parent pages.
 const char kSitePerProcess[]                = "site-per-process";
 
 // Skip gpu info collection, blacklist loading, and blacklist auto-update

@@ -4,7 +4,6 @@
 
 #include "content/browser/browser_plugin/browser_plugin_guest_manager.h"
 
-#include "base/command_line.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/browser_plugin/browser_plugin_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -13,7 +12,6 @@
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/user_metrics.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -44,7 +42,6 @@ BrowserPluginGuest* BrowserPluginGuestManager::CreateGuest(
     int instance_id,
     const BrowserPluginHostMsg_Attach_Params& params,
     scoped_ptr<base::DictionaryValue> extra_params) {
-  SiteInstance* guest_site_instance = NULL;
   RenderProcessHost* embedder_process_host =
       embedder_site_instance->GetProcess();
   // Validate that the partition id coming from the renderer is valid UTF-8,
@@ -59,54 +56,39 @@ BrowserPluginGuest* BrowserPluginGuestManager::CreateGuest(
     return NULL;
   }
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kSitePerProcess)) {
-    // When --site-per-process is specified, the behavior of BrowserPlugin
-    // as <webview> is broken and we use it for rendering out-of-process
-    // iframes instead. We use the src URL sent by the renderer to find the
-    // right process in which to place this instance.
-    // Note: Since BrowserPlugin doesn't support cross-process navigation,
-    // the instance will stay in the initially assigned process, regardless
-    // of the site it is navigated to.
-    // TODO(nasko): Fix this, and such that cross-process navigations are
-    // supported.
-    guest_site_instance =
-        embedder_site_instance->GetRelatedSiteInstance(GURL(params.src));
-  } else {
-    // We usually require BrowserPlugins to be hosted by a storage isolated
-    // extension. We treat WebUI pages as a special case if they host the
-    // BrowserPlugin in a component extension iframe. In that case, we use the
-    // iframe's URL to determine the extension.
-    const GURL& embedder_site_url = embedder_site_instance->GetSiteURL();
-    GURL validated_frame_url(params.embedder_frame_url);
-    RenderViewHost::FilterURL(
-        embedder_process_host, false, &validated_frame_url);
-    const std::string& host = content::HasWebUIScheme(embedder_site_url) ?
-         validated_frame_url.host() : embedder_site_url.host();
+  // We usually require BrowserPlugins to be hosted by a storage isolated
+  // extension. We treat WebUI pages as a special case if they host the
+  // BrowserPlugin in a component extension iframe. In that case, we use the
+  // iframe's URL to determine the extension.
+  const GURL& embedder_site_url = embedder_site_instance->GetSiteURL();
+  GURL validated_frame_url(params.embedder_frame_url);
+  RenderViewHost::FilterURL(
+      embedder_process_host, false, &validated_frame_url);
+  const std::string& host = content::HasWebUIScheme(embedder_site_url) ?
+       validated_frame_url.host() : embedder_site_url.host();
 
-    std::string url_encoded_partition = net::EscapeQueryParamValue(
-        params.storage_partition_id, false);
-    // The SiteInstance of a given webview tag is based on the fact that it's
-    // a guest process in addition to which platform application the tag
-    // belongs to and what storage partition is in use, rather than the URL
-    // that the tag is being navigated to.
-    GURL guest_site(base::StringPrintf("%s://%s/%s?%s",
-                                       kGuestScheme,
-                                       host.c_str(),
-                                       params.persist_storage ? "persist" : "",
-                                       url_encoded_partition.c_str()));
+  std::string url_encoded_partition = net::EscapeQueryParamValue(
+      params.storage_partition_id, false);
+  // The SiteInstance of a given webview tag is based on the fact that it's
+  // a guest process in addition to which platform application the tag
+  // belongs to and what storage partition is in use, rather than the URL
+  // that the tag is being navigated to.
+  GURL guest_site(base::StringPrintf("%s://%s/%s?%s",
+                                     kGuestScheme,
+                                     host.c_str(),
+                                     params.persist_storage ? "persist" : "",
+                                     url_encoded_partition.c_str()));
 
-    // If we already have a webview tag in the same app using the same storage
-    // partition, we should use the same SiteInstance so the existing tag and
-    // the new tag can script each other.
-    guest_site_instance = GetGuestSiteInstance(guest_site);
-    if (!guest_site_instance) {
-      // Create the SiteInstance in a new BrowsingInstance, which will ensure
-      // that webview tags are also not allowed to send messages across
-      // different partitions.
-      guest_site_instance = SiteInstance::CreateForURL(
-          embedder_site_instance->GetBrowserContext(), guest_site);
-    }
+  // If we already have a webview tag in the same app using the same storage
+  // partition, we should use the same SiteInstance so the existing tag and
+  // the new tag can script each other.
+  SiteInstance* guest_site_instance = GetGuestSiteInstance(guest_site);
+  if (!guest_site_instance) {
+    // Create the SiteInstance in a new BrowsingInstance, which will ensure
+    // that webview tags are also not allowed to send messages across
+    // different partitions.
+    guest_site_instance = SiteInstance::CreateForURL(
+        embedder_site_instance->GetBrowserContext(), guest_site);
   }
 
   return WebContentsImpl::CreateGuest(
