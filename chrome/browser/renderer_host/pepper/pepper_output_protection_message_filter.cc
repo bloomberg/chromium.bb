@@ -192,7 +192,7 @@ int32_t PepperOutputProtectionMessageFilter::Delegate::OnQueryStatus(
       *link_mask |= chromeos::OUTPUT_TYPE_NETWORK;
   }
 
-  return PP_OK;
+  return result ? PP_OK : PP_ERROR_FAILED;
 }
 
 int32_t PepperOutputProtectionMessageFilter::Delegate::OnEnableProtection(
