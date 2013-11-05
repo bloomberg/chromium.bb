@@ -11,33 +11,59 @@ from server_instance import ServerInstance
 from servlet import Request, Response
 from test_util import DisableLogging, ReadFile
 
+
 class _RenderServletDelegate(RenderServlet.Delegate):
   def CreateServerInstance(self):
     return ServerInstance.ForTest(LocalFileSystem.Create())
 
+
 class RenderServletTest(unittest.TestCase):
+  def _Render(self, path):
+    return RenderServlet(Request.ForTest(path),
+                         _RenderServletDelegate()).Get()
+
   def testExtensionAppRedirect(self):
-    request = Request.ForTest('storage.html')
     self.assertEqual(
         Response.Redirect('/extensions/storage.html', permanent=False),
-        RenderServlet(request, _RenderServletDelegate()).Get())
+        self._Render('storage.html'))
 
   def testChannelRedirect(self):
-    request = Request.ForTest('stable/extensions/storage.html')
     self.assertEqual(
         Response.Redirect('/extensions/storage.html', permanent=True),
-        RenderServlet(request, _RenderServletDelegate()).Get())
+        self._Render('stable/extensions/storage.html'))
 
-  @DisableLogging('warning')
   def testNotFound(self):
-    request = Request.ForTest('extensions/not_found.html')
-    response = RenderServlet(request, _RenderServletDelegate()).Get()
-    self.assertEqual(404, response.status)
+    def create_404_response(real_path):
+      real_404 = self._Render(real_path)
+      self.assertEqual(200, real_404.status)
+      real_404.status = 404
+      return real_404
+
+    root_404 = create_404_response('404.html')
+    extensions_404 = create_404_response('extensions/404.html')
+    apps_404 = create_404_response('apps/404.html')
+    # Note: would test that root_404 != extensions and apps but it's not
+    # necessarily true.
+    self.assertNotEqual(extensions_404, apps_404)
+
+    self.assertEqual(root_404, self._Render('not_found.html'))
+    self.assertEqual(root_404, self._Render('not_found/not_found.html'))
+
+    self.assertEqual(extensions_404, self._Render('extensions/not_found.html'))
+    self.assertEqual(
+        extensions_404, self._Render('extensions/manifest/not_found.html'))
+    self.assertEqual(
+        extensions_404,
+        self._Render('extensions/manifest/not_found/not_found.html'))
+
+    self.assertEqual(apps_404, self._Render('apps/not_found.html'))
+    self.assertEqual(apps_404, self._Render('apps/manifest/not_found.html'))
+    self.assertEqual(
+        apps_404, self._Render('apps/manifest/not_found/not_found.html'))
 
   def testSampleFile(self):
     sample_file = 'extensions/talking_alarm_clock/background.js'
-    request = Request.ForTest('extensions/examples/%s' % sample_file)
-    response = RenderServlet(request, _RenderServletDelegate()).Get()
+    response = self._Render('extensions/examples/%s' % sample_file)
     self.assertEqual(200, response.status)
     content_type = response.headers.get('content-type')
     self.assertTrue(content_type == 'application/javascript' or
@@ -47,15 +73,13 @@ class RenderServletTest(unittest.TestCase):
 
   def testSampleZip(self):
     sample_dir = 'extensions/talking_alarm_clock'
-    request = Request.ForTest('extensions/examples/%s.zip' % sample_dir)
-    response = RenderServlet(request, _RenderServletDelegate()).Get()
+    response = self._Render('extensions/examples/%s.zip' % sample_dir)
     self.assertEqual(200, response.status)
     self.assertEqual('application/zip', response.headers.get('content-type'))
 
   def testStaticFile(self):
     static_file = 'css/site.css'
-    request = Request.ForTest('static/%s' % static_file)
-    response = RenderServlet(request, _RenderServletDelegate()).Get()
+    response = self._Render('static/%s' % static_file)
     self.assertEqual(200, response.status)
     self.assertEqual('text/css', response.headers.get('content-type'))
     self.assertEqual(ReadFile('docs/static/%s' % static_file),
@@ -63,13 +87,31 @@ class RenderServletTest(unittest.TestCase):
 
   def testHtmlTemplate(self):
     html_file = 'extensions/storage.html'
-    request = Request.ForTest(html_file)
-    response = RenderServlet(request, _RenderServletDelegate()).Get()
+    response = self._Render(html_file)
     self.assertEqual(200, response.status)
     self.assertEqual('text/html', response.headers.get('content-type'))
     # Can't really test rendering all that well.
     self.assertTrue(len(response.content) >
                     len(ReadFile('docs/templates/public/%s' % html_file)))
+
+  def testDevelopersGoogleComRedirect(self):
+    def assert_redirect(request_path):
+      response = self._Render(request_path)
+      self.assertEqual(('//developers.google.com/chrome', False),
+                       response.GetRedirect())
+    assert_redirect('')
+    assert_redirect('index.html')
+
+  def testIndexRedirect(self):
+    response = self._Render('extensions')
+    self.assertEqual(('/extensions/index.html', False),
+                     response.GetRedirect())
+
+  def testOtherRedirectsJsonRedirect(self):
+    response = self._Render('apps/webview_tag.html')
+    self.assertEqual(('/apps/tags/webview.html', False),
+                     response.GetRedirect())
+
 
 if __name__ == '__main__':
   unittest.main()

@@ -196,7 +196,7 @@ class CronServlet(Servlet):
       for data_source in CreateDataSources(server_instance).values():
         run_cron(data_source)
 
-      run_cron(server_instance.redirector)
+      run_cron(server_instance.content_providers)
 
     except:
       results.append(False)

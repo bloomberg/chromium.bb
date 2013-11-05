@@ -105,6 +105,9 @@ class Response(object):
       return (None, None)
     return (self.headers.get('Location'), self.status == 301)
 
+  def IsNotFound(self):
+    return self.status == 404
+
   def __eq__(self, other):
     return (isinstance(other, self.__class__) and
             str(other.content) == str(self.content) and

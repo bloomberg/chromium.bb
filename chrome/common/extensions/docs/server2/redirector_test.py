@@ -15,28 +15,26 @@ from third_party.json_schema_compiler.json_parse import Parse
 HOST = 'http://localhost/'
 
 file_system = TestFileSystem({
-  'public': {
+  'redirects.json': json.dumps({
+    '': '/index.html',
+    'home': 'index.html',
+    'index.html': 'http://something.absolute.com/'
+  }),
+  'apps': {
     'redirects.json': json.dumps({
-      '': '/index.html',
-      'home': 'index.html',
-      'index.html': 'http://something.absolute.com/'
+      '': '../index.html',
+      'index.html': 'about_apps.html'
+    })
+  },
+  'extensions': {
+    'redirects.json': json.dumps({
+      'manifest': 'manifest.html'
     }),
-    'apps': {
+    'manifest': {
       'redirects.json': json.dumps({
-        '': '../index.html',
-        'index.html': 'about_apps.html'
+        '': '../manifest.html',
+        'more-info': 'http://lmgtfy.com'
       })
-    },
-    'extensions': {
-      'redirects.json': json.dumps({
-        'manifest': 'manifest.html'
-      }),
-      'manifest': {
-        'redirects.json': json.dumps({
-          '': '../manifest.html',
-          'more-info': 'http://lmgtfy.com'
-        })
-      }
     }
   }
 })
@@ -45,8 +43,7 @@ class RedirectorTest(unittest.TestCase):
   def setUp(self):
     self._redirector = Redirector(
         CompiledFileSystem.Factory(ObjectStoreCreator.ForTest()),
-        file_system,
-        'public')
+        file_system)
 
   def testExternalRedirection(self):
     self.assertEqual(
@@ -61,9 +58,9 @@ class RedirectorTest(unittest.TestCase):
         '/apps/about_apps.html',
         self._redirector.Redirect(HOST, 'apps/index.html'))
     self.assertEqual(
-      '/index.html', self._redirector.Redirect(HOST, ''))
+        '/index.html', self._redirector.Redirect(HOST, ''))
     self.assertEqual(
-      '/index.html', self._redirector.Redirect(HOST, 'home'))
+        '/index.html', self._redirector.Redirect(HOST, 'home'))
 
   def testRelativeRedirection(self):
     self.assertEqual(
@@ -93,10 +90,10 @@ class RedirectorTest(unittest.TestCase):
     self._redirector.Cron()
 
     expected_paths = set([
-      'public/redirects.json',
-      'public/apps/redirects.json',
-      'public/extensions/redirects.json',
-      'public/extensions/manifest/redirects.json'
+      'redirects.json',
+      'apps/redirects.json',
+      'extensions/redirects.json',
+      'extensions/manifest/redirects.json'
     ])
 
     for path in expected_paths:

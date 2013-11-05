@@ -7,7 +7,7 @@ from api_list_data_source import APIListDataSource
 from api_models import APIModels
 from availability_finder import AvailabilityFinder
 from compiled_file_system import CompiledFileSystem
-from directory_zipper import DirectoryZipper
+from content_providers import ContentProviders
 from empty_dir_file_system import EmptyDirFileSystem
 from environment import IsDevServer
 from features_bundle import FeaturesBundle
@@ -17,7 +17,6 @@ from host_file_system_iterator import HostFileSystemIterator
 from intro_data_source import IntroDataSource
 from object_store_creator import ObjectStoreCreator
 from path_canonicalizer import PathCanonicalizer
-from redirector import Redirector
 from reference_resolver import ReferenceResolver
 from samples_data_source import SamplesDataSource
 import svn_constants
@@ -133,18 +132,13 @@ class ServerInstance(object):
         self.ref_resolver_factory,
         [svn_constants.INTRO_PATH, svn_constants.ARTICLE_PATH])
 
-    self.directory_zipper = DirectoryZipper(
-        self.compiled_fs_factory,
-        host_fs_at_trunk)
-
     self.path_canonicalizer = PathCanonicalizer(
         self.compiled_fs_factory,
         host_fs_at_trunk)
 
-    self.redirector = Redirector(
+    self.content_providers = ContentProviders(
         self.compiled_fs_factory,
-        host_fs_at_trunk,
-        svn_constants.PUBLIC_TEMPLATE_PATH)
+        host_fs_at_trunk)
 
     # TODO(kalman): Move all the remaining DataSources into DataSourceRegistry,
     # then factor out the DataSource creation into a factory method, so that

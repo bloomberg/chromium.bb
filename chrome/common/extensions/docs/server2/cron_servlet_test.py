@@ -14,9 +14,10 @@ from host_file_system_provider import HostFileSystemProvider
 from local_file_system import LocalFileSystem
 from mock_file_system import MockFileSystem
 from servlet import Request
+from svn_constants import JSON_PATH
 from test_branch_utility import TestBranchUtility
 from test_file_system import TestFileSystem
-from test_util import EnableLogging
+from test_util import EnableLogging, ReadFile
 
 # NOTE(kalman): The ObjectStore created by the CronServlet is backed onto our
 # fake AppEngine memcache/datastore, so the tests aren't isolated. Of course,
@@ -106,6 +107,8 @@ class CronServletTest(unittest.TestCase):
             },
           },
           'json': {
+            'content_providers.json': ReadFile('%s/content_providers.json' %
+                                               JSON_PATH),
             'manifest.json': '{}',
             'strings.json': '{}',
             'apps_sidenav.json': '{}',
