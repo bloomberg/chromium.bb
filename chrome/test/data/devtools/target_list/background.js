@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function requestUrl(url, callback) {
+var REMOTE_DEBUGGER_HOST = 'localhost:9222';
+
+function requestUrl(path, callback) {
   var req = new XMLHttpRequest();
-  req.open('GET', url, true);
+  req.open('GET', 'http://' + REMOTE_DEBUGGER_HOST + path, true);
   req.onload = function() {
     if (req.status == 200)
       callback(req.responseText);
@@ -17,7 +19,6 @@ function requestUrl(url, callback) {
   req.send(null);
 }
 
-var REMOTE_DEBUGGER_HOST = 'localhost:9222';
 
 function checkTarget(targets, url, type, opt_title, opt_faviconUrl) {
   var target =
@@ -40,29 +41,158 @@ function checkTarget(targets, url, type, opt_title, opt_faviconUrl) {
   chrome.test.assertEq(opt_title || target.url, target.title);
   chrome.test.assertEq(type, target.type);
   chrome.test.assertEq('ws://' + wsAddress, target.webSocketDebuggerUrl);
+
+  return target;
 }
+
+function waitForTab(filter, callback) {
+  var fired = false;
+  function onUpdated(updatedTabId, changeInfo, updatedTab) {
+    if (!filter(updatedTab) && !fired)
+      return;
+
+    chrome.tabs.onUpdated.removeListener(onUpdated);
+    if (!fired) {
+      fired = true;
+      callback(updatedTab);
+    }
+  }
+
+  chrome.tabs.onUpdated.addListener(onUpdated);
+
+  chrome.tabs.query({}, function(tabs) {
+    if (!fired) {
+      for (var i = 0; i < tabs.length; ++i)
+        if (filter(tabs[i])) {
+          fired = true;
+          callback(tabs[i]);
+        }
+    }
+  });
+}
+
+function listenOnce(event, func) {
+  var listener = function() {
+    event.removeListener(listener);
+    func.apply(null, arguments)
+  };
+  event.addListener(listener);
+}
+
+function runNewPageTest(devtoolsUrl, expectedUrl) {
+  var json;
+  var newTab;
+  var pendingCount = 2;
+
+  function checkResult() {
+    if (--pendingCount)
+      return;
+    chrome.test.assertEq(newTab.url, expectedUrl);
+    chrome.test.assertEq(json.url, expectedUrl);
+    chrome.test.assertTrue(newTab.active);
+    chrome.test.succeed();
+  }
+
+  function onCreated(createdTab) {
+    waitForTab(
+      function(tab) {
+        return tab.id == createdTab.id &&
+               tab.active &&
+               tab.status == "complete";
+      },
+      function(tab) {
+        newTab = tab;
+        checkResult();
+      });
+  }
+
+  listenOnce(chrome.tabs.onCreated, onCreated);
+
+  requestUrl(devtoolsUrl,
+      function(text) {
+        json = JSON.parse(text);
+        checkResult();
+      });
+}
+
+var extensionTargetId;
+var extensionTabId;
 
 chrome.test.runTests([
   function discoverTargets() {
     var testPageUrl = chrome.extension.getURL('test_page.html');
 
-    function onUpdated() {
-      chrome.tabs.onUpdated.removeListener(onUpdated);
-      requestUrl('http://' + REMOTE_DEBUGGER_HOST + '/json', function(text) {
+    function onUpdated(updatedTabId) {
+      requestUrl('/json', function(text) {
         var targets = JSON.parse(text);
-
-        checkTarget(targets, 'about:blank', 'page');
-        checkTarget(targets, testPageUrl, 'page', 'Test page',
-            chrome.extension.getURL('favicon.png'));
-        checkTarget(targets,
-            chrome.extension.getURL('_generated_background_page.html'),
-            'background_page',
-            'Remote Debugger Test');
-
-        chrome.test.succeed();
-      });
+        waitForTab(
+            function(tab) {
+              return tab.id == updatedTabId && tab.status == "complete"
+            },
+            function() {
+              checkTarget(targets, 'about:blank', 'page');
+              checkTarget(targets,
+                  chrome.extension.getURL('_generated_background_page.html'),
+                  'background_page',
+                  'Remote Debugger Test');
+              extensionTargetId = checkTarget(targets,
+                  testPageUrl, 'page', 'Test page',
+                  chrome.extension.getURL('favicon.png')).id;
+              chrome.test.succeed();
+            });
+        });
     }
-    chrome.tabs.onUpdated.addListener(onUpdated);
+    listenOnce(chrome.tabs.onUpdated, onUpdated);
     chrome.tabs.create({url: testPageUrl});
+  },
+
+  function versionInfo() {
+    requestUrl('/json/version',
+        function(text) {
+          var versionInfo = JSON.parse(text);
+          chrome.test.assertTrue(/^Chrome\//.test(versionInfo["Browser"]));
+          chrome.test.assertTrue("Protocol-Version" in versionInfo);
+          chrome.test.assertTrue("User-Agent" in versionInfo);
+          chrome.test.assertTrue("WebKit-Version" in versionInfo);
+          chrome.test.succeed();
+        });
+  },
+
+  function activatePage() {
+    requestUrl('/json/activate/' + extensionTargetId,
+        function(text) {
+          chrome.test.assertEq(text, "Target activated");
+          waitForTab(
+              function(tab) {
+                return tab.active &&
+                       tab.status == "complete" &&
+                       tab.title == 'Test page';
+              },
+              function (tab) {
+                extensionTabId = tab.id;
+                chrome.test.succeed();
+              });
+        });
+  },
+
+  function closePage() {
+    function onRemoved(tabId) {
+      chrome.test.assertEq(tabId, extensionTabId);
+      chrome.test.succeed();
+    }
+
+    listenOnce(chrome.tabs.onRemoved, onRemoved);
+
+    requestUrl('/json/close/' + extensionTargetId, function(text) {
+      chrome.test.assertEq(text, "Target is closing");
+    });
+  },
+
+  function newSpecificPage() {
+    runNewPageTest('/json/new?chrome://version/', "chrome://version/");
+  },
+
+  function newDefaultPage() {
+    runNewPageTest('/json/new', "about:blank");
   }
 ]);
