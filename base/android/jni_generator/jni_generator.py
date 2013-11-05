@@ -53,7 +53,7 @@ class NativeMethod(object):
       assert type(self.params) is list
       assert type(self.params[0]) is Param
     if (self.params and
-        self.params[0].datatype == 'int' and
+        self.params[0].datatype == kwargs.get('ptr_type', 'int') and
         self.params[0].name.startswith('native')):
       self.type = 'method'
       self.p0_type = self.params[0].name[len('native'):]
@@ -290,7 +290,7 @@ def ExtractFullyQualifiedJavaClassName(java_file_name, contents):
           os.path.splitext(os.path.basename(java_file_name))[0])
 
 
-def ExtractNatives(contents):
+def ExtractNatives(contents, ptr_type):
   """Returns a list of dict containing information about a native method."""
   contents = contents.replace('\n', '')
   natives = []
@@ -307,7 +307,8 @@ def ExtractNatives(contents):
         native_class_name=match.group('native_class_name'),
         return_type=match.group('return_type'),
         name=match.group('name').replace('native', ''),
-        params=JniParams.Parse(match.group('params')))
+        params=JniParams.Parse(match.group('params')),
+        ptr_type=ptr_type)
     natives += [native]
   return natives
 
@@ -530,7 +531,7 @@ class JNIFromJavaSource(object):
     JniParams.SetFullyQualifiedClass(fully_qualified_class)
     JniParams.ExtractImportsAndInnerClasses(contents)
     jni_namespace = ExtractJNINamespace(contents)
-    natives = ExtractNatives(contents)
+    natives = ExtractNatives(contents, options.ptr_type)
     called_by_natives = ExtractCalledByNatives(contents)
     if len(natives) == 0 and len(called_by_natives) == 0:
       raise SyntaxError('Unable to find any JNI methods for %s.' %
@@ -1073,6 +1074,11 @@ See SampleForTests.java for more details.
   option_parser.add_option('--script_name', default=GetScriptName(),
                            help='The name of this script in the generated '
                            'header.')
+  option_parser.add_option('--ptr_type', default='int',
+                           type='choice', choices=['int', 'long'],
+                           help='The type used to represent native pointers in '
+                           'Java code. For 32-bit, use int; '
+                           'for 64-bit, use long.')
   options, args = option_parser.parse_args(argv)
   if options.jar_file:
     input_file = ExtractJarInputFile(options.jar_file, options.input_file,
