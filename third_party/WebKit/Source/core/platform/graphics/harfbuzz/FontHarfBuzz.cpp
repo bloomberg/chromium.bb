@@ -55,48 +55,11 @@ bool Font::canExpandAroundIdeographsInComplexText()
     return false;
 }
 
-void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
-                      const GlyphBuffer& glyphBuffer,  int from, int numGlyphs,
-                      const FloatPoint& point, const FloatRect& textRect) const {
-    SkASSERT(sizeof(GlyphBufferGlyph) == sizeof(uint16_t)); // compile-time assert
 
-    const GlyphBufferGlyph* glyphs = glyphBuffer.glyphs(from);
-    SkScalar x = SkFloatToScalar(point.x());
-    SkScalar y = SkFloatToScalar(point.y());
-
-    // FIXME: text rendering speed:
-    // Android has code in their WebCore fork to special case when the
-    // GlyphBuffer has no advances other than the defaults. In that case the
-    // text drawing can proceed faster. However, it's unclear when those
-    // patches may be upstreamed to WebKit so we always use the slower path
-    // here.
-    const GlyphBufferAdvance* adv = glyphBuffer.advances(from);
-    SkAutoSTMalloc<32, SkPoint> storage(numGlyphs), storage2(numGlyphs), storage3(numGlyphs);
-    SkPoint* pos = storage.get();
-    SkPoint* vPosBegin = storage2.get();
-    SkPoint* vPosEnd = storage3.get();
-
-    bool isVertical = font->platformData().orientation() == Vertical;
-    SkScalar verticalPosCompensation = isVertical ? SkFloatToScalar((font->fontMetrics().floatHeight() - font->fontMetrics().floatAscent()) / 2) : 0;
-    for (int i = 0; i < numGlyphs; i++) {
-        SkScalar myWidth = SkFloatToScalar(adv[i].width());
-        pos[i].set(x, y);
-        if (isVertical) {
-            // In vertical mode, we need to align the left of ideographics to the vertical baseline.
-            // (Note vertical/horizontal are in absolute orientation, that is, here x is vertical.)
-            // However, when the glyph is drawn in drawTextOnPath(), the baseline is the horizontal path,
-            // so the ideographics will look shifted to the bottom-right direction because the ascent is
-            // applied vertically. Compensate the position so that ascent will look like to be applied
-            // horizontally.
-            SkScalar bottom = x + myWidth - verticalPosCompensation;
-            SkScalar left = y + verticalPosCompensation;
-            vPosBegin[i].set(bottom, left);
-            vPosEnd[i].set(bottom, left - myWidth);
-        }
-        x += myWidth;
-        y += SkFloatToScalar(adv[i].height());
-    }
-
+static void paintGlyphs(GraphicsContext* gc, const SimpleFontData* font,
+    const GlyphBufferGlyph* glyphs, int numGlyphs,
+    SkPoint* pos, const FloatRect& textRect)
+{
     TextDrawingModeFlags textMode = gc->textDrawingMode();
 
     // We draw text up to two times (once for fill, once for stroke).
@@ -107,16 +70,7 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
         gc->adjustTextRenderMode(&paint);
         paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
 
-        if (isVertical) {
-            SkPath path;
-            for (int i = 0; i < numGlyphs; ++i) {
-                path.reset();
-                path.moveTo(vPosBegin[i]);
-                path.lineTo(vPosEnd[i]);
-                gc->drawTextOnPath(glyphs + i, 2, path, textRect, 0, paint);
-            }
-        } else
-            gc->drawPosText(glyphs, numGlyphs << 1, pos, textRect, paint);
+        gc->drawPosText(glyphs, numGlyphs << 1, pos, textRect, paint);
     }
 
     if ((textMode & TextModeStroke)
@@ -136,17 +90,77 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
             paint.setLooper(0);
         }
 
-        if (isVertical) {
-            SkPath path;
-            for (int i = 0; i < numGlyphs; ++i) {
-                path.reset();
-                path.moveTo(vPosBegin[i]);
-                path.lineTo(vPosEnd[i]);
-                gc->drawTextOnPath(glyphs + i, 2, path, textRect, 0, paint);
-            }
-        } else
-            gc->drawPosText(glyphs, numGlyphs << 1, pos, textRect, paint);
+        gc->drawPosText(glyphs, numGlyphs << 1, pos, textRect, paint);
     }
+}
+
+void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
+    const GlyphBuffer& glyphBuffer,  int from, int numGlyphs,
+    const FloatPoint& point, const FloatRect& textRect) const
+{
+    SkASSERT(sizeof(GlyphBufferGlyph) == sizeof(uint16_t)); // compile-time assert
+
+    const GlyphBufferGlyph* glyphs = glyphBuffer.glyphs(from);
+    SkScalar x = SkFloatToScalar(point.x());
+    SkScalar y = SkFloatToScalar(point.y());
+
+    // FIXME: text rendering speed:
+    // Android has code in their WebCore fork to special case when the
+    // GlyphBuffer has no advances other than the defaults. In that case the
+    // text drawing can proceed faster. However, it's unclear when those
+    // patches may be upstreamed to WebKit so we always use the slower path
+    // here.
+    const GlyphBufferAdvance* adv = glyphBuffer.advances(from);
+    SkAutoSTMalloc<32, SkPoint> storage(numGlyphs);
+    SkPoint* pos = storage.get();
+
+    const OpenTypeVerticalData* verticalData = font->verticalData();
+    if (font->platformData().orientation() == Vertical && verticalData) {
+        AffineTransform savedMatrix = gc->getCTM();
+        gc->concatCTM(AffineTransform(0, -1, 1, 0, point.x(), point.y()));
+        gc->concatCTM(AffineTransform(1, 0, 0, 1, -point.x(), -point.y()));
+
+        const int kMaxBufferLength = 256;
+        Vector<int, kMaxBufferLength> advances;
+        Vector<FloatPoint, kMaxBufferLength> translations;
+
+        const FontMetrics& metrics = font->fontMetrics();
+        SkScalar verticalOriginX = SkFloatToScalar(point.x() + metrics.floatAscent() - metrics.floatAscent(IdeographicBaseline));
+        float horizontalOffset = point.x();
+
+        int glyphIndex = 0;
+        while (glyphIndex < numGlyphs) {
+            int chunkLength = std::min(kMaxBufferLength, numGlyphs - glyphIndex);
+
+            const Glyph* glyphs = glyphBuffer.glyphs(from + glyphIndex);
+            translations.resize(chunkLength);
+            verticalData->getVerticalTranslationsForGlyphs(font, &glyphs[0], chunkLength, reinterpret_cast<float*>(&translations[0]));
+
+            x = verticalOriginX;
+            y = SkFloatToScalar(point.y() + horizontalOffset - point.x());
+
+            float currentWidth = 0;
+            for (int i = 0; i < chunkLength; ++i, ++glyphIndex) {
+                pos[i].set(
+                    x + SkIntToScalar(lroundf(translations[i].x())),
+                    y + -SkIntToScalar(-lroundf(currentWidth - translations[i].y())));
+                currentWidth += glyphBuffer.advanceAt(from + glyphIndex);
+            }
+            horizontalOffset += currentWidth;
+            paintGlyphs(gc, font, glyphs, numGlyphs, pos, textRect);
+        }
+
+        gc->setCTM(savedMatrix);
+        return;
+    }
+
+    for (int i = 0; i < numGlyphs; i++) {
+        pos[i].set(x, y);
+        x += SkFloatToScalar(adv[i].width());
+        y += SkFloatToScalar(adv[i].height());
+    }
+
+    paintGlyphs(gc, font, glyphs, numGlyphs, pos, textRect);
 }
 
 void Font::drawComplexText(GraphicsContext* gc, const TextRunPaintInfo& runInfo, const FloatPoint& point) const
