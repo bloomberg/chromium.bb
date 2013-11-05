@@ -47,9 +47,6 @@ public:
     String label() const;
     void setLabel(const String&);
 
-    bool isDefault() const;
-    void setIsDefault(bool);
-
     enum ReadyState { NONE = 0, LOADING = 1, LOADED = 2, TRACK_ERROR = 3 };
     ReadyState readyState();
     void setReadyState(ReadyState);

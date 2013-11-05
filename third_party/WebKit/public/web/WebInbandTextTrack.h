@@ -66,7 +66,6 @@ public:
 
     virtual WebString label() const = 0;
     virtual WebString language() const = 0;
-    virtual bool isDefault() const = 0;
 
     virtual int textTrackIndex() const = 0;
 };

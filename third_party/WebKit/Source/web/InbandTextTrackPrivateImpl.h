@@ -57,7 +57,6 @@ public:
 
     virtual AtomicString label() const;
     virtual AtomicString language() const;
-    virtual bool isDefault() const;
 
     virtual int textTrackIndex() const;
 

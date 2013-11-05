@@ -79,11 +79,6 @@ AtomicString InbandTextTrackPrivateImpl::language() const
     return m_track->language();
 }
 
-bool InbandTextTrackPrivateImpl::isDefault() const
-{
-    return m_track->isDefault();
-}
-
 int InbandTextTrackPrivateImpl::textTrackIndex() const
 {
     return m_track->textTrackIndex();

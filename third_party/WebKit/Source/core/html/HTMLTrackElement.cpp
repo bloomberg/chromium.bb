@@ -146,16 +146,6 @@ void HTMLTrackElement::setLabel(const String& label)
     setAttribute(labelAttr, label);
 }
 
-bool HTMLTrackElement::isDefault() const
-{
-    return fastHasAttribute(defaultAttr);
-}
-
-void HTMLTrackElement::setIsDefault(bool isDefault)
-{
-    setBooleanAttribute(defaultAttr, isDefault);
-}
-
 LoadableTextTrack* HTMLTrackElement::ensureTrack()
 {
     if (!m_track) {
