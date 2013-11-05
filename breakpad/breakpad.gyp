@@ -29,6 +29,8 @@
             'src/processor/disassembler_x86.cc',
             'src/processor/disassembler_x86.h',
             'src/processor/exploitability.cc',
+            'src/processor/exploitability_linux.cc',
+            'src/processor/exploitability_linux.h',
             'src/processor/exploitability_win.cc',
             'src/processor/exploitability_win.h',
             'src/processor/logging.cc',
