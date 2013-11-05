@@ -565,15 +565,18 @@ TEST_F(GetCallerFrame, WindowsFrameDataAligned) {
                    " $ebp $T1 4 - ^ ="
                    " $eip $T1 ^ ="
                    " $esp $T1 4 + =");
+  Label frame0_esp, frame0_ebp;
   Label frame1_esp, frame1_ebp;
   stack_section.start() = 0x80000000;
   stack_section
     // frame 0
+    .Mark(&frame0_esp)
     .D32(0x0ffa0ffa)                    // unused saved register
     .D32(0xdeaddead)                    // locals
     .D32(0xbeefbeef)
     .D32(0)                             // 8-byte alignment
-    .D32(frame1_ebp)
+    .Mark(&frame0_ebp)
+    .D32(frame1_ebp)                    // saved %ebp
     .D32(0x5000129d)                    // return address
     // frame 1
     .Mark(&frame1_esp)
@@ -584,8 +587,8 @@ TEST_F(GetCallerFrame, WindowsFrameDataAligned) {
 
   RegionFromSection();
   raw_context.eip = 0x4000aa85;
-  raw_context.esp = stack_section.start().Value();
-  raw_context.ebp = 0xf052c1de;         // should not be needed to walk frame
+  raw_context.esp = frame0_esp.Value();
+  raw_context.ebp = frame0_ebp.Value();
 
   StackFrameSymbolizer frame_symbolizer(&supplier, &resolver);
   StackwalkerX86 walker(&system_info, &raw_context, &stack_region, &modules,
@@ -606,8 +609,8 @@ TEST_F(GetCallerFrame, WindowsFrameDataAligned) {
     ASSERT_EQ(StackFrameX86::CONTEXT_VALID_ALL, frame0->context_validity);
     EXPECT_EQ(0x4000aa85U, frame0->instruction);
     EXPECT_EQ(0x4000aa85U, frame0->context.eip);
-    EXPECT_EQ(stack_section.start().Value(), frame0->context.esp);
-    EXPECT_EQ(0xf052c1deU, frame0->context.ebp);
+    EXPECT_EQ(frame0_esp.Value(), frame0->context.esp);
+    EXPECT_EQ(frame0_ebp.Value(), frame0->context.ebp);
     EXPECT_TRUE(frame0->windows_frame_info != NULL);
   }
 
@@ -1459,6 +1462,206 @@ TEST_F(GetCallerFrame, ReturnAddressIsNotInKnownModule) {
               "$T0 160 - ^ =",
               frame2->windows_frame_info->program_string);
     EXPECT_FALSE(frame2->windows_frame_info->allocates_base_pointer);
+  }
+}
+
+// Test the .raSearchStart/.raSearch calculation when alignment operators are
+// used in the program string.  The current %ebp must be valid and it is the
+// only reliable data point that can be used for that calculation.
+TEST_F(GetCallerFrame, HandleAlignmentInProgramString) {
+  MockCodeModule chrome_dll(0x59630000, 0x19e3000, "chrome.dll", "version1");
+  SetModuleSymbols(&chrome_dll,  // chrome.dll
+                   "FUNC 56422 50c 8 base::MessageLoop::RunTask"
+                   "(base::PendingTask const &)\n"
+                   "56422 e 458 4589\n"
+                   "STACK WIN 4 56422 50c 11 0 8 c ac 0 1 $T1 .raSearch = $T0 "
+                   "$T1 4 - 8 @ = $ebp $T1 4 - ^ = $eip $T1 ^ = $esp $T1 4 + = "
+                   "$20 $T0 176 - ^ =  $23 $T0 180 - ^ =  $24 $T0 184 - ^ =\n"
+                   "FUNC 55d34 34a 0 base::MessageLoop::DoWork()\n"
+                   "55d34 11 596 4589\n"
+                   "STACK WIN 4 55d34 34a 19 0 0 c 134 0 1 $T1 .raSearch = "
+                   "$T0  $T1 4 - 8 @ = $ebp $T1 4 - ^ = $eip $T1 ^ = $esp "
+                   "$T1 4 + = $20 $T0 312 - ^ =  $23 $T0 316 - ^ =  $24 $T0 "
+                   "320 - ^ =\n"
+                   "FUNC 55c39 fb 0 base::MessagePumpForIO::DoRunLoop()\n"
+                   "55c39 d 518 19962\n"
+                   "STACK WIN 4 55c39 fb d 0 0 c 34 0 1 $T1 .raSearch = $T0 "
+                   "$T1 4 - 64 @ = $ebp $T1 4 - ^ = $eip $T1 ^ = $esp $T1 4 + "
+                   "= $20 $T0 56 - ^ =  $23 $T0 60 - ^ =  $24 $T0 64 - ^ =\n"
+                   "FUNC 55bf0 49 4 base::MessagePumpWin::Run(base::"
+                   "MessagePump::Delegate *)\n"
+                   "55bf0 49 48 4724\n"
+                   "STACK WIN 4 55bf0 49 c 0 4 0 10 0 1 $T0 $ebp = $eip $T0 4 "
+                   "+ ^ = $ebp $T0 ^ = $esp $T0 8 + =\n"
+                   "FUNC 165d de 4 malloc\n"
+                   "165d 6 119 54\n"
+                   "STACK WIN 4 165d de d 0 4 8 0 0 1 $T1 .raSearch = $T0 "
+                   "$T1 4 - 8 @ = $ebp $T1 4 - ^ = $eip $T1 ^ = $esp $T1 4 "
+                   "+ = $23 $T0 4 - ^ =  $24 $T0 8 - ^ =\n"
+                   "FUNC 55ac9 79 0 base::MessageLoop::RunInternal()\n"
+                   "55ac9 d 427 4589\n"
+                   "STACK WIN 4 55ac9 79 d 0 0 8 10 0 1 $T1 .raSearch = $T0 "
+                   "$T1 4 - 8 @ = $ebp $T1 4 - ^ = $eip $T1 ^ = $esp $T1 4 + = "
+                   "$23 $T0 20 - ^ =  $24 $T0 24 - ^ =\n");
+
+  // Create some modules with some stock debugging information.
+  MockCodeModules local_modules;
+  local_modules.Add(&chrome_dll);
+
+  Label frame0_esp;
+  Label frame0_ebp;
+  Label frame1_esp;
+  Label frame1_ebp;
+  Label frame2_esp;
+  Label frame2_ebp;
+  Label frame3_esp;
+  Label frame3_ebp;
+
+  stack_section.start() = 0x046bfc80;
+  stack_section
+    .D32(0)
+    .Mark(&frame0_esp)
+    .D32(0x01e235a0)
+    .D32(0x00000000)
+    .D32(0x01e9f580)
+    .D32(0x01e9f580)
+    .D32(0x00000020)
+    .D32(0x00000000)
+    .D32(0x00463674)
+    .D32(0x00000020)
+    .D32(0x00000000)
+    .D32(0x046bfcd8)
+    .D32(0x046bfcd8)
+    .D32(0x0001204b)
+    .D32(0x00000000)
+    .D32(0xfdddb523)
+    .D32(0x00000000)
+    .D32(0x00000007)
+    .D32(0x00000040)
+    .D32(0x00000000)
+    .D32(0x59631693)  // chrome_59630000!malloc+0x36
+    .D32(0x01e9f580)
+    .D32(0x01e9f580)
+    .D32(0x046bfcf8)
+    .D32(0x77da6704)  // ntdll!NtSetIoCompletion+0xc
+    .D32(0x046bfd4c)
+    .D32(0x59685bec)  // chrome_59630000!base::MessageLoop::StartHistogrammer..
+    .D32(0x01e235a0)
+
+    .Mark(&frame0_ebp)
+    .D32(frame1_ebp)  // Child EBP    .D32(0x046bfd0c)
+    .D32(0x59685c2e)  // Return address in
+                      // chrome_59630000!base::MessagePumpWin::Run+0x3e
+    .Mark(&frame1_esp)
+    .D32(0x01e75a90)
+    .D32(0x046bfd4c)
+    .D32(0x01e75a90)
+    .D32(0x00000000)
+    .D32(0x00000300)
+    .D32(0x00000001)
+
+    .Mark(&frame1_ebp)
+    .D32(frame2_ebp)  // Child EBP    .D32(0x046bfd30)
+    .D32(0x59685b3c)  // Return address in
+                      // chrome_59630000!base::MessageLoop::RunInternal+0x73
+    .Mark(&frame2_esp)
+    .D32(0x01e75a90)
+    .D32(0x00000000)
+    .D32(0x046bfd4c)
+    .D32(0x59658123)  // chrome_59630000!std::deque..
+    .D32(0x046bfda0)
+    .D32(0x01e79d70)
+    .D32(0x046bfda0)
+
+    .Mark(&frame2_ebp)  // .D32(0x046bfd40)
+    .D32(0)             // saved %ebp (stack end)
+    .D32(0);            // saved %eip (stack end)
+
+  RegionFromSection();
+  raw_context.eip = 0x59685c46;  // Context frame in
+                                 // base::MessagePumpForIO::DoRunLoop
+  raw_context.esp = frame0_esp.Value();
+  raw_context.ebp = frame0_ebp.Value();
+
+  StackFrameSymbolizer frame_symbolizer(&supplier, &resolver);
+  StackwalkerX86 walker(&system_info, &raw_context, &stack_region,
+                        &local_modules, &frame_symbolizer);
+  vector<const CodeModule*> modules_without_symbols;
+  vector<const CodeModule*> modules_with_corrupt_symbols;
+  ASSERT_TRUE(walker.Walk(&call_stack, &modules_without_symbols,
+                          &modules_with_corrupt_symbols));
+  ASSERT_EQ(0U, modules_without_symbols.size());
+  ASSERT_EQ(0U, modules_with_corrupt_symbols.size());
+  frames = call_stack.frames();
+
+  ASSERT_EQ(3U, frames->size());
+
+  {  // To avoid reusing locals by mistake
+    StackFrameX86 *frame = static_cast<StackFrameX86 *>(frames->at(0));
+    EXPECT_EQ(StackFrame::FRAME_TRUST_CONTEXT, frame->trust);
+    ASSERT_EQ(StackFrameX86::CONTEXT_VALID_ALL, frame->context_validity);
+    EXPECT_EQ("base::MessagePumpForIO::DoRunLoop()", frame->function_name);
+    EXPECT_EQ(0x59685c46U, frame->instruction);
+    EXPECT_EQ(0x59685c46U, frame->context.eip);
+    EXPECT_EQ(frame0_esp.Value(), frame->context.esp);
+    EXPECT_EQ(frame0_ebp.Value(), frame->context.ebp);
+    EXPECT_EQ(&chrome_dll, frame->module);
+    ASSERT_TRUE(frame->windows_frame_info != NULL);
+    EXPECT_EQ(WindowsFrameInfo::VALID_ALL, frame->windows_frame_info->valid);
+    EXPECT_EQ(WindowsFrameInfo::STACK_INFO_FRAME_DATA,
+              frame->windows_frame_info->type_);
+    EXPECT_EQ("$T1 .raSearch = $T0 "
+              "$T1 4 - 64 @ = $ebp $T1 4 - ^ = $eip $T1 ^ = $esp $T1 4 + "
+              "= $20 $T0 56 - ^ =  $23 $T0 60 - ^ =  $24 $T0 64 - ^ =",
+              frame->windows_frame_info->program_string);
+    EXPECT_FALSE(frame->windows_frame_info->allocates_base_pointer);
+  }
+
+  {  // To avoid reusing locals by mistake
+    StackFrameX86 *frame = static_cast<StackFrameX86 *>(frames->at(1));
+    EXPECT_EQ(StackFrame::FRAME_TRUST_CFI, frame->trust);
+    ASSERT_EQ((StackFrameX86::CONTEXT_VALID_EIP |
+               StackFrameX86::CONTEXT_VALID_ESP |
+               StackFrameX86::CONTEXT_VALID_EBP),
+              frame->context_validity);
+    EXPECT_EQ("base::MessagePumpWin::Run(base::MessagePump::Delegate *)",
+              frame->function_name);
+    EXPECT_EQ(1500011566U, frame->instruction + 1);
+    EXPECT_EQ(1500011566U, frame->context.eip);
+    EXPECT_EQ(frame1_esp.Value(), frame->context.esp);
+    EXPECT_EQ(frame1_ebp.Value(), frame->context.ebp);
+    EXPECT_EQ(&chrome_dll, frame->module);
+    ASSERT_TRUE(frame->windows_frame_info != NULL);
+    EXPECT_EQ(WindowsFrameInfo::VALID_ALL, frame->windows_frame_info->valid);
+    EXPECT_EQ(WindowsFrameInfo::STACK_INFO_FRAME_DATA,
+              frame->windows_frame_info->type_);
+    EXPECT_EQ("$T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + =",
+              frame->windows_frame_info->program_string);
+    EXPECT_FALSE(frame->windows_frame_info->allocates_base_pointer);
+  }
+
+  {  // To avoid reusing locals by mistake
+    StackFrameX86 *frame = static_cast<StackFrameX86 *>(frames->at(2));
+    EXPECT_EQ(StackFrame::FRAME_TRUST_CFI, frame->trust);
+    ASSERT_EQ((StackFrameX86::CONTEXT_VALID_EIP |
+               StackFrameX86::CONTEXT_VALID_ESP |
+               StackFrameX86::CONTEXT_VALID_EBP),
+              frame->context_validity);
+    EXPECT_EQ("base::MessageLoop::RunInternal()", frame->function_name);
+    EXPECT_EQ(1500011324U, frame->instruction + 1);
+    EXPECT_EQ(1500011324U, frame->context.eip);
+    EXPECT_EQ(frame2_esp.Value(), frame->context.esp);
+    EXPECT_EQ(frame2_ebp.Value(), frame->context.ebp);
+    EXPECT_EQ(&chrome_dll, frame->module);
+    ASSERT_TRUE(frame->windows_frame_info != NULL);
+    EXPECT_EQ(WindowsFrameInfo::VALID_ALL, frame->windows_frame_info->valid);
+    EXPECT_EQ(WindowsFrameInfo::STACK_INFO_FRAME_DATA,
+              frame->windows_frame_info->type_);
+    EXPECT_EQ("$T1 .raSearch = $T0 "
+              "$T1 4 - 8 @ = $ebp $T1 4 - ^ = $eip $T1 ^ = $esp $T1 4 + = "
+              "$23 $T0 20 - ^ =  $24 $T0 24 - ^ =",
+              frame->windows_frame_info->program_string);
+    EXPECT_FALSE(frame->windows_frame_info->allocates_base_pointer);
   }
 }
 

@@ -217,14 +217,27 @@ StackFrameX86* StackwalkerX86::GetCallerByWindowsFrameInfo(
   dictionary[".cbLocals"] = last_frame_info->local_size;
 
   uint32_t raSearchStart = last_frame->context.esp +
-                            last_frame_callee_parameter_size +
-                            last_frame_info->local_size +
-                            last_frame_info->saved_register_size;
+                           last_frame_callee_parameter_size +
+                           last_frame_info->local_size +
+                           last_frame_info->saved_register_size;
 
   uint32_t raSearchStartOld = raSearchStart;
   uint32_t found = 0;  // dummy value
   // Scan up to three words above the calculated search value, in case
   // the stack was aligned to a quadword boundary.
+  //
+  // TODO(ivan.penkov): Consider cleaning up the scan for return address that
+  // follows.  The purpose of this scan is to adjust the .raSearchStart
+  // calculation (which is based on register %esp) in the cases where register
+  // %esp may have been aligned (up to a quadword).  There are two problems
+  // with this approach:
+  //  1) In practice, 64 byte boundary alignment is seen which clearly can not
+  //     be handled by a three word scan.
+  //  2) A search for a return address is "guesswork" by definition because
+  //     the results will be different depending on what is left on the stack
+  //     from previous executions.
+  // So, basically, the results from this scan should be ignored if other means
+  // for calculation of the value of .raSearchStart are available.
   if (ScanForReturnAddress(raSearchStart, &raSearchStart, &found, 3) &&
       last_frame->trust == StackFrame::FRAME_TRUST_CONTEXT &&
       last_frame->windows_frame_info != NULL &&
@@ -240,11 +253,6 @@ StackFrameX86* StackwalkerX86::GetCallerByWindowsFrameInfo(
     raSearchStart += 4;
     ScanForReturnAddress(raSearchStart, &raSearchStart, &found, 3);
   }
-
-  // The difference between raSearch and raSearchStart is unknown,
-  // but making them the same seems to work well in practice.
-  dictionary[".raSearchStart"] = raSearchStart;
-  dictionary[".raSearch"] = raSearchStart;
 
   dictionary[".cbParams"] = last_frame_info->parameter_size;
 
@@ -329,6 +337,27 @@ StackFrameX86* StackwalkerX86::GetCallerByWindowsFrameInfo(
         "$esp .raSearchStart 4 + =";
     recover_ebp = false;
   }
+
+  // Check for alignment operators in the program string.  If alignment
+  // operators are found, then current %ebp must be valid and it is the only
+  // reliable data point that can be used for getting to the previous frame.
+  // E.g. the .raSearchStart calculation (above) is based on %esp and since
+  // %esp was aligned in the current frame (which is a lossy operation) the
+  // calculated value of .raSearchStart cannot be correct and should not be
+  // used.  Instead .raSearchStart must be calculated based on %ebp.
+  // The code that follows assumes that .raSearchStart is supposed to point
+  // at the saved return address (ebp + 4).
+  // For some more details on this topic, take a look at the following thread:
+  // https://groups.google.com/forum/#!topic/google-breakpad-dev/ZP1FA9B1JjM
+  if ((StackFrameX86::CONTEXT_VALID_EBP & last_frame->context_validity) != 0 &&
+      program_string.find('@') != string::npos) {
+    raSearchStart = last_frame->context.ebp + 4;
+  }
+
+  // The difference between raSearch and raSearchStart is unknown,
+  // but making them the same seems to work well in practice.
+  dictionary[".raSearchStart"] = raSearchStart;
+  dictionary[".raSearch"] = raSearchStart;
 
   // Now crank it out, making sure that the program string set at least the
   // two required variables.
