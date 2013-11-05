@@ -80,6 +80,10 @@ class LinuxSandbox {
 
   // We must have been pre_initialized_ before using this.
   bool seccomp_bpf_supported() const;
+  // Returns true if it can be determined that the current process has open
+  // directories that are not managed by the LinuxSandbox class. This would
+  // be a vulnerability as it would allow to bypass the setuid sandbox.
+  bool HasOpenDirectories();
   // The last part of the initialization is to make sure any temporary "hole"
   // in the sandbox is closed. For now, this consists of closing proc_fd_.
   void SealSandbox();

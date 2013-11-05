@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <dirent.h>
 #include <fcntl.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
@@ -16,6 +17,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "content/common/sandbox_linux.h"
 #include "content/common/sandbox_seccomp_bpf_linux.h"
@@ -59,6 +61,12 @@ bool IsRunningTSAN() {
   return false;
 #endif
 }
+
+struct DIRDeleter {
+  void operator()(DIR* d) {
+    PCHECK(closedir(d) == 0);
+  }
+};
 
 }  // namespace
 
@@ -143,6 +151,12 @@ bool LinuxSandbox::InitializeSandbox() {
     return false;
   }
 
+  if (linux_sandbox->HasOpenDirectories()) {
+    LOG(FATAL) << "InitializeSandbox() called after unexpected directories "
+                  "have been opened- this breaks the security of the setuid "
+                  "sandbox.";
+  }
+
   // Attempt to limit the future size of the address space of the process.
   linux_sandbox->LimitAddressSpace(process_type);
 
@@ -206,6 +220,50 @@ bool LinuxSandbox::IsSingleThreaded() const {
   // determining if the current proces is monothreaded it works: if at any
   // time it becomes monothreaded, it'll stay so.
   return task_stat.st_nlink == 3;
+}
+
+bool LinuxSandbox::HasOpenDirectories() {
+  int proc_self_fd = -1;
+  if (proc_fd_ >= 0) {
+    proc_self_fd = openat(proc_fd_, "self/fd", O_DIRECTORY | O_RDONLY);
+  } else {
+    proc_self_fd = openat(AT_FDCWD, "/proc/self/fd", O_DIRECTORY | O_RDONLY);
+    if (proc_self_fd < 0) {
+      // Guess false.
+      // TODO(mostynb@opera.com): errno == ENOENT is ok, but figure out what
+      // other situations fail here. http://crbug.com/314985
+      return false;
+    }
+  }
+  CHECK_GE(proc_self_fd, 0);
+
+  // Ownership of proc_self_fd is transferred here, it must not be closed
+  // or modified afterwards except via dir.
+  scoped_ptr<DIR, DIRDeleter> dir(fdopendir(proc_self_fd));
+  CHECK(dir);
+
+  struct dirent e;
+  struct dirent* de;
+  while (!readdir_r(dir.get(), &e, &de) && de) {
+    if (strcmp(e.d_name, ".") == 0 || strcmp(e.d_name, "..") == 0)
+      continue;
+
+    int fd_num;
+    CHECK(base::StringToInt(e.d_name, &fd_num));
+    if (fd_num == proc_fd_ || fd_num == proc_self_fd) {
+      continue;
+    }
+
+    struct stat s;
+    // It's OK to use proc_self_fd here, fstatat won't modify it.
+    CHECK(fstatat(proc_self_fd, e.d_name, &s, 0) == 0);
+    if (S_ISDIR(s.st_mode)) {
+      return true;
+    }
+  }
+
+  // No open unmanaged directories found. \o/
+  return false;
 }
 
 bool LinuxSandbox::seccomp_bpf_started() const {
