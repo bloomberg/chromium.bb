@@ -7,10 +7,8 @@
     'conditions': [
       ['OS=="linux"', {
         'compile_suid_client': 1,
-        'compile_credentials': 1,
       }, {
         'compile_suid_client': 0,
-        'compile_credentials': 0,
       }],
       ['((OS=="linux" or OS=="android") and '
              '(target_arch=="ia32" or target_arch=="x64" or '
@@ -150,18 +148,6 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
-      ],
-      'conditions': [
-        ['compile_credentials==1', {
-          'sources': [
-            'services/credentials.cc',
-            'services/credentials.h',
-          ],
-          'dependencies': [
-            # for capabilities.cc.
-            '../build/linux/system.gyp:libcap',
-          ],
-        }],
       ],
       'include_dirs': [
         '..',
