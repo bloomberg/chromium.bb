@@ -9,9 +9,6 @@
 
 namespace media {
 
-// TODO(ddorwin): Move to content_decryption_module.h.
-#define CDM_MODULE_VERSION 4
-
 bool IsSupportedCdmModuleVersion(int version) {
   switch(version) {
     // Latest.
