@@ -20,7 +20,8 @@ that make them easily usable on embedded products.
 Local Modifications:
 * Removed the revoked third clause from the licenses in the header files.
 * Correctly wrapped netdb.h to allow it to be included in both C and C++ files.
-* Removed faulty _BSD_SIZE_T_ typedef in arpa/inet.h
+* Removed faulty _BSD_SIZE_T_ typedef in arpa/inet.h.
 * Removed macros in arpa/inet.h which added underbars to various functions of
   the form inet_*, to avoid problems with forward declarations in user code.
-* Added prototypes for htonl, htons, ntohl, and ntohs to netinet/in.h
+* Added prototypes for htonl, htons, ntohl, and ntohs to netinet/in.h.
+* Modified netinet/in.h not to use u_int32_t.
