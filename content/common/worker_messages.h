@@ -80,6 +80,10 @@ IPC_SYNC_MESSAGE_CONTROL3_1(WorkerProcessHostMsg_AllowIndexedDB,
                             string16 /* database name */,
                             bool /* result */)
 
+// Sent by the worker process to request being killed.
+IPC_SYNC_MESSAGE_CONTROL0_0(WorkerProcessHostMsg_ForceKillWorker);
+
+
 //-----------------------------------------------------------------------------
 // Worker messages
 // These are messages sent from the renderer process to the worker process.

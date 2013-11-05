@@ -13,6 +13,7 @@
 #include "content/child/indexed_db/indexed_db_message_filter.h"
 #include "content/child/runtime_features.h"
 #include "content/child/web_database_observer_impl.h"
+#include "content/common/child_process_messages.h"
 #include "content/common/worker_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/worker/websharedworker_stub.h"
@@ -56,6 +57,13 @@ WorkerThread::WorkerThread() {
   SetRuntimeFeaturesDefaultsAndUpdateFromArgs(command_line);
 }
 
+void WorkerThread::OnShutdown() {
+  // The worker process is to be shut down gracefully. Ask the browser
+  // process to shut it down forcefully instead and wait on the message, so that
+  // there are no races between threads when the process is shutting down.
+  Send(new WorkerProcessHostMsg_ForceKillWorker());
+}
+
 WorkerThread::~WorkerThread() {
 }
 
@@ -86,6 +94,15 @@ bool WorkerThread::OnControlMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(WorkerThread, msg)
     IPC_MESSAGE_HANDLER(WorkerProcessMsg_CreateWorker, OnCreateWorker)
     IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+bool WorkerThread::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(WorkerThread, msg)
+    IPC_MESSAGE_HANDLER(ChildProcessMsg_Shutdown, OnShutdown)
+    IPC_MESSAGE_UNHANDLED(handled = ChildThread::OnMessageReceived(msg))
   IPC_END_MESSAGE_MAP()
   return handled;
 }

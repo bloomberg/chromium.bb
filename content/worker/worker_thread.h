@@ -39,8 +39,10 @@ class WorkerThread : public ChildThread {
  private:
   virtual bool OnControlMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   void OnCreateWorker(const WorkerProcessMsg_CreateWorker_Params& params);
+  void OnShutdown();
 
   scoped_ptr<WorkerWebKitPlatformSupportImpl> webkit_platform_support_;
   scoped_ptr<AppCacheDispatcher> appcache_dispatcher_;

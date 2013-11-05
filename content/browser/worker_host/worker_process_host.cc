@@ -323,6 +323,8 @@ bool WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_AllowDatabase, OnAllowDatabase)
     IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_AllowFileSystem, OnAllowFileSystem)
     IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_AllowIndexedDB, OnAllowIndexedDB)
+    IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_ForceKillWorker,
+                        OnForceKillWorkerProcess)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -391,6 +393,14 @@ void WorkerProcessHost::OnAllowIndexedDB(int worker_route_id,
                                          bool* result) {
   *result = GetContentClient()->browser()->AllowWorkerIndexedDB(
       url, name, resource_context_, GetRenderViewIDsForWorker(worker_route_id));
+}
+
+void WorkerProcessHost::OnForceKillWorkerProcess() {
+  if (process_ && process_launched_)
+    base::KillProcess(
+          process_->GetData().handle, RESULT_CODE_NORMAL_EXIT, false);
+  else
+    RecordAction(UserMetricsAction("WorkerProcess_BadProcessToKill"));
 }
 
 void WorkerProcessHost::RelayMessage(

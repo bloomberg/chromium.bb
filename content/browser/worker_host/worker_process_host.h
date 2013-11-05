@@ -207,6 +207,7 @@ class WorkerProcessHost : public BrowserChildProcessHostDelegate,
                         const GURL& url,
                         const string16& name,
                         bool* result);
+  void OnForceKillWorkerProcess();
 
   // Relays a message to the given endpoint.  Takes care of parsing the message
   // if it contains a message port and sending it a valid route id.
