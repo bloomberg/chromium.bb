@@ -395,7 +395,8 @@ void FileCache::DestroyOnBlockingPool() {
 
 bool FileCache::RecoverFilesFromCacheDirectory(
     const base::FilePath& dest_directory,
-    const std::map<std::string, FileCacheEntry>& recovered_cache_entries) {
+    const ResourceMetadataStorage::RecoveredCacheInfoMap&
+        recovered_cache_info) {
   int file_number = 1;
 
   base::FileEnumerator enumerator(cache_file_directory_,
@@ -413,14 +414,13 @@ bool FileCache::RecoverFilesFromCacheDirectory(
     // If a cache entry which is non-dirty and has matching MD5 is found in
     // |recovered_cache_entries|, it means the current file is already uploaded
     // to the server. Just delete it instead of recovering it.
-    std::map<std::string, FileCacheEntry>::const_iterator it =
-        recovered_cache_entries.find(id);
-    if (it != recovered_cache_entries.end()) {
-      const FileCacheEntry& recovered_entry = it->second;
-      // Due to the DB corruption, |recovered_entry| might be recovered from old
-      // revision. Perform MD5 check even when is_dirty() is false just in case.
-      if (!recovered_entry.is_dirty() &&
-          recovered_entry.md5() == util::GetMd5Digest(current)) {
+    ResourceMetadataStorage::RecoveredCacheInfoMap::const_iterator it =
+        recovered_cache_info.find(id);
+    if (it != recovered_cache_info.end()) {
+      // Due to the DB corruption, cache info might be recovered from old
+      // revision. Perform MD5 check even when is_dirty is false just in case.
+      if (!it->second.is_dirty &&
+          it->second.md5 == util::GetMd5Digest(current)) {
         base::DeleteFile(current, false /* recursive */);
         continue;
       }
@@ -437,13 +437,18 @@ bool FileCache::RecoverFilesFromCacheDirectory(
     if (read_result == 0)  // Skip empty files.
       continue;
 
-    // Decide file name with sniffed mime type.
+    // Use recovered file name if available, otherwise decide file name with
+    // sniffed mime type.
     base::FilePath dest_base_name(FILE_PATH_LITERAL("file"));
     std::string mime_type;
-    if (net::SniffMimeType(&content[0], read_result,
-                           net::FilePathToFileURL(current), std::string(),
-                           &mime_type) ||
-        net::SniffMimeTypeFromLocalData(&content[0], read_result, &mime_type)) {
+    if (it != recovered_cache_info.end() && !it->second.title.empty()) {
+      // We can use a file name recovered from the trashed DB.
+      dest_base_name = base::FilePath::FromUTF8Unsafe(it->second.title);
+    } else if (net::SniffMimeType(&content[0], read_result,
+                                  net::FilePathToFileURL(current),
+                                  std::string(), &mime_type) ||
+               net::SniffMimeTypeFromLocalData(&content[0], read_result,
+                                               &mime_type)) {
       // Change base name for common mime types.
       if (net::MatchesMimeType("image/*", mime_type)) {
         dest_base_name = base::FilePath(FILE_PATH_LITERAL("image"));

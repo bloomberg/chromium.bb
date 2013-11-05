@@ -446,18 +446,21 @@ TEST_F(ResourceMetadataStorageTest, RecoverCacheEntriesFromTrashedResourceMap) {
   cache_entry.set_md5("md5_foo");
   EXPECT_TRUE(storage_->PutCacheEntry("id_foo", cache_entry));
   cache_entry.set_md5("md5_bar");
+  cache_entry.set_is_dirty(true);
   EXPECT_TRUE(storage_->PutCacheEntry("id_bar", cache_entry));
 
   // Put entry with id_foo.
   ResourceEntry entry;
   entry.set_local_id("id_foo");
   entry.set_base_name("foo");
+  entry.set_title("foo");
   EXPECT_TRUE(storage_->PutEntry(entry));
 
   // Put entry with id_bar as a id_foo's child.
   entry.set_local_id("id_bar");
   entry.set_parent_local_id("id_foo");
   entry.set_base_name("bar");
+  entry.set_title("bar");
   EXPECT_TRUE(storage_->PutEntry(entry));
 
   // Remove parent-child relationship to make the DB invalid.
@@ -470,11 +473,15 @@ TEST_F(ResourceMetadataStorageTest, RecoverCacheEntriesFromTrashedResourceMap) {
   ASSERT_TRUE(storage_->Initialize());
 
   // Recover cache entries from the trashed DB.
-  std::map<std::string, FileCacheEntry> recovered_cache_entries;
-  storage_->RecoverCacheEntriesFromTrashedResourceMap(&recovered_cache_entries);
-  EXPECT_EQ(2U, recovered_cache_entries.size());
-  EXPECT_EQ("md5_foo", recovered_cache_entries["id_foo"].md5());
-  EXPECT_EQ("md5_bar", recovered_cache_entries["id_bar"].md5());
+  ResourceMetadataStorage::RecoveredCacheInfoMap recovered_cache_info;
+  storage_->RecoverCacheInfoFromTrashedResourceMap(&recovered_cache_info);
+  EXPECT_EQ(2U, recovered_cache_info.size());
+  EXPECT_FALSE(recovered_cache_info["id_foo"].is_dirty);
+  EXPECT_EQ("md5_foo", recovered_cache_info["id_foo"].md5);
+  EXPECT_EQ("foo", recovered_cache_info["id_foo"].title);
+  EXPECT_TRUE(recovered_cache_info["id_bar"].is_dirty);
+  EXPECT_EQ("md5_bar", recovered_cache_info["id_bar"].md5);
+  EXPECT_EQ("bar", recovered_cache_info["id_bar"].title);
 }
 
 TEST_F(ResourceMetadataStorageTest, CheckValidity) {

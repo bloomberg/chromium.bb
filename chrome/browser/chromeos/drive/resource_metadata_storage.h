@@ -105,6 +105,17 @@ class ResourceMetadataStorage {
     DISALLOW_COPY_AND_ASSIGN(CacheEntryIterator);
   };
 
+  // Cache information recovered from trashed DB.
+  struct RecoveredCacheInfo {
+    RecoveredCacheInfo();
+    ~RecoveredCacheInfo();
+
+    bool is_dirty;
+    std::string md5;
+    std::string title;
+  };
+  typedef std::map<std::string, RecoveredCacheInfo> RecoveredCacheInfoMap;
+
   // Returns true if the DB was successfully upgraded to the newest version.
   static bool UpgradeOldDB(const base::FilePath& directory_path,
                            const ResourceIdCanonicalizer& id_canonicalizer);
@@ -124,9 +135,8 @@ class ResourceMetadataStorage {
   // Initializes this object.
   bool Initialize();
 
-  // Collects FileCacheEntry from trashed resource map DB.
-  void RecoverCacheEntriesFromTrashedResourceMap(
-      std::map<std::string, FileCacheEntry>* out_entries);
+  // Collects cache info from trashed resource map DB.
+  void RecoverCacheInfoFromTrashedResourceMap(RecoveredCacheInfoMap* out_info);
 
   // Sets the largest changestamp.
   bool SetLargestChangestamp(int64 largest_changestamp);

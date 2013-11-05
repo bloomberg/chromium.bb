@@ -768,23 +768,37 @@ TEST_F(FileCacheTest, RecoverFilesFromCacheDirectory) {
   ASSERT_TRUE(base::CopyFile(src_path, file_directory.AppendASCII("id_bar")));
   ASSERT_TRUE(base::CopyFile(src_path, file_directory.AppendASCII("id_baz")));
 
-  // Insert a dirty entry with "id_baz" to |recovered_cache_entries|.
+  // Insert a dirty entry with "id_baz" to |recovered_cache_info|.
   // This should not prevent the file from being recovered.
-  std::map<std::string, FileCacheEntry> recovered_cache_entries;
-  recovered_cache_entries["id_baz"].set_is_dirty(true);
+  ResourceMetadataStorage::RecoveredCacheInfoMap recovered_cache_info;
+  recovered_cache_info["id_baz"].is_dirty = true;
+  recovered_cache_info["id_baz"].title = "baz.png";
 
   // Recover files.
   const base::FilePath dest_directory = temp_dir_.path().AppendASCII("dest");
   EXPECT_TRUE(cache_->RecoverFilesFromCacheDirectory(dest_directory,
-                                                     recovered_cache_entries));
+                                                     recovered_cache_info));
 
   // Only two files should be recovered.
   EXPECT_TRUE(base::PathExists(dest_directory));
-  EXPECT_TRUE(base::ContentsEqual(src_path,
-                                  dest_directory.Append("image00000001.png")));
-  EXPECT_TRUE(base::ContentsEqual(src_path,
-                                  dest_directory.Append("image00000002.png")));
-  EXPECT_FALSE(base::PathExists(dest_directory.Append("image00000003.png")));
+  // base::FileEnumerator does not guarantee the order.
+  if (base::PathExists(dest_directory.AppendASCII("baz00000001.png"))) {
+    EXPECT_TRUE(base::ContentsEqual(
+        src_path,
+        dest_directory.AppendASCII("baz00000001.png")));
+    EXPECT_TRUE(base::ContentsEqual(
+        src_path,
+        dest_directory.AppendASCII("image00000002.png")));
+  } else {
+    EXPECT_TRUE(base::ContentsEqual(
+        src_path,
+        dest_directory.AppendASCII("image00000001.png")));
+    EXPECT_TRUE(base::ContentsEqual(
+        src_path,
+        dest_directory.AppendASCII("baz00000002.png")));
+  }
+  EXPECT_FALSE(base::PathExists(
+      dest_directory.AppendASCII("image00000003.png")));
 }
 
 TEST_F(FileCacheTest, Iterator) {

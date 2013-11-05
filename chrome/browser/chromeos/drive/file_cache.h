@@ -157,11 +157,12 @@ class FileCache {
 
   // Moves files in the cache directory which are not manged by FileCache to
   // |dest_directory|.
-  // |recovered_cache_entries| should contain cache entries recovered from the
-  // trashed metadata DB. It is used to ignore non-dirty files.
+  // |recovered_cache_info| should contain cache info recovered from the trashed
+  // metadata DB. It is used to ignore non-dirty files.
   bool RecoverFilesFromCacheDirectory(
       const base::FilePath& dest_directory,
-      const std::map<std::string, FileCacheEntry>& recovered_cache_entries);
+      const ResourceMetadataStorage::RecoveredCacheInfoMap&
+          recovered_cache_info);
 
  private:
   friend class FileCacheTest;
