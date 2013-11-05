@@ -571,6 +571,39 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoDragging) {
   EXPECT_EQ(kTooltipA, incognito_bar.GetTooltip(1));
 }
 
+// Tests that events are dispatched to the correct profile for split mode
+// extensions.
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoSplit) {
+  ResultCatcher catcher;
+  const Extension* extension = LoadExtensionWithFlags(
+      test_data_dir_.AppendASCII("browser_action/split_mode"),
+      kFlagEnableIncognito);
+  ASSERT_TRUE(extension) << message_;
+
+  // Open an incognito window.
+  Profile* incognito_profile = browser()->profile()->GetOffTheRecordProfile();
+  Browser* incognito_browser =
+      new Browser(Browser::CreateParams(incognito_profile,
+                                        browser()->host_desktop_type()));
+  // Navigate just to have a tab in this window, otherwise wonky things happen.
+  ui_test_utils::OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
+  ASSERT_EQ(1,
+            BrowserActionTestUtil(incognito_browser).NumberOfBrowserActions());
+
+  // A click in the regular profile should open a tab in the regular profile.
+  ExtensionService* service = extensions::ExtensionSystem::Get(
+      browser()->profile())->extension_service();
+  service->toolbar_model()->ExecuteBrowserAction(
+      extension, browser(), NULL, true);
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+  // A click in the incognito profile should open a tab in the
+  // incognito profile.
+  service->toolbar_model()->ExecuteBrowserAction(
+      extension, incognito_browser, NULL, true);
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
 // Disabled because of failures (crashes) on ASAN bot.
 // See http://crbug.com/98861.
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_CloseBackgroundPage) {
