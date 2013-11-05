@@ -11,7 +11,7 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 
 #include <algorithm>
-#include <set>
+#include <map>
 
 #include "base/atomicops.h"
 #include "base/bind.h"
@@ -39,32 +39,16 @@
 #include "webkit/common/gpu/gl_bindings_skia_cmd_buffer.h"
 
 namespace content {
-static base::LazyInstance<base::Lock>::Leaky
-    g_all_shared_contexts_lock = LAZY_INSTANCE_INITIALIZER;
-static base::LazyInstance<std::set<WebGraphicsContext3DCommandBufferImpl*> >
-    g_all_shared_contexts = LAZY_INSTANCE_INITIALIZER;
 
 namespace {
 
-void ClearSharedContextsIfInShareSet(
-    WebGraphicsContext3DCommandBufferImpl* context) {
-  // If the given context isn't in the share set, that means that it
-  // or another context it was previously sharing with already
-  // provoked a lost context. Other contexts might have since been
-  // successfully created and added to the share set, so do not clear
-  // out the share set unless we know that all the contexts in there
-  // are supposed to be lost simultaneously.
-  base::AutoLock lock(g_all_shared_contexts_lock.Get());
-  std::set<WebGraphicsContext3DCommandBufferImpl*>* share_set =
-      g_all_shared_contexts.Pointer();
-  for (std::set<WebGraphicsContext3DCommandBufferImpl*>::iterator iter =
-           share_set->begin(); iter != share_set->end(); ++iter) {
-    if (context == *iter) {
-      share_set->clear();
-      return;
-    }
-  }
-}
+static base::LazyInstance<base::Lock>::Leaky
+    g_all_shared_contexts_lock = LAZY_INSTANCE_INITIALIZER;
+
+typedef std::multimap<GpuChannelHost*, WebGraphicsContext3DCommandBufferImpl*>
+    ContextMap;
+static base::LazyInstance<ContextMap> g_all_shared_contexts =
+    LAZY_INSTANCE_INITIALIZER;
 
 size_t ClampUint64ToSizeT(uint64 value) {
   value = std::min(value,
@@ -268,9 +252,16 @@ WebGraphicsContext3DCommandBufferImpl::
     real_gl_->SetErrorMessageCallback(NULL);
   }
 
-  {
+  if (host_.get()) {
     base::AutoLock lock(g_all_shared_contexts_lock.Get());
-    g_all_shared_contexts.Pointer()->erase(this);
+    ContextMap& all_contexts = g_all_shared_contexts.Get();
+    ContextMap::iterator it = std::find(
+        all_contexts.begin(),
+        all_contexts.end(),
+        std::pair<GpuChannelHost* const,
+                  WebGraphicsContext3DCommandBufferImpl*>(host_.get(), this));
+    if (it != all_contexts.end())
+      all_contexts.erase(it);
   }
   Destroy();
 }
@@ -296,7 +287,7 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
     gl_->EnableFeatureCHROMIUM("webgl_enable_glsl_webgl_validation");
 
   command_buffer_->SetChannelErrorCallback(
-      base::Bind(&WebGraphicsContext3DCommandBufferImpl::OnContextLost,
+      base::Bind(&WebGraphicsContext3DCommandBufferImpl::OnGpuChannelLost,
                  weak_ptr_factory_.GetWeakPtr()));
 
   command_buffer_->SetOnConsoleMessageCallback(
@@ -346,11 +337,10 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
   base::AutoLock lock(g_all_shared_contexts_lock.Get());
   CommandBufferProxyImpl* share_group = NULL;
   if (attributes_.shareResources) {
-    WebGraphicsContext3DCommandBufferImpl* share_group_context =
-        g_all_shared_contexts.Pointer()->empty() ?
-            NULL : *g_all_shared_contexts.Pointer()->begin();
-    share_group = share_group_context ?
-        share_group_context->command_buffer_.get() : NULL;
+    ContextMap& all_contexts = g_all_shared_contexts.Get();
+    ContextMap::const_iterator it = all_contexts.find(host_.get());
+    if (it != all_contexts.end())
+      share_group = it->second->command_buffer_.get();
   }
 
   std::vector<int32> attribs;
@@ -412,15 +402,17 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
   // process and the GPU process.
   transfer_buffer_ .reset(new gpu::TransferBuffer(gles2_helper_.get()));
 
+  DCHECK(host_.get());
   scoped_ptr<base::AutoLock> lock;
   scoped_refptr<gpu::gles2::ShareGroup> share_group;
   if (attributes_.shareResources) {
     // Make sure two clients don't try to create a new ShareGroup
     // simultaneously.
     lock.reset(new base::AutoLock(g_all_shared_contexts_lock.Get()));
-    if (!g_all_shared_contexts.Pointer()->empty()) {
-      share_group = (*g_all_shared_contexts.Pointer()->begin())
-          ->GetImplementation()->share_group();
+    ContextMap& all_contexts = g_all_shared_contexts.Get();
+    ContextMap::const_iterator it = all_contexts.find(host_.get());
+    if (it != all_contexts.end()) {
+      share_group = it->second->GetImplementation()->share_group();
       DCHECK(share_group);
     }
   }
@@ -436,7 +428,7 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
 
   if (attributes_.shareResources) {
     // Don't add ourselves to the list before others can get to our ShareGroup.
-    g_all_shared_contexts.Pointer()->insert(this);
+    g_all_shared_contexts.Get().insert(std::make_pair(host_.get(), this));
     lock.reset();
   }
 
@@ -1450,14 +1442,19 @@ WGC3Denum convertReason(gpu::error::ContextLostReason reason) {
 
 }  // anonymous namespace
 
-void WebGraphicsContext3DCommandBufferImpl::OnContextLost() {
+void WebGraphicsContext3DCommandBufferImpl::OnGpuChannelLost() {
   context_lost_reason_ = convertReason(
       command_buffer_->GetLastState().context_lost_reason);
   if (context_lost_callback_) {
     context_lost_callback_->onContextLost();
   }
-  if (attributes_.shareResources)
-    ClearSharedContextsIfInShareSet(this);
+
+  DCHECK(host_.get());
+  {
+    base::AutoLock lock(g_all_shared_contexts_lock.Get());
+    g_all_shared_contexts.Get().erase(host_.get());
+  }
+
   if (ShouldUseSwapClient())
     swap_client_->OnViewContextSwapBuffersAborted();
 }

@@ -703,7 +703,7 @@ class WebGraphicsContext3DCommandBufferImpl
 
   // SwapBuffers callback.
   void OnSwapBuffersComplete();
-  virtual void OnContextLost();
+  virtual void OnGpuChannelLost();
   virtual void OnErrorMessage(const std::string& message, int id);
 
   // Check if we should call into the swap client. We can only do that on the
