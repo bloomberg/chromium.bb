@@ -46,15 +46,6 @@ static int CallFstat(int fd, stat_wrapper_t *sb) {
 // NaCl doesn't provide the following system calls, so either simulate them or
 // wrap them in order to minimize the number of #ifdef's in this file.
 #if !defined(OS_NACL)
-static int DoPread(PlatformFile file, char* data, int size, int64 offset) {
-  return HANDLE_EINTR(pread(file, data, size, offset));
-}
-
-static int DoPwrite(PlatformFile file, const char* data, int size,
-                      int64 offset) {
-  return HANDLE_EINTR(pwrite(file, data, size, offset));
-}
-
 static bool IsOpenAppend(PlatformFile file) {
   return (fcntl(file, F_GETFL) & O_APPEND) != 0;
 }
@@ -95,17 +86,6 @@ static PlatformFileError CallFctnlFlock(PlatformFile file, bool do_lock) {
   return PLATFORM_FILE_OK;
 }
 #else  // defined(OS_NACL)
-// TODO(bbudge) Remove DoPread, DoPwrite when NaCl implements pread, pwrite.
-static int DoPread(PlatformFile file, char* data, int size, int64 offset) {
-  lseek(file, static_cast<off_t>(offset), SEEK_SET);
-  return HANDLE_EINTR(read(file, data, size));
-}
-
-static int DoPwrite(PlatformFile file, const char* data, int size,
-                      int64 offset) {
-  lseek(file, static_cast<off_t>(offset), SEEK_SET);
-  return HANDLE_EINTR(write(file, data, size));
-}
 
 static bool IsOpenAppend(PlatformFile file) {
   // NaCl doesn't implement fcntl. Since NaCl's write conforms to the POSIX
@@ -262,8 +242,8 @@ int ReadPlatformFile(PlatformFile file, int64 offset, char* data, int size) {
   int bytes_read = 0;
   int rv;
   do {
-    rv = DoPread(file, data + bytes_read,
-                 size - bytes_read, offset + bytes_read);
+    rv = HANDLE_EINTR(pread(file, data + bytes_read,
+                            size - bytes_read, offset + bytes_read));
     if (rv <= 0)
       break;
 
@@ -297,7 +277,7 @@ int ReadPlatformFileNoBestEffort(PlatformFile file, int64 offset,
   if (file < 0)
     return -1;
 
-  return DoPread(file, data, size, offset);
+  return HANDLE_EINTR(pread(file, data, size, offset));
 }
 
 int ReadPlatformFileCurPosNoBestEffort(PlatformFile file,
@@ -322,8 +302,8 @@ int WritePlatformFile(PlatformFile file, int64 offset,
   int bytes_written = 0;
   int rv;
   do {
-    rv = DoPwrite(file, data + bytes_written,
-                  size - bytes_written, offset + bytes_written);
+    rv = HANDLE_EINTR(pwrite(file, data + bytes_written,
+                             size - bytes_written, offset + bytes_written));
     if (rv <= 0)
       break;
 
