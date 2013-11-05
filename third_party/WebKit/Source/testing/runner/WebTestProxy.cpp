@@ -953,7 +953,7 @@ void WebTestProxyBase::didChangeContents()
         m_delegate->printMessage("EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification\n");
 }
 
-bool WebTestProxyBase::createView(WebFrame*, const WebURLRequest& request, const WebWindowFeatures&, const WebString&, WebNavigationPolicy)
+bool WebTestProxyBase::createView(WebFrame*, const WebURLRequest& request, const WebWindowFeatures&, const WebString&, WebNavigationPolicy, bool)
 {
     if (!m_testInterfaces->testRunner()->canOpenWindows())
         return false;

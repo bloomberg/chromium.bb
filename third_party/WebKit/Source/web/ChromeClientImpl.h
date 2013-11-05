@@ -81,7 +81,7 @@ public:
     virtual void takeFocus(WebCore::FocusDirection);
     virtual void focusedNodeChanged(WebCore::Node*);
     virtual WebCore::Page* createWindow(
-        WebCore::Frame*, const WebCore::FrameLoadRequest&, const WebCore::WindowFeatures&, WebCore::NavigationPolicy);
+        WebCore::Frame*, const WebCore::FrameLoadRequest&, const WebCore::WindowFeatures&, WebCore::NavigationPolicy, WebCore::ShouldSendReferrer);
     virtual void show(WebCore::NavigationPolicy);
     virtual bool canRunModal();
     virtual void runModal();

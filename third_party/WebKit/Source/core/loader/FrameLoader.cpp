@@ -716,7 +716,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
     NavigationAction action(request.resourceRequest(), newLoadType, request.formState(), request.triggeringEvent());
     if ((!targetFrame && !request.frameName().isEmpty()) || action.shouldOpenInNewWindow()) {
         TemporaryChange<bool> changeOpener(m_suppressOpenerInNewFrame, request.shouldSendReferrer() == NeverSendReferrer);
-        checkNewWindowPolicyAndContinue(request.formState(), request.frameName(), action);
+        checkNewWindowPolicyAndContinue(request.formState(), request.frameName(), action, request.shouldSendReferrer());
         return;
     }
 
@@ -1366,7 +1366,7 @@ void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const
     m_provisionalDocumentLoader->startLoadingMainResource();
 }
 
-void FrameLoader::checkNewWindowPolicyAndContinue(PassRefPtr<FormState> formState, const String& frameName, const NavigationAction& action)
+void FrameLoader::checkNewWindowPolicyAndContinue(PassRefPtr<FormState> formState, const String& frameName, const NavigationAction& action, ShouldSendReferrer shouldSendReferrer)
 {
     if (m_frame->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal)
         return;
@@ -1389,7 +1389,7 @@ void FrameLoader::checkNewWindowPolicyAndContinue(PassRefPtr<FormState> formStat
     if (!m_frame->settings() || m_frame->settings()->supportsMultipleWindows()) {
         struct WindowFeatures features;
         Page* newPage = m_frame->page()->chrome().client().createWindow(m_frame, FrameLoadRequest(m_frame->document()->securityOrigin(), action.resourceRequest()),
-            features, navigationPolicy);
+            features, navigationPolicy, shouldSendReferrer);
 
         // createWindow can return null (e.g., popup blocker denies the window).
         if (!newPage)
@@ -1402,7 +1402,7 @@ void FrameLoader::checkNewWindowPolicyAndContinue(PassRefPtr<FormState> formStat
 
     mainFrame->page()->setOpenedByDOM();
     mainFrame->page()->chrome().show(navigationPolicy);
-    if (!m_suppressOpenerInNewFrame) {
+    if (shouldSendReferrer == MaybeSendReferrer) {
         mainFrame->loader().setOpener(frame.get());
         mainFrame->document()->setReferrerPolicy(frame->document()->referrerPolicy());
     }

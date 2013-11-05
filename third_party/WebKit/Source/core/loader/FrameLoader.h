@@ -229,7 +229,7 @@ private:
     SubstituteData defaultSubstituteDataForURL(const KURL&);
 
     void checkNavigationPolicyAndContinueFragmentScroll(const NavigationAction&, bool isNewNavigation, ClientRedirectPolicy);
-    void checkNewWindowPolicyAndContinue(PassRefPtr<FormState>, const String& frameName, const NavigationAction&);
+    void checkNewWindowPolicyAndContinue(PassRefPtr<FormState>, const String& frameName, const NavigationAction&, ShouldSendReferrer);
 
     bool shouldPerformFragmentNavigation(bool isFormSubmission, const String& httpMethod, FrameLoadType, const KURL&);
     void scrollToFragmentWithParentBoundary(const KURL&);

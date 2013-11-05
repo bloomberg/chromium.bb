@@ -106,7 +106,8 @@ public:
                                 const WebURLRequest& request,
                                 const WebWindowFeatures& features,
                                 const WebString& name,
-                                WebNavigationPolicy policy) {
+                                WebNavigationPolicy policy,
+                                bool suppressOpener) {
         return 0;
     }
 

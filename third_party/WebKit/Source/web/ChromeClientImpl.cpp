@@ -229,8 +229,8 @@ void ChromeClientImpl::focusedNodeChanged(Node* node)
     m_webView->client()->setKeyboardFocusURL(focusURL);
 }
 
-Page* ChromeClientImpl::createWindow(
-    Frame* frame, const FrameLoadRequest& r, const WindowFeatures& features, NavigationPolicy navigationPolicy)
+Page* ChromeClientImpl::createWindow(Frame* frame, const FrameLoadRequest& r, const WindowFeatures& features,
+    NavigationPolicy navigationPolicy, ShouldSendReferrer shouldSendReferrer)
 {
     if (!m_webView->client())
         return 0;
@@ -242,7 +242,7 @@ Page* ChromeClientImpl::createWindow(
     DocumentFullscreen::webkitCancelFullScreen(frame->document());
 
     WebViewImpl* newView = toWebViewImpl(
-        m_webView->client()->createView(WebFrameImpl::fromFrame(frame), WrappedResourceRequest(r.resourceRequest()), features, r.frameName(), policy));
+        m_webView->client()->createView(WebFrameImpl::fromFrame(frame), WrappedResourceRequest(r.resourceRequest()), features, r.frameName(), policy, shouldSendReferrer == NeverSendReferrer));
     if (!newView)
         return 0;
     return newView->page();

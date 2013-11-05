@@ -166,7 +166,7 @@ protected:
     void didChangeSelection(bool isEmptySelection);
     void didChangeContents();
     void didEndEditing();
-    bool createView(WebKit::WebFrame* creator, const WebKit::WebURLRequest&, const WebKit::WebWindowFeatures&, const WebKit::WebString& frameName, WebKit::WebNavigationPolicy);
+    bool createView(WebKit::WebFrame* creator, const WebKit::WebURLRequest&, const WebKit::WebWindowFeatures&, const WebKit::WebString& frameName, WebKit::WebNavigationPolicy, bool suppressOpener);
     WebKit::WebPlugin* createPlugin(WebKit::WebFrame*, const WebKit::WebPluginParams&);
     void setStatusText(const WebKit::WebString&);
     void didStopLoading();
@@ -329,11 +329,11 @@ public:
         WebTestProxyBase::didChangeContents();
         Base::didChangeContents();
     }
-    virtual WebKit::WebView* createView(WebKit::WebFrame* creator, const WebKit::WebURLRequest& request, const WebKit::WebWindowFeatures& features, const WebKit::WebString& frameName, WebKit::WebNavigationPolicy policy)
+    virtual WebKit::WebView* createView(WebKit::WebFrame* creator, const WebKit::WebURLRequest& request, const WebKit::WebWindowFeatures& features, const WebKit::WebString& frameName, WebKit::WebNavigationPolicy policy, bool suppressOpener)
     {
-        if (!WebTestProxyBase::createView(creator, request, features, frameName, policy))
+        if (!WebTestProxyBase::createView(creator, request, features, frameName, policy, suppressOpener))
             return 0;
-        return Base::createView(creator, request, features, frameName, policy);
+        return Base::createView(creator, request, features, frameName, policy, suppressOpener);
     }
     virtual void setStatusText(const WebKit::WebString& text)
     {

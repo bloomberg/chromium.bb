@@ -104,7 +104,7 @@ public:
     // created Page has its show method called.
     // The FrameLoadRequest parameter is only for ChromeClient to check if the
     // request could be fulfilled. The ChromeClient should not load the request.
-    virtual Page* createWindow(Frame*, const FrameLoadRequest&, const WindowFeatures&, NavigationPolicy = NavigationPolicyIgnore) = 0;
+    virtual Page* createWindow(Frame*, const FrameLoadRequest&, const WindowFeatures&, NavigationPolicy = NavigationPolicyIgnore, ShouldSendReferrer = MaybeSendReferrer) = 0;
     virtual void show(NavigationPolicy) = 0;
 
     virtual bool canRunModal() = 0;
