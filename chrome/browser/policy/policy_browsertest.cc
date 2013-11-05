@@ -2096,7 +2096,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisableAudioOutput) {
   audio_handler->RemoveAudioObserver(test_observer.get());
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_SessionLengthLimit) {
+// Disabled, see http://crbug.com/315308.
+IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_PRE_SessionLengthLimit) {
   // Indicate that the session started 2 hours ago and no user activity has
   // occurred yet.
   g_browser_process->local_state()->SetInt64(
@@ -2105,7 +2106,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_SessionLengthLimit) {
           .ToInternalValue());
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, SessionLengthLimit) {
+// Disabled, see http://crbug.com/315308.
+IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_SessionLengthLimit) {
   content::MockNotificationObserver observer;
   content::NotificationRegistrar registrar;
   registrar.Add(&observer,
@@ -2137,7 +2139,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SessionLengthLimit) {
   Mock::VerifyAndClearExpectations(&observer);
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_WaitForInitialUserActivityUsatisfied) {
+// Disabled, see http://crbug.com/315308.
+IN_PROC_BROWSER_TEST_F(PolicyTest,
+                       DISABLED_PRE_WaitForInitialUserActivityUsatisfied) {
   // Indicate that the session started 2 hours ago and no user activity has
   // occurred yet.
   g_browser_process->local_state()->SetInt64(
@@ -2146,7 +2150,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_WaitForInitialUserActivityUsatisfied) {
           .ToInternalValue());
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, WaitForInitialUserActivityUsatisfied) {
+// Disabled, see http://crbug.com/315308.
+IN_PROC_BROWSER_TEST_F(PolicyTest,
+                       DISABLED_WaitForInitialUserActivityUsatisfied) {
   content::MockNotificationObserver observer;
   content::NotificationRegistrar registrar;
   registrar.Add(&observer,
@@ -2175,7 +2181,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WaitForInitialUserActivityUsatisfied) {
   Mock::VerifyAndClearExpectations(&observer);
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_WaitForInitialUserActivitySatisfied) {
+// Disabled, see http://crbug.com/315308.
+IN_PROC_BROWSER_TEST_F(PolicyTest,
+                       DISABLED_PRE_WaitForInitialUserActivitySatisfied) {
   // Indicate that initial user activity in this session occurred 2 hours ago.
   g_browser_process->local_state()->SetInt64(
       prefs::kSessionStartTime,
@@ -2186,7 +2194,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_WaitForInitialUserActivitySatisfied) {
       true);
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, WaitForInitialUserActivitySatisfied) {
+// Disabled, see http://crbug.com/315308.
+IN_PROC_BROWSER_TEST_F(PolicyTest,
+                       DISABLED_WaitForInitialUserActivitySatisfied) {
   content::MockNotificationObserver observer;
   content::NotificationRegistrar registrar;
   registrar.Add(&observer,
