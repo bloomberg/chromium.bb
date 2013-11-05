@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_frame.h"
@@ -381,6 +382,12 @@ void AVStreamToVideoDecoderConfig(
 
   gfx::Size natural_size = GetNaturalSize(
       visible_rect.size(), aspect_ratio.num, aspect_ratio.den);
+
+  if (record_stats) {
+    UMA_HISTOGRAM_ENUMERATION("Media.VideoColorRange",
+                              stream->codec->color_range,
+                              AVCOL_RANGE_NB);
+  }
 
   VideoFrame::Format format = PixelFormatToVideoFormat(stream->codec->pix_fmt);
   if (codec == kCodecVP9) {

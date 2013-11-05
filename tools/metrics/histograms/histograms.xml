@@ -6354,6 +6354,12 @@ other types of suffix sets.
   <summary>Coded width of HTML5 video.</summary>
 </histogram>
 
+<histogram name="Media.VideoColorRange" enum="FFmpegColorRanges">
+  <summary>
+    Pixel format color range of HTML5 video. Emitted on video load.
+  </summary>
+</histogram>
+
 <histogram name="Media.VideoVisibleAspectRatio">
   <summary>Visible aspect ratio of HTML5 video.</summary>
 </histogram>
@@ -23160,6 +23166,12 @@ other types of suffix sets.
   <int value="1936029283" label="EVRC"/>
   <int value="1936944502" label="SMV"/>
   <int value="1950507339" label="TAK"/>
+</enum>
+
+<enum name="FFmpegColorRanges" type="int">
+  <int value="0" label="UNSPECIFIED"/>
+  <int value="1" label="MPEG"/>
+  <int value="2" label="JPEG"/>
 </enum>
 
 <enum name="FileDialogType" type="int">
