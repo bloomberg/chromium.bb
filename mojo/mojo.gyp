@@ -176,6 +176,7 @@
       'type': 'executable',
       'dependencies': [
         '../base/base.gyp:base',
+        '../ui/gl/gl.gyp:gl',
         '../url/url.gyp:url_lib',
         'mojo_shell_lib',
         'mojo_system',

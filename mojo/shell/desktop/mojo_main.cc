@@ -7,10 +7,13 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/shell/run.h"
+#include "ui/gl/gl_surface.h"
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   CommandLine::Init(argc, argv);
+
+  gfx::GLSurface::InitializeOneOff();
 
   base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
   mojo::shell::Context context;
