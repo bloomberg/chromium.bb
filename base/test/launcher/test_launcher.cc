@@ -552,14 +552,42 @@ bool TestLauncher::Init() {
     return false;
   }
 
-  if (!TakeInt32FromEnvironment(kTestTotalShards, &total_shards_))
-    return false;
-  if (!TakeInt32FromEnvironment(kTestShardIndex, &shard_index_))
-    return false;
+  // Initialize sharding. Command line takes precedence over legacy environment
+  // variables.
+  if (command_line->HasSwitch(switches::kTestLauncherTotalShards) &&
+      command_line->HasSwitch(switches::kTestLauncherShardIndex)) {
+    if (!StringToInt(
+            command_line->GetSwitchValueASCII(
+                switches::kTestLauncherTotalShards),
+            &total_shards_)) {
+      LOG(ERROR) << "Invalid value for " << switches::kTestLauncherTotalShards;
+      return false;
+    }
+    if (!StringToInt(
+            command_line->GetSwitchValueASCII(
+                switches::kTestLauncherShardIndex),
+            &shard_index_)) {
+      LOG(ERROR) << "Invalid value for " << switches::kTestLauncherShardIndex;
+      return false;
+    }
+    fprintf(stdout,
+            "Using sharding settings from command line. This is shard %d/%d\n",
+            shard_index_, total_shards_);
+    fflush(stdout);
+  } else {
+    if (!TakeInt32FromEnvironment(kTestTotalShards, &total_shards_))
+      return false;
+    if (!TakeInt32FromEnvironment(kTestShardIndex, &shard_index_))
+      return false;
+    fprintf(stdout,
+            "Using sharding settings from environment. This is shard %d/%d\n",
+            shard_index_, total_shards_);
+    fflush(stdout);
+  }
   if (shard_index_ < 0 ||
       total_shards_ < 0 ||
       shard_index_ >= total_shards_) {
-    LOG(ERROR) << "Invalid environment variables: we require 0 <= "
+    LOG(ERROR) << "Invalid sharding settings: we require 0 <= "
                << kTestShardIndex << " < " << kTestTotalShards
                << ", but you have " << kTestShardIndex << "=" << shard_index_
                << ", " << kTestTotalShards << "=" << total_shards_ << ".\n";

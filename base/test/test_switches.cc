@@ -26,6 +26,15 @@ const char switches::kTestLauncherSummaryOutput[] =
 const char switches::kTestLauncherPrintTestStdio[] =
     "test-launcher-print-test-stdio";
 
+// Index of the test shard to run, starting from 0 (first shard) to total shards
+// minus one (last shard).
+const char switches::kTestLauncherShardIndex[] =
+    "test-launcher-shard-index";
+
+// Total number of shards. Must be the same for all shards.
+const char switches::kTestLauncherTotalShards[] =
+    "test-launcher-total-shards";
+
 // Time (in milliseconds) that the tests should wait before timing out.
 const char switches::kTestLauncherTimeout[] = "test-launcher-timeout";
 // TODO(phajdan.jr): Clean up the switch names.
