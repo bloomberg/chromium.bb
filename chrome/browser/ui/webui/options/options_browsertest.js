@@ -691,8 +691,15 @@ TEST_F('OptionsWebUIExtendedTest', 'OverlayBackToUnrelated', function() {
   });
 });
 
+// Flaky on win. See http://crbug.com/315250
+GEN('#if defined(OS_WIN)');
+GEN('#define MAYBE_OverlayShowDoesntShift DISABLED_OverlayShowDoesntShift');
+GEN('#else');
+GEN('#define MAYBE_OverlayShowDoesntShift OverlayShowDoesntShift');
+GEN('#endif  // defined(OS_WIN)');
+
 // An overlay's position should remain the same as it shows.
-TEST_F('OptionsWebUIExtendedTest', 'OverlayShowDoesntShift', function() {
+TEST_F('OptionsWebUIExtendedTest', 'MAYBE_OverlayShowDoesntShift', function() {
   var searchEngineOverlay = $('search-engine-manager-page');
   var frozenPages = document.getElementsByClassName('frozen');  // Gets updated.
   expectEquals(0, frozenPages.length);
