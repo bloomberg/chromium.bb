@@ -859,6 +859,10 @@ size_t WebKitPlatformSupportImpl::actualMemoryUsageMB() {
   return getMemoryUsageMB(true);
 }
 
+size_t WebKitPlatformSupportImpl::physicalMemoryMB() {
+  return static_cast<size_t>(base::SysInfo::AmountOfPhysicalMemoryMB());
+}
+
 void WebKitPlatformSupportImpl::startHeapProfiling(
   const WebKit::WebString& prefix) {
   // FIXME(morrita): Make this built on windows.

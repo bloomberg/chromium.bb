@@ -49,6 +49,7 @@ class WEBKIT_CHILD_EXPORT WebKitPlatformSupportImpl :
       const WebKit::WebURL& url);
   virtual size_t memoryUsageMB();
   virtual size_t actualMemoryUsageMB();
+  virtual size_t physicalMemoryMB();
 
   virtual void startHeapProfiling(const WebKit::WebString& prefix);
   virtual void stopHeapProfiling() OVERRIDE;
