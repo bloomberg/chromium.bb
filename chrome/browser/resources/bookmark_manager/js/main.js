@@ -144,6 +144,7 @@ function loadLocalizedStrings(data) {
  */
 function updateHash() {
   window.location.hash = tree.selectedItem.bookmarkId;
+  updateAllCommands();
 }
 
 /**
@@ -359,12 +360,21 @@ function getAllUrls(nodes) {
  */
 function getNodesForOpen(target) {
   if (target == tree) {
-    var folderItem = tree.selectedItem;
-    return folderItem == searchTreeItem ?
-        list.dataModel.slice() : tree.selectedFolders;
+    if (tree.selectedItem != searchTreeItem)
+      return tree.selectedFolders;
+    // Fall through to use all nodes in the list.
+  } else {
+    var items = list.selectedItems;
+    if (items.length)
+      return items;
   }
-  var items = list.selectedItems;
-  return items.length ? items : list.dataModel.slice();
+
+  // The list starts off with a null dataModel. We can get here during startup.
+  if (!list.dataModel)
+    return [];
+
+  // Return an array based on the dataModel.
+  return list.dataModel.slice();
 }
 
 /**
@@ -447,7 +457,8 @@ function handleCanExecuteForDocument(e) {
       e.canExecute = true;
       break;
     case 'sort-command':
-      e.canExecute = !list.isSearch() && list.dataModel.length > 1;
+      e.canExecute = !list.isSearch() &&
+          list.dataModel && list.dataModel.length > 1;
       break;
     case 'undo-command':
       // The global undo command has no visible UI, so always enable it, and
@@ -635,25 +646,12 @@ function handleCanExecuteForTree(e) {
 }
 
 /**
- * Update the canExecute state of the commands when the selection changes.
- * @param {Event} e The change event object.
+ * Update the canExecute state of all the commands.
  */
-function updateCommandsBasedOnSelection(e) {
-  if (e.target == document.activeElement) {
-    // Paste only needs to be updated when the tree selection changes.
-    var commandNames = ['copy', 'cut', 'delete', 'rename-folder', 'edit',
-      'add-new-bookmark', 'new-folder', 'open-in-new-tab',
-      'open-in-background-tab', 'open-in-new-window', 'open-incognito-window',
-      'open-in-same-window', 'show-in-folder'];
-
-    if (e.target == tree) {
-      commandNames.push('paste-from-context-menu', 'paste-from-organize-menu',
-                        'sort');
-    }
-
-    commandNames.forEach(function(baseId) {
-      $(baseId + '-command').canExecuteChange();
-    });
+function updateAllCommands() {
+  var commands = document.querySelectorAll('command');
+  for (var i = 0; i < commands.length; i++) {
+    commands[i].canExecuteChange();
   }
 }
 
@@ -673,7 +671,7 @@ function updateEditingCommands() {
 }
 
 function handleChangeForTree(e) {
-  updateCommandsBasedOnSelection(e);
+  updateAllCommands();
   navigateTo(tree.selectedItem.bookmarkId, updateHash);
 }
 
@@ -1233,7 +1231,7 @@ function continueInitializeBookmarkManager(localizedStrings) {
 
   list.addEventListener('canceledit', handleCancelEdit);
   list.addEventListener('canExecute', handleCanExecuteForList);
-  list.addEventListener('change', updateCommandsBasedOnSelection);
+  list.addEventListener('change', updateAllCommands);
   list.addEventListener('contextmenu', updateEditingCommands);
   list.addEventListener('dblclick', handleDoubleClickForList);
   list.addEventListener('edit', handleEdit);
