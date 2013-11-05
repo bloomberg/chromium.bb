@@ -374,15 +374,6 @@ void ComponentLoader::AddDefaultComponentExtensions(
       base::FilePath(FILE_PATH_LITERAL("/usr/share/chromeos-assets/mobile")));
 
 #if defined(GOOGLE_CHROME_BUILD)
-  {
-    const CommandLine* command_line = CommandLine::ForCurrentProcess();
-    if (!command_line->HasSwitch(chromeos::switches::kDisableGeniusApp)) {
-      AddWithName(IDR_GENIUS_APP_MANIFEST,
-                  base::FilePath(FILE_PATH_LITERAL(
-                      "/usr/share/chromeos-assets/genius_app")),
-                  l10n_util::GetStringUTF8(IDS_GENIUS_APP_NAME));
-    }
-  }
   if (browser_defaults::enable_help_app) {
     Add(IDR_HELP_MANIFEST, base::FilePath(FILE_PATH_LITERAL(
                                "/usr/share/chromeos-assets/helpapp")));
@@ -428,6 +419,16 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
               switches::kDisableComponentExtensionsWithBackgroundPages))) {
     return;
   }
+
+#if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
+  // Since this is a v2 app it has a background page.
+  if (!command_line->HasSwitch(chromeos::switches::kDisableGeniusApp)) {
+    AddWithName(IDR_GENIUS_APP_MANIFEST,
+                base::FilePath(FILE_PATH_LITERAL(
+                    "/usr/share/chromeos-assets/genius_app")),
+                l10n_util::GetStringUTF8(IDS_GENIUS_APP_NAME));
+  }
+#endif
 
   if (!skip_session_components) {
     // Apps Debugger
