@@ -741,7 +741,15 @@ public:
     }
 
     // Functions used by serialization states.
-    StateBase* doSerialize(v8::Handle<v8::Value> value, StateBase* next);
+    StateBase* doSerialize(v8::Handle<v8::Value>, StateBase* next);
+
+    // The serializer workhorse, no stack depth check.
+    StateBase* doSerializeImpl(v8::Handle<v8::Value>, StateBase* next);
+
+    StateBase* doSerializeArrayBuffer(v8::Handle<v8::Value> arrayBuffer, StateBase* next)
+    {
+        return doSerializeImpl(arrayBuffer, next);
+    }
 
     StateBase* checkException(StateBase* state)
     {
@@ -1141,16 +1149,18 @@ private:
         v8::Handle<v8::Value> underlyingBuffer = toV8(arrayBufferView->buffer(), v8::Handle<v8::Object>(), m_writer.getIsolate());
         if (underlyingBuffer.IsEmpty())
             return handleError(DataCloneError, next);
-        StateBase* stateOut = doSerialize(underlyingBuffer, 0);
+        StateBase* stateOut = doSerializeArrayBuffer(underlyingBuffer, next);
         if (stateOut)
-            return handleError(DataCloneError, next);
+            return stateOut;
         m_writer.writeArrayBufferView(*arrayBufferView);
         // This should be safe: we serialize something that we know to be a wrapper (see
-        // the toV8 call above), so the call to doSerialize above should neither cause
-        // the stack to overflow nor should it have the potential to reach this
-        // ArrayBufferView again. We do need to grey the underlying buffer before we grey
-        // its view, however; ArrayBuffers may be shared, so they need to be given reference IDs,
-        // and an ArrayBufferView cannot be constructed without a corresponding ArrayBuffer
+        // the toV8 call above), so the call to doSerializeArrayBuffer should neither
+        // cause the system stack to overflow nor should it have potential to reach
+        // this ArrayBufferView again.
+        //
+        // We do need to grey the underlying buffer before we grey its view, however;
+        // ArrayBuffers may be shared, so they need to be given reference IDs, and an
+        // ArrayBufferView cannot be constructed without a corresponding ArrayBuffer
         // (or without an additional tag that would allow us to do two-stage construction
         // like we do for Objects and Arrays).
         greyObject(object);
@@ -1235,12 +1245,8 @@ private:
     v8::Isolate* m_isolate;
 };
 
-Serializer::StateBase* Serializer::doSerialize(v8::Handle<v8::Value> value, StateBase* next)
+Serializer::StateBase* Serializer::doSerializeImpl(v8::Handle<v8::Value> value, StateBase* next)
 {
-    if (m_execDepth + (next ? next->execDepth() : 0) > 1) {
-        m_writer.writeNull();
-        return 0;
-    }
     m_writer.writeReferenceCount(m_nextObjectReference);
     uint32_t objectReference;
     uint32_t arrayBufferIndex;
@@ -1316,6 +1322,15 @@ Serializer::StateBase* Serializer::doSerialize(v8::Handle<v8::Value> value, Stat
             return handleError(DataCloneError, next);
     }
     return 0;
+}
+
+Serializer::StateBase* Serializer::doSerialize(v8::Handle<v8::Value> value, StateBase* next)
+{
+    if (m_execDepth + (next ? next->execDepth() : 0) > 1) {
+        m_writer.writeNull();
+        return 0;
+    }
+    return doSerializeImpl(value, next);
 }
 
 // Interface used by Reader to create objects of composite types.
