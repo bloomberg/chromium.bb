@@ -70,6 +70,7 @@ class SyncableFileSystemOperation
                          const StatusCallback& callback) OVERRIDE;
   virtual void OpenFile(const fileapi::FileSystemURL& url,
                         int file_flags,
+                        base::ProcessHandle peer_handle,
                         const OpenFileCallback& callback) OVERRIDE;
   virtual void Cancel(const StatusCallback& cancel_callback) OVERRIDE;
   virtual void CreateSnapshotFile(

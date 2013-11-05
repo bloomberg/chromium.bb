@@ -69,6 +69,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationImpl
                          const StatusCallback& callback) OVERRIDE;
   virtual void OpenFile(const FileSystemURL& url,
                         int file_flags,
+                        base::ProcessHandle peer_handle,
                         const OpenFileCallback& callback) OVERRIDE;
   virtual void Cancel(const StatusCallback& cancel_callback) OVERRIDE;
   virtual void CreateSnapshotFile(
@@ -193,6 +194,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationImpl
   scoped_ptr<RecursiveOperationDelegate> recursive_operation_delegate_;
 
   StatusCallback cancel_callback_;
+
+  // Used only by OpenFile, in order to clone the file handle back to the
+  // requesting process.
+  base::ProcessHandle peer_handle_;
 
   // A flag to make sure we call operation only once per instance.
   OperationType pending_operation_;

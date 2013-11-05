@@ -145,6 +145,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationRunner
   // This function is used only by Pepper as of writing.
   OperationID OpenFile(const FileSystemURL& url,
                        int file_flags,
+                       base::ProcessHandle peer_handle,
                        const OpenFileCallback& callback);
 
   // Creates a local snapshot file for a given |url| and returns the
@@ -273,7 +274,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationRunner
       const OpenFileCallback& callback,
       base::PlatformFileError rv,
       base::PlatformFile file,
-      const base::Closure& on_close_callback);
+      const base::Closure& on_close_callback,
+      base::ProcessHandle peer_handle);
   void DidCreateSnapshot(
       const OperationHandle& handle,
       const SnapshotFileCallback& callback,
