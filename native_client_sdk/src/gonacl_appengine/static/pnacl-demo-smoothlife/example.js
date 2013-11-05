@@ -132,6 +132,9 @@ function moduleDidLoad() {
   bar.max = 100;
   naclModule = $('nacl_module');
   hideStatus();
+  setSize(256);
+  setThreadCount(4);
+  setMaxScale(1);
   loadPreset(0);
 }
 
@@ -219,6 +222,19 @@ function loadPreset(index) {
 function clear(color) {
   naclModule.postMessage({cmd: 'clear', color: color});
 }
+
+function setSize(size) {
+  naclModule.postMessage({cmd: 'setSize', size: size});
+}
+
+function setMaxScale(scale) {
+  naclModule.postMessage({cmd: 'setMaxScale', scale: scale});
+}
+
+function setThreadCount(threadCount) {
+  naclModule.postMessage({cmd: 'setThreadCount', threadCount: threadCount});
+}
+
 
 function setKernel(discRadius, ringRadius, blendRadius) {
   naclModule.postMessage({
