@@ -622,7 +622,7 @@ bool FocusController::setFocusedElement(Element* element, PassRefPtr<Frame> newF
     RefPtr<Document> oldDocument = oldFocusedFrame ? oldFocusedFrame->document() : 0;
 
     Element* oldFocusedElement = oldDocument ? oldDocument->focusedElement() : 0;
-    if (oldFocusedElement == element)
+    if (element && oldFocusedElement == element)
         return true;
 
     // FIXME: Might want to disable this check for caretBrowsing
@@ -631,18 +631,16 @@ bool FocusController::setFocusedElement(Element* element, PassRefPtr<Frame> newF
 
     m_page->editorClient().willSetInputMethodState();
 
-    clearSelectionIfNeeded(oldFocusedFrame.get(), newFocusedFrame.get(), element);
-
-    if (!element) {
-        if (oldDocument)
-            oldDocument->setFocusedElement(0);
-        return true;
-    }
-
-    RefPtr<Document> newDocument(element->document());
+    RefPtr<Document> newDocument;
+    if (element)
+        newDocument = &element->document();
+    else if (newFocusedFrame)
+        newDocument = newFocusedFrame->document();
 
     if (newDocument && newDocument->focusedElement() == element)
         return true;
+
+    clearSelectionIfNeeded(oldFocusedFrame.get(), newFocusedFrame.get(), element);
 
     if (oldDocument && oldDocument != newDocument)
         oldDocument->setFocusedElement(0);
