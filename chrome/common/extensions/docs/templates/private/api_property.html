@@ -4,7 +4,7 @@
     <div class="line">{{+partials.api_namespace api:api}}{{name}}</div>
   </div>
   <div>
-    <dt><span class="property">{{name}}</span> {{+partials.type_name link:link}}</dt>
+    <dt><span class="property">{{name}}</span> {{+partials.type_name link:link @:property}}</dt>
     {{?description}}<dd>
       {{{description}}}
     </dd>{{/description}}
