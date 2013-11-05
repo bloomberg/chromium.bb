@@ -266,7 +266,8 @@
         var parsedExpectation = getComputedStyle(replica).getPropertyValue(params.property);
         var pass = normalizeValue(value) === normalizeValue(parsedExpectation);
         result = pass ? 'PASS: ' : 'FAIL: ';
-        reason = pass ? '' : ', expected [' + expectation + ']';
+        reason = pass ? '' : ', expected [' + expectation + ']' +
+            (expectation === parsedExpectation ? '' : ' (parsed as [' + sanitizeUrls(parsedExpectation) + '])');
         value = pass ? expectation : sanitizeUrls(value);
       }
       return result + params.property + ' from [' + params.from + '] to ' +

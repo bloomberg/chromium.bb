@@ -43,16 +43,16 @@ PASS: -webkit-filter from [contrast(0)] to [none] was [contrast(0)] at 0
 PASS: -webkit-filter from [contrast(0)] to [none] was [contrast(0.5)] at 0.5
 FAIL: -webkit-filter from [contrast(0)] to [none] was [contrast(1)] at 1, expected [none]
 PASS: -webkit-filter from [contrast(0)] to [none] was [contrast(1.5)] at 1.5
-FAIL: -webkit-filter from [none] to [drop-shadow(20px 10px green)] was [drop-shadow(rgba(0, 0, 0, 0) -20px -10px 0px)] at -1, expected [drop-shadow(-20px -10px white)]
+FAIL: -webkit-filter from [none] to [drop-shadow(20px 10px green)] was [drop-shadow(rgba(0, 0, 0, 0) -20px -10px 0px)] at -1, expected [drop-shadow(-20px -10px white)] (parsed as [drop-shadow(rgb(255, 255, 255) -20px -10px 0px)])
 FAIL: -webkit-filter from [none] to [drop-shadow(20px 10px green)] was [drop-shadow(rgba(0, 0, 0, 0) 0px 0px 0px)] at 0, expected [none]
-FAIL: -webkit-filter from [none] to [drop-shadow(20px 10px green)] was [drop-shadow(rgba(0, 127, 0, 0.501961) 10px 5px 0px)] at 0.5, expected [drop-shadow(10px 5px #80C080)]
+FAIL: -webkit-filter from [none] to [drop-shadow(20px 10px green)] was [drop-shadow(rgba(0, 127, 0, 0.501961) 10px 5px 0px)] at 0.5, expected [drop-shadow(10px 5px #80C080)] (parsed as [drop-shadow(rgb(128, 192, 128) 10px 5px 0px)])
 PASS: -webkit-filter from [none] to [drop-shadow(20px 10px green)] was [drop-shadow(20px 10px green)] at 1
-FAIL: -webkit-filter from [none] to [drop-shadow(20px 10px green)] was [drop-shadow(rgb(0, 192, 0) 30px 15px 0px)] at 1.5, expected [drop-shadow(30px 15px #004000)]
+FAIL: -webkit-filter from [none] to [drop-shadow(20px 10px green)] was [drop-shadow(rgb(0, 192, 0) 30px 15px 0px)] at 1.5, expected [drop-shadow(30px 15px #004000)] (parsed as [drop-shadow(rgb(0, 64, 0) 30px 15px 0px)])
 PASS: -webkit-filter from [drop-shadow(0px 0px 0px currentcolor)] to [drop-shadow(20px 10px green)] was [drop-shadow(-20px -10px white)] at -1
 PASS: -webkit-filter from [drop-shadow(0px 0px 0px currentcolor)] to [drop-shadow(20px 10px green)] was [drop-shadow(0px 0px 0px currentcolor)] at 0
 PASS: -webkit-filter from [drop-shadow(0px 0px 0px currentcolor)] to [drop-shadow(20px 10px green)] was [drop-shadow(10px 5px #80C080)] at 0.5
 PASS: -webkit-filter from [drop-shadow(0px 0px 0px currentcolor)] to [drop-shadow(20px 10px green)] was [drop-shadow(20px 10px green)] at 1
-FAIL: -webkit-filter from [drop-shadow(0px 0px 0px currentcolor)] to [drop-shadow(20px 10px green)] was [drop-shadow(rgb(0, 65, 0) 30px 15px 0px)] at 1.5, expected [drop-shadow(30px 15px #004000)]
+FAIL: -webkit-filter from [drop-shadow(0px 0px 0px currentcolor)] to [drop-shadow(20px 10px green)] was [drop-shadow(rgb(0, 65, 0) 30px 15px 0px)] at 1.5, expected [drop-shadow(30px 15px #004000)] (parsed as [drop-shadow(rgb(0, 64, 0) 30px 15px 0px)])
 PASS: -webkit-filter from [none] to [grayscale(1)] was [grayscale(0)] at -1
 FAIL: -webkit-filter from [none] to [grayscale(1)] was [grayscale(0)] at 0, expected [none]
 PASS: -webkit-filter from [none] to [grayscale(1)] was [grayscale(0.5)] at 0.5
@@ -83,13 +83,13 @@ FAIL: -webkit-filter from [none] to [sepia(1)] was [sepia(0)] at 0, expected [no
 PASS: -webkit-filter from [none] to [sepia(1)] was [sepia(0.5)] at 0.5
 PASS: -webkit-filter from [none] to [sepia(1)] was [sepia(1)] at 1
 PASS: -webkit-filter from [none] to [sepia(1)] was [sepia(1)] at 1.5
-FAIL: -webkit-filter from [url(#svgfilter)] to [none] was [none] at -1, expected [url(#svgfilter)]
-FAIL: -webkit-filter from [url(#svgfilter)] to [none] was [none] at 0, expected [url(#svgfilter)]
+FAIL: -webkit-filter from [url(#svgfilter)] to [none] was [none] at -1, expected [url(#svgfilter)] (parsed as [url(file:///.../'#svgfilter')])
+FAIL: -webkit-filter from [url(#svgfilter)] to [none] was [none] at 0, expected [url(#svgfilter)] (parsed as [url(file:///.../'#svgfilter')])
 PASS: -webkit-filter from [url(#svgfilter)] to [none] was [none] at 0.5
 PASS: -webkit-filter from [url(#svgfilter)] to [none] was [none] at 1
 PASS: -webkit-filter from [url(#svgfilter)] to [none] was [none] at 1.5
-FAIL: -webkit-filter from [url(#svgfilter)] to [blur(5px)] was [blur(5px)] at -1, expected [url(#svgfilter)]
-FAIL: -webkit-filter from [url(#svgfilter)] to [blur(5px)] was [blur(5px)] at 0, expected [url(#svgfilter)]
+FAIL: -webkit-filter from [url(#svgfilter)] to [blur(5px)] was [blur(5px)] at -1, expected [url(#svgfilter)] (parsed as [url(file:///.../'#svgfilter')])
+FAIL: -webkit-filter from [url(#svgfilter)] to [blur(5px)] was [blur(5px)] at 0, expected [url(#svgfilter)] (parsed as [url(file:///.../'#svgfilter')])
 PASS: -webkit-filter from [url(#svgfilter)] to [blur(5px)] was [blur(5px)] at 0.5
 PASS: -webkit-filter from [url(#svgfilter)] to [blur(5px)] was [blur(5px)] at 1
 PASS: -webkit-filter from [url(#svgfilter)] to [blur(5px)] was [blur(5px)] at 1.5

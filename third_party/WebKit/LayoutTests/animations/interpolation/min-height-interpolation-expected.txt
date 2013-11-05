@@ -1,4 +1,4 @@
-FAIL: min-height from [0px] to [100px] was [-50px] at -0.5, expected [0]
+FAIL: min-height from [0px] to [100px] was [-50px] at -0.5, expected [0] (parsed as [0px])
 PASS: min-height from [0px] to [100px] was [0] at 0
 PASS: min-height from [0px] to [100px] was [30px] at 0.3
 PASS: min-height from [0px] to [100px] was [60px] at 0.6

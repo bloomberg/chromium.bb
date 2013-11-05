@@ -1,4 +1,4 @@
-FAIL: -webkit-column-width from [1px] to [101px] was [-29px] at -0.3, expected [0.00001px]
+FAIL: -webkit-column-width from [1px] to [101px] was [-29px] at -0.3, expected [0.00001px] (parsed as [0.000009999999747378752px])
 PASS: -webkit-column-width from [1px] to [101px] was [1px] at 0
 PASS: -webkit-column-width from [1px] to [101px] was [31px] at 0.3
 PASS: -webkit-column-width from [1px] to [101px] was [61px] at 0.6
