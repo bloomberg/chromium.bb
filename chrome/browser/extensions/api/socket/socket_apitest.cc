@@ -325,7 +325,8 @@ IN_PROC_BROWSER_TEST_F(SocketPpapiTest, MAYBE(TCPServer)) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(SocketPpapiTest, MAYBE(Multicast)) {
+// Disabled due to flakiness: http://crbug.com/314899
+IN_PROC_BROWSER_TEST_F(SocketPpapiTest, DISABLED_Multicast) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
   ExtensionTestMessageListener listener("info_please", true);
