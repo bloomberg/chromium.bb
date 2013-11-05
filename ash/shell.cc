@@ -980,7 +980,7 @@ bool Shell::CanAcceptEvent(const ui::Event& event) {
 }
 
 ui::EventTarget* Shell::GetParentTarget() {
-  return NULL;
+  return aura::Env::GetInstance();
 }
 
 void Shell::OnEvent(ui::Event* event) {

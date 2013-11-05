@@ -24,7 +24,10 @@
 #include "ash/wm/window_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/event_generator.h"
+#include "ui/aura/test/test_event_handler.h"
 #include "ui/aura/window.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/size.h"
@@ -513,6 +516,16 @@ TEST_F(ShellTest, TestPreTargetHandlerOrder) {
   const ui::EventHandlerList& handlers = test_api.pre_target_handlers();
   EXPECT_EQ(handlers[0], shell->mouse_cursor_filter());
   EXPECT_EQ(handlers[1], shell_test_api.drag_drop_controller());
+}
+
+// Verifies an EventHandler added to Env gets notified from EventGenerator.
+TEST_F(ShellTest, EnvPreTargetHandler) {
+  aura::test::TestEventHandler event_handler;
+  aura::Env::GetInstance()->AddPreTargetHandler(&event_handler);
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  generator.MoveMouseBy(1, 1);
+  EXPECT_NE(0, event_handler.num_mouse_events());
+  aura::Env::GetInstance()->RemovePreTargetHandler(&event_handler);
 }
 
 // This verifies WindowObservers are removed when a window is destroyed after
