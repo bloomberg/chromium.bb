@@ -57,7 +57,7 @@ AudioOutputController::AudioOutputController(
           params.sample_rate(),
           TimeDelta::FromMilliseconds(kPowerMeasurementTimeConstantMillis)),
 #endif
-      number_polling_attempts_left_(0) {
+      on_more_io_data_called_(0) {
   DCHECK(audio_manager);
   DCHECK(handler_);
   DCHECK(sync_reader_);
@@ -132,6 +132,7 @@ void AudioOutputController::SwitchOutputDevice(
 void AudioOutputController::DoCreate(bool is_for_device_change) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.CreateTime");
+  TRACE_EVENT0("audio", "AudioOutputController::DoCreate");
 
   // Close() can be called before DoCreate() is executed.
   if (state_ == kClosed)
@@ -176,6 +177,7 @@ void AudioOutputController::DoCreate(bool is_for_device_change) {
 void AudioOutputController::DoPlay() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.PlayTime");
+  TRACE_EVENT0("audio", "AudioOutputController::DoPlay");
 
   // We can start from created or paused state.
   if (state_ != kCreated && state_ != kPaused)
@@ -196,7 +198,23 @@ void AudioOutputController::DoPlay() {
   power_poll_callback_.callback().Run();
 #endif
 
-  // We start the AudioOutputStream lazily.
+  // For UMA tracking purposes, start the wedge detection timer.  This allows us
+  // to record statistics about the number of wedged playbacks in the field.
+  //
+  // WedgeCheck() will look to see if |on_more_io_data_called_| is true after
+  // the timeout expires.  Care must be taken to ensure the wedge check delay is
+  // large enough that the value isn't queried while OnMoreDataIO() is setting
+  // it.
+  //
+  // Timer self-manages its lifetime and WedgeCheck() will only record the UMA
+  // statistic if state is still kPlaying.  Additional Start() calls will
+  // invalidate the previous timer.
+  wedge_timer_.reset(new base::OneShotTimer<AudioOutputController>());
+  wedge_timer_->Start(
+      FROM_HERE, TimeDelta::FromSeconds(3), this,
+      &AudioOutputController::WedgeCheck);
+  on_more_io_data_called_ = 0;
+
   AllowEntryToOnMoreIOData();
   stream_->Start(this);
 
@@ -219,6 +237,7 @@ void AudioOutputController::StopStream() {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
   if (state_ == kPlaying) {
+    wedge_timer_.reset();
     stream_->Stop();
     DisallowEntryToOnMoreIOData();
 
@@ -233,6 +252,7 @@ void AudioOutputController::StopStream() {
 void AudioOutputController::DoPause() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.PauseTime");
+  TRACE_EVENT0("audio", "AudioOutputController::DoPause");
 
   StopStream();
 
@@ -255,6 +275,7 @@ void AudioOutputController::DoPause() {
 void AudioOutputController::DoClose() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.CloseTime");
+  TRACE_EVENT0("audio", "AudioOutputController::DoClose");
 
   if (state_ != kClosed) {
     DoStopCloseAndClearStream();
@@ -320,6 +341,13 @@ int AudioOutputController::OnMoreIOData(AudioBus* source,
   DisallowEntryToOnMoreIOData();
   TRACE_EVENT0("audio", "AudioOutputController::OnMoreIOData");
 
+  // Indicate that we haven't wedged (at least not indefinitely, WedgeCheck()
+  // may have already fired if OnMoreIOData() took an abnormal amount of time).
+  // Since this thread is the only writer of |on_more_io_data_called_| once the
+  // thread starts, its safe to compare and then increment.
+  if (base::AtomicRefCountIsZero(&on_more_io_data_called_))
+    base::AtomicRefCountInc(&on_more_io_data_called_);
+
   sync_reader_->Read(source, dest);
 
   const int frames = dest->frames();
@@ -363,6 +391,7 @@ void AudioOutputController::DoStopCloseAndClearStream() {
 void AudioOutputController::OnDeviceChange() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.DeviceChangeTime");
+  TRACE_EVENT0("audio", "AudioOutputController::OnDeviceChange");
 
   // TODO(dalecurtis): Notify the renderer side that a device change has
   // occurred.  Currently querying the hardware information here will lead to
@@ -439,6 +468,16 @@ void AudioOutputController::AllowEntryToOnMoreIOData() {
 void AudioOutputController::DisallowEntryToOnMoreIOData() {
   const bool is_zero = !base::AtomicRefCountDec(&num_allowed_io_);
   DCHECK(is_zero);
+}
+
+void AudioOutputController::WedgeCheck() {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+
+  // If we should be playing and we haven't, that's a wedge.
+  if (state_ == kPlaying) {
+    UMA_HISTOGRAM_BOOLEAN("Media.AudioOutputControllerPlaybackStartupSuccess",
+                          base::AtomicRefCountIsOne(&on_more_io_data_called_));
+  }
 }
 
 }  // namespace media

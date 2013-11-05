@@ -5877,6 +5877,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Media.AudioOutputControllerPlaybackStartupSuccess"
+    enum="BooleanSuccess">
+  <summary>
+    Whether playback started successfully after stream startup was requested.
+  </summary>
+</histogram>
+
 <histogram name="Media.AudioRendererEvents" enum="AudioRendererEvents">
   <summary>Captures statistics for various AudioRendererImpl events.</summary>
 </histogram>

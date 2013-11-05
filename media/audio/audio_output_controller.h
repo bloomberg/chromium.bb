@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/timer/timer.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_power_monitor.h"
@@ -222,6 +223,9 @@ class MEDIA_EXPORT AudioOutputController
   void AllowEntryToOnMoreIOData();
   void DisallowEntryToOnMoreIOData();
 
+  // Checks if a stream was started successfully but never calls OnMoreIOData().
+  void WedgeCheck();
+
   AudioManager* const audio_manager_;
   const AudioParameters params_;
   EventHandler* const handler_;
@@ -267,9 +271,9 @@ class MEDIA_EXPORT AudioOutputController
   base::CancelableClosure power_poll_callback_;
 #endif
 
-  // When starting stream we wait for data to become available.
-  // Number of times left.
-  int number_polling_attempts_left_;
+  // Flags when we've asked for a stream to start but it never did.
+  base::AtomicRefCount on_more_io_data_called_;
+  scoped_ptr<base::OneShotTimer<AudioOutputController> > wedge_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputController);
 };
