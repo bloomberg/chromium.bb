@@ -179,7 +179,7 @@ class _JSCModel(object):
       'returns': None,
       'id': _CreateId(function, 'method')
     }
-    if (function.deprecated is not None):
+    if function.deprecated is not None:
       function_dict['deprecated'] = self._FormatDescription(
           function.deprecated)
     if (function.parent is not None and
@@ -219,6 +219,9 @@ class _JSCModel(object):
       'id': _CreateId(event, 'event'),
       'byName': {},
     }
+    if event.deprecated is not None:
+      event_dict['deprecated'] = self._FormatDescription(
+          event.deprecated)
     if (event.parent is not None and
         not isinstance(event.parent, model.Namespace)):
       event_dict['parentName'] = event.parent.simple_name
