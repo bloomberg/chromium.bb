@@ -242,6 +242,7 @@ camera.Camera.prototype.start = function() {
     this.tooltipManager_.initialize();
     this.viewsStack_.push(this.cameraView_);
     camera.util.makeEmptyButtonsUnfocusable();
+    camera.util.setAriaAttributes();
     callback();
   }.bind(this));
 };

@@ -7,11 +7,14 @@ body {
   background: black;
   bottom: 0;
   display: -webkit-box;
+  height: 100%;
   left: 0;
   margin: 0;
+  overflow: hidden;
   position: absolute;
   right: 0;
   top: 0;
+  width: 100%;
 }
 
 .scrollbar-track {

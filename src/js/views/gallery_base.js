@@ -187,10 +187,20 @@ camera.views.GalleryBase.prototype.currentPicture = function() {
  */
 camera.views.GalleryBase.prototype.onCurrentIndexChanged = function(
     oldIndex, newIndex) {
-  if (oldIndex !== null && oldIndex < this.model.length)
+  if (oldIndex !== null && oldIndex < this.model.length) {
     this.pictures[oldIndex].element.classList.remove('selected');
-  if (newIndex !== null && newIndex < this.model.length)
+    this.pictures[oldIndex].element.setAttribute('aria-selected', 'false');
+  }
+
+  if (newIndex !== null && newIndex < this.model.length) {
     this.pictures[newIndex].element.classList.add('selected');
+    this.pictures[newIndex].element.setAttribute('aria-selected', 'true');
+
+    // The parent is required to be the list.
+    var list = this.pictures[newIndex].element.parentNode;
+    list.setAttribute('aria-activedescendant',
+        this.pictures[newIndex].element.id);
+  }
 };
 
 /**

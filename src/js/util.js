@@ -135,6 +135,22 @@ camera.util.TooltipManager.prototype.showTooltip_ = function(element) {
 };
 
 /**
+ * Sets localized aria attributes for TTS on the entire document. Uses the
+ * dedicated i18n-aria-label attribute as a strings identifier. If it is not
+ * found, then i18n-label is used as a fallback.
+ */
+camera.util.setAriaAttributes = function() {
+  var elements = document.querySelectorAll('*[i18n-aria-label], *[i18n-label]');
+  for (var index = 0; index < elements.length; index++) {
+    var label = elements[index].hasAttribute('i18n-aria-label') ?
+        elements[index].getAttribute('i18n-aria-label') :
+        elements[index].getAttribute('i18n-label');  // Fallback.
+
+    elements[index].setAttribute('aria-label', chrome.i18n.getMessage(label));
+  }
+};
+
+/**
  * Sets a class which invokes an animation and calls the callback when the
  * animation is done. The class is released once the animation is finished.
  * If the class name is already set, then calls onCompletion immediately.

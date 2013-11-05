@@ -56,6 +56,15 @@ camera.views.Browser = function(context, router) {
       function() {},  // onScrollStarted
       this.onScrollEnded_.bind(this));
 
+  /**
+   * Sequential index of the last inserted picture. Used to generate unique
+   * identifiers.
+   *
+   * @type {number}
+   * @private
+   */
+  this.lastPictureIndex_ = 0;
+
   // End of properties, seal the object.
   Object.seal(this);
 
@@ -96,6 +105,13 @@ camera.views.Browser.prototype.onEnter = function() {
 camera.views.Browser.prototype.onLeave = function() {
   this.scrollTracker_.stop();
   document.body.classList.remove('browser');
+};
+
+/**
+ * @override
+ */
+camera.views.Browser.prototype.onActivate = function() {
+  document.querySelector('#browser .padder').focus();
 };
 
 /**
@@ -292,8 +308,7 @@ camera.views.Browser.prototype.exportSelection_ = function() {
 camera.views.Browser.prototype.onKeyPressed = function(event) {
   var currentPicture = this.currentPicture();
   switch (camera.util.getShortcutIdentifier(event)) {
-    case 'Enter':
-    case 'Ctrl-U+0053':  // Ctrl+S or Enter for saving.
+    case 'Ctrl-U+0053':  // Ctrl+S for saving.
       this.exportSelection_();
       event.preventDefault();
       return;
@@ -314,6 +329,9 @@ camera.views.Browser.prototype.addPictureToDOM = function(picture) {
   var browser = document.querySelector('#browser .padder');
   var boundsPadder = browser.querySelector('.bounds-padder');
   var img = document.createElement('img');
+  img.id = 'browser-picture-' + (this.lastPictureIndex_++);
+  img.setAttribute('aria-role', 'option');
+  img.setAttribute('aria-selected', 'false');
   browser.insertBefore(img, boundsPadder.nextSibling);
 
   // Add to the collection.
