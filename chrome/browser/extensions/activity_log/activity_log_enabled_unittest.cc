@@ -9,10 +9,10 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "extensions/common/extension_builder.h"
 
 #if defined OS_CHROMEOS
 #include "chrome/browser/chromeos/login/user_manager.h"

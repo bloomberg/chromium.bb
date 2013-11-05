@@ -15,12 +15,12 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_builder.h"
-#include "chrome/common/extensions/value_builder.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/common/extension_builder.h"
+#include "extensions/common/value_builder.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"

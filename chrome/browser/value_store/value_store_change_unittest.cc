@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/value_store/value_store_change.h"
-#include "chrome/common/extensions/value_builder.h"
+#include "extensions/common/value_builder.h"
 
 using base::DictionaryValue;
 using base::Value;

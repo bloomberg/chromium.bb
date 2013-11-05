@@ -9,10 +9,10 @@
 #include "chrome/browser/extensions/test_management_policy.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "chrome/common/extensions/extension_builder.h"
-#include "chrome/common/extensions/value_builder.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
+#include "extensions/common/extension_builder.h"
+#include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {

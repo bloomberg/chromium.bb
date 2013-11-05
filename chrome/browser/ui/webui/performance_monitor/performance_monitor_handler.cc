@@ -18,9 +18,9 @@
 #include "chrome/browser/ui/webui/performance_monitor/performance_monitor_ui_constants.h"
 #include "chrome/browser/ui/webui/performance_monitor/performance_monitor_ui_util.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/value_builder.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
+#include "extensions/common/value_builder.h"
 
 using content::BrowserThread;
 

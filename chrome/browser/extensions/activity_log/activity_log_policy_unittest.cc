@@ -7,7 +7,7 @@
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "chrome/browser/extensions/activity_log/activity_log_policy.h"
 #include "chrome/browser/extensions/activity_log/web_request_constants.h"
-#include "chrome/common/extensions/value_builder.h"
+#include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {

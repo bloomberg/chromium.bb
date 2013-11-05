@@ -5,7 +5,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/common/extensions/api/omnibox.h"
-#include "chrome/common/extensions/value_builder.h"
+#include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

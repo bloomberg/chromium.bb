@@ -4,12 +4,12 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
-#include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
-#include "chrome/common/extensions/value_builder.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace errors = extensions::manifest_errors;

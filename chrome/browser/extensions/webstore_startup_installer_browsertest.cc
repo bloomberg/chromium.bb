@@ -17,8 +17,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension_builder.h"
-#include "chrome/common/extensions/value_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
@@ -28,6 +26,8 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/common/extension_builder.h"
+#include "extensions/common/value_builder.h"
 #include "net/dns/mock_host_resolver.h"
 #include "url/gurl.h"
 

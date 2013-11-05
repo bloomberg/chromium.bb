@@ -9,9 +9,9 @@
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/test_extension_environment.h"
-#include "chrome/common/extensions/extension_builder.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/extension_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -14,10 +14,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
-#include "chrome/common/extensions/value_builder.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
@@ -28,7 +26,9 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/common/features/feature.h"
+#include "extensions/common/value_builder.h"
 
 using base::DictionaryValue;
 using base::ListValue;

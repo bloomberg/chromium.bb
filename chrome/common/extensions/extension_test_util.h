@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "chrome/common/extensions/extension_builder.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest.h"
 
 namespace extensions {

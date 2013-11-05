@@ -6,7 +6,7 @@
 
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/features/simple_feature.h"
-#include "chrome/common/extensions/value_builder.h"
+#include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using chrome::VersionInfo;

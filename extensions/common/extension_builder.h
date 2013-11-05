@@ -1,15 +1,15 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_BUILDER_H_
-#define CHROME_COMMON_EXTENSIONS_EXTENSION_BUILDER_H_
+#ifndef EXTENSIONS_COMMON_EXTENSION_BUILDER_H_
+#define EXTENSIONS_COMMON_EXTENSION_BUILDER_H_
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/extensions/value_builder.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/value_builder.h"
 
 namespace extensions {
 class Extension;
@@ -60,4 +60,4 @@ class ExtensionBuilder {
 
 } // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_BUILDER_H_
+#endif  // EXTENSIONS_COMMON_EXTENSION_BUILDER_H_
