@@ -50,23 +50,27 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
     session_bus_ = new dbus::Bus(options);
 #endif
 
-    // Listen for future mtpd service owner changes, in case it is not
-    // available right now. There is no guarantee on Linux or ChromeOS that
-    // mtpd is running already.
-    mtpd_owner_changed_callback_ =
-        base::Bind(&MediaTransferProtocolManagerImpl::FinishSetupOnOriginThread,
-                   weak_ptr_factory_.GetWeakPtr());
-    GetBus()->ListenForServiceOwnerChange(mtpd::kMtpdServiceName,
-                                          mtpd_owner_changed_callback_);
-    GetBus()->GetServiceOwner(mtpd::kMtpdServiceName,
-                              mtpd_owner_changed_callback_);
+    if (GetBus()) {
+      // Listen for future mtpd service owner changes, in case it is not
+      // available right now. There is no guarantee on Linux or ChromeOS that
+      // mtpd is running already.
+      mtpd_owner_changed_callback_ = base::Bind(
+          &MediaTransferProtocolManagerImpl::FinishSetupOnOriginThread,
+          weak_ptr_factory_.GetWeakPtr());
+      GetBus()->ListenForServiceOwnerChange(mtpd::kMtpdServiceName,
+                                            mtpd_owner_changed_callback_);
+      GetBus()->GetServiceOwner(mtpd::kMtpdServiceName,
+                                mtpd_owner_changed_callback_);
+    }
   }
 
   virtual ~MediaTransferProtocolManagerImpl() {
     DCHECK(g_media_transfer_protocol_manager);
     g_media_transfer_protocol_manager = NULL;
-    GetBus()->UnlistenForServiceOwnerChange(mtpd::kMtpdServiceName,
-                                            mtpd_owner_changed_callback_);
+    if (GetBus()) {
+      GetBus()->UnlistenForServiceOwnerChange(mtpd::kMtpdServiceName,
+                                              mtpd_owner_changed_callback_);
+    }
 
 #if !defined(OS_CHROMEOS)
     session_bus_->GetDBusTaskRunner()->PostTask(
@@ -428,9 +432,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
 
     current_mtpd_owner_ = mtpd_service_owner;
 
-    mtp_client_.reset(
-        MediaTransferProtocolDaemonClient::Create(GetBus(),
-                                                  false /* not stub */));
+    mtp_client_.reset(MediaTransferProtocolDaemonClient::Create(GetBus()));
 
     // Set up signals and start initializing |storage_info_map_|.
     mtp_client_->SetUpConnections(

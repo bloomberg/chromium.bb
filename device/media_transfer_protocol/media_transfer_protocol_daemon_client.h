@@ -163,9 +163,7 @@ class MediaTransferProtocolDaemonClient {
   virtual void SetUpConnections(const MTPStorageEventHandler& handler) = 0;
 
   // Factory function, creates a new instance and returns ownership.
-  // For normal usage, set |is_stub| to false.
-  static MediaTransferProtocolDaemonClient* Create(dbus::Bus* bus,
-                                                   bool is_stub);
+  static MediaTransferProtocolDaemonClient* Create(dbus::Bus* bus);
 
  protected:
   // Create() should be used instead.
