@@ -107,6 +107,15 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   bool ShowSuggestionPopup(const PasswordFormFillData& fill_data,
                            const WebKit::WebInputElement& user_input);
 
+  // Attempts to fill |username_element| and |password_element| with the
+  // |fill_data|.  Will use the data corresponding to the preferred username,
+  // unless the |username_element| already has a value set.  In that case,
+  // attempts to fill the password matching the already filled username, if
+  // such a password exists.
+  void FillFormOnPasswordRecieved(const PasswordFormFillData& fill_data,
+                                  WebKit::WebInputElement username_element,
+                                  WebKit::WebInputElement password_element);
+
   bool FillUserNameAndPassword(
       WebKit::WebInputElement* username_element,
       WebKit::WebInputElement* password_element,

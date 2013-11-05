@@ -164,39 +164,6 @@ bool IsElementEditable(const WebKit::WebInputElement& element) {
   return element.isEnabled() && !element.isReadOnly();
 }
 
-void FillForm(FormElements* fe, const FormData& data) {
-  if (!fe->form_element.autoComplete())
-    return;
-
-  std::map<base::string16, base::string16> data_map;
-  for (size_t i = 0; i < data.fields.size(); i++)
-    data_map[data.fields[i].name] = data.fields[i].value;
-
-  for (FormInputElementMap::iterator it = fe->input_elements.begin();
-       it != fe->input_elements.end(); ++it) {
-    WebKit::WebInputElement element = it->second;
-    // Don't fill a form that has pre-filled values distinct from the ones we
-    // want to fill with.
-    if (!element.value().isEmpty() && element.value() != data_map[it->first])
-      return;
-
-    // Don't fill forms with uneditable fields or fields with autocomplete
-    // disabled.
-    if (!IsElementEditable(element) || !element.autoComplete())
-      return;
-  }
-
-  for (FormInputElementMap::iterator it = fe->input_elements.begin();
-       it != fe->input_elements.end(); ++it) {
-    WebKit::WebInputElement element = it->second;
-
-    // TODO(tkent): Check maxlength and pattern.
-    element.setValue(data_map[it->first]);
-    element.setAutofilled(true);
-    element.dispatchFormControlChangeEvent();
-  }
-}
-
 void SetElementAutofilled(WebKit::WebInputElement* element, bool autofilled) {
   if (element->isAutofilled() == autofilled)
     return;
@@ -250,7 +217,9 @@ bool PasswordAutofillAgent::TextFieldDidEndEditing(
 
   // Do not set selection when ending an editing session, otherwise it can
   // mess with focus.
-  FillUserNameAndPassword(&username, &password, fill_data, true, false);
+  FillUserNameAndPassword(&username, &password, fill_data,
+                          true /* exact_username_match */,
+                          false /* set_selection */);
   return true;
 }
 
@@ -331,7 +300,9 @@ bool PasswordAutofillAgent::DidAcceptAutofillSuggestion(
   // will do the rest.
   input.setValue(value, true);
   return FillUserNameAndPassword(&input, &password.password_field,
-                                 password.fill_data, true, true);
+                                 password.fill_data,
+                                 true /* exact_username_match */,
+                                 true /* set_selection */);
 }
 
 bool PasswordAutofillAgent::DidClearAutofillSelection(
@@ -516,11 +487,6 @@ void PasswordAutofillAgent::OnFillPasswordForm(
   for (iter = forms.begin(); iter != forms.end(); ++iter) {
     scoped_ptr<FormElements> form_elements(*iter);
 
-    // If wait_for_username is true, we don't want to initially fill the form
-    // until the user types in a valid username.
-    if (!form_data.wait_for_username)
-      FillForm(form_elements.get(), form_data.basic_data);
-
     // Attach autocomplete listener to enable selecting alternate logins.
     // First, get pointers to username element.
     WebKit::WebInputElement username_element =
@@ -530,6 +496,11 @@ void PasswordAutofillAgent::OnFillPasswordForm(
     // password forms).
     WebKit::WebInputElement password_element =
         form_elements->input_elements[form_data.basic_data.fields[1].name];
+
+    // If wait_for_username is true, we don't want to initially fill the form
+    // until the user types in a valid username.
+    if (!form_data.wait_for_username)
+      FillFormOnPasswordRecieved(form_data, username_element, password_element);
 
     // We might have already filled this form if there are two <form> elements
     // with identical markup.
@@ -625,6 +596,33 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
   return !suggestions.empty();
 }
 
+void PasswordAutofillAgent::FillFormOnPasswordRecieved(
+    const PasswordFormFillData& fill_data,
+    WebKit::WebInputElement username_element,
+    WebKit::WebInputElement password_element) {
+  if (!username_element.form().autoComplete())
+    return;
+
+  // If we can't modify the password, don't try to set the username
+  if (!IsElementEditable(password_element) || !password_element.autoComplete())
+    return;
+
+  // Try to set the username to the preferred name, but only if the field
+  // can be set and isn't prefilled.
+  if (IsElementEditable(username_element) &&
+      username_element.autoComplete() &&
+      username_element.value().isEmpty()) {
+    // TODO(tkent): Check maxlength and pattern.
+    username_element.setValue(fill_data.basic_data.fields[0].value);
+  }
+
+  // Fill if we have an exact match for the username. Note that this sets
+  // username to autofilled.
+  FillUserNameAndPassword(&username_element, &password_element, fill_data,
+                          true /* exact_username_match */,
+                          false /* set_selection */);
+}
+
 bool PasswordAutofillAgent::FillUserNameAndPassword(
     WebKit::WebInputElement* username_element,
     WebKit::WebInputElement* password_element,
@@ -676,17 +674,32 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
   if (password.empty())
     return false;  // No match was found.
 
-  // Input matches the username, fill in required values.
-  username_element->setValue(username);
+  // TODO(tkent): Check maxlength and pattern for both username and password
+  // fields.
 
-  if (set_selection) {
-    username_element->setSelectionRange(current_username.length(),
-                                        username.length());
+  // Don't fill username if password can't be set.
+  if (!IsElementEditable(*password_element) ||
+      !password_element->autoComplete()) {
+    return false;
   }
 
-  SetElementAutofilled(username_element, true);
-  if (IsElementEditable(*password_element))
-    password_element->setValue(password);
+  // Input matches the username, fill in required values.
+  if (IsElementEditable(*username_element) &&
+      username_element->autoComplete()) {
+    username_element->setValue(username);
+    SetElementAutofilled(username_element, true);
+
+    if (set_selection) {
+      username_element->setSelectionRange(current_username.length(),
+                                          username.length());
+    }
+  } else if (current_username != username) {
+    // If the username can't be filled and it doesn't match a saved password
+    // as is, don't autofill a password.
+    return false;
+  }
+
+  password_element->setValue(password);
   SetElementAutofilled(password_element, true);
   return true;
 }
@@ -715,7 +728,9 @@ void PasswordAutofillAgent::PerformInlineAutocomplete(
 #if !defined(OS_ANDROID)
   // Fill the user and password field with the most relevant match. Android
   // only fills in the fields after the user clicks on the suggestion popup.
-  FillUserNameAndPassword(&username, &password, fill_data, false, true);
+  FillUserNameAndPassword(&username, &password, fill_data,
+                          false /* exact_username_match */,
+                          true /* set_selection */);
 #endif
 }
 

@@ -340,9 +340,9 @@ TEST_F(PasswordAutofillAgentTest, InitialAutocompleteForEmptyAction) {
   CheckTextFieldsState(kAliceUsername, true, kAlicePassword, true);
 }
 
-// Tests that if a password or input element is marked as readonly, neither
-// field is autofilled on page load.
-TEST_F(PasswordAutofillAgentTest, NoInitialAutocompleteForReadOnly) {
+// Tests that if a password is marked as readonly, neither field is autofilled
+// on page load.
+TEST_F(PasswordAutofillAgentTest, NoInitialAutocompleteForReadOnlyPassword) {
   password_element_.setAttribute(WebString::fromUTF8("readonly"),
                                  WebString::fromUTF8("true"));
 
@@ -353,8 +353,33 @@ TEST_F(PasswordAutofillAgentTest, NoInitialAutocompleteForReadOnly) {
   CheckTextFieldsState(std::string(), false, std::string(), false);
 }
 
+// Can still fill a password field if the username is set to a value that
+// matches.
+TEST_F(PasswordAutofillAgentTest,
+       AutocompletePasswordForReadonlyUsernameMatched) {
+  username_element_.setValue(username3_);
+  username_element_.setAttribute(WebString::fromUTF8("readonly"),
+                                 WebString::fromUTF8("true"));
+
+  // Filled even though username is not the preferred match.
+  SimulateOnFillPasswordForm(fill_data_);
+  CheckTextFieldsState(UTF16ToUTF8(username3_), false,
+                       UTF16ToUTF8(password3_), true);
+}
+
+// If a username field is empty and readonly, don't autofill.
+TEST_F(PasswordAutofillAgentTest,
+       NoAutocompletePasswordForReadonlyUsernameUnmatched) {
+  username_element_.setValue(WebString::fromUTF8(""));
+  username_element_.setAttribute(WebString::fromUTF8("readonly"),
+                                 WebString::fromUTF8("true"));
+
+  SimulateOnFillPasswordForm(fill_data_);
+  CheckTextFieldsState(std::string(), false, std::string(), false);
+}
+
 // Tests that having a non-matching username precludes the autocomplete.
-TEST_F(PasswordAutofillAgentTest, NoInitialAutocompleteForFilledField) {
+TEST_F(PasswordAutofillAgentTest, NoAutocompleteForFilledFieldUnmatched) {
   username_element_.setValue(WebString::fromUTF8("bogus"));
 
   // Simulate the browser sending back the login info, it triggers the
@@ -363,6 +388,28 @@ TEST_F(PasswordAutofillAgentTest, NoInitialAutocompleteForFilledField) {
 
   // Neither field should be autocompleted.
   CheckTextFieldsState("bogus", false, std::string(), false);
+}
+
+// Don't try to complete a prefilled value even if it's a partial match
+// to a username.
+TEST_F(PasswordAutofillAgentTest, NoPartialMatchForPrefilledUsername) {
+  username_element_.setValue(WebString::fromUTF8("ali"));
+
+  SimulateOnFillPasswordForm(fill_data_);
+
+  CheckTextFieldsState("ali", false, std::string(), false);
+}
+
+TEST_F(PasswordAutofillAgentTest, InputWithNoForms) {
+  const char kNoFormInputs[] =
+      "<input type='text' id='username'/>"
+      "<input type='password' id='password'/>";
+  LoadHTML(kNoFormInputs);
+
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // Input elements that aren't in a <form> won't autofill.
+  CheckTextFieldsState(std::string(), false, std::string(), false);
 }
 
 // Tests that we do not autofill username/passwords if marked as
