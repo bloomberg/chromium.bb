@@ -5,6 +5,7 @@
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
@@ -1057,6 +1058,9 @@ void DesktopNativeWidgetAura::OnRootWindowHostResized(
 void DesktopNativeWidgetAura::OnRootWindowHostMoved(
     const aura::RootWindow* root,
     const gfx::Point& new_origin) {
+  TRACE_EVENT1("views", "DesktopNativeWidgetAura::OnRootWindowHostMoved",
+               "new_origin", new_origin.ToString());
+
   native_widget_delegate_->OnNativeWidgetMove();
 }
 

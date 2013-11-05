@@ -521,6 +521,9 @@ void TabDragController::SetMoveBehavior(MoveBehavior behavior) {
 }
 
 void TabDragController::Drag(const gfx::Point& point_in_screen) {
+  TRACE_EVENT1("views", "TabDragController::Drag",
+               "point_in_screen", point_in_screen.ToString());
+
   bring_to_front_timer_.Stop();
   move_stacked_timer_.Stop();
 
@@ -551,6 +554,8 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
 }
 
 void TabDragController::EndDrag(EndDragReason reason) {
+  TRACE_EVENT0("views", "TabDragController::EndDrag");
+
   // If we're dragging a window ignore capture lost since it'll ultimately
   // trigger the move loop to end and we'll revert the drag when RunMoveLoop()
   // finishes.
@@ -562,6 +567,7 @@ void TabDragController::EndDrag(EndDragReason reason) {
 
 void TabDragController::InitTabDragData(Tab* tab,
                                         TabDragData* drag_data) {
+  TRACE_EVENT0("views", "TabDragController::InitTabDragData");
   drag_data->source_model_index =
       source_tabstrip_->GetModelIndexOfTab(tab);
   drag_data->contents = GetModel(source_tabstrip_)->GetWebContentsAt(
@@ -711,6 +717,9 @@ void TabDragController::DidProcessEvent(const base::NativeEvent& event) {
 
 void TabDragController::OnWidgetBoundsChanged(views::Widget* widget,
                                               const gfx::Rect& new_bounds) {
+  TRACE_EVENT1("views", "TabDragController::OnWidgetBoundsChanged",
+               "new_bounds", new_bounds.ToString());
+
   Drag(GetCursorScreenPoint());
 }
 
@@ -766,6 +775,9 @@ gfx::Point TabDragController::GetWindowCreatePoint(
 }
 
 void TabDragController::UpdateDockInfo(const gfx::Point& point_in_screen) {
+  TRACE_EVENT1("views", "TabDragController::UpdateDockInfo",
+               "point_in_screen", point_in_screen.ToString());
+
   // Update the DockInfo for the current mouse coordinates.
   DockInfo dock_info = GetDockInfoAtPoint(point_in_screen);
   if (!dock_info.equals(dock_info_)) {
@@ -827,6 +839,9 @@ bool TabDragController::CanStartDrag(const gfx::Point& point_in_screen) const {
 }
 
 void TabDragController::ContinueDragging(const gfx::Point& point_in_screen) {
+  TRACE_EVENT1("views", "TabDragController::ContinueDragging",
+               "point_in_screen", point_in_screen.ToString());
+
   DCHECK(!detach_into_browser_ || attached_tabstrip_);
 
   TabStrip* target_tabstrip = detach_behavior_ == DETACHABLE ?
@@ -886,6 +901,9 @@ TabDragController::DragBrowserResultType
 TabDragController::DragBrowserToNewTabStrip(
     TabStrip* target_tabstrip,
     const gfx::Point& point_in_screen) {
+  TRACE_EVENT1("views", "TabDragController::DragBrowserToNewTabStrip",
+               "point_in_screen", point_in_screen.ToString());
+
   if (!target_tabstrip) {
     DetachIntoNewBrowserAndRunMoveLoop(point_in_screen);
     return DRAG_BROWSER_RESULT_STOP;
@@ -1159,6 +1177,9 @@ DockInfo TabDragController::GetDockInfoAtPoint(
 
 TabStrip* TabDragController::GetTargetTabStripForPoint(
     const gfx::Point& point_in_screen) {
+  TRACE_EVENT1("views", "TabDragController::GetTargetTabStripForPoint",
+               "point_in_screen", point_in_screen.ToString());
+
   if (move_only() && attached_tabstrip_) {
     DCHECK_EQ(DETACHABLE, detach_behavior_);
     // move_only() is intended for touch, in which case we only want to detach
@@ -1224,6 +1245,9 @@ bool TabDragController::DoesTabStripContain(
 
 void TabDragController::Attach(TabStrip* attached_tabstrip,
                                const gfx::Point& point_in_screen) {
+  TRACE_EVENT1("views", "TabDragController::Attach",
+               "point_in_screen", point_in_screen.ToString());
+
   DCHECK(!attached_tabstrip_);  // We should already have detached by the time
                                 // we get here.
 
@@ -1325,6 +1349,9 @@ void TabDragController::Attach(TabStrip* attached_tabstrip,
 }
 
 void TabDragController::Detach(ReleaseCapture release_capture) {
+  TRACE_EVENT1("views", "TabDragController::Detach",
+               "release_capture", release_capture);
+
   attach_index_ = -1;
 
   // When the user detaches we assume they want to reorder.

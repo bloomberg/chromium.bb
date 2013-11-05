@@ -10,6 +10,7 @@
 // It clashes with out RootWindow.
 #undef RootWindow
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/x11/edid_parser_x11.h"
 #include "ui/aura/root_window.h"
@@ -132,6 +133,8 @@ bool DesktopScreenX11::IsDIPEnabled() {
 }
 
 gfx::Point DesktopScreenX11::GetCursorScreenPoint() {
+  TRACE_EVENT0("views", "DesktopScreenX11::GetCursorScreenPoint()");
+
   XDisplay* display = gfx::GetXDisplay();
 
   ::Window root, child;

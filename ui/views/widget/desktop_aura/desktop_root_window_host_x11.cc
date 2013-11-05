@@ -11,6 +11,7 @@
 #include <X11/Xutil.h>
 
 #include "base/basictypes.h"
+#include "base/debug/trace_event.h"
 #include "base/message_loop/message_pump_x11.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1092,6 +1093,9 @@ std::list<XID>& DesktopRootWindowHostX11::open_windows() {
 
 bool DesktopRootWindowHostX11::Dispatch(const base::NativeEvent& event) {
   XEvent* xev = event;
+
+  TRACE_EVENT1("views", "DesktopRootWindowHostX11::Dispatch",
+               "event->type", event->type);
 
   // May want to factor CheckXEventForConsistency(xev); into a common location
   // since it is called here.

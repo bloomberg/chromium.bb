@@ -698,6 +698,10 @@ class WebContentsViewAura::WindowObserver
   // Overridden RootWindowObserver:
   virtual void OnRootWindowHostMoved(const aura::RootWindow* root,
                                      const gfx::Point& new_origin) OVERRIDE {
+    TRACE_EVENT1("ui",
+                 "WebContentsViewAura::WindowObserver::OnRootWindowHostMoved",
+                 "new_origin", new_origin.ToString());
+
     // This is for the desktop case (i.e. Aura desktop).
     SendScreenRects();
   }

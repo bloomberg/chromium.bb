@@ -22,6 +22,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
@@ -586,6 +587,8 @@ void ClearX11DefaultRootWindow() {
 }
 
 bool IsWindowVisible(XID window) {
+  TRACE_EVENT0("ui", "IsWindowVisible");
+
   XWindowAttributes win_attributes;
   if (!XGetWindowAttributes(gfx::GetXDisplay(), window, &win_attributes))
     return false;
@@ -620,6 +623,8 @@ bool GetWindowRect(XID window, gfx::Rect* rect) {
 
 
 bool WindowContainsPoint(XID window, gfx::Point screen_loc) {
+  TRACE_EVENT0("ui", "WindowContainsPoint");
+
   gfx::Rect window_rect;
   if (!GetWindowRect(window, &window_rect))
     return false;

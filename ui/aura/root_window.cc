@@ -903,11 +903,17 @@ void RootWindow::OnHostPaint(const gfx::Rect& damage_rect) {
 }
 
 void RootWindow::OnHostMoved(const gfx::Point& origin) {
+  TRACE_EVENT1("ui", "RootWindow::OnHostMoved",
+               "origin", origin.ToString());
+
   FOR_EACH_OBSERVER(RootWindowObserver, observers_,
                     OnRootWindowHostMoved(this, origin));
 }
 
 void RootWindow::OnHostResized(const gfx::Size& size) {
+  TRACE_EVENT1("ui", "RootWindow::OnHostResized",
+               "size", size.ToString());
+
   DispatchHeldEvents();
   // The compositor should have the same size as the native root window host.
   // Get the latest scale from display because it might have been changed.

@@ -332,7 +332,7 @@ bool ToolbarView::GetAcceleratorInfo(int id, ui::Accelerator* accel) {
 
 void ToolbarView::OnMenuButtonClicked(views::View* source,
                                       const gfx::Point& point) {
-  TRACE_EVENT0("ui::views", "ToolbarView::OnMenuButtonClicked");
+  TRACE_EVENT0("views", "ToolbarView::OnMenuButtonClicked");
   DCHECK_EQ(VIEW_ID_APP_MENU, source->id());
 
   bool use_new_menu = false;

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/tabs/dock_info.h"
 
+#include "base/debug/trace_event.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -179,6 +180,9 @@ gfx::NativeView DockInfo::GetLocalProcessWindowAtPoint(
     chrome::HostDesktopType host_desktop_type,
     const gfx::Point& screen_point,
     const std::set<gfx::NativeView>& ignore) {
+  TRACE_EVENT1("ui", "DockInfo::GetLocalProcessWindowAtPoint",
+               "screen_point", screen_point.ToString());
+
   // The X11 server is the canonical state of what the window stacking order
   // is.
   XID xid =
