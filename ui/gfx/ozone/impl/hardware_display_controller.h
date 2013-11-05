@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_OZONE_IMPL_HARDWARE_DISPLAY_CONTROLLER_OZONE_H_
-#define UI_GFX_OZONE_IMPL_HARDWARE_DISPLAY_CONTROLLER_OZONE_H_
+#ifndef UI_GFX_OZONE_IMPL_HARDWARE_DISPLAY_CONTROLLER_H_
+#define UI_GFX_OZONE_IMPL_HARDWARE_DISPLAY_CONTROLLER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -12,11 +12,11 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/gfx/ozone/impl/drm_wrapper_ozone.h"
+#include "ui/gfx/ozone/impl/dri_wrapper.h"
 
 namespace gfx {
 
-class SoftwareSurfaceOzone;
+class DriSurface;
 
 // The HDCOz will handle modesettings and scannout operations for hardware
 // devices.
@@ -75,7 +75,7 @@ class SoftwareSurfaceOzone;
 //
 // TODO(dnicoara) Need to have a way to detect events (such as monitor
 // connected or disconnected).
-class HardwareDisplayControllerOzone {
+class HardwareDisplayController {
  public:
   // Controller states. The state transitions will happen from top to bottom.
   enum State {
@@ -100,21 +100,21 @@ class HardwareDisplayControllerOzone {
     FAILED,
   };
 
-  HardwareDisplayControllerOzone();
+  HardwareDisplayController();
 
-  ~HardwareDisplayControllerOzone();
+  ~HardwareDisplayController();
 
   // Set the hardware configuration for this HDCO. Once this is set, the HDCO is
   // responsible for keeping track of the connector and CRTC and cleaning up
   // when it is destroyed.
-  void SetControllerInfo(DrmWrapperOzone* drm,
+  void SetControllerInfo(DriWrapper* drm,
                          uint32_t connector_id,
                          uint32_t crtc_id,
                          uint32_t dpms_property_id,
                          drmModeModeInfo mode);
 
   // Associate the HDCO with a surface implementation and initialize it.
-  bool BindSurfaceToController(scoped_ptr<SoftwareSurfaceOzone> surface);
+  bool BindSurfaceToController(scoped_ptr<DriSurface> surface);
 
   // Schedules the |surface_|'s framebuffer to be displayed on the next vsync
   // event. The event will be posted on the graphics card file descriptor |fd_|
@@ -140,12 +140,12 @@ class HardwareDisplayControllerOzone {
 
   const drmModeModeInfo& get_mode() const { return mode_; };
 
-  SoftwareSurfaceOzone* get_surface() const { return surface_.get(); };
+  DriSurface* get_surface() const { return surface_.get(); };
 
  private:
   // Object containing the connection to the graphics device and wraps the API
   // calls to control it.
-  DrmWrapperOzone* drm_;
+  DriWrapper* drm_;
 
   // TODO(dnicoara) Need to allow a CRTC to have multiple connectors.
   uint32_t connector_id_;
@@ -163,11 +163,11 @@ class HardwareDisplayControllerOzone {
 
   State state_;
 
-  scoped_ptr<SoftwareSurfaceOzone> surface_;
+  scoped_ptr<DriSurface> surface_;
 
-  DISALLOW_COPY_AND_ASSIGN(HardwareDisplayControllerOzone);
+  DISALLOW_COPY_AND_ASSIGN(HardwareDisplayController);
 };
 
 }  // namespace gfx
 
-#endif  // UI_GFX_OZONE_IMPL_HARDWARE_DISPLAY_CONTROLLER_OZONE_H_
+#endif  // UI_GFX_OZONE_IMPL_HARDWARE_DISPLAY_CONTROLLER_H_

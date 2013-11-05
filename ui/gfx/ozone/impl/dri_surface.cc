@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/ozone/impl/software_surface_ozone.h"
+#include "ui/gfx/ozone/impl/dri_surface.h"
 
 #include <errno.h>
 #include <sys/mman.h>
@@ -13,8 +13,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "ui/gfx/ozone/impl/drm_skbitmap_ozone.h"
-#include "ui/gfx/ozone/impl/hardware_display_controller_ozone.h"
+#include "ui/gfx/ozone/impl/dri_skbitmap.h"
+#include "ui/gfx/ozone/impl/hardware_display_controller.h"
 #include "ui/gfx/skia_util.h"
 
 namespace gfx {
@@ -38,19 +38,19 @@ class CustomSkBitmapDevice : public SkBitmapDevice {
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// SoftwareSurfaceOzone implementation
+// DriSurface implementation
 
-SoftwareSurfaceOzone::SoftwareSurfaceOzone(
-    HardwareDisplayControllerOzone* controller)
+DriSurface::DriSurface(
+    HardwareDisplayController* controller)
     : controller_(controller),
       bitmaps_(),
       front_buffer_(0) {
 }
 
-SoftwareSurfaceOzone::~SoftwareSurfaceOzone() {
+DriSurface::~DriSurface() {
 }
 
-bool SoftwareSurfaceOzone::Initialize() {
+bool DriSurface::Initialize() {
   for (int i = 0; i < 2; ++i) {
     bitmaps_[i].reset(CreateBuffer());
     // TODO(dnicoara) Should select the configuration based on what the
@@ -71,14 +71,14 @@ bool SoftwareSurfaceOzone::Initialize() {
   return true;
 }
 
-uint32_t SoftwareSurfaceOzone::GetFramebufferId() const {
+uint32_t DriSurface::GetFramebufferId() const {
   CHECK(bitmaps_[0].get() && bitmaps_[1].get());
   return bitmaps_[front_buffer_ ^ 1]->get_framebuffer();
 }
 
 // This call is made after the hardware just started displaying our back buffer.
 // We need to update our pointer reference and synchronize the two buffers.
-void SoftwareSurfaceOzone::SwapBuffers() {
+void DriSurface::SwapBuffers() {
   CHECK(bitmaps_[0].get() && bitmaps_[1].get());
 
   // Update our front buffer pointer.
@@ -102,12 +102,12 @@ void SoftwareSurfaceOzone::SwapBuffers() {
                                      damage);
 }
 
-SkCanvas* SoftwareSurfaceOzone::GetDrawableForWidget() {
+SkCanvas* DriSurface::GetDrawableForWidget() {
   return skia_canvas_.get();
 }
 
-DrmSkBitmapOzone* SoftwareSurfaceOzone::CreateBuffer() {
-  return new DrmSkBitmapOzone(controller_->get_fd());
+DriSkBitmap* DriSurface::CreateBuffer() {
+  return new DriSkBitmap(controller_->get_fd());
 }
 
 }  // namespace gfx

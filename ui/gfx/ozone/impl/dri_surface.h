@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_OZONE_IMPL_SOFTWARE_SURFACE_OZONE_H_
-#define UI_GFX_OZONE_IMPL_SOFTWARE_SURFACE_OZONE_H_
+#ifndef UI_GFX_OZONE_IMPL_DRI_SURFACE_H_
+#define UI_GFX_OZONE_IMPL_DRI_SURFACE_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -14,28 +14,28 @@ class SkCanvas;
 
 namespace gfx {
 
-class DrmSkBitmapOzone;
-class HardwareDisplayControllerOzone;
+class DriSkBitmap;
+class HardwareDisplayController;
 
-// SoftwareSurfaceOzone is used to represent a surface that can be scanned out
+// DriSurface is used to represent a surface that can be scanned out
 // to a monitor. It will store the internal state associated with the drawing
-// surface associated with it. SoftwareSurfaceOzone also performs all the needed
+// surface associated with it. DriSurface also performs all the needed
 // operations to initialize and update the drawing surface.
 //
 // The implementation uses dumb buffers, which is used for software rendering.
-// The intent is to have one SoftwareSurfaceOzone implementation for a
-// HardwareDisplayControllerOzone.
+// The intent is to have one DriSurface implementation for a
+// HardwareDisplayController.
 //
 // DoubleBufferedSurface is intended to be the software analog to
-// EGLNativeSurface while SoftwareSurfaceOzone is intended to provide the glue
+// EGLNativeSurface while DriSurface is intended to provide the glue
 // necessary to initialize and display the surface to the screen.
 //
 // The typical usage pattern is:
 // -----------------------------------------------------------------------------
-// HardwareDisplayControllerOzone controller;
+// HardwareDisplayController controller;
 // // Initialize controller
 //
-// SoftwareSurfaceOzone* surface = new SoftwareSurfaceOzone(controller);
+// DriSurface* surface = new DriSurface(controller);
 // surface.Initialize();
 // controller.BindSurfaceToController(surface);
 //
@@ -116,11 +116,11 @@ class HardwareDisplayControllerOzone;
 // to the backbuffer.
 //
 // At this point we're back to step 1 and can start a new draw iteration.
-class SoftwareSurfaceOzone {
+class DriSurface {
  public:
-  SoftwareSurfaceOzone(HardwareDisplayControllerOzone* controller);
+  DriSurface(HardwareDisplayController* controller);
 
-  virtual ~SoftwareSurfaceOzone();
+  virtual ~DriSurface();
 
   // Used to allocate all necessary buffers for this surface. If the
   // initialization succeeds, the device is ready to be used for drawing
@@ -138,17 +138,17 @@ class SoftwareSurfaceOzone {
   SkCanvas* GetDrawableForWidget();
 
  private:
-  friend class HardwareDisplayControllerOzone;
+  friend class HardwareDisplayController;
 
   // Used to create the backing buffers.
-  virtual DrmSkBitmapOzone* CreateBuffer();
+  virtual DriSkBitmap* CreateBuffer();
 
   // Stores DRM information for this output device (connector, encoder, last
   // CRTC state).
-  HardwareDisplayControllerOzone* controller_;
+  HardwareDisplayController* controller_;
 
   // The actual buffers used for painting.
-  scoped_ptr<DrmSkBitmapOzone> bitmaps_[2];
+  scoped_ptr<DriSkBitmap> bitmaps_[2];
 
   // BitmapDevice for the current backbuffer.
   skia::RefPtr<SkBitmapDevice> skia_device_;
@@ -159,9 +159,9 @@ class SoftwareSurfaceOzone {
   // Keeps track of which bitmap is |buffers_| is the frontbuffer.
   int front_buffer_;
 
-  DISALLOW_COPY_AND_ASSIGN(SoftwareSurfaceOzone);
+  DISALLOW_COPY_AND_ASSIGN(DriSurface);
 };
 
 }  // namespace gfx
 
-#endif  // UI_GFX_OZONE_IMPL_SOFTWARE_SURFACE_OZONE_H_
+#endif  // UI_GFX_OZONE_IMPL_DRI_SURFACE_H_

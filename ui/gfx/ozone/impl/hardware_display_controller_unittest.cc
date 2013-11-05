@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/ozone/impl/drm_skbitmap_ozone.h"
-#include "ui/gfx/ozone/impl/drm_wrapper_ozone.h"
-#include "ui/gfx/ozone/impl/hardware_display_controller_ozone.h"
-#include "ui/gfx/ozone/impl/software_surface_ozone.h"
+#include "ui/gfx/ozone/impl/dri_skbitmap.h"
+#include "ui/gfx/ozone/impl/dri_surface.h"
+#include "ui/gfx/ozone/impl/dri_wrapper.h"
+#include "ui/gfx/ozone/impl/hardware_display_controller.h"
 
 namespace {
 
@@ -25,10 +25,10 @@ const uint32_t kCrtcId = 1;
 
 const uint32_t kDPMSPropertyId = 1;
 
-// The real DrmWrapper makes actual DRM calls which we can't use in unit tests.
-class MockDrmWrapperOzone : public gfx::DrmWrapperOzone {
+// The real DriWrapper makes actual DRM calls which we can't use in unit tests.
+class MockDriWrapper : public gfx::DriWrapper {
  public:
-  MockDrmWrapperOzone(int fd) : DrmWrapperOzone(""),
+  MockDriWrapper(int fd) : DriWrapper(""),
                                 get_crtc_call_count_(0),
                                 free_crtc_call_count_(0),
                                 restore_crtc_call_count_(0),
@@ -40,7 +40,7 @@ class MockDrmWrapperOzone : public gfx::DrmWrapperOzone {
     fd_ = fd;
   }
 
-  virtual ~MockDrmWrapperOzone() { fd_ = -1; }
+  virtual ~MockDriWrapper() { fd_ = -1; }
 
   virtual drmModeCrtc* GetCrtc(uint32_t crtc_id) OVERRIDE {
     get_crtc_call_count_++;
@@ -132,165 +132,165 @@ class MockDrmWrapperOzone : public gfx::DrmWrapperOzone {
   bool add_framebuffer_expectation_;
   bool page_flip_expectation_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockDrmWrapperOzone);
+  DISALLOW_COPY_AND_ASSIGN(MockDriWrapper);
 };
 
-class MockDrmSkBitmapOzone : public gfx::DrmSkBitmapOzone {
+class MockDriSkBitmap : public gfx::DriSkBitmap {
  public:
-  MockDrmSkBitmapOzone(int fd) : DrmSkBitmapOzone(fd) {}
-  virtual ~MockDrmSkBitmapOzone() {}
+  MockDriSkBitmap(int fd) : DriSkBitmap(fd) {}
+  virtual ~MockDriSkBitmap() {}
 
   virtual bool Initialize() OVERRIDE {
     return allocPixels();
   }
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockDrmSkBitmapOzone);
+  DISALLOW_COPY_AND_ASSIGN(MockDriSkBitmap);
 };
 
-class MockSoftwareSurfaceOzone : public gfx::SoftwareSurfaceOzone {
+class MockDriSurface : public gfx::DriSurface {
  public:
-  MockSoftwareSurfaceOzone(gfx::HardwareDisplayControllerOzone* controller)
-      : SoftwareSurfaceOzone(controller) {}
-  virtual ~MockSoftwareSurfaceOzone() {}
+  MockDriSurface(gfx::HardwareDisplayController* controller)
+      : DriSurface(controller) {}
+  virtual ~MockDriSurface() {}
 
  private:
-  virtual gfx::DrmSkBitmapOzone* CreateBuffer() OVERRIDE {
-    return new MockDrmSkBitmapOzone(kFd);
+  virtual gfx::DriSkBitmap* CreateBuffer() OVERRIDE {
+    return new MockDriSkBitmap(kFd);
   }
-  DISALLOW_COPY_AND_ASSIGN(MockSoftwareSurfaceOzone);
+  DISALLOW_COPY_AND_ASSIGN(MockDriSurface);
 };
 
 }  // namespace
 
-class HardwareDisplayControllerOzoneTest : public testing::Test {
+class HardwareDisplayControllerTest : public testing::Test {
  public:
-  HardwareDisplayControllerOzoneTest() {}
-  virtual ~HardwareDisplayControllerOzoneTest() {}
+  HardwareDisplayControllerTest() {}
+  virtual ~HardwareDisplayControllerTest() {}
 
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
  protected:
-  scoped_ptr<gfx::HardwareDisplayControllerOzone> controller_;
-  scoped_ptr<MockDrmWrapperOzone> drm_;
+  scoped_ptr<gfx::HardwareDisplayController> controller_;
+  scoped_ptr<MockDriWrapper> drm_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(HardwareDisplayControllerOzoneTest);
+  DISALLOW_COPY_AND_ASSIGN(HardwareDisplayControllerTest);
 };
 
-void HardwareDisplayControllerOzoneTest::SetUp() {
-  controller_.reset(new gfx::HardwareDisplayControllerOzone());
-  drm_.reset(new MockDrmWrapperOzone(kFd));
+void HardwareDisplayControllerTest::SetUp() {
+  controller_.reset(new gfx::HardwareDisplayController());
+  drm_.reset(new MockDriWrapper(kFd));
 }
 
-void HardwareDisplayControllerOzoneTest::TearDown() {
+void HardwareDisplayControllerTest::TearDown() {
   controller_.reset();
   drm_.reset();
 }
 
-TEST_F(HardwareDisplayControllerOzoneTest, CheckInitialState) {
-  EXPECT_EQ(gfx::HardwareDisplayControllerOzone::UNASSOCIATED,
+TEST_F(HardwareDisplayControllerTest, CheckInitialState) {
+  EXPECT_EQ(gfx::HardwareDisplayController::UNASSOCIATED,
             controller_->get_state());
 }
 
-TEST_F(HardwareDisplayControllerOzoneTest,
+TEST_F(HardwareDisplayControllerTest,
        CheckStateAfterControllerIsInitialized) {
   controller_->SetControllerInfo(
       drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
 
   EXPECT_EQ(1, drm_->get_get_crtc_call_count());
-  EXPECT_EQ(gfx::HardwareDisplayControllerOzone::UNINITIALIZED,
+  EXPECT_EQ(gfx::HardwareDisplayController::UNINITIALIZED,
             controller_->get_state());
 }
 
-TEST_F(HardwareDisplayControllerOzoneTest, CheckStateAfterSurfaceIsBound) {
+TEST_F(HardwareDisplayControllerTest, CheckStateAfterSurfaceIsBound) {
   controller_->SetControllerInfo(
       drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
-  scoped_ptr<gfx::SoftwareSurfaceOzone> surface(
-      new MockSoftwareSurfaceOzone(controller_.get()));
+  scoped_ptr<gfx::DriSurface> surface(
+      new MockDriSurface(controller_.get()));
 
   EXPECT_TRUE(surface->Initialize());
   EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass()));
 
   EXPECT_EQ(2, drm_->get_add_framebuffer_call_count());
-  EXPECT_EQ(gfx::HardwareDisplayControllerOzone::SURFACE_INITIALIZED,
+  EXPECT_EQ(gfx::HardwareDisplayController::SURFACE_INITIALIZED,
             controller_->get_state());
 }
 
-TEST_F(HardwareDisplayControllerOzoneTest, CheckStateIfBindingFails) {
+TEST_F(HardwareDisplayControllerTest, CheckStateIfBindingFails) {
   drm_->set_add_framebuffer_expectation(false);
 
   controller_->SetControllerInfo(
       drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
-  scoped_ptr<gfx::SoftwareSurfaceOzone> surface(
-      new MockSoftwareSurfaceOzone(controller_.get()));
+  scoped_ptr<gfx::DriSurface> surface(
+      new MockDriSurface(controller_.get()));
 
   EXPECT_TRUE(surface->Initialize());
   EXPECT_FALSE(controller_->BindSurfaceToController(surface.Pass()));
 
   EXPECT_EQ(1, drm_->get_add_framebuffer_call_count());
-  EXPECT_EQ(gfx::HardwareDisplayControllerOzone::FAILED,
+  EXPECT_EQ(gfx::HardwareDisplayController::FAILED,
             controller_->get_state());
 }
 
-TEST_F(HardwareDisplayControllerOzoneTest, CheckStateAfterPageFlip) {
+TEST_F(HardwareDisplayControllerTest, CheckStateAfterPageFlip) {
   controller_->SetControllerInfo(
       drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
-  scoped_ptr<gfx::SoftwareSurfaceOzone> surface(
-      new MockSoftwareSurfaceOzone(controller_.get()));
+  scoped_ptr<gfx::DriSurface> surface(
+      new MockDriSurface(controller_.get()));
 
   EXPECT_TRUE(surface->Initialize());
   EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass()));
 
   controller_->SchedulePageFlip();
 
-  EXPECT_EQ(gfx::HardwareDisplayControllerOzone::INITIALIZED,
+  EXPECT_EQ(gfx::HardwareDisplayController::INITIALIZED,
             controller_->get_state());
 }
 
-TEST_F(HardwareDisplayControllerOzoneTest, CheckStateIfModesetFails) {
+TEST_F(HardwareDisplayControllerTest, CheckStateIfModesetFails) {
   drm_->set_set_crtc_expectation(false);
 
   controller_->SetControllerInfo(
       drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
-  scoped_ptr<gfx::SoftwareSurfaceOzone> surface(
-      new MockSoftwareSurfaceOzone(controller_.get()));
+  scoped_ptr<gfx::DriSurface> surface(
+      new MockDriSurface(controller_.get()));
 
   EXPECT_TRUE(surface->Initialize());
   EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass()));
 
   controller_->SchedulePageFlip();
 
-  EXPECT_EQ(gfx::HardwareDisplayControllerOzone::FAILED,
+  EXPECT_EQ(gfx::HardwareDisplayController::FAILED,
             controller_->get_state());
 }
 
-TEST_F(HardwareDisplayControllerOzoneTest, CheckStateIfPageFlipFails) {
+TEST_F(HardwareDisplayControllerTest, CheckStateIfPageFlipFails) {
   drm_->set_page_flip_expectation(false);
 
   controller_->SetControllerInfo(
       drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
-  scoped_ptr<gfx::SoftwareSurfaceOzone> surface(
-      new MockSoftwareSurfaceOzone(controller_.get()));
+  scoped_ptr<gfx::DriSurface> surface(
+      new MockDriSurface(controller_.get()));
 
   EXPECT_TRUE(surface->Initialize());
   EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass()));
 
   controller_->SchedulePageFlip();
 
-  EXPECT_EQ(gfx::HardwareDisplayControllerOzone::FAILED,
+  EXPECT_EQ(gfx::HardwareDisplayController::FAILED,
             controller_->get_state());
 }
 
-TEST_F(HardwareDisplayControllerOzoneTest, CheckProperDestruction) {
+TEST_F(HardwareDisplayControllerTest, CheckProperDestruction) {
   controller_->SetControllerInfo(
       drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
-  scoped_ptr<gfx::SoftwareSurfaceOzone> surface(
-      new MockSoftwareSurfaceOzone(controller_.get()));
+  scoped_ptr<gfx::DriSurface> surface(
+      new MockDriSurface(controller_.get()));
 
   EXPECT_TRUE(surface->Initialize());
   EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass()));
 
-  EXPECT_EQ(gfx::HardwareDisplayControllerOzone::SURFACE_INITIALIZED,
+  EXPECT_EQ(gfx::HardwareDisplayController::SURFACE_INITIALIZED,
             controller_->get_state());
 
   controller_.reset();

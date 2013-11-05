@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/ozone/impl/hardware_display_controller_ozone.h"
+#include "ui/gfx/ozone/impl/hardware_display_controller.h"
 
 #include <errno.h>
 #include <string.h>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "ui/gfx/ozone/impl/drm_skbitmap_ozone.h"
-#include "ui/gfx/ozone/impl/drm_wrapper_ozone.h"
-#include "ui/gfx/ozone/impl/software_surface_ozone.h"
+#include "ui/gfx/ozone/impl/dri_skbitmap.h"
+#include "ui/gfx/ozone/impl/dri_surface.h"
+#include "ui/gfx/ozone/impl/dri_wrapper.h"
 
 namespace gfx {
 
-HardwareDisplayControllerOzone::HardwareDisplayControllerOzone()
+HardwareDisplayController::HardwareDisplayController()
   : drm_(NULL),
     connector_id_(0),
     crtc_id_(0),
@@ -25,8 +25,8 @@ HardwareDisplayControllerOzone::HardwareDisplayControllerOzone()
     surface_() {
 }
 
-void HardwareDisplayControllerOzone::SetControllerInfo(
-    DrmWrapperOzone* drm,
+void HardwareDisplayController::SetControllerInfo(
+    DriWrapper* drm,
     uint32_t connector_id,
     uint32_t crtc_id,
     uint32_t dpms_property_id,
@@ -40,7 +40,7 @@ void HardwareDisplayControllerOzone::SetControllerInfo(
   state_ = UNINITIALIZED;
 }
 
-HardwareDisplayControllerOzone::~HardwareDisplayControllerOzone() {
+HardwareDisplayController::~HardwareDisplayController() {
   if (saved_crtc_) {
     if (!drm_->SetCrtc(saved_crtc_, &connector_id_))
       DLOG(ERROR) << "Failed to restore CRTC state: " << strerror(errno);
@@ -57,8 +57,8 @@ HardwareDisplayControllerOzone::~HardwareDisplayControllerOzone() {
 }
 
 bool
-HardwareDisplayControllerOzone::BindSurfaceToController(
-    scoped_ptr<SoftwareSurfaceOzone> surface) {
+HardwareDisplayController::BindSurfaceToController(
+    scoped_ptr<DriSurface> surface) {
   CHECK(state_ == UNINITIALIZED);
 
   // Register the buffers.
@@ -82,7 +82,7 @@ HardwareDisplayControllerOzone::BindSurfaceToController(
   return true;
 }
 
-bool HardwareDisplayControllerOzone::SchedulePageFlip() {
+bool HardwareDisplayController::SchedulePageFlip() {
   CHECK(state_ == SURFACE_INITIALIZED || state_ == INITIALIZED);
 
   if (state_ == SURFACE_INITIALIZED) {

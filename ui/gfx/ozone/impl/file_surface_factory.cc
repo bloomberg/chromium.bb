@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/ozone/impl/file_surface_factory_ozone.h"
+#include "ui/gfx/ozone/impl/file_surface_factory.h"
 
 #include "base/bind.h"
 #include "base/file_util.h"
@@ -28,7 +28,7 @@ void WriteDataToFile(const base::FilePath& location,
 
 namespace gfx {
 
-FileSurfaceFactoryOzone::FileSurfaceFactoryOzone(
+FileSurfaceFactory::FileSurfaceFactory(
     const base::FilePath& dump_location)
     : location_(dump_location) {
   CHECK(!base::DirectoryExists(location_))
@@ -36,32 +36,32 @@ FileSurfaceFactoryOzone::FileSurfaceFactoryOzone(
   CHECK(!base::PathExists(location_) || base::PathIsWritable(location_));
 }
 
-FileSurfaceFactoryOzone::~FileSurfaceFactoryOzone() {}
+FileSurfaceFactory::~FileSurfaceFactory() {}
 
 SurfaceFactoryOzone::HardwareState
-FileSurfaceFactoryOzone::InitializeHardware() {
+FileSurfaceFactory::InitializeHardware() {
   return INITIALIZED;
 }
 
-void FileSurfaceFactoryOzone::ShutdownHardware() {
+void FileSurfaceFactory::ShutdownHardware() {
 }
 
-AcceleratedWidget FileSurfaceFactoryOzone::GetAcceleratedWidget() {
+AcceleratedWidget FileSurfaceFactory::GetAcceleratedWidget() {
   return 1;
 }
 
-AcceleratedWidget FileSurfaceFactoryOzone::RealizeAcceleratedWidget(
+AcceleratedWidget FileSurfaceFactory::RealizeAcceleratedWidget(
     AcceleratedWidget widget) {
   return 1;
 }
 
-bool FileSurfaceFactoryOzone::LoadEGLGLES2Bindings(
+bool FileSurfaceFactory::LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) {
   return false;
 }
 
-bool FileSurfaceFactoryOzone::AttemptToResizeAcceleratedWidget(
+bool FileSurfaceFactory::AttemptToResizeAcceleratedWidget(
     AcceleratedWidget widget,
     const Rect& bounds) {
   device_ = skia::AdoptRef(new SkBitmapDevice(SkBitmap::kARGB_8888_Config,
@@ -71,7 +71,7 @@ bool FileSurfaceFactoryOzone::AttemptToResizeAcceleratedWidget(
   return true;
 }
 
-bool FileSurfaceFactoryOzone::SchedulePageFlip(AcceleratedWidget widget) {
+bool FileSurfaceFactory::SchedulePageFlip(AcceleratedWidget widget) {
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config,
                    device_->width(),
@@ -85,11 +85,11 @@ bool FileSurfaceFactoryOzone::SchedulePageFlip(AcceleratedWidget widget) {
   return true;
 }
 
-SkCanvas* FileSurfaceFactoryOzone::GetCanvasForWidget(AcceleratedWidget w) {
+SkCanvas* FileSurfaceFactory::GetCanvasForWidget(AcceleratedWidget w) {
   return canvas_.get();
 }
 
-VSyncProvider* FileSurfaceFactoryOzone::GetVSyncProvider(AcceleratedWidget w) {
+VSyncProvider* FileSurfaceFactory::GetVSyncProvider(AcceleratedWidget w) {
   return NULL;
 }
 

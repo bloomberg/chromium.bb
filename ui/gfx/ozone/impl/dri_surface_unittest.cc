@@ -6,9 +6,9 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkDevice.h"
-#include "ui/gfx/ozone/impl/drm_skbitmap_ozone.h"
-#include "ui/gfx/ozone/impl/hardware_display_controller_ozone.h"
-#include "ui/gfx/ozone/impl/software_surface_ozone.h"
+#include "ui/gfx/ozone/impl/dri_skbitmap.h"
+#include "ui/gfx/ozone/impl/dri_surface.h"
+#include "ui/gfx/ozone/impl/hardware_display_controller.h"
 
 namespace {
 
@@ -28,10 +28,10 @@ const uint32_t kCrtcId = 1;
 // Mock DPMS property ID.
 const uint32_t kDPMSPropertyId = 1;
 
-class MockDrmWrapperOzone : public gfx::DrmWrapperOzone {
+class MockDriWrapper : public gfx::DriWrapper {
  public:
-  MockDrmWrapperOzone() : DrmWrapperOzone(""), id_(1) { fd_ = kFd; }
-  virtual ~MockDrmWrapperOzone() { fd_ = -1; }
+  MockDriWrapper() : DriWrapper(""), id_(1) { fd_ = kFd; }
+  virtual ~MockDriWrapper() { fd_ = -1; }
 
   virtual drmModeCrtc* GetCrtc(uint32_t crtc_id) OVERRIDE { return NULL; }
   virtual void FreeCrtc(drmModeCrtc* crtc) OVERRIDE {}
@@ -63,16 +63,16 @@ class MockDrmWrapperOzone : public gfx::DrmWrapperOzone {
 
  private:
   int id_;
-  DISALLOW_COPY_AND_ASSIGN(MockDrmWrapperOzone);
+  DISALLOW_COPY_AND_ASSIGN(MockDriWrapper);
 };
 
-class MockDrmSkBitmapOzone : public gfx::DrmSkBitmapOzone {
+class MockDriSkBitmap : public gfx::DriSkBitmap {
  public:
-  MockDrmSkBitmapOzone(int fd,
+  MockDriSkBitmap(int fd,
                        bool initialize_expectation)
-      : DrmSkBitmapOzone(fd),
+      : DriSkBitmap(fd),
         initialize_expectation_(initialize_expectation) {}
-  virtual ~MockDrmSkBitmapOzone() {}
+  virtual ~MockDriSkBitmap() {}
 
   virtual bool Initialize() OVERRIDE {
     if (!initialize_expectation_)
@@ -87,76 +87,76 @@ class MockDrmSkBitmapOzone : public gfx::DrmSkBitmapOzone {
  private:
   bool initialize_expectation_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockDrmSkBitmapOzone);
+  DISALLOW_COPY_AND_ASSIGN(MockDriSkBitmap);
 };
 
-class MockSoftwareSurfaceOzone : public gfx::SoftwareSurfaceOzone {
+class MockDriSurface : public gfx::DriSurface {
  public:
-  MockSoftwareSurfaceOzone(gfx::HardwareDisplayControllerOzone* controller)
-      : SoftwareSurfaceOzone(controller),
+  MockDriSurface(gfx::HardwareDisplayController* controller)
+      : DriSurface(controller),
         initialize_expectation_(true) {}
-  virtual ~MockSoftwareSurfaceOzone() {}
+  virtual ~MockDriSurface() {}
 
   void set_initialize_expectation(bool state) {
     initialize_expectation_ = state;
   }
 
  private:
-  virtual gfx::DrmSkBitmapOzone* CreateBuffer() OVERRIDE {
-    return new MockDrmSkBitmapOzone(kFd, initialize_expectation_);
+  virtual gfx::DriSkBitmap* CreateBuffer() OVERRIDE {
+    return new MockDriSkBitmap(kFd, initialize_expectation_);
   }
 
   bool initialize_expectation_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockSoftwareSurfaceOzone);
+  DISALLOW_COPY_AND_ASSIGN(MockDriSurface);
 };
 
 }  // namespace
 
-class SoftwareSurfaceOzoneTest : public testing::Test {
+class DriSurfaceTest : public testing::Test {
  public:
-  SoftwareSurfaceOzoneTest() {}
+  DriSurfaceTest() {}
 
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
  protected:
-  scoped_ptr<MockDrmWrapperOzone> drm_;
-  scoped_ptr<gfx::HardwareDisplayControllerOzone> controller_;
-  scoped_ptr<MockSoftwareSurfaceOzone> surface_;
+  scoped_ptr<MockDriWrapper> drm_;
+  scoped_ptr<gfx::HardwareDisplayController> controller_;
+  scoped_ptr<MockDriSurface> surface_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SoftwareSurfaceOzoneTest);
+  DISALLOW_COPY_AND_ASSIGN(DriSurfaceTest);
 };
 
-void SoftwareSurfaceOzoneTest::SetUp() {
-  drm_.reset(new MockDrmWrapperOzone());
-  controller_.reset(new gfx::HardwareDisplayControllerOzone());
+void DriSurfaceTest::SetUp() {
+  drm_.reset(new MockDriWrapper());
+  controller_.reset(new gfx::HardwareDisplayController());
   controller_->SetControllerInfo(
       drm_.get(), kConnectorId, kCrtcId, kDPMSPropertyId, kDefaultMode);
 
-  surface_.reset(new MockSoftwareSurfaceOzone(controller_.get()));
+  surface_.reset(new MockDriSurface(controller_.get()));
 }
 
-void SoftwareSurfaceOzoneTest::TearDown() {
+void DriSurfaceTest::TearDown() {
   surface_.reset();
   controller_.reset();
   drm_.reset();
 }
 
-TEST_F(SoftwareSurfaceOzoneTest, FailInitialization) {
+TEST_F(DriSurfaceTest, FailInitialization) {
   surface_->set_initialize_expectation(false);
   EXPECT_FALSE(surface_->Initialize());
 }
 
-TEST_F(SoftwareSurfaceOzoneTest, SuccessfulInitialization) {
+TEST_F(DriSurfaceTest, SuccessfulInitialization) {
   EXPECT_TRUE(surface_->Initialize());
 }
 
-TEST_F(SoftwareSurfaceOzoneTest, CheckFBIDOnSwap) {
+TEST_F(DriSurfaceTest, CheckFBIDOnSwap) {
   EXPECT_TRUE(surface_->Initialize());
   controller_->BindSurfaceToController(
-      surface_.PassAs<gfx::SoftwareSurfaceOzone>());
+      surface_.PassAs<gfx::DriSurface>());
 
   // Check that the framebuffer ID is correct.
   EXPECT_EQ(2u, controller_->get_surface()->GetFramebufferId());
@@ -166,7 +166,7 @@ TEST_F(SoftwareSurfaceOzoneTest, CheckFBIDOnSwap) {
   EXPECT_EQ(1u, controller_->get_surface()->GetFramebufferId());
 }
 
-TEST_F(SoftwareSurfaceOzoneTest, CheckPixelPointerOnSwap) {
+TEST_F(DriSurfaceTest, CheckPixelPointerOnSwap) {
   EXPECT_TRUE(surface_->Initialize());
 
   void* bitmap_pixels1 = surface_->GetDrawableForWidget()->getDevice()
@@ -182,7 +182,7 @@ TEST_F(SoftwareSurfaceOzoneTest, CheckPixelPointerOnSwap) {
   EXPECT_NE(bitmap_pixels1, bitmap_pixels2);
 }
 
-TEST_F(SoftwareSurfaceOzoneTest, CheckCorrectBufferSync) {
+TEST_F(DriSurfaceTest, CheckCorrectBufferSync) {
   EXPECT_TRUE(surface_->Initialize());
 
   SkCanvas* canvas = surface_->GetDrawableForWidget();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/ozone/impl/software_surface_factory_ozone.h"
+#include "ui/gfx/ozone/impl/dri_surface_factory.h"
 
 #include <drm.h>
 #include <errno.h>
@@ -12,10 +12,10 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/ozone/impl/drm_skbitmap_ozone.h"
-#include "ui/gfx/ozone/impl/drm_wrapper_ozone.h"
-#include "ui/gfx/ozone/impl/hardware_display_controller_ozone.h"
-#include "ui/gfx/ozone/impl/software_surface_ozone.h"
+#include "ui/gfx/ozone/impl/dri_skbitmap.h"
+#include "ui/gfx/ozone/impl/dri_surface.h"
+#include "ui/gfx/ozone/impl/dri_wrapper.h"
+#include "ui/gfx/ozone/impl/hardware_display_controller.h"
 
 namespace gfx {
 
@@ -31,7 +31,7 @@ const gfx::AcceleratedWidget kDefaultWidgetHandle = 1;
 // The old frontbuffer is no longer used by the hardware and can be used for
 // future draw operations.
 //
-// |device| will contain a reference to the |SoftwareSurfaceOzone| object which
+// |device| will contain a reference to the |DriSurface| object which
 // the event belongs to.
 //
 // TODO(dnicoara) When we have a FD handler for the DRM calls in the message
@@ -41,11 +41,11 @@ void HandlePageFlipEvent(int fd,
                          unsigned int seconds,
                          unsigned int useconds,
                          void* controller) {
-  static_cast<HardwareDisplayControllerOzone*>(controller)->get_surface()
+  static_cast<HardwareDisplayController*>(controller)->get_surface()
       ->SwapBuffers();
 }
 
-uint32_t GetDrmProperty(int fd, drmModeConnector* connector, const char* name) {
+uint32_t GetDriProperty(int fd, drmModeConnector* connector, const char* name) {
   for (int i = 0; i < connector->count_props; ++i) {
     drmModePropertyPtr property = drmModeGetProperty(fd, connector->props[i]);
     if (!property)
@@ -97,19 +97,19 @@ uint32_t GetCrtc(int fd, drmModeRes* resources, drmModeConnector* connector) {
 
 }  // namespace
 
-SoftwareSurfaceFactoryOzone::SoftwareSurfaceFactoryOzone()
+DriSurfaceFactory::DriSurfaceFactory()
     : drm_(),
       state_(UNINITIALIZED),
       controller_() {
 }
 
-SoftwareSurfaceFactoryOzone::~SoftwareSurfaceFactoryOzone() {
+DriSurfaceFactory::~DriSurfaceFactory() {
   if (state_ == INITIALIZED)
     ShutdownHardware();
 }
 
 SurfaceFactoryOzone::HardwareState
-SoftwareSurfaceFactoryOzone::InitializeHardware() {
+DriSurfaceFactory::InitializeHardware() {
   CHECK(state_ == UNINITIALIZED);
 
   // TODO(dnicoara): Short-cut right now. What we want is to look at all the
@@ -126,7 +126,7 @@ SoftwareSurfaceFactoryOzone::InitializeHardware() {
   return state_;
 }
 
-void SoftwareSurfaceFactoryOzone::ShutdownHardware() {
+void DriSurfaceFactory::ShutdownHardware() {
   CHECK(state_ == INITIALIZED);
 
   controller_.reset();
@@ -135,14 +135,14 @@ void SoftwareSurfaceFactoryOzone::ShutdownHardware() {
   state_ = UNINITIALIZED;
 }
 
-gfx::AcceleratedWidget SoftwareSurfaceFactoryOzone::GetAcceleratedWidget() {
+gfx::AcceleratedWidget DriSurfaceFactory::GetAcceleratedWidget() {
   CHECK(state_ != FAILED);
 
   // TODO(dnicoara) When there's more information on which display we want,
   // then we can return the widget associated with the display.
   // For now just assume we have 1 display device and return it.
   if (!controller_.get())
-    controller_.reset(new HardwareDisplayControllerOzone());
+    controller_.reset(new HardwareDisplayController());
 
   // TODO(dnicoara) We only have 1 display for now, so only 1 AcceleratedWidget.
   // When we'll support multiple displays this needs to be changed to return a
@@ -150,7 +150,7 @@ gfx::AcceleratedWidget SoftwareSurfaceFactoryOzone::GetAcceleratedWidget() {
   return kDefaultWidgetHandle;
 }
 
-gfx::AcceleratedWidget SoftwareSurfaceFactoryOzone::RealizeAcceleratedWidget(
+gfx::AcceleratedWidget DriSurfaceFactory::RealizeAcceleratedWidget(
     gfx::AcceleratedWidget w) {
   CHECK(state_ == INITIALIZED);
   // TODO(dnicoara) Once we can handle multiple displays this needs to be
@@ -158,7 +158,7 @@ gfx::AcceleratedWidget SoftwareSurfaceFactoryOzone::RealizeAcceleratedWidget(
   CHECK(w == kDefaultWidgetHandle);
 
   CHECK(controller_->get_state() ==
-        HardwareDisplayControllerOzone::UNASSOCIATED);
+        HardwareDisplayController::UNASSOCIATED);
 
   // Until now the controller is just a stub. Initializing it will link it to a
   // hardware display.
@@ -168,7 +168,7 @@ gfx::AcceleratedWidget SoftwareSurfaceFactoryOzone::RealizeAcceleratedWidget(
   }
 
   // Create a surface suitable for the current controller.
-  scoped_ptr<SoftwareSurfaceOzone> surface(CreateSurface(controller_.get()));
+  scoped_ptr<DriSurface> surface(CreateSurface(controller_.get()));
 
   if (!surface->Initialize()) {
     LOG(ERROR) << "Failed to initialize surface";
@@ -186,19 +186,19 @@ gfx::AcceleratedWidget SoftwareSurfaceFactoryOzone::RealizeAcceleratedWidget(
   return reinterpret_cast<gfx::AcceleratedWidget>(controller_->get_surface());
 }
 
-bool SoftwareSurfaceFactoryOzone::LoadEGLGLES2Bindings(
+bool DriSurfaceFactory::LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) {
   return false;
 }
 
-bool SoftwareSurfaceFactoryOzone::AttemptToResizeAcceleratedWidget(
+bool DriSurfaceFactory::AttemptToResizeAcceleratedWidget(
     gfx::AcceleratedWidget w,
     const gfx::Rect& bounds) {
   return false;
 }
 
-bool SoftwareSurfaceFactoryOzone::SchedulePageFlip(gfx::AcceleratedWidget w) {
+bool DriSurfaceFactory::SchedulePageFlip(gfx::AcceleratedWidget w) {
   CHECK(state_ == INITIALIZED);
   // TODO(dnicoara) Change this CHECK once we're running with the threaded
   // compositor.
@@ -218,7 +218,7 @@ bool SoftwareSurfaceFactoryOzone::SchedulePageFlip(gfx::AcceleratedWidget w) {
   // wait should happen in the message loop. The message loop would then
   // schedule the next draw event. Alternatively, the VSyncProvider could be
   // used to schedule the next draw. Unfortunately, at this point,
-  // SoftwareOutputDevice does not provide any means to use any of the above
+  // DriOutputDevice does not provide any means to use any of the above
   // solutions. Note that if the DRM callback does not schedule the next draw,
   // then some sort of synchronization needs to take place since starting a new
   // draw before the page flip happened is considered an error. However we can
@@ -230,32 +230,32 @@ bool SoftwareSurfaceFactoryOzone::SchedulePageFlip(gfx::AcceleratedWidget w) {
   return true;
 }
 
-SkCanvas* SoftwareSurfaceFactoryOzone::GetCanvasForWidget(
+SkCanvas* DriSurfaceFactory::GetCanvasForWidget(
     gfx::AcceleratedWidget w) {
   CHECK(state_ == INITIALIZED);
-  return reinterpret_cast<SoftwareSurfaceOzone*>(w)->GetDrawableForWidget();
+  return reinterpret_cast<DriSurface*>(w)->GetDrawableForWidget();
 }
 
-gfx::VSyncProvider* SoftwareSurfaceFactoryOzone::GetVSyncProvider(
+gfx::VSyncProvider* DriSurfaceFactory::GetVSyncProvider(
     gfx::AcceleratedWidget w) {
   return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// SoftwareSurfaceFactoryOzone private
+// DriSurfaceFactory private
 
-SoftwareSurfaceOzone* SoftwareSurfaceFactoryOzone::CreateSurface(
-    HardwareDisplayControllerOzone* controller) {
-  return new SoftwareSurfaceOzone(controller);
+DriSurface* DriSurfaceFactory::CreateSurface(
+    HardwareDisplayController* controller) {
+  return new DriSurface(controller);
 }
 
-DrmWrapperOzone* SoftwareSurfaceFactoryOzone::CreateWrapper() {
-  return new DrmWrapperOzone(kDefaultGraphicsCardPath);
+DriWrapper* DriSurfaceFactory::CreateWrapper() {
+  return new DriWrapper(kDefaultGraphicsCardPath);
 }
 
-bool SoftwareSurfaceFactoryOzone::InitializeControllerForPrimaryDisplay(
-    DrmWrapperOzone* drm,
-    HardwareDisplayControllerOzone* controller) {
+bool DriSurfaceFactory::InitializeControllerForPrimaryDisplay(
+    DriWrapper* drm,
+    HardwareDisplayController* controller) {
   CHECK(state_ == SurfaceFactoryOzone::INITIALIZED);
 
   drmModeRes* resources = drmModeGetResources(drm->get_fd());
@@ -280,7 +280,7 @@ bool SoftwareSurfaceFactoryOzone::InitializeControllerForPrimaryDisplay(
     if (!crtc)
       continue;
 
-    uint32_t dpms_property_id = GetDrmProperty(drm->get_fd(),
+    uint32_t dpms_property_id = GetDriProperty(drm->get_fd(),
                                                connector,
                                                kDPMSProperty);
 
@@ -302,7 +302,7 @@ bool SoftwareSurfaceFactoryOzone::InitializeControllerForPrimaryDisplay(
   return false;
 }
 
-void SoftwareSurfaceFactoryOzone::WaitForPageFlipEvent(int fd) {
+void DriSurfaceFactory::WaitForPageFlipEvent(int fd) {
   drmEventContext drm_event;
   drm_event.version = DRM_EVENT_CONTEXT_VERSION;
   drm_event.page_flip_handler = HandlePageFlipEvent;

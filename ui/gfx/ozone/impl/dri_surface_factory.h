@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_OZONE_IMPL_SOFTWARE_SURFACE_FACTORY_OZONE_H_
-#define UI_GFX_OZONE_IMPL_SOFTWARE_SURFACE_FACTORY_OZONE_H_
+#ifndef UI_GFX_OZONE_IMPL_DRI_SURFACE_FACTORY_H_
+#define UI_GFX_OZONE_IMPL_DRI_SURFACE_FACTORY_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/ozone/surface_factory_ozone.h"
 
 namespace gfx {
 
-class DrmWrapperOzone;
-class HardwareDisplayControllerOzone;
-class SoftwareSurfaceOzone;
+class DriSurface;
+class DriWrapper;
+class HardwareDisplayController;
 
 // SurfaceFactoryOzone implementation on top of DRM/KMS using dumb buffers.
 // This implementation is used in conjunction with the software rendering
 // path.
-class SoftwareSurfaceFactoryOzone : public SurfaceFactoryOzone {
+class DriSurfaceFactory : public SurfaceFactoryOzone {
  public:
-  SoftwareSurfaceFactoryOzone();
-  virtual ~SoftwareSurfaceFactoryOzone();
+  DriSurfaceFactory();
+  virtual ~DriSurfaceFactory();
 
   virtual HardwareState InitializeHardware() OVERRIDE;
   virtual void ShutdownHardware() OVERRIDE;
@@ -45,14 +45,14 @@ class SoftwareSurfaceFactoryOzone : public SurfaceFactoryOzone {
       gfx::AcceleratedWidget w) OVERRIDE;
 
  private:
-  virtual SoftwareSurfaceOzone* CreateSurface(
-    HardwareDisplayControllerOzone* controller);
+  virtual DriSurface* CreateSurface(
+    HardwareDisplayController* controller);
 
-  virtual DrmWrapperOzone* CreateWrapper();
+  virtual DriWrapper* CreateWrapper();
 
   virtual bool InitializeControllerForPrimaryDisplay(
-    DrmWrapperOzone* drm,
-    HardwareDisplayControllerOzone* controller);
+    DriWrapper* drm,
+    HardwareDisplayController* controller);
 
   // Blocks until a DRM event is read.
   // TODO(dnicoara) Remove once we can safely move DRM event processing in the
@@ -60,17 +60,17 @@ class SoftwareSurfaceFactoryOzone : public SurfaceFactoryOzone {
   // pending frame.
   virtual void WaitForPageFlipEvent(int fd);
 
-  scoped_ptr<DrmWrapperOzone> drm_;
+  scoped_ptr<DriWrapper> drm_;
 
   HardwareState state_;
 
   // Active output.
-  scoped_ptr<HardwareDisplayControllerOzone> controller_;
+  scoped_ptr<HardwareDisplayController> controller_;
 
 
-  DISALLOW_COPY_AND_ASSIGN(SoftwareSurfaceFactoryOzone);
+  DISALLOW_COPY_AND_ASSIGN(DriSurfaceFactory);
 };
 
 }  // namespace gfx
 
-#endif  // UI_GFX_OZONE_IMPL_SOFTWARE_SURFACE_FACTORY_OZONE_H_
+#endif  // UI_GFX_OZONE_IMPL_DRI_SURFACE_FACTORY_H_

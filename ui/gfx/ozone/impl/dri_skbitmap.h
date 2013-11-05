@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_OZONE_IMPL_DRM_SKBITMAP_OZONE_H_
-#define UI_GFX_OZONE_IMPL_DRM_SKBITMAP_OZONE_H_
+#ifndef UI_GFX_OZONE_IMPL_DRI_SKBITMAP_H_
+#define UI_GFX_OZONE_IMPL_DRI_SKBITMAP_H_
 
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -12,12 +12,12 @@ namespace gfx {
 
 // Extend the SkBitmap interface to keep track of additional parameters used by
 // the DRM stack when allocating buffers.
-class DrmSkBitmapOzone : public SkBitmap {
+class DriSkBitmap : public SkBitmap {
  public:
-  DrmSkBitmapOzone(int fd);
-  virtual ~DrmSkBitmapOzone();
+  DriSkBitmap(int fd);
+  virtual ~DriSkBitmap();
 
-  // Allocates the backing pixels using DRM.
+  // Allocates the backing pixels using DRI.
   // Return true on success, false otherwise.
   virtual bool Initialize();
 
@@ -31,26 +31,26 @@ class DrmSkBitmapOzone : public SkBitmap {
   uint8_t GetColorDepth() const;
 
  private:
-  friend class DrmAllocator;
-  friend class HardwareDisplayControllerOzone;
+  friend class DriAllocator;
+  friend class HardwareDisplayController;
 
   void set_handle(uint32_t handle) { handle_ = handle; };
   void set_framebuffer(uint32_t framebuffer) { framebuffer_ = framebuffer; };
 
-  // File descriptor used by the DRM allocator to request buffers from the DRM
+  // File descriptor used by the DRI allocator to request buffers from the DRI
   // stack.
   int fd_;
 
-  // Buffer handle used by the DRM allocator.
+  // Buffer handle used by the DRI allocator.
   uint32_t handle_;
 
-  // Buffer ID used by the DRM modesettings API. This is set when the buffer is
+  // Buffer ID used by the DRI modesettings API. This is set when the buffer is
   // registered with the CRTC.
   uint32_t framebuffer_;
 
-  DISALLOW_COPY_AND_ASSIGN(DrmSkBitmapOzone);
+  DISALLOW_COPY_AND_ASSIGN(DriSkBitmap);
 };
 
 }  // namespace gfx
 
-#endif  // UI_GFX_OZONE_IMPL_DRM_SKBITMAP_OZONE_H_
+#endif  // UI_GFX_OZONE_IMPL_DRI_SKBITMAP_H_

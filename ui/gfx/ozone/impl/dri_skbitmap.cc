@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/ozone/impl/drm_skbitmap_ozone.h"
+#include "ui/gfx/ozone/impl/dri_skbitmap.h"
 
 #include <errno.h>
 #include <sys/mman.h>
@@ -29,14 +29,14 @@ void DestroyDumbBuffer(int fd, uint32_t handle) {
 // in the SkPixelRef.
 // At the end of its life the SkPixelRef is responsible for deallocating the
 // pixel memory.
-class DrmSkPixelRef : public SkPixelRef {
+class DriSkPixelRef : public SkPixelRef {
  public:
-  DrmSkPixelRef(void* pixels,
+  DriSkPixelRef(void* pixels,
                 SkColorTable* color_table_,
                 size_t size,
                 int fd,
                 uint32_t handle);
-  virtual ~DrmSkPixelRef();
+  virtual ~DriSkPixelRef();
 
   virtual void* onLockPixels(SkColorTable** ct) OVERRIDE;
   virtual void onUnlockPixels() OVERRIDE;
@@ -59,13 +59,13 @@ class DrmSkPixelRef : public SkPixelRef {
   // Handle for the allocated memory.
   uint32_t handle_;
 
-  DISALLOW_COPY_AND_ASSIGN(DrmSkPixelRef);
+  DISALLOW_COPY_AND_ASSIGN(DriSkPixelRef);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// DrmSkPixelRef implementation
+// DriSkPixelRef implementation
 
-DrmSkPixelRef::DrmSkPixelRef(
+DriSkPixelRef::DriSkPixelRef(
     void* pixels,
     SkColorTable* color_table,
     size_t size,
@@ -78,47 +78,47 @@ DrmSkPixelRef::DrmSkPixelRef(
     handle_(handle) {
 }
 
-DrmSkPixelRef::~DrmSkPixelRef() {
+DriSkPixelRef::~DriSkPixelRef() {
   munmap(pixels_, size_);
   DestroyDumbBuffer(fd_, handle_);
 }
 
-void* DrmSkPixelRef::onLockPixels(SkColorTable** ct) {
+void* DriSkPixelRef::onLockPixels(SkColorTable** ct) {
   *ct = color_table_;
   return pixels_;
 }
 
-void DrmSkPixelRef::onUnlockPixels() {
+void DriSkPixelRef::onUnlockPixels() {
 }
 
 }  // namespace
 
 // Allocates pixel memory for a SkBitmap using DRM dumb buffers.
-class DrmAllocator : public SkBitmap::Allocator {
+class DriAllocator : public SkBitmap::Allocator {
  public:
-  DrmAllocator();
+  DriAllocator();
 
   virtual bool allocPixelRef(SkBitmap* bitmap,
                              SkColorTable* color_table) OVERRIDE;
 
  private:
-  bool AllocatePixels(DrmSkBitmapOzone* bitmap, SkColorTable* color_table);
+  bool AllocatePixels(DriSkBitmap* bitmap, SkColorTable* color_table);
 
-  DISALLOW_COPY_AND_ASSIGN(DrmAllocator);
+  DISALLOW_COPY_AND_ASSIGN(DriAllocator);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// DrmAllocator implementation
+// DriAllocator implementation
 
-DrmAllocator::DrmAllocator() {
+DriAllocator::DriAllocator() {
 }
 
-bool DrmAllocator::allocPixelRef(SkBitmap* bitmap,
+bool DriAllocator::allocPixelRef(SkBitmap* bitmap,
                                  SkColorTable* color_table) {
-  return AllocatePixels(static_cast<DrmSkBitmapOzone*>(bitmap), color_table);
+  return AllocatePixels(static_cast<DriSkBitmap*>(bitmap), color_table);
 }
 
-bool DrmAllocator::AllocatePixels(DrmSkBitmapOzone* bitmap,
+bool DriAllocator::AllocatePixels(DriSkBitmap* bitmap,
                                   SkColorTable* color_table) {
   struct drm_mode_create_dumb request;
   request.width = bitmap->width();
@@ -158,7 +158,7 @@ bool DrmAllocator::AllocatePixels(DrmSkBitmapOzone* bitmap,
     return false;
   }
 
-  bitmap->setPixelRef(new DrmSkPixelRef(
+  bitmap->setPixelRef(new DriSkPixelRef(
       pixels,
       color_table,
       bitmap->getSize(),
@@ -170,23 +170,23 @@ bool DrmAllocator::AllocatePixels(DrmSkBitmapOzone* bitmap,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DrmSkBitmapOzone implementation
+// DriSkBitmap implementation
 
-DrmSkBitmapOzone::DrmSkBitmapOzone(int fd)
+DriSkBitmap::DriSkBitmap(int fd)
   : fd_(fd),
     handle_(0),
     framebuffer_(0) {
 }
 
-DrmSkBitmapOzone::~DrmSkBitmapOzone() {
+DriSkBitmap::~DriSkBitmap() {
 }
 
-bool DrmSkBitmapOzone::Initialize() {
-  DrmAllocator drm_allocator;
+bool DriSkBitmap::Initialize() {
+  DriAllocator drm_allocator;
   return allocPixels(&drm_allocator, NULL);
 }
 
-uint8_t DrmSkBitmapOzone::GetColorDepth() const {
+uint8_t DriSkBitmap::GetColorDepth() const {
   switch (config()) {
     case SkBitmap::kNo_Config:
     case SkBitmap::kA1_Config:

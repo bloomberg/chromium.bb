@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_OZONE_IMPL_FILE_SURFACE_FACTORY_OZONE_H_
-#define UI_GFX_OZONE_IMPL_FILE_SURFACE_FACTORY_OZONE_H_
+#ifndef UI_GFX_OZONE_IMPL_FILE_SURFACE_FACTORY_H_
+#define UI_GFX_OZONE_IMPL_FILE_SURFACE_FACTORY_H_
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
@@ -16,10 +16,10 @@ class SkCanvas;
 
 namespace gfx {
 
-class FileSurfaceFactoryOzone : public SurfaceFactoryOzone {
+class FileSurfaceFactory : public SurfaceFactoryOzone {
  public:
-  explicit FileSurfaceFactoryOzone(const base::FilePath& dump_location);
-  virtual ~FileSurfaceFactoryOzone();
+  explicit FileSurfaceFactory(const base::FilePath& dump_location);
+  virtual ~FileSurfaceFactory();
 
  private:
   // SurfaceFactoryOzone:
@@ -41,9 +41,9 @@ class FileSurfaceFactoryOzone : public SurfaceFactoryOzone {
   skia::RefPtr<SkBitmapDevice> device_;
   skia::RefPtr<SkCanvas> canvas_;
 
-  DISALLOW_COPY_AND_ASSIGN(FileSurfaceFactoryOzone);
+  DISALLOW_COPY_AND_ASSIGN(FileSurfaceFactory);
 };
 
 }  // namespace gfx
 
-#endif  // UI_GFX_OZONE_IMPL_FILE_SURFACE_FACTORY_OZONE_H_
+#endif  // UI_GFX_OZONE_IMPL_FILE_SURFACE_FACTORY_H_

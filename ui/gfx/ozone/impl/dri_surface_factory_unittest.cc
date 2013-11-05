@@ -5,11 +5,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/ozone/impl/drm_skbitmap_ozone.h"
-#include "ui/gfx/ozone/impl/drm_wrapper_ozone.h"
-#include "ui/gfx/ozone/impl/hardware_display_controller_ozone.h"
-#include "ui/gfx/ozone/impl/software_surface_factory_ozone.h"
-#include "ui/gfx/ozone/impl/software_surface_ozone.h"
+#include "ui/gfx/ozone/impl/dri_skbitmap.h"
+#include "ui/gfx/ozone/impl/dri_surface.h"
+#include "ui/gfx/ozone/impl/dri_surface_factory.h"
+#include "ui/gfx/ozone/impl/dri_wrapper.h"
+#include "ui/gfx/ozone/impl/hardware_display_controller.h"
 #include "ui/gfx/ozone/surface_factory_ozone.h"
 
 namespace {
@@ -30,16 +30,16 @@ const uint32_t kDPMSPropertyId = 1;
 
 const gfx::AcceleratedWidget kDefaultWidgetHandle = 1;
 
-// The real DrmWrapper makes actual DRM calls which we can't use in unit tests.
-class MockDrmWrapperOzone : public gfx::DrmWrapperOzone {
+// The real DriWrapper makes actual DRM calls which we can't use in unit tests.
+class MockDriWrapper : public gfx::DriWrapper {
  public:
-  MockDrmWrapperOzone(int fd) : DrmWrapperOzone(""),
+  MockDriWrapper(int fd) : DriWrapper(""),
                                 add_framebuffer_expectation_(true),
                                 page_flip_expectation_(true) {
     fd_ = fd;
   }
 
-  virtual ~MockDrmWrapperOzone() { fd_ = -1; }
+  virtual ~MockDriWrapper() { fd_ = -1; }
 
   virtual drmModeCrtc* GetCrtc(uint32_t crtc_id) OVERRIDE {
     return new drmModeCrtc;
@@ -74,7 +74,7 @@ class MockDrmWrapperOzone : public gfx::DrmWrapperOzone {
   virtual bool PageFlip(uint32_t crtc_id,
                         uint32_t framebuffer,
                         void* data) OVERRIDE {
-    static_cast<gfx::HardwareDisplayControllerOzone*>(data)->get_surface()
+    static_cast<gfx::HardwareDisplayController*>(data)->get_surface()
         ->SwapBuffers();
     return page_flip_expectation_;
   }
@@ -95,13 +95,13 @@ class MockDrmWrapperOzone : public gfx::DrmWrapperOzone {
   bool add_framebuffer_expectation_;
   bool page_flip_expectation_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockDrmWrapperOzone);
+  DISALLOW_COPY_AND_ASSIGN(MockDriWrapper);
 };
 
-class MockDrmSkBitmapOzone : public gfx::DrmSkBitmapOzone {
+class MockDriSkBitmap : public gfx::DriSkBitmap {
  public:
-  MockDrmSkBitmapOzone() : DrmSkBitmapOzone(kFd) {}
-  virtual ~MockDrmSkBitmapOzone() {}
+  MockDriSkBitmap() : DriSkBitmap(kFd) {}
+  virtual ~MockDriSkBitmap() {}
 
   virtual bool Initialize() OVERRIDE {
     allocPixels();
@@ -110,36 +110,36 @@ class MockDrmSkBitmapOzone : public gfx::DrmSkBitmapOzone {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockDrmSkBitmapOzone);
+  DISALLOW_COPY_AND_ASSIGN(MockDriSkBitmap);
 };
 
-class MockSoftwareSurfaceOzone : public gfx::SoftwareSurfaceOzone {
+class MockDriSurface : public gfx::DriSurface {
  public:
-  MockSoftwareSurfaceOzone(gfx::HardwareDisplayControllerOzone* controller)
-      : SoftwareSurfaceOzone(controller) {}
-  virtual ~MockSoftwareSurfaceOzone() {}
+  MockDriSurface(gfx::HardwareDisplayController* controller)
+      : DriSurface(controller) {}
+  virtual ~MockDriSurface() {}
 
  private:
-  virtual gfx::DrmSkBitmapOzone* CreateBuffer() OVERRIDE {
-    return new MockDrmSkBitmapOzone();
+  virtual gfx::DriSkBitmap* CreateBuffer() OVERRIDE {
+    return new MockDriSkBitmap();
   }
 
-  DISALLOW_COPY_AND_ASSIGN(MockSoftwareSurfaceOzone);
+  DISALLOW_COPY_AND_ASSIGN(MockDriSurface);
 };
 
 // SSFO would normally allocate DRM resources. We can't rely on having a DRM
 // backend to allocate and display our buffers. Thus, we replace these
 // resources with stubs. For DRM calls, we simply use stubs that do nothing and
 // for buffers we use the default SkBitmap allocator.
-class MockSoftwareSurfaceFactoryOzone
-    : public gfx::SoftwareSurfaceFactoryOzone {
+class MockDriSurfaceFactory
+    : public gfx::DriSurfaceFactory {
  public:
-  MockSoftwareSurfaceFactoryOzone()
-      : SoftwareSurfaceFactoryOzone(),
+  MockDriSurfaceFactory()
+      : DriSurfaceFactory(),
         mock_drm_(NULL),
         drm_wrapper_expectation_(true),
         initialize_controller_expectation_(true) {}
-  virtual ~MockSoftwareSurfaceFactoryOzone() {};
+  virtual ~MockDriSurfaceFactory() {};
 
   void set_drm_wrapper_expectation(bool state) {
     drm_wrapper_expectation_ = state;
@@ -149,21 +149,21 @@ class MockSoftwareSurfaceFactoryOzone
     initialize_controller_expectation_ = state;
   }
 
-  MockDrmWrapperOzone* get_drm() const {
+  MockDriWrapper* get_drm() const {
     return mock_drm_;
   }
 
  private:
-  virtual gfx::SoftwareSurfaceOzone* CreateSurface(
-      gfx::HardwareDisplayControllerOzone* controller) OVERRIDE {
-    return new MockSoftwareSurfaceOzone(controller);
+  virtual gfx::DriSurface* CreateSurface(
+      gfx::HardwareDisplayController* controller) OVERRIDE {
+    return new MockDriSurface(controller);
   }
 
-  virtual gfx::DrmWrapperOzone* CreateWrapper() OVERRIDE {
+  virtual gfx::DriWrapper* CreateWrapper() OVERRIDE {
     if (drm_wrapper_expectation_)
-      mock_drm_ = new MockDrmWrapperOzone(kFd);
+      mock_drm_ = new MockDriWrapper(kFd);
     else
-      mock_drm_ = new MockDrmWrapperOzone(-1);
+      mock_drm_ = new MockDriWrapper(-1);
 
     return mock_drm_;
   }
@@ -171,8 +171,8 @@ class MockSoftwareSurfaceFactoryOzone
   // Normally we'd use DRM to figure out the controller configuration. But we
   // can't use DRM in unit tests, so we just create a fake configuration.
   virtual bool InitializeControllerForPrimaryDisplay(
-      gfx::DrmWrapperOzone* drm,
-      gfx::HardwareDisplayControllerOzone* controller) OVERRIDE {
+      gfx::DriWrapper* drm,
+      gfx::HardwareDisplayController* controller) OVERRIDE {
     if (initialize_controller_expectation_) {
       controller->SetControllerInfo(drm,
                                     kConnectorId,
@@ -187,51 +187,51 @@ class MockSoftwareSurfaceFactoryOzone
 
   virtual void WaitForPageFlipEvent(int fd) OVERRIDE {}
 
-  MockDrmWrapperOzone* mock_drm_;
+  MockDriWrapper* mock_drm_;
   bool drm_wrapper_expectation_;
   bool initialize_controller_expectation_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockSoftwareSurfaceFactoryOzone);
+  DISALLOW_COPY_AND_ASSIGN(MockDriSurfaceFactory);
 };
 
 }  // namespace
 
-class SoftwareSurfaceFactoryOzoneTest : public testing::Test {
+class DriSurfaceFactoryTest : public testing::Test {
  public:
-  SoftwareSurfaceFactoryOzoneTest() {}
+  DriSurfaceFactoryTest() {}
 
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
  protected:
   scoped_ptr<base::MessageLoop> message_loop_;
-  scoped_ptr<MockSoftwareSurfaceFactoryOzone> factory_;
+  scoped_ptr<MockDriSurfaceFactory> factory_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SoftwareSurfaceFactoryOzoneTest);
+  DISALLOW_COPY_AND_ASSIGN(DriSurfaceFactoryTest);
 };
 
-void SoftwareSurfaceFactoryOzoneTest::SetUp() {
+void DriSurfaceFactoryTest::SetUp() {
   message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
-  factory_.reset(new MockSoftwareSurfaceFactoryOzone());
+  factory_.reset(new MockDriSurfaceFactory());
 }
 
-void SoftwareSurfaceFactoryOzoneTest::TearDown() {
+void DriSurfaceFactoryTest::TearDown() {
   factory_.reset();
   message_loop_.reset();
 }
 
-TEST_F(SoftwareSurfaceFactoryOzoneTest, FailInitialization) {
+TEST_F(DriSurfaceFactoryTest, FailInitialization) {
   factory_->set_drm_wrapper_expectation(false);
 
   EXPECT_EQ(gfx::SurfaceFactoryOzone::FAILED, factory_->InitializeHardware());
 }
 
-TEST_F(SoftwareSurfaceFactoryOzoneTest, SuccessfulInitialization) {
+TEST_F(DriSurfaceFactoryTest, SuccessfulInitialization) {
   EXPECT_EQ(gfx::SurfaceFactoryOzone::INITIALIZED,
             factory_->InitializeHardware());
 }
 
-TEST_F(SoftwareSurfaceFactoryOzoneTest, FailSurfaceInitialization) {
+TEST_F(DriSurfaceFactoryTest, FailSurfaceInitialization) {
   factory_->set_initialize_controller_expectation(false);
 
   EXPECT_EQ(gfx::SurfaceFactoryOzone::INITIALIZED,
@@ -243,7 +243,7 @@ TEST_F(SoftwareSurfaceFactoryOzoneTest, FailSurfaceInitialization) {
   EXPECT_EQ(gfx::kNullAcceleratedWidget, factory_->RealizeAcceleratedWidget(w));
 }
 
-TEST_F(SoftwareSurfaceFactoryOzoneTest, FailBindingSurfaceToController) {
+TEST_F(DriSurfaceFactoryTest, FailBindingSurfaceToController) {
   EXPECT_EQ(gfx::SurfaceFactoryOzone::INITIALIZED,
             factory_->InitializeHardware());
 
@@ -255,7 +255,7 @@ TEST_F(SoftwareSurfaceFactoryOzoneTest, FailBindingSurfaceToController) {
   EXPECT_EQ(gfx::kNullAcceleratedWidget, factory_->RealizeAcceleratedWidget(w));
 }
 
-TEST_F(SoftwareSurfaceFactoryOzoneTest, SuccessfulWidgetRealization) {
+TEST_F(DriSurfaceFactoryTest, SuccessfulWidgetRealization) {
   EXPECT_EQ(gfx::SurfaceFactoryOzone::INITIALIZED,
             factory_->InitializeHardware());
 
@@ -265,7 +265,7 @@ TEST_F(SoftwareSurfaceFactoryOzoneTest, SuccessfulWidgetRealization) {
   EXPECT_NE(gfx::kNullAcceleratedWidget, factory_->RealizeAcceleratedWidget(w));
 }
 
-TEST_F(SoftwareSurfaceFactoryOzoneTest, FailSchedulePageFlip) {
+TEST_F(DriSurfaceFactoryTest, FailSchedulePageFlip) {
   EXPECT_EQ(gfx::SurfaceFactoryOzone::INITIALIZED,
             factory_->InitializeHardware());
 
@@ -279,7 +279,7 @@ TEST_F(SoftwareSurfaceFactoryOzoneTest, FailSchedulePageFlip) {
   EXPECT_FALSE(factory_->SchedulePageFlip(w));
 }
 
-TEST_F(SoftwareSurfaceFactoryOzoneTest, SuccessfulSchedulePageFlip) {
+TEST_F(DriSurfaceFactoryTest, SuccessfulSchedulePageFlip) {
   EXPECT_EQ(gfx::SurfaceFactoryOzone::INITIALIZED,
             factory_->InitializeHardware());
 

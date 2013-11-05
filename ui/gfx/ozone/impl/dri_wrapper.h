@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_OZONE_IMPL_DRM_WRAPPER_OZONE_H_
-#define UI_GFX_OZONE_IMPL_DRM_WRAPPER_OZONE_H_
+#ifndef UI_GFX_OZONE_IMPL_DRI_WRAPPER_H_
+#define UI_GFX_OZONE_IMPL_DRI_WRAPPER_H_
 
 #include <stdint.h>
 
@@ -17,10 +17,10 @@ namespace gfx {
 // Wraps DRM calls into a nice interface. Used to provide different
 // implementations of the DRM calls. For the actual implementation the DRM API
 // would be called. In unit tests this interface would be stubbed.
-class DrmWrapperOzone {
+class DriWrapper {
  public:
-  DrmWrapperOzone(const char* device_path);
-  virtual ~DrmWrapperOzone();
+  DriWrapper(const char* device_path);
+  virtual ~DriWrapper();
 
   // Get the CRTC state. This is generally used to save state before using the
   // CRTC. When the user finishes using the CRTC, the user should restore the
@@ -77,9 +77,9 @@ class DrmWrapperOzone {
   int fd_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DrmWrapperOzone);
+  DISALLOW_COPY_AND_ASSIGN(DriWrapper);
 };
 
 }  // namespace gfx
 
-#endif  // UI_GFX_OZONE_IMPL_DRM_WRAPPER_OZONE_H_
+#endif  // UI_GFX_OZONE_IMPL_DRI_WRAPPER_H_
