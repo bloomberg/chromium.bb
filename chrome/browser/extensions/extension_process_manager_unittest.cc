@@ -34,11 +34,6 @@ class ExtensionProcessManagerTest : public testing::Test {
     return manager->registrar_.IsRegistered(
         manager, type, content::Source<Profile>(profile));
   }
-
-  // Allows access to a protected method.
-  static Profile* GetProfile(ExtensionProcessManager* manager) {
-    return manager->GetProfile();
-  }
 };
 
 // Test that notification registration works properly.
@@ -48,12 +43,8 @@ TEST_F(ExtensionProcessManagerTest, ExtensionNotificationRegistration) {
   scoped_ptr<ExtensionProcessManager> manager1(
       ExtensionProcessManager::Create(original_profile.get()));
 
-  EXPECT_EQ(original_profile.get(), GetProfile(manager1.get()));
+  EXPECT_EQ(original_profile.get(), manager1->GetBrowserContext());
   EXPECT_EQ(0u, manager1->background_hosts().size());
-
-  // It observes some notifications from all sources.
-  EXPECT_TRUE(IsRegistered(
-      manager1.get(), chrome::NOTIFICATION_BROWSER_WINDOW_READY, NULL));
 
   // It observes other notifications from this profile.
   EXPECT_TRUE(IsRegistered(manager1.get(),
@@ -77,7 +68,7 @@ TEST_F(ExtensionProcessManagerTest, ExtensionNotificationRegistration) {
   scoped_ptr<ExtensionProcessManager> manager2(
       ExtensionProcessManager::Create(incognito_profile.get()));
 
-  EXPECT_EQ(incognito_profile.get(), GetProfile(manager2.get()));
+  EXPECT_EQ(incognito_profile.get(), manager2->GetBrowserContext());
   EXPECT_EQ(0u, manager2->background_hosts().size());
 
   // Some notifications are observed for the original profile.

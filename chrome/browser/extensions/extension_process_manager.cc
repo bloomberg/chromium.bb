@@ -20,7 +20,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
@@ -99,15 +98,12 @@ class IncognitoExtensionProcessManager : public ExtensionProcessManager {
   virtual SiteInstance* GetSiteInstanceForURL(const GURL& url) OVERRIDE;
 
  private:
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   // Returns true if the extension is allowed to run in incognito mode.
   bool IsIncognitoEnabled(const Extension* extension);
 
   ExtensionProcessManager* original_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(IncognitoExtensionProcessManager);
 };
 
 static void CreateBackgroundHostForExtensionLoad(
@@ -129,10 +125,9 @@ class RenderViewHostDestructionObserver
  private:
   explicit RenderViewHostDestructionObserver(WebContents* web_contents)
       : WebContentsObserver(web_contents) {
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents->GetBrowserContext());
+    BrowserContext* context = web_contents->GetBrowserContext();
     process_manager_ =
-        extensions::ExtensionSystem::Get(profile)->process_manager();
+        ExtensionSystem::GetForBrowserContext(context)->process_manager();
   }
 
   friend class content::WebContentsUserData<RenderViewHostDestructionObserver>;
@@ -188,12 +183,11 @@ ExtensionProcessManager::ExtensionProcessManager(
     BrowserContext* original_context)
   : site_instance_(SiteInstance::Create(context)),
     defer_background_host_creation_(false),
+    startup_background_hosts_created_(false),
     devtools_callback_(base::Bind(
         &ExtensionProcessManager::OnDevToolsStateChanged,
         base::Unretained(this))),
     weak_ptr_factory_(this) {
-  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
-                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
                  content::Source<BrowserContext>(original_context));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
@@ -602,29 +596,27 @@ void ExtensionProcessManager::DeferBackgroundHostCreation(bool defer) {
     CreateBackgroundHostsForProfileStartup();
 }
 
+void ExtensionProcessManager::OnBrowserWindowReady() {
+  ExtensionService* service = ExtensionSystem::GetForBrowserContext(
+      GetBrowserContext())->extension_service();
+  // On Chrome OS, a login screen is implemented as a browser.
+  // This browser has no extension service.  In this case,
+  // service will be NULL.
+  if (!service || !service->is_ready())
+    return;
+
+  CreateBackgroundHostsForProfileStartup();
+}
+
+content::BrowserContext* ExtensionProcessManager::GetBrowserContext() const {
+  return site_instance_->GetBrowserContext();
+}
+
 void ExtensionProcessManager::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_BROWSER_WINDOW_READY: {
-      // If a window for this profile, or this profile's incognito profile,
-      // has been opened, make sure this profile's background hosts have
-      // been loaded.
-      Browser* browser = content::Source<Browser>(source).ptr();
-      if (browser->profile() != GetProfile() &&
-          !(GetProfile()->HasOffTheRecordProfile() &&
-            browser->profile() == GetProfile()->GetOffTheRecordProfile()))
-        break;
-
-      ExtensionService* service = ExtensionSystem::GetForBrowserContext(
-          GetBrowserContext())->extension_service();
-      if (!service || !service->is_ready())
-        break;
-
-      CreateBackgroundHostsForProfileStartup();
-      break;
-    }
     case chrome::NOTIFICATION_EXTENSIONS_READY:
     case chrome::NOTIFICATION_PROFILE_CREATED: {
       CreateBackgroundHostsForProfileStartup();
@@ -632,9 +624,9 @@ void ExtensionProcessManager::Observe(
     }
 
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
-      Profile* profile = content::Source<Profile>(source).ptr();
+      BrowserContext* context = content::Source<BrowserContext>(source).ptr();
       ExtensionService* service =
-          extensions::ExtensionSystem::Get(profile)->extension_service();
+          ExtensionSystem::GetForBrowserContext(context)->extension_service();
       if (service->is_ready()) {
         const Extension* extension =
             content::Details<const Extension>(details).ptr();
@@ -756,7 +748,9 @@ void ExtensionProcessManager::OnDevToolsStateChanged(
 }
 
 void ExtensionProcessManager::CreateBackgroundHostsForProfileStartup() {
-  DVLOG(1) << "CreateBackgroundHostsForProfileStartup";
+  if (startup_background_hosts_created_)
+    return;
+
   // Don't load background hosts now if the loading should be deferred.
   // Instead they will be loaded when a browser window for this profile
   // (or an incognito profile from this profile) is ready, or when
@@ -774,13 +768,12 @@ void ExtensionProcessManager::CreateBackgroundHostsForProfileStartup() {
     extensions::RuntimeEventRouter::DispatchOnStartupEvent(
         GetBrowserContext(), (*extension)->id());
   }
+  startup_background_hosts_created_ = true;
 
   // Background pages should only be loaded once. To prevent any further loads
   // occurring, we remove the notification listeners.
   BrowserContext* original_context =
       ExtensionsBrowserClient::Get()->GetOriginalContext(GetBrowserContext());
-  registrar_.Remove(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
-                    content::NotificationService::AllSources());
   if (registrar_.IsRegistered(
           this,
           chrome::NOTIFICATION_PROFILE_CREATED,
@@ -797,14 +790,6 @@ void ExtensionProcessManager::CreateBackgroundHostsForProfileStartup() {
                       chrome::NOTIFICATION_EXTENSIONS_READY,
                       content::Source<BrowserContext>(original_context));
   }
-}
-
-Profile* ExtensionProcessManager::GetProfile() const {
-  return Profile::FromBrowserContext(site_instance_->GetBrowserContext());
-}
-
-content::BrowserContext* ExtensionProcessManager::GetBrowserContext() const {
-  return site_instance_->GetBrowserContext();
 }
 
 void ExtensionProcessManager::OnExtensionHostCreated(ExtensionHost* host,
@@ -971,33 +956,4 @@ bool IncognitoExtensionProcessManager::IsIncognitoEnabled(
   ExtensionService* service = ExtensionSystem::GetForBrowserContext(
       GetBrowserContext())->extension_service();
   return extension_util::IsIncognitoEnabled(extension->id(), service);
-}
-
-void IncognitoExtensionProcessManager::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    // Do not use ExtensionProcessManager's handler for
-    // NOTIFICATION_BROWSER_WINDOW_READY.
-    case chrome::NOTIFICATION_BROWSER_WINDOW_READY: {
-      // We want to spawn our background hosts as soon as the user opens an
-      // incognito window. Watch for new browsers and create the hosts if
-      // it matches our profile.
-      Browser* browser = content::Source<Browser>(source).ptr();
-      if (browser->profile() == site_instance_->GetBrowserContext()) {
-        // On Chrome OS, a login screen is implemented as a browser.
-        // This browser has no extension service.  In this case,
-        // service will be NULL.
-        ExtensionService* service = ExtensionSystem::GetForBrowserContext(
-            GetBrowserContext())->extension_service();
-        if (service && service->is_ready())
-          CreateBackgroundHostsForProfileStartup();
-      }
-      break;
-    }
-    default:
-      ExtensionProcessManager::Observe(type, source, details);
-      break;
-  }
 }

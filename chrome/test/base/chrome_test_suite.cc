@@ -93,6 +93,24 @@ class ChromeTestSuiteInitializer : public testing::EmptyTestEventListener {
     DCHECK(!g_browser_process);
     g_browser_process = new TestingBrowserProcess;
 
+    SetUpContentClients();
+    SetUpExtensionsClients();
+  }
+
+  virtual void OnTestEnd(const testing::TestInfo& test_info) OVERRIDE {
+    TearDownExtensionsClients();
+    TearDownContentClients();
+
+    if (g_browser_process) {
+      BrowserProcess* browser_process = g_browser_process;
+      // g_browser_process must be NULL during its own destruction.
+      g_browser_process = NULL;
+      delete browser_process;
+    }
+  }
+
+ private:
+  void SetUpContentClients() {
     content_client_.reset(new chrome::ChromeContentClient);
     content::SetContentClient(content_client_.get());
     // TODO(ios): Bring this back once ChromeContentBrowserClient is building.
@@ -104,14 +122,7 @@ class ChromeTestSuiteInitializer : public testing::EmptyTestEventListener {
 #endif
   }
 
-  virtual void OnTestEnd(const testing::TestInfo& test_info) OVERRIDE {
-    if (g_browser_process) {
-      BrowserProcess* browser_process = g_browser_process;
-      // g_browser_process must be NULL during its own destruction.
-      g_browser_process = NULL;
-      delete browser_process;
-    }
-
+  void TearDownContentClients() {
     // TODO(ios): Bring this back once ChromeContentBrowserClient is building.
 #if !defined(OS_IOS)
     browser_content_client_.reset();
@@ -121,13 +132,28 @@ class ChromeTestSuiteInitializer : public testing::EmptyTestEventListener {
     content::SetContentClient(NULL);
   }
 
- private:
+  void SetUpExtensionsClients() {
+    extensions_browser_client_.reset(
+        new extensions::ChromeExtensionsBrowserClient);
+    extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
+  }
+
+  void TearDownExtensionsClients() {
+    extensions_browser_client_.reset();
+    extensions::ExtensionsBrowserClient::Set(NULL);
+  }
+
+  // Client implementations for the content module.
   scoped_ptr<chrome::ChromeContentClient> content_client_;
   // TODO(ios): Bring this back once ChromeContentBrowserClient is building.
 #if !defined(OS_IOS)
   scoped_ptr<chrome::ChromeContentBrowserClient> browser_content_client_;
   scoped_ptr<chrome::ChromeContentUtilityClient> utility_content_client_;
 #endif
+
+  // Client implementations for the extensions module.
+  scoped_ptr<extensions::ChromeExtensionsBrowserClient>
+      extensions_browser_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeTestSuiteInitializer);
 };
@@ -172,8 +198,6 @@ void ChromeTestSuite::Initialize() {
 
   extensions::ExtensionsClient::Set(
       extensions::ChromeExtensionsClient::GetInstance());
-  extensions::ExtensionsBrowserClient::Set(
-      extensions::ChromeExtensionsBrowserClient::GetInstance());
 
   // Only want to do this for unit tests.
   if (!content::GetCurrentTestLauncherDelegate()) {

@@ -8,6 +8,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/extensions/chrome_notification_observer.h"
 #include "extensions/browser/extensions_browser_client.h"
 
 namespace content {
@@ -45,6 +47,9 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
 
  private:
   friend struct base::DefaultLazyInstanceTraits<ChromeExtensionsBrowserClient>;
+
+  // Observer for Chrome-specific notifications.
+  ChromeNotificationObserver notification_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsBrowserClient);
 };

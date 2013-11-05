@@ -19,9 +19,6 @@ ExtensionsBrowserClient* ExtensionsBrowserClient::Get() {
 }
 
 void ExtensionsBrowserClient::Set(ExtensionsBrowserClient* client) {
-  // This can happen in tests.
-  if (g_client)
-    return;
   g_client = client;
 }
 

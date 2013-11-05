@@ -36,6 +36,10 @@ namespace base {
 class SequencedTaskRunner;
 }
 
+namespace extensions {
+class ExtensionsBrowserClient;
+}
+
 namespace policy {
 class BrowserPolicyConnector;
 class PolicyService;
@@ -185,6 +189,7 @@ class BrowserProcessImpl : public BrowserProcess,
 
   scoped_ptr<GpuModeManager> gpu_mode_manager_;
 
+  scoped_ptr<extensions::ExtensionsBrowserClient> extensions_browser_client_;
   scoped_refptr<extensions::EventRouterForwarder>
       extension_event_router_forwarder_;
 

@@ -20,7 +20,6 @@
 
 class Browser;
 class GURL;
-class Profile;
 
 namespace content {
 class BrowserContext;
@@ -141,6 +140,13 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // background hosts will be created.  Defaults to false.
   void DeferBackgroundHostCreation(bool defer);
 
+  // Ensures background hosts are loaded for a new browser window.
+  void OnBrowserWindowReady();
+
+  // Gets the BrowserContext associated with site_instance_ and all other
+  // related SiteInstances.
+  content::BrowserContext* GetBrowserContext() const;
+
  protected:
   // If |context| is incognito pass the master context as |original_context|.
   // Otherwise pass the same context for both.
@@ -162,13 +168,6 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // Load all background pages once the profile data is ready and the pages
   // should be loaded.
   void CreateBackgroundHostsForProfileStartup();
-
-  // Gets the profile associated with site_instance_ and all other
-  // related SiteInstances.
-  Profile* GetProfile() const;
-
-  // Returns the same value as GetProfile() as a BrowserContext.
-  content::BrowserContext* GetBrowserContext() const;
 
   content::NotificationRegistrar registrar_;
 
@@ -238,6 +237,9 @@ class ExtensionProcessManager : public content::NotificationObserver {
 
   // If true, then creation of background hosts is suspended.
   bool defer_background_host_creation_;
+
+  // True if we have created the startup set of background hosts.
+  bool startup_background_hosts_created_;
 
   base::Callback<void(content::DevToolsAgentHost*, bool)> devtools_callback_;
 

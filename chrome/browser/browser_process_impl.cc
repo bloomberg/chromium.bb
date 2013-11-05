@@ -188,8 +188,11 @@ BrowserProcessImpl::BrowserProcessImpl(
   apps::AppsClient::Set(ChromeAppsClient::GetInstance());
   extensions::ExtensionsClient::Set(
       extensions::ChromeExtensionsClient::GetInstance());
-  extensions::ExtensionsBrowserClient::Set(
-      extensions::ChromeExtensionsBrowserClient::GetInstance());
+
+  extensions_browser_client_.reset(
+      new extensions::ChromeExtensionsBrowserClient);
+  extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
+
   extension_event_router_forwarder_ = new extensions::EventRouterForwarder;
   ExtensionRendererState::GetInstance()->Init();
 
