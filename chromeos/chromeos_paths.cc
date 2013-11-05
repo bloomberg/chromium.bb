@@ -33,8 +33,11 @@ const base::FilePath::CharType kUptimeFileName[] =
 const base::FilePath::CharType kUpdateRebootNeededUptimeFile[] =
     FILE_PATH_LITERAL("/var/run/chrome/update_reboot_needed_uptime");
 
-const base::FilePath::CharType kDeviceLocalAccountCacheDir[] =
+const base::FilePath::CharType kDeviceLocalAccountExtensionDir[] =
     FILE_PATH_LITERAL("/var/cache/device_local_account_extensions");
+
+const base::FilePath::CharType kDeviceLocalAccountExternalDataDir[] =
+    FILE_PATH_LITERAL("/var/cache/device_local_account_external_policy_data");
 
 bool PathProvider(int key, base::FilePath* result) {
   switch (key) {
@@ -56,8 +59,11 @@ bool PathProvider(int key, base::FilePath* result) {
     case FILE_UPDATE_REBOOT_NEEDED_UPTIME:
       *result = base::FilePath(kUpdateRebootNeededUptimeFile);
       break;
-    case DIR_DEVICE_LOCAL_ACCOUNT_CACHE:
-      *result = base::FilePath(kDeviceLocalAccountCacheDir);
+    case DIR_DEVICE_LOCAL_ACCOUNT_EXTENSIONS:
+      *result = base::FilePath(kDeviceLocalAccountExtensionDir);
+      break;
+    case DIR_DEVICE_LOCAL_ACCOUNT_EXTERNAL_DATA:
+      *result = base::FilePath(kDeviceLocalAccountExternalDataDir);
       break;
     default:
       return false;
