@@ -89,7 +89,6 @@ class ServerInstance(object):
     self.api_list_data_source_factory = APIListDataSource.Factory(
         self.compiled_fs_factory,
         host_fs_at_trunk,
-        svn_constants.PUBLIC_TEMPLATE_PATH,
         self.features_bundle,
         self.object_store_creator)
 

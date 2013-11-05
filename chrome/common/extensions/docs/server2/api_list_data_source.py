@@ -4,9 +4,9 @@
 
 from operator import itemgetter
 import os
+import posixpath
 
-from third_party.json_schema_compiler.json_parse import Parse
-import third_party.json_schema_compiler.model as model
+from svn_constants import PUBLIC_TEMPLATE_PATH
 import docs_server_utils as utils
 
 def _GetAPICategory(api, documented_apis):
@@ -38,13 +38,9 @@ class APIListDataSource(object):
     def __init__(self,
                  compiled_fs_factory,
                  file_system,
-                 public_template_path,
                  features_bundle,
                  object_store_creator):
       self._file_system = file_system
-      def NormalizePath(string):
-        return string if string.endswith('/') else (string + '/')
-      self._public_template_path = NormalizePath(public_template_path)
       self._cache = compiled_fs_factory.Create(file_system,
                                                self._CollectDocumentedAPIs,
                                                APIListDataSource)
@@ -54,8 +50,8 @@ class APIListDataSource(object):
     def _CollectDocumentedAPIs(self, base_dir, files):
       def GetDocumentedAPIsForPlatform(names, platform):
         public_templates = []
-        for root, _, files in self._file_system.Walk(
-            self._public_template_path + platform):
+        for root, _, files in self._file_system.Walk(posixpath.join(
+            PUBLIC_TEMPLATE_PATH, platform)):
           public_templates.extend(
               ('%s/%s' % (root, name)).lstrip('/') for name in files)
         template_names = set(os.path.splitext(name)[0]
@@ -69,7 +65,7 @@ class APIListDataSource(object):
 
     def _GenerateAPIDict(self):
       documented_apis = self._cache.GetFromFileListing(
-          self._public_template_path).Get()
+          PUBLIC_TEMPLATE_PATH).Get()
       api_features = self._features_bundle.GetAPIFeatures()
 
       def FilterAPIs(platform):

@@ -5,12 +5,11 @@
 
 import json
 import unittest
+
 from api_list_data_source import APIListDataSource
-from compiled_file_system import CompiledFileSystem
-from copy import deepcopy
-from features_bundle import FeaturesBundle
-from object_store_creator import ObjectStoreCreator
+from server_instance import ServerInstance
 from test_file_system import TestFileSystem
+
 
 def _ToTestData(obj):
   '''Transforms |obj| into test data by turning a list of files into an object
@@ -18,33 +17,13 @@ def _ToTestData(obj):
   '''
   return dict((name, name) for name in obj)
 
+
 def _ToTestFeatures(names):
   '''Transforms a list of strings into a minimal JSON features object.
   '''
-  return dict((name, {
-        'name': name,
-        'platforms': platforms
-      }) for name, platforms in names)
+  return dict((name, {'name': name, 'platforms': platforms})
+              for name, platforms in names)
 
-_TEST_DATA = {
-  'public': {
-    'apps': _ToTestData([
-      'alarms.html',
-      'app_window.html',
-      'experimental_bluetooth.html',
-      'experimental_power.html',
-      'storage.html',
-    ]),
-    'extensions': _ToTestData([
-      'alarms.html',
-      'browserAction.html',
-      'experimental_history.html',
-      'experimental_power.html',
-      'infobars.html',
-      'storage.html',
-    ]),
-  },
-}
 
 _TEST_API_FEATURES = _ToTestFeatures([
   ('alarms', ['apps', 'extensions']),
@@ -60,20 +39,48 @@ _TEST_API_FEATURES = _ToTestFeatures([
 ])
 
 
-class _FakeFeaturesBundle(object):
-  def GetAPIFeatures(self):
-    return _TEST_API_FEATURES
+_TEST_DATA = {
+  'api': {
+    '_api_features.json': json.dumps(_TEST_API_FEATURES),
+    '_manifest_features.json': '{}',
+    '_permission_features.json': '{}',
+  },
+  'docs': {
+    'templates': {
+      'json': {
+        'manifest.json': '{}',
+        'permissions.json': '{}',
+      },
+      'public': {
+        'apps': _ToTestData([
+          'alarms.html',
+          'app_window.html',
+          'experimental_bluetooth.html',
+          'experimental_power.html',
+          'storage.html',
+        ]),
+        'extensions': _ToTestData([
+          'alarms.html',
+          'browserAction.html',
+          'experimental_history.html',
+          'experimental_power.html',
+          'infobars.html',
+          'storage.html',
+        ]),
+      },
+    },
+  },
+}
 
 
 class APIListDataSourceTest(unittest.TestCase):
   def setUp(self):
-    object_store_creator = ObjectStoreCreator.ForTest()
+    server_instance = ServerInstance.ForTest(TestFileSystem(_TEST_DATA))
     self._factory = APIListDataSource.Factory(
-        CompiledFileSystem.Factory(object_store_creator),
-        TestFileSystem(deepcopy(_TEST_DATA)),
-        'public',
-        _FakeFeaturesBundle(),
-        object_store_creator)
+        server_instance.compiled_fs_factory,
+        server_instance.host_file_system_provider.GetTrunk(),
+        server_instance.features_bundle,
+        server_instance.object_store_creator)
 
   def testApps(self):
     api_list = self._factory.Create()
