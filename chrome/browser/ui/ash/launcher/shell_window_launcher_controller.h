@@ -48,7 +48,7 @@ class ShellWindowLauncherController
 
   // An additional user identified by |Profile|, got added to the existing
   // session.
-  virtual void AdditionalUserAddedToSession(Profile* profile) {}
+  virtual void AdditionalUserAddedToSession(Profile* profile);
 
   // Overridden from ShellWindowRegistry::Observer:
   virtual void OnShellWindowAdded(apps::ShellWindow* shell_window) OVERRIDE;
@@ -81,7 +81,10 @@ class ShellWindowLauncherController
   ShellWindowLauncherItemController* ControllerForWindow(aura::Window* window);
 
   ChromeLauncherController* owner_;
-  apps::ShellWindowRegistry* registry_;  // Unowned convenience pointer
+  // A set of unowned ShellWindowRegistry pointers for loaded users.
+  // Note that this will only be used with multiple users in the side by side
+  // mode.
+  std::set<apps::ShellWindowRegistry*> registry_;
   aura::client::ActivationClient* activation_client_;
 
   // Map of app launcher id to controller.

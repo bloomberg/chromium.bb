@@ -15,6 +15,10 @@
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/root_window.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/ash/multi_user_window_manager.h"
+#endif
+
 using apps::ShellWindow;
 
 namespace {
@@ -35,9 +39,11 @@ bool ControlsWindow(aura::Window* window) {
 ShellWindowLauncherController::ShellWindowLauncherController(
     ChromeLauncherController* owner)
     : owner_(owner),
-      registry_(apps::ShellWindowRegistry::Get(owner->profile())),
       activation_client_(NULL) {
-  registry_->AddObserver(this);
+  apps::ShellWindowRegistry* registry =
+      apps::ShellWindowRegistry::Get(owner->profile());
+  registry_.insert(registry);
+  registry->AddObserver(this);
   if (ash::Shell::HasInstance()) {
     if (ash::Shell::GetInstance()->GetPrimaryRootWindow()) {
       activation_client_ = aura::client::GetActivationClient(
@@ -49,7 +55,10 @@ ShellWindowLauncherController::ShellWindowLauncherController(
 }
 
 ShellWindowLauncherController::~ShellWindowLauncherController() {
-  registry_->RemoveObserver(this);
+  for (std::set<apps::ShellWindowRegistry*>::iterator it = registry_.begin();
+      it != registry_.end(); ++it)
+    (*it)->RemoveObserver(this);
+
   if (activation_client_)
     activation_client_->RemoveObserver(this);
   for (WindowToAppLauncherIdMap::iterator iter =
@@ -57,6 +66,24 @@ ShellWindowLauncherController::~ShellWindowLauncherController() {
        iter != window_to_app_launcher_id_map_.end(); ++iter) {
     iter->first->RemoveObserver(this);
   }
+}
+
+void ShellWindowLauncherController::AdditionalUserAddedToSession(
+    Profile* profile) {
+#if defined(OS_CHROMEOS)
+  // TODO(skuhne): This was added for the legacy side by side mode in M32. If
+  // this mode gets no longer pursued this special case can be removed.
+  if (chrome::MultiUserWindowManager::GetMultiProfileMode() !=
+          chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_MIXED)
+    return;
+
+  apps::ShellWindowRegistry* registry = apps::ShellWindowRegistry::Get(profile);
+  if (registry_.find(registry) != registry_.end())
+    return;
+
+  registry->AddObserver(this);
+  registry_.insert(registry);
+#endif
 }
 
 void ShellWindowLauncherController::OnShellWindowAdded(
