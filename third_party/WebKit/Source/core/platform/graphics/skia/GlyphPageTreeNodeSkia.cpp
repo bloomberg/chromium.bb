@@ -47,13 +47,7 @@ bool GlyphPage::fill(unsigned offset, unsigned length, UChar* buffer, unsigned b
         return false;
     }
 
-#if OS(WIN)
-    // FIXME: For some reason SkAutoSTMalloc fails to link on Windows.
-    // SkAutoSTArray works fine though...
-    SkAutoSTArray<GlyphPage::size, uint16_t> glyphStorage(length);
-#else
     SkAutoSTMalloc<GlyphPage::size, uint16_t> glyphStorage(length);
-#endif
 
     uint16_t* glyphs = glyphStorage.get();
     SkTypeface* typeface = fontData->platformData().typeface();
