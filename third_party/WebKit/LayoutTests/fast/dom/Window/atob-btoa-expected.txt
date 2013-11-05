@@ -26,8 +26,16 @@ PASS window.atob() threw exception TypeError: Failed to execute 'atob' on 'Windo
 PASS window.atob("") is ""
 PASS window.atob(null) is "ée"
 PASS window.atob(undefined) threw exception InvalidCharacterError: 'atob' failed: The string to be decoded is not correctly encoded..
-PASS window.atob(" YQ==") threw exception InvalidCharacterError: 'atob' failed: The string to be decoded is not correctly encoded..
-PASS window.atob("YQ==\u000a") threw exception InvalidCharacterError: 'atob' failed: The string to be decoded is not correctly encoded..
+PASS window.atob(" YQ==") is "a"
+PASS window.atob("YQ== ") is "a"
+PASS window.atob("YQ==    ") is "a"
+PASS window.atob("YQ==\u000a") is "a"
+PASS window.atob("YQ ==") is "a"
+PASS window.atob("YQ\t==") is "a"
+PASS window.atob("YQ\n==") is "a"
+PASS window.atob("YQ\f==") is "a"
+PASS window.atob("YQ\r==") is "a"
+PASS window.atob("YQ\t\n\f\r ==") is "a"
 PASS window.atob("6ek=") is "éé"
 PASS window.atob("6ek") is "éé"
 PASS window.atob("gIE=") is ""

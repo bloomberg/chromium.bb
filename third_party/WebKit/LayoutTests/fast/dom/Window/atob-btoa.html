@@ -5,52 +5,64 @@
 </head>
 <body>
 <script>
-shouldBe('window.atob("YQ==")', '"a"');
-shouldBe('window.atob("YWI=")', '"ab"');
-shouldBe('window.atob("YWJj")', '"abc"');
-shouldBe('window.atob("YWJjZA==")', '"abcd"');
-shouldBe('window.atob("YWJjZGU=")', '"abcde"');
-shouldBe('window.atob("YWJjZGVm")', '"abcdef"');
-shouldBe('window.btoa("a")', '"YQ=="');
-shouldBe('window.btoa("ab")', '"YWI="');
-shouldBe('window.btoa("abc")', '"YWJj"');
-shouldBe('window.btoa("abcd")', '"YWJjZA=="');
-shouldBe('window.btoa("abcde")', '"YWJjZGU="');
-shouldBe('window.btoa("abcdef")', '"YWJjZGVm"');
+shouldBeEqualToString('window.atob("YQ==")', 'a');
+shouldBeEqualToString('window.atob("YWI=")', 'ab');
+shouldBeEqualToString('window.atob("YWJj")', 'abc');
+shouldBeEqualToString('window.atob("YWJjZA==")', 'abcd');
+shouldBeEqualToString('window.atob("YWJjZGU=")', 'abcde');
+shouldBeEqualToString('window.atob("YWJjZGVm")', 'abcdef');
 
-shouldBe('typeof window.btoa', '"function"');
+shouldBeEqualToString('window.btoa("a")', 'YQ==');
+shouldBeEqualToString('window.btoa("ab")', 'YWI=');
+shouldBeEqualToString('window.btoa("abc")', 'YWJj');
+shouldBeEqualToString('window.btoa("abcd")', 'YWJjZA==');
+shouldBeEqualToString('window.btoa("abcde")', 'YWJjZGU=');
+shouldBeEqualToString('window.btoa("abcdef")', 'YWJjZGVm');
+
+shouldBeEqualToString('typeof window.btoa', 'function');
 shouldThrow('window.btoa()', '"TypeError: Failed to execute \'btoa\' on \'Window\': 1 argument required, but only 0 present."');
-shouldBe('window.btoa("")', '""');
-shouldBe('window.btoa(null)', '"bnVsbA=="'); // Gets converted to "null" string.
-shouldBe('window.btoa(undefined)', '"dW5kZWZpbmVk"');
-shouldBe('window.btoa(window)', '"W29iamVjdCBXaW5kb3dd"'); // "[object Window]"
-shouldBe('window.btoa("éé")', '"6ek="');
-shouldBe('window.btoa("\\u0080\\u0081")', '"gIE="');
+shouldBeEqualToString('window.btoa("")', '');
+shouldBeEqualToString('window.btoa(null)', 'bnVsbA=='); // Gets converted to "null" string.
+shouldBeEqualToString('window.btoa(undefined)', 'dW5kZWZpbmVk');
+shouldBeEqualToString('window.btoa(window)', 'W29iamVjdCBXaW5kb3dd'); // "[object Window]"
+shouldBeEqualToString('window.btoa("éé")', '6ek=');
+shouldBeEqualToString('window.btoa("\\u0080\\u0081")', 'gIE=');
 shouldThrow('window.btoa("тест")');
 window.btoa = 0;
 shouldBe('window.btoa', '0');
-shouldBe('typeof window.btoa', '"number"');
+shouldBeEqualToString('typeof window.btoa', 'number');
 
-shouldBe('typeof window.atob', '"function"');
+shouldBeEqualToString('typeof window.atob', 'function');
 shouldThrow('window.atob()', '"TypeError: Failed to execute \'atob\' on \'Window\': 1 argument required, but only 0 present."');
-shouldBe('window.atob("")', '""');
-shouldBe('window.atob(null)', '"\x9Eée"'); // Gets converted to "null" string.
+shouldBeEqualToString('window.atob("")', '');
+shouldBeEqualToString('window.atob(null)', '\x9Eée'); // Gets converted to "null" string.
 shouldThrow('window.atob(undefined)');
-shouldThrow('window.atob(" YQ==")');
-shouldThrow('window.atob("YQ==\\u000a")');
-shouldBe('window.atob("6ek=")', '"éé"');
-shouldBe('window.atob("6ek")', '"éé"');
-shouldBe('window.atob("gIE=")', '"\u0080\u0081"');
+
+// HTML space characters in input.
+shouldBeEqualToString('window.atob(" YQ==")', 'a');
+shouldBeEqualToString('window.atob("YQ== ")', 'a');
+shouldBeEqualToString('window.atob("YQ==    ")', 'a');
+shouldBeEqualToString('window.atob("YQ==\\u000a")', 'a');
+shouldBeEqualToString('window.atob("YQ ==")', 'a');
+shouldBeEqualToString('window.atob("YQ\\t==")', 'a');
+shouldBeEqualToString('window.atob("YQ\\n==")', 'a');
+shouldBeEqualToString('window.atob("YQ\\f==")', 'a');
+shouldBeEqualToString('window.atob("YQ\\r==")', 'a');
+shouldBeEqualToString('window.atob("YQ\\t\\n\\f\\r ==")', 'a');
+
+shouldBeEqualToString('window.atob("6ek=")', 'éé');
+shouldBeEqualToString('window.atob("6ek")', 'éé');
+shouldBeEqualToString('window.atob("gIE=")', '\u0080\u0081');
 shouldThrow('window.atob("тест")');
 shouldThrow('window.atob("z")');
-shouldBe('window.atob("zz")', '"Ï"');
-shouldBe('window.atob("zzz")', '"Ï\u003C"');
-shouldBe('window.atob("zzz=")', '"Ï\u003C"');
+shouldBeEqualToString('window.atob("zz")', 'Ï');
+shouldBeEqualToString('window.atob("zzz")', 'Ï\u003C');
+shouldBeEqualToString('window.atob("zzz=")', 'Ï\u003C');
 shouldThrow('window.atob("zzz==")'); // excess pad characters.
 shouldThrow('window.atob("zzz===")'); // excess pad characters.
 shouldThrow('window.atob("zzz====")'); // excess pad characters.
 shouldThrow('window.atob("zzz=====")'); // excess pad characters.
-shouldBe('window.atob("zzzz")', '"Ï\u003Có"');
+shouldBeEqualToString('window.atob("zzzz")', 'Ï\u003Có');
 shouldThrow('window.atob("zzzzz")');
 shouldThrow('window.atob("z=zz")');
 shouldThrow('window.atob("=")');
@@ -60,7 +72,7 @@ shouldThrow('window.atob("====")');
 shouldThrow('window.atob("=====")');
 window.atob = 0;
 shouldBe('window.atob', '0');
-shouldBe('typeof window.atob', '"number"');
+shouldBeEqualToString('typeof window.atob', 'number');
 
 </script>
 </body>

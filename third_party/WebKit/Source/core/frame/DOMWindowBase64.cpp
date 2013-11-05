@@ -35,6 +35,7 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "wtf/text/Base64.h"
 
 namespace WebCore {
@@ -63,9 +64,8 @@ String atob(void*, const String& encodedString, ExceptionState& es)
         es.throwDOMException(InvalidCharacterError, "'atob' failed: The string to be decoded contains characters outside of the Latin1 range.");
         return String();
     }
-
     Vector<char> out;
-    if (!base64Decode(encodedString, out, Base64FailOnInvalidCharacterOrExcessPadding)) {
+    if (!base64Decode(encodedString, out, isHTMLSpace<UChar>, Base64ValidatePadding)) {
         es.throwDOMException(InvalidCharacterError, "'atob' failed: The string to be decoded is not correctly encoded.");
         return String();
     }
