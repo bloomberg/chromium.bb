@@ -27,10 +27,6 @@
 using content::NavigationEntry;
 
 namespace {
-
-// TODO(hajimehoshi): Remove this after crbug/283720 is solved.
-const char kDeclineTranslate[] = "Translate.DeclineTranslate";
-
 const char kCloseInfobar[] = "Translate.DeclineTranslateCloseInfobar";
 const char kShowErrorInfobar[] = "Translate.ShowErrorInfobar";
 
@@ -126,26 +122,7 @@ void TranslateInfoBarDelegate::ReportLanguageDetectionError() {
 }
 
 void TranslateInfoBarDelegate::TranslationDeclined() {
-  // TODO(miguelg) switch this back to just calling web_contents()
-  // once we've diagnosed crbug/283720
-  // TODO(hajimehoshi): Replace this implementstion with calling ui_delegate_.
-  // TranslationDeclined() after miguelg's investigating.
-  content::WebContents* contents = owner()->web_contents();
-  content::BrowserContext* context = contents->GetBrowserContext();
-  if (!context->IsOffTheRecord()) {
-    prefs_.ResetTranslationAcceptedCount(original_language_code());
-    prefs_.IncrementTranslationDeniedCount(original_language_code());
-  }
-
-  // Remember that the user declined the translation so as to prevent showing a
-  // translate infobar for that page again.  (TranslateManager initiates
-  // translations when getting a LANGUAGE_DETERMINED from the page, which
-  // happens when a load stops. That could happen multiple times, including
-  // after the user already declined the translation.)
-  TranslateTabHelper::FromWebContents(web_contents())->
-      language_state().set_translation_declined(true);
-
-  UMA_HISTOGRAM_BOOLEAN(kDeclineTranslate, true);
+  ui_delegate_.TranslationDeclined();
 }
 
 bool TranslateInfoBarDelegate::IsTranslatableLanguageByPrefs() {
