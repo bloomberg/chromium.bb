@@ -114,6 +114,7 @@ class WebCryptoImplTest : public testing::Test {
                                           &key));
 
     EXPECT_EQ(WebKit::WebCryptoKeyTypeSecret, key.type());
+    EXPECT_FALSE(key.isNull());
     EXPECT_TRUE(key.handle());
     return key;
   }
@@ -658,6 +659,7 @@ TEST_F(WebCryptoImplTest, GenerateKeyHmac) {
   WebKit::WebCryptoAlgorithm algorithm =
       CreateHmacKeyAlgorithm(WebKit::WebCryptoAlgorithmIdSha1, 128);
   ASSERT_TRUE(GenerateKeyInternal(algorithm, &key));
+  EXPECT_FALSE(key.isNull());
   EXPECT_TRUE(key.handle());
   EXPECT_EQ(WebKit::WebCryptoKeyTypeSecret, key.type());
 }

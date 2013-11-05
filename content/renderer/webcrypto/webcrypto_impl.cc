@@ -46,16 +46,6 @@ void WebCryptoImpl::ShrinkBuffer(
   *buffer = new_buffer;
 }
 
-// static
-// TODO(eroman): Expose functionality in Blink instead.
-WebKit::WebCryptoKey WebCryptoImpl::NullKey() {
-  // Needs a non-null algorithm to succeed.
-  return WebKit::WebCryptoKey::create(
-      NULL, WebKit::WebCryptoKeyTypeSecret, false,
-      WebKit::WebCryptoAlgorithm::adoptParamsAndCreate(
-          WebKit::WebCryptoAlgorithmIdAesGcm, NULL), 0);
-}
-
 void WebCryptoImpl::encrypt(
     const WebKit::WebCryptoAlgorithm& algorithm,
     const WebKit::WebCryptoKey& key,
