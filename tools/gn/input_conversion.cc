@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "input_conversion.h"
+#include "tools/gn/input_conversion.h"
 
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
