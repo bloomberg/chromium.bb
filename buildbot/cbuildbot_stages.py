@@ -1129,7 +1129,8 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
             self._options.buildnumber, self.builder_name,
             self._options.debug, check_tree_open=not self._options.debug,
             changes_query=self._options.cq_gerrit_override,
-            change_filter=self.ChangeFilter)
+            change_filter=self.ChangeFilter,
+            throttled_ok=False)
 
       except validation_pool.TreeIsClosedException as e:
         cros_build_lib.Warning(str(e))

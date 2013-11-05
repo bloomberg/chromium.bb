@@ -50,9 +50,23 @@ CQ = 'cq'
 class TreeIsClosedException(Exception):
   """Raised when the tree is closed and we wanted to submit changes."""
 
-  def __init__(self):
+  def __init__(self, closed_or_throttled=False):
+    """
+    Args:
+      closed_or_throttled: True if the exception is being thrown on a
+                           possibly 'throttled' tree. False if only
+                           thrown on a 'closed' tree. Default: False
+    """
+    if closed_or_throttled:
+      status_text = 'closed or throttled'
+      opposite_status_text = 'open'
+    else:
+      status_text = 'closed'
+      opposite_status_text = 'throttled or open'
+
     super(TreeIsClosedException, self).__init__(
-        'TREE IS CLOSED.  PLEASE SET TO OPEN OR THROTTLED TO COMMIT')
+        'Tree is %s.  Please set tree status to %s to '
+        'proceed.' % (status_text, opposite_status_text))
 
 
 class FailedToSubmitAllChangesException(Exception):
@@ -1322,7 +1336,7 @@ class ValidationPool(object):
   @classmethod
   def AcquirePool(cls, overlays, repo, build_number, builder_name,
                   dryrun=False, changes_query=None, check_tree_open=True,
-                  change_filter=None):
+                  change_filter=None, throttled_ok=False):
     """Acquires the current pool from Gerrit.
 
     Polls Gerrit and checks for which change's are ready to be committed.
@@ -1339,10 +1353,13 @@ class ValidationPool(object):
       check_tree_open: If True, only return when the tree is open.
       change_filter: If set, use change_filter(pool, changes,
         non_manifest_changes) to filter out unwanted patches.
+      throttled_ok: if |check_tree_open|, treat a throttled tree as open.
+                    Default: True.
     Returns:
       ValidationPool object.
     Raises:
-      TreeIsClosedException: if the tree is closed.
+      TreeIsClosedException: if the tree is closed (or throttled, if not
+                             |throttled_ok|).
     """
 
     if changes_query is None:
@@ -1358,8 +1375,9 @@ class ValidationPool(object):
 
       # Wait until the tree opens.
       if check_tree_open and not cros_build_lib.TreeOpen(
-          cls.STATUS_URL, cls.SLEEP_TIMEOUT, max_timeout=time_left):
-        raise TreeIsClosedException()
+          cls.STATUS_URL, cls.SLEEP_TIMEOUT, max_timeout=time_left,
+          throttled_ok=throttled_ok):
+        raise TreeIsClosedException(closed_or_throttled=not throttled_ok)
 
       # Sync so that we are up-to-date on what is committed.
       repo.Sync()
@@ -1640,13 +1658,14 @@ class ValidationPool(object):
   # than patch resolution/applying needs to use .change_id from patch objects.
   # Basically all code from this point forward.
 
-  def SubmitChanges(self, changes, check_tree_open=True):
+  def SubmitChanges(self, changes, check_tree_open=True, throttled_ok=True):
     """Submits the given changes to Gerrit.
 
     Args:
       changes: GerritPatch's to submit.
       check_tree_open: Whether to check that the tree is open before submitting
         changes. If this is False, TreeIsClosedException will never be raised.
+      throttled_ok: if |check_tree_open|, treat a throttled tree as open
 
     Raises:
       TreeIsClosedException: if the tree is closed.
@@ -1661,8 +1680,9 @@ class ValidationPool(object):
                           dry_run=self.dryrun)
 
     if check_tree_open and not self.dryrun and not cros_build_lib.TreeOpen(
-        self.STATUS_URL, self.SLEEP_TIMEOUT, max_timeout=self.MAX_TIMEOUT):
-      raise TreeIsClosedException()
+        self.STATUS_URL, self.SLEEP_TIMEOUT, max_timeout=self.MAX_TIMEOUT,
+        throttled_ok=throttled_ok):
+      raise TreeIsClosedException(close_or_throttled=not throttled_ok)
 
     # Reload all of the changes from the Gerrit server so that we have a fresh
     # view of their approval status. This is needed so that our filtering that
@@ -1776,12 +1796,13 @@ class ValidationPool(object):
     self.SubmitChanges(self.non_manifest_changes,
                        check_tree_open=check_tree_open)
 
-  def SubmitPool(self, check_tree_open=True):
+  def SubmitPool(self, check_tree_open=True, throttled_ok=True):
     """Commits changes to Gerrit from Pool.  This is only called by a master.
 
     Args:
       check_tree_open: Whether to check that the tree is open before submitting
         changes. If this is False, TreeIsClosedException will never be raised.
+      throttled_ok: if |check_tree_open|, treat a throttled tree as open
 
     Raises:
       TreeIsClosedException: if the tree is closed.
@@ -1793,7 +1814,8 @@ class ValidationPool(object):
     # a CQ run (since the submit state has changed, we have no way of
     # knowing).  They *likely* will still fail, but this approach tries
     # to minimize wasting the developers time.
-    self.SubmitChanges(self.changes, check_tree_open=check_tree_open)
+    self.SubmitChanges(self.changes, check_tree_open=check_tree_open,
+                       throttled_ok=throttled_ok)
     if self.changes_that_failed_to_apply_earlier:
       self._HandleApplyFailure(self.changes_that_failed_to_apply_earlier)
 

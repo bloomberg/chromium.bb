@@ -733,7 +733,8 @@ class TestCoreLogic(MoxBase):
     cros_build_lib.TreeOpen(
         validation_pool.ValidationPool.STATUS_URL,
         validation_pool.ValidationPool.SLEEP_TIMEOUT,
-        max_timeout=mox.IgnoreArg()).AndReturn(True)
+        max_timeout=mox.IgnoreArg(),
+        throttled_ok=mox.IgnoreArg()).AndReturn(True)
 
     self.mox.ReplayAll()
     self.assertRaises(validation_pool.FailedToSubmitAllChangesException,
@@ -762,7 +763,8 @@ class TestCoreLogic(MoxBase):
     cros_build_lib.TreeOpen(
         validation_pool.ValidationPool.STATUS_URL,
         validation_pool.ValidationPool.SLEEP_TIMEOUT,
-        max_timeout=mox.IgnoreArg()).AndReturn(True)
+        max_timeout=mox.IgnoreArg(),
+        throttled_ok=mox.IgnoreArg()).AndReturn(True)
 
     self.mox.ReplayAll()
     pool.SubmitPool()
@@ -786,7 +788,8 @@ class TestCoreLogic(MoxBase):
     cros_build_lib.TreeOpen(
         validation_pool.ValidationPool.STATUS_URL,
         validation_pool.ValidationPool.SLEEP_TIMEOUT,
-        max_timeout=mox.IgnoreArg()).AndReturn(True)
+        max_timeout=mox.IgnoreArg(),
+        throttled_ok=mox.IgnoreArg()).AndReturn(True)
 
     self.mox.ReplayAll()
     pool.SubmitNonManifestChanges()

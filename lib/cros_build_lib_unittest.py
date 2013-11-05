@@ -931,7 +931,7 @@ class TestTreeStatus(cros_test_lib.MoxTestCase):
 
   @cros_build_lib.TimeoutDecorator(3)
   def _TreeStatusTestHelper(self, tree_status, general_state, expected_return,
-                            retries_500=0, max_timeout=0):
+                            retries_500=0, max_timeout=0, throttled_ok=True):
     """Tests whether we return the correct value based on tree_status."""
     return_status = self._TreeStatusFile(tree_status, general_state)
     self.mox.StubOutWithMock(urllib, 'urlopen')
@@ -955,14 +955,16 @@ class TestTreeStatus(cros_test_lib.MoxTestCase):
       for time_plus in xrange(max_timeout + 1):
         time.time().AndReturn(start_time + time_plus)
       self.mox.StubOutWithMock(cros_build_lib, 'Info')
-      cros_build_lib.Info(mox.IgnoreArg(), mox.IgnoreArg()).MultipleTimes()
+      cros_build_lib.Info(mox.IgnoreArg(), mox.IgnoreArg(),
+                          mox.IgnoreArg()).MultipleTimes()
       time.sleep(sleep_timeout).MultipleTimes()
 
     return_status.getcode().MultipleTimes().AndReturn(200)
     return_status.read().MultipleTimes().AndReturn(return_status.json)
     self.mox.ReplayAll()
     self.assertEqual(cros_build_lib.TreeOpen(status_url, sleep_timeout,
-                                             max_timeout), expected_return)
+                                             max_timeout, throttled_ok),
+                     expected_return)
     self.mox.VerifyAll()
 
   def testTreeIsOpen(self):
@@ -984,6 +986,12 @@ class TestTreeStatus(cros_test_lib.MoxTestCase):
     """Tests that we return True if the tree is throttled."""
     self._TreeStatusTestHelper('Tree is throttled (waiting to cycle)',
                                'throttled', True)
+
+  def testTreeIsThrottledNotOk(self):
+    """Tests that we respect throttled_ok"""
+    self._TreeStatusTestHelper('Tree is throttled (waiting to cycle)',
+                               'throttled', False, max_timeout=5,
+                               throttled_ok=False)
 
   def testTreeStatusWithNetworkFailures(self):
     """Checks for non-500 errors.."""

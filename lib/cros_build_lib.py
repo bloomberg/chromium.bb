@@ -1386,8 +1386,9 @@ def PredicateSplit(func, iterable):
   return trues, falses
 
 
-def TreeOpen(status_url, sleep_timeout, max_timeout=600):
-  """Returns True if the tree is open or throttled.
+def TreeOpen(status_url, sleep_timeout, max_timeout=600,
+             throttled_ok=True):
+  """Returns True if the tree is open (or throttled, if |throttled_ok|=True).
 
   At the highest level this function checks to see if the Tree is Open.
   However, it also does a robustified wait as the server hosting the tree
@@ -1404,10 +1405,17 @@ def TreeOpen(status_url, sleep_timeout, max_timeout=600):
     sleep_timeout: How long to sleep when periodically polling for tree open
       status.
     max_timeout: The max length to wait for the tree to open.
+    throttled_ok: Treat a throttled tree as an Open. Default: True
   """
   # Limit sleep interval to max_timeout if set.
   if max_timeout > 0:
     sleep_timeout = min(max_timeout, sleep_timeout)
+
+  acceptable_states = {'open'}
+  verb = 'open'
+  if throttled_ok:
+    acceptable_states.add('throttled')
+    verb = 'not be closed'
 
   def _SleepWithExponentialBackOff(current_sleep):
     """Helper function to sleep with exponential backoff."""
@@ -1424,7 +1432,7 @@ def TreeOpen(status_url, sleep_timeout, max_timeout=600):
         response = urllib.urlopen(status_url)
         if response.getcode() == 200:
           data = json.load(response)
-          return data['general_state'] in ('open', 'throttled')
+          return data['general_state'] in acceptable_states
 
       # We remain robust against IOError's and retry.
       except IOError as e:
@@ -1444,7 +1452,8 @@ def TreeOpen(status_url, sleep_timeout, max_timeout=600):
       return True
     elif time_left <= 0:
       return False
-    Info('Waiting for the tree to open (%d minutes left)...', time_left / 60)
+    Info('Waiting for the tree to %s (%d minutes left)...', verb,
+         time_left / 60)
     time.sleep(sleep_timeout)
 
 
