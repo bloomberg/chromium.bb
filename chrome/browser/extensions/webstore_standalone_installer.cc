@@ -88,7 +88,7 @@ void WebstoreStandaloneInstaller::OnWebstoreRequestFailure() {
 }
 
 void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
-    scoped_ptr<DictionaryValue> webstore_data) {
+    DictionaryValue* webstore_data) {
   if (!CheckRequestorAlive()) {
     CompleteInstall(std::string());
     return;
@@ -153,7 +153,7 @@ void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
   }
 
   // Assume ownership of webstore_data.
-  webstore_data_ = webstore_data.Pass();
+  webstore_data_.reset(webstore_data);
 
   scoped_refptr<WebstoreInstallHelper> helper =
       new WebstoreInstallHelper(this,

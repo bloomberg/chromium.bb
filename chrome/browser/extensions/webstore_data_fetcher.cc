@@ -53,8 +53,8 @@ void WebstoreDataFetcher::OnJsonParseSuccess(
     return;
   }
 
-  delegate_->OnWebstoreResponseParseSuccess(scoped_ptr<base::DictionaryValue>(
-      static_cast<base::DictionaryValue*>(parsed_json.release())));
+  delegate_->OnWebstoreResponseParseSuccess(
+      static_cast<base::DictionaryValue*>(parsed_json.release()));
 }
 
 void WebstoreDataFetcher::OnJsonParseFailure(

@@ -409,27 +409,28 @@ void KioskAppData::OnWebstoreRequestFailure() {
 }
 
 void KioskAppData::OnWebstoreResponseParseSuccess(
-      scoped_ptr<base::DictionaryValue> webstore_data) {
+      base::DictionaryValue* webstore_data) {
   // Takes ownership of |webstore_data|.
+  scoped_ptr<base::DictionaryValue> data(webstore_data);
+
   webstore_fetcher_.reset();
 
   std::string manifest;
-  if (!CheckResponseKeyValue(webstore_data.get(), kManifestKey, &manifest))
+  if (!CheckResponseKeyValue(data.get(), kManifestKey, &manifest))
     return;
 
-  if (!CheckResponseKeyValue(webstore_data.get(), kLocalizedNameKey, &name_))
+  if (!CheckResponseKeyValue(data.get(), kLocalizedNameKey, &name_))
     return;
 
   std::string icon_url_string;
-  if (!CheckResponseKeyValue(webstore_data.get(), kIconUrlKey,
-                             &icon_url_string))
+  if (!CheckResponseKeyValue(data.get(), kIconUrlKey, &icon_url_string))
     return;
 
   GURL icon_url = GURL(extension_urls::GetWebstoreLaunchURL()).Resolve(
       icon_url_string);
   if (!icon_url.is_valid()) {
     LOG(ERROR) << "Webstore response error (icon url): "
-               << ValueToString(webstore_data.get());
+               << ValueToString(data.get());
     OnWebstoreResponseParseFailure(kInvalidWebstoreResponseError);
     return;
   }

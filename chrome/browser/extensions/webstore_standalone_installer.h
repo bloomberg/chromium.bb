@@ -149,7 +149,7 @@ class WebstoreStandaloneInstaller
   virtual void OnWebstoreRequestFailure() OVERRIDE;
 
   virtual void OnWebstoreResponseParseSuccess(
-      scoped_ptr<base::DictionaryValue> webstore_data) OVERRIDE;
+      base::DictionaryValue* webstore_data) OVERRIDE;
 
   virtual void OnWebstoreResponseParseFailure(
       const std::string& error) OVERRIDE;
