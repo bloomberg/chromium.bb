@@ -121,7 +121,6 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
         gc->concatCTM(AffineTransform(1, 0, 0, 1, -point.x(), -point.y()));
 
         const int kMaxBufferLength = 256;
-        Vector<int, kMaxBufferLength> advances;
         Vector<FloatPoint, kMaxBufferLength> translations;
 
         const FontMetrics& metrics = font->fontMetrics();
