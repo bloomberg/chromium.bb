@@ -87,41 +87,14 @@ class TestWebContentsDelegate : public WebContentsDelegate {
   bool renderer_unresponsive_received_;
 };
 
-class DevToolsManagerTestBrowserClient : public TestContentBrowserClient {
- public:
-  DevToolsManagerTestBrowserClient() {
-  }
-
-  virtual bool ShouldSwapProcessesForNavigation(
-      SiteInstance* site_instance,
-      const GURL& current_url,
-      const GURL& new_url) OVERRIDE {
-    return true;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DevToolsManagerTestBrowserClient);
-};
-
 }  // namespace
 
 class DevToolsManagerTest : public RenderViewHostImplTestHarness {
  protected:
   virtual void SetUp() OVERRIDE {
-    original_browser_client_ = SetBrowserClientForTesting(&browser_client_);
-
     RenderViewHostImplTestHarness::SetUp();
     TestDevToolsClientHost::ResetCounters();
   }
-
-  virtual void TearDown() OVERRIDE {
-    RenderViewHostImplTestHarness::TearDown();
-    SetBrowserClientForTesting(original_browser_client_);
-  }
-
- private:
-  ContentBrowserClient* original_browser_client_;
-  DevToolsManagerTestBrowserClient browser_client_;
 };
 
 TEST_F(DevToolsManagerTest, OpenAndManuallyCloseDevToolsClientHost) {
@@ -200,7 +173,6 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedContents) {
 }
 
 TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
-  contents()->transition_cross_site = true;
   // Navigate to URL.  First URL should use first RenderViewHost.
   const GURL url("http://www.google.com");
   controller().LoadURL(
