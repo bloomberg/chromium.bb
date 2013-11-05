@@ -4,8 +4,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from ctypes import windll, wintypes
 import os
+import re
 import sys
 import subprocess
 
@@ -18,77 +18,12 @@ FFMPEG_ROOT = os.path.abspath(os.path.join(
 CONVERTER_EXECUTABLE = os.path.abspath(os.path.join(
     FFMPEG_ROOT, 'chromium', 'binaries', 'c99conv.exe'))
 
-# $CC to use if GOMA can't be detected.
-DEFAULT_CC = ['cl.exe']
+# $CC to use.   We use to support GOMA, but by switching to stdout preprocessing
+# its twice as fast to just preprocess locally (compilation may still be GOMA).
+DEFAULT_CC = 'cl.exe'
 
 # Disable spammy warning related to av_restrict, upstream needs to fix.
 DISABLED_WARNINGS = ['-wd4005']
-
-
-# Figure out if GOMA is available or not.  Kind of hacky, but well worth it
-# since this will cut the run time from ~3 minutes to ~30 seconds (-j 256).
-def GetCC():
-  # Things that don't work:
-  #   - Checking for $CC, not set and seems to be explicitly removed by gyp.
-  #   - Trying to find include.gypi, as with $CC, the script is called with a
-  #     sanitized environment which removes $USERPROFILE.
-
-  # See if the user has a chromium.gyp_env setting for GOMA.
-  gyp_env = os.path.abspath(os.path.join(
-      FFMPEG_ROOT, '..', '..', '..', 'chromium.gyp_env'))
-  if os.path.isfile(gyp_env):
-    gyp_config = eval(open(gyp_env, 'r').read())
-    if 'CC' in gyp_config:
-      return gyp_config['CC'].split()
-
-  # See if the user's build.ninja uses GOMA.
-  for config_name in ('Release', 'Debug'):
-    build_ninja = os.path.abspath(os.path.join(
-        FFMPEG_ROOT, '..', '..', 'out', config_name, 'build.ninja'))
-    if os.path.isfile(build_ninja):
-      with open(build_ninja) as f:
-        for line in f:
-          if line.startswith('cc ='):
-            return line.rstrip().replace('cc =', '').split()
-
-  return DEFAULT_CC
-
-
-# TODO(scottmg|dalecurtis|iannucci): Replace this with gyp 'pool' syntax when
-# available.
-class PreprocessLock(object):
-  """A flock-style lock to limit the number of concurrent preprocesses to one
-  when running locally. Not used when using goma to preprocess.
-
-  Cuts local cl.exe time down from ~3-4m to ~1m.
-
-  Uses a session-local mutex based on the file's directory.
-  """
-  def __init__(self, cc):
-    self.cc = cc
-
-  def __enter__(self):
-    # Only lock if we're using the default CC, not when using goma.
-    if self.cc != DEFAULT_CC:
-      return
-    name = 'Local\\c99conv_cl_preprocess_mutex'
-    self.mutex = windll.kernel32.CreateMutexW(
-        wintypes.c_int(0),
-        wintypes.c_int(0),
-        wintypes.create_unicode_buffer(name))
-    assert self.mutex
-    result = windll.kernel32.WaitForSingleObject(
-        self.mutex, wintypes.c_int(0xFFFFFFFF))
-    # 0x80 means another process was killed without releasing the mutex, but
-    # that this process has been given ownership. This is fine for our
-    # purposes.
-    assert result in (0, 0x80), (
-        "%s, %s" % (result, windll.kernel32.GetLastError()))
-
-  def __exit__(self, type, value, traceback):
-    if self.cc == DEFAULT_CC:
-      windll.kernel32.ReleaseMutex(self.mutex)
-      windll.kernel32.CloseHandle(self.mutex)
 
 
 def main():
@@ -103,38 +38,40 @@ def main():
   preprocessed_output_file = input_file + '_preprocessed.c'
   output_file = os.path.abspath(sys.argv[2])
 
-  # Find $CC, hope for GOMA.
-  cc = GetCC()
-
-  with PreprocessLock(cc):
-    # Run the preprocessor command.  All of these settings are pulled from the
-    # CFLAGS section of the "config.mak" created after running build_ffmpeg.sh.
-    p = subprocess.Popen(
-        cc + ['-P', '-nologo', '-DCOMPILING_avcodec=1', '-DCOMPILING_avutil=1',
-              '-DCOMPILING_avformat=1', '-D_USE_MATH_DEFINES',
-              '-Dinline=__inline', '-Dstrtoll=_strtoi64', '-U__STRICT_ANSI__',
-              '-D_ISOC99_SOURCE', '-D_LARGEFILE_SOURCE', '-DHAVE_AV_CONFIG_H',
-              '-Dstrtod=avpriv_strtod', '-Dsnprintf=avpriv_snprintf',
-              '-D_snprintf=avpriv_snprintf', '-Dvsnprintf=avpriv_vsnprintf',
-              '-FIstdlib.h'] + sys.argv[3:] +
-             DISABLED_WARNINGS +
-             ['-I', '.', '-I', FFMPEG_ROOT, '-I', 'chromium/config',
-              '-I', 'chromium/include/win',
-              '-Fi%s' % preprocessed_output_file, input_file],
-        cwd=FFMPEG_ROOT, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
-    stdout, _ = p.communicate()
-
-  # Print all lines if an error occurred, otherwise skip filename print out that
-  # MSVC forces for every cl.exe execution.
-  for line in stdout.splitlines():
-    if p.returncode != 0 or not os.path.basename(input_file) == line.strip():
-      print line
+  # Run the preprocessor command.  All of these settings are pulled from the
+  # CFLAGS section of the "config.mak" created after running build_ffmpeg.sh.
+  #
+  # cl.exe is extremely inefficient (upwards of 30k writes) when asked to
+  # preprocess to file (-P) so instead ask for output to go to stdout (-E) and
+  # write it out ourselves afterward.  See http://crbug.com/172368.
+  p = subprocess.Popen(
+      [DEFAULT_CC, '-E', '-nologo', '-DCOMPILING_avcodec=1',
+       '-DCOMPILING_avutil=1', '-DCOMPILING_avformat=1', '-D_USE_MATH_DEFINES',
+       '-Dinline=__inline', '-Dstrtoll=_strtoi64', '-U__STRICT_ANSI__',
+       '-D_ISOC99_SOURCE', '-D_LARGEFILE_SOURCE', '-DHAVE_AV_CONFIG_H',
+       '-Dstrtod=avpriv_strtod', '-Dsnprintf=avpriv_snprintf',
+       '-D_snprintf=avpriv_snprintf', '-Dvsnprintf=avpriv_vsnprintf',
+       '-FIstdlib.h'] +
+      sys.argv[3:] +
+      DISABLED_WARNINGS +
+      ['-I', '.', '-I', FFMPEG_ROOT, '-I', 'chromium/config',
+       '-I', 'chromium/include/win', input_file],
+      cwd=FFMPEG_ROOT, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+  stdout, stderr = p.communicate()
 
   # Abort if any error occurred.
   if p.returncode != 0:
+    print stdout, stderr
     if os.path.isfile(preprocessed_output_file):
       os.unlink(preprocessed_output_file)
     sys.exit(p.returncode)
+
+  with open(preprocessed_output_file, 'w') as f:
+    # Write out stdout but skip the filename print out that MSVC forces for
+    # every cl.exe execution as well as ridiculous amounts of white space;
+    # saves ~64mb of output over the entire conversion!
+    f.write(re.sub('(%s)+' % os.linesep, '\n',
+                   stdout[len(os.path.basename(input_file)):]))
 
   # Run the converter command.  Note: the input file must have a '.c' extension
   # or the converter will crash.  libclang does some funky detection based on
