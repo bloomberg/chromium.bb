@@ -468,8 +468,8 @@ void FaviconCache::OnPageFaviconUpdated(const GURL& page_url) {
   // desired_size_in_dip). Figure out a way to fetch all favicons we support.
   // See crbug.com/181068.
   CancelableTaskTracker::TaskId id = favicon_service->GetFaviconForURL(
-      FaviconService::FaviconForURLParams(
-          profile_, page_url, SupportedFaviconTypes(), kMaxFaviconResolution),
+      FaviconService::FaviconForURLParams(page_url, SupportedFaviconTypes(),
+                                          kMaxFaviconResolution),
       base::Bind(&FaviconCache::OnFaviconDataAvailable,
                  weak_ptr_factory_.GetWeakPtr(), page_url),
       &cancelable_task_tracker_);

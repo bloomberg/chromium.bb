@@ -255,8 +255,7 @@ void BackForwardMenuModel::FetchFavicon(NavigationEntry* entry) {
     return;
 
   favicon_service->GetFaviconImageForURL(
-      FaviconService::FaviconForURLParams(browser_->profile(),
-                                          entry->GetURL(),
+      FaviconService::FaviconForURLParams(entry->GetURL(),
                                           chrome::FAVICON,
                                           gfx::kFaviconSize),
       base::Bind(&BackForwardMenuModel::OnFavIconDataAvailable,

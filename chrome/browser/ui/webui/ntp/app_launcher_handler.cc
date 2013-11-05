@@ -700,8 +700,7 @@ void AppLauncherHandler::HandleGenerateAppForLink(const ListValue* args) {
   install_info->page_ordinal = page_ordinal;
 
   favicon_service->GetFaviconImageForURL(
-      FaviconService::FaviconForURLParams(profile,
-                                          launch_url,
+      FaviconService::FaviconForURLParams(launch_url,
                                           chrome::FAVICON,
                                           gfx::kFaviconSize),
       base::Bind(&AppLauncherHandler::OnFaviconForApp,

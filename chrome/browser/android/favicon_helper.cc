@@ -90,7 +90,6 @@ jboolean FaviconHelper::GetLocalFaviconImageForURL(
     return false;
 
   FaviconService::FaviconForURLParams params(
-      profile,
       GURL(ConvertJavaStringToUTF16(env, j_page_url)),
       static_cast<int>(j_icon_types),
       static_cast<int>(j_desired_size_in_dip));

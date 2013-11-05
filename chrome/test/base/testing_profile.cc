@@ -396,9 +396,7 @@ TestingProfile::~TestingProfile() {
 
 static BrowserContextKeyedService* BuildFaviconService(
     content::BrowserContext* profile) {
-  return new FaviconService(
-      HistoryServiceFactory::GetForProfileWithoutCreating(
-          static_cast<Profile*>(profile)));
+  return new FaviconService(static_cast<Profile*>(profile));
 }
 
 void TestingProfile::CreateFaviconService() {

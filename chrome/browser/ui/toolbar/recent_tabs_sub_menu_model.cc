@@ -609,8 +609,7 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
     return;
 
   favicon_service->GetFaviconImageForURL(
-      FaviconService::FaviconForURLParams(browser_->profile(),
-                                          url,
+      FaviconService::FaviconForURLParams(url,
                                           chrome::FAVICON,
                                           gfx::kFaviconSize),
       base::Bind(&RecentTabsSubMenuModel::OnFaviconDataAvailable,

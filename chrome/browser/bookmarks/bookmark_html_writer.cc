@@ -463,7 +463,7 @@ bool BookmarkFaviconFetcher::FetchNextFavicon() {
           profile_, Profile::EXPLICIT_ACCESS);
       favicon_service->GetRawFaviconForURL(
           FaviconService::FaviconForURLParams(
-              profile_, GURL(url), chrome::FAVICON, gfx::kFaviconSize),
+              GURL(url), chrome::FAVICON, gfx::kFaviconSize),
           ui::SCALE_FACTOR_100P,
           base::Bind(&BookmarkFaviconFetcher::OnFaviconDataAvailable,
                      base::Unretained(this)),

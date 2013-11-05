@@ -5,6 +5,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/favicon/favicon_handler.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/favicon_status.h"
@@ -1069,7 +1070,12 @@ TEST_F(FaviconHandlerTest, MultipleFavicons) {
 
 static BrowserContextKeyedService* BuildFaviconService(
     content::BrowserContext* profile) {
-  return new FaviconService(NULL);
+  return new FaviconService(static_cast<Profile*>(profile));
+}
+
+static BrowserContextKeyedService* BuildHistoryService(
+    content::BrowserContext* profile) {
+  return NULL;
 }
 
 // Test that Favicon is not requested repeatedly during the same session if
@@ -1083,6 +1089,10 @@ TEST_F(FaviconHandlerTest, UnableToDownloadFavicon) {
 
   FaviconServiceFactory::GetInstance()->SetTestingFactory(
       profile, BuildFaviconService);
+
+  HistoryServiceFactory::GetInstance()->SetTestingFactory(
+      profile, BuildHistoryService);
+
   FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
       profile, Profile::IMPLICIT_ACCESS);
 

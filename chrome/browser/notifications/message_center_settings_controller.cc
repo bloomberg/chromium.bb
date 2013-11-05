@@ -247,7 +247,6 @@ void MessageCenterSettingsController::GetNotifierList(
         notification_service->IsNotifierEnabled(notifier_id)));
     patterns_[name] = iter->primary_pattern;
     FaviconService::FaviconForURLParams favicon_params(
-        profile,
         url,
         chrome::FAVICON | chrome::TOUCH_ICON,
         message_center::kSettingsIconSize);

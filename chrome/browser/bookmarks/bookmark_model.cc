@@ -996,8 +996,7 @@ void BookmarkModel::LoadFavicon(BookmarkNode* node) {
   if (!favicon_service)
     return;
   FaviconService::Handle handle = favicon_service->GetFaviconImageForURL(
-      FaviconService::FaviconForURLParams(profile_,
-                                          node->url(),
+      FaviconService::FaviconForURLParams(node->url(),
                                           chrome::FAVICON,
                                           gfx::kFaviconSize),
       base::Bind(&BookmarkModel::OnFaviconDataAvailable,

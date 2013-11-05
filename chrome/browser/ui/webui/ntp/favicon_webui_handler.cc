@@ -112,7 +112,6 @@ void FaviconWebUIHandler::HandleGetFaviconDominantColor(const ListValue* args) {
   dom_id_map_[id_] = dom_id;
   favicon_service->GetRawFaviconForURL(
       FaviconService::FaviconForURLParams(
-          Profile::FromWebUI(web_ui()),
           url,
           chrome::FAVICON,
           gfx::kFaviconSize),

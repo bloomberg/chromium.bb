@@ -673,7 +673,6 @@ class BookmarkIconFetchTask : public FaviconServiceTask {
         base::Bind(&FaviconService::GetRawFaviconForURL,
                    base::Unretained(service()),
                    FaviconService::FaviconForURLParams(
-                       profile(),
                        url,
                        chrome::FAVICON | chrome::TOUCH_ICON,
                        gfx::kFaviconSize),

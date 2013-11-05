@@ -195,7 +195,7 @@ TEST_F(SQLiteCursorTest, Run) {
   column_names.push_back(HistoryAndBookmarkRow::GetAndroidName(
       HistoryAndBookmarkRow::FAVICON));
 
-  FaviconService* favicon_service = new FaviconService(hs_);
+  FaviconService* favicon_service = new FaviconService(testing_profile_);
 
   SQLiteCursor* cursor = new SQLiteCursor(column_names, statement,
       service_.get(), favicon_service);

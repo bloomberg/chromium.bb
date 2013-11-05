@@ -34,22 +34,19 @@ struct FaviconImageResult;
 class FaviconService : public CancelableRequestProvider,
                        public BrowserContextKeyedService {
  public:
-  explicit FaviconService(HistoryService* history_service);
+  explicit FaviconService(Profile* profile);
 
   virtual ~FaviconService();
 
   // Auxiliary argument structure for requesting favicons for URLs.
   struct FaviconForURLParams {
-    FaviconForURLParams(Profile* profile,
-                        const GURL& page_url,
+    FaviconForURLParams(const GURL& page_url,
                         int icon_types,
                         int desired_size_in_dip)
-        : profile(profile),
-          page_url(page_url),
+        : page_url(page_url),
           icon_types(icon_types),
           desired_size_in_dip(desired_size_in_dip) {}
 
-    Profile* profile;
     GURL page_url;
     int icon_types;
     int desired_size_in_dip;
@@ -244,6 +241,7 @@ class FaviconService : public CancelableRequestProvider,
   typedef uint32 MissingFaviconURLHash;
   base::hash_set<MissingFaviconURLHash> missing_favicon_urls_;
   HistoryService* history_service_;
+  Profile* profile_;
 
   // Helper function for GetFaviconImageForURL(), GetRawFaviconForURL() and
   // GetFaviconForURL().

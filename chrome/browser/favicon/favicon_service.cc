@@ -63,8 +63,10 @@ CancelableTaskTracker::TaskId GetFaviconForChromeURL(
 
 }  // namespace
 
-FaviconService::FaviconService(HistoryService* history_service)
-    : history_service_(history_service) {
+FaviconService::FaviconService(Profile* profile)
+    : history_service_(HistoryServiceFactory::GetForProfile(
+          profile, Profile::EXPLICIT_ACCESS)),
+      profile_(profile) {
 }
 
 // static
@@ -323,7 +325,7 @@ CancelableTaskTracker::TaskId FaviconService::GetFaviconForURLImpl(
     CancelableTaskTracker* tracker) {
   if (params.page_url.SchemeIs(chrome::kChromeUIScheme) ||
       params.page_url.SchemeIs(extensions::kExtensionScheme)) {
-    return GetFaviconForChromeURL(params.profile, params.page_url,
+    return GetFaviconForChromeURL(profile_, params.page_url,
                                   desired_scale_factors, callback, tracker);
   } else if (history_service_) {
     return history_service_->GetFaviconsForURL(params.page_url,

@@ -406,7 +406,6 @@ void BookmarksHandler::HandleCreateHomeScreenBookmarkShortcut(
       profile, Profile::EXPLICIT_ACCESS);
   favicon_service->GetRawFaviconForURL(
       FaviconService::FaviconForURLParams(
-          profile,
           node->url(),
           chrome::TOUCH_PRECOMPOSED_ICON | chrome::TOUCH_ICON |
               chrome::FAVICON,

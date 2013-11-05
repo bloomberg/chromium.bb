@@ -49,8 +49,7 @@ void NavigationPopup::FetchFaviconForUrl(JNIEnv* env,
   // TODO(tedchoc): Request higher favicons based on screen density instead of
   //                hardcoding kFaviconSize.
   favicon_service->GetFaviconImageForURL(
-      FaviconService::FaviconForURLParams(profile,
-                                          url,
+      FaviconService::FaviconForURLParams(url,
                                           chrome::FAVICON,
                                           gfx::kFaviconSize),
       base::Bind(&NavigationPopup::OnFaviconDataAvailable,

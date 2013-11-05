@@ -684,8 +684,7 @@ void JumpList::StartLoadingFavicon() {
   FaviconService* favicon_service =
       FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   task_id_ = favicon_service->GetFaviconImageForURL(
-      FaviconService::FaviconForURLParams(profile_,
-                                          url,
+      FaviconService::FaviconForURLParams(url,
                                           chrome::FAVICON,
                                           gfx::kFaviconSize),
       base::Bind(&JumpList::OnFaviconDataAvailable,

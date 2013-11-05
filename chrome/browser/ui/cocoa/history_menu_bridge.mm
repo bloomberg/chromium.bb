@@ -459,8 +459,7 @@ void HistoryMenuBridge::GetFaviconForHistoryItem(HistoryItem* item) {
   FaviconService* service =
       FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   CancelableTaskTracker::TaskId task_id = service->GetFaviconImageForURL(
-      FaviconService::FaviconForURLParams(profile_,
-                                          item->url,
+      FaviconService::FaviconForURLParams(item->url,
                                           chrome::FAVICON,
                                           gfx::kFaviconSize),
       base::Bind(&HistoryMenuBridge::GotFaviconData,

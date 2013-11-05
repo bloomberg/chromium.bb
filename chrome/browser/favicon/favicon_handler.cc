@@ -473,8 +473,8 @@ void FaviconHandler::GetFaviconForURL(
     const FaviconService::FaviconResultsCallback& callback,
     CancelableTaskTracker* tracker) {
   GetFaviconService()->GetFaviconForURL(
-      FaviconService::FaviconForURLParams(
-          profile_, page_url, icon_types, preferred_icon_size()),
+      FaviconService::FaviconForURLParams(page_url, icon_types,
+                                          preferred_icon_size()),
       callback,
       tracker);
 }
