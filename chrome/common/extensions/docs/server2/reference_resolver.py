@@ -2,10 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from file_system import FileNotFoundError
+from copy import deepcopy
 import logging
 import re
 import string
+
+from file_system import FileNotFoundError
+
 
 def _ClassifySchemaNode(node_name, api):
   """Attempt to classify |node_name| in an API, determining whether |node_name|
@@ -29,8 +32,18 @@ def _ClassifySchemaNode(node_name, api):
           return group, node_name
   return None
 
-def _MakeKey(namespace, ref, title):
-  return '%s.%s.%s' % (namespace, ref, title)
+
+def _MakeKey(namespace, ref):
+  key = '%s/%s' % (namespace, ref)
+  # AppEngine doesn't like keys > 500, but there will be some other stuff
+  # that goes into this key, so truncate it earlier.  This shoudn't be
+  # happening anyway unless there's a bug, such as http://crbug.com/314102.
+  max_size = 256
+  if len(key) > max_size:
+    logging.error('Key was >%s characters: %s' % (max_size, key))
+    key = key[:max_size]
+  return key
+
 
 class ReferenceResolver(object):
   """Resolves references to $ref's by searching through the APIs to find the
@@ -68,7 +81,7 @@ class ReferenceResolver(object):
     self._api_models = api_models
     self._object_store = object_store
 
-  def _GetRefLink(self, ref, api_list, namespace, title):
+  def _GetRefLink(self, ref, api_list, namespace):
     # Check nodes within each API the ref might refer to.
     parts = ref.split('.')
     for i, part in enumerate(parts):
@@ -104,7 +117,7 @@ class ReferenceResolver(object):
         text = text[len('%s.' % namespace):]
       return {
         'href': '%s.html#%s-%s' % (api_name, category, name.replace('.', '-')),
-        'text': title if title else text,
+        'text': text,
         'name': node_name
       }
 
@@ -114,7 +127,7 @@ class ReferenceResolver(object):
     if ref in api_list:
       return {
         'href': '%s.html' % ref,
-        'text': title if title else ref,
+        'text': ref,
         'name': ref
       }
 
@@ -124,22 +137,21 @@ class ReferenceResolver(object):
     """Resolve $ref |ref| in namespace |namespace| if not None, returning None
     if it cannot be resolved.
     """
-    link = self._object_store.Get(_MakeKey(namespace, ref, title)).Get()
-    if link is not None:
-      return link
-
-    api_list = self._api_models.GetNames()
-    link = self._GetRefLink(ref, api_list, namespace, title)
-
-    if link is None and namespace is not None:
-      # Try to resolve the ref in the current namespace if there is one.
-      link = self._GetRefLink('%s.%s' % (namespace, ref),
-                              api_list,
-                              namespace,
-                              title)
-
-    if link is not None:
-      self._object_store.Set(_MakeKey(namespace, ref, title), link)
+    db_key = _MakeKey(namespace, ref)
+    link = self._object_store.Get(db_key).Get()
+    if link is None:
+      api_list = self._api_models.GetNames()
+      link = self._GetRefLink(ref, api_list, namespace)
+      if link is None and namespace is not None:
+        # Try to resolve the ref in the current namespace if there is one.
+        link = self._GetRefLink('%s.%s' % (namespace, ref), api_list, namespace)
+      if link is None:
+        return None
+      self._object_store.Set(db_key, link)
+    else:
+      link = deepcopy(link)
+    if title is not None:
+      link['text'] = title
     return link
 
   def SafeGetLink(self, ref, namespace=None, title=None):
@@ -154,7 +166,7 @@ class ReferenceResolver(object):
     type_name = ref.rsplit('.', 1)[-1]
     return {
       'href': '#type-%s' % type_name,
-      'text': title if title else ref,
+      'text': title or ref,
       'name': ref
     }
 

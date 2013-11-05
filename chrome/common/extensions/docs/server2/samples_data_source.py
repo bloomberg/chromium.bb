@@ -56,15 +56,20 @@ class SamplesDataSource(object):
                                request)
 
     def _GetAPIItems(self, js_file):
-      chrome_regex = '(chrome\.[a-zA-Z0-9\.]+)'
-      calls = set(re.findall(chrome_regex, js_file))
-      # Find APIs that have been assigned into variables.
-      assigned_vars = dict(re.findall('var\s*([^\s]+)\s*=\s*%s;' % chrome_regex,
-                                      js_file))
-      # Replace the variable name with the full API name.
-      for var_name, value in assigned_vars.iteritems():
-        js_file = js_file.replace(var_name, value)
-      return calls.union(re.findall(chrome_regex, js_file))
+      chrome_pattern = r'chrome[\w.]+'
+      # Add API calls that appear normally, like "chrome.runtime.connect".
+      calls = set(re.findall(chrome_pattern, js_file))
+      # Add API calls that have been assigned into variables, like
+      # "var storageArea = chrome.storage.sync; storageArea.get", which should
+      # be expanded like "chrome.storage.sync.get".
+      for match in re.finditer(r'var\s+(\w+)\s*=\s*(%s);' % chrome_pattern,
+                               js_file):
+        var_name, api_prefix = match.groups()
+        for var_match in re.finditer(r'\b%s\.([\w.]+)\b' % re.escape(var_name),
+                                     js_file):
+          api_suffix, = var_match.groups()
+          calls.add('%s.%s' % (api_prefix, api_suffix))
+      return calls
 
     def _GetDataFromManifest(self, path, file_system):
       manifest = file_system.ReadSingle(path + '/manifest.json').Get()
@@ -130,6 +135,12 @@ class SamplesDataSource(object):
           if item.startswith('chrome.'):
             item = item[len('chrome.'):]
           ref_data = self._ref_resolver.GetLink(item)
+          # TODO(kalman): What about references like chrome.storage.sync.get?
+          # That should link to either chrome.storage.sync or
+          # chrome.storage.StorageArea.get (or probably both).
+          # TODO(kalman): Filter out API-only references? This can happen when
+          # the API namespace is assigned to a variable, but it's very hard to
+          # to disambiguate.
           if ref_data is None:
             continue
           api_calls.append({
