@@ -31,7 +31,7 @@
 #ifndef MediaConstraintsImpl_h
 #define MediaConstraintsImpl_h
 
-#include "core/platform/mediastream/MediaConstraints.h"
+#include "platform/mediastream/MediaConstraints.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
 

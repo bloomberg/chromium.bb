@@ -351,6 +351,8 @@
       'graphics/ThreadSafeDataTransport.cpp',
       'graphics/ThreadSafeDataTransport.h',
       'graphics/WindRule.h',
+      'mediastream/MediaConstraints.cpp',
+      'mediastream/MediaConstraints.h',
       'mediastream/RTCConfiguration.h',
       'network/DNS.cpp',
       'network/DNS.h',

@@ -32,7 +32,7 @@
 
 #include "public/platform/WebMediaConstraints.h"
 
-#include "core/platform/mediastream/MediaConstraints.h"
+#include "platform/mediastream/MediaConstraints.h"
 
 using namespace WebCore;
 

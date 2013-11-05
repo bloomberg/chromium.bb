@@ -31,6 +31,7 @@
 #ifndef MediaConstraints_h
 #define MediaConstraints_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
@@ -47,9 +48,9 @@ struct MediaConstraint {
     String m_value;
 };
 
-class MediaConstraints : public RefCounted<MediaConstraints> {
+class PLATFORM_EXPORT MediaConstraints : public RefCounted<MediaConstraints> {
 public:
-    virtual ~MediaConstraints() { }
+    virtual ~MediaConstraints();
 
     virtual void getMandatoryConstraints(Vector<MediaConstraint>&) const = 0;
     virtual void getOptionalConstraints(Vector<MediaConstraint>&) const = 0;
