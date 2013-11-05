@@ -124,6 +124,7 @@ namespace WebCore {
 
         Page* page() const;
         HTMLFrameOwnerElement* ownerElement() const;
+        bool isMainFrame() const;
 
         void setDOMWindow(PassRefPtr<DOMWindow>);
         DOMWindow* domWindow() const;

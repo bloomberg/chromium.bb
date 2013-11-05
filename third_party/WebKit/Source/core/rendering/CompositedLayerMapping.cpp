@@ -167,13 +167,8 @@ CompositedLayerMapping::CompositedLayerMapping(RenderLayer* layer)
     , m_canCompositeFilters(false)
     , m_backgroundLayerPaintsFixedRootBackground(false)
 {
-    if (layer->isRootLayer()) {
-        Frame& frame = toRenderView(renderer())->frameView()->frame();
-        Page* page = frame.page();
-        if (page && page->mainFrame() == &frame) {
-            m_isMainFrameRenderViewLayer = true;
-        }
-    }
+    if (layer->isRootLayer() && renderer()->frame()->isMainFrame())
+        m_isMainFrameRenderViewLayer = true;
 
     createPrimaryGraphicsLayer();
 }

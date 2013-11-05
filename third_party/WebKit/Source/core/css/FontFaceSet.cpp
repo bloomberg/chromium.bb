@@ -177,8 +177,7 @@ void FontFaceSet::handlePendingEventsAndPromisesSoon()
 
 void FontFaceSet::didLayout()
 {
-    Document* d = document();
-    if (d->page() && d->page()->mainFrame() == d->frame())
+    if (document()->frame()->isMainFrame())
         m_histogram.record();
     if (!RuntimeEnabledFeatures::fontLoadEventsEnabled())
         return;

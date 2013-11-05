@@ -585,7 +585,7 @@ void FrameView::applyOverflowToViewport(RenderObject* o, ScrollbarMode& hMode, S
     }
 
     bool ignoreOverflowHidden = false;
-    if (m_frame->settings()->ignoreMainFrameOverflowHiddenQuirk() && m_frame->page()->mainFrame() == m_frame)
+    if (m_frame->settings()->ignoreMainFrameOverflowHiddenQuirk() && m_frame->isMainFrame())
         ignoreOverflowHidden = true;
 
     switch (overflowX) {
@@ -3478,7 +3478,7 @@ void FrameView::setCursor(const Cursor& cursor)
 
 bool FrameView::isMainFrame() const
 {
-    return m_frame->page() && m_frame->page()->mainFrame() == m_frame;
+    return m_frame->isMainFrame();
 }
 
 void FrameView::frameRectsChanged()

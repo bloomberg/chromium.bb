@@ -204,7 +204,7 @@ void Frame::setView(PassRefPtr<FrameView> view)
 
     m_view = view;
 
-    if (m_view && m_page && m_page->mainFrame() == this)
+    if (m_view && isMainFrame())
         m_view->setVisibleContentScaleFactor(m_page->pageScaleFactor());
 }
 
@@ -358,6 +358,11 @@ void Frame::disconnectOwnerElement()
     m_frameInit->setOwnerElement(0);
 }
 
+bool Frame::isMainFrame() const
+{
+    return m_page && this == m_page->mainFrame();
+}
+
 String Frame::documentTypeString() const
 {
     if (DocumentType* doctype = document()->doctype())
@@ -435,7 +440,7 @@ void Frame::createView(const IntSize& viewportSize, const Color& backgroundColor
     ASSERT(this);
     ASSERT(m_page);
 
-    bool isMainFrame = this == m_page->mainFrame();
+    bool isMainFrame = this->isMainFrame();
 
     if (isMainFrame && view())
         view()->setParentVisible(false);
@@ -547,7 +552,7 @@ void Frame::deviceOrPageScaleFactorChanged()
 void Frame::notifyChromeClientWheelEventHandlerCountChanged() const
 {
     // Ensure that this method is being called on the main frame of the page.
-    ASSERT(m_page && m_page->mainFrame() == this);
+    ASSERT(isMainFrame());
 
     unsigned count = 0;
     for (const Frame* frame = this; frame; frame = frame->tree().traverseNext()) {

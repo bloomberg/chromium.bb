@@ -85,15 +85,14 @@ void HistoryController::restoreScrollPositionAndViewState()
         return;
 
     if (FrameView* view = m_frame->view()) {
-        Page* page = m_frame->page();
-        if (page && page->mainFrame() == m_frame) {
-            if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
+        if (m_frame->isMainFrame()) {
+            if (ScrollingCoordinator* scrollingCoordinator = m_frame->page()->scrollingCoordinator())
                 scrollingCoordinator->frameViewRootLayerDidChange(view);
         }
 
         if (!view->wasScrolledByUser()) {
-            if (page && page->mainFrame() == m_frame && m_currentItem->pageScaleFactor())
-                page->setPageScaleFactor(m_currentItem->pageScaleFactor(), m_currentItem->scrollPoint());
+            if (m_frame->isMainFrame() && m_currentItem->pageScaleFactor())
+                m_frame->page()->setPageScaleFactor(m_currentItem->pageScaleFactor(), m_currentItem->scrollPoint());
             else
                 view->setScrollPositionNonProgrammatically(m_currentItem->scrollPoint());
         }
@@ -124,7 +123,7 @@ void HistoryController::saveDocumentAndScrollState()
     m_currentItem->setScrollPoint(m_frame->view()->scrollPosition());
 
     Page* page = m_frame->page();
-    if (page && page->mainFrame() == m_frame && !page->inspectorController().deviceEmulationEnabled())
+    if (m_frame->isMainFrame() && !page->inspectorController().deviceEmulationEnabled())
         m_currentItem->setPageScaleFactor(page->pageScaleFactor());
 }
 

@@ -331,8 +331,7 @@ bool RenderGeometryMap::isTopmostRenderView(const RenderObject* renderer) const
     if (!(m_mapCoordinatesFlags & TraverseDocumentBoundaries))
         return true;
 
-    Frame* thisFrame = renderer->frame();
-    return thisFrame == thisFrame->page()->mainFrame();
+    return renderer->frame()->isMainFrame();
 }
 #endif
 

@@ -910,8 +910,7 @@ void FrameLoader::closeOldDataSources()
 
 bool FrameLoader::isLoadingMainFrame() const
 {
-    Page* page = m_frame->page();
-    return page && m_frame == page->mainFrame();
+    return m_frame->isMainFrame();
 }
 
 bool FrameLoader::subframeIsLoading() const

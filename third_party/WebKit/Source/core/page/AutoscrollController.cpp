@@ -171,8 +171,7 @@ void AutoscrollController::updateDragAndDrop(Node* dropTargetNode, const IntPoin
 #if OS(WIN)
 void AutoscrollController::handleMouseReleaseForPanScrolling(Frame* frame, const PlatformMouseEvent& mouseEvent)
 {
-    Page* page = frame->page();
-    if (!page || page->mainFrame() != frame)
+    if (!frame->isMainFrame())
         return;
     switch (m_autoscrollType) {
     case AutoscrollForPan:

@@ -362,7 +362,7 @@ ImageResource* ImageDocument::cachedImage()
 
 bool ImageDocument::shouldShrinkToFit() const
 {
-    return frame()->settings()->shrinksStandaloneImagesToFit() && frame()->page()->mainFrame() == frame();
+    return frame()->settings()->shrinksStandaloneImagesToFit() && frame()->isMainFrame();
 }
 
 void ImageDocument::dispose()

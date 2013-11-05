@@ -2949,7 +2949,7 @@ void Document::setViewportDescription(const ViewportDescription& viewportDescrip
 
 void Document::updateViewportDescription()
 {
-    if (page() && page()->mainFrame() == frame()) {
+    if (frame()->isMainFrame()) {
 #ifndef NDEBUG
         m_didDispatchViewportPropertiesChanged = true;
 #endif

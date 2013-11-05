@@ -2261,6 +2261,7 @@ void RenderLayerCompositor::updateRootLayerAttachment()
 
 bool RenderLayerCompositor::isMainFrame() const
 {
+    // FIXME: Frame::isMainFrame() is probably better.
     return !m_renderView->document().ownerElement();
 }
 

@@ -3808,18 +3808,18 @@ bool EventHandler::dispatchSyntheticTouchEventIfEnabled(const PlatformMouseEvent
 bool EventHandler::handleMouseEventAsEmulatedGesture(const PlatformMouseEvent& event)
 {
     PlatformEvent::Type eventType = event.type();
-    Page* page = m_frame->page();
-    FrameView* view = m_frame->view();
-    if (event.button() != LeftButton || page->mainFrame() != m_frame)
+    if (event.button() != LeftButton || !m_frame->isMainFrame())
         return false;
 
     // Simulate pinch / scroll gesture.
     const IntPoint& position = event.position();
     bool swallowEvent = false;
 
+    FrameView* view = m_frame->view();
     if (event.shiftKey()) {
         // Shift pressed - consider it gesture.
         swallowEvent = true;
+        Page* page = m_frame->page();
         float pageScaleFactor = page->pageScaleFactor();
         switch (eventType) {
         case PlatformEvent::MousePressed:

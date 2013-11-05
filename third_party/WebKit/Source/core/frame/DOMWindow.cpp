@@ -237,10 +237,7 @@ static bool allowsBeforeUnloadListeners(DOMWindow* window)
     Frame* frame = window->frame();
     if (!frame)
         return false;
-    Page* page = frame->page();
-    if (!page)
-        return false;
-    return frame == page->mainFrame();
+    return frame->isMainFrame();
 }
 
 unsigned DOMWindow::pendingUnloadEventListeners() const
@@ -402,7 +399,7 @@ PassRefPtr<Document> DOMWindow::installNewDocument(const String& mimeType, const
 
     m_frame->selection().updateSecureKeyboardEntryIfActive();
 
-    if (m_frame->page() && m_frame->page()->mainFrame() == m_frame) {
+    if (m_frame->isMainFrame()) {
         m_frame->page()->mainFrame()->notifyChromeClientWheelEventHandlerCountChanged();
         if (m_document->hasTouchEventHandlers())
             m_frame->page()->chrome().client().needTouchEvents(true);
@@ -938,7 +935,7 @@ void DOMWindow::focus(ExecutionContext* context)
     }
 
     // If we're a top level window, bring the window to the front.
-    if (m_frame == page->mainFrame() && allowFocus)
+    if (m_frame->isMainFrame() && allowFocus)
         page->chrome().focus();
 
     if (!m_frame)
