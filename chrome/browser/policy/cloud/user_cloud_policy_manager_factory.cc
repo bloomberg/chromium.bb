@@ -111,7 +111,8 @@ void UserCloudPolicyManagerFactory::CreateServiceNow(
 void UserCloudPolicyManagerFactory::Register(Profile* profile,
                                              UserCloudPolicyManager* instance) {
   UserCloudPolicyManager*& entry = managers_[profile];
-  DCHECK(!entry);
+  // TODO(pneubeck): Re-enable this DCHECK. See http://crbug.com/315266.
+  // DCHECK(!entry);
   entry = instance;
 }
 
