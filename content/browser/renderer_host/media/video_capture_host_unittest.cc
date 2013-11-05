@@ -270,13 +270,15 @@ class VideoCaptureHostTest : public testing::Test {
     // Release the reference to the mock object. The object will be destructed
     // on the current message loop.
     host_ = NULL;
+
+    media_stream_manager_->WillDestroyCurrentMessageLoop();
   }
 
   void OpenSession() {
     const int render_process_id = 1;
     const int render_view_id = 1;
     const int page_request_id = 1;
-    const GURL security_origin("http://test.com");
+    const GURL security_origin;
 
     ASSERT_TRUE(opened_device_label_.empty());
 

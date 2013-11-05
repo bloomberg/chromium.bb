@@ -52,6 +52,9 @@ class CONTENT_EXPORT DeviceRequestMessageFilter : public BrowserMessageFilter,
 
  private:
   void OnGetSources(int request_id, const GURL& security_origin);
+  void HmacDeviceIds(const GURL& origin,
+                     const StreamDeviceInfoArray& raw_devices,
+                     StreamDeviceInfoArray* devices_with_guids);
 
   // Owned by ProfileIOData which is guaranteed to outlive DRMF.
   ResourceContext* resource_context_;

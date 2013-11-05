@@ -77,6 +77,7 @@ class MediaStreamManagerTest : public ::testing::Test {
   }
 
   virtual ~MediaStreamManagerTest() {
+    media_stream_manager_->WillDestroyCurrentMessageLoop();
   }
 
   MOCK_METHOD1(Response, void(int index));
@@ -128,8 +129,6 @@ TEST_F(MediaStreamManagerTest, MakeAndCancelMediaAccessRequest) {
   std::string label = MakeMediaAccessRequest(0);
   // No callback is expected.
   media_stream_manager_->CancelRequest(label);
-  run_loop_.RunUntilIdle();
-  media_stream_manager_->WillDestroyCurrentMessageLoop();
 }
 
 TEST_F(MediaStreamManagerTest, MakeMultipleRequests) {

@@ -52,6 +52,11 @@ class CONTENT_EXPORT MediaStreamProviderListener {
   virtual void DevicesEnumerated(MediaStreamType stream_type,
                                  const StreamDeviceInfoArray& devices) = 0;
 
+  // Called by a MediaStreamProvider when an error has occured.
+  virtual void Error(MediaStreamType stream_type,
+                     int capture_session_id,
+                     MediaStreamProviderError error) = 0;
+
  protected:
   virtual ~MediaStreamProviderListener() {}
 };
