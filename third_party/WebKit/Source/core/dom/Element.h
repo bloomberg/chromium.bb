@@ -565,6 +565,7 @@ private:
 
     StyleRecalcChange recalcOwnStyle(StyleRecalcChange);
     void recalcChildStyle(StyleRecalcChange);
+    void checkForChildrenAdjacentRuleChanges();
 
     void updatePseudoElement(PseudoId, StyleRecalcChange);
 

@@ -1595,29 +1595,9 @@ void Element::recalcChildStyle(StyleRecalcChange change)
     if (shouldRecalcStyle(change, this))
         updatePseudoElement(BEFORE, change);
 
-    bool hasDirectAdjacentRules = childrenAffectedByDirectAdjacentRules();
-    bool hasIndirectAdjacentRules = childrenAffectedByForwardPositionalRules();
-    unsigned forceCheckOfNextElementCount = 0;
-    bool forceCheckOfAnyElementSibling = false;
-    if (hasDirectAdjacentRules || hasIndirectAdjacentRules) {
-        for (Node* child = firstChild(); child; child = child->nextSibling()) {
-            if (!child->isElementNode())
-                continue;
-            Element* element = toElement(child);
-            bool childRulesChanged = element->needsStyleRecalc() && element->styleChangeType() >= SubtreeStyleChange;
+    if (change < Force && hasRareData() && childNeedsStyleRecalc())
+        checkForChildrenAdjacentRuleChanges();
 
-            if (forceCheckOfNextElementCount || forceCheckOfAnyElementSibling)
-                element->setNeedsStyleRecalc();
-
-            if (forceCheckOfNextElementCount)
-                forceCheckOfNextElementCount--;
-
-            if (childRulesChanged && hasDirectAdjacentRules)
-                forceCheckOfNextElementCount = document().styleEngine()->maxDirectAdjacentSelectors();
-
-            forceCheckOfAnyElementSibling = forceCheckOfAnyElementSibling || (childRulesChanged && hasIndirectAdjacentRules);
-        }
-    }
     // This loop is deliberately backwards because we use insertBefore in the rendering tree, and want to avoid
     // a potentially n^2 loop to find the insertion point while resolving style. Having us start from the last
     // child and work our way back means in the common case, we'll find the insertion point in O(1) time.
@@ -1650,6 +1630,39 @@ void Element::recalcChildStyle(StyleRecalcChange change)
     if (shouldRecalcStyle(change, this)) {
         updatePseudoElement(AFTER, change);
         updatePseudoElement(BACKDROP, change);
+    }
+}
+
+// FIXME: This method and checkForSiblingStyleChanges and checkForEmptyStyleChange
+// should all be renamed to something better than "check", since it's not clear that
+// they alter the style bits of siblings and children.
+void Element::checkForChildrenAdjacentRuleChanges()
+{
+    bool hasDirectAdjacentRules = childrenAffectedByDirectAdjacentRules();
+    bool hasIndirectAdjacentRules = childrenAffectedByForwardPositionalRules();
+
+    if (!hasDirectAdjacentRules && !hasIndirectAdjacentRules)
+        return;
+
+    unsigned forceCheckOfNextElementCount = 0;
+    bool forceCheckOfAnyElementSibling = false;
+
+    for (Node* child = firstChild(); child; child = child->nextSibling()) {
+        if (!child->isElementNode())
+            continue;
+        Element* element = toElement(child);
+        bool childRulesChanged = element->needsStyleRecalc() && element->styleChangeType() >= SubtreeStyleChange;
+
+        if (forceCheckOfNextElementCount || forceCheckOfAnyElementSibling)
+            element->setNeedsStyleRecalc();
+
+        if (forceCheckOfNextElementCount)
+            forceCheckOfNextElementCount--;
+
+        if (childRulesChanged && hasDirectAdjacentRules)
+            forceCheckOfNextElementCount = document().styleEngine()->maxDirectAdjacentSelectors();
+
+        forceCheckOfAnyElementSibling = forceCheckOfAnyElementSibling || (childRulesChanged && hasIndirectAdjacentRules);
     }
 }
 
