@@ -91,6 +91,7 @@ class CC_EXPORT Scheduler {
   void FinishCommit();
   void BeginMainFrameAborted(bool did_handle);
 
+  void DidManageTiles();
   void DidLoseOutputSurface();
   void DidCreateAndInitializeOutputSurface();
   bool HasInitializedOutputSurface() const {

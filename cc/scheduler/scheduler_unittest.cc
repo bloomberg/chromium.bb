@@ -1080,5 +1080,53 @@ TEST(SchedulerTest, ManageTiles) {
   EXPECT_TRUE(client.HasAction("ScheduledActionManageTiles"));
 }
 
+// Test that ManageTiles only happens once per frame.  If an external caller
+// initiates it, then the state machine should not on that frame.
+TEST(SchedulerTest, ManageTilesOncePerFrame) {
+  FakeSchedulerClient client;
+  SchedulerSettings default_scheduler_settings;
+  Scheduler* scheduler = client.CreateScheduler(default_scheduler_settings);
+  scheduler->SetCanStart();
+  scheduler->SetVisible(true);
+  scheduler->SetCanDraw(true);
+  InitializeOutputSurfaceAndFirstCommit(scheduler);
+
+  // If DidManageTiles during a frame, then ManageTiles should not occur again.
+  scheduler->SetNeedsManageTiles();
+  scheduler->SetNeedsRedraw();
+  client.Reset();
+  scheduler->BeginImplFrame(BeginFrameArgs::CreateForTesting());
+  EXPECT_SINGLE_ACTION("PostBeginImplFrameDeadlineTask", client);
+
+  EXPECT_TRUE(scheduler->ManageTilesPending());
+  scheduler->DidManageTiles();
+  EXPECT_FALSE(scheduler->ManageTilesPending());
+
+  client.Reset();
+  scheduler->OnBeginImplFrameDeadline();
+  EXPECT_EQ(1, client.num_draws());
+  EXPECT_TRUE(client.HasAction("ScheduledActionDrawAndSwapIfPossible"));
+  EXPECT_FALSE(client.HasAction("ScheduledActionManageTiles"));
+  EXPECT_FALSE(scheduler->RedrawPending());
+  EXPECT_FALSE(scheduler->ManageTilesPending());
+
+  // Next frame without DidManageTiles should ManageTiles with draw.
+  scheduler->SetNeedsManageTiles();
+  scheduler->SetNeedsRedraw();
+  client.Reset();
+  scheduler->BeginImplFrame(BeginFrameArgs::CreateForTesting());
+  EXPECT_SINGLE_ACTION("PostBeginImplFrameDeadlineTask", client);
+
+  client.Reset();
+  scheduler->OnBeginImplFrameDeadline();
+  EXPECT_EQ(1, client.num_draws());
+  EXPECT_TRUE(client.HasAction("ScheduledActionDrawAndSwapIfPossible"));
+  EXPECT_TRUE(client.HasAction("ScheduledActionManageTiles"));
+  EXPECT_LT(client.ActionIndex("ScheduledActionDrawAndSwapIfPossible"),
+            client.ActionIndex("ScheduledActionManageTiles"));
+  EXPECT_FALSE(scheduler->RedrawPending());
+  EXPECT_FALSE(scheduler->ManageTilesPending());
+}
+
 }  // namespace
 }  // namespace cc

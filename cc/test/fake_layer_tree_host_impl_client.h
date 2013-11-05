@@ -36,6 +36,7 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   virtual void RequestScrollbarAnimationOnImplThread(base::TimeDelta)
       OVERRIDE {}
   virtual void DidActivatePendingTree() OVERRIDE {}
+  virtual void DidManageTiles() OVERRIDE {}
 };
 
 }  // namespace cc

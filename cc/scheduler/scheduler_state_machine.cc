@@ -26,6 +26,7 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       last_frame_number_swap_performed_(-1),
       last_frame_number_begin_main_frame_sent_(-1),
       last_frame_number_update_visible_tiles_was_called_(-1),
+      last_frame_number_manage_tiles_called_(-1),
       consecutive_failed_draws_(0),
       needs_redraw_(false),
       needs_manage_tiles_(false),
@@ -493,6 +494,12 @@ bool SchedulerStateMachine::ShouldCommit() const {
 }
 
 bool SchedulerStateMachine::ShouldManageTiles() const {
+  // ManageTiles only really needs to be called immediately after commit
+  // and then periodically after that.  Limiting to once per frame prevents
+  // post-commit and post-draw ManageTiles on the same frame.
+  if (last_frame_number_manage_tiles_called_ == current_frame_number_)
+    return false;
+
   // Limiting to once per-frame is not enough, since we only want to
   // manage tiles _after_ draws. Polling for draw triggers and
   // begin-frame are mutually exclusive, so we limit to these two cases.
@@ -1016,6 +1023,11 @@ void SchedulerStateMachine::BeginMainFrameAborted(bool did_handle) {
     commit_state_ = COMMIT_STATE_IDLE;
     SetNeedsCommit();
   }
+}
+
+void SchedulerStateMachine::DidManageTiles() {
+  needs_manage_tiles_ = false;
+  last_frame_number_manage_tiles_called_ = current_frame_number_;
 }
 
 void SchedulerStateMachine::DidLoseOutputSurface() {

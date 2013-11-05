@@ -101,6 +101,10 @@ void Scheduler::BeginMainFrameAborted(bool did_handle) {
   ProcessScheduledActions();
 }
 
+void Scheduler::DidManageTiles() {
+  state_machine_.DidManageTiles();
+}
+
 void Scheduler::DidLoseOutputSurface() {
   TRACE_EVENT0("cc", "Scheduler::DidLoseOutputSurface");
   last_set_needs_begin_impl_frame_ = false;

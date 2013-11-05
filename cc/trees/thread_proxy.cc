@@ -1591,4 +1591,9 @@ void ThreadProxy::DidActivatePendingTree() {
       base::TimeTicks::HighResNow() - commit_complete_time_);
 }
 
+void ThreadProxy::DidManageTiles() {
+  DCHECK(IsImplThread());
+  scheduler_on_impl_thread_->DidManageTiles();
+}
+
 }  // namespace cc

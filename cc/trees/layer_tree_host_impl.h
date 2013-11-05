@@ -79,6 +79,7 @@ class LayerTreeHostImplClient {
   virtual void RenewTreePriority() = 0;
   virtual void RequestScrollbarAnimationOnImplThread(base::TimeDelta delay) = 0;
   virtual void DidActivatePendingTree() = 0;
+  virtual void DidManageTiles() = 0;
 
  protected:
   virtual ~LayerTreeHostImplClient() {}

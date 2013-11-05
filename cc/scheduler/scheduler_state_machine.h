@@ -219,6 +219,7 @@ class CC_EXPORT SchedulerStateMachine {
 
   bool has_pending_tree() const { return has_pending_tree_; }
 
+  void DidManageTiles();
   void DidLoseOutputSurface();
   void DidCreateAndInitializeOutputSurface();
   bool HasInitializedOutputSurface() const;
@@ -271,6 +272,7 @@ class CC_EXPORT SchedulerStateMachine {
   int last_frame_number_swap_performed_;
   int last_frame_number_begin_main_frame_sent_;
   int last_frame_number_update_visible_tiles_was_called_;
+  int last_frame_number_manage_tiles_called_;
 
   int consecutive_failed_draws_;
   bool needs_redraw_;

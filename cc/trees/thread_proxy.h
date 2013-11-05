@@ -90,6 +90,7 @@ class ThreadProxy : public Proxy,
   virtual void RequestScrollbarAnimationOnImplThread(base::TimeDelta delay)
       OVERRIDE;
   virtual void DidActivatePendingTree() OVERRIDE;
+  virtual void DidManageTiles() OVERRIDE;
 
   // SchedulerClient implementation
   virtual void SetNeedsBeginImplFrame(bool enable) OVERRIDE;
