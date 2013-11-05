@@ -30,7 +30,11 @@ class MockSurfaceFactoryOzone : public gfx::SurfaceFactoryOzone {
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE { return 1; }
   virtual gfx::AcceleratedWidget RealizeAcceleratedWidget(
       gfx::AcceleratedWidget w) OVERRIDE { return w; }
-  virtual bool LoadEGLGLES2Bindings() OVERRIDE { return false; }
+  virtual bool LoadEGLGLES2Bindings(
+      AddGLLibraryCallback add_gl_library,
+      SetGLGetProcAddressProcCallback set_gl_get_proc_address) OVERRIDE {
+    return false;
+  }
   virtual bool AttemptToResizeAcceleratedWidget(
       gfx::AcceleratedWidget w, const gfx::Rect& bounds) OVERRIDE {
     device_ = skia::AdoptRef(new SkBitmapDevice(SkBitmap::kARGB_8888_Config,
@@ -91,7 +95,8 @@ void SoftwareOutputDeviceOzoneTest::SetUp() {
   gfx::SurfaceFactoryOzone::SetInstance(surface_factory_.get());
 
   const gfx::Size size(500, 400);
-  compositor_.reset(new ui::Compositor(gfx::SurfaceFactoryOzone::GetInstance()
+  compositor_.reset(new ui::Compositor(true,
+                                       gfx::SurfaceFactoryOzone::GetInstance()
                                            ->GetAcceleratedWidget()));
   compositor_->SetScaleAndSize(1.0f, size);
 
