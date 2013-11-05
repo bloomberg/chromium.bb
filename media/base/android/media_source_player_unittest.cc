@@ -208,6 +208,12 @@ class MediaSourcePlayerTest : public testing::Test {
     decoder_callback_hook_executed_ = true;
   }
 
+  // Inspect internal pending_event_ state of |player_|. This is for infrequent
+  // use by tests, only where required.
+  bool IsPendingSurfaceChange() {
+    return player_.IsEventPending(player_.SURFACE_CHANGE_EVENT_PENDING);
+  }
+
   DemuxerConfigs CreateAudioDemuxerConfigs() {
     DemuxerConfigs configs;
     configs.audio_codec = kCodecVorbis;
@@ -1706,6 +1712,26 @@ TEST_F(MediaSourcePlayerTest, BrowserSeek_ThenReleaseThenStart) {
 
   // No further seek should have been requested since BrowserSeekPlayer().
   EXPECT_EQ(1, demuxer_->num_seek_requests());
+}
+
+// TODO(xhwang): Once we add tests to cover DrmBridge, update this test to
+// also verify that the job is successfully created if SetDrmBridge(), Start()
+// and eventually OnMediaCrypto() occur. This would increase test coverage of
+// http://crbug.com/313470 and allow us to remove inspection of internal player
+// pending event state. See http://crbug.com/313860.
+TEST_F(MediaSourcePlayerTest, SurfaceChangeClearedEvenIfMediaCryptoAbsent) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that |SURFACE_CHANGE_EVENT_PENDING| is not pending after
+  // SetVideoSurface() for a player configured for encrypted video, when the
+  // player has not yet received media crypto.
+  DemuxerConfigs configs = CreateVideoDemuxerConfigs();
+  configs.is_video_encrypted = true;
+
+  player_.OnDemuxerConfigsAvailable(configs);
+  CreateNextTextureAndSetVideoSurface();
+  EXPECT_FALSE(IsPendingSurfaceChange());
+  EXPECT_FALSE(GetMediaDecoderJob(false));
 }
 
 // TODO(xhwang): Enable this test when the test devices are updated.
