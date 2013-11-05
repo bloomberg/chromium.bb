@@ -23,7 +23,7 @@ class TestLauncherItemDelegate : public ash::LauncherItemDelegate {
   virtual ~TestLauncherItemDelegate();
 
   // ash::LauncherItemDelegate overrides:
-  virtual void ItemSelected(const ui::Event& event) OVERRIDE;
+  virtual bool ItemSelected(const ui::Event& event) OVERRIDE;
   virtual base::string16 GetTitle() OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(
       aura::Window* root_window) OVERRIDE;

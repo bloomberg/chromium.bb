@@ -143,7 +143,7 @@ void BrowserShortcutLauncherItemController::Launch(ash::LaunchSource source,
                                                    int event_flags) {
 }
 
-void BrowserShortcutLauncherItemController::Activate(ash::LaunchSource source) {
+bool BrowserShortcutLauncherItemController::Activate(ash::LaunchSource source) {
   Browser* last_browser = chrome::FindTabbedBrowser(
       launcher_controller()->profile(),
       true,
@@ -151,11 +151,12 @@ void BrowserShortcutLauncherItemController::Activate(ash::LaunchSource source) {
 
   if (!last_browser) {
     launcher_controller()->CreateNewWindow();
-    return;
+    return true;
   }
 
   launcher_controller()->ActivateWindowOrMinimizeIfActive(
       last_browser->window(), GetApplicationList(0).size() == 2);
+  return false;
 }
 
 void BrowserShortcutLauncherItemController::Close() {
@@ -215,7 +216,7 @@ BrowserShortcutLauncherItemController::GetApplicationList(int event_flags) {
   return items.Pass();
 }
 
-void BrowserShortcutLauncherItemController::ItemSelected(
+bool BrowserShortcutLauncherItemController::ItemSelected(
     const ui::Event& event) {
 #if defined(OS_CHROMEOS)
   chromeos::default_pinned_apps_field_trial::RecordShelfClick(
@@ -224,17 +225,17 @@ void BrowserShortcutLauncherItemController::ItemSelected(
 
   if (event.flags() & ui::EF_CONTROL_DOWN) {
     launcher_controller()->CreateNewWindow();
-    return;
+    return true;
   }
 
   // In case of a keyboard event, we were called by a hotkey. In that case we
   // activate the next item in line if an item of our list is already active.
   if (event.type() & ui::ET_KEY_RELEASED) {
     ActivateOrAdvanceToNextBrowser();
-    return;
+    return false;
   }
 
-  Activate(ash::LAUNCH_FROM_UNKNOWN);
+  return Activate(ash::LAUNCH_FROM_UNKNOWN);
 }
 
 string16 BrowserShortcutLauncherItemController::GetTitle() {

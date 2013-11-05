@@ -23,12 +23,13 @@ WindowWatcherLauncherItemDelegate::WindowWatcherLauncherItemDelegate(
 WindowWatcherLauncherItemDelegate::~WindowWatcherLauncherItemDelegate() {
 }
 
-void WindowWatcherLauncherItemDelegate::ItemSelected(const ui::Event& event) {
+bool WindowWatcherLauncherItemDelegate::ItemSelected(const ui::Event& event) {
   aura::Window* window = watcher_->GetWindowByID(id_);
   if (window->type() == aura::client::WINDOW_TYPE_PANEL)
     ash::wm::MoveWindowToEventRoot(window, event);
   window->Show();
   ash::wm::ActivateWindow(window);
+  return false;
 }
 
 base::string16 WindowWatcherLauncherItemDelegate::GetTitle() {

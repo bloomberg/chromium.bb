@@ -45,7 +45,8 @@ class ASH_EXPORT LauncherItemDelegate {
   // but not |aura::Window|. If the |event| is of type KeyEvent, it is assumed
   // that this was triggered by keyboard action (Alt+<number>) and special
   // handling might happen.
-  virtual void ItemSelected(const ui::Event& event) = 0;
+  // Returns true if a new item was created.
+  virtual bool ItemSelected(const ui::Event& event) = 0;
 
   // Returns the title to display.
   virtual base::string16 GetTitle() = 0;

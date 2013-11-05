@@ -80,7 +80,8 @@ class LauncherItemController : public ash::LauncherItemDelegate {
 
   // Shows and activates the most-recently-active window associated with the
   // item, or launches the item if it is not currently open.
-  virtual void Activate(ash::LaunchSource source) = 0;
+  // Returns true when a new item got created.
+  virtual bool Activate(ash::LaunchSource source) = 0;
 
   // Closes all windows associated with this item.
   virtual void Close() = 0;

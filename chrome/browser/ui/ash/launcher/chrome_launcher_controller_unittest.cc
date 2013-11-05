@@ -225,9 +225,9 @@ class TestV2AppLauncherItemController : public LauncherItemController {
   virtual bool IsOpen() const OVERRIDE { return true; }
   virtual bool IsVisible() const OVERRIDE { return true; }
   virtual void Launch(ash::LaunchSource source, int event_flags) OVERRIDE {}
-  virtual void Activate(ash::LaunchSource source) OVERRIDE {}
+  virtual bool Activate(ash::LaunchSource source) OVERRIDE { return false; }
   virtual void Close() OVERRIDE {}
-  virtual void ItemSelected(const ui::Event& event) OVERRIDE {}
+  virtual bool ItemSelected(const ui::Event& event) OVERRIDE { return false; }
   virtual string16 GetTitle() OVERRIDE { return string16(); }
   virtual ChromeLauncherAppMenuItems GetApplicationList(
       int event_flags) OVERRIDE {

@@ -138,11 +138,12 @@ void ShellWindowLauncherItemController::Launch(ash::LaunchSource source,
                                    ui::EF_NONE);
 }
 
-void ShellWindowLauncherItemController::Activate(ash::LaunchSource source) {
+bool ShellWindowLauncherItemController::Activate(ash::LaunchSource source) {
   DCHECK(!shell_windows_.empty());
   ShellWindow* window_to_activate = last_active_shell_window_ ?
       last_active_shell_window_ : shell_windows_.back();
   window_to_activate->GetBaseWindow()->Activate();
+  return false;
 }
 
 void ShellWindowLauncherItemController::Close() {
@@ -183,9 +184,9 @@ ShellWindowLauncherItemController::GetApplicationList(int event_flags) {
   return items.Pass();
 }
 
-void ShellWindowLauncherItemController::ItemSelected(const ui::Event& event) {
+bool ShellWindowLauncherItemController::ItemSelected(const ui::Event& event) {
   if (shell_windows_.empty())
-    return;
+    return false;
   if (type() == TYPE_APP_PANEL) {
     DCHECK(shell_windows_.size() == 1);
     ShellWindow* panel = shell_windows_.front();
@@ -212,6 +213,7 @@ void ShellWindowLauncherItemController::ItemSelected(const ui::Event& event) {
       ShowAndActivateOrMinimize(window_to_show);
     }
   }
+  return false;
 }
 
 base::string16 ShellWindowLauncherItemController::GetTitle() {

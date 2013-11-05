@@ -17,13 +17,14 @@ TestLauncherItemDelegate::TestLauncherItemDelegate(aura::Window* window)
 TestLauncherItemDelegate::~TestLauncherItemDelegate() {
 }
 
-void TestLauncherItemDelegate::ItemSelected(const ui::Event& event) {
+bool TestLauncherItemDelegate::ItemSelected(const ui::Event& event) {
   if (window_) {
     if (window_->type() == aura::client::WINDOW_TYPE_PANEL)
       ash::wm::MoveWindowToEventRoot(window_, event);
     window_->Show();
     ash::wm::ActivateWindow(window_);
   }
+  return false;
 }
 
 base::string16 TestLauncherItemDelegate::GetTitle() {

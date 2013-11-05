@@ -1672,9 +1672,8 @@ void ShelfView::ButtonPressed(views::Button* sender, const ui::Event& event) {
     LauncherItemDelegate* item_delegate =
         item_manager_->GetLauncherItemDelegate(
             model_->items()[view_index].id);
-    item_delegate->ItemSelected(event);
-
-    ShowListMenuForView(model_->items()[view_index], sender, event);
+    if (!item_delegate->ItemSelected(event))
+      ShowListMenuForView(model_->items()[view_index], sender, event);
   }
 }
 

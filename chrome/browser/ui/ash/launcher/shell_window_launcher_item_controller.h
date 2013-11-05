@@ -59,11 +59,11 @@ class ShellWindowLauncherItemController : public LauncherItemController,
   virtual bool IsOpen() const OVERRIDE;
   virtual bool IsVisible() const OVERRIDE;
   virtual void Launch(ash::LaunchSource source, int event_flags) OVERRIDE;
-  virtual void Activate(ash::LaunchSource source) OVERRIDE;
+  virtual bool Activate(ash::LaunchSource source) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual ChromeLauncherAppMenuItems GetApplicationList(
       int event_flags) OVERRIDE;
-  virtual void ItemSelected(const ui::Event& eent) OVERRIDE;
+  virtual bool ItemSelected(const ui::Event& eent) OVERRIDE;
   virtual base::string16 GetTitle() OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(
       aura::Window* root_window) OVERRIDE;
