@@ -62,8 +62,7 @@ class OmniboxViewWin
                  LocationBarView* parent_view,
                  CommandUpdater* command_updater,
                  bool popup_window_mode,
-                 const gfx::FontList& font_list,
-                 int font_y_offset);
+                 const gfx::FontList& font_list);
   ~OmniboxViewWin();
 
   // Gets the relative window for the specified native view.

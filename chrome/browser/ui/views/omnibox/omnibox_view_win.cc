@@ -449,8 +449,7 @@ OmniboxViewWin::OmniboxViewWin(OmniboxEditController* controller,
                                LocationBarView* location_bar,
                                CommandUpdater* command_updater,
                                bool popup_window_mode,
-                               const gfx::FontList& font_list,
-                               int font_y_offset)
+                               const gfx::FontList& font_list)
     : OmniboxView(location_bar->profile(), controller, command_updater),
       popup_view_(OmniboxPopupContentsView::Create(
           font_list, this, model(), location_bar)),
@@ -464,7 +463,7 @@ OmniboxViewWin::OmniboxViewWin(OmniboxEditController* controller,
       ignore_ime_messages_(false),
       delete_at_end_pressed_(false),
       font_list_(font_list),
-      font_y_adjustment_(font_y_offset),
+      font_y_adjustment_(0),
       possible_drag_(false),
       in_drag_(false),
       initiated_drag_(false),
@@ -522,6 +521,10 @@ OmniboxViewWin::OmniboxViewWin(OmniboxEditController* controller,
   const float kXHeightRatio = 0.7f;
   font_x_height_ = static_cast<int>(
       (static_cast<float>(cap_height) * kXHeightRatio) + 0.5);
+  // Determine the y offset centering cap height.
+  const int location_height = location_bar_->GetInternalHeight(true);
+  font_y_adjustment_ = std::max(0,
+      int((location_height - cap_height) / 2 - tm.tmInternalLeading));
 
   // Get the number of twips per pixel, which we need below to offset our text
   // by the desired number of pixels.
