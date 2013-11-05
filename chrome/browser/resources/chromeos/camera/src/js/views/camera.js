@@ -241,14 +241,6 @@ camera.views.Camera = function(context, router) {
   this.scrollBar_ = new camera.HorizontalScrollBar(this.scroller_);
 
   /**
-   * True if the window has been shown during startup. Used to avoid showing
-   * it more than once, when retrying initialization.
-   * @type {boolean}
-   * @private
-   */
-  this.shownAtStartup_ = false;
-
-  /**
    * Detects if the mouse has been moved or clicked, and if any touch events
    * have been performed on the view. If such events are detected, then the
    * ribbon and the window buttons are shown.
@@ -379,10 +371,8 @@ camera.views.Camera.prototype.initialize = function(callback) {
         chrome.i18n.getMessage('errorMsgNoWebGL'),
         chrome.i18n.getMessage('errorMsgNoWebGLHint'));
 
-    // Show the window, since the camera initialization will not happen (due
-    // to lack of webgl).
-    chrome.app.window.current().show();
-    this.shownAtStartup_ = true;
+    // Initialization failed due to lack of webgl.
+    document.body.classList.remove('initializing');
   }
 
   if (this.mainCanvas_ && this.mainFastCanvas_) {
@@ -954,13 +944,17 @@ camera.views.Camera.prototype.start_ = function() {
           bounds.left - (targetWidth - bounds.width) / 2,
           bounds.top - (targetHeight - bounds.height) / 2);
     }
-    if (!this.shownAtStartup_)
-      chrome.app.window.current().show();
-    // Show tools after some small delay to make it more visible.
+
     setTimeout(function() {
+      // Remove the initialization layer, but with some small delay to give
+      // the UI change to reflow and update correctly.
+      document.body.classList.remove('initializing');
+
+      // Show tools after some small delay to make it more visible.
       this.ribbonInitialization_ = false;
       this.setExpanded_(true);
     }.bind(this), 500);
+
     if (this.retryStartTimer_) {
       clearTimeout(this.retryStartTimer_);
       this.retryStartTimer_ = null;
@@ -981,9 +975,7 @@ camera.views.Camera.prototype.start_ = function() {
   }.bind(this);
 
   var onFailure = function() {
-    if (!this.shownAtStartup_)
-      chrome.app.window.current().show();
-    this.shownAtStartup_ = true;
+    document.body.classList.remove('initializing');
     scheduleRetry();
   }.bind(this);
 

@@ -36,6 +36,7 @@ SRC_RESOURCES= \
 	src/images/gallery_button_back.png \
 	src/images/gallery_button_delete.png \
 	src/images/no_camera.svg \
+	src/images/spinner.svg \
 	src/images/topbar_button_close.png \
 	src/images/topbar_button_maximize.png \
 	src/js/background.js \

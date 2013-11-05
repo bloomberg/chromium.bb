@@ -707,3 +707,19 @@ body.dialog #dialog #dialog-popup {
   padding: 5px 20px;
 }
 
+#initializing {
+  background: black url(../images/spinner.svg) center / 16px no-repeat;
+  bottom: 0;
+  left: 0;
+  opacity: 1;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+body:not(.initializing) #initializing {
+  opacity: 0;
+  transition: opacity 200ms, visibility 0 200ms;
+  visibility: hidden;
+}
+
