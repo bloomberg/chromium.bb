@@ -28,14 +28,34 @@ class Credentials {
 
   // Drop all capabilities in the effective, inheritable and permitted sets for
   // the current process.
-  void DropAllCapabilities();
+  bool DropAllCapabilities();
   // Return true iff there is any capability in any of the capabilities sets
   // of the current process.
-  bool HasAnyCapability();
+  bool HasAnyCapability() const;
   // Returns the capabilities of the current process in textual form, as
   // documented in libcap2's cap_to_text(3). This is mostly useful for
   // debugging and tests.
-  scoped_ptr<std::string> GetCurrentCapString();
+  scoped_ptr<std::string> GetCurrentCapString() const;
+
+  // Move the current process to a new "user namespace" as supported by Linux
+  // 3.8+ (CLONE_NEWUSER).
+  // The uid map will be set-up so that the perceived uid and gid will not
+  // change.
+  // If this call succeeds, the current process will be granted a full set of
+  // capabilities in the new namespace.
+  bool MoveToNewUserNS();
+
+  // Remove the ability of the process to access the file system. File
+  // descriptors which are already open prior to calling this API remain
+  // available.
+  // The implementation currently uses chroot(2) and requires CAP_SYS_CHROOT.
+  // CAP_SYS_CHROOT can be acquired by using the MoveToNewUserNS() API.
+  // Make sure to call DropAllCapabilities() after this call to prevent
+  // escapes.
+  // To be secure, it's very important for this API to not be called with any
+  // directory file descriptor present. TODO(jln): integrate with
+  // crbug.com/269806 when available.
+  bool DropFileSystemAccess();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Credentials);

@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/at_exit.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 int main(int argc, char *argv[]) {
+  // The use of Callbacks requires an AtExitManager.
+  base::AtExitManager exit_manager;
   testing::InitGoogleTest(&argc, argv);
   // Always go through re-execution for death tests.
   // This makes gtest only marginally slower for us and has the
