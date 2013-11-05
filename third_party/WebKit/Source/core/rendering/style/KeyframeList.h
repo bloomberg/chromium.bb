@@ -76,9 +76,6 @@ public:
     }
     ~KeyframeList();
 
-    bool operator==(const KeyframeList& o) const;
-    bool operator!=(const KeyframeList& o) const { return !(*this == o); }
-
     const AtomicString& animationName() const { return m_animationName; }
 
     void insert(const KeyframeValue& keyframe);

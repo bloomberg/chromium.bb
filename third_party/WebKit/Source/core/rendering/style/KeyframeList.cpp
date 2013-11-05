@@ -64,25 +64,6 @@ void KeyframeList::clear()
     m_properties.clear();
 }
 
-bool KeyframeList::operator==(const KeyframeList& o) const
-{
-    if (m_keyframes.size() != o.m_keyframes.size())
-        return false;
-
-    Vector<KeyframeValue>::const_iterator it2 = o.m_keyframes.begin();
-    for (Vector<KeyframeValue>::const_iterator it1 = m_keyframes.begin(); it1 != m_keyframes.end(); ++it1) {
-        if (it1->key() != it2->key())
-            return false;
-        const RenderStyle& style1 = *it1->style();
-        const RenderStyle& style2 = *it2->style();
-        if (style1 != style2)
-            return false;
-        ++it2;
-    }
-
-    return true;
-}
-
 void KeyframeList::insert(const KeyframeValue& keyframe)
 {
     if (keyframe.key() < 0 || keyframe.key() > 1)
