@@ -808,6 +808,10 @@ For Chromium, processes used to display diagnostics information (such as this "a
         Remove from Chromium
       </message>
 
+      <message name="IDS_EXTENSIONS_SUSPICIOUS_DISABLED_BODY" desc="Body of the dialog shown when suspicious extensions have been disabled">
+        To make Chromium safer, we disabled some extensions that aren't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE">$1<ex>Chrome Web Store</ex></ph> and may have been added without your knowledge.
+      </message>
+
       <!-- Main Chrome menu -->
       <message name="IDS_APPMENU_TOOLTIP" desc="The tooltip to show for the browser menu">
         Customize and control Chromium

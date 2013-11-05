@@ -587,6 +587,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <message name="IDS_SAVE" desc="Used on a button to save information you are editing.">
         Save
       </message>
+      <message name="IDS_DISABLE" desc="Used for Disable on buttons">
+        Disable
+      </message>
 
       <!-- content area context menus -->
       <if expr="is_macosx">
@@ -5130,6 +5133,36 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_EXTENSIONS_PACK" desc="Text for the link to pack the extension / app.">
         Pack
+      </message>
+
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_EXTENSIONS_SUSPICIOUS_DISABLED_TITLE" desc="In Title Case: Title of the dialog shown when suspicious extensions have been disabled">
+          Suspicious Extensions Disabled
+        </message>
+      </if>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_EXTENSIONS_SUSPICIOUS_DISABLED_TITLE" desc="Title of the dialog shown when suspicious extensions have been disabled">
+          Suspicious extensions disabled
+        </message>
+      </if>
+      <message name="IDS_EXTENSIONS_SUSPICIOUS_DISABLED_BUTTON" desc="Text of the button on the dialog shown when suspicious extensions have been disabled">
+      OK, got it
+      </message>
+      <message name="IDS_EXTENSIONS_ADDED_WITHOUT_KNOWLEDGE" desc="Text shown in the extensions settings for items that might have been forcefully added to chrome without the user's knowledge">
+        This extension is not listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE">$1<ex>Chrome Web Store</ex></ph> and may have been added without your knowledge.
+      </message>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_EXTENSIONS_DISABLE_DEVELOPER_MODE_TITLE" desc="In Title Case: Title of a dialog warning users they have development mode extensions running">
+          Disable Developer Mode Extensions
+        </message>
+      </if>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_EXTENSIONS_DISABLE_DEVELOPER_MODE_TITLE" desc="Title of a dialog warning users they have development mode extensions running">
+          Disable developer mode extensions
+        </message>
+      </if>
+      <message name="IDS_EXTENSIONS_DISABLE_DEVELOPER_MODE_BODY" desc="Body of a dialog warning users they have development mode extensions running">
+        Extensions running in developer mode can harm your computer. If you're not a developer, you should disable these extensions running in developer mode to stay safe.
       </message>
 
       <!-- chrome://settings-frame/options_settings_app.html for the App Launcher Settings App -->
