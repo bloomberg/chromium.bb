@@ -886,9 +886,7 @@ void InProcessViewRenderer::EnsureContinuousInvalidation(
   // This method should be called again when any of these conditions change.
   bool need_invalidate =
       compositor_needs_continuous_invalidate_ || invalidate_ignore_compositor;
-  bool throttle = (is_paused_ && !on_new_picture_enable_) ||
-                  (attached_to_window_ && !window_visible_);
-  if (!need_invalidate || block_invalidates_ || throttle)
+  if (!need_invalidate || block_invalidates_)
     return;
 
   if (draw_info) {
@@ -900,6 +898,11 @@ void InProcessViewRenderer::EnsureContinuousInvalidation(
   } else {
     client_->PostInvalidate();
   }
+
+  bool throttle_fallback_tick = (is_paused_ && !on_new_picture_enable_) ||
+                                (attached_to_window_ && !window_visible_);
+  if (throttle_fallback_tick)
+    return;
 
   block_invalidates_ = compositor_needs_continuous_invalidate_;
 
