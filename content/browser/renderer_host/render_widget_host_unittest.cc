@@ -1350,7 +1350,7 @@ TEST_F(RenderWidgetHostTest, WheelScrollConsumedDoNotHorizOverscroll) {
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
-  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(1U, process_->sink().message_count());
 
   process_->sink().ClearMessages();
   SendInputEventACK(WebInputEvent::MouseWheel,
@@ -1684,41 +1684,6 @@ TEST_F(RenderWidgetHostTest, GestureScrollConsumedHorizontal) {
   EXPECT_EQ(1U, process_->sink().message_count());
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
-}
-
-// Tests that if the page is scrolled because of a scroll-gesture, then that
-// particular scroll sequence never generates overscroll if the scroll direction
-// is vertical.
-TEST_F(RenderWidgetHostTest, GestureScrollConsumedVertical) {
-  // Turn off debounce handling for test isolation.
-  host_->SetupForOverscrollControllerTest();
-  host_->set_debounce_interval_time_ms(0);
-  process_->sink().ClearMessages();
-
-  SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
-                       WebGestureEvent::Touchscreen);
-  SimulateGestureScrollUpdateEvent(0, -1, 0);
-
-  // Start scrolling on content. ACK both events as being processed.
-  SendInputEventACK(WebInputEvent::GestureScrollBegin,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
-  SendInputEventACK(WebInputEvent::GestureScrollUpdate,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
-  EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_delegate()->current_mode());
-
-  // Send another gesture event and ACK as not being processed. This should
-  // initiate overscroll because the scroll was in the vertical direction even
-  // though the beginning of the scroll did scroll content.
-  SimulateGestureScrollUpdateEvent(0, -50, 0);
-  SendInputEventACK(WebInputEvent::GestureScrollUpdate,
-                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(OVERSCROLL_NORTH, host_->overscroll_mode());
-
-  // Changing direction of scroll to be horizontal to test that this causes the
-  // vertical overscroll to stop.
-  SimulateGestureScrollUpdateEvent(500, 0, 0);
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
 }
 

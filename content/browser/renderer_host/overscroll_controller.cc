@@ -4,11 +4,22 @@
 
 #include "content/browser/renderer_host/overscroll_controller.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
 #include "content/public/browser/overscroll_configuration.h"
+#include "content/public/common/content_switches.h"
 
 using WebKit::WebInputEvent;
+
+namespace {
+
+bool IsScrollEndEffectEnabled() {
+  return CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      switches::kScrollEndEffect) == "1";
+}
+
+}  // namespace
 
 namespace content {
 
@@ -301,6 +312,12 @@ void OverscrollController::ProcessOverscroll(float delta_x,
   else if (fabs(overscroll_delta_y_) > vert_threshold &&
            fabs(overscroll_delta_y_) > fabs(overscroll_delta_x_) * kMinRatio)
     new_mode = overscroll_delta_y_ > 0.f ? OVERSCROLL_SOUTH : OVERSCROLL_NORTH;
+
+  // The vertical oversrcoll currently does not have any UX effects other then
+  // for the scroll end effect, so testing if it is enabled.
+  if ((new_mode == OVERSCROLL_SOUTH || new_mode == OVERSCROLL_NORTH) &&
+      !IsScrollEndEffectEnabled())
+    new_mode = OVERSCROLL_NONE;
 
   if (overscroll_mode_ == OVERSCROLL_NONE)
     SetOverscrollMode(new_mode);
