@@ -251,7 +251,7 @@ void GLES2Implementation::DeleteBuffers(GLsizei n, const GLuint* buffers) {
   });
   GPU_CLIENT_DCHECK_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
-      GPU_DCHECK(buffers[i] != 0);
+      DCHECK(buffers[i] != 0);
     }
   });
   if (n < 0) {
@@ -273,7 +273,7 @@ void GLES2Implementation::DeleteFramebuffers(
   });
   GPU_CLIENT_DCHECK_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
-      GPU_DCHECK(framebuffers[i] != 0);
+      DCHECK(framebuffers[i] != 0);
     }
   });
   if (n < 0) {
@@ -303,7 +303,7 @@ void GLES2Implementation::DeleteRenderbuffers(
   });
   GPU_CLIENT_DCHECK_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
-      GPU_DCHECK(renderbuffers[i] != 0);
+      DCHECK(renderbuffers[i] != 0);
     }
   });
   if (n < 0) {
@@ -332,7 +332,7 @@ void GLES2Implementation::DeleteTextures(GLsizei n, const GLuint* textures) {
   });
   GPU_CLIENT_DCHECK_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
-      GPU_DCHECK(textures[i] != 0);
+      DCHECK(textures[i] != 0);
     }
   });
   if (n < 0) {
@@ -1511,7 +1511,7 @@ void GLES2Implementation::DeleteQueriesEXT(GLsizei n, const GLuint* queries) {
   });
   GPU_CLIENT_DCHECK_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
-      GPU_DCHECK(queries[i] != 0);
+      DCHECK(queries[i] != 0);
     }
   });
   if (n < 0) {
@@ -1553,7 +1553,7 @@ void GLES2Implementation::DeleteVertexArraysOES(
   });
   GPU_CLIENT_DCHECK_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
-      GPU_DCHECK(arrays[i] != 0);
+      DCHECK(arrays[i] != 0);
     }
   });
   if (n < 0) {

@@ -4,9 +4,9 @@
 
 #include "gpu/command_buffer/client/vertex_array_object_manager.h"
 
+#include "base/logging.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
-#include "gpu/command_buffer/common/logging.h"
 
 #if defined(__native_client__) && !defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
 #define GLES2_SUPPORT_CLIENT_SIDE_ARRAYS
@@ -234,7 +234,7 @@ void VertexArrayObject::SetAttribEnable(GLuint index, bool enabled) {
     if (attrib.enabled() != enabled) {
       if (attrib.IsClientSide()) {
         num_client_side_pointers_enabled_ += enabled ? 1 : -1;
-        GPU_DCHECK_GE(num_client_side_pointers_enabled_, 0);
+        DCHECK_GE(num_client_side_pointers_enabled_, 0);
       }
       attrib.set_enabled(enabled);
     }
@@ -253,7 +253,7 @@ void VertexArrayObject::SetAttribPointer(
     VertexAttrib& attrib = vertex_attribs_[index];
     if (attrib.IsClientSide() && attrib.enabled()) {
       --num_client_side_pointers_enabled_;
-      GPU_DCHECK_GE(num_client_side_pointers_enabled_, 0);
+      DCHECK_GE(num_client_side_pointers_enabled_, 0);
     }
 
     attrib.SetInfo(buffer_id, size, type, normalized, stride, ptr);
@@ -368,18 +368,18 @@ bool VertexArrayObjectManager::BindElementArray(GLuint id) {
 
 void VertexArrayObjectManager::GenVertexArrays(
     GLsizei n, const GLuint* arrays) {
-  GPU_DCHECK_GE(n, 0);
+  DCHECK_GE(n, 0);
   for (GLsizei i = 0; i < n; ++i) {
     std::pair<VertexArrayObjectMap::iterator, bool> result =
         vertex_array_objects_.insert(std::make_pair(
             arrays[i], new VertexArrayObject(max_vertex_attribs_)));
-    GPU_DCHECK(result.second);
+    DCHECK(result.second);
   }
 }
 
 void VertexArrayObjectManager::DeleteVertexArrays(
     GLsizei n, const GLuint* arrays) {
-  GPU_DCHECK_GE(n, 0);
+  DCHECK_GE(n, 0);
   for (GLsizei i = 0; i < n; ++i) {
     GLuint id = arrays[i];
     if (id) {
@@ -534,7 +534,7 @@ bool VertexArrayObjectManager::SetupSimulatedClientSideBuffers(
           ii, attrib.size(), attrib.type(), attrib.normalized(), 0,
           array_buffer_offset_);
       array_buffer_offset_ += RoundUpToMultipleOf4(bytes_collected);
-      GPU_DCHECK_LE(array_buffer_offset_, array_buffer_size_);
+      DCHECK_LE(array_buffer_offset_, array_buffer_size_);
     }
   }
 #endif  // defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)

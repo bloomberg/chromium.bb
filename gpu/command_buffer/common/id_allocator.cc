@@ -5,7 +5,8 @@
 // This file contains the implementation of IdAllocator.
 
 #include "gpu/command_buffer/common/id_allocator.h"
-#include "gpu/command_buffer/common/logging.h"
+
+#include "base/logging.h"
 
 namespace gpu {
 
@@ -51,7 +52,7 @@ ResourceId IdAllocator::AllocateIDAtOrAbove(ResourceId desired_id) {
 }
 
 bool IdAllocator::MarkAsUsed(ResourceId id) {
-  GPU_DCHECK(id);
+  DCHECK(id);
   free_ids_.erase(id);
   std::pair<ResourceIdSet::iterator, bool> result = used_ids_.insert(id);
   return result.second;
@@ -106,7 +107,7 @@ ResourceId NonReusedIdAllocator::AllocateIDAtOrAbove(ResourceId desired_id) {
 }
 
 bool NonReusedIdAllocator::MarkAsUsed(ResourceId id) {
-  GPU_NOTREACHED();
+  NOTREACHED();
   return false;
 }
 
@@ -114,7 +115,7 @@ void NonReusedIdAllocator::FreeID(ResourceId id) {
 }
 
 bool NonReusedIdAllocator::InUse(ResourceId id) const {
-  GPU_NOTREACHED();
+  NOTREACHED();
   return false;
 }
 

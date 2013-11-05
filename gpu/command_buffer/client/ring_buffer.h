@@ -9,7 +9,7 @@
 
 #include <deque>
 
-#include "gpu/command_buffer/common/logging.h"
+#include "base/logging.h"
 #include "gpu/command_buffer/common/types.h"
 #include "gpu/gpu_export.h"
 
@@ -162,7 +162,7 @@ class RingBufferWrapper {
   //   pointer: the pointer to the memory block to free.
   //   token: the token value to wait for before re-using the memory.
   void FreePendingToken(void* pointer, unsigned int token) {
-    GPU_DCHECK(pointer);
+    DCHECK(pointer);
     allocator_.FreePendingToken(GetOffset(pointer), token);
   }
 

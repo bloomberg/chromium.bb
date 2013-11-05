@@ -72,13 +72,13 @@ GLES2Implementation::GLStaticState::IntState::IntState()
 GLES2Implementation::SingleThreadChecker::SingleThreadChecker(
     GLES2Implementation* gles2_implementation)
     : gles2_implementation_(gles2_implementation) {
-  GPU_CHECK_EQ(0, gles2_implementation_->use_count_);
+  CHECK_EQ(0, gles2_implementation_->use_count_);
   ++gles2_implementation_->use_count_;
 }
 
 GLES2Implementation::SingleThreadChecker::~SingleThreadChecker() {
   --gles2_implementation_->use_count_;
-  GPU_CHECK_EQ(0, gles2_implementation_->use_count_);
+  CHECK_EQ(0, gles2_implementation_->use_count_);
 }
 
 GLES2Implementation::GLES2Implementation(
@@ -113,9 +113,9 @@ GLES2Implementation::GLES2Implementation(
       error_message_callback_(NULL),
       gpu_control_(gpu_control),
       weak_ptr_factory_(this) {
-  GPU_DCHECK(helper);
-  GPU_DCHECK(transfer_buffer);
-  GPU_DCHECK(gpu_control);
+  DCHECK(helper);
+  DCHECK(transfer_buffer);
+  DCHECK(gpu_control);
 
   char temp[128];
   sprintf(temp, "%p", static_cast<void*>(this));
@@ -137,9 +137,9 @@ bool GLES2Implementation::Initialize(
     unsigned int min_transfer_buffer_size,
     unsigned int max_transfer_buffer_size,
     unsigned int mapped_memory_limit) {
-  GPU_DCHECK_GE(starting_transfer_buffer_size, min_transfer_buffer_size);
-  GPU_DCHECK_LE(starting_transfer_buffer_size, max_transfer_buffer_size);
-  GPU_DCHECK_GE(min_transfer_buffer_size, kStartingOffset);
+  DCHECK_GE(starting_transfer_buffer_size, min_transfer_buffer_size);
+  DCHECK_LE(starting_transfer_buffer_size, max_transfer_buffer_size);
+  DCHECK_GE(min_transfer_buffer_size, kStartingOffset);
 
   if (!transfer_buffer_->Initialize(
       starting_transfer_buffer_size,
@@ -447,7 +447,7 @@ GLenum GLES2Implementation::GetGLError() {
 #if defined(GL_CLIENT_FAIL_GL_ERRORS)
 void GLES2Implementation::FailGLError(GLenum error) {
   if (error != GL_NO_ERROR) {
-    GPU_NOTREACHED() << "Error";
+    NOTREACHED() << "Error";
   }
 }
 // NOTE: Calling GetGLError overwrites data in the result buffer.
@@ -483,7 +483,7 @@ void GLES2Implementation::SetGLErrorInvalidEnum(
 bool GLES2Implementation::GetBucketContents(uint32 bucket_id,
                                             std::vector<int8>* data) {
   TRACE_EVENT0("gpu", "GLES2::GetBucketContents");
-  GPU_DCHECK(data);
+  DCHECK(data);
   const uint32 kStartSize = 32 * 1024;
   ScopedTransferBufferPtr buffer(kStartSize, helper_, transfer_buffer_);
   if (!buffer.valid()) {
@@ -529,7 +529,7 @@ bool GLES2Implementation::GetBucketContents(uint32 bucket_id,
 
 void GLES2Implementation::SetBucketContents(
     uint32 bucket_id, const void* data, size_t size) {
-  GPU_DCHECK(data);
+  DCHECK(data);
   helper_->SetBucketSize(bucket_id, size);
   if (size > 0u) {
     uint32 offset = 0;
@@ -561,7 +561,7 @@ void GLES2Implementation::SetBucketAsCString(
 
 bool GLES2Implementation::GetBucketAsString(
     uint32 bucket_id, std::string* str) {
-  GPU_DCHECK(str);
+  DCHECK(str);
   std::vector<int8> data;
   // NOTE: strings are passed NULL terminated. That means the empty
   // string will have a size of 1 and no-string will have a size of 0
@@ -862,7 +862,7 @@ bool GLES2Implementation::MustBeContextLost() {
     WaitForCmd();
     context_lost = helper_->IsContextLost();
   }
-  GPU_CHECK(context_lost);
+  CHECK(context_lost);
   return context_lost;
 }
 
@@ -1046,7 +1046,7 @@ bool GLES2Implementation::DeleteProgramHelper(GLuint program) {
 
 void GLES2Implementation::DeleteProgramStub(
     GLsizei n, const GLuint* programs) {
-  GPU_DCHECK_EQ(1, n);
+  DCHECK_EQ(1, n);
   share_group_->program_info_manager()->DeleteInfo(programs[0]);
   helper_->DeleteProgram(programs[0]);
 }
@@ -1064,7 +1064,7 @@ bool GLES2Implementation::DeleteShaderHelper(GLuint shader) {
 
 void GLES2Implementation::DeleteShaderStub(
     GLsizei n, const GLuint* shaders) {
-  GPU_DCHECK_EQ(1, n);
+  DCHECK_EQ(1, n);
   share_group_->program_info_manager()->DeleteInfo(shaders[0]);
   helper_->DeleteShader(shaders[0]);
 }
@@ -1339,7 +1339,7 @@ void GLES2Implementation::ShaderSource(
     }
   }
 
-  GPU_DCHECK_EQ(total_size, offset);
+  DCHECK_EQ(total_size, offset);
 
   helper_->ShaderSourceBucket(shader, kResultBucketId);
   helper_->SetBucketSize(kResultBucketId, 0);
@@ -1370,7 +1370,7 @@ void GLES2Implementation::BufferDataHelper(
 
     // Create new buffer.
     buffer = buffer_tracker_->CreateBuffer(buffer_id, size);
-    GPU_DCHECK(buffer);
+    DCHECK(buffer);
     if (buffer->address() && data)
       memcpy(buffer->address(), data, size);
     return;
@@ -1462,8 +1462,8 @@ void GLES2Implementation::BufferSubDataHelper(
 void GLES2Implementation::BufferSubDataHelperImpl(
     GLenum target, GLintptr offset, GLsizeiptr size, const void* data,
     ScopedTransferBufferPtr* buffer) {
-  GPU_DCHECK(buffer);
-  GPU_DCHECK_GT(size, 0);
+  DCHECK(buffer);
+  DCHECK_GT(size, 0);
 
   const int8* source = static_cast<const int8*>(data);
   while (size) {
@@ -1843,7 +1843,7 @@ void GLES2Implementation::TexSubImage2D(
 static GLint ComputeNumRowsThatFitInBuffer(
     GLsizeiptr padded_row_size, GLsizeiptr unpadded_row_size,
     unsigned int size) {
-  GPU_DCHECK_GE(unpadded_row_size, 0);
+  DCHECK_GE(unpadded_row_size, 0);
   if (padded_row_size == 0) {
     return 1;
   }
@@ -1856,10 +1856,10 @@ void GLES2Implementation::TexSubImage2DImpl(
     GLsizei height, GLenum format, GLenum type, uint32 unpadded_row_size,
     const void* pixels, uint32 pixels_padded_row_size, GLboolean internal,
     ScopedTransferBufferPtr* buffer, uint32 buffer_padded_row_size) {
-  GPU_DCHECK(buffer);
-  GPU_DCHECK_GE(level, 0);
-  GPU_DCHECK_GT(height, 0);
-  GPU_DCHECK_GT(width, 0);
+  DCHECK(buffer);
+  DCHECK_GE(level, 0);
+  DCHECK_GT(height, 0);
+  DCHECK_GT(width, 0);
 
   const int8* source = reinterpret_cast<const int8*>(pixels);
   GLint original_yoffset = yoffset;
@@ -2148,7 +2148,7 @@ const GLubyte* GLES2Implementation::GetStringHelper(GLenum name) {
       std::set<std::string> strings;
       std::pair<GLStringMap::iterator, bool> insert_result =
           gl_strings_.insert(std::make_pair(name, strings));
-      GPU_DCHECK(insert_result.second);
+      DCHECK(insert_result.second);
       it = insert_result.first;
     }
     std::set<std::string>& string_set = it->second;
@@ -2158,7 +2158,7 @@ const GLubyte* GLES2Implementation::GetStringHelper(GLenum name) {
     } else {
       std::pair<std::set<std::string>::const_iterator, bool> insert_result =
           string_set.insert(str);
-      GPU_DCHECK(insert_result.second);
+      DCHECK(insert_result.second);
       result = insert_result.first->c_str();
     }
   }
@@ -2810,7 +2810,7 @@ void* GLES2Implementation::MapBufferSubDataCHROMIUM(
          mem,
          MappedBuffer(
              access, shm_id, mem, shm_offset, target, offset, size)));
-  GPU_DCHECK(result.second);
+  DCHECK(result.second);
   GPU_CLIENT_LOG("  returned " << mem);
   return mem;
 }
@@ -2884,7 +2884,7 @@ void* GLES2Implementation::MapTexSubImage2DCHROMIUM(
          MappedTexture(
              access, shm_id, mem, shm_offset,
              target, level, xoffset, yoffset, width, height, format, type)));
-  GPU_DCHECK(result.second);
+  DCHECK(result.second);
   GPU_CLIENT_LOG("  returned " << mem);
   return mem;
 }
@@ -2940,7 +2940,7 @@ const GLchar* GLES2Implementation::GetRequestableExtensionsCHROMIUM() {
     } else {
       std::pair<std::set<std::string>::const_iterator, bool> insert_result =
           requestable_extensions_set_.insert(str);
-      GPU_DCHECK(insert_result.second);
+      DCHECK(insert_result.second);
       result = insert_result.first->c_str();
     }
   }
@@ -3122,7 +3122,7 @@ void GLES2Implementation::GetAllShaderPrecisionFormatsOnCompleted(
 
 void GLES2Implementation::GetProgramInfoCHROMIUMHelper(
     GLuint program, std::vector<int8>* result) {
-  GPU_DCHECK(result);
+  DCHECK(result);
   // Clear the bucket so if the command fails nothing will be in it.
   helper_->SetBucketSize(kResultBucketId, 0);
   helper_->GetProgramInfoCHROMIUM(program, kResultBucketId);
@@ -3143,7 +3143,7 @@ void GLES2Implementation::GetProgramInfoCHROMIUM(
   }
   // Make sure they've set size to 0 else the value will be undefined on
   // lost context.
-  GPU_DCHECK(*size == 0);
+  DCHECK(*size == 0);
   std::vector<int8> result;
   GetProgramInfoCHROMIUMHelper(program, &result);
   if (result.empty()) {
@@ -3359,7 +3359,7 @@ void GLES2Implementation::GetQueryObjectuivEXT(
         if (!query->CheckResultsAvailable(helper_)) {
           // TODO(gman): Speed this up.
           WaitForCmd();
-          GPU_CHECK(query->CheckResultsAvailable(helper_));
+          CHECK(query->CheckResultsAvailable(helper_));
         }
       }
       *params = query->GetResult();

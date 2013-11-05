@@ -5,6 +5,8 @@
 // A class to Manage a growing transfer buffer.
 
 #include "gpu/command_buffer/client/transfer_buffer.h"
+
+#include "base/logging.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 
 namespace gpu {
@@ -118,7 +120,7 @@ static int Log2Floor(uint32 n) {
       log += shift;
     }
   }
-  GPU_DCHECK_EQ(value, 1u);
+  DCHECK_EQ(value, 1u);
   return log;
 }
 
@@ -153,7 +155,7 @@ void TransferBuffer::ReallocateRingBuffer(unsigned int size) {
 
 void* TransferBuffer::AllocUpTo(
     unsigned int size, unsigned int* size_allocated) {
-  GPU_DCHECK(size_allocated);
+  DCHECK(size_allocated);
 
   ReallocateRingBuffer(size);
 

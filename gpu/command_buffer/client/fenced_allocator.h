@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "gpu/command_buffer/common/logging.h"
+#include "base/logging.h"
 #include "gpu/command_buffer/common/types.h"
 #include "gpu/gpu_export.h"
 
@@ -187,7 +187,7 @@ class FencedAllocatorWrapper {
   // Parameters:
   //   pointer: the pointer to the memory block to free.
   void Free(void *pointer) {
-    GPU_DCHECK(pointer);
+    DCHECK(pointer);
     allocator_.Free(GetOffset(pointer));
   }
 
@@ -198,7 +198,7 @@ class FencedAllocatorWrapper {
   //   pointer: the pointer to the memory block to free.
   //   token: the token value to wait for before re-using the memory.
   void FreePendingToken(void *pointer, int32 token) {
-    GPU_DCHECK(pointer);
+    DCHECK(pointer);
     allocator_.FreePendingToken(GetOffset(pointer), token);
   }
 

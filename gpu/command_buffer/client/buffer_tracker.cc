@@ -23,8 +23,8 @@ BufferTracker::~BufferTracker() {
 
 BufferTracker::Buffer* BufferTracker::CreateBuffer(
     GLuint id, GLsizeiptr size) {
-  GPU_DCHECK_NE(0u, id);
-  GPU_DCHECK_LE(0, size);
+  DCHECK_NE(0u, id);
+  DCHECK_LE(0, size);
   int32 shm_id = -1;
   uint32 shm_offset = 0;
   void* address = NULL;
@@ -34,7 +34,7 @@ BufferTracker::Buffer* BufferTracker::CreateBuffer(
   Buffer* buffer = new Buffer(id, size, shm_id, shm_offset, address);
   std::pair<BufferMap::iterator, bool> result =
       buffers_.insert(std::make_pair(id, buffer));
-  GPU_DCHECK(result.second);
+  DCHECK(result.second);
   return buffer;
 }
 

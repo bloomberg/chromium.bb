@@ -4351,7 +4351,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs) {
 """ % func.GetOriginalArgs()[1].name)
       file.Write("""  GPU_CLIENT_DCHECK_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
-      GPU_DCHECK(%s[i] != 0);
+      DCHECK(%s[i] != 0);
     }
   });
 """ % func.GetOriginalArgs()[1].name)
@@ -7164,7 +7164,7 @@ void ContextState::InitState() const {
       file.Write("    case GL_%s:\n" % capability['name'].upper())
       file.Write("      return enable_flags.%s;\n" % capability['name'])
     file.Write("""    default:
-      GPU_NOTREACHED();
+      NOTREACHED();
       return false;
   }
 }

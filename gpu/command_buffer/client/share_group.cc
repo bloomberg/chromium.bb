@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "gpu/command_buffer/client/share_group.h"
+
+#include "base/logging.h"
 #include "gpu/command_buffer/client/atomicops.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/program_info_manager.h"
-#include "gpu/command_buffer/client/share_group.h"
 #include "gpu/command_buffer/common/id_allocator.h"
-#include "gpu/command_buffer/common/logging.h"
 
 namespace gpu {
 namespace gles2 {
@@ -67,7 +68,7 @@ class StrictIdHandler : public IdHandler {
 
   // Overridden from IdHandler.
   virtual bool MarkAsUsedForBind(GLuint id) OVERRIDE {
-    GPU_DCHECK(id == 0 || id_allocator_.InUse(id));
+    DCHECK(id == 0 || id_allocator_.InUse(id));
     return IdHandler::MarkAsUsedForBind(id);
   }
 };

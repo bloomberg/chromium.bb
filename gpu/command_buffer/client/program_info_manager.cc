@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "gpu/command_buffer/client/program_info_manager.h"
+
 #include <map>
 
 #include "base/compiler_specific.h"
 #include "gpu/command_buffer/client/atomicops.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
-#include "gpu/command_buffer/client/program_info_manager.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 
 namespace gpu {
@@ -229,7 +230,7 @@ CachedProgramInfoManager::Program::UniformInfo::UniformInfo(
       type(_type),
       name(_name) {
   is_array = (!name.empty() && name[name.size() - 1] == ']');
-  GPU_DCHECK(!(size > 1 && !is_array));
+  DCHECK(!(size > 1 && !is_array));
 }
 
 CachedProgramInfoManager::Program::Program()
@@ -308,7 +309,7 @@ template<typename T> static T LocalGetAs(
     const std::vector<int8>& data, uint32 offset, size_t size) {
   const int8* p = &data[0] + offset;
   if (offset + size > data.size()) {
-    GPU_NOTREACHED();
+    NOTREACHED();
     return NULL;
   }
   return static_cast<T>(static_cast<const void*>(p));
@@ -325,7 +326,7 @@ void CachedProgramInfoManager::Program::Update(
     // This should only happen on a lost context.
     return;
   }
-  GPU_DCHECK_GE(result.size(), sizeof(ProgramInfoHeader));
+  DCHECK_GE(result.size(), sizeof(ProgramInfoHeader));
   const ProgramInfoHeader* header = LocalGetAs<const ProgramInfoHeader*>(
       result, 0, sizeof(header));
   link_status_ = header->link_status != 0;
@@ -367,7 +368,7 @@ void CachedProgramInfoManager::Program::Update(
     uniform_infos_.push_back(info);
     ++input;
   }
-  GPU_DCHECK_EQ(header->num_attribs + header->num_uniforms,
+  DCHECK_EQ(header->num_attribs + header->num_uniforms,
                 static_cast<uint32>(input - inputs));
   cached_ = true;
 }
@@ -397,7 +398,7 @@ void CachedProgramInfoManager::CreateInfo(GLuint program) {
   std::pair<ProgramInfoMap::iterator, bool> result =
       program_infos_.insert(std::make_pair(program, Program()));
 
-  GPU_DCHECK(result.second);
+  DCHECK(result.second);
 }
 
 void CachedProgramInfoManager::DeleteInfo(GLuint program) {

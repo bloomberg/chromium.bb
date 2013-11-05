@@ -250,7 +250,7 @@ int MockTransferBuffer::GetResultOffset() {
 }
 
 void MockTransferBuffer::Free() {
-  GPU_NOTREACHED();
+  NOTREACHED();
 }
 
 bool MockTransferBuffer::HaveBuffer() const {

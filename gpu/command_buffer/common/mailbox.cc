@@ -6,7 +6,7 @@
 
 #include <string.h>
 
-#include "gpu/command_buffer/common/logging.h"
+#include "base/logging.h"
 
 namespace gpu {
 
@@ -27,7 +27,7 @@ void Mailbox::SetZero() {
 }
 
 void Mailbox::SetName(const int8* n) {
-  GPU_DCHECK(IsZero() || !memcmp(name, n, sizeof(name)));
+  DCHECK(IsZero() || !memcmp(name, n, sizeof(name)));
   memcpy(name, n, sizeof(name));
 }
 

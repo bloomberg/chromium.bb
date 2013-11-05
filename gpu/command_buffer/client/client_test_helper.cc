@@ -76,16 +76,16 @@ Buffer MockCommandBufferBase::CreateTransferBuffer(size_t size, int32* id) {
 }
 
 void MockCommandBufferBase::DestroyTransferBufferHelper(int32 id) {
-  GPU_DCHECK_GE(id, kTransferBufferBaseId);
-  GPU_DCHECK_LT(id, kTransferBufferBaseId + kMaxTransferBuffers);
+  DCHECK_GE(id, kTransferBufferBaseId);
+  DCHECK_LT(id, kTransferBufferBaseId + kMaxTransferBuffers);
   id -= kTransferBufferBaseId;
   transfer_buffers_[id].reset();
   transfer_buffer_buffers_[id] = Buffer();
 }
 
 Buffer MockCommandBufferBase::GetTransferBuffer(int32 id) {
-  GPU_DCHECK_GE(id, kTransferBufferBaseId);
-  GPU_DCHECK_LT(id, kTransferBufferBaseId + kMaxTransferBuffers);
+  DCHECK_GE(id, kTransferBufferBaseId);
+  DCHECK_LT(id, kTransferBufferBaseId + kMaxTransferBuffers);
   return transfer_buffer_buffers_[id - kTransferBufferBaseId];
 }
 
@@ -94,18 +94,18 @@ void MockCommandBufferBase::FlushHelper(int32 put_offset) {
 }
 
 void MockCommandBufferBase::SetToken(int32 token) {
-  GPU_NOTREACHED();
+  NOTREACHED();
   state_.token = token;
 }
 
 void MockCommandBufferBase::SetParseError(error::Error error) {
-  GPU_NOTREACHED();
+  NOTREACHED();
   state_.error = error;
 }
 
 void MockCommandBufferBase::SetContextLostReason(
     error::ContextLostReason reason) {
-  GPU_NOTREACHED();
+  NOTREACHED();
   state_.context_lost_reason = reason;
 }
 

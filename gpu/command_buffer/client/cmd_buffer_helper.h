@@ -13,7 +13,6 @@
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
-#include "gpu/command_buffer/common/logging.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {

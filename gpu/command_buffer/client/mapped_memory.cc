@@ -8,6 +8,7 @@
 #include <functional>
 
 #include "base/debug/trace_event.h"
+#include "base/logging.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 
 namespace gpu {
@@ -38,8 +39,8 @@ MappedMemoryManager::~MappedMemoryManager() {
 
 void* MappedMemoryManager::Alloc(
     unsigned int size, int32* shm_id, unsigned int* shm_offset) {
-  GPU_DCHECK(shm_id);
-  GPU_DCHECK(shm_offset);
+  DCHECK(shm_id);
+  DCHECK(shm_offset);
   if (size <= allocated_memory_) {
     size_t total_bytes_in_use = 0;
     // See if any of the chunks can satisfy this request.
@@ -49,7 +50,7 @@ void* MappedMemoryManager::Alloc(
       total_bytes_in_use += chunk->bytes_in_use();
       if (chunk->GetLargestFreeSizeWithoutWaiting() >= size) {
         void* mem = chunk->Alloc(size);
-        GPU_DCHECK(mem);
+        DCHECK(mem);
         *shm_id = chunk->shm_id();
         *shm_offset = chunk->GetOffset(mem);
         return mem;
@@ -66,7 +67,7 @@ void* MappedMemoryManager::Alloc(
         MemoryChunk* chunk = chunks_[ii];
         if (chunk->GetLargestFreeSizeWithWaiting() >= size) {
           void* mem = chunk->Alloc(size);
-          GPU_DCHECK(mem);
+          DCHECK(mem);
           *shm_id = chunk->shm_id();
           *shm_offset = chunk->GetOffset(mem);
           return mem;
@@ -88,7 +89,7 @@ void* MappedMemoryManager::Alloc(
   allocated_memory_ += mc->GetSize();
   chunks_.push_back(mc);
   void* mem = mc->Alloc(size);
-  GPU_DCHECK(mem);
+  DCHECK(mem);
   *shm_id = mc->shm_id();
   *shm_offset = mc->GetOffset(mem);
   return mem;
@@ -102,7 +103,7 @@ void MappedMemoryManager::Free(void* pointer) {
       return;
     }
   }
-  GPU_NOTREACHED();
+  NOTREACHED();
 }
 
 void MappedMemoryManager::FreePendingToken(void* pointer, int32 token) {
@@ -113,7 +114,7 @@ void MappedMemoryManager::FreePendingToken(void* pointer, int32 token) {
       return;
     }
   }
-  GPU_NOTREACHED();
+  NOTREACHED();
 }
 
 void MappedMemoryManager::FreeUnused() {

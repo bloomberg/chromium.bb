@@ -49,8 +49,8 @@ FencedAllocator::~FencedAllocator() {
     }
   }
   // These checks are not valid if the service has crashed or lost the context.
-  // GPU_DCHECK_EQ(blocks_.size(), 1u);
-  // GPU_DCHECK_EQ(blocks_[0].state, FREE);
+  // DCHECK_EQ(blocks_.size(), 1u);
+  // DCHECK_EQ(blocks_[0].state, FREE);
 }
 
 // Looks for a non-allocated block that is big enough. Search in the FREE
@@ -92,7 +92,7 @@ FencedAllocator::Offset FencedAllocator::Alloc(unsigned int size) {
 // necessary.
 void FencedAllocator::Free(FencedAllocator::Offset offset) {
   BlockIndex index = GetBlockByOffset(offset);
-  GPU_DCHECK_NE(blocks_[index].state, FREE);
+  DCHECK_NE(blocks_[index].state, FREE);
   Block &block = blocks_[index];
 
   if (block.state == IN_USE)
@@ -136,7 +136,7 @@ unsigned int FencedAllocator::GetLargestFreeOrPendingSize() {
       max_size = std::max(max_size, current_size);
       current_size = 0;
     } else {
-      GPU_DCHECK(block.state == FREE || block.state == FREE_PENDING_TOKEN);
+      DCHECK(block.state == FREE || block.state == FREE_PENDING_TOKEN);
       current_size += block.size;
     }
   }
@@ -195,7 +195,7 @@ FencedAllocator::BlockIndex FencedAllocator::CollapseFreeBlock(
 FencedAllocator::BlockIndex FencedAllocator::WaitForTokenAndFreeBlock(
     BlockIndex index) {
   Block &block = blocks_[index];
-  GPU_DCHECK_EQ(block.state, FREE_PENDING_TOKEN);
+  DCHECK_EQ(block.state, FREE_PENDING_TOKEN);
   helper_->WaitForToken(block.token);
   block.state = FREE;
   return CollapseFreeBlock(index);
@@ -220,8 +220,8 @@ void FencedAllocator::FreeUnused() {
 FencedAllocator::Offset FencedAllocator::AllocInBlock(BlockIndex index,
                                                       unsigned int size) {
   Block &block = blocks_[index];
-  GPU_DCHECK_GE(block.size, size);
-  GPU_DCHECK_EQ(block.state, FREE);
+  DCHECK_GE(block.size, size);
+  DCHECK_EQ(block.state, FREE);
   Offset offset = block.offset;
   bytes_in_use_ += size;
   if (block.size == size) {
@@ -241,7 +241,7 @@ FencedAllocator::BlockIndex FencedAllocator::GetBlockByOffset(Offset offset) {
   Block templ = { IN_USE, offset, 0, kUnusedToken };
   Container::iterator it = std::lower_bound(blocks_.begin(), blocks_.end(),
                                             templ, OffsetCmp());
-  GPU_DCHECK(it != blocks_.end() && it->offset == offset);
+  DCHECK(it != blocks_.end() && it->offset == offset);
   return it-blocks_.begin();
 }
 

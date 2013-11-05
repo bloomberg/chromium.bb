@@ -5,6 +5,8 @@
 // This file contains the implementation of the command buffer helper class.
 
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
+
+#include "base/logging.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/trace_event.h"
 
@@ -87,7 +89,7 @@ void CommandBufferHelper::FreeResources() {
 }
 
 void CommandBufferHelper::FreeRingBuffer() {
-  GPU_CHECK((put_ == get_offset()) ||
+  CHECK((put_ == get_offset()) ||
       error::IsError(command_buffer_->GetLastState().error));
   FreeResources();
 }
@@ -130,7 +132,7 @@ bool CommandBufferHelper::Finish() {
   if (put_ == get_offset()) {
     return true;
   }
-  GPU_DCHECK(HaveRingBuffer());
+  DCHECK(HaveRingBuffer());
   do {
     // Do not loop forever if the flush fails, meaning the command buffer reader
     // has shutdown.
@@ -150,7 +152,7 @@ int32 CommandBufferHelper::InsertToken() {
   if (!usable()) {
     return token_;
   }
-  GPU_DCHECK(HaveRingBuffer());
+  DCHECK(HaveRingBuffer());
   // Increment token as 31-bit integer. Negative values are used to signal an
   // error.
   token_ = (token_ + 1) & 0x7FFFFFFF;
@@ -161,7 +163,7 @@ int32 CommandBufferHelper::InsertToken() {
       TRACE_EVENT0("gpu", "CommandBufferHelper::InsertToken(wrapped)");
       // we wrapped
       Finish();
-      GPU_DCHECK_EQ(token_, last_token_read());
+      DCHECK_EQ(token_, last_token_read());
     }
   }
   return token_;
@@ -179,7 +181,7 @@ void CommandBufferHelper::WaitForToken(int32 token) {
   if (token > token_) return;  // we wrapped
   while (last_token_read() < token) {
     if (get_offset() == put_) {
-      GPU_LOG(FATAL) << "Empty command buffer while waiting on a token.";
+      LOG(FATAL) << "Empty command buffer while waiting on a token.";
       return;
     }
     // Do not loop forever if the flush fails, meaning the command buffer reader
@@ -199,14 +201,14 @@ void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
   if (!usable()) {
     return;
   }
-  GPU_DCHECK(HaveRingBuffer());
-  GPU_DCHECK(count < total_entry_count_);
+  DCHECK(HaveRingBuffer());
+  DCHECK(count < total_entry_count_);
   if (put_ + count > total_entry_count_) {
     // There's not enough room between the current put and the end of the
     // buffer, so we need to wrap. We will add noops all the way to the end,
     // but we need to make sure get wraps first, actually that get is 1 or
     // more (since put will wrap to 0 after we add the noops).
-    GPU_DCHECK_LE(1, put_);
+    DCHECK_LE(1, put_);
     if (get_offset() > put_ || get_offset() == 0) {
       TRACE_EVENT0("gpu", "CommandBufferHelper::WaitForAvailableEntries");
       while (get_offset() > put_ || get_offset() == 0) {
@@ -262,12 +264,12 @@ CommandBufferEntry* CommandBufferHelper::GetSpace(uint32 entries) {
   if (!usable()) {
     return NULL;
   }
-  GPU_DCHECK(HaveRingBuffer());
+  DCHECK(HaveRingBuffer());
   ++commands_issued_;
   WaitForAvailableEntries(entries);
   CommandBufferEntry* space = &entries_[put_];
   put_ += entries;
-  GPU_DCHECK_LE(put_, total_entry_count_);
+  DCHECK_LE(put_, total_entry_count_);
   if (put_ == total_entry_count_) {
     put_ = 0;
   }

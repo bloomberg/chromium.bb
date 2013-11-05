@@ -555,7 +555,7 @@ uint32 GLES2Util::GLErrorToErrorBit(uint32 error) {
     case GL_INVALID_FRAMEBUFFER_OPERATION:
       return gl_error_bit::kInvalidFrameBufferOperation;
     default:
-      GPU_NOTREACHED();
+      NOTREACHED();
       return gl_error_bit::kNoError;
   }
 }
@@ -573,7 +573,7 @@ uint32 GLES2Util::GLErrorBitToGLError(uint32 error_bit) {
     case gl_error_bit::kInvalidFrameBufferOperation:
       return GL_INVALID_FRAMEBUFFER_OPERATION;
     default:
-      GPU_NOTREACHED();
+      NOTREACHED();
       return GL_NO_ERROR;
   }
 }
@@ -801,8 +801,8 @@ bool ContextCreationAttribHelper::Parse(const std::vector<int32>& attribs) {
         return true;
       }
 
-      GPU_DLOG(ERROR) << "Missing value after context creation attribute: "
-                      << attrib;
+      DLOG(ERROR) << "Missing value after context creation attribute: "
+                  << attrib;
       return false;
     }
 
@@ -845,7 +845,7 @@ bool ContextCreationAttribHelper::Parse(const std::vector<int32>& attribs) {
         // Terminate list, even if more attributes.
         return true;
       default:
-        GPU_DLOG(ERROR) << "Invalid context creation attribute: " << attrib;
+        DLOG(ERROR) << "Invalid context creation attribute: " << attrib;
         return false;
     }
   }

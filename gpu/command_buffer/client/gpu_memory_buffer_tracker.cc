@@ -32,7 +32,7 @@ int32 GpuMemoryBufferTracker::CreateBuffer(
 
   std::pair<BufferMap::iterator, bool> result =
       buffers_.insert(std::make_pair(image_id, buffer));
-  GPU_DCHECK(result.second);
+  DCHECK(result.second);
 
   return image_id;
 }

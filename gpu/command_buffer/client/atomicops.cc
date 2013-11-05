@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/client/atomicops.h"
-#include "gpu/command_buffer/common/logging.h"
+
+#include "base/logging.h"
 
 #if !defined(__native_client__)
 #include "base/atomicops.h"
@@ -41,7 +42,7 @@ class LockImpl {
   }
 
   void Release() {
-    GPU_DCHECK(acquired_);
+    DCHECK(acquired_);
     acquired_ = false;
     pthread_mutex_unlock(&mutex_);
   }
@@ -55,7 +56,7 @@ class LockImpl {
   }
 
   void AssertAcquired() const {
-    GPU_DCHECK(acquired_);
+    DCHECK(acquired_);
   }
 
  private:

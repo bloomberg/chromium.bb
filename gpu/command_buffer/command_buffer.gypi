@@ -18,18 +18,6 @@
           'common/gles2_cmd_utils.cc',
           'common/gles2_cmd_utils.h',
           'common/gles2_utils_export.h',
-          'common/logging.cc',
-          'common/logging.h',
-        ],
-        'conditions': [
-          ['OS=="android"', {
-            'sources!': [
-              'common/logging.cc',
-            ],
-            'sources': [
-              'common/logging_android.cc',
-            ],
-          }],
         ],
       }],
     ],

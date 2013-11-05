@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/client/client_context_state.h"
-#include "gpu/command_buffer/common/logging.h"
+
+#include "base/logging.h"
 
 namespace gpu {
 namespace gles2 {

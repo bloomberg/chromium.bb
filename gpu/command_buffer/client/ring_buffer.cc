@@ -5,7 +5,10 @@
 // This file contains the implementation of the RingBuffer class.
 
 #include "gpu/command_buffer/client/ring_buffer.h"
+
 #include <algorithm>
+
+#include "base/logging.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 
 namespace gpu {
@@ -27,9 +30,9 @@ RingBuffer::~RingBuffer() {
 }
 
 void RingBuffer::FreeOldestBlock() {
-  GPU_DCHECK(!blocks_.empty()) << "no free blocks";
+  DCHECK(!blocks_.empty()) << "no free blocks";
   Block& block = blocks_.front();
-  GPU_DCHECK(block.state != IN_USE)
+  DCHECK(block.state != IN_USE)
       << "attempt to allocate more than maximum memory";
   if (block.state == FREE_PENDING_TOKEN) {
     helper_->WaitForToken(block.token);
@@ -47,8 +50,8 @@ void RingBuffer::FreeOldestBlock() {
 }
 
 RingBuffer::Offset RingBuffer::Alloc(unsigned int size) {
-  GPU_DCHECK_LE(size, size_) << "attempt to allocate more than maximum memory";
-  GPU_DCHECK(blocks_.empty() || blocks_.back().state != IN_USE)
+  DCHECK_LE(size, size_) << "attempt to allocate more than maximum memory";
+  DCHECK(blocks_.empty() || blocks_.back().state != IN_USE)
       << "Attempt to alloc another block before freeing the previous.";
   // Similarly to malloc, an allocation of 0 allocates at least 1 byte, to
   // return different pointers every time.
@@ -77,20 +80,20 @@ RingBuffer::Offset RingBuffer::Alloc(unsigned int size) {
 void RingBuffer::FreePendingToken(RingBuffer::Offset offset,
                                   unsigned int token) {
   offset -= base_offset_;
-  GPU_DCHECK(!blocks_.empty()) << "no allocations to free";
+  DCHECK(!blocks_.empty()) << "no allocations to free";
   for (Container::reverse_iterator it = blocks_.rbegin();
         it != blocks_.rend();
         ++it) {
     Block& block = *it;
     if (block.offset == offset) {
-      GPU_DCHECK(block.state == IN_USE)
+      DCHECK(block.state == IN_USE)
           << "block that corresponds to offset already freed";
       block.token = token;
       block.state = FREE_PENDING_TOKEN;
       return;
     }
   }
-  GPU_NOTREACHED() << "attempt to free non-existant block";
+  NOTREACHED() << "attempt to free non-existant block";
 }
 
 unsigned int RingBuffer::GetLargestFreeSizeNoWaiting() {
@@ -103,7 +106,7 @@ unsigned int RingBuffer::GetLargestFreeSizeNoWaiting() {
   if (free_offset_ == in_use_offset_) {
     if (blocks_.empty()) {
       // The entire buffer is free.
-      GPU_DCHECK_EQ(free_offset_, 0u);
+      DCHECK_EQ(free_offset_, 0u);
       return size_;
     } else {
       // The entire buffer is in use.

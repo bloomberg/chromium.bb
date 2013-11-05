@@ -157,7 +157,7 @@ bool ContextState::GetEnabled(GLenum cap) const {
     case GL_STENCIL_TEST:
       return enable_flags.stencil_test;
     default:
-      GPU_NOTREACHED();
+      NOTREACHED();
       return false;
   }
 }
