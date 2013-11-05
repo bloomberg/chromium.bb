@@ -19,6 +19,7 @@
 #import "chrome/browser/ui/cocoa/download/download_item_button.h"
 #import "chrome/browser/ui/cocoa/download/download_item_cell.h"
 #include "chrome/browser/ui/cocoa/download/download_item_mac.h"
+#import "chrome/browser/ui/cocoa/download/download_shelf_context_menu_controller.h"
 #import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/ui_localizer.h"
@@ -125,34 +126,73 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 - (void)awakeFromNib {
   [progressView_ setController:self];
 
-  [self setStateFromDownload:bridge_->download_model()];
-
   GTMUILocalizerAndLayoutTweaker* localizerAndLayoutTweaker =
       [[[GTMUILocalizerAndLayoutTweaker alloc] init] autorelease];
   [localizerAndLayoutTweaker applyLocalizer:localizer_ tweakingUI:[self view]];
 
-  // The strings are based on the download item's name, sizing tweaks have to be
-  // manually done.
-  DCHECK(buttonTweaker_ != nil);
-  CGFloat widthChange = [buttonTweaker_ changedWidth];
-  // If it's a dangerous download, size the two lines so the text/filename
-  // is always visible.
-  if ([self isDangerousMode]) {
-    widthChange +=
-        [GTMUILocalizerAndLayoutTweaker
-          sizeToFitFixedHeightTextField:dangerousDownloadLabel_
-                               minWidth:kTextWidth];
-  }
-  // Grow the parent views
-  WidenView([self view], widthChange);
-  WidenView(dangerousDownloadView_, widthChange);
-  // Slide the two buttons over.
-  NSPoint frameOrigin = [buttonTweaker_ frame].origin;
-  frameOrigin.x += widthChange;
-  [buttonTweaker_ setFrameOrigin:frameOrigin];
+  [self setStateFromDownload:bridge_->download_model()];
 
   bridge_->LoadIcon();
   [self updateToolTip];
+}
+
+- (void)showDangerousWarning:(DownloadItemModel*)downloadModel {
+  // The transition from safe -> dangerous should only happen once. The code
+  // assumes that the danger type of the download doesn't change once it's set.
+  if ([self isDangerousMode])
+    return;
+
+  [self setState:kDangerous];
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  NSImage* alertIcon;
+
+  NSString* dangerousWarning = base::SysUTF16ToNSString(
+      downloadModel->GetWarningText(*font_list_, kTextWidth));
+  DCHECK(dangerousWarning);
+  [dangerousDownloadLabel_ setStringValue:dangerousWarning];
+  CGFloat labelWidthChange =
+      [GTMUILocalizerAndLayoutTweaker
+        sizeToFitFixedHeightTextField:dangerousDownloadLabel_
+                             minWidth:kTextWidth];
+  CGFloat buttonWidthChange = 0.0;
+
+  if (downloadModel->MightBeMalicious()) {
+    alertIcon = rb.GetNativeImageNamed(IDR_SAFEBROWSING_WARNING).ToNSImage();
+    buttonWidthChange = [maliciousButtonTweaker_ changedWidth];
+
+    // Move the buttons to account for the change in label size.
+    NSPoint frameOrigin = [maliciousButtonTweaker_ frame].origin;
+    frameOrigin.x += labelWidthChange;
+    [maliciousButtonTweaker_ setFrameOrigin:frameOrigin];
+
+    [dangerousButtonTweaker_ setHidden:YES];
+    [maliciousButtonTweaker_ setHidden:NO];
+  } else {
+    alertIcon = rb.GetNativeImageNamed(IDR_WARNING).ToNSImage();
+    buttonWidthChange = [dangerousButtonTweaker_ changedWidth];
+
+    // The text on the confirm button can change depending on the type of the
+    // download.
+    NSString* confirmButtonTitle =
+        base::SysUTF16ToNSString(downloadModel->GetWarningConfirmButtonText());
+    DCHECK(confirmButtonTitle);
+    [dangerousDownloadConfirmButton_ setTitle:confirmButtonTitle];
+
+    // Move the button to account for the change in label size.
+    NSPoint frameOrigin = [dangerousButtonTweaker_ frame].origin;
+    frameOrigin.x += labelWidthChange;
+    [dangerousButtonTweaker_ setFrameOrigin:frameOrigin];
+
+    [dangerousButtonTweaker_ setHidden:NO];
+    [maliciousButtonTweaker_ setHidden:YES];
+  }
+  DCHECK(alertIcon);
+  [image_ setImage:alertIcon];
+
+  // Grow the parent views
+  WidenView([self view], labelWidthChange + buttonWidthChange);
+  WidenView(dangerousDownloadView_, labelWidthChange + buttonWidthChange);
 }
 
 - (void)setStateFromDownload:(DownloadItemModel*)downloadModel {
@@ -160,28 +200,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
   // Handle dangerous downloads.
   if (downloadModel->IsDangerous()) {
-    [self setState:kDangerous];
-
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    NSString* dangerousWarning;
-    NSString* confirmButtonTitle;
-    NSImage* alertIcon;
-
-    dangerousWarning =
-        base::SysUTF16ToNSString(downloadModel->GetWarningText(
-            *font_list_, kTextWidth));
-    confirmButtonTitle =
-        base::SysUTF16ToNSString(downloadModel->GetWarningConfirmButtonText());
-    if (downloadModel->MightBeMalicious())
-      alertIcon = rb.GetNativeImageNamed(IDR_SAFEBROWSING_WARNING).ToNSImage();
-    else
-      alertIcon = rb.GetNativeImageNamed(IDR_WARNING).ToNSImage();
-    DCHECK(alertIcon);
-    [image_ setImage:alertIcon];
-    DCHECK(dangerousWarning);
-    [dangerousDownloadLabel_ setStringValue:dangerousWarning];
-    DCHECK(confirmButtonTitle);
-    [dangerousDownloadConfirmButton_ setTitle:confirmButtonTitle];
+    [self showDangerousWarning:downloadModel];
     return;
   }
 
@@ -305,6 +324,21 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   DownloadItem* download = bridge_->download_model()->download();
   download->Remove();
   // WARNING: we are deleted at this point.  Don't access 'this'.
+}
+
+- (IBAction)dismissMaliciousDownload:(id)sender {
+  [self remove];
+  // WARNING: we are deleted at this point.
+}
+
+- (IBAction)showContextMenu:(id)sender {
+  base::scoped_nsobject<DownloadShelfContextMenuController> menuController(
+      [[DownloadShelfContextMenuController alloc]
+        initWithItemController:self
+                  withDelegate:nil]);
+  [NSMenu popUpContextMenu:[menuController menu]
+                 withEvent:[NSApp currentEvent]
+                   forView:[self view]];
 }
 
 @end
