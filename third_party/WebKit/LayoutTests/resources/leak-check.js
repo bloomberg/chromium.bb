@@ -1,4 +1,4 @@
-// include fast/js/resources/js-test-pre.js before this file.
+// include resources/js-test.js before this file.
 
 function doLeakTest(src, tolerance) {
     function getCounterValues() {

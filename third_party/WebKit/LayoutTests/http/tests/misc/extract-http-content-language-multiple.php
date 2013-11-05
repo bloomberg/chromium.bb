@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<script src="../../js-test-resources/js-test-pre.js"></script>
+<script src="../../js-test-resources/js-test.js"></script>
 </head>
 <body>
 <p>Test for <a href="https://bugs.webkit.org/show_bug.cgi?id=97929">bug 97929</a>:

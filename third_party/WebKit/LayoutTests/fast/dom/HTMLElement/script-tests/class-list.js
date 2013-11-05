@@ -132,7 +132,7 @@ debug('Test invalid tokens');
 
 // Testing exception due to invalid token
 
-// shouldThrow from js-test-pre.js is not sufficient.
+// shouldThrow from js-test.js is not sufficient.
 function shouldThrowDOMException(f, ec)
 {
     try {

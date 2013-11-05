@@ -14,7 +14,7 @@ function testTimingWithDocumentOpen()
     document.open();
     document.write("<html>");
     document.write("<head>");
-    document.write("<script src=\"../js/resources/js-test-pre.js\"></script>");
+    document.write("<script src=\"../../resources/js-test.js\"></script>");
     document.write("</head>");
     document.write("<body>");
     document.write("</body>");

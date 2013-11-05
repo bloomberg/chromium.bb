@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="../../js/resources/js-test-pre.js"></script>
+<script src="../../../resources/js-test.js"></script>
 <script>
 description("This test ensures that the lifecycle callback of a parser-made element is visible in following script block.")
 proto = Object.create(HTMLElement.prototype, { createdCallback: { value: function() { window.callbacksCalled = true; } } });

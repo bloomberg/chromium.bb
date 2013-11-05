@@ -1,5 +1,5 @@
-// NOTE: You must include fast/js/resources/js-test-pre.js before this file in a test case since
-// this file makes use of functions in js-test-pre.js.
+// NOTE: You must include resources/js-test.js before this file in a test case since
+// this file makes use of functions in js-test.js.
 
 var replayEventQueue = []; // Global queue of recorded events.
 var registeredElementsAndEventsStruct; // Global structure of registered elements and events.

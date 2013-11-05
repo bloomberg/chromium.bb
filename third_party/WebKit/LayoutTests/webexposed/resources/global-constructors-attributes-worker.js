@@ -1,5 +1,5 @@
 if (this.importScripts)
-    importScripts('../../fast/js/resources/js-test-pre.js');
+    importScripts('../../resources/js-test.js');
 
 description("Test to ensure that global constructors in workers environment have the right attributes");
 

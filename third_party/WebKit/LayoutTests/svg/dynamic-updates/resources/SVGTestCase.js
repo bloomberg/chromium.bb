@@ -1,4 +1,4 @@
-// Force activating pixel tests - this variable is used in fast/js/resources/js-test-pre.js, when calling setDumpAsText().
+// Force activating pixel tests - this variable is used in resources/js-test.js, when calling setDumpAsText().
 window.enablePixelTesting = true;
 
 var svgNS = "http://www.w3.org/2000/svg";

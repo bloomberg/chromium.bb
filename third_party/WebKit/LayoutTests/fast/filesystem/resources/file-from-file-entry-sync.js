@@ -1,6 +1,6 @@
 // FIXME: move this under workers/resources
 importScripts('fs-worker-common.js');
-importScripts('../../js/resources/js-test-pre.js');
+importScripts('../../../resources/js-test.js');
 
 description("Obtaining File from FileEntrySync.");
 

@@ -1,5 +1,5 @@
 if (self.importScripts) {
-    importScripts('../../fast/js/resources/js-test-pre.js');
+    importScripts('../../resources/js-test.js');
 
     if (!self.postMessage) {
         // Shared worker.  Make postMessage send to the newest client, which in

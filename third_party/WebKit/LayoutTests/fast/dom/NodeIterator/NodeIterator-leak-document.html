@@ -5,8 +5,8 @@
         keepNodeIterator = document.createNodeIterator(document, NodeFilter.SHOW_ELEMENT, function(node) { return NodeFilter.SHOW_ELEMENT; }, false);
     </script>
 
-    <script src="../../js/resources/js-test-pre.js"></script>
-    <script src="../../js/resources/leak-check.js"></script>
+    <script src="../../../resources/js-test.js"></script>
+    <script src="../../../resources/leak-check.js"></script>
     <script>
         var target = '<script>'+grabScriptText('targetJS')+'<'+'/script>';
         var tolerance = {'numberOfLiveDocuments': 0};

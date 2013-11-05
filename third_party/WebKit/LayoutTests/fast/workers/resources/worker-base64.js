@@ -1,5 +1,5 @@
 if (this.importScripts)
-    importScripts('../../js/resources/js-test-pre.js');
+    importScripts('../../../resources/js-test.js');
 
 description("Tests that atob() / btoa() functions are exposed to workers");
 

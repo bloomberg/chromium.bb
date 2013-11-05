@@ -2,7 +2,7 @@
 <p id="description"></p>
 <div id="sample">foobarbaz</div>
 </div>
-<script src="../../fast/js/resources/js-test-pre.js"></script>
+<script src="../../resources/js-test.js"></script>
 <script>
 description('Check selection updated after splitText.');
 function $(id) { return document.getElementById(id); }
@@ -22,4 +22,4 @@ shouldBeEqualToString('selection.toString()', 'baz');
 if (window.testRunner)
     $('container').outerHTML = '';
 </script>
-<script src="../../fast/js/resources/js-test-pre.js"></script>
+<script src="../../resources/js-test.js"></script>

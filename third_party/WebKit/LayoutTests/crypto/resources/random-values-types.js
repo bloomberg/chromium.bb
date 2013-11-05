@@ -1,5 +1,5 @@
 if (self.importScripts)
-    importScripts('../../fast/js/resources/js-test-pre.js');
+    importScripts('../../resources/js-test.js');
 
 description("Tests which types are valid for crypto.randomValues.");
 

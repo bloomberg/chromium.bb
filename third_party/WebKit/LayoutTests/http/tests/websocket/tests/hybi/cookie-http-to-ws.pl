@@ -17,7 +17,7 @@ print "\r\n";
 print <<HTML
 <html>
 <head>
-<script src="/js-test-resources/js-test-pre.js"></script>
+<script src="/js-test-resources/js-test.js"></script>
 </head>
 <body>
 <p>Test How WebSocket handles cookies with cookie-av's.</p>

@@ -1,4 +1,4 @@
-importScripts('../../js/resources/js-test-pre.js');
+importScripts('../../../resources/js-test.js');
 
 self.jsTestIsAsync = true;
 

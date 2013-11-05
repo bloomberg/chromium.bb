@@ -4,7 +4,7 @@
   <use id="use" xlink:href="foo.svg#foo"/>
   <text>PASS: did not crash.</text>
 
-  <script src="../../fast/js/resources/js-test-pre.js"></script>
+  <script src="../../resources/js-test.js"></script>
   <script>
     var use = document.getElementById('use');
     use.setAttribute('xlink:href', 'bar.svg#bar');

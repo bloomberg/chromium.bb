@@ -3,7 +3,7 @@
 <head>
 <script>
 </script>
-<script src="../../js-test-resources/js-test-pre.js"></script>
+<script src="../../js-test-resources/js-test.js"></script>
 </head>
 <body>
 <p id="description"></p>

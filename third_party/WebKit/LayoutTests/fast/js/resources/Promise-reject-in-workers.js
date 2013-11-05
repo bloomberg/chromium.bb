@@ -1,4 +1,4 @@
-importScripts('./js-test-pre.js');
+importScripts('../../../resources/js-test.js');
 
 description('Test Promise.');
 

@@ -1,4 +1,4 @@
-importScripts('../../js/resources/js-test-pre.js');
+importScripts('../../../resources/js-test.js');
 
 var IndexSizeError = "IndexSizeError: Index or size was negative, or greater than the allowed value.";
 
