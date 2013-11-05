@@ -282,7 +282,7 @@ TEST_F(DiscardableMemoryProviderTest, DestructionWhileLocked) {
   EXPECT_EQ(0u, BytesAllocated());
 }
 
-#if !defined(NDEBUG) && !defined(OS_ANDROID)
+#if !defined(NDEBUG) && !defined(OS_ANDROID) && !defined(OS_IOS)
 // Death tests are not supported with Android APKs.
 TEST_F(DiscardableMemoryProviderTest, UnlockedMemoryAccessCrashesInDebugMode) {
   size_t size = 1024;

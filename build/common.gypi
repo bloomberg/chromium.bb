@@ -4664,16 +4664,19 @@
         # Target both iPhone and iPad.
         'TARGETED_DEVICE_FAMILY': '1,2',
         'VALID_ARCHS': 'armv7 i386',
-      }],
-      ['target_arch=="x64"', {
-        'ARCHS': [
-          'x86_64'
-         ],
-      }],
-      ['target_arch=="ia32"', {
-        'ARCHS': [
-          'i386'
-         ],
+      }, {  # OS!="ios"
+        'conditions': [
+          ['target_arch=="x64"', {
+            'ARCHS': [
+              'x86_64'
+            ],
+          }],
+          ['target_arch=="ia32"', {
+            'ARCHS': [
+              'i386'
+            ],
+          }],
+        ],
       }],
     ],
 
