@@ -309,4 +309,5 @@ interface TestObjectPython {
     // [CallWith=ScriptState&ScriptArguments] void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(optional boolean optionalBooleanArg); // FIXME: optional arguments with extended attributes requires refactoring template
     [CallWith=ActiveWindow] void callWithActiveWindow();
     [CallWith=ActiveWindow&FirstWindow] void callWithActiveWindowScriptWindow();
+    [CheckSecurityForNode] void checkSecurityForNodeVoidMethod();
 };

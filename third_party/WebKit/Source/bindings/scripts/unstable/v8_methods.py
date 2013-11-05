@@ -42,6 +42,7 @@ import v8_utilities
 
 def generate_method(interface, method):
     arguments = method.arguments
+    extended_attributes = method.extended_attributes
     is_static = method.is_static
     name = method.name
 
@@ -60,6 +61,9 @@ def generate_method(interface, method):
                          'core/inspector/ScriptArguments.h'])
     if is_call_with_script_state:
         includes.add('bindings/v8/ScriptState.h')
+    is_check_security_for_node = 'CheckSecurityForNode' in extended_attributes
+    if is_check_security_for_node:
+        includes.add('bindings/v8/BindingSecurity.h')
 
     contents = {
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method, 'Access'),  # [ActivityLogging]
@@ -71,6 +75,7 @@ def generate_method(interface, method):
         'is_call_with_execution_context': v8_utilities.has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
         'is_call_with_script_arguments': is_call_with_script_arguments,
         'is_call_with_script_state': is_call_with_script_state,
+        'is_check_security_for_node': is_check_security_for_node,
         'is_static': is_static,
         'name': name,
         'number_of_required_arguments': len([
