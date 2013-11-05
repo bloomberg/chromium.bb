@@ -17,9 +17,6 @@
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebElement.h"
-#include "third_party/WebKit/public/web/WebPluginContainer.h"
 
 using ppapi::HostResource;
 using ppapi::TrackedCallback;
@@ -46,7 +43,8 @@ PepperVideoCaptureHost::PepperVideoCaptureHost(RendererPpapiHostImpl* host,
           this,
           PepperMediaDeviceManager::GetForRenderView(
               host->GetRenderViewForInstance(pp_instance())),
-          PP_DEVICETYPE_DEV_VIDEOCAPTURE) {
+          PP_DEVICETYPE_DEV_VIDEOCAPTURE,
+          host->GetDocumentURL(instance)) {
 }
 
 PepperVideoCaptureHost::~PepperVideoCaptureHost() {
@@ -275,9 +273,8 @@ int32_t PepperVideoCaptureHost::OnOpen(
 
   SetRequestedInfo(requested_info, buffer_count);
 
-  PepperPluginInstance* instance =
-      renderer_ppapi_host_->GetPluginInstance(pp_instance());
-  if (!instance)
+  GURL document_url = renderer_ppapi_host_->GetDocumentURL(pp_instance());
+  if (!document_url.is_valid())
     return PP_ERROR_FAILED;
 
   RenderViewImpl* render_view = static_cast<RenderViewImpl*>(
@@ -285,7 +282,7 @@ int32_t PepperVideoCaptureHost::OnOpen(
 
   platform_video_capture_ = new PepperPlatformVideoCapture(
       render_view->AsWeakPtr(), device_id,
-      instance->GetContainer()->element().document().url(), this);
+      document_url, this);
 
   open_reply_context_ = context->MakeReplyMessageContext();
 

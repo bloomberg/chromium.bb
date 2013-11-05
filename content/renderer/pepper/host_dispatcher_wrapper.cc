@@ -12,9 +12,6 @@
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/pepper/renderer_restrict_dispatch_group.h"
 #include "content/renderer/render_view_impl.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebElement.h"
-#include "third_party/WebKit/public/web/WebPluginContainer.h"
 
 namespace content {
 
@@ -87,7 +84,7 @@ void HostDispatcherWrapper::AddInstance(PP_Instance instance) {
         PepperRendererInstanceData(
             0,  // The render process id will be supplied in the browser.
             render_view->GetRoutingID(),
-            plugin_instance->GetContainer()->element().document().url(),
+            host->GetDocumentURL(instance),
             plugin_instance->GetPluginURL()),
         is_external_));
   }

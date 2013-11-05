@@ -18,6 +18,7 @@
 #include "ppapi/proxy/resource_message_test_sink.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -34,6 +35,7 @@ class TestDelegate : public PepperDeviceEnumerationHostHelper::Delegate {
 
   virtual int EnumerateDevices(
       PP_DeviceType_Dev /* type */,
+      const GURL& /* document_url */,
       const EnumerateDevicesCallback& callback) OVERRIDE {
     last_used_id_++;
     callbacks_[last_used_id_] = callback;
@@ -78,7 +80,8 @@ class PepperDeviceEnumerationHostHelperTest : public testing::Test {
       : ppapi_host_(&sink_, ppapi::PpapiPermissions()),
         resource_host_(&ppapi_host_, 12345, 67890),
         device_enumeration_(&resource_host_, &delegate_,
-                            PP_DEVICETYPE_DEV_AUDIOCAPTURE) {
+                            PP_DEVICETYPE_DEV_AUDIOCAPTURE,
+                            GURL("http://example.com")) {
   }
 
   virtual ~PepperDeviceEnumerationHostHelperTest() {}

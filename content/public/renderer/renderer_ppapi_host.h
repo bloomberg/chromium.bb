@@ -14,6 +14,7 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/pp_instance.h"
+#include "url/gurl.h"
 
 namespace base {
 class FilePath;
@@ -127,6 +128,13 @@ class RendererPpapiHost {
       PP_Instance instance,
       const std::vector<IPC::Message>& nested_msgs,
       const base::Callback<void(const std::vector<int>&)>& callback) const = 0;
+
+  // Gets the URL of the document containing the given PP_Instance.
+  // Returns an empty URL if the instance is invalid.
+  // TODO(yzshen): Some methods such as this one don't need to be pure virtual.
+  // Instead, they could be directly implemented using other methods in this
+  // interface. Consider changing them to static helpers.
+  virtual GURL GetDocumentURL(PP_Instance instance) const = 0;
 
  protected:
   virtual ~RendererPpapiHost() {}

@@ -34,6 +34,9 @@ class PepperDeviceEnumerationHostHelper::ScopedRequest
         requested_(false),
         request_id_(0),
         sync_call_(false) {
+    if (!owner_->document_url_.is_valid())
+      return;
+
     requested_ = true;
 
     // Note that the callback passed into
@@ -46,6 +49,7 @@ class PepperDeviceEnumerationHostHelper::ScopedRequest
     sync_call_ = true;
     request_id_ = owner_->delegate_->EnumerateDevices(
         owner_->device_type_,
+        owner_->document_url_,
         base::Bind(&ScopedRequest::EnumerateDevicesCallbackBody, AsWeakPtr()));
     sync_call_ = false;
   }
@@ -91,10 +95,12 @@ class PepperDeviceEnumerationHostHelper::ScopedRequest
 PepperDeviceEnumerationHostHelper::PepperDeviceEnumerationHostHelper(
     ppapi::host::ResourceHost* resource_host,
     Delegate* delegate,
-    PP_DeviceType_Dev device_type)
+    PP_DeviceType_Dev device_type,
+    const GURL& document_url)
     : resource_host_(resource_host),
       delegate_(delegate),
-      device_type_(device_type) {
+      device_type_(device_type),
+      document_url_(document_url) {
 }
 
 PepperDeviceEnumerationHostHelper::~PepperDeviceEnumerationHostHelper() {

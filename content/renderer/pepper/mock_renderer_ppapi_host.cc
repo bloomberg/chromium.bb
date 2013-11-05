@@ -86,4 +86,9 @@ void MockRendererPpapiHost::CreateBrowserResourceHosts(
   return;
 }
 
+GURL MockRendererPpapiHost::GetDocumentURL(PP_Instance instance) const {
+  NOTIMPLEMENTED();
+  return GURL();
+}
+
 }  // namespace content

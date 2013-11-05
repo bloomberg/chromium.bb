@@ -29,6 +29,7 @@ class PepperMediaDeviceManager
   // PepperDeviceEnumerationHostHelper::Delegate implementation:
   virtual int EnumerateDevices(
       PP_DeviceType_Dev type,
+      const GURL& document_url,
       const EnumerateDevicesCallback& callback) OVERRIDE;
   virtual void StopEnumerateDevices(int request_id) OVERRIDE;
 

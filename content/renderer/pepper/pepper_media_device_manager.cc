@@ -45,6 +45,7 @@ PepperMediaDeviceManager::~PepperMediaDeviceManager() {
 
 int PepperMediaDeviceManager::EnumerateDevices(
     PP_DeviceType_Dev type,
+    const GURL& document_url,
     const EnumerateDevicesCallback& callback) {
   enumerate_callbacks_[next_id_] = callback;
   int request_id = next_id_++;
@@ -53,7 +54,7 @@ int PepperMediaDeviceManager::EnumerateDevices(
   GetRenderViewImpl()->media_stream_dispatcher()->EnumerateDevices(
       request_id, AsWeakPtr(),
       PepperMediaDeviceManager::FromPepperDeviceType(type),
-      GURL());
+      document_url.GetOrigin());
 #else
   base::MessageLoop::current()->PostTask(
       FROM_HERE,

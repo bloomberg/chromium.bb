@@ -17,9 +17,6 @@
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_structs.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebElement.h"
-#include "third_party/WebKit/public/web/WebPluginContainer.h"
 
 namespace content {
 
@@ -53,7 +50,8 @@ PepperAudioInputHost::PepperAudioInputHost(
           this,
           PepperMediaDeviceManager::GetForRenderView(
               host->GetRenderViewForInstance(pp_instance())),
-          PP_DEVICETYPE_DEV_AUDIOCAPTURE) {
+          PP_DEVICETYPE_DEV_AUDIOCAPTURE,
+          host->GetDocumentURL(instance)) {
 }
 
 PepperAudioInputHost::~PepperAudioInputHost() {
@@ -99,9 +97,8 @@ int32_t PepperAudioInputHost::OnOpen(
   if (audio_input_)
     return PP_ERROR_FAILED;
 
-  PepperPluginInstanceImpl* instance =
-      renderer_ppapi_host_->GetPluginInstanceImpl(pp_instance());
-  if (!instance)
+  GURL document_url = renderer_ppapi_host_->GetDocumentURL(pp_instance());
+  if (!document_url.is_valid())
     return PP_ERROR_FAILED;
 
   // When it is done, we'll get called back on StreamCreated() or
@@ -111,7 +108,7 @@ int32_t PepperAudioInputHost::OnOpen(
 
   audio_input_ = PepperPlatformAudioInput::Create(
       render_view->AsWeakPtr(), device_id,
-      instance->container()->element().document().url(),
+      document_url,
       static_cast<int>(sample_rate),
       static_cast<int>(sample_frame_count), this);
   if (audio_input_) {

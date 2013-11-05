@@ -54,6 +54,7 @@ class MockRendererPpapiHost : public RendererPpapiHost {
       const std::vector<IPC::Message>& nested_msgs,
       const base::Callback<void(
           const std::vector<int>&)>& callback) const OVERRIDE;
+  virtual GURL GetDocumentURL(PP_Instance instance) const OVERRIDE;
 
  private:
   ppapi::proxy::ResourceMessageTestSink sink_;

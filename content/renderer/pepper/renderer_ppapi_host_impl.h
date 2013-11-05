@@ -97,6 +97,7 @@ class RendererPpapiHostImpl : public RendererPpapiHost {
       const std::vector<IPC::Message>& nested_msgs,
       const base::Callback<void(
           const std::vector<int>&)>& callback) const OVERRIDE;
+  virtual GURL GetDocumentURL(PP_Instance instance) const OVERRIDE;
 
  private:
   RendererPpapiHostImpl(PluginModule* module,

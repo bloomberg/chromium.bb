@@ -17,9 +17,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/file_type_conversion.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
-#include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
@@ -114,17 +112,15 @@ int32_t PepperFileSystemHost::OnHostMsgOpen(
       return PP_ERROR_FAILED;
   }
 
-  PepperPluginInstance* plugin_instance =
-      renderer_ppapi_host_->GetPluginInstance(pp_instance());
-  if (!plugin_instance)
+  GURL document_url = renderer_ppapi_host_->GetDocumentURL(pp_instance());
+  if (!document_url.is_valid())
     return PP_ERROR_FAILED;
 
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
   reply_context_ = context->MakeReplyMessageContext();
   file_system_dispatcher->OpenFileSystem(
-      GURL(plugin_instance->GetContainer()->element().document().url()).
-          GetOrigin(),
+      document_url.GetOrigin(),
       file_system_type,
       base::Bind(&PepperFileSystemHost::DidOpenFileSystem,
                  weak_factory_.GetWeakPtr()),
