@@ -17,6 +17,10 @@
     'animations': {
       'filepath': '[Aa]nimat|[Tt]ransition',
     },
+    'audio': {
+      'filepath': 'Source/platform/audio' \
+                  '|Source/modules/webaudio',
+    }
     'bindings': {
       'filepath': 'Source/bindings',
     },
@@ -197,6 +201,7 @@
                    'steveblock@chromium.org',
                    'timloh@chromium.org',
                    'dino@apple.com'],
+    'audio': ['rtoy@chromium.org'],
     'devtools': [ 'pfeldman+blink@chromium.org',
                   'aandrey+blink@chromium.org',
                   'alph+blink@chromium.org',
