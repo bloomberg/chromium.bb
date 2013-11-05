@@ -63,6 +63,12 @@ static gfx::Vector2dF GetEffectiveTotalScrollOffset(LayerType* layer) {
   return offset;
 }
 
+template <typename LayerType>
+static inline bool LayerHasEventHandler(LayerType* layer) {
+  return !layer->touch_event_handler_region().IsEmpty() ||
+         layer->have_wheel_event_handlers();
+}
+
 inline gfx::Rect CalculateVisibleRectWithCachedLayerRect(
     gfx::Rect target_surface_rect,
     gfx::Rect layer_bound_rect,
@@ -440,7 +446,7 @@ static bool LayerShouldBeSkipped(LayerType* layer,
   //   - has empty bounds
   //   - the layer is not double-sided, but its back face is visible.
   //   - is transparent
-  //   - does not draw content and does not participate in hit testing.
+  //   - does not draw content
   //
   // Some additional conditions need to be computed at a later point after the
   // recursion is finished.
@@ -471,11 +477,7 @@ static bool LayerShouldBeSkipped(LayerType* layer,
       IsLayerBackFaceVisible(backface_test_layer))
     return true;
 
-  // The layer is visible to events.  If it's subject to hit testing, then
-  // we can't skip it.
-  bool can_accept_input = !layer->touch_event_handler_region().IsEmpty() ||
-      layer->have_wheel_event_handlers();
-  if (!layer->DrawsContent() && !can_accept_input)
+  if (!layer->DrawsContent())
     return true;
 
   return false;
@@ -501,7 +503,6 @@ static inline bool SubtreeShouldBeSkipped(LayerImpl* layer,
   // The opacity of a layer always applies to its children (either implicitly
   // via a render surface or explicitly if the parent preserves 3D), so the
   // entire subtree can be skipped if this layer is fully transparent.
-  // TODO(sad): Don't skip layers used for hit testing crbug.com/295295.
   return !layer->opacity();
 }
 
@@ -522,7 +523,6 @@ static inline bool SubtreeShouldBeSkipped(Layer* layer,
   // In particular, it should not cause the subtree to be skipped.
   // Similarly, for layers that might animate opacity using an impl-only
   // animation, their subtree should also not be skipped.
-  // TODO(sad): Don't skip layers used for hit testing crbug.com/295295.
   return !layer->opacity() && !layer->OpacityIsAnimating() &&
          !layer->OpacityCanAnimateOnImplThread();
 }
@@ -1018,15 +1018,19 @@ static inline void RemoveSurfaceForEarlyExit(
 
 struct PreCalculateMetaInformationRecursiveData {
   bool layer_or_descendant_has_copy_request;
+  bool layer_or_descendant_has_event_handler;
   int num_unclipped_descendants;
 
   PreCalculateMetaInformationRecursiveData()
       : layer_or_descendant_has_copy_request(false),
+        layer_or_descendant_has_event_handler(false),
         num_unclipped_descendants(0) {}
 
   void Merge(const PreCalculateMetaInformationRecursiveData& data) {
     layer_or_descendant_has_copy_request |=
         data.layer_or_descendant_has_copy_request;
+    layer_or_descendant_has_event_handler |=
+        data.layer_or_descendant_has_event_handler;
     num_unclipped_descendants +=
         data.num_unclipped_descendants;
   }
@@ -1080,6 +1084,9 @@ static void PreCalculateMetaInformation(
   if (layer->HasCopyRequest())
     recursive_data->layer_or_descendant_has_copy_request = true;
 
+  if (LayerHasEventHandler(layer))
+    recursive_data->layer_or_descendant_has_event_handler = true;
+
   layer->draw_properties().num_descendants_that_draw_content =
       num_descendants_that_draw_content;
   layer->draw_properties().num_unclipped_descendants =
@@ -1102,6 +1109,7 @@ struct SubtreeGlobals {
   const LayerType* page_scale_application_layer;
   bool can_adjust_raster_scales;
   bool can_render_to_separate_surface;
+  bool tree_has_event_handler;
 };
 
 template<typename LayerType>
@@ -1142,6 +1150,7 @@ struct DataForRecursion {
   bool in_subtree_of_page_scale_application_layer;
   bool subtree_can_use_lcd_text;
   bool subtree_is_visible_from_ancestor;
+  bool subtree_should_be_skipped_for_drawing;
 };
 
 template <typename LayerType>
@@ -1408,6 +1417,8 @@ static void CalculateDrawPropertiesInternal(
       data_from_ancestor.in_subtree_of_page_scale_application_layer;
   data_for_children.subtree_can_use_lcd_text =
       data_from_ancestor.subtree_can_use_lcd_text;
+  data_for_children.subtree_should_be_skipped_for_drawing =
+      data_from_ancestor.subtree_should_be_skipped_for_drawing;
 
   // Layers with a copy request are always visible, as well as un-hiding their
   // subtree. Otherise, layers that are marked as hidden will hide themselves
@@ -1419,10 +1430,14 @@ static void CalculateDrawPropertiesInternal(
     layer_is_visible = true;
 
   // The root layer cannot skip CalcDrawProperties.
-  if (!IsRootLayer(layer) && SubtreeShouldBeSkipped(layer, layer_is_visible)) {
-    if (layer->render_surface())
-      layer->ClearRenderSurface();
-    return;
+  if (!IsRootLayer(layer) &&
+      SubtreeShouldBeSkipped(layer, layer_is_visible)) {
+    if (!globals.tree_has_event_handler) {
+      if (layer->render_surface())
+        layer->ClearRenderSurface();
+      return;
+    }
+    data_for_children.subtree_should_be_skipped_for_drawing = true;
   }
 
   // We need to circumvent the normal recursive flow of information for clip
@@ -1847,8 +1862,11 @@ static void CalculateDrawPropertiesInternal(
   // and should be included in the sorting process.
   size_t sorting_start_index = descendants.size();
 
-  if (!LayerShouldBeSkipped(layer, layer_is_visible))
+  bool skip_layer = LayerShouldBeSkipped(layer, layer_is_visible);
+  if (globals.tree_has_event_handler || !skip_layer)
     descendants.push_back(layer);
+  layer_draw_properties.skip_drawing = skip_layer ||
+      data_for_children.subtree_should_be_skipped_for_drawing;
 
   // Any layers that are appended after this point may need to be sorted if we
   // visit the children out of order.
@@ -2142,9 +2160,12 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   data_for_recursion.in_subtree_of_page_scale_application_layer = false;
   data_for_recursion.subtree_can_use_lcd_text = inputs->can_use_lcd_text;
   data_for_recursion.subtree_is_visible_from_ancestor = true;
+  data_for_recursion.subtree_should_be_skipped_for_drawing = false;
 
   PreCalculateMetaInformationRecursiveData recursive_data;
   PreCalculateMetaInformation(inputs->root_layer, &recursive_data);
+  globals.tree_has_event_handler =
+      recursive_data.layer_or_descendant_has_event_handler;
   std::vector<AccumulatedSurfaceState<Layer> > accumulated_surface_state;
   CalculateDrawPropertiesInternal<Layer>(inputs->root_layer,
                                          globals,
@@ -2200,9 +2221,12 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   data_for_recursion.in_subtree_of_page_scale_application_layer = false;
   data_for_recursion.subtree_can_use_lcd_text = inputs->can_use_lcd_text;
   data_for_recursion.subtree_is_visible_from_ancestor = true;
+  data_for_recursion.subtree_should_be_skipped_for_drawing = false;
 
   PreCalculateMetaInformationRecursiveData recursive_data;
   PreCalculateMetaInformation(inputs->root_layer, &recursive_data);
+  globals.tree_has_event_handler =
+      recursive_data.layer_or_descendant_has_event_handler;
   std::vector<AccumulatedSurfaceState<LayerImpl> >
       accumulated_surface_state;
   CalculateDrawPropertiesInternal<LayerImpl>(inputs->root_layer,

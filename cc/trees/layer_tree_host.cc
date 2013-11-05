@@ -1057,7 +1057,7 @@ void LayerTreeHost::PaintLayerContents(
     if (it.represents_target_render_surface()) {
       PaintMasksForRenderSurface(
           *it, queue, did_paint_content, need_more_updates);
-    } else if (it.represents_itself() && it->DrawsContent()) {
+    } else if (it.represents_itself() && !it->draw_properties().skip_drawing) {
       devtools_instrumentation::ScopedLayerTreeTask
           update_layer(devtools_instrumentation::kUpdateLayer, it->id(), id());
       DCHECK(!it->paint_properties().bounds.IsEmpty());

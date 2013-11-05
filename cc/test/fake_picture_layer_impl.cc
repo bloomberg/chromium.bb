@@ -11,13 +11,17 @@ FakePictureLayerImpl::FakePictureLayerImpl(
     int id,
     scoped_refptr<PicturePileImpl> pile)
     : PictureLayerImpl(tree_impl, id),
-      append_quads_count_(0) {
+      append_quads_count_(0),
+      update_tile_priorities_count_(0) {
   pile_ = pile;
   SetBounds(pile_->size());
 }
 
 FakePictureLayerImpl::FakePictureLayerImpl(LayerTreeImpl* tree_impl, int id)
-    : PictureLayerImpl(tree_impl, id), append_quads_count_(0) {}
+    : PictureLayerImpl(tree_impl, id),
+      append_quads_count_(0),
+      update_tile_priorities_count_(0) {
+}
 
 scoped_ptr<LayerImpl> FakePictureLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
@@ -29,6 +33,11 @@ void FakePictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                                        AppendQuadsData* append_quads_data) {
   PictureLayerImpl::AppendQuads(quad_sink, append_quads_data);
   ++append_quads_count_;
+}
+
+void FakePictureLayerImpl::UpdateTilePriorities() {
+  PictureLayerImpl::UpdateTilePriorities();
+  ++update_tile_priorities_count_;
 }
 
 gfx::Size FakePictureLayerImpl::CalculateTileSize(

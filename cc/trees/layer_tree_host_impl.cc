@@ -755,7 +755,8 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
                                        contributing_render_pass,
                                        occlusion_tracker,
                                        &append_quads_data);
-    } else if (it.represents_itself() && it->DrawsContent() &&
+    } else if (it.represents_itself() &&
+               !it->draw_properties().skip_drawing &&
                !it->visible_content_rect().IsEmpty()) {
       bool impl_draw_transform_is_unknown = false;
       bool occluded = occlusion_tracker.Occluded(
