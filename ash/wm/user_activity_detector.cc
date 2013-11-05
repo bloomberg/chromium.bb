@@ -5,9 +5,36 @@
 #include "ash/wm/user_activity_detector.h"
 
 #include "ash/wm/user_activity_observer.h"
+#include "base/format_macros.h"
+#include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "ui/events/event.h"
 
 namespace ash {
+
+namespace {
+
+// Returns a string describing |event|.
+std::string GetEventDebugString(const ui::Event* event) {
+  std::string details = base::StringPrintf(
+      "type=%d name=%s flags=%d time=%" PRId64,
+      event->type(), event->name().c_str(), event->flags(),
+      event->time_stamp().InMilliseconds());
+
+  if (event->IsKeyEvent()) {
+    details += base::StringPrintf(" key_code=%d",
+        static_cast<const ui::KeyEvent*>(event)->key_code());
+  } else if (event->IsMouseEvent() || event->IsTouchEvent() ||
+             event->IsGestureEvent()) {
+    details += base::StringPrintf(" location=%s",
+        static_cast<const ui::LocatedEvent*>(
+            event)->location().ToString().c_str());
+  }
+
+  return details;
+}
+
+}  // namespace
 
 const int UserActivityDetector::kNotifyIntervalMs = 200;
 
@@ -75,6 +102,8 @@ void UserActivityDetector::HandleActivity(const ui::Event* event) {
   if (last_observer_notification_time_.is_null() ||
       (now - last_observer_notification_time_).InMillisecondsF() >=
       kNotifyIntervalMs) {
+    if (VLOG_IS_ON(1))
+      VLOG(1) << "Reporting user activity: " << GetEventDebugString(event);
     FOR_EACH_OBSERVER(UserActivityObserver, observers_, OnUserActivity(event));
     last_observer_notification_time_ = now;
   }
