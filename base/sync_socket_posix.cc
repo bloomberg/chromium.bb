@@ -125,7 +125,13 @@ size_t SyncSocket::ReceiveWithTimeout(void* buffer,
   DCHECK_GT(length, 0u);
   DCHECK_LE(length, kMaxMessageLength);
   DCHECK_NE(handle_, kInvalidHandle);
-  CHECK_LT(handle_, FD_SETSIZE);
+
+  // TODO(dalecurtis): There's an undiagnosed issue on OSX where we're seeing
+  // large numbers of open files which prevents select() from being used.  In
+  // this case, the best we can do is Peek() to see if we can Receive() now or
+  // return a timeout error (0) if not.  See http://crbug.com/314364.
+  if (handle_ >= FD_SETSIZE)
+    return Peek() < length ? 0 : Receive(buffer, length);
 
   // Only timeouts greater than zero and less than one second are allowed.
   DCHECK_GT(timeout.InMicroseconds(), 0);
