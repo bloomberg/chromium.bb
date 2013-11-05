@@ -1504,8 +1504,7 @@ bool Element::recalcStyle(StyleRecalcChange change)
         data->clearComputedStyle();
     }
 
-    // Active InsertionPoints have no renderers so they never need to go through a recalc.
-    if ((change >= Inherit || needsStyleRecalc()) && parentRenderStyle() && !isActiveInsertionPoint(*this))
+    if ((change >= Inherit || needsStyleRecalc()) && parentRenderStyle())
         change = recalcOwnStyle(change);
 
     // If we reattached we don't need to recalc the style of our descendants anymore.
