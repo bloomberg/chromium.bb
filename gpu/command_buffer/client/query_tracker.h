@@ -10,8 +10,8 @@
 #include <deque>
 #include <list>
 
+#include "base/containers/hash_tables.h"
 #include "gles2_impl_export.h"
-#include "gpu/command_buffer/client/hash_tables.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 
 namespace gpu {
@@ -161,7 +161,7 @@ class GLES2_IMPL_EXPORT QueryTracker {
   void FreeCompletedQueries();
 
  private:
-  typedef gpu::hash_map<GLuint, Query*> QueryMap;
+  typedef base::hash_map<GLuint, Query*> QueryMap;
   typedef std::list<Query*> QueryList;
 
   QueryMap queries_;

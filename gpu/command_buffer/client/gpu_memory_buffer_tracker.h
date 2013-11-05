@@ -6,8 +6,8 @@
 #define GPU_COMMAND_BUFFER_CLIENT_GPU_MEMORY_BUFFER_TRACKER_H_
 
 #include "base/basictypes.h"
+#include "base/containers/hash_tables.h"
 #include "gles2_impl_export.h"
-#include "gpu/command_buffer/client/hash_tables.h"
 
 namespace gfx {
 class GpuMemoryBuffer;
@@ -29,7 +29,7 @@ class GLES2_IMPL_EXPORT GpuMemoryBufferTracker {
   void RemoveBuffer(int32 image_id);
 
  private:
-  typedef gpu::hash_map<int32, gfx::GpuMemoryBuffer*> BufferMap;
+  typedef base::hash_map<int32, gfx::GpuMemoryBuffer*> BufferMap;
   BufferMap buffers_;
   GpuControl* gpu_control_;
 

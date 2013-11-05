@@ -15,14 +15,6 @@
 
 namespace gpu {
 
-void MemoryBarrier() {
-#if defined(__native_client__)
-  __sync_synchronize();
-#else
-  base::subtle::MemoryBarrier();
-#endif
-}
-
 #if defined(__native_client__)
 
 class LockImpl {

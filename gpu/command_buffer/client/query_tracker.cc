@@ -151,7 +151,7 @@ bool QueryTracker::Query::CheckResultsAvailable(
         helper->IsContextLost()) {
       // Need a MemoryBarrier here so that sync->result read after
       // sync->process_count.
-      gpu::MemoryBarrier();
+      base::subtle::MemoryBarrier();
       switch (target()) {
         case GL_COMMANDS_ISSUED_CHROMIUM:
           result_ = std::min(info_.sync->result,

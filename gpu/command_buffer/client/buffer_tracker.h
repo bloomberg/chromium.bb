@@ -8,8 +8,8 @@
 #include <GLES2/gl2.h>
 
 #include <queue>
+#include "base/containers/hash_tables.h"
 #include "gles2_impl_export.h"
-#include "gpu/command_buffer/client/hash_tables.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 
 namespace gpu {
@@ -99,7 +99,7 @@ class GLES2_IMPL_EXPORT BufferTracker {
   void FreePendingToken(Buffer*, int32 token);
 
  private:
-  typedef gpu::hash_map<GLuint, Buffer*> BufferMap;
+  typedef base::hash_map<GLuint, Buffer*> BufferMap;
 
   MappedMemoryManager* mapped_memory_;
   BufferMap buffers_;
