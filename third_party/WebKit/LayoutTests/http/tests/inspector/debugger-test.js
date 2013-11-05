@@ -69,13 +69,13 @@ InspectorTest.runDebuggerTestSuite = function(testSuite)
     }
 
     InspectorTest.startDebuggerTest(runner);
-}
+};
 
 InspectorTest.runTestFunction = function()
 {
     InspectorTest.evaluateInConsole("setTimeout(testFunction, 0)");
     InspectorTest.addResult("Set timer for test function.");
-}
+};
 
 InspectorTest.runTestFunctionAndWaitUntilPaused = function(callback)
 {
@@ -110,7 +110,7 @@ InspectorTest.resumeExecution = function(callback)
     InspectorTest.waitUntilResumed(callback);
 };
 
-InspectorTest.captureStackTrace = function(callFrames, dropLineNumbers)
+InspectorTest.captureStackTrace = function(callFrames, dropLineNumbers, printReturnValue)
 {
     InspectorTest.addResult("Call stack:");
     for (var i = 0; i < callFrames.length; i++) {
@@ -127,7 +127,14 @@ InspectorTest.captureStackTrace = function(callFrames, dropLineNumbers)
         }
         var s = "    " + i + ") " + frame.functionName + " (" + url + (dropLineNumbers ? "" : ":" + lineNumber) + ")";
         InspectorTest.addResult(s);
+        if (printReturnValue && frame.returnValue)
+            InspectorTest.addResult("       <return>: " + frame.returnValue.description);
     }
+};
+
+InspectorTest.captureStackTraceExtended = function(callFrames, dropLineNumbers)
+{
+    InspectorTest.captureStackTrace(callFrames, dropLineNumbers, true);
 };
 
 InspectorTest.dumpSourceFrameContents = function(sourceFrame)
@@ -149,7 +156,7 @@ InspectorTest._pausedScript = function(callFrames, reason, auxData, breakpointId
         delete InspectorTest._waitUntilPausedCallback;
         callback.apply(callback, InspectorTest._pausedScriptArguments);
     }
-}
+};
 
 InspectorTest._resumedScript = function()
 {
@@ -221,7 +228,6 @@ InspectorTest.removeBreakpoint = function(sourceFrame, lineNumber)
 {
     sourceFrame._breakpointManager.findBreakpoint(sourceFrame._uiSourceCode, lineNumber).remove();
 };
-
 
 InspectorTest.expandProperties = function(properties, callback)
 {
@@ -295,7 +301,7 @@ InspectorTest.createScriptMock = function(url, startLine, startColumn, isContent
     script.requestContent = function(callback) { callback(source, false, "text/javascript"); };
     WebInspector.debuggerModel._registerScript(script);
     return script;
-}
+};
 
 InspectorTest._lastScriptId = 0;
 
