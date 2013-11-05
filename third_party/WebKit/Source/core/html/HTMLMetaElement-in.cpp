@@ -195,13 +195,6 @@ Length HTMLMetaElement::parseViewportValueAsLength(const String& keyString, cons
     if (value < 0)
         return Length(); // auto
 
-    if (!value && document().settings() && document().settings()->viewportMetaZeroValuesQuirk()) {
-        if (keyString == "width")
-            return Length(100, ViewportPercentageWidth);
-        if (keyString == "height")
-            return Length(100, ViewportPercentageHeight);
-    }
-
     return Length(clampLengthValue(value), Fixed);
 }
 

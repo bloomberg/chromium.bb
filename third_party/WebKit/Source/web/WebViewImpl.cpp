@@ -3002,6 +3002,11 @@ void WebViewImpl::updatePageDefinedViewportConstraints(const ViewportDescription
     if (settingsImpl()->viewportMetaLayoutSizeQuirk() && adjustedDescription.type == ViewportDescription::ViewportMeta) {
         if (adjustedDescription.maxWidth.type() == ExtendToZoom)
             adjustedDescription.maxWidth = Length(); // auto
+        const int legacyWidthSnappingMagicNumber = 320;
+        if (adjustedDescription.maxWidth.isFixed() && adjustedDescription.maxWidth.value() <= legacyWidthSnappingMagicNumber)
+            adjustedDescription.maxWidth = Length(100, ViewportPercentageWidth);
+        if (adjustedDescription.maxHeight.isFixed() && adjustedDescription.maxWidth.value() <= m_size.height)
+            adjustedDescription.maxHeight = Length(100, ViewportPercentageHeight);
         adjustedDescription.minWidth = adjustedDescription.maxWidth;
         adjustedDescription.minHeight = adjustedDescription.maxHeight;
     }
