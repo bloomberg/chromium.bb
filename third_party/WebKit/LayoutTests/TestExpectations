@@ -1,11 +1,3 @@
-# See http://www.chromium.org/developers/testing/webkit-layout-tests/testexpectations for more information on this file.
-
-crbug.com/179332 virtual/gpu/compositedscrolling/scrollbars/rtl/div-horizontal.html [ NeedsRebaseline ]
-crbug.com/179332 [ Win Mac ] scrollbars/rtl/div-horizontal-with-vertical-scrollbar.html [ NeedsRebaseline ]
-crbug.com/179332 [ Win Mac ] scrollbars/rtl/div-horizontal.html [ NeedsRebaseline ]
-crbug.com/179332 [ Win Mac ] compositing/rtl/rtl-overflow-scrolling.html [ NeedsRebaseline ]
-crbug.com/179332 [ Win Mac ] fast/block/float/026.html [ NeedsRebaseline ]
-crbug.com/179332 [ Win Mac ] fast/block/float/028.html [ NeedsRebaseline ]
 
 # This test can't just be rebaselined because it has absolute file paths in the output.
 crbug.com/257132 http/tests/inspector/network/network-xhr-replay.html [ Failure ]
