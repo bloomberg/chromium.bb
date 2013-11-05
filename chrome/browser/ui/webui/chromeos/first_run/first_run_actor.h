@@ -59,15 +59,27 @@ class FirstRunActor {
   // only if |IsInitialized| returns |true|.
   virtual bool IsInitialized() = 0;
 
-  // Adds hole to background with given position and dimensions.
-  virtual void AddBackgroundHole(int x, int y, int width, int height) = 0;
+  // Changes background visibility.
+  virtual void SetBackgroundVisible(bool visible) = 0;
+
+  // Adds rectangular hole to background with given position and dimensions.
+  virtual void AddRectangularHole(int x, int y, int width, int height) = 0;
+
+  // Adds round hole to background with given position and dimensions.
+  virtual void AddRoundHole(int x, int y, float radius) = 0;
 
   // Removes all holes from background.
   virtual void RemoveBackgroundHoles() = 0;
 
   // Shows step with given name and position.
-  virtual void ShowStep(const std::string& name,
-                        const StepPosition& position) = 0;
+  virtual void ShowStepPositioned(const std::string& name,
+                                  const StepPosition& position) = 0;
+
+  // Shows step with given name that points to given point.
+  virtual void ShowStepPointingTo(const std::string& name,
+                                  int x,
+                                  int y,
+                                  int offset) = 0;
 
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
   Delegate* delegate() const { return delegate_; }

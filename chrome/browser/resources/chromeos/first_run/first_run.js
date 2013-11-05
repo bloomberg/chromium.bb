@@ -13,11 +13,17 @@ cr.define('cr.FirstRun', function() {
     // SVG element representing UI background.
     background_: null,
 
+    // Container for background.
+    backgroundContainer_: null,
+
     // Mask element describing transparent "holes" in background.
     mask_: null,
 
-    // Pattern used for creating new holes.
-    hole_pattern_: null,
+    // Pattern used for creating rectangular holes.
+    rectangularHolePattern_: null,
+
+    // Pattern used for creating round holes.
+    roundHolePattern_: null,
 
     // Dictionary keeping all available tutorial steps by their names.
     steps_: {},
@@ -31,31 +37,48 @@ cr.define('cr.FirstRun', function() {
     initialize: function() {
       disableTextSelectAndDrag();
       this.background_ = $('background');
+      this.backgroundContainer_ = $('background-container');
       this.mask_ = $('mask');
-      this.hole_pattern_ = $('hole-pattern');
+      this.rectangularHolePattern_ = $('rectangular-hole-pattern');
+      this.rectangularHolePattern_.removeAttribute('id');
+      this.roundHolePattern_ = $('round-hole-pattern');
+      this.roundHolePattern_.removeAttribute('id');
       var stepElements = document.getElementsByClassName('step');
       for (var i = 0; i < stepElements.length; ++i) {
         var step = stepElements[i];
-        cr.FirstRun.Step.decorate(step);
+        cr.FirstRun.DecorateStep(step);
         this.steps_[step.getName()] = step;
       }
       chrome.send('initialized');
     },
 
     /**
-     * Adds transparent hole to background.
+     * Adds transparent rectangular hole to background.
      * @param {number} x X coordinate of top-left corner of hole.
      * @param {number} y Y coordinate of top-left corner of hole.
      * @param {number} widht Width of hole.
      * @param {number} height Height of hole.
      */
-    addHole: function(x, y, width, height) {
-      var hole = this.hole_pattern_.cloneNode();
-      hole.removeAttribute('id');
+    addRectangularHole: function(x, y, width, height) {
+      var hole = this.rectangularHolePattern_.cloneNode();
       hole.setAttribute('x', x);
       hole.setAttribute('y', y);
       hole.setAttribute('width', width);
       hole.setAttribute('height', height);
+      this.mask_.appendChild(hole);
+    },
+
+    /**
+     * Adds transparent round hole to background.
+     * @param {number} x X coordinate of circle center.
+     * @param {number} y Y coordinate of circle center.
+     * @param {number} radius Radius of circle.
+     */
+    addRoundHole: function(x, y, radius) {
+      var hole = this.roundHolePattern_.cloneNode();
+      hole.setAttribute('cx', x);
+      hole.setAttribute('cy', y);
+      hole.setAttribute('r', radius);
       this.mask_.appendChild(hole);
     },
 
@@ -75,23 +98,30 @@ cr.define('cr.FirstRun', function() {
      * @param {string} name Name of step.
      * @param {object} position Optional parameter with optional fields |top|,
      *     |right|, |bottom|, |left| used for step positioning.
+     * @param {Array} pointWithOffset Optional parameter for positioning
+     *     bubble. Contains [x, y, offset], where (x, y) - point to which bubble
+     *     points, offset - distance between arrow and point.
      */
-    showStep: function(name, position) {
+    showStep: function(name, position, pointWithOffset) {
       if (!this.steps_.hasOwnProperty(name))
         throw Error('Step "' + name + '" not found.');
-      if (this.currentStep_) {
-        this.currentStep_.style.setProperty('display', 'none');
-      }
+      if (this.currentStep_)
+        this.currentStep_.hide();
       var step = this.steps_[name];
-      var stepStyle = step.style;
-      if (position) {
-        ['top', 'right', 'bottom', 'left'].forEach(function(property) {
-          if (position.hasOwnProperty(property))
-            stepStyle.setProperty(property, position[property] + 'px');
-        });
-      }
-      stepStyle.setProperty('display', 'inline-block');
+      if (position)
+        step.setPosition(position);
+      if (pointWithOffset)
+        step.setPointsTo(pointWithOffset.slice(0, 2), pointWithOffset[2]);
+      step.show();
       this.currentStep_ = step;
+    },
+
+    /**
+     * Sets visibility of the background.
+     * @param {boolean} visibility Whether background should be visible.
+     */
+    setBackgroundVisible: function(visible) {
+      this.backgroundContainer_.hidden = !visible;
     }
   };
 });

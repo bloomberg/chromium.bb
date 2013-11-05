@@ -5,27 +5,131 @@
  */
 
 .step {
-  color: white;
+  background: white;
+  color: #8c8c8c;
   display: none;
-  padding: 18px;
-  position: absolute;
+  padding: 0;
 }
 
-.step button {
-  background-color: rgb(72, 136, 246);
-  border: none;
-  color: white;
-  cursor: pointer;
-  font-size: 0.9em;
-  padding: 0.5em 2.5em;
+.step h1 {
+  color: #333;
+  font-weight: normal;
 }
 
 .step p {
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
-.step .controls {
-  -webkit-margin-after: 2em;
-  -webkit-margin-before: 1.5em;
+.step.bubble {
+  border: 1px solid;
+  border-radius: 3px;
+  position: absolute;
+  width: 400px;
+}
+
+.step button.blue-button {
+  color: white;
+}
+
+.step button.white-button {
+  color: black;
+}
+
+.step .controls button {
+  margin: 0 3px;
+}
+
+.step .controls button:first-of-type {
+  -webkit-margin-start: 0;
+}
+
+.step .controls button:last-of-type {
+  -webkit-margin-end: 0;
+}
+
+.step.bubble h1 {
+  font-size: 18px;
+  margin-bottom: 20px;
+  margin-left: 20px;
+  margin-right: 20px;
+  margin-top: 20px;
+}
+
+
+.step.bubble p {
+  font-size: 14px;
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+.step.bubble p + p {
+  margin-top: 30px;
+}
+
+.step.bubble .controls {
+  margin-bottom: 18px;
+  margin-left: 18px;
+  margin-right: 18px;
+  margin-top: 18px;
+  text-align: end;
+}
+
+.step.bubble .controls button {
+  font-size: 12px;
+  min-width: 0;
+  padding: 0 15px;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+}
+
+.step.dialog {
+  border: 1px solid;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3),
+              0 4px 23px 5px rgba(0, 0, 0, 0.2),
+              0 2px 6px rgba(0, 0, 0, 0.15);
+  padding: 40px;
+  position: relative;
+  text-align: center;
+  width: 720px;
+}
+
+.step.dialog h1 {
+  font-size: 30px;
+  margin-bottom: 16px;
+  margin-top: 0;
+}
+
+.step.dialog p {
+  font-size: 15px;
+}
+
+.step.dialog .controls {
+  margin-bottom: 64px;
+  margin-top: 40px;
+}
+
+.step.dialog .controls button {
+  font-size: 12px;
+  min-width: 0;
+  padding: 0 35px;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+}
+
+.step.dialog .topbutton-bar {
+  display: block;
+  left: 0;
+  position: absolute;
+  top: 10px;
+  width: 100%;
+}
+
+.step.dialog .topbutton-wrapper {
+  -webkit-padding-end: 10px;
+  text-align: end;
+}
+
+.step.dialog .topbutton-bar button {
+  -webkit-margin-end: 0;
+  display: inline;
 }
 

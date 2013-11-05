@@ -312,7 +312,8 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
   default_host_ = NULL;
   // TODO(dzhioev): find better place for starting tutorial.
   if (CommandLine::ForCurrentProcess()->
-          HasSwitch(switches::kEnableFirstRunUI)) {
+          HasSwitch(switches::kEnableFirstRunUI) &&
+      chromeos::UserManager::Get()->IsCurrentUserNew()) {
     // FirstRunController manages its lifetime and destructs after tutorial
     // completion.
     (new FirstRunController())->Start();

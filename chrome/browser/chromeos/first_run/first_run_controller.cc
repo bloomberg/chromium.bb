@@ -4,66 +4,41 @@
 
 #include "chrome/browser/chromeos/first_run/first_run_controller.h"
 
-#include "ash/launcher/launcher.h"
+#include "ash/first_run/first_run_helper.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/chromeos/first_run/first_run_view.h"
+#include "chrome/browser/chromeos/first_run/steps/app_list_step.h"
+#include "chrome/browser/chromeos/first_run/steps/greeting_step.h"
+#include "chrome/browser/chromeos/first_run/steps/help_step.h"
+#include "chrome/browser/chromeos/first_run/steps/tray_step.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
 
-gfx::Rect GetScreenBounds() {
-  return ash::Shell::GetScreen()->GetPrimaryDisplay().bounds();
-}
+size_t NONE_STEP_INDEX = std::numeric_limits<size_t>::max();
 
-views::Widget* CreateFirstRunWindow() {
-  views::Widget::InitParams params(
-      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.bounds = GetScreenBounds();
-  params.show_state = ui::SHOW_STATE_FULLSCREEN;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.parent =
-      ash::Shell::GetContainer(
-          ash::Shell::GetPrimaryRootWindow(),
-          ash::internal::kShellWindowId_OverlayContainer);
-  views::Widget* window = new views::Widget;
-  window->Init(params);
-  return window;
-}
-
-// We can't get launcher size now in normal way. This workaround uses fact that
-// AppList button is the rightmost button in Launcher.
-gfx::Rect GetLauncherBounds() {
-  ash::Launcher* launcher = ash::Launcher::ForPrimaryDisplay();
-  views::View* app_button = launcher->GetAppListButtonView();
-  gfx::Rect bounds = app_button->GetBoundsInScreen();
-  return gfx::Rect(0, bounds.y(), bounds.right(), bounds.height());
-}
-
-}  // anonymous namespace
+}  // namespace
 
 namespace chromeos {
 
 FirstRunController::FirstRunController()
-    : window_(NULL),
-      actor_(NULL) {
+    : actor_(NULL),
+      current_step_index_(NONE_STEP_INDEX) {
 }
 
 FirstRunController::~FirstRunController() {
-  if (window_)
+  if (shell_helper_.get())
     Stop();
 }
 
 void FirstRunController::Start() {
-  if (window_)
-    return;
-  window_ = CreateFirstRunWindow();
+  shell_helper_.reset(ash::Shell::GetInstance()->CreateFirstRunHelper());
   FirstRunView* view = new FirstRunView();
   view->Init(ProfileManager::GetDefaultProfile());
-  window_->SetContentsView(view);
+  shell_helper_->GetOverlayWidget()->SetContentsView(view);
   actor_ = view->GetActor();
   actor_->set_delegate(this);
   if (actor_->IsInitialized())
@@ -71,35 +46,64 @@ void FirstRunController::Start() {
 }
 
 void FirstRunController::Stop() {
-  window_->Close();
-  window_ = NULL;
+  if (GetCurrentStep())
+    GetCurrentStep()->OnBeforeHide();
+  steps_.clear();
   if (actor_)
     actor_->set_delegate(NULL);
   actor_ = NULL;
+  shell_helper_.reset();
 }
 
 void FirstRunController::OnActorInitialized() {
-  window_->Show();
-  gfx::Rect launcher_bounds = GetLauncherBounds();
-  actor_->AddBackgroundHole(launcher_bounds.x(),
-                            launcher_bounds.y(),
-                            launcher_bounds.width(),
-                            launcher_bounds.height());
-  actor_->ShowStep("first-step",
-                   FirstRunActor::StepPosition()
-                       .SetLeft(0)
-                       .SetBottom(
-                           GetScreenBounds().height() - launcher_bounds.y()));
+  RegisterSteps();
+  shell_helper_->GetOverlayWidget()->Show();
+  ShowNextStep();
 }
 
 void FirstRunController::OnNextButtonClicked(const std::string& step_name) {
-  CHECK(step_name == "first-step");
-  Stop();
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  DCHECK(GetCurrentStep() && GetCurrentStep()->name() == step_name);
+  ShowNextStep();
 }
 
 void FirstRunController::OnActorDestroyed() {
-  actor_ = NULL;
+  // Called when overlay window was destroyed not by us.
+  NOTIMPLEMENTED();
+}
+
+void FirstRunController::RegisterSteps() {
+  steps_.push_back(make_linked_ptr(
+      new first_run::GreetingStep(shell_helper_.get(), actor_)));
+  steps_.push_back(make_linked_ptr(
+      new first_run::AppListStep(shell_helper_.get(), actor_)));
+  steps_.push_back(make_linked_ptr(
+      new first_run::TrayStep(shell_helper_.get(), actor_)));
+  steps_.push_back(make_linked_ptr(
+      new first_run::HelpStep(shell_helper_.get(), actor_)));
+}
+
+void FirstRunController::ShowNextStep() {
+  if (GetCurrentStep())
+    GetCurrentStep()->OnBeforeHide();
+  AdvanceStep();
+  if (GetCurrentStep())
+    GetCurrentStep()->Show();
+  else
+    Stop();
+}
+
+void FirstRunController::AdvanceStep() {
+  if (current_step_index_ == NONE_STEP_INDEX)
+    current_step_index_ = 0;
+  else
+    ++current_step_index_;
+  if (current_step_index_ >= steps_.size())
+    current_step_index_ = NONE_STEP_INDEX;
+}
+
+first_run::Step* FirstRunController::GetCurrentStep() const {
+  return current_step_index_ != NONE_STEP_INDEX ?
+      steps_[current_step_index_].get() : NULL;
 }
 
 }  // namespace chromeos

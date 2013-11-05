@@ -1,18 +1,14 @@
-<svg id="background" xmlns="http://www.w3.org/2000/svg"
-    xmlns:xlink="http://www.w3.org/1999/xlink">
-  <defs>
-    <rect id="hole-pattern" class="hole" filter="url(#blur-filter)"/>
-    <filter id="blur-filter" filterUnits="userSpaceOnUse">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode/>
-      </feMerge>
-    </filter>
-    <mask id="mask" maskUnits="objectBoundingBox"
-        maskContentUnits="userSpaceOnUse">
-      <rect width="100%" height="100%" fill="white"/>
-    </mask>
-  </defs>
-  <rect class="fill" width="100%" height="100%" mask="url(#mask)"/>
-</svg>
+<div id="background-container" hidden>
+  <svg id="background" xmlns="http://www.w3.org/2000/svg"
+      xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs>
+      <rect id="rectangular-hole-pattern" class="hole"/>
+      <circle id="round-hole-pattern" class="hole"/>
+      <mask id="mask" maskUnits="objectBoundingBox"
+          maskContentUnits="userSpaceOnUse">
+        <rect width="100%" height="100%" fill="white"/>
+      </mask>
+    </defs>
+    <rect class="fill" width="100%" height="100%" mask="url(#mask)"/>
+  </svg>
+</div>

@@ -6,15 +6,48 @@
 
 #include "ash/launcher/launcher.h"
 #include "ash/shell.h"
+#include "ash/shell_window_ids.h"
+#include "ash/system/tray/system_tray.h"
 #include "base/logging.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
-FirstRunHelperImpl::FirstRunHelperImpl() {}
+namespace {
+
+views::Widget* CreateFirstRunWindow() {
+  views::Widget::InitParams params(
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  params.bounds = Shell::GetScreen()->GetPrimaryDisplay().bounds();
+  params.show_state = ui::SHOW_STATE_FULLSCREEN;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.parent =
+      Shell::GetContainer(Shell::GetPrimaryRootWindow(),
+                          ash::internal::kShellWindowId_OverlayContainer);
+  views::Widget* window = new views::Widget;
+  window->Init(params);
+  return window;
+}
+
+}  // anonymous namespace
+
+FirstRunHelperImpl::FirstRunHelperImpl()
+    : widget_(CreateFirstRunWindow()) {
+  Shell::GetInstance()->overlay_filter()->Activate(this);
+}
+
+FirstRunHelperImpl::~FirstRunHelperImpl() {
+  Shell::GetInstance()->overlay_filter()->Deactivate();
+  widget_->Close();
+}
+
+views::Widget* FirstRunHelperImpl::GetOverlayWidget() {
+  return widget_;
+}
 
 void FirstRunHelperImpl::OpenAppList() {
   if (Shell::GetInstance()->GetAppListTargetVisibility())
@@ -41,8 +74,47 @@ gfx::Rect FirstRunHelperImpl::GetAppListButtonBounds() {
 
 gfx::Rect FirstRunHelperImpl::GetAppListBounds() {
   app_list::AppListView* view = Shell::GetInstance()->GetAppListView();
-  CHECK(view);
   return view->GetBoundsInScreen();
+}
+
+void FirstRunHelperImpl::Cancel() {
+  NOTIMPLEMENTED();
+}
+
+bool FirstRunHelperImpl::IsCancelingKeyEvent(ui::KeyEvent* event) {
+  return false;
+}
+
+aura::Window* FirstRunHelperImpl::GetWindow() {
+  return widget_->GetNativeWindow();
+}
+
+void FirstRunHelperImpl::OpenTrayBubble() {
+  SystemTray* tray = Shell::GetInstance()->GetPrimarySystemTray();
+  tray->ShowPersistentDefaultView();
+}
+
+void FirstRunHelperImpl::CloseTrayBubble() {
+  SystemTray* tray = Shell::GetInstance()->GetPrimarySystemTray();
+  DCHECK(tray->HasSystemBubble()) << "Tray bubble is closed already.";
+  tray->CloseSystemBubble();
+}
+
+bool FirstRunHelperImpl::IsTrayBubbleOpened() {
+  SystemTray* tray = Shell::GetInstance()->GetPrimarySystemTray();
+  return tray->HasSystemBubble();
+}
+
+gfx::Rect FirstRunHelperImpl::GetTrayBubbleBounds() {
+  SystemTray* tray = Shell::GetInstance()->GetPrimarySystemTray();
+  views::View* bubble = tray->GetSystemBubble()->bubble_view();
+  return bubble->GetBoundsInScreen();
+}
+
+gfx::Rect FirstRunHelperImpl::GetHelpButtonBounds() {
+  SystemTray* tray = Shell::GetInstance()->GetPrimarySystemTray();
+  views::View* help_button = tray->GetHelpButtonView();
+  return help_button->GetBoundsInScreen();
 }
 
 }  // namespace ash

@@ -16,6 +16,7 @@ namespace {
 // These are the list of container ids of containers which may contain windows
 // that need to be activated in the order that they should be activated.
 const int kWindowContainerIds[] = {
+    internal::kShellWindowId_OverlayContainer,
     internal::kShellWindowId_LockSystemModalContainer,
     internal::kShellWindowId_SettingBubbleContainer,
     internal::kShellWindowId_LockScreenContainer,

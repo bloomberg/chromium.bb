@@ -14,10 +14,12 @@ body {
   background-color: rgba(0, 0, 0, 0);
   cursor: default;
   height: 100%;
+  overflow: hidden;
+  position: fixed;
   width: 100%;
 }
 
-#background {
+#background-container {
   height: 100%;
   left: 0;
   position: absolute;
@@ -26,6 +28,22 @@ body {
   z-index: -1;
 }
 
-#background .fill {
-  fill: rgba(0, 0, 0, 0.7);
+#background {
+  height: 100%;
+  position: absolute;
+  width: 100%;
 }
+
+#background .fill {
+  fill: rgba(0, 0, 0, 0.5);
+}
+
+#steps {
+  align-items: center;
+  display: flex;
+  flex-flow: row;
+  height: 100%;
+  justify-content: center;
+  width: 100%;
+}
+

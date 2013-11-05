@@ -21,10 +21,17 @@ class FirstRunHandler : public FirstRunActor,
   FirstRunHandler();
   // Overriden from FirstRunActor.
   virtual bool IsInitialized() OVERRIDE;
-  virtual void AddBackgroundHole(int x, int y, int width, int height) OVERRIDE;
+  virtual void SetBackgroundVisible(bool visible) OVERRIDE;
+  virtual void AddRectangularHole(int x, int y, int width, int height) OVERRIDE;
+  virtual void AddRoundHole(int x, int y, float radius) OVERRIDE;
   virtual void RemoveBackgroundHoles() OVERRIDE;
-  virtual void ShowStep(const std::string& name,
-                        const StepPosition& position) OVERRIDE;
+  virtual void ShowStepPositioned(const std::string& name,
+                                  const StepPosition& position) OVERRIDE;
+  virtual void ShowStepPointingTo(const std::string& name,
+                                  int x,
+                                  int y,
+                                  int offset) OVERRIDE;
+
  private:
   // Overriden from content::WebUIMessageHandler.
   virtual void RegisterMessages() OVERRIDE;

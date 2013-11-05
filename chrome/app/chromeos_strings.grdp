@@ -3847,4 +3847,56 @@ Battery full
     Disable HD on <ph name="DOMAIN">$1<ex>example.com</ex></ph>
   </message>
 
+  <!-- First-run tutorial -->
+  <message name="IDS_FIRST_RUN_GREETING_STEP_HEADER" desc="Greeting message shown as header of the first dialog of first-run tutorial.">
+    Howdy, <ph name="USER_GIVEN_NAME">$1<ex>John</ex></ph>.
+  </message>
+  <message name="IDS_FIRST_RUN_GREETING_STEP_HEADER_GENERAL" desc="Greeting message shown as header of the first dialog of first-run tutorial in case when we don't know user's given name.">
+    Howdy.
+  </message>
+  <message name="IDS_FIRST_RUN_GREETING_STEP_TEXT_1" desc="First part of message shown on the first dialog of firsr-run tutorial.">
+    Welcome to the Chromebook family. This is no ordinary computer.
+  </message>
+  <message name="IDS_FIRST_RUN_GREETING_STEP_TEXT_2" desc="Second part of message shown on the first dialog of firsr-run tutorial.">
+    This Chromebook was designed to deliver the best experience of the web to you.
+  </message>
+  <message name="IDS_FIRST_RUN_GREETING_STEP_BUTTON" desc="Text on the button located on the first dialog of first-run tutorial.">
+    Take a tour
+  </message>
+  <message name="IDS_FIRST_RUN_APP_LIST_STEP_HEADER" desc="Header of the first-run bubble bubble pointing to application list button.">
+    Play, edit, share, get stuff done.
+  </message>
+  <message name="IDS_FIRST_RUN_APP_LIST_STEP_TEXT_1" desc="First part of message on the first-run tutorial bubble pointing to application list button.">
+    Access all your apps from this handy launcher. Play games, video chat, listen to music, edit documents, or get more apps from the Chrome Web Store.
+  </message>
+  <message name="IDS_FIRST_RUN_APP_LIST_STEP_TEXT_2" desc="Second part of message on the first-run tutorial bubble pointing to application list button. Part of the phrase &quot;Access all your apps from this handy launcher. Play games, video chat, listen to music, edit documents, or get more apps from the Chrome Web Store. It's all here.&quot;">
+    It's all here.
+  </message>
+  <message name="IDS_FIRST_RUN_TRAY_STEP_HEADER" desc="Header of the first-run tutorial bubble pointing to system tray bubble.">
+    Hassle-free goodness.
+  </message>
+  <message name="IDS_FIRST_RUN_TRAY_STEP_TEXT" desc="Text on the first-run tutorial bubble pointing to system tray bubble.">
+    The status tray shows you the current state of your network, battery and other things.
+  </message>
+  <message name="IDS_FIRST_RUN_HELP_STEP_HEADER" desc="Header of the first-run tutorial bubble pointing to help button in system tray.">
+    Have fun! We're here for you.
+  </message>
+  <message name="IDS_FIRST_RUN_HELP_STEP_TEXT_1" desc="First part of text shown on the first-run tutorial bubble pointing to help button in system tray.">
+    Enjoy your Chromebook. Question? You can always get help by clicking the "?" in the Status tray.
+  </message>
+  <message name="IDS_FIRST_RUN_HELP_STEP_TEXT_2" desc="Second part of text shown on the first-run tutorial bubble pointing to help button in system tray. Part of the phrase &quot;Want to discover more awesome features? It's just one click away.&quot;">
+    Want to discover more awsome features?
+  </message>
+  <message name="IDS_FIRST_RUN_HELP_STEP_TEXT_3" desc="Third part of text shown on the first-run tutorial bubble pointing to help button in system tray. Part of the phrase &quot;Want to discover more awesome features? It's just one click away.&quot;">
+    It's just one click away.
+  </message>
+  <message name="IDS_FIRST_RUN_HELP_STEP_KEEP_EXPLORING_BUTTON" desc="Text on the button located in the first-run tutorial bubble pointing to help button is system tray. After click on the button tutorial finishes and help app opens.">
+    Keep exploring
+  </message>
+  <message name="IDS_FIRST_RUN_HELP_STEP_FINISH_BUTTON" desc="Text on the button located in the first-run tutorial bubble pointing to help button is system tray. After click on the button tutorial finishes.">
+    Finish
+  </message>
+  <message name="IDS_FIRST_RUN_NEXT_BUTTON" desc="Text on the first-run tutorial button leading to next step of tutorial.">
+    Next
+  </message>
 </grit-part>
