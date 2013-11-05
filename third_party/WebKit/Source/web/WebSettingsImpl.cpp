@@ -57,6 +57,7 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings)
     , m_doubleTapToZoomEnabled(false)
     , m_supportDeprecatedTargetDensityDPI(false)
     , m_viewportMetaLayoutSizeQuirk(false)
+    , m_clobberUserAgentInitialScaleQuirk(false)
     , m_pinchOverlayScrollbarThickness(0)
 {
     ASSERT(settings);
@@ -210,6 +211,11 @@ void WebSettingsImpl::setIgnoreMainFrameOverflowHiddenQuirk(bool ignoreMainFrame
 void WebSettingsImpl::setReportScreenSizeInPhysicalPixelsQuirk(bool reportScreenSizeInPhysicalPixelsQuirk)
 {
     m_settings->setReportScreenSizeInPhysicalPixelsQuirk(reportScreenSizeInPhysicalPixelsQuirk);
+}
+
+void WebSettingsImpl::setClobberUserAgentInitialScaleQuirk(bool clobberUserAgentInitialScaleQuirk)
+{
+    m_clobberUserAgentInitialScaleQuirk = clobberUserAgentInitialScaleQuirk;
 }
 
 void WebSettingsImpl::setSupportsMultipleWindows(bool supportsMultipleWindows)

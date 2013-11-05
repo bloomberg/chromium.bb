@@ -140,7 +140,7 @@ void PageScaleConstraintsSet::adjustForAndroidWebViewQuirks(const ViewportDescri
         if (description.zoom == -1) {
             if (description.maxWidth.isAuto())
                 resetInitialScale = true;
-            if (useWideViewport || !description.maxWidth.isFixed())
+            if (useWideViewport || description.maxWidth == Length(100, ViewportPercentageWidth))
                 resetInitialScale = true;
         }
         if (resetInitialScale)
@@ -156,7 +156,7 @@ void PageScaleConstraintsSet::adjustForAndroidWebViewQuirks(const ViewportDescri
             m_pageDefinedConstraints.initialScale *= targetDensityDPIFactor;
         m_pageDefinedConstraints.minimumScale *= targetDensityDPIFactor;
         m_pageDefinedConstraints.maximumScale *= targetDensityDPIFactor;
-        if (wideViewportQuirkEnabled && (!useWideViewport || !description.maxWidth.isFixed()))
+        if (wideViewportQuirkEnabled && (!useWideViewport || description.maxWidth == Length(100, ViewportPercentageWidth)))
             adjustedLayoutSizeWidth /= targetDensityDPIFactor;
     }
 

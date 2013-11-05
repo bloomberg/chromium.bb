@@ -75,6 +75,7 @@ public:
     virtual void setAuthorAndUserStylesEnabled(bool);
     virtual void setAutoZoomFocusedNodeToLegibleScale(bool);
     virtual void setCaretBrowsingEnabled(bool);
+    virtual void setClobberUserAgentInitialScaleQuirk(bool);
     virtual void setCompositedScrollingForFramesEnabled(bool);
     virtual void setCompositorTouchHitTesting(bool);
     virtual void setCookieEnabled(bool);
@@ -192,6 +193,7 @@ public:
     bool perTilePaintingEnabled() const { return m_perTilePaintingEnabled; }
     bool supportDeprecatedTargetDensityDPI() const { return m_supportDeprecatedTargetDensityDPI; }
     bool viewportMetaLayoutSizeQuirk() const { return m_viewportMetaLayoutSizeQuirk; }
+    bool clobberUserAgentInitialScaleQuirk() const { return m_clobberUserAgentInitialScaleQuirk; }
     int pinchOverlayScrollbarThickness() const { return m_pinchOverlayScrollbarThickness; }
 
 private:
@@ -209,6 +211,10 @@ private:
     // the Android SDK prior to and including version 18. Presumably, this
     // can be removed any time after 2015. See http://crbug.com/277369.
     bool m_viewportMetaLayoutSizeQuirk;
+    // This quirk is to maintain compatibility with Android apps built on
+    // the Android SDK prior to and including version 18. Presumably, this
+    // can be removed any time after 2015. See http://crbug.com/313754.
+    bool m_clobberUserAgentInitialScaleQuirk;
     int m_pinchOverlayScrollbarThickness;
 };
 
