@@ -3339,8 +3339,8 @@ static ALWAYS_INLINE void* do_malloc(size_t size) {
         // size-appropriate freelist, afer replenishing it if it's empty.
         ret = CheckedMallocResult(heap->Allocate(size));
     }
-    if (!ret)
-        CRASH();
+    // This is the out-of-memory crash line.
+    RELEASE_ASSERT(ret);
     return ret;
 }
 
