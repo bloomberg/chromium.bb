@@ -19,12 +19,12 @@
  */
 
 interface HTMLAreaElement : HTMLElement {
-    [Reflect, TreatNullAs=NullString] attribute DOMString alt;
-    [Reflect, TreatNullAs=NullString] attribute DOMString coords;
+    [Reflect] attribute DOMString alt;
+    [Reflect] attribute DOMString coords;
     [Reflect] attribute boolean noHref;
-    [Reflect, TreatNullAs=NullString] attribute DOMString ping;
-    [Reflect, TreatNullAs=NullString] attribute DOMString shape;
-    [Reflect, TreatNullAs=NullString] attribute DOMString target;
+    [Reflect] attribute DOMString ping;
+    [Reflect] attribute DOMString shape;
+    [Reflect] attribute DOMString target;
 };
 
 // Force rebuild: crbug.com/307023

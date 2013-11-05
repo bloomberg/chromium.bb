@@ -40,11 +40,12 @@ TEST SUCCEEDED: The value was the empty string. [tested HTMLAppletElement.vspace
 TEST SUCCEEDED: The value was the empty string. [tested HTMLAppletElement.width]
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLAreaElement.accessKey]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLAreaElement.alt]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLAreaElement.coords]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLAreaElement.alt]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLAreaElement.coords]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLAreaElement.href]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLAreaElement.shape]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLAreaElement.target]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLAreaElement.ping]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLAreaElement.shape]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLAreaElement.target]
 
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLAudioElement.mediaGroup]
 TEST SUCCEEDED: The value was the string 'auto'. [tested HTMLAudioElement.preload]

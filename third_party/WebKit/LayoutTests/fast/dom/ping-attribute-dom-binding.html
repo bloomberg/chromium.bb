@@ -25,8 +25,8 @@ shouldBeEqualToString('area.ping', 'p1');
 area.ping = 'p2';
 shouldBeEqualToString('area.getAttribute("ping")', 'p2');
 area.ping = null;
-shouldBeFalse('area.hasAttribute("ping")');
-shouldBeEqualToString('area.ping', '');
+shouldBeEqualToString('area.getAttribute("ping")', 'null');
+shouldBeEqualToString('area.ping', 'null');
 
 </script>
 </body>
