@@ -202,7 +202,7 @@
 #include "ipc/ipc_message_utils_impl.h"
 #endif
 
-// Convenience macro for defining structs without inheritence. Should not need
+// Convenience macro for defining structs without inheritance. Should not need
 // to be subsequently redefined.
 #define IPC_STRUCT_BEGIN(struct_name) \
   IPC_STRUCT_BEGIN_WITH_PARENT(struct_name, IPC::NoParams)

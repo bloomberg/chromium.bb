@@ -56,7 +56,7 @@ class NonThreadSafeDoNothing {
 // }
 //
 // Note that base::ThreadChecker offers identical functionality to
-// NonThreadSafe, but does not require inheritence. In general, it is preferable
+// NonThreadSafe, but does not require inheritance. In general, it is preferable
 // to have a base::ThreadChecker as a member, rather than inherit from
 // NonThreadSafe. For more details about when to choose one over the other, see
 // the documentation for base::ThreadChecker.
