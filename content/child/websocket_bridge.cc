@@ -31,10 +31,25 @@ using WebKit::WebVector;
 
 namespace content {
 
+namespace {
+
+const unsigned short kAbnormalShutdownOpCode = 1006;
+
+}  // namespace
+
 WebSocketBridge::WebSocketBridge()
     : channel_id_(kInvalidChannelId), client_(NULL) {}
 
 WebSocketBridge::~WebSocketBridge() {
+  if (channel_id_ != kInvalidChannelId) {
+    // The connection is abruptly disconnected by the renderer without
+    // closing handshake.
+    ChildThread::current()->Send(
+        new WebSocketMsg_DropChannel(channel_id_,
+                                     false,
+                                     kAbnormalShutdownOpCode,
+                                     std::string()));
+  }
   Disconnect();
 }
 
@@ -42,6 +57,7 @@ bool WebSocketBridge::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebSocketBridge, msg)
     IPC_MESSAGE_HANDLER(WebSocketMsg_AddChannelResponse, DidConnect)
+    IPC_MESSAGE_HANDLER(WebSocketMsg_NotifyFailure, DidFail)
     IPC_MESSAGE_HANDLER(WebSocketMsg_SendFrame, DidReceiveData)
     IPC_MESSAGE_HANDLER(WebSocketMsg_FlowControl, DidReceiveFlowControl)
     IPC_MESSAGE_HANDLER(WebSocketMsg_DropChannel, DidClose)
@@ -66,6 +82,18 @@ void WebSocketBridge::DidConnect(bool fail,
   WebString protocol_to_pass = WebString::fromUTF8(selected_protocol);
   WebString extensions_to_pass = WebString::fromUTF8(extensions);
   client->didConnect(this, fail, protocol_to_pass, extensions_to_pass);
+  // |this| can be deleted here.
+}
+
+void WebSocketBridge::DidFail(const std::string& message) {
+  DVLOG(1) << "WebSocketBridge::DidFail(" << message << ")";
+  WebSocketHandleClient* client = client_;
+  Disconnect();
+  if (!client)
+    return;
+
+  WebString message_to_pass = WebString::fromUTF8(message);
+  client->didFail(this, message_to_pass);
   // |this| can be deleted here.
 }
 
@@ -106,9 +134,11 @@ void WebSocketBridge::DidReceiveFlowControl(int64_t quota) {
   // |this| can be deleted here.
 }
 
-void WebSocketBridge::DidClose(unsigned short code,
+void WebSocketBridge::DidClose(bool was_clean,
+                               unsigned short code,
                                const std::string& reason) {
   DVLOG(1) << "WebSocketBridge::DidClose("
+           << was_clean << ", "
            << code << ", "
            << reason << ")";
   WebSocketHandleClient* client = client_;
@@ -117,7 +147,7 @@ void WebSocketBridge::DidClose(unsigned short code,
     return;
 
   WebString reason_to_pass = WebString::fromUTF8(reason);
-  client->didClose(this, code, reason_to_pass);
+  client->didClose(this, was_clean, code, reason_to_pass);
   // |this| can be deleted here.
 }
 
@@ -197,8 +227,9 @@ void WebSocketBridge::close(unsigned short code,
   std::string reason_to_pass = reason.utf8();
   DVLOG(1) << "Bridge #" << channel_id_ << " Close("
            << code << ", " << reason_to_pass << ")";
+  // This method is for closing handshake and hence |was_clean| shall be true.
   ChildThread::current()->Send(
-      new WebSocketMsg_DropChannel(channel_id_, code, reason_to_pass));
+      new WebSocketMsg_DropChannel(channel_id_, true, code, reason_to_pass));
 }
 
 void WebSocketBridge::Disconnect() {

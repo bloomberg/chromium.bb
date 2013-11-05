@@ -55,7 +55,7 @@ class CONTENT_EXPORT WebSocketHost {
 
   void OnFlowControl(int64 quota);
 
-  void OnDropChannel(uint16 code, const std::string& reason);
+  void OnDropChannel(bool was_clean, uint16 code, const std::string& reason);
 
   // The channel we use to send events to the network.
   scoped_ptr<net::WebSocketChannel> channel_;

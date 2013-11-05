@@ -47,11 +47,12 @@ class WebSocketBridge : public WebKit::WebSocketHandle {
   void DidConnect(bool fail,
                   const std::string& selected_protocol,
                   const std::string& extensions);
+  void DidFail(const std::string& message);
   void DidReceiveData(bool fin,
                       WebSocketMessageType type,
                       const std::vector<char>& data);
   void DidReceiveFlowControl(int64_t quota);
-  void DidClose(unsigned short code, const std::string& reason);
+  void DidClose(bool was_clean, unsigned short code, const std::string& reason);
 
   int channel_id_;
   WebKit::WebSocketHandleClient* client_;

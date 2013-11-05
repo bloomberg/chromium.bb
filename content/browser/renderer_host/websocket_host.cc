@@ -193,11 +193,14 @@ void WebSocketHost::OnFlowControl(int64 quota) {
   channel_->SendFlowControl(quota);
 }
 
-void WebSocketHost::OnDropChannel(uint16 code, const std::string& reason) {
+void WebSocketHost::OnDropChannel(bool was_clean,
+                                  uint16 code,
+                                  const std::string& reason) {
   DVLOG(3) << "WebSocketDispatcherHost::OnDropChannel"
-           << " routing_id= " << routing_id_ << " code= " << code
-           << " reason= " << reason;
+           << " routing_id= " << routing_id_ << " was_clean = " << was_clean
+           << " code= " << code << " reason= " << reason;
 
+  // TODO(yhirano): Handle |was_clean| appropriately.
   channel_->StartClosingHandshake(code, reason);
 }
 

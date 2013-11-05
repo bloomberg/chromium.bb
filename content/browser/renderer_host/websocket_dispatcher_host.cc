@@ -130,7 +130,9 @@ WebSocketHostState WebSocketDispatcherHost::DoDropChannel(
     int routing_id,
     uint16 code,
     const std::string& reason) {
-  if (SendOrDrop(new WebSocketMsg_DropChannel(routing_id, code, reason)) ==
+  bool was_clean = true;
+  if (SendOrDrop(
+          new WebSocketMsg_DropChannel(routing_id, was_clean, code, reason)) ==
       WEBSOCKET_HOST_DELETED)
     return WEBSOCKET_HOST_DELETED;
   DeleteWebSocketHost(routing_id);

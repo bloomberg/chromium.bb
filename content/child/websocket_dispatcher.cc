@@ -37,6 +37,7 @@ void WebSocketDispatcher::RemoveBridge(int channel_id) {
 bool WebSocketDispatcher::OnMessageReceived(const IPC::Message& msg) {
   switch (msg.type()) {
     case WebSocketMsg_AddChannelResponse::ID:
+    case WebSocketMsg_NotifyFailure::ID:
     case WebSocketMsg_SendFrame::ID:
     case WebSocketMsg_FlowControl::ID:
     case WebSocketMsg_DropChannel::ID:
