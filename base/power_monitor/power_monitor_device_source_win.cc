@@ -17,6 +17,37 @@ namespace {
 
 const wchar_t kWindowClassName[] = L"Base_PowerMessageWindow";
 
+void ProcessWmPowerBroadcastMessage(WPARAM event_id) {
+  PowerMonitorSource::PowerEvent power_event;
+  switch (event_id) {
+    case PBT_APMPOWERSTATUSCHANGE:  // The power status changed.
+      power_event = PowerMonitorSource::POWER_STATE_EVENT;
+      break;
+    case PBT_APMRESUMEAUTOMATIC:  // Resume from suspend.
+      //case PBT_APMRESUMESUSPEND:  // User-initiated resume from suspend.
+      // We don't notify for this latter event
+      // because if it occurs it is always sent as a
+      // second event after PBT_APMRESUMEAUTOMATIC.
+      power_event = PowerMonitorSource::RESUME_EVENT;
+      break;
+    case PBT_APMSUSPEND:  // System has been suspended.
+      power_event = PowerMonitorSource::SUSPEND_EVENT;
+      break;
+    default:
+      return;
+
+      // Other Power Events:
+      // PBT_APMBATTERYLOW - removed in Vista.
+      // PBT_APMOEMEVENT - removed in Vista.
+      // PBT_APMQUERYSUSPEND - removed in Vista.
+      // PBT_APMQUERYSUSPENDFAILED - removed in Vista.
+      // PBT_APMRESUMECRITICAL - removed in Vista.
+      // PBT_POWERSETTINGCHANGE - user changed the power settings.
+  }
+
+  ProcessPowerEventHelper(power_event);
+}
+
 }  // namespace
 
 // Function to query the system to see if it is currently running on
@@ -52,8 +83,6 @@ PowerMonitorDeviceSource::PowerMessageWindow::PowerMessageWindow()
 
   message_hwnd_ = CreateWindowEx(WS_EX_NOACTIVATE, kWindowClassName,
       NULL, WS_POPUP, 0, 0, 0, 0, NULL, NULL, instance_, NULL);
-  SetWindowLongPtr(message_hwnd_, GWLP_USERDATA,
-                   reinterpret_cast<LONG_PTR>(this));
 }
 
 PowerMonitorDeviceSource::PowerMessageWindow::~PowerMessageWindow() {
@@ -63,68 +92,19 @@ PowerMonitorDeviceSource::PowerMessageWindow::~PowerMessageWindow() {
   }
 }
 
-void
-PowerMonitorDeviceSource::PowerMessageWindow::ProcessWmPowerBroadcastMessage(
-    int event_id) {
-  PowerMonitorSource::PowerEvent power_event;
-  switch (event_id) {
-    case PBT_APMPOWERSTATUSCHANGE:  // The power status changed.
-      power_event = PowerMonitorSource::POWER_STATE_EVENT;
-      break;
-    case PBT_APMRESUMEAUTOMATIC:  // Resume from suspend.
-    //case PBT_APMRESUMESUSPEND:  // User-initiated resume from suspend.
-                                  // We don't notify for this latter event
-                                  // because if it occurs it is always sent as a
-                                  // second event after PBT_APMRESUMEAUTOMATIC.
-      power_event = PowerMonitorSource::RESUME_EVENT;
-      break;
-    case PBT_APMSUSPEND:  // System has been suspended.
-      power_event = PowerMonitorSource::SUSPEND_EVENT;
-      break;
-    default:
-      return;
-
-    // Other Power Events:
-    // PBT_APMBATTERYLOW - removed in Vista.
-    // PBT_APMOEMEVENT - removed in Vista.
-    // PBT_APMQUERYSUSPEND - removed in Vista.
-    // PBT_APMQUERYSUSPENDFAILED - removed in Vista.
-    // PBT_APMRESUMECRITICAL - removed in Vista.
-    // PBT_POWERSETTINGCHANGE - user changed the power settings.
-  }
-
-  ProcessPowerEventHelper(power_event);
-}
-
-LRESULT CALLBACK PowerMonitorDeviceSource::PowerMessageWindow::WndProc(
-    HWND hwnd,
-    UINT message,
-    WPARAM wparam,
-    LPARAM lparam) {
-  switch (message) {
-    case WM_POWERBROADCAST: {
-      DWORD power_event = static_cast<DWORD>(message);
-      ProcessWmPowerBroadcastMessage(power_event);
-      return TRUE;
-    }
-    default:
-      break;
-  }
-  return ::DefWindowProc(hwnd, message, wparam, lparam);
-}
-
 // static
 LRESULT CALLBACK PowerMonitorDeviceSource::PowerMessageWindow::WndProcThunk(
     HWND hwnd,
     UINT message,
     WPARAM wparam,
     LPARAM lparam) {
-  PowerMonitorDeviceSource::PowerMessageWindow* message_hwnd =
-      reinterpret_cast<PowerMonitorDeviceSource::PowerMessageWindow*>(
-          GetWindowLongPtr(hwnd, GWLP_USERDATA));
-  if (message_hwnd)
-    return message_hwnd->WndProc(hwnd, message, wparam, lparam);
-  return ::DefWindowProc(hwnd, message, wparam, lparam);
+  switch (message) {
+    case WM_POWERBROADCAST:
+      ProcessWmPowerBroadcastMessage(wparam);
+      return TRUE;
+    default:
+      return ::DefWindowProc(hwnd, message, wparam, lparam);
+  }
 }
 
 }  // namespace base

@@ -61,9 +61,6 @@ class BASE_EXPORT PowerMonitorDeviceSource : public PowerMonitorSource {
     ~PowerMessageWindow();
 
    private:
-    void ProcessWmPowerBroadcastMessage(int event_id);
-    LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
-                             WPARAM wparam, LPARAM lparam);
     static LRESULT CALLBACK WndProcThunk(HWND hwnd,
                                          UINT message,
                                          WPARAM wparam,
