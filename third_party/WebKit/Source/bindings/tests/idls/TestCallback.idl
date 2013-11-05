@@ -29,12 +29,12 @@
 // This IDL file is for testing the bindings code generator with a callback
 // interface for tracking changes in its ouput.
 callback interface TestCallback {
-  boolean callbackWithNoParam();
-  boolean callbackWithTestObjectParam(TestObject class1Param);
-  boolean callbackWithTestObjectParam(TestObject class2Param, DOMString strArg);
-  [Custom] long customCallback(TestObject testObjParam, TestObject testObjParam);
-  boolean callbackWithBoolean(boolean boolParam);
-  boolean callbackWithSequence(sequence<TestObject> sequenceParam);
-  boolean callbackWithFloat(float floatParam);
-  [CallWith=ThisValue] boolean callbackWithThisArg(long param);
+  boolean callbackWithNoArg();
+  boolean callbackWithTestInterfaceEmptyArg(TestInterfaceEmpty class1Arg);
+  boolean callbackWithTestInterfaceEmptyArg(TestInterfaceEmpty class2Arg, DOMString strArg);
+  [Custom] boolean customCallback(TestInterfaceEmpty testInterfaceEmptyArg, TestInterfaceEmpty testInterfaceEmptyArg);
+  boolean callbackWithBooleanArg(boolean boolArg);
+  boolean callbackWithSequenceArg(sequence<TestInterfaceEmpty> sequenceArg);
+  boolean callbackWithFloatArg(float floatArg);
+  [CallWith=ThisValue] boolean callbackWithThisArg(long arg);
 };

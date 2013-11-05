@@ -33,7 +33,7 @@
 #include "config.h"
 #include "V8TestCallback.h"
 
-#include "V8TestObject.h"
+#include "V8TestInterfaceEmpty.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Callback.h"
 #include "core/dom/ExecutionContext.h"
@@ -53,9 +53,7 @@ V8TestCallback::~V8TestCallback()
 {
 }
 
-// Functions
-
-bool V8TestCallback::callbackWithNoParam()
+bool V8TestCallback::callbackWithNoArg()
 {
     if (!canInvokeCallback())
         return true;
@@ -68,15 +66,13 @@ bool V8TestCallback::callbackWithNoParam()
         return true;
 
     v8::Context::Scope scope(v8Context);
-
-
     v8::Handle<v8::Value> *argv = 0;
 
     bool callbackReturnValue = false;
     return !invokeCallback(m_callback.newLocal(isolate), 0, argv, callbackReturnValue, executionContext(), isolate);
 }
 
-bool V8TestCallback::callbackWithTestObjectParam(TestObj* class1Param)
+bool V8TestCallback::callbackWithTestInterfaceEmptyArg(TestInterfaceEmpty* class1Arg)
 {
     if (!canInvokeCallback())
         return true;
@@ -89,23 +85,19 @@ bool V8TestCallback::callbackWithTestObjectParam(TestObj* class1Param)
         return true;
 
     v8::Context::Scope scope(v8Context);
-
-    v8::Handle<v8::Value> class1ParamHandle = toV8(class1Param, v8::Handle<v8::Object>(), isolate);
-    if (class1ParamHandle.IsEmpty()) {
+    v8::Handle<v8::Value> class1ArgHandle = toV8(class1Arg, v8::Handle<v8::Object>(), isolate);
+    if (class1ArgHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();
         return true;
     }
-
-    v8::Handle<v8::Value> argv[] = {
-        class1ParamHandle
-    };
+    v8::Handle<v8::Value> argv[] = { class1ArgHandle };
 
     bool callbackReturnValue = false;
     return !invokeCallback(m_callback.newLocal(isolate), 1, argv, callbackReturnValue, executionContext(), isolate);
 }
 
-bool V8TestCallback::callbackWithTestObjectParam(TestObj* class2Param, const String& strArg)
+bool V8TestCallback::callbackWithTestInterfaceEmptyArg(TestInterfaceEmpty* class2Arg, const String& strArg)
 {
     if (!canInvokeCallback())
         return true;
@@ -118,9 +110,8 @@ bool V8TestCallback::callbackWithTestObjectParam(TestObj* class2Param, const Str
         return true;
 
     v8::Context::Scope scope(v8Context);
-
-    v8::Handle<v8::Value> class2ParamHandle = toV8(class2Param, v8::Handle<v8::Object>(), isolate);
-    if (class2ParamHandle.IsEmpty()) {
+    v8::Handle<v8::Value> class2ArgHandle = toV8(class2Arg, v8::Handle<v8::Object>(), isolate);
+    if (class2ArgHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();
         return true;
@@ -131,17 +122,13 @@ bool V8TestCallback::callbackWithTestObjectParam(TestObj* class2Param, const Str
             CRASH();
         return true;
     }
-
-    v8::Handle<v8::Value> argv[] = {
-        class2ParamHandle,
-        strArgHandle
-    };
+    v8::Handle<v8::Value> argv[] = { class2ArgHandle, strArgHandle };
 
     bool callbackReturnValue = false;
     return !invokeCallback(m_callback.newLocal(isolate), 2, argv, callbackReturnValue, executionContext(), isolate);
 }
 
-bool V8TestCallback::callbackWithBoolean(bool boolParam)
+bool V8TestCallback::callbackWithBooleanArg(bool boolArg)
 {
     if (!canInvokeCallback())
         return true;
@@ -154,23 +141,19 @@ bool V8TestCallback::callbackWithBoolean(bool boolParam)
         return true;
 
     v8::Context::Scope scope(v8Context);
-
-    v8::Handle<v8::Value> boolParamHandle = v8Boolean(boolParam, isolate);
-    if (boolParamHandle.IsEmpty()) {
+    v8::Handle<v8::Value> boolArgHandle = v8Boolean(boolArg, isolate);
+    if (boolArgHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();
         return true;
     }
-
-    v8::Handle<v8::Value> argv[] = {
-        boolParamHandle
-    };
+    v8::Handle<v8::Value> argv[] = { boolArgHandle };
 
     bool callbackReturnValue = false;
     return !invokeCallback(m_callback.newLocal(isolate), 1, argv, callbackReturnValue, executionContext(), isolate);
 }
 
-bool V8TestCallback::callbackWithSequence(const Vector<RefPtr<TestObj> >& sequenceParam)
+bool V8TestCallback::callbackWithSequenceArg(const Vector<RefPtr<TestInterfaceEmpty> >& sequenceArg)
 {
     if (!canInvokeCallback())
         return true;
@@ -183,23 +166,19 @@ bool V8TestCallback::callbackWithSequence(const Vector<RefPtr<TestObj> >& sequen
         return true;
 
     v8::Context::Scope scope(v8Context);
-
-    v8::Handle<v8::Value> sequenceParamHandle = v8Array(sequenceParam, isolate);
-    if (sequenceParamHandle.IsEmpty()) {
+    v8::Handle<v8::Value> sequenceArgHandle = v8Array(sequenceArg, isolate);
+    if (sequenceArgHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();
         return true;
     }
-
-    v8::Handle<v8::Value> argv[] = {
-        sequenceParamHandle
-    };
+    v8::Handle<v8::Value> argv[] = { sequenceArgHandle };
 
     bool callbackReturnValue = false;
     return !invokeCallback(m_callback.newLocal(isolate), 1, argv, callbackReturnValue, executionContext(), isolate);
 }
 
-bool V8TestCallback::callbackWithFloat(float floatParam)
+bool V8TestCallback::callbackWithFloatArg(float floatArg)
 {
     if (!canInvokeCallback())
         return true;
@@ -212,23 +191,19 @@ bool V8TestCallback::callbackWithFloat(float floatParam)
         return true;
 
     v8::Context::Scope scope(v8Context);
-
-    v8::Handle<v8::Value> floatParamHandle = v8::Number::New(isolate, floatParam);
-    if (floatParamHandle.IsEmpty()) {
+    v8::Handle<v8::Value> floatArgHandle = v8::Number::New(isolate, floatArg);
+    if (floatArgHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();
         return true;
     }
-
-    v8::Handle<v8::Value> argv[] = {
-        floatParamHandle
-    };
+    v8::Handle<v8::Value> argv[] = { floatArgHandle };
 
     bool callbackReturnValue = false;
     return !invokeCallback(m_callback.newLocal(isolate), 1, argv, callbackReturnValue, executionContext(), isolate);
 }
 
-bool V8TestCallback::callbackWithThisArg(ScriptValue thisValue, int param)
+bool V8TestCallback::callbackWithThisArg(ScriptValue thisValue, int arg)
 {
     if (!canInvokeCallback())
         return true;
@@ -241,7 +216,6 @@ bool V8TestCallback::callbackWithThisArg(ScriptValue thisValue, int param)
         return true;
 
     v8::Context::Scope scope(v8Context);
-
     v8::Handle<v8::Value> thisHandle = thisValue.v8Value();
     if (thisHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
@@ -249,16 +223,13 @@ bool V8TestCallback::callbackWithThisArg(ScriptValue thisValue, int param)
         return true;
     }
     ASSERT(thisHandle->IsObject());
-    v8::Handle<v8::Value> paramHandle = v8::Integer::New(param, isolate);
-    if (paramHandle.IsEmpty()) {
+    v8::Handle<v8::Value> argHandle = v8::Integer::New(arg, isolate);
+    if (argHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();
         return true;
     }
-
-    v8::Handle<v8::Value> argv[] = {
-        paramHandle
-    };
+    v8::Handle<v8::Value> argv[] = { argHandle };
 
     bool callbackReturnValue = false;
     return !invokeCallback(m_callback.newLocal(isolate), v8::Handle<v8::Object>::Cast(thisHandle), 1, argv, callbackReturnValue, executionContext(), isolate);

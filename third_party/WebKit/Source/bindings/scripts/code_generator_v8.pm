@@ -380,7 +380,7 @@ sub GenerateInterface
     my $nameSpaceWebCoreBegin = "namespace WebCore {\n";
     my $nameSpaceWebCoreEnd = "} // namespace WebCore";
     $nameSpaceWebCoreBegin = "$nameSpaceWebCoreBegin\n" if !$interface->isCallback;
-    $nameSpaceWebCoreEnd = "\n$nameSpaceWebCoreEnd\n" if $interface->isCallback;
+    $nameSpaceWebCoreEnd = "$nameSpaceWebCoreEnd\n" if $interface->isCallback;
     $implementation{nameSpaceWebCore} = new Block("Namespace WebCore", $nameSpaceWebCoreBegin, $nameSpaceWebCoreEnd);
     $implementation{nameSpaceInternal} = new Block("Internal namespace", "namespace $internalNamespace {\n", "} // namespace $internalNamespace\n");
 
@@ -4730,8 +4730,6 @@ sub GenerateCallbackHeader
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
 
-    $header{root}->addFooter("\n");
-
     my @includes = ();
     push(@includes, "bindings/v8/ActiveDOMCallback.h");
     push(@includes, "bindings/v8/DOMWrapperWorld.h");
@@ -4740,7 +4738,7 @@ sub GenerateCallbackHeader
     for my $include (sort @includes) {
         $header{includes}->add("#include \"$include\"\n");
     }
-    $header{nameSpaceWebCore}->addHeader("\nclass ExecutionContext;\n\n");
+    $header{nameSpaceWebCore}->addHeader("\nclass ExecutionContext;\n");
     $header{class}->addHeader("class $v8ClassName : public $implClassName, public ActiveDOMCallback {");
     $header{class}->addFooter("};\n");
 
@@ -4759,7 +4757,6 @@ END
     # Functions
     my $numFunctions = @{$interface->functions};
     if ($numFunctions > 0) {
-        $header{classPublic}->add("    // Functions\n");
         foreach my $function (@{$interface->functions}) {
             my $code = "    virtual " . GetNativeTypeForCallbacks($function->type) . " " . $function->name . "(";
 
@@ -4821,7 +4818,6 @@ END
     # Functions
     my $numFunctions = @{$interface->functions};
     if ($numFunctions > 0) {
-        $implementation{nameSpaceWebCore}->add("// Functions\n");
         foreach my $function (@{$interface->functions}) {
             my $code = "";
             my @params = @{$function->parameters};
@@ -4829,7 +4825,7 @@ END
 
             AddIncludesForType($function->type);
             die "We don't yet support callbacks that return non-boolean values.\n" if $function->type ne "boolean";
-            $code .= "\n" . GetNativeTypeForCallbacks($function->type) . " ${v8ClassName}::" . $function->name . "(";
+            $code .= GetNativeTypeForCallbacks($function->type) . " ${v8ClassName}::" . $function->name . "(";
             my $callWithThisValue = ExtendedAttributeContains($function->extendedAttributes->{"CallWith"}, "ThisValue");
 
             my @args = ();
@@ -4862,7 +4858,7 @@ END
             $code .= "    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), m_world.get());\n";
             $code .= "    if (v8Context.IsEmpty())\n";
             $code .= "        return true;\n\n";
-            $code .= "    v8::Context::Scope scope(v8Context);\n\n";
+            $code .= "    v8::Context::Scope scope(v8Context);\n";
 
             my $thisObjectHandle = "";
             if ($callWithThisValue) {
@@ -4884,19 +4880,19 @@ END
                 $code .= "            CRASH();\n";
                 $code .= "        return true;\n";
                 $code .= "    }\n";
-                push(@args, "        ${paramName}Handle");
+                push(@args, "${paramName}Handle");
             }
 
             if (scalar(@args) > 0) {
-                $code .= "\n    v8::Handle<v8::Value> argv[] = {\n";
-                $code .= join(",\n", @args);
-                $code .= "\n    };\n\n";
+                $code .= "    v8::Handle<v8::Value> argv[] = { ";
+                $code .= join(", ", @args);
+                $code .= " };\n\n";
             } else {
-                $code .= "\n    v8::Handle<v8::Value> *argv = 0;\n\n";
+                $code .= "    v8::Handle<v8::Value> *argv = 0;\n\n";
             }
             $code .= "    bool callbackReturnValue = false;\n";
             $code .= "    return !invokeCallback(m_callback.newLocal(isolate), ${thisObjectHandle}" . scalar(@args) . ", argv, callbackReturnValue, executionContext(), isolate);\n";
-            $code .= "}\n";
+            $code .= "}\n\n";
             $implementation{nameSpaceWebCore}->add($code);
         }
     }

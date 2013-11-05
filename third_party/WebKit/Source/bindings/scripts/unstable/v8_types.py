@@ -560,29 +560,30 @@ def v8_set_return_value(idl_type, cpp_value, extended_attributes=None, script_wr
 
 
 CPP_VALUE_TO_V8_VALUE = {
+    # Built-in types
     'Date': 'v8DateOrNull({cpp_value}, {isolate})',
     'DOMString': 'v8String({cpp_value}, {isolate})',
-    'ScriptValue': '{cpp_value}.v8Value()',
-    'SerializedScriptValue': '{cpp_value} ? {cpp_value}->deserialize() : v8::Handle<v8::Value>(v8::Null({isolate}))',
     'boolean': 'v8Boolean({cpp_value}, {isolate})',
     'int': 'v8::Integer::New({cpp_value}, {isolate})',
     'unsigned': 'v8::Integer::NewFromUnsigned({cpp_value}, {isolate})',
-    'float': 'v8::Number::New({cpp_value})',
-    'double': 'v8::Number::New({cpp_value})',
+    'float': 'v8::Number::New({isolate}, {cpp_value})',
+    'double': 'v8::Number::New({isolate}, {cpp_value})',
     'void': 'v8Undefined()',
     # Special cases
     'EventHandler': '{cpp_value} ? v8::Handle<v8::Value>(V8AbstractEventListener::cast({cpp_value})->getListenerObject(imp->executionContext())) : v8::Handle<v8::Value>(v8::Null({isolate}))',
+    'ScriptValue': '{cpp_value}.v8Value()',
+    'SerializedScriptValue': '{cpp_value} ? {cpp_value}->deserialize() : v8::Handle<v8::Value>(v8::Null({isolate}))',
     # General
     'array': 'v8Array({cpp_value}, {isolate})',
-    'default': 'toV8({cpp_value}, {isolate})',
+    'DOMWrapper': 'toV8({cpp_value}, {creation_context}, {isolate})',
 }
 
 
-def cpp_value_to_v8_value(idl_type, cpp_value, isolate='info.GetIsolate()', extended_attributes=None):
+def cpp_value_to_v8_value(idl_type, cpp_value, isolate='info.GetIsolate()', creation_context='', extended_attributes=None):
     """Returns an expression that converts a C++ value to a V8 value."""
     # the isolate parameter is needed for callback interfaces
     idl_type, cpp_value = preprocess_idl_type_and_value(idl_type, cpp_value, extended_attributes)
     this_v8_conversion_type = v8_conversion_type(idl_type, extended_attributes)
     format_string = CPP_VALUE_TO_V8_VALUE[this_v8_conversion_type]
-    statement = format_string.format(cpp_value=cpp_value, isolate=isolate)
+    statement = format_string.format(cpp_value=cpp_value, isolate=isolate, creation_context=creation_context)
     return statement

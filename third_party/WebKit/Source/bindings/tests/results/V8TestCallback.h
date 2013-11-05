@@ -42,7 +42,6 @@ namespace WebCore {
 
 class ExecutionContext;
 
-
 class V8TestCallback : public TestCallback, public ActiveDOMCallback {
 public:
     static PassRefPtr<V8TestCallback> create(v8::Handle<v8::Value> jsValue, ExecutionContext* context)
@@ -54,15 +53,14 @@ public:
 
     virtual ~V8TestCallback();
 
-    // Functions
-    virtual bool callbackWithNoParam();
-    virtual bool callbackWithTestObjectParam(TestObj* class1Param);
-    virtual bool callbackWithTestObjectParam(TestObj* class2Param, const String& strArg);
-    virtual int customCallback(TestObj* testObjParam, TestObj* testObjParam);
-    virtual bool callbackWithBoolean(bool boolParam);
-    virtual bool callbackWithSequence(const Vector<RefPtr<TestObj> >& sequenceParam);
-    virtual bool callbackWithFloat(float floatParam);
-    virtual bool callbackWithThisArg(ScriptValue thisValue, int param);
+    virtual bool callbackWithNoArg();
+    virtual bool callbackWithTestInterfaceEmptyArg(TestInterfaceEmpty* class1Arg);
+    virtual bool callbackWithTestInterfaceEmptyArg(TestInterfaceEmpty* class2Arg, const String& strArg);
+    virtual bool customCallback(TestInterfaceEmpty* testInterfaceEmptyArg, TestInterfaceEmpty* testInterfaceEmptyArg);
+    virtual bool callbackWithBooleanArg(bool boolArg);
+    virtual bool callbackWithSequenceArg(const Vector<RefPtr<TestInterfaceEmpty> >& sequenceArg);
+    virtual bool callbackWithFloatArg(float floatArg);
+    virtual bool callbackWithThisArg(ScriptValue thisValue, int arg);
 
     virtual ExecutionContext* executionContext() const { return ContextLifecycleObserver::executionContext(); }
 
@@ -76,4 +74,3 @@ private:
 }
 
 #endif // V8TestCallback_h
-

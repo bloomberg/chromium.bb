@@ -51,7 +51,8 @@ def has_extended_attribute(definition_or_member, extended_attribute_list):
 
 
 def extended_attribute_value_contains(extended_attribute_value, value):
-    return value in re.split('[|&]', extended_attribute_value)
+    return (extended_attribute_value and
+            value in re.split('[|&]', extended_attribute_value))
 
 
 def capitalize(name):

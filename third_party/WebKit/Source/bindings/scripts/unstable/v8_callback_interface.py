@@ -36,8 +36,8 @@ For details, see bug http://crbug.com/239771
 """
 
 from v8_globals import includes
-from v8_types import cpp_type, cpp_value_to_v8_value, add_includes_for_type
-from v8_utilities import v8_class_name, extended_attribute_value_contains
+import v8_types
+import v8_utilities
 
 CALLBACK_INTERFACE_H_INCLUDES = set([
     'bindings/v8/ActiveDOMCallback.h',
@@ -50,23 +50,39 @@ CALLBACK_INTERFACE_CPP_INCLUDES = set([
     'bindings/v8/V8Callback.h',
     'wtf/Assertions.h',
 ])
-CPP_TO_V8_CONVERSION = 'v8::Handle<v8::Value> {name}Handle = {cpp_value_to_v8_value};'
 
 
 def cpp_to_v8_conversion(idl_type, name):
-    # Includes handled in includes_for_operation
-    this_cpp_value_to_v8_value = cpp_value_to_v8_value(idl_type, name, isolate='isolate')
-    return CPP_TO_V8_CONVERSION.format(name=name, cpp_value_to_v8_value=this_cpp_value_to_v8_value)
+    # FIXME: setting creation_context=v8::Handle<v8::Object>() is wrong,
+    # as toV8 then implicitly uses the current context, which causes leaks
+    # between isolate worlds if a different context should be used.
+    cpp_value_to_v8_value = v8_types.cpp_value_to_v8_value(idl_type, name,
+        isolate='isolate', creation_context='v8::Handle<v8::Object>()')
+    return 'v8::Handle<v8::Value> {name}Handle = {cpp_to_v8};'.format(
+        name=name, cpp_to_v8=cpp_value_to_v8_value)
+
+
+def cpp_type(idl_type):
+    # FIXME: remove this function by making callback types consistent
+    # (always use usual v8_types.cpp_type)
+    if idl_type == 'DOMString':
+        return 'const String&'
+    # Callbacks use raw pointers, so used_as_argument=True
+    usual_cpp_type = v8_types.cpp_type(idl_type, used_as_argument=True)
+    if usual_cpp_type.startswith('Vector'):
+        return 'const %s&' % usual_cpp_type
+    return usual_cpp_type
 
 
 def generate_callback_interface(callback_interface):
     includes.clear()
     includes.update(CALLBACK_INTERFACE_CPP_INCLUDES)
 
-    methods = [generate_method(operation) for operation in callback_interface.operations]
+    methods = [generate_method(operation)
+               for operation in callback_interface.operations]
     template_contents = {
         'cpp_class_name': callback_interface.name,
-        'v8_class_name': v8_class_name(callback_interface),
+        'v8_class_name': v8_utilities.v8_class_name(callback_interface),
         'header_includes': CALLBACK_INTERFACE_H_INCLUDES,
         'methods': methods,
     }
@@ -74,40 +90,41 @@ def generate_callback_interface(callback_interface):
 
 
 def add_includes_for_operation(operation):
-    add_includes_for_type(operation.idl_type)
+    v8_types.add_includes_for_type(operation.idl_type)
     for argument in operation.arguments:
-        add_includes_for_type(argument.idl_type)
+        v8_types.add_includes_for_type(argument.idl_type)
 
 
 def generate_method(operation):
-    if operation.idl_type != 'boolean':
+    extended_attributes = operation.extended_attributes
+    idl_type = operation.idl_type
+    if idl_type != 'boolean':
         raise Exception("We don't yet support callbacks that return non-boolean values.")
-    is_custom = 'Custom' in operation.extended_attributes
+    is_custom = 'Custom' in extended_attributes
     if not is_custom:
         add_includes_for_operation(operation)
-    extended_attributes = operation.extended_attributes
     call_with = extended_attributes.get('CallWith')
+    call_with_this_handle = v8_utilities.extended_attribute_value_contains(call_with, 'ThisValue')
     contents = {
-        'call_with_this_handle': extended_attribute_value_contains(call_with, 'ThisValue'),
+        'call_with_this_handle': call_with_this_handle,
         'custom': is_custom,
         'name': operation.name,
-        'return_cpp_type': cpp_type(operation.idl_type, 'RefPtr'),
+        'return_cpp_type': cpp_type(idl_type),
     }
     contents.update(generate_arguments_contents(operation.arguments, call_with_this_handle))
     return contents
 
 
 def generate_arguments_contents(arguments, call_with_this_handle):
-    def argument_declaration(argument):
-        return '%s %s' % (cpp_type(argument.idl_type), argument.name)
-
     def generate_argument(argument):
         return {
             'name': argument.name,
             'cpp_to_v8_conversion': cpp_to_v8_conversion(argument.idl_type, argument.name),
         }
 
-    argument_declarations = [argument_declaration(argument) for argument in arguments]
+    argument_declarations = [
+            '%s %s' % (cpp_type(argument.idl_type), argument.name)
+            for argument in arguments]
     if call_with_this_handle:
         argument_declarations.insert(0, 'ScriptValue thisValue')
     return  {

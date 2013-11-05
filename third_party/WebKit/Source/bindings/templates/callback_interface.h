@@ -48,11 +48,11 @@ class ExecutionContext;
 
 class {{v8_class_name}} : public {{cpp_class_name}}, public ActiveDOMCallback {
 public:
-    static PassRefPtr<{{v8_class_name}}> create(v8::Handle<v8::Value> value, ExecutionContext* context)
+    static PassRefPtr<{{v8_class_name}}> create(v8::Handle<v8::Value> jsValue, ExecutionContext* context)
     {
-        ASSERT(value->IsObject());
+        ASSERT(jsValue->IsObject());
         ASSERT(context);
-        return adoptRef(new {{v8_class_name}}(v8::Handle<v8::Object>::Cast(value), context));
+        return adoptRef(new {{v8_class_name}}(v8::Handle<v8::Object>::Cast(jsValue), context));
     }
 
     virtual ~{{v8_class_name}}();
