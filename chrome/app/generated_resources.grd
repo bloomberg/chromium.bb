@@ -14522,10 +14522,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Cancel
       </message>
       <message name="IDS_ENTERPRISE_DEVICE_REQUISITION_PROMPT_OK" desc="OK button text in the device requisition poup.">
-        Set Requisition
+        Restart
       </message>
       <message name="IDS_ENTERPRISE_DEVICE_REQUISITION_PROMPT_TEXT" desc="Prompt shown in the device requisition prompt popup.">
-        Use this device requisition when enrolling the device for enterprise management:
+        You're almost there. Restart the device to continue setup.
       </message>
 
       <message name="IDS_ENTERPRISE_ENROLLMENT_STATUS_REGISTRATION_FAILED" desc="Error message shown on the enrollment screen upon failed device registration.">
