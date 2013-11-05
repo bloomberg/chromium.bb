@@ -74,7 +74,6 @@ String PagePopupController::localizeNumberString(const String& numberString)
     return numberString;
 }
 
-#if ENABLE(CALENDAR_PICKER)
 String PagePopupController::formatMonth(int year, int zeroBaseMonth)
 {
     if (!m_popupClient)
@@ -92,7 +91,6 @@ String PagePopupController::formatShortMonth(int year, int zeroBaseMonth)
     date.setMonthsSinceEpoch((year - 1970) * 12.0 + zeroBaseMonth);
     return m_popupClient->locale().formatDateTime(date, Locale::FormatTypeShort);
 }
-#endif
 
 void PagePopupController::clearPagePopupClient()
 {

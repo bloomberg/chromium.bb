@@ -129,7 +129,6 @@ const Vector<String>& LocaleMac::monthLabels()
     return m_monthLabels;
 }
 
-#if ENABLE(CALENDAR_PICKER)
 const Vector<String>& LocaleMac::weekDayShortLabels()
 {
     if (!m_weekDayShortLabels.isEmpty())
@@ -160,7 +159,6 @@ bool LocaleMac::isRTL()
 {
     return NSLocaleLanguageDirectionRightToLeft == [NSLocale characterDirectionForLanguage:[NSLocale canonicalLanguageIdentifierFromString:[m_locale.get() localeIdentifier]]];
 }
-#endif
 
 RetainPtr<NSDateFormatter> LocaleMac::timeFormatter()
 {

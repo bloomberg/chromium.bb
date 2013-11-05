@@ -160,13 +160,11 @@ inline LocaleWin::LocaleWin(LCID lcid, bool defaultsForLocale)
     , m_didInitializeNumberData(false)
     , m_defaultsForLocale(defaultsForLocale)
 {
-#if ENABLE(CALENDAR_PICKER)
     DWORD value = 0;
     getLocaleInfo(LOCALE_IFIRSTDAYOFWEEK | (defaultsForLocale ? LOCALE_NOUSEROVERRIDE : 0), value);
     // 0:Monday, ..., 6:Sunday.
     // We need 1 for Monday, 0 for Sunday.
     m_firstDayOfWeek = (value + 1) % 7;
-#endif
 }
 
 PassOwnPtr<LocaleWin> LocaleWin::create(LCID lcid, bool defaultsForLocale)
@@ -395,7 +393,6 @@ const Vector<String>& LocaleWin::monthLabels()
     return m_monthLabels;
 }
 
-#if ENABLE(CALENDAR_PICKER)
 const Vector<String>& LocaleWin::weekDayShortLabels()
 {
     ensureWeekDayShortLabels();
@@ -412,7 +409,6 @@ bool LocaleWin::isRTL()
     WTF::Unicode::Direction dir = WTF::Unicode::direction(monthLabels()[0][0]);
     return dir == WTF::Unicode::RightToLeft || dir == WTF::Unicode::RightToLeftArabic;
 }
-#endif
 
 String LocaleWin::dateFormat()
 {

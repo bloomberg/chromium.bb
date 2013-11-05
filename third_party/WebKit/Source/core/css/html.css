@@ -787,7 +787,6 @@ input[type="color"]::-webkit-color-swatch {
     -webkit-user-modify: read-only !important;
 }
 
-#if defined(ENABLE_CALENDAR_PICKER) && ENABLE_CALENDAR_PICKER
 input::-webkit-calendar-picker-indicator {
     display: inline-block;
     width: 0.66em;
@@ -820,7 +819,6 @@ input[type="week"][readonly]::-webkit-inner-spin-button,
 input[readonly]::-webkit-calendar-picker-indicator {
     visibility: hidden;
 }
-#endif // ENABLE_CALENDAR_PICKER
 
 select {
     -webkit-appearance: menulist;

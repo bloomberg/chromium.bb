@@ -118,7 +118,6 @@ public:
     // December. These strings should not be abbreviations.
     virtual const Vector<String>& monthLabels() = 0;
 
-#if ENABLE(CALENDAR_PICKER)
     // Returns a vector of string of which size is 7. The first item is a
     // localized short string of Monday, and the last item is a localized
     // short string of Saturday. These strings should be short.
@@ -130,7 +129,6 @@ public:
     // Returns true if people use right-to-left writing in the locale for this
     // object.
     virtual bool isRTL() = 0;
-#endif
 
     enum FormatType { FormatTypeUnspecified, FormatTypeShort, FormatTypeMedium };
 

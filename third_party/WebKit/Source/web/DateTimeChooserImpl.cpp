@@ -44,10 +44,6 @@
 #include "platform/Language.h"
 #include "platform/text/PlatformLocale.h"
 
-#if !ENABLE(CALENDAR_PICKER)
-#error "ENABLE_INPUT_MULTIPLE_FIELDS_UI requires ENABLE_CALENDAR_PICKER in Chromium."
-#endif
-
 using namespace WebCore;
 
 namespace WebKit {

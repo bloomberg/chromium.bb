@@ -46,11 +46,9 @@ class PLATFORM_EXPORT LocaleWin : public Locale {
 public:
     static PassOwnPtr<LocaleWin> create(LCID, bool defaultsForLocale);
     ~LocaleWin();
-#if ENABLE(CALENDAR_PICKER)
     virtual const Vector<String>& weekDayShortLabels() OVERRIDE;
     virtual unsigned firstDayOfWeek() OVERRIDE;
     virtual bool isRTL() OVERRIDE;
-#endif
     virtual String dateFormat() OVERRIDE;
     virtual String monthFormat() OVERRIDE;
     virtual String shortMonthFormat() OVERRIDE;
@@ -72,9 +70,7 @@ private:
     void getLocaleInfo(LCTYPE, DWORD&);
     void ensureShortMonthLabels();
     void ensureMonthLabels();
-#if ENABLE(CALENDAR_PICKER)
     void ensureWeekDayShortLabels();
-#endif
     // Locale function:
     virtual void initializeLocaleData() OVERRIDE;
 
@@ -89,10 +85,8 @@ private:
     String m_dateTimeFormatWithSeconds;
     String m_dateTimeFormatWithoutSeconds;
     Vector<String> m_timeAMPMLabels;
-#if ENABLE(CALENDAR_PICKER)
     Vector<String> m_weekDayShortLabels;
     unsigned m_firstDayOfWeek;
-#endif
     bool m_didInitializeNumberData;
     bool m_defaultsForLocale;
 };

@@ -54,7 +54,6 @@
       }],
       ['OS=="android"', {
         'feature_defines': [
-          'ENABLE_CALENDAR_PICKER=0',
           'ENABLE_FAST_MOBILE_SCROLLING=1',
           'ENABLE_INPUT_SPEECH=0',
           'ENABLE_LEGACY_NOTIFICATIONS=0',
@@ -65,7 +64,6 @@
         'enable_touch_icon_loading': 1,
       }, { # OS!="android"
         'feature_defines': [
-          'ENABLE_CALENDAR_PICKER=1',
           'ENABLE_INPUT_SPEECH=1',
           'ENABLE_INPUT_MULTIPLE_FIELDS_UI=1',
           'ENABLE_LEGACY_NOTIFICATIONS=1',

@@ -55,9 +55,7 @@ LocaleICU::LocaleICU(const char* locale)
     , m_shortDateFormat(0)
     , m_didCreateDecimalFormat(false)
     , m_didCreateShortDateFormat(false)
-#if ENABLE(CALENDAR_PICKER)
     , m_firstDayOfWeek(0)
-#endif
     , m_mediumTimeFormat(0)
     , m_shortTimeFormat(0)
     , m_didCreateTimeFormat(false)
@@ -192,7 +190,6 @@ PassOwnPtr<Vector<String> > LocaleICU::createLabelVector(const UDateFormat* date
     return labels.release();
 }
 
-#if ENABLE(CALENDAR_PICKER)
 static PassOwnPtr<Vector<String> > createFallbackWeekDayShortLabels()
 {
     OwnPtr<Vector<String> > labels = adoptPtr(new Vector<String>());
@@ -223,7 +220,6 @@ void LocaleICU::initializeCalendar()
     if (!m_weekDayShortLabels)
         m_weekDayShortLabels = createFallbackWeekDayShortLabels();
 }
-#endif
 
 static PassOwnPtr<Vector<String> > createFallbackMonthLabels()
 {
@@ -247,7 +243,6 @@ const Vector<String>& LocaleICU::monthLabels()
     return *m_monthLabels;
 }
 
-#if ENABLE(CALENDAR_PICKER)
 const Vector<String>& LocaleICU::weekDayShortLabels()
 {
     initializeCalendar();
@@ -265,7 +260,6 @@ bool LocaleICU::isRTL()
     UErrorCode status = U_ZERO_ERROR;
     return uloc_getCharacterOrientation(m_locale.data(), &status) == ULOC_LAYOUT_RTL;
 }
-#endif
 
 static PassOwnPtr<Vector<String> > createFallbackAMPMLabels()
 {

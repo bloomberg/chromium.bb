@@ -90,7 +90,6 @@ protected:
         return locale->formatDateTime(dateComponents(year, month, day));
     }
 
-#if ENABLE(CALENDAR_PICKER)
     unsigned firstDayOfWeek(LCID lcid)
     {
         OwnPtr<LocaleWin> locale = LocaleWin::create(lcid, true /* defaultsForLocale */);
@@ -114,7 +113,6 @@ protected:
         OwnPtr<LocaleWin> locale = LocaleWin::create(lcid, true /* defaultsForLocale */);
         return locale->isRTL();
     }
-#endif
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     String monthFormat(LCID lcid)
@@ -162,7 +160,6 @@ TEST_F(LocaleWinTest, formatDate)
     EXPECT_STREQ("2005/04/27", formatDate(JapaneseJP, 2005, April, 27).utf8().data());
 }
 
-#if ENABLE(CALENDAR_PICKER)
 TEST_F(LocaleWinTest, firstDayOfWeek)
 {
     EXPECT_EQ(Sunday, firstDayOfWeek(EnglishUS));
@@ -205,8 +202,6 @@ TEST_F(LocaleWinTest, isRTL)
     EXPECT_TRUE(isRTL(ArabicEG));
     EXPECT_FALSE(isRTL(EnglishUS));
 }
-
-#endif
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 TEST_F(LocaleWinTest, dateFormat)

@@ -320,7 +320,6 @@
                     'action': [
                         'python',
                         '<(make_file_arrays)',
-                        '--condition=ENABLE(CALENDAR_PICKER)',
                         '--out-h=<(SHARED_INTERMEDIATE_DIR)/blink/CalendarPicker.h',
                         '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/blink/CalendarPicker.cpp',
                         '<@(resources)',

@@ -99,7 +99,6 @@ protected:
         return locale->formatDateTime(timeComponents(hour, minute, second, millisecond), (useShortFormat ? Locale::FormatTypeShort : Locale::FormatTypeMedium));
     }
 
-#if ENABLE(CALENDAR_PICKER)
     unsigned firstDayOfWeek(const String& localeString)
     {
         OwnPtr<LocaleMac> locale = LocaleMac::create(localeString);
@@ -123,7 +122,6 @@ protected:
         OwnPtr<LocaleMac> locale = LocaleMac::create(localeString);
         return locale->isRTL();
     }
-#endif
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     String monthFormat(const String& localeString)
@@ -221,7 +219,6 @@ TEST_F(LocaleMacTest, formatTime)
     EXPECT_STREQ("\xDB\xB7:\xDB\xB0\xDB\xB7:\xDB\xB0\xDB\xB7\xD9\xAB\xDB\xB0\xDB\xB0\xDB\xB7", formatTime("fa", 07, 07, 07, 007, false).utf8().data());
 }
 
-#if ENABLE(CALENDAR_PICKER)
 TEST_F(LocaleMacTest, firstDayOfWeek)
 {
     EXPECT_EQ(Sunday, firstDayOfWeek("en_US"));
@@ -266,7 +263,6 @@ TEST_F(LocaleMacTest, isRTL)
     EXPECT_FALSE(isRTL("ja-jp"));
     EXPECT_FALSE(isRTL("**invalid**"));
 }
-#endif
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 TEST_F(LocaleMacTest, monthFormat)
