@@ -20,6 +20,7 @@
 #ifndef PluginData_h
 #define PluginData_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -47,7 +48,7 @@ struct PluginInfo {
     Vector<MimeClassInfo> mimes;
 };
 
-class PluginData : public RefCounted<PluginData> {
+class PLATFORM_EXPORT PluginData : public RefCounted<PluginData> {
 public:
     static PassRefPtr<PluginData> create(const Page* page) { return adoptRef(new PluginData(page)); }
 
@@ -72,8 +73,8 @@ private:
 };
 
 // Checks if any of the plugins handle this extension, and if so returns the
-// plugin's mime type for this extension.  Otherwise returns an empty string.
-String getPluginMimeTypeFromExtension(const String& extension);
+// plugin's mime type for this extension. Otherwise returns an empty string.
+PLATFORM_EXPORT String getPluginMimeTypeFromExtension(const String& extension);
 
 }
 

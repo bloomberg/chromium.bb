@@ -39,9 +39,9 @@
 #include "core/html/HTMLParamElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/page/Settings.h"
-#include "core/platform/MIMETypeRegistry.h"
 #include "core/plugins/PluginView.h"
 #include "core/rendering/RenderEmbeddedObject.h"
+#include "platform/MIMETypeRegistry.h"
 #include "platform/Widget.h"
 
 namespace WebCore {

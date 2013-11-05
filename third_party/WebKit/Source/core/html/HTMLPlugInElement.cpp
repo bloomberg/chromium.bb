@@ -38,15 +38,15 @@
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "core/platform/MIMETypeFromURL.h"
-#include "core/platform/MIMETypeRegistry.h"
-#include "core/plugins/PluginData.h"
 #include "core/plugins/PluginView.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderWidget.h"
 #include "platform/Logging.h"
+#include "platform/MIMETypeFromURL.h"
+#include "platform/MIMETypeRegistry.h"
 #include "platform/Widget.h"
+#include "platform/plugins/PluginData.h"
 #include "wtf/UnusedParam.h"
 
 

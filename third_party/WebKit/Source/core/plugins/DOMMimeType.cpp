@@ -23,7 +23,6 @@
 #include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "core/plugins/DOMPlugin.h"
-#include "core/plugins/PluginData.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {

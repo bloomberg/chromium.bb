@@ -38,9 +38,9 @@
 #include "core/html/TimeRanges.h"
 #include "platform/ContentType.h"
 #include "platform/Logging.h"
-#include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/SourceBufferPrivate.h"
 #include "modules/mediasource/MediaSourceRegistry.h"
+#include "platform/MIMETypeRegistry.h"
 #include "wtf/Uint8Array.h"
 #include "wtf/text/CString.h"
 

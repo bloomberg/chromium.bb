@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "core/platform/MIMETypeRegistry.h"
+#include "platform/MIMETypeRegistry.h"
 
-#include "core/plugins/PluginData.h"
+#include "platform/plugins/PluginData.h"
 
 #include "public/platform/Platform.h"
 #include "public/platform/WebMimeRegistry.h"

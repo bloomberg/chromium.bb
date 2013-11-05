@@ -26,6 +26,7 @@
 #ifndef MIMETypeRegistry_h
 #define MIMETypeRegistry_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"
@@ -33,7 +34,7 @@
 
 namespace WebCore {
 
-class MIMETypeRegistry {
+class PLATFORM_EXPORT MIMETypeRegistry {
 public:
     static String getMIMETypeForExtension(const String& extension);
     static String getWellKnownMIMETypeForExtension(const String& extension);
@@ -56,7 +57,7 @@ public:
     static bool isSupportedJavaScriptMIMEType(const String& mimeType);
 
     // Check to see if a non-image mime type is suitable for being loaded as a
-    // document in a frame.  Includes supported JavaScript MIME types.
+    // document in a frame. Includes supported JavaScript MIME types.
     static bool isSupportedNonImageMIMEType(const String& mimeType);
 
     // Check to see if the mime type and codecs are supported by the MediaSource implementation.

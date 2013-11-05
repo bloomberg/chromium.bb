@@ -25,9 +25,9 @@
  */
 
 #include "config.h"
-#include "core/platform/MIMETypeFromURL.h"
+#include "platform/MIMETypeFromURL.h"
 
-#include "core/platform/MIMETypeRegistry.h"
+#include "platform/MIMETypeRegistry.h"
 #include "weborigin/KURL.h"
 #include "wtf/text/WTFString.h"
 

@@ -33,7 +33,6 @@
 #include "config.h"
 #include "core/platform/graphics/ImageBuffer.h"
 
-#include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/Extensions3D.h"
 #include "core/platform/graphics/GraphicsContext.h"
@@ -45,6 +44,7 @@
 #include "core/platform/image-encoders/skia/JPEGImageEncoder.h"
 #include "core/platform/image-encoders/skia/PNGImageEncoder.h"
 #include "core/platform/image-encoders/skia/WEBPImageEncoder.h"
+#include "platform/MIMETypeRegistry.h"
 #include "platform/geometry/IntRect.h"
 #include "public/platform/Platform.h"
 #include "skia/ext/platform_canvas.h"

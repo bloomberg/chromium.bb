@@ -35,10 +35,10 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/frame/Frame.h"
 #include "core/platform/DragImage.h"
-#include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderObject.h"
+#include "platform/MIMETypeRegistry.h"
 #include "platform/clipboard/ClipboardMimeTypes.h"
 #include "platform/clipboard/ClipboardUtilities.h"
 

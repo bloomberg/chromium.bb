@@ -32,7 +32,7 @@
 #include "core/loader/archive/MHTMLParser.h"
 
 #include "core/loader/archive/MHTMLArchive.h"
-#include "core/platform/MIMETypeRegistry.h"
+#include "platform/MIMETypeRegistry.h"
 #include "platform/SharedBufferChunkReader.h"
 #include "platform/network/ParsedContentType.h"
 #include "platform/text/QuotedPrintable.h"

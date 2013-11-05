@@ -22,16 +22,16 @@
 */
 
 #include "config.h"
-#include "core/plugins/PluginData.h"
+#include "platform/plugins/PluginData.h"
 
-#include "core/plugins/PluginListBuilder.h"
+#include "platform/plugins/PluginListBuilder.h"
 #include "public/platform/Platform.h"
 
 namespace WebCore {
 
 class PluginCache {
 public:
-    PluginCache() : m_loaded(false), m_refresh(false) {}
+    PluginCache() : m_loaded(false), m_refresh(false) { }
     ~PluginCache() { reset(false); }
 
     void reset(bool refresh)

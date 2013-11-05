@@ -28,28 +28,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PluginListBuilder_h
-#define PluginListBuilder_h
+#include "config.h"
+#include "platform/plugins/PluginListBuilder.h"
 
-#include "core/plugins/PluginData.h"
-#include "public/platform/WebPluginListBuilder.h"
+#include "public/platform/WebString.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
-class PluginListBuilder : public WebKit::WebPluginListBuilder {
-public:
-    PluginListBuilder(Vector<WebCore::PluginInfo>* results) : m_results(results) { }
+void PluginListBuilder::addPlugin(const WebKit::WebString& name, const WebKit::WebString& description, const WebKit::WebString& fileName)
+{
+    PluginInfo info;
+    info.name = name;
+    info.desc = description;
+    info.file = fileName;
+    m_results->append(info);
+}
 
-    // WebPluginListBuilder methods:
-    virtual void addPlugin(const WebKit::WebString& name, const WebKit::WebString& description, const WebKit::WebString& fileName);
-    virtual void addMediaTypeToLastPlugin(const WebKit::WebString& name, const WebKit::WebString& description);
-    virtual void addFileExtensionToLastMediaType(const WebKit::WebString& extension);
+void PluginListBuilder::addMediaTypeToLastPlugin(const WebKit::WebString& name, const WebKit::WebString& description)
+{
+    MimeClassInfo info;
+    info.type = name;
+    info.desc = description;
+    m_results->last().mimes.append(info);
+}
 
-private:
-    Vector<PluginInfo>* m_results;
-};
+void PluginListBuilder::addFileExtensionToLastMediaType(const WebKit::WebString& extension)
+{
+    MimeClassInfo& info = m_results->last().mimes.last();
+    info.extensions.append(extension);
+}
 
 } // namespace WebCore
-
-#endif

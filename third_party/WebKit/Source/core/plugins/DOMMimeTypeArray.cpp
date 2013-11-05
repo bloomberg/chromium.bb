@@ -22,7 +22,7 @@
 
 #include "core/frame/Frame.h"
 #include "core/page/Page.h"
-#include "core/plugins/PluginData.h"
+#include "platform/plugins/PluginData.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {
