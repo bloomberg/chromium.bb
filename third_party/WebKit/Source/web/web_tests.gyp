@@ -43,7 +43,6 @@
             'target_name': 'webkit_unit_tests',
             'type': 'executable',
             'variables': { 'enable_wexit_time_destructors': 1, },
-            'msvs_guid': '7CEFE800-8403-418A-AD6A-2D52C6FC3EAD',
             'dependencies': [
                 '../../public/blink.gyp:blink',
                 '../testing/testing.gyp:DumpRenderTree_resources',
