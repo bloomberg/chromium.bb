@@ -625,8 +625,10 @@ bool WindowsCreateFunction::RunImpl() {
   else
     new_window->window()->ShowInactive();
 
-  if (new_window->profile()->IsOffTheRecord() && !include_incognito()) {
-    // Don't expose incognito windows if the extension isn't allowed.
+  if (new_window->profile()->IsOffTheRecord() &&
+      !GetProfile()->IsOffTheRecord() && !include_incognito()) {
+    // Don't expose incognito windows if extension itself works in non-incognito
+    // profile and CanCrossIncognito isn't allowed.
     SetResult(Value::CreateNullValue());
   } else {
     SetResult(
