@@ -6,7 +6,9 @@
 
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/rect.h"
@@ -82,9 +84,12 @@ bool OverviewGestureHandler::ProcessGestureEvent(
   // Detect at the beginning of any gesture whether it begins on the top bezel.
   if (event.type() == ui::ET_GESTURE_BEGIN &&
       event.details().touch_points() == 1) {
+    gfx::Point point_in_screen(event.location());
+    aura::Window* target = static_cast<aura::Window*>(event.target());
+    wm::ConvertPointToScreen(target, &point_in_screen);
     in_top_bezel_gesture_ = !Shell::GetScreen()->GetDisplayNearestPoint(
-        event.location()).bounds().y() + kTopBezelExtraPixels >
-            event.location().y();
+        point_in_screen).bounds().y() + kTopBezelExtraPixels >
+            point_in_screen.y();
     return false;
   }
 
