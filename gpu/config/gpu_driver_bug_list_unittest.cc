@@ -10,6 +10,8 @@
 #include "gpu/config/gpu_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#define LONG_STRING_CONST(...) #__VA_ARGS__
+
 namespace gpu {
 
 class GpuDriverBugListTest : public testing::Test {
@@ -72,6 +74,55 @@ TEST_F(GpuDriverBugListTest, CurrentListForImagination) {
   std::set<int> bugs = list->MakeDecision(
       GpuControlList::kOsAndroid, "4.1", gpu_info);
   EXPECT_EQ(1u, bugs.count(USE_CLIENT_SIDE_ARRAYS_FOR_STREAM_BUFFERS));
+}
+
+TEST_F(GpuDriverBugListTest, GpuSwitching) {
+  const std::string json = LONG_STRING_CONST(
+      {
+        "name": "gpu driver bug list",
+        "version": "0.1",
+        "entries": [
+          {
+            "id": 1,
+            "os": {
+              "type": "macosx"
+            },
+            "features": [
+              "force_discrete_gpu"
+            ]
+          },
+          {
+            "id": 2,
+            "os": {
+              "type": "win"
+            },
+            "features": [
+              "force_integrated_gpu"
+            ]
+          }
+        ]
+      }
+  );
+  scoped_ptr<GpuDriverBugList> driver_bug_list(GpuDriverBugList::Create());
+  EXPECT_TRUE(driver_bug_list->LoadList(json, GpuControlList::kAllOs));
+  std::set<int> switching = driver_bug_list->MakeDecision(
+      GpuControlList::kOsMacosx, "10.8", gpu_info());
+  EXPECT_EQ(1u, switching.size());
+  EXPECT_EQ(1u, switching.count(FORCE_DISCRETE_GPU));
+  std::vector<uint32> entries;
+  driver_bug_list->GetDecisionEntries(&entries, false);
+  ASSERT_EQ(1u, entries.size());
+  EXPECT_EQ(1u, entries[0]);
+
+  driver_bug_list.reset(GpuDriverBugList::Create());
+  EXPECT_TRUE(driver_bug_list->LoadList(json, GpuControlList::kAllOs));
+  switching = driver_bug_list->MakeDecision(
+      GpuControlList::kOsWin, "6.1", gpu_info());
+  EXPECT_EQ(1u, switching.size());
+  EXPECT_EQ(1u, switching.count(FORCE_INTEGRATED_GPU));
+  driver_bug_list->GetDecisionEntries(&entries, false);
+  ASSERT_EQ(1u, entries.size());
+  EXPECT_EQ(2u, entries[0]);
 }
 
 }  // namespace gpu

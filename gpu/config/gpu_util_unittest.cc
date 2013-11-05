@@ -4,36 +4,8 @@
 
 #include "gpu/config/gpu_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gl/gl_switches.h"
 
 namespace gpu {
-
-TEST(GpuUtilTest, GpuSwitchingOptionFromString) {
-  // Test StringToGpuSwitchingOption.
-  EXPECT_EQ(StringToGpuSwitchingOption(
-                switches::kGpuSwitchingOptionNameAutomatic),
-            GPU_SWITCHING_OPTION_AUTOMATIC);
-  EXPECT_EQ(StringToGpuSwitchingOption(
-                switches::kGpuSwitchingOptionNameForceDiscrete),
-            GPU_SWITCHING_OPTION_FORCE_DISCRETE);
-  EXPECT_EQ(StringToGpuSwitchingOption(
-                switches::kGpuSwitchingOptionNameForceIntegrated),
-            GPU_SWITCHING_OPTION_FORCE_INTEGRATED);
-  EXPECT_EQ(StringToGpuSwitchingOption("xxx"), GPU_SWITCHING_OPTION_UNKNOWN);
-}
-
-TEST(GpuUtilTest, GpuSwitchingOptionToString) {
-  // Test GpuSwitchingOptionToString.
-  EXPECT_STREQ(
-      GpuSwitchingOptionToString(GPU_SWITCHING_OPTION_AUTOMATIC).c_str(),
-      switches::kGpuSwitchingOptionNameAutomatic);
-  EXPECT_STREQ(
-      GpuSwitchingOptionToString(GPU_SWITCHING_OPTION_FORCE_DISCRETE).c_str(),
-      switches::kGpuSwitchingOptionNameForceDiscrete);
-  EXPECT_STREQ(
-      GpuSwitchingOptionToString(GPU_SWITCHING_OPTION_FORCE_INTEGRATED).c_str(),
-      switches::kGpuSwitchingOptionNameForceIntegrated);
-}
 
 TEST(GpuUtilTest, MergeFeatureSets) {
   {
@@ -72,6 +44,27 @@ TEST(GpuUtilTest, MergeFeatureSets) {
     EXPECT_EQ(1u, dst.size());
     MergeFeatureSets(&dst, src);
     EXPECT_EQ(2u, dst.size());
+  }
+}
+
+TEST(GpuUtilTest, StringToFeatureSet) {
+  {
+    // zero feature.
+    std::set<int> features;
+    StringToFeatureSet("", &features);
+    EXPECT_EQ(0u, features.size());
+  }
+  {
+    // One features.
+    std::set<int> features;
+    StringToFeatureSet("4", &features);
+    EXPECT_EQ(1u, features.size());
+  }
+  {
+    // Multiple features.
+    std::set<int> features;
+    StringToFeatureSet("1,9", &features);
+    EXPECT_EQ(2u, features.size());
   }
 }
 

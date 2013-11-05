@@ -29,7 +29,9 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "crypto/hmac.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_info_collector.h"
+#include "gpu/config/gpu_util.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_switches.h"
@@ -115,13 +117,14 @@ int GpuMain(const MainFunctionParams& parameters) {
     logging::SetLogMessageHandler(GpuProcessLogMessageHandler);
   }
 
-  if (command_line.HasSwitch(switches::kSupportsDualGpus) &&
-      command_line.HasSwitch(switches::kGpuSwitching)) {
-    std::string option = command_line.GetSwitchValueASCII(
-        switches::kGpuSwitching);
-    if (option == switches::kGpuSwitchingOptionNameForceDiscrete)
+  if (command_line.HasSwitch(switches::kSupportsDualGpus)) {
+    std::string types = command_line.GetSwitchValueASCII(
+        switches::kGpuDriverBugWorkarounds);
+    std::set<int> workarounds;
+    gpu::StringToFeatureSet(types, &workarounds);
+    if (workarounds.count(gpu::FORCE_DISCRETE_GPU) == 1)
       ui::GpuSwitchingManager::GetInstance()->ForceUseOfDiscreteGpu();
-    else if (option == switches::kGpuSwitchingOptionNameForceIntegrated)
+    else if (workarounds.count(gpu::FORCE_INTEGRATED_GPU) == 1)
       ui::GpuSwitchingManager::GetInstance()->ForceUseOfIntegratedGpu();
   }
 

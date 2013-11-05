@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_control_list_jsons.h"
 #include "gpu/config/gpu_driver_bug_list.h"
@@ -31,31 +32,19 @@ std::string IntSetToString(const std::set<int>& list) {
   return rt;
 }
 
-}  // namespace anonymous
-
-GpuSwitchingOption StringToGpuSwitchingOption(
-    const std::string& switching_string) {
-  if (switching_string == switches::kGpuSwitchingOptionNameAutomatic)
-    return GPU_SWITCHING_OPTION_AUTOMATIC;
-  if (switching_string == switches::kGpuSwitchingOptionNameForceIntegrated)
-    return GPU_SWITCHING_OPTION_FORCE_INTEGRATED;
-  if (switching_string == switches::kGpuSwitchingOptionNameForceDiscrete)
-    return GPU_SWITCHING_OPTION_FORCE_DISCRETE;
-  return GPU_SWITCHING_OPTION_UNKNOWN;
-}
-
-std::string GpuSwitchingOptionToString(GpuSwitchingOption option) {
-  switch (option) {
-    case GPU_SWITCHING_OPTION_AUTOMATIC:
-      return switches::kGpuSwitchingOptionNameAutomatic;
-    case GPU_SWITCHING_OPTION_FORCE_INTEGRATED:
-      return switches::kGpuSwitchingOptionNameForceIntegrated;
-    case GPU_SWITCHING_OPTION_FORCE_DISCRETE:
-      return switches::kGpuSwitchingOptionNameForceDiscrete;
-    default:
-      return "unknown";
+void StringToIntSet(const std::string& str, std::set<int>* list) {
+  DCHECK(list);
+  std::vector<std::string> pieces;
+  base::SplitString(str, ',', &pieces);
+  for (size_t i = 0; i < pieces.size(); ++i) {
+    int number = 0;
+    bool succeed = base::StringToInt(pieces[i], &number);
+    DCHECK(succeed);
+    list->insert(number);
   }
 }
+
+}  // namespace anonymous
 
 void MergeFeatureSets(std::set<int>* dst, const std::set<int>& src) {
   DCHECK(dst);
@@ -77,6 +66,11 @@ void ApplyGpuDriverBugWorkarounds(CommandLine* command_line) {
     command_line->AppendSwitchASCII(switches::kGpuDriverBugWorkarounds,
                                     IntSetToString(workarounds));
   }
+}
+
+void StringToFeatureSet(
+    const std::string& str, std::set<int>* feature_set) {
+  StringToIntSet(str, feature_set);
 }
 
 }  // namespace gpu

@@ -21,7 +21,6 @@
 #include "content/public/common/gpu_memory_stats.h"
 #include "content/public/common/three_d_api_types.h"
 #include "gpu/config/gpu_info.h"
-#include "gpu/config/gpu_switching_option.h"
 
 class CommandLine;
 class GURL;
@@ -108,8 +107,6 @@ class CONTENT_EXPORT GpuDataManagerImpl
 
   // Update WebPreferences for renderer based on blacklisting decisions.
   void UpdateRendererWebPrefs(WebPreferences* prefs) const;
-
-  gpu::GpuSwitchingOption GetGpuSwitchingOption() const;
 
   std::string GetBlacklistVersion() const;
   std::string GetDriverBugListVersion() const;

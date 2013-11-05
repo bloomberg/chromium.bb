@@ -38,6 +38,10 @@
          enable_chromium_fast_npot_mo8_textures)             \
   GPU_OP(EXIT_ON_CONTEXT_LOST,                               \
          exit_on_context_lost)                               \
+  GPU_OP(FORCE_DISCRETE_GPU,                                 \
+         force_discrete_gpu)                                 \
+  GPU_OP(FORCE_INTEGRATED_GPU,                               \
+         force_integrated_gpu)                               \
   GPU_OP(INIT_GL_POSITION_IN_VERTEX_SHADER,                  \
          init_gl_position_in_vertex_shader)                  \
   GPU_OP(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_1024,               \

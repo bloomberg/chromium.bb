@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "2.26",
+  "version": "3.0",
   "entries": [
     {
       "id": 1,
@@ -633,6 +633,35 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       },
       "features": [
         "use_virtualized_gl_contexts"
+      ]
+    },
+    {
+      "id": 48,
+      "description": "Force to use discrete GPU on older MacBookPro models.",
+      "cr_bugs": [113703],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": ">=",
+          "value": "10.7"
+        }
+      },
+      "machine_model": {
+        "name": {
+          "op": "=",
+          "value": "MacBookPro"
+        },
+        "version": {
+          "op": "<",
+          "value": "8"
+        }
+      },
+      "gpu_count": {
+        "op": "=",
+        "value": "2"
+      },
+      "features": [
+        "force_discrete_gpu"
       ]
     }
   ]

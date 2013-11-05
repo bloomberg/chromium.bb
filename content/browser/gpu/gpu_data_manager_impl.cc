@@ -162,11 +162,6 @@ void GpuDataManagerImpl::UpdateRendererWebPrefs(
   private_->UpdateRendererWebPrefs(prefs);
 }
 
-gpu::GpuSwitchingOption GpuDataManagerImpl::GetGpuSwitchingOption() const {
-  base::AutoLock auto_lock(lock_);
-  return private_->GetGpuSwitchingOption();
-}
-
 std::string GpuDataManagerImpl::GetBlacklistVersion() const {
   base::AutoLock auto_lock(lock_);
   return private_->GetBlacklistVersion();

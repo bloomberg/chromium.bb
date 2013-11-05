@@ -224,7 +224,6 @@
         'config/gpu_driver_bug_list_unittest.cc',
         'config/gpu_info_collector_unittest.cc',
         'config/gpu_info_unittest.cc',
-        'config/gpu_switching_list_unittest.cc',
         'config/gpu_test_config_unittest.cc',
         'config/gpu_test_expectations_parser_unittest.cc',
         'config/gpu_util_unittest.cc',

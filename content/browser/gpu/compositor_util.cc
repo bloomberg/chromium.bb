@@ -366,25 +366,6 @@ base::Value* GetFeatureStatus() {
     feature_status_dict->SetString(
         gpu_feature_info.name.c_str(), status.c_str());
   }
-  gpu::GpuSwitchingOption gpu_switching_option =
-      manager->GetGpuSwitchingOption();
-  if (gpu_switching_option != gpu::GPU_SWITCHING_OPTION_UNKNOWN) {
-    std::string gpu_switching;
-    switch (gpu_switching_option) {
-    case gpu::GPU_SWITCHING_OPTION_AUTOMATIC:
-        gpu_switching = "gpu_switching_automatic";
-        break;
-    case gpu::GPU_SWITCHING_OPTION_FORCE_DISCRETE:
-        gpu_switching = "gpu_switching_force_discrete";
-        break;
-    case gpu::GPU_SWITCHING_OPTION_FORCE_INTEGRATED:
-        gpu_switching = "gpu_switching_force_integrated";
-        break;
-      default:
-        break;
-    }
-    feature_status_dict->SetString("gpu_switching", gpu_switching.c_str());
-  }
   return feature_status_dict;
 }
 
