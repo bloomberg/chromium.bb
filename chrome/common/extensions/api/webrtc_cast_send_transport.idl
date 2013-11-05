@@ -7,13 +7,13 @@
 // the given RtpParams.
 namespace webrtc.castSendTransport {
   // Params for audio and video codec.
-  dictionary CodecSpecificParam {
+  dictionary CodecSpecificParams {
     DOMString key;
     DOMString value;
   };
 
   // RTP payload param.
-  dictionary RtpPayloadParam {
+  dictionary RtpPayloadParams {
     long payloadType;
 
     DOMString codecName;
@@ -37,13 +37,13 @@ namespace webrtc.castSendTransport {
     long? height;
 
     // A list of codec specific params.
-    CodecSpecificParam[] codecSpecficParams;
+    CodecSpecificParams[] codecSpecficParams;
   };
 
   // Cast transport capabilities
-  dictionary CastTransportCaps {
+  dictionary RtpCaps {
     // RTP payload params.
-    RtpPayloadParam[] payloads;
+    RtpPayloadParams[] payloads;
 
     DOMString[] rtcpFeatures;
 
@@ -51,42 +51,36 @@ namespace webrtc.castSendTransport {
   };
 
   // Cast transport params.
-  dictionary CastTransportParams {
+  dictionary RtpParams {
     // RTP payload params.
-    RtpPayloadParam[] payloads;
+    RtpPayloadParams[] payloads;
 
     DOMString[] rtcpFeatures;
 
     DOMString[] fecMechanisms;
   };
 
-  // Result of <code>create</code> call.
-  dictionary CreateInfo {
-    // The ID of the newly created transport.
-    long transportId;
-  };
-
   // Callback from the <code>create</code> method.
   // |id| : The transport id.
-  callback CreateCallback = void (CreateInfo info);
+  callback CreateCallback = void (long transportId);
 
   // Callback from the <code>createParams</code> method.
   // |params| : The cast transport params.
-  callback CreateParamsCallback = void (CastTransportParams params);
+  callback CreateParamsCallback = void (RtpParams params);
 
   // Callback from the <code>getCaps</code> method.
   // |caps| : Capabilities of the cast transport.
-  callback GetCapsCallback = void (CastTransportCaps caps);
+  callback GetCapsCallback = void (RtpCaps caps);
 
   interface Functions {
     // Creates a cast send transport.
-    // |track| : the media track encoded by this transport.
     // |innerTransportId| : the ID of the inner transport. The transport to be
     //   created will send data on the inner transport.
+    // |track| : the media track encoded by this transport.
     // |callback| : Called when the transport has been created.
     [nocompile] static void create(
-        [instanceOf=MediaStreamTrack] object track,
         long innerTransportId,
+        [instanceOf=MediaStreamTrack] object track,
         CreateCallback callback);
 
     // Destroys a cast send transport.
@@ -96,7 +90,8 @@ namespace webrtc.castSendTransport {
     // Creates suitable params given the capabilities.
     // |caps| : the capabilities.
     // |callback| : Called when the params have been created.
-    [nocompile] static void getCaps(long transportId,
+    [nocompile] static void getCaps(
+        long transportId,
         GetCapsCallback callback);
 
     // Creates suitable params given the capabilities.
@@ -105,14 +100,13 @@ namespace webrtc.castSendTransport {
     // |callback| : Called when the params has been created.
     [nocompile] static void createParams(
         long transportId,
-        CastTransportCaps remoteCaps,
+        RtpCaps remoteCaps,
         CreateParamsCallback callback);
 
     // Starts to use the transport by providing remote params info.
     // |transportId| : The transport ID.
     // |params| : Parameters set for this transport.
-    [nocompile] static void start(long transportId,
-        CastTransportParams params);
+    [nocompile] static void start(long transportId, RtpParams params);
 
     // Stops using the transport.
     // |transportId| : The transport ID.
@@ -145,4 +139,3 @@ namespace webrtc.castSendTransport {
     static void onError(long transportId, DOMString errorString);
   };
 };
-

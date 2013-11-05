@@ -5,8 +5,14 @@
 #ifndef CHROME_RENDERER_EXTENSIONS_WEBRTC_NATIVE_HANDLER_H_
 #define CHROME_RENDERER_EXTENSIONS_WEBRTC_NATIVE_HANDLER_H_
 
+#include <map>
+
+#include "base/memory/linked_ptr.h"
 #include "chrome/renderer/extensions/object_backed_native_handler.h"
 #include "v8/include/v8.h"
+
+class CastSendTransport;
+class CastUdpTransport;
 
 namespace extensions {
 
@@ -40,6 +46,19 @@ class WebRtcNativeHandler : public ObjectBackedNativeHandler {
       const v8::FunctionCallbackInfo<v8::Value>& args);
   void StopCastUdpTransport(
       const v8::FunctionCallbackInfo<v8::Value>& args);
+
+  // Gets the Send or UDP transport indexed by |transport_id|.
+  // If not found, returns NULL and throws a V8 exception.
+  CastSendTransport* GetSendTransportOrThrow(int transport_id) const;
+  CastUdpTransport* GetUdpTransportOrThrow(int transport_id) const;
+
+  int last_transport_id_;
+
+  typedef std::map<int, linked_ptr<CastSendTransport> > SendTransportMap;
+  SendTransportMap send_transport_map_;
+
+  typedef std::map<int, linked_ptr<CastUdpTransport> > UdpTransportMap;
+  UdpTransportMap udp_transport_map_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcNativeHandler);
 };

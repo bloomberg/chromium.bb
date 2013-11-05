@@ -19,16 +19,16 @@ class CastSession;
 class CastUdpTransport;
 
 // A key value pair structure for codec specific parameters.
-struct CastCodecSpecificParam {
+struct CastCodecSpecificParams {
   std::string key;
   std::string value;
 
-  CastCodecSpecificParam();
-  ~CastCodecSpecificParam();
+  CastCodecSpecificParams();
+  ~CastCodecSpecificParams();
 };
 
 // Defines the basic properties of a payload supported by cast transport.
-struct CastRtpPayloadParam {
+struct CastRtpPayloadParams {
   // RTP specific field that identifies the content type.
   int payload_type;
 
@@ -52,16 +52,16 @@ struct CastRtpPayloadParam {
   std::string codec_name;
 
   // List of codec specific parameters.
-  std::vector<CastCodecSpecificParam> codec_specific_params;
+  std::vector<CastCodecSpecificParams> codec_specific_params;
 
-  CastRtpPayloadParam();
-  ~CastRtpPayloadParam();
+  CastRtpPayloadParams();
+  ~CastRtpPayloadParams();
 };
 
 // Defines the capabilities of the transport.
 struct CastRtpCaps {
   // Defines a list of supported payloads.
-  std::vector<CastRtpPayloadParam> payloads;
+  std::vector<CastRtpPayloadParams> payloads;
 
   // Names of supported RTCP features.
   std::vector<std::string> rtcp_features;
@@ -91,15 +91,11 @@ class CastSendTransport {
   CastRtpParams GetParams();
 
   // Return the best parameters given the capabilities of remote peer.
-  CastRtpParams CreateParams(CastRtpCaps remote_caps);
+  CastRtpParams CreateParams(const CastRtpCaps& remote_caps);
 
-  // Begin encoding of media stream from |audio_track| and |video_track|
-  // and then submit the encoded streams to underlying transport.
-  // Either stream can be NULL but it is invalid for both streams to be
-  // NULL.
-  void Start(WebKit::WebMediaStreamTrack* audio_track,
-             WebKit::WebMediaStreamTrack* video_track,
-             CastRtpParams params);
+  // Begin encoding of media stream and then submit the encoded streams
+  // to underlying transport.
+  void Start(const CastRtpParams& params);
 
   // Stop encoding.
   void Stop();

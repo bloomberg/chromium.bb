@@ -8,13 +8,13 @@
 #include "chrome/renderer/media/cast_session.h"
 #include "chrome/renderer/media/cast_udp_transport.h"
 
-CastCodecSpecificParam::CastCodecSpecificParam() {
+CastCodecSpecificParams::CastCodecSpecificParams() {
 }
 
-CastCodecSpecificParam::~CastCodecSpecificParam() {
+CastCodecSpecificParams::~CastCodecSpecificParams() {
 }
 
-CastRtpPayloadParam::CastRtpPayloadParam()
+CastRtpPayloadParams::CastRtpPayloadParams()
     : payload_type(0),
       ssrc(0),
       clock_rate(0),
@@ -24,7 +24,7 @@ CastRtpPayloadParam::CastRtpPayloadParam()
       height(0) {
 }
 
-CastRtpPayloadParam::~CastRtpPayloadParam() {
+CastRtpPayloadParams::~CastRtpPayloadParams() {
 }
 
 CastRtpCaps::CastRtpCaps() {
@@ -33,8 +33,7 @@ CastRtpCaps::CastRtpCaps() {
 CastRtpCaps::~CastRtpCaps() {
 }
 
-CastSendTransport::CastSendTransport(
-    CastUdpTransport* udp_transport)
+CastSendTransport::CastSendTransport(CastUdpTransport* udp_transport)
     : cast_session_(udp_transport->cast_session()) {
 }
 
@@ -52,14 +51,12 @@ CastRtpParams CastSendTransport::GetParams() {
 }
 
 CastRtpParams CastSendTransport::CreateParams(
-    CastRtpCaps remote_caps) {
+    const CastRtpCaps& remote_caps) {
   NOTIMPLEMENTED();
   return CastRtpParams();
 }
 
-void CastSendTransport::Start(WebKit::WebMediaStreamTrack* audio_track,
-                              WebKit::WebMediaStreamTrack* video_track,
-                              CastRtpParams params) {
+void CastSendTransport::Start(const CastRtpParams& params) {
   NOTIMPLEMENTED();
 }
 

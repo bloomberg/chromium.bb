@@ -11,8 +11,8 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   apiFunctions.setHandleRequest('create',
-      function(track, innerTransportId, callback) {
-        webrtc.CreateCastSendTransport(track, innerTransportId, callback);
+      function(innerTransportId, track, callback) {
+        webrtc.CreateCastSendTransport(innerTransportId, track, callback);
   });
   apiFunctions.setHandleRequest('destroy',
       function(transportId) {

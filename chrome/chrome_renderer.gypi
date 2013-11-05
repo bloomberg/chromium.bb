@@ -387,6 +387,8 @@
         }],
         ['enable_webrtc==0', {
           'sources!': [
+            'renderer/extensions/webrtc_native_handler.cc',
+            'renderer/extensions/webrtc_native_handler.h',
             'renderer/media/chrome_webrtc_log_message_delegate.cc',
             'renderer/media/chrome_webrtc_log_message_delegate.h',
             'renderer/media/webrtc_logging_message_filter.cc',
@@ -465,6 +467,13 @@
                 '<(allocator_target)',
               ],
             }],
+          ],
+        }],
+        ['OS != "ios"', {
+          'dependencies': [
+            # TODO(hclam): See crbug.com/298380 for details.
+            # We should isolate the APIs needed by the renderer.
+            '<(DEPTH)/chrome/common/extensions/api/api.gyp:api',
           ],
         }],
       ],

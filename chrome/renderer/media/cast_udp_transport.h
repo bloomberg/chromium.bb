@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "net/base/ip_endpoint.h"
+#include "net/base/host_port_pair.h"
 
 class CastSession;
 
@@ -25,7 +25,7 @@ class CastUdpTransport {
 
   // Begin the transport by specifying the remote IP address.
   // The transport will use UDP.
-  void Start(const net::IPEndPoint& remote_address);
+  void Start(const net::HostPortPair& remote_address);
 
   // Terminate the communication with the end point.
   void Stop();

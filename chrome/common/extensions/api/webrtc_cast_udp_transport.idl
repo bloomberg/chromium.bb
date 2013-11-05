@@ -17,7 +17,7 @@ namespace webrtc.castUdpTransport {
   // Result of <code>create</code> call.
   dictionary CreateInfo {
     // The ID of the newly created UDP transport.
-    long tranportId;
+    long transportId;
 
     // The transport params.
     UdpParams params;
