@@ -40,6 +40,10 @@
 #include "webkit/common/user_agent/user_agent.h"
 #include "webkit/common/user_agent/user_agent_util.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 namespace content {
 
 namespace {
@@ -453,6 +457,10 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
     version.SetString("Browser", content::GetContentClient()->GetProduct());
     version.SetString("User-Agent",
                       webkit_glue::GetUserAgent(GURL(kAboutBlankURL)));
+#if defined(OS_ANDROID)
+    version.SetString("Android-Package",
+        base::android::BuildInfo::GetInstance()->package_name());
+#endif
     SendJson(connection_id, net::HTTP_OK, &version, std::string());
     return;
   }
