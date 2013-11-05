@@ -3,7 +3,17 @@
 // found in the LICENSE file.
 
 (function() {
-function makeLogEntryNode(entry) {
+'use strict';
+var toggleDisplay = function() {
+  var detailsNode = this.parentNode.getElementsByClassName('details')[0];
+  if (detailsNode.classList.contains('hidden')) {
+    detailsNode.classList.remove('hidden');
+  } else {
+    detailsNode.classList.add('hidden');
+  }
+}
+
+var makeLogEntryNode = function(entry) {
   var timeNode = document.createElement('td');
   timeNode.textContent = entry.date;
 
@@ -15,7 +25,14 @@ function makeLogEntryNode(entry) {
 
   var details = document.createElement('pre');
   details.textContent = JSON.stringify(entry.details, null, 2);
+  details.className = 'details';
+  details.classList.add('details');
+  details.classList.add('hidden');
+  var detailsToggleButton = document.createElement('button');
+  detailsToggleButton.addEventListener('click', toggleDisplay, false);
+  detailsToggleButton.textContent = 'Show/Hide Details';
   var detailsNode = document.createElement('td');
+  detailsNode.appendChild(detailsToggleButton);
   detailsNode.appendChild(details);
 
   var node = document.createElement('tr');
@@ -27,7 +44,7 @@ function makeLogEntryNode(entry) {
   return node;
 }
 
-var syncEvents = document.getElementById('sync-events');
+var syncEvents = $('sync-events');
 
 var entries = chrome.sync.log.entries;
 for (var i = 0; i < entries.length; ++i) {
