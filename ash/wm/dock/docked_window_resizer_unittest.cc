@@ -563,7 +563,7 @@ TEST_P(DockedWindowResizerTest, AttachOnTwoSides) {
   EXPECT_EQ(internal::kShellWindowId_DefaultContainer, w2->parent()->id());
 }
 
-// Reverting drag
+// Tests that reverting a drag restores docked state if a window was docked.
 TEST_P(DockedWindowResizerTest, RevertDragRestoresAttachment) {
   if (!SupportsHostWindowResize())
     return;
@@ -588,6 +588,20 @@ TEST_P(DockedWindowResizerTest, RevertDragRestoresAttachment) {
   DragEnd();
   EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
             window->parent()->id());
+}
+
+// Tests that reverting drag restores undocked state if a window was not docked.
+TEST_P(DockedWindowResizerTest, RevertDockedDragRevertsAttachment) {
+  if (!SupportsHostWindowResize())
+    return;
+  scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  int previous_container_id = window->parent()->id();
+  // Drag the window out but revert the drag
+  ASSERT_NO_FATAL_FAILURE(DragStart(window.get()));
+  DragMove(-50 - window->bounds().x(), 50 - window->bounds().y());
+  EXPECT_EQ(CorrectContainerIdDuringDrag(), window->parent()->id());
+  DragRevert();
+  EXPECT_EQ(previous_container_id, window->parent()->id());
 }
 
 // Move a docked window to the second display

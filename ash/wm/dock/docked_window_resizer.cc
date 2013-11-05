@@ -4,7 +4,6 @@
 
 #include "ash/wm/dock/docked_window_resizer.h"
 
-#include "ash/ash_switches.h"
 #include "ash/display/display_controller.h"
 #include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
@@ -142,9 +141,12 @@ void DockedWindowResizer::RevertDrag() {
     window_state->SetTrackedByWorkspace(false);
   next_window_resizer_->RevertDrag();
   // Restore docked state to what it was before the drag if necessary.
-  if (was_docked_ && !is_docked_) {
-    dock_layout_->DockDraggedWindow(GetTarget());
+  if (is_docked_ != was_docked_) {
     is_docked_ = was_docked_;
+    if (is_docked_)
+      dock_layout_->DockDraggedWindow(GetTarget());
+    else
+      dock_layout_->UndockDraggedWindow();
   }
   FinishedDragging();
   window_state->SetTrackedByWorkspace(was_tracked_by_workspace);
