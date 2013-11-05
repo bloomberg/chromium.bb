@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
@@ -41,6 +42,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -104,6 +106,10 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   virtual ~TestAutofillDialogController() {}
 
   virtual GURL SignInUrl() const OVERRIDE {
+    return GURL(chrome::kChromeUIVersionURL);
+  }
+
+  GURL SignInContinueUrl() const {
     return GURL(content::kAboutBlankURL);
   }
 
@@ -186,7 +192,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   }
 
   virtual bool IsSignInContinueUrl(const GURL& url) const OVERRIDE {
-    return true;
+    return url == SignInContinueUrl();
   }
 
  private:
@@ -898,44 +904,63 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   EXPECT_EQ(last_four, test_generated_bubble_controller()->backing_card_name());
 }
 
-// See http://crbug.com/314627
-#if defined(OS_WIN)
-#define MAYBE_SignInNoCrash DISABLED_SignInNoCrash
-#else
-#define MAYBE_SignInNoCrash SignInNoCrash
-#endif
-
-// Simulates the user successfully signing in to the dialog for the first time.
-// The controller listens for nav entry commits and should not destroy the web
-// contents before its post load code runs (which would cause a crash).
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_SignInNoCrash) {
+// Simulates the user signing in to the dialog from the inline web contents.
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, SimulateSuccessfulSignIn) {
   browser()->profile()->GetPrefs()->SetBoolean(
       ::prefs::kAutofillDialogPayWithoutWallet,
       true);
 
   InitializeController();
 
+  controller()->OnDidFetchWalletCookieValue(std::string());
+  controller()->OnUserNameFetchFailure(GoogleServiceAuthError(
+      GoogleServiceAuthError::USER_NOT_SIGNED_UP));
+  controller()->OnDidGetWalletItems(
+      wallet::GetTestWalletItemsWithRequiredAction(wallet::GAIA_AUTH));
+
+  ui_test_utils::UrlLoadObserver sign_in_page_observer(
+      controller()->SignInUrl(),
+      content::NotificationService::AllSources());
+
+  // Simulate a user clicking "Sign In" (which loads dialog's web contents).
+  controller()->SignInLinkClicked();
+  EXPECT_TRUE(controller()->ShouldShowSignInWebView());
+
+  TestableAutofillDialogView* view = controller()->GetTestableView();
+  content::WebContents* sign_in_contents = view->GetSignInWebContents();
+  ASSERT_TRUE(sign_in_contents);
+
+  sign_in_page_observer.Wait();
+
+  ui_test_utils::UrlLoadObserver continue_page_observer(
+      controller()->SignInContinueUrl(),
+      content::NotificationService::AllSources());
+
+  EXPECT_EQ(sign_in_contents->GetURL(), controller()->SignInUrl());
+
   const AccountChooserModel& account_chooser_model =
       controller()->AccountChooserModelForTesting();
   EXPECT_FALSE(account_chooser_model.WalletIsSelected());
 
-  ui_test_utils::UrlLoadObserver observer(
-      controller()->SignInUrl(),
-      content::NotificationService::AllSources());
+  sign_in_contents->GetController().LoadURL(
+      controller()->SignInContinueUrl(),
+      content::Referrer(),
+      content::PAGE_TRANSITION_FORM_SUBMIT,
+      std::string());
 
-  controller()->SignInLinkClicked();
+  EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
+  continue_page_observer.Wait();
+  content::RunAllPendingInMessageLoop();
+
+  EXPECT_FALSE(controller()->ShouldShowSignInWebView());
+
+  controller()->OnDidGetWalletItems(
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED));
   std::vector<std::string> usernames(1, "user@example.com");
   controller()->OnUserNameFetchSuccess(usernames);
-  controller()->OnDidFetchWalletCookieValue(std::string());
-  controller()->OnDidGetWalletItems(
-      wallet::GetTestWalletItemsWithRequiredAction(wallet::GAIA_AUTH));
 
-  TestableAutofillDialogView* view = controller()->GetTestableView();
-  EXPECT_TRUE(view->GetSignInWebContents());
-  EXPECT_TRUE(controller()->ShouldShowSignInWebView());
-  observer.Wait();
-
-  // Wallet should now be selected and Chrome shouldn't have crashed.
+  // Wallet should now be selected and Chrome shouldn't have crashed (which can
+  // happen if the WebContents is deleted while proccessing a nav entry commit).
   EXPECT_TRUE(account_chooser_model.WalletIsSelected());
 }
 
