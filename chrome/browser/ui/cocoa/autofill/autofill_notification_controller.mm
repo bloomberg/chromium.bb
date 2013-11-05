@@ -22,11 +22,13 @@
   NSView* arrowAnchorView_;
   BOOL hasArrow_;
   base::scoped_nsobject<NSColor> backgroundColor_;
+  base::scoped_nsobject<NSColor> borderColor_;
 }
 
 @property (nonatomic, assign) NSView* anchorView;
 @property (nonatomic, assign) BOOL hasArrow;
 @property (nonatomic, retain) NSColor* backgroundColor;
+@property (nonatomic, retain) NSColor* borderColor;
 
 @end
 
@@ -38,26 +40,39 @@
 - (void)drawRect:(NSRect)dirtyRect {
   [super drawRect:dirtyRect];
 
-  NSRect backgroundRect = [self bounds];
-  if (hasArrow_) {
+  NSBezierPath* path;
+  NSRect bounds = [self bounds];
+  if (!hasArrow_) {
+    path = [NSBezierPath bezierPathWithRect:bounds];
+  } else {
+    // The upper tip of the arrow.
     NSPoint anchorPoint = NSMakePoint(NSMidX([arrowAnchorView_ bounds]), 0);
     anchorPoint = [self convertPoint:anchorPoint fromView:arrowAnchorView_];
-    anchorPoint.y = NSMaxY([self bounds]);
+    anchorPoint.y = NSMaxY(bounds);
+    // The minimal rectangle that encloses the arrow.
+    NSRect arrowRect = NSMakeRect(anchorPoint.x - autofill::kArrowWidth / 2.0,
+                                  anchorPoint.y - autofill::kArrowHeight,
+                                  autofill::kArrowWidth,
+                                  autofill::kArrowHeight);
 
-    NSBezierPath* arrow = [NSBezierPath bezierPath];
-    [arrow moveToPoint:anchorPoint];
-    [arrow relativeLineToPoint:
-        NSMakePoint(-autofill::kArrowWidth / 2.0, -autofill::kArrowHeight)];
-    [arrow relativeLineToPoint:NSMakePoint(autofill::kArrowWidth, 0)];
-    [arrow closePath];
-    [backgroundColor_ setFill];
-    [arrow fill];
-    backgroundRect.size.height -= autofill::kArrowHeight;
+    // Include the arrow and the rectangular non-arrow region in the same path,
+    // so that the stroke is easier to draw. Start at the upper-left of the
+    // rectangular region, and proceed clockwise.
+    path = [NSBezierPath bezierPath];
+    [path moveToPoint:NSMakePoint(NSMinX(bounds), NSMinY(arrowRect))];
+    [path lineToPoint:arrowRect.origin];
+    [path lineToPoint:NSMakePoint(NSMidX(arrowRect), NSMaxY(arrowRect))];
+    [path lineToPoint:NSMakePoint(NSMaxX(arrowRect), NSMinY(arrowRect))];
+    [path lineToPoint:NSMakePoint(NSMaxX(bounds), NSMinY(arrowRect))];
+    [path lineToPoint:NSMakePoint(NSMaxX(bounds), NSMinY(bounds))];
+    [path lineToPoint:NSMakePoint(NSMinX(bounds), NSMinY(bounds))];
+    [path closePath];
   }
 
-  dirtyRect = NSIntersectionRect(backgroundRect, dirtyRect);
   [backgroundColor_ setFill];
-  NSRectFill(dirtyRect);
+  [path fill];
+  [borderColor_ setStroke];
+  [path stroke];
 }
 
 - (NSColor*)backgroundColor {
@@ -66,6 +81,14 @@
 
 - (void)setBackgroundColor:(NSColor*)backgroundColor {
   backgroundColor_.reset([backgroundColor retain]);
+}
+
+- (NSColor*)borderColor {
+  return borderColor_;
+}
+
+- (void)setBorderColor:(NSColor*)borderColor {
+  borderColor_.reset([borderColor retain]);
 }
 
 @end
@@ -78,6 +101,8 @@
         [[AutofillNotificationView alloc] initWithFrame:NSZeroRect]);
     [view setBackgroundColor:
         gfx::SkColorToCalibratedNSColor(notification->GetBackgroundColor())];
+    [view setBorderColor:
+        gfx::SkColorToCalibratedNSColor(notification->GetBorderColor())];
     [self setView:view];
 
     textfield_.reset([[NSTextField alloc] initWithFrame:NSZeroRect]);
