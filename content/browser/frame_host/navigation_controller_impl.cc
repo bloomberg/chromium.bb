@@ -17,7 +17,7 @@
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
-#include "content/browser/frame_host/web_contents_screenshot_manager.h"
+#include "content/browser/frame_host/navigation_entry_screenshot_manager.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"  // Temporary
 #include "content/browser/site_instance_impl.h"
 #include "content/common/view_messages.h"
@@ -209,7 +209,7 @@ NavigationControllerImpl::NavigationControllerImpl(
       is_initial_navigation_(true),
       pending_reload_(NO_RELOAD),
       get_timestamp_callback_(base::Bind(&base::Time::Now)),
-      screenshot_manager_(new WebContentsScreenshotManager(this)) {
+      screenshot_manager_(new NavigationEntryScreenshotManager(this)) {
   DCHECK(browser_context_);
 }
 
@@ -505,9 +505,9 @@ void NavigationControllerImpl::TakeScreenshot() {
 }
 
 void NavigationControllerImpl::SetScreenshotManager(
-    WebContentsScreenshotManager* manager) {
+    NavigationEntryScreenshotManager* manager) {
   screenshot_manager_.reset(manager ? manager :
-                            new WebContentsScreenshotManager(this));
+                            new NavigationEntryScreenshotManager(this));
 }
 
 bool NavigationControllerImpl::CanGoBack() const {

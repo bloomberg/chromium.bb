@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_FRAME_HOST_WEB_CONTENTS_SCREENSHOT_MANAGER_H_
-#define CONTENT_BROWSER_FRAME_HOST_WEB_CONTENTS_SCREENSHOT_MANAGER_H_
+#ifndef CONTENT_BROWSER_FRAME_HOST_NAVIGATION_ENTRY_SCREENSHOT_MANAGER_H_
+#define CONTENT_BROWSER_FRAME_HOST_NAVIGATION_ENTRY_SCREENSHOT_MANAGER_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
@@ -19,16 +19,15 @@ class NavigationEntryImpl;
 class RenderViewHost;
 class ScreenshotData;
 
-// WebContentsScreenshotManager takes care of taking image-captures for the
+// NavigationEntryScreenshotManager takes care of taking image-captures for the
 // current navigation entry of a NavigationControllerImpl, and managing these
 // captured images. These image-captures are used for history navigation using
 // overscroll gestures.
-// TODO(nasko): Rename this to better reflect that it is used for
-// navigation entries and not WebContents.
-class CONTENT_EXPORT WebContentsScreenshotManager {
+class CONTENT_EXPORT NavigationEntryScreenshotManager {
  public:
-  explicit WebContentsScreenshotManager(NavigationControllerImpl* controller);
-  virtual ~WebContentsScreenshotManager();
+  explicit NavigationEntryScreenshotManager(
+      NavigationControllerImpl* controller);
+  virtual ~NavigationEntryScreenshotManager();
 
   // Takes a screenshot of the last-committed entry of the controller.
   void TakeScreenshot();
@@ -77,15 +76,15 @@ class CONTENT_EXPORT WebContentsScreenshotManager {
 
   // Taking a screenshot and encoding them can be async. So use a weakptr for
   // the callback to make sure that the screenshot/encoding completion callback
-  // does not trigger on a destroyed WebContentsScreenshotManager.
-  base::WeakPtrFactory<WebContentsScreenshotManager> screenshot_factory_;
+  // does not trigger on a destroyed NavigationEntryScreenshotManager.
+  base::WeakPtrFactory<NavigationEntryScreenshotManager> screenshot_factory_;
 
   base::Time last_screenshot_time_;
   int min_screenshot_interval_ms_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebContentsScreenshotManager);
+  DISALLOW_COPY_AND_ASSIGN(NavigationEntryScreenshotManager);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_FRAME_HOST_WEB_CONTENTS_SCREENSHOT_MANAGER_H_
+#endif  // CONTENT_BROWSER_FRAME_HOST_NAVIGATION_ENTRY_SCREENSHOT_MANAGER_H_

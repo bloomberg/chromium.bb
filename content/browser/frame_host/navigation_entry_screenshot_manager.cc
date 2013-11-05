@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/frame_host/web_contents_screenshot_manager.h"
+#include "content/browser/frame_host/navigation_entry_screenshot_manager.h"
 
 #include "base/command_line.h"
 #include "base/threading/worker_pool.h"
@@ -58,17 +58,17 @@ class ScreenshotData : public base::RefCountedThreadSafe<ScreenshotData> {
   DISALLOW_COPY_AND_ASSIGN(ScreenshotData);
 };
 
-WebContentsScreenshotManager::WebContentsScreenshotManager(
+NavigationEntryScreenshotManager::NavigationEntryScreenshotManager(
     NavigationControllerImpl* owner)
     : owner_(owner),
       screenshot_factory_(this),
       min_screenshot_interval_ms_(kMinScreenshotIntervalMS) {
 }
 
-WebContentsScreenshotManager::~WebContentsScreenshotManager() {
+NavigationEntryScreenshotManager::~NavigationEntryScreenshotManager() {
 }
 
-void WebContentsScreenshotManager::TakeScreenshot() {
+void NavigationEntryScreenshotManager::TakeScreenshot() {
   static bool overscroll_enabled = CommandLine::ForCurrentProcess()->
       GetSwitchValueASCII(switches::kOverscrollHistoryNavigation) != "0";
   if (!overscroll_enabled)
@@ -103,7 +103,7 @@ void WebContentsScreenshotManager::TakeScreenshot() {
 
 // Implemented here and not in NavigationEntry because this manager keeps track
 // of the total number of screen shots across all entries.
-void WebContentsScreenshotManager::ClearAllScreenshots() {
+void NavigationEntryScreenshotManager::ClearAllScreenshots() {
   int count = owner_->GetEntryCount();
   for (int i = 0; i < count; ++i) {
     ClearScreenshot(NavigationEntryImpl::FromNavigationEntry(
@@ -112,24 +112,25 @@ void WebContentsScreenshotManager::ClearAllScreenshots() {
   DCHECK_EQ(GetScreenshotCount(), 0);
 }
 
-void WebContentsScreenshotManager::TakeScreenshotImpl(
+void NavigationEntryScreenshotManager::TakeScreenshotImpl(
     RenderViewHost* host,
     NavigationEntryImpl* entry) {
   DCHECK(host && host->GetView());
   DCHECK(entry);
   host->CopyFromBackingStore(gfx::Rect(),
       host->GetView()->GetViewBounds().size(),
-      base::Bind(&WebContentsScreenshotManager::OnScreenshotTaken,
+      base::Bind(&NavigationEntryScreenshotManager::OnScreenshotTaken,
                  screenshot_factory_.GetWeakPtr(),
                  entry->GetUniqueID()));
 }
 
-void WebContentsScreenshotManager::SetMinScreenshotIntervalMS(int interval_ms) {
+void NavigationEntryScreenshotManager::SetMinScreenshotIntervalMS(
+    int interval_ms) {
   DCHECK_GE(interval_ms, 0);
   min_screenshot_interval_ms_ = interval_ms;
 }
 
-void WebContentsScreenshotManager::OnScreenshotTaken(int unique_id,
+void NavigationEntryScreenshotManager::OnScreenshotTaken(int unique_id,
                                                      bool success,
                                                      const SkBitmap& bitmap) {
   NavigationEntryImpl* entry = NULL;
@@ -156,13 +157,13 @@ void WebContentsScreenshotManager::OnScreenshotTaken(int unique_id,
   scoped_refptr<ScreenshotData> screenshot = new ScreenshotData();
   screenshot->EncodeScreenshot(
       bitmap,
-      base::Bind(&WebContentsScreenshotManager::OnScreenshotEncodeComplete,
+      base::Bind(&NavigationEntryScreenshotManager::OnScreenshotEncodeComplete,
                  screenshot_factory_.GetWeakPtr(),
                  unique_id,
                  screenshot));
 }
 
-int WebContentsScreenshotManager::GetScreenshotCount() const {
+int NavigationEntryScreenshotManager::GetScreenshotCount() const {
   int screenshot_count = 0;
   int entry_count = owner_->GetEntryCount();
   for (int i = 0; i < entry_count; ++i) {
@@ -174,7 +175,7 @@ int WebContentsScreenshotManager::GetScreenshotCount() const {
   return screenshot_count;
 }
 
-void WebContentsScreenshotManager::OnScreenshotEncodeComplete(
+void NavigationEntryScreenshotManager::OnScreenshotEncodeComplete(
     int unique_id,
     scoped_refptr<ScreenshotData> screenshot) {
   NavigationEntryImpl* entry = NULL;
@@ -192,12 +193,14 @@ void WebContentsScreenshotManager::OnScreenshotEncodeComplete(
   OnScreenshotSet(entry);
 }
 
-void WebContentsScreenshotManager::OnScreenshotSet(NavigationEntryImpl* entry) {
+void NavigationEntryScreenshotManager::OnScreenshotSet(
+    NavigationEntryImpl* entry) {
   if (entry->screenshot().get())
     PurgeScreenshotsIfNecessary();
 }
 
-bool WebContentsScreenshotManager::ClearScreenshot(NavigationEntryImpl* entry) {
+bool NavigationEntryScreenshotManager::ClearScreenshot(
+    NavigationEntryImpl* entry) {
   if (!entry->screenshot().get())
     return false;
 
@@ -205,7 +208,7 @@ bool WebContentsScreenshotManager::ClearScreenshot(NavigationEntryImpl* entry) {
   return true;
 }
 
-void WebContentsScreenshotManager::PurgeScreenshotsIfNecessary() {
+void NavigationEntryScreenshotManager::PurgeScreenshotsIfNecessary() {
   // Allow only a certain number of entries to keep screenshots.
   const int kMaxScreenshots = 10;
   int screenshot_count = GetScreenshotCount();

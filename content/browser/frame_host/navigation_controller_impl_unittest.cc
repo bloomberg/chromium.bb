@@ -13,7 +13,7 @@
 #include "base/time/time.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
-#include "content/browser/frame_host/web_contents_screenshot_manager.h"
+#include "content/browser/frame_host/navigation_entry_screenshot_manager.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -64,10 +64,10 @@ bool DoImagesMatch(const gfx::Image& a, const gfx::Image& b) {
                 a_bitmap.getSize()) == 0;
 }
 
-class MockScreenshotManager : public content::WebContentsScreenshotManager {
+class MockScreenshotManager : public content::NavigationEntryScreenshotManager {
  public:
   explicit MockScreenshotManager(content::NavigationControllerImpl* owner)
-      : content::WebContentsScreenshotManager(owner),
+      : content::NavigationEntryScreenshotManager(owner),
         encoding_screenshot_in_progress_(false) {
   }
 
@@ -85,7 +85,7 @@ class MockScreenshotManager : public content::WebContentsScreenshotManager {
   }
 
   int GetScreenshotCount() {
-    return content::WebContentsScreenshotManager::GetScreenshotCount();
+    return content::NavigationEntryScreenshotManager::GetScreenshotCount();
   }
 
   void WaitUntilScreenshotIsReady() {
@@ -96,7 +96,7 @@ class MockScreenshotManager : public content::WebContentsScreenshotManager {
   }
 
  private:
-  // Overridden from content::WebContentsScreenshotManager:
+  // Overridden from content::NavigationEntryScreenshotManager:
   virtual void TakeScreenshotImpl(
       content::RenderViewHost* host,
       content::NavigationEntryImpl* entry) OVERRIDE {
@@ -104,7 +104,7 @@ class MockScreenshotManager : public content::WebContentsScreenshotManager {
 
   virtual void OnScreenshotSet(content::NavigationEntryImpl* entry) OVERRIDE {
     encoding_screenshot_in_progress_ = false;
-    WebContentsScreenshotManager::OnScreenshotSet(entry);
+    NavigationEntryScreenshotManager::OnScreenshotSet(entry);
     if (message_loop_runner_.get())
       message_loop_runner_->Quit();
   }

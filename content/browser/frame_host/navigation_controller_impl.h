@@ -21,7 +21,7 @@ struct ViewHostMsg_FrameNavigate_Params;
 namespace content {
 class NavigationEntryImpl;
 class RenderViewHost;
-class WebContentsScreenshotManager;
+class NavigationEntryScreenshotManager;
 class SiteInstance;
 struct LoadCommittedDetails;
 
@@ -200,7 +200,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   // a new screenshot-manager is set, or when the controller is destroyed.
   // Setting a NULL manager recreates the default screenshot manager and uses
   // that.
-  void SetScreenshotManager(WebContentsScreenshotManager* manager);
+  void SetScreenshotManager(NavigationEntryScreenshotManager* manager);
 
   // Discards only the pending entry.
   void DiscardPendingEntry();
@@ -400,7 +400,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   // the wrong order in the history view.
   TimeSmoother time_smoother_;
 
-  scoped_ptr<WebContentsScreenshotManager> screenshot_manager_;
+  scoped_ptr<NavigationEntryScreenshotManager> screenshot_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationControllerImpl);
 };

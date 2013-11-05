@@ -14,7 +14,7 @@
 #endif
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
-#include "content/browser/frame_host/web_contents_screenshot_manager.h"
+#include "content/browser/frame_host/navigation_entry_screenshot_manager.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -33,10 +33,10 @@
 namespace content {
 
 // This class keeps track of the RenderViewHost whose screenshot was captured.
-class ScreenshotTracker : public WebContentsScreenshotManager {
+class ScreenshotTracker : public NavigationEntryScreenshotManager {
  public:
   explicit ScreenshotTracker(NavigationControllerImpl* controller)
-      : WebContentsScreenshotManager(controller),
+      : NavigationEntryScreenshotManager(controller),
         screenshot_taken_for_(NULL),
         waiting_for_screenshots_(0) {
   }
@@ -67,18 +67,18 @@ class ScreenshotTracker : public WebContentsScreenshotManager {
   }
 
  private:
-  // Overridden from WebContentsScreenshotManager:
+  // Overridden from NavigationEntryScreenshotManager:
   virtual void TakeScreenshotImpl(RenderViewHost* host,
                                   NavigationEntryImpl* entry) OVERRIDE {
     ++waiting_for_screenshots_;
     screenshot_taken_for_ = host;
-    WebContentsScreenshotManager::TakeScreenshotImpl(host, entry);
+    NavigationEntryScreenshotManager::TakeScreenshotImpl(host, entry);
   }
 
   virtual void OnScreenshotSet(NavigationEntryImpl* entry) OVERRIDE {
     --waiting_for_screenshots_;
     screenshot_set_[entry] = true;
-    WebContentsScreenshotManager::OnScreenshotSet(entry);
+    NavigationEntryScreenshotManager::OnScreenshotSet(entry);
     if (waiting_for_screenshots_ == 0 && message_loop_runner_.get())
       message_loop_runner_->Quit();
   }
