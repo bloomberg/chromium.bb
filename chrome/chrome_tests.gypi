@@ -1374,7 +1374,7 @@
         'browser/safe_browsing/safe_browsing_blocking_page_test.cc',
         'browser/safe_browsing/safe_browsing_service_browsertest.cc',
         'browser/safe_browsing/safe_browsing_test.cc',
-        'browser/service/service_process_control_browsertest.cc',
+        'browser/service_process/service_process_control_browsertest.cc',
         'browser/sessions/better_session_restore_browsertest.cc',
         'browser/sessions/persistent_tab_restore_service_browsertest.cc',
         'browser/sessions/session_restore_browsertest.cc',
@@ -1761,7 +1761,7 @@
             '../apps/load_and_launch_browsertest.cc',
             'browser/printing/cloud_print/test/cloud_print_policy_browsertest.cc',
             'browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc',
-            'browser/service/service_process_control_browsertest.cc',
+            'browser/service_process/service_process_control_browsertest.cc',
             'browser/signin/signin_browsertest.cc',
             'browser/ui/app_list/test/app_list_service_test_api_linux.cc',
             # chromeos does not use cross-platform panels

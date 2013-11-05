@@ -229,7 +229,7 @@
 #endif
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/service/service_process_control.h"
+#include "chrome/browser/service_process/service_process_control.h"
 #endif
 
 using base::Time;

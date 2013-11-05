@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SERVICE_SERVICE_PROCESS_CONTROL_H_
-#define CHROME_BROWSER_SERVICE_SERVICE_PROCESS_CONTROL_H_
+#ifndef CHROME_BROWSER_SERVICE_PROCESS_SERVICE_PROCESS_CONTROL_H_
+#define CHROME_BROWSER_SERVICE_PROCESS_SERVICE_PROCESS_CONTROL_H_
 
 #include <queue>
 #include <set>
@@ -216,4 +216,4 @@ class ServiceProcessControl : public IPC::Sender,
   base::CancelableClosure histograms_timeout_callback_;
 };
 
-#endif  // CHROME_BROWSER_SERVICE_SERVICE_PROCESS_CONTROL_H_
+#endif  // CHROME_BROWSER_SERVICE_PROCESS_SERVICE_PROCESS_CONTROL_H_
