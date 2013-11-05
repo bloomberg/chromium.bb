@@ -111,7 +111,7 @@ camera.views.Browser.prototype.onLeave = function() {
  * @override
  */
 camera.views.Browser.prototype.onActivate = function() {
-  document.querySelector('#browser .padder').focus();
+  document.querySelector('#browser').focus();
 };
 
 /**
@@ -347,5 +347,12 @@ camera.views.Browser.prototype.addPictureToDOM = function(picture) {
 
     this.model.currentIndex = this.model.pictures.indexOf(picture);
   }.bind(this));
+};
+
+/**
+ * @override
+ */
+camera.views.Browser.prototype.ariaListNode = function() {
+  return document.querySelector('#browser');
 };
 

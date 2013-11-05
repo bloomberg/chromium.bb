@@ -1052,12 +1052,12 @@ camera.util.getShortcutIdentifier = function(event) {
 };
 
 /**
- * Makes all buttons which do not have text unfocusable.
+ * Makes all elements with a tabindex attribute unfocusable by mouse.
  */
-camera.util.makeEmptyButtonsUnfocusable = function() {
-  var buttons = document.querySelectorAll('button:empty');
-  for (var index = 0; index < buttons.length; index++) {
-    buttons[index].addEventListener('mousedown', function(event) {
+camera.util.makeElementsUnfocusableByMouse = function() {
+  var elements = document.querySelectorAll('*[tabindex]');
+  for (var index = 0; index < elements.length; index++) {
+    elements[index].addEventListener('mousedown', function(event) {
       event.preventDefault();
     });
   }

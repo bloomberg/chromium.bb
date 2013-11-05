@@ -196,9 +196,7 @@ camera.views.GalleryBase.prototype.onCurrentIndexChanged = function(
     this.pictures[newIndex].element.classList.add('selected');
     this.pictures[newIndex].element.setAttribute('aria-selected', 'true');
 
-    // The parent is required to be the list.
-    var list = this.pictures[newIndex].element.parentNode;
-    list.setAttribute('aria-activedescendant',
+    this.ariaListNode().getAttribute('aria-activedescendant',
         this.pictures[newIndex].element.id);
   }
 };
@@ -274,5 +272,14 @@ camera.views.GalleryBase.prototype.onPictureAdded = function(index) {
  */
 camera.views.GalleryBase.prototype.addPictureToDOM = function(picture) {
   throw new Error('Not implemented.');
-}
+};
+
+/**
+ * Provides node for the picture list to be used to set list aria attributes.
+ * @return {HTMLElement}
+ * @protected
+ */
+camera.views.GalleryBase.prototype.ariaListNode = function() {
+  throw new Error('Not implemented.');
+};
 
