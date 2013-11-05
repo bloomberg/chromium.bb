@@ -2772,7 +2772,6 @@
             'platform/graphics/chromium/FontChromiumWin.cpp',
             'platform/graphics/chromium/FontPlatformDataChromiumWin.cpp',
             'platform/graphics/chromium/FontPlatformDataChromiumWin.h',
-            'platform/graphics/chromium/FontRenderStyle.h',
             'platform/graphics/chromium/GlyphPageTreeNodeChromiumWin.cpp',
             'platform/graphics/chromium/ImageDecodingStore.cpp',
             'platform/graphics/chromium/ImageDecodingStore.h',

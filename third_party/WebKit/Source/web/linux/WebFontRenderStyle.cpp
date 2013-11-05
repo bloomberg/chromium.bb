@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebFontRenderStyle.h"
 
-#include "core/platform/graphics/chromium/FontRenderStyle.h"
+#include "platform/fonts/FontRenderStyle.h"
 
 using WebCore::FontRenderStyle;
 

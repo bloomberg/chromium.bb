@@ -269,6 +269,7 @@
       'fonts/FontFamily.h',
       'fonts/FontFeatureSettings.cpp',
       'fonts/FontFeatureSettings.h',
+      'fonts/FontRenderStyle.h',
       'fonts/GlyphBuffer.h',
       'fonts/GlyphMetricsMap.h',
       'fonts/GlyphPage.h',
