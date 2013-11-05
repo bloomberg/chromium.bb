@@ -183,6 +183,15 @@ void V8InjectedScriptHost::typeMethodCustom(const v8::FunctionCallbackInfo<v8::V
     }
 }
 
+static bool setFunctionName(v8::Handle<v8::Object>& result, const v8::Handle<v8::Value>& value)
+{
+    if (value->IsString() && v8::Handle<v8::String>::Cast(value)->Length()) {
+        result->Set(v8::String::NewSymbol("functionName"), value);
+        return true;
+    }
+    return false;
+}
+
 void V8InjectedScriptHost::functionDetailsMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (info.Length() < 1)
@@ -203,15 +212,10 @@ void V8InjectedScriptHost::functionDetailsMethodCustom(const v8::FunctionCallbac
     v8::Local<v8::Object> result = v8::Object::New();
     result->Set(v8::String::NewSymbol("location"), location);
 
-    v8::Handle<v8::Value> name = function->GetName();
-    if (name->IsString() && v8::Handle<v8::String>::Cast(name)->Length())
-        result->Set(v8::String::NewSymbol("name"), name);
-
-    v8::Handle<v8::Value> inferredName = function->GetInferredName();
-    if (inferredName->IsString() && v8::Handle<v8::String>::Cast(inferredName)->Length())
-        result->Set(v8::String::NewSymbol("inferredName"), inferredName);
-
-    // FIXME: pass function displayName from V8 (crbug.com/17356).
+    if (!setFunctionName(result, function->GetDisplayName())
+        && !setFunctionName(result, function->GetName())
+        && !setFunctionName(result, function->GetInferredName()))
+        result->Set(v8::String::NewSymbol("functionName"), v8::String::NewSymbol(""));
 
     InjectedScriptHost* host = V8InjectedScriptHost::toNative(info.Holder());
     ScriptDebugServer& debugServer = host->scriptDebugServer();
