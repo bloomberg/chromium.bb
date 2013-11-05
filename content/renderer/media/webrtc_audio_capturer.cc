@@ -442,11 +442,15 @@ bool WebRtcAudioCapturer::GetPairedOutputParameters(
     int* session_id,
     int* output_sample_rate,
     int* output_frames_per_buffer) const {
+  // Don't set output parameters unless all of them are valid.
+  if (session_id_ <= 0 || !output_sample_rate_ || !output_frames_per_buffer_)
+    return false;
+
   *session_id = session_id_;
   *output_sample_rate = output_sample_rate_;
   *output_frames_per_buffer = output_frames_per_buffer_;
-  return session_id_ > 0 && output_sample_rate_ > 0 &&
-      output_frames_per_buffer_> 0;
+
+  return true;
 }
 
 int WebRtcAudioCapturer::GetBufferSize(int sample_rate) const {
