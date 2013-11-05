@@ -119,7 +119,9 @@ void DeviceController::AcceptHostCommandInternal() {
       listener->SetAdbDataSocket(socket.Pass());
       break;
     case command::UNLISTEN:
+      LOG(INFO) << "Unmapping port " << port;
       if (!listener) {
+        LOG(ERROR) << "No listener found for port " << port;
         SendCommand(command::UNLISTEN_ERROR, port, socket.get());
         break;
       }
