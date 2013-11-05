@@ -102,6 +102,9 @@ namespace socket {
 
     // The available IPv4/6 address.
     DOMString address;
+
+    // The prefix length
+    long prefixLength;
   };
 
   callback RecvFromCallback = void (RecvFromInfo recvFromInfo);

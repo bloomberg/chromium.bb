@@ -691,6 +691,7 @@ void SocketGetNetworkListFunction::SendResponseOnUIThread(
         make_linked_ptr(new api::socket::NetworkInterface);
     info->name = i->name;
     info->address = net::IPAddressToString(i->address);
+    info->prefix_length = i->network_prefix;
     create_arg.push_back(info);
   }
 
