@@ -125,7 +125,9 @@
       'target_name': 'android_builder_webrtc',
       'type': 'none',
       'variables': {
-        # WebRTC tests are normally not built by Chromium bots.
+        # Set default value for include_tests to '0'. It is normally only
+        # used in WebRTC GYP files. It is set to '1' only when building
+        # WebRTC for Android, inside a Chromium checkout.
         'include_tests%': 0,
       },
       'conditions': [
@@ -136,6 +138,24 @@
         }],
       ],
     },  # target_name: android_builder_webrtc
+    {
+      # WebRTC Chromium tests to run on Android.
+      'target_name': 'android_builder_chromium_webrtc',
+      'type': 'none',
+      'dependencies': [
+        '../content/content_shell_and_tests.gyp:content_browsertests',
+        '../tools/android/android_tools.gyp:android_tools',
+        '../tools/android/android_tools.gyp:memconsumer',
+      ],
+      'conditions': [
+        ['"<(gtest_target_type)"=="shared_library"', {
+          'dependencies': [
+            # Unit test bundles packaged as an apk.
+            '../content/content_shell_and_tests.gyp:content_browsertests_apk',
+          ],
+        }],
+      ],
+    },  # target_name: android_builder_chromium_webrtc
     {
       # Experimental / in-progress targets that are expected to fail
       # but we still try to compile them on bots (turning the stage

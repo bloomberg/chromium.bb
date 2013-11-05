@@ -171,7 +171,7 @@ def GetBotStepMap():
       B('builder-unit-tests', H(compile_step), T(['unit'])),
       B('webrtc-chromium-builder',
         H(std_build_steps,
-          extra_args=['--build-targets=content_browsertests_apk'])),
+          extra_args=['--build-targets=android_builder_chromium_webrtc'])),
       B('webrtc-native-builder',
         H(std_build_steps,
           extra_args=['--build-targets=android_builder_webrtc'],
