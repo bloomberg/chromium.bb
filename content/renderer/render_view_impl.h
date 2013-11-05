@@ -426,6 +426,14 @@ class CONTENT_EXPORT RenderViewImpl
       const WebKit::WebURLRequest& request,
       const WebKit::WebWindowFeatures& features,
       const WebKit::WebString& frame_name,
+      WebKit::WebNavigationPolicy policy,
+      bool suppress_opener);
+  // DEPRECATED
+  virtual WebKit::WebView* createView(
+      WebKit::WebFrame* creator,
+      const WebKit::WebURLRequest& request,
+      const WebKit::WebWindowFeatures& features,
+      const WebKit::WebString& frame_name,
       WebKit::WebNavigationPolicy policy);
   virtual WebKit::WebWidget* createPopupMenu(WebKit::WebPopupType popup_type);
   virtual WebKit::WebExternalPopupMenu* createExternalPopupMenu(
