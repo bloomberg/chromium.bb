@@ -67,37 +67,44 @@ EOF
 
 # Wrapper to run unittest.  Hides output unless test fails.
 # $1 test to run.  Must be in chromite/buildbot.
-# $2 If set, run inside the chroot.
+# $2 Is this a dry run?
 run_test() {
+  local test=$1 dryrun=$2
   local log_file="${LOGFILE}.tmp.${BASHPID}"
-  local special="${special_tests[$1]:-}"
+  local special="${special_tests[${test}]:-}"
   local starttime="$(date +%s%N)"
 
   if [[ "${special}" == "skip" ]]; then
-    echo "Skipping unittest $1"
+    echo "Skipping unittest ${test}"
     return
   elif [[ "${special}" == "outside" && -f /etc/debian_chroot ]]; then
-    echo "Skipping unittest $1 because it must run outside the chroot."
+    echo "Skipping unittest ${test} because it must run outside the chroot"
     return
   elif [[ "${special}" == "inside" && ! -f /etc/debian_chroot ]]; then
     if ${SKIP_CHROOT_TESTS}; then
-      echo "Skipping unittest $1 because it must run inside the chroot"
+      echo "Skipping unittest ${test} because it must run inside the chroot"
       return
     else
-      echo "Starting unittest $1 inside the chroot"
-      ${IN_CHROOT} python "${CHROOT_CHROMITE}/$1" &> "${log_file}" ||
-        append_failed_test "$1" "${log_file}"
+      echo "Starting unittest ${test} inside the chroot"
+      if ! ${dryrun}; then
+        ${IN_CHROOT} python "${CHROOT_CHROMITE}/${test}" &> "${log_file}" ||
+          append_failed_test "${test}" "${log_file}"
+      fi
     fi
   else
-    echo "Starting unittest $1"
-    python "${CHROMITE_PATH}/$1" &> "${log_file}" ||
-      append_failed_test "$1" "${log_file}"
+    echo "Starting unittest ${test}"
+    if ! ${dryrun}; then
+      python "${CHROMITE_PATH}/${test}" &> "${log_file}" ||
+        append_failed_test "${test}" "${log_file}"
+    fi
   fi
 
-  local endtime="$(date +%s%N)"
-  local duration=$(( (endtime - starttime) / 1000000 ))
+  if ! ${dryrun}; then
+    local endtime="$(date +%s%N)"
+    local duration=$(( (endtime - starttime) / 1000000 ))
 
-  echo "Finished unittest $1 (${duration} ms)"
+    echo "Finished unittest ${test} (${duration} ms)"
+  fi
   rm -f "${log_file}"
 }
 
@@ -133,16 +140,54 @@ show_logs() {
   rm -f "${LOGFILE}"
 }
 
+usage() {
+  cat <<EOF
+Usage: run_tests [options] [tests]
+
+Run the specified tests.  If none are specified, we'll scan the
+tree looking for tests to run and then only run the semi-fast ones.
+
+You can add a .testignore file to a dir to disable scanning it.
+
+Options:
+  -q, --quick     Only run the really quick tests
+  -n, --dry-run   Do everything but actually run the test
+  -l, --list      List all the available tests
+  -h, --help      This screen
+EOF
+
+  if [[ $# -gt 0 ]]; then
+    printf '\nerror: %s\n' "$*" >&2
+    exit 1
+  else
+    exit 0
+  fi
+}
+
 main() {
+  # Parse args from the user first.
+  local list=false
+  local dryrun=false
+  local user_tests=()
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+    -h|--help)     usage;;
+    -q|--quick)    skip_quick_tests;;
+    -n|--dry-run)  dryrun=true;;
+    -l|--list)     list=true;;
+    -*)            usage "unknown option $1";;
+    *)             user_tests+=( "$1" );;
+    esac
+    shift
+  done
+  if [[ ${#user_tests[@]} -gt 0 ]]; then
+    set -- "${user_tests[@]}"
+  fi
+
   # For some versions of 'sudo' (notably, the 'sudo' in the chroot at
   # the time of this writing), sudo -v will ask for a password whether
   # or not it's needed.  'sudo true' will do what we want.
   sudo true
-
-  if [[ $# -ne 0 && $1 == "--quick" ]]; then
-    shift
-    skip_quick_tests
-  fi
 
   SKIP_CHROOT_TESTS=false
   if ! repo list 2>/dev/null | grep -q chromiumos-overlay; then
@@ -168,13 +213,18 @@ main() {
     set -- "${all_tests[@]}"
   fi
 
+  if ${list}; then
+    printf '%s\n' "$@" | sort
+    exit 0
+  fi
+
   # Now do the real code.
   LOGFILE="$(mktemp -t buildbot.run_tests.XXXXXX)"
   trap cleanup INT TERM
 
   local children=()
   for test in "$@"; do
-    run_test ${test} &
+    run_test ${test} ${dryrun} &
     children+=( $! )
   done
 
@@ -182,7 +232,9 @@ main() {
   trap - INT TERM
 
   show_logs
-  echo "All tests succeeded!"
+  if ! ${dryrun}; then
+    echo "All tests succeeded!"
+  fi
 }
 
 main "$@"
