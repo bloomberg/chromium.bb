@@ -35,16 +35,14 @@ class DeviceMonitorMac::QTMonitorImpl {
 
 DeviceMonitorMac::QTMonitorImpl::QTMonitorImpl(DeviceMonitorMac* monitor)
     : monitor_(monitor),
-      number_audio_devices_(0),
-      number_video_devices_(0),
+      number_audio_devices_(-1),
+      number_video_devices_(-1),
       device_arrival_(nil),
       device_removal_(nil) {
   DCHECK(monitor);
 }
 
 void DeviceMonitorMac::QTMonitorImpl::Start() {
-  CountDevices();
-
   NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
   device_arrival_ =
       [nc addObserverForName:QTCaptureDeviceWasConnectedNotification
