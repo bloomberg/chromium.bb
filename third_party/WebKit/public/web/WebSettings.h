@@ -192,9 +192,6 @@ public:
     virtual void setWideViewportQuirkEnabled(bool) = 0;
     virtual void setXSSAuditorEnabled(bool) = 0;
 
-    // DEPRECATED: Delete after Chromium-side calls deleted.
-    void setInitializeAtMinimumPageScale(bool enabled) { setLoadWithOverviewMode(enabled); }
-
 protected:
     ~WebSettings() { }
 };
