@@ -14,6 +14,10 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "ui/base/accessibility/accessibility_types.h"
 
+namespace extensions {
+class ExtensionHost;
+} // namespace extensions
+
 // Observes the profile and routes accessibility notifications as events
 // to the extension system.
 class ExtensionAccessibilityEventRouter {
@@ -53,6 +57,16 @@ class ExtensionAccessibilityEventRouter {
   // Route a control-related accessibility event.
   void HandleControlEvent(ui::AccessibilityTypes::Event event,
                           const AccessibilityControlInfo* info);
+
+  void OnChromeVoxLoadStateChanged(
+      Profile* profile,
+      bool loading,
+      bool make_announcements);
+
+  static void DispatchEventToChromeVox(
+      Profile* profile,
+      const char* event_name,
+      scoped_ptr<base::ListValue> event_args);
 
  private:
   friend struct DefaultSingletonTraits<ExtensionAccessibilityEventRouter>;

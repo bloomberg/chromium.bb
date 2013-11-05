@@ -321,7 +321,7 @@ Press any key to continue exploring.
     Accessibility
   </message>
   <message name="IDS_OOBE_SPOKEN_FEEDBACK_OPTION" desc="Spoken feedback option shown on OOBE screens accessibility menu.">
-    Spoken feedback
+    ChromeVox (spoken feedback)
   </message>
   <message name="IDS_OOBE_LARGE_CURSOR_OPTION" desc="Large mouse cursor option shown on OOBE screens accessibility menu.">
     Large mouse cursor
@@ -937,7 +937,7 @@ Press any key to continue exploring.
     Show large mouse cursor
   </message>
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SPOKEN_FEEDBACK_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for spoken feedback.">
-    Enable spoken feedback
+    Enable ChromeVox (spoken feedback)
   </message>
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_HIGH_CONTRAST_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for high contrast mode.">
     Use high contrast mode
@@ -2406,10 +2406,10 @@ Press any key to continue exploring.
     Mouse
   </message>
   <message name="IDS_STATUSBAR_SPOKEN_FEEDBACK_ENABLED" desc="The tooltip for the status bar button to indicate that spoken feedback has been enabled.">
-    Spoken feedback is enabled.
+    ChromeVox (spoken feedback) is enabled. Press Ctrl+Alt+Z to disable.
   </message>
   <message name="IDS_STATUSBAR_DISABLE_SPOKEN_FEEDBACK" desc="The menu option to disable spoken feedback accessibility feature.">
-    Disable spoken feedback
+    Disable ChromeVox (spoken feedback)
   </message>
   <message name="IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET" desc="The ethernet network device.">
     Ethernet
@@ -2671,12 +2671,6 @@ Battery full
   </message>
   <message name="IDS_CHROMEOS_ACC_TEXT_UNSELECTED" desc="A phrase to indicate to the user that text has been unselected.">
     Unselected
-  </message>
-  <message name="IDS_CHROMEOS_ACC_SPOKEN_FEEDBACK_ENABLED" desc="A phrase to speak when spoken feedback is enabled.">
-    Enabling spoken feedback.
-  </message>
-  <message name="IDS_CHROMEOS_ACC_SPOKEN_FEEDBACK_DISABLED" desc="A phrase to speak when spoken feedback is disabled.">
-    Disabling spoken feedback.
   </message>
   <message name="IDS_CHROMEOS_ACC_USERNAME_LABEL" desc="Label for the username text field.">
     Username.
@@ -3274,7 +3268,7 @@ Battery full
     Toggle speech input
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_SPOKEN_FEEDBACK" desc="The text in the keyboard overlay to explain the shortcut (enable or disable spoken feedback).">
-    Toggle spoken feedback
+    Toggle ChromeVox (spoken feedback)
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_UNDO" desc="The text in the keyboard overlay to explain the shortcut.">
     Undo

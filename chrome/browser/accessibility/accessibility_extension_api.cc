@@ -10,6 +10,8 @@
 #include "chrome/browser/accessibility/accessibility_extension_api_constants.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/event_router.h"
+#include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
@@ -17,7 +19,9 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/experimental_accessibility.h"
+#include "chrome/common/extensions/background_info.h"
 #include "content/public/browser/browser_accessibility_state.h"
+#include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/common/error_utils.h"
 
 namespace keys = extension_accessibility_api_constants;
@@ -162,6 +166,33 @@ void ExtensionAccessibilityEventRouter::OnMenuClosed(
   DispatchEvent(info->profile(),
                 experimental_accessibility::OnMenuClosed::kEventName,
                 args.Pass());
+}
+
+void ExtensionAccessibilityEventRouter::OnChromeVoxLoadStateChanged(
+    Profile* profile,
+    bool loading,
+    bool make_announcements) {
+  scoped_ptr<base::ListValue> event_args(new base::ListValue());
+  event_args->Append(base::Value::CreateBooleanValue(loading));
+  event_args->Append(base::Value::CreateBooleanValue(make_announcements));
+  ExtensionAccessibilityEventRouter::DispatchEventToChromeVox(profile,
+      experimental_accessibility::OnChromeVoxLoadStateChanged::kEventName,
+      event_args.Pass());
+}
+
+// Static.
+void ExtensionAccessibilityEventRouter::DispatchEventToChromeVox(
+    Profile* profile,
+    const char* event_name,
+    scoped_ptr<base::ListValue> event_args) {
+  extensions::ExtensionSystem* system =
+      extensions::ExtensionSystem::Get(profile);
+  if (!system)
+    return;
+  scoped_ptr<extensions::Event> event(new extensions::Event(event_name,
+                                                            event_args.Pass()));
+  system->event_router()->DispatchEventToExtension(
+      extension_misc::kChromeVoxExtensionId, event.Pass());
 }
 
 void ExtensionAccessibilityEventRouter::DispatchEvent(

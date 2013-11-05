@@ -293,6 +293,23 @@
             "description": "Information about the menu that was closed."
           }
         ]
+      },
+      {
+        "name": "onChromeVoxLoadStateChanged",
+        "type": "function",
+        "description": "Fired ChromeVox load state changes.",
+        "parameters": [
+          {
+            "type": "boolean",
+            "name": "loading",
+            "description": "True if ChromeVox is loading; false if ChromeVox is unloading."
+          },
+          {
+            "type": "boolean",
+            "name": "makeAnnouncements",
+            "description": "Whether to make introductory announcements."
+          }
+        ]
       }
     ]
   }
