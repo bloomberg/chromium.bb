@@ -55,6 +55,7 @@ void ExamplesBrowserMainParts::PreMainMessageLoopRun() {
   // Ensure Aura knows where to open new windows.
   window_context = minimal_shell_->root_window();
 #elif defined(USE_AURA)
+  aura::Env::CreateInstance();
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, CreateDesktopScreen());
 #endif
