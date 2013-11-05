@@ -30,54 +30,27 @@
 #ifndef CustomFilterTransformParameter_h
 #define CustomFilterTransformParameter_h
 
-#include "platform/geometry/FloatSize.h"
+#include "platform/PlatformExport.h"
 #include "platform/graphics/filters/custom/CustomFilterParameter.h"
 #include "platform/transforms/TransformOperations.h"
 
 namespace WebCore {
 
-class FloatRect;
+class FloatSize;
 class TransformationMatrix;
 
-class CustomFilterTransformParameter : public CustomFilterParameter {
+class PLATFORM_EXPORT CustomFilterTransformParameter : public CustomFilterParameter {
 public:
     static PassRefPtr<CustomFilterTransformParameter> create(const String& name)
     {
         return adoptRef(new CustomFilterTransformParameter(name));
     }
 
-    virtual PassRefPtr<CustomFilterParameter> blend(const CustomFilterParameter* fromParameter, double progress)
-    {
-        if (!fromParameter || !isSameType(*fromParameter))
-            return this;
+    virtual PassRefPtr<CustomFilterParameter> blend(const CustomFilterParameter* fromParameter, double progress);
 
-        const CustomFilterTransformParameter* fromTransformParameter = static_cast<const CustomFilterTransformParameter*>(fromParameter);
-        const TransformOperations& from = fromTransformParameter->operations();
-        const TransformOperations& to = operations();
-        if (from == to)
-            return this;
+    virtual bool operator==(const CustomFilterParameter&) const;
 
-        RefPtr<CustomFilterTransformParameter> result = CustomFilterTransformParameter::create(name());
-        if (from.size() && to.size())
-            result->setOperations(to.blend(from, progress));
-        else
-            result->setOperations(progress > 0.5 ? to : from);
-        return result;
-    }
-
-    virtual bool operator==(const CustomFilterParameter& o) const
-    {
-        if (!isSameType(o))
-            return false;
-        const CustomFilterTransformParameter* other = static_cast<const CustomFilterTransformParameter*>(&o);
-        return m_operations == other->m_operations;
-    }
-
-    void applyTransform(TransformationMatrix& transform, const FloatSize& boxSize) const
-    {
-        for (unsigned i = 0, size = m_operations.size(); i < size; ++i)
-            m_operations.at(i)->apply(transform, boxSize);
-    }
+    void applyTransform(TransformationMatrix&, const FloatSize& boxSize) const;
 
     const TransformOperations& operations() const { return m_operations; }
     void setOperations(const TransformOperations& value) { m_operations = value; }
@@ -95,6 +68,5 @@ private:
 };
 
 } // namespace WebCore
-
 
 #endif // CustomFilterTransformParameter_h

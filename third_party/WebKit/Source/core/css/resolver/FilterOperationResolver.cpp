@@ -37,7 +37,6 @@
 #include "core/css/CSSShadowValue.h"
 #include "core/css/resolver/TransformBuilder.h"
 #include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
-#include "core/platform/graphics/filters/custom/CustomFilterTransformParameter.h"
 #include "core/rendering/style/StyleCustomFilterProgram.h"
 #include "core/rendering/style/StyleShader.h"
 #include "core/svg/SVGURIReference.h"
@@ -46,6 +45,7 @@
 #include "platform/graphics/filters/custom/CustomFilterNumberParameter.h"
 #include "platform/graphics/filters/custom/CustomFilterParameter.h"
 #include "platform/graphics/filters/custom/CustomFilterProgramInfo.h"
+#include "platform/graphics/filters/custom/CustomFilterTransformParameter.h"
 
 namespace WebCore {
 
