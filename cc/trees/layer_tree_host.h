@@ -121,9 +121,6 @@ class CC_EXPORT LayerTreeHost {
 
   void SetLayerTreeHostClientReady();
 
-  // Returns true if any LayerTreeHost is alive.
-  static bool AnyLayerTreeHostInstanceExists();
-
   void set_needs_filter_context() { needs_filter_context_ = true; }
   bool needs_offscreen_context() const {
     return needs_filter_context_;
