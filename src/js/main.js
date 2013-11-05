@@ -393,5 +393,6 @@ camera.Camera.getInstance = function() {
  */
 document.addEventListener('DOMContentLoaded', function() {
   camera.Camera.getInstance().start();
+  chrome.app.window.current().show();
 });
 
