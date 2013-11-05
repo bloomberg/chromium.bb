@@ -701,7 +701,7 @@ void PrinterJobHandler::OnReceivePrinterCaps(
           "CloudPrint.CapsUpdateInterval",
           base::Time::Now() - last_caps_update_time_,
           base::TimeDelta::FromMilliseconds(1),
-          base::TimeDelta::FromDays(30), 50);
+          base::TimeDelta::FromDays(7), 50);
     }
     last_caps_update_time_ = base::Time::Now();
   }
