@@ -59,17 +59,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionProcessManagerBrowserTest,
   EXPECT_EQ(0, pm->GetLazyKeepaliveCount(extension.get()));
 }
 
-// Times out on Windows.
-#if defined(OS_WIN)
-#define MAYBE_PopupHostCreation DISABLED_PopupHostCreation
-#else
-#define MAYBE_PopupHostCreation PopupHostCreation
-#endif
 // Test that loading an extension with a browser action does not create a
 // background page and that clicking on the action creates the appropriate
 // ExtensionHost.
+// Disabled due to flake, see http://crbug.com/315242
 IN_PROC_BROWSER_TEST_F(ExtensionProcessManagerBrowserTest,
-                       MAYBE_PopupHostCreation) {
+                       DISABLED_PopupHostCreation) {
   ExtensionProcessManager* pm =
       ExtensionSystem::Get(profile())->process_manager();
 
