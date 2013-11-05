@@ -54,6 +54,7 @@
             ],
             'dependencies': [
                 'TestRunner_resources',
+                '../config.gyp:unittest_config',
                 '../../public/blink.gyp:blink',
                 '<(source_dir)/web/web.gyp:webkit_test_support',
             ],
@@ -241,6 +242,7 @@
             'type': 'loadable_module',
             'sources': [ '<@(test_plugin_files)' ],
             'dependencies': [
+                '../config.gyp:unittest_config',
                 '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
             ],
             'include_dirs': [

@@ -74,6 +74,7 @@
       ],
       'dependencies': [
           'wtf_config',
+          '../config.gyp:config',
           '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
           '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
       ],

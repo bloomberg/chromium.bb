@@ -95,6 +95,7 @@
       'hard_dependency': 1,
       'dependencies': [
         'generate_test_support_idls',
+        '../config.gyp:config',
       ],
       'sources': [
         # bison rule

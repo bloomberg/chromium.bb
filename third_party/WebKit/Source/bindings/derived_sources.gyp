@@ -200,6 +200,7 @@
       'hard_dependency': 1,
       'dependencies': [
         'interface_dependencies',
+        '../config.gyp:config',
         '../core/core_derived_sources.gyp:generate_test_support_idls',
       ],
       'sources': [
