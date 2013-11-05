@@ -76,18 +76,15 @@ def ZipBuild(options):
   RunCmd([
       os.path.join(SLAVE_SCRIPTS_DIR, 'zip_build.py'),
       '--src-dir', constants.DIR_SOURCE_ROOT,
-      '--build-dir', SrcPath('out'),
       '--exclude-files', 'lib.target,gen,android_webview,jingle_unittests']
       + bb_utils.EncodeProperties(options), cwd=DIR_BUILD_ROOT)
 
 
 def ExtractBuild(options):
   bb_annotations.PrintNamedStep('extract_build')
-  RunCmd(
-      [os.path.join(SLAVE_SCRIPTS_DIR, 'extract_build.py'),
-       '--build-dir', SrcPath('build'), '--build-output-dir',
-       SrcPath('out')] + bb_utils.EncodeProperties(options),
-       warning_code=1, cwd=DIR_BUILD_ROOT)
+  RunCmd([os.path.join(SLAVE_SCRIPTS_DIR, 'extract_build.py')]
+         + bb_utils.EncodeProperties(options),
+         warning_code=1, cwd=DIR_BUILD_ROOT)
 
 
 def FindBugs(options):
