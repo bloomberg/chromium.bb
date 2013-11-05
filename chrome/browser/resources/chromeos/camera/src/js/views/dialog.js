@@ -93,7 +93,6 @@ camera.views.Dialog.prototype.onEnter = function(opt_arguments) {
   this.messageElement_.textContent = opt_arguments.message;
 
   document.body.classList.add('dialog');
-  this.positiveButton_.focus();
 };
 
 /**
@@ -102,6 +101,13 @@ camera.views.Dialog.prototype.onEnter = function(opt_arguments) {
  */
 camera.views.Dialog.prototype.onLeave = function() {
   document.body.classList.remove('dialog');
+};
+
+/**
+ * @override
+ */
+camera.views.Dialog.prototype.onActivate = function() {
+  document.querySelector('#dialog-popup').focus();
 };
 
 /**
@@ -135,6 +141,12 @@ camera.views.Dialog.prototype.onNegativeButtonClicked_ = function(event) {
  */
 camera.views.Dialog.prototype.onKeyPressed = function(event) {
   switch (camera.util.getShortcutIdentifier(event)) {
+    case 'Enter':
+      if (document.activeElement == this.negativeButton_)
+        break;
+      this.router.back({isPositive: true});
+      event.preventDefault();
+      break;
     case 'U+001B':  // Escape.
       this.router.back({isPositive: false});
       event.preventDefault();

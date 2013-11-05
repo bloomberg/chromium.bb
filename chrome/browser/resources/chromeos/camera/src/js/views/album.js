@@ -46,6 +46,15 @@ camera.views.Album = function(context, router) {
    */
   this.scrollBar_ = new camera.VerticalScrollBar(this.scroller_);
 
+  /**
+   * Sequential index of the last inserted picture. Used to generate unique
+   * identifiers.
+   *
+   * @type {number}
+   * @private
+   */
+  this.lastPictureIndex_ = 0;
+
   // End of properties, seal the object.
   Object.seal(this);
 
@@ -76,6 +85,13 @@ camera.views.Album.prototype.onEnter = function() {
  */
 camera.views.Album.prototype.onLeave = function() {
   document.body.classList.remove('album');
+};
+
+/**
+ * @override
+ */
+camera.views.Album.prototype.onActivate = function() {
+  document.querySelector('#album .padder').focus();
 };
 
 /**
@@ -167,6 +183,9 @@ camera.views.Album.prototype.onKeyPressed = function(event) {
       event.preventDefault();
       return;
     case 'Enter':
+      // Do not handle enter, if other elements (such as buttons) are focused.
+      if (document.activeElement != document.querySelector('#album .padder'))
+        return;
       if (currentPicture)
         this.router.navigate(camera.Router.ViewIdentifier.BROWSER);
       event.preventDefault();
@@ -183,6 +202,9 @@ camera.views.Album.prototype.onKeyPressed = function(event) {
 camera.views.Album.prototype.addPictureToDOM = function(picture) {
   var album = document.querySelector('#album .padder');
   var img = document.createElement('img');
+  img.id = 'album-picture-' + (this.lastPictureIndex_++);
+  img.setAttribute('aria-role', 'option');
+  img.setAttribute('aria-selected', 'false');
   album.insertBefore(img, album.firstChild);
 
   // Add to the collection.

@@ -42,24 +42,25 @@
   <body class="controls-visible">
    <div id="main-canvas-wrapper"></div>
     <div id="main-fast-canvas-wrapper"></div>
-    <div id="toolbar-puller-wrapper">
-      <div id="toolbar" class="dynamic">
-        <div id="toolbar-background"></div>
-        <div id="toolbar-stripe">
-          <div id="buttons">
-            <button id="take-picture" tabIndex="-1"></button>
+      <div id="toolbar-puller-wrapper">
+        <div id="toolbar" class="dynamic">
+          <div id="toolbar-background"></div>
+          <div id="toolbar-stripe">
+            <div id="buttons">
+              <button id="take-picture" tabIndex="0"></button>
+            </div>
+            <div class="buttons opposite-side">
+              <button id="filters-toggle" tabIndex="0"
+                      i18n-label="filtersButton"></button>
+            </div>
+            <div class="buttons">
+              <button id="album-enter" tabIndex="0"
+                      i18n-label="galleryButton"></button>
+            </div>
           </div>
-          <div class="buttons opposite-side">
-            <button id="filters-toggle" tabIndex="-1"
-                    i18n-label="filtersButton"></button>
+          <div id="effects">
+            <ul class="padder" aria-role="listbox" tabIndex="0"></ul>
           </div>
-          <div class="buttons">
-            <button id="album-enter" tabIndex="-1"
-                    i18n-label="galleryButton"></button>
-          </div>
-        </div>
-        <div id="effects">
-          <ul class="padder"></ul>
         </div>
       </div>
     </div>
@@ -67,33 +68,36 @@
     </div>
     <div id="header">
       <div class="buttons dynamic">
-        <button id="maximize-button" tabIndex="-1"></button>
-        <button id="close-button" tabIndex="-1"></button>
+        <button id="maximize-button" tabIndex="0"
+                i18n-aria-label="maximizeButton"></button>
+        <button id="close-button" tabIndex="0"
+                i18n-aria-label="closeButton"></button>
       </div>
     </div>
     <div id="album">
-      <div class="padder">
-      </div>
+      <div class="padder" tabIndex="0" aria-role="listbox"
+           i18n-aria-label="galleryImages"></div>
       <div class="buttons dynamic">
-        <button id="album-delete" disabled tabIndex="-1"
+        <button id="album-delete" disabled tabIndex="0"
                 i18n-label="deleteButton"></button>
-        <button id="album-back" tabIndex="-1"
+        <button id="album-back" tabIndex="0"
                 i18n-label="backButton"></button>
       </div>
     </div>
     <div id="browser">
-      <div class="padder">
+      <div class="padder" tabIndex="0" aria-role="listbox"
+           i18n-aria-label="galleryImages">
         <div class="bounds-padder"></div>
         <div class="bounds-padder"></div>
       </div>
       <div class="buttons dynamic">
-        <button id="browser-print" disabled tabIndex="-1"
+        <button id="browser-print" disabled tabIndex="0"
                 i18n-label="printButton"></button>
-        <button id="browser-export" disabled tabIndex="-1"
+        <button id="browser-export" disabled tabIndex="0"
                 i18n-label="exportButton"></button>
-        <button id="browser-delete" disabled tabIndex="-1"
+        <button id="browser-delete" disabled tabIndex="0"
                 i18n-label="deleteButton"></button>
-        <button id="browser-back" tabIndex="-1"
+        <button id="browser-back" tabIndex="0"
                 i18n-label="backButton"></button>
       </div>
     </div>
@@ -104,7 +108,8 @@
       <div id="error-msg-hint"></div>
     </div>
     <div id="dialog">
-      <div id="dialog-popup">
+      <div id="dialog-popup"aria-role="dialog" aria-labelledby="dialog-msg"
+           tabIndex="0">
         <div id="dialog-msg"></div>
         <div id="dialog-buttons">
           <button id="dialog-positive-button"></button>

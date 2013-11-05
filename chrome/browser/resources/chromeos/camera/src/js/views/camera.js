@@ -161,12 +161,28 @@ camera.views.Camera = function(context, router) {
    */
   this.toolbarEffect_ = new camera.util.StyleEffect(
       function(args, callback) {
-        if (args)
-          document.querySelector('#toolbar').classList.add('expanded');
-        else
-          document.querySelector('#toolbar').classList.remove('expanded');
+        var toolbar = document.querySelector('#toolbar');
+        var list = document.querySelector('#effects .padder');
+        if (args) {
+          toolbar.classList.add('expanded');
+          list.setAttribute('tabIndex', 0);
+        } else {
+          toolbar.classList.remove('expanded');
+          // Make the list not-focusable if it is out of the screen.
+          list.removeAttribute('tabIndex');
+          if (document.activeElement == list)
+            document.querySelector('#filters-toggle').focus();
+        }
         camera.util.waitForTransitionCompletion(
-            document.querySelector('#toolbar'), 500, callback);
+            document.querySelector('#toolbar'), 500, function() {
+          // If the filters button was previously selected, then advance to
+          // the ribbon.
+          if (args && document.activeElement ==
+              document.querySelector('#filters-toggle')) {
+            list.focus();
+          }
+          callback();
+        });
       });
 
   /**
@@ -447,6 +463,13 @@ camera.views.Camera.prototype.onLeave = function() {
 };
 
 /**
+ * @override
+ */
+camera.views.Camera.prototype.onActivate = function() {
+  window.focus();
+};
+
+/**
  * Handles clicking on the album button.
  * @param {Event} event Mouse event
  * @private
@@ -490,11 +513,33 @@ camera.views.Camera.prototype.onWindowMouseOut_ = function(event) {
 
 /**
  * Handles pressing a key within a window.
+ * TODO(mtomasz): Simplify this logic.
+ *
  * @param {Event} event Key down event
  * @private
  */
 camera.views.Camera.prototype.onWindowKeyDown_ = function(event) {
-  this.setControlsVisible_(false);
+  // When the ribbon is focused, then do not collapse it when pressing keys.
+  if (document.activeElement == document.querySelector('#effects .padder')) {
+    this.setExpanded_(true);
+    this.setControlsVisible_(true);
+    return;
+  }
+
+  // If anything else is focused, then hide controls when navigation keys
+  // are pressed (or space).
+   switch (camera.util.getShortcutIdentifier(event)) {
+    case 'Right':
+    case 'Left':
+    case 'Up':
+    case 'Down':
+    case 'U+0020':  // Space.
+    case 'Home':
+    case 'End':
+      this.setControlsVisible_(false);
+    default:
+      this.setControlsVisible_(true);
+  }
 };
 
 /**
@@ -536,6 +581,11 @@ camera.views.Camera.prototype.addEffect_ = function(effect) {
   var effectIndex = this.previewProcessors_.length;
   item.id = 'effect-' + effectIndex;
 
+  // Set aria attributes.
+  item.setAttribute('i18n-aria-label', effect.getTitle());
+  item.setAttribute('aria-role', 'option');
+  item.setAttribute('aria-selected', 'false');
+
   // Assign events.
   item.addEventListener('click',
       this.setCurrentEffect_.bind(this, effectIndex));
@@ -553,15 +603,24 @@ camera.views.Camera.prototype.addEffect_ = function(effect) {
  * @private
  */
 camera.views.Camera.prototype.setCurrentEffect_ = function(effectIndex) {
-  document.querySelector('#effects #effect-' + this.currentEffectIndex_).
-      removeAttribute('selected');
-  var element = document.querySelector('#effects #effect-' + effectIndex);
-  element.setAttribute('selected', '');
-  camera.util.ensureVisible(element, this.scroller_);
+  var previousEffect =
+      document.querySelector('#effects #effect-' + this.currentEffectIndex_);
+  previousEffect.removeAttribute('selected');
+  previousEffect.setAttribute('aria-selected', 'false');
+
+  var effect = document.querySelector('#effects #effect-' + effectIndex);
+  effect.setAttribute('selected', '');
+  effect.setAttribute('aria-selected', 'true');
+  camera.util.ensureVisible(effect, this.scroller_);
+
   if (this.currentEffectIndex_ == effectIndex)
     this.previewProcessors_[effectIndex].effect.randomize();
   this.mainProcessor_.effect = this.previewProcessors_[effectIndex].effect;
   this.mainFastProcessor_.effect = this.previewProcessors_[effectIndex].effect;
+
+  var list = document.querySelector('#effects .padder');
+  list.setAttribute('aria-activedescendant', effect.id);
+  list.setAttribute('aria-labelledby', effect.id);
   this.currentEffectIndex_ = effectIndex;
 };
 
@@ -610,7 +669,6 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
       this.setCurrentEffect_(this.previewProcessors_.length - 1);
       event.preventDefault();
       break;
-    case 'Enter':
     case 'U+0020':
       this.takePicture_();
       event.stopPropagation();
