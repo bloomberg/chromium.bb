@@ -177,12 +177,12 @@ int KernelProxy::pipe(int pipefds[2]) {
   MountNodePipe* pipe = new MountNodePipe(stream_mount_.get());
   ScopedMountNode node(pipe);
 
-  if (pipe->Init(S_IREAD | S_IWRITE) == 0) {
+  if (pipe->Init(O_RDWR) == 0) {
     ScopedKernelHandle handle0(new KernelHandle(stream_mount_, node));
     ScopedKernelHandle handle1(new KernelHandle(stream_mount_, node));
 
     // Should never fail, but...
-    if (handle0->Init(S_IREAD) || handle1->Init(S_IWRITE)) {
+    if (handle0->Init(O_RDONLY) || handle1->Init(O_WRONLY)) {
       errno = EACCES;
       return -1;
     }
@@ -1105,7 +1105,7 @@ int KernelProxy::accept(int fd, struct sockaddr* addr, socklen_t* len) {
   // The MountNodeSocket now holds a reference to the new socket
   // so we release ours.
   ppapi_->ReleaseResource(new_sock);
-  error = sock->Init(S_IREAD | S_IWRITE);
+  error = sock->Init(O_RDWR);
   if (error != 0) {
     errno = error;
     return -1;
@@ -1113,7 +1113,7 @@ int KernelProxy::accept(int fd, struct sockaddr* addr, socklen_t* len) {
 
   ScopedMountNode node(sock);
   ScopedKernelHandle new_handle(new KernelHandle(stream_mount_, node));
-  error = sock->Init(O_RDWR);
+  error = new_handle->Init(O_RDWR);
   if (error != 0) {
     errno = error;
     return -1;
@@ -1444,7 +1444,7 @@ int KernelProxy::socket(int domain, int type, int protocol) {
   }
 
   ScopedMountNode node(sock);
-  Error rtn = sock->Init(S_IREAD | S_IWRITE);
+  Error rtn = sock->Init(O_RDWR);
   if (rtn != 0) {
     errno = rtn;
     return -1;

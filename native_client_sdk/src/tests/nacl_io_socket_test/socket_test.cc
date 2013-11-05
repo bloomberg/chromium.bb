@@ -500,6 +500,10 @@ TEST_F(SocketTestUDP, Listen) {
 TEST_F(SocketTestTCP, Listen) {
   sockaddr_in addr;
   socklen_t addrlen = sizeof(addr);
+  const char* client_greeting = "hello";
+  const char* server_reply = "reply";
+  const int greeting_len = strlen(client_greeting);
+  const int reply_len = strlen(server_reply);
 
   int server_sock = sock1_;
 
@@ -514,14 +518,15 @@ TEST_F(SocketTestTCP, Listen) {
   ASSERT_EQ(0, listen(server_sock, 10))
     << "listen failed with: " << strerror(errno);
 
-  // Connect to listening socket
+  // Connect to listening socket, and send greeting
   int client_sock = sock2_;
   IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
   addrlen = sizeof(addr);
   ASSERT_EQ(0, connect(client_sock, (sockaddr*)&addr, addrlen))
     << "Failed with " << errno << ": " << strerror(errno) << "\n";
 
-  ASSERT_EQ(5, send(client_sock, "hello", 5, 0));
+  ASSERT_EQ(greeting_len, send(client_sock, client_greeting,
+                               greeting_len, 0));
 
   // Pass in addrlen that is larger than our actual address to make
   // sure that it is correctly set back to sizeof(sockaddr_in)
@@ -538,8 +543,16 @@ TEST_F(SocketTestTCP, Listen) {
   ASSERT_EQ(client_addr.sin_port, addr.sin_port);
   ASSERT_EQ(client_addr.sin_addr.s_addr, addr.sin_addr.s_addr);
 
+  // Recv greeting from client and send reply
   char inbuf[512];
-  ASSERT_EQ(5, recv(new_socket, inbuf, 5, 0));
+  ASSERT_EQ(greeting_len, recv(new_socket, inbuf, sizeof(inbuf), 0));
+  ASSERT_STREQ(inbuf, client_greeting);
+  ASSERT_EQ(reply_len, send(new_socket, server_reply, reply_len, 0));
+
+  // Recv reply on client socket
+  ASSERT_EQ(reply_len, recv(client_sock, inbuf, sizeof(inbuf), 0));
+  ASSERT_STREQ(inbuf, server_reply);
+
   ASSERT_EQ(0, close(new_socket));
 }
 

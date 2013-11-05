@@ -177,6 +177,8 @@ Error KernelHandle::Recv(void* buf, size_t len, int flags, int* out_len) {
   MountNodeSocket* sock = socket_node();
   if (!sock)
     return ENOTSOCK;
+  if (OpenMode() == O_WRONLY)
+    return EACCES;
 
   AUTO_LOCK(handle_lock_);
   return sock->Recv(handle_attr_, buf, len, flags, out_len);
@@ -191,6 +193,8 @@ Error KernelHandle::RecvFrom(void* buf,
   MountNodeSocket* sock = socket_node();
   if (!sock)
     return ENOTSOCK;
+  if (OpenMode() == O_WRONLY)
+    return EACCES;
 
   AUTO_LOCK(handle_lock_);
   return sock->RecvFrom(handle_attr_, buf, len, flags, src_addr, addrlen,
@@ -204,6 +208,8 @@ Error KernelHandle::Send(const void* buf,
   MountNodeSocket* sock = socket_node();
   if (!sock)
     return ENOTSOCK;
+  if (OpenMode() == O_RDONLY)
+    return EACCES;
 
   AUTO_LOCK(handle_lock_);
   return sock->Send(handle_attr_, buf, len, flags, out_len);
@@ -218,6 +224,8 @@ Error KernelHandle::SendTo(const void* buf,
   MountNodeSocket* sock = socket_node();
   if (!sock)
     return ENOTSOCK;
+  if (OpenMode() == O_RDONLY)
+    return EACCES;
 
   AUTO_LOCK(handle_lock_);
   return sock->SendTo(handle_attr_, buf, len, flags, dest_addr, addrlen,

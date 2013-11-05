@@ -902,6 +902,8 @@ def main(args):
 
   global options
   options, args = parser.parse_args(args[1:])
+  if args:
+    parser.error("Unexpected arguments: %s" % str(args))
 
   generate_make.use_gyp = options.gyp
   if buildbot_common.IsSDKBuilder():
