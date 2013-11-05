@@ -514,7 +514,7 @@ void RenderLayerScrollableArea::computeScrollDimensions()
     m_overflowRect = m_box->layoutOverflowRect();
     m_box->flipForWritingMode(m_overflowRect);
 
-    int scrollableLeftOverflow = m_overflowRect.x() - m_box->borderLeft();
+    int scrollableLeftOverflow = m_overflowRect.x() - m_box->borderLeft() - (m_box->style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft() ? m_box->verticalScrollbarWidth() : 0);
     int scrollableTopOverflow = m_overflowRect.y() - m_box->borderTop();
     setScrollOrigin(IntPoint(-scrollableLeftOverflow, -scrollableTopOverflow));
 }

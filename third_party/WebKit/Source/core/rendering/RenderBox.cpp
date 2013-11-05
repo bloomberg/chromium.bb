@@ -4777,7 +4777,7 @@ LayoutRect RenderBox::noOverflowRect() const
     // writing modes, x in vertical writing modes), which is always "logical top". Apart from the
     // flipping, this method does the same as clientBoxRect().
 
-    LayoutUnit left = borderLeft();
+    LayoutUnit left = borderLeft() + (style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft() ? verticalScrollbarWidth() : 0);
     LayoutUnit top = borderTop();
     LayoutUnit right = borderRight();
     LayoutUnit bottom = borderBottom();
@@ -4792,7 +4792,10 @@ LayoutRect RenderBox::noOverflowRect() const
     // FIXME: when the above mentioned bug is fixed, it should hopefully be possible to call
     // clientBoxRect() or paddingBoxRect() in this method, rather than fiddling with the edges on
     // our own.
-    rect.contract(verticalScrollbarWidth(), horizontalScrollbarHeight());
+    if (style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
+        rect.contract(0, horizontalScrollbarHeight());
+    else
+        rect.contract(verticalScrollbarWidth(), horizontalScrollbarHeight());
     return rect;
 }
 

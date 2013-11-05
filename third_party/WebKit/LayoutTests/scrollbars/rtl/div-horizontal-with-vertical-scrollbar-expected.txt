@@ -1,4 +1,4 @@
-Test if WebKit can show the left side of the inner elements regardless of the position of its scrollbars. To test manually, open this document and verify we can see "ABC" both in the LTR element and in the RTL element.
+Test that horizontal scrollbar should appear as the content width encroaches upon the vertical scrollbar and also test if WebKit can show the left side of the inner elements regardless of the position of its scrollbars. To test manually, open this document and verify we can see "ABC" both in the LTR element and in the RTL element.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

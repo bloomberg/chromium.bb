@@ -1546,12 +1546,8 @@ void RenderBlock::addOverflowFromPositionedObjects()
         positionedObject = *it;
 
         // Fixed positioned elements don't contribute to layout overflow, since they don't scroll with the content.
-        if (positionedObject->style()->position() != FixedPosition) {
-            LayoutUnit x = positionedObject->x();
-            if (style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-                x -= verticalScrollbarWidth();
-            addOverflowFromChild(positionedObject, LayoutSize(x, positionedObject->y()));
-        }
+        if (positionedObject->style()->position() != FixedPosition)
+            addOverflowFromChild(positionedObject, LayoutSize(positionedObject->x(), positionedObject->y()));
     }
 }
 
