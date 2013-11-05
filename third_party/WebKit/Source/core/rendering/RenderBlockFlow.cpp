@@ -1916,9 +1916,6 @@ FloatingObject* RenderBlockFlow::insertFloatingObject(RenderBox* floatBox)
 
     setLogicalWidthForFloat(newObj.get(), logicalWidthForChild(floatBox) + marginStartForChild(floatBox) + marginEndForChild(floatBox));
 
-    if (ShapeOutsideInfo* shapeOutside = floatBox->shapeOutsideInfo())
-        shapeOutside->setShapeSize(logicalWidthForChild(floatBox), logicalHeightForChild(floatBox));
-
     return m_floatingObjects->add(newObj.release());
 }
 
@@ -2076,6 +2073,9 @@ bool RenderBlockFlow::positionNewFloats()
         setLogicalHeightForFloat(floatingObject, logicalHeightForChild(childBox) + marginBeforeForChild(childBox) + marginAfterForChild(childBox));
 
         m_floatingObjects->addPlacedObject(floatingObject);
+
+        if (ShapeOutsideInfo* shapeOutside = childBox->shapeOutsideInfo())
+            shapeOutside->setShapeSize(logicalWidthForChild(childBox), logicalHeightForChild(childBox));
 
         // If the child moved, we have to repaint it.
         if (childBox->checkForRepaintDuringLayout())
