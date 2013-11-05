@@ -1,8 +1,9 @@
 function testGridDefinitionsValues(element, columnValue, rowValue, computedColumnValue, computedRowValue)
 {
     window.element = element;
-    shouldBeEqualToString("window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns')", computedColumnValue || columnValue);
-    shouldBeEqualToString("window.getComputedStyle(element, '').getPropertyValue('grid-definition-rows')", computedRowValue || rowValue);
+    var elementID = element.id || "element";
+    shouldBeEqualToString("window.getComputedStyle(" + elementID + ", '').getPropertyValue('grid-definition-columns')", computedColumnValue || columnValue);
+    shouldBeEqualToString("window.getComputedStyle(" + elementID + ", '').getPropertyValue('grid-definition-rows')", computedRowValue || rowValue);
 }
 
 function testGridDefinitionsSetJSValues(columnValue, rowValue, computedColumnValue, computedRowValue, jsColumnValue, jsRowValue)
