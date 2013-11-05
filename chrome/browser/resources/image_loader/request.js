@@ -260,7 +260,7 @@ AuthorizedXHR.prototype.load = function(url, onSuccess, onFailure) {
         onInnerFailure();
         return;
       }
-      this.xhr_ = AuthorizedXHR.loadWithToken_(
+      this.xhr_ = AuthorizedXHR.load_(
           token, url, onInnerSuccess, onInnerFailure);
     }.bind(this));
   }.bind(this);
@@ -272,6 +272,12 @@ AuthorizedXHR.prototype.load = function(url, onSuccess, onFailure) {
     requestTokenAndCall(true, onMaybeSuccess, onMaybeFailure);
   }.bind(this);
 
+  // Do not request a token for local resources, since it is not necessary.
+  if (url.indexOf('filesystem:') === 0) {
+    this.xhr_ = AuthorizedXHR.load_(null, url, onMaybeSuccess, onMaybeFailure);
+    return;
+  }
+
   // Make the request with reusing the current token. If it fails, then retry.
   requestTokenAndCall(false, onMaybeSuccess, maybeRetryCall);
 };
@@ -280,15 +286,17 @@ AuthorizedXHR.prototype.load = function(url, onSuccess, onFailure) {
  * Fetches data using authorized XmlHttpRequest with the provided OAuth2 token.
  * If the token is invalid, the request will fail.
  *
- * @param {string} token OAuth2 token to be injected to the request.
+ * @param {?string} token OAuth2 token to be injected to the request. Null for
+ *     no token.
  * @param {string} url URL to the resource to be fetched.
  * @param {function(string, Blob}) onSuccess Success callback with the content
  *     type and the fetched data.
  * @param {function(number=)} onFailure Failure callback with the error code
  *     if available.
+ * @return {AuthorizedXHR} XHR instance.
  * @private
  */
-AuthorizedXHR.loadWithToken_ = function(token, url, onSuccess, onFailure) {
+AuthorizedXHR.load_ = function(token, url, onSuccess, onFailure) {
   var xhr = new XMLHttpRequest();
   xhr.responseType = 'blob';
 
@@ -306,11 +314,14 @@ AuthorizedXHR.loadWithToken_ = function(token, url, onSuccess, onFailure) {
   // Perform a xhr request.
   try {
     xhr.open('GET', url, true);
-    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+    if (token)
+      xhr.setRequestHeader('Authorization', 'Bearer ' + token);
     xhr.send();
   } catch (e) {
     onFailure();
   }
+
+  return xhr;
 };
 
 /**
