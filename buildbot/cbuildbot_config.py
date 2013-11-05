@@ -1302,7 +1302,16 @@ internal_paladin.add_config('parrot-paladin',
   upload_hw_test_artifacts=True,
 )
 
+incompatible_instruction_set = _config(
+  # If a board has a newer instruction set, then the unit tests and VM tests
+  # cannot run on the builders, at least until we've implemented an emulator.
+  # Disable the VM tests and unit tests to be safe.
+  vm_tests=None,
+  unittests=False,
+)
+
 internal_paladin.add_config('rambi-paladin',
+  incompatible_instruction_set,
   boards=['rambi'],
   paladin_builder_name='rambi paladin',
 )
@@ -1619,10 +1628,9 @@ _release.add_config('peppy-release',
 # rambi-release does not enable vm_tests or unittests due to the compiler
 # flags enabled for baytrail.
 _release.add_config('rambi-release',
+  incompatible_instruction_set,
   boards=['rambi'],
   hw_tests=[],
-  vm_tests=None,
-  unittests=False,
 )
 
 _release.add_config('samus-release',
