@@ -491,11 +491,8 @@ void OmniboxPopupViewGtk::StackWindow() {
 
 void OmniboxPopupViewGtk::AcceptLine(size_t line,
                                      WindowOpenDisposition disposition) {
-  // OpenMatch() may close the popup, which will clear the result set and, by
-  // extension, |match| and its contents.  So copy the relevant match out to
-  // make sure it stays alive until the call completes.
-  AutocompleteMatch match = GetResult().match_at(line);
-  omnibox_view_->OpenMatch(match, disposition, GURL(), line);
+  omnibox_view_->OpenMatch(GetResult().match_at(line), disposition, GURL(),
+                           line);
 }
 
 gfx::Image OmniboxPopupViewGtk::IconForMatch(

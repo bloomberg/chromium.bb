@@ -497,10 +497,5 @@ void OmniboxPopupViewMac::OpenURLForRow(size_t row,
   size_t start_match = model_->result().ShouldHideTopMatch() ? 1 : 0;
   row += start_match;
   DCHECK_LT(row, GetResult().size());
-
-  // OpenMatch() may close the popup, which will clear the result set and, by
-  // extension, |match| and its contents.  So copy the relevant match out to
-  // make sure it stays alive until the call completes.
-  AutocompleteMatch match = GetResult().match_at(row);
-  omnibox_view_->OpenMatch(match, disposition, GURL(), row);
+  omnibox_view_->OpenMatch(GetResult().match_at(row), disposition, GURL(), row);
 }

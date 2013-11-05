@@ -637,10 +637,16 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
                    OmniboxPopupModel::kNoMatch);
 }
 
-void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
+void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
                                  WindowOpenDisposition disposition,
                                  const GURL& alternate_nav_url,
                                  size_t index) {
+  const base::TimeTicks& now(base::TimeTicks::Now());
+  base::TimeDelta elapsed_time_since_user_first_modified_omnibox(
+      now - time_user_first_modified_omnibox_);
+  autocomplete_controller()->UpdateMatchDestinationURL(
+      elapsed_time_since_user_first_modified_omnibox, &match);
+
   const string16& user_text =
       user_input_in_progress_ ? user_text_ : permanent_text_;
   scoped_ptr<OmniboxNavigationObserver> observer(
@@ -653,9 +659,6 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
   // We only care about cases where there is a selection (i.e. the popup is
   // open).
   if (popup_model()->IsOpen()) {
-    const base::TimeTicks& now(base::TimeTicks::Now());
-    base::TimeDelta elapsed_time_since_user_first_modified_omnibox(
-        now - time_user_first_modified_omnibox_);
     base::TimeDelta elapsed_time_since_last_change_to_default_match(
         now - autocomplete_controller()->last_time_default_match_changed());
     // These elapsed times don't really make sense for ZeroSuggest matches
@@ -682,7 +685,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
         result());
 
     DCHECK(user_input_in_progress_ || (match.provider &&
-           match.provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST))
+           (match.provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST)))
         << "We didn't get here through the expected series of calls. "
         << "time_user_first_modified_omnibox_ is not set correctly and other "
         << "things may be wrong. Match provider: "
@@ -764,11 +767,6 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
     ExtensionAppProvider::LaunchAppFromOmnibox(match, profile_, disposition);
     observer->OnSuccessfulNavigation();
   } else {
-    base::TimeDelta query_formulation_time =
-        base::TimeTicks::Now() - time_user_first_modified_omnibox_;
-    const GURL destination_url = autocomplete_controller()->
-        GetDestinationURL(match, query_formulation_time);
-
     RecordPercentageMatchHistogram(
         permanent_text_, current_text,
         controller_->GetToolbarModel()->WouldPerformSearchTermReplacement(
@@ -778,16 +776,16 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
     // Track whether the destination URL sends us to a search results page
     // using the default search provider.
     if (TemplateURLServiceFactory::GetForProfile(profile_)->
-        IsSearchResultsPageFromDefaultSearchProvider(destination_url)) {
+        IsSearchResultsPageFromDefaultSearchProvider(match.destination_url)) {
       content::RecordAction(
           content::UserMetricsAction("OmniboxDestinationURLIsSearchOnDSP"));
     }
 
-    if (destination_url.is_valid()) {
+    if (match.destination_url.is_valid()) {
       // This calls RevertAll again.
       base::AutoReset<bool> tmp(&in_revert_, true);
       controller_->OnAutocompleteAccept(
-          destination_url, disposition,
+          match.destination_url, disposition,
           content::PageTransitionFromInt(
               match.transition | content::PAGE_TRANSITION_FROM_ADDRESS_BAR));
       if (observer->load_state() != OmniboxNavigationObserver::LOAD_NOT_SEEN)

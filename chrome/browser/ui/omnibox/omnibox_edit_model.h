@@ -191,7 +191,17 @@ class OmniboxEditModel {
                    bool for_drop);
 
   // Asks the browser to load the item at |index|, with the given properties.
-  void OpenMatch(const AutocompleteMatch& match,
+  //
+  // |match| is passed by value for two reasons:
+  // (1) This function needs to modify |match|, so a const ref isn't
+  //     appropriate.  Callers don't actually care about the modifications, so a
+  //     pointer isn't required.
+  // (2) The passed-in match is, on the caller side, typically coming from data
+  //     associated with the popup.  Since this call can close the popup, that
+  //     could clear that data, leaving us with a pointer-to-garbage.  So at
+  //     some point someone needs to make a copy of the match anyway, to
+  //     preserve it past the popup closure.
+  void OpenMatch(AutocompleteMatch match,
                  WindowOpenDisposition disposition,
                  const GURL& alternate_nav_url,
                  size_t index);

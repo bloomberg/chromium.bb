@@ -377,31 +377,28 @@ void AutocompleteController::ResetSession() {
   in_zero_suggest_ = false;
 }
 
-GURL AutocompleteController::GetDestinationURL(
-    const AutocompleteMatch& match,
-    base::TimeDelta query_formulation_time) const {
-  GURL destination_url(match.destination_url);
-  TemplateURL* template_url = match.GetTemplateURL(profile_, false);
+void AutocompleteController::UpdateMatchDestinationURL(
+    base::TimeDelta query_formulation_time,
+    AutocompleteMatch* match) const {
+  TemplateURL* template_url = match->GetTemplateURL(profile_, false);
+  if (!template_url || !match->search_terms_args.get() ||
+      match->search_terms_args->assisted_query_stats.empty())
+    return;
 
   // Append the query formulation time (time from when the user first typed a
   // character into the omnibox to when the user selected a query) and whether
-  // a field trial has triggered to the AQS parameter, if other AQS parameters
-  // were already populated.
-  if (template_url && match.search_terms_args.get() &&
-      !match.search_terms_args->assisted_query_stats.empty()) {
-    TemplateURLRef::SearchTermsArgs search_terms_args(*match.search_terms_args);
-    search_terms_args.assisted_query_stats += base::StringPrintf(
-        ".%" PRId64 "j%dj%d",
-        query_formulation_time.InMilliseconds(),
-        (search_provider_ &&
-         search_provider_->field_trial_triggered_in_session()) ||
-        (zero_suggest_provider_ &&
-         zero_suggest_provider_->field_trial_triggered_in_session()),
-        input_.current_page_classification());
-    destination_url = GURL(template_url->url_ref().
-                           ReplaceSearchTerms(search_terms_args));
-  }
-  return destination_url;
+  // a field trial has triggered to the AQS parameter.
+  TemplateURLRef::SearchTermsArgs search_terms_args(*match->search_terms_args);
+  search_terms_args.assisted_query_stats += base::StringPrintf(
+      ".%" PRId64 "j%dj%d",
+      query_formulation_time.InMilliseconds(),
+      (search_provider_ &&
+       search_provider_->field_trial_triggered_in_session()) ||
+      (zero_suggest_provider_ &&
+       zero_suggest_provider_->field_trial_triggered_in_session()),
+      input_.current_page_classification());
+  match->destination_url =
+      GURL(template_url->url_ref().ReplaceSearchTerms(search_terms_args));
 }
 
 void AutocompleteController::UpdateResult(

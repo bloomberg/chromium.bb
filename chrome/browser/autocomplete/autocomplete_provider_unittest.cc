@@ -190,6 +190,11 @@ class AutocompleteProviderTest : public testing::Test,
 
   void CopyResults();
 
+  // Returns match.destination_url as it would be set by
+  // AutocompleteController::UpdateMatchDestinationURL().
+  GURL GetDestinationURL(AutocompleteMatch match,
+                         base::TimeDelta query_formulation_time) const;
+
   AutocompleteResult result_;
   scoped_ptr<AutocompleteController> controller_;
 
@@ -430,6 +435,13 @@ void AutocompleteProviderTest::CopyResults() {
   result_.CopyFrom(controller_->result());
 }
 
+GURL AutocompleteProviderTest::GetDestinationURL(
+    AutocompleteMatch match,
+    base::TimeDelta query_formulation_time) const {
+  controller_->UpdateMatchDestinationURL(query_formulation_time, &match);
+  return match.destination_url;
+}
+
 void AutocompleteProviderTest::Observe(
     int type,
     const content::NotificationSource& source,
@@ -600,43 +612,37 @@ TEST_F(AutocompleteProviderTest, GetDestinationURL) {
   // and the field trial triggered bit, many conditions need to be satisfied.
   AutocompleteMatch match(NULL, 1100, false,
                           AutocompleteMatchType::SEARCH_SUGGEST);
-  GURL url = controller_->
-      GetDestinationURL(match, base::TimeDelta::FromMilliseconds(2456));
+  GURL url(GetDestinationURL(match, base::TimeDelta::FromMilliseconds(2456)));
   EXPECT_TRUE(url.path().empty());
 
   // The protocol needs to be https.
   RegisterTemplateURL(ASCIIToUTF16(kTestTemplateURLKeyword),
                       "https://aqs/{searchTerms}/{google:assistedQueryStats}");
-  url = controller_->GetDestinationURL(match,
-                                       base::TimeDelta::FromMilliseconds(2456));
+  url = GetDestinationURL(match, base::TimeDelta::FromMilliseconds(2456));
   EXPECT_TRUE(url.path().empty());
 
   // There needs to be a keyword provider.
   match.keyword = ASCIIToUTF16(kTestTemplateURLKeyword);
-  url = controller_->GetDestinationURL(match,
-                                       base::TimeDelta::FromMilliseconds(2456));
+  url = GetDestinationURL(match, base::TimeDelta::FromMilliseconds(2456));
   EXPECT_TRUE(url.path().empty());
 
   // search_terms_args needs to be set.
   match.search_terms_args.reset(
       new TemplateURLRef::SearchTermsArgs(string16()));
-  url = controller_->GetDestinationURL(match,
-                                       base::TimeDelta::FromMilliseconds(2456));
+  url = GetDestinationURL(match, base::TimeDelta::FromMilliseconds(2456));
   EXPECT_TRUE(url.path().empty());
 
   // assisted_query_stats needs to have been previously set.
   match.search_terms_args->assisted_query_stats =
       "chrome.0.69i57j69i58j5l2j0l3j69i59";
-  url = controller_->GetDestinationURL(match,
-                                       base::TimeDelta::FromMilliseconds(2456));
+  url = GetDestinationURL(match, base::TimeDelta::FromMilliseconds(2456));
   EXPECT_EQ("//aqs=chrome.0.69i57j69i58j5l2j0l3j69i59.2456j0j0&", url.path());
 
   // Test field trial triggered bit set.
   controller_->search_provider_->field_trial_triggered_in_session_ = true;
   EXPECT_TRUE(
       controller_->search_provider_->field_trial_triggered_in_session());
-  url = controller_->GetDestinationURL(match,
-                                       base::TimeDelta::FromMilliseconds(2456));
+  url = GetDestinationURL(match, base::TimeDelta::FromMilliseconds(2456));
   EXPECT_EQ("//aqs=chrome.0.69i57j69i58j5l2j0l3j69i59.2456j1j0&", url.path());
 
   // Test page classification set.
@@ -644,15 +650,13 @@ TEST_F(AutocompleteProviderTest, GetDestinationURL) {
   controller_->search_provider_->field_trial_triggered_in_session_ = false;
   EXPECT_FALSE(
       controller_->search_provider_->field_trial_triggered_in_session());
-  url = controller_->GetDestinationURL(match,
-                                       base::TimeDelta::FromMilliseconds(2456));
+  url = GetDestinationURL(match, base::TimeDelta::FromMilliseconds(2456));
   EXPECT_EQ("//aqs=chrome.0.69i57j69i58j5l2j0l3j69i59.2456j0j4&", url.path());
 
   // Test page classification and field trial triggered set.
   controller_->search_provider_->field_trial_triggered_in_session_ = true;
   EXPECT_TRUE(
       controller_->search_provider_->field_trial_triggered_in_session());
-  url = controller_->GetDestinationURL(match,
-                                       base::TimeDelta::FromMilliseconds(2456));
+  url = GetDestinationURL(match, base::TimeDelta::FromMilliseconds(2456));
   EXPECT_EQ("//aqs=chrome.0.69i57j69i58j5l2j0l3j69i59.2456j1j4&", url.path());
 }

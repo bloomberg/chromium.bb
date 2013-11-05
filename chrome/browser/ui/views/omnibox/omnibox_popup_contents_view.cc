@@ -496,12 +496,8 @@ void OmniboxPopupContentsView::OpenSelectedLine(
   size_t index = GetIndexForPoint(event.location());
   if (!HasMatchAt(index))
     return;
-
-  // OpenMatch() may close the popup, which will clear the result set and, by
-  // extension, |match| and its contents.  So copy the relevant match out to
-  // make sure it stays alive until the call completes.
-  AutocompleteMatch match = model_->result().match_at(index);
-  omnibox_view_->OpenMatch(match, disposition, GURL(), index);
+  omnibox_view_->OpenMatch(model_->result().match_at(index), disposition,
+                           GURL(), index);
 }
 
 OmniboxResultView* OmniboxPopupContentsView::result_view_at(size_t i) {
