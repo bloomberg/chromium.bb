@@ -183,7 +183,6 @@ public:
     virtual Document* ownerDocument() const;
     bool canBind() const { return m_origin != TypeBuilder::CSS::StyleSheetOrigin::User_agent && m_origin != TypeBuilder::CSS::StyleSheetOrigin::User; }
     CSSStyleSheet* pageStyleSheet() const { return m_pageStyleSheet.get(); }
-    bool isReparsing() const { return m_isReparsing; }
     void reparseStyleSheet(const String&);
     bool setText(const String&, ExceptionState&);
     String ruleSelector(const InspectorCSSId&, ExceptionState&);
@@ -249,7 +248,6 @@ private:
     TypeBuilder::CSS::StyleSheetOrigin::Enum m_origin;
     String m_documentURL;
     bool m_isRevalidating;
-    bool m_isReparsing;
     ParsedStyleSheet* m_parsedStyleSheet;
     mutable CSSRuleVector m_flatRules;
     Listener* m_listener;

@@ -33,6 +33,7 @@
 
 #include "bindings/v8/ScriptString.h"
 #include "core/css/CSSSelector.h"
+#include "core/css/CSSStyleDeclaration.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/dom/CharacterData.h"
 #include "core/dom/Element.h"
@@ -165,9 +166,19 @@ inline InstrumentingAgents* instrumentingAgentsFor(Document* document)
     return document ? instrumentingAgentsFor(*document) : 0;
 }
 
+inline InstrumentingAgents* instrumentingAgentsFor(CSSStyleSheet* styleSheet)
+{
+    return styleSheet ? instrumentingAgentsFor(styleSheet->ownerDocument()) : 0;
+}
+
 inline InstrumentingAgents* instrumentingAgentsFor(Node* node)
 {
     return node ? instrumentingAgentsFor(node->document()) : 0;
+}
+
+inline InstrumentingAgents* instrumentingAgentsFor(CSSStyleDeclaration* declaration)
+{
+    return declaration ? instrumentingAgentsFor(declaration->parentStyleSheet()) : 0;
 }
 
 } // namespace InspectorInstrumentation

@@ -97,18 +97,11 @@ enum ForcePseudoClassFlags {
 
 class StyleSheetAppender {
 public:
-    StyleSheetAppender(CSSStyleSheetToInspectorStyleSheet& cssStyleSheetToInspectorStyleSheet, Vector<CSSStyleSheet*>& result)
-        : m_cssStyleSheetToInspectorStyleSheet(cssStyleSheetToInspectorStyleSheet)
-        , m_result(result) { }
+    StyleSheetAppender(Vector<CSSStyleSheet*>& result)
+        : m_result(result) { }
 
     void run(CSSStyleSheet* styleSheet)
     {
-        RefPtr<InspectorStyleSheet> inspectorStyleSheet = m_cssStyleSheetToInspectorStyleSheet.get(styleSheet);
-        // Avoid creating m_childRuleCSSOMWrappers in the stylesheet if it is in the process of re-parsing.
-        // Otherwise m_childRuleCSSOMWrappers size will be initialized only for a part of rules, resulting in an ASSERT failure in CSSStyleSheet::item().
-        // Instead, wait for the RuleMutationScope destruction and handle the complete CSSStyleSheet.
-        if (inspectorStyleSheet && inspectorStyleSheet->isReparsing())
-            return;
         m_result.append(styleSheet);
         for (unsigned i = 0, size = styleSheet->length(); i < size; ++i) {
             CSSRule* rule = styleSheet->item(i);
@@ -121,7 +114,6 @@ public:
     }
 
 private:
-    CSSStyleSheetToInspectorStyleSheet& m_cssStyleSheetToInspectorStyleSheet;
     Vector<CSSStyleSheet*>& m_result;
 };
 
@@ -622,6 +614,8 @@ InspectorCSSAgent::InspectorCSSAgent(InstrumentingAgents* instrumentingAgents, I
     , m_pageAgent(pageAgent)
     , m_resourceAgent(resourceAgent)
     , m_lastStyleSheetId(1)
+    , m_styleSheetsPendingMutation(0)
+    , m_styleDeclarationPendingMutation(false)
     , m_creatingViaInspectorStyleSheet(false)
     , m_isSettingStyleSheetText(false)
 {
@@ -777,6 +771,40 @@ void InspectorCSSAgent::willRemoveNamedFlow(Document* document, NamedFlow* named
     m_frontend->namedFlowRemoved(documentNodeId, namedFlow->name().string());
 }
 
+void InspectorCSSAgent::willMutateRules()
+{
+    ++m_styleSheetsPendingMutation;
+}
+
+void InspectorCSSAgent::didMutateRules(CSSStyleSheet* styleSheet)
+{
+    --m_styleSheetsPendingMutation;
+    ASSERT(m_styleSheetsPendingMutation >= 0);
+
+    if (!styleSheetEditInProgress()) {
+        Document* owner = styleSheet->ownerDocument();
+        if (owner)
+            owner->modifiedStyleSheet(styleSheet, RecalcStyleImmediately, FullStyleUpdate);
+    }
+}
+
+void InspectorCSSAgent::willMutateStyle()
+{
+    m_styleDeclarationPendingMutation = true;
+}
+
+void InspectorCSSAgent::didMutateStyle(CSSStyleDeclaration* style, bool isInlineStyle)
+{
+    ASSERT(m_styleDeclarationPendingMutation);
+    m_styleDeclarationPendingMutation = false;
+    if (!styleSheetEditInProgress() && !isInlineStyle) {
+        CSSStyleSheet* parentSheet = style->parentStyleSheet();
+        Document* owner = parentSheet ? parentSheet->ownerDocument() : 0;
+        if (owner)
+            owner->modifiedStyleSheet(parentSheet, RecalcStyleImmediately, FullStyleUpdate);
+    }
+}
+
 void InspectorCSSAgent::didUpdateRegionLayout(Document* document, NamedFlow* namedFlow)
 {
     int documentNodeId = documentNodeWithRequestedFlowsId(document);
@@ -823,8 +851,9 @@ void InspectorCSSAgent::regionOversetChanged(NamedFlow* namedFlow, int documentN
 
 void InspectorCSSAgent::activeStyleSheetsUpdated(Document* document, const StyleSheetVector& newSheets)
 {
-    if (m_isSettingStyleSheetText)
+    if (styleSheetEditInProgress())
         return;
+
     HashSet<CSSStyleSheet*> removedSheets;
     for (CSSStyleSheetToInspectorStyleSheet::iterator it = m_cssStyleSheetToInspectorStyleSheet.begin(); it != m_cssStyleSheetToInspectorStyleSheet.end(); ++it) {
         if (it->value->canBind() && (!it->key->ownerDocument() || it->key->ownerDocument() == document))
@@ -835,7 +864,7 @@ void InspectorCSSAgent::activeStyleSheetsUpdated(Document* document, const Style
     for (size_t i = 0, size = newSheets.size(); i < size; ++i) {
         StyleSheet* newSheet = newSheets.at(i).get();
         if (newSheet->isCSSStyleSheet()) {
-            StyleSheetAppender appender(m_cssStyleSheetToInspectorStyleSheet, newSheetsVector);
+            StyleSheetAppender appender(newSheetsVector);
             appender.run(static_cast<CSSStyleSheet*>(newSheet));
         }
     }

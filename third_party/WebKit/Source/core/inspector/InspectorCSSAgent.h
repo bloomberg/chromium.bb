@@ -113,6 +113,10 @@ public:
     void mediaQueryResultChanged();
     void didCreateNamedFlow(Document*, NamedFlow*);
     void willRemoveNamedFlow(Document*, NamedFlow*);
+    void willMutateRules();
+    void didMutateRules(CSSStyleSheet*);
+    void willMutateStyle();
+    void didMutateStyle(CSSStyleDeclaration*, bool);
 
 private:
     void regionLayoutUpdated(NamedFlow*, int documentNodeId);
@@ -177,6 +181,7 @@ private:
     InspectorStyleSheet* viaInspectorStyleSheet(Document*, bool createIfAbsent);
     InspectorStyleSheet* assertStyleSheetForId(ErrorString*, const String&);
     TypeBuilder::CSS::StyleSheetOrigin::Enum detectOrigin(CSSStyleSheet* pageStyleSheet, Document* ownerDocument);
+    bool styleSheetEditInProgress() const { return m_styleSheetsPendingMutation || m_styleDeclarationPendingMutation || m_isSettingStyleSheetText; }
 
     PassRefPtr<TypeBuilder::CSS::CSSRule> buildObjectForRule(CSSStyleRule*, StyleResolver*);
     PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSRule> > buildArrayForRuleList(CSSRuleList*, StyleResolver*);
@@ -190,7 +195,7 @@ private:
     virtual void didRemoveDOMNode(Node*);
     virtual void didModifyDOMAttr(Element*);
 
-    // InspectorCSSAgent::Listener implementation
+    // InspectorStyleSheet::Listener implementation
     virtual void styleSheetChanged(InspectorStyleSheet*) OVERRIDE;
     virtual void willReparseStyleSheet() OVERRIDE;
     virtual void didReparseStyleSheet() OVERRIDE;
@@ -212,6 +217,8 @@ private:
     OwnPtr<ChangeRegionOversetTask> m_changeRegionOversetTask;
 
     int m_lastStyleSheetId;
+    int m_styleSheetsPendingMutation;
+    bool m_styleDeclarationPendingMutation;
     bool m_creatingViaInspectorStyleSheet;
     bool m_isSettingStyleSheetText;
 

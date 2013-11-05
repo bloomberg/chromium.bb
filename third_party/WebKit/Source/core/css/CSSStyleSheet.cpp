@@ -35,6 +35,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/Node.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -153,6 +154,7 @@ void CSSStyleSheet::extraCSSOMWrapperIndices(Vector<unsigned>& indices)
 
 void CSSStyleSheet::willMutateRules()
 {
+    InspectorInstrumentation::willMutateRules(this);
     // If we are the only client it is safe to mutate.
     if (m_contents->hasOneClient() && !m_contents->isInMemoryCache()) {
         m_contents->setMutable();
@@ -180,6 +182,7 @@ void CSSStyleSheet::didMutateRules()
     ASSERT(m_contents->isMutable());
     ASSERT(m_contents->hasOneClient());
 
+    InspectorInstrumentation::didMutateRules(this);
     didMutate(PartialRuleUpdate);
 }
 

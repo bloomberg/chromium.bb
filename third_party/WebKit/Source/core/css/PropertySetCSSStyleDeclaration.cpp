@@ -44,6 +44,7 @@ class StyleAttributeMutationScope {
 public:
     StyleAttributeMutationScope(PropertySetCSSStyleDeclaration* decl)
     {
+        InspectorInstrumentation::willMutateStyle(decl);
         ++s_scopeCount;
 
         if (s_scopeCount != 1) {
@@ -83,13 +84,15 @@ public:
             m_mutationRecipients->enqueueMutationRecord(m_mutation);
 
         s_shouldDeliver = false;
-        if (!s_shouldNotifyInspector) {
-            s_currentDecl = 0;
-            return;
-        }
+
         // We have to clear internal state before calling Inspector's code.
         PropertySetCSSStyleDeclaration* localCopyStyleDecl = s_currentDecl;
         s_currentDecl = 0;
+        InspectorInstrumentation::didMutateStyle(localCopyStyleDecl, s_shouldNotifyInspector);
+
+        if (!s_shouldNotifyInspector)
+            return;
+
         s_shouldNotifyInspector = false;
         if (localCopyStyleDecl->parentElement())
             InspectorInstrumentation::didInvalidateStyleAttr(localCopyStyleDecl->parentElement());
