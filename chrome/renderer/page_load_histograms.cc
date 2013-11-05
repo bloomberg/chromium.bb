@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/common/chrome_switches.h"
@@ -104,9 +105,35 @@ bool DataReductionProxyWasUsed(WebFrame* frame) {
   return false;
 }
 
+// Returns true if the provided URL is a referrer string that came from
+// a Google Web Search results page. This is a little non-deterministic
+// because desktop and mobile websearch differ and sometimes just provide
+// http://www.google.com/ as the referrer. In the case of /url we can be sure
+// that it came from websearch but we will be generous and allow for cases
+// where a non-Google URL was provided a bare Google URL as a referrer.
+// The domain validation matches the code used by the prerenderer for similar
+// purposes.
+// TODO(pmeenan): Remove the fuzzy logic when the referrer is reliable
+bool IsFromGoogleSearchResult(const GURL& url, const GURL& referrer) {
+  if (!StartsWithASCII(referrer.host(), "www.google.", true))
+    return false;
+  if (StartsWithASCII(referrer.path(), "/url", true))
+    return true;
+  bool is_possible_search_referrer =
+      referrer.path().empty() ||
+      referrer.path() == "/" ||
+      StartsWithASCII(referrer.path(), "/search", true) ||
+      StartsWithASCII(referrer.path(), "/webhp", true);
+  if (is_possible_search_referrer &&
+      !StartsWithASCII(url.host(), "www.google", true))
+    return true;
+  return false;
+}
+
 void DumpPerformanceTiming(const WebPerformance& performance,
                            DocumentState* document_state,
-                           bool data_reduction_proxy_was_used) {
+                           bool data_reduction_proxy_was_used,
+                           bool came_from_websearch) {
   Time request = document_state->request_time();
 
   Time navigation_start = Time::FromDoubleT(performance.navigationStart());
@@ -217,11 +244,23 @@ void DumpPerformanceTiming(const WebPerformance& performance,
     PLT_HISTOGRAM("PLT.PT_BeginToFinishDoc", load_event_start - begin);
     PLT_HISTOGRAM("PLT.PT_CommitToFinishDoc",
                   load_event_start - response_start);
+    PLT_HISTOGRAM("PLT.PT_RequestToFinishDoc",
+                  load_event_start - navigation_start);
     if (data_reduction_proxy_was_used) {
       PLT_HISTOGRAM("PLT.PT_BeginToFinishDoc_DataReductionProxy",
                     load_event_start - begin);
       PLT_HISTOGRAM("PLT.PT_CommitToFinishDoc_DataReductionProxy",
                     load_event_start - response_start);
+      PLT_HISTOGRAM("PLT.PT_RequestToFinishDoc_DataReductionProxy",
+                    load_event_start - navigation_start);
+    }
+    if (came_from_websearch) {
+      PLT_HISTOGRAM("PLT.PT_BeginToFinishDoc_FromGWS",
+                    load_event_start - begin);
+      PLT_HISTOGRAM("PLT.PT_CommitToFinishDoc_FromGWS",
+                    load_event_start - response_start);
+      PLT_HISTOGRAM("PLT.PT_RequestToFinishDoc_FromGWS",
+                    load_event_start - navigation_start);
     }
   }
   if (!load_event_end.is_null()) {
@@ -239,6 +278,15 @@ void DumpPerformanceTiming(const WebPerformance& performance,
       PLT_HISTOGRAM("PLT.PT_StartToFinish_DataReductionProxy",
                     load_event_end - request_start);
     }
+    if (came_from_websearch) {
+      PLT_HISTOGRAM("PLT.PT_BeginToFinish_FromGWS", load_event_end - begin);
+      PLT_HISTOGRAM("PLT.PT_CommitToFinish_FromGWS",
+                    load_event_end - response_start);
+      PLT_HISTOGRAM("PLT.PT_RequestToFinish_FromGWS",
+                    load_event_end - navigation_start);
+      PLT_HISTOGRAM("PLT.PT_StartToFinish_FromGWS",
+                    load_event_end - request_start);
+    }
   }
   if (!load_event_start.is_null() && !load_event_end.is_null()) {
     PLT_HISTOGRAM("PLT.PT_FinishDocToFinish",
@@ -247,14 +295,24 @@ void DumpPerformanceTiming(const WebPerformance& performance,
                       load_event_end - load_event_start,
                       data_reduction_proxy_was_used);
 
-    if (data_reduction_proxy_was_used) {
+    if (data_reduction_proxy_was_used)
       PLT_HISTOGRAM("PLT.PT_FinishDocToFinish_DataReductionProxy",
                     load_event_end - load_event_start);
-    }
+  }
+  if (!dom_content_loaded_start.is_null()) {
+    PLT_HISTOGRAM("PLT.PT_RequestToDomContentLoaded",
+                  dom_content_loaded_start - navigation_start);
+    if (data_reduction_proxy_was_used)
+      PLT_HISTOGRAM("PLT.PT_RequestToDomContentLoaded_DataReductionProxy",
+                    dom_content_loaded_start - navigation_start);
+    if (came_from_websearch)
+      PLT_HISTOGRAM("PLT.PT_RequestToDomContentLoaded_FromGWS",
+                    dom_content_loaded_start - navigation_start);
   }
   PLT_HISTOGRAM("PLT.PT_BeginToCommit", response_start - begin);
   PLT_HISTOGRAM("PLT.PT_RequestToStart", request_start - navigation_start);
   PLT_HISTOGRAM("PLT.PT_StartToCommit", response_start - request_start);
+  PLT_HISTOGRAM("PLT.PT_RequestToCommit", response_start - navigation_start);
   if (data_reduction_proxy_was_used) {
     PLT_HISTOGRAM("PLT.PT_BeginToCommit_DataReductionProxy",
                   response_start - begin);
@@ -262,6 +320,17 @@ void DumpPerformanceTiming(const WebPerformance& performance,
                   request_start - navigation_start);
     PLT_HISTOGRAM("PLT.PT_StartToCommit_DataReductionProxy",
                   response_start - request_start);
+    PLT_HISTOGRAM("PLT.PT_RequestToCommit_DataReductionProxy",
+                  response_start - navigation_start);
+  }
+  if (came_from_websearch) {
+    PLT_HISTOGRAM("PLT.PT_BeginToCommit_FromGWS", response_start - begin);
+    PLT_HISTOGRAM("PLT.PT_RequestToStart_FromGWS",
+                  request_start - navigation_start);
+    PLT_HISTOGRAM("PLT.PT_StartToCommit_FromGWS",
+                  response_start - request_start);
+    PLT_HISTOGRAM("PLT.PT_RequestToCommit_FromGWS",
+                  response_start - navigation_start);
   }
 }
 
@@ -308,6 +377,9 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
       DocumentState::FromDataSource(frame->dataSource());
 
   bool data_reduction_proxy_was_used = DataReductionProxyWasUsed(frame);
+  bool came_from_websearch =
+      IsFromGoogleSearchResult(frame->document().url(),
+                               GURL(frame->document().referrer()));
 
   // Times based on the Web Timing metrics.
   // http://www.w3.org/TR/navigation-timing/
@@ -315,7 +387,7 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   // the existing ones. Once we understand any differences, we will standardize
   // on a single set of metrics.
   DumpPerformanceTiming(frame->performance(), document_state,
-                        data_reduction_proxy_was_used);
+                        data_reduction_proxy_was_used, came_from_websearch);
 
   // If we've already dumped, do nothing.
   // This simple bool works because we only dump for the main frame.
@@ -419,10 +491,14 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
     if (begin <= first_paint) {
       begin_to_first_paint.reset(new TimeDelta(first_paint - begin));
       PLT_HISTOGRAM("PLT.BeginToFirstPaint", *begin_to_first_paint);
+      if (came_from_websearch)
+        PLT_HISTOGRAM("PLT.BeginToFirstPaint_FromGWS", *begin_to_first_paint);
     }
     DCHECK(commit <= first_paint);
     commit_to_first_paint.reset(new TimeDelta(first_paint - commit));
     PLT_HISTOGRAM("PLT.CommitToFirstPaint", *commit_to_first_paint);
+    if (came_from_websearch)
+      PLT_HISTOGRAM("PLT.CommitToFirstPaint_FromGWS", *commit_to_first_paint);
   }
   if (!first_paint_after_load.is_null()) {
     // 'first_paint_after_load' can be before 'begin' for an unknown reason.
@@ -440,6 +516,10 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   }
   PLT_HISTOGRAM("PLT.BeginToFinishDoc", begin_to_finish_doc);
   PLT_HISTOGRAM("PLT.BeginToFinish", begin_to_finish_all_loads);
+  if (came_from_websearch) {
+    PLT_HISTOGRAM("PLT.BeginToFinishDoc_FromGWS", begin_to_finish_doc);
+    PLT_HISTOGRAM("PLT.BeginToFinish_FromGWS", begin_to_finish_all_loads);
+  }
 
   // Load type related histograms.
   switch (load_type) {

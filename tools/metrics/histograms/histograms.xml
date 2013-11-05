@@ -12976,6 +12976,107 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="PLT.PT_BeginToCommit" units="milliseconds">
+  <summary>
+    This time is based on the NavigationTiming spec and is a more accurate
+    version of PLT.BeginToCommit. Commit: responseStart. Begin: requestStart or
+    navigationStart if user-initiated request.
+  </summary>
+</histogram>
+
+<histogram name="PLT.PT_BeginToFinish" units="milliseconds">
+  <summary>
+    This time is based on the NavigationTiming spec and is a more accurate
+    version of PLT.BeginToFinish. Finish: loadEventEnd. Begin: requestStart or
+    navigationStart if user-initiated request.
+  </summary>
+</histogram>
+
+<histogram name="PLT.PT_BeginToFinishDoc" units="milliseconds">
+  <summary>
+    This time is based on the NavigationTiming spec and is a more accurate
+    version of PLT.BeginToFinishDoc. FinishDoc: loadEventStart. Begin:
+    requestStart or navigationStart if user-initiated request.
+  </summary>
+</histogram>
+
+<histogram name="PLT.PT_CommitToFinish" units="milliseconds">
+  <summary>
+    This time is based on the NavigationTiming spec and is a more accurate
+    version of PLT.CommitToFinish. Commit: responseStart. Finish: loadEventEnd.
+  </summary>
+</histogram>
+
+<histogram name="PLT.PT_CommitToFinishDoc" units="milliseconds">
+  <summary>
+    This time is based on the NavigationTiming spec and is a more accurate
+    version of PLT.CommitToFinishDoc. Commit: responseStart. FinishDoc:
+    loadEventStart.
+  </summary>
+</histogram>
+
+<histogram name="PLT.PT_FinishDocToFinish" units="milliseconds">
+  <summary>
+    This time is based on the NavigationTiming spec and is a more accurate
+    version of PLT.FinishDocToFinish. Finish: loadEventEnd. FinishDoc:
+    loadEventStart.
+  </summary>
+</histogram>
+
+<histogram name="PLT.PT_RequestToCommit" units="milliseconds">
+  <summary>
+    This time is based on the NavigationTiming spec and measures the time until
+    the renderer got first byte of document. Commit: time when renderer got
+    first byte of document. Request: navigationStart.
+  </summary>
+</histogram>
+
+<histogram name="PLT.PT_RequestToDomContentLoaded" units="milliseconds">
+  <summary>
+    This time is based on the NavigationTiming spec and measures the time until
+    the beginning of the DOMContentLoaded event. DOMContentLoaded:
+    domContentLoadedEventStart. Request: navigationStart.
+  </summary>
+</histogram>
+
+<histogram name="PLT.PT_RequestToFinish" units="milliseconds">
+  <summary>
+    This time is based on the NavigationTiming spec and is a more accurate
+    version of PLT.RequestToFinish. Finish: loadEventEnd. Request:
+    navigationStart.
+  </summary>
+</histogram>
+
+<histogram name="PLT.PT_RequestToFinishDoc" units="milliseconds">
+  <summary>
+    This time is based on the NavigationTiming spec and measures the page load
+    time until the beginning of the load event. Finish: loadEventStart. Request:
+    navigationStart.
+  </summary>
+</histogram>
+
+<histogram name="PLT.PT_RequestToStart" units="milliseconds">
+  <summary>
+    This time is based on the NavigationTiming spec and is a more accurate
+    version of PLT.RequestToStart. Start: requestStart. Request:
+    navigationStart.
+  </summary>
+</histogram>
+
+<histogram name="PLT.PT_StartToCommit" units="milliseconds">
+  <summary>
+    This time is based on the NavigationTiming spec and is a more accurate
+    version of PLT.StartToCommit. Start: requestStart. Commit: responseStart.
+  </summary>
+</histogram>
+
+<histogram name="PLT.PT_StartToFinish" units="milliseconds">
+  <summary>
+    This time is based on the NavigationTiming spec and is a more accurate
+    version of PLT.StartToFinish. Start: requestStart. Finish: loadEventEnd.
+  </summary>
+</histogram>
+
 <histogram name="PLT.RequestToFinish" units="milliseconds">
   <summary>
     Time from &quot;request&quot; to &quot;finish.&quot;  &quot;Request&quot; ==
@@ -29026,6 +29127,19 @@ other types of suffix sets.
   <affected-histogram name="PLT.NT_Redirect"/>
   <affected-histogram name="PLT.NT_Request"/>
   <affected-histogram name="PLT.NT_Response"/>
+  <affected-histogram name="PLT.PT_BeginToCommit"/>
+  <affected-histogram name="PLT.PT_BeginToFinish"/>
+  <affected-histogram name="PLT.PT_BeginToFinishDoc"/>
+  <affected-histogram name="PLT.PT_CommitToFinish"/>
+  <affected-histogram name="PLT.PT_CommitToFinishDoc"/>
+  <affected-histogram name="PLT.PT_FinishDocToFinish"/>
+  <affected-histogram name="PLT.PT_RequestToCommit"/>
+  <affected-histogram name="PLT.PT_RequestToDomContentLoaded"/>
+  <affected-histogram name="PLT.PT_RequestToFinish"/>
+  <affected-histogram name="PLT.PT_RequestToFinishDoc"/>
+  <affected-histogram name="PLT.PT_RequestToStart"/>
+  <affected-histogram name="PLT.PT_StartToCommit"/>
+  <affected-histogram name="PLT.PT_StartToFinish"/>
 </fieldtrial>
 
 <fieldtrial name="DefaultAppsExperiment">
@@ -29174,6 +29288,28 @@ other types of suffix sets.
       label="Total load time from the moment the Javascript started parsing
              till the moment the empty file list is displayed."/>
   <affected-histogram name="FileBrowser.Load"/>
+</fieldtrial>
+
+<fieldtrial name="FromGWS">
+  <group name="FromGWS"
+      label="Only page loads that are a result of a navigation from a web
+             search are considered."/>
+  <affected-histogram name="PLT.BeginToFinish"/>
+  <affected-histogram name="PLT.BeginToFinishDoc"/>
+  <affected-histogram name="PLT.BeginToFirstPaint"/>
+  <affected-histogram name="PLT.CommitToFirstPaint"/>
+  <affected-histogram name="PLT.PT_BeginToCommit"/>
+  <affected-histogram name="PLT.PT_BeginToFinish"/>
+  <affected-histogram name="PLT.PT_BeginToFinishDoc"/>
+  <affected-histogram name="PLT.PT_CommitToFinish"/>
+  <affected-histogram name="PLT.PT_CommitToFinishDoc"/>
+  <affected-histogram name="PLT.PT_RequestToCommit"/>
+  <affected-histogram name="PLT.PT_RequestToDomContentLoaded"/>
+  <affected-histogram name="PLT.PT_RequestToFinish"/>
+  <affected-histogram name="PLT.PT_RequestToFinishDoc"/>
+  <affected-histogram name="PLT.PT_RequestToStart"/>
+  <affected-histogram name="PLT.PT_StartToCommit"/>
+  <affected-histogram name="PLT.PT_StartToFinish"/>
 </fieldtrial>
 
 <fieldtrial name="HttpPipeliningCompatibility">
