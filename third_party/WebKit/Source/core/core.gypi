@@ -2054,7 +2054,6 @@
             'dom/VisitedLinkState.h',
             'dom/WheelController.cpp',
             'dom/WheelController.h',
-            'dom/WhitespaceChildList.h',
             'events/AutocompleteErrorEvent.h',
             'events/BeforeLoadEvent.h',
             'events/BeforeTextInsertedEvent.cpp',

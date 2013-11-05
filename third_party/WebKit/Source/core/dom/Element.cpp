@@ -64,7 +64,6 @@
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/dom/SelectorQuery.h"
 #include "core/dom/Text.h"
-#include "core/dom/WhitespaceChildList.h"
 #include "core/dom/custom/CustomElement.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
 #include "core/dom/shadow/InsertionPoint.h"
@@ -1606,28 +1605,22 @@ void Element::recalcChildStyle(StyleRecalcChange change)
     // Reversing this loop can lead to non-deterministic results in our code to optimize out empty whitespace
     // RenderTexts. We try to put off recalcing their style until the end to avoid this issue.
     // See crbug.com/288225
-    WhitespaceChildList whitespaceChildList(change);
     for (Node* child = lastChild(); child; child = child->previousSibling()) {
+        bool didReattach = false;
         if (child->isTextNode()) {
-            Text* textChild = toText(child);
-            // FIXME: This check is expensive and may negate the performance gained by the optimization of
-            // avoiding whitespace renderers.
-            if (textChild->containsOnlyWhitespace())
-                whitespaceChildList.append(textChild);
-            else
-                textChild->recalcTextStyle(change);
+            didReattach = toText(child)->recalcTextStyle(change);
         } else if (child->isElementNode()) {
             Element* element = toElement(child);
             if (shouldRecalcStyle(change, element)) {
                 parentPusher.push();
-                element->recalcStyle(change);
+                didReattach = element->recalcStyle(change);
             } else if (element->supportsStyleSharing()) {
                 document().styleResolver()->addToStyleSharingList(*element);
             }
         }
+        if (didReattach)
+            child->reattachWhitespaceSiblings();
     }
-
-    whitespaceChildList.recalcStyle();
 
     if (shouldRecalcStyle(change, this)) {
         updatePseudoElement(AFTER, change);

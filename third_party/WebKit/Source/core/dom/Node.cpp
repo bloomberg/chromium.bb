@@ -997,6 +997,16 @@ void Node::detach(const AttachContext& context)
 #endif
 }
 
+void Node::reattachWhitespaceSiblings() const
+{
+    for (Node* sibling = nextSibling(); sibling; sibling = sibling->nextSibling()) {
+        if (sibling->isTextNode() && toText(sibling)->containsOnlyWhitespace())
+            sibling->reattach();
+        else if (sibling->renderer())
+            return;
+    }
+}
+
 // FIXME: This code is used by editing.  Seems like it could move over there and not pollute Node.
 Node *Node::previousNodeConsideringAtomicNodes() const
 {

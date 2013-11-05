@@ -561,6 +561,8 @@ public:
     void reattach(const AttachContext& = AttachContext());
     void lazyReattachIfAttached();
 
+    void reattachWhitespaceSiblings() const;
+
     // Wrapper for nodes that don't have a renderer, but still cache the style (like HTMLOptionElement).
     RenderStyle* renderStyle() const;
     RenderStyle* parentRenderStyle() const;
