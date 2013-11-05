@@ -28,9 +28,6 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrame(
   scoped_refptr<VideoFrame> frame(new VideoFrame(
       format, coded_size, visible_rect, natural_size, timestamp));
   switch (format) {
-    case VideoFrame::RGB32:
-      frame->AllocateRGB(4u);
-      break;
     case VideoFrame::YV12:
     case VideoFrame::YV12A:
     case VideoFrame::YV16:
@@ -48,8 +45,6 @@ std::string VideoFrame::FormatToString(VideoFrame::Format format) {
   switch (format) {
     case VideoFrame::UNKNOWN:
       return "UNKNOWN";
-    case VideoFrame::RGB32:
-      return "RGB32";
     case VideoFrame::YV12:
       return "YV12";
     case VideoFrame::YV16:
@@ -231,8 +226,6 @@ size_t VideoFrame::NumPlanes(Format format) {
     case VideoFrame::HOLE:
 #endif
       return 0;
-    case VideoFrame::RGB32:
-      return 1;
     case VideoFrame::YV12:
     case VideoFrame::YV16:
     case VideoFrame::I420:
@@ -256,8 +249,6 @@ static inline size_t RoundUp(size_t value, size_t alignment) {
 // static
 size_t VideoFrame::AllocationSize(Format format, const gfx::Size& coded_size) {
   switch (format) {
-    case VideoFrame::RGB32:
-      return coded_size.GetArea() * 4;
     case VideoFrame::YV12:
     case VideoFrame::I420: {
       const size_t rounded_size =
@@ -286,25 +277,10 @@ size_t VideoFrame::AllocationSize(Format format, const gfx::Size& coded_size) {
   return 0;
 }
 
-// Release data allocated by AllocateRGB() or AllocateYUV().
+// Release data allocated by AllocateYUV().
 static void ReleaseData(uint8* data) {
   DCHECK(data);
   base::AlignedFree(data);
-}
-
-void VideoFrame::AllocateRGB(size_t bytes_per_pixel) {
-  // Round up to align at least at a 16-byte boundary for each row.
-  // This is sufficient for MMX and SSE2 reads (movq/movdqa).
-  size_t bytes_per_row = RoundUp(coded_size_.width(),
-                                 kFrameSizeAlignment) * bytes_per_pixel;
-  size_t aligned_height = RoundUp(coded_size_.height(), kFrameSizeAlignment);
-  strides_[VideoFrame::kRGBPlane] = bytes_per_row;
-  data_[VideoFrame::kRGBPlane] = reinterpret_cast<uint8*>(
-      base::AlignedAlloc(bytes_per_row * aligned_height + kFrameSizePadding,
-                         kFrameAddressAlignment));
-  no_longer_needed_cb_ = base::Bind(&ReleaseData, data_[VideoFrame::kRGBPlane]);
-  DCHECK(!(reinterpret_cast<intptr_t>(data_[VideoFrame::kRGBPlane]) & 7));
-  COMPILE_ASSERT(0 == VideoFrame::kRGBPlane, RGB_data_must_be_index_0);
 }
 
 void VideoFrame::AllocateYUV() {
@@ -394,10 +370,6 @@ int VideoFrame::row_bytes(size_t plane) const {
   DCHECK(IsValidPlane(plane));
   int width = coded_size_.width();
   switch (format_) {
-    // 32bpp.
-    case RGB32:
-      return width * 4;
-
     // Planar, 8bpp.
     case YV12A:
       if (plane == kAPlane)
@@ -423,7 +395,6 @@ int VideoFrame::rows(size_t plane) const {
   DCHECK(IsValidPlane(plane));
   int height = coded_size_.height();
   switch (format_) {
-    case RGB32:
     case YV16:
       return height;
 
