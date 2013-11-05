@@ -246,6 +246,12 @@ void CheckLineIntegrity(const std::vector<internal::Line>& lines,
   }
 }
 
+// Returns true if characters of |block_code| may trigger font fallback.
+bool IsUnusualBlockCode(const UBlockCode block_code) {
+  return block_code == UBLOCK_GEOMETRIC_SHAPES ||
+         block_code == UBLOCK_MISCELLANEOUS_SYMBOLS;
+}
+
 }  // namespace
 
 namespace internal {
@@ -918,7 +924,7 @@ void RenderTextWin::ItemizeLogicalText() {
         --run_break;
     }
 
-    // Break runs adjacent to UBLOCK_GEOMETRIC_SHAPES character substrings.
+    // Break runs adjacent to character substrings in certain code blocks.
     // This avoids using their fallback fonts for more characters than needed,
     // in cases like "\x25B6 Media Title", etc. http://crbug.com/278913
     if (run_break > run->range.start()) {
@@ -927,11 +933,11 @@ void RenderTextWin::ItemizeLogicalText() {
       base::i18n::UTF16CharIterator iter(layout_text.c_str() + run_start,
                                          run_length);
       const UBlockCode first_block_code = ublock_getCode(iter.get());
+      const bool first_block_unusual = IsUnusualBlockCode(first_block_code);
       while (iter.Advance() && iter.array_pos() < run_length) {
         const UBlockCode current_block_code = ublock_getCode(iter.get());
         if (current_block_code != first_block_code &&
-            (current_block_code == UBLOCK_GEOMETRIC_SHAPES ||
-             first_block_code == UBLOCK_GEOMETRIC_SHAPES)) {
+            (first_block_unusual || IsUnusualBlockCode(current_block_code))) {
           run_break = run_start + iter.array_pos();
           break;
         }
