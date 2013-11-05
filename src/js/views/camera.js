@@ -162,15 +162,15 @@ camera.views.Camera = function(context, router) {
   this.toolbarEffect_ = new camera.util.StyleEffect(
       function(args, callback) {
         var toolbar = document.querySelector('#toolbar');
-        var list = document.querySelector('#effects .padder');
+        var listWrapper = document.querySelector('#effects-wrapper');
         if (args) {
           toolbar.classList.add('expanded');
-          list.setAttribute('tabIndex', 0);
+          listWrapper.setAttribute('tabIndex', 0);
         } else {
           toolbar.classList.remove('expanded');
           // Make the list not-focusable if it is out of the screen.
-          list.removeAttribute('tabIndex');
-          if (document.activeElement == list)
+          listWrapper.removeAttribute('tabIndex');
+          if (document.activeElement == listWrapper)
             document.querySelector('#filters-toggle').focus();
         }
         camera.util.waitForTransitionCompletion(
@@ -179,7 +179,7 @@ camera.views.Camera = function(context, router) {
           // the ribbon.
           if (args && document.activeElement ==
               document.querySelector('#filters-toggle')) {
-            list.focus();
+            listWrapper.focus();
           }
           callback();
         });
@@ -510,7 +510,7 @@ camera.views.Camera.prototype.onWindowMouseOut_ = function(event) {
  */
 camera.views.Camera.prototype.onWindowKeyDown_ = function(event) {
   // When the ribbon is focused, then do not collapse it when pressing keys.
-  if (document.activeElement == document.querySelector('#effects .padder')) {
+  if (document.activeElement == document.querySelector('#effects-wrapper')) {
     this.setExpanded_(true);
     this.setControlsVisible_(true);
     return;
@@ -552,7 +552,7 @@ camera.views.Camera.prototype.onPointerActivity_ = function() {
  */
 camera.views.Camera.prototype.addEffect_ = function(effect) {
   // Create the preview on the ribbon.
-  var list = document.querySelector('#effects .padder');
+  var listPadder = document.querySelector('#effects .padder');
   var wrapper = document.createElement('div');
   wrapper.className = 'preview-canvas-wrapper';
   var canvas = document.createElement('canvas');
@@ -562,7 +562,7 @@ camera.views.Camera.prototype.addEffect_ = function(effect) {
   wrapper.appendChild(padder);
   var item = document.createElement('li');
   item.appendChild(wrapper);
-  list.appendChild(item);
+  listPadder.appendChild(item);
   var label = document.createElement('span');
   label.textContent = effect.getTitle();
   item.appendChild(label);
@@ -608,9 +608,9 @@ camera.views.Camera.prototype.setCurrentEffect_ = function(effectIndex) {
   this.mainProcessor_.effect = this.previewProcessors_[effectIndex].effect;
   this.mainFastProcessor_.effect = this.previewProcessors_[effectIndex].effect;
 
-  var list = document.querySelector('#effects .padder');
-  list.setAttribute('aria-activedescendant', effect.id);
-  list.setAttribute('aria-labelledby', effect.id);
+  var listWrapper = document.querySelector('#effects-wrapper');
+  listWrapper.setAttribute('aria-activedescendant', effect.id);
+  listWrapper.setAttribute('aria-labelledby', effect.id);
   this.currentEffectIndex_ = effectIndex;
 };
 

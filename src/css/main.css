@@ -66,10 +66,6 @@ body.controls-visible .scrollbar-track .scrollbar-thumb:active {
   width: 8px;
 }
 
-button:empty {
-  outline: none;
-}
-
 .dynamic {
   opacity: 1;
   transition: opacity 200ms linear;
@@ -323,6 +319,10 @@ canvas {
   -webkit-transform: scaleX(-1);
 }
 
+#effects-wrapper {
+  position: relative;
+}
+
 #effects {
   margin-bottom: 8px;
   overflow: auto;
@@ -333,10 +333,6 @@ canvas {
   list-style-type: none;
   margin: 0;
   padding: 0 0 5px;
-}
-
-#effects .padder span {
-  position: relative;
 }
 
 ::-webkit-scrollbar {
@@ -502,6 +498,7 @@ body.browser #picture-preview {
 #browser {
   bottom: 0;
   left: 0;
+  outline: none;
   overflow: auto;
   position: absolute;
   right: 0;
@@ -533,6 +530,7 @@ body.browser #picture-preview {
 
 #browser {
   background: rgba(0, 0, 0, 0.8);
+  outline: none;
   visibility: hidden;
 }
 
@@ -678,6 +676,7 @@ body:not(.dialog) #dialog {
   -webkit-box-orient: vertical;
   background: white;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+  outline: none;
   padding: 20px;
   display: -webkit-box;
   transition: -webkit-transform 200ms;

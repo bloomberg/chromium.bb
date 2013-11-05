@@ -184,7 +184,7 @@ camera.views.Album.prototype.onKeyPressed = function(event) {
       return;
     case 'Enter':
       // Do not handle enter, if other elements (such as buttons) are focused.
-      if (document.activeElement != document.querySelector('#album .padder'))
+      if (document.activeElement != document.querySelector('#album'))
         return;
       if (currentPicture)
         this.router.navigate(camera.Router.ViewIdentifier.BROWSER);
@@ -218,5 +218,12 @@ camera.views.Album.prototype.addPictureToDOM = function(picture) {
   img.addEventListener('dblclick', function() {
     this.router.navigate(camera.Router.ViewIdentifier.BROWSER);
   }.bind(this));
+};
+
+/**
+ * @override
+ */
+camera.views.Album.prototype.ariaListNode = function() {
+  return document.querySelector('#album');
 };
 
