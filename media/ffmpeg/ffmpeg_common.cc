@@ -85,6 +85,8 @@ static AudioCodec CodecIDToAudioCodec(AVCodecID codec_id) {
       return kCodecAMR_WB;
     case AV_CODEC_ID_GSM_MS:
       return kCodecGSM_MS;
+    case AV_CODEC_ID_PCM_ALAW:
+      return kCodecPCM_ALAW;
     case AV_CODEC_ID_PCM_MULAW:
       return kCodecPCM_MULAW;
     case AV_CODEC_ID_OPUS:
@@ -130,6 +132,8 @@ static AVCodecID AudioCodecToCodecID(AudioCodec audio_codec,
       return AV_CODEC_ID_AMR_WB;
     case kCodecGSM_MS:
       return AV_CODEC_ID_GSM_MS;
+    case kCodecPCM_ALAW:
+      return AV_CODEC_ID_PCM_ALAW;
     case kCodecPCM_MULAW:
       return AV_CODEC_ID_PCM_MULAW;
     case kCodecOpus:

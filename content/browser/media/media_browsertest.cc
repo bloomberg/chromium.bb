@@ -168,15 +168,19 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavGsmms) {
   PlayAudio("bear_gsm_ms.wav", GetParam());
 }
 
-IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavMulaw) {
-  PlayAudio("bear_mulaw.wav", GetParam());
-}
-
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearFlac) {
   PlayAudio("bear.flac", GetParam());
 }
 #endif
 #endif
+
+IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavAlaw) {
+  PlayAudio("bear_alaw.wav", GetParam());
+}
+
+IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavMulaw) {
+  PlayAudio("bear_mulaw.wav", GetParam());
+}
 
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavPcm) {
   PlayAudio("bear_pcm.wav", GetParam());

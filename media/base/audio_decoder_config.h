@@ -33,6 +33,7 @@ enum AudioCodec {
   kCodecPCM_S24BE,
   kCodecOpus,
   kCodecEAC3,
+  kCodecPCM_ALAW,
   // DO NOT ADD RANDOM AUDIO CODECS!
   //
   // The only acceptable time to add a new codec is if there is production code
