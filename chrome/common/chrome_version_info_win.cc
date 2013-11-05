@@ -26,9 +26,6 @@ std::string VersionInfo::GetVersionStringModifier() {
     GoogleUpdateSettings::GetChromeChannelAndModifiers(is_system_install,
                                                        &channel);
   }
-#if defined(USE_AURA)
-  channel += L" Aura";
-#endif
 #if defined(ADDRESS_SANITIZER)
   if (base::debug::IsBinaryInstrumented())
     channel += L" SyzyASan";
