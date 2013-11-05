@@ -66,6 +66,10 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #endif
 
+#if defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
+#include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
+#endif
+
 using content::BrowserThread;
 using content::DownloadManagerDelegate;
 using content::HostZoomMap;
@@ -96,6 +100,13 @@ OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
 }
 
 void OffTheRecordProfileImpl::Init() {
+#if defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
+  // Because UserCloudPolicyManager is in a component, it cannot access
+  // GetOriginalProfile. Instead, we have to inject this relation here.
+  policy::UserCloudPolicyManagerFactory::RegisterForOffTheRecordProfile(
+      this->GetOriginalProfile(), this);
+#endif
+
   BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
       this);
 

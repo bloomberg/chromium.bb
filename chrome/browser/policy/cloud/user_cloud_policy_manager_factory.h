@@ -50,10 +50,14 @@ class UserCloudPolicyManagerFactory : public BrowserContextKeyedBaseFactory {
   //
   // If |force_immediate_load| is true, policy is loaded synchronously from
   // UserCloudPolicyStore at startup.
-  static scoped_ptr<UserCloudPolicyManager> CreateForProfile(
+  static scoped_ptr<UserCloudPolicyManager> CreateForOriginalProfile(
       Profile* profile,
       bool force_immediate_load,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner);
+
+  static UserCloudPolicyManager* RegisterForOffTheRecordProfile(
+      Profile* original_profile,
+      Profile* off_the_record_profile);
 
  private:
   friend class UserCloudPolicyManager;
@@ -64,23 +68,29 @@ class UserCloudPolicyManagerFactory : public BrowserContextKeyedBaseFactory {
 
   // See comments for the static versions above.
   UserCloudPolicyManager* GetManagerForProfile(Profile* profile);
-  scoped_ptr<UserCloudPolicyManager> CreateManagerForProfile(
+
+  scoped_ptr<UserCloudPolicyManager> CreateManagerForOriginalProfile(
       Profile* profile,
       bool force_immediate_load,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner);
 
+  UserCloudPolicyManager* RegisterManagerForOffTheRecordProfile(
+      Profile* original_profile,
+      Profile* off_the_record_profile);
+
   // BrowserContextKeyedBaseFactory:
   virtual void BrowserContextShutdown(
-      content::BrowserContext* profile) OVERRIDE;
+      content::BrowserContext* context) OVERRIDE;
   virtual void SetEmptyTestingFactory(
-      content::BrowserContext* profile) OVERRIDE;
-  virtual void CreateServiceNow(content::BrowserContext* profile) OVERRIDE;
+      content::BrowserContext* context) OVERRIDE;
+  virtual void CreateServiceNow(content::BrowserContext* context) OVERRIDE;
 
   // Invoked by UserCloudPolicyManager to register/unregister instances.
   void Register(Profile* profile, UserCloudPolicyManager* instance);
   void Unregister(Profile* profile, UserCloudPolicyManager* instance);
 
   typedef std::map<Profile*, UserCloudPolicyManager*> ManagerMap;
+
   ManagerMap managers_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManagerFactory);

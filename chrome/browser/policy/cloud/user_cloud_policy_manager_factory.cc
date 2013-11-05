@@ -28,13 +28,23 @@ UserCloudPolicyManager* UserCloudPolicyManagerFactory::GetForProfile(
 
 // static
 scoped_ptr<UserCloudPolicyManager>
-UserCloudPolicyManagerFactory::CreateForProfile(
+UserCloudPolicyManagerFactory::CreateForOriginalProfile(
     Profile* profile,
     bool force_immediate_load,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner) {
-  return GetInstance()->CreateManagerForProfile(
+  return GetInstance()->CreateManagerForOriginalProfile(
       profile, force_immediate_load, background_task_runner);
 }
+
+// static
+UserCloudPolicyManager*
+UserCloudPolicyManagerFactory::RegisterForOffTheRecordProfile(
+    Profile* original_profile,
+    Profile* off_the_record_profile) {
+  return GetInstance()->RegisterManagerForOffTheRecordProfile(
+      original_profile, off_the_record_profile);
+}
+
 
 UserCloudPolicyManagerFactory::UserCloudPolicyManagerFactory()
     : BrowserContextKeyedBaseFactory(
@@ -45,17 +55,17 @@ UserCloudPolicyManagerFactory::~UserCloudPolicyManagerFactory() {}
 
 UserCloudPolicyManager* UserCloudPolicyManagerFactory::GetManagerForProfile(
     Profile* profile) {
-  // Get the manager for the original profile, since the PolicyService is
-  // also shared between the incognito Profile and the original Profile.
-  ManagerMap::const_iterator it = managers_.find(profile->GetOriginalProfile());
+  // In case |profile| is an incognito Profile, |manager_| will have a matching
+  // entry pointing to the PolicyService of the original Profile.
+  ManagerMap::const_iterator it = managers_.find(profile);
   return it != managers_.end() ? it->second : NULL;
 }
 
 scoped_ptr<UserCloudPolicyManager>
-    UserCloudPolicyManagerFactory::CreateManagerForProfile(
-        Profile* profile,
-        bool force_immediate_load,
-        scoped_refptr<base::SequencedTaskRunner> background_task_runner) {
+UserCloudPolicyManagerFactory::CreateManagerForOriginalProfile(
+    Profile* profile,
+    bool force_immediate_load,
+    scoped_refptr<base::SequencedTaskRunner> background_task_runner) {
   scoped_ptr<UserCloudPolicyStore> store(
       UserCloudPolicyStore::Create(profile, background_task_runner));
   if (force_immediate_load)
@@ -67,6 +77,17 @@ scoped_ptr<UserCloudPolicyManager>
                                  base::MessageLoopProxy::current()));
   manager->Init();
   return manager.Pass();
+}
+
+UserCloudPolicyManager*
+UserCloudPolicyManagerFactory::RegisterManagerForOffTheRecordProfile(
+    Profile* original_profile,
+    Profile* off_the_record_profile) {
+  // Register the PolicyService of the original Profile for the respective
+  // incognito Profile. See GetManagerForProfile above.
+  UserCloudPolicyManager* manager = GetManagerForProfile(original_profile);
+  Register(off_the_record_profile, manager);
+  return manager;
 }
 
 void UserCloudPolicyManagerFactory::BrowserContextShutdown(
