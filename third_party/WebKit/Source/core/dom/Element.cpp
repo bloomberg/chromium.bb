@@ -2575,6 +2575,11 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change)
 {
     PseudoElement* element = pseudoElement(pseudoId);
     if (element && (needsStyleRecalc() || shouldRecalcStyle(change, element))) {
+        // Need to clear the cached style if the PseudoElement wants a recalc so it
+        // computes a new style.
+        if (element->needsStyleRecalc())
+            renderer()->style()->removeCachedPseudoStyle(pseudoId);
+
         // PseudoElement styles hang off their parent element's style so if we needed
         // a style recalc we should Force one on the pseudo.
         element->recalcStyle(needsStyleRecalc() ? Force : change);
