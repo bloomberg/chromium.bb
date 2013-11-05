@@ -278,7 +278,7 @@ def RunProcess(command):
   return subprocess.call(command, shell=shell)
 
 
-def RunProcessAndRetrieveOutput(command):
+def RunProcessAndRetrieveOutput(command, cwd=None):
   """Run an arbitrary command, returning its output and return code. Since
   output is collected via communicate(), there will be no output until the
   call terminates. If you need output while the program runs (ie. so
@@ -286,24 +286,20 @@ def RunProcessAndRetrieveOutput(command):
 
   Args:
     command: A list containing the command and args to execute.
-    print_output: Optional parameter to write output to stdout as it's
-        being collected.
 
   Returns:
     A tuple of the output and return code.
   """
   # On Windows, use shell=True to get PATH interpretation.
   shell = IsWindows()
-  proc = subprocess.Popen(command,
-                          shell=shell,
-                          stdout=subprocess.PIPE)
+  proc = subprocess.Popen(command, shell=shell, stdout=subprocess.PIPE, cwd=cwd)
 
   (output, _) = proc.communicate()
 
   return (output, proc.returncode)
 
 
-def RunGit(command):
+def RunGit(command, cwd=None):
   """Run a git subcommand, returning its output and return code.
 
   Args:
@@ -314,10 +310,10 @@ def RunGit(command):
   """
   command = ['git'] + command
 
-  return RunProcessAndRetrieveOutput(command)
+  return RunProcessAndRetrieveOutput(command, cwd=cwd)
 
 
-def CheckRunGit(command):
+def CheckRunGit(command, cwd=None):
   """Run a git subcommand, returning its output and return code. Asserts if
   the return code of the call is non-zero.
 
@@ -327,7 +323,7 @@ def CheckRunGit(command):
   Returns:
     A tuple of the output and return code.
   """
-  (output, return_code) = RunGit(command)
+  (output, return_code) = RunGit(command, cwd=cwd)
 
   assert not return_code, 'An error occurred while running'\
                           ' "git %s"' % ' '.join(command)
@@ -717,7 +713,7 @@ class GitSourceControl(SourceControl):
 
     return not results
 
-  def ResolveToRevision(self, revision_to_check, depot, search):
+  def ResolveToRevision(self, revision_to_check, depot, search, cwd=None):
     """If an SVN revision is supplied, try to resolve it to a git SHA1.
 
     Args:
@@ -753,7 +749,7 @@ class GitSourceControl(SourceControl):
         cmd = ['log', '--format=%H', '-1', '--grep', svn_pattern,
                'origin/master']
 
-        (log_output, return_code) = RunGit(cmd)
+        (log_output, return_code) = RunGit(cmd, cwd=cwd)
 
         assert not return_code, 'An error occurred while running'\
                                 ' "git %s"' % ' '.join(cmd)
@@ -779,7 +775,7 @@ class GitSourceControl(SourceControl):
 
         git_revision = None
 
-        log_output = CheckRunGit(cmd)
+        log_output = CheckRunGit(cmd, cwd=cwd)
         if log_output:
           git_revision = log_output
           git_revision = int(log_output.strip())
@@ -820,7 +816,7 @@ class GitSourceControl(SourceControl):
 
     return None
 
-  def QueryRevisionInfo(self, revision):
+  def QueryRevisionInfo(self, revision, cwd=None):
     """Gathers information on a particular revision, such as author's name,
     email, subject, and date.
 
@@ -843,7 +839,7 @@ class GitSourceControl(SourceControl):
 
     for i in xrange(len(formats)):
       cmd = ['log', '--format=%s' % formats[i], '-1', revision]
-      output = CheckRunGit(cmd)
+      output = CheckRunGit(cmd, cwd=cwd)
       commit_info[targets[i]] = output.rstrip()
 
     return commit_info
@@ -956,6 +952,71 @@ class BisectPerformanceMetrics(object):
 
     return revision_work_list
 
+  def _GetV8BleedingEdgeFromV8TrunkIfMappable(self, revision):
+    svn_revision = self.source_control.SVNFindRev(revision)
+
+    if IsStringInt(svn_revision):
+      # V8 is tricky to bisect, in that there are only a few instances when
+      # we can dive into bleeding_edge and get back a meaningful result.
+      # Try to detect a V8 "business as usual" case, which is when:
+      #  1. trunk revision N has description "Version X.Y.Z"
+      #  2. bleeding_edge revision (N-1) has description "Prepare push to
+      #     trunk. Now working on X.Y.(Z+1)."
+      v8_dir = self._GetDepotDirectory('v8')
+      v8_bleeding_edge_dir = self._GetDepotDirectory('v8_bleeding_edge')
+
+      revision_info = self.source_control.QueryRevisionInfo(revision,
+          cwd=v8_dir)
+
+      version_re = re.compile("Version (?P<values>[0-9,.]+)")
+
+      regex_results = version_re.search(revision_info['subject'])
+
+      if regex_results:
+        version = regex_results.group('values')
+
+        git_revision = self.source_control.ResolveToRevision(
+            int(svn_revision) - 1, 'v8_bleeding_edge', -1,
+            cwd=v8_bleeding_edge_dir)
+
+        if git_revision:
+          revision_info = self.source_control.QueryRevisionInfo(git_revision,
+              cwd=v8_bleeding_edge_dir)
+
+          if 'Prepare push to trunk' in revision_info['subject']:
+            return git_revision
+    return None
+
+  def _GetNearestV8BleedingEdgeFromTrunk(self, revision, search_forward=True):
+    cwd = self._GetDepotDirectory('v8')
+    cmd = ['log', '--format=%ct', '-1', revision]
+    output = CheckRunGit(cmd, cwd=cwd)
+    commit_time = int(output)
+    commits = []
+
+    if search_forward:
+      cmd = ['log', '--format=%H', '-10', '--after=%d' % commit_time,
+          'origin/master']
+      output = CheckRunGit(cmd, cwd=cwd)
+      output = output.split()
+      commits = output
+      commits = reversed(commits)
+    else:
+      cmd = ['log', '--format=%H', '-10', '--before=%d' % commit_time,
+          'origin/master']
+      output = CheckRunGit(cmd, cwd=cwd)
+      output = output.split()
+      commits = output
+
+    bleeding_edge_revision = None
+
+    for c in commits:
+      bleeding_edge_revision = self._GetV8BleedingEdgeFromV8TrunkIfMappable(c)
+      if bleeding_edge_revision:
+        break
+
+    return bleeding_edge_revision
+
   def Get3rdPartyRevisionsFromCurrentRevision(self, depot, revision):
     """Parses the DEPS file to determine WebKit/v8/etc... versions.
 
@@ -1041,38 +1102,10 @@ class BisectPerformanceMetrics(object):
 
           results['chromium'] = output.strip()
     elif depot == 'v8':
+      # We can't try to map the trunk revision to bleeding edge yet, because
+      # we don't know which direction to try to search in. Have to wait until
+      # the bisect has narrowed the results down to 2 v8 rolls.
       results['v8_bleeding_edge'] = None
-
-      svn_revision = self.source_control.SVNFindRev(revision)
-
-      if IsStringInt(svn_revision):
-        # V8 is tricky to bisect, in that there are only a few instances when
-        # we can dive into bleeding_edge and get back a meaningful result.
-        # Try to detect a V8 "business as usual" case, which is when:
-        #  1. trunk revision N has description "Version X.Y.Z"
-        #  2. bleeding_edge revision (N-1) has description "Prepare push to
-        #     trunk. Now working on X.Y.(Z+1)."
-        self.ChangeToDepotWorkingDirectory(depot)
-
-        revision_info = self.source_control.QueryRevisionInfo(revision)
-
-        version_re = re.compile("Version (?P<values>[0-9,.]+)")
-
-        regex_results = version_re.search(revision_info['subject'])
-
-        if regex_results:
-          version = regex_results.group('values')
-
-          self.ChangeToDepotWorkingDirectory('v8_bleeding_edge')
-
-          git_revision = self.source_control.ResolveToRevision(
-              int(svn_revision) - 1, 'v8_bleeding_edge', -1)
-
-          if git_revision:
-            revision_info = self.source_control.QueryRevisionInfo(git_revision)
-
-            if 'Prepare push to trunk' in revision_info['subject']:
-              results['v8_bleeding_edge'] = git_revision
 
     return results
 
@@ -1607,29 +1640,50 @@ class BisectPerformanceMetrics(object):
 
     return dist_to_good_value < dist_to_bad_value
 
+  def _GetDepotDirectory(self, depot_name):
+    if depot_name == 'chromium':
+      return self.src_cwd
+    elif depot_name == 'cros':
+      return self.cros_cwd
+    elif depot_name in DEPOT_NAMES:
+      return self.depot_cwd[depot_name]
+    else:
+      assert False, 'Unknown depot [ %s ] encountered. Possibly a new one'\
+                    ' was added without proper support?' %\
+                    (depot_name,)
+
   def ChangeToDepotWorkingDirectory(self, depot_name):
     """Given a depot, changes to the appropriate working directory.
 
     Args:
       depot_name: The name of the depot (see DEPOT_NAMES).
     """
-    if depot_name == 'chromium':
-      os.chdir(self.src_cwd)
-    elif depot_name == 'cros':
-      os.chdir(self.cros_cwd)
-    elif depot_name in DEPOT_NAMES:
-      os.chdir(self.depot_cwd[depot_name])
-    else:
-      assert False, 'Unknown depot [ %s ] encountered. Possibly a new one'\
-                    ' was added without proper support?' %\
-                    (depot_name,)
+    os.chdir(self._GetDepotDirectory(depot_name))
 
-  def FindNextDepotToBisect(self, current_revision, min_revision_data,
-      max_revision_data):
+  def _FillInV8BleedingEdgeInfo(self, min_revision_data, max_revision_data):
+    r1 = self._GetNearestV8BleedingEdgeFromTrunk(min_revision_data['revision'],
+        search_forward=True)
+    r2 = self._GetNearestV8BleedingEdgeFromTrunk(max_revision_data['revision'],
+        search_forward=False)
+    min_revision_data['external']['v8_bleeding_edge'] = r1
+    max_revision_data['external']['v8_bleeding_edge'] = r2
+
+    if (not self._GetV8BleedingEdgeFromV8TrunkIfMappable(
+            min_revision_data['revision']) or
+        not self._GetV8BleedingEdgeFromV8TrunkIfMappable(
+            max_revision_data['revision'])):
+      self.warnings.append('Trunk revisions in V8 did not map directly to '
+          'bleeding_edge. Attempted to expand the range to find V8 rolls which '
+          'did map directly to bleeding_edge revisions, but results might not '
+          'be valid.')
+
+  def _FindNextDepotToBisect(self, current_depot, current_revision,
+      min_revision_data, max_revision_data):
     """Given the state of the bisect, decides which depot the script should
     dive into next (if any).
 
     Args:
+      current_depot: Current depot being bisected.
       current_revision: Current revision synced to.
       min_revision_data: Data about the earliest revision in the bisect range.
       max_revision_data: Data about the latest revision in the bisect range.
@@ -1638,23 +1692,29 @@ class BisectPerformanceMetrics(object):
       The depot to bisect next, or None.
     """
     external_depot = None
-    for current_depot in DEPOT_NAMES:
-      if DEPOT_DEPS_NAME[current_depot].has_key('platform'):
-        if DEPOT_DEPS_NAME[current_depot]['platform'] != os.name:
+    for next_depot in DEPOT_NAMES:
+      if DEPOT_DEPS_NAME[next_depot].has_key('platform'):
+        if DEPOT_DEPS_NAME[next_depot]['platform'] != os.name:
           continue
 
-      if not (DEPOT_DEPS_NAME[current_depot]["recurse"] and
-          DEPOT_DEPS_NAME[current_depot]['from'] ==
+      if not (DEPOT_DEPS_NAME[next_depot]["recurse"] and
+          DEPOT_DEPS_NAME[next_depot]['from'] ==
           min_revision_data['depot']):
         continue
 
-      if (min_revision_data['external'][current_depot] ==
-          max_revision_data['external'][current_depot]):
+      if current_depot == 'v8':
+        # We grab the bleeding_edge info here rather than earlier because we
+        # finally have the revision range. From that we can search forwards and
+        # backwards to try to match trunk revisions to bleeding_edge.
+        self._FillInV8BleedingEdgeInfo(min_revision_data, max_revision_data)
+
+      if (min_revision_data['external'][next_depot] ==
+          max_revision_data['external'][next_depot]):
         continue
 
-      if (min_revision_data['external'][current_depot] and
-          max_revision_data['external'][current_depot]):
-        external_depot = current_depot
+      if (min_revision_data['external'][next_depot] and
+          max_revision_data['external'][next_depot]):
+        external_depot = next_depot
         break
 
     return external_depot
@@ -2054,7 +2114,7 @@ class BisectPerformanceMetrics(object):
             previous_revision = revision_list[min_revision]
             # If there were changes to any of the external libraries we track,
             # should bisect the changes there as well.
-            external_depot = self.FindNextDepotToBisect(
+            external_depot = self._FindNextDepotToBisect(current_depot,
                 previous_revision, min_revision_data, max_revision_data)
 
             # If there was no change in any of the external depots, the search
