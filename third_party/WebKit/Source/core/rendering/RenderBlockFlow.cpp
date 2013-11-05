@@ -157,6 +157,14 @@ RenderBlockFlow::~RenderBlockFlow()
 {
 }
 
+void RenderBlockFlow::willBeDestroyed()
+{
+    if (lineGridBox())
+        lineGridBox()->destroy();
+
+    RenderBlock::willBeDestroyed();
+}
+
 void RenderBlockFlow::layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeight)
 {
     ASSERT(needsLayout());

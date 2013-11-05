@@ -87,7 +87,7 @@ void RenderSVGBlock::absoluteRects(Vector<IntRect>&, const LayoutPoint&) const
 void RenderSVGBlock::willBeDestroyed()
 {
     SVGResourcesCache::clientDestroyed(this);
-    RenderBlock::willBeDestroyed();
+    RenderBlockFlow::willBeDestroyed();
 }
 
 void RenderSVGBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)

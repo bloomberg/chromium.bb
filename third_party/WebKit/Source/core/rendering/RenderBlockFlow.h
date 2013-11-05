@@ -129,6 +129,17 @@ public:
 
     static TextRun constructTextRun(RenderObject* context, const Font&, const UChar* characters, int length, RenderStyle*,
         TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
+
+    RootInlineBox* lineGridBox() const { return m_rareData ? m_rareData->m_lineGridBox : 0; }
+    void setLineGridBox(RootInlineBox* box)
+    {
+        if (!m_rareData)
+            m_rareData = adoptPtr(new RenderBlockFlowRareData(this));
+        if (m_rareData->m_lineGridBox)
+            m_rareData->m_lineGridBox->destroy();
+        m_rareData->m_lineGridBox = box;
+    }
+    void layoutLineGridBox();
 protected:
     // Only used by RenderSVGText, which explicitly overrides RenderBlock::layoutBlock(), do NOT use for anything else.
     void forceLayoutInlineChildren()
@@ -145,6 +156,7 @@ protected:
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
 
     void addOverflowFromFloats();
+    virtual void willBeDestroyed() OVERRIDE;
 private:
     void layoutBlockChildren(bool relayoutChildren, LayoutUnit& maxFloatLogicalBottom, SubtreeLayoutScope&);
     void layoutInlineChildren(bool relayoutChildren, LayoutUnit& repaintLogicalTop, LayoutUnit& repaintLogicalBottom);
@@ -251,6 +263,7 @@ public:
     public:
         RenderBlockFlowRareData(const RenderBlockFlow* block)
             : m_margins(positiveMarginBeforeDefault(block), negativeMarginBeforeDefault(block), positiveMarginAfterDefault(block), negativeMarginAfterDefault(block))
+            , m_lineGridBox(0)
             , m_discardMarginBefore(false)
             , m_discardMarginAfter(false)
         {
@@ -274,6 +287,9 @@ public:
         }
 
         MarginValues m_margins;
+
+        RootInlineBox* m_lineGridBox;
+
         bool m_discardMarginBefore : 1;
         bool m_discardMarginAfter : 1;
     };

@@ -273,7 +273,7 @@ void RenderTable::updateLogicalWidth()
         LayoutUnit availableContentLogicalWidth = max<LayoutUnit>(0, containerWidthInInlineDirection - marginTotal);
         if (shrinkToAvoidFloats() && cb->containsFloats() && !hasPerpendicularContainingBlock) {
             // FIXME: Work with regions someday.
-            availableContentLogicalWidth = shrinkLogicalWidthToAvoidFloats(marginStart, marginEnd, cb, 0);
+            availableContentLogicalWidth = shrinkLogicalWidthToAvoidFloats(marginStart, marginEnd, toRenderBlockFlow(cb), 0);
         }
 
         // Ensure we aren't bigger than our available width.

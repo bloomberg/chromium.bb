@@ -231,9 +231,6 @@ void RenderBlock::willBeDestroyed()
 
     m_lineBoxes.deleteLineBoxes();
 
-    if (lineGridBox())
-        lineGridBox()->destroy();
-
     if (UNLIKELY(gDelayedUpdateScrollInfoSet != 0))
         gDelayedUpdateScrollInfoSet->remove(this);
 

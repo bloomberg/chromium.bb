@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-class RenderBlock;
+class RenderBlockFlow;
 class RenderBox;
 class RenderObject;
 class RenderFlowThread;
@@ -81,7 +81,7 @@ public:
     LayoutUnit pageLogicalHeight() const { return m_pageLogicalHeight; }
     bool pageLogicalHeightChanged() const { return m_pageLogicalHeightChanged; }
 
-    RenderBlock* lineGrid() const { return m_lineGrid; }
+    RenderBlockFlow* lineGrid() const { return m_lineGrid; }
     LayoutSize lineGridOffset() const { return m_lineGridOffset; }
     LayoutSize lineGridPaginationOrigin() const { return m_lineGridPaginationOrigin; }
 
@@ -96,7 +96,7 @@ public:
 #endif
 private:
     void propagateLineGridInfo(RenderBox*);
-    void establishLineGrid(RenderBlock*);
+    void establishLineGrid(RenderBlockFlow*);
 
     void computeLineGridPaginationOrigin(RenderBox*);
 
@@ -113,7 +113,7 @@ public:
     // If the enclosing pagination model is a column model, then this will store column information for easy retrieval/manipulation.
     ColumnInfo* m_columnInfo;
     // The current line grid that we're snapping to and the offset of the start of the grid.
-    RenderBlock* m_lineGrid;
+    RenderBlockFlow* m_lineGrid;
     LayoutState* m_next;
     ShapeInsideInfo* m_shapeInsideInfo;
 

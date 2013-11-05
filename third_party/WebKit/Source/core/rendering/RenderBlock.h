@@ -297,17 +297,6 @@ public:
     LayoutUnit pageLogicalOffset() const { return m_rareData ? m_rareData->m_pageLogicalOffset : LayoutUnit(); }
     void setPageLogicalOffset(LayoutUnit);
 
-    RootInlineBox* lineGridBox() const { return m_rareData ? m_rareData->m_lineGridBox : 0; }
-    void setLineGridBox(RootInlineBox* box)
-    {
-        if (!m_rareData)
-            m_rareData = adoptPtr(new RenderBlockRareData());
-        if (m_rareData->m_lineGridBox)
-            m_rareData->m_lineGridBox->destroy();
-        m_rareData->m_lineGridBox = box;
-    }
-    void layoutLineGridBox();
-
     // Accessors for logical width/height and margins in the containing block's block-flow direction.
     enum ApplyLayoutDeltaMode { ApplyLayoutDelta, DoNotApplyLayoutDelta };
     LayoutUnit logicalWidthForChild(const RenderBox* child) const { return isHorizontalWritingMode() ? child->width() : child->height(); }
@@ -708,7 +697,6 @@ public:
         RenderBlockRareData()
             : m_paginationStrut(0)
             , m_pageLogicalOffset(0)
-            , m_lineGridBox(0)
             , m_lineBreakToAvoidWidow(-1)
             , m_didBreakAtLineToAvoidWidow(false)
         {
@@ -716,8 +704,6 @@ public:
 
         LayoutUnit m_paginationStrut;
         LayoutUnit m_pageLogicalOffset;
-
-        RootInlineBox* m_lineGridBox;
 
         int m_lineBreakToAvoidWidow;
         OwnPtr<ShapeInsideInfo> m_shapeInsideInfo;

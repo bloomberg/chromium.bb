@@ -3535,7 +3535,7 @@ LayoutUnit RenderBlock::startAlignedOffsetForLine(LayoutUnit position, bool firs
 }
 
 
-void RenderBlock::layoutLineGridBox()
+void RenderBlockFlow::layoutLineGridBox()
 {
     if (style()->lineGrid() == RenderStyle::initialLineGrid()) {
         setLineGridBox(0);

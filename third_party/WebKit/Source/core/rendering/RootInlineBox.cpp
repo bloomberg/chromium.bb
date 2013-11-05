@@ -337,7 +337,7 @@ LayoutUnit RootInlineBox::lineSnapAdjustment(LayoutUnit delta) const
 
     // Get the current line grid and offset.
     LayoutState* layoutState = block()->view()->layoutState();
-    RenderBlock* lineGrid = layoutState->lineGrid();
+    RenderBlockFlow* lineGrid = layoutState->lineGrid();
     LayoutSize lineGridOffset = layoutState->lineGridOffset();
     if (!lineGrid || lineGrid->style()->writingMode() != block()->style()->writingMode())
         return 0;
