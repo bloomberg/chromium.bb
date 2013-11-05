@@ -45,6 +45,7 @@ UserPolicySigninServiceBase::UserPolicySigninServiceBase(
 UserPolicySigninServiceBase::~UserPolicySigninServiceBase() {}
 
 void UserPolicySigninServiceBase::FetchPolicyForSignedInUser(
+    const std::string& username,
     scoped_ptr<CloudPolicyClient> client,
     const PolicyFetchCallback& callback) {
   DCHECK(client);
@@ -56,7 +57,7 @@ void UserPolicySigninServiceBase::FetchPolicyForSignedInUser(
   UserCloudPolicyManager* manager = GetManager();
   DCHECK(manager);
   DCHECK(!manager->core()->client());
-  InitializeUserCloudPolicyManager(client.Pass());
+  InitializeUserCloudPolicyManager(username, client.Pass());
   DCHECK(manager->IsClientRegistered());
 
   // Now initiate a policy fetch.
@@ -159,6 +160,8 @@ scoped_ptr<CloudPolicyClient> UserPolicySigninServiceBase::PrepareToRegister(
     return scoped_ptr<CloudPolicyClient>();
   }
 
+  GetManager()->SetSigninUsername(username);
+
   // If the DeviceManagementService is not yet initialized, start it up now.
   device_management_service_->ScheduleInitialization(0);
 
@@ -201,8 +204,11 @@ void UserPolicySigninServiceBase::InitializeForSignedInUser(
     // OnInitializationCompleted() callback is invoked and this will
     // initiate a policy fetch.
     InitializeUserCloudPolicyManager(
+        username,
         UserCloudPolicyManager::CreateCloudPolicyClient(
             device_management_service_).Pass());
+  } else {
+    manager->SetSigninUsername(username);
   }
 
   // If the CloudPolicyService is initialized, kick off registration.
@@ -213,8 +219,10 @@ void UserPolicySigninServiceBase::InitializeForSignedInUser(
 }
 
 void UserPolicySigninServiceBase::InitializeUserCloudPolicyManager(
+    const std::string& username,
     scoped_ptr<CloudPolicyClient> client) {
   UserCloudPolicyManager* manager = GetManager();
+  manager->SetSigninUsername(username);
   DCHECK(!manager->core()->client());
   manager->Connect(local_state_, request_context_, client.Pass());
   DCHECK(manager->core()->service());

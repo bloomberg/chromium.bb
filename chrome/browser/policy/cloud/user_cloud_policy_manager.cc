@@ -46,6 +46,10 @@ void UserCloudPolicyManager::Shutdown() {
   BrowserContextKeyedService::Shutdown();
 }
 
+void UserCloudPolicyManager::SetSigninUsername(const std::string& username) {
+  store_->SetSigninUsername(username);
+}
+
 void UserCloudPolicyManager::Connect(
     PrefService* local_state,
     scoped_refptr<net::URLRequestContextGetter> request_context,

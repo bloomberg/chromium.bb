@@ -10,7 +10,6 @@
 #include "base/task_runner_util.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "chrome/browser/policy/proto/cloud/device_management_local.pb.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "policy/policy_constants.h"
@@ -94,24 +93,26 @@ void StorePolicyToDiskOnBackgroundThread(
 }  // namespace
 
 UserCloudPolicyStore::UserCloudPolicyStore(
-    Profile* profile,
     const base::FilePath& path,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner)
     : UserCloudPolicyStoreBase(background_task_runner),
       weak_factory_(this),
-      profile_(profile),
       backing_file_path_(path) {}
 
 UserCloudPolicyStore::~UserCloudPolicyStore() {}
 
 // static
 scoped_ptr<UserCloudPolicyStore> UserCloudPolicyStore::Create(
-    Profile* profile,
+    const base::FilePath& profile_path,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner) {
   base::FilePath path =
-      profile->GetPath().Append(kPolicyDir).Append(kPolicyCacheFile);
+      profile_path.Append(kPolicyDir).Append(kPolicyCacheFile);
   return make_scoped_ptr(
-      new UserCloudPolicyStore(profile, path, background_task_runner));
+      new UserCloudPolicyStore(path, background_task_runner));
+}
+
+void UserCloudPolicyStore::SetSigninUsername(const std::string& username) {
+  signin_username_ = username;
 }
 
 void UserCloudPolicyStore::LoadImmediately() {
@@ -217,17 +218,10 @@ void UserCloudPolicyStore::Validate(
   scoped_ptr<UserCloudPolicyValidator> validator = CreateValidator(
       policy.Pass(),
       CloudPolicyValidatorBase::TIMESTAMP_NOT_BEFORE);
-  SigninManager* signin = SigninManagerFactory::GetForProfileIfExists(profile_);
-  if (signin) {
-    std::string username = signin->GetAuthenticatedUsername();
-    if (username.empty())
-      username = signin->GetUsernameForAuthInProgress();
 
-    // Validate the username if the user is signed in (or in the process of
-    // signing in).
-    if (!username.empty())
-      validator->ValidateUsername(username);
-  }
+  // Validate the username if the user is signed in.
+  if (!signin_username_.empty())
+    validator->ValidateUsername(signin_username_);
 
   if (validate_in_background) {
     // Start validation in the background. The Validator will free itself once

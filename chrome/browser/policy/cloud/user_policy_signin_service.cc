@@ -120,8 +120,10 @@ void UserPolicySigninService::OnRefreshTokenAvailable(
 }
 
 void UserPolicySigninService::InitializeUserCloudPolicyManager(
+    const std::string& username,
     scoped_ptr<CloudPolicyClient> client) {
-  UserPolicySigninServiceBase::InitializeUserCloudPolicyManager(client.Pass());
+  UserPolicySigninServiceBase::InitializeUserCloudPolicyManager(username,
+                                                                client.Pass());
   ProhibitSignoutIfNeeded();
 }
 

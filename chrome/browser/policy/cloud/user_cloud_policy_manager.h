@@ -46,6 +46,8 @@ class UserCloudPolicyManager : public CloudPolicyManager,
 
   virtual void Shutdown() OVERRIDE;
 
+  void SetSigninUsername(const std::string& username);
+
   // Initializes the cloud connection. |local_state| must stay valid until this
   // object is deleted or DisconnectAndRemovePolicy() gets called. Virtual for
   // mocking.

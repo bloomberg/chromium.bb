@@ -27,6 +27,7 @@ class MockUserCloudPolicyStore : public UserCloudPolicyStore {
   using CloudPolicyStore::policy_map_;
   using CloudPolicyStore::policy_;
   using CloudPolicyStore::status_;
+  using UserCloudPolicyStore::signin_username_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockUserCloudPolicyStore);

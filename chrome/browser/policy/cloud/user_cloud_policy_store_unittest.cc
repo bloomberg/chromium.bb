@@ -8,16 +8,10 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/policy/cloud/mock_cloud_external_data_manager.h"
 #include "chrome/browser/policy/cloud/mock_cloud_policy_store.h"
 #include "chrome/browser/policy/cloud/policy_builder.h"
-#include "chrome/browser/signin/fake_signin_manager.h"
-#include "chrome/browser/signin/signin_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_profile.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -40,22 +34,15 @@ void RunUntilIdle() {
 
 class UserCloudPolicyStoreTest : public testing::Test {
  public:
-  UserCloudPolicyStoreTest()
-      : loop_(base::MessageLoop::TYPE_UI),
-        profile_(new TestingProfile()) {}
+  UserCloudPolicyStoreTest() : loop_(base::MessageLoop::TYPE_UI) {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
-    SigninManager* signin = static_cast<SigninManager*>(
-      SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile_.get(), FakeSigninManager::Build));
-    profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
-                                    PolicyBuilder::kFakeUsername);
-    signin->Initialize(profile_.get(), NULL);
-    store_.reset(new UserCloudPolicyStore(
-        profile_.get(), policy_file(), loop_.message_loop_proxy()));
+    store_.reset(
+        new UserCloudPolicyStore(policy_file(), loop_.message_loop_proxy()));
     external_data_manager_.reset(new MockCloudExternalDataManager);
     external_data_manager_->SetPolicyStore(store_.get());
+    store_->SetSigninUsername(PolicyBuilder::kFakeUsername);
     store_->AddObserver(&observer_);
 
     policy_.payload().mutable_passwordmanagerenabled()->set_value(true);
@@ -104,7 +91,6 @@ class UserCloudPolicyStoreTest : public testing::Test {
   // callers can use RunLoop to manage both virtual threads.
   base::MessageLoop loop_;
 
-  scoped_ptr<TestingProfile> profile_;
   base::ScopedTempDir tmp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyStoreTest);
@@ -277,8 +263,9 @@ TEST_F(UserCloudPolicyStoreTest, StoreThenLoad) {
   RunUntilIdle();
 
   // Now, make sure the policy can be read back in from a second store.
-  scoped_ptr<UserCloudPolicyStore> store2(new UserCloudPolicyStore(
-      profile_.get(), policy_file(), loop_.message_loop_proxy()));
+  scoped_ptr<UserCloudPolicyStore> store2(
+      new UserCloudPolicyStore(policy_file(), loop_.message_loop_proxy()));
+  store2->SetSigninUsername(PolicyBuilder::kFakeUsername);
   store2->AddObserver(&observer_);
   EXPECT_CALL(observer_, OnStoreLoaded(store2.get()));
   store2->Load();
@@ -302,8 +289,9 @@ TEST_F(UserCloudPolicyStoreTest, StoreThenLoadImmediately) {
   RunUntilIdle();
 
   // Now, make sure the policy can be read back in from a second store.
-  scoped_ptr<UserCloudPolicyStore> store2(new UserCloudPolicyStore(
-      profile_.get(), policy_file(), loop_.message_loop_proxy()));
+  scoped_ptr<UserCloudPolicyStore> store2(
+      new UserCloudPolicyStore(policy_file(), loop_.message_loop_proxy()));
+  store2->SetSigninUsername(PolicyBuilder::kFakeUsername);
   store2->AddObserver(&observer_);
   EXPECT_CALL(observer_, OnStoreLoaded(store2.get()));
   store2->LoadImmediately();  // Should load without running the message loop.
@@ -338,12 +326,9 @@ TEST_F(UserCloudPolicyStoreTest, LoadValidationError) {
 
   // Sign out, and sign back in as a different user, and try to load the profile
   // data (should fail due to mismatched username).
-  SigninManagerFactory::GetForProfile(profile_.get())->SignOut();
-  SigninManagerFactory::GetForProfile(profile_.get())->SetAuthenticatedUsername(
-      "foobar@foobar.com");
-
-  scoped_ptr<UserCloudPolicyStore> store2(new UserCloudPolicyStore(
-      profile_.get(), policy_file(), loop_.message_loop_proxy()));
+  scoped_ptr<UserCloudPolicyStore> store2(
+      new UserCloudPolicyStore(policy_file(), loop_.message_loop_proxy()));
+  store2->SetSigninUsername("foobar@foobar.com");
   store2->AddObserver(&observer_);
   ExpectError(store2.get(), CloudPolicyStore::STATUS_VALIDATION_ERROR);
   store2->Load();
@@ -354,9 +339,8 @@ TEST_F(UserCloudPolicyStoreTest, LoadValidationError) {
 
   // Sign out - we should be able to load the policy (don't check usernames
   // when signed out).
-  SigninManagerFactory::GetForProfile(profile_.get())->SignOut();
-  scoped_ptr<UserCloudPolicyStore> store3(new UserCloudPolicyStore(
-      profile_.get(), policy_file(), loop_.message_loop_proxy()));
+  scoped_ptr<UserCloudPolicyStore> store3(
+      new UserCloudPolicyStore(policy_file(), loop_.message_loop_proxy()));
   store3->AddObserver(&observer_);
   EXPECT_CALL(observer_, OnStoreLoaded(store3.get()));
   store3->Load();
@@ -366,12 +350,9 @@ TEST_F(UserCloudPolicyStoreTest, LoadValidationError) {
   store3->RemoveObserver(&observer_);
 
   // Now start a signin as a different user - this should fail validation.
-  FakeSigninManager* signin = static_cast<FakeSigninManager*>(
-      SigninManagerFactory::GetForProfile(profile_.get()));
-  signin->set_auth_in_progress("foobar@foobar.com");
-
-  scoped_ptr<UserCloudPolicyStore> store4(new UserCloudPolicyStore(
-      profile_.get(), policy_file(), loop_.message_loop_proxy()));
+  scoped_ptr<UserCloudPolicyStore> store4(
+      new UserCloudPolicyStore(policy_file(), loop_.message_loop_proxy()));
+  store4->SetSigninUsername("foobar@foobar.com");
   store4->AddObserver(&observer_);
   ExpectError(store4.get(), CloudPolicyStore::STATUS_VALIDATION_ERROR);
   store4->Load();

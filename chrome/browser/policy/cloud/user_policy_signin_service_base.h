@@ -70,7 +70,8 @@ class UserPolicySigninServiceBase : public BrowserContextKeyedService,
   // previously initialized via RegisterPolicyClient. |callback| is invoked
   // once the policy fetch is complete, passing true if the policy fetch
   // succeeded.
-  void FetchPolicyForSignedInUser(scoped_ptr<CloudPolicyClient> client,
+  void FetchPolicyForSignedInUser(const std::string& username,
+                                  scoped_ptr<CloudPolicyClient> client,
                                   const PolicyFetchCallback& callback);
 
   // content::NotificationObserver implementation:
@@ -121,6 +122,7 @@ class UserPolicySigninServiceBase : public BrowserContextKeyedService,
   // signed in account at startup, and from FetchPolicyForSignedInUser() during
   // the initial policy fetch after signing in.
   virtual void InitializeUserCloudPolicyManager(
+      const std::string& username,
       scoped_ptr<CloudPolicyClient> client);
 
   // Prepares for the UserCloudPolicyManager to be shutdown due to

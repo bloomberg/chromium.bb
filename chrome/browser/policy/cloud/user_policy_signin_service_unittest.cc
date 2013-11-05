@@ -256,7 +256,9 @@ class UserPolicySigninServiceTest : public testing::Test {
         .WillOnce(device_management_service_.CreateAsyncJob(&fetch_request));
     EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _))
         .Times(1);
+
     signin_service->FetchPolicyForSignedInUser(
+        kTestUser,
         created_client_.Pass(),
         base::Bind(&UserPolicySigninServiceTest::OnPolicyRefresh,
                    base::Unretained(this)));
@@ -265,6 +267,7 @@ class UserPolicySigninServiceTest : public testing::Test {
     ASSERT_TRUE(fetch_request);
 
     // UserCloudPolicyManager should now be initialized.
+    EXPECT_EQ(mock_store_->signin_username_, kTestUser);
     ASSERT_TRUE(manager_->core()->service());
 
     // Make the policy fetch succeed - this should result in a write to the
@@ -359,6 +362,7 @@ TEST_F(UserPolicySigninServiceTest, InitWhileSignedIn) {
   GetTokenService()->IssueRefreshToken("oauth_login_refresh_token");
 
   // Client registration should be in progress since we now have an oauth token.
+  EXPECT_EQ(mock_store_->signin_username_, kTestUser);
   ASSERT_TRUE(IsRequestActive());
 }
 
@@ -418,6 +422,7 @@ TEST_F(UserPolicySigninServiceTest, SignInAfterInit) {
   GetTokenService()->IssueRefreshToken("oauth_login_refresh_token");
 
   // UserCloudPolicyManager should be initialized.
+  EXPECT_EQ(mock_store_->signin_username_, kTestUser);
   ASSERT_TRUE(manager_->core()->service());
 
   // Client registration should be in progress since we have an oauth token.
@@ -472,6 +477,7 @@ TEST_F(UserPolicySigninServiceTest, UnregisteredClient) {
   GetTokenService()->IssueRefreshToken("oauth_login_refresh_token");
 
   // UserCloudPolicyManager should be initialized.
+  EXPECT_EQ(mock_store_->signin_username_, kTestUser);
   ASSERT_TRUE(manager_->core()->service());
 
   // Client registration should not be in progress since the store is not
@@ -505,6 +511,7 @@ TEST_F(UserPolicySigninServiceTest, RegisteredClient) {
   GetTokenService()->IssueRefreshToken("oauth_login_refresh_token");
 
   // UserCloudPolicyManager should be initialized.
+  EXPECT_EQ(mock_store_->signin_username_, kTestUser);
   ASSERT_TRUE(manager_->core()->service());
 
   // Client registration should not be in progress since the store is not
@@ -529,6 +536,7 @@ TEST_F(UserPolicySigninServiceTest, RegisteredClient) {
 
 TEST_F(UserPolicySigninServiceTest, SignOutAfterInit) {
   EXPECT_CALL(*mock_store_, Clear());
+
   // Set the user as signed in.
   SigninManagerFactory::GetForProfile(profile_.get())->SetAuthenticatedUsername(
       kTestUser);
@@ -540,6 +548,7 @@ TEST_F(UserPolicySigninServiceTest, SignOutAfterInit) {
       content::NotificationService::NoDetails());
 
   // UserCloudPolicyManager should be initialized.
+  EXPECT_EQ(mock_store_->signin_username_, kTestUser);
   ASSERT_TRUE(manager_->core()->service());
 
   // Now sign out.
@@ -700,6 +709,7 @@ TEST_F(UserPolicySigninServiceTest, FetchPolicyFailed) {
   UserPolicySigninService* signin_service =
       UserPolicySigninServiceFactory::GetForProfile(profile_.get());
   signin_service->FetchPolicyForSignedInUser(
+      kTestUser,
       client.Pass(),
       base::Bind(&UserPolicySigninServiceTest::OnPolicyRefresh,
                  base::Unretained(this)));
@@ -709,7 +719,9 @@ TEST_F(UserPolicySigninServiceTest, FetchPolicyFailed) {
   EXPECT_CALL(*this, OnPolicyRefresh(false)).Times(1);
   fetch_request->SendResponse(DM_STATUS_REQUEST_FAILED,
                               em::DeviceManagementResponse());
+
   // UserCloudPolicyManager should be initialized.
+  EXPECT_EQ(mock_store_->signin_username_, kTestUser);
   ASSERT_TRUE(manager_->core()->service());
 }
 

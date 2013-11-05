@@ -59,6 +59,7 @@ class UserPolicySigninService : public UserPolicySigninServiceBase,
  protected:
   // UserPolicySigninServiceBase implementation:
   virtual void InitializeUserCloudPolicyManager(
+      const std::string& username,
       scoped_ptr<CloudPolicyClient> client) OVERRIDE;
 
   virtual void PrepareForUserCloudPolicyManagerShutdown() OVERRIDE;

@@ -106,6 +106,7 @@ void SigninManagerAndroid::FetchPolicyBeforeSignIn(JNIEnv* env, jobject obj) {
     policy::UserPolicySigninService* service =
         policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
     service->FetchPolicyForSignedInUser(
+        username_,
         cloud_policy_client_.Pass(),
         base::Bind(&SigninManagerAndroid::OnPolicyFetchDone,
                    weak_factory_.GetWeakPtr()));

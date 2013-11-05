@@ -67,7 +67,7 @@ UserCloudPolicyManagerFactory::CreateManagerForOriginalProfile(
     bool force_immediate_load,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner) {
   scoped_ptr<UserCloudPolicyStore> store(
-      UserCloudPolicyStore::Create(profile, background_task_runner));
+      UserCloudPolicyStore::Create(profile->GetPath(), background_task_runner));
   if (force_immediate_load)
     store->LoadImmediately();
   scoped_ptr<UserCloudPolicyManager> manager(

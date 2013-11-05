@@ -13,8 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_store_base.h"
 
-class Profile;
-
 namespace base {
 class SequencedTaskRunner;
 }
@@ -26,18 +24,21 @@ namespace policy {
 // a secure storage implementation.
 class UserCloudPolicyStore : public UserCloudPolicyStoreBase {
  public:
-  // Creates a policy store associated with the user signed in to this
-  // |profile|.
+  // Creates a policy store associated with a signed-in (or in the progress of
+  // it) user.
   UserCloudPolicyStore(
-      Profile* profile,
       const base::FilePath& policy_file,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner);
   virtual ~UserCloudPolicyStore();
 
-  // Factory method for creating a UserCloudPolicyStore for |profile|.
+  // Factory method for creating a UserCloudPolicyStore for a profile with path
+  // |profile_path|.
   static scoped_ptr<UserCloudPolicyStore> Create(
-      Profile* profile,
+      const base::FilePath& profile_path,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner);
+
+  // Sets the username from signin for validation of the policy.
+  void SetSigninUsername(const std::string& username);
 
   // Loads policy immediately on the current thread. Virtual for mocks.
   virtual void LoadImmediately();
@@ -50,6 +51,9 @@ class UserCloudPolicyStore : public UserCloudPolicyStoreBase {
   virtual void Load() OVERRIDE;
   virtual void Store(
       const enterprise_management::PolicyFetchResponse& policy) OVERRIDE;
+
+ protected:
+  std::string signin_username_;
 
  private:
   // Callback invoked when a new policy has been loaded from disk. If
@@ -76,9 +80,6 @@ class UserCloudPolicyStore : public UserCloudPolicyStoreBase {
 
   // WeakPtrFactory used to create callbacks for validating and storing policy.
   base::WeakPtrFactory<UserCloudPolicyStore> weak_factory_;
-
-  // Weak pointer to the profile associated with this store.
-  Profile* profile_;
 
   // Path to file where we store persisted policy.
   base::FilePath backing_file_path_;
