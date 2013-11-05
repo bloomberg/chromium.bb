@@ -827,9 +827,11 @@ void URLFetcherCore::DidWriteBuffer(scoped_refptr<DrainableIOBuffer> data,
   if (WriteBuffer(data) < 0)
     return;
 
-  // Finished writing buffer_. Read some more.
+  // Finished writing buffer_. Read some more, unless the request has been
+  // cancelled and deleted.
   DCHECK_EQ(0, data->BytesRemaining());
-  ReadResponse();
+  if (request_.get())
+    ReadResponse();
 }
 
 void URLFetcherCore::ReadResponse() {
