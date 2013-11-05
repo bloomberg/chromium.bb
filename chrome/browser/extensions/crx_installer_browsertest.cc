@@ -378,8 +378,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, HiDpiThemeTest) {
   EXPECT_FALSE(service->GetExtensionById(extension_id, false));
 }
 
+// See http://crbug.com/315299.
+#if defined(OS_WIN)
+#define MAYBE_InstallDelayedUntilNextUpdate \
+        DISABLED_InstallDelayedUntilNextUpdate
+#else
+#define MAYBE_InstallDelayedUntilNextUpdate InstallDelayedUntilNextUpdate
+#endif  // defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
-                       InstallDelayedUntilNextUpdate) {
+                       MAYBE_InstallDelayedUntilNextUpdate) {
   const std::string extension_id("ldnnhddmnhbkjipkidpdiheffobcpfmf");
   base::FilePath crx_path = test_data_dir_.AppendASCII("delayed_install");
   ExtensionSystem* extension_system = extensions::ExtensionSystem::Get(
