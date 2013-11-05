@@ -26,8 +26,6 @@ namespace WTF {
 
     // The following are provided in this file:
     //
-    //   Conditional<Predicate, If, Then>::Type
-    //
     //   IsInteger<T>::value
     //   IsPod<T>::value, see the definition for a note about its limitations
     //   IsConvertibleToInteger<T>::value
@@ -44,9 +42,6 @@ namespace WTF {
     //   RemoveExtent<T>::Type
     //
     //   COMPILE_ASSERT's in TypeTraits.cpp illustrate their usage and what they do.
-
-    template <bool Predicate, class If, class Then> struct Conditional  { typedef If Type; };
-    template <class If, class Then> struct Conditional<false, If, Then> { typedef Then Type; };
 
     template<bool Predicate, class T = void> struct EnableIf;
     template<class T> struct EnableIf<true, T> { typedef T Type; };
