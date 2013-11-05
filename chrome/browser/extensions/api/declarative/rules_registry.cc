@@ -87,7 +87,10 @@ RulesRegistry::RulesRegistry(
     cache_delegate_ = cache_delegate->GetWeakPtr();
     cache_delegate->Init(this);
   } else {
-    ready_.Signal();
+    content::BrowserThread::PostTask(
+        owner_thread,
+        FROM_HERE,
+        base::Bind(&RulesRegistry::MarkReady, this, base::Time::Now()));
   }
 }
 
