@@ -161,6 +161,7 @@ void ResourceLoader::changeToSynchronous()
     ASSERT(m_loader);
     m_loader->cancel();
     m_loader.clear();
+    m_request.setPriority(ResourceLoadPriorityHighest);
     m_connectionState = ConnectionStateNew;
     requestSynchronously();
 }
