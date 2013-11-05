@@ -813,14 +813,6 @@ const char kEnableWebSocketOverSpdy[]       = "enable-websocket-over-spdy";
 // numbers.
 const char kExplicitlyAllowedPorts[]        = "explicitly-allowed-ports";
 
-// The time in seconds that an extension event page can be idle before it
-// is shut down.
-const char kEventPageIdleTime[]             = "event-page-idle-time";
-
-// The time in seconds that an extension event page has between being notified
-// of its impending unload and that unload happening.
-const char kEventPageSuspendingTime[]       = "event-page-unloading-time";
-
 // Marks a renderer as extension process.
 const char kExtensionProcess[]              = "extension-process";
 

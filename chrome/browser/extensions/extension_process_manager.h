@@ -23,6 +23,7 @@ class GURL;
 class Profile;
 
 namespace content {
+class BrowserContext;
 class DevToolsAgentHost;
 class RenderViewHost;
 class SiteInstance;
@@ -41,7 +42,7 @@ class ExtensionProcessManager : public content::NotificationObserver {
   typedef std::set<extensions::ExtensionHost*> ExtensionHostSet;
   typedef ExtensionHostSet::const_iterator const_iterator;
 
-  static ExtensionProcessManager* Create(Profile* profile);
+  static ExtensionProcessManager* Create(content::BrowserContext* context);
   virtual ~ExtensionProcessManager();
 
   const ExtensionHostSet& background_hosts() const {
@@ -141,7 +142,10 @@ class ExtensionProcessManager : public content::NotificationObserver {
   void DeferBackgroundHostCreation(bool defer);
 
  protected:
-  explicit ExtensionProcessManager(Profile* profile);
+  // If |context| is incognito pass the master context as |original_context|.
+  // Otherwise pass the same context for both.
+  ExtensionProcessManager(content::BrowserContext* context,
+                          content::BrowserContext* original_context);
 
   // Called just after |host| is created so it can be registered in our lists.
   void OnExtensionHostCreated(extensions::ExtensionHost* host,
@@ -163,6 +167,9 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // related SiteInstances.
   Profile* GetProfile() const;
 
+  // Returns the same value as GetProfile() as a BrowserContext.
+  content::BrowserContext* GetBrowserContext() const;
+
   content::NotificationRegistrar registrar_;
 
   // The set of ExtensionHosts running viewless background extensions.
@@ -174,6 +181,8 @@ class ExtensionProcessManager : public content::NotificationObserver {
   scoped_refptr<content::SiteInstance> site_instance_;
 
  private:
+  friend class ExtensionProcessManagerTest;
+
   // Extra information we keep for each extension's background page.
   struct BackgroundPageData;
   typedef std::string ExtensionId;
@@ -207,10 +216,7 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // Clears background page data for this extension.
   void ClearBackgroundPageData(const std::string& extension_id);
 
-  // Returns true if loading background pages should be deferred. This is
-  // true if there are no browser windows open and the browser process was
-  // started to show the app launcher, or if DeferBackgroundHostCreation was
-  // called with true, or if the profile is not yet valid.
+  // Returns true if loading background pages should be deferred.
   bool DeferLoadingBackgroundHosts() const;
 
   void OnDevToolsStateChanged(content::DevToolsAgentHost*, bool attached);
@@ -233,9 +239,9 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // If true, then creation of background hosts is suspended.
   bool defer_background_host_creation_;
 
-  base::WeakPtrFactory<ExtensionProcessManager> weak_ptr_factory_;
-
   base::Callback<void(content::DevToolsAgentHost*, bool)> devtools_callback_;
+
+  base::WeakPtrFactory<ExtensionProcessManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionProcessManager);
 };

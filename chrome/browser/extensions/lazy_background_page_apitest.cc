@@ -23,13 +23,13 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/common/switches.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
@@ -81,8 +81,10 @@ class LazyBackgroundPageApiTest : public ExtensionApiTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     // Set shorter delays to prevent test timeouts.
-    command_line->AppendSwitchASCII(switches::kEventPageIdleTime, "1");
-    command_line->AppendSwitchASCII(switches::kEventPageSuspendingTime, "1");
+    command_line->AppendSwitchASCII(
+        extensions::switches::kEventPageIdleTime, "1");
+    command_line->AppendSwitchASCII(
+        extensions::switches::kEventPageSuspendingTime, "1");
   }
 
   // Loads the extension, which temporarily starts the lazy background page
