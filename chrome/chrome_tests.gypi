@@ -1042,6 +1042,7 @@
         'browser/chromeos/file_manager/drive_test_util.h',
         'browser/chromeos/file_manager/external_filesystem_apitest.cc',
         'browser/chromeos/file_manager/file_manager_browsertest.cc',
+        'browser/chromeos/file_manager/file_manager_jstest.cc',
         'browser/chromeos/input_method/input_method_engine_ibus_browserttests.cc',
         'browser/chromeos/kiosk_mode/mock_kiosk_mode_settings.cc',
         'browser/chromeos/kiosk_mode/mock_kiosk_mode_settings.h',
