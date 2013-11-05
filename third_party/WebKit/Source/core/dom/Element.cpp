@@ -1509,7 +1509,7 @@ bool Element::recalcStyle(StyleRecalcChange change)
         change = recalcOwnStyle(change);
 
     // If we reattached we don't need to recalc the style of our descendants anymore.
-    if (change < Reattach)
+    if ((change >= Inherit && change < Reattach) || childNeedsStyleRecalc())
         recalcChildStyle(change);
 
     clearNeedsStyleRecalc();
