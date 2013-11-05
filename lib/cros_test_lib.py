@@ -852,7 +852,7 @@ class GerritTestCase(TempDirTestCase):
   @classmethod
   def _create_gerrit_instance(cls, gerrit_dir):
     gerrit_init_script = os.path.join(
-        cros_build_lib.FindDepotTools(), 'testing_support', 'gerrit-init.sh')
+        osutils.FindDepotTools(), 'testing_support', 'gerrit-init.sh')
     http_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     http_sock.bind(('', 0))
     http_port = str(http_sock.getsockname()[1])

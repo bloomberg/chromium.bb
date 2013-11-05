@@ -215,22 +215,31 @@ def RmDir(path, ignore_missing=False, sudo=False):
         raise
 
 
-def Which(binary, path=None):
+def Which(binary, path=None, mode=os.X_OK):
   """Return the absolute path to the specified binary.
 
-  Arguments:
+  Args:
     binary: The binary to look for.
     path: Search path. Defaults to os.environ['PATH'].
-
-  Returns the specified binary if found. Otherwise returns None.
+    mode: File mode to check on the binary.
+  Returns:
+    The full path to |binary| if found (with the right mode). Otherwise, None.
   """
   if path is None:
     path = os.environ.get('PATH', '')
-  for p in path.split(':'):
+  for p in path.split(os.pathsep):
     p = os.path.join(p, binary)
-    if os.path.isfile(p) and os.access(p, os.X_OK):
+    if os.path.isfile(p) and os.access(p, mode):
       return p
   return None
+
+
+def FindDepotTools():
+  """Returns the location of depot_tools if it is in $PATH."""
+  gclient_dir = os.path.dirname(Which('gclient.py', mode=os.F_OK) or '')
+  gitcl_dir = os.path.dirname(Which('git_cl.py', mode=os.F_OK) or '')
+  if gclient_dir and gclient_dir == gitcl_dir:
+    return gclient_dir
 
 
 def FindMissingBinaries(needed_tools):

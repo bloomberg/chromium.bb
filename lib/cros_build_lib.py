@@ -1610,14 +1610,3 @@ def GetDefaultBoard():
     return None
 
   return default_board
-
-
-# TODO(szager): Merge this with similar functionality in osutils.Which().
-def FindDepotTools():
-  """Discovers the location of a depot_tools checkout in PATH."""
-  for p in os.environ['PATH'].split(os.pathsep):
-    if p.split(os.sep)[-1] == 'depot_tools':
-      f1 = os.path.join(p, 'gclient.py')
-      f2 = os.path.join(p, 'git_cl.py')
-      if os.access(f1, os.R_OK) and os.access(f2, os.R_OK):
-        return p
