@@ -591,14 +591,6 @@ FrameView* AXObject::documentFrameView() const
     return object->documentFrameView();
 }
 
-Page* AXObject::page() const
-{
-    Document* document = this->document();
-    if (!document)
-        return 0;
-    return document->page();
-}
-
 String AXObject::language() const
 {
     const AtomicString& lang = getAttribute(langAttr);

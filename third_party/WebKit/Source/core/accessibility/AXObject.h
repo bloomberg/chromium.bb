@@ -49,7 +49,6 @@ class HTMLAreaElement;
 class IntPoint;
 class IntSize;
 class Node;
-class Page;
 class RenderObject;
 class RenderListItem;
 class ScrollableArea;
@@ -508,7 +507,6 @@ public:
     virtual Element* anchorElement() const { return 0; }
     virtual Element* actionElement() const { return 0; }
     virtual Widget* widgetForAttachmentView() const { return 0; }
-    Page* page() const;
     String language() const;
     bool hasAttribute(const QualifiedName&) const;
     const AtomicString& getAttribute(const QualifiedName&) const;
