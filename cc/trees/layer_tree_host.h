@@ -17,6 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "cc/animation/animation_events.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"
@@ -31,7 +32,6 @@
 #include "cc/resources/scoped_ui_resource.h"
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/resources/ui_resource_client.h"
-#include "cc/scheduler/rate_limiter.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_settings.h"
@@ -40,19 +40,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/rect.h"
-
-namespace WebKit { class WebGraphicsContext3D; }
-
-#if defined(COMPILER_GCC)
-namespace BASE_HASH_NAMESPACE {
-template <>
-struct hash<WebKit::WebGraphicsContext3D*> {
-  size_t operator()(WebKit::WebGraphicsContext3D* ptr) const {
-    return hash<size_t>()(reinterpret_cast<size_t>(ptr));
-  }
-};
-}  // namespace BASE_HASH_NAMESPACE
-#endif  // COMPILER
 
 namespace cc {
 
@@ -122,7 +109,7 @@ class CC_EXPORT UIResourceRequest {
   scoped_ptr<UIResourceBitmap> bitmap_;
 };
 
-class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
+class CC_EXPORT LayerTreeHost {
  public:
   // The SharedBitmapManager will be used on the compositor thread.
   static scoped_ptr<LayerTreeHost> Create(
@@ -276,11 +263,11 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   void SetImplTransform(const gfx::Transform& transform);
   void SetLatencyInfo(const ui::LatencyInfo& latency_info);
 
-  virtual void StartRateLimiter(WebKit::WebGraphicsContext3D* context3d);
-  virtual void StopRateLimiter(WebKit::WebGraphicsContext3D* context3d);
+  // Virtual for tests.
+  virtual void StartRateLimiter();
+  virtual void StopRateLimiter();
 
-  // RateLimiterClient implementation.
-  virtual void RateLimit() OVERRIDE;
+  void RateLimit();
 
   bool AlwaysUsePartialTextureUpdates();
   size_t MaxPartialTextureUpdates() const;
@@ -417,9 +404,7 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
 
   bool visible_;
 
-  typedef base::hash_map<WebKit::WebGraphicsContext3D*,
-                         scoped_refptr<RateLimiter> > RateLimiterMap;
-  RateLimiterMap rate_limiters_;
+  base::OneShotTimer<LayerTreeHost> rate_limit_timer_;
 
   float page_scale_factor_;
   float min_page_scale_factor_;

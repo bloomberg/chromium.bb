@@ -183,9 +183,6 @@ LayerTreeHost::~LayerTreeHost() {
   }
 
   s_num_layer_tree_instances--;
-  RateLimiterMap::iterator it = rate_limiters_.begin();
-  if (it != rate_limiters_.end())
-    it->second->Stop();
 
   if (root_layer_.get()) {
     // The layer tree must be destroyed before the layer tree host. We've
@@ -1111,28 +1108,20 @@ void LayerTreeHost::ApplyScrollAndScale(const ScrollAndScaleSet& info) {
   }
 }
 
-void LayerTreeHost::StartRateLimiter(WebKit::WebGraphicsContext3D* context3d) {
+void LayerTreeHost::StartRateLimiter() {
   if (animating_)
     return;
 
-  DCHECK(context3d);
-  RateLimiterMap::iterator it = rate_limiters_.find(context3d);
-  if (it != rate_limiters_.end()) {
-    it->second->Start();
-  } else {
-    scoped_refptr<RateLimiter> rate_limiter =
-        RateLimiter::Create(context3d, this, proxy_->MainThreadTaskRunner());
-    rate_limiters_[context3d] = rate_limiter;
-    rate_limiter->Start();
+  if (!rate_limit_timer_.IsRunning()) {
+    rate_limit_timer_.Start(FROM_HERE,
+                            base::TimeDelta(),
+                            this,
+                            &LayerTreeHost::RateLimit);
   }
 }
 
-void LayerTreeHost::StopRateLimiter(WebKit::WebGraphicsContext3D* context3d) {
-  RateLimiterMap::iterator it = rate_limiters_.find(context3d);
-  if (it != rate_limiters_.end()) {
-    it->second->Stop();
-    rate_limiters_.erase(it);
-  }
+void LayerTreeHost::StopRateLimiter() {
+  rate_limit_timer_.Stop();
 }
 
 void LayerTreeHost::RateLimit() {
@@ -1140,6 +1129,7 @@ void LayerTreeHost::RateLimit() {
   // commands will wait for the compositing context, and therefore for the
   // SwapBuffers.
   proxy_->ForceSerializeOnSwapBuffers();
+  client_->RateLimitSharedMainThreadContext();
 }
 
 bool LayerTreeHost::AlwaysUsePartialTextureUpdates() {

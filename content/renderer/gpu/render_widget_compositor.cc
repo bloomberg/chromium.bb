@@ -648,4 +648,10 @@ RenderWidgetCompositor::OffscreenContextProvider() {
   return RenderThreadImpl::current()->OffscreenCompositorContextProvider();
 }
 
+void RenderWidgetCompositor::RateLimitSharedMainThreadContext() {
+  cc::ContextProvider* provider =
+      RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
+  provider->Context3d()->rateLimitOffscreenContextCHROMIUM();
+}
+
 }  // namespace content

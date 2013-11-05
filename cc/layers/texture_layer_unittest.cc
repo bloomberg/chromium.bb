@@ -51,8 +51,8 @@ class MockLayerTreeHost : public LayerTreeHost {
   MOCK_METHOD0(AcquireLayerTextures, void());
   MOCK_METHOD0(SetNeedsCommit, void());
   MOCK_METHOD0(SetNeedsUpdateLayers, void());
-  MOCK_METHOD1(StartRateLimiter, void(WebKit::WebGraphicsContext3D* context));
-  MOCK_METHOD1(StopRateLimiter, void(WebKit::WebGraphicsContext3D* context));
+  MOCK_METHOD0(StartRateLimiter, void());
+  MOCK_METHOD0(StopRateLimiter, void());
 };
 
 class TextureLayerTest : public testing::Test {
@@ -278,23 +278,23 @@ TEST_F(TextureLayerTest, RateLimiter) {
   layer_tree_host_->SetRootLayer(test_layer);
 
   // Don't rate limit until we invalidate.
-  EXPECT_CALL(*layer_tree_host_, StartRateLimiter(_)).Times(0);
+  EXPECT_CALL(*layer_tree_host_, StartRateLimiter()).Times(0);
   test_layer->SetRateLimitContext(true);
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
 
   // Do rate limit after we invalidate.
-  EXPECT_CALL(*layer_tree_host_, StartRateLimiter(client.Context3d()));
+  EXPECT_CALL(*layer_tree_host_, StartRateLimiter());
   test_layer->SetNeedsDisplay();
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
 
   // Stop rate limiter when we don't want it any more.
-  EXPECT_CALL(*layer_tree_host_, StopRateLimiter(client.Context3d()));
+  EXPECT_CALL(*layer_tree_host_, StopRateLimiter());
   test_layer->SetRateLimitContext(false);
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
 
   // Or we clear the client.
   test_layer->SetRateLimitContext(true);
-  EXPECT_CALL(*layer_tree_host_, StopRateLimiter(client.Context3d()));
+  EXPECT_CALL(*layer_tree_host_, StopRateLimiter());
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());
   test_layer->ClearClient();
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
@@ -306,14 +306,14 @@ TEST_F(TextureLayerTest, RateLimiter) {
   test_layer->SetRateLimitContext(true);
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());
   layer_tree_host_->SetRootLayer(test_layer);
-  EXPECT_CALL(*layer_tree_host_, StartRateLimiter(_)).Times(0);
+  EXPECT_CALL(*layer_tree_host_, StartRateLimiter()).Times(0);
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
-  EXPECT_CALL(*layer_tree_host_, StartRateLimiter(client.Context3d()));
+  EXPECT_CALL(*layer_tree_host_, StartRateLimiter());
   test_layer->SetNeedsDisplay();
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
 
   // Stop rate limiter when we're removed from the tree.
-  EXPECT_CALL(*layer_tree_host_, StopRateLimiter(client.Context3d()));
+  EXPECT_CALL(*layer_tree_host_, StopRateLimiter());
   layer_tree_host_->SetRootLayer(NULL);
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
 }

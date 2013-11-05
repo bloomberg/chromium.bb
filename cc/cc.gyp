@@ -378,8 +378,6 @@
         'scheduler/delay_based_time_source.h',
         'scheduler/frame_rate_controller.cc',
         'scheduler/frame_rate_controller.h',
-        'scheduler/rate_limiter.cc',
-        'scheduler/rate_limiter.h',
         'scheduler/rolling_time_delta_history.cc',
         'scheduler/rolling_time_delta_history.h',
         'scheduler/scheduler.cc',

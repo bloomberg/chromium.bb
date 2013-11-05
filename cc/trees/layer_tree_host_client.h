@@ -44,6 +44,12 @@ class LayerTreeHostClient {
   // the same thread as the OutputSurface's context.
   virtual scoped_refptr<cc::ContextProvider> OffscreenContextProvider() = 0;
 
+  // Requests that the client insert a rate limiting token in the shared main
+  // thread context's command stream that will block if the context gets too far
+  // ahead of the compositor's command stream. Only needed if the tree contains
+  // a TextureLayer that calls SetRateLimitContext(true).
+  virtual void RateLimitSharedMainThreadContext() {}
+
   // This hook is for testing.
   virtual void DidFailToInitializeOutputSurface() {}
 

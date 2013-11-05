@@ -50,7 +50,7 @@ TextureLayer::~TextureLayer() {
 
 void TextureLayer::ClearClient() {
   if (rate_limit_context_ && client_ && layer_tree_host())
-    layer_tree_host()->StopRateLimiter(client_->Context3d());
+    layer_tree_host()->StopRateLimiter();
   client_ = NULL;
   if (uses_mailbox_)
     SetTextureMailbox(TextureMailbox(), scoped_ptr<SingleReleaseCallback>());
@@ -114,7 +114,7 @@ void TextureLayer::SetBlendBackgroundColor(bool blend) {
 
 void TextureLayer::SetRateLimitContext(bool rate_limit) {
   if (!rate_limit && rate_limit_context_ && client_ && layer_tree_host())
-    layer_tree_host()->StopRateLimiter(client_->Context3d());
+    layer_tree_host()->StopRateLimiter();
 
   rate_limit_context_ = rate_limit;
 }
@@ -178,7 +178,7 @@ void TextureLayer::SetNeedsDisplayRect(const gfx::RectF& dirty_rect) {
   Layer::SetNeedsDisplayRect(dirty_rect);
 
   if (rate_limit_context_ && client_ && layer_tree_host() && DrawsContent())
-    layer_tree_host()->StartRateLimiter(client_->Context3d());
+    layer_tree_host()->StartRateLimiter();
 }
 
 void TextureLayer::SetLayerTreeHost(LayerTreeHost* host) {
@@ -195,7 +195,7 @@ void TextureLayer::SetLayerTreeHost(LayerTreeHost* host) {
       SetNextCommitWaitsForActivation();
     }
     if (rate_limit_context_ && client_)
-      layer_tree_host()->StopRateLimiter(client_->Context3d());
+      layer_tree_host()->StopRateLimiter();
   }
   // If we're removed from the tree, the TextureLayerImpl will be destroyed, and
   // we will need to set the mailbox again on a new TextureLayerImpl the next
