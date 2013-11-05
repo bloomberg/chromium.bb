@@ -364,8 +364,6 @@ void DesktopNativeWidgetAura::InitNativeWidget(
 
   desktop_root_window_host_->OnRootWindowCreated(root_window_.get(), params);
 
-  native_widget_delegate_->OnNativeWidgetCreated(true);
-
   UpdateWindowTransparency();
 
   capture_client_.reset(new DesktopCaptureClient(root_window_.get()));

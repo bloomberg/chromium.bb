@@ -780,6 +780,7 @@
         'view_model_utils_unittest.cc',
         'view_unittest.cc',
         'widget/desktop_aura/desktop_native_widget_aura_unittest.cc',
+        'widget/desktop_aura/desktop_root_window_host_win_unittest.cc',
         'widget/desktop_aura/desktop_screen_x11_unittest.cc',
         'widget/desktop_aura/desktop_screen_position_client_unittest.cc',
         'widget/native_widget_aura_unittest.cc',

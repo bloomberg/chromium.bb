@@ -240,6 +240,8 @@ void DesktopRootWindowHostX11::OnRootWindowCreated(
   x11_window_move_client_.reset(new X11DesktopWindowMoveClient);
   aura::client::SetWindowMoveClient(root_window_,
                                     x11_window_move_client_.get());
+
+  native_widget_delegate_->OnNativeWidgetCreated(true);
 }
 
 scoped_ptr<corewm::Tooltip> DesktopRootWindowHostX11::CreateTooltip() {

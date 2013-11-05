@@ -687,6 +687,8 @@ void DesktopRootWindowHostWin::HandleCreate() {
   // TODO(beng): moar
   NOTIMPLEMENTED();
 
+  native_widget_delegate_->OnNativeWidgetCreated(true);
+
   // 1. Window property association
   // 2. MouseWheel.
 }
