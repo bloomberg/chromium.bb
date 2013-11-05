@@ -47,7 +47,6 @@ void SafeManifestParser::ParseInSandbox() {
   content::UtilityProcessHost* host = content::UtilityProcessHost::Create(
       this,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI).get());
-  host->EnableZygote();
   host->Send(new ChromeUtilityMsg_ParseUpdateManifest(xml_));
 }
 

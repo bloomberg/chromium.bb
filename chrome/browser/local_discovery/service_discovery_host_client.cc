@@ -235,7 +235,6 @@ void ServiceDiscoveryHostClient::StartOnIOThread() {
   utility_host_ = UtilityProcessHost::Create(
       this, base::MessageLoopProxy::current().get())->AsWeakPtr();
   if (utility_host_) {
-    utility_host_->EnableZygote();
     utility_host_->EnableMDns();
     utility_host_->StartBatchMode();
 

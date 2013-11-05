@@ -60,7 +60,6 @@ void ImageDecoder::DecodeImageInSandbox(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   UtilityProcessHost* utility_process_host;
   utility_process_host = UtilityProcessHost::Create(this, task_runner_.get());
-  utility_process_host->EnableZygote();
   if (image_codec_ == ROBUST_JPEG_CODEC) {
     utility_process_host->Send(
         new ChromeUtilityMsg_RobustJPEGDecodeImage(image_data));

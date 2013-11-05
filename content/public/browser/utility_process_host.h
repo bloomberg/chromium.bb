@@ -55,15 +55,11 @@ class UtilityProcessHost : public IPC::Sender,
   // the operation.
   virtual void SetExposedDir(const base::FilePath& dir) = 0;
 
-  // Allows a mdns to use network in sandbox.
+  // Perform presandbox initialization for mDNS.
   virtual void EnableMDns() = 0;
 
   // Make the process run without a sandbox.
   virtual void DisableSandbox() = 0;
-
-  // If the sandbox is being used and we are on Linux, launch the process from
-  // the zygote. Can only be used for tasks that do not require FS access.
-  virtual void EnableZygote() = 0;
 
   // Returns information about the utility child process.
   virtual const ChildProcessData& GetData() = 0;

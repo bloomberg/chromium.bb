@@ -96,7 +96,6 @@ void SafePicasaAlbumsIndexer::StartWorkOnIOThread() {
 
   UtilityProcessHost* host =
       UtilityProcessHost::Create(this, base::MessageLoopProxy::current());
-  host->EnableZygote();
   host->Send(new ChromeUtilityMsg_IndexPicasaAlbumsContents(album_uids_,
                                                             folders_inis_));
   parser_state_ = STARTED_PARSING_STATE;

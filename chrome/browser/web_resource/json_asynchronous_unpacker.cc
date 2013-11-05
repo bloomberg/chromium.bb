@@ -89,7 +89,6 @@ class JSONAsynchronousUnpackerImpl
                               const std::string& json_data) {
     UtilityProcessHost* host = UtilityProcessHost::Create(
         this, BrowserThread::GetMessageLoopProxyForThread(thread_id).get());
-    host->EnableZygote();
     // TODO(mrc): get proper file path when we start using web resources
     // that need to be unpacked.
     host->Send(new ChromeUtilityMsg_UnpackWebResource(json_data));

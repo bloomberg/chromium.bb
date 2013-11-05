@@ -41,7 +41,6 @@ void SafeAudioVideoChecker::Start() {
 
   utility_process_host_ = content::UtilityProcessHost::Create(
       this, base::MessageLoopProxy::current())->AsWeakPtr();
-  utility_process_host_->EnableZygote();
   utility_process_host_->Send(new ChromeUtilityMsg_StartupPing);
 }
 

@@ -304,7 +304,6 @@ class SafeManifestJSONParser : public UtilityProcessHostClient {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     UtilityProcessHost* host = UtilityProcessHost::Create(
         this, base::MessageLoopProxy::current().get());
-    host->EnableZygote();
     host->Send(new ChromeUtilityMsg_ParseJSON(manifest_));
   }
 

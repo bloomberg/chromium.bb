@@ -32,7 +32,6 @@ void SafeJsonParser::StartWorkOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   UtilityProcessHost* host =
       UtilityProcessHost::Create(this, base::MessageLoopProxy::current().get());
-  host->EnableZygote();
   host->Send(new ChromeUtilityMsg_ParseJSON(unsafe_json_));
 }
 

@@ -40,7 +40,6 @@ void SafeITunesPrefParserWin::StartWorkOnIOThread() {
 
   UtilityProcessHost* host =
       UtilityProcessHost::Create(this, base::MessageLoopProxy::current());
-  host->EnableZygote();
   host->Send(new ChromeUtilityMsg_ParseITunesPrefXml(unsafe_xml_));
   parser_state_ = STARTED_PARSING_STATE;
 }
