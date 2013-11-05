@@ -271,6 +271,12 @@ TEST_F('OptionsWebUITest', 'EnterPreventsDefault', function() {
   testDone();
 });
 
+// Verifies that sending an empty list of indexes to move doesn't crash chrome.
+TEST_F('OptionsWebUITest', 'emptySelectedIndexesDoesntCrash', function() {
+  chrome.send('dragDropStartupPage', [0, []]);
+  setTimeout(testDone);
+});
+
 /**
  * TestFixture for OptionsPage WebUI testing including tab history and support
  * for preference manipulation.

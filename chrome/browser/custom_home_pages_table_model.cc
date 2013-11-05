@@ -96,7 +96,7 @@ void CustomHomePagesTableModel::SetURLs(const std::vector<GURL>& urls) {
  */
 void CustomHomePagesTableModel::MoveURLs(int insert_before,
                                          const std::vector<int>& index_list) {
-  DCHECK(!index_list.empty());
+  if (index_list.empty()) return;
   DCHECK(insert_before >= 0 && insert_before <= RowCount());
 
   // The range of elements that needs to be reshuffled is [ |first|, |last| ).
