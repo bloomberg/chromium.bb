@@ -35,5 +35,10 @@
         'seccomp-bpf/syscall_unittest.cc',
       ],
     }],
+    [ 'compile_credentials==1', {
+      'sources': [
+        'services/credentials_unittest.cc',
+      ],
+    }],
   ],
 }
