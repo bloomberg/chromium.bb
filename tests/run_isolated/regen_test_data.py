@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
+# Copyright 2012 The Swarming Authors. All rights reserved.
+# Use of this source code is governed by the Apache v2.0 license that can be
 # found in the LICENSE file.
 
 """Regenerates all the .isolated test data files.
@@ -47,13 +47,26 @@ def save(filename, data):
     f.write(out)
 
 
+def fixup_isolated(isolated, data):
+  """Fix in-place an isolated file."""
+  for f, metadata in data['files'].iteritems():
+    if 'h' in metadata and os.path.isfile(f):
+      if isolated == 'check_files.isolated' and f == 'file2.txt':
+        # See check_files.py for an explanation. It is testing that another file
+        # is actually mapped in place.
+        f = 'file3.txt'
+      metadata['h'] = sha1(f)
+      metadata['s'] = os.stat(f).st_size
+
 def main():
   # Simplify our life.
   os.chdir(ROOT_DIR)
 
   # First, reformat all the files.
   for filename in glob.glob('*.isolated'):
-    save(filename, load(filename))
+    d = load(filename)
+    fixup_isolated(filename, d)
+    save(filename, d)
 
   # Then update the SHA-1s.
   for manifest, includes in INCLUDES_TO_FIX:

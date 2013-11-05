@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
+# Copyright 2012 The Swarming Authors. All rights reserved.
+# Use of this source code is governed by the Apache v2.0 license that can be
 # found in the LICENSE file.
 
 """Checks all the expected files are mapped."""
