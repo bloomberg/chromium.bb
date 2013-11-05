@@ -1,4 +1,4 @@
-
+# Copyright Jonathan Hartley 2013. BSD 3-Clause license, see LICENSE file.
 from . import win32
 
 
@@ -113,7 +113,7 @@ class WinTerm(object):
         # get the number of character cells in the current buffer
         dw_con_size = csbi.dwSize.X * csbi.dwSize.Y
         # fill the entire screen with blanks
-        win32.FillConsoleOutputCharacter(handle, ord(' '), dw_con_size, coord_screen)
+        win32.FillConsoleOutputCharacter(handle, ' ', dw_con_size, coord_screen)
         # now set the buffer's attributes accordingly
         win32.FillConsoleOutputAttribute(handle, self.get_attrs(), dw_con_size, coord_screen );
         # put the cursor at (0, 0)
