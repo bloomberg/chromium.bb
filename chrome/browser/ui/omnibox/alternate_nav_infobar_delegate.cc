@@ -14,16 +14,17 @@
 
 // static
 void AlternateNavInfoBarDelegate::Create(InfoBarService* infobar_service,
-                                         const GURL& alternate_nav_url) {
+                                         const AutocompleteMatch& match) {
   infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-      new AlternateNavInfoBarDelegate(infobar_service, alternate_nav_url)));
+      new AlternateNavInfoBarDelegate(infobar_service, match)));
 }
 
 AlternateNavInfoBarDelegate::AlternateNavInfoBarDelegate(
     InfoBarService* owner,
-    const GURL& alternate_nav_url)
+    const AutocompleteMatch& match)
     : InfoBarDelegate(owner),
-      alternate_nav_url_(alternate_nav_url) {
+      match_(match) {
+  DCHECK(match_.destination_url.is_valid());
 }
 
 AlternateNavInfoBarDelegate::~AlternateNavInfoBarDelegate() {
@@ -37,7 +38,7 @@ string16 AlternateNavInfoBarDelegate::GetMessageTextWithOffset(
 }
 
 string16 AlternateNavInfoBarDelegate::GetLinkText() const {
-  return UTF8ToUTF16(alternate_nav_url_.spec());
+  return UTF8ToUTF16(match_.destination_url.spec());
 }
 
 bool AlternateNavInfoBarDelegate::LinkClicked(
@@ -45,7 +46,7 @@ bool AlternateNavInfoBarDelegate::LinkClicked(
   // Pretend the user typed this URL, so that navigating to it will be the
   // default action when it's typed again in the future.
   web_contents()->OpenURL(content::OpenURLParams(
-      alternate_nav_url_, content::Referrer(), disposition,
+      match_.destination_url, content::Referrer(), disposition,
       content::PAGE_TRANSITION_TYPED, false));
 
   // We should always close, even if the navigation did not occur within this

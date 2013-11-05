@@ -644,8 +644,11 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
   const string16& user_text =
       user_input_in_progress_ ? user_text_ : permanent_text_;
   scoped_ptr<OmniboxNavigationObserver> observer(
-      new OmniboxNavigationObserver(profile_, user_text, match,
-                                    alternate_nav_url));
+      new OmniboxNavigationObserver(
+          profile_, user_text, match,
+          autocomplete_controller()->history_url_provider()->SuggestExactInput(
+              user_text, alternate_nav_url,
+              AutocompleteInput::HasHTTPScheme(user_text))));
 
   // We only care about cases where there is a selection (i.e. the popup is
   // open).

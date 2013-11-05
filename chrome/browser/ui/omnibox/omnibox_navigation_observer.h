@@ -14,7 +14,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "net/url_request/url_fetcher_delegate.h"
-#include "url/gurl.h"
 
 namespace history {
 class ShortcutsBackend;
@@ -57,7 +56,7 @@ class OmniboxNavigationObserver : public content::NotificationObserver,
   OmniboxNavigationObserver(Profile* profile,
                             const string16& text,
                             const AutocompleteMatch& match,
-                            const GURL& alternate_nav_url);
+                            const AutocompleteMatch& alternate_nav_match);
   virtual ~OmniboxNavigationObserver();
 
   LoadState load_state() const { return load_state_; }
@@ -97,7 +96,7 @@ class OmniboxNavigationObserver : public content::NotificationObserver,
 
   const string16 text_;
   const AutocompleteMatch match_;
-  const GURL alternate_nav_url_;
+  const AutocompleteMatch alternate_nav_match_;
   scoped_refptr<history::ShortcutsBackend> shortcuts_backend_;  // May be NULL
                                                                 // in incognito.
   scoped_ptr<net::URLFetcher> fetcher_;

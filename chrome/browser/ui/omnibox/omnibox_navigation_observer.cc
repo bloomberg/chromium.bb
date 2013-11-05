@@ -54,15 +54,15 @@ OmniboxNavigationObserver::OmniboxNavigationObserver(
     Profile* profile,
     const string16& text,
     const AutocompleteMatch& match,
-    const GURL& alternate_nav_url)
+    const AutocompleteMatch& alternate_nav_match)
     : text_(text),
       match_(match),
-      alternate_nav_url_(alternate_nav_url),
+      alternate_nav_match_(alternate_nav_match),
       shortcuts_backend_(ShortcutsBackendFactory::GetForProfile(profile)),
       load_state_(LOAD_NOT_SEEN),
       fetch_state_(FETCH_NOT_COMPLETE) {
-  if (alternate_nav_url_.is_valid()) {
-    fetcher_.reset(net::URLFetcher::Create(alternate_nav_url,
+  if (alternate_nav_match_.destination_url.is_valid()) {
+    fetcher_.reset(net::URLFetcher::Create(alternate_nav_match_.destination_url,
                                            net::URLFetcher::HEAD, this));
     fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
     fetcher_->SetStopOnRedirect(true);
@@ -134,7 +134,8 @@ void OmniboxNavigationObserver::OnURLFetchComplete(
       (status.is_success() && ResponseCodeIndicatesSuccess(response_code)) ||
       ((status.status() == net::URLRequestStatus::CANCELED) &&
        ((response_code / 100) == 3) &&
-       IsValidNavigation(alternate_nav_url_, source->GetURL())) ?
+       IsValidNavigation(alternate_nav_match_.destination_url,
+                         source->GetURL())) ?
           FETCH_SUCCEEDED : FETCH_FAILED;
   if (load_state_ == LOAD_COMMITTED)
     OnAllLoadingFinished();  // deletes |this|!
@@ -143,7 +144,7 @@ void OmniboxNavigationObserver::OnURLFetchComplete(
 void OmniboxNavigationObserver::OnAllLoadingFinished() {
   if (fetch_state_ == FETCH_SUCCEEDED) {
     AlternateNavInfoBarDelegate::Create(
-        InfoBarService::FromWebContents(web_contents()), alternate_nav_url_);
+        InfoBarService::FromWebContents(web_contents()), alternate_nav_match_);
   }
   delete this;
 }
