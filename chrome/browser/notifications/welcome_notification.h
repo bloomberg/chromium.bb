@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/prefs/pref_member.h"
+#include "ui/message_center/notifier_settings.h"
 
 namespace message_center {
 class MessageCenter;
@@ -46,7 +47,10 @@ class WelcomeNotification {
   };
 
   // Unconditionally shows the welcome notification.
-  void ShowWelcomeNotification(PopUpRequest popUpRequest);
+  void ShowWelcomeNotification(
+      const message_center::NotifierId notifier_id,
+      const string16& display_source,
+      PopUpRequest pop_up_request);
 
   // Hides the welcome notification.
   void HideWelcomeNotification();

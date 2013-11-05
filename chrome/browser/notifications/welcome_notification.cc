@@ -92,20 +92,23 @@ WelcomeNotification::~WelcomeNotification() {}
 
 void WelcomeNotification::ShowWelcomeNotificationIfNecessary(
     const Notification& notification) {
-  if (notification.notifier_id().id == kChromeNowExtensionID) {
+  message_center::NotifierId notifier_id = notification.notifier_id();
+  if (notifier_id.id == kChromeNowExtensionID) {
     PrefService* pref_service = profile_->GetPrefs();
     if (!pref_service->GetBoolean(prefs::kWelcomeNotificationDismissed)) {
-      PopUpRequest popUpRequest =
+      PopUpRequest pop_up_request =
           pref_service->GetBoolean(
               prefs::kWelcomeNotificationPreviouslyPoppedUp)
           ? POP_UP_HIDDEN
           : POP_UP_SHOWN;
-      if (popUpRequest == POP_UP_SHOWN) {
+      if (pop_up_request == POP_UP_SHOWN) {
         pref_service->SetBoolean(
             prefs::kWelcomeNotificationPreviouslyPoppedUp, true);
       }
 
-      ShowWelcomeNotification(popUpRequest);
+      ShowWelcomeNotification(notifier_id,
+                              notification.display_source(),
+                              pop_up_request);
     }
   }
 }
@@ -123,7 +126,10 @@ void WelcomeNotification::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
-void WelcomeNotification::ShowWelcomeNotification(PopUpRequest popUpRequest) {
+void WelcomeNotification::ShowWelcomeNotification(
+    const message_center::NotifierId notifier_id,
+    const string16& display_source,
+    PopUpRequest pop_up_request) {
   message_center::ButtonInfo learn_more(
       l10n_util::GetStringUTF16(IDS_NOTIFICATION_WELCOME_BUTTON_LEARN_MORE));
   learn_more.icon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
@@ -145,14 +151,13 @@ void WelcomeNotification::ShowWelcomeNotification(PopUpRequest popUpRequest) {
             l10n_util::GetStringUTF16(IDS_NOTIFICATION_WELCOME_BODY),
             ui::ResourceBundle::GetSharedInstance().GetImageNamed(
                 IDR_NOTIFICATION_WELCOME_ICON),
-            l10n_util::GetStringUTF16(IDS_NOTIFICATION_WELCOME_DISPLAY_SOURCE),
-            message_center::NotifierId(
-                message_center::NotifierId::SYSTEM_COMPONENT),
+            display_source,
+            notifier_id,
             rich_notification_data,
             new WelcomeNotificationDelegate(
                 welcome_notification_id_, profile_)));
 
-    if (popUpRequest == POP_UP_HIDDEN)
+    if (pop_up_request == POP_UP_HIDDEN)
       message_center_notification->set_shown_as_popup(true);
 
     message_center_->AddNotification(message_center_notification.Pass());
