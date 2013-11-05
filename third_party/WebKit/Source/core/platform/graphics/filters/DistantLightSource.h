@@ -23,7 +23,7 @@
 #ifndef DistantLightSource_h
 #define DistantLightSource_h
 
-#include "core/platform/graphics/filters/LightSource.h"
+#include "platform/graphics/filters/LightSource.h"
 
 namespace WebCore {
 

@@ -24,7 +24,7 @@
 
 #include "core/platform/graphics/filters/FEDiffuseLighting.h"
 
-#include "core/platform/graphics/filters/LightSource.h"
+#include "platform/graphics/filters/LightSource.h"
 #include "platform/text/TextStream.h"
 
 namespace WebCore {

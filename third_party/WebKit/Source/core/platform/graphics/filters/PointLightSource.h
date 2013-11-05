@@ -23,7 +23,7 @@
 #ifndef PointLightSource_h
 #define PointLightSource_h
 
-#include "core/platform/graphics/filters/LightSource.h"
+#include "platform/graphics/filters/LightSource.h"
 
 namespace WebCore {
 

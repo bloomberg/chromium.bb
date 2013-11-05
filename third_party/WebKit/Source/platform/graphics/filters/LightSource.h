@@ -24,6 +24,7 @@
 #ifndef LightSource_h
 #define LightSource_h
 
+#include "platform/PlatformExport.h"
 #include "platform/geometry/FloatPoint3D.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -38,7 +39,7 @@ enum LightType {
 
 class TextStream;
 
-class LightSource : public RefCounted<LightSource> {
+class PLATFORM_EXPORT LightSource : public RefCounted<LightSource> {
 public:
 
     // Light vectors must be calculated for every pixel during
@@ -63,7 +64,7 @@ public:
         : m_type(type)
     { }
 
-    virtual ~LightSource() { }
+    virtual ~LightSource();
 
     LightType type() const { return m_type; }
     virtual TextStream& externalRepresentation(TextStream&) const = 0;

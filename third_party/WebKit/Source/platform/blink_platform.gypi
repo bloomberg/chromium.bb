@@ -306,6 +306,8 @@
       'geometry/TransformState.h',
       'graphics/angle/ANGLEPlatformBridge.cpp',
       'graphics/angle/ANGLEPlatformBridge.h',
+      'graphics/filters/LightSource.cpp',
+      'graphics/filters/LightSource.h',
       'graphics/filters/custom/CustomFilterArrayParameter.cpp',
       'graphics/filters/custom/CustomFilterArrayParameter.h',
       'graphics/filters/custom/CustomFilterConstants.h',

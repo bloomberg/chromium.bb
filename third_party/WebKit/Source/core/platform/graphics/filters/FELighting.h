@@ -30,10 +30,10 @@
 
 #include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
-#include "core/platform/graphics/filters/LightSource.h"
 #include "core/platform/graphics/filters/PointLightSource.h"
 #include "core/platform/graphics/filters/SpotLightSource.h"
 #include "platform/graphics/Color.h"
+#include "platform/graphics/filters/LightSource.h"
 #include "wtf/Uint8ClampedArray.h"
 
 // Common base class for FEDiffuseLighting and FESpecularLighting
