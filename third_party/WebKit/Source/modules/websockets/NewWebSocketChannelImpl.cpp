@@ -45,7 +45,6 @@
 #include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "platform/Logging.h"
-#include "platform/NotImplemented.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebSocketHandle.h"
 #include "public/platform/WebString.h"
@@ -467,6 +466,14 @@ void NewWebSocketChannelImpl::didClose(WebSocketHandle* handle, bool wasClean, u
     // FIXME: Maybe we should notify an error to m_client for some didClose messages.
     handleDidClose(code, reason);
     // handleDidClose may delete this object.
+}
+
+void NewWebSocketChannelImpl::didReceiveFlowControl(WebSocketHandle* handle, int64_t quota)
+{
+    LOG(Network, "NewWebSocketChannelImpl %p didReceiveFlowControl(%p, %ld)", this, handle, static_cast<long>(quota));
+    ASSERT(m_handle);
+    m_sendingQuota += quota;
+    sendInternal();
 }
 
 void NewWebSocketChannelImpl::didFinishLoadingBlob(PassRefPtr<ArrayBuffer> buffer)

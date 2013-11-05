@@ -126,7 +126,7 @@ private:
     virtual void didFail(WebKit::WebSocketHandle*, const WebKit::WebString& message) OVERRIDE;
     virtual void didReceiveData(WebKit::WebSocketHandle*, bool fin, WebKit::WebSocketHandle::MessageType, const char* data, size_t /* size */) OVERRIDE;
     virtual void didClose(WebKit::WebSocketHandle*, bool wasClean, unsigned short code, const WebKit::WebString& reason) OVERRIDE;
-    virtual void didReceiveFlowControl(WebKit::WebSocketHandle*, int64_t quota) OVERRIDE { m_sendingQuota += quota; }
+    virtual void didReceiveFlowControl(WebKit::WebSocketHandle*, int64_t quota) OVERRIDE;
 
     // Methods for BlobLoader.
     void didFinishLoadingBlob(PassRefPtr<ArrayBuffer>);
