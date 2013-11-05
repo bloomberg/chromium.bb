@@ -39,7 +39,6 @@
                     'outputs': [
                       '<(PRODUCT_DIR)/pnacl/pnacl_public_pnacl_json',
                       '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_crtbegin_o',
-                      '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_crtbeginS_o',
                       '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_ld_nexe',
                       '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_libcrt_platform_a',
                       '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_libgcc_a',
@@ -47,7 +46,6 @@
                       '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_libpnacl_irt_shim_a',
                       '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_pnacl_llc_nexe',
                       '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_crtbegin_o',
-                      '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_crtbeginS_o',
                       '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_ld_nexe',
                       '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_libcrt_platform_a',
                       '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_libgcc_a',
@@ -74,7 +72,6 @@
                         'outputs': [
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_pnacl_json',
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_arm_crtbegin_o',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_arm_crtbeginS_o',
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_arm_ld_nexe',
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_arm_libcrt_platform_a',
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_arm_libgcc_a',
@@ -96,7 +93,6 @@
                         'outputs': [
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_pnacl_json',
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_crtbegin_o',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_crtbeginS_o',
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_ld_nexe',
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_libcrt_platform_a',
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_libgcc_a',
@@ -118,7 +114,6 @@
                         'outputs': [
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_pnacl_json',
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_crtbegin_o',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_crtbeginS_o',
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_ld_nexe',
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_libcrt_platform_a',
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_libgcc_a',
