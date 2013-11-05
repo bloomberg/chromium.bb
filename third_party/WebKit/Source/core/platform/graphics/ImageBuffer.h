@@ -50,7 +50,6 @@ namespace WebKit { class WebLayer; }
 namespace WebCore {
 
 class Image;
-class ImageData;
 class IntPoint;
 class IntRect;
 class GraphicsContext3D;
@@ -152,7 +151,16 @@ private:
     ImageBuffer(const IntSize&, float resolutionScale, const GraphicsContext*, bool hasAlpha, bool& success);
 };
 
-String ImageDataToDataURL(const ImageData&, const String& mimeType, const double* quality);
+struct ImageDataBuffer {
+    ImageDataBuffer(const IntSize& size, PassRefPtr<Uint8ClampedArray> data) : m_size(size), m_data(data) { }
+    IntSize size() const { return m_size; }
+    unsigned char* data() const { return m_data->data(); }
+
+    IntSize m_size;
+    RefPtr<Uint8ClampedArray> m_data;
+};
+
+String ImageDataToDataURL(const ImageDataBuffer&, const String& mimeType, const double* quality);
 
 } // namespace WebCore
 

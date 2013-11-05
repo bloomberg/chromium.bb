@@ -29,7 +29,6 @@
 
 #include "core/platform/graphics/GraphicsContext3D.h"
 
-#include "core/html/ImageData.h"
 #include "core/platform/graphics/Extensions3D.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/Image.h"
@@ -524,23 +523,27 @@ void GraphicsContext3D::paintRenderingResultsToCanvas(ImageBuffer* imageBuffer, 
     paintFramebufferToCanvas(framebufferId, width, height, !getContextAttributes().premultipliedAlpha, imageBuffer);
 }
 
-PassRefPtr<ImageData> GraphicsContext3D::paintRenderingResultsToImageData(DrawingBuffer* drawingBuffer)
+PassRefPtr<Uint8ClampedArray> GraphicsContext3D::paintRenderingResultsToImageData(DrawingBuffer* drawingBuffer, int& width, int& height)
 {
     if (getContextAttributes().premultipliedAlpha)
         return 0;
 
     Platform3DObject framebufferId;
-    int width, height;
     getDrawingParameters(drawingBuffer, m_impl, &framebufferId, &width, &height);
 
-    RefPtr<ImageData> imageData = ImageData::create(IntSize(width, height));
-    unsigned char* pixels = imageData->data()->data();
+    Checked<int, RecordOverflow> dataSize = 4;
+    dataSize *= width;
+    dataSize *= height;
+    if (dataSize.hasOverflowed())
+        return 0;
+
+    RefPtr<Uint8ClampedArray> pixels = Uint8ClampedArray::createUninitialized(width * height * 4);
 
     m_impl->bindFramebuffer(FRAMEBUFFER, framebufferId);
-    readBackFramebuffer(pixels, width, height, ReadbackRGBA, AlphaDoNothing);
-    flipVertically(pixels, width, height);
+    readBackFramebuffer(pixels->data(), width, height, ReadbackRGBA, AlphaDoNothing);
+    flipVertically(pixels->data(), width, height);
 
-    return imageData.release();
+    return pixels.release();
 }
 
 void GraphicsContext3D::readBackFramebuffer(unsigned char* pixels, int width, int height, ReadbackOrder readbackOrder, AlphaOp op)

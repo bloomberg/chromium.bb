@@ -34,7 +34,7 @@
 #include "SkBitmap.h"
 #include "SkColorPriv.h"
 #include "SkUnPreMultiply.h"
-#include "core/html/ImageData.h"
+#include "core/platform/graphics/ImageBuffer.h"
 #include "platform/geometry/IntSize.h"
 extern "C" {
 #include "png.h"
@@ -124,9 +124,9 @@ bool PNGImageEncoder::encode(const SkBitmap& bitmap, Vector<unsigned char>* outp
     return encodePixels(IntSize(bitmap.width(), bitmap.height()), static_cast<unsigned char*>(bitmap.getPixels()), true, output);
 }
 
-bool PNGImageEncoder::encode(const ImageData& imageData, Vector<unsigned char>* output)
+bool PNGImageEncoder::encode(const ImageDataBuffer& imageData, Vector<unsigned char>* output)
 {
-    return encodePixels(imageData.size(), imageData.data()->data(), false, output);
+    return encodePixels(imageData.size(), imageData.data(), false, output);
 }
 
 } // namespace WebCore

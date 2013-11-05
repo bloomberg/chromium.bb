@@ -33,7 +33,6 @@
 #include "config.h"
 #include "core/platform/graphics/ImageBuffer.h"
 
-#include "core/html/ImageData.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/Extensions3D.h"
@@ -484,7 +483,7 @@ String ImageBuffer::toDataURL(const String& mimeType, const double* quality, Coo
     return "data:" + mimeType + ";base64," + base64Data;
 }
 
-String ImageDataToDataURL(const ImageData& imageData, const String& mimeType, const double* quality)
+String ImageDataToDataURL(const ImageDataBuffer& imageData, const String& mimeType, const double* quality)
 {
     ASSERT(MIMETypeRegistry::isSupportedImageMIMETypeForEncoding(mimeType));
 

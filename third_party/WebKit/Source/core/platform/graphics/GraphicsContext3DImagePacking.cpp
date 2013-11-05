@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
 
-#include "core/html/ImageData.h"
 #include "core/platform/graphics/ImageObserver.h"
 #include "core/platform/graphics/cpu/arm/GraphicsContext3DNEON.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
@@ -1490,7 +1489,8 @@ bool GraphicsContext3D::packImageData(
 }
 
 bool GraphicsContext3D::extractImageData(
-    ImageData* imageData,
+    const uint8_t* imageData,
+    const IntSize& imageDataSize,
     GC3Denum format,
     GC3Denum type,
     bool flipY,
@@ -1499,8 +1499,8 @@ bool GraphicsContext3D::extractImageData(
 {
     if (!imageData)
         return false;
-    int width = imageData->width();
-    int height = imageData->height();
+    int width = imageDataSize.width();
+    int height = imageDataSize.height();
 
     unsigned packedSize;
     // Output data is tightly packed (alignment == 1).
@@ -1508,7 +1508,7 @@ bool GraphicsContext3D::extractImageData(
         return false;
     data.resize(packedSize);
 
-    if (!packPixels(imageData->data()->data(), DataFormatRGBA8, width, height, 0, format, type, premultiplyAlpha ? AlphaDoPremultiply : AlphaDoNothing, data.data(), flipY))
+    if (!packPixels(imageData, DataFormatRGBA8, width, height, 0, format, type, premultiplyAlpha ? AlphaDoPremultiply : AlphaDoNothing, data.data(), flipY))
         return false;
 
     return true;

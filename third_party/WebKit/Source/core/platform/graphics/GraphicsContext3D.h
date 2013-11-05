@@ -60,7 +60,6 @@ class GraphicsContext3DContextLostCallbackAdapter;
 class GraphicsContext3DErrorMessageCallbackAdapter;
 class Image;
 class ImageBuffer;
-class ImageData;
 class IntRect;
 class IntSize;
 
@@ -668,7 +667,7 @@ public:
     bool layerComposited() const;
 
     void paintRenderingResultsToCanvas(ImageBuffer*, DrawingBuffer*);
-    PassRefPtr<ImageData> paintRenderingResultsToImageData(DrawingBuffer*);
+    PassRefPtr<Uint8ClampedArray> paintRenderingResultsToImageData(DrawingBuffer*, int&, int&);
 
     // Support for buffer creation and deletion
     Platform3DObject createBuffer();
@@ -775,7 +774,7 @@ public:
     // packing the pixel data according to the given format and type,
     // and obeying the flipY and premultiplyAlpha flags. Returns true
     // upon success.
-    static bool extractImageData(ImageData*, GC3Denum format, GC3Denum type, bool flipY, bool premultiplyAlpha, Vector<uint8_t>& data);
+    static bool extractImageData(const uint8_t*, const IntSize&, GC3Denum format, GC3Denum type, bool flipY, bool premultiplyAlpha, Vector<uint8_t>& data);
 
     // Helper function which extracts the user-supplied texture
     // data, applying the flipY and premultiplyAlpha parameters.

@@ -940,14 +940,17 @@ PassRefPtr<ImageData> WebGLRenderingContext::paintRenderingResultsToImageData()
 
     clearIfComposited();
     m_drawingBuffer->commit();
-    RefPtr<ImageData> imageData = m_context->paintRenderingResultsToImageData(m_drawingBuffer.get());
+    int width, height;
+    RefPtr<Uint8ClampedArray> imageDataPixels = m_context->paintRenderingResultsToImageData(m_drawingBuffer.get(), width, height);
+    if (!imageDataPixels)
+        return 0;
 
     if (m_framebufferBinding)
         m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, objectOrZero(m_framebufferBinding.get()));
     else
         m_drawingBuffer->bind();
 
-    return imageData;
+    return ImageData::create(IntSize(width, height), imageDataPixels);
 }
 
 void WebGLRenderingContext::reshape(int width, int height)
@@ -3435,7 +3438,7 @@ void WebGLRenderingContext::texImage2D(GC3Denum target, GC3Dint level, GC3Denum 
     if (!m_unpackFlipY && !m_unpackPremultiplyAlpha && format == GraphicsContext3D::RGBA && type == GraphicsContext3D::UNSIGNED_BYTE)
         needConversion = false;
     else {
-        if (!m_context->extractImageData(pixels, format, type, m_unpackFlipY, m_unpackPremultiplyAlpha, data)) {
+        if (!m_context->extractImageData(pixels->data()->data(), pixels->size(), format, type, m_unpackFlipY, m_unpackPremultiplyAlpha, data)) {
             synthesizeGLError(GraphicsContext3D::INVALID_VALUE, "texImage2D", "bad image data");
             return;
         }
@@ -3674,7 +3677,7 @@ void WebGLRenderingContext::texSubImage2D(GC3Denum target, GC3Dint level, GC3Din
     if (format == GraphicsContext3D::RGBA && type == GraphicsContext3D::UNSIGNED_BYTE && !m_unpackFlipY && !m_unpackPremultiplyAlpha)
         needConversion = false;
     else {
-        if (!m_context->extractImageData(pixels, format, type, m_unpackFlipY, m_unpackPremultiplyAlpha, data)) {
+        if (!m_context->extractImageData(pixels->data()->data(), pixels->size(), format, type, m_unpackFlipY, m_unpackPremultiplyAlpha, data)) {
             synthesizeGLError(GraphicsContext3D::INVALID_VALUE, "texSubImage2D", "bad image data");
             return;
         }

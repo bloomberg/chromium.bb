@@ -392,7 +392,7 @@ String HTMLCanvasElement::toDataURL(const String& mimeType, const double* qualit
     RefPtr<ImageData> imageData = getImageData();
 
     if (imageData)
-        return ImageDataToDataURL(*imageData, encodingMimeType, quality);
+        return ImageDataToDataURL(ImageDataBuffer(imageData->size(), imageData->data()), encodingMimeType, quality);
 
     if (m_context)
         m_context->paintRenderingResultsToCanvas();
