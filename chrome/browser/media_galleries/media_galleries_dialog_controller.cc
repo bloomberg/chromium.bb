@@ -9,6 +9,8 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/api/file_system/file_system_api.h"
+#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_histograms.h"
 #include "chrome/browser/profiles/profile.h"
@@ -88,7 +90,7 @@ MediaGalleriesDialogController::MediaGalleriesDialogController(
         on_finish_(on_finish) {
   preferences_ =
       g_browser_process->media_file_system_registry()->GetPreferences(
-          Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
+          GetProfile());
   // Passing unretained pointer is safe, since the dialog controller
   // is self-deleting, and so won't be deleted until it can be shown
   // and then closed.
@@ -209,14 +211,17 @@ MediaGalleriesDialogController::UnattachedPermissions() const {
 }
 
 void MediaGalleriesDialogController::OnAddFolderClicked() {
-  base::FilePath desktop;
-  PathService::Get(base::DIR_USER_DESKTOP, &desktop);
+  base::FilePath default_path =
+      extensions::file_system_api::GetLastChooseEntryDirectory(
+          extensions::ExtensionPrefs::Get(GetProfile()), extension_->id());
+  if (default_path.empty())
+    PathService::Get(base::DIR_USER_DESKTOP, &default_path);
   select_folder_dialog_ =
       ui::SelectFileDialog::Create(this, new ChromeSelectFilePolicy(NULL));
   select_folder_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_FOLDER,
       l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY_TITLE),
-      desktop,
+      default_path,
       NULL,
       0,
       base::FilePath::StringType(),
@@ -287,6 +292,11 @@ content::WebContents* MediaGalleriesDialogController::web_contents() {
 void MediaGalleriesDialogController::FileSelected(const base::FilePath& path,
                                                   int /*index*/,
                                                   void* /*params*/) {
+  extensions::file_system_api::SetLastChooseEntryDirectory(
+      extensions::ExtensionPrefs::Get(GetProfile()),
+      extension_->id(),
+      path);
+
   // Try to find it in the prefs.
   MediaGalleryPrefInfo gallery;
   bool gallery_exists = preferences_->LookUpGalleryByPath(path, &gallery);
@@ -464,6 +474,10 @@ ui::MenuModel* MediaGalleriesDialogController::GetContextMenuModel(
     MediaGalleryPrefId id) {
   gallery_menu_model_->set_media_gallery_pref_id(id);
   return context_menu_model_.get();
+}
+
+Profile* MediaGalleriesDialogController::GetProfile() {
+  return Profile::FromBrowserContext(web_contents_->GetBrowserContext());
 }
 
 // MediaGalleries dialog -------------------------------------------------------

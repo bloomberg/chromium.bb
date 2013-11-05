@@ -30,6 +30,7 @@ class MenuModel;
 
 class GalleryContextMenuModel;
 class MediaGalleriesDialogController;
+class Profile;
 
 // The view.
 class MediaGalleriesDialog {
@@ -166,6 +167,8 @@ class MediaGalleriesDialogController
   // gallery permissions.
   void FillPermissions(bool attached,
                        GalleryPermissionsVector* permissions) const;
+
+  Profile* GetProfile();
 
   // The web contents from which the request originated.
   content::WebContents* web_contents_;
