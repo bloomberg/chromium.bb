@@ -405,33 +405,6 @@ int GetNumberOfThreads(ProcessHandle process) {
 
 namespace {
 
-// The format of /proc/meminfo is:
-//
-// MemTotal:      8235324 kB
-// MemFree:       1628304 kB
-// Buffers:        429596 kB
-// Cached:        4728232 kB
-// ...
-const size_t kMemTotalIndex = 1;
-const size_t kMemFreeIndex = 4;
-const size_t kMemBuffersIndex = 7;
-const size_t kMemCachedIndex = 10;
-const size_t kMemActiveAnonIndex = 22;
-const size_t kMemInactiveAnonIndex = 25;
-const size_t kMemActiveFileIndex = 28;
-const size_t kMemInactiveFileIndex = 31;
-
-// The format of /proc/vmstat is:
-//
-// nr_free_pages 299878
-// nr_inactive_anon 239863
-// nr_active_anon 1318966
-// nr_inactive_file 2015629
-// ...
-const size_t kVMPagesSwappedIn = 75;
-const size_t kVMPagesSwappedOut = 77;
-const size_t kVMPageMajorFaults = 95;
-
 // The format of /proc/diskstats is:
 //  Device major number
 //  Device minor number
@@ -541,53 +514,81 @@ scoped_ptr<Value> SystemMemoryInfoKB::ToValue() const {
 // exposed for testing
 bool ParseProcMeminfo(const std::string& meminfo_data,
                       SystemMemoryInfoKB* meminfo) {
-  std::vector<std::string> meminfo_fields;
-  SplitStringAlongWhitespace(meminfo_data, &meminfo_fields);
+  // The format of /proc/meminfo is:
+  //
+  // MemTotal:      8235324 kB
+  // MemFree:       1628304 kB
+  // Buffers:        429596 kB
+  // Cached:        4728232 kB
+  // ...
+  // There is no guarantee on the ordering or position
+  // though it doesn't appear to change very often
 
-  if (meminfo_fields.size() < kMemCachedIndex) {
-    return false;
-  }
+  // As a basic sanity check, let's make sure we at least get non-zero
+  // MemTotal value
+  meminfo->total = 0;
 
-  DCHECK_EQ(meminfo_fields[kMemTotalIndex-1], "MemTotal:");
-  DCHECK_EQ(meminfo_fields[kMemFreeIndex-1], "MemFree:");
-  DCHECK_EQ(meminfo_fields[kMemBuffersIndex-1], "Buffers:");
-  DCHECK_EQ(meminfo_fields[kMemCachedIndex-1], "Cached:");
-  DCHECK_EQ(meminfo_fields[kMemActiveAnonIndex-1], "Active(anon):");
-  DCHECK_EQ(meminfo_fields[kMemInactiveAnonIndex-1], "Inactive(anon):");
-  DCHECK_EQ(meminfo_fields[kMemActiveFileIndex-1], "Active(file):");
-  DCHECK_EQ(meminfo_fields[kMemInactiveFileIndex-1], "Inactive(file):");
-
-  StringToInt(meminfo_fields[kMemTotalIndex], &meminfo->total);
-  StringToInt(meminfo_fields[kMemFreeIndex], &meminfo->free);
-  StringToInt(meminfo_fields[kMemBuffersIndex], &meminfo->buffers);
-  StringToInt(meminfo_fields[kMemCachedIndex], &meminfo->cached);
-  StringToInt(meminfo_fields[kMemActiveAnonIndex], &meminfo->active_anon);
-  StringToInt(meminfo_fields[kMemInactiveAnonIndex], &meminfo->inactive_anon);
-  StringToInt(meminfo_fields[kMemActiveFileIndex], &meminfo->active_file);
-  StringToInt(meminfo_fields[kMemInactiveFileIndex], &meminfo->inactive_file);
-
-  // We don't know when these fields appear, so we must search for them.
-  for (size_t i = kMemCachedIndex+2; i < meminfo_fields.size(); i += 3) {
-    if (meminfo_fields[i] == "SwapTotal:")
-      StringToInt(meminfo_fields[i+1], &meminfo->swap_total);
-    if (meminfo_fields[i] == "SwapFree:")
-      StringToInt(meminfo_fields[i+1], &meminfo->swap_free);
-    if (meminfo_fields[i] == "Dirty:")
-      StringToInt(meminfo_fields[i+1], &meminfo->dirty);
-  }
-
+  std::vector<std::string> meminfo_lines;
+  Tokenize(meminfo_data, "\n", &meminfo_lines);
+  for (std::vector<std::string>::iterator it = meminfo_lines.begin();
+       it != meminfo_lines.end(); ++it) {
+    std::vector<std::string> tokens;
+    SplitStringAlongWhitespace(*it, &tokens);
+    // HugePages_* only has a number and no suffix so we can't rely on
+    // there being exactly 3 tokens.
+    if (tokens.size() > 1) {
+      if (tokens[0] == "MemTotal:") {
+        StringToInt(tokens[1], &meminfo->total);
+        continue;
+      } if (tokens[0] == "MemFree:") {
+        StringToInt(tokens[1], &meminfo->free);
+        continue;
+      } if (tokens[0] == "Buffers:") {
+        StringToInt(tokens[1], &meminfo->buffers);
+        continue;
+      } if (tokens[0] == "Cached:") {
+        StringToInt(tokens[1], &meminfo->cached);
+        continue;
+      } if (tokens[0] == "Active(anon):") {
+        StringToInt(tokens[1], &meminfo->active_anon);
+        continue;
+      } if (tokens[0] == "Inactive(anon):") {
+        StringToInt(tokens[1], &meminfo->inactive_anon);
+        continue;
+      } if (tokens[0] == "Active(file):") {
+        StringToInt(tokens[1], &meminfo->active_file);
+        continue;
+      } if (tokens[0] == "Inactive(file):") {
+        StringToInt(tokens[1], &meminfo->inactive_file);
+        continue;
+      } if (tokens[0] == "SwapTotal:") {
+        StringToInt(tokens[1], &meminfo->swap_total);
+        continue;
+      } if (tokens[0] == "SwapFree:") {
+        StringToInt(tokens[1], &meminfo->swap_free);
+        continue;
+      } if (tokens[0] == "Dirty:") {
+        StringToInt(tokens[1], &meminfo->dirty);
+        continue;
 #if defined(OS_CHROMEOS)
-  // Chrome OS has a tweaked kernel that allows us to query Shmem, which is
-  // usually video memory otherwise invisible to the OS.  Unfortunately, the
-  // meminfo format varies on different hardware so we have to search for the
-  // string.  It always appears after "Cached:".
-  for (size_t i = kMemCachedIndex+2; i < meminfo_fields.size(); i += 3) {
-    if (meminfo_fields[i] == "Shmem:")
-      StringToInt(meminfo_fields[i+1], &meminfo->shmem);
-    if (meminfo_fields[i] == "Slab:")
-      StringToInt(meminfo_fields[i+1], &meminfo->slab);
-  }
+      // Chrome OS has a tweaked kernel that allows us to query Shmem, which is
+      // usually video memory otherwise invisible to the OS.
+      } if (tokens[0] == "Shmem:") {
+        StringToInt(tokens[1], &meminfo->shmem);
+        continue;
+      } if (tokens[0] == "Slab:") {
+        StringToInt(tokens[1], &meminfo->slab);
+        continue;
 #endif
+      }
+    } else
+      DLOG(WARNING) << "meminfo: tokens: " << tokens.size()
+                    << " malformed line: " << *it;
+  }
+
+  // Make sure we got a valid MemTotal.
+  if (!meminfo->total)
+    return false;
 
   return true;
 }
@@ -595,14 +596,34 @@ bool ParseProcMeminfo(const std::string& meminfo_data,
 // exposed for testing
 bool ParseProcVmstat(const std::string& vmstat_data,
                      SystemMemoryInfoKB* meminfo) {
-  std::vector<std::string> vmstat_fields;
-  SplitStringAlongWhitespace(vmstat_data, &vmstat_fields);
-  if (vmstat_fields[kVMPagesSwappedIn-1] == "pswpin")
-    StringToInt(vmstat_fields[kVMPagesSwappedIn], &meminfo->pswpin);
-  if (vmstat_fields[kVMPagesSwappedOut-1] == "pswpout")
-    StringToInt(vmstat_fields[kVMPagesSwappedOut], &meminfo->pswpout);
-  if (vmstat_fields[kVMPageMajorFaults-1] == "pgmajfault")
-    StringToInt(vmstat_fields[kVMPageMajorFaults], &meminfo->pgmajfault);
+  // The format of /proc/vmstat is:
+  //
+  // nr_free_pages 299878
+  // nr_inactive_anon 239863
+  // nr_active_anon 1318966
+  // nr_inactive_file 2015629
+  // ...
+  //
+  // We iterate through the whole file because the position of the
+  // fields are dependent on the kernel version and configuration.
+
+  std::vector<std::string> vmstat_lines;
+  Tokenize(vmstat_data, "\n", &vmstat_lines);
+  for (std::vector<std::string>::iterator it = vmstat_lines.begin();
+       it != vmstat_lines.end(); ++it) {
+    std::vector<std::string> tokens;
+    SplitString(*it, ' ', &tokens);
+    if (tokens.size() == 2) {
+      if (tokens[0] == "pswpin") {
+        StringToInt(tokens[1], &meminfo->pswpin);
+        continue;
+      } if (tokens[0] == "pswpout") {
+        StringToInt(tokens[1], &meminfo->pswpout);
+        continue;
+      } if (tokens[0] == "pgmajfault")
+        StringToInt(tokens[1], &meminfo->pgmajfault);
+    }
+  }
 
   return true;
 }
