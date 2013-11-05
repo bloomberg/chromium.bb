@@ -827,7 +827,7 @@ void WebTestProxyBase::postAccessibilityEvent(const WebKit::WebAXObject& obj, We
     if (event == WebKit::WebAXEventFocus)
         m_testInterfaces->accessibilityController()->setFocusedElement(obj);
 
-    const char* eventName;
+    const char* eventName = 0;
     switch (event) {
     case WebKit::WebAXEventActiveDescendantChanged:
         eventName = "ActiveDescendantChanged";
