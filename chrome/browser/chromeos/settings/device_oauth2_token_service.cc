@@ -38,6 +38,7 @@ class DeviceOAuth2TokenService::ValidatingConsumer
       public gaia::GaiaOAuthClient::Delegate {
  public:
   explicit ValidatingConsumer(DeviceOAuth2TokenService* token_service,
+                              const std::string& account_id,
                               Consumer* consumer);
   virtual ~ValidatingConsumer();
 
@@ -85,8 +86,9 @@ class DeviceOAuth2TokenService::ValidatingConsumer
 
 DeviceOAuth2TokenService::ValidatingConsumer::ValidatingConsumer(
     DeviceOAuth2TokenService* token_service,
+    const std::string& account_id,
     Consumer* consumer)
-        : OAuth2TokenService::RequestImpl(this),
+        : OAuth2TokenService::RequestImpl(account_id, this),
           token_service_(token_service),
           consumer_(consumer),
           token_validation_done_(false),
@@ -276,13 +278,14 @@ net::URLRequestContextGetter* DeviceOAuth2TokenService::GetRequestContext() {
 
 scoped_ptr<OAuth2TokenService::RequestImpl>
 DeviceOAuth2TokenService::CreateRequest(
+    const std::string& account_id,
     OAuth2TokenService::Consumer* consumer) {
   if (refresh_token_is_valid_)
-    return OAuth2TokenService::CreateRequest(consumer);
+    return OAuth2TokenService::CreateRequest(account_id, consumer);
 
   // Substitute our own consumer to wait for refresh token validation.
   scoped_ptr<ValidatingConsumer> validating_consumer(
-      new ValidatingConsumer(this, consumer));
+      new ValidatingConsumer(this, account_id, consumer));
   validating_consumer->StartValidation();
   return validating_consumer.PassAs<RequestImpl>();
 }

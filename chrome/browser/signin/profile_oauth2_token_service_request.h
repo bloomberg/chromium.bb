@@ -34,6 +34,9 @@ class ProfileOAuth2TokenServiceRequest : public OAuth2TokenService::Request,
 
   virtual ~ProfileOAuth2TokenServiceRequest();
 
+  // Overridden from Request:
+  virtual std::string GetAccountId() const OVERRIDE;
+
  private:
   class Core;
   friend class Core;
@@ -42,6 +45,7 @@ class ProfileOAuth2TokenServiceRequest : public OAuth2TokenService::Request,
                                    const std::string& account_id,
                                    const OAuth2TokenService::ScopeSet& scopes,
                                    OAuth2TokenService::Consumer* consumer);
+
   OAuth2TokenService::Consumer* const consumer_;
   scoped_refptr<Core> core_;
 

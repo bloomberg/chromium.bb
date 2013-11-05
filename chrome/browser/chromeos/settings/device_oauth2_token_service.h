@@ -61,6 +61,7 @@ class DeviceOAuth2TokenService : public OAuth2TokenService {
   // Implementation of OAuth2TokenService.
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
   virtual scoped_ptr<OAuth2TokenService::RequestImpl> CreateRequest(
+      const std::string& account_id,
       OAuth2TokenService::Consumer* consumer) OVERRIDE;
 
  private:

@@ -33,6 +33,8 @@ class ProfileOAuth2TokenServiceRequest::Core
   // thread.
   void Stop();
 
+  OAuth2TokenService::Request* request();
+
   // OAuth2TokenService::Consumer. It should be called on the UI thread.
   virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
                                  const std::string& access_token,
@@ -124,6 +126,10 @@ void ProfileOAuth2TokenServiceRequest::Core::Stop() {
   }
 }
 
+OAuth2TokenService::Request* ProfileOAuth2TokenServiceRequest::Core::request() {
+  return request_.get();
+}
+
 void ProfileOAuth2TokenServiceRequest::Core::StopOnUIThread() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   request_.reset();
@@ -211,3 +217,8 @@ ProfileOAuth2TokenServiceRequest::~ProfileOAuth2TokenServiceRequest() {
   DCHECK(CalledOnValidThread());
   core_->Stop();
 }
+
+std::string ProfileOAuth2TokenServiceRequest::GetAccountId() const {
+  return core_->request()->GetAccountId();
+}
+

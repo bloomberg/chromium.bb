@@ -56,6 +56,7 @@ class OAuth2TokenService : public base::NonThreadSafe {
   class Request {
    public:
     virtual ~Request();
+    virtual std::string GetAccountId() const = 0;
    protected:
     Request();
   };
@@ -177,8 +178,11 @@ class OAuth2TokenService : public base::NonThreadSafe {
                       public Request {
    public:
     // |consumer| is required to outlive this.
-    explicit RequestImpl(Consumer* consumer);
+    explicit RequestImpl(const std::string& account_id, Consumer* consumer);
     virtual ~RequestImpl();
+
+    // Overridden from Request:
+    virtual std::string GetAccountId() const OVERRIDE;
 
     // Informs |consumer_| that this request is completed.
     void InformConsumer(const GoogleServiceAuthError& error,
@@ -187,6 +191,7 @@ class OAuth2TokenService : public base::NonThreadSafe {
 
    private:
     // |consumer_| to call back when this request completes.
+    const std::string account_id_;
     Consumer* const consumer_;
   };
 
@@ -230,7 +235,9 @@ class OAuth2TokenService : public base::NonThreadSafe {
   // Creates a request implementation. Can be overriden by derived classes to
   // provide additional control of token consumption. |consumer| will outlive
   // the created request.
-  virtual scoped_ptr<RequestImpl> CreateRequest(Consumer* consumer);
+  virtual scoped_ptr<RequestImpl> CreateRequest(
+      const std::string& account_id,
+      Consumer* consumer);
 
   // Fetches an OAuth token for the specified client/scopes. Virtual so it can
   // be overridden for tests and for platform-specific behavior on Android.
