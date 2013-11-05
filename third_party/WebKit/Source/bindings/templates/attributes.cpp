@@ -22,7 +22,7 @@ static void {{attribute.name}}AttributeGetter{{world_suffix}}(const v8::Property
     {% elif not (attribute.is_static or attribute.is_unforgeable) %}
     {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(info.Holder());
     {% endif %}
-    {% if attribute.is_call_with_script_execution_context %}
+    {% if attribute.is_call_with_execution_context %}
     ExecutionContext* scriptContext = getExecutionContext();
     {% endif %}
     {# Special cases #}
@@ -139,7 +139,7 @@ static void {{attribute.name}}AttributeSetter{{world_suffix}}(v8::Local<v8::Valu
     {% if attribute.is_setter_raises_exception %}
     ExceptionState es(info.GetIsolate());
     {% endif %}
-    {% if attribute.is_call_with_script_execution_context %}
+    {% if attribute.is_call_with_execution_context %}
     ExecutionContext* scriptContext = getExecutionContext();
     {% endif %}
     {{attribute.cpp_setter}};

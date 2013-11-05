@@ -50,6 +50,12 @@ def has_extended_attribute(definition_or_member, extended_attribute_list):
                for extended_attribute in extended_attribute_list)
 
 
+def has_extended_attribute_value(definition_or_member, name, value):
+    extended_attributes = definition_or_member.extended_attributes
+    return (name in extended_attributes and
+            extended_attribute_value_contains(extended_attributes[name], value))
+
+
 def extended_attribute_value_contains(extended_attribute_value, value):
     return (extended_attribute_value and
             value in re.split('[|&]', extended_attribute_value))
@@ -140,13 +146,11 @@ CALL_WITH_VALUES = [
 ]
 
 
-def call_with_arguments(call_with_values, contents):
+def call_with_arguments(member, call_with_values=None):
+    # Optional parameter so setter can override with [SetterCallWith]
+    call_with_values = call_with_values or member.extended_attributes.get('CallWith')
     if not call_with_values:
         return []
-
-    # FIXME: Implement other template values for functions
-    contents['is_call_with_script_execution_context'] = extended_attribute_value_contains(call_with_values, 'ExecutionContext')
-
     return [CALL_WITH_ARGUMENTS[value]
             for value in CALL_WITH_VALUES
             if extended_attribute_value_contains(call_with_values, value)]

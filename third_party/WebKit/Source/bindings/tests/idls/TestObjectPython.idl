@@ -301,4 +301,12 @@ interface TestObjectPython {
 
     // Extended attributes for methods
     [ActivityLogging=AccessForAllWorlds] void activityLoggingAccessForAllWorldsMethod();
+    [CallWith=ScriptState] void callWithScriptStateVoidMethod();
+    // [CallWith=ScriptState] long callWithScriptStateLongMethod(); // FIXME: non-void [CallWith=ScriptState] have different C++ method call
+    [CallWith=ExecutionContext] void callWithExecutionContextVoidMethod();
+    [CallWith=ScriptState&ExecutionContext] void callWithScriptStateExecutionContextVoidMethod();
+    [CallWith=ScriptState&ScriptArguments] void callWithScriptStateScriptArgumentsVoidMethod();
+    // [CallWith=ScriptState&ScriptArguments] void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(optional boolean optionalBooleanArg); // FIXME: optional arguments with extended attributes requires refactoring template
+    [CallWith=ActiveWindow] void callWithActiveWindow();
+    [CallWith=ActiveWindow&FirstWindow] void callWithActiveWindowScriptWindow();
 };

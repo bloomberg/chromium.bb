@@ -59,6 +59,7 @@ def generate_attribute(interface, attribute):
         'has_custom_getter': has_custom_getter,
         'has_custom_setter': has_custom_setter,
         'idl_type': idl_type,
+        'is_call_with_execution_context': v8_utilities.has_extended_attribute_value(attribute, 'CallWith', 'ExecutionContext'),
         'is_constructor': is_constructor_attribute(attribute),
         'is_getter_raises_exception': has_extended_attribute(attribute, ('GetterRaisesException', 'RaisesException')),
         'is_keep_alive_for_gc': is_keep_alive_for_gc(attribute),
@@ -143,8 +144,7 @@ def getter_expression(interface, attribute, contents):
     this_getter_base_name = getter_base_name(attribute, arguments)
     getter_name = v8_utilities.scoped_name(interface, attribute, this_getter_base_name)
 
-    call_with = attribute.extended_attributes.get('CallWith')
-    arguments.extend(v8_utilities.call_with_arguments(call_with, contents))
+    arguments.extend(v8_utilities.call_with_arguments(attribute))
     if attribute.is_nullable:
         arguments.append('isNull')
     if contents['is_getter_raises_exception']:
@@ -224,8 +224,7 @@ def generate_setter(interface, attribute, contents):
 
 
 def setter_expression(interface, attribute, contents):
-    call_with = attribute.extended_attributes.get('SetterCallWith') or attribute.extended_attributes.get('CallWith')
-    arguments = v8_utilities.call_with_arguments(call_with, contents)
+    arguments = v8_utilities.call_with_arguments(attribute, attribute.extended_attributes.get('SetterCallWith'))
 
     this_setter_base_name = setter_base_name(attribute, arguments)
     setter_name = v8_utilities.scoped_name(interface, attribute, this_setter_base_name)

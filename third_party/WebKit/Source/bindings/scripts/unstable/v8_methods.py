@@ -35,6 +35,7 @@ Until then, please work on the Perl IDL compiler.
 For details, see bug http://crbug.com/239771
 """
 
+from v8_globals import includes
 import v8_types
 import v8_utilities
 
@@ -52,6 +53,14 @@ def generate_method(interface, method):
     else:
         signature = 'defaultSignature'
 
+    is_call_with_script_arguments = v8_utilities.has_extended_attribute_value(method, 'CallWith', 'ScriptArguments')
+    is_call_with_script_state = v8_utilities.has_extended_attribute_value(method, 'CallWith', 'ScriptState')
+    if is_call_with_script_arguments:
+        includes.update(['bindings/v8/ScriptCallStackFactory.h',
+                         'core/inspector/ScriptArguments.h'])
+    if is_call_with_script_state:
+        includes.add('bindings/v8/ScriptState.h')
+
     contents = {
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method, 'Access'),  # [ActivityLogging]
         'arguments': [generate_argument(interface, method, argument, index)
@@ -59,6 +68,9 @@ def generate_method(interface, method):
         'cpp_method': cpp_method(interface, method, len(arguments)),
         'custom_signature': this_custom_signature,
         'idl_type': method.idl_type,
+        'is_call_with_execution_context': v8_utilities.has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
+        'is_call_with_script_arguments': is_call_with_script_arguments,
+        'is_call_with_script_state': is_call_with_script_state,
         'is_static': is_static,
         'name': name,
         'number_of_required_arguments': len([
@@ -101,6 +113,8 @@ def cpp_method(interface, method, number_of_arguments):
     # Truncate omitted optional arguments
     arguments = method.arguments[:number_of_arguments]
     cpp_arguments = [cpp_argument(argument) for argument in arguments]
+    cpp_arguments.extend(v8_utilities.call_with_arguments(method))
+
     cpp_method_name = v8_utilities.scoped_name(interface, method, method.name)
     cpp_value = '%s(%s)' % (cpp_method_name, ', '.join(cpp_arguments))
 
