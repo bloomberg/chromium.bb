@@ -2451,7 +2451,6 @@ class UpgradePackageTest(CpuTestBase):
     if force:
       cmdargs.append('--force')
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs)
-    pinfo.upgraded_stable = not unstable_ok
 
     # Add test-specific mocks/stubs
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
@@ -2474,11 +2473,10 @@ class UpgradePackageTest(CpuTestBase):
 
         if upgrade_staged:
           mocked_upgrader._SetUpgradedMaskBits(pinfo)
-          if not pinfo.upgraded_stable:
-            ebuild_path = cpu.Upgrader._GetEbuildPathFromCpv(upstream_cpv)
-            ebuild_path = os.path.join(mocked_upgrader._stable_repo,
-                                       ebuild_path)
-            mocked_upgrader._StabilizeEbuild(ebuild_path)
+          ebuild_path = cpu.Upgrader._GetEbuildPathFromCpv(upstream_cpv)
+          ebuild_path = os.path.join(mocked_upgrader._stable_repo,
+                                     ebuild_path)
+          mocked_upgrader._StabilizeEbuild(ebuild_path)
           mocked_upgrader._RunGit(mocked_upgrader._stable_repo,
                                   ['add', pinfo.package])
           mocked_upgrader._UpdateCategories(pinfo)
@@ -2780,28 +2778,24 @@ class VerifyPackageTest(CpuTestBase):
     pinfo = cpu.PInfo(upgraded_cpv='foo/bar-2.7.0')
     self._TestSetUpgradedMaskBits(pinfo, output)
     self.assertTrue(pinfo.upgraded_unmasked)
-    self.assertTrue(pinfo.upgraded_stable)
 
   def testGetMaskBitsUnmaskedUnstable(self):
     output = ' ~|foo/bar-2.7.3:0'
     pinfo = cpu.PInfo(upgraded_cpv='foo/bar-2.7.3')
     self._TestSetUpgradedMaskBits(pinfo, output)
     self.assertTrue(pinfo.upgraded_unmasked)
-    self.assertFalse(pinfo.upgraded_stable)
 
   def testGetMaskBitsMaskedStable(self):
     output = 'M |foo/bar-2.7.4:0'
     pinfo = cpu.PInfo(upgraded_cpv='foo/bar-2.7.4')
     self._TestSetUpgradedMaskBits(pinfo, output)
     self.assertFalse(pinfo.upgraded_unmasked)
-    self.assertTrue(pinfo.upgraded_stable)
 
   def testGetMaskBitsMaskedUnstable(self):
     output = 'M~|foo/bar-2.7.4-r1:0'
     pinfo = cpu.PInfo(upgraded_cpv='foo/bar-2.7.4-r1')
     self._TestSetUpgradedMaskBits(pinfo, output)
     self.assertFalse(pinfo.upgraded_unmasked)
-    self.assertFalse(pinfo.upgraded_stable)
 
 ##################
 ### CommitTest ###

@@ -59,7 +59,6 @@ class PInfo(object):
       'stable_upstream_cpv', # Latest stable upstream cpv
       'state',               # One of utable.UpgradeTable.STATE_*
       'upgraded_cpv',        # If upgraded, it is to this cpv
-      'upgraded_stable',     # Boolean. If upgraded_cpv, indicates if stable.
       'upgraded_unmasked',   # Boolean. If upgraded_cpv, indicates if unmasked.
       'upstream_cpv',        # latest/stable upstream cpv according to request
       'user_arg',            # Original user arg for this pkg, if applicable
@@ -509,7 +508,7 @@ class Upgrader(object):
       return None
 
   def _SetUpgradedMaskBits(self, pinfo):
-    """Set pinfo.upgraded_unmasked and pinfo.upgraded_stable."""
+    """Set pinfo.upgraded_unmasked."""
     cpv = pinfo.upgraded_cpv
     envvars = self._GenPortageEnvvars(self._curr_arch, unstable_ok=False)
 
@@ -533,7 +532,6 @@ class Upgrader(object):
       mask = line.split('|')[0]
       if len(mask) == 2:
         pinfo.upgraded_unmasked = 'M' != mask[0]
-        pinfo.upgraded_stable = '~' != mask[1]
         return
 
     raise RuntimeError('Unable to determine whether %s is stable from equery:\n'
@@ -1040,11 +1038,11 @@ class Upgrader(object):
                          catpkg)
 
     if pinfo.upgraded_cpv:
-      # Deal with keywords now if new ebuild is not stable.
+      # Deal with keywords now.  We always run this logic as we sometimes will
+      # stabilizing keywords other than just our own (the unsupported arches).
       self._SetUpgradedMaskBits(pinfo)
-      if not pinfo.upgraded_stable:
-        ebuild_path = Upgrader._GetEbuildPathFromCpv(pinfo.upgraded_cpv)
-        self._StabilizeEbuild(os.path.join(self._stable_repo, ebuild_path))
+      ebuild_path = Upgrader._GetEbuildPathFromCpv(pinfo.upgraded_cpv)
+      self._StabilizeEbuild(os.path.join(self._stable_repo, ebuild_path))
 
       # Add all new package files to git.
       self._RunGit(self._stable_repo, ['add', pinfo.package])
