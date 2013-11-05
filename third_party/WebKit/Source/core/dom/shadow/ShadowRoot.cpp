@@ -66,7 +66,7 @@ ShadowRoot::ShadowRoot(Document* document, ShadowRootType type)
     , m_resetStyleInheritance(false)
     , m_type(type)
     , m_registeredWithParentShadowRoot(false)
-    , m_childInsertionPointsIsValid(false)
+    , m_descendantInsertionPointsIsValid(false)
 {
     ASSERT(document);
     ScriptWrappable::init(this);
@@ -357,13 +357,13 @@ void ShadowRoot::setShadowInsertionPointOfYoungerShadowRoot(PassRefPtr<HTMLShado
 void ShadowRoot::didAddInsertionPoint(InsertionPoint* insertionPoint)
 {
     ensureShadowRootRareData()->didAddInsertionPoint(insertionPoint);
-    invalidateChildInsertionPoints();
+    invalidateDescendantInsertionPoints();
 }
 
 void ShadowRoot::didRemoveInsertionPoint(InsertionPoint* insertionPoint)
 {
     m_shadowRootRareData->didRemoveInsertionPoint(insertionPoint);
-    invalidateChildInsertionPoints();
+    invalidateDescendantInsertionPoints();
 }
 
 void ShadowRoot::addChildShadowRoot()
@@ -384,9 +384,9 @@ unsigned ShadowRoot::childShadowRootCount() const
     return m_shadowRootRareData ? m_shadowRootRareData->childShadowRootCount() : 0;
 }
 
-void ShadowRoot::invalidateChildInsertionPoints()
+void ShadowRoot::invalidateDescendantInsertionPoints()
 {
-    m_childInsertionPointsIsValid = false;
+    m_descendantInsertionPointsIsValid = false;
     m_shadowRootRareData->clearDescendantInsertionPoints();
 }
 
@@ -394,10 +394,10 @@ const Vector<RefPtr<InsertionPoint> >& ShadowRoot::descendantInsertionPoints()
 {
     DEFINE_STATIC_LOCAL(const Vector<RefPtr<InsertionPoint> >, emptyList, ());
 
-    if (m_shadowRootRareData && m_childInsertionPointsIsValid)
+    if (m_shadowRootRareData && m_descendantInsertionPointsIsValid)
         return m_shadowRootRareData->descendantInsertionPoints();
 
-    m_childInsertionPointsIsValid = true;
+    m_descendantInsertionPointsIsValid = true;
 
     if (!containsInsertionPoints())
         return emptyList;

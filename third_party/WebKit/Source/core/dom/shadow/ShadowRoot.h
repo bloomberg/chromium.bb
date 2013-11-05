@@ -131,7 +131,7 @@ private:
 
     void addChildShadowRoot();
     void removeChildShadowRoot();
-    void invalidateChildInsertionPoints();
+    void invalidateDescendantInsertionPoints();
 
     // ShadowRoots should never be cloned.
     virtual PassRefPtr<Node> cloneNode(bool) OVERRIDE { return 0; }
@@ -148,7 +148,7 @@ private:
     unsigned m_resetStyleInheritance : 1;
     unsigned m_type : 1;
     unsigned m_registeredWithParentShadowRoot : 1;
-    unsigned m_childInsertionPointsIsValid : 1;
+    unsigned m_descendantInsertionPointsIsValid : 1;
 };
 
 inline Element* ShadowRoot::activeElement() const
