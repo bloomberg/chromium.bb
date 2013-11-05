@@ -53,6 +53,7 @@ def generate_method(interface, method):
         signature = 'defaultSignature'
 
     contents = {
+        'activity_logging_world_list': v8_utilities.activity_logging_world_list(method, 'Access'),  # [ActivityLogging]
         'arguments': [generate_argument(interface, method, argument, index)
                       for index, argument in enumerate(arguments)],
         'cpp_method': cpp_method(interface, method, len(arguments)),

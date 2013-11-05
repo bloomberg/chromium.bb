@@ -284,7 +284,7 @@ interface TestObjectPython {
     void voidMethodVariadicTestInterfaceEmptyArg(TestInterfaceEmpty... variadicTestInterfaceEmptyArgs);
     void voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg, TestInterfaceEmpty... variadicTestInterfaceEmptyArgs);
 
-    // Extended attributes
+    // Extended attributes for arguments
     // [Clamp]
     void voidMethodClampUnsignedShortArg([Clamp] unsigned short clampUnsignedShortArg);
     void voidMethodClampUnsignedLongArg([Clamp] unsigned long clampUnsignedLongArg);
@@ -298,4 +298,7 @@ interface TestObjectPython {
     // [TreatNullAs], [TreatUndefinedAs]
     void voidMethodTreatNullAsNullStringStringArg([TreatNullAs=NullString] DOMString treatNullAsNullStringStringArg);
     void voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArg([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString treatNullAsNullStringStringArg);
+
+    // Extended attributes for methods
+    [ActivityLogging=AccessForAllWorlds] void activityLoggingAccessForAllWorldsMethod();
 };

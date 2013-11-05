@@ -68,10 +68,17 @@ static void {{method.name}}Method(const v8::FunctionCallbackInfo<v8::Value>& inf
 
 
 {##############################################################################}
-{% macro method_callback(method) %}
+{% macro method_callback(method, world_suffix) %}
 static void {{method.name}}MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    {% if world_suffix in method.activity_logging_world_list %}
+    V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
+    if (contextData && contextData->activityLogger()) {
+        Vector<v8::Handle<v8::Value> > loggerArgs = toVectorOfArguments(info);
+        contextData->activityLogger()->log("{{interface_name}}.{{method.name}}", info.Length(), loggerArgs.data(), "Method");
+    }
+    {% endif %}
     {{cpp_class_name}}V8Internal::{{method.name}}Method(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
