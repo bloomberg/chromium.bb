@@ -29,6 +29,9 @@ const int kVerticalSpacing = 8;
 // the details section and the button strip.
 const int kDetailVerticalPadding = 10;
 
+// Fixed width for a single input field.
+const CGFloat kFieldWidth = 104;
+
 }  // autofill
 
 #endif  // CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_DIALOG_CONSTANTS__H_

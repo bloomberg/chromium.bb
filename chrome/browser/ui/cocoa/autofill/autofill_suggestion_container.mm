@@ -12,6 +12,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 #include "chrome/browser/ui/chrome_style.h"
+#include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_textfield.h"
 #include "skia/ext/skia_utils_mac.h"
 
@@ -108,6 +109,11 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
   [[inputField_ cell] setIcon:icon];
   [inputField_ setHidden:NO];
   [inputField_ sizeToFit];
+
+  // Enforce fixed width.
+  NSSize frameSize = NSMakeSize(autofill::kFieldWidth,
+                                NSHeight([inputField_ frame]));
+  [inputField_ setFrameSize:frameSize];
 }
 
 - (NSSize)preferredSizeForFirstLine {
