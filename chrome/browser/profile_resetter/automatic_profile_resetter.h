@@ -39,6 +39,11 @@ class AutomaticProfileResetter : public BrowserContextKeyedService {
   explicit AutomaticProfileResetter(Profile* profile);
   virtual ~AutomaticProfileResetter();
 
+  // Initializes the service if it is enabled in the field trial. Otherwise,
+  // skips the initialization steps, and also permanently disables the service.
+  // Called by AutomaticProfileResetterFactory.
+  void Initialize();
+
   // Fires up the service by unleashing the asynchronous evaluation flow, unless
   // the service has been already disabled in Initialize() or there is no
   // |program_| to run (in which case the service also gets disabled).
@@ -46,10 +51,10 @@ class AutomaticProfileResetter : public BrowserContextKeyedService {
   void Activate();
 
   // Should be called before Activate().
-  void SetHashSeedForTesting(const base::StringPiece& hash_seed);
+  void SetProgramForTesting(const std::string& program);
 
   // Should be called before Activate().
-  void SetProgramForTesting(const base::StringPiece& program);
+  void SetHashSeedForTesting(const std::string& hash_seed);
 
   // Should be called before Activate().
   void SetDelegateForTesting(
@@ -72,10 +77,6 @@ class AutomaticProfileResetter : public BrowserContextKeyedService {
     STATE_WORKING,
     STATE_DONE
   };
-
-  // Initializes the service if it is enabled in the field trial, otherwise,
-  // skips the initialization steps and also permanently disables the service.
-  void Initialize();
 
   // Prepares the asynchronous evaluation flow by requesting services that it
   // depends on to make themselves ready.
@@ -114,8 +115,8 @@ class AutomaticProfileResetter : public BrowserContextKeyedService {
   // program will only see hashed keys and values that are produced using
   // |hash_seed| as a key.
   static scoped_ptr<EvaluationResults> EvaluateConditionsOnWorkerPoolThread(
-      const base::StringPiece& hash_seed,
-      const base::StringPiece& program,
+      const std::string& hash_seed,
+      const std::string& program,
       scoped_ptr<base::DictionaryValue> program_input);
 
   // Called back when EvaluateConditionsOnWorkerPoolThread completes executing
@@ -137,8 +138,8 @@ class AutomaticProfileResetter : public BrowserContextKeyedService {
   bool enumeration_of_loaded_modules_ready_;
   bool template_url_service_ready_;
 
-  base::StringPiece hash_seed_;
-  base::StringPiece program_;
+  std::string hash_seed_;
+  std::string program_;
 
   PreferenceHostedPromptMemento memento_in_prefs_;
   LocalStateHostedPromptMemento memento_in_local_state_;

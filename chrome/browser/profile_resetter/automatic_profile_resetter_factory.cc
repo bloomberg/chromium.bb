@@ -51,6 +51,7 @@ AutomaticProfileResetterFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   AutomaticProfileResetter* service = new AutomaticProfileResetter(profile);
+  service->Initialize();
   service->Activate();
   return service;
 }

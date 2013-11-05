@@ -25,6 +25,7 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/user_prefs/pref_registry_syncable.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -407,6 +408,7 @@ class AutomaticProfileResetterTestBase : public testing::Test {
         local_state_(TestingBrowserProcess::GetGlobal()),
         profile_(new TestingProfile()),
         experiment_group_name_(experiment_group_name),
+        inject_data_through_variation_params_(false),
         mock_delegate_(NULL) {
     // Make sure the factory is not optimized away, so whatever preferences it
     // wants to register will actually get registered.
@@ -429,18 +431,14 @@ class AutomaticProfileResetterTestBase : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     field_trials_.reset(new base::FieldTrialList(NULL));
+    chrome_variations::testing::ClearAllVariationParams();
     base::FieldTrialList::CreateFieldTrial(kAutomaticProfileResetStudyName,
                                            experiment_group_name_);
-
-    resetter_.reset(new testing::StrictMock<AutomaticProfileResetterUnderTest>(
-        profile_.get()));
-
-    scoped_ptr<MockProfileResetterDelegate> mock_delegate(
+    resetter_.reset(
+        new testing::StrictMock<AutomaticProfileResetterUnderTest>(profile()));
+    mock_delegate_owned_.reset(
         new testing::StrictMock<MockProfileResetterDelegate>());
-    mock_delegate_ = mock_delegate.get();
-    resetter_->SetDelegateForTesting(
-        mock_delegate.PassAs<AutomaticProfileResetterDelegate>());
-    resetter_->SetTaskRunnerForWaitingForTesting(waiting_task_runner_);
+    mock_delegate_ = mock_delegate_owned_.get();
   }
 
   void SetTestingHashSeed(const std::string& hash_seed) {
@@ -451,14 +449,32 @@ class AutomaticProfileResetterTestBase : public testing::Test {
     testing_program_ = source_code;
   }
 
-  void UnleashResetterAndWait() {
-    resetter_->SetHashSeedForTesting(testing_hash_seed_);
-    resetter_->SetProgramForTesting(testing_program_);
+  void AllowInjectingTestDataThroughVariationParams(bool value) {
+    inject_data_through_variation_params_ = value;
+  }
 
+  void UnleashResetterAndWait() {
+    if (inject_data_through_variation_params_) {
+      std::map<std::string, std::string> variation_params;
+      variation_params["program"] = testing_program_;
+      variation_params["hash_seed"] = testing_hash_seed_;
+      ASSERT_TRUE(chrome_variations::AssociateVariationParams(
+          kAutomaticProfileResetStudyName,
+          experiment_group_name_,
+          variation_params));
+    }
+    resetter_->Initialize();
+    resetter_->SetDelegateForTesting(
+        mock_delegate_owned_.PassAs<AutomaticProfileResetterDelegate>());
+    resetter_->SetTaskRunnerForWaitingForTesting(waiting_task_runner_);
+    if (!inject_data_through_variation_params_) {
+      resetter_->SetProgramForTesting(testing_program_);
+      resetter_->SetHashSeedForTesting(testing_hash_seed_);
+    }
     resetter_->Activate();
 
     if (waiting_task_runner_->HasPendingTask()) {
-      EXPECT_EQ(base::TimeDelta::FromSeconds(55),
+      ASSERT_EQ(base::TimeDelta::FromSeconds(55),
                 waiting_task_runner_->NextPendingTaskDelay());
       waiting_task_runner_->RunPendingTasks();
     }
@@ -482,8 +498,10 @@ class AutomaticProfileResetterTestBase : public testing::Test {
   std::string experiment_group_name_;
   std::string testing_program_;
   std::string testing_hash_seed_;
+  bool inject_data_through_variation_params_;
 
   scoped_ptr<AutomaticProfileResetterUnderTest> resetter_;
+  scoped_ptr<MockProfileResetterDelegate> mock_delegate_owned_;
   MockProfileResetterDelegate* mock_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomaticProfileResetterTestBase);
@@ -600,6 +618,32 @@ TEST_F(AutomaticProfileResetterTestDryRun, OtherConditionSatisfied) {
   EXPECT_EQ(kTestMementoValue, memento_in_local_state.ReadValue());
   EXPECT_EQ(kTestMementoValue, memento_in_file.ReadValue());
 }
+
+#if defined(GOOGLE_CHROME_BUILD)
+TEST_F(AutomaticProfileResetterTestDryRun, ProgramSetThroughVariationParams) {
+  PreferenceHostedPromptMemento memento_in_prefs(profile());
+  LocalStateHostedPromptMemento memento_in_local_state(profile());
+  FileHostedPromptMementoSynchronous memento_in_file(profile());
+
+  EXPECT_EQ("", memento_in_prefs.ReadValue());
+  EXPECT_EQ("", memento_in_local_state.ReadValue());
+  EXPECT_EQ("", memento_in_file.ReadValue());
+
+  SetTestingProgram(ConstructProgram(true, true));
+  SetTestingHashSeed(kTestHashSeed);
+  AllowInjectingTestDataThroughVariationParams(true);
+
+  mock_delegate().ExpectCallsToDependenciesSetUpMethods();
+  mock_delegate().ExpectCallsToGetterMethods();
+  EXPECT_CALL(resetter(), ReportStatistics(0x03u, 0x01u));
+
+  UnleashResetterAndWait();
+
+  EXPECT_EQ(kTestMementoValue, memento_in_prefs.ReadValue());
+  EXPECT_EQ(kTestMementoValue, memento_in_local_state.ReadValue());
+  EXPECT_EQ(kTestMementoValue, memento_in_file.ReadValue());
+}
+#endif
 
 TEST_F(AutomaticProfileResetterTestDryRun,
        ConditionsSatisfiedAndInvalidMementos) {
@@ -775,6 +819,33 @@ TEST_F(AutomaticProfileResetterTest, OtherConditionSatisfied) {
   EXPECT_EQ(kTestMementoValue, memento_in_local_state.ReadValue());
   EXPECT_EQ(kTestMementoValue, memento_in_file.ReadValue());
 }
+
+#if defined(GOOGLE_CHROME_BUILD)
+TEST_F(AutomaticProfileResetterTest, ProgramSetThroughVariationParams) {
+  PreferenceHostedPromptMemento memento_in_prefs(profile());
+  LocalStateHostedPromptMemento memento_in_local_state(profile());
+  FileHostedPromptMementoSynchronous memento_in_file(profile());
+
+  EXPECT_EQ("", memento_in_prefs.ReadValue());
+  EXPECT_EQ("", memento_in_local_state.ReadValue());
+  EXPECT_EQ("", memento_in_file.ReadValue());
+
+  SetTestingProgram(ConstructProgram(true, true));
+  SetTestingHashSeed(kTestHashSeed);
+  AllowInjectingTestDataThroughVariationParams(true);
+
+  mock_delegate().ExpectCallsToDependenciesSetUpMethods();
+  mock_delegate().ExpectCallsToGetterMethods();
+  EXPECT_CALL(mock_delegate(), ShowPrompt());
+  EXPECT_CALL(resetter(), ReportStatistics(0x03u, 0x01u));
+
+  UnleashResetterAndWait();
+
+  EXPECT_EQ(kTestMementoValue, memento_in_prefs.ReadValue());
+  EXPECT_EQ(kTestMementoValue, memento_in_local_state.ReadValue());
+  EXPECT_EQ(kTestMementoValue, memento_in_file.ReadValue());
+}
+#endif
 
 TEST_F(AutomaticProfileResetterTest, ConditionsSatisfiedAndInvalidMementos) {
   PreferenceHostedPromptMemento memento_in_prefs(profile());

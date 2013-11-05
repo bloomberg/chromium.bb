@@ -12,6 +12,7 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -55,6 +57,8 @@ namespace {
 const char kAutomaticProfileResetStudyName[] = "AutomaticProfileReset";
 const char kAutomaticProfileResetStudyDryRunGroupName[] = "DryRun";
 const char kAutomaticProfileResetStudyEnabledGroupName[] = "Enabled";
+const char kAutomaticProfileResetStudyProgramParameterName[] = "program";
+const char kAutomaticProfileResetStudyHashSeedParameterName[] = "hash_seed";
 
 // How long to wait after start-up before unleashing the evaluation flow.
 const int64 kEvaluationFlowDelayInSeconds = 55;
@@ -117,14 +121,30 @@ enum PromptResult {
 
 // Returns whether or not a dry-run shall be performed.
 bool ShouldPerformDryRun() {
-  return base::FieldTrialList::FindFullName(kAutomaticProfileResetStudyName) ==
-         kAutomaticProfileResetStudyDryRunGroupName;
+  return StartsWithASCII(
+      base::FieldTrialList::FindFullName(kAutomaticProfileResetStudyName),
+      kAutomaticProfileResetStudyDryRunGroupName, true);
 }
 
 // Returns whether or not a live-run shall be performed.
 bool ShouldPerformLiveRun() {
-  return base::FieldTrialList::FindFullName(kAutomaticProfileResetStudyName) ==
-         kAutomaticProfileResetStudyEnabledGroupName;
+  return StartsWithASCII(
+      base::FieldTrialList::FindFullName(kAutomaticProfileResetStudyName),
+      kAutomaticProfileResetStudyEnabledGroupName, true);
+}
+
+// Returns whether or not the currently active experiment group prescribes the
+// program and hash seed to use instead of the baked-in ones.
+bool DoesExperimentOverrideProgramAndHashSeed() {
+#if defined(GOOGLE_CHROME_BUILD)
+  std::map<std::string, std::string> params;
+  chrome_variations::GetVariationParams(kAutomaticProfileResetStudyName,
+                                        &params);
+  return params.count(kAutomaticProfileResetStudyProgramParameterName) &&
+         params.count(kAutomaticProfileResetStudyHashSeedParameterName);
+#else
+  return false;
+#endif
 }
 
 // Deep-copies all preferences in |source| to a sub-tree named |value_tree_key|
@@ -176,10 +196,47 @@ AutomaticProfileResetter::AutomaticProfileResetter(Profile* profile)
       memento_in_file_(profile_),
       weak_ptr_factory_(this) {
   DCHECK(profile_);
-  Initialize();
 }
 
 AutomaticProfileResetter::~AutomaticProfileResetter() {}
+
+void AutomaticProfileResetter::Initialize() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_EQ(state_, STATE_UNINITIALIZED);
+
+  if (!ShouldPerformDryRun() && !ShouldPerformLiveRun()) {
+    state_ = STATE_DISABLED;
+    return;
+  }
+
+  ui::ResourceBundle& resources(ui::ResourceBundle::GetSharedInstance());
+  if (DoesExperimentOverrideProgramAndHashSeed()) {
+    program_ = chrome_variations::GetVariationParamValue(
+        kAutomaticProfileResetStudyName,
+        kAutomaticProfileResetStudyProgramParameterName);
+    hash_seed_ = chrome_variations::GetVariationParamValue(
+        kAutomaticProfileResetStudyName,
+        kAutomaticProfileResetStudyHashSeedParameterName);
+  } else if (ShouldPerformLiveRun()) {
+    program_ = resources.GetRawDataResource(
+        IDR_AUTOMATIC_PROFILE_RESET_RULES).as_string();
+    hash_seed_ = resources.GetRawDataResource(
+        IDR_AUTOMATIC_PROFILE_RESET_HASH_SEED).as_string();
+  } else {  // ShouldPerformDryRun()
+    program_ = resources.GetRawDataResource(
+        IDR_AUTOMATIC_PROFILE_RESET_RULES_DRY).as_string();
+    hash_seed_ = resources.GetRawDataResource(
+        IDR_AUTOMATIC_PROFILE_RESET_HASH_SEED_DRY).as_string();
+  }
+
+  delegate_.reset(new AutomaticProfileResetterDelegateImpl(
+      TemplateURLServiceFactory::GetForProfile(profile_)));
+  task_runner_for_waiting_ =
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::UI);
+
+  state_ = STATE_INITIALIZED;
+}
 
 void AutomaticProfileResetter::Activate() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -201,14 +258,14 @@ void AutomaticProfileResetter::Activate() {
   }
 }
 
-void AutomaticProfileResetter::SetHashSeedForTesting(
-    const base::StringPiece& hash_key) {
-  hash_seed_ = hash_key;
+void AutomaticProfileResetter::SetProgramForTesting(
+    const std::string& program) {
+  program_ = program;
 }
 
-void AutomaticProfileResetter::SetProgramForTesting(
-    const base::StringPiece& program) {
-  program_ = program;
+void AutomaticProfileResetter::SetHashSeedForTesting(
+    const std::string& hash_key) {
+  hash_seed_ = hash_key;
 }
 
 void AutomaticProfileResetter::SetDelegateForTesting(
@@ -219,34 +276,6 @@ void AutomaticProfileResetter::SetDelegateForTesting(
 void AutomaticProfileResetter::SetTaskRunnerForWaitingForTesting(
     const scoped_refptr<base::TaskRunner>& task_runner) {
   task_runner_for_waiting_ = task_runner;
-}
-
-void AutomaticProfileResetter::Initialize() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  DCHECK_EQ(state_, STATE_UNINITIALIZED);
-
-  if (ShouldPerformDryRun() || ShouldPerformLiveRun()) {
-    ui::ResourceBundle& resources(ui::ResourceBundle::GetSharedInstance());
-    if (ShouldPerformLiveRun()) {
-      program_ =
-          resources.GetRawDataResource(IDR_AUTOMATIC_PROFILE_RESET_RULES);
-      hash_seed_ =
-          resources.GetRawDataResource(IDR_AUTOMATIC_PROFILE_RESET_HASH_SEED);
-    } else {  // ShouldPerformDryRun()
-      program_ =
-          resources.GetRawDataResource(IDR_AUTOMATIC_PROFILE_RESET_RULES_DRY);
-      hash_seed_ = resources.GetRawDataResource(
-          IDR_AUTOMATIC_PROFILE_RESET_HASH_SEED_DRY);
-    }
-    delegate_.reset(new AutomaticProfileResetterDelegateImpl(
-        TemplateURLServiceFactory::GetForProfile(profile_)));
-    task_runner_for_waiting_ =
-        content::BrowserThread::GetMessageLoopProxyForThread(
-            content::BrowserThread::UI);
-    state_ = STATE_INITIALIZED;
-  } else {
-    state_ = STATE_DISABLED;
-  }
 }
 
 void AutomaticProfileResetter::PrepareEvaluationFlow() {
@@ -380,11 +409,10 @@ void AutomaticProfileResetter::ContinueWithEvaluationFlow(
 // static
 scoped_ptr<AutomaticProfileResetter::EvaluationResults>
     AutomaticProfileResetter::EvaluateConditionsOnWorkerPoolThread(
-    const base::StringPiece& hash_seed,
-    const base::StringPiece& program,
+    const std::string& hash_seed,
+    const std::string& program,
     scoped_ptr<base::DictionaryValue> program_input) {
-  JtlInterpreter interpreter(
-      hash_seed.as_string(), program.as_string(), program_input.get());
+  JtlInterpreter interpreter(hash_seed, program, program_input.get());
   interpreter.Execute();
   UMA_HISTOGRAM_ENUMERATION("AutomaticProfileReset.InterpreterResult",
                             interpreter.result(),
