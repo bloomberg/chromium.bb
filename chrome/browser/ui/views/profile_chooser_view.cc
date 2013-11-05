@@ -51,7 +51,6 @@ const int kLargeImageSide = 64;
 const int kSmallImageSide = 32;
 const int kMinMenuWidth = 250;
 const int kButtonHeight = 29;
-const int kArrowHeight = 10;
 
 // Current profile avatar image.
 views::View* CreateProfileImageView(const gfx::Image& icon) {
@@ -225,8 +224,6 @@ ProfileChooserView::ProfileChooserView(views::View* anchor_view,
       browser_(browser) {
   // Reset the default margins inherited from the BubbleDelegateView.
   set_margins(gfx::Insets());
-  // Compensate for built-in vertical padding in the anchor view's image.
-  set_anchor_view_insets(gfx::Insets(kArrowHeight, 0, kArrowHeight, 0));
 
   ResetLinksAndButtons();
 
