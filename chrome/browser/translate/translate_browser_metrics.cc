@@ -16,7 +16,7 @@ namespace {
 // Constant string values to indicate UMA names. All entries should have
 // a corresponding index in MetricsNameIndex and an entry in |kMetricsEntries|.
 const char kTranslateInitiationStatus[] =
-    "Translate.InitiationStatus";
+    "Translate.InitiationStatus.v2";
 const char kTranslateReportLanguageDetectionError[] =
     "Translate.ReportLanguageDetectionError";
 const char kTranslateLocalesOnDisabledByPrefs[] =

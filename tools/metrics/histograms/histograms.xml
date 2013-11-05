@@ -18564,6 +18564,18 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Translate.InitiationStatus" enum="TranslateInitiationStatus">
+  <obsolete>
+    Deprecated as of 11/2013, and replaced by Translate.InitiationStatus.v2.
+  </obsolete>
+  <summary>
+    The reason why Chrome decided to perform the next action (e.g., to show
+    infobar, to translate a page without any prompting, and so on) when Chrome
+    Translate is ready to translate a page.
+  </summary>
+</histogram>
+
+<histogram name="Translate.InitiationStatus.v2"
+    enum="TranslateInitiationStatus">
   <summary>
     The reason why Chrome decided to perform the next action (e.g., to show
     infobar, to translate a page without any prompting, and so on) when Chrome
@@ -28322,6 +28334,7 @@ other types of suffix sets.
   <int value="7" label="Auto translation by user configuration"/>
   <int value="8" label="Auto translation by linked from a translated page"/>
   <int value="9" label="Show infobar"/>
+  <int value="10" label="MIME-type is not supported"/>
 </enum>
 
 <enum name="TranslateLanguage" type="int">
