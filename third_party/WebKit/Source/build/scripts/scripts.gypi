@@ -14,6 +14,11 @@
             'template_expander.py',
             'templates/macros.tmpl',
         ],
+        'make_event_factory_files': [
+            '<@(scripts_for_in_files)',
+            'make_event_factory.py',
+            'templates/EventFactory.cpp.tmpl',
+        ],
         'make_names_files': [
             '<@(scripts_for_in_files)',
             'make_names.py',

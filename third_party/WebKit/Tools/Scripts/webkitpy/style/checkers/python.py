@@ -75,7 +75,9 @@ class PythonChecker(object):
         wkf = WebKitFinder(FileSystem())
         executive = Executive()
         env = os.environ.copy()
-        env['PYTHONPATH'] = ('%s%s%s' % (wkf.path_from_webkit_base('Tools', 'Scripts'),
+        env['PYTHONPATH'] = ('%s%s%s%s%s' % (wkf.path_from_webkit_base('Tools', 'Scripts'),
+                                         os.pathsep,
+                                         wkf.path_from_webkit_base('Source', 'build', 'scripts'),
                                          os.pathsep,
                                          wkf.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'thirdparty')))
         return executive.run_command([sys.executable, wkf.path_from_depot_tools_base('pylint.py'),

@@ -34,26 +34,7 @@ import shutil
 from in_file import InFile
 import name_macros
 import name_utilities
-import license
-
-
-IMPLEMENTATION_TEMPLATE = """%(license)s
-#include "config.h"
-#include "core/events/%(namespace)sFactory.h"
-
-#include "%(namespace)sHeaders.h"
-#include "RuntimeEnabledFeatures.h"
-
-namespace WebCore {
-
-PassRefPtr<%(namespace)s> %(namespace)sFactory::create(const String& type)
-{
-%(factory_implementation)s
-    return 0;
-}
-
-} // namespace WebCore
-"""
+import template_expander
 
 
 class EventFactoryWriter(name_macros.Writer):
@@ -65,34 +46,21 @@ class EventFactoryWriter(name_macros.Writer):
     default_parameters = {
         'namespace': '',
     }
+    filters = {
+        'script_name': name_utilities.script_name,
+        'cpp_name': name_utilities.cpp_name,
+        'lower_first': name_utilities.lower_first,
+    }
 
     def __init__(self, in_file_path, enabled_conditions):
         super(EventFactoryWriter, self).__init__(in_file_path, enabled_conditions)
         self._outputs[(self.namespace + ".cpp")] = self.generate_implementation
 
-    def _events(self):
-        return self.in_file.name_dictionaries
-
-    def _factory_implementation(self, event):
-        if event['RuntimeEnabled']:
-            runtime_condition = ' && RuntimeEnabledFeatures::%s()' % name_utilities.lower_first(event['RuntimeEnabled'])
-        else:
-            runtime_condition = ''
-        script_name = name_utilities.script_name(event)
-        cpp_name = name_utilities.cpp_name(event)
-        implementation = """    if (type == "%(script_name)s"%(runtime_condition)s)
-        return %(cpp_name)s::create();""" % {
-            'script_name': script_name,
-            'runtime_condition': runtime_condition,
-            'cpp_name': cpp_name,
-        }
-        return self.wrap_with_condition(implementation, event['Conditional'])
-
+    @template_expander.use_jinja('EventFactory.cpp.tmpl', filters=filters)
     def generate_implementation(self):
-        return IMPLEMENTATION_TEMPLATE % {
+        return {
             'namespace': self.namespace,
-            'license': license.license_for_generated_cpp(),
-            'factory_implementation': "\n".join(map(self._factory_implementation, self._events())),
+            'events': self.in_file.name_dictionaries,
         }
 
 

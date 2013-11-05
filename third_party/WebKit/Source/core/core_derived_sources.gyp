@@ -320,8 +320,7 @@
         {
           'action_name': 'EventFactory',
           'inputs': [
-            '<@(scripts_for_in_files)',
-            '../build/scripts/make_event_factory.py',
+            '<@(make_event_factory_files)',
             '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
             'events/EventAliases.in',
           ],
@@ -360,8 +359,7 @@
         {
           'action_name': 'EventTargetFactory',
           'inputs': [
-            '<@(scripts_for_in_files)',
-            '../build/scripts/make_event_factory.py',
+            '<@(make_event_factory_files)',
             'events/EventTargetFactory.in',
           ],
           'outputs': [
