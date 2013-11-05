@@ -15,6 +15,8 @@
 
 #define SIMPLE_CACHE_THUNK(uma_type, args) UMA_HISTOGRAM_##uma_type args
 
+// TODO(ttuttle): Add SimpleCache.Media.* histograms and call thunk in
+// MEDIA_CACHE case below.
 #define SIMPLE_CACHE_UMA(uma_type, uma_name, cache_type, ...)         \
   do {                                                                \
     switch (cache_type) {                                             \
@@ -25,6 +27,8 @@
       case net::APP_CACHE:                                            \
         SIMPLE_CACHE_THUNK(                                           \
             uma_type, ("SimpleCache.App." uma_name, ##__VA_ARGS__));  \
+        break;                                                        \
+      case net::MEDIA_CACHE:                                          \
         break;                                                        \
       default:                                                        \
         NOTREACHED();                                                 \
