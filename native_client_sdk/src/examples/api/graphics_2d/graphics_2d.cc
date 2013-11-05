@@ -42,7 +42,6 @@ uint32_t MakeColor(uint8_t r, uint8_t g, uint8_t b) {
 
 }  // namespace
 
-
 class Graphics2DInstance : public pp::Instance {
  public:
   explicit Graphics2DInstance(PP_Instance instance)
@@ -51,9 +50,7 @@ class Graphics2DInstance : public pp::Instance {
         mouse_down_(false),
         buffer_(NULL) {}
 
-  ~Graphics2DInstance() {
-    delete[] buffer_;
-  }
+  ~Graphics2DInstance() { delete[] buffer_; }
 
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]) {
     RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE);
@@ -66,16 +63,16 @@ class Graphics2DInstance : public pp::Instance {
 
   virtual void DidChangeView(const pp::View& view) {
     pp::Size new_size = view.GetRect().size();
-    bool had_context = !context_.is_null();
 
-    if (!CreateContext(new_size)) {
-      // failed.
+    if (!CreateContext(new_size))
       return;
-    }
 
-    if (!had_context) {
+    // When flush_context_ is null, it means there is no Flush callback in
+    // flight. This may have happened if the context was not created
+    // successfully, or if this is the first call to DidChangeView (when the
+    // module first starts). In either case, start the main loop.
+    if (flush_context_.is_null())
       MainLoop(0);
-    }
   }
 
   virtual bool HandleInputEvent(const pp::InputEvent& event) {
@@ -93,9 +90,8 @@ class Graphics2DInstance : public pp::Instance {
       mouse_down_ = true;
     }
 
-    if (event.GetType() == PP_INPUTEVENT_TYPE_MOUSEUP) {
+    if (event.GetType() == PP_INPUTEVENT_TYPE_MOUSEUP)
       mouse_down_ = false;
-    }
 
     return true;
   }
@@ -122,14 +118,9 @@ class Graphics2DInstance : public pp::Instance {
       return false;
     }
 
-    // Create an ImageData object we can draw to that is the same size as the
-    // Graphics2D context.
-    const bool kInitToZero = true;
-    PP_ImageDataFormat format = pp::ImageData::GetNativeImageDataFormat();
-    image_data_ = pp::ImageData(this, format, new_size, kInitToZero);
-
-    // Allocate a buffer of palette entries of the same size.
+    // Allocate a buffer of palette entries of the same size as the new context.
     buffer_ = new uint8_t[new_size.width() * new_size.height()];
+    size_ = new_size;
 
     return true;
   }
@@ -143,9 +134,8 @@ class Graphics2DInstance : public pp::Instance {
   }
 
   void UpdateCoals() {
-    const pp::Size& size = image_data_.size();
-    int width = size.width();
-    int height = size.height();
+    int width = size_.width();
+    int height = size_.height();
     size_t span = 0;
 
     // Draw two rows of random values at the bottom.
@@ -166,17 +156,16 @@ class Graphics2DInstance : public pp::Instance {
   }
 
   void UpdateFlames() {
-    const pp::Size& size = image_data_.size();
-    int width = size.width();
-    int height = size.height();
+    int width = size_.width();
+    int height = size_.height();
     for (int y = 1; y < height - 1; ++y) {
       size_t offset = y * width;
       for (int x = 1; x < width - 1; ++x) {
         int sum = 0;
         sum += buffer_[offset - width + x - 1];
         sum += buffer_[offset - width + x + 1];
-        sum += buffer_[offset         + x - 1];
-        sum += buffer_[offset         + x + 1];
+        sum += buffer_[offset + x - 1];
+        sum += buffer_[offset + x + 1];
         sum += buffer_[offset + width + x - 1];
         sum += buffer_[offset + width + x];
         sum += buffer_[offset + width + x + 1];
@@ -189,9 +178,8 @@ class Graphics2DInstance : public pp::Instance {
     if (!mouse_down_)
       return;
 
-    const pp::Size& size = image_data_.size();
-    int width = size.width();
-    int height = size.height();
+    int width = size_.width();
+    int height = size_.height();
 
     // Draw a circle at the mouse position.
     int radius = kMouseRadius;
@@ -203,35 +191,72 @@ class Graphics2DInstance : public pp::Instance {
     int maxy = cy + radius >= height ? height - 1 : cy + radius;
     for (int y = miny; y < maxy; ++y) {
       for (int x = minx; x < maxx; ++x) {
-        if ((x - cx) * (x - cx) + (y - cy) * (y - cy) < radius * radius) {
+        if ((x - cx) * (x - cx) + (y - cy) * (y - cy) < radius * radius)
           buffer_[y * width + x] = RandUint8(192, 255);
-        }
       }
     }
   }
 
   void Paint() {
-    const pp::Size& size = image_data_.size();
-    uint32_t* data = static_cast<uint32_t*>(image_data_.data());
-    uint32_t num_pixels = size.width() * size.height();
+    // See the comment above the call to ReplaceContents below.
+    PP_ImageDataFormat format = pp::ImageData::GetNativeImageDataFormat();
+    const bool kDontInitToZero = false;
+    pp::ImageData image_data(this, format, size_, kDontInitToZero);
+
+    uint32_t* data = static_cast<uint32_t*>(image_data.data());
+    if (!data)
+      return;
+
+    uint32_t num_pixels = size_.width() * size_.height();
     size_t offset = 0;
     for (uint32_t i = 0; i < num_pixels; ++i) {
       data[offset] = palette_[buffer_[offset]];
       offset++;
     }
-    context_.PaintImageData(image_data_, pp::Point());
+
+    // Using Graphics2D::ReplaceContents is the fastest way to update the
+    // entire canvas every frame. According to the documentation:
+    //
+    //   Normally, calling PaintImageData() requires that the browser copy
+    //   the pixels out of the image and into the graphics context's backing
+    //   store. This function replaces the graphics context's backing store
+    //   with the given image, avoiding the copy.
+    //
+    //   In the case of an animation, you will want to allocate a new image for
+    //   the next frame. It is best if you wait until the flush callback has
+    //   executed before allocating this bitmap. This gives the browser the
+    //   option of caching the previous backing store and handing it back to
+    //   you (assuming the sizes match). In the optimal case, this means no
+    //   bitmaps are allocated during the animation, and the backing store and
+    //   "front buffer" (which the module is painting into) are just being
+    //   swapped back and forth.
+    //
+    context_.ReplaceContents(&image_data);
   }
 
   void MainLoop(int32_t) {
+    if (context_.is_null()) {
+      // The current Graphics2D context is null, so updating and rendering is
+      // pointless. Set flush_context_ to null as well, so if we get another
+      // DidChangeView call, the main loop is started again.
+      flush_context_ = context_;
+      return;
+    }
+
     Update();
     Paint();
+    // Store a reference to the context that is being flushed; this ensures
+    // the callback is called, even if context_ changes before the flush
+    // completes.
+    flush_context_ = context_;
     context_.Flush(
         callback_factory_.NewCallback(&Graphics2DInstance::MainLoop));
   }
 
   pp::CompletionCallbackFactory<Graphics2DInstance> callback_factory_;
   pp::Graphics2D context_;
-  pp::ImageData image_data_;
+  pp::Graphics2D flush_context_;
+  pp::Size size_;
   pp::Point mouse_;
   bool mouse_down_;
   uint8_t* buffer_;
