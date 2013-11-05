@@ -1217,7 +1217,11 @@ function initializeBookmarkManager() {
   if (!chrome.bookmarks)
     console.error('Bookmarks extension API is not available');
 
-  chrome.bookmarkManagerPrivate.getStrings(loadLocalizedStrings);
+  chrome.bookmarkManagerPrivate.getStrings(continueInitializeBookmarkManager);
+}
+
+function continueInitializeBookmarkManager(localizedStrings) {
+  loadLocalizedStrings(localizedStrings);
 
   bmm.treeLookup[searchTreeItem.bookmarkId] = searchTreeItem;
 
