@@ -204,7 +204,7 @@ cr.define('options', function() {
     var container = $('page-container');
     var scrollTop = container.oldScrollTop || 0;
     container.oldScrollTop = undefined;
-    window.scroll(document.body.scrollLeft, scrollTop);
+    window.scroll(document.documentElement.scrollLeft, scrollTop);
   };
 
   /**
@@ -704,7 +704,7 @@ cr.define('options', function() {
       e.style.right = OptionsPage.horizontalOffset + 'px';
     } else {
       e.style.left = OptionsPage.horizontalOffset -
-          document.body.scrollLeft + 'px';
+          document.documentElement.scrollLeft + 'px';
     }
   };
 

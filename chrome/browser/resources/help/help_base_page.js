@@ -118,10 +118,10 @@ cr.define('help', function() {
       if (freeze) {
         this.lastScrollTop = document.documentElement.scrollTop;
         document.body.style.overflow = 'hidden';
-        window.scroll(document.body.scrollLeft, 0);
+        window.scroll(document.documentElement.scrollLeft, 0);
       } else {
         document.body.style.overflow = 'auto';
-        window.scroll(document.body.scrollLeft, this.lastScrollTop);
+        window.scroll(document.documentElement.scrollLeft, this.lastScrollTop);
       }
     },
 
