@@ -89,10 +89,11 @@ def main():
   # TODO(shcherbina): add option to pass path to the toolchain.
   if len(sys.argv) != 2:
     print 'Usage:'
-    print '    ncval <nexe> | ncval_annotate.py <nexe>'
+    print '    ncval_annotate.py <nexe>'
     sys.exit(1)
 
   binary = sys.argv[1]
+  retcode = 0
 
   # Ncval output has the following structure:
   #   HEADER (information about nexe it is validating, etc.)
@@ -107,7 +108,8 @@ def main():
   # by bundles).
 
   errors = []
-  for line in sys.stdin:
+  proc = subprocess.Popen(["ncval_new", binary], stdout=subprocess.PIPE)
+  for line in proc.stdout:
     # Collect error messages of the form
     #    201ef: unrecognized instruction
     m = re.match(r'\s*([0-9a-f]+): (.*)$', line, re.IGNORECASE)
@@ -117,10 +119,13 @@ def main():
       if errors:
         PrintErrors(binary, errors)
         errors = []
+        retcode = 1
       print line.rstrip()
 
   if errors:
     PrintErrors(binary, errors)
+    retcode = 1
+  sys.exit(retcode)
 
 
 if __name__ == '__main__':

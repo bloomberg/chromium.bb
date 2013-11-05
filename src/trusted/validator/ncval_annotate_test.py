@@ -16,7 +16,7 @@ from testutils import read_file, write_file
 import testutils
 
 
-PARENT_DIR = os.path.dirname(__file__)
+ANNOTATE_DIR = os.path.join(os.path.dirname(__file__), "driver")
 
 NACL_CFLAGS = os.environ.get("NACL_CFLAGS", "").split()
 
@@ -44,46 +44,32 @@ void _start() {
                           "-o", os.path.join(temp_dir, "prog")] + NACL_CFLAGS)
     dest_file = os.path.join(self.make_temp_dir(), "file")
     rc = subprocess.call([sys.executable,
-                          os.path.join(PARENT_DIR, "ncval_annotate.py"),
+                          os.path.join(ANNOTATE_DIR, "ncval_annotate.py"),
                           os.path.join(temp_dir, "prog")],
                          stdout=open(dest_file, "w"))
     # ncval_annotate should propagate the exit code through so that it
     # can be used as a substitute for ncval.
     self.assertEquals(rc, 1)
 
-    # For some reason ncval produces two errors for the same instruction.
-    # TODO(mseaborn): Tidy that up.
+    # Errors printed in two lines, with interspersed objdump output.
+    # The first line starts with an ADDRESS and file/line.
+    # The second is the error on the instruction, which ends with "<<<<".
+    filter_pattern = "^[0-9a-f]+.*|.*<<<<$"
+    actual_lines = [line for line in open(dest_file, "r")
+                    if re.match(filter_pattern, line)]
+    actual = "".join(actual_lines)
+    # Strip windows' carriage return characters.
+    actual = actual.replace("\r", "")
+
     expected_pattern = """
-VALIDATOR: ADDRESS: ret instruction \(not allowed\)
-  code: c3\s*ret
-  func: _start
-  file: FILENAME:4
-    __asm__\("ret"\); /\* This comment appears in output \*/
-
-VALIDATOR: ADDRESS: Illegal instruction
-  code: c3\s*ret
-  func: _start
-  file: FILENAME:4
-    __asm__\("ret"\); /\* This comment appears in output \*/
-|
-VALIDATOR: ADDRESS: This instruction has been marked illegal by Native Client
-  code: c3\s*retq
-  func: _start
-  file: FILENAME:4
-    __asm__\("ret"\); /\* This comment appears in output \*/
-
-VALIDATOR: ADDRESS: Illegal assignment to RSP
-  code: c3\s*retq
-  func: _start
-  file: FILENAME:4
-    __asm__\("ret"\); /\* This comment appears in output \*/
+ADDRESS \(FILENAME:[0-9]+, function _start\): unrecognized instruction
+\s+ADDRESS:\s+c3\s+retq?\s+<<<<
 """
     expected_pattern = expected_pattern.replace("ADDRESS", "[0-9a-f]+")
     # Cygwin mixes \ and / in filenames, so be liberal in what we accept.
-    expected_pattern = expected_pattern.replace("FILENAME", "\S+code.c")
+    expected_pattern = expected_pattern.replace("FILENAME", "code.c")
 
-    actual = read_file(dest_file).replace("\r", "")
-    if re.match(expected_pattern + "$", actual) is None:
+    if re.match(expected_pattern, "\n" + actual) is None:
       raise AssertionError(
         "Output did not match.\n\nEXPECTED:\n%s\nACTUAL:\n%s"
         % (expected_pattern, actual))
@@ -108,12 +94,14 @@ VALIDATOR: ADDRESS: Illegal assignment to RSP
                           "-o", os.path.join(temp_dir, "prog")] + NACL_CFLAGS)
     dest_file = os.path.join(self.make_temp_dir(), "file")
     subprocess.call([sys.executable,
-                     os.path.join(PARENT_DIR, "ncval_annotate.py"),
+                     os.path.join(ANNOTATE_DIR, "ncval_annotate.py"),
                      os.path.join(temp_dir, "prog")],
                     stdout=open(dest_file, "w"))
+    # Filter unrecognized instructions that are printed, one per bundle.
+    filter_pattern = ".*<<<<$"
     failures = len([line for line in open(dest_file, "r")
-                    if line.startswith("VALIDATOR")])
-    self.assertEquals(failures, 150)
+                    if re.match(filter_pattern, line)])
+    self.assertEquals(failures, 10)
 
 
 if __name__ == "__main__":

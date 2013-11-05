@@ -3049,7 +3049,7 @@ nacl_env.Append(
     'src/shared/platform/nacl.scons',
     'src/shared/srpc/nacl.scons',
     'src/trusted/service_runtime/nacl.scons',
-    'src/trusted/validator_x86/nacl.scons',
+    'src/trusted/validator/nacl.scons',
     'src/trusted/weak_ref/nacl.scons',
     'src/untrusted/crash_dump/nacl.scons',
     'src/untrusted/minidump_generator/nacl.scons',
