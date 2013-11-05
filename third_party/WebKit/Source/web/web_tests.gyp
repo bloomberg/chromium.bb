@@ -107,6 +107,13 @@
                             },
                         },
                     },
+                    'conditions': [
+                        ['win_use_allocator_shim==1', {
+                            'dependencies': [
+                                '<(DEPTH)/base/allocator/allocator.gyp:allocator',
+                            ],
+                        }],
+                    ],
                 }],
                 ['OS=="android" and gtest_target_type == "shared_library"', {
                     'type': 'shared_library',
