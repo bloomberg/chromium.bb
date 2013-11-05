@@ -20,6 +20,7 @@
 #include "cc/test/ordered_texture_map.h"
 #include "cc/test/test_texture.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "ui/gfx/rect.h"
 
 namespace cc {
 class TestContextSupport;
@@ -124,6 +125,7 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
       WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* callback);
 
   virtual void prepareTexture();
+  virtual void postSubBufferCHROMIUM(int x, int y, int width, int height);
   virtual void finish();
   virtual void flush();
 
@@ -230,6 +232,24 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
     test_support_ = test_support;
   }
 
+  int width() const { return width_; }
+  int height() const { return height_; }
+  bool reshape_called() const { return reshape_called_; }
+  void clear_reshape_called() { reshape_called_ = false; }
+  float scale_factor() const { return scale_factor_; }
+
+  enum UpdateType {
+    NoUpdate = 0,
+    PrepareTexture,
+    PostSubBuffer
+  };
+
+  gfx::Rect update_rect() const { return update_rect_; }
+
+  UpdateType last_update_type() {
+    return last_update_type_;
+  }
+
  protected:
   struct TextureTargets {
     TextureTargets();
@@ -304,12 +324,20 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   int times_map_buffer_chromium_succeeds_;
   WebGraphicsContextLostCallback* context_lost_callback_;
   WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* swap_buffers_callback_;
-  base::hash_set<WebKit::WebGLId> used_textures_;
+  base::hash_set<unsigned> used_textures_;
+  unsigned next_program_id_;
+  base::hash_set<unsigned> program_set_;
+  unsigned next_shader_id_;
+  base::hash_set<unsigned> shader_set_;
   std::vector<WebKit::WebGraphicsContext3D*> shared_contexts_;
   int max_texture_size_;
+  bool reshape_called_;
   int width_;
   int height_;
+  float scale_factor_;
   TestContextSupport* test_support_;
+  gfx::Rect update_rect_;
+  UpdateType last_update_type_;
 
   unsigned bound_buffer_;
   TextureTargets texture_targets_;

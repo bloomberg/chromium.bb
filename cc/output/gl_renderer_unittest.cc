@@ -246,70 +246,10 @@ class GLRendererTest : public testing::Test {
 // declared above it.
 }  // namespace
 
-
-// Gives unique shader ids and unique program ids for tests that need them.
-class ShaderCreatorMockGraphicsContext : public TestWebGraphicsContext3D {
- public:
-  ShaderCreatorMockGraphicsContext()
-      : next_program_id_number_(10000),
-        next_shader_id_number_(1) {}
-
-  bool hasShader(WebGLId shader) {
-    return shader_set_.find(shader) != shader_set_.end();
-  }
-
-  bool hasProgram(WebGLId program) {
-    return program_set_.find(program) != program_set_.end();
-  }
-
-  virtual WebGLId createProgram() {
-    unsigned program = next_program_id_number_;
-    program_set_.insert(program);
-    next_program_id_number_++;
-    return program;
-  }
-
-  virtual void deleteProgram(WebGLId program) {
-    ASSERT_TRUE(hasProgram(program));
-    program_set_.erase(program);
-  }
-
-  virtual void useProgram(WebGLId program) {
-    if (!program)
-      return;
-    ASSERT_TRUE(hasProgram(program));
-  }
-
-  virtual WebKit::WebGLId createShader(WebKit::WGC3Denum) {
-    unsigned shader = next_shader_id_number_;
-    shader_set_.insert(shader);
-    next_shader_id_number_++;
-    return shader;
-  }
-
-  virtual void deleteShader(WebKit::WebGLId shader) {
-    ASSERT_TRUE(hasShader(shader));
-    shader_set_.erase(shader);
-  }
-
-  virtual void attachShader(WebGLId program, WebGLId shader) {
-    ASSERT_TRUE(hasProgram(program));
-    ASSERT_TRUE(hasShader(shader));
-  }
-
- protected:
-  unsigned next_program_id_number_;
-  unsigned next_shader_id_number_;
-  std::set<unsigned> program_set_;
-  std::set<unsigned> shader_set_;
-};
-
 class GLRendererShaderTest : public testing::Test {
  protected:
   GLRendererShaderTest() {
-    output_surface_ = FakeOutputSurface::Create3d(
-        scoped_ptr<TestWebGraphicsContext3D>(
-            new ShaderCreatorMockGraphicsContext())).Pass();
+    output_surface_ = FakeOutputSurface::Create3d().Pass();
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
     resource_provider_ = ResourceProvider::Create(

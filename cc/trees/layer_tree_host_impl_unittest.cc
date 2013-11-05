@@ -2763,26 +2763,6 @@ TEST_F(LayerTreeHostImplTest, OverscrollAlways) {
   EXPECT_EQ(gfx::Vector2dF(), host_impl_->current_fling_velocity());
 }
 
-class BlendStateTrackerContext: public TestWebGraphicsContext3D {
- public:
-  BlendStateTrackerContext() : blend_(false) {}
-
-  virtual void enable(WebKit::WGC3Denum cap) OVERRIDE {
-    if (cap == GL_BLEND)
-      blend_ = true;
-  }
-
-  virtual void disable(WebKit::WGC3Denum cap) OVERRIDE {
-    if (cap == GL_BLEND)
-      blend_ = false;
-  }
-
-  bool blend() const { return blend_; }
-
- private:
-  bool blend_;
-};
-
 class BlendStateCheckLayer : public LayerImpl {
  public:
   static scoped_ptr<LayerImpl> Create(LayerTreeImpl* tree_impl,
@@ -3376,36 +3356,6 @@ TEST_F(LayerTreeHostImplViewportCoveredTest, ActiveTreeShrinkViewportInvalid) {
   TestLayerIsLargerThanViewport();
 }
 
-class ReshapeTrackerContext: public TestWebGraphicsContext3D {
- public:
-  ReshapeTrackerContext()
-    : reshape_called_(false),
-      last_reshape_width_(-1),
-      last_reshape_height_(-1),
-      last_reshape_scale_factor_(-1.f) {
-  }
-
-  virtual void reshapeWithScaleFactor(
-      int width, int height, float scale_factor) OVERRIDE {
-    reshape_called_ = true;
-    last_reshape_width_ = width;
-    last_reshape_height_ = height;
-    last_reshape_scale_factor_ = scale_factor;
-  }
-
-  bool reshape_called() const { return reshape_called_; }
-  void clear_reshape_called() { reshape_called_ = false; }
-  int last_reshape_width() { return last_reshape_width_; }
-  int last_reshape_height() { return last_reshape_height_; }
-  int last_reshape_scale_factor() { return last_reshape_scale_factor_; }
-
- private:
-  bool reshape_called_;
-  int last_reshape_width_;
-  int last_reshape_height_;
-  float last_reshape_scale_factor_;
-};
-
 class FakeDrawableLayerImpl: public LayerImpl {
  public:
   static scoped_ptr<LayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
@@ -3420,11 +3370,9 @@ class FakeDrawableLayerImpl: public LayerImpl {
 // can leave the window at the wrong size if we never draw and the proper
 // viewport size is never set.
 TEST_F(LayerTreeHostImplTest, ReshapeNotCalledUntilDraw) {
-  scoped_ptr<ReshapeTrackerContext> owned_reshape_tracker(
-      new ReshapeTrackerContext);
-  ReshapeTrackerContext* reshape_tracker = owned_reshape_tracker.get();
-  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
-      owned_reshape_tracker.PassAs<TestWebGraphicsContext3D>()));
+  scoped_refptr<TestContextProvider> provider(TestContextProvider::Create());
+  scoped_ptr<OutputSurface> output_surface(
+      FakeOutputSurface::Create3d(provider));
   host_impl_->InitializeRenderer(output_surface.Pass());
 
   scoped_ptr<LayerImpl> root =
@@ -3434,86 +3382,53 @@ TEST_F(LayerTreeHostImplTest, ReshapeNotCalledUntilDraw) {
   root->SetContentBounds(gfx::Size(10, 10));
   root->SetDrawsContent(true);
   host_impl_->active_tree()->SetRootLayer(root.Pass());
-  EXPECT_FALSE(reshape_tracker->reshape_called());
-  reshape_tracker->clear_reshape_called();
+  EXPECT_FALSE(provider->TestContext3d()->reshape_called());
+  provider->TestContext3d()->clear_reshape_called();
 
   LayerTreeHostImpl::FrameData frame;
   host_impl_->SetViewportSize(gfx::Size(10, 10));
   host_impl_->SetDeviceScaleFactor(1.f);
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
   host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
-  EXPECT_TRUE(reshape_tracker->reshape_called());
-  EXPECT_EQ(reshape_tracker->last_reshape_width(), 10);
-  EXPECT_EQ(reshape_tracker->last_reshape_height(), 10);
-  EXPECT_EQ(reshape_tracker->last_reshape_scale_factor(), 1.f);
+  EXPECT_TRUE(provider->TestContext3d()->reshape_called());
+  EXPECT_EQ(provider->TestContext3d()->width(), 10);
+  EXPECT_EQ(provider->TestContext3d()->height(), 10);
+  EXPECT_EQ(provider->TestContext3d()->scale_factor(), 1.f);
   host_impl_->DidDrawAllLayers(frame);
-  reshape_tracker->clear_reshape_called();
+  provider->TestContext3d()->clear_reshape_called();
 
   host_impl_->SetViewportSize(gfx::Size(20, 30));
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
   host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
-  EXPECT_TRUE(reshape_tracker->reshape_called());
-  EXPECT_EQ(reshape_tracker->last_reshape_width(), 20);
-  EXPECT_EQ(reshape_tracker->last_reshape_height(), 30);
-  EXPECT_EQ(reshape_tracker->last_reshape_scale_factor(), 1.f);
+  EXPECT_TRUE(provider->TestContext3d()->reshape_called());
+  EXPECT_EQ(provider->TestContext3d()->width(), 20);
+  EXPECT_EQ(provider->TestContext3d()->height(), 30);
+  EXPECT_EQ(provider->TestContext3d()->scale_factor(), 1.f);
   host_impl_->DidDrawAllLayers(frame);
-  reshape_tracker->clear_reshape_called();
+  provider->TestContext3d()->clear_reshape_called();
 
   host_impl_->SetDeviceScaleFactor(2.f);
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
   host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
-  EXPECT_TRUE(reshape_tracker->reshape_called());
-  EXPECT_EQ(reshape_tracker->last_reshape_width(), 20);
-  EXPECT_EQ(reshape_tracker->last_reshape_height(), 30);
-  EXPECT_EQ(reshape_tracker->last_reshape_scale_factor(), 2.f);
+  EXPECT_TRUE(provider->TestContext3d()->reshape_called());
+  EXPECT_EQ(provider->TestContext3d()->width(), 20);
+  EXPECT_EQ(provider->TestContext3d()->height(), 30);
+  EXPECT_EQ(provider->TestContext3d()->scale_factor(), 2.f);
   host_impl_->DidDrawAllLayers(frame);
-  reshape_tracker->clear_reshape_called();
+  provider->TestContext3d()->clear_reshape_called();
 }
-
-class SwapTrackerContext : public TestWebGraphicsContext3D {
- public:
-  SwapTrackerContext()
-      : last_update_type_(NoUpdate) {
-    test_capabilities_.post_sub_buffer = true;
-    test_capabilities_.set_visibility = true;
-  }
-
-  virtual void prepareTexture() OVERRIDE {
-    update_rect_ = gfx::Rect(width_, height_);
-    last_update_type_ = PrepareTexture;
-  }
-
-  virtual void postSubBufferCHROMIUM(int x, int y, int width, int height)
-      OVERRIDE {
-    update_rect_ = gfx::Rect(x, y, width, height);
-    last_update_type_ = PostSubBuffer;
-  }
-
-  gfx::Rect update_rect() const { return update_rect_; }
-
-  enum UpdateType {
-    NoUpdate = 0,
-    PrepareTexture,
-    PostSubBuffer
-  };
-
-  UpdateType last_update_type() {
-    return last_update_type_;
-  }
-
- private:
-  gfx::Rect update_rect_;
-  UpdateType last_update_type_;
-};
 
 // Make sure damage tracking propagates all the way to the graphics context,
 // where it should request to swap only the sub-buffer that is damaged.
 TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
-  scoped_ptr<SwapTrackerContext> context(new SwapTrackerContext);
-  SwapTrackerContext* swap_tracker = context.get();
+  scoped_refptr<TestContextProvider> provider(
+      TestContextProvider::Create());
+  scoped_ptr<OutputSurface> output_surface(
+      FakeOutputSurface::Create3d(provider));
 
-  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
-      context.PassAs<TestWebGraphicsContext3D>()));
+  provider->BindToCurrentThread();
+  TestWebGraphicsContext3D* context = provider->TestContext3d();
+  context->set_have_post_sub_buffer(true);
 
   // This test creates its own LayerTreeHostImpl, so
   // that we can force partial swap enabled.
@@ -3548,14 +3463,14 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   layer_tree_host_impl->DrawLayers(&frame, gfx::FrameTime::Now());
   layer_tree_host_impl->DidDrawAllLayers(frame);
   layer_tree_host_impl->SwapBuffers(frame);
-  gfx::Rect actual_swap_rect = swap_tracker->update_rect();
+  gfx::Rect actual_swap_rect = context->update_rect();
   gfx::Rect expected_swap_rect = gfx::Rect(0, 0, 500, 500);
   EXPECT_EQ(expected_swap_rect.x(), actual_swap_rect.x());
   EXPECT_EQ(expected_swap_rect.y(), actual_swap_rect.y());
   EXPECT_EQ(expected_swap_rect.width(), actual_swap_rect.width());
   EXPECT_EQ(expected_swap_rect.height(), actual_swap_rect.height());
-  EXPECT_EQ(swap_tracker->last_update_type(),
-            SwapTrackerContext::PrepareTexture);
+  EXPECT_EQ(context->last_update_type(),
+            TestWebGraphicsContext3D::PrepareTexture);
   // Second frame, only the damaged area should get swapped. Damage should be
   // the union of old and new child rects.
   // expected damage rect: gfx::Rect(26, 28);
@@ -3566,14 +3481,14 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   layer_tree_host_impl->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
   layer_tree_host_impl->SwapBuffers(frame);
-  actual_swap_rect = swap_tracker->update_rect();
+  actual_swap_rect = context->update_rect();
   expected_swap_rect = gfx::Rect(0, 500-28, 26, 28);
   EXPECT_EQ(expected_swap_rect.x(), actual_swap_rect.x());
   EXPECT_EQ(expected_swap_rect.y(), actual_swap_rect.y());
   EXPECT_EQ(expected_swap_rect.width(), actual_swap_rect.width());
   EXPECT_EQ(expected_swap_rect.height(), actual_swap_rect.height());
-  EXPECT_EQ(swap_tracker->last_update_type(),
-            SwapTrackerContext::PostSubBuffer);
+  EXPECT_EQ(context->last_update_type(),
+            TestWebGraphicsContext3D::PostSubBuffer);
 
   // Make sure that partial swap is constrained to the viewport dimensions
   // expected damage rect: gfx::Rect(500, 500);
@@ -3586,14 +3501,14 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   layer_tree_host_impl->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
   layer_tree_host_impl->SwapBuffers(frame);
-  actual_swap_rect = swap_tracker->update_rect();
+  actual_swap_rect = context->update_rect();
   expected_swap_rect = gfx::Rect(10, 10);
   EXPECT_EQ(expected_swap_rect.x(), actual_swap_rect.x());
   EXPECT_EQ(expected_swap_rect.y(), actual_swap_rect.y());
   EXPECT_EQ(expected_swap_rect.width(), actual_swap_rect.width());
   EXPECT_EQ(expected_swap_rect.height(), actual_swap_rect.height());
-  EXPECT_EQ(swap_tracker->last_update_type(),
-            SwapTrackerContext::PrepareTexture);
+  EXPECT_EQ(context->last_update_type(),
+            TestWebGraphicsContext3D::PrepareTexture);
 }
 
 TEST_F(LayerTreeHostImplTest, RootLayerDoesntCreateExtraSurface) {
@@ -3807,29 +3722,16 @@ TEST_F(LayerTreeHostImplTest, PartialSwap) {
   Mock::VerifyAndClearExpectations(&mock_context);
 }
 
-class PartialSwapContext : public TestWebGraphicsContext3D {
- public:
-  PartialSwapContext() {
-    test_capabilities_.post_sub_buffer = true;
-  }
-
-  // Unlimited texture size.
-  virtual void getIntegerv(WebKit::WGC3Denum pname, WebKit::WGC3Dint* value)
-      OVERRIDE {
-    if (pname == GL_MAX_TEXTURE_SIZE)
-      *value = 8192;
-    else if (pname == GL_ACTIVE_TEXTURE)
-      *value = GL_TEXTURE0;
-  }
-};
-
 static scoped_ptr<LayerTreeHostImpl> SetupLayersForOpacity(
     bool partial_swap,
     LayerTreeHostImplClient* client,
     Proxy* proxy,
     RenderingStatsInstrumentation* stats_instrumentation) {
-  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
-      scoped_ptr<TestWebGraphicsContext3D>(new PartialSwapContext)));
+  scoped_refptr<TestContextProvider> provider(TestContextProvider::Create());
+  scoped_ptr<OutputSurface> output_surface(
+      FakeOutputSurface::Create3d(provider));
+  provider->BindToCurrentThread();
+  provider->TestContext3d()->set_have_post_sub_buffer(true);
 
   LayerTreeSettings settings;
   settings.partial_swap_enabled = partial_swap;
@@ -3940,39 +3842,6 @@ TEST_F(LayerTreeHostImplTest, ContributingLayerEmptyScissorNoPartialSwap) {
     my_host_impl->DidDrawAllLayers(frame);
   }
 }
-
-// Fake WebKit::WebGraphicsContext3D that tracks the number of textures in use.
-class TrackingWebGraphicsContext3D : public TestWebGraphicsContext3D {
- public:
-  TrackingWebGraphicsContext3D()
-      : TestWebGraphicsContext3D(),
-        num_textures_(0) {
-    test_capabilities_.iosurface = true;
-    test_capabilities_.texture_rectangle = true;
-  }
-
-  virtual WebKit::WebGLId createTexture() OVERRIDE {
-    WebKit::WebGLId id = TestWebGraphicsContext3D::createTexture();
-
-    textures_[id] = true;
-    ++num_textures_;
-    return id;
-  }
-
-  virtual void deleteTexture(WebKit::WebGLId id) OVERRIDE {
-    if (textures_.find(id) == textures_.end())
-      return;
-
-    textures_[id] = false;
-    --num_textures_;
-  }
-
-  unsigned num_textures() const { return num_textures_; }
-
- private:
-  base::hash_map<WebKit::WebGLId, bool> textures_;
-  unsigned num_textures_;
-};
 
 TEST_F(LayerTreeHostImplTest, LayersFreeTextures) {
   scoped_ptr<TestWebGraphicsContext3D> context =

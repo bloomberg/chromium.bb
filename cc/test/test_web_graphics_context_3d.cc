@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "cc/test/test_context_support.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
 using WebKit::WGC3Dboolean;
@@ -28,9 +29,7 @@ using WebKit::WebGraphicsContext3D;
 namespace cc {
 
 static const WebGLId kFramebufferId = 1;
-static const WebGLId kProgramId = 2;
-static const WebGLId kRenderbufferId = 3;
-static const WebGLId kShaderId = 4;
+static const WebGLId kRenderbufferId = 2;
 
 static unsigned s_context_id = 1;
 
@@ -71,10 +70,15 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D()
       times_map_buffer_chromium_succeeds_(-1),
       context_lost_callback_(NULL),
       swap_buffers_callback_(NULL),
+      next_program_id_(1000),
+      next_shader_id_(2000),
       max_texture_size_(2048),
+      reshape_called_(false),
       width_(0),
       height_(0),
+      scale_factor_(-1.f),
       test_support_(NULL),
+      last_update_type_(NoUpdate),
       bound_buffer_(0),
       weak_ptr_factory_(this) {
   CreateNamespace();
@@ -113,8 +117,10 @@ bool TestWebGraphicsContext3D::makeContextCurrent() {
 
 void TestWebGraphicsContext3D::reshapeWithScaleFactor(
     int width, int height, float scale_factor) {
+  reshape_called_ = true;
   width_ = width;
   height_ = height;
+  scale_factor_ = scale_factor;
 }
 
 bool TestWebGraphicsContext3D::isContextLost() {
@@ -282,12 +288,16 @@ void TestWebGraphicsContext3D::deleteTexture(WebGLId id) {
   deleteTextures(1, &id);
 }
 
-WebGLId TestWebGraphicsContext3D::createProgram() {
-  return kProgramId | context_id_ << 16;
+unsigned TestWebGraphicsContext3D::createProgram() {
+  unsigned program = next_program_id_++ | context_id_ << 16;
+  program_set_.insert(program);
+  return program;
 }
 
 WebGLId TestWebGraphicsContext3D::createShader(WGC3Denum) {
-  return kShaderId | context_id_ << 16;
+  unsigned shader = next_shader_id_++ | context_id_ << 16;
+  shader_set_.insert(shader);
+  return shader;
 }
 
 WebGLId TestWebGraphicsContext3D::createExternalTexture() {
@@ -297,22 +307,29 @@ WebGLId TestWebGraphicsContext3D::createExternalTexture() {
 }
 
 void TestWebGraphicsContext3D::deleteProgram(WebGLId id) {
-  DCHECK_EQ(kProgramId | context_id_ << 16, id);
+  if (!program_set_.count(id))
+    ADD_FAILURE() << "deleteProgram called on unknown program " << id;
+  program_set_.erase(id);
 }
 
 void TestWebGraphicsContext3D::deleteShader(WebGLId id) {
-  DCHECK_EQ(kShaderId | context_id_ << 16, id);
+  if (!shader_set_.count(id))
+    ADD_FAILURE() << "deleteShader called on unknown shader " << id;
+  shader_set_.erase(id);
 }
 
 void TestWebGraphicsContext3D::attachShader(WebGLId program, WebGLId shader) {
-  DCHECK_EQ(kProgramId | context_id_ << 16, program);
-  DCHECK_EQ(kShaderId | context_id_ << 16, shader);
+  if (!program_set_.count(program))
+    ADD_FAILURE() << "attachShader called with unknown program " << program;
+  if (!shader_set_.count(shader))
+    ADD_FAILURE() << "attachShader called with unknown shader " << shader;
 }
 
 void TestWebGraphicsContext3D::useProgram(WebGLId program) {
   if (!program)
     return;
-  DCHECK_EQ(kProgramId | context_id_ << 16, program);
+  if (!program_set_.count(program))
+    ADD_FAILURE() << "useProgram called on unknown program " << program;
 }
 
 void TestWebGraphicsContext3D::bindFramebuffer(
@@ -429,6 +446,9 @@ void TestWebGraphicsContext3D::setSwapBuffersCompleteCallbackCHROMIUM(
 }
 
 void TestWebGraphicsContext3D::prepareTexture() {
+  update_rect_ = gfx::Rect(width_, height_);
+  last_update_type_ = PrepareTexture;
+
   // TODO(jamesr): This should implemented as ContextSupport::SwapBuffers().
   if (swap_buffers_callback_) {
     base::MessageLoop::current()->PostTask(
@@ -436,6 +456,12 @@ void TestWebGraphicsContext3D::prepareTexture() {
                               weak_ptr_factory_.GetWeakPtr()));
   }
   test_support_->CallAllSyncPointCallbacks();
+}
+
+void TestWebGraphicsContext3D::postSubBufferCHROMIUM(
+    int x, int y, int width, int height) {
+  update_rect_ = gfx::Rect(x, y, width, height);
+  last_update_type_ = PostSubBuffer;
 }
 
 void TestWebGraphicsContext3D::finish() {
