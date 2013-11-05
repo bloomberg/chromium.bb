@@ -78,8 +78,10 @@ const StylePropertyShorthand& parsingShorthandForProperty(CSSPropertyID);
 const StylePropertyShorthand& shorthandForProperty(CSSPropertyID);
 
 // Return the list of shorthands for a given longhand.
-const Vector<StylePropertyShorthand> matchingShorthandsForLonghand(CSSPropertyID);
-unsigned indexOfShorthandForLonghand(CSSPropertyID, const Vector<StylePropertyShorthand>&);
+// The client must pass in an empty result vector.
+void getMatchingShorthandsForLonghand(CSSPropertyID, Vector<StylePropertyShorthand, 4>* result);
+
+unsigned indexOfShorthandForLonghand(CSSPropertyID, const Vector<StylePropertyShorthand, 4>&);
 
 bool isExpandedShorthand(CSSPropertyID);
 

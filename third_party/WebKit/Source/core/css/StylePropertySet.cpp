@@ -275,7 +275,9 @@ unsigned getIndexInShorthandVectorForPrefixingVariant(const CSSProperty& propert
         return 0;
 
     CSSPropertyID prefixedShorthand = prefixingVariantForPropertyId(property.shorthandID());
-    return indexOfShorthandForLonghand(prefixedShorthand, matchingShorthandsForLonghand(prefixingVariant));
+    Vector<StylePropertyShorthand, 4> shorthands;
+    getMatchingShorthandsForLonghand(prefixingVariant, &shorthands);
+    return indexOfShorthandForLonghand(prefixedShorthand, shorthands);
 }
 
 bool MutableStylePropertySet::setVariableValue(const AtomicString& name, const String& value, bool important)

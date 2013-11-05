@@ -39,7 +39,8 @@ CSSPropertyID StylePropertyMetadata::shorthandID() const
     if (!m_isSetFromShorthand)
         return CSSPropertyInvalid;
 
-    const Vector<StylePropertyShorthand> shorthands = matchingShorthandsForLonghand(static_cast<CSSPropertyID>(m_propertyID));
+    Vector<StylePropertyShorthand, 4> shorthands;
+    getMatchingShorthandsForLonghand(static_cast<CSSPropertyID>(m_propertyID), &shorthands);
     ASSERT(shorthands.size() && m_indexInShorthandsVector >= 0 && m_indexInShorthandsVector < shorthands.size());
     return shorthands.at(m_indexInShorthandsVector).id();
 }

@@ -1452,7 +1452,8 @@ void CSSParser::addProperty(CSSPropertyID propId, PassRefPtr<CSSValue> value, bo
         return;
     }
 
-    const Vector<StylePropertyShorthand> shorthands = matchingShorthandsForLonghand(propId);
+    Vector<StylePropertyShorthand, 4> shorthands;
+    getMatchingShorthandsForLonghand(propId, &shorthands);
     // The longhand does not belong to multiple shorthands.
     if (shorthands.size() == 1)
         m_parsedProperties.append(CSSProperty(propId, value, important, true, CSSPropertyInvalid, m_implicitShorthand || implicit));

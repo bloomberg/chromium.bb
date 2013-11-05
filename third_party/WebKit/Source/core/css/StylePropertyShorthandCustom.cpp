@@ -113,7 +113,7 @@ bool isExpandedShorthand(CSSPropertyID id)
     return shorthandForProperty(id).length();
 }
 
-unsigned indexOfShorthandForLonghand(CSSPropertyID shorthandID, const Vector<StylePropertyShorthand>& shorthands)
+unsigned indexOfShorthandForLonghand(CSSPropertyID shorthandID, const Vector<StylePropertyShorthand, 4>& shorthands)
 {
     for (unsigned i = 0; i < shorthands.size(); ++i) {
         if (shorthands.at(i).id() == shorthandID)

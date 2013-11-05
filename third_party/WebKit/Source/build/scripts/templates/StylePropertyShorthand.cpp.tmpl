@@ -63,27 +63,27 @@ const StylePropertyShorthand& shorthandForProperty(CSSPropertyID propertyID)
     }
 }
 
-const Vector<StylePropertyShorthand> matchingShorthandsForLonghand(CSSPropertyID propertyID)
+void getMatchingShorthandsForLonghand(CSSPropertyID propertyID, Vector<StylePropertyShorthand, 4>* result)
 {
+    ASSERT(!result->size());
     switch (propertyID) {
 {%- for longhand_id, shorthands in longhands_dictionary.items() %}
     case {{ longhand_id }}: {
 {%- if shorthands|length == 1 %}
     {% for shorthand in shorthands -%}
-       return Vector<StylePropertyShorthand>(1, {{ shorthand.camel_case_name }}Shorthand());
+       result->uncheckedAppend({{ shorthand.camel_case_name }}Shorthand());
+       break;
     {%- endfor %}
 {%- else %}
-        Vector<StylePropertyShorthand> vectorShorthands;
-        vectorShorthands.reserveInitialCapacity({{ shorthands|length }});
         {% for shorthand in shorthands -%}
-        vectorShorthands.uncheckedAppend({{ shorthand.camel_case_name }}Shorthand());
+        result->uncheckedAppend({{ shorthand.camel_case_name }}Shorthand());
         {% endfor -%}
-        return vectorShorthands;
+        break;
 {% endif %}
     }
 {%- endfor %}
     default:
-        return Vector<StylePropertyShorthand>();
+        break;
     }
 }
 
