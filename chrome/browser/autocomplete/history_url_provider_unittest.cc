@@ -880,8 +880,8 @@ TEST_F(HistoryURLProviderTest, SuggestExactInput) {
                             string16(), GURL("about:blank"),
                             AutocompleteInput::INVALID_SPEC, false, false, true,
                             AutocompleteInput::ALL_MATCHES);
-    AutocompleteMatch match = HistoryURLProvider::SuggestExactInput(
-        autocomplete_.get(), input, test_cases[i].trim_http);
+    AutocompleteMatch match(autocomplete_->SuggestExactInput(
+        input.text(), input.canonicalized_url(), test_cases[i].trim_http));
     EXPECT_EQ(ASCIIToUTF16(test_cases[i].contents), match.contents);
     for (size_t match_index = 0; match_index < match.contents_class.size();
          ++match_index) {

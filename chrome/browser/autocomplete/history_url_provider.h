@@ -162,20 +162,20 @@ class HistoryURLProvider : public HistoryProvider {
 
   HistoryURLProvider(AutocompleteProviderListener* listener, Profile* profile);
 
-  // Returns a match corresponding to exactly what the user has typed.
-  // |trim_http| should not be set to true if |input| contains an http
-  // prefix.
-  // NOTE: This does not set the relevance of the returned match, as different
-  //       callers want different behavior. Callers must set this manually.
-  // This function is static so SearchProvider may construct similar matches.
-  static AutocompleteMatch SuggestExactInput(AutocompleteProvider* provider,
-                                             const AutocompleteInput& input,
-                                             bool trim_http);
-
-  // AutocompleteProvider
+  // HistoryProvider:
   virtual void Start(const AutocompleteInput& input,
                      bool minimal_changes) OVERRIDE;
   virtual void Stop(bool clear_cached_results) OVERRIDE;
+
+  // Returns a match representing a navigation to |destination_url| given user
+  // input of |text|.  |trim_http| controls whether the match's |fill_into_edit|
+  // and |contents| should have any HTTP scheme stripped off, and should not be
+  // set to true if |text| contains an http prefix.
+  // NOTE: This does not set the relevance of the returned match, as different
+  //       callers want different behavior. Callers must set this manually.
+  AutocompleteMatch SuggestExactInput(const string16& text,
+                                      const GURL& destination_url,
+                                      bool trim_http);
 
   // Runs the history query on the history thread, called by the history
   // system. The history database MAY BE NULL in which case it is not

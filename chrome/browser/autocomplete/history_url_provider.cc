@@ -372,62 +372,6 @@ HistoryURLProvider::HistoryURLProvider(AutocompleteProviderListener* listener,
       search_url_database_(true) {
 }
 
-// static
-AutocompleteMatch HistoryURLProvider::SuggestExactInput(
-    AutocompleteProvider* provider,
-    const AutocompleteInput& input,
-    bool trim_http) {
-  AutocompleteMatch match(provider, 0, false,
-                          AutocompleteMatchType::URL_WHAT_YOU_TYPED);
-
-  const GURL& url = input.canonicalized_url();
-  if (url.is_valid()) {
-    match.destination_url = url;
-
-    // Trim off "http://" if the user didn't type it.
-    // NOTE: We use TrimHttpPrefix() here rather than StringForURLDisplay() to
-    // strip the scheme as we need to know the offset so we can adjust the
-    // |match_location| below.  StringForURLDisplay() and TrimHttpPrefix() have
-    // slightly different behavior as well (the latter will strip even without
-    // two slashes after the scheme).
-    DCHECK(!trim_http || !AutocompleteInput::HasHTTPScheme(input.text()));
-    string16 display_string(provider->StringForURLDisplay(url, false, false));
-    const size_t offset = trim_http ? TrimHttpPrefix(&display_string) : 0;
-    match.fill_into_edit =
-        AutocompleteInput::FormattedStringWithEquivalentMeaning(url,
-                                                                display_string);
-    match.allowed_to_be_default_match = true;
-    // NOTE: Don't set match.inline_autocompletion to something non-empty here;
-    // it's surprising and annoying.
-
-    // Try to highlight "innermost" match location.  If we fix up "w" into
-    // "www.w.com", we want to highlight the fifth character, not the first.
-    // This relies on match.destination_url being the non-prefix-trimmed version
-    // of match.contents.
-    match.contents = display_string;
-    const URLPrefix* best_prefix = URLPrefix::BestURLPrefix(
-        UTF8ToUTF16(match.destination_url.spec()), input.text());
-    // It's possible for match.destination_url to not contain the user's input
-    // at all (so |best_prefix| is NULL), for example if the input is
-    // "view-source:x" and |destination_url| has an inserted "http://" in the
-    // middle.
-    if (best_prefix == NULL) {
-      AutocompleteMatch::ClassifyMatchInString(input.text(), match.contents,
-                                               ACMatchClassification::URL,
-                                               &match.contents_class);
-    } else {
-      AutocompleteMatch::ClassifyLocationInString(
-          best_prefix->prefix.length() - offset, input.text().length(),
-          match.contents.length(), ACMatchClassification::URL,
-          &match.contents_class);
-    }
-
-    match.is_history_what_you_typed_match = true;
-  }
-
-  return match;
-}
-
 void HistoryURLProvider::Start(const AutocompleteInput& input,
                                bool minimal_changes) {
   // NOTE: We could try hard to do less work in the |minimal_changes| case
@@ -450,6 +394,60 @@ void HistoryURLProvider::Stop(bool clear_cached_results) {
 
   if (params_)
     params_->cancel_flag.Set();
+}
+
+AutocompleteMatch HistoryURLProvider::SuggestExactInput(
+    const string16& text,
+    const GURL& destination_url,
+    bool trim_http) {
+  AutocompleteMatch match(this, 0, false,
+                          AutocompleteMatchType::URL_WHAT_YOU_TYPED);
+
+  if (destination_url.is_valid()) {
+    match.destination_url = destination_url;
+
+    // Trim off "http://" if the user didn't type it.
+    // NOTE: We use TrimHttpPrefix() here rather than StringForURLDisplay() to
+    // strip the scheme as we need to know the offset so we can adjust the
+    // |match_location| below.  StringForURLDisplay() and TrimHttpPrefix() have
+    // slightly different behavior as well (the latter will strip even without
+    // two slashes after the scheme).
+    DCHECK(!trim_http || !AutocompleteInput::HasHTTPScheme(text));
+    string16 display_string(StringForURLDisplay(destination_url, false, false));
+    const size_t offset = trim_http ? TrimHttpPrefix(&display_string) : 0;
+    match.fill_into_edit =
+        AutocompleteInput::FormattedStringWithEquivalentMeaning(destination_url,
+                                                                display_string);
+    match.allowed_to_be_default_match = true;
+    // NOTE: Don't set match.inline_autocompletion to something non-empty here;
+    // it's surprising and annoying.
+
+    // Try to highlight "innermost" match location.  If we fix up "w" into
+    // "www.w.com", we want to highlight the fifth character, not the first.
+    // This relies on match.destination_url being the non-prefix-trimmed version
+    // of match.contents.
+    match.contents = display_string;
+    const URLPrefix* best_prefix =
+        URLPrefix::BestURLPrefix(UTF8ToUTF16(destination_url.spec()), text);
+    // It's possible for match.destination_url to not contain the user's input
+    // at all (so |best_prefix| is NULL), for example if the input is
+    // "view-source:x" and |destination_url| has an inserted "http://" in the
+    // middle.
+    if (best_prefix == NULL) {
+      AutocompleteMatch::ClassifyMatchInString(text, match.contents,
+                                               ACMatchClassification::URL,
+                                               &match.contents_class);
+    } else {
+      AutocompleteMatch::ClassifyLocationInString(
+          best_prefix->prefix.length() - offset, text.length(),
+          match.contents.length(), ACMatchClassification::URL,
+          &match.contents_class);
+    }
+
+    match.is_history_what_you_typed_match = true;
+  }
+
+  return match;
 }
 
 // Called on the history thread.
@@ -497,8 +495,9 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
        (classifier.type() == VisitClassifier::UNVISITED_INTRANET) ||
        !params->trim_http ||
        (AutocompleteInput::NumNonHostComponents(params->input.parts()) > 0));
-  AutocompleteMatch what_you_typed_match(
-      SuggestExactInput(this, params->input, params->trim_http));
+  AutocompleteMatch what_you_typed_match(SuggestExactInput(
+      params->input.text(), params->input.canonicalized_url(),
+      params->trim_http));
   what_you_typed_match.relevance = CalculateRelevance(WHAT_YOU_TYPED, 0);
 
   // Get the matching URLs from the DB
@@ -678,7 +677,8 @@ void HistoryURLProvider::RunAutocompletePasses(
   // this, it's not what the user wants, and just adds noise.
   if ((input.type() != AutocompleteInput::QUERY) &&
       input.canonicalized_url().is_valid()) {
-    AutocompleteMatch what_you_typed(SuggestExactInput(this, input, trim_http));
+    AutocompleteMatch what_you_typed(SuggestExactInput(
+        input.text(), input.canonicalized_url(), trim_http));
     what_you_typed.relevance = CalculateRelevance(WHAT_YOU_TYPED, 0);
     matches_.push_back(what_you_typed);
   }
