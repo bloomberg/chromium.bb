@@ -31,7 +31,6 @@ class BlinkPerfAnimation(test.Test):
 class BlinkPerfWebAnimations(test.Test):
   tag = 'web_animations'
   test = blink_perf.BlinkPerfMeasurement
-  enabled = False
 
   def CreatePageSet(self, options):
     path = os.path.join(util.GetChromiumSrcDir(),
