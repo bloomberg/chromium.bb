@@ -82,7 +82,7 @@ def run_executable(cmd, build_dir, env):
   """Runs an executable within a xvfb buffer on linux or normally on other
   platforms.
 
-  Requires that both xvfb and openbox are installed on linux.
+  Requires that both xvfb and icewm are installed on linux.
 
   Detects recursion with an environment variable and do not create a recursive X
   buffer if present.
@@ -109,11 +109,11 @@ def run_executable(cmd, build_dir, env):
       # Some ChromeOS tests need a window manager. Technically, it could be
       # another script but that would be overkill.
       try:
-        wm_cmd = ['openbox']
+        ice_cmd = ['icewm']
         subprocess.Popen(
-            wm_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env)
+            ice_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env)
       except OSError:
-        print >> sys.stderr, 'Failed to run %s' % ' '.join(wm_cmd)
+        print >> sys.stderr, 'Failed to run %s' % ' '.join(ice_cmd)
         return 1
     return test_env.run_executable(cmd, env)
   finally:
