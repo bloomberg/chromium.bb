@@ -1641,7 +1641,7 @@ void Element::recalcChildStyle(StyleRecalcChange change)
                 parentPusher.push();
                 element->recalcStyle(change);
             } else if (element->supportsStyleSharing()) {
-                document().styleResolver()->addToStyleSharingList(element);
+                document().styleResolver()->addToStyleSharingList(*element);
             }
         }
     }

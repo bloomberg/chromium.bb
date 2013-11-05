@@ -281,11 +281,15 @@ bool StyleResolver::hasRulesForId(const AtomicString& id) const
     return m_features.idsInRules.contains(id.impl());
 }
 
-void StyleResolver::addToStyleSharingList(Element* element)
+void StyleResolver::addToStyleSharingList(Element& element)
 {
+    // Never add elements to the style sharing list if we're not in a recalcStyle,
+    // otherwise we could leave stale pointers in there.
+    if (!document().inStyleRecalc())
+        return;
     if (m_styleSharingList.size() >= styleSharingListSize)
         m_styleSharingList.remove(--m_styleSharingList.end());
-    m_styleSharingList.prepend(element);
+    m_styleSharingList.prepend(&element);
 }
 
 void StyleResolver::clearStyleSharingList()

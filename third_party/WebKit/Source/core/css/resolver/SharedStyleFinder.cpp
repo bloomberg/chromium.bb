@@ -250,17 +250,17 @@ inline Element* SharedStyleFinder::findElementForStyleSharing() const
 {
     StyleSharingList& styleSharingList = m_styleResolver.styleSharingList();
     for (StyleSharingList::iterator it = styleSharingList.begin(); it != styleSharingList.end(); ++it) {
-        if (!canShareStyleWithElement(**it))
+        Element& candidate = **it;
+        if (!canShareStyleWithElement(candidate))
             continue;
-        Element* element = it->get();
         if (it != styleSharingList.begin()) {
             // Move the element to the front of the LRU
             styleSharingList.remove(it);
-            styleSharingList.prepend(element);
+            styleSharingList.prepend(&candidate);
         }
-        return element;
+        return &candidate;
     }
-    m_styleResolver.addToStyleSharingList(&element());
+    m_styleResolver.addToStyleSharingList(element());
     return 0;
 }
 
