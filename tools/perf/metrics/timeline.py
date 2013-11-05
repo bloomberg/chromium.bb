@@ -73,3 +73,9 @@ class TimelineMetric(Metric):
       results.Add(event_name, 'ms', total)
       results.Add(event_name + '_max', 'ms', biggest_jank)
       results.Add(event_name + '_avg', 'ms', total / len(times))
+
+    counters_by_name = self._thread_for_tab.parent.counters
+    for counter_name, counter in counters_by_name.iteritems():
+      total = sum(counter.totals)
+      results.Add(counter_name, 'count', total)
+      results.Add(counter_name + '_avg', 'count', total / len(counter.totals))
