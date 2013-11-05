@@ -183,7 +183,7 @@ class BindingsTests(object):
                '--event-names-file', self.event_names_filename,
                '--write-file-only-if-changed', '0']
 
-        if self.reset_results:
+        if self.reset_results and self.verbose:
             print 'Reset results: EventInterfaces.in'
         try:
             output = self.run_command(cmd)
