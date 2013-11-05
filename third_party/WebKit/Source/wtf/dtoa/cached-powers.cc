@@ -135,7 +135,6 @@ namespace double_conversion {
         {UINT64_2PART_C(0xeb96bf6e, badf77d9), 1039, 332},
         {UINT64_2PART_C(0xaf87023b, 9bf0ee6b), 1066, 340},
     };
-    static const int kCachedPowersLength = ARRAY_SIZE(kCachedPowers);
     static const int kCachedPowersOffset = 348; // -kCachedPowers[0].decimal_exponent
 
     const int PowersOfTenCache::kDecimalExponentDistance = 8; // kCachedPowers[1].decimal_exponent - kCachedPowers[0].decimal_exponent
@@ -143,6 +142,10 @@ namespace double_conversion {
     const int PowersOfTenCache::kMaxDecimalExponent = 340; // kCachedPowers[kCachedPowersLength - 1].decimal_exponent
 
 #ifndef NDEBUG
+#if !ASSERT_DISABLED
+    static const int kCachedPowersLength = ARRAY_SIZE(kCachedPowers);
+#endif
+
     // Check that the static constants match the values in kCachedPowers.
     static void validateStaticConstants() {
         ASSERT(kCachedPowersOffset == -kCachedPowers[0].decimal_exponent);
