@@ -89,7 +89,7 @@
           # timesNewRoman.unstatic.3258 and colorTransparent.unstatic.4879.
           'cflags': ['-Wno-uninitialized'],
         }],
-        ['OS!="win" and OS!="android"', {
+        ['OS!="win"', {
           # TODO: Turn this on on all platforms, http://crbug.com/312287
           'variables': {
             'chromium_code': 1,

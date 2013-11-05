@@ -531,11 +531,11 @@ void partitionDumpStats(const PartitionRoot& root)
         totalLive += numActiveBytes;
         totalResident += numResidentBytes;
         totalFreeable += numFreeableBytes;
-        printf("bucket size %ld (pageSize %ld waste %ld): %ld alloc/%ld commit/%ld freeable bytes, %ld/%ld/%ld full/active/free pages\n", bucketSlotSize, static_cast<size_t>(bucket.pageSize), bucketWaste, numActiveBytes, numResidentBytes, numFreeableBytes, static_cast<size_t>(bucket.numFullPages), numActivePages, numFreePages);
+        printf("bucket size %zu (pageSize %zu waste %zu): %zu alloc/%zu commit/%zu freeable bytes, %zu/%zu/%zu full/active/free pages\n", bucketSlotSize, static_cast<size_t>(bucket.pageSize), bucketWaste, numActiveBytes, numResidentBytes, numFreeableBytes, static_cast<size_t>(bucket.numFullPages), numActivePages, numFreePages);
     }
-    printf("total live: %ld bytes\n", totalLive);
-    printf("total resident: %ld bytes\n", totalResident);
-    printf("total freeable: %ld bytes\n", totalFreeable);
+    printf("total live: %zu bytes\n", totalLive);
+    printf("total resident: %zu bytes\n", totalResident);
+    printf("total freeable: %zu bytes\n", totalFreeable);
     fflush(stdout);
 }
 
