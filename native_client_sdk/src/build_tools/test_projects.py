@@ -67,6 +67,10 @@ DISABLED_TESTS = [
     # TODO(binji): figure out a way to inject the testing code without
     # modifying the example; maybe an extension?
     {'name': 'part1'},
+    # TODO(binji): loading nacl_io_test.pexe on win/linux is > 40 seconds.
+    # See http://crbug.com/315253
+    {'name': 'nacl_io_test', 'platform': ('win', 'linux'),
+     'toolchain': 'pnacl', 'config': 'Release'},
 ]
 
 def ValidateToolchains(toolchains):
