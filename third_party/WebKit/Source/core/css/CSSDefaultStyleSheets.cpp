@@ -33,6 +33,7 @@
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/RuleSet.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/css/ViewportStyle.h"
 #include "core/dom/FullscreenElementStack.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLHtmlElement.h"
@@ -57,7 +58,7 @@ StyleSheetContents* CSSDefaultStyleSheets::mediaControlsStyleSheet;
 StyleSheetContents* CSSDefaultStyleSheets::fullscreenStyleSheet;
 
 // FIXME: It would be nice to use some mechanism that guarantees this is in sync with the real UA stylesheet.
-static const char simpleUserAgentStyleSheet[] = "html,body,div{display:block}head{display:none}body{margin:8px}div:focus,span:focus,a:focus{outline:auto 5px -webkit-focus-ring-color}a:-webkit-any-link{color:-webkit-link;text-decoration:underline}a:-webkit-any-link:active{color:-webkit-activelink}body:-webkit-seamless-document{margin:0}body:-webkit-full-page-media{background-color:black}@viewport{min-width:980px}@page{size:auto;margin:auto;padding:0;border-width:0}";
+static const char simpleUserAgentStyleSheet[] = "html,body,div{display:block}head{display:none}body{margin:8px}div:focus,span:focus,a:focus{outline:auto 5px -webkit-focus-ring-color}a:-webkit-any-link{color:-webkit-link;text-decoration:underline}a:-webkit-any-link:active{color:-webkit-activelink}body:-webkit-seamless-document{margin:0}body:-webkit-full-page-media{background-color:black}@page{size:auto;margin:auto;padding:0;border-width:0}";
 
 static inline bool elementCanUseSimpleDefaultStyle(Element* e)
 {
@@ -119,6 +120,7 @@ void CSSDefaultStyleSheets::loadFullDefaultStyle()
     String defaultRules = String(htmlUserAgentStyleSheet, sizeof(htmlUserAgentStyleSheet)) + RenderTheme::theme().extraDefaultStyleSheet();
     defaultStyleSheet = parseUASheet(defaultRules);
     defaultStyle->addRulesFromSheet(defaultStyleSheet, screenEval());
+    defaultStyle->addRulesFromSheet(parseUASheet(ViewportStyle::viewportStyleSheet()), screenEval());
     defaultPrintStyle->addRulesFromSheet(defaultStyleSheet, printEval());
 
     // Quirks-mode rules.
@@ -139,6 +141,7 @@ void CSSDefaultStyleSheets::loadSimpleDefaultStyle()
 
     simpleDefaultStyleSheet = parseUASheet(simpleUserAgentStyleSheet, strlen(simpleUserAgentStyleSheet));
     defaultStyle->addRulesFromSheet(simpleDefaultStyleSheet, screenEval());
+    defaultStyle->addRulesFromSheet(parseUASheet(ViewportStyle::viewportStyleSheet()), screenEval());
 
     // No need to initialize quirks sheet yet as there are no quirk rules for elements allowed in simple default style.
 }

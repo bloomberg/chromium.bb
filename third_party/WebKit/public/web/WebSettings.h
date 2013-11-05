@@ -52,9 +52,11 @@ public:
         EditingBehaviorAndroid
     };
 
+    virtual bool mainFrameResizesAreOrientationChanges() const = 0;
     virtual bool scrollAnimatorEnabled() const = 0;
     virtual bool touchEditingEnabled() const = 0;
     virtual bool viewportEnabled() const = 0;
+    virtual bool viewportMetaEnabled() const = 0;
     virtual void setAccelerated2dCanvasEnabled(bool) = 0;
     virtual void setAccelerated2dCanvasMSAASampleCount(int) = 0;
     virtual void setAcceleratedCompositingEnabled(bool) = 0;
@@ -125,6 +127,7 @@ public:
     virtual void setLoadWithOverviewMode(bool) = 0;
     virtual void setLocalStorageEnabled(bool) = 0;
     virtual void setMainFrameClipsContent(bool) = 0;
+    virtual void setMainFrameResizesAreOrientationChanges(bool) = 0;
     virtual void setMaxTouchPoints(int) = 0;
     virtual void setMediaPlaybackRequiresUserGesture(bool) = 0;
     virtual void setMediaFullscreenRequiresUserGesture(bool) = 0;
@@ -183,6 +186,7 @@ public:
     virtual void setUseWideViewport(bool) = 0;
     virtual void setValidationMessageTimerMagnification(int) = 0;
     virtual void setViewportEnabled(bool) = 0;
+    virtual void setViewportMetaEnabled(bool) = 0;
     virtual void setViewportMetaLayoutSizeQuirk(bool) = 0;
     virtual void setViewportMetaMergeContentQuirk(bool) = 0;
     virtual void setViewportMetaZeroValuesQuirk(bool) = 0;

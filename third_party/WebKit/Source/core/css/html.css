@@ -1128,11 +1128,5 @@ textarea[dir=auto] {
     border-width: 0px;
 }
 
-/* viewport */
-
-@viewport {
-    min-width: 980px;
-}
-
 /* noscript is handled internally, as it depends on settings. */
 

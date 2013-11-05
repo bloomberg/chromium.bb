@@ -1028,6 +1028,14 @@ TEST_F(WebFrameTest, SetLoadWithOverviewModeToFalseAndNoWideViewport)
     EXPECT_EQ(1.0f, webViewHelper.webView()->pageScaleFactor());
 }
 
+// Viewport settings need to be set before the page gets loaded
+static void enableViewportSettings(WebSettings* settings)
+{
+    settings->setViewportMetaEnabled(true);
+    settings->setViewportEnabled(true);
+    settings->setMainFrameResizesAreOrientationChanges(true);
+}
+
 TEST_F(WebFrameTest, NoWideViewportIgnoresPageViewportWidth)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
@@ -1061,8 +1069,7 @@ TEST_F(WebFrameTest, NoWideViewportIgnoresPageViewportWidthButAccountsScale)
     int viewportHeight = 480;
 
     FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initializeAndLoad(m_baseURL + "viewport-wide-2x-initial-scale.html", true, 0, &client);
-    webViewHelper.webView()->settings()->setViewportEnabled(true);
+    webViewHelper.initializeAndLoad(m_baseURL + "viewport-wide-2x-initial-scale.html", true, 0, &client, enableViewportSettings);
     webViewHelper.webView()->settings()->setWideViewportQuirkEnabled(true);
     webViewHelper.webView()->settings()->setUseWideViewport(false);
     webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
@@ -1146,8 +1153,7 @@ TEST_F(WebFrameTest, PageViewportInitialScaleOverridesLoadWithOverviewMode)
     int viewportHeight = 480;
 
     FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initializeAndLoad(m_baseURL + "viewport-wide-2x-initial-scale.html", true, 0, &client);
-    webViewHelper.webView()->settings()->setViewportEnabled(true);
+    webViewHelper.initializeAndLoad(m_baseURL + "viewport-wide-2x-initial-scale.html", true, 0, &client, enableViewportSettings);
     webViewHelper.webView()->settings()->setLoadWithOverviewMode(false);
     webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
 
@@ -1199,8 +1205,7 @@ TEST_F(WebFrameTest, PermanentInitialPageScaleFactorOverridesLoadWithOverviewMod
     float enforcedPageScalePactor = 0.5f;
 
     FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initializeAndLoad(m_baseURL + "viewport-auto-initial-scale.html", true, 0, &client);
-    webViewHelper.webView()->settings()->setViewportEnabled(true);
+    webViewHelper.initializeAndLoad(m_baseURL + "viewport-auto-initial-scale.html", true, 0, &client, enableViewportSettings);
     webViewHelper.webView()->settings()->setLoadWithOverviewMode(false);
     webViewHelper.webView()->setInitialPageScaleOverride(enforcedPageScalePactor);
     webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
@@ -1220,8 +1225,7 @@ TEST_F(WebFrameTest, PermanentInitialPageScaleFactorOverridesPageViewportInitial
     float enforcedPageScaleFactor = 0.5f;
 
     FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initializeAndLoad(m_baseURL + "viewport-wide-2x-initial-scale.html", true, 0, &client);
-    webViewHelper.webView()->settings()->setViewportEnabled(true);
+    webViewHelper.initializeAndLoad(m_baseURL + "viewport-wide-2x-initial-scale.html", true, 0, &client, enableViewportSettings);
     webViewHelper.webView()->setInitialPageScaleOverride(enforcedPageScaleFactor);
     webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
 
@@ -1309,8 +1313,7 @@ TEST_F(WebFrameTest, WideViewportInitialScaleDoesNotExpandFixedLayoutWidth)
     int viewportHeight = 480;
 
     FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initializeAndLoad(m_baseURL + "viewport-device-0.5x-initial-scale.html", true, 0, &client);
-    webViewHelper.webView()->settings()->setViewportEnabled(true);
+    webViewHelper.initializeAndLoad(m_baseURL + "viewport-device-0.5x-initial-scale.html", true, 0, &client, enableViewportSettings);
     webViewHelper.webView()->settings()->setWideViewportQuirkEnabled(true);
     webViewHelper.webView()->settings()->setUseWideViewport(true);
     webViewHelper.webView()->settings()->setViewportMetaLayoutSizeQuirk(true);
@@ -1336,8 +1339,7 @@ TEST_F(WebFrameTest, WideViewportAndWideContentWithInitialScale)
     int viewportHeight = 800;
 
     FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initializeAndLoad("about:blank", true, 0, &client);
-    webViewHelper.webView()->settings()->setViewportEnabled(true);
+    webViewHelper.initializeAndLoad("about:blank", true, 0, &client, enableViewportSettings);
     webViewHelper.webView()->settings()->setWideViewportQuirkEnabled(true);
     webViewHelper.webView()->settings()->setUseWideViewport(true);
     webViewHelper.webView()->settings()->setViewportMetaLayoutSizeQuirk(true);
@@ -1364,8 +1366,7 @@ TEST_F(WebFrameTest, ZeroValuesQuirk)
     int viewportHeight = 480;
 
     FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initialize(true, 0, &client);
-    webViewHelper.webView()->settings()->setViewportEnabled(true);
+    webViewHelper.initialize(true, 0, &client, enableViewportSettings);
     webViewHelper.webView()->settings()->setViewportMetaZeroValuesQuirk(true);
     webViewHelper.webView()->settings()->setWideViewportQuirkEnabled(true);
     FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), m_baseURL + "viewport-zero-values.html");
@@ -1432,8 +1433,7 @@ TEST_F(WebFrameTest, NonZeroValuesNoQuirk)
     float expectedPageScaleFactor = 0.5f;
 
     FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initialize(true, 0, &client);
-    webViewHelper.webView()->settings()->setViewportEnabled(true);
+    webViewHelper.initialize(true, 0, &client, enableViewportSettings);
     webViewHelper.webView()->settings()->setViewportMetaZeroValuesQuirk(true);
     webViewHelper.webView()->settings()->setWideViewportQuirkEnabled(true);
     FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), m_baseURL + "viewport-nonzero-values.html");
@@ -1610,8 +1610,7 @@ TEST_F(WebFrameTest, targetDensityDpiHigh)
         client.m_screenInfo.deviceScaleFactor = deviceScaleFactor;
 
         FrameTestHelpers::WebViewHelper webViewHelper;
-        webViewHelper.initializeAndLoad(m_baseURL + "viewport-target-densitydpi-high.html", true, 0, &client);
-        webViewHelper.webView()->settings()->setViewportEnabled(true);
+        webViewHelper.initializeAndLoad(m_baseURL + "viewport-target-densitydpi-high.html", true, 0, &client, enableViewportSettings);
         webViewHelper.webView()->settings()->setWideViewportQuirkEnabled(true);
         webViewHelper.webView()->settings()->setSupportDeprecatedTargetDensityDPI(true);
         webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
@@ -1640,8 +1639,7 @@ TEST_F(WebFrameTest, targetDensityDpiDevice)
         client.m_screenInfo.deviceScaleFactor = deviceScaleFactors[i];
 
         FrameTestHelpers::WebViewHelper webViewHelper;
-        webViewHelper.initializeAndLoad(m_baseURL + "viewport-target-densitydpi-device.html", true, 0, &client);
-        webViewHelper.webView()->settings()->setViewportEnabled(true);
+        webViewHelper.initializeAndLoad(m_baseURL + "viewport-target-densitydpi-device.html", true, 0, &client, enableViewportSettings);
         webViewHelper.webView()->settings()->setWideViewportQuirkEnabled(true);
         webViewHelper.webView()->settings()->setSupportDeprecatedTargetDensityDPI(true);
         webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
@@ -1667,8 +1665,7 @@ TEST_F(WebFrameTest, targetDensityDpiDeviceAndFixedWidth)
         client.m_screenInfo.deviceScaleFactor = deviceScaleFactors[i];
 
         FrameTestHelpers::WebViewHelper webViewHelper;
-        webViewHelper.initializeAndLoad(m_baseURL + "viewport-target-densitydpi-device-and-fixed-width.html", true, 0, &client);
-        webViewHelper.webView()->settings()->setViewportEnabled(true);
+        webViewHelper.initializeAndLoad(m_baseURL + "viewport-target-densitydpi-device-and-fixed-width.html", true, 0, &client, enableViewportSettings);
         webViewHelper.webView()->settings()->setWideViewportQuirkEnabled(true);
         webViewHelper.webView()->settings()->setSupportDeprecatedTargetDensityDPI(true);
         webViewHelper.webView()->settings()->setUseWideViewport(true);
@@ -1691,8 +1688,7 @@ TEST_F(WebFrameTest, NoWideViewportAndScaleLessThanOne)
     int viewportHeight = 480;
 
     FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initializeAndLoad(m_baseURL + "viewport-initial-scale-less-than-1.html", true, 0, &client);
-    webViewHelper.webView()->settings()->setViewportEnabled(true);
+    webViewHelper.initializeAndLoad(m_baseURL + "viewport-initial-scale-less-than-1.html", true, 0, &client, enableViewportSettings);
     webViewHelper.webView()->settings()->setSupportDeprecatedTargetDensityDPI(true);
     webViewHelper.webView()->settings()->setWideViewportQuirkEnabled(true);
     webViewHelper.webView()->settings()->setUseWideViewport(false);
@@ -1715,8 +1711,7 @@ TEST_F(WebFrameTest, NoWideViewportAndScaleLessThanOneWithDeviceWidth)
     int viewportHeight = 480;
 
     FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initializeAndLoad(m_baseURL + "viewport-initial-scale-less-than-1-device-width.html", true, 0, &client);
-    webViewHelper.webView()->settings()->setViewportEnabled(true);
+    webViewHelper.initializeAndLoad(m_baseURL + "viewport-initial-scale-less-than-1-device-width.html", true, 0, &client, enableViewportSettings);
     webViewHelper.webView()->settings()->setSupportDeprecatedTargetDensityDPI(true);
     webViewHelper.webView()->settings()->setWideViewportQuirkEnabled(true);
     webViewHelper.webView()->settings()->setUseWideViewport(false);
@@ -1750,8 +1745,7 @@ protected:
         const float aspectRatio = static_cast<float>(viewportSize.width) / viewportSize.height;
 
         FrameTestHelpers::WebViewHelper webViewHelper;
-        webViewHelper.initializeAndLoad(m_baseURL + url, true);
-        webViewHelper.webView()->settings()->setViewportEnabled(true);
+        webViewHelper.initializeAndLoad(m_baseURL + url, true, 0, 0, enableViewportSettings);
 
         // Origin scrollOffsets preserved under resize.
         {
@@ -1926,8 +1920,7 @@ TEST_F(WebFrameTest, CanOverrideScaleLimits)
     int viewportHeight = 480;
 
     FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initializeAndLoad(m_baseURL + "no_scale_for_you.html", true, 0, &client);
-    webViewHelper.webView()->settings()->setViewportEnabled(true);
+    webViewHelper.initializeAndLoad(m_baseURL + "no_scale_for_you.html", true, 0, &client, enableViewportSettings);
     webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
 
     EXPECT_EQ(2.0f, webViewHelper.webView()->minimumPageScaleFactor());

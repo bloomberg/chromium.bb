@@ -59,6 +59,7 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings)
     , m_viewportMetaLayoutSizeQuirk(false)
     , m_clobberUserAgentInitialScaleQuirk(false)
     , m_pinchOverlayScrollbarThickness(0)
+    , m_mainFrameResizesAreOrientationChanges(false)
 {
     ASSERT(settings);
 }
@@ -652,6 +653,16 @@ bool WebSettingsImpl::viewportEnabled() const
     return m_settings->viewportEnabled();
 }
 
+bool WebSettingsImpl::viewportMetaEnabled() const
+{
+    return m_settings->viewportMetaEnabled();
+}
+
+bool WebSettingsImpl::mainFrameResizesAreOrientationChanges() const
+{
+    return m_mainFrameResizesAreOrientationChanges;
+}
+
 void WebSettingsImpl::setShouldDisplaySubtitles(bool enabled)
 {
     m_settings->setShouldDisplaySubtitles(enabled);
@@ -689,7 +700,15 @@ void WebSettingsImpl::setFixedPositionCreatesStackingContext(bool creates)
 
 void WebSettingsImpl::setViewportEnabled(bool enabled)
 {
+    // FIXME: Remove once Chromium side changes land.
+    setMainFrameResizesAreOrientationChanges(enabled);
+
     m_settings->setViewportEnabled(enabled);
+}
+
+void WebSettingsImpl::setViewportMetaEnabled(bool enabled)
+{
+    m_settings->setViewportMetaEnabled(enabled);
 }
 
 void WebSettingsImpl::setSyncXHRInDocumentsEnabled(bool enabled)
@@ -750,6 +769,11 @@ void WebSettingsImpl::setPinchVirtualViewportEnabled(bool enabled)
 void WebSettingsImpl::setUseSolidColorScrollbars(bool enabled)
 {
     m_settings->setUseSolidColorScrollbars(enabled);
+}
+
+void WebSettingsImpl::setMainFrameResizesAreOrientationChanges(bool enabled)
+{
+    m_mainFrameResizesAreOrientationChanges = enabled;
 }
 
 } // namespace WebKit

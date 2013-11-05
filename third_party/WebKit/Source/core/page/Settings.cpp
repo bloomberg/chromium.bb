@@ -133,6 +133,7 @@ Settings::Settings(Page* page)
     , m_touchEventEmulationEnabled(false)
     , m_openGLMultisamplingEnabled(false)
     , m_viewportEnabled(false)
+    , m_viewportMetaEnabled(false)
     , m_compositorDrivenAcceleratedScrollingEnabled(false)
     , m_setImageLoadingSettingsTimer(this, &Settings::imageLoadingSettingsTimerFired)
 {
@@ -403,9 +404,17 @@ void Settings::setViewportEnabled(bool enabled)
     if (m_viewportEnabled == enabled)
         return;
 
+    // FIXME: Remove once Chromium-side lands.
+    setViewportMetaEnabled(enabled);
+
     m_viewportEnabled = enabled;
     if (m_page->mainFrame())
         m_page->mainFrame()->document()->updateViewportDescription();
+}
+
+void Settings::setViewportMetaEnabled(bool enabled)
+{
+    m_viewportMetaEnabled = enabled;
 }
 
 } // namespace WebCore

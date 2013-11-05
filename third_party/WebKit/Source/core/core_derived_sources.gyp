@@ -435,6 +435,7 @@
               'css/mediaControlsAndroid.css',
               'css/fullscreen.css',
               'css/xhtmlmp.css',
+              'css/viewportAndroid.css',
             ],
           },
           'inputs': [

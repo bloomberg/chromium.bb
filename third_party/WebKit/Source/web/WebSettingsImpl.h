@@ -44,10 +44,12 @@ public:
     explicit WebSettingsImpl(WebCore::Settings*);
     virtual ~WebSettingsImpl() { }
 
+    virtual bool mainFrameResizesAreOrientationChanges() const;
     virtual bool deviceSupportsTouch();
     virtual bool scrollAnimatorEnabled() const;
     virtual bool touchEditingEnabled() const;
     virtual bool viewportEnabled() const;
+    virtual bool viewportMetaEnabled() const;
     virtual void setAccelerated2dCanvasEnabled(bool);
     virtual void setAccelerated2dCanvasMSAASampleCount(int);
     virtual void setAcceleratedCompositingEnabled(bool);
@@ -118,6 +120,7 @@ public:
     virtual void setLoadWithOverviewMode(bool);
     virtual void setLocalStorageEnabled(bool);
     virtual void setMainFrameClipsContent(bool);
+    virtual void setMainFrameResizesAreOrientationChanges(bool);
     virtual void setMaxTouchPoints(int);
     virtual void setMediaPlaybackRequiresUserGesture(bool);
     virtual void setMediaFullscreenRequiresUserGesture(bool);
@@ -172,6 +175,7 @@ public:
     virtual void setUseWideViewport(bool);
     virtual void setValidationMessageTimerMagnification(int);
     virtual void setViewportEnabled(bool);
+    virtual void setViewportMetaEnabled(bool);
     virtual void setViewportMetaLayoutSizeQuirk(bool);
     virtual void setViewportMetaMergeContentQuirk(bool);
     virtual void setViewportMetaZeroValuesQuirk(bool);
@@ -216,6 +220,7 @@ private:
     // can be removed any time after 2015. See http://crbug.com/313754.
     bool m_clobberUserAgentInitialScaleQuirk;
     int m_pinchOverlayScrollbarThickness;
+    bool m_mainFrameResizesAreOrientationChanges;
 };
 
 } // namespace WebKit

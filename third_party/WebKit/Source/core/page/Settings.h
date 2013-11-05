@@ -154,6 +154,14 @@ public:
     void setViewportEnabled(bool);
     bool viewportEnabled() const { return m_viewportEnabled; }
 
+    void setViewportMetaEnabled(bool);
+    bool viewportMetaEnabled() const
+    {
+        // FIXME: Remove and uncomment once chromium side changes land.
+        return true;
+        // return m_viewportMetaEnabled;
+    }
+
     // FIXME: This is a temporary flag and should be removed once accelerated
     // overflow scroll is ready (crbug.com/254111).
     void setCompositorDrivenAcceleratedScrollingEnabled(bool enabled) { m_compositorDrivenAcceleratedScrollingEnabled = enabled; }
@@ -192,6 +200,7 @@ private:
     bool m_touchEventEmulationEnabled : 1;
     bool m_openGLMultisamplingEnabled : 1;
     bool m_viewportEnabled : 1;
+    bool m_viewportMetaEnabled : 1;
 
     // FIXME: This is a temporary flag and should be removed once accelerated
     // overflow scroll is ready (crbug.com/254111).
