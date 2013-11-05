@@ -70,7 +70,7 @@ class TestServer(object):
     # Make dirs into a list of absolute paths.
     abs_dirs = [os.path.join(src_dir, d) for d in _PYTHONPATH_DIRS]
     # Add the generated python files to the path
-    abs_dirs.extend([os.path.join(src_dir, 'out', constants.GetBuildType(), d)
+    abs_dirs.extend([os.path.join(src_dir, constants.GetOutDirectory(), d)
                      for d in _GENERATED_PYTHONPATH_DIRS])
     current_python_path = os.environ.get('PYTHONPATH')
     extra_python_path = ':'.join(abs_dirs)
