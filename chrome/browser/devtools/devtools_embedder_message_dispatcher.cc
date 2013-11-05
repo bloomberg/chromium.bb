@@ -185,6 +185,10 @@ DevToolsEmbedderMessageDispatcher::DevToolsEmbedderMessageDispatcher(
   RegisterHandler("removeFileSystem",
       BindToListParser(base::Bind(&Delegate::RemoveFileSystem,
                                   base::Unretained(delegate))));
+  RegisterHandler("upgradeDraggedFileSystemPermissions",
+                  BindToListParser(
+                      base::Bind(&Delegate::UpgradeDraggedFileSystemPermissions,
+                                 base::Unretained(delegate))));
   RegisterHandler("indexPath",
       BindToListParser(base::Bind(&Delegate::IndexPath,
                                   base::Unretained(delegate))));

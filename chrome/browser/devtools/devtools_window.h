@@ -210,6 +210,8 @@ class DevToolsWindow : private content::NotificationObserver,
   virtual void RequestFileSystems() OVERRIDE;
   virtual void AddFileSystem() OVERRIDE;
   virtual void RemoveFileSystem(const std::string& file_system_path) OVERRIDE;
+  virtual void UpgradeDraggedFileSystemPermissions(
+      const std::string& file_system_url) OVERRIDE;
   virtual void IndexPath(int request_id,
                          const std::string& file_system_path) OVERRIDE;
   virtual void StopIndexing(int request_id) OVERRIDE;

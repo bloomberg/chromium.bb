@@ -1058,6 +1058,16 @@ void DevToolsWindow::RemoveFileSystem(const std::string& file_system_path) {
                      &file_system_path_value, NULL, NULL);
 }
 
+void DevToolsWindow::UpgradeDraggedFileSystemPermissions(
+    const std::string& file_system_url) {
+  CHECK(web_contents_->GetURL().SchemeIs(chrome::kChromeDevToolsScheme));
+  file_helper_->UpgradeDraggedFileSystemPermissions(
+      file_system_url,
+      base::Bind(&DevToolsWindow::FileSystemAdded, weak_factory_.GetWeakPtr()),
+      base::Bind(&DevToolsWindow::ShowDevToolsConfirmInfoBar,
+                 weak_factory_.GetWeakPtr()));
+}
+
 void DevToolsWindow::IndexPath(int request_id,
                                const std::string& file_system_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

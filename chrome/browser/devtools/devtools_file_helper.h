@@ -71,13 +71,28 @@ class DevToolsFileHelper {
   // Shows select folder dialog.
   // If user cancels folder selection, passes empty FileSystem struct to
   // |callback|.
-  // If selected folder contains magic file, grants renderer read/write
+  // Shows infobar by means of |show_info_bar_callback| to let the user decide
+  // whether to grant security permissions or not.
+  // If user allows adding file system in infobar, grants renderer read/write
   // permissions, registers isolated file system for it and passes FileSystem
   // struct to |callback|. Saves file system path to prefs.
-  // If selected folder does not contain magic file, passes error string to
+  // If user denies adding file system in infobar, passes error string to
   // |callback|.
   void AddFileSystem(const AddFileSystemCallback& callback,
                      const ShowInfoBarCallback& show_info_bar_callback);
+
+  // Upgrades dragged file system permissions to a read-write access.
+  // Shows infobar by means of |show_info_bar_callback| to let the user decide
+  // whether to grant security permissions or not.
+  // If user allows adding file system in infobar, grants renderer read/write
+  // permissions, registers isolated file system for it and passes FileSystem
+  // struct to |callback|. Saves file system path to prefs.
+  // If user denies adding file system in infobar, passes error string to
+  // |callback|.
+  void UpgradeDraggedFileSystemPermissions(
+      const std::string& file_system_url,
+      const AddFileSystemCallback& callback,
+      const ShowInfoBarCallback& show_info_bar_callback);
 
   // Loads file system paths from prefs, grants permissions and registers
   // isolated file system for those of them that contain magic file and passes

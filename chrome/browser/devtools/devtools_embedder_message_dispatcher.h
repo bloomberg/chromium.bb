@@ -40,6 +40,8 @@ class DevToolsEmbedderMessageDispatcher {
     virtual void RequestFileSystems() = 0;
     virtual void AddFileSystem() = 0;
     virtual void RemoveFileSystem(const std::string& file_system_path) = 0;
+    virtual void UpgradeDraggedFileSystemPermissions(
+        const std::string& file_system_url) = 0;
     virtual void IndexPath(int request_id,
                            const std::string& file_system_path) = 0;
     virtual void StopIndexing(int request_id) = 0;

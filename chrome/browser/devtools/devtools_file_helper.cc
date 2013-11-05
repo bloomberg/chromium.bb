@@ -35,6 +35,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
+#include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
@@ -307,6 +308,27 @@ void DevToolsFileHelper::AddFileSystem(
       web_contents_);
   select_file_dialog->Show(ui::SelectFileDialog::SELECT_FOLDER,
                            base::FilePath());
+}
+
+void DevToolsFileHelper::UpgradeDraggedFileSystemPermissions(
+    const std::string& file_system_url,
+    const AddFileSystemCallback& callback,
+    const ShowInfoBarCallback& show_info_bar_callback) {
+  fileapi::FileSystemURL root_url =
+      isolated_context()->CrackURL(GURL(file_system_url));
+  if (!root_url.is_valid() || !root_url.path().empty()) {
+    callback.Run(FileSystem());
+    return;
+  }
+
+  std::vector<fileapi::MountPoints::MountPointInfo> mount_points;
+  isolated_context()->GetDraggedFileInfo(root_url.filesystem_id(),
+                                         &mount_points);
+
+  std::vector<fileapi::MountPoints::MountPointInfo>::const_iterator it =
+      mount_points.begin();
+  for (; it != mount_points.end(); ++it)
+    InnerAddFileSystem(callback, show_info_bar_callback, it->path);
 }
 
 void DevToolsFileHelper::InnerAddFileSystem(
