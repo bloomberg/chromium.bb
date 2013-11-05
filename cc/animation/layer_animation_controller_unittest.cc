@@ -1260,9 +1260,11 @@ TEST(LayerAnimationControllerTest, AnimatedBounds) {
   scoped_ptr<KeyframedTransformAnimationCurve> curve3(
       KeyframedTransformAnimationCurve::Create());
   TransformOperations operations3;
+  gfx::Transform transform3;
+  transform3.Scale3d(1.0, 2.0, 3.0);
   curve3->AddKeyframe(TransformKeyframe::Create(
       0.0, operations3, scoped_ptr<TimingFunction>()));
-  operations3.AppendSkew(1.0, 2.0);
+  operations3.AppendMatrix(transform3);
   curve3->AddKeyframe(TransformKeyframe::Create(
       1.0, operations3, scoped_ptr<TimingFunction>()));
   animation = Animation::Create(

@@ -13,7 +13,9 @@
 
 #include "base/logging.h"
 #include "cc/animation/transform_operation.h"
+#include "cc/animation/transform_operations.h"
 #include "ui/gfx/box_f.h"
+#include "ui/gfx/transform_util.h"
 #include "ui/gfx/vector3d_f.h"
 
 namespace {
@@ -198,30 +200,6 @@ bool TransformOperation::BlendTransformOperations(
   return true;
 }
 
-static void ApplyScaleToBox(float x_scale,
-                            float y_scale,
-                            float z_scale,
-                            gfx::BoxF* box) {
-  if (x_scale < 0)
-    box->set_x(-box->right());
-  if (y_scale < 0)
-    box->set_y(-box->bottom());
-  if (z_scale < 0)
-    box->set_z(-box->front());
-  box->Scale(std::abs(x_scale), std::abs(y_scale), std::abs(z_scale));
-}
-
-static void UnionBoxWithZeroScale(gfx::BoxF* box) {
-  float min_x = std::min(box->x(), 0.f);
-  float min_y = std::min(box->y(), 0.f);
-  float min_z = std::min(box->z(), 0.f);
-  float max_x = std::max(box->right(), 0.f);
-  float max_y = std::max(box->bottom(), 0.f);
-  float max_z = std::max(box->front(), 0.f);
-  *box = gfx::BoxF(
-      min_x, min_y, min_z, max_x - min_x, max_y - min_y, max_z - min_z);
-}
-
 // If p = (px, py) is a point in the plane being rotated about (0, 0, nz), this
 // function computes the angles we would have to rotate from p to get to
 // (length(p), 0), (-length(p), 0), (0, length(p)), (0, -length(p)). If nz is
@@ -250,20 +228,6 @@ static float DegreesToRadians(float degrees) {
   return (M_PI * degrees) / 180.f;
 }
 
-// Div by zero doesn't always result in Inf as you might hope, so we'll do this
-// explicitly here.
-static float SafeDivide(float numerator, float denominator) {
-  if (numerator == 0.f)
-    return 0.f;
-
-  if (denominator == 0.f) {
-    return numerator > 0.f ? std::numeric_limits<float>::infinity()
-                           : -std::numeric_limits<float>::infinity();
-  }
-
-  return numerator / denominator;
-}
-
 static void BoundingBoxForArc(const gfx::Point3F& point,
                               const TransformOperation* from,
                               const TransformOperation* to,
@@ -290,6 +254,16 @@ static void BoundingBoxForArc(const gfx::Point3F& point,
 
   SkMScalar from_angle = from ? from->rotate.angle : 0.f;
   SkMScalar to_angle = to ? to->rotate.angle : 0.f;
+
+  // If the axes of rotation are pointing in opposite directions, we need to
+  // flip one of the angles. Note, if both |from| and |to| exist, then axis will
+  // correspond to |from|.
+  if (from && to) {
+    gfx::Vector3dF other_axis(
+        to->rotate.axis.x, to->rotate.axis.y, to->rotate.axis.z);
+    if (gfx::DotProduct(axis, other_axis) < 0.f)
+      to_angle *= -1.f;
+  }
 
   float min_degrees =
       SkMScalarToFloat(BlendSkMScalars(from_angle, to_angle, min_progress));
@@ -360,16 +334,11 @@ static void BoundingBoxForArc(const gfx::Point3F& point,
     double phi_x = atan2(gfx::DotProduct(v2, vx), gfx::DotProduct(v1, vx));
     double phi_z = atan2(gfx::DotProduct(v2, vz), gfx::DotProduct(v1, vz));
 
-    // NB: it is fine if the denominators here are zero and these values go to
-    // infinity; atan can handle it.
-    double tan_theta1 = SafeDivide(normal.y(), (normal.x() * normal.z()));
-    double tan_theta2 = SafeDivide(-normal.z(), (normal.x() * normal.y()));
-
-    candidates[0] = atan(tan_theta1) + phi_x;
+    candidates[0] = atan2(normal.y(), normal.x() * normal.z()) + phi_x;
     candidates[1] = candidates[0] + M_PI;
-    candidates[2] = atan(tan_theta2) + phi_x;
+    candidates[2] = atan2(-normal.z(), normal.x() * normal.y()) + phi_x;
     candidates[3] = candidates[2] + M_PI;
-    candidates[4] = atan(-tan_theta1) + phi_z;
+    candidates[4] = atan2(normal.y(), -normal.x() * normal.z()) + phi_z;
     candidates[5] = candidates[4] + M_PI;
   }
 
@@ -415,78 +384,36 @@ bool TransformOperation::BlendedBoundsForBox(const gfx::BoxF& box,
     interpolation_type = to->type;
 
   switch (interpolation_type) {
-    case TransformOperation::TransformOperationTranslate: {
-      SkMScalar from_x, from_y, from_z;
-      if (is_identity_from) {
-        from_x = from_y = from_z = 0.0;
-      } else {
-        from_x = from->translate.x;
-        from_y = from->translate.y;
-        from_z = from->translate.z;
-      }
-      SkMScalar to_x, to_y, to_z;
-      if (is_identity_to) {
-        to_x = to_y = to_z = 0.0;
-      } else {
-        to_x = to->translate.x;
-        to_y = to->translate.y;
-        to_z = to->translate.z;
-      }
-      *bounds = box;
-      *bounds += gfx::Vector3dF(BlendSkMScalars(from_x, to_x, min_progress),
-                                BlendSkMScalars(from_y, to_y, min_progress),
-                                BlendSkMScalars(from_z, to_z, min_progress));
-      gfx::BoxF bounds_max = box;
-      bounds_max += gfx::Vector3dF(BlendSkMScalars(from_x, to_x, max_progress),
-                                   BlendSkMScalars(from_y, to_y, max_progress),
-                                   BlendSkMScalars(from_z, to_z, max_progress));
-      bounds->Union(bounds_max);
-      return true;
-    }
-    case TransformOperation::TransformOperationScale: {
-      SkMScalar from_x, from_y, from_z;
-      if (is_identity_from) {
-        from_x = from_y = from_z = 1.0;
-      } else {
-        from_x = from->scale.x;
-        from_y = from->scale.y;
-        from_z = from->scale.z;
-      }
-      SkMScalar to_x, to_y, to_z;
-      if (is_identity_to) {
-        to_x = to_y = to_z = 1.0;
-      } else {
-        to_x = to->scale.x;
-        to_y = to->scale.y;
-        to_z = to->scale.z;
-      }
-      *bounds = box;
-      ApplyScaleToBox(
-          SkMScalarToFloat(BlendSkMScalars(from_x, to_x, min_progress)),
-          SkMScalarToFloat(BlendSkMScalars(from_y, to_y, min_progress)),
-          SkMScalarToFloat(BlendSkMScalars(from_z, to_z, min_progress)),
-          bounds);
-      gfx::BoxF bounds_max = box;
-      ApplyScaleToBox(
-          SkMScalarToFloat(BlendSkMScalars(from_x, to_x, max_progress)),
-          SkMScalarToFloat(BlendSkMScalars(from_y, to_y, max_progress)),
-          SkMScalarToFloat(BlendSkMScalars(from_z, to_z, max_progress)),
-          &bounds_max);
-      if (!bounds->IsEmpty() && !bounds_max.IsEmpty()) {
-        bounds->Union(bounds_max);
-      } else if (!bounds->IsEmpty()) {
-        UnionBoxWithZeroScale(bounds);
-      } else if (!bounds_max.IsEmpty()) {
-        UnionBoxWithZeroScale(&bounds_max);
-        *bounds = bounds_max;
-      }
-
-      return true;
-    }
     case TransformOperation::TransformOperationIdentity:
       *bounds = box;
       return true;
+    case TransformOperation::TransformOperationTranslate:
+    case TransformOperation::TransformOperationSkew:
+    case TransformOperation::TransformOperationPerspective:
+    case TransformOperation::TransformOperationScale: {
+      gfx::Transform from_transform;
+      gfx::Transform to_transform;
+      if (!BlendTransformOperations(from, to, min_progress, &from_transform) ||
+          !BlendTransformOperations(from, to, max_progress, &to_transform))
+        return false;
+
+      *bounds = box;
+      from_transform.TransformBox(bounds);
+
+      gfx::BoxF to_box = box;
+      to_transform.TransformBox(&to_box);
+      bounds->ExpandTo(to_box);
+
+      return true;
+    }
     case TransformOperation::TransformOperationRotate: {
+      SkMScalar axis_x = 0;
+      SkMScalar axis_y = 0;
+      SkMScalar axis_z = 1;
+      SkMScalar from_angle = 0;
+      if (!ShareSameAxis(from, to, &axis_x, &axis_y, &axis_z, &from_angle))
+        return false;
+
       bool first_point = true;
       for (int i = 0; i < 8; ++i) {
         gfx::Point3F corner = box.origin();
@@ -504,8 +431,6 @@ bool TransformOperation::BlendedBoundsForBox(const gfx::BoxF& box,
       }
       return true;
     }
-    case TransformOperation::TransformOperationSkew:
-    case TransformOperation::TransformOperationPerspective:
     case TransformOperation::TransformOperationMatrix:
       return false;
   }

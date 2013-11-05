@@ -11,6 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/box_f.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/vector3d_f.h"
 
 namespace cc {
@@ -886,6 +887,30 @@ TEST(TransformOperationTest, BlendedBoundsForRotationAllExtrema) {
             bounds.ToString());
 }
 
+TEST(TransformOperationTest, BlendedBoundsForRotationDifferentAxes) {
+  // We can handle rotations about a single axis. If the axes are different,
+  // we revert to matrix interpolation for which inflated bounds cannot be
+  // computed.
+  TransformOperations operations_from;
+  operations_from.AppendRotate(1.f, 1.f, 1.f, 30.f);
+  TransformOperations operations_to_same;
+  operations_to_same.AppendRotate(1.f, 1.f, 1.f, 390.f);
+  TransformOperations operations_to_opposite;
+  operations_to_opposite.AppendRotate(-1.f, -1.f, -1.f, 390.f);
+  TransformOperations operations_to_different;
+  operations_to_different.AppendRotate(1.f, 3.f, 1.f, 390.f);
+
+  gfx::BoxF box(1.f, 0.f, 0.f, 0.f, 0.f, 0.f);
+  gfx::BoxF bounds;
+
+  EXPECT_TRUE(operations_to_same.BlendedBoundsForBox(
+      box, operations_from, 0.f, 1.f, &bounds));
+  EXPECT_TRUE(operations_to_opposite.BlendedBoundsForBox(
+      box, operations_from, 0.f, 1.f, &bounds));
+  EXPECT_FALSE(operations_to_different.BlendedBoundsForBox(
+      box, operations_from, 0.f, 1.f, &bounds));
+}
+
 TEST(TransformOperationTest, BlendedBoundsForRotationPointOnAxis) {
   // Checks that if the point to rotate is sitting on the axis of rotation, that
   // it does not get affected.
@@ -968,7 +993,80 @@ struct TestProgress {
   float max_progress;
 };
 
-TEST(TransformOperationsTest, BlendedBoundsForRotationEmpiricalTests) {
+static void ExpectBoxesApproximatelyEqual(const gfx::BoxF& lhs,
+                                          const gfx::BoxF& rhs,
+                                          float tolerance) {
+  EXPECT_NEAR(lhs.x(), rhs.x(), tolerance);
+  EXPECT_NEAR(lhs.y(), rhs.y(), tolerance);
+  EXPECT_NEAR(lhs.z(), rhs.z(), tolerance);
+  EXPECT_NEAR(lhs.width(), rhs.width(), tolerance);
+  EXPECT_NEAR(lhs.height(), rhs.height(), tolerance);
+  EXPECT_NEAR(lhs.depth(), rhs.depth(), tolerance);
+}
+
+static void EmpiricallyTestBounds(const TransformOperations& from,
+                                  const TransformOperations& to,
+                                  SkMScalar min_progress,
+                                  SkMScalar max_progress,
+                                  bool test_containment_only) {
+  gfx::BoxF box(200.f, 500.f, 100.f, 100.f, 300.f, 200.f);
+  gfx::BoxF bounds;
+  EXPECT_TRUE(
+      to.BlendedBoundsForBox(box, from, min_progress, max_progress, &bounds));
+
+  bool first_time = true;
+  gfx::BoxF empirical_bounds;
+  static const size_t kNumSteps = 10;
+  for (size_t step = 0; step < kNumSteps; ++step) {
+    float t = step / (kNumSteps - 1.f);
+    t = gfx::Tween::FloatValueBetween(t, min_progress, max_progress);
+    gfx::Transform partial_transform = to.Blend(from, t);
+    gfx::BoxF transformed = box;
+    partial_transform.TransformBox(&transformed);
+
+    if (first_time) {
+      empirical_bounds = transformed;
+      first_time = false;
+    } else {
+      empirical_bounds.Union(transformed);
+    }
+  }
+
+  if (test_containment_only) {
+    gfx::BoxF unified_bounds = bounds;
+    unified_bounds.Union(empirical_bounds);
+    // Convert to the screen space rects these boxes represent.
+    gfx::Rect bounds_rect = ToEnclosingRect(
+        gfx::RectF(bounds.x(), bounds.y(), bounds.width(), bounds.height()));
+    gfx::Rect unified_bounds_rect =
+        ToEnclosingRect(gfx::RectF(unified_bounds.x(),
+                                   unified_bounds.y(),
+                                   unified_bounds.width(),
+                                   unified_bounds.height()));
+    EXPECT_EQ(bounds_rect.ToString(), unified_bounds_rect.ToString());
+  } else {
+    // Our empirical estimate will be a little rough since we're only doing
+    // 100 samples.
+    static const float kTolerance = 1e-2f;
+    ExpectBoxesApproximatelyEqual(empirical_bounds, bounds, kTolerance);
+  }
+}
+
+static void EmpiricallyTestBoundsEquality(const TransformOperations& from,
+                                          const TransformOperations& to,
+                                          SkMScalar min_progress,
+                                          SkMScalar max_progress) {
+  EmpiricallyTestBounds(from, to, min_progress, max_progress, false);
+}
+
+static void EmpiricallyTestBoundsContainment(const TransformOperations& from,
+                                             const TransformOperations& to,
+                                             SkMScalar min_progress,
+                                             SkMScalar max_progress) {
+  EmpiricallyTestBounds(from, to, min_progress, max_progress, true);
+}
+
+TEST(TransformOperationTest, BlendedBoundsForRotationEmpiricalTests) {
   // Sets up various axis angle combinations, computes the bounding box and
   // empirically tests that the transformed bounds are indeed contained by the
   // computed bounding box.
@@ -1012,7 +1110,6 @@ TEST(TransformOperationsTest, BlendedBoundsForRotationEmpiricalTests) {
     { -.25f, 1.25f },
   };
 
-  size_t num_steps = 150;
   for (size_t i = 0; i < arraysize(axes); ++i) {
     for (size_t j = 0; j < arraysize(angles); ++j) {
       for (size_t k = 0; k < arraysize(progress); ++k) {
@@ -1023,48 +1120,10 @@ TEST(TransformOperationsTest, BlendedBoundsForRotationEmpiricalTests) {
         operations_from.AppendRotate(x, y, z, angles[j].theta_from);
         TransformOperations operations_to;
         operations_to.AppendRotate(x, y, z, angles[j].theta_to);
-
-        gfx::BoxF box(2.f, 5.f, 6.f, 1.f, 3.f, 2.f);
-        gfx::BoxF bounds;
-
-        EXPECT_TRUE(operations_to.BlendedBoundsForBox(box,
-                                                      operations_from,
-                                                      progress[k].min_progress,
-                                                      progress[k].max_progress,
-                                                      &bounds));
-        bool first_point = true;
-        gfx::BoxF empirical_bounds;
-        for (size_t step = 0; step < num_steps; ++step) {
-          float t = step / (num_steps - 1.f);
-          t = gfx::Tween::FloatValueBetween(
-              t, progress[k].min_progress, progress[k].max_progress);
-          gfx::Transform partial_rotation =
-              operations_to.Blend(operations_from, t);
-
-          for (int corner = 0; corner < 8; ++corner) {
-            gfx::Point3F point = box.origin();
-            point += gfx::Vector3dF(corner & 1 ? box.width() : 0.f,
-                                    corner & 2 ? box.height() : 0.f,
-                                    corner & 4 ? box.depth() : 0.f);
-            partial_rotation.TransformPoint(&point);
-            if (first_point) {
-              empirical_bounds.set_origin(point);
-              first_point = false;
-            } else {
-              empirical_bounds.ExpandTo(point);
-            }
-          }
-        }
-
-        // Our empirical estimate will be a little rough since we're only doing
-        // 100 samples.
-        static const float kTolerance = 1e-2f;
-        EXPECT_NEAR(empirical_bounds.x(), bounds.x(), kTolerance);
-        EXPECT_NEAR(empirical_bounds.y(), bounds.y(), kTolerance);
-        EXPECT_NEAR(empirical_bounds.z(), bounds.z(), kTolerance);
-        EXPECT_NEAR(empirical_bounds.width(), bounds.width(), kTolerance);
-        EXPECT_NEAR(empirical_bounds.height(), bounds.height(), kTolerance);
-        EXPECT_NEAR(empirical_bounds.depth(), bounds.depth(), kTolerance);
+        EmpiricallyTestBoundsContainment(operations_from,
+                                         operations_to,
+                                         progress[k].min_progress,
+                                         progress[k].max_progress);
       }
     }
   }
@@ -1095,6 +1154,69 @@ TEST(TransformOperationTest, PerspectiveMatrixAndTransformBlendingEquivalency) {
 
       EXPECT_TRANSFORMATION_MATRIX_EQ(blended_matrix, blended_transform);
     }
+}
+
+struct TestPerspectiveDepths {
+  float from_depth;
+  float to_depth;
+};
+
+TEST(TransformOperationTest, BlendedBoundsForPerspective) {
+  TestPerspectiveDepths perspective_depths[] = {
+    { 600.f, 400.f },
+    { 800.f, 1000.f },
+    { 800.f, std::numeric_limits<float>::infinity() },
+  };
+
+  TestProgress progress[] = {
+    { 0.f, 1.f },
+    { -0.1f, 1.1f },
+  };
+
+  for (size_t i = 0; i < arraysize(perspective_depths); ++i) {
+    for (size_t j = 0; j < arraysize(progress); ++j) {
+      TransformOperations operations_from;
+      operations_from.AppendPerspective(perspective_depths[i].from_depth);
+      TransformOperations operations_to;
+      operations_to.AppendPerspective(perspective_depths[i].to_depth);
+      EmpiricallyTestBoundsEquality(operations_from,
+                                    operations_to,
+                                    progress[j].min_progress,
+                                    progress[j].max_progress);
+    }
+  }
+}
+
+struct TestSkews {
+  float from_x;
+  float from_y;
+  float to_x;
+  float to_y;
+};
+
+TEST(TransformOperationTest, BlendedBoundsForSkew) {
+  TestSkews skews[] = {
+    { 1.f, 0.5f, 0.5f, 1.f },
+    { 2.f, 1.f, 0.5f, 0.5f },
+  };
+
+  TestProgress progress[] = {
+    { 0.f, 1.f },
+    { -0.1f, 1.1f },
+  };
+
+  for (size_t i = 0; i < arraysize(skews); ++i) {
+    for (size_t j = 0; j < arraysize(progress); ++j) {
+      TransformOperations operations_from;
+      operations_from.AppendSkew(skews[i].from_x, skews[i].from_y);
+      TransformOperations operations_to;
+      operations_to.AppendSkew(skews[i].to_x, skews[i].to_y);
+      EmpiricallyTestBoundsEquality(operations_from,
+                                    operations_to,
+                                    progress[j].min_progress,
+                                    progress[j].max_progress);
+    }
+  }
 }
 
 TEST(TransformOperationTest, BlendedBoundsForSequence) {

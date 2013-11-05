@@ -99,6 +99,11 @@ class GFX_EXPORT BoxF {
   // |origin_|.
   void ExpandTo(const Point3F& point);
 
+  // Expands |this| to contain the given box, if necessary. Please note, even
+  // if |this| is empty, after the function |this| will continue to contain its
+  // |origin_|.
+  void ExpandTo(const BoxF& box);
+
  private:
   // Expands the box to contain the two given points. It is required that each
   // component of |min| is less than or equal to the corresponding component in

@@ -50,12 +50,15 @@ void BoxF::Union(const BoxF& box) {
   }
   if (box.IsEmpty())
     return;
-
-  ExpandTo(box.origin(), gfx::Point3F(box.right(), box.bottom(), box.front()));
+  ExpandTo(box);
 }
 
 void BoxF::ExpandTo(const Point3F& point) {
   ExpandTo(point, point);
+}
+
+void BoxF::ExpandTo(const BoxF& box) {
+  ExpandTo(box.origin(), gfx::Point3F(box.right(), box.bottom(), box.front()));
 }
 
 BoxF UnionBoxes(const BoxF& a, const BoxF& b) {
