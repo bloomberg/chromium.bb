@@ -42,17 +42,25 @@ static const int kDecodeThreads = 2;
 static const int kMaxDecodeThreads = 16;
 
 // Returns the number of threads.
-static int GetThreadCount() {
-  // TODO(scherkus): De-duplicate this function and the one used by
-  // FFmpegVideoDecoder.
-
+static int GetThreadCount(const VideoDecoderConfig& config) {
   // Refer to http://crbug.com/93932 for tsan suppressions on decoding.
   int decode_threads = kDecodeThreads;
 
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   std::string threads(cmd_line->GetSwitchValueASCII(switches::kVideoThreads));
-  if (threads.empty() || !base::StringToInt(threads, &decode_threads))
+  if (threads.empty() || !base::StringToInt(threads, &decode_threads)) {
+    if (config.codec() == kCodecVP9) {
+      // For VP9 decode when using the default thread count, increase the number
+      // of decode threads to equal the maximum number of tiles possible for
+      // higher resolution streams.
+      if (config.coded_size().width() >= 2048)
+        decode_threads = 8;
+      else if (config.coded_size().width() >= 1024)
+        decode_threads = 4;
+    }
+
     return decode_threads;
+  }
 
   decode_threads = std::max(decode_threads, 0);
   decode_threads = std::min(decode_threads, kMaxDecodeThreads);
@@ -100,7 +108,7 @@ static vpx_codec_ctx* InitializeVpxContext(vpx_codec_ctx* context,
   vpx_codec_dec_cfg_t vpx_config = {0};
   vpx_config.w = config.coded_size().width();
   vpx_config.h = config.coded_size().height();
-  vpx_config.threads = GetThreadCount();
+  vpx_config.threads = GetThreadCount(config);
 
   vpx_codec_err_t status = vpx_codec_dec_init(context,
                                               config.codec() == kCodecVP9 ?
