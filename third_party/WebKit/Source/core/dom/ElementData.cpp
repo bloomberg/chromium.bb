@@ -81,11 +81,8 @@ ElementData::ElementData(const ElementData& other, bool isUnique)
     // NOTE: The inline style is copied by the subclass copy constructor since we don't know what to do with it here.
 }
 
-void ElementData::deref()
+void ElementData::destroy()
 {
-    if (!derefBase())
-        return;
-
     if (m_isUnique)
         delete static_cast<UniqueElementData*>(this);
     else
@@ -215,17 +212,6 @@ PassRefPtr<ShareableElementData> UniqueElementData::makeShareableCopy() const
     return adoptRef(new (slot) ShareableElementData(*this));
 }
 
-void UniqueElementData::addAttribute(const QualifiedName& attributeName, const AtomicString& value)
-{
-    m_attributeVector.append(Attribute(attributeName, value));
-}
-
-void UniqueElementData::removeAttribute(size_t index)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(index < length());
-    m_attributeVector.remove(index);
-}
-
 Attribute* UniqueElementData::getAttributeItem(const QualifiedName& name)
 {
     for (unsigned i = 0; i < length(); ++i) {
@@ -233,12 +219,6 @@ Attribute* UniqueElementData::getAttributeItem(const QualifiedName& name)
             return &m_attributeVector.at(i);
     }
     return 0;
-}
-
-Attribute* UniqueElementData::attributeItem(unsigned index)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(index < length());
-    return &m_attributeVector.at(index);
 }
 
 } // namespace WebCore

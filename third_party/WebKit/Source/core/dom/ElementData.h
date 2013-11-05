@@ -97,6 +97,8 @@ private:
     friend class UniqueElementData;
     friend class SVGElement;
 
+    void destroy();
+
     const Attribute* attributeBase() const;
     const Attribute* getAttributeItem(const AtomicString& name, bool shouldIgnoreAttributeCase) const;
     size_t getAttributeItemIndexSlowCase(const AtomicString& name, bool shouldIgnoreAttributeCase) const;
@@ -143,6 +145,13 @@ public:
     mutable RefPtr<StylePropertySet> m_presentationAttributeStyle;
     Vector<Attribute, 4> m_attributeVector;
 };
+
+inline void ElementData::deref()
+{
+    if (!derefBase())
+        return;
+    destroy();
+}
 
 inline size_t ElementData::length() const
 {
@@ -223,6 +232,21 @@ inline const Attribute* ElementData::attributeItem(unsigned index) const
 {
     RELEASE_ASSERT(index < length());
     return attributeBase() + index;
+}
+
+inline void UniqueElementData::addAttribute(const QualifiedName& attributeName, const AtomicString& value)
+{
+    m_attributeVector.append(Attribute(attributeName, value));
+}
+
+inline void UniqueElementData::removeAttribute(size_t index)
+{
+    m_attributeVector.remove(index);
+}
+
+inline Attribute* UniqueElementData::attributeItem(unsigned index)
+{
+    return &m_attributeVector.at(index);
 }
 
 } // namespace WebCore
