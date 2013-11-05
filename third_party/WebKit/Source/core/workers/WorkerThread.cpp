@@ -30,7 +30,6 @@
 
 #include "bindings/v8/ScriptSourceCode.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/platform/ThreadGlobalData.h"
 #include "core/workers/DedicatedWorkerGlobalScope.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerThreadStartupData.h"

@@ -31,8 +31,6 @@
 #include "config.h"
 #include "core/inspector/InspectorCounters.h"
 
-#include "core/platform/ThreadGlobalData.h"
-
 namespace WebCore {
 
 int InspectorCounters::s_counters[CounterTypeLength];

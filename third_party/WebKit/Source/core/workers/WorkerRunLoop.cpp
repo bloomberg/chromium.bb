@@ -33,7 +33,6 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/platform/ThreadGlobalData.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/PlatformThreadData.h"
