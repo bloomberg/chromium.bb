@@ -26,6 +26,7 @@
 #ifndef MediaPlayer_h
 #define MediaPlayer_h
 
+#include "platform/PlatformExport.h"
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
@@ -99,7 +100,7 @@ public:
 
 typedef PassOwnPtr<MediaPlayer> (*CreateMediaEnginePlayer)(MediaPlayerClient*);
 
-class MediaPlayer {
+class PLATFORM_EXPORT MediaPlayer {
     WTF_MAKE_NONCOPYABLE(MediaPlayer);
 public:
     static PassOwnPtr<MediaPlayer> create(MediaPlayerClient*);

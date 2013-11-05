@@ -49,10 +49,10 @@
 #include "core/page/Page.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/Image.h"
-#include "core/platform/graphics/MediaPlayer.h"
 #include "core/plugins/PluginData.h"
 #include "core/svg/SVGDocument.h"
 #include "platform/ContentType.h"
+#include "platform/graphics/media/MediaPlayer.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/StdLibExtras.h"
 

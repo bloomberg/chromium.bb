@@ -23,7 +23,6 @@
 #include "platform/audio/AudioSourceProviderClient.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/GraphicsLayer.h"
-#include "core/platform/graphics/MediaPlayer.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
 #include "modules/mediastream/MediaStreamRegistry.h"

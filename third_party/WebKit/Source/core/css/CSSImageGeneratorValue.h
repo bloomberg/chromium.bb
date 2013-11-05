@@ -27,7 +27,7 @@
 #define CSSImageGeneratorValue_h
 
 #include "core/css/CSSValue.h"
-#include "core/platform/graphics/IntSizeHash.h"
+#include "platform/geometry/IntSizeHash.h"
 #include "wtf/HashCountedSet.h"
 #include "wtf/RefPtr.h"
 

@@ -34,8 +34,8 @@
 #include "WebAudioSourceProviderClient.h"
 #include "WebMediaPlayerClient.h"
 #include "platform/audio/AudioSourceProvider.h"
-#include "core/platform/graphics/InbandTextTrackPrivate.h"
-#include "core/platform/graphics/MediaPlayer.h"
+#include "platform/graphics/media/InbandTextTrackPrivate.h"
+#include "platform/graphics/media/MediaPlayer.h"
 #if OS(ANDROID)
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkRefCnt.h"

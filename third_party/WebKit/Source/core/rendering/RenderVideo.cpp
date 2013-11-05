@@ -33,10 +33,10 @@
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
 #include "core/page/Page.h"
-#include "core/platform/graphics/MediaPlayer.h"
 #include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderFullScreen.h"
+#include "platform/graphics/media/MediaPlayer.h"
 
 namespace WebCore {
 

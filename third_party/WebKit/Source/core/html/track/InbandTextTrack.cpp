@@ -28,8 +28,8 @@
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/html/track/TextTrackCue.h"
-#include "core/platform/graphics/InbandTextTrackPrivate.h"
 #include "platform/Logging.h"
+#include "platform/graphics/media/InbandTextTrackPrivate.h"
 #include "wtf/UnusedParam.h"
 #include <math.h>
 

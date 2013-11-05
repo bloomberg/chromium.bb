@@ -28,10 +28,10 @@
 
 #include "modules/webaudio/MediaElementAudioSourceNode.h"
 
-#include "platform/Logging.h"
-#include "core/platform/graphics/MediaPlayer.h"
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeOutput.h"
+#include "platform/Logging.h"
+#include "platform/graphics/media/MediaPlayer.h"
 #include "wtf/Locker.h"
 
 // These are somewhat arbitrary limits, but we need to do some kind of sanity-checking.

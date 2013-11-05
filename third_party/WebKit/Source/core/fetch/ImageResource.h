@@ -25,9 +25,9 @@
 
 #include "core/fetch/Resource.h"
 #include "core/platform/graphics/ImageObserver.h"
-#include "core/platform/graphics/IntSizeHash.h"
 #include "core/svg/graphics/SVGImageCache.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/geometry/IntSizeHash.h"
 #include "platform/geometry/LayoutSize.h"
 #include "wtf/HashMap.h"
 

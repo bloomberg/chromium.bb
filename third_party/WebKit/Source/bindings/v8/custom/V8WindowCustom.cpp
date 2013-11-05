@@ -63,9 +63,9 @@
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/page/WindowFeatures.h"
-#include "core/platform/graphics/MediaPlayer.h"
 #include "core/storage/Storage.h"
 #include "platform/PlatformScreen.h"
+#include "platform/graphics/media/MediaPlayer.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/OwnPtr.h"
 

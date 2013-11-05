@@ -24,8 +24,8 @@
  */
 
 #include "config.h"
+#include "platform/graphics/media/MediaPlayer.h"
 
-#include "core/platform/graphics/MediaPlayer.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {

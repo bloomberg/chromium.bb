@@ -31,8 +31,8 @@
 #ifndef InbandTextTrackPrivateImpl_h
 #define InbandTextTrackPrivateImpl_h
 
-#include "core/platform/graphics/InbandTextTrackPrivate.h"
 #include "WebInbandTextTrackClient.h"
+#include "platform/graphics/media/InbandTextTrackPrivate.h"
 
 namespace WebCore {
 class InbandTextTrackPrivateClient;
