@@ -50,6 +50,7 @@ struct CONTENT_EXPORT ExplodedFrameState {
   gfx::Point scroll_offset;
   int64 item_sequence_number;
   int64 document_sequence_number;
+  int64 target_frame_id;
   double page_scale_factor;
   ExplodedHttpBody http_body;
   std::vector<ExplodedFrameState> children;

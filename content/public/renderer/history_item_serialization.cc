@@ -91,6 +91,7 @@ bool RecursivelyGenerateFrameState(const WebHistoryItem& item,
   state->item_sequence_number = item.itemSequenceNumber();
   state->document_sequence_number =
       item.documentSequenceNumber();
+  state->target_frame_id = item.targetFrameID();
   state->page_scale_factor = item.pageScaleFactor();
   ToNullableString16Vector(item.documentState(), &state->document_state);
 
@@ -138,6 +139,8 @@ bool RecursivelyGenerateHistoryItem(const ExplodedFrameState& state,
     item->setItemSequenceNumber(state.item_sequence_number);
   if (state.document_sequence_number)
     item->setDocumentSequenceNumber(state.document_sequence_number);
+
+  item->setTargetFrameID(state.target_frame_id);
 
   item->setHTTPContentType(state.http_body.http_content_type);
   if (!state.http_body.is_null) {

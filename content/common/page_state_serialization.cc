@@ -187,12 +187,13 @@ struct SerializeObject {
 // 14: Adds list of referenced files, version written only for first item.
 // 15: Removes a bunch of values we defined but never used.
 // 16: Switched from blob urls to blob uuids.
+// 17: Add a target frame id number.
 //
 // NOTE: If the version is -1, then the pickle contains only a URL string.
 // See ReadPageState.
 //
 const int kMinVersion = 11;
-const int kCurrentVersion = 16;
+const int kCurrentVersion = 17;
 
 // A bunch of convenience functions to read/write to SerializeObjects.  The
 // de-serializers assume the input data will be in the correct format and fall
@@ -502,6 +503,7 @@ void WriteFrameState(
   WriteReal(state.page_scale_factor, obj);
   WriteInteger64(state.item_sequence_number, obj);
   WriteInteger64(state.document_sequence_number, obj);
+  WriteInteger64(state.target_frame_id, obj);
 
   bool has_state_object = !state.state_object.is_null();
   WriteBoolean(has_state_object, obj);
@@ -552,6 +554,8 @@ void ReadFrameState(SerializeObject* obj, bool is_top,
   state->page_scale_factor = ReadReal(obj);
   state->item_sequence_number = ReadInteger64(obj);
   state->document_sequence_number = ReadInteger64(obj);
+  if (obj->version >= 17)
+    state->target_frame_id = ReadInteger64(obj);
 
   bool has_state_object = ReadBoolean(obj);
   if (has_state_object)
@@ -660,6 +664,7 @@ ExplodedHttpBody::~ExplodedHttpBody() {
 ExplodedFrameState::ExplodedFrameState()
     : item_sequence_number(0),
       document_sequence_number(0),
+      target_frame_id(0),
       page_scale_factor(0.0) {
 }
 

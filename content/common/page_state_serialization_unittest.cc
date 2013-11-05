@@ -75,6 +75,7 @@ void ExpectEquality(const ExplodedFrameState& a, const ExplodedFrameState& b) {
   EXPECT_EQ(a.scroll_offset, b.scroll_offset);
   EXPECT_EQ(a.item_sequence_number, b.item_sequence_number);
   EXPECT_EQ(a.document_sequence_number, b.document_sequence_number);
+  EXPECT_EQ(a.target_frame_id, b.target_frame_id);
   EXPECT_EQ(a.page_scale_factor, b.page_scale_factor);
   ExpectEquality(a.http_body, b.http_body);
   ExpectEquality(a.children, b.children);
@@ -103,6 +104,7 @@ class PageStateSerializationTest : public testing::Test {
     frame_state->scroll_offset = gfx::Point(0, 100);
     frame_state->item_sequence_number = 1;
     frame_state->document_sequence_number = 2;
+    frame_state->target_frame_id = 3;
     frame_state->page_scale_factor = 2.0;
   }
 
@@ -140,6 +142,7 @@ class PageStateSerializationTest : public testing::Test {
     frame_state->scroll_offset = gfx::Point(42, -42);
     frame_state->item_sequence_number = 123;
     frame_state->document_sequence_number = 456;
+    frame_state->target_frame_id = 0;
     frame_state->page_scale_factor = 2.0f;
 
     frame_state->document_state.push_back(
@@ -412,6 +415,10 @@ TEST_F(PageStateSerializationTest, BackwardsCompat_v14) {
 
 TEST_F(PageStateSerializationTest, BackwardsCompat_v15) {
   TestBackwardsCompat(15);
+}
+
+TEST_F(PageStateSerializationTest, BackwardsCompat_v16) {
+  TestBackwardsCompat(16);
 }
 
 }  // namespace
