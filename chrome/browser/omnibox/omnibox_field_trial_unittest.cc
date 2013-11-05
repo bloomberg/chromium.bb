@@ -188,6 +188,34 @@ TEST_F(OmniboxFieldTrialTest, GetDemotionsByTypeWithFallback) {
   VerifyDemotion(demotions_by_type, AutocompleteMatchType::HISTORY_URL, 0.25);
 }
 
+TEST_F(OmniboxFieldTrialTest, GetUndemotableTopTypes) {
+  {
+    std::map<std::string, std::string> params;
+    const std::string rule(OmniboxFieldTrial::kUndemotableTopTypeRule);
+    params[rule + ":1:*"] = "1,3";
+    params[rule + ":3:*"] = "5";
+    params[rule + ":*:*"] = "2";
+    ASSERT_TRUE(chrome_variations::AssociateVariationParams(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
+  }
+  base::FieldTrialList::CreateFieldTrial(
+      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
+  OmniboxFieldTrial::UndemotableTopMatchTypes undemotable_types;
+  undemotable_types = OmniboxFieldTrial::GetUndemotableTopTypes(
+      AutocompleteInput::NEW_TAB_PAGE);
+  ASSERT_EQ(2u, undemotable_types.size());
+  ASSERT_EQ(1u, undemotable_types.count(AutocompleteMatchType::HISTORY_URL));
+  ASSERT_EQ(1u, undemotable_types.count(AutocompleteMatchType::HISTORY_BODY));
+  undemotable_types = OmniboxFieldTrial::GetUndemotableTopTypes(
+      AutocompleteInput::HOME_PAGE);
+  ASSERT_EQ(1u, undemotable_types.size());
+  ASSERT_EQ(1u, undemotable_types.count(AutocompleteMatchType::NAVSUGGEST));
+  undemotable_types = OmniboxFieldTrial::GetUndemotableTopTypes(
+      AutocompleteInput::BLANK);
+  ASSERT_EQ(1u, undemotable_types.size());
+  ASSERT_EQ(1u, undemotable_types.count(AutocompleteMatchType::HISTORY_TITLE));
+}
+
 TEST_F(OmniboxFieldTrialTest, GetValueForRuleInContext) {
   // This test starts with Instant Extended off (the default state), then
   // enables Instant Extended and tests again on the same rules.

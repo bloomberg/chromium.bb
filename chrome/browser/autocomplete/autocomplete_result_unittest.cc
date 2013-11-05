@@ -377,6 +377,56 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDemotionsByType) {
             result.match_at(2)->destination_url.spec());
 }
 
+TEST_F(AutocompleteResultTest, SortAndCullWithUndemotableTypes) {
+  // Add some matches.
+  ACMatches matches(3);
+  matches[0].destination_url = GURL("http://top-history-url/");
+  matches[0].relevance = 1400;
+  matches[0].allowed_to_be_default_match = true;
+  matches[0].type = AutocompleteMatchType::HISTORY_URL;
+  matches[1].destination_url = GURL("http://history-url2/");
+  matches[1].relevance = 1300;
+  matches[1].allowed_to_be_default_match = true;
+  matches[1].type = AutocompleteMatchType::HISTORY_URL;
+  matches[2].destination_url = GURL("http://search-what-you-typed/");
+  matches[2].relevance = 1200;
+  matches[2].allowed_to_be_default_match = true;
+  matches[2].type = AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED;
+
+  // Add a rule demoting history-url, but don't demote the top match.
+  {
+    std::map<std::string, std::string> params;
+    // 3 == HOME_PAGE
+    params[std::string(OmniboxFieldTrial::kDemoteByTypeRule) + ":3:*"] =
+        "1:50";
+    params[std::string(OmniboxFieldTrial::kUndemotableTopTypeRule) + ":3:*"] =
+        "1,5";
+    ASSERT_TRUE(chrome_variations::AssociateVariationParams(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "B", params));
+  }
+  base::FieldTrialList::CreateFieldTrial(
+      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "B");
+
+  AutocompleteResult result;
+  result.AppendMatches(matches);
+  AutocompleteInput input(string16(), string16::npos, string16(), GURL(),
+                          AutocompleteInput::HOME_PAGE, false, false, false,
+                          AutocompleteInput::ALL_MATCHES);
+  result.SortAndCull(input, test_util_.profile());
+
+  // Check the new ordering.  The first history-url result should not be
+  // demoted, but the second result should be.
+  // We cannot check relevance scores because the matches are sorted by
+  // demoted relevance but the actual relevance scores are not modified.
+  ASSERT_EQ(3u, result.size());
+  EXPECT_EQ("http://top-history-url/",
+            result.match_at(0)->destination_url.spec());
+  EXPECT_EQ("http://search-what-you-typed/",
+            result.match_at(1)->destination_url.spec());
+  EXPECT_EQ("http://history-url2/",
+            result.match_at(2)->destination_url.spec());
+}
+
 TEST_F(AutocompleteResultTest, SortAndCullReorderForDefaultMatch) {
   TestData data[] = {
     { 0, 0, 1300 },

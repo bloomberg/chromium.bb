@@ -154,10 +154,22 @@ void AutocompleteResult::SortAndCull(const AutocompleteInput& input,
                              &AutocompleteMatch::DestinationsEqual),
                  matches_.end());
 
+  // Find the top match before possibly applying demotions.
+  if (!matches_.empty())
+    std::partial_sort(matches_.begin(), matches_.begin() +  1, matches_.end(),
+                      &AutocompleteMatch::MoreRelevant);
+  // Don't demote the top match if applicable.
+  OmniboxFieldTrial::UndemotableTopMatchTypes undemotable_top_types =
+      OmniboxFieldTrial::GetUndemotableTopTypes(
+          input.current_page_classification());
+  const bool preserve_top_match = !matches_.empty() &&
+      (undemotable_top_types.count(matches_.begin()->type) != 0);
+
   // Sort and trim to the most relevant kMaxMatches matches.
   size_t max_num_matches = std::min(kMaxMatches, matches_.size());
   CompareWithDemoteByType comparing_object(input.current_page_classification());
-  std::sort(matches_.begin(), matches_.end(), comparing_object);
+  std::sort(matches_.begin() + (preserve_top_match ? 1 : 0), matches_.end(),
+            comparing_object);
   if (!matches_.empty() && !matches_.begin()->allowed_to_be_default_match &&
       OmniboxFieldTrial::ReorderForLegalDefaultMatch(
           input.current_page_classification())) {
@@ -316,6 +328,8 @@ void AutocompleteResult::AddMatch(
   DCHECK_EQ(AutocompleteMatch::SanitizeString(match.contents), match.contents);
   DCHECK_EQ(AutocompleteMatch::SanitizeString(match.description),
             match.description);
+  // GetUndemotableTopTypes() is not used here because it's done in
+  // SortAndCull(), and we depend on SortAndCull() to be called afterwards.
   CompareWithDemoteByType comparing_object(page_classification);
   ACMatches::iterator insertion_point =
       std::upper_bound(begin(), end(), match, comparing_object);

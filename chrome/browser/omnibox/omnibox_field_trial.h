@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_OMNIBOX_OMNIBOX_FIELD_TRIAL_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -21,6 +22,9 @@ class OmniboxFieldTrial {
   // specified type should have their relevance score multiplied by the
   // given number.  Omitted types are assumed to have multipliers of 1.0.
   typedef std::map<AutocompleteMatchType::Type, float> DemotionMultipliers;
+
+  // A set of types that should not be demoted when they are the top match.
+  typedef std::set<AutocompleteMatchType::Type> UndemotableTopMatchTypes;
 
   // Creates the static field trial groups.
   // *** MUST NOT BE CALLED MORE THAN ONCE. ***
@@ -148,6 +152,11 @@ class OmniboxFieldTrial {
       AutocompleteInput::PageClassification current_page_classification,
       DemotionMultipliers* demotions_by_type);
 
+  // Get the set of types that should not be demoted if they are the top
+  // match.
+  static UndemotableTopMatchTypes GetUndemotableTopTypes(
+      AutocompleteInput::PageClassification current_page_classification);
+
   // ---------------------------------------------------------
   // For the ReorderForLegalDefaultMatch experiment that's part of the
   // bundled omnibox field trial.
@@ -168,6 +177,7 @@ class OmniboxFieldTrial {
   static const char kShortcutsScoringMaxRelevanceRule[];
   static const char kSearchHistoryRule[];
   static const char kDemoteByTypeRule[];
+  static const char kUndemotableTopTypeRule[];
   static const char kReorderForLegalDefaultMatchRule[];
   // Rule values.
   static const char kReorderForLegalDefaultMatchRuleEnabled[];
