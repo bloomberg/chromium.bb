@@ -103,11 +103,10 @@ class OmniboxResultView::MirroringContext {
   DISALLOW_COPY_AND_ASSIGN(MirroringContext);
 };
 
-OmniboxResultView::OmniboxResultView(
-    OmniboxResultViewModel* model,
-    int model_index,
-    LocationBarView* location_bar_view,
-    const gfx::FontList& font_list)
+OmniboxResultView::OmniboxResultView(OmniboxResultViewModel* model,
+                                     int model_index,
+                                     LocationBarView* location_bar_view,
+                                     const gfx::FontList& font_list)
     : edge_item_padding_(LocationBarView::GetItemPadding()),
       item_padding_(LocationBarView::GetItemPadding()),
       minimum_text_vertical_padding_(kMinimumTextVerticalPadding),
@@ -115,8 +114,9 @@ OmniboxResultView::OmniboxResultView(
       model_index_(model_index),
       location_bar_view_(location_bar_view),
       font_list_(font_list),
-      font_height_(std::max(font_list.GetHeight(),
-                            font_list.DeriveFontList(gfx::BOLD).GetHeight())),
+      font_height_(
+          std::max(font_list.GetHeight(),
+                   font_list.DeriveFontList(gfx::Font::BOLD).GetHeight())),
       ellipsis_width_(font_list.GetPrimaryFont().GetStringWidth(
           string16(kEllipsis))),
       mirroring_context_(new MirroringContext()),
