@@ -1278,6 +1278,45 @@ TEST_F(MediaSourcePlayerTest, PrerollContinuesAcrossConfigChange) {
   EXPECT_FALSE(IsPrerolling(true));
 }
 
+TEST_F(MediaSourcePlayerTest, SimultaneousAudioVideoConfigChange) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that the player allows simultaneous audio and video config change,
+  // such as might occur during OnPrefetchDone() if next access unit for both
+  // audio and video jobs is |kConfigChanged|.
+  Start(CreateAudioVideoDemuxerConfigs());
+  CreateNextTextureAndSetVideoSurface();
+  MediaDecoderJob* first_audio_job = GetMediaDecoderJob(true);
+  MediaDecoderJob* first_video_job = GetMediaDecoderJob(false);
+  EXPECT_TRUE(first_audio_job && first_video_job);
+
+  // Simulate audio |kConfigChanged| prefetched as standalone access unit.
+  player_.OnDemuxerDataAvailable(
+      CreateReadFromDemuxerAckWithConfigChanged(true, 0));
+  EXPECT_EQ(0, demuxer_->num_config_requests());  // No OnPrefetchDone() yet.
+
+  // Simulate video |kConfigChanged| prefetched as standalone access unit.
+  player_.OnDemuxerDataAvailable(
+      CreateReadFromDemuxerAckWithConfigChanged(false, 0));
+  EXPECT_EQ(1, demuxer_->num_config_requests());  // OnPrefetchDone() occurred.
+  EXPECT_EQ(2, demuxer_->num_data_requests());
+
+  // No job re-creation should occur until the requested configs arrive.
+  EXPECT_EQ(first_audio_job, GetMediaDecoderJob(true));
+  EXPECT_EQ(first_video_job, GetMediaDecoderJob(false));
+
+  player_.OnDemuxerConfigsAvailable(CreateAudioVideoDemuxerConfigs());
+  EXPECT_EQ(4, demuxer_->num_data_requests());
+  MediaDecoderJob* second_audio_job = GetMediaDecoderJob(true);
+  MediaDecoderJob* second_video_job = GetMediaDecoderJob(false);
+  EXPECT_NE(first_audio_job, second_audio_job);
+  EXPECT_NE(first_video_job, second_video_job);
+  EXPECT_TRUE(second_audio_job && second_video_job);
+
+  // Confirm no further demuxer configs requested.
+  EXPECT_EQ(1, demuxer_->num_config_requests());
+}
+
 TEST_F(MediaSourcePlayerTest, DemuxerConfigRequestedIfInPrefetchUnit0) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 

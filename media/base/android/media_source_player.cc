@@ -655,7 +655,16 @@ void MediaSourcePlayer::DecodeMoreAudio() {
 
   // Failed to start the next decode.
   // Wait for demuxer ready message.
+  DCHECK(!reconfig_audio_decoder_);
   reconfig_audio_decoder_ = true;
+
+  // Config change may have just been detected on the other stream. If so,
+  // don't send a duplicate demuxer config request.
+  if (IsEventPending(CONFIG_CHANGE_EVENT_PENDING)) {
+    DCHECK(reconfig_video_decoder_);
+    return;
+  }
+
   SetPendingEvent(CONFIG_CHANGE_EVENT_PENDING);
   ProcessPendingEvents();
 }
@@ -675,11 +684,20 @@ void MediaSourcePlayer::DecodeMoreVideo() {
 
   // Failed to start the next decode.
   // Wait for demuxer ready message.
-  reconfig_video_decoder_ = true;
 
   // After this detection of video config change, next video data received
   // will begin with I-frame.
   next_video_data_is_iframe_ = true;
+
+  DCHECK(!reconfig_video_decoder_);
+  reconfig_video_decoder_ = true;
+
+  // Config change may have just been detected on the other stream. If so,
+  // don't send a duplicate demuxer config request.
+  if (IsEventPending(CONFIG_CHANGE_EVENT_PENDING)) {
+    DCHECK(reconfig_audio_decoder_);
+    return;
+  }
 
   SetPendingEvent(CONFIG_CHANGE_EVENT_PENDING);
   ProcessPendingEvents();

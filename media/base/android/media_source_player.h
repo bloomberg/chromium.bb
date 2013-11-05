@@ -111,7 +111,7 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // Flush the decoders and clean up all the data needs to be decoded.
   void ClearDecodingData();
 
-  // Called to decoder more data.
+  // Called to decode more data.
   void DecodeMoreAudio();
   void DecodeMoreVideo();
 
