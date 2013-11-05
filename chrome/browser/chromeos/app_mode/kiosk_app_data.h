@@ -96,7 +96,7 @@ class KioskAppData : public base::SupportsWeakPtr<KioskAppData>,
   // extensions::WebstoreDataFetcherDelegate overrides:
   virtual void OnWebstoreRequestFailure() OVERRIDE;
   virtual void OnWebstoreResponseParseSuccess(
-      base::DictionaryValue* webstore_data) OVERRIDE;
+      scoped_ptr<base::DictionaryValue> webstore_data) OVERRIDE;
   virtual void OnWebstoreResponseParseFailure(
       const std::string& error) OVERRIDE;
 
