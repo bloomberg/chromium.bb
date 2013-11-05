@@ -5,6 +5,7 @@
 #include "sandbox/linux/services/credentials.h"
 
 #include <errno.h>
+#include <stdio.h>
 #include <unistd.h>
 
 #include "base/logging.h"
@@ -68,11 +69,13 @@ SANDBOX_TEST(Credentials, MoveToNewUserNS) {
   Credentials creds;
   creds.DropAllCapabilities();
   bool userns_supported = creds.MoveToNewUserNS();
-  printf("Unprivileged CLONE_NEWUSER supported: %s\n",
-         userns_supported ? "true." : "false.");
+  fprintf(stdout, "Unprivileged CLONE_NEWUSER supported: %s\n",
+          userns_supported ? "true." : "false.");
+  fflush(stdout);
   if (!userns_supported) {
-    printf("This kernel does not support unprivileged namespaces. "
-           "USERNS tests will all pass.\n");
+    fprintf(stdout, "This kernel does not support unprivileged namespaces. "
+            "USERNS tests will succeed without running.\n");
+    fflush(stdout);
     return;
   }
   CHECK(creds.HasAnyCapability());
