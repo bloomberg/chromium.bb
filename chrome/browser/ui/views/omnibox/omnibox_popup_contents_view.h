@@ -58,8 +58,8 @@ class OmniboxPopupContentsView : public views::View,
 
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
-  virtual views::View* GetEventHandlerForPoint(
-      const gfx::Point& point) OVERRIDE;
+  virtual views::View* GetEventHandlerForRect(
+      const gfx::Rect& rect) OVERRIDE;
   virtual views::View* GetTooltipHandlerForPoint(
       const gfx::Point& point) OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;

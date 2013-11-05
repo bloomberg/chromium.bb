@@ -31,6 +31,7 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
@@ -302,12 +303,11 @@ bool BrowserNonClientFrameViewAsh::HitTestRect(const gfx::Rect& rect) const {
     return false;
   }
   // If the rect is outside the bounds of the client area, claim it.
-  // TODO(tdanderson): Implement View::ConvertRectToTarget().
-  gfx::Point rect_in_client_view_coords_origin(rect.origin());
-  View::ConvertPointToTarget(this, frame()->client_view(),
-      &rect_in_client_view_coords_origin);
-  gfx::Rect rect_in_client_view_coords(
-      rect_in_client_view_coords_origin, rect.size());
+  gfx::RectF rect_in_client_view_coords_f(rect);
+  View::ConvertRectToTarget(this, frame()->client_view(),
+      &rect_in_client_view_coords_f);
+  gfx::Rect rect_in_client_view_coords = gfx::ToEnclosingRect(
+      rect_in_client_view_coords_f);
   if (!frame()->client_view()->HitTestRect(rect_in_client_view_coords))
     return true;
 
@@ -317,24 +317,19 @@ bool BrowserNonClientFrameViewAsh::HitTestRect(const gfx::Rect& rect) const {
   if (!tabstrip || !browser_view()->IsTabStripVisible())
     return false;
 
-  gfx::Point rect_in_tabstrip_coords_origin(rect.origin());
-  View::ConvertPointToTarget(this, tabstrip,
-      &rect_in_tabstrip_coords_origin);
-  gfx::Rect rect_in_tabstrip_coords(rect_in_tabstrip_coords_origin,
-      rect.size());
+  gfx::RectF rect_in_tabstrip_coords_f(rect);
+  View::ConvertRectToTarget(this, tabstrip, &rect_in_tabstrip_coords_f);
+  gfx::Rect rect_in_tabstrip_coords = gfx::ToEnclosingRect(
+      rect_in_tabstrip_coords_f);
 
-  if (rect_in_tabstrip_coords.bottom() > tabstrip->GetLocalBounds().bottom()) {
+  if (rect_in_tabstrip_coords.y() > tabstrip->GetLocalBounds().bottom()) {
     // |rect| is below the tabstrip.
     return false;
   }
 
   if (tabstrip->HitTestRect(rect_in_tabstrip_coords)) {
     // Claim |rect| if it is in a non-tab portion of the tabstrip.
-    // TODO(tdanderson): Pass |rect_in_tabstrip_coords| instead of its center
-    // point to TabStrip::IsPositionInWindowCaption() once
-    // GetEventHandlerForRect() is implemented.
-    return tabstrip->IsPositionInWindowCaption(
-        rect_in_tabstrip_coords.CenterPoint());
+    return tabstrip->IsRectInWindowCaption(rect_in_tabstrip_coords);
   }
 
   // We claim |rect| because it is above the bottom of the tabstrip, but

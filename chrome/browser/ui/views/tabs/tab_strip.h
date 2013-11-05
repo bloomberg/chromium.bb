@@ -161,6 +161,10 @@ class TabStrip : public views::View,
   // window caption area of the browser window.
   bool IsPositionInWindowCaption(const gfx::Point& point);
 
+  // Returns true if the specified rect (in TabStrip coordinates) intersects
+  // the window caption area of the browser window.
+  bool IsRectInWindowCaption(const gfx::Rect& rect);
+
   // Set the background offset used by inactive tabs to match the frame image.
   void SetBackgroundOffset(const gfx::Point& offset);
 
@@ -221,8 +225,7 @@ class TabStrip : public views::View,
   virtual void OnDragExited() OVERRIDE;
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-  virtual views::View* GetEventHandlerForPoint(
-      const gfx::Point& point) OVERRIDE;
+  virtual views::View* GetEventHandlerForRect(const gfx::Rect& rect) OVERRIDE;
   virtual views::View* GetTooltipHandlerForPoint(
       const gfx::Point& point) OVERRIDE;
 

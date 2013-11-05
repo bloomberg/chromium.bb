@@ -997,13 +997,16 @@ void AutofillDialogViews::SectionContainer::OnMouseReleased(
   proxy_button_->OnMouseReleased(ProxyEvent(event));
 }
 
-views::View* AutofillDialogViews::SectionContainer::GetEventHandlerForPoint(
-    const gfx::Point& point) {
-  views::View* handler = views::View::GetEventHandlerForPoint(point);
+views::View* AutofillDialogViews::SectionContainer::GetEventHandlerForRect(
+    const gfx::Rect& rect) {
+  // TODO(tdanderson): Modify this function to support rect-based event
+  // targeting.
+
+  views::View* handler = views::View::GetEventHandlerForRect(rect);
   // If the event is not in the label bar and there's no background to be
   // cleared, let normal event handling take place.
   if (!background() &&
-      point.y() > child_at(0)->bounds().bottom()) {
+      rect.CenterPoint().y() > child_at(0)->bounds().bottom()) {
     return handler;
   }
 

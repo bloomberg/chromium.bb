@@ -16,6 +16,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/views_switches.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_deletion_observer.h"
@@ -286,10 +287,22 @@ void RootView::DispatchGestureEvent(ui::GestureEvent* event) {
       break;
   }
 
+  View* gesture_handler = NULL;
+  if (views::switches::UseRectBasedTargeting()) {
+    // TODO(tdanderson): Pass in the bounding box to GetEventHandlerForRect()
+    // once crbug.com/313392 is resolved.
+    gfx::Rect touch_rect(event->details().bounding_box());
+    touch_rect.set_origin(event->location());
+    touch_rect.Offset(-touch_rect.width() / 2, -touch_rect.height() / 2);
+    gesture_handler = GetEventHandlerForRect(touch_rect);
+  } else {
+    gesture_handler = GetEventHandlerForPoint(event->location());
+  }
+
   // Walk up the tree until we find a view that wants the gesture event.
-  for (gesture_handler_ = GetEventHandlerForPoint(event->location());
-      gesture_handler_ && (gesture_handler_ != this);
-      gesture_handler_ = gesture_handler_->parent()) {
+  for (gesture_handler_ = gesture_handler;
+       gesture_handler_ && (gesture_handler_ != this);
+       gesture_handler_ = gesture_handler_->parent()) {
     if (!gesture_handler_->enabled()) {
       // Disabled views eat events but are treated as not handled.
       return;

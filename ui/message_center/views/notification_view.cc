@@ -695,8 +695,12 @@ void NotificationView::ScrollRectToVisible(const gfx::Rect& rect) {
   views::View::ScrollRectToVisible(GetLocalBounds());
 }
 
-views::View* NotificationView::GetEventHandlerForPoint(
-    const gfx::Point& point) {
+views::View* NotificationView::GetEventHandlerForRect(const gfx::Rect& rect) {
+  // TODO(tdanderson): Modify this function to support rect-based event
+  // targeting. Using the center point of |rect| preserves this function's
+  // expected behavior for the time being.
+  gfx::Point point = rect.CenterPoint();
+
   // Want to return this for underlying views, otherwise GetCursor is not
   // called. But buttons are exceptions, they'll have their own event handlings.
   std::vector<views::View*> buttons(action_buttons_);

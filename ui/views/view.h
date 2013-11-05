@@ -571,12 +571,20 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   static bool get_use_acceleration_when_possible();
 
   // Input ---------------------------------------------------------------------
-  // The points (and mouse locations) in the following functions are in the
-  // view's coordinates, except for a RootView.
+  // The points, rects, mouse locations, and touch locations in the following
+  // functions are in the view's coordinates, except for a RootView.
 
-  // Returns the deepest visible descendant that contains the specified point
-  // and supports event handling.
-  virtual View* GetEventHandlerForPoint(const gfx::Point& point);
+  // Convenience functions which calls into GetEventHandler() with
+  // a 1x1 rect centered at |point|.
+  View* GetEventHandlerForPoint(const gfx::Point& point);
+
+  // If point-based targeting should be used, return the deepest visible
+  // descendant that contains the center point of |rect|.
+  // If rect-based targeting (i.e., fuzzing) should be used, return the
+  // closest visible descendant having at least kRectTargetOverlap of
+  // its area covered by |rect|. If no such descendant exists, return the
+  // deepest visible descendant that contains the center point of |rect|.
+  virtual View* GetEventHandlerForRect(const gfx::Rect& rect);
 
   // Returns the deepest visible descendant that contains the specified point
   // and supports tooltips. If the view does not contain the point, returns

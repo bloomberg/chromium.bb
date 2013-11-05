@@ -357,6 +357,8 @@
         'view_model_utils.cc',
         'view_model_utils.h',
         'view_win.cc',
+        'views_switches.cc',
+        'views_switches.h',
         'views_delegate.cc',
         'views_delegate.h',
         'widget/aero_tooltip_manager.cc',

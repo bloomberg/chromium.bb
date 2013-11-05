@@ -373,7 +373,7 @@ class AutofillDialogViews : public AutofillDialogView,
     virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
     virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
     // This is needed because not all events percolate up the views hierarchy.
-    virtual View* GetEventHandlerForPoint(const gfx::Point& point) OVERRIDE;
+    virtual View* GetEventHandlerForRect(const gfx::Rect& rect) OVERRIDE;
 
    private:
     // Converts |event| to one suitable for |proxy_button_|.

@@ -43,10 +43,12 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/path.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/mouse_watcher_view_host.h"
+#include "ui/views/rect_based_targeting_utils.h"
 #include "ui/views/view_model_utils.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
@@ -915,22 +917,27 @@ void TabStrip::UpdateLoadingAnimations() {
 }
 
 bool TabStrip::IsPositionInWindowCaption(const gfx::Point& point) {
-  views::View* v = GetEventHandlerForPoint(point);
+  return IsRectInWindowCaption(gfx::Rect(point, gfx::Size(1, 1)));
+}
+
+bool TabStrip::IsRectInWindowCaption(const gfx::Rect& rect) {
+  views::View* v = GetEventHandlerForRect(rect);
 
   // If there is no control at this location, claim the hit was in the title
   // bar to get a move action.
   if (v == this)
     return true;
 
-  // Check to see if the point is within the non-button parts of the new tab
+  // Check to see if the rect intersects the non-button parts of the new tab
   // button. The button has a non-rectangular shape, so if it's not in the
   // visual portions of the button we treat it as a click to the caption.
-  gfx::Point point_in_newtab_coords(point);
-  View::ConvertPointToTarget(this, newtab_button_, &point_in_newtab_coords);
-  if (newtab_button_->GetLocalBounds().Contains(point_in_newtab_coords) &&
-      !newtab_button_->HitTestPoint(point_in_newtab_coords)) {
+  gfx::RectF rect_in_newtab_coords_f(rect);
+  View::ConvertRectToTarget(this, newtab_button_, &rect_in_newtab_coords_f);
+  gfx::Rect rect_in_newtab_coords = gfx::ToEnclosingRect(
+      rect_in_newtab_coords_f);
+  if (newtab_button_->GetLocalBounds().Intersects(rect_in_newtab_coords) &&
+      !newtab_button_->HitTestRect(rect_in_newtab_coords))
     return true;
-  }
 
   // All other regions, including the new Tab button, should be considered part
   // of the containing Window's client area so that regular events can be
@@ -1426,11 +1433,15 @@ void TabStrip::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_PAGETABLIST;
 }
 
-views::View* TabStrip::GetEventHandlerForPoint(const gfx::Point& point) {
+views::View* TabStrip::GetEventHandlerForRect(const gfx::Rect& rect) {
+  if (!views::UsePointBasedTargeting(rect))
+    return View::GetEventHandlerForRect(rect);
+  const gfx::Point point(rect.CenterPoint());
+
   if (!touch_layout_.get()) {
     // Return any view that isn't a Tab or this TabStrip immediately. We don't
     // want to interfere.
-    views::View* v = View::GetEventHandlerForPoint(point);
+    views::View* v = View::GetEventHandlerForRect(rect);
     if (v && v != this && strcmp(v->GetClassName(), Tab::kViewClassName))
       return v;
 

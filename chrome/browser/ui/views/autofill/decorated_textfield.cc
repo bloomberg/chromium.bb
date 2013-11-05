@@ -120,8 +120,7 @@ const char* DecoratedTextfield::GetClassName() const {
   return kViewClassName;
 }
 
-views::View* DecoratedTextfield::GetEventHandlerForPoint(
-    const gfx::Point& point) {
+views::View* DecoratedTextfield::GetEventHandlerForRect(const gfx::Rect& rect) {
   return native_wrapper_->GetView();
 }
 

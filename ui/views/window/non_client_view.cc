@@ -6,6 +6,8 @@
 
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/hit_test.h"
+#include "ui/gfx/rect_conversions.h"
+#include "ui/views/rect_based_targeting_utils.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
@@ -188,10 +190,13 @@ const char* NonClientView::GetClassName() const {
   return kViewClassName;
 }
 
-views::View* NonClientView::GetEventHandlerForPoint(const gfx::Point& point) {
+views::View* NonClientView::GetEventHandlerForRect(const gfx::Rect& rect) {
+  if (!views::UsePointBasedTargeting(rect))
+    return View::GetEventHandlerForRect(rect);
+
   // Because of the z-ordering of our child views (the client view is positioned
   // over the non-client frame view, if the client view ever overlaps the frame
-  // view visually (as it does for the browser window), then it will eat mouse
+  // view visually (as it does for the browser window), then it will eat
   // events for the window controls. We override this method here so that we can
   // detect this condition and re-route the events to the non-client frame view.
   // The assumption is that the frame view's implementation of HitTest will only
@@ -200,17 +205,19 @@ views::View* NonClientView::GetEventHandlerForPoint(const gfx::Point& point) {
     // During the reset of the frame_view_ it's possible to be in this code
     // after it's been removed from the view hierarchy but before it's been
     // removed from the NonClientView.
-    gfx::Point point_in_child_coords(point);
-    View::ConvertPointToTarget(this, frame_view_.get(), &point_in_child_coords);
-    if (frame_view_->HitTestPoint(point_in_child_coords))
-      return frame_view_->GetEventHandlerForPoint(point_in_child_coords);
+    gfx::RectF rect_in_child_coords_f(rect);
+    View::ConvertRectToTarget(this, frame_view_.get(), &rect_in_child_coords_f);
+    gfx::Rect rect_in_child_coords = gfx::ToEnclosingRect(
+        rect_in_child_coords_f);
+    if (frame_view_->HitTestRect(rect_in_child_coords))
+      return frame_view_->GetEventHandlerForRect(rect_in_child_coords);
   }
 
-  return View::GetEventHandlerForPoint(point);
+  return View::GetEventHandlerForRect(rect);
 }
 
 views::View* NonClientView::GetTooltipHandlerForPoint(const gfx::Point& point) {
-  // The same logic as for |GetEventHandlerForPoint()| applies here.
+  // The same logic as for |GetEventHandlerForRect()| applies here.
   if (frame_view_->parent() == this) {
     // During the reset of the frame_view_ it's possible to be in this code
     // after it's been removed from the view hierarchy but before it's been

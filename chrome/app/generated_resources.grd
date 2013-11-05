@@ -6919,6 +6919,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_TRANSLATE_NEW_UX_DESCRIPTION" desc="Description for the flag to enable the new Translate UX.">
         Enable the new Translate bubble UX is offered instead of the infobar.
       </message>
+    <message name="IDS_FLAGS_VIEWS_USE_RECT_BASED_TARGETING_NAME" desc="Name of about:flags option to use rect-based targeting in views">
+      Rect-based targeting in views
+    </message>
+    <message name="IDS_FLAGS_VIEWS_USE_RECT_BASED_TARGETING_DESCRIPTION" desc="Description of about:flags option to use rect-based targeting in views">
+      Use a heuristic to determine the most probable target of a gesture, where the touch region is represented by a rectangle.
+    </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

@@ -293,8 +293,8 @@ void OmniboxPopupContentsView::Layout() {
   SchedulePaint();
 }
 
-views::View* OmniboxPopupContentsView::GetEventHandlerForPoint(
-    const gfx::Point& point) {
+views::View* OmniboxPopupContentsView::GetEventHandlerForRect(
+    const gfx::Rect& rect) {
   return this;
 }
 

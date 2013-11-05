@@ -215,8 +215,7 @@ class VIEWS_EXPORT NonClientView : public View {
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
 
-  virtual views::View* GetEventHandlerForPoint(
-      const gfx::Point& point) OVERRIDE;
+  virtual views::View* GetEventHandlerForRect(const gfx::Rect& rect) OVERRIDE;
   virtual views::View* GetTooltipHandlerForPoint(
       const gfx::Point& point) OVERRIDE;
 

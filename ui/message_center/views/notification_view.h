@@ -45,8 +45,7 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView {
   virtual void Layout() OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void ScrollRectToVisible(const gfx::Rect& rect) OVERRIDE;
-  virtual views::View* GetEventHandlerForPoint(
-      const gfx::Point& point) OVERRIDE;
+  virtual views::View* GetEventHandlerForRect(const gfx::Rect& rect) OVERRIDE;
   virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) OVERRIDE;
 
   // Overridden from MessageView:

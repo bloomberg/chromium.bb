@@ -36,6 +36,7 @@
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/message_center/message_center_switches.h"
 #include "ui/surface/surface_switches.h"
+#include "ui/views/views_switches.h"
 
 #if defined(USE_ASH)
 #include "ash/ash_switches.h"
@@ -1836,6 +1837,15 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kEnableTranslateNewUX)
   },
+#if defined(TOOLKIT_VIEWS)
+  {
+    "views-use-rect-based-targeting",  // FLAGS:RECORD_UMA
+    IDS_FLAGS_VIEWS_USE_RECT_BASED_TARGETING_NAME,
+    IDS_FLAGS_VIEWS_USE_RECT_BASED_TARGETING_DESCRIPTION,
+    kOsCrOS | kOsWin,
+    SINGLE_VALUE_TYPE(views::switches::kViewsUseRectBasedTargeting)
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;

@@ -1049,6 +1049,252 @@ TEST_F(ViewTest, HitTestMasks) {
   widget->CloseNow();
 }
 
+TEST_F(ViewTest, GetEventHandlerForRect) {
+  Widget* widget = new Widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  widget->Init(params);
+  View* root_view = widget->GetRootView();
+  root_view->SetBoundsRect(gfx::Rect(0, 0, 500, 500));
+
+  // Have this hierarchy of views (the coordinates here are all in
+  // the root view's coordinate space):
+  // v1 (0, 0, 100, 100)
+  // v2 (150, 0, 250, 100)
+  // v3 (0, 200, 150, 100)
+  //     v31 (10, 210, 80, 80)
+  //     v32 (110, 210, 30, 80)
+  // v4 (300, 200, 100, 100)
+  //     v41 (310, 210, 80, 80)
+  //         v411 (370, 275, 10, 5)
+
+  // The coordinates used for SetBounds are in parent coordinates.
+
+  TestView* v1 = new TestView;
+  v1->SetBounds(0, 0, 100, 100);
+  root_view->AddChildView(v1);
+
+  TestView* v2 = new TestView;
+  v2->SetBounds(150, 0, 250, 100);
+  root_view->AddChildView(v2);
+
+  TestView* v3 = new TestView;
+  v3->SetBounds(0, 200, 150, 100);
+  root_view->AddChildView(v3);
+
+  TestView* v4 = new TestView;
+  v4->SetBounds(300, 200, 100, 100);
+  root_view->AddChildView(v4);
+
+  TestView* v31 = new TestView;
+  v31->SetBounds(10, 10, 80, 80);
+  v3->AddChildView(v31);
+
+  TestView* v32 = new TestView;
+  v32->SetBounds(110, 10, 30, 80);
+  v3->AddChildView(v32);
+
+  TestView* v41 = new TestView;
+  v41->SetBounds(10, 10, 80, 80);
+  v4->AddChildView(v41);
+
+  TestView* v411 = new TestView;
+  v411->SetBounds(60, 65, 10, 5);
+  v41->AddChildView(v411);
+
+  // |touch_rect| does not intersect any descendant view of |root_view|.
+  gfx::Rect touch_rect(105, 105, 30, 45);
+  View* result_view = root_view->GetEventHandlerForRect(touch_rect);
+  EXPECT_EQ(root_view, result_view);
+  result_view = NULL;
+
+  // Covers |v1| by at least 60%.
+  touch_rect.SetRect(15, 15, 100, 100);
+  result_view = root_view->GetEventHandlerForRect(touch_rect);
+  EXPECT_EQ(v1, result_view);
+  result_view = NULL;
+
+  // Intersects |v1| but does not cover it by at least 60%. The center
+  // of |touch_rect| is within |v1|.
+  touch_rect.SetRect(50, 50, 5, 10);
+  result_view = root_view->GetEventHandlerForRect(touch_rect);
+  EXPECT_EQ(v1, result_view);
+  result_view = NULL;
+
+  // Intersects |v1| but does not cover it by at least 60%. The center
+  // of |touch_rect| is not within |v1|.
+  touch_rect.SetRect(95, 96, 21, 22);
+  result_view = root_view->GetEventHandlerForRect(touch_rect);
+  EXPECT_EQ(root_view, result_view);
+  result_view = NULL;
+
+  // Intersects |v1| and |v2|, but only covers |v2| by at least 60%.
+  touch_rect.SetRect(95, 10, 300, 120);
+  result_view = root_view->GetEventHandlerForRect(touch_rect);
+  EXPECT_EQ(v2, result_view);
+  result_view = NULL;
+
+  // Covers both |v1| and |v2| by at least 60%, but the center point
+  // of |touch_rect| is closer to the center line of |v2|.
+  touch_rect.SetRect(20, 20, 400, 100);
+  result_view = root_view->GetEventHandlerForRect(touch_rect);
+  EXPECT_EQ(v2, result_view);
+  result_view = NULL;
+
+  // Covers both |v1| and |v2| by at least 60%, but the center point
+  // of |touch_rect| is closer to the center line (point) of |v1|.
+  touch_rect.SetRect(-700, -15, 1050, 110);
+  result_view = root_view->GetEventHandlerForRect(touch_rect);
+  EXPECT_EQ(v1, result_view);
+  result_view = NULL;
+
+  // A mouse click within |v1| will target |v1|.
+  touch_rect.SetRect(15, 15, 1, 1);
+  result_view = root_view->GetEventHandlerForRect(touch_rect);
+  EXPECT_EQ(v1, result_view);
+  result_view = NULL;
+
+  // Intersects |v3| and |v31| by at least 60% and the center point
+  // of |touch_rect| is closer to the center line of |v3|.
+  touch_rect.SetRect(0, 200, 110, 100);
+  result_view = root_view->GetEventHandlerForRect(touch_rect);
+  EXPECT_EQ(v3, result_view);
+  result_view = NULL;
+
+  // Intersects |v3| and |v31| by at least 60% and the center point
+  // of |touch_rect| is equally close to the center lines of both.
+  touch_rect.SetRect(-60, 140, 200, 200);
+  result_view = root_view->GetEventHandlerForRect(touch_rect);
+  EXPECT_EQ(v31, result_view);
+  result_view = NULL;
+
+  // Intersects |v3| and |v31|, but neither by at least 60%. The
+  // center point of |touch_rect| lies within |v31|.
+  touch_rect.SetRect(80, 280, 15, 15);
+  result_view = root_view->GetEventHandlerForRect(touch_rect);
+  EXPECT_EQ(v31, result_view);
+  result_view = NULL;
+
+  // Covers |v3|, |v31|, and |v32| all by at least 60%, and the
+  // center point of |touch_rect| is closest to the center line
+  // of |v3|.
+  touch_rect.SetRect(0, 200, 200, 100);
+  result_view = root_view->GetEventHandlerForRect(touch_rect);
+  EXPECT_EQ(v3, result_view);
+  result_view = NULL;
+
+  // Intersects all of |v3|, |v31|, and |v32|, but only covers
+  // |v31| and |v32| by at least 60%. The center point of
+  // |touch_rect| is closest to the center line of |v32|.
+  touch_rect.SetRect(30, 225, 180, 115);
+  result_view = root_view->GetEventHandlerForRect(touch_rect);
+  EXPECT_EQ(v32, result_view);
+  result_view = NULL;
+
+  // A mouse click at the corner of |v3| will target |v3|.
+  touch_rect.SetRect(0, 200, 1, 1);
+  result_view = root_view->GetEventHandlerForRect(touch_rect);
+  EXPECT_EQ(v3, result_view);
+  result_view = NULL;
+
+  // A mouse click within |v32| will target |v32|.
+  touch_rect.SetRect(112, 211, 1, 1);
+  result_view = root_view->GetEventHandlerForRect(touch_rect);
+  EXPECT_EQ(v32, result_view);
+  result_view = NULL;
+
+  // Covers all of |v4|, |v41|, and |v411| by at least 60%.
+  // The center point of |touch_rect| is equally close to
+  // the center points of |v4| and |v41|.
+  touch_rect.SetRect(310, 210, 80, 80);
+  result_view = root_view->GetEventHandlerForRect(touch_rect);
+  EXPECT_EQ(v41, result_view);
+  result_view = NULL;
+
+  // Intersects all of |v4|, |v41|, and |v411| but only covers
+  // |v411| by at least 60%.
+  touch_rect.SetRect(370, 275, 7, 5);
+  result_view = root_view->GetEventHandlerForRect(touch_rect);
+  EXPECT_EQ(v411, result_view);
+  result_view = NULL;
+
+  // Intersects |v4| and |v41| but covers neither by at least 60%.
+  // The center point of |touch_rect| is equally close to the center
+  // points of |v4| and |v41|.
+  touch_rect.SetRect(345, 245, 7, 7);
+  result_view = root_view->GetEventHandlerForRect(touch_rect);
+  EXPECT_EQ(v41, result_view);
+  result_view = NULL;
+
+  // Intersects all of |v4|, |v41|, and |v411| and covers none of
+  // them by at least 60%. The center point of |touch_rect| lies
+  // within |v411|.
+  touch_rect.SetRect(368, 272, 4, 6);
+  result_view = root_view->GetEventHandlerForRect(touch_rect);
+  EXPECT_EQ(v411, result_view);
+  result_view = NULL;
+
+  // Intersects all of |v4|, |v41|, and |v411| and covers none of
+  // them by at least 60%. The center point of |touch_rect| lies
+  // within |v41|.
+  touch_rect.SetRect(365, 270, 7, 7);
+  result_view = root_view->GetEventHandlerForRect(touch_rect);
+  EXPECT_EQ(v41, result_view);
+  result_view = NULL;
+
+  // Intersects all of |v4|, |v41|, and |v411| and covers none of
+  // them by at least 60%. The center point of |touch_rect| lies
+  // within |v4|.
+  touch_rect.SetRect(205, 275, 200, 2);
+  result_view = root_view->GetEventHandlerForRect(touch_rect);
+  EXPECT_EQ(v4, result_view);
+  result_view = NULL;
+
+  // Intersects all of |v4|, |v41|, and |v411| but only covers
+  // |v41| by at least 60%.
+  touch_rect.SetRect(310, 210, 61, 66);
+  result_view = root_view->GetEventHandlerForRect(touch_rect);
+  EXPECT_EQ(v41, result_view);
+  result_view = NULL;
+
+  // A mouse click within |v411| will target |v411|.
+  touch_rect.SetRect(372, 275, 1, 1);
+  result_view = root_view->GetEventHandlerForRect(touch_rect);
+  EXPECT_EQ(v411, result_view);
+  result_view = NULL;
+
+  // A mouse click within |v41| will target |v41|.
+  touch_rect.SetRect(350, 215, 1, 1);
+  result_view = root_view->GetEventHandlerForRect(touch_rect);
+  EXPECT_EQ(v41, result_view);
+  result_view = NULL;
+
+  // Covers |v3|, |v4|, and all of their descendants by at
+  // least 60%. The center point of |touch_rect| is closest
+  // to the center line of |v32|.
+  touch_rect.SetRect(0, 200, 400, 100);
+  result_view = root_view->GetEventHandlerForRect(touch_rect);
+  EXPECT_EQ(v32, result_view);
+  result_view = NULL;
+
+  // Intersects all of |v2|, |v3|, |v32|, |v4|, |v41|, and |v411|.
+  // Covers |v2|, |v32|, |v4|, |v41|, and |v411| by at least 60%.
+  // The center point of |touch_rect| is closest to the center
+  // point of |root_view|.
+  touch_rect.SetRect(110, 15, 375, 450);
+  result_view = root_view->GetEventHandlerForRect(touch_rect);
+  EXPECT_EQ(root_view, result_view);
+  result_view = NULL;
+
+  // Covers all views by at least 60%. The center point of
+  // |touch_rect| is closest to the center line of |v2|.
+  touch_rect.SetRect(0, 0, 400, 300);
+  result_view = root_view->GetEventHandlerForRect(touch_rect);
+  EXPECT_EQ(v2, result_view);
+  result_view = NULL;
+
+  widget->CloseNow();
+}
+
 TEST_F(ViewTest, NotifyEnterExitOnChild) {
   Widget* widget = new Widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
