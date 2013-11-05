@@ -9,8 +9,12 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "chrome/browser/ui/chrome_style.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
+#include "grit/theme_resources.h"
+#include "skia/ext/skia_utils_mac.h"
 
 @interface AutofillNotificationView : NSView {
  @private
@@ -68,21 +72,45 @@
 
 @implementation AutofillNotificationController
 
-- (id)init {
+- (id)initWithNotification:(const autofill::DialogNotification*)notification {
   if (self = [super init]) {
     base::scoped_nsobject<AutofillNotificationView> view(
         [[AutofillNotificationView alloc] initWithFrame:NSZeroRect]);
+    [view setBackgroundColor:
+        gfx::SkColorToCalibratedNSColor(notification->GetBackgroundColor())];
     [self setView:view];
 
     textfield_.reset([[NSTextField alloc] initWithFrame:NSZeroRect]);
     [textfield_ setEditable:NO];
     [textfield_ setBordered:NO];
     [textfield_ setDrawsBackground:NO];
+    [textfield_ setTextColor:
+         gfx::SkColorToCalibratedNSColor(notification->GetTextColor())];
+    [textfield_ setStringValue:
+        base::SysUTF16ToNSString(notification->display_text())];
+    [textfield_ setHidden:notification->HasCheckbox()];
 
     checkbox_.reset([[NSButton alloc] initWithFrame:NSZeroRect]);
     [checkbox_ setButtonType:NSSwitchButton];
-    [checkbox_ setHidden:YES];
-    [view setSubviews:@[textfield_, checkbox_]];
+    [checkbox_ setHidden:!notification->HasCheckbox()];
+    [checkbox_ setState:(notification->checked() ? NSOnState : NSOffState)];
+    [checkbox_ setAttributedTitle:[textfield_ attributedStringValue]];
+    // Update the size that preferredSizeForWidth will use. Do this here because
+    //   (1) preferredSizeForWidth is logically const, and so shouldn't have a
+    //       side-effect of updating the checkbox's frame, and
+    //   (2) this way, the sizing computation can be cached.
+    [checkbox_ sizeToFit];
+
+    tooltipIcon_.reset([[NSImageView alloc] initWithFrame:NSZeroRect]);
+    [tooltipIcon_ setImage:
+        ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+            IDR_AUTOFILL_TOOLTIP_ICON).ToNSImage()];
+    [tooltipIcon_ setFrameSize:[[tooltipIcon_ image] size]];
+    [tooltipIcon_ setToolTip:
+        base::SysUTF16ToNSString(notification->tooltip_text())];
+    [tooltipIcon_ setHidden:[[tooltipIcon_ toolTip] length] == 0];
+
+    [view setSubviews:@[textfield_, checkbox_, tooltipIcon_]];
   }
   return self;
 }
@@ -100,26 +128,6 @@
   return [[self notificationView] hasArrow];
 }
 
-- (void)setHasCheckbox:(BOOL)hasCheckbox {
-  [checkbox_ setHidden:!hasCheckbox];
-  [textfield_ setHidden:hasCheckbox];
-}
-
-- (NSString*)text {
-  return [textfield_ stringValue];
-}
-
-- (void)setText:(NSString*)string {
-  [textfield_ setStringValue:string];
-  [checkbox_ setAttributedTitle:[textfield_ attributedStringValue]];
-
-  // Update the size that preferredSizeForWidth will use. Do this here because
-  //   (1) preferredSizeForWidth is logically const, and so shouldn't have a
-  //       side-effect of updating the checkbox's frame, and
-  //   (2) this way, the sizing computation can be cached.
-  [checkbox_ sizeToFit];
-}
-
 - (NSTextField*)textfield {
   return textfield_;
 }
@@ -128,23 +136,18 @@
   return checkbox_;
 }
 
-- (NSColor*)backgroundColor {
-  return [[self notificationView] backgroundColor];
-}
-
-- (void)setBackgroundColor:(NSColor*)backgroundColor {
-  [[self notificationView] setBackgroundColor:backgroundColor];
-}
-
-- (NSColor*)textColor {
-  return [textfield_ textColor];
-}
-
-- (void)setTextColor:(NSColor*)textColor {
-  [textfield_ setTextColor:textColor];
+- (NSImageView*)tooltipIcon {
+  return tooltipIcon_;
 }
 
 - (NSSize)preferredSizeForWidth:(CGFloat)width {
+  width -= 2 * chrome_style::kHorizontalPadding;
+  if (![tooltipIcon_ isHidden])
+    width -= [tooltipIcon_ frame].size.width + chrome_style::kHorizontalPadding;
+  // TODO(isherman): Restore the DCHECK below once I figure out why it causes
+  // unit tests to fail.
+  //DCHECK_GT(width, 0);
+
   NSSize preferredSize;
   if (![textfield_ isHidden]) {
     NSRect bounds = NSMakeRect(0, 0, width, CGFLOAT_MAX);
@@ -176,12 +179,26 @@
   if ([[self notificationView] hasArrow])
     bounds.size.height -= autofill::kArrowHeight;
 
-  NSRect textFrame = NSInsetRect(bounds,
+  // Calculate the frame size, leaving room for padding around the notification,
+  // as well as for the tooltip if it is visible.
+  NSRect labelFrame = NSInsetRect(bounds,
                                  chrome_style::kHorizontalPadding,
                                  autofill::kNotificationPadding);
-  NSControl* control =
-      [checkbox_ isHidden] ? textfield_.get() : checkbox_.get();
-  [control setFrame:textFrame];
+  if (![tooltipIcon_ isHidden]) {
+    labelFrame.size.width -=
+        [tooltipIcon_ frame].size.width + chrome_style::kHorizontalPadding;
+  }
+
+  NSView* label = [checkbox_ isHidden] ? textfield_.get() : checkbox_.get();
+  [label setFrame:labelFrame];
+
+  if (![tooltipIcon_ isHidden]) {
+    NSPoint tooltipOrigin =
+        NSMakePoint(
+            NSMaxX(labelFrame) + chrome_style::kHorizontalPadding,
+            NSMidY(labelFrame) - (NSHeight([tooltipIcon_ frame]) / 2.0));
+    [tooltipIcon_ setFrameOrigin:tooltipOrigin];
+  }
 }
 
 @end

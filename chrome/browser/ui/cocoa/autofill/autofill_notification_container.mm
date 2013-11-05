@@ -6,12 +6,10 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_notification_controller.h"
-#include "skia/ext/skia_utils_mac.h"
 
 @implementation AutofillNotificationContainer
 
@@ -75,30 +73,21 @@
     // Create basic notification view.
     const autofill::DialogNotification& notification = notifications[i];
     base::scoped_nsobject<AutofillNotificationController>
-        notificationController([[AutofillNotificationController alloc] init]);
-    [notificationController setText:
-        base::SysUTF16ToNSString(notification.display_text())];
-    [notificationController setTextColor:
-        gfx::SkColorToCalibratedNSColor(notification.GetTextColor())];
-    [notificationController setBackgroundColor:
-        gfx::SkColorToCalibratedNSColor(notification.GetBackgroundColor())];
+        notificationController([[AutofillNotificationController alloc]
+                                    initWithNotification:&notification]);
 
-    // Add optional checkbox.
+    if (i == 0) {
+      [notificationController setHasArrow:notification.HasArrow()
+                           withAnchorView:anchorView_];
+    }
+
     if (notification.HasCheckbox()) {
       // No more than one notification with a checkbox.
       DCHECK(!checkboxNotification_);
       checkboxNotification_.reset(
           new autofill::DialogNotification(notification));
-      [notificationController setHasCheckbox:YES];
-      [[notificationController checkbox] setState:
-          (notification.checked() ? NSOnState : NSOffState)];
       [[notificationController checkbox] setTarget:self];
       [[notificationController checkbox] setAction:@selector(checkboxClicked:)];
-    }
-
-    if (i == 0) {
-      [notificationController setHasArrow:notification.HasArrow()
-                           withAnchorView:anchorView_];
     }
 
     [notificationControllers_ addObject:notificationController];

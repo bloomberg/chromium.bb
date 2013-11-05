@@ -10,6 +10,10 @@
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_layout.h"
 
+namespace autofill {
+class DialogNotification;
+}
+
 // Contains a single notification for requestAutocomplete dialog.
 @interface AutofillNotificationController : NSViewController<AutofillLayout> {
  @private
@@ -18,16 +22,18 @@
 
   // Optional checkbox.
   base::scoped_nsobject<NSButton> checkbox_;
+
+  // Optional tooltip icon.
+  base::scoped_nsobject<NSImageView> tooltipIcon_;
 }
 
 @property(nonatomic, readonly) NSTextField* textfield;
 @property(nonatomic, readonly) NSButton* checkbox;
-@property(nonatomic, retain) NSColor* backgroundColor;
-@property(nonatomic, retain) NSColor* textColor;
-@property(nonatomic, copy) NSString* text;  // Label text.
+@property(nonatomic, readonly) NSImageView* tooltipIcon;
 
-// Designated initializer.
-- (id)init;
+// Designated initializer. Initializes the controller as specified by
+// |notification|.
+- (id)initWithNotification:(const autofill::DialogNotification*)notification;
 
 // Displays arrow on top of notification if set to YES. |anchorView| determines
 // the arrow position - the tip of the arrow is centered on the horizontal
@@ -36,9 +42,6 @@
 
 // Indicates if the controller draws an arrow.
 - (BOOL)hasArrow;
-
-// Enables the optional checkbox.
-- (void)setHasCheckbox:(BOOL)hasCheckbox;
 
 // Compute preferred size for given width.
 - (NSSize)preferredSizeForWidth:(CGFloat)width;
