@@ -14,10 +14,13 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/file_util.h"
+#include "base/json/json_reader.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/client/gl_helper_scaling.h"
@@ -75,6 +78,55 @@ class GLHelperTest : public testing::Test {
     helper_scaling_.reset(NULL);
     helper_.reset(NULL);
     context_.reset(NULL);
+  }
+
+  void StartTracing(const std::string& filter) {
+    base::debug::TraceLog::GetInstance()->SetEnabled(
+        base::debug::CategoryFilter(filter),
+        base::debug::TraceLog::RECORD_UNTIL_FULL);
+  }
+
+  static void TraceDataCB(
+      const base::Callback<void()>& callback,
+      std::string* output,
+      const scoped_refptr<base::RefCountedString>& json_events_str,
+      bool has_more_events) {
+    if (output->size() > 1) {
+      output->append(",");
+    }
+    output->append(json_events_str->data());
+    if (!has_more_events) {
+      callback.Run();
+    }
+  }
+
+  // End tracing, return tracing data in a simple map
+  // of event name->counts.
+  void EndTracing(std::map<std::string, int> *event_counts) {
+    std::string json_data = "[";
+    base::debug::TraceLog::GetInstance()->SetDisabled();
+    base::RunLoop run_loop;
+    base::debug::TraceLog::GetInstance()->Flush(
+        base::Bind(&GLHelperTest::TraceDataCB,
+                   run_loop.QuitClosure(),
+                   base::Unretained(&json_data)));
+    run_loop.Run();
+    json_data.append("]");
+
+    scoped_ptr<Value> trace_data(base::JSONReader::Read(json_data));
+    ListValue* list;
+    CHECK(trace_data->GetAsList(&list));
+    for (size_t i = 0; i < list->GetSize(); i++) {
+      base::Value *item = NULL;
+      if (list->Get(i, &item)) {
+        base::DictionaryValue *dict;
+        CHECK(item->GetAsDictionary(&dict));
+        std::string name;
+        CHECK(dict->GetString("name", &name));
+        (*event_counts)[name]++;
+        VLOG(1) << "trace name: " << name;
+      }
+    }
   }
 
   // Bicubic filter kernel function.
@@ -795,7 +847,8 @@ class GLHelperTest : public testing::Test {
                        int ymargin,
                        int test_pattern,
                        bool flip,
-                       bool use_mrt) {
+                       bool use_mrt,
+                       content::GLHelper::ScalerQuality quality) {
     WebGLId src_texture = context_->createTexture();
     SkBitmap input_pixels;
     input_pixels.setConfig(SkBitmap::kARGB_8888_Config, xsize, ysize);
@@ -856,7 +909,7 @@ class GLHelperTest : public testing::Test {
                                              flip ? "mrt" : "nomrt");
     scoped_ptr<ReadbackYUVInterface> yuv_reader(
         helper_->CreateReadbackPipelineYUV(
-            content::GLHelper::SCALER_QUALITY_GOOD,
+            quality,
             gfx::Size(xsize, ysize),
             gfx::Rect(0, 0, xsize, ysize),
             gfx::Size(output_xsize, output_ysize),
@@ -1151,6 +1204,40 @@ class GLHelperTest : public testing::Test {
   std::deque<GLHelperScaling::ScaleOp> x_ops_, y_ops_;
 };
 
+TEST_F(GLHelperTest, YUVReadbackOptTest) {
+  // This test uses the cb_command tracing events to detect how many
+  // scaling passes are actually performed by the YUV readback pipeline.
+  StartTracing(TRACE_DISABLED_BY_DEFAULT("cb_command"));
+
+  TestYUVReadback(
+      800, 400,
+      800, 400,
+      0,  0,
+      1,
+      false,
+      true,
+      content::GLHelper::SCALER_QUALITY_FAST);
+
+  std::map<std::string, int> event_counts;
+  EndTracing(&event_counts);
+  int draw_buffer_calls = event_counts["kDrawBuffersEXTImmediate"];
+  int draw_arrays_calls = event_counts["kDrawArrays"];
+  VLOG(1) << "Draw buffer calls: " << draw_buffer_calls;
+  VLOG(1) << "DrawArrays calls: " << draw_arrays_calls;
+
+  if (draw_buffer_calls) {
+    // When using MRT, the YUV readback code should only
+    // execute two draw arrays, and scaling should be integrated
+    // into those two calls since we are using the FAST scalign
+    // quality.
+    EXPECT_EQ(2, draw_arrays_calls);
+  } else {
+    // When not using MRT, there are three passes for the YUV,
+    // and one for the scaling.
+    EXPECT_EQ(4, draw_arrays_calls);
+  }
+}
+
 TEST_F(GLHelperTest, YUVReadbackTest) {
   int sizes[] = { 2, 4, 14 };
   for (int flip = 0; flip <= 1; flip++) {
@@ -1177,7 +1264,8 @@ TEST_F(GLHelperTest, YUVReadbackTest) {
                         compute_margin(sizes[y], sizes[oy], ym),
                         pattern,
                         flip == 1,
-                        use_mrt == 1);
+                        use_mrt == 1,
+                        content::GLHelper::SCALER_QUALITY_GOOD);
                     if (HasFailure()) {
                       return;
                     }
@@ -1191,7 +1279,6 @@ TEST_F(GLHelperTest, YUVReadbackTest) {
     }
   }
 }
-
 
 // Per pixel tests, all sizes are small so that we can print
 // out the generated bitmaps.
