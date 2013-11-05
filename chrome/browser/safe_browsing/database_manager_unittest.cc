@@ -39,10 +39,16 @@ class TestSafeBrowsingServiceFactory : public SafeBrowsingServiceFactory {
 class SafeBrowsingDatabaseManagerTest : public PlatformTest {
  public:
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     PlatformTest::SetUp();
     SafeBrowsingService::RegisterFactory(&factory_);
   }
+
+  virtual void TearDown() OVERRIDE {
+    SafeBrowsingService::RegisterFactory(NULL);
+    PlatformTest::TearDown();
+  }
+
   bool RunSBHashTest(const safe_browsing_util::ListType list_type,
                      const std::vector<SBThreatType>& expected_threats,
                      const std::string& result_list);

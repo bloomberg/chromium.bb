@@ -126,16 +126,18 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
     ui_manager_ = new TestSafeBrowsingUIManager(NULL);
   }
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
     SafeBrowsingBlockingPage::RegisterFactory(&factory_);
-    MalwareDetails::RegisterFactory(NULL);  // Create it fresh each time.
     ResetUserResponse();
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     // Release the UI manager before the BrowserThreads are destroyed.
     ui_manager_ = NULL;
+    SafeBrowsingBlockingPage::RegisterFactory(NULL);
+    // Clean up singleton reference (crbug.com/110594).
+    MalwareDetails::RegisterFactory(NULL);
     ChromeRenderViewHostTestHarness::TearDown();
   }
 

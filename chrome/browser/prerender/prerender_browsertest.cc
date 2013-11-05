@@ -726,6 +726,12 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
 #endif
   }
 
+  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
+#if defined(FULL_SAFE_BROWSING)
+    SafeBrowsingService::RegisterFactory(NULL);
+#endif
+  }
+
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitchASCII(switches::kPrerenderMode,
                                     switches::kPrerenderModeSwitchValueEnabled);
