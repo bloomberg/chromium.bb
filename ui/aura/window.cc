@@ -893,18 +893,16 @@ void Window::StackChildRelativeTo(Window* child,
   // See tests WindowTest.StackingMadrigal and StackOverClosingTransient
   // for an explanation of this.
   while (final_target_i > 0 &&
-         children_[final_target_i]->layer()->delegate() == NULL) {
+         children_[direction == STACK_ABOVE ? final_target_i :
+                                              final_target_i - 1]->layer()
+             ->delegate() == NULL) {
     --final_target_i;
   }
-
-  // Allow stacking immediately below a window with a NULL layer.
-  if (direction == STACK_BELOW && target_i != final_target_i)
-    direction = STACK_ABOVE;
 
   Window* final_target = children_[final_target_i];
 
   // If we couldn't find a valid target position, don't move anything.
-  if (final_target->layer()->delegate() == NULL)
+  if (direction == STACK_ABOVE && final_target->layer()->delegate() == NULL)
     return;
 
   // Don't try to stack a child above itself.

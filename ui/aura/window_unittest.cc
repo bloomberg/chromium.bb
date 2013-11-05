@@ -2171,6 +2171,26 @@ TEST_F(WindowTest, AcquireThenRecreateLayer) {
   w.reset();
 }
 
+TEST_F(WindowTest, StackWindowAtBottomBelowWindowWhoseLayerHasNoDelegate) {
+  scoped_ptr<Window> window1(CreateTestWindowWithId(1, root_window()));
+  window1->layer()->set_name("1");
+  scoped_ptr<Window> window2(CreateTestWindowWithId(2, root_window()));
+  window2->layer()->set_name("2");
+  scoped_ptr<Window> window3(CreateTestWindowWithId(3, root_window()));
+  window3->layer()->set_name("3");
+
+  EXPECT_EQ("1 2 3", ChildWindowIDsAsString(root_window()));
+  EXPECT_EQ("1 2 3",
+            ui::test::ChildLayerNamesAsString(*root_window()->layer()));
+  window1->layer()->set_delegate(NULL);
+  root_window()->StackChildAtBottom(window3.get());
+
+  // Window 3 should have moved to the bottom.
+  EXPECT_EQ("3 1 2", ChildWindowIDsAsString(root_window()));
+  EXPECT_EQ("3 1 2",
+            ui::test::ChildLayerNamesAsString(*root_window()->layer()));
+}
+
 TEST_F(WindowTest, StackWindowsWhoseLayersHaveNoDelegate) {
   scoped_ptr<Window> window1(CreateTestWindowWithId(1, root_window()));
   window1->layer()->set_name("1");
