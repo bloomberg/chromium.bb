@@ -1,0 +1,4 @@
+Warning this test is running in real-time and may be flaky.
+PASS - "left" property for "box" element at 0.5s saw something close to: 50
+PASS - "left" property for "box" element at 0.8s saw something close to: 0
+

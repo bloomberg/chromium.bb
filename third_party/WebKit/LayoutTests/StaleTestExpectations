@@ -30,9 +30,6 @@ webkit.org/b/91429 [ Debug ] fast/frames/calculate-round.html [ WontFix ]
 # These have been flaky for as long as we have test history.
 webkit.org/b/52063 [ Win ] http/tests/navigation/ping-cross-origin.html [ WontFix ]
 
-# These were flaky, now failing more consistently after r75169.
-webkit.org/b/52061 [ Linux Release ] transitions/change-values-during-transition.html [ WontFix ]
-
 webkit.org/b/56702 [ Win ] http/tests/navigation/ping-cross-origin-from-https.html [ WontFix ]
 
 webkit.org/b/74746 [ Win ] http/tests/xmlhttprequest/workers/methods.html [ WontFix ]

@@ -693,6 +693,7 @@ Function parameters:
     trigger [optional]: a function to be executed just before the test starts (none by default)
     callbacks [optional]: an object in the form {timeS: function} specifing callbacks to be made during the test
     doPixelTest [optional]: whether to dump pixels during the test (false by default)
+    disablePauseAnimationAPI [optional]: whether to disable the pause API and run a RAF-based test (false by default)
 
     Each sub-array must contain these items in this order:
     - the time in seconds at which to snapshot the CSS property
@@ -706,7 +707,7 @@ Function parameters:
     If the CSS property name is "-webkit-transform.N", expected value must be a number corresponding to the Nth element of the matrix
 
 */
-function runTransitionTest(expected, trigger, callbacks, doPixelTest) {
+function runTransitionTest(expected, trigger, callbacks, doPixelTest, disablePauseAnimationAPI) {
     isTransitionsTest = true;
-    runAnimationTest(expected, callbacks, trigger, false, doPixelTest);
+    runAnimationTest(expected, callbacks, trigger, disablePauseAnimationAPI, doPixelTest);
 }

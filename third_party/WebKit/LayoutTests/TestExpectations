@@ -81,7 +81,6 @@ crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Fai
 
 # The implementation of CSS Animations on the Web Animations model is still in progress
 # These can't be rebaselined because the failure involves flaky output.
-crbug.com/303430 virtual/web-animations-css/transitions/change-values-during-transition.html [ Pass Failure ]
 crbug.com/303430 virtual/web-animations-css/transitions/extra-transition.html [ Pass Failure ]
 # This test fails due to -webkit-mask-box-image not being implemented as a shorthand property
 crbug.com/309962 virtual/web-animations-css/animations/cross-fade-webkit-mask-box-image.html [ ImageOnlyFailure ]
@@ -240,7 +239,7 @@ crbug.com/248938 virtual/threaded/transitions/interrupt-transform-transition.htm
 crbug.com/248938 virtual/threaded/transitions/start-transform-transition.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/opacity-transition-zindex.html [ Pass ImageOnlyFailure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-transform.html [ Pass Failure ]
-crbug.com/248938 virtual/threaded/transitions/change-values-during-transition.html [ Pass Failure ]
+crbug.com/248938 virtual/threaded/transitions/change-duration-during-transition.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-multiple-04.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/cancel-transition.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-all-properties.html [ Pass Failure ]

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <style>
+    #box {
+      position: absolute;
+      height: 100px;
+      width: 100px;
+      left: 0px;
+      background-color: blue;
+      -webkit-transition-duration: 1s;
+      -webkit-transition-timing-function: linear;
+      -webkit-transition-property: left;
+    }
+  </style>
+  <script src="../animations/resources/animation-test-helpers.js" type="text/javascript"></script>
+  <script>
+    const expectedValues = [
+      // [time, element-id, property, expected-value, tolerance]
+      [0.5, 'box', 'left', 50, 10],
+      [0.8, 'box', 'left', 0, 0],
+    ];
+
+    function changeDuration() {
+      box.style.webkitTransitionDuration = "0.1s";
+    }
+
+    function goBack() {
+      box.style.left = "0px";
+    }
+
+    const callbacks = {
+      0.1: changeDuration,
+      0.6: goBack,
+    }
+
+    function setupTest() {
+      box.style.left = '100px';
+    }
+
+    runTransitionTest(expectedValues, setupTest, callbacks, false, true);
+  </script>
+</head>
+<body>
+  <div id="box"></div>
+</body>
+</html>
