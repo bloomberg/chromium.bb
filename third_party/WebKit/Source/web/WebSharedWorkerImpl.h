@@ -33,11 +33,9 @@
 
 #include "WebSharedWorker.h"
 
-#include "WebCommonWorkerClient.h"
 #include "WebContentSecurityPolicy.h"
 #include "WebFrameClient.h"
 #include "WebSharedWorkerClient.h"
-#include "WebWorkerBase.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerReportingProxy.h"
@@ -64,7 +62,6 @@ class WebSharedWorkerClient;
 class WebSharedWorkerImpl
     : public WebCore::WorkerReportingProxy
     , public WebCore::WorkerLoaderProxy
-    , public WebWorkerBase
     , public WebFrameClient
     , public WebSharedWorker {
 public:
@@ -81,13 +78,10 @@ public:
     virtual void workerGlobalScopeClosed();
     virtual void workerGlobalScopeDestroyed();
 
-    virtual WebView* view() const { return m_webView; }
-
     // WebCore::WorkerLoaderProxy methods:
     virtual void postTaskToLoader(PassOwnPtr<WebCore::ExecutionContextTask>);
     virtual bool postTaskForModeToWorkerGlobalScope(
         PassOwnPtr<WebCore::ExecutionContextTask>, const WTF::String& mode);
-    virtual WebWorkerBase* toWebWorkerBase() OVERRIDE;
 
     // WebFrameClient methods to support resource loading thru the 'shadow page'.
     virtual void didCreateDataSource(WebFrame*, WebDataSource*);
@@ -109,11 +103,6 @@ public:
     virtual void reattachDevTools(const WebString& savedState);
     virtual void detachDevTools();
     virtual void dispatchDevToolsMessage(const WebString&);
-
-
-    // WebWorkerBase methods:
-    WebCore::WorkerLoaderProxy* workerLoaderProxy() { return this; }
-    WebCommonWorkerClient* commonClient() { return m_client->get(); }
 
 private:
     virtual ~WebSharedWorkerImpl();

@@ -31,12 +31,9 @@
 #include "config.h"
 #include "WorkerFileSystemClient.h"
 
-#include "WebWorkerBase.h"
-#include "WorkerAllowMainThreadBridgeBase.h"
 #include "WorkerPermissionClient.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "core/workers/WorkerThread.h"
 #include "platform/AsyncFileSystemCallbacks.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFileError.h"
@@ -50,33 +47,6 @@ using namespace WebCore;
 
 namespace WebKit {
 
-namespace {
-
-// This class is used to route the result of the WebWorkerBase::allowFileSystem
-// call back to the worker context.
-class AllowFileSystemMainThreadBridge : public WorkerAllowMainThreadBridgeBase {
-public:
-    static PassRefPtr<AllowFileSystemMainThreadBridge> create(WebCore::WorkerGlobalScope* workerGlobalScope, WebWorkerBase* webWorkerBase, const String& mode)
-    {
-        return adoptRef(new AllowFileSystemMainThreadBridge(workerGlobalScope, webWorkerBase, mode));
-    }
-
-private:
-    AllowFileSystemMainThreadBridge(WebCore::WorkerGlobalScope* workerGlobalScope, WebWorkerBase* webWorkerBase, const String& mode)
-        : WorkerAllowMainThreadBridgeBase(workerGlobalScope, webWorkerBase)
-    {
-        postTaskToMainThread(adoptPtr(new AllowParams(mode)));
-    }
-
-    virtual bool allowOnMainThread(WebCommonWorkerClient* commonClient, AllowParams*)
-    {
-        ASSERT(isMainThread());
-        return commonClient->allowFileSystem();
-    }
-};
-
-} // namespace
-
 PassOwnPtr<FileSystemClient> WorkerFileSystemClient::create()
 {
     return adoptPtr(static_cast<FileSystemClient*>(new WorkerFileSystemClient()));
@@ -89,29 +59,7 @@ WorkerFileSystemClient::~WorkerFileSystemClient()
 bool WorkerFileSystemClient::allowFileSystem(ExecutionContext* context)
 {
     WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
-    WorkerPermissionClient* permissionClient = WorkerPermissionClient::from(workerGlobalScope);
-    if (permissionClient->proxy())
-        return permissionClient->allowFileSystem();
-
-    // FIXME: Deprecate this bridge code when PermissionClientProxy is
-    // implemented by the embedder.
-    WebCore::WorkerThread* workerThread = workerGlobalScope->thread();
-    WorkerRunLoop& runLoop = workerThread->runLoop();
-    WebCore::WorkerLoaderProxy* workerLoaderProxy = &workerThread->workerLoaderProxy();
-
-    String mode = "allowFileSystemMode";
-    mode.append(String::number(runLoop.createUniqueId()));
-
-    RefPtr<AllowFileSystemMainThreadBridge> bridge = AllowFileSystemMainThreadBridge::create(workerGlobalScope, workerLoaderProxy->toWebWorkerBase(), mode);
-
-    // Either the bridge returns, or the queue gets terminated.
-    // FIXME: This synchoronous execution should be replaced with better model.
-    if (runLoop.runInMode(workerGlobalScope, mode) == MessageQueueTerminated) {
-        bridge->cancel();
-        return false;
-    }
-
-    return bridge->result();
+    return WorkerPermissionClient::from(workerGlobalScope)->allowFileSystem();
 }
 
 WorkerFileSystemClient::WorkerFileSystemClient()

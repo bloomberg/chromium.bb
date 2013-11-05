@@ -78,48 +78,6 @@ void WebWorkerClientImpl::terminateWorkerGlobalScope()
     WebCore::WorkerMessagingProxy::terminateWorkerGlobalScope();
 }
 
-WebWorkerBase* WebWorkerClientImpl::toWebWorkerBase()
-{
-    return this;
-}
-
-WebView* WebWorkerClientImpl::view() const
-{
-    if (askedToTerminate())
-        return 0;
-    return m_webFrame->view();
-}
-
-bool WebWorkerClientImpl::allowDatabase(WebFrame*, const WebString& name, const WebString& displayName, unsigned long estimatedSize)
-{
-    if (askedToTerminate())
-        return false;
-    WebKit::WebViewImpl* webView = m_webFrame->viewImpl();
-    if (!webView)
-        return false;
-    return !webView->permissionClient() || webView->permissionClient()->allowDatabase(m_webFrame, name, displayName, estimatedSize);
-}
-
-bool WebWorkerClientImpl::allowFileSystem()
-{
-    if (askedToTerminate())
-        return false;
-    WebKit::WebViewImpl* webView = m_webFrame->viewImpl();
-    if (!webView)
-        return false;
-    return !webView->permissionClient() || webView->permissionClient()->allowFileSystem(m_webFrame);
-}
-
-bool WebWorkerClientImpl::allowIndexedDB(const WebString& name)
-{
-    if (askedToTerminate())
-        return false;
-    WebKit::WebViewImpl* webView = m_webFrame->viewImpl();
-    if (!webView)
-        return false;
-    return !webView->permissionClient() || webView->permissionClient()->allowIndexedDB(m_webFrame, name, WebSecurityOrigin());
-}
-
 WebWorkerClientImpl::WebWorkerClientImpl(Worker* worker, WebFrameImpl* webFrame, PassOwnPtr<WorkerClients> workerClients)
     : WebCore::WorkerMessagingProxy(worker, workerClients)
     , m_webFrame(webFrame)

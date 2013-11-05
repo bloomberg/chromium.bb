@@ -41,18 +41,13 @@
 #include "WebPermissionClient.h"
 #include "WebSecurityOrigin.h"
 #include "WebViewImpl.h"
-#include "WebWorkerBase.h"
 #include "WebWorkerClientImpl.h"
-#include "WorkerAllowMainThreadBridgeBase.h"
 #include "WorkerPermissionClient.h"
 #include "bindings/v8/WorkerScriptController.h"
-#include "core/dom/CrossThreadTask.h"
 #include "core/dom/DOMError.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "core/workers/WorkerLoaderProxy.h"
-#include "core/workers/WorkerThread.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
 #include "weborigin/SecurityOrigin.h"
 
@@ -75,41 +70,6 @@ IDBFactoryBackendProxy::~IDBFactoryBackendProxy()
 {
 }
 
-static const char allowIndexedDBMode[] = "allowIndexedDBMode";
-
-class AllowIndexedDBMainThreadBridge : public WorkerAllowMainThreadBridgeBase {
-public:
-    static PassRefPtr<AllowIndexedDBMainThreadBridge> create(WorkerGlobalScope* workerGlobalScope, WebWorkerBase* webWorkerBase, const String& mode, const String& name)
-    {
-        return adoptRef(new AllowIndexedDBMainThreadBridge(workerGlobalScope, webWorkerBase, mode, name));
-    }
-
-private:
-    class AllowIDBParams : public AllowParams
-    {
-    public:
-        AllowIDBParams(const String& mode, const String& name)
-            : AllowParams(mode)
-            , m_name(name.isolatedCopy())
-        {
-        }
-        String m_name;
-    };
-
-    AllowIndexedDBMainThreadBridge(WorkerGlobalScope* workerGlobalScope, WebWorkerBase* webWorkerBase, const String& mode, const String& name)
-        : WorkerAllowMainThreadBridgeBase(workerGlobalScope, webWorkerBase)
-    {
-        postTaskToMainThread(adoptPtr(new AllowIDBParams(mode, name)));
-    }
-
-    virtual bool allowOnMainThread(WebCommonWorkerClient* commonClient, AllowParams* params)
-    {
-        ASSERT(isMainThread());
-        AllowIDBParams* allowIDBParams = static_cast<AllowIDBParams*>(params);
-        return commonClient->allowIndexedDB(allowIDBParams->m_name);
-    }
-};
-
 bool IDBFactoryBackendProxy::allowIndexedDB(ExecutionContext* context, const String& name, const WebSecurityOrigin& origin, PassRefPtr<IDBCallbacks> callbacks)
 {
     bool allowed;
@@ -122,30 +82,7 @@ bool IDBFactoryBackendProxy::allowIndexedDB(ExecutionContext* context, const Str
         allowed = !webView->permissionClient() || webView->permissionClient()->allowIndexedDB(webFrame, name, origin);
     } else {
         WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
-        WorkerPermissionClient* permissionClient = WorkerPermissionClient::from(workerGlobalScope);
-        if (permissionClient->proxy()) {
-            allowed = permissionClient->allowIndexedDB(name);
-            if (!allowed)
-                callbacks->onError(WebIDBDatabaseError(UnknownError, "The user denied permission to access the database."));
-
-            return allowed;
-        }
-
-        // FIXME: Deprecate this bridge code when PermissionClientProxy is
-        // implemented by the embedder.
-        WebWorkerBase* webWorkerBase = static_cast<WebWorkerBase*>(workerGlobalScope->thread()->workerLoaderProxy().toWebWorkerBase());
-        WorkerRunLoop& runLoop = workerGlobalScope->thread()->runLoop();
-
-        String mode = allowIndexedDBMode;
-        mode.append(String::number(runLoop.createUniqueId()));
-        RefPtr<AllowIndexedDBMainThreadBridge> bridge = AllowIndexedDBMainThreadBridge::create(workerGlobalScope, webWorkerBase, mode, name);
-
-        // Either the bridge returns, or the queue gets terminated.
-        if (runLoop.runInMode(workerGlobalScope, mode) == MessageQueueTerminated) {
-            bridge->cancel();
-            return false;
-        }
-        allowed = bridge->result();
+        allowed = WorkerPermissionClient::from(workerGlobalScope)->allowIndexedDB(name);
     }
 
     if (!allowed)

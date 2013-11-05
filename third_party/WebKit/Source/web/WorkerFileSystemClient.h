@@ -36,6 +36,8 @@
 
 namespace WebKit {
 
+// FIXME: This could be probably unified into non-worker FileSystemClient
+// implementation.
 class WorkerFileSystemClient : public WebCore::FileSystemClient {
 public:
     static PassOwnPtr<FileSystemClient> create();

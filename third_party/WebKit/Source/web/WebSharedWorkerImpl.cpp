@@ -37,6 +37,7 @@
 #include "public/platform/WebURL.h"
 #include "wtf/MainThread.h"
 #include "WebDataSourceImpl.h"
+#include "WebFrame.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
 #include "WebRuntimeFeatures.h"
@@ -73,6 +74,24 @@
 using namespace WebCore;
 
 namespace WebKit {
+
+namespace {
+
+void invokeTaskMethod(void* param)
+{
+    ExecutionContextTask* task =
+        static_cast<ExecutionContextTask*>(param);
+    task->performTask(0);
+    delete task;
+}
+
+
+void dispatchTaskToMainThread(PassOwnPtr<ExecutionContextTask> task)
+{
+    callOnMainThread(invokeTaskMethod, task.leakPtr());
+}
+
+} // namespace
 
 // This function is called on the main thread to force to initialize some static
 // values used in WebKit before any worker thread is started. This is because in
@@ -231,12 +250,6 @@ bool WebSharedWorkerImpl::postTaskForModeToWorkerGlobalScope(
     m_workerThread->runLoop().postTaskForMode(task, mode);
     return true;
 }
-
-WebWorkerBase* WebSharedWorkerImpl::toWebWorkerBase()
-{
-    return this;
-}
-
 
 bool WebSharedWorkerImpl::isStarted()
 {

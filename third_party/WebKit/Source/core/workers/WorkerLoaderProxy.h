@@ -35,10 +35,6 @@
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebKit {
-class WebWorkerBase;
-}
-
 namespace WebCore {
 
     // A proxy to talk to the loader context. Normally, the document on the main thread
@@ -57,9 +53,6 @@ namespace WebCore {
         // specific synchronous loading requests so they can be 'nested', per spec.
         // Returns true if the task was posted successfully.
         virtual bool postTaskForModeToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask>, const String& mode) = 0;
-
-        // Spans divergent class hierarchies for dedicated and shared workers.
-        virtual WebKit::WebWorkerBase* toWebWorkerBase() = 0;
     };
 
 } // namespace WebCore

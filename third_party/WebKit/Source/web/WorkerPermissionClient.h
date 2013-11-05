@@ -54,9 +54,6 @@ public:
     bool allowFileSystem();
     bool allowIndexedDB(const WebString& name);
 
-    // FIXME: Remove this after embedder implement this.
-    WebWorkerPermissionClientProxy* proxy() { return m_proxy.get(); }
-
     static const char* supplementName();
     static WorkerPermissionClient* from(WebCore::ExecutionContext*);
 

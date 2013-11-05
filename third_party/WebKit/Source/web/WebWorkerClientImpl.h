@@ -37,7 +37,6 @@
 #include "core/workers/WorkerMessagingProxy.h"
 #include "core/workers/WorkerObjectProxy.h"
 
-#include "WebWorkerBase.h"
 #include "public/platform/WebFileSystem.h"
 #include "public/platform/WebFileSystemType.h"
 #include "wtf/OwnPtr.h"
@@ -50,8 +49,7 @@ class WebWorker;
 class WebFrameImpl;
 
 // This class provides chromium implementation for WorkerGlobalScopeProxy, WorkerObjectProxy amd WorkerLoaderProxy
-// for in-proc dedicated workers. It also acts as a bridge for workers to chromium implementation of file systems,
-// databases and other related functionality.
+// for in-proc dedicated workers.
 //
 // In essence, this class decorates WorkerMessagingProxy.
 //
@@ -59,10 +57,9 @@ class WebFrameImpl;
 // WorkerMessagingProxy, because that class tracks and reports its activity to outside callers, and manages
 // its own lifetime, via calls to workerObjectDestroyed, workerGlobalScopeDestroyed, workerGlobalScopeClosed, etc. It
 // is basically impossible to correctly manage the lifetime of this class separately from WorkerMessagingProxy.
-class WebWorkerClientImpl : public WebCore::WorkerMessagingProxy
-                          , public WebWorkerBase
-                          , public WebCommonWorkerClient {
+class WebWorkerClientImpl : public WebCore::WorkerMessagingProxy {
 public:
+    // FIXME: Deprecate this static factory method.
     // WebCore::WorkerGlobalScopeProxy Factory.
     static WebCore::WorkerGlobalScopeProxy* createWorkerGlobalScopeProxy(WebCore::Worker*);
 
@@ -70,19 +67,6 @@ public:
     // These are called on the thread that created the worker.  In the renderer
     // process, this will be the main WebKit thread.
     virtual void terminateWorkerGlobalScope() OVERRIDE;
-
-    // WebCore::WorkerLoaderProxy methods
-    virtual WebWorkerBase* toWebWorkerBase() OVERRIDE;
-
-    // WebWorkerBase methods:
-    virtual WebCore::WorkerLoaderProxy* workerLoaderProxy() OVERRIDE { return this; }
-    virtual WebCommonWorkerClient* commonClient() OVERRIDE { return this; }
-    virtual WebView* view() const OVERRIDE;
-
-    // WebCommonWorkerClient methods:
-    virtual bool allowDatabase(WebFrame*, const WebString& name, const WebString& displayName, unsigned long estimatedSize) OVERRIDE;
-    virtual bool allowFileSystem();
-    virtual bool allowIndexedDB(const WebString& name) OVERRIDE;
 
 private:
     WebWorkerClientImpl(WebCore::Worker*, WebFrameImpl*, PassOwnPtr<WebCore::WorkerClients>);

@@ -52,21 +52,21 @@ WorkerPermissionClient::~WorkerPermissionClient()
 bool WorkerPermissionClient::allowDatabase(const WebString& name, const WebString& displayName, unsigned long estimatedSize)
 {
     if (!m_proxy)
-        return false;
+        return true;
     return m_proxy->allowDatabase(name, displayName, estimatedSize);
 }
 
 bool WorkerPermissionClient::allowFileSystem()
 {
     if (!m_proxy)
-        return false;
+        return true;
     return m_proxy->allowFileSystem();
 }
 
 bool WorkerPermissionClient::allowIndexedDB(const WebString& name)
 {
     if (!m_proxy)
-        return false;
+        return true;
     return m_proxy->allowIndexedDB(name);
 }
 

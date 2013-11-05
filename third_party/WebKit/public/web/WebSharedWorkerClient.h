@@ -32,10 +32,11 @@
 #define WebSharedWorkerClient_h
 
 #include "../platform/WebMessagePortChannel.h"
-#include "WebCommonWorkerClient.h"
 
 namespace WebKit {
 
+class WebApplicationCacheHost;
+class WebApplicationCacheHostClient;
 class WebNotificationPresenter;
 class WebSecurityOrigin;
 class WebString;
@@ -45,13 +46,13 @@ class WebWorkerPermissionClientProxy;
 // Provides an interface back to the in-page script object for a worker.
 // All functions are expected to be called back on the thread that created
 // the Worker object, unless noted.
-class WebSharedWorkerClient : public WebCommonWorkerClient {
+class WebSharedWorkerClient {
 public:
     virtual void workerContextClosed() = 0;
     virtual void workerContextDestroyed() = 0;
 
     // Returns the notification presenter for this worker context. Pointer
-    // is owned by the object implementing WebCommonWorkerClient.
+    // is owned by the object implementing WebSharedWorkerClient.
     virtual WebNotificationPresenter* notificationPresenter() = 0;
 
     // Called on the main webkit thread in the worker process during
