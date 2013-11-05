@@ -68,7 +68,6 @@
 #include "chrome/renderer/extensions/tab_finder.h"
 #include "chrome/renderer/extensions/tabs_custom_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
-#include "chrome/renderer/extensions/webrtc_native_handler.h"
 #include "chrome/renderer/extensions/webstore_bindings.h"
 #include "chrome/renderer/resource_bundle_source_map.h"
 #include "content/public/renderer/render_thread.h"
@@ -99,6 +98,10 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "v8/include/v8.h"
+
+#if defined(ENABLE_WEBRTC)
+#include "chrome/renderer/extensions/webrtc_native_handler.h"
+#endif
 
 using WebKit::WebDataSource;
 using WebKit::WebDocument;
@@ -938,8 +941,10 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
       scoped_ptr<NativeHandler>(new TabsCustomBindings(this, context)));
   module_system->RegisterNativeHandler("webstore",
       scoped_ptr<NativeHandler>(new WebstoreBindings(this, context)));
+#if defined(ENABLE_WEBRTC)
   module_system->RegisterNativeHandler("webrtc_natives",
       scoped_ptr<NativeHandler>(new WebRtcNativeHandler(context)));
+#endif
 }
 
 void Dispatcher::PopulateSourceMap() {
@@ -1011,10 +1016,12 @@ void Dispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("webRequest", IDR_WEB_REQUEST_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("webRequestInternal",
                              IDR_WEB_REQUEST_INTERNAL_CUSTOM_BINDINGS_JS);
+#if defined(ENABLE_WEBRTC)
   source_map_.RegisterSource("webrtc.castSendTransport",
                              IDR_WEBRTC_CAST_SEND_TRANSPORT_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("webrtc.castUdpTransport",
                              IDR_WEBRTC_CAST_UDP_TRANSPORT_CUSTOM_BINDINGS_JS);
+#endif
   source_map_.RegisterSource("webstore", IDR_WEBSTORE_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("windowControls", IDR_WINDOW_CONTROLS_JS);
   source_map_.RegisterSource("binding", IDR_BINDING_JS);
