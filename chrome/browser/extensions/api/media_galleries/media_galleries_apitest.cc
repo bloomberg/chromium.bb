@@ -292,8 +292,14 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
   ASSERT_TRUE(RunMediaGalleriesTest("picasa")) << message_;
 }
 
+// Disabled on windows. See http://crbug.com/315246.
+#if defined(OS_WIN)
+#define MAYBE_PicasaCustomLocation DISABLED_PicasaCustomLocation
+#else
+#define MAYBE_PicasaCustomLocation PicasaCustomLocation
+#endif
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
-                       PicasaCustomLocation) {
+                       MAYBE_PicasaCustomLocation) {
   base::ScopedTempDir custom_picasa_app_data_root;
   ASSERT_TRUE(custom_picasa_app_data_root.CreateUniqueTempDir());
   ensure_media_directories_exists()->SetCustomPicasaAppDataPath(
@@ -301,4 +307,5 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
   PopulatePicasaTestData(custom_picasa_app_data_root.path());
   ASSERT_TRUE(RunMediaGalleriesTest("picasa")) << message_;
 }
+
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
