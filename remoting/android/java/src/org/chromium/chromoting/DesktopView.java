@@ -85,6 +85,11 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface, Ru
         }
 
         Bitmap image = JniInterface.getVideoFrame();
+        if (image == null) {
+            // This can happen if the client is connected, but a complete video frame has not yet
+            // been decoded.
+            return;
+        }
 
         int width = image.getWidth();
         int height = image.getHeight();
