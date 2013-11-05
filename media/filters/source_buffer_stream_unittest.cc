@@ -3225,6 +3225,31 @@ TEST_F(SourceBufferStreamTest, Remove_GOPBeingAppended) {
   CheckExpectedBuffers("240K 270 300");
 }
 
+
+TEST_F(SourceBufferStreamTest,
+       Remove_PreviousAppendDestroyedAndOverwriteExistingRange) {
+  SeekToTimestamp(base::TimeDelta::FromMilliseconds(90));
+
+  NewSegmentAppend("90K 120 150");
+  CheckExpectedRangesByTimestamp("{ [90,180) }");
+
+  // Append a segment before the previously appended data.
+  NewSegmentAppend("0K 30 60");
+
+  // Verify that the ranges get merged.
+  CheckExpectedRangesByTimestamp("{ [0,180) }");
+
+  // Remove the data from the last append.
+  RemoveInMs(0, 90, 360);
+  CheckExpectedRangesByTimestamp("{ [90,180) }");
+
+  // Append a new segment that follows the removed segment and
+  // starts at the beginning of the range left over from the
+  // remove.
+  NewSegmentAppend("90K 121 151");
+  CheckExpectedBuffers("90K 121 151");
+}
+
 // TODO(vrk): Add unit tests where keyframes are unaligned between streams.
 // (crbug.com/133557)
 

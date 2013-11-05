@@ -391,7 +391,7 @@ void SourceBufferStream::OnNewMediaSegment(
                              media_segment_start_time)) {
     last_appended_buffer_timestamp_ = kNoTimestamp();
     last_appended_buffer_is_keyframe_ = false;
-  } else {
+  } else if (last_range != ranges_.end()) {
     DCHECK(last_range == range_for_next_append_);
   }
 }
