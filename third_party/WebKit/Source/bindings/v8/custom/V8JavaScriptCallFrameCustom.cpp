@@ -76,6 +76,12 @@ void V8JavaScriptCallFrame::thisObjectAttributeGetterCustom(const v8::PropertyCa
     v8SetReturnValue(info, impl->thisObject());
 }
 
+void V8JavaScriptCallFrame::returnValueAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    JavaScriptCallFrame* impl = V8JavaScriptCallFrame::toNative(info.Holder());
+    v8SetReturnValue(info, impl->returnValue());
+}
+
 void V8JavaScriptCallFrame::typeAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8SetReturnValue(info, v8::String::NewSymbol("function"));

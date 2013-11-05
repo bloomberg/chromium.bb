@@ -51,5 +51,6 @@
     readonly attribute DOMString stepInPositions;
     readonly attribute DOMString functionName;
     [CustomGetter] readonly attribute DOMString type;
+    readonly attribute boolean isAtReturn;
+    [CustomGetter] readonly attribute any returnValue;
 };
-

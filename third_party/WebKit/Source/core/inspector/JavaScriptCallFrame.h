@@ -59,6 +59,8 @@ public:
     int scopeType(int scopeIndex) const;
     v8::Handle<v8::Value> thisObject() const;
     String stepInPositions() const;
+    bool isAtReturn() const;
+    v8::Handle<v8::Value> returnValue() const;
 
     v8::Handle<v8::Value> evaluate(const String& expression);
     v8::Handle<v8::Value> restart();

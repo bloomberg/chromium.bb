@@ -338,6 +338,9 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
     // Get this object.
     var thisObject = frameMirror.details_.receiver();
 
+    var isAtReturn = !!frameMirror.details_.isAtReturn();
+    var returnValue = isAtReturn ? frameMirror.details_.returnValue() : undefined;
+
     var scopeChain = [];
     var scopeType = [];
     for (var i = 0; i < frameMirror.scopeCount(); i++) {
@@ -396,6 +399,8 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
         "restart": restart,
         "setVariableValue": setVariableValue,
         "stepInPositions": stepInPositions,
+        "isAtReturn": isAtReturn,
+        "returnValue": returnValue,
         "frameMirror": frameMirror
     };
 }

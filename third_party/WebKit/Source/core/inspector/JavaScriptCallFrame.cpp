@@ -127,6 +127,21 @@ String JavaScriptCallFrame::stepInPositions() const
     return toWebCoreStringWithUndefinedOrNullCheck(result);
 }
 
+bool JavaScriptCallFrame::isAtReturn() const
+{
+    v8::HandleScope handleScope(m_isolate);
+    v8::Context::Scope contextScope(m_debuggerContext.newLocal(m_isolate));
+    v8::Handle<v8::Value> result = m_callFrame.newLocal(m_isolate)->Get(v8::String::NewSymbol("isAtReturn"));
+    if (result->IsBoolean())
+        return result->BooleanValue();
+    return false;
+}
+
+v8::Handle<v8::Value> JavaScriptCallFrame::returnValue() const
+{
+    return m_callFrame.newLocal(m_isolate)->Get(v8::String::NewSymbol("returnValue"));
+}
+
 v8::Handle<v8::Value> JavaScriptCallFrame::evaluate(const String& expression)
 {
     v8::Handle<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);
