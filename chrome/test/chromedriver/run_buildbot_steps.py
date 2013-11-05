@@ -195,10 +195,19 @@ def _ArchiveGoodBuild(platform, revision):
   zip_path = util.Zip(os.path.join(chrome_paths.GetBuildDir([server_name]),
                                    server_name))
 
-  build_url = '%s/chromedriver_%s_%s.%s.zip' % (
-      GS_CONTINUOUS_URL, platform, _GetVersion(), revision)
+  build_name = 'chromedriver_%s_%s.%s.zip' % (
+      platform, _GetVersion(), revision)
+  build_url = '%s/%s' % (GS_CONTINUOUS_URL, build_name)
   if slave_utils.GSUtilCopy(zip_path, build_url):
     util.MarkBuildStepError()
+
+  (latest_fd, latest_file) = tempfile.mkstemp()
+  os.write(latest_fd, build_name)
+  os.close(latest_fd)
+  latest_url = '%s/latest_%s' % (GS_CONTINUOUS_URL, platform)
+  if slave_utils.GSUtilCopy(latest_file, latest_url, mimetype='text/plain'):
+    util.MarkBuildStepError()
+  os.remove(latest_file)
 
 
 def _MaybeRelease(platform):
