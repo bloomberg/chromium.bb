@@ -82,6 +82,10 @@ const char kEnableCarrierSwitching[]        = "enable-carrier-switching";
 const char kEnableChromeCaptivePortalDetector[] =
     "enable-chrome-captive-portal-detector";
 
+// Enables reporting recently logged in users for enterprise-managed devices.
+const char kEnableEnterpriseUserReporting[] =
+    "enable-enterprise-user-reporting";
+
 // Enable to show the indicator about the IME (input method editor) mode
 // on Chrome OS.
 const char kEnableIMEModeIndicator[] = "enable-ime-mode-indicator";

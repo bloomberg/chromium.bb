@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
 
+#include "base/command_line.h"
 #include "base/environment.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/network/network_handler.h"
@@ -179,6 +181,9 @@ class DeviceStatusCollectorTest : public testing::Test {
     attributes->SetDomain("managed.com");
     attributes->SetRegistrationUser("user@managed.com");
     BrowserPolicyConnector::SetInstallAttributesForTesting(attributes);
+
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        chromeos::switches::kEnableEnterpriseUserReporting);
 
     RestartStatusCollector();
   }
