@@ -926,6 +926,10 @@ const char kDisableSCTPDataChannels[]       = "disable-sctp-data-channels";
 // Disables HW decode acceleration for WebRTC.
 const char kDisableWebRtcHWDecoding[]       = "disable-webrtc-hw-decoding";
 
+// Disables encryption of RTP Media for WebRTC. When Chrome embeds Content, it
+// ignores this switch on its stable and beta channels.
+const char kDisableWebRtcEncryption[]      = "disable-webrtc-encryption";
+
 // Disables HW encode acceleration for WebRTC.
 const char kDisableWebRtcHWEncoding[]       = "disable-webrtc-hw-encoding";
 

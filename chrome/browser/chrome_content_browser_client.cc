@@ -92,6 +92,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
@@ -1437,6 +1438,17 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     if (!login_profile.empty())
       command_line->AppendSwitchASCII(
           chromeos::switches::kLoginProfile, login_profile);
+#endif
+
+#if defined(ENABLE_WEBRTC)
+    if (VersionInfo::GetChannel() <= VersionInfo::CHANNEL_DEV) {
+      static const char* const kWebRtcDevSwitchNames[] = {
+        switches::kDisableWebRtcEncryption,
+      };
+      command_line->CopySwitchesFrom(browser_command_line,
+                                     kWebRtcDevSwitchNames,
+                                     arraysize(kWebRtcDevSwitchNames));
+    }
 #endif
 
     content::RenderProcessHost* process =

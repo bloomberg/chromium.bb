@@ -564,6 +564,8 @@ bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
       cmd_line->HasSwitch(switches::kEnableWebRtcAecRecordings);
   factory_options.disable_sctp_data_channels =
       cmd_line->HasSwitch(switches::kDisableSCTPDataChannels);
+  factory_options.disable_encryption =
+      cmd_line->HasSwitch(switches::kDisableWebRtcEncryption);
   pc_factory_->SetOptions(factory_options);
   return true;
 }

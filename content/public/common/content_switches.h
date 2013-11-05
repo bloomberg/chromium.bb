@@ -263,6 +263,7 @@ CONTENT_EXPORT extern const char kZygoteProcess[];
 CONTENT_EXPORT extern const char kDisableDeviceEnumeration[];
 CONTENT_EXPORT extern const char kDisableSCTPDataChannels[];
 CONTENT_EXPORT extern const char kDisableWebRtcHWDecoding[];
+extern const char kDisableWebRtcEncryption[];
 extern const char kDisableWebRtcHWEncoding[];
 extern const char kEnableWebRtcAecRecordings[];
 extern const char kEnableWebRtcTcpServerSocket[];

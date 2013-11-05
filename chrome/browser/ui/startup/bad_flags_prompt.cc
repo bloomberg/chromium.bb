@@ -38,6 +38,10 @@ void ShowBadFlagsPrompt(Browser* browser) {
     // This parameter should be used only for server side developments.
     switches::kTranslateScriptURL,
     translate::switches::kTranslateSecurityOrigin,
+  #if defined(ENABLE_WEBRTC)
+    // This flag disables security of media packets in WebRTC.
+    switches::kDisableWebRtcEncryption,
+  #endif
     NULL
   };
 
