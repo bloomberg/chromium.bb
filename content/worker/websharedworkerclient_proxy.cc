@@ -81,10 +81,8 @@ WebApplicationCacheHost* WebSharedWorkerClientProxy::createApplicationCacheHost(
 WebKit::WebWorkerPermissionClientProxy*
 WebSharedWorkerClientProxy::createWorkerPermissionClientProxy(
     const WebKit::WebSecurityOrigin& origin) {
-  if (origin.isUnique())
-    return NULL;
   return new SharedWorkerPermissionClientProxy(
-      GURL(origin.toString()), route_id_,
+      GURL(origin.toString()), origin.isUnique(), route_id_,
       ChildThread::current()->thread_safe_sender());
 }
 

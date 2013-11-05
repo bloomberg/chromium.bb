@@ -21,6 +21,7 @@ class SharedWorkerPermissionClientProxy
  public:
   SharedWorkerPermissionClientProxy(
       const GURL& origin_url,
+      bool is_unique_origin,
       int routing_id,
       ThreadSafeSender* thread_safe_sender);
   virtual ~SharedWorkerPermissionClientProxy();
@@ -34,6 +35,7 @@ class SharedWorkerPermissionClientProxy
 
  private:
   const GURL origin_url_;
+  const bool is_unique_origin_;
   const int routing_id_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 

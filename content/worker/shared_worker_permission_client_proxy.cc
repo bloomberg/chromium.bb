@@ -13,9 +13,11 @@ namespace content {
 
 SharedWorkerPermissionClientProxy::SharedWorkerPermissionClientProxy(
     const GURL& origin_url,
+    bool is_unique_origin,
     int routing_id,
     ThreadSafeSender* thread_safe_sender)
     : origin_url_(origin_url),
+      is_unique_origin_(is_unique_origin),
       routing_id_(routing_id),
       thread_safe_sender_(thread_safe_sender) {
 }
@@ -27,6 +29,8 @@ bool SharedWorkerPermissionClientProxy::allowDatabase(
     const WebKit::WebString& name,
     const WebKit::WebString& display_name,
     unsigned long estimated_size) {
+  if (is_unique_origin_)
+    return false;
   bool result = false;
   thread_safe_sender_->Send(new WorkerProcessHostMsg_AllowDatabase(
       routing_id_, origin_url_, name, display_name,
@@ -35,6 +39,8 @@ bool SharedWorkerPermissionClientProxy::allowDatabase(
 }
 
 bool SharedWorkerPermissionClientProxy::allowFileSystem() {
+  if (is_unique_origin_)
+    return false;
   bool result = false;
   thread_safe_sender_->Send(new WorkerProcessHostMsg_AllowFileSystem(
       routing_id_, origin_url_, &result));
@@ -43,6 +49,8 @@ bool SharedWorkerPermissionClientProxy::allowFileSystem() {
 
 bool SharedWorkerPermissionClientProxy::allowIndexedDB(
     const WebKit::WebString& name) {
+  if (is_unique_origin_)
+    return false;
   bool result = false;
   thread_safe_sender_->Send(new WorkerProcessHostMsg_AllowIndexedDB(
       routing_id_, origin_url_, name, &result));
