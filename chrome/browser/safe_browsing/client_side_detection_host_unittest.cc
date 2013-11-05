@@ -86,6 +86,12 @@ ACTION_TEMPLATE(InvokeCallbackArgument,
   ::std::tr1::get<k>(args).Run(p0, p1);
 }
 
+ACTION_P(InvokeMalwareCallback, verdict) {
+  scoped_ptr<ClientMalwareRequest> request(::std::tr1::get<1>(args));
+  request->CopyFrom(*verdict);
+  ::std::tr1::get<2>(args).Run(true, request.Pass());
+}
+
 void EmptyUrlCheckCallback(bool processed) {
 }
 
@@ -139,6 +145,7 @@ class MockSafeBrowsingDatabaseManager : public SafeBrowsingDatabaseManager {
       : SafeBrowsingDatabaseManager(service) { }
 
   MOCK_METHOD1(MatchCsdWhitelistUrl, bool(const GURL&));
+  MOCK_METHOD1(MatchMalwareIP, bool(const std::string& ip_address));
 
  protected:
   virtual ~MockSafeBrowsingDatabaseManager() {}
@@ -159,18 +166,19 @@ class MockBrowserFeatureExtractor : public BrowserFeatureExtractor {
  public:
   explicit MockBrowserFeatureExtractor(
       WebContents* tab,
-      ClientSideDetectionService* service)
-      : BrowserFeatureExtractor(tab, service) {}
+      ClientSideDetectionHost* host)
+      : BrowserFeatureExtractor(tab, host) {}
   virtual ~MockBrowserFeatureExtractor() {}
 
   MOCK_METHOD3(ExtractFeatures,
-               void(const BrowseInfo* info,
+               void(const BrowseInfo*,
                     ClientPhishingRequest*,
                     const BrowserFeatureExtractor::DoneCallback&));
 
-  MOCK_METHOD2(ExtractMalwareFeatures,
-               void(const BrowseInfo* info,
-                    ClientMalwareRequest*));
+  MOCK_METHOD3(ExtractMalwareFeatures,
+               void(BrowseInfo*,
+                    ClientMalwareRequest*,
+                    const BrowserFeatureExtractor::MalwareDoneCallback&));
 };
 
 }  // namespace
@@ -330,9 +338,10 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneInvalidVerdict) {
 #endif
   // Case 0: renderer sends an invalid verdict string that we're unable to
   // parse.
-  MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
-      web_contents(),
-      csd_service_.get());
+  MockBrowserFeatureExtractor* mock_extractor =
+      new StrictMock<MockBrowserFeatureExtractor>(
+          web_contents(),
+          csd_host_.get());
   SetFeatureExtractor(mock_extractor);  // The host class takes ownership.
   EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _)).Times(0);
   OnPhishingDetectionDone("Invalid Protocol Buffer");
@@ -348,9 +357,10 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneNotPhishing) {
 #endif
   // Case 1: client thinks the page is phishing.  The server does not agree.
   // No interstitial is shown.
-  MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
-      web_contents(),
-      csd_service_.get());
+  MockBrowserFeatureExtractor* mock_extractor =
+      new StrictMock<MockBrowserFeatureExtractor>(
+          web_contents(),
+          csd_host_.get());
   SetFeatureExtractor(mock_extractor);  // The host class takes ownership.
 
   ClientSideDetectionService::ClientReportPhishingRequestCallback cb;
@@ -359,15 +369,19 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneNotPhishing) {
   verdict.set_client_score(1.0f);
   verdict.set_is_phishing(true);
 
+  ClientMalwareRequest malware_verdict;
+  malware_verdict.set_url(verdict.url());
   EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _))
       .WillOnce(DoAll(DeleteArg<1>(),
                       InvokeCallbackArgument<2>(true, &verdict)));
+  EXPECT_CALL(*mock_extractor, ExtractMalwareFeatures(_, _, _))
+      .WillOnce(InvokeMalwareCallback(&malware_verdict));
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(
                   Pointee(PartiallyEqualVerdict(verdict)), _))
       .WillOnce(SaveArg<1>(&cb));
   OnPhishingDetectionDone(verdict.SerializeAsString());
-  EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
+  EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
   ASSERT_FALSE(cb.is_null());
 
   // Make sure DoDisplayBlockingPage is not going to be called.
@@ -385,9 +399,10 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneDisabled) {
 #endif
   // Case 2: client thinks the page is phishing and so does the server but
   // showing the interstitial is disabled => no interstitial is shown.
-  MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
-      web_contents(),
-      csd_service_.get());
+  MockBrowserFeatureExtractor* mock_extractor =
+      new StrictMock<MockBrowserFeatureExtractor>(
+          web_contents(),
+          csd_host_.get());
   SetFeatureExtractor(mock_extractor);  // The host class takes ownership.
 
   ClientSideDetectionService::ClientReportPhishingRequestCallback cb;
@@ -403,8 +418,16 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneDisabled) {
               SendClientReportPhishingRequest(
                   Pointee(PartiallyEqualVerdict(verdict)), _))
       .WillOnce(SaveArg<1>(&cb));
+
+  ClientMalwareRequest malware_verdict;
+  malware_verdict.set_url(verdict.url());
+  EXPECT_CALL(*mock_extractor, ExtractMalwareFeatures(_, _, _))
+      .WillOnce(InvokeMalwareCallback(&malware_verdict));
+  EXPECT_CALL(*csd_service_,
+              SendClientReportMalwareRequest(_, _)).Times(0);
+
   OnPhishingDetectionDone(verdict.SerializeAsString());
-  EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
+  EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
   ASSERT_FALSE(cb.is_null());
 
   // Make sure DoDisplayBlockingPage is not going to be called.
@@ -423,9 +446,10 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneShowInterstitial) {
 #endif
   // Case 3: client thinks the page is phishing and so does the server.
   // We show an interstitial.
-  MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
-      web_contents(),
-      csd_service_.get());
+  MockBrowserFeatureExtractor* mock_extractor =
+      new StrictMock<MockBrowserFeatureExtractor>(
+          web_contents(),
+          csd_host_.get());
   SetFeatureExtractor(mock_extractor);  // The host class takes ownership.
 
   ClientSideDetectionService::ClientReportPhishingRequestCallback cb;
@@ -435,14 +459,20 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneShowInterstitial) {
   verdict.set_client_score(1.0f);
   verdict.set_is_phishing(true);
 
+  ClientMalwareRequest malware_verdict;
+  malware_verdict.set_url(verdict.url());
+
   EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _))
       .WillOnce(DoAll(DeleteArg<1>(),
                       InvokeCallbackArgument<2>(true, &verdict)));
+  EXPECT_CALL(*mock_extractor, ExtractMalwareFeatures(_, _, _))
+      .WillOnce(InvokeMalwareCallback(&malware_verdict));
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(
                   Pointee(PartiallyEqualVerdict(verdict)), _))
       .WillOnce(SaveArg<1>(&cb));
   OnPhishingDetectionDone(verdict.SerializeAsString());
+  EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_FALSE(cb.is_null());
 
@@ -482,9 +512,10 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
   // before the server responds with a verdict.  After a while the
   // server responds for both requests with a phishing verdict.  Only
   // a single interstitial is shown for the second URL.
-  MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
-      web_contents(),
-      csd_service_.get());
+  MockBrowserFeatureExtractor* mock_extractor =
+      new StrictMock<MockBrowserFeatureExtractor>(
+          web_contents(),
+          csd_host_.get());
   SetFeatureExtractor(mock_extractor);  // The host class takes ownership.
 
   ClientSideDetectionService::ClientReportPhishingRequestCallback cb;
@@ -494,14 +525,20 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
   verdict.set_client_score(1.0f);
   verdict.set_is_phishing(true);
 
+  ClientMalwareRequest malware_verdict;
+  malware_verdict.set_url(verdict.url());
+
   EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _))
       .WillOnce(DoAll(DeleteArg<1>(),
                       InvokeCallbackArgument<2>(true, &verdict)));
+  EXPECT_CALL(*mock_extractor, ExtractMalwareFeatures(_, _, _))
+      .WillOnce(InvokeMalwareCallback(&malware_verdict));
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(
                   Pointee(PartiallyEqualVerdict(verdict)), _))
       .WillOnce(SaveArg<1>(&cb));
   OnPhishingDetectionDone(verdict.SerializeAsString());
+  EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_FALSE(cb.is_null());
 
@@ -509,7 +546,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
   // NavigateAndCommit() and it's easier to use the real thing than setting up
   // mock expectations.
   SetFeatureExtractor(new BrowserFeatureExtractor(web_contents(),
-                                                  csd_service_.get()));
+                                                  csd_host_.get()));
   GURL other_phishing_url("http://other_phishing_url.com/bla");
   ExpectPreClassificationChecks(other_phishing_url, &kFalse, &kFalse, &kFalse,
                                 &kFalse, &kFalse, &kFalse);
@@ -532,6 +569,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
   SetRedirectChain(redirect_chain);
   OnPhishingDetectionDone(verdict.SerializeAsString());
   base::MessageLoop::current()->Run();
+  EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_FALSE(cb_other.is_null());
 
@@ -572,9 +610,10 @@ TEST_F(ClientSideDetectionHostTest,
        OnPhishingDetectionDoneVerdictNotPhishing) {
 #endif
   // Case 6: renderer sends a verdict string that isn't phishing.
-  MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
-      web_contents(),
-      csd_service_.get());
+  MockBrowserFeatureExtractor* mock_extractor =
+      new StrictMock<MockBrowserFeatureExtractor>(
+          web_contents(),
+          csd_host_.get());
   SetFeatureExtractor(mock_extractor);  // The host class takes ownership.
 
   ClientPhishingRequest verdict;
@@ -582,7 +621,12 @@ TEST_F(ClientSideDetectionHostTest,
   verdict.set_client_score(0.1f);
   verdict.set_is_phishing(false);
 
+  ClientMalwareRequest malware_verdict;
+  malware_verdict.set_url(verdict.url());
+
   EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _)).Times(0);
+  EXPECT_CALL(*mock_extractor, ExtractMalwareFeatures(_, _, _))
+      .WillOnce(InvokeMalwareCallback(&malware_verdict));
   OnPhishingDetectionDone(verdict.SerializeAsString());
   EXPECT_TRUE(Mock::VerifyAndClear(mock_extractor));
 }
@@ -619,7 +663,7 @@ TEST_F(ClientSideDetectionHostTest,
   SetRedirectChain(redirect_chain);
   OnPhishingDetectionDone(verdict.SerializeAsString());
   base::MessageLoop::current()->Run();
-  EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
+  EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
 }
 
 #if defined(OS_WIN)
@@ -690,9 +734,10 @@ TEST_F(ClientSideDetectionHostTest,
 #endif
   // Case 7: renderer sends a verdict string that isn't phishing and not matches
   // malware bad IP list
-  MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
-      web_contents(),
-      csd_service_.get());
+  MockBrowserFeatureExtractor* mock_extractor =
+      new StrictMock<MockBrowserFeatureExtractor>(
+          web_contents(),
+          csd_host_.get());
   SetFeatureExtractor(mock_extractor);  // The host class takes ownership.
 
   ClientPhishingRequest verdict;
@@ -701,10 +746,12 @@ TEST_F(ClientSideDetectionHostTest,
   verdict.set_is_phishing(false);
 
   ClientMalwareRequest malware_verdict;
-  malware_verdict.set_url("http://not-phishing.com/");
+  malware_verdict.set_url(verdict.url());
 
-  EXPECT_CALL(*mock_extractor, ExtractMalwareFeatures(_, _))
-      .WillOnce(SetArgumentPointee<1>(malware_verdict));
+  // That is a special case.  If there were no IP matches or if feature
+  // extraction failed the callback will delete the malware_verdict.
+  EXPECT_CALL(*mock_extractor, ExtractMalwareFeatures(_, _, _))
+      .WillOnce(InvokeMalwareCallback(&malware_verdict));
   EXPECT_CALL(*csd_service_,
               SendClientReportMalwareRequest(_, _)).Times(0);
   EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _)).Times(0);
@@ -723,9 +770,10 @@ TEST_F(ClientSideDetectionHostTest,
 #endif
   // Case 8: renderer sends a verdict string that isn't phishing but matches
   // malware bad IP list
-  MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
-      web_contents(),
-      csd_service_.get());
+  MockBrowserFeatureExtractor* mock_extractor =
+      new StrictMock<MockBrowserFeatureExtractor>(
+          web_contents(),
+          csd_host_.get());
   SetFeatureExtractor(mock_extractor);  // The host class takes ownership.
 
   ClientPhishingRequest verdict;
@@ -734,14 +782,14 @@ TEST_F(ClientSideDetectionHostTest,
   verdict.set_is_phishing(false);
 
   ClientMalwareRequest malware_verdict;
-  malware_verdict.set_url("http://not-phishing.com/");
+  malware_verdict.set_url(verdict.url());
   ClientMalwareRequest::Feature* feature = malware_verdict.add_feature_map();
   feature->set_name("malwareip1.2.3.4");
   feature->set_value(1.0);
   feature->add_metainfo("badip.com");
 
-  EXPECT_CALL(*mock_extractor, ExtractMalwareFeatures(_, _))
-      .WillOnce(SetArgumentPointee<1>(malware_verdict));
+  EXPECT_CALL(*mock_extractor, ExtractMalwareFeatures(_, _, _))
+      .WillOnce(InvokeMalwareCallback(&malware_verdict));
   EXPECT_CALL(*csd_service_,
               SendClientReportMalwareRequest(
                   Pointee(PartiallyEqualMalwareVerdict(malware_verdict)), _))
@@ -762,9 +810,10 @@ TEST_F(ClientSideDetectionHostTest,
 #endif
   // Case 9: renderer sends a verdict string that is phishing and matches
   // malware bad IP list
-  MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
-      web_contents(),
-      csd_service_.get());
+  MockBrowserFeatureExtractor* mock_extractor =
+      new StrictMock<MockBrowserFeatureExtractor>(
+          web_contents(),
+          csd_host_.get());
   SetFeatureExtractor(mock_extractor);  // The host class takes ownership.
 
   ClientSideDetectionService::ClientReportPhishingRequestCallback cb;
@@ -774,14 +823,14 @@ TEST_F(ClientSideDetectionHostTest,
   verdict.set_is_phishing(true);
 
   ClientMalwareRequest malware_verdict;
-  malware_verdict.set_url("http://not-phishing.com/");
+  malware_verdict.set_url(verdict.url());
   ClientMalwareRequest::Feature* feature = malware_verdict.add_feature_map();
   feature->set_name("malwareip1.2.3.4");
   feature->set_value(1.0);
   feature->add_metainfo("badip.com");
 
-  EXPECT_CALL(*mock_extractor, ExtractMalwareFeatures(_, _))
-      .WillOnce(SetArgumentPointee<1>(malware_verdict));
+  EXPECT_CALL(*mock_extractor, ExtractMalwareFeatures(_, _, _))
+      .WillOnce(InvokeMalwareCallback(&malware_verdict));
   EXPECT_CALL(*csd_service_,
               SendClientReportMalwareRequest(
                   Pointee(PartiallyEqualMalwareVerdict(malware_verdict)), _))
@@ -797,6 +846,7 @@ TEST_F(ClientSideDetectionHostTest,
       .WillOnce(SaveArg<1>(&cb));
   OnPhishingDetectionDone(verdict.SerializeAsString());
   EXPECT_TRUE(Mock::VerifyAndClear(mock_extractor));
+  EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_FALSE(cb.is_null());
 }
@@ -811,9 +861,10 @@ TEST_F(ClientSideDetectionHostTest,
 #endif
   // Case 10: client thinks the page match malware IP and so does the server.
   // We show an sub-resource malware interstitial.
-  MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
-      web_contents(),
-      csd_service_.get());
+  MockBrowserFeatureExtractor* mock_extractor =
+      new StrictMock<MockBrowserFeatureExtractor>(
+          web_contents(),
+          csd_host_.get());
   SetFeatureExtractor(mock_extractor);  // The host class takes ownership.
 
   ClientPhishingRequest verdict;
@@ -831,14 +882,14 @@ TEST_F(ClientSideDetectionHostTest,
   feature->set_value(1.0);
   feature->add_metainfo("http://badip.com");
 
-  EXPECT_CALL(*mock_extractor, ExtractMalwareFeatures(_, _))
-      .WillOnce(SetArgumentPointee<1>(malware_verdict));
+  EXPECT_CALL(*mock_extractor, ExtractMalwareFeatures(_, _, _))
+      .WillOnce(InvokeMalwareCallback(&malware_verdict));
   EXPECT_CALL(*csd_service_,
               SendClientReportMalwareRequest(
                   Pointee(PartiallyEqualMalwareVerdict(malware_verdict)), _))
-      .WillOnce(DoAll(DeleteArg<0>(),
-                      SaveArg<1>(&cb)));
+      .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb)));
   OnPhishingDetectionDone(verdict.SerializeAsString());
+  EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_FALSE(cb.is_null());
 
@@ -1045,7 +1096,7 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
   base::RunLoop().RunUntilIdle();
   // Now we check that all expected functions were indeed called on the two
   // service objects.
-  EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
+  EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
   EXPECT_TRUE(Mock::VerifyAndClear(ui_manager_.get()));
   EXPECT_EQ(url, resource.url);
   EXPECT_EQ(url, resource.original_url);
@@ -1054,5 +1105,4 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
       SafeBrowsingMsg_StartPhishingDetection::ID);
   ASSERT_FALSE(msg);
 }
-
 }  // namespace safe_browsing
