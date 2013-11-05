@@ -69,6 +69,7 @@ const char kUseRemoteNTPOnStartupFlagName[] = "use_remote_ntp_on_startup";
 const char kShowNtpFlagName[] = "show_ntp";
 const char kRecentTabsOnNTPFlagName[] = "show_recent_tabs";
 const char kUseCacheableNTP[] = "use_cacheable_ntp";
+const char kPrefetchSearchResultsFlagName[] = "prefetch_results";
 const char kPrefetchSearchResultsOnSRP[] = "prefetch_results_srp";
 const char kSuppressInstantExtendedOnSRPFlagName[] = "suppress_on_srp";
 
@@ -495,6 +496,22 @@ GURL GetNewTabPageURL(Profile* profile) {
     return GURL(chrome::kChromeSearchLocalNtpUrl);
 
   return url;
+}
+
+GURL GetSearchResultPrefetchBaseURL(Profile* profile) {
+  return ShouldPrefetchSearchResults() ?
+      GetInstantURL(profile, kDisableStartMargin, true) : GURL();
+}
+
+bool ShouldPrefetchSearchResults() {
+  if (!ShouldUseCacheableNTP())
+    return false;
+
+  FieldTrialFlags flags;
+  if (GetFieldTrialInfo(&flags, NULL))
+    return GetBoolValueForFlagWithDefault(kPrefetchSearchResultsFlagName, false,
+                                          flags);
+  return false;
 }
 
 GURL GetLocalInstantURL(Profile* profile) {

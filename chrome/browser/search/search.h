@@ -120,6 +120,15 @@ GURL GetInstantURL(Profile* profile,
 // Returns URLs associated with the default search engine for |profile|.
 std::vector<GURL> GetSearchURLs(Profile* profile);
 
+// Returns the default search engine base page URL to prefetch search results.
+// Returns an empty URL if 'prefetch_results' flag is set to false in field
+// trials.
+GURL GetSearchResultPrefetchBaseURL(Profile* profile);
+
+// Returns true if 'prefetch_results' flag is set to true in field trials to
+// prefetch high-confidence search suggestions.
+bool ShouldPrefetchSearchResults();
+
 // Returns the Local Instant URL of the New Tab Page.
 // TODO(kmadhusu): Remove this function and update the call sites.
 GURL GetLocalInstantURL(Profile* profile);
