@@ -44,9 +44,6 @@
 
 namespace breakpad {
 
-// TODO(raymes): Modify the way custom crash info is stored. g_custom_entries
-// is way too too fragile. See
-// https://code.google.com/p/chromium/issues/detail?id=137062.
 std::vector<google_breakpad::CustomInfoEntry>* g_custom_entries = NULL;
 bool g_deferred_crash_uploads = false;
 
@@ -276,6 +273,8 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
       google_breakpad::CustomInfoEntry(L"plat", L"Win32"));
   g_custom_entries->push_back(
       google_breakpad::CustomInfoEntry(L"ptype", type.c_str()));
+  g_custom_entries->push_back(google_breakpad::CustomInfoEntry(
+      L"pid", base::StringPrintf(L"%d", ::GetCurrentProcessId()).c_str()));
   g_custom_entries->push_back(google_breakpad::CustomInfoEntry(
       L"channel", base::UTF16ToWide(channel_name).c_str()));
   g_custom_entries->push_back(google_breakpad::CustomInfoEntry(

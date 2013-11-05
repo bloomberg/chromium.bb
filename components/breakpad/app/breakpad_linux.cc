@@ -82,6 +82,7 @@ const char kUploadURL[] = "https://clients2.google.com/cr/report";
 
 bool g_is_crash_reporter_enabled = false;
 uint64_t g_process_start_time = 0;
+pid_t g_pid = 0;
 char* g_crash_log_path = NULL;
 ExceptionHandler* g_breakpad = NULL;
 
@@ -590,7 +591,7 @@ bool CrashDone(const MinidumpDescriptor& minidump,
   info.upload = upload;
   info.process_start_time = g_process_start_time;
   info.oom_size = base::g_oom_size;
-  info.pid = 0;
+  info.pid = g_pid;
   info.crash_keys = g_crash_keys;
   HandleCrashDump(info);
 #if defined(OS_ANDROID)
@@ -698,6 +699,7 @@ bool CrashDoneInProcessNoUpload(
   info.distro_length = distro_length;
   info.upload = false;
   info.process_start_time = g_process_start_time;
+  info.pid = g_pid;
   info.crash_keys = g_crash_keys;
   HandleCrashDump(info);
   return FinalizeCrashDoneAndroid();
@@ -723,6 +725,7 @@ void EnableNonBrowserCrashDumping(int minidump_fd) {
     return;
   }
   SetProcessStartTime();
+  g_pid = getpid();
 
   g_is_crash_reporter_enabled = true;
   // Save the process type (it is leaked).
@@ -1477,6 +1480,7 @@ void InitCrashReporter() {
   }
 
   SetProcessStartTime();
+  g_pid = getpid();
 
   GetBreakpadClient()->SetDumpWithoutCrashingFunction(&DumpProcess);
 #if defined(ADDRESS_SANITIZER)

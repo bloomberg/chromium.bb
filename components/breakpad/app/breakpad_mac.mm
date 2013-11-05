@@ -274,6 +274,10 @@ void InitCrashProcessInfo() {
 
   // Store process type in crash dump.
   SetCrashKeyValue(@"ptype", process_type);
+
+  NSString* pid_value =
+      [NSString stringWithFormat:@"%d", static_cast<unsigned int>(getpid())];
+  SetCrashKeyValue(@"pid", pid_value);
 }
 
 }  // namespace breakpad
