@@ -29,6 +29,9 @@ namespace autofill {
 // Updates the validation message for a given field.
 - (void)updateMessageForField:(NSControl<AutofillInputField>*)field;
 
+// Hides the validation error bubble.
+- (void)hideErrorBubble;
+
 @end
 
 

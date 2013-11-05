@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/mac/bundle_locations.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
@@ -14,10 +15,12 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_account_chooser.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_details_container.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_input_field.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_main_container.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_overlay_controller.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_section_container.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_sign_in_container.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_textfield.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #include "content/public/browser/web_contents.h"
@@ -248,6 +251,28 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 
 @end
 
+
+#pragma mark Field Editor
+
+@interface AutofillDialogFieldEditor : NSTextView
+@end
+
+
+@implementation AutofillDialogFieldEditor
+
+- (void)mouseDown:(NSEvent*)event {
+  // Delegate _must_ be notified before mouseDown is complete, since it needs
+  // to distinguish between mouseDown for already focused fields, and fields
+  // that will receive focus as part of the mouseDown.
+  AutofillTextField* textfield =
+      base::mac::ObjCCastStrict<AutofillTextField>([self delegate]);
+  [textfield onEditorMouseDown:self];
+  [super mouseDown:event];
+}
+
+@end
+
+
 #pragma mark Window Controller
 
 @interface AutofillDialogWindowController ()
@@ -263,6 +288,24 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 
 @end
 
+
+@implementation AutofillDialogWindowController (NSWindowDelegate)
+
+- (id)windowWillReturnFieldEditor:(NSWindow*)window toObject:(id)client {
+  AutofillTextField* textfield = base::mac::ObjCCast<AutofillTextField>(client);
+  if (!textfield)
+    return nil;
+
+  if (!fieldEditor_) {
+    fieldEditor_.reset([[AutofillDialogFieldEditor alloc] init]);
+    [fieldEditor_ setFieldEditor:YES];
+  }
+  return fieldEditor_.get();
+}
+
+@end
+
+
 @implementation AutofillDialogWindowController
 
 - (id)initWithWebContents:(content::WebContents*)webContents
@@ -274,6 +317,7 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
           initWithContentRect:ui::kWindowSizeDeterminedLater]);
 
   if ((self = [super initWithWindow:window])) {
+    [window setDelegate:self];
     webContents_ = webContents;
     autofillDialog_ = autofillDialog;
 

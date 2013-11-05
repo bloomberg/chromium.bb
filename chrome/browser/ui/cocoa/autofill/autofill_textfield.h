@@ -15,9 +15,21 @@
 @interface AutofillTextField : NSTextField<AutofillInputField,
                                            NSTextFieldDelegate> {
  @private
-   id<AutofillInputDelegate> delegate_;
-   base::scoped_nsobject<NSString> validityMessage_;
+  id<AutofillInputDelegate> delegate_;
+  base::scoped_nsobject<NSString> validityMessage_;
+
+  // |shouldFilterFirstClick_| ensures only the very first click after
+  // -becomeFirstResponder: is treated specially.
+  BOOL shouldFilterClick_;
+
+  // YES if the field is currently handling a click that caused the field to
+  // become first responder.
+  BOOL handlingFirstClick_;
 }
+
+// Can be invoked by field editor to forward mouseDown messages from the field
+// editor to the AutofillTextField.
+- (void)onEditorMouseDown:(id)sender;
 
 @end
 

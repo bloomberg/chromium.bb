@@ -144,6 +144,10 @@ SkColor const kWarningColor = 0xffde4932;  // SkColorSetRGB(0xde, 0x49, 0x32);
   return [[errorBubble_ superview] convertPoint:bubbleOrigin fromView:nil];
 }
 
+- (void)hideErrorBubble {
+  [errorBubble_ setHidden:YES];
+}
+
 - (void)updateMessageForField:(NSControl<AutofillInputField>*)field {
   // Ignore fields that are not first responder. Testing this is a bit
   // convoluted, since for NSTextFields with firstResponder status, the

@@ -262,8 +262,12 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   [view_ setFrameSize:viewFrame.size];
 }
 
-- (void)fieldBecameFirstResponder:(NSControl<AutofillInputField>*)field {
+- (void)onMouseDown:(NSControl<AutofillInputField>*)field {
   [self textfieldEditedOrActivated:field edited:NO];
+  [validationDelegate_ updateMessageForField:field];
+}
+
+- (void)fieldBecameFirstResponder:(NSControl<AutofillInputField>*)field {
   [validationDelegate_ updateMessageForField:field];
 }
 
@@ -272,6 +276,8 @@ bool CompareInputRows(const autofill::DetailInput* input1,
 }
 
 - (void)didEndEditing:(id)sender {
+  delegate_->FocusMoved();
+  [validationDelegate_ hideErrorBubble];
   [self validateFor:autofill::VALIDATE_EDIT];
 }
 
@@ -396,11 +402,11 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   gfx::Rect textFrameRect(NSRectToCGRect(textFrameInScreen));
 
   delegate_->UserEditedOrActivatedInput(section_,
-                                          [self detailInputForType:type],
-                                          [self view],
-                                          textFrameRect,
-                                          fieldValue,
-                                          edited);
+                                        [self detailInputForType:type],
+                                        [self view],
+                                        textFrameRect,
+                                        fieldValue,
+                                        edited);
 
   // If the field is marked as invalid, check if the text is now valid.
   // Many fields (i.e. CC#) are invalid for most of the duration of editing,
@@ -638,6 +644,7 @@ bool CompareInputRows(const autofill::DetailInput* input1,
 
   NSControl<AutofillInputField>* field = [inputs_ viewWithTag:input.type];
   [[field window] makeFirstResponder:field];
+  [self textfieldEditedOrActivated:field edited:NO];
 }
 
 @end

@@ -21,6 +21,9 @@
 // Delegate to handle editing events on the AutofillInputFields.
 @protocol AutofillInputDelegate<NSObject>
 
+// Input field or its editor received a mouseDown: message.
+- (void)onMouseDown:(NSControl<AutofillInputField>*)sender;
+
 // An input field just became first responder.
 - (void)fieldBecameFirstResponder:(NSControl<AutofillInputField>*)field;
 
