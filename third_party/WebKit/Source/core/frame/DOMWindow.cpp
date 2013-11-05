@@ -94,7 +94,6 @@
 #include "core/storage/StorageArea.h"
 #include "core/storage/StorageNamespace.h"
 #include "core/timing/Performance.h"
-#include "modules/device_orientation/NewDeviceOrientationController.h"
 #include "platform/PlatformScreen.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/geometry/FloatRect.h"
@@ -536,10 +535,6 @@ void DOMWindow::frameDestroyed()
 void DOMWindow::willDetachPage()
 {
     InspectorInstrumentation::frameWindowDiscarded(m_frame, this);
-    // FIXME: Once DeviceOrientationController is a ExecutionContext
-    // Supplement, this will no longer be needed.
-    if (NewDeviceOrientationController* controller = NewDeviceOrientationController::from(document()))
-        controller->stopUpdating();
 }
 
 void DOMWindow::willDestroyDocumentInFrame()
