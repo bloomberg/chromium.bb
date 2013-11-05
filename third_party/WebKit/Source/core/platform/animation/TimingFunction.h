@@ -35,6 +35,7 @@
 #include "wtf/Vector.h"
 #include <algorithm>
 
+
 namespace WebCore {
 
 class TimingFunction : public RefCounted<TimingFunction> {
@@ -90,6 +91,10 @@ private:
     {
     }
 };
+
+
+// Forward declare so we can friend it below. Don't use in production code!
+class ChainedTimingFunctionPrinter;
 
 class CubicBezierTimingFunction : public TimingFunction {
 public:
@@ -311,6 +316,10 @@ private:
         double m_min;
         double m_max;
         RefPtr<TimingFunction> m_timingFunction;
+
+        // Allow printing of our segments. Can be removed once
+        // ChainedTimingFunction has a public API for segments.
+        friend class ChainedTimingFunctionPrinter;
     };
 
     ChainedTimingFunction()
@@ -320,6 +329,10 @@ private:
     }
 
     Vector<Segment> m_segments;
+
+    // Allow printing of our segments. Can be removed once
+    // ChainedTimingFunction has a public API for segments.
+    friend class ChainedTimingFunctionPrinter;
 };
 
 } // namespace WebCore
