@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/format_macros.h"
-#include "base/memory/aligned_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "media/base/buffers.h"
@@ -47,41 +46,40 @@ void ExpectFrameColor(media::VideoFrame* yv12_frame, uint32 expect_rgb_color) {
   ASSERT_EQ(VideoFrame::YV12, yv12_frame->format());
   ASSERT_EQ(yv12_frame->stride(VideoFrame::kUPlane),
             yv12_frame->stride(VideoFrame::kVPlane));
-  ASSERT_EQ(
-      yv12_frame->coded_size().width() & (VideoFrame::kFrameSizeAlignment - 1),
-      0);
-  ASSERT_EQ(
-      yv12_frame->coded_size().height() & (VideoFrame::kFrameSizeAlignment - 1),
-      0);
 
-  size_t bytes_per_row = yv12_frame->coded_size().width() * 4u;
-  uint8* rgb_data = reinterpret_cast<uint8*>(
-      base::AlignedAlloc(bytes_per_row * yv12_frame->coded_size().height() +
-                             VideoFrame::kFrameSizePadding,
-                         VideoFrame::kFrameAddressAlignment));
+  scoped_refptr<media::VideoFrame> rgb_frame;
+  rgb_frame = media::VideoFrame::CreateFrame(VideoFrame::RGB32,
+                                             yv12_frame->coded_size(),
+                                             yv12_frame->visible_rect(),
+                                             yv12_frame->natural_size(),
+                                             yv12_frame->GetTimestamp());
+
+  ASSERT_EQ(yv12_frame->coded_size().width(),
+      rgb_frame->coded_size().width());
+  ASSERT_EQ(yv12_frame->coded_size().height(),
+      rgb_frame->coded_size().height());
 
   media::ConvertYUVToRGB32(yv12_frame->data(VideoFrame::kYPlane),
                            yv12_frame->data(VideoFrame::kUPlane),
                            yv12_frame->data(VideoFrame::kVPlane),
-                           rgb_data,
-                           yv12_frame->coded_size().width(),
-                           yv12_frame->coded_size().height(),
+                           rgb_frame->data(VideoFrame::kRGBPlane),
+                           rgb_frame->coded_size().width(),
+                           rgb_frame->coded_size().height(),
                            yv12_frame->stride(VideoFrame::kYPlane),
                            yv12_frame->stride(VideoFrame::kUPlane),
-                           bytes_per_row,
+                           rgb_frame->stride(VideoFrame::kRGBPlane),
                            media::YV12);
 
-  for (int row = 0; row < yv12_frame->coded_size().height(); ++row) {
+  for (int row = 0; row < rgb_frame->coded_size().height(); ++row) {
     uint32* rgb_row_data = reinterpret_cast<uint32*>(
-        rgb_data + (bytes_per_row * row));
-    for (int col = 0; col < yv12_frame->coded_size().width(); ++col) {
+        rgb_frame->data(VideoFrame::kRGBPlane) +
+        (rgb_frame->stride(VideoFrame::kRGBPlane) * row));
+    for (int col = 0; col < rgb_frame->coded_size().width(); ++col) {
       SCOPED_TRACE(
           base::StringPrintf("Checking (%d, %d)", row, col));
       EXPECT_EQ(expect_rgb_color, rgb_row_data[col]);
     }
   }
-
-  base::AlignedFree(rgb_data);
 }
 
 // Fill each plane to its reported extents and verify accessors report non
@@ -205,6 +203,8 @@ TEST(VideoFrame, CheckFrameExtents) {
   // Each call consists of a VideoFrame::Format, # of planes, bytes per pixel,
   // and the expected hash of all planes if filled with kFillByte (defined in
   // ExpectFrameExtents).
+  ExpectFrameExtents(
+      VideoFrame::RGB32,  1, 4, "de6d3d567e282f6a38d478f04fc81fb0");
   ExpectFrameExtents(
       VideoFrame::YV12,   3, 1, "71113bdfd4c0de6cf62f48fb74f7a0b1");
   ExpectFrameExtents(

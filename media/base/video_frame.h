@@ -28,6 +28,8 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   enum {
     kMaxPlanes = 4,
 
+    kRGBPlane = 0,
+
     kYPlane = 0,
     kUPlane = 1,
     kVPlane = 2,
@@ -39,6 +41,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // http://www.fourcc.org/yuv.php
   enum Format {
     UNKNOWN = 0,  // Unknown format value.
+    RGB32 = 4,  // 32bpp RGB packed with extra byte 8:8:8
     YV12 = 6,  // 12bpp YVU planar 1x1 Y, 2x2 VU samples
     YV16 = 7,  // 16bpp YVU planar 1x1 Y, 2x1 VU samples
     EMPTY = 9,  // An empty frame.
@@ -248,6 +251,8 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
              base::TimeDelta timestamp);
   virtual ~VideoFrame();
 
+  // Used internally by CreateFrame().
+  void AllocateRGB(size_t bytes_per_pixel);
   void AllocateYUV();
 
   // Used to DCHECK() plane parameters.

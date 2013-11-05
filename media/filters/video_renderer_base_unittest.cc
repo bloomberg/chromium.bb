@@ -186,7 +186,7 @@ class VideoRendererBaseTest : public ::testing::Test {
 
     gfx::Size natural_size = TestVideoConfig::NormalCodedSize();
     scoped_refptr<VideoFrame> frame = VideoFrame::CreateFrame(
-        VideoFrame::YV12, natural_size, gfx::Rect(natural_size), natural_size,
+        VideoFrame::RGB32, natural_size, gfx::Rect(natural_size), natural_size,
         next_frame_timestamp_);
     decode_results_.push_back(std::make_pair(
         VideoDecoder::kOk, frame));

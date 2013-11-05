@@ -77,6 +77,7 @@ bool VideoResourceUpdater::VerifyFrame(
 
     // Unacceptable inputs. ¯\(°_o)/¯
     case media::VideoFrame::UNKNOWN:
+    case media::VideoFrame::RGB32:
     case media::VideoFrame::EMPTY:
     case media::VideoFrame::I420:
       break;
@@ -104,6 +105,7 @@ static gfx::Size SoftwarePlaneDimension(
         return gfx::ToFlooredSize(gfx::ScaleSize(coded_size, 0.5f, 1.f));
 
       case media::VideoFrame::UNKNOWN:
+      case media::VideoFrame::RGB32:
       case media::VideoFrame::EMPTY:
       case media::VideoFrame::I420:
       case media::VideoFrame::NATIVE_TEXTURE:
