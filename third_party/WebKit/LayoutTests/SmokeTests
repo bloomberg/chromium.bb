@@ -122,7 +122,6 @@ fast/invalid/invalidSVGFont.html
 fast/invalid/nestedh3s-rapidweaver.html
 fast/invalid/test-case-tr-th-td-should-not-close-dl-list.html
 fast/js/add-to-primitive.html
-fast/js/concat-large-strings-crash.html
 fast/js/direct-entry-to-function-code.html
 fast/js/do-while-expression-value.html
 fast/js/do-while-without-semicolon.html
