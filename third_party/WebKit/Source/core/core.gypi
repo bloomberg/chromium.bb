@@ -2899,7 +2899,6 @@
             'platform/graphics/mac/SimpleFontDataMac.mm',
             'platform/graphics/opentype/OpenTypeSanitizer.cpp',
             'platform/graphics/opentype/OpenTypeSanitizer.h',
-            'platform/graphics/opentype/OpenTypeTypes.h',
             'platform/graphics/opentype/OpenTypeUtilities.cpp',
             'platform/graphics/opentype/OpenTypeUtilities.h',
             'platform/graphics/opentype/OpenTypeVerticalData.cpp',

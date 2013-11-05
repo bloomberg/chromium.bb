@@ -275,6 +275,7 @@
       'fonts/GlyphPage.h',
       'fonts/Latin1TextIterator.h',
       'fonts/WidthCache.h',
+      'fonts/opentype/OpenTypeTypes.h',
       'geometry/FloatPolygon.cpp',
       'geometry/FloatPolygon.h',
       'geometry/FloatPoint.cpp',
