@@ -279,20 +279,22 @@ class NotificationView : public views::View,
       views::StyledLabel::RangeStyleInfo text_style;
       text_style.color = data.GetTextColor();
 
-      if (!data.link_range().is_empty()) {
-        label->AddStyleRange(gfx::Range(0, data.link_range().start()),
-                             text_style);
-        label->AddStyleRange(
-            gfx::Range(0, data.link_range().start()),
-            views::StyledLabel::RangeStyleInfo::CreateForLink());
-        label->AddStyleRange(gfx::Range(0, data.link_range().start()),
-                             text_style);
-        label->AddStyleRange(
-            gfx::Range(data.link_range().end(), data.display_text().size()),
-            views::StyledLabel::RangeStyleInfo::CreateForLink());
-      } else {
+      if (data.link_range().is_empty()) {
         label->AddStyleRange(gfx::Range(0, data.display_text().size()),
                              text_style);
+      } else {
+        gfx::Range prefix_range(0, data.link_range().start());
+        if (!prefix_range.is_empty())
+          label->AddStyleRange(prefix_range, text_style);
+
+        label->AddStyleRange(
+            data.link_range(),
+            views::StyledLabel::RangeStyleInfo::CreateForLink());
+
+        gfx::Range suffix_range(data.link_range().end(),
+                                data.display_text().size());
+        if (!suffix_range.is_empty())
+          label->AddStyleRange(suffix_range, text_style);
       }
 
       label_view.reset(label.release());

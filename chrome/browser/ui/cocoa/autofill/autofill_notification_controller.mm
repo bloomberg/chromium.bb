@@ -11,8 +11,10 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 #include "chrome/browser/ui/chrome_style.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
+#import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 
@@ -95,8 +97,12 @@
 
 @implementation AutofillNotificationController
 
-- (id)initWithNotification:(const autofill::DialogNotification*)notification {
+- (id)initWithNotification:(const autofill::DialogNotification*)notification
+                  delegate:(autofill::AutofillDialogViewDelegate*)delegate {
   if (self = [super init]) {
+    delegate_ = delegate;
+    notificationType_ = notification->type();
+
     base::scoped_nsobject<AutofillNotificationView> view(
         [[AutofillNotificationView alloc] initWithFrame:NSZeroRect]);
     [view setBackgroundColor:
@@ -105,22 +111,31 @@
         gfx::SkColorToCalibratedNSColor(notification->GetBorderColor())];
     [self setView:view];
 
-    textfield_.reset([[NSTextField alloc] initWithFrame:NSZeroRect]);
-    [textfield_ setEditable:NO];
-    [textfield_ setBordered:NO];
-    [textfield_ setDrawsBackground:NO];
-    [textfield_ setTextColor:
-         gfx::SkColorToCalibratedNSColor(notification->GetTextColor())];
-    [textfield_ setStringValue:
-        base::SysUTF16ToNSString(notification->display_text())];
-    [textfield_ setHidden:notification->HasCheckbox()];
+    textview_.reset([[HyperlinkTextView alloc] initWithFrame:NSZeroRect]);
+    NSColor* textColor =
+        gfx::SkColorToCalibratedNSColor(notification->GetTextColor());
+    [textview_ setMessage:base::SysUTF16ToNSString(notification->display_text())
+                 withFont:[NSFont labelFontOfSize:[[textview_ font] pointSize]]
+             messageColor:textColor];
+    if (!notification->link_range().is_empty()) {
+      // This class is not currently able to render links as checkbox labels.
+      DCHECK(!notification->HasCheckbox());
+      [textview_ setDelegate:self];
+      [textview_ addLinkRange:notification->link_range().ToNSRange()
+                     withName:self
+                    linkColor:[NSColor blueColor]];
+      linkURL_ = notification->link_url();
+    }
+    [textview_ setHidden:notification->HasCheckbox()];
 
     checkbox_.reset([[NSButton alloc] initWithFrame:NSZeroRect]);
     [checkbox_ setButtonType:NSSwitchButton];
     [checkbox_ setHidden:!notification->HasCheckbox()];
     [checkbox_ setState:(notification->checked() ? NSOnState : NSOffState)];
-    [checkbox_ setAttributedTitle:[textfield_ attributedStringValue]];
-    // Update the size that preferredSizeForWidth will use. Do this here because
+    [checkbox_ setAttributedTitle:[textview_ textStorage]];
+    [checkbox_ setTarget:self];
+    [checkbox_ setAction:@selector(checkboxClicked:)];
+    // Set the size that preferredSizeForWidth will use. Do this here because
     //   (1) preferredSizeForWidth is logically const, and so shouldn't have a
     //       side-effect of updating the checkbox's frame, and
     //   (2) this way, the sizing computation can be cached.
@@ -135,7 +150,7 @@
         base::SysUTF16ToNSString(notification->tooltip_text())];
     [tooltipIcon_ setHidden:[[tooltipIcon_ toolTip] length] == 0];
 
-    [view setSubviews:@[textfield_, checkbox_, tooltipIcon_]];
+    [view setSubviews:@[textview_, checkbox_, tooltipIcon_]];
   }
   return self;
 }
@@ -153,8 +168,8 @@
   return [[self notificationView] hasArrow];
 }
 
-- (NSTextField*)textfield {
-  return textfield_;
+- (NSTextView*)textview {
+  return textview_;
 }
 
 - (NSButton*)checkbox {
@@ -174,9 +189,20 @@
   //DCHECK_GT(width, 0);
 
   NSSize preferredSize;
-  if (![textfield_ isHidden]) {
-    NSRect bounds = NSMakeRect(0, 0, width, CGFLOAT_MAX);
-    preferredSize = [[textfield_ cell] cellSizeForBounds:bounds];
+  if (![textview_ isHidden]) {
+    // This method is logically const. Hence, cache the original frame so that
+    // it can be restored once the preferred size has been computed.
+    NSRect frame = [textview_ frame];
+
+    // Compute preferred size.
+    [textview_ setFrameSize:NSMakeSize(width, frame.size.height)];
+    [textview_ setVerticallyResizable:YES];
+    [textview_ sizeToFit];
+    preferredSize = [textview_ frame].size;
+
+    // Restore original properties, since this method is logically const.
+    [textview_ setFrame:frame];
+    [textview_ setVerticallyResizable:NO];
   } else {
     // Unlike textfields, checkboxes (NSButtons, really) are not designed to
     // support multi-line labels. Hence, ignore the |width| and simply use the
@@ -214,7 +240,7 @@
         [tooltipIcon_ frame].size.width + chrome_style::kHorizontalPadding;
   }
 
-  NSView* label = [checkbox_ isHidden] ? textfield_.get() : checkbox_.get();
+  NSView* label = [checkbox_ isHidden] ? textview_.get() : checkbox_.get();
   [label setFrame:labelFrame];
 
   if (![tooltipIcon_ isHidden]) {
@@ -224,6 +250,19 @@
             NSMidY(labelFrame) - (NSHeight([tooltipIcon_ frame]) / 2.0));
     [tooltipIcon_ setFrameOrigin:tooltipOrigin];
   }
+}
+
+- (IBAction)checkboxClicked:(id)sender {
+  DCHECK(sender == checkbox_.get());
+  BOOL isChecked = ([checkbox_ state] == NSOnState);
+  delegate_->NotificationCheckboxStateChanged(notificationType_, isChecked);
+}
+
+- (BOOL)textView:(NSTextView *)textView
+   clickedOnLink:(id)link
+         atIndex:(NSUInteger)charIndex {
+  delegate_->LinkClicked(linkURL_);
+  return YES;
 }
 
 @end

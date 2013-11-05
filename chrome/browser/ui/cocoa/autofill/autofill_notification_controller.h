@@ -8,32 +8,46 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_layout.h"
+#include "url/gurl.h"
 
+@class HyperlinkTextView;
 namespace autofill {
-class DialogNotification;
+class AutofillDialogViewDelegate;
 }
 
 // Contains a single notification for requestAutocomplete dialog.
-@interface AutofillNotificationController : NSViewController<AutofillLayout> {
+@interface AutofillNotificationController :
+    NSViewController<AutofillLayout, NSTextViewDelegate> {
  @private
-  // NSTextField for label.
-  base::scoped_nsobject<NSTextField> textfield_;
+  // Text view for label.
+  base::scoped_nsobject<HyperlinkTextView> textview_;
 
   // Optional checkbox.
   base::scoped_nsobject<NSButton> checkbox_;
 
   // Optional tooltip icon.
   base::scoped_nsobject<NSImageView> tooltipIcon_;
+
+  // Optional link target.
+  GURL linkURL_;
+
+  // Notification type.
+  autofill::DialogNotification::Type notificationType_;
+
+  // Main delegate for the dialog. Weak, owns dialog.
+  autofill::AutofillDialogViewDelegate* delegate_;
 }
 
-@property(nonatomic, readonly) NSTextField* textfield;
+@property(nonatomic, readonly) NSTextView* textview;
 @property(nonatomic, readonly) NSButton* checkbox;
 @property(nonatomic, readonly) NSImageView* tooltipIcon;
 
 // Designated initializer. Initializes the controller as specified by
 // |notification|.
-- (id)initWithNotification:(const autofill::DialogNotification*)notification;
+- (id)initWithNotification:(const autofill::DialogNotification*)notification
+                  delegate:(autofill::AutofillDialogViewDelegate*)delegate;
 
 // Displays arrow on top of notification if set to YES. |anchorView| determines
 // the arrow position - the tip of the arrow is centered on the horizontal
@@ -45,6 +59,8 @@ class DialogNotification;
 
 // Compute preferred size for given width.
 - (NSSize)preferredSizeForWidth:(CGFloat)width;
+
+- (IBAction)checkboxClicked:(id)sender;
 
 @end
 

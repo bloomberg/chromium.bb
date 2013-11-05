@@ -33,7 +33,9 @@ DialogNotification::DialogNotification(Type type, const string16& display_text)
   std::vector<base::string16> pieces;
   base::SplitStringDontTrim(display_text, kRangeSeparator, &pieces);
   if (pieces.size() > 1) {
-    link_range_ = gfx::Range(pieces[0].size(), pieces[1].size());
+    size_t start = pieces[0].size();
+    size_t end = start + pieces[1].size();
+    link_range_ = gfx::Range(start, end);
     display_text_ = JoinString(pieces, string16());
   }
 }

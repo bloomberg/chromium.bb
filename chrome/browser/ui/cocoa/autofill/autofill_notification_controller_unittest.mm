@@ -25,7 +25,8 @@ class AutofillNotificationControllerTest : public ui::CocoaTest {
       const autofill::DialogNotification& notification) {
     controller_.reset(
         [[AutofillNotificationController alloc]
-             initWithNotification:&notification]);
+             initWithNotification:&notification
+                         delegate:NULL]);
     [[test_window() contentView] setSubviews:@[[controller_ view]]];
   }
 
@@ -41,12 +42,12 @@ TEST_F(AutofillNotificationControllerTest, Subviews) {
   NSView* view = [controller_ view];
   ASSERT_EQ(3U, [[view subviews] count]);
   EXPECT_TRUE([[[view subviews] objectAtIndex:0] isKindOfClass:
-      [NSTextField class]]);
+      [NSTextView class]]);
   EXPECT_TRUE([[[view subviews] objectAtIndex:1] isKindOfClass:
       [NSButton class]]);
   EXPECT_TRUE([[[view subviews] objectAtIndex:2] isKindOfClass:
       [NSImageView class]]);
-  EXPECT_NSEQ([controller_ textfield],
+  EXPECT_NSEQ([controller_ textview],
               [[view subviews] objectAtIndex:0]);
   EXPECT_NSEQ([controller_ checkbox],
               [[view subviews] objectAtIndex:1]);
@@ -63,7 +64,7 @@ TEST_F(AutofillNotificationControllerTest, TextLabelOnly) {
           autofill::DialogNotification::DEVELOPER_WARNING,
           ASCIIToUTF16("A notification title")));
 
-  EXPECT_FALSE([[controller_ textfield] isHidden]);
+  EXPECT_FALSE([[controller_ textview] isHidden]);
   EXPECT_TRUE([[controller_ checkbox] isHidden]);
   EXPECT_TRUE([[controller_ tooltipIcon] isHidden]);
 }
@@ -75,7 +76,7 @@ TEST_F(AutofillNotificationControllerTest, CheckboxOnly) {
   ASSERT_TRUE(notification.HasCheckbox());
   InitControllerWithNotification(notification);
 
-  EXPECT_TRUE([[controller_ textfield] isHidden]);
+  EXPECT_TRUE([[controller_ textview] isHidden]);
   EXPECT_FALSE([[controller_ checkbox] isHidden]);
   EXPECT_TRUE([[controller_ tooltipIcon] isHidden]);
 }
@@ -87,7 +88,7 @@ TEST_F(AutofillNotificationControllerTest, TextLabelAndTooltip) {
   notification.set_tooltip_text(ASCIIToUTF16("My very informative tooltip."));
   InitControllerWithNotification(notification);
 
-  EXPECT_FALSE([[controller_ textfield] isHidden]);
+  EXPECT_FALSE([[controller_ textview] isHidden]);
   EXPECT_TRUE([[controller_ checkbox] isHidden]);
   EXPECT_FALSE([[controller_ tooltipIcon] isHidden]);
   EXPECT_NSEQ(@"My very informative tooltip.",
@@ -102,7 +103,7 @@ TEST_F(AutofillNotificationControllerTest, CheckboxAndTooltip) {
   notification.set_tooltip_text(ASCIIToUTF16("My very informative tooltip."));
   InitControllerWithNotification(notification);
 
-  EXPECT_TRUE([[controller_ textfield] isHidden]);
+  EXPECT_TRUE([[controller_ textview] isHidden]);
   EXPECT_FALSE([[controller_ checkbox] isHidden]);
   EXPECT_FALSE([[controller_ tooltipIcon] isHidden]);
   EXPECT_NSEQ(@"My very informative tooltip.",

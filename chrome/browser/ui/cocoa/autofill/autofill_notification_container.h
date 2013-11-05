@@ -30,9 +30,6 @@ namespace autofill {
   // View that the arrow is anchored to. Weak.
   NSView* anchorView_;
 
-  // The notification that the checkbox is associated with.
-  scoped_ptr<autofill::DialogNotification> checkboxNotification_;
-
   // Main delegate for the dialog. Weak, owns dialog.
   autofill::AutofillDialogViewDelegate* delegate_;
 }
@@ -49,8 +46,6 @@ namespace autofill {
 // Sets a view that the arrow is anchored to - center of arrow will be aligned
 // with center of anchorView. (horizontally only).
 - (void)setAnchorView:(NSView*)anchorView;
-
-- (IBAction)checkboxClicked:(id)sender;
 
 @end
 
