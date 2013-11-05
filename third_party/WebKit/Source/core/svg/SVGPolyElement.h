@@ -35,7 +35,7 @@ public:
     SVGListPropertyTearOff<SVGPointList>* points();
     SVGListPropertyTearOff<SVGPointList>* animatedPoints();
 
-    SVGPointList& pointList() const { return m_points.value; }
+    SVGPointList& pointsCurrentValue();
 
     static const SVGPropertyInfo* pointsPropertyInfo();
 

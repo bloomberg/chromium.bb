@@ -46,6 +46,17 @@ const SVGPropertyInfo* SVGPolyElement::pointsPropertyInfo()
     return s_propertyInfo;
 }
 
+SVGPointList& SVGPolyElement::pointsCurrentValue()
+{
+    SVGAnimatedProperty* wrapper = SVGAnimatedProperty::lookupWrapper<SVGPolyElement, SVGAnimatedPointList>(this, pointsPropertyInfo());
+    if (wrapper && wrapper->isAnimating()) {
+        if (SVGListPropertyTearOff<SVGPointList>* ap = animatedPoints())
+            return ap->values();
+    }
+
+    return m_points.value;
+}
+
 // Animated property definitions
 DEFINE_ANIMATED_BOOLEAN(SVGPolyElement, SVGNames::externalResourcesRequiredAttr, ExternalResourcesRequired, externalResourcesRequired)
 
