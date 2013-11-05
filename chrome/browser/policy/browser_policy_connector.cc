@@ -307,11 +307,7 @@ void BrowserPolicyConnector::Init(
             chromeos::DeviceSettingsService::Get(),
             chromeos::CrosSettings::Get(),
             GetBackgroundTaskRunner(),
-            GetBackgroundTaskRunner(),
-            GetBackgroundTaskRunner(),
-            content::BrowserThread::GetMessageLoopProxyForThread(
-                content::BrowserThread::IO),
-            request_context));
+            GetBackgroundTaskRunner()));
     device_local_account_policy_service_->Connect(
         device_management_service_.get());
   }
@@ -362,7 +358,7 @@ void BrowserPolicyConnector::Shutdown() {
   if (device_cloud_policy_manager_)
     device_cloud_policy_manager_->Shutdown();
   if (device_local_account_policy_service_)
-    device_local_account_policy_service_->Shutdown();
+    device_local_account_policy_service_->Disconnect();
   global_user_cloud_policy_provider_.Shutdown();
 #endif
 

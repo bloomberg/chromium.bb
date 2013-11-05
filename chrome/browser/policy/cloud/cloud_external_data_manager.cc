@@ -31,7 +31,6 @@ CloudExternalDataManager::~CloudExternalDataManager() {
 }
 
 void CloudExternalDataManager::SetPolicyStore(CloudPolicyStore* policy_store) {
-  weak_factory_.InvalidateWeakPtrs();
   policy_store_ = policy_store;
   if (policy_store_)
     policy_store_->SetExternalDataManager(weak_factory_.GetWeakPtr());
