@@ -440,6 +440,8 @@
     'SK_GDI_ALWAYS_USE_TEXTMETRICS_FOR_FONT_METRICS',
 
     'SK_DEFAULT_FONT_CACHE_LIMIT=<(default_font_cache_limit)',
+
+    'SK_DISABLE_BLUR_DIVISION_OPTIMIZATION',
   ],
 
   'direct_dependent_settings': {
