@@ -1065,7 +1065,10 @@ def GetMacBundleResources(product_dir, xcode_settings, resources):
     output = os.path.join(output, res_parts[1])
     # Compiled XIB files are referred to by .nib.
     if output.endswith('.xib'):
-      output = output[0:-3] + 'nib'
+      output = os.path.splitext(output)[0] + '.nib'
+    # Compiled storyboard files are referred to by .storyboardc.
+    if output.endswith('.storyboard'):
+      output = os.path.splitext(output)[0] + '.storyboardc'
 
     yield output, res
 

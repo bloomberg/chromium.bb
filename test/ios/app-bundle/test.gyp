@@ -23,6 +23,7 @@
       'mac_bundle_resources': [
         'TestApp/English.lproj/InfoPlist.strings',
         'TestApp/English.lproj/MainMenu.xib',
+        'TestApp/English.lproj/Main_iPhone.storyboard',
       ],
       'link_settings': {
         'libraries': [
@@ -36,7 +37,7 @@
         ],
         'INFOPLIST_FILE': 'TestApp/TestApp-Info.plist',
         'SDKROOT': 'iphonesimulator',  # -isysroot
-        'IPHONEOS_DEPLOYMENT_TARGET': '4.2',
+        'IPHONEOS_DEPLOYMENT_TARGET': '5.0',
         'CONFIGURATION_BUILD_DIR':'build/Default',
       },
     },

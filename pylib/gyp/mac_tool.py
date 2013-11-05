@@ -53,6 +53,8 @@ class MacTool(object):
       shutil.copytree(source, dest)
     elif extension == '.xib':
       return self._CopyXIBFile(source, dest)
+    elif extension == '.storyboard':
+      return self._CopyXIBFile(source, dest)
     elif extension == '.strings':
       self._CopyStringsFile(source, dest)
     else:
@@ -60,6 +62,14 @@ class MacTool(object):
 
   def _CopyXIBFile(self, source, dest):
     """Compiles a XIB file with ibtool into a binary plist in the bundle."""
+
+    # ibtool sometimes crashes with relative paths. See crbug.com/314728.
+    base = os.path.dirname(os.path.realpath(__file__))
+    if os.path.relpath(source):
+      source = os.path.join(base, source)
+    if os.path.relpath(dest):
+      dest = os.path.join(base, dest)
+
     args = ['xcrun', 'ibtool', '--errors', '--warnings', '--notices',
         '--output-format', 'human-readable-text', '--compile', dest, source]
     ibtool_section_re = re.compile(r'/\*.*\*/')

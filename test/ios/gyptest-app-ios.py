@@ -33,6 +33,9 @@ if sys.platform == 'darwin':
   test.built_file_must_exist(
       'Test App Gyp.bundle/English.lproj/MainMenu.nib',
       chdir='app-bundle')
+  test.built_file_must_exist(
+      'Test App Gyp.bundle/English.lproj/Main_iPhone.storyboardc',
+      chdir='app-bundle')
 
   # Packaging
   test.built_file_must_exist('Test App Gyp.bundle/PkgInfo',
