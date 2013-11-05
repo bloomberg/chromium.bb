@@ -29,7 +29,7 @@ const redirect_t redirects[] = {
   {L"/bin/i686-nacl-gcov.exe",        L"/libexec/x86_64-nacl-gcov.exe",      L""},
   {L"/bin/i686-nacl-gfortran.exe",    L"/libexec/x86_64-nacl-gfortran.exe",  L"-m32"},
   {L"/bin/i686-nacl-gprof.exe",       L"/libexec/x86_64-nacl-gprof.exe",     L""},
-  {L"/bin/i686-nacl-ld.exe",          L"/libexec/x86_64-nacl-ld.exe",        L"-melf_nacl"},
+  {L"/bin/i686-nacl-ld.exe",          L"/libexec/x86_64-nacl-ld.exe",        L"-melf_i386_nacl"},
   {L"/bin/i686-nacl-nm.exe",          L"/libexec/x86_64-nacl-nm.exe",        L""},
   {L"/bin/i686-nacl-objcopy.exe",     L"/libexec/x86_64-nacl-objcopy.exe",   L""},
   {L"/bin/i686-nacl-objdump.exe",     L"/libexec/x86_64-nacl-objdump.exe",   L""},
