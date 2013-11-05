@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_HELPERS_H_
-#define CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_HELPERS_H_
+#ifndef CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_SERVICE_HELPERS_H_
+#define CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_SERVICE_HELPERS_H_
 
 #include <string>
 #include <vector>
@@ -40,4 +40,4 @@ std::string GetCloudPrintAuthHeaderFromStore();
 
 }  // namespace cloud_print
 
-#endif  // CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_HELPERS_H_
+#endif  // CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_SERVICE_HELPERS_H_

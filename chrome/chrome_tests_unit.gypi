@@ -1887,7 +1887,7 @@
         'renderer/spellchecker/spellcheck_unittest.cc',
         'renderer/spellchecker/spellcheck_worditerator_unittest.cc',
         'renderer/web_apps_unittest.cc',
-        'service/cloud_print/cloud_print_helpers_unittest.cc',
+        'service/cloud_print/cloud_print_service_helpers_unittest.cc',
         'service/cloud_print/cloud_print_token_store_unittest.cc',
         'service/cloud_print/cloud_print_url_fetcher_unittest.cc',
         'service/cloud_print/connector_settings_unittest.cc',

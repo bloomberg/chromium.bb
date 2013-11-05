@@ -10,7 +10,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
-#include "chrome/service/cloud_print/cloud_print_helpers.h"
+#include "chrome/service/cloud_print/cloud_print_service_helpers.h"
 #include "chrome/service/cloud_print/cloud_print_token_store.h"
 #include "chrome/service/cloud_print/print_system.h"
 #include "chrome/service/cloud_print/printer_job_handler.h"

@@ -27,7 +27,7 @@
 #include "base/values.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/common/crash_keys.h"
-#include "chrome/service/cloud_print/cloud_print_helpers.h"
+#include "chrome/service/cloud_print/cloud_print_service_helpers.h"
 #include "grit/generated_resources.h"
 #include "printing/backend/cups_helper.h"
 #include "printing/backend/print_backend.h"
