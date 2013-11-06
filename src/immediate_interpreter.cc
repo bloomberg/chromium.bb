@@ -739,8 +739,7 @@ int FingerButtonClick::EvaluateTwoFingerButtonType() {
       interpreter_->tapping_finger_min_separation_.val_ *
       interpreter_->tapping_finger_min_separation_.val_;
   float dist_sq = DistSq(*fingers_[0], *fingers_[1]);
-  if ((dist_sq < kMin2fDistThreshSq) &&
-      !(fingers_[0]->flags & GESTURES_FINGER_MERGE))
+  if (dist_sq < kMin2fDistThreshSq)
     return GESTURES_BUTTON_LEFT;
 
   // fingers touched down at approx the same time
