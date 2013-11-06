@@ -244,7 +244,12 @@ cr.define('options', function() {
         }, 50);
       }
 
-      inputEl.addEventListener('focus', this.handleFocus_.bind(this));
+      // In some cases 'focus' event may arrive before 'input'.
+      // To make sure revalidation is triggered we postpone 'focus' handling.
+      var handler = this.handleFocus_.bind(this);
+      inputEl.addEventListener('focus', function() {
+         window.setTimeout(handler, 0);
+      });
       container.appendChild(inputEl);
       this.editFields_.push(inputEl);
 
