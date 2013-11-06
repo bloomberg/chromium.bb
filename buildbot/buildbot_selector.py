@@ -114,8 +114,7 @@ BOT_ASSIGNMENT = {
                    'coverage 32 newlib --coverage'),
     # Clang trybots.
     'nacl-precise_64-newlib-dbg-clang':
-        #python + ' buildbot/buildbot_standard.py dbg 64 newlib --clang',
-        'echo "TODO(mcgrathr): linux clang disabled pending bot upgrades"',
+        python + ' buildbot/buildbot_standard.py dbg 64 newlib --clang',
     'nacl-mac10.6-newlib-dbg-clang':
         python + ' buildbot/buildbot_standard.py dbg 32 newlib --clang',
     # Pnacl main trybots
