@@ -12,8 +12,9 @@ import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import android.media.MediaCrypto;
 import android.media.MediaFormat;
-import android.view.Surface;
+import android.os.Build;
 import android.util.Log;
+import android.view.Surface;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -151,17 +152,25 @@ class MediaCodecBridge {
                 continue;
             }
 
-            String[] supportedTypes = info.getSupportedTypes();
-            String codecString = info.getName();
-            String secureCodecName = codecString + ".secure";
             boolean secureDecoderSupported = false;
-            try {
-                MediaCodec secureCodec = MediaCodec.createByCodecName(secureCodecName);
-                secureDecoderSupported = true;
-                secureCodec.release();
-            } catch (Exception e) {
-                Log.e(TAG, "Failed to create " + secureCodecName);
+            String codecString = info.getName();
+            // ".secure" codecs sometimes crash instead of throwing on pre-JBMR2
+            // platforms, but this code isn't run on them anyway (MediaDrm
+            // unavailable) so we side-step the issue.  http://crbug.com/314868
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                String secureCodecName = codecString + ".secure";
+                try {
+                    MediaCodec secureCodec = MediaCodec.createByCodecName(secureCodecName);
+                    if (secureCodec != null) {
+                        secureDecoderSupported = true;
+                        secureCodec.release();
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to create " + secureCodecName);
+                }
             }
+
+            String[] supportedTypes = info.getSupportedTypes();
             for (int j = 0; j < supportedTypes.length; ++j) {
                 if (!CodecInfoMap.containsKey(supportedTypes[j]) || secureDecoderSupported) {
                     CodecInfoMap.put(supportedTypes[j], new CodecInfo(
