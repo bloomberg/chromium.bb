@@ -21,8 +21,8 @@ def _GetAPICategory(api, documented_apis):
 
 class APIListDataSource(object):
   """ This class creates a list of chrome.* APIs and chrome.experimental.* APIs
-  for extensions and apps that are used in the api_index.html and
-  experimental.html pages.
+  for extensions and apps that are used in the api_index.html,
+  experimental.html, and private_apis.html pages.
 
   An API is considered listable if it is listed in _api_features.json,
   it has a corresponding HTML file in the public template path, and one of
@@ -75,8 +75,9 @@ class APIListDataSource(object):
       def MakeDictForPlatform(platform):
         platform_dict = { 'chrome': [], 'experimental': [], 'private': [] }
         for api in FilterAPIs(platform):
-          category = _GetAPICategory(api, documented_apis[platform])
-          platform_dict[category].append(api)
+          if api['name'] in documented_apis[platform]:
+            category = _GetAPICategory(api, documented_apis[platform])
+            platform_dict[category].append(api)
         for category, apis in platform_dict.iteritems():
           platform_dict[category] = sorted(apis, key=itemgetter('name'))
           utils.MarkLast(platform_dict[category])
