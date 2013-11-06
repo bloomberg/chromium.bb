@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
+
 namespace base {
 class DictionaryValue;
 }
@@ -21,7 +23,7 @@ class WebstoreDataFetcherDelegate {
   // Invoked when the web store response parsing is successful. Delegate takes
   // ownership of |webstore_data|.
   virtual void OnWebstoreResponseParseSuccess(
-      base::DictionaryValue* webstore_data) = 0;
+      scoped_ptr<base::DictionaryValue> webstore_data) = 0;
 
   // Invoked when the web store response parsing is failed.
   virtual void OnWebstoreResponseParseFailure(const std::string& error) = 0;
