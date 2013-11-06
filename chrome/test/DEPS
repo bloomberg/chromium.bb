@@ -15,7 +15,9 @@ include_rules = [
   "+content/public",
 
   "+grit",  # For generated headers
+  "+media/audio",
   "+media/base",
+  "+sandbox/win/src",
   "+sandbox/win/tests",
   "+webkit/glue",
   "+win8/test",

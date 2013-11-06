@@ -1,4 +1,6 @@
 include_rules = [
+  "+google_apis",
   # For generated headers.
   "+grit",
+  "+sandbox/win/src/sandbox_types.h",
 ]
