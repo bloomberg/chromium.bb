@@ -70,7 +70,7 @@ def main():
     # Write out stdout but skip the filename print out that MSVC forces for
     # every cl.exe execution as well as ridiculous amounts of white space;
     # saves ~64mb of output over the entire conversion!
-    f.write(re.sub('(%s)+' % os.linesep, '\n',
+    f.write(re.sub('(?:%s)+' % os.linesep, '\n',
                    stdout[len(os.path.basename(input_file)):]))
 
   # Run the converter command.  Note: the input file must have a '.c' extension
