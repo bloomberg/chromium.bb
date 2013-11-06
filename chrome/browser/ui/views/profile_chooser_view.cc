@@ -221,7 +221,8 @@ ProfileChooserView::ProfileChooserView(views::View* anchor_view,
                                        const gfx::Rect& anchor_rect,
                                        Browser* browser)
     : BubbleDelegateView(anchor_view, arrow),
-      browser_(browser) {
+      browser_(browser),
+      view_mode_(PROFILE_CHOOSER_VIEW) {
   // Reset the default margins inherited from the BubbleDelegateView.
   set_margins(gfx::Insets());
 
@@ -232,9 +233,15 @@ ProfileChooserView::ProfileChooserView(views::View* anchor_view,
       this,
       browser_));
   avatar_menu_->RebuildMenu();
+
+  Profile* profile = browser_->profile();
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->AddObserver(this);
 }
 
 ProfileChooserView::~ProfileChooserView() {
+  Profile* profile = browser_->profile();
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->
+      RemoveObserver(this);
 }
 
 void ProfileChooserView::ResetLinksAndButtons() {
@@ -262,6 +269,24 @@ void ProfileChooserView::OnAvatarMenuChanged(
   ShowView(PROFILE_CHOOSER_VIEW, avatar_menu);
 }
 
+void ProfileChooserView::OnRefreshTokenAvailable(
+    const std::string& account_id) {
+  // Refresh the account management view when a new account is added to the
+  // profile.
+  if (view_mode_ == ACCOUNT_MANAGEMENT_VIEW ||
+      view_mode_ == GAIA_SIGNIN_VIEW ||
+      view_mode_ == GAIA_ADD_ACCOUNT_VIEW) {
+    ShowView(ACCOUNT_MANAGEMENT_VIEW, avatar_menu_.get());
+  }
+}
+
+void ProfileChooserView::OnRefreshTokenRevoked(const std::string& account_id) {
+  // Refresh the account management view when an account is removed from the
+  // profile.
+  if (view_mode_ == ACCOUNT_MANAGEMENT_VIEW)
+    ShowView(ACCOUNT_MANAGEMENT_VIEW, avatar_menu_.get());
+}
+
 void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
                                   AvatarMenu* avatar_menu) {
   // The account management view should only be displayed if the active profile
@@ -274,6 +299,7 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
 
   ResetLinksAndButtons();
   RemoveAllChildViews(true);
+  view_mode_ = view_to_display;
 
   views::GridLayout* layout = CreateSingleColumnLayout(this);
   layout->set_minimum_size(gfx::Size(kMinMenuWidth, 0));

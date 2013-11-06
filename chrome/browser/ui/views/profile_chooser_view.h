@@ -10,6 +10,7 @@
 
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/avatar_menu_observer.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
@@ -33,7 +34,8 @@ class ProfileItemView;
 class ProfileChooserView : public views::BubbleDelegateView,
                            public views::ButtonListener,
                            public views::LinkListener,
-                           public AvatarMenuObserver {
+                           public AvatarMenuObserver,
+                           public OAuth2TokenService::Observer {
  public:
   // Shows the bubble if one is not already showing.  This allows us to easily
   // make a button toggle the bubble on and off when clicked: we unconditionally
@@ -90,6 +92,10 @@ class ProfileChooserView : public views::BubbleDelegateView,
   // AvatarMenuObserver:
   virtual void OnAvatarMenuChanged(AvatarMenu* avatar_menu) OVERRIDE;
 
+  // OAuth2TokenService::Observer overrides.
+  virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
+  virtual void OnRefreshTokenRevoked(const std::string& account_id) OVERRIDE;
+
   static ProfileChooserView* profile_bubble_;
   static bool close_on_deactivate_;
 
@@ -133,6 +139,9 @@ class ProfileChooserView : public views::BubbleDelegateView,
   views::TextButton* add_user_button_;
   views::TextButton* users_button_;
   views::LabelButton* add_account_button_;
+
+  // Active view mode.
+  BubbleViewMode view_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileChooserView);
 };
