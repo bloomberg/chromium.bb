@@ -178,11 +178,12 @@ static void removeAttrNodeListForElement(Element* element)
     element->setHasSyntheticAttrChildNodes(false);
 }
 
-static Attr* findAttrNodeInList(AttrNodeList& attrNodeList, const QualifiedName& name)
+static Attr* findAttrNodeInList(const AttrNodeList& attrNodeList, const QualifiedName& name)
 {
-    for (unsigned i = 0; i < attrNodeList.size(); ++i) {
-        if (attrNodeList[i]->qualifiedName() == name)
-            return attrNodeList[i].get();
+    AttrNodeList::const_iterator end = attrNodeList.end();
+    for (AttrNodeList::const_iterator it = attrNodeList.begin(); it != end; ++it) {
+        if ((*it)->qualifiedName() == name)
+            return it->get();
     }
     return 0;
 }
@@ -923,12 +924,13 @@ inline void Element::setAttributeInternal(size_t index, const QualifiedName& nam
         return;
     }
 
-    QualifiedName existingAttributeName = attributeItem(index)->name();
+    const Attribute* existingAttribute = attributeItem(index);
+    QualifiedName existingAttributeName = existingAttribute->name();
 
     if (!inSynchronizationOfLazyAttribute)
-        willModifyAttribute(existingAttributeName, attributeItem(index)->value(), newValue);
+        willModifyAttribute(existingAttributeName, existingAttribute->value(), newValue);
 
-    if (newValue != attributeItem(index)->value()) {
+    if (newValue != existingAttribute->value()) {
         // If there is an Attr node hooked to this attribute, the Attr::setValue() call below
         // will write into the ElementData.
         // FIXME: Refactor this so it makes some sense.
