@@ -2268,6 +2268,16 @@ bool EventHandler::handleGestureShowPress()
 
 bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
 {
+    IntPoint adjustedPoint = gestureEvent.position();
+    if (gestureEvent.type() == PlatformEvent::GestureLongPress
+        || gestureEvent.type() == PlatformEvent::GestureLongTap
+        || gestureEvent.type() == PlatformEvent::GestureTwoFingerTap) {
+        adjustGesturePosition(gestureEvent, adjustedPoint);
+        RefPtr<Frame> subframe = getSubFrameForGestureEvent(adjustedPoint, gestureEvent);
+        if (subframe)
+            return subframe->eventHandler().handleGestureEvent(gestureEvent);
+    }
+
     Node* eventTarget = 0;
     Scrollbar* scrollbar = 0;
     if (gestureEvent.type() == PlatformEvent::GestureScrollEnd
@@ -2277,7 +2287,6 @@ bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
         eventTarget = m_scrollGestureHandlingNode.get();
     }
 
-    IntPoint adjustedPoint = gestureEvent.position();
     HitTestRequest::HitTestRequestType hitType = HitTestRequest::TouchEvent;
     if (gestureEvent.type() == PlatformEvent::GestureShowPress
         || gestureEvent.type() == PlatformEvent::GestureTapUnconfirmed) {
@@ -2351,11 +2360,11 @@ bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
     case PlatformEvent::GestureShowPress:
         return handleGestureShowPress();
     case PlatformEvent::GestureLongPress:
-        return handleGestureLongPress(gestureEvent);
+        return handleGestureLongPress(gestureEvent, adjustedPoint);
     case PlatformEvent::GestureLongTap:
-        return handleGestureLongTap(gestureEvent);
+        return handleGestureLongTap(gestureEvent, adjustedPoint);
     case PlatformEvent::GestureTwoFingerTap:
-        return handleGestureTwoFingerTap(gestureEvent);
+        return handleGestureTwoFingerTap(gestureEvent, adjustedPoint);
     case PlatformEvent::GestureTapDown:
     case PlatformEvent::GesturePinchBegin:
     case PlatformEvent::GesturePinchEnd:
@@ -2395,14 +2404,8 @@ bool EventHandler::handleGestureTap(const PlatformGestureEvent& gestureEvent)
     return defaultPrevented;
 }
 
-bool EventHandler::handleGestureLongPress(const PlatformGestureEvent& gestureEvent)
+bool EventHandler::handleGestureLongPress(const PlatformGestureEvent& gestureEvent, const IntPoint& adjustedPoint)
 {
-    IntPoint adjustedPoint = gestureEvent.position();
-    adjustGesturePosition(gestureEvent, adjustedPoint);
-    RefPtr<Frame> subframe = getSubFrameForGestureEvent(adjustedPoint, gestureEvent);
-    if (subframe && subframe->eventHandler().handleGestureLongPress(gestureEvent))
-        return true;
-
     m_longTapShouldInvokeContextMenu = false;
     if (m_frame->settings() && m_frame->settings()->touchDragDropEnabled() && m_frame->view()) {
         PlatformMouseEvent mouseDownEvent(adjustedPoint, gestureEvent.globalPosition(), LeftButton, PlatformEvent::MousePressed, 1,
@@ -2444,13 +2447,8 @@ bool EventHandler::handleGestureLongPress(const PlatformGestureEvent& gestureEve
     return sendContextMenuEventForGesture(gestureEvent);
 }
 
-bool EventHandler::handleGestureLongTap(const PlatformGestureEvent& gestureEvent)
+bool EventHandler::handleGestureLongTap(const PlatformGestureEvent& gestureEvent, const IntPoint& adjustedPoint)
 {
-    IntPoint adjustedPoint = gestureEvent.position();
-    adjustGesturePosition(gestureEvent, adjustedPoint);
-    RefPtr<Frame> subframe = getSubFrameForGestureEvent(adjustedPoint, gestureEvent);
-    if (subframe && subframe->eventHandler().handleGestureLongTap(gestureEvent))
-        return true;
 #if !OS(ANDROID)
     if (m_longTapShouldInvokeContextMenu) {
         m_longTapShouldInvokeContextMenu = false;
@@ -2487,7 +2485,7 @@ bool EventHandler::handleScrollGestureOnResizer(Node* eventTarget, const Platfor
     return false;
 }
 
-bool EventHandler::handleGestureTwoFingerTap(const PlatformGestureEvent& gestureEvent)
+bool EventHandler::handleGestureTwoFingerTap(const PlatformGestureEvent& gestureEvent, const IntPoint& adjustedPoint)
 {
     return sendContextMenuEventForGesture(gestureEvent);
 }

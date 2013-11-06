@@ -200,9 +200,9 @@ private:
     bool handlePasteGlobalSelection(const PlatformMouseEvent&);
 
     bool handleGestureTap(const PlatformGestureEvent&);
-    bool handleGestureLongPress(const PlatformGestureEvent&);
-    bool handleGestureLongTap(const PlatformGestureEvent&);
-    bool handleGestureTwoFingerTap(const PlatformGestureEvent&);
+    bool handleGestureLongPress(const PlatformGestureEvent&, const IntPoint& adjustedPoint);
+    bool handleGestureLongTap(const PlatformGestureEvent&, const IntPoint& adjustedPoint);
+    bool handleGestureTwoFingerTap(const PlatformGestureEvent&, const IntPoint& adjustedPoint);
     bool handleGestureScrollUpdate(const PlatformGestureEvent&);
     bool handleGestureScrollBegin(const PlatformGestureEvent&);
     void clearGestureScrollNodes();
