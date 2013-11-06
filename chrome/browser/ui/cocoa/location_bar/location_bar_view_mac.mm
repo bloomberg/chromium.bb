@@ -351,8 +351,6 @@ void LocationBarViewMac::Layout() {
     [cell addRightDecoration:page_action_decorations_[i]];
   }
 
-  // Iterate through |content_setting_decorations_| in reverse order so that
-  // the order in which the decorations are drawn matches the Views code.
   for (ScopedVector<ContentSettingDecoration>::iterator i =
        content_setting_decorations_.begin();
        i != content_setting_decorations_.end(); ++i) {
