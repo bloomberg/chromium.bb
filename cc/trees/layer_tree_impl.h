@@ -175,6 +175,8 @@ class CC_EXPORT LayerTreeImpl {
   gfx::Size ScrollableSize() const;
   gfx::SizeF ScrollableViewportSize() const;
 
+  gfx::Rect RootScrollLayerDeviceViewportBounds() const;
+
   LayerImpl* LayerById(int id);
 
   // These should be called by LayerImpl's ctor/dtor.

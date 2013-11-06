@@ -553,8 +553,9 @@ static void AppendQuadsForRenderSurfaceLayer(
 }
 
 static void AppendQuadsToFillScreen(
-    ResourceProvider::ResourceId resource_id,
-    gfx::SizeF resource_scaled_size,
+    ResourceProvider::ResourceId overhang_resource_id,
+    gfx::SizeF overhang_resource_scaled_size,
+    gfx::Rect root_scroll_layer_rect,
     RenderPass* target_render_pass,
     LayerImpl* root_layer,
     SkColor screen_background_color,
@@ -565,6 +566,16 @@ static void AppendQuadsToFillScreen(
   Region fill_region = occlusion_tracker.ComputeVisibleRegionInScreen();
   if (fill_region.IsEmpty())
     return;
+
+  // Divide the fill region into the part to be filled with the overhang
+  // resource and the part to be filled with the background color.
+  Region screen_background_color_region = fill_region;
+  Region overhang_region;
+  if (overhang_resource_id) {
+    overhang_region = fill_region;
+    overhang_region.Subtract(root_scroll_layer_rect);
+    screen_background_color_region.Intersect(root_scroll_layer_rect);
+  }
 
   bool for_surface = false;
   QuadCuller quad_culler(&target_render_pass->quad_list,
@@ -596,38 +607,44 @@ static void AppendQuadsToFillScreen(
   bool did_invert = root_layer->screen_space_transform().GetInverse(
       &transform_to_layer_space);
   DCHECK(did_invert);
-  for (Region::Iterator fill_rects(fill_region);
+  for (Region::Iterator fill_rects(screen_background_color_region);
        fill_rects.has_rect();
        fill_rects.next()) {
     // The root layer transform is composed of translations and scales only,
     // no perspective, so mapping is sufficient (as opposed to projecting).
     gfx::Rect layer_rect =
         MathUtil::MapClippedRect(transform_to_layer_space, fill_rects.rect());
-    if (resource_id) {
-      scoped_ptr<TextureDrawQuad> tex_quad = TextureDrawQuad::Create();
-      const float vertex_opacity[4] = {1.f, 1.f, 1.f, 1.f};
-      tex_quad->SetNew(
-          shared_quad_state,
-          layer_rect,
-          layer_rect,
-          resource_id,
-          false,
-          gfx::PointF(layer_rect.x() / resource_scaled_size.width(),
-                      layer_rect.y() / resource_scaled_size.height()),
-          gfx::PointF(layer_rect.right() / resource_scaled_size.width(),
-                      layer_rect.bottom() / resource_scaled_size.height()),
-          screen_background_color,
-          vertex_opacity,
-          false);
-        quad_culler.Append(tex_quad.PassAs<DrawQuad>(), &append_quads_data);
-    } else {
-      // Skip the quad culler and just append the quads directly to avoid
-      // occlusion checks.
-      scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
-      quad->SetNew(
-          shared_quad_state, layer_rect, screen_background_color, false);
-      quad_culler.Append(quad.PassAs<DrawQuad>(), &append_quads_data);
-    }
+    // Skip the quad culler and just append the quads directly to avoid
+    // occlusion checks.
+    scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
+    quad->SetNew(
+        shared_quad_state, layer_rect, screen_background_color, false);
+    quad_culler.Append(quad.PassAs<DrawQuad>(), &append_quads_data);
+  }
+  for (Region::Iterator fill_rects(overhang_region);
+       fill_rects.has_rect();
+       fill_rects.next()) {
+    DCHECK(overhang_resource_id);
+    gfx::Rect layer_rect =
+        MathUtil::MapClippedRect(transform_to_layer_space, fill_rects.rect());
+    scoped_ptr<TextureDrawQuad> tex_quad = TextureDrawQuad::Create();
+    const float vertex_opacity[4] = {1.f, 1.f, 1.f, 1.f};
+    tex_quad->SetNew(
+        shared_quad_state,
+        layer_rect,
+        layer_rect,
+        overhang_resource_id,
+        false,
+        gfx::PointF(layer_rect.x() / overhang_resource_scaled_size.width(),
+                    layer_rect.y() / overhang_resource_scaled_size.height()),
+        gfx::PointF(layer_rect.right() /
+                        overhang_resource_scaled_size.width(),
+                    layer_rect.bottom() /
+                        overhang_resource_scaled_size.height()),
+        screen_background_color,
+        vertex_opacity,
+        false);
+      quad_culler.Append(tex_quad.PassAs<DrawQuad>(), &append_quads_data);
   }
 }
 
@@ -827,13 +844,14 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
 
   if (!active_tree_->has_transparent_background()) {
     frame->render_passes.back()->has_transparent_background = false;
-    AppendQuadsToFillScreen(ResourceIdForUIResource(overhang_ui_resource_id_),
-                            gfx::ScaleSize(overhang_ui_resource_size_,
-                                           device_scale_factor_),
-                            frame->render_passes.back(),
-                            active_tree_->root_layer(),
-                            active_tree_->background_color(),
-                            occlusion_tracker);
+    AppendQuadsToFillScreen(
+        ResourceIdForUIResource(overhang_ui_resource_id_),
+        gfx::ScaleSize(overhang_ui_resource_size_, device_scale_factor_),
+        active_tree_->RootScrollLayerDeviceViewportBounds(),
+        frame->render_passes.back(),
+        active_tree_->root_layer(),
+        active_tree_->background_color(),
+        occlusion_tracker);
   }
 
   if (draw_frame)
