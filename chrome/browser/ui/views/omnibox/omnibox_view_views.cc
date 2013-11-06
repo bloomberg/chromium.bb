@@ -198,7 +198,16 @@ void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
   }
   if (select_all_on_gesture_tap_ && event->type() == ui::ET_GESTURE_TAP)
     SelectAll(false);
-  select_all_on_gesture_tap_ = false;
+
+  if (event->type() == ui::ET_GESTURE_TAP ||
+      event->type() == ui::ET_GESTURE_TAP_CANCEL ||
+      event->type() == ui::ET_GESTURE_TWO_FINGER_TAP ||
+      event->type() == ui::ET_GESTURE_SCROLL_BEGIN ||
+      event->type() == ui::ET_GESTURE_PINCH_BEGIN ||
+      event->type() == ui::ET_GESTURE_LONG_PRESS ||
+      event->type() == ui::ET_GESTURE_LONG_TAP) {
+    select_all_on_gesture_tap_ = false;
+  }
 }
 
 void OmniboxViewViews::GetAccessibleState(ui::AccessibleViewState* state) {
