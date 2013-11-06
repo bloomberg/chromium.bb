@@ -529,3 +529,5 @@ crbug.com/315514 [ Linux ] fast/workers/storage/test-authorizer-sync.html [ Fail
 crbug.com/315514 [ Linux ] fast/workers/storage/test-authorizer.html [ Failure ]
 crbug.com/315514 [ Linux ] storage/websql/sql-error-codes.html [ Failure ]
 crbug.com/315514 [ Linux ] storage/websql/test-authorizer.html [ Failure ]
+
+crbug.com/315913 [ Win7 Debug ] editing/spelling/inline-spelling-markers-hidpi.html [ ImageOnlyFailure ]
