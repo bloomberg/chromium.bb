@@ -842,6 +842,13 @@ SkRegion* NativeAppWindowViews::GetDraggableRegion() {
 
 void NativeAppWindowViews::UpdateInputRegion(scoped_ptr<SkRegion> region) {
   input_region_ = region.Pass();
+
+#if defined(USE_AURA)
+  if (input_region_)
+    window_->SetShape(new SkRegion(*input_region_));
+  else
+    window_->SetShape(NULL);
+#endif // defined(USE_AURA)
 }
 
 void NativeAppWindowViews::HandleKeyboardEvent(

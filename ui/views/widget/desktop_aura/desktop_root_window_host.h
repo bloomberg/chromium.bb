@@ -93,6 +93,8 @@ class VIEWS_EXPORT DesktopRootWindowHost {
 
   virtual gfx::Rect GetWorkAreaBoundsInScreen() const = 0;
 
+  // Sets the shape of the root window. If |native_region| is NULL then the
+  // window reverts to rectangular. Takes ownership of |native_region|.
   virtual void SetShape(gfx::NativeRegion native_region) = 0;
 
   virtual void Activate() = 0;
