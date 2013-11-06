@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webcrypto_impl.h"
+#include "content/renderer/webcrypto/webcrypto_impl.h"
+
+#include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -10,7 +13,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
-#include "content/renderer/webcrypto/webcrypto_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
@@ -72,7 +74,7 @@ WebKit::WebCryptoAlgorithm CreateAesCbcAlgorithm(
 }
 
 WebKit::WebCryptoAlgorithm CreateAesCbcAlgorithm(
-    unsigned short key_length_bits) {
+    unsigned short key_length_bits) { // NOLINT
   return WebKit::WebCryptoAlgorithm::adoptParamsAndCreate(
       WebKit::WebCryptoAlgorithmIdAesCbc,
       new WebKit::WebCryptoAesKeyGenParams(key_length_bits));
@@ -638,8 +640,7 @@ TEST_F(WebCryptoImplTest, AesCbcSampleSets) {
   }
 }
 
-// TODO (padolph): Add test to verify generated symmetric keys appear random.
-
+// TODO(padolph): Add test to verify generated symmetric keys appear random.
 
 TEST_F(WebCryptoImplTest, GenerateKeyAes) {
   WebKit::WebCryptoKey key = WebKit::WebCryptoKey::createNull();
@@ -688,7 +689,6 @@ TEST_F(WebCryptoImplTest, ImportSecretKeyNoAlgorithm) {
 #if !defined(USE_OPENSSL)
 
 TEST_F(WebCryptoImplTest, GenerateKeyPairRsa) {
-
   // Note: using unrealistic short key lengths here to avoid bogging down tests.
 
   // Successful WebCryptoAlgorithmIdRsaEsPkcs1v1_5 key generation.
@@ -698,7 +698,7 @@ TEST_F(WebCryptoImplTest, GenerateKeyPairRsa) {
       CreateRsaAlgorithm(WebKit::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
                          modulus_length,
                          public_exponent);
-  const bool extractable = false;
+  bool extractable = false;
   const WebKit::WebCryptoKeyUsageMask usage_mask = 0;
   WebKit::WebCryptoKey public_key = WebKit::WebCryptoKey::createNull();
   WebKit::WebCryptoKey private_key = WebKit::WebCryptoKey::createNull();
@@ -720,7 +720,7 @@ TEST_F(WebCryptoImplTest, GenerateKeyPairRsa) {
       algorithm, extractable, usage_mask, &public_key, &private_key));
 
   // Fail with bad exponent: larger than unsigned long.
-  unsigned exponent_length = sizeof(unsigned long) + 1;
+  unsigned exponent_length = sizeof(unsigned long) + 1; // NOLINT
   const std::vector<uint8> long_exponent(exponent_length, 0x01);
   algorithm = CreateRsaAlgorithm(WebKit::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
                                  modulus_length,
