@@ -150,8 +150,8 @@ void AppListWin::Prerender() {
   view_->Prerender();
 }
 
-void AppListWin::RegainNextLostFocus() {
-  activation_tracker_.RegainNextLostFocus();
+void AppListWin::ReactivateOnNextFocusLoss() {
+  activation_tracker_.ReactivateOnNextFocusLoss();
 }
 
 gfx::NativeWindow AppListWin::GetWindow() {

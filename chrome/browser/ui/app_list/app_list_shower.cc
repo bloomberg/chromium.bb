@@ -19,7 +19,7 @@ AppListShower::~AppListShower() {
 
 void AppListShower::ShowAndReacquireFocus(Profile* requested_profile) {
   ShowForProfile(requested_profile);
-  app_list_->RegainNextLostFocus();
+  app_list_->ReactivateOnNextFocusLoss();
 }
 
 void AppListShower::ShowForProfile(Profile* requested_profile) {

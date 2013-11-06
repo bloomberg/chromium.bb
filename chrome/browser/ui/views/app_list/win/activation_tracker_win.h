@@ -17,8 +17,8 @@ class ActivationTrackerWin : public app_list::AppListView::Observer {
                        const base::Closure& on_should_dismiss);
   ~ActivationTrackerWin();
 
-  void RegainNextLostFocus() {
-    regain_next_lost_focus_ = true;
+  void ReactivateOnNextFocusLoss() {
+    reactivate_on_next_focus_loss_ = true;
   }
 
   // app_list::AppListView::Observer overrides.
@@ -27,7 +27,17 @@ class ActivationTrackerWin : public app_list::AppListView::Observer {
   void OnViewHidden();
 
  private:
-  void CheckTaskbarOrViewHasFocus();
+  // Dismisses the app launcher if it has lost focus and the user is not trying
+  // to pin it. If it is time to dismiss the app launcher, but
+  // ReactivateOnNextFocusLoss has been called, reactivates the app launcher
+  // instead of dismissing it.
+  void MaybeDismissAppList();
+
+  // Determines whether the app launcher should be dismissed. This should be
+  // called at most once per timer tick, as it is not idempotent (if the taskbar
+  // is focused, it waits until it has been called twice before dismissing the
+  // app list).
+  bool ShouldDismissAppList();
 
   // The window to track the active state of.
   app_list::AppListView* view_;
@@ -38,15 +48,14 @@ class ActivationTrackerWin : public app_list::AppListView::Observer {
   // True if we are anticipating that the app list will lose focus, and we want
   // to take it back. This is used when switching out of Metro mode, and the
   // browser regains focus after showing the app list.
-  bool regain_next_lost_focus_;
+  bool reactivate_on_next_focus_loss_;
 
-  // When the context menu on the app list's taskbar icon is brought up the
-  // app list should not be hidden, but it should be if the taskbar is clicked
-  // on. There can be a period of time when the taskbar gets focus between a
-  // right mouse click and the menu showing; to prevent hiding the app launcher
-  // when this happens it is kept visible if the taskbar is seen briefly without
-  // the right mouse button down, but not if this happens twice in a row.
-  bool preserving_focus_for_taskbar_menu_;
+  // Records whether, on the previous timer tick, the taskbar had focus without
+  // the right mouse button being down. We allow the taskbar to have focus for
+  // one tick before dismissing the app list. This allows the app list to be
+  // kept visible if the taskbar is seen briefly without the right mouse button
+  // down, but not if this happens for two consecutive ticks.
+  bool taskbar_has_focus_;
 
   // Timer used to check if the taskbar or app list is active. Using a timer
   // means we don't need to hook Windows, which is apparently not possible
