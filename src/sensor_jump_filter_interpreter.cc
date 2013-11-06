@@ -114,7 +114,7 @@ void SensorJumpFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
         should_store_flag = should_warp = true;
       }
       if (should_warp) {
-        fs[0]->flags |= warp[f_idx];
+        fs[0]->flags |= (warp[f_idx] | GESTURES_FINGER_WARP_TELEPORTATION);
         // Warping moves here get tap warped, too
         if (warp_move) {
           fs[0]->flags |= warp[f_idx] == GESTURES_FINGER_WARP_X_MOVE ?

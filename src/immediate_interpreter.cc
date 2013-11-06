@@ -743,8 +743,36 @@ int FingerButtonClick::EvaluateTwoFingerButtonType() {
     return GESTURES_BUTTON_LEFT;
 
   // fingers touched down at approx the same time
-  if (start_delta < interpreter_->right_click_start_time_diff_.val_)
+  if (start_delta < interpreter_->right_click_start_time_diff_.val_) {
+    // If two fingers are both very recent, it could either be a right-click
+    // or the left-click of one click-and-drag gesture. Our heuristic is that
+    // for real right-clicks, two finger's pressure should be roughly the same
+    // and they tend not be vertically aligned.
+    const FingerState* min_fs = NULL;
+    const FingerState* fs = NULL;
+    if (fingers_[0]->pressure < fingers_[1]->pressure)
+      min_fs = fingers_[0], fs = fingers_[1];
+    else
+      min_fs = fingers_[1], fs = fingers_[0];
+    float min_pressure = min_fs->pressure;
+    // It takes higher pressure for the bottom finger to trigger the physical
+    // click and people tend to place fingers more vertically so that they have
+    // enough space to drag the content with ease.
+    bool likely_click_drag =
+        (fs->pressure >
+             min_pressure +
+                 interpreter_->click_drag_pressure_diff_thresh_.val_ &&
+         fs->pressure >
+             min_pressure *
+                 interpreter_->click_drag_pressure_diff_factor_.val_ &&
+         fs->position_y > min_fs->position_y);
+    float xdist = fabsf(fs->position_x - min_fs->position_x);
+    float ydist = fabsf(fs->position_y - min_fs->position_y);
+    if (likely_click_drag &&
+        ydist >= xdist * interpreter_->click_drag_min_slope_.val_)
+      return GESTURES_BUTTON_LEFT;
     return GESTURES_BUTTON_RIGHT;
+  }
 
   // 1 finger is cold and in the dampened zone? Probably a thumb!
   if (num_cold_ == 1 && interpreter_->FingerInDampenedZone(*fingers_[0]))
@@ -772,6 +800,10 @@ int FingerButtonClick::EvaluateThreeOrMoreFingerButtonType() {
   if ((num_fingers_ - num_recent_ == 2) &&
       (num_recent_ == num_dampened_recent))
     return EvaluateTwoFingerButtonType();
+
+  // Only one finger hot with all others cold -> moving -> left click
+  if (num_hot_ == 1 && num_cold_ == num_fingers_ - 1)
+    return GESTURES_BUTTON_LEFT;
 
   // A single recent touch, or a single cold touch (with all others being hot)
   // could be a thumb or a second hand finger.
@@ -944,6 +976,13 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
       two_finger_pressure_diff_factor_(prop_reg,
                                        "Two Finger Pressure Diff Factor",
                                        1.65),
+      click_drag_pressure_diff_thresh_(prop_reg,
+                                       "Click Drag Pressure Diff Thresh",
+                                       10.0),
+      click_drag_pressure_diff_factor_(prop_reg,
+                                       "Click Drag Pressure Diff Factor",
+                                       1.20),
+      click_drag_min_slope_(prop_reg, "Click Drag Min Slope", 2.22),
       thumb_movement_factor_(prop_reg, "Thumb Movement Factor", 0.5),
       thumb_speed_factor_(prop_reg, "Thumb Speed Factor", 0.5),
       thumb_eval_timeout_(prop_reg, "Thumb Evaluation Timeout", 0.06),
@@ -1098,13 +1137,14 @@ void ImmediateInterpreter::UpdatePointingFingers(const HardwareState& hwstate) {
 }
 
 float ImmediateInterpreter::DistanceTravelledSq(const FingerState& fs,
-                                                bool origin) const {
-  Point delta = FingerTraveledVector(fs, origin);
+                                                bool origin,
+                                                bool permit_warp) const {
+  Point delta = FingerTraveledVector(fs, origin, permit_warp);
   return delta.x_ * delta.x_ + delta.y_ * delta.y_;
 }
 
 ImmediateInterpreter::Point ImmediateInterpreter::FingerTraveledVector(
-    const FingerState& fs, bool origin) const {
+    const FingerState& fs, bool origin, bool permit_warp) const {
   const map<short, Point, kMaxFingers>* positions;
   if (origin)
     positions = &origin_positions_;
@@ -1117,9 +1157,11 @@ ImmediateInterpreter::Point ImmediateInterpreter::FingerTraveledVector(
   const Point& start = (*positions)[fs.tracking_id];
   float dx = fs.position_x - start.x_;
   float dy = fs.position_y - start.y_;
-  if (fs.flags & GESTURES_FINGER_WARP_X)
+  bool suppress_move =
+      (!permit_warp || (fs.flags & GESTURES_FINGER_WARP_TELEPORTATION));
+  if ((fs.flags & GESTURES_FINGER_WARP_X) && suppress_move)
     dx = 0;
-  if (fs.flags & GESTURES_FINGER_WARP_Y)
+  if ((fs.flags & GESTURES_FINGER_WARP_Y) && suppress_move)
     dy = 0;
   return Point(dx, dy);
 }
@@ -1159,9 +1201,14 @@ void ImmediateInterpreter::UpdateThumbState(const HardwareState& hwstate) {
     // Only palms on the touchpad
     return;
   }
-  bool min_warp_move = (min_fs->flags & GESTURES_FINGER_WARP_X_MOVE) ||
-                       (min_fs->flags & GESTURES_FINGER_WARP_Y_MOVE);
-  float min_dist_sq = DistanceTravelledSq(*min_fs, true);
+  // We respect warp flags only if we really have little information of the
+  // finger positions and not just because we want to suppress unintentional
+  // cursor moves. See the definition of GESTURES_FINGER_WARP_TELEPORTATION
+  // for more detail.
+  bool min_warp_move = (min_fs->flags & GESTURES_FINGER_WARP_TELEPORTATION) &&
+                       ((min_fs->flags & GESTURES_FINGER_WARP_X_MOVE) ||
+                        (min_fs->flags & GESTURES_FINGER_WARP_Y_MOVE));
+  float min_dist_sq = DistanceTravelledSq(*min_fs, true, true);
   float min_dt = hwstate.timestamp -
       origin_timestamps_[min_fs->tracking_id];
   float thumb_dist_sq_thresh = min_dist_sq *
@@ -1174,7 +1221,7 @@ void ImmediateInterpreter::UpdateThumbState(const HardwareState& hwstate) {
     const FingerState& fs = hwstate.fingers[i];
     if (fs.flags & GESTURES_FINGER_PALM)
       continue;
-    float dist_sq = DistanceTravelledSq(fs, true);
+    float dist_sq = DistanceTravelledSq(fs, true, true);
     float dt = hwstate.timestamp - origin_timestamps_[fs.tracking_id];
     bool closer_to_origin = dist_sq <= thumb_dist_sq_thresh;
     bool slower_moved = (dist_sq * min_dt &&
@@ -1192,8 +1239,9 @@ void ImmediateInterpreter::UpdateThumbState(const HardwareState& hwstate) {
     // 1. Both fingers warp.
     // 2. Min-pressure finger warps and relatively_motionless is false.
     // 3. Thumb warps and relatively_motionless is true.
-    bool warp_move = (fs.flags & GESTURES_FINGER_WARP_X_MOVE) ||
-                     (fs.flags & GESTURES_FINGER_WARP_Y_MOVE);
+    bool warp_move = (fs.flags & GESTURES_FINGER_WARP_TELEPORTATION) &&
+                     ((fs.flags & GESTURES_FINGER_WARP_X_MOVE) ||
+                      (fs.flags & GESTURES_FINGER_WARP_Y_MOVE));
     if (likely_thumb &&
         ((warp_move && min_warp_move) ||
          (!warp_move && min_warp_move && !relatively_motionless) ||
@@ -1662,6 +1710,20 @@ bool ImmediateInterpreter::PalmIsArrivingOrDeparting(
   return false;
 }
 
+bool ImmediateInterpreter::IsTooCloseToThumb(const FingerState& finger) const {
+  const float kMin2fDistThreshSq = tapping_finger_min_separation_.val_ *
+      tapping_finger_min_separation_.val_;
+  for (map<short, stime_t, kMaxFingers>::const_iterator it = thumb_.begin();
+       it != thumb_.end(); ++it) {
+    const FingerState* thumb = state_buffer_.Get(0)->GetFingerState(it->first);
+    float xdist = fabsf(finger.position_x - thumb->position_x);
+    float ydist = fabsf(finger.position_y - thumb->position_y);
+    if (xdist * xdist + ydist * ydist < kMin2fDistThreshSq)
+      return true;
+  }
+  return false;
+}
+
 bool ImmediateInterpreter::TwoFingersGesturing(
     const FingerState& finger1,
     const FingerState& finger2,
@@ -1730,6 +1792,16 @@ GestureType ImmediateInterpreter::GetTwoFingerGestureType(
       !MapContainsKey(start_positions_, finger2.tracking_id))
     return kGestureTypeNull;
 
+  // If a finger is close to any thumb, we believe it to be due to thumb-splits
+  // and ignore it.
+  int num_close_to_thumb = 0;
+  num_close_to_thumb += static_cast<int>(IsTooCloseToThumb(finger1));
+  num_close_to_thumb += static_cast<int>(IsTooCloseToThumb(finger2));
+  if (num_close_to_thumb == 1)
+    return kGestureTypeMove;
+  else if (num_close_to_thumb == 2)
+    return kGestureTypeNull;
+
   // Compute distance traveled since fingers changed for each finger
   float dx1 = finger1.position_x - start_positions_[finger1.tracking_id].x_;
   float dy1 = finger1.position_y - start_positions_[finger1.tracking_id].y_;
@@ -1756,8 +1828,7 @@ GestureType ImmediateInterpreter::GetTwoFingerGestureType(
   bool damp_instaneous_moving_x = false;
   bool damp_instaneous_moving_y = false;
   if (FingerInDampenedZone(finger1) ||
-      (finger1.flags & GESTURES_FINGER_POSSIBLE_PALM) ||
-      SetContainsValue(thumb_, finger1.tracking_id)) {
+      (finger1.flags & GESTURES_FINGER_POSSIBLE_PALM)) {
     dampened_zone_occupied = true;
     damp_dx = dx1;
     damp_dy = dy1;
@@ -1767,8 +1838,7 @@ GestureType ImmediateInterpreter::GetTwoFingerGestureType(
         finger1.flags & GESTURES_FINGER_INSTANTANEOUS_MOVING;
   }
   if (FingerInDampenedZone(finger2) ||
-      (finger2.flags & GESTURES_FINGER_POSSIBLE_PALM) ||
-      SetContainsValue(thumb_, finger2.tracking_id)) {
+      (finger2.flags & GESTURES_FINGER_POSSIBLE_PALM)) {
     dampened_zone_occupied = true;
     damp_dx = MinMag(damp_dx, dx2);
     damp_dy = MinMag(damp_dy, dy2);

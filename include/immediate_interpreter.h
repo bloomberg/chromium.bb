@@ -384,11 +384,19 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
 
   // Returns the square of the distance that this contact has travelled since
   // fingers changed (origin=false) or since they touched down (origin=true).
-  float DistanceTravelledSq(const FingerState& fs, bool origin) const;
+  // If permit_warp is true, we ignore the GESTURES_FINGER_WARP_X/Y flags
+  // unless the more strict GESTURES_FINGER_WARP_TELEPORTATION flag is set.
+  float DistanceTravelledSq(const FingerState& fs,
+                            bool origin,
+                            bool permit_warp = false) const;
 
   // Returns the vector that this finger has travelled since
   // fingers changed (origin=false) or since they touched down (origin=true).
-  Point FingerTraveledVector(const FingerState& fs, bool origin) const;
+  // If permit_warp is true, we ignore the GESTURES_FINGER_WARP_X/Y flags
+  // unless the more strict GESTURES_FINGER_WARP_TELEPORTATION flag is set.
+  Point FingerTraveledVector(const FingerState& fs,
+                             bool origin,
+                             bool permit_warp = false) const;
 
   // Returns the square of distance between two fingers.
   // Returns -1 if not exactly two fingers are present.
@@ -433,6 +441,10 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // intentional 1f cursor move near the touchpad boundary usually has a
   // stationary finger contact size/pressure.
   bool PalmIsArrivingOrDeparting(const FingerState& finger) const;
+
+  // Check if a finger is close to any known thumb. Can be used to detect some
+  // thumb split cases.
+  bool IsTooCloseToThumb(const FingerState& finger) const;
 
   // If the fingers are near each other in location and pressure and might
   // to be part of a 2-finger action, returns true. The function can also
@@ -691,6 +703,15 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // larger is a thumb.
   DoubleProperty two_finger_pressure_diff_thresh_;
   DoubleProperty two_finger_pressure_diff_factor_;
+  // Click-and-drags are sometimes wrongly classified as right-clicks if the
+  // physical-clicking finger arrives at the pad later than or at roughly the
+  // same time of the other finger. To distinguish between the two cases, we
+  // use the pressure difference and the fingers' relative positions.
+  DoubleProperty click_drag_pressure_diff_thresh_;
+  DoubleProperty click_drag_pressure_diff_factor_;
+  // Mininum slope of the line connecting two fingers that can qualify a click-
+  // and-drag gesture.
+  DoubleProperty click_drag_min_slope_;
   // If a large contact moves more than this much times the lowest-pressure
   // contact, consider it not to be a thumb.
   DoubleProperty thumb_movement_factor_;

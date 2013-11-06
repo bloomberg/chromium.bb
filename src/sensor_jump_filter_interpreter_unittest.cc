@@ -99,7 +99,8 @@ TEST(SensorJumpFilterInterpreterTest, SimpleTest) {
     fs.position_y = data[i].val;
     wrapper.SyncInterpret(&hs, NULL);
     const unsigned kFlags = GESTURES_FINGER_WARP_Y |
-        GESTURES_FINGER_WARP_Y_TAP_MOVE;
+        GESTURES_FINGER_WARP_Y_TAP_MOVE |
+        GESTURES_FINGER_WARP_TELEPORTATION;
     EXPECT_EQ(data[i].warp ? kFlags : 0, fs.flags) << "i=" << i;
   }
 }

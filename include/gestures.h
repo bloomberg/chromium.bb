@@ -104,6 +104,16 @@ struct HardwareProperties {
 // a shorter period of time than the trend ones so it may provide faster
 // response and lower latency.
 #define GESTURES_FINGER_INSTANTANEOUS_MOVING (1 << 18)
+// We sometimes use the warp flags only because we want to suppress unwanted
+// movements and not that we really have no good idea of the finger position.
+// This poses additional difficulty for some classifying logics that relies
+// much on the finger position. To maximize the use of any available data,
+// we further mark a finger as GESTURES_FINGER_WARP_TELEPORTATION only if we
+// indeed have no idea of its position (e.g. due to sensor jumps). For all
+// other cases (e.g. click wiggle, plams suppression, stationary wiggle), we
+// skip the flag so that we can have the option to use the not-that-accurate
+// positions.
+#define GESTURES_FINGER_WARP_TELEPORTATION (1 << 19)
 
 #define GESTURES_FINGER_WARP_X    (GESTURES_FINGER_WARP_X_NON_MOVE | \
                                    GESTURES_FINGER_WARP_X_MOVE)
