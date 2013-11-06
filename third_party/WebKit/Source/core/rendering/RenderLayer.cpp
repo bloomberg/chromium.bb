@@ -3783,8 +3783,8 @@ bool RenderLayer::shouldBeSelfPaintingLayer() const
 
 void RenderLayer::updateSelfPaintingLayer()
 {
-    bool isSelfPaintingLayer = shouldBeSelfPaintingLayer();
-    if (m_isSelfPaintingLayer == isSelfPaintingLayer)
+    bool isSelfPaintingLayer = this->shouldBeSelfPaintingLayer();
+    if (this->isSelfPaintingLayer() == isSelfPaintingLayer)
         return;
 
     m_isSelfPaintingLayer = isSelfPaintingLayer;

@@ -438,7 +438,7 @@ bool RenderLayerStackingNode::shouldBeNormalFlowOnlyIgnoringCompositedScrolling(
 void RenderLayerStackingNode::updateIsNormalFlowOnly()
 {
     bool isNormalFlowOnly = shouldBeNormalFlowOnly();
-    if (isNormalFlowOnly == m_isNormalFlowOnly)
+    if (isNormalFlowOnly == this->isNormalFlowOnly())
         return;
 
     m_isNormalFlowOnly = isNormalFlowOnly;
@@ -620,7 +620,7 @@ bool RenderLayerStackingNode::descendantsAreContiguousInStackingOrder() const
 
 bool RenderLayerStackingNode::setNeedsToBeStackingContainer(bool needsToBeStackingContainer)
 {
-    if (m_needsToBeStackingContainer == needsToBeStackingContainer)
+    if (this->needsToBeStackingContainer() == needsToBeStackingContainer)
         return false;
 
     // Count the total number of RenderLayers which need to be stacking
