@@ -456,6 +456,7 @@ std::string AudioManagerMac::GetAssociatedOutputDeviceID(
   if (result)
     return std::string();
 
+  std::vector<std::string> associated_devices;
   for (int i = 0; i < device_count; ++i) {
     // Get the number of  output channels of the device.
     pa.mSelector = kAudioDevicePropertyStreams;
@@ -483,10 +484,30 @@ std::string AudioManagerMac::GetAssociatedOutputDeviceID(
 
     std::string ret(base::SysCFStringRefToUTF8(uid));
     CFRelease(uid);
-    return ret;
+    associated_devices.push_back(ret);
   }
 
   // No matching device found.
+  if (associated_devices.empty())
+    return std::string();
+
+  // Return the device if there is only one associated device.
+  if (associated_devices.size() == 1)
+    return associated_devices[0];
+
+  // When there are multiple associated devices, we currently do not have a way
+  // to detect if a device (e.g. a digital output device) is actually connected
+  // to an endpoint, so we cannot randomly pick a device.
+  // We pick the device iff the associated device is the default output device.
+  const std::string default_device = GetDefaultOutputDeviceID();
+  for (std::vector<std::string>::const_iterator iter =
+           associated_devices.begin();
+       iter != associated_devices.end(); ++iter) {
+    if (default_device == *iter)
+      return *iter;
+  }
+
+  // Failed to figure out which is the matching device, return an emtpy string.
   return std::string();
 }
 
