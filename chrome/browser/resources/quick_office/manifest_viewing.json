@@ -82,7 +82,7 @@
       "sub_package_path": "_platform_specific/arm/"
     }
   ],
-  "version": "32.92.1530.4",
+  "version": "32.93.1611.7",
   "web_accessible_resources": [
     "views/qowt.html"
   ]
