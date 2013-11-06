@@ -167,7 +167,7 @@ deps_os = {
         'src/third_party/lss':
             Var('git_url') + '/external/linux-syscall-support/lss.git@e6c7682c40c27527894fbb8bcba38f77edbbb6b7',
         'src/third_party/openssl':
-            Var('git_url') + '/chromium/deps/openssl.git@fc8760c61cfe4155d0636a956ed70726c4d19dd2',
+            Var('git_url') + '/chromium/deps/openssl.git@08086bd0f0dfbc08d121ccc6fbd27de9eaed55c7',
     },
     'ios':
     {
@@ -294,7 +294,7 @@ deps_os = {
         'src/third_party/mtpd/source':
             Var('git_url') + '/chromiumos/platform/mtpd.git@5be739c938a0a229ba9479b00b180e1f9c843e81',
         'src/third_party/openssl':
-            Var('git_url') + '/chromium/deps/openssl.git@fc8760c61cfe4155d0636a956ed70726c4d19dd2',
+            Var('git_url') + '/chromium/deps/openssl.git@08086bd0f0dfbc08d121ccc6fbd27de9eaed55c7',
         'src/third_party/pyelftools':
             Var('git_url') + '/chromiumos/third_party/pyelftools.git@bdc1d380acd88d4bfaf47265008091483b0d614e',
         'src/third_party/swig/linux':
