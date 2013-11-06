@@ -27,6 +27,12 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     # Windows/Intel failures
     self.Fail('conformance/textures/texture-size.html',
         ['win', 'intel'], bug=121139)
+    self.Fail('conformance/rendering/gl-scissor-test.html',
+        ['win', 'intel'], bug=314997)
+
+    # Windows/ATI failures
+    self.Fail('conformance/rendering/more-than-65536-indices.html',
+        ['win', 'ati'], bug=314997)
 
     # Windows 7/Intel failures
     self.Fail('conformance/context/context-lost-restored.html',
@@ -83,6 +89,8 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['win7', 'intel'])
 
     # Mac/Intel failures
+    self.Fail('conformance/rendering/gl-scissor-test.html',
+        ['mac', 'intel'], bug=314997)
     # The following two tests hang the WindowServer.
     self.Skip('conformance/canvas/drawingbuffer-static-canvas-test.html',
         ['mac', 'intel'], bug=303915)
@@ -136,6 +144,8 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['mac', 'amd'], bug=308328)
     self.Skip('conformance/textures/tex-image-and-sub-image-2d-with-image-data-rgba5551.html',
         ['mac', 'amd'], bug=308328)
+    self.Fail('conformance/canvas/drawingbuffer-test.html',
+        ['mac', 'amd'], bug=314997)
 
     # Android failures
     self.Fail('conformance/textures/texture-npot-video.html',
@@ -143,4 +153,6 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     # The following test is very slow and therefore times out on Android bot.
     self.Skip('conformance/rendering/multisample-corruption.html',
         ['android'])
+    self.Fail('conformance/canvas/drawingbuffer-test.html',
+        ['android'], bug=314997)
 
