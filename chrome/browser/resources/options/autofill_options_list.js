@@ -94,7 +94,7 @@ cr.define('options.autofillOptions', function() {
       this.contentElement.appendChild(label);
 
       // The credit card icon.
-      var icon = this.ownerDocument.createElement('image');
+      var icon = this.ownerDocument.createElement('img');
       icon.src = this.icon;
       icon.alt = this.description;
       this.contentElement.appendChild(icon);
