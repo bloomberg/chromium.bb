@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "6.14",
+  "version": "6.13",
   "entries": [
     {
       "id": 1,
@@ -147,7 +147,92 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         }
       ],
       "features": [
-        "all"
+        "accelerated_2d_canvas",
+        "accelerated_video",
+        "accelerated_video_decode",
+        "3d_css",
+        "multisampling",
+        "flash_3d",
+        "flash_stage3d",
+        "force_compositing_mode"
+      ]
+    },
+    {
+      "id": 13,
+      "description": "ATI drivers older than 10.6 on Windows XP are possibly unreliable.",
+      "cr_bugs": [74212],
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "=",
+          "value": "5"
+        }
+      },
+      "vendor_id": "0x1002",
+      "driver_version": {
+        "op": "<",
+        "value": "8.741"
+      },
+      "features": [
+        "accelerated_video",
+        "accelerated_video_decode",
+        "3d_css",
+        "multisampling",
+        "flash_3d",
+        "flash_stage3d",
+        "force_compositing_mode"
+      ]
+    },
+    {
+      "id": 14,
+      "description": "NVIDIA drivers older than 257.21 on Windows XP are possibly unreliable.",
+      "cr_bugs": [74212],
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "=",
+          "value": "5"
+        }
+      },
+      "vendor_id": "0x10de",
+      "driver_version": {
+        "op": "<",
+        "value": "6.14.12.5721"
+      },
+      "features": [
+        "accelerated_video",
+        "accelerated_video_decode",
+        "3d_css",
+        "multisampling",
+        "flash_3d",
+        "flash_stage3d",
+        "force_compositing_mode"
+      ]
+    },
+    {
+      "id": 15,
+      "description": "Intel drivers older than 14.42.7.5294 on Windows XP are possibly unreliable.",
+      "cr_bugs": [74212],
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "=",
+          "value": "5"
+        }
+      },
+      "vendor_id": "0x8086",
+      "driver_version": {
+        "op": "<",
+        "value": "6.14.10.5294"
+      },
+      "features": [
+        "accelerated_video",
+        "accelerated_video_decode",
+        "3d_css",
+        "multisampling",
+        "flash_3d",
+        "flash_stage3d",
+        "force_compositing_mode"
       ]
     },
     {
@@ -450,6 +535,21 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       ]
     },
     {
+      "id": 41,
+      "description": "Disable 3D (but not Stage3D) in Flash on XP",
+      "cr_bugs": [134885],
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "=",
+          "value": "5"
+        }
+      },
+      "features": [
+        "flash_3d"
+      ]
+    },
+    {
       "id": 42,
       "description": "AMD Radeon HD 6490M and 6970M on Snow Leopard are buggy.",
       "cr_bugs": [137307, 285350],
@@ -605,6 +705,46 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "gl_vendor": {
         "op": "beginwith",
         "value": "VMware"
+      },
+      "features": [
+        "all"
+      ]
+    },
+    {
+      "id": 51,
+      "description": "NVIDIA drivers 6.14.11.9621 is buggy on Windows XP.",
+      "cr_bugs": [152096],
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "=",
+          "value": "5"
+        }
+      },
+      "vendor_id": "0x10de",
+      "driver_version": {
+        "op": "=",
+        "value": "6.14.11.9621"
+      },
+      "features": [
+        "all"
+      ]
+    },
+    {
+      "id": 52,
+      "description": "NVIDIA drivers 6.14.11.8267 is buggy on Windows XP.",
+      "cr_bugs": [152096],
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "=",
+          "value": "5"
+        }
+      },
+      "vendor_id": "0x10de",
+      "driver_version": {
+        "op": "=",
+        "value": "6.14.11.8267"
       },
       "features": [
         "all"
@@ -964,6 +1104,23 @@ LONG_STRING_CONST(
       ]
     },
     {
+      "id": 77,
+      "description": "Multisampling is reportedly very slow on Quadro NVS 135M/GeForce 8400M GS",
+      "cr_bugs": [279446],
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "=",
+          "value": "5"
+        }
+      },
+      "vendor_id": "0x10de",
+      "device_id": ["0x0429", "0x042b"],
+      "features": [
+        "multisampling"
+      ]
+    },
+    {
       "id": 78,
       "description": "Accelerated video decode interferes with GPU blacklist on older Intel drivers",
       "cr_bugs": [180695],
@@ -982,7 +1139,7 @@ LONG_STRING_CONST(
     },
     {
       "id": 79,
-      "description": "Disable GPU on all Windows versions prior to and including Vista.",
+      "description": "Disable force compositing mode on all Windows versions prior to and including Vista.",
       "cr_bugs": [273920, 170421],
       "os": {
         "type": "win",
@@ -992,7 +1149,9 @@ LONG_STRING_CONST(
         }
       },
       "features": [
-        "all"
+        "flash_3d",
+        "flash_stage3d",
+        "force_compositing_mode"
       ]
     },
     {
