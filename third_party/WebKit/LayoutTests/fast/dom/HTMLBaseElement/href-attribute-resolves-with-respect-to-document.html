@@ -23,8 +23,7 @@ shouldBeTrue("endsWith(document.querySelector('base').href, 'foo/bar/')");
 shouldBeFalse("endsWith(document.querySelector('base').href, 'foo/bar/foo/bar/')");
 
 base.href = null;
-shouldBeFalse("document.querySelector('base').hasAttribute('href')");
-shouldBeTrue("endsWith(document.querySelector('base').href, '/href-attribute-resolves-with-respect-to-document.html')");
+shouldBeTrue("endsWith(document.querySelector('base').href, '/null')");
 
 // When a document does not have a URL, base cannot be resolved
 

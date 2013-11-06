@@ -163,7 +163,8 @@
                     type: 'HTMLBaseElement',
                     elementToUse: document.createElement('base'),
                     attributes: [
-                        {name: 'target', expectedNull: ''}
+                        {name: 'href', expectedNull: 'null', isUrl: true},
+                        {name: 'target', expectedNull: 'null'}
                     ]
                 },
                 {
@@ -178,7 +179,7 @@
                     elementToUse: document.createElement('body'),
                     attributes: [
                         {name: 'aLink', expectedNull: ''},
-                        {name: 'background', expectedNull: ''},
+                        {name: 'background', expectedNull: 'null'},
                         {name: 'bgColor', expectedNull: ''},
                         {name: 'link', expectedNull: ''},
                         {name: 'text', expectedNull: ''},
@@ -189,7 +190,7 @@
                     type: 'HTMLBRElement',
                     elementToUse: document.createElement('br'),
                     attributes: [
-                        {name: 'clear', expectedNull: ''}
+                        {name: 'clear', expectedNull: 'null'}
                     ]
                 },
                 {

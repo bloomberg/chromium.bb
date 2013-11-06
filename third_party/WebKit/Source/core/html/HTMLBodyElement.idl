@@ -20,7 +20,7 @@
 
 interface HTMLBodyElement : HTMLElement {
     [Reflect, TreatNullAs=NullString] attribute DOMString aLink;
-    [Reflect, TreatNullAs=NullString] attribute DOMString background;
+    [Reflect] attribute DOMString background;
     [Reflect, TreatNullAs=NullString] attribute DOMString bgColor;
     [Reflect, TreatNullAs=NullString] attribute DOMString link;
     [Reflect, TreatNullAs=NullString] attribute DOMString text;

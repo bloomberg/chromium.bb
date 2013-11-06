@@ -51,18 +51,19 @@ TEST SUCCEEDED: The value was the string 'null'. [tested HTMLAudioElement.mediaG
 TEST SUCCEEDED: The value was the string 'auto'. [tested HTMLAudioElement.preload]
 TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLAudioElement.src]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLBaseElement.target]
+TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLBaseElement.href]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLBaseElement.target]
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLBlockquoteElement.cite]
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLBodyElement.aLink]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLBodyElement.background]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLBodyElement.background]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLBodyElement.bgColor]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLBodyElement.link]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLBodyElement.text]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLBodyElement.vLink]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLBRElement.clear]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLBRElement.clear]
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLButtonElement.accessKey]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLButtonElement.name]
