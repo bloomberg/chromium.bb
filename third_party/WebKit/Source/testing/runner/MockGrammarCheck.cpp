@@ -65,7 +65,8 @@ bool MockGrammarCheck::checkGrammarOfString(const WebString& text, vector<WebTex
         {"apple zz orange.", 0, 16},
         {"apple,zz,orange.", 0, 16},
         {"orange,zz,apple.", 0, 16},
-        {"the the adlj adaasj sdklj. there there", 0, 38},
+        {"the the adlj adaasj sdklj. there there", 4, 3},
+        {"the the adlj adaasj sdklj. there there", 33, 5},
         {"zz apple orange.", 0, 16},
     };
     for (size_t i = 0; i < ARRAYSIZE_UNSAFE(grammarErrors); ++i) {

@@ -1,5 +1,7 @@
 <html>
 <head>
+<script src="../../resources/js-test.js"></script>
+<script src="../../editing/editing.js"></script>
 <style>
 .testDiv {
     width: 200px;
@@ -20,56 +22,88 @@
 
 </style>
 
-<script>
-function moveCursorOverAllWords(divName, numWords) {
-    div = document.getElementById(divName);
-    div.focus();
-    var selection = window.getSelection();
-    // Move to start of text
-    selection.modify("move", "backward", "line");
-    // Move cursor over all words so inline spellchecking is activated for all
-    for (var i = 0; i < 100; i++ ) {
-        selection.modify("move", "forward", "word");
-    }
-    // Remove focus from the element, since the word under the cursor won't have a misspelling marker.
-    div.blur();
-}
-
-function startTest() {
-    moveCursorOverAllWords('testLTR');
-    moveCursorOverAllWords('testRTL');
-    moveCursorOverAllWords('testLTREllipses');
-    moveCursorOverAllWords('testRTLEllipses');
-
-}
-</script>
 </head>
-<body onload="startTest()">
-<p id="explanation">
-This tests the correct placement of inline spelling and grammar markers in text.<br>
-Spelling markers should line up exactly under misspelled words in all cases.
-</p>
+<body>
+<script>
+description("This tests the correct placement of inline spelling and grammar "
+    + "markers in text. Spelling markers should line up exactly under misspelled "
+    + "words in all cases.");
+
+jsTestIsAsync = true;
+
+if (window.internals) {
+    internals.settings.setUnifiedTextCheckerEnabled(true);
+    internals.settings.setAsynchronousSpellCheckingEnabled(true);
+}
+
+if (window.testRunner)
+    testRunner.dumpAsTextWithPixelResults();
+
+</script>
 
 LTR
-<div id="testLTR" class="testDiv" contenteditable="true">
-the the adlj adaasj sdklj. there there
-</div>
+<div id="testLTR" class="testDiv" contenteditable="true">the the adlj adaasj sdklj. there there</div>
 
 RTL
-<div id="testRTL" class="testDiv forcertl" contenteditable="true">
-the the adlj adaasj sdklj. there there
-</div>
-
+<div id="testRTL" class="testDiv forcertl" contenteditable="true">the the adlj adaasj sdklj. there there</div>
 
 LTR (text-overflow:ellipses):
-<div id="testLTREllipses" class="testDiv ellipses" contenteditable="true">
-the the adlj adaasj sdklj. there there
-</div>
+<div id="testLTREllipses" class="testDiv ellipses" contenteditable="true">the the adlj adaasj sdklj. there there</div>
 
 RTL (text-overflow:ellipses):
-<div id="testRTLEllipses" class="testDiv forcertl ellipses" contenteditable="true">
-the the adlj adaasj sdklj. there there
-</div>
+<div id="testRTLEllipses" class="testDiv forcertl ellipses" contenteditable="true">the the adlj adaasj sdklj. there there</div>
 
+<script>
+function moveCursorOverAllWords(id)
+{
+    div = document.getElementById(id);
+    div.focus();
+
+    debug(id + ":");
+    // Move cursor over all words so inline spellchecking is activated for all.
+    for (var i = 0; i < div.innerHTML.length; i++)
+        moveSelectionForwardByWordCommand();
+
+    verifyMarkers();
+}
+
+function verifyMarkers()
+{
+    if (!window.internals)
+        return done();
+
+    // Take care of spelling markers first.
+    shouldBecomeEqual('internals.hasSpellingMarker(document, 8, 4)', 'true', function() { // Verifies 'adlj'.
+        shouldBecomeEqual('internals.hasSpellingMarker(document, 13, 6)', 'true', function() { // Verifies 'adaasj'.
+            shouldBecomeEqual('internals.hasSpellingMarker(document, 20, 5)', 'true', verifyGrammarMarkers) // Verifies 'sdklj'.
+        })
+    });
+
+    function verifyGrammarMarkers() {
+        shouldBecomeEqual('internals.hasGrammarMarker(document, 4, 3)', 'true', function() { // Verifies second 'the'.
+            shouldBecomeEqual('internals.hasGrammarMarker(document, 33, 5)', 'true', function() { // Verifies second 'there'.
+                // Markers of next element can not be found after modification selection without blur event.
+                div.blur();
+                done();
+            })
+        });
+    }
+}
+
+var tests = [ function() { moveCursorOverAllWords('testLTR'); },
+              function() { moveCursorOverAllWords('testRTL'); },
+              function() { moveCursorOverAllWords('testLTREllipses'); },
+              function() { moveCursorOverAllWords('testRTLEllipses'); } ];
+
+function done()
+{
+    var next = tests.shift();
+    if (next)
+        return window.setTimeout(next, 0);
+
+    finishJSTest();
+}
+done();
+</script>
 </body>
 </html>
