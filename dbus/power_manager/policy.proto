@@ -106,6 +106,14 @@ message PowerManagementPolicy {
   // be reset once the video has stopped.
   optional bool use_video_activity = 6;
 
+  // Backlight brightness in the range [0.0, 100.0] to use when on AC or battery
+  // power. When a message containing these fields is received, the backlight is
+  // set to the requested brightness. The updated brightness persists until the
+  // user manually changes it or a new policy containing the currently-relevant
+  // field is received.
+  optional double ac_brightness_percent = 13;
+  optional double battery_brightness_percent = 14;
+
   // Factor by which |screen_dim_ms| will be scaled while the device is in
   // presentation mode.  Other delays' distances from |screen_dim_ms| are
   // preserved after scaling.  A value of 1.0 (or less) leaves delays
@@ -136,5 +144,5 @@ message PowerManagementPolicy {
   // Logged by the power manager to aid in debugging.
   optional string reason = 8;
 
-  // Next ID to use: 13
+  // Next ID to use: 15
 }
