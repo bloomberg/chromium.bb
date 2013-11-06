@@ -42,7 +42,14 @@ class EVENTS_EXPORT DeviceListCacheX {
 
   void UpdateDeviceList(Display* display);
 
+  // Returns the list of devices associated with |display|. Uses the old X11
+  // protocol to get the list of the devices.
   const XDeviceList& GetXDeviceList(Display* display);
+
+  // Returns the list of devices associated with |display|. Uses the newer
+  // XINPUT2 protocol to get the list of devices. Before making this call, make
+  // sure that XInput2 support is available (e.g. by calling
+  // IsXInput2Available()).
   const XIDeviceList& GetXI2DeviceList(Display* display);
 
  private:
@@ -53,8 +60,6 @@ class EVENTS_EXPORT DeviceListCacheX {
 
   std::map<Display*, XDeviceList> x_dev_list_map_;
   std::map<Display*, XIDeviceList> xi_dev_list_map_;
-
-  bool xi2_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceListCacheX);
 };
