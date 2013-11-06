@@ -328,6 +328,7 @@ Profile* CreateProfile(const content::MainFunctionParams& parameters,
                        const base::FilePath& user_data_dir,
                        const CommandLine& parsed_command_line) {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::CreateProfile")
+  base::Time start = base::Time::Now();
   if (profiles::IsMultipleProfilesEnabled() &&
       parsed_command_line.HasSwitch(switches::kProfileDirectory)) {
     g_browser_process->local_state()->SetString(prefs::kProfileLastUsed,
@@ -351,8 +352,11 @@ Profile* CreateProfile(const content::MainFunctionParams& parameters,
   profile = g_browser_process->profile_manager()->GetProfile(
       profile_path);
 #endif
-  if (profile)
+  if (profile) {
+    UMA_HISTOGRAM_LONG_TIMES(
+        "Startup.CreateFirstProfile", base::Time::Now() - start);
     return profile;
+  }
 
 #if !defined(OS_WIN)
   // TODO(port): fix this.  See comments near the definition of

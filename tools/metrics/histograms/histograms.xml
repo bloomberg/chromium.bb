@@ -18270,6 +18270,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Startup.CreateFirstProfile" units="milliseconds">
+  <summary>
+    How long it takes to load the original profile synchronously on the UI
+    thread.
+  </summary>
+</histogram>
+
 <histogram name="Startup.Fling.TimeToDisplayVideo" units="milliseconds">
   <summary>
     The elapsed time from the Fling application launch to the first video frame
