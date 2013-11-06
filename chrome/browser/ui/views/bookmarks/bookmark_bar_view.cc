@@ -1241,12 +1241,11 @@ void BookmarkBarView::ShowContextMenuForView(views::View* source,
     parent = model_->bookmark_bar_node();
     nodes.push_back(parent);
   }
-  Profile* profile = browser_->profile();
   bool close_on_remove =
-      (parent == BookmarkModelFactory::GetForProfile(profile)->other_node()) &&
-      (parent->child_count() == 1);
+      (parent == model_->other_node()) && (parent->child_count() == 1);
+
   context_menu_.reset(new BookmarkContextMenu(
-      GetWidget(), browser_, profile,
+      GetWidget(), browser_, browser_->profile(),
       browser_->tab_strip_model()->GetActiveWebContents(),
       parent, nodes, close_on_remove));
   context_menu_->RunMenuAt(point, source_type);
