@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.1'
+__version__ = '0.2'
 
 import hashlib
 import json
@@ -71,7 +71,7 @@ class Manifest(object):
   """
   def __init__(
       self, isolate_server, isolated_hash, test_name, shards, env,
-      filters, working_dir, verbose, profile, priority, algo):
+      dimensions, working_dir, verbose, profile, priority, algo):
     """Populates a manifest object.
       Args:
         isolate_server - isolate server url.
@@ -79,7 +79,7 @@ class Manifest(object):
         test_name - The name to give the test request.
         shards - The number of swarm shards to request.
         env - environment variables to set.
-        filters - dimensions to filter the task on.
+        dimensions - dimensions to filter the task on.
         working_dir - Relative working directory to start the script.
         verbose - if True, have the slave print more details.
         profile - if True, have the slave print more timing data.
@@ -94,8 +94,8 @@ class Manifest(object):
 
     self._test_name = test_name
     self._shards = shards
-    self._env = env
-    self._filters = filters
+    self._env = env.copy()
+    self._dimensions = dimensions.copy()
     self._working_dir = working_dir
 
     self.verbose = bool(verbose)
@@ -154,7 +154,7 @@ class Manifest(object):
       'configurations': [
         {
           'config_name': 'isolated',
-          'dimensions': self._filters,
+          'dimensions': self._dimensions,
           'min_instances': self._shards,
           'priority': self.priority,
         },
@@ -307,7 +307,7 @@ def chromium_setup(manifest):
   manifest.add_task('Clean Up', ['python', cleanup_script_name])
 
 
-def archive(isolated, isolate_server, os_slave, algo, verbose):
+def archive(isolated, isolate_server, algo, verbose):
   """Archives a .isolated and all the dependencies on the CAC."""
   tempdir = None
   try:
@@ -318,7 +318,6 @@ def archive(isolated, isolate_server, os_slave, algo, verbose):
       'archive',
       '--outdir', isolate_server,
       '--isolated', isolated,
-      '-V', 'OS', PLATFORM_MAPPING_ISOLATE[os_slave],
     ]
     cmd.extend(['--verbose'] * verbose)
     logging.info(' '.join(cmd))
@@ -332,14 +331,14 @@ def archive(isolated, isolate_server, os_slave, algo, verbose):
 
 def process_manifest(
     swarming, isolate_server, file_hash_or_isolated, test_name, shards,
-    test_filter, slave_os, working_dir, verbose, profile, priority, algo):
-  """Process the manifest file and send off the swarm test request.
+    dimensions, env, working_dir, verbose, profile, priority, algo):
+  """Processes the manifest file and send off the swarming test request.
 
   Optionally archives an .isolated file.
   """
   if file_hash_or_isolated.endswith('.isolated'):
     file_hash = archive(
-        file_hash_or_isolated, isolate_server, slave_os, algo, verbose)
+        file_hash_or_isolated, isolate_server, algo, verbose)
     if not file_hash:
       tools.report_error('Archival failure %s' % file_hash_or_isolated)
       return 1
@@ -348,26 +347,14 @@ def process_manifest(
   else:
     tools.report_error('Invalid hash %s' % file_hash_or_isolated)
     return 1
-
-  env = {}
-  # These flags are googletest specific.
-  if test_filter and test_filter != '*':
-    env['GTEST_FILTER'] = test_filter
-  if shards > 1:
-    env['GTEST_SHARD_INDEX'] = '%(instance_index)s'
-    env['GTEST_TOTAL_SHARDS'] = '%(num_instances)s'
-
-  filters = {
-    'os': PLATFORM_MAPPING_SWARMING[slave_os],
-  }
   try:
     manifest = Manifest(
         isolate_server=isolate_server,
         isolated_hash=file_hash,
         test_name=test_name,
         shards=shards,
+        dimensions=dimensions,
         env=env,
-        filters=filters,
         working_dir=working_dir,
         verbose=verbose,
         profile=profile,
@@ -411,16 +398,24 @@ def process_manifest(
 def trigger(
     swarming,
     isolate_server,
-    slave_os,
     tasks,
     task_prefix,
     working_dir,
+    dimensions,
+    env,
     verbose,
     profile,
     priority):
   """Sends off the hash swarming test requests."""
   highest_exit_code = 0
-  for (file_hash, test_name, shards, testfilter) in tasks:
+  for (file_hash, test_name, shards, test_filter) in tasks:
+    task_env = env.copy()
+    # These flags are googletest specific.
+    if test_filter and test_filter != '*':
+      task_env['GTEST_FILTER'] = test_filter
+    if int(shards) > 1:
+      task_env['GTEST_SHARD_INDEX'] = '%(instance_index)s'
+      task_env['GTEST_TOTAL_SHARDS'] = '%(num_instances)s'
     # TODO(maruel): It should first create a request manifest object, then pass
     # it to a function to zip, archive and trigger.
     exit_code = process_manifest(
@@ -429,8 +424,8 @@ def trigger(
         file_hash_or_isolated=file_hash,
         test_name=task_prefix + test_name,
         shards=int(shards),
-        test_filter=testfilter,
-        slave_os=slave_os,
+        dimensions=dimensions,
+        env=task_env,
         working_dir=working_dir,
         verbose=verbose,
         profile=profile,
@@ -495,6 +490,13 @@ def add_trigger_options(parser):
       '-o', '--os', default=sys.platform,
       help='Swarm OS image to request. Should be one of the valid sys.platform '
            'values like darwin, linux2 or win32 default: %default.')
+  parser.add_option(
+      '-e', '--env', default=[], action='append', nargs=2, metavar='FOO bar',
+      help='environment variables to set')
+  parser.add_option(
+      '-d', '--dimensions', default=[], action='append', nargs=2,
+      dest='dimensions', metavar='FOO bar',
+      help='dimension to filter on')
   parser.add_option(
       '-T', '--task-prefix', default='',
       help='Prefix to give the swarm test request. default: %default')
@@ -567,11 +569,16 @@ def CMDrun(parser, args):
   for arg in args:
     logging.info('Triggering %s', arg)
     try:
+      dimensions = {
+        'os': PLATFORM_MAPPING_SWARMING[options.os],
+      }
+      dimensions.update(dict(options.dimensions))
       result = trigger(
           swarming=options.swarming,
           isolate_server=options.isolate_server,
-          slave_os=options.os,
           tasks=[(arg, os.path.basename(arg), '1', '')],
+          dimensions=dimensions,
+          env=dict(options.env),
           task_prefix=options.task_prefix,
           working_dir=options.working_dir,
           verbose=options.verbose,
@@ -625,14 +632,19 @@ def CMDtrigger(parser, args):
   process_trigger_options(parser, options)
   if not options.tasks:
     parser.error('At least one --task is required.')
+  dimensions = {
+    'os': PLATFORM_MAPPING_SWARMING[options.os],
+  }
+  dimensions.update(dict(options.dimensions))
 
   try:
     return trigger(
         swarming=options.swarming,
         isolate_server=options.isolate_server,
-        slave_os=options.os,
         tasks=options.tasks,
         task_prefix=options.task_prefix,
+        dimensions=dimensions,
+        env=dict(options.env),
         working_dir=options.working_dir,
         verbose=options.verbose,
         profile=options.profile,
