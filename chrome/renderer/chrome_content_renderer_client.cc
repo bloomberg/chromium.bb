@@ -138,7 +138,7 @@ namespace {
 const char kWebViewTagName[] = "WEBVIEW";
 const char kAdViewTagName[] = "ADVIEW";
 
-chrome::ChromeContentRendererClient* g_current_client;
+ChromeContentRendererClient* g_current_client;
 
 static void AppendParams(const std::vector<string16>& additional_names,
                          const std::vector<string16>& additional_values,
@@ -195,7 +195,7 @@ bool ShouldUseJavaScriptSettingForPlugin(const WebPluginInfo& plugin) {
   }
 
   // Treat Native Client invocations like JavaScript.
-  if (plugin.name == ASCIIToUTF16(chrome::ChromeContentClient::kNaClPluginName))
+  if (plugin.name == ASCIIToUTF16(ChromeContentClient::kNaClPluginName))
     return true;
 
 #if defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS)
@@ -217,8 +217,6 @@ const char* kPredefinedAllowedFileHandleOrigins[] = {
 #endif
 
 }  // namespace
-
-namespace chrome {
 
 ChromeContentRendererClient::ChromeContentRendererClient() {
   g_current_client = this;
@@ -589,8 +587,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kAllowed: {
         const bool is_nacl_plugin =
-            plugin.name ==
-            ASCIIToUTF16(chrome::ChromeContentClient::kNaClPluginName);
+            plugin.name == ASCIIToUTF16(ChromeContentClient::kNaClPluginName);
         const bool is_nacl_mime_type =
             actual_mime_type == "application/x-nacl";
         const bool is_pnacl_mime_type =
@@ -1315,13 +1312,14 @@ bool ChromeContentRendererClient::IsPluginAllowedToCallRequestOSFileHandle(
   GURL url = container->element().document().baseURL();
   const ExtensionSet* extension_set = extension_dispatcher_->extensions();
 
-  return IsExtensionOrSharedModuleWhitelisted(url, extension_set,
-                                              allowed_file_handle_origins_) ||
-         IsHostAllowedByCommandLine(url, extension_set,
-                                    switches::kAllowNaClFileHandleAPI);
-#else
-  return false;
+  if (chrome::IsExtensionOrSharedModuleWhitelisted(
+          url, extension_set, allowed_file_handle_origins_) ||
+      chrome::IsHostAllowedByCommandLine(
+          url, extension_set, switches::kAllowNaClFileHandleAPI)) {
+    return true;
+  }
 #endif
+  return false;
 }
 
 WebKit::WebSpeechSynthesizer*
@@ -1403,5 +1401,3 @@ ChromeContentRendererClient::CreateWorkerPermissionClientProxy(
     WebKit::WebFrame* frame) {
   return new WorkerPermissionClientProxy(render_view, frame);
 }
-
-}  // namespace chrome

@@ -110,7 +110,7 @@ void PDFEnableAdobeReaderPromptDelegate::Accept() {
   plugin_prefs->EnablePluginGroup(
       true, ASCIIToUTF16(PluginMetadata::kAdobeReaderGroupName));
   plugin_prefs->EnablePluginGroup(
-      false, ASCIIToUTF16(chrome::ChromeContentClient::kPDFPluginName));
+      false, ASCIIToUTF16(ChromeContentClient::kPDFPluginName));
 }
 
 void PDFEnableAdobeReaderPromptDelegate::Cancel() {

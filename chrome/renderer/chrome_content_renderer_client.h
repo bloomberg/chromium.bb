@@ -59,8 +59,6 @@ class WebSecurityOrigin;
 class WebRtcLoggingMessageFilter;
 #endif
 
-namespace chrome {
-
 class ChromeContentRendererClient : public content::ContentRendererClient {
  public:
   ChromeContentRendererClient();
@@ -226,7 +224,5 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   std::set<std::string> allowed_file_handle_origins_;
 #endif
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_RENDERER_CHROME_CONTENT_RENDERER_CLIENT_H_

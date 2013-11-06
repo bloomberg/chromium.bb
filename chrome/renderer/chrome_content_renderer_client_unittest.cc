@@ -21,11 +21,8 @@
 using WebKit::WebPluginParams;
 using WebKit::WebString;
 using WebKit::WebVector;
-using chrome::ChromeContentRendererClient;
 using content::WebPluginInfo;
 using content::WebPluginMimeType;
-
-namespace chrome {
 
 namespace {
 const bool kNaClRestricted = false;
@@ -389,5 +386,3 @@ TEST_F(ChromeContentRendererClientTest, ShouldSuppressErrorPage) {
   EXPECT_FALSE(client.ShouldSuppressErrorPage(GURL("http://example.com")));
   EXPECT_TRUE(client.ShouldSuppressErrorPage(GURL("http://example.com/n")));
 }
-
-}  // namespace chrome

@@ -107,7 +107,7 @@ base::LazyInstance<chrome::ChromeContentBrowserClient>
 #endif
 
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
-base::LazyInstance<chrome::ChromeContentRendererClient>
+base::LazyInstance<ChromeContentRendererClient>
     g_chrome_content_renderer_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<chrome::ChromeContentUtilityClient>
     g_chrome_content_utility_client = LAZY_INSTANCE_INITIALIZER;

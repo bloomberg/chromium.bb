@@ -77,7 +77,7 @@ namespace {
 const char kBrowserTestType[] = "browser";
 
 // Used when running in single-process mode.
-base::LazyInstance<chrome::ChromeContentRendererClient>::Leaky
+base::LazyInstance<ChromeContentRendererClient>::Leaky
     g_chrome_content_renderer_client = LAZY_INSTANCE_INITIALIZER;
 
 // A BrowserListObserver that makes sure that all browsers created are on the

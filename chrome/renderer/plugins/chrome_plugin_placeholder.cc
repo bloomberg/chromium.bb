@@ -282,7 +282,7 @@ void ChromePluginPlaceholder::PluginListChanged() {
                                           &output));
   if (output.status.value == status_->value)
     return;
-  WebPlugin* new_plugin = chrome::ChromeContentRendererClient::CreatePlugin(
+  WebPlugin* new_plugin = ChromeContentRendererClient::CreatePlugin(
       render_view(), GetFrame(), GetPluginParams(), output);
   ReplacePlugin(new_plugin);
   if (!new_plugin) {

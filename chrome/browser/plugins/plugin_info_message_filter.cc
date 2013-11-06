@@ -32,7 +32,6 @@
 #include "base/win/metro.h"
 #endif
 
-using chrome::ChromeContentClient;
 using content::PluginService;
 using content::WebPluginInfo;
 

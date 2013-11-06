@@ -596,7 +596,7 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   // TODO(mpcomplete): remove the extension-related histograms after we collect
   // enough data. http://crbug.com/100411
   const bool use_adblock_histogram =
-      chrome::ChromeContentRendererClient::IsAdblockInstalled();
+      ChromeContentRendererClient::IsAdblockInstalled();
   if (use_adblock_histogram) {
     UMA_HISTOGRAM_ENUMERATION(
         "PLT.Abandoned_ExtensionAdblock",
@@ -628,7 +628,7 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   }
 
   const bool use_adblockplus_histogram =
-      chrome::ChromeContentRendererClient::IsAdblockPlusInstalled();
+      ChromeContentRendererClient::IsAdblockPlusInstalled();
   if (use_adblockplus_histogram) {
     UMA_HISTOGRAM_ENUMERATION(
         "PLT.Abandoned_ExtensionAdblockPlus",
@@ -660,7 +660,7 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   }
 
   const bool use_webrequest_adblock_histogram =
-      chrome::ChromeContentRendererClient::IsAdblockWithWebRequestInstalled();
+      ChromeContentRendererClient::IsAdblockWithWebRequestInstalled();
   if (use_webrequest_adblock_histogram) {
     UMA_HISTOGRAM_ENUMERATION(
         "PLT.Abandoned_ExtensionWebRequestAdblock",
@@ -692,7 +692,7 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   }
 
   const bool use_webrequest_adblockplus_histogram =
-      chrome::ChromeContentRendererClient::
+      ChromeContentRendererClient::
           IsAdblockPlusWithWebRequestInstalled();
   if (use_webrequest_adblockplus_histogram) {
     UMA_HISTOGRAM_ENUMERATION(
@@ -725,7 +725,7 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   }
 
   const bool use_webrequest_other_histogram =
-      chrome::ChromeContentRendererClient::
+      ChromeContentRendererClient::
           IsOtherExtensionWithWebRequestInstalled();
   if (use_webrequest_other_histogram) {
     UMA_HISTOGRAM_ENUMERATION(

@@ -46,7 +46,7 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
                             const std::string& process_type);
 #endif  // defined(OS_MACOSX)
 
-  chrome::ChromeContentClient chrome_content_client_;
+  ChromeContentClient chrome_content_client_;
 
   // startup_timer_ will hold a reference to stats_counter_timer_. Therefore,
   // the declaration order of these variables matters. Changing this order will

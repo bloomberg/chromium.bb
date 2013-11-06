@@ -4,12 +4,8 @@
 
 #include "chrome/common/chrome_content_client.h"
 
-namespace chrome {
-
 const char* const ChromeContentClient::kPDFPluginName = "Chrome PDF Viewer";
 const char* const ChromeContentClient::kNaClPluginName = "Native Client";
 const char* const ChromeContentClient::kNaClOldPluginName = "Chrome NaCl";
 const char* const ChromeContentClient::kRemotingViewerPluginPath =
     "internal-remoting-viewer";
-
-}  // namespace chrome

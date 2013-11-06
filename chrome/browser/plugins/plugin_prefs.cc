@@ -245,7 +245,7 @@ bool PluginPrefs::IsPluginEnabled(const content::WebPluginInfo& plugin) const {
   // information.
   // TODO(dspringer): When NaCl is on by default, remove this code.
   if ((plugin.name ==
-       ASCIIToUTF16(chrome::ChromeContentClient::kNaClPluginName)) &&
+       ASCIIToUTF16(ChromeContentClient::kNaClPluginName)) &&
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNaCl)) {
     return true;
   }

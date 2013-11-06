@@ -30,7 +30,7 @@ class ChromeRenderViewTest : public content::RenderViewTest {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
-  chrome::ChromeContentRendererClient chrome_content_renderer_client_;
+  ChromeContentRendererClient chrome_content_renderer_client_;
   extensions::Dispatcher* extension_dispatcher_;
 
   autofill::TestPasswordAutofillAgent* password_autofill_;

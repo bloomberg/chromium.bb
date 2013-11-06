@@ -16,8 +16,6 @@
 // TODO(ios): Investigate merging with chrome_content_client.cc; this would
 // requiring either a lot of ifdefing, or spliting the file into parts.
 
-namespace chrome {
-
 void ChromeContentClient::SetActiveURL(const GURL& url) {
   NOTIMPLEMENTED();
 }
@@ -79,5 +77,3 @@ std::string ChromeContentClient::GetProcessTypeNameInEnglish(int type) {
   DCHECK(false) << "Unknown child process type!";
   return "Unknown"; 
 }
-
-}  // namespace chrome

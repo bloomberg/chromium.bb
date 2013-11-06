@@ -250,9 +250,8 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
     if (enable) {
       // See http://crbug.com/50105 for background.
       string16 adobereader = ASCIIToUTF16(
-          PluginMetadata::kAdobeReaderGroupName);
-      string16 internalpdf =
-          ASCIIToUTF16(chrome::ChromeContentClient::kPDFPluginName);
+           PluginMetadata::kAdobeReaderGroupName);
+      string16 internalpdf = ASCIIToUTF16(ChromeContentClient::kPDFPluginName);
       if (group_name == adobereader)
         plugin_prefs->EnablePluginGroup(false, internalpdf);
       else if (group_name == internalpdf)

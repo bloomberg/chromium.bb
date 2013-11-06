@@ -253,7 +253,7 @@ void HeapStatisticsCollector::SendStatsToBrowser(int round_id) {
 bool ChromeRenderProcessObserver::is_incognito_process_ = false;
 
 ChromeRenderProcessObserver::ChromeRenderProcessObserver(
-    chrome::ChromeContentRendererClient* client)
+    ChromeContentRendererClient* client)
     : client_(client),
       clear_cache_pending_(false),
       webkit_initialized_(false),

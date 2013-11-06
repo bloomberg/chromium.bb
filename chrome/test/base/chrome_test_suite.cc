@@ -111,7 +111,7 @@ class ChromeTestSuiteInitializer : public testing::EmptyTestEventListener {
 
  private:
   void SetUpContentClients() {
-    content_client_.reset(new chrome::ChromeContentClient);
+    content_client_.reset(new ChromeContentClient);
     content::SetContentClient(content_client_.get());
     // TODO(ios): Bring this back once ChromeContentBrowserClient is building.
 #if !defined(OS_IOS)
@@ -144,7 +144,7 @@ class ChromeTestSuiteInitializer : public testing::EmptyTestEventListener {
   }
 
   // Client implementations for the content module.
-  scoped_ptr<chrome::ChromeContentClient> content_client_;
+  scoped_ptr<ChromeContentClient> content_client_;
   // TODO(ios): Bring this back once ChromeContentBrowserClient is building.
 #if !defined(OS_IOS)
   scoped_ptr<chrome::ChromeContentBrowserClient> browser_content_client_;
@@ -253,7 +253,7 @@ void ChromeTestSuite::Initialize() {
 }
 
 content::ContentClient* ChromeTestSuite::CreateClientForInitialization() {
-  return new chrome::ChromeContentClient();
+  return new ChromeContentClient();
 }
 
 void ChromeTestSuite::Shutdown() {

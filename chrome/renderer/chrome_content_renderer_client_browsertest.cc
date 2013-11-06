@@ -12,8 +12,6 @@
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "url/gurl.h"
 
-namespace chrome {
-
 typedef ChromeRenderViewTest InstantProcessNavigationTest;
 
 // Tests that renderer-initiated navigations from an Instant render process get
@@ -46,5 +44,3 @@ TEST_F(InstantProcessNavigationTest, ForkForNavigationsToSearchURLs) {
       GetMainFrame(), GURL("http://example.com/"), "GET", false, false,
       &unused));
 }
-
-}  // namespace chrome

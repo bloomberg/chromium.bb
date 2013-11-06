@@ -141,7 +141,7 @@ class FakeContentBrowserClient : public chrome::ChromeContentBrowserClient {
       const content::MainFunctionParams& parameters) OVERRIDE;
 };
 
-base::LazyInstance<chrome::ChromeContentClient>
+base::LazyInstance<ChromeContentClient>
     g_chrome_content_client = LAZY_INSTANCE_INITIALIZER;
 
 // Override the default ContentBrowserClient to let Chrome participate in
@@ -149,7 +149,7 @@ base::LazyInstance<chrome::ChromeContentClient>
 base::LazyInstance<FakeContentBrowserClient>
     g_browser_client = LAZY_INSTANCE_INITIALIZER;
 
-base::LazyInstance<chrome::ChromeContentRendererClient>
+base::LazyInstance<ChromeContentRendererClient>
     g_renderer_client = LAZY_INSTANCE_INITIALIZER;
 
 class FakeMainDelegate : public content::ContentMainDelegate {

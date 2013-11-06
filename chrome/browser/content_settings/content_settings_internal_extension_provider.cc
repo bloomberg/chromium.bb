@@ -92,7 +92,7 @@ void InternalExtensionProvider::Observe(int type,
                     kAppWhitelist, kAppWhitelist + arraysize(kAppWhitelist)))) {
           SetContentSettingForExtensionAndResource(
               host->extension(),
-              chrome::ChromeContentClient::kRemotingViewerPluginPath,
+              ChromeContentClient::kRemotingViewerPluginPath,
               CONTENT_SETTING_ALLOW);
         }
       }
