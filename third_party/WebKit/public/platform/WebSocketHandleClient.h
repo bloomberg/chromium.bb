@@ -54,13 +54,6 @@ public:
     virtual void didReceiveData(WebSocketHandle*, bool fin, WebSocketHandle::MessageType, const char* data, size_t /* size */) = 0;
 
     // Called when the handle is closed.
-    // Deperecated: will be removed soon.
-    virtual void didClose(WebSocketHandle* handle, unsigned short code, const WebString& reason)
-    {
-        didClose(handle, false, code, reason);
-    }
-
-    // Called when the handle is closed.
     virtual void didClose(WebSocketHandle*, bool wasClean, unsigned short code, const WebString& reason) = 0;
 
     virtual void didReceiveFlowControl(WebSocketHandle*, int64_t quota) = 0;
