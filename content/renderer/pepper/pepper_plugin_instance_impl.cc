@@ -1902,10 +1902,6 @@ unsigned PepperPluginInstanceImpl::PrepareTexture() {
   return 0;
 }
 
-WebKit::WebGraphicsContext3D* PepperPluginInstanceImpl::Context3d() {
-  return NULL;
-}
-
 bool PepperPluginInstanceImpl::PrepareTextureMailbox(
     cc::TextureMailbox* mailbox,
     scoped_ptr<cc::SingleReleaseCallback>* release_callback,

@@ -48,7 +48,6 @@ class VertexShaderPosTex {
 
   void Init(WebKit::WebGraphicsContext3D* context,
             unsigned program,
-            bool using_bind_uniform,
             int* base_uniform_index);
   std::string GetShaderString() const;
 
@@ -66,7 +65,6 @@ class VertexShaderPosTexYUVStretch {
 
   void Init(WebKit::WebGraphicsContext3D* context,
             unsigned program,
-            bool using_bind_uniform,
             int* base_uniform_index);
   std::string GetShaderString() const;
 
@@ -86,7 +84,6 @@ class VertexShaderPos {
 
   void Init(WebKit::WebGraphicsContext3D* context,
             unsigned program,
-            bool using_bind_uniform,
             int* base_uniform_index);
   std::string GetShaderString() const;
 
@@ -102,7 +99,6 @@ class VertexShaderPosTexIdentity {
  public:
   void Init(WebKit::WebGraphicsContext3D* context,
             unsigned program,
-            bool using_bind_uniform,
             int* base_uniform_index) {}
   std::string GetShaderString() const;
 };
@@ -113,7 +109,6 @@ class VertexShaderPosTexTransform {
 
   void Init(WebKit::WebGraphicsContext3D* context,
             unsigned program,
-            bool using_bind_uniform,
             int* base_uniform_index);
   std::string GetShaderString() const;
 
@@ -135,7 +130,6 @@ class VertexShaderQuad {
 
   void Init(WebKit::WebGraphicsContext3D* context,
            unsigned program,
-           bool using_bind_uniform,
            int* base_uniform_index);
   std::string GetShaderString() const;
 
@@ -157,7 +151,6 @@ class VertexShaderQuadAA {
 
   void Init(WebKit::WebGraphicsContext3D* context,
            unsigned program,
-           bool using_bind_uniform,
            int* base_uniform_index);
   std::string GetShaderString() const;
 
@@ -182,7 +175,6 @@ class VertexShaderQuadTexTransformAA {
 
   void Init(WebKit::WebGraphicsContext3D* context,
            unsigned program,
-           bool using_bind_uniform,
            int* base_uniform_index);
   std::string GetShaderString() const;
 
@@ -208,7 +200,6 @@ class VertexShaderTile {
 
   void Init(WebKit::WebGraphicsContext3D* context,
             unsigned program,
-            bool using_bind_uniform,
             int* base_uniform_index);
   std::string GetShaderString() const;
 
@@ -234,7 +225,6 @@ class VertexShaderTileAA {
 
   void Init(WebKit::WebGraphicsContext3D* context,
             unsigned program,
-            bool using_bind_uniform,
             int* base_uniform_index);
   std::string GetShaderString() const;
 
@@ -262,7 +252,6 @@ class VertexShaderVideoTransform {
 
   void Init(WebKit::WebGraphicsContext3D* context,
             unsigned program,
-            bool using_bind_uniform,
             int* base_uniform_index);
   std::string GetShaderString() const;
 
@@ -282,7 +271,6 @@ class FragmentTexAlphaBinding {
 
   void Init(WebKit::WebGraphicsContext3D* context,
             unsigned program,
-            bool using_bind_uniform,
             int* base_uniform_index);
   int alpha_location() const { return alpha_location_; }
   int fragment_tex_transform_location() const { return -1; }
@@ -301,8 +289,7 @@ class FragmentTexColorMatrixAlphaBinding {
 
     void Init(WebKit::WebGraphicsContext3D* context,
               unsigned program,
-              bool usingBindUniform,
-              int* baseUniformIndex);
+              int* base_uniform_index);
     int alpha_location() const { return alpha_location_; }
     int color_matrix_location() const { return color_matrix_location_; }
     int color_offset_location() const { return color_offset_location_; }
@@ -322,7 +309,6 @@ class FragmentTexOpaqueBinding {
 
   void Init(WebKit::WebGraphicsContext3D* context,
             unsigned program,
-            bool using_bind_uniform,
             int* base_uniform_index);
   int alpha_location() const { return -1; }
   int fragment_tex_transform_location() const { return -1; }
@@ -341,7 +327,6 @@ class FragmentTexBackgroundBinding {
 
   void Init(WebKit::WebGraphicsContext3D* context,
             unsigned program,
-            bool using_bind_uniform,
             int* base_uniform_index);
   int background_color_location() const { return background_color_location_; }
   int sampler_location() const { return sampler_location_; }
@@ -421,7 +406,6 @@ class FragmentShaderOESImageExternal : public FragmentTexAlphaBinding {
   std::string GetShaderString(TexCoordPrecision precision) const;
   void Init(WebKit::WebGraphicsContext3D* context,
             unsigned program,
-            bool using_bind_uniform,
             int* base_uniform_index);
  private:
   int sampler_location_;
@@ -435,7 +419,6 @@ class FragmentShaderRGBATexAlphaAA {
 
   void Init(WebKit::WebGraphicsContext3D* context,
             unsigned program,
-            bool using_bind_uniform,
             int* base_uniform_index);
   std::string GetShaderString(TexCoordPrecision precision) const;
 
@@ -455,7 +438,6 @@ class FragmentTexClampAlphaAABinding {
 
   void Init(WebKit::WebGraphicsContext3D* context,
             unsigned program,
-            bool using_bind_uniform,
             int* base_uniform_index);
   int alpha_location() const { return alpha_location_; }
   int sampler_location() const { return sampler_location_; }
@@ -491,7 +473,6 @@ class FragmentShaderRGBATexAlphaMask {
 
   void Init(WebKit::WebGraphicsContext3D* context,
             unsigned program,
-            bool using_bind_uniform,
             int* base_uniform_index);
   int alpha_location() const { return alpha_location_; }
   int sampler_location() const { return sampler_location_; }
@@ -520,7 +501,6 @@ class FragmentShaderRGBATexAlphaMaskAA {
 
   void Init(WebKit::WebGraphicsContext3D* context,
             unsigned program,
-            bool using_bind_uniform,
             int* base_uniform_index);
   int alpha_location() const { return alpha_location_; }
   int sampler_location() const { return sampler_location_; }
@@ -549,7 +529,6 @@ class FragmentShaderRGBATexAlphaMaskColorMatrixAA {
 
   void Init(WebKit::WebGraphicsContext3D* context,
             unsigned program,
-            bool using_bind_uniform,
             int* base_uniform_index);
   int alpha_location() const { return alpha_location_; }
   int sampler_location() const { return sampler_location_; }
@@ -580,7 +559,6 @@ class FragmentShaderRGBATexAlphaColorMatrixAA {
 
   void Init(WebKit::WebGraphicsContext3D* context,
             unsigned program,
-            bool using_bind_uniform,
             int* base_uniform_index);
   int alpha_location() const { return alpha_location_; }
   int sampler_location() const { return sampler_location_; }
@@ -601,7 +579,6 @@ class FragmentShaderRGBATexAlphaMaskColorMatrix {
 
   void Init(WebKit::WebGraphicsContext3D* context,
             unsigned program,
-            bool using_bind_uniform,
             int* base_uniform_index);
   int alpha_location() const { return alpha_location_; }
   int sampler_location() const { return sampler_location_; }
@@ -632,7 +609,6 @@ class FragmentShaderYUVVideo {
 
   void Init(WebKit::WebGraphicsContext3D* context,
             unsigned program,
-            bool using_bind_uniform,
             int* base_uniform_index);
   int y_texture_location() const { return y_texture_location_; }
   int u_texture_location() const { return u_texture_location_; }
@@ -660,7 +636,6 @@ class FragmentShaderYUVAVideo {
 
   void Init(WebKit::WebGraphicsContext3D* context,
             unsigned program,
-            bool using_bind_uniform,
             int* base_uniform_index);
 
   int y_texture_location() const { return y_texture_location_; }
@@ -690,7 +665,6 @@ class FragmentShaderColor {
 
   void Init(WebKit::WebGraphicsContext3D* context,
             unsigned program,
-            bool using_bind_uniform,
             int* base_uniform_index);
   int color_location() const { return color_location_; }
 
@@ -707,7 +681,6 @@ class FragmentShaderColorAA {
 
   void Init(WebKit::WebGraphicsContext3D* context,
             unsigned program,
-            bool using_bind_uniform,
             int* base_uniform_index);
   int color_location() const { return color_location_; }
 
@@ -724,7 +697,6 @@ class FragmentShaderCheckerboard {
 
   void Init(WebKit::WebGraphicsContext3D* context,
             unsigned program,
-            bool using_bind_uniform,
             int* base_uniform_index);
   int alpha_location() const { return alpha_location_; }
   int tex_transform_location() const { return tex_transform_location_; }

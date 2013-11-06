@@ -35,6 +35,7 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   virtual gpu::ContextSupport* ContextSupport() OVERRIDE;
   virtual class GrContext* GrContext() OVERRIDE;
   virtual Capabilities ContextCapabilities() OVERRIDE;
+  virtual bool IsContextLost() OVERRIDE;
   virtual void VerifyContexts() OVERRIDE;
   virtual bool DestroyedOnMainThread() OVERRIDE;
   virtual void SetLostContextCallback(

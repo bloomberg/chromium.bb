@@ -31,6 +31,7 @@ class TestContextProvider : public cc::ContextProvider {
   virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE;
   virtual gpu::ContextSupport* ContextSupport() OVERRIDE;
   virtual class GrContext* GrContext() OVERRIDE;
+  virtual bool IsContextLost() OVERRIDE;
   virtual void VerifyContexts() OVERRIDE;
   virtual bool DestroyedOnMainThread() OVERRIDE;
   virtual void SetLostContextCallback(const LostContextCallback& cb) OVERRIDE;

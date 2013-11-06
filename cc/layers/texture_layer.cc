@@ -233,10 +233,6 @@ bool TextureLayer::Update(ResourceUpdateQueue* queue,
       }
     } else {
       texture_id_ = client_->PrepareTexture();
-      DCHECK_EQ(!!texture_id_, !!client_->Context3d());
-      if (client_->Context3d() &&
-          client_->Context3d()->getGraphicsResetStatusARB() != GL_NO_ERROR)
-        texture_id_ = 0;
       updated = true;
       SetNeedsPushProperties();
       // The texture id needs to be removed from the active tree before the

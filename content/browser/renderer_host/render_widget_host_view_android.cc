@@ -1251,10 +1251,6 @@ void RenderWidgetHostViewAndroid::DidCommitFrameData() {
   RunAckCallbacks();
 }
 
-WebKit::WebGraphicsContext3D* RenderWidgetHostViewAndroid::Context3d() {
-  return ImageTransportFactoryAndroid::GetInstance()->GetContext3D();
-}
-
 bool RenderWidgetHostViewAndroid::PrepareTextureMailbox(
     cc::TextureMailbox* mailbox,
     scoped_ptr<cc::SingleReleaseCallback>* release_callback,

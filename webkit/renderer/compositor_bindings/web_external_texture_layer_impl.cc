@@ -11,6 +11,7 @@
 #include "third_party/WebKit/public/platform/WebExternalTextureLayerClient.h"
 #include "third_party/WebKit/public/platform/WebExternalTextureMailbox.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
+#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "webkit/renderer/compositor_bindings/web_external_bitmap_impl.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
@@ -63,11 +64,6 @@ void WebExternalTextureLayerImpl::setRateLimitContext(bool rate_limit) {
 unsigned WebExternalTextureLayerImpl::PrepareTexture() {
   NOTREACHED();
   return 0;
-}
-
-WebKit::WebGraphicsContext3D* WebExternalTextureLayerImpl::Context3d() {
-  DCHECK(client_);
-  return client_->context();
 }
 
 bool WebExternalTextureLayerImpl::PrepareTextureMailbox(

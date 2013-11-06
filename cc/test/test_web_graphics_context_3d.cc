@@ -127,10 +127,6 @@ bool TestWebGraphicsContext3D::isContextLost() {
   return context_lost_;
 }
 
-WGC3Denum TestWebGraphicsContext3D::getGraphicsResetStatusARB() {
-  return context_lost_ ? GL_UNKNOWN_CONTEXT_RESET_ARB : GL_NO_ERROR;
-}
-
 WGC3Denum TestWebGraphicsContext3D::checkFramebufferStatus(
     WGC3Denum target) {
   if (context_lost_)

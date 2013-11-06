@@ -125,7 +125,6 @@ ContextProviderInProcess::ContextCapabilities() {
   // We always use a WebGraphicsContext3DInProcessCommandBufferImpl which
   // provides the following capabilities:
   Capabilities caps;
-  caps.bind_uniform_location = true;
   caps.discard_backbuffer = true;
   caps.map_image = true;
   caps.map_sub = true;
@@ -172,6 +171,14 @@ class GrContext* ContextProviderInProcess::GrContext() {
   gr_context_.reset(
       new webkit::gpu::GrContextForWebGraphicsContext3D(context3d_.get()));
   return gr_context_->get();
+}
+
+bool ContextProviderInProcess::IsContextLost() {
+  DCHECK(context3d_);
+  DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+
+  return context3d_->isContextLost();
 }
 
 void ContextProviderInProcess::VerifyContexts() {

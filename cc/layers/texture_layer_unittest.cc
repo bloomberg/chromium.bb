@@ -245,14 +245,10 @@ TEST_F(TextureLayerTest, VisibleContentOpaqueRegion) {
 
 class FakeTextureLayerClient : public TextureLayerClient {
  public:
-  FakeTextureLayerClient() : context_(TestWebGraphicsContext3D::Create()) {}
+  FakeTextureLayerClient() {}
 
   virtual unsigned PrepareTexture() OVERRIDE {
     return 0;
-  }
-
-  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE {
-    return context_.get();
   }
 
   virtual bool PrepareTextureMailbox(
@@ -265,7 +261,6 @@ class FakeTextureLayerClient : public TextureLayerClient {
   }
 
  private:
-  scoped_ptr<TestWebGraphicsContext3D> context_;
   DISALLOW_COPY_AND_ASSIGN(FakeTextureLayerClient);
 };
 
@@ -893,7 +888,7 @@ class TextureLayerNoMailboxIsActivatedDuringCommit : public LayerTreeTest,
   TextureLayerNoMailboxIsActivatedDuringCommit()
       : wait_thread_("WAIT"),
         wait_event_(false, false),
-        context_(TestWebGraphicsContext3D::Create()) {
+        texture_(0u) {
     wait_thread_.Start();
   }
 
@@ -917,13 +912,16 @@ class TextureLayerNoMailboxIsActivatedDuringCommit : public LayerTreeTest,
     PostSetNeedsCommitToMainThread();
   }
 
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
+      OVERRIDE {
+    scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
+    texture_ = provider->UnboundTestContext3d()->createExternalTexture();
+    return FakeOutputSurface::Create3d(provider).PassAs<OutputSurface>();
+  }
+
   // TextureLayerClient implementation.
   virtual unsigned PrepareTexture() OVERRIDE {
-    context_->makeContextCurrent();
-    return context_->createTexture();
-  }
-  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE {
-    return context_.get();
+    return texture_;
   }
   virtual bool PrepareTextureMailbox(
       TextureMailbox* mailbox,
@@ -1002,11 +1000,10 @@ class TextureLayerNoMailboxIsActivatedDuringCommit : public LayerTreeTest,
   base::Thread wait_thread_;
   base::WaitableEvent wait_event_;
   base::Lock activate_lock_;
+  unsigned texture_;
   int activate_count_;
-  int activate_commit_;
   scoped_refptr<Layer> root_;
   scoped_refptr<TextureLayer> layer_;
-  scoped_ptr<TestWebGraphicsContext3D> context_;
 };
 
 SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
@@ -1406,28 +1403,19 @@ class TextureLayerClientTest
       public TextureLayerClient {
  public:
   TextureLayerClientTest()
-      : context_(NULL),
-        texture_(0),
+      : texture_(0),
         commit_count_(0),
         expected_used_textures_on_draw_(0),
         expected_used_textures_on_commit_(0) {}
 
   virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
       OVERRIDE {
-    scoped_ptr<TestWebGraphicsContext3D> context(
-        TestWebGraphicsContext3D::Create());
-    context_ = context.get();
-    texture_ = context->createTexture();
-    return FakeOutputSurface::Create3d(context.Pass()).PassAs<OutputSurface>();
+    scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
+    texture_ = provider->UnboundTestContext3d()->createExternalTexture();
+    return FakeOutputSurface::Create3d(provider).PassAs<OutputSurface>();
   }
 
-  virtual unsigned PrepareTexture() OVERRIDE {
-    return texture_;
-  }
-
-  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE {
-    return context_;
-  }
+  virtual unsigned PrepareTexture() OVERRIDE { return texture_; }
 
   virtual bool PrepareTextureMailbox(
       TextureMailbox* mailbox,
@@ -1470,7 +1458,6 @@ class TextureLayerClientTest
           base::AutoLock lock(lock_);
           expected_used_textures_on_commit_ = 0;
         }
-        texture_ = 0;
         break;
       case 2:
         EndTest();
@@ -1489,21 +1476,26 @@ class TextureLayerClientTest
   virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
                                      LayerTreeHostImpl::FrameData* frame_data,
                                      bool result) OVERRIDE {
-    context_->ResetUsedTextures();
+    ContextForImplThread(host_impl)->ResetUsedTextures();
     return true;
   }
 
   virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
                                    bool result) OVERRIDE {
     ASSERT_TRUE(result);
-    EXPECT_EQ(expected_used_textures_on_draw_, context_->NumUsedTextures());
+    EXPECT_EQ(expected_used_textures_on_draw_,
+              ContextForImplThread(host_impl)->NumUsedTextures());
   }
 
   virtual void AfterTest() OVERRIDE {}
 
  private:
+  TestWebGraphicsContext3D* ContextForImplThread(LayerTreeHostImpl* host_impl) {
+    return static_cast<TestWebGraphicsContext3D*>(
+        host_impl->output_surface()->context_provider()->Context3d());
+  }
+
   scoped_refptr<TextureLayer> texture_layer_;
-  TestWebGraphicsContext3D* context_;
   unsigned texture_;
   int commit_count_;
 
@@ -1528,25 +1520,23 @@ class TextureLayerChangeInvisibleTest
       public TextureLayerClient {
  public:
   TextureLayerChangeInvisibleTest()
-      : client_context_(TestWebGraphicsContext3D::Create()),
-        texture_(client_context_->createTexture()),
-        texture_to_delete_on_next_commit_(0),
+      : texture_(0u),
         prepare_called_(0),
         commit_count_(0),
         expected_texture_on_draw_(0) {}
+
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
+      OVERRIDE {
+    scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
+    texture_ = provider->UnboundTestContext3d()->createExternalTexture();
+    return FakeOutputSurface::Create3d(provider).PassAs<OutputSurface>();
+  }
 
   // TextureLayerClient implementation.
   virtual unsigned PrepareTexture() OVERRIDE {
     ++prepare_called_;
     return texture_;
   }
-
-  // TextureLayerClient implementation.
-  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE {
-    return client_context_.get();
-  }
-
-  // TextureLayerClient implementation.
   virtual bool PrepareTextureMailbox(
       cc::TextureMailbox* mailbox,
       scoped_ptr<SingleReleaseCallback>* release_callback,
@@ -1597,9 +1587,6 @@ class TextureLayerChangeInvisibleTest
       case 2: {
         // Layer shouldn't have been updated.
         EXPECT_EQ(1, prepare_called_);
-        // Change the texture.
-        texture_to_delete_on_next_commit_ = texture_;
-        texture_ = client_context_->createTexture();
         texture_layer_->SetNeedsDisplay();
         // Force a change to make sure we draw a frame.
         solid_layer_->SetBackgroundColor(SK_ColorGRAY);
@@ -1607,8 +1594,6 @@ class TextureLayerChangeInvisibleTest
       }
       case 3:
         EXPECT_EQ(1, prepare_called_);
-        client_context_->deleteTexture(texture_to_delete_on_next_commit_);
-        texture_to_delete_on_next_commit_ = 0;
         // Make layer visible again.
         parent_layer_->SetOpacity(1.f);
         break;
@@ -1616,7 +1601,6 @@ class TextureLayerChangeInvisibleTest
         // Layer should have been updated.
         EXPECT_EQ(2, prepare_called_);
         texture_layer_->ClearClient();
-        client_context_->deleteTexture(texture_);
         texture_ = 0;
         break;
       }
@@ -1676,14 +1660,12 @@ class TextureLayerChangeInvisibleTest
   scoped_refptr<SolidColorLayer> solid_layer_;
   scoped_refptr<Layer> parent_layer_;
   scoped_refptr<TextureLayer> texture_layer_;
-  scoped_ptr<TestWebGraphicsContext3D> client_context_;
 
   // Used on the main thread, and on the impl thread while the main thread is
   // blocked.
   unsigned texture_;
 
   // Used on the main thread.
-  unsigned texture_to_delete_on_next_commit_;
   int prepare_called_;
   int commit_count_;
 
@@ -1708,12 +1690,6 @@ class TextureLayerNoExtraCommitForMailboxTest
   virtual unsigned PrepareTexture() OVERRIDE {
     NOTREACHED();
     return 0;
-  }
-
-  // TextureLayerClient implementation.
-  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE {
-    NOTREACHED();
-    return NULL;
   }
 
   virtual bool PrepareTextureMailbox(
@@ -1819,13 +1795,6 @@ class TextureLayerChangeInvisibleMailboxTest
     return 0;
   }
 
-  // TextureLayerClient implementation.
-  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE {
-    NOTREACHED();
-    return NULL;
-  }
-
-  // TextureLayerClient implementation.
   virtual bool PrepareTextureMailbox(
       cc::TextureMailbox* mailbox,
       scoped_ptr<SingleReleaseCallback>* release_callback,
@@ -1965,26 +1934,20 @@ class TextureLayerLostContextTest
       public TextureLayerClient {
  public:
   TextureLayerLostContextTest()
-      : texture_(0),
+      : context_lost_(false),
         draw_count_(0) {}
 
   virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
       OVERRIDE {
-    texture_context_ = TestWebGraphicsContext3D::Create();
-    texture_ = texture_context_->createTexture();
     return CreateFakeOutputSurface();
   }
 
   virtual unsigned PrepareTexture() OVERRIDE {
-    if (draw_count_ == 0) {
-      texture_context_->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
-          GL_INNOCENT_CONTEXT_RESET_ARB);
-    }
-    return texture_;
-  }
-
-  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE {
-    return texture_context_.get();
+    if (draw_count_ == 0)
+      context_lost_ = true;
+    if (context_lost_)
+      return 0u;
+    return 1u;
   }
 
   virtual bool PrepareTextureMailbox(
@@ -2021,7 +1984,7 @@ class TextureLayerLostContextTest
     if (++draw_count_ == 1)
       EXPECT_EQ(0u, texture_layer->texture_id());
     else
-      EXPECT_EQ(texture_, texture_layer->texture_id());
+      EXPECT_EQ(1u, texture_layer->texture_id());
     return true;
   }
 
@@ -2033,8 +1996,7 @@ class TextureLayerLostContextTest
 
  private:
   scoped_refptr<TextureLayer> texture_layer_;
-  scoped_ptr<TestWebGraphicsContext3D> texture_context_;
-  unsigned texture_;
+  bool context_lost_;
   int draw_count_;
 };
 

@@ -27,16 +27,10 @@ static void GetProgramUniformLocations(WebGraphicsContext3D* context,
                                        size_t count,
                                        const char** uniforms,
                                        int* locations,
-                                       bool using_bind_uniform,
                                        int* base_uniform_index) {
   for (size_t i = 0; i < count; i++) {
-    if (using_bind_uniform) {
-      locations[i] = (*base_uniform_index)++;
-      context->bindUniformLocationCHROMIUM(program, locations[i], uniforms[i]);
-    } else {
-      locations[i] = context->getUniformLocation(program, uniforms[i]);
-      DCHECK_NE(locations[i], -1);
-    }
+    locations[i] = (*base_uniform_index)++;
+    context->bindUniformLocationCHROMIUM(program, locations[i], uniforms[i]);
   }
 }
 
@@ -121,7 +115,6 @@ VertexShaderPosTex::VertexShaderPosTex()
 
 void VertexShaderPosTex::Init(WebGraphicsContext3D* context,
                               unsigned program,
-                              bool using_bind_uniform,
                               int* base_uniform_index) {
   static const char* uniforms[] = {
       "matrix",
@@ -133,7 +126,6 @@ void VertexShaderPosTex::Init(WebGraphicsContext3D* context,
                              arraysize(uniforms),
                              uniforms,
                              locations,
-                             using_bind_uniform,
                              base_uniform_index);
   matrix_location_ = locations[0];
 }
@@ -157,7 +149,6 @@ VertexShaderPosTexYUVStretch::VertexShaderPosTexYUVStretch()
 
 void VertexShaderPosTexYUVStretch::Init(WebGraphicsContext3D* context,
                                         unsigned program,
-                                        bool using_bind_uniform,
                                         int* base_uniform_index) {
   static const char* uniforms[] = {
     "matrix",
@@ -170,7 +161,6 @@ void VertexShaderPosTexYUVStretch::Init(WebGraphicsContext3D* context,
                              arraysize(uniforms),
                              uniforms,
                              locations,
-                             using_bind_uniform,
                              base_uniform_index);
   matrix_location_ = locations[0];
   tex_scale_location_ = locations[1];
@@ -196,7 +186,6 @@ VertexShaderPos::VertexShaderPos()
 
 void VertexShaderPos::Init(WebGraphicsContext3D* context,
                            unsigned program,
-                           bool using_bind_uniform,
                            int* base_uniform_index) {
   static const char* uniforms[] = {
       "matrix",
@@ -208,7 +197,6 @@ void VertexShaderPos::Init(WebGraphicsContext3D* context,
                              arraysize(uniforms),
                              uniforms,
                              locations,
-                             using_bind_uniform,
                              base_uniform_index);
   matrix_location_ = locations[0];
 }
@@ -230,7 +218,6 @@ VertexShaderPosTexTransform::VertexShaderPosTexTransform()
 
 void VertexShaderPosTexTransform::Init(WebGraphicsContext3D* context,
                                        unsigned program,
-                                       bool using_bind_uniform,
                                        int* base_uniform_index) {
   static const char* uniforms[] = {
     "matrix",
@@ -244,7 +231,6 @@ void VertexShaderPosTexTransform::Init(WebGraphicsContext3D* context,
                              arraysize(uniforms),
                              uniforms,
                              locations,
-                             using_bind_uniform,
                              base_uniform_index);
   matrix_location_ = locations[0];
   tex_transform_location_ = locations[1];
@@ -288,7 +274,6 @@ VertexShaderQuad::VertexShaderQuad()
 
 void VertexShaderQuad::Init(WebGraphicsContext3D* context,
                             unsigned program,
-                            bool using_bind_uniform,
                             int* base_uniform_index) {
   static const char* uniforms[] = {
     "matrix",
@@ -301,7 +286,6 @@ void VertexShaderQuad::Init(WebGraphicsContext3D* context,
                              arraysize(uniforms),
                              uniforms,
                              locations,
-                             using_bind_uniform,
                              base_uniform_index);
   matrix_location_ = locations[0];
   quad_location_ = locations[1];
@@ -347,7 +331,6 @@ VertexShaderQuadAA::VertexShaderQuadAA()
 
 void VertexShaderQuadAA::Init(WebGraphicsContext3D* context,
                             unsigned program,
-                            bool using_bind_uniform,
                             int* base_uniform_index) {
   static const char* uniforms[] = {
     "matrix",
@@ -362,7 +345,6 @@ void VertexShaderQuadAA::Init(WebGraphicsContext3D* context,
                              arraysize(uniforms),
                              uniforms,
                              locations,
-                             using_bind_uniform,
                              base_uniform_index);
   matrix_location_ = locations[0];
   viewport_location_ = locations[1];
@@ -406,7 +388,6 @@ VertexShaderQuadTexTransformAA::VertexShaderQuadTexTransformAA()
 
 void VertexShaderQuadTexTransformAA::Init(WebGraphicsContext3D* context,
                                         unsigned program,
-                                        bool using_bind_uniform,
                                         int* base_uniform_index) {
   static const char* uniforms[] = {
     "matrix",
@@ -422,7 +403,6 @@ void VertexShaderQuadTexTransformAA::Init(WebGraphicsContext3D* context,
                              arraysize(uniforms),
                              uniforms,
                              locations,
-                             using_bind_uniform,
                              base_uniform_index);
   matrix_location_ = locations[0];
   viewport_location_ = locations[1];
@@ -468,7 +448,6 @@ VertexShaderTile::VertexShaderTile()
 
 void VertexShaderTile::Init(WebGraphicsContext3D* context,
                             unsigned program,
-                            bool using_bind_uniform,
                             int* base_uniform_index) {
   static const char* uniforms[] = {
     "matrix",
@@ -482,7 +461,6 @@ void VertexShaderTile::Init(WebGraphicsContext3D* context,
                              arraysize(uniforms),
                              uniforms,
                              locations,
-                             using_bind_uniform,
                              base_uniform_index);
   matrix_location_ = locations[0];
   quad_location_ = locations[1];
@@ -514,7 +492,6 @@ VertexShaderTileAA::VertexShaderTileAA()
 
 void VertexShaderTileAA::Init(WebGraphicsContext3D* context,
                               unsigned program,
-                              bool using_bind_uniform,
                               int* base_uniform_index) {
   static const char* uniforms[] = {
     "matrix",
@@ -530,7 +507,6 @@ void VertexShaderTileAA::Init(WebGraphicsContext3D* context,
                              arraysize(uniforms),
                              uniforms,
                              locations,
-                             using_bind_uniform,
                              base_uniform_index);
   matrix_location_ = locations[0];
   viewport_location_ = locations[1];
@@ -575,7 +551,6 @@ VertexShaderVideoTransform::VertexShaderVideoTransform()
 
 void VertexShaderVideoTransform::Init(WebGraphicsContext3D* context,
                                       unsigned program,
-                                      bool using_bind_uniform,
                                       int* base_uniform_index) {
   static const char* uniforms[] = {
     "matrix",
@@ -588,7 +563,6 @@ void VertexShaderVideoTransform::Init(WebGraphicsContext3D* context,
                              arraysize(uniforms),
                              uniforms,
                              locations,
-                             using_bind_uniform,
                              base_uniform_index);
   matrix_location_ = locations[0];
   tex_matrix_location_ = locations[1];
@@ -615,7 +589,6 @@ FragmentTexAlphaBinding::FragmentTexAlphaBinding()
 
 void FragmentTexAlphaBinding::Init(WebGraphicsContext3D* context,
                                    unsigned program,
-                                   bool using_bind_uniform,
                                    int* base_uniform_index) {
   static const char* uniforms[] = {
     "s_texture",
@@ -628,7 +601,6 @@ void FragmentTexAlphaBinding::Init(WebGraphicsContext3D* context,
                              arraysize(uniforms),
                              uniforms,
                              locations,
-                             using_bind_uniform,
                              base_uniform_index);
   sampler_location_ = locations[0];
   alpha_location_ = locations[1];
@@ -642,7 +614,6 @@ FragmentTexColorMatrixAlphaBinding::FragmentTexColorMatrixAlphaBinding()
 
 void FragmentTexColorMatrixAlphaBinding::Init(WebGraphicsContext3D* context,
                                               unsigned program,
-                                              bool using_bind_uniform,
                                               int* base_uniform_index) {
   static const char* uniforms[] = {
     "s_texture",
@@ -657,7 +628,6 @@ void FragmentTexColorMatrixAlphaBinding::Init(WebGraphicsContext3D* context,
                              arraysize(uniforms),
                              uniforms,
                              locations,
-                             using_bind_uniform,
                              base_uniform_index);
   sampler_location_ = locations[0];
   alpha_location_ = locations[1];
@@ -670,7 +640,6 @@ FragmentTexOpaqueBinding::FragmentTexOpaqueBinding()
 
 void FragmentTexOpaqueBinding::Init(WebGraphicsContext3D* context,
                                     unsigned program,
-                                    bool using_bind_uniform,
                                     int* base_uniform_index) {
   static const char* uniforms[] = {
     "s_texture",
@@ -682,7 +651,6 @@ void FragmentTexOpaqueBinding::Init(WebGraphicsContext3D* context,
                              arraysize(uniforms),
                              uniforms,
                              locations,
-                             using_bind_uniform,
                              base_uniform_index);
   sampler_location_ = locations[0];
 }
@@ -692,7 +660,6 @@ FragmentShaderOESImageExternal::FragmentShaderOESImageExternal()
 
 void FragmentShaderOESImageExternal::Init(WebGraphicsContext3D* context,
                                           unsigned program,
-                                          bool using_bind_uniform,
                                           int* base_uniform_index) {
   static const char* uniforms[] = {
     "s_texture",
@@ -704,7 +671,6 @@ void FragmentShaderOESImageExternal::Init(WebGraphicsContext3D* context,
                              arraysize(uniforms),
                              uniforms,
                              locations,
-                             using_bind_uniform,
                              base_uniform_index);
   sampler_location_ = locations[0];
 }
@@ -795,7 +761,6 @@ FragmentTexBackgroundBinding::FragmentTexBackgroundBinding()
 
 void FragmentTexBackgroundBinding::Init(WebGraphicsContext3D* context,
                                         unsigned program,
-                                        bool using_bind_uniform,
                                         int* base_uniform_index) {
   static const char* uniforms[] = {
     "s_texture",
@@ -808,7 +773,6 @@ void FragmentTexBackgroundBinding::Init(WebGraphicsContext3D* context,
                              arraysize(uniforms),
                              uniforms,
                              locations,
-                             using_bind_uniform,
                              base_uniform_index);
 
   sampler_location_ = locations[0];
@@ -925,7 +889,6 @@ FragmentShaderRGBATexAlphaAA::FragmentShaderRGBATexAlphaAA()
 
 void FragmentShaderRGBATexAlphaAA::Init(WebGraphicsContext3D* context,
                                         unsigned program,
-                                        bool using_bind_uniform,
                                         int* base_uniform_index) {
   static const char* uniforms[] = {
     "s_texture",
@@ -938,7 +901,6 @@ void FragmentShaderRGBATexAlphaAA::Init(WebGraphicsContext3D* context,
                              arraysize(uniforms),
                              uniforms,
                              locations,
-                             using_bind_uniform,
                              base_uniform_index);
   sampler_location_ = locations[0];
   alpha_location_ = locations[1];
@@ -970,7 +932,6 @@ FragmentTexClampAlphaAABinding::FragmentTexClampAlphaAABinding()
 
 void FragmentTexClampAlphaAABinding::Init(WebGraphicsContext3D* context,
                                           unsigned program,
-                                          bool using_bind_uniform,
                                           int* base_uniform_index) {
   static const char* uniforms[] = {
     "s_texture",
@@ -984,7 +945,6 @@ void FragmentTexClampAlphaAABinding::Init(WebGraphicsContext3D* context,
                              arraysize(uniforms),
                              uniforms,
                              locations,
-                             using_bind_uniform,
                              base_uniform_index);
   sampler_location_ = locations[0];
   alpha_location_ = locations[1];
@@ -1046,7 +1006,6 @@ FragmentShaderRGBATexAlphaMask::FragmentShaderRGBATexAlphaMask()
 
 void FragmentShaderRGBATexAlphaMask::Init(WebGraphicsContext3D* context,
                                           unsigned program,
-                                          bool using_bind_uniform,
                                           int* base_uniform_index) {
   static const char* uniforms[] = {
     "s_texture",
@@ -1062,7 +1021,6 @@ void FragmentShaderRGBATexAlphaMask::Init(WebGraphicsContext3D* context,
                              arraysize(uniforms),
                              uniforms,
                              locations,
-                             using_bind_uniform,
                              base_uniform_index);
   sampler_location_ = locations[0];
   mask_sampler_location_ = locations[1];
@@ -1101,7 +1059,6 @@ FragmentShaderRGBATexAlphaMaskAA::FragmentShaderRGBATexAlphaMaskAA()
 
 void FragmentShaderRGBATexAlphaMaskAA::Init(WebGraphicsContext3D* context,
                                             unsigned program,
-                                            bool using_bind_uniform,
                                             int* base_uniform_index) {
   static const char* uniforms[] = {
     "s_texture",
@@ -1117,7 +1074,6 @@ void FragmentShaderRGBATexAlphaMaskAA::Init(WebGraphicsContext3D* context,
                              arraysize(uniforms),
                              uniforms,
                              locations,
-                             using_bind_uniform,
                              base_uniform_index);
   sampler_location_ = locations[0];
   mask_sampler_location_ = locations[1];
@@ -1164,7 +1120,6 @@ FragmentShaderRGBATexAlphaMaskColorMatrixAA::
 void FragmentShaderRGBATexAlphaMaskColorMatrixAA::Init(
     WebGraphicsContext3D* context,
     unsigned program,
-    bool using_bind_uniform,
     int* base_uniform_index) {
   static const char* uniforms[] = {
     "s_texture",
@@ -1182,7 +1137,6 @@ void FragmentShaderRGBATexAlphaMaskColorMatrixAA::Init(
                              arraysize(uniforms),
                              uniforms,
                              locations,
-                             using_bind_uniform,
                              base_uniform_index);
   sampler_location_ = locations[0];
   mask_sampler_location_ = locations[1];
@@ -1236,7 +1190,6 @@ FragmentShaderRGBATexAlphaColorMatrixAA::
 void FragmentShaderRGBATexAlphaColorMatrixAA::Init(
       WebGraphicsContext3D* context,
       unsigned program,
-      bool using_bind_uniform,
       int* base_uniform_index) {
   static const char* uniforms[] = {
     "s_texture",
@@ -1251,7 +1204,6 @@ void FragmentShaderRGBATexAlphaColorMatrixAA::Init(
                              arraysize(uniforms),
                              uniforms,
                              locations,
-                             using_bind_uniform,
                              base_uniform_index);
   sampler_location_ = locations[0];
   alpha_location_ = locations[1];
@@ -1295,7 +1247,6 @@ FragmentShaderRGBATexAlphaMaskColorMatrix::
 void FragmentShaderRGBATexAlphaMaskColorMatrix::Init(
     WebGraphicsContext3D* context,
     unsigned program,
-    bool using_bind_uniform,
     int* base_uniform_index) {
   static const char* uniforms[] = {
     "s_texture",
@@ -1313,7 +1264,6 @@ void FragmentShaderRGBATexAlphaMaskColorMatrix::Init(
                              arraysize(uniforms),
                              uniforms,
                              locations,
-                             using_bind_uniform,
                              base_uniform_index);
   sampler_location_ = locations[0];
   mask_sampler_location_ = locations[1];
@@ -1362,7 +1312,6 @@ FragmentShaderYUVVideo::FragmentShaderYUVVideo()
 
 void FragmentShaderYUVVideo::Init(WebGraphicsContext3D* context,
                                   unsigned program,
-                                  bool using_bind_uniform,
                                   int* base_uniform_index) {
   static const char* uniforms[] = {
     "y_texture",
@@ -1379,7 +1328,6 @@ void FragmentShaderYUVVideo::Init(WebGraphicsContext3D* context,
                              arraysize(uniforms),
                              uniforms,
                              locations,
-                             using_bind_uniform,
                              base_uniform_index);
   y_texture_location_ = locations[0];
   u_texture_location_ = locations[1];
@@ -1424,7 +1372,6 @@ FragmentShaderYUVAVideo::FragmentShaderYUVAVideo()
 
 void FragmentShaderYUVAVideo::Init(WebGraphicsContext3D* context,
                                    unsigned program,
-                                   bool using_bind_uniform,
                                    int* base_uniform_index) {
   static const char* uniforms[] = {
       "y_texture",
@@ -1442,7 +1389,6 @@ void FragmentShaderYUVAVideo::Init(WebGraphicsContext3D* context,
                              arraysize(uniforms),
                              uniforms,
                              locations,
-                             using_bind_uniform,
                              base_uniform_index);
   y_texture_location_ = locations[0];
   u_texture_location_ = locations[1];
@@ -1483,7 +1429,6 @@ FragmentShaderColor::FragmentShaderColor()
 
 void FragmentShaderColor::Init(WebGraphicsContext3D* context,
                                unsigned program,
-                               bool using_bind_uniform,
                                int* base_uniform_index) {
   static const char* uniforms[] = {
     "color",
@@ -1495,7 +1440,6 @@ void FragmentShaderColor::Init(WebGraphicsContext3D* context,
                              arraysize(uniforms),
                              uniforms,
                              locations,
-                             using_bind_uniform,
                              base_uniform_index);
   color_location_ = locations[0];
 }
@@ -1516,7 +1460,6 @@ FragmentShaderColorAA::FragmentShaderColorAA()
 
 void FragmentShaderColorAA::Init(WebGraphicsContext3D* context,
                                  unsigned program,
-                                 bool using_bind_uniform,
                                  int* base_uniform_index) {
   static const char* uniforms[] = {
     "color",
@@ -1528,7 +1471,6 @@ void FragmentShaderColorAA::Init(WebGraphicsContext3D* context,
                              arraysize(uniforms),
                              uniforms,
                              locations,
-                             using_bind_uniform,
                              base_uniform_index);
   color_location_ = locations[0];
 }
@@ -1556,7 +1498,6 @@ FragmentShaderCheckerboard::FragmentShaderCheckerboard()
 
 void FragmentShaderCheckerboard::Init(WebGraphicsContext3D* context,
                                       unsigned program,
-                                      bool using_bind_uniform,
                                       int* base_uniform_index) {
   static const char* uniforms[] = {
     "alpha",
@@ -1571,7 +1512,6 @@ void FragmentShaderCheckerboard::Init(WebGraphicsContext3D* context,
                              arraysize(uniforms),
                              uniforms,
                              locations,
-                             using_bind_uniform,
                              base_uniform_index);
   alpha_location_ = locations[0];
   tex_transform_location_ = locations[1];

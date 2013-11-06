@@ -57,8 +57,8 @@ namespace cc {
 
 #define EXPECT_PROGRAM_VALID(program_binding)                                  \
   do {                                                                         \
-    EXPECT_TRUE(program_binding->program());                                   \
-    EXPECT_TRUE(program_binding->initialized());                               \
+    EXPECT_TRUE((program_binding)->program());                                 \
+    EXPECT_TRUE((program_binding)->initialized());                             \
   } while (false)
 
 // Explicitly named to be a friend in GLRenderer for shader access.
@@ -262,56 +262,56 @@ class GLRendererShaderTest : public testing::Test {
   }
 
   void TestRenderPassProgram() {
-    EXPECT_PROGRAM_VALID(renderer_->render_pass_program_);
-    EXPECT_EQ(renderer_->render_pass_program_->program(),
+    EXPECT_PROGRAM_VALID(&renderer_->render_pass_program_);
+    EXPECT_EQ(renderer_->render_pass_program_.program(),
               renderer_->program_shadow_);
   }
 
   void TestRenderPassColorMatrixProgram() {
-    EXPECT_PROGRAM_VALID(renderer_->render_pass_color_matrix_program_);
-    EXPECT_EQ(renderer_->render_pass_color_matrix_program_->program(),
+    EXPECT_PROGRAM_VALID(&renderer_->render_pass_color_matrix_program_);
+    EXPECT_EQ(renderer_->render_pass_color_matrix_program_.program(),
               renderer_->program_shadow_);
   }
 
   void TestRenderPassMaskProgram() {
-    EXPECT_PROGRAM_VALID(renderer_->render_pass_mask_program_);
-    EXPECT_EQ(renderer_->render_pass_mask_program_->program(),
+    EXPECT_PROGRAM_VALID(&renderer_->render_pass_mask_program_);
+    EXPECT_EQ(renderer_->render_pass_mask_program_.program(),
               renderer_->program_shadow_);
   }
 
   void TestRenderPassMaskColorMatrixProgram() {
-    EXPECT_PROGRAM_VALID(renderer_->render_pass_mask_color_matrix_program_);
-    EXPECT_EQ(renderer_->render_pass_mask_color_matrix_program_->program(),
+    EXPECT_PROGRAM_VALID(&renderer_->render_pass_mask_color_matrix_program_);
+    EXPECT_EQ(renderer_->render_pass_mask_color_matrix_program_.program(),
               renderer_->program_shadow_);
   }
 
   void TestRenderPassProgramAA() {
-    EXPECT_PROGRAM_VALID(renderer_->render_pass_program_aa_);
-    EXPECT_EQ(renderer_->render_pass_program_aa_->program(),
+    EXPECT_PROGRAM_VALID(&renderer_->render_pass_program_aa_);
+    EXPECT_EQ(renderer_->render_pass_program_aa_.program(),
               renderer_->program_shadow_);
   }
 
   void TestRenderPassColorMatrixProgramAA() {
-    EXPECT_PROGRAM_VALID(renderer_->render_pass_color_matrix_program_aa_);
-    EXPECT_EQ(renderer_->render_pass_color_matrix_program_aa_->program(),
+    EXPECT_PROGRAM_VALID(&renderer_->render_pass_color_matrix_program_aa_);
+    EXPECT_EQ(renderer_->render_pass_color_matrix_program_aa_.program(),
               renderer_->program_shadow_);
   }
 
   void TestRenderPassMaskProgramAA() {
-    EXPECT_PROGRAM_VALID(renderer_->render_pass_mask_program_aa_);
-    EXPECT_EQ(renderer_->render_pass_mask_program_aa_->program(),
+    EXPECT_PROGRAM_VALID(&renderer_->render_pass_mask_program_aa_);
+    EXPECT_EQ(renderer_->render_pass_mask_program_aa_.program(),
               renderer_->program_shadow_);
   }
 
   void TestRenderPassMaskColorMatrixProgramAA() {
-    EXPECT_PROGRAM_VALID(renderer_->render_pass_mask_color_matrix_program_aa_);
-    EXPECT_EQ(renderer_->render_pass_mask_color_matrix_program_aa_->program(),
+    EXPECT_PROGRAM_VALID(&renderer_->render_pass_mask_color_matrix_program_aa_);
+    EXPECT_EQ(renderer_->render_pass_mask_color_matrix_program_aa_.program(),
               renderer_->program_shadow_);
   }
 
   void TestSolidColorProgramAA() {
-    EXPECT_PROGRAM_VALID(renderer_->solid_color_program_aa_);
-    EXPECT_EQ(renderer_->solid_color_program_aa_->program(),
+    EXPECT_PROGRAM_VALID(&renderer_->solid_color_program_aa_);
+    EXPECT_EQ(renderer_->solid_color_program_aa_.program(),
               renderer_->program_shadow_);
   }
 
@@ -570,9 +570,7 @@ TEST(GLRendererTest2, InitializationDoesNotMakeSynchronousCalls) {
 
 class LoseContextOnFirstGetContext : public TestWebGraphicsContext3D {
  public:
-  LoseContextOnFirstGetContext() : context_lost_(false) {}
-
-  virtual bool makeContextCurrent() OVERRIDE { return !context_lost_; }
+  LoseContextOnFirstGetContext() {}
 
   virtual void getProgramiv(WebGLId program, WGC3Denum pname, WGC3Dint* value)
       OVERRIDE {
@@ -585,13 +583,6 @@ class LoseContextOnFirstGetContext : public TestWebGraphicsContext3D {
     context_lost_ = true;
     *value = 0;
   }
-
-  virtual WGC3Denum getGraphicsResetStatusARB() OVERRIDE {
-    return context_lost_ ? 1 : 0;
-  }
-
- private:
-  bool context_lost_;
 };
 
 TEST(GLRendererTest2, InitializationWithQuicklyLostContextDoesNotAssert) {

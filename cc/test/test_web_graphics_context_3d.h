@@ -37,7 +37,6 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
       int width, int height, float scale_factor);
 
   virtual bool isContextLost();
-  virtual WebKit::WGC3Denum getGraphicsResetStatusARB();
 
   virtual void attachShader(WebKit::WebGLId program, WebKit::WebGLId shader);
   virtual void bindFramebuffer(

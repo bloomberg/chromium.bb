@@ -149,8 +149,7 @@ bool DelegatingRenderer::IsContextLost() {
   ContextProvider* context_provider = output_surface_->context_provider();
   if (!context_provider)
     return false;
-  return context_provider->Context3d()->getGraphicsResetStatusARB() !=
-         GL_NO_ERROR;
+  return context_provider->IsContextLost();
 }
 
 void DelegatingRenderer::SetVisible(bool visible) {

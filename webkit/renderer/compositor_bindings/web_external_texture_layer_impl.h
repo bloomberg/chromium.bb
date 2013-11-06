@@ -46,7 +46,6 @@ class WebExternalTextureLayerImpl
 
   // TextureLayerClient implementation.
   virtual unsigned PrepareTexture() OVERRIDE;
-  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE;
   virtual bool PrepareTextureMailbox(
       cc::TextureMailbox* mailbox,
       scoped_ptr<cc::SingleReleaseCallback>* release_callback,

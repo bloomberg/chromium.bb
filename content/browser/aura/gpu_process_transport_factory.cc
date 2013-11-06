@@ -67,6 +67,8 @@ class OwnedTexture : public ui::Texture, ImageTransportFactoryObserver {
 
   // ui::Texture overrides:
   virtual unsigned int PrepareTexture() OVERRIDE {
+    if (!host_context_ || host_context_->isContextLost())
+      return 0u;
     return texture_id_;
   }
 

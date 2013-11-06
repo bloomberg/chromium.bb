@@ -165,6 +165,14 @@ ContextProviderCommandBuffer::ContextCapabilities() {
   return capabilities_;
 }
 
+bool ContextProviderCommandBuffer::IsContextLost() {
+  DCHECK(context3d_);
+  DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+
+  return context3d_->isContextLost();
+}
+
 void ContextProviderCommandBuffer::VerifyContexts() {
   DCHECK(context3d_);
   DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
@@ -212,7 +220,6 @@ bool ContextProviderCommandBuffer::InitializeCapabilities() {
   // TODO(jamesr): This information is duplicated with
   // gpu::gles2::FeatureInfo::AddFeatures().
   Capabilities caps;
-  caps.bind_uniform_location = true;
   caps.discard_backbuffer = true;
   caps.set_visibility = true;
 

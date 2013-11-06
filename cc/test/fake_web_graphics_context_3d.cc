@@ -38,10 +38,6 @@ bool FakeWebGraphicsContext3D::isContextLost() {
   return false;
 }
 
-WGC3Denum FakeWebGraphicsContext3D::getGraphicsResetStatusARB() {
-  return GL_NO_ERROR;
-}
-
 void* FakeWebGraphicsContext3D::mapBufferSubDataCHROMIUM(
     WGC3Denum target,
     WebKit::WGC3Dintptr offset,

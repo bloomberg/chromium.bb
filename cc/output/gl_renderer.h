@@ -357,72 +357,65 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   const SolidColorProgram* GetSolidColorProgram();
   const SolidColorProgramAA* GetSolidColorProgramAA();
 
-  scoped_ptr<TileProgram> tile_program_;
-  scoped_ptr<TileProgramOpaque> tile_program_opaque_;
-  scoped_ptr<TileProgramAA> tile_program_aa_;
-  scoped_ptr<TileProgramSwizzle> tile_program_swizzle_;
-  scoped_ptr<TileProgramSwizzleOpaque> tile_program_swizzle_opaque_;
-  scoped_ptr<TileProgramSwizzleAA> tile_program_swizzle_aa_;
-  scoped_ptr<TileCheckerboardProgram> tile_checkerboard_program_;
+  TileProgram tile_program_;
+  TileProgramOpaque tile_program_opaque_;
+  TileProgramAA tile_program_aa_;
+  TileProgramSwizzle tile_program_swizzle_;
+  TileProgramSwizzleOpaque tile_program_swizzle_opaque_;
+  TileProgramSwizzleAA tile_program_swizzle_aa_;
+  TileCheckerboardProgram tile_checkerboard_program_;
 
-  scoped_ptr<TileProgram> tile_program_highp_;
-  scoped_ptr<TileProgramOpaque> tile_program_opaque_highp_;
-  scoped_ptr<TileProgramAA> tile_program_aa_highp_;
-  scoped_ptr<TileProgramSwizzle> tile_program_swizzle_highp_;
-  scoped_ptr<TileProgramSwizzleOpaque> tile_program_swizzle_opaque_highp_;
-  scoped_ptr<TileProgramSwizzleAA> tile_program_swizzle_aa_highp_;
+  TileProgram tile_program_highp_;
+  TileProgramOpaque tile_program_opaque_highp_;
+  TileProgramAA tile_program_aa_highp_;
+  TileProgramSwizzle tile_program_swizzle_highp_;
+  TileProgramSwizzleOpaque tile_program_swizzle_opaque_highp_;
+  TileProgramSwizzleAA tile_program_swizzle_aa_highp_;
 
-  scoped_ptr<TextureProgram> texture_program_;
-  scoped_ptr<NonPremultipliedTextureProgram> nonpremultiplied_texture_program_;
-  scoped_ptr<TextureBackgroundProgram> texture_background_program_;
-  scoped_ptr<NonPremultipliedTextureBackgroundProgram>
+  TextureProgram texture_program_;
+  NonPremultipliedTextureProgram nonpremultiplied_texture_program_;
+  TextureBackgroundProgram texture_background_program_;
+  NonPremultipliedTextureBackgroundProgram
       nonpremultiplied_texture_background_program_;
-  scoped_ptr<TextureIOSurfaceProgram> texture_io_surface_program_;
+  TextureIOSurfaceProgram texture_io_surface_program_;
 
-  scoped_ptr<TextureProgram> texture_program_highp_;
-  scoped_ptr<NonPremultipliedTextureProgram>
-      nonpremultiplied_texture_program_highp_;
-  scoped_ptr<TextureBackgroundProgram> texture_background_program_highp_;
-  scoped_ptr<NonPremultipliedTextureBackgroundProgram>
+  TextureProgram texture_program_highp_;
+  NonPremultipliedTextureProgram nonpremultiplied_texture_program_highp_;
+  TextureBackgroundProgram texture_background_program_highp_;
+  NonPremultipliedTextureBackgroundProgram
       nonpremultiplied_texture_background_program_highp_;
-  scoped_ptr<TextureIOSurfaceProgram> texture_io_surface_program_highp_;
+  TextureIOSurfaceProgram texture_io_surface_program_highp_;
 
-  scoped_ptr<RenderPassProgram> render_pass_program_;
-  scoped_ptr<RenderPassProgramAA> render_pass_program_aa_;
-  scoped_ptr<RenderPassMaskProgram> render_pass_mask_program_;
-  scoped_ptr<RenderPassMaskProgramAA> render_pass_mask_program_aa_;
-  scoped_ptr<RenderPassColorMatrixProgram> render_pass_color_matrix_program_;
-  scoped_ptr<RenderPassColorMatrixProgramAA>
-      render_pass_color_matrix_program_aa_;
-  scoped_ptr<RenderPassMaskColorMatrixProgram>
-      render_pass_mask_color_matrix_program_;
-  scoped_ptr<RenderPassMaskColorMatrixProgramAA>
-      render_pass_mask_color_matrix_program_aa_;
+  RenderPassProgram render_pass_program_;
+  RenderPassProgramAA render_pass_program_aa_;
+  RenderPassMaskProgram render_pass_mask_program_;
+  RenderPassMaskProgramAA render_pass_mask_program_aa_;
+  RenderPassColorMatrixProgram render_pass_color_matrix_program_;
+  RenderPassColorMatrixProgramAA render_pass_color_matrix_program_aa_;
+  RenderPassMaskColorMatrixProgram render_pass_mask_color_matrix_program_;
+  RenderPassMaskColorMatrixProgramAA render_pass_mask_color_matrix_program_aa_;
 
-  scoped_ptr<RenderPassProgram> render_pass_program_highp_;
-  scoped_ptr<RenderPassProgramAA> render_pass_program_aa_highp_;
-  scoped_ptr<RenderPassMaskProgram> render_pass_mask_program_highp_;
-  scoped_ptr<RenderPassMaskProgramAA> render_pass_mask_program_aa_highp_;
-  scoped_ptr<RenderPassColorMatrixProgram>
-      render_pass_color_matrix_program_highp_;
-  scoped_ptr<RenderPassColorMatrixProgramAA>
-      render_pass_color_matrix_program_aa_highp_;
-  scoped_ptr<RenderPassMaskColorMatrixProgram>
-      render_pass_mask_color_matrix_program_highp_;
-  scoped_ptr<RenderPassMaskColorMatrixProgramAA>
+  RenderPassProgram render_pass_program_highp_;
+  RenderPassProgramAA render_pass_program_aa_highp_;
+  RenderPassMaskProgram render_pass_mask_program_highp_;
+  RenderPassMaskProgramAA render_pass_mask_program_aa_highp_;
+  RenderPassColorMatrixProgram render_pass_color_matrix_program_highp_;
+  RenderPassColorMatrixProgramAA render_pass_color_matrix_program_aa_highp_;
+  RenderPassMaskColorMatrixProgram render_pass_mask_color_matrix_program_highp_;
+  RenderPassMaskColorMatrixProgramAA
       render_pass_mask_color_matrix_program_aa_highp_;
 
-  scoped_ptr<VideoYUVProgram> video_yuv_program_;
-  scoped_ptr<VideoYUVAProgram> video_yuva_program_;
-  scoped_ptr<VideoStreamTextureProgram> video_stream_texture_program_;
+  VideoYUVProgram video_yuv_program_;
+  VideoYUVAProgram video_yuva_program_;
+  VideoStreamTextureProgram video_stream_texture_program_;
 
-  scoped_ptr<VideoYUVProgram> video_yuv_program_highp_;
-  scoped_ptr<VideoYUVAProgram> video_yuva_program_highp_;
-  scoped_ptr<VideoStreamTextureProgram> video_stream_texture_program_highp_;
+  VideoYUVProgram video_yuv_program_highp_;
+  VideoYUVAProgram video_yuva_program_highp_;
+  VideoStreamTextureProgram video_stream_texture_program_highp_;
 
-  scoped_ptr<DebugBorderProgram> debug_border_program_;
-  scoped_ptr<SolidColorProgram> solid_color_program_;
-  scoped_ptr<SolidColorProgramAA> solid_color_program_aa_;
+  DebugBorderProgram debug_border_program_;
+  SolidColorProgram solid_color_program_;
+  SolidColorProgramAA solid_color_program_aa_;
 
   WebKit::WebGraphicsContext3D* context_;
   gpu::ContextSupport* context_support_;

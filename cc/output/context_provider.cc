@@ -9,8 +9,7 @@
 namespace cc {
 
 ContextProvider::Capabilities::Capabilities()
-    : bind_uniform_location(false),
-      discard_backbuffer(false),
+    : discard_backbuffer(false),
       egl_image_external(false),
       fast_npot_mo8_textures(false),
       iosurface(false),

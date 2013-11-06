@@ -31,7 +31,6 @@ class FakeWebGraphicsContext3D : public WebKit::WebGraphicsContext3D {
   virtual void synthesizeGLError(WebKit::WGC3Denum) {}
 
   virtual bool isContextLost();
-  virtual WebKit::WGC3Denum getGraphicsResetStatusARB();
 
   virtual void* mapBufferSubDataCHROMIUM(
       WebKit::WGC3Denum target,

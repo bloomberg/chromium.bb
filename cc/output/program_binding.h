@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "cc/output/context_provider.h"
 #include "cc/output/shader.h"
 
 namespace WebKit { class WebGraphicsContext3D; }
@@ -19,10 +20,10 @@ class ProgramBindingBase {
   ProgramBindingBase();
   ~ProgramBindingBase();
 
-  void Init(WebKit::WebGraphicsContext3D* context,
+  bool Init(WebKit::WebGraphicsContext3D* context,
             const std::string& vertex_shader,
             const std::string& fragment_shader);
-  void Link(WebKit::WebGraphicsContext3D* context);
+  bool Link(WebKit::WebGraphicsContext3D* context);
   void Cleanup(WebKit::WebGraphicsContext3D* context);
 
   unsigned program() const { return program_; }
@@ -36,7 +37,6 @@ class ProgramBindingBase {
                                unsigned vertex_shader,
                                unsigned fragment_shader);
   void CleanupShaders(WebKit::WebGraphicsContext3D* context);
-  bool IsContextLost(WebKit::WebGraphicsContext3D* context);
 
   unsigned program_;
   unsigned vertex_shader_id_;
@@ -50,35 +50,35 @@ class ProgramBindingBase {
 template <class VertexShader, class FragmentShader>
 class ProgramBinding : public ProgramBindingBase {
  public:
-  explicit ProgramBinding(WebKit::WebGraphicsContext3D* context,
-                          TexCoordPrecision precision) {
-    ProgramBindingBase::Init(
-        context,
-        vertex_shader_.GetShaderString(),
-        fragment_shader_.GetShaderString(precision));
-  }
+  ProgramBinding() {}
 
-  void Initialize(WebKit::WebGraphicsContext3D* context,
-                  bool using_bind_uniform) {
-    DCHECK(context);
+  void Initialize(ContextProvider* context_provider,
+                  TexCoordPrecision precision) {
+    DCHECK(context_provider);
     DCHECK(!initialized_);
 
-    if (IsContextLost(context))
+    if (context_provider->IsContextLost())
       return;
 
-    // Need to bind uniforms before linking
-    if (!using_bind_uniform)
-      Link(context);
+    if (!ProgramBindingBase::Init(
+            context_provider->Context3d(),
+            vertex_shader_.GetShaderString(),
+            fragment_shader_.GetShaderString(precision))) {
+      DCHECK(context_provider->IsContextLost());
+      return;
+    }
 
     int base_uniform_index = 0;
-    vertex_shader_.Init(
-        context, program_, using_bind_uniform, &base_uniform_index);
-    fragment_shader_.Init(
-        context, program_, using_bind_uniform, &base_uniform_index);
+    vertex_shader_.Init(context_provider->Context3d(),
+                        program_, &base_uniform_index);
+    fragment_shader_.Init(context_provider->Context3d(),
+                          program_, &base_uniform_index);
 
     // Link after binding uniforms
-    if (using_bind_uniform)
-      Link(context);
+    if (!Link(context_provider->Context3d())) {
+      DCHECK(context_provider->IsContextLost());
+      return;
+    }
 
     initialized_ = true;
   }

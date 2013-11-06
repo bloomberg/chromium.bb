@@ -20,6 +20,7 @@
 #include "cc/output/filter_operation.h"
 #include "cc/output/filter_operations.h"
 #include "cc/resources/transferable_resource.h"
+#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer_animator.h"
@@ -645,13 +646,6 @@ void Layer::PaintContents(SkCanvas* sk_canvas,
 unsigned Layer::PrepareTexture() {
   DCHECK(texture_layer_.get());
   return texture_->PrepareTexture();
-}
-
-WebKit::WebGraphicsContext3D* Layer::Context3d() {
-  DCHECK(texture_layer_.get());
-  if (texture_.get())
-    return texture_->HostContext3D();
-  return NULL;
 }
 
 bool Layer::PrepareTextureMailbox(

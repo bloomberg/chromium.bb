@@ -71,7 +71,9 @@ scoped_refptr<TestContextProvider> TestContextProvider::Create(
 
 TestContextProvider::TestContextProvider(
     scoped_ptr<TestWebGraphicsContext3D> context)
-    : context3d_(context.Pass()), bound_(false), destroyed_(false) {
+    : context3d_(context.Pass()),
+      bound_(false),
+      destroyed_(false) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(context3d_);
   context_thread_checker_.DetachFromThread();
@@ -139,6 +141,14 @@ class GrContext* TestContextProvider::GrContext() {
   return NULL;
 }
 
+bool TestContextProvider::IsContextLost() {
+  DCHECK(context3d_);
+  DCHECK(bound_);
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+
+  return context3d_->isContextLost();
+}
+
 void TestContextProvider::VerifyContexts() {
   DCHECK(context3d_);
   DCHECK(bound_);
@@ -185,7 +195,6 @@ TestWebGraphicsContext3D* TestContextProvider::TestContext3d() {
 
 TestWebGraphicsContext3D* TestContextProvider::UnboundTestContext3d() {
   DCHECK(context3d_);
-  DCHECK(context_thread_checker_.CalledOnValidThread());
 
   return context3d_.get();
 }
