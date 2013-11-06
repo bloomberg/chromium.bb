@@ -104,17 +104,9 @@
       ]
     },
     {
-      "url": "https://drive.google.com",
-      "why": "productivity, top google properties",
-      "credentials": "google",
-      "navigate_steps" : [
-        { "action": "navigate" },
-        { "action": "wait", "javascript": "document.getElementsByClassName('doclistview-list').length" }
-      ],
-      "smoothness": {
-        "action": "scroll",
-        "scrollable_element_function": "function(callback) { callback(document.getElementsByClassName('doclistview-list')[0]); }"
-      }
+      "url": "https://www.google.com/search?q=cats&tbm=isch",
+      "why": "tough image case; top google properties",
+      "credentials": "google"
     },
     {
       "name": "Docs  (1 open document tab)",
