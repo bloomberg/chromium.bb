@@ -7,8 +7,8 @@
 
 #include "base/strings/string16.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/permissions/socket_permission_data.h"
+#include "extensions/common/manifest_handler.h"
 
 namespace extensions {
 

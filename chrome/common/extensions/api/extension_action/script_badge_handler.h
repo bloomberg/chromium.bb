@@ -9,7 +9,7 @@
 
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/manifest_handler.h"
+#include "extensions/common/manifest_handler.h"
 
 namespace extensions {
 

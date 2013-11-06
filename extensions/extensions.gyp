@@ -59,6 +59,8 @@
         'common/manifest.h',
         'common/manifest_constants.cc',
         'common/manifest_constants.h',
+        'common/manifest_handler.cc',
+        'common/manifest_handler.h',
         'common/matcher/regex_set_matcher.cc',
         'common/matcher/regex_set_matcher.h',
         'common/matcher/string_pattern.cc',

@@ -7,7 +7,7 @@
 
 #include "base/strings/string16.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/manifest_handler.h"
+#include "extensions/common/manifest_handler.h"
 
 namespace extensions {
 

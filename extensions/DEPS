@@ -7,11 +7,11 @@ include_rules = [
 
 # More specific rules for what we are allowed to include.
 specific_include_rules = {
-  ".*test\.cc": [
+  ".*test\.cc$": [
     "+content/public/test",
   ],
-  "api_permission_set_unittest\.cc": [
-    # Temporary include for tests.
+  # Temporary includes for tests.
+  "^api_permission_set_unittest\.cc$": [
     "+chrome/common/extensions/extension_messages.h",
   ],
 }
