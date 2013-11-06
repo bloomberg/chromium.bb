@@ -1570,6 +1570,9 @@ void TabDragController::RunMoveLoop(const gfx::Vector2d& drag_offset) {
       // Move the tabs into position.
       MoveAttached(point_in_screen);
       attached_tabstrip_->GetWidget()->Activate();
+      // Activate may trigger a focus loss, destroying us.
+      if (!ref)
+        return;
       tab_strip_to_attach_to_after_exit_ = NULL;
     }
     DCHECK(attached_tabstrip_);
