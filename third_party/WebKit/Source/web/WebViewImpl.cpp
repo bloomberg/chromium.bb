@@ -3465,10 +3465,18 @@ void WebViewImpl::setCompositorDeviceScaleFactorOverride(float deviceScaleFactor
 void WebViewImpl::setRootLayerScaleTransform(float rootLayerScale)
 {
     m_rootLayerScale = rootLayerScale;
-    if (mainFrameImpl()) {
-        WebSize offset = m_devToolsAgent ? m_devToolsAgent->deviceMetricsOffset() : WebSize();
-        mainFrameImpl()->setInputEventsTransformForEmulation(offset, m_rootLayerScale);
-    }
+    m_rootLayerOffset = m_devToolsAgent ? m_devToolsAgent->deviceMetricsOffset() : WebSize();
+    if (mainFrameImpl())
+        mainFrameImpl()->setInputEventsTransformForEmulation(m_rootLayerOffset, m_rootLayerScale);
+    updateRootLayerTransform();
+}
+
+void WebViewImpl::setRootLayerTransform(const WebSize& rootLayerOffset, float rootLayerScale)
+{
+    m_rootLayerScale = rootLayerScale;
+    m_rootLayerOffset = rootLayerOffset;
+    if (mainFrameImpl())
+        mainFrameImpl()->setInputEventsTransformForEmulation(m_rootLayerOffset, m_rootLayerScale);
     updateRootLayerTransform();
 }
 
@@ -4080,10 +4088,7 @@ void WebViewImpl::updateRootLayerTransform()
 {
     if (m_rootGraphicsLayer) {
         WebCore::TransformationMatrix transform;
-        if (m_devToolsAgent) {
-            IntSize offset = m_devToolsAgent->deviceMetricsOffset();
-            transform.translate(offset.width(), offset.height());
-        }
+        transform.translate(m_rootLayerOffset.width, m_rootLayerOffset.height);
         transform = transform.scale(m_rootLayerScale);
         m_rootGraphicsLayer->setChildrenTransform(transform);
     }

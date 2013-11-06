@@ -394,8 +394,10 @@ public:
     // device metrics emulation.
     virtual void setCompositorDeviceScaleFactorOverride(float) = 0;
 
-    // Set scaling transformation on the root composited layer. This is used
+    // Set offset and scale on the root composited layer. This is used
     // to implement device metrics emulation.
+    virtual void setRootLayerTransform(const WebSize& offset, float scale) = 0;
+    // FIXME: remove this method after migrating to the new one.
     virtual void setRootLayerScaleTransform(float) = 0;
 
     // The embedder may optionally engage a WebDevToolsAgent.  This may only

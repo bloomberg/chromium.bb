@@ -285,6 +285,7 @@ public:
                                      const WebString& value);
     virtual void setCompositorDeviceScaleFactorOverride(float);
     virtual void setRootLayerScaleTransform(float);
+    virtual void setRootLayerTransform(const WebSize& offset, float scale);
     virtual WebDevToolsAgent* devToolsAgent();
     virtual WebAXObject accessibilityObject();
     virtual void applyAutofillSuggestions(
@@ -714,6 +715,7 @@ private:
     bool m_ignoreInputEvents;
 
     float m_compositorDeviceScaleFactorOverride;
+    WebSize m_rootLayerOffset;
     float m_rootLayerScale;
 
     // Webkit expects keyPress events to be suppressed if the associated keyDown
