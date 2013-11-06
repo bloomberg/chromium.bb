@@ -8,6 +8,7 @@ import datetime
 import mojom
 import mojom_pack
 import os
+import re
 import sys
 
 from string import Template
@@ -35,8 +36,7 @@ class Forwards(object):
 
   def __repr__(self):
     return '\n'.join(
-      sorted(map(
-          lambda kind: "class %s;" % kind.name.capitalize(), self.kinds)))
+        sorted(map(lambda kind: "class %s;" % kind.name, self.kinds)))
 
 
 class Lines(object):
@@ -58,8 +58,7 @@ class Lines(object):
 
 def GetStructFromMethod(interface, method):
   """Converts a method's parameters into the fields of a struct."""
-  params_class = \
-      "%s_%s_Params" % (interface.name.capitalize(), method.name.capitalize())
+  params_class = "%s_%s_Params" % (interface.name, method.name)
   struct = mojom.Struct(params_class)
   for param in method.parameters:
     struct.AddField(param.name, param.kind, param.ordinal)
@@ -67,6 +66,10 @@ def GetStructFromMethod(interface, method):
 
 def IsPointerKind(kind):
   return isinstance(kind, (mojom.Struct, mojom.Array)) or kind.spec == 's'
+
+def CamelToUnderscores(camel):
+  s = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', camel)
+  return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s).lower()
 
 class CPPGenerator(object):
 
@@ -135,7 +138,7 @@ class CPPGenerator(object):
   @classmethod
   def GetType(cls, kind):
     if isinstance(kind, mojom.Struct):
-      return "%s*" % kind.name.capitalize()
+      return "%s*" % kind.name
     if isinstance(kind, mojom.Array):
       return "mojo::Array<%s>*" % cls.GetType(kind.kind)
     if kind.spec == 's':
@@ -145,7 +148,7 @@ class CPPGenerator(object):
   @classmethod
   def GetConstType(cls, kind):
     if isinstance(kind, mojom.Struct):
-      return "const %s*" % kind.name.capitalize()
+      return "const %s*" % kind.name
     if isinstance(kind, mojom.Array):
       return "const mojo::Array<%s>*" % cls.GetConstType(kind.kind)
     if kind.spec == 's':
@@ -175,7 +178,7 @@ class CPPGenerator(object):
       return cls.bool_field_template.substitute(FIELD=field.name)
     itype = None
     if isinstance(kind, mojom.Struct):
-      itype = "mojo::internal::StructPointer<%s>" % kind.name.capitalize()
+      itype = "mojo::internal::StructPointer<%s>" % kind.name
     elif isinstance(kind, mojom.Array):
       itype = "mojo::internal::ArrayPointer<%s>" % cls.GetType(kind.kind)
     elif kind.spec == 's':
@@ -215,10 +218,11 @@ class CPPGenerator(object):
         (self.module.name.upper(), name.upper())
 
   def GetHeaderFile(self, *components):
+    components = map(lambda c: CamelToUnderscores(c), components)
     component_string = '_'.join(components)
     return os.path.join(
       self.header_dir,
-      "%s_%s.h" % (self.module.name.lower(), component_string.lower()))
+      "%s_%s.h" % (CamelToUnderscores(self.module.name), component_string))
 
   # Pass |output_dir| to emit files to disk. Omit |output_dir| to echo all files
   # to stdout.
@@ -228,10 +232,12 @@ class CPPGenerator(object):
     self.output_dir = output_dir
 
   def WriteTemplateToFile(self, template_name, name, **substitutions):
+    template_name = CamelToUnderscores(template_name)
+    name = CamelToUnderscores(name)
     template = self.GetTemplate(template_name)
-    filename = "%s_%s" % (self.module.name.lower(), template_name)
-    filename = filename.replace("interface", name.lower())
-    filename = filename.replace("struct", name.lower())
+    filename = "%s_%s" % (CamelToUnderscores(self.module.name), template_name)
+    filename = filename.replace("interface", name)
+    filename = filename.replace("struct", name)
     substitutions['YEAR'] = datetime.date.today().year
     substitutions['NAMESPACE'] = self.module.namespace
     if self.output_dir is None:
@@ -295,15 +301,15 @@ class CPPGenerator(object):
     fields = self.GetSerializedFields(ps)
     handle_fields = self.GetHandleFields(ps)
     for field in fields:
-      substitutions = {'NAME': param_name, 'FIELD': field.name.lower()}
+      substitutions = {'NAME': param_name, 'FIELD': field.name}
       encodes.Add(substitutions)
       decodes.Add(substitutions)
     for field in handle_fields:
-      substitutions = {'NAME': param_name, 'FIELD': field.name.lower()}
+      substitutions = {'NAME': param_name, 'FIELD': field.name}
       encode_handles.Add(substitutions)
       decode_handles.Add(substitutions)
     return self.GetTemplate("struct_serialization").substitute(
-        CLASS = "%s::%s" % (self.module.namespace.lower(), class_name),
+        CLASS = "%s::%s" % (self.module.namespace, class_name),
         NAME = param_name,
         ENCODES = encodes,
         DECODES = decodes,
@@ -318,16 +324,16 @@ class CPPGenerator(object):
 
     self.WriteTemplateToFile("struct.h", struct.name,
         HEADER_GUARD = self.GetHeaderGuard(struct.name),
-        CLASS = struct.name.capitalize(),
+        CLASS = struct.name,
         FORWARDS = forwards,
-        DECLARATION = self.GetStructDeclaration(struct.name.capitalize(), ps))
+        DECLARATION = self.GetStructDeclaration(struct.name, ps))
 
   def GenerateStructSource(self, ps):
     struct = ps.struct
     header = self.GetHeaderFile(struct.name)
-    implementation = self.GetStructImplementation(struct.name.capitalize(), ps)
+    implementation = self.GetStructImplementation(struct.name, ps)
     self.WriteTemplateToFile("struct.cc", struct.name,
-        CLASS = struct.name.capitalize(),
+        CLASS = struct.name,
         NUM_FIELDS = len(struct.fields),
         HEADER = header,
         IMPLEMENTATION = implementation)
@@ -336,13 +342,15 @@ class CPPGenerator(object):
     struct = ps.struct
     self.WriteTemplateToFile("struct_serialization.h", struct.name,
         HEADER_GUARD = self.GetHeaderGuard(struct.name + "_SERIALIZATION"),
-        CLASS = struct.name.capitalize(),
+        CLASS = struct.name,
+        NAME = CamelToUnderscores(struct.name),
         FULL_CLASS = "%s::%s" % \
-            (self.module.namespace, struct.name.capitalize()))
+            (self.module.namespace, struct.name))
 
   def GenerateStructSerializationSource(self, ps):
     struct = ps.struct
     serialization_header = self.GetHeaderFile(struct.name, "serialization")
+    param_name = CamelToUnderscores(struct.name)
 
     kinds = DependentKinds()
     for field in struct.fields:
@@ -354,20 +362,18 @@ class CPPGenerator(object):
 
     class_header = self.GetHeaderFile(struct.name)
     clones = Lines(self.struct_serialization_clone_template)
-    sizes = "  return sizeof(*%s)" % struct.name.lower()
+    sizes = "  return sizeof(*%s)" % param_name
     fields = self.GetSerializedFields(ps)
     for field in fields:
-      substitutions = {'NAME': struct.name.lower(), 'FIELD': field.name.lower()}
+      substitutions = {'NAME': param_name, 'FIELD': field.name}
       sizes += \
           self.struct_serialization_compute_template.substitute(substitutions)
       clones.Add(substitutions)
     sizes += ";"
-    serialization = \
-        self.GetStructSerialization(struct.name.capitalize(), struct.name, ps)
+    serialization = self.GetStructSerialization(struct.name, param_name, ps)
     self.WriteTemplateToFile("struct_serialization.cc", struct.name,
-        NAME = struct.name.lower(),
-        CLASS = "%s::%s" % \
-            (self.module.namespace.lower(), struct.name.capitalize()),
+        NAME = param_name,
+        CLASS = "%s::%s" % (self.module.namespace, struct.name),
         SERIALIZATION_HEADER = serialization_header,
         INCLUDES = '\n'.join(includes),
         SIZES = sizes,
@@ -387,7 +393,7 @@ class CPPGenerator(object):
 
     self.WriteTemplateToFile("interface.h", interface.name,
         HEADER_GUARD = self.GetHeaderGuard(interface.name),
-        CLASS = interface.name.capitalize(),
+        CLASS = interface.name,
         FORWARDS = forwards,
         METHODS = '\n'.join(methods))
 
@@ -395,7 +401,7 @@ class CPPGenerator(object):
     header = self.GetHeaderFile(interface.name)
     self.WriteTemplateToFile("interface_stub.h", interface.name,
         HEADER_GUARD = self.GetHeaderGuard(interface.name + "_STUB"),
-        CLASS = interface.name.capitalize(),
+        CLASS = interface.name,
         HEADER = header)
 
   def GenerateInterfaceStubSource(self, interface):
@@ -405,7 +411,7 @@ class CPPGenerator(object):
     for method in interface.methods:
       cases.append(self.GetCaseLine(interface, method))
     self.WriteTemplateToFile("interface_stub.cc", interface.name,
-        CLASS = interface.name.capitalize(),
+        CLASS = interface.name,
         CASES = '\n'.join(cases),
         STUB_HEADER = stub_header,
         SERIALIZATION_HEADER = serialization_header)
@@ -428,8 +434,8 @@ class CPPGenerator(object):
     template_declaration = self.GetTemplate("template_declaration")
     for method in interface.methods:
       names.append(self.name_template.substitute(
-        INTERFACE = interface.name.capitalize(),
-        METHOD = method.name.capitalize(),
+        INTERFACE = interface.name,
+        METHOD = method.name,
         NAME = name))
       name += 1
 
@@ -455,7 +461,7 @@ class CPPGenerator(object):
       serializations.append(
           self.GetStructSerialization("internal::" + struct.name, "params", ps))
     self.WriteTemplateToFile("interface_serialization.cc", interface.name,
-        HEADER = self.GetHeaderFile(interface.name.lower(), "serialization"),
+        HEADER = self.GetHeaderFile(interface.name, "serialization"),
         IMPLEMENTATIONS = '\n'.join(implementations),
         SERIALIZATIONS = '\n'.join(serializations))
 
@@ -472,7 +478,7 @@ class CPPGenerator(object):
     self.WriteTemplateToFile("interface_proxy.h", interface.name,
         HEADER_GUARD = self.GetHeaderGuard(interface.name + "_PROXY"),
         HEADER = self.GetHeaderFile(interface.name),
-        CLASS = interface.name.capitalize(),
+        CLASS = interface.name,
         METHODS = '\n'.join(methods))
 
   def GenerateInterfaceProxySource(self, interface):
@@ -490,13 +496,11 @@ class CPPGenerator(object):
       params_list = map(
           lambda param: "%s %s" % (self.GetConstType(param.kind), param.name),
           method.parameters)
-      name = \
-          "internal::k%s_%s_Name" % (interface.name.capitalize(), method.name)
-      params_name = \
-          "internal::%s_%s_Params" % (interface.name.capitalize(), method.name)
+      name = "internal::k%s_%s_Name" % (interface.name, method.name)
+      params_name = "internal::%s_%s_Params" % (interface.name, method.name)
 
       implementations.Add(
-          CLASS = interface.name.capitalize(),
+          CLASS = interface.name,
           METHOD = method.name,
           NAME = name,
           PARAMS = params_name,
@@ -507,7 +511,7 @@ class CPPGenerator(object):
         HEADER = self.GetHeaderFile(interface.name, "proxy"),
         SERIALIZATION_HEADER = \
           self.GetHeaderFile(interface.name, "serialization"),
-        CLASS = interface.name.capitalize(),
+        CLASS = interface.name,
         IMPLEMENTATIONS = implementations)
 
   def GenerateFiles(self):

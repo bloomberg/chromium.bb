@@ -7,7 +7,7 @@
       {'name': 'alpha', 'kind': 'u8', 'ordinal': 0},
       {'name': 'beta', 'kind': 'u8', 'ordinal': 1},
       {'name': 'gamma', 'kind': 'u8', 'ordinal': 2}]}, {
-    'name': 'Foo',
+    'name': 'FooBar',
     'fields': [
       {'name': 'name', 'kind': 's', 'ordinal': 8},
       {'name': 'x', 'kind': 'i32', 'ordinal': 0},
@@ -25,7 +25,7 @@
       'name': 'Frobinate',
       'ordinal': 0,
       'parameters': [
-        {'name': 'foo', 'kind': 'x:Foo', 'ordinal': 0},
+        {'name': 'foo', 'kind': 'x:FooBar', 'ordinal': 0},
         {'name': 'baz', 'kind': 'b', 'ordinal': 1},
         {'name': 'port', 'kind': 'h', 'ordinal': 2}]}]}]
 }
