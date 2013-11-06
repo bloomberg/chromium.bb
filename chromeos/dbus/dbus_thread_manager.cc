@@ -24,8 +24,6 @@
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/dbus/gsm_sms_client.h"
 #include "chromeos/dbus/ibus/ibus_client.h"
-#include "chromeos/dbus/ibus/ibus_engine_factory_service.h"
-#include "chromeos/dbus/ibus/ibus_engine_service.h"
 #include "chromeos/dbus/image_burner_client.h"
 #include "chromeos/dbus/introspectable_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
@@ -136,15 +134,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     // Shut down the bus. During the browser shutdown, it's ok to shut down
     // the bus synchronously.
     system_bus_->ShutdownOnDBusThreadAndBlock();
-    if (ibus_bus_.get())
-      ibus_bus_->ShutdownOnDBusThreadAndBlock();
-
-    // Release IBusEngineService instances.
-    for (std::map<dbus::ObjectPath, IBusEngineService*>::iterator it
-            = ibus_engine_services_.begin();
-         it != ibus_engine_services_.end(); it++) {
-      delete it->second;
-    }
 
     // Stop the D-Bus thread.
     dbus_thread_->Stop();
@@ -166,34 +155,12 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   virtual void InitIBusBus(
       const std::string &ibus_address,
       const base::Closure& on_disconnected_callback) OVERRIDE {
-    DCHECK(!ibus_bus_.get());
-    dbus::Bus::Options ibus_bus_options;
-    ibus_bus_options.bus_type = dbus::Bus::CUSTOM_ADDRESS;
-    ibus_bus_options.address = ibus_address;
-    ibus_bus_options.connection_type = dbus::Bus::PRIVATE;
-    ibus_bus_options.dbus_task_runner = dbus_thread_->message_loop_proxy();
-    ibus_bus_options.disconnected_callback = on_disconnected_callback;
-    ibus_bus_ = new dbus::Bus(ibus_bus_options);
-    ibus_address_ = ibus_address;
-    VLOG(1) << "Connected to ibus-daemon: " << ibus_address;
-
-    DBusClientImplementationType client_type = STUB_DBUS_CLIENT_IMPLEMENTATION;
-
-    ibus_client_.reset(
-        IBusClient::Create(client_type, ibus_bus_.get()));
-    ibus_engine_factory_service_.reset(
-        IBusEngineFactoryService::Create(ibus_bus_.get(), client_type));
-
-    ibus_engine_services_.clear();
+    ibus_client_.reset(IBusClient::Create());
   }
 
   // DBusThreadManager overrides:
   virtual dbus::Bus* GetSystemBus() OVERRIDE {
     return system_bus_.get();
-  }
-
-  virtual dbus::Bus* GetIBusBus() OVERRIDE {
-    return ibus_bus_.get();
   }
 
   virtual BluetoothAdapterClient* GetBluetoothAdapterClient() OVERRIDE {
@@ -318,30 +285,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     return ibus_client_.get();
   }
 
-  virtual IBusEngineFactoryService* GetIBusEngineFactoryService() OVERRIDE {
-    return ibus_engine_factory_service_.get();
-  }
-
-  virtual IBusEngineService* GetIBusEngineService(
-      const dbus::ObjectPath& object_path) OVERRIDE {
-    if (ibus_engine_services_.find(object_path)
-            == ibus_engine_services_.end()) {
-      ibus_engine_services_[object_path] = IBusEngineService::Create();
-    }
-    return ibus_engine_services_[object_path];
-  }
-
-  virtual void RemoveIBusEngineService(
-      const dbus::ObjectPath& object_path) OVERRIDE {
-    if (ibus_engine_services_.find(object_path) !=
-        ibus_engine_services_.end()) {
-      LOG(WARNING) << "Object path not found: " << object_path.value();
-      return;
-    }
-    delete ibus_engine_services_[object_path];
-    ibus_engine_services_.erase(object_path);
-  }
-
  private:
   // Initializes |client| with the |system_bus_|.
   void InitClient(DBusClient* client) {
@@ -403,7 +346,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
 
   scoped_ptr<base::Thread> dbus_thread_;
   scoped_refptr<dbus::Bus> system_bus_;
-  scoped_refptr<dbus::Bus> ibus_bus_;
   scoped_ptr<BluetoothAdapterClient> bluetooth_adapter_client_;
   scoped_ptr<BluetoothAgentManagerClient> bluetooth_agent_manager_client_;
   scoped_ptr<BluetoothDeviceClient> bluetooth_device_client_;
@@ -435,11 +377,8 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<SMSClient> sms_client_;
   scoped_ptr<UpdateEngineClient> update_engine_client_;
   scoped_ptr<IBusClient> ibus_client_;
-  scoped_ptr<IBusEngineFactoryService> ibus_engine_factory_service_;
-  std::map<dbus::ObjectPath, IBusEngineService*> ibus_engine_services_;
   scoped_ptr<PowerPolicyController> power_policy_controller_;
 
-  std::string ibus_address_;
 };
 
 // static

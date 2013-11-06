@@ -161,13 +161,8 @@ IBusEngineFactoryService::~IBusEngineFactoryService() {
 }
 
 // static
-IBusEngineFactoryService* IBusEngineFactoryService::Create(
-    dbus::Bus* bus,
-    DBusClientImplementationType type) {
-  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new IBusEngineFactoryServiceImpl(bus);
-  else
-    return new IBusEngineFactoryServiceDaemonlessImpl();
+IBusEngineFactoryService* IBusEngineFactoryService::Create() {
+  return new IBusEngineFactoryServiceDaemonlessImpl();
 }
 
 }  // namespace chromeos

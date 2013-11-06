@@ -39,8 +39,6 @@ class FakeShillManagerClient;
 class FakeSystemClockClient;
 class FakeUpdateEngineClient;
 class MockIBusClient;
-class MockIBusEngineFactoryService;
-class MockIBusEngineService;
 
 // This class provides a fake implementation of DBusThreadManager, which
 // hosts fake D-Bus clients.
@@ -54,7 +52,6 @@ class FakeDBusThreadManager : public DBusThreadManager {
   virtual void InitIBusBus(const std::string& ibus_address,
                            const base::Closure& closure) OVERRIDE;
   virtual dbus::Bus* GetSystemBus() OVERRIDE;
-  virtual dbus::Bus* GetIBusBus() OVERRIDE;
 
   virtual BluetoothAdapterClient* GetBluetoothAdapterClient() OVERRIDE;
   virtual BluetoothAgentManagerClient*
@@ -88,11 +85,6 @@ class FakeDBusThreadManager : public DBusThreadManager {
   virtual SystemClockClient* GetSystemClockClient() OVERRIDE;
   virtual UpdateEngineClient* GetUpdateEngineClient() OVERRIDE;
   virtual IBusClient* GetIBusClient() OVERRIDE;
-  virtual IBusEngineFactoryService* GetIBusEngineFactoryService() OVERRIDE;
-  virtual IBusEngineService* GetIBusEngineService(
-      const dbus::ObjectPath& object_path) OVERRIDE;
-  virtual void RemoveIBusEngineService(
-      const dbus::ObjectPath& object_path) OVERRIDE;
 
   FakeBluetoothAdapterClient* fake_bluetooth_adapter_client() {
     return fake_bluetooth_adapter_client_.get();
@@ -175,14 +167,6 @@ class FakeDBusThreadManager : public DBusThreadManager {
     return mock_ibus_client_.get();
   }
 
-  MockIBusEngineService* mock_ibus_engine_service() {
-    return mock_ibus_engine_service_.get();
-  }
-
-  MockIBusEngineFactoryService* mock_ibus_engine_factory_service() {
-    return mock_ibus_engine_factory_service_.get();
-  }
-
   void set_ibus_bus(dbus::Bus* ibus_bus) {
     ibus_bus_ = ibus_bus;
   }
@@ -215,8 +199,6 @@ class FakeDBusThreadManager : public DBusThreadManager {
   scoped_ptr<FakeUpdateEngineClient> fake_update_engine_client_;
 
   scoped_ptr<MockIBusClient> mock_ibus_client_;
-  scoped_ptr<MockIBusEngineService> mock_ibus_engine_service_;
-  scoped_ptr<MockIBusEngineFactoryService> mock_ibus_engine_factory_service_;
 
   scoped_ptr<PowerPolicyController> power_policy_controller_;
   dbus::Bus* ibus_bus_;

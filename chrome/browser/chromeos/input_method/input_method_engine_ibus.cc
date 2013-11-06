@@ -53,8 +53,8 @@ InputMethodEngineIBus::InputMethodEngineIBus()
       component_(new IBusComponent()),
       candidate_window_(new input_method::CandidateWindow()),
       window_visible_(false),
-      weak_ptr_factory_(this) {
-}
+      ibus_engine_factory_service_(IBusEngineFactoryService::Create()),
+      weak_ptr_factory_(this) {}
 
 InputMethodEngineIBus::~InputMethodEngineIBus() {
   input_method::InputMethodManager::Get()->RemoveInputMethodExtension(ibus_id_);
@@ -65,7 +65,7 @@ InputMethodEngineIBus::~InputMethodEngineIBus() {
   //             InputMethodManager once ibus-daemon is gone. (crbug.com/158273)
   if (!object_path_.value().empty()) {
     GetCurrentService()->UnsetEngine(this);
-    DBusThreadManager::Get()->RemoveIBusEngineService(object_path_);
+    ibus_engine_service_.reset();
   }
 }
 
@@ -527,7 +527,9 @@ void InputMethodEngineIBus::SetSurroundingText(const std::string& text,
 }
 
 IBusEngineService* InputMethodEngineIBus::GetCurrentService() {
-  return DBusThreadManager::Get()->GetIBusEngineService(object_path_);
+  if (!ibus_engine_service_)
+    ibus_engine_service_.reset(IBusEngineService::Create());
+  return ibus_engine_service_.get();
 }
 
 void InputMethodEngineIBus::MenuItemToProperty(
@@ -593,11 +595,10 @@ void InputMethodEngineIBus::RegisterComponent() {
 }
 
 void InputMethodEngineIBus::OnComponentRegistered() {
-  DBusThreadManager::Get()->GetIBusEngineFactoryService()->
-      SetCreateEngineHandler(ibus_id_,
-                             base::Bind(
-                                 &InputMethodEngineIBus::CreateEngineHandler,
-                                 weak_ptr_factory_.GetWeakPtr()));
+  ibus_engine_factory_service_->SetCreateEngineHandler(
+      ibus_id_,
+      base::Bind(&InputMethodEngineIBus::CreateEngineHandler,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void InputMethodEngineIBus::OnComponentRegistrationFailed() {
@@ -608,10 +609,8 @@ void InputMethodEngineIBus::OnComponentRegistrationFailed() {
 void InputMethodEngineIBus::CreateEngineHandler(
     const IBusEngineFactoryService::CreateEngineResponseSender& sender) {
   GetCurrentService()->UnsetEngine(this);
-  DBusThreadManager::Get()->RemoveIBusEngineService(object_path_);
-
-  object_path_ = DBusThreadManager::Get()->GetIBusEngineFactoryService()->
-      GenerateUniqueObjectPath();
+  ibus_engine_service_.reset();
+  object_path_ = ibus_engine_factory_service_->GenerateUniqueObjectPath();
 
   GetCurrentService()->SetEngine(this);
   sender.Run(object_path_);

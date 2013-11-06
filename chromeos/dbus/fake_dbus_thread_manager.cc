@@ -25,8 +25,6 @@
 #include "chromeos/dbus/fake_system_clock_client.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
 #include "chromeos/dbus/ibus/mock_ibus_client.h"
-#include "chromeos/dbus/ibus/mock_ibus_engine_factory_service.h"
-#include "chromeos/dbus/ibus/mock_ibus_engine_service.h"
 #include "chromeos/dbus/power_policy_controller.h"
 
 namespace chromeos {
@@ -80,16 +78,10 @@ void FakeDBusThreadManager::InitIBusBus(
   // Non-null bus address is used to ensure the connection to ibus-daemon.
   ibus_bus_ = reinterpret_cast<dbus::Bus*>(0xdeadbeef);
   mock_ibus_client_.reset(new MockIBusClient);
-  mock_ibus_engine_service_.reset(new MockIBusEngineService);
-  mock_ibus_engine_factory_service_.reset(new MockIBusEngineFactoryService);
 }
 
 dbus::Bus* FakeDBusThreadManager::GetSystemBus() {
   return NULL;
-}
-
-dbus::Bus* FakeDBusThreadManager::GetIBusBus() {
-  return ibus_bus_;
 }
 
 BluetoothAdapterClient*
@@ -233,20 +225,6 @@ UpdateEngineClient* FakeDBusThreadManager::GetUpdateEngineClient() {
 
 IBusClient* FakeDBusThreadManager::GetIBusClient() {
   return mock_ibus_client_.get();
-}
-
-IBusEngineFactoryService*
-    FakeDBusThreadManager::GetIBusEngineFactoryService() {
-  return mock_ibus_engine_factory_service_.get();
-}
-
-IBusEngineService* FakeDBusThreadManager::GetIBusEngineService(
-    const dbus::ObjectPath& object_path) {
-  return mock_ibus_engine_service_.get();
-}
-
-void FakeDBusThreadManager::RemoveIBusEngineService(
-    const dbus::ObjectPath& object_path) {
 }
 
 }  // namespace chromeos

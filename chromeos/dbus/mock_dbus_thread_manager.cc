@@ -109,8 +109,6 @@ MockDBusThreadManager::MockDBusThreadManager()
 
   EXPECT_CALL(*this, GetSystemBus())
       .WillRepeatedly(ReturnNull());
-  EXPECT_CALL(*this, GetIBusBus())
-      .WillRepeatedly(ReturnNull());
 
   // These observers calls are used in ChromeBrowserMainPartsChromeos.
   EXPECT_CALL(*mock_session_manager_client_.get(), AddObserver(_))

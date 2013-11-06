@@ -54,7 +54,6 @@ class MockDBusThreadManager : public DBusThreadManager {
   MOCK_METHOD2(InitIBusBus, void(const std::string& ibus_address,
                                  const base::Closure& closure));
   MOCK_METHOD0(GetSystemBus, dbus::Bus*(void));
-  MOCK_METHOD0(GetIBusBus, dbus::Bus*(void));
   MOCK_METHOD0(GetBluetoothAdapterClient, BluetoothAdapterClient*(void));
   MOCK_METHOD0(GetBluetoothAgentManagerClient,
                BluetoothAgentManagerClient*(void));
@@ -87,11 +86,6 @@ class MockDBusThreadManager : public DBusThreadManager {
   MOCK_METHOD0(GetSystemClockClient, SystemClockClient*(void));
   MOCK_METHOD0(GetUpdateEngineClient, UpdateEngineClient*(void));
   MOCK_METHOD0(GetIBusClient, IBusClient*(void));
-  MOCK_METHOD0(GetIBusEngineFactoryService, IBusEngineFactoryService*(void));
-  MOCK_METHOD1(GetIBusEngineService,
-               IBusEngineService*(const dbus::ObjectPath& object_path));
-  MOCK_METHOD1(RemoveIBusEngineService,
-               void(const dbus::ObjectPath& object_path));
 
   FakeBluetoothAdapterClient* fake_bluetooth_adapter_client() {
     return fake_bluetooth_adapter_client_.get();

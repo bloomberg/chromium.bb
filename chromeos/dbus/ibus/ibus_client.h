@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "chromeos/chromeos_export.h"
-#include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "dbus/object_path.h"
 
 namespace dbus {
@@ -65,8 +64,7 @@ class CHROMEOS_EXPORT IBusClient {
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
-  static CHROMEOS_EXPORT IBusClient* Create(DBusClientImplementationType type,
-                                            dbus::Bus* bus);
+  static CHROMEOS_EXPORT IBusClient* Create();
 
  protected:
   // Create() should be used instead.

@@ -117,7 +117,6 @@ class CHROMEOS_EXPORT DBusThreadManager {
 
   // Returns various D-Bus bus instances, owned by DBusThreadManager.
   virtual dbus::Bus* GetSystemBus() = 0;
-  virtual dbus::Bus* GetIBusBus() = 0;
 
   // All returned objects are owned by DBusThreadManager.  Do not cache these
   // pointers and use them after DBusThreadManager has been shut down.
@@ -132,9 +131,6 @@ class CHROMEOS_EXPORT DBusThreadManager {
   virtual DebugDaemonClient* GetDebugDaemonClient() = 0;
   virtual GsmSMSClient* GetGsmSMSClient() = 0;
   virtual IBusClient* GetIBusClient() = 0;
-  virtual IBusEngineFactoryService* GetIBusEngineFactoryService() = 0;
-  virtual IBusEngineService* GetIBusEngineService(
-      const dbus::ObjectPath& object_path) = 0;
   virtual ImageBurnerClient* GetImageBurnerClient() = 0;
   virtual IntrospectableClient* GetIntrospectableClient() = 0;
   virtual ModemMessagingClient* GetModemMessagingClient() = 0;
@@ -154,9 +150,6 @@ class CHROMEOS_EXPORT DBusThreadManager {
   virtual SMSClient* GetSMSClient() = 0;
   virtual SystemClockClient* GetSystemClockClient() = 0;
   virtual UpdateEngineClient* GetUpdateEngineClient() = 0;
-
-  // Removes the ibus engine services for |object_path|.
-  virtual void RemoveIBusEngineService(const dbus::ObjectPath& object_path) = 0;
 
   virtual ~DBusThreadManager();
 
