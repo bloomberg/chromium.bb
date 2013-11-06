@@ -7,7 +7,7 @@
     {{?enum_values}}
     <dd>enum of
       {{#enum_values}}
-      {{?last}}or {{/}}<code>"{{name}}"</code>{{^last}}, {{/}}
+      {{?@.last}}or {{/}}<code>"{{name}}"</code>{{^@.last}}, {{/}}
       {{/enum_values}}
     </dd>
     {{:enum_values}}

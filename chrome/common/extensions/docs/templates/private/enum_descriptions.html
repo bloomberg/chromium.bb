@@ -1,16 +1,16 @@
 {{?values}}
 <dl>
   {{#values}}
-  {{?description}}
+  {{?@.description}}
     <dd>
       <dl>
         <dt>{{name}}</dt>
         <dd>
-          {{description}}
+          {{{description}}}
         </dd>
       </dl>
     </dd>
-  {{/description}}
+  {{/@.description}}
   {{/values}}
 </dl>
 {{/values}}

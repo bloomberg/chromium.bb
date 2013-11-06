@@ -13,7 +13,7 @@ array of {{+partials.variable_type}}
 {{simple_type}}
 {{/simple_type}}
 {{?enum_values}}
-enum of {{#enum_values}}{{?last}}or {{/}}<code>"{{name}}"</code>{{^last}}, {{/}}{{/}}
+enum of {{#enum_values}}{{?@.last}}or {{/}}<code>"{{name}}"</code>{{^@.last}}, {{/}}{{/}}
 {{/enum_values}}
 {{?value}}
 <code>{{value}}</code>
