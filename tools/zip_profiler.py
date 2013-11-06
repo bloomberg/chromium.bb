@@ -84,7 +84,7 @@ def main():
 
   temp_dir = None
   try:
-    temp_dir = tempfile.mkdtemp()
+    temp_dir = tempfile.mkdtemp(prefix='zip_profiler')
 
     # Create a directory of the required files
     subprocess.check_call([os.path.join(ROOT_DIR, 'isolate.py'),

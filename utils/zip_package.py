@@ -265,7 +265,7 @@ def extract_resource(package, resource):
   data = pkgutil.get_data(package.__name__, resource)
   if data is None:
     raise ValueError('No such resource in zipped %s: %s' % (package, resource))
-  fd, path = tempfile.mkstemp()
+  fd, path = tempfile.mkstemp(prefix='zip_package')
   with os.fdopen(fd, 'w') as stream:
     stream.write(data)
 

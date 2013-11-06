@@ -145,7 +145,7 @@ class IsolateBase(unittest.TestCase):
   def setUp(self):
     # The tests assume the current directory is the file's directory.
     os.chdir(ROOT_DIR)
-    self.tempdir = tempfile.mkdtemp()
+    self.tempdir = tempfile.mkdtemp(prefix='isolate_smoke_')
     self.isolated = os.path.join(self.tempdir, 'isolate_smoke_test.isolated')
     self.outdir = os.path.join(self.tempdir, 'isolated')
 

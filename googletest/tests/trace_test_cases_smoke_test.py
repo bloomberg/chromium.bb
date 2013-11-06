@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -28,7 +29,8 @@ TARGET_PATH = os.path.join(BASE_DIR, 'gtest_fake', 'gtest_fake_fail.py')
 
 class TraceTestCases(unittest.TestCase):
   def setUp(self):
-    self.temp_file = None
+    super(TraceTestCases, self).setUp()
+    self.temp_dir = tempfile.mkdtemp(prefix='trace_test_cases_test')
 
     self.initial_cwd = GOOGLETEST_DIR
     if sys.platform == 'win32':
@@ -52,8 +54,8 @@ class TraceTestCases(unittest.TestCase):
     os.environ.pop('GTEST_TOTAL_SHARDS', '')
 
   def tearDown(self):
-    if self.temp_file:
-      os.remove(self.temp_file)
+    shutil.rmtree(self.temp_dir)
+    super(TraceTestCases, self).tearDown()
 
   def assertGreater(self, a, b, msg=None):
     """Just like self.assertTrue(a > b), but with a nicer default message.
@@ -65,16 +67,13 @@ class TraceTestCases(unittest.TestCase):
       self.fail(msg or standardMsg)
 
   def test_simple(self):
-    file_handle, self.temp_file = tempfile.mkstemp(
-        prefix='trace_test_cases_test')
-    os.close(file_handle)
-
+    temp_file = os.path.join(self.temp_dir, 'foo_bar')
     cmd = [
         sys.executable,
         os.path.join(GOOGLETEST_DIR, 'trace_test_cases.py'),
         # Forces 4 parallel jobs.
         '--jobs', '4',
-        '--out', self.temp_file,
+        '--out', temp_file,
     ]
     if VERBOSE:
       cmd.extend(['-v'] * 3)
@@ -107,7 +106,7 @@ class TraceTestCases(unittest.TestCase):
     if sys.platform != 'win32' and not VERBOSE:
       self.assertEqual('', err)
 
-    with open(self.temp_file, 'r') as f:
+    with open(temp_file, 'r') as f:
       content = f.read()
       try:
         result = json.loads(content)
