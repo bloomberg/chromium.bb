@@ -373,6 +373,7 @@ INSTANTIATE_TEST_CASE_P(PDFTestFiles,
 #define MAYBE_Action DISABLED_Action
 #else
 #define MAYBE_Action Action
+#endif
 IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Action) {
   ASSERT_NO_FATAL_FAILURE(Load());
 
