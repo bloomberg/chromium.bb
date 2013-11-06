@@ -10,7 +10,6 @@ import sys
 
 
 def MapKind(kind):
-  # todo: add more types
   map_to_kind = { 'bool': 'b',
                   'int8': 'i8',
                   'int16': 'i16',
@@ -20,6 +19,8 @@ def MapKind(kind):
                   'uint16': 'u16',
                   'uint32': 'u32',
                   'uint64': 'u64',
+                  'float': 'f',
+                  'double': 'd',
                   'string': 's',
                   'handle': 'h' }
   if kind.endswith('[]'):
