@@ -191,7 +191,14 @@ class ShowAppListBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ShowAppListBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ShowAppListBrowserTest, ShowAppListFlag) {
+// See http://crbug.com/315677
+#if defined(OS_WIN)
+#define MAYBE_ShowAppListFlag DISABLED_ShowAppListFlag
+#else
+#define MAYBE_ShowAppListFlag ShowAppListFlag
+#endif
+
+IN_PROC_BROWSER_TEST_F(ShowAppListBrowserTest, MAYBE_ShowAppListFlag) {
   AppListService* service = GetAppListService();
   // The app list should already be shown because we passed
   // switches::kShowAppList.
