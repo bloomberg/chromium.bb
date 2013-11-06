@@ -231,10 +231,13 @@
       'target_name': 'sample_app',
       'type': 'shared_library',
       'dependencies': [
+        '../ui/gl/gl.gyp:gl',
         'mojo_system',
       ],
       'sources': [
         'examples/sample_app/sample_app.cc',
+        'examples/sample_app/spinning_cube.cc',
+        'examples/sample_app/spinning_cube.h',
       ],
     },
     {

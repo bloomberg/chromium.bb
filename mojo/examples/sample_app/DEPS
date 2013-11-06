@@ -1,0 +1,5 @@
+include_rules = [
+  # TODO(abarth): Rather than including this interface directly,
+  # we need to figure out the right way for apps to call GL.
+  "!gpu/command_buffer/client/gles2_interface.h",
+]
