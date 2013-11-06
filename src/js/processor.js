@@ -13,7 +13,7 @@ var camera = camera || {};
  * Creates a processor object, which takes the camera stream and processes it.
  * Flushes the result to a canvas.
  *
- * @param {Canvas|Video} input Canvas or Video with the input frame.
+ * @param {fx.Texture} input Texture with the input frame.
  * @param {Canvas} output Canvas with the output frame.
  * @param {fx.Canvas} fxCanvas Fx canvas to be used for processing.
  * @param {camera.Processor.Mode=} opt_mode Optional mode of the processor.
@@ -22,7 +22,7 @@ var camera = camera || {};
  */
 camera.Processor = function(input, output, fxCanvas, opt_mode) {
   /**
-   * @type {Canvas|Video}
+   * @type {fx.Texture}
    * @private
    */
   this.input_ = input;
@@ -44,12 +44,6 @@ camera.Processor = function(input, output, fxCanvas, opt_mode) {
    * @private
    */
   this.mode_ = opt_mode || camera.Processor.Mode.DEFAULT;
-
-  /**
-   * @type {fx.Texture}
-   * @private
-   */
-  this.texture_ = null;
 
   /**
    * @type {camera.Effect}
@@ -78,9 +72,6 @@ camera.Processor.prototype = {
   get effect() {
     return this.effect_;
   },
-  get input() {
-    return this.input_;
-  },
   get output() {
     return this.output_;
   }
@@ -91,13 +82,10 @@ camera.Processor.prototype = {
  * canvas.
  */
 camera.Processor.prototype.processFrame = function() {
-  var width = this.input_.videoWidth || this.input_.width;
-  var height = this.input_.videoHeight || this.input_.height;
+  var width = this.input_._.width;
+  var height = this.input_._.height;
   if (!width || !height)
     return;
-
-  if (!this.texture_)
-    this.texture_ = this.fxCanvas_.texture(this.input_);
 
   var textureWidth = null;
   var textureHeight = null;
@@ -113,8 +101,7 @@ camera.Processor.prototype.processFrame = function() {
       break;
   }
 
-  this.texture_.loadContentsOf(this.input_);
-  this.fxCanvas_.draw(this.texture_, textureWidth, textureHeight);
+  this.fxCanvas_.draw(this.input_, textureWidth, textureHeight);
   if (this.effect_)
     this.effect_.filterFrame(this.fxCanvas_);
   this.fxCanvas_.update();

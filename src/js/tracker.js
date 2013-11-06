@@ -222,6 +222,14 @@ camera.Tracker.prototype = {
    */
   get fps() {
     return this.performanceMonitor_.fps;
+  },
+
+  /**
+   * Returns true if busy, false otherwise.
+   * @return {boolean}
+   */
+  get busy() {
+    return this.busy_;
   }
 };
 

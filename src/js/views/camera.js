@@ -85,6 +85,13 @@ camera.views.Camera = function(context, router) {
   this.mainCanvas_ = null;
 
   /**
+   * Texture for the full quality canvas.
+   * @type {fx.Texture}
+   * @private
+   */
+  this.mainCanvasTexture_ = null;
+
+  /**
    * The main (full screen canvas) for fast capture.
    * @type {fx.Canvas}
    * @private
@@ -92,11 +99,25 @@ camera.views.Camera = function(context, router) {
   this.mainFastCanvas_ = null;
 
   /**
+   * Texture for the fast canvas.
+   * @type {fx.Texture}
+   * @private
+   */
+  this.mainFastCanvasTexture_ = null;
+
+  /**
    * Shared fx canvas for effects' previews.
    * @type {fx.Canvas}
    * @private
    */
   this.previewCanvas_ = null;
+
+  /**
+   * Texture for the effects' canvas.
+   * @type {fx.Texture}
+   * @private
+   */
+  this.previewCanvasTexture_ = null;
 
   /**
    * The main (full screen) processor in the full quality mode.
@@ -377,10 +398,14 @@ camera.views.Camera.prototype.initialize = function(callback) {
 
   if (this.mainCanvas_ && this.mainFastCanvas_) {
     // Initialize the processors.
+    this.mainCanvasTexture_ = this.mainCanvas_.texture(this.video_);
+    this.mainFastCanvasTexture_ = this.mainFastCanvas_.texture(this.video_);
     this.mainProcessor_ = new camera.Processor(
-        this.video_, this.mainCanvas_, this.mainCanvas_);
+        this.mainCanvasTexture_,
+        this.mainCanvas_,
+        this.mainCanvas_);
     this.mainFastProcessor_ = new camera.Processor(
-        this.video_,
+        this.mainFastCanvasTexture_,
         this.mainFastCanvas_,
         this.mainFastCanvas_,
         camera.Processor.Mode.FAST);
@@ -395,6 +420,8 @@ camera.views.Camera.prototype.initialize = function(callback) {
     this.mainProcessor_.effect = new camera.effects.Swirl();
 
     // Prepare effect previews.
+    this.previewCanvasTexture_ = this.previewCanvas_.texture(
+        this.previewInputCanvas_);
     this.addEffect_(new camera.effects.Normal(this.tracker_));
     this.addEffect_(new camera.effects.Vintage(this.tracker_));
     this.addEffect_(new camera.effects.Beauty(this.tracker_));
@@ -582,7 +609,9 @@ camera.views.Camera.prototype.addEffect_ = function(effect) {
 
   // Create the preview processor.
   var processor = new camera.Processor(
-      this.previewInputCanvas_, canvas, this.previewCanvas_);
+      this.previewCanvasTexture_,
+      canvas,
+      this.previewCanvas_);
   processor.effect = effect;
   this.previewProcessors_.push(processor);
 };
@@ -772,6 +801,7 @@ camera.views.Camera.prototype.takePicture_ = function() {
   this.shutterSound_.play();
 
   setTimeout(function() {
+    this.mainCanvasTexture_.loadContentsOf(this.video_);
     this.mainProcessor_.processFrame();
     var dataURL = this.mainCanvas_.toDataURL('image/jpeg');
 
@@ -1032,11 +1062,13 @@ camera.views.Camera.prototype.drawEffectsRibbon_ = function(mode) {
 camera.views.Camera.prototype.drawCameraFrame_ = function(mode) {
   switch (mode) {
     case camera.views.Camera.DrawMode.OPTIMIZED:
+      this.mainFastCanvasTexture_.loadContentsOf(this.video_);
       this.mainFastProcessor_.processFrame();
       this.mainCanvas_.parentNode.hidden = true;
       this.mainFastCanvas_.parentNode.hidden = false;
       break;
     case camera.views.Camera.DrawMode.FULL:
+      this.mainCanvasTexture_.loadContentsOf(this.video_);
       this.mainProcessor_.processFrame();
       this.mainCanvas_.parentNode.hidden = false;
       this.mainFastCanvas_.parentNode.hidden = true;
@@ -1069,9 +1101,9 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
                       0,
                       this.previewInputCanvas_.width,
                       this.previewInputCanvas_.height);
-
-    // Detect and track faces.
-    this.tracker_.detect();
+    this.previewCanvasTexture_.loadContentsOf(this.previewInputCanvas_);
+    if (!this.tracker_.busy)
+      this.tracker_.detect();
   }
 
   // Update internal state of the tracker.
