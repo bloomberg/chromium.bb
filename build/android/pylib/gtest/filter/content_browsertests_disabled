@@ -4,7 +4,6 @@ Http/MediaTest.*
 File/MediaTest.*
 WorkerTest.*
 MediaTest.*
-MediaSourceTest.*
 WebGLConformanceTest.*
 MessagePortTest.Tests
 CrossPlatformAccessibilityBrowserTest.*
