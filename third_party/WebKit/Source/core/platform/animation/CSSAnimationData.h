@@ -148,7 +148,7 @@ private:
     explicit CSSAnimationData(const CSSAnimationData&);
 
     // return true if all members of this class match (excluding m_next)
-    bool animationsMatch(const CSSAnimationData*, bool matchPlayStates = true) const;
+    bool animationsMatch(const CSSAnimationData*) const;
 
     AtomicString m_name;
     CSSPropertyID m_property;
