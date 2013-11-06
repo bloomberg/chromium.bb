@@ -59,8 +59,5 @@ class SchemaLoader(object):
     else:
       sys.exit('Did not recognize file extension %s for schema %s' %
                (schema_extension, schema))
-    if len(api_defs) != 1:
-      sys.exit('File %s has multiple schemas. Files are only allowed to contain'
-               'a single schema.' % schema)
 
     return api_defs
