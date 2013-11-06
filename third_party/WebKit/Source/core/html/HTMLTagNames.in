@@ -11,7 +11,7 @@ applet constructorNeedsCreatedByParser
 area
 article interfaceName=HTMLElement
 aside interfaceName=HTMLElement
-audio wrapperOnlyIfMediaIsAvailable, constructorNeedsCreatedByParser
+audio runtimeEnabled=media, constructorNeedsCreatedByParser
 b interfaceName=HTMLElement
 base
 basefont interfaceName=HTMLElement
@@ -112,7 +112,7 @@ script constructorNeedsCreatedByParser
 section interfaceName=HTMLElement
 select constructorNeedsFormElement, constructorNeedsCreatedByParser
 small interfaceName=HTMLElement
-source wrapperOnlyIfMediaIsAvailable
+source runtimeEnabled=media
 span
 strike interfaceName=HTMLElement
 strong interfaceName=HTMLElement
@@ -130,12 +130,12 @@ th interfaceName=HTMLTableCellElement
 thead interfaceName=HTMLTableSectionElement
 title
 tr interfaceName=HTMLTableRowElement
-track wrapperOnlyIfMediaIsAvailable
+track runtimeEnabled=videoTrack
 tt interfaceName=HTMLElement
 u interfaceName=HTMLElement
 ul interfaceName=HTMLUListElement
 var interfaceName=HTMLElement
-video wrapperOnlyIfMediaIsAvailable, constructorNeedsCreatedByParser
+video runtimeEnabled=media, constructorNeedsCreatedByParser
 wbr interfaceName=HTMLElement
 xmp interfaceName=HTMLPreElement
 noscript interfaceName=HTMLElement

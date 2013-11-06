@@ -31,7 +31,6 @@
 #include "core/events/Event.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/frame/ContentSecurityPolicy.h"
-#include "RuntimeEnabledFeatures.h"
 #include "platform/Logging.h"
 
 using namespace std;
@@ -94,23 +93,22 @@ void HTMLTrackElement::removedFrom(ContainerNode* insertionPoint)
 
 void HTMLTrackElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    if (RuntimeEnabledFeatures::videoTrackEnabled()) {
-        if (name == srcAttr) {
-            if (!value.isEmpty())
-                scheduleLoad();
-            else if (m_track)
-                m_track->removeAllCues();
+    if (name == srcAttr) {
+        if (!value.isEmpty())
+            scheduleLoad();
+        else if (m_track)
+            m_track->removeAllCues();
 
-        // 4.8.10.12.3 Sourcing out-of-band text tracks
-        // As the kind, label, and srclang attributes are set, changed, or removed, the text track must update accordingly...
-        } else if (name == kindAttr)
-            track()->setKind(value.lower());
-        else if (name == labelAttr)
-            track()->setLabel(value);
-        else if (name == srclangAttr)
-            track()->setLanguage(value);
-        else if (name == defaultAttr)
-            track()->setIsDefault(!value.isNull());
+    // 4.8.10.12.3 Sourcing out-of-band text tracks
+    // As the kind, label, and srclang attributes are set, changed, or removed, the text track must update accordingly...
+    } else if (name == kindAttr) {
+        track()->setKind(value.lower());
+    } else if (name == labelAttr) {
+        track()->setLabel(value);
+    } else if (name == srclangAttr) {
+        track()->setLanguage(value);
+    } else if (name == defaultAttr) {
+        track()->setIsDefault(!value.isNull());
     }
 
     HTMLElement::parseAttribute(name, value);
@@ -177,9 +175,6 @@ void HTMLTrackElement::scheduleLoad()
     if (m_loadTimer.isActive())
         return;
 
-    if (!RuntimeEnabledFeatures::videoTrackEnabled())
-        return;
-
     // 2. If the text track's text track mode is not set to one of hidden or showing, abort these steps.
     if (ensureTrack()->mode() != TextTrack::hiddenKeyword() && ensureTrack()->mode() != TextTrack::showingKeyword())
         return;
@@ -217,9 +212,6 @@ void HTMLTrackElement::loadTimerFired(Timer<HTMLTrackElement>*)
 
 bool HTMLTrackElement::canLoadUrl(const KURL& url)
 {
-    if (!RuntimeEnabledFeatures::videoTrackEnabled())
-        return false;
-
     HTMLMediaElement* parent = mediaElement();
     if (!parent)
         return false;

@@ -45,7 +45,7 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
         'interfaceName': None,
         'mapToTagName': None,
         'noConstructor': None,
-        'wrapperOnlyIfMediaIsAvailable': None,
+        'runtimeEnabled': None,
     })
     default_parameters = dict(MakeQualifiedNamesWriter.default_parameters, **{
         'fallbackInterfaceName': '',

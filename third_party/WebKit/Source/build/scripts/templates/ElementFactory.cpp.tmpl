@@ -43,13 +43,12 @@ static PassRefPtr<{{namespace}}Element> {{tag|symbol}}Constructor(
 {%- endif %}
     bool createdByParser)
 {
-{%- if tag.wrapperOnlyIfMediaIsAvailable %}
-    Settings* settings = document.settings();
-    if (!RuntimeEnabledFeatures::mediaEnabled() || (settings && !settings->mediaEnabled()))
-        return 0;
-{%- endif %}
 {%- if tag.contextConditional %}
     if (!ContextFeatures::{{tag.contextConditional}}Enabled(&document))
+        return 0;
+{%- endif %}
+{%- if tag.runtimeEnabled %}
+    if (!RuntimeEnabledFeatures::{{tag.runtimeEnabled}}Enabled())
         return 0;
 {%- endif %}
     return {{tag.interface}}::create(tagName, document

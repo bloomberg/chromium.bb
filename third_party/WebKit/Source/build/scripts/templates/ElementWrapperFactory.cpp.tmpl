@@ -34,13 +34,12 @@ static v8::Handle<v8::Object> create{{namespace}}ElementWrapper({{namespace}}Ele
 {%- for js_interface, list in tags|sort|selectattr('has_js_interface')|groupby('js_interface') %}
 static v8::Handle<v8::Object> create{{js_interface}}Wrapper({{namespace}}Element* element, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-{%- if list[0].wrapperOnlyIfMediaIsAvailable %}
-    Settings* settings = element->document().settings();
-    if (!RuntimeEnabledFeatures::mediaEnabled() || (settings && !settings->mediaEnabled()))
-        return createV8{{namespace}}FallbackWrapper(to{{fallback_js_interface}}(element), creationContext, isolate);
-{%- endif %}
 {%- if list[0].contextConditional %}
     if (!ContextFeatures::{{list[0].contextConditional}}Enabled(&element->document()))
+        return createV8{{namespace}}FallbackWrapper(to{{fallback_js_interface}}(element), creationContext, isolate);
+{%- endif %}
+{%- if list[0].runtimeEnabled %}
+    if (!RuntimeEnabledFeatures::{{list[0].runtimeEnabled}}Enabled())
         return createV8{{namespace}}FallbackWrapper(to{{fallback_js_interface}}(element), creationContext, isolate);
 {%- endif %}
     return wrap(static_cast<{{js_interface}}*>(element), creationContext, isolate);
@@ -55,7 +54,7 @@ v8::Handle<v8::Object> createV8{{namespace}}Wrapper({{namespace}}Element* elemen
 {%- for tag in tags|sort %}
         map.set({{tag|symbol}}Tag.localName().impl(), create{{tag.js_interface}}Wrapper);
 {%- endfor %}
-    } // taco
+    }
 
     Create{{namespace}}ElementWrapperFunction createWrapperFunction = map.get(element->localName().impl());
     if (createWrapperFunction == create{{namespace}}ElementWrapper)

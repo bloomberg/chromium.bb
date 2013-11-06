@@ -115,7 +115,7 @@ Touch status=stable
 
 UserSelectAll status=experimental
 Vibration status=stable
-VideoTrack status=stable
+VideoTrack depends_on=Media, status=stable
 WebAnimations
 WebAnimationsCSS depends_on=WebAnimations
 WebAnimationsSVG depends_on=WebAnimations

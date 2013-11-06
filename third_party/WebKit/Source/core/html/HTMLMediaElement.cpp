@@ -616,6 +616,9 @@ void HTMLMediaElement::load()
 
     LOG(Media, "HTMLMediaElement::load()");
 
+    if (document().settings() && !document().settings()->mediaEnabled())
+        return;
+
     if (userGestureRequiredForLoad() && !UserGestureIndicator::processingUserGesture())
         return;
 
