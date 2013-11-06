@@ -121,10 +121,11 @@ TEST_F(DeviceSettingsServiceTest, LoadValidationErrorFutureTimestamp) {
   owner_key_util_->SetPublicKeyFromPrivateKey(*device_policy_.GetSigningKey());
   ReloadDeviceSettings();
 
-  EXPECT_EQ(DeviceSettingsService::STORE_TEMP_VALIDATION_ERROR,
+  // Loading a cached device policy with a timestamp in the future should work,
+  // since this may be due to a broken clock on the client device.
+  EXPECT_EQ(DeviceSettingsService::STORE_SUCCESS,
             device_settings_service_.status());
-  EXPECT_FALSE(device_settings_service_.policy_data());
-  EXPECT_FALSE(device_settings_service_.device_settings());
+  CheckPolicy();
 }
 
 TEST_F(DeviceSettingsServiceTest, LoadSuccess) {
