@@ -31,3 +31,8 @@ per-file *_messages*.h=kenrb@chromium.org
 # Accessibility
 per-file accessibility_node_data.*=dmazzoni@chromium.org
 per-file accessibility_node_data.*=dtseng@chromium.org
+
+# WebSocket
+per-file websocket.h=ricea@chromium.org
+per-file websocket.h=tyoshino@chromium.org
+per-file websocket.h=yhirano@chromium.org
