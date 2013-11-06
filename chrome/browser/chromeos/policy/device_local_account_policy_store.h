@@ -69,11 +69,13 @@ class DeviceLocalAccountPolicyStore
 
   // Gets the owner key and triggers policy validation.
   void CheckKeyAndValidate(
+      bool valid_timestamp_required,
       scoped_ptr<enterprise_management::PolicyFetchResponse> policy,
       const UserCloudPolicyValidator::CompletionCallback& callback);
 
   // Triggers policy validation.
   void Validate(
+      bool valid_timestamp_required,
       scoped_ptr<enterprise_management::PolicyFetchResponse> policy,
       const UserCloudPolicyValidator::CompletionCallback& callback,
       chromeos::DeviceSettingsService::OwnershipStatus ownership_status);

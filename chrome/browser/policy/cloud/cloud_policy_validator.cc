@@ -276,11 +276,14 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckTimestamp() {
     }
   }
 
-  if (policy_data_->timestamp() < timestamp_not_before_) {
+  if (timestamp_option_ != TIMESTAMP_NOT_REQUIRED &&
+      policy_data_->timestamp() < timestamp_not_before_) {
+    // If |timestamp_option_| is TIMESTAMP_REQUIRED or TIMESTAMP_NOT_BEFORE
+    // then this is a failure.
     LOG(ERROR) << "Policy too old: " << policy_data_->timestamp();
     return VALIDATION_BAD_TIMESTAMP;
   }
-  if (timestamp_option_ != TIMESTAMP_NOT_BEFORE &&
+  if (timestamp_option_ == TIMESTAMP_REQUIRED &&
       policy_data_->timestamp() > timestamp_not_after_) {
     LOG(ERROR) << "Policy from the future: " << policy_data_->timestamp();
     return VALIDATION_BAD_TIMESTAMP;

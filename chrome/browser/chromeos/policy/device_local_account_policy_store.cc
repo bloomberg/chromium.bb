@@ -45,6 +45,7 @@ void DeviceLocalAccountPolicyStore::Store(
     const em::PolicyFetchResponse& policy) {
   weak_factory_.InvalidateWeakPtrs();
   CheckKeyAndValidate(
+      true,
       make_scoped_ptr(new em::PolicyFetchResponse(policy)),
       base::Bind(&DeviceLocalAccountPolicyStore::StoreValidatedPolicy,
                  weak_factory_.GetWeakPtr()));
@@ -59,6 +60,7 @@ void DeviceLocalAccountPolicyStore::ValidateLoadedPolicyBlob(
     scoped_ptr<em::PolicyFetchResponse> policy(new em::PolicyFetchResponse());
     if (policy->ParseFromString(policy_blob)) {
       CheckKeyAndValidate(
+          false,
           policy.Pass(),
           base::Bind(&DeviceLocalAccountPolicyStore::UpdatePolicy,
                      weak_factory_.GetWeakPtr()));
@@ -147,16 +149,19 @@ void DeviceLocalAccountPolicyStore::HandleStoreResult(bool success) {
 }
 
 void DeviceLocalAccountPolicyStore::CheckKeyAndValidate(
+    bool valid_timestamp_required,
     scoped_ptr<em::PolicyFetchResponse> policy,
     const UserCloudPolicyValidator::CompletionCallback& callback) {
   device_settings_service_->GetOwnershipStatusAsync(
       base::Bind(&DeviceLocalAccountPolicyStore::Validate,
                  weak_factory_.GetWeakPtr(),
+                 valid_timestamp_required,
                  base::Passed(&policy),
                  callback));
 }
 
 void DeviceLocalAccountPolicyStore::Validate(
+    bool valid_timestamp_required,
     scoped_ptr<em::PolicyFetchResponse> policy_response,
     const UserCloudPolicyValidator::CompletionCallback& callback,
     chromeos::DeviceSettingsService::OwnershipStatus ownership_status) {
@@ -175,9 +180,14 @@ void DeviceLocalAccountPolicyStore::Validate(
                                        background_task_runner()));
   validator->ValidateUsername(account_id_);
   validator->ValidatePolicyType(dm_protocol::kChromePublicAccountPolicyType);
+  // The timestamp is verified when storing a new policy downloaded from the
+  // server but not when loading a cached policy from disk.
+  // See SessionManagerOperation::ValidateDeviceSettings for the rationale.
   validator->ValidateAgainstCurrentPolicy(
       policy(),
-      CloudPolicyValidatorBase::TIMESTAMP_REQUIRED,
+      valid_timestamp_required
+          ? CloudPolicyValidatorBase::TIMESTAMP_REQUIRED
+          : CloudPolicyValidatorBase::TIMESTAMP_NOT_REQUIRED,
       CloudPolicyValidatorBase::DM_TOKEN_REQUIRED);
   validator->ValidatePayload();
   validator->ValidateSignature(*key->public_key(), false);
