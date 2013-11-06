@@ -6,12 +6,14 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
 
 namespace sync_file_system {
 namespace drive_backend {
 
-RemoteToLocalSyncer::RemoteToLocalSyncer() {
-  NOTIMPLEMENTED();
+RemoteToLocalSyncer::RemoteToLocalSyncer(SyncEngineContext* sync_context)
+    : sync_context_(sync_context),
+      weak_ptr_factory_(this) {
 }
 
 RemoteToLocalSyncer::~RemoteToLocalSyncer() {
@@ -21,6 +23,19 @@ RemoteToLocalSyncer::~RemoteToLocalSyncer() {
 void RemoteToLocalSyncer::Run(const SyncStatusCallback& callback) {
   NOTIMPLEMENTED();
   callback.Run(SYNC_STATUS_FAILED);
+}
+
+drive::DriveServiceInterface* RemoteToLocalSyncer::drive_service() {
+  return sync_context_->GetDriveService();
+}
+
+MetadataDatabase* RemoteToLocalSyncer::metadata_database() {
+  return sync_context_->GetMetadataDatabase();
+}
+
+RemoteChangeProcessor* RemoteToLocalSyncer::remote_change_processor() {
+  DCHECK(sync_context_->GetRemoteChangeProcessor());
+  return sync_context_->GetRemoteChangeProcessor();
 }
 
 }  // namespace drive_backend

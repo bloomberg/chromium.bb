@@ -68,6 +68,10 @@ class ListChangesTaskTest : public testing::Test,
     return metadata_database_.get();
   }
 
+  virtual RemoteChangeProcessor* GetRemoteChangeProcessor() OVERRIDE {
+    return NULL;
+  }
+
   int64 GetRemoteLargestChangeID() {
     scoped_ptr<google_apis::AboutResource> about_resource;
     EXPECT_EQ(google_apis::HTTP_SUCCESS,

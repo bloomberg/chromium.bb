@@ -71,6 +71,10 @@ class RegisterAppTaskTest : public testing::Test,
     return metadata_database_.get();
   }
 
+  virtual RemoteChangeProcessor* GetRemoteChangeProcessor() OVERRIDE {
+    return NULL;
+  }
+
  protected:
   scoped_ptr<leveldb::DB> OpenLevelDB() {
     leveldb::DB* db = NULL;

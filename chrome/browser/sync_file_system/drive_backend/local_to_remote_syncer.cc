@@ -10,7 +10,9 @@
 namespace sync_file_system {
 namespace drive_backend {
 
-LocalToRemoteSyncer::LocalToRemoteSyncer() {
+LocalToRemoteSyncer::LocalToRemoteSyncer(SyncEngineContext* sync_context)
+    : sync_context_(sync_context),
+      weak_ptr_factory_(this) {
   NOTIMPLEMENTED();
 }
 

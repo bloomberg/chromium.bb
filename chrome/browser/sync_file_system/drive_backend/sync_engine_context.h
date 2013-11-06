@@ -12,6 +12,9 @@ class DriveServiceInterface;
 }
 
 namespace sync_file_system {
+
+class RemoteChangeProcessor;
+
 namespace drive_backend {
 
 class MetadataDatabase;
@@ -23,6 +26,7 @@ class SyncEngineContext {
 
   virtual drive::DriveServiceInterface* GetDriveService() = 0;
   virtual MetadataDatabase* GetMetadataDatabase() = 0;
+  virtual RemoteChangeProcessor* GetRemoteChangeProcessor() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncEngineContext);

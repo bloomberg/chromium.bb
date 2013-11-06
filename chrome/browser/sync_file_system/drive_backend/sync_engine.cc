@@ -119,7 +119,7 @@ void SyncEngine::UninstallOrigin(
 
 void SyncEngine::ProcessRemoteChange(
     const SyncFileCallback& callback) {
-  RemoteToLocalSyncer* syncer = new RemoteToLocalSyncer;
+  RemoteToLocalSyncer* syncer = new RemoteToLocalSyncer(this);
   task_manager_->ScheduleSyncTask(
       scoped_ptr<SyncTask>(syncer),
       base::Bind(&SyncEngine::DidProcessRemoteChange,
@@ -201,7 +201,7 @@ void SyncEngine::ApplyLocalChange(
     const SyncFileMetadata& local_file_metadata,
     const fileapi::FileSystemURL& url,
     const SyncStatusCallback& callback) {
-  LocalToRemoteSyncer* syncer = new LocalToRemoteSyncer;
+  LocalToRemoteSyncer* syncer = new LocalToRemoteSyncer(this);
   task_manager_->ScheduleSyncTask(
       scoped_ptr<SyncTask>(syncer),
       base::Bind(&SyncEngine::DidApplyLocalChange,
@@ -267,6 +267,10 @@ drive::DriveServiceInterface* SyncEngine::GetDriveService() {
 
 MetadataDatabase* SyncEngine::GetMetadataDatabase() {
   return metadata_database_.get();
+}
+
+RemoteChangeProcessor* SyncEngine::GetRemoteChangeProcessor() {
+  return remote_change_processor_;
 }
 
 void SyncEngine::DoDisableApp(const std::string& app_id,

@@ -117,6 +117,7 @@ class SyncEngine : public RemoteFileSyncService,
   // SyncEngineContext overrides.
   virtual drive::DriveServiceInterface* GetDriveService() OVERRIDE;
   virtual MetadataDatabase* GetMetadataDatabase() OVERRIDE;
+  virtual RemoteChangeProcessor* GetRemoteChangeProcessor() OVERRIDE;
 
  private:
   void DoDisableApp(const std::string& app_id,
