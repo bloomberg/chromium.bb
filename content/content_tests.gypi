@@ -225,10 +225,10 @@
             '../third_party/WebKit/public/blink.gyp:blink',
             '../third_party/WebKit/public/blink_test_runner.gyp:blink_test_runner',
             '../ui/surface/surface.gyp:surface',
+            '../webkit/child/webkit_child.gyp:webkit_child',
             '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
             '../webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
             '../webkit/glue/webkit_glue.gyp:glue',
-            '../webkit/glue/webkit_glue.gyp:glue_child',
             '../webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
             '../webkit/renderer/webkit_renderer.gyp:webkit_renderer',
             '../webkit/storage_browser.gyp:webkit_storage_browser',
@@ -649,7 +649,7 @@
             '../v8/tools/gyp/v8.gyp:v8',
             '../webkit/common/webkit_common.gyp:webkit_common',
             '../webkit/glue/webkit_glue.gyp:glue',
-            '../webkit/glue/webkit_glue.gyp:glue_child',
+            '../webkit/child/webkit_child.gyp:webkit_child',
             '../webkit/renderer/webkit_renderer.gyp:webkit_renderer',
             '../webkit/storage_browser.gyp:webkit_storage_browser',
             '../webkit/storage_common.gyp:webkit_storage_common',
@@ -870,8 +870,8 @@
             '../ui/snapshot/snapshot.gyp:snapshot',
             '../ui/ui.gyp:ui',
             '../ui/ui.gyp:ui_resources',
+            '../webkit/child/webkit_child.gyp:webkit_child',
             '../webkit/glue/webkit_glue.gyp:glue',
-            '../webkit/glue/webkit_glue.gyp:glue_child',
             '../webkit/renderer/webkit_renderer.gyp:webkit_renderer',
           ],
           'include_dirs': [
@@ -1113,8 +1113,8 @@
             '../third_party/WebKit/public/blink.gyp:blink',
             # The following two dependencies provide the missing
             # symbol HeapProfilerStart in Linux component builds.
+            '../webkit/child/webkit_child.gyp:webkit_child',
             '../webkit/glue/webkit_glue.gyp:glue',
-            '../webkit/glue/webkit_glue.gyp:glue_child',
           ],
           'include_dirs': [
             '..',
@@ -1146,7 +1146,7 @@
             # The following two dependencies provide the missing
             # symbol HeapProfilerStart in Linux component builds.
             '../webkit/glue/webkit_glue.gyp:glue',
-            '../webkit/glue/webkit_glue.gyp:glue_child',
+            '../webkit/child/webkit_child.gyp:webkit_child',
           ],
           'include_dirs': [
             '..',

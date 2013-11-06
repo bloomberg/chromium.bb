@@ -238,8 +238,8 @@
             # The following two dependencies provide the missing
             # symbol HeapProfilerStart in Linux component builds.
             # They probably can be removed after http://crbug.com/263316
+            '../../webkit/child/webkit_child.gyp:webkit_child',
             '../../webkit/glue/webkit_glue.gyp:glue',
-            '../../webkit/glue/webkit_glue.gyp:glue_child',
           ],
         }],
         ['OS=="win" and win_use_allocator_shim==1', {

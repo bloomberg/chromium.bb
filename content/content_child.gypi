@@ -178,8 +178,8 @@
       'dependencies': [
         '../third_party/WebKit/public/blink.gyp:blink',
         '../third_party/npapi/npapi.gyp:npapi',
+        '../webkit/child/webkit_child.gyp:webkit_child',
         '../webkit/common/webkit_common.gyp:webkit_common',
-        '../webkit/glue/webkit_glue.gyp:glue_child',
       ],
     }],
     ['use_aura==1', {
