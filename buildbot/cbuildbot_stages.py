@@ -1285,7 +1285,7 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     cros_build_lib.PrintBuildbotStepWarnings()
     cros_build_lib.Warning('\n'.join([
         'The following builders took too long to finish:',
-        ', '.join(sorted(inflight_statuses.keys())),
+        ', '.join(sorted(inflight_statuses)),
         'Please check the logs of these builders for details.']))
 
   def PerformStage(self):
