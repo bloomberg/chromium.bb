@@ -195,6 +195,7 @@ notifier::NotifierOptions ParseNotifierOptions(
         request_context_getter) {
   notifier::NotifierOptions notifier_options;
   notifier_options.request_context_getter = request_context_getter;
+  notifier_options.auth_mechanism = "X-OAUTH2";
 
   if (command_line.HasSwitch(kXmppHostPortSwitch)) {
     notifier_options.xmpp_host_port =
