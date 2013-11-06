@@ -368,7 +368,12 @@ INSTANTIATE_TEST_CASE_P(PDFTestFiles,
                         PDFBrowserTest,
                         testing::Range(0, kLoadingNumberOfParts));
 
-IN_PROC_BROWSER_TEST_F(PDFBrowserTest, Action) {
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_MACOSX)
+// http://crbug.com/315160
+#define MAYBE_Action DISABLED_Action
+#else
+#define MAYBE_Action Action
+IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Action) {
   ASSERT_NO_FATAL_FAILURE(Load());
 
   ASSERT_TRUE(content::ExecuteScript(
