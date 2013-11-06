@@ -1646,6 +1646,8 @@
         'browser/ui/views/autofill/new_credit_card_bubble_views.h',
         'browser/ui/views/autofill/decorated_textfield.cc',
         'browser/ui/views/autofill/decorated_textfield.h',
+        'browser/ui/views/autofill/info_bubble.cc',
+        'browser/ui/views/autofill/info_bubble.h',
         'browser/ui/views/autofill/tooltip_icon.cc',
         'browser/ui/views/autofill/tooltip_icon.h',
         'browser/ui/views/avatar_menu_bubble_view.cc',

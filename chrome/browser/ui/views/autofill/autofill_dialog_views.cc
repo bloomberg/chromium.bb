@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 #include "chrome/browser/ui/autofill/loading_animation.h"
 #include "chrome/browser/ui/views/autofill/decorated_textfield.h"
+#include "chrome/browser/ui/views/autofill/info_bubble.h"
 #include "chrome/browser/ui/views/autofill/tooltip_icon.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "components/autofill/content/browser/wallet/wallet_service_url.h"
@@ -96,13 +97,6 @@ const int kDialogEdgePadding = 20;
 
 // The vertical padding between rows of manual inputs (in pixels).
 const int kManualInputRowPadding = 10;
-
-// The margin between the content of the error bubble and its border.
-const int kErrorBubbleHorizontalMargin = 14;
-const int kErrorBubbleVerticalMargin = 12;
-
-// The visible width of bubble borders (differs from the actual width) in px.
-const int kBubbleBorderVisibleWidth = 1;
 
 // Slight shading for mouse hover and legal document background.
 SkColor kShadingColor = SkColorSetARGB(7, 0, 0, 0);
@@ -461,122 +455,6 @@ class LoadingAnimationView : public views::View,
 };
 
 }  // namespace
-
-// AutofillDialogViews::ErrorBubble --------------------------------------------
-
-AutofillDialogViews::ErrorBubble::ErrorBubble(views::View* anchor,
-                                              views::View* anchor_container,
-                                              const base::string16& message)
-    : anchor_(anchor),
-      anchor_container_(anchor_container),
-      show_above_anchor_(
-          anchor->GetClassName() == views::Combobox::kViewClassName) {
-  DCHECK(anchor_container_->Contains(anchor));
-  SetAnchorView(anchor_);
-
-  // TODO(dbeam): currently we assume that combobox menus always show downward
-  // (which isn't true). If the invalid combobox is low enough on the screen,
-  // its menu will actually show upward and obscure the bubble. Figure out when
-  // this might happen and adjust |show_above_anchor_| accordingly. This is not
-  // that big of deal because it rarely happens in practice.
-  if (show_above_anchor_) {
-    set_arrow(ShouldArrowGoOnTheRight() ? views::BubbleBorder::BOTTOM_RIGHT :
-                                          views::BubbleBorder::BOTTOM_LEFT);
-  } else {
-    set_arrow(ShouldArrowGoOnTheRight() ? views::BubbleBorder::TOP_RIGHT :
-                                          views::BubbleBorder::TOP_LEFT);
-  }
-
-  set_margins(gfx::Insets(kErrorBubbleVerticalMargin,
-                          kErrorBubbleHorizontalMargin,
-                          kErrorBubbleVerticalMargin,
-                          kErrorBubbleHorizontalMargin));
-  set_use_focusless(true);
-
-  SetLayoutManager(new views::FillLayout);
-  views::Label* label = new views::Label(message);
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label->SetMultiLine(true);
-  AddChildView(label);
-
-  widget_ = views::BubbleDelegateView::CreateBubble(this);
-  UpdatePosition();
-}
-
-AutofillDialogViews::ErrorBubble::~ErrorBubble() {
-  DCHECK(!widget_);
-}
-
-void AutofillDialogViews::ErrorBubble::Hide() {
-  views::Widget* widget = GetWidget();
-  if (widget && !widget->IsClosed())
-    widget->Close();
-}
-
-void AutofillDialogViews::ErrorBubble::UpdatePosition() {
-  if (!widget_)
-    return;
-
-  if (!anchor_->GetVisibleBounds().IsEmpty()) {
-    SizeToContents();
-    widget_->SetVisibilityChangedAnimationsEnabled(true);
-    widget_->ShowInactive();
-  } else {
-    widget_->SetVisibilityChangedAnimationsEnabled(false);
-    widget_->Hide();
-  }
-}
-
-gfx::Size AutofillDialogViews::ErrorBubble::GetPreferredSize() {
-  int pref_width = GetPreferredBubbleWidth();
-  pref_width -= GetBubbleFrameView()->GetInsets().width();
-  pref_width -= 2 * kBubbleBorderVisibleWidth;
-  return gfx::Size(pref_width, GetHeightForWidth(pref_width));
-}
-
-gfx::Rect AutofillDialogViews::ErrorBubble::GetBubbleBounds() {
-  gfx::Rect bounds = views::BubbleDelegateView::GetBubbleBounds();
-  gfx::Rect anchor_bounds = anchor_->GetBoundsInScreen();
-
-  if (show_above_anchor_)
-    bounds.set_y(anchor_bounds.y() - GetBubbleFrameView()->height());
-
-  anchor_bounds.Inset(-GetBubbleFrameView()->bubble_border()->GetInsets());
-  bounds.set_x(ShouldArrowGoOnTheRight() ?
-      anchor_bounds.right() - bounds.width() - kBubbleBorderVisibleWidth :
-      anchor_bounds.x() + kBubbleBorderVisibleWidth);
-  return bounds;
-}
-
-void AutofillDialogViews::ErrorBubble::OnWidgetClosing(views::Widget* widget) {
-  if (widget == widget_)
-    widget_ = NULL;
-}
-
-bool AutofillDialogViews::ErrorBubble::ShouldFlipArrowForRtl() const {
-  return false;
-}
-
-int AutofillDialogViews::ErrorBubble::GetContainerWidth() {
-  return anchor_container_->width() - anchor_container_->GetInsets().width();
-}
-
-int AutofillDialogViews::ErrorBubble::GetPreferredBubbleWidth() {
-  return (GetContainerWidth() - views::kRelatedControlHorizontalSpacing) / 2;
-}
-
-bool AutofillDialogViews::ErrorBubble::ShouldArrowGoOnTheRight() {
-  gfx::Point anchor_offset;
-  views::View::ConvertPointToTarget(anchor_, anchor_container_, &anchor_offset);
-  anchor_offset.Offset(-anchor_container_->GetInsets().left(), 0);
-
-  if (base::i18n::IsRTL()) {
-    int anchor_right_x = anchor_offset.x() + anchor_->width();
-    return anchor_right_x >= GetPreferredBubbleWidth();
-  }
-
-  return anchor_offset.x() + GetPreferredBubbleWidth() > GetContainerWidth();
-}
 
 // AutofillDialogViews::AccountChooser -----------------------------------------
 
@@ -2258,9 +2136,17 @@ void AutofillDialogViews::ShowErrorBubbleForViewIfNecessary(views::View* view) {
 
     if (!error_bubble_ || error_bubble_->anchor() != view) {
       HideErrorBubble();
-      views::View* section =
-          view->GetAncestorWithClassName(kSectionContainerClassName);
-      error_bubble_ = new ErrorBubble(view, section, error_message->second);
+      error_bubble_ = new InfoBubble(view, error_message->second);
+      error_bubble_->set_align_to_anchor_edge(true);
+      error_bubble_->set_container_insets(gfx::Insets(kDialogEdgePadding,
+                                                      kDialogEdgePadding,
+                                                      kDialogEdgePadding,
+                                                      kDialogEdgePadding));
+      error_bubble_->set_preferred_width(
+          (kSectionContainerWidth - views::kRelatedControlVerticalSpacing) / 2);
+      bool show_above = view->GetClassName() == views::Combobox::kViewClassName;
+      error_bubble_->set_show_above_anchor(show_above);
+      error_bubble_->Show();
     }
   }
 }

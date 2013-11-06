@@ -121,6 +121,9 @@ const char* DecoratedTextfield::GetClassName() const {
 }
 
 views::View* DecoratedTextfield::GetEventHandlerForRect(const gfx::Rect& rect) {
+  views::View* handler = views::Textfield::GetEventHandlerForRect(rect);
+  if (handler->GetClassName() == TooltipIcon::kViewClassName)
+    return handler;
   return native_wrapper_->GetView();
 }
 
