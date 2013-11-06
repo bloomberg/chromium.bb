@@ -308,6 +308,7 @@ public:
     ElementShadow& ensureShadow();
     PassRefPtr<ShadowRoot> createShadowRoot(ExceptionState&);
     ShadowRoot* shadowRoot() const;
+    ShadowRoot* youngestShadowRoot() const;
 
     bool hasAuthorShadowRoot() const { return shadowRoot(); }
     virtual void didAddShadowRoot(ShadowRoot&);

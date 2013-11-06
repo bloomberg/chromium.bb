@@ -106,9 +106,14 @@ inline Element* ElementShadow::host() const
 
 inline ShadowRoot* Node::youngestShadowRoot() const
 {
-    if (!this->isElementNode())
+    if (!isElementNode())
         return 0;
-    if (ElementShadow* shadow = toElement(this)->shadow())
+    return toElement(this)->youngestShadowRoot();
+}
+
+inline ShadowRoot* Element::youngestShadowRoot() const
+{
+    if (ElementShadow* shadow = this->shadow())
         return shadow->youngestShadowRoot();
     return 0;
 }
