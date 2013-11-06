@@ -841,13 +841,21 @@ class AndroidCommands(object):
       A list of tuples of the form (host_path, device_path) for files whose
       md5sums do not match.
     """
+
+    # Md5Sum resolves symbolic links in path names so the calculation of
+    # relative path names from its output will need the real path names of the
+    # base directories. Having calculated these they are used throughout the
+    # function since this makes us less subject to any future changes to Md5Sum.
+    real_host_path = os.path.realpath(host_path)
+    real_device_path = self.RunShellCommand('realpath "%s"' % device_path)[0]
+
     host_hash_tuples, device_hash_tuples = self._RunMd5Sum(
-        host_path, device_path)
+        real_host_path, real_device_path)
 
     # Ignore extra files on the device.
     if not ignore_filenames:
       host_files = [os.path.relpath(os.path.normpath(p.path),
-                    os.path.normpath(host_path)) for p in host_hash_tuples]
+                                    real_host_path) for p in host_hash_tuples]
 
       def HostHas(fname):
         return any(path in fname for path in host_files)
@@ -862,12 +870,12 @@ class AndroidCommands(object):
     # only a single file is given as the base name given in device_path may
     # differ from that in host_path.
     def HostToDevicePath(host_file_path):
-      return os.path.join(device_path, os.path.relpath(
-          host_file_path, os.path.normpath(host_path)))
+      return os.path.join(device_path, os.path.relpath(host_file_path,
+                                                       real_host_path))
 
     device_hashes = [h.hash for h in device_hash_tuples]
-    return [(t.path, HostToDevicePath(t.path) if os.path.isdir(host_path) else
-             device_path)
+    return [(t.path, HostToDevicePath(t.path) if
+             os.path.isdir(real_host_path) else real_device_path)
             for t in host_hash_tuples if t.hash not in device_hashes]
 
   def PushIfNeeded(self, host_path, device_path):
