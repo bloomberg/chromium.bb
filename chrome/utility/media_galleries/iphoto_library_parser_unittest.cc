@@ -42,18 +42,26 @@
     "   </dict>"
 
 #define SIMPLE_PHOTO(id, guid, path, caption) \
-    "  <key>" #id "</key>"             \
-    "  <dict>"                         \
-    "    <key>MediaType</key>"         \
-    "    <string>Image</string>"       \
-    "    <key>Caption</key>"           \
-    "    <string>" caption "</string>" \
-    "    <key>GUID</key>"              \
-    "    <string>" #guid "</string>"   \
-    "    <key>ImagePath</key>"         \
-    "    <string>" path "</string>"    \
-    "    <key>ThumbPath</key>"         \
-    "    <string>" path "</string>"    \
+    "  <key>" #id "</key>"                    \
+    "  <dict>"                                \
+    "    <key>MediaType</key>"                \
+    "    <string>Image</string>"              \
+    "    <key>Caption</key>"                  \
+    "    <string>" caption "</string>"        \
+    "    <key>GUID</key>"                     \
+    "    <string>" #guid "</string>"          \
+    "    <key>ModDateAsTimerInterval</key>"   \
+    "    <string>386221543.0000</string>"     \
+    "    <key>DateAsTimerInterval</key>"      \
+    "    <string>386221543.0000</string>"     \
+    "    <key>DateAsTimerIntervalGMT</key>"   \
+    "    <string>385123456.00</string>"       \
+    "    <key>ImagePath</key>"                \
+    "    <string>" path "</string>"           \
+    "    <key>OriginalPath</key>"             \
+    "    <string>/original" path "</string>"  \
+    "    <key>ThumbPath</key>"                \
+    "    <string>" path "</string>"           \
     "  </dict>"
 
 #define SIMPLE_FOOTER()  \
@@ -99,6 +107,7 @@ namespace {
 void ComparePhoto(const parser::Photo& a, const parser::Photo& b) {
   EXPECT_EQ(a.id, b.id);
   EXPECT_EQ(a.location.value(), b.location.value());
+  EXPECT_EQ(a.original_location.value(), b.original_location.value());
 }
 
 void CompareAlbum(const parser::Album& a, const parser::Album& b) {
@@ -152,9 +161,11 @@ class IPhotoLibraryParserTest : public testing::Test {
     CompareLibrary(expected_library_, parser.library());
   }
 
-  void AddExpectedPhoto(uint32 id, const std::string& location,
+  void AddExpectedPhoto(uint32 id,
+                        const std::string& location,
                         const std::string& album) {
-    parser::Photo photo(id, base::FilePath::FromUTF8Unsafe(location));
+    parser::Photo photo(id, base::FilePath::FromUTF8Unsafe(location),
+                        base::FilePath::FromUTF8Unsafe("/original" + location));
     if (!album.empty())
       expected_library_.albums[album].insert(id);
     expected_library_.all_photos.insert(photo);
@@ -283,6 +294,27 @@ TEST_F(IPhotoLibraryParserTest, MalformedSyntax) {
       ALBUMS_FOOTER()
       IMAGE_LIST_HEADER()
       MALFORMED_PHOTO2(1, 1, "/bad.jpg", "p1")
+      IMAGE_LIST_FOOTER()
+      SIMPLE_FOOTER());
+}
+
+TEST_F(IPhotoLibraryParserTest, DuplicateAlbumNames) {
+  AddExpectedPhoto(1, "/dir/PhotoA1.jpg", "Album 1");
+  AddExpectedPhoto(2, "/dir/PhotoA2.jpg", "Album 1");
+  AddExpectedPhoto(3, "/dir/PhotoA3.jpg", "Album 1(11)");
+  AddExpectedPhoto(4, "/dir/PhotoB1.jpg", "Album 1(11)");
+  TestParser(
+      true,
+      SIMPLE_HEADER()
+      ALBUMS_HEADER()
+      SIMPLE_ALBUM(10, "Album 1", 1, 2)
+      SIMPLE_ALBUM(11, "Album 1", 3, 4)
+      ALBUMS_FOOTER()
+      IMAGE_LIST_HEADER()
+      SIMPLE_PHOTO(1, 1, "/dir/PhotoA1.jpg", "Photo 1")
+      SIMPLE_PHOTO(2, 2, "/dir/PhotoA2.jpg", "Photo 2")
+      SIMPLE_PHOTO(3, 3, "/dir/PhotoA3.jpg", "Photo 3")
+      SIMPLE_PHOTO(4, 4, "/dir/PhotoB1.jpg", "Photo 4")
       IMAGE_LIST_FOOTER()
       SIMPLE_FOOTER());
 }

@@ -18,11 +18,14 @@ namespace parser {
 
 struct Photo {
   Photo();
-  Photo(uint64 id, const base::FilePath& location);
+  Photo(uint64 id,
+        const base::FilePath& location,
+        const base::FilePath& original_location);
   bool operator<(const Photo& other) const;
 
   uint64 id;
   base::FilePath location;
+  base::FilePath original_location;
 };
 
 typedef std::set<uint64> Album;

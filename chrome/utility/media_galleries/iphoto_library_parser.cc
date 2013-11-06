@@ -19,9 +19,8 @@ namespace {
 
 struct PhotoInfo {
   uint64 id;
-  std::string guid;
   base::FilePath location;
-  std::string type;
+  base::FilePath original_location;
 };
 
 struct AlbumInfo {
@@ -43,11 +42,8 @@ bool GetPhotoInfoFromDict(XmlReader* reader, PhotoInfo* result) {
   if (!reader->Read())
     return false;
 
-  bool found_guid = false;
   bool found_location = false;
-  bool found_type = false;
-  while (reader->Depth() >= dict_content_depth &&
-         !(found_guid && found_location && found_type)) {
+  while (reader->Depth() >= dict_content_depth) {
     if (!iapps::SeekToNodeAtCurrentDepth(reader, "key"))
       break;
     std::string found_key;
@@ -55,19 +51,7 @@ bool GetPhotoInfoFromDict(XmlReader* reader, PhotoInfo* result) {
       break;
     DCHECK_EQ(dict_content_depth, reader->Depth());
 
-    if (found_key == "GUID") {
-      if (found_guid)
-        break;
-      if (!iapps::ReadString(reader, &result->guid))
-        break;
-      found_guid = true;
-    } else if (found_key == "MediaType") {
-      if (found_type)
-        break;
-      if (!iapps::ReadString(reader, &result->type))
-        break;
-      found_type = true;
-    } else if (found_key == "ImagePath") {
+    if (found_key == "ImagePath") {
       if (found_location)
         break;
       std::string value;
@@ -75,6 +59,11 @@ bool GetPhotoInfoFromDict(XmlReader* reader, PhotoInfo* result) {
         break;
       result->location = base::FilePath(value);
       found_location = true;
+    } else if (found_key == "OriginalPath") {
+      std::string value;
+      if (!iapps::ReadString(reader, &value))
+        break;
+      result->original_location = base::FilePath(value);
     } else {
       if (!iapps::SkipToNextElement(reader))
         break;
@@ -229,7 +218,8 @@ bool ParseAllPhotos(XmlReader* reader,
       break;
     }
 
-    parser::Photo photo(photo_info.id, photo_info.location);
+    parser::Photo photo(photo_info.id, photo_info.location,
+                        photo_info.original_location);
     all_photos->insert(photo);
   }
 
@@ -286,10 +276,15 @@ bool IPhotoLibraryParser::Parse(const std::string& library_xml) {
         if (GetAlbumInfoFromDict(&reader, &album_info)) {
           parser::Album album;
           album = album_info.photo_ids;
-          // Strip / from album name.
+          // Strip / from album name and dedupe any collisions.
           std::string name;
           ReplaceChars(album_info.name, "//", " ", &name);
-          library_.albums[name] = album;
+          if (!ContainsKey(library_.albums, name)) {
+            library_.albums[name] = album;
+          } else {
+            library_.albums[name+"("+base::Uint64ToString(album_info.id)+")"] =
+                album;
+          }
         }
       }
     } else if (found_key == "Master Image List") {
