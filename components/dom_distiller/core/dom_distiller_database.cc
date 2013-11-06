@@ -23,11 +23,17 @@ using base::SequencedTaskRunner;
 
 namespace dom_distiller {
 
-DomDistillerDatabase::LevelDB::LevelDB() {}
+DomDistillerDatabase::LevelDB::LevelDB() {
+  thread_checker_.DetachFromThread();
+}
 
-DomDistillerDatabase::LevelDB::~LevelDB() {}
+DomDistillerDatabase::LevelDB::~LevelDB() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 bool DomDistillerDatabase::LevelDB::Init(const base::FilePath& database_dir) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   leveldb::Options options;
   options.create_if_missing = true;
   options.max_open_files = 0;  // Use minimum.
@@ -37,7 +43,6 @@ bool DomDistillerDatabase::LevelDB::Init(const base::FilePath& database_dir) {
   leveldb::DB* db = NULL;
   leveldb::Status status = leveldb::DB::Open(options, path, &db);
   if (status.IsCorruption()) {
-    LOG(WARNING) << "Deleting possibly-corrupt database";
     base::DeleteFile(database_dir, true);
     status = leveldb::DB::Open(options, path, &db);
   }
@@ -54,6 +59,8 @@ bool DomDistillerDatabase::LevelDB::Init(const base::FilePath& database_dir) {
 }
 
 bool DomDistillerDatabase::LevelDB::Save(const EntryVector& entries) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   leveldb::WriteBatch updates;
   for (EntryVector::const_iterator it = entries.begin(); it != entries.end();
        ++it) {
@@ -67,11 +74,14 @@ bool DomDistillerDatabase::LevelDB::Save(const EntryVector& entries) {
   if (status.ok())
     return true;
 
-  LOG(WARNING) << "Failed writing dom_distiller entries: " << status.ToString();
+  DLOG(WARNING) << "Failed writing dom_distiller entries: "
+                << status.ToString();
   return false;
 }
 
 bool DomDistillerDatabase::LevelDB::Load(EntryVector* entries) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   leveldb::ReadOptions options;
   scoped_ptr<leveldb::Iterator> db_iterator(db_->NewIterator(options));
   for (db_iterator->SeekToFirst(); db_iterator->Valid(); db_iterator->Next()) {
@@ -79,33 +89,13 @@ bool DomDistillerDatabase::LevelDB::Load(EntryVector* entries) {
 
     ArticleEntry entry;
     if (!entry.ParseFromArray(value_slice.data(), value_slice.size())) {
-      LOG(WARNING) << "Unable to parse dom_distiller entry "
-                   << db_iterator->key().ToString();
+      DLOG(WARNING) << "Unable to parse dom_distiller entry "
+                    << db_iterator->key().ToString();
       // TODO(cjhopman): Decide what to do about un-parseable entries.
     }
     entries->push_back(entry);
   }
   return true;
-}
-
-DomDistillerDatabase::DomDistillerDatabase(
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : task_runner_(task_runner), weak_ptr_factory_(this) {
-  main_loop_ = MessageLoop::current();
-}
-
-void DomDistillerDatabase::Destroy() {
-  DCHECK(IsRunOnMainLoop());
-  weak_ptr_factory_.InvalidateWeakPtrs();
-  task_runner_->PostNonNestableTask(
-      FROM_HERE,
-      base::Bind(&DomDistillerDatabase::DestroyFromTaskRunner,
-                 base::Unretained(this)));
-}
-
-void DomDistillerDatabase::Init(const base::FilePath& database_dir,
-                                InitCallback callback) {
-  InitWithDatabase(scoped_ptr<Database>(new LevelDB()), database_dir, callback);
 }
 
 namespace {
@@ -126,20 +116,57 @@ void RunLoadCallback(DomDistillerDatabaseInterface::LoadCallback callback,
   callback.Run(*success, entries.Pass());
 }
 
+void InitFromTaskRunner(DomDistillerDatabase::Database* database,
+                        const base::FilePath& database_dir,
+                        bool* success) {
+  DCHECK(success);
+
+  // TODO(cjhopman): Histogram for database size.
+  *success = database->Init(database_dir);
+}
+
+void SaveEntriesFromTaskRunner(DomDistillerDatabase::Database* database,
+                               scoped_ptr<EntryVector> entries,
+                               bool* success) {
+  DCHECK(success);
+  *success = database->Save(*entries);
+}
+
+void LoadEntriesFromTaskRunner(DomDistillerDatabase::Database* database,
+                               EntryVector* entries,
+                               bool* success) {
+  DCHECK(success);
+  DCHECK(entries);
+
+  entries->clear();
+  *success = database->Load(entries);
+}
+
 }  // namespace
+
+DomDistillerDatabase::DomDistillerDatabase(
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    : task_runner_(task_runner) {
+}
+
+void DomDistillerDatabase::Init(const base::FilePath& database_dir,
+                                InitCallback callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  InitWithDatabase(scoped_ptr<Database>(new LevelDB()), database_dir, callback);
+}
 
 void DomDistillerDatabase::InitWithDatabase(scoped_ptr<Database> database,
                                             const base::FilePath& database_dir,
                                             InitCallback callback) {
-  DCHECK(IsRunOnMainLoop());
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!db_);
   DCHECK(database);
   db_.reset(database.release());
   bool* success = new bool(false);
   task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&DomDistillerDatabase::InitFromTaskRunner,
-                 base::Unretained(this),
+      base::Bind(InitFromTaskRunner,
+                 base::Unretained(db_.get()),
                  database_dir,
                  success),
       base::Bind(RunInitCallback, callback, base::Owned(success)));
@@ -147,20 +174,19 @@ void DomDistillerDatabase::InitWithDatabase(scoped_ptr<Database> database,
 
 void DomDistillerDatabase::SaveEntries(scoped_ptr<EntryVector> entries,
                                        SaveCallback callback) {
-  DCHECK(IsRunOnMainLoop());
+  DCHECK(thread_checker_.CalledOnValidThread());
   bool* success = new bool(false);
   task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&DomDistillerDatabase::SaveEntriesFromTaskRunner,
-                 base::Unretained(this),
+      base::Bind(SaveEntriesFromTaskRunner,
+                 base::Unretained(db_.get()),
                  base::Passed(&entries),
                  success),
       base::Bind(RunSaveCallback, callback, base::Owned(success)));
 }
 
 void DomDistillerDatabase::LoadEntries(LoadCallback callback) {
-  DCHECK(IsRunOnMainLoop());
-
+  DCHECK(thread_checker_.CalledOnValidThread());
   bool* success = new bool(false);
 
   scoped_ptr<EntryVector> entries(new EntryVector());
@@ -169,8 +195,8 @@ void DomDistillerDatabase::LoadEntries(LoadCallback callback) {
 
   task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&DomDistillerDatabase::LoadEntriesFromTaskRunner,
-                 base::Unretained(this),
+      base::Bind(LoadEntriesFromTaskRunner,
+                 base::Unretained(db_.get()),
                  entries_ptr,
                  success),
       base::Bind(RunLoadCallback,
@@ -179,50 +205,11 @@ void DomDistillerDatabase::LoadEntries(LoadCallback callback) {
                  base::Passed(&entries)));
 }
 
-DomDistillerDatabase::~DomDistillerDatabase() { DCHECK(IsRunByTaskRunner()); }
-
-bool DomDistillerDatabase::IsRunByTaskRunner() const {
-  return task_runner_->RunsTasksOnCurrentThread();
-}
-
-bool DomDistillerDatabase::IsRunOnMainLoop() const {
-  return MessageLoop::current() == main_loop_;
-}
-
-void DomDistillerDatabase::DestroyFromTaskRunner() {
-  DCHECK(IsRunByTaskRunner());
-  delete this;
-}
-
-void DomDistillerDatabase::InitFromTaskRunner(
-    const base::FilePath& database_dir,
-    bool* success) {
-  DCHECK(IsRunByTaskRunner());
-  DCHECK(success);
-
-  VLOG(1) << "Opening " << database_dir.value();
-
-  // TODO(cjhopman): Histogram for database size.
-  *success = db_->Init(database_dir);
-}
-
-void DomDistillerDatabase::SaveEntriesFromTaskRunner(
-    scoped_ptr<EntryVector> entries,
-    bool* success) {
-  DCHECK(IsRunByTaskRunner());
-  DCHECK(success);
-  VLOG(1) << "Saving " << entries->size() << " entry(ies) to database ";
-  *success = db_->Save(*entries);
-}
-
-void DomDistillerDatabase::LoadEntriesFromTaskRunner(EntryVector* entries,
-                                                     bool* success) {
-  DCHECK(IsRunByTaskRunner());
-  DCHECK(success);
-  DCHECK(entries);
-
-  entries->clear();
-  *success = db_->Load(entries);
+DomDistillerDatabase::~DomDistillerDatabase() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!task_runner_->DeleteSoon(FROM_HERE, db_.release())) {
+    DLOG(WARNING) << "DOM distiller database will not be deleted.";
+  }
 }
 
 }  // namespace dom_distiller

@@ -55,8 +55,6 @@ class FakeDB : public DomDistillerDatabaseInterface {
  public:
   explicit FakeDB(EntryMap* db) : db_(db) {}
 
-  virtual void Destroy() OVERRIDE {}
-
   virtual void Init(
       const base::FilePath& database_dir,
       DomDistillerDatabaseInterface::InitCallback callback) OVERRIDE {

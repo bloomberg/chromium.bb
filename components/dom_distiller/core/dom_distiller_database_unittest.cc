@@ -10,6 +10,7 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
+#include "base/threading/thread.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -87,23 +88,16 @@ class DomDistillerDatabaseTest : public testing::Test {
  public:
   virtual void SetUp() {
     main_loop_.reset(new MessageLoop());
-    db_ = new DomDistillerDatabase(main_loop_->message_loop_proxy());
+    db_.reset(new DomDistillerDatabase(main_loop_->message_loop_proxy()));
   }
 
   virtual void TearDown() {
-    DestroyDB();
-    main_loop_.reset(NULL);
+    db_.reset();
+    base::RunLoop().RunUntilIdle();
+    main_loop_.reset();
   }
 
-  void DestroyDB() {
-    if (db_) {
-      db_->Destroy();
-      base::RunLoop().RunUntilIdle();
-      db_ = NULL;
-    }
-  }
-
-  DomDistillerDatabase* db_;
+  scoped_ptr<DomDistillerDatabase> db_;
   scoped_ptr<MessageLoop> main_loop_;
 };
 
@@ -262,6 +256,34 @@ TEST_F(DomDistillerDatabaseTest, TestDBSaveFailure) {
       base::Bind(&MockDatabaseCaller::SaveCallback, base::Unretained(&caller)));
 
   base::RunLoop().RunUntilIdle();
+}
+
+// This tests that normal usage of the real database does not cause any
+// threading violations.
+TEST(DomDistillerDatabaseThreadingTest, TestDBDestruction) {
+  base::MessageLoop main_loop;
+
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  base::Thread db_thread("dbthread");
+  ASSERT_TRUE(db_thread.Start());
+
+  scoped_ptr<DomDistillerDatabase> db(
+      new DomDistillerDatabase(db_thread.message_loop_proxy()));
+
+  MockDatabaseCaller caller;
+  EXPECT_CALL(caller, InitCallback(_));
+  db->Init(
+      temp_dir.path(),
+      base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
+
+  db.reset();
+
+  base::RunLoop run_loop;
+  db_thread.message_loop_proxy()->PostTaskAndReply(
+      FROM_HERE, base::Bind(base::DoNothing), run_loop.QuitClosure());
+  run_loop.Run();
 }
 
 // Test that the LevelDB properly saves entries and that load returns the saved

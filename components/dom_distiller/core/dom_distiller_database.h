@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "components/dom_distiller/core/article_entry.h"
 
 namespace base {
@@ -40,11 +41,6 @@ class DomDistillerDatabaseInterface {
 
   virtual ~DomDistillerDatabaseInterface() {}
 
-  // Asynchronously destroys the object after all in-progress file operations
-  // have completed. The callbacks for in-progress operations will still be
-  // called.
-  virtual void Destroy() {}
-
   // Asynchronously initializes the object. |callback| will be invoked on the UI
   // thread when complete.
   virtual void Init(const base::FilePath& database_dir,
@@ -60,6 +56,8 @@ class DomDistillerDatabaseInterface {
   virtual void LoadEntries(LoadCallback callback) = 0;
 };
 
+// When the DomDistillerDatabase instance is deleted, in-progress asynchronous
+// operations will be completed and the corresponding callbacks will be called.
 class DomDistillerDatabase
     : public DomDistillerDatabaseInterface {
  public:
@@ -72,6 +70,8 @@ class DomDistillerDatabase
     virtual ~Database() {}
   };
 
+  // Once constructed, function calls and destruction should all occur on the
+  // same thread (not necessarily the same as the constructor).
   class LevelDB : public Database {
    public:
     LevelDB();
@@ -81,7 +81,7 @@ class DomDistillerDatabase
     virtual bool Load(EntryVector* entries) OVERRIDE;
 
    private:
-
+    base::ThreadChecker thread_checker_;
     scoped_ptr<leveldb::DB> db_;
   };
 
@@ -90,7 +90,6 @@ class DomDistillerDatabase
   virtual ~DomDistillerDatabase();
 
   // DomDistillerDatabaseInterface implementation.
-  virtual void Destroy() OVERRIDE;
   virtual void Init(const base::FilePath& database_dir,
                     InitCallback callback) OVERRIDE;
   virtual void SaveEntries(scoped_ptr<EntryVector> entries_to_save,
@@ -103,36 +102,12 @@ class DomDistillerDatabase
                         InitCallback callback);
 
  private:
-  // Whether currently being run by |task_runner_|.
-  bool IsRunByTaskRunner() const;
-
-  // Whether currently being run on |main_loop_|.
-  bool IsRunOnMainLoop() const;
-
-  // Deletes |this|.
-  void DestroyFromTaskRunner();
-
-  // Initializes the database in |database_dir| and updates |success|.
-  void InitFromTaskRunner(const base::FilePath& database_dir, bool* success);
-
-  // Saves data to disk and updates |success|.
-  void SaveEntriesFromTaskRunner(scoped_ptr<EntryVector> entries_to_save,
-                                 bool* success);
-
-  // Loads entries from disk and updates |success|.
-  void LoadEntriesFromTaskRunner(EntryVector* entries, bool* success);
-
-  // The MessageLoop that the database was created on.
-  base::MessageLoop* main_loop_;
+  base::ThreadChecker thread_checker_;
 
   // Used to run blocking tasks in-order.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   scoped_ptr<Database> db_;
-
-  // Note: This should remain the last member so it'll be destroyed and
-  // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<DomDistillerDatabase> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DomDistillerDatabase);
 };
