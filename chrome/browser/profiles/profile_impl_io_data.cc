@@ -16,6 +16,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/extensions/extension_protocols.h"
@@ -97,7 +98,7 @@ ProfileImplIOData::Handle::~Handle() {
     // (i.e. we shut down before ProfileImpl::DoFinalInit() got called).
     bool save_prefs = true;
 #if defined(OS_CHROMEOS)
-    save_prefs = !profile_->IsLoginProfile();
+    save_prefs = !chromeos::ProfileHelper::IsSigninProfile(profile_);
 #endif
     if (save_prefs) {
       io_data_->predictor_->SaveStateForNextStartupAndTrim(

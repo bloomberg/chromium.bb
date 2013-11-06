@@ -304,7 +304,6 @@ class TestingProfile : public Profile {
   }
   virtual void InitChromeOSPreferences() OVERRIDE {
   }
-  virtual bool IsLoginProfile() OVERRIDE;
 #endif  // defined(OS_CHROMEOS)
 
   virtual PrefProxyConfigTracker* GetProxyConfigTracker() OVERRIDE;

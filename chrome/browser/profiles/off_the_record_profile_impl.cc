@@ -422,10 +422,6 @@ void OffTheRecordProfileImpl::InitChromeOSPreferences() {
   // The incognito profile shouldn't have Chrome OS's preferences.
   // The preferences are associated with the regular user profile.
 }
-
-bool OffTheRecordProfileImpl::IsLoginProfile() {
-  return false;
-}
 #endif  // defined(OS_CHROMEOS)
 
 PrefProxyConfigTracker* OffTheRecordProfileImpl::GetProxyConfigTracker() {

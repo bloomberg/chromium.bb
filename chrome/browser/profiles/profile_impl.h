@@ -135,7 +135,6 @@ class ProfileImpl : public Profile {
                                AppLocaleChangedVia) OVERRIDE;
   virtual void OnLogin() OVERRIDE;
   virtual void InitChromeOSPreferences() OVERRIDE;
-  virtual bool IsLoginProfile() OVERRIDE;
 #endif  // defined(OS_CHROMEOS)
 
   virtual PrefProxyConfigTracker* GetProxyConfigTracker() OVERRIDE;
