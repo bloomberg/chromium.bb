@@ -1026,7 +1026,7 @@ def ListInstalledPackages(board):
   #                                 redirect_stdout=True).output.splitlines()
 
   args = ["emerge-%s" % board, "--with-bdeps=y", "--usepkgonly", "--emptytree",
-          "--pretend", "chromeos-base/chromeos"]
+          "--pretend", "--color=n", "chromeos-base/chromeos"]
   emerge = cros_build_lib.RunCommand(args, print_cmd=debug,
                                      redirect_stdout=True).output.splitlines()
 
