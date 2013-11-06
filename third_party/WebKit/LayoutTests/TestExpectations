@@ -532,3 +532,8 @@ crbug.com/313846 [ Mac Win ] http/tests/images/webp-partial-load.html [ ImageOnl
 crbug.com/309760 compositing/transitions/transform-on-large-layer.html [ NeedsManualRebaseline ]
 crbug.com/309760 fast/events/attempt-scroll-with-no-scrollbars.html [ NeedsManualRebaseline ]
 crbug.com/309760 virtual/softwarecompositing/transitions/transform-on-large-layer.html [ NeedsManualRebaseline ]
+
+crbug.com/315514 [ Linux ] fast/workers/storage/test-authorizer-sync.html [ Failure ]
+crbug.com/315514 [ Linux ] fast/workers/storage/test-authorizer.html [ Failure ]
+crbug.com/315514 [ Linux ] storage/websql/sql-error-codes.html [ Failure ]
+crbug.com/315514 [ Linux ] storage/websql/test-authorizer.html [ Failure ]
