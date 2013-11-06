@@ -124,34 +124,11 @@ void HTMLTrackElement::setKind(const String& kind)
     setAttribute(kindAttr, kind);
 }
 
-String HTMLTrackElement::srclang() const
-{
-    return getAttribute(srclangAttr);
-}
-
-void HTMLTrackElement::setSrclang(const String& srclang)
-{
-    setAttribute(srclangAttr, srclang);
-}
-
-String HTMLTrackElement::label() const
-{
-    return getAttribute(labelAttr);
-}
-
-void HTMLTrackElement::setLabel(const String& label)
-{
-    setAttribute(labelAttr, label);
-}
-
 LoadableTextTrack* HTMLTrackElement::ensureTrack()
 {
     if (!m_track) {
-        // The kind attribute is an enumerated attribute, limited only to know values. It defaults to 'subtitles' if missing or invalid.
-        String kind = getAttribute(kindAttr).lower();
-        if (!TextTrack::isValidKindKeyword(kind))
-            kind = TextTrack::subtitlesKeyword();
-        m_track = LoadableTextTrack::create(this, kind, label(), srclang());
+        // kind, label and language are updated by parseAttribute
+        m_track = LoadableTextTrack::create(this);
     }
     return m_track.get();
 }

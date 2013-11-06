@@ -37,9 +37,9 @@ class LoadableTextTrack;
 
 class LoadableTextTrack : public TextTrack, private TextTrackLoaderClient {
 public:
-    static PassRefPtr<LoadableTextTrack> create(HTMLTrackElement* track, const String& kind, const String& label, const String& language)
+    static PassRefPtr<LoadableTextTrack> create(HTMLTrackElement* track)
     {
-        return adoptRef(new LoadableTextTrack(track, kind, label, language));
+        return adoptRef(new LoadableTextTrack(track));
     }
     virtual ~LoadableTextTrack();
 
@@ -60,7 +60,7 @@ private:
     virtual void cueLoadingCompleted(TextTrackLoader*, bool loadingFailed) OVERRIDE;
     virtual void newRegionsAvailable(TextTrackLoader*) OVERRIDE;
 
-    LoadableTextTrack(HTMLTrackElement*, const String& kind, const String& label, const String& language);
+    LoadableTextTrack(HTMLTrackElement*);
 
     void loadTimerFired(Timer<LoadableTextTrack>*);
 

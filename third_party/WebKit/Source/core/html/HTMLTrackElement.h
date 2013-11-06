@@ -41,12 +41,6 @@ public:
     String kind();
     void setKind(const String&);
 
-    String srclang() const;
-    void setSrclang(const String&);
-
-    String label() const;
-    void setLabel(const String&);
-
     enum ReadyState { NONE = 0, LOADING = 1, LOADED = 2, TRACK_ERROR = 3 };
     ReadyState readyState();
     void setReadyState(ReadyState);
