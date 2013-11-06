@@ -16,6 +16,15 @@
 
 namespace cloud_print {
 
+namespace {
+
+bool IsTerminalJobState(PrintJobStatus status) {
+  return status == PRINT_JOB_STATUS_ERROR ||
+         status == PRINT_JOB_STATUS_COMPLETED;
+}
+
+}  // namespace
+
 JobStatusUpdater::JobStatusUpdater(const std::string& printer_name,
                                    const std::string& job_id,
                                    PlatformJobId& local_job_id,
@@ -43,7 +52,7 @@ void JobStatusUpdater::UpdateStatus() {
     // If the job has already been completed, we just need to update the server
     // with that status. The *only* reason we would come back here in that case
     // is if our last server update attempt failed.
-    if (last_job_details_.status == PRINT_JOB_STATUS_COMPLETED) {
+    if (IsTerminalJobState(last_job_details_.status)) {
       need_update = true;
     } else {
       PrintJobDetails details;
@@ -90,7 +99,7 @@ CloudPrintURLFetcher::ResponseAction JobStatusUpdater::HandleJSONData(
       const GURL& url,
       DictionaryValue* json_data,
       bool succeeded) {
-  if (last_job_details_.status == PRINT_JOB_STATUS_COMPLETED) {
+  if (IsTerminalJobState(last_job_details_.status)) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&JobStatusUpdater::Stop, this));
   }
