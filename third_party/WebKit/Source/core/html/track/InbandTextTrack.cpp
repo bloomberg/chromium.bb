@@ -75,23 +75,6 @@ InbandTextTrack::~InbandTextTrack()
     ASSERT(!m_private);
 }
 
-void InbandTextTrack::setMode(const AtomicString& mode)
-{
-    TextTrack::setMode(mode);
-
-    if (!m_private)
-        return;
-
-    if (mode == TextTrack::disabledKeyword())
-        m_private->setMode(InbandTextTrackPrivate::Disabled);
-    else if (mode == TextTrack::hiddenKeyword())
-        m_private->setMode(InbandTextTrackPrivate::Hidden);
-    else if (mode == TextTrack::showingKeyword())
-        m_private->setMode(InbandTextTrackPrivate::Showing);
-    else
-        ASSERT_NOT_REACHED();
-}
-
 size_t InbandTextTrack::inbandTrackIndex()
 {
     ASSERT(m_private);

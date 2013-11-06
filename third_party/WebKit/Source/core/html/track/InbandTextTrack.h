@@ -42,7 +42,6 @@ public:
     static PassRefPtr<InbandTextTrack> create(Document&, TextTrackClient*, PassRefPtr<InbandTextTrackPrivate>);
     virtual ~InbandTextTrack();
 
-    virtual void setMode(const AtomicString&) OVERRIDE;
     size_t inbandTrackIndex();
     void trackRemoved();
 

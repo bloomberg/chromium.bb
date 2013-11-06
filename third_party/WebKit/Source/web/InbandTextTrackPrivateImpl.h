@@ -48,12 +48,7 @@ public:
     explicit InbandTextTrackPrivateImpl(WebInbandTextTrack*);
     virtual ~InbandTextTrackPrivateImpl();
 
-    // InbandTextTrackPrivate methods.
-    virtual void setMode(Mode);
-    virtual InbandTextTrackPrivate::Mode mode() const;
-
     virtual Kind kind() const;
-
     virtual AtomicString label() const;
     virtual AtomicString language() const;
 

@@ -407,10 +407,6 @@ COMPILE_ASSERT_MATCHING_ENUM(WebInbandTextTrack::KindChapters, InbandTextTrackPr
 COMPILE_ASSERT_MATCHING_ENUM(WebInbandTextTrack::KindMetadata, InbandTextTrackPrivate::Metadata);
 COMPILE_ASSERT_MATCHING_ENUM(WebInbandTextTrack::KindNone, InbandTextTrackPrivate::None);
 
-COMPILE_ASSERT_MATCHING_ENUM(WebInbandTextTrack::ModeDisabled, InbandTextTrackPrivate::Disabled);
-COMPILE_ASSERT_MATCHING_ENUM(WebInbandTextTrack::ModeHidden, InbandTextTrackPrivate::Hidden);
-COMPILE_ASSERT_MATCHING_ENUM(WebInbandTextTrack::ModeShowing, InbandTextTrackPrivate::Showing);
-
 #if ENABLE(INPUT_SPEECH)
 COMPILE_ASSERT_MATCHING_ENUM(WebInputElement::Idle, InputFieldSpeechButtonElement::Idle);
 COMPILE_ASSERT_MATCHING_ENUM(WebInputElement::Recording, InputFieldSpeechButtonElement::Recording);

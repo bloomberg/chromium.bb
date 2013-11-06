@@ -85,7 +85,7 @@ public:
     static const AtomicString& showingKeyword();
 
     AtomicString mode() const { return m_mode; }
-    virtual void setMode(const AtomicString&);
+    void setMode(const AtomicString&);
 
     enum ReadinessState { NotLoaded = 0, Loading = 1, Loaded = 2, FailedToLoad = 3 };
     ReadinessState readinessState() const { return m_readinessState; }

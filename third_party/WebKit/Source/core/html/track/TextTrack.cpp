@@ -102,7 +102,7 @@ TextTrack::TextTrack(Document& document, TextTrackClient* client, const AtomicSt
     , m_mediaElement(0)
     , m_label(label)
     , m_language(language)
-    , m_mode(disabledKeyword().string())
+    , m_mode(disabledKeyword())
     , m_client(client)
     , m_trackType(type)
     , m_readinessState(NotLoaded)

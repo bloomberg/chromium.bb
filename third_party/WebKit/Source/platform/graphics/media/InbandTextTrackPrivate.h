@@ -47,10 +47,6 @@ public:
     void setClient(InbandTextTrackPrivateClient* client) { m_client = client; }
     InbandTextTrackPrivateClient* client() { return m_client; }
 
-    enum Mode { Disabled, Hidden, Showing };
-    virtual void setMode(Mode mode) { m_mode = mode; };
-    virtual InbandTextTrackPrivate::Mode mode() const { return m_mode; }
-
     enum Kind { Subtitles, Captions, Descriptions, Chapters, Metadata, None };
     virtual Kind kind() const { return Subtitles; }
 
@@ -62,13 +58,11 @@ public:
 protected:
     InbandTextTrackPrivate()
         : m_client(0)
-        , m_mode(Disabled)
     {
     }
 
 private:
     InbandTextTrackPrivateClient* m_client;
-    Mode m_mode;
 };
 
 } // namespace WebCore
