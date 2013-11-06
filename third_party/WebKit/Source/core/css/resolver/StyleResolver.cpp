@@ -109,6 +109,14 @@ PassRefPtr<TimingFunction> generateTimingFunction(const KeyframeAnimationEffect:
     return chainedTimingFunction;
 }
 
+void setAnimationUpdateIfNeeded(StyleResolverState& state, Element& element)
+{
+    // If any changes to CSS Animations were detected, stash the update away for application after the
+    // render object is updated if we're in the appropriate scope.
+    if (RuntimeEnabledFeatures::webAnimationsCSSEnabled() && state.animationUpdate())
+        element.ensureActiveAnimations()->cssAnimations().setPendingUpdate(state.takeAnimationUpdate());
+}
+
 } // namespace
 
 namespace WebCore {
@@ -683,7 +691,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
         else
             matchAllRules(state, collector, m_matchAuthorAndUserStyles, matchingBehavior != MatchAllRulesExcludingSMIL);
 
-        applyMatchedProperties(state, collector.matchedResult());
+        applyMatchedProperties(state, collector.matchedResult(), element);
 
         addContentAttrValuesToFeatures(state.contentAttrValues(), m_features);
     }
@@ -698,10 +706,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
     if (element->hasTagName(bodyTag))
         document().textLinkColors().setTextColor(state.style()->visitedDependentColor(CSSPropertyColor));
 
-    // If any changes to CSS Animations were detected, stash the update away for application after the
-    // render object is updated if we're in the appropriate scope.
-    if (RuntimeEnabledFeatures::webAnimationsCSSEnabled() && state.animationUpdate())
-        element->ensureActiveAnimations()->cssAnimations().setPendingUpdate(state.takeAnimationUpdate());
+    setAnimationUpdateIfNeeded(state, *element);
 
     // Now return the style.
     return state.takeStyle();
@@ -1036,7 +1041,7 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
 
         state.style()->setStyleType(pseudoStyleRequest.pseudoId);
 
-        applyMatchedProperties(state, collector.matchedResult());
+        applyMatchedProperties(state, collector.matchedResult(), e->pseudoElement(pseudoStyleRequest.pseudoId));
 
         addContentAttrValuesToFeatures(state.contentAttrValues(), m_features);
     }
@@ -1048,6 +1053,9 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
     }
 
     document().didAccessStyleResolver();
+
+    if (PseudoElement* pseudoElement = e->pseudoElement(pseudoStyleRequest.pseudoId))
+        setAnimationUpdateIfNeeded(state, *pseudoElement);
 
     // Now return the style.
     return state.takeStyle();
@@ -1392,7 +1400,7 @@ void StyleResolver::invalidateMatchedPropertiesCache()
     m_matchedPropertiesCache.clear();
 }
 
-void StyleResolver::applyMatchedProperties(StyleResolverState& state, const MatchResult& matchResult)
+void StyleResolver::applyMatchedProperties(StyleResolverState& state, const MatchResult& matchResult, Element* animatingElement)
 {
     const Element* element = state.element();
     ASSERT(element);
@@ -1480,8 +1488,10 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     applyMatchedProperties<LowPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
     applyMatchedProperties<LowPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
 
-    if (RuntimeEnabledFeatures::webAnimationsEnabled()) {
-        state.setAnimationUpdate(CSSAnimations::calculateUpdate(state.element(), state.style(), this));
+    // animatingElement may be null, for example if we're calculating the
+    // style for a potential pseudo element that has yet to be created.
+    if (RuntimeEnabledFeatures::webAnimationsEnabled() && animatingElement) {
+        state.setAnimationUpdate(CSSAnimations::calculateUpdate(animatingElement, state.style(), this));
         if (state.animationUpdate()) {
             ASSERT(!applyInheritedOnly);
             const AnimationEffect::CompositableValueMap& compositableValuesForAnimations = state.animationUpdate()->compositableValuesForAnimations();
