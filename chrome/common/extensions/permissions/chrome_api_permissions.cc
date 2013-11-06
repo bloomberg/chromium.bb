@@ -347,6 +347,23 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
     { APIPermission::kFullscreen, "fullscreen" },
     { APIPermission::kAudio, "audio" },
     { APIPermission::kWebRtc, "webrtc" },
+
+    // Settings override permissions.
+    { APIPermission::kHomepage, "homepage",
+      APIPermissionInfo::kFlagCannotBeOptional |
+      APIPermissionInfo::kFlagInternal,
+      IDS_EXTENSION_PROMPT_WARNING_HOME_PAGE_SETTING_OVERRIDE,
+      PermissionMessage::kHomepage },
+    { APIPermission::kSearchProvider, "searchProvider",
+      APIPermissionInfo::kFlagCannotBeOptional |
+      APIPermissionInfo::kFlagInternal,
+      IDS_EXTENSION_PROMPT_WARNING_SEARCH_SETTINGS_OVERRIDE,
+      PermissionMessage::kSearchProvider },
+    { APIPermission::kStartupPages, "startupPages",
+      APIPermissionInfo::kFlagCannotBeOptional |
+      APIPermissionInfo::kFlagInternal,
+      IDS_EXTENSION_PROMPT_WARNING_START_PAGE_SETTING_OVERRIDE,
+      PermissionMessage::kStartupPages },
   };
 
   std::vector<APIPermissionInfo*> permissions;

@@ -4394,7 +4394,7 @@ Make sure you do not expose any sensitive information.
         Change your search settings to: <ph name="SEARCH_HOST">$1<ex>url.search.com</ex></ph>
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_HOME_PAGE_SETTING_OVERRIDE" desc="Permission string for home page override.">
-        Change your home page to: <ph name="START_PAGE">$1<ex>home.page.com/home.html</ex></ph>
+        Change your home page to: <ph name="HOME_PAGE">$1<ex>home.page.com/home.html</ex></ph>
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_START_PAGE_SETTING_OVERRIDE" desc="Permission string for start page override.">
         Change your start page to: <ph name="START_PAGE">$1<ex>start.page.com/start.html</ex></ph>

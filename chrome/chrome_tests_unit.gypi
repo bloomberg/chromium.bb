@@ -1832,6 +1832,7 @@
         'common/extensions/permissions/media_galleries_permission_unittest.cc',
         'common/extensions/permissions/permission_set_unittest.cc',
         'common/extensions/permissions/permissions_data_unittest.cc',
+        'common/extensions/permissions/settings_override_permission_unittest.cc',
         'common/extensions/permissions/socket_permission_unittest.cc',
         'common/extensions/permissions/usb_device_permission_unittest.cc',
         'common/extensions/sync_type_unittest.cc',
@@ -2132,6 +2133,8 @@
             ['exclude', '^common/extensions/api/'],
             ['exclude', '^common/extensions/manifest_handlers/'],
             ['exclude', '^common/extensions/manifest_tests/'],
+            # This test depends on manifest_tests.
+            ['exclude', '^common/extensions/permissions/settings_override_permission_unittest.cc'],
           ],
           'sources!': [
             'browser/extensions/extension_context_menu_model_unittest.cc',

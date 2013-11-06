@@ -4,14 +4,22 @@
 
 #include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
 
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
+#include "chrome/common/extensions/permissions/settings_override_permission.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/permissions/api_permission_set.h"
+#include "extensions/common/permissions/permissions_info.h"
+#include "url/gurl.h"
 
 using extensions::api::manifest_types::ChromeSettingsOverrides;
 
 namespace extensions {
 namespace {
+
+const char* kWwwPrefix = "www.";
 
 scoped_ptr<GURL> CreateManifestURL(const std::string& url) {
   scoped_ptr<GURL> manifest_url(new GURL(url));
@@ -54,6 +62,14 @@ std::vector<GURL> ParseStartupPage(const ChromeSettingsOverrides& overrides,
   return urls;
 }
 
+// A www. prefix is not informative and thus not worth the limited real estate
+// in the permissions UI.
+std::string RemoveWwwPrefix(const std::string& url) {
+  if (StartsWithASCII(url, kWwwPrefix, false))
+    return url.substr(strlen(kWwwPrefix));
+  return url;
+}
+
 }  // namespace
 
 SettingsOverrides::SettingsOverrides() {}
@@ -85,6 +101,27 @@ bool SettingsOverridesHandler::Parse(Extension* extension, string16* error) {
   if (!info->homepage && !info->search_engine && info->startup_pages.empty()) {
     *error = ASCIIToUTF16(manifest_errors::kInvalidEmptySettingsOverrides);
     return false;
+  }
+  APIPermissionSet* permission_set =
+      PermissionsData::GetInitialAPIPermissions(extension);
+  DCHECK(permission_set);
+  if (info->search_engine) {
+    permission_set->insert(new SettingsOverrideAPIPermission(
+        PermissionsInfo::GetInstance()->GetByID(APIPermission::kSearchProvider),
+        RemoveWwwPrefix(CreateManifestURL(info->search_engine->search_url)->
+            GetOrigin().host())));
+  }
+  if (!info->startup_pages.empty()) {
+    permission_set->insert(new SettingsOverrideAPIPermission(
+        PermissionsInfo::GetInstance()->GetByID(APIPermission::kStartupPages),
+        // We only support one startup page even though the type of the manifest
+        // property is a list, only the first one is used.
+        RemoveWwwPrefix(info->startup_pages[0].GetContent())));
+  }
+  if (info->homepage) {
+    permission_set->insert(new SettingsOverrideAPIPermission(
+        PermissionsInfo::GetInstance()->GetByID(APIPermission::kHomepage),
+        RemoveWwwPrefix(info->homepage.get()->GetContent())));
   }
   extension->SetManifestData(manifest_keys::kSettingsOverride,
                              info.release());

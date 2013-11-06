@@ -256,6 +256,8 @@
         'common/extensions/permissions/permissions_data.cc',
         'common/extensions/permissions/permissions_data.h',
         'common/extensions/permissions/set_disjunction_permission.h',
+        'common/extensions/permissions/settings_override_permission.cc',
+        'common/extensions/permissions/settings_override_permission.h',
         'common/extensions/permissions/socket_permission.cc',
         'common/extensions/permissions/socket_permission.h',
         'common/extensions/permissions/socket_permission_data.cc',
