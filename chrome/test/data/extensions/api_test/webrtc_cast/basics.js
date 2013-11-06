@@ -4,11 +4,6 @@
 
 chrome.test.runTests([
   function udpTransport() {
-    // TODO(hclam): Remove this line when the bug with build bot is
-    // fixed. See crbug.com/315169 and crbug.com/314971.
-    chrome.test.succeed();
-    return;
-
     chrome.webrtc.castUdpTransport.create(function(info) {
       chrome.webrtc.castUdpTransport.start(
           info.transportId,
