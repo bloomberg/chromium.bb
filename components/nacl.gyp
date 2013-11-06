@@ -40,6 +40,7 @@
           'nacl/loader/nacl_validation_db.h',
           'nacl/loader/nacl_validation_query.cc',
           'nacl/loader/nacl_validation_query.h',
+          'nacl/common/test_nacl_browser_delegate.cc',
         ],
         # TODO(gregoryd): consider switching NaCl to use Chrome OS defines
         'conditions': [

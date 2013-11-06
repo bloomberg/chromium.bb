@@ -10,61 +10,18 @@
 #include "base/test/scoped_path_override.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/common/nacl_browser_delegate.h"
+#include "components/nacl/common/test_nacl_browser_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using nacl_file_host::PnaclCanOpenFile;
 
-class TestNaClBrowserDelegate : public NaClBrowserDelegate {
+class FileHostTestNaClBrowserDelegate : public TestNaClBrowserDelegate {
  public:
-
-  TestNaClBrowserDelegate() {}
-
-  virtual void ShowNaClInfobar(int render_process_id,
-                               int render_view_id,
-                               int error_id) OVERRIDE {
-  }
-
-  virtual bool DialogsAreSuppressed() OVERRIDE {
-    return false;
-  }
-
-  virtual bool GetCacheDirectory(base::FilePath* cache_dir) OVERRIDE {
-    return false;
-  }
-
-  virtual bool GetPluginDirectory(base::FilePath* plugin_dir) OVERRIDE {
-    return false;
-  }
+  FileHostTestNaClBrowserDelegate() {}
 
   virtual bool GetPnaclDirectory(base::FilePath* pnacl_dir) OVERRIDE {
     *pnacl_dir = pnacl_path_;
     return true;
-  }
-
-  virtual bool GetUserDirectory(base::FilePath* user_dir) OVERRIDE {
-    return false;
-  }
-
-  virtual std::string GetVersionString() const OVERRIDE {
-    return std::string();
-  }
-
-  virtual ppapi::host::HostFactory* CreatePpapiHostFactory(
-      content::BrowserPpapiHost* ppapi_host) OVERRIDE {
-    return NULL;
-  }
-
-  virtual bool MapUrlToLocalFilePath(const GURL& file_url,
-                                     bool use_blocking_api,
-                                     base::FilePath* file_path) OVERRIDE {
-    return false;
-  }
-
-  virtual void SetDebugPatterns(std::string debug_patterns) OVERRIDE {
-  }
-
-  virtual bool URLMatchesDebugPatterns(const GURL& manifest_url) OVERRIDE {
-    return false;
   }
 
   void SetPnaclDirectory(const base::FilePath& pnacl_dir) {
@@ -81,7 +38,7 @@ class NaClFileHostTest : public testing::Test {
   virtual ~NaClFileHostTest();
 
   virtual void SetUp() OVERRIDE {
-    nacl_browser_delegate_ = new TestNaClBrowserDelegate;
+    nacl_browser_delegate_ = new FileHostTestNaClBrowserDelegate;
     nacl::NaClBrowser::SetDelegate(nacl_browser_delegate_);
   }
 
@@ -90,12 +47,12 @@ class NaClFileHostTest : public testing::Test {
     nacl::NaClBrowser::SetDelegate(NULL);
   }
 
-  TestNaClBrowserDelegate* nacl_browser_delegate() {
+  FileHostTestNaClBrowserDelegate* nacl_browser_delegate() {
     return nacl_browser_delegate_;
   }
 
  private:
-  TestNaClBrowserDelegate* nacl_browser_delegate_;
+  FileHostTestNaClBrowserDelegate* nacl_browser_delegate_;
   DISALLOW_COPY_AND_ASSIGN(NaClFileHostTest);
 };
 
