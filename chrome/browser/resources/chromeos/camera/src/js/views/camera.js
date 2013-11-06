@@ -882,28 +882,33 @@ camera.views.Camera.prototype.synchronizeBounds_ = function() {
       }
     }
   }, function(stream) {
-    this.running_ = true;
-    // Use a watchdog since the stream.onended event is unreliable in the
-    // recent version of Chrome.
-    this.watchdog_ = setInterval(function() {
-      if (stream.ended) {
-        this.capturing_ = false;
-        onDisconnected();
-        clearTimeout(this.watchdog_);
-        this.watchdog_ = null;
-      }
-    }.bind(this), 1000);
     this.video_.src = window.URL.createObjectURL(stream);
-    this.video_.play();
-    this.capturing_ = true;
-    var onAnimationFrame = function() {
-      if (!this.running_)
-        return;
-      this.onAnimationFrame_();
-      requestAnimationFrame(onAnimationFrame);
+    var onLoadedMetadata = function() {
+      this.video_.removeEventListener('loadedmetadata', onLoadedMetadata);
+      this.running_ = true;
+      // Use a watchdog since the stream.onended event is unreliable in the
+      // recent version of Chrome.
+      this.watchdog_ = setInterval(function() {
+        if (stream.ended) {
+          this.capturing_ = false;
+          onDisconnected();
+          clearTimeout(this.watchdog_);
+          this.watchdog_ = null;
+        }
+      }.bind(this), 1000);
+      this.capturing_ = true;
+      var onAnimationFrame = function() {
+        if (!this.running_)
+          return;
+        this.onAnimationFrame_();
+        requestAnimationFrame(onAnimationFrame);
+      }.bind(this);
+      onAnimationFrame();
+      onSuccess(resolution[0], resolution[1]);
     }.bind(this);
-    onAnimationFrame();
-    onSuccess(resolution[0], resolution[1]);
+    // Load the stream and wait for the metadata.
+    this.video_.addEventListener('loadedmetadata', onLoadedMetadata);
+    this.video_.play();
   }.bind(this), function(error) {
     onFailure();
   });
