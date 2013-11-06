@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/time/time.h"
-#include "ui/events/events_export.h"
+#include "ui/events/events_base_export.h"
 
 namespace ui {
 
@@ -57,7 +57,7 @@ enum LatencyComponentType {
   WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT
 };
 
-struct EVENTS_EXPORT LatencyInfo {
+struct EVENTS_BASE_EXPORT LatencyInfo {
   struct LatencyComponent {
     // Nondecreasing number that can be used to determine what events happened
     // in the component at the time this struct was sent on to the next

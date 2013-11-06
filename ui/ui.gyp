@@ -26,19 +26,15 @@
         '../third_party/zlib/zlib.gyp:zlib',
         '../url/url.gyp:url_lib',
         'base/strings/ui_strings.gyp:ui_strings',
-        'events/events.gyp:events',
+        'events/events.gyp:events_base',
         'gfx/gfx.gyp:gfx',
         'ui_resources',
       ],
       'defines': [
         'UI_IMPLEMENTATION',
       ],
-      # Export these dependencies since text_elider.h includes ICU headers.
       'export_dependent_settings': [
         '../net/net.gyp:net',
-        '../third_party/icu/icu.gyp:icui18n',
-        '../third_party/icu/icu.gyp:icuuc',
-        'events/events.gyp:events',
         'gfx/gfx.gyp:gfx',
       ],
       'sources' : [
@@ -350,6 +346,11 @@
               '$(SDKROOT)/System/Library/Frameworks/CoreGraphics.framework',
             ],
           },
+        }],
+        ['toolkit_views==1', {
+          'dependencies': [
+            'events/events.gyp:events',
+          ],
         }],
         ['use_aura==1', {
           'sources/': [

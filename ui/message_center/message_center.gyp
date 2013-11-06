@@ -17,7 +17,6 @@
         '../../skia/skia.gyp:skia',
         '../../url/url.gyp:url_lib',
         '../base/strings/ui_strings.gyp:ui_strings',
-        '../events/events.gyp:events',
         '../gfx/gfx.gyp:gfx',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
@@ -99,6 +98,7 @@
       'conditions': [
         ['toolkit_views==1', {
           'dependencies': [
+            '../events/events.gyp:events',
             '../views/views.gyp:views',
           ],
         }, {
@@ -148,7 +148,6 @@
         '../../base/base.gyp:base',
         '../../base/base.gyp:test_support_base',
         '../../skia/skia.gyp:skia',
-        '../events/events.gyp:events',
         '../gfx/gfx.gyp:gfx',
         '../ui.gyp:ui',
         'message_center',
@@ -170,7 +169,6 @@
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
         '../../url/url.gyp:url_lib',
-        '../events/events.gyp:events',
         '../gfx/gfx.gyp:gfx',
         '../ui.gyp:ui',
         '../ui_unittests.gyp:run_ui_unittests',

@@ -31,6 +31,7 @@
         '../base/strings/ui_strings.gyp:ui_strings',
         '../compositor/compositor.gyp:compositor',
         '../events/events.gyp:events',
+        '../events/events.gyp:events_base',
         '../gfx/gfx.gyp:gfx',
         '../native_theme/native_theme.gyp:native_theme',
         '../ui.gyp:ui',

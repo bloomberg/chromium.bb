@@ -19,6 +19,7 @@
         '../../skia/skia.gyp:skia',
         '../compositor/compositor.gyp:compositor',
         '../events/events.gyp:events',
+        '../events/events.gyp:events_base',
         '../gfx/gfx.gyp:gfx',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
@@ -125,11 +126,6 @@
             'input_state_lookup.cc',
           ],
         }],
-        ['use_ozone==1', {
-          'dependencies': [
-            '../ozone/ozone.gyp:ozone',
-          ],
-        }],
       ],
     },
     {
@@ -140,6 +136,7 @@
         '../../testing/gtest.gyp:gtest',
         '../compositor/compositor.gyp:compositor_test_support',
         '../events/events.gyp:events',
+        '../events/events.gyp:events_base',
         '../gfx/gfx.gyp:gfx',
         '../ui.gyp:ui',
         '../ui_unittests.gyp:ui_test_support',
@@ -276,6 +273,7 @@
         '../compositor/compositor.gyp:compositor_test_support',
         '../compositor/compositor.gyp:compositor',
         '../events/events.gyp:events',
+        '../events/events.gyp:events_base',
         '../gfx/gfx.gyp:gfx',
         '../gl/gl.gyp:gl',
         '../ui.gyp:ui',

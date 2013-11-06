@@ -687,7 +687,6 @@
           'dependencies': [
             'chrome_resources.gyp:chrome_strings',
             '../base/base.gyp:base',
-            '../ui/events/events.gyp:events',
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/ui.gyp:ui',
           ],

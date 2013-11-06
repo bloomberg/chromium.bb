@@ -5,14 +5,14 @@
 #ifndef UI_EVENTS_KEYCODES_KEYBOARD_CODE_CONVERSION_WIN_H_
 #define UI_EVENTS_KEYCODES_KEYBOARD_CODE_CONVERSION_WIN_H_
 
-#include "ui/events/events_export.h"
+#include "ui/events/events_base_export.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace ui {
 
 // Methods to convert ui::KeyboardCode/Windows virtual key type methods.
-EVENTS_EXPORT WORD WindowsKeyCodeForKeyboardCode(KeyboardCode keycode);
-EVENTS_EXPORT KeyboardCode KeyboardCodeForWindowsKeyCode(WORD keycode);
+EVENTS_BASE_EXPORT WORD WindowsKeyCodeForKeyboardCode(KeyboardCode keycode);
+EVENTS_BASE_EXPORT KeyboardCode KeyboardCodeForWindowsKeyCode(WORD keycode);
 
 }  // namespace ui
 

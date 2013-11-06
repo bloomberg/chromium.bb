@@ -10,7 +10,6 @@
     '../base/base.gyp:base',
     '../base/base.gyp:base_i18n',
     '../crypto/crypto.gyp:crypto',
-    '../ui/events/events.gyp:events',
     '../ui/gfx/gfx.gyp:gfx',
     '../ui/ui.gyp:ui',
   ],

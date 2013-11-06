@@ -44,7 +44,6 @@
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/zlib/zlib.gyp:zlib',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
-        '../ui/events/events.gyp:events',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/message_center/message_center.gyp:message_center',
         '../ui/native_theme/native_theme.gyp:native_theme',
@@ -2672,17 +2671,19 @@
             '../third_party/libusb/libusb.gyp:libusb',
           ],
         }],
-        ['toolkit_views == 0', {
+        ['toolkit_views == 1', {
+          'dependencies': [
+            '../ui/events/events.gyp:events',
+          ],
+          'sources!': [
+            'browser/ui/profile_reset_bubble_stub.cc',
+          ],
+        }, {  # toolkit_views == 0
           'sources!': [
             'browser/ui/tabs/tab_strip_layout_type.h',
             'browser/ui/tabs/tab_strip_layout_type_prefs.cc',
             'browser/ui/tabs/tab_strip_layout_type_prefs.h',
-          ],
-        }],
-        ['toolkit_views == 1', {
-          'sources!': [
-            'browser/ui/profile_reset_bubble_stub.cc',
-          ],
+          ],        
         }],
         ['OS=="linux"', {
           'dependencies': [

@@ -17,7 +17,7 @@
         '<(DEPTH)/media/media.gyp:media',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink_minimal',
-        '<(DEPTH)/ui/events/events.gyp:events',
+        '<(DEPTH)/ui/events/events.gyp:events_base',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
         '<(DEPTH)/ui/gl/gl.gyp:gl',
       ],

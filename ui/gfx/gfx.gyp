@@ -23,6 +23,12 @@
         '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
         '<(DEPTH)/url/url.gyp:url_lib',
       ],
+      # text_elider.h includes ICU headers.
+      'export_dependent_settings': [
+        '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
+        '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
+      ],
       'defines': [
         'GFX_IMPLEMENTATION',
       ],

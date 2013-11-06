@@ -13,7 +13,6 @@
         '../base/base.gyp:base',
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
-        'events/events.gyp:events',
         'gfx/gfx.gyp:gfx',
       ],
       'sources': [
@@ -89,7 +88,7 @@
         '../third_party/libpng/libpng.gyp:libpng',
         '../url/url.gyp:url_lib',
         'base/strings/ui_strings.gyp:ui_strings',
-        'events/events.gyp:events',
+        'events/events.gyp:events_base',
         'run_ui_unittests',
         'shell_dialogs/shell_dialogs.gyp:shell_dialogs',
         'ui.gyp:keycode_converter',
@@ -155,7 +154,6 @@
         'base/cocoa/controls/blue_label_button_unittest.mm',
         'base/cocoa/controls/hover_image_menu_button_unittest.mm',
         'base/cocoa/controls/hyperlink_button_cell_unittest.mm',
-        'base/cocoa/events_mac_unittest.mm',
         'base/cocoa/focus_tracker_unittest.mm',
         'base/cocoa/fullscreen_window_manager_unittest.mm',
         'base/cocoa/hover_image_button_unittest.mm',
@@ -330,6 +328,12 @@
           'sources!': [
             'events/event_dispatcher_unittest.cc',
             'events/event_unittest.cc',
+          ],
+        }],
+        ['toolkit_views==1', {
+          'dependencies': [
+            'events/events.gyp:events',
+            'events/events.gyp:events_base',
           ],
         }],
         ['use_aura==1', {

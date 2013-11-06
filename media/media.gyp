@@ -49,7 +49,7 @@
         '../gpu/gpu.gyp:command_buffer_common',
         '../skia/skia.gyp:skia',
         '../third_party/opus/opus.gyp:opus',
-        '../ui/events/events.gyp:events',
+        '../ui/events/events.gyp:events_base',
         '../ui/gfx/gfx.gyp:gfx',
         '../url/url.gyp:url_lib',
         'shared_memory_support',

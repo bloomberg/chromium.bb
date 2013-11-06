@@ -13,7 +13,6 @@
       'dependencies': [
         '../../skia/skia.gyp:skia',
         '../../base/base.gyp:base',
-        '../events/events.gyp:events',
         '../gfx/gfx.gyp:gfx',
         '../ui.gyp:ui',
       ],
@@ -51,7 +50,6 @@
         '../../base/base.gyp:base',
         '../../base/base.gyp:test_support_base',
         '../../testing/gtest.gyp:gtest',
-        '../events/events.gyp:events',
         '../gfx/gfx.gyp:gfx',
         '../ui.gyp:ui',
         'snapshot'

@@ -60,7 +60,7 @@
         '../third_party/zlib/zlib.gyp:minizip',
         '../third_party/zlib/zlib.gyp:zlib',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
-        '../ui/events/events.gyp:events',
+        '../ui/events/events.gyp:events_base',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/message_center/message_center.gyp:message_center',
         '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',

@@ -17,7 +17,6 @@
         '../../skia/skia.gyp:skia',
         '../base/strings/ui_strings.gyp:ui_strings',
         '../compositor/compositor.gyp:compositor',
-        '../events/events.gyp:events',
         '../gfx/gfx.gyp:gfx',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
@@ -133,6 +132,7 @@
           'dependencies': [
             '../../content/content.gyp:content',
             '../../content/content.gyp:content_browser',
+            '../events/events.gyp:events',
             '../views/controls/webview/webview.gyp:webview',
             '../views/views.gyp:views',
           ],
