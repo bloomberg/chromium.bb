@@ -69,7 +69,6 @@ class GetFileForSavingOperation {
                                      scoped_ptr<ResourceEntry> entry);
   void GetFileForSavingAfterMarkDirty(const GetFileCallback& callback,
                                       const base::FilePath& cache_path,
-                                      const std::string* local_id,
                                       scoped_ptr<ResourceEntry> entry,
                                       FileError error);
   void GetFileForSavingAfterWatch(const GetFileCallback& callback,
