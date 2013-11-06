@@ -923,14 +923,12 @@ inline void Element::setAttributeInternal(size_t index, const QualifiedName& nam
         return;
     }
 
-    const Attribute* existingAttribute = attributeItem(index);
-    ASSERT(existingAttribute);
-    const QualifiedName& existingAttributeName = existingAttribute->name();
+    QualifiedName existingAttributeName = attributeItem(index)->name();
 
     if (!inSynchronizationOfLazyAttribute)
-        willModifyAttribute(existingAttributeName, existingAttribute->value(), newValue);
+        willModifyAttribute(existingAttributeName, attributeItem(index)->value(), newValue);
 
-    if (newValue != existingAttribute->value()) {
+    if (newValue != attributeItem(index)->value()) {
         // If there is an Attr node hooked to this attribute, the Attr::setValue() call below
         // will write into the ElementData.
         // FIXME: Refactor this so it makes some sense.
