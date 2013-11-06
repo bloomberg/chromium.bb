@@ -344,7 +344,7 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
   // that were delayed (see the delay inserted in BitcodeGotCompiled).
   if (ExpectedProgressKnown()) {
     pexe_bytes_compiled_ = expected_pexe_size_;
-    plugin_->EnqueueProgressEvent(plugin::Plugin::kProgressEventProgress,
+    plugin_->EnqueueProgressEvent(PP_NACL_EVENT_PROGRESS,
                                   pexe_url_,
                                   plugin::Plugin::LENGTH_IS_COMPUTABLE,
                                   pexe_bytes_compiled_,
@@ -634,14 +634,14 @@ void PnaclCoordinator::BitcodeGotCompiled(int32_t pp_error,
   // that bytes were sent to the compiler.
   if (ExpectedProgressKnown()) {
     if (!ShouldDelayProgressEvent()) {
-      plugin_->EnqueueProgressEvent(plugin::Plugin::kProgressEventProgress,
+      plugin_->EnqueueProgressEvent(PP_NACL_EVENT_PROGRESS,
                                     pexe_url_,
                                     plugin::Plugin::LENGTH_IS_COMPUTABLE,
                                     pexe_bytes_compiled_,
                                     expected_pexe_size_);
     }
   } else {
-    plugin_->EnqueueProgressEvent(plugin::Plugin::kProgressEventProgress,
+    plugin_->EnqueueProgressEvent(PP_NACL_EVENT_PROGRESS,
                                   pexe_url_,
                                   plugin::Plugin::LENGTH_IS_NOT_COMPUTABLE,
                                   pexe_bytes_compiled_,

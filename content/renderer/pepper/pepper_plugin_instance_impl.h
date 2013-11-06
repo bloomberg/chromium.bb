@@ -345,6 +345,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // PluginInstance implementation
   virtual RenderView* GetRenderView() OVERRIDE;
   virtual WebKit::WebPluginContainer* GetContainer() OVERRIDE;
+  virtual v8::Isolate* GetIsolate() const OVERRIDE;
   virtual ppapi::VarTracker* GetVarTracker() OVERRIDE;
   virtual const GURL& GetPluginURL() OVERRIDE;
   virtual base::FilePath GetModulePath() OVERRIDE;
@@ -492,10 +493,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // Returns the plugin NPP identifier that this plugin will use to identify
   // itself when making NPObject scripting calls to WebBindings.
   struct _NPP* instanceNPP();
-
-  // Returns the v8::Isolate that was current when this Instance was created.
-  // This is not inlined so as to avoid an unnecessary header include of v8.h.
-  v8::Isolate* GetIsolate() const;
 
   // cc::TextureLayerClient implementation.
   virtual unsigned PrepareTexture() OVERRIDE;

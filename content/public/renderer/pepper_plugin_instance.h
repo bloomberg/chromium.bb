@@ -36,6 +36,10 @@ namespace WebKit {
 class WebPluginContainer;
 }
 
+namespace v8 {
+class Isolate;
+}
+
 namespace content {
 class RenderView;
 
@@ -48,6 +52,8 @@ class PepperPluginInstance {
   virtual content::RenderView* GetRenderView() = 0;
 
   virtual WebKit::WebPluginContainer* GetContainer() = 0;
+
+  virtual v8::Isolate* GetIsolate() const = 0;
 
   virtual ppapi::VarTracker* GetVarTracker() = 0;
 

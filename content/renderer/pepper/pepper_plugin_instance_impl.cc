@@ -1374,12 +1374,22 @@ bool PepperPluginInstanceImpl::LoadPrintInterface() {
 }
 
 bool PepperPluginInstanceImpl::LoadPrivateInterface() {
+  // If this is a NaCl app, we want to talk to the trusted NaCl plugin to
+  // call GetInstanceObject. This is necessary to ensure that the properties
+  // the trusted plugin exposes (readyState and lastError) work properly. Note
+  // that untrusted NaCl apps are not allowed to provide PPP_InstancePrivate,
+  // so it's correct to never look up PPP_InstancePrivate for them.
+  //
+  // If this is *not* a NaCl plugin, original_module_ will never be set; we talk
+  // to the "real" module.
+  scoped_refptr<PluginModule> module = original_module_ ? original_module_ :
+                                                          module_;
   // Only check for the interface if the plugin has private permission.
-  if (!module_->permissions().HasPermission(ppapi::PERMISSION_PRIVATE))
+  if (!module->permissions().HasPermission(ppapi::PERMISSION_PRIVATE))
     return false;
   if (!plugin_private_interface_) {
     plugin_private_interface_ = static_cast<const PPP_Instance_Private*>(
-        module_->GetPluginInterface(PPP_INSTANCE_PRIVATE_INTERFACE));
+        module->GetPluginInterface(PPP_INSTANCE_PRIVATE_INTERFACE));
   }
 
   return !!plugin_private_interface_;
@@ -2666,10 +2676,6 @@ NPP PepperPluginInstanceImpl::instanceNPP() {
   return npp_.get();
 }
 
-v8::Isolate* PepperPluginInstanceImpl::GetIsolate() const {
-  return isolate_;
-}
-
 PepperPluginInstance* PepperPluginInstance::Get(PP_Instance instance_id) {
   return HostGlobals::Get()->GetInstance(instance_id);
 }
@@ -2680,6 +2686,10 @@ RenderView* PepperPluginInstanceImpl::GetRenderView() {
 
 WebKit::WebPluginContainer* PepperPluginInstanceImpl::GetContainer() {
   return container_;
+}
+
+v8::Isolate* PepperPluginInstanceImpl::GetIsolate() const {
+  return isolate_;
 }
 
 ppapi::VarTracker* PepperPluginInstanceImpl::GetVarTracker() {

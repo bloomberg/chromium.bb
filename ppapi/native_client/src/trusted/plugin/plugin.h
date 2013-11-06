@@ -146,21 +146,12 @@ class Plugin : public pp::InstancePrivate {
   // event (loadstart, progress, error, abort, load, loadend).  Events are
   // enqueued on the JavaScript event loop, which then calls back through
   // DispatchProgressEvent.
-  void EnqueueProgressEvent(const char* event_type);
-  void EnqueueProgressEvent(const char* event_type,
+  void EnqueueProgressEvent(PP_NaClEventType event_type);
+  void EnqueueProgressEvent(PP_NaClEventType event_type,
                             const nacl::string& url,
                             LengthComputable length_computable,
                             uint64_t loaded_bytes,
                             uint64_t total_bytes);
-
-  // Progress event types.
-  static const char* const kProgressEventLoadStart;
-  static const char* const kProgressEventProgress;
-  static const char* const kProgressEventError;
-  static const char* const kProgressEventAbort;
-  static const char* const kProgressEventLoad;
-  static const char* const kProgressEventLoadEnd;
-  static const char* const kProgressEventCrash;
 
   // Report the error code that sel_ldr produces when starting a nexe.
   void ReportSelLdrLoadStatus(int status);

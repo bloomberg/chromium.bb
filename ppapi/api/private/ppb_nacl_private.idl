@@ -24,6 +24,17 @@ enum PP_NaClError {
   PP_NACL_MANIFEST_MISSING_ARCH = 0
 };
 
+/** Event types that NaCl may use when reporting load progress or errors. */
+enum PP_NaClEventType {
+  PP_NACL_EVENT_LOADSTART,
+  PP_NACL_EVENT_PROGRESS,
+  PP_NACL_EVENT_ERROR,
+  PP_NACL_EVENT_ABORT,
+  PP_NACL_EVENT_LOAD,
+  PP_NACL_EVENT_LOADEND,
+  PP_NACL_EVENT_CRASH
+};
+
 /* PPB_NaCl_Private */
 interface PPB_NaCl_Private {
   /* Launches NaCl's sel_ldr process.  Returns PP_EXTERNAL_PLUGIN_OK on success
@@ -151,4 +162,15 @@ interface PPB_NaCl_Private {
                                    [in] str_t file_url,
                                    [out] uint64_t file_token_lo,
                                    [out] uint64_t file_token_hi);
+
+
+  /* Dispatch a progress event on the DOM element where the given instance is
+   * embedded.
+   */
+  void DispatchEvent([in] PP_Instance instance,
+                     [in] PP_NaClEventType event_type,
+                     [in] PP_Var resource_url,
+                     [in] PP_Bool length_is_computable,
+                     [in] uint64_t loaded_bytes,
+                     [in] uint64_t total_bytes);
 };

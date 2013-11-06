@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Thu Oct 31 15:10:06 2013. */
+/* From private/ppb_nacl_private.idl modified Tue Nov  5 15:33:53 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -40,6 +40,17 @@ typedef enum {
    */
   PP_NACL_MANIFEST_MISSING_ARCH = 0
 } PP_NaClError;
+
+/** Event types that NaCl may use when reporting load progress or errors. */
+typedef enum {
+  PP_NACL_EVENT_LOADSTART,
+  PP_NACL_EVENT_PROGRESS,
+  PP_NACL_EVENT_ERROR,
+  PP_NACL_EVENT_ABORT,
+  PP_NACL_EVENT_LOAD,
+  PP_NACL_EVENT_LOADEND,
+  PP_NACL_EVENT_CRASH
+} PP_NaClEventType;
 /**
  * @}
  */
@@ -163,6 +174,15 @@ struct PPB_NaCl_Private_1_0 {
                                       const char* file_url,
                                       uint64_t* file_token_lo,
                                       uint64_t* file_token_hi);
+  /* Dispatch a progress event on the DOM element where the given instance is
+   * embedded.
+   */
+  void (*DispatchEvent)(PP_Instance instance,
+                        PP_NaClEventType event_type,
+                        struct PP_Var resource_url,
+                        PP_Bool length_is_computable,
+                        uint64_t loaded_bytes,
+                        uint64_t total_bytes);
 };
 
 typedef struct PPB_NaCl_Private_1_0 PPB_NaCl_Private;

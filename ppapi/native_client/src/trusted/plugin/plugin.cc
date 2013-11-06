@@ -559,20 +559,9 @@ char* Plugin::LookupArgument(const char* key) {
   return NULL;
 }
 
-// Suggested names for progress event types, per
-// http://www.w3.org/TR/progress-events/
-const char* const Plugin::kProgressEventLoadStart = "loadstart";
-const char* const Plugin::kProgressEventProgress =  "progress";
-const char* const Plugin::kProgressEventError =     "error";
-const char* const Plugin::kProgressEventAbort =     "abort";
-const char* const Plugin::kProgressEventLoad =      "load";
-const char* const Plugin::kProgressEventLoadEnd =   "loadend";
-// Define a NaCl specific event type for .nexe crashes.
-const char* const Plugin::kProgressEventCrash =     "crash";
-
 class ProgressEvent {
  public:
-  ProgressEvent(const char* event_type,
+  ProgressEvent(PP_NaClEventType event_type,
                 const nacl::string& url,
                 Plugin::LengthComputable length_computable,
                 uint64_t loaded_bytes,
@@ -582,7 +571,7 @@ class ProgressEvent {
     length_computable_(length_computable),
     loaded_bytes_(loaded_bytes),
     total_bytes_(total_bytes) { }
-  const char* event_type() const { return event_type_; }
+  PP_NaClEventType event_type() const { return event_type_; }
   const char* url() const { return url_.c_str(); }
   Plugin::LengthComputable length_computable() const {
     return length_computable_;
@@ -591,10 +580,7 @@ class ProgressEvent {
   uint64_t total_bytes() const { return total_bytes_; }
 
  private:
-  // event_type_ is always passed from a string literal, so ownership is
-  // not taken.  Hence it does not need to be deleted when ProgressEvent is
-  // destroyed.
-  const char* event_type_;
+  PP_NaClEventType event_type_;
   nacl::string url_;
   Plugin::LengthComputable length_computable_;
   uint64_t loaded_bytes_;
@@ -869,7 +855,7 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
       static_cast<float>(nexe_downloader_.TimeSinceOpenMilliseconds()));
 
   // Inform JavaScript that we successfully downloaded the nacl module.
-  EnqueueProgressEvent(kProgressEventProgress,
+  EnqueueProgressEvent(PP_NACL_EVENT_PROGRESS,
                        nexe_downloader_.url_to_open(),
                        LENGTH_IS_COMPUTABLE,
                        nexe_bytes_read,
@@ -1046,7 +1032,7 @@ void Plugin::ReportDeadNexe() {
     set_last_error_string(message);
     AddToConsole(message);
 
-    EnqueueProgressEvent(kProgressEventCrash);
+    EnqueueProgressEvent(PP_NACL_EVENT_CRASH);
     set_nexe_error_reported(true);
   }
   // else ReportLoadError() and ReportAbortError() will be used by loading code
@@ -1180,7 +1166,7 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
     is_installed_ = GetUrlScheme(program_url) == SCHEME_CHROME_EXTENSION;
     nacl_ready_state_ = LOADING;
     // Inform JavaScript that we found a nexe URL to load.
-    EnqueueProgressEvent(kProgressEventProgress);
+    EnqueueProgressEvent(PP_NACL_EVENT_PROGRESS);
     if (pnacl_options.translate()) {
       pp::CompletionCallback translate_callback =
           callback_factory_.NewCallback(&Plugin::BitcodeDidTranslate);
@@ -1238,7 +1224,7 @@ void Plugin::RequestNaClManifest(const nacl::string& url) {
   set_manifest_url(url);
   // Inform JavaScript that a load is starting.
   nacl_ready_state_ = OPENED;
-  EnqueueProgressEvent(kProgressEventLoadStart);
+  EnqueueProgressEvent(PP_NACL_EVENT_LOADSTART);
   bool is_data_uri = GetUrlScheme(nmf_resolved_url.AsString()) == SCHEME_DATA;
   HistogramEnumerateManifestIsDataURI(static_cast<int>(is_data_uri));
   if (is_data_uri) {
@@ -1360,9 +1346,9 @@ void Plugin::ReportLoadSuccess(LengthComputable length_computable,
   // Inform JavaScript that loading was successful and is complete.
   const nacl::string& url = nexe_downloader_.url_to_open();
   EnqueueProgressEvent(
-      kProgressEventLoad, url, length_computable, loaded_bytes, total_bytes);
+      PP_NACL_EVENT_LOAD, url, length_computable, loaded_bytes, total_bytes);
   EnqueueProgressEvent(
-      kProgressEventLoadEnd, url, length_computable, loaded_bytes, total_bytes);
+      PP_NACL_EVENT_LOADEND, url, length_computable, loaded_bytes, total_bytes);
 
   // UMA
   HistogramEnumerateLoadStatus(ERROR_LOAD_SUCCESS, is_installed_);
@@ -1392,8 +1378,8 @@ void Plugin::ReportLoadError(const ErrorInfo& error_info) {
   AddToConsole(nacl::string("NaCl module load failed: ") +
                error_info.console_message());
   // Inform JavaScript that loading encountered an error and is complete.
-  EnqueueProgressEvent(kProgressEventError);
-  EnqueueProgressEvent(kProgressEventLoadEnd);
+  EnqueueProgressEvent(PP_NACL_EVENT_ERROR);
+  EnqueueProgressEvent(PP_NACL_EVENT_LOADEND);
 
   // UMA
   HistogramEnumerateLoadStatus(error_info.error_code(), is_installed_);
@@ -1410,8 +1396,8 @@ void Plugin::ReportLoadAbort() {
   set_last_error_string(error_string);
   AddToConsole(error_string);
   // Inform JavaScript that loading was aborted and is complete.
-  EnqueueProgressEvent(kProgressEventAbort);
-  EnqueueProgressEvent(kProgressEventLoadEnd);
+  EnqueueProgressEvent(PP_NACL_EVENT_ABORT);
+  EnqueueProgressEvent(PP_NACL_EVENT_LOADEND);
 
   // UMA
   HistogramEnumerateLoadStatus(ERROR_LOAD_ABORTED, is_installed_);
@@ -1444,7 +1430,7 @@ void Plugin::UpdateDownloadProgress(
       LengthComputable length_computable = (total_bytes_to_be_received >= 0) ?
           LENGTH_IS_COMPUTABLE : LENGTH_IS_NOT_COMPUTABLE;
 
-      plugin->EnqueueProgressEvent(kProgressEventProgress,
+      plugin->EnqueueProgressEvent(PP_NACL_EVENT_PROGRESS,
                                    url,
                                    length_computable,
                                    bytes_received,
@@ -1471,7 +1457,7 @@ const FileDownloader* Plugin::FindFileDownloader(
   return file_downloader;
 }
 
-void Plugin::EnqueueProgressEvent(const char* event_type) {
+void Plugin::EnqueueProgressEvent(PP_NaClEventType event_type) {
   EnqueueProgressEvent(event_type,
                        NACL_NO_URL,
                        Plugin::LENGTH_IS_NOT_COMPUTABLE,
@@ -1479,7 +1465,7 @@ void Plugin::EnqueueProgressEvent(const char* event_type) {
                        Plugin::kUnknownBytes);
 }
 
-void Plugin::EnqueueProgressEvent(const char* event_type,
+void Plugin::EnqueueProgressEvent(PP_NaClEventType event_type,
                                   const nacl::string& url,
                                   LengthComputable length_computable,
                                   uint64_t loaded_bytes,
@@ -1525,63 +1511,21 @@ void Plugin::DispatchProgressEvent(int32_t result) {
   nacl::scoped_ptr<ProgressEvent> event(progress_events_.front());
   progress_events_.pop();
   PLUGIN_PRINTF(("Plugin::DispatchProgressEvent ("
-                 "event_type='%s', url='%s', length_computable=%d, "
+                 "event_type='%d', url='%s', length_computable=%d, "
                  "loaded=%" NACL_PRIu64 ", total=%" NACL_PRIu64 ")\n",
-                 event->event_type(),
+                 static_cast<int>(event->event_type()),
                  event->url(),
                  static_cast<int>(event->length_computable()),
                  event->loaded_bytes(),
                  event->total_bytes()));
 
-  static const char* kEventClosureJS =
-      "(function(target, type, url,"
-      "          lengthComputable, loadedBytes, totalBytes) {"
-      "    var progress_event = new ProgressEvent(type, {"
-      "        bubbles: false,"
-      "        cancelable: true,"
-      "        lengthComputable: lengthComputable,"
-      "        loaded: loadedBytes,"
-      "        total: totalBytes"
-      "      });"
-      "    progress_event.url = url;"
-      "    target.dispatchEvent(progress_event);"
-      "})";
-
-  // Create a function object by evaluating the JavaScript text.
-  // TODO(sehr, polina): We should probably cache the created function object to
-  // avoid JavaScript reparsing.
-  pp::VarPrivate exception;
-  pp::VarPrivate function_object = ExecuteScript(kEventClosureJS, &exception);
-  if (!exception.is_undefined() || !function_object.is_object()) {
-    PLUGIN_PRINTF(("Plugin::DispatchProgressEvent:"
-                   " Function object creation failed.\n"));
-    return;
-  }
-  // Get the target of the event to be dispatched.
-  pp::Var owner_element_object = GetOwnerElementObject();
-  if (!owner_element_object.is_object()) {
-    PLUGIN_PRINTF(("Plugin::DispatchProgressEvent:"
-                   " Couldn't get owner element object.\n"));
-    NACL_NOTREACHED();
-    return;
-  }
-
-  pp::Var argv[6];
-  static const uint32_t argc = NACL_ARRAY_SIZE(argv);
-  argv[0] = owner_element_object;
-  argv[1] = pp::Var(event->event_type());
-  argv[2] = pp::Var(event->url());
-  argv[3] = pp::Var(event->length_computable() == LENGTH_IS_COMPUTABLE);
-  argv[4] = pp::Var(static_cast<double>(event->loaded_bytes()));
-  argv[5] = pp::Var(static_cast<double>(event->total_bytes()));
-
-  // Dispatch the event.
-  const pp::Var default_method;
-  function_object.Call(default_method, argc, argv, &exception);
-  if (!exception.is_undefined()) {
-    PLUGIN_PRINTF(("Plugin::DispatchProgressEvent:"
-                   " event dispatch failed.\n"));
-  }
+  nacl_interface_->DispatchEvent(
+      pp_instance(),
+      event->event_type(),
+      pp::Var(event->url()).pp_var(),
+      event->length_computable() == LENGTH_IS_COMPUTABLE ? PP_TRUE : PP_FALSE,
+      event->loaded_bytes(),
+      event->total_bytes());
 }
 
 bool Plugin::OpenURLFast(const nacl::string& url,
