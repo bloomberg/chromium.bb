@@ -671,6 +671,10 @@ void RenderViewHostImpl::OnCrossSiteResponse(
   }
 }
 
+void RenderViewHostImpl::SuppressDialogsUntilSwapOut() {
+  Send(new ViewMsg_SuppressDialogsUntilSwapOut(GetRoutingID()));
+}
+
 void RenderViewHostImpl::SwapOut() {
   // This will be set back to false in OnSwapOutACK, just before we replace
   // this RVH with the pending RVH.

@@ -1008,6 +1008,7 @@ class CONTENT_EXPORT RenderViewImpl
   void OnShouldClose();
   void OnStop();
   void OnStopFinding(StopFindAction action);
+  void OnSuppressDialogsUntilSwapOut();
   void OnSwapOut();
   void OnThemeChanged();
   void OnUpdateTargetURLAck();
@@ -1249,6 +1250,11 @@ class CONTENT_EXPORT RenderViewImpl
   // opener. If so, we may want to load pages in a separate process.  See
   // decidePolicyForNavigation for details.
   bool opener_suppressed_;
+
+  // Whether we must stop creating nested message loops for modal dialogs until
+  // OnSwapOut is called.  This is necessary because modal dialogs have a
+  // PageGroupLoadDeferrer on the stack that interferes with swapping out.
+  bool suppress_dialogs_until_swap_out_;
 
   // Holds state pertaining to a navigation that we initiated.  This is held by
   // the WebDataSource::ExtraData attribute.  We use pending_navigation_state_

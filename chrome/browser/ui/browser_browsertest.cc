@@ -472,13 +472,13 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CrossProcessNavCancelsDialogs) {
   GURL url(test_server()->GetURL("empty.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
-  // TODO(creis): Test this with a setInterval loop of alert dialogs to ensure
-  // that we can navigate away even if the renderer tries to synchronously
-  // create more.  See http://crbug.com/312490.
+  // Test this with multiple alert dialogs to ensure that we can navigate away
+  // even if the renderer tries to synchronously create more.
+  // See http://crbug.com/312490.
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   contents->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
       string16(),
-      ASCIIToUTF16("alert('Dialog showing!');"));
+      ASCIIToUTF16("alert('one'); alert('two');"));
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   EXPECT_TRUE(alert->IsValid());
   AppModalDialogQueue* dialog_queue = AppModalDialogQueue::GetInstance();

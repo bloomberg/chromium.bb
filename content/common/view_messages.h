@@ -1158,6 +1158,11 @@ IPC_MESSAGE_ROUTED0(ViewMsg_CantFocus)
 // via ViewHostMsg_ShouldClose.
 IPC_MESSAGE_ROUTED0(ViewMsg_ShouldClose)
 
+// Tells the renderer to suppress any further modal dialogs until it receives a
+// corresponding ViewMsg_SwapOut message.  This ensures that no
+// PageGroupLoadDeferrer is on the stack for SwapOut.
+IPC_MESSAGE_ROUTED0(ViewMsg_SuppressDialogsUntilSwapOut)
+
 // Instructs the renderer to swap out for a cross-site transition, including
 // running the unload event handler. Expects a SwapOut_ACK message when
 // finished.

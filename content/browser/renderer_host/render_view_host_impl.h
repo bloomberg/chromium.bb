@@ -303,6 +303,12 @@ class CONTENT_EXPORT RenderViewHostImpl
       PageTransition page_transition,
       int64 frame_id);
 
+  // Tells the renderer that this RenderView will soon be swapped out, and thus
+  // not to create any new modal dialogs until it happens.  This must be done
+  // separately so that the PageGroupLoadDeferrers of any current dialogs are no
+  // longer on the stack when we attempt to swap it out.
+  void SuppressDialogsUntilSwapOut();
+
   // Tells the renderer that this RenderView is being swapped out for one in a
   // different renderer process.  It should run its unload handler and move to
   // a blank document.  The renderer should preserve the Frame object until it

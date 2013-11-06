@@ -832,6 +832,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       navigation_gesture_(NavigationGestureUnknown),
       opened_by_user_gesture_(true),
       opener_suppressed_(false),
+      suppress_dialogs_until_swap_out_(false),
       page_id_(-1),
       last_page_id_sent_to_browser_(-1),
       next_page_id_(params->next_page_id),
@@ -1425,6 +1426,8 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnEnumerateDirectoryResponse)
     IPC_MESSAGE_HANDLER(ViewMsg_RunFileChooserResponse, OnFileChooserResponse)
     IPC_MESSAGE_HANDLER(ViewMsg_ShouldClose, OnShouldClose)
+    IPC_MESSAGE_HANDLER(ViewMsg_SuppressDialogsUntilSwapOut,
+                        OnSuppressDialogsUntilSwapOut)
     IPC_MESSAGE_HANDLER(ViewMsg_SwapOut, OnSwapOut)
     IPC_MESSAGE_HANDLER(ViewMsg_ClosePage, OnClosePage)
     IPC_MESSAGE_HANDLER(ViewMsg_ThemeChanged, OnThemeChanged)
@@ -2277,6 +2280,11 @@ bool RenderViewImpl::RunJavaScriptMessage(JavaScriptMessageType type,
                                           const string16& default_value,
                                           const GURL& frame_url,
                                           string16* result) {
+  // Don't allow further dialogs if we are waiting to swap out, since the
+  // PageGroupLoadDeferrer in our stack prevents it.
+  if (suppress_dialogs_until_swap_out_)
+    return false;
+
   bool success = false;
   string16 result_temp;
   if (!result)
@@ -2724,6 +2732,11 @@ bool RenderViewImpl::runModalBeforeUnloadDialog(
   if (is_swapped_out_)
     return true;
 
+  // Don't allow further dialogs if we are waiting to swap out, since the
+  // PageGroupLoadDeferrer in our stack prevents it.
+  if (suppress_dialogs_until_swap_out_)
+    return false;
+
   bool success = false;
   // This is an ignored return value, but is included so we can accept the same
   // response as RunJavaScriptMessage.
@@ -3010,6 +3023,11 @@ void RenderViewImpl::show(WebNavigationPolicy policy) {
 
 void RenderViewImpl::runModal() {
   DCHECK(did_show_) << "should already have shown the view";
+
+  // Don't allow further dialogs if we are waiting to swap out, since the
+  // PageGroupLoadDeferrer in our stack prevents it.
+  if (suppress_dialogs_until_swap_out_)
+    return;
 
   // We must keep WebKit's shared timer running in this case in order to allow
   // showModalDialog to function properly.
@@ -5336,6 +5354,11 @@ void RenderViewImpl::OnShouldClose() {
                                        before_unload_end_time));
 }
 
+void RenderViewImpl::OnSuppressDialogsUntilSwapOut() {
+  // Don't show any more dialogs until we finish OnSwapOut.
+  suppress_dialogs_until_swap_out_ = true;
+}
+
 void RenderViewImpl::OnSwapOut() {
   // Only run unload if we're not swapped out yet, but send the ack either way.
   if (!is_swapped_out_) {
@@ -5368,6 +5391,9 @@ void RenderViewImpl::OnSwapOut() {
     // stop compositing.
     webview()->setVisibilityState(WebKit::WebPageVisibilityStateHidden, false);
   }
+
+  // It is now safe to show modal dialogs again.
+  suppress_dialogs_until_swap_out_ = false;
 
   Send(new ViewHostMsg_SwapOut_ACK(routing_id_));
 }

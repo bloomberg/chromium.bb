@@ -437,12 +437,14 @@ void RenderViewHostManager::SwapOutOldPage() {
   // Should only see this while we have a pending renderer or transfer.
   CHECK(cross_navigation_pending_ || pending_nav_params_.get());
 
-  // First close any modal dialogs that would prevent us from swapping out.
-  // TODO(creis): This is not a guarantee.  The renderer could immediately
-  // create another dialog in a loop, potentially causing a renderer crash when
-  // we tell it to swap out with a nested message loop and PageGroupLoadDeferrer
-  // on the stack.  We should prevent the renderer from showing more dialogs
-  // until the SwapOut.  See http://crbug.com/312490.
+  // Tell the renderer to suppress any further modal dialogs so that we can swap
+  // it out.  This must be done before canceling any current dialog, in case
+  // there is a loop creating additional dialogs.
+  render_view_host_->SuppressDialogsUntilSwapOut();
+
+  // Now close any modal dialogs that would prevent us from swapping out.  This
+  // must be done separately from SwapOut, so that the PageGroupLoadDeferrer is
+  // no longer on the stack when we send the SwapOut message.
   delegate_->CancelModalDialogsForRenderManager();
 
   // Tell the old renderer it is being swapped out.  This will fire the unload
@@ -772,14 +774,6 @@ void RenderViewHostManager::CommitPending() {
   // committed yet, so if we've already cleared |pending_web_ui_| the call chain
   // this triggers won't be able to figure out what's going on.
   bool will_focus_location_bar = delegate_->FocusLocationBarByDefault();
-
-  // We currently can't guarantee that the renderer isn't showing a new modal
-  // dialog, even though we canceled them in SwapOutOldPage.  (It may have
-  // created another in the meantime.)  Make sure we run and reset the callback
-  // now before we delete its RVH below.
-  // TODO(creis): Remove this if we can guarantee that no new dialogs will be
-  // shown after SwapOutOldPage.  See http://crbug.com/312490.
-  delegate_->CancelModalDialogsForRenderManager();
 
   // Next commit the Web UI, if any. Either replace |web_ui_| with
   // |pending_web_ui_|, or clear |web_ui_| if there is no pending WebUI, or
