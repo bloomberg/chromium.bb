@@ -95,9 +95,6 @@ crbug.com/309963 virtual/threaded/animations/play-state-initially-paused-start-e
 crbug.com/303430 [ Debug ] animations/interpolation/line-height-interpolation.html [ Crash ]
 crbug.com/303430 [ Debug ] virtual/threaded/animations/interpolation/line-height-interpolation.html [ Crash ]
 
-Bug(grzegorz) [ Linux Mac Win ] editing/spelling/inline-spelling-markers-hidpi.html [ NeedsRebaseline ]
-Bug(grzegorz) [ Linux Mac Win ] editing/spelling/inline-spelling-markers-hidpi-composited.html [ NeedsRebaseline ]
-
 # This has flaky output so can't be rebaselined.
 crbug.com/258896 animations/transition-and-animation-3.html [ Failure ]
 
