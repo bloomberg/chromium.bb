@@ -540,7 +540,7 @@ class BASE_EXPORT TraceLog {
 
   // Exposed for unittesting:
 
-  void InstallWaitableEventForSamplingTesting(WaitableEvent* waitable_event);
+  void WaitSamplingEventForTesting();
 
   // Allows deleting our singleton instance.
   static void DeleteForTesting();

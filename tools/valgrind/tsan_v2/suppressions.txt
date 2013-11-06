@@ -59,9 +59,6 @@ race:uprv_realloc_46
 # http://crbug.com/223955
 race:PassRefPtr
 
-# http://crbug.com/224617
-race:base::debug::TraceEventTestFixture_TraceSampling_Test::TestBody
-
 # http://crbug.com/239359
 race:media::TestInputCallback::OnData
 
@@ -134,9 +131,6 @@ race:PostponeInterruptsScope
 
 # http://crbug.com/296883
 race:net::URLFetcherCore::Stop
-
-# http://crbug.com/305459
-race:base::debug::TraceEventTestFixture_TraceContinuousSampling_Test::TestBody
 
 # http://crbug.com/310851
 race:net::ProxyResolverV8Tracing::Job::~Job

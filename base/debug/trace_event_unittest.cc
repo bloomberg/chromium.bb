@@ -1756,13 +1756,10 @@ TEST_F(TraceEventTestFixture, TraceSampling) {
       TraceLog::Options(TraceLog::RECORD_UNTIL_FULL |
                         TraceLog::ENABLE_SAMPLING));
 
-  WaitableEvent* sampled = new WaitableEvent(false, false);
-  TraceLog::GetInstance()->InstallWaitableEventForSamplingTesting(sampled);
-
   TRACE_EVENT_SET_SAMPLING_STATE_FOR_BUCKET(1, "cc", "Stuff");
-  sampled->Wait();
+  TraceLog::GetInstance()->WaitSamplingEventForTesting();
   TRACE_EVENT_SET_SAMPLING_STATE_FOR_BUCKET(1, "cc", "Things");
-  sampled->Wait();
+  TraceLog::GetInstance()->WaitSamplingEventForTesting();
 
   EndTraceAndFlush();
 
@@ -1778,32 +1775,29 @@ TEST_F(TraceEventTestFixture, TraceSamplingScope) {
     TraceLog::Options(TraceLog::RECORD_UNTIL_FULL |
                       TraceLog::ENABLE_SAMPLING));
 
-  WaitableEvent* sampled = new WaitableEvent(false, false);
-  TraceLog::GetInstance()->InstallWaitableEventForSamplingTesting(sampled);
-
   TRACE_EVENT_SCOPED_SAMPLING_STATE("AAA", "name");
-  sampled->Wait();
+  TraceLog::GetInstance()->WaitSamplingEventForTesting();
   {
     EXPECT_STREQ(TRACE_EVENT_GET_SAMPLING_STATE(), "AAA");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("BBB", "name");
-    sampled->Wait();
+    TraceLog::GetInstance()->WaitSamplingEventForTesting();
     EXPECT_STREQ(TRACE_EVENT_GET_SAMPLING_STATE(), "BBB");
   }
-  sampled->Wait();
+  TraceLog::GetInstance()->WaitSamplingEventForTesting();
   {
     EXPECT_STREQ(TRACE_EVENT_GET_SAMPLING_STATE(), "AAA");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("CCC", "name");
-    sampled->Wait();
+    TraceLog::GetInstance()->WaitSamplingEventForTesting();
     EXPECT_STREQ(TRACE_EVENT_GET_SAMPLING_STATE(), "CCC");
   }
-  sampled->Wait();
+  TraceLog::GetInstance()->WaitSamplingEventForTesting();
   {
     EXPECT_STREQ(TRACE_EVENT_GET_SAMPLING_STATE(), "AAA");
     TRACE_EVENT_SET_SAMPLING_STATE("DDD", "name");
-    sampled->Wait();
+    TraceLog::GetInstance()->WaitSamplingEventForTesting();
     EXPECT_STREQ(TRACE_EVENT_GET_SAMPLING_STATE(), "DDD");
   }
-  sampled->Wait();
+  TraceLog::GetInstance()->WaitSamplingEventForTesting();
   EXPECT_STREQ(TRACE_EVENT_GET_SAMPLING_STATE(), "DDD");
 
   EndTraceAndFlush();
@@ -1815,14 +1809,10 @@ TEST_F(TraceEventTestFixture, TraceContinuousSampling) {
       CategoryFilter("*"),
       TraceLog::Options(TraceLog::MONITOR_SAMPLING));
 
-  WaitableEvent* sampled = new WaitableEvent(false, false);
-  TraceLog::GetInstance()->InstallWaitableEventForSamplingTesting(
-      sampled);
-
   TRACE_EVENT_SET_SAMPLING_STATE_FOR_BUCKET(1, "category", "AAA");
-  sampled->Wait();
+  TraceLog::GetInstance()->WaitSamplingEventForTesting();
   TRACE_EVENT_SET_SAMPLING_STATE_FOR_BUCKET(1, "category", "BBB");
-  sampled->Wait();
+  TraceLog::GetInstance()->WaitSamplingEventForTesting();
 
   FlushMonitoring();
 
@@ -1831,12 +1821,12 @@ TEST_F(TraceEventTestFixture, TraceContinuousSampling) {
   EXPECT_TRUE(FindNamePhase("BBB", "P"));
 
   Clear();
-  sampled->Wait();
+  TraceLog::GetInstance()->WaitSamplingEventForTesting();
 
   TRACE_EVENT_SET_SAMPLING_STATE_FOR_BUCKET(1, "category", "CCC");
-  sampled->Wait();
+  TraceLog::GetInstance()->WaitSamplingEventForTesting();
   TRACE_EVENT_SET_SAMPLING_STATE_FOR_BUCKET(1, "category", "DDD");
-  sampled->Wait();
+  TraceLog::GetInstance()->WaitSamplingEventForTesting();
 
   FlushMonitoring();
 

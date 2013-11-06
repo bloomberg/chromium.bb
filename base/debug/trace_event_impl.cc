@@ -838,7 +838,7 @@ class TraceSamplingThread : public PlatformThread::Delegate {
   static void DefaultSamplingCallback(TraceBucketData* bucekt_data);
 
   void Stop();
-  void InstallWaitableEventForSamplingTesting(WaitableEvent* waitable_event);
+  void WaitSamplingEventForTesting();
 
  private:
   friend class TraceLog;
@@ -855,14 +855,14 @@ class TraceSamplingThread : public PlatformThread::Delegate {
                                      const char** name);
   std::vector<TraceBucketData> sample_buckets_;
   bool thread_running_;
-  scoped_ptr<CancellationFlag> cancellation_flag_;
-  scoped_ptr<WaitableEvent> waitable_event_for_testing_;
+  CancellationFlag cancellation_flag_;
+  WaitableEvent waitable_event_for_testing_;
 };
 
 
 TraceSamplingThread::TraceSamplingThread()
-    : thread_running_(false) {
-  cancellation_flag_.reset(new CancellationFlag);
+    : thread_running_(false),
+      waitable_event_for_testing_(false, false) {
 }
 
 TraceSamplingThread::~TraceSamplingThread() {
@@ -872,12 +872,11 @@ void TraceSamplingThread::ThreadMain() {
   PlatformThread::SetName("Sampling Thread");
   thread_running_ = true;
   const int kSamplingFrequencyMicroseconds = 1000;
-  while (!cancellation_flag_->IsSet()) {
+  while (!cancellation_flag_.IsSet()) {
     PlatformThread::Sleep(
         TimeDelta::FromMicroseconds(kSamplingFrequencyMicroseconds));
     GetSamples();
-    if (waitable_event_for_testing_.get())
-      waitable_event_for_testing_->Signal();
+    waitable_event_for_testing_.Signal();
   }
 }
 
@@ -909,6 +908,9 @@ void TraceSamplingThread::RegisterSampleBucket(
     TRACE_EVENT_API_ATOMIC_WORD* bucket,
     const char* const name,
     TraceSampleCallback callback) {
+  // Access to sample_buckets_ doesn't cause races with the sampling thread
+  // that uses the sample_buckets_, because it is guaranteed that
+  // RegisterSampleBucket is called before the sampling thread is created.
   DCHECK(!thread_running_);
   sample_buckets_.push_back(TraceBucketData(bucket, name, callback));
 }
@@ -922,12 +924,11 @@ void TraceSamplingThread::ExtractCategoryAndName(const char* combined,
 }
 
 void TraceSamplingThread::Stop() {
-  cancellation_flag_->Set();
+  cancellation_flag_.Set();
 }
 
-void TraceSamplingThread::InstallWaitableEventForSamplingTesting(
-    WaitableEvent* waitable_event) {
-  waitable_event_for_testing_.reset(waitable_event);
+void TraceSamplingThread::WaitSamplingEventForTesting() {
+  waitable_event_for_testing_.Wait();
 }
 
 TraceBucketData::TraceBucketData(base::subtle::AtomicWord* bucket,
@@ -2027,11 +2028,10 @@ void TraceLog::AddMetadataEventsWhileLocked() {
   }
 }
 
-void TraceLog::InstallWaitableEventForSamplingTesting(
-    WaitableEvent* waitable_event) {
+void TraceLog::WaitSamplingEventForTesting() {
   if (!sampling_thread_)
     return;
-  sampling_thread_->InstallWaitableEventForSamplingTesting(waitable_event);
+  sampling_thread_->WaitSamplingEventForTesting();
 }
 
 void TraceLog::DeleteForTesting() {
