@@ -395,10 +395,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   class WindowObserver;
   friend class WindowObserver;
-#if defined(OS_WIN)
-  class TransientWindowObserver;
-  friend class TransientWindowObserver;
-#endif
 
   // Overridden from ImageTransportFactoryObserver:
   virtual void OnLostResources() OVERRIDE;
@@ -556,11 +552,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   BrowserAccessibilityManager* GetOrCreateBrowserAccessibilityManager();
 
 #if defined(OS_WIN)
-  // Sets the cutout rects from transient windows. These are rectangles that
-  // windowed NPAPI plugins shouldn't paint in. Overwrites any previous cutout
-  // rects.
-  void UpdateTransientRects(const std::vector<gfx::Rect>& rects);
-
   // Updates the total list of cutout rects, which is the union of transient
   // windows and constrained windows.
   void UpdateCutoutRects();
@@ -731,11 +722,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   PaintObserver* paint_observer_;
 
 #if defined(OS_WIN)
-  scoped_ptr<TransientWindowObserver> transient_observer_;
-
-  // The list of rectangles from transient and constrained windows over this
-  // view. Windowed NPAPI plugins shouldn't draw over them.
-  std::vector<gfx::Rect> transient_rects_;
+  // The list of rectangles from constrained windows over this view. Windowed
+  // NPAPI plugins shouldn't draw over them.
   std::vector<gfx::Rect> constrained_rects_;
 
   typedef std::map<HWND, WebPluginGeometry> PluginWindowMoves;

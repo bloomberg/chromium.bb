@@ -97,7 +97,8 @@ PluginTest* CreatePluginTest(const std::string& test_name,
   } else if (test_name == "hidden_plugin" ||
              test_name == "create_instance_in_paint" ||
              test_name == "alert_in_window_message" ||
-             test_name == "ensure_scripting_works_in_destroy") {
+             test_name == "ensure_scripting_works_in_destroy" ||
+             test_name == "set_title_in_paint") {
     new_test = new WindowedPluginTest(instance, host_functions);
 #endif
   } else if (test_name == "setup") {
