@@ -310,7 +310,10 @@ interface TestObjectPython {
     [CallWith=ActiveWindow] void callWithActiveWindow();
     [CallWith=ActiveWindow&FirstWindow] void callWithActiveWindowScriptWindow();
     [CheckSecurityForNode] void checkSecurityForNodeVoidMethod();
+    [Conditional=Condition] void conditionalConditionVoidMethod();
+    [Conditional=Condition1&Condition2] void conditionalCondition1AndCondition2VoidMethod();
+    [Conditional=Condition] static void conditionalConditionStaticVoidMethod();
     [Custom] void customVoidMethod();
-    // [Conditional=Condition, Custom] void conditionalConditionCustomVoidMethod(); // FIXME: wait for [Conditional] to land
+    [Conditional=Condition, Custom] void conditionalConditionCustomVoidMethod();
     [CustomElementCallbacks] void customElementCallbacksVoidMethod();
 };

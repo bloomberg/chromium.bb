@@ -72,6 +72,7 @@ def generate_method(interface, method):
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]
         'arguments': [generate_argument(interface, method, argument, index)
                       for index, argument in enumerate(arguments)],
+        'conditional_string': v8_utilities.generate_conditional_string(method),
         'cpp_method': cpp_method(interface, method, len(arguments)),
         'custom_signature': this_custom_signature,
         'idl_type': method.idl_type,

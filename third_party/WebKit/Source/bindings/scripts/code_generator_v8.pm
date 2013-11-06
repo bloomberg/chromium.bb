@@ -2237,7 +2237,7 @@ sub GenerateFunctionCallback
 
     my $conditionalString = GenerateConditionalString($function);
     my $code = "";
-    $code .= "#if ${conditionalString}\n\n" if $conditionalString;
+    $code .= "#if ${conditionalString}\n" if $conditionalString;
     $code .= <<END;
 static void ${name}MethodCallback${forMainWorldSuffix}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -2254,8 +2254,9 @@ END
         $code .= "    ${implClassName}V8Internal::${name}Method${forMainWorldSuffix}(info);\n";
     }
     $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
-    $code .= "}\n\n";
-    $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
+    $code .= "}\n";
+    $code .= "#endif // ${conditionalString}\n" if $conditionalString;
+    $code .= "\n";
     $implementation{nameSpaceInternal}->add($code);
 }
 
@@ -2283,7 +2284,7 @@ sub GenerateFunction
 
     my $conditionalString = GenerateConditionalString($function);
     my $code = "";
-    $code .= "#if ${conditionalString}\n\n" if $conditionalString;
+    $code .= "#if ${conditionalString}\n" if $conditionalString;
     $code .= "static void ${name}Method${forMainWorldSuffix}(const v8::FunctionCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
 
@@ -2317,9 +2318,9 @@ sub GenerateFunction
             ${hiddenDependencyAction}HiddenDependency(info.Holder(), info[1], ${v8ClassName}::eventListenerCacheIndex, info.GetIsolate());
     }
 }
-
 END
-        $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
+        $code .= "#endif // ${conditionalString}\n" if $conditionalString;
+        $code .= "\n";
         $implementation{nameSpaceInternal}->add($code);
         return;
     }
@@ -2398,8 +2399,9 @@ END
 
     # Build the function call string.
     $code .= GenerateFunctionCallString($function, $paramIndex, "    ", $interface, $forMainWorldSuffix, %replacements);
-    $code .= "}\n\n";
-    $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
+    $code .= "}\n";
+    $code .= "#endif // ${conditionalString}\n" if $conditionalString;
+    $code .= "\n";
     $implementation{nameSpaceInternal}->add($code);
 }
 

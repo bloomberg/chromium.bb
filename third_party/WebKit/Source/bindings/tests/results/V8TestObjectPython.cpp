@@ -5091,12 +5091,71 @@ static void checkSecurityForNodeVoidMethodMethodCallback(const v8::FunctionCallb
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+#if ENABLE(Condition)
+static void conditionalConditionVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    imp->conditionalConditionVoidMethod();
+}
+#endif // ENABLE(Condition)
+
+#if ENABLE(Condition)
+static void conditionalConditionVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::conditionalConditionVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+#endif // ENABLE(Condition)
+
+#if ENABLE(Condition1) && ENABLE(Condition2)
+static void conditionalCondition1AndCondition2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    imp->conditionalCondition1AndCondition2VoidMethod();
+}
+#endif // ENABLE(Condition1) && ENABLE(Condition2)
+
+#if ENABLE(Condition1) && ENABLE(Condition2)
+static void conditionalCondition1AndCondition2VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::conditionalCondition1AndCondition2VoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+#endif // ENABLE(Condition1) && ENABLE(Condition2)
+
+#if ENABLE(Condition)
+static void conditionalConditionStaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython::conditionalConditionStaticVoidMethod();
+}
+#endif // ENABLE(Condition)
+
+#if ENABLE(Condition)
+static void conditionalConditionStaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::conditionalConditionStaticVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+#endif // ENABLE(Condition)
+
 static void customVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     V8TestObjectPython::customVoidMethodMethodCustom(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
+
+#if ENABLE(Condition)
+static void conditionalConditionCustomVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    V8TestObjectPython::conditionalConditionCustomVoidMethodMethodCustom(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+#endif // ENABLE(Condition)
 
 static void customElementCallbacksVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -5325,7 +5384,16 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"callWithActiveWindow", TestObjectPythonV8Internal::callWithActiveWindowMethodCallback, 0, 0},
     {"callWithActiveWindowScriptWindow", TestObjectPythonV8Internal::callWithActiveWindowScriptWindowMethodCallback, 0, 0},
     {"checkSecurityForNodeVoidMethod", TestObjectPythonV8Internal::checkSecurityForNodeVoidMethodMethodCallback, 0, 0},
+#if ENABLE(Condition)
+    {"conditionalConditionVoidMethod", TestObjectPythonV8Internal::conditionalConditionVoidMethodMethodCallback, 0, 0},
+#endif // ENABLE(Condition)
+#if ENABLE(Condition1) && ENABLE(Condition2)
+    {"conditionalCondition1AndCondition2VoidMethod", TestObjectPythonV8Internal::conditionalCondition1AndCondition2VoidMethodMethodCallback, 0, 0},
+#endif // ENABLE(Condition1) && ENABLE(Condition2)
     {"customVoidMethod", TestObjectPythonV8Internal::customVoidMethodMethodCallback, 0, 0},
+#if ENABLE(Condition)
+    {"conditionalConditionCustomVoidMethod", TestObjectPythonV8Internal::conditionalConditionCustomVoidMethodMethodCallback, 0, 0},
+#endif // ENABLE(Condition)
     {"customElementCallbacksVoidMethod", TestObjectPythonV8Internal::customElementCallbacksVoidMethodMethodCallback, 0, 0},
 };
 
@@ -5458,6 +5526,9 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::
     v8::Handle<v8::FunctionTemplate> voidMethodDefaultUndefinedTestInterfaceEmptyArgArgv[voidMethodDefaultUndefinedTestInterfaceEmptyArgArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8TestInterfaceEmpty::wrapperTypeInfo, currentWorldType) };
     v8::Handle<v8::Signature> voidMethodDefaultUndefinedTestInterfaceEmptyArgSignature = v8::Signature::New(desc, voidMethodDefaultUndefinedTestInterfaceEmptyArgArgc, voidMethodDefaultUndefinedTestInterfaceEmptyArgArgv);
     proto->Set(v8::String::NewSymbol("voidMethodDefaultUndefinedTestInterfaceEmptyArg"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::voidMethodDefaultUndefinedTestInterfaceEmptyArgMethodCallback, v8Undefined(), voidMethodDefaultUndefinedTestInterfaceEmptyArgSignature, 0));
+#if ENABLE(Condition)
+    desc->Set(v8::String::NewSymbol("conditionalConditionStaticVoidMethod"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::conditionalConditionStaticVoidMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
+#endif // ENABLE(Condition)
     desc->SetNativeDataProperty(v8::String::NewSymbol("staticStringAttribute"), TestObjectPythonV8Internal::staticStringAttributeAttributeGetterCallback, TestObjectPythonV8Internal::staticStringAttributeAttributeSetterCallback, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
     desc->SetNativeDataProperty(v8::String::NewSymbol("staticLongAttribute"), TestObjectPythonV8Internal::staticLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::staticLongAttributeAttributeSetterCallback, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
 

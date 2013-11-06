@@ -1,5 +1,6 @@
 {##############################################################################}
 {% macro generate_method(method) %}
+{% filter conditional(method.conditional_string) %}
 static void {{method.name}}Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     {% if method.number_of_required_arguments %}
@@ -74,6 +75,7 @@ static void {{method.name}}Method(const v8::FunctionCallbackInfo<v8::Value>& inf
     {% endfor %}{# arguments #}
     {{cpp_method_call(method, method.cpp_method) | indent}}
 }
+{% endfilter %}
 {% endmacro %}
 
 
@@ -105,6 +107,7 @@ if (state.hadException()) {
 
 {##############################################################################}
 {% macro method_callback(method, world_suffix) %}
+{% filter conditional(method.conditional_string) %}
 static void {{method.name}}MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
@@ -124,4 +127,5 @@ static void {{method.name}}MethodCallback(const v8::FunctionCallbackInfo<v8::Val
     {% endif %}
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
+{% endfilter %}
 {% endmacro %}

@@ -52,6 +52,9 @@ public:
     static void derefObject(void*);
     static const WrapperTypeInfo wrapperTypeInfo;
     static void customVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
+#if ENABLE(Condition)
+    static void conditionalConditionCustomVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
+#endif // ENABLE(Condition)
     static void customLongAttributeAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>&);
     static void customLongAttributeAttributeSetterCustom(v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
     static void customGetterLongAttributeAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>&);

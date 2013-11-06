@@ -303,28 +303,23 @@ static void Node14AttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::V
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
-
 static void supplementalMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     SupportTestInterface* imp = V8SupportTestInterface::toNative(info.Holder());
     SupportTestPartialInterface::supplementalMethod1(imp);
 }
-
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
-
 static void supplementalMethod1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     SupportTestInterfaceV8Internal::supplementalMethod1Method(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
-
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
-
 static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 2)) {
@@ -341,49 +336,40 @@ static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>&
         return;
     v8SetReturnValue(info, result.release());
 }
-
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
-
 static void supplementalMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     SupportTestInterfaceV8Internal::supplementalMethod2Method(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
-
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
-
 static void supplementalMethod3MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     V8SupportTestInterface::supplementalMethod3MethodCustom(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
-
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
-
 static void supplementalMethod4Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     SupportTestPartialInterface::supplementalMethod4();
 }
-
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 #if ENABLE(Condition11) || ENABLE(Condition12)
-
 static void supplementalMethod4MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     SupportTestInterfaceV8Internal::supplementalMethod4Method(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
-
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
 } // namespace SupportTestInterfaceV8Internal

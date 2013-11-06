@@ -56,7 +56,9 @@ public:
     static void derefObject(void*);
     static const WrapperTypeInfo wrapperTypeInfo;
     {% for method in methods if method.is_custom %}
+    {% filter conditional(method.conditional_string) %}
     static void {{method.name}}MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
+    {% endfilter %}
     {% endfor %}
     {% for attribute in attributes %}
     {% if attribute.has_custom_getter %}{# FIXME: and not attribute.implemented_by #}

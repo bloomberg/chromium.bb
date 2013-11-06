@@ -3749,66 +3749,54 @@ static void methodWithEnforceRangeUInt64MethodCallback(const v8::FunctionCallbac
 }
 
 #if ENABLE(Condition1)
-
 static void conditionalMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     v8SetReturnValueString(info, imp->conditionalMethod1(), info.GetIsolate());
 }
-
 #endif // ENABLE(Condition1)
 
 #if ENABLE(Condition1)
-
 static void conditionalMethod1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestObjV8Internal::conditionalMethod1Method(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
-
 #endif // ENABLE(Condition1)
 
 #if ENABLE(Condition1) && ENABLE(Condition2)
-
 static void conditionalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     imp->conditionalMethod2();
 }
-
 #endif // ENABLE(Condition1) && ENABLE(Condition2)
 
 #if ENABLE(Condition1) && ENABLE(Condition2)
-
 static void conditionalMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestObjV8Internal::conditionalMethod2Method(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
-
 #endif // ENABLE(Condition1) && ENABLE(Condition2)
 
 #if ENABLE(Condition1) || ENABLE(Condition2)
-
 static void conditionalMethod3Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     imp->conditionalMethod3();
 }
-
 #endif // ENABLE(Condition1) || ENABLE(Condition2)
 
 #if ENABLE(Condition1) || ENABLE(Condition2)
-
 static void conditionalMethod3MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestObjV8Internal::conditionalMethod3Method(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
-
 #endif // ENABLE(Condition1) || ENABLE(Condition2)
 
 static void callbackFunctionReturnValueMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4071,7 +4059,6 @@ static void classMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>
 }
 
 #if ENABLE(Condition1)
-
 static void overloadedMethod11Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
@@ -4081,11 +4068,9 @@ static void overloadedMethod11Method(const v8::FunctionCallbackInfo<v8::Value>& 
     V8TRYCATCH_VOID(int, arg, toInt32(info[0]));
     TestObj::overloadedMethod1(arg);
 }
-
 #endif // ENABLE(Condition1)
 
 #if ENABLE(Condition1)
-
 static void overloadedMethod12Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
@@ -4095,7 +4080,6 @@ static void overloadedMethod12Method(const v8::FunctionCallbackInfo<v8::Value>& 
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, info[0]);
     TestObj::overloadedMethod1(type);
 }
-
 #endif // ENABLE(Condition1)
 
 #if ENABLE(Condition1)
@@ -4120,14 +4104,12 @@ static void overloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& i
 #endif // ENABLE(Condition1)
 
 #if ENABLE(Condition1)
-
 static void overloadedMethod1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestObjV8Internal::overloadedMethod1Method(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
-
 #endif // ENABLE(Condition1)
 
 static void classMethodWithClampMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
