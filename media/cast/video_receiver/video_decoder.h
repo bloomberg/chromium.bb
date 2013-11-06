@@ -19,14 +19,15 @@ class Vp8Decoder;
 // thread.
 class VideoDecoder : public base::NonThreadSafe {
  public:
-  explicit VideoDecoder(const VideoReceiverConfig& video_config);
+  VideoDecoder(const VideoReceiverConfig& video_config,
+               scoped_refptr<CastEnvironment> cast_environment);
   virtual ~VideoDecoder();
 
-  // Decode a video frame. Decoded (raw) frame will be returned in the
-  // provided video_frame.
+  // Decode a video frame. Decoded (raw) frame will be returned via the
+  // provided callback
   bool DecodeVideoFrame(const EncodedVideoFrame* encoded_frame,
                         const base::TimeTicks render_time,
-                        I420VideoFrame* video_frame);
+                        const VideoFrameDecodedCallback& frame_decoded_cb);
 
  private:
   VideoCodec codec_;

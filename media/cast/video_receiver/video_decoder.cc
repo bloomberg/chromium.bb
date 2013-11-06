@@ -12,13 +12,14 @@
 namespace media {
 namespace cast {
 
-VideoDecoder::VideoDecoder(const VideoReceiverConfig& video_config)
+VideoDecoder::VideoDecoder(const VideoReceiverConfig& video_config,
+                           scoped_refptr<CastEnvironment> cast_environment)
     : codec_(video_config.codec),
       vp8_decoder_() {
   switch (video_config.codec) {
     case kVp8:
       // Initializing to use one core.
-      vp8_decoder_.reset(new Vp8Decoder(1));
+      vp8_decoder_.reset(new Vp8Decoder(1, cast_environment));
       break;
     case kH264:
       NOTIMPLEMENTED();
@@ -31,13 +32,13 @@ VideoDecoder::VideoDecoder(const VideoReceiverConfig& video_config)
 
 VideoDecoder::~VideoDecoder() {}
 
-bool VideoDecoder::DecodeVideoFrame(
-    const EncodedVideoFrame* encoded_frame,
-    const base::TimeTicks render_time,
-    I420VideoFrame* video_frame) {
+bool VideoDecoder::DecodeVideoFrame(const EncodedVideoFrame* encoded_frame,
+                                    const base::TimeTicks render_time,
+                                    const VideoFrameDecodedCallback&
+                                    frame_decoded_cb) {
   DCHECK(encoded_frame->codec == codec_) << "Invalid codec";
   DCHECK_GT(encoded_frame->data.size(), GG_UINT64_C(0)) << "Empty video frame";
-  return vp8_decoder_->Decode(*encoded_frame, video_frame);
+  return vp8_decoder_->Decode(encoded_frame, render_time, frame_decoded_cb);
 }
 
 }  // namespace cast

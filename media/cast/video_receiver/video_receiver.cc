@@ -131,7 +131,7 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
                            video_config.decoder_faster_than_max_frame_rate,
                            max_unacked_frames));
   if (!video_config.use_external_decoder) {
-    video_decoder_.reset(new VideoDecoder(video_config));
+    video_decoder_.reset(new VideoDecoder(video_config, cast_environment));
   }
 
   rtcp_.reset(
@@ -180,23 +180,12 @@ void VideoReceiver::DecodeVideoFrameThread(
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::VIDEO_DECODER));
   DCHECK(video_decoder_);
 
-  // TODO(mikhal): Allow the application to allocate this memory.
-  scoped_ptr<I420VideoFrame> video_frame(new I420VideoFrame());
-
-  bool success = video_decoder_->DecodeVideoFrame(encoded_frame.get(),
-      render_time, video_frame.get());
-
-  if (success) {
-    VLOG(1) << "Decoded frame " << static_cast<int>(encoded_frame->frame_id);
-    // Frame decoded - return frame to the user via callback.
-    cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
-          base::Bind(frame_decoded_callback,
-                     base::Passed(&video_frame), render_time));
-  } else {
+  if (!(video_decoder_->DecodeVideoFrame(encoded_frame.get(), render_time,
+                                        frame_decoded_callback))) {
     // This will happen if we decide to decode but not show a frame.
     cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
         base::Bind(&VideoReceiver::GetRawVideoFrame,
-            weak_factory_.GetWeakPtr(), frame_decoded_callback));
+                   weak_factory_.GetWeakPtr(), frame_decoded_callback));
   }
 }
 
