@@ -100,17 +100,9 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
 {
     SkASSERT(sizeof(GlyphBufferGlyph) == sizeof(uint16_t)); // compile-time assert
 
-    const GlyphBufferGlyph* glyphs = glyphBuffer.glyphs(from);
     SkScalar x = SkFloatToScalar(point.x());
     SkScalar y = SkFloatToScalar(point.y());
 
-    // FIXME: text rendering speed:
-    // Android has code in their WebCore fork to special case when the
-    // GlyphBuffer has no advances other than the defaults. In that case the
-    // text drawing can proceed faster. However, it's unclear when those
-    // patches may be upstreamed to WebKit so we always use the slower path
-    // here.
-    const GlyphBufferAdvance* adv = glyphBuffer.advances(from);
     SkAutoSTMalloc<32, SkPoint> storage(numGlyphs);
     SkPoint* pos = storage.get();
 
@@ -131,7 +123,7 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
         while (glyphIndex < numGlyphs) {
             unsigned chunkLength = std::min(kMaxBufferLength, numGlyphs - glyphIndex);
 
-            const Glyph* glyphs = glyphBuffer.glyphs(from + glyphIndex);
+            const GlyphBufferGlyph* glyphs = glyphBuffer.glyphs(from + glyphIndex);
             translations.resize(chunkLength);
             verticalData->getVerticalTranslationsForGlyphs(font, &glyphs[0], chunkLength, reinterpret_cast<float*>(&translations[0]));
 
@@ -153,12 +145,20 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
         return;
     }
 
+    // FIXME: text rendering speed:
+    // Android has code in their WebCore fork to special case when the
+    // GlyphBuffer has no advances other than the defaults. In that case the
+    // text drawing can proceed faster. However, it's unclear when those
+    // patches may be upstreamed to WebKit so we always use the slower path
+    // here.
+    const GlyphBufferAdvance* adv = glyphBuffer.advances(from);
     for (unsigned i = 0; i < numGlyphs; i++) {
         pos[i].set(x, y);
         x += SkFloatToScalar(adv[i].width());
         y += SkFloatToScalar(adv[i].height());
     }
 
+    const GlyphBufferGlyph* glyphs = glyphBuffer.glyphs(from);
     paintGlyphs(gc, font, glyphs, numGlyphs, pos, textRect);
 }
 
