@@ -52,7 +52,7 @@ def generate_attribute(interface, attribute):
         'activity_logging_world_list_for_getter': v8_utilities.activity_logging_world_list(attribute, 'Getter'),  # [ActivityLogging]
         'activity_logging_world_list_for_setter': v8_utilities.activity_logging_world_list(attribute, 'Setter'),  # [ActivityLogging]
         'cached_attribute_validation_method': extended_attributes.get('CachedAttribute'),
-        'conditional_string': v8_utilities.generate_conditional_string(attribute),
+        'conditional_string': v8_utilities.conditional_string(attribute),
         'cpp_type': v8_types.cpp_type(idl_type),
         'getter_callback_name': getter_callback_name(interface, attribute),
         'getter_callback_name_for_main_world': getter_callback_name_for_main_world(interface, attribute),
@@ -130,12 +130,12 @@ def generate_getter(interface, attribute, contents):
     if is_check_security_for_node or contents['is_getter_raises_exception']:
         includes.update(set(['bindings/v8/ExceptionMessages.h',
                              'bindings/v8/ExceptionState.h']))
-    v8_utilities.generate_deprecate_as(attribute, contents)  # [DeprecateAs]
-    v8_utilities.generate_measure_as(attribute, contents)  # [MeasureAs]
 
     contents.update({
+        'deprecate_as': v8_utilities.deprecate_as(attribute),  # [DeprecateAs]
         'is_check_security_for_node': is_check_security_for_node,
         'is_unforgeable': 'Unforgeable' in extended_attributes,
+        'measure_as': v8_utilities.measure_as(attribute),  # [MeasureAs]
     })
 
 

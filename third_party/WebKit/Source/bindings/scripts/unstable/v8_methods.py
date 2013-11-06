@@ -75,10 +75,11 @@ def generate_method(interface, method):
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]
         'arguments': [generate_argument(interface, method, argument, index)
                       for index, argument in enumerate(arguments)],
-        'conditional_string': v8_utilities.generate_conditional_string(method),
+        'conditional_string': v8_utilities.conditional_string(method),
         'cpp_type': v8_types.cpp_type(idl_type),
         'cpp_value': this_cpp_value,
         'custom_signature': this_custom_signature,
+        'deprecate_as': v8_utilities.deprecate_as(method),  # [DeprecateAs]
         'function_template': 'desc' if method.is_static else 'proto',
         'idl_type': idl_type,
         'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),

@@ -45,6 +45,12 @@ import v8_types
 ACRONYMS = ['CSS', 'HTML', 'IME', 'JS', 'SVG', 'URL', 'WOFF', 'XML', 'XSLT']
 
 
+# Extended attributes
+def extended_attribute_value_contains(extended_attribute_value, value):
+    return (extended_attribute_value and
+            value in re.split('[|&]', extended_attribute_value))
+
+
 def has_extended_attribute(definition_or_member, extended_attribute_list):
     return any(extended_attribute in definition_or_member.extended_attributes
                for extended_attribute in extended_attribute_list)
@@ -56,23 +62,13 @@ def has_extended_attribute_value(definition_or_member, name, value):
             extended_attribute_value_contains(extended_attributes[name], value))
 
 
-def extended_attribute_value_contains(extended_attribute_value, value):
-    return (extended_attribute_value and
-            value in re.split('[|&]', extended_attribute_value))
-
-
+# String handling
 def capitalize(name):
     """Capitalize first letter or initial acronym (used in setter names)."""
     for acronym in ACRONYMS:
         if name.startswith(acronym.lower()):
             return name.replace(acronym.lower(), acronym)
     return name[0].upper() + name[1:]
-
-
-def scoped_name(interface, definition, base_name):
-    if definition.is_static:
-        return '%s::%s' % (interface.name, base_name)
-    return 'imp->%s' % base_name
 
 
 def strip_suffix(string, suffix):
@@ -82,10 +78,9 @@ def strip_suffix(string, suffix):
 
 
 def uncapitalize(name):
-    """Uncapitalizes first letter or initial acronym (* with some exceptions).
+    """Uncapitalizes first letter or initial acronym (used in method names).
 
     E.g., 'SetURL' becomes 'setURL', but 'URLFoo' becomes 'urlFoo'.
-    Used in method names; exceptions differ from capitalize().
     """
     for acronym in ACRONYMS:
         if name.startswith(acronym):
@@ -94,15 +89,22 @@ def uncapitalize(name):
     return name[0].lower() + name[1:]
 
 
-def v8_class_name(interface):
-    return v8_types.v8_type(interface.name)
-
-
+# C++
 def enum_validation_expression(idl_type):
     if not v8_types.is_enum_type(idl_type):
         return None
     return ' || '.join(['string == "%s"' % enum_value
                         for enum_value in v8_types.enum_values(idl_type)])
+
+
+def scoped_name(interface, definition, base_name):
+    if definition.is_static:
+        return '%s::%s' % (interface.name, base_name)
+    return 'imp->%s' % base_name
+
+
+def v8_class_name(interface):
+    return v8_types.v8_type(interface.name)
 
 
 # [ActivityLogging]
@@ -156,25 +158,43 @@ def call_with_arguments(member, call_with_values=None):
 
 
 # [Conditional]
-def generate_conditional_string(definition_or_member):
-    if 'Conditional' not in definition_or_member.extended_attributes:
+def conditional_string(definition_or_member):
+    extended_attributes = definition_or_member.extended_attributes
+    if 'Conditional' not in extended_attributes:
         return None
-    conditional = definition_or_member.extended_attributes['Conditional']
+    conditional = extended_attributes['Conditional']
     for operator in '&|':
         if operator in conditional:
-            conditions = set(conditional.split(operator))
+            conditions = conditional.split(operator)
             operator_separator = ' %s%s ' % (operator, operator)
             return operator_separator.join('ENABLE(%s)' % expression for expression in sorted(conditions))
     return 'ENABLE(%s)' % conditional
 
 
 # [DeprecateAs]
-def generate_deprecate_as(member, contents):
-    deprecate_as = member.extended_attributes.get('DeprecateAs')
-    if not deprecate_as:
-        return
-    contents['deprecate_as'] = deprecate_as
-    includes.update(['core/frame/UseCounter.h'])
+def deprecate_as(member):
+    extended_attributes = member.extended_attributes
+    if 'DeprecateAs' not in extended_attributes:
+        return None
+    includes.add('core/frame/UseCounter.h')
+    return extended_attributes['DeprecateAs']
+
+
+# [ImplementedAs]
+def cpp_name(definition_or_member):
+    extended_attributes = definition_or_member.extended_attributes
+    if 'ImplementedAs' not in extended_attributes:
+        return definition_or_member.name
+    return extended_attributes['ImplementedAs']
+
+
+# [MeasureAs]
+def measure_as(definition_or_member):
+    extended_attributes = definition_or_member.extended_attributes
+    if 'MeasureAs' not in extended_attributes:
+        return None
+    includes.add('core/frame/UseCounter.h')
+    return extended_attributes['MeasureAs']
 
 
 # [PerContextEnabled]
@@ -199,16 +219,3 @@ def runtime_enabled_function_name(definition_or_member):
         return None
     feature_name = extended_attributes['RuntimeEnabled']
     return 'RuntimeEnabledFeatures::%sEnabled' % uncapitalize(feature_name)
-
-
-# [ImplementedAs]
-def cpp_name(definition_or_member):
-    return definition_or_member.extended_attributes.get('ImplementedAs', definition_or_member.name)
-
-
-# [MeasureAs]
-def generate_measure_as(definition_or_member, contents):
-    if 'MeasureAs' not in definition_or_member.extended_attributes:
-        return
-    contents['measure_as'] = definition_or_member.extended_attributes['MeasureAs']
-    includes.add('core/frame/UseCounter.h')
