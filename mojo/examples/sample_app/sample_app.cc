@@ -6,9 +6,8 @@
 
 #include "mojo/public/system/core.h"
 #include "mojo/public/system/macros.h"
-#include "mojo/system/core_impl.h"
 
-#if defined(OS_WIN)
+#if defined(WIN32)
 #if !defined(CDECL)
 #define CDECL __cdecl
 #endif

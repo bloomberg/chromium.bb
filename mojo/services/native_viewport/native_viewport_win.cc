@@ -3,6 +3,10 @@
 // found in the LICENSE file.
 
 #include "mojo/services/native_viewport/native_viewport.h"
+
+#include "base/bind.h"
+#include "gpu/command_buffer/client/gl_in_process_context.h"
+#include "gpu/command_buffer/client/gles2_implementation.h"
 #include "ui/events/event.h"
 #include "ui/gfx/win/window_impl.h"
 
@@ -32,6 +36,7 @@ class NativeViewportWin : public gfx::WindowImpl,
   BEGIN_MSG_MAP_EX(NativeViewportWin)
     MESSAGE_RANGE_HANDLER_EX(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)
 
+    MSG_WM_CREATE(OnCreate)
     MSG_WM_PAINT(OnPaint)
     MSG_WM_SIZE(OnSize)
     MSG_WM_DESTROY(OnDestroy)
@@ -43,6 +48,19 @@ class NativeViewportWin : public gfx::WindowImpl,
     ui::MouseEvent event(msg);
     bool handled = delegate_->OnEvent(&event);
     SetMsgHandled(handled);
+    return 0;
+  }
+  LRESULT OnCreate(CREATESTRUCT* create_struct) {
+    RECT cr;
+    GetClientRect(hwnd(), &cr);
+    gpu::GLInProcessContextAttribs attribs;
+    gl_context_.reset(gpu::GLInProcessContext::CreateContext(
+        false, hwnd(), gfx::Size(cr.right - cr.left, cr.bottom - cr.top),
+        false, attribs, gfx::PreferDiscreteGpu));
+    gl_context_->SetContextLostCallback(base::Bind(
+        &NativeViewportWin::OnGLContextLost, base::Unretained(this)));
+
+    delegate_->OnGLContextAvailable(gl_context_->GetImplementation());
     return 0;
   }
   void OnPaint(HDC) {
@@ -65,7 +83,13 @@ class NativeViewportWin : public gfx::WindowImpl,
     delegate_->OnDestroyed();
   }
 
+  void OnGLContextLost() {
+    gl_context_.reset();
+    delegate_->OnGLContextLost();
+  }
+
   NativeViewportDelegate* delegate_;
+  scoped_ptr<gpu::GLInProcessContext> gl_context_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewportWin);
 };
