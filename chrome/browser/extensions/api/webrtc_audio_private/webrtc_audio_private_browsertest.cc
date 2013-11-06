@@ -4,11 +4,14 @@
 
 #include "base/json/json_writer.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/api/webrtc_audio_private/webrtc_audio_private_api.h"
+#include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -19,6 +22,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/media_device_id.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "media/audio/audio_manager.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -35,7 +39,36 @@ namespace extensions {
 using extension_function_test_utils::RunFunctionAndReturnError;
 using extension_function_test_utils::RunFunctionAndReturnSingleResult;
 
-class WebrtcAudioPrivateTest : public ExtensionApiTest {
+class AudioWaitingExtensionTest : public ExtensionApiTest {
+ protected:
+  void WaitUntilAudioIsPlaying(WebContents* tab) {
+    // Wait for audio to start playing. We gate this on there being one
+    // or more AudioOutputController objects for our tab.
+    bool audio_playing = false;
+    for (size_t remaining_tries = 50; remaining_tries > 0; --remaining_tries) {
+      tab->GetRenderViewHost()->GetAudioOutputControllers(
+          base::Bind(OnAudioControllers, &audio_playing));
+      base::MessageLoop::current()->RunUntilIdle();
+      if (audio_playing)
+        break;
+
+      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+    }
+
+    if (!audio_playing)
+      FAIL() << "Audio did not start playing within ~5 seconds.";
+  }
+
+  // Used by the test above to wait until audio is playing.
+  static void OnAudioControllers(
+      bool* audio_playing,
+      const RenderViewHost::AudioOutputControllerList& list) {
+    if (!list.empty())
+      *audio_playing = true;
+  }
+};
+
+class WebrtcAudioPrivateTest : public AudioWaitingExtensionTest {
  public:
   WebrtcAudioPrivateTest() : enumeration_event_(false, false) {
   }
@@ -165,14 +198,6 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, SetActiveSinkNoMediaStream) {
             error);
 }
 
-// Used by the test below to wait until audio is playing.
-static void OnAudioControllers(
-    bool* audio_playing,
-    const RenderViewHost::AudioOutputControllerList& list) {
-  if (!list.empty())
-    *audio_playing = true;
-}
-
 IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetAndSetWithMediaStream) {
   // First get the list of output devices, so that we can (if
   // available) set the active device to a device other than the one
@@ -192,21 +217,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetAndSetWithMediaStream) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   int tab_id = ExtensionTabUtil::GetTabId(tab);
 
-  // Wait for audio to start playing. We gate this on there being one
-  // or more AudioOutputController objects for our tab.
-  bool audio_playing = false;
-  for (size_t remaining_tries = 50; remaining_tries > 0; --remaining_tries) {
-    tab->GetRenderViewHost()->GetAudioOutputControllers(
-        base::Bind(OnAudioControllers, &audio_playing));
-    base::MessageLoop::current()->RunUntilIdle();
-    if (audio_playing)
-      break;
-
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
-  }
-
-  if (!audio_playing)
-    FAIL() << "Audio did not start playing within ~5 seconds.";
+  WaitUntilAudioIsPlaying(tab);
 
   std::string current_device = InvokeGetActiveSink(tab_id);
   VLOG(2) << "Before setting, current device: " << current_device;
@@ -291,6 +302,41 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, TriggerEvent) {
   std::string result = ExecuteScriptInBackgroundPage(extension->id(),
                                                      "reportIfGot()");
   EXPECT_EQ("true", result);
+}
+
+class HangoutServicesBrowserTest : public AudioWaitingExtensionTest {
+ public:
+  virtual void SetUp() OVERRIDE {
+    // Make sure the Hangout Services component extension gets loaded.
+    ComponentLoader::EnableBackgroundExtensionsForTesting();
+    AudioWaitingExtensionTest::SetUp();
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(HangoutServicesBrowserTest,
+                       RunComponentExtensionTest) {
+  // This runs the end-to-end JavaScript test for the Hangout Services
+  // component extension, which uses the webrtcAudioPrivate API among
+  // others.
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  GURL url(embedded_test_server()->GetURL(
+               "/extensions/hangout_services_test.html"));
+  // The "externally connectable" extension permission doesn't seem to
+  // like when we use 127.0.0.1 as the host, but using localhost works.
+  std::string url_spec = url.spec();
+  ReplaceFirstSubstringAfterOffset(&url_spec, 0, "127.0.0.1", "localhost");
+  GURL localhost_url(url_spec);
+  ui_test_utils::NavigateToURL(browser(), localhost_url);
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  WaitUntilAudioIsPlaying(tab);
+
+  ASSERT_TRUE(content::ExecuteScript(tab, "browsertestRunAllTests();"));
+
+  content::TitleWatcher title_watcher(tab, ASCIIToUTF16("success"));
+  title_watcher.AlsoWaitForTitle(ASCIIToUTF16("failure"));
+  string16 result = title_watcher.WaitAndGetTitle();
+  EXPECT_EQ(ASCIIToUTF16("success"), result);
 }
 
 }  // namespace extensions
