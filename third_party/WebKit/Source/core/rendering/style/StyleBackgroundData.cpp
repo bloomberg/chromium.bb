@@ -28,7 +28,7 @@
 namespace WebCore {
 
 StyleBackgroundData::StyleBackgroundData()
-    : m_background(BackgroundFillLayer)
+    : m_background(BackgroundFillLayer, true)
     , m_color(RenderStyle::initialBackgroundColor())
 {
 }

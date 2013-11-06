@@ -62,7 +62,7 @@ struct FillSize {
 class FillLayer {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    FillLayer(EFillLayerType);
+    FillLayer(EFillLayerType, bool useInitialValues = false);
     ~FillLayer();
 
     StyleImage* image() const { return m_image.get(); }
