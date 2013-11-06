@@ -36,6 +36,36 @@ def _CheckForVersionControlConflicts(input_api, output_api):
     return results
 
 
+def _CheckWatchlist(input_api, output_api):
+    """Check that the WATCHLIST file parses correctly."""
+    errors = []
+    for f in input_api.AffectedFiles():
+        if f.LocalPath() != 'WATCHLISTS':
+            continue
+        import StringIO
+        import logging
+        import watchlists
+
+        log_buffer = StringIO.StringIO()
+        log_handler = logging.StreamHandler(log_buffer)
+        log_handler.setFormatter(
+            logging.Formatter('%(levelname)s: %(message)s'))
+        logger = logging.getLogger()
+        logger.addHandler(log_handler)
+
+        wl = watchlists.Watchlists(input_api.change.RepositoryRoot())
+
+        logger.removeHandler(log_handler)
+        log_handler.flush()
+        log_buffer.flush()
+
+        if log_buffer.getvalue():
+            errors.append(output_api.PresubmitError(
+                'Cannot parse WATCHLISTS file, please resolve.',
+                log_buffer.getvalue().splitlines()))
+    return errors
+
+
 def _CommonChecks(input_api, output_api):
     """Checks common to both upload and commit."""
     # We should figure out what license checks we actually want to use.
@@ -50,6 +80,7 @@ def _CommonChecks(input_api, output_api):
     results.extend(_CheckTestExpectations(input_api, output_api))
     results.extend(_CheckUnwantedDependencies(input_api, output_api))
     results.extend(_CheckChromiumPlatformMacros(input_api, output_api))
+    results.extend(_CheckWatchlist(input_api, output_api))
     return results
 
 
