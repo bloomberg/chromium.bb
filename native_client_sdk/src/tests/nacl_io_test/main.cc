@@ -50,25 +50,13 @@ class GTestEventListener : public ::testing::EmptyTestEventListener {
         << "," << (test_info.result()->Failed() ? "failed" : "ok");
     pp::Instance(PSGetInstanceId()).PostMessage(msg.str());
   }
-
-  virtual void OnTestProgramEnd(const ::testing::UnitTest&) {
-    pp::Instance(PSGetInstanceId()).PostMessage("testend");
-  }
 };
 
 int example_main(int argc, char* argv[]) {
   ::testing::InitGoogleTest(&argc, argv);
   ::testing::UnitTest::GetInstance()->listeners()
       .Append(new GTestEventListener());
-  int result = RUN_ALL_TESTS();
-
-  // When running as an automated test, we don't want the final message
-  // ("testend") to be dropped, so don't exit. The web page will kill the
-  // plugin if it needs to.
-  while(1);
-
-  // Silence the warning.
-  return result;
+  return RUN_ALL_TESTS();
 }
 
 // Register the function to call once the Instance Object is initialized.

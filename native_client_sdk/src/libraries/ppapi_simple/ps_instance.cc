@@ -64,21 +64,39 @@ void* PSInstance::MainThreadThunk(void *info) {
   si->inst_->main_loop_->AttachToCurrentThread();
 
   int ret = si->inst_->MainThread(si->argc_, si->argv_);
+
+  char* exit_message = si->inst_->exit_message_;
+  bool should_exit = exit_message == NULL;
+
+  if (exit_message) {
+    // Send the exit message to JavaScript. Don't call exit(), so the message
+    // doesn't get dropped.
+    si->inst_->Log("Posting exit message to JavaScript.\n");
+    si->inst_->PostMessage(exit_message);
+    free(exit_message);
+    exit_message = si->inst_->exit_message_ = NULL;
+  }
+
+  // Clean up StartInfo.
   for (uint32_t i = 0; i < si->argc_; i++) {
     delete[] si->argv_[i];
   }
   delete[] si->argv_;
   delete si;
 
-  // Exit the entire process once the 'main' thread returns.
-  // The error code will be available to javascript via
-  // the exitcode paramater of the crash event.
-  exit(ret);
+
+  if (should_exit) {
+    // Exit the entire process once the 'main' thread returns.
+    // The error code will be available to javascript via
+    // the exitcode parameter of the crash event.
+    exit(ret);
+  }
+
   return NULL;
 }
 
 // The default implementation supports running a 'C' main.
-int PSInstance::MainThread(int argc, char *argv[]) {
+int PSInstance::MainThread(int argc, char* argv[]) {
   if (!main_cb_) {
     Error("No main defined.\n");
     return 0;
@@ -87,6 +105,7 @@ int PSInstance::MainThread(int argc, char *argv[]) {
   Trace("Starting MAIN.\n");
   int ret = main_cb_(argc, argv);
   Log("Main thread returned with %d.\n", ret);
+
   return ret;
 }
 
@@ -98,7 +117,8 @@ PSInstance::PSInstance(PP_Instance instance)
       events_enabled_(PSE_NONE),
       verbosity_(PSV_WARN),
       tty_fd_(-1),
-      tty_prefix_(NULL) {
+      tty_prefix_(NULL),
+      exit_message_(NULL) {
   // Set the single Instance object
   s_InstanceObject = this;
 
@@ -225,6 +245,11 @@ bool PSInstance::ProcessProperties() {
     } else {
       Error("Failed to open /dev/tty.\n");
     }
+  }
+
+  const char* exit_message = getenv("PS_EXIT_MESSAGE");
+  if (exit_message) {
+    exit_message_ = strdup(exit_message);
   }
 
   // Set line buffering on stdout and stderr

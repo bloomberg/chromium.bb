@@ -184,6 +184,10 @@ class PSInstance : public pp::Instance, pp::MouseLock, pp::Graphics3DClient {
   const char* tty_prefix_;
   MessageHandlerMap message_handlers_;
 
+  // A message to Post to JavaScript instead of exiting, or NULL if exit()
+  // should be called instead.
+  char* exit_message_;
+
   PSMainFunc_t main_cb_;
 
   const PPB_Core* ppb_core_;

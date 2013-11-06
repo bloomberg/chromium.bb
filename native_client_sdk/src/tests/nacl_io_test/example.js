@@ -46,7 +46,6 @@ function endCommand(testName, testResult) {
 
 function testendCommand() {
   testsFinished = true;
-  common.removeModule();
 
   if (failedTests) {
     common.updateStatus('FAILED');

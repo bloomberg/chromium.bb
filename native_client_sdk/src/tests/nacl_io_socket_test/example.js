@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 // Called by the common.js module.
-
 function moduleDidLoad() {
   // The module is not hidden by default so we can easily see if the plugin
   // failed to load.
@@ -10,6 +9,8 @@ function moduleDidLoad() {
 }
 
 var currentTestEl = null;
+var failedTests = 0;
+var testsFinished = false;
 
 function startCommand(testName) {
   var testListEl = document.getElementById('tests');
@@ -33,6 +34,7 @@ function failCommand(fileName, lineNumber, summary) {
   var testMessageEl = document.createElement('pre');
   testMessageEl.textContent += fileName + ':' + lineNumber + ': ' + summary;
   currentTestEl.appendChild(testMessageEl);
+  failedTests++;
 }
 
 function endCommand(testName, testResult) {
@@ -42,10 +44,22 @@ function endCommand(testName, testResult) {
   testResultEl.textContent = testResult;
 }
 
+function testendCommand() {
+  testsFinished = true;
+
+  if (failedTests) {
+    common.updateStatus('FAILED');
+    document.getElementById('statusField').classList.add('failed');
+  } else {
+    common.updateStatus('OK');
+    document.getElementById('statusField').classList.add('ok');
+  }
+}
+
 function handleMessage(event) {
   var msg = event.data;
   var firstColon = msg.indexOf(':');
-  var cmd = msg.substr(0, firstColon);
+  var cmd = firstColon !== -1 ? msg.substr(0, firstColon) : msg;
   var cmdFunctionName = cmd + 'Command';
   var cmdFunction = window[cmdFunctionName];
 
