@@ -342,6 +342,8 @@
       'graphics/GraphicsTypes.cpp',
       'graphics/GraphicsTypes.h',
       'graphics/GraphicsTypes3D.h',
+      'graphics/ImageObserver.cpp',
+      'graphics/ImageObserver.h',
       'graphics/ImageOrientation.cpp',
       'graphics/ImageOrientation.h',
       'graphics/PathTraversalState.cpp',

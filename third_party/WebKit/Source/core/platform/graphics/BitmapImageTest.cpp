@@ -32,7 +32,7 @@
 #include "core/platform/graphics/BitmapImage.h"
 
 #include "platform/SharedBuffer.h"
-#include "core/platform/graphics/ImageObserver.h"
+#include "platform/graphics/ImageObserver.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
 

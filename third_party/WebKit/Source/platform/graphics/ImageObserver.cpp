@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -10,7 +10,7 @@
  * 2.  Redistributions in binary form must reproduce the above copyright
  *     notice, this list of conditions and the following disclaimer in the
  *     documentation and/or other materials provided with the distribution.
- * 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
+ * 3.  Neither the name of Google, Inc. ("Google") nor the names of
  *     its contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
@@ -24,49 +24,17 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
  */
 
-#ifndef SVGImageChromeClient_h
-#define SVGImageChromeClient_h
+#include "config.h"
 
-#include "core/loader/EmptyClients.h"
 #include "platform/graphics/ImageObserver.h"
 
 namespace WebCore {
 
-class SVGImageChromeClient : public EmptyChromeClient {
-    WTF_MAKE_NONCOPYABLE(SVGImageChromeClient); WTF_MAKE_FAST_ALLOCATED;
-public:
-    SVGImageChromeClient(SVGImage* image)
-        : m_image(image)
-    {
-    }
-
-    virtual bool isSVGImageChromeClient() const { return true; }
-    SVGImage* image() const { return m_image; }
-
-private:
-    virtual void chromeDestroyed()
-    {
-        m_image = 0;
-    }
-
-    virtual void invalidateContentsAndRootView(const IntRect& r)
-    {
-        // If m_image->m_page is null, we're being destructed, don't fire changedInRect() in that case.
-        if (m_image && m_image->imageObserver() && m_image->m_page)
-            m_image->imageObserver()->changedInRect(m_image, r);
-    }
-
-    SVGImage* m_image;
-};
-
-inline SVGImageChromeClient* toSVGImageChromeClient(ChromeClient* client)
+ImageObserver::~ImageObserver()
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!client || client->isSVGImageChromeClient());
-    return static_cast<SVGImageChromeClient*>(client);
 }
 
-}
-
-#endif // SVGImageChromeClient_h
+} // namespace WebCore

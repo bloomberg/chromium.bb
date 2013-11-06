@@ -24,11 +24,11 @@
 #define ImageResource_h
 
 #include "core/fetch/Resource.h"
-#include "core/platform/graphics/ImageObserver.h"
 #include "core/svg/graphics/SVGImageCache.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSizeHash.h"
 #include "platform/geometry/LayoutSize.h"
+#include "platform/graphics/ImageObserver.h"
 #include "wtf/HashMap.h"
 
 namespace WebCore {

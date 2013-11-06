@@ -27,9 +27,9 @@
 #include "config.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
 
-#include "core/platform/graphics/ImageObserver.h"
 #include "core/platform/graphics/cpu/arm/GraphicsContext3DNEON.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
+#include "platform/graphics/ImageObserver.h"
 
 namespace WebCore {
 

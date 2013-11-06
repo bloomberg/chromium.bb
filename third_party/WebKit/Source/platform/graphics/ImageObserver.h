@@ -26,6 +26,8 @@
 #ifndef ImageObserver_h
 #define ImageObserver_h
 
+#include "platform/PlatformExport.h"
+
 namespace WebCore {
 
 class Image;
@@ -33,9 +35,9 @@ class IntRect;
 
 // Interface for notification about changes to an image, including decoding,
 // drawing, and animating.
-class ImageObserver {
+class PLATFORM_EXPORT ImageObserver {
 protected:
-    virtual ~ImageObserver() {}
+    virtual ~ImageObserver();
 public:
     virtual void decodedSizeChanged(const Image*, int delta) = 0;
     virtual void didDraw(const Image*) = 0;
