@@ -141,30 +141,6 @@ class ComponentUpdaterTest : public testing::Test {
 const char expected_crx_url[] =
     "http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx";
 
-class PingChecker : public RequestCounter {
- public:
-  explicit PingChecker(const std::map<std::string, std::string>& attributes);
-
-  virtual ~PingChecker();
-
-  virtual void Trial(net::URLRequest* request) OVERRIDE;
-
-  int NumHits() const {
-    return num_hits_;
-  }
-  int NumMisses() const {
-    return num_misses_;
-  }
-  std::string GetPings() const;
-
- private:
-  std::vector<std::string> pings_;
-  int num_hits_;
-  int num_misses_;
-  const std::map<std::string, std::string> attributes_;
-  virtual bool Test(net::URLRequest* request);
-};
-
 class MockComponentObserver : public ComponentObserver {
  public:
   MockComponentObserver();

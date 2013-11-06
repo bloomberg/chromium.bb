@@ -118,6 +118,15 @@ void TestConfigurator::SetQuitClosure(const base::Closure& quit_closure) {
   quit_closure_ = quit_closure;
 }
 
+// Intercepts ping requests sent over http POST to localhost2.
+class PingInterceptor : public URLRequestPostInterceptor {
+ public:
+  PingInterceptor() : URLRequestPostInterceptor("http", "localhost2") {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PingInterceptor);
+};
+
 ComponentUpdaterTest::ComponentUpdaterTest()
     : test_config_(NULL),
       thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
@@ -184,59 +193,6 @@ void ComponentUpdaterTest::RunThreadsUntilIdle() {
   base::RunLoop().RunUntilIdle();
 }
 
-PingChecker::PingChecker(const std::map<std::string, std::string>& attributes)
-    : num_hits_(0), num_misses_(0), attributes_(attributes) {
-}
-
-PingChecker::~PingChecker() {}
-
-void PingChecker::Trial(net::URLRequest* request) {
-  if (Test(request))
-    ++num_hits_;
-  else
-    ++num_misses_;
-}
-
-bool PingChecker::Test(net::URLRequest* request) {
-  if (request->has_upload()) {
-    const net::UploadDataStream* stream = request->get_upload();
-    const net::UploadBytesElementReader* reader =
-        stream->element_readers()[0]->AsBytesReader();
-    int size = reader->length();
-    scoped_refptr <net::IOBuffer> buffer = new net::IOBuffer(size);
-    std::string data(reader->bytes());
-    pings_.push_back(data);
-    // For now, we assume that there is only one ping per POST.
-    std::string::size_type start = data.find("<o:event");
-    if (start != std::string::npos) {
-      std::string::size_type end = data.find(">", start);
-      if (end != std::string::npos) {
-        std::string ping = data.substr(start, end - start);
-        std::map<std::string, std::string>::const_iterator iter;
-        for (iter = attributes_.begin(); iter != attributes_.end(); ++iter) {
-          // does the ping contain the specified attribute/value?
-          if (ping.find(std::string(" ") + (iter->first) +
-              std::string("=") + (iter->second)) == string::npos) {
-            return false;
-          }
-        }
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-std::string PingChecker::GetPings() const {
-  std::string pings_str = "Pings are:";
-  int i = 0;
-  for (std::vector<std::string>::const_iterator it = pings_.begin();
-      it != pings_.end(); ++it) {
-    pings_str.append(base::StringPrintf("\n  (%d): %s", ++i, it->c_str()));
-  }
-  return pings_str;
-}
-
 ComponentUpdateService::Status OnDemandTester::OnDemand(
     ComponentUpdateService* cus, const std::string& component_id) {
   return cus->OnDemandUpdate(component_id);
@@ -258,8 +214,9 @@ TEST_F(ComponentUpdaterTest, StartStop) {
 
 // Verify that when the server has no updates, we go back to sleep and
 // the COMPONENT_UPDATER_STARTED and COMPONENT_UPDATER_SLEEPING notifications
-// are generated.
+// are generated. No pings are sent.
 TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
+  PingInterceptor ping_interceptor;
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
   MockComponentObserver observer;
@@ -326,6 +283,7 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
   RunThreads();
 
   EXPECT_EQ(4, interceptor.GetHitCount());
+  EXPECT_EQ(0, ping_interceptor.GetHitCount());
 
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->install_count());
@@ -342,14 +300,7 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
 // 2- download crx
 // 3- second manifest check.
 TEST_F(ComponentUpdaterTest, InstallCrx) {
-  std::map<std::string, std::string> map;
-  map.insert(std::pair<std::string, std::string>("eventtype", "\"3\""));
-  map.insert(std::pair<std::string, std::string>("eventresult", "\"1\""));
-  map.insert(std::pair<std::string, std::string>("previousversion",
-                                                 "\"0.9\""));
-  map.insert(std::pair<std::string, std::string>("nextversion", "\"1.0\""));
-  PingChecker ping_checker(map);
-  URLRequestPostInterceptor post_interceptor(&ping_checker);
+  PingInterceptor ping_interceptor;
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
   MockComponentObserver observer1;
@@ -435,8 +386,15 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
   EXPECT_EQ(0, static_cast<TestInstaller*>(com2.installer)->install_count());
 
   EXPECT_EQ(3, interceptor.GetHitCount());
-  EXPECT_EQ(1, ping_checker.NumHits()) << ping_checker.GetPings();
-  EXPECT_EQ(0, ping_checker.NumMisses()) << ping_checker.GetPings();
+
+  EXPECT_EQ(1, ping_interceptor.GetHitCount())
+      << ping_interceptor.GetRequestsAsString();
+  EXPECT_NE(string::npos, ping_interceptor.GetRequests()[0].find(
+      "<o:app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"1.0\">"
+      "<o:event eventtype=\"3\" eventresult=\"1\" "
+      "previousversion=\"0.9\" nextversion=\"1.0\"/></o:app>"))
+      << ping_interceptor.GetRequestsAsString();
+
 
   component_updater()->Stop();
 }
@@ -445,9 +403,7 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
 // particular there should not be an install because the minimum product
 // version is much higher than of chrome.
 TEST_F(ComponentUpdaterTest, ProdVersionCheck) {
-  std::map<std::string, std::string> map;
-  PingChecker ping_checker(map);
-  URLRequestPostInterceptor post_interceptor(&ping_checker);
+  PingInterceptor ping_interceptor;
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
   TestInstaller installer;
@@ -467,9 +423,10 @@ TEST_F(ComponentUpdaterTest, ProdVersionCheck) {
   component_updater()->Start();
   RunThreads();
 
-  EXPECT_EQ(0, ping_checker.NumHits()) << ping_checker.GetPings();
-  EXPECT_EQ(0, ping_checker.NumMisses()) << ping_checker.GetPings();
+  EXPECT_EQ(0, ping_interceptor.GetHitCount())
+      << ping_interceptor.GetRequestsAsString();
   EXPECT_EQ(1, interceptor.GetHitCount());
+
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->install_count());
 
@@ -483,14 +440,7 @@ TEST_F(ComponentUpdaterTest, ProdVersionCheck) {
 //  - We ping.
 //  - This triggers a second loop, which has a reply that triggers an install.
 TEST_F(ComponentUpdaterTest, OnDemandUpdate) {
-  std::map<std::string, std::string> map;
-  map.insert(std::pair<std::string, std::string>("eventtype", "\"3\""));
-  map.insert(std::pair<std::string, std::string>("eventresult", "\"1\""));
-  map.insert(std::pair<std::string, std::string>("previousversion",
-                                                 "\"0.9\""));
-  map.insert(std::pair<std::string, std::string>("nextversion", "\"1.0\""));
-  PingChecker ping_checker(map);
-  URLRequestPostInterceptor post_interceptor(&ping_checker);
+  PingInterceptor ping_interceptor;
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
   MockComponentObserver observer1;
@@ -686,8 +636,13 @@ TEST_F(ComponentUpdaterTest, OnDemandUpdate) {
 
   RunThreads();
 
-  EXPECT_EQ(1, ping_checker.NumHits()) << ping_checker.GetPings();
-  EXPECT_EQ(0, ping_checker.NumMisses()) << ping_checker.GetPings();
+  EXPECT_EQ(1, ping_interceptor.GetHitCount())
+      << ping_interceptor.GetRequestsAsString();
+  EXPECT_NE(string::npos, ping_interceptor.GetRequests()[0].find(
+      "<o:app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"1.0\">"
+      "<o:event eventtype=\"3\" eventresult=\"1\" "
+      "previousversion=\"0.9\" nextversion=\"1.0\"/></o:app>"))
+      << ping_interceptor.GetRequestsAsString();
 
   component_updater()->Stop();
 }
@@ -695,14 +650,7 @@ TEST_F(ComponentUpdaterTest, OnDemandUpdate) {
 // Verify that a previously registered component can get re-registered
 // with a different version.
 TEST_F(ComponentUpdaterTest, CheckReRegistration) {
-  std::map<std::string, std::string> map;
-  map.insert(std::pair<std::string, std::string>("eventtype", "\"3\""));
-  map.insert(std::pair<std::string, std::string>("eventresult", "\"1\""));
-  map.insert(std::pair<std::string, std::string>("previousversion",
-                                                 "\"0.9\""));
-  map.insert(std::pair<std::string, std::string>("nextversion", "\"1.0\""));
-  PingChecker ping_checker(map);
-  URLRequestPostInterceptor post_interceptor(&ping_checker);
+  PingInterceptor ping_interceptor;
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
   MockComponentObserver observer1;
@@ -790,8 +738,14 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
   EXPECT_EQ(0, static_cast<TestInstaller*>(com2.installer)->error());
   EXPECT_EQ(0, static_cast<TestInstaller*>(com2.installer)->install_count());
 
-  EXPECT_EQ(1, ping_checker.NumHits()) << ping_checker.GetPings();
-  EXPECT_EQ(0, ping_checker.NumMisses()) << ping_checker.GetPings();
+  EXPECT_EQ(1, ping_interceptor.GetHitCount())
+        << ping_interceptor.GetRequestsAsString();
+  EXPECT_NE(string::npos, ping_interceptor.GetRequests()[0].find(
+      "<o:app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"1.0\">"
+      "<o:event eventtype=\"3\" eventresult=\"1\" "
+      "previousversion=\"0.9\" nextversion=\"1.0\"/></o:app>"))
+      << ping_interceptor.GetRequestsAsString();
+
   EXPECT_EQ(3, interceptor.GetHitCount());
 
   component_updater()->Stop();
@@ -870,12 +824,7 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
 // There should be two pings, one for each update. The second will bear a
 // diffresult=1, while the first will not.
 TEST_F(ComponentUpdaterTest, DifferentialUpdate) {
-  std::map<std::string, std::string> map;
-  map.insert(std::pair<std::string, std::string>("eventtype", "\"3\""));
-  map.insert(std::pair<std::string, std::string>("eventresult", "\"1\""));
-  map.insert(std::pair<std::string, std::string>("diffresult", "\"1\""));
-  PingChecker ping_checker(map);
-  URLRequestPostInterceptor post_interceptor(&ping_checker);
+  PingInterceptor ping_interceptor;
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
   VersionedTestInstaller installer;
@@ -917,8 +866,19 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdate) {
   EXPECT_EQ(2, static_cast<TestInstaller*>(com.installer)->install_count());
 
   // One ping has the diffresult=1, the other does not.
-  EXPECT_EQ(1, ping_checker.NumHits()) << ping_checker.GetPings();
-  EXPECT_EQ(1, ping_checker.NumMisses()) << ping_checker.GetPings();
+  EXPECT_EQ(2, ping_interceptor.GetHitCount())
+      << ping_interceptor.GetRequestsAsString();
+  EXPECT_NE(string::npos, ping_interceptor.GetRequests()[0].find(
+      "<o:app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" version=\"1.0\">"
+      "<o:event eventtype=\"3\" eventresult=\"1\" "
+      "previousversion=\"0.0\" nextversion=\"1.0\" nextfp=\"1\"/></o:app>"))
+      << ping_interceptor.GetRequestsAsString();
+  EXPECT_NE(string::npos, ping_interceptor.GetRequests()[1].find(
+      "<o:app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" version=\"2.0\">"
+      "<o:event eventtype=\"3\" eventresult=\"1\" "
+      "previousversion=\"1.0\" nextversion=\"2.0\" "
+      "diffresult=\"1\" previousfp=\"1\" nextfp=\"f22\"/></o:app>"))
+      << ping_interceptor.GetRequestsAsString();
 
   EXPECT_EQ(5, interceptor.GetHitCount());
 
@@ -935,15 +895,8 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdate) {
 // 3- download full crx
 // 4- update check (loop 2 - no update available)
 // There should be one ping for the first attempted update.
-
 TEST_F(ComponentUpdaterTest, DifferentialUpdateFails) {
-  std::map<std::string, std::string> map;
-  map.insert(std::pair<std::string, std::string>("eventtype", "\"3\""));
-  map.insert(std::pair<std::string, std::string>("eventresult", "\"1\""));
-  map.insert(std::pair<std::string, std::string>("diffresult", "\"0\""));
-  map.insert(std::pair<std::string, std::string>("differrorcode", "\"16\""));
-  PingChecker ping_checker(map);
-  URLRequestPostInterceptor post_interceptor(&ping_checker);
+  PingInterceptor ping_interceptor;
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
   TestInstaller installer;
@@ -984,8 +937,16 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdateFails) {
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
   EXPECT_EQ(1, static_cast<TestInstaller*>(com.installer)->install_count());
 
-  EXPECT_EQ(1, ping_checker.NumHits()) << ping_checker.GetPings();
-  EXPECT_EQ(0, ping_checker.NumMisses()) << ping_checker.GetPings();
+  EXPECT_EQ(1, ping_interceptor.GetHitCount())
+      << ping_interceptor.GetRequestsAsString();
+  EXPECT_NE(string::npos, ping_interceptor.GetRequests()[0].find(
+      "<o:app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" version=\"2.0\">"
+      "<o:event eventtype=\"3\" eventresult=\"1\" "
+      "previousversion=\"1.0\" nextversion=\"2.0\" "
+      "diffresult=\"0\" differrorcat=\"2\" differrorcode=\"16\" "
+      "nextfp=\"f22\"/></o:app>"))
+      << ping_interceptor.GetRequestsAsString();
+
   EXPECT_EQ(4, interceptor.GetHitCount());
 
   component_updater()->Stop();
@@ -993,15 +954,7 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdateFails) {
 
 // Verify that a failed installation causes an install failure ping.
 TEST_F(ComponentUpdaterTest, CheckFailedInstallPing) {
-  std::map<std::string, std::string> map;
-  map.insert(std::pair<std::string, std::string>("eventtype", "\"3\""));
-  map.insert(std::pair<std::string, std::string>("eventresult", "\"0\""));
-  map.insert(std::pair<std::string, std::string>("errorcode", "\"9\""));
-  map.insert(std::pair<std::string, std::string>("previousversion",
-                                                 "\"0.9\""));
-  map.insert(std::pair<std::string, std::string>("nextversion", "\"1.0\""));
-  PingChecker ping_checker(map);
-  URLRequestPostInterceptor post_interceptor(&ping_checker);
+  PingInterceptor ping_interceptor;
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
   // This test installer reports installation failure.
@@ -1045,8 +998,21 @@ TEST_F(ComponentUpdaterTest, CheckFailedInstallPing) {
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
   EXPECT_EQ(2, static_cast<TestInstaller*>(com.installer)->install_count());
 
-  EXPECT_EQ(2, ping_checker.NumHits()) << ping_checker.GetPings();
-  EXPECT_EQ(0, ping_checker.NumMisses()) << ping_checker.GetPings();
+  EXPECT_EQ(2, ping_interceptor.GetHitCount())
+      << ping_interceptor.GetRequestsAsString();
+  EXPECT_NE(string::npos, ping_interceptor.GetRequests()[0].find(
+      "<o:app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\">"
+      "<o:event eventtype=\"3\" eventresult=\"0\" "
+      "previousversion=\"0.9\" nextversion=\"1.0\" "
+      "errorcat=\"3\" errorcode=\"9\"/></o:app>"))
+      << ping_interceptor.GetRequestsAsString();
+  EXPECT_NE(string::npos, ping_interceptor.GetRequests()[1].find(
+      "<o:app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\">"
+      "<o:event eventtype=\"3\" eventresult=\"0\" "
+      "previousversion=\"0.9\" nextversion=\"1.0\" "
+      "errorcat=\"3\" errorcode=\"9\"/></o:app>"))
+      << ping_interceptor.GetRequestsAsString();
+
   EXPECT_EQ(5, interceptor.GetHitCount());
 
   component_updater()->Stop();
@@ -1056,14 +1022,7 @@ TEST_F(ComponentUpdaterTest, CheckFailedInstallPing) {
 // ihfokbkgjpifnbbojhneepfflplebdkc_1to2_bad.crx contains an incorrect
 // patching instruction that should fail.
 TEST_F(ComponentUpdaterTest, DifferentialUpdateFailErrorcode) {
-  std::map<std::string, std::string> map;
-  map.insert(std::pair<std::string, std::string>("eventtype", "\"3\""));
-  map.insert(std::pair<std::string, std::string>("eventresult", "\"1\""));
-  map.insert(std::pair<std::string, std::string>("diffresult", "\"0\""));
-  map.insert(std::pair<std::string, std::string>("differrorcode", "\"14\""));
-  map.insert(std::pair<std::string, std::string>("diffextracode1", "\"305\""));
-  PingChecker ping_checker(map);
-  URLRequestPostInterceptor post_interceptor(&ping_checker);
+  PingInterceptor ping_interceptor;
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
   VersionedTestInstaller installer;
@@ -1111,7 +1070,21 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdateFailErrorcode) {
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
   EXPECT_EQ(2, static_cast<TestInstaller*>(com.installer)->install_count());
 
-  EXPECT_EQ(1, ping_checker.NumHits()) << ping_checker.GetPings();
-  EXPECT_EQ(1, ping_checker.NumMisses()) << ping_checker.GetPings();
+  EXPECT_EQ(2, ping_interceptor.GetHitCount())
+      << ping_interceptor.GetRequestsAsString();
+  EXPECT_NE(string::npos, ping_interceptor.GetRequests()[0].find(
+      "<o:app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" version=\"1.0\">"
+      "<o:event eventtype=\"3\" eventresult=\"1\" "
+      "previousversion=\"0.0\" nextversion=\"1.0\" nextfp=\"1\"/></o:app>"))
+      << ping_interceptor.GetRequestsAsString();
+  EXPECT_NE(string::npos, ping_interceptor.GetRequests()[1].find(
+      "<o:app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" version=\"2.0\">"
+      "<o:event eventtype=\"3\" eventresult=\"1\" "
+      "previousversion=\"1.0\" nextversion=\"2.0\" "
+      "diffresult=\"0\" differrorcat=\"2\" "
+      "differrorcode=\"14\" diffextracode1=\"305\" "
+      "previousfp=\"1\" nextfp=\"f22\"/></o:app>"))
+      << ping_interceptor.GetRequestsAsString();
+
   EXPECT_EQ(5, interceptor.GetHitCount());
 }

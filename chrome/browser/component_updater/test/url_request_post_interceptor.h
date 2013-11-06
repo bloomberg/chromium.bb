@@ -5,68 +5,53 @@
 #ifndef CHROME_BROWSER_COMPONENT_UPDATER_TEST_URL_REQUEST_POST_INTERCEPTOR_H_
 #define CHROME_BROWSER_COMPONENT_UPDATER_TEST_URL_REQUEST_POST_INTERCEPTOR_H_
 
+#include <string>
+#include <vector>
 #include "base/basictypes.h"
-#include "net/url_request/url_request_job_factory.h"
-#include "net/url_request/url_request_simple_job.h"
+
+namespace base {
+class FilePath;
+}
 
 namespace net {
-class NetworkDelegate;
 class URLRequest;
 }
 
-class RequestCounter {
- public:
-  virtual void Trial(net::URLRequest* request) = 0;
-};
-
+// Intercepts POST requests, counts them, and captures the body of the requests.
+// Optionally, for each request, it can return a canned response from a
+// given file. The class maintains a queue of paths to serve responses from,
+// and returns one and only one response for each request that it intercepts.
 class URLRequestPostInterceptor {
  public:
-  explicit URLRequestPostInterceptor(RequestCounter* counter);
-  virtual ~URLRequestPostInterceptor();
+  URLRequestPostInterceptor(const std::string& scheme,
+                            const std::string& hostname);
+  ~URLRequestPostInterceptor();
+
+ // Returns how many requests have been intercepted.
+ int GetHitCount() const;
+
+ // Returns the requests that have been intercepted.
+ std::vector<std::string> GetRequests() const;
+
+ // Returns all requests as a string for debugging purposes.
+ std::string GetRequestsAsString() const;
+
+ // Adds a response to its queue of responses to serve.
+ // TODO(sorin): implement this.
+ void AddResponse(const base::FilePath& path);
 
  private:
   class Delegate;
 
-  // After creation, |delegate_| lives on the IO thread, and a task to delete it
-  // is posted from ~URLRequestPostInterceptor().
+  const std::string scheme_;
+  const std::string hostname_;
+
+  // After creation, |delegate_| lives on the IO thread and it is owned by
+  // a URLRequestFilter after registration. A task to unregister it and
+  // implicitly destroy it is posted from ~URLRequestPostInterceptor().
   Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestPostInterceptor);
-};
-
-class URLRequestPostInterceptor::Delegate
-    : public net::URLRequestJobFactory::ProtocolHandler {
- public:
-  explicit Delegate(RequestCounter* counter);
-  virtual ~Delegate() {}
-
-  void Register();
-
-  void Unregister();
-
- private:
-  RequestCounter* counter_;
-
-  virtual net::URLRequestJob* MaybeCreateJob(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE;
-};
-
-class URLRequestPingMockJob : public net::URLRequestSimpleJob {
- public:
-  URLRequestPingMockJob(net::URLRequest* request,
-                        net::NetworkDelegate* network_delegate);
-
- protected:
-  virtual int GetData(std::string* mime_type,
-                      std::string* charset,
-                      std::string* data,
-                      const net::CompletionCallback& callback) const OVERRIDE;
-
- private:
-  virtual ~URLRequestPingMockJob() {}
-
-  DISALLOW_COPY_AND_ASSIGN(URLRequestPingMockJob);
 };
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_TEST_URL_REQUEST_POST_INTERCEPTOR_H_
