@@ -113,21 +113,6 @@ BackgroundPageType GetBackgroundPageType(const Extension* extension) {
   return EVENT_PAGE;
 }
 
-void DispatchOnInstalledEvent(
-    Profile* profile,
-    const std::string& extension_id,
-    const Version& old_version,
-    bool chrome_updated) {
-  // profile manager can be NULL in unit tests.
-  if (!g_browser_process->profile_manager())
-    return;
-  if (!g_browser_process->profile_manager()->IsValidProfile(profile))
-    return;
-
-  extensions::RuntimeEventRouter::DispatchOnInstalledEvent(
-      profile, extension_id, old_version, chrome_updated);
-}
-
 }  // namespace
 
 InstalledLoader::InstalledLoader(ExtensionService* extension_service)
