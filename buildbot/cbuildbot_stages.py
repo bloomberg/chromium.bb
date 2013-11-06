@@ -216,9 +216,9 @@ class ArchivingStage(BoardSpecificBuilderStage):
     archive_root = self.GetLocalArchiveRoot(self._build_root, trybot)
     self.bot_archive_root = os.path.join(archive_root, self._bot_id)
     self.archive_path = os.path.join(self.bot_archive_root, self.version)
-    base_upload_url = self.GetBaseUploadURL(build_config, options.archive_base,
-                                            options.remote_trybot)
-    self.upload_url = '%s/%s' % (base_upload_url, self.version)
+    self.base_upload_url = self.GetBaseUploadURL(
+        build_config, options.archive_base, options.remote_trybot)
+    self.upload_url = '%s/%s' % (self.base_upload_url, self.version)
 
     if options.buildbot or options.remote_trybot:
       base_download_url = gs.PRIVATE_BASE_HTTPS_URL
@@ -3039,7 +3039,8 @@ class ArchiveStage(ArchivingStage):
         latest_path = os.path.join(self.bot_archive_root, filename)
         osutils.WriteFile(latest_path, self.version, mode='w')
         commands.UploadArchivedFile(
-            self.bot_archive_root, upload_url, filename, debug, acl=self.acl)
+            self.bot_archive_root, self.base_upload_url, filename,
+            debug, acl=self.acl)
 
     try:
       if not self._build_config['pgo_generate']:
