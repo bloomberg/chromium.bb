@@ -326,6 +326,10 @@ enum PageshowEventPersistence {
         void dispatchWindowLoadEvent();
         void documentWasClosed();
         void statePopped(PassRefPtr<SerializedScriptValue>);
+
+        // FIXME: This shouldn't be public once DOMWindow becomes ExecutionContext.
+        void clearEventQueue();
+
     protected:
         DOMWindowLifecycleNotifier& lifecycleNotifier();
 

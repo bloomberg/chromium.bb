@@ -1986,6 +1986,10 @@ void Document::detach(const AttachContext& context)
     if (svgExtensions())
         accessSVGExtensions()->pauseAnimations();
 
+    // FIXME: This shouldn't be needed once DOMWindow becomes ExecutionContext.
+    if (m_domWindow)
+        m_domWindow->clearEventQueue();
+
     RenderView* renderView = m_renderView;
 
     if (renderView)

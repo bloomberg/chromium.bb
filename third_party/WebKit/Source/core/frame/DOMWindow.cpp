@@ -349,13 +349,21 @@ void DOMWindow::clearDocument()
         // depends on this detach() call, so it seems like there's some room
         // for cleanup.
         m_document->detach();
-        m_eventQueue->close();
     }
 
-    m_eventQueue.clear();
+    // FIXME: This should be part of ActiveDOM Object shutdown
+    clearEventQueue();
 
     m_document->clearDOMWindow();
     m_document = 0;
+}
+
+void DOMWindow::clearEventQueue()
+{
+    if (!m_eventQueue)
+        return;
+    m_eventQueue->close();
+    m_eventQueue.clear();
 }
 
 PassRefPtr<Document> DOMWindow::createDocument(const String& mimeType, const DocumentInit& init, bool forceXHTML)
@@ -415,12 +423,16 @@ EventQueue* DOMWindow::eventQueue() const
 
 void DOMWindow::enqueueWindowEvent(PassRefPtr<Event> event)
 {
+    if (!m_eventQueue)
+        return;
     event->setTarget(this);
     m_eventQueue->enqueueEvent(event);
 }
 
 void DOMWindow::enqueueDocumentEvent(PassRefPtr<Event> event)
 {
+    if (!m_eventQueue)
+        return;
     event->setTarget(m_document);
     m_eventQueue->enqueueEvent(event);
 }
