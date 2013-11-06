@@ -65,16 +65,23 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
   headers = headers or {}
   bare_host = host.partition(':')[0]
   auth = NETRC.authenticators(bare_host)
+
   if auth:
     headers.setdefault('Authorization', 'Basic %s' % (
         base64.b64encode('%s:%s' % (auth[0], auth[2]))))
   else:
-    LOGGER.debug('No authorization found')
+    LOGGER.debug('No authorization found in netrc.')
+
+  if 'Authorization' in headers and not path.startswith('a/'):
+    url = '/a/%s' % path
+  else:
+    url = '/%s' % path
+
   if body:
     body = json.JSONEncoder().encode(body)
     headers.setdefault('Content-Type', 'application/json')
   if LOGGER.isEnabledFor(logging.DEBUG):
-    LOGGER.debug('%s %s://%s/a/%s' % (reqtype, GERRIT_PROTOCOL, host, path))
+    LOGGER.debug('%s %s://%s%s' % (reqtype, GERRIT_PROTOCOL, host, url))
     for key, val in headers.iteritems():
       if key == 'Authorization':
         val = 'HIDDEN'
@@ -84,7 +91,7 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
   conn = GetConnectionClass()(host)
   conn.req_host = host
   conn.req_params = {
-      'url': '/a/%s' % path,
+      'url': url,
       'method': reqtype,
       'headers': headers,
       'body': body,
@@ -178,6 +185,43 @@ def QueryChanges(host, param_dict, first_param=None, limit=None, o_params=None,
     path = '%s&%s' % (path, '&'.join(['o=%s' % p for p in o_params]))
   # Don't ignore 404; a query should always return a list, even if it's empty.
   return ReadHttpJsonResponse(CreateHttpConn(host, path), ignore_404=False)
+
+
+def GenerateAllChanges(host, param_dict, first_param=None, limit=500,
+                       o_params=None, sortkey=None):
+  """
+  Queries a gerrit-on-borg server for all the changes matching the query terms.
+
+  A single query to gerrit-on-borg is limited on the number of results by the
+  limit parameter on the request (see QueryChanges) and the server maximum
+  limit. This function uses the "_more_changes" and "_sortkey" attributes on
+  the returned changes to iterate all of them making multiple queries to the
+  server, regardless the query limit.
+
+  Args:
+    param_dict, first_param: Refer to QueryChanges().
+    limit: Maximum number of requested changes per query.
+    o_params: Refer to QueryChanges().
+    sortkey: The value of the "_sortkey" attribute where starts from. None to
+        start from the first change.
+
+  Returns:
+    A generator object to the list of returned changes, possibly unbound.
+  """
+  more_changes = True
+  while more_changes:
+    page = QueryChanges(host, param_dict, first_param, limit, o_params, sortkey)
+    for cl in page:
+      yield cl
+
+    more_changes = [cl for cl in page if '_more_changes' in cl]
+    if len(more_changes) > 1:
+      raise GerritError(
+          200,
+          'Received %d changes with a _more_changes attribute set but should '
+          'receive at most one.' % len(more_changes))
+    if more_changes:
+      sortkey = more_changes[0]['_sortkey']
 
 
 def MultiQueryChanges(host, param_dict, change_list, limit=None, o_params=None,

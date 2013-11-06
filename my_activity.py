@@ -35,6 +35,7 @@ import sys
 import urllib
 import urllib2
 
+import gerrit_util
 import rietveld
 from third_party import upload
 
@@ -119,12 +120,10 @@ gerrit_instances = [
     'url': 'chromium-review.googlesource.com',
     'shorturl': 'crosreview.com',
   },
-  # TODO(deymo): chrome-internal-review requires login credentials. Enable once
-  # login support is added to this client. See crbug.com/281695.
-  #{
-  #  'url': 'chrome-internal-review.googlesource.com',
-  #  'shorturl': 'crosreview.com/i',
-  #},
+  {
+    'url': 'chrome-internal-review.googlesource.com',
+    'shorturl': 'crosreview.com/i',
+  },
   {
     'host': 'gerrit.chromium.org',
     'port': 29418,
@@ -405,27 +404,16 @@ class MyActivity(object):
 
   @staticmethod
   def gerrit_changes_over_rest(instance, filters):
-    # See https://gerrit-review.googlesource.com/Documentation/rest-api.html
-    # Gerrit doesn't allow filtering by created time, only modified time.
-    args = urllib.urlencode([
-        ('q', ' '.join(filters)),
-        ('o', 'MESSAGES'),
-        ('o', 'LABELS')])
-    rest_url = 'https://%s/changes/?%s' % (instance['url'], args)
-
-    req = urllib2.Request(rest_url, headers={'Accept': 'text/plain'})
+    # Convert the "key:value" filter to a dictionary.
+    req = dict(f.split(':', 1) for f in filters)
     try:
-      response = urllib2.urlopen(req)
-      stdout = response.read()
-    except urllib2.HTTPError, e:
-      print 'ERROR: Looking up %r: %s' % (rest_url, e)
+      # Instantiate the generator to force all the requests now and catch the
+      # errors here.
+      return list(gerrit_util.GenerateAllChanges(instance['url'], req,
+          o_params=['MESSAGES', 'LABELS', 'DETAILED_ACCOUNTS']))
+    except gerrit_util.GerritError, e:
+      print 'ERROR: Looking up %r: %s' % (instance['url'], e)
       return []
-
-    # Check that the returned JSON starts with the right marker.
-    if stdout[:5] != ")]}'\n":
-      print 'ERROR: Marker not found on REST API response: %r' % stdout[:5]
-      return []
-    return json.loads(stdout[5:])
 
   def gerrit_search(self, instance, owner=None, reviewer=None):
     max_age = datetime.today() - self.modified_after
@@ -506,7 +494,8 @@ class MyActivity(object):
   @staticmethod
   def process_gerrit_rest_issue_replies(replies):
     ret = []
-    replies = filter(lambda r: 'email' in r['author'], replies)
+    replies = filter(lambda r: 'author' in r and 'email' in r['author'],
+        replies)
     for reply in replies:
       ret.append({
         'author': reply['author']['email'],
