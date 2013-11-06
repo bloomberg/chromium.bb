@@ -5091,6 +5091,13 @@ static void checkSecurityForNodeVoidMethodMethodCallback(const v8::FunctionCallb
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void customVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    V8TestObjectPython::customVoidMethodMethodCustom(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 } // namespace TestObjectPythonV8Internal
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttributes[] = {
@@ -5304,6 +5311,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"callWithActiveWindow", TestObjectPythonV8Internal::callWithActiveWindowMethodCallback, 0, 0},
     {"callWithActiveWindowScriptWindow", TestObjectPythonV8Internal::callWithActiveWindowScriptWindowMethodCallback, 0, 0},
     {"checkSecurityForNodeVoidMethod", TestObjectPythonV8Internal::checkSecurityForNodeVoidMethodMethodCallback, 0, 0},
+    {"customVoidMethod", TestObjectPythonV8Internal::customVoidMethodMethodCallback, 0, 0},
 };
 
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)

@@ -108,11 +108,17 @@ static void {{method.name}}MethodCallback(const v8::FunctionCallbackInfo<v8::Val
     {% if world_suffix in method.activity_logging_world_list %}
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger()) {
+        {# FIXME: replace toVectorOfArguments with toNativeArguments(info, 0)
+           and delete toVectorOfArguments #}
         Vector<v8::Handle<v8::Value> > loggerArgs = toVectorOfArguments(info);
         contextData->activityLogger()->log("{{interface_name}}.{{method.name}}", info.Length(), loggerArgs.data(), "Method");
     }
     {% endif %}
+    {% if method.is_custom %}
+    {{v8_class_name}}::{{method.name}}MethodCustom(info);
+    {% else %}
     {{cpp_class_name}}V8Internal::{{method.name}}Method(info);
+    {% endif %}
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 {% endmacro %}

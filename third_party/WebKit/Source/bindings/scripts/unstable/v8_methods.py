@@ -76,6 +76,7 @@ def generate_method(interface, method):
         'is_call_with_script_arguments': is_call_with_script_arguments,
         'is_call_with_script_state': is_call_with_script_state,
         'is_check_security_for_node': is_check_security_for_node,
+        'is_custom': 'Custom' in extended_attributes,
         'is_static': is_static,
         'name': name,
         'number_of_arguments': len(arguments),
