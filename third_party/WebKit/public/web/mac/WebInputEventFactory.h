@@ -55,7 +55,6 @@ public:
     BLINK_EXPORT static WebMouseEvent mouseEvent(NSEvent*, NSView*);
     BLINK_EXPORT static WebMouseWheelEvent mouseWheelEvent(NSEvent*, NSView*);
     BLINK_EXPORT static WebGestureEvent gestureEvent(NSEvent *, NSView *);
-    BLINK_EXPORT static bool isSystemKeyEvent(const WebKeyboardEvent&);
 };
 
 } // namespace WebKit

@@ -54,7 +54,6 @@ public:
     // information is known to be stale and needs to be reset; that is the
     // function of resetLastClickState().
     BLINK_EXPORT static void resetLastClickState();
-    BLINK_EXPORT static bool isSystemKeyEvent(const WebKeyboardEvent&);
 };
 
 } // namespace WebKit

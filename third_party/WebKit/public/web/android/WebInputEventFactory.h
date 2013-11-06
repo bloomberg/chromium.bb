@@ -86,8 +86,6 @@ public:
                                                       int x,
                                                       int y,
                                                       int modifiers);
-
-    BLINK_EXPORT static bool isSystemKeyEvent(const WebKeyboardEvent&);
 };
 
 } // namespace WebKit
