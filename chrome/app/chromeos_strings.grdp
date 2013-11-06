@@ -2771,26 +2771,6 @@ Battery full
     Unable to connect.
   </message>
 
-  <!-- Captive Portal state strings for ChromeOS -->
-  <message name="IDS_CHROMEOS_CAPTIVE_PORTAL_STATUS_UNKNOWN" desc="Captive Portal status in about:network: Unknown">
-    Unknown
-  </message>
-  <message name="IDS_CHROMEOS_CAPTIVE_PORTAL_STATUS_OFFLINE" desc="Captive Portal status in about:network: Offline">
-    Offline
-  </message>
-  <message name="IDS_CHROMEOS_CAPTIVE_PORTAL_STATUS_ONLINE" desc="Captive Portal status in about:network: Online">
-    Online
-  </message>
-  <message name="IDS_CHROMEOS_CAPTIVE_PORTAL_STATUS_PORTAL" desc="Captive Portal status in about:network: Portal">
-    Portal
-  </message>
-  <message name="IDS_CHROMEOS_CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED" desc="Proxy authentication required for the active network">
-    Proxy authentication required
-  </message>
-  <message name="IDS_CHROMEOS_CAPTIVE_PORTAL_STATUS_UNRECOGNIZED" desc="Captive Portal status in about:network: Unrecognized">
-    Unrecognized
-  </message>
-
   <!-- Cellular network technology description strings for ChromeOS -->
   <message name="IDS_CHROMEOS_NETWORK_CELLULAR_TECHNOLOGY_UNKNOWN" desc="Description of unknown cellular network technology. Shown under details on chrome:stettings/internet page.">
     Unknown

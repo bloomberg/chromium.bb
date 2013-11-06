@@ -39,29 +39,31 @@ const int kProxyChangeDelaySec = 1;
 // Delay between consecutive portal checks for a network in lazy mode.
 const int kLazyCheckIntervalSec = 5;
 
+const char kCaptivePortalStatusUnknown[] = "Unknown";
+const char kCaptivePortalStatusOffline[] = "Offline";
+const char kCaptivePortalStatusOnline[]  = "Online";
+const char kCaptivePortalStatusPortal[]  = "Portal";
+const char kCaptivePortalStatusProxyAuthRequired[] =
+    "Proxy authentication required";
+const char kCaptivePortalStatusUnrecognized[] = "Unrecognized";
+
 std::string CaptivePortalStatusString(
     NetworkPortalDetectorImpl::CaptivePortalStatus status) {
   switch (status) {
     case NetworkPortalDetectorImpl::CAPTIVE_PORTAL_STATUS_UNKNOWN:
-      return l10n_util::GetStringUTF8(
-          IDS_CHROMEOS_CAPTIVE_PORTAL_STATUS_UNKNOWN);
+      return kCaptivePortalStatusUnknown;
     case NetworkPortalDetectorImpl::CAPTIVE_PORTAL_STATUS_OFFLINE:
-      return l10n_util::GetStringUTF8(
-          IDS_CHROMEOS_CAPTIVE_PORTAL_STATUS_OFFLINE);
+      return kCaptivePortalStatusOffline;
     case NetworkPortalDetectorImpl::CAPTIVE_PORTAL_STATUS_ONLINE:
-      return l10n_util::GetStringUTF8(
-          IDS_CHROMEOS_CAPTIVE_PORTAL_STATUS_ONLINE);
+      return kCaptivePortalStatusOnline;
     case NetworkPortalDetectorImpl::CAPTIVE_PORTAL_STATUS_PORTAL:
-      return l10n_util::GetStringUTF8(
-          IDS_CHROMEOS_CAPTIVE_PORTAL_STATUS_PORTAL);
+      return kCaptivePortalStatusPortal;
     case NetworkPortalDetectorImpl::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED:
-      return l10n_util::GetStringUTF8(
-          IDS_CHROMEOS_CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED);
+      return kCaptivePortalStatusProxyAuthRequired;
     case NetworkPortalDetectorImpl::CAPTIVE_PORTAL_STATUS_COUNT:
       NOTREACHED();
   }
-  return l10n_util::GetStringUTF8(
-      IDS_CHROMEOS_CAPTIVE_PORTAL_STATUS_UNRECOGNIZED);
+  return kCaptivePortalStatusUnrecognized;
 }
 
 }  // namespace
@@ -203,10 +205,12 @@ void NetworkPortalDetectorImpl::DefaultNetworkChanged(
     const NetworkState* default_network) {
   DCHECK(CalledOnValidThread());
   if (!default_network) {
+    default_network_name_.clear();
     default_network_id_.clear();
     return;
   }
 
+  default_network_name_ = default_network->name();
   default_network_id_ = default_network->guid();
 
   bool network_changed = (default_service_path_ != default_network->path());
@@ -290,7 +294,8 @@ void NetworkPortalDetectorImpl::DetectCaptivePortalTask() {
   if (attempt_count_ < kMaxRequestAttempts) {
     ++attempt_count_;
     VLOG(1) << "Portal detection started: "
-            << "network=" << default_network_id_ << ", "
+            << "name=" << default_network_name_ << ", "
+            << "id=" << default_network_id_ << ", "
             << "attempt=" << attempt_count_ << " of " << kMaxRequestAttempts;
   } else {
     DCHECK(lazy_detection_enabled());
@@ -320,7 +325,8 @@ void NetworkPortalDetectorImpl::PortalDetectionTimeout() {
   DCHECK(CalledOnValidThread());
   DCHECK(IsCheckingForPortal());
 
-  VLOG(1) << "Portal detection timeout: network=" << default_network_id_;
+  VLOG(1) << "Portal detection timeout: name=" << default_network_name_ << ", "
+          << "id=" << default_network_id_;
 
   captive_portal_detector_->Cancel();
   CaptivePortalDetector::Results results;
@@ -351,7 +357,8 @@ void NetworkPortalDetectorImpl::OnPortalDetectionCompleted(
   DCHECK(IsCheckingForPortal());
 
   VLOG(1) << "Portal detection completed: "
-          << "network=" << default_network_id_ << ", "
+          << "name=" << default_network_name_ << ", "
+          << "id=" << default_network_id_ << ", "
           << "result=" << CaptivePortalDetector::CaptivePortalResultToString(
               results.result) << ", "
           << "response_code=" << results.response_code;
@@ -373,7 +380,8 @@ void NetworkPortalDetectorImpl::OnPortalDetectionCompleted(
                                        shill::kStatePortal)) {
           // Take into account shill's detection results.
           state.status = CAPTIVE_PORTAL_STATUS_PORTAL;
-          LOG(WARNING) << "Network " << default_network->guid() << " "
+          LOG(WARNING) << "Network name=" << default_network->name() << ", "
+                       << "id=" << default_network->guid() << " "
                        << "is marked as "
                        << CaptivePortalStatusString(state.status) << " "
                        << "despite the fact that CaptivePortalDetector "
@@ -451,7 +459,8 @@ void NetworkPortalDetectorImpl::SetCaptivePortalState(
       it->second.status != state.status ||
       it->second.response_code != state.response_code) {
     VLOG(1) << "Updating Chrome Captive Portal state: "
-            << "network=" << network->guid() << ", "
+            << "name=" << network->name() << ", "
+            << "id=" << network->guid() << ", "
             << "status=" << CaptivePortalStatusString(state.status) << ", "
             << "response_code=" << state.response_code;
     portal_state_map_[network->path()] = state;

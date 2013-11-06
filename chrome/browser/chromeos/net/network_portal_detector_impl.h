@@ -187,6 +187,9 @@ class NetworkPortalDetectorImpl
   // * otherwise, timeout equals to |attempt_count_| * kBaseRequestTimeoutSec
   int GetRequestTimeoutSec() const;
 
+  // Name of the default network.
+  std::string default_network_name_;
+
   // Unique identifier of the default network.
   std::string default_network_id_;
 
