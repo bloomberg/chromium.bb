@@ -352,17 +352,21 @@ class GSContext(object):
           'CommandException: One or more URIs matched no objects' in error):
         raise GSNoSuchKey(e)
 
+      logging.warning('GS_ERROR: %s', error)
       # Temporary fix: remove the gsutil tracker files so that our retry
       # can hit a different backend. This should be removed after the
       # bug is fixed by the Google Storage team (see crbug.com/308300).
       if (self.RESUMABLE_DOWNLOAD_ERROR in error or
           self.RESUMABLE_UPLOAD_ERROR in error):
+
         # Only remove the tracker files if we try to upload/download a file.
         if 'cp' in e.result.cmd[:-2]:
           # Assume a command: gsutil [options] cp [options] src_path dest_path
           # dest_path needs to be a fully qualified local path, which is already
           # required for GSContext.Copy().
           tracker_filenames = self._GetTrackerFilenames(e.result.cmd[-1])
+          logging.warning('Potential list of tracker files: %s',
+                          tracker_filenames)
           for tracker_filename in tracker_filenames:
             tracker_file_path = os.path.join(self.DEFAULT_GSUTIL_TRACKER_DIR,
                                              tracker_filename)
