@@ -670,6 +670,7 @@ void ProfileSyncService::OnGetTokenFailure(
                         weak_factory_.GetWeakPtr()));
       break;
     }
+    case GoogleServiceAuthError::SERVICE_ERROR:
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS: {
       // Report time since token was issued for invalid credentials error.
       base::Time auth_token_time =

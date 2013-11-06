@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/json/json_reader.h"
+#include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -44,6 +46,38 @@ static const char kGetAccessTokenBodyWithScopeFormat[] =
 
 static const char kAccessTokenKey[] = "access_token";
 static const char kExpiresInKey[] = "expires_in";
+static const char kErrorKey[] = "error";
+
+// Enumerated constants for logging server responses on 400 errors, matching
+// RFC 6749.
+enum OAuth2ErrorCodesForHistogram {
+   OAUTH2_ACCESS_ERROR_INVALID_REQUEST = 0,
+   OAUTH2_ACCESS_ERROR_INVALID_CLIENT,
+   OAUTH2_ACCESS_ERROR_INVALID_GRANT,
+   OAUTH2_ACCESS_ERROR_UNAUTHORIZED_CLIENT,
+   OAUTH2_ACCESS_ERROR_UNSUPPORTED_GRANT_TYPE,
+   OAUTH2_ACCESS_ERROR_INVALID_SCOPE,
+   OAUTH2_ACCESS_ERROR_UNKNOWN,
+   OAUTH2_ACCESS_ERROR_COUNT
+};
+
+OAuth2ErrorCodesForHistogram OAuth2ErrorToHistogramValue(
+    const std::string& error) {
+  if (error == "invalid_request")
+    return OAUTH2_ACCESS_ERROR_INVALID_REQUEST;
+  else if (error == "invalid_client")
+    return OAUTH2_ACCESS_ERROR_INVALID_CLIENT;
+  else if (error == "invalid_grant")
+    return OAUTH2_ACCESS_ERROR_INVALID_GRANT;
+  else if (error == "unauthorized_client")
+    return OAUTH2_ACCESS_ERROR_UNAUTHORIZED_CLIENT;
+  else if (error == "unsupported_grant_type")
+    return OAUTH2_ACCESS_ERROR_UNSUPPORTED_GRANT_TYPE;
+  else if (error == "invalid_scope")
+    return OAUTH2_ACCESS_ERROR_INVALID_SCOPE;
+
+  return OAUTH2_ACCESS_ERROR_UNKNOWN;
+}
 
 static GoogleServiceAuthError CreateAuthError(URLRequestStatus status) {
   CHECK(!status.is_success());
@@ -124,6 +158,10 @@ void OAuth2AccessTokenFetcher::EndGetAccessToken(
   state_ = GET_ACCESS_TOKEN_DONE;
 
   URLRequestStatus status = source->GetStatus();
+  int histogram_value = status.is_success() ? source->GetResponseCode() :
+                                              status.error();
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Gaia.ResponseCodesForOAuth2AccessToken",
+                              histogram_value);
   if (!status.is_success()) {
     OnGetTokenFailure(CreateAuthError(status));
     return;
@@ -134,6 +172,29 @@ void OAuth2AccessTokenFetcher::EndGetAccessToken(
   if (source->GetResponseCode() == net::HTTP_FORBIDDEN) {
     OnGetTokenFailure(GoogleServiceAuthError(
         GoogleServiceAuthError::SERVICE_UNAVAILABLE));
+    return;
+  }
+
+  if (source->GetResponseCode() == net::HTTP_BAD_REQUEST) {
+    // HTTP_BAD_REQUEST (400) usually contains error as per
+    // http://tools.ietf.org/html/rfc6749#section-5.2.
+    std::string gaia_error;
+    OAuth2ErrorCodesForHistogram access_error(OAUTH2_ACCESS_ERROR_UNKNOWN);
+    if (!ParseGetAccessTokenFailureResponse(source, &gaia_error)) {
+      OnGetTokenFailure(GoogleServiceAuthError(
+          GoogleServiceAuthError::SERVICE_UNAVAILABLE));
+      return;
+    }
+
+    access_error = OAuth2ErrorToHistogramValue(gaia_error);
+    UMA_HISTOGRAM_ENUMERATION("Gaia.BadRequestTypeForOAuth2AccessToken",
+                              access_error, OAUTH2_ACCESS_ERROR_COUNT);
+
+    OnGetTokenFailure(access_error == OAUTH2_ACCESS_ERROR_INVALID_GRANT ?
+        GoogleServiceAuthError(
+            GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS) :
+        GoogleServiceAuthError(
+            GoogleServiceAuthError::SERVICE_ERROR));
     return;
   }
 
@@ -148,7 +209,8 @@ void OAuth2AccessTokenFetcher::EndGetAccessToken(
   // Parse out the access token and the expiration time.
   std::string access_token;
   int expires_in;
-  if (!ParseGetAccessTokenResponse(source, &access_token, &expires_in)) {
+  if (!ParseGetAccessTokenSuccessResponse(
+          source, &access_token, &expires_in)) {
     DLOG(WARNING) << "Response doesn't match expected format";
     OnGetTokenFailure(
         GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
@@ -213,21 +275,43 @@ std::string OAuth2AccessTokenFetcher::MakeGetAccessTokenBody(
   }
 }
 
-// static
-bool OAuth2AccessTokenFetcher::ParseGetAccessTokenResponse(
-    const net::URLFetcher* source,
-    std::string* access_token,
-    int* expires_in) {
+scoped_ptr<base::DictionaryValue> ParseGetAccessTokenResponse(
+    const net::URLFetcher* source) {
   CHECK(source);
-  CHECK(access_token);
+
   std::string data;
   source->GetResponseAsString(&data);
   scoped_ptr<base::Value> value(base::JSONReader::Read(data));
   if (!value.get() || value->GetType() != base::Value::TYPE_DICTIONARY)
+    value.reset();
+
+  return scoped_ptr<base::DictionaryValue>(
+      static_cast<base::DictionaryValue*>(value.release()));
+}
+
+// static
+bool OAuth2AccessTokenFetcher::ParseGetAccessTokenSuccessResponse(
+    const net::URLFetcher* source,
+    std::string* access_token,
+    int* expires_in) {
+  CHECK(access_token);
+  scoped_ptr<base::DictionaryValue> value = ParseGetAccessTokenResponse(
+      source);
+  if (value.get() == NULL)
     return false;
 
-  base::DictionaryValue* dict =
-      static_cast<base::DictionaryValue*>(value.get());
-  return dict->GetString(kAccessTokenKey, access_token) &&
-      dict->GetInteger(kExpiresInKey, expires_in);
+  return value->GetString(kAccessTokenKey, access_token) &&
+      value->GetInteger(kExpiresInKey, expires_in);
+}
+
+// static
+bool OAuth2AccessTokenFetcher::ParseGetAccessTokenFailureResponse(
+    const net::URLFetcher* source,
+    std::string* error) {
+  CHECK(error);
+  scoped_ptr<base::DictionaryValue> value = ParseGetAccessTokenResponse(
+      source);
+  if (value.get() == NULL)
+    return false;
+  return value->GetString(kErrorKey, error);
 }

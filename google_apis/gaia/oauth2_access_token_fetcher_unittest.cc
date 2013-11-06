@@ -50,6 +50,11 @@ static const char kTokenResponseNoAccessToken[] =
     "  \"token_type\": \"Bearer\""
     "}";
 
+static const char kValidFailureTokenResponse[] =
+    "{"
+    "  \"error\": \"invalid_grant\""
+    "}";
+
 class MockUrlFetcherFactory : public ScopedURLFetcherFactory,
                               public URLFetcherFactory {
 public:
@@ -195,7 +200,7 @@ TEST_F(OAuth2AccessTokenFetcherTest, MAYBE_ParseGetAccessTokenResponse) {
 
     std::string at;
     int expires_in;
-    EXPECT_FALSE(OAuth2AccessTokenFetcher::ParseGetAccessTokenResponse(
+    EXPECT_FALSE(OAuth2AccessTokenFetcher::ParseGetAccessTokenSuccessResponse(
         &url_fetcher, &at, &expires_in));
     EXPECT_TRUE(at.empty());
   }
@@ -205,7 +210,7 @@ TEST_F(OAuth2AccessTokenFetcherTest, MAYBE_ParseGetAccessTokenResponse) {
 
     std::string at;
     int expires_in;
-    EXPECT_FALSE(OAuth2AccessTokenFetcher::ParseGetAccessTokenResponse(
+    EXPECT_FALSE(OAuth2AccessTokenFetcher::ParseGetAccessTokenSuccessResponse(
         &url_fetcher, &at, &expires_in));
     EXPECT_TRUE(at.empty());
   }
@@ -215,7 +220,7 @@ TEST_F(OAuth2AccessTokenFetcherTest, MAYBE_ParseGetAccessTokenResponse) {
 
     std::string at;
     int expires_in;
-    EXPECT_FALSE(OAuth2AccessTokenFetcher::ParseGetAccessTokenResponse(
+    EXPECT_FALSE(OAuth2AccessTokenFetcher::ParseGetAccessTokenSuccessResponse(
         &url_fetcher, &at, &expires_in));
     EXPECT_TRUE(at.empty());
   }
@@ -225,9 +230,27 @@ TEST_F(OAuth2AccessTokenFetcherTest, MAYBE_ParseGetAccessTokenResponse) {
 
     std::string at;
     int expires_in;
-    EXPECT_TRUE(OAuth2AccessTokenFetcher::ParseGetAccessTokenResponse(
+    EXPECT_TRUE(OAuth2AccessTokenFetcher::ParseGetAccessTokenSuccessResponse(
         &url_fetcher, &at, &expires_in));
     EXPECT_EQ("at1", at);
     EXPECT_EQ(3600, expires_in);
   }
+  {  // Valid json: invalid error response.
+     TestURLFetcher url_fetcher(0, GURL("www.google.com"), NULL);
+     url_fetcher.SetResponseString(kTokenResponseNoAccessToken);
+
+     std::string error;
+     EXPECT_FALSE(OAuth2AccessTokenFetcher::ParseGetAccessTokenFailureResponse(
+         &url_fetcher, &error));
+     EXPECT_TRUE(error.empty());
+   }
+   {  // Valid json: error response.
+     TestURLFetcher url_fetcher(0, GURL("www.google.com"), NULL);
+     url_fetcher.SetResponseString(kValidFailureTokenResponse);
+
+     std::string error;
+     EXPECT_TRUE(OAuth2AccessTokenFetcher::ParseGetAccessTokenFailureResponse(
+         &url_fetcher, &error));
+     EXPECT_EQ("invalid_grant", error);
+   }
 }

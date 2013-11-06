@@ -222,6 +222,7 @@ void TiclInvalidationService::OnGetTokenFailure(
                        base::Unretained(this)));
       break;
     }
+    case GoogleServiceAuthError::SERVICE_ERROR:
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS: {
       // This is a real auth error.
       // Report time since token was issued for invalid credentials error.

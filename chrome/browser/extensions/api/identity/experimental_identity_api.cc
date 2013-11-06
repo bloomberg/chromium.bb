@@ -158,6 +158,7 @@ void ExperimentalIdentityGetAuthTokenFunction::OnMintTokenFailure(
     const GoogleServiceAuthError& error) {
   switch (error.state()) {
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
+    case GoogleServiceAuthError::SERVICE_ERROR:
     case GoogleServiceAuthError::ACCOUNT_DELETED:
     case GoogleServiceAuthError::ACCOUNT_DISABLED:
       extensions::IdentityAPI::GetFactoryInstance()

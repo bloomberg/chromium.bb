@@ -101,6 +101,7 @@ void GetStatusLabelsForAuthError(Profile* profile,
       SigninGlobalError::GetForProfile(profile)->GetLastAuthError().state();
   switch (state) {
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
+    case GoogleServiceAuthError::SERVICE_ERROR:
     case GoogleServiceAuthError::ACCOUNT_DELETED:
     case GoogleServiceAuthError::ACCOUNT_DISABLED:
       // If the user name is empty then the first login failed, otherwise the

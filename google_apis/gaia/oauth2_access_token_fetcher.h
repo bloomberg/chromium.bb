@@ -90,9 +90,15 @@ class OAuth2AccessTokenFetcher : public net::URLFetcherDelegate {
       const std::string& client_secret,
       const std::string& refresh_token,
       const std::vector<std::string>& scopes);
-  static bool ParseGetAccessTokenResponse(const net::URLFetcher* source,
-                                          std::string* access_token,
-                                          int* expires_in);
+
+  static bool ParseGetAccessTokenSuccessResponse(
+      const net::URLFetcher* source,
+      std::string* access_token,
+      int* expires_in);
+
+  static bool ParseGetAccessTokenFailureResponse(
+      const net::URLFetcher* source,
+      std::string* error);
 
   // State that is set during construction.
   OAuth2AccessTokenConsumer* const consumer_;
