@@ -177,6 +177,12 @@ void GpuVideoEncodeAcceleratorHost::OnRequireBitstreamBuffers(
 
 void GpuVideoEncodeAcceleratorHost::OnNotifyInputDone(int32 frame_id) {
   DVLOG(3) << "OnNotifyInputDone(): frame_id=" << frame_id;
+  // Fun-fact: std::hash_map is not spec'd to be re-entrant; since freeing a
+  // frame can trigger a further encode to be kicked off and thus an .insert()
+  // back into the map, we separate the frame's dtor running from the .erase()
+  // running by holding on to the frame temporarily.  This isn't "just
+  // theoretical" - Android's std::hash_map crashes if we don't do this.
+  scoped_refptr<media::VideoFrame> frame = frame_map_[frame_id];
   if (!frame_map_.erase(frame_id)) {
     DLOG(ERROR) << "OnNotifyInputDone(): "
                    "invalid frame_id=" << frame_id;
@@ -185,6 +191,7 @@ void GpuVideoEncodeAcceleratorHost::OnNotifyInputDone(int32 frame_id) {
     OnNotifyError(kPlatformFailureError);
     return;
   }
+  frame = NULL;  // Not necessary but nice to be explicit; see fun-fact above.
 }
 
 void GpuVideoEncodeAcceleratorHost::OnBitstreamBufferReady(
