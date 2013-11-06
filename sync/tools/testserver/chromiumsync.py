@@ -1158,6 +1158,13 @@ class TestServer(object):
         for times in xrange(0, sys.maxint) for c in xrange(ord('A'), ord('Z')))
     self.transient_error = False
     self.sync_count = 0
+    # Gaia OAuth2 Token fields and their default values.
+    self.response_code = 200
+    self.request_token = 'rt1'
+    self.access_token = 'at1'
+    self.expires_in = 3600
+    self.token_type = 'Bearer'
+
 
   def GetShortClientName(self, query):
     parsed = cgi.parse_qs(query[query.find('?')+1:])
@@ -1482,3 +1489,35 @@ class TestServer(object):
 
     if update_request.need_encryption_key or sending_nigori_node:
       update_response.encryption_keys.extend(self.account.GetKeystoreKeys())
+
+  def HandleGetOauth2Token(self):
+    return (int(self.response_code),
+            '{\n'
+            '  \"refresh_token\": \"' + self.request_token + '\",\n'
+            '  \"access_token\": \"' + self.access_token + '\",\n'
+            '  \"expires_in\": ' + str(self.expires_in) + ',\n'
+            '  \"token_type\": \"' + self.token_type +'\"\n'
+            '}')
+
+  def HandleSetOauth2Token(self, response_code, request_token, access_token,
+                           expires_in, token_type):
+    if response_code != 0:
+      self.response_code = response_code
+    if request_token != '':
+      self.request_token = request_token
+    if access_token != '':
+      self.access_token = access_token
+    if expires_in != 0:
+      self.expires_in = expires_in
+    if token_type != '':
+      self.token_type = token_type
+
+    return (200,
+            '<html><title>Set OAuth2 Token</title>'
+            '<H1>This server will now return the OAuth2 Token:</H1>'
+            '<p>response_code: ' + str(self.response_code) + '</p>'
+            '<p>request_token: ' + self.request_token + '</p>'
+            '<p>access_token: ' + self.access_token + '</p>'
+            '<p>expires_in: ' + str(self.expires_in) + '</p>'
+            '<p>token_type: ' + self.token_type + '</p>'
+            '</html>')

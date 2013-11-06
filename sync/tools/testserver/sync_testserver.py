@@ -151,10 +151,14 @@ class SyncPageHandler(testserver_base.BasePageHandler):
                     self.ChromiumSyncEnableKeystoreEncryptionOpHandler,
                     self.ChromiumSyncRotateKeystoreKeysOpHandler,
                     self.ChromiumSyncEnableManagedUserAcknowledgementHandler,
-                    self.ChromiumSyncEnablePreCommitGetUpdateAvoidanceHandler]
+                    self.ChromiumSyncEnablePreCommitGetUpdateAvoidanceHandler,
+                    self.GaiaOAuth2TokenHandler,
+                    self.GaiaSetOAuth2TokenResponseHandler]
 
     post_handlers = [self.ChromiumSyncCommandHandler,
-                     self.ChromiumSyncTimeHandler]
+                     self.ChromiumSyncTimeHandler,
+                     self.GaiaOAuth2TokenHandler,
+                     self.GaiaSetOAuth2TokenResponseHandler]
     testserver_base.BasePageHandler.__init__(self, request, client_address,
                                              sync_http_server, [], get_handlers,
                                              [], post_handlers, [])
@@ -441,6 +445,60 @@ class SyncPageHandler(testserver_base.BasePageHandler):
     self.wfile.write(raw_reply)
     return True
 
+  def GaiaOAuth2TokenHandler(self):
+    test_name = "/o/oauth2/token"
+    if not self._ShouldHandleRequest(test_name):
+      return False
+    if self.headers.getheader('content-length'):
+      length = int(self.headers.getheader('content-length'))
+      _raw_request = self.rfile.read(length)
+    result, raw_reply = (
+        self.server._sync_handler.HandleGetOauth2Token())
+    self.send_response(result)
+    self.send_header('Content-Type', 'application/json')
+    self.send_header('Content-Length', len(raw_reply))
+    self.end_headers()
+    self.wfile.write(raw_reply)
+    return True
+
+  def GaiaSetOAuth2TokenResponseHandler(self):
+    test_name = "/setfakeoauth2token"
+    if not self._ShouldHandleRequest(test_name):
+      return False
+
+    # The index of 'query' is 4.
+    # See http://docs.python.org/2/library/urlparse.html
+    query = urlparse.urlparse(self.path)[4]
+    query_params = urlparse.parse_qs(query)
+
+    response_code = 0
+    request_token = ''
+    access_token = ''
+    expires_in = 0
+    token_type = ''
+
+    if 'response_code' in query_params:
+      response_code = query_params['response_code'][0]
+    if 'request_token' in query_params:
+      request_token = query_params['request_token'][0]
+    if 'access_token' in query_params:
+      access_token = query_params['access_token'][0]
+    if 'expires_in' in query_params:
+      expires_in = query_params['expires_in'][0]
+    if 'token_type' in query_params:
+      token_type = query_params['token_type'][0]
+
+    result, raw_reply = (
+        self.server._sync_handler.HandleSetOauth2Token(
+            response_code, request_token, access_token, expires_in, token_type))
+    self.send_response(result)
+    self.send_header('Content-Type', 'text/html')
+    self.send_header('Content-Length', len(raw_reply))
+    self.end_headers()
+    self.wfile.write(raw_reply)
+    return True
+
+
 class SyncServerRunner(testserver_base.TestServerRunner):
   """TestServerRunner for the net test servers."""
 
@@ -452,8 +510,12 @@ class SyncServerRunner(testserver_base.TestServerRunner):
     host = self.options.host
     xmpp_port = self.options.xmpp_port
     server = SyncHTTPServer((host, port), xmpp_port, SyncPageHandler)
-    print 'Sync HTTP server started on port %d...' % server.server_port
-    print 'Sync XMPP server started on port %d...' % server.xmpp_port
+    print ('Sync HTTP server started at %s:%d/chromiumsync...' %
+           (host, server.server_port))
+    print ('Fake OAuth2 Token server started at %s:%d/o/oauth2/token...' %
+           (host, server.server_port))
+    print ('Sync XMPP server started at %s:%d...' %
+           (host, server.xmpp_port))
     server_data['port'] = server.server_port
     server_data['xmpp_port'] = server.xmpp_port
     return server
