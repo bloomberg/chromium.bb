@@ -37,7 +37,7 @@ camera.Camera = function() {
       this.navigateById_.bind(this),
       this.viewsStack_.pop.bind(this.viewsStack_));
 
-   /**
+  /**
    * @type {camera.views.Camera}
    * @private
    */
