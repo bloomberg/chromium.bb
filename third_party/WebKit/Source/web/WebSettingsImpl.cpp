@@ -57,6 +57,7 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings)
     , m_doubleTapToZoomEnabled(false)
     , m_supportDeprecatedTargetDensityDPI(false)
     , m_viewportMetaLayoutSizeQuirk(false)
+    , m_viewportMetaNonUserScalableQuirk(false)
     , m_clobberUserAgentInitialScaleQuirk(false)
     , m_pinchOverlayScrollbarThickness(0)
     , m_mainFrameResizesAreOrientationChanges(false)
@@ -197,6 +198,11 @@ void WebSettingsImpl::setViewportMetaLayoutSizeQuirk(bool viewportMetaLayoutSize
 void WebSettingsImpl::setViewportMetaMergeContentQuirk(bool viewportMetaMergeContentQuirk)
 {
     m_settings->setViewportMetaMergeContentQuirk(viewportMetaMergeContentQuirk);
+}
+
+void WebSettingsImpl::setViewportMetaNonUserScalableQuirk(bool viewportMetaNonUserScalableQuirk)
+{
+    m_viewportMetaNonUserScalableQuirk = viewportMetaNonUserScalableQuirk;
 }
 
 void WebSettingsImpl::setViewportMetaZeroValuesQuirk(bool viewportMetaZeroValuesQuirk)

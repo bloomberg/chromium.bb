@@ -178,6 +178,7 @@ public:
     virtual void setViewportMetaEnabled(bool);
     virtual void setViewportMetaLayoutSizeQuirk(bool);
     virtual void setViewportMetaMergeContentQuirk(bool);
+    virtual void setViewportMetaNonUserScalableQuirk(bool);
     virtual void setViewportMetaZeroValuesQuirk(bool);
     virtual void setWebAudioEnabled(bool);
     virtual void setWebGLErrorsToConsoleEnabled(bool);
@@ -197,6 +198,7 @@ public:
     bool perTilePaintingEnabled() const { return m_perTilePaintingEnabled; }
     bool supportDeprecatedTargetDensityDPI() const { return m_supportDeprecatedTargetDensityDPI; }
     bool viewportMetaLayoutSizeQuirk() const { return m_viewportMetaLayoutSizeQuirk; }
+    bool viewportMetaNonUserScalableQuirk() const { return m_viewportMetaNonUserScalableQuirk; }
     bool clobberUserAgentInitialScaleQuirk() const { return m_clobberUserAgentInitialScaleQuirk; }
     int pinchOverlayScrollbarThickness() const { return m_pinchOverlayScrollbarThickness; }
 
@@ -215,6 +217,10 @@ private:
     // the Android SDK prior to and including version 18. Presumably, this
     // can be removed any time after 2015. See http://crbug.com/277369.
     bool m_viewportMetaLayoutSizeQuirk;
+    // This quirk is to maintain compatibility with Android apps built on
+    // the Android SDK prior to and including version 18. Presumably, this
+    // can be removed any time after 2015. See http://crbug.com/312691.
+    bool m_viewportMetaNonUserScalableQuirk;
     // This quirk is to maintain compatibility with Android apps built on
     // the Android SDK prior to and including version 18. Presumably, this
     // can be removed any time after 2015. See http://crbug.com/313754.

@@ -134,9 +134,9 @@ static float computeHeightByAspectRatio(float width, const FloatSize& deviceSize
     return width * (deviceSize.height() / deviceSize.width());
 }
 
-void PageScaleConstraintsSet::adjustForAndroidWebViewQuirks(const ViewportDescription& description, IntSize viewSize, int layoutFallbackWidth, float deviceScaleFactor, bool supportTargetDensityDPI, bool wideViewportQuirkEnabled, bool useWideViewport, bool loadWithOverviewMode)
+void PageScaleConstraintsSet::adjustForAndroidWebViewQuirks(const ViewportDescription& description, IntSize viewSize, int layoutFallbackWidth, float deviceScaleFactor, bool supportTargetDensityDPI, bool wideViewportQuirkEnabled, bool useWideViewport, bool loadWithOverviewMode, bool nonUserScalableQuirkEnabled)
 {
-    if (!supportTargetDensityDPI && !wideViewportQuirkEnabled && loadWithOverviewMode)
+    if (!supportTargetDensityDPI && !wideViewportQuirkEnabled && loadWithOverviewMode && !nonUserScalableQuirkEnabled)
         return;
 
     const float oldInitialScale = m_pageDefinedConstraints.initialScale;
@@ -181,6 +181,16 @@ void PageScaleConstraintsSet::adjustForAndroidWebViewQuirks(const ViewportDescri
                 m_pageDefinedConstraints.minimumScale = std::min<float>(m_pageDefinedConstraints.minimumScale, m_pageDefinedConstraints.initialScale);
                 m_pageDefinedConstraints.maximumScale = std::max<float>(m_pageDefinedConstraints.maximumScale, m_pageDefinedConstraints.initialScale);
             }
+        }
+    }
+
+    if (nonUserScalableQuirkEnabled && !description.userZoom) {
+        m_pageDefinedConstraints.initialScale = targetDensityDPIFactor;
+        m_pageDefinedConstraints.minimumScale = m_pageDefinedConstraints.initialScale;
+        m_pageDefinedConstraints.maximumScale = m_pageDefinedConstraints.initialScale;
+        if (description.maxWidth.isAuto() || description.maxWidth.type() == ExtendToZoom || description.maxWidth == Length(100, ViewportPercentageWidth)) {
+            adjustedLayoutSizeWidth = viewSize.width() / targetDensityDPIFactor;
+            adjustedLayoutSizeHeight = computeHeightByAspectRatio(adjustedLayoutSizeWidth, viewSize);
         }
     }
 

@@ -3020,7 +3020,7 @@ void WebViewImpl::updatePageDefinedViewportConstraints(const ViewportDescription
             || (description.maxWidth == Length(100, ViewportPercentageWidth) && m_pageScaleConstraintsSet.pageDefinedConstraints().initialScale == 1.0f))
             setInitialPageScaleOverride(-1);
     }
-    m_pageScaleConstraintsSet.adjustForAndroidWebViewQuirks(adjustedDescription, m_size, page()->settings().layoutFallbackWidth(), deviceScaleFactor(), settingsImpl()->supportDeprecatedTargetDensityDPI(), page()->settings().wideViewportQuirkEnabled(), page()->settings().useWideViewport(), page()->settings().loadWithOverviewMode());
+    m_pageScaleConstraintsSet.adjustForAndroidWebViewQuirks(adjustedDescription, m_size, page()->settings().layoutFallbackWidth(), deviceScaleFactor(), settingsImpl()->supportDeprecatedTargetDensityDPI(), page()->settings().wideViewportQuirkEnabled(), page()->settings().useWideViewport(), page()->settings().loadWithOverviewMode(), settingsImpl()->viewportMetaNonUserScalableQuirk());
     float newInitialScale = m_pageScaleConstraintsSet.pageDefinedConstraints().initialScale;
     if (oldInitialScale != newInitialScale && newInitialScale != -1) {
         m_pageScaleConstraintsSet.setNeedsReset(true);
