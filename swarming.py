@@ -70,22 +70,25 @@ class Manifest(object):
   Also includes code to zip code and upload itself.
   """
   def __init__(
-      self, isolated_hash, test_name, shards, test_filter, slave_os,
-      working_dir, isolate_server, verbose, profile, priority, algo):
+      self, isolate_server, isolated_hash, test_name, shards, test_filter,
+      slave_os, working_dir, verbose, profile, priority, algo):
     """Populates a manifest object.
       Args:
+        isolate_server - isolate server url.
         isolated_hash - The manifest's sha-1 that the slave is going to fetch.
         test_name - The name to give the test request.
         shards - The number of swarm shards to request.
         test_filter - The gtest filter to apply when running the test.
         slave_os - OS to run on.
         working_dir - Relative working directory to start the script.
-        isolate_server - isolate server url.
         verbose - if True, have the slave print more details.
         profile - if True, have the slave print more timing data.
         priority - int between 0 and 1000, lower the higher priority.
         algo - hashing algorithm used.
     """
+    self.isolate_server = isolate_server
+    self.storage = isolateserver.get_storage(isolate_server, 'default')
+
     self.isolated_hash = isolated_hash
     self.bundle = zip_package.ZipPackage(ROOT_DIR)
 
@@ -95,8 +98,6 @@ class Manifest(object):
     self._target_platform = slave_os
     self._working_dir = working_dir
 
-    self.isolate_server = isolate_server
-    self.storage = isolateserver.get_storage(isolate_server, 'default')
     self.verbose = bool(verbose)
     self.profile = bool(profile)
     self.priority = priority
@@ -149,25 +150,25 @@ class Manifest(object):
     This function doesn't mutate the object.
     """
     test_case = {
-      'test_case_name': self._test_name,
-      'data': [],
-      'tests': self._tasks,
-      # TODO: Let the encoding get set from the command line.
-      'encoding': 'UTF-8',
-      'env_vars': {},
+      'cleanup': 'root',
       'configurations': [
         {
-          'min_instances': self._shards,
           'config_name': self._target_platform,
-          'priority': self.priority,
           'dimensions': {
             'os': self._target_platform,
           },
+          'min_instances': self._shards,
+          'priority': self.priority,
         },
       ],
-      'working_dir': self._working_dir,
+      'data': [],
+      # TODO: Let the encoding get set from the command line.
+      'encoding': 'UTF-8',
+      'env_vars': {},
       'restart_on_failure': True,
-      'cleanup': 'root',
+      'test_case_name': self._test_name,
+      'tests': self._tasks,
+      'working_dir': self._working_dir,
     }
     if self._isolate_item:
       test_case['data'].append(
@@ -339,8 +340,8 @@ def archive(isolated, isolate_server, os_slave, algo, verbose):
 
 
 def process_manifest(
-    file_hash_or_isolated, test_name, shards, test_filter, slave_os,
-    working_dir, isolate_server, swarming, verbose, profile, priority, algo):
+    swarming, isolate_server, file_hash_or_isolated, test_name, shards,
+    test_filter, slave_os, working_dir, verbose, profile, priority, algo):
   """Process the manifest file and send off the swarm test request.
 
   Optionally archives an .isolated file.
@@ -359,17 +360,17 @@ def process_manifest(
 
   try:
     manifest = Manifest(
-        file_hash,
-        test_name,
-        shards,
-        test_filter,
-        PLATFORM_MAPPING_SWARMING[slave_os],
-        working_dir,
-        isolate_server,
-        verbose,
-        profile,
-        priority,
-        algo)
+        isolate_server=isolate_server,
+        isolated_hash=file_hash,
+        test_name=test_name,
+        shards=shards,
+        test_filter=test_filter,
+        slave_os=PLATFORM_MAPPING_SWARMING[slave_os],
+        working_dir=working_dir,
+        verbose=verbose,
+        profile=profile,
+        priority=priority,
+        algo=algo)
   except ValueError as e:
     tools.report_error('Unable to process %s: %s' % (test_name, e))
     return 1
@@ -406,12 +407,12 @@ def process_manifest(
 
 
 def trigger(
+    swarming,
+    isolate_server,
     slave_os,
     tasks,
     task_prefix,
     working_dir,
-    isolate_server,
-    swarming,
     verbose,
     profile,
     priority):
@@ -421,18 +422,18 @@ def trigger(
     # TODO(maruel): It should first create a request manifest object, then pass
     # it to a function to zip, archive and trigger.
     exit_code = process_manifest(
-        file_hash,
-        task_prefix + test_name,
-        int(shards),
-        testfilter,
-        slave_os,
-        working_dir,
-        isolate_server,
-        swarming,
-        verbose,
-        profile,
-        priority,
-        hashlib.sha1)
+        swarming=swarming,
+        isolate_server=isolate_server,
+        file_hash_or_isolated=file_hash,
+        test_name=task_prefix + test_name,
+        shards=int(shards),
+        test_filter=testfilter,
+        slave_os=slave_os,
+        working_dir=working_dir,
+        verbose=verbose,
+        profile=profile,
+        priority=priority,
+        algo=hashlib.sha1)
     highest_exit_code = max(highest_exit_code, exit_code)
   return highest_exit_code
 
@@ -565,15 +566,15 @@ def CMDrun(parser, args):
     logging.info('Triggering %s', arg)
     try:
       result = trigger(
-          options.os,
-          [(arg, os.path.basename(arg), '1', '')],
-          options.task_prefix,
-          options.working_dir,
-          options.isolate_server,
-          options.swarming,
-          options.verbose,
-          options.profile,
-          options.priority)
+          swarming=options.swarming,
+          isolate_server=options.isolate_server,
+          slave_os=options.os,
+          tasks=[(arg, os.path.basename(arg), '1', '')],
+          task_prefix=options.task_prefix,
+          working_dir=options.working_dir,
+          verbose=options.verbose,
+          profile=options.profile,
+          priority=options.priority)
     except Failure as e:
       result = e.args[0]
     if result:
@@ -625,15 +626,15 @@ def CMDtrigger(parser, args):
 
   try:
     return trigger(
-        options.os,
-        options.tasks,
-        options.task_prefix,
-        options.working_dir,
-        options.isolate_server,
-        options.swarming,
-        options.verbose,
-        options.profile,
-        options.priority)
+        swarming=options.swarming,
+        isolate_server=options.isolate_server,
+        slave_os=options.os,
+        tasks=options.tasks,
+        task_prefix=options.task_prefix,
+        working_dir=options.working_dir,
+        verbose=options.verbose,
+        profile=options.profile,
+        priority=options.priority)
   except Failure as e:
     tools.report_error(e)
     return 1

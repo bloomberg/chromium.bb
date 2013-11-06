@@ -477,13 +477,13 @@ class ManifestTest(auto_stub.TestCase):
 
   def test_basic_manifest(self):
     manifest = swarming.Manifest(
+        isolate_server='http://localhost:8081',
         isolated_hash=FILE_HASH,
         test_name=TEST_NAME,
         shards=2,
         test_filter='*',
         slave_os='Windows',
         working_dir='swarm_tests',
-        isolate_server='http://localhost:8081',
         verbose=False,
         profile=False,
         priority=101,
@@ -505,13 +505,13 @@ class ManifestTest(auto_stub.TestCase):
        aren't used.
     """
     manifest = swarming.Manifest(
+        isolate_server='http://localhost:8081',
         isolated_hash=FILE_HASH,
         test_name=TEST_NAME,
         shards=1,
         test_filter='*',
         slave_os='Linux',
         working_dir='swarm_tests',
-        isolate_server='http://localhost:8081',
         verbose=False,
         profile=False,
         priority=101,
@@ -530,13 +530,13 @@ class ManifestTest(auto_stub.TestCase):
 
   def test_basic_linux_profile(self):
     manifest = swarming.Manifest(
+        isolate_server='http://localhost:8081',
         isolated_hash=FILE_HASH,
         test_name=TEST_NAME,
         shards=1,
         test_filter='*',
         slave_os='Linux',
         working_dir='swarm_tests',
-        isolate_server='http://localhost:8081',
         verbose=False,
         profile=True,
         priority=101,
@@ -559,14 +559,14 @@ class ManifestTest(auto_stub.TestCase):
         lambda *_: MockedStorage(warm_cache=False))
 
     result = swarming.process_manifest(
+        swarming='http://localhost:8082',
+        isolate_server='http://localhost:8081',
         file_hash_or_isolated=FILE_HASH,
         test_name=TEST_NAME,
         shards=1,
         test_filter='*',
         slave_os='linux2',
         working_dir='swarm_tests',
-        isolate_server='http://localhost:8081',
-        swarming='http://localhost:8082',
         verbose=False,
         profile=False,
         priority=101,
@@ -587,14 +587,14 @@ class ManifestTest(auto_stub.TestCase):
         lambda *_: MockedStorage(warm_cache=True))
 
     result = swarming.process_manifest(
+        swarming='http://localhost:8082',
+        isolate_server='http://localhost:8081',
         file_hash_or_isolated=FILE_HASH,
         test_name=TEST_NAME,
         shards=1,
         test_filter='*',
         slave_os='linux2',
         working_dir='swarm_tests',
-        isolate_server='http://localhost:8081',
-        swarming='http://localhost:8082',
         verbose=False,
         profile=False,
         priority=101,
