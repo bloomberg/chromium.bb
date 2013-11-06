@@ -11,12 +11,14 @@ class FileNotFoundError(Exception):
   def __init__(self, filename):
     Exception.__init__(self, filename)
 
+
 class FileSystemError(Exception):
   '''Raised on when there are errors reading or statting files, such as a
   network timeout.
   '''
   def __init__(self, filename):
     Exception.__init__(self, filename)
+
 
 class StatInfo(object):
   '''The result of calling Stat on a FileSystem.
@@ -40,6 +42,7 @@ class StatInfo(object):
   def __repr__(self):
     return str(self)
 
+
 def ToUnicode(data):
   '''Returns the str |data| as a unicode object. It's expected to be utf8, but
   there are also latin-1 encodings in there for some reason. Fall back to that.
@@ -48,6 +51,7 @@ def ToUnicode(data):
     return unicode(data, 'utf-8')
   except:
     return unicode(data, 'latin-1')
+
 
 class FileSystem(object):
   '''A FileSystem interface that can read files and directories.
@@ -76,7 +80,10 @@ class FileSystem(object):
     return Future(delegate=Gettable(lambda: read_single.Get()[path]))
 
   def Refresh(self):
-    raise NotImplementedError(self.__class__)
+    '''Asynchronously refreshes the content of the FileSystem, returning a
+    future to its completion.
+    '''
+    return Future(value=())
 
   # TODO(cduvall): Allow Stat to take a list of paths like Read.
   def Stat(self, path):

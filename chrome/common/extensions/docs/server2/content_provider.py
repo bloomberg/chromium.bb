@@ -84,5 +84,6 @@ class ContentProvider(object):
     return self._content_cache.GetFromFile(path, binary=True)
 
   def Cron(self):
-    # TODO(kalman): Implement.
-    pass
+    # Running Refresh() on the file system is enough to pull GitHub content,
+    # which is all we need for now.
+    self.file_system.Refresh().Get()

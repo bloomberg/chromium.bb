@@ -138,7 +138,8 @@ class ServerInstance(object):
 
     self.content_providers = ContentProviders(
         self.compiled_fs_factory,
-        host_fs_at_trunk)
+        host_fs_at_trunk,
+        self.github_file_system_provider)
 
     # TODO(kalman): Move all the remaining DataSources into DataSourceRegistry,
     # then factor out the DataSource creation into a factory method, so that

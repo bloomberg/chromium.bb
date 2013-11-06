@@ -23,9 +23,13 @@ class ContentProviders(object):
   Returns ContentProvider instances based on how they're configured there.
   '''
 
-  def __init__(self, compiled_fs_factory, host_file_system):
+  def __init__(self,
+               compiled_fs_factory,
+               host_file_system,
+               github_file_system_provider):
     self._compiled_fs_factory = compiled_fs_factory
     self._host_file_system = host_file_system
+    self._github_file_system_provider = github_file_system_provider
     self._cache = compiled_fs_factory.ForJson(host_file_system)
 
   @memoize
@@ -73,12 +77,22 @@ class ContentProviders(object):
     if 'chromium' in config:
       chromium_config = config['chromium']
       if 'dir' not in chromium_config:
-        logging.error('"chromium" must have a "dir" property')
+        logging.error('%s: "chromium" must have a "dir" property' % name)
         return None
       file_system = ChrootFileSystem(self._host_file_system,
                                      chromium_config['dir'])
+    elif 'github' in config:
+      github_config = config['github']
+      if 'owner' not in github_config or 'repo' not in github_config:
+        logging.error('%s: "github" must provide an "owner" and "repo"' % name)
+        return None
+      file_system = self._github_file_system_provider.Create(
+          github_config['owner'], github_config['repo'])
+      if 'dir' in github_config:
+        file_system = ChrootFileSystem(file_system, github_config['dir'])
     else:
-      logging.error('Content provider type "%s" not supported', type_)
+      logging.error(
+          '%s: content provider type "%s" not supported' % (name, type_))
       return None
 
     return ContentProvider(name,
