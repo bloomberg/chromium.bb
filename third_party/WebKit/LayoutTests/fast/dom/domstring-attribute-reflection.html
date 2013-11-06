@@ -5,7 +5,7 @@
 <script>
 var element;
 
-function testDOMStringReflection(elementName, contentAttributeName, idlAttributeName) {
+function testDOMStringReflection(elementName, contentAttributeName, idlAttributeName, treatNullAsString) {
     idlAttributeName = idlAttributeName || contentAttributeName;
     element = document.createElement(elementName);
     debug('Reflected DOMString attribute test for ' + elementName + '/@' + contentAttributeName);
@@ -22,8 +22,13 @@ function testDOMStringReflection(elementName, contentAttributeName, idlAttribute
     shouldBeEqualToString('element.getAttribute("' + contentAttributeName + '")', ' bar\n');
 
     debug('Setting null via the IDL attribute:');
-    shouldBeEqualToString('element.' + idlAttributeName + ' = null; element.' + idlAttributeName, '');
-    shouldBeNull('element.getAttribute("' + contentAttributeName + '")');
+    if (treatNullAsString) {
+        shouldBeEqualToString('element.' + idlAttributeName + ' = null; element.' + idlAttributeName, 'null');
+        shouldBeEqualToString('element.getAttribute("' + contentAttributeName + '")', 'null');
+    } else {
+        shouldBeEqualToString('element.' + idlAttributeName + ' = null; element.' + idlAttributeName, '');
+        shouldBeNull('element.getAttribute("' + contentAttributeName + '")');
+    }
 
     debug('Setting null via the content attribute:');
     shouldBeEqualToString('element.setAttribute("' + contentAttributeName + '", null); element.' + idlAttributeName, 'null');
@@ -48,7 +53,7 @@ function testDOMStringReflection(elementName, contentAttributeName, idlAttribute
     debug('\n');
 }
 
-testDOMStringReflection('button', 'name');
+testDOMStringReflection('button', 'name', 'name', true);
 testDOMStringReflection('fieldset', 'name');
 testDOMStringReflection('form', 'name');
 testDOMStringReflection('input', 'name');

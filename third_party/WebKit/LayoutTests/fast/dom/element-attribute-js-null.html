@@ -198,8 +198,13 @@
                     elementToUse: document.createElement('button'),
                     attributes: [
                         {name: 'accessKey', expectedNull: ''},
-                        {name: 'name', expectedNull: ''},
-                        {name: 'value', expectedNull: ''}
+                        {name: 'formAction', expectedNull: 'null', isUrl:true},
+                        {name: 'formEnctype', expectedNull: 'application/x-www-form-urlencoded'},
+                        {name: 'formMethod', expectedNull: 'get'},
+                        {name: 'formTarget', expectedNull: 'null'},
+                        {name: 'name', expectedNull: 'null'},
+                        {name: 'type', expectedNull: 'submit'},
+                        {name: 'value', expectedNull: 'null'}
                     ]
                 },
                 {

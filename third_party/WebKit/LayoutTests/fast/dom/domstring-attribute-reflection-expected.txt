@@ -9,8 +9,8 @@ Setting a value via the content attribute:
 PASS element.setAttribute("name", " bar\n"); element.name is " bar\n"
 PASS element.getAttribute("name") is " bar\n"
 Setting null via the IDL attribute:
-PASS element.name = null; element.name is ""
-PASS element.getAttribute("name") is null
+PASS element.name = null; element.name is "null"
+PASS element.getAttribute("name") is "null"
 Setting null via the content attribute:
 PASS element.setAttribute("name", null); element.name is "null"
 PASS element.getAttribute("name") is "null"

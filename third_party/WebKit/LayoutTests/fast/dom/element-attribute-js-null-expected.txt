@@ -66,8 +66,13 @@ TEST SUCCEEDED: The value was the empty string. [tested HTMLBodyElement.vLink]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLBRElement.clear]
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLButtonElement.accessKey]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLButtonElement.name]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLButtonElement.value]
+TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLButtonElement.formAction]
+TEST SUCCEEDED: The value was the string 'application/x-www-form-urlencoded'. [tested HTMLButtonElement.formEnctype]
+TEST SUCCEEDED: The value was the string 'get'. [tested HTMLButtonElement.formMethod]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLButtonElement.formTarget]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLButtonElement.name]
+TEST SUCCEEDED: The value was the string 'submit'. [tested HTMLButtonElement.type]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLButtonElement.value]
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLDivElement.align]
 
