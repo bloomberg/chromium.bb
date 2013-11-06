@@ -114,18 +114,17 @@ def activity_logging_world_list(member, access_type=None):
     if 'ActivityLogging' not in member.extended_attributes:
         return set()
     activity_logging = member.extended_attributes['ActivityLogging']
-    # [ActivityLogging=Access*] means log for all access, otherwise check that
-    # value agrees with specified access_type.
-    has_logging = (activity_logging.startswith('Access') or
+    # [ActivityLogging=For*] (no prefix, starts with the worlds suffix) means
+    # "log for all use (method)/access (attribute)", otherwise check that value
+    # agrees with specified access_type (Getter/Setter).
+    has_logging = (activity_logging.startswith('For') or
                    (access_type and activity_logging.startswith(access_type)))
     if not has_logging:
         return set()
     includes.add('bindings/v8/V8DOMActivityLogger.h')
     if activity_logging.endswith('ForIsolatedWorlds'):
         return set([''])
-    if activity_logging.endswith('ForAllWorlds'):
-        return set(['', 'ForMainWorld'])
-    raise 'Unrecognized [ActivityLogging] value: "%s"' % activity_logging
+    return set(['', 'ForMainWorld'])  # endswith('ForAllWorlds')
 
 
 # [CallWith]

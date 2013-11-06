@@ -101,7 +101,7 @@ interface TestObjectPython {
     attribute EventHandler eventHandlerAttribute;
 
     // Extended attributes
-    [ActivityLogging=AccessForAllWorlds] attribute long activityLoggingAccessForAllWorldsLongAttribute;
+    [ActivityLogging=ForAllWorlds] attribute long activityLoggingAccessForAllWorldsLongAttribute;
     [ActivityLogging=GetterForAllWorlds] attribute long activityLoggingGetterForAllWorldsLongAttribute;
     [ActivityLogging=SetterForAllWorlds] attribute long activityLoggingSetterForAllWorldsLongAttribute;
     [CachedAttribute=isValueDirty] attribute any cachedAttributeAnyAttribute;
@@ -133,8 +133,8 @@ interface TestObjectPython {
     [PerContextEnabled=FeatureName] attribute long perContextEnabledLongAttribute;
     [PerWorldBindings] attribute long perWorldBindingsLongAttribute;
     [PerWorldBindings] readonly attribute long perWorldBindingsReadonlyLongAttribute;  // Separate read only attribute to check attribute configuration
-    [ActivityLogging=AccessForAllWorlds, PerWorldBindings] attribute long activityLoggingAccessPerWorldBindingsLongAttribute;
-    [ActivityLogging=AccessForIsolatedWorlds, PerWorldBindings] attribute long activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute;
+    [ActivityLogging=ForAllWorlds, PerWorldBindings] attribute long activityLoggingAccessPerWorldBindingsLongAttribute;
+    [ActivityLogging=ForIsolatedWorlds, PerWorldBindings] attribute long activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute;
     [ActivityLogging=GetterForAllWorlds, PerWorldBindings] attribute long activityLoggingGetterPerWorldBindingsLongAttribute;
     [ActivityLogging=GetterForIsolatedWorlds, PerWorldBindings] attribute long activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute;
     [RaisesException] attribute long raisesExceptionLongAttribute;
@@ -300,7 +300,7 @@ interface TestObjectPython {
     void voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArg([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString treatNullAsNullStringStringArg);
 
     // Extended attributes for methods
-    [ActivityLogging=AccessForAllWorlds] void activityLoggingAccessForAllWorldsMethod();
+    [ActivityLogging=ForAllWorlds] void activityLoggingAccessForAllWorldsMethod();
     [CallWith=ScriptState] void callWithScriptStateVoidMethod();
     // [CallWith=ScriptState] long callWithScriptStateLongMethod(); // FIXME: non-void [CallWith=ScriptState] have different C++ method call
     [CallWith=ExecutionContext] void callWithExecutionContextVoidMethod();

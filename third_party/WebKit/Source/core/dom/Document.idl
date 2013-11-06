@@ -29,7 +29,7 @@ callback CustomElementConstructor = Element ();
     readonly attribute DOMImplementation implementation;
     readonly attribute Element documentElement;
 
-    [CustomElementCallbacks, PerWorldBindings, ActivityLogging=AccessForIsolatedWorlds, RaisesException] Element createElement([TreatNullAs=NullString,Default=Undefined] optional DOMString tagName);
+    [CustomElementCallbacks, PerWorldBindings, ActivityLogging=ForIsolatedWorlds, RaisesException] Element createElement([TreatNullAs=NullString,Default=Undefined] optional DOMString tagName);
     DocumentFragment   createDocumentFragment();
     [PerWorldBindings] Text createTextNode([Default=Undefined] optional DOMString data);
     Comment createComment([Default=Undefined] optional DOMString data);
@@ -41,9 +41,9 @@ callback CustomElementConstructor = Element ();
 
     // Introduced in DOM Level 2:
 
-    [CustomElementCallbacks, PerWorldBindings, ActivityLogging=AccessForIsolatedWorlds, RaisesException] Node importNode([Default=Undefined] optional Node importedNode,
+    [CustomElementCallbacks, PerWorldBindings, ActivityLogging=ForIsolatedWorlds, RaisesException] Node importNode([Default=Undefined] optional Node importedNode,
                     optional boolean deep);
-    [CustomElementCallbacks, PerWorldBindings, ActivityLogging=AccessForIsolatedWorlds, RaisesException] Element createElementNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
+    [CustomElementCallbacks, PerWorldBindings, ActivityLogging=ForIsolatedWorlds, RaisesException] Element createElementNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
                             [TreatNullAs=NullString,Default=Undefined] optional DOMString qualifiedName);
     [RaisesException, MeasureAs=DocumentCreateAttributeNS] Attr createAttributeNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
                                                                                   [TreatNullAs=NullString,Default=Undefined] optional DOMString qualifiedName); // Removed from DOM4.
@@ -130,7 +130,7 @@ callback CustomElementConstructor = Element ();
 
     [PerWorldBindings] NodeList getElementsByName([Default=Undefined] optional DOMString elementName);
 
-    [PerWorldBindings, ActivityLogging=AccessForIsolatedWorlds, PutForwards=href] readonly attribute Location location;
+    [PerWorldBindings, ActivityLogging=ForIsolatedWorlds, PutForwards=href] readonly attribute Location location;
 
     // IE extensions
     [MeasureAs=DocumentCharset, TreatReturnedNullStringAs=Undefined, TreatNullAs=NullString] attribute DOMString charset;
@@ -204,8 +204,8 @@ callback CustomElementConstructor = Element ();
 
     [DeprecateAs=PrefixedDocumentRegister, RuntimeEnabled=CustomElements, ImplementedAs=registerElement, CallWith=ScriptState, CustomElementCallbacks, RaisesException] CustomElementConstructor webkitRegister(DOMString name, optional Dictionary options);
     [RuntimeEnabled=CustomElements, ImplementedAs=registerElement, CallWith=ScriptState, CustomElementCallbacks, RaisesException] CustomElementConstructor register(DOMString name, optional Dictionary options);
-    [CustomElementCallbacks, PerWorldBindings, ActivityLogging=AccessForIsolatedWorlds, RaisesException] Element createElement(DOMString localName, [TreatNullAs=NullString] DOMString typeExtension);
-    [CustomElementCallbacks, PerWorldBindings, ActivityLogging=AccessForIsolatedWorlds, RaisesException] Element createElementNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString qualifiedName,
+    [CustomElementCallbacks, PerWorldBindings, ActivityLogging=ForIsolatedWorlds, RaisesException] Element createElement(DOMString localName, [TreatNullAs=NullString] DOMString typeExtension);
+    [CustomElementCallbacks, PerWorldBindings, ActivityLogging=ForIsolatedWorlds, RaisesException] Element createElementNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString qualifiedName,
                             [TreatNullAs=NullString] DOMString typeExtension);
 
     // Page visibility API.

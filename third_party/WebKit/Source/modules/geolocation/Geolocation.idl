@@ -27,11 +27,11 @@
 [
     NoInterfaceObject
 ] interface Geolocation {
-    [Custom, PerWorldBindings, ActivityLogging=AccessForIsolatedWorlds] void getCurrentPosition(PositionCallback successCallback,
+    [Custom, PerWorldBindings, ActivityLogging=ForIsolatedWorlds] void getCurrentPosition(PositionCallback successCallback,
                                      optional PositionErrorCallback errorCallback,
                                      optional PositionOptions options);
 
-    [Custom, PerWorldBindings, ActivityLogging=AccessForIsolatedWorlds] long watchPosition(PositionCallback successCallback,
+    [Custom, PerWorldBindings, ActivityLogging=ForIsolatedWorlds] long watchPosition(PositionCallback successCallback,
                                 optional PositionErrorCallback errorCallback,
                                 optional PositionOptions options);
 

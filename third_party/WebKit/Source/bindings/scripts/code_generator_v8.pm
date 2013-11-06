@@ -1105,7 +1105,7 @@ sub HasActivityLogging
     if (!$attrExt->{"ActivityLogging"}) {
         return 0;
     }
-    my $logAllAccess = ($attrExt->{"ActivityLogging"} =~ /^Access/);
+    my $logAllAccess = ($attrExt->{"ActivityLogging"} =~ /^For/);  # No prefix, starts with For*Worlds suffix
     my $logGetter = ($attrExt->{"ActivityLogging"} =~ /^Getter/);
     my $logSetter = ($attrExt->{"ActivityLogging"} =~ /^Setter/);
     my $logOnlyIsolatedWorlds = ($attrExt->{"ActivityLogging"} =~ /ForIsolatedWorlds$/);

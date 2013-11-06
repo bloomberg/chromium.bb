@@ -66,7 +66,7 @@ def generate_method(interface, method):
         includes.add('bindings/v8/BindingSecurity.h')
 
     contents = {
-        'activity_logging_world_list': v8_utilities.activity_logging_world_list(method, 'Access'),  # [ActivityLogging]
+        'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]
         'arguments': [generate_argument(interface, method, argument, index)
                       for index, argument in enumerate(arguments)],
         'cpp_method': cpp_method(interface, method, len(arguments)),

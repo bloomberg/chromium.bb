@@ -34,7 +34,7 @@
 #
 
 ActiveDOMObject
-ActivityLogging=AccessForAllWorlds|GetterForAllWorlds|SetterForAllWorlds|AccessForIsolatedWorlds|GetterForIsolatedWorlds|SetterForIsolatedWorlds
+ActivityLogging=ForAllWorlds|GetterForAllWorlds|SetterForAllWorlds|ForIsolatedWorlds|GetterForIsolatedWorlds|SetterForIsolatedWorlds
 CachedAttribute=*
 CallWith=ExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow|ThisValue
 CheckSecurity

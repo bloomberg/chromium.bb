@@ -35,11 +35,11 @@
     [MeasureAs=PrefixedVideoSupportsFullscreen] readonly attribute boolean webkitSupportsFullscreen;
     [MeasureAs=PrefixedVideoDisplayingFullscreen] readonly attribute boolean webkitDisplayingFullscreen;
 
-    [MeasureAs=PrefixedVideoEnterFullscreen, RaisesException, PerWorldBindings, ActivityLogging=AccessForAllWorlds] void webkitEnterFullscreen();
+    [MeasureAs=PrefixedVideoEnterFullscreen, RaisesException, PerWorldBindings, ActivityLogging=ForAllWorlds] void webkitEnterFullscreen();
     [MeasureAs=PrefixedVideoExitFullscreen] void webkitExitFullscreen();
 
     // Note the different capitalization of the "S" in FullScreen.
-    [MeasureAs=PrefixedVideoEnterFullScreen, ImplementedAs=webkitEnterFullscreen, RaisesException, PerWorldBindings, ActivityLogging=AccessForAllWorlds] void webkitEnterFullScreen();
+    [MeasureAs=PrefixedVideoEnterFullScreen, ImplementedAs=webkitEnterFullscreen, RaisesException, PerWorldBindings, ActivityLogging=ForAllWorlds] void webkitEnterFullScreen();
     [MeasureAs=PrefixedVideoExitFullScreen, ImplementedAs=webkitExitFullscreen] void webkitExitFullScreen();
 
     // The number of frames that have been decoded and made available for
