@@ -71,7 +71,14 @@ void AvatarMenuButtonTest::StartAvatarMenu() {
   EXPECT_TRUE(AvatarMenuBubbleView::IsShowing());
 }
 
-IN_PROC_BROWSER_TEST_F(AvatarMenuButtonTest, HideOnSecondClick) {
+// See http://crbug.com/315732
+#if defined(OS_WIN)
+#define MAYBE_HideOnSecondClick DISABLED_HideOnSecondClick
+#else
+#define MAYBE_HideOnSecondClick HideOnSecondClick
+#endif
+
+IN_PROC_BROWSER_TEST_F(AvatarMenuButtonTest, MAYBE_HideOnSecondClick) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
