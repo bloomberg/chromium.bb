@@ -81,6 +81,7 @@ typedef AudioFrames_2 AudioFrames;
 
 class Host_1;
 class Host_2;
+class Host_3;
 
 class DecryptedBlock;
 class VideoFrame;
@@ -498,9 +499,6 @@ class ContentDecryptionModule_2 {
   // Returns kDeferredInitialization if the CDM is not ready to initialize the
   // decoder at this time. Must call Host::OnDeferredInitializationDone() once
   // initialization is complete.
-  //
-  // TODO(xhwang): Add stream ID here and in the following audio decoder
-  // functions when we need to support multiple audio streams in one CDM.
   virtual Status InitializeAudioDecoder(
       const AudioDecoderConfig& audio_decoder_config) = 0;
 
@@ -514,9 +512,6 @@ class ContentDecryptionModule_2 {
   // Returns kDeferredInitialization if the CDM is not ready to initialize the
   // decoder at this time. Must call Host::OnDeferredInitializationDone() once
   // initialization is complete.
-  //
-  // TODO(xhwang): Add stream ID here and in the following video decoder
-  // functions when we need to support multiple video streams in one CDM.
   virtual Status InitializeVideoDecoder(
       const VideoDecoderConfig& video_decoder_config) = 0;
 
@@ -585,6 +580,143 @@ class ContentDecryptionModule_2 {
  protected:
   ContentDecryptionModule_2() {}
   virtual ~ContentDecryptionModule_2() {}
+};
+
+// ContentDecryptionModule interface that all CDMs need to implement.
+// The interface is versioned for backward compatibility.
+// Note: ContentDecryptionModule implementations must use the allocator
+// provided in CreateCdmInstance() to allocate any Buffer that needs to
+// be passed back to the caller. Implementations must call Buffer::Destroy()
+// when a Buffer is created that will never be returned to the caller.
+class ContentDecryptionModule_3 {
+ public:
+  static const int kVersion = 3;
+  typedef Host_3 Host;
+
+  // GenerateKeyRequest(), Update(), and Close() get passed a |reference_id|
+  // which is the reference ID for a MediaKeySession object. It must be used
+  // in the reply via Host methods (e.g. Host::SendMessage()).
+
+  // Generates a key request given |type| and |init_data|.
+  virtual void GenerateKeyRequest(
+      uint32_t reference_id,
+      const char* type, uint32_t type_size,
+      const uint8_t* init_data, uint32_t init_data_size) = 0;
+
+  // Updates the session with |response|.
+  virtual void Update(uint32_t reference_id,
+                      const uint8_t* response, uint32_t response_size) = 0;
+
+  // Closes the session specified by |reference_id|.
+  virtual void Close(uint32_t reference_id) = 0;
+
+  // Performs scheduled operation with |context| when the timer fires.
+  virtual void TimerExpired(void* context) = 0;
+
+  // Decrypts the |encrypted_buffer|.
+  //
+  // Returns kSuccess if decryption succeeded, in which case the callee
+  // should have filled the |decrypted_buffer| and passed the ownership of
+  // |data| in |decrypted_buffer| to the caller.
+  // Returns kNoKey if the CDM did not have the necessary decryption key
+  // to decrypt.
+  // Returns kDecryptError if any other error happened.
+  // If the return value is not kSuccess, |decrypted_buffer| should be ignored
+  // by the caller.
+  virtual Status Decrypt(const InputBuffer& encrypted_buffer,
+                         DecryptedBlock* decrypted_buffer) = 0;
+
+  // Initializes the CDM audio decoder with |audio_decoder_config|. This
+  // function must be called before DecryptAndDecodeSamples() is called.
+  //
+  // Returns kSuccess if the |audio_decoder_config| is supported and the CDM
+  // audio decoder is successfully initialized.
+  // Returns kSessionError if |audio_decoder_config| is not supported. The CDM
+  // may still be able to do Decrypt().
+  // Returns kDeferredInitialization if the CDM is not ready to initialize the
+  // decoder at this time. Must call Host::OnDeferredInitializationDone() once
+  // initialization is complete.
+  virtual Status InitializeAudioDecoder(
+      const AudioDecoderConfig& audio_decoder_config) = 0;
+
+  // Initializes the CDM video decoder with |video_decoder_config|. This
+  // function must be called before DecryptAndDecodeFrame() is called.
+  //
+  // Returns kSuccess if the |video_decoder_config| is supported and the CDM
+  // video decoder is successfully initialized.
+  // Returns kSessionError if |video_decoder_config| is not supported. The CDM
+  // may still be able to do Decrypt().
+  // Returns kDeferredInitialization if the CDM is not ready to initialize the
+  // decoder at this time. Must call Host::OnDeferredInitializationDone() once
+  // initialization is complete.
+  virtual Status InitializeVideoDecoder(
+      const VideoDecoderConfig& video_decoder_config) = 0;
+
+  // De-initializes the CDM decoder and sets it to an uninitialized state. The
+  // caller can initialize the decoder again after this call to re-initialize
+  // it. This can be used to reconfigure the decoder if the configuration
+  // changes.
+  virtual void DeinitializeDecoder(StreamType decoder_type) = 0;
+
+  // Resets the CDM decoder to an initialized clean state. All internal buffers
+  // MUST be flushed.
+  virtual void ResetDecoder(StreamType decoder_type) = 0;
+
+  // Decrypts the |encrypted_buffer| and decodes the decrypted buffer into a
+  // |video_frame|. Upon end-of-stream, the caller should call this function
+  // repeatedly with empty |encrypted_buffer| (|data| == NULL) until only empty
+  // |video_frame| (|format| == kEmptyVideoFrame) is produced.
+  //
+  // Returns kSuccess if decryption and decoding both succeeded, in which case
+  // the callee will have filled the |video_frame| and passed the ownership of
+  // |frame_buffer| in |video_frame| to the caller.
+  // Returns kNoKey if the CDM did not have the necessary decryption key
+  // to decrypt.
+  // Returns kNeedMoreData if more data was needed by the decoder to generate
+  // a decoded frame (e.g. during initialization and end-of-stream).
+  // Returns kDecryptError if any decryption error happened.
+  // Returns kDecodeError if any decoding error happened.
+  // If the return value is not kSuccess, |video_frame| should be ignored by
+  // the caller.
+  virtual Status DecryptAndDecodeFrame(const InputBuffer& encrypted_buffer,
+                                       VideoFrame* video_frame) = 0;
+
+  // Decrypts the |encrypted_buffer| and decodes the decrypted buffer into
+  // |audio_frames|. Upon end-of-stream, the caller should call this function
+  // repeatedly with empty |encrypted_buffer| (|data| == NULL) until only empty
+  // |audio_frames| is produced.
+  //
+  // Returns kSuccess if decryption and decoding both succeeded, in which case
+  // the callee will have filled |audio_frames| and passed the ownership of
+  // |data| in |audio_frames| to the caller.
+  // Returns kNoKey if the CDM did not have the necessary decryption key
+  // to decrypt.
+  // Returns kNeedMoreData if more data was needed by the decoder to generate
+  // audio samples (e.g. during initialization and end-of-stream).
+  // Returns kDecryptError if any decryption error happened.
+  // Returns kDecodeError if any decoding error happened.
+  // If the return value is not kSuccess, |audio_frames| should be ignored by
+  // the caller.
+  virtual Status DecryptAndDecodeSamples(const InputBuffer& encrypted_buffer,
+                                         AudioFrames* audio_frames) = 0;
+
+  // Called by the host after a platform challenge was initiated via
+  // Host::SendPlatformChallenge().
+  virtual void OnPlatformChallengeResponse(
+      const PlatformChallengeResponse& response) = 0;
+
+  // Called by the host after a call to Host::QueryOutputProtectionStatus(). The
+  // |link_mask| is a bit mask of OutputLinkTypes and |output_protection_mask|
+  // is a bit mask of OutputProtectionMethods.
+  virtual void OnQueryOutputProtectionStatus(
+      uint32_t link_mask, uint32_t output_protection_mask) = 0;
+
+  // Destroys the object in the same context as it was created.
+  virtual void Destroy() = 0;
+
+ protected:
+  ContentDecryptionModule_3() {}
+  virtual ~ContentDecryptionModule_3() {}
 };
 
 typedef ContentDecryptionModule_2 ContentDecryptionModule;
@@ -715,6 +847,84 @@ class Host_2 {
  protected:
   Host_2() {}
   virtual ~Host_2() {}
+};
+
+class Host_3 {
+ public:
+  static const int kVersion = 3;
+
+  // Returns a Buffer* containing non-zero members upon success, or NULL on
+  // failure. The caller owns the Buffer* after this call. The buffer is not
+  // guaranteed to be zero initialized. The capacity of the allocated Buffer
+  // is guaranteed to be not less than |capacity|.
+  virtual Buffer* Allocate(uint32_t capacity) = 0;
+
+  // Requests the host to call ContentDecryptionModule::TimerFired() |delay_ms|
+  // from now with |context|.
+  virtual void SetTimer(int64_t delay_ms, void* context) = 0;
+
+  // Returns the current epoch wall time in seconds.
+  virtual double GetCurrentWallTimeInSeconds() = 0;
+
+  // Sends a message event with |message| to the MediaKeySession object
+  // represented by |reference_id|. Length parameters should not include
+  // null termination.
+  virtual void SendMessage(
+      uint32_t reference_id,
+      const char* message, uint32_t message_length,
+      const char* destination_url, uint32_t destination_url_length) = 0;
+
+  // Sends a ready event to the MediaKeySession object represented by
+  // |reference_id|.
+  virtual void SendReady(uint32_t reference_id) = 0;
+
+  // Sends a closed event to the MediaKeySession object represented by
+  // |reference_id|.
+  virtual void SendClosed(uint32_t reference_id) = 0;
+
+  // Sends an error event to the MediaKeySession object represented by
+  // |reference_id|.
+  virtual void SendError(uint32_t reference_id,
+                         MediaKeyError error_code,
+                         uint32_t system_code) = 0;
+
+  // Sets the session ID for the session represented by |reference_id|.
+  // This must be called before any SendMessage() or SendReady() for
+  // |reference_id|. |session_id_length| should not include null termination.
+  virtual void SetSessionId(
+      uint32_t reference_id,
+      const char* session_id, uint32_t session_id_length) = 0;
+
+  // The following are optional methods that may not be implemented on all
+  // platforms.
+
+  // Sends a platform challenge for the given |service_id|. |challenge| is at
+  // most 256 bits of data to be signed. Once the challenge has been completed,
+  // the host will call ContentDecryptionModule::OnPlatformChallengeResponse()
+  // with the signed challenge response and platform certificate. Length
+  // parameters should not include null termination.
+  virtual void SendPlatformChallenge(
+      const char* service_id, uint32_t service_id_length,
+      const char* challenge, uint32_t challenge_length) = 0;
+
+  // Attempts to enable output protection (e.g. HDCP) on the display link. The
+  // |desired_protection_mask| is a bit mask of OutputProtectionMethods. No
+  // status callback is issued, the CDM must call QueryOutputProtectionStatus()
+  // periodically to ensure the desired protections are applied.
+  virtual void EnableOutputProtection(uint32_t desired_protection_mask) = 0;
+
+  // Requests the current output protection status. Once the host has the status
+  // it will call ContentDecryptionModule::OnQueryOutputProtectionStatus().
+  virtual void QueryOutputProtectionStatus() = 0;
+
+  // Must be called by the CDM if it returned kDeferredInitialization during
+  // InitializeAudioDecoder() or InitializeVideoDecoder().
+  virtual void OnDeferredInitializationDone(StreamType stream_type,
+                                            Status decoder_status) = 0;
+
+ protected:
+  Host_3() {}
+  virtual ~Host_3() {}
 };
 
 // Represents a decrypted block that has not been decoded.
