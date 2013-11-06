@@ -40,18 +40,24 @@
         xhr.open("GET", MEDIA_2);
         xhr.responseType = 'arraybuffer';
         xhr.addEventListener('load', function(e) {
+          var onUpdateEnd = function(e) {
+            console.log('Second buffer append ended.');
+            srcBuffer.removeEventListener('updateend', onUpdateEnd);
+            mediaSource.endOfStream();
+            if (!mediaSource.duration ||
+                Math.abs(mediaSource.duration - TOTAL_DURATION) > DELTA) {
+              failTest('Unexpected mediaSource.duration = ' +
+                       mediaSource.duration + ', expected duration = ' +
+                       TOTAL_DURATION);
+              return;
+            }
+            video.play();
+          };
+          console.log('Appending next media source at ' + APPEND_TIME + 'sec.');
           var srcBuffer = mediaSource.sourceBuffers[0];
+          srcBuffer.addEventListener('updateend', onUpdateEnd);
           srcBuffer.timestampOffset = APPEND_TIME;
-          srcBuffer.append(new Uint8Array(e.target.response));
-          mediaSource.endOfStream();
-          if (!mediaSource.duration ||
-              Math.abs(mediaSource.duration - TOTAL_DURATION) > DELTA) {
-            failTest('Unexpected mediaSource.duration = ' +
-                     mediaSource.duration + ', expected duration = ' +
-                     TOTAL_DURATION);
-            return;
-          }
-          video.play();
+          srcBuffer.appendBuffer(new Uint8Array(e.target.response));
         });
         xhr.send();
       }

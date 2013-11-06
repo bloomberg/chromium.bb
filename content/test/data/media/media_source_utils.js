@@ -44,20 +44,24 @@ function loadMediaSource(mediaFiles, mediaTypes, appendSourceCallbackFn) {
     xhr.open('GET', mediaFile);
     xhr.responseType = 'arraybuffer';
     xhr.addEventListener('load', function(e) {
-      console.log('Appending to buffer ' + mediaFile);
-      srcBuffer.append(new Uint8Array(e.target.response));
-      totalAppended++;
-      if (totalAppended == mediaFiles.length) {
-        if (appendSourceCallbackFn)
-          appendSourceCallbackFn(mediaSource);
-        else
-          mediaSource.endOfStream();
-      }
+      var onUpdateEnd = function(e) {
+        console.log('End of appending buffer from ' + mediaFile);
+        srcBuffer.removeEventListener('updateend', onUpdateEnd);
+        totalAppended++;
+        if (totalAppended == mediaFiles.length) {
+          if (appendSourceCallbackFn)
+            appendSourceCallbackFn(mediaSource);
+          else
+            mediaSource.endOfStream();
+        }
+      };
+      srcBuffer.addEventListener('updateend', onUpdateEnd);
+      srcBuffer.appendBuffer(new Uint8Array(e.target.response));
     });
     xhr.send();
   }
 
-  var mediaSource = new WebKitMediaSource();
-  mediaSource.addEventListener('webkitsourceopen', onSourceOpen);
+  var mediaSource = new MediaSource();
+  mediaSource.addEventListener('sourceopen', onSourceOpen);
   return mediaSource;
 }
