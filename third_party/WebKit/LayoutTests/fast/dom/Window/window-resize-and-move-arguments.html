@@ -87,20 +87,20 @@
 
     debug("Testing - moveTo with 0 arguments");
     window.moveTo();
-    shouldBe('window.screenX', 'resetX');
-    shouldBe('window.screenY', 'resetY');
+    shouldBe('window.screenX', 'screen.availLeft');
+    shouldBe('window.screenY', 'screen.availTop');
     reset();
 
     debug("Testing - moveTo with 1 argument");
     window.moveTo(x);
-    shouldBe('window.screenX', 'resetX + x');
-    shouldBe('window.screenY', 'resetY');
+    shouldBe('window.screenX', 'Math.max(x, screen.availLeft)');
+    shouldBe('window.screenY', 'screen.availTop');
     reset();
 
     debug("Testing - moveTo with more than 2 arguments");
     window.moveTo(x, y, 200, "text");
-    shouldBe('window.screenX', 'x + screen.availLeft');
-    shouldBe('window.screenY', 'y + screen.availTop');
+    shouldBe('window.screenX', 'Math.max(x, screen.availLeft)');
+    shouldBe('window.screenY', 'Math.max(y, screen.availTop)');
     reset();
 
 

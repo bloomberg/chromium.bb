@@ -31,14 +31,14 @@ PASS window.outerHeight is resetHeight + y
 window.moveTo Tests
 
 Testing - moveTo with 0 arguments
-PASS window.screenX is resetX
-PASS window.screenY is resetY
+PASS window.screenX is screen.availLeft
+PASS window.screenY is screen.availTop
 Testing - moveTo with 1 argument
-PASS window.screenX is resetX + x
-PASS window.screenY is resetY
+PASS window.screenX is Math.max(x, screen.availLeft)
+PASS window.screenY is screen.availTop
 Testing - moveTo with more than 2 arguments
-PASS window.screenX is x + screen.availLeft
-PASS window.screenY is y + screen.availTop
+PASS window.screenX is Math.max(x, screen.availLeft)
+PASS window.screenY is Math.max(y, screen.availTop)
 
 window.moveBy Tests
 

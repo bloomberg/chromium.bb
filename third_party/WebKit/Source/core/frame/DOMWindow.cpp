@@ -1432,11 +1432,8 @@ void DOMWindow::moveTo(float x, float y) const
     if (m_frame != page->mainFrame())
         return;
 
-    FloatRect fr = page->chrome().windowRect();
-    FloatRect sr = screenAvailableRect(page->mainFrame()->view());
-    fr.setLocation(sr.location());
-    FloatRect update = fr;
-    update.move(x, y);
+    FloatRect update = page->chrome().windowRect();
+    update.setLocation(FloatPoint(x, y));
     // Security check (the spec talks about UniversalBrowserWrite to disable this check...)
     page->chrome().setWindowRect(adjustWindowRect(page, update));
 }
