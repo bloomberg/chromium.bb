@@ -23,9 +23,13 @@ EXTRA_ENV = {
                            # It doesn't normally make sense to do this.
 
   # CXX_EH_MODE specifies how to deal with C++ exception handling:
-  #  * 'none':  strips out use of C++ exception handling
-  #  * 'zerocost':  enables C++ exception handling, but is not
-  #    supported in PNaCl's stable ABI
+  #  * 'none':  Strips out use of C++ exception handling.
+  #  * 'sjlj':  Enables the setjmp()+longjmp()-based implementation of
+  #    C++ exception handling.  This is supported in PNaCl's stable
+  #    ABI.
+  #  * 'zerocost':  Enables the zero-cost implementation of C++
+  #    exception handling.  This is not supported in PNaCl's stable
+  #    ABI.
   'CXX_EH_MODE': 'none',
 
   'FORCE_INTERMEDIATE_LL': '0',
@@ -115,7 +119,8 @@ EXTRA_ENV = {
   # Only propagate opt level to linker if explicitly set, so that the
   # linker will know if an opt level was explicitly set or not.
   'LD_FLAGS' : '${#OPT_LEVEL ? -O${OPT_LEVEL}} -static ' +
-               '${PIC ? -fPIC} ${@AddPrefix:-L:SEARCH_DIRS}',
+               '${PIC ? -fPIC} ${@AddPrefix:-L:SEARCH_DIRS} ' +
+               '--pnacl-exceptions=${CXX_EH_MODE}',
 
   'SEARCH_DIRS'      : '${SEARCH_DIRS_USER} ${PREFIXES}',
   'SEARCH_DIRS_USER' : '', # Directories specified using -L
@@ -134,7 +139,8 @@ EXTRA_ENV = {
   'LD_ARGS_static':
     '${CXX_EH_MODE==zerocost ? -l:crt1_for_eh.x : -l:crt1.x} ' +
     '-l:crti.bc -l:crtbegin.bc '
-    '${CXX_EH_MODE==none ? -l:unwind_stubs.bc} ' +
+    '${CXX_EH_MODE==sjlj ? -l:sjlj_eh_redirect.bc : '
+      '${CXX_EH_MODE==none ? -l:unwind_stubs.bc}} ' +
     '${ld_inputs} ' +
     '--start-group ${STDLIBS} --end-group',
 
@@ -189,10 +195,6 @@ def AddBPrefix(prefix):
   include_dir = prefix + 'include'
   if pathtools.isdir(include_dir):
     env.append('ISYSTEM_USER', include_dir)
-
-def UseZeroCostCXXEH(*args):
-  env.set('CXX_EH_MODE', 'zerocost')
-  AddLDFlag(*args)
 
 def SetTarget(*args):
   arch = ParseTriple(args[0])
@@ -249,7 +251,10 @@ CustomPatterns = [
   ( '--pnacl-frontend-triple=(.+)', SetTarget),
   ( ('-target','(.+)'),             SetTarget),
   ( ('--target=(.+)'),              SetTarget),
-  ( '(--pnacl-allow-exceptions)',   UseZeroCostCXXEH),
+  ( '--pnacl-exceptions=(none|sjlj|zerocost)', "env.set('CXX_EH_MODE', $0)"),
+  # TODO(mseaborn): Remove "--pnacl-allow-exceptions", which is
+  # superseded by "--pnacl-exceptions".
+  ( '--pnacl-allow-exceptions',     "env.set('CXX_EH_MODE', 'zerocost')"),
   ( '(--pnacl-allow-nexe-build-id)', AddLDFlag),
   ( '(--pnacl-disable-abi-check)',  AddLDFlag),
   ( '(--pnacl-disable-pass=.+)',    AddLLVMPassDisableFlag),

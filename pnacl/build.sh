@@ -2486,12 +2486,14 @@ libs-support-bitcode() {
   # is not included in the native link).
   StepBanner "LIBS-SUPPORT" "Install ${arch} unwind_stubs.bc"
   ${cc_cmd} -c unwind_stubs.c -o "${build_dir}"/unwind_stubs.bc
+  StepBanner "LIBS-SUPPORT" "Install ${arch} sjlj_eh_redirect.bc"
+  ${cc_cmd} -c sjlj_eh_redirect.c -o "${build_dir}"/sjlj_eh_redirect.bc
 
   spopd
 
   # Install to actual lib directories.
   spushd "${build_dir}"
-  local files="crti.bc crtbegin.bc unwind_stubs.bc"
+  local files="crti.bc crtbegin.bc unwind_stubs.bc sjlj_eh_redirect.bc"
   mkdir -p "${INSTALL_LIB}"
   cp -f ${files} "${INSTALL_LIB}"
   spopd
@@ -2821,6 +2823,18 @@ driver-install-python() {
   spopd
 }
 
+feature-version-file-install() {
+  # Scons tests can check this version number to decide whether to
+  # enable tests for toolchain bug fixes or new features.  This allows
+  # tests to be enabled on the toolchain buildbots/trybots before the
+  # new toolchain version is rolled into TOOL_REVISIONS (i.e. before
+  # the tests would pass on the main NaCl buildbots/trybots).
+  #
+  # If you are adding a test that depends on a toolchain change, you
+  # can increment this version number manually.
+  echo 1 > "${INSTALL_ROOT}/FEATURE_VERSION"
+}
+
 # The driver is a simple python script which changes its behavior
 # depending on the name it is invoked as.
 driver-install() {
@@ -2857,6 +2871,8 @@ HOST_ARCH=${HOST_ARCH}""" > "${destdir}"/driver.conf
       cp "/bin/cyg${name}.dll" "${destdir}"
     done
   fi
+
+  feature-version-file-install
 }
 
 #@ driver-install-translator - Install driver scripts for translator component

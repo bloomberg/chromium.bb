@@ -4,11 +4,12 @@
  * found in the LICENSE file.
  */
 
-/* The PNaCl stable ABI does not support C++ exceptions and nexes are not
- * linked with libgcc_eh.a which provides a number of _Unwind_* functions.
- * Some parts of the pexe (e.g. libstdc++) refer to these functions
- * so we provide abort()-ing stubs here. It gets linked into pexes
- * during a stable ABI build.
+/*
+ * This file is for linking into pexes when C++ exception handling is
+ * disabled.  libstdc++ expects to be able to call _Unwind_*()
+ * functions, which are normally provided by libgcc_eh, which is not
+ * accessible in PNaCl's stable ABI.  This file provides stubs for the
+ * _Unwind_*() functions which just abort().
  */
 
 #include <stdlib.h>

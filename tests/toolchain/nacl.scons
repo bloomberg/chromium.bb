@@ -199,7 +199,7 @@ if env.IsRunningUnderValgrind():
 
 
 # NOTE: we assume that the incoming env contains '-O2', '-fomit-frame-pointer'
-def MakeEnv(use_opts, use_frames):
+def MakeEnv(env, use_opts, use_frames):
   new_env = env.Clone()
   # AddBiasForPNaCl() is only needed for stack_frame.cc and eh_return.c.
   if new_env.Bit('bitcode'):
@@ -225,13 +225,29 @@ def MakeEnv(use_opts, use_frames):
     new_env.FilterOut(LINKFLAGS=['-O3'])
   return new_env
 
-ENVIRONMENTS_TO_TRY = [ ('noopt_frame', MakeEnv(False, True)),
-                        ('noopt_noframe', MakeEnv(False, False)),
-                        ('opt_frame', MakeEnv(True, True)),
-                        ('opt_noframe', MakeEnv(True, False)),
-                        ]
+EH_ENVIRONMENTS_TO_TRY = []
 
-for tag, env_to_try in ENVIRONMENTS_TO_TRY:
+if env.Bit('bitcode') and env['TOOLCHAIN_FEATURE_VERSION'] >= 1:
+  sjlj_eh_env = env.Clone()
+  sjlj_eh_env.Append(LINKFLAGS=['--pnacl-exceptions=sjlj'])
+  EH_ENVIRONMENTS_TO_TRY.append(('sjlj', sjlj_eh_env))
+
+if env.Bit('bitcode'):
+  zerocost_eh_env = env.Clone()
+  zerocost_eh_env.Append(LINKFLAGS=['--pnacl-allow-exceptions'])
+  zerocost_eh_env.Append(TRANSLATEFLAGS=['--pnacl-allow-exceptions'])
+else:
+  zerocost_eh_env = env
+# Zero-cost C++ exception handling is not currently supported in
+# PNaCl's stable ABI.
+if zerocost_eh_env.AllowNonStableBitcode():
+  EH_ENVIRONMENTS_TO_TRY.extend(
+      [('noopt_frame', MakeEnv(zerocost_eh_env, False, True)),
+       ('noopt_noframe', MakeEnv(zerocost_eh_env, False, False)),
+       ('opt_frame', MakeEnv(zerocost_eh_env, True, True)),
+       ('opt_noframe', MakeEnv(zerocost_eh_env, True, False))])
+
+for tag, env_to_try in EH_ENVIRONMENTS_TO_TRY:
   for src in ['unwind_trace.cc',
               'stack_frame.cc',
               'eh_return.c',
@@ -260,21 +276,23 @@ for tag, env_to_try in ENVIRONMENTS_TO_TRY:
       # may not hold for the nacl-gcc TC
       is_broken = True
 
-    exc_env = env_to_try.Clone()
-    # C++ exceptions are not currently supported in PNaCl's ABI.
-    if exc_env.Bit('bitcode'):
-      exc_env.Append(LINKFLAGS=['--pnacl-allow-exceptions'])
-      exc_env.Append(TRANSLATEFLAGS=['--pnacl-allow-exceptions'])
-    if not exc_env.AllowNonStableBitcode():
+    # The following tests don't work as PNaCl ABI-stable pexes.
+    non_abi_stable_tests = [
+        'unwind_trace.cc', # Tests _Unwind_* functions
+        'eh_floating_point.cc', # Uses vector types
+        ]
+    if tag == 'sjlj' and src in non_abi_stable_tests:
       continue
+
     name = src.split('.')[0] + '_' + tag
-    nobj = exc_env.ComponentObject(name + '.o', src)
-    nexe = exc_env.ComponentProgram(name, nobj, EXTRA_LIBS=['${NONIRT_LIBS}'])
-    node = exc_env.CommandSelLdrTestNacl(name + '.out',
-                                         nexe,
-                                         exit_status='55')
-    exc_env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
-                               'run_' + name  +'_test', is_broken=is_broken)
+    nobj = env_to_try.ComponentObject(name + '.o', src)
+    nexe = env_to_try.ComponentProgram(name, nobj,
+                                       EXTRA_LIBS=['${NONIRT_LIBS}'])
+    node = env_to_try.CommandSelLdrTestNacl(name + '.out',
+                                            nexe,
+                                            exit_status='55')
+    env_to_try.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
+                                  'run_' + name  +'_test', is_broken=is_broken)
 
 
 # Test that Exception Handling works with the calling conventions that

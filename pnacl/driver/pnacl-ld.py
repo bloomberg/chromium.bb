@@ -51,6 +51,7 @@ EXTRA_ENV = {
                      '${#SONAME ? -Wl,--soname=${SONAME}} ' +
                      '${#OPT_LEVEL ? -O${OPT_LEVEL}} ' +
                      '--allow-llvm-bitcode-input ' +
+                     '${CXX_EH_MODE==zerocost ? --pnacl-allow-zerocost-eh} ' +
                      '${TRANSLATE_FLAGS_USER}',
 
   # Extra pnacl-translate flags specified by the user using -Wt
@@ -94,6 +95,16 @@ EXTRA_ENV = {
     '--allow-unresolved=memmove '
     '--allow-unresolved=setjmp '
     '--allow-unresolved=longjmp '
+    '${CXX_EH_MODE==sjlj ? '
+      # These symbols are defined by libsupc++ and the PNaClSjLjEH
+      # pass generates references to them.
+      '--undefined=__pnacl_eh_stack '
+      '--undefined=__pnacl_eh_resume '
+      # These symbols are defined by the PNaClSjLjEH pass and
+      # libsupc++ refers to them.
+      '--allow-unresolved=__pnacl_eh_type_table '
+      '--allow-unresolved=__pnacl_eh_action_table '
+      '--allow-unresolved=__pnacl_eh_filter_table} '
     # For exception-handling enabled tests.
     '${CXX_EH_MODE==zerocost ? '
       '--allow-unresolved=_Unwind_Backtrace '
@@ -140,10 +151,6 @@ def AddToBothFlags(*args):
   env.append('LD_FLAGS', *args)
   env.append('LD_FLAGS_NATIVE', *args)
 
-def UseZeroCostCXXEH(*args):
-  env.set('CXX_EH_MODE', 'zerocost')
-  env.append('TRANSLATE_FLAGS', *args)
-
 def SetLibTarget(*args):
   arch = ParseTriple(args[0])
   if arch != 'le32':
@@ -155,7 +162,10 @@ def IsPortable():
 LDPatterns = [
   ( '--pnacl-allow-native', "env.set('ALLOW_NATIVE', '1')"),
   ( '--noirt',              "env.set('USE_IRT', '0')"),
-  ( '(--pnacl-allow-exceptions)', UseZeroCostCXXEH),
+  ( '--pnacl-exceptions=(none|sjlj|zerocost)', "env.set('CXX_EH_MODE', $0)"),
+  # TODO(mseaborn): Remove "--pnacl-allow-exceptions", which is
+  # superseded by "--pnacl-exceptions".
+  ( '--pnacl-allow-exceptions', "env.set('CXX_EH_MODE', 'zerocost')"),
   ( '(--pnacl-allow-nexe-build-id)', "env.set('ALLOW_NEXE_BUILD_ID', '1')"),
   ( '--pnacl-disable-abi-check', "env.set('DISABLE_ABI_CHECK', '1')"),
   # "--pnacl-disable-pass" allows an ABI simplification pass to be
@@ -371,9 +381,13 @@ def main(argv):
                     IsPortable())
     still_need_expand_byval = IsPortable()
 
+    abi_simplify_opts = []
+    if env.getone('CXX_EH_MODE') == 'sjlj':
+      abi_simplify_opts += ['-enable-pnacl-sjlj-eh']
+
     preopt_passes = []
     if abi_simplify:
-      preopt_passes += ['-pnacl-abi-simplify-preopt']
+      preopt_passes += ['-pnacl-abi-simplify-preopt'] + abi_simplify_opts
     elif env.getone('CXX_EH_MODE') != 'zerocost':
       # '-lowerinvoke' prevents use of C++ exception handling, which
       # is not yet supported in the PNaCl ABI.  '-simplifycfg' removes
@@ -393,7 +407,7 @@ def main(argv):
 
     postopt_passes = []
     if abi_simplify:
-      postopt_passes = ['-pnacl-abi-simplify-postopt']
+      postopt_passes = ['-pnacl-abi-simplify-postopt'] + abi_simplify_opts
       if not env.getbool('DISABLE_ABI_CHECK'):
         postopt_passes += [
             '-verify-pnaclabi-module',

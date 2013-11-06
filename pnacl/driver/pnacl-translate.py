@@ -209,6 +209,9 @@ TranslatorPatterns = [
 
   # Allowing zero-cost C++ exception handling causes a specific set of
   # native objects to get linked into the nexe.
+  ( '--pnacl-allow-zerocost-eh', "env.set('ALLOW_ZEROCOST_CXX_EH', '1')"),
+  # TODO(mseaborn): Remove "--pnacl-allow-exceptions", replaced by
+  # "--pnacl-allow-zerocost-eh".
   ( '--pnacl-allow-exceptions', "env.set('ALLOW_ZEROCOST_CXX_EH', '1')"),
 
   ( '--allow-llvm-bitcode-input', "env.set('ALLOW_LLVM_BITCODE_INPUT', '1')"),

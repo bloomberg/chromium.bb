@@ -798,3 +798,14 @@ def generate(env):
       recursive=True
       )
   env.Append(SCANNERS=ldscript_scanner)
+
+  # Scons tests can check this version number to decide whether to
+  # enable tests for toolchain bug fixes or new features.  See
+  # description in pnacl/build.sh.
+  version_file = os.path.join(root, 'FEATURE_VERSION')
+  if os.path.exists(version_file):
+    with open(version_file, 'r') as fh:
+      version = int(fh.read())
+  else:
+    version = 0
+  env.Replace(TOOLCHAIN_FEATURE_VERSION=version)
