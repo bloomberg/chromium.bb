@@ -312,4 +312,5 @@ interface TestObjectPython {
     [CheckSecurityForNode] void checkSecurityForNodeVoidMethod();
     [Custom] void customVoidMethod();
     // [Conditional=Condition, Custom] void conditionalConditionCustomVoidMethod(); // FIXME: wait for [Conditional] to land
+    [CustomElementCallbacks] void customElementCallbacksVoidMethod();
 };

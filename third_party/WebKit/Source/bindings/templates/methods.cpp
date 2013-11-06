@@ -11,6 +11,9 @@ static void {{method.name}}Method(const v8::FunctionCallbackInfo<v8::Value>& inf
     {% if not method.is_static %}
     {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(info.Holder());
     {% endif %}
+    {% if method.is_custom_element_callbacks %}
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    {% endif %}
     {% if method.is_check_security_for_node %}
     if (!BindingSecurity::shouldAllowAccessToNode(imp->{{method.name}}(es), es)) {
         v8SetReturnValueNull(info);

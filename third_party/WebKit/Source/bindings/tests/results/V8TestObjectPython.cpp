@@ -5098,6 +5098,20 @@ static void customVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Va
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void customElementCallbacksVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    imp->customElementCallbacksVoidMethod();
+}
+
+static void customElementCallbacksVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::customElementCallbacksVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 } // namespace TestObjectPythonV8Internal
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttributes[] = {
@@ -5312,6 +5326,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"callWithActiveWindowScriptWindow", TestObjectPythonV8Internal::callWithActiveWindowScriptWindowMethodCallback, 0, 0},
     {"checkSecurityForNodeVoidMethod", TestObjectPythonV8Internal::checkSecurityForNodeVoidMethodMethodCallback, 0, 0},
     {"customVoidMethod", TestObjectPythonV8Internal::customVoidMethodMethodCallback, 0, 0},
+    {"customElementCallbacksVoidMethod", TestObjectPythonV8Internal::customElementCallbacksVoidMethodMethodCallback, 0, 0},
 };
 
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)

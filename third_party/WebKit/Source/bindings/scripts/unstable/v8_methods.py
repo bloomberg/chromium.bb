@@ -55,15 +55,18 @@ def generate_method(interface, method):
         signature = 'defaultSignature'
 
     is_call_with_script_arguments = v8_utilities.has_extended_attribute_value(method, 'CallWith', 'ScriptArguments')
-    is_call_with_script_state = v8_utilities.has_extended_attribute_value(method, 'CallWith', 'ScriptState')
     if is_call_with_script_arguments:
         includes.update(['bindings/v8/ScriptCallStackFactory.h',
                          'core/inspector/ScriptArguments.h'])
+    is_call_with_script_state = v8_utilities.has_extended_attribute_value(method, 'CallWith', 'ScriptState')
     if is_call_with_script_state:
         includes.add('bindings/v8/ScriptState.h')
     is_check_security_for_node = 'CheckSecurityForNode' in extended_attributes
     if is_check_security_for_node:
         includes.add('bindings/v8/BindingSecurity.h')
+    is_custom_element_callbacks = 'CustomElementCallbacks' in extended_attributes
+    if is_custom_element_callbacks:
+        includes.add('core/dom/custom/CustomElementCallbackDispatcher.h')
 
     contents = {
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]
@@ -77,6 +80,7 @@ def generate_method(interface, method):
         'is_call_with_script_state': is_call_with_script_state,
         'is_check_security_for_node': is_check_security_for_node,
         'is_custom': 'Custom' in extended_attributes,
+        'is_custom_element_callbacks': is_custom_element_callbacks,
         'is_static': is_static,
         'name': name,
         'number_of_arguments': len(arguments),
