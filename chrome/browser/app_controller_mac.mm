@@ -681,8 +681,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 
   // Start managing the menu for app windows. This needs to be done here because
   // main menu item titles are not yet initialized in awakeFromNib.
-  if (apps::IsAppShimsEnabled())
-    appShimMenuController_.reset([[AppShimMenuController alloc] init]);
+  [self initAppShimMenuController];
 
   // Build up the encoding menu, the order of the items differs based on the
   // current locale (see http://crbug.com/7647 for details).
@@ -1459,6 +1458,11 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 
 - (void)removeObserverForWorkAreaChange:(ui::WorkAreaWatcherObserver*)observer {
   workAreaChangeObservers_.RemoveObserver(observer);
+}
+
+- (void)initAppShimMenuController {
+  if (apps::IsAppShimsEnabled() && !appShimMenuController_)
+    appShimMenuController_.reset([[AppShimMenuController alloc] init]);
 }
 
 - (void)applicationDidChangeScreenParameters:(NSNotification*)notification {

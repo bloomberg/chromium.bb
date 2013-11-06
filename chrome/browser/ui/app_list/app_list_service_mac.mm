@@ -14,6 +14,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
+#import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -403,6 +404,12 @@ void AppListServiceMac::DismissAppList() {
 bool AppListServiceMac::IsAppListVisible() const {
   return [[window_controller_ window] isVisible] &&
       ![animation_controller_ isClosing];
+}
+
+void AppListServiceMac::EnableAppList(Profile* initial_profile) {
+  AppListServiceImpl::EnableAppList(initial_profile);
+  AppController* controller = [NSApp delegate];
+  [controller initAppShimMenuController];
 }
 
 void AppListServiceMac::CreateShortcut() {

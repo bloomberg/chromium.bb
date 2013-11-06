@@ -136,6 +136,10 @@ class WorkAreaWatcherObserver;
 - (void)addObserverForWorkAreaChange:(ui::WorkAreaWatcherObserver*)observer;
 - (void)removeObserverForWorkAreaChange:(ui::WorkAreaWatcherObserver*)observer;
 
+// Initializes the AppShimMenuController. This enables changing the menu bar for
+// apps.
+- (void)initAppShimMenuController;
+
 @end
 
 #endif  // __OBJC__
