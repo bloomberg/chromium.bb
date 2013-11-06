@@ -12,6 +12,7 @@
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 
 using content::WebContents;
 
@@ -22,13 +23,14 @@ namespace {
 // TODO(tmdiep): Launching the app will be moved downstream when an ephemeral
 // app service/manager is implemented.
 void LaunchApp(Profile* profile, const std::string& id) {
-  ExtensionService* service = extensions::ExtensionSystem::Get(profile)->
-      extension_service();
+  ExtensionService* service =
+      ExtensionSystem::Get(profile)->extension_service();
   DCHECK(service);
-  const extensions::Extension* extension = service->GetExtensionById(id, false);
+  const Extension* extension = service->GetExtensionById(id, false);
   if (extension) {
+    // TODO(tmdiep): Sort out params.desktop_type when launching is moved
+    // to the correct location.
     AppLaunchParams params(profile, extension, NEW_FOREGROUND_TAB);
-    params.desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
     OpenApplication(params);
   }
 }
@@ -45,7 +47,22 @@ void OnInstallDone(Profile* profile,
         base::Bind(&LaunchApp, profile, id),
         base::TimeDelta());
 
-  callback.Run(success, error);
+  if (!callback.is_null())
+    callback.Run(success, error);
+}
+
+Profile* ProfileForWebContents(content::WebContents* contents) {
+  if (!contents)
+    return NULL;
+
+  return Profile::FromBrowserContext(contents->GetBrowserContext());
+}
+
+gfx::NativeWindow NativeWindowForWebContents(content::WebContents* contents) {
+  if (!contents)
+    return NULL;
+
+  return contents->GetView()->GetTopLevelNativeWindow();
 }
 
 }  // namespace
@@ -62,8 +79,20 @@ WebstoreEphemeralInstaller::CreateForLauncher(
                                      profile,
                                      parent_window,
                                      callback);
-  installer->set_install_source(
-      extensions::WebstoreInstaller::INSTALL_SOURCE_APP_LAUNCHER);
+  installer->set_install_source(WebstoreInstaller::INSTALL_SOURCE_APP_LAUNCHER);
+  return installer;
+}
+
+// static
+scoped_refptr<WebstoreEphemeralInstaller>
+WebstoreEphemeralInstaller::CreateForLink(
+    const std::string& webstore_item_id,
+    content::WebContents* web_contents) {
+  scoped_refptr<WebstoreEphemeralInstaller> installer =
+      new WebstoreEphemeralInstaller(webstore_item_id,
+                                     web_contents,
+                                     Callback());
+  installer->set_install_source(WebstoreInstaller::INSTALL_SOURCE_OTHER);
   return installer;
 }
 
@@ -80,10 +109,24 @@ WebstoreEphemeralInstaller::WebstoreEphemeralInstaller(
           dummy_web_contents_(
               WebContents::Create(WebContents::CreateParams(profile))) {}
 
+WebstoreEphemeralInstaller::WebstoreEphemeralInstaller(
+    const std::string& webstore_item_id,
+    content::WebContents* web_contents,
+    const Callback& callback)
+        : WebstoreStandaloneInstaller(
+              webstore_item_id,
+              ProfileForWebContents(web_contents),
+              base::Bind(OnInstallDone,
+                         ProfileForWebContents(web_contents),
+                         webstore_item_id,
+                         callback)),
+          content::WebContentsObserver(web_contents),
+          parent_window_(NativeWindowForWebContents(web_contents)) {}
+
 WebstoreEphemeralInstaller::~WebstoreEphemeralInstaller() {}
 
 bool WebstoreEphemeralInstaller::CheckRequestorAlive() const {
-  return true;
+  return dummy_web_contents_.get() != NULL || web_contents() != NULL;
 }
 
 const GURL& WebstoreEphemeralInstaller::GetRequestorURL() const {
@@ -99,7 +142,7 @@ bool WebstoreEphemeralInstaller::ShouldShowAppInstalledBubble() const {
 }
 
 WebContents* WebstoreEphemeralInstaller::GetWebContents() const {
-  return dummy_web_contents_.get();
+  return web_contents() ? web_contents() : dummy_web_contents_.get();
 }
 
 scoped_ptr<ExtensionInstallPrompt::Prompt>
@@ -147,8 +190,16 @@ bool WebstoreEphemeralInstaller::CheckRequestorPermitted(
 
 scoped_ptr<ExtensionInstallPrompt>
 WebstoreEphemeralInstaller::CreateInstallUI() {
+  if (web_contents())
+    return make_scoped_ptr(new ExtensionInstallPrompt(web_contents()));
+
   return make_scoped_ptr(
       new ExtensionInstallPrompt(profile(), parent_window_, NULL));
+}
+
+void WebstoreEphemeralInstaller::WebContentsDestroyed(
+    content::WebContents* web_contents) {
+  AbortInstall();
 }
 
 }  // namespace extensions

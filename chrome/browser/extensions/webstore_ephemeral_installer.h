@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/extensions/webstore_standalone_installer.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class Profile;
 
@@ -20,7 +21,8 @@ namespace extensions {
 
 // WebstoreEphemeralInstaller handles the installation of ephemeral apps.
 class WebstoreEphemeralInstaller
-    : public extensions::WebstoreStandaloneInstaller {
+    : public extensions::WebstoreStandaloneInstaller,
+      public content::WebContentsObserver {
  public:
   typedef WebstoreStandaloneInstaller::Callback Callback;
 
@@ -29,6 +31,9 @@ class WebstoreEphemeralInstaller
       Profile* profile,
       gfx::NativeWindow parent_window,
       const Callback& callback);
+  static scoped_refptr<WebstoreEphemeralInstaller> CreateForLink(
+      const std::string& webstore_item_id,
+      content::WebContents* web_contents);
 
  private:
   friend class base::RefCountedThreadSafe<WebstoreEphemeralInstaller>;
@@ -36,6 +41,10 @@ class WebstoreEphemeralInstaller
   WebstoreEphemeralInstaller(const std::string& webstore_item_id,
                              Profile* profile,
                              gfx::NativeWindow parent_window,
+                             const Callback& callback);
+
+  WebstoreEphemeralInstaller(const std::string& webstore_item_id,
+                             content::WebContents* web_contents,
                              const Callback& callback);
 
   virtual ~WebstoreEphemeralInstaller();
@@ -55,6 +64,10 @@ class WebstoreEphemeralInstaller
       const base::DictionaryValue& webstore_data,
       std::string* error) const OVERRIDE;
   virtual scoped_ptr<ExtensionInstallPrompt> CreateInstallUI() OVERRIDE;
+
+  // content::WebContentsObserver implementation.
+  virtual void WebContentsDestroyed(
+      content::WebContents* web_contents) OVERRIDE;
 
   gfx::NativeWindow parent_window_;
   scoped_ptr<content::WebContents> dummy_web_contents_;

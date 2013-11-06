@@ -65,6 +65,8 @@
         'browser/apps/app_url_redirector.h',
         'browser/apps/chrome_apps_client.cc',
         'browser/apps/chrome_apps_client.h',
+        'browser/apps/ephemeral_app_throttle.cc',
+        'browser/apps/ephemeral_app_throttle.h',
         'browser/apps/shortcut_manager.cc',
         'browser/apps/shortcut_manager.h',
         'browser/apps/shortcut_manager_factory.cc',
