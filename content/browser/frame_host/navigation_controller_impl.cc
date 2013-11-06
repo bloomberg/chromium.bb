@@ -966,16 +966,6 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
   return NAVIGATION_TYPE_EXISTING_PAGE;
 }
 
-bool NavigationControllerImpl::IsRedirect(
-  const ViewHostMsg_FrameNavigate_Params& params) {
-  // For main frame transition, we judge by params.transition.
-  // Otherwise, by params.redirects.
-  if (PageTransitionIsMainFrame(params.transition)) {
-    return PageTransitionIsRedirect(params.transition);
-  }
-  return params.redirects.size() > 1;
-}
-
 void NavigationControllerImpl::RendererDidNavigateToNewPage(
     const ViewHostMsg_FrameNavigate_Params& params, bool replace_entry) {
   NavigationEntryImpl* new_entry;

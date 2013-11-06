@@ -306,9 +306,6 @@ class CONTENT_EXPORT NavigationControllerImpl
   // must ensure that |CanPruneAllButVisible| returns true before calling this.
   void PruneAllButVisibleInternal();
 
-  // Returns true if the navigation is redirect.
-  bool IsRedirect(const ViewHostMsg_FrameNavigate_Params& params);
-
   // Returns true if the navigation is likley to be automatic rather than
   // user-initiated.
   bool IsLikelyAutoNavigation(base::TimeTicks now);
