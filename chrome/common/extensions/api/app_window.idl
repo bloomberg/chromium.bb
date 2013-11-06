@@ -24,6 +24,9 @@ namespace app.window {
     // Id to identify the window. This will be used to remember the size
     // and position of the window and restore that geometry when a window
     // with the same id is later opened.
+    // If a window with a given id is created while another window with the same
+    // id already exists, the currently opened window will be focused instead of
+    // creating a new window.
     DOMString? id;
 
     // Default width of the window. (Deprecated; regular bounds act like this
@@ -102,7 +105,8 @@ namespace app.window {
     // window with the same id already exists that window is activated instead.
     // If you do want to create multiple windows with the same id, you can
     // set this property to false.
-    boolean? singleton;
+    // (Deprecated; multiple windows with the same id is no longer supported.)
+    [nodoc] boolean? singleton;
 
     // If true, the window will stay above most other windows. If there are
     // multiple windows of this kind, the currently focused window will be in
