@@ -10,6 +10,10 @@
 #include "third_party/WebKit/public/web/WebDatabaseObserver.h"
 #include "webkit/common/database/database_connections.h"
 
+namespace WebKit {
+class WebString;
+}
+
 namespace content {
 
 class WebDatabaseObserverImpl : public WebKit::WebDatabaseObserver {
@@ -19,7 +23,10 @@ class WebDatabaseObserverImpl : public WebKit::WebDatabaseObserver {
 
   virtual void databaseOpened(const WebKit::WebDatabase& database) OVERRIDE;
   virtual void databaseModified(const WebKit::WebDatabase& database) OVERRIDE;
-  virtual void databaseClosed(const WebKit::WebDatabase& database) OVERRIDE;
+  virtual void databaseClosed(const WebKit::WebString& origin_identifier,
+                              const WebKit::WebString& database_name);
+  // TODO(jochen): Remove this version once the blink side has rolled.
+  virtual void databaseClosed(const WebKit::WebDatabase& database);
 
   virtual void reportOpenDatabaseResult(
       const WebKit::WebDatabase& database, int callsite,

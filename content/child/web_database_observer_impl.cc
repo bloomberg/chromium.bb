@@ -13,6 +13,7 @@
 #include "third_party/sqlite/sqlite3.h"
 
 using WebKit::WebDatabase;
+using WebKit::WebString;
 
 namespace content {
 namespace {
@@ -87,6 +88,14 @@ void WebDatabaseObserverImpl::databaseModified(
     const WebDatabase& database) {
   sender_->Send(new DatabaseHostMsg_Modified(
       database.securityOrigin().databaseIdentifier().utf8(), database.name()));
+}
+
+void WebDatabaseObserverImpl::databaseClosed(const WebString& origin_identifier,
+                                             const WebString& database_name) {
+  sender_->Send(new DatabaseHostMsg_Closed(
+      origin_identifier.utf8(), database_name));
+  open_connections_->RemoveOpenConnection(origin_identifier.utf8(),
+                                          database_name);
 }
 
 void WebDatabaseObserverImpl::databaseClosed(
