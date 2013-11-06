@@ -30,9 +30,9 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     self.Fail('conformance/rendering/gl-scissor-test.html',
         ['win', 'intel'], bug=314997)
 
-    # Windows/ATI failures
+    # Windows/AMD failures
     self.Fail('conformance/rendering/more-than-65536-indices.html',
-        ['win', 'ati'], bug=314997)
+        ['win', 'amd'], bug=314997)
 
     # Windows 7/Intel failures
     self.Fail('conformance/context/context-lost-restored.html',
