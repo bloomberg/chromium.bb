@@ -119,6 +119,7 @@ struct BidiCharacterRun {
         , m_start(start)
         , m_stop(stop)
     {
+        ASSERT(m_start <= m_stop);
         if (dir == WTF::Unicode::OtherNeutral)
             dir = context->dir();
 
