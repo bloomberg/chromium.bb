@@ -88,7 +88,10 @@ class OCSPIOLoop {
       base::AutoLock autolock(lock_);
       DCHECK(base::MessageLoopForIO::current());
       thread_checker_.DetachFromThread();
-      thread_checker_.CalledOnValidThread();
+
+      // CalledOnValidThread is the only available API to reassociate
+      // thread_checker_ with the current thread. Result ignored intentionally.
+      ignore_result(thread_checker_.CalledOnValidThread());
       shutdown_ = false;
       used_ = false;
     }
