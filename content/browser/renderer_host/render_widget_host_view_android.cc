@@ -55,17 +55,6 @@ namespace {
 const int kUndefinedOutputSurfaceId = -1;
 const int kMinimumPointerDistance = 50;
 
-void InsertSyncPointAndAckForGpu(
-    int gpu_host_id, int route_id, const std::string& return_mailbox) {
-  uint32 sync_point =
-      ImageTransportFactoryAndroid::GetInstance()->InsertSyncPoint();
-  AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
-  ack_params.mailbox_name = return_mailbox;
-  ack_params.sync_point = sync_point;
-  RenderWidgetHostImpl::AcknowledgeBufferPresent(
-      route_id, gpu_host_id, ack_params);
-}
-
 void InsertSyncPointAndAckForCompositor(
     int renderer_host_id,
     uint32 output_surface_id,
@@ -828,31 +817,7 @@ void RenderWidgetHostViewAndroid::UpdateContentViewCoreFrameMetadata(
 void RenderWidgetHostViewAndroid::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {
-  NOTREACHED() << "Deprecated. Use --composite-to-mailbox.";
-
-  if (params.mailbox_name.empty())
-    return;
-
-  std::string return_mailbox;
-  if (!current_mailbox_.IsZero()) {
-    return_mailbox.assign(
-        reinterpret_cast<const char*>(current_mailbox_.name),
-        sizeof(current_mailbox_.name));
-  }
-
-  base::Closure callback = base::Bind(&InsertSyncPointAndAckForGpu,
-                                      gpu_host_id, params.route_id,
-                                      return_mailbox);
-
-  gpu::Mailbox mailbox;
-  std::copy(params.mailbox_name.data(),
-            params.mailbox_name.data() + params.mailbox_name.length(),
-            reinterpret_cast<char*>(mailbox.name));
-
-  texture_size_in_layer_ = params.size;
-  content_size_in_layer_ = params.size;
-
-  BuffersSwapped(mailbox, kUndefinedOutputSurfaceId, callback);
+  NOTREACHED() << "Need --composite-to-mailbox or --enable-delegated-renderer";
 }
 
 void RenderWidgetHostViewAndroid::BuffersSwapped(
@@ -1000,7 +965,7 @@ gfx::Rect RenderWidgetHostViewAndroid::GetBoundsInRootWindow() {
 }
 
 gfx::GLSurfaceHandle RenderWidgetHostViewAndroid::GetCompositingSurface() {
-  return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::TEXTURE_TRANSPORT);
+  return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::NATIVE_TRANSPORT);
 }
 
 void RenderWidgetHostViewAndroid::ProcessAckedTouchEvent(

@@ -205,6 +205,8 @@ class PassThroughImageTransportSurface
   // the browser.
   virtual void SendVSyncUpdateIfAvailable();
 
+  ImageTransportHelper* GetHelper() { return helper_.get(); }
+
  private:
   scoped_ptr<ImageTransportHelper> helper_;
   gfx::Size new_size_;
