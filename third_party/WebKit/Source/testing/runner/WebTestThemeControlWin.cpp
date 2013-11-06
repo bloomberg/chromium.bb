@@ -55,16 +55,18 @@ namespace {
 const SkColor edgeColor     = SK_ColorBLACK;
 const SkColor readOnlyColor = SkColorSetRGB(0xe9, 0xc2, 0xa6);
 const SkColor fgColor       = SK_ColorBLACK;
+
+// These are indexed by WebTestThemeControlWin::State, *not* WebThemeEngine::State.
 const SkColor bgColors[]    = {
-    SK_ColorBLACK, // Unknown
+    SK_ColorBLACK, //                   Unknown (not used)
     SkColorSetRGB(0xc9, 0xc9, 0xc9), // Disabled
     SkColorSetRGB(0xf3, 0xe0, 0xd0), // Readonly
     SkColorSetRGB(0x89, 0xc4, 0xff), // Normal
     SkColorSetRGB(0x43, 0xf9, 0xff), // Hot
-    SkColorSetRGB(0x20, 0xf6, 0xcc), // Focused
-    SkColorSetRGB(0x00, 0xf3, 0xac), // Hover
+    SkColorSetRGB(0x20, 0xf6, 0xcc), // Hover
+    SkColorSetRGB(0x00, 0xf3, 0xac), // Focused
     SkColorSetRGB(0xa9, 0xff, 0x12), // Pressed
-    SkColorSetRGB(0xcc, 0xcc, 0xcc) // Indeterminate
+    SkColorSetRGB(0xcc, 0xcc, 0xcc) //  Indeterminate (not used)
 };
 
 SkIRect validate(const SkIRect& rect, WebTestThemeControlWin::Type ctype)
