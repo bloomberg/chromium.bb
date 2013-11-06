@@ -256,20 +256,16 @@
             'gl_context_cgl.h',
             'gl_surface_cgl.cc',
             'gl_surface_cgl.h',
+            'gl_context_nsview.mm',
+            'gl_context_nsview.h',
+            'gl_surface_nsview.mm',
+            'gl_surface_nsview.h',
           ],
           'link_settings': {
             'libraries': [
               '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
             ],
           },
-        }],
-        ['OS=="mac" and use_aura == 1', {
-          'sources': [
-            'gl_context_nsview.mm',
-            'gl_context_nsview.h',
-            'gl_surface_nsview.mm',
-            'gl_surface_nsview.h',
-          ],
         }],
         ['OS=="android"', {
           'dependencies': [

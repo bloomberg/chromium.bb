@@ -16,10 +16,9 @@ class GLContextNSView;
 // GLSurfaceNSView provides an implementation of the the GLSurface interface
 // that is backed by an NSView.  This interface pairs with the GLContextNSView
 // class, and the NSView is expected to use this context for drawing.
-class GLSurfaceNSView : public GLSurface {
+class GL_EXPORT GLSurfaceNSView : public GLSurface {
  public:
   explicit GLSurfaceNSView(AcceleratedWidget view);
-  virtual ~GLSurfaceNSView();
 
   // GLSurface:
   virtual void Destroy() OVERRIDE;
@@ -32,6 +31,8 @@ class GLSurfaceNSView : public GLSurface {
   virtual bool OnMakeCurrent(GLContext* context) OVERRIDE;
 
  private:
+  virtual ~GLSurfaceNSView();
+
   // Weak.  An |NSView*|.
   AcceleratedWidget view_;
 

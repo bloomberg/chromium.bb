@@ -291,6 +291,7 @@
         '../gpu/gpu.gyp:gles2_implementation',
         '../ui/events/events.gyp:events',
         '../ui/gfx/gfx.gyp:gfx',
+        '../ui/gl/gl.gyp:gl',
       ],
       'sources': [
         'services/native_viewport/android/mojo_viewport.cc',
@@ -299,12 +300,13 @@
         'services/native_viewport/native_viewport_android.cc',
         'services/native_viewport/native_viewport_controller.cc',
         'services/native_viewport/native_viewport_controller.h',
+        'services/native_viewport/native_viewport_mac.mm',
         'services/native_viewport/native_viewport_stub.cc',
         'services/native_viewport/native_viewport_win.cc',
         'services/native_viewport/native_viewport_x11.cc',
       ],
       'conditions': [
-        ['OS=="win" or OS=="android" or OS=="linux"', {
+        ['OS=="win" or OS=="android" or OS=="linux" or OS=="mac"', {
           'sources!': [
             'services/native_viewport/native_viewport_stub.cc',
           ],

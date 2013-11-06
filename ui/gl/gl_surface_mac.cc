@@ -13,10 +13,7 @@
 #include "ui/gl/gl_surface_cgl.h"
 #include "ui/gl/gl_surface_osmesa.h"
 #include "ui/gl/gl_surface_stub.h"
-
-#if defined(USE_AURA)
 #include "ui/gl/gl_surface_nsview.h"
-#endif
 
 namespace gfx {
 
@@ -38,7 +35,6 @@ bool GLSurface::InitializeOneOffInternal() {
 scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
     gfx::AcceleratedWidget window) {
   TRACE_EVENT0("gpu", "GLSurface::CreateViewGLSurface");
-#if defined(USE_AURA)
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL:
     case kGLImplementationAppleGL: {
@@ -54,9 +50,6 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
       NOTREACHED();
       return NULL;
   }
-#else
-  return CreateOffscreenGLSurface(gfx::Size(1, 1));
-#endif
 }
 
 scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(

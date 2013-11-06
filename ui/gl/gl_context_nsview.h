@@ -20,7 +20,6 @@ class GLSurface;
 class GLContextNSView : public GLContextReal {
  public:
   explicit GLContextNSView(GLShareGroup* group);
-  virtual ~GLContextNSView();
 
   // GLContext:
   virtual bool Initialize(GLSurface* surface,
@@ -36,6 +35,8 @@ class GLContextNSView : public GLContextReal {
   void FlushBuffer();
 
  private:
+  virtual ~GLContextNSView();
+
   base::scoped_nsobject<NSOpenGLContext> context_;
   GpuPreference gpu_preference_;
 
