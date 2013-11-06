@@ -823,7 +823,7 @@ def BuildStepBuildNaClPorts(pepper_ver, pepperdir):
 
   env = dict(os.environ)
   env['NACL_SDK_ROOT'] = pepperdir
-  env['PEPPER_DIR'] = os.path.dirname(pepperdir)
+  env['PEPPER_DIR'] = os.path.basename(pepperdir)  # pepper_NN
   env['NACLPORTS_NO_ANNOTATE'] = "1"
   env['NACLPORTS_NO_UPLOAD'] = "1"
 
