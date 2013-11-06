@@ -369,13 +369,13 @@
    bug_90013_a
    Heapcheck:Leak
    fun:??
-   fun:gfx::RenderTextLinux::EnsureLayout
+   fun:gfx::RenderTextPango::EnsureLayout
 }
 {
    bug_90013_b
    Heapcheck:Leak
    fun:??
-   fun:gfx::RenderTextLinux::GetStringSize
+   fun:gfx::RenderTextPango::GetStringSize
 }
 {
    bug_90013_c
@@ -578,7 +578,7 @@
    bug_173597
    Heapcheck:Leak
    fun:FcConfigEvaluate
-   fun:gfx::RenderTextLinux::EnsureLayout
+   fun:gfx::RenderTextPango::EnsureLayout
    fun:gfx::RenderTextTest_PangoAttributes_Test::TestBody
 }
 {
@@ -789,7 +789,7 @@
    bug_274114
    Heapcheck:Leak
    ...
-   fun:gfx::RenderTextLinux::GetBaseline
+   fun:gfx::RenderTextPango::GetBaseline
    fun:views::NativeTextfieldViews::GetTextfieldBaseline
    fun:_init
    fun:LocationBarView::Init
