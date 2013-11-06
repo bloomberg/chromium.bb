@@ -17,7 +17,7 @@ M C CSM: Shouldn't use synchronized method, please narrow down the synchronizati
 M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At TraceEvent.java
 M C CST: Shouldn't use synchronized(this), please narrow down the synchronization scope.  At HttpAuthDatabase.java
 M C CST: Shouldn't use synchronized(this), please narrow down the synchronization scope.  At SimpleSynchronizedThis.java
-M C RCN: Nullcheck of GestureDetector.mVelocityTracker at line 630 of value previously dereferenced in org.chromium.content.browser.third_party.GestureDetector.onTouchEvent(MotionEvent)  At GestureDetector.java
+M C RCN: Nullcheck of GestureDetector.mVelocityTracker at line 639 of value previously dereferenced in org.chromium.content.browser.third_party.GestureDetector.onTouchEvent(MotionEvent)  At GestureDetector.java
 M C USELESS_STRING: Invocation of toString on certChain in org.chromium.net.X509Util.verifyServerCertificates(byte[][], String)  At X509Util.java
 M D DMI: Hard coded reference to an absolute pathname in org.chromium.android_webview.test.ArchiveTest.testAutoBadPath()  At ArchiveTest.java
 M D DMI: Hard coded reference to an absolute pathname in org.chromium.android_webview.test.ArchiveTest.testExplicitBadPath()  At ArchiveTest.java
