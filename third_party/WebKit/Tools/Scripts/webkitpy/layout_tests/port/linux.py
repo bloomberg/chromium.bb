@@ -26,10 +26,12 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import cgi
 import logging
 import re
 
 from webkitpy.common.webkit_finder import WebKitFinder
+from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port import base
 from webkitpy.layout_tests.port import win
 from webkitpy.layout_tests.port import config
@@ -98,12 +100,11 @@ class LinuxPort(base.Port):
         assert port_name in ('linux', 'linux-x86', 'linux-x86_64')
         self._version = 'lucid'  # We only support lucid right now.
         self._architecture = arch
+        self._breakpad_tools_available = None
 
     def additional_drt_flag(self):
         flags = super(LinuxPort, self).additional_drt_flag()
-        # FIXME: Temporarily disable the sandbox on Linux until we can get
-        # stacktraces via breakpad. http://crbug.com/247431
-        flags += ['--no-sandbox']
+        flags += ['--enable-crash-reporter', '--crash-dumps-dir=%s' % self.crash_dumps_directory()]
         return flags
 
     def default_baseline_search_path(self):
@@ -115,10 +116,63 @@ class LinuxPort(base.Port):
 
     def check_build(self, needs_http, printer):
         result = super(LinuxPort, self).check_build(needs_http, printer)
+
+        self._breakpad_tools_available = self._check_breakpad_tools_available()
+        if not self._breakpad_tools_available:
+            result = test_run_results.UNEXPECTED_ERROR_EXIT_STATUS
+
         if result:
             _log.error('For complete Linux build requirements, please see:')
             _log.error('')
             _log.error('    http://code.google.com/p/chromium/wiki/LinuxBuildInstructions')
+        return result
+
+    def setup_test_run(self):
+        super(LinuxPort, self).setup_test_run()
+
+        if self._filesystem.exists(self.crash_dumps_directory()):
+            self._filesystem.rmtree(self.crash_dumps_directory())
+        self._filesystem.maybe_make_directory(self.crash_dumps_directory())
+
+    def look_for_new_crash_logs(self, crashed_processes, start_time):
+        if not crashed_processes:
+            return None
+
+        if self._breakpad_tools_available == None:
+            self._breakpad_tools_available = self._check_breakpad_tools_available()
+        if not self._breakpad_tools_available:
+            return None
+
+        pid_to_minidump = dict()
+        for root, dirs, files in self._filesystem.walk(self.crash_dumps_directory()):
+            for dmp in [f for f in files if f.endswith('.dmp')]:
+                dmp_file = self._filesystem.join(root, dmp)
+                if self._filesystem.mtime(dmp_file) < start_time:
+                    continue
+                with self._filesystem.open_binary_file_for_reading(dmp_file) as f:
+                    boundary = f.readline().strip()[2:]
+                    data = cgi.parse_multipart(f, {'boundary': boundary})
+                    if 'pid' in data:
+                        pid_to_minidump[data['pid'][0]] = '\r\n'.join(data['upload_file_minidump'])
+
+        result = dict()
+        for test, process_name, pid in crashed_processes:
+            if str(pid) in pid_to_minidump:
+                self._generate_breakpad_symbols_if_necessary()
+                f, temp_name = self._filesystem.open_binary_tempfile('dmp')
+                f.write(pid_to_minidump[str(pid)])
+                f.close()
+
+                cmd = [self._path_to_minidump_stackwalk(), temp_name, self._path_to_breakpad_symbols()]
+                try:
+                    stack = self._executive.run_command(cmd, return_stderr=False)
+                except:
+                    _log.warning('Failed to execute "%s"' % ' '.join(cmd))
+                else:
+                    result[test] = stack
+
+                self._filesystem.remove(temp_name)
+
         return result
 
     def operating_system(self):
@@ -182,3 +236,48 @@ class LinuxPort(base.Port):
 
     def _path_to_helper(self):
         return None
+
+    def _path_to_minidump_stackwalk(self):
+        return self._build_path("minidump_stackwalk")
+
+    def _path_to_dump_syms(self):
+        return self._build_path("dump_syms")
+
+    def _path_to_breakpad_symbols(self):
+        return self._build_path("content_shell.syms")
+
+    def _path_to_generate_breakpad_symbols(self):
+        return self.path_from_chromium_base("components", "breakpad", "tools", "generate_breakpad_symbols.py")
+
+    def _check_breakpad_tools_available(self):
+        result = self._check_file_exists(self._path_to_dump_syms(), "dump_syms")
+        result = self._check_file_exists(self._path_to_minidump_stackwalk(), "minidump_stackwalk") and result
+        if not result:
+            _log.error("    Could not find breakpad tools, unexpected crashes won't be symbolized")
+            _log.error('    Did you build the target all_webkit?')
+            _log.error('')
+        return result
+
+    def _generate_breakpad_symbols_if_necessary(self):
+        if self._filesystem.exists(self._path_to_breakpad_symbols()) and (self._filesystem.mtime(self._path_to_driver()) < self._filesystem.mtime(self._path_to_breakpad_symbols())):
+            return
+
+        BINARIES = [
+            self._path_to_driver(),
+            self._build_path("libTestNetscapePlugIn.so"),
+        ]
+
+        _log.debug("Regenerating breakpad symbols")
+        self._filesystem.rmtree(self._path_to_breakpad_symbols())
+
+        for binary in BINARIES:
+            cmd = [
+                self._path_to_generate_breakpad_symbols(),
+                '--binary=%s' % binary,
+                '--symbols-dir=%s' % self._path_to_breakpad_symbols(),
+                '--build-dir=%s' % self._build_path(),
+            ]
+            try:
+                self._executive.run_command(cmd)
+            except:
+                _log.error('Failed to execute "%s"' % ' '.join(cmd))
