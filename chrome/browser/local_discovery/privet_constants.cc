@@ -17,6 +17,12 @@ const char kPrivetKeyTimeout[] = "timeout";
 
 const char kPrivetActionNameInfo[] = "info";
 
+const char kPrivetInfoPath[] = "/privet/info";
+const char kPrivetRegisterPath[] = "/privet/register";
+const char kPrivetCapabilitiesPath[] = "/privet/capabilities";
+const char kPrivetSubmitdocPath[] = "/privet/printer/submitdoc";
+const char kPrivetCreatejobPath[] = "/privet/printer/createjob";
+
 const char kPrivetErrorDeviceBusy[] = "device_busy";
 const char kPrivetErrorPendingUserAction[] = "pending_user_action";
 const char kPrivetErrorInvalidXPrivetToken[] = "invalid_x_privet_token";
@@ -28,8 +34,9 @@ const char kPrivetActionGetClaimToken[] = "getClaimToken";
 const char kPrivetActionComplete[] = "complete";
 const char kPrivetActionCancel[] = "cancel";
 
-extern const char kPrivetDefaultDeviceType[] = "_privet._tcp.local";
-extern const char kPrivetSubtypeTemplate[] = "%s._sub._privet._tcp.local";
+const char kPrivetDefaultDeviceType[] = "_privet._tcp.local";
+const char kPrivetSubtypeTemplate[] = "%s._sub._privet._tcp.local";
+const char kPrivetSubtypePrinter[] = "_printer";
 
 const char kPrivetTxtKeyName[] = "ty";
 const char kPrivetTxtKeyDescription[] = "note";

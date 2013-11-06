@@ -963,6 +963,8 @@
         'browser/local_discovery/privet_http.h',
         'browser/local_discovery/privet_http_impl.cc',
         'browser/local_discovery/privet_http_impl.h',
+        'browser/local_discovery/privet_local_printer_lister.h',
+        'browser/local_discovery/privet_local_printer_lister.cc',
         'browser/local_discovery/privet_url_fetcher.cc',
         'browser/local_discovery/privet_url_fetcher.h',
         'browser/local_discovery/service_discovery_client_mac.h',
@@ -3534,6 +3536,8 @@
               'browser/local_discovery/service_discovery_client_mdns.h',
               'browser/local_discovery/service_discovery_host_client.cc',
               'browser/local_discovery/service_discovery_host_client.h',
+              'browser/local_discovery/privet_local_printer_lister.h',
+              'browser/local_discovery/privet_local_printer_lister.cc'
             ]
         }]
       ],

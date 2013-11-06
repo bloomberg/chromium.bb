@@ -18,6 +18,12 @@ extern const char kPrivetKeyTimeout[];
 
 extern const char kPrivetActionNameInfo[];
 
+extern const char kPrivetInfoPath[];
+extern const char kPrivetRegisterPath[];
+extern const char kPrivetCapabilitiesPath[];
+extern const char kPrivetSubmitdocPath[];
+extern const char kPrivetCreatejobPath[];
+
 extern const char kPrivetErrorDeviceBusy[];
 extern const char kPrivetErrorPendingUserAction[];
 extern const char kPrivetErrorInvalidXPrivetToken[];
@@ -31,6 +37,7 @@ extern const char kPrivetActionCancel[];
 
 extern const char kPrivetDefaultDeviceType[];
 extern const char kPrivetSubtypeTemplate[];
+extern const char kPrivetSubtypePrinter[];
 
 const double kPrivetMaximumTimeScaling = 1.2;
 

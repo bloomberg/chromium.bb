@@ -18,12 +18,6 @@ const char kUrlPlaceHolder[] = "http://host/";
 const char kPrivetRegisterActionArgName[] = "action";
 const char kPrivetRegisterUserArgName[] = "user";
 
-const char kPrivetInfoPath[] = "/privet/info";
-const char kPrivetRegisterPath[] = "/privet/register";
-const char kPrivetCapabilitiesPath[] = "/privet/capabilities";
-const char kPrivetSubmitdocPath[] = "/privet/printer/submitdoc";
-const char kPrivetCreatejobPath[] = "/privet/printer/createjob";
-
 const char kPrivetURLKeyUser[] = "user";
 const char kPrivetURLKeyJobname[] = "jobname";
 const char kPrivetURLKeyOffline[] = "offline";
@@ -241,7 +235,7 @@ void PrivetRegisterOperationImpl::OnPrivetInfoDone(
     PrivetInfoOperation* operation,
     int http_code,
     const base::DictionaryValue* value) {
-   // TODO (noamsml): Simplify error case.
+  // TODO(noamsml): Simplify error case.
   if (!value) {
     delegate_->OnPrivetRegisterError(this,
                                      kPrivetActionNameInfo,

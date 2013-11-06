@@ -411,6 +411,12 @@
             '../components/components.gyp:breakpad_stubs',
           ],
         }],
+        ['enable_mdns == 1', {
+            'sources': [
+              'browser/local_discovery/test_service_discovery_client.cc',
+              'browser/local_discovery/test_service_discovery_client.h',
+            ]
+        }],
       ],
     },
     {
@@ -2216,7 +2222,8 @@
               'utility/local_discovery/local_domain_resolver_unittest.cc',
               'utility/local_discovery/service_discovery_client_unittest.cc',
               'browser/local_discovery/privet_device_lister_unittest.cc',
-              'browser/local_discovery/privet_notifications_unittest.cc'
+              'browser/local_discovery/privet_notifications_unittest.cc',
+              'browser/local_discovery/privet_local_printer_lister_unittest.cc',
             ]
         }],
         ['configuration_policy==0', {
