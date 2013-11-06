@@ -49,7 +49,7 @@ namespace {
 
 content::WebUIDataSource* CreateWebUIDataSource() {
   content::WebUIDataSource* source =
-        content::WebUIDataSource::Create(chrome::kChromeUIInlineLoginHost);
+        content::WebUIDataSource::Create(chrome::kChromeUIChromeSigninHost);
   source->SetUseJsonJSFormatV2();
   source->SetJsonPath("strings.js");
 

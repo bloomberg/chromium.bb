@@ -36,7 +36,7 @@
                attemptToken: new Date().getTime(),
                chooseWhatToSync: chooseWhatToSync};
 
-    extWindow.postMessage(msg, 'chrome://inline-login');
+    extWindow.postMessage(msg, 'chrome://chrome-signin');
     console.log('Credentials sent');
 
     return;

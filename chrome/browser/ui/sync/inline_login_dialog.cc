@@ -28,7 +28,7 @@ string16 InlineLoginDialog::GetDialogTitle() const {
 }
 
 GURL InlineLoginDialog::GetDialogContentURL() const {
-  return GURL(chrome::kChromeUIInlineLoginURL);
+  return GURL(chrome::kChromeUIChromeSigninURL);
 }
 
 void InlineLoginDialog::GetWebUIMessageHandlers(
