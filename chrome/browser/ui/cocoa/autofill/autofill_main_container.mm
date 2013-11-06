@@ -62,7 +62,6 @@
   [saveInChromeCheckbox_ setButtonType:NSSwitchButton];
   [saveInChromeCheckbox_ setTitle:
       base::SysUTF16ToNSString(delegate_->SaveLocallyText())];
-  [self updateSaveInChrome];
   [saveInChromeCheckbox_ sizeToFit];
   [[self view] addSubview:saveInChromeCheckbox_];
 
@@ -74,6 +73,7 @@
       base::SysUTF16ToNSString(delegate_->SaveLocallyTooltip())];
   [saveInChromeTooltip_ setFrameSize:[[saveInChromeTooltip_ image] size]];
   [[self view] addSubview:saveInChromeTooltip_];
+  [self updateSaveInChrome];
 
   detailsContainer_.reset(
       [[AutofillDetailsContainer alloc] initWithDelegate:delegate_]);

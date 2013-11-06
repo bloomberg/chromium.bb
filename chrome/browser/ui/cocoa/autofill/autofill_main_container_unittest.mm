@@ -111,9 +111,13 @@ TEST_F(AutofillMainContainerTest, SaveInChromeCheckboxVisibility) {
 
   RebuildView();
   NSButton* checkbox = [container_ saveInChromeCheckboxForTesting];
+  NSImageView* tooltip = [container_ saveInChromeTooltipForTesting];
   ASSERT_TRUE(checkbox);
+  ASSERT_TRUE(tooltip);
 
   EXPECT_TRUE([checkbox isHidden]);
+  EXPECT_TRUE([tooltip isHidden]);
   [container_ modelChanged];
   EXPECT_FALSE([checkbox isHidden]);
+  EXPECT_FALSE([tooltip isHidden]);
 }
