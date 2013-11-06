@@ -131,9 +131,6 @@ EXTRA_ENV = {
   # provided on the command-line.
   'LD_ARGS_nostdlib': '-nostdlib ${ld_inputs}',
 
-  # TODO(pdox): Pull all native objects out of here
-  #             and into pnacl-translate.
-  # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2423
   'LD_ARGS_static':
     '${CXX_EH_MODE==zerocost ? -l:crt1_for_eh.x : -l:crt1.x} ' +
     '-l:crti.bc -l:crtbegin.bc '
