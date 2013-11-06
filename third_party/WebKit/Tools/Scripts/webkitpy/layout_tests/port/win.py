@@ -32,6 +32,7 @@ import os
 import logging
 import shlex
 
+from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port import base
 from webkitpy.layout_tests.servers import crash_service
 
@@ -68,6 +69,7 @@ class WinPort(base.Port):
         assert self._version in self.SUPPORTED_VERSIONS, "%s is not in %s" % (self._version, self.SUPPORTED_VERSIONS)
         self._crash_service = None
         self._cdb_available = None
+        self._crash_service_available = None
 
     def additional_drt_flag(self):
         flags = super(WinPort, self).additional_drt_flag()
@@ -77,7 +79,13 @@ class WinPort(base.Port):
     def setup_test_run(self):
         super(WinPort, self).setup_test_run()
 
+        self._filesystem.maybe_make_directory(self.crash_dumps_directory())
+
         assert not self._crash_service, 'Already running a crash service'
+        if self._crash_service_available == None:
+            self._crash_service_available = self._check_crash_service_available()
+        if not self._crash_service_available:
+            return
         service = crash_service.CrashService(self, self.crash_dumps_directory())
         service.start()
         self._crash_service = service
@@ -118,7 +126,10 @@ class WinPort(base.Port):
     def check_build(self, needs_http, printer):
         result = super(WinPort, self).check_build(needs_http, printer)
 
-        result = self._check_cdb_available() and result
+        self._cdb_available = self._check_cdb_available()
+        self._crash_service_available = self._check_crash_service_available()
+        if not self._crash_service_available:
+            result = test_run_results.UNEXPECTED_ERROR_EXIT_STATUS
 
         if result:
             _log.error('For complete Windows build requirements, please see:')
@@ -176,6 +187,15 @@ class WinPort(base.Port):
 
     def _path_to_wdiff(self):
         return self.path_from_chromium_base('third_party', 'cygwin', 'bin', 'wdiff.exe')
+
+    def _check_crash_service_available(self):
+        """Checks whether the crash service binary is present."""
+        result = self._check_file_exists(self._path_to_crash_service(), "content_shell_crash_service.exe")
+        if not result:
+            _log.error("    Could not find crash service, unexpected crashes won't be symbolized.")
+            _log.error('    Did you build the target all_webkit?')
+            _log.error('')
+        return result
 
     def _check_cdb_available(self, logging=True):
         """Checks whether we can use cdb to symbolize minidumps."""
