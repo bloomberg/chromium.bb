@@ -23,17 +23,6 @@ namespace file_system {
 
 namespace {
 
-// Returns ResourceEntry and the local ID of the entry at the given path.
-FileError GetResourceEntryAndIdByPath(internal::ResourceMetadata* metadata,
-                                      const base::FilePath& file_path,
-                                      std::string* local_id,
-                                      ResourceEntry* entry) {
-  FileError error = metadata->GetIdByPath(file_path, local_id);
-  if (error != FILE_ERROR_OK)
-    return error;
-  return metadata->GetResourceEntryById(*local_id, entry);
-}
-
 // Refreshes the entry specified by |local_id| with the contents of
 // |resource_entry|.
 FileError RefreshEntry(internal::ResourceMetadata* metadata,
@@ -88,21 +77,18 @@ void TouchOperation::TouchFile(const base::FilePath& file_path,
   DCHECK(!callback.is_null());
 
   ResourceEntry* entry = new ResourceEntry;
-  std::string* local_id = new std::string;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&GetResourceEntryAndIdByPath,
+      base::Bind(&internal::ResourceMetadata::GetResourceEntryByPath,
                  base::Unretained(metadata_),
                  file_path,
-                 local_id,
                  entry),
       base::Bind(&TouchOperation::TouchFileAfterGetResourceEntry,
                  weak_ptr_factory_.GetWeakPtr(),
                  last_access_time,
                  last_modified_time,
                  callback,
-                 base::Owned(local_id),
                  base::Owned(entry)));
 }
 
@@ -110,7 +96,6 @@ void TouchOperation::TouchFileAfterGetResourceEntry(
     const base::Time& last_access_time,
     const base::Time& last_modified_time,
     const FileOperationCallback& callback,
-    std::string* local_id,
     ResourceEntry* entry,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -128,7 +113,7 @@ void TouchOperation::TouchFileAfterGetResourceEntry(
       entry->resource_id(), last_modified_time, last_access_time,
       base::Bind(&TouchOperation::TouchFileAfterServerTimeStampUpdated,
                  weak_ptr_factory_.GetWeakPtr(),
-                 *local_id, callback));
+                 entry->local_id(), callback));
 }
 
 void TouchOperation::TouchFileAfterServerTimeStampUpdated(

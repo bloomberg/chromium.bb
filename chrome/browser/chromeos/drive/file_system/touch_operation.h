@@ -55,7 +55,6 @@ class TouchOperation {
   void TouchFileAfterGetResourceEntry(const base::Time& last_access_time,
                                       const base::Time& last_modified_time,
                                       const FileOperationCallback& callback,
-                                      std::string* local_id,
                                       ResourceEntry* entry,
                                       FileError error);
 
