@@ -37,7 +37,7 @@ namespace webrtc.castSendTransport {
     long? height;
 
     // A list of codec specific params.
-    CodecSpecificParams[] codecSpecficParams;
+    CodecSpecificParams[] codecSpecificParams;
   };
 
   // Cast transport capabilities

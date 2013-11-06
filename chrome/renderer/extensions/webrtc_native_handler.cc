@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/extensions/webrtc_native_handler.h"
 
+#include <functional>
+
 #include "base/logging.h"
 #include "chrome/common/extensions/api/webrtc_cast_send_transport.h"
 #include "chrome/common/extensions/api/webrtc_cast_udp_transport.h"
@@ -17,6 +19,7 @@
 using content::V8ValueConverter;
 
 // Extension types.
+using extensions::api::webrtc_cast_send_transport::CodecSpecificParams;
 using extensions::api::webrtc_cast_send_transport::RtpCaps;
 using extensions::api::webrtc_cast_send_transport::RtpParams;
 using extensions::api::webrtc_cast_send_transport::RtpPayloadParams;
@@ -32,30 +35,119 @@ const char kInvalidUdpParams[] = "Invalid UDP params";
 const char kInvalidRtpCaps[] = "Invalid value for RTP caps";
 const char kInvalidRtpParams[] = "Invalid value for RTP params";
 const char kUnableToConvertArgs[] = "Unable to convert arguments";
-const char kUnableToConvertCaps[] = "Unable to convert caps";
 const char kUnableToConvertParams[] = "Unable to convert params";
 
 // These helper methods are used to convert between Extension API
 // types and Cast types.
-bool ToCastRtpCaps(const RtpCaps& ext_caps, CastRtpCaps* cast_caps) {
-  NOTIMPLEMENTED();
-  return true;
+void ToCastCodecSpecificParams(const CodecSpecificParams& ext_params,
+                               CastCodecSpecificParams* cast_params) {
+  cast_params->key = ext_params.key;
+  cast_params->value = ext_params.value;
 }
 
-bool FromCastRtpCaps(const CastRtpCaps& cast_caps, RtpCaps* ext_caps) {
-  NOTIMPLEMENTED();
-  return true;
+void FromCastCodecSpecificParams(const CastCodecSpecificParams& cast_params,
+                                 CodecSpecificParams* ext_params) {
+  ext_params->key = cast_params.key;
+  ext_params->value = cast_params.value;
 }
 
-bool ToCastRtpParams(const RtpParams& ext_params, CastRtpParams* cast_params) {
-  NOTIMPLEMENTED();
-  return true;
+void ToCastRtpPayloadParams(const RtpPayloadParams& ext_params,
+                            CastRtpPayloadParams* cast_params) {
+  cast_params->payload_type = ext_params.payload_type;
+  cast_params->codec_name = ext_params.codec_name;
+  cast_params->ssrc = ext_params.ssrc ? *ext_params.ssrc : 0;
+  cast_params->clock_rate = ext_params.clock_rate ? *ext_params.clock_rate : 0;
+  cast_params->min_bitrate =
+      ext_params.min_bitrate ? *ext_params.min_bitrate : 0;
+  cast_params->max_bitrate =
+      ext_params.max_bitrate ? *ext_params.max_bitrate : 0;
+  cast_params->channels = ext_params.channels ? *ext_params.channels : 0;
+  cast_params->width = ext_params.width ? *ext_params.width : 0;
+  cast_params->height = ext_params.height ? *ext_params.height : 0;
+  for (size_t i = 0; i < ext_params.codec_specific_params.size(); ++i) {
+    CastCodecSpecificParams cast_codec_params;
+    ToCastCodecSpecificParams(*ext_params.codec_specific_params[i],
+                              &cast_codec_params);
+    cast_params->codec_specific_params.push_back(cast_codec_params);
+  }
 }
 
-bool FromCastRtpParams(const CastRtpParams& cast_params,
+void FromCastRtpPayloadParams(const CastRtpPayloadParams& cast_params,
+                              RtpPayloadParams* ext_params) {
+  ext_params->payload_type = cast_params.payload_type;
+  ext_params->codec_name = cast_params.codec_name;
+  if (cast_params.ssrc)
+    ext_params->ssrc.reset(new int(cast_params.ssrc));
+  if (cast_params.clock_rate)
+    ext_params->clock_rate.reset(new int(cast_params.clock_rate));
+  if (cast_params.min_bitrate)
+    ext_params->min_bitrate.reset(new int(cast_params.min_bitrate));
+  if (cast_params.max_bitrate)
+    ext_params->max_bitrate.reset(new int(cast_params.max_bitrate));
+  if (cast_params.channels)
+    ext_params->channels.reset(new int(cast_params.channels));
+  if (cast_params.width)
+    ext_params->width.reset(new int(cast_params.width));
+  if (cast_params.height)
+    ext_params->height.reset(new int(cast_params.height));
+  for (size_t i = 0; i < cast_params.codec_specific_params.size(); ++i) {
+    linked_ptr<CodecSpecificParams> ext_codec_params(
+        new CodecSpecificParams());
+    FromCastCodecSpecificParams(cast_params.codec_specific_params[i],
+                                ext_codec_params.get());
+    ext_params->codec_specific_params.push_back(ext_codec_params);
+  }
+}
+
+void ToCastRtpCaps(const RtpCaps& ext_caps, CastRtpCaps* cast_caps) {
+  std::copy(ext_caps.rtcp_features.begin(), ext_caps.rtcp_features.end(),
+            cast_caps->rtcp_features.begin());
+  std::copy(ext_caps.fec_mechanisms.begin(), ext_caps.fec_mechanisms.end(),
+            cast_caps->fec_mechanisms.begin());
+  for (size_t i = 0; i < ext_caps.payloads.size(); ++i) {
+    CastRtpPayloadParams cast_payload_params;
+    ToCastRtpPayloadParams(*ext_caps.payloads[i], &cast_payload_params);
+    cast_caps->payloads.push_back(cast_payload_params);
+  }
+}
+
+void FromCastRtpCaps(const CastRtpCaps& cast_caps, RtpCaps* ext_caps) {
+  std::copy(cast_caps.rtcp_features.begin(), cast_caps.rtcp_features.end(),
+            ext_caps->rtcp_features.begin());
+  std::copy(cast_caps.fec_mechanisms.begin(), cast_caps.fec_mechanisms.end(),
+            ext_caps->fec_mechanisms.begin());
+  for (size_t i = 0; i < cast_caps.payloads.size(); ++i) {
+    linked_ptr<RtpPayloadParams> ext_payload_params(new RtpPayloadParams());
+    FromCastRtpPayloadParams(cast_caps.payloads[i], ext_payload_params.get());
+    ext_caps->payloads.push_back(ext_payload_params);
+  }
+}
+
+void ToCastRtpParams(const RtpParams& ext_params, CastRtpParams* cast_params) {
+  std::copy(ext_params.rtcp_features.begin(), ext_params.rtcp_features.end(),
+            cast_params->rtcp_features.begin());
+  std::copy(ext_params.fec_mechanisms.begin(), ext_params.fec_mechanisms.end(),
+            cast_params->fec_mechanisms.begin());
+  for (size_t i = 0; i < ext_params.payloads.size(); ++i) {
+    CastRtpPayloadParams cast_payload_params;
+    ToCastRtpPayloadParams(*ext_params.payloads[i], &cast_payload_params);
+    cast_params->payloads.push_back(cast_payload_params);
+  }
+}
+
+void FromCastRtpParams(const CastRtpParams& cast_params,
                        RtpParams* ext_params) {
-  NOTIMPLEMENTED();
-  return true;
+  std::copy(cast_params.rtcp_features.begin(), cast_params.rtcp_features.end(),
+            ext_params->rtcp_features.begin());
+  std::copy(cast_params.fec_mechanisms.begin(),
+            cast_params.fec_mechanisms.end(),
+            ext_params->fec_mechanisms.begin());
+  for (size_t i = 0; i < cast_params.payloads.size(); ++i) {
+    linked_ptr<RtpPayloadParams> ext_payload_params(new RtpPayloadParams());
+    FromCastRtpPayloadParams(cast_params.payloads[i],
+                             ext_payload_params.get());
+    ext_params->payloads.push_back(ext_payload_params);
+  }
 }
 
 }  // namespace
@@ -162,18 +254,10 @@ void WebRtcNativeHandler::CreateParamsCastSendTransport(
   }
 
   CastRtpCaps cast_remote_caps;
-  if (!ToCastRtpCaps(*remote_caps, &cast_remote_caps)) {
-    v8::ThrowException(v8::Exception::TypeError(v8::String::New(
-        kUnableToConvertCaps)));
-    return;
-  }
+  ToCastRtpCaps(*remote_caps, &cast_remote_caps);
   CastRtpParams cast_params = transport->CreateParams(cast_remote_caps);
   RtpParams params;
-  if (!FromCastRtpParams(cast_params, &params)) {
-    v8::ThrowException(v8::Exception::TypeError(v8::String::New(
-        kUnableToConvertParams)));
-    return;
-  }
+  FromCastRtpParams(cast_params, &params);
 
   scoped_ptr<base::DictionaryValue> params_value = params.ToValue();
   v8::Handle<v8::Value> params_v8 = converter->ToV8Value(
@@ -195,11 +279,7 @@ void WebRtcNativeHandler::GetCapsCastSendTransport(
 
   CastRtpCaps cast_caps = transport->GetCaps();
   RtpCaps caps;
-  if (!FromCastRtpCaps(cast_caps, &caps)) {
-    v8::ThrowException(v8::Exception::TypeError(v8::String::New(
-        kUnableToConvertCaps)));
-    return;
-  }
+  FromCastRtpCaps(cast_caps, &caps);
 
   scoped_ptr<base::DictionaryValue> caps_value = caps.ToValue();
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
@@ -236,11 +316,7 @@ void WebRtcNativeHandler::StartCastSendTransport(
   }
 
   CastRtpCaps cast_params;
-  if (!ToCastRtpParams(*params, &cast_params)) {
-    v8::ThrowException(v8::Exception::TypeError(v8::String::New(
-        kUnableToConvertParams)));
-    return;
-  }
+  ToCastRtpParams(*params, &cast_params);
   transport->Start(cast_params);
 }
 

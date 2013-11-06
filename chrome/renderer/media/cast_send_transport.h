@@ -38,8 +38,11 @@ struct CastRtpPayloadParams {
   // Update frequency of payload sample.
   int clock_rate;
 
-  // Uncompressed bitrate.
-  int bitrate;
+  // Maximum bitrate.
+  int max_bitrate;
+
+  // Minimum bitrate.
+  int min_bitrate;
 
   // Number of audio channels.
   int channels;
@@ -67,7 +70,7 @@ struct CastRtpCaps {
   std::vector<std::string> rtcp_features;
 
   // Names of supported FEC (Forward Error Correction) mechanisms.
-  std::vector<std::string> fec_mechanism;
+  std::vector<std::string> fec_mechanisms;
 
   CastRtpCaps();
   ~CastRtpCaps();
@@ -84,7 +87,7 @@ class CastSendTransport {
   explicit CastSendTransport(CastUdpTransport* udp_transport);
   ~CastSendTransport();
 
-  // Return capabilities currently spported by this transport.
+  // Return capabilities currently supported by this transport.
   CastRtpCaps GetCaps();
 
   // Return parameters set to this transport.

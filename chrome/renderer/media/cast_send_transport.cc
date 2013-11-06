@@ -18,7 +18,8 @@ CastRtpPayloadParams::CastRtpPayloadParams()
     : payload_type(0),
       ssrc(0),
       clock_rate(0),
-      bitrate(0),
+      max_bitrate(0),
+      min_bitrate(0),
       channels(0),
       width(0),
       height(0) {
