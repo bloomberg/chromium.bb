@@ -70,7 +70,7 @@ class Manifest(object):
   Also includes code to zip code and upload itself.
   """
   def __init__(
-      self, isolate_server, isolated_hash, test_name, shards, test_filter,
+      self, isolate_server, isolated_hash, test_name, shards, env,
       slave_os, working_dir, verbose, profile, priority, algo):
     """Populates a manifest object.
       Args:
@@ -78,7 +78,7 @@ class Manifest(object):
         isolated_hash - The manifest's sha-1 that the slave is going to fetch.
         test_name - The name to give the test request.
         shards - The number of swarm shards to request.
-        test_filter - The gtest filter to apply when running the test.
+        env - environment variables to set.
         slave_os - OS to run on.
         working_dir - Relative working directory to start the script.
         verbose - if True, have the slave print more details.
@@ -94,7 +94,7 @@ class Manifest(object):
 
     self._test_name = test_name
     self._shards = shards
-    self._test_filter = test_filter
+    self._env = env
     self._target_platform = slave_os
     self._working_dir = working_dir
 
@@ -164,7 +164,7 @@ class Manifest(object):
       'data': [],
       # TODO: Let the encoding get set from the command line.
       'encoding': 'UTF-8',
-      'env_vars': {},
+      'env_vars': self._env,
       'restart_on_failure': True,
       'test_case_name': self._test_name,
       'tests': self._tasks,
@@ -176,13 +176,6 @@ class Manifest(object):
             self.storage.get_fetch_url(self._isolate_item.digest),
             'swarm_data.zip',
           ])
-    # These flags are googletest specific.
-    if self._test_filter and self._test_filter != '*':
-      test_case['env_vars']['GTEST_FILTER'] = self._test_filter
-    if self._shards > 1:
-      test_case['env_vars']['GTEST_SHARD_INDEX'] = '%(instance_index)s'
-      test_case['env_vars']['GTEST_TOTAL_SHARDS'] = '%(num_instances)s'
-
     return json.dumps(test_case, separators=(',',':'))
 
 
@@ -358,13 +351,21 @@ def process_manifest(
     tools.report_error('Invalid hash %s' % file_hash_or_isolated)
     return 1
 
+  env = {}
+  # These flags are googletest specific.
+  if test_filter and test_filter != '*':
+    env['GTEST_FILTER'] = test_filter
+  if shards > 1:
+    env['GTEST_SHARD_INDEX'] = '%(instance_index)s'
+    env['GTEST_TOTAL_SHARDS'] = '%(num_instances)s'
+
   try:
     manifest = Manifest(
         isolate_server=isolate_server,
         isolated_hash=file_hash,
         test_name=test_name,
         shards=shards,
-        test_filter=test_filter,
+        env=env,
         slave_os=PLATFORM_MAPPING_SWARMING[slave_os],
         working_dir=working_dir,
         verbose=verbose,

@@ -476,12 +476,16 @@ class ManifestTest(auto_stub.TestCase):
     self.mock(sys, 'stderr', StringIO.StringIO())
 
   def test_basic_manifest(self):
+    env = {
+      u'GTEST_SHARD_INDEX': u'%(instance_index)s',
+      u'GTEST_TOTAL_SHARDS': u'%(num_instances)s',
+    }
     manifest = swarming.Manifest(
         isolate_server='http://localhost:8081',
         isolated_hash=FILE_HASH,
         test_name=TEST_NAME,
         shards=2,
-        test_filter='*',
+        env=env,
         slave_os='Windows',
         working_dir='swarm_tests',
         verbose=False,
@@ -509,7 +513,7 @@ class ManifestTest(auto_stub.TestCase):
         isolated_hash=FILE_HASH,
         test_name=TEST_NAME,
         shards=1,
-        test_filter='*',
+        env={},
         slave_os='Linux',
         working_dir='swarm_tests',
         verbose=False,
@@ -534,7 +538,7 @@ class ManifestTest(auto_stub.TestCase):
         isolated_hash=FILE_HASH,
         test_name=TEST_NAME,
         shards=1,
-        test_filter='*',
+        env={},
         slave_os='Linux',
         working_dir='swarm_tests',
         verbose=False,
