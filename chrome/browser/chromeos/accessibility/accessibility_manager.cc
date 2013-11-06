@@ -422,14 +422,6 @@ void AccessibilityManager::UpdateSpokenFeedbackFromPref() {
 
   if (enabled) {
     LoadChromeVox();
-    ExtensionAccessibilityEventRouter::GetInstance()->
-        OnChromeVoxLoadStateChanged(profile_,
-            true,
-            chrome_vox_loaded_on_lock_screen_ ||
-                should_speak_chrome_vox_announcements_on_user_screen_);
-
-    should_speak_chrome_vox_announcements_on_user_screen_ =
-        chrome_vox_loaded_on_lock_screen_;
   } else {
     ExtensionAccessibilityEventRouter::GetInstance()->
         OnChromeVoxLoadStateChanged(profile_, false, false);
