@@ -30,7 +30,6 @@
 #include "config.h"
 #include "core/platform/graphics/SimpleFontData.h"
 
-#include "core/css/CSSFontFaceSource.h"
 #include "core/platform/graphics/opentype/OpenTypeVerticalData.h"
 
 #include "wtf/MathExtras.h"
@@ -43,7 +42,7 @@ namespace WebCore {
 const float smallCapsFontSizeMultiplier = 0.7f;
 const float emphasisMarkFontSizeMultiplier = 0.5f;
 
-SimpleFontData::SimpleFontData(const FontPlatformData& platformData, bool isCustomFont, bool isLoadingFallback, bool isTextOrientationFallback)
+SimpleFontData::SimpleFontData(const FontPlatformData& platformData, PassRefPtr<CustomFontData> customData, bool isTextOrientationFallback)
     : m_maxCharWidth(-1)
     , m_avgCharWidth(-1)
     , m_platformData(platformData)
@@ -54,7 +53,7 @@ SimpleFontData::SimpleFontData(const FontPlatformData& platformData, bool isCust
     , m_verticalData(0)
 #endif
     , m_hasVerticalGlyphs(false)
-    , m_customFontData(isCustomFont, isLoadingFallback)
+    , m_customFontData(customData)
 {
     platformInit();
     platformGlyphInit();
@@ -67,9 +66,8 @@ SimpleFontData::SimpleFontData(const FontPlatformData& platformData, bool isCust
 #endif
 }
 
-SimpleFontData::SimpleFontData(PassOwnPtr<AdditionalFontData> fontData, float fontSize, bool syntheticBold, bool syntheticItalic)
+SimpleFontData::SimpleFontData(PassRefPtr<CustomFontData> customData, float fontSize, bool syntheticBold, bool syntheticItalic)
     : m_platformData(FontPlatformData(fontSize, syntheticBold, syntheticItalic))
-    , m_fontData(fontData)
     , m_treatAsFixedPitch(false)
     , m_isTextOrientationFallback(false)
     , m_isBrokenIdeographFallback(false)
@@ -77,9 +75,10 @@ SimpleFontData::SimpleFontData(PassOwnPtr<AdditionalFontData> fontData, float fo
     , m_verticalData(0)
 #endif
     , m_hasVerticalGlyphs(false)
-    , m_customFontData(true, false)
+    , m_customFontData(customData)
 {
-    m_fontData->initializeFontData(this, fontSize);
+    if (m_customFontData)
+        m_customFontData->initializeFontData(this, fontSize);
 }
 
 // Estimates of avgCharWidth and maxCharWidth for platforms that don't support accessing these values from the font.
@@ -148,7 +147,7 @@ void SimpleFontData::platformGlyphInit()
 
 SimpleFontData::~SimpleFontData()
 {
-    if (!m_fontData)
+    if (!isSVGFont())
         platformDestroy();
 
     if (isCustomFont())
@@ -180,7 +179,7 @@ PassRefPtr<SimpleFontData> SimpleFontData::verticalRightOrientationFontData() co
     if (!m_derivedFontData->verticalRightOrientation) {
         FontPlatformData verticalRightPlatformData(m_platformData);
         verticalRightPlatformData.setOrientation(Horizontal);
-        m_derivedFontData->verticalRightOrientation = create(verticalRightPlatformData, isCustomFont(), false, true);
+        m_derivedFontData->verticalRightOrientation = create(verticalRightPlatformData, isCustomFont() ? CustomFontData::create(false): 0, true);
     }
     return m_derivedFontData->verticalRightOrientation;
 }
@@ -190,7 +189,7 @@ PassRefPtr<SimpleFontData> SimpleFontData::uprightOrientationFontData() const
     if (!m_derivedFontData)
         m_derivedFontData = DerivedFontData::create(isCustomFont());
     if (!m_derivedFontData->uprightOrientation)
-        m_derivedFontData->uprightOrientation = create(m_platformData, isCustomFont(), false, true);
+        m_derivedFontData->uprightOrientation = create(m_platformData, isCustomFont() ? CustomFontData::create(false): 0, true);
     return m_derivedFontData->uprightOrientation;
 }
 
@@ -219,18 +218,10 @@ PassRefPtr<SimpleFontData> SimpleFontData::brokenIdeographFontData() const
     if (!m_derivedFontData)
         m_derivedFontData = DerivedFontData::create(isCustomFont());
     if (!m_derivedFontData->brokenIdeograph) {
-        m_derivedFontData->brokenIdeograph = create(m_platformData, isCustomFont(), false);
+        m_derivedFontData->brokenIdeograph = create(m_platformData, isCustomFont() ? CustomFontData::create(false): 0);
         m_derivedFontData->brokenIdeograph->m_isBrokenIdeographFallback = true;
     }
     return m_derivedFontData->brokenIdeograph;
-}
-
-void SimpleFontData::beginLoadIfNeeded() const
-{
-    if (!m_customFontData.isUsed && m_customFontData.isLoadingFallback && m_customFontData.fontFaceSource) {
-        m_customFontData.isUsed = true;
-        m_customFontData.fontFaceSource->beginLoadingFontSoon();
-    }
 }
 
 #ifndef NDEBUG
@@ -269,8 +260,8 @@ SimpleFontData::DerivedFontData::~DerivedFontData()
 
 PassRefPtr<SimpleFontData> SimpleFontData::createScaledFontData(const FontDescription& fontDescription, float scaleFactor) const
 {
-    // FIXME: Support scaled fonts that used AdditionalFontData.
-    if (m_fontData)
+    // FIXME: Support scaled SVG fonts. Given that SVG is scalable in general this should be achievable.
+    if (isSVGFont())
         return 0;
 
     return platformCreateScaledFontData(fontDescription, scaleFactor);

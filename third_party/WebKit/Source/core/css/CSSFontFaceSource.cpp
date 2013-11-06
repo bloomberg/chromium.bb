@@ -27,6 +27,7 @@
 #include "core/css/CSSFontFaceSource.h"
 
 #include "RuntimeEnabledFeatures.h"
+#include "core/css/CSSCustomFontData.h"
 #include "core/css/CSSFontFace.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/fetch/FontResource.h"
@@ -70,8 +71,9 @@ void CSSFontFaceSource::pruneTable()
         return;
 
     for (FontDataTable::iterator it = m_fontDataTable.begin(); it != m_fontDataTable.end(); ++it) {
-        if (SimpleFontData* fontData = it->value.get())
-            fontData->clearCSSFontFaceSource();
+        SimpleFontData* fontData = it->value.get();
+        if (fontData && fontData->customFontData())
+            fontData->customFontData()->clearCSSFontFaceSource();
     }
     m_fontDataTable.clear();
 }
@@ -186,7 +188,9 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
                         m_svgFontFaceElement = fontFaceElement;
                     }
 
-                    fontData = SimpleFontData::create(SVGFontData::create(fontFaceElement), fontDescription.effectiveFontSize(), syntheticBold, syntheticItalic);
+                    fontData = SimpleFontData::create(
+                        SVGFontData::create(fontFaceElement),
+                        fontDescription.effectiveFontSize(), syntheticBold, syntheticItalic);
                 }
             } else
 #endif
@@ -195,22 +199,29 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
                 if (!m_font->ensureCustomFontData())
                     return 0;
 
-                fontData = SimpleFontData::create(m_font->platformDataFromCustomData(fontDescription.effectiveFontSize(), syntheticBold, syntheticItalic,
-                    fontDescription.orientation(), fontDescription.widthVariant()), true, false);
+                fontData = SimpleFontData::create(
+                    m_font->platformDataFromCustomData(fontDescription.effectiveFontSize(), syntheticBold, syntheticItalic,
+                        fontDescription.orientation(), fontDescription.widthVariant()), CustomFontData::create(false));
             }
         } else {
 #if ENABLE(SVG_FONTS)
             // In-Document SVG Fonts
-            if (m_svgFontFaceElement)
-                fontData = SimpleFontData::create(SVGFontData::create(m_svgFontFaceElement.get()), fontDescription.effectiveFontSize(), syntheticBold, syntheticItalic);
+            if (m_svgFontFaceElement) {
+                fontData = SimpleFontData::create(
+                    SVGFontData::create(m_svgFontFaceElement.get()),
+                    fontDescription.effectiveFontSize(),
+                    syntheticBold,
+                    syntheticItalic);
+            }
 #endif
         }
     } else {
         // This temporary font is not retained and should not be returned.
         FontCachePurgePreventer fontCachePurgePreventer;
         SimpleFontData* temporaryFont = fontCache()->getNonRetainedLastResortFallbackFont(fontDescription);
-        fontData = SimpleFontData::create(temporaryFont->platformData(), true, true);
-        fontData->setCSSFontFaceSource(this);
+        RefPtr<CSSCustomFontData> cssFontData = CSSCustomFontData::create(true);
+        cssFontData->setCSSFontFaceSource(this);
+        fontData = SimpleFontData::create(temporaryFont->platformData(), cssFontData);
     }
 
     return fontData; // No release, because fontData is a reference to a RefPtr that is held in the m_fontDataTable.

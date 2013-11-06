@@ -121,8 +121,8 @@ const FontData* FontFallbackList::primaryFontData(const Font* f) const
         // Begin to load the first custom font if needed.
         if (!fontIndex) {
             const SimpleFontData* simpleFontData = fontData->fontDataForCharacter(' ');
-            if (simpleFontData)
-                simpleFontData->beginLoadIfNeeded();
+            if (simpleFontData && simpleFontData->customFontData())
+                simpleFontData->customFontData()->beginLoadIfNeeded();
         }
     }
 }

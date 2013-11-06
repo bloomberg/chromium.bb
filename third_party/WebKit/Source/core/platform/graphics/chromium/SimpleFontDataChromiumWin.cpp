@@ -115,7 +115,7 @@ PassRefPtr<SimpleFontData> SimpleFontData::platformCreateScaledFontData(const Fo
     float scaledSize = scaleFactor * fontDescription.computedSize();
     winFont.lfHeight = -lroundf(scaledSize);
     HFONT hfont = CreateFontIndirect(&winFont);
-    return SimpleFontData::create(FontPlatformData(hfont, scaledSize, m_platformData.orientation()), isCustomFont(), false);
+    return SimpleFontData::create(FontPlatformData(hfont, scaledSize, m_platformData.orientation()), isCustomFont() ? CustomFontData::create(false) : 0);
 }
 
 bool SimpleFontData::containsCharacters(const UChar* characters, int length) const

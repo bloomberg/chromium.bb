@@ -122,8 +122,8 @@ void GlyphPageTreeNode::pruneTreeFontData(const SimpleFontData* fontData)
 static bool fill(GlyphPage* pageToFill, unsigned offset, unsigned length, UChar* buffer, unsigned bufferLength, const SimpleFontData* fontData)
 {
 #if ENABLE(SVG_FONTS)
-    if (SimpleFontData::AdditionalFontData* additionalFontData = fontData->fontData())
-        return additionalFontData->fillSVGGlyphPage(pageToFill, offset, length, buffer, bufferLength, fontData);
+    if (fontData->isSVGFont())
+        return fontData->customFontData()->fillSVGGlyphPage(pageToFill, offset, length, buffer, bufferLength, fontData);
 #endif
     bool hasGlyphs = pageToFill->fill(offset, length, buffer, bufferLength, fontData);
 #if ENABLE(OPENTYPE_VERTICAL)
@@ -229,8 +229,9 @@ void GlyphPageTreeNode::initializePage(const FontData* fontData, unsigned pageNu
                         // If this is a custom font needs to be loaded, kick off
                         // the load here, and do not fill the page so that
                         // font fallback is used while loading.
-                        if (range.fontData()->isLoadingFallback()) {
-                            range.fontData()->beginLoadIfNeeded();
+                        RefPtr<CustomFontData> customData = range.fontData()->customFontData();
+                        if (customData && customData->isLoadingFallback()) {
+                            customData->beginLoadIfNeeded();
                             continue;
                         }
 

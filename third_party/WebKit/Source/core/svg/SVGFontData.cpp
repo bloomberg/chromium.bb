@@ -25,6 +25,7 @@
 #include "SVGNames.h"
 #include "XMLNames.h"
 #include "core/platform/graphics/SVGGlyph.h"
+#include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/WidthIterator.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
@@ -43,7 +44,8 @@ using namespace Unicode;
 namespace WebCore {
 
 SVGFontData::SVGFontData(SVGFontFaceElement* fontFaceElement)
-    : m_svgFontFaceElement(fontFaceElement)
+    : CustomFontData(false)
+    , m_svgFontFaceElement(fontFaceElement)
     , m_horizontalOriginX(fontFaceElement->horizontalOriginX())
     , m_horizontalOriginY(fontFaceElement->horizontalOriginY())
     , m_horizontalAdvanceX(fontFaceElement->horizontalAdvanceX())

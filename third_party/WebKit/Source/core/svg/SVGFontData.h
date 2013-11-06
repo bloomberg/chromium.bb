@@ -21,26 +21,30 @@
 #define SVGFontData_h
 
 #if ENABLE(SVG_FONTS)
-#include "core/platform/graphics/SimpleFontData.h"
+#include "core/platform/graphics/CustomFontData.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
+class SimpleFontData;
 class SVGFontElement;
 class SVGFontFaceElement;
 
-class SVGFontData : public SimpleFontData::AdditionalFontData {
+class SVGFontData FINAL : public CustomFontData {
 public:
-    static PassOwnPtr<SVGFontData> create(SVGFontFaceElement* element)
+    static PassRefPtr<SVGFontData> create(SVGFontFaceElement* element)
     {
-        return adoptPtr(new SVGFontData(element));
+        return adoptRef(new SVGFontData(element));
     }
 
     virtual ~SVGFontData() { }
 
-    virtual void initializeFontData(SimpleFontData*, float fontSize);
-    virtual float widthForSVGGlyph(Glyph, float fontSize) const;
-    virtual bool fillSVGGlyphPage(GlyphPage*, unsigned offset, unsigned length, UChar* buffer, unsigned bufferLength, const SimpleFontData*) const;
-    virtual bool applySVGGlyphSelection(WidthIterator&, GlyphData&, bool mirror, int currentCharacter, unsigned& advanceLength) const;
+    virtual bool isSVGFont() const OVERRIDE { return true; };
+    virtual void initializeFontData(SimpleFontData*, float fontSize) OVERRIDE;
+    virtual float widthForSVGGlyph(Glyph, float fontSize) const OVERRIDE;
+    virtual bool fillSVGGlyphPage(GlyphPage*, unsigned offset, unsigned length, UChar* buffer, unsigned bufferLength, const SimpleFontData*) const OVERRIDE;
+    virtual bool applySVGGlyphSelection(WidthIterator&, GlyphData&, bool mirror, int currentCharacter, unsigned& advanceLength) const OVERRIDE;
+
 
     SVGFontFaceElement* svgFontFaceElement() const { return m_svgFontFaceElement; }
 

@@ -173,7 +173,7 @@ void SimpleFontData::platformDestroy()
 PassRefPtr<SimpleFontData> SimpleFontData::platformCreateScaledFontData(const FontDescription& fontDescription, float scaleFactor) const
 {
     const float scaledSize = lroundf(fontDescription.computedSize() * scaleFactor);
-    return SimpleFontData::create(FontPlatformData(m_platformData, scaledSize), isCustomFont(), false);
+    return SimpleFontData::create(FontPlatformData(m_platformData, scaledSize), isCustomFont() ? CustomFontData::create(false) : 0);
 }
 
 bool SimpleFontData::containsCharacters(const UChar* characters, int length) const

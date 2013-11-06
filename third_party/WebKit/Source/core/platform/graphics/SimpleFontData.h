@@ -24,6 +24,7 @@
 #ifndef SimpleFontData_h
 #define SimpleFontData_h
 
+#include "core/platform/graphics/CustomFontData.h"
 #include "core/platform/graphics/FontPlatformData.h"
 #include "core/platform/graphics/GlyphPageTreeNode.h"
 #include "platform/fonts/FontBaseline.h"
@@ -57,27 +58,16 @@ enum Pitch { UnknownPitch, FixedPitch, VariablePitch };
 
 class SimpleFontData : public FontData {
 public:
-    class AdditionalFontData {
-        WTF_MAKE_FAST_ALLOCATED;
-    public:
-        virtual ~AdditionalFontData() { }
-
-        virtual void initializeFontData(SimpleFontData*, float fontSize) = 0;
-        virtual float widthForSVGGlyph(Glyph, float fontSize) const = 0;
-        virtual bool fillSVGGlyphPage(GlyphPage*, unsigned offset, unsigned length, UChar* buffer, unsigned bufferLength, const SimpleFontData*) const = 0;
-        virtual bool applySVGGlyphSelection(WidthIterator&, GlyphData&, bool mirror, int currentCharacter, unsigned& advanceLength) const = 0;
-    };
-
     // Used to create platform fonts.
-    static PassRefPtr<SimpleFontData> create(const FontPlatformData& platformData, bool isCustomFont = false, bool isLoadingFallback = false, bool isTextOrientationFallback = false)
+    static PassRefPtr<SimpleFontData> create(const FontPlatformData& platformData, PassRefPtr<CustomFontData> customData = 0, bool isTextOrientationFallback = false)
     {
-        return adoptRef(new SimpleFontData(platformData, isCustomFont, isLoadingFallback, isTextOrientationFallback));
+        return adoptRef(new SimpleFontData(platformData, customData, isTextOrientationFallback));
     }
 
     // Used to create SVG Fonts.
-    static PassRefPtr<SimpleFontData> create(PassOwnPtr<AdditionalFontData> fontData, float fontSize, bool syntheticBold, bool syntheticItalic)
+    static PassRefPtr<SimpleFontData> create(PassRefPtr<CustomFontData> customData, float fontSize, bool syntheticBold, bool syntheticItalic)
     {
-        return adoptRef(new SimpleFontData(fontData, fontSize, syntheticBold, syntheticItalic));
+        return adoptRef(new SimpleFontData(customData, fontSize, syntheticBold, syntheticItalic));
     }
 
     virtual ~SimpleFontData();
@@ -155,18 +145,14 @@ public:
     void determinePitch();
     Pitch pitch() const { return m_treatAsFixedPitch ? FixedPitch : VariablePitch; }
 
-    AdditionalFontData* fontData() const { return m_fontData.get(); }
-    bool isSVGFont() const { return m_fontData; }
-
-    virtual bool isCustomFont() const OVERRIDE { return m_customFontData.isCustomFont; }
-    virtual bool isLoading() const OVERRIDE { return m_customFontData.isLoadingFallback && m_customFontData.isUsed; }
-    virtual bool isLoadingFallback() const OVERRIDE { return m_customFontData.isLoadingFallback; }
+    bool isSVGFont() const { return m_customFontData && m_customFontData->isSVGFont(); }
+    virtual bool isCustomFont() const OVERRIDE { return m_customFontData; }
+    virtual bool isLoading() const OVERRIDE { return m_customFontData ? m_customFontData->isLoading() : false; }
+    virtual bool isLoadingFallback() const OVERRIDE { return m_customFontData ? m_customFontData->isLoadingFallback() : false; }
     virtual bool isSegmented() const OVERRIDE;
 
     const GlyphData& missingGlyphData() const { return m_missingGlyphData; }
     void setMissingGlyphData(const GlyphData& glyphData) { m_missingGlyphData = glyphData; }
-
-    void beginLoadIfNeeded() const;
 
 #ifndef NDEBUG
     virtual String description() const;
@@ -194,13 +180,12 @@ public:
         return false;
     }
 
-    void setCSSFontFaceSource(CSSFontFaceSource* source) { m_customFontData.fontFaceSource = source; }
-    void clearCSSFontFaceSource() { m_customFontData.fontFaceSource = 0; }
+    PassRefPtr<CustomFontData> customFontData() const { return m_customFontData; }
 
 private:
-    SimpleFontData(const FontPlatformData&, bool isCustomFont = false, bool isLoadingFallback = false, bool isTextOrientationFallback = false);
+    SimpleFontData(const FontPlatformData&, PassRefPtr<CustomFontData> customData, bool isTextOrientationFallback = false);
 
-    SimpleFontData(PassOwnPtr<AdditionalFontData> , float fontSize, bool syntheticBold, bool syntheticItalic);
+    SimpleFontData(PassRefPtr<CustomFontData> customData, float fontSize, bool syntheticBold, bool syntheticItalic);
 
     void platformInit();
     void platformGlyphInit();
@@ -217,7 +202,6 @@ private:
     float m_avgCharWidth;
 
     FontPlatformData m_platformData;
-    OwnPtr<AdditionalFontData> m_fontData;
 
     mutable OwnPtr<GlyphMetricsMap<FloatRect> > m_glyphToBoundsMap;
     mutable GlyphMetricsMap<float> m_glyphToWidthMap;
@@ -263,20 +247,7 @@ private:
 
     mutable OwnPtr<DerivedFontData> m_derivedFontData;
 
-    struct CustomFontData {
-        CustomFontData(bool isCustomFont, bool isLoadingFallback)
-            : isCustomFont(isCustomFont)
-            , isLoadingFallback(isLoadingFallback)
-            , isUsed(false)
-            , fontFaceSource(0)
-        {
-        }
-        bool isCustomFont; // Whether or not we are custom font loaded via @font-face
-        bool isLoadingFallback; // Whether or not this is a temporary font data for a custom font which is not yet loaded.
-        mutable bool isUsed;
-        CSSFontFaceSource* fontFaceSource;
-    };
-    CustomFontData m_customFontData;
+    RefPtr<CustomFontData> m_customFontData;
 
 #if OS(MACOSX)
     float m_syntheticBoldOffset;
@@ -317,8 +288,8 @@ ALWAYS_INLINE float SimpleFontData::widthForGlyph(Glyph glyph) const
     if (width != cGlyphSizeUnknown)
         return width;
 
-    if (m_fontData)
-        width = m_fontData->widthForSVGGlyph(glyph, m_platformData.size());
+    if (isSVGFont())
+        width = m_customFontData->widthForSVGGlyph(glyph, m_platformData.size());
 #if ENABLE(OPENTYPE_VERTICAL)
     else if (m_verticalData)
 #if OS(MACOSX)

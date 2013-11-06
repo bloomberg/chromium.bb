@@ -44,7 +44,8 @@ static inline const SVGFontData* svgFontAndFontFaceElementForFontData(const Simp
     ASSERT(fontData->isCustomFont());
     ASSERT(fontData->isSVGFont());
 
-    const SVGFontData* svgFontData = static_cast<const SVGFontData*>(fontData->fontData());
+    RefPtr<CustomFontData> customFontData = fontData->customFontData();
+    const SVGFontData* svgFontData = static_cast<const SVGFontData*>(customFontData.get());
 
     fontFace = svgFontData->svgFontFaceElement();
     ASSERT(fontFace);
@@ -192,7 +193,7 @@ GlyphData SVGTextRunRenderingContext::glyphDataForCharacter(const Font& font, co
 
     // Characters enclosed by an <altGlyph> element, may not be registered in the GlyphPage.
     const SimpleFontData* originalFontData = glyphData.fontData;
-    if (glyphData.fontData && !glyphData.fontData->isSVGFont()) {
+    if (originalFontData && !originalFontData->isSVGFont()) {
         if (TextRun::RenderingContext* renderingContext = run.renderingContext()) {
             RenderObject* renderObject = static_cast<SVGTextRunRenderingContext*>(renderingContext)->renderer();
             RenderObject* parentRenderObject = renderObject->isText() ? renderObject->parent() : renderObject;

@@ -188,7 +188,8 @@ void CSSSegmentedFontFace::loadFont(const FontDescription& fontDescription, cons
     for (unsigned i = 0; i < size; i++) {
         if (m_fontFaces[i]->loadStatus() == FontFace::Unloaded && m_fontFaces[i]->ranges().intersectsWith(text)) {
             RefPtr<SimpleFontData> fontData = m_fontFaces[i]->getFontData(fontDescription, false, false);
-            fontData->beginLoadIfNeeded();
+            if (fontData->customFontData())
+                fontData->customFontData()->beginLoadIfNeeded();
         }
     }
 
