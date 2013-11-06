@@ -4,7 +4,6 @@
 
 #include "gpu/command_buffer/client/buffer_tracker.h"
 
-#include "gpu/command_buffer/client/atomicops.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 #include "gpu/command_buffer/client/mapped_memory.h"
 

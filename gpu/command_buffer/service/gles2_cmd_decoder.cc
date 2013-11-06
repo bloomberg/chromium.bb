@@ -14,13 +14,9 @@
 #include <vector>
 
 #include "base/at_exit.h"
-#include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
-#if defined(OS_MACOSX)
-#include "base/mac/scoped_cftyperef.h"
-#endif
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"

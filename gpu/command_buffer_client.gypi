@@ -15,8 +15,6 @@
     '../third_party/khronos/khronos.gyp:khronos_headers',
   ],
   'sources': [
-    'command_buffer/client/atomicops.cc',
-    'command_buffer/client/atomicops.h',
     'command_buffer/client/cmd_buffer_helper.cc',
     'command_buffer/client/cmd_buffer_helper.h',
     'command_buffer/client/fenced_allocator.cc',

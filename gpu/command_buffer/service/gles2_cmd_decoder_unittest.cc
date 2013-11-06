@@ -4,7 +4,6 @@
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 
-#include "base/atomicops.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/id_allocator.h"
