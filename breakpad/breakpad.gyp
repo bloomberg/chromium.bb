@@ -16,6 +16,7 @@
           'target_name': 'minidump_stackwalk',
           'type': 'executable',
           'includes': ['breakpad_tools.gypi'],
+          'defines': ['BPLOG_MINIMUM_SEVERITY=SEVERITY_ERROR'],
           'sources': [
             'src/processor/basic_code_module.h',
             'src/processor/basic_code_modules.cc',
