@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_REMOTE_TO_LOCAL_SYNCER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/remote_change_processor.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
@@ -15,8 +16,8 @@ namespace drive {
 class DriveServiceInterface;
 }
 
-namespace drive {
-class DriveServiceInterface;
+namespace google_apis {
+class ResourceEntry;
 }
 
 namespace sync_file_system {
@@ -46,6 +47,10 @@ class RemoteToLocalSyncer : public SyncTask {
   void ResolveRemoteChange(const SyncStatusCallback& callback);
 
   void GetRemoteResource(const SyncStatusCallback& callback);
+  void DidGetRemoteResource(const SyncStatusCallback& callback,
+                            int64 change_id,
+                            google_apis::GDataErrorCode error,
+                            scoped_ptr<google_apis::ResourceEntry> entry);
 
   void HandleDeletion(const SyncStatusCallback& callback);
   void HandleNewFile(const SyncStatusCallback& callback);

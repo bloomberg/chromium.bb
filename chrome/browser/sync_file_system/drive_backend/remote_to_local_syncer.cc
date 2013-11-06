@@ -9,6 +9,10 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "chrome/browser/drive/drive_api_util.h"
+#include "chrome/browser/drive/drive_service_interface.h"
+#include "chrome/browser/google_apis/drive_api_parser.h"
+#include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
 
@@ -176,11 +180,23 @@ void RemoteToLocalSyncer::ResolveRemoteChange(
 
 void RemoteToLocalSyncer::GetRemoteResource(
     const SyncStatusCallback& callback) {
-  // TODO(tzik): FileMetadata is missing, retrieve and store it to
-  // MetadataDatabase.
+  drive_service()->GetResourceEntry(
+      dirty_tracker_.file_id(),
+      base::Bind(&RemoteToLocalSyncer::DidGetRemoteResource,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback,
+                 metadata_database()->GetLargestChangeID()));
+}
 
-  NOTIMPLEMENTED();
-  callback.Run(SYNC_STATUS_FAILED);
+void RemoteToLocalSyncer::DidGetRemoteResource(
+    const SyncStatusCallback& callback,
+    int64 change_id,
+    google_apis::GDataErrorCode error,
+    scoped_ptr<google_apis::ResourceEntry> entry) {
+  metadata_database()->UpdateByFileResource(
+      change_id,
+      *drive::util::ConvertResourceEntryToFileResource(*entry),
+      callback);
 }
 
 void RemoteToLocalSyncer::HandleDeletion(
