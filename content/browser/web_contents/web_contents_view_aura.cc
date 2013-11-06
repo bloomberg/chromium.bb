@@ -663,15 +663,66 @@ class WebContentsViewAura::WindowObserver
       view_->window_->GetDispatcher()->RemoveRootWindowObserver(this);
     if (parent_)
       parent_->RemoveObserver(this);
+
+#if defined(OS_WIN)
+    if (parent_) {
+      const aura::Window::Windows& children = parent_->children();
+      for (size_t i = 0; i < children.size(); ++i)
+        children[i]->RemoveObserver(this);
+    }
+#endif
   }
 
   // Overridden from aura::WindowObserver:
+#if defined(OS_WIN)
+  // Constrained windows are added as children of the parent's parent's view
+  // which may overlap with windowed NPAPI plugins. In that case, tell the RWHV
+  // so that it can update the plugins' cutout rects accordingly.
+  // Note: this is hard coding how Chrome layer adds its dialogs. Since NPAPI is
+  // going to be deprecated in a year, this is ok for now. The test for this is
+  // PrintPreviewTest.WindowedNPAPIPluginHidden.
+  virtual void OnWindowAdded(aura::Window* new_window) OVERRIDE {
+    if (new_window->parent() != parent_)
+      return;
+
+    new_window->AddObserver(this);
+    UpdateConstrainedWindows(NULL);
+  }
+
+  virtual void OnWillRemoveWindow(aura::Window* window) OVERRIDE {
+    if (window->parent() == parent_ && window != view_->window_) {
+      window->RemoveObserver(this);
+      UpdateConstrainedWindows(window);
+    }
+  }
+
+  virtual void OnWindowVisibilityChanged(aura::Window* window,
+                                         bool visible) OVERRIDE {
+    if (window->parent() == parent_ && window != view_->window_)
+      UpdateConstrainedWindows(NULL);
+  }
+#endif
+
   virtual void OnWindowParentChanged(aura::Window* window,
                                      aura::Window* parent) OVERRIDE {
-    if (window == parent_)
+    if (window != view_->window_)
       return;
     if (parent_)
       parent_->RemoveObserver(this);
+
+#if defined(OS_WIN)
+    if (parent_) {
+      const aura::Window::Windows& children = parent_->children();
+      for (size_t i = 0; i < children.size(); ++i)
+        children[i]->RemoveObserver(this);
+
+      RenderWidgetHostViewAura* view = ToRenderWidgetHostViewAura(
+          view_->web_contents_->GetRenderWidgetHostView());
+      if (view)
+        view->UpdateConstrainedWindowRects(std::vector<gfx::Rect>());
+    }
+#endif
+
     parent_ = parent;
     if (parent)
       parent->AddObserver(this);
@@ -680,18 +731,24 @@ class WebContentsViewAura::WindowObserver
   virtual void OnWindowBoundsChanged(aura::Window* window,
                                      const gfx::Rect& old_bounds,
                                      const gfx::Rect& new_bounds) OVERRIDE {
-    SendScreenRects();
-    if (view_->touch_editable_)
-      view_->touch_editable_->UpdateEditingController();
+    if (window == parent_ || window == view_->window_) {
+      SendScreenRects();
+      if (view_->touch_editable_)
+        view_->touch_editable_->UpdateEditingController();
+#if defined(OS_WIN)
+    } else {
+      UpdateConstrainedWindows(NULL);
+#endif
+    }
   }
 
   virtual void OnWindowAddedToRootWindow(aura::Window* window) OVERRIDE {
-    if (window != parent_)
+    if (window == view_->window_)
       window->GetDispatcher()->AddRootWindowObserver(this);
   }
 
   virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE {
-    if (window != parent_)
+    if (window == view_->window_)
       window->GetDispatcher()->RemoveRootWindowObserver(this);
   }
 
@@ -712,6 +769,27 @@ class WebContentsViewAura::WindowObserver
         SendScreenRects();
   }
 
+#if defined(OS_WIN)
+  void UpdateConstrainedWindows(aura::Window* exclude) {
+    RenderWidgetHostViewAura* view = ToRenderWidgetHostViewAura(
+        view_->web_contents_->GetRenderWidgetHostView());
+    if (!view)
+      return;
+
+    std::vector<gfx::Rect> constrained_windows;
+    const aura::Window::Windows& children = parent_->children();
+    for (size_t i = 0; i < children.size(); ++i) {
+      if (children[i] != view_->window_ &&
+          children[i] != exclude &&
+          children[i]->IsVisible()) {
+        constrained_windows.push_back(children[i]->GetBoundsInRootWindow());
+      }
+    }
+
+    view->UpdateConstrainedWindowRects(constrained_windows);
+  }
+#endif
+
   WebContentsViewAura* view_;
 
   // We cache the old parent so that we can unregister when it's not the parent
@@ -720,96 +798,6 @@ class WebContentsViewAura::WindowObserver
 
   DISALLOW_COPY_AND_ASSIGN(WindowObserver);
 };
-
-#if defined(OS_WIN)
-// Constrained windows are added as children of the WebContent's view which may
-// overlap with windowed NPAPI plugins. In that case, tell the RWHV so that it
-// can update the plugins' cutout rects accordingly.
-class WebContentsViewAura::ChildWindowObserver : public aura::WindowObserver,
-                                                 public WebContentsObserver {
- public:
-  explicit ChildWindowObserver(WebContentsViewAura* view)
-      : WebContentsObserver(view->web_contents_),
-        view_(view),
-        web_contents_destroyed_(false) {
-    view_->window_->AddObserver(this);
-  }
-
-  virtual ~ChildWindowObserver() {
-    view_->window_->RemoveObserver(this);
-    const aura::Window::Windows& children = view_->window_->children();
-    for (size_t i = 0; i < children.size(); ++i)
-      children[i]->RemoveObserver(this);
-  }
-
-  // Overridden from aura::WindowObserver:
-  virtual void OnWindowAdded(aura::Window* new_window) OVERRIDE {
-    // If new child windows are added to the WebContent's view, tell the RWHV.
-    // We also start watching them to know when their size is updated. Of
-    // course, ignore the shadow window that contains the RWHV and child windows
-    // of the child windows that we are watching.
-    RenderWidgetHostViewAura* view = ToRenderWidgetHostViewAura(
-        view_->web_contents_->GetRenderWidgetHostView());
-    aura::Window* content_window = view ? view->GetNativeView() : NULL;
-    if (new_window->parent() == view_->window_ &&
-        new_window != content_window) {
-      new_window->AddObserver(this);
-      UpdateConstrainedWindows(NULL);
-    }
-  }
-
-  virtual void OnWillRemoveWindow(aura::Window* window) OVERRIDE {
-    RenderWidgetHostViewAura* view = ToRenderWidgetHostViewAura(
-        view_->web_contents_->GetRenderWidgetHostView());
-    aura::Window* content_window = view ? view->GetNativeView() : NULL;
-    if (window->parent() == view_->window_ &&
-        window != content_window) {
-      window->RemoveObserver(this);
-      UpdateConstrainedWindows(window);
-    }
-  }
-
-  virtual void OnWindowBoundsChanged(aura::Window* window,
-                                     const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) OVERRIDE {
-    if (window->parent() == view_->window_ &&
-        window != view_->GetContentNativeView()) {
-      UpdateConstrainedWindows(NULL);
-    }
-  }
-
-  // Overridden from WebContentsObserver:
-  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE {
-    web_contents_destroyed_ = true;
-  }
-
- private:
-  void UpdateConstrainedWindows(aura::Window* exclude) {
-    if (web_contents_destroyed_)
-      return;
-
-    RenderWidgetHostViewAura* view = ToRenderWidgetHostViewAura(
-        view_->web_contents_->GetRenderWidgetHostView());
-    if (!view)
-      return;
-
-    std::vector<gfx::Rect> constrained_windows;
-    const aura::Window::Windows& children = view_->window_->children();
-    aura::Window* content = view_->GetContentNativeView();
-    for (size_t i = 0; i < children.size(); ++i) {
-      if (children[i] != content && children[i] != exclude)
-        constrained_windows.push_back(children[i]->GetBoundsInRootWindow());
-    }
-
-    view->UpdateConstrainedWindowRects(constrained_windows);
-  }
-
-  WebContentsViewAura* view_;
-  bool web_contents_destroyed_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChildWindowObserver);
-};
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsViewAura, public:
@@ -836,9 +824,7 @@ WebContentsViewAura::~WebContentsViewAura() {
     return;
 
   window_observer_.reset();
-#if defined(OS_WIN)
-  child_window_observer_.reset();
-#endif
+
   // Window needs a valid delegate during its destructor, so we explicitly
   // delete it here.
   window_.reset();
@@ -1169,9 +1155,6 @@ void WebContentsViewAura::CreateView(
   window_->SetName("WebContentsViewAura");
 
   window_observer_.reset(new WindowObserver(this));
-#if defined(OS_WIN)
-  child_window_observer_.reset(new ChildWindowObserver(this));
-#endif
 
   // delegate_->GetDragDestDelegate() creates a new delegate on every call.
   // Hence, we save a reference to it locally. Similar model is used on other
