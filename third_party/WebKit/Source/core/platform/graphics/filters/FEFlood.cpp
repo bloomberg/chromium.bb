@@ -25,62 +25,14 @@
 
 #include "core/platform/graphics/filters/FEFlood.h"
 
+#include "SkColorFilter.h"
+#include "SkColorFilterImageFilter.h"
 #include "SkFlattenableBuffers.h"
-#include "SkImageFilter.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
 #include "third_party/skia/include/core/SkDevice.h"
-
-namespace {
-
-class FloodImageFilter : public SkImageFilter {
-public:
-    FloodImageFilter(const SkColor& color, const CropRect* cropRect)
-        : SkImageFilter(0, 0, cropRect)
-        , m_color(color)
-    {
-    }
-    SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(FloodImageFilter)
-
-    FloodImageFilter(SkFlattenableReadBuffer& buffer) : SkImageFilter(buffer)
-    {
-        m_color = buffer.readColor();
-    }
-
-    virtual void flatten(SkFlattenableWriteBuffer& buffer) const
-    {
-        this->SkImageFilter::flatten(buffer);
-        buffer.writeColor(m_color);
-    }
-
-    virtual bool onFilterImage(Proxy* proxy, const SkBitmap& src, const SkMatrix& ctm, SkBitmap* result, SkIPoint* offset)
-    {
-        if (!src.width() || !src.height())
-            return false;
-
-        SkIRect bounds;
-        src.getBounds(&bounds);
-        if (!applyCropRect(&bounds, ctm)) {
-            return false;
-        }
-
-        SkAutoTUnref<SkBaseDevice> device(proxy->createDevice(bounds.width(), bounds.height()));
-        SkCanvas canvas(device.get());
-        SkPaint paint;
-        paint.setColor(m_color);
-        canvas.drawRect(SkRect::MakeWH(src.width(), src.height()), paint);
-        *result = device->accessBitmap(false);
-        offset->fX += bounds.left();
-        offset->fY += bounds.top();
-        return true;
-    }
-private:
-    SkColor m_color;
-};
-
-}; // unnamed namespace
 
 namespace WebCore {
 
@@ -139,7 +91,8 @@ PassRefPtr<SkImageFilter> FEFlood::createImageFilter(SkiaImageFilterBuilder* bui
     Color color = colorWithOverrideAlpha(floodColor().rgb(), floodOpacity());
 
     SkImageFilter::CropRect rect = getCropRect(builder->cropOffset());
-    return adoptRef(new FloodImageFilter(color.rgb(), &rect));
+    SkAutoTUnref<SkColorFilter> cf(SkColorFilter::CreateModeFilter(color.rgb(), SkXfermode::kSrc_Mode));
+    return adoptRef(SkColorFilterImageFilter::Create(cf, 0, &rect));
 }
 
 TextStream& FEFlood::externalRepresentation(TextStream& ts, int indent) const

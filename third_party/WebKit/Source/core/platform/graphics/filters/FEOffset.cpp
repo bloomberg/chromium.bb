@@ -27,7 +27,7 @@
 #include "core/platform/graphics/filters/FEOffset.h"
 
 #include "SkFlattenableBuffers.h"
-#include "SkImageFilter.h"
+#include "SkOffsetImageFilter.h"
 
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/filters/Filter.h"
@@ -36,59 +36,6 @@
 #include "third_party/skia/include/core/SkDevice.h"
 
 namespace WebCore {
-
-class OffsetImageFilter : public SkImageFilter {
-public:
-    OffsetImageFilter(SkScalar dx, SkScalar dy, SkImageFilter* input, const CropRect* cropRect = 0) : SkImageFilter(input, cropRect), m_dx(dx), m_dy(dy)
-    {
-    }
-
-    virtual bool onFilterImage(Proxy* proxy, const SkBitmap& src, const SkMatrix& ctm, SkBitmap* dst, SkIPoint* offset)
-    {
-        SkBitmap source = src;
-        SkImageFilter* input = getInput(0);
-        SkIPoint srcOffset = SkIPoint::Make(0, 0);
-        if (input && !input->filterImage(proxy, src, ctm, &source, &srcOffset))
-            return false;
-
-        SkIRect bounds;
-        source.getBounds(&bounds);
-
-        if (!applyCropRect(&bounds, ctm)) {
-            return false;
-        }
-
-        SkAutoTUnref<SkBaseDevice> device(proxy->createDevice(bounds.width(), bounds.height()));
-        SkCanvas canvas(device);
-        SkPaint paint;
-        paint.setXfermodeMode(SkXfermode::kSrc_Mode);
-        canvas.drawBitmap(source, m_dx - bounds.left(), m_dy - bounds.top(), &paint);
-        *dst = device->accessBitmap(false);
-        offset->fX += bounds.left();
-        offset->fY += bounds.top();
-        return true;
-    }
-
-    SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(OffsetImageFilter)
-
-protected:
-    explicit OffsetImageFilter(SkFlattenableReadBuffer& buffer)
-        : SkImageFilter(buffer)
-    {
-        m_dx = buffer.readScalar();
-        m_dy = buffer.readScalar();
-    }
-
-    virtual void flatten(SkFlattenableWriteBuffer& buffer) const
-    {
-        this->SkImageFilter::flatten(buffer);
-        buffer.writeScalar(m_dx);
-        buffer.writeScalar(m_dy);
-    }
-
-private:
-    SkScalar m_dx, m_dy;
-};
 
 FEOffset::FEOffset(Filter* filter, float dx, float dy)
     : FilterEffect(filter)
@@ -165,7 +112,7 @@ PassRefPtr<SkImageFilter> FEOffset::createImageFilter(SkiaImageFilterBuilder* bu
     RefPtr<SkImageFilter> input(builder->build(inputEffect(0), operatingColorSpace()));
     Filter* filter = this->filter();
     SkImageFilter::CropRect cropRect = getCropRect(builder->cropOffset());
-    return adoptRef(new OffsetImageFilter(SkFloatToScalar(filter->applyHorizontalScale(m_dx)), SkFloatToScalar(filter->applyVerticalScale(m_dy)), input.get(), &cropRect));
+    return adoptRef(new SkOffsetImageFilter(SkFloatToScalar(filter->applyHorizontalScale(m_dx)), SkFloatToScalar(filter->applyVerticalScale(m_dy)), input.get(), &cropRect));
 }
 
 TextStream& FEOffset::externalRepresentation(TextStream& ts, int indent) const

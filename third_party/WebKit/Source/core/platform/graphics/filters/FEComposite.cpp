@@ -42,67 +42,6 @@
 
 namespace WebCore {
 
-class CompositeImageFilter : public SkImageFilter {
-public:
-    CompositeImageFilter(SkXfermode::Mode mode, SkImageFilter* background, SkImageFilter* foreground, const CropRect* cropRect) : SkImageFilter(background, foreground, cropRect), m_mode(mode)
-    {
-    }
-
-    virtual bool onFilterImage(Proxy* proxy, const SkBitmap& src, const SkMatrix& ctm, SkBitmap* dst, SkIPoint* offset)
-    {
-        SkBitmap background = src;
-        SkBitmap foreground = src;
-        SkImageFilter* backgroundInput = getInput(0);
-        SkImageFilter* foregroundInput = getInput(1);
-        SkIPoint backgroundOffset = SkIPoint::Make(0, 0), foregroundOffset = SkIPoint::Make(0, 0);
-        if (backgroundInput && !backgroundInput->filterImage(proxy, src, ctm, &background, &backgroundOffset))
-            return false;
-
-        if (foregroundInput && !foregroundInput->filterImage(proxy, src, ctm, &foreground, &foregroundOffset))
-            return false;
-
-        SkIRect bounds;
-        background.getBounds(&bounds);
-        if (!applyCropRect(&bounds, ctm)) {
-            return false;
-        }
-        backgroundOffset.fX -= bounds.left();
-        backgroundOffset.fY -= bounds.top();
-        foregroundOffset.fX -= bounds.left();
-        foregroundOffset.fY -= bounds.top();
-
-        SkAutoTUnref<SkBaseDevice> device(proxy->createDevice(bounds.width(), bounds.height()));
-        SkCanvas canvas(device);
-        SkPaint paint;
-        paint.setXfermodeMode(SkXfermode::kSrc_Mode);
-        canvas.drawBitmap(background, backgroundOffset.fX, backgroundOffset.fY, &paint);
-        paint.setXfermodeMode(m_mode);
-        canvas.drawBitmap(foreground, foregroundOffset.fX, foregroundOffset.fY, &paint);
-        *dst = device->accessBitmap(false);
-        offset->fX += bounds.left();
-        offset->fY += bounds.top();
-        return true;
-    }
-
-    SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(CompositeImageFilter)
-
-protected:
-    explicit CompositeImageFilter(SkFlattenableReadBuffer& buffer)
-        : SkImageFilter(buffer)
-    {
-        m_mode = (SkXfermode::Mode) buffer.readInt();
-    }
-
-    virtual void flatten(SkFlattenableWriteBuffer& buffer) const
-    {
-        this->SkImageFilter::flatten(buffer);
-        buffer.writeInt((int) m_mode);
-    }
-
-private:
-    SkXfermode::Mode m_mode;
-};
-
 FEComposite::FEComposite(Filter* filter, const CompositeOperationType& type, float k1, float k2, float k3, float k4)
     : FilterEffect(filter)
     , m_type(type)
@@ -412,7 +351,8 @@ PassRefPtr<SkImageFilter> FEComposite::createImageFilter(SkiaImageFilterBuilder*
         return adoptRef(new SkXfermodeImageFilter(mode, background.get(), foreground.get()));
     }
     SkImageFilter::CropRect cropRect = getCropRect(builder->cropOffset());
-    return adoptRef(new CompositeImageFilter(toXfermode(m_type), background.get(), foreground.get(), &cropRect));
+    SkAutoTUnref<SkXfermode> mode(SkXfermode::Create(toXfermode(m_type)));
+    return adoptRef(new SkXfermodeImageFilter(mode, background.get(), foreground.get(), &cropRect));
 }
 
 static TextStream& operator<<(TextStream& ts, const CompositeOperationType& type)
