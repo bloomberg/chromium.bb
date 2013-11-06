@@ -202,9 +202,19 @@ ui::WindowShowState NativeAppWindowGtk::GetRestoredState() const {
 }
 
 gfx::Rect NativeAppWindowGtk::GetBounds() const {
-  gfx::Rect window_bounds = bounds_;
-  window_bounds.Inset(-GetFrameInsets());
-  return window_bounds;
+  // :GetBounds() is expecting the outer window bounds to be returned (ie.
+  // including window decorations). The internal |bounds_| is not including them
+  // and trying to add the decoration to |bounds_| would require calling
+  // gdk_window_get_frame_extents. The best thing to do is to directly get the
+  // frame bounds and only use the internal value if we can't.
+  GdkWindow* gdk_window = gtk_widget_get_window(GTK_WIDGET(window_));
+  if (!gdk_window)
+    return bounds_;
+
+  GdkRectangle window_bounds = {0};
+  gdk_window_get_frame_extents(gdk_window, &window_bounds);
+  return gfx::Rect(window_bounds.x, window_bounds.y,
+                   window_bounds.width, window_bounds.height);
 }
 
 void NativeAppWindowGtk::Show() {
@@ -284,7 +294,6 @@ void NativeAppWindowGtk::Restore() {
 
 void NativeAppWindowGtk::SetBounds(const gfx::Rect& bounds) {
   gfx::Rect content_bounds = bounds;
-  content_bounds.Inset(GetFrameInsets());
   gtk_window_move(window_, content_bounds.x(), content_bounds.y());
   if (!resizable_) {
     if (frameless_ &&
@@ -320,9 +329,12 @@ GdkFilterReturn NativeAppWindowGtk::OnXEvent(GdkXEvent* gdk_x_event,
         std::find(atom_list.begin(),
                   atom_list.end(),
                   atom_cache_.GetAtom("_NET_WM_STATE_HIDDEN"));
+
     state_ = (it != atom_list.end()) ? GDK_WINDOW_STATE_ICONIFIED :
         static_cast<GdkWindowState>(state_ & ~GDK_WINDOW_STATE_ICONIFIED);
 
+    // TODO(mlamouri): we don't need to send a change event all the time here.
+    // Only when |state_| has actually changed.
     shell_window_->OnNativeWindowChanged();
   }
 
