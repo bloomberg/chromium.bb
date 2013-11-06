@@ -13,6 +13,7 @@
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/wm/drag_window_controller.h"
 #include "ash/wm/window_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
@@ -191,10 +192,13 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
     scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
         window_.get(), gfx::Point(), HTCAPTION));
     ASSERT_TRUE(resizer.get());
-    resizer->Drag(CalculateDragPoint(*resizer, 790, 10), 0);
+    resizer->Drag(CalculateDragPoint(*resizer, 795, 10), 0);
+    // Window should be adjusted for minimum visibility (10px) during the drag.
+    EXPECT_EQ("790,10 50x60", window_->bounds().ToString());
     resizer->CompleteDrag(0);
     // Since the pointer is still on the primary root window, the parent should
     // not be changed.
+    // Window origin should be adjusted for minimum visibility (10px).
     EXPECT_EQ(root_windows[0], window_->GetRootWindow());
     EXPECT_EQ("790,10 50x60", window_->bounds().ToString());
   }
@@ -214,7 +218,10 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
     // even though only small fraction of the window is within the secondary
     // root window's bounds.
     EXPECT_EQ(root_windows[1], window_->GetRootWindow());
-    EXPECT_EQ("-49,10 50x60", window_->bounds().ToString());
+    // Window origin should be adjusted for minimum visibility (10px).
+    int expected_x = -50 + 10;
+    EXPECT_EQ(base::IntToString(expected_x) + ",10 50x60",
+              window_->bounds().ToString());
   }
 }
 
@@ -280,7 +287,10 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplaysRightToLeft) {
     resizer->Drag(CalculateDragPoint(*resizer, -2, 0), ui::EF_CONTROL_DOWN);
     resizer->CompleteDrag(0);
     EXPECT_EQ(root_windows[0], window_->GetRootWindow());
-    EXPECT_EQ("798,0 50x60", window_->bounds().ToString());
+    // Window origin should be adjusted for minimum visibility (10px).
+    int expected_x = 800 - 10;
+    EXPECT_EQ(base::IntToString(expected_x) + ",0 50x60",
+              window_->bounds().ToString());
   }
 }
 

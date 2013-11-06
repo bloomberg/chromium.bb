@@ -126,8 +126,7 @@ void DockedWindowResizer::CompleteDrag(int event_flags) {
   // windows.
   wm::WindowState* window_state = wm::GetWindowState(GetTarget());
   bool was_tracked_by_workspace = window_state->tracked_by_workspace();
-  if (was_docked_)
-    window_state->SetTrackedByWorkspace(false);
+  window_state->SetTrackedByWorkspace(false);
   // The root window can change when dragging into a different screen.
   next_window_resizer_->CompleteDrag(event_flags);
   FinishedDragging();
@@ -140,8 +139,7 @@ void DockedWindowResizer::RevertDrag() {
   // windows.
   wm::WindowState* window_state = wm::GetWindowState(GetTarget());
   bool was_tracked_by_workspace = window_state->tracked_by_workspace();
-  if (was_docked_)
-    window_state->SetTrackedByWorkspace(false);
+  window_state->SetTrackedByWorkspace(false);
   next_window_resizer_->RevertDrag();
   // Restore docked state to what it was before the drag if necessary.
   if (is_docked_ != was_docked_) {

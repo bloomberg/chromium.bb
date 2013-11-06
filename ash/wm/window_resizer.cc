@@ -263,12 +263,15 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
     // the |work_area| above isn't good for this check since it is the work area
     // for the current display but the window can move to a different one.
     aura::Window* parent = details.window->parent();
-    gfx::Rect new_bounds_in_screen =
-        ScreenAsh::ConvertRectToScreen(parent, new_bounds);
+    gfx::Point passed_location_in_screen(passed_location);
+    wm::ConvertPointToScreen(parent, &passed_location_in_screen);
+    gfx::Rect near_passed_location(passed_location_in_screen, gfx::Size());
+    // Use a pointer location (matching the logic in DragWindowResizer) to
+    // calculate the target display after the drag.
     const gfx::Display& display =
-        Shell::GetScreen()->GetDisplayMatching(new_bounds_in_screen);
+        Shell::GetScreen()->GetDisplayMatching(near_passed_location);
     aura::Window* dock_container = Shell::GetContainer(
-        wm::GetRootWindowMatching(new_bounds_in_screen),
+        wm::GetRootWindowMatching(near_passed_location),
         internal::kShellWindowId_DockedContainer);
     internal::DockedWindowLayoutManager* dock_layout =
         static_cast<internal::DockedWindowLayoutManager*>(
@@ -277,6 +280,8 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
     gfx::Rect screen_work_area = display.work_area();
     screen_work_area.Union(dock_layout->docked_bounds());
     screen_work_area.Inset(kMinimumOnScreenArea, 0);
+    gfx::Rect new_bounds_in_screen =
+        ScreenAsh::ConvertRectToScreen(parent, new_bounds);
     if (!screen_work_area.Intersects(new_bounds_in_screen)) {
       // Make sure that the x origin does not leave the current display.
       new_bounds_in_screen.set_x(
