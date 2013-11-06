@@ -82,7 +82,6 @@ bool InsecureContentInfoBarDelegate::Accept() {
   return true;
 }
 
-
 // Cancel button is labelled "load anyways".  It triggers Cancel(), but really
 // means become insecure, so do the work of reloading the page.
 bool InsecureContentInfoBarDelegate::Cancel() {
@@ -90,14 +89,12 @@ bool InsecureContentInfoBarDelegate::Cancel() {
       (type_ == DISPLAY) ? DISPLAY_USER_OVERRIDE : RUN_USER_OVERRIDE,
       NUM_EVENTS);
 
-  if (web_contents()) {
-    int32 routing_id = web_contents()->GetRoutingID();
-    web_contents()->Send((type_ == DISPLAY) ?
-        static_cast<IPC::Message*>(
-            new ChromeViewMsg_SetAllowDisplayingInsecureContent(routing_id,
-                                                                true)) :
-        new ChromeViewMsg_SetAllowRunningInsecureContent(routing_id, true));
-  }
+  int32 routing_id = web_contents()->GetRoutingID();
+  web_contents()->Send((type_ == DISPLAY) ?
+      static_cast<IPC::Message*>(
+          new ChromeViewMsg_SetAllowDisplayingInsecureContent(routing_id,
+                                                              true)) :
+      new ChromeViewMsg_SetAllowRunningInsecureContent(routing_id, true));
   return true;
 }
 

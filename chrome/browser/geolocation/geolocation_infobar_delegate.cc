@@ -106,11 +106,10 @@ bool GeolocationInfoBarDelegate::Accept() {
 
 void GeolocationInfoBarDelegate::SetPermission(bool update_content_setting,
                                                bool allowed) {
-  if (web_contents()) {
-    GURL embedder = web_contents()->GetLastCommittedURL().GetOrigin();
-    controller_->OnPermissionSet(id_, requesting_frame_, embedder,
-                                 update_content_setting, allowed);
-  }
+  controller_->OnPermissionSet(
+        id_, requesting_frame_,
+        web_contents()->GetLastCommittedURL().GetOrigin(),
+        update_content_setting, allowed);
 }
 
 void GeolocationInfoBarDelegate::InfoBarDismissed() {
