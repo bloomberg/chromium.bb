@@ -1,19 +1,19 @@
 Name: mach_override
-Short Name: Part of the mach_star project
-Version: Unknown
-URL: https://github.com/rentzsch/mach_star
-Date: 11/14/2012
-Revision: 10860416803280f05cbe20f97a3ec02a7c697bf4
-License: MIT
+Short Name: mach_override
+Version: Newer than 1.2. HEAD from branch semver-1.x.
+URL: https://github.com/rentzsch/mach_override
+Date: 2013-08-21
+Revision: 1a1bb35291a915c545842cd64b5e12e1e76883fc
+License: MIT and 2-clause BSD
 Security Critical: Yes
 
 
 Description:
-This is the mach_override part of mach_star, namely:
-https://github.com/rentzsch/mach_star/tree/10860416803280f05cbe20f97a3ec02a7c697bf4
-
 This package is used to replace framework functions with different
 implementations at run time.
+
+mach_override includes a copy of libudis86 1.7.1, available separately from
+http://udis86.sourceforge.net/ and https://github.com/vmt/udis86 .
 
 
 Local Modifications:

@@ -1,11 +1,12 @@
-/*******************************************************************************
-	mach_override.c
-		Copyright (c) 2003-2009 Jonathan 'Wolf' Rentzsch: <http://rentzsch.com>
-		Some rights reserved: <http://opensource.org/licenses/mit-license.php>
-
-	***************************************************************************/
+// mach_override.c semver:1.2.0
+//   Copyright (c) 2003-2012 Jonathan 'Wolf' Rentzsch: http://rentzsch.com
+//   Some rights reserved: http://opensource.org/licenses/mit
+//   https://github.com/rentzsch/mach_override
 
 #include "mach_override.h"
+#if defined(__i386__) || defined(__x86_64__)
+#include "udis86.h"
+#endif
 
 #include <mach-o/dyld.h>
 #include <mach/mach_host.h>
@@ -24,7 +25,6 @@
 #pragma mark	-
 #pragma mark	(Constants)
 
-#define kPageSize 4096
 #if defined(__ppc__) || defined(__POWERPC__)
 
 long kIslandTemplate[] = {
@@ -78,6 +78,9 @@ char kIslandTemplate[] = {
 
 #endif
 
+#define	kAllocateHigh		1
+#define	kAllocateNormal		0
+
 /**************************
 *	
 *	Data Types
@@ -88,6 +91,7 @@ char kIslandTemplate[] = {
 
 typedef	struct	{
 	char	instructions[sizeof(kIslandTemplate)];
+	int		allocatedHigh;
 }	BranchIsland;
 
 /**************************
@@ -101,6 +105,7 @@ typedef	struct	{
 	mach_error_t
 allocateBranchIsland(
 		BranchIsland	**island,
+		int				allocateHigh,
 		void *originalFunctionAddress);
 
 	mach_error_t
@@ -155,10 +160,12 @@ fixupInstructions(
 #if defined(__i386__) || defined(__x86_64__)
 mach_error_t makeIslandExecutable(void *address) {
 	mach_error_t err = err_none;
-    uintptr_t page = (uintptr_t)address & ~(uintptr_t)(kPageSize-1);
+    vm_size_t pageSize;
+    host_page_size( mach_host_self(), &pageSize );
+    uintptr_t page = (uintptr_t)address & ~(uintptr_t)(pageSize-1);
     int e = err_none;
-    e |= mprotect((void *)page, kPageSize, PROT_EXEC | PROT_READ);
-    e |= msync((void *)page, kPageSize, MS_INVALIDATE );
+    e |= mprotect((void *)page, pageSize, PROT_EXEC | PROT_READ);
+    e |= msync((void *)page, pageSize, MS_INVALIDATE );
     if (e) {
         err = err_cannot_override;
     }
@@ -236,7 +243,7 @@ mach_override_ptr(
 	//	Allocate and target the escape island to the overriding function.
 	BranchIsland	*escapeIsland = NULL;
 	if( !err )	
-		err = allocateBranchIsland( &escapeIsland, originalFunctionAddress );
+		err = allocateBranchIsland( &escapeIsland, kAllocateHigh, originalFunctionAddress );
 		if (err) fprintf(stderr, "err = %x %s:%d\n", err, __FILE__, __LINE__);
 
 	
@@ -278,7 +285,7 @@ mach_override_ptr(
 	//  technically our original function.
 	BranchIsland	*reentryIsland = NULL;
 	if( !err && originalFunctionReentryIsland ) {
-		err = allocateBranchIsland( &reentryIsland, escapeIsland);
+		err = allocateBranchIsland( &reentryIsland, kAllocateHigh, escapeIsland);
 		if( !err )
 			*originalFunctionReentryIsland = reentryIsland;
 	}
@@ -364,10 +371,13 @@ mach_override_ptr(
 #pragma mark	-
 #pragma mark	(Implementation)
 
-/***************************************************************************//**
+/*******************************************************************************
 	Implementation: Allocates memory for a branch island.
 	
 	@param	island			<-	The allocated island.
+	@param	allocateHigh	->	Whether to allocate the island at the end of the
+								address space (for use with the branch absolute
+								instruction).
 	@result					<-	mach_error_t
 
 	***************************************************************************/
@@ -375,53 +385,74 @@ mach_override_ptr(
 	mach_error_t
 allocateBranchIsland(
 		BranchIsland	**island,
+		int				allocateHigh,
 		void *originalFunctionAddress)
 {
 	assert( island );
 	
-	assert( sizeof( BranchIsland ) <= kPageSize );
+	mach_error_t	err = err_none;
+	
+	if( allocateHigh ) {
+		vm_size_t pageSize;
+		err = host_page_size( mach_host_self(), &pageSize );
+		if( !err ) {
+			assert( sizeof( BranchIsland ) <= pageSize );
 #if defined(__i386__)
-	vm_address_t page = 0;
-	mach_error_t err = vm_allocate( mach_task_self(), &page, kPageSize, VM_FLAGS_ANYWHERE );
-	if( err == err_none ) {
-		*island = (BranchIsland*) page;
-		return err_none;
-	}
-	return err;
+			vm_address_t page = 0;
+			mach_error_t err = vm_allocate( mach_task_self(), &page, pageSize, VM_FLAGS_ANYWHERE );
+			if( err == err_none ) {
+				*island = (BranchIsland*) page;
+				return err_none;
+			}
+			return err;
 #else
 
 #if defined(__ppc__) || defined(__POWERPC__)
-	vm_address_t first = 0xfeffffff;
-	vm_address_t last = 0xfe000000 + kPageSize;
+			vm_address_t first = 0xfeffffff;
+			vm_address_t last = 0xfe000000 + pageSize;
 #elif defined(__x86_64__)
-	vm_address_t first = ((uint64_t)originalFunctionAddress & ~(uint64_t)(((uint64_t)1 << 31) - 1)) | ((uint64_t)1 << 31); // start in the middle of the page?
-	vm_address_t last = 0x0;
+			vm_address_t first = ((uint64_t)originalFunctionAddress & ~(uint64_t)(((uint64_t)1 << 31) - 1)) | ((uint64_t)1 << 31); // start in the middle of the page?
+			vm_address_t last = 0x0;
 #endif
 
-	vm_address_t page = first;
-	vm_map_t task_self = mach_task_self();
+			vm_address_t page = first;
+			int allocated = 0;
+			vm_map_t task_self = mach_task_self();
+			
+			while( !err && !allocated && page != last ) {
 
-	while( page != last ) {
-		mach_error_t err = vm_allocate( task_self, &page, kPageSize, 0 );
-		if( err == err_none ) {
-			*island = (BranchIsland*) page;
-			return err_none;
-                }
-		if( err != KERN_NO_SPACE )
-			return err;
+				err = vm_allocate( task_self, &page, pageSize, 0 );
+				if( err == err_none )
+					allocated = 1;
+				else if( err == KERN_NO_SPACE ) {
 #if defined(__x86_64__)
-		page -= kPageSize;
+					page -= pageSize;
 #else
-		page += kPageSize;
+					page += pageSize;
 #endif
-		err = err_none;
+					err = err_none;
+				}
+			}
+			if( allocated )
+				*island = (BranchIsland*) page;
+			else if( !allocated && !err )
+				err = KERN_NO_SPACE;
+#endif
+		}
+	} else {
+		void *block = malloc( sizeof( BranchIsland ) );
+		if( block )
+			*island = block;
+		else
+			err = KERN_NO_SPACE;
 	}
-
-	return KERN_NO_SPACE;
-#endif
+	if( !err )
+		(**island).allocatedHigh = allocateHigh;
+	
+	return err;
 }
 
-/***************************************************************************//**
+/*******************************************************************************
 	Implementation: Deallocates memory for a branch island.
 	
 	@param	island	->	The island to deallocate.
@@ -435,12 +466,27 @@ freeBranchIsland(
 {
 	assert( island );
 	assert( (*(long*)&island->instructions[0]) == kIslandTemplate[0] );
-	assert( sizeof( BranchIsland ) <= kPageSize );
-	return vm_deallocate( mach_task_self(), (vm_address_t) island,
-			      kPageSize );
+	assert( island->allocatedHigh );
+	
+	mach_error_t	err = err_none;
+	
+	if( island->allocatedHigh ) {
+		vm_size_t pageSize;
+		err = host_page_size( mach_host_self(), &pageSize );
+		if( !err ) {
+			assert( sizeof( BranchIsland ) <= pageSize );
+			err = vm_deallocate(
+					mach_task_self(),
+					(vm_address_t) island, pageSize );
+		}
+	} else {
+		free( island );
+	}
+	
+	return err;
 }
 
-/***************************************************************************//**
+/*******************************************************************************
 	Implementation: Sets the branch island's target, with an optional
 	instruction.
 	
@@ -530,68 +576,6 @@ setBranchIslandTarget_i386(
 
 
 #if defined(__i386__) || defined(__x86_64__)
-// simplistic instruction matching
-typedef struct {
-	unsigned int length; // max 15
-	unsigned char mask[15]; // sequence of bytes in memory order
-	unsigned char constraint[15]; // sequence of bytes in memory order
-}	AsmInstructionMatch;
-
-#if defined(__i386__)
-static AsmInstructionMatch possibleInstructions[] = {
-	{ 0x5, {0xFF, 0x00, 0x00, 0x00, 0x00}, {0xE9, 0x00, 0x00, 0x00, 0x00} },	// jmp 0x????????
-	{ 0x5, {0xFF, 0xFF, 0xFF, 0xFF, 0xFF}, {0x55, 0x89, 0xe5, 0xc9, 0xc3} },	// push %ebp; mov %esp,%ebp; leave; ret
-	{ 0x1, {0xFF}, {0x90} },							// nop
-	{ 0x1, {0xFF}, {0x55} },							// push %esp
-	{ 0x2, {0xFF, 0xFF}, {0x89, 0xE5} },				                // mov %esp,%ebp
-	{ 0x1, {0xFF}, {0x53} },							// push %ebx
-	{ 0x3, {0xFF, 0xFF, 0x00}, {0x83, 0xEC, 0x00} },	                        // sub 0x??, %esp
-	{ 0x6, {0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00}, {0x81, 0xEC, 0x00, 0x00, 0x00, 0x00} },	// sub 0x??, %esp with 32bit immediate
-	{ 0x1, {0xFF}, {0x57} },							// push %edi
-	{ 0x1, {0xFF}, {0x56} },							// push %esi
-	{ 0x2, {0xFF, 0xFF}, {0x31, 0xC0} },						// xor %eax, %eax
-	{ 0x3, {0xFF, 0x4F, 0x00}, {0x8B, 0x45, 0x00} },  // mov $imm(%ebp), %reg
-	{ 0x3, {0xFF, 0x4C, 0x00}, {0x8B, 0x40, 0x00} },  // mov $imm(%eax-%edx), %reg
-	{ 0x4, {0xFF, 0xFF, 0xFF, 0x00}, {0x8B, 0x4C, 0x24, 0x00} },  // mov $imm(%esp), %ecx
-	{ 0x5, {0xFF, 0x00, 0x00, 0x00, 0x00}, {0xB8, 0x00, 0x00, 0x00, 0x00} },	// mov $imm, %eax
-	{ 0x0 }
-};
-#elif defined(__x86_64__)
-static AsmInstructionMatch possibleInstructions[] = {
-	{ 0x5, {0xFF, 0x00, 0x00, 0x00, 0x00}, {0xE9, 0x00, 0x00, 0x00, 0x00} },	// jmp 0x????????
-	{ 0x1, {0xFF}, {0x90} },							// nop
-	{ 0x1, {0xF8}, {0x50} },							// push %rX
-	{ 0x3, {0xFF, 0xFF, 0xFF}, {0x48, 0x89, 0xE5} },				// mov %rsp,%rbp
-	{ 0x4, {0xFF, 0xFF, 0xFF, 0x00}, {0x48, 0x83, 0xEC, 0x00} },	                // sub 0x??, %rsp
-	{ 0x4, {0xFB, 0xFF, 0x00, 0x00}, {0x48, 0x89, 0x00, 0x00} },	                // move onto rbp
-	{ 0x2, {0xFF, 0x00}, {0x41, 0x00} },						// push %rXX
-	{ 0x2, {0xFF, 0x00}, {0x85, 0x00} },						// test %rX,%rX
-	{ 0x5, {0xF8, 0x00, 0x00, 0x00, 0x00}, {0xB8, 0x00, 0x00, 0x00, 0x00} },   // mov $imm, %reg
-	{ 0x3, {0xFF, 0xFF, 0x00}, {0xFF, 0x77, 0x00} },  // pushq $imm(%rdi)
-	{ 0x2, {0xFF, 0xFF}, {0x31, 0xC0} },						// xor %eax, %eax
-    { 0x2, {0xFF, 0xFF}, {0x89, 0xF8} },			// mov %edi, %eax
-	{ 0x0 }
-};
-#endif
-
-static Boolean codeMatchesInstruction(unsigned char *code, AsmInstructionMatch* instruction) 
-{
-	Boolean match = true;
-	
-	size_t i;
-	for (i=0; i<instruction->length; i++) {
-		unsigned char mask = instruction->mask[i];
-		unsigned char constraint = instruction->constraint[i];
-		unsigned char codeValue = code[i];
-				
-		match = ((codeValue & mask) == constraint);
-		if (!match) break;
-	}
-	
-	return match;
-}
-
-#if defined(__i386__) || defined(__x86_64__)
 	static Boolean 
 eatKnownInstructions( 
 	unsigned char	*code, 
@@ -603,32 +587,28 @@ eatKnownInstructions(
 {
 	Boolean allInstructionsKnown = true;
 	int totalEaten = 0;
-	unsigned char* ptr = code;
 	int remainsToEat = 5; // a JMP instruction takes 5 bytes
 	int instructionIndex = 0;
+	ud_t ud_obj;
 	
 	if (howManyEaten) *howManyEaten = 0;
 	if (originalInstructionCount) *originalInstructionCount = 0;
+	ud_init(&ud_obj);
+#if defined(__i386__)
+	ud_set_mode(&ud_obj, 32);
+#else
+	ud_set_mode(&ud_obj, 64);
+#endif
+	ud_set_input_buffer(&ud_obj, code, 64); // Assume that 'code' points to at least 64bytes of data.
 	while (remainsToEat > 0) {
-		Boolean curInstructionKnown = false;
-		
-		// See if instruction matches one  we know
-		AsmInstructionMatch* curInstr = possibleInstructions;
-		do { 
-			if ((curInstructionKnown = codeMatchesInstruction(ptr, curInstr))) break;
-			curInstr++;
-		} while (curInstr->length > 0);
-		
-		// if all instruction matches failed, we don't know current instruction then, stop here
-		if (!curInstructionKnown) { 
-			allInstructionsKnown = false;
-			fprintf(stderr, "mach_override: some instructions unknown! Need to update mach_override.c\n");
-			break;
+		if (!ud_disassemble(&ud_obj)) {
+		    allInstructionsKnown = false;
+		    fprintf(stderr, "mach_override: some instructions unknown! Need to update libudis86\n");
+		    break;
 		}
 		
 		// At this point, we've matched curInstr
-		int eaten = curInstr->length;
-		ptr += eaten;
+		int eaten = ud_insn_len(&ud_obj);
 		remainsToEat -= eaten;
 		totalEaten += eaten;
 		
@@ -689,7 +669,6 @@ fixupInstructions(
 		instructionsToFix = (void*)((uintptr_t)instructionsToFix + instructionSizes[index]);
     }
 }
-#endif
 
 #if defined(__i386__)
 __asm(
