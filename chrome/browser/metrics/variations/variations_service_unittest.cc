@@ -383,4 +383,24 @@ TEST_F(VariationsServiceTest, SeedNotStoredWhenNonOKStatus) {
   }
 }
 
+TEST_F(VariationsServiceTest, SeedDateUpdatedOn304Status) {
+  base::MessageLoop message_loop;
+  content::TestBrowserThread io_thread(content::BrowserThread::IO,
+                                       &message_loop);
+  TestingPrefServiceSimple prefs;
+  VariationsService::RegisterPrefs(prefs.registry());
+
+  VariationsService variations_service(new TestRequestAllowedNotifier, &prefs);
+  net::TestURLFetcherFactory factory;
+  variations_service.DoActualFetch();
+  EXPECT_TRUE(
+      prefs.FindPreference(prefs::kVariationsSeedDate)->IsDefaultValue());
+
+  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  SimulateServerResponse(net::HTTP_NOT_MODIFIED, fetcher);
+  variations_service.OnURLFetchComplete(fetcher);
+  EXPECT_FALSE(
+      prefs.FindPreference(prefs::kVariationsSeedDate)->IsDefaultValue());
+}
+
 }  // namespace chrome_variations

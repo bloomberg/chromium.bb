@@ -25,7 +25,6 @@
 #include "components/variations/proto/variations_seed.pb.h"
 #include "components/variations/variations_seed_processor.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/url_fetcher.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
@@ -398,6 +397,10 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
     if (response_code == net::HTTP_NOT_MODIFIED) {
       UMA_HISTOGRAM_MEDIUM_TIMES("Variations.FetchNotModifiedLatency", latency);
       RecordLastFetchTime();
+      // Update the seed date value in local state (used for expiry check on
+      // next start up), since 304 is a successful response.
+      local_state_->SetInt64(prefs::kVariationsSeedDate,
+                             response_date.ToInternalValue());
     } else {
       UMA_HISTOGRAM_MEDIUM_TIMES("Variations.FetchOtherLatency", latency);
     }
