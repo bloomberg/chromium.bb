@@ -8,15 +8,20 @@
 #include "mojo/public/bindings/sample/generated/sample_service_internal.h"
 
 namespace sample {
-namespace internal {
-
+namespace {
 const uint32_t kService_Frobinate_Name = 1;
 
 #pragma pack(push, 1)
-
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-private-field"
+#endif
 class Service_Frobinate_Params {
  public:
-  static Service_Frobinate_Params* New(mojo::Buffer* buf);
+  static Service_Frobinate_Params* New(mojo::Buffer* buf) {
+    return new (buf->Allocate(sizeof(Service_Frobinate_Params)))
+        Service_Frobinate_Params();
+  }
 
   void set_foo(Foo* foo) { foo_.ptr = foo; }
   void set_baz(bool baz) { baz_ = baz; }
@@ -32,8 +37,10 @@ class Service_Frobinate_Params {
  private:
   friend class mojo::internal::ObjectTraits<Service_Frobinate_Params>;
 
-  Service_Frobinate_Params();
-  ~Service_Frobinate_Params();  // NOT IMPLEMENTED
+  Service_Frobinate_Params() {
+    _header_.num_bytes = sizeof(*this);
+    _header_.num_fields = 3;
+  }
 
   mojo::internal::StructHeader _header_;
   mojo::internal::StructPointer<Foo> foo_;
@@ -43,21 +50,12 @@ class Service_Frobinate_Params {
 };
 MOJO_COMPILE_ASSERT(sizeof(Service_Frobinate_Params) == 24,
                     bad_sizeof_Service_Frobinate_Params);
-
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 #pragma pack(pop)
 
-// static
-Service_Frobinate_Params* Service_Frobinate_Params::New(mojo::Buffer* buf) {
-  return new (buf->Allocate(sizeof(Service_Frobinate_Params)))
-      Service_Frobinate_Params();
-}
-
-Service_Frobinate_Params::Service_Frobinate_Params() {
-  _header_.num_bytes = sizeof(*this);
-  _header_.num_fields = 3;
-}
-
-}  // namespace internal
+}  // namespace
 
 // static
 Bar* Bar::New(mojo::Buffer* buf) {
@@ -85,10 +83,10 @@ ServiceProxy::ServiceProxy(mojo::MessageReceiver* receiver)
 
 void ServiceProxy::Frobinate(const Foo* foo, bool baz, mojo::Handle port) {
   size_t payload_size =
-      mojo::internal::Align(sizeof(internal::Service_Frobinate_Params));
+      mojo::internal::Align(sizeof(Service_Frobinate_Params));
   payload_size += mojo::internal::ComputeSizeOf(foo);
 
-  mojo::MessageBuilder builder(internal::kService_Frobinate_Name, payload_size);
+  mojo::MessageBuilder builder(kService_Frobinate_Name, payload_size);
 
   // We now go about allocating the anonymous Frobinate_Params struct.  It
   // holds the parameters to the Frobinate message.
@@ -97,8 +95,8 @@ void ServiceProxy::Frobinate(const Foo* foo, bool baz, mojo::Handle port) {
   // within the same buffer as the Frobinate_Params struct. That's what we
   // need in order to generate a contiguous blob of message data.
 
-  internal::Service_Frobinate_Params* params =
-      internal::Service_Frobinate_Params::New(builder.buffer());
+  Service_Frobinate_Params* params =
+      Service_Frobinate_Params::New(builder.buffer());
   params->set_foo(mojo::internal::Clone(foo, builder.buffer()));
   params->set_baz(baz);
   params->set_port(port);
@@ -121,9 +119,9 @@ void ServiceProxy::Frobinate(const Foo* foo, bool baz, mojo::Handle port) {
 
 bool ServiceStub::Accept(mojo::Message* message) {
   switch (message->data->header.name) {
-    case internal::kService_Frobinate_Name: {
-      internal::Service_Frobinate_Params* params =
-          reinterpret_cast<internal::Service_Frobinate_Params*>(
+    case kService_Frobinate_Name: {
+      Service_Frobinate_Params* params =
+          reinterpret_cast<Service_Frobinate_Params*>(
               message->data->payload);
 
       if (!mojo::internal::DecodePointersAndHandles(params, *message))
@@ -157,12 +155,12 @@ sample::Bar* ObjectTraits<sample::Bar>::Clone(
 
 // static
 void ObjectTraits<sample::Bar>::EncodePointersAndHandles(
-    sample::Bar* bar, std::vector<mojo::Handle>* handles) {
+    sample::Bar* bar, std::vector<Handle>* handles) {
 }
 
 // static
 bool ObjectTraits<sample::Bar>::DecodePointersAndHandles(
-    sample::Bar* bar, const mojo::Message& message) {
+    sample::Bar* bar, const Message& message) {
   return true;
 }
 
@@ -194,7 +192,7 @@ sample::Foo* ObjectTraits<sample::Foo>::Clone(
 
 // static
 void ObjectTraits<sample::Foo>::EncodePointersAndHandles(
-    sample::Foo* foo, std::vector<mojo::Handle>* handles) {
+    sample::Foo* foo, std::vector<Handle>* handles) {
   Encode(&foo->bar_, handles);
   Encode(&foo->data_, handles);
   Encode(&foo->extra_bars_, handles);
@@ -204,7 +202,7 @@ void ObjectTraits<sample::Foo>::EncodePointersAndHandles(
 
 // static
 bool ObjectTraits<sample::Foo>::DecodePointersAndHandles(
-    sample::Foo* foo, const mojo::Message& message) {
+    sample::Foo* foo, const Message& message) {
   if (!Decode(&foo->bar_, message))
     return false;
   if (!Decode(&foo->data_, message))
@@ -227,40 +225,29 @@ bool ObjectTraits<sample::Foo>::DecodePointersAndHandles(
 }
 
 template <>
-class ObjectTraits<sample::internal::Service_Frobinate_Params> {
+class ObjectTraits<sample::Service_Frobinate_Params> {
  public:
   static void EncodePointersAndHandles(
-      sample::internal::Service_Frobinate_Params* params,
-      std::vector<mojo::Handle>* handles);
-  static bool DecodePointersAndHandles(
-      sample::internal::Service_Frobinate_Params* params,
-      const mojo::Message& message);
-};
-
-// static
-void ObjectTraits<sample::internal::Service_Frobinate_Params>::
-    EncodePointersAndHandles(
-        sample::internal::Service_Frobinate_Params* params,
-        std::vector<mojo::Handle>* handles) {
-  Encode(&params->foo_, handles);
-  EncodeHandle(&params->port_, handles);
-}
-
-// static
-bool ObjectTraits<sample::internal::Service_Frobinate_Params>::
-    DecodePointersAndHandles(
-        sample::internal::Service_Frobinate_Params* params,
-        const mojo::Message& message) {
-  if (!Decode(&params->foo_, message))
-    return false;
-  if (params->_header_.num_fields >= 3) {
-    if (!DecodeHandle(&params->port_, message.handles))
-      return false;
+      sample::Service_Frobinate_Params* params,
+      std::vector<Handle>* handles) {
+    Encode(&params->foo_, handles);
+    EncodeHandle(&params->port_, handles);
   }
 
-  // TODO: validate
-  return true;
-}
+  static bool DecodePointersAndHandles(
+      sample::Service_Frobinate_Params* params,
+      const Message& message){
+    if (!Decode(&params->foo_, message))
+      return false;
+    if (params->_header_.num_fields >= 3) {
+      if (!DecodeHandle(&params->port_, message.handles))
+        return false;
+    }
+
+    // TODO: validate
+    return true;
+  }
+};
 
 }  // namespace internal
 }  // namespace mojo
