@@ -29,7 +29,7 @@ conformance_harness_script = r"""
     testHarness._originalLog.apply(window.console, [msg]);
   }
 
-  testHarness.reportResults = function(url, success, msg) {
+  testHarness.reportResults = function(success, msg) {
     testHarness._allTestSucceeded = testHarness._allTestSucceeded && !!success;
     if(!success) {
       testHarness._failures++;
@@ -38,7 +38,7 @@ conformance_harness_script = r"""
       }
     }
   };
-  testHarness.notifyFinished = function(url) {
+  testHarness.notifyFinished = function() {
     testHarness._finished = true;
   };
   testHarness.navigateToPage = function(src) {
