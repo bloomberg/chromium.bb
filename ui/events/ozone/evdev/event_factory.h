@@ -6,13 +6,14 @@
 #define UI_EVENTS_OZONE_EVENT_FACTORY_DELEGATE_EVDEV_H_
 
 #include "base/compiler_specific.h"
+#include "ui/events/events_export.h"
 #include "ui/events/ozone/evdev/event_modifiers.h"
 #include "ui/events/ozone/event_factory_ozone.h"
 
 namespace ui {
 
 // Ozone events implementation for the Linux input subsystem ("evdev").
-class EventFactoryEvdev : public EventFactoryOzone {
+class EVENTS_EXPORT EventFactoryEvdev : public EventFactoryOzone {
  public:
   EventFactoryEvdev();
   virtual ~EventFactoryEvdev();

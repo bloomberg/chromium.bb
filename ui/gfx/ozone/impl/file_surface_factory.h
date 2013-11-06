@@ -16,7 +16,7 @@ class SkCanvas;
 
 namespace gfx {
 
-class FileSurfaceFactory : public SurfaceFactoryOzone {
+class GFX_EXPORT FileSurfaceFactory : public SurfaceFactoryOzone {
  public:
   explicit FileSurfaceFactory(const base::FilePath& dump_location);
   virtual ~FileSurfaceFactory();

@@ -17,7 +17,7 @@ class HardwareDisplayController;
 // SurfaceFactoryOzone implementation on top of DRM/KMS using dumb buffers.
 // This implementation is used in conjunction with the software rendering
 // path.
-class DriSurfaceFactory : public SurfaceFactoryOzone {
+class GFX_EXPORT DriSurfaceFactory : public SurfaceFactoryOzone {
  public:
   DriSurfaceFactory();
   virtual ~DriSurfaceFactory();
