@@ -1,14 +1,14 @@
-Markers in text inputs should only be visible if an input is being edited but removing markers from the input must not touch other markers.When testing manually type something misspelled in the first textarea, focus the text input and type something with misspellings there too.Then focus the second text area. Mispelling marks should be removed from the inputbut not for the first textarea. Focus the input again - misspelling marks should be restored.
+Misspelling markers in text inputs should only be visible if an input is being edited but removing markers from the input must not touch other markers. To test manually, focus the text input, then focus the second text area. The test succeed if misspellings were removed from the input but not for the first textarea. Focus the input again - misspelling markers should be restored.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling") is 1
-PASS internals.markerCountForNode(findFirstTextNode(testInput), "spelling") is 4
-PASS internals.markerCountForNode(findFirstTextNode(testInput), "spelling") is 0
-PASS internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling") is 1
-PASS internals.markerCountForNode(findFirstTextNode(testInput), "spelling") is 4
-PASS internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling") is 1
+PASS internals.markerCountForNode(findFirstTextNode(element), "spelling") became expectedMarkerCount
+PASS internals.markerCountForNode(findFirstTextNode(element), "spelling") became expectedMarkerCount
+PASS internals.markerCountForNode(findFirstTextNode(element), "spelling") became expectedMarkerCount
+PASS internals.markerCountForNode(findFirstTextNode(element), "spelling") became expectedMarkerCount
+PASS internals.markerCountForNode(findFirstTextNode(element), "spelling") became expectedMarkerCount
+PASS internals.markerCountForNode(findFirstTextNode(element), "spelling") became expectedMarkerCount
 PASS successfullyParsed is true
 
 TEST COMPLETE
