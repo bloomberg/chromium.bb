@@ -187,6 +187,7 @@ class DevToolsWindow::FrontendWebContentsObserver
   virtual void AboutToNavigateRenderView(
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DocumentOnLoadCompletedInMainFrame(int32 page_id) OVERRIDE;
+  virtual void WebContentsDestroyed(content::WebContents*) OVERRIDE;
 
   DevToolsWindow* devtools_window_;
   DISALLOW_COPY_AND_ASSIGN(FrontendWebContentsObserver);
@@ -196,6 +197,11 @@ DevToolsWindow::FrontendWebContentsObserver::FrontendWebContentsObserver(
     DevToolsWindow* devtools_window)
     : WebContentsObserver(devtools_window->web_contents()),
       devtools_window_(devtools_window) {
+}
+
+void DevToolsWindow::FrontendWebContentsObserver::WebContentsDestroyed(
+    content::WebContents* contents) {
+  delete devtools_window_;
 }
 
 DevToolsWindow::FrontendWebContentsObserver::~FrontendWebContentsObserver() {
@@ -257,6 +263,10 @@ DictionaryValue* CreateFileSystemValue(
 const char DevToolsWindow::kDevToolsApp[] = "DevToolsApp";
 
 DevToolsWindow::~DevToolsWindow() {
+  content::DevToolsManager::GetInstance()->ClientHostClosing(
+      frontend_host_.get());
+  UpdateBrowserToolbar();
+
   DevToolsWindows* instances = &g_instances.Get();
   DevToolsWindows::iterator it(
       std::find(instances->begin(), instances->end(), this));
@@ -601,9 +611,6 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
   entry->GetFavicon().valid = true;
 
   // Register on-load actions.
-  content::Source<content::NavigationController> nav_controller_source(
-      &web_contents_->GetController());
-  registrar_.Add(this, chrome::NOTIFICATION_TAB_CLOSING, nav_controller_source);
   registrar_.Add(
       this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
       content::Source<ThemeService>(
@@ -740,22 +747,8 @@ DevToolsDockSide DevToolsWindow::SideFromString(
 void DevToolsWindow::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_TAB_CLOSING) {
-    if (content::Source<content::NavigationController>(source).ptr() ==
-        &web_contents_->GetController()) {
-      // This happens when browser closes all of its tabs as a result
-      // of window.Close event.
-      // Notify manager that this DevToolsClientHost no longer exists and
-      // initiate self-destuct here.
-      content::DevToolsManager::GetInstance()->ClientHostClosing(
-          frontend_host_.get());
-      UpdateBrowserToolbar();
-      delete this;
-    }
-  } else {
-    DCHECK_EQ(chrome::NOTIFICATION_BROWSER_THEME_CHANGED, type);
-    UpdateTheme();
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_BROWSER_THEME_CHANGED, type);
+  UpdateTheme();
 }
 
 content::WebContents* DevToolsWindow::OpenURLFromTab(
@@ -807,9 +800,9 @@ void DevToolsWindow::CloseContents(content::WebContents* source) {
   if (inspected_window)
     inspected_window->UpdateDevTools();
   // In case of docked web_contents_, we own it so delete here.
+  // Embedding DevTools window will be deleted as a result of
+  // WebContentsDestroyed callback.
   delete web_contents_;
-
-  delete this;
 }
 
 void DevToolsWindow::BeforeUnloadFired(content::WebContents* tab,
