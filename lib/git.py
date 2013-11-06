@@ -61,6 +61,9 @@ GIT_TRANSIENT_ERRORS = (
 
     # crbug.com/187444
     r'RPC failed; result=\d+, HTTP code = \d+',
+
+    # crbug.com/315421
+    r'The requested URL returned error: 500 while accessing',
 )
 
 GIT_TRANSIENT_ERRORS_RE = re.compile('|'.join(GIT_TRANSIENT_ERRORS))
