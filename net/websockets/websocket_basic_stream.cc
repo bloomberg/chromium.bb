@@ -68,9 +68,15 @@ int CalculateSerializedSizeAndTurnOnMaskBit(
 }  // namespace
 
 WebSocketBasicStream::WebSocketBasicStream(
-    scoped_ptr<ClientSocketHandle> connection)
+    scoped_ptr<ClientSocketHandle> connection,
+    const scoped_refptr<GrowableIOBuffer>& http_read_buffer,
+    const std::string& sub_protocol,
+    const std::string& extensions)
     : read_buffer_(new IOBufferWithSize(kReadBufferSize)),
       connection_(connection.Pass()),
+      http_read_buffer_(http_read_buffer),
+      sub_protocol_(sub_protocol),
+      extensions_(extensions),
       generate_websocket_masking_key_(&GenerateWebSocketMaskingKey) {
   DCHECK(connection_->is_initialized());
 }
@@ -179,13 +185,8 @@ WebSocketBasicStream::CreateWebSocketBasicStreamForTesting(
     const std::string& sub_protocol,
     const std::string& extensions,
     WebSocketMaskingKeyGeneratorFunction key_generator_function) {
-  scoped_ptr<WebSocketBasicStream> stream(
-      new WebSocketBasicStream(connection.Pass()));
-  if (http_read_buffer) {
-    stream->http_read_buffer_ = http_read_buffer;
-  }
-  stream->sub_protocol_ = sub_protocol;
-  stream->extensions_ = extensions;
+  scoped_ptr<WebSocketBasicStream> stream(new WebSocketBasicStream(
+      connection.Pass(), http_read_buffer, sub_protocol, extensions));
   stream->generate_websocket_masking_key_ = key_generator_function;
   return stream.Pass();
 }

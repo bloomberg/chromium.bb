@@ -30,8 +30,13 @@ class NET_EXPORT_PRIVATE WebSocketBasicStream : public WebSocketStream {
   typedef WebSocketMaskingKey (*WebSocketMaskingKeyGeneratorFunction)();
 
   // This class should not normally be constructed directly; see
-  // WebSocketStream::CreateAndConnectStream.
-  explicit WebSocketBasicStream(scoped_ptr<ClientSocketHandle> connection);
+  // WebSocketStream::CreateAndConnectStream() and
+  // WebSocketBasicHandshakeStream::Upgrade().
+  explicit WebSocketBasicStream(
+      scoped_ptr<ClientSocketHandle> connection,
+      const scoped_refptr<GrowableIOBuffer>& http_read_buffer,
+      const std::string& sub_protocol,
+      const std::string& extensions);
 
   // The destructor has to make sure the connection is closed when we finish so
   // that it does not get returned to the pool.
@@ -144,10 +149,10 @@ class NET_EXPORT_PRIVATE WebSocketBasicStream : public WebSocketStream {
   WebSocketFrameParser parser_;
 
   // The negotated sub-protocol, or empty for none.
-  std::string sub_protocol_;
+  const std::string sub_protocol_;
 
   // The extensions negotiated with the remote server.
-  std::string extensions_;
+  const std::string extensions_;
 
   // This can be overridden in tests to make the output deterministic. We don't
   // use a Callback here because a function pointer is faster and good enough
