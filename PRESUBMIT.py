@@ -1,6 +1,6 @@
 # Copyright 2012 The Swarming Authors. All rights reserved.
-# Use of this source code is governed by the Apache v2.0 license that can be
-# found in the LICENSE file.
+# Use of this source code is governed under the Apache License, Version 2.0 that
+# can be found in the LICENSE file.
 
 """Top-level presubmit script for swarm_client.
 
@@ -71,9 +71,9 @@ def header(input_api):
   license_header = (
     r'.*? Copyright %(year)s The Swarming Authors\. '
       r'All rights reserved\.\n'
-    r'.*? Use of this source code is governed by the Apache v2\.0 license '
-      r'that can be\n'
-    r'.*? found in the LICENSE file\.(?: \*/)?\n'
+    r'.*? Use of this source code is governed under the Apache License, '
+      r'Version 2\.0 that\n'
+    r'.*? can be found in the LICENSE file\.(?: \*/)?\n'
   ) % {
     'year': years_re,
   }
