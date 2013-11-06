@@ -51,6 +51,7 @@
 #include "extensions/common/user_script.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
+#include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/url_request/url_request.h"
@@ -287,7 +288,13 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
       child_id, route_id);
   if (is_prerendering) {
     user_data->set_is_prerender(true);
-    request->SetPriority(net::IDLE);
+    // Requests with the IGNORE_LIMITS flag set (i.e., sync XHRs)
+    // should remain at MAXIMUM_PRIORITY.
+    if (request->load_flags() & net::LOAD_IGNORE_LIMITS) {
+      DCHECK_EQ(request->priority(), net::MAXIMUM_PRIORITY);
+    } else {
+      request->SetPriority(net::IDLE);
+    }
   }
 
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(
