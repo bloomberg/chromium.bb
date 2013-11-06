@@ -89,8 +89,12 @@ public:
     ~FontPlatformData();
 
     bool isFixedPitch() const;
-    HFONT hfont() const { return m_font ? m_font->hfont() : 0; }
     float size() const { return m_textSize; }
+#if USE(HARFBUZZ)
+    HarfBuzzFace* harfBuzzFace() const;
+#else
+    HFONT hfont() const { return m_font ? m_font->hfont() : 0; }
+#endif
     SkTypeface* typeface() const { return m_typeface.get(); }
     SkFontID uniqueID() const { return m_typeface->uniqueID(); }
     int paintTextFlags() const { return m_paintTextFlags; }
@@ -123,19 +127,14 @@ public:
     String description() const;
 #endif
 
-    // FIXME: Only used by Uniscribe, should be protected by a
-    // ENABLE(GDI_FONTS_ON_WINDOWS) macro once we have an abstraction layer
-    // for complex text shaping.
+#if !USE(HARFBUZZ)
     SCRIPT_FONTPROPERTIES* scriptFontProperties() const;
     SCRIPT_CACHE* scriptCache() const { return &m_scriptCache; }
-
     static bool ensureFontLoaded(HFONT);
-
-#if USE(HARFBUZZ)
-    HarfBuzzFace* harfBuzzFace() const;
 #endif
 
 private:
+#if !USE(HARFBUZZ)
     // We refcount the internal HFONT so that FontPlatformData can be
     // efficiently copied. WebKit depends on being able to copy it, and we
     // don't really want to re-create the HFONT.
@@ -170,19 +169,20 @@ private:
     };
 
     RefPtr<RefCountedHFONT> m_font;
+#endif // !USE(HARFBUZZ)
     float m_textSize; // Point size of the font in pixels.
     FontOrientation m_orientation;
     bool m_fakeBold;
     bool m_fakeItalic;
 
-    RefPtr<SkTypeface> m_typeface; // cached from m_font
-    int m_paintTextFlags; // cached from m_font
-
-    mutable SCRIPT_CACHE m_scriptCache;
-    mutable OwnPtr<SCRIPT_FONTPROPERTIES> m_scriptFontProperties;
+    RefPtr<SkTypeface> m_typeface;
+    int m_paintTextFlags;
 
 #if USE(HARFBUZZ)
     mutable RefPtr<HarfBuzzFace> m_harfBuzzFace;
+#else
+    mutable SCRIPT_CACHE m_scriptCache;
+    mutable OwnPtr<SCRIPT_FONTPROPERTIES> m_scriptFontProperties;
 #endif
 
     bool m_isHashTableDeletedValue;

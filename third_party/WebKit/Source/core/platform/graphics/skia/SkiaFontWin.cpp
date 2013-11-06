@@ -157,7 +157,7 @@ void paintSkiaText(GraphicsContext* context,
     paintSkiaText(context, data, data.typeface(), data.size(), data.paintTextFlags(),
                   numGlyphs, glyphs, advances, offsets, origin, textRect);
 }
-
+#if !USE(HARFBUZZ)
 void paintSkiaText(GraphicsContext* context,
     const FontPlatformData& data,
     HFONT hfont,
@@ -178,5 +178,5 @@ void paintSkiaText(GraphicsContext* context,
     RefPtr<SkTypeface> face = CreateTypefaceFromHFont(hfont, &size, &paintTextFlags);
     paintSkiaText(context, data, face.get(), size, paintTextFlags, numGlyphs, glyphs, advances, offsets, origin, textRect);
 }
-
+#endif
 }  // namespace WebCore

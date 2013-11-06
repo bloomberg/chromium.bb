@@ -158,6 +158,7 @@ static int computePaintTextFlags(const LOGFONT& lf)
     return textFlags;
 }
 
+#if !USE(HARFBUZZ)
 PassRefPtr<SkTypeface> CreateTypefaceFromHFont(HFONT hfont, int* size, int* paintTextFlags)
 {
     LOGFONT info;
@@ -172,34 +173,39 @@ PassRefPtr<SkTypeface> CreateTypefaceFromHFont(HFONT hfont, int* size, int* pain
         *paintTextFlags = computePaintTextFlags(info);
     return adoptRef(SkCreateTypefaceFromLOGFONT(info));
 }
+#endif
 
 FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
-    : m_font(0)
-    , m_textSize(-1)
+    : m_textSize(-1)
     , m_fakeBold(false)
     , m_fakeItalic(false)
     , m_orientation(Horizontal)
-    , m_scriptCache(0)
     , m_typeface(adoptRef(SkTypeface::RefDefault()))
     , m_paintTextFlags(0)
     , m_isHashTableDeletedValue(true)
 {
+#if !USE(HARFBUZZ)
+    m_font = 0;
+    m_scriptCache = 0;
+#endif
 }
 
 FontPlatformData::FontPlatformData()
-    : m_font(0)
-    , m_textSize(0)
+    : m_textSize(0)
     , m_fakeBold(false)
     , m_fakeItalic(false)
     , m_orientation(Horizontal)
-    , m_scriptCache(0)
     , m_typeface(adoptRef(SkTypeface::RefDefault()))
     , m_paintTextFlags(0)
     , m_isHashTableDeletedValue(false)
 {
+#if !USE(HARFBUZZ)
+    m_font = 0;
+    m_scriptCache = 0;
+#endif
 }
 
-#if ENABLE(GDI_FONTS_ON_WINDOWS)
+#if ENABLE(GDI_FONTS_ON_WINDOWS) && !USE(HARFBUZZ)
 FontPlatformData::FontPlatformData(HFONT font, float size, FontOrientation orientation)
     : m_font(RefCountedHFONT::create(font))
     , m_textSize(size)
@@ -215,51 +221,55 @@ FontPlatformData::FontPlatformData(HFONT font, float size, FontOrientation orien
 
 // FIXME: this constructor is needed for SVG fonts but doesn't seem to do much
 FontPlatformData::FontPlatformData(float size, bool bold, bool oblique)
-    : m_font(0)
-    , m_textSize(size)
+    : m_textSize(size)
     , m_fakeBold(false)
     , m_fakeItalic(false)
     , m_orientation(Horizontal)
-    , m_scriptCache(0)
     , m_typeface(adoptRef(SkTypeface::RefDefault()))
     , m_paintTextFlags(0)
     , m_isHashTableDeletedValue(false)
 {
+#if !USE(HARFBUZZ)
+    m_font = 0;
+    m_scriptCache = 0;
+#endif
 }
 
 FontPlatformData::FontPlatformData(const FontPlatformData& data)
-    : m_font(data.m_font)
-    , m_textSize(data.m_textSize)
+    : m_textSize(data.m_textSize)
     , m_fakeBold(data.m_fakeBold)
     , m_fakeItalic(data.m_fakeItalic)
     , m_orientation(data.m_orientation)
-    , m_scriptCache(0)
     , m_typeface(data.m_typeface)
     , m_paintTextFlags(data.m_paintTextFlags)
     , m_isHashTableDeletedValue(false)
 {
+#if !USE(HARFBUZZ)
+    m_font = data.m_font;
+    m_scriptCache = 0;
+#endif
 }
 
 FontPlatformData::FontPlatformData(const FontPlatformData& data, float textSize)
-    : m_font(data.m_font)
-    , m_textSize(textSize)
+    : m_textSize(textSize)
     , m_fakeBold(data.m_fakeBold)
     , m_fakeItalic(data.m_fakeItalic)
     , m_orientation(data.m_orientation)
-    , m_scriptCache(0)
     , m_typeface(data.m_typeface)
     , m_paintTextFlags(data.m_paintTextFlags)
     , m_isHashTableDeletedValue(false)
 {
+#if !USE(HARFBUZZ)
+    m_font = data.m_font;
+    m_scriptCache = 0;
+#endif
 }
 
 FontPlatformData::FontPlatformData(PassRefPtr<SkTypeface> tf, const char* family, float textSize, bool fakeBold, bool fakeItalic, FontOrientation orientation)
-    : m_font(0)
-    , m_textSize(textSize)
+    : m_textSize(textSize)
     , m_fakeBold(fakeBold)
     , m_fakeItalic(fakeItalic)
     , m_orientation(orientation)
-    , m_scriptCache(0)
     , m_typeface(tf)
     , m_isHashTableDeletedValue(false)
 {
@@ -268,16 +278,18 @@ FontPlatformData::FontPlatformData(PassRefPtr<SkTypeface> tf, const char* family
     LOGFONT logFont;
     SkLOGFONTFromTypeface(m_typeface.get(), &logFont);
     logFont.lfHeight = -textSize;
-    HFONT hFont = CreateFontIndirect(&logFont);
-    if (hFont)
-        m_font = RefCountedHFONT::create(hFont);
     m_paintTextFlags = computePaintTextFlags(logFont);
+
+#if !USE(HARFBUZZ)
+    HFONT hFont = CreateFontIndirect(&logFont);
+    m_font = hFont ? RefCountedHFONT::create(hFont) : 0;
+    m_scriptCache = 0;
+#endif
 }
 
 FontPlatformData& FontPlatformData::operator=(const FontPlatformData& data)
 {
     if (this != &data) {
-        m_font = data.m_font;
         m_textSize = data.m_textSize;
         m_fakeBold = data.m_fakeBold;
         m_fakeItalic = data.m_fakeItalic;
@@ -285,18 +297,23 @@ FontPlatformData& FontPlatformData::operator=(const FontPlatformData& data)
         m_typeface = data.m_typeface;
         m_paintTextFlags = data.m_paintTextFlags;
 
+#if !USE(HARFBUZZ)
+        m_font = data.m_font;
         // The following fields will get re-computed if necessary.
         ScriptFreeCache(&m_scriptCache);
         m_scriptCache = 0;
         m_scriptFontProperties.clear();
+#endif
     }
     return *this;
 }
 
 FontPlatformData::~FontPlatformData()
 {
+#if !USE(HARFBUZZ)
     ScriptFreeCache(&m_scriptCache);
     m_scriptCache = 0;
+#endif
 }
 
 String FontPlatformData::fontFamilyName() const
@@ -350,6 +367,16 @@ bool FontPlatformData::isFixedPitch() const
 #endif
 }
 
+#if USE(HARFBUZZ)
+HarfBuzzFace* FontPlatformData::harfBuzzFace() const
+{
+    if (!m_harfBuzzFace)
+        m_harfBuzzFace = HarfBuzzFace::create(const_cast<FontPlatformData*>(this), uniqueID());
+
+    return m_harfBuzzFace.get();
+}
+
+#else
 FontPlatformData::RefCountedHFONT::~RefCountedHFONT()
 {
     DeleteObject(m_hfont);
@@ -382,13 +409,6 @@ SCRIPT_FONTPROPERTIES* FontPlatformData::scriptFontProperties() const
     return m_scriptFontProperties.get();
 }
 
-#ifndef NDEBUG
-String FontPlatformData::description() const
-{
-    return String();
-}
-#endif
-
 bool FontPlatformData::ensureFontLoaded(HFONT font)
 {
     WebKit::WebSandboxSupport* sandboxSupport = WebKit::Platform::current()->sandboxSupport();
@@ -396,14 +416,12 @@ bool FontPlatformData::ensureFontLoaded(HFONT font)
     // was able to be loaded successfully already
     return sandboxSupport ? sandboxSupport->ensureFontLoaded(font) : true;
 }
+#endif
 
-#if USE(HARFBUZZ)
-HarfBuzzFace* FontPlatformData::harfBuzzFace() const
+#ifndef NDEBUG
+String FontPlatformData::description() const
 {
-    if (!m_harfBuzzFace)
-        m_harfBuzzFace = HarfBuzzFace::create(const_cast<FontPlatformData*>(this), uniqueID());
-
-    return m_harfBuzzFace.get();
+    return String();
 }
 #endif
 
