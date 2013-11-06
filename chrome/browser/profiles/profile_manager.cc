@@ -165,6 +165,15 @@ bool IsProfileMarkedForDeletion(const base::FilePath& profile_path) {
       profile_path) != ProfilesToDelete().end();
 }
 
+// Physically remove deleted profile directories from disk.
+void NukeProfileFromDisk(const base::FilePath& profile_path) {
+  // Delete both the profile directory and its corresponding cache.
+  base::FilePath cache_path;
+  chrome::GetUserCacheDirectory(profile_path, &cache_path);
+  base::DeleteFile(profile_path, true);
+  base::DeleteFile(cache_path, true);
+}
+
 #if defined(OS_CHROMEOS)
 void CheckCryptohomeIsMounted(chromeos::DBusMethodCallStatus call_status,
                               bool is_mounted) {
@@ -198,11 +207,7 @@ void ProfileManager::NukeDeletedProfilesFromDisk() {
           ProfilesToDelete().begin();
        it != ProfilesToDelete().end();
        ++it) {
-    // Delete both the profile directory and its corresponding cache.
-    base::FilePath cache_path;
-    chrome::GetUserCacheDirectory(*it, &cache_path);
-    base::DeleteFile(*it, true);
-    base::DeleteFile(cache_path, true);
+    NukeProfileFromDisk(*it);
   }
   ProfilesToDelete().clear();
 }
@@ -299,6 +304,10 @@ ProfileManager::ProfileManager(const base::FilePath& user_data_dir)
   registrar_.Add(
       this,
       chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED,
+      content::NotificationService::AllSources());
+  registrar_.Add(
+      this,
+      chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
       content::NotificationService::AllSources());
 
   if (ProfileShortcutManager::IsFeatureEnabled() && !user_data_dir_.empty())
@@ -651,6 +660,10 @@ void ProfileManager::Observe(
       }
       break;
     }
+    case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED: {
+      save_active_profiles = !closing_all_browsers_;
+      break;
+    }
     default: {
       NOTREACHED();
       break;
@@ -862,13 +875,15 @@ void ProfileManager::OnProfileCreated(Profile* profile,
     profiles_info_.erase(iter);
   }
 
-  // If this was the guest profile, finish setting its incognito status.
-  if (profile->GetPath() == ProfileManager::GetGuestProfilePath())
-    SetGuestProfilePrefs(profile);
+  if (profile) {
+    // If this was the guest profile, finish setting its incognito status.
+    if (profile->GetPath() == ProfileManager::GetGuestProfilePath())
+      SetGuestProfilePrefs(profile);
 
-  // Invoke CREATED callback for incognito profiles.
-  if (profile && go_off_the_record)
-    RunCallbacks(callbacks, profile, Profile::CREATE_STATUS_CREATED);
+    // Invoke CREATED callback for incognito profiles.
+    if (go_off_the_record)
+      RunCallbacks(callbacks, profile, Profile::CREATE_STATUS_CREATED);
+  }
 
   // Invoke INITIALIZED or FAIL for all profiles.
   RunCallbacks(callbacks, profile,
@@ -984,6 +999,11 @@ void ProfileManager::AddProfileToCache(Profile* profile) {
                           username,
                           icon_index,
                           managed_user_id);
+
+  if (profile->GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles)) {
+    cache.SetProfileIsEphemeralAtIndex(
+        cache.GetIndexOfProfileWithPath(profile->GetPath()), true);
+  }
 }
 
 void ProfileManager::InitProfileUserPrefs(Profile* profile) {
@@ -1114,6 +1134,17 @@ void ProfileManager::ScheduleProfileForDeletion(
     }
   }
   FinishDeletingProfile(profile_dir);
+}
+
+// static
+void ProfileManager::CleanUpStaleProfiles(
+    const std::vector<base::FilePath>& profile_paths) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  for (std::vector<base::FilePath>::const_iterator it = profile_paths.begin();
+       it != profile_paths.end(); ++it) {
+    NukeProfileFromDisk(*it);
+  }
 }
 
 void ProfileManager::OnNewActiveProfileLoaded(

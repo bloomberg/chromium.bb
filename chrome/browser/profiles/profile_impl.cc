@@ -507,6 +507,7 @@ void ProfileImpl::DoFinalInit() {
   // kGoogleServicesUsername, initialize components that depend on it to reflect
   // the current value.
   UpdateProfileUserNameCache();
+  UpdateProfileIsEphemeralCache();
   GAIAInfoUpdateServiceFactory::GetForProfile(this);
 
   PrefService* local_state = g_browser_process->local_state();

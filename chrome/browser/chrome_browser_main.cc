@@ -1045,9 +1045,16 @@ void ChromeBrowserMainParts::PreProfileInit() {
     if (profile_cache.ProfileIsEphemeralAtIndex(i))
       profiles_to_delete.push_back(profile_cache.GetPathOfProfileAtIndex(i));
   }
-  for (size_t i = 0;i < profiles_to_delete.size(); ++i) {
-    profile_manager->ScheduleProfileForDeletion(
-        profiles_to_delete[i], ProfileManager::CreateCallback());
+
+  if (profiles_to_delete.size()) {
+    for (size_t i = 0;i < profiles_to_delete.size(); ++i) {
+      profile_manager->ScheduleProfileForDeletion(
+          profiles_to_delete[i], ProfileManager::CreateCallback());
+    }
+    // Clean up stale profiles immediately after browser start.
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&ProfileManager::CleanUpStaleProfiles, profiles_to_delete));
   }
 #endif  // OS_ANDROID
 

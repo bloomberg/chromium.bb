@@ -187,6 +187,12 @@ class ProfileManager : public base::NonThreadSafe,
   void ScheduleProfileForDeletion(const base::FilePath& profile_dir,
                                   const CreateCallback& callback);
 
+  // Called on start-up if there are any stale ephemeral profiles to be deleted.
+  // This can be the case if the browser has crashed and the clean-up code had
+  // no chance to run then.
+  static void CleanUpStaleProfiles(
+      const std::vector<base::FilePath>& profile_paths);
+
   // Autoloads profiles if they are running background apps.
   void AutoloadProfiles();
 
