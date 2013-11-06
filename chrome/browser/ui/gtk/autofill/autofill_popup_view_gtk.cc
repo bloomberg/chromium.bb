@@ -117,7 +117,7 @@ gboolean AutofillPopupViewGtk::HandleButtonRelease(GtkWidget* widget,
   if (event->button != 1)
     return FALSE;
 
-  controller_->MouseClicked(event->x, event->y);
+  controller_->LineAcceptedAtPoint(event->x, event->y);
   return TRUE;
 }
 
@@ -158,14 +158,14 @@ gboolean AutofillPopupViewGtk::HandleExpose(GtkWidget* widget,
 
 gboolean AutofillPopupViewGtk::HandleLeave(GtkWidget* widget,
                                            GdkEventCrossing* event) {
-  controller_->MouseExitedPopup();
+  controller_->SelectionCleared();
 
   return FALSE;
 }
 
 gboolean AutofillPopupViewGtk::HandleMotion(GtkWidget* widget,
                                             GdkEventMotion* event) {
-  controller_->MouseHovered(event->x, event->y);
+  controller_->LineSelectedAtPoint(event->x, event->y);
 
   return TRUE;
 }

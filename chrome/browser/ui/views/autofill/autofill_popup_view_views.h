@@ -45,6 +45,7 @@ class AutofillPopupViewViews : public AutofillPopupView,
   virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // views::WidgetObserver implementation.
   virtual void OnWidgetBoundsChanged(views::Widget* widget,

@@ -158,8 +158,8 @@ NSColor* SubtextColor() {
                                fromView:nil];
 
   if (NSPointInRect(location, [self bounds])) {
-    controller_->MouseClicked(static_cast<int>(location.x),
-                              static_cast<int>(location.y));
+    controller_->LineAcceptedAtPoint(static_cast<int>(location.x),
+                                     static_cast<int>(location.y));
   }
 }
 
@@ -171,8 +171,8 @@ NSColor* SubtextColor() {
   NSPoint location = [self convertPoint:[theEvent locationInWindow]
                                fromView:nil];
 
-  controller_->MouseHovered(static_cast<int>(location.x),
-                            static_cast<int>(location.y));
+  controller_->LineSelectedAtPoint(static_cast<int>(location.x),
+                                   static_cast<int>(location.y));
 }
 
 - (void)mouseDragged:(NSEvent*)theEvent {
@@ -184,7 +184,7 @@ NSColor* SubtextColor() {
   if (!controller_)
     return;
 
-  controller_->MouseExitedPopup();
+  controller_->SelectionCleared();
 }
 
 #pragma mark -

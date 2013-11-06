@@ -36,14 +36,17 @@ class AutofillPopupController {
   // Recalculates the height and width of the popup and triggers a redraw.
   virtual void UpdateBoundsAndRedrawPopup() = 0;
 
-  // The user has moved the mouse within the popup.
-  virtual void MouseHovered(int x, int y) = 0;
+  // The user selected the line at (x, y), e.g. by hovering the mouse cursor.
+  // |x| and |y| must be in the popup coordinates.
+  virtual void LineSelectedAtPoint(int x, int y) = 0;
 
-  // The user clicked the mouse within the popup.
-  virtual void MouseClicked(int x, int y) = 0;
+  // The user accepted the line at (x, y); e.g., by clicking on it using the
+  // mouse. |x| and |y| must be in the popup coordinates.
+  virtual void LineAcceptedAtPoint(int x, int y) = 0;
 
-  // The user has moved the mouse outside of the popup.
-  virtual void MouseExitedPopup() = 0;
+  // The user cleared the selected line, e.g. by moving the mouse cursor out of
+  // the popup bounds.
+  virtual void SelectionCleared() = 0;
 
   // Whether |event| should be reposted to the native window management.
   virtual bool ShouldRepostEvent(const ui::MouseEvent& event) = 0;

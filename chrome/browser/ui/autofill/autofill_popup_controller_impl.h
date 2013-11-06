@@ -88,9 +88,9 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
 
   // AutofillPopupController implementation.
   virtual void UpdateBoundsAndRedrawPopup() OVERRIDE;
-  virtual void MouseHovered(int x, int y) OVERRIDE;
-  virtual void MouseClicked(int x, int y) OVERRIDE;
-  virtual void MouseExitedPopup() OVERRIDE;
+  virtual void LineSelectedAtPoint(int x, int y) OVERRIDE;
+  virtual void LineAcceptedAtPoint(int x, int y) OVERRIDE;
+  virtual void SelectionCleared() OVERRIDE;
   virtual bool ShouldRepostEvent(const ui::MouseEvent& event) OVERRIDE;
   virtual void AcceptSuggestion(size_t index) OVERRIDE;
   virtual int GetIconResourceID(const string16& resource_name) const OVERRIDE;

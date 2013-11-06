@@ -293,7 +293,7 @@ bool AutofillPopupControllerImpl::HandleKeyPressEvent(
       return (event.modifiers & content::NativeWebKeyboardEvent::ShiftKey) &&
              RemoveSelectedLine();
     case ui::VKEY_TAB:
-      // A tab press should cause the highlighted line to be selected, but still
+      // A tab press should cause the selected line to be accepted, but still
       // return false so the tab key press propagates and changes the cursor
       // location.
       AcceptSelectedLine();
@@ -317,16 +317,16 @@ void AutofillPopupControllerImpl::UpdateBoundsAndRedrawPopup() {
   view_->UpdateBoundsAndRedrawPopup();
 }
 
-void AutofillPopupControllerImpl::MouseHovered(int x, int y) {
+void AutofillPopupControllerImpl::LineSelectedAtPoint(int x, int y) {
   SetSelectedLine(LineFromY(y));
 }
 
-void AutofillPopupControllerImpl::MouseClicked(int x, int y) {
-  MouseHovered(x, y);
+void AutofillPopupControllerImpl::LineAcceptedAtPoint(int x, int y) {
+  LineSelectedAtPoint(x, y);
   AcceptSelectedLine();
 }
 
-void AutofillPopupControllerImpl::MouseExitedPopup() {
+void AutofillPopupControllerImpl::SelectionCleared() {
   SetSelectedLine(kNoSelection);
 }
 

@@ -89,7 +89,7 @@ void AutofillPopupViewViews::OnPaint(gfx::Canvas* canvas) {
 
 void AutofillPopupViewViews::OnMouseCaptureLost() {
   if (controller_)
-    controller_->MouseExitedPopup();
+    controller_->SelectionCleared();
 }
 
 bool AutofillPopupViewViews::OnMouseDragged(const ui::MouseEvent& event) {
@@ -97,7 +97,7 @@ bool AutofillPopupViewViews::OnMouseDragged(const ui::MouseEvent& event) {
     return false;
 
   if (HitTestPoint(event.location())) {
-    controller_->MouseHovered(event.x(), event.y());
+    controller_->LineSelectedAtPoint(event.x(), event.y());
 
     // We must return true in order to get future OnMouseDragged and
     // OnMouseReleased events.
@@ -105,13 +105,13 @@ bool AutofillPopupViewViews::OnMouseDragged(const ui::MouseEvent& event) {
   }
 
   // If we move off of the popup, we lose the selection.
-  controller_->MouseExitedPopup();
+  controller_->SelectionCleared();
   return false;
 }
 
 void AutofillPopupViewViews::OnMouseExited(const ui::MouseEvent& event) {
   if (controller_)
-    controller_->MouseExitedPopup();
+    controller_->SelectionCleared();
 }
 
 void AutofillPopupViewViews::OnMouseMoved(const ui::MouseEvent& event) {
@@ -119,9 +119,9 @@ void AutofillPopupViewViews::OnMouseMoved(const ui::MouseEvent& event) {
     return;
 
   if (HitTestPoint(event.location()))
-    controller_->MouseHovered(event.x(), event.y());
+    controller_->LineSelectedAtPoint(event.x(), event.y());
   else
-    controller_->MouseExitedPopup();
+    controller_->SelectionCleared();
 }
 
 bool AutofillPopupViewViews::OnMousePressed(const ui::MouseEvent& event) {
@@ -163,7 +163,37 @@ void AutofillPopupViewViews::OnMouseReleased(const ui::MouseEvent& event) {
 
   // We only care about the left click.
   if (event.IsOnlyLeftMouseButton() && HitTestPoint(event.location()))
-    controller_->MouseClicked(event.x(), event.y());
+    controller_->LineAcceptedAtPoint(event.x(), event.y());
+}
+
+void AutofillPopupViewViews::OnGestureEvent(ui::GestureEvent* event) {
+  if (!controller_)
+    return;
+
+  switch (event->type()) {
+    case ui::ET_GESTURE_TAP_DOWN:
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      if (HitTestPoint(event->location()))
+        controller_->LineSelectedAtPoint(event->x(), event->y());
+      else
+        controller_->SelectionCleared();
+      break;
+    case ui::ET_GESTURE_TAP:
+    case ui::ET_GESTURE_SCROLL_END:
+      if (HitTestPoint(event->location()))
+        controller_->LineAcceptedAtPoint(event->x(), event->y());
+      else
+        controller_->SelectionCleared();
+      break;
+    case ui::ET_GESTURE_TAP_CANCEL:
+    case ui::ET_SCROLL_FLING_START:
+      controller_->SelectionCleared();
+      break;
+    default:
+      return;
+  }
+  event->SetHandled();
 }
 
 void AutofillPopupViewViews::OnWidgetBoundsChanged(
