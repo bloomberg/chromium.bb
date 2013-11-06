@@ -532,7 +532,11 @@ void CompositingIOSurfaceMac::CopyTo(
       const base::Callback<void(bool, const SkBitmap&)>& callback) {
   scoped_ptr<SkBitmap> output(new SkBitmap());
   output->setConfig(SkBitmap::kARGB_8888_Config,
-                    dst_pixel_size.width(), dst_pixel_size.height());
+                    dst_pixel_size.width(),
+                    dst_pixel_size.height(),
+                    0,
+                    kOpaque_SkAlphaType);
+
   if (!output->allocPixels()) {
     DLOG(ERROR) << "Failed to allocate SkBitmap pixels!";
     callback.Run(false, *output);
@@ -540,7 +544,6 @@ void CompositingIOSurfaceMac::CopyTo(
   }
   DCHECK_EQ(output->rowBytesAsPixels(), dst_pixel_size.width())
       << "Stride is required to be equal to width for GPU readback.";
-  output->setIsOpaque(true);
 
   CGLSetCurrentContext(context_->cgl_context());
   const base::Closure copy_done_callback = CopyToSelectedOutputWithinContext(

@@ -18,11 +18,15 @@ SkBitmap CGImageToSkBitmap(CGImageRef image, CGSize size, bool is_opaque) {
   if (!image)
     return bitmap;
 
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, size.width, size.height);
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                   size.width,
+                   size.height,
+                   0,
+                   is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
+
   if (!bitmap.allocPixels())
     return bitmap;
 
-  bitmap.setIsOpaque(is_opaque);
   void* data = bitmap.getPixels();
 
   // Allocate a bitmap context with 4 components per pixel (BGRA). Apple

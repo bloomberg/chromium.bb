@@ -26,11 +26,15 @@ SkBitmap NSImageOrNSImageRepToSkBitmap(
   DCHECK((image != 0) ^ (image_rep != 0));
 
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, size.width, size.height);
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                   size.width,
+                   size.height,
+                   0,
+                   is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
+
   if (!bitmap.allocPixels())
     return bitmap;  // Return |bitmap| which should respond true to isNull().
 
-  bitmap.setIsOpaque(is_opaque);
 
   base::ScopedCFTypeRef<CGColorSpaceRef> color_space(
       CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB));
