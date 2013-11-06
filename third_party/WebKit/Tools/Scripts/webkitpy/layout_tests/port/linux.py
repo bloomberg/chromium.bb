@@ -130,8 +130,6 @@ class LinuxPort(base.Port):
     def setup_test_run(self):
         super(LinuxPort, self).setup_test_run()
 
-        if self._filesystem.exists(self.crash_dumps_directory()):
-            self._filesystem.rmtree(self.crash_dumps_directory())
         self._filesystem.maybe_make_directory(self.crash_dumps_directory())
 
     def look_for_new_crash_logs(self, crashed_processes, start_time):
