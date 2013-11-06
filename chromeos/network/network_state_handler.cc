@@ -247,10 +247,12 @@ const NetworkState* NetworkStateHandler::FirstNetworkByType(
 
 std::string NetworkStateHandler::HardwareAddressForType(
     const NetworkTypePattern& type) const {
+  const DeviceState* device = NULL;
   const NetworkState* network = ConnectedNetworkByType(type);
-  if (!network)
-    return std::string();
-  const DeviceState* device = GetDeviceState(network->device_path());
+  if (network)
+    device = GetDeviceState(network->device_path());
+  else
+    device = GetDeviceStateByType(type);
   if (!device)
     return std::string();
   std::string result = device->mac_address();
