@@ -981,7 +981,7 @@ class TestTreeStatus(cros_test_lib.MoxTestCase):
                                True, retries_500=2)
 
   def testTreeIsThrottled(self):
-    """Tests that we return false is the tree is throttled."""
+    """Tests that we return True if the tree is throttled."""
     self._TreeStatusTestHelper('Tree is throttled (waiting to cycle)',
                                'throttled', True)
 
