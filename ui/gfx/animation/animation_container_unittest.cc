@@ -5,27 +5,40 @@
 #include "ui/gfx/animation/animation_container.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/animation_container_observer.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/animation/test_animation_delegate.h"
 
-using testing::AtLeast;
-
 namespace gfx {
 
 namespace {
 
-class MockObserver : public AnimationContainerObserver {
+class FakeAnimationContainerObserver : public AnimationContainerObserver {
  public:
-  MockObserver() {}
+  FakeAnimationContainerObserver()
+      : progressed_count_(0),
+        empty_(false) {
+  }
 
-  MOCK_METHOD1(AnimationContainerProgressed, void(AnimationContainer*));
-  MOCK_METHOD1(AnimationContainerEmpty, void(AnimationContainer*));
+  int progressed_count() const { return progressed_count_; }
+  bool empty() const { return empty_; }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockObserver);
+  virtual void AnimationContainerProgressed(
+      AnimationContainer* container) OVERRIDE {
+    progressed_count_++;
+  }
+
+  // Invoked when no more animations are being managed by this container.
+  virtual void AnimationContainerEmpty(AnimationContainer* container) OVERRIDE {
+    empty_ = true;
+  }
+
+  int progressed_count_;
+  bool empty_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeAnimationContainerObserver);
 };
 
 class TestAnimation : public LinearAnimation {
@@ -94,19 +107,13 @@ TEST_F(AnimationContainerTest, Multi) {
 
 // Makes sure observer is notified appropriately.
 TEST_F(AnimationContainerTest, Observer) {
-  MockObserver observer;
+  FakeAnimationContainerObserver observer;
   TestAnimationDelegate delegate1;
 
   scoped_refptr<AnimationContainer> container(new AnimationContainer());
   container->set_observer(&observer);
   TestAnimation animation1(&delegate1);
   animation1.SetContainer(container.get());
-
-  // We expect to get these two calls: the animation progressed, and then when
-  // the animation completed the container went empty.
-  EXPECT_CALL(observer, AnimationContainerProgressed(container.get())).Times(
-      AtLeast(1));
-  EXPECT_CALL(observer, AnimationContainerEmpty(container.get())).Times(1);
 
   // Start the animation.
   animation1.Start();
@@ -115,8 +122,12 @@ TEST_F(AnimationContainerTest, Observer) {
   // Run the message loop. The delegate quits the message loop when notified.
   base::MessageLoop::current()->Run();
 
+  EXPECT_EQ(1, observer.progressed_count());
+
   // The timer should have finished.
   EXPECT_TRUE(delegate1.finished());
+
+  EXPECT_TRUE(observer.empty());
 
   // And the container should no longer be running.
   EXPECT_FALSE(container->is_running());
