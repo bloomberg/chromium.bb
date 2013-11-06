@@ -416,7 +416,9 @@ fi
 echo
 echo "Initializing Automake:"
 
-AM_INIT_AUTOMAKE([1.10 foreign tar-v7 filename-length-max=99])
+# Automake 1.10 should still be enough but you need to omit serial-tests.
+dnl AM_INIT_AUTOMAKE([1.10 foreign tar-v7 filename-length-max=99])
+AM_INIT_AUTOMAKE([1.12 foreign tar-v7 filename-length-max=99 serial-tests])
 AC_PROG_LN_S
 
 AC_PROG_CC_C99
@@ -460,7 +462,7 @@ AM_CONDITIONAL([COND_SHARED], [test "x$enable_shared" != xno])
 
 echo
 echo "Initializing gettext:"
-AM_GNU_GETTEXT_VERSION([0.16.1])
+AM_GNU_GETTEXT_VERSION([0.18])
 AM_GNU_GETTEXT([external])
 
 ###############################################################################
@@ -498,7 +500,7 @@ AC_TYPE_UINTPTR_T
 AC_CHECK_SIZEOF([size_t])
 
 # The command line tool can copy high resolution timestamps if such
-# information is availabe in struct stat. Otherwise one second accuracy
+# information is available in struct stat. Otherwise one second accuracy
 # is used.
 AC_CHECK_MEMBERS([
 	struct stat.st_atim.tv_nsec,
@@ -560,6 +562,7 @@ if test "$GCC" = yes ; then
 	for NEW_FLAG in \
 			-Wall \
 			-Wextra \
+			-Wvla \
 			-Wformat=2 \
 			-Winit-self \
 			-Wmissing-include-dirs \
