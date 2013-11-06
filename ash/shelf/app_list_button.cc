@@ -6,8 +6,8 @@
 
 #include <vector>
 
-#include "ash/launcher/launcher_button_host.h"
 #include "ash/launcher/launcher_types.h"
+#include "ash/shelf/shelf_button_host.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/accessibility/accessible_view_state.h"
@@ -25,7 +25,7 @@ const int kAnimationDurationInMs = 600;
 const float kAnimationOpacity[] = { 1.0f, 0.4f, 1.0f };
 
 AppListButton::AppListButton(views::ButtonListener* listener,
-                             LauncherButtonHost* host)
+                             ShelfButtonHost* host)
     : views::ImageButton(listener),
       host_(host) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -86,23 +86,23 @@ void AppListButton::StopLoadingAnimation() {
 
 bool AppListButton::OnMousePressed(const ui::MouseEvent& event) {
   ImageButton::OnMousePressed(event);
-  host_->PointerPressedOnButton(this, LauncherButtonHost::MOUSE, event);
+  host_->PointerPressedOnButton(this, ShelfButtonHost::MOUSE, event);
   return true;
 }
 
 void AppListButton::OnMouseReleased(const ui::MouseEvent& event) {
   ImageButton::OnMouseReleased(event);
-  host_->PointerReleasedOnButton(this, LauncherButtonHost::MOUSE, false);
+  host_->PointerReleasedOnButton(this, ShelfButtonHost::MOUSE, false);
 }
 
 void AppListButton::OnMouseCaptureLost() {
-  host_->PointerReleasedOnButton(this, LauncherButtonHost::MOUSE, true);
+  host_->PointerReleasedOnButton(this, ShelfButtonHost::MOUSE, true);
   ImageButton::OnMouseCaptureLost();
 }
 
 bool AppListButton::OnMouseDragged(const ui::MouseEvent& event) {
   ImageButton::OnMouseDragged(event);
-  host_->PointerDraggedOnButton(this, LauncherButtonHost::MOUSE, event);
+  host_->PointerDraggedOnButton(this, ShelfButtonHost::MOUSE, event);
   return true;
 }
 

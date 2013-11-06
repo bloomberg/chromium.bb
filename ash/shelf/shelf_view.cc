@@ -633,7 +633,7 @@ bool ShelfView::StartDrag(const std::string& app_id,
   ui::MouseEvent event(ui::ET_MOUSE_PRESSED,
                        pt, location_in_screen_coordinates, 0);
   PointerPressedOnButton(
-      drag_and_drop_view, LauncherButtonHost::DRAG_AND_DROP, event);
+      drag_and_drop_view, ShelfButtonHost::DRAG_AND_DROP, event);
 
   // Drag the item where it really belongs.
   Drag(location_in_screen_coordinates);
@@ -652,7 +652,7 @@ bool ShelfView::Drag(const gfx::Point& location_in_screen_coordinates) {
 
   ui::MouseEvent event(ui::ET_MOUSE_DRAGGED, pt, gfx::Point(), 0);
   PointerDraggedOnButton(
-      drag_and_drop_view, LauncherButtonHost::DRAG_AND_DROP, event);
+      drag_and_drop_view, ShelfButtonHost::DRAG_AND_DROP, event);
   return true;
 }
 
@@ -663,7 +663,7 @@ void ShelfView::EndDrag(bool cancel) {
   views::View* drag_and_drop_view = view_model_->view_at(
       model_->ItemIndexByID(drag_and_drop_launcher_id_));
   PointerReleasedOnButton(
-      drag_and_drop_view, LauncherButtonHost::DRAG_AND_DROP, cancel);
+      drag_and_drop_view, ShelfButtonHost::DRAG_AND_DROP, cancel);
 
   // Either destroy the temporarily created item - or - make the item visible.
   if (drag_and_drop_item_pinned_ && cancel)

@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "ash/ash_switches.h"
-#include "ash/launcher/launcher_button_host.h"
+#include "ash/shelf/shelf_button_host.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "grit/ash_resources.h"
 #include "skia/ext/image_operations.h"
@@ -221,7 +221,7 @@ bool LauncherButton::IconView::HitTestRect(const gfx::Rect& rect) const {
 
 LauncherButton* LauncherButton::Create(
     views::ButtonListener* listener,
-    LauncherButtonHost* host,
+    ShelfButtonHost* host,
     ShelfLayoutManager* shelf_layout_manager) {
   LauncherButton* button =
       new LauncherButton(listener, host, shelf_layout_manager);
@@ -230,7 +230,7 @@ LauncherButton* LauncherButton::Create(
 }
 
 LauncherButton::LauncherButton(views::ButtonListener* listener,
-                               LauncherButtonHost* host,
+                               ShelfButtonHost* host,
                                ShelfLayoutManager* shelf_layout_manager)
     : CustomButton(listener),
       host_(host),
@@ -355,24 +355,24 @@ void LauncherButton::ShowContextMenu(const gfx::Point& p,
 
 bool LauncherButton::OnMousePressed(const ui::MouseEvent& event) {
   CustomButton::OnMousePressed(event);
-  host_->PointerPressedOnButton(this, LauncherButtonHost::MOUSE, event);
+  host_->PointerPressedOnButton(this, ShelfButtonHost::MOUSE, event);
   return true;
 }
 
 void LauncherButton::OnMouseReleased(const ui::MouseEvent& event) {
   CustomButton::OnMouseReleased(event);
-  host_->PointerReleasedOnButton(this, LauncherButtonHost::MOUSE, false);
+  host_->PointerReleasedOnButton(this, ShelfButtonHost::MOUSE, false);
 }
 
 void LauncherButton::OnMouseCaptureLost() {
   ClearState(STATE_HOVERED);
-  host_->PointerReleasedOnButton(this, LauncherButtonHost::MOUSE, true);
+  host_->PointerReleasedOnButton(this, ShelfButtonHost::MOUSE, true);
   CustomButton::OnMouseCaptureLost();
 }
 
 bool LauncherButton::OnMouseDragged(const ui::MouseEvent& event) {
   CustomButton::OnMouseDragged(event);
-  host_->PointerDraggedOnButton(this, LauncherButtonHost::MOUSE, event);
+  host_->PointerDraggedOnButton(this, ShelfButtonHost::MOUSE, event);
   return true;
 }
 
@@ -481,16 +481,16 @@ void LauncherButton::OnGestureEvent(ui::GestureEvent* event) {
       ClearState(STATE_HOVERED);
       return CustomButton::OnGestureEvent(event);
     case ui::ET_GESTURE_SCROLL_BEGIN:
-      host_->PointerPressedOnButton(this, LauncherButtonHost::TOUCH, *event);
+      host_->PointerPressedOnButton(this, ShelfButtonHost::TOUCH, *event);
       event->SetHandled();
       return;
     case ui::ET_GESTURE_SCROLL_UPDATE:
-      host_->PointerDraggedOnButton(this, LauncherButtonHost::TOUCH, *event);
+      host_->PointerDraggedOnButton(this, ShelfButtonHost::TOUCH, *event);
       event->SetHandled();
       return;
     case ui::ET_GESTURE_SCROLL_END:
     case ui::ET_SCROLL_FLING_START:
-      host_->PointerReleasedOnButton(this, LauncherButtonHost::TOUCH, false);
+      host_->PointerReleasedOnButton(this, ShelfButtonHost::TOUCH, false);
       event->SetHandled();
       return;
     default:

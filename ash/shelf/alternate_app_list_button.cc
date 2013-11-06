@@ -5,8 +5,8 @@
 #include "ash/shelf/alternate_app_list_button.h"
 
 #include "ash/ash_switches.h"
-#include "ash/launcher/launcher_button_host.h"
 #include "ash/launcher/launcher_types.h"
+#include "ash/shelf/shelf_button_host.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -31,7 +31,7 @@ const int AlternateAppListButton::kImageBoundsSize = 7;
 
 
 AlternateAppListButton::AlternateAppListButton(views::ButtonListener* listener,
-                                               LauncherButtonHost* host,
+                                               ShelfButtonHost* host,
                                                ShelfWidget* shelf_widget)
     : views::ImageButton(listener),
       host_(host),
@@ -46,23 +46,23 @@ AlternateAppListButton::~AlternateAppListButton() {
 
 bool AlternateAppListButton::OnMousePressed(const ui::MouseEvent& event) {
   ImageButton::OnMousePressed(event);
-  host_->PointerPressedOnButton(this, LauncherButtonHost::MOUSE, event);
+  host_->PointerPressedOnButton(this, ShelfButtonHost::MOUSE, event);
   return true;
 }
 
 void AlternateAppListButton::OnMouseReleased(const ui::MouseEvent& event) {
   ImageButton::OnMouseReleased(event);
-  host_->PointerReleasedOnButton(this, LauncherButtonHost::MOUSE, false);
+  host_->PointerReleasedOnButton(this, ShelfButtonHost::MOUSE, false);
 }
 
 void AlternateAppListButton::OnMouseCaptureLost() {
-  host_->PointerReleasedOnButton(this, LauncherButtonHost::MOUSE, true);
+  host_->PointerReleasedOnButton(this, ShelfButtonHost::MOUSE, true);
   ImageButton::OnMouseCaptureLost();
 }
 
 bool AlternateAppListButton::OnMouseDragged(const ui::MouseEvent& event) {
   ImageButton::OnMouseDragged(event);
-  host_->PointerDraggedOnButton(this, LauncherButtonHost::MOUSE, event);
+  host_->PointerDraggedOnButton(this, ShelfButtonHost::MOUSE, event);
   return true;
 }
 
@@ -84,16 +84,16 @@ void AlternateAppListButton::OnMouseExited(const ui::MouseEvent& event) {
 void AlternateAppListButton::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
    case ui::ET_GESTURE_SCROLL_BEGIN:
-     host_->PointerPressedOnButton(this, LauncherButtonHost::TOUCH, *event);
+     host_->PointerPressedOnButton(this, ShelfButtonHost::TOUCH, *event);
      event->SetHandled();
      return;
    case ui::ET_GESTURE_SCROLL_UPDATE:
-     host_->PointerDraggedOnButton(this, LauncherButtonHost::TOUCH, *event);
+     host_->PointerDraggedOnButton(this, ShelfButtonHost::TOUCH, *event);
      event->SetHandled();
      return;
    case ui::ET_GESTURE_SCROLL_END:
    case ui::ET_SCROLL_FLING_START:
-     host_->PointerReleasedOnButton(this, LauncherButtonHost::TOUCH, false);
+     host_->PointerReleasedOnButton(this, ShelfButtonHost::TOUCH, false);
      event->SetHandled();
      return;
    default:

@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_LAUNCHER_LAUNCHER_BUTTON_HOST_H_
-#define ASH_LAUNCHER_LAUNCHER_BUTTON_HOST_H_
+#ifndef ASH_SHELF_SHELF_BUTTON_HOST_H_
+#define ASH_SHELF_SHELF_BUTTON_HOST_H_
 
 #include "ash/ash_export.h"
 #include "base/strings/string16.h"
@@ -19,9 +19,9 @@ class View;
 namespace ash {
 namespace internal {
 
-// The launcher buttons communicate back to the host by way of this interface.
-// This interface is used to enable reordering the items on the launcher.
-class ASH_EXPORT LauncherButtonHost {
+// The shelf buttons communicate back to the host by way of this interface.
+// This interface is used to enable reordering the items on the shelf.
+class ASH_EXPORT ShelfButtonHost {
  public:
   enum Pointer {
     NONE,
@@ -58,10 +58,10 @@ class ASH_EXPORT LauncherButtonHost {
   virtual base::string16 GetAccessibleName(const views::View* view) = 0;
 
  protected:
-  virtual ~LauncherButtonHost() {}
+  virtual ~ShelfButtonHost() {}
 };
 
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_LAUNCHER_LAUNCHER_BUTTON_HOST_H_
+#endif  // ASH_SHELF_SHELF_BUTTON_HOST_H_

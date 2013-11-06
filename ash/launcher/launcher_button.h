@@ -13,7 +13,7 @@
 namespace ash {
 namespace internal {
 
-class LauncherButtonHost;
+class ShelfButtonHost;
 class ShelfLayoutManager;
 
 // Button used for items on the launcher, except for the AppList.
@@ -41,7 +41,7 @@ class ASH_EXPORT LauncherButton : public views::CustomButton {
 
   // Called to create an instance of a LauncherButton.
   static LauncherButton* Create(views::ButtonListener* listener,
-                                LauncherButtonHost* host,
+                                ShelfButtonHost* host,
                                 ShelfLayoutManager* shelf_layout_manager);
 
   // Sets the image to display for this entry.
@@ -70,7 +70,7 @@ class ASH_EXPORT LauncherButton : public views::CustomButton {
 
  protected:
   LauncherButton(views::ButtonListener* listener,
-                 LauncherButtonHost* host,
+                 ShelfButtonHost* host,
                  ShelfLayoutManager* shelf_layout_manager);
 
   // Class that draws the icon part of a button, so it can be animated
@@ -118,7 +118,7 @@ class ASH_EXPORT LauncherButton : public views::CustomButton {
   // Override to subclass IconView.
   virtual IconView* CreateIconView();
   IconView* icon_view() const { return icon_view_; }
-  LauncherButtonHost* host() const { return host_; }
+  ShelfButtonHost* host() const { return host_; }
 
  private:
   class BarView;
@@ -134,7 +134,7 @@ class ASH_EXPORT LauncherButton : public views::CustomButton {
   // Updates the status bar (bitmap, orientation, visibility).
   void UpdateBar();
 
-  LauncherButtonHost* host_;
+  ShelfButtonHost* host_;
   IconView* icon_view_;
   // Draws a bar underneath the image to represent the state of the application.
   BarView* bar_;

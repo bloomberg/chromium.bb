@@ -10,13 +10,12 @@
 namespace ash {
 namespace internal {
 
-class LauncherButtonHost;
+class ShelfButtonHost;
 
-// Button used for the AppList icon on the launcher.
+// Button used for the AppList icon on the shelf.
 class AppListButton : public views::ImageButton {
  public:
-  AppListButton(views::ButtonListener* listener,
-                LauncherButtonHost* host);
+  AppListButton(views::ButtonListener* listener, ShelfButtonHost* host);
   virtual ~AppListButton();
 
   void StartLoadingAnimation();
@@ -34,7 +33,7 @@ class AppListButton : public views::ImageButton {
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
  private:
-  LauncherButtonHost* host_;
+  ShelfButtonHost* host_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListButton);
 };

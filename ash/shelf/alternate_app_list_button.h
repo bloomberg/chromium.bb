@@ -13,19 +13,19 @@ class ShelfWidget;
 
 namespace internal {
 
-class LauncherButtonHost;
+class ShelfButtonHost;
 
-// Button used for the AppList icon on the launcher.
-// This class is an alternate implementation to
-// ash::internal::AppListButton for the purposes of testing an
-// alternate shelf layout (see ash_switches: UseAlternateShelfLayout).
+// Button used for the AppList icon on the shelf.
+// This class is an alternate implementation to ash::internal::AppListButton
+// for the purposes of testing an alternate shelf layout
+// (see ash_switches: UseAlternateShelfLayout).
 class AlternateAppListButton : public views::ImageButton {
  public:
   // Bounds size (inset) required for the app icon image (in pixels).
   static const int kImageBoundsSize;
 
   AlternateAppListButton(views::ButtonListener* listener,
-                         LauncherButtonHost* host,
+                         ShelfButtonHost* host,
                          ShelfWidget* shelf_widget);
   virtual ~AlternateAppListButton();
 
@@ -45,7 +45,7 @@ class AlternateAppListButton : public views::ImageButton {
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  private:
-  LauncherButtonHost* host_;
+  ShelfButtonHost* host_;
   // Reference to the shelf widget containing this button, owned by the
   // root window controller.
   ShelfWidget* shelf_widget_;

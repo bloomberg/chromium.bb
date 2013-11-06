@@ -336,9 +336,9 @@ class ShelfViewTest : public AshTestBase {
   }
 
   views::View* SimulateButtonPressed(
-      internal::LauncherButtonHost::Pointer pointer,
+      internal::ShelfButtonHost::Pointer pointer,
       int button_index) {
-    internal::LauncherButtonHost* button_host = shelf_view_;
+    internal::ShelfButtonHost* button_host = shelf_view_;
     views::View* button = test_api_->GetButton(button_index);
     ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED,
                                button->bounds().origin(),
@@ -347,20 +347,20 @@ class ShelfViewTest : public AshTestBase {
     return button;
   }
 
-  views::View* SimulateClick(internal::LauncherButtonHost::Pointer pointer,
+  views::View* SimulateClick(internal::ShelfButtonHost::Pointer pointer,
                              int button_index) {
-    internal::LauncherButtonHost* button_host = shelf_view_;
+    internal::ShelfButtonHost* button_host = shelf_view_;
     views::View* button = SimulateButtonPressed(pointer, button_index);
     button_host->PointerReleasedOnButton(button,
-                                         internal::LauncherButtonHost::MOUSE,
+                                         internal::ShelfButtonHost::MOUSE,
                                          false);
     return button;
   }
 
-  views::View* SimulateDrag(internal::LauncherButtonHost::Pointer pointer,
+  views::View* SimulateDrag(internal::ShelfButtonHost::Pointer pointer,
                             int button_index,
                             int destination_index) {
-    internal::LauncherButtonHost* button_host = shelf_view_;
+    internal::ShelfButtonHost* button_host = shelf_view_;
     views::View* button = SimulateButtonPressed(pointer, button_index);
 
     // Drag.
@@ -782,7 +782,7 @@ TEST_F(ShelfViewTest, AddButtonQuickly) {
 // Check that model changes are handled correctly while a launcher icon is being
 // dragged.
 TEST_F(ShelfViewTest, ModelChangesWhileDragging) {
-  internal::LauncherButtonHost* button_host = shelf_view_;
+  internal::ShelfButtonHost* button_host = shelf_view_;
 
   std::vector<std::pair<LauncherID, views::View*> > id_map;
   SetupForDragTest(&id_map);
@@ -790,19 +790,18 @@ TEST_F(ShelfViewTest, ModelChangesWhileDragging) {
   // Dragging browser shortcut at index 1.
   EXPECT_TRUE(model_->items()[1].type == TYPE_BROWSER_SHORTCUT);
   views::View* dragged_button = SimulateDrag(
-      internal::LauncherButtonHost::MOUSE, 1, 3);
+      internal::ShelfButtonHost::MOUSE, 1, 3);
   std::rotate(id_map.begin() + 1,
               id_map.begin() + 2,
               id_map.begin() + 4);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
   button_host->PointerReleasedOnButton(dragged_button,
-                                       internal::LauncherButtonHost::MOUSE,
+                                       internal::ShelfButtonHost::MOUSE,
                                        false);
   EXPECT_TRUE(model_->items()[3].type == TYPE_BROWSER_SHORTCUT);
 
   // Dragging changes model order.
-  dragged_button = SimulateDrag(
-      internal::LauncherButtonHost::MOUSE, 1, 3);
+  dragged_button = SimulateDrag(internal::ShelfButtonHost::MOUSE, 1, 3);
   std::rotate(id_map.begin() + 1,
               id_map.begin() + 2,
               id_map.begin() + 4);
@@ -810,7 +809,7 @@ TEST_F(ShelfViewTest, ModelChangesWhileDragging) {
 
   // Cancelling the drag operation restores previous order.
   button_host->PointerReleasedOnButton(dragged_button,
-                                       internal::LauncherButtonHost::MOUSE,
+                                       internal::ShelfButtonHost::MOUSE,
                                        true);
   std::rotate(id_map.begin() + 1,
               id_map.begin() + 3,
@@ -818,38 +817,38 @@ TEST_F(ShelfViewTest, ModelChangesWhileDragging) {
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 
   // Deleting an item keeps the remaining intact.
-  dragged_button = SimulateDrag(internal::LauncherButtonHost::MOUSE, 1, 3);
+  dragged_button = SimulateDrag(internal::ShelfButtonHost::MOUSE, 1, 3);
   model_->RemoveItemAt(1);
   id_map.erase(id_map.begin() + 1);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
   button_host->PointerReleasedOnButton(dragged_button,
-                                       internal::LauncherButtonHost::MOUSE,
+                                       internal::ShelfButtonHost::MOUSE,
                                        false);
 
   // Adding a launcher item cancels the drag and respects the order.
-  dragged_button = SimulateDrag(internal::LauncherButtonHost::MOUSE, 1, 3);
+  dragged_button = SimulateDrag(internal::ShelfButtonHost::MOUSE, 1, 3);
   LauncherID new_id = AddAppShortcut();
   id_map.insert(id_map.begin() + 6,
                 std::make_pair(new_id, GetButtonByID(new_id)));
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
   button_host->PointerReleasedOnButton(dragged_button,
-                                       internal::LauncherButtonHost::MOUSE,
+                                       internal::ShelfButtonHost::MOUSE,
                                        false);
 
   // Adding a launcher item at the end (i.e. a panel)  canels drag and respects
   // the order.
-  dragged_button = SimulateDrag(internal::LauncherButtonHost::MOUSE, 1, 3);
+  dragged_button = SimulateDrag(internal::ShelfButtonHost::MOUSE, 1, 3);
   new_id = AddPanel();
   id_map.insert(id_map.begin() + 7,
                 std::make_pair(new_id, GetButtonByID(new_id)));
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
   button_host->PointerReleasedOnButton(dragged_button,
-                                       internal::LauncherButtonHost::MOUSE,
+                                       internal::ShelfButtonHost::MOUSE,
                                        false);
 }
 
 TEST_F(ShelfViewLegacyShelfLayoutTest, ModelChangesWhileDragging) {
-  internal::LauncherButtonHost* button_host = shelf_view_;
+  internal::ShelfButtonHost* button_host = shelf_view_;
 
   std::vector<std::pair<LauncherID, views::View*> > id_map;
   SetupForDragTest(&id_map);
@@ -857,19 +856,18 @@ TEST_F(ShelfViewLegacyShelfLayoutTest, ModelChangesWhileDragging) {
   // Dragging browser shortcut at index 0.
   EXPECT_TRUE(model_->items()[0].type == TYPE_BROWSER_SHORTCUT);
   views::View* dragged_button = SimulateDrag(
-      internal::LauncherButtonHost::MOUSE, 0, 2);
+      internal::ShelfButtonHost::MOUSE, 0, 2);
   std::rotate(id_map.begin(),
               id_map.begin() + 1,
               id_map.begin() + 3);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
   button_host->PointerReleasedOnButton(dragged_button,
-                                       internal::LauncherButtonHost::MOUSE,
+                                       internal::ShelfButtonHost::MOUSE,
                                        false);
   EXPECT_TRUE(model_->items()[2].type == TYPE_BROWSER_SHORTCUT);
 
   // Dragging changes model order.
-  dragged_button = SimulateDrag(
-      internal::LauncherButtonHost::MOUSE, 0, 2);
+  dragged_button = SimulateDrag(internal::ShelfButtonHost::MOUSE, 0, 2);
   std::rotate(id_map.begin(),
               id_map.begin() + 1,
               id_map.begin() + 3);
@@ -877,7 +875,7 @@ TEST_F(ShelfViewLegacyShelfLayoutTest, ModelChangesWhileDragging) {
 
   // Cancelling the drag operation restores previous order.
   button_host->PointerReleasedOnButton(dragged_button,
-                                       internal::LauncherButtonHost::MOUSE,
+                                       internal::ShelfButtonHost::MOUSE,
                                        true);
   std::rotate(id_map.begin(),
               id_map.begin() + 2,
@@ -885,80 +883,78 @@ TEST_F(ShelfViewLegacyShelfLayoutTest, ModelChangesWhileDragging) {
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 
   // Deleting an item keeps the remaining intact.
-  dragged_button = SimulateDrag(internal::LauncherButtonHost::MOUSE, 0, 2);
+  dragged_button = SimulateDrag(internal::ShelfButtonHost::MOUSE, 0, 2);
   model_->RemoveItemAt(1);
   id_map.erase(id_map.begin() + 1);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
   button_host->PointerReleasedOnButton(dragged_button,
-                                       internal::LauncherButtonHost::MOUSE,
+                                       internal::ShelfButtonHost::MOUSE,
                                        false);
 
   // Adding a launcher item cancels the drag and respects the order.
-  dragged_button = SimulateDrag(internal::LauncherButtonHost::MOUSE, 0, 2);
+  dragged_button = SimulateDrag(internal::ShelfButtonHost::MOUSE, 0, 2);
   LauncherID new_id = AddAppShortcut();
   id_map.insert(id_map.begin() + 5,
                 std::make_pair(new_id, GetButtonByID(new_id)));
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
   button_host->PointerReleasedOnButton(dragged_button,
-                                       internal::LauncherButtonHost::MOUSE,
+                                       internal::ShelfButtonHost::MOUSE,
                                        false);
 
   // Adding a launcher item at the end (i.e. a panel)  canels drag and respects
   // the order.
-  dragged_button = SimulateDrag(internal::LauncherButtonHost::MOUSE, 0, 2);
+  dragged_button = SimulateDrag(internal::ShelfButtonHost::MOUSE, 0, 2);
   new_id = AddPanel();
   id_map.insert(id_map.begin() + 7,
                 std::make_pair(new_id, GetButtonByID(new_id)));
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
   button_host->PointerReleasedOnButton(dragged_button,
-                                       internal::LauncherButtonHost::MOUSE,
+                                       internal::ShelfButtonHost::MOUSE,
                                        false);
 }
 
 // Check that 2nd drag from the other pointer would be ignored.
 TEST_F(ShelfViewTest, SimultaneousDrag) {
-  internal::LauncherButtonHost* button_host = shelf_view_;
+  internal::ShelfButtonHost* button_host = shelf_view_;
 
   std::vector<std::pair<LauncherID, views::View*> > id_map;
   SetupForDragTest(&id_map);
 
   // Start a mouse drag.
   views::View* dragged_button_mouse = SimulateDrag(
-      internal::LauncherButtonHost::MOUSE, 1, 3);
+      internal::ShelfButtonHost::MOUSE, 1, 3);
   std::rotate(id_map.begin() + 1,
               id_map.begin() + 2,
               id_map.begin() + 4);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
   // Attempt a touch drag before the mouse drag finishes.
   views::View* dragged_button_touch = SimulateDrag(
-      internal::LauncherButtonHost::TOUCH, 4, 2);
+      internal::ShelfButtonHost::TOUCH, 4, 2);
 
   // Nothing changes since 2nd drag is ignored.
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 
   // Finish the mouse drag.
   button_host->PointerReleasedOnButton(dragged_button_mouse,
-                                       internal::LauncherButtonHost::MOUSE,
+                                       internal::ShelfButtonHost::MOUSE,
                                        false);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 
   // Now start a touch drag.
-  dragged_button_touch = SimulateDrag(
-      internal::LauncherButtonHost::TOUCH, 4, 2);
+  dragged_button_touch = SimulateDrag(internal::ShelfButtonHost::TOUCH, 4, 2);
   std::rotate(id_map.begin() + 3,
               id_map.begin() + 4,
               id_map.begin() + 5);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 
   // And attempt a mouse drag before the touch drag finishes.
-  dragged_button_mouse = SimulateDrag(
-      internal::LauncherButtonHost::MOUSE, 1, 2);
+  dragged_button_mouse = SimulateDrag(internal::ShelfButtonHost::MOUSE, 1, 2);
 
   // Nothing changes since 2nd drag is ignored.
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 
   button_host->PointerReleasedOnButton(dragged_button_touch,
-                                       internal::LauncherButtonHost::TOUCH,
+                                       internal::ShelfButtonHost::TOUCH,
                                        false);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 }
@@ -966,24 +962,24 @@ TEST_F(ShelfViewTest, SimultaneousDrag) {
 // Check that clicking first on one item and then dragging another works as
 // expected.
 TEST_F(ShelfViewTest, ClickOneDragAnother) {
-  internal::LauncherButtonHost* button_host = shelf_view_;
+  internal::ShelfButtonHost* button_host = shelf_view_;
 
   std::vector<std::pair<LauncherID, views::View*> > id_map;
   SetupForDragTest(&id_map);
 
   // A click on item 1 is simulated.
-  SimulateClick(internal::LauncherButtonHost::MOUSE, 1);
+  SimulateClick(internal::ShelfButtonHost::MOUSE, 1);
 
   // Dragging browser index at 0 should change the model order correctly.
   EXPECT_TRUE(model_->items()[1].type == TYPE_BROWSER_SHORTCUT);
   views::View* dragged_button = SimulateDrag(
-      internal::LauncherButtonHost::MOUSE, 1, 3);
+      internal::ShelfButtonHost::MOUSE, 1, 3);
   std::rotate(id_map.begin() + 1,
               id_map.begin() + 2,
               id_map.begin() + 4);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
   button_host->PointerReleasedOnButton(dragged_button,
-                                       internal::LauncherButtonHost::MOUSE,
+                                       internal::ShelfButtonHost::MOUSE,
                                        false);
   EXPECT_TRUE(model_->items()[3].type == TYPE_BROWSER_SHORTCUT);
 }
@@ -1084,7 +1080,7 @@ TEST_F(ShelfViewTest, ShelfTooltipTest) {
   internal::LauncherButton* app_button = GetButtonByID(app_button_id);
   internal::LauncherButton* platform_button = GetButtonByID(platform_button_id);
 
-  internal::LauncherButtonHost* button_host = shelf_view_;
+  internal::ShelfButtonHost* button_host = shelf_view_;
   internal::ShelfTooltipManager* tooltip_manager =
       shelf_view_->tooltip_manager();
 
@@ -1122,7 +1118,7 @@ TEST_F(ShelfViewTest, ShelfTooltipTest) {
 // Verify a fix for crash caused by a tooltip update for a deleted launcher
 // button, see crbug.com/288838.
 TEST_F(ShelfViewTest, RemovingItemClosesTooltip) {
-  internal::LauncherButtonHost* button_host = shelf_view_;
+  internal::ShelfButtonHost* button_host = shelf_view_;
   internal::ShelfTooltipManager* tooltip_manager =
       shelf_view_->tooltip_manager();
 
@@ -1148,7 +1144,7 @@ TEST_F(ShelfViewTest, RemovingItemClosesTooltip) {
 
 // Changing the shelf alignment closes any open tooltip.
 TEST_F(ShelfViewTest, ShelfAlignmentClosesTooltip) {
-  internal::LauncherButtonHost* button_host = shelf_view_;
+  internal::ShelfButtonHost* button_host = shelf_view_;
   internal::ShelfTooltipManager* tooltip_manager =
       shelf_view_->tooltip_manager();
 

@@ -210,6 +210,7 @@
         'shelf/shelf_alignment_menu.h',
         'shelf/shelf_bezel_event_filter.cc',
         'shelf/shelf_bezel_event_filter.h',
+        'shelf/shelf_button_host.h',
         'shelf/shelf_icon_observer.h',
         'shelf/shelf_layout_manager.cc',
         'shelf/shelf_layout_manager.h',
