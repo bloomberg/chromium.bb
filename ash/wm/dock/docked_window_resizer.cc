@@ -105,7 +105,10 @@ void DockedWindowResizer::Drag(const gfx::Point& location, int event_flags) {
     if (is_docked_ && dock_layout_->is_dragged_window_docked())
       dock_layout_->UndockDraggedWindow();
     if (dock_layout_ != initial_dock_layout_)
-      dock_layout_->FinishDragging();
+      dock_layout_->FinishDragging(
+          DOCKED_ACTION_NONE,
+          details_.source == aura::client::WINDOW_MOVE_SOURCE_MOUSE ?
+              DOCKED_ACTION_SOURCE_MOUSE : DOCKED_ACTION_SOURCE_TOUCH);
     is_docked_ = false;
     dock_layout_ = new_dock_layout;
     // The window's initial layout manager already knows that the drag is
@@ -264,6 +267,7 @@ void DockedWindowResizer::FinishedDragging() {
     window_state->ClearRestoreBounds();
 
   // Check if the window needs to be docked or returned to workspace.
+  DockedAction action = DOCKED_ACTION_NONE;
   aura::Window* dock_container = Shell::GetContainer(
       window->GetRootWindow(),
       kShellWindowId_DockedContainer);
@@ -271,6 +275,7 @@ void DockedWindowResizer::FinishedDragging() {
       is_docked_ != (window->parent() == dock_container)) {
     if (is_docked_) {
       wm::ReparentChildWithTransientChildren(dock_container, window);
+      action = DOCKED_ACTION_DOCK;
     } else if (window->parent()->id() == kShellWindowId_DockedContainer) {
       // Reparent the window back to workspace.
       // We need to be careful to give ParentWindowWithContext a location in
@@ -284,15 +289,32 @@ void DockedWindowResizer::FinishedDragging() {
       aura::client::ParentWindowWithContext(window, window, near_last_location);
       if (window->parent() != previous_parent)
         wm::ReparentTransientChildrenOfChild(window->parent(), window);
+      action = was_docked_ ? DOCKED_ACTION_UNDOCK : DOCKED_ACTION_NONE;
     }
+  } else {
+    // Docked state was not changed but still need to record a UMA action.
+    if (is_resized && is_docked_ && was_docked_)
+      action = DOCKED_ACTION_RESIZE;
+    else if (is_docked_ && was_docked_)
+      action = DOCKED_ACTION_REORDER;
+    else if (is_docked_ && !was_docked_)
+      action = DOCKED_ACTION_DOCK;
+    else
+      action = DOCKED_ACTION_NONE;
   }
-  dock_layout_->FinishDragging();
+  dock_layout_->FinishDragging(
+      action,
+      details_.source == aura::client::WINDOW_MOVE_SOURCE_MOUSE ?
+          DOCKED_ACTION_SOURCE_MOUSE : DOCKED_ACTION_SOURCE_TOUCH);
 
   // If we started the drag in one root window and moved into another root
   // but then canceled the drag we may need to inform the original layout
   // manager that the drag is finished.
   if (initial_dock_layout_ != dock_layout_)
-    initial_dock_layout_->FinishDragging();
+    initial_dock_layout_->FinishDragging(
+        DOCKED_ACTION_NONE,
+        details_.source == aura::client::WINDOW_MOVE_SOURCE_MOUSE ?
+            DOCKED_ACTION_SOURCE_MOUSE : DOCKED_ACTION_SOURCE_TOUCH);
   is_docked_ = false;
 }
 

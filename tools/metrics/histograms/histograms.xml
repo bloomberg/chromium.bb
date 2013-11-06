@@ -216,6 +216,63 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Ash.Dock.Action" enum="DockedAction">
+  <summary>
+    User-initiated action taken that affects docked windows such as docking,
+    undocking, minimizing, restoring, closing or just dragging a docked window.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Dock.ActionSource" enum="DockedActionSource">
+  <summary>
+    Source (mouse, touch or unknown) of the user-initiated action for docked
+    windows.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Dock.ItemsAll">
+  <summary>
+    Number of all docked windows or panels including hidden or minimized.
+    Recorded on every user action that interacts with docked windows.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Dock.ItemsLarge">
+  <summary>
+    Number of large (wider than dock maximum width) windows that had to be
+    shrunk to get docked among the visible docked windows. Recorded on every
+    user action that interacts with docked windows.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Dock.ItemsPanels">
+  <summary>
+    Number of docked visible panels. Recorded on every user action that
+    interacts with docked windows.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Dock.ItemsVisible">
+  <summary>
+    Number of visible docked windows or panels. Recorded on every user action
+    that interacts with docked windows.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Dock.TimeBetweenUse" units="seconds">
+  <summary>
+    Time elapsed between instances of docking, undocking or any other action
+    affecting docked state of a window.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Dock.Width" units="pixels">
+  <summary>
+    Width of the docked area in pixels. Recorded every time it changes after a
+    user window resize operation is completed.
+  </summary>
+</histogram>
+
 <histogram name="Ash.GestureCreated" enum="UIEventType">
   <summary>
     The gesture-events recognized and dispatched by the browser gesture
@@ -21004,6 +21061,25 @@ other types of suffix sets.
   <int value="1" label="Just 127.0.0.1">
     127.0.0.1 was the only nameserver in the system DNS config.
   </int>
+</enum>
+
+<enum name="DockedAction" type="int">
+  <int value="0" label="None"/>
+  <int value="1" label="Dock"/>
+  <int value="2" label="Undock"/>
+  <int value="3" label="Resize"/>
+  <int value="4" label="Reorder"/>
+  <int value="5" label="Evict"/>
+  <int value="6" label="Maximize"/>
+  <int value="7" label="Minimize"/>
+  <int value="8" label="Restore"/>
+  <int value="9" label="Close"/>
+</enum>
+
+<enum name="DockedActionSource" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Mouse"/>
+  <int value="2" label="Touch"/>
 </enum>
 
 <enum name="DomainBoundCerts.GetCertResult" type="int">

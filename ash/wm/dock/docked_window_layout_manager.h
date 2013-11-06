@@ -17,6 +17,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
@@ -44,6 +45,31 @@ class DockedWindowLayoutManagerObserver;
 class DockedWindowResizerTest;
 class ShelfLayoutManager;
 class WorkspaceController;
+
+// User action recorded for use in UMA histograms.
+enum DockedAction {
+  DOCKED_ACTION_NONE,       // Regular drag of undocked window. Not recorded.
+  DOCKED_ACTION_DOCK,       // Dragged and docked a window.
+  DOCKED_ACTION_UNDOCK,     // Dragged and undocked a window.
+  DOCKED_ACTION_RESIZE,     // Resized a docked window.
+  DOCKED_ACTION_REORDER,    // Possibly reordered docked windows.
+  DOCKED_ACTION_EVICT,      // A docked window could not stay docked.
+  DOCKED_ACTION_MAXIMIZE,   // Maximized a docked window.
+  DOCKED_ACTION_MINIMIZE,   // Minimized a docked window.
+  DOCKED_ACTION_RESTORE,    // Restored a docked window that was minimized.
+  DOCKED_ACTION_CLOSE,      // Closed a window while it was docked.
+  DOCKED_ACTION_COUNT,      // Maximum value of this enum for histograms use.
+};
+
+// Event source for the docking user action (when known).
+enum DockedActionSource {
+  DOCKED_ACTION_SOURCE_UNKNOWN,
+  DOCKED_ACTION_SOURCE_MOUSE,
+  DOCKED_ACTION_SOURCE_TOUCH,
+
+  // Maximum value of this enum for histograms use.
+  DOCKED_ACTION_SOURCE_COUNT,
+};
 
 struct WindowWithHeight {
   explicit WindowWithHeight(aura::Window* window) :
@@ -104,7 +130,8 @@ class ASH_EXPORT DockedWindowLayoutManager
 
   // Called by a DockedWindowResizer when a window is no longer being dragged.
   // Stops observing the window unless it is a child.
-  void FinishDragging();
+  // Records |action| by |source| in UMA.
+  void FinishDragging(DockedAction action, DockedActionSource source);
 
   ash::Launcher* launcher() { return launcher_; }
   void SetLauncher(ash::Launcher* launcher);
@@ -179,6 +206,12 @@ class ASH_EXPORT DockedWindowLayoutManager
   // Minimize / restore window and relayout.
   void MinimizeDockedWindow(wm::WindowState* window_state);
   void RestoreDockedWindow(wm::WindowState* window_state);
+
+  // Record user-initiated |action| by |source| in UMA metrics.
+  void RecordUmaAction(DockedAction action, DockedActionSource source);
+
+  // Updates |docked_width_| and UMA histograms.
+  void UpdateDockedWidth(int width);
 
   // Updates docked layout state when a window gets inside the dock.
   void OnDraggedWindowDocked(aura::Window* window);
@@ -266,6 +299,10 @@ class ASH_EXPORT DockedWindowLayoutManager
   // The last active window. Used to maintain stacking order even if no windows
   // are currently focused.
   aura::Window* last_active_window_;
+
+  // Timestamp of the last user-initiated action that changed docked state.
+  // Used in UMA metrics.
+  base::Time last_action_time_;
 
   // Widget used to paint a background for the docked area.
   scoped_ptr<views::Widget> background_widget_;
