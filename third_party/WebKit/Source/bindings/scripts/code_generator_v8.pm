@@ -1293,7 +1293,7 @@ sub GenerateFeatureObservation
     my $measureAs = shift;
 
     if ($measureAs) {
-        AddToImplIncludes("core/page/UseCounter.h");
+        AddToImplIncludes("core/frame/UseCounter.h");
         return "    UseCounter::count(activeDOMWindow(), UseCounter::${measureAs});\n";
     }
 
@@ -1304,7 +1304,7 @@ sub GenerateDeprecationNotification
 {
     my $deprecateAs = shift;
     if ($deprecateAs) {
-        AddToImplIncludes("core/page/UseCounter.h");
+        AddToImplIncludes("core/frame/UseCounter.h");
         return "    UseCounter::countDeprecation(activeExecutionContext(), UseCounter::${deprecateAs});\n";
     }
     return "";

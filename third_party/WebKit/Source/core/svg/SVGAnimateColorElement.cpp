@@ -22,7 +22,7 @@
 #include "config.h"
 
 #include "SVGNames.h"
-#include "core/page/UseCounter.h"
+#include "core/frame/UseCounter.h"
 #include "core/svg/SVGAnimateColorElement.h"
 
 namespace WebCore {

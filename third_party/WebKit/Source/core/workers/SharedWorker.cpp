@@ -39,7 +39,7 @@
 #include "core/dom/MessagePort.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Page.h"
-#include "core/page/UseCounter.h"
+#include "core/frame/UseCounter.h"
 #include "core/workers/SharedWorkerRepositoryClient.h"
 #include "weborigin/KURL.h"
 #include "weborigin/SecurityOrigin.h"

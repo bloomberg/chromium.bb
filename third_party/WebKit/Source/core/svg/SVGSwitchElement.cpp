@@ -23,7 +23,7 @@
 #include "core/svg/SVGSwitchElement.h"
 
 #include "SVGNames.h"
-#include "core/page/UseCounter.h"
+#include "core/frame/UseCounter.h"
 #include "core/rendering/svg/RenderSVGTransformableContainer.h"
 
 namespace WebCore {

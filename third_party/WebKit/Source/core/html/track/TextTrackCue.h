@@ -35,7 +35,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/events/EventTarget.h"
 #include "core/html/HTMLDivElement.h"
-#include "core/page/UseCounter.h"
+#include "core/frame/UseCounter.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {

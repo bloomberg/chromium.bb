@@ -25,7 +25,7 @@
 #include "config.h"
 #include "core/rendering/RenderDeprecatedFlexibleBox.h"
 
-#include "core/page/UseCounter.h"
+#include "core/frame/UseCounter.h"
 #include "core/platform/graphics/Font.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderLayer.h"

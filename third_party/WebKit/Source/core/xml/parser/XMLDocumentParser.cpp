@@ -55,7 +55,7 @@
 #include "core/html/parser/HTMLEntityParser.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/ImageLoader.h"
-#include "core/page/UseCounter.h"
+#include "core/frame/UseCounter.h"
 #include "core/xml/XMLErrors.h"
 #include "core/xml/XMLTreeViewer.h"
 #include "core/xml/parser/XMLDocumentParserScope.h"

@@ -36,7 +36,7 @@
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/NamedNodesCollection.h"
 #include "core/html/HTMLAllCollection.h"
-#include "core/page/UseCounter.h"
+#include "core/frame/UseCounter.h"
 
 namespace WebCore {
 

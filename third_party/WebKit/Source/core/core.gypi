@@ -1307,7 +1307,7 @@
             'page/TouchAdjustment.h',
             'page/TouchDisambiguation.cpp',
             'page/TouchDisambiguation.h',
-            'page/UseCounter.cpp',
+            'frame/UseCounter.cpp',
             'page/WindowFeatures.cpp',
             'page/WindowFocusAllowedIndicator.cpp',
             'workers/WorkerNavigator.cpp',

@@ -37,7 +37,7 @@
 #include "core/frame/Frame.h"
 #include "core/page/FrameTree.h"
 #include "core/frame/FrameView.h"
-#include "core/page/UseCounter.h"
+#include "core/frame/UseCounter.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/svg/RenderSVGModelObject.h"

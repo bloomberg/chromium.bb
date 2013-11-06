@@ -49,7 +49,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/Frame.h"
-#include "core/page/UseCounter.h"
+#include "core/frame/UseCounter.h"
 #include "core/rendering/RenderTextControl.h"
 #include "platform/UserGestureIndicator.h"
 

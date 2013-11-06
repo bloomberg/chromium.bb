@@ -33,7 +33,7 @@
 #include "core/html/HTMLDataListElement.h"
 
 #include "core/dom/IdTargetObserverRegistry.h"
-#include "core/page/UseCounter.h"
+#include "core/frame/UseCounter.h"
 
 namespace WebCore {
 

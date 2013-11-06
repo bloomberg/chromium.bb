@@ -71,7 +71,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
 #include "core/frame/DOMWindow.h"
-#include "core/page/UseCounter.h"
+#include "core/frame/UseCounter.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
 #include "core/svg/properties/SVGStaticPropertyTearOff.h"
 #include "platform/TraceEvent.h"

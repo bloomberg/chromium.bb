@@ -32,7 +32,7 @@
 #include "CSSPropertyNames.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/events/ThreadLocalEventNames.h"
-#include "core/page/UseCounter.h"
+#include "core/frame/UseCounter.h"
 #include "core/frame/animation/AnimationControllerPrivate.h"
 #include "core/frame/animation/CSSPropertyAnimation.h"
 #include "core/frame/animation/CompositeAnimation.h"

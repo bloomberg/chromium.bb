@@ -174,7 +174,7 @@ def generate_deprecate_as(member, contents):
     if not deprecate_as:
         return
     contents['deprecate_as'] = deprecate_as
-    includes.update(['core/page/UseCounter.h'])
+    includes.update(['core/frame/UseCounter.h'])
 
 
 # [PerContextEnabled]
@@ -211,4 +211,4 @@ def generate_measure_as(definition_or_member, contents):
     if 'MeasureAs' not in definition_or_member.extended_attributes:
         return
     contents['measure_as'] = definition_or_member.extended_attributes['MeasureAs']
-    includes.add('core/page/UseCounter.h')
+    includes.add('core/frame/UseCounter.h')

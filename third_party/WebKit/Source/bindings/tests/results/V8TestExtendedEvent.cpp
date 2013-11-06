@@ -45,7 +45,7 @@
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
-#include "core/page/UseCounter.h"
+#include "core/frame/UseCounter.h"
 #include "platform/TraceEvent.h"
 #include "wtf/UnusedParam.h"
 

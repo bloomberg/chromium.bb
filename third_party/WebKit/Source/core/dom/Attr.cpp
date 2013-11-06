@@ -31,7 +31,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/Text.h"
 #include "core/events/ScopedEventQueue.h"
-#include "core/page/UseCounter.h"
+#include "core/frame/UseCounter.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/StringBuilder.h"
 

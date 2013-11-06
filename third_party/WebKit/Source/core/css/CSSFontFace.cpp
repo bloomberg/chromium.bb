@@ -31,7 +31,7 @@
 #include "core/css/CSSSegmentedFontFace.h"
 #include "core/css/FontFaceSet.h"
 #include "core/dom/Document.h"
-#include "core/page/UseCounter.h"
+#include "core/frame/UseCounter.h"
 #include "core/platform/graphics/SimpleFontData.h"
 
 namespace WebCore {

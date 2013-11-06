@@ -36,7 +36,7 @@
 #include "bindings/v8/SharedPersistent.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8NPObject.h"
-#include "core/page/UseCounter.h"
+#include "core/frame/UseCounter.h"
 
 namespace WebCore {
 

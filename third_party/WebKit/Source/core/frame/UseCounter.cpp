@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/page/UseCounter.h"
+#include "core/frame/UseCounter.h"
 
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StyleSheetContents.h"

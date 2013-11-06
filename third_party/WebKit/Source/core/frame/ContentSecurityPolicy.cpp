@@ -40,7 +40,7 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/PingLoader.h"
-#include "core/page/UseCounter.h"
+#include "core/frame/UseCounter.h"
 #include "platform/JSONValues.h"
 #include "platform/NotImplemented.h"
 #include "platform/ParsingUtilities.h"

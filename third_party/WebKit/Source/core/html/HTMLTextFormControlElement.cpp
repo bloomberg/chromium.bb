@@ -40,7 +40,7 @@
 #include "core/html/HTMLBRElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/frame/Frame.h"
-#include "core/page/UseCounter.h"
+#include "core/frame/UseCounter.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderTheme.h"
 #include "wtf/text/StringBuilder.h"

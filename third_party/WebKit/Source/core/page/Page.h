@@ -23,7 +23,7 @@
 
 #include "core/dom/ViewportDescription.h"
 #include "core/page/PageVisibilityState.h"
-#include "core/page/UseCounter.h"
+#include "core/frame/UseCounter.h"
 #include "core/rendering/Pagination.h"
 #include "platform/LifecycleContext.h"
 #include "platform/Supplementable.h"

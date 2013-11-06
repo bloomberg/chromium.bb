@@ -36,7 +36,7 @@
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/html/forms/InputTypeView.h"
 #include "core/html/forms/StepRange.h"
-#include "core/page/UseCounter.h"
+#include "core/frame/UseCounter.h"
 
 namespace WebCore {
 

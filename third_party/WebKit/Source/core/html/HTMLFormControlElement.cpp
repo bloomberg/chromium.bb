@@ -35,7 +35,7 @@
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/html/ValidityState.h"
 #include "core/html/forms/ValidationMessage.h"
-#include "core/page/UseCounter.h"
+#include "core/frame/UseCounter.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderTheme.h"
 #include "wtf/Vector.h"

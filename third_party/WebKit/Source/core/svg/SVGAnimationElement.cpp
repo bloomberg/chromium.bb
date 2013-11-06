@@ -30,7 +30,7 @@
 #include "SVGNames.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSParser.h"
-#include "core/page/UseCounter.h"
+#include "core/frame/UseCounter.h"
 #include "core/svg/SVGAnimateElement.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGParserUtilities.h"
