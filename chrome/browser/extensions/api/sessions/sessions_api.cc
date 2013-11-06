@@ -393,8 +393,9 @@ void SessionsRestoreFunction::SetInvalidIdError(const std::string& invalid_id) {
 
 void SessionsRestoreFunction::SetResultRestoredTab(
     const content::WebContents* contents) {
-  scoped_ptr<tabs::Tab> tab(tabs::Tab::FromValue(
-      *ExtensionTabUtil::CreateTabValue(contents, GetExtension())));
+  scoped_ptr<DictionaryValue> tab_value(
+      ExtensionTabUtil::CreateTabValue(contents, GetExtension()));
+  scoped_ptr<tabs::Tab> tab(tabs::Tab::FromValue(*tab_value));
   scoped_ptr<api::sessions::Session> restored_session(CreateSessionModelHelper(
       base::Time::Now().ToTimeT(),
       tab.Pass(),
