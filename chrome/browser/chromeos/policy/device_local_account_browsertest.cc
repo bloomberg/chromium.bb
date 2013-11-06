@@ -97,6 +97,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "net/url_request/url_request_status.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -256,10 +257,11 @@ scoped_ptr<net::FakeURLFetcher> RunCallbackAndReturnFakeURLFetcher(
     const GURL& url,
     net::URLFetcherDelegate* delegate,
     const std::string& response_data,
-    net::HttpStatusCode response_code) {
+    net::HttpStatusCode response_code,
+    net::URLRequestStatus::Status status) {
   task_runner->PostTask(FROM_HERE, callback);
   return make_scoped_ptr(new net::FakeURLFetcher(
-      url, delegate, response_data, response_code));
+      url, delegate, response_data, response_code, status));
 }
 
 }  // namespace
@@ -837,7 +839,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExternalData) {
                      run_loop->QuitClosure())));
   fetcher_factory->SetFakeResponse(GURL(kExternalDataURL),
                                    kExternalData,
-                                   net::HTTP_OK);
+                                   net::HTTP_OK,
+                                   net::URLRequestStatus::SUCCESS);
 
   // TODO(bartfab): The test injects an ExternalDataFetcher for an arbitrary
   // policy. This is only done because there are no policies that reference

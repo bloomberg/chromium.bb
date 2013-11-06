@@ -287,7 +287,8 @@ class FakeURLFetcher : public TestURLFetcher {
   FakeURLFetcher(const GURL& url,
                  URLFetcherDelegate* d,
                  const std::string& response_data,
-                 HttpStatusCode response_code);
+                 HttpStatusCode response_code,
+                 URLRequestStatus::Status status);
 
   // Start the request.  This will call the given delegate asynchronously
   // with the pre-baked response as parameter.
@@ -326,18 +327,29 @@ class FakeURLFetcher : public TestURLFetcher {
 //  // want to respond with a simple html page and an HTTP/200 code.
 //  factory.SetFakeResponse("http://a.com/success",
 //                          "<html><body>hello world</body></html>",
-//                          HTTP_OK);
-//  // You know that class SomeService will request url http://a.com/failure and
-//  // you want to test the service class by returning a server error.
+//                          HTTP_OK,
+//                          URLRequestStatus::SUCCESS);
+//  // You know that class SomeService will request url http://a.com/servererror
+//  // and you want to test the service class by returning a server error.
+//  factory.SetFakeResponse("http://a.com/servererror",
+//                          "",
+//                          HTTP_INTERNAL_SERVER_ERROR,
+//                          URLRequestStatus::SUCCESS);
+//  // You know that class SomeService will request url http://a.com/autherror
+//  // and you want to test the service class by returning a specific error
+//  // code, say, a HTTP/401 error.
+//  factory.SetFakeResponse("http://a.com/autherror",
+//                          "some_response",
+//                          HTTP_UNAUTHORIZED,
+//                          URLRequestStatus::SUCCESS);
+//
+//  // You know that class SomeService will request url http://a.com/failure
+//  // and you want to test the service class by returning a failure in the
+//  // network layer.
 //  factory.SetFakeResponse("http://a.com/failure",
 //                          "",
-//                          HTTP_INTERNAL_SERVER_ERROR);
-//  // You know that class SomeService will request url http://a.com/error and
-//  // you want to test the service class by returning a specific error code,
-//  // say, a HTTP/401 error.
-//  factory.SetFakeResponse("http://a.com/error",
-//                          "some_response",
-//                          HTTP_UNAUTHORIZED);
+//                          HTTP_INTERNAL_SERVER_ERROR,
+//                          URLRequestStatus::FAILURE);
 //
 //  SomeService service;
 //  service.Run();  // Will eventually request these three URLs.
@@ -350,13 +362,16 @@ class FakeURLFetcherFactory : public URLFetcherFactory,
   // |delegate| Delegate for FakeURLFetcher
   // |response_data| response data for FakeURLFetcher
   // |response_code| response code for FakeURLFetcher
+  // |status| URL fetch status for FakeURLFetcher
   // These arguments should by default be used in instantiating FakeURLFetcher
-  // as follows: new FakeURLFetcher(url, delegate, response_data, response_code)
+  // like so:
+  // new FakeURLFetcher(url, delegate, response_data, response_code, status)
   typedef base::Callback<scoped_ptr<FakeURLFetcher>(
       const GURL&,
       URLFetcherDelegate*,
       const std::string&,
-      HttpStatusCode)> FakeURLFetcherCreator;
+      HttpStatusCode,
+      URLRequestStatus::Status)> FakeURLFetcherCreator;
 
   // |default_factory|, which can be NULL, is a URLFetcherFactory that
   // will be used to construct a URLFetcher in case the URL being created
@@ -390,20 +405,28 @@ class FakeURLFetcherFactory : public URLFetcherFactory,
   // Sets the fake response for a given URL. The |response_data| may be empty.
   // The |response_code| may be any HttpStatusCode. For instance, HTTP_OK will
   // return an HTTP/200 and HTTP_INTERNAL_SERVER_ERROR will return an HTTP/500.
-  // Note: The URLRequestStatus of FakeURLFetchers created by the factory will
-  // be FAILED for HttpStatusCodes HTTP/5xx, and SUCCESS for all other codes.
+  // The |status| argument may be any URLRequestStatus::Status value. Typically,
+  // requests that return a valid HttpStatusCode have the SUCCESS status, while
+  // requests that indicate a failure to connect to the server have the FAILED
+  // status.
   void SetFakeResponse(const GURL& url,
                        const std::string& response_data,
-                       HttpStatusCode response_code);
+                       HttpStatusCode response_code,
+                       URLRequestStatus::Status status);
 
   // Clear all the fake responses that were previously set via
   // SetFakeResponse().
   void ClearFakeResponses();
 
  private:
+  struct FakeURLResponse {
+    std::string response_data;
+    HttpStatusCode response_code;
+    URLRequestStatus::Status status;
+  };
+  typedef std::map<GURL, FakeURLResponse> FakeResponseMap;
+
   const FakeURLFetcherCreator creator_;
-  typedef std::map<GURL,
-                   std::pair<std::string, HttpStatusCode> > FakeResponseMap;
   FakeResponseMap fake_responses_;
   URLFetcherFactory* const default_factory_;
 
@@ -411,7 +434,8 @@ class FakeURLFetcherFactory : public URLFetcherFactory,
       const GURL& url,
       URLFetcherDelegate* delegate,
       const std::string& response_data,
-      HttpStatusCode response_code);
+      HttpStatusCode response_code,
+      URLRequestStatus::Status status);
   DISALLOW_COPY_AND_ASSIGN(FakeURLFetcherFactory);
 };
 

@@ -10,6 +10,7 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -33,11 +34,11 @@ public:
     factory_->SetFakeResponse(
         GURL(kTestPageA),
         std::string(kTestPageAResponse, sizeof(kTestPageAResponse)),
-        net::HTTP_OK);
+        net::HTTP_OK, net::URLRequestStatus::SUCCESS);
     factory_->SetFakeResponse(
         GURL(kTestPageB),
         std::string(kTestPageBResponse, sizeof(kTestPageBResponse)),
-        net::HTTP_INTERNAL_SERVER_ERROR);
+        net::HTTP_INTERNAL_SERVER_ERROR, net::URLRequestStatus::FAILED);
   }
 
   void Fetch(const std::string& url,

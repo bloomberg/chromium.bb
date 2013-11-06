@@ -12,6 +12,7 @@
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -111,7 +112,8 @@ IN_PROC_BROWSER_TEST_F(NotificationBitmapFetcherBrowserTest,
 
   NotificationBitmapFetcher fetcher(url, &delegate);
 
-  url_fetcher_factory_->SetFakeResponse(url, image_string, net::HTTP_OK);
+  url_fetcher_factory_->SetFakeResponse(url, image_string, net::HTTP_OK,
+                                        net::URLRequestStatus::SUCCESS);
 
   // We expect that the image decoder will get called and return
   // an image in a callback to OnImageDecoded().
@@ -163,7 +165,8 @@ IN_PROC_BROWSER_TEST_F(NotificationBitmapFetcherBrowserTest,
 
   url_fetcher_factory_->SetFakeResponse(url,
                                         std::string(),
-                                        net::HTTP_INTERNAL_SERVER_ERROR);
+                                        net::HTTP_INTERNAL_SERVER_ERROR,
+                                        net::URLRequestStatus::FAILED);
 
   fetcher.Start(browser()->profile());
 
@@ -179,7 +182,8 @@ IN_PROC_BROWSER_TEST_F(NotificationBitmapFetcherBrowserTest,
   NotificationBitmapFetcherTestDelegate delegate(kAsyncCall);
   NotificationBitmapFetcher fetcher(url, &delegate);
   url_fetcher_factory_->SetFakeResponse(
-      url, std::string("Not a real bitmap"), net::HTTP_OK);
+      url, std::string("Not a real bitmap"),
+      net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 
   fetcher.Start(browser()->profile());
 

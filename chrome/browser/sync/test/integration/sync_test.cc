@@ -430,23 +430,28 @@ void SyncTest::SetupMockGaiaResponses() {
   fake_factory_->SetFakeResponse(
       GaiaUrls::GetInstance()->client_login_url(),
       "SID=sid\nLSID=lsid",
-      net::HTTP_OK);
+      net::HTTP_OK,
+      net::URLRequestStatus::SUCCESS);
   fake_factory_->SetFakeResponse(
       GaiaUrls::GetInstance()->get_user_info_url(),
       "email=user@gmail.com\ndisplayEmail=user@gmail.com",
-      net::HTTP_OK);
+      net::HTTP_OK,
+      net::URLRequestStatus::SUCCESS);
   fake_factory_->SetFakeResponse(
       GaiaUrls::GetInstance()->issue_auth_token_url(),
       "auth",
-      net::HTTP_OK);
+      net::HTTP_OK,
+      net::URLRequestStatus::SUCCESS);
   fake_factory_->SetFakeResponse(
       GURL(GoogleURLTracker::kSearchDomainCheckURL),
       ".google.com",
-      net::HTTP_OK);
+      net::HTTP_OK,
+      net::URLRequestStatus::SUCCESS);
   fake_factory_->SetFakeResponse(
       GaiaUrls::GetInstance()->client_login_to_oauth2_url(),
       "some_response",
-      net::HTTP_OK);
+      net::HTTP_OK,
+      net::URLRequestStatus::SUCCESS);
   fake_factory_->SetFakeResponse(
       GaiaUrls::GetInstance()->oauth2_token_url(),
       "{"
@@ -455,11 +460,13 @@ void SyncTest::SetupMockGaiaResponses() {
       "  \"expires_in\": 3600,"
       "  \"token_type\": \"Bearer\""
       "}",
-      net::HTTP_OK);
+      net::HTTP_OK,
+      net::URLRequestStatus::SUCCESS);
   fake_factory_->SetFakeResponse(
       GaiaUrls::GetInstance()->oauth1_login_url(),
       "SID=sid\nLSID=lsid\nAuth=auth_token",
-      net::HTTP_OK);
+      net::HTTP_OK,
+      net::URLRequestStatus::SUCCESS);
 }
 
 void SyncTest::ClearMockGaiaResponses() {

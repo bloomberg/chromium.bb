@@ -15,6 +15,7 @@
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_impl.h"
+#include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -107,7 +108,8 @@ TEST_F(CloudPrintPrinterListTest, SuccessOAuth2) {
   fetcher_factory_->SetFakeResponse(
       GURL("http://SoMeUrL.com/cloudprint/search"),
       kSampleSuccessResponseOAuth,
-      net::HTTP_OK);
+      net::HTTP_OK,
+      net::URLRequestStatus::SUCCESS);
 
   CloudPrintBaseApiFlow* cloudprint_flow =
       printer_list_->GetOAuth2ApiFlowForTests();

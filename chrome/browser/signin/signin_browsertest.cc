@@ -27,6 +27,7 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
+#include "net/url_request/url_request_status.h"
 
 namespace {
 const char kNonSigninURL[] = "www.google.com";
@@ -55,12 +56,11 @@ class SigninBrowserTest : public InProcessBrowserTest {
     factory_.reset(new net::URLFetcherImplFactory());
     fake_factory_.reset(new net::FakeURLFetcherFactory(factory_.get()));
     fake_factory_->SetFakeResponse(
-        GaiaUrls::GetInstance()->service_login_url(),
-        std::string(),
-        net::HTTP_OK);
-    fake_factory_->SetFakeResponse(GURL(kNonSigninURL),
-                                   std::string(),
-                                   net::HTTP_OK);
+        GaiaUrls::GetInstance()->service_login_url(), std::string(),
+        net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+    fake_factory_->SetFakeResponse(
+        GURL(kNonSigninURL), std::string(), net::HTTP_OK,
+        net::URLRequestStatus::SUCCESS);
     // Yield control back to the InProcessBrowserTest framework.
     InProcessBrowserTest::SetUp();
   }

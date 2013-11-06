@@ -123,7 +123,9 @@ void DataReductionProxySettingsTestBase::SetProbeResult(
             GURL(test_url),
             settings,
             response,
-            success ? net::HTTP_OK : net::HTTP_INTERNAL_SERVER_ERROR)));
+            success ? net::HTTP_OK : net::HTTP_INTERNAL_SERVER_ERROR,
+            success ? net::URLRequestStatus::SUCCESS :
+                      net::URLRequestStatus::FAILED)));
   }
 }
 

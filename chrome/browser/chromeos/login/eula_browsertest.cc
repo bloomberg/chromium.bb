@@ -12,6 +12,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
+#include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::Exactly;
@@ -36,9 +37,10 @@ class TestURLFetcherCallback {
       const GURL& url,
       net::URLFetcherDelegate* d,
       const std::string& response_data,
-      net::HttpStatusCode response_code) {
+      net::HttpStatusCode response_code,
+      net::URLRequestStatus::Status status) {
     scoped_ptr<net::FakeURLFetcher> fetcher(
-        new net::FakeURLFetcher(url, d, response_data, response_code));
+        new net::FakeURLFetcher(url, d, response_data, response_code, status));
     OnRequestCreate(url, fetcher.get());
     return fetcher.Pass();
   }
@@ -60,7 +62,8 @@ IN_PROC_BROWSER_TEST_F(TermsOfServiceProcessBrowserTest, LoadOnline) {
       NULL,
       base::Bind(&TestURLFetcherCallback::CreateURLFetcher,
                  base::Unretained(&url_callback)));
-  factory.SetFakeResponse(GURL(kEULAURL), kFakeOnlineEULA, net::HTTP_OK);
+  factory.SetFakeResponse(GURL(kEULAURL), kFakeOnlineEULA,
+                          net::HTTP_OK, net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(url_callback, OnRequestCreate(GURL(kEULAURL), _))
       .Times(Exactly(1))
       .WillRepeatedly(Invoke(AddMimeHeader));
@@ -80,7 +83,8 @@ IN_PROC_BROWSER_TEST_F(TermsOfServiceProcessBrowserTest, LoadOnline) {
 // Make sure offline version is shown.
 IN_PROC_BROWSER_TEST_F(TermsOfServiceProcessBrowserTest, LoadOffline) {
   net::FakeURLFetcherFactory factory(NULL);
-  factory.SetFakeResponse(GURL(kEULAURL), "", net::HTTP_INTERNAL_SERVER_ERROR);
+  factory.SetFakeResponse(GURL(kEULAURL), "", net::HTTP_INTERNAL_SERVER_ERROR,
+                          net::URLRequestStatus::FAILED);
 
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUITermsURL));
   content::WebContents* web_contents =
