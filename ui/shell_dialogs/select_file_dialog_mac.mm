@@ -193,7 +193,7 @@ void SelectFileDialogImpl::SelectFileImpl(
     dialog = [[NSOpenPanel openPanel] retain];
 
   if (!title.empty())
-    [dialog setTitle:base::SysUTF16ToNSString(title)];
+    [dialog setMessage:base::SysUTF16ToNSString(title)];
 
   NSString* default_dir = nil;
   NSString* default_filename = nil;
