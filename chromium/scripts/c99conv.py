@@ -56,7 +56,9 @@ def main():
       DISABLED_WARNINGS +
       ['-I', '.', '-I', FFMPEG_ROOT, '-I', 'chromium/config',
        '-I', 'chromium/include/win', input_file],
-      cwd=FFMPEG_ROOT, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+      cwd=FFMPEG_ROOT, stderr=subprocess.STDOUT, stdout=subprocess.PIPE,
+      # universal_newlines ensures whitespace is correct for #line directives.
+      universal_newlines=True)
   stdout, stderr = p.communicate()
 
   # Abort if any error occurred.
@@ -68,9 +70,11 @@ def main():
 
   with open(preprocessed_output_file, 'w') as f:
     # Write out stdout but skip the filename print out that MSVC forces for
-    # every cl.exe execution as well as ridiculous amounts of white space;
-    # saves ~64mb of output over the entire conversion!
-    f.write(re.sub('(?:%s)+' % os.linesep, '\n',
+    # every cl.exe execution as well as ridiculous amounts of white space; saves
+    # ~64mb of output over the entire conversion!  Care must be taken while
+    # trimming whitespace to keep #line directives accurate or stack traces will
+    # be inaccurate.
+    f.write(re.sub('\s+\n(#line|#pragma)', r'\n\1',
                    stdout[len(os.path.basename(input_file)):]))
 
   # Run the converter command.  Note: the input file must have a '.c' extension
