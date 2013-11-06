@@ -13,9 +13,6 @@
 
 var CreateEvent = require('webView').CreateEvent;
 var MessagingNatives = requireNative('messaging_natives');
-var WebRequestEvent = require('webRequestInternal').WebRequestEvent;
-var WebRequestSchema =
-    requireNative('schema_registry').GetSchema('webRequest');
 var WebViewInternal = require('webView').WebViewInternal;
 var WebView = require('webView').WebView;
 
