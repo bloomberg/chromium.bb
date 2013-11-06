@@ -408,8 +408,7 @@ protected:
     WebFrame* m_frame;
 };
 
-// crbug.com/310440
-TEST_F(WebFrameCSSCallbackTest, DISABLED_AuthorStyleSheet)
+TEST_F(WebFrameCSSCallbackTest, AuthorStyleSheet)
 {
     loadHTML(
         "<style>"
@@ -482,7 +481,7 @@ TEST_F(WebFrameCSSCallbackTest, SharedRenderStyle)
     EXPECT_THAT(matchedSelectors(), testing::ElementsAre());
 }
 
-TEST_F(WebFrameCSSCallbackTest, DISABLED_CatchesAttributeChange)
+TEST_F(WebFrameCSSCallbackTest, CatchesAttributeChange)
 {
     loadHTML("<span></span>");
 
@@ -500,7 +499,7 @@ TEST_F(WebFrameCSSCallbackTest, DISABLED_CatchesAttributeChange)
     EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span[attr=\"value\"]"));
 }
 
-TEST_F(WebFrameCSSCallbackTest, DISABLED_DisplayNone)
+TEST_F(WebFrameCSSCallbackTest, DisplayNone)
 {
     loadHTML("<div style='display:none'><span></span></div>");
 
@@ -546,12 +545,7 @@ TEST_F(WebFrameCSSCallbackTest, DISABLED_DisplayNone)
     EXPECT_THAT(matchedSelectors(), testing::ElementsAre());
 }
 
-// Flaky on Win7 and Mac dbg: crbug.com/314554
-#if (OS(MACOSX) || OS(WIN)) && !defined(NDEBUG)
-TEST_F(WebFrameCSSCallbackTest, FLAKY_Reparenting)
-#else
 TEST_F(WebFrameCSSCallbackTest, Reparenting)
-#endif
 {
     loadHTML(
         "<div id='d1'><span></span></div>"
@@ -573,8 +567,7 @@ TEST_F(WebFrameCSSCallbackTest, Reparenting)
     EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span"));
 }
 
-// Flaky: crbug.com/310440
-TEST_F(WebFrameCSSCallbackTest, DISABLED_MultiSelector)
+TEST_F(WebFrameCSSCallbackTest, MultiSelector)
 {
     loadHTML("<span></span>");
 
@@ -590,12 +583,7 @@ TEST_F(WebFrameCSSCallbackTest, DISABLED_MultiSelector)
     EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span", "span, p"));
 }
 
-// Flaky on MacOS https://code.google.com/p/chromium/issues/detail?id=310361
-#if OS(MACOSX)
-TEST_F(WebFrameCSSCallbackTest, DISABLED_InvalidSelector)
-#else
 TEST_F(WebFrameCSSCallbackTest, InvalidSelector)
-#endif
 {
     loadHTML("<p><span></span></p>");
 
