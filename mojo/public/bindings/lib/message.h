@@ -27,18 +27,30 @@ MOJO_COMPILE_ASSERT(sizeof(MessageData) == 9, bad_sizeof_MessageData);
 
 #pragma pack(pop)
 
-struct Message {
+// Message is a holder for the data and handles to be sent over a MessagePipe.
+// Message owns its data, but a consumer of Message is free to manipulate the
+// data member or replace it. If replacing, then be sure to use |malloc| to
+// allocate the memory.
+class Message {
+ public:
   Message();
   ~Message();
 
+  void Swap(Message* other);
+
   MessageData* data;  // Heap-allocated.
   std::vector<Handle> handles;
+
+ private:
+  MOJO_DISALLOW_COPY_AND_ASSIGN(Message);
 };
 
 class MessageReceiver {
  public:
   // The receiver may mutate the given message or take ownership of its
-  // |message->data| member by setting it to NULL.
+  // |message->data| member by setting it to NULL.  Returns true if the message
+  // was accepted and false otherwise, indicating that the message was invalid
+  // or malformed.
   virtual bool Accept(Message* message) = 0;
 };
 

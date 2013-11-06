@@ -18,8 +18,6 @@ class TestBase : public testing::Test {
   TestBase();
   virtual ~TestBase();
 
-  virtual void SetUp() OVERRIDE;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(TestBase);
 };

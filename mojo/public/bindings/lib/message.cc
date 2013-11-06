@@ -6,6 +6,8 @@
 
 #include <stdlib.h>
 
+#include <algorithm>
+
 namespace mojo {
 
 Message::Message()
@@ -14,6 +16,12 @@ Message::Message()
 
 Message::~Message() {
   free(data);
+  // TODO(darin): Need to Close any handles so they don't leak.
+}
+
+void Message::Swap(Message* other) {
+  std::swap(data, other->data);
+  std::swap(handles, other->handles);
 }
 
 }  // namespace mojo

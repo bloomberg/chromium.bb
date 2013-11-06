@@ -12,14 +12,11 @@ namespace mojo {
 namespace test {
 
 TestBase::TestBase() {
+  if (!system::CoreImpl::Get())
+    system::CoreImpl::Init();
 }
 
 TestBase::~TestBase() {
-}
-
-void TestBase::SetUp() {
-  if (!system::CoreImpl::Get())
-    system::CoreImpl::Init();
 }
 
 void IterateAndReportPerf(const char* test_name,
