@@ -7,6 +7,4 @@ icudt42.dll
 icudt46.dll
 icudt.dll
 plugins\npTestNetscapePlugIn.dll
-pyautolib.py
-_pyautolib.pyd
 fonts\*

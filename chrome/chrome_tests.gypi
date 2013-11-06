@@ -2621,9 +2621,10 @@
     },
     {
       # Documentation: http://dev.chromium.org/developers/testing/pyauto
+      # Deprecated. Do not add additional dependencies.
       'target_name': 'pyautolib',
       'conditions': [
-        ['enable_automation==1 and (OS=="mac" or ((OS=="win" or os_posix==1) and target_arch==python_arch))', {
+        ['enable_automation==1 and OS=="linux" and target_arch==python_arch', {
           'type': 'loadable_module',
           'product_prefix': '_',
           'dependencies': [
@@ -2642,7 +2643,13 @@
           ],
           'include_dirs': [
             '..',
+            '<(sysroot)/usr/include/python<(python_ver)',
           ],
+          'link_settings': {
+            'libraries': [
+              '-lpython<(python_ver)',
+            ],
+          },
           'cflags': [
              '-Wno-uninitialized',
              '-Wno-self-assign',  # to keep clang happy for generated code.
@@ -2659,69 +2666,21 @@
             '<(INTERMEDIATE_DIR)/pyautolib_wrap.cc',
             '<@(pyautolib_sources)',
           ],
-          'xcode_settings': {
-            # Link with python2.6. Using -L/usr/lib and -lpython2.6 does not
-            # work with the -isysroot argument passed in. Even if it did,
-            # the linker shouldn't use any other lib not in the 10.5 sdk.
-            'OTHER_LDFLAGS': [
-              '/usr/lib/libpython2.6.dylib'
-            ],
-            'WARNING_CFLAGS': [
-              # swig creates code with self assignments.
-              '-Wno-self-assign',
-            ],
-          },
-          'msvs_disabled_warnings': [4211],
           'conditions': [
             # Disable the type profiler. _POSIX_C_SOURCE and _XOPEN_SOURCE
             # conflict between <Python.h> and <typeinfo>.
-            ['OS=="linux" and clang_type_profiler==1', {
+            ['clang_type_profiler==1', {
               'cflags_cc!': [
                 '-fintercept-allocation-functions',
               ],
-            }],
-            ['os_posix == 1 and OS!="mac"', {
-              'include_dirs': [
-                '..',
-                '<(sysroot)/usr/include/python<(python_ver)',
-              ],
-              'link_settings': {
-                'libraries': [
-                  '-lpython<(python_ver)',
-                ],
-              },
             }],
             ['toolkit_uses_gtk == 1', {
               'dependencies': [
                 '../build/linux/system.gyp:gtk',
               ],
             }],
-            ['OS=="mac"', {
-              'include_dirs': [
-                '..',
-                '/usr/include/python2.6',
-              ],
-            }],
-            ['OS=="win"', {
-              'product_extension': 'pyd',
-              'include_dirs': [
-                '..',
-                '../third_party/python_26/include',
-              ],
-              'msvs_settings': {
-                'VCLinkerTool': {
-                  'AdditionalLibraryDirectories': [
-                    '<(DEPTH)/third_party/python_26/libs',
-                  ],
-                  'AdditionalDependencies': [
-                    'python26.lib',
-                  ],
-                },
-              }
-            }],
             ['asan==1', {
               'cflags!': [ '-fsanitize=address' ],
-              'xcode_settings': { 'OTHER_CFLAGS!': [ '-fsanitize=address' ] },
             }],
           ],
           'actions': [
