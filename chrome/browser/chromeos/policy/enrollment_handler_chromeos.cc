@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/policy/enrollment_handler_chromeos.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/browser_process.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/proto/chromeos/chrome_device_policy.pb.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
+#include "chromeos/chromeos_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/http/http_status_code.h"
 
@@ -27,6 +29,11 @@ namespace {
 const int kLockRetryIntervalMs = 500;
 // Maximum time to retry InstallAttrs initialization before we give up.
 const int kLockRetryTimeoutMs = 10 * 60 * 1000;  // 10 minutes.
+
+// Testing token used when the enrollment-skip-robot-auth is set to skip talking
+// to GAIA for an actual token. This is needed to be able to run against the
+// testing DMServer implementations.
+const char kTestingRobotToken[] = "test-token";
 
 }  // namespace
 
@@ -186,6 +193,16 @@ void EnrollmentHandlerChromeOS::PolicyValidated(
     policy_ = validator->policy().Pass();
     username_ = validator->policy_data()->username();
     device_id_ = validator->policy_data()->device_id();
+
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            chromeos::switches::kEnterpriseEnrollmentSkipRobotAuth)) {
+      // For test purposes we allow enrollment to succeed without proper robot
+      // account and use the provided value as a token.
+      refresh_token_ = kTestingRobotToken;
+      enrollment_step_ = STEP_LOCK_DEVICE,
+      StartLockDevice(username_, device_mode_, device_id_);
+      return;
+    }
 
     enrollment_step_ = STEP_ROBOT_AUTH_FETCH;
     client_->FetchRobotAuthCodes(auth_token_);

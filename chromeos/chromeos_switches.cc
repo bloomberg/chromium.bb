@@ -117,6 +117,11 @@ const char kEnterpriseEnrollmentInitialModulus[] =
 const char kEnterpriseEnrollmentModulusLimit[] =
     "enterprise-enrollment-modulus-limit";
 
+// Don't create robot account on enrollment. Used when testing device
+// enrollment against YAPS or the Python test server.
+const char kEnterpriseEnrollmentSkipRobotAuth[] =
+    "enterprise-enrollment-skip-robot-auth";
+
 // Shows the selecting checkboxes in the Files.app.
 const char kFileManagerShowCheckboxes[]     = "file-manager-show-checkboxes";
 
