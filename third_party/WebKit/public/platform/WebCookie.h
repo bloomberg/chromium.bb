@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 #include "WebString.h"
 
-namespace WebKit {
+namespace blink {
 
 // A cookie.
 //
@@ -70,6 +70,6 @@ struct WebCookie {
     bool session;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

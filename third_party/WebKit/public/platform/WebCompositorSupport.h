@@ -32,7 +32,7 @@
 #include "WebScrollbar.h"
 #include "WebScrollbarThemePainter.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebAnimationCurve;
 class WebCompositorOutputSurface;
@@ -57,7 +57,7 @@ class WebTransformOperations;
 class WebCompositorSupport {
 public:
     // Creates an output surface for the compositor backed by a 3d context.
-    virtual WebCompositorOutputSurface* createOutputSurfaceFor3D(WebKit::WebGraphicsContext3D*) { return 0; }
+    virtual WebCompositorOutputSurface* createOutputSurfaceFor3D(blink::WebGraphicsContext3D*) { return 0; }
 
     // Creates an output surface for the compositor backed by a software device.
     virtual WebCompositorOutputSurface* createOutputSurfaceForSoftware() { return 0; }

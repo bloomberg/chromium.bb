@@ -40,7 +40,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 class DOMActivityLoggerContainer : public V8DOMActivityLogger {
 public:
@@ -75,4 +75,4 @@ void setDOMActivityLogger(int worldId, WebDOMActivityLogger* logger)
     DOMWrapperWorld::setActivityLogger(worldId, adoptPtr(new DOMActivityLoggerContainer(adoptPtr(logger))));
 }
 
-} // namespace WebKit
+} // namespace blink

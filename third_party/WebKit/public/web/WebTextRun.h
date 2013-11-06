@@ -37,7 +37,7 @@
 namespace WebCore { class TextRun; }
 #endif
 
-namespace WebKit {
+namespace blink {
 
 struct WebTextRun {
     WebTextRun(const WebString& t, bool isRTL, bool hasDirectionalOverride)
@@ -63,6 +63,6 @@ struct WebTextRun {
 #endif
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

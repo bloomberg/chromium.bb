@@ -46,7 +46,7 @@ private:
     HTMLParserThread();
     ~HTMLParserThread();
 
-    OwnPtr<WebKit::WebThread> m_thread;
+    OwnPtr<blink::WebThread> m_thread;
 };
 
 } // namespace WebCore

@@ -41,9 +41,9 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebKit {
+namespace blink {
 
-MediaSourcePrivateImpl::MediaSourcePrivateImpl(PassOwnPtr<WebKit::WebMediaSource> webMediaSource)
+MediaSourcePrivateImpl::MediaSourcePrivateImpl(PassOwnPtr<blink::WebMediaSource> webMediaSource)
     : m_webMediaSource(webMediaSource)
 {
 }

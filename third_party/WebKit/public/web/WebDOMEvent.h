@@ -41,7 +41,7 @@ namespace WebCore { class Event; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
-namespace WebKit {
+namespace blink {
 
 class WebDOMEvent {
 public:
@@ -130,6 +130,6 @@ protected:
     WebPrivatePtr<WebDOMEventPrivate> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

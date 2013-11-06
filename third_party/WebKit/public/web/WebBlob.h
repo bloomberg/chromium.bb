@@ -44,7 +44,7 @@ template <class T> class Handle;
 
 namespace WebCore { class Blob; }
 
-namespace WebKit {
+namespace blink {
 
 class WebBlob {
 public:
@@ -79,6 +79,6 @@ protected:
     WebPrivatePtr<WebCore::Blob> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebBlob_h

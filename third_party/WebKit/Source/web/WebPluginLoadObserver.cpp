@@ -34,7 +34,7 @@
 #include "WebPlugin.h"
 #include "WebPluginContainerImpl.h"
 
-namespace WebKit {
+namespace blink {
 
 WebPluginLoadObserver::~WebPluginLoadObserver()
 {
@@ -54,4 +54,4 @@ void WebPluginLoadObserver::didFailLoading(const WebURLError& error)
         m_pluginContainer->plugin()->didFailLoadingFrameRequest(m_notifyURL, m_notifyData, error);
 }
 
-} // namespace WebKit
+} // namespace blink

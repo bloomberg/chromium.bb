@@ -61,7 +61,7 @@ void CryptoResultImpl::completeWithError()
     finish();
 }
 
-void CryptoResultImpl::completeWithBuffer(const WebKit::WebArrayBuffer& buffer)
+void CryptoResultImpl::completeWithBuffer(const blink::WebArrayBuffer& buffer)
 {
     m_promiseResolver->resolve(PassRefPtr<ArrayBuffer>(buffer));
     finish();
@@ -73,13 +73,13 @@ void CryptoResultImpl::completeWithBoolean(bool b)
     finish();
 }
 
-void CryptoResultImpl::completeWithKey(const WebKit::WebCryptoKey& key)
+void CryptoResultImpl::completeWithKey(const blink::WebCryptoKey& key)
 {
     m_promiseResolver->resolve(Key::create(key));
     finish();
 }
 
-void CryptoResultImpl::completeWithKeyPair(const WebKit::WebCryptoKey& publicKey, const WebKit::WebCryptoKey& privateKey)
+void CryptoResultImpl::completeWithKeyPair(const blink::WebCryptoKey& publicKey, const blink::WebCryptoKey& privateKey)
 {
     m_promiseResolver->resolve(KeyPair::create(publicKey, privateKey));
     finish();

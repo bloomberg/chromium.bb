@@ -25,7 +25,7 @@
 #ifndef WebPluginScrollbarClient_h
 #define WebPluginScrollbarClient_h
 
-namespace WebKit {
+namespace blink {
 
 class WebPluginScrollbar;
 struct WebRect;
@@ -39,6 +39,6 @@ public:
     virtual void getTickmarks(WebPluginScrollbar*, WebVector<WebRect>*) const = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

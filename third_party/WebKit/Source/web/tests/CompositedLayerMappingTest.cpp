@@ -43,7 +43,7 @@
 
 #include <gtest/gtest.h>
 
-using namespace WebKit;
+using namespace blink;
 
 namespace WebCore {
 

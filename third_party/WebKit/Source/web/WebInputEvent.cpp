@@ -38,7 +38,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 struct SameSizeAsWebInputEvent {
     int inputData[5];
@@ -236,4 +236,4 @@ int WebKeyboardEvent::locationModifiersFromWindowsKeyCode(int keycode)
     }
 }
 
-} // namespace WebKit
+} // namespace blink

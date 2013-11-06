@@ -64,7 +64,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 // Arbitrary depth limit for the undo stack, to keep it from using
 // unbounded memory.  This is the maximum number of distinct undoable

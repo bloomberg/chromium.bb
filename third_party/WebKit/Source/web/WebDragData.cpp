@@ -44,7 +44,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 class WebDragDataPrivate : public ChromiumDataObject {
 };
@@ -175,4 +175,4 @@ void WebDragData::ensureMutable()
     ASSERT(m_private->hasOneRef());
 }
 
-} // namespace WebKit
+} // namespace blink

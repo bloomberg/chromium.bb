@@ -35,7 +35,7 @@
 #include "core/frame/Navigator.h"
 #include "platform/Supplementable.h"
 
-namespace WebKit {
+namespace blink {
 class WebServiceWorkerProvider;
 class WebServiceWorkerProviderClient;
 }
@@ -62,12 +62,12 @@ private:
 
     virtual void willDetachGlobalObjectFromFrame() OVERRIDE;
 
-    WebKit::WebServiceWorkerProvider* ensureProvider();
+    blink::WebServiceWorkerProvider* ensureProvider();
 
     static const char* supplementName();
 
     Navigator* m_navigator;
-    OwnPtr<WebKit::WebServiceWorkerProvider> m_provider;
+    OwnPtr<blink::WebServiceWorkerProvider> m_provider;
 };
 
 } // namespace WebCore

@@ -37,7 +37,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 class WebDateTimeChooserCompletionImpl : public WebDateTimeChooserCompletion {
 public:

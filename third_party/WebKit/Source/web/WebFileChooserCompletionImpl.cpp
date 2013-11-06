@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebFileChooserCompletionImpl.h"
 
-namespace WebKit {
+namespace blink {
 
 WebFileChooserCompletionImpl::WebFileChooserCompletionImpl(PassRefPtr<WebCore::FileChooser> chooser)
     : m_fileChooser(chooser)
@@ -62,4 +62,4 @@ void WebFileChooserCompletionImpl::didChooseFile(const WebVector<SelectedFileInf
     delete this;
 }
 
-} // namespace WebKit
+} // namespace blink

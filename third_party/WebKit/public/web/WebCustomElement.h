@@ -33,7 +33,7 @@
 
 #include "../platform/WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebString;
 
@@ -50,6 +50,6 @@ private:
     WebCustomElement();
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

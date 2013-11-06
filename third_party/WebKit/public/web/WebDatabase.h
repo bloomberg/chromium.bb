@@ -36,7 +36,7 @@
 
 namespace WebCore { class DatabaseBackendBase; }
 
-namespace WebKit {
+namespace blink {
 
 class WebDatabaseObserver;
 class WebString;
@@ -71,6 +71,6 @@ private:
     const WebCore::DatabaseBackendBase* m_database;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

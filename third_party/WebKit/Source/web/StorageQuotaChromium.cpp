@@ -43,7 +43,7 @@
 #include "modules/quota/WebStorageQuotaCallbacksImpl.h"
 #include "wtf/Threading.h"
 
-using namespace WebKit;
+using namespace blink;
 
 namespace WebCore {
 

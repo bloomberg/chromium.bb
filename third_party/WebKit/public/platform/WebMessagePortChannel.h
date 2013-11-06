@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 #include "WebVector.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebMessagePortChannelClient;
 class WebString;
@@ -57,6 +57,6 @@ protected:
     ~WebMessagePortChannel() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

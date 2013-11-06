@@ -37,7 +37,7 @@
 namespace WebCore { class PluginDocument; }
 #endif
 
-namespace WebKit {
+namespace blink {
 class WebPlugin;
 
 // Wraps a WebDocument for full page plugins.
@@ -62,6 +62,6 @@ public:
 #endif
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

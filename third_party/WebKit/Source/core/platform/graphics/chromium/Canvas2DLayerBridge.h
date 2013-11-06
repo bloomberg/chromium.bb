@@ -37,7 +37,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebKit {
+namespace blink {
 class WebGraphicsContext3D;
 }
 
@@ -61,7 +61,7 @@ private:
     RefPtr<Canvas2DLayerBridge> m_ptr;
 };
 
-class Canvas2DLayerBridge : public WebKit::WebExternalTextureLayerClient, public SkDeferredCanvas::NotificationClient, public DoublyLinkedListNode<Canvas2DLayerBridge>, public RefCounted<Canvas2DLayerBridge> {
+class Canvas2DLayerBridge : public blink::WebExternalTextureLayerClient, public SkDeferredCanvas::NotificationClient, public DoublyLinkedListNode<Canvas2DLayerBridge>, public RefCounted<Canvas2DLayerBridge> {
     WTF_MAKE_NONCOPYABLE(Canvas2DLayerBridge);
 public:
     enum OpacityMode {
@@ -73,10 +73,10 @@ public:
 
     virtual ~Canvas2DLayerBridge();
 
-    // WebKit::WebExternalTextureLayerClient implementation.
-    virtual WebKit::WebGraphicsContext3D* context() OVERRIDE;
-    virtual bool prepareMailbox(WebKit::WebExternalTextureMailbox*, WebKit::WebExternalBitmap*) OVERRIDE;
-    virtual void mailboxReleased(const WebKit::WebExternalTextureMailbox&) OVERRIDE;
+    // blink::WebExternalTextureLayerClient implementation.
+    virtual blink::WebGraphicsContext3D* context() OVERRIDE;
+    virtual bool prepareMailbox(blink::WebExternalTextureMailbox*, blink::WebExternalBitmap*) OVERRIDE;
+    virtual void mailboxReleased(const blink::WebExternalTextureMailbox&) OVERRIDE;
 
     // SkDeferredCanvas::NotificationClient implementation
     virtual void prepareForDraw() OVERRIDE;
@@ -91,7 +91,7 @@ public:
     size_t bytesAllocated() const {return m_bytesAllocated;}
     void limitPendingFrames();
 
-    WebKit::WebLayer* layer();
+    blink::WebLayer* layer();
     void contextAcquired();
     PassRefPtr<SkCanvas> getCanvas() { return PassRefPtr<SkCanvas>(m_canvas); }
 
@@ -106,7 +106,7 @@ protected:
     void setRateLimitingEnabled(bool);
 
     RefPtr<SkDeferredCanvas> m_canvas;
-    OwnPtr<WebKit::WebExternalTextureLayer> m_layer;
+    OwnPtr<blink::WebExternalTextureLayer> m_layer;
     RefPtr<GraphicsContext3D> m_context;
     int m_msaaSampleCount;
     size_t m_bytesAllocated;
@@ -127,7 +127,7 @@ protected:
     };
 
     struct MailboxInfo {
-        WebKit::WebExternalTextureMailbox m_mailbox;
+        blink::WebExternalTextureMailbox m_mailbox;
         SkAutoTUnref<SkImage> m_image;
         MailboxStatus m_status;
         RefPtr<Canvas2DLayerBridge> m_parentLayerBridge;

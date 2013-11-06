@@ -41,7 +41,7 @@
 #include <gtest/gtest.h>
 
 using namespace WebCore;
-using namespace WebKit;
+using namespace blink;
 using testing::Test;
 using testing::_;
 
@@ -76,7 +76,7 @@ TEST_F(DrawingBufferTest, verifyNoNewBuffersAfterContextLostWithMailboxes)
     m_drawingBuffer->markContentsChanged();
     m_drawingBuffer->releaseResources();
 
-    WebKit::WebExternalTextureMailbox mailbox;
+    blink::WebExternalTextureMailbox mailbox;
     EXPECT_FALSE(m_drawingBuffer->prepareMailbox(&mailbox, 0));
 }
 

@@ -54,7 +54,7 @@
 using namespace WebCore;
 using namespace WTF;
 
-namespace WebKit {
+namespace blink {
 
 namespace {
 
@@ -304,7 +304,7 @@ AssociatedURLLoader::~AssociatedURLLoader()
 }
 
 #define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, webcore_name) \
-    COMPILE_ASSERT(static_cast<int>(WebKit::webkit_name) == static_cast<int>(WebCore::webcore_name), mismatching_enums)
+    COMPILE_ASSERT(static_cast<int>(blink::webkit_name) == static_cast<int>(WebCore::webcore_name), mismatching_enums)
 
 COMPILE_ASSERT_MATCHING_ENUM(WebURLLoaderOptions::CrossOriginRequestPolicyDeny, DenyCrossOriginRequests);
 COMPILE_ASSERT_MATCHING_ENUM(WebURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl, UseAccessControl);
@@ -370,4 +370,4 @@ void AssociatedURLLoader::setDefersLoading(bool defersLoading)
         m_loader->setDefersLoading(defersLoading);
 }
 
-} // namespace WebKit
+} // namespace blink

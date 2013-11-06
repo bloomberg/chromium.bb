@@ -42,19 +42,19 @@ public:
     class Factory {
     public:
         virtual ~Factory() { }
-        virtual WebAXObjectProxy* getOrCreate(const WebKit::WebAXObject&) = 0;
+        virtual WebAXObjectProxy* getOrCreate(const blink::WebAXObject&) = 0;
     };
 
-    WebAXObjectProxy(const WebKit::WebAXObject&, Factory*);
+    WebAXObjectProxy(const blink::WebAXObject&, Factory*);
 
     virtual WebAXObjectProxy* getChildAtIndex(unsigned);
     virtual bool isRoot() const { return false; }
-    virtual bool isEqual(const WebKit::WebAXObject&);
+    virtual bool isEqual(const blink::WebAXObject&);
 
     virtual void notificationReceived(const char *notificationName);
 
 protected:
-    const WebKit::WebAXObject& accessibilityObject() const { return m_accessibilityObject; }
+    const blink::WebAXObject& accessibilityObject() const { return m_accessibilityObject; }
 
     Factory* factory() const { return m_factory; }
 
@@ -133,7 +133,7 @@ private:
 
     void fallbackCallback(const CppArgumentList&, CppVariant*);
 
-    WebKit::WebAXObject m_accessibilityObject;
+    blink::WebAXObject m_accessibilityObject;
     Factory* m_factory;
     std::vector<CppVariant> m_notificationCallbacks;
 };
@@ -141,7 +141,7 @@ private:
 
 class RootWebAXObjectProxy : public WebAXObjectProxy {
 public:
-    RootWebAXObjectProxy(const WebKit::WebAXObject&, Factory*);
+    RootWebAXObjectProxy(const blink::WebAXObject&, Factory*);
 
     virtual WebAXObjectProxy* getChildAtIndex(unsigned);
     virtual bool isRoot() const { return true; }
@@ -157,8 +157,8 @@ public:
     virtual ~WebAXObjectProxyList();
 
     void clear();
-    virtual WebAXObjectProxy* getOrCreate(const WebKit::WebAXObject&);
-    WebAXObjectProxy* createRoot(const WebKit::WebAXObject&);
+    virtual WebAXObjectProxy* getOrCreate(const blink::WebAXObject&);
+    WebAXObjectProxy* createRoot(const blink::WebAXObject&);
 
 private:
     typedef std::vector<WebAXObjectProxy*> ElementList;

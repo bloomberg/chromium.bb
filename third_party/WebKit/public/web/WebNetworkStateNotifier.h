@@ -33,7 +33,7 @@
 
 #include "../platform/WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebNetworkStateNotifier {
 public:
@@ -43,6 +43,6 @@ private:
     WebNetworkStateNotifier();
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

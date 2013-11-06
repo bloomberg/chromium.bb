@@ -47,7 +47,7 @@ class Blob;
 class ExceptionState;
 class ExecutionContext;
 
-class FileWriter : public ScriptWrappable, public FileWriterBase, public ActiveDOMObject, public EventTargetWithInlineData, public WebKit::WebFileWriterClient {
+class FileWriter : public ScriptWrappable, public FileWriterBase, public ActiveDOMObject, public EventTargetWithInlineData, public blink::WebFileWriterClient {
     DEFINE_EVENT_TARGET_REFCOUNTING(FileWriterBase);
 public:
     static PassRefPtr<FileWriter> create(ExecutionContext*);
@@ -68,7 +68,7 @@ public:
     // WebFileWriterClient
     virtual void didWrite(long long bytes, bool complete) OVERRIDE;
     virtual void didTruncate() OVERRIDE;
-    virtual void didFail(WebKit::WebFileError) OVERRIDE;
+    virtual void didFail(blink::WebFileError) OVERRIDE;
 
     // ActiveDOMObject
     virtual void stop();

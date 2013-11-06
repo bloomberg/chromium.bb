@@ -35,7 +35,7 @@
 
 namespace WebCore { class DOMError; }
 
-namespace WebKit {
+namespace blink {
 
 // See comment in WebIDBFactory for a high level overview these classes.
 class WebIDBDatabaseError {
@@ -65,6 +65,6 @@ private:
     WebPrivatePtr<WebCore::DOMError> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebIDBDatabaseError_h

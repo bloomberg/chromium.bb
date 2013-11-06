@@ -42,7 +42,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 namespace {
 
@@ -176,4 +176,4 @@ WebPasswordFormData::WebPasswordFormData(const WebFormElement& webForm)
                                oldPassword, password, this);
 }
 
-} // namespace WebKit
+} // namespace blink

@@ -289,7 +289,7 @@ void V8WindowShell::createContext()
     const char* histogramName = "WebCore.V8WindowShell.createContext.MainWorld";
     if (!m_world->isMainWorld())
         histogramName = "WebCore.V8WindowShell.createContext.IsolatedWorld";
-    WebKit::Platform::current()->histogramCustomCounts(histogramName, contextCreationDurationInMilliseconds, 0, 10000, 50);
+    blink::Platform::current()->histogramCustomCounts(histogramName, contextCreationDurationInMilliseconds, 0, 10000, 50);
 }
 
 bool V8WindowShell::installDOMWindow()

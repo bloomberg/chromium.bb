@@ -36,7 +36,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebSharedWorkerRepositoryClient;
 
@@ -59,6 +59,6 @@ private:
     WebSharedWorkerRepositoryClient* m_client;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // SharedWorkerRepositoryClientImpl_h

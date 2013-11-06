@@ -30,7 +30,7 @@
 #include "WebIDBDatabaseError.h"
 #include "WebString.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebIDBDatabaseCallbacks {
 public:
@@ -43,6 +43,6 @@ public:
     virtual void onComplete(long long transactionId) { BLINK_ASSERT_NOT_REACHED(); }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebIDBDatabaseCallbacks_h

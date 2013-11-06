@@ -39,7 +39,7 @@
 typedef void *HANDLE;
 #endif
 
-namespace WebKit {
+namespace blink {
 
 struct WebFileInfo;
 
@@ -60,6 +60,6 @@ protected:
     ~WebFileUtilities() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

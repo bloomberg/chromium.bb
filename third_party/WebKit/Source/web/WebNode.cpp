@@ -56,7 +56,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 void WebNode::reset()
 {
@@ -266,4 +266,4 @@ WebNode::operator PassRefPtr<Node>() const
     return m_private.get();
 }
 
-} // namespace WebKit
+} // namespace blink

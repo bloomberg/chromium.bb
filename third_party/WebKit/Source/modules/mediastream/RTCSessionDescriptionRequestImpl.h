@@ -34,7 +34,7 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/platform/mediastream/RTCSessionDescriptionRequest.h"
 
-namespace WebKit {
+namespace blink {
 class WebRTCSessionDescription;
 }
 
@@ -49,7 +49,7 @@ public:
     static PassRefPtr<RTCSessionDescriptionRequestImpl> create(ExecutionContext*, PassRefPtr<RTCSessionDescriptionCallback>, PassRefPtr<RTCErrorCallback>);
     virtual ~RTCSessionDescriptionRequestImpl();
 
-    virtual void requestSucceeded(const WebKit::WebRTCSessionDescription&) OVERRIDE;
+    virtual void requestSucceeded(const blink::WebRTCSessionDescription&) OVERRIDE;
     virtual void requestFailed(const String& error) OVERRIDE;
 
     // ActiveDOMObject

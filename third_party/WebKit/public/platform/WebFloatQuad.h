@@ -42,7 +42,7 @@
 #include "platform/geometry/FloatQuad.h"
 #endif
 
-namespace WebKit {
+namespace blink {
 
 struct WebFloatQuad {
     WebFloatPoint p[4];
@@ -77,6 +77,6 @@ struct WebFloatQuad {
 #endif
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

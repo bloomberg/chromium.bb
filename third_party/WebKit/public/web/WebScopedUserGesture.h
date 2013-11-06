@@ -37,7 +37,7 @@ namespace WebCore {
 class UserGestureIndicator;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebUserGestureToken;
 
@@ -68,6 +68,6 @@ private:
     WebPrivateOwnPtr<WebCore::UserGestureIndicator> m_indicator;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebScopedUserGesture_h

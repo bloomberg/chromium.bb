@@ -31,13 +31,13 @@
 #ifndef WebContentSecurityPolicy_h
 #define WebContentSecurityPolicy_h
 
-namespace WebKit {
+namespace blink {
 
 enum WebContentSecurityPolicyType {
     WebContentSecurityPolicyTypeReport,
     WebContentSecurityPolicyTypeEnforce,
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

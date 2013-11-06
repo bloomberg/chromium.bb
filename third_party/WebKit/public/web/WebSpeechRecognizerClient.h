@@ -28,7 +28,7 @@
 
 #include "../platform/WebVector.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebSpeechRecognitionResult;
 class WebSpeechRecognitionHandle;
@@ -94,6 +94,6 @@ protected:
     virtual ~WebSpeechRecognizerClient() {}
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebSpeechRecognizerClient_h

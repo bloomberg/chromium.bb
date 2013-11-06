@@ -32,7 +32,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebSpeechRecognizer;
 class WebString;
@@ -67,6 +67,6 @@ private:
     WebSpeechRecognizer* m_recognizer;
 };
 
-}; // namespace WebKit
+}; // namespace blink
 
 #endif // SpeechRecognitionClientProxy_h

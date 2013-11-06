@@ -37,7 +37,7 @@
 #include "WebScreenInfo.h"
 #include "../platform/WebLayerTreeView.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebGestureEvent;
 class WebString;
@@ -176,6 +176,6 @@ protected:
     ~WebWidgetClient() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

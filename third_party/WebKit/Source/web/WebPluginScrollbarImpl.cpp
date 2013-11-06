@@ -44,7 +44,7 @@
 using namespace std;
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebPluginScrollbar* WebPluginScrollbar::createForPlugin(Orientation orientation,
                                                         WebPluginContainer* pluginContainer,
@@ -371,4 +371,4 @@ bool WebPluginScrollbarImpl::onKeyDown(const WebInputEvent& event)
     return false;
 }
 
-} // namespace WebKit
+} // namespace blink

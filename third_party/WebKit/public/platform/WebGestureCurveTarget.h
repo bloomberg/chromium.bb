@@ -28,7 +28,7 @@
 #include "WebFloatSize.h"
 #include "WebPoint.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebGestureCurveTarget {
 public:
@@ -40,6 +40,6 @@ protected:
     virtual ~WebGestureCurveTarget() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

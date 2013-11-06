@@ -36,7 +36,7 @@
 #include "core/inspector/InspectorFrontendChannel.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebDevToolsAgentClient;
 class WebDevToolsAgentImpl;
@@ -84,6 +84,6 @@ private:
     WebViewImpl* m_inspectedWebView;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

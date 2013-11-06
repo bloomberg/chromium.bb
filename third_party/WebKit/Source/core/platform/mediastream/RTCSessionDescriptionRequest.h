@@ -36,7 +36,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebKit {
+namespace blink {
 class WebRTCSessionDescription;
 }
 
@@ -51,7 +51,7 @@ public:
 
     virtual ~RTCSessionDescriptionRequest() { }
 
-    virtual void requestSucceeded(const WebKit::WebRTCSessionDescription&) = 0;
+    virtual void requestSucceeded(const blink::WebRTCSessionDescription&) = 0;
     virtual void requestFailed(const String& error) = 0;
 
     PassRefPtr<ExtraData> extraData() const { return m_extraData; }

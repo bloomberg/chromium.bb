@@ -527,19 +527,19 @@ UseCounter::UseCounter()
 UseCounter::~UseCounter()
 {
     // We always log PageDestruction so that we have a scale for the rest of the features.
-    WebKit::Platform::current()->histogramEnumeration("WebCore.FeatureObserver", PageDestruction, NumberOfFeatures);
+    blink::Platform::current()->histogramEnumeration("WebCore.FeatureObserver", PageDestruction, NumberOfFeatures);
 
     updateMeasurements();
 }
 
 void UseCounter::updateMeasurements()
 {
-    WebKit::Platform::current()->histogramEnumeration("WebCore.FeatureObserver", PageVisits, NumberOfFeatures);
+    blink::Platform::current()->histogramEnumeration("WebCore.FeatureObserver", PageVisits, NumberOfFeatures);
 
     if (m_countBits) {
         for (unsigned i = 0; i < NumberOfFeatures; ++i) {
             if (m_countBits->quickGet(i))
-                WebKit::Platform::current()->histogramEnumeration("WebCore.FeatureObserver", i, NumberOfFeatures);
+                blink::Platform::current()->histogramEnumeration("WebCore.FeatureObserver", i, NumberOfFeatures);
         }
         // Clearing count bits is timing sensitive.
         m_countBits->clearAll();
@@ -552,13 +552,13 @@ void UseCounter::updateMeasurements()
     for (int i = firstCSSProperty; i <= lastCSSProperty; ++i) {
         if (m_CSSFeatureBits.quickGet(i)) {
             int cssSampleId = mapCSSPropertyIdToCSSSampleIdForHistogram(i);
-            WebKit::Platform::current()->histogramEnumeration("WebCore.FeatureObserver.CSSProperties", cssSampleId, maximumCSSSampleId());
+            blink::Platform::current()->histogramEnumeration("WebCore.FeatureObserver.CSSProperties", cssSampleId, maximumCSSSampleId());
             needsPagesMeasuredUpdate = true;
         }
     }
 
     if (needsPagesMeasuredUpdate)
-        WebKit::Platform::current()->histogramEnumeration("WebCore.FeatureObserver.CSSProperties", totalPagesMeasuredCSSSampleId(), maximumCSSSampleId());
+        blink::Platform::current()->histogramEnumeration("WebCore.FeatureObserver.CSSProperties", totalPagesMeasuredCSSSampleId(), maximumCSSSampleId());
 
     m_CSSFeatureBits.clearAll();
 }

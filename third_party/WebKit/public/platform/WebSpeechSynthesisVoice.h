@@ -34,7 +34,7 @@ namespace WebCore {
 class PlatformSpeechSynthesisVoice;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebSpeechSynthesisVoice {
 public:
@@ -65,6 +65,6 @@ private:
     WebPrivatePtr<WebCore::PlatformSpeechSynthesisVoice> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebSpeechSynthesisVoice_h

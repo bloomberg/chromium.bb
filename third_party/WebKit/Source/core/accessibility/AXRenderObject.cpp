@@ -72,7 +72,7 @@
 #include "platform/text/PlatformLocale.h"
 #include "wtf/StdLibExtras.h"
 
-using WebKit::WebLocalizedString;
+using blink::WebLocalizedString;
 using namespace std;
 
 namespace WebCore {

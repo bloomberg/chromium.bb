@@ -52,16 +52,16 @@ double RenderThemeChromiumDefault::m_caretBlinkInterval;
 
 static const unsigned defaultButtonBackgroundColor = 0xffdddddd;
 
-static WebKit::WebThemeEngine::State getWebThemeState(const RenderTheme* theme, const RenderObject* o)
+static blink::WebThemeEngine::State getWebThemeState(const RenderTheme* theme, const RenderObject* o)
 {
     if (!theme->isEnabled(o))
-        return WebKit::WebThemeEngine::StateDisabled;
+        return blink::WebThemeEngine::StateDisabled;
     if (theme->isPressed(o))
-        return WebKit::WebThemeEngine::StatePressed;
+        return blink::WebThemeEngine::StatePressed;
     if (theme->isHovered(o))
-        return WebKit::WebThemeEngine::StateHover;
+        return blink::WebThemeEngine::StateHover;
 
-    return WebKit::WebThemeEngine::StateNormal;
+    return blink::WebThemeEngine::StateNormal;
 }
 
 PassRefPtr<RenderTheme> RenderThemeChromiumDefault::create()
@@ -168,7 +168,7 @@ int RenderThemeChromiumDefault::sliderTickOffsetFromTrackCenter() const
 
 void RenderThemeChromiumDefault::adjustSliderThumbSize(RenderStyle* style, Element* element) const
 {
-    IntSize size = WebKit::Platform::current()->themeEngine()->getSize(WebKit::WebThemeEngine::PartSliderThumb);
+    IntSize size = blink::Platform::current()->themeEngine()->getSize(blink::WebThemeEngine::PartSliderThumb);
     float zoomLevel = style->effectiveZoom();
     if (style->appearance() == SliderThumbHorizontalPart) {
         style->setWidth(Length(size.width() * zoomLevel, Fixed));
@@ -209,8 +209,8 @@ void RenderThemeChromiumDefault::setSelectionColors(
 
 bool RenderThemeChromiumDefault::paintCheckbox(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
-    WebKit::WebThemeEngine::ExtraParams extraParams;
-    WebKit::WebCanvas* canvas = i.context->canvas();
+    blink::WebThemeEngine::ExtraParams extraParams;
+    blink::WebCanvas* canvas = i.context->canvas();
     extraParams.button.checked = isChecked(o);
     extraParams.button.indeterminate = isIndeterminate(o);
 
@@ -225,7 +225,7 @@ bool RenderThemeChromiumDefault::paintCheckbox(RenderObject* o, const PaintInfo&
         i.context->translate(-unzoomedRect.x(), -unzoomedRect.y());
     }
 
-    WebKit::Platform::current()->themeEngine()->paint(canvas, WebKit::WebThemeEngine::PartCheckbox, getWebThemeState(this, o), WebKit::WebRect(unzoomedRect), &extraParams);
+    blink::Platform::current()->themeEngine()->paint(canvas, blink::WebThemeEngine::PartCheckbox, getWebThemeState(this, o), blink::WebRect(unzoomedRect), &extraParams);
     return false;
 }
 
@@ -235,7 +235,7 @@ void RenderThemeChromiumDefault::setCheckboxSize(RenderStyle* style) const
     if (!style->width().isIntrinsicOrAuto() && !style->height().isAuto())
         return;
 
-    IntSize size = WebKit::Platform::current()->themeEngine()->getSize(WebKit::WebThemeEngine::PartCheckbox);
+    IntSize size = blink::Platform::current()->themeEngine()->getSize(blink::WebThemeEngine::PartCheckbox);
     float zoomLevel = style->effectiveZoom();
     size.setWidth(size.width() * zoomLevel);
     size.setHeight(size.height() * zoomLevel);
@@ -244,11 +244,11 @@ void RenderThemeChromiumDefault::setCheckboxSize(RenderStyle* style) const
 
 bool RenderThemeChromiumDefault::paintRadio(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
-    WebKit::WebThemeEngine::ExtraParams extraParams;
-    WebKit::WebCanvas* canvas = i.context->canvas();
+    blink::WebThemeEngine::ExtraParams extraParams;
+    blink::WebCanvas* canvas = i.context->canvas();
     extraParams.button.checked = isChecked(o);
 
-    WebKit::Platform::current()->themeEngine()->paint(canvas, WebKit::WebThemeEngine::PartRadio, getWebThemeState(this, o), WebKit::WebRect(rect), &extraParams);
+    blink::Platform::current()->themeEngine()->paint(canvas, blink::WebThemeEngine::PartRadio, getWebThemeState(this, o), blink::WebRect(rect), &extraParams);
     return false;
 }
 
@@ -258,7 +258,7 @@ void RenderThemeChromiumDefault::setRadioSize(RenderStyle* style) const
     if (!style->width().isIntrinsicOrAuto() && !style->height().isAuto())
         return;
 
-    IntSize size = WebKit::Platform::current()->themeEngine()->getSize(WebKit::WebThemeEngine::PartRadio);
+    IntSize size = blink::Platform::current()->themeEngine()->getSize(blink::WebThemeEngine::PartRadio);
     float zoomLevel = style->effectiveZoom();
     size.setWidth(size.width() * zoomLevel);
     size.setHeight(size.height() * zoomLevel);
@@ -267,14 +267,14 @@ void RenderThemeChromiumDefault::setRadioSize(RenderStyle* style) const
 
 bool RenderThemeChromiumDefault::paintButton(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
-    WebKit::WebThemeEngine::ExtraParams extraParams;
-    WebKit::WebCanvas* canvas = i.context->canvas();
+    blink::WebThemeEngine::ExtraParams extraParams;
+    blink::WebCanvas* canvas = i.context->canvas();
     extraParams.button.hasBorder = true;
     extraParams.button.backgroundColor = defaultButtonBackgroundColor;
     if (o->hasBackground())
         extraParams.button.backgroundColor = o->resolveColor(CSSPropertyBackgroundColor).rgb();
 
-    WebKit::Platform::current()->themeEngine()->paint(canvas, WebKit::WebThemeEngine::PartButton, getWebThemeState(this, o), WebKit::WebRect(rect), &extraParams);
+    blink::Platform::current()->themeEngine()->paint(canvas, blink::WebThemeEngine::PartButton, getWebThemeState(this, o), blink::WebRect(rect), &extraParams);
     return false;
 }
 
@@ -287,17 +287,17 @@ bool RenderThemeChromiumDefault::paintTextField(RenderObject* o, const PaintInfo
 
     ControlPart part = o->style()->appearance();
 
-    WebKit::WebThemeEngine::ExtraParams extraParams;
+    blink::WebThemeEngine::ExtraParams extraParams;
     extraParams.textField.isTextArea = part == TextAreaPart;
     extraParams.textField.isListbox = part == ListboxPart;
 
-    WebKit::WebCanvas* canvas = i.context->canvas();
+    blink::WebCanvas* canvas = i.context->canvas();
 
     // Fallback to white if the specified color object is invalid.
     Color backgroundColor = o->resolveColor(CSSPropertyBackgroundColor, Color::white);
     extraParams.textField.backgroundColor = backgroundColor.rgb();
 
-    WebKit::Platform::current()->themeEngine()->paint(canvas, WebKit::WebThemeEngine::PartTextField, getWebThemeState(this, o), WebKit::WebRect(rect), &extraParams);
+    blink::Platform::current()->themeEngine()->paint(canvas, blink::WebThemeEngine::PartTextField, getWebThemeState(this, o), blink::WebRect(rect), &extraParams);
     return false;
 }
 
@@ -309,7 +309,7 @@ bool RenderThemeChromiumDefault::paintMenuList(RenderObject* o, const PaintInfo&
     const int right = rect.x() + rect.width();
     const int middle = rect.y() + rect.height() / 2;
 
-    WebKit::WebThemeEngine::ExtraParams extraParams;
+    blink::WebThemeEngine::ExtraParams extraParams;
     extraParams.menuList.arrowX = (o->style()->direction() == RTL) ? rect.x() + 7 : right - 13;
     extraParams.menuList.arrowY = middle;
     const RenderBox* box = toRenderBox(o);
@@ -321,16 +321,16 @@ bool RenderThemeChromiumDefault::paintMenuList(RenderObject* o, const PaintInfo&
     if (o->hasBackground())
         extraParams.menuList.backgroundColor = o->resolveColor(CSSPropertyBackgroundColor).rgb();
 
-    WebKit::WebCanvas* canvas = i.context->canvas();
+    blink::WebCanvas* canvas = i.context->canvas();
 
-    WebKit::Platform::current()->themeEngine()->paint(canvas, WebKit::WebThemeEngine::PartMenuList, getWebThemeState(this, o), WebKit::WebRect(rect), &extraParams);
+    blink::Platform::current()->themeEngine()->paint(canvas, blink::WebThemeEngine::PartMenuList, getWebThemeState(this, o), blink::WebRect(rect), &extraParams);
     return false;
 }
 
 bool RenderThemeChromiumDefault::paintSliderTrack(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
-    WebKit::WebThemeEngine::ExtraParams extraParams;
-    WebKit::WebCanvas* canvas = i.context->canvas();
+    blink::WebThemeEngine::ExtraParams extraParams;
+    blink::WebCanvas* canvas = i.context->canvas();
     extraParams.slider.vertical = o->style()->appearance() == SliderVerticalPart;
 
     paintSliderTicks(o, i, rect);
@@ -346,15 +346,15 @@ bool RenderThemeChromiumDefault::paintSliderTrack(RenderObject* o, const PaintIn
         i.context->translate(-unzoomedRect.x(), -unzoomedRect.y());
     }
 
-    WebKit::Platform::current()->themeEngine()->paint(canvas, WebKit::WebThemeEngine::PartSliderTrack, getWebThemeState(this, o), WebKit::WebRect(unzoomedRect), &extraParams);
+    blink::Platform::current()->themeEngine()->paint(canvas, blink::WebThemeEngine::PartSliderTrack, getWebThemeState(this, o), blink::WebRect(unzoomedRect), &extraParams);
 
     return false;
 }
 
 bool RenderThemeChromiumDefault::paintSliderThumb(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
-    WebKit::WebThemeEngine::ExtraParams extraParams;
-    WebKit::WebCanvas* canvas = i.context->canvas();
+    blink::WebThemeEngine::ExtraParams extraParams;
+    blink::WebCanvas* canvas = i.context->canvas();
     extraParams.slider.vertical = o->style()->appearance() == SliderThumbVerticalPart;
     extraParams.slider.inDrag = isPressed(o);
 
@@ -369,13 +369,13 @@ bool RenderThemeChromiumDefault::paintSliderThumb(RenderObject* o, const PaintIn
         i.context->translate(-unzoomedRect.x(), -unzoomedRect.y());
     }
 
-    WebKit::Platform::current()->themeEngine()->paint(canvas, WebKit::WebThemeEngine::PartSliderThumb, getWebThemeState(this, o), WebKit::WebRect(unzoomedRect), &extraParams);
+    blink::Platform::current()->themeEngine()->paint(canvas, blink::WebThemeEngine::PartSliderThumb, getWebThemeState(this, o), blink::WebRect(unzoomedRect), &extraParams);
     return false;
 }
 
 void RenderThemeChromiumDefault::adjustInnerSpinButtonStyle(RenderStyle* style, Element*) const
 {
-    IntSize size = WebKit::Platform::current()->themeEngine()->getSize(WebKit::WebThemeEngine::PartInnerSpinButton);
+    IntSize size = blink::Platform::current()->themeEngine()->getSize(blink::WebThemeEngine::PartInnerSpinButton);
 
     style->setWidth(Length(size.width(), Fixed));
     style->setMinWidth(Length(size.width(), Fixed));
@@ -383,12 +383,12 @@ void RenderThemeChromiumDefault::adjustInnerSpinButtonStyle(RenderStyle* style, 
 
 bool RenderThemeChromiumDefault::paintInnerSpinButton(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
-    WebKit::WebThemeEngine::ExtraParams extraParams;
-    WebKit::WebCanvas* canvas = i.context->canvas();
+    blink::WebThemeEngine::ExtraParams extraParams;
+    blink::WebCanvas* canvas = i.context->canvas();
     extraParams.innerSpin.spinUp = (controlStatesForRenderer(o) & SpinUpState);
     extraParams.innerSpin.readOnly = isReadOnlyControl(o);
 
-    WebKit::Platform::current()->themeEngine()->paint(canvas, WebKit::WebThemeEngine::PartInnerSpinButton, getWebThemeState(this, o), WebKit::WebRect(rect), &extraParams);
+    blink::Platform::current()->themeEngine()->paint(canvas, blink::WebThemeEngine::PartInnerSpinButton, getWebThemeState(this, o), blink::WebRect(rect), &extraParams);
     return false;
 }
 
@@ -400,7 +400,7 @@ bool RenderThemeChromiumDefault::paintProgressBar(RenderObject* o, const PaintIn
     RenderProgress* renderProgress = toRenderProgress(o);
     IntRect valueRect = progressValueRectFor(renderProgress, rect);
 
-    WebKit::WebThemeEngine::ExtraParams extraParams;
+    blink::WebThemeEngine::ExtraParams extraParams;
     extraParams.progressBar.determinate = renderProgress->isDeterminate();
     extraParams.progressBar.valueRectX = valueRect.x();
     extraParams.progressBar.valueRectY = valueRect.y();
@@ -408,8 +408,8 @@ bool RenderThemeChromiumDefault::paintProgressBar(RenderObject* o, const PaintIn
     extraParams.progressBar.valueRectHeight = valueRect.height();
 
     DirectionFlippingScope scope(o, i, rect);
-    WebKit::WebCanvas* canvas = i.context->canvas();
-    WebKit::Platform::current()->themeEngine()->paint(canvas, WebKit::WebThemeEngine::PartProgressBar, getWebThemeState(this, o), WebKit::WebRect(rect), &extraParams);
+    blink::WebCanvas* canvas = i.context->canvas();
+    blink::Platform::current()->themeEngine()->paint(canvas, blink::WebThemeEngine::PartProgressBar, getWebThemeState(this, o), blink::WebRect(rect), &extraParams);
     return false;
 }
 

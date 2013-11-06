@@ -36,7 +36,7 @@
 #include "../platform/WebString.h"
 #include "../platform/WebTimeRange.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebAudioSourceProvider;
 class WebAudioSourceProviderClient;
@@ -159,6 +159,6 @@ public:
     virtual bool canEnterFullscreen() const { return false; }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

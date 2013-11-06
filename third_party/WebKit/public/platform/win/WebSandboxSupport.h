@@ -33,7 +33,7 @@
 
 typedef struct HFONT__* HFONT;
 
-namespace WebKit {
+namespace blink {
 
 // Put methods here that are required due to sandbox restrictions.
 class WebSandboxSupport {
@@ -47,6 +47,6 @@ public:
     virtual bool ensureFontLoaded(HFONT) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

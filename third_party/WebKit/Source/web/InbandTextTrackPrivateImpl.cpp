@@ -35,7 +35,7 @@
 #include "platform/graphics/media/InbandTextTrackPrivateClient.h"
 #include "public/platform/WebString.h"
 
-namespace WebKit {
+namespace blink {
 
 InbandTextTrackPrivateImpl::InbandTextTrackPrivateImpl(WebInbandTextTrack* track)
     : m_track(track)
@@ -79,4 +79,4 @@ void InbandTextTrackPrivateImpl::addWebVTTCue(
     client()->addWebVTTCue(this, start, end, id, content, settings);
 }
 
-} // namespace WebKit
+} // namespace blink

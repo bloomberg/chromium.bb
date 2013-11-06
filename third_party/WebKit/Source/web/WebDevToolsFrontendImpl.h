@@ -39,7 +39,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebDevToolsClientDelegate;
 class WebViewImpl;
@@ -47,12 +47,12 @@ struct WebDevToolsMessageData;
 
 using WTF::String;
 
-class WebDevToolsFrontendImpl : public WebKit::WebDevToolsFrontend {
+class WebDevToolsFrontendImpl : public blink::WebDevToolsFrontend {
     WTF_MAKE_NONCOPYABLE(WebDevToolsFrontendImpl);
 public:
     WebDevToolsFrontendImpl(
-        WebKit::WebViewImpl* webViewImpl,
-        WebKit::WebDevToolsFrontendClient* client,
+        blink::WebViewImpl* webViewImpl,
+        blink::WebDevToolsFrontendClient* client,
         const String& applicationLocale);
     virtual ~WebDevToolsFrontendImpl();
 
@@ -65,14 +65,14 @@ private:
     void maybeDispatch(WebCore::Timer<WebDevToolsFrontendImpl>*);
     void doDispatchOnInspectorFrontend(const WebString& message);
 
-    WebKit::WebViewImpl* m_webViewImpl;
-    WebKit::WebDevToolsFrontendClient* m_client;
+    blink::WebViewImpl* m_webViewImpl;
+    blink::WebDevToolsFrontendClient* m_client;
     String m_applicationLocale;
     OwnPtr<InspectorFrontendResumeObserver> m_inspectorFrontendResumeObserver;
     Deque<WebString> m_messages;
     WebCore::Timer<WebDevToolsFrontendImpl> m_inspectorFrontendDispatchTimer;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -31,7 +31,7 @@
 #ifndef WebTextInputType_h
 #define WebTextInputType_h
 
-namespace WebKit {
+namespace blink {
 
 enum WebTextInputType {
     // Input caret is not in an editable node, no input method shall be used.
@@ -68,6 +68,6 @@ enum WebTextInputType {
     WebTextInputTypeDateTimeField,
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

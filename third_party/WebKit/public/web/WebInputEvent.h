@@ -37,7 +37,7 @@
 
 #include <string.h>
 
-namespace WebKit {
+namespace blink {
 
 // The classes defined in this file are intended to be used with
 // WebWidget's handleInputEvent method.  These event types are cross-
@@ -496,6 +496,6 @@ public:
 
 #pragma pack(pop)
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

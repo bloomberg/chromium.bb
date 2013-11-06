@@ -54,7 +54,7 @@ class Element;
 class Node;
 }
 
-namespace WebKit {
+namespace blink {
 class WebFrameImpl;
 
 // Get html data by serializing all frames of current page with lists
@@ -187,6 +187,6 @@ private:
                              SerializeDomParam* param);
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

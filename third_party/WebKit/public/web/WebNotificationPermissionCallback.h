@@ -31,7 +31,7 @@
 #ifndef WebNotificationPermissionCallback_h
 #define WebNotificationPermissionCallback_h
 
-namespace WebKit {
+namespace blink {
 
 // Callback object used with WebNotificationPresenter.
 class WebNotificationPermissionCallback {
@@ -46,6 +46,6 @@ protected:
     ~WebNotificationPermissionCallback() {}
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -35,7 +35,7 @@ namespace WebCore {
 class ColorChooserClient;
 }
 
-namespace WebKit {
+namespace blink {
 
 class ChromeClientImpl;
 class WebColorChooser;

@@ -41,7 +41,7 @@ class Value;
 template <class T> class Handle;
 }
 
-namespace WebKit {
+namespace blink {
 class WebString;
 
 // FIXME: Should this class be in platform?
@@ -85,6 +85,6 @@ private:
     WebPrivatePtr<WebCore::SerializedScriptValue> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -35,7 +35,7 @@
 #include "core/page/PageScaleConstraints.h"
 #include "platform/geometry/IntSize.h"
 
-namespace WebKit {
+namespace blink {
 
 // This class harmonizes the viewport (particularly page scale) constraints from
 // the meta viewport tag and other sources.

@@ -69,7 +69,7 @@ public:
 private:
     void schedule()
     {
-        class TaskImpl : public WebKit::WebThread::Task {
+        class TaskImpl : public blink::WebThread::Task {
         public:
             RefPtr<InspectorBackendMessageQueue> owner;
             virtual void run()
@@ -79,7 +79,7 @@ private:
         };
         TaskImpl* taskImpl = new TaskImpl;
         taskImpl->owner = this;
-        WebKit::Platform::current()->currentThread()->postTask(taskImpl);
+        blink::Platform::current()->currentThread()->postTask(taskImpl);
     }
 
     void deliver()

@@ -35,7 +35,7 @@ namespace WebCore {
 class SpeechInputResult;
 }
 
-namespace WebKit {
+namespace blink {
 
 // This class holds one speech recognition result including the text and other related
 // fields, as received from the embedder.
@@ -66,6 +66,6 @@ private:
 
 typedef WebVector<WebSpeechInputResult> WebSpeechInputResultArray;
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebSpeechInputResult_h

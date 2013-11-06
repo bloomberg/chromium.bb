@@ -39,7 +39,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 static Vector<TextCheckingResult> toCoreResults(const WebVector<WebTextCheckingResult>& results)
 {
@@ -61,4 +61,4 @@ void WebTextCheckingCompletionImpl::didCancelCheckingText()
     delete this;
 }
 
-} // namespace WebKit
+} // namespace blink

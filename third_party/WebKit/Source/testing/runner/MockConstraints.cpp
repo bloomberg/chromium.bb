@@ -33,7 +33,7 @@
 #include "public/platform/WebMediaConstraints.h"
 #include "public/platform/WebString.h"
 
-using namespace WebKit;
+using namespace blink;
 
 namespace WebTestRunner {
 

@@ -44,7 +44,7 @@ class Context;
 template<class T> class Handle;
 }
 
-namespace WebKit {
+namespace blink {
 class WebCookieJar;
 class WebServiceWorkerProvider;
 class WebServiceWorkerProviderClient;
@@ -201,7 +201,7 @@ class FetchRequest;
         // This callback is similar, but for plugins.
         virtual void didNotAllowPlugins() { }
 
-        virtual WebKit::WebCookieJar* cookieJar() const = 0;
+        virtual blink::WebCookieJar* cookieJar() const = 0;
 
         // Returns true if the embedder intercepted the postMessage call
         virtual bool willCheckAndDispatchMessageEvent(SecurityOrigin* /*target*/, MessageEvent*) const { return false; }
@@ -227,7 +227,7 @@ class FetchRequest;
 
         virtual void dispatchDidChangeResourcePriority(unsigned long /*identifier*/, ResourceLoadPriority) { }
 
-        virtual PassOwnPtr<WebKit::WebServiceWorkerProvider> createServiceWorkerProvider(PassOwnPtr<WebKit::WebServiceWorkerProviderClient>) = 0;
+        virtual PassOwnPtr<blink::WebServiceWorkerProvider> createServiceWorkerProvider(PassOwnPtr<blink::WebServiceWorkerProviderClient>) = 0;
 
         virtual void didStopAllLoaders() { }
 

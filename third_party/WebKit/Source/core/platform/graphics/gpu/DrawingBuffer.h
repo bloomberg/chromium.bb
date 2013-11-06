@@ -41,7 +41,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebKit {
+namespace blink {
 class WebExternalBitmap;
 class WebExternalTextureLayer;
 class WebGraphicsContext3D;
@@ -62,10 +62,10 @@ public:
 };
 
 // Manages a rendering target (framebuffer + attachment) for a canvas.  Can publish its rendering
-// results to a WebKit::WebLayer for compositing.
-class DrawingBuffer : public RefCounted<DrawingBuffer>, public WebKit::WebExternalTextureLayerClient  {
+// results to a blink::WebLayer for compositing.
+class DrawingBuffer : public RefCounted<DrawingBuffer>, public blink::WebExternalTextureLayerClient  {
     struct MailboxInfo : public RefCounted<MailboxInfo> {
-        WebKit::WebExternalTextureMailbox mailbox;
+        blink::WebExternalTextureMailbox mailbox;
         unsigned textureId;
         IntSize size;
     };
@@ -120,13 +120,13 @@ public:
 
     void markContentsChanged();
 
-    WebKit::WebLayer* platformLayer();
+    blink::WebLayer* platformLayer();
     void paintCompositedResultsToCanvas(ImageBuffer*);
 
     // WebExternalTextureLayerClient implementation.
-    virtual WebKit::WebGraphicsContext3D* context() OVERRIDE;
-    virtual bool prepareMailbox(WebKit::WebExternalTextureMailbox*, WebKit::WebExternalBitmap*) OVERRIDE;
-    virtual void mailboxReleased(const WebKit::WebExternalTextureMailbox&) OVERRIDE;
+    virtual blink::WebGraphicsContext3D* context() OVERRIDE;
+    virtual bool prepareMailbox(blink::WebExternalTextureMailbox*, blink::WebExternalBitmap*) OVERRIDE;
+    virtual void mailboxReleased(const blink::WebExternalTextureMailbox&) OVERRIDE;
 
     bool copyToPlatformTexture(GraphicsContext3D&, Platform3DObject texture, GC3Denum internalFormat,
         GC3Denum destType, GC3Dint level, bool premultiplyAlpha, bool flipY);
@@ -202,7 +202,7 @@ private:
     unsigned m_internalRenderbufferFormat;
     int m_maxTextureSize;
 
-    OwnPtr<WebKit::WebExternalTextureLayer> m_layer;
+    OwnPtr<blink::WebExternalTextureLayer> m_layer;
 
     // All of the mailboxes that this DrawingBuffer has ever created.
     Vector<RefPtr<MailboxInfo> > m_textureMailboxes;

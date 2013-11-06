@@ -45,7 +45,7 @@ public:
     {
         if (!m_loaded) {
             PluginListBuilder builder(&m_plugins);
-            WebKit::Platform::current()->getPluginList(m_refresh, &builder);
+            blink::Platform::current()->getPluginList(m_refresh, &builder);
             m_loaded = true;
             m_refresh = false;
         }

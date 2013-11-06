@@ -37,7 +37,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 void WebGeolocationController::positionChanged(const WebGeolocationPosition& webPosition)
 {
@@ -49,4 +49,4 @@ void WebGeolocationController::errorOccurred(const WebGeolocationError& webError
     m_private->errorOccurred(PassRefPtr<GeolocationError>(webError).get());
 }
 
-} // namespace WebKit
+} // namespace blink

@@ -39,7 +39,7 @@ class InspectorFrontendHost;
 class Page;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebDevToolsFrontendClient;
 class WebDevToolsFrontendImpl;
@@ -67,6 +67,6 @@ private:
     RefPtr<WebCore::InspectorFrontendHost> m_frontendHost;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

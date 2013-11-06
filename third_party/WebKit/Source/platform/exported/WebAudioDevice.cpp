@@ -25,7 +25,7 @@
 #include "config.h"
 #include "public/platform/WebAudioDevice.h"
 
-namespace WebKit {
+namespace blink {
 
 void WebAudioDevice::RenderCallback::render(const WebVector<float*>& sourceData, const WebVector<float*>& destinationData, size_t numberOfFrames)
 {
@@ -35,4 +35,4 @@ WebAudioDevice::RenderCallback::~RenderCallback()
 {
 }
 
-} // namespace WebKit
+} // namespace blink

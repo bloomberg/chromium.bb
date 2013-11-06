@@ -34,7 +34,7 @@ namespace WebCore {
 class ScrollbarTheme;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebScrollbar;
 
@@ -70,6 +70,6 @@ private:
     WebCore::ScrollbarTheme* m_theme;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

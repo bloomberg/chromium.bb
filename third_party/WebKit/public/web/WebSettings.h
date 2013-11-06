@@ -35,7 +35,7 @@
 #include "../platform/WebSize.h"
 #include <unicode/uscript.h>
 
-namespace WebKit {
+namespace blink {
 
 class WebString;
 class WebURL;
@@ -202,6 +202,6 @@ protected:
     ~WebSettings() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

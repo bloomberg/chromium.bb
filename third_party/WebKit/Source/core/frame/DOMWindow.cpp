@@ -149,12 +149,12 @@ private:
 
 static void disableSuddenTermination()
 {
-    WebKit::Platform::current()->suddenTerminationChanged(false);
+    blink::Platform::current()->suddenTerminationChanged(false);
 }
 
 static void enableSuddenTermination()
 {
-    WebKit::Platform::current()->suddenTerminationChanged(true);
+    blink::Platform::current()->suddenTerminationChanged(true);
 }
 
 typedef HashCountedSet<DOMWindow*> DOMWindowSet;

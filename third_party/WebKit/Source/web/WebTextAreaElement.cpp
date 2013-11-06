@@ -38,7 +38,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 void WebTextAreaElement::setValue(const WebString& value)
 {
@@ -66,4 +66,4 @@ WebTextAreaElement::operator PassRefPtr<HTMLTextAreaElement>() const
     return toHTMLTextAreaElement(m_private.get());
 }
 
-} // namespace WebKit
+} // namespace blink

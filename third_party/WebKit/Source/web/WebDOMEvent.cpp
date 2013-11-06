@@ -36,7 +36,7 @@
 #include "core/events/Event.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebDOMEventPrivate : public WebCore::Event {
 };
@@ -204,4 +204,4 @@ bool WebDOMEvent::isBeforeLoadEvent() const
     return m_private->hasInterface(WebCore::EventNames::BeforeLoadEvent);
 }
 
-} // namespace WebKit
+} // namespace blink

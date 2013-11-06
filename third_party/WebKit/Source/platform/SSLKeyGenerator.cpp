@@ -42,13 +42,13 @@ namespace WebCore {
 void getSupportedKeySizes(Locale& locale, Vector<String>& sizes)
 {
     sizes.resize(2);
-    sizes[0] = locale.queryString(WebKit::WebLocalizedString::KeygenMenuHighGradeKeySize);
-    sizes[1] = locale.queryString(WebKit::WebLocalizedString::KeygenMenuMediumGradeKeySize);
+    sizes[0] = locale.queryString(blink::WebLocalizedString::KeygenMenuHighGradeKeySize);
+    sizes[1] = locale.queryString(blink::WebLocalizedString::KeygenMenuMediumGradeKeySize);
 }
 
 String signedPublicKeyAndChallengeString(unsigned keySizeIndex, const String& challengeString, const KURL& url)
 {
-    return WebKit::Platform::current()->signedPublicKeyAndChallengeString(keySizeIndex, WebKit::WebString(challengeString), WebKit::WebURL(url));
+    return blink::Platform::current()->signedPublicKeyAndChallengeString(keySizeIndex, blink::WebString(challengeString), blink::WebURL(url));
 }
 
 } // namespace WebCore

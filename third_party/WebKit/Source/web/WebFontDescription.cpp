@@ -35,7 +35,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebFontDescription::WebFontDescription(const FontDescription& desc,
                                        short fontLetterSpacing, short fontWordSpacing)
@@ -68,4 +68,4 @@ WebFontDescription::operator WebCore::FontDescription() const
     return desc;
 }
 
-} // namespace WebKit
+} // namespace blink

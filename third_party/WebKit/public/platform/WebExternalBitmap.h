@@ -33,7 +33,7 @@
 
 #include "WebSize.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebExternalBitmap {
 public:
@@ -49,6 +49,6 @@ public:
     virtual uint8* pixels() = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebExternalBitmap_h

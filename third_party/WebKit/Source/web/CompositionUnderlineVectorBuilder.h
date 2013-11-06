@@ -36,7 +36,7 @@
 #include "public/platform/WebVector.h"
 #include "wtf/Vector.h"
 
-namespace WebKit {
+namespace blink {
 
 // This classes are used for converting from std::vector<WebCompositionUnderline>
 // to Vector<WebCore::CompositionUnderline>.
@@ -48,6 +48,6 @@ public:
         const WebVector<WebCompositionUnderline>&);
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -37,7 +37,7 @@ class IDBDatabaseBackendInterface;
 
 } // namespace WebCore
 
-namespace WebKit {
+namespace blink {
 
 class WebIDBCallbacksImpl : public WebIDBCallbacks {
 public:
@@ -62,6 +62,6 @@ private:
     RefPtr<WebCore::IDBDatabaseBackendInterface> m_databaseProxy;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebIDBCallbacksImpl_h

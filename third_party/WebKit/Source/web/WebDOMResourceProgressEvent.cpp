@@ -36,7 +36,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebDOMResourceProgressEvent::WebDOMResourceProgressEvent(const WebString& type, bool lengthIsComputable, unsigned long long loaded, unsigned long long total, const WebString& url)
     : WebDOMProgressEvent()
@@ -44,4 +44,4 @@ WebDOMResourceProgressEvent::WebDOMResourceProgressEvent(const WebString& type, 
     assign(ResourceProgressEvent::create(type, lengthIsComputable, loaded, total, url));
 }
 
-} // namespace WebKit
+} // namespace blink

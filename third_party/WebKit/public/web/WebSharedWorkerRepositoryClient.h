@@ -31,7 +31,7 @@
 #ifndef WebSharedWorkerRepositoryClient_h
 #define WebSharedWorkerRepositoryClient_h
 
-namespace WebKit {
+namespace blink {
 
 class WebString;
 class WebSharedWorker;
@@ -49,6 +49,6 @@ public:
     virtual void documentDetached(DocumentID) { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebSharedWorkerRepositoryClient_h

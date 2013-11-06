@@ -411,7 +411,7 @@ SCRIPT_FONTPROPERTIES* FontPlatformData::scriptFontProperties() const
 
 bool FontPlatformData::ensureFontLoaded(HFONT font)
 {
-    WebKit::WebSandboxSupport* sandboxSupport = WebKit::Platform::current()->sandboxSupport();
+    blink::WebSandboxSupport* sandboxSupport = blink::Platform::current()->sandboxSupport();
     // if there is no sandbox, then we can assume the font
     // was able to be loaded successfully already
     return sandboxSupport ? sandboxSupport->ensureFontLoaded(font) : true;

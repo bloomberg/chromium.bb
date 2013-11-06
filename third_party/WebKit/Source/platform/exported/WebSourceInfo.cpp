@@ -31,7 +31,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebSourceInfoPrivate FINAL : public RefCounted<WebSourceInfoPrivate> {
 public:
@@ -103,5 +103,5 @@ WebSourceInfo::VideoFacingMode WebSourceInfo::facing() const
     return m_private->facing();
 }
 
-} // namespace WebKit
+} // namespace blink
 

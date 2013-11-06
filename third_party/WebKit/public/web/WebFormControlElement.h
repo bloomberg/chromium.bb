@@ -39,7 +39,7 @@
 namespace WebCore { class HTMLFormControlElement; }
 #endif
 
-namespace WebKit {
+namespace blink {
 
 // Provides readonly access to some properties of a DOM form control element node.
 class WebFormControlElement : public WebElement {
@@ -78,6 +78,6 @@ public:
 #endif
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

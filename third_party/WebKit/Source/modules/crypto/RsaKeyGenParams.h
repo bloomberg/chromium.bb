@@ -39,13 +39,13 @@ namespace WebCore {
 
 class RsaKeyGenParams : public Algorithm {
 public:
-    static PassRefPtr<RsaKeyGenParams> create(const WebKit::WebCryptoAlgorithm& algorithm) { return adoptRef(new RsaKeyGenParams(algorithm)); }
+    static PassRefPtr<RsaKeyGenParams> create(const blink::WebCryptoAlgorithm& algorithm) { return adoptRef(new RsaKeyGenParams(algorithm)); }
 
     unsigned modulusLength() const;
     Uint8Array* publicExponent();
 
 private:
-    explicit RsaKeyGenParams(const WebKit::WebCryptoAlgorithm&);
+    explicit RsaKeyGenParams(const blink::WebCryptoAlgorithm&);
 
     RefPtr<Uint8Array> m_publicExponent;
 };

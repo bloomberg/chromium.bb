@@ -50,7 +50,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 class WebRangePrivate : public Range {
 };
@@ -167,4 +167,4 @@ void WebRange::assign(WebRangePrivate* p)
     m_private = p;
 }
 
-} // namespace WebKit
+} // namespace blink

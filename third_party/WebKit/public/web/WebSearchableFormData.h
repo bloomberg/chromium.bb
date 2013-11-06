@@ -35,7 +35,7 @@
 #include "../platform/WebURL.h"
 #include "WebInputElement.h"
 
-namespace WebKit {
+namespace blink {
 class WebFormElement;
 
 // SearchableFormData encapsulates a URL and encoding of an INPUT field that
@@ -65,6 +65,6 @@ private:
     WebString m_encoding;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

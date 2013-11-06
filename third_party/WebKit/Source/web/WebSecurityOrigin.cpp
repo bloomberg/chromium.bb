@@ -40,7 +40,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 class WebSecurityOriginPrivate : public SecurityOrigin {
 };
@@ -162,4 +162,4 @@ void WebSecurityOrigin::grantLoadLocalResources() const
     get()->grantLoadLocalResources();
 }
 
-} // namespace WebKit
+} // namespace blink

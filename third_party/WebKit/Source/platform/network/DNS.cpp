@@ -34,7 +34,7 @@ namespace WebCore {
 
 void prefetchDNS(const String& hostname)
 {
-    WebKit::WebPrescientNetworking* prescientNetworking = WebKit::Platform::current()->prescientNetworking();
+    blink::WebPrescientNetworking* prescientNetworking = blink::Platform::current()->prescientNetworking();
 
     if (!prescientNetworking)
         return;

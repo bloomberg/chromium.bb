@@ -35,7 +35,7 @@
 
 namespace WebCore { class GeolocationError; }
 
-namespace WebKit {
+namespace blink {
 
 class WebString;
 
@@ -64,6 +64,6 @@ private:
     WebPrivatePtr<WebCore::GeolocationError> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebGeolocationError_h

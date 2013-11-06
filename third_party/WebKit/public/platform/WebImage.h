@@ -41,7 +41,7 @@ namespace WebCore { class Image; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
-namespace WebKit {
+namespace blink {
 
 class WebData;
 struct WebSize;
@@ -101,6 +101,6 @@ private:
 
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

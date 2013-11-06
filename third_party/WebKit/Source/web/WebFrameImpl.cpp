@@ -200,7 +200,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 static int frameCount = 0;
 
@@ -2114,13 +2114,13 @@ WebFrameImpl::WebFrameImpl(WebFrameClient* client, long long embedderIdentifier)
     , m_inSameDocumentHistoryLoad(false)
     , m_inputEventsScaleFactorForEmulation(1)
 {
-    WebKit::Platform::current()->incrementStatsCounter(webFrameActiveCount);
+    blink::Platform::current()->incrementStatsCounter(webFrameActiveCount);
     frameCount++;
 }
 
 WebFrameImpl::~WebFrameImpl()
 {
-    WebKit::Platform::current()->decrementStatsCounter(webFrameActiveCount);
+    blink::Platform::current()->decrementStatsCounter(webFrameActiveCount);
     frameCount--;
 
     cancelPendingScopingEffort();
@@ -2529,4 +2529,4 @@ void WebFrameImpl::willDetachPage()
     }
 }
 
-} // namespace WebKit
+} // namespace blink

@@ -38,7 +38,7 @@ namespace WebCore {
 class ScriptExecutionContext;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebString;
 class WebMessagePortChannel;
@@ -89,6 +89,6 @@ public:
     virtual void dispatchDevToolsMessage(const WebString&) { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

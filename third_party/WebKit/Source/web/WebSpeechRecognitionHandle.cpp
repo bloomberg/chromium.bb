@@ -30,7 +30,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 void WebSpeechRecognitionHandle::reset()
 {
@@ -68,4 +68,4 @@ WebSpeechRecognitionHandle::operator PassRefPtr<SpeechRecognition>() const
     return m_private.get();
 }
 
-} // namespace WebKit
+} // namespace blink

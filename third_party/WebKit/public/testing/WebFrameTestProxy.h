@@ -39,7 +39,7 @@ namespace WebTestRunner {
 // Templetized wrapper around RenderFrameImpl objects, which implement
 // the WebFrameClient interface.
 template<class Base, typename P, typename R>
-class WebFrameTestProxy : public Base, public WebKit::WebNonCopyable {
+class WebFrameTestProxy : public Base, public blink::WebNonCopyable {
 public:
     WebFrameTestProxy(P p, R r)
         : Base(p, r)
@@ -58,108 +58,108 @@ public:
         m_version = version;
     }
 
-    WebKit::WebPlugin* createPlugin(WebKit::WebFrame* frame, const WebKit::WebPluginParams& params)
+    blink::WebPlugin* createPlugin(blink::WebFrame* frame, const blink::WebPluginParams& params)
     {
-        WebKit::WebPlugin* plugin = m_baseProxy->createPlugin(frame, params);
+        blink::WebPlugin* plugin = m_baseProxy->createPlugin(frame, params);
         if (plugin)
             return plugin;
         return Base::createPlugin(frame, params);
     }
 
     // WebFrameClient implementation.
-    virtual void didStartProvisionalLoad(WebKit::WebFrame* frame)
+    virtual void didStartProvisionalLoad(blink::WebFrame* frame)
     {
         if (m_version > 2)
             m_baseProxy->didStartProvisionalLoad(frame);
         Base::didStartProvisionalLoad(frame);
     }
-    virtual void didReceiveServerRedirectForProvisionalLoad(WebKit::WebFrame* frame)
+    virtual void didReceiveServerRedirectForProvisionalLoad(blink::WebFrame* frame)
     {
         Base::didReceiveServerRedirectForProvisionalLoad(frame);
     }
-    virtual void didFailProvisionalLoad(WebKit::WebFrame* frame, const WebKit::WebURLError& error)
+    virtual void didFailProvisionalLoad(blink::WebFrame* frame, const blink::WebURLError& error)
     {
         Base::didFailProvisionalLoad(frame, error);
     }
-    virtual void didCommitProvisionalLoad(WebKit::WebFrame* frame, bool isNewNavigation)
+    virtual void didCommitProvisionalLoad(blink::WebFrame* frame, bool isNewNavigation)
     {
         Base::didCommitProvisionalLoad(frame, isNewNavigation);
     }
-    virtual void didReceiveTitle(WebKit::WebFrame* frame, const WebKit::WebString& title, WebKit::WebTextDirection direction)
+    virtual void didReceiveTitle(blink::WebFrame* frame, const blink::WebString& title, blink::WebTextDirection direction)
     {
         Base::didReceiveTitle(frame, title, direction);
     }
-    virtual void didChangeIcon(WebKit::WebFrame* frame, WebKit::WebIconURL::Type iconType)
+    virtual void didChangeIcon(blink::WebFrame* frame, blink::WebIconURL::Type iconType)
     {
         Base::didChangeIcon(frame, iconType);
     }
-    virtual void didFinishDocumentLoad(WebKit::WebFrame* frame)
+    virtual void didFinishDocumentLoad(blink::WebFrame* frame)
     {
         Base::didFinishDocumentLoad(frame);
     }
-    virtual void didHandleOnloadEvents(WebKit::WebFrame* frame)
+    virtual void didHandleOnloadEvents(blink::WebFrame* frame)
     {
         Base::didHandleOnloadEvents(frame);
     }
-    virtual void didFailLoad(WebKit::WebFrame* frame, const WebKit::WebURLError& error)
+    virtual void didFailLoad(blink::WebFrame* frame, const blink::WebURLError& error)
     {
         Base::didFailLoad(frame, error);
     }
-    virtual void didFinishLoad(WebKit::WebFrame* frame)
+    virtual void didFinishLoad(blink::WebFrame* frame)
     {
         Base::didFinishLoad(frame);
     }
-    virtual void didDetectXSS(WebKit::WebFrame* frame, const WebKit::WebURL& insecureURL, bool didBlockEntirePage)
+    virtual void didDetectXSS(blink::WebFrame* frame, const blink::WebURL& insecureURL, bool didBlockEntirePage)
     {
         // This is not implemented in RenderFrameImpl, so need to explicitly call
         // into the base proxy.
         m_baseProxy->didDetectXSS(frame, insecureURL, didBlockEntirePage);
         Base::didDetectXSS(frame, insecureURL, didBlockEntirePage);
     }
-    virtual void didDispatchPingLoader(WebKit::WebFrame* frame, const WebKit::WebURL& url)
+    virtual void didDispatchPingLoader(blink::WebFrame* frame, const blink::WebURL& url)
     {
         // This is not implemented in RenderFrameImpl, so need to explicitly call
         // into the base proxy.
         m_baseProxy->didDispatchPingLoader(frame, url);
         Base::didDispatchPingLoader(frame, url);
     }
-    virtual void willRequestResource(WebKit::WebFrame* frame, const WebKit::WebCachedURLRequest& request)
+    virtual void willRequestResource(blink::WebFrame* frame, const blink::WebCachedURLRequest& request)
     {
         // This is not implemented in RenderFrameImpl, so need to explicitly call
         // into the base proxy.
         m_baseProxy->willRequestResource(frame, request);
         Base::willRequestResource(frame, request);
     }
-    virtual void didCreateDataSource(WebKit::WebFrame* frame, WebKit::WebDataSource* ds)
+    virtual void didCreateDataSource(blink::WebFrame* frame, blink::WebDataSource* ds)
     {
         Base::didCreateDataSource(frame, ds);
     }
-    virtual void willSendRequest(WebKit::WebFrame* frame, unsigned identifier, WebKit::WebURLRequest& request, const WebKit::WebURLResponse& redirectResponse)
+    virtual void willSendRequest(blink::WebFrame* frame, unsigned identifier, blink::WebURLRequest& request, const blink::WebURLResponse& redirectResponse)
     {
         m_baseProxy->willSendRequest(frame, identifier, request, redirectResponse);
         Base::willSendRequest(frame, identifier, request, redirectResponse);
     }
-    virtual void didReceiveResponse(WebKit::WebFrame* frame, unsigned identifier, const WebKit::WebURLResponse& response)
+    virtual void didReceiveResponse(blink::WebFrame* frame, unsigned identifier, const blink::WebURLResponse& response)
     {
         m_baseProxy->didReceiveResponse(frame, identifier, response);
         Base::didReceiveResponse(frame, identifier, response);
     }
-    virtual void didChangeResourcePriority(WebKit::WebFrame* frame, unsigned identifier, const WebKit::WebURLRequest::Priority& priority)
+    virtual void didChangeResourcePriority(blink::WebFrame* frame, unsigned identifier, const blink::WebURLRequest::Priority& priority)
     {
         // This is not implemented in RenderFrameImpl, so need to explicitly call
         // into the base proxy.
         m_baseProxy->didChangeResourcePriority(frame, identifier, priority);
         Base::didChangeResourcePriority(frame, identifier, priority);
     }
-    virtual void didFinishResourceLoad(WebKit::WebFrame* frame, unsigned identifier)
+    virtual void didFinishResourceLoad(blink::WebFrame* frame, unsigned identifier)
     {
         Base::didFinishResourceLoad(frame, identifier);
     }
-    virtual WebKit::WebNavigationPolicy decidePolicyForNavigation(WebKit::WebFrame* frame, WebKit::WebDataSource::ExtraData* extraData, const WebKit::WebURLRequest& request, WebKit::WebNavigationType type, WebKit::WebNavigationPolicy defaultPolicy, bool isRedirect)
+    virtual blink::WebNavigationPolicy decidePolicyForNavigation(blink::WebFrame* frame, blink::WebDataSource::ExtraData* extraData, const blink::WebURLRequest& request, blink::WebNavigationType type, blink::WebNavigationPolicy defaultPolicy, bool isRedirect)
     {
         return Base::decidePolicyForNavigation(frame, extraData, request, type, defaultPolicy, isRedirect);
     }
-    virtual bool willCheckAndDispatchMessageEvent(WebKit::WebFrame* sourceFrame, WebKit::WebFrame* targetFrame, WebKit::WebSecurityOrigin target, WebKit::WebDOMMessageEvent event)
+    virtual bool willCheckAndDispatchMessageEvent(blink::WebFrame* sourceFrame, blink::WebFrame* targetFrame, blink::WebSecurityOrigin target, blink::WebDOMMessageEvent event)
     {
         if (m_baseProxy->willCheckAndDispatchMessageEvent(sourceFrame, targetFrame, target, event))
             return true;

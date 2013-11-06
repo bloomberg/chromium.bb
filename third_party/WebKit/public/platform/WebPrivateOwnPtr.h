@@ -34,7 +34,7 @@
 #include "wtf/PassOwnPtr.h"
 #endif
 
-namespace WebKit {
+namespace blink {
 
 // This class is an implementation detail of the WebKit API.  It exists
 // to help simplify the implementation of WebKit interfaces that merely
@@ -95,6 +95,6 @@ template<typename T> template<typename U> inline WebPrivateOwnPtr<T>::WebPrivate
 }
 #endif
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

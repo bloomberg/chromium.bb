@@ -33,7 +33,7 @@
 
 #include "WebString.h"
 
-namespace WebKit {
+namespace blink {
 class WebURL;
 struct WebCookie;
 template <typename T> class WebVector;
@@ -51,6 +51,6 @@ protected:
     ~WebCookieJar() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

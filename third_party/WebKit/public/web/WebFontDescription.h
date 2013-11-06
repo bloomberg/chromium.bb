@@ -37,7 +37,7 @@
 namespace WebCore { class FontDescription; }
 #endif
 
-namespace WebKit {
+namespace blink {
 
 struct WebFontDescription {
     enum GenericFamily {
@@ -101,6 +101,6 @@ struct WebFontDescription {
 #endif
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

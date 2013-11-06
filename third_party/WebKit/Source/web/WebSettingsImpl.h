@@ -37,7 +37,7 @@ namespace WebCore {
 class Settings;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebSettingsImpl : public WebSettings {
 public:
@@ -229,6 +229,6 @@ private:
     bool m_mainFrameResizesAreOrientationChanges;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

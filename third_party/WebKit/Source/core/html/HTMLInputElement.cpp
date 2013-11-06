@@ -803,7 +803,7 @@ String HTMLInputElement::altText() const
     if (alt.isNull())
         alt = getAttribute(valueAttr);
     if (alt.isEmpty())
-        alt = locale().queryString(WebKit::WebLocalizedString::InputElementAltText);
+        alt = locale().queryString(blink::WebLocalizedString::InputElementAltText);
     return alt;
 }
 

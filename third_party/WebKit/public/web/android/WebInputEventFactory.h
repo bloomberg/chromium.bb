@@ -34,7 +34,7 @@
 #include "../../platform/WebCommon.h"
 #include "../WebInputEvent.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebKeyboardEvent;
 
@@ -88,6 +88,6 @@ public:
                                                       int modifiers);
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

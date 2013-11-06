@@ -60,7 +60,7 @@ KeyframeAnimation::KeyframeAnimation(const CSSAnimationData* animation, RenderOb
     checkForMatchingFilterFunctionLists();
     HashSet<CSSPropertyID>::const_iterator endProperties = m_keyframes.endProperties();
     for (HashSet<CSSPropertyID>::const_iterator it = m_keyframes.beginProperties(); it != endProperties; ++it)
-        WebKit::Platform::current()->histogramSparse("WebCore.Animation.CSSProperties", UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(*it));
+        blink::Platform::current()->histogramSparse("WebCore.Animation.CSSProperties", UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(*it));
 }
 
 KeyframeAnimation::~KeyframeAnimation()

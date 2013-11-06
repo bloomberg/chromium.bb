@@ -52,11 +52,11 @@
 int main(int argc, char** argv)
 {
 #if defined(BLINK_DLL_UNITTEST)
-    WebKit::InitTestSuite(argc, argv);
+    blink::InitTestSuite(argc, argv);
     content::SetUpTestEnvironmentForWebKitUnitTests();
-    int result = WebKit::RunAllUnitTests();
+    int result = blink::RunAllUnitTests();
     content::TearDownEnvironmentForWebKitUnitTests();
-    WebKit::DeleteTestSuite();
+    blink::DeleteTestSuite();
 #else
     ::testing::InitGoogleMock(&argc, argv);
     TestSuite testSuite(argc, argv);

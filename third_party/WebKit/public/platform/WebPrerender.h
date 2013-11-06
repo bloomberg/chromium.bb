@@ -45,7 +45,7 @@ namespace WebCore {
 class Prerender;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebPrerender {
 public:
@@ -89,6 +89,6 @@ private:
     WebPrivatePtr<WebCore::Prerender> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebPrerender_h

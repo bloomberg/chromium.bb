@@ -35,7 +35,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 void WebScrollbarTheme::updateScrollbars(
     float initialButtonDelay, float autoscrollButtonDelay,
@@ -45,4 +45,4 @@ void WebScrollbarTheme::updateScrollbars(
         initialButtonDelay, autoscrollButtonDelay, jumpOnTrackClick, redraw);
 }
 
-} // namespace WebKit
+} // namespace blink

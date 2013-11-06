@@ -38,7 +38,7 @@
 namespace WebCore { class ResourceRequest; }
 #endif
 
-namespace WebKit {
+namespace blink {
 
 class WebCString;
 class WebHTTPBody;
@@ -204,6 +204,6 @@ private:
     WebURLRequestPrivate* m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

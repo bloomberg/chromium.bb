@@ -38,14 +38,14 @@ namespace WebCore {
 
 class HmacKeyParams : public Algorithm {
 public:
-    static PassRefPtr<HmacKeyParams> create(const WebKit::WebCryptoAlgorithm& algorithm) { return adoptRef(new HmacKeyParams(algorithm)); }
+    static PassRefPtr<HmacKeyParams> create(const blink::WebCryptoAlgorithm& algorithm) { return adoptRef(new HmacKeyParams(algorithm)); }
 
     Algorithm* hash();
 
     unsigned length(bool& isNull);
 
 private:
-    explicit HmacKeyParams(const WebKit::WebCryptoAlgorithm&);
+    explicit HmacKeyParams(const blink::WebCryptoAlgorithm&);
 
     RefPtr<Algorithm> m_hash;
 };

@@ -39,8 +39,8 @@
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebGraphicsContext3D.h"
 
-using WebKit::WebExternalTextureLayer;
-using WebKit::WebGraphicsContext3D;
+using blink::WebExternalTextureLayer;
+using blink::WebGraphicsContext3D;
 
 namespace WebCore {
 
@@ -103,7 +103,7 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, 
     ASSERT(m_canvas);
     // Used by browser tests to detect the use of a Canvas2DLayerBridge.
     TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation");
-    m_layer = adoptPtr(WebKit::Platform::current()->compositorSupport()->createExternalTextureLayer(this));
+    m_layer = adoptPtr(blink::Platform::current()->compositorSupport()->createExternalTextureLayer(this));
     m_layer->setOpaque(opacityMode == Opaque);
     m_layer->setBlendBackgroundColor(opacityMode != Opaque);
     GraphicsLayer::registerContentsLayer(m_layer->layer());
@@ -275,7 +275,7 @@ bool Canvas2DLayerBridge::isValid()
     return m_surfaceIsValid;
 }
 
-bool Canvas2DLayerBridge::prepareMailbox(WebKit::WebExternalTextureMailbox* outMailbox, WebKit::WebExternalBitmap* bitmap)
+bool Canvas2DLayerBridge::prepareMailbox(blink::WebExternalTextureMailbox* outMailbox, blink::WebExternalBitmap* bitmap)
 {
     if (bitmap) {
         // Using accelerated 2d canvas with software renderer, which
@@ -368,7 +368,7 @@ Canvas2DLayerBridge::MailboxInfo* Canvas2DLayerBridge::createMailboxInfo() {
     return mailboxInfo;
 }
 
-void Canvas2DLayerBridge::mailboxReleased(const WebKit::WebExternalTextureMailbox& mailbox)
+void Canvas2DLayerBridge::mailboxReleased(const blink::WebExternalTextureMailbox& mailbox)
 {
     Vector<MailboxInfo>::iterator mailboxInfo;
     for (mailboxInfo = m_mailboxes.begin(); mailboxInfo < m_mailboxes.end(); mailboxInfo++) {
@@ -386,7 +386,7 @@ void Canvas2DLayerBridge::mailboxReleased(const WebKit::WebExternalTextureMailbo
     }
 }
 
-WebKit::WebLayer* Canvas2DLayerBridge::layer()
+blink::WebLayer* Canvas2DLayerBridge::layer()
 {
     ASSERT(m_layer);
     return m_layer->layer();

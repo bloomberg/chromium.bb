@@ -37,7 +37,7 @@ namespace WebCore {
 
 class IDBVersionChangeEvent : public Event {
 public:
-    static PassRefPtr<IDBVersionChangeEvent> create(PassRefPtr<IDBAny> oldVersion = IDBAny::createNull(), PassRefPtr<IDBAny> newVersion = IDBAny::createNull(), const AtomicString& eventType = AtomicString(), WebKit::WebIDBCallbacks::DataLoss = WebKit::WebIDBCallbacks::DataLossNone, const String& dataLossMessage = String());
+    static PassRefPtr<IDBVersionChangeEvent> create(PassRefPtr<IDBAny> oldVersion = IDBAny::createNull(), PassRefPtr<IDBAny> newVersion = IDBAny::createNull(), const AtomicString& eventType = AtomicString(), blink::WebIDBCallbacks::DataLoss = blink::WebIDBCallbacks::DataLossNone, const String& dataLossMessage = String());
     virtual ~IDBVersionChangeEvent();
 
     virtual PassRefPtr<IDBAny> oldVersion() { return m_oldVersion; }
@@ -51,7 +51,7 @@ public:
     virtual const AtomicString& interfaceName() const;
 
 private:
-    IDBVersionChangeEvent(PassRefPtr<IDBAny> oldVersion, PassRefPtr<IDBAny> newVersion, const AtomicString& eventType, WebKit::WebIDBCallbacks::DataLoss, const String& dataLoss);
+    IDBVersionChangeEvent(PassRefPtr<IDBAny> oldVersion, PassRefPtr<IDBAny> newVersion, const AtomicString& eventType, blink::WebIDBCallbacks::DataLoss, const String& dataLoss);
 
     RefPtr<IDBAny> m_oldVersion;
     RefPtr<IDBAny> m_newVersion;

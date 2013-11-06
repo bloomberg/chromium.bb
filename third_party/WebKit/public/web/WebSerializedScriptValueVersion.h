@@ -31,7 +31,7 @@
 #ifndef WebSerializedScriptValueVersion_h
 #define WebSerializedScriptValueVersion_h
 
-namespace WebKit {
+namespace blink {
 
 // SerializedScriptValue wire format version. Versions higher than
 // this value will not be deserializable by WebSerializedScriptValue.
@@ -40,6 +40,6 @@ namespace WebKit {
 // before deserializing individual values.
 const unsigned kSerializedScriptValueVersion = 3;
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebSerializedScriptValueVersion_h

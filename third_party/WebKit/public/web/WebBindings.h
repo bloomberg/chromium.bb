@@ -42,7 +42,7 @@ template <class T> class Handle;
 template <class T> class Local;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebArrayBuffer;
 class WebArrayBufferView;
@@ -184,6 +184,6 @@ public:
     BLINK_EXPORT static v8::Handle<v8::Value> toV8Value(const NPVariant*);
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

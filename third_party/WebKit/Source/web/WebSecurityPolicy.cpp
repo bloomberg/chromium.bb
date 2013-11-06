@@ -40,7 +40,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 void WebSecurityPolicy::registerURLSchemeAsLocal(const WebString& scheme)
 {
@@ -114,4 +114,4 @@ void WebSecurityPolicy::registerURLSchemeAsNotAllowingJavascriptURLs(const WebSt
     SchemeRegistry::registerURLSchemeAsNotAllowingJavascriptURLs(scheme);
 }
 
-} // namespace WebKit
+} // namespace blink

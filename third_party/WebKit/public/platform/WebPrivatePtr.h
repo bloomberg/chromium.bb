@@ -37,7 +37,7 @@
 #include "wtf/PassRefPtr.h"
 #endif
 
-namespace WebKit {
+namespace blink {
 
 // This class is an implementation detail of the WebKit API.  It exists
 // to help simplify the implementation of WebKit interfaces that merely
@@ -141,6 +141,6 @@ private:
     T* m_ptr;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

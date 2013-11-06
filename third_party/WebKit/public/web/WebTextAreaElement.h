@@ -37,7 +37,7 @@
 namespace WebCore { class HTMLTextAreaElement; }
 #endif
 
-namespace WebKit {
+namespace blink {
 
 // Provides access to some properties of a DOM textarea element node.
 class WebTextAreaElement : public WebFormControlElement {
@@ -62,6 +62,6 @@ public:
 #endif
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

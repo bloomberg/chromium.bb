@@ -34,7 +34,7 @@
 #include "CppBoundClass.h"
 #include "WebAXObjectProxy.h"
 
-namespace WebKit {
+namespace blink {
 class WebAXObject;
 class WebFrame;
 class WebView;
@@ -49,20 +49,20 @@ public:
     AccessibilityController();
 
     // Shadow to include accessibility initialization.
-    void bindToJavascript(WebKit::WebFrame*, const WebKit::WebString& classname);
+    void bindToJavascript(blink::WebFrame*, const blink::WebString& classname);
     void reset();
 
-    void setFocusedElement(const WebKit::WebAXObject&);
+    void setFocusedElement(const blink::WebAXObject&);
     WebAXObjectProxy* getFocusedElement();
     WebAXObjectProxy* getRootElement();
     WebAXObjectProxy* getAccessibleElementById(const std::string& id);
 
     bool shouldLogAccessibilityEvents();
 
-    void notificationReceived(const WebKit::WebAXObject& target, const char* notificationName);
+    void notificationReceived(const blink::WebAXObject& target, const char* notificationName);
 
     void setDelegate(WebTestDelegate* delegate) { m_delegate = delegate; }
-    void setWebView(WebKit::WebView* webView) { m_webView = webView; }
+    void setWebView(blink::WebView* webView) { m_webView = webView; }
 
 private:
     // If true, will log all accessibility notifications.
@@ -78,17 +78,17 @@ private:
     void rootElementGetterCallback(CppVariant*);
     void accessibleElementByIdGetterCallback(const CppArgumentList&, CppVariant*);
 
-    WebAXObjectProxy* findAccessibleElementByIdRecursive(const WebKit::WebAXObject&, const WebKit::WebString& id);
+    WebAXObjectProxy* findAccessibleElementByIdRecursive(const blink::WebAXObject&, const blink::WebString& id);
 
-    WebKit::WebAXObject m_focusedElement;
-    WebKit::WebAXObject m_rootElement;
+    blink::WebAXObject m_focusedElement;
+    blink::WebAXObject m_rootElement;
 
     WebAXObjectProxyList m_elements;
 
     std::vector<CppVariant> m_notificationCallbacks;
 
     WebTestDelegate* m_delegate;
-    WebKit::WebView* m_webView;
+    blink::WebView* m_webView;
 };
 
 }

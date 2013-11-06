@@ -83,7 +83,7 @@ bool SubmitInputType::canBeSuccessfulSubmitButton()
 
 String SubmitInputType::defaultValue() const
 {
-    return locale().queryString(WebKit::WebLocalizedString::SubmitButtonDefaultLabel);
+    return locale().queryString(blink::WebLocalizedString::SubmitButtonDefaultLabel);
 }
 
 bool SubmitInputType::isSubmitButton() const

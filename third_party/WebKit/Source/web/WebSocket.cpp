@@ -33,7 +33,7 @@
 
 #include "WebSocketImpl.h"
 
-namespace WebKit {
+namespace blink {
 
 WebSocket* WebSocket::create(const WebDocument& document, WebSocketClient* client)
 {
@@ -46,4 +46,4 @@ WebSocket* WebSocket::create(const WebDocument& document, WebSocketClient* clien
     return websocket.leakPtr();
 }
 
-} // namespace WebKit
+} // namespace blink

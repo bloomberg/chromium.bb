@@ -38,12 +38,12 @@ namespace WebCore {
 
 class AesKeyGenParams : public Algorithm {
 public:
-    static PassRefPtr<AesKeyGenParams> create(const WebKit::WebCryptoAlgorithm& algorithm) { return adoptRef(new AesKeyGenParams(algorithm)); }
+    static PassRefPtr<AesKeyGenParams> create(const blink::WebCryptoAlgorithm& algorithm) { return adoptRef(new AesKeyGenParams(algorithm)); }
 
     unsigned short length() const;
 
 private:
-    explicit AesKeyGenParams(const WebKit::WebCryptoAlgorithm&);
+    explicit AesKeyGenParams(const blink::WebCryptoAlgorithm&);
 };
 
 } // namespace WebCore

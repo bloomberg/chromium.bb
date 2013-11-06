@@ -36,7 +36,7 @@
 #include "../platform/WebVector.h"
 #include "WebFormElement.h"
 
-namespace WebKit {
+namespace blink {
 
 struct WebPasswordFormData {
     // If the provided form is suitable for password completion, isValid() will
@@ -121,6 +121,6 @@ struct WebPasswordFormData {
     }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

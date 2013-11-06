@@ -44,7 +44,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 SpeechRecognitionClientProxy::~SpeechRecognitionClientProxy()
 {
@@ -146,4 +146,4 @@ SpeechRecognitionClientProxy::SpeechRecognitionClientProxy(WebSpeechRecognizer* 
 {
 }
 
-} // namespace WebKit
+} // namespace blink

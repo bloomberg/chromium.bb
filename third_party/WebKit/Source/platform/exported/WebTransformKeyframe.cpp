@@ -27,7 +27,7 @@
 
 #include "wtf/PassOwnPtr.h"
 
-namespace WebKit {
+namespace blink {
 
 WebTransformKeyframe::WebTransformKeyframe(double time, PassOwnPtr<WebTransformOperations> value)
     : m_time(time)
@@ -51,4 +51,4 @@ const WebTransformOperations& WebTransformKeyframe::value() const
 }
 
 
-} // namespace WebKit
+} // namespace blink

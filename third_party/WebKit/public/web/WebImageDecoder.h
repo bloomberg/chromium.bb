@@ -37,7 +37,7 @@
 
 namespace WebCore { class ImageDecoder; }
 
-namespace WebKit {
+namespace blink {
 
 typedef WebCore::ImageDecoder WebImageDecoderPrivate;
 class WebData;
@@ -85,6 +85,6 @@ private:
     WebImageDecoderPrivate* m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

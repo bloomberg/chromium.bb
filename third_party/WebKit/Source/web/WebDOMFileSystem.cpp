@@ -38,7 +38,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebDOMFileSystem WebDOMFileSystem::fromV8Value(v8::Handle<v8::Value> value)
 {
@@ -106,4 +106,4 @@ WebDOMFileSystem::operator WTF::PassRefPtr<WebCore::DOMFileSystem>() const
     return m_private.get();
 }
 
-} // namespace WebKit
+} // namespace blink

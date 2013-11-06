@@ -29,7 +29,7 @@
 #include "modules/speech/SpeechGrammar.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebKit {
+namespace blink {
 
 void WebSpeechGrammar::reset()
 {
@@ -64,4 +64,4 @@ float WebSpeechGrammar::weight() const
     return m_private->weight();
 }
 
-} // namespace WebKit
+} // namespace blink

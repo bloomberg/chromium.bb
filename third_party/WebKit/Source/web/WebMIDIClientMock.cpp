@@ -35,7 +35,7 @@
 #include "modules/webmidi/MIDIClientMock.h"
 #include "public/web/WebMIDIPermissionRequest.h"
 
-namespace WebKit {
+namespace blink {
 
 WebMIDIClientMock::WebMIDIClientMock()
 {

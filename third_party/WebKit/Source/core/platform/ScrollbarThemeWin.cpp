@@ -65,7 +65,7 @@ int ScrollbarThemeWin::scrollbarThickness(ScrollbarControlSize controlSize)
     if (!thickness) {
         if (isRunningLayoutTest())
             return kMacScrollbarSize[controlSize];
-        thickness = IntSize(WebKit::Platform::current()->themeEngine()->getSize(SBP_ARROWBTN)).width();
+        thickness = IntSize(blink::Platform::current()->themeEngine()->getSize(SBP_ARROWBTN)).width();
     }
     return thickness;
 }
@@ -105,9 +105,9 @@ void ScrollbarThemeWin::paintTrackPiece(GraphicsContext* gc, ScrollbarThemeClien
 
     IntRect alignRect = trackRect(scrollbar, false);
 
-    WebKit::WebCanvas* canvas = gc->canvas();
+    blink::WebCanvas* canvas = gc->canvas();
     // Draw the track area before/after the thumb on the scroll bar.
-    WebKit::Platform::current()->themeEngine()->paintScrollbarTrack(canvas, partId, getThemeState(scrollbar, partType), getClassicThemeState(scrollbar, partType), WebKit::WebRect(rect), WebKit::WebRect(alignRect));
+    blink::Platform::current()->themeEngine()->paintScrollbarTrack(canvas, partId, getThemeState(scrollbar, partType), getClassicThemeState(scrollbar, partType), blink::WebRect(rect), blink::WebRect(alignRect));
 }
 
 void ScrollbarThemeWin::paintButton(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart part)
@@ -120,21 +120,21 @@ void ScrollbarThemeWin::paintButton(GraphicsContext* gc, ScrollbarThemeClient* s
     else
         partId = horz ? DFCS_SCROLLRIGHT : DFCS_SCROLLDOWN;
 
-    WebKit::WebCanvas* canvas = gc->canvas();
+    blink::WebCanvas* canvas = gc->canvas();
     // Draw the thumb (the box you drag in the scroll bar to scroll).
-    WebKit::Platform::current()->themeEngine()->paintScrollbarArrow(canvas, getThemeArrowState(scrollbar, part), partId | getClassicThemeState(scrollbar, part), WebKit::WebRect(rect));
+    blink::Platform::current()->themeEngine()->paintScrollbarArrow(canvas, getThemeArrowState(scrollbar, part), partId | getClassicThemeState(scrollbar, part), blink::WebRect(rect));
 }
 
 void ScrollbarThemeWin::paintThumb(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
     bool horz = scrollbar->orientation() == HorizontalScrollbar;
 
-    WebKit::WebCanvas* canvas = gc->canvas();
+    blink::WebCanvas* canvas = gc->canvas();
     // Draw the thumb (the box you drag in the scroll bar to scroll).
-    WebKit::Platform::current()->themeEngine()->paintScrollbarThumb(canvas, horz ? SBP_THUMBBTNHORZ : SBP_THUMBBTNVERT, getThemeState(scrollbar, ThumbPart), getClassicThemeState(scrollbar, ThumbPart), WebKit::WebRect(rect));
+    blink::Platform::current()->themeEngine()->paintScrollbarThumb(canvas, horz ? SBP_THUMBBTNHORZ : SBP_THUMBBTNVERT, getThemeState(scrollbar, ThumbPart), getClassicThemeState(scrollbar, ThumbPart), blink::WebRect(rect));
 
     // Draw the gripper (the three little lines on the thumb).
-    WebKit::Platform::current()->themeEngine()->paintScrollbarThumb(canvas, horz ? SBP_GRIPPERHORZ : SBP_GRIPPERVERT, getThemeState(scrollbar, ThumbPart), getClassicThemeState(scrollbar, ThumbPart), WebKit::WebRect(rect));
+    blink::Platform::current()->themeEngine()->paintScrollbarThumb(canvas, horz ? SBP_GRIPPERHORZ : SBP_GRIPPERVERT, getThemeState(scrollbar, ThumbPart), getClassicThemeState(scrollbar, ThumbPart), blink::WebRect(rect));
 }
 
 int ScrollbarThemeWin::getThemeState(ScrollbarThemeClient* scrollbar, ScrollbarPart part) const

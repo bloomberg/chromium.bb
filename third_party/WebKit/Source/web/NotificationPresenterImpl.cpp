@@ -41,7 +41,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 #if ENABLE(LEGACY_NOTIFICATIONS)
 class VoidCallbackClient : public WebNotificationPermissionCallback {
@@ -136,4 +136,4 @@ void NotificationPresenterImpl::requestPermission(ExecutionContext* context, WTF
     m_presenter->requestPermission(WebSecurityOrigin(context->securityOrigin()), new NotificationPermissionCallbackClient(m_presenter, context->securityOrigin(), callback));
 }
 
-} // namespace WebKit
+} // namespace blink

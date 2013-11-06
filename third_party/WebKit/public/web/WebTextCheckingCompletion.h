@@ -33,7 +33,7 @@
 
 #include "../platform/WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 
 struct WebTextCheckingResult;
 template <typename T> class WebVector;
@@ -47,6 +47,6 @@ protected:
     ~WebTextCheckingCompletion() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

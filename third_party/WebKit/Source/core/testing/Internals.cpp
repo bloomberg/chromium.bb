@@ -1298,7 +1298,7 @@ static RenderLayer* findRenderLayerForGraphicsLayer(RenderLayer* searchRoot, Gra
 // of rects returned by an SkRegion (which have been split apart for sorting
 // purposes). No attempt is made to do this efficiently (eg. by relying on the
 // sort criteria of SkRegion).
-static void mergeRects(WebKit::WebVector<WebKit::WebRect>& rects)
+static void mergeRects(blink::WebVector<blink::WebRect>& rects)
 {
     for (size_t i = 0; i < rects.size(); ++i) {
         if (rects[i].isEmpty())
@@ -1313,23 +1313,23 @@ static void mergeRects(WebKit::WebVector<WebKit::WebRect>& rects)
                 if (rects[i].y == rects[j].y && rects[i].height == rects[j].height) {
                     if (rects[i].x + rects[i].width == rects[j].x) {
                         rects[i].width += rects[j].width;
-                        rects[j] = WebKit::WebRect();
+                        rects[j] = blink::WebRect();
                         updated = true;
                     } else if (rects[i].x == rects[j].x + rects[j].width) {
                         rects[i].x = rects[j].x;
                         rects[i].width += rects[j].width;
-                        rects[j] = WebKit::WebRect();
+                        rects[j] = blink::WebRect();
                         updated = true;
                     }
                 } else if (rects[i].x == rects[j].x && rects[i].width == rects[j].width) {
                     if (rects[i].y + rects[i].height == rects[j].y) {
                         rects[i].height += rects[j].height;
-                        rects[j] = WebKit::WebRect();
+                        rects[j] = blink::WebRect();
                         updated = true;
                     } else if (rects[i].y == rects[j].y + rects[j].height) {
                         rects[i].y = rects[j].y;
                         rects[i].height += rects[j].height;
-                        rects[j] = WebKit::WebRect();
+                        rects[j] = blink::WebRect();
                         updated = true;
                     }
                 }
@@ -1340,7 +1340,7 @@ static void mergeRects(WebKit::WebVector<WebKit::WebRect>& rects)
 
 static void accumulateLayerRectList(RenderLayerCompositor* compositor, GraphicsLayer* graphicsLayer, LayerRectList* rects)
 {
-    WebKit::WebVector<WebKit::WebRect> layerRects = graphicsLayer->platformLayer()->touchEventHandlerRegion();
+    blink::WebVector<blink::WebRect> layerRects = graphicsLayer->platformLayer()->touchEventHandlerRegion();
     if (!layerRects.isEmpty()) {
         mergeRects(layerRects);
         String layerType;

@@ -26,7 +26,7 @@
 #ifndef WebIDBTypes_h
 #define WebIDBTypes_h
 
-namespace WebKit {
+namespace blink {
 
 enum WebIDBKeyType {
     WebIDBKeyTypeInvalid = 0,
@@ -45,6 +45,6 @@ enum WebIDBKeyPathType {
 };
 
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebIDBTypes_h

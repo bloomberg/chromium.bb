@@ -34,7 +34,7 @@ namespace WebCore {
 class Scrollbar;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebScrollbarLayer {
 public:
@@ -45,6 +45,6 @@ public:
     virtual void setScrollLayer(WebLayer*) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebScrollbarLayer_h

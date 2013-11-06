@@ -40,22 +40,22 @@ namespace WebCore {
 
 void InternalProfilers::startHeapProfiling(const String& prefix)
 {
-    WebKit::Platform::current()->startHeapProfiling(prefix);
+    blink::Platform::current()->startHeapProfiling(prefix);
 }
 
 void InternalProfilers::stopHeapProfiling()
 {
-    WebKit::Platform::current()->stopHeapProfiling();
+    blink::Platform::current()->stopHeapProfiling();
 }
 
 void InternalProfilers::dumpHeapProfiling(const String& reason)
 {
-    WebKit::Platform::current()->dumpHeapProfiling(reason);
+    blink::Platform::current()->dumpHeapProfiling(reason);
 }
 
 String InternalProfilers::getHeapProfile()
 {
-    String text = WebKit::Platform::current()->getHeapProfile();
+    String text = blink::Platform::current()->getHeapProfile();
     // Only return the first line which contains total numbers
     // because whole dump is too big and too noisy to process in JavaScript.
     return text.substring(0, text.find('\n'));

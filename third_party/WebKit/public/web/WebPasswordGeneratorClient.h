@@ -31,7 +31,7 @@
 #ifndef WebPasswordGeneratorClient_h
 #define WebPasswordGeneratorClient_h
 
-namespace WebKit {
+namespace blink {
 
 class WebInputElement;
 

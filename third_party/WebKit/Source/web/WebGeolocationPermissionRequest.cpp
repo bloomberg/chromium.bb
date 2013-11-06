@@ -34,7 +34,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebSecurityOrigin WebGeolocationPermissionRequest::securityOrigin() const
 {

@@ -33,7 +33,7 @@
 
 #include "../WebCanvas.h"
 
-namespace WebKit {
+namespace blink {
 
 struct WebRect;
 
@@ -73,6 +73,6 @@ public:
     virtual void paintScrollbarThumb(WebCanvas*, State, Size, const WebRect&, const ScrollbarInfo&) { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

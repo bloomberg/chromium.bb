@@ -37,7 +37,7 @@
 namespace WebCore { class EventTarget; }
 #endif
 
-namespace WebKit {
+namespace blink {
 
 class EventListenerWrapper;
 class WebDOMEvent;
@@ -63,6 +63,6 @@ private:
     WebDOMEventListenerPrivate* m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -28,7 +28,7 @@
 
 #include "WebCanvas.h"
 
-namespace WebKit {
+namespace blink {
 struct WebRect;
 struct WebFloatRect;
 
@@ -47,6 +47,6 @@ protected:
     virtual ~WebContentLayerClient() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebContentLayerClient_h

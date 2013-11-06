@@ -42,7 +42,7 @@ template <class T> class Handle;
 
 namespace WebCore { class DOMError; }
 
-namespace WebKit {
+namespace blink {
 
 class WebDOMError {
 public:
@@ -76,6 +76,6 @@ protected:
     WebPrivatePtr<WebCore::DOMError> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebDOMError_h

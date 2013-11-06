@@ -39,7 +39,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 namespace {
 
@@ -158,4 +158,4 @@ void WebMediaStream::assign(const WebMediaStream& other)
     m_private = other.m_private;
 }
 
-} // namespace WebKit
+} // namespace blink

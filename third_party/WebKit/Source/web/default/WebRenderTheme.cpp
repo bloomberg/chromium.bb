@@ -37,11 +37,11 @@
 using WebCore::RenderTheme;
 using WebCore::RenderThemeChromiumDefault;
 
-namespace WebKit {
+namespace blink {
 
 void setCaretBlinkInterval(double interval)
 {
     RenderThemeChromiumDefault::setCaretBlinkInterval(interval);
 }
 
-} // namespace WebKit
+} // namespace blink

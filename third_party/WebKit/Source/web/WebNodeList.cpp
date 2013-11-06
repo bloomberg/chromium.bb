@@ -39,7 +39,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 void WebNodeList::reset()
 {
@@ -77,4 +77,4 @@ WebNode WebNodeList::item(size_t index) const
     return WebNode(m_private->item(index));
 }
 
-} // namespace WebKit
+} // namespace blink

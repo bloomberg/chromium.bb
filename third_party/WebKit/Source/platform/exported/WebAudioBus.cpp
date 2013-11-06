@@ -41,7 +41,7 @@ class AudioBus : public ThreadSafeRefCounted<AudioBus> {
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 class WebAudioBusPrivate : public AudioBus {
 };
@@ -148,4 +148,4 @@ PassRefPtr<AudioBus> WebAudioBus::release()
 #endif
 }
 
-} // namespace WebKit
+} // namespace blink

@@ -720,7 +720,7 @@ void XMLHttpRequest::send(ArrayBuffer* body, ExceptionState& es)
     String consoleMessage("ArrayBuffer is deprecated in XMLHttpRequest.send(). Use ArrayBufferView instead.");
     executionContext()->addConsoleMessage(JSMessageSource, WarningMessageLevel, consoleMessage);
 
-    WebKit::Platform::current()->histogramEnumeration("WebCore.XHR.send.ArrayBufferOrView", XMLHttpRequestSendArrayBuffer, XMLHttpRequestSendArrayBufferOrViewMax);
+    blink::Platform::current()->histogramEnumeration("WebCore.XHR.send.ArrayBufferOrView", XMLHttpRequestSendArrayBuffer, XMLHttpRequestSendArrayBufferOrViewMax);
 
     sendBytesData(body->data(), body->byteLength(), es);
 }
@@ -729,7 +729,7 @@ void XMLHttpRequest::send(ArrayBufferView* body, ExceptionState& es)
 {
     LOG(Network, "XMLHttpRequest %p send() ArrayBufferView %p", this, body);
 
-    WebKit::Platform::current()->histogramEnumeration("WebCore.XHR.send.ArrayBufferOrView", XMLHttpRequestSendArrayBufferView, XMLHttpRequestSendArrayBufferOrViewMax);
+    blink::Platform::current()->histogramEnumeration("WebCore.XHR.send.ArrayBufferOrView", XMLHttpRequestSendArrayBufferView, XMLHttpRequestSendArrayBufferOrViewMax);
 
     sendBytesData(body->baseAddress(), body->byteLength(), es);
 }

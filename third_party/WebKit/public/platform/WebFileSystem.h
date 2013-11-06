@@ -36,7 +36,7 @@
 #include "WebFileSystemType.h"
 #include "WebURL.h"
 
-namespace WebKit {
+namespace blink {
 
 // FIXME: Remove this after the switch is over.
 #define NON_SELFDESTRUCT_WEBFILESYSTEMCALLBACKS
@@ -166,6 +166,6 @@ protected:
     virtual ~WebFileSystem() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

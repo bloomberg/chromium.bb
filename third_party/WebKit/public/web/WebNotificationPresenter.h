@@ -35,7 +35,7 @@
 #include "WebNotificationPermissionCallback.h"
 #include "WebSecurityOrigin.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebDocument;
 class WebNotification;
@@ -68,6 +68,6 @@ public:
     virtual void requestPermission(const WebSecurityOrigin&, WebNotificationPermissionCallback*) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

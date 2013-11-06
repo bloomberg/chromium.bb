@@ -33,14 +33,14 @@
 
 #include "../platform/WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 
 // An interface to query and configure WebKit's image cache.
 //
 // Methods of this interface can be called on any thread.
 //
-// Methods of this interface can be only be used after WebKit::initialize()
-// and before WebKit::shutdown() is called.
+// Methods of this interface can be only be used after blink::initialize()
+// and before blink::shutdown() is called.
 
 class WebImageCache {
 public:
@@ -61,6 +61,6 @@ private:
     WebImageCache();  // Not intended to be instanced.
 };
 
-}  // namespace WebKit
+}  // namespace blink
 
 #endif

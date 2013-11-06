@@ -33,7 +33,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebKit {
+namespace blink {
 class WebAnimation;
 }
 
@@ -48,9 +48,9 @@ struct WebAnimations {
     ~WebAnimations();
     WebAnimations(const WebAnimations&);
     bool isEmpty() const;
-    OwnPtr<WebKit::WebAnimation> m_transformAnimation;
-    OwnPtr<WebKit::WebAnimation> m_opacityAnimation;
-    OwnPtr<WebKit::WebAnimation> m_filterAnimation;
+    OwnPtr<blink::WebAnimation> m_transformAnimation;
+    OwnPtr<blink::WebAnimation> m_opacityAnimation;
+    OwnPtr<blink::WebAnimation> m_filterAnimation;
 };
 
 class WebAnimationProvider {
@@ -65,7 +65,7 @@ public:
     WebAnimations startTransition(double timeOffset, CSSPropertyID, const RenderStyle* fromStyle, const RenderStyle* toStyle, bool hasTransform, bool hasFilter, const IntSize& boxSize, float fromOpacity, float toOpacity);
 
 private:
-    PassOwnPtr<WebKit::WebAnimation> createWebAnimationAndStoreId(const KeyframeValueList&, const IntSize& boxSize, const CSSAnimationData*, const String& animationName, double timeOffset);
+    PassOwnPtr<blink::WebAnimation> createWebAnimationAndStoreId(const KeyframeValueList&, const IntSize& boxSize, const CSSAnimationData*, const String& animationName, double timeOffset);
 
     typedef HashMap<String, int> AnimationIdMap;
     AnimationIdMap m_animationIdMap;

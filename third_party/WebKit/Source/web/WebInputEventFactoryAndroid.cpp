@@ -36,7 +36,7 @@
 #include "core/platform/chromium/KeyboardCodes.h"
 #include "wtf/Assertions.h"
 
-namespace WebKit {
+namespace blink {
 
 WebKeyboardEvent WebInputEventFactory::keyboardEvent(WebInputEvent::Type type,
                                                      int modifiers,
@@ -176,4 +176,4 @@ WebGestureEvent WebInputEventFactory::gestureEvent(WebInputEvent::Type type,
     return result;
 }
 
-} // namespace WebKit
+} // namespace blink

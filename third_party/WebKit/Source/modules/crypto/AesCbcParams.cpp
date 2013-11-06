@@ -38,13 +38,13 @@ namespace WebCore {
 Uint8Array* AesCbcParams::iv()
 {
     if (!m_iv) {
-        const WebKit::WebVector<unsigned char>& iv = m_algorithm.aesCbcParams()->iv();
+        const blink::WebVector<unsigned char>& iv = m_algorithm.aesCbcParams()->iv();
         m_iv = Uint8Array::create(iv.data(), iv.size());
     }
     return m_iv.get();
 }
 
-AesCbcParams::AesCbcParams(const WebKit::WebCryptoAlgorithm& algorithm)
+AesCbcParams::AesCbcParams(const blink::WebCryptoAlgorithm& algorithm)
     : Algorithm(algorithm)
 {
     ASSERT(algorithm.aesCbcParams());

@@ -35,7 +35,7 @@
 #include "WebNavigationType.h"
 #include "WebTextDirection.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebApplicationCacheHost;
 class WebString;
@@ -121,6 +121,6 @@ protected:
     ~WebDataSource() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

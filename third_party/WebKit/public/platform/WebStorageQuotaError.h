@@ -31,7 +31,7 @@
 #ifndef WebStorageQuotaError_h
 #define WebStorageQuotaError_h
 
-namespace WebKit {
+namespace blink {
 
 // The error code used for WebStorageQuota.
 enum WebStorageQuotaError {
@@ -41,6 +41,6 @@ enum WebStorageQuotaError {
     WebStorageQuotaErrorAbort = 17,
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebStorageQuotaError_h

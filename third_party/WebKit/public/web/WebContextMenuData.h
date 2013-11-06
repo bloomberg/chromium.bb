@@ -42,7 +42,7 @@
 
 #define WEBCONTEXT_MEDIATYPEFILE_DEFINED
 
-namespace WebKit {
+namespace blink {
 
 // This struct is passed to WebViewClient::ShowContextMenu.
 struct WebContextMenuData {
@@ -182,6 +182,6 @@ struct WebContextMenuData {
         , editFlags(0) { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

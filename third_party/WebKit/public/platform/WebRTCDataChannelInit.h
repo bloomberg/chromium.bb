@@ -33,7 +33,7 @@
 
 #include "WebString.h"
 
-namespace WebKit {
+namespace blink {
 
 struct WebRTCDataChannelInit {
 public:
@@ -51,6 +51,6 @@ public:
     int id;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebRTCDataChannelInit_h

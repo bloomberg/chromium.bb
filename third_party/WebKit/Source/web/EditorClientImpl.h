@@ -42,7 +42,7 @@ class Frame;
 class HTMLInputElement;
 }
 
-namespace WebKit {
+namespace blink {
 class WebViewImpl;
 class WebTextCheckingCompletionImpl;
 
@@ -119,6 +119,6 @@ private:
     int m_spellCheckThisFieldStatus;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

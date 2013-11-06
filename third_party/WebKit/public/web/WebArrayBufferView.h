@@ -39,7 +39,7 @@ template <class T> class Handle;
 
 namespace WTF { class ArrayBufferView; }
 
-namespace WebKit {
+namespace blink {
 
 // Provides access to an ArrayBufferView.
 class WebArrayBufferView {
@@ -67,6 +67,6 @@ private:
     WebPrivatePtr<WTF::ArrayBufferView> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

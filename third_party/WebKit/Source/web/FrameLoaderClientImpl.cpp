@@ -98,7 +98,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 FrameLoaderClientImpl::FrameLoaderClientImpl(WebFrameImpl* frame)
     : m_webFrame(frame)
@@ -315,7 +315,7 @@ void FrameLoaderClientImpl::dispatchDidChangeResourcePriority(unsigned long iden
                                                               ResourceLoadPriority priority)
 {
     if (m_webFrame->client())
-        m_webFrame->client()->didChangeResourcePriority(m_webFrame, identifier, static_cast<WebKit::WebURLRequest::Priority>(priority));
+        m_webFrame->client()->didChangeResourcePriority(m_webFrame, identifier, static_cast<blink::WebURLRequest::Priority>(priority));
 }
 
 // Called when a particular resource load completes
@@ -567,7 +567,7 @@ String FrameLoaderClientImpl::userAgent(const KURL& url)
     if (!override.isEmpty())
         return override;
 
-    return WebKit::Platform::current()->userAgent(url);
+    return blink::Platform::current()->userAgent(url);
 }
 
 String FrameLoaderClientImpl::doNotTrackValue()
@@ -784,4 +784,4 @@ void FrameLoaderClientImpl::didStopAllLoaders()
         m_webFrame->client()->didAbortLoading(m_webFrame);
 }
 
-} // namespace WebKit
+} // namespace blink

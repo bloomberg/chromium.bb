@@ -43,7 +43,7 @@ namespace WebTestRunner {
 class WebTestDelegate;
 
 // A class that implements WebNotificationPresenter for the TestRunner library.
-class NotificationPresenter : public WebKit::WebNotificationPresenter, public WebKit::WebNonCopyable {
+class NotificationPresenter : public blink::WebNotificationPresenter, public blink::WebNonCopyable {
 public:
     NotificationPresenter();
     virtual ~NotificationPresenter();
@@ -51,20 +51,20 @@ public:
     void setDelegate(WebTestDelegate* delegate) { m_delegate = delegate; }
 
     // Called by the TestRunner to simulate a user granting permission.
-    void grantPermission(const WebKit::WebString& origin);
+    void grantPermission(const blink::WebString& origin);
 
     // Called by the TestRunner to simulate a user clicking on a notification.
-    bool simulateClick(const WebKit::WebString& notificationIdentifier);
+    bool simulateClick(const blink::WebString& notificationIdentifier);
 
     // Called by the TestRunner to cancel all active notications.
     void cancelAllActiveNotifications();
 
-    // WebKit::WebNotificationPresenter interface
-    virtual bool show(const WebKit::WebNotification&);
-    virtual void cancel(const WebKit::WebNotification&);
-    virtual void objectDestroyed(const WebKit::WebNotification&);
-    virtual Permission checkPermission(const WebKit::WebSecurityOrigin&);
-    virtual void requestPermission(const WebKit::WebSecurityOrigin&, WebKit::WebNotificationPermissionCallback*);
+    // blink::WebNotificationPresenter interface
+    virtual bool show(const blink::WebNotification&);
+    virtual void cancel(const blink::WebNotification&);
+    virtual void objectDestroyed(const blink::WebNotification&);
+    virtual Permission checkPermission(const blink::WebSecurityOrigin&);
+    virtual void requestPermission(const blink::WebSecurityOrigin&, blink::WebNotificationPermissionCallback*);
 
     void reset() { m_allowedOrigins.clear(); }
 
@@ -75,7 +75,7 @@ private:
     std::set<std::string> m_allowedOrigins;
 
     // Map of active notifications.
-    std::map<std::string, WebKit::WebNotification> m_activeNotifications;
+    std::map<std::string, blink::WebNotification> m_activeNotifications;
 
     // Map of active replacement IDs to the titles of those notifications
     std::map<std::string, std::string> m_replacements;

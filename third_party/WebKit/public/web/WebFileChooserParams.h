@@ -35,7 +35,7 @@
 #include "../platform/WebVector.h"
 #include "WebFileChooserCompletion.h"
 
-namespace WebKit {
+namespace blink {
 
 struct WebFileChooserParams {
     // If |multiSelect| is true, the dialog allows the user to select multiple files.
@@ -81,6 +81,6 @@ struct WebFileChooserParams {
     }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -52,7 +52,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 bool WebBindings::construct(NPP npp, NPObject* object, const NPVariant* args, uint32_t argCount, NPVariant* result)
 {
@@ -398,4 +398,4 @@ v8::Handle<v8::Value> WebBindings::toV8Value(const NPVariant* variant)
     return convertNPVariantToV8Object(variant, 0, isolate);
 }
 
-} // namespace WebKit
+} // namespace blink

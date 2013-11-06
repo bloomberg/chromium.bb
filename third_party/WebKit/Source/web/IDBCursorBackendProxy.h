@@ -33,7 +33,7 @@
 #include "wtf/RefPtr.h"
 #include "modules/indexeddb/IDBCursorBackendInterface.h"
 
-namespace WebKit {
+namespace blink {
 
 class IDBCursorBackendProxy : public WebCore::IDBCursorBackendInterface {
 public:
@@ -50,6 +50,6 @@ private:
     OwnPtr<WebIDBCursor> m_idbCursor;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // IDBCursorBackendProxy_h

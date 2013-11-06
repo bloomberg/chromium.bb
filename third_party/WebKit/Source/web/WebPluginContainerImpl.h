@@ -56,7 +56,7 @@ class WheelEvent;
 class Widget;
 }
 
-namespace WebKit {
+namespace blink {
 
 struct WebPrintParams;
 
@@ -216,6 +216,6 @@ inline WebPluginContainerImpl* toPluginContainerImpl(WebPluginContainer* contain
 // This will catch anyone doing an unnecessary cast.
 void toPluginContainerImpl(const WebPluginContainerImpl*);
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -31,7 +31,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebKit {
+namespace blink {
 
 void WebSpeechRecognitionResult::assign(const WebSpeechRecognitionResult& other)
 {
@@ -59,4 +59,4 @@ WebSpeechRecognitionResult::operator PassRefPtr<WebCore::SpeechRecognitionResult
     return m_private.get();
 }
 
-} // namespace WebKit
+} // namespace blink

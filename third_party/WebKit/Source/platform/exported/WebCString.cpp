@@ -36,7 +36,7 @@
 #include "wtf/text/CString.h"
 #include <string.h>
 
-namespace WebKit {
+namespace blink {
 
 int WebCString::compare(const WebCString& other) const
 {
@@ -105,4 +105,4 @@ void WebCString::assign(WTF::CStringBuffer* p)
     m_private = p;
 }
 
-} // namespace WebKit
+} // namespace blink

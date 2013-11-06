@@ -44,7 +44,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 class WebFileSystemCallbacksPrivate : public RefCounted<WebFileSystemCallbacksPrivate> {
 public:
@@ -155,4 +155,4 @@ bool WebFileSystemCallbacks::shouldBlockUntilCompletion() const
     return m_private->callbacks()->shouldBlockUntilCompletion();
 }
 
-} // namespace WebKit
+} // namespace blink

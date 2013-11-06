@@ -59,7 +59,7 @@ SocketStreamHandleInternal::~SocketStreamHandleInternal()
 
 void SocketStreamHandleInternal::connect(const KURL& url)
 {
-    m_socket = adoptPtr(WebKit::Platform::current()->createSocketStreamHandle());
+    m_socket = adoptPtr(blink::Platform::current()->createSocketStreamHandle());
     LOG(Network, "SocketStreamHandleInternal %p connect()", this);
     ASSERT(m_socket);
     ASSERT(m_handle);
@@ -83,7 +83,7 @@ int SocketStreamHandleInternal::send(const char* data, int len)
 
     if (len <= 0)
         return len;
-    WebKit::WebData webdata(data, len);
+    blink::WebData webdata(data, len);
     if (m_socket->send(webdata)) {
         m_pendingAmountSent += len;
         LOG(Network, "SocketStreamHandleInternal %p send() Sent %d bytes", this, len);
@@ -100,7 +100,7 @@ void SocketStreamHandleInternal::close()
         m_socket->close();
 }
 
-void SocketStreamHandleInternal::didOpenStream(WebKit::WebSocketStreamHandle* socketHandle, int maxPendingSendAllowed)
+void SocketStreamHandleInternal::didOpenStream(blink::WebSocketStreamHandle* socketHandle, int maxPendingSendAllowed)
 {
     LOG(Network, "SocketStreamHandleInternal %p didOpenStream() maxPendingSendAllowed=%d", this, maxPendingSendAllowed);
     ASSERT(maxPendingSendAllowed > 0);
@@ -116,7 +116,7 @@ void SocketStreamHandleInternal::didOpenStream(WebKit::WebSocketStreamHandle* so
     LOG(Network, "SocketStreamHandleInternal %p didOpenStream() m_handle or m_socket is NULL", this);
 }
 
-void SocketStreamHandleInternal::didSendData(WebKit::WebSocketStreamHandle* socketHandle, int amountSent)
+void SocketStreamHandleInternal::didSendData(blink::WebSocketStreamHandle* socketHandle, int amountSent)
 {
     LOG(Network, "SocketStreamHandleInternal %p didSendData() amountSent=%d", this, amountSent);
     ASSERT(amountSent > 0);
@@ -128,7 +128,7 @@ void SocketStreamHandleInternal::didSendData(WebKit::WebSocketStreamHandle* sock
     }
 }
 
-void SocketStreamHandleInternal::didReceiveData(WebKit::WebSocketStreamHandle* socketHandle, const WebKit::WebData& data)
+void SocketStreamHandleInternal::didReceiveData(blink::WebSocketStreamHandle* socketHandle, const blink::WebData& data)
 {
     LOG(Network, "SocketStreamHandleInternal %p didReceiveData() Received %lu bytes", this, static_cast<unsigned long>(data.size()));
     if (m_handle && m_socket) {
@@ -138,7 +138,7 @@ void SocketStreamHandleInternal::didReceiveData(WebKit::WebSocketStreamHandle* s
     }
 }
 
-void SocketStreamHandleInternal::didClose(WebKit::WebSocketStreamHandle* socketHandle)
+void SocketStreamHandleInternal::didClose(blink::WebSocketStreamHandle* socketHandle)
 {
     LOG(Network, "SocketStreamHandleInternal %p didClose()", this);
     if (m_handle && m_socket) {
@@ -151,7 +151,7 @@ void SocketStreamHandleInternal::didClose(WebKit::WebSocketStreamHandle* socketH
     }
 }
 
-void SocketStreamHandleInternal::didFail(WebKit::WebSocketStreamHandle* socketHandle, const WebKit::WebSocketStreamError& err)
+void SocketStreamHandleInternal::didFail(blink::WebSocketStreamHandle* socketHandle, const blink::WebSocketStreamError& err)
 {
     LOG(Network, "SocketStreamHandleInternal %p didFail()", this);
     if (m_handle && m_socket) {

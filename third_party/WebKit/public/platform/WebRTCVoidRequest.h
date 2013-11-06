@@ -40,7 +40,7 @@ namespace WebCore {
 class RTCVoidRequest;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebRTCVoidRequest {
 public:
@@ -82,6 +82,6 @@ private:
     WebPrivatePtr<WebCore::RTCVoidRequest> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebRTCVoidRequest_h

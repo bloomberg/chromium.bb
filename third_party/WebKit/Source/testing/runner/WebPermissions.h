@@ -38,18 +38,18 @@ namespace WebTestRunner {
 
 class WebTestDelegate;
 
-class WebPermissions : public WebKit::WebPermissionClient, public WebKit::WebNonCopyable {
+class WebPermissions : public blink::WebPermissionClient, public blink::WebNonCopyable {
 public:
     WebPermissions();
     virtual ~WebPermissions();
 
     // Override WebPermissionClient methods.
-    virtual bool allowImage(WebKit::WebFrame*, bool enabledPerSettings, const WebKit::WebURL& imageURL);
-    virtual bool allowScriptFromSource(WebKit::WebFrame*, bool enabledPerSettings, const WebKit::WebURL& scriptURL);
-    virtual bool allowStorage(WebKit::WebFrame*, bool local);
-    virtual bool allowPlugins(WebKit::WebFrame*, bool enabledPerSettings);
-    virtual bool allowDisplayingInsecureContent(WebKit::WebFrame*, bool enabledPerSettings, const WebKit::WebSecurityOrigin&, const WebKit::WebURL&);
-    virtual bool allowRunningInsecureContent(WebKit::WebFrame*, bool enabledPerSettings, const WebKit::WebSecurityOrigin&, const WebKit::WebURL&);
+    virtual bool allowImage(blink::WebFrame*, bool enabledPerSettings, const blink::WebURL& imageURL);
+    virtual bool allowScriptFromSource(blink::WebFrame*, bool enabledPerSettings, const blink::WebURL& scriptURL);
+    virtual bool allowStorage(blink::WebFrame*, bool local);
+    virtual bool allowPlugins(blink::WebFrame*, bool enabledPerSettings);
+    virtual bool allowDisplayingInsecureContent(blink::WebFrame*, bool enabledPerSettings, const blink::WebSecurityOrigin&, const blink::WebURL&);
+    virtual bool allowRunningInsecureContent(blink::WebFrame*, bool enabledPerSettings, const blink::WebSecurityOrigin&, const blink::WebURL&);
 
     // Hooks to set the different policies.
     void setImagesAllowed(bool);

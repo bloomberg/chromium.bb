@@ -99,7 +99,7 @@ EInsideLink VisitedLinkState::determineLinkStateSlowCase(const Element& element)
 
     if (LinkHash hash = linkHashForElement(element, attribute)) {
         m_linksCheckedForVisitedState.add(hash);
-        if (WebKit::Platform::current()->isLinkVisited(hash))
+        if (blink::Platform::current()->isLinkVisited(hash))
             return InsideVisitedLink;
     }
 

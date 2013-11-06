@@ -35,7 +35,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 void WebThreadSafeData::reset()
 {
@@ -72,4 +72,4 @@ WebThreadSafeData& WebThreadSafeData::operator=(const PassRefPtr<RawData>& data)
     return *this;
 }
 
-} // namespace WebKit
+} // namespace blink

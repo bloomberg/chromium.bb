@@ -35,7 +35,7 @@
 #include <SkFontHost.h>
 #include <SkPaint.h>
 
-namespace WebKit {
+namespace blink {
 
 class WebFontRendering {
 public:
@@ -51,6 +51,6 @@ public:
     BLINK_EXPORT static void setLCDOrientation(SkFontHost::LCDOrientation);
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

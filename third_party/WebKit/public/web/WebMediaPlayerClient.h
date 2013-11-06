@@ -33,7 +33,7 @@
 
 #include "WebMediaPlayer.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebFrame;
 class WebInbandTextTrack;
@@ -84,6 +84,6 @@ protected:
     ~WebMediaPlayerClient() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

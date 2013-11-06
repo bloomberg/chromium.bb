@@ -44,7 +44,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 void WebImageDecoder::reset()
 {
@@ -53,7 +53,7 @@ void WebImageDecoder::reset()
 
 void WebImageDecoder::init(Type type)
 {
-    size_t maxDecodedBytes = WebKit::Platform::current()->maxDecodedImageBytes();
+    size_t maxDecodedBytes = blink::Platform::current()->maxDecodedImageBytes();
 
     switch (type) {
     case TypeBMP:
@@ -114,4 +114,4 @@ WebImage WebImageDecoder::getFrameAtIndex(int index = 0) const
     return WebImage(image->bitmap());
 }
 
-} // namespace WebKit
+} // namespace blink

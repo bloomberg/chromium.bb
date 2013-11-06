@@ -31,7 +31,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 void WebGeolocationError::assign(Error code, const WebString& message)
 {

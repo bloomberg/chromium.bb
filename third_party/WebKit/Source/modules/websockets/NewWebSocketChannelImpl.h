@@ -55,7 +55,7 @@ namespace WebCore {
 class Document;
 
 // This class may replace MainThreadWebSocketChannel.
-class NewWebSocketChannelImpl : public WebSocketChannel, public RefCounted<NewWebSocketChannelImpl>, public WebKit::WebSocketHandleClient, public ContextLifecycleObserver {
+class NewWebSocketChannelImpl : public WebSocketChannel, public RefCounted<NewWebSocketChannelImpl>, public blink::WebSocketHandleClient, public ContextLifecycleObserver {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     // You can specify the source file and the line number information
@@ -122,11 +122,11 @@ private:
     Document* document(); // can be called only when m_identifier > 0.
 
     // WebSocketHandleClient functions.
-    virtual void didConnect(WebKit::WebSocketHandle*, bool fail, const WebKit::WebString& selectedProtocol, const WebKit::WebString& extensions) OVERRIDE;
-    virtual void didFail(WebKit::WebSocketHandle*, const WebKit::WebString& message) OVERRIDE;
-    virtual void didReceiveData(WebKit::WebSocketHandle*, bool fin, WebKit::WebSocketHandle::MessageType, const char* data, size_t /* size */) OVERRIDE;
-    virtual void didClose(WebKit::WebSocketHandle*, bool wasClean, unsigned short code, const WebKit::WebString& reason) OVERRIDE;
-    virtual void didReceiveFlowControl(WebKit::WebSocketHandle*, int64_t quota) OVERRIDE;
+    virtual void didConnect(blink::WebSocketHandle*, bool fail, const blink::WebString& selectedProtocol, const blink::WebString& extensions) OVERRIDE;
+    virtual void didFail(blink::WebSocketHandle*, const blink::WebString& message) OVERRIDE;
+    virtual void didReceiveData(blink::WebSocketHandle*, bool fin, blink::WebSocketHandle::MessageType, const char* data, size_t /* size */) OVERRIDE;
+    virtual void didClose(blink::WebSocketHandle*, bool wasClean, unsigned short code, const blink::WebString& reason) OVERRIDE;
+    virtual void didReceiveFlowControl(blink::WebSocketHandle*, int64_t quota) OVERRIDE;
 
     // Methods for BlobLoader.
     void didFinishLoadingBlob(PassRefPtr<ArrayBuffer>);
@@ -142,7 +142,7 @@ private:
 
     // m_handle is a handle of the connection.
     // m_handle == 0 means this channel is closed.
-    OwnPtr<WebKit::WebSocketHandle> m_handle;
+    OwnPtr<blink::WebSocketHandle> m_handle;
 
     // m_client can be deleted while this channel is alive, but this class
     // expects that disconnect() is called before the deletion.

@@ -37,7 +37,7 @@
 namespace WebCore { class HTMLInputElement; }
 #endif
 
-namespace WebKit {
+namespace blink {
 
     class WebNodeCollection;
 
@@ -125,6 +125,6 @@ namespace WebKit {
         return toWebInputElement(const_cast<WebElement*>(element));
     }
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

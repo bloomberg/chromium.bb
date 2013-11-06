@@ -40,7 +40,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 UserMediaClientImpl::UserMediaClientImpl(WebViewImpl* webView)
     : m_client(webView->client() ? webView->client()->userMediaClient() : 0)
@@ -59,4 +59,4 @@ void UserMediaClientImpl::cancelUserMediaRequest(UserMediaRequest* request)
         m_client->cancelUserMediaRequest(WebUserMediaRequest(request));
 }
 
-} // namespace WebKit
+} // namespace blink

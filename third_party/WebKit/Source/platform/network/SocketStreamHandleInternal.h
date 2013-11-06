@@ -36,7 +36,7 @@
 #include "public/platform/WebURL.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebKit {
+namespace blink {
 class WebData;
 class WebSocketStreamError;
 class WebSocketStreamHandle;
@@ -44,7 +44,7 @@ class WebSocketStreamHandle;
 
 namespace WebCore {
 
-class PLATFORM_EXPORT SocketStreamHandleInternal : public WebKit::WebSocketStreamHandleClient {
+class PLATFORM_EXPORT SocketStreamHandleInternal : public blink::WebSocketStreamHandleClient {
     WTF_MAKE_NONCOPYABLE(SocketStreamHandleInternal);
 public:
     static PassOwnPtr<SocketStreamHandleInternal> create(SocketStreamHandle* handle)
@@ -57,13 +57,13 @@ public:
     int send(const char*, int);
     void close();
 
-    virtual void didOpenStream(WebKit::WebSocketStreamHandle*, int);
-    virtual void didSendData(WebKit::WebSocketStreamHandle*, int);
-    virtual void didReceiveData(WebKit::WebSocketStreamHandle*, const WebKit::WebData&);
-    virtual void didClose(WebKit::WebSocketStreamHandle*);
-    virtual void didFail(WebKit::WebSocketStreamHandle*, const WebKit::WebSocketStreamError&);
+    virtual void didOpenStream(blink::WebSocketStreamHandle*, int);
+    virtual void didSendData(blink::WebSocketStreamHandle*, int);
+    virtual void didReceiveData(blink::WebSocketStreamHandle*, const blink::WebData&);
+    virtual void didClose(blink::WebSocketStreamHandle*);
+    virtual void didFail(blink::WebSocketStreamHandle*, const blink::WebSocketStreamError&);
 
-    static WebKit::WebSocketStreamHandle* toWebSocketStreamHandle(SocketStreamHandle* handle)
+    static blink::WebSocketStreamHandle* toWebSocketStreamHandle(SocketStreamHandle* handle)
     {
         if (handle && handle->m_internal)
             return handle->m_internal->m_socket.get();
@@ -74,7 +74,7 @@ private:
     explicit SocketStreamHandleInternal(SocketStreamHandle*);
 
     SocketStreamHandle* m_handle;
-    OwnPtr<WebKit::WebSocketStreamHandle> m_socket;
+    OwnPtr<blink::WebSocketStreamHandle> m_socket;
     int m_maxPendingSendAllowed;
     int m_pendingAmountSent;
 };

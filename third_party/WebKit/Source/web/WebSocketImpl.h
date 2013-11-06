@@ -40,7 +40,7 @@
 
 namespace WebCore { class MainThreadWebSocketChannel; }
 
-namespace WebKit {
+namespace blink {
 
 class WebDocument;
 class WebString;
@@ -80,6 +80,6 @@ private:
     BinaryType m_binaryType;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebWebSocketChannelImpl_h

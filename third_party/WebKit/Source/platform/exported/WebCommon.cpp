@@ -33,7 +33,7 @@
 
 #include "wtf/Assertions.h"
 
-namespace WebKit {
+namespace blink {
 
 void failedAssertion(const char* file, int line, const char* function, const char* assertion)
 {
@@ -41,4 +41,4 @@ void failedAssertion(const char* file, int line, const char* function, const cha
     CRASH();
 }
 
-} // namespace WebKit
+} // namespace blink

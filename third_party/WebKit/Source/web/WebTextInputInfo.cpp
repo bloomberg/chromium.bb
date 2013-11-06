@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebTextInputInfo.h"
 
-namespace WebKit {
+namespace blink {
 
 bool WebTextInputInfo::equals(const WebTextInputInfo& other) const
 {
@@ -43,4 +43,4 @@ bool WebTextInputInfo::equals(const WebTextInputInfo& other) const
         && compositionEnd == other.compositionEnd;
 }
 
-} // namespace WebKit
+} // namespace blink

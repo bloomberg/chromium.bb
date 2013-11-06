@@ -36,7 +36,7 @@
 #include "wtf/RefCounted.h"
 #include "public/platform/WebString.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebRTCSessionDescriptionPrivate FINAL : public RefCounted<WebRTCSessionDescriptionPrivate> {
 public:
@@ -105,5 +105,5 @@ void WebRTCSessionDescription::setSDP(const WebString& sdp)
     return m_private->setSdp(sdp);
 }
 
-} // namespace WebKit
+} // namespace blink
 

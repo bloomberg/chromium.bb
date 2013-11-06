@@ -37,7 +37,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 void WebCustomElement::addEmbedderCustomElementName(const WebString& name)
 {
@@ -45,4 +45,4 @@ void WebCustomElement::addEmbedderCustomElementName(const WebString& name)
     CustomElement::addEmbedderCustomElementName(name);
 }
 
-} // namespace WebKit
+} // namespace blink

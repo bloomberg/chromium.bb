@@ -28,7 +28,7 @@
 
 #include "core/storage/StorageArea.h"
 
-namespace WebKit {
+namespace blink {
 class WebStorageArea;
 class WebStorageNamespace;
 }
@@ -44,7 +44,7 @@ class Storage;
 
 class StorageAreaProxy : public StorageArea {
 public:
-    StorageAreaProxy(PassOwnPtr<WebKit::WebStorageArea>, StorageType);
+    StorageAreaProxy(PassOwnPtr<blink::WebStorageArea>, StorageType);
     virtual ~StorageAreaProxy();
 
     // The HTML5 DOM Storage API
@@ -62,16 +62,16 @@ public:
 
     static void dispatchLocalStorageEvent(
             const String& key, const String& oldValue, const String& newValue,
-            SecurityOrigin*, const KURL& pageURL, WebKit::WebStorageArea* sourceAreaInstance, bool originatedInProcess);
+            SecurityOrigin*, const KURL& pageURL, blink::WebStorageArea* sourceAreaInstance, bool originatedInProcess);
     static void dispatchSessionStorageEvent(
             const String& key, const String& oldValue, const String& newValue,
-            SecurityOrigin*, const KURL& pageURL, const WebKit::WebStorageNamespace&,
-            WebKit::WebStorageArea* sourceAreaInstance, bool originatedInProcess);
+            SecurityOrigin*, const KURL& pageURL, const blink::WebStorageNamespace&,
+            blink::WebStorageArea* sourceAreaInstance, bool originatedInProcess);
 
 private:
-    static bool isEventSource(Storage*, WebKit::WebStorageArea* sourceAreaInstance);
+    static bool isEventSource(Storage*, blink::WebStorageArea* sourceAreaInstance);
 
-    OwnPtr<WebKit::WebStorageArea> m_storageArea;
+    OwnPtr<blink::WebStorageArea> m_storageArea;
     StorageType m_storageType;
     mutable bool m_canAccessStorageCachedResult;
     mutable Frame* m_canAccessStorageCachedFrame;

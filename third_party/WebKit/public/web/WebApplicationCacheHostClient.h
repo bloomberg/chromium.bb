@@ -34,7 +34,7 @@
 #include "../platform/WebCommon.h"
 #include "WebApplicationCacheHost.h"
 
-namespace WebKit {
+namespace blink {
 
 // This interface is used by the embedder to call into webkit.
 class WebApplicationCacheHostClient {
@@ -51,7 +51,7 @@ protected:
     virtual ~WebApplicationCacheHostClient() { }
 };
 
-}  // namespace WebKit
+}  // namespace blink
 
 #endif  // WebApplicationCacheHostClient_h
 

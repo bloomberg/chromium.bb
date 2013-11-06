@@ -31,7 +31,7 @@
 #ifndef WebHTTPHeaderVisitor_h
 #define WebHTTPHeaderVisitor_h
 
-namespace WebKit {
+namespace blink {
 
 class WebString;
 
@@ -43,6 +43,6 @@ protected:
     ~WebHTTPHeaderVisitor() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

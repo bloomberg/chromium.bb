@@ -39,7 +39,7 @@ PassRefPtr<DeviceOrientationData> DeviceOrientationData::create(bool canProvideA
     return adoptRef(new DeviceOrientationData(canProvideAlpha, alpha, canProvideBeta, beta, canProvideGamma, gamma, canProvideAbsolute, absolute));
 }
 
-PassRefPtr<DeviceOrientationData> DeviceOrientationData::create(const WebKit::WebDeviceOrientationData& data)
+PassRefPtr<DeviceOrientationData> DeviceOrientationData::create(const blink::WebDeviceOrientationData& data)
 {
     return DeviceOrientationData::create(data.hasAlpha, data.alpha, data.hasBeta, data.beta, data.hasGamma, data.gamma, data.hasAbsolute, data.absolute);
 }

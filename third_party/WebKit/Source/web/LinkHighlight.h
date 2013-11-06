@@ -41,7 +41,7 @@ class RenderLayer;
 class Node;
 }
 
-namespace WebKit {
+namespace blink {
 
 struct WebFloatRect;
 struct WebRect;
@@ -95,6 +95,6 @@ private:
     double m_startTime;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

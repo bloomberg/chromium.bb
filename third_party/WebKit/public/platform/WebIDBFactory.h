@@ -35,7 +35,7 @@
 #include "WebString.h"
 #include "WebVector.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebIDBDatabase;
 class WebIDBDatabaseCallbacks;
@@ -52,6 +52,6 @@ public:
     virtual void deleteDatabase(const WebString& name, WebIDBCallbacks* callbacks, const WebString& databaseIdentifier) { BLINK_ASSERT_NOT_REACHED(); }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebIDBFactory_h

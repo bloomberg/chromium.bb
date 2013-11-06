@@ -28,7 +28,7 @@
 
 #include "../platform/WebString.h"
 
-namespace WebKit {
+namespace blink {
 
 struct WebMemoryUsageInfo {
     WebMemoryUsageInfo(const WebString& allocator, size_t allocated)
@@ -46,6 +46,6 @@ struct WebMemoryUsageInfo {
     size_t allocatedBytes;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebMemoryUsageInfo_h

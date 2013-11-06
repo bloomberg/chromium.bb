@@ -40,7 +40,7 @@
 
 namespace WebCore { class RawData; }
 
-namespace WebKit {
+namespace blink {
 
 // A container for raw bytes. It is inexpensive to copy a WebThreadSafeData object.
 // It is safe to pass a WebThreadSafeData across threads!!!
@@ -72,6 +72,6 @@ private:
     WebPrivatePtr<WebCore::RawData> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -60,9 +60,9 @@ public:
 
     static PassRefPtr<SharedBuffer> readFile(const char* fileName)
     {
-        String filePath = WebKit::Platform::current()->unitTestSupport()->webKitRootDir();
+        String filePath = blink::Platform::current()->unitTestSupport()->webKitRootDir();
         filePath.append(fileName);
-        return WebKit::Platform::current()->unitTestSupport()->readFromFile(filePath);
+        return blink::Platform::current()->unitTestSupport()->readFromFile(filePath);
     }
 
     // Accessors to BitmapImage's protected methods.

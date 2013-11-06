@@ -37,7 +37,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebKit {
+namespace blink {
 class WebServiceWorker;
 }
 
@@ -45,13 +45,13 @@ namespace WebCore {
 
 class ServiceWorker : public RefCounted<ServiceWorker> {
 public:
-    static PassRefPtr<ServiceWorker> create(PassOwnPtr<WebKit::WebServiceWorker> worker)
+    static PassRefPtr<ServiceWorker> create(PassOwnPtr<blink::WebServiceWorker> worker)
     {
         return adoptRef(new ServiceWorker(worker));
     }
 
     // For CallbackPromiseAdapter
-    typedef WebKit::WebServiceWorker WebType;
+    typedef blink::WebServiceWorker WebType;
     static PassRefPtr<ServiceWorker> from(WebType* worker)
     {
         return create(adoptPtr(worker));
@@ -60,9 +60,9 @@ public:
     ~ServiceWorker() { }
 
 private:
-    explicit ServiceWorker(PassOwnPtr<WebKit::WebServiceWorker>);
+    explicit ServiceWorker(PassOwnPtr<blink::WebServiceWorker>);
 
-    OwnPtr<WebKit::WebServiceWorker> m_outerWorker;
+    OwnPtr<blink::WebServiceWorker> m_outerWorker;
 };
 
 } // namespace WebCore

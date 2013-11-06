@@ -35,7 +35,7 @@
 
 class SkBitmap;
 
-namespace WebKit {
+namespace blink {
 class WebGraphicsContext3D;
 class WebLayer;
 struct WebPoint;
@@ -151,6 +151,6 @@ public:
     virtual void setShowScrollBottleneckRects(bool) { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebLayerTreeView_h

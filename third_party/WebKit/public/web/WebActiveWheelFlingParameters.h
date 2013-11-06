@@ -32,7 +32,7 @@
 #include "../platform/WebSize.h"
 #include "WebInputEvent.h"
 
-namespace WebKit {
+namespace blink {
 
 struct WebActiveWheelFlingParameters {
     WebFloatPoint delta;

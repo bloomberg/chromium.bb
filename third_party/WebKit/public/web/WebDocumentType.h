@@ -38,7 +38,7 @@ namespace WebCore { class DocumentType; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
-namespace WebKit {
+namespace blink {
 class WebString;
 
 // Provides readonly access to some properties of a DOM document type.
@@ -63,6 +63,6 @@ public:
 #endif
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

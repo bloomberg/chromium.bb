@@ -29,7 +29,7 @@
 #include "public/testing/WebTestDelegate.h"
 #include <assert.h>
 
-using namespace WebKit;
+using namespace blink;
 
 namespace WebTestRunner {
 

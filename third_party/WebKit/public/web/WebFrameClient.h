@@ -46,7 +46,7 @@
 #include "WebTextDirection.h"
 #include <v8.h>
 
-namespace WebKit {
+namespace blink {
 
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
@@ -240,7 +240,7 @@ public:
         WebFrame*, unsigned identifier, const WebURLResponse&) { }
 
     virtual void didChangeResourcePriority(
-        WebFrame*, unsigned identifier, const WebKit::WebURLRequest::Priority&) { }
+        WebFrame*, unsigned identifier, const blink::WebURLRequest::Priority&) { }
 
     // The resource request given by identifier succeeded.
     virtual void didFinishResourceLoad(
@@ -377,6 +377,6 @@ protected:
     ~WebFrameClient() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

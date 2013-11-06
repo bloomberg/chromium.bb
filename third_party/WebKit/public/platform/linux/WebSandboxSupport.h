@@ -35,7 +35,7 @@
 #include "../WebString.h"
 #include "WebFontFamily.h"
 
-namespace WebKit {
+namespace blink {
 
 struct WebFontRenderStyle;
 
@@ -57,6 +57,6 @@ public:
     virtual void getRenderStyleForStrike(const char* family, int sizeAndStyle, WebFontRenderStyle*) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

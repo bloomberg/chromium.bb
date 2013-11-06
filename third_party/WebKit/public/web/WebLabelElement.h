@@ -38,7 +38,7 @@ namespace WebCore { class HTMLLabelElement; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
-namespace WebKit {
+namespace blink {
 
 // Provides readonly access to some properties of a DOM label element node.
 class WebLabelElement : public WebElement {
@@ -63,6 +63,6 @@ public:
 #endif
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

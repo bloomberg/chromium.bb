@@ -55,7 +55,7 @@ namespace {
 int chromiumOpen(sqlite3_vfs*, const char* fileName,
                  sqlite3_file* id, int desiredFlags, int* usedFlags)
 {
-    HANDLE h = WebKit::Platform::current()->databaseOpenFile(String(fileName), desiredFlags);
+    HANDLE h = blink::Platform::current()->databaseOpenFile(String(fileName), desiredFlags);
     if (h == INVALID_HANDLE_VALUE) {
         if (desiredFlags & SQLITE_OPEN_READWRITE) {
             int newFlags = (desiredFlags | SQLITE_OPEN_READONLY) & ~SQLITE_OPEN_READWRITE;
@@ -82,7 +82,7 @@ int chromiumOpen(sqlite3_vfs*, const char* fileName,
 //           should be synched after the file is deleted.
 int chromiumDelete(sqlite3_vfs*, const char* fileName, int)
 {
-    return WebKit::Platform::current()->databaseDeleteFile(String(fileName), false);
+    return blink::Platform::current()->databaseDeleteFile(String(fileName), false);
 }
 
 // Check the existance and status of the given file.
@@ -93,7 +93,7 @@ int chromiumDelete(sqlite3_vfs*, const char* fileName, int)
 // res - the result.
 int chromiumAccess(sqlite3_vfs*, const char* fileName, int flag, int* res)
 {
-    DWORD attr = WebKit::Platform::current()->databaseGetFileAttributes(String(fileName));
+    DWORD attr = blink::Platform::current()->databaseGetFileAttributes(String(fileName));
     switch (flag) {
     case SQLITE_ACCESS_READ:
     case SQLITE_ACCESS_EXISTS:

@@ -134,7 +134,7 @@ void retrieveResourcesForElement(Element* element,
 }
 
 void retrieveResourcesForFrame(Frame* frame,
-                               const WebKit::WebVector<WebKit::WebCString>& supportedSchemes,
+                               const blink::WebVector<blink::WebCString>& supportedSchemes,
                                Vector<Frame*>* visitedFrames,
                                Vector<Frame*>* framesToVisit,
                                Vector<KURL>* frameURLs,
@@ -179,7 +179,7 @@ void retrieveResourcesForFrame(Frame* frame,
 
 } // namespace
 
-namespace WebKit {
+namespace blink {
 
 void WebPageSerializer::serialize(WebView* view, WebVector<WebPageSerializer::Resource>* resourcesParam)
 {
@@ -298,4 +298,4 @@ WebString WebPageSerializer::generateBaseTagDeclaration(const WebString& baseTar
     return baseString;
 }
 
-} // namespace WebKit
+} // namespace blink

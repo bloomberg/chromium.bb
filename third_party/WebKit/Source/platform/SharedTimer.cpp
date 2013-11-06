@@ -32,17 +32,17 @@ namespace WebCore {
 
 void setSharedTimerFiredFunction(void (*f)())
 {
-    WebKit::Platform::current()->setSharedTimerFiredFunction(f);
+    blink::Platform::current()->setSharedTimerFiredFunction(f);
 }
 
 void setSharedTimerFireInterval(double fireTime)
 {
-    WebKit::Platform::current()->setSharedTimerFireInterval(fireTime);
+    blink::Platform::current()->setSharedTimerFireInterval(fireTime);
 }
 
 void stopSharedTimer()
 {
-    WebKit::Platform::current()->stopSharedTimer();
+    blink::Platform::current()->stopSharedTimer();
 }
 
 } // namespace WebCore

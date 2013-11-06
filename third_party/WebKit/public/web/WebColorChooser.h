@@ -29,7 +29,7 @@
 #include "../platform/WebColor.h"
 #include "../platform/WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 
 // This represents a color chooser.
 class WebColorChooser {

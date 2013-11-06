@@ -34,7 +34,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebKit {
+namespace blink {
 class WebSourceInfo;
 }
 
@@ -55,7 +55,7 @@ public:
 
     String origin() { return m_origin; }
 
-    void requestSucceeded(const WebKit::WebVector<WebKit::WebSourceInfo>&);
+    void requestSucceeded(const blink::WebVector<blink::WebSourceInfo>&);
 
     PassRefPtr<ExtraData> extraData() const { return m_extraData; }
     void setExtraData(PassRefPtr<ExtraData> extraData) { m_extraData = extraData; }

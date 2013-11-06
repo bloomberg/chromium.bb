@@ -38,7 +38,7 @@ class Range;
 class RenderObject;
 }
 
-namespace WebKit {
+namespace blink {
 
 // Find-in-page coordinate conversion methods.
 //
@@ -56,6 +56,6 @@ namespace WebKit {
 WebCore::FloatRect findInPageRectFromAbsoluteRect(const WebCore::FloatRect&, const WebCore::RenderObject*);
 WebCore::FloatRect findInPageRectFromRange(WebCore::Range*);
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -44,7 +44,7 @@
 #include "public/web/WebInputEvent.h"
 #include <memory>
 
-namespace WebKit {
+namespace blink {
 class WebDragData;
 class WebView;
 struct WebContextMenuData;
@@ -61,15 +61,15 @@ public:
     ~EventSender();
 
     void setDelegate(WebTestDelegate* delegate) { m_delegate = delegate; }
-    void setWebView(WebKit::WebView* webView) { m_webView = webView; }
+    void setWebView(blink::WebView* webView) { m_webView = webView; }
 
-    void setContextMenuData(const WebKit::WebContextMenuData&);
+    void setContextMenuData(const blink::WebContextMenuData&);
 
     // Resets some static variable state.
     void reset();
 
     // Simulate drag&drop system call.
-    void doDragDrop(const WebKit::WebDragData&, WebKit::WebDragOperationsMask);
+    void doDragDrop(const blink::WebDragData&, blink::WebDragOperationsMask);
 
     // Test helper for dragging out images.
     void dumpFilenameBeingDragged(const CppArgumentList&, CppVariant*);
@@ -126,7 +126,7 @@ public:
     void gestureLongPress(const CppArgumentList&, CppVariant*);
     void gestureLongTap(const CppArgumentList&, CppVariant*);
     void gestureTwoFingerTap(const CppArgumentList&, CppVariant*);
-    void gestureEvent(WebKit::WebInputEvent::Type, const CppArgumentList&);
+    void gestureEvent(blink::WebInputEvent::Type, const CppArgumentList&);
 
     // Setting this to false makes EventSender not force layout() calls.
     // This makes it possible to test the standard WebCore event dispatch.
@@ -152,7 +152,7 @@ public:
     WebTaskList* taskList() { return &m_taskList; }
 
 private:
-    WebKit::WebView* webview() { return m_webView; }
+    blink::WebView* webview() { return m_webView; }
 
     // Returns true if dragMode is true.
     bool isDragMode() { return dragMode.isBool() && dragMode.toBoolean(); }
@@ -161,13 +161,13 @@ private:
 
     // Sometimes we queue up mouse move and mouse up events for drag drop
     // handling purposes. These methods dispatch the event.
-    void doMouseMove(const WebKit::WebMouseEvent&);
-    void doMouseUp(const WebKit::WebMouseEvent&);
+    void doMouseMove(const blink::WebMouseEvent&);
+    void doMouseUp(const blink::WebMouseEvent&);
     static void doLeapForward(int milliseconds);
     void replaySavedEvents();
 
     // Helper to return the button type given a button code
-    static WebKit::WebMouseEvent::Button getButtonTypeFromButtonNumber(int);
+    static blink::WebMouseEvent::Button getButtonTypeFromButtonNumber(int);
 
     // Helper to extract the button number from the optional argument in
     // mouseDown and mouseUp
@@ -177,36 +177,36 @@ private:
     // modifier to be passed into the generated event.
     bool needsShiftModifier(int);
 
-    void finishDragAndDrop(const WebKit::WebMouseEvent&, WebKit::WebDragOperation);
-    void updateClickCountForButton(WebKit::WebMouseEvent::Button);
+    void finishDragAndDrop(const blink::WebMouseEvent&, blink::WebDragOperation);
+    void updateClickCountForButton(blink::WebMouseEvent::Button);
 
     // Compose a touch event from the current touch points and send it.
-    void sendCurrentTouchEvent(const WebKit::WebInputEvent::Type);
+    void sendCurrentTouchEvent(const blink::WebInputEvent::Type);
 
     // Init a mouse wheel event from the given args.
-    void initMouseWheelEvent(const CppArgumentList&, CppVariant*, bool continuous, WebKit::WebMouseWheelEvent*);
+    void initMouseWheelEvent(const CppArgumentList&, CppVariant*, bool continuous, blink::WebMouseWheelEvent*);
 
     WebTaskList m_taskList;
 
     TestInterfaces* m_testInterfaces;
     WebTestDelegate* m_delegate;
-    WebKit::WebView* m_webView;
+    blink::WebView* m_webView;
 
-    std::auto_ptr<WebKit::WebContextMenuData> m_lastContextMenuData;
+    std::auto_ptr<blink::WebContextMenuData> m_lastContextMenuData;
 
     // Location of the touch point that initiated a gesture.
-    WebKit::WebPoint m_currentGestureLocation;
+    blink::WebPoint m_currentGestureLocation;
 
     // Location of last mouseMoveTo event.
-    static WebKit::WebPoint lastMousePos;
+    static blink::WebPoint lastMousePos;
 
     // Currently pressed mouse button (Left/Right/Middle or None)
-    static WebKit::WebMouseEvent::Button pressedButton;
+    static blink::WebMouseEvent::Button pressedButton;
 
     // The last button number passed to mouseDown and mouseUp.
     // Used to determine whether the click count continues to
     // increment or not.
-    static WebKit::WebMouseEvent::Button lastButtonType;
+    static blink::WebMouseEvent::Button lastButtonType;
 };
 
 }

@@ -55,14 +55,14 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 void WebAXObject::reset()
 {
     m_private.reset();
 }
 
-void WebAXObject::assign(const WebKit::WebAXObject& other)
+void WebAXObject::assign(const blink::WebAXObject& other)
 {
     m_private = other.m_private;
 }
@@ -608,7 +608,7 @@ bool WebAXObject::press() const
 WebAXRole WebAXObject::role() const
 {
     if (isDetached())
-        return WebKit::WebAXRoleUnknown;
+        return blink::WebAXRoleUnknown;
 
     return static_cast<WebAXRole>(m_private->roleValue());
 }
@@ -1073,4 +1073,4 @@ WebAXObject::operator WTF::PassRefPtr<WebCore::AXObject>() const
     return m_private.get();
 }
 
-} // namespace WebKit
+} // namespace blink

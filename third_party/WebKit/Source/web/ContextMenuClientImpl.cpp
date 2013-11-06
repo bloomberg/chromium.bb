@@ -79,7 +79,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 // Figure out the URL of a page or subframe. Returns |page_type| as the type,
 // which indicates page or subframe, or ContextNodeType::NONE if the URL could not
@@ -421,4 +421,4 @@ void ContextMenuClientImpl::populateCustomMenuItems(const WebCore::ContextMenu* 
     populateSubMenuItems(defaultMenu->items(), data->customItems);
 }
 
-} // namespace WebKit
+} // namespace blink

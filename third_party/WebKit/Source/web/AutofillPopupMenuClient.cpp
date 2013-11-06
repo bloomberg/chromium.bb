@@ -49,7 +49,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 AutofillPopupMenuClient::AutofillPopupMenuClient()
     : m_selectedIndex(-1)
@@ -347,4 +347,4 @@ RenderStyle* AutofillPopupMenuClient::textFieldStyle() const
     return style;
 }
 
-} // namespace WebKit
+} // namespace blink

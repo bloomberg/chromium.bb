@@ -45,7 +45,7 @@
 #include "WebTextDirection.h"
 #include "WebWidgetClient.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebAXObject;
 class WebColorChooser;
@@ -387,6 +387,6 @@ protected:
     ~WebViewClient() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

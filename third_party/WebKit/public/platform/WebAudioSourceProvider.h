@@ -27,7 +27,7 @@
 
 #include "WebVector.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebAudioSourceProviderClient;
 

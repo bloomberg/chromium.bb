@@ -47,7 +47,7 @@
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
 
-using namespace WebKit;
+using namespace blink;
 using namespace WebCore;
 
 namespace {
@@ -60,7 +60,7 @@ PassRefPtr<WebCore::KeyboardEvent> createKeyboardEventWithLocation(WebCore::Keyb
 int getModifiersForKeyLocationCode(WebCore::KeyboardEvent::KeyLocationCode location)
 {
     RefPtr<WebCore::KeyboardEvent> event = createKeyboardEventWithLocation(location);
-    WebKit::WebKeyboardEventBuilder convertedEvent(*event);
+    blink::WebKeyboardEventBuilder convertedEvent(*event);
     return convertedEvent.modifiers;
 }
 

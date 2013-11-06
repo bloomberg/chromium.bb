@@ -35,14 +35,14 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebKit { class WebFileWriter; }
+namespace blink { class WebFileWriter; }
 
 namespace WebCore {
 
 class FileWriterBase : public RefCounted<FileWriterBase> {
 public:
     virtual ~FileWriterBase();
-    void initialize(PassOwnPtr<WebKit::WebFileWriter>, long long length);
+    void initialize(PassOwnPtr<blink::WebFileWriter>, long long length);
 
     long long position() const
     {
@@ -56,7 +56,7 @@ public:
 protected:
     FileWriterBase();
 
-    WebKit::WebFileWriter* writer()
+    blink::WebFileWriter* writer()
     {
         return m_writer.get();
     }
@@ -76,7 +76,7 @@ protected:
 private:
     friend class WTF::RefCounted<FileWriterBase>;
 
-    OwnPtr<WebKit::WebFileWriter> m_writer;
+    OwnPtr<blink::WebFileWriter> m_writer;
     long long m_position;
     long long m_length;
 };

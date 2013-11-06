@@ -52,7 +52,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 // Chromium-specific decorator of WorkerMessagingProxy.
 
@@ -88,4 +88,4 @@ WebWorkerClientImpl::~WebWorkerClientImpl()
 {
 }
 
-} // namespace WebKit
+} // namespace blink

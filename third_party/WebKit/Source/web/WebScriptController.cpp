@@ -35,7 +35,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 void WebScriptController::registerExtension(v8::Extension* extension)
 {
@@ -52,4 +52,4 @@ void WebScriptController::flushConsoleMessages()
     // FIXME: remove this method after all it's usages are gone.
 }
 
-} // namespace WebKit
+} // namespace blink

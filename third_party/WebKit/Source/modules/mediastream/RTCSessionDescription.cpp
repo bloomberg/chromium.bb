@@ -61,15 +61,15 @@ PassRefPtr<RTCSessionDescription> RTCSessionDescription::create(const Dictionary
     String sdp;
     descriptionInitDict.get("sdp", sdp);
 
-    return adoptRef(new RTCSessionDescription(WebKit::WebRTCSessionDescription(type, sdp)));
+    return adoptRef(new RTCSessionDescription(blink::WebRTCSessionDescription(type, sdp)));
 }
 
-PassRefPtr<RTCSessionDescription> RTCSessionDescription::create(WebKit::WebRTCSessionDescription webSessionDescription)
+PassRefPtr<RTCSessionDescription> RTCSessionDescription::create(blink::WebRTCSessionDescription webSessionDescription)
 {
     return adoptRef(new RTCSessionDescription(webSessionDescription));
 }
 
-RTCSessionDescription::RTCSessionDescription(WebKit::WebRTCSessionDescription webSessionDescription)
+RTCSessionDescription::RTCSessionDescription(blink::WebRTCSessionDescription webSessionDescription)
     : m_webSessionDescription(webSessionDescription)
 {
     ScriptWrappable::init(this);
@@ -98,7 +98,7 @@ void RTCSessionDescription::setSdp(const String& sdp)
     m_webSessionDescription.setSDP(sdp);
 }
 
-WebKit::WebRTCSessionDescription RTCSessionDescription::webSessionDescription()
+blink::WebRTCSessionDescription RTCSessionDescription::webSessionDescription()
 {
     return m_webSessionDescription;
 }

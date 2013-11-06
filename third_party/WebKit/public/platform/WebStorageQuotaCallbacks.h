@@ -33,7 +33,7 @@
 
 #include "WebStorageQuotaError.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebStorageQuotaCallbacks {
 public:
@@ -50,6 +50,6 @@ protected:
     virtual ~WebStorageQuotaCallbacks() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebStorageQuotaCallbacks_h

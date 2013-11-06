@@ -37,7 +37,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 void WebHTTPLoadInfo::initialize()
 {
@@ -144,4 +144,4 @@ void WebHTTPLoadInfo::setResponseHeadersText(const WebString& headersText)
     m_private->responseHeadersText = headersText;
 }
 
-} // namespace WebKit
+} // namespace blink

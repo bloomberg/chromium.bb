@@ -33,7 +33,7 @@
 
 #include "WebRect.h"
 
-namespace WebKit {
+namespace blink {
 
 struct WebScreenInfo {
     // Device scale factor. Specifies the ratio between physical and logical
@@ -74,6 +74,6 @@ struct WebScreenInfo {
         , isMonochrome(false) { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

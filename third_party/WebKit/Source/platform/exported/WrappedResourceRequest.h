@@ -34,7 +34,7 @@
 #include "platform/exported/WebURLRequestPrivate.h"
 #include "public/platform/WebURLRequest.h"
 
-namespace WebKit {
+namespace blink {
 
 class WrappedResourceRequest : public WebURLRequest {
 public:
@@ -75,6 +75,6 @@ private:
     Handle m_handle;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

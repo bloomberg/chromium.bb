@@ -34,7 +34,7 @@
 #include "../platform/WebCommon.h"
 #include "WebWidget.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebWidgetClient;
 
@@ -46,6 +46,6 @@ public:
     BLINK_EXPORT static void setMinimumRowHeight(int);
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

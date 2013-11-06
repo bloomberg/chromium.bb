@@ -110,7 +110,7 @@ void FileWriterSync::didTruncate()
 #endif
 }
 
-void FileWriterSync::didFail(WebKit::WebFileError error)
+void FileWriterSync::didFail(blink::WebFileError error)
 {
     ASSERT(m_error == FileError::OK);
     m_error = static_cast<FileError::ErrorCode>(error);

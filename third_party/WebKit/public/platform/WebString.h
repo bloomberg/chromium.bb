@@ -47,7 +47,7 @@ namespace WTF {
 class StringImpl;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebCString;
 
@@ -187,6 +187,6 @@ inline bool operator!=(const WebString& a, const WebString& b)
     return !(a == b);
 }
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

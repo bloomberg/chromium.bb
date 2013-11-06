@@ -40,7 +40,7 @@
 
 namespace WebCore { class SocketStreamError; }
 
-namespace WebKit {
+namespace blink {
 
 class WebString;
 
@@ -64,6 +64,6 @@ private:
     WebPrivatePtr<WebCore::SocketStreamError> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

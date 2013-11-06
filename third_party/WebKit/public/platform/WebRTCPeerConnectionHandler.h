@@ -31,7 +31,7 @@
 #ifndef WebRTCPeerConnectionHandler_h
 #define WebRTCPeerConnectionHandler_h
 
-namespace WebKit {
+namespace blink {
 class WebMediaConstraints;
 class WebMediaStream;
 class WebMediaStreamTrack;
@@ -73,6 +73,6 @@ public:
     virtual void stop() = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebRTCPeerConnectionHandler_h

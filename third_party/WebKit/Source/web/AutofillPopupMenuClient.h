@@ -40,7 +40,7 @@ class PopupMenuStyle;
 class RenderStyle;
 }
 
-namespace WebKit {
+namespace blink {
 class WebString;
 class WebViewImpl;
 template <typename T> class WebVector;
@@ -140,6 +140,6 @@ private:
     bool m_useLegacyBehavior;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

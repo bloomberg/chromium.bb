@@ -36,7 +36,7 @@
 #include "platform/graphics/media/MediaPlayer.h"
 #include "public/platform/WebMimeRegistry.h"
 
-namespace WebKit { class WebLayer; }
+namespace blink { class WebLayer; }
 
 namespace WebCore {
 
@@ -74,7 +74,7 @@ class HTMLMediaElement : public HTMLElement, public MediaPlayerClient, public Ac
     , private TextTrackClient
 {
 public:
-    static WebKit::WebMimeRegistry::SupportsType supportsType(const ContentType&, const String& keySystem = String());
+    static blink::WebMimeRegistry::SupportsType supportsType(const ContentType&, const String& keySystem = String());
 
     MediaPlayer* player() const { return m_player.get(); }
 
@@ -87,7 +87,7 @@ public:
 
     bool supportsSave() const;
 
-    WebKit::WebLayer* platformLayer() const;
+    blink::WebLayer* platformLayer() const;
 
     enum DelayedActionType {
         LoadMediaResource = 1 << 0,

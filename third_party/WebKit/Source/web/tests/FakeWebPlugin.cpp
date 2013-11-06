@@ -34,7 +34,7 @@
 #include "WebPluginParams.h"
 #include "wtf/StdLibExtras.h"
 
-namespace WebKit {
+namespace blink {
 
 FakeWebPlugin::FakeWebPlugin(WebFrame* frame, const WebPluginParams& params)
     : m_frame(frame)

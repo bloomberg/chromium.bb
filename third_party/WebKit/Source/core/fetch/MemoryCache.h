@@ -59,7 +59,7 @@ struct SecurityOriginHash;
 // Enable this macro to periodically log information about the memory cache.
 #undef MEMORY_CACHE_STATS
 
-class MemoryCache : public WebKit::WebThread::TaskObserver {
+class MemoryCache : public blink::WebThread::TaskObserver {
     WTF_MAKE_NONCOPYABLE(MemoryCache); WTF_MAKE_FAST_ALLOCATED;
 public:
     MemoryCache();

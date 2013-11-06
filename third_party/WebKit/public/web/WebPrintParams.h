@@ -35,7 +35,7 @@
 #include "../platform/WebSize.h"
 #include "WebPrintScalingOption.h"
 
-namespace WebKit {
+namespace blink {
 
 struct WebPrintParams {
     // Specifies printable content rect in points (a point is 1/72 of an inch).
@@ -74,6 +74,6 @@ struct WebPrintParams {
         , printScalingOption(printScalingOption) { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

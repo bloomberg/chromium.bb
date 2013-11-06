@@ -33,7 +33,7 @@
 
 #include "../platform/WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 
 // An interface to query and configure WebKit's font cache.
 class WebFontCache {
@@ -54,6 +54,6 @@ private:
     WebFontCache();  // Not intended to be instanced.
 };
 
-}  // namespace WebKit
+}  // namespace blink
 
 #endif

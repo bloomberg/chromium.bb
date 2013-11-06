@@ -33,7 +33,7 @@ namespace WebCore {
 class GraphicsLayer;
 }
 
-namespace WebKit {
+namespace blink {
 class PageOverlayList;
 
 // This class is responsible for calling setNeedsDisplay on all
@@ -46,6 +46,6 @@ public:
     static void setNeedsDisplayRecursive(WebCore::GraphicsLayer*, PageOverlayList*);
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -31,7 +31,7 @@
 #ifndef WebServiceWorkerProviderClient_h
 #define WebServiceWorkerProviderClient_h
 
-namespace WebKit {
+namespace blink {
 class WebString;
 
 // This class catches any errors that may originate on the browser

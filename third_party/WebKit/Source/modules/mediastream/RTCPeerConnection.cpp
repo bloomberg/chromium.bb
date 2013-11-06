@@ -226,7 +226,7 @@ void RTCPeerConnection::setLocalDescription(PassRefPtr<RTCSessionDescription> pr
 
 PassRefPtr<RTCSessionDescription> RTCPeerConnection::localDescription(ExceptionState& es)
 {
-    WebKit::WebRTCSessionDescription webSessionDescription = m_peerHandler->localDescription();
+    blink::WebRTCSessionDescription webSessionDescription = m_peerHandler->localDescription();
     if (webSessionDescription.isNull())
         return 0;
 
@@ -253,7 +253,7 @@ void RTCPeerConnection::setRemoteDescription(PassRefPtr<RTCSessionDescription> p
 
 PassRefPtr<RTCSessionDescription> RTCPeerConnection::remoteDescription(ExceptionState& es)
 {
-    WebKit::WebRTCSessionDescription webSessionDescription = m_peerHandler->remoteDescription();
+    blink::WebRTCSessionDescription webSessionDescription = m_peerHandler->remoteDescription();
     if (webSessionDescription.isNull())
         return 0;
 
@@ -465,7 +465,7 @@ PassRefPtr<RTCDataChannel> RTCPeerConnection::createDataChannel(String label, co
         return 0;
     }
 
-    WebKit::WebRTCDataChannelInit init;
+    blink::WebRTCDataChannelInit init;
     options.get("ordered", init.ordered);
     options.get("negotiated", init.negotiated);
 
@@ -541,7 +541,7 @@ void RTCPeerConnection::negotiationNeeded()
     scheduleDispatchEvent(Event::create(EventTypeNames::negotiationneeded));
 }
 
-void RTCPeerConnection::didGenerateIceCandidate(WebKit::WebRTCICECandidate webCandidate)
+void RTCPeerConnection::didGenerateIceCandidate(blink::WebRTCICECandidate webCandidate)
 {
     ASSERT(executionContext()->isContextThread());
     if (webCandidate.isNull())

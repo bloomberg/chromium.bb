@@ -52,65 +52,65 @@ namespace {
 
 struct AlgorithmNameMapping {
     const char* const algorithmName;
-    WebKit::WebCryptoAlgorithmId algorithmId;
+    blink::WebCryptoAlgorithmId algorithmId;
 };
 
 // Indicates that the algorithm doesn't support the specified operation.
 const int UnsupportedOp = -1;
 
-// Either UnsupportedOp, or a value from WebKit::WebCryptoAlgorithmParamsType
+// Either UnsupportedOp, or a value from blink::WebCryptoAlgorithmParamsType
 typedef int AlgorithmParamsForOperation;
 
 struct OperationParamsMapping {
-    WebKit::WebCryptoAlgorithmId algorithmId;
+    blink::WebCryptoAlgorithmId algorithmId;
     AlgorithmOperation operation;
     AlgorithmParamsForOperation params;
 };
 
 const AlgorithmNameMapping algorithmNameMappings[] = {
-    {"AES-CBC", WebKit::WebCryptoAlgorithmIdAesCbc},
-    {"HMAC", WebKit::WebCryptoAlgorithmIdHmac},
-    {"RSASSA-PKCS1-v1_5", WebKit::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5},
-    {"RSAES-PKCS1-v1_5", WebKit::WebCryptoAlgorithmIdRsaEsPkcs1v1_5},
-    {"SHA-1", WebKit::WebCryptoAlgorithmIdSha1},
-    {"SHA-224", WebKit::WebCryptoAlgorithmIdSha224},
-    {"SHA-256", WebKit::WebCryptoAlgorithmIdSha256},
-    {"SHA-384", WebKit::WebCryptoAlgorithmIdSha384},
-    {"SHA-512", WebKit::WebCryptoAlgorithmIdSha512},
+    {"AES-CBC", blink::WebCryptoAlgorithmIdAesCbc},
+    {"HMAC", blink::WebCryptoAlgorithmIdHmac},
+    {"RSASSA-PKCS1-v1_5", blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5},
+    {"RSAES-PKCS1-v1_5", blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5},
+    {"SHA-1", blink::WebCryptoAlgorithmIdSha1},
+    {"SHA-224", blink::WebCryptoAlgorithmIdSha224},
+    {"SHA-256", blink::WebCryptoAlgorithmIdSha256},
+    {"SHA-384", blink::WebCryptoAlgorithmIdSha384},
+    {"SHA-512", blink::WebCryptoAlgorithmIdSha512},
 };
 
 // What operations each algorithm supports, and what parameters it expects.
 const OperationParamsMapping operationParamsMappings[] = {
     // AES-CBC
-    {WebKit::WebCryptoAlgorithmIdAesCbc, Decrypt, WebKit::WebCryptoAlgorithmParamsTypeAesCbcParams},
-    {WebKit::WebCryptoAlgorithmIdAesCbc, Encrypt, WebKit::WebCryptoAlgorithmParamsTypeAesCbcParams},
-    {WebKit::WebCryptoAlgorithmIdAesCbc, GenerateKey, WebKit::WebCryptoAlgorithmParamsTypeAesKeyGenParams},
-    {WebKit::WebCryptoAlgorithmIdAesCbc, ImportKey, WebKit::WebCryptoAlgorithmParamsTypeNone},
+    {blink::WebCryptoAlgorithmIdAesCbc, Decrypt, blink::WebCryptoAlgorithmParamsTypeAesCbcParams},
+    {blink::WebCryptoAlgorithmIdAesCbc, Encrypt, blink::WebCryptoAlgorithmParamsTypeAesCbcParams},
+    {blink::WebCryptoAlgorithmIdAesCbc, GenerateKey, blink::WebCryptoAlgorithmParamsTypeAesKeyGenParams},
+    {blink::WebCryptoAlgorithmIdAesCbc, ImportKey, blink::WebCryptoAlgorithmParamsTypeNone},
 
     // HMAC
-    {WebKit::WebCryptoAlgorithmIdHmac, Sign, WebKit::WebCryptoAlgorithmParamsTypeHmacParams},
-    {WebKit::WebCryptoAlgorithmIdHmac, Verify, WebKit::WebCryptoAlgorithmParamsTypeHmacParams},
-    {WebKit::WebCryptoAlgorithmIdHmac, GenerateKey, WebKit::WebCryptoAlgorithmParamsTypeHmacKeyParams},
-    {WebKit::WebCryptoAlgorithmIdHmac, ImportKey, WebKit::WebCryptoAlgorithmParamsTypeHmacParams},
+    {blink::WebCryptoAlgorithmIdHmac, Sign, blink::WebCryptoAlgorithmParamsTypeHmacParams},
+    {blink::WebCryptoAlgorithmIdHmac, Verify, blink::WebCryptoAlgorithmParamsTypeHmacParams},
+    {blink::WebCryptoAlgorithmIdHmac, GenerateKey, blink::WebCryptoAlgorithmParamsTypeHmacKeyParams},
+    {blink::WebCryptoAlgorithmIdHmac, ImportKey, blink::WebCryptoAlgorithmParamsTypeHmacParams},
 
     // RSASSA-PKCS1-v1_5
-    {WebKit::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, Sign, WebKit::WebCryptoAlgorithmParamsTypeRsaSsaParams},
-    {WebKit::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, Verify, WebKit::WebCryptoAlgorithmParamsTypeRsaSsaParams},
-    {WebKit::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, GenerateKey, WebKit::WebCryptoAlgorithmParamsTypeRsaKeyGenParams},
-    {WebKit::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, ImportKey, WebKit::WebCryptoAlgorithmParamsTypeNone},
+    {blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, Sign, blink::WebCryptoAlgorithmParamsTypeRsaSsaParams},
+    {blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, Verify, blink::WebCryptoAlgorithmParamsTypeRsaSsaParams},
+    {blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, GenerateKey, blink::WebCryptoAlgorithmParamsTypeRsaKeyGenParams},
+    {blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, ImportKey, blink::WebCryptoAlgorithmParamsTypeNone},
 
     // RSAES-PKCS1-v1_5
-    {WebKit::WebCryptoAlgorithmIdRsaEsPkcs1v1_5, Encrypt, WebKit::WebCryptoAlgorithmParamsTypeNone},
-    {WebKit::WebCryptoAlgorithmIdRsaEsPkcs1v1_5, Decrypt, WebKit::WebCryptoAlgorithmParamsTypeNone},
-    {WebKit::WebCryptoAlgorithmIdRsaEsPkcs1v1_5, GenerateKey, WebKit::WebCryptoAlgorithmParamsTypeRsaKeyGenParams},
-    {WebKit::WebCryptoAlgorithmIdRsaEsPkcs1v1_5, ImportKey, WebKit::WebCryptoAlgorithmParamsTypeNone},
+    {blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5, Encrypt, blink::WebCryptoAlgorithmParamsTypeNone},
+    {blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5, Decrypt, blink::WebCryptoAlgorithmParamsTypeNone},
+    {blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5, GenerateKey, blink::WebCryptoAlgorithmParamsTypeRsaKeyGenParams},
+    {blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5, ImportKey, blink::WebCryptoAlgorithmParamsTypeNone},
 
     // SHA-*
-    {WebKit::WebCryptoAlgorithmIdSha1, Digest, WebKit::WebCryptoAlgorithmParamsTypeNone},
-    {WebKit::WebCryptoAlgorithmIdSha224, Digest, WebKit::WebCryptoAlgorithmParamsTypeNone},
-    {WebKit::WebCryptoAlgorithmIdSha256, Digest, WebKit::WebCryptoAlgorithmParamsTypeNone},
-    {WebKit::WebCryptoAlgorithmIdSha384, Digest, WebKit::WebCryptoAlgorithmParamsTypeNone},
-    {WebKit::WebCryptoAlgorithmIdSha512, Digest, WebKit::WebCryptoAlgorithmParamsTypeNone},
+    {blink::WebCryptoAlgorithmIdSha1, Digest, blink::WebCryptoAlgorithmParamsTypeNone},
+    {blink::WebCryptoAlgorithmIdSha224, Digest, blink::WebCryptoAlgorithmParamsTypeNone},
+    {blink::WebCryptoAlgorithmIdSha256, Digest, blink::WebCryptoAlgorithmParamsTypeNone},
+    {blink::WebCryptoAlgorithmIdSha384, Digest, blink::WebCryptoAlgorithmParamsTypeNone},
+    {blink::WebCryptoAlgorithmIdSha512, Digest, blink::WebCryptoAlgorithmParamsTypeNone},
 };
 
 // This structure describes an algorithm and its supported operations.
@@ -122,7 +122,7 @@ struct AlgorithmInfo {
             paramsForOperation[i] = UnsupportedOp;
     }
 
-    WebKit::WebCryptoAlgorithmId algorithmId;
+    blink::WebCryptoAlgorithmId algorithmId;
     const char* algorithmName;
     AlgorithmParamsForOperation paramsForOperation[NumberOfAlgorithmOperations];
 };
@@ -135,17 +135,17 @@ public:
     static AlgorithmRegistry& instance();
 
     const AlgorithmInfo* lookupAlgorithmByName(const String&) const;
-    const AlgorithmInfo* lookupAlgorithmById(WebKit::WebCryptoAlgorithmId) const;
+    const AlgorithmInfo* lookupAlgorithmById(blink::WebCryptoAlgorithmId) const;
 
 private:
     AlgorithmRegistry();
 
     // Algorithm name to ID.
-    typedef HashMap<String, WebKit::WebCryptoAlgorithmId, CaseFoldingHash> AlgorithmNameToIdMap;
+    typedef HashMap<String, blink::WebCryptoAlgorithmId, CaseFoldingHash> AlgorithmNameToIdMap;
     AlgorithmNameToIdMap m_algorithmNameToId;
 
     // Algorithm ID to information.
-    AlgorithmInfo m_algorithms[WebKit::NumberOfWebCryptoAlgorithmId];
+    AlgorithmInfo m_algorithms[blink::NumberOfWebCryptoAlgorithmId];
 };
 
 AlgorithmRegistry& AlgorithmRegistry::instance()
@@ -162,7 +162,7 @@ const AlgorithmInfo* AlgorithmRegistry::lookupAlgorithmByName(const String& algo
     return lookupAlgorithmById(it->value);
 }
 
-const AlgorithmInfo* AlgorithmRegistry::lookupAlgorithmById(WebKit::WebCryptoAlgorithmId algorithmId) const
+const AlgorithmInfo* AlgorithmRegistry::lookupAlgorithmById(blink::WebCryptoAlgorithmId algorithmId) const
 {
     ASSERT(algorithmId >= 0 && algorithmId < WTF_ARRAY_LENGTH(m_algorithms));
     return &m_algorithms[algorithmId];
@@ -323,7 +323,7 @@ bool getOptionalUint32(const Dictionary& raw, const char* propertyName, bool& ha
     return true;
 }
 
-bool parseAesCbcParams(const Dictionary& raw, OwnPtr<WebKit::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& es)
+bool parseAesCbcParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& es)
 {
     RefPtr<ArrayBufferView> iv;
     if (!getArrayBufferView(raw, "iv", iv, context, es))
@@ -334,23 +334,23 @@ bool parseAesCbcParams(const Dictionary& raw, OwnPtr<WebKit::WebCryptoAlgorithmP
         return false;
     }
 
-    params = adoptPtr(new WebKit::WebCryptoAesCbcParams(static_cast<unsigned char*>(iv->baseAddress()), iv->byteLength()));
+    params = adoptPtr(new blink::WebCryptoAesCbcParams(static_cast<unsigned char*>(iv->baseAddress()), iv->byteLength()));
     return true;
 }
 
-bool parseAesKeyGenParams(const Dictionary& raw, OwnPtr<WebKit::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& es)
+bool parseAesKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& es)
 {
     uint16_t length;
     if (!getUint16(raw, "length", length, context, es))
         return false;
 
-    params = adoptPtr(new WebKit::WebCryptoAesKeyGenParams(length));
+    params = adoptPtr(new blink::WebCryptoAesKeyGenParams(length));
     return true;
 }
 
-bool normalizeAlgorithm(const Dictionary&, AlgorithmOperation, WebKit::WebCryptoAlgorithm&, ExceptionContext, ExceptionState&);
+bool normalizeAlgorithm(const Dictionary&, AlgorithmOperation, blink::WebCryptoAlgorithm&, ExceptionContext, ExceptionState&);
 
-bool parseHash(const Dictionary& raw, WebKit::WebCryptoAlgorithm& hash, ExceptionContext context, ExceptionState& es)
+bool parseHash(const Dictionary& raw, blink::WebCryptoAlgorithm& hash, ExceptionContext context, ExceptionState& es)
 {
     Dictionary rawHash;
     if (!raw.get("hash", rawHash)) {
@@ -362,19 +362,19 @@ bool parseHash(const Dictionary& raw, WebKit::WebCryptoAlgorithm& hash, Exceptio
     return normalizeAlgorithm(rawHash, Digest, hash, context, es);
 }
 
-bool parseHmacParams(const Dictionary& raw, OwnPtr<WebKit::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& es)
+bool parseHmacParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& es)
 {
-    WebKit::WebCryptoAlgorithm hash;
+    blink::WebCryptoAlgorithm hash;
     if (!parseHash(raw, hash, context, es))
         return false;
 
-    params = adoptPtr(new WebKit::WebCryptoHmacParams(hash));
+    params = adoptPtr(new blink::WebCryptoHmacParams(hash));
     return true;
 }
 
-bool parseHmacKeyParams(const Dictionary& raw, OwnPtr<WebKit::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& es)
+bool parseHmacKeyParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& es)
 {
-    WebKit::WebCryptoAlgorithm hash;
+    blink::WebCryptoAlgorithm hash;
     if (!parseHash(raw, hash, context, es))
         return false;
 
@@ -383,21 +383,21 @@ bool parseHmacKeyParams(const Dictionary& raw, OwnPtr<WebKit::WebCryptoAlgorithm
     if (!getOptionalUint32(raw, "length", hasLength, length, context, es))
         return false;
 
-    params = adoptPtr(new WebKit::WebCryptoHmacKeyParams(hash, hasLength, length));
+    params = adoptPtr(new blink::WebCryptoHmacKeyParams(hash, hasLength, length));
     return true;
 }
 
-bool parseRsaSsaParams(const Dictionary& raw, OwnPtr<WebKit::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& es)
+bool parseRsaSsaParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& es)
 {
-    WebKit::WebCryptoAlgorithm hash;
+    blink::WebCryptoAlgorithm hash;
     if (!parseHash(raw, hash, context, es))
         return false;
 
-    params = adoptPtr(new WebKit::WebCryptoRsaSsaParams(hash));
+    params = adoptPtr(new blink::WebCryptoRsaSsaParams(hash));
     return true;
 }
 
-bool parseRsaKeyGenParams(const Dictionary& raw, OwnPtr<WebKit::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& es)
+bool parseRsaKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ExceptionContext& context, ExceptionState& es)
 {
     uint32_t modulusLength;
     if (!getUint32(raw, "modulusLength", modulusLength, context, es))
@@ -407,35 +407,35 @@ bool parseRsaKeyGenParams(const Dictionary& raw, OwnPtr<WebKit::WebCryptoAlgorit
     if (!getUint8Array(raw, "publicExponent", publicExponent, context, es))
         return false;
 
-    params = adoptPtr(new WebKit::WebCryptoRsaKeyGenParams(modulusLength, static_cast<const unsigned char*>(publicExponent->baseAddress()), publicExponent->byteLength()));
+    params = adoptPtr(new blink::WebCryptoRsaKeyGenParams(modulusLength, static_cast<const unsigned char*>(publicExponent->baseAddress()), publicExponent->byteLength()));
     return true;
 }
 
-bool parseAlgorithmParams(const Dictionary& raw, WebKit::WebCryptoAlgorithmParamsType type, OwnPtr<WebKit::WebCryptoAlgorithmParams>& params, ExceptionContext& context, ExceptionState& es)
+bool parseAlgorithmParams(const Dictionary& raw, blink::WebCryptoAlgorithmParamsType type, OwnPtr<blink::WebCryptoAlgorithmParams>& params, ExceptionContext& context, ExceptionState& es)
 {
     switch (type) {
-    case WebKit::WebCryptoAlgorithmParamsTypeNone:
+    case blink::WebCryptoAlgorithmParamsTypeNone:
         return true;
-    case WebKit::WebCryptoAlgorithmParamsTypeAesCbcParams:
+    case blink::WebCryptoAlgorithmParamsTypeAesCbcParams:
         context.add("AesCbcParams");
         return parseAesCbcParams(raw, params, context, es);
-    case WebKit::WebCryptoAlgorithmParamsTypeAesKeyGenParams:
+    case blink::WebCryptoAlgorithmParamsTypeAesKeyGenParams:
         context.add("AesKeyGenParams");
         return parseAesKeyGenParams(raw, params, context, es);
-    case WebKit::WebCryptoAlgorithmParamsTypeHmacParams:
+    case blink::WebCryptoAlgorithmParamsTypeHmacParams:
         context.add("HmacParams");
         return parseHmacParams(raw, params, context, es);
-    case WebKit::WebCryptoAlgorithmParamsTypeHmacKeyParams:
+    case blink::WebCryptoAlgorithmParamsTypeHmacKeyParams:
         context.add("HmacKeyParams");
         return parseHmacKeyParams(raw, params, context, es);
-    case WebKit::WebCryptoAlgorithmParamsTypeRsaSsaParams:
+    case blink::WebCryptoAlgorithmParamsTypeRsaSsaParams:
         context.add("RsaSSaParams");
         return parseRsaSsaParams(raw, params, context, es);
-    case WebKit::WebCryptoAlgorithmParamsTypeRsaKeyGenParams:
+    case blink::WebCryptoAlgorithmParamsTypeRsaKeyGenParams:
         context.add("RsaKeyGenParams");
         return parseRsaKeyGenParams(raw, params, context, es);
-    case WebKit::WebCryptoAlgorithmParamsTypeAesGcmParams:
-    case WebKit::WebCryptoAlgorithmParamsTypeRsaOaepParams:
+    case blink::WebCryptoAlgorithmParamsTypeAesGcmParams:
+    case blink::WebCryptoAlgorithmParamsTypeRsaOaepParams:
         // TODO
         notImplemented();
         break;
@@ -468,7 +468,7 @@ const AlgorithmInfo* algorithmInfo(const Dictionary& raw, const ExceptionContext
 
 // This implementation corresponds with:
 // http://www.w3.org/TR/WebCryptoAPI/#algorithm-normalizing-rules
-bool normalizeAlgorithm(const Dictionary& raw, AlgorithmOperation op, WebKit::WebCryptoAlgorithm& algorithm, ExceptionContext context, ExceptionState& es)
+bool normalizeAlgorithm(const Dictionary& raw, AlgorithmOperation op, blink::WebCryptoAlgorithm& algorithm, ExceptionContext context, ExceptionState& es)
 {
     context.add("Algorithm");
 
@@ -483,23 +483,23 @@ bool normalizeAlgorithm(const Dictionary& raw, AlgorithmOperation op, WebKit::We
         return false;
     }
 
-    WebKit::WebCryptoAlgorithmParamsType paramsType = static_cast<WebKit::WebCryptoAlgorithmParamsType>(info->paramsForOperation[op]);
-    OwnPtr<WebKit::WebCryptoAlgorithmParams> params;
+    blink::WebCryptoAlgorithmParamsType paramsType = static_cast<blink::WebCryptoAlgorithmParamsType>(info->paramsForOperation[op]);
+    OwnPtr<blink::WebCryptoAlgorithmParams> params;
     if (!parseAlgorithmParams(raw, paramsType, params, context, es))
         return false;
 
-    algorithm = WebKit::WebCryptoAlgorithm(info->algorithmId, params.release());
+    algorithm = blink::WebCryptoAlgorithm(info->algorithmId, params.release());
     return true;
 }
 
 } // namespace
 
-bool normalizeAlgorithm(const Dictionary& raw, AlgorithmOperation op, WebKit::WebCryptoAlgorithm& algorithm, ExceptionState& es)
+bool normalizeAlgorithm(const Dictionary& raw, AlgorithmOperation op, blink::WebCryptoAlgorithm& algorithm, ExceptionState& es)
 {
     return normalizeAlgorithm(raw, op, algorithm, ExceptionContext(), es);
 }
 
-const char* algorithmIdToName(WebKit::WebCryptoAlgorithmId id)
+const char* algorithmIdToName(blink::WebCryptoAlgorithmId id)
 {
     return AlgorithmRegistry::instance().lookupAlgorithmById(id)->algorithmName;
 }

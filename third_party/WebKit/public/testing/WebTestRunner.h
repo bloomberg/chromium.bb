@@ -31,7 +31,7 @@
 #ifndef WebTestRunner_h
 #define WebTestRunner_h
 
-namespace WebKit {
+namespace blink {
 class WebArrayBufferView;
 class WebPermissionClient;
 }
@@ -42,7 +42,7 @@ class WebTestRunner {
 public:
     // Returns a mock WebPermissionClient that is used for layout tests. An
     // embedder should use this for all WebViews it creates.
-    virtual WebKit::WebPermissionClient* webPermissions() const = 0;
+    virtual blink::WebPermissionClient* webPermissions() const = 0;
 
     // After WebTestDelegate::testFinished was invoked, the following methods
     // can be used to determine what kind of dump the main WebTestProxy can
@@ -51,7 +51,7 @@ public:
     // If true, WebTestDelegate::audioData returns an audio dump and no text
     // or pixel results are available.
     virtual bool shouldDumpAsAudio() const = 0;
-    virtual const WebKit::WebArrayBufferView* audioData() const = 0;
+    virtual const blink::WebArrayBufferView* audioData() const = 0;
 
     // Returns true if the call to WebTestProxy::captureTree will invoke
     // WebTestDelegate::captureHistoryForWindow.

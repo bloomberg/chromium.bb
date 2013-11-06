@@ -47,7 +47,7 @@ void QuotaTracker::getDatabaseSizeAndSpaceAvailableToOrigin(
     const String& originIdentifier, const String& databaseName,
     unsigned long long* databaseSize, unsigned long long* spaceAvailable)
 {
-    // Extra scope to unlock prior to potentially calling WebKit::Platform.
+    // Extra scope to unlock prior to potentially calling blink::Platform.
     {
         MutexLocker lockData(m_dataGuard);
         ASSERT(m_databaseSizes.contains(originIdentifier));
@@ -62,7 +62,7 @@ void QuotaTracker::getDatabaseSizeAndSpaceAvailableToOrigin(
     }
 
     // The embedder hasn't pushed this value to us, so we pull it as needed.
-    *spaceAvailable = WebKit::Platform::current()->databaseGetSpaceAvailableForOrigin(originIdentifier);
+    *spaceAvailable = blink::Platform::current()->databaseGetSpaceAvailableForOrigin(originIdentifier);
 }
 
 void QuotaTracker::updateDatabaseSize(

@@ -34,7 +34,7 @@
 #include "../WebCString.h"
 #include "../WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 
 struct WebFontFamily {
     WebCString name;
@@ -42,6 +42,6 @@ struct WebFontFamily {
     bool isItalic;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebFontFamily_h

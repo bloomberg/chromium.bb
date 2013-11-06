@@ -35,7 +35,7 @@
 
 namespace WebCore { class GeolocationPosition; }
 
-namespace WebKit {
+namespace blink {
 
 class WebGeolocationPosition {
 public:
@@ -61,6 +61,6 @@ private:
     WebPrivatePtr<WebCore::GeolocationPosition> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebGeolocationPosition_h

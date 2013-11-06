@@ -33,7 +33,7 @@
 
 #include "core/workers/WorkerThread.h"
 
-namespace WebKit {
+namespace blink {
 
 unsigned WebWorkerInfo::dedicatedWorkerCount()
 {

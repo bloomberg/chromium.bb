@@ -33,7 +33,7 @@
 
 #include "WebTextDirection.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebString;
 struct WebRect;
@@ -58,6 +58,6 @@ protected:
     virtual ~WebValidationMessageClient() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

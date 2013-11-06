@@ -88,7 +88,7 @@ typedef unsigned __int64 uint64_t;
 #include <stdint.h> // For int32_t
 #endif
 
-namespace WebKit {
+namespace blink {
 
 // UTF-32 character type
 typedef int32_t WebUChar32;
@@ -108,7 +108,7 @@ typedef unsigned char WebLChar;
 
 BLINK_COMMON_EXPORT void failedAssertion(const char* file, int line, const char* function, const char* assertion);
 
-} // namespace WebKit
+} // namespace blink
 
 // Ideally, only use inside the public directory but outside of INSIDE_BLINK blocks.  (Otherwise use WTF's ASSERT.)
 #if defined(NDEBUG)

@@ -37,7 +37,7 @@
 
 static TestSuite* testSuite = 0;
 
-namespace WebKit {
+namespace blink {
 
 void InitTestSuite(int argc, char** argv)
 {
@@ -58,4 +58,4 @@ void DeleteTestSuite()
     testSuite = 0;
 }
 
-} // namespace WebKit
+} // namespace blink

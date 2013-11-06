@@ -37,7 +37,7 @@
 
 namespace WebCore { class FetchRequest; }
 
-namespace WebKit {
+namespace blink {
 
 class WebString;
 class WebURLRequest;
@@ -65,6 +65,6 @@ private:
     mutable WebPrivateOwnPtr<WrappedResourceRequest> m_resourceRequestWrapper;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

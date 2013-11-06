@@ -43,7 +43,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 void WebDOMMessageEvent::initMessageEvent(const WebString& type, bool canBubble, bool cancelable, const WebSerializedScriptValue& messageData, const WebString& origin, const WebFrame* sourceFrame, const WebString& lastEventId, const WebMessagePortChannelArray& webChannels)
 {
@@ -83,4 +83,4 @@ WebMessagePortChannelArray WebDOMMessageEvent::releaseChannels()
     return webChannels;
 }
 
-} // namespace WebKit
+} // namespace blink

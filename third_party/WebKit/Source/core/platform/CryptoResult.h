@@ -42,14 +42,14 @@ public:
     virtual ~CryptoResult() { }
 
     virtual void completeWithError() = 0;
-    virtual void completeWithBuffer(const WebKit::WebArrayBuffer&) = 0;
+    virtual void completeWithBuffer(const blink::WebArrayBuffer&) = 0;
     virtual void completeWithBoolean(bool) = 0;
-    virtual void completeWithKey(const WebKit::WebCryptoKey&) = 0;
-    virtual void completeWithKeyPair(const WebKit::WebCryptoKey& publicKey, const WebKit::WebCryptoKey& privateKey) = 0;
+    virtual void completeWithKey(const blink::WebCryptoKey&) = 0;
+    virtual void completeWithKeyPair(const blink::WebCryptoKey& publicKey, const blink::WebCryptoKey& privateKey) = 0;
 
-    WebKit::WebCryptoResult result()
+    blink::WebCryptoResult result()
     {
-        return WebKit::WebCryptoResult(this);
+        return blink::WebCryptoResult(this);
     }
 };
 

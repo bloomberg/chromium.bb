@@ -38,7 +38,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebKit {
+namespace blink {
 class WebMediaStream;
 class WebRTCICECandidate;
 class WebRTCSessionDescription;
@@ -57,7 +57,7 @@ class RTCSessionDescriptionRequest;
 class RTCStatsRequest;
 class RTCVoidRequest;
 
-class RTCPeerConnectionHandler : public WebKit::WebRTCPeerConnectionHandlerClient {
+class RTCPeerConnectionHandler : public blink::WebRTCPeerConnectionHandlerClient {
 public:
     static PassOwnPtr<RTCPeerConnectionHandler> create(RTCPeerConnectionHandlerClient*);
     virtual ~RTCPeerConnectionHandler();
@@ -68,39 +68,39 @@ public:
 
     void createOffer(PassRefPtr<RTCSessionDescriptionRequest>, PassRefPtr<MediaConstraints>);
     void createAnswer(PassRefPtr<RTCSessionDescriptionRequest>, PassRefPtr<MediaConstraints>);
-    void setLocalDescription(PassRefPtr<RTCVoidRequest>, WebKit::WebRTCSessionDescription);
-    void setRemoteDescription(PassRefPtr<RTCVoidRequest>, WebKit::WebRTCSessionDescription);
-    WebKit::WebRTCSessionDescription localDescription();
-    WebKit::WebRTCSessionDescription remoteDescription();
+    void setLocalDescription(PassRefPtr<RTCVoidRequest>, blink::WebRTCSessionDescription);
+    void setRemoteDescription(PassRefPtr<RTCVoidRequest>, blink::WebRTCSessionDescription);
+    blink::WebRTCSessionDescription localDescription();
+    blink::WebRTCSessionDescription remoteDescription();
     bool updateIce(PassRefPtr<RTCConfiguration>, PassRefPtr<MediaConstraints>);
 
     // DEPRECATED
-    bool addIceCandidate(WebKit::WebRTCICECandidate);
+    bool addIceCandidate(blink::WebRTCICECandidate);
 
-    bool addIceCandidate(PassRefPtr<RTCVoidRequest>, WebKit::WebRTCICECandidate);
+    bool addIceCandidate(PassRefPtr<RTCVoidRequest>, blink::WebRTCICECandidate);
     bool addStream(PassRefPtr<MediaStreamDescriptor>, PassRefPtr<MediaConstraints>);
     void removeStream(PassRefPtr<MediaStreamDescriptor>);
     void getStats(PassRefPtr<RTCStatsRequest>);
-    PassOwnPtr<RTCDataChannelHandler> createDataChannel(const String& label, const WebKit::WebRTCDataChannelInit&);
+    PassOwnPtr<RTCDataChannelHandler> createDataChannel(const String& label, const blink::WebRTCDataChannelInit&);
     PassOwnPtr<RTCDTMFSenderHandler> createDTMFSender(PassRefPtr<MediaStreamComponent>);
     void stop();
 
-    // WebKit::WebRTCPeerConnectionHandlerClient implementation.
+    // blink::WebRTCPeerConnectionHandlerClient implementation.
     virtual void negotiationNeeded() OVERRIDE;
-    virtual void didGenerateICECandidate(const WebKit::WebRTCICECandidate&) OVERRIDE;
-    virtual void didChangeSignalingState(WebKit::WebRTCPeerConnectionHandlerClient::SignalingState) OVERRIDE;
-    virtual void didChangeICEGatheringState(WebKit::WebRTCPeerConnectionHandlerClient::ICEGatheringState) OVERRIDE;
-    virtual void didChangeICEConnectionState(WebKit::WebRTCPeerConnectionHandlerClient::ICEConnectionState) OVERRIDE;
-    virtual void didAddRemoteStream(const WebKit::WebMediaStream&) OVERRIDE;
-    virtual void didRemoveRemoteStream(const WebKit::WebMediaStream&) OVERRIDE;
-    virtual void didAddRemoteDataChannel(WebKit::WebRTCDataChannelHandler*) OVERRIDE;
+    virtual void didGenerateICECandidate(const blink::WebRTCICECandidate&) OVERRIDE;
+    virtual void didChangeSignalingState(blink::WebRTCPeerConnectionHandlerClient::SignalingState) OVERRIDE;
+    virtual void didChangeICEGatheringState(blink::WebRTCPeerConnectionHandlerClient::ICEGatheringState) OVERRIDE;
+    virtual void didChangeICEConnectionState(blink::WebRTCPeerConnectionHandlerClient::ICEConnectionState) OVERRIDE;
+    virtual void didAddRemoteStream(const blink::WebMediaStream&) OVERRIDE;
+    virtual void didRemoveRemoteStream(const blink::WebMediaStream&) OVERRIDE;
+    virtual void didAddRemoteDataChannel(blink::WebRTCDataChannelHandler*) OVERRIDE;
 
-    static WebKit::WebRTCPeerConnectionHandler* toWebRTCPeerConnectionHandler(RTCPeerConnectionHandler*);
+    static blink::WebRTCPeerConnectionHandler* toWebRTCPeerConnectionHandler(RTCPeerConnectionHandler*);
 
 private:
     explicit RTCPeerConnectionHandler(RTCPeerConnectionHandlerClient*);
 
-    OwnPtr<WebKit::WebRTCPeerConnectionHandler> m_webHandler;
+    OwnPtr<blink::WebRTCPeerConnectionHandler> m_webHandler;
     RTCPeerConnectionHandlerClient* m_client;
 };
 

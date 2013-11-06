@@ -18,7 +18,7 @@
 #include "public/platform/WebUnitTestSupport.h"
 
 using namespace WebCore;
-using namespace WebKit;
+using namespace blink;
 
 namespace {
 

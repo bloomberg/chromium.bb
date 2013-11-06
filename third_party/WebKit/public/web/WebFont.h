@@ -35,7 +35,7 @@
 #include "../platform/WebColor.h"
 #include "../platform/WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 
 struct WebFontDescription;
 struct WebFloatPoint;
@@ -95,6 +95,6 @@ public:
                                               int height, int from = 0, int to = -1) const = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

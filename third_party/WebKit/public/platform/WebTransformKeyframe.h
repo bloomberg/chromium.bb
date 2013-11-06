@@ -32,7 +32,7 @@
 namespace WTF { template <typename T> class PassOwnPtr; }
 #endif
 
-namespace WebKit {
+namespace blink {
 
 class WebTransformKeyframe : public WebNonCopyable {
 public:
@@ -51,6 +51,6 @@ private:
     WebPrivateOwnPtr<WebTransformOperations> m_value;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebTransformKeyframe_h

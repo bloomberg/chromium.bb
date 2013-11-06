@@ -31,7 +31,7 @@
 #ifndef WebMIDIClient_h
 #define WebMIDIClient_h
 
-namespace WebKit {
+namespace blink {
 class WebMIDIPermissionRequest;
 
 class WebMIDIClient {
@@ -44,6 +44,6 @@ public:
     virtual void cancelSysExPermissionRequest(const WebMIDIPermissionRequest&) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebMIDIClient_h

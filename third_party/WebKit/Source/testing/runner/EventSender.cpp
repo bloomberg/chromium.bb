@@ -65,7 +65,7 @@
 // FIXME: layout before each event?
 
 using namespace std;
-using namespace WebKit;
+using namespace blink;
 
 namespace WebTestRunner {
 
@@ -344,8 +344,8 @@ void EventSender::reset()
     // The test should have finished a drag and the mouse button state.
     BLINK_ASSERT(currentDragData.isNull());
     currentDragData.reset();
-    currentDragEffect = WebKit::WebDragOperationNone;
-    currentDragEffectsAllowed = WebKit::WebDragOperationNone;
+    currentDragEffect = blink::WebDragOperationNone;
+    currentDragEffectsAllowed = blink::WebDragOperationNone;
     if (webview() && pressedButton != WebMouseEvent::ButtonNone)
         webview()->mouseCaptureLost();
     pressedButton = WebMouseEvent::ButtonNone;
@@ -502,7 +502,7 @@ void EventSender::doMouseUp(const WebMouseEvent& e)
     finishDragAndDrop(e, webview()->dragTargetDragOver(clientPoint, screenPoint, currentDragEffectsAllowed, 0));
 }
 
-void EventSender::finishDragAndDrop(const WebMouseEvent& e, WebKit::WebDragOperation dragEffect)
+void EventSender::finishDragAndDrop(const WebMouseEvent& e, blink::WebDragOperation dragEffect)
 {
     WebPoint clientPoint(e.x, e.y);
     WebPoint screenPoint(e.globalX, e.globalY);
@@ -697,7 +697,7 @@ void EventSender::keyDown(const CppArgumentList& arguments, CppVariant* result)
     if (code == VKEY_ESCAPE && !currentDragData.isNull()) {
         WebMouseEvent event;
         initMouseEvent(WebInputEvent::MouseDown, pressedButton, lastMousePos, &event, getCurrentEventTimeSec(m_delegate));
-        finishDragAndDrop(event, WebKit::WebDragOperationNone);
+        finishDragAndDrop(event, blink::WebDragOperationNone);
     }
 
     m_delegate->clearEditCommand();
@@ -980,7 +980,7 @@ void EventSender::beginDragWithFiles(const CppArgumentList& arguments, CppVarian
         absoluteFilenames[i] = item.filenameData;
     }
     currentDragData.setFilesystemId(m_delegate->registerIsolatedFileSystem(absoluteFilenames));
-    currentDragEffectsAllowed = WebKit::WebDragOperationCopy;
+    currentDragEffectsAllowed = blink::WebDragOperationCopy;
 
     // Provide a drag source.
     webview()->dragTargetDragEnter(currentDragData, lastMousePos, lastMousePos, currentDragEffectsAllowed, 0);
@@ -1393,7 +1393,7 @@ void EventSender::gestureEvent(WebInputEvent::Type type, const CppArgumentList& 
     if (type == WebInputEvent::GestureLongPress && !currentDragData.isNull()) {
         WebMouseEvent mouseEvent;
         initMouseEvent(WebInputEvent::MouseDown, pressedButton, point, &mouseEvent, getCurrentEventTimeSec(m_delegate));
-        finishDragAndDrop(mouseEvent, WebKit::WebDragOperationNone);
+        finishDragAndDrop(mouseEvent, blink::WebDragOperationNone);
     }
 }
 

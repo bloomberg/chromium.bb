@@ -31,13 +31,13 @@
 #ifndef WebStorageQuotaType_h
 #define WebStorageQuotaType_h
 
-namespace WebKit {
+namespace blink {
 
 enum WebStorageQuotaType {
     WebStorageQuotaTypeTemporary,
     WebStorageQuotaTypePersistent,
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebStorageQuotaType_h

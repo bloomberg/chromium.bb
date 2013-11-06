@@ -31,7 +31,7 @@
 #ifndef WebTextCheckingType_h
 #define WebTextCheckingType_h
 
-namespace WebKit {
+namespace blink {
 
 enum WebTextCheckingType {
     WebTextCheckingTypeSpelling                     = 1 << 1,
@@ -40,6 +40,6 @@ enum WebTextCheckingType {
 
 typedef unsigned WebTextCheckingTypeMask;
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

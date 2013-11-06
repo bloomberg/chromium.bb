@@ -257,17 +257,17 @@ HarfBuzzFace* FontPlatformData::harfBuzzFace() const
 
 void FontPlatformData::getRenderStyleForStrike(const char* font, int sizeAndStyle)
 {
-    WebKit::WebFontRenderStyle style;
+    blink::WebFontRenderStyle style;
 
 #if OS(ANDROID)
     style.setDefaults();
 #else
     if (!font || !*font)
         style.setDefaults(); // It's probably a webfont. Take the system defaults.
-    else if (WebKit::Platform::current()->sandboxSupport())
-        WebKit::Platform::current()->sandboxSupport()->getRenderStyleForStrike(font, sizeAndStyle, &style);
+    else if (blink::Platform::current()->sandboxSupport())
+        blink::Platform::current()->sandboxSupport()->getRenderStyleForStrike(font, sizeAndStyle, &style);
     else
-        WebKit::WebFontInfo::renderStyleForStrike(font, sizeAndStyle, &style);
+        blink::WebFontInfo::renderStyleForStrike(font, sizeAndStyle, &style);
 #endif
 
     style.toFontRenderStyle(&m_style);

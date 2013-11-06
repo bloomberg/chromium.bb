@@ -64,16 +64,16 @@ void DeviceOrientationDispatcher::removeDeviceOrientationController(NewDeviceOri
 
 void DeviceOrientationDispatcher::startListening()
 {
-    WebKit::Platform::current()->setDeviceOrientationListener(this);
+    blink::Platform::current()->setDeviceOrientationListener(this);
 }
 
 void DeviceOrientationDispatcher::stopListening()
 {
-    WebKit::Platform::current()->setDeviceOrientationListener(0);
+    blink::Platform::current()->setDeviceOrientationListener(0);
     m_lastDeviceOrientationData.clear();
 }
 
-void DeviceOrientationDispatcher::didChangeDeviceOrientation(const WebKit::WebDeviceOrientationData& motion)
+void DeviceOrientationDispatcher::didChangeDeviceOrientation(const blink::WebDeviceOrientationData& motion)
 {
     m_lastDeviceOrientationData = DeviceOrientationData::create(motion);
 

@@ -34,7 +34,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 PassRefPtr<IDBCursorBackendInterface> IDBCursorBackendProxy::create(PassOwnPtr<WebIDBCursor> idbCursor)
 {
@@ -65,4 +65,4 @@ void IDBCursorBackendProxy::postSuccessHandlerCallback()
     m_idbCursor->postSuccessHandlerCallback();
 }
 
-} // namespace WebKit
+} // namespace blink

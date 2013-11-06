@@ -38,12 +38,12 @@ namespace WebCore {
 
 class AesCbcParams : public Algorithm {
 public:
-    static PassRefPtr<AesCbcParams> create(const WebKit::WebCryptoAlgorithm& algorithm) { return adoptRef(new AesCbcParams(algorithm)); }
+    static PassRefPtr<AesCbcParams> create(const blink::WebCryptoAlgorithm& algorithm) { return adoptRef(new AesCbcParams(algorithm)); }
 
     Uint8Array* iv();
 
 private:
-    explicit AesCbcParams(const WebKit::WebCryptoAlgorithm&);
+    explicit AesCbcParams(const blink::WebCryptoAlgorithm&);
 
     RefPtr<Uint8Array> m_iv;
 };

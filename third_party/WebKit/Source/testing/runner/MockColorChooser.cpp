@@ -33,7 +33,7 @@
 #include "public/testing/WebTestDelegate.h"
 #include "public/testing/WebTestProxy.h"
 
-using namespace WebKit;
+using namespace blink;
 using namespace std;
 
 namespace WebTestRunner {
@@ -54,7 +54,7 @@ private:
 };
 }
 
-MockColorChooser::MockColorChooser(WebKit::WebColorChooserClient* client, WebTestDelegate* delegate, WebTestProxyBase* proxy)
+MockColorChooser::MockColorChooser(blink::WebColorChooserClient* client, WebTestDelegate* delegate, WebTestProxyBase* proxy)
     : m_client(client)
     , m_delegate(delegate)
     , m_proxy(proxy)
@@ -67,7 +67,7 @@ MockColorChooser::~MockColorChooser()
     m_proxy->didCloseChooser();
 }
 
-void MockColorChooser::setSelectedColor(const WebKit::WebColor)
+void MockColorChooser::setSelectedColor(const blink::WebColor)
 {
 }
 

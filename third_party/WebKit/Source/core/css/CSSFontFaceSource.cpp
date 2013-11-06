@@ -291,7 +291,7 @@ void CSSFontFaceSource::FontLoadHistograms::loadStarted()
 void CSSFontFaceSource::FontLoadHistograms::recordLocalFont(bool loadSuccess)
 {
     if (!m_loadStartTime) {
-        WebKit::Platform::current()->histogramEnumeration("WebFont.LocalFontUsed", loadSuccess ? 1 : 0, 2);
+        blink::Platform::current()->histogramEnumeration("WebFont.LocalFontUsed", loadSuccess ? 1 : 0, 2);
         m_loadStartTime = -1; // Do not count this font again.
     }
 }
@@ -300,14 +300,14 @@ void CSSFontFaceSource::FontLoadHistograms::recordRemoteFont(const FontResource*
 {
     if (m_loadStartTime > 0 && font && !font->isLoading()) {
         int duration = static_cast<int>(currentTimeMS() - m_loadStartTime);
-        WebKit::Platform::current()->histogramCustomCounts(histogramName(font), duration, 0, 10000, 50);
+        blink::Platform::current()->histogramCustomCounts(histogramName(font), duration, 0, 10000, 50);
         m_loadStartTime = -1;
 
         enum { Miss, Hit, DataUrl, CacheHitEnumMax };
         int histogramValue = font->url().protocolIsData() ? DataUrl
             : font->response().wasCached() ? Hit
             : Miss;
-        WebKit::Platform::current()->histogramEnumeration("WebFont.CacheHit", histogramValue, CacheHitEnumMax);
+        blink::Platform::current()->histogramEnumeration("WebFont.CacheHit", histogramValue, CacheHitEnumMax);
     }
 }
 

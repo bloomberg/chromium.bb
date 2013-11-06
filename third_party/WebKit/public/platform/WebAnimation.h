@@ -37,7 +37,7 @@ namespace WebCore {
 class CCActiveAnimation;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebAnimationCurve;
 
@@ -74,6 +74,6 @@ public:
     virtual void setAlternatesDirection(bool) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebAnimation_h

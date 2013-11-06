@@ -32,7 +32,7 @@ namespace WebCore {
 class HitTestResult;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebElement;
 class WebNode;
@@ -81,6 +81,6 @@ protected:
     WebPrivateOwnPtr<WebCore::HitTestResult> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

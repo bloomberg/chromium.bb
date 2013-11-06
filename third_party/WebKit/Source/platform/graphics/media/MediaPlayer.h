@@ -31,7 +31,7 @@
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebKit { class WebLayer; }
+namespace blink { class WebLayer; }
 
 namespace WebCore {
 
@@ -115,7 +115,7 @@ public:
     virtual void load(const String& url, PassRefPtr<HTMLMediaSource>) = 0;
 
     virtual void prepareToPlay() = 0;
-    virtual WebKit::WebLayer* platformLayer() const = 0;
+    virtual blink::WebLayer* platformLayer() const = 0;
 
     virtual void play() = 0;
     virtual void pause() = 0;

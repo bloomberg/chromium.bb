@@ -35,7 +35,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebCryptoAlgorithmPrivate : public ThreadSafeRefCounted<WebCryptoAlgorithmPrivate> {
 public:
@@ -157,4 +157,4 @@ void WebCryptoAlgorithm::reset()
     m_private.reset();
 }
 
-} // namespace WebKit
+} // namespace blink

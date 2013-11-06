@@ -29,7 +29,7 @@ class SkMatrix44;
 
 #define WEB_TRANSFORM_OPERATIONS_IS_VIRTUAL 1
 
-namespace WebKit {
+namespace blink {
 
 class WebTransformOperations {
 public:
@@ -51,7 +51,7 @@ public:
     virtual bool isIdentity() const = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebTransformOperations_h
 

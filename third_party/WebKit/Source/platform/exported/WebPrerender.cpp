@@ -34,7 +34,7 @@
 #include "platform/Prerender.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebKit {
+namespace blink {
 
 namespace {
 
@@ -130,4 +130,4 @@ void WebPrerender::didSendDOMContentLoadedForPrerender()
     m_private->didSendDOMContentLoadedForPrerender();
 }
 
-} // namespace WebKit
+} // namespace blink

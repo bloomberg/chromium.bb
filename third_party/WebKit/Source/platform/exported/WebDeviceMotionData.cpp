@@ -33,7 +33,7 @@
 
 #include <string.h>
 
-namespace WebKit {
+namespace blink {
 
 WebDeviceMotionData::WebDeviceMotionData()
 {
@@ -44,4 +44,4 @@ WebDeviceMotionData::WebDeviceMotionData()
     memset(this, 0, sizeof(*this));
 }
 
-} // namespace WebKit
+} // namespace blink

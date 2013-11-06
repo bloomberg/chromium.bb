@@ -38,19 +38,19 @@ namespace WebCore {
 class PlatformSpeechSynthesizer;
 class PlatformSpeechSynthesizerClient;
 
-class WebSpeechSynthesizerClientImpl : public WebKit::WebSpeechSynthesizerClient {
+class WebSpeechSynthesizerClientImpl : public blink::WebSpeechSynthesizerClient {
 public:
     explicit WebSpeechSynthesizerClientImpl(PlatformSpeechSynthesizer*, PlatformSpeechSynthesizerClient*);
     virtual ~WebSpeechSynthesizerClientImpl();
 
-    virtual void setVoiceList(const WebKit::WebVector<WebKit::WebSpeechSynthesisVoice>& voices);
-    virtual void didStartSpeaking(const WebKit::WebSpeechSynthesisUtterance&);
-    virtual void didFinishSpeaking(const WebKit::WebSpeechSynthesisUtterance&);
-    virtual void didPauseSpeaking(const WebKit::WebSpeechSynthesisUtterance&);
-    virtual void didResumeSpeaking(const WebKit::WebSpeechSynthesisUtterance&);
-    virtual void speakingErrorOccurred(const WebKit::WebSpeechSynthesisUtterance&);
-    virtual void wordBoundaryEventOccurred(const WebKit::WebSpeechSynthesisUtterance&, unsigned charIndex);
-    virtual void sentenceBoundaryEventOccurred(const WebKit::WebSpeechSynthesisUtterance&, unsigned charIndex);
+    virtual void setVoiceList(const blink::WebVector<blink::WebSpeechSynthesisVoice>& voices);
+    virtual void didStartSpeaking(const blink::WebSpeechSynthesisUtterance&);
+    virtual void didFinishSpeaking(const blink::WebSpeechSynthesisUtterance&);
+    virtual void didPauseSpeaking(const blink::WebSpeechSynthesisUtterance&);
+    virtual void didResumeSpeaking(const blink::WebSpeechSynthesisUtterance&);
+    virtual void speakingErrorOccurred(const blink::WebSpeechSynthesisUtterance&);
+    virtual void wordBoundaryEventOccurred(const blink::WebSpeechSynthesisUtterance&, unsigned charIndex);
+    virtual void sentenceBoundaryEventOccurred(const blink::WebSpeechSynthesisUtterance&, unsigned charIndex);
 
 private:
     PlatformSpeechSynthesizer* m_synthesizer;

@@ -33,7 +33,7 @@
 
 #include "../platform/WebMessagePortChannel.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
@@ -73,6 +73,6 @@ protected:
     ~WebSharedWorkerClient() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

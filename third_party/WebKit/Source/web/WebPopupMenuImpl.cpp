@@ -54,7 +54,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 // WebPopupMenu ---------------------------------------------------------------
 
@@ -394,4 +394,4 @@ void WebPopupMenuImpl::popupClosed(FramelessScrollView* widget)
         m_client->closeWidgetSoon();
 }
 
-} // namespace WebKit
+} // namespace blink

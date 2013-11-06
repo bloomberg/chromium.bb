@@ -33,7 +33,7 @@
 
 #include "../platform/WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 
 struct WebRect;
 class WebSecurityOrigin;
@@ -67,6 +67,6 @@ protected:
     virtual ~WebSpeechInputController() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebSpeechInputController_h

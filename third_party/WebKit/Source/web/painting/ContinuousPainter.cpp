@@ -35,7 +35,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 void ContinuousPainter::setNeedsDisplayRecursive(GraphicsLayer* layer, PageOverlayList* pageOverlays)
 {
@@ -58,4 +58,4 @@ void ContinuousPainter::setNeedsDisplayRecursive(GraphicsLayer* layer, PageOverl
         setNeedsDisplayRecursive(*it, pageOverlays);
 }
 
-} // namespace WebKit
+} // namespace blink

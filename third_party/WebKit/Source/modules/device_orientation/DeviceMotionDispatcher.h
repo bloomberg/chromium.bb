@@ -35,7 +35,7 @@
 #include "public/platform/WebDeviceMotionListener.h"
 #include "wtf/RefPtr.h"
 
-namespace WebKit {
+namespace blink {
 class WebDeviceMotionData;
 }
 
@@ -46,7 +46,7 @@ class DeviceMotionData;
 
 // This class listens to device motion data and dispatches it to all
 // listening controllers.
-class DeviceMotionDispatcher : public DeviceSensorEventDispatcher, public WebKit::WebDeviceMotionListener {
+class DeviceMotionDispatcher : public DeviceSensorEventDispatcher, public blink::WebDeviceMotionListener {
 public:
     static DeviceMotionDispatcher& instance();
 
@@ -55,7 +55,7 @@ public:
     DeviceMotionData* latestDeviceMotionData();
 
     // This method is called every time new device motion data is available.
-    virtual void didChangeDeviceMotion(const WebKit::WebDeviceMotionData&) OVERRIDE;
+    virtual void didChangeDeviceMotion(const blink::WebDeviceMotionData&) OVERRIDE;
     void addDeviceMotionController(DeviceMotionController*);
     void removeDeviceMotionController(DeviceMotionController*);
 

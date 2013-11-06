@@ -261,7 +261,7 @@ FileWriterBaseCallbacks::FileWriterBaseCallbacks(PassRefPtr<FileWriterBase> file
 {
 }
 
-void FileWriterBaseCallbacks::didCreateFileWriter(PassOwnPtr<WebKit::WebFileWriter> fileWriter, long long length)
+void FileWriterBaseCallbacks::didCreateFileWriter(PassOwnPtr<blink::WebFileWriter> fileWriter, long long length)
 {
     m_fileWriter->initialize(fileWriter, length);
     if (m_successCallback)

@@ -225,7 +225,7 @@ void FileWriter::didTruncate()
     unsetPendingActivity(this);
 }
 
-void FileWriter::didFail(WebKit::WebFileError code)
+void FileWriter::didFail(blink::WebFileError code)
 {
     ASSERT(m_operationInProgress != OperationNone);
     ASSERT(static_cast<FileError::ErrorCode>(code) != FileError::OK);

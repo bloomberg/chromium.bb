@@ -47,7 +47,7 @@
 #include "modules/webdatabase/DatabaseContext.h"
 #include "platform/CrossThreadCopier.h"
 
-using namespace WebKit;
+using namespace blink;
 
 namespace WebCore {
 

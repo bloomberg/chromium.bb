@@ -39,7 +39,7 @@
 #include "public/platform/WebSourceInfo.h"
 #include "public/platform/WebVector.h"
 
-using namespace WebKit;
+using namespace blink;
 
 namespace WebTestRunner {
 
@@ -88,7 +88,7 @@ void MockWebMediaStreamCenter::didStopLocalMediaStream(const WebMediaStream& str
         tracks[i].source().setReadyState(WebMediaStreamSource::ReadyStateEnded);
 }
 
-bool MockWebMediaStreamCenter::didStopMediaStreamTrack(const WebKit::WebMediaStreamTrack& track)
+bool MockWebMediaStreamCenter::didStopMediaStreamTrack(const blink::WebMediaStreamTrack& track)
 {
     track.source().setReadyState(WebMediaStreamSource::ReadyStateEnded);
     return true;

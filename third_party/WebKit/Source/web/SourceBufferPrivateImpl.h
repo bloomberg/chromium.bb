@@ -35,7 +35,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebSourceBuffer;
 

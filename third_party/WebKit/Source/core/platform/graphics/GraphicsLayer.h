@@ -49,7 +49,7 @@
 #include "public/platform/WebNinePatchLayer.h"
 #include "public/platform/WebSolidColorLayer.h"
 
-namespace WebKit {
+namespace blink {
 class GraphicsLayerFactoryChromium;
 class WebAnimation;
 class WebLayer;
@@ -69,7 +69,7 @@ class LinkHighlightClient {
 public:
     virtual void invalidate() = 0;
     virtual void clearCurrentGraphicsLayer() = 0;
-    virtual WebKit::WebLayer* layer() = 0;
+    virtual blink::WebLayer* layer() = 0;
 
 protected:
     virtual ~LinkHighlightClient() { }
@@ -78,7 +78,7 @@ protected:
 // GraphicsLayer is an abstraction for a rendering surface with backing store,
 // which may have associated transformation and animations.
 
-class GraphicsLayer : public GraphicsContextPainter, public WebKit::WebAnimationDelegate, public WebKit::WebLayerScrollClient, public WebKit::WebLayerClient {
+class GraphicsLayer : public GraphicsContextPainter, public blink::WebAnimationDelegate, public blink::WebLayerScrollClient, public blink::WebLayerClient {
     WTF_MAKE_NONCOPYABLE(GraphicsLayer); WTF_MAKE_FAST_ALLOCATED;
 public:
     enum ContentsLayerPurpose {
@@ -95,11 +95,11 @@ public:
 
     GraphicsLayerClient* client() const { return m_client; }
 
-    // WebKit::WebLayerClient implementation.
-    virtual WebKit::WebString debugName(WebKit::WebLayer*) OVERRIDE;
+    // blink::WebLayerClient implementation.
+    virtual blink::WebString debugName(blink::WebLayer*) OVERRIDE;
 
-    void setCompositingReasons(WebKit::WebCompositingReasons);
-    WebKit::WebCompositingReasons compositingReasons() const { return m_compositingReasons; }
+    void setCompositingReasons(blink::WebCompositingReasons);
+    blink::WebCompositingReasons compositingReasons() const { return m_compositingReasons; }
 
     GraphicsLayer* parent() const { return m_parent; };
     void setParent(GraphicsLayer*); // Internal use only.
@@ -183,8 +183,8 @@ public:
     bool contentsAreVisible() const { return m_contentsVisible; }
     void setContentsVisible(bool);
 
-    void setScrollParent(WebKit::WebLayer*);
-    void setClipParent(WebKit::WebLayer*);
+    void setScrollParent(blink::WebLayer*);
+    void setClipParent(blink::WebLayer*);
 
     // For special cases, e.g. drawing missing tiles on Android.
     // The compositor should never paint this color in normal cases because the RenderLayer
@@ -225,7 +225,7 @@ public:
     // Return true if the animation is handled by the compositing system. If this returns
     // false, the animation will be run by AnimationController.
     // These methods handle both transitions and keyframe animations.
-    bool addAnimation(PassOwnPtr<WebKit::WebAnimation>);
+    bool addAnimation(PassOwnPtr<blink::WebAnimation>);
     void pauseAnimation(int animationId, double /*timeOffset*/);
     void removeAnimation(int animationId);
 
@@ -233,22 +233,22 @@ public:
     void setContentsToImage(Image*);
     void setContentsToNinePatch(Image*, const IntRect& aperture);
     bool shouldDirectlyCompositeImage(Image*) const { return true; }
-    void setContentsToMedia(WebKit::WebLayer*); // video or plug-in
+    void setContentsToMedia(blink::WebLayer*); // video or plug-in
     // Pass an invalid color to remove the contents layer.
     void setContentsToSolidColor(const Color&) { }
-    void setContentsToCanvas(WebKit::WebLayer*);
+    void setContentsToCanvas(blink::WebLayer*);
     // FIXME: webkit.org/b/109658
     // Should unify setContentsToMedia and setContentsToCanvas
-    void setContentsToPlatformLayer(WebKit::WebLayer* layer) { setContentsToMedia(layer); }
+    void setContentsToPlatformLayer(blink::WebLayer* layer) { setContentsToMedia(layer); }
     bool hasContentsLayer() const { return m_contentsLayer; }
 
     // Callback from the underlying graphics system to draw layer contents.
     void paintGraphicsLayerContents(GraphicsContext&, const IntRect& clip);
     // Callback from the underlying graphics system when the layer has been displayed
-    void layerDidDisplay(WebKit::WebLayer*) { }
+    void layerDidDisplay(blink::WebLayer*) { }
 
     // For hosting this GraphicsLayer in a native layer hierarchy.
-    WebKit::WebLayer* platformLayer() const;
+    blink::WebLayer* platformLayer() const;
 
     enum CompositingCoordinatesOrientation { CompositingCoordinatesTopDown, CompositingCoordinatesBottomUp };
 
@@ -297,13 +297,13 @@ public:
     void setScrollableArea(ScrollableArea*, bool isMainFrame);
     ScrollableArea* scrollableArea() const { return m_scrollableArea; }
 
-    WebKit::WebContentLayer* contentLayer() const { return m_layer.get(); }
+    blink::WebContentLayer* contentLayer() const { return m_layer.get(); }
 
     // Exposed for tests. FIXME - name is too similar to contentLayer(), very error prone.
-    WebKit::WebLayer* contentsLayer() const { return m_contentsLayer; }
+    blink::WebLayer* contentsLayer() const { return m_contentsLayer; }
 
-    static void registerContentsLayer(WebKit::WebLayer*);
-    static void unregisterContentsLayer(WebKit::WebLayer*);
+    static void registerContentsLayer(blink::WebLayer*);
+    static void unregisterContentsLayer(blink::WebLayer*);
 
     // GraphicsContextPainter implementation.
     virtual void paint(GraphicsContext&, const IntRect& clip) OVERRIDE;
@@ -318,7 +318,7 @@ public:
 protected:
     explicit GraphicsLayer(GraphicsLayerClient*);
     // GraphicsLayerFactoryChromium that wants to create a GraphicsLayer need to be friends.
-    friend class WebKit::GraphicsLayerFactoryChromium;
+    friend class blink::GraphicsLayerFactoryChromium;
 
 private:
     // Adds a child without calling updateChildList(), so that adding children
@@ -342,10 +342,10 @@ private:
     void updateLayerIsDrawable();
     void updateContentsRect();
 
-    void setContentsTo(ContentsLayerPurpose, WebKit::WebLayer*);
-    void setupContentsLayer(WebKit::WebLayer*);
+    void setContentsTo(ContentsLayerPurpose, blink::WebLayer*);
+    void setupContentsLayer(blink::WebLayer*);
     void clearContentsLayerIfUnregistered();
-    WebKit::WebLayer* contentsLayerIfRegistered();
+    blink::WebLayer* contentsLayerIfRegistered();
 
     GraphicsLayerClient* m_client;
 
@@ -395,10 +395,10 @@ private:
 
     int m_paintCount;
 
-    OwnPtr<WebKit::WebContentLayer> m_layer;
-    OwnPtr<WebKit::WebImageLayer> m_imageLayer;
-    OwnPtr<WebKit::WebNinePatchLayer> m_ninePatchLayer;
-    WebKit::WebLayer* m_contentsLayer;
+    OwnPtr<blink::WebContentLayer> m_layer;
+    OwnPtr<blink::WebImageLayer> m_imageLayer;
+    OwnPtr<blink::WebNinePatchLayer> m_ninePatchLayer;
+    blink::WebLayer* m_contentsLayer;
     // We don't have ownership of m_contentsLayer, but we do want to know if a given layer is the
     // same as our current layer in setContentsTo(). Since m_contentsLayer may be deleted at this point,
     // we stash an ID away when we know m_contentsLayer is alive and use that for comparisons from that point
@@ -412,7 +412,7 @@ private:
     ContentsLayerPurpose m_contentsLayerPurpose;
 
     ScrollableArea* m_scrollableArea;
-    WebKit::WebCompositingReasons m_compositingReasons;
+    blink::WebCompositingReasons m_compositingReasons;
 };
 
 

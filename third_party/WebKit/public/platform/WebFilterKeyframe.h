@@ -39,7 +39,7 @@
 namespace WTF { template <typename T> class PassOwnPtr; }
 #endif
 
-namespace WebKit {
+namespace blink {
 
 class WebFilterKeyframe {
 public:
@@ -58,6 +58,6 @@ private:
     WebPrivateOwnPtr<WebFilterOperations> m_value;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebFilterKeyframe_h

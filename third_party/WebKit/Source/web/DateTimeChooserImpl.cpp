@@ -46,7 +46,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 DateTimeChooserImpl::DateTimeChooserImpl(ChromeClientImpl* chromeClient, WebCore::DateTimeChooserClient* client, const WebCore::DateTimeChooserParameters& parameters)
     : m_chromeClient(chromeClient)
@@ -183,6 +183,6 @@ void DateTimeChooserImpl::didClosePopup()
     m_client->didEndChooser();
 }
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // ENABLE(INPUT_MULTIPLE_FIELDS_UI)

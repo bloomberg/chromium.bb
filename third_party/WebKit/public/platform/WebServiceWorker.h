@@ -31,7 +31,7 @@
 #ifndef WebServiceWorker_h
 #define WebServiceWorker_h
 
-namespace WebKit {
+namespace blink {
 
 class WebServiceWorker {
 

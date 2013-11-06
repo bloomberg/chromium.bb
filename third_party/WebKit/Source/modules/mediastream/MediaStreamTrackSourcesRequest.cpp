@@ -50,7 +50,7 @@ MediaStreamTrackSourcesRequest::~MediaStreamTrackSourcesRequest()
 {
 }
 
-void MediaStreamTrackSourcesRequest::requestSucceeded(const WebKit::WebVector<WebKit::WebSourceInfo>& webSourceInfos)
+void MediaStreamTrackSourcesRequest::requestSucceeded(const blink::WebVector<blink::WebSourceInfo>& webSourceInfos)
 {
     ASSERT(m_callback && !m_scheduledEventTimer.isActive());
 

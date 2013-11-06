@@ -35,7 +35,7 @@
 #include "public/web/WebTextCheckingCompletion.h"
 #include "public/web/WebTextCheckingResult.h"
 
-using namespace WebKit;
+using namespace blink;
 using namespace std;
 
 namespace WebTestRunner {
@@ -72,7 +72,7 @@ void SpellCheckClient::setDelegate(WebTestDelegate* delegate)
     m_delegate = delegate;
 }
 
-// WebKit::WebSpellCheckClient
+// blink::WebSpellCheckClient
 void SpellCheckClient::spellCheck(const WebString& text, int& misspelledOffset, int& misspelledLength, WebVector<WebString>* optionalSuggestions)
 {
     // Check the spelling of the given text.

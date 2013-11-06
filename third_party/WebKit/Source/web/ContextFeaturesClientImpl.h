@@ -33,7 +33,7 @@
 
 #include "core/dom/ContextFeatures.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebPermissionClient;
 
@@ -53,6 +53,6 @@ private:
     WebPermissionClient* m_client;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // ContextFeaturesClientImpl_h

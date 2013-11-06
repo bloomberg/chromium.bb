@@ -47,7 +47,7 @@
 #include "public/web/WebFrame.h"
 #include <memory>
 
-using namespace WebKit;
+using namespace blink;
 using namespace std;
 
 namespace WebTestRunner {

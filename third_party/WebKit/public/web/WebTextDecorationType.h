@@ -31,7 +31,7 @@
 #ifndef WebTextDecorationType_h
 #define WebTextDecorationType_h
 
-namespace WebKit {
+namespace blink {
 
 enum WebTextDecorationType {
     WebTextDecorationTypeSpelling            = 1 << 1,
@@ -39,6 +39,6 @@ enum WebTextDecorationType {
     WebTextDecorationTypeInvisibleSpellcheck = 1 << 3,
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

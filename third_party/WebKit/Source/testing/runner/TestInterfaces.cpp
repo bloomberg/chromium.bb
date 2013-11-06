@@ -44,7 +44,7 @@
 #include "public/web/WebView.h"
 #include <string>
 
-using namespace WebKit;
+using namespace blink;
 using namespace std;
 
 namespace WebTestRunner {
@@ -57,7 +57,7 @@ TestInterfaces::TestInterfaces()
     , m_testRunner(new TestRunner(this))
     , m_delegate(0)
 {
-    WebKit::setLayoutTestMode(true);
+    blink::setLayoutTestMode(true);
 
     // NOTE: please don't put feature specific enable flags here,
     // instead add them to RuntimeEnabledFeatures.in

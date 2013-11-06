@@ -40,7 +40,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 
 WebPlugin* WebPluginDocument::plugin()
@@ -69,4 +69,4 @@ WebPluginDocument::operator PassRefPtr<PluginDocument>() const
     return static_cast<PluginDocument*>(m_private.get());
 }
 
-} // namespace WebKit
+} // namespace blink

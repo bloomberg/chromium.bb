@@ -35,7 +35,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 int WebDOMMouseEvent::screenX() const
 {
@@ -97,4 +97,4 @@ bool WebDOMMouseEvent::buttonDown() const
     return constUnwrap<MouseEvent>()->buttonDown();
 }
 
-} // namespace WebKit
+} // namespace blink

@@ -35,7 +35,7 @@
 
 #include "wtf/Assertions.h"
 
-namespace WebKit {
+namespace blink {
 
 static const unsigned long defaultScrollLinesPerWheelDelta = 3;
 static const unsigned long defaultScrollCharsPerWheelDelta = 1;
@@ -486,4 +486,4 @@ WebMouseWheelEvent WebInputEventFactory::mouseWheelEvent(HWND hwnd, UINT message
     return result;
 }
 
-} // namespace WebKit
+} // namespace blink

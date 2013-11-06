@@ -31,7 +31,7 @@ namespace WebCore {
 class WorkerRunLoop;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebWorkerRunLoop {
 public:

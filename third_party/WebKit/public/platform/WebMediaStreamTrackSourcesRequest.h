@@ -36,7 +36,7 @@ namespace WebCore {
 class MediaStreamTrackSourcesRequest;
 }
 
-namespace WebKit {
+namespace blink {
 class WebSourceInfo;
 
 class WebMediaStreamTrackSourcesRequest {
@@ -79,6 +79,6 @@ private:
     WebPrivatePtr<WebCore::MediaStreamTrackSourcesRequest> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebMediaStreamTrackSourcesRequest_h

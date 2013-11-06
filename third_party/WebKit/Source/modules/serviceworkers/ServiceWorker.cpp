@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-ServiceWorker::ServiceWorker(PassOwnPtr<WebKit::WebServiceWorker> worker)
+ServiceWorker::ServiceWorker(PassOwnPtr<blink::WebServiceWorker> worker)
     : m_outerWorker(worker)
 {
 }

@@ -35,7 +35,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 static const float defaultMinimumScale = 0.25f;
 static const float defaultMaximumScale = 5.0f;

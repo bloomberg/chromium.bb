@@ -38,7 +38,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebMIDIPermissionRequest::WebMIDIPermissionRequest(const PassRefPtr<WebCore::MIDIAccess>& midi)
     : m_private(midi)
@@ -75,4 +75,4 @@ void WebMIDIPermissionRequest::setIsAllowed(bool allowed)
     m_private->setSysExEnabled(allowed);
 }
 
-} // namespace WebKit
+} // namespace blink

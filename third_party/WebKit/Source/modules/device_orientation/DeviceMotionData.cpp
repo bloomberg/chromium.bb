@@ -75,7 +75,7 @@ PassRefPtr<DeviceMotionData> DeviceMotionData::create(PassRefPtr<Acceleration> a
     return adoptRef(new DeviceMotionData(acceleration, accelerationIncludingGravity, rotationRate, canProvideInterval, interval));
 }
 
-PassRefPtr<DeviceMotionData> DeviceMotionData::create(const WebKit::WebDeviceMotionData& data)
+PassRefPtr<DeviceMotionData> DeviceMotionData::create(const blink::WebDeviceMotionData& data)
 {
     return DeviceMotionData::create(
         DeviceMotionData::Acceleration::create(

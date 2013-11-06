@@ -45,7 +45,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 bool WebInputElement::isTextField() const
 {
@@ -267,4 +267,4 @@ WebInputElement* toWebInputElement(WebElement* webElement)
 
     return static_cast<WebInputElement*>(webElement);
 }
-} // namespace WebKit
+} // namespace blink

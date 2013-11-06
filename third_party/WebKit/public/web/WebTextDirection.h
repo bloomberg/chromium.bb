@@ -31,7 +31,7 @@
 #ifndef WebTextDirection_h
 #define WebTextDirection_h
 
-namespace WebKit {
+namespace blink {
 
 // Represents text directions (or writing directions) of a DOM node.
 enum WebTextDirection {
@@ -40,6 +40,6 @@ enum WebTextDirection {
     WebTextDirectionRightToLeft,
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

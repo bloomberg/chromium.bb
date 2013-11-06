@@ -859,7 +859,7 @@ void CompositedLayerMapping::updateDrawsContent(bool isSimpleContainer)
     if (hasPaintedContent && isAcceleratedCanvas(renderer())) {
         CanvasRenderingContext* context = toHTMLCanvasElement(renderer()->node())->renderingContext();
         // Content layer may be null if context is lost.
-        if (WebKit::WebLayer* contentLayer = context->platformLayer()) {
+        if (blink::WebLayer* contentLayer = context->platformLayer()) {
             Color bgColor;
             if (contentLayerSupportsDirectBackgroundComposition(renderer())) {
                 bgColor = rendererBackgroundColor();

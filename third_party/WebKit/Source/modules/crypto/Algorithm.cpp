@@ -43,25 +43,25 @@
 
 namespace WebCore {
 
-PassRefPtr<Algorithm> Algorithm::create(const WebKit::WebCryptoAlgorithm& algorithm)
+PassRefPtr<Algorithm> Algorithm::create(const blink::WebCryptoAlgorithm& algorithm)
 {
     switch (algorithm.paramsType()) {
-    case WebKit::WebCryptoAlgorithmParamsTypeNone:
+    case blink::WebCryptoAlgorithmParamsTypeNone:
         return adoptRef(new Algorithm(algorithm));
-    case WebKit::WebCryptoAlgorithmParamsTypeAesCbcParams:
+    case blink::WebCryptoAlgorithmParamsTypeAesCbcParams:
         return AesCbcParams::create(algorithm);
-    case WebKit::WebCryptoAlgorithmParamsTypeAesKeyGenParams:
+    case blink::WebCryptoAlgorithmParamsTypeAesKeyGenParams:
         return AesKeyGenParams::create(algorithm);
-    case WebKit::WebCryptoAlgorithmParamsTypeHmacParams:
+    case blink::WebCryptoAlgorithmParamsTypeHmacParams:
         return HmacParams::create(algorithm);
-    case WebKit::WebCryptoAlgorithmParamsTypeHmacKeyParams:
+    case blink::WebCryptoAlgorithmParamsTypeHmacKeyParams:
         return HmacKeyParams::create(algorithm);
-    case WebKit::WebCryptoAlgorithmParamsTypeRsaSsaParams:
+    case blink::WebCryptoAlgorithmParamsTypeRsaSsaParams:
         return RsaSsaParams::create(algorithm);
-    case WebKit::WebCryptoAlgorithmParamsTypeRsaKeyGenParams:
+    case blink::WebCryptoAlgorithmParamsTypeRsaKeyGenParams:
         return RsaKeyGenParams::create(algorithm);
-    case WebKit::WebCryptoAlgorithmParamsTypeAesGcmParams:
-    case WebKit::WebCryptoAlgorithmParamsTypeRsaOaepParams:
+    case blink::WebCryptoAlgorithmParamsTypeAesGcmParams:
+    case blink::WebCryptoAlgorithmParamsTypeRsaOaepParams:
         // TODO
         notImplemented();
         break;
@@ -70,7 +70,7 @@ PassRefPtr<Algorithm> Algorithm::create(const WebKit::WebCryptoAlgorithm& algori
     return 0;
 }
 
-Algorithm::Algorithm(const WebKit::WebCryptoAlgorithm& algorithm)
+Algorithm::Algorithm(const blink::WebCryptoAlgorithm& algorithm)
     : m_algorithm(algorithm)
 {
     ScriptWrappable::init(this);

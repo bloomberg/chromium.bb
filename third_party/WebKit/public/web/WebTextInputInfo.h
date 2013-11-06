@@ -29,7 +29,7 @@
 #include "../platform/WebString.h"
 #include "WebTextInputType.h"
 
-namespace WebKit {
+namespace blink {
 
 struct WebTextInputInfo {
     WebTextInputType type;
@@ -77,6 +77,6 @@ inline bool operator!=(const WebTextInputInfo& a, const WebTextInputInfo& b)
     return !(a == b);
 }
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

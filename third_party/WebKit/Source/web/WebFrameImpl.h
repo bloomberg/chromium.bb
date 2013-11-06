@@ -56,7 +56,7 @@ struct FrameLoadRequest;
 struct WindowFeatures;
 }
 
-namespace WebKit {
+namespace blink {
 class ChromePrintContext;
 class WebDataSourceImpl;
 class WebInputElement;
@@ -534,6 +534,6 @@ inline const WebFrameImpl* toWebFrameImpl(const WebFrame* webFrame)
 // This will catch anyone doing an unnecessary cast.
 void toWebFrameImpl(const WebFrameImpl*);
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

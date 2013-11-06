@@ -34,7 +34,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 
 ColorChooserUIController::ColorChooserUIController(ChromeClientImpl* chromeClient, ColorChooserClient* client)
@@ -83,4 +83,4 @@ void ColorChooserUIController::openColorChooser()
     m_chooser = m_chromeClient->createWebColorChooser(this, static_cast<WebColor>(m_client->currentColor().rgb()));
 }
 
-} // namespace WebKit
+} // namespace blink

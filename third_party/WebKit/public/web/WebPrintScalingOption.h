@@ -31,7 +31,7 @@
 #ifndef WebPrintScalingOption_h
 #define WebPrintScalingOption_h
 
-namespace WebKit {
+namespace blink {
 
 enum WebPrintScalingOption {
     WebPrintScalingOptionNone, // Prints the upper left of a page without scaling. Crop the page contents that don't fit on the paper.
@@ -39,6 +39,6 @@ enum WebPrintScalingOption {
     WebPrintScalingOptionSourceSize, // Print output page size is same as the actual source page size. Do not scale/center/fit to printable area.
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

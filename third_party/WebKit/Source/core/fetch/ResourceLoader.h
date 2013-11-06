@@ -44,7 +44,7 @@ class ResourceError;
 class ResourceResponse;
 class ResourceLoaderHost;
 
-class ResourceLoader : public RefCounted<ResourceLoader>, protected WebKit::WebURLLoaderClient {
+class ResourceLoader : public RefCounted<ResourceLoader>, protected blink::WebURLLoaderClient {
 public:
     static PassRefPtr<ResourceLoader> create(ResourceLoaderHost*, Resource*, const ResourceRequest&, const ResourceLoaderOptions&);
     virtual ~ResourceLoader();
@@ -67,14 +67,14 @@ public:
     void didChangePriority(ResourceLoadPriority);
 
     // WebURLLoaderClient
-    virtual void willSendRequest(WebKit::WebURLLoader*, WebKit::WebURLRequest&, const WebKit::WebURLResponse& redirectResponse) OVERRIDE;
-    virtual void didSendData(WebKit::WebURLLoader*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent) OVERRIDE;
-    virtual void didReceiveResponse(WebKit::WebURLLoader*, const WebKit::WebURLResponse&) OVERRIDE;
-    virtual void didReceiveData(WebKit::WebURLLoader*, const char*, int, int encodedDataLength) OVERRIDE;
-    virtual void didReceiveCachedMetadata(WebKit::WebURLLoader*, const char* data, int length) OVERRIDE;
-    virtual void didFinishLoading(WebKit::WebURLLoader*, double finishTime) OVERRIDE;
-    virtual void didFail(WebKit::WebURLLoader*, const WebKit::WebURLError&) OVERRIDE;
-    virtual void didDownloadData(WebKit::WebURLLoader*, int, int) OVERRIDE;
+    virtual void willSendRequest(blink::WebURLLoader*, blink::WebURLRequest&, const blink::WebURLResponse& redirectResponse) OVERRIDE;
+    virtual void didSendData(blink::WebURLLoader*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent) OVERRIDE;
+    virtual void didReceiveResponse(blink::WebURLLoader*, const blink::WebURLResponse&) OVERRIDE;
+    virtual void didReceiveData(blink::WebURLLoader*, const char*, int, int encodedDataLength) OVERRIDE;
+    virtual void didReceiveCachedMetadata(blink::WebURLLoader*, const char* data, int length) OVERRIDE;
+    virtual void didFinishLoading(blink::WebURLLoader*, double finishTime) OVERRIDE;
+    virtual void didFail(blink::WebURLLoader*, const blink::WebURLError&) OVERRIDE;
+    virtual void didDownloadData(blink::WebURLLoader*, int, int) OVERRIDE;
 
     const KURL& url() const { return m_request.url(); }
     bool shouldSendResourceLoadCallbacks() const { return m_options.sendLoadCallbacks == SendCallbacks; }
@@ -92,7 +92,7 @@ private:
 
     void didFinishLoadingOnePart(double finishTime);
 
-    OwnPtr<WebKit::WebURLLoader> m_loader;
+    OwnPtr<blink::WebURLLoader> m_loader;
     RefPtr<ResourceLoaderHost> m_host;
 
     ResourceRequest m_request;

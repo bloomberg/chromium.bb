@@ -37,7 +37,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebString canonicalizeSelector(WebString webSelector, WebSelectorType restriction)
 {
@@ -55,4 +55,4 @@ WebString canonicalizeSelector(WebString webSelector, WebSelectorType restrictio
     return selectorList.selectorsText();
 }
 
-} // namespace WebKit
+} // namespace blink

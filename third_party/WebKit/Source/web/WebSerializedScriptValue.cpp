@@ -36,7 +36,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebSerializedScriptValue WebSerializedScriptValue::fromString(const WebString& s)
 {
@@ -93,4 +93,4 @@ WebSerializedScriptValue::operator PassRefPtr<SerializedScriptValue>() const
     return m_private.get();
 }
 
-} // namespace WebKit
+} // namespace blink

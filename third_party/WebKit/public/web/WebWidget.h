@@ -39,7 +39,7 @@
 #include "WebTextDirection.h"
 #include "WebTextInputInfo.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebInputEvent;
 class WebLayerTreeView;
@@ -262,6 +262,6 @@ protected:
     ~WebWidget() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

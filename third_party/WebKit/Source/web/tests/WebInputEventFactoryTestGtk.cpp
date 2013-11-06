@@ -39,10 +39,10 @@
 #include "WebInputEventFactory.h"
 #include "core/events/KeyboardEvent.h"
 
-using WebKit::WebInputEvent;
-using WebKit::WebKeyboardEvent;
-using WebKit::WebMouseEvent;
-using WebKit::WebInputEventFactory;
+using blink::WebInputEvent;
+using blink::WebKeyboardEvent;
+using blink::WebMouseEvent;
+using blink::WebInputEventFactory;
 
 namespace {
 
@@ -192,11 +192,11 @@ TEST(WebInputEventFactoryTest, NumPadConversion)
     EXPECT_TRUE(webEvent.modifiers & WebInputEvent::IsKeyPad);
 
     // Round-trip through the WebCore KeyboardEvent class.
-    WebKit::PlatformKeyboardEventBuilder platformBuilder(webEvent);
+    blink::PlatformKeyboardEventBuilder platformBuilder(webEvent);
     RefPtr<WebCore::KeyboardEvent> keypress = WebCore::KeyboardEvent::create(platformBuilder, 0);
     EXPECT_TRUE(keypress->location() == WebCore::KeyboardEvent::DOM_KEY_LOCATION_NUMPAD);
 
-    WebKit::WebKeyboardEventBuilder builder(*keypress);
+    blink::WebKeyboardEventBuilder builder(*keypress);
     EXPECT_TRUE(builder.modifiers & WebInputEvent::IsKeyPad);
 }
 

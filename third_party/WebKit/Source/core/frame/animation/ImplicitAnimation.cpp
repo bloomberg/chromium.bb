@@ -49,7 +49,7 @@ ImplicitAnimation::ImplicitAnimation(const CSSAnimationData* transition, CSSProp
     , m_fromStyle(fromStyle)
 {
     ASSERT(animatingProperty != CSSPropertyInvalid);
-    WebKit::Platform::current()->histogramSparse("WebCore.Animation.CSSProperties", UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(m_animatingProperty));
+    blink::Platform::current()->histogramSparse("WebCore.Animation.CSSProperties", UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(m_animatingProperty));
 }
 
 ImplicitAnimation::~ImplicitAnimation()

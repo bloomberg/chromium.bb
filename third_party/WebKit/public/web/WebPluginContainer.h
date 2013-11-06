@@ -35,7 +35,7 @@
 
 struct NPObject;
 
-namespace WebKit {
+namespace blink {
 
 class WebElement;
 class WebPlugin;
@@ -132,6 +132,6 @@ protected:
     ~WebPluginContainer() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -49,7 +49,7 @@
 #include <memory>
 #include <vector>
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
 class WebString;
 }
@@ -60,7 +60,7 @@ typedef std::vector<CppVariant> CppArgumentList;
 
 // CppBoundClass lets you map Javascript method calls and property accesses
 // directly to C++ method calls and CppVariant* variable access.
-class CppBoundClass : public WebKit::WebNonCopyable {
+class CppBoundClass : public blink::WebNonCopyable {
 public:
     class PropertyCallback {
     public:
@@ -98,7 +98,7 @@ public:
     // as window.<classname>. The owner of the CppBoundObject is responsible for
     // keeping the object around while the frame is alive, and for destroying it
     // afterwards.
-    void bindToJavascript(WebKit::WebFrame*, const WebKit::WebString& classname);
+    void bindToJavascript(blink::WebFrame*, const blink::WebString& classname);
 
     // Used by a test. Returns true if a method with the specified name exists,
     // regardless of whether a fallback is registered.

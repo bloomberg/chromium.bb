@@ -56,7 +56,7 @@
 #include "wtf/text/CString.h"
 
 using namespace std;
-using namespace WebKit;
+using namespace blink;
 
 namespace WebCore {
 
@@ -138,7 +138,7 @@ PassOwnPtr<WebTransformOperations> toWebTransformOperations(const TransformOpera
 }
 
 template <class Value, class Keyframe, class Curve>
-bool appendKeyframeWithStandardTimingFunction(Curve* curve, double keyTime, const Value* value, const Value* lastValue, WebKit::WebAnimationCurve::TimingFunctionType timingFunctionType, const FloatSize&)
+bool appendKeyframeWithStandardTimingFunction(Curve* curve, double keyTime, const Value* value, const Value* lastValue, blink::WebAnimationCurve::TimingFunctionType timingFunctionType, const FloatSize&)
 {
     curve->add(Keyframe(keyTime, value->value()), timingFunctionType);
     return true;
@@ -152,7 +152,7 @@ bool appendKeyframeWithCustomBezierTimingFunction(Curve* curve, double keyTime, 
 }
 
 template <>
-bool appendKeyframeWithStandardTimingFunction<TransformAnimationValue, WebTransformKeyframe, WebTransformAnimationCurve>(WebTransformAnimationCurve* curve, double keyTime, const TransformAnimationValue* value, const TransformAnimationValue* lastValue, WebKit::WebAnimationCurve::TimingFunctionType timingFunctionType, const FloatSize& boxSize)
+bool appendKeyframeWithStandardTimingFunction<TransformAnimationValue, WebTransformKeyframe, WebTransformAnimationCurve>(WebTransformAnimationCurve* curve, double keyTime, const TransformAnimationValue* value, const TransformAnimationValue* lastValue, blink::WebAnimationCurve::TimingFunctionType timingFunctionType, const FloatSize& boxSize)
 {
     bool canBlend = !lastValue;
     OwnPtr<WebTransformOperations> operations(toWebTransformOperations(*value->value(), boxSize));
@@ -192,7 +192,7 @@ bool appendKeyframeWithCustomBezierTimingFunction<TransformAnimationValue, WebTr
 }
 
 template <>
-bool appendKeyframeWithStandardTimingFunction<FilterAnimationValue, WebFilterKeyframe, WebFilterAnimationCurve>(WebFilterAnimationCurve* curve, double keyTime, const FilterAnimationValue* value, const FilterAnimationValue* lastValue, WebKit::WebAnimationCurve::TimingFunctionType timingFunctionType, const FloatSize& boxSize)
+bool appendKeyframeWithStandardTimingFunction<FilterAnimationValue, WebFilterKeyframe, WebFilterAnimationCurve>(WebFilterAnimationCurve* curve, double keyTime, const FilterAnimationValue* value, const FilterAnimationValue* lastValue, blink::WebAnimationCurve::TimingFunctionType timingFunctionType, const FloatSize& boxSize)
 {
     // FIXME(ajuma): In order to animate pixel-moving filters on the compositor thread, we need
     // to update overlap testing to take into account the bounds within which the animation
@@ -230,7 +230,7 @@ bool appendKeyframeWithCustomBezierTimingFunction<FilterAnimationValue, WebFilte
 }
 
 template <class Value, class Keyframe, class Curve>
-PassOwnPtr<WebKit::WebAnimation> createWebAnimation(const KeyframeValueList& valueList, const CSSAnimationData* animation, int animationId, double timeOffset, Curve* curve, WebKit::WebAnimation::TargetProperty targetProperty, const FloatSize& boxSize)
+PassOwnPtr<blink::WebAnimation> createWebAnimation(const KeyframeValueList& valueList, const CSSAnimationData* animation, int animationId, double timeOffset, Curve* curve, blink::WebAnimation::TargetProperty targetProperty, const FloatSize& boxSize)
 {
     bool alternate = false;
     bool reverse = false;
@@ -257,7 +257,7 @@ PassOwnPtr<WebKit::WebAnimation> createWebAnimation(const KeyframeValueList& val
             originalTimingFunction = animation->timingFunction();
 
         // Ease is the default timing function.
-        WebKit::WebAnimationCurve::TimingFunctionType timingFunctionType = WebKit::WebAnimationCurve::TimingFunctionTypeEase;
+        blink::WebAnimationCurve::TimingFunctionType timingFunctionType = blink::WebAnimationCurve::TimingFunctionTypeEase;
 
         bool isUsingCustomBezierTimingFunction = false;
         double x1 = 0;
@@ -271,7 +271,7 @@ PassOwnPtr<WebKit::WebAnimation> createWebAnimation(const KeyframeValueList& val
                 // FIXME: add support for steps timing function.
                 return nullptr;
             case TimingFunction::LinearFunction:
-                timingFunctionType = WebKit::WebAnimationCurve::TimingFunctionTypeLinear;
+                timingFunctionType = blink::WebAnimationCurve::TimingFunctionTypeLinear;
                 break;
             case TimingFunction::CubicBezierFunction:
                 {
@@ -303,7 +303,7 @@ PassOwnPtr<WebKit::WebAnimation> createWebAnimation(const KeyframeValueList& val
             return nullptr;
     }
 
-    OwnPtr<WebKit::WebAnimation> webAnimation = adoptPtr(Platform::current()->compositorSupport()->createAnimation(*curve, targetProperty, animationId));
+    OwnPtr<blink::WebAnimation> webAnimation = adoptPtr(Platform::current()->compositorSupport()->createAnimation(*curve, targetProperty, animationId));
 
     int iterations = (animation && animation->isIterationCountSet()) ? animation->iterationCount() : 1;
     webAnimation->setIterations(iterations);
@@ -315,22 +315,22 @@ PassOwnPtr<WebKit::WebAnimation> createWebAnimation(const KeyframeValueList& val
     return webAnimation.release();
 }
 
-PassOwnPtr<WebKit::WebAnimation> createWebAnimation(const KeyframeValueList& values, const CSSAnimationData* animation, int animationId, double timeOffset, const FloatSize& boxSize)
+PassOwnPtr<blink::WebAnimation> createWebAnimation(const KeyframeValueList& values, const CSSAnimationData* animation, int animationId, double timeOffset, const FloatSize& boxSize)
 {
     switch (values.property()) {
     case AnimatedPropertyWebkitTransform: {
         OwnPtr<WebTransformAnimationCurve> curve = adoptPtr(Platform::current()->compositorSupport()->createTransformAnimationCurve());
-        return createWebAnimation<TransformAnimationValue, WebTransformKeyframe, WebTransformAnimationCurve>(values, animation, animationId, timeOffset, curve.get(), WebKit::WebAnimation::TargetPropertyTransform, FloatSize(boxSize));
+        return createWebAnimation<TransformAnimationValue, WebTransformKeyframe, WebTransformAnimationCurve>(values, animation, animationId, timeOffset, curve.get(), blink::WebAnimation::TargetPropertyTransform, FloatSize(boxSize));
     }
 
     case AnimatedPropertyOpacity: {
         OwnPtr<WebFloatAnimationCurve> curve = adoptPtr(Platform::current()->compositorSupport()->createFloatAnimationCurve());
-        return createWebAnimation<FloatAnimationValue, WebFloatKeyframe, WebFloatAnimationCurve>(values, animation, animationId, timeOffset, curve.get(), WebKit::WebAnimation::TargetPropertyOpacity, FloatSize());
+        return createWebAnimation<FloatAnimationValue, WebFloatKeyframe, WebFloatAnimationCurve>(values, animation, animationId, timeOffset, curve.get(), blink::WebAnimation::TargetPropertyOpacity, FloatSize());
     }
 
     case AnimatedPropertyWebkitFilter: {
         OwnPtr<WebFilterAnimationCurve> curve = adoptPtr(Platform::current()->compositorSupport()->createFilterAnimationCurve());
-        return createWebAnimation<FilterAnimationValue, WebFilterKeyframe, WebFilterAnimationCurve>(values, animation, animationId, timeOffset, curve.get(), WebKit::WebAnimation::TargetPropertyFilter, FloatSize(boxSize));
+        return createWebAnimation<FilterAnimationValue, WebFilterKeyframe, WebFilterAnimationCurve>(values, animation, animationId, timeOffset, curve.get(), blink::WebAnimation::TargetPropertyFilter, FloatSize(boxSize));
     }
 
     case AnimatedPropertyBackgroundColor:

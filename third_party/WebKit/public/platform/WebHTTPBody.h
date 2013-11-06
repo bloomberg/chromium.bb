@@ -42,7 +42,7 @@ namespace WebCore { class FormData; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
-namespace WebKit {
+namespace blink {
 
 class WebHTTPBodyPrivate;
 
@@ -113,6 +113,6 @@ private:
     WebHTTPBodyPrivate* m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

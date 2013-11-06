@@ -29,7 +29,7 @@
 
 #define WEB_FILTER_ANIMATION_CURVE_IS_DEFINED 1
 
-namespace WebKit {
+namespace blink {
 
 class WebAnimationCurve {
 public:
@@ -52,7 +52,7 @@ public:
     virtual AnimationCurveType type() const = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebAnimationCurve_h
 

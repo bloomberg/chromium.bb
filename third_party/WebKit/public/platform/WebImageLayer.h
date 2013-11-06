@@ -30,7 +30,7 @@
 #include "WebLayer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebImageLayer {
 public:
@@ -40,6 +40,6 @@ public:
     virtual void setBitmap(SkBitmap) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebImageLayer_h

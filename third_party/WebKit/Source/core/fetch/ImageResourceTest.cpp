@@ -52,18 +52,18 @@ using namespace WebCore;
 
 namespace {
 
-class QuitTask : public WebKit::WebThread::Task {
+class QuitTask : public blink::WebThread::Task {
 public:
     virtual void run()
     {
-        WebKit::Platform::current()->currentThread()->exitRunLoop();
+        blink::Platform::current()->currentThread()->exitRunLoop();
     }
 };
 
 void runPendingTasks()
 {
-    WebKit::Platform::current()->currentThread()->postTask(new QuitTask);
-    WebKit::Platform::current()->currentThread()->enterRunLoop();
+    blink::Platform::current()->currentThread()->postTask(new QuitTask);
+    blink::Platform::current()->currentThread()->enterRunLoop();
 }
 
 TEST(ImageResourceTest, MultipartImage)
@@ -114,12 +114,12 @@ TEST(ImageResourceTest, CancelOnDetach)
 {
     KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
 
-    WebKit::WebURLResponse response;
+    blink::WebURLResponse response;
     response.initialize();
     response.setMIMEType("text/html");
-    WTF::String localPath = WebKit::Platform::current()->unitTestSupport()->webKitRootDir();
+    WTF::String localPath = blink::Platform::current()->unitTestSupport()->webKitRootDir();
     localPath.append("/Source/web/tests/data/cancelTest.html");
-    WebKit::Platform::current()->unitTestSupport()->registerMockedURL(testURL, response, localPath);
+    blink::Platform::current()->unitTestSupport()->registerMockedURL(testURL, response, localPath);
 
     // Create enough of a mocked world to get a functioning ResourceLoader.
     Page::PageClients pageClients;
@@ -151,7 +151,7 @@ TEST(ImageResourceTest, CancelOnDetach)
     EXPECT_EQ(Resource::LoadError, cachedImage->status());
     EXPECT_EQ(reinterpret_cast<Resource*>(0), memoryCache()->resourceForURL(testURL));
 
-    WebKit::Platform::current()->unitTestSupport()->unregisterMockedURL(testURL);
+    blink::Platform::current()->unitTestSupport()->unregisterMockedURL(testURL);
 }
 
 } // namespace

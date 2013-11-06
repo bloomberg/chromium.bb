@@ -35,7 +35,7 @@
 #include "../platform/WebURL.h"
 #include "../platform/WebVector.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebApplicationCacheHostClient;
 class WebFrame;
@@ -117,6 +117,6 @@ public:
     virtual void deleteAssociatedCacheGroup() { }
 };
 
-}  // namespace WebKit
+}  // namespace blink
 
 #endif  // WebApplicationCacheHost_h

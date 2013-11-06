@@ -34,7 +34,7 @@ namespace WebCore {
 class SpeechGrammar;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebSpeechGrammar {
 public:
@@ -57,6 +57,6 @@ private:
     WebPrivatePtr<WebCore::SpeechGrammar> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebSpeechGrammar_h

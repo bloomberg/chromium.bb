@@ -31,7 +31,7 @@
 
 namespace WebCore { class IDBKeyRange; }
 
-namespace WebKit {
+namespace blink {
 
 class WebIDBKey;
 class WebString;
@@ -62,6 +62,6 @@ private:
     WebPrivatePtr<WebCore::IDBKeyRange> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebIDBKeyRange_h

@@ -57,7 +57,7 @@ bool CheckboxInputType::valueMissing(const String&) const
 
 String CheckboxInputType::valueMissingText() const
 {
-    return locale().queryString(WebKit::WebLocalizedString::ValidationValueMissingForCheckbox);
+    return locale().queryString(blink::WebLocalizedString::ValidationValueMissingForCheckbox);
 }
 
 void CheckboxInputType::handleKeyupEvent(KeyboardEvent* event)

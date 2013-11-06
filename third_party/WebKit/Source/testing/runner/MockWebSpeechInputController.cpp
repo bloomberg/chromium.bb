@@ -32,7 +32,7 @@
 
 #if ENABLE_INPUT_SPEECH
 
-using namespace WebKit;
+using namespace blink;
 using namespace std;
 
 namespace WebTestRunner {

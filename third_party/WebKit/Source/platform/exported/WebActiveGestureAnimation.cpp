@@ -29,7 +29,7 @@
 #include "public/platform/WebGestureCurve.h"
 #include "public/platform/WebGestureCurveTarget.h"
 
-namespace WebKit {
+namespace blink {
 
 PassOwnPtr<WebActiveGestureAnimation> WebActiveGestureAnimation::createAtAnimationStart(PassOwnPtr<WebGestureCurve> curve, WebGestureCurveTarget* target)
 {
@@ -64,4 +64,4 @@ bool WebActiveGestureAnimation::animate(double time)
     return m_curve->apply(time - m_startTime, m_target);
 }
 
-} // namespace WebKit
+} // namespace blink

@@ -60,9 +60,9 @@ namespace WebCore {
 
 namespace {
 
-void preconnectToURL(const KURL& url, WebKit::WebPreconnectMotivation motivation)
+void preconnectToURL(const KURL& url, blink::WebPreconnectMotivation motivation)
 {
-    WebKit::WebPrescientNetworking* prescientNetworking = WebKit::Platform::current()->prescientNetworking();
+    blink::WebPrescientNetworking* prescientNetworking = blink::Platform::current()->prescientNetworking();
     if (!prescientNetworking)
         return;
 
@@ -95,7 +95,7 @@ private:
     void handleClick(Event* event);
 
     bool shouldPrefetch(const KURL&);
-    void prefetch(WebKit::WebPreconnectMotivation);
+    void prefetch(blink::WebPreconnectMotivation);
 
     HTMLAnchorElement* m_anchorElement;
     double m_mouseOverTimestamp;
@@ -577,9 +577,9 @@ void HTMLAnchorElement::PrefetchEventHandler::handleMouseOver(Event* event)
     if (m_mouseOverTimestamp == 0.0) {
         m_mouseOverTimestamp = event->timeStamp();
 
-        WebKit::Platform::current()->histogramEnumeration("MouseEventPrefetch.MouseOvers", 0, 2);
+        blink::Platform::current()->histogramEnumeration("MouseEventPrefetch.MouseOvers", 0, 2);
 
-        prefetch(WebKit::WebPreconnectMotivationLinkMouseOver);
+        prefetch(blink::WebPreconnectMotivationLinkMouseOver);
     }
 }
 
@@ -587,7 +587,7 @@ void HTMLAnchorElement::PrefetchEventHandler::handleMouseOut(Event* event)
 {
     if (m_mouseOverTimestamp > 0.0) {
         double mouseOverDuration = convertDOMTimeStampToSeconds(event->timeStamp() - m_mouseOverTimestamp);
-        WebKit::Platform::current()->histogramCustomCounts("MouseEventPrefetch.MouseOverDuration_NoClick", mouseOverDuration * 1000, 0, 10000, 100);
+        blink::Platform::current()->histogramCustomCounts("MouseEventPrefetch.MouseOverDuration_NoClick", mouseOverDuration * 1000, 0, 10000, 100);
 
         m_mouseOverTimestamp = 0.0;
     }
@@ -597,27 +597,27 @@ void HTMLAnchorElement::PrefetchEventHandler::handleLeftMouseDown(Event* event)
 {
     m_mouseDownTimestamp = event->timeStamp();
 
-    WebKit::Platform::current()->histogramEnumeration("MouseEventPrefetch.MouseDowns", 0, 2);
+    blink::Platform::current()->histogramEnumeration("MouseEventPrefetch.MouseDowns", 0, 2);
 
-    prefetch(WebKit::WebPreconnectMotivationLinkMouseDown);
+    prefetch(blink::WebPreconnectMotivationLinkMouseDown);
 }
 
 void HTMLAnchorElement::PrefetchEventHandler::handleGestureTapUnconfirmed(Event* event)
 {
     m_hadTapUnconfirmed = true;
 
-    WebKit::Platform::current()->histogramEnumeration("MouseEventPrefetch.TapUnconfirmeds", 0, 2);
+    blink::Platform::current()->histogramEnumeration("MouseEventPrefetch.TapUnconfirmeds", 0, 2);
 
-    prefetch(WebKit::WebPreconnectMotivationLinkTapUnconfirmed);
+    prefetch(blink::WebPreconnectMotivationLinkTapUnconfirmed);
 }
 
 void HTMLAnchorElement::PrefetchEventHandler::handleGestureShowPress(Event* event)
 {
     m_tapDownTimestamp = event->timeStamp();
 
-    WebKit::Platform::current()->histogramEnumeration("MouseEventPrefetch.TapDowns", 0, 2);
+    blink::Platform::current()->histogramEnumeration("MouseEventPrefetch.TapDowns", 0, 2);
 
-    prefetch(WebKit::WebPreconnectMotivationLinkTapDown);
+    prefetch(blink::WebPreconnectMotivationLinkTapDown);
 }
 
 void HTMLAnchorElement::PrefetchEventHandler::handleClick(Event* event)
@@ -626,27 +626,27 @@ void HTMLAnchorElement::PrefetchEventHandler::handleClick(Event* event)
     if (capturedMouseOver) {
         double mouseOverDuration = convertDOMTimeStampToSeconds(event->timeStamp() - m_mouseOverTimestamp);
 
-        WebKit::Platform::current()->histogramCustomCounts("MouseEventPrefetch.MouseOverDuration_Click", mouseOverDuration * 1000, 0, 10000, 100);
+        blink::Platform::current()->histogramCustomCounts("MouseEventPrefetch.MouseOverDuration_Click", mouseOverDuration * 1000, 0, 10000, 100);
     }
 
     bool capturedMouseDown = (m_mouseDownTimestamp > 0.0);
-    WebKit::Platform::current()->histogramEnumeration("MouseEventPrefetch.MouseDownFollowedByClick", capturedMouseDown, 2);
+    blink::Platform::current()->histogramEnumeration("MouseEventPrefetch.MouseDownFollowedByClick", capturedMouseDown, 2);
 
     if (capturedMouseDown) {
         double mouseDownDuration = convertDOMTimeStampToSeconds(event->timeStamp() - m_mouseDownTimestamp);
 
-        WebKit::Platform::current()->histogramCustomCounts("MouseEventPrefetch.MouseDownDuration_Click", mouseDownDuration * 1000, 0, 10000, 100);
+        blink::Platform::current()->histogramCustomCounts("MouseEventPrefetch.MouseDownDuration_Click", mouseDownDuration * 1000, 0, 10000, 100);
     }
 
     bool capturedTapDown = (m_tapDownTimestamp > 0.0);
     if (capturedTapDown) {
         double tapDownDuration = convertDOMTimeStampToSeconds(event->timeStamp() - m_tapDownTimestamp);
 
-        WebKit::Platform::current()->histogramCustomCounts("MouseEventPrefetch.TapDownDuration_Click", tapDownDuration * 1000, 0, 10000, 100);
+        blink::Platform::current()->histogramCustomCounts("MouseEventPrefetch.TapDownDuration_Click", tapDownDuration * 1000, 0, 10000, 100);
     }
 
     int flags = (m_hadTapUnconfirmed ? 2 : 0) | (capturedTapDown ? 1 : 0);
-    WebKit::Platform::current()->histogramEnumeration("MouseEventPrefetch.PreTapEventsFollowedByClick", flags, 4);
+    blink::Platform::current()->histogramEnumeration("MouseEventPrefetch.PreTapEventsFollowedByClick", flags, 4);
 }
 
 bool HTMLAnchorElement::PrefetchEventHandler::shouldPrefetch(const KURL& url)
@@ -679,7 +679,7 @@ bool HTMLAnchorElement::PrefetchEventHandler::shouldPrefetch(const KURL& url)
     return true;
 }
 
-void HTMLAnchorElement::PrefetchEventHandler::prefetch(WebKit::WebPreconnectMotivation motivation)
+void HTMLAnchorElement::PrefetchEventHandler::prefetch(blink::WebPreconnectMotivation motivation)
 {
     const KURL& url = m_anchorElement->href();
 
@@ -687,7 +687,7 @@ void HTMLAnchorElement::PrefetchEventHandler::prefetch(WebKit::WebPreconnectMoti
         return;
 
     // The precision of current MouseOver trigger is too low to actually trigger preconnects.
-    if (motivation == WebKit::WebPreconnectMotivationLinkMouseOver)
+    if (motivation == blink::WebPreconnectMotivationLinkMouseOver)
         return;
 
     preconnectToURL(url, motivation);

@@ -35,7 +35,7 @@
 
 class GrContext;
 
-namespace WebKit {
+namespace blink {
 class WebGraphicsContext3D;
 
 class WebGraphicsContext3DProvider {
@@ -46,6 +46,6 @@ public:
     virtual GrContext* grContext() = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

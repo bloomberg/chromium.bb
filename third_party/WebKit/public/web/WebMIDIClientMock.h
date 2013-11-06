@@ -39,7 +39,7 @@ namespace WebCore {
 class MIDIClientMock;
 }
 
-namespace WebKit {
+namespace blink {
 class WebMIDIPermissionRequest;
 
 class WebMIDIClientMock : public WebMIDIClient {
@@ -61,6 +61,6 @@ private:
     WebPrivateOwnPtr<WebCore::MIDIClientMock> m_clientMock;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebMIDIClientMock_h

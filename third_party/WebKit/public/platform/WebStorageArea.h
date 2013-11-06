@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 #include "WebString.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebURL;
 
@@ -93,6 +93,6 @@ public:
     virtual void clear(const WebURL& pageUrl, bool& somethingCleared)  { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebStorageArea_h

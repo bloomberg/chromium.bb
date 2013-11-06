@@ -70,7 +70,7 @@ private:
     virtual bool nextWinFontData(HFONT&, SCRIPT_CACHE*&, SCRIPT_FONTPROPERTIES*&, int& ascent, WORD& spaceGlyph);
     virtual void resetFontIndex();
 
-    // Reference to WebKit::Font that contains all the information about fonts
+    // Reference to blink::Font that contains all the information about fonts
     // we can use to render this input run of text.  It is used in
     // NextWinFontData to retrieve Windows font data for a series of
     // non-primary fonts.

@@ -30,7 +30,7 @@
 #include "../platform/WebURL.h"
 #include "WebRange.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebContentDetectionResult {
 public:
@@ -59,6 +59,6 @@ private:
     WebURL m_intent;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

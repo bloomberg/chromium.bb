@@ -40,7 +40,7 @@ namespace WebCore {
 class ServiceWorkerError {
 public:
     // For CallbackPromiseAdapter
-    typedef WebKit::WebServiceWorkerError WebType;
+    typedef blink::WebServiceWorkerError WebType;
     static PassRefPtr<DOMError> from(WebType* webErrorRaw)
     {
         OwnPtr<WebType> webError = adoptPtr(webErrorRaw);
@@ -49,7 +49,7 @@ public:
     }
 
 private:
-    static String errorString(WebKit::WebServiceWorkerError::ErrorType);
+    static String errorString(blink::WebServiceWorkerError::ErrorType);
     WTF_MAKE_NONCOPYABLE(ServiceWorkerError);
     ServiceWorkerError() WTF_DELETED_FUNCTION;
 };

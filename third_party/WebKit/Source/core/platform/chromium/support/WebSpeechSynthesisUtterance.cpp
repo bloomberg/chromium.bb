@@ -33,7 +33,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebSpeechSynthesisUtterance::WebSpeechSynthesisUtterance(const PassRefPtr<PlatformSpeechSynthesisUtterance>& utterance)
     : m_private(utterance)
@@ -101,4 +101,4 @@ double WebSpeechSynthesisUtterance::startTime() const
     return m_private->startTime();
 }
 
-} // namespace WebKit
+} // namespace blink

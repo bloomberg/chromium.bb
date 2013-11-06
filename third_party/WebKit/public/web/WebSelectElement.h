@@ -39,7 +39,7 @@
 namespace WebCore { class HTMLSelectElement; }
 #endif
 
-namespace WebKit {
+namespace blink {
 
 // Provides readonly access to some properties of a DOM select element node.
 class WebSelectElement : public WebFormControlElement {
@@ -65,6 +65,6 @@ public:
 #endif
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

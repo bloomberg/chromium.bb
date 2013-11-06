@@ -39,7 +39,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebKit { class WebLayer; }
+namespace blink { class WebLayer; }
 
 namespace WebCore {
 
@@ -315,7 +315,7 @@ public:
 
     GraphicsContext3D* graphicsContext3D() const { return m_context.get(); }
     WebGLContextGroup* contextGroup() const { return m_contextGroup.get(); }
-    virtual WebKit::WebLayer* platformLayer() const;
+    virtual blink::WebLayer* platformLayer() const;
 
     void reshape(int width, int height);
 

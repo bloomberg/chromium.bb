@@ -40,7 +40,7 @@ template <class T> class Handle;
 template <class T> class Local;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebString;
 
@@ -54,6 +54,6 @@ public:
     BLINK_EXPORT static WebString toWebString(v8::Handle<v8::String>);
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

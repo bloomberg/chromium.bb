@@ -33,7 +33,7 @@
 
 #include "WebTimeRange.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebSourceBuffer {
 public:
@@ -54,6 +54,6 @@ public:
     virtual void removedFromMediaSource() = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

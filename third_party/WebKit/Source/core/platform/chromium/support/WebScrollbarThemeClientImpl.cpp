@@ -28,7 +28,7 @@
 #include "core/platform/chromium/support/WebScrollbarThemeClientImpl.h"
 #include "core/platform/ScrollbarTheme.h"
 
-using WebKit::WebScrollbar;
+using blink::WebScrollbar;
 
 namespace WebCore {
 
@@ -117,7 +117,7 @@ WebCore::ScrollbarOverlayStyle WebScrollbarThemeClientImpl::scrollbarOverlayStyl
 
 void WebScrollbarThemeClientImpl::getTickmarks(Vector<IntRect>& tickmarks) const
 {
-    WebKit::WebVector<WebKit::WebRect> webTickmarks;
+    blink::WebVector<blink::WebRect> webTickmarks;
     m_scrollbar->getTickmarks(webTickmarks);
     tickmarks.resize(webTickmarks.size());
     for (size_t i = 0; i < webTickmarks.size(); ++i)
@@ -228,4 +228,4 @@ void WebScrollbarThemeClientImpl::setIsAlphaLocked(bool flag)
     m_scrollbar->setIsAlphaLocked(flag);
 }
 
-} // namespace WebKit
+} // namespace blink

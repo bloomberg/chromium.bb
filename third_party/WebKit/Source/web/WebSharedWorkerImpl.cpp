@@ -73,7 +73,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 namespace {
 
@@ -367,4 +367,4 @@ WebSharedWorker* WebSharedWorker::create(WebSharedWorkerClient* client)
     return new WebSharedWorkerImpl(client);
 }
 
-} // namespace WebKit
+} // namespace blink

@@ -37,7 +37,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebKit {
+namespace blink {
 class WebContentDecryptionModule;
 }
 
@@ -57,12 +57,12 @@ public:
     virtual void keyMessage(const unsigned char* message, size_t messageLength, const KURL& destinationURL) = 0;
 };
 
-class PLATFORM_EXPORT ContentDecryptionModuleSession : private WebKit::WebContentDecryptionModuleSession::Client {
+class PLATFORM_EXPORT ContentDecryptionModuleSession : private blink::WebContentDecryptionModuleSession::Client {
     WTF_MAKE_NONCOPYABLE(ContentDecryptionModuleSession);
 public:
     static PassOwnPtr<ContentDecryptionModuleSession> create(ContentDecryptionModuleSessionClient*);
 
-    ContentDecryptionModuleSession(WebKit::WebContentDecryptionModule*, ContentDecryptionModuleSessionClient*);
+    ContentDecryptionModuleSession(blink::WebContentDecryptionModule*, ContentDecryptionModuleSessionClient*);
     ~ContentDecryptionModuleSession();
 
     String sessionId() const;
@@ -71,12 +71,12 @@ public:
     void close();
 
 private:
-    // WebKit::WebContentDecryptionModuleSession::Client
+    // blink::WebContentDecryptionModuleSession::Client
     virtual void keyAdded() OVERRIDE;
     virtual void keyError(MediaKeyErrorCode, unsigned long systemCode) OVERRIDE;
-    virtual void keyMessage(const unsigned char* message, size_t messageLength, const WebKit::WebURL& destinationURL) OVERRIDE;
+    virtual void keyMessage(const unsigned char* message, size_t messageLength, const blink::WebURL& destinationURL) OVERRIDE;
 
-    OwnPtr<WebKit::WebContentDecryptionModuleSession> m_session;
+    OwnPtr<blink::WebContentDecryptionModuleSession> m_session;
 
     ContentDecryptionModuleSessionClient* m_client;
 };

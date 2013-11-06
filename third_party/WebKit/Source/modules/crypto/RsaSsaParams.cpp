@@ -42,7 +42,7 @@ Algorithm* RsaSsaParams::hash()
     return m_hash.get();
 }
 
-RsaSsaParams::RsaSsaParams(const WebKit::WebCryptoAlgorithm& algorithm)
+RsaSsaParams::RsaSsaParams(const blink::WebCryptoAlgorithm& algorithm)
     : Algorithm(algorithm)
 {
     ASSERT(algorithm.rsaSsaParams());

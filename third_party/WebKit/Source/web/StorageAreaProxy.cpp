@@ -51,7 +51,7 @@
 
 namespace WebCore {
 
-StorageAreaProxy::StorageAreaProxy(PassOwnPtr<WebKit::WebStorageArea> storageArea, StorageType storageType)
+StorageAreaProxy::StorageAreaProxy(PassOwnPtr<blink::WebStorageArea> storageArea, StorageType storageType)
     : m_storageArea(storageArea)
     , m_storageType(storageType)
     , m_canAccessStorageCachedResult(false)
@@ -96,9 +96,9 @@ void StorageAreaProxy::setItem(const String& key, const String& value, Exception
         es.throwSecurityError(ExceptionMessages::failedToExecute("setItem", "Storage", "access is denied for this document."));
         return;
     }
-    WebKit::WebStorageArea::Result result = WebKit::WebStorageArea::ResultOK;
+    blink::WebStorageArea::Result result = blink::WebStorageArea::ResultOK;
     m_storageArea->setItem(key, value, frame->document()->url(), result);
-    if (result != WebKit::WebStorageArea::ResultOK)
+    if (result != blink::WebStorageArea::ResultOK)
         es.throwDOMException(QuotaExceededError, ExceptionMessages::failedToExecute("setItem", "Storage", "Setting the value of '" + key + "' exceeded the quota."));
 }
 
@@ -135,8 +135,8 @@ bool StorageAreaProxy::canAccessStorage(Frame* frame)
         return false;
     if (m_canAccessStorageCachedFrame == frame)
         return m_canAccessStorageCachedResult;
-    WebKit::WebFrameImpl* webFrame = WebKit::WebFrameImpl::fromFrame(frame);
-    WebKit::WebViewImpl* webView = webFrame->viewImpl();
+    blink::WebFrameImpl* webFrame = blink::WebFrameImpl::fromFrame(frame);
+    blink::WebViewImpl* webView = webFrame->viewImpl();
     bool result = !webView->permissionClient() || webView->permissionClient()->allowStorage(webFrame, m_storageType == LocalStorage);
     m_canAccessStorageCachedFrame = frame;
     m_canAccessStorageCachedResult = result;
@@ -149,7 +149,7 @@ size_t StorageAreaProxy::memoryBytesUsedByCache()
 }
 
 void StorageAreaProxy::dispatchLocalStorageEvent(const String& key, const String& oldValue, const String& newValue,
-                                                 SecurityOrigin* securityOrigin, const KURL& pageURL, WebKit::WebStorageArea* sourceAreaInstance, bool originatedInProcess)
+                                                 SecurityOrigin* securityOrigin, const KURL& pageURL, blink::WebStorageArea* sourceAreaInstance, bool originatedInProcess)
 {
     // FIXME: This looks suspicious. Why doesn't this use allPages instead?
     const HashSet<Page*>& pages = PageGroup::sharedGroup()->pages();
@@ -163,7 +163,7 @@ void StorageAreaProxy::dispatchLocalStorageEvent(const String& key, const String
     }
 }
 
-static Page* findPageWithSessionStorageNamespace(const WebKit::WebStorageNamespace& sessionNamespace)
+static Page* findPageWithSessionStorageNamespace(const blink::WebStorageNamespace& sessionNamespace)
 {
     // FIXME: This looks suspicious. Why doesn't this use allPages instead?
     const HashSet<Page*>& pages = PageGroup::sharedGroup()->pages();
@@ -177,8 +177,8 @@ static Page* findPageWithSessionStorageNamespace(const WebKit::WebStorageNamespa
 }
 
 void StorageAreaProxy::dispatchSessionStorageEvent(const String& key, const String& oldValue, const String& newValue,
-                                                   SecurityOrigin* securityOrigin, const KURL& pageURL, const WebKit::WebStorageNamespace& sessionNamespace,
-                                                   WebKit::WebStorageArea* sourceAreaInstance, bool originatedInProcess)
+                                                   SecurityOrigin* securityOrigin, const KURL& pageURL, const blink::WebStorageNamespace& sessionNamespace,
+                                                   blink::WebStorageArea* sourceAreaInstance, bool originatedInProcess)
 {
     Page* page = findPageWithSessionStorageNamespace(sessionNamespace);
     if (!page)
@@ -192,7 +192,7 @@ void StorageAreaProxy::dispatchSessionStorageEvent(const String& key, const Stri
     InspectorInstrumentation::didDispatchDOMStorageEvent(page, key, oldValue, newValue, SessionStorage, securityOrigin);
 }
 
-bool StorageAreaProxy::isEventSource(Storage* storage, WebKit::WebStorageArea* sourceAreaInstance)
+bool StorageAreaProxy::isEventSource(Storage* storage, blink::WebStorageArea* sourceAreaInstance)
 {
     ASSERT(storage);
     StorageAreaProxy* areaProxy = static_cast<StorageAreaProxy*>(storage->area());

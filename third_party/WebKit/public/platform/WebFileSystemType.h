@@ -31,7 +31,7 @@
 #ifndef WebFileSystemType_h
 #define WebFileSystemType_h
 
-namespace WebKit {
+namespace blink {
 
 enum WebFileSystemType {
     WebFileSystemTypeTemporary,
@@ -44,6 +44,6 @@ enum WebFileSystemType {
     WebFileSystemTypeExternal,
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

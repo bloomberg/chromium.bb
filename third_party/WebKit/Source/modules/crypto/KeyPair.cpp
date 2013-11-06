@@ -36,10 +36,10 @@
 
 namespace WebCore {
 
-PassRefPtr<KeyPair> KeyPair::create(const WebKit::WebCryptoKey& publicKey, const WebKit::WebCryptoKey& privateKey)
+PassRefPtr<KeyPair> KeyPair::create(const blink::WebCryptoKey& publicKey, const blink::WebCryptoKey& privateKey)
 {
-    ASSERT(publicKey.type() == WebKit::WebCryptoKeyTypePublic);
-    ASSERT(privateKey.type() == WebKit::WebCryptoKeyTypePrivate);
+    ASSERT(publicKey.type() == blink::WebCryptoKeyTypePublic);
+    ASSERT(privateKey.type() == blink::WebCryptoKeyTypePrivate);
     return adoptRef(new KeyPair(Key::create(publicKey), Key::create(privateKey)));
 }
 

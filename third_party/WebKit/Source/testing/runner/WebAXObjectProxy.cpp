@@ -37,7 +37,7 @@
 #include "public/platform/WebString.h"
 #include "public/web/WebAXObject.h"
 
-using namespace WebKit;
+using namespace blink;
 using namespace std;
 
 namespace WebTestRunner {
@@ -563,7 +563,7 @@ WebAXObjectProxy* WebAXObjectProxy::getChildAtIndex(unsigned index)
     return m_factory->getOrCreate(accessibilityObject().childAt(index));
 }
 
-bool WebAXObjectProxy::isEqual(const WebKit::WebAXObject& other)
+bool WebAXObjectProxy::isEqual(const blink::WebAXObject& other)
 {
     return accessibilityObject().equals(other);
 }

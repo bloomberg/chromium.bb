@@ -40,7 +40,7 @@ class PagePopup;
 class DateTimeChooserClient;
 }
 
-namespace WebKit {
+namespace blink {
 
 class ChromeClientImpl;
 

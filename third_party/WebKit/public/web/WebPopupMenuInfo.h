@@ -34,7 +34,7 @@
 #include "../platform/WebVector.h"
 #include "WebMenuItemInfo.h"
 
-namespace WebKit {
+namespace blink {
 
 // Describes the contents of a popup menu.
 struct WebPopupMenuInfo {

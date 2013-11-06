@@ -39,7 +39,7 @@
 
 using WebCore::FontPlatformData;
 
-namespace WebKit {
+namespace blink {
 
 // static
 void WebFontRendering::setHinting(SkPaint::Hinting hinting)
@@ -92,4 +92,4 @@ void WebFontRendering::setLCDOrientation(SkFontHost::LCDOrientation orientation)
     SkFontHost::SetSubpixelOrientation(orientation);
 }
 
-} // namespace WebKit
+} // namespace blink

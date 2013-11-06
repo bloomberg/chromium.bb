@@ -36,7 +36,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 BackForwardClientImpl::BackForwardClientImpl(WebViewImpl* webView)
     : m_webView(webView)
@@ -71,4 +71,4 @@ int BackForwardClientImpl::backForwardListCount()
 }
 
 
-} // namespace WebKit
+} // namespace blink

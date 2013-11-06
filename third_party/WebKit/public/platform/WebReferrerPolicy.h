@@ -31,7 +31,7 @@
 #ifndef WebReferrerPolicy_h
 #define WebReferrerPolicy_h
 
-namespace WebKit {
+namespace blink {
 
 enum WebReferrerPolicy {
     WebReferrerPolicyAlways,
@@ -40,6 +40,6 @@ enum WebReferrerPolicy {
     WebReferrerPolicyOrigin,
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

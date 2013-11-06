@@ -715,7 +715,7 @@ namespace WebCore {
     v8::Isolate* toIsolate(ExecutionContext*);
     v8::Isolate* toIsolate(Frame*);
 
-    // Can only be called by WebKit::initialize
+    // Can only be called by blink::initialize
     void setMainThreadIsolate(v8::Isolate*);
 } // namespace WebCore
 

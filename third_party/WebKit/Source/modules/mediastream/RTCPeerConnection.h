@@ -113,7 +113,7 @@ public:
 
     // RTCPeerConnectionHandlerClient
     virtual void negotiationNeeded() OVERRIDE;
-    virtual void didGenerateIceCandidate(WebKit::WebRTCICECandidate) OVERRIDE;
+    virtual void didGenerateIceCandidate(blink::WebRTCICECandidate) OVERRIDE;
     virtual void didChangeSignalingState(SignalingState) OVERRIDE;
     virtual void didChangeIceGatheringState(IceGatheringState) OVERRIDE;
     virtual void didChangeIceConnectionState(IceConnectionState) OVERRIDE;

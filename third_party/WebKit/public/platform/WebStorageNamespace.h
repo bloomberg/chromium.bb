@@ -33,7 +33,7 @@
 
 #include "WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebStorageArea;
 class WebString;
@@ -54,6 +54,6 @@ public:
     virtual bool isSameNamespace(const WebStorageNamespace&) const { return false; }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebStorageNamespace_h

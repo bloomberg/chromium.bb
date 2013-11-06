@@ -39,7 +39,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 EventListenerWrapper::EventListenerWrapper(WebDOMEventListener* webDOMEventListener)
     : EventListener(EventListener::NativeEventListenerType)
@@ -71,4 +71,4 @@ void EventListenerWrapper::webDOMEventListenerDeleted()
     m_webDOMEventListener = 0;
 }
 
-} // namespace WebKit
+} // namespace blink

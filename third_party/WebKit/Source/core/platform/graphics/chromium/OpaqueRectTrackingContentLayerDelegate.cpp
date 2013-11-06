@@ -33,8 +33,8 @@
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebRect.h"
 
-using WebKit::WebFloatRect;
-using WebKit::WebRect;
+using blink::WebFloatRect;
+using blink::WebRect;
 
 namespace WebCore {
 

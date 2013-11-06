@@ -49,7 +49,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebUserMediaRequest::WebUserMediaRequest(const PassRefPtr<UserMediaRequest>& request)
     : m_private(request)
@@ -137,4 +137,4 @@ WebUserMediaRequest::operator UserMediaRequest*() const
     return m_private.get();
 }
 
-} // namespace WebKit
+} // namespace blink

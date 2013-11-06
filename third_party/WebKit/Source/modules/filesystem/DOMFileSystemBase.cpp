@@ -72,9 +72,9 @@ DOMFileSystemBase::~DOMFileSystemBase()
 {
 }
 
-WebKit::WebFileSystem* DOMFileSystemBase::fileSystem() const
+blink::WebFileSystem* DOMFileSystemBase::fileSystem() const
 {
-    return WebKit::Platform::current()->fileSystem();
+    return blink::Platform::current()->fileSystem();
 }
 
 SecurityOrigin* DOMFileSystemBase::securityOrigin() const

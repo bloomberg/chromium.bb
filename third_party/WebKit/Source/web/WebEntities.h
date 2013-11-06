@@ -34,7 +34,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebKit {
+namespace blink {
 
 // FIXME: This class is wrong and needs to be removed!
 class WebEntities {
@@ -71,6 +71,6 @@ private:
     EntitiesMapType m_entitiesMap;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

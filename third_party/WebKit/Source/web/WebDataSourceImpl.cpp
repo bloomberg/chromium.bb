@@ -40,7 +40,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 static OwnPtr<WebPluginLoadObserver>& nextPluginLoadObserver()
 {
@@ -185,4 +185,4 @@ WebDataSourceImpl::~WebDataSourceImpl()
 {
 }
 
-} // namespace WebKit
+} // namespace blink

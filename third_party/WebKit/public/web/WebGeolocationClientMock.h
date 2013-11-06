@@ -39,7 +39,7 @@ namespace WebCore {
 class GeolocationClientMock;
 }
 
-namespace WebKit {
+namespace blink {
 class WebGeolocationPosition;
 class WebString;
 

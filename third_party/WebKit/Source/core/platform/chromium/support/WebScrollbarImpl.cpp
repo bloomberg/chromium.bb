@@ -29,7 +29,7 @@
 #include "core/platform/Scrollbar.h"
 #include "platform/geometry/IntRect.h"
 
-namespace WebKit {
+namespace blink {
 
 WebScrollbarImpl::WebScrollbarImpl(WebCore::Scrollbar* scrollbar)
     : m_scrollbar(scrollbar)
@@ -138,4 +138,4 @@ void WebScrollbarImpl::setIsAlphaLocked(bool flag)
     m_scrollbar->setIsAlphaLocked(flag);
 }
 
-} // namespace WebKit
+} // namespace blink

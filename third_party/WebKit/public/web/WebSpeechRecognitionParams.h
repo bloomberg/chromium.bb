@@ -31,7 +31,7 @@
 #include "WebSecurityOrigin.h"
 #include "WebSpeechGrammar.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebSpeechGrammar;
 
@@ -63,6 +63,6 @@ private:
     WebSecurityOrigin m_origin;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebSpeechRecognitionParams_h

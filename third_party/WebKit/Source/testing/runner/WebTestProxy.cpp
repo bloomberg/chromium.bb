@@ -72,7 +72,7 @@
 #include <cctype>
 #include "skia/ext/platform_canvas.h"
 
-using namespace WebKit;
+using namespace blink;
 using namespace std;
 
 namespace WebTestRunner {
@@ -132,9 +132,9 @@ void printRangeDescription(WebTestDelegate* delegate, const WebRange& range)
 string textAffinityDescription(WebTextAffinity affinity)
 {
     switch (affinity) {
-    case WebKit::WebTextAffinityUpstream:
+    case blink::WebTextAffinityUpstream:
         return "NSSelectionAffinityUpstream";
-    case WebKit::WebTextAffinityDownstream:
+    case blink::WebTextAffinityDownstream:
         return "NSSelectionAffinityDownstream";
     }
     return "(UNKNOWN AFFINITY)";
@@ -271,17 +271,17 @@ const char* illegalString = "illegal value";
 const char* webNavigationTypeToString(WebNavigationType type)
 {
     switch (type) {
-    case WebKit::WebNavigationTypeLinkClicked:
+    case blink::WebNavigationTypeLinkClicked:
         return linkClickedString;
-    case WebKit::WebNavigationTypeFormSubmitted:
+    case blink::WebNavigationTypeFormSubmitted:
         return formSubmittedString;
-    case WebKit::WebNavigationTypeBackForward:
+    case blink::WebNavigationTypeBackForward:
         return backForwardString;
-    case WebKit::WebNavigationTypeReload:
+    case blink::WebNavigationTypeReload:
         return reloadString;
-    case WebKit::WebNavigationTypeFormResubmitted:
+    case blink::WebNavigationTypeFormResubmitted:
         return formResubmittedString;
-    case WebKit::WebNavigationTypeOther:
+    case blink::WebNavigationTypeOther:
         return otherString;
     }
     return illegalString;
@@ -522,13 +522,13 @@ WebValidationMessageClient* WebTestProxyBase::validationMessageClient()
     return m_validationMessageClient.get();
 }
 
-WebColorChooser* WebTestProxyBase::createColorChooser(WebColorChooserClient* client, const WebKit::WebColor& color)
+WebColorChooser* WebTestProxyBase::createColorChooser(WebColorChooserClient* client, const blink::WebColor& color)
 {
     // This instance is deleted by WebCore::ColorInputType
     return new MockColorChooser(client, m_delegate, this);
 }
 
-bool WebTestProxyBase::runFileChooser(const WebKit::WebFileChooserParams&, WebKit::WebFileChooserCompletion*)
+bool WebTestProxyBase::runFileChooser(const blink::WebFileChooserParams&, blink::WebFileChooserCompletion*)
 {
     m_delegate->printMessage("Mock: Opening a file chooser.\n");
     // FIXME: Add ability to set file names to a file upload control.
@@ -707,7 +707,7 @@ void WebTestProxyBase::displayRepaintMask()
 
 void WebTestProxyBase::display()
 {
-    const WebKit::WebSize& size = webWidget()->size();
+    const blink::WebSize& size = webWidget()->size();
     WebRect rect(0, 0, size.width, size.height);
     m_paintRect = rect;
     paintInvalidatedRegion();
@@ -822,92 +822,92 @@ void WebTestProxyBase::didAutoResize(const WebSize&)
     invalidateAll();
 }
 
-void WebTestProxyBase::postAccessibilityEvent(const WebKit::WebAXObject& obj, WebKit::WebAXEvent event)
+void WebTestProxyBase::postAccessibilityEvent(const blink::WebAXObject& obj, blink::WebAXEvent event)
 {
-    if (event == WebKit::WebAXEventFocus)
+    if (event == blink::WebAXEventFocus)
         m_testInterfaces->accessibilityController()->setFocusedElement(obj);
 
     const char* eventName = 0;
     switch (event) {
-    case WebKit::WebAXEventActiveDescendantChanged:
+    case blink::WebAXEventActiveDescendantChanged:
         eventName = "ActiveDescendantChanged";
         break;
-    case WebKit::WebAXEventAlert:
+    case blink::WebAXEventAlert:
         eventName = "Alert";
         break;
-    case WebKit::WebAXEventAriaAttributeChanged:
+    case blink::WebAXEventAriaAttributeChanged:
         eventName = "AriaAttributeChanged";
         break;
-    case WebKit::WebAXEventAutocorrectionOccured:
+    case blink::WebAXEventAutocorrectionOccured:
         eventName = "AutocorrectionOccured";
         break;
-    case WebKit::WebAXEventBlur:
+    case blink::WebAXEventBlur:
         eventName = "Blur";
         break;
-    case WebKit::WebAXEventCheckedStateChanged:
+    case blink::WebAXEventCheckedStateChanged:
         eventName = "CheckedStateChanged";
         break;
-    case WebKit::WebAXEventChildrenChanged:
+    case blink::WebAXEventChildrenChanged:
         eventName = "ChildrenChanged";
         break;
-    case WebKit::WebAXEventFocus:
+    case blink::WebAXEventFocus:
         eventName = "Focus";
         break;
-    case WebKit::WebAXEventHide:
+    case blink::WebAXEventHide:
         eventName = "Hide";
         break;
-    case WebKit::WebAXEventInvalidStatusChanged:
+    case blink::WebAXEventInvalidStatusChanged:
         eventName = "InvalidStatusChanged";
         break;
-    case WebKit::WebAXEventLayoutComplete:
+    case blink::WebAXEventLayoutComplete:
         eventName = "LayoutComplete";
         break;
-    case WebKit::WebAXEventLiveRegionChanged:
+    case blink::WebAXEventLiveRegionChanged:
         eventName = "LiveRegionChanged";
         break;
-    case WebKit::WebAXEventLoadComplete:
+    case blink::WebAXEventLoadComplete:
         eventName = "LoadComplete";
         break;
-    case WebKit::WebAXEventLocationChanged:
+    case blink::WebAXEventLocationChanged:
         eventName = "LocationChanged";
         break;
-    case WebKit::WebAXEventMenuListItemSelected:
+    case blink::WebAXEventMenuListItemSelected:
         eventName = "MenuListItemSelected";
         break;
-    case WebKit::WebAXEventMenuListValueChanged:
+    case blink::WebAXEventMenuListValueChanged:
         eventName = "MenuListValueChanged";
         break;
-    case WebKit::WebAXEventRowCollapsed:
+    case blink::WebAXEventRowCollapsed:
         eventName = "RowCollapsed";
         break;
-    case WebKit::WebAXEventRowCountChanged:
+    case blink::WebAXEventRowCountChanged:
         eventName = "RowCountChanged";
         break;
-    case WebKit::WebAXEventRowExpanded:
+    case blink::WebAXEventRowExpanded:
         eventName = "RowExpanded";
         break;
-    case WebKit::WebAXEventScrolledToAnchor:
+    case blink::WebAXEventScrolledToAnchor:
         eventName = "ScrolledToAnchor";
         break;
-    case WebKit::WebAXEventSelectedChildrenChanged:
+    case blink::WebAXEventSelectedChildrenChanged:
         eventName = "SelectedChildrenChanged";
         break;
-    case WebKit::WebAXEventSelectedTextChanged:
+    case blink::WebAXEventSelectedTextChanged:
         eventName = "SelectedTextChanged";
         break;
-    case WebKit::WebAXEventShow:
+    case blink::WebAXEventShow:
         eventName = "Show";
         break;
-    case WebKit::WebAXEventTextChanged:
+    case blink::WebAXEventTextChanged:
         eventName = "TextChanged";
         break;
-    case WebKit::WebAXEventTextInserted:
+    case blink::WebAXEventTextInserted:
         eventName = "TextInserted";
         break;
-    case WebKit::WebAXEventTextRemoved:
+    case blink::WebAXEventTextRemoved:
         eventName = "TextRemoved";
         break;
-    case WebKit::WebAXEventValueChanged:
+    case blink::WebAXEventValueChanged:
         eventName = "ValueChanged";
         break;
     }
@@ -918,9 +918,9 @@ void WebTestProxyBase::postAccessibilityEvent(const WebKit::WebAXObject& obj, We
         string message("AccessibilityNotification - ");
         message += eventName;
 
-        WebKit::WebNode node = obj.node();
+        blink::WebNode node = obj.node();
         if (!node.isNull() && node.isElementNode()) {
-            WebKit::WebElement element = node.to<WebKit::WebElement>();
+            blink::WebElement element = node.to<blink::WebElement>();
             if (element.hasAttribute("id")) {
                 message += " - id:";
                 message += element.getAttribute("id").utf8().data();
@@ -1199,7 +1199,7 @@ void WebTestProxyBase::didDispatchPingLoader(WebFrame*, const WebURL& url)
         m_delegate->printMessage(string("PingLoader dispatched to '") + URLDescription(url).c_str() + "'.\n");
 }
 
-void WebTestProxyBase::willRequestResource(WebFrame* frame, const WebKit::WebCachedURLRequest& request)
+void WebTestProxyBase::willRequestResource(WebFrame* frame, const blink::WebCachedURLRequest& request)
 {
     if (m_testInterfaces->testRunner()->shouldDumpResourceRequestCallbacks()) {
         printFrameDescription(m_delegate, frame);
@@ -1214,7 +1214,7 @@ void WebTestProxyBase::didCreateDataSource(WebFrame*, WebDataSource* ds)
         ds->setDeferMainResourceDataLoad(false);
 }
 
-void WebTestProxyBase::willSendRequest(WebFrame*, unsigned identifier, WebKit::WebURLRequest& request, const WebKit::WebURLResponse& redirectResponse)
+void WebTestProxyBase::willSendRequest(WebFrame*, unsigned identifier, blink::WebURLRequest& request, const blink::WebURLResponse& redirectResponse)
 {
     // Need to use GURL for host() and SchemeIs()
     GURL url = request.url();
@@ -1271,7 +1271,7 @@ void WebTestProxyBase::willSendRequest(WebFrame*, unsigned identifier, WebKit::W
     request.setURL(m_delegate->rewriteLayoutTestsURL(request.url().spec()));
 }
 
-void WebTestProxyBase::didReceiveResponse(WebFrame*, unsigned identifier, const WebKit::WebURLResponse& response)
+void WebTestProxyBase::didReceiveResponse(WebFrame*, unsigned identifier, const blink::WebURLResponse& response)
 {
     if (m_testInterfaces->testRunner()->shouldDumpResourceLoadCallbacks()) {
         if (m_resourceIdentifierMap.find(identifier) == m_resourceIdentifierMap.end())
@@ -1293,7 +1293,7 @@ void WebTestProxyBase::didReceiveResponse(WebFrame*, unsigned identifier, const 
     }
 }
 
-void WebTestProxyBase::didChangeResourcePriority(WebFrame*, unsigned identifier, const WebKit::WebURLRequest::Priority& priority)
+void WebTestProxyBase::didChangeResourcePriority(WebFrame*, unsigned identifier, const blink::WebURLRequest::Priority& priority)
 {
     if (m_testInterfaces->testRunner()->shouldDumpResourcePriorities()) {
         if (m_resourceIdentifierMap.find(identifier) == m_resourceIdentifierMap.end())
@@ -1398,9 +1398,9 @@ WebNavigationPolicy WebTestProxyBase::decidePolicyForNavigation(WebFrame*, WebDa
 
     m_delegate->printMessage(string("Policy delegate: attempt to load ") + URLDescription(request.url()) + " with navigation type '" + webNavigationTypeToString(type) + "'\n");
     if (m_testInterfaces->testRunner()->policyDelegateIsPermissive())
-        result = WebKit::WebNavigationPolicyCurrentTab;
+        result = blink::WebNavigationPolicyCurrentTab;
     else
-        result = WebKit::WebNavigationPolicyIgnore;
+        result = blink::WebNavigationPolicyIgnore;
 
     if (m_testInterfaces->testRunner()->policyDelegateShouldNotifyDone())
         m_testInterfaces->testRunner()->policyDelegateDone();

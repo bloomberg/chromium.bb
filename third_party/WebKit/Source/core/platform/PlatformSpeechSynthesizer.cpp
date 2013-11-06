@@ -48,7 +48,7 @@ PlatformSpeechSynthesizer::PlatformSpeechSynthesizer(PlatformSpeechSynthesizerCl
     : m_speechSynthesizerClient(client)
 {
     m_webSpeechSynthesizerClient = adoptPtr(new WebSpeechSynthesizerClientImpl(this, client));
-    m_webSpeechSynthesizer = adoptPtr(WebKit::Platform::current()->createSpeechSynthesizer(m_webSpeechSynthesizerClient.get()));
+    m_webSpeechSynthesizer = adoptPtr(blink::Platform::current()->createSpeechSynthesizer(m_webSpeechSynthesizerClient.get()));
 }
 
 PlatformSpeechSynthesizer::~PlatformSpeechSynthesizer()
@@ -60,7 +60,7 @@ void PlatformSpeechSynthesizer::speak(PassRefPtr<PlatformSpeechSynthesisUtteranc
     if (!m_webSpeechSynthesizer || !m_webSpeechSynthesizerClient)
         return;
 
-    m_webSpeechSynthesizer->speak(WebKit::WebSpeechSynthesisUtterance(utterance));
+    m_webSpeechSynthesizer->speak(blink::WebSpeechSynthesisUtterance(utterance));
 }
 
 void PlatformSpeechSynthesizer::pause()

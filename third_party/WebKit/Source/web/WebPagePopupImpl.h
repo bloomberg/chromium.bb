@@ -43,7 +43,7 @@ class PagePopupClient;
 class PlatformKeyboardEvent;
 }
 
-namespace WebKit {
+namespace blink {
 
 class PagePopupChromeClient;
 class WebViewImpl;
@@ -109,5 +109,5 @@ inline WebPagePopupImpl* toWebPagePopupImpl(WebCore::PagePopup* popup)
     return static_cast<WebPagePopupImpl*>(popup);
 }
 
-} // namespace WebKit
+} // namespace blink
 #endif // WebPagePopupImpl_h

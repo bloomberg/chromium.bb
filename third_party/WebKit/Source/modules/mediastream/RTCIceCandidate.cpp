@@ -54,15 +54,15 @@ PassRefPtr<RTCIceCandidate> RTCIceCandidate::create(const Dictionary& dictionary
     unsigned short sdpMLineIndex = 0;
     dictionary.get("sdpMLineIndex", sdpMLineIndex);
 
-    return adoptRef(new RTCIceCandidate(WebKit::WebRTCICECandidate(candidate, sdpMid, sdpMLineIndex)));
+    return adoptRef(new RTCIceCandidate(blink::WebRTCICECandidate(candidate, sdpMid, sdpMLineIndex)));
 }
 
-PassRefPtr<RTCIceCandidate> RTCIceCandidate::create(WebKit::WebRTCICECandidate webCandidate)
+PassRefPtr<RTCIceCandidate> RTCIceCandidate::create(blink::WebRTCICECandidate webCandidate)
 {
     return adoptRef(new RTCIceCandidate(webCandidate));
 }
 
-RTCIceCandidate::RTCIceCandidate(WebKit::WebRTCICECandidate webCandidate)
+RTCIceCandidate::RTCIceCandidate(blink::WebRTCICECandidate webCandidate)
     : m_webCandidate(webCandidate)
 {
     ScriptWrappable::init(this);
@@ -83,7 +83,7 @@ unsigned short RTCIceCandidate::sdpMLineIndex() const
     return m_webCandidate.sdpMLineIndex();
 }
 
-WebKit::WebRTCICECandidate RTCIceCandidate::webCandidate()
+blink::WebRTCICECandidate RTCIceCandidate::webCandidate()
 {
     return m_webCandidate;
 }

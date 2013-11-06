@@ -34,7 +34,7 @@
 #include "bindings/v8/V8RecursionScope.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebKit {
+namespace blink {
 
 #ifndef NDEBUG
 class WebScopedMicrotaskSuppression::Impl : public WebCore::V8RecursionScope::MicrotaskSuppression { };
@@ -54,4 +54,4 @@ void WebScopedMicrotaskSuppression::reset()
 #endif
 }
 
-} // namespace WebKit
+} // namespace blink

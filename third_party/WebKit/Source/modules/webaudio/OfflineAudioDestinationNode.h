@@ -68,7 +68,7 @@ private:
     RefPtr<AudioBus> m_renderBus;
 
     // Rendering thread.
-    OwnPtr<WebKit::WebThread> m_renderThread;
+    OwnPtr<blink::WebThread> m_renderThread;
     bool m_startedRendering;
     void offlineRender();
 

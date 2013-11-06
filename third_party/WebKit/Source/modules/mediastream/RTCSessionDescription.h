@@ -45,7 +45,7 @@ class ExceptionState;
 class RTCSessionDescription FINAL : public RefCounted<RTCSessionDescription>, public ScriptWrappable {
 public:
     static PassRefPtr<RTCSessionDescription> create(const Dictionary&, ExceptionState&);
-    static PassRefPtr<RTCSessionDescription> create(WebKit::WebRTCSessionDescription);
+    static PassRefPtr<RTCSessionDescription> create(blink::WebRTCSessionDescription);
 
     String type();
     void setType(const String&, ExceptionState&);
@@ -53,12 +53,12 @@ public:
     String sdp();
     void setSdp(const String&);
 
-    WebKit::WebRTCSessionDescription webSessionDescription();
+    blink::WebRTCSessionDescription webSessionDescription();
 
 private:
-    explicit RTCSessionDescription(WebKit::WebRTCSessionDescription);
+    explicit RTCSessionDescription(blink::WebRTCSessionDescription);
 
-    WebKit::WebRTCSessionDescription m_webSessionDescription;
+    blink::WebRTCSessionDescription m_webSessionDescription;
 };
 
 } // namespace WebCore

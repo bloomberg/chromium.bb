@@ -55,7 +55,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-using WebKit::WebSocketHandle;
+using blink::WebSocketHandle;
 
 namespace WebCore {
 
@@ -116,7 +116,7 @@ void NewWebSocketChannelImpl::BlobLoader::didFail(FileError::ErrorCode errorCode
 
 NewWebSocketChannelImpl::NewWebSocketChannelImpl(ExecutionContext* context, WebSocketChannelClient* client, const String& sourceURL, unsigned lineNumber)
     : ContextLifecycleObserver(context)
-    , m_handle(adoptPtr(WebKit::Platform::current()->createWebSocketHandle()))
+    , m_handle(adoptPtr(blink::Platform::current()->createWebSocketHandle()))
     , m_client(client)
     , m_identifier(0)
     , m_sendingQuota(0)
@@ -149,7 +149,7 @@ void NewWebSocketChannelImpl::connect(const KURL& url, const String& protocol)
         // it.
         protocol.split(", ", true, protocols);
     }
-    WebKit::WebVector<WebKit::WebString> webProtocols(protocols.size());
+    blink::WebVector<blink::WebString> webProtocols(protocols.size());
     for (size_t i = 0; i < protocols.size(); ++i) {
         webProtocols[i] = protocols[i];
     }
@@ -371,7 +371,7 @@ Document* NewWebSocketChannelImpl::document()
     return toDocument(context);
 }
 
-void NewWebSocketChannelImpl::didConnect(WebSocketHandle* handle, bool fail, const WebKit::WebString& selectedProtocol, const WebKit::WebString& extensions)
+void NewWebSocketChannelImpl::didConnect(WebSocketHandle* handle, bool fail, const blink::WebString& selectedProtocol, const blink::WebString& extensions)
 {
     LOG(Network, "NewWebSocketChannelImpl %p didConnect(%p, %d, %s, %s)", this, handle, fail, selectedProtocol.utf8().data(), extensions.utf8().data());
     ASSERT(m_handle);
@@ -391,13 +391,13 @@ void NewWebSocketChannelImpl::didConnect(WebSocketHandle* handle, bool fail, con
     m_client->didConnect();
 }
 
-void NewWebSocketChannelImpl::didFail(WebSocketHandle* handle, const WebKit::WebString& message)
+void NewWebSocketChannelImpl::didFail(WebSocketHandle* handle, const blink::WebString& message)
 {
     LOG(Network, "NewWebSocketChannelImpl %p didFail(%p, %s)", this, handle, message.utf8().data());
     // FIXME: Hande the failure correctly.
     // CloseEventCodeAbnormalClosure is the closing code for the closure
     // without sending or receiving a Close control frame.
-    didClose(handle, false, CloseEventCodeAbnormalClosure, WebKit::WebString());
+    didClose(handle, false, CloseEventCodeAbnormalClosure, blink::WebString());
     // |this| may be deleted.
 }
 
@@ -452,7 +452,7 @@ void NewWebSocketChannelImpl::didReceiveData(WebSocketHandle* handle, bool fin, 
     }
 }
 
-void NewWebSocketChannelImpl::didClose(WebSocketHandle* handle, bool wasClean, unsigned short code, const WebKit::WebString& reason)
+void NewWebSocketChannelImpl::didClose(WebSocketHandle* handle, bool wasClean, unsigned short code, const blink::WebString& reason)
 {
     // FIXME: Use |wasClean| appropriately.
     LOG(Network, "NewWebSocketChannelImpl %p didClose(%p, %d, %u, %s)", this, handle, wasClean, code, String(reason).utf8().data());

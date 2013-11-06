@@ -31,7 +31,7 @@
 #ifndef WebURLLoaderClient_h
 #define WebURLLoaderClient_h
 
-namespace WebKit {
+namespace blink {
 
 class WebURLLoader;
 class WebURLRequest;
@@ -73,6 +73,6 @@ protected:
     virtual ~WebURLLoaderClient() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

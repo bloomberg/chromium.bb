@@ -52,50 +52,50 @@
 
 namespace WebTestRunner {
 
-class WebTestThemeEngineWin : public WebKit::WebThemeEngine, public WebKit::WebNonCopyable {
+class WebTestThemeEngineWin : public blink::WebThemeEngine, public blink::WebNonCopyable {
 public:
     WebTestThemeEngineWin() { }
 
     // WebThemeEngine methods:
     virtual void paintButton(
-        WebKit::WebCanvas*, int part, int state, int classicState,
-        const WebKit::WebRect&);
+        blink::WebCanvas*, int part, int state, int classicState,
+        const blink::WebRect&);
 
     virtual void paintMenuList(
-        WebKit::WebCanvas*, int part, int state, int classicState,
-        const WebKit::WebRect&);
+        blink::WebCanvas*, int part, int state, int classicState,
+        const blink::WebRect&);
 
     virtual void paintScrollbarArrow(
-        WebKit::WebCanvas*, int state, int classicState,
-        const WebKit::WebRect&);
+        blink::WebCanvas*, int state, int classicState,
+        const blink::WebRect&);
 
     virtual void paintScrollbarThumb(
-        WebKit::WebCanvas*, int part, int state, int classicState,
-        const WebKit::WebRect&);
+        blink::WebCanvas*, int part, int state, int classicState,
+        const blink::WebRect&);
 
     virtual void paintScrollbarTrack(
-        WebKit::WebCanvas*, int part, int state, int classicState,
-        const WebKit::WebRect&, const WebKit::WebRect& alignRect);
+        blink::WebCanvas*, int part, int state, int classicState,
+        const blink::WebRect&, const blink::WebRect& alignRect);
 
     virtual void paintSpinButton(
-        WebKit::WebCanvas*, int part, int state, int classicState,
-        const WebKit::WebRect&);
+        blink::WebCanvas*, int part, int state, int classicState,
+        const blink::WebRect&);
 
     virtual void paintTextField(
-        WebKit::WebCanvas*, int part, int state, int classicState,
-        const WebKit::WebRect&, WebKit::WebColor, bool fillContentArea,
+        blink::WebCanvas*, int part, int state, int classicState,
+        const blink::WebRect&, blink::WebColor, bool fillContentArea,
         bool drawEdges);
 
     virtual void paintTrackbar(
-        WebKit::WebCanvas*, int part, int state, int classicState,
-        const WebKit::WebRect&);
+        blink::WebCanvas*, int part, int state, int classicState,
+        const blink::WebRect&);
 
     virtual void paintProgressBar(
-        WebKit::WebCanvas*, const WebKit::WebRect& barRect,
-        const WebKit::WebRect& valueRect,
+        blink::WebCanvas*, const blink::WebRect& barRect,
+        const blink::WebRect& valueRect,
         bool determinate, double time);
 
-    virtual WebKit::WebSize getSize(int part);
+    virtual blink::WebSize getSize(int part);
 };
 
 }

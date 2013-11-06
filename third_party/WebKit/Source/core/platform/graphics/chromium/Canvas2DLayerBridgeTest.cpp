@@ -39,7 +39,7 @@
 #include <gtest/gtest.h>
 
 using namespace WebCore;
-using namespace WebKit;
+using namespace blink;
 using testing::InSequence;
 using testing::Return;
 using testing::Test;

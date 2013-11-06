@@ -33,7 +33,7 @@
 
 #include <limits.h>
 
-namespace WebKit {
+namespace blink {
 
 // "Verb" of a drag-and-drop operation as negotiated between the source and
 // destination.
@@ -54,6 +54,6 @@ enum WebDragOperation {
 // with potentially multiple value bits set.
 typedef WebDragOperation WebDragOperationsMask;
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

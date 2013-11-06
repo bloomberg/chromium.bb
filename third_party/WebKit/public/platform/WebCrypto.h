@@ -41,7 +41,7 @@ namespace WebCore { class CryptoResult; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
-namespace WebKit {
+namespace blink {
 
 class WebArrayBuffer;
 
@@ -110,6 +110,6 @@ protected:
     virtual ~WebCrypto() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

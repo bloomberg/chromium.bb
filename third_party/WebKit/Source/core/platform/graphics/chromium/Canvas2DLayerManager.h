@@ -32,7 +32,7 @@ class Canvas2DLayerManagerTest;
 
 namespace WebCore {
 
-class Canvas2DLayerManager : public WebKit::WebThread::TaskObserver {
+class Canvas2DLayerManager : public blink::WebThread::TaskObserver {
 public:
     static Canvas2DLayerManager& get();
     void init(size_t maxBytesAllocated, size_t targetBytesAllocated);

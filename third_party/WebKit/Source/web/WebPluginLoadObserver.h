@@ -33,7 +33,7 @@
 
 #include "public/platform/WebURL.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebPluginContainerImpl;
 struct WebURLError;
@@ -62,6 +62,6 @@ private:
     void* m_notifyData;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -31,7 +31,7 @@
 #ifndef WebPluginAction_h
 #define WebPluginAction_h
 
-namespace WebKit {
+namespace blink {
 
 struct WebPluginAction {
     enum Type {
@@ -49,6 +49,6 @@ struct WebPluginAction {
         : type(type), enable(enable) { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

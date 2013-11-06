@@ -33,7 +33,7 @@
 
 #include "../platform/WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebArrayBuffer;
 class WebString;
@@ -55,6 +55,6 @@ public:
     virtual void didClose(unsigned long bufferedAmount, ClosingHandshakeCompletionStatus, unsigned short code, const WebString& reason) { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebSocketClient_h

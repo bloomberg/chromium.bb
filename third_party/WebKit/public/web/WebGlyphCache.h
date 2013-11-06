@@ -33,7 +33,7 @@
 
 #include "../platform/WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 
 // An interface to query WebKit's glyph cache (which maps unicode characters to
 // glyphs in particular fonts).
@@ -46,6 +46,6 @@ private:
     WebGlyphCache();  // Not intended to be instanced.
 };
 
-}  // namespace WebKit
+}  // namespace blink
 
 #endif

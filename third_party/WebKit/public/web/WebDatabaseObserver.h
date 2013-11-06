@@ -31,7 +31,7 @@
 #ifndef WebDatabaseObserver_h
 #define WebDatabaseObserver_h
 
-namespace WebKit {
+namespace blink {
 class WebDatabase;
 
 class WebDatabaseObserver {
@@ -51,6 +51,6 @@ protected:
     ~WebDatabaseObserver() {}
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

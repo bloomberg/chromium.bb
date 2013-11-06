@@ -48,7 +48,7 @@
 #include "public/platform/WebVector.h"
 #include "public/testing/WebTestDelegate.h"
 
-using namespace WebKit;
+using namespace blink;
 
 namespace WebTestRunner {
 
@@ -90,7 +90,7 @@ private:
 
 class RTCStatsRequestSucceededTask : public WebMethodTask<MockWebRTCPeerConnectionHandler> {
 public:
-    RTCStatsRequestSucceededTask(MockWebRTCPeerConnectionHandler* object, const WebKit::WebRTCStatsRequest& request, const WebKit::WebRTCStatsResponse& response)
+    RTCStatsRequestSucceededTask(MockWebRTCPeerConnectionHandler* object, const blink::WebRTCStatsRequest& request, const blink::WebRTCStatsResponse& response)
         : WebMethodTask<MockWebRTCPeerConnectionHandler>(object)
         , m_request(request)
         , m_response(response)
@@ -103,8 +103,8 @@ public:
     }
 
 private:
-    WebKit::WebRTCStatsRequest m_request;
-    WebKit::WebRTCStatsResponse m_response;
+    blink::WebRTCStatsRequest m_request;
+    blink::WebRTCStatsResponse m_response;
 };
 
 class RTCVoidRequestTask : public WebMethodTask<MockWebRTCPeerConnectionHandler> {
@@ -291,7 +291,7 @@ void MockWebRTCPeerConnectionHandler::getStats(const WebRTCStatsRequest& request
     m_interfaces->delegate()->postTask(new RTCStatsRequestSucceededTask(this, request, response));
 }
 
-WebRTCDataChannelHandler* MockWebRTCPeerConnectionHandler::createDataChannel(const WebString& label, const WebKit::WebRTCDataChannelInit& init)
+WebRTCDataChannelHandler* MockWebRTCPeerConnectionHandler::createDataChannel(const WebString& label, const blink::WebRTCDataChannelInit& init)
 {
     m_interfaces->delegate()->postTask(new RemoteDataChannelTask(this, m_client, m_interfaces->delegate()));
 

@@ -34,7 +34,7 @@ namespace WebCore {
 class SurroundingText;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebHitTestResult;
 class WebNode;
@@ -65,6 +65,6 @@ protected:
     WebPrivateOwnPtr<WebCore::SurroundingText> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

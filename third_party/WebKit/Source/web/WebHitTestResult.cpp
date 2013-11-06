@@ -39,7 +39,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebNode WebHitTestResult::node() const
 {
@@ -102,4 +102,4 @@ void WebHitTestResult::reset()
     m_private.reset(0);
 }
 
-} // namespace WebKit
+} // namespace blink

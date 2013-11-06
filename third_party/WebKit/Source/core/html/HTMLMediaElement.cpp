@@ -92,7 +92,7 @@
 #endif
 
 using namespace std;
-using WebKit::WebMimeRegistry;
+using blink::WebMimeRegistry;
 
 namespace WebCore {
 
@@ -209,7 +209,7 @@ static bool canLoadURL(const KURL& url, const ContentType& contentType, const St
     // when used with parameters, e.g. "application/octet-stream;codecs=theora", is a type that the user agent knows
     // it cannot render.
     if (contentMIMEType != "application/octet-stream" || contentTypeCodecs.isEmpty()) {
-        WebMimeRegistry::SupportsType supported = WebKit::Platform::current()->mimeRegistry()->supportsMediaMIMEType(contentMIMEType, contentTypeCodecs, keySystem.lower());
+        WebMimeRegistry::SupportsType supported = blink::Platform::current()->mimeRegistry()->supportsMediaMIMEType(contentMIMEType, contentTypeCodecs, keySystem.lower());
         return supported > WebMimeRegistry::IsNotSupported;
     }
 
@@ -237,7 +237,7 @@ WebMimeRegistry::SupportsType HTMLMediaElement::supportsType(const ContentType& 
     if (type == "application/octet-stream")
         return WebMimeRegistry::IsNotSupported;
 
-    return WebKit::Platform::current()->mimeRegistry()->supportsMediaMIMEType(type, typeCodecs, system);
+    return blink::Platform::current()->mimeRegistry()->supportsMediaMIMEType(type, typeCodecs, system);
 }
 
 HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& document, bool createdByParser)
@@ -3477,7 +3477,7 @@ void HTMLMediaElement::willStopBeingFullscreenElement()
         document().renderView()->compositor()->setCompositingLayersNeedRebuild(true);
 }
 
-WebKit::WebLayer* HTMLMediaElement::platformLayer() const
+blink::WebLayer* HTMLMediaElement::platformLayer() const
 {
     return m_player ? m_player->platformLayer() : 0;
 }

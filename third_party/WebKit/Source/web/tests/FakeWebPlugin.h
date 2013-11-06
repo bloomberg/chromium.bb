@@ -33,7 +33,7 @@
 
 #include "WebPlugin.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebDragData;
 class WebFrame;
@@ -45,27 +45,27 @@ class WebURLResponse;
 
 class FakeWebPlugin : public WebPlugin {
 public:
-    FakeWebPlugin(WebKit::WebFrame*, const WebKit::WebPluginParams&);
+    FakeWebPlugin(blink::WebFrame*, const blink::WebPluginParams&);
     virtual ~FakeWebPlugin();
 
     // WebPlugin methods:
-    virtual bool initialize(WebKit::WebPluginContainer*) OVERRIDE;
+    virtual bool initialize(blink::WebPluginContainer*) OVERRIDE;
     virtual void destroy() OVERRIDE;
     virtual NPObject* scriptableObject() OVERRIDE { return 0; }
     virtual bool canProcessDrag() const OVERRIDE { return false; }
-    virtual void paint(WebKit::WebCanvas*, const WebKit::WebRect&) OVERRIDE { }
-    virtual void updateGeometry(const WebKit::WebRect& frameRect, const WebKit::WebRect& clipRect, const WebKit::WebVector<WebKit::WebRect>& cutOutsRects, bool isVisible) OVERRIDE { }
+    virtual void paint(blink::WebCanvas*, const blink::WebRect&) OVERRIDE { }
+    virtual void updateGeometry(const blink::WebRect& frameRect, const blink::WebRect& clipRect, const blink::WebVector<blink::WebRect>& cutOutsRects, bool isVisible) OVERRIDE { }
     virtual void updateFocus(bool) OVERRIDE { }
     virtual void updateVisibility(bool) OVERRIDE { }
     virtual bool acceptsInputEvents() OVERRIDE { return true; }
-    virtual bool handleInputEvent(const WebKit::WebInputEvent&, WebKit::WebCursorInfo&) OVERRIDE { return false; }
-    virtual bool handleDragStatusUpdate(WebKit::WebDragStatus, const WebKit::WebDragData&, WebKit::WebDragOperationsMask, const WebKit::WebPoint& position, const WebKit::WebPoint& screenPosition) OVERRIDE { return false; }
-    virtual void didReceiveResponse(const WebKit::WebURLResponse&) OVERRIDE { }
+    virtual bool handleInputEvent(const blink::WebInputEvent&, blink::WebCursorInfo&) OVERRIDE { return false; }
+    virtual bool handleDragStatusUpdate(blink::WebDragStatus, const blink::WebDragData&, blink::WebDragOperationsMask, const blink::WebPoint& position, const blink::WebPoint& screenPosition) OVERRIDE { return false; }
+    virtual void didReceiveResponse(const blink::WebURLResponse&) OVERRIDE { }
     virtual void didReceiveData(const char* data, int dataLength) OVERRIDE { }
     virtual void didFinishLoading() OVERRIDE { }
-    virtual void didFailLoading(const WebKit::WebURLError&) OVERRIDE { }
-    virtual void didFinishLoadingFrameRequest(const WebKit::WebURL&, void* notifyData) OVERRIDE { }
-    virtual void didFailLoadingFrameRequest(const WebKit::WebURL&, void* notifyData, const WebKit::WebURLError&) OVERRIDE { }
+    virtual void didFailLoading(const blink::WebURLError&) OVERRIDE { }
+    virtual void didFinishLoadingFrameRequest(const blink::WebURL&, void* notifyData) OVERRIDE { }
+    virtual void didFailLoadingFrameRequest(const blink::WebURL&, void* notifyData, const blink::WebURLError&) OVERRIDE { }
     virtual bool isPlaceholder() OVERRIDE { return false; }
 
 private:
@@ -73,6 +73,6 @@ private:
     WebPluginContainer* m_container;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // FakeWebPlugin_h

@@ -33,7 +33,7 @@
 
 #include "WebSpeechInputResult.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebString;
 
@@ -67,6 +67,6 @@ protected:
     ~WebSpeechInputListener() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebSpeechInputListener_h

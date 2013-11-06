@@ -33,7 +33,7 @@ namespace WebCore { class AudioBus; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
-namespace WebKit {
+namespace blink {
 
 class WebAudioBusPrivate;
 
@@ -74,6 +74,6 @@ private:
     WebCore::AudioBus* m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebAudioBus_h

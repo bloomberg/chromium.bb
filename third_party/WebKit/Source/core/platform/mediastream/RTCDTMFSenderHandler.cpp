@@ -31,7 +31,7 @@
 #include "public/platform/WebRTCDTMFSenderHandler.h"
 #include "wtf/PassOwnPtr.h"
 
-using namespace WebKit;
+using namespace blink;
 
 namespace WebCore {
 

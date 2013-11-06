@@ -37,7 +37,7 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebKit {
+namespace blink {
 
 WebEntities::WebEntities(bool xmlEntities)
 {
@@ -84,4 +84,4 @@ String WebEntities::convertEntitiesInString(const String& value) const
     return result.toString();
 }
 
-} // namespace WebKit
+} // namespace blink

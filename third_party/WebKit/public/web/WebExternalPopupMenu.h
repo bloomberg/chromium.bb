@@ -31,7 +31,7 @@
 #ifndef WebExternalPopupMenu_h
 #define WebExternalPopupMenu_h
 
-namespace WebKit {
+namespace blink {
 
 struct WebRect;
 
@@ -41,6 +41,6 @@ public:
     virtual void close() = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebExternalPopupMenu_h

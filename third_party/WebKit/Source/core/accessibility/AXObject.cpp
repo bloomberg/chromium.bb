@@ -42,7 +42,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/WTFString.h"
 
-using WebKit::WebLocalizedString;
+using blink::WebLocalizedString;
 using namespace std;
 
 namespace WebCore {

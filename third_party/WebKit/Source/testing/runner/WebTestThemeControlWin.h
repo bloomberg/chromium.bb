@@ -48,7 +48,7 @@ class SkCanvas;
 
 namespace WebTestRunner {
 
-class WebTestThemeControlWin : public WebKit::WebNonCopyable {
+class WebTestThemeControlWin : public blink::WebNonCopyable {
 public:
     // This list of states mostly mirrors the list in WebCore/platform/ThemeTypes.h
     // but is maintained separately since that isn't public and also to minimize

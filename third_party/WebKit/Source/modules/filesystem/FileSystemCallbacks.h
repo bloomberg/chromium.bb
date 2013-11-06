@@ -132,7 +132,7 @@ private:
 class FileWriterBaseCallbacks : public FileSystemCallbacksBase {
 public:
     static PassOwnPtr<AsyncFileSystemCallbacks> create(PassRefPtr<FileWriterBase>, PassRefPtr<FileWriterBaseCallback>, PassRefPtr<ErrorCallback>);
-    virtual void didCreateFileWriter(PassOwnPtr<WebKit::WebFileWriter>, long long length);
+    virtual void didCreateFileWriter(PassOwnPtr<blink::WebFileWriter>, long long length);
 
 private:
     FileWriterBaseCallbacks(PassRefPtr<FileWriterBase>, PassRefPtr<FileWriterBaseCallback>, PassRefPtr<ErrorCallback>);

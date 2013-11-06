@@ -43,7 +43,7 @@ public:
     ~SkiaImageFilterBuilder();
 
     PassRefPtr<SkImageFilter> build(FilterEffect*, ColorSpace);
-    bool buildFilterOperations(const FilterOperations&, WebKit::WebFilterOperations*);
+    bool buildFilterOperations(const FilterOperations&, blink::WebFilterOperations*);
 
     PassRefPtr<SkImageFilter> transformColorSpace(
         SkImageFilter* input, ColorSpace srcColorSpace, ColorSpace dstColorSpace);

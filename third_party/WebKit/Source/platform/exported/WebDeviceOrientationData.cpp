@@ -33,7 +33,7 @@
 
 #include <string.h>
 
-namespace WebKit {
+namespace blink {
 
 WebDeviceOrientationData::WebDeviceOrientationData()
 {
@@ -44,4 +44,4 @@ WebDeviceOrientationData::WebDeviceOrientationData()
     memset(this, 0, sizeof(*this));
 }
 
-} // namespace WebKit
+} // namespace blink

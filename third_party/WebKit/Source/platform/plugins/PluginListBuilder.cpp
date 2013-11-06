@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-void PluginListBuilder::addPlugin(const WebKit::WebString& name, const WebKit::WebString& description, const WebKit::WebString& fileName)
+void PluginListBuilder::addPlugin(const blink::WebString& name, const blink::WebString& description, const blink::WebString& fileName)
 {
     PluginInfo info;
     info.name = name;
@@ -45,7 +45,7 @@ void PluginListBuilder::addPlugin(const WebKit::WebString& name, const WebKit::W
     m_results->append(info);
 }
 
-void PluginListBuilder::addMediaTypeToLastPlugin(const WebKit::WebString& name, const WebKit::WebString& description)
+void PluginListBuilder::addMediaTypeToLastPlugin(const blink::WebString& name, const blink::WebString& description)
 {
     MimeClassInfo info;
     info.type = name;
@@ -53,7 +53,7 @@ void PluginListBuilder::addMediaTypeToLastPlugin(const WebKit::WebString& name, 
     m_results->last().mimes.append(info);
 }
 
-void PluginListBuilder::addFileExtensionToLastMediaType(const WebKit::WebString& extension)
+void PluginListBuilder::addFileExtensionToLastMediaType(const blink::WebString& extension)
 {
     MimeClassInfo& info = m_results->last().mimes.last();
     info.extensions.append(extension);

@@ -31,7 +31,7 @@
 #ifndef WebAutofillClient_h
 #define WebAutofillClient_h
 
-namespace WebKit {
+namespace blink {
 
 class WebFormElement;
 class WebFrame;
@@ -101,6 +101,6 @@ protected:
     virtual ~WebAutofillClient() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

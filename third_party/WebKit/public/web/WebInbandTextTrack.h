@@ -31,7 +31,7 @@
 #ifndef WebInbandTextTrack_h
 #define WebInbandTextTrack_h
 
-namespace WebKit {
+namespace blink {
 
 class WebString;
 class WebInbandTextTrackClient;
@@ -66,6 +66,6 @@ public:
     virtual int textTrackIndex() const = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

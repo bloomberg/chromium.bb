@@ -29,7 +29,7 @@
 #include "WebCommon.h"
 #include "WebIDBMetadata.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebData;
 class WebIDBCallbacks;
@@ -83,6 +83,6 @@ protected:
     WebIDBDatabase() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebIDBDatabase_h

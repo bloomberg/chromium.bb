@@ -58,11 +58,11 @@
 #include <stdio.h>
 #endif
 
-using WebKit::Platform;
-using WebKit::WebAnimation;
-using WebKit::WebFilterOperations;
-using WebKit::WebLayer;
-using WebKit::WebPoint;
+using blink::Platform;
+using blink::WebAnimation;
+using blink::WebFilterOperations;
+using blink::WebLayer;
+using blink::WebPoint;
 
 namespace WebCore {
 
@@ -103,7 +103,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_contentsLayerId(0)
     , m_contentsLayerPurpose(NoContentsLayer)
     , m_scrollableArea(0)
-    , m_compositingReasons(WebKit::CompositingReasonUnknown)
+    , m_compositingReasons(blink::CompositingReasonUnknown)
 {
 #ifndef NDEBUG
     if (m_client)
@@ -756,7 +756,7 @@ String GraphicsLayer::layerTreeAsText(LayerTreeFlags flags) const
     return ts.release();
 }
 
-WebKit::WebString GraphicsLayer::debugName(WebKit::WebLayer* webLayer)
+blink::WebString GraphicsLayer::debugName(blink::WebLayer* webLayer)
 {
     String name;
     if (!m_client)
@@ -782,7 +782,7 @@ WebKit::WebString GraphicsLayer::debugName(WebKit::WebLayer* webLayer)
     return name;
 }
 
-void GraphicsLayer::setCompositingReasons(WebKit::WebCompositingReasons reasons)
+void GraphicsLayer::setCompositingReasons(blink::WebCompositingReasons reasons)
 {
     m_compositingReasons = reasons;
     m_layer->layer()->setCompositingReasons(reasons);
@@ -868,13 +868,13 @@ void GraphicsLayer::setContentsVisible(bool contentsVisible)
     updateLayerIsDrawable();
 }
 
-void GraphicsLayer::setClipParent(WebKit::WebLayer* parent)
+void GraphicsLayer::setClipParent(blink::WebLayer* parent)
 {
     m_hasClipParent = !!parent;
     m_layer->layer()->setClipParent(parent);
 }
 
-void GraphicsLayer::setScrollParent(WebKit::WebLayer* parent)
+void GraphicsLayer::setScrollParent(blink::WebLayer* parent)
 {
     m_hasScrollParent = !!parent;
     m_layer->layer()->setScrollParent(parent);

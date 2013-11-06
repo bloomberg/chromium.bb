@@ -39,7 +39,7 @@
 
 using namespace::WebCore;
 
-namespace WebKit {
+namespace blink {
 
 static int toCSSValueKeyword(WebColorName name)
 {

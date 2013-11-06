@@ -51,20 +51,20 @@ class AudioSourceProviderClient;
 class HTMLMediaSource;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebHelperPluginImpl;
 class WebAudioSourceProvider;
 class WebMediaPlayer;
 
 // This class serves as a bridge between WebCore::MediaPlayer and
-// WebKit::WebMediaPlayer.
+// blink::WebMediaPlayer.
 class WebMediaPlayerClientImpl : public WebCore::MediaPlayer, public WebMediaPlayerClient {
 
 public:
     static PassOwnPtr<WebCore::MediaPlayer> create(WebCore::MediaPlayerClient*);
 
-    // Returns the encapsulated WebKit::WebMediaPlayer.
+    // Returns the encapsulated blink::WebMediaPlayer.
     WebMediaPlayer* mediaPlayer() const;
 
     // WebMediaPlayerClient methods:
@@ -97,7 +97,7 @@ public:
     virtual void load(const WTF::String& url) OVERRIDE;
     virtual void load(const WTF::String& url, PassRefPtr<WebCore::HTMLMediaSource>) OVERRIDE;
 
-    virtual WebKit::WebLayer* platformLayer() const OVERRIDE;
+    virtual blink::WebLayer* platformLayer() const OVERRIDE;
     virtual void play() OVERRIDE;
     virtual void pause() OVERRIDE;
     virtual void prepareToPlay() OVERRIDE;
@@ -182,7 +182,7 @@ private:
     // AudioClientImpl wraps an AudioSourceProviderClient.
     // When the audio format is known, Chromium calls setFormat() which then dispatches into WebCore.
 
-    class AudioClientImpl : public WebKit::WebAudioSourceProviderClient {
+    class AudioClientImpl : public blink::WebAudioSourceProviderClient {
     public:
         AudioClientImpl(WebCore::AudioSourceProviderClient* client)
             : m_client(client)
@@ -229,6 +229,6 @@ private:
     RefPtr<WebCore::HTMLMediaSource> m_mediaSource;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -34,7 +34,7 @@ namespace WebCore {
 class GeolocationPosition;
 }
 
-namespace WebKit {
+namespace blink {
 class WebGeolocationClient;
 
 class GeolocationClientProxy : public WebCore::GeolocationClient {
@@ -56,6 +56,6 @@ private:
     RefPtr<WebCore::GeolocationPosition> m_lastPosition;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // GeolocationClientProxy_h

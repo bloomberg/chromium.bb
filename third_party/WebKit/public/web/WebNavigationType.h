@@ -31,7 +31,7 @@
 #ifndef WebNavigationType_h
 #define WebNavigationType_h
 
-namespace WebKit {
+namespace blink {
 
 enum WebNavigationType {
     WebNavigationTypeLinkClicked,
@@ -42,6 +42,6 @@ enum WebNavigationType {
     WebNavigationTypeOther
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -37,7 +37,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebFrameImpl;
 class WebPluginContainerImpl;
@@ -172,6 +172,6 @@ inline FrameLoaderClientImpl* toFrameLoaderClientImpl(WebCore::FrameLoaderClient
     return static_cast<FrameLoaderClientImpl*>(client);
 }
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

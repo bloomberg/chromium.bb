@@ -39,7 +39,7 @@
 #include "public/platform/WebRTCStatsRequest.h"
 #include "public/testing/WebTask.h"
 
-namespace WebKit {
+namespace blink {
 class WebRTCPeerConnectionHandlerClient;
 };
 
@@ -47,26 +47,26 @@ namespace WebTestRunner {
 
 class TestInterfaces;
 
-class MockWebRTCPeerConnectionHandler : public WebKit::WebRTCPeerConnectionHandler, public WebKit::WebNonCopyable {
+class MockWebRTCPeerConnectionHandler : public blink::WebRTCPeerConnectionHandler, public blink::WebNonCopyable {
 public:
-    MockWebRTCPeerConnectionHandler(WebKit::WebRTCPeerConnectionHandlerClient*, TestInterfaces*);
+    MockWebRTCPeerConnectionHandler(blink::WebRTCPeerConnectionHandlerClient*, TestInterfaces*);
 
-    virtual bool initialize(const WebKit::WebRTCConfiguration&, const WebKit::WebMediaConstraints&) OVERRIDE;
+    virtual bool initialize(const blink::WebRTCConfiguration&, const blink::WebMediaConstraints&) OVERRIDE;
 
-    virtual void createOffer(const WebKit::WebRTCSessionDescriptionRequest&, const WebKit::WebMediaConstraints&) OVERRIDE;
-    virtual void createAnswer(const WebKit::WebRTCSessionDescriptionRequest&, const WebKit::WebMediaConstraints&) OVERRIDE;
-    virtual void setLocalDescription(const WebKit::WebRTCVoidRequest&, const WebKit::WebRTCSessionDescription&) OVERRIDE;
-    virtual void setRemoteDescription(const WebKit::WebRTCVoidRequest&, const WebKit::WebRTCSessionDescription&) OVERRIDE;
-    virtual WebKit::WebRTCSessionDescription localDescription() OVERRIDE;
-    virtual WebKit::WebRTCSessionDescription remoteDescription() OVERRIDE;
-    virtual bool updateICE(const WebKit::WebRTCConfiguration&, const WebKit::WebMediaConstraints&) OVERRIDE;
-    virtual bool addICECandidate(const WebKit::WebRTCICECandidate&) OVERRIDE;
-    virtual bool addICECandidate(const WebKit::WebRTCVoidRequest&, const WebKit::WebRTCICECandidate&) OVERRIDE;
-    virtual bool addStream(const WebKit::WebMediaStream&, const WebKit::WebMediaConstraints&) OVERRIDE;
-    virtual void removeStream(const WebKit::WebMediaStream&) OVERRIDE;
-    virtual void getStats(const WebKit::WebRTCStatsRequest&) OVERRIDE;
-    virtual WebKit::WebRTCDataChannelHandler* createDataChannel(const WebKit::WebString& label, const WebKit::WebRTCDataChannelInit&) OVERRIDE;
-    virtual WebKit::WebRTCDTMFSenderHandler* createDTMFSender(const WebKit::WebMediaStreamTrack&) OVERRIDE;
+    virtual void createOffer(const blink::WebRTCSessionDescriptionRequest&, const blink::WebMediaConstraints&) OVERRIDE;
+    virtual void createAnswer(const blink::WebRTCSessionDescriptionRequest&, const blink::WebMediaConstraints&) OVERRIDE;
+    virtual void setLocalDescription(const blink::WebRTCVoidRequest&, const blink::WebRTCSessionDescription&) OVERRIDE;
+    virtual void setRemoteDescription(const blink::WebRTCVoidRequest&, const blink::WebRTCSessionDescription&) OVERRIDE;
+    virtual blink::WebRTCSessionDescription localDescription() OVERRIDE;
+    virtual blink::WebRTCSessionDescription remoteDescription() OVERRIDE;
+    virtual bool updateICE(const blink::WebRTCConfiguration&, const blink::WebMediaConstraints&) OVERRIDE;
+    virtual bool addICECandidate(const blink::WebRTCICECandidate&) OVERRIDE;
+    virtual bool addICECandidate(const blink::WebRTCVoidRequest&, const blink::WebRTCICECandidate&) OVERRIDE;
+    virtual bool addStream(const blink::WebMediaStream&, const blink::WebMediaConstraints&) OVERRIDE;
+    virtual void removeStream(const blink::WebMediaStream&) OVERRIDE;
+    virtual void getStats(const blink::WebRTCStatsRequest&) OVERRIDE;
+    virtual blink::WebRTCDataChannelHandler* createDataChannel(const blink::WebString& label, const blink::WebRTCDataChannelInit&) OVERRIDE;
+    virtual blink::WebRTCDTMFSenderHandler* createDTMFSender(const blink::WebMediaStreamTrack&) OVERRIDE;
     virtual void stop() OVERRIDE;
 
     // WebTask related methods
@@ -75,11 +75,11 @@ public:
 private:
     MockWebRTCPeerConnectionHandler() { }
 
-    WebKit::WebRTCPeerConnectionHandlerClient* m_client;
+    blink::WebRTCPeerConnectionHandlerClient* m_client;
     bool m_stopped;
     WebTaskList m_taskList;
-    WebKit::WebRTCSessionDescription m_localDescription;
-    WebKit::WebRTCSessionDescription m_remoteDescription;
+    blink::WebRTCSessionDescription m_localDescription;
+    blink::WebRTCSessionDescription m_remoteDescription;
     int m_streamCount;
     TestInterfaces* m_interfaces;
 };

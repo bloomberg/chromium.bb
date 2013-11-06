@@ -31,7 +31,7 @@
 #include "WebColor.h"
 #include "WebPoint.h"
 
-namespace WebKit {
+namespace blink {
 
 // An ordered list of filter operations.
 class WebFilterOperations {
@@ -58,6 +58,6 @@ public:
     virtual void clear() = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebFilterOperations_h

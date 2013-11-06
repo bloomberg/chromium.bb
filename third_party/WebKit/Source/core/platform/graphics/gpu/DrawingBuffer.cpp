@@ -144,14 +144,14 @@ void DrawingBuffer::markContentsChanged()
     m_contentsChangeCommitted = false;
 }
 
-WebKit::WebGraphicsContext3D* DrawingBuffer::context()
+blink::WebGraphicsContext3D* DrawingBuffer::context()
 {
     if (!m_context)
         return 0;
     return m_context->webContext();
 }
 
-bool DrawingBuffer::prepareMailbox(WebKit::WebExternalTextureMailbox* outMailbox, WebKit::WebExternalBitmap* bitmap)
+bool DrawingBuffer::prepareMailbox(blink::WebExternalTextureMailbox* outMailbox, blink::WebExternalBitmap* bitmap)
 {
     if (!m_context || !m_contentsChanged || !m_lastColorBuffer)
         return false;
@@ -220,7 +220,7 @@ bool DrawingBuffer::prepareMailbox(WebKit::WebExternalTextureMailbox* outMailbox
     return true;
 }
 
-void DrawingBuffer::mailboxReleased(const WebKit::WebExternalTextureMailbox& mailbox)
+void DrawingBuffer::mailboxReleased(const blink::WebExternalTextureMailbox& mailbox)
 {
     for (size_t i = 0; i < m_textureMailboxes.size(); i++) {
          RefPtr<MailboxInfo> mailboxInfo = m_textureMailboxes[i];
@@ -345,13 +345,13 @@ Platform3DObject DrawingBuffer::framebuffer() const
     return m_fbo;
 }
 
-WebKit::WebLayer* DrawingBuffer::platformLayer()
+blink::WebLayer* DrawingBuffer::platformLayer()
 {
     if (!m_context)
         return 0;
 
     if (!m_layer) {
-        m_layer = adoptPtr(WebKit::Platform::current()->compositorSupport()->createExternalTextureLayer(this));
+        m_layer = adoptPtr(blink::Platform::current()->compositorSupport()->createExternalTextureLayer(this));
 
         m_layer->setOpaque(!m_attributes.alpha);
         m_layer->setBlendBackgroundColor(m_attributes.alpha);

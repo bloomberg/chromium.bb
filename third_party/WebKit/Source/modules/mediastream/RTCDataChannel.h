@@ -31,7 +31,7 @@
 #include "platform/Timer.h"
 #include "wtf/RefCounted.h"
 
-namespace WebKit {
+namespace blink {
 struct WebRTCDataChannelInit;
 }
 
@@ -46,7 +46,7 @@ class RTCDataChannel : public RefCounted<RTCDataChannel>, public ScriptWrappable
     REFCOUNTED_EVENT_TARGET(RTCDataChannel);
 public:
     static PassRefPtr<RTCDataChannel> create(ExecutionContext*, PassOwnPtr<RTCDataChannelHandler>);
-    static PassRefPtr<RTCDataChannel> create(ExecutionContext*, RTCPeerConnectionHandler*, const String& label, const WebKit::WebRTCDataChannelInit&, ExceptionState&);
+    static PassRefPtr<RTCDataChannel> create(ExecutionContext*, RTCPeerConnectionHandler*, const String& label, const blink::WebRTCDataChannelInit&, ExceptionState&);
     ~RTCDataChannel();
 
     String label() const;

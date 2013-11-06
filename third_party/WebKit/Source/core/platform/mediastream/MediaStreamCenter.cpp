@@ -53,7 +53,7 @@ MediaStreamCenter& MediaStreamCenter::instance()
 }
 
 MediaStreamCenter::MediaStreamCenter()
-    : m_private(adoptPtr(WebKit::Platform::current()->createMediaStreamCenter(this)))
+    : m_private(adoptPtr(blink::Platform::current()->createMediaStreamCenter(this)))
 {
 }
 
@@ -100,12 +100,12 @@ bool MediaStreamCenter::didStopMediaStreamTrack(MediaStreamComponent* track)
 void MediaStreamCenter::didCreateMediaStream(MediaStreamDescriptor* stream)
 {
     if (m_private) {
-        WebKit::WebMediaStream webStream(stream);
+        blink::WebMediaStream webStream(stream);
         m_private->didCreateMediaStream(webStream);
     }
 }
 
-void MediaStreamCenter::stopLocalMediaStream(const WebKit::WebMediaStream& webStream)
+void MediaStreamCenter::stopLocalMediaStream(const blink::WebMediaStream& webStream)
 {
     MediaStreamDescriptor* stream = webStream;
     MediaStreamDescriptorClient* client = stream->client();

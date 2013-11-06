@@ -35,7 +35,7 @@ static String platformLanguage()
 {
     DEFINE_STATIC_LOCAL(String, computedDefaultLanguage, ());
     if (computedDefaultLanguage.isEmpty()) {
-        computedDefaultLanguage.append(WebKit::Platform::current()->defaultLocale());
+        computedDefaultLanguage.append(blink::Platform::current()->defaultLocale());
         ASSERT(!computedDefaultLanguage.isEmpty());
     }
     return computedDefaultLanguage;

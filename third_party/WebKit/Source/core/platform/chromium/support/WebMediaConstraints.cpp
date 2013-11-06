@@ -36,7 +36,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebMediaConstraint::WebMediaConstraint(const WebCore::MediaConstraint& other)
     : m_name(other.m_name)
@@ -104,5 +104,5 @@ bool WebMediaConstraints::getOptionalConstraintValue(const WebString& name, WebS
     return false;
 }
 
-} // namespace WebKit
+} // namespace blink
 

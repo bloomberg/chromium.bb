@@ -30,7 +30,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 void WebGeolocationPosition::assign(double timestamp, double latitude, double longitude, double accuracy, bool providesAltitude, double altitude, bool providesAltitudeAccuracy, double altitudeAccuracy, bool providesHeading, double heading, bool providesSpeed, double speed)
 {
@@ -58,4 +58,4 @@ WebGeolocationPosition::operator PassRefPtr<GeolocationPosition>() const
     return m_private.get();
 }
 
-} // namespace WebKit
+} // namespace blink

@@ -39,7 +39,7 @@
 #include "core/page/WindowFeatures.h"
 #endif
 
-namespace WebKit {
+namespace blink {
 
 struct WebWindowFeatures {
     float x;
@@ -127,6 +127,6 @@ struct WebWindowFeatures {
 #endif
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

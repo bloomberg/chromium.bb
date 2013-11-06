@@ -35,11 +35,11 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 void WebNetworkStateNotifier::setOnLine(bool onLine)
 {
     networkStateNotifier().setOnLine(onLine);
 }
 
-} // namespace WebKit
+} // namespace blink

@@ -49,10 +49,10 @@ public:
     static PassRefPtr<CryptoResultImpl> create(ScriptPromise);
 
     virtual void completeWithError() OVERRIDE;
-    virtual void completeWithBuffer(const WebKit::WebArrayBuffer&) OVERRIDE;
+    virtual void completeWithBuffer(const blink::WebArrayBuffer&) OVERRIDE;
     virtual void completeWithBoolean(bool) OVERRIDE;
-    virtual void completeWithKey(const WebKit::WebCryptoKey&) OVERRIDE;
-    virtual void completeWithKeyPair(const WebKit::WebCryptoKey& publicKey, const WebKit::WebCryptoKey& privateKey) OVERRIDE;
+    virtual void completeWithKey(const blink::WebCryptoKey&) OVERRIDE;
+    virtual void completeWithKeyPair(const blink::WebCryptoKey& publicKey, const blink::WebCryptoKey& privateKey) OVERRIDE;
 
 private:
     explicit CryptoResultImpl(ScriptPromise);

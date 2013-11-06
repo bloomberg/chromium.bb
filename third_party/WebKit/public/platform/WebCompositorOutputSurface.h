@@ -26,7 +26,7 @@
 #ifndef WebCompositorOutputSurface_h
 #define WebCompositorOutputSurface_h
 
-namespace WebKit {
+namespace blink {
 
 // An empty base class for cc::OutputSurface in chromium.
 class WebCompositorOutputSurface { };

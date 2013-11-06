@@ -99,7 +99,7 @@ void PagePopupController::clearPagePopupClient()
 
 void PagePopupController::histogramEnumeration(const String& name, int sample, int boundaryValue)
 {
-    WebKit::Platform::current()->histogramEnumeration(name.utf8().data(), sample, boundaryValue);
+    blink::Platform::current()->histogramEnumeration(name.utf8().data(), sample, boundaryValue);
 }
 
 }

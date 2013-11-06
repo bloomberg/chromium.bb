@@ -39,7 +39,7 @@ namespace WebCore {
 class RTCIceCandidateDescriptor;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebString;
 class WebRTCICECandidatePrivate;
@@ -77,6 +77,6 @@ private:
     WebPrivatePtr<WebRTCICECandidatePrivate> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebRTCICECandidate_h

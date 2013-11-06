@@ -41,16 +41,16 @@ namespace WebCore {
 
 class Algorithm : public ScriptWrappable, public RefCounted<Algorithm> {
 public:
-    static PassRefPtr<Algorithm> create(const WebKit::WebCryptoAlgorithm&);
+    static PassRefPtr<Algorithm> create(const blink::WebCryptoAlgorithm&);
 
     String name();
 
-    WebKit::WebCryptoAlgorithmParamsType type() const { return m_algorithm.paramsType(); }
+    blink::WebCryptoAlgorithmParamsType type() const { return m_algorithm.paramsType(); }
 
 protected:
-    explicit Algorithm(const WebKit::WebCryptoAlgorithm&);
+    explicit Algorithm(const blink::WebCryptoAlgorithm&);
 
-    const WebKit::WebCryptoAlgorithm m_algorithm;
+    const blink::WebCryptoAlgorithm m_algorithm;
 };
 
 } // namespace WebCore

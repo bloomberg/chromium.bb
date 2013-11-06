@@ -31,7 +31,7 @@
 #ifndef WebPermissionClient_h
 #define WebPermissionClient_h
 
-namespace WebKit {
+namespace blink {
 
 class WebDocument;
 class WebFrame;
@@ -114,6 +114,6 @@ protected:
     ~WebPermissionClient() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

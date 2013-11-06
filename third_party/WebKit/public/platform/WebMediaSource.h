@@ -34,7 +34,7 @@
 #include "WebTimeRange.h"
 #include "WebURL.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebSourceBuffer;
 
@@ -61,6 +61,6 @@ public:
     virtual void unmarkEndOfStream() = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

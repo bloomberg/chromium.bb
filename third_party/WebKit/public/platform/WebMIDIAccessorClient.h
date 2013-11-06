@@ -33,7 +33,7 @@
 
 #include "WebString.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebMIDIAccessorClient {
 public:
@@ -49,6 +49,6 @@ protected:
     virtual ~WebMIDIAccessorClient() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebMIDIAccessorClient_h

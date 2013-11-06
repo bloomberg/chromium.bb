@@ -43,13 +43,13 @@ unsigned RsaKeyGenParams::modulusLength() const
 Uint8Array* RsaKeyGenParams::publicExponent()
 {
     if (!m_publicExponent) {
-        const WebKit::WebVector<unsigned char>& exponent = m_algorithm.rsaKeyGenParams()->publicExponent();
+        const blink::WebVector<unsigned char>& exponent = m_algorithm.rsaKeyGenParams()->publicExponent();
         m_publicExponent = Uint8Array::create(exponent.data(), exponent.size());
     }
     return m_publicExponent.get();
 }
 
-RsaKeyGenParams::RsaKeyGenParams(const WebKit::WebCryptoAlgorithm& algorithm)
+RsaKeyGenParams::RsaKeyGenParams(const blink::WebCryptoAlgorithm& algorithm)
     : Algorithm(algorithm)
 {
     ASSERT(algorithm.rsaKeyGenParams());

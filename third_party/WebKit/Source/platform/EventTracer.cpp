@@ -37,7 +37,7 @@
 
 namespace WebCore {
 
-COMPILE_ASSERT(sizeof(WebKit::Platform::TraceEventHandle) == sizeof(TraceEvent::TraceEventHandle), TraceEventHandle_types_must_be_compatible);
+COMPILE_ASSERT(sizeof(blink::Platform::TraceEventHandle) == sizeof(TraceEvent::TraceEventHandle), TraceEventHandle_types_must_be_compatible);
 
 // The dummy variable is needed to avoid a crash when someone updates the state variables
 // before EventTracer::initialize() is called.
@@ -46,33 +46,33 @@ long* traceSamplingState[3] = {&dummyTraceSamplingState, &dummyTraceSamplingStat
 
 void EventTracer::initialize()
 {
-    traceSamplingState[0] = WebKit::Platform::current()->getTraceSamplingState(0);
+    traceSamplingState[0] = blink::Platform::current()->getTraceSamplingState(0);
     // FIXME: traceSamplingState[0] can be 0 in split-dll build. http://crbug.com/256965
     if (!traceSamplingState[0])
         traceSamplingState[0] = &dummyTraceSamplingState;
-    traceSamplingState[1] = WebKit::Platform::current()->getTraceSamplingState(1);
+    traceSamplingState[1] = blink::Platform::current()->getTraceSamplingState(1);
     if (!traceSamplingState[1])
         traceSamplingState[1] = &dummyTraceSamplingState;
-    traceSamplingState[2] = WebKit::Platform::current()->getTraceSamplingState(2);
+    traceSamplingState[2] = blink::Platform::current()->getTraceSamplingState(2);
     if (!traceSamplingState[2])
         traceSamplingState[2] = &dummyTraceSamplingState;
 }
 
 const unsigned char* EventTracer::getTraceCategoryEnabledFlag(const char* categoryName)
 {
-    return WebKit::Platform::current()->getTraceCategoryEnabledFlag(categoryName);
+    return blink::Platform::current()->getTraceCategoryEnabledFlag(categoryName);
 }
 
 TraceEvent::TraceEventHandle EventTracer::addTraceEvent(char phase, const unsigned char* categoryEnabledFlag,
     const char* name, unsigned long long id, int numArgs, const char** argNames,
     const unsigned char* argTypes, const unsigned long long* argValues, unsigned char flags)
 {
-    return WebKit::Platform::current()->addTraceEvent(phase, categoryEnabledFlag, name, id, numArgs, argNames, argTypes, argValues, flags);
+    return blink::Platform::current()->addTraceEvent(phase, categoryEnabledFlag, name, id, numArgs, argNames, argTypes, argValues, flags);
 }
 
 void EventTracer::updateTraceEventDuration(TraceEvent::TraceEventHandle handle)
 {
-    WebKit::Platform::current()->updateTraceEventDuration(handle);
+    blink::Platform::current()->updateTraceEventDuration(handle);
 }
 
 } // namespace WebCore

@@ -46,7 +46,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 PassOwnPtr<FileSystemClient> LocalFileSystemClient::create()
 {
@@ -61,7 +61,7 @@ bool LocalFileSystemClient::allowFileSystem(ExecutionContext* context)
 {
     Document* document = toDocument(context);
     WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
-    WebKit::WebViewImpl* webView = webFrame->viewImpl();
+    blink::WebViewImpl* webView = webFrame->viewImpl();
 
     return !webView->permissionClient() || webView->permissionClient()->allowFileSystem(webFrame);
 }
@@ -70,4 +70,4 @@ LocalFileSystemClient::LocalFileSystemClient()
 {
 }
 
-} // namespace WebKit
+} // namespace blink

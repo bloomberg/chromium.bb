@@ -43,7 +43,7 @@
 
 namespace WebCore {
 
-using WebKit::WebLocalizedString;
+using blink::WebLocalizedString;
 using namespace HTMLNames;
 
 static const int dateTimeLocalDefaultStep = 60;

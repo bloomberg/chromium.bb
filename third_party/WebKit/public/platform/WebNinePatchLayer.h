@@ -36,7 +36,7 @@
 #include "WebRect.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebNinePatchLayer {
 public:
@@ -46,6 +46,6 @@ public:
     virtual void setBitmap(SkBitmap, const WebRect& aperture) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebNinePatchLayer_h

@@ -37,7 +37,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebNotificationPresenter;
 
@@ -65,6 +65,6 @@ private:
     WebNotificationPresenter* m_presenter;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // NotificationPresenterImpl_h

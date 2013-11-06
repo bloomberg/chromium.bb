@@ -31,7 +31,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebIDBDatabase;
 
@@ -66,6 +66,6 @@ private:
     OwnPtr<WebIDBDatabase> m_webIDBDatabase;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // IDBDatabaseBackendProxy_h

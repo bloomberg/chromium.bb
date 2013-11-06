@@ -39,7 +39,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebKit {
+namespace blink {
 class WebMediaStream;
 class WebMediaStreamCenter;
 class WebMediaStreamTrack;
@@ -51,7 +51,7 @@ class MediaStreamComponent;
 class MediaStreamDescriptor;
 class MediaStreamTrackSourcesRequest;
 
-class MediaStreamCenter : public WebKit::WebMediaStreamCenterClient {
+class MediaStreamCenter : public blink::WebMediaStreamCenterClient {
 public:
     ~MediaStreamCenter();
 
@@ -65,13 +65,13 @@ public:
     bool didStopMediaStreamTrack(MediaStreamComponent*);
     void didCreateMediaStream(MediaStreamDescriptor*);
 
-    // WebKit::WebMediaStreamCenterClient
-    virtual void stopLocalMediaStream(const WebKit::WebMediaStream&) OVERRIDE;
+    // blink::WebMediaStreamCenterClient
+    virtual void stopLocalMediaStream(const blink::WebMediaStream&) OVERRIDE;
 
 private:
     MediaStreamCenter();
 
-    OwnPtr<WebKit::WebMediaStreamCenter> m_private;
+    OwnPtr<blink::WebMediaStreamCenter> m_private;
 };
 
 } // namespace WebCore

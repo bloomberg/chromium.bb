@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 #include "WebString.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebURL;
 
@@ -62,6 +62,6 @@ public:
     virtual void preconnect(const WebURL&, WebPreconnectMotivation) { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebPrescientNetworking_h

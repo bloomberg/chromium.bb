@@ -36,15 +36,15 @@ namespace WebCore {
 
 PassRefPtr<AudioBus> decodeAudioFileData(const char* data, size_t size, double sampleRate)
 {
-    WebKit::WebAudioBus webAudioBus;
-    if (WebKit::Platform::current()->loadAudioResource(&webAudioBus, data, size, sampleRate))
+    blink::WebAudioBus webAudioBus;
+    if (blink::Platform::current()->loadAudioResource(&webAudioBus, data, size, sampleRate))
         return webAudioBus.release();
     return 0;
 }
 
 PassRefPtr<AudioBus> AudioBus::loadPlatformResource(const char* name, float sampleRate)
 {
-    const WebKit::WebData& resource = WebKit::Platform::current()->loadResource(name);
+    const blink::WebData& resource = blink::Platform::current()->loadResource(name);
     if (resource.isEmpty())
         return 0;
 

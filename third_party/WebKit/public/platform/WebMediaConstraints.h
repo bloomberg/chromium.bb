@@ -42,7 +42,7 @@ struct MediaConstraint;
 class MediaConstraints;
 }
 
-namespace WebKit {
+namespace blink {
 
 struct WebMediaConstraint {
     WebMediaConstraint()
@@ -95,6 +95,6 @@ private:
     WebPrivatePtr<WebCore::MediaConstraints> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebMediaConstraints_h

@@ -30,7 +30,7 @@
 #ifndef   WebFileError_h
 #define   WebFileError_h
 
-namespace WebKit {
+namespace blink {
 
 // File-related error code defined in HTML5 File API.
 enum WebFileError {
@@ -48,6 +48,6 @@ enum WebFileError {
     WebFileErrorPathExists = 12,
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

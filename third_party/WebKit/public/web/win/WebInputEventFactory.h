@@ -35,7 +35,7 @@
 
 #include <windows.h>
 
-namespace WebKit {
+namespace blink {
 
 class WebKeyboardEvent;
 class WebMouseEvent;
@@ -56,6 +56,6 @@ public:
     BLINK_EXPORT static void resetLastClickState();
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

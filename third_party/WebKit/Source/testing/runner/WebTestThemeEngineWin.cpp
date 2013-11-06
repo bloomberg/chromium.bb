@@ -41,7 +41,7 @@
 #include <vsstyle.h>
 #include <windows.h>
 
-using namespace WebKit;
+using namespace blink;
 
 namespace WebTestRunner {
 
@@ -726,7 +726,7 @@ void WebTestThemeEngineWin::paintTrackbar(WebCanvas* canvas, int part, int state
 }
 
 
-void WebTestThemeEngineWin::paintProgressBar(WebKit::WebCanvas* canvas, const WebKit::WebRect& barRect, const WebKit::WebRect& valueRect, bool determinate, double)
+void WebTestThemeEngineWin::paintProgressBar(blink::WebCanvas* canvas, const blink::WebRect& barRect, const blink::WebRect& valueRect, bool determinate, double)
 {
     WebTestThemeControlWin::Type ctype = WebTestThemeControlWin::ProgressBarType;
     WebTestThemeControlWin::State cstate = determinate ? WebTestThemeControlWin::NormalState : WebTestThemeControlWin::IndeterminateState;
@@ -734,9 +734,9 @@ void WebTestThemeEngineWin::paintProgressBar(WebKit::WebCanvas* canvas, const We
 }
 
 
-WebKit::WebSize WebTestThemeEngineWin::getSize(int part)
+blink::WebSize WebTestThemeEngineWin::getSize(int part)
 {
-    return WebKit::WebSize();
+    return blink::WebSize();
 }
 
 }

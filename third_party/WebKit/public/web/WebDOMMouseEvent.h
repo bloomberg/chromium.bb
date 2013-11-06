@@ -36,7 +36,7 @@
 namespace WebCore { class Event; }
 #endif
 
-namespace WebKit {
+namespace blink {
 
 class WebDOMMouseEvent : public WebDOMEvent {
 public:
@@ -55,6 +55,6 @@ public:
     BLINK_EXPORT bool buttonDown() const;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

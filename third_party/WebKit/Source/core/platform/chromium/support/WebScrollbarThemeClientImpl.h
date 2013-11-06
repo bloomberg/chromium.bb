@@ -39,7 +39,7 @@ class WebScrollbarThemeClientImpl : public ScrollbarThemeClient {
 public:
     // Caller must retain ownership of this pointer and ensure that its lifetime
     // exceeds this instance.
-    WebScrollbarThemeClientImpl(WebKit::WebScrollbar*);
+    WebScrollbarThemeClientImpl(blink::WebScrollbar*);
     ~WebScrollbarThemeClientImpl();
 
     // Implement ScrollbarThemeClient interface
@@ -79,7 +79,7 @@ public:
     virtual void setIsAlphaLocked(bool) OVERRIDE;
 
 private:
-    WebKit::WebScrollbar* m_scrollbar;
+    blink::WebScrollbar* m_scrollbar;
 };
 
 }

@@ -45,7 +45,7 @@
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebUnitTestSupport.h"
 
-namespace WebKit {
+namespace blink {
 namespace FrameTestHelpers {
 
 namespace {
@@ -154,4 +154,4 @@ void WebViewHelper::reset()
 }
 
 } // namespace FrameTestHelpers
-} // namespace WebKit
+} // namespace blink

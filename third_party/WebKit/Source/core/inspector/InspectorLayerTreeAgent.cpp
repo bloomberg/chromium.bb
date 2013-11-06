@@ -291,7 +291,7 @@ void InspectorLayerTreeAgent::compositingReasons(ErrorString* errorString, const
     const GraphicsLayer* graphicsLayer = layerById(errorString, layerId);
     if (!graphicsLayer)
         return;
-    WebKit::WebCompositingReasons reasonsBitmask = graphicsLayer->compositingReasons();
+    blink::WebCompositingReasons reasonsBitmask = graphicsLayer->compositingReasons();
     reasonStrings = TypeBuilder::Array<String>::create();
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(compositingReasonNames); ++i) {
         if (!(reasonsBitmask & compositingReasonNames[i].mask))

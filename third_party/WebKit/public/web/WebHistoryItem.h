@@ -36,7 +36,7 @@
 
 namespace WebCore { class HistoryItem; }
 
-namespace WebKit {
+namespace blink {
 class WebHTTPBody;
 class WebString;
 class WebSerializedScriptValue;
@@ -121,6 +121,6 @@ private:
     WebPrivatePtr<WebCore::HistoryItem> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -33,7 +33,7 @@ namespace WebCore {
 class MediaStreamComponent;
 }
 
-namespace WebKit {
+namespace blink {
 class WebAudioSourceProvider;
 class WebMediaStream;
 class WebMediaStreamSource;
@@ -93,6 +93,6 @@ private:
     WebPrivatePtr<WebCore::MediaStreamComponent> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebMediaStreamTrack_h

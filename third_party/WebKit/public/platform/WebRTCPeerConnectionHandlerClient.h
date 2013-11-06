@@ -31,7 +31,7 @@
 #ifndef WebRTCPeerConnectionHandlerClient_h
 #define WebRTCPeerConnectionHandlerClient_h
 
-namespace WebKit {
+namespace blink {
 class WebMediaStream;
 class WebRTCDataChannelHandler;
 class WebRTCICECandidate;
@@ -78,6 +78,6 @@ public:
     virtual void didAddRemoteDataChannel(WebRTCDataChannelHandler*) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebRTCPeerConnectionHandlerClient_h

@@ -47,7 +47,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 static const RenderBlock* enclosingScrollableAncestor(const RenderObject* renderer)
 {
@@ -137,4 +137,4 @@ FloatRect findInPageRectFromRange(Range* range)
     return findInPageRectFromAbsoluteRect(RenderObject::absoluteBoundingBoxRectForRange(range), range->firstNode()->renderer());
 }
 
-} // namespace WebKit
+} // namespace blink

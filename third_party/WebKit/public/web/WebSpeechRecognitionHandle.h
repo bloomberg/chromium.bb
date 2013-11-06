@@ -33,7 +33,7 @@ namespace WebCore {
 class SpeechRecognition;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebSpeechRecognitionResult;
 class WebString;
@@ -86,6 +86,6 @@ inline bool operator<(const WebSpeechRecognitionHandle& a, const WebSpeechRecogn
     return a.lessThan(b);
 }
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebSpeechRecognitionHandle_h

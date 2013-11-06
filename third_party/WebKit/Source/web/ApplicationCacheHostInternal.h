@@ -39,12 +39,12 @@
 
 namespace WebCore {
 
-class ApplicationCacheHostInternal : public WebKit::WebApplicationCacheHostClient {
+class ApplicationCacheHostInternal : public blink::WebApplicationCacheHostClient {
 public:
     ApplicationCacheHostInternal(ApplicationCacheHost* host)
         : m_innerHost(host)
     {
-        WebKit::WebFrameImpl* webFrame = WebKit::WebFrameImpl::fromFrame(host->m_documentLoader->frame());
+        blink::WebFrameImpl* webFrame = blink::WebFrameImpl::fromFrame(host->m_documentLoader->frame());
         ASSERT(webFrame);
         m_outerHost = adoptPtr(webFrame->client()->createApplicationCacheHost(webFrame, this));
     }
@@ -54,17 +54,17 @@ public:
         // FIXME: Prod the inspector to update it's notion of what cache the page is using.
     }
 
-    virtual void notifyEventListener(WebKit::WebApplicationCacheHost::EventID eventID)
+    virtual void notifyEventListener(blink::WebApplicationCacheHost::EventID eventID)
     {
         m_innerHost->notifyApplicationCache(static_cast<ApplicationCacheHost::EventID>(eventID), 0, 0);
     }
 
-    virtual void notifyProgressEventListener(const WebKit::WebURL&, int progressTotal, int progressDone)
+    virtual void notifyProgressEventListener(const blink::WebURL&, int progressTotal, int progressDone)
     {
         m_innerHost->notifyApplicationCache(ApplicationCacheHost::PROGRESS_EVENT, progressTotal, progressDone);
     }
 
-    static WebKit::WebApplicationCacheHost* toWebApplicationCacheHost(ApplicationCacheHost* innerHost)
+    static blink::WebApplicationCacheHost* toWebApplicationCacheHost(ApplicationCacheHost* innerHost)
     {
         if (innerHost && innerHost->m_internal)
             return innerHost->m_internal->m_outerHost.get();
@@ -74,7 +74,7 @@ public:
 private:
     friend class ApplicationCacheHost;
     ApplicationCacheHost* m_innerHost;
-    OwnPtr<WebKit::WebApplicationCacheHost> m_outerHost;
+    OwnPtr<blink::WebApplicationCacheHost> m_outerHost;
 };
 
 }

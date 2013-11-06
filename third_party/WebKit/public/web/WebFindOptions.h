@@ -33,7 +33,7 @@
 
 #include "../platform/WebString.h"
 
-namespace WebKit {
+namespace blink {
 
 // Options used when performing a find-in-page query.
 struct WebFindOptions {
@@ -61,6 +61,6 @@ struct WebFindOptions {
         , medialCapitalAsWordStart(false) { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -57,7 +57,7 @@ LinkHash visitedLinkHash(const KURL& base, const AtomicString& relative)
     url_canon::RawCanonOutput<2048> buffer;
     if (!resolveRelative(base, relative.string(), &buffer))
         return 0;
-    return WebKit::Platform::current()->visitedLinkHash(buffer.data(), buffer.length());
+    return blink::Platform::current()->visitedLinkHash(buffer.data(), buffer.length());
 }
 
 } // namespace WebCore

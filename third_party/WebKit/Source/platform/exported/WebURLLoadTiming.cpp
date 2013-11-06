@@ -36,7 +36,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 void WebURLLoadTiming::initialize()
 {
@@ -189,4 +189,4 @@ WebURLLoadTiming::operator PassRefPtr<ResourceLoadTiming>() const
     return m_private.get();
 }
 
-} // namespace WebKit
+} // namespace blink

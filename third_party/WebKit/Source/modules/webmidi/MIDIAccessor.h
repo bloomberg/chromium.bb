@@ -40,7 +40,7 @@ namespace WebCore {
 
 class MIDIAccessorClient;
 
-class MIDIAccessor : public WebKit::WebMIDIAccessorClient {
+class MIDIAccessor : public blink::WebMIDIAccessorClient {
 public:
     static PassOwnPtr<MIDIAccessor> create(MIDIAccessorClient*);
 
@@ -49,9 +49,9 @@ public:
     void startSession();
     void sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp);
 
-    // WebKit::WebMIDIAccessorClient
-    virtual void didAddInputPort(const WebKit::WebString& id, const WebKit::WebString& manufacturer, const WebKit::WebString& name, const WebKit::WebString& version) OVERRIDE;
-    virtual void didAddOutputPort(const WebKit::WebString& id, const WebKit::WebString& manufacturer, const WebKit::WebString& name, const WebKit::WebString& version) OVERRIDE;
+    // blink::WebMIDIAccessorClient
+    virtual void didAddInputPort(const blink::WebString& id, const blink::WebString& manufacturer, const blink::WebString& name, const blink::WebString& version) OVERRIDE;
+    virtual void didAddOutputPort(const blink::WebString& id, const blink::WebString& manufacturer, const blink::WebString& name, const blink::WebString& version) OVERRIDE;
     virtual void didStartSession(bool success) OVERRIDE;
     virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) OVERRIDE;
 
@@ -59,7 +59,7 @@ private:
     explicit MIDIAccessor(MIDIAccessorClient*);
 
     MIDIAccessorClient* m_client;
-    OwnPtr<WebKit::WebMIDIAccessor> m_accessor;
+    OwnPtr<blink::WebMIDIAccessor> m_accessor;
 };
 
 } // namespace WebCore

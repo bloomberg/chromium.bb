@@ -50,7 +50,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 static const double millisPerSecond = 1000.0;
 
@@ -770,4 +770,4 @@ WebGestureEventBuilder::WebGestureEventBuilder(const Widget* widget, const WebCo
     y = localPoint.y();
 }
 
-} // namespace WebKit
+} // namespace blink

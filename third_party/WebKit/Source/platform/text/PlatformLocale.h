@@ -40,9 +40,9 @@ public:
     static PassOwnPtr<Locale> create(const AtomicString& localeIdentifier);
     static Locale& defaultLocale();
 
-    String queryString(WebKit::WebLocalizedString::Name);
-    String queryString(WebKit::WebLocalizedString::Name, const String& parameter);
-    String queryString(WebKit::WebLocalizedString::Name, const String& parameter1, const String& parameter2);
+    String queryString(blink::WebLocalizedString::Name);
+    String queryString(blink::WebLocalizedString::Name, const String& parameter);
+    String queryString(blink::WebLocalizedString::Name, const String& parameter1, const String& parameter2);
     String validationMessageTooLongText(unsigned valueLength, int maxLength);
 
     // Converts the specified number string to another number string localized

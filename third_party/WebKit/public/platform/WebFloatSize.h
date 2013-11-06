@@ -43,7 +43,7 @@
 #include <ui/gfx/vector2d_f.h>
 #endif
 
-namespace WebKit {
+namespace blink {
 
 struct WebFloatSize {
     float width;
@@ -130,6 +130,6 @@ inline bool operator!=(const WebFloatSize& a, const WebFloatSize& b)
     return !(a == b);
 }
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

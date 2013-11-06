@@ -36,13 +36,13 @@
 #include "public/testing/WebTestDelegate.h"
 #include "public/testing/WebTestRunner.h"
 
-using namespace WebKit;
+using namespace blink;
 
 namespace {
 
 class DidStartSessionTask : public WebTestRunner::WebMethodTask<WebTestRunner::MockWebMIDIAccessor> {
 public:
-    DidStartSessionTask(WebTestRunner::MockWebMIDIAccessor* object, WebKit::WebMIDIAccessorClient* client, bool result)
+    DidStartSessionTask(WebTestRunner::MockWebMIDIAccessor* object, blink::WebMIDIAccessorClient* client, bool result)
         : WebMethodTask<WebTestRunner::MockWebMIDIAccessor>(object)
         , m_client(client)
         , m_result(result)
@@ -55,7 +55,7 @@ public:
     }
 
 private:
-    WebKit::WebMIDIAccessorClient* m_client;
+    blink::WebMIDIAccessorClient* m_client;
     bool m_result;
 };
 
@@ -63,7 +63,7 @@ private:
 
 namespace WebTestRunner {
 
-MockWebMIDIAccessor::MockWebMIDIAccessor(WebKit::WebMIDIAccessorClient* client, TestInterfaces* interfaces)
+MockWebMIDIAccessor::MockWebMIDIAccessor(blink::WebMIDIAccessorClient* client, TestInterfaces* interfaces)
     : m_client(client)
     , m_interfaces(interfaces)
 {

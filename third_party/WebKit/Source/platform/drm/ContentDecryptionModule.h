@@ -48,7 +48,7 @@ public:
     static bool supportsKeySystem(const String&);
     static PassOwnPtr<ContentDecryptionModule> create(const String& keySystem);
 
-    ContentDecryptionModule(PassOwnPtr<WebKit::WebContentDecryptionModule>);
+    ContentDecryptionModule(PassOwnPtr<blink::WebContentDecryptionModule>);
     ~ContentDecryptionModule();
 
     // ContentDecryptionModule
@@ -56,7 +56,7 @@ public:
     PassOwnPtr<ContentDecryptionModuleSession> createSession(ContentDecryptionModuleSessionClient*);
 
 private:
-    OwnPtr<WebKit::WebContentDecryptionModule> m_cdm;
+    OwnPtr<blink::WebContentDecryptionModule> m_cdm;
 };
 
 } // namespace WebCore

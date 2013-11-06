@@ -38,7 +38,7 @@
 namespace WebCore { class ResourceError; }
 #endif
 
-namespace WebKit {
+namespace blink {
 
 struct WebURLError {
     // A namespace for "reason" to support various layers generating
@@ -71,6 +71,6 @@ struct WebURLError {
 #endif
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

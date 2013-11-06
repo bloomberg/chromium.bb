@@ -34,7 +34,7 @@ namespace WebCore {
 class MediaStreamDescriptor;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebMediaStreamSource;
 class WebMediaStreamTrack;
@@ -92,6 +92,6 @@ private:
     WebPrivatePtr<WebCore::MediaStreamDescriptor> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebMediaStream_h

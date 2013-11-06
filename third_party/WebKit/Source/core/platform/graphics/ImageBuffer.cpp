@@ -205,7 +205,7 @@ BackingStoreCopy ImageBuffer::fastCopyImageMode()
     return DontCopyBackingStore;
 }
 
-WebKit::WebLayer* ImageBuffer::platformLayer() const
+blink::WebLayer* ImageBuffer::platformLayer() const
 {
     return m_layerBridge ? m_layerBridge->layer() : 0;
 }

@@ -62,26 +62,26 @@ void Prerender::removeClient()
 
 void Prerender::add()
 {
-    WebKit::WebPrerenderingSupport* platform = WebKit::WebPrerenderingSupport::current();
+    blink::WebPrerenderingSupport* platform = blink::WebPrerenderingSupport::current();
     if (!platform)
         return;
-    platform->add(WebKit::WebPrerender(this));
+    platform->add(blink::WebPrerender(this));
 }
 
 void Prerender::cancel()
 {
-    WebKit::WebPrerenderingSupport* platform = WebKit::WebPrerenderingSupport::current();
+    blink::WebPrerenderingSupport* platform = blink::WebPrerenderingSupport::current();
     if (!platform)
         return;
-    platform->cancel(WebKit::WebPrerender(this));
+    platform->cancel(blink::WebPrerender(this));
 }
 
 void Prerender::abandon()
 {
-    WebKit::WebPrerenderingSupport* platform = WebKit::WebPrerenderingSupport::current();
+    blink::WebPrerenderingSupport* platform = blink::WebPrerenderingSupport::current();
     if (!platform)
         return;
-    platform->abandon(WebKit::WebPrerender(this));
+    platform->abandon(blink::WebPrerender(this));
 }
 
 void Prerender::didStartPrerender()

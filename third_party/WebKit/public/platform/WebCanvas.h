@@ -35,10 +35,10 @@
 
 class SkCanvas;
 
-namespace WebKit {
+namespace blink {
 
 typedef SkCanvas WebCanvas;
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

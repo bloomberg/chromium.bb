@@ -36,7 +36,7 @@
 #include "WebPrivatePtr.h"
 #include "WebString.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebRTCSessionDescriptionPrivate;
 
@@ -86,6 +86,6 @@ private:
     WebPrivatePtr<WebRTCSessionDescriptionPrivate> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebRTCSessionDescription_h

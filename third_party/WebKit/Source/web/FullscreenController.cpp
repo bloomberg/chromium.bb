@@ -43,7 +43,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 PassOwnPtr<FullscreenController> FullscreenController::create(WebViewImpl* webViewImpl)
 {

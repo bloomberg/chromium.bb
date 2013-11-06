@@ -28,7 +28,7 @@
 
 #include "WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebSpeechSynthesizerClient;
 class WebSpeechSynthesisUtterance;
@@ -47,6 +47,6 @@ public:
     virtual void cancel() = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebSpeechSynthesizer_h

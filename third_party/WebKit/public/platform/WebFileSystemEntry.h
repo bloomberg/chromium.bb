@@ -33,7 +33,7 @@
 
 #include "WebString.h"
 
-namespace WebKit {
+namespace blink {
 
 struct WebFileSystemEntry {
     WebFileSystemEntry() : isDirectory(false) { }
@@ -45,6 +45,6 @@ struct WebFileSystemEntry {
     bool isDirectory;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebFileSystemEntry_h

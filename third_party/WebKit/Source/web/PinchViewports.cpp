@@ -48,7 +48,7 @@
 
 using WebCore::GraphicsLayer;
 
-namespace WebKit {
+namespace blink {
 
 PassOwnPtr<PinchViewports> PinchViewports::create(WebViewImpl* owner)
 {
@@ -213,4 +213,4 @@ String PinchViewports::debugName(const GraphicsLayer* graphicsLayer)
     return name;
 }
 
-} // namespace WebKit
+} // namespace blink

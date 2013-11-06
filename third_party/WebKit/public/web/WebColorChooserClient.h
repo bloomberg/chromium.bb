@@ -29,7 +29,7 @@
 #include "../platform/WebColor.h"
 #include "../platform/WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 
 // Receives calls from WebColorChooser and passes it to the WebCore side.
 class WebColorChooserClient {

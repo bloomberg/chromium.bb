@@ -44,7 +44,7 @@
 #include "wtf/RefPtr.h"
 
 
-namespace WebKit {
+namespace blink {
 class WebWorker;
 class WebFrameImpl;
 
@@ -75,6 +75,6 @@ private:
     WebFrameImpl* m_webFrame;
 };
 
-} // namespace WebKit;
+} // namespace blink;
 
 #endif

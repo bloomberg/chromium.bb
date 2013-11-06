@@ -38,7 +38,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebElement WebLabelElement::correspondingControl()
 {
@@ -61,4 +61,4 @@ WebLabelElement::operator PassRefPtr<HTMLLabelElement>() const
     return toHTMLLabelElement(m_private.get());
 }
 
-} // namespace WebKit
+} // namespace blink

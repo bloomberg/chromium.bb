@@ -46,7 +46,7 @@ class CString;
 class CStringBuffer;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebString;
 
@@ -131,6 +131,6 @@ inline bool operator<(const WebCString& a, const WebCString& b)
     return a.compare(b) < 0;
 }
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

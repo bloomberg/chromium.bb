@@ -37,7 +37,7 @@ namespace v8 {
 class Isolate;
 }
 
-namespace WebKit {
+namespace blink {
 
 // Must be called on the thread that will be the main WebKit thread before
 // using any other WebKit APIs. The provided Platform; must be
@@ -81,6 +81,6 @@ BLINK_EXPORT void enableLogChannel(const char*);
 // containing plugins will be reloaded after refreshing the plugin list.
 BLINK_EXPORT void resetPluginCache(bool reloadPages);
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

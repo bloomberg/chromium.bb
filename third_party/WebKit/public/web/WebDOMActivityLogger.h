@@ -36,7 +36,7 @@
 #include "../platform/WebURL.h"
 #include <v8.h>
 
-namespace WebKit {
+namespace blink {
 
 class WebDOMActivityLogger {
 public:
@@ -52,6 +52,6 @@ BLINK_EXPORT bool hasDOMActivityLogger(int worldId);
 // with the world identified by worldId (worldId may be 0 identifying the main world).
 BLINK_EXPORT void setDOMActivityLogger(int worldId, WebDOMActivityLogger*);
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

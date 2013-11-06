@@ -49,9 +49,9 @@
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
-using WebKit::WebBlobData;
-using WebKit::WebBlobRegistry;
-using WebKit::WebThreadSafeData;
+using blink::WebBlobData;
+using blink::WebBlobRegistry;
+using blink::WebThreadSafeData;
 using WTF::ThreadSpecific;
 
 namespace WebCore {
@@ -104,7 +104,7 @@ public:
 
 static WebBlobRegistry* blobRegistry()
 {
-    return WebKit::Platform::current()->blobRegistry();
+    return blink::Platform::current()->blobRegistry();
 }
 
 typedef HashMap<String, RefPtr<SecurityOrigin> > BlobURLOriginMap;
@@ -135,7 +135,7 @@ static void removeFromOriginMap(const KURL& url)
 
 void BlobRegistry::registerBlobData(const String& uuid, PassOwnPtr<BlobData> data)
 {
-    blobRegistry()->registerBlobData(uuid, WebKit::WebBlobData(data));
+    blobRegistry()->registerBlobData(uuid, blink::WebBlobData(data));
 }
 
 void BlobRegistry::addBlobDataRef(const String& uuid)

@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 #include "WebVector.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebSocketHandleClient;
 class WebString;
@@ -64,6 +64,6 @@ public:
     virtual void close(unsigned short code, const WebString& reason) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebSocketHandle_h

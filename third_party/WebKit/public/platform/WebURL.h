@@ -41,7 +41,7 @@ namespace WebCore { class KURL; }
 #include <url/gurl.h>
 #endif
 
-namespace WebKit {
+namespace blink {
 
 class WebURL {
 public:
@@ -143,6 +143,6 @@ inline bool operator!=(const WebURL& a, const WebURL& b)
     return !(a == b);
 }
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

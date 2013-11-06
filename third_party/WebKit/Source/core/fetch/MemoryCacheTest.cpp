@@ -149,7 +149,7 @@ TEST_F(MemoryCacheTest, LiveResourceEvictionAtEndOfTask)
     cachedLiveResource->addClient(&client);
     cachedLiveResource->appendData(data, 4);
 
-    class Task1 : public WebKit::WebThread::Task {
+    class Task1 : public blink::WebThread::Task {
     public:
         Task1(const ResourcePtr<Resource>& live, const ResourcePtr<Resource>& dead)
             : m_live(live)
@@ -183,7 +183,7 @@ TEST_F(MemoryCacheTest, LiveResourceEvictionAtEndOfTask)
         ResourcePtr<Resource> m_live, m_dead;
     };
 
-    class Task2 : public WebKit::WebThread::Task {
+    class Task2 : public blink::WebThread::Task {
     public:
         Task2(unsigned liveSizeWithoutDecode)
             : m_liveSizeWithoutDecode(liveSizeWithoutDecode) { }
@@ -193,7 +193,7 @@ TEST_F(MemoryCacheTest, LiveResourceEvictionAtEndOfTask)
             // Next task: now, the live resource was evicted.
             ASSERT_EQ(0u, memoryCache()->deadSize());
             ASSERT_EQ(m_liveSizeWithoutDecode, memoryCache()->liveSize());
-            WebKit::Platform::current()->currentThread()->exitRunLoop();
+            blink::Platform::current()->currentThread()->exitRunLoop();
         }
 
     private:
@@ -201,9 +201,9 @@ TEST_F(MemoryCacheTest, LiveResourceEvictionAtEndOfTask)
     };
 
 
-    WebKit::Platform::current()->currentThread()->postTask(new Task1(cachedLiveResource, cachedDeadResource));
-    WebKit::Platform::current()->currentThread()->postTask(new Task2(cachedLiveResource->encodedSize() + cachedLiveResource->overheadSize()));
-    WebKit::Platform::current()->currentThread()->enterRunLoop();
+    blink::Platform::current()->currentThread()->postTask(new Task1(cachedLiveResource, cachedDeadResource));
+    blink::Platform::current()->currentThread()->postTask(new Task2(cachedLiveResource->encodedSize() + cachedLiveResource->overheadSize()));
+    blink::Platform::current()->currentThread()->enterRunLoop();
     cachedLiveResource->removeClient(&client);
 }
 

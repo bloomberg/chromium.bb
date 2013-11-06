@@ -25,7 +25,7 @@
 #ifndef WebFloatKeyframe_h
 #define WebFloatKeyframe_h
 
-namespace WebKit {
+namespace blink {
 
 struct WebFloatKeyframe {
     WebFloatKeyframe(double time, float value)
@@ -38,6 +38,6 @@ struct WebFloatKeyframe {
     float value;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebFloatKeyframe_h

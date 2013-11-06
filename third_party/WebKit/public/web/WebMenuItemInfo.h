@@ -36,7 +36,7 @@
 #include "../platform/WebVector.h"
 #include "WebTextDirection.h"
 
-namespace WebKit {
+namespace blink {
 
 struct WebMenuItemInfo {
     enum Type {
@@ -68,6 +68,6 @@ struct WebMenuItemInfo {
     bool checked;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

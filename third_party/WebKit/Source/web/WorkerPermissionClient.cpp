@@ -38,7 +38,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 PassOwnPtr<WorkerPermissionClient> WorkerPermissionClient::create(PassOwnPtr<WebWorkerPermissionClientProxy> proxy)
 {
@@ -90,4 +90,4 @@ void providePermissionClientToWorker(WorkerClients* clients, PassOwnPtr<WebWorke
     WorkerPermissionClient::provideTo(clients, WorkerPermissionClient::supplementName(), WorkerPermissionClient::create(proxy));
 }
 
-} // namespace WebKit
+} // namespace blink

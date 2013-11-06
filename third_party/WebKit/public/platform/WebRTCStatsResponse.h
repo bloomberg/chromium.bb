@@ -33,7 +33,7 @@ namespace WebCore {
 class RTCStatsResponseBase;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebRTCStatsResponse {
 public:
@@ -64,6 +64,6 @@ private:
     WebPrivatePtr<WebCore::RTCStatsResponseBase> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebRTCStatsResponse_h

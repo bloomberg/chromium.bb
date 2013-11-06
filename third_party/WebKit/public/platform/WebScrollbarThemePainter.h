@@ -33,7 +33,7 @@ class ScrollbarTheme;
 class Scrollbar;
 };
 
-namespace WebKit {
+namespace blink {
 
 class WebScrollbar;
 struct WebRect;
@@ -80,6 +80,6 @@ private:
     WebCore::Scrollbar* m_scrollbar;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

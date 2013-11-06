@@ -78,7 +78,7 @@ class PopupMenuClient;
 class RenderLayerCompositor;
 }
 
-namespace WebKit {
+namespace blink {
 class AutocompletePopupMenuClient;
 class AutofillPopupMenuClient;
 class ContextFeaturesClientImpl;
@@ -828,6 +828,6 @@ inline WebViewImpl* toWebViewImpl(WebView* webView)
     return static_cast<WebViewImpl*>(webView);
 }
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

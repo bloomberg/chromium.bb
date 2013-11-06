@@ -34,7 +34,7 @@
 #include "../platform/WebColor.h"
 #include "../platform/WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 
 enum WebColorName {
     WebColorActiveBorder,
@@ -72,6 +72,6 @@ enum WebColorName {
 // Sets the values of a set of named colors.
 BLINK_EXPORT void setNamedColors(const WebColorName*, const WebColor*, size_t length);
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

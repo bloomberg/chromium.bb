@@ -212,7 +212,7 @@ TEST(BidiResolver, BidiTest_txt)
     // This code wants to use PathService from base/path_service.h
     // but we aren't allowed to depend on base/ directly from Blink yet.
     // Alternatively we could use:
-    // WebKit::Platform::current()->unitTestSupport()->webKitRootDir()
+    // blink::Platform::current()->unitTestSupport()->webKitRootDir()
     // and a relative path, but that would require running inside
     // webkit_unit_tests (to have a functioning Platform object).
     // The file we want is:

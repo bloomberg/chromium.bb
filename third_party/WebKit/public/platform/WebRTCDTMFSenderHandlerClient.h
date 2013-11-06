@@ -28,7 +28,7 @@
 
 #include "WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebRTCDTMFSenderHandlerClient {
 public:
@@ -37,6 +37,6 @@ public:
     virtual void didPlayTone(const WebString& tone) const = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebRTCDTMFSenderHandlerClient_h

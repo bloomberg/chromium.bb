@@ -31,7 +31,7 @@
 #ifndef WebDragStatus_h
 #define WebDragStatus_h
 
-namespace WebKit {
+namespace blink {
 
 enum WebDragStatus {
     WebDragStatusUnknown = 0,
@@ -41,6 +41,6 @@ enum WebDragStatus {
     WebDragStatusDrop
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

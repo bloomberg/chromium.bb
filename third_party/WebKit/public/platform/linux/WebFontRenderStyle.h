@@ -35,7 +35,7 @@
 
 namespace WebCore { struct FontRenderStyle; }
 
-namespace WebKit {
+namespace blink {
 
 struct BLINK_EXPORT WebFontRenderStyle {
     // Each of the use* members below can take one of three values:
@@ -58,6 +58,6 @@ struct BLINK_EXPORT WebFontRenderStyle {
     void setDefaults();
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebFontRenderStyle_h

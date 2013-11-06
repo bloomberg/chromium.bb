@@ -40,7 +40,7 @@
 using namespace WebCore;
 using namespace HTMLNames;
 
-namespace WebKit {
+namespace blink {
 
 void WebOptionElement::setValue(const WebString& newValue)
 {
@@ -88,4 +88,4 @@ WebOptionElement::operator PassRefPtr<HTMLOptionElement>() const
     return toHTMLOptionElement(m_private.get());
 }
 
-} // namespace WebKit
+} // namespace blink

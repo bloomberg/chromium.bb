@@ -45,7 +45,7 @@
 #include "wtf/WeakPtr.h"
 
 
-namespace WebKit {
+namespace blink {
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebWorkerClient;
@@ -143,6 +143,6 @@ private:
     bool m_pauseWorkerContextOnStart;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

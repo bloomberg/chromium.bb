@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 #include "WebString.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebString;
 class WebURL;
@@ -54,6 +54,6 @@ public:
     virtual void cancel() = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

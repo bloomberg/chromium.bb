@@ -29,7 +29,7 @@
 #include "WebCommon.h"
 #include "WebSize.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebGraphicsContext3D;
 class WebExternalBitmap;
@@ -52,6 +52,6 @@ protected:
     virtual ~WebExternalTextureLayerClient() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebExternalTextureLayerClient_h

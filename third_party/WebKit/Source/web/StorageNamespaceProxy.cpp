@@ -45,19 +45,19 @@ namespace WebCore {
 PassOwnPtr<StorageArea> StorageNamespace::localStorageArea(SecurityOrigin* origin)
 {
     ASSERT(isMainThread());
-    static WebKit::WebStorageNamespace* localStorageNamespace = 0;
+    static blink::WebStorageNamespace* localStorageNamespace = 0;
     if (!localStorageNamespace)
-        localStorageNamespace = WebKit::Platform::current()->createLocalStorageNamespace();
+        localStorageNamespace = blink::Platform::current()->createLocalStorageNamespace();
     return adoptPtr(new StorageAreaProxy(adoptPtr(localStorageNamespace->createStorageArea(origin->toString())), LocalStorage));
 }
 
 PassOwnPtr<StorageNamespace> StorageNamespace::sessionStorageNamespace(Page* page)
 {
-    WebKit::WebViewClient* webViewClient = WebKit::WebViewImpl::fromPage(page)->client();
+    blink::WebViewClient* webViewClient = blink::WebViewImpl::fromPage(page)->client();
     return adoptPtr(new StorageNamespaceProxy(adoptPtr(webViewClient->createSessionStorageNamespace())));
 }
 
-StorageNamespaceProxy::StorageNamespaceProxy(PassOwnPtr<WebKit::WebStorageNamespace> storageNamespace)
+StorageNamespaceProxy::StorageNamespaceProxy(PassOwnPtr<blink::WebStorageNamespace> storageNamespace)
     : m_storageNamespace(storageNamespace)
 {
 }
@@ -71,7 +71,7 @@ PassOwnPtr<StorageArea> StorageNamespaceProxy::storageArea(SecurityOrigin* origi
     return adoptPtr(new StorageAreaProxy(adoptPtr(m_storageNamespace->createStorageArea(origin->toString())), SessionStorage));
 }
 
-bool StorageNamespaceProxy::isSameNamespace(const WebKit::WebStorageNamespace& sessionNamespace)
+bool StorageNamespaceProxy::isSameNamespace(const blink::WebStorageNamespace& sessionNamespace)
 {
     return m_storageNamespace && m_storageNamespace->isSameNamespace(sessionNamespace);
 }

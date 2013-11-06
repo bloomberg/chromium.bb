@@ -33,7 +33,7 @@
 #include "modules/geolocation/Geolocation.h"
 #include "modules/geolocation/GeolocationPosition.h"
 
-namespace WebKit {
+namespace blink {
 
 GeolocationClientProxy::GeolocationClientProxy(WebGeolocationClient* client)
     : m_client(client)

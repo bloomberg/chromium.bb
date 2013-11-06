@@ -34,7 +34,7 @@
 #include "V8MediaStreamTrack.h"
 #include "modules/mediastream/MediaStreamTrack.h"
 
-namespace WebKit {
+namespace blink {
 
 WebDOMMediaStreamTrack::WebDOMMediaStreamTrack(PassRefPtr<WebCore::MediaStreamTrack> track)
     : m_private(track)
@@ -65,4 +65,4 @@ WebMediaStreamTrack WebDOMMediaStreamTrack::component() const
     return WebMediaStreamTrack(m_private->component());
 }
 
-} // namespace WebKit
+} // namespace blink

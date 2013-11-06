@@ -35,7 +35,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 void WebData::reset()
 {
@@ -82,4 +82,4 @@ WebData::operator PassRefPtr<SharedBuffer>() const
     return PassRefPtr<SharedBuffer>(m_private.get());
 }
 
-} // namespace WebKit
+} // namespace blink

@@ -41,7 +41,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebKit { class WebLayer; }
+namespace blink { class WebLayer; }
 
 namespace WebCore {
 
@@ -330,7 +330,7 @@ private:
 
     virtual bool isTransformInvertible() const { return state().m_invertibleCTM; }
 
-    virtual WebKit::WebLayer* platformLayer() const OVERRIDE;
+    virtual blink::WebLayer* platformLayer() const OVERRIDE;
 
     Vector<State, 1> m_stateStack;
     unsigned m_unrealizedSaveCount;

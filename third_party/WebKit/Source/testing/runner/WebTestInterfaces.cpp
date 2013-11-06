@@ -37,7 +37,7 @@
 #include "TestInterfaces.h"
 #include "TestRunner.h"
 
-using namespace WebKit;
+using namespace blink;
 
 namespace WebTestRunner {
 

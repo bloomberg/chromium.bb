@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 #include "WebFileError.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebFileWriterClient {
 public:
@@ -52,6 +52,6 @@ protected:
     virtual ~WebFileWriterClient() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

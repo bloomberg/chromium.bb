@@ -36,7 +36,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 v8::Local<v8::String> WebScriptBindings::toV8String(const WebString& string, v8::Isolate* isolate)
 {
@@ -48,4 +48,4 @@ WebString WebScriptBindings::toWebString(v8::Handle<v8::String> v8String)
     return v8StringToWebCoreString<String>(v8String, Externalize);
 }
 
-} // namespace WebKit
+} // namespace blink

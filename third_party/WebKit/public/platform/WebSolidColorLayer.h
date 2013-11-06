@@ -29,7 +29,7 @@
 #include "WebColor.h"
 #include "WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 class WebLayer;
 
 class WebSolidColorLayer {
@@ -40,6 +40,6 @@ public:
     virtual void setBackgroundColor(WebColor) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebSolidColorLayer_h

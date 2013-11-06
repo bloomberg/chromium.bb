@@ -45,7 +45,7 @@ template <class T> class Handle;
 
 namespace WebCore { class MediaStreamTrack; }
 
-namespace WebKit {
+namespace blink {
 
 class WebDOMMediaStreamTrack {
 public:
@@ -74,6 +74,6 @@ private:
     WebPrivatePtr<WebCore::MediaStreamTrack> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

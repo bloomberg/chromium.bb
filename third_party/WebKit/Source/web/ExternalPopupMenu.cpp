@@ -45,7 +45,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 ExternalPopupMenu::ExternalPopupMenu(Frame& frame, PopupMenuClient* popupMenuClient, WebViewClient* webViewClient)
     : m_popupMenuClient(popupMenuClient)

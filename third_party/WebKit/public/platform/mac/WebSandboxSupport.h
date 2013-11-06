@@ -39,7 +39,7 @@ typedef struct CGFont* CGFontRef;
 class NSFont;
 #endif
 
-namespace WebKit {
+namespace blink {
 
 // Put methods here that are required due to sandbox restrictions.
 class WebSandboxSupport {
@@ -56,6 +56,6 @@ public:
     virtual bool loadFont(NSFont* srcFont, CGFontRef* out, uint32_t* fontID) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

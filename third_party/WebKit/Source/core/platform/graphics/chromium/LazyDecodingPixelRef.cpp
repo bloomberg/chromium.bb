@@ -128,4 +128,4 @@ void LazyDecodingPixelRef::Decode()
 }
 
 
-} // namespace WebKit
+} // namespace blink

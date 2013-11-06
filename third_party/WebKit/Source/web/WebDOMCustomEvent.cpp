@@ -38,7 +38,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 void WebDOMCustomEvent::initCustomEvent(const WebString& type, bool canBubble, bool cancelable, const WebSerializedScriptValue& webSerializedScriptValue)
 {
@@ -48,4 +48,4 @@ void WebDOMCustomEvent::initCustomEvent(const WebString& type, bool canBubble, b
     unwrap<CustomEvent>()->initCustomEvent(type, canBubble, cancelable, serializedScriptValue.get());
 }
 
-} // namespace WebKit
+} // namespace blink

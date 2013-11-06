@@ -31,7 +31,7 @@
 #ifndef WebWorkerPermissionClientProxy_h
 #define WebWorkerPermissionClientProxy_h
 
-namespace WebKit {
+namespace blink {
 
 class WebString;
 
@@ -59,6 +59,6 @@ public:
     }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebWorkerPermissionClientProxy_h

@@ -34,7 +34,7 @@
 #include "core/history/HistoryItem.h"
 #include "core/page/BackForwardClient.h"
 
-namespace WebKit {
+namespace blink {
 class WebViewImpl;
 
 class BackForwardClientImpl : public WebCore::BackForwardClient {
@@ -51,6 +51,6 @@ private:
     WebViewImpl* m_webView;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

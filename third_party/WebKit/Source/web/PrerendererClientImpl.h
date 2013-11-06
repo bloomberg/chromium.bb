@@ -40,7 +40,7 @@ namespace WebCore {
 class Prerender;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebPrerendererClient;
 

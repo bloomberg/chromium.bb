@@ -25,7 +25,7 @@
 #ifndef WebAudioSourceProviderClient_h
 #define WebAudioSourceProviderClient_h
 
-namespace WebKit {
+namespace blink {
 
 class WebAudioSourceProviderClient {
 public:

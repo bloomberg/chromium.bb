@@ -31,7 +31,7 @@
 #ifndef WebUserMediaClient_h
 #define WebUserMediaClient_h
 
-namespace WebKit {
+namespace blink {
 
 class WebMediaStreamSource;
 class WebUserMediaRequest;
@@ -45,6 +45,6 @@ public:
     virtual void cancelUserMediaRequest(const WebUserMediaRequest&) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebUserMediaClient_h

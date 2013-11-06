@@ -31,7 +31,7 @@
 #ifndef WebMessagePortChannelClient_h
 #define WebMessagePortChannelClient_h
 
-namespace WebKit {
+namespace blink {
 
 // Provides an interface for users of WebMessagePortChannel to be notified
 // when messages are available.
@@ -46,6 +46,6 @@ protected:
     ~WebMessagePortChannelClient() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

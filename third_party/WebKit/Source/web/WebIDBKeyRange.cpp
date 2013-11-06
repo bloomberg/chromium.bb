@@ -32,7 +32,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 void WebIDBKeyRange::assign(const WebIDBKeyRange& other)
 {
@@ -92,4 +92,4 @@ WebIDBKeyRange::operator PassRefPtr<IDBKeyRange>() const
     return m_private.get();
 }
 
-} // namespace WebKit
+} // namespace blink

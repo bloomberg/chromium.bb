@@ -33,7 +33,7 @@
 #include "TestCommon.h"
 #include "public/platform/WebCString.h"
 
-using namespace WebKit;
+using namespace blink;
 using namespace std;
 
 namespace WebTestRunner {

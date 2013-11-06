@@ -29,7 +29,7 @@
 #include "WebPrivatePtr.h"
 #include "WebString.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebRTCDataChannelHandlerClient {
 public:
@@ -48,6 +48,6 @@ public:
     virtual void didDetectError() const = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebRTCDataChannelHandlerClient_h

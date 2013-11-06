@@ -37,7 +37,7 @@
 
 #include "CppBoundClass.h"
 
-namespace WebKit {
+namespace blink {
 class WebView;
 }
 
@@ -47,7 +47,7 @@ class TextInputController : public CppBoundClass {
 public:
     TextInputController();
 
-    void setWebView(WebKit::WebView* webView) { m_webView = webView; }
+    void setWebView(blink::WebView* webView) { m_webView = webView; }
 
     void insertText(const CppArgumentList&, CppVariant*);
     void doCommand(const CppArgumentList&, CppVariant*);
@@ -60,7 +60,7 @@ public:
     void setComposition(const CppArgumentList&, CppVariant*);
 
 private:
-    WebKit::WebView* m_webView;
+    blink::WebView* m_webView;
 };
 
 }

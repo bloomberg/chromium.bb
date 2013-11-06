@@ -39,7 +39,7 @@ namespace WebCore {
 class RTCStatsRequest;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebMediaStreamTrack;
 class WebMediaStream;
@@ -104,6 +104,6 @@ private:
     WebPrivatePtr<WebCore::RTCStatsRequest> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebRTCStatsRequest_h

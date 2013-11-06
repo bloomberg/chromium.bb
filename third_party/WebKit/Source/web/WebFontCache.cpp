@@ -35,7 +35,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 // static
 size_t WebFontCache::fontDataCount()
@@ -61,4 +61,4 @@ void WebFontCache::prune()
     fontCache()->purgeInactiveFontData();
 }
 
-}  // namespace WebKit
+}  // namespace blink

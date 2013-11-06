@@ -38,7 +38,7 @@
 #include "WebURL.h"
 #include "WebVector.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebDragData;
 class WebImage;
@@ -93,6 +93,6 @@ protected:
     ~WebClipboard() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

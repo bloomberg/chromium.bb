@@ -36,7 +36,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 void WebIDBDatabaseError::assign(const WebIDBDatabaseError& value)
 {
@@ -63,4 +63,4 @@ WebIDBDatabaseError::operator PassRefPtr<DOMError>() const
     return m_private.get();
 }
 
-} // namespace WebKit
+} // namespace blink

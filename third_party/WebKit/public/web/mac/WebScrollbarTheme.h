@@ -33,7 +33,7 @@
 
 #include "public/platform/WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebScrollbarTheme {
 public:
@@ -47,6 +47,6 @@ public:
         bool jumpOnTrackClick, bool redraw);
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

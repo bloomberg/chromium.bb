@@ -35,7 +35,7 @@ namespace WebCore {
 struct IDBDatabaseMetadata;
 }
 
-namespace WebKit {
+namespace blink {
 
 struct WebIDBMetadata {
     enum {
@@ -87,6 +87,6 @@ struct WebIDBMetadata {
 };
 
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebIDBMetadata_h

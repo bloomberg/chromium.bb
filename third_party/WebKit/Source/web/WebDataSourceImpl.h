@@ -41,7 +41,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebPluginLoadObserver;
 
@@ -92,6 +92,6 @@ private:
     OwnPtr<WebPluginLoadObserver> m_pluginLoadObserver;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif  // WebDataSourceImpl_h

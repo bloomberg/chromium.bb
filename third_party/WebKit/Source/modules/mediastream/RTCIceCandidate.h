@@ -46,18 +46,18 @@ class ExceptionState;
 class RTCIceCandidate FINAL : public RefCounted<RTCIceCandidate>, public ScriptWrappable {
 public:
     static PassRefPtr<RTCIceCandidate> create(const Dictionary&, ExceptionState&);
-    static PassRefPtr<RTCIceCandidate> create(WebKit::WebRTCICECandidate);
+    static PassRefPtr<RTCIceCandidate> create(blink::WebRTCICECandidate);
 
     String candidate() const;
     String sdpMid() const;
     unsigned short sdpMLineIndex() const;
 
-    WebKit::WebRTCICECandidate webCandidate();
+    blink::WebRTCICECandidate webCandidate();
 
 private:
-    explicit RTCIceCandidate(WebKit::WebRTCICECandidate);
+    explicit RTCIceCandidate(blink::WebRTCICECandidate);
 
-    WebKit::WebRTCICECandidate m_webCandidate;
+    blink::WebRTCICECandidate m_webCandidate;
 };
 
 } // namespace WebCore

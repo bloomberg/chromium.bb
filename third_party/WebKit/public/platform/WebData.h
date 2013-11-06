@@ -36,7 +36,7 @@
 
 namespace WebCore { class SharedBuffer; }
 
-namespace WebKit {
+namespace blink {
 
 class WebDataPrivate;
 
@@ -102,6 +102,6 @@ private:
     WebPrivatePtr<WebCore::SharedBuffer> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

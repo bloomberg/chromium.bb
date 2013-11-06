@@ -36,7 +36,7 @@
 #include "public/web/WebTextCheckingResult.h"
 #include <algorithm>
 
-using namespace WebKit;
+using namespace blink;
 using namespace std;
 
 namespace WebTestRunner {

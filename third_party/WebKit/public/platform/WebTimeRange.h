@@ -33,7 +33,7 @@
 
 #include "WebVector.h"
 
-namespace WebKit {
+namespace blink {
 
 struct WebTimeRange {
     WebTimeRange() : start(0), end(0) { }
@@ -45,6 +45,6 @@ struct WebTimeRange {
 
 typedef WebVector<WebTimeRange> WebTimeRanges;
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -31,7 +31,7 @@
 #ifndef WebCallbacks_h
 #define WebCallbacks_h
 
-namespace WebKit {
+namespace blink {
 
 template<typename S, typename T>
 class WebCallbacks {
@@ -41,6 +41,6 @@ public:
     virtual void onError(T*) { };
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

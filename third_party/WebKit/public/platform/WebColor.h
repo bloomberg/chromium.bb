@@ -31,10 +31,10 @@
 #ifndef WebColor_h
 #define WebColor_h
 
-namespace WebKit {
+namespace blink {
 
 typedef unsigned WebColor;  // RGBA quad. Equivalent to SkColor.
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -31,7 +31,7 @@
 #ifndef WebNonCopyable_h
 #define WebNonCopyable_h
 
-namespace WebKit {
+namespace blink {
 
 // A base class to extend from if you do not support copying.
 class WebNonCopyable {
@@ -44,6 +44,6 @@ private:
     WebNonCopyable& operator=(const WebNonCopyable&);
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

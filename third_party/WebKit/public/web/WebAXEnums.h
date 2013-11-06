@@ -31,7 +31,7 @@
 #ifndef WebAXEnums_h
 #define WebAXEnums_h
 
-namespace WebKit {
+namespace blink {
 
 // Accessibility events sent from Blink to the embedder.
 // These values must match WebCore::AXObjectCache::AXNotification values.
@@ -217,6 +217,6 @@ enum WebAXTextDirection {
     WebAXTextDirectionBT
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

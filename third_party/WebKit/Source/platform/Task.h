@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-class Task : public WebKit::WebThread::Task {
+class Task : public blink::WebThread::Task {
 public:
     explicit Task(const Closure& closure)
         : m_closure(closure)

@@ -39,7 +39,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 namespace {
 
@@ -347,4 +347,4 @@ void WebURLRequest::assign(WebURLRequestPrivate* p)
     m_private = p;
 }
 
-} // namespace WebKit
+} // namespace blink

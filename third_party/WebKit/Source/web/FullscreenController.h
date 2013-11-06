@@ -40,7 +40,7 @@ class Element;
 class Frame;
 }
 
-namespace WebKit {
+namespace blink {
 class WebViewImpl;
 
 class FullscreenController {

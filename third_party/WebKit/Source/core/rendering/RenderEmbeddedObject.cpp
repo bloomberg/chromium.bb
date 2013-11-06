@@ -84,9 +84,9 @@ static String unavailablePluginReplacementText(Node* node, RenderEmbeddedObject:
     Locale& locale = node ? toElement(node)->locale() : Locale::defaultLocale();
     switch (pluginUnavailabilityReason) {
     case RenderEmbeddedObject::PluginMissing:
-        return locale.queryString(WebKit::WebLocalizedString::MissingPluginText);
+        return locale.queryString(blink::WebLocalizedString::MissingPluginText);
     case RenderEmbeddedObject::PluginBlockedByContentSecurityPolicy:
-        return locale.queryString(WebKit::WebLocalizedString::BlockedPluginText);
+        return locale.queryString(blink::WebLocalizedString::BlockedPluginText);
     }
 
     ASSERT_NOT_REACHED();

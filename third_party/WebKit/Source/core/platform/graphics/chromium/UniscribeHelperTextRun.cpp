@@ -102,7 +102,7 @@ bool UniscribeHelperTextRun::nextWinFontData(
     // This check is necessary because NextWinFontData can be called again
     // after we already ran out of fonts. fontDataAt behaves in a strange
     // manner when the difference between param passed and # of fonts stored in
-    // WebKit::Font is larger than one. We can avoid this check by setting
+    // blink::Font is larger than one. We can avoid this check by setting
     // font_index_ to # of elements in hfonts_ when we run out of font. In that
     // case, we'd have to go through a couple of more checks before returning
     // false.

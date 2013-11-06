@@ -33,7 +33,7 @@
 #include "WebDOMEvent.h"
 #include "WebSerializedScriptValue.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebFrame;
 class WebString;
@@ -44,6 +44,6 @@ public:
     BLINK_EXPORT void initCustomEvent(const WebString& type, bool canBubble, bool cancelable, const WebSerializedScriptValue& messageData);
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -146,9 +146,9 @@ static Resource* resourceFromDataURIRequest(const ResourceRequest& request, cons
     const KURL& url = request.url();
     ASSERT(url.protocolIsData());
 
-    WebKit::WebString mimetype;
-    WebKit::WebString charset;
-    RefPtr<SharedBuffer> data = PassRefPtr<SharedBuffer>(WebKit::Platform::current()->parseDataURL(url, mimetype, charset));
+    blink::WebString mimetype;
+    blink::WebString charset;
+    RefPtr<SharedBuffer> data = PassRefPtr<SharedBuffer>(blink::Platform::current()->parseDataURL(url, mimetype, charset));
     if (!data)
         return 0;
     ResourceResponse response(url, mimetype, data->size(), charset, String());

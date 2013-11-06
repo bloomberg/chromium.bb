@@ -124,7 +124,7 @@ static void histogramEnumeration(const char* name, const v8::FunctionCallbackInf
 
     int sample = info[0]->ToInt32()->Value();
     if (sample < boundaryValue)
-        WebKit::Platform::current()->histogramEnumeration(name, sample, boundaryValue);
+        blink::Platform::current()->histogramEnumeration(name, sample, boundaryValue);
 }
 
 void V8InspectorFrontendHost::recordActionTakenMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)

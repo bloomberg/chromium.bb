@@ -36,7 +36,7 @@
 
 namespace WebCore { class FontDescription; }
 
-namespace WebKit {
+namespace blink {
 
 class WebFontImpl : public WebFont {
 public:
@@ -61,6 +61,6 @@ private:
     WebCore::Font m_font;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

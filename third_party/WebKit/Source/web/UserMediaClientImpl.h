@@ -39,7 +39,7 @@ namespace WebCore {
 class UserMediaRequest;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebUserMediaClient;
 class WebViewImpl;
@@ -58,6 +58,6 @@ private:
     WebUserMediaClient* m_client;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // UserMediaClientImpl_h

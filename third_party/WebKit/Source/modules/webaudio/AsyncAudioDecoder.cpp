@@ -39,7 +39,7 @@
 namespace WebCore {
 
 AsyncAudioDecoder::AsyncAudioDecoder()
-    : m_thread(adoptPtr(WebKit::Platform::current()->createThread("Audio Decoder")))
+    : m_thread(adoptPtr(blink::Platform::current()->createThread("Audio Decoder")))
 {
 }
 

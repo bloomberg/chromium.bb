@@ -38,7 +38,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 namespace {
 
@@ -124,4 +124,4 @@ IntPoint ViewportAnchor::computeOrigin(const IntSize& currentViewSize) const
     return flooredIntPoint(anchorPoint - anchorOffsetFromOrigin);
 }
 
-} // namespace WebKit
+} // namespace blink

@@ -39,7 +39,7 @@
 
 namespace WebCore { class DocumentThreadableLoader; }
 
-namespace WebKit {
+namespace blink {
 
 class WebFrameImpl;
 
@@ -67,6 +67,6 @@ private:
     RefPtr<WebCore::DocumentThreadableLoader> m_loader;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

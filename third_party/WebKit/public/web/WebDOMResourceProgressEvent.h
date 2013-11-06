@@ -33,7 +33,7 @@
 
 #include "WebDOMProgressEvent.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebString;
 
@@ -43,6 +43,6 @@ public:
     BLINK_EXPORT WebDOMResourceProgressEvent(const WebString& type, bool lengthIsComputable, unsigned long long loaded, unsigned long long total, const WebString& url);
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

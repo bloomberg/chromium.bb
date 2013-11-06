@@ -35,7 +35,7 @@
 #include "../WebColor.h"
 #include "../WebSize.h"
 
-namespace WebKit {
+namespace blink {
 
 struct WebRect;
 struct WebSize;
@@ -87,6 +87,6 @@ public:
     virtual WebSize getSize(int part) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

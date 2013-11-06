@@ -39,7 +39,7 @@
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/ThreadingPrimitives.h"
 
-namespace WebKit {
+namespace blink {
 class WebMessagePortChannel;
 }
 
@@ -54,11 +54,11 @@ class SerializedScriptValue;
 typedef Vector<OwnPtr<MessagePortChannel>, 1> MessagePortChannelArray;
 
 // MessagePortChannel is a platform-independent interface to the remote side of a message channel.
-class MessagePortChannel : public WebKit::WebMessagePortChannelClient {
+class MessagePortChannel : public blink::WebMessagePortChannelClient {
     WTF_MAKE_NONCOPYABLE(MessagePortChannel);
 public:
     static void createChannel(MessagePort*, MessagePort*);
-    static PassOwnPtr<MessagePortChannel> create(WebKit::WebMessagePortChannel*);
+    static PassOwnPtr<MessagePortChannel> create(blink::WebMessagePortChannel*);
 
     virtual ~MessagePortChannel();
 
@@ -81,12 +81,12 @@ public:
     bool tryGetMessageFromRemote(RefPtr<SerializedScriptValue>&, OwnPtr<MessagePortChannelArray>&);
 
     // Releases ownership of the contained web channel.
-    WebKit::WebMessagePortChannel* webChannelRelease();
+    blink::WebMessagePortChannel* webChannelRelease();
 
 private:
-    explicit MessagePortChannel(WebKit::WebMessagePortChannel*);
+    explicit MessagePortChannel(blink::WebMessagePortChannel*);
 
-    // WebKit::WebMessagePortChannelClient implementation
+    // blink::WebMessagePortChannelClient implementation
     virtual void messageAvailable() OVERRIDE;
 
     // Mutex used to ensure exclusive access to the object internals.
@@ -95,7 +95,7 @@ private:
     // The port we are connected to - this is the port that is notified when new messages arrive.
     MessagePort* m_localPort;
 
-    WebKit::WebMessagePortChannel* m_webChannel;
+    blink::WebMessagePortChannel* m_webChannel;
 };
 
 } // namespace WebCore

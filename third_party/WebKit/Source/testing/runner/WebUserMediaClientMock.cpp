@@ -41,7 +41,7 @@
 #include "public/web/WebMediaStreamRegistry.h"
 #include "public/web/WebUserMediaRequest.h"
 
-using namespace WebKit;
+using namespace blink;
 
 namespace WebTestRunner {
 

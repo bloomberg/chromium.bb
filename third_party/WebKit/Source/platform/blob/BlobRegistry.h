@@ -44,7 +44,7 @@ class KURL;
 class RawData;
 class SecurityOrigin;
 
-// A bridging class for calling WebKit::WebBlobRegistry methods.
+// A bridging class for calling blink::WebBlobRegistry methods.
 class PLATFORM_EXPORT BlobRegistry {
 public:
     // Methods for controlling Blobs.

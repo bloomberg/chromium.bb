@@ -36,7 +36,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 void WebSocketStreamError::assign(int code, const WebString& message)
 {

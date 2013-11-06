@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 #include "WebPrivatePtr.h"
 
-namespace WebKit {
+namespace blink {
 
 enum WebCryptoKeyType {
     WebCryptoKeyTypeSecret,
@@ -137,6 +137,6 @@ public:
     virtual ~WebCryptoKeyHandle() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

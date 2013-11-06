@@ -35,8 +35,8 @@
 
 #include <gtest/gtest.h>
 
-using WebKit::WebRect;
-using WebKit::WebFloatRect;
+using blink::WebRect;
+using blink::WebFloatRect;
 using namespace WebCore;
 
 namespace {

@@ -41,7 +41,7 @@ template <class T> class Handle;
 
 namespace WTF { class ArrayBuffer; }
 
-namespace WebKit {
+namespace blink {
 
 class WebArrayBuffer {
 public:
@@ -77,6 +77,6 @@ protected:
     WebPrivatePtr<WTF::ArrayBuffer> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebArrayBuffer_h

@@ -30,7 +30,7 @@
 #ifndef WebDateTimeInputType_h
 #define WebDateTimeInputType_h
 
-namespace WebKit {
+namespace blink {
 
 enum WebDateTimeInputType {
     WebDateTimeInputTypeNone,
@@ -42,6 +42,6 @@ enum WebDateTimeInputType {
     WebDateTimeInputTypeWeek,
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

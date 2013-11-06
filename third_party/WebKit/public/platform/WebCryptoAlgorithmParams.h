@@ -35,7 +35,7 @@
 #include "WebCryptoAlgorithm.h"
 #include "WebVector.h"
 
-namespace WebKit {
+namespace blink {
 
 // NOTE: For documentation on the meaning of each of the parameters see the
 //       Web crypto spec:
@@ -231,6 +231,6 @@ private:
     const WebVector<unsigned char> m_label;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

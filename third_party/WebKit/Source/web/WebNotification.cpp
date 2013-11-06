@@ -42,7 +42,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 class WebNotificationPrivate : public Notification {
 };
@@ -112,7 +112,7 @@ void WebNotification::dispatchDisplayEvent()
     m_private->dispatchShowEvent();
 }
 
-void WebNotification::dispatchErrorEvent(const WebKit::WebString& /* errorMessage */)
+void WebNotification::dispatchErrorEvent(const blink::WebString& /* errorMessage */)
 {
     // FIXME: errorMessage not supported by WebCore yet
     m_private->dispatchErrorEvent();
@@ -153,4 +153,4 @@ void WebNotification::assign(WebNotificationPrivate* p)
     m_private = p;
 }
 
-} // namespace WebKit
+} // namespace blink

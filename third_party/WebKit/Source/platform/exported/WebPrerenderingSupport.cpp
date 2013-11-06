@@ -32,7 +32,7 @@
 
 #include "public/platform/WebPrerenderingSupport.h"
 
-namespace WebKit {
+namespace blink {
 
 WebPrerenderingSupport* WebPrerenderingSupport::s_platform = 0;
 

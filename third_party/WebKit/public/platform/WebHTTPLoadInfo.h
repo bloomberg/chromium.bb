@@ -38,7 +38,7 @@ namespace WebCore {
 struct ResourceLoadInfo;
 }
 
-namespace WebKit {
+namespace blink {
 class WebString;
 
 class WebHTTPLoadInfo {
@@ -83,6 +83,6 @@ private:
     WebPrivatePtr<WebCore::ResourceLoadInfo> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

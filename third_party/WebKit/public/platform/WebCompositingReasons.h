@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 #include <stdint.h>
 
-namespace WebKit {
+namespace blink {
 
 // This is a clone of CompositingReasons in RenderLayer.h.
 const uint64_t CompositingReasonUnknown                                = 0;
@@ -74,6 +74,6 @@ const uint64_t CompositingReasonOutOfFlowClipping                      = static_
 
 typedef uint64_t WebCompositingReasons;
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebCompositingReasons_h

@@ -57,8 +57,8 @@ bool getFileModificationTime(const String& path, time_t& result)
 
 bool getFileMetadata(const String& path, FileMetadata& metadata)
 {
-    WebKit::WebFileInfo webFileInfo;
-    if (!WebKit::Platform::current()->fileUtilities()->getFileInfo(path, webFileInfo))
+    blink::WebFileInfo webFileInfo;
+    if (!blink::Platform::current()->fileUtilities()->getFileInfo(path, webFileInfo))
         return false;
     metadata.modificationTime = webFileInfo.modificationTime;
     metadata.length = webFileInfo.length;
@@ -68,7 +68,7 @@ bool getFileMetadata(const String& path, FileMetadata& metadata)
 
 String directoryName(const String& path)
 {
-    return WebKit::Platform::current()->fileUtilities()->directoryName(path);
+    return blink::Platform::current()->fileUtilities()->directoryName(path);
 }
 
 } // namespace WebCore

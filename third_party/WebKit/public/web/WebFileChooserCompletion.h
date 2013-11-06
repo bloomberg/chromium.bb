@@ -33,7 +33,7 @@
 
 #include "../platform/WebString.h"
 
-namespace WebKit {
+namespace blink {
 
 template <typename T> class WebVector;
 
@@ -65,6 +65,6 @@ protected:
     virtual ~WebFileChooserCompletion() {}
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

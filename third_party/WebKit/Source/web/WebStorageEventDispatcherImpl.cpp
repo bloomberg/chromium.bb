@@ -38,7 +38,7 @@
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebKit {
+namespace blink {
 
 void WebStorageEventDispatcher::dispatchLocalStorageEvent(
         const WebString& key, const WebString& oldValue,
@@ -64,4 +64,4 @@ void WebStorageEventDispatcher::dispatchSessionStorageEvent(
             sessionNamespace, sourceAreaInstance, originatedInProcess);
 }
 
-} // namespace WebKit
+} // namespace blink

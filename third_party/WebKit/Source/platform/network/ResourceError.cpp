@@ -38,7 +38,7 @@ const char errorDomainWebKitInternal[] = "WebKitInternal";
 
 ResourceError ResourceError::cancelledError(const String& failingURL)
 {
-    return WebKit::Platform::current()->cancelledError(KURL(ParsedURLString, failingURL));
+    return blink::Platform::current()->cancelledError(KURL(ParsedURLString, failingURL));
 }
 
 ResourceError ResourceError::copy() const

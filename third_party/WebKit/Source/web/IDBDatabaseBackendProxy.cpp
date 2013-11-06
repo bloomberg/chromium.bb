@@ -42,7 +42,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 PassRefPtr<IDBDatabaseBackendInterface> IDBDatabaseBackendProxy::create(PassOwnPtr<WebIDBDatabase> database)
 {
@@ -151,4 +151,4 @@ void IDBDatabaseBackendProxy::close(PassRefPtr<IDBDatabaseCallbacks>)
     m_webIDBDatabase->close();
 }
 
-} // namespace WebKit
+} // namespace blink

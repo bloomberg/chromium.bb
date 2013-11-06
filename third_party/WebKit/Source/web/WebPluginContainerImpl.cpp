@@ -91,7 +91,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 // Public methods --------------------------------------------------------------
 
@@ -341,7 +341,7 @@ void WebPluginContainerImpl::copy()
     if (!m_webPlugin->hasSelection())
         return;
 
-    WebKit::Platform::current()->clipboard()->writeHTML(m_webPlugin->selectionAsMarkup(), WebURL(), m_webPlugin->selectionAsText(), false);
+    blink::Platform::current()->clipboard()->writeHTML(m_webPlugin->selectionAsMarkup(), WebURL(), m_webPlugin->selectionAsText(), false);
 }
 
 bool WebPluginContainerImpl::executeEditCommand(const WebString& name)
@@ -897,4 +897,4 @@ WebCore::IntRect WebPluginContainerImpl::windowClipRect() const
     return clipRect;
 }
 
-} // namespace WebKit
+} // namespace blink

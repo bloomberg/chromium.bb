@@ -37,7 +37,7 @@
 
 struct GrGLInterface;
 
-namespace WebKit {
+namespace blink {
 
 // WGC3D types match the corresponding GL types as defined in OpenGL ES 2.0
 // header file gl2.h from khronos.org.
@@ -473,6 +473,6 @@ public:
     virtual void vertexAttribDivisorANGLE(WGC3Duint index, WGC3Duint divisor) { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -46,13 +46,13 @@ namespace WebCore {
 // To use:
 //
 // class MyClass ... {
-//    typedef WebKit::WebMyClass WebType;
-//    static PassRefPtr<MyClass> from(WebKit::WebMyClass* webInstance) {
+//    typedef blink::WebMyClass WebType;
+//    static PassRefPtr<MyClass> from(blink::WebMyClass* webInstance) {
 //        // convert/create as appropriate, but often it's just:
 //        return MyClass::create(adoptPtr(webInstance));
 //    }
 //
-// Now when calling into a WebKit API that requires a WebCallbacks<WebKit::WebMyClass, WebKit::WebMyClass>*:
+// Now when calling into a WebKit API that requires a WebCallbacks<blink::WebMyClass, blink::WebMyClass>*:
 //
 //    // call signature: callSomeMethod(WebCallbacks<MyClass, MyClass>* callbacks)
 //    webObject->callSomeMethod(new CallbackPromiseAdapter<MyClass, MyClass>(resolver, scriptExecutionContext));
@@ -61,7 +61,7 @@ namespace WebCore {
 // example that ownership of the WebCallbacks instance is being passed
 // in and it is up to the callee to free the WebCallbacks instace.
 template<typename S, typename T>
-class CallbackPromiseAdapter : public WebKit::WebCallbacks<typename S::WebType, typename T::WebType> {
+class CallbackPromiseAdapter : public blink::WebCallbacks<typename S::WebType, typename T::WebType> {
 public:
     explicit CallbackPromiseAdapter(PassRefPtr<ScriptPromiseResolver> resolver, ExecutionContext* context)
         : m_resolver(resolver)

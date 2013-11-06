@@ -45,7 +45,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 PassOwnPtr<FileSystemClient> WorkerFileSystemClient::create()
 {
@@ -66,4 +66,4 @@ WorkerFileSystemClient::WorkerFileSystemClient()
 {
 }
 
-} // namespace WebKit
+} // namespace blink

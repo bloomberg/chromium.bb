@@ -33,7 +33,7 @@
 
 #include "WebDevToolsAgent.h"
 
-namespace WebKit {
+namespace blink {
 class WebFrameImpl;
 class WebInputEvent;
 struct WebSize;
@@ -57,6 +57,6 @@ public:
     virtual WebSize deviceMetricsOffset() = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

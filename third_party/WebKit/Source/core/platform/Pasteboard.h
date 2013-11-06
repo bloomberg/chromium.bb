@@ -70,12 +70,12 @@ public:
     bool isSelectionMode() const;
     void setSelectionMode(bool);
 
-    WebKit::WebClipboard::Buffer buffer() const { return m_buffer; }
+    blink::WebClipboard::Buffer buffer() const { return m_buffer; }
 
 private:
     Pasteboard();
 
-    WebKit::WebClipboard::Buffer m_buffer;
+    blink::WebClipboard::Buffer m_buffer;
 };
 
 } // namespace WebCore

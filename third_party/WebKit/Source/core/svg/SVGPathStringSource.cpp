@@ -247,4 +247,4 @@ bool SVGPathStringSource::parseArcToSegment(float& rx, float& ry, float& angle, 
     return parseArcToSegmentHelper(m_current.m_character16, m_end.m_character16, rx, ry, angle, largeArc, sweep, targetPoint);
 }
 
-} // namespace WebKit
+} // namespace blink

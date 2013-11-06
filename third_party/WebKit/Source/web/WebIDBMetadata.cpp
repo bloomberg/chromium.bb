@@ -33,7 +33,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebIDBMetadata::WebIDBMetadata(const WebCore::IDBDatabaseMetadata& metadata)
 {
@@ -86,4 +86,4 @@ WebIDBMetadata::operator IDBDatabaseMetadata() const
     return db;
 }
 
-} // namespace WebKit
+} // namespace blink

@@ -40,7 +40,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebIDBCallbacksImpl::WebIDBCallbacksImpl(PassRefPtr<IDBCallbacks> callbacks)
     : m_callbacks(callbacks)
@@ -120,4 +120,4 @@ void WebIDBCallbacksImpl::onUpgradeNeeded(long long oldVersion, WebIDBDatabase* 
     m_callbacks->onUpgradeNeeded(oldVersion, m_databaseProxy, metadata, dataLoss, dataLossMessage);
 }
 
-} // namespace WebKit
+} // namespace blink

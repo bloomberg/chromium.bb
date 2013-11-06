@@ -33,11 +33,11 @@
 
 #include "core/loader/CrossOriginPreflightResultCache.h"
 
-namespace WebKit {
+namespace blink {
 
 void WebCrossOriginPreflightResultCache::clear()
 {
     WebCore::CrossOriginPreflightResultCache::shared().empty();
 }
 
-} // namespace WebKit
+} // namespace blink

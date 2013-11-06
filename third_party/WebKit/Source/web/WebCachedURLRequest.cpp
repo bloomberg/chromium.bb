@@ -37,7 +37,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 void WebCachedURLRequest::reset()
 {
@@ -74,4 +74,4 @@ WebCachedURLRequest::WebCachedURLRequest(FetchRequest* request)
 {
 }
 
-} // namespace WebKit
+} // namespace blink

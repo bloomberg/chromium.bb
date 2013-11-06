@@ -31,7 +31,7 @@
 #ifndef WebTextAffinity_h
 #define WebTextAffinity_h
 
-namespace WebKit {
+namespace blink {
 
 // These constants specify the preferred direction of selection.
 enum WebTextAffinity {
@@ -39,6 +39,6 @@ enum WebTextAffinity {
     WebTextAffinityDownstream, // The selection is moving toward the bottom of the document.
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

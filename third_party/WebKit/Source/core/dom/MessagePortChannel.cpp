@@ -39,7 +39,7 @@
 
 namespace WebCore {
 
-PassOwnPtr<MessagePortChannel> MessagePortChannel::create(WebKit::WebMessagePortChannel* channel)
+PassOwnPtr<MessagePortChannel> MessagePortChannel::create(blink::WebMessagePortChannel* channel)
 {
     return adoptPtr(new MessagePortChannel(channel));
 }
@@ -47,8 +47,8 @@ PassOwnPtr<MessagePortChannel> MessagePortChannel::create(WebKit::WebMessagePort
 void MessagePortChannel::createChannel(MessagePort* port1, MessagePort* port2)
 {
     // Create proxies for each endpoint.
-    OwnPtr<MessagePortChannel> channel1 = create(WebKit::Platform::current()->createMessagePortChannel());
-    OwnPtr<MessagePortChannel> channel2 = create(WebKit::Platform::current()->createMessagePortChannel());
+    OwnPtr<MessagePortChannel> channel1 = create(blink::Platform::current()->createMessagePortChannel());
+    OwnPtr<MessagePortChannel> channel2 = create(blink::Platform::current()->createMessagePortChannel());
 
     // Entangle the two endpoints.
     channel1->m_webChannel->entangle(channel2->m_webChannel);
@@ -59,7 +59,7 @@ void MessagePortChannel::createChannel(MessagePort* port1, MessagePort* port2)
     port2->entangle(channel1.release());
 }
 
-MessagePortChannel::MessagePortChannel(WebKit::WebMessagePortChannel* channel)
+MessagePortChannel::MessagePortChannel(blink::WebMessagePortChannel* channel)
     : m_localPort(0)
     , m_webChannel(channel)
 {
@@ -90,10 +90,10 @@ void MessagePortChannel::postMessageToRemote(PassRefPtr<SerializedScriptValue> m
     if (!m_localPort || !m_webChannel)
         return;
 
-    WebKit::WebString messageString = message->toWireString();
-    WebKit::WebMessagePortChannelArray* webChannels = 0;
+    blink::WebString messageString = message->toWireString();
+    blink::WebMessagePortChannelArray* webChannels = 0;
     if (channels && channels->size()) {
-        webChannels = new WebKit::WebMessagePortChannelArray(channels->size());
+        webChannels = new blink::WebMessagePortChannelArray(channels->size());
         for (size_t i = 0; i < channels->size(); ++i)
             (*webChannels)[i] = (*channels)[i]->webChannelRelease();
     }
@@ -105,8 +105,8 @@ bool MessagePortChannel::tryGetMessageFromRemote(RefPtr<SerializedScriptValue>& 
     if (!m_webChannel)
         return false;
 
-    WebKit::WebString message;
-    WebKit::WebMessagePortChannelArray webChannels;
+    blink::WebString message;
+    blink::WebMessagePortChannelArray webChannels;
     bool rv = m_webChannel->tryGetMessage(&message, webChannels);
     if (rv) {
         if (webChannels.size()) {
@@ -141,10 +141,10 @@ void MessagePortChannel::messageAvailable()
         m_localPort->messageAvailable();
 }
 
-WebKit::WebMessagePortChannel* MessagePortChannel::webChannelRelease()
+blink::WebMessagePortChannel* MessagePortChannel::webChannelRelease()
 {
     ASSERT(m_webChannel);
-    WebKit::WebMessagePortChannel* webChannel = m_webChannel;
+    blink::WebMessagePortChannel* webChannel = m_webChannel;
     m_webChannel = 0;
     webChannel->setClient(0);
     return webChannel;

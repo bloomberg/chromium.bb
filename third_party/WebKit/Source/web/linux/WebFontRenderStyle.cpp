@@ -35,7 +35,7 @@
 
 using WebCore::FontRenderStyle;
 
-namespace WebKit {
+namespace blink {
 
 void WebFontRenderStyle::toFontRenderStyle(FontRenderStyle* out)
 {
@@ -59,4 +59,4 @@ void WebFontRenderStyle::setDefaults()
     useSubpixelPositioning = 2;
 }
 
-} // namespace WebKit
+} // namespace blink

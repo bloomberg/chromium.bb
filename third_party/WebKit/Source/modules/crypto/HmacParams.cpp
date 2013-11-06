@@ -42,7 +42,7 @@ Algorithm* HmacParams::hash()
     return m_hash.get();
 }
 
-HmacParams::HmacParams(const WebKit::WebCryptoAlgorithm& algorithm)
+HmacParams::HmacParams(const blink::WebCryptoAlgorithm& algorithm)
     : Algorithm(algorithm)
 {
     ASSERT(algorithm.hmacParams());

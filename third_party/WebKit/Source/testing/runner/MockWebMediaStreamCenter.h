@@ -35,24 +35,24 @@
 #include "public/platform/WebMediaStreamCenter.h"
 #include "public/platform/WebNonCopyable.h"
 
-namespace WebKit {
+namespace blink {
 class WebMediaStreamCenterClient;
 };
 
 namespace WebTestRunner {
 
-class MockWebMediaStreamCenter : public WebKit::WebMediaStreamCenter, public WebKit::WebNonCopyable {
+class MockWebMediaStreamCenter : public blink::WebMediaStreamCenter, public blink::WebNonCopyable {
 public:
-    explicit MockWebMediaStreamCenter(WebKit::WebMediaStreamCenterClient*);
+    explicit MockWebMediaStreamCenter(blink::WebMediaStreamCenterClient*);
 
-    virtual bool getMediaStreamTrackSources(const WebKit::WebMediaStreamTrackSourcesRequest&) OVERRIDE;
-    virtual void didEnableMediaStreamTrack(const WebKit::WebMediaStream&, const WebKit::WebMediaStreamTrack&) OVERRIDE;
-    virtual void didDisableMediaStreamTrack(const WebKit::WebMediaStream&, const WebKit::WebMediaStreamTrack&) OVERRIDE;
-    virtual bool didAddMediaStreamTrack(const WebKit::WebMediaStream&, const WebKit::WebMediaStreamTrack&) OVERRIDE;
-    virtual bool didRemoveMediaStreamTrack(const WebKit::WebMediaStream&, const WebKit::WebMediaStreamTrack&) OVERRIDE;
-    virtual void didStopLocalMediaStream(const WebKit::WebMediaStream&) OVERRIDE;
-    virtual bool didStopMediaStreamTrack(const WebKit::WebMediaStreamTrack&) OVERRIDE;
-    virtual void didCreateMediaStream(WebKit::WebMediaStream&) OVERRIDE;
+    virtual bool getMediaStreamTrackSources(const blink::WebMediaStreamTrackSourcesRequest&) OVERRIDE;
+    virtual void didEnableMediaStreamTrack(const blink::WebMediaStream&, const blink::WebMediaStreamTrack&) OVERRIDE;
+    virtual void didDisableMediaStreamTrack(const blink::WebMediaStream&, const blink::WebMediaStreamTrack&) OVERRIDE;
+    virtual bool didAddMediaStreamTrack(const blink::WebMediaStream&, const blink::WebMediaStreamTrack&) OVERRIDE;
+    virtual bool didRemoveMediaStreamTrack(const blink::WebMediaStream&, const blink::WebMediaStreamTrack&) OVERRIDE;
+    virtual void didStopLocalMediaStream(const blink::WebMediaStream&) OVERRIDE;
+    virtual bool didStopMediaStreamTrack(const blink::WebMediaStreamTrack&) OVERRIDE;
+    virtual void didCreateMediaStream(blink::WebMediaStream&) OVERRIDE;
 
 private:
     MockWebMediaStreamCenter() { }

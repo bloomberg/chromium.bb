@@ -37,7 +37,7 @@
 
 namespace WebCore { class Performance; }
 
-namespace WebKit {
+namespace blink {
 
 class WebPerformance {
 public:
@@ -91,6 +91,6 @@ private:
     WebPrivatePtr<WebCore::Performance> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -35,7 +35,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebDOMEventListener::WebDOMEventListener()
     : m_private(new WebDOMEventListenerPrivate(this))
@@ -63,4 +63,4 @@ EventListenerWrapper* WebDOMEventListener::getEventListenerWrapper(const WebStri
     return m_private->getEventListenerWrapper(eventType, useCapture, target);
 }
 
-} // namespace WebKit
+} // namespace blink

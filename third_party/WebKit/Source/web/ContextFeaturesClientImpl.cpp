@@ -38,7 +38,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 class ContextFeaturesCache : public DocumentSupplement {
 public:
@@ -150,4 +150,4 @@ bool ContextFeaturesClientImpl::askIfIsEnabled(Document* document, ContextFeatur
     }
 }
 
-} // namespace WebKit
+} // namespace blink

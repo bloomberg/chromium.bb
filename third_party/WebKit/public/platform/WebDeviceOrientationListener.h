@@ -31,7 +31,7 @@
 #ifndef WebDeviceOrientationListener_h
 #define WebDeviceOrientationListener_h
 
-namespace WebKit {
+namespace blink {
 
 class WebDeviceOrientationData;
 
@@ -41,6 +41,6 @@ public:
     virtual void didChangeDeviceOrientation(const WebDeviceOrientationData&) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebDeviceOrientationListener_h

@@ -34,7 +34,7 @@
 #include "modules/filesystem/FileSystemClient.h"
 #include "wtf/Forward.h"
 
-namespace WebKit {
+namespace blink {
 
 // FIXME: This could be probably unified into non-worker FileSystemClient
 // implementation.
@@ -49,6 +49,6 @@ private:
     WorkerFileSystemClient();
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WorkerFileSystemClient_h

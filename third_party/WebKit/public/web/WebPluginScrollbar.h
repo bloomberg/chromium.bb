@@ -28,7 +28,7 @@
 #include "../platform/WebCanvas.h"
 #include "../platform/WebScrollbar.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebInputEvent;
 class WebPluginContainer;
@@ -71,6 +71,6 @@ public:
     virtual bool handleInputEvent(const WebInputEvent&) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -31,7 +31,7 @@
 #ifndef WebDevToolsFrontendClient_h
 #define WebDevToolsFrontendClient_h
 
-namespace WebKit {
+namespace blink {
 
 class WebString;
 struct WebFloatPoint;
@@ -51,6 +51,6 @@ protected:
     virtual ~WebDevToolsFrontendClient() {}
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

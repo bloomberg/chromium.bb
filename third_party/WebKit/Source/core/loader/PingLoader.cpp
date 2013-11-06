@@ -127,9 +127,9 @@ PingLoader::PingLoader(Frame* frame, ResourceRequest& request, StoredCredentials
     frame->loader().client()->didDispatchPingLoader(request.url());
 
     unsigned long identifier = createUniqueIdentifier();
-    m_loader = adoptPtr(WebKit::Platform::current()->createURLLoader());
+    m_loader = adoptPtr(blink::Platform::current()->createURLLoader());
     ASSERT(m_loader);
-    WebKit::WrappedResourceRequest wrappedRequest(request);
+    blink::WrappedResourceRequest wrappedRequest(request);
     wrappedRequest.setAllowStoredCredentials(credentialsAllowed == AllowStoredCredentials);
     m_loader->loadAsynchronously(wrappedRequest, this);
 

@@ -35,7 +35,7 @@
 #include "../platform/WebVector.h"
 #include "WebTextCheckingType.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebString;
 class WebTextCheckingCompletion;
@@ -84,6 +84,6 @@ protected:
     ~WebSpellCheckClient() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

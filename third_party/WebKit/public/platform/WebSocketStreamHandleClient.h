@@ -33,7 +33,7 @@
 
 #include "WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebData;
 class WebSocketStreamError;
@@ -59,6 +59,6 @@ public:
     virtual void didFail(WebSocketStreamHandle*, const WebSocketStreamError&) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -41,7 +41,7 @@
 #include "public/web/WebView.h"
 #include <string>
 
-using namespace WebKit;
+using namespace blink;
 using namespace std;
 
 namespace WebTestRunner {

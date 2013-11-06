@@ -33,7 +33,7 @@
 
 #include "WebString.h"
 
-namespace WebKit {
+namespace blink {
 
 struct WebServiceWorkerError {
     enum ErrorType {
@@ -48,6 +48,6 @@ struct WebServiceWorkerError {
     WebString message;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

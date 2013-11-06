@@ -38,7 +38,7 @@
 #include "WebPageVisibilityState.h"
 #include "WebWidget.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebAXObject;
 class WebAutofillClient;
@@ -517,6 +517,6 @@ protected:
     ~WebView() {}
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -26,7 +26,7 @@
 #ifndef WebLayerPositionConstraint_h
 #define WebLayerPositionConstraint_h
 
-namespace WebKit {
+namespace blink {
 
 struct WebLayerPositionConstraint {
     bool isFixedPosition     : 1;
@@ -50,6 +50,6 @@ struct WebLayerPositionConstraint {
     }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebLayerPositionConstraint_h

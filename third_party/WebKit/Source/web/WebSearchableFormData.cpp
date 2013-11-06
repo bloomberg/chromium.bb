@@ -235,7 +235,7 @@ bool buildSearchString(const HTMLFormElement* form, Vector<char>* encodedString,
 }
 } // namespace
 
-namespace WebKit {
+namespace blink {
 
 WebSearchableFormData::WebSearchableFormData(const WebFormElement& form, const WebInputElement& selectedInputElement)
 {
@@ -294,4 +294,4 @@ WebSearchableFormData::WebSearchableFormData(const WebFormElement& form, const W
     m_encoding = String(encoding.name());
 }
 
-} // namespace WebKit
+} // namespace blink

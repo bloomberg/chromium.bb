@@ -30,7 +30,7 @@
 #include "WebFloatRect.h"
 #include "WebLayer.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebExternalTextureLayerClient;
 
@@ -64,6 +64,6 @@ public:
     virtual void setRateLimitContext(bool) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebExternalTextureLayer_h

@@ -35,7 +35,7 @@
 #include "public/platform/WebArrayBuffer.h"
 #include <string.h>
 
-namespace WebKit {
+namespace blink {
 
 void WebCryptoResult::completeWithError()
 {
@@ -52,7 +52,7 @@ void WebCryptoResult::completeWithBuffer(const WebArrayBuffer& buffer)
 
 void WebCryptoResult::completeWithBuffer(const void* bytes, unsigned bytesSize)
 {
-    WebArrayBuffer buffer = WebKit::WebArrayBuffer::create(bytesSize, 1);
+    WebArrayBuffer buffer = blink::WebArrayBuffer::create(bytesSize, 1);
     RELEASE_ASSERT(!buffer.isNull());
     memcpy(buffer.data(), bytes, bytesSize);
     completeWithBuffer(buffer);
@@ -95,4 +95,4 @@ void WebCryptoResult::assign(const WebCryptoResult& o)
     m_impl = o.m_impl;
 }
 
-} // namespace WebKit
+} // namespace blink

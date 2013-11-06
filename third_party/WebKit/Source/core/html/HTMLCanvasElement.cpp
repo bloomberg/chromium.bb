@@ -168,7 +168,7 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
         if (m_context && !m_context->is2d())
             return 0;
         if (!m_context) {
-            WebKit::Platform::current()->histogramEnumeration("Canvas.ContextType", Context2d, ContextTypeCount);
+            blink::Platform::current()->histogramEnumeration("Canvas.ContextType", Context2d, ContextTypeCount);
             m_context = CanvasRenderingContext2D::create(this, static_cast<Canvas2DContextAttributes*>(attrs), document().inQuirksMode());
             if (m_context)
                 scheduleLayerUpdate();
@@ -195,7 +195,7 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
             if (m_context && !m_context->is3d())
                 return 0;
             if (!m_context) {
-                WebKit::Platform::current()->histogramEnumeration("Canvas.ContextType", contextType, ContextTypeCount);
+                blink::Platform::current()->histogramEnumeration("Canvas.ContextType", contextType, ContextTypeCount);
                 m_context = WebGLRenderingContext::create(this, static_cast<WebGLContextAttributes*>(attrs));
                 if (m_context)
                     scheduleLayerUpdate();
@@ -443,7 +443,7 @@ bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const
     if (size.width() * size.height() < settings->minimumAccelerated2dCanvasSize())
         return false;
 
-    if (!WebKit::Platform::current()->canAccelerate2dCanvas())
+    if (!blink::Platform::current()->canAccelerate2dCanvas())
         return false;
 
     return true;

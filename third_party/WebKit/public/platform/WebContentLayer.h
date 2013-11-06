@@ -29,7 +29,7 @@
 #include "WebCommon.h"
 #include "WebLayer.h"
 
-namespace WebKit {
+namespace blink {
 class WebContentLayerClient;
 
 class WebContentLayer {
@@ -55,6 +55,6 @@ public:
     virtual void setDrawCheckerboardForMissingTiles(bool) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebContentLayer_h

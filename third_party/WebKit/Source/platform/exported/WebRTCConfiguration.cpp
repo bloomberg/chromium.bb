@@ -39,7 +39,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebRTCICEServer::WebRTCICEServer(const PassRefPtr<RTCIceServer>& iceServer)
     : m_private(iceServer)
@@ -101,4 +101,4 @@ WebRTCICEServer WebRTCConfiguration::server(size_t index) const
     return WebRTCICEServer(m_private->server(index));
 }
 
-} // namespace WebKit
+} // namespace blink

@@ -42,7 +42,7 @@ class IntPoint;
 class KURL;
 }
 
-namespace WebKit {
+namespace blink {
 class WebViewImpl;
 
 class DragClientImpl : public WebCore::DragClient {
@@ -62,6 +62,6 @@ private:
     WebViewImpl* m_webView;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

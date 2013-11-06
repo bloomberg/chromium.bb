@@ -37,7 +37,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebURLError::WebURLError(const ResourceError& error)
 {
@@ -68,4 +68,4 @@ WebURLError::operator ResourceError() const
     return resourceError;
 }
 
-} // namespace WebKit
+} // namespace blink

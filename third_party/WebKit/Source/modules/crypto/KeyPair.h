@@ -36,7 +36,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
-namespace WebKit { class WebCryptoKey; }
+namespace blink { class WebCryptoKey; }
 
 namespace WebCore {
 
@@ -44,7 +44,7 @@ class Key;
 
 class KeyPair : public ScriptWrappable, public RefCounted<KeyPair> {
 public:
-    static PassRefPtr<KeyPair> create(const WebKit::WebCryptoKey& publicKey, const WebKit::WebCryptoKey& privateKey);
+    static PassRefPtr<KeyPair> create(const blink::WebCryptoKey& publicKey, const blink::WebCryptoKey& privateKey);
 
     Key* publicKey() { return m_publicKey.get(); }
     Key* privateKey() { return m_privateKey.get(); }

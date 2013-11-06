@@ -48,13 +48,13 @@ bool ContentDecryptionModule::supportsKeySystem(const String& keySystem)
 PassOwnPtr<ContentDecryptionModule> ContentDecryptionModule::create(const String& keySystem)
 {
     ASSERT(!keySystem.isEmpty());
-    OwnPtr<WebKit::WebContentDecryptionModule> cdm = adoptPtr(WebKit::Platform::current()->createContentDecryptionModule(keySystem));
+    OwnPtr<blink::WebContentDecryptionModule> cdm = adoptPtr(blink::Platform::current()->createContentDecryptionModule(keySystem));
     if (!cdm)
         return nullptr;
     return adoptPtr(new ContentDecryptionModule(cdm.release()));
 }
 
-ContentDecryptionModule::ContentDecryptionModule(PassOwnPtr<WebKit::WebContentDecryptionModule> cdm)
+ContentDecryptionModule::ContentDecryptionModule(PassOwnPtr<blink::WebContentDecryptionModule> cdm)
     : m_cdm(cdm)
 {
     ASSERT(m_cdm);

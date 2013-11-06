@@ -40,7 +40,7 @@ class HTMLFormControlElement;
 class HTMLFormElement;
 }
 
-namespace WebKit {
+namespace blink {
 
 // Helper structure to locate username, passwords and submit fields.
 //
@@ -58,6 +58,6 @@ struct PasswordFormFields {
 void findPasswordFormFields(WebCore::HTMLFormElement* form,
                             PasswordFormFields* fields);
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -174,7 +174,7 @@ void FontResource::willUseFontData()
 FontResource::FontResourceHistograms::~FontResourceHistograms()
 {
     if (m_styledTime > 0)
-        WebKit::Platform::current()->histogramEnumeration("WebFont.Resource.UsageType", StyledButNotUsed, UsageTypeMax);
+        blink::Platform::current()->histogramEnumeration("WebFont.Resource.UsageType", StyledButNotUsed, UsageTypeMax);
 }
 
 void FontResource::FontResourceHistograms::willUseFontData()
@@ -188,11 +188,11 @@ void FontResource::FontResourceHistograms::loadStarted()
     if (m_styledTime < 0)
         return;
     if (!m_styledTime) {
-        WebKit::Platform::current()->histogramEnumeration("WebFont.Resource.UsageType", NotStyledButUsed, UsageTypeMax);
+        blink::Platform::current()->histogramEnumeration("WebFont.Resource.UsageType", NotStyledButUsed, UsageTypeMax);
     } else {
         int duration = static_cast<int>(currentTimeMS() - m_styledTime);
-        WebKit::Platform::current()->histogramCustomCounts("WebFont.Resource.StyleRecalcToDownloadLatency", duration, 0, 10000, 50);
-        WebKit::Platform::current()->histogramEnumeration("WebFont.Resource.UsageType", StyledAndUsed, UsageTypeMax);
+        blink::Platform::current()->histogramCustomCounts("WebFont.Resource.StyleRecalcToDownloadLatency", duration, 0, 10000, 50);
+        blink::Platform::current()->histogramEnumeration("WebFont.Resource.UsageType", StyledAndUsed, UsageTypeMax);
     }
     m_styledTime = -1;
 }

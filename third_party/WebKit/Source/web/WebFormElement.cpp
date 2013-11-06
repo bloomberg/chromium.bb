@@ -44,7 +44,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 bool WebFormElement::autoComplete() const
 {
@@ -123,4 +123,4 @@ WebFormElement::operator PassRefPtr<HTMLFormElement>() const
     return toHTMLFormElement(m_private.get());
 }
 
-} // namespace WebKit
+} // namespace blink

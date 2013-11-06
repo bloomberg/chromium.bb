@@ -34,7 +34,7 @@
 
 using namespace WTF;
 
-namespace WebKit {
+namespace blink {
 
 void WebArrayBufferView::assign(const WebArrayBufferView& other)
 {
@@ -85,4 +85,4 @@ WebArrayBufferView::operator PassRefPtr<ArrayBufferView>() const
     return m_private.get();
 }
 
-} // namespace WebKit
+} // namespace blink

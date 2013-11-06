@@ -38,7 +38,7 @@
 namespace WebCore { class HTMLOptionElement; }
 #endif
 
-namespace WebKit {
+namespace blink {
 
 // Provides readonly access to some properties of a DOM option element node.
 class WebOptionElement : public WebElement {
@@ -68,6 +68,6 @@ public:
 #endif
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -31,7 +31,7 @@
 #ifndef WebMediaStreamCenterClient_h
 #define WebMediaStreamCenterClient_h
 
-namespace WebKit {
+namespace blink {
 class WebMediaStream;
 class WebMediaStreamTrack;
 
@@ -42,6 +42,6 @@ public:
     virtual void stopLocalMediaStream(const WebMediaStream&) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebMediaStreamCenterClient_h

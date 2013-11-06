@@ -37,7 +37,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebBlobData::WebBlobData()
 {
@@ -119,4 +119,4 @@ WebBlobData::operator PassOwnPtr<BlobData>()
     return m_private.release();
 }
 
-} // namespace WebKit
+} // namespace blink

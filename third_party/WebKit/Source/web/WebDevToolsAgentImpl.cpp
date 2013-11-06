@@ -82,7 +82,7 @@ namespace OverlayZOrders {
 static const int highlight = 99;
 }
 
-namespace WebKit {
+namespace blink {
 
 class ClientMessageLoopAdapter : public PageScriptDebugServer::ClientMessageLoop {
 public:
@@ -109,7 +109,7 @@ public:
     }
 
 private:
-    ClientMessageLoopAdapter(PassOwnPtr<WebKit::WebDevToolsAgentClient::WebKitClientMessageLoop> messageLoop)
+    ClientMessageLoopAdapter(PassOwnPtr<blink::WebDevToolsAgentClient::WebKitClientMessageLoop> messageLoop)
         : m_running(false)
         , m_messageLoop(messageLoop) { }
 
@@ -162,7 +162,7 @@ private:
     }
 
     bool m_running;
-    OwnPtr<WebKit::WebDevToolsAgentClient::WebKitClientMessageLoop> m_messageLoop;
+    OwnPtr<blink::WebDevToolsAgentClient::WebKitClientMessageLoop> m_messageLoop;
     typedef HashSet<WebViewImpl*> FrozenViewsSet;
     FrozenViewsSet m_frozenViews;
     // FIXME: The ownership model for s_instance is somewhat complicated. Can we make this simpler?
@@ -210,7 +210,7 @@ WebDevToolsAgentImpl::~WebDevToolsAgentImpl()
 {
     ClientMessageLoopAdapter::inspectedViewClosed(m_webViewImpl);
     if (m_attached)
-        WebKit::Platform::current()->currentThread()->removeTaskObserver(this);
+        blink::Platform::current()->currentThread()->removeTaskObserver(this);
 }
 
 void WebDevToolsAgentImpl::attach()
@@ -220,7 +220,7 @@ void WebDevToolsAgentImpl::attach()
 
     inspectorController()->connectFrontend(this);
     inspectorController()->webViewResized(m_webViewImpl->size());
-    WebKit::Platform::current()->currentThread()->addTaskObserver(this);
+    blink::Platform::current()->currentThread()->addTaskObserver(this);
     m_attached = true;
 }
 
@@ -230,13 +230,13 @@ void WebDevToolsAgentImpl::reattach(const WebString& savedState)
         return;
 
     inspectorController()->reuseFrontend(this, savedState);
-    WebKit::Platform::current()->currentThread()->addTaskObserver(this);
+    blink::Platform::current()->currentThread()->addTaskObserver(this);
     m_attached = true;
 }
 
 void WebDevToolsAgentImpl::detach()
 {
-    WebKit::Platform::current()->currentThread()->removeTaskObserver(this);
+    blink::Platform::current()->currentThread()->removeTaskObserver(this);
 
     // Prevent controller from sending messages to the frontend.
     InspectorController* ic = inspectorController();
@@ -623,4 +623,4 @@ void WebDevToolsAgent::processPendingMessages()
     PageScriptDebugServer::shared().runPendingTasks();
 }
 
-} // namespace WebKit
+} // namespace blink

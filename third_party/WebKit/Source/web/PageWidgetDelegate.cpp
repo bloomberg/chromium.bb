@@ -45,7 +45,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 static inline FrameView* mainFrameView(Page* page)
 {

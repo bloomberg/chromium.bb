@@ -33,7 +33,7 @@
 
 #include "WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebBlobData;
 class WebString;
@@ -44,11 +44,11 @@ class WebBlobRegistry {
 public:
     virtual ~WebBlobRegistry() { }
 
-    virtual void registerBlobData(const WebKit::WebString& uuid, const WebKit::WebBlobData&) { }
-    virtual void addBlobDataRef(const WebKit::WebString& uuid) { }
-    virtual void removeBlobDataRef(const WebKit::WebString& uuid) { }
-    virtual void registerPublicBlobURL(const WebKit::WebURL&, const WebKit::WebString& uuid) { }
-    virtual void revokePublicBlobURL(const WebKit::WebURL&) { }
+    virtual void registerBlobData(const blink::WebString& uuid, const blink::WebBlobData&) { }
+    virtual void addBlobDataRef(const blink::WebString& uuid) { }
+    virtual void removeBlobDataRef(const blink::WebString& uuid) { }
+    virtual void registerPublicBlobURL(const blink::WebURL&, const blink::WebString& uuid) { }
+    virtual void revokePublicBlobURL(const blink::WebURL&) { }
 
     // DEPRECATED - old style blob handling is being replaced
     virtual void registerBlobURL(const WebURL&, WebBlobData&) { }
@@ -78,6 +78,6 @@ public:
     virtual void unregisterStreamURL(const WebURL&) { BLINK_ASSERT_NOT_REACHED(); }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebBlobRegistry_h

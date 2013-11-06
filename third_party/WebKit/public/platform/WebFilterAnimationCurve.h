@@ -36,7 +36,7 @@
 #include "WebCommon.h"
 #include "WebFilterKeyframe.h"
 
-namespace WebKit {
+namespace blink {
 
 // A keyframed filter animation curve.
 class WebFilterAnimationCurve : public WebAnimationCurve {
@@ -49,6 +49,6 @@ public:
     virtual void add(const WebFilterKeyframe&, double x1, double y1, double x2, double y2) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebFilterAnimationCurve_h

@@ -30,7 +30,7 @@
 
 #include "MockWebAudioDevice.h"
 
-using namespace WebKit;
+using namespace blink;
 
 namespace WebTestRunner {
 

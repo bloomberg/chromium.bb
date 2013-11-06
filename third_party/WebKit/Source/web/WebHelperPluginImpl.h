@@ -39,7 +39,7 @@ namespace WebCore {
 class Page;
 }
 
-namespace WebKit {
+namespace blink {
 
 class HelperPluginChromeClient;
 class HelperPluginFrameClient;
@@ -92,6 +92,6 @@ inline WebHelperPluginImpl* toWebHelperPluginImpl(WebWidget* widget)
     return static_cast<WebHelperPluginImpl*>(widget);
 }
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebHelperPluginImpl_h

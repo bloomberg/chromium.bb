@@ -30,7 +30,7 @@
 #include "WebCommon.h"
 #include "WebFloatKeyframe.h"
 
-namespace WebKit {
+namespace blink {
 
 // A keyframed float animation curve.
 class WebFloatAnimationCurve : public WebAnimationCurve {
@@ -47,6 +47,6 @@ public:
     virtual float getValue(double time) const = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebFloatAnimationCurve_h

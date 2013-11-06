@@ -30,7 +30,7 @@
 #include "WebCommon.h"
 #include "WebTransformKeyframe.h"
 
-namespace WebKit {
+namespace blink {
 
 // A keyframed transform animation curve.
 class WebTransformAnimationCurve : public WebAnimationCurve {
@@ -45,6 +45,6 @@ public:
     virtual void add(const WebTransformKeyframe&, double x1, double y1, double x2, double y2) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebTransformAnimationCurve_h

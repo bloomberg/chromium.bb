@@ -38,7 +38,7 @@
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebKit {
+namespace blink {
 class WebAudioSourceProvider;
 }
 
@@ -69,7 +69,7 @@ public:
 
 #if ENABLE(WEB_AUDIO)
     AudioSourceProvider* audioSourceProvider() { return &m_sourceProvider; }
-    void setSourceProvider(WebKit::WebAudioSourceProvider* provider) { m_sourceProvider.wrap(provider); }
+    void setSourceProvider(blink::WebAudioSourceProvider* provider) { m_sourceProvider.wrap(provider); }
 #endif // ENABLE(WEB_AUDIO)
 
     ExtraData* extraData() const { return m_extraData.get(); }
@@ -91,14 +91,14 @@ private:
 
         virtual ~AudioSourceProviderImpl() { }
 
-        // Wraps the given WebKit::WebAudioSourceProvider to WebCore::AudioSourceProvider.
-        void wrap(WebKit::WebAudioSourceProvider*);
+        // Wraps the given blink::WebAudioSourceProvider to WebCore::AudioSourceProvider.
+        void wrap(blink::WebAudioSourceProvider*);
 
         // WebCore::AudioSourceProvider
         virtual void provideInput(WebCore::AudioBus*, size_t framesToProcess);
 
     private:
-        WebKit::WebAudioSourceProvider* m_webAudioSourceProvider;
+        blink::WebAudioSourceProvider* m_webAudioSourceProvider;
         Mutex m_provideInputLock;
     };
 

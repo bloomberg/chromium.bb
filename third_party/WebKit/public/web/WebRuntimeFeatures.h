@@ -33,7 +33,7 @@
 
 #include "../platform/WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 
 // This class is used to enable runtime features of Blink.
 // All features are disabled by default.
@@ -167,6 +167,6 @@ private:
     WebRuntimeFeatures();
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

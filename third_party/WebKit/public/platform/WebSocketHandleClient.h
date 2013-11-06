@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 #include "public/platform/WebSocketHandle.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebString;
 class WebURL;
@@ -59,6 +59,6 @@ public:
     virtual void didReceiveFlowControl(WebSocketHandle*, int64_t quota) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebSocketHandleClient_h

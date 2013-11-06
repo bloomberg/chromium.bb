@@ -35,7 +35,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebTextCheckingResult::operator TextCheckingResult() const
 {
@@ -56,4 +56,4 @@ WebTextCheckingResult::operator TextCheckingResult() const
     return result;
 }
 
-} // namespace WebKit
+} // namespace blink

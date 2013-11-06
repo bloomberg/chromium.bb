@@ -38,7 +38,7 @@ namespace WebCore {
 class InbandTextTrackPrivateClient;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebInbandTextTrack;
 

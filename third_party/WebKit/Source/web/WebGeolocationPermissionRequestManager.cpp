@@ -38,7 +38,7 @@ using namespace WebCore;
 typedef HashMap<Geolocation*, int> GeolocationIdMap;
 typedef HashMap<int, Geolocation*> IdGeolocationMap;
 
-namespace WebKit {
+namespace blink {
 class WebGeolocationPermissionRequestManagerPrivate {
 public:
     GeolocationIdMap m_geolocationIdMap;
@@ -46,9 +46,9 @@ public:
 };
 }
 
-using namespace WebKit;
+using namespace blink;
 
-int WebGeolocationPermissionRequestManager::add(const WebKit::WebGeolocationPermissionRequest& permissionRequest)
+int WebGeolocationPermissionRequestManager::add(const blink::WebGeolocationPermissionRequest& permissionRequest)
 {
     Geolocation* geolocation = permissionRequest.geolocation();
     ASSERT(!m_private->m_geolocationIdMap.contains(geolocation));
@@ -58,7 +58,7 @@ int WebGeolocationPermissionRequestManager::add(const WebKit::WebGeolocationPerm
     return id;
 }
 
-bool WebGeolocationPermissionRequestManager::remove(const WebKit::WebGeolocationPermissionRequest& permissionRequest, int& id)
+bool WebGeolocationPermissionRequestManager::remove(const blink::WebGeolocationPermissionRequest& permissionRequest, int& id)
 {
     Geolocation* geolocation = permissionRequest.geolocation();
     GeolocationIdMap::iterator it = m_private->m_geolocationIdMap.find(geolocation);
@@ -70,7 +70,7 @@ bool WebGeolocationPermissionRequestManager::remove(const WebKit::WebGeolocation
     return true;
 }
 
-bool WebGeolocationPermissionRequestManager::remove(int id, WebKit::WebGeolocationPermissionRequest& permissionRequest)
+bool WebGeolocationPermissionRequestManager::remove(int id, blink::WebGeolocationPermissionRequest& permissionRequest)
 {
     IdGeolocationMap::iterator it = m_private->m_idGeolocationMap.find(id);
     if (it == m_private->m_idGeolocationMap.end())

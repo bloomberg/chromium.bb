@@ -52,7 +52,7 @@ class Node;
 class PlatformKeyboardEvent;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebDevToolsAgentClient;
 class WebFrame;
@@ -141,6 +141,6 @@ private:
     bool m_isOverlayScrollbarsEnabled;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

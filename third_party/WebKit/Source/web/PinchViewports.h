@@ -45,7 +45,7 @@ class IntRect;
 class IntSize;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebLayerTreeView;
 class WebScrollbarLayer;
@@ -75,7 +75,7 @@ public:
 private:
     explicit PinchViewports(WebViewImpl* owner);
 
-    void setupScrollbar(WebKit::WebScrollbar::Orientation);
+    void setupScrollbar(blink::WebScrollbar::Orientation);
 
     WebViewImpl* m_owner;
     OwnPtr<WebCore::GraphicsLayer> m_innerViewportContainerLayer;
@@ -87,6 +87,6 @@ private:
     OwnPtr<WebScrollbarLayer> m_webOverlayScrollbarVertical;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // PinchViewports_h

@@ -33,7 +33,7 @@
 
 #include "WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebPrerender;
 
@@ -62,6 +62,6 @@ private:
     static WebPrerenderingSupport* s_platform;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebPrerenderingSupport_h

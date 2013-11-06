@@ -43,21 +43,21 @@
 
 namespace WebCore {
 
-static WebKit::WebCookieJar* toCookieJar(const Document* document)
+static blink::WebCookieJar* toCookieJar(const Document* document)
 {
     if (!document || !document->frame())
         return 0;
-    WebKit::WebCookieJar* cookieJar = document->frame()->loader().client()->cookieJar();
+    blink::WebCookieJar* cookieJar = document->frame()->loader().client()->cookieJar();
     // FIXME: DRT depends on being able to get a cookie jar from Platform rather than
     // FrameLoaderClient. Delete this when DRT is deleted.
     if (!cookieJar)
-        cookieJar = WebKit::Platform::current()->cookieJar();
+        cookieJar = blink::Platform::current()->cookieJar();
     return cookieJar;
 }
 
 String cookies(const Document* document, const KURL& url)
 {
-    WebKit::WebCookieJar* cookieJar = toCookieJar(document);
+    blink::WebCookieJar* cookieJar = toCookieJar(document);
     if (!cookieJar)
         return String();
     return cookieJar->cookies(url, document->firstPartyForCookies());
@@ -65,7 +65,7 @@ String cookies(const Document* document, const KURL& url)
 
 void setCookies(Document* document, const KURL& url, const String& cookieString)
 {
-    WebKit::WebCookieJar* cookieJar = toCookieJar(document);
+    blink::WebCookieJar* cookieJar = toCookieJar(document);
     if (!cookieJar)
         return;
     cookieJar->setCookie(url, document->firstPartyForCookies(), cookieString);
@@ -73,7 +73,7 @@ void setCookies(Document* document, const KURL& url, const String& cookieString)
 
 bool cookiesEnabled(const Document* document)
 {
-    WebKit::WebCookieJar* cookieJar = toCookieJar(document);
+    blink::WebCookieJar* cookieJar = toCookieJar(document);
     if (!cookieJar)
         return false;
     return cookieJar->cookiesEnabled(document->cookieURL(), document->firstPartyForCookies());
@@ -81,7 +81,7 @@ bool cookiesEnabled(const Document* document)
 
 String cookieRequestHeaderFieldValue(const Document* document, const KURL& url)
 {
-    WebKit::WebCookieJar* cookieJar = toCookieJar(document);
+    blink::WebCookieJar* cookieJar = toCookieJar(document);
     if (!cookieJar)
         return String();
     return cookieJar->cookieRequestHeaderFieldValue(url, document->firstPartyForCookies());
@@ -90,13 +90,13 @@ String cookieRequestHeaderFieldValue(const Document* document, const KURL& url)
 bool getRawCookies(const Document* document, const KURL& url, Vector<Cookie>& cookies)
 {
     cookies.clear();
-    WebKit::WebCookieJar* cookieJar = toCookieJar(document);
+    blink::WebCookieJar* cookieJar = toCookieJar(document);
     if (!cookieJar)
         return false;
-    WebKit::WebVector<WebKit::WebCookie> webCookies;
+    blink::WebVector<blink::WebCookie> webCookies;
     cookieJar->rawCookies(url, document->firstPartyForCookies(), webCookies);
     for (unsigned i = 0; i < webCookies.size(); ++i) {
-        const WebKit::WebCookie& webCookie = webCookies[i];
+        const blink::WebCookie& webCookie = webCookies[i];
         cookies.append(Cookie(webCookie.name, webCookie.value, webCookie.domain, webCookie.path,
                               webCookie.expires, webCookie.httpOnly, webCookie.secure, webCookie.session));
     }
@@ -105,7 +105,7 @@ bool getRawCookies(const Document* document, const KURL& url, Vector<Cookie>& co
 
 void deleteCookie(const Document* document, const KURL& url, const String& cookieName)
 {
-    WebKit::WebCookieJar* cookieJar = toCookieJar(document);
+    blink::WebCookieJar* cookieJar = toCookieJar(document);
     if (!cookieJar)
         return;
     cookieJar->deleteCookie(url, cookieName);

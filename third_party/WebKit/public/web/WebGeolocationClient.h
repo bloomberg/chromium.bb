@@ -26,7 +26,7 @@
 #ifndef WebGeolocationClient_h
 #define WebGeolocationClient_h
 
-namespace WebKit {
+namespace blink {
 class WebGeolocationController;
 class WebGeolocationPermissionRequest;
 class WebGeolocationPosition;
@@ -49,6 +49,6 @@ public:
     virtual void setController(WebGeolocationController*) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebGeolocationClient_h

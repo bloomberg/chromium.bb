@@ -91,8 +91,8 @@ FloatRect screenAvailableRect(Widget* widget)
 
 void screenColorProfile(ColorProfile& toProfile)
 {
-    WebKit::WebVector<char> profile;
-    WebKit::Platform::current()->screenColorProfile(&profile);
+    blink::WebVector<char> profile;
+    blink::Platform::current()->screenColorProfile(&profile);
     toProfile.append(profile.data(), profile.size());
 }
 

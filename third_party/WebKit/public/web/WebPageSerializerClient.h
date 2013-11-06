@@ -31,7 +31,7 @@
 #ifndef WebPageSerializerClient_h
 #define WebPageSerializerClient_h
 
-namespace WebKit {
+namespace blink {
 class WebCString;
 class WebURL;
 
@@ -70,6 +70,6 @@ protected:
     virtual ~WebPageSerializerClient() { }
 };
 
-}  // namespace WebKit
+}  // namespace blink
 
 #endif

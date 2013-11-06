@@ -33,7 +33,7 @@ namespace WebCore {
 class DateTimeChooserClient;
 }
 
-namespace WebKit {
+namespace blink {
 
 class ChromeClientImpl;
 class WebString;

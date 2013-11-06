@@ -39,7 +39,7 @@ namespace WebCore {
 struct TextCheckingResult;
 }
 
-namespace WebKit {
+namespace blink {
 
 // A checked entry of text checking.
 struct WebTextCheckingResult {
@@ -71,6 +71,6 @@ struct WebTextCheckingResult {
     uint32_t hash;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

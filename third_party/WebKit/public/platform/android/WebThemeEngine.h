@@ -35,7 +35,7 @@
 #include "../WebColor.h"
 #include "../WebSize.h"
 
-namespace WebKit {
+namespace blink {
 
 struct WebRect;
 
@@ -147,6 +147,6 @@ public:
     virtual void paint(WebCanvas*, Part, State, const WebRect&, const ExtraParams*) { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -25,7 +25,7 @@
 #ifndef WebGestureCurve_h
 #define WebGestureCurve_h
 
-namespace WebKit {
+namespace blink {
 
 class WebGestureCurveTarget;
 
@@ -41,6 +41,6 @@ public:
     virtual bool apply(double time, WebGestureCurveTarget*) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

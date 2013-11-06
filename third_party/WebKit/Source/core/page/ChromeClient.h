@@ -148,7 +148,7 @@ public:
     virtual void scroll(const IntSize&, const IntRect&, const IntRect&) = 0;
     virtual IntPoint screenToRootView(const IntPoint&) const = 0;
     virtual IntRect rootViewToScreen(const IntRect&) const = 0;
-    virtual WebKit::WebScreenInfo screenInfo() const = 0;
+    virtual blink::WebScreenInfo screenInfo() const = 0;
     virtual void setCursor(const Cursor&) = 0;
     virtual void scheduleAnimation() = 0;
     // End methods used by HostWindow.

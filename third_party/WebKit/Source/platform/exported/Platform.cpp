@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/platform/Platform.h"
 
-namespace WebKit {
+namespace blink {
 
 static Platform* s_platform = 0;
 
@@ -50,4 +50,4 @@ Platform* Platform::current()
     return s_platform;
 }
 
-} // namespace WebKit
+} // namespace blink

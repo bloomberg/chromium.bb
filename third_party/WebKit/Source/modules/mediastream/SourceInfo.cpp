@@ -30,13 +30,13 @@
 
 namespace WebCore {
 
-PassRefPtr<SourceInfo> SourceInfo::create(const WebKit::WebSourceInfo& webSourceInfo)
+PassRefPtr<SourceInfo> SourceInfo::create(const blink::WebSourceInfo& webSourceInfo)
 {
     ASSERT(!webSourceInfo.isNull());
     return adoptRef(new SourceInfo(webSourceInfo));
 }
 
-SourceInfo::SourceInfo(const WebKit::WebSourceInfo& webSourceInfo)
+SourceInfo::SourceInfo(const blink::WebSourceInfo& webSourceInfo)
     : m_webSourceInfo(webSourceInfo)
 {
     ScriptWrappable::init(this);
@@ -50,11 +50,11 @@ String SourceInfo::id() const
 String SourceInfo::kind() const
 {
     switch (m_webSourceInfo.kind()) {
-    case WebKit::WebSourceInfo::SourceKindAudio:
+    case blink::WebSourceInfo::SourceKindAudio:
         return "audio";
-    case WebKit::WebSourceInfo::SourceKindVideo:
+    case blink::WebSourceInfo::SourceKindVideo:
         return "video";
-    case WebKit::WebSourceInfo::SourceKindNone:
+    case blink::WebSourceInfo::SourceKindNone:
         return "none";
     }
 
@@ -70,11 +70,11 @@ String SourceInfo::label() const
 String SourceInfo::facing() const
 {
     switch (m_webSourceInfo.facing()) {
-    case WebKit::WebSourceInfo::VideoFacingModeNone:
+    case blink::WebSourceInfo::VideoFacingModeNone:
         return String();
-    case WebKit::WebSourceInfo::VideoFacingModeUser:
+    case blink::WebSourceInfo::VideoFacingModeUser:
         return "user";
-    case WebKit::WebSourceInfo::VideoFacingModeEnvironment:
+    case blink::WebSourceInfo::VideoFacingModeEnvironment:
         return "environment";
     }
 

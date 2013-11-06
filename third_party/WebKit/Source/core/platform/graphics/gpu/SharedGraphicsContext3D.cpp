@@ -45,9 +45,9 @@ public:
     {
         bool wasCreated = false;
 
-        OwnPtr<WebKit::WebGraphicsContext3DProvider> provider = adoptPtr(WebKit::Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+        OwnPtr<blink::WebGraphicsContext3DProvider> provider = adoptPtr(blink::Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
 
-        WebKit::WebGraphicsContext3D* webContext = 0;
+        blink::WebGraphicsContext3D* webContext = 0;
         GrContext* grContext = 0;
 
         if (provider) {
@@ -56,7 +56,7 @@ public:
         }
 
         if (webContext && grContext) {
-            WebKit::WebGraphicsContext3D* oldWebContext = m_context ? m_context->webContext() : 0;
+            blink::WebGraphicsContext3D* oldWebContext = m_context ? m_context->webContext() : 0;
             GrContext* oldGrContext = m_context ? m_context->grContext() : 0;
             if (webContext != oldWebContext || grContext != oldGrContext)
                 m_context.clear();

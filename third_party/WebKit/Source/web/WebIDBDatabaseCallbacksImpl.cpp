@@ -32,7 +32,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebIDBDatabaseCallbacksImpl::WebIDBDatabaseCallbacksImpl(PassRefPtr<IDBDatabaseCallbacks> callbacks)
     : m_callbacks(callbacks)
@@ -63,4 +63,4 @@ void WebIDBDatabaseCallbacksImpl::onComplete(long long transactionId)
     m_callbacks->onComplete(transactionId);
 }
 
-} // namespace WebKit
+} // namespace blink

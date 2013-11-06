@@ -35,7 +35,7 @@ namespace WebCore {
 class SpeechRecognitionResult;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebSpeechRecognitionResult {
 public:
@@ -55,6 +55,6 @@ private:
     WebPrivatePtr<WebCore::SpeechRecognitionResult> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebSpeechRecognitionResult_h

@@ -51,7 +51,7 @@ class Value;
 template <class T> class Handle;
 }
 
-namespace WebKit {
+namespace blink {
 class WebAXObject;
 class WebDocumentType;
 class WebElement;
@@ -151,6 +151,6 @@ public:
 #endif
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

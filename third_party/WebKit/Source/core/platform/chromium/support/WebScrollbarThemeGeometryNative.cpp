@@ -33,9 +33,9 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
-PassOwnPtr<WebKit::WebScrollbarThemeGeometryNative> WebScrollbarThemeGeometryNative::create(WebCore::ScrollbarTheme* theme)
+PassOwnPtr<blink::WebScrollbarThemeGeometryNative> WebScrollbarThemeGeometryNative::create(WebCore::ScrollbarTheme* theme)
 {
     return adoptPtr(new WebScrollbarThemeGeometryNative(theme));
 }
@@ -154,4 +154,4 @@ void WebScrollbarThemeGeometryNative::splitTrack(WebScrollbar* scrollbar, const 
     webEndTrack = endTrack;
 }
 
-} // namespace WebKit
+} // namespace blink

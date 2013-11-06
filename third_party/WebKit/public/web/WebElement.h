@@ -38,7 +38,7 @@
 namespace WebCore { class Element; }
 #endif
 
-namespace WebKit {
+namespace blink {
 struct WebRect;
 
     // Provides access to some properties of a DOM element node.
@@ -95,6 +95,6 @@ struct WebRect;
 #endif
     };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -36,7 +36,7 @@
 #endif
 #include "../platform/WebURL.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebIconURL {
 public:

@@ -59,8 +59,8 @@ bool NavigatorVibration::vibrate(const VibrationPattern& pattern)
 
     // If any pattern entry is too long then truncate it.
     for (size_t i = 0; i < length; ++i) {
-        if (sanitized[i] > WebKit::kVibrationDurationMax)
-            sanitized[i] = WebKit::kVibrationDurationMax;
+        if (sanitized[i] > blink::kVibrationDurationMax)
+            sanitized[i] = blink::kVibrationDurationMax;
     }
 
     // If the last item in the pattern is a pause then discard it.
@@ -93,7 +93,7 @@ void NavigatorVibration::cancelVibration()
 {
     m_pattern.clear();
     if (m_isVibrating) {
-        WebKit::Platform::current()->cancelVibration();
+        blink::Platform::current()->cancelVibration();
         m_isVibrating = false;
         m_timerStop.stop();
     }
@@ -105,7 +105,7 @@ void NavigatorVibration::timerStartFired(Timer<NavigatorVibration>* timer)
 
     if (m_pattern.size()) {
         m_isVibrating = true;
-        WebKit::Platform::current()->vibrate(m_pattern[0]);
+        blink::Platform::current()->vibrate(m_pattern[0]);
         m_timerStop.startOneShot(m_pattern[0] / 1000.0);
         m_pattern.remove(0);
     }

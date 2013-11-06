@@ -31,7 +31,7 @@
 #include "WebPrivatePtr.h"
 #include "WebString.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebSourceInfoPrivate;
 
@@ -74,6 +74,6 @@ private:
     WebPrivatePtr<WebSourceInfoPrivate> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebSourceInfo_h

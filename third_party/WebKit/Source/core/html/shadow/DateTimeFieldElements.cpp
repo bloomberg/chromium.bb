@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-using WebKit::WebLocalizedString;
+using blink::WebLocalizedString;
 
 static String queryString(WebLocalizedString::Name name)
 {

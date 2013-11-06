@@ -31,7 +31,7 @@
 #include "config.h"
 #include "ServiceWorkerError.h"
 
-using WebKit::WebServiceWorkerError;
+using blink::WebServiceWorkerError;
 namespace WebCore {
 
 String ServiceWorkerError::errorString(WebServiceWorkerError::ErrorType type)

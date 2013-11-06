@@ -37,7 +37,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 void WebSurroundingText::initialize(const WebNode& webNode, const WebPoint& nodePoint, size_t maxLength)
 {
@@ -73,4 +73,4 @@ void WebSurroundingText::reset()
     m_private.reset(0);
 }
 
-} // namespace WebKit
+} // namespace blink

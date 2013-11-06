@@ -50,7 +50,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 static PassOwnPtr<WebMediaPlayer> createWebMediaPlayer(WebMediaPlayerClient* client, const WebURL& url, Frame* frame)
 {
@@ -759,4 +759,4 @@ void WebMediaPlayerClientImpl::AudioClientImpl::setFormat(size_t numberOfChannel
 
 #endif
 
-} // namespace WebKit
+} // namespace blink

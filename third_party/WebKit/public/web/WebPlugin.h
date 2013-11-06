@@ -40,7 +40,7 @@
 struct NPObject;
 struct _NPP;
 
-namespace WebKit {
+namespace blink {
 
 class WebDataSource;
 class WebDragData;
@@ -159,6 +159,6 @@ protected:
     ~WebPlugin() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

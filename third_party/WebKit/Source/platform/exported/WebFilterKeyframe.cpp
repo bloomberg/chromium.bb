@@ -27,7 +27,7 @@
 
 #include "wtf/PassOwnPtr.h"
 
-namespace WebKit {
+namespace blink {
 
 WebFilterKeyframe::WebFilterKeyframe(double time, PassOwnPtr<WebFilterOperations> value)
     : m_time(time)
@@ -40,4 +40,4 @@ WebFilterKeyframe::~WebFilterKeyframe()
     m_value.reset(0);
 }
 
-} // namespace WebKit
+} // namespace blink

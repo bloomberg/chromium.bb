@@ -46,7 +46,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 InspectorClientImpl::InspectorClientImpl(WebViewImpl* webView)
     : m_inspectedWebView(webView)
@@ -171,4 +171,4 @@ WebDevToolsAgentImpl* InspectorClientImpl::devToolsAgent()
     return static_cast<WebDevToolsAgentImpl*>(m_inspectedWebView->devToolsAgent());
 }
 
-} // namespace WebKit
+} // namespace blink

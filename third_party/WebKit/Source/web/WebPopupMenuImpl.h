@@ -48,7 +48,7 @@ class Range;
 class Widget;
 }
 
-namespace WebKit {
+namespace blink {
 class WebGestureEvent;
 class WebKeyboardEvent;
 class WebMouseEvent;
@@ -147,6 +147,6 @@ inline WebPopupMenuImpl* toWebPopupMenuImpl(WebCore::FramelessScrollViewClient* 
     return static_cast<WebPopupMenuImpl*>(client);
 }
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -45,7 +45,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 namespace {
 
 void addReferencedFilePaths(HistoryItem* item, HashSet<String>& results)
@@ -275,4 +275,4 @@ void WebHistoryItem::ensureMutable()
         m_private = m_private->copy();
 }
 
-} // namespace WebKit
+} // namespace blink

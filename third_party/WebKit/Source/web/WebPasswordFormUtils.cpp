@@ -49,7 +49,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 // Maximum number of password fields we will observe before throwing our
 // hands in the air and giving up with a given form.
@@ -101,4 +101,4 @@ void findPasswordFormFields(HTMLFormElement* form, PasswordFormFields* fields)
     }
 }
 
-} // namespace WebKit
+} // namespace blink

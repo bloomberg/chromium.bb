@@ -37,16 +37,16 @@ namespace WebTestRunner {
 
 class WebTestDelegate;
 
-class MockWebRTCDTMFSenderHandler : public WebKit::WebRTCDTMFSenderHandler, public WebKit::WebNonCopyable {
+class MockWebRTCDTMFSenderHandler : public blink::WebRTCDTMFSenderHandler, public blink::WebNonCopyable {
 public:
-    MockWebRTCDTMFSenderHandler(const WebKit::WebMediaStreamTrack&, WebTestDelegate*);
+    MockWebRTCDTMFSenderHandler(const blink::WebMediaStreamTrack&, WebTestDelegate*);
 
-    virtual void setClient(WebKit::WebRTCDTMFSenderHandlerClient*) OVERRIDE;
+    virtual void setClient(blink::WebRTCDTMFSenderHandlerClient*) OVERRIDE;
 
-    virtual WebKit::WebString currentToneBuffer() OVERRIDE;
+    virtual blink::WebString currentToneBuffer() OVERRIDE;
 
     virtual bool canInsertDTMF() OVERRIDE;
-    virtual bool insertDTMF(const WebKit::WebString& tones, long duration, long interToneGap) OVERRIDE;
+    virtual bool insertDTMF(const blink::WebString& tones, long duration, long interToneGap) OVERRIDE;
 
     // WebTask related methods
     WebTaskList* taskList() { return &m_taskList; }
@@ -55,9 +55,9 @@ public:
 private:
     MockWebRTCDTMFSenderHandler();
 
-    WebKit::WebRTCDTMFSenderHandlerClient* m_client;
-    WebKit::WebMediaStreamTrack m_track;
-    WebKit::WebString m_toneBuffer;
+    blink::WebRTCDTMFSenderHandlerClient* m_client;
+    blink::WebMediaStreamTrack m_track;
+    blink::WebString m_toneBuffer;
     WebTaskList m_taskList;
     WebTestDelegate* m_delegate;
 };

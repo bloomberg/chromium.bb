@@ -35,7 +35,7 @@
 
 #include <algorithm>
 
-namespace WebKit {
+namespace blink {
 
 // A simple vector class.
 //
@@ -187,6 +187,6 @@ private:
     size_t m_size;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

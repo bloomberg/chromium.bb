@@ -2310,7 +2310,7 @@ const Font& CanvasRenderingContext2D::accessFont()
     return state().m_font;
 }
 
-WebKit::WebLayer* CanvasRenderingContext2D::platformLayer() const
+blink::WebLayer* CanvasRenderingContext2D::platformLayer() const
 {
     return canvas()->buffer() ? canvas()->buffer()->platformLayer() : 0;
 }

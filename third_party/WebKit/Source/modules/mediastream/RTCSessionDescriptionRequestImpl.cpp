@@ -58,7 +58,7 @@ RTCSessionDescriptionRequestImpl::~RTCSessionDescriptionRequestImpl()
 {
 }
 
-void RTCSessionDescriptionRequestImpl::requestSucceeded(const WebKit::WebRTCSessionDescription& webSessionDescription)
+void RTCSessionDescriptionRequestImpl::requestSucceeded(const blink::WebRTCSessionDescription& webSessionDescription)
 {
     if (m_successCallback) {
         RefPtr<RTCSessionDescription> sessionDescription = RTCSessionDescription::create(webSessionDescription);

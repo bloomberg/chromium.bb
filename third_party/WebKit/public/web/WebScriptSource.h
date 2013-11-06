@@ -34,7 +34,7 @@
 #include "../platform/WebString.h"
 #include "../platform/WebURL.h"
 
-namespace WebKit {
+namespace blink {
 
 struct WebScriptSource {
     WebString code;
@@ -49,6 +49,6 @@ struct WebScriptSource {
         : code(code), url(url), startLine(startLine) { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

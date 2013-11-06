@@ -30,7 +30,7 @@
 #include "WebFrame.h"
 #include <v8/include/v8.h>
 
-namespace WebKit {
+namespace blink {
 
 void WebTestingSupport::injectInternalsObject(WebFrame* frame)
 {

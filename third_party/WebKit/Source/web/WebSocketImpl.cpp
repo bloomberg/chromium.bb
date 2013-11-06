@@ -46,7 +46,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebSocketImpl::WebSocketImpl(const WebDocument& document, WebSocketClient* client)
     : m_client(client)
@@ -167,4 +167,4 @@ void WebSocketImpl::didClose(unsigned long bufferedAmount, ClosingHandshakeCompl
     m_client->didClose(bufferedAmount, static_cast<WebSocketClient::ClosingHandshakeCompletionStatus>(status), code, WebString(reason));
 }
 
-} // namespace WebKit
+} // namespace blink

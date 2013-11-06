@@ -33,7 +33,7 @@
 
 #include "../platform/WebVector.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebExternalPopupMenuClient {
 public:
@@ -58,6 +58,6 @@ public:
     virtual void didCancel() = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebExternalPopupMenuClient_h

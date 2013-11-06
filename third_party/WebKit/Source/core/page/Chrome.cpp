@@ -91,7 +91,7 @@ IntRect Chrome::rootViewToScreen(const IntRect& rect) const
     return m_client->rootViewToScreen(rect);
 }
 
-WebKit::WebScreenInfo Chrome::screenInfo() const
+blink::WebScreenInfo Chrome::screenInfo() const
 {
     return m_client->screenInfo();
 }

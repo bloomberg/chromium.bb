@@ -38,7 +38,7 @@ namespace WebCore { class NodeList; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
-namespace WebKit {
+namespace blink {
 class WebNode;
 
 // Provides readonly access to some properties of a DOM node.
@@ -69,6 +69,6 @@ private:
     WebCore::NodeList* m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

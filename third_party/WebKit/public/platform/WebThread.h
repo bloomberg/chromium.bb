@@ -27,7 +27,7 @@
 
 #include "WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 
 // Provides an interface to an embedder-defined thread implementation.
 //
@@ -71,6 +71,6 @@ public:
     virtual ~WebThread() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -33,7 +33,7 @@
 
 #include "WebVector.h"
 
-namespace WebKit {
+namespace blink {
 class WebMediaStream;
 class WebMediaStreamTrack;
 class WebMediaStreamTrackSourcesRequest;
@@ -54,7 +54,7 @@ public:
     virtual void didCreateMediaStream(WebMediaStream&) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebMediaStreamCenter_h
 

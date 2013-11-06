@@ -35,7 +35,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebRTCICECandidatePrivate FINAL : public RefCounted<WebRTCICECandidatePrivate> {
 public:
@@ -96,4 +96,4 @@ unsigned short WebRTCICECandidate::sdpMLineIndex() const
     return m_private->sdpMLineIndex();
 }
 
-} // namespace WebKit
+} // namespace blink

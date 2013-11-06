@@ -33,7 +33,7 @@
 
 #include "WebString.h"
 
-namespace WebKit {
+namespace blink {
 
 struct WebFileInfo {
     // The last modification time of the file, in seconds.
@@ -57,6 +57,6 @@ struct WebFileInfo {
     WebFileInfo() : modificationTime(0.0), length(-1), type(TypeUnknown) { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

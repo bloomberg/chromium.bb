@@ -31,7 +31,7 @@
 #ifndef WebDeviceMotionListener_h
 #define WebDeviceMotionListener_h
 
-namespace WebKit {
+namespace blink {
 
 class WebDeviceMotionData;
 
@@ -41,6 +41,6 @@ public:
     virtual void didChangeDeviceMotion(const WebDeviceMotionData&) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebDeviceMotionListener_h

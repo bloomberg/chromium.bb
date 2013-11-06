@@ -64,16 +64,16 @@ void DeviceMotionDispatcher::removeDeviceMotionController(DeviceMotionController
 
 void DeviceMotionDispatcher::startListening()
 {
-    WebKit::Platform::current()->setDeviceMotionListener(this);
+    blink::Platform::current()->setDeviceMotionListener(this);
 }
 
 void DeviceMotionDispatcher::stopListening()
 {
-    WebKit::Platform::current()->setDeviceMotionListener(0);
+    blink::Platform::current()->setDeviceMotionListener(0);
     m_lastDeviceMotionData.clear();
 }
 
-void DeviceMotionDispatcher::didChangeDeviceMotion(const WebKit::WebDeviceMotionData& motion)
+void DeviceMotionDispatcher::didChangeDeviceMotion(const blink::WebDeviceMotionData& motion)
 {
     m_lastDeviceMotionData = DeviceMotionData::create(motion);
 

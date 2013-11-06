@@ -59,7 +59,7 @@
 #include <v8-defaults.h>
 #include <v8.h>
 
-namespace WebKit {
+namespace blink {
 
 namespace {
 
@@ -167,9 +167,9 @@ void initializeWithoutV8(Platform* platform)
     // this, initializing this lazily probably doesn't buy us much.
     WTF::UTF8Encoding();
 
-    WebCore::setIDBFactoryBackendInterfaceCreateFunction(WebKit::IDBFactoryBackendProxy::create);
+    WebCore::setIDBFactoryBackendInterfaceCreateFunction(blink::IDBFactoryBackendProxy::create);
 
-    WebCore::MediaPlayer::setMediaEngineCreateFunction(WebKit::WebMediaPlayerClientImpl::create);
+    WebCore::MediaPlayer::setMediaEngineCreateFunction(blink::WebMediaPlayerClientImpl::create);
 
     WebCore::WorkerGlobalScopeProxy::setCreateDelegate(WebWorkerClientImpl::createWorkerGlobalScopeProxy);
 }
@@ -229,4 +229,4 @@ void resetPluginCache(bool reloadPages)
     WebCore::Page::refreshPlugins(reloadPages);
 }
 
-} // namespace WebKit
+} // namespace blink

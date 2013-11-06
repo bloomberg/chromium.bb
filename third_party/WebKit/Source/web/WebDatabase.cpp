@@ -42,7 +42,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 static WebDatabaseObserver* databaseObserver = 0;
 
@@ -111,4 +111,4 @@ WebDatabase::WebDatabase(const DatabaseBackendBase* database)
 {
 }
 
-} // namespace WebKit
+} // namespace blink

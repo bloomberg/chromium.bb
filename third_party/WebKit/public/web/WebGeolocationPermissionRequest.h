@@ -33,7 +33,7 @@ namespace WebCore {
 class Geolocation;
 }
 
-namespace WebKit {
+namespace blink {
 class WebSecurityOrigin;
 
 // WebGeolocationPermissionRequest encapsulates a WebCore Geolocation object and represents

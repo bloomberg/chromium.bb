@@ -39,16 +39,16 @@ namespace WebTestRunner {
 
 class WebTestDelegate;
 
-class MockWebValidationMessageClient : public WebKit::WebValidationMessageClient, public WebKit::WebNonCopyable {
+class MockWebValidationMessageClient : public blink::WebValidationMessageClient, public blink::WebNonCopyable {
 public:
     MockWebValidationMessageClient();
     virtual ~MockWebValidationMessageClient();
     void setDelegate(WebTestDelegate*);
 
 private:
-    virtual void showValidationMessage(const WebKit::WebRect&, const WebKit::WebString&, const WebKit::WebString&, WebKit::WebTextDirection) OVERRIDE;
+    virtual void showValidationMessage(const blink::WebRect&, const blink::WebString&, const blink::WebString&, blink::WebTextDirection) OVERRIDE;
     virtual void hideValidationMessage() OVERRIDE;
-    virtual void moveValidationMessage(const WebKit::WebRect&) OVERRIDE;
+    virtual void moveValidationMessage(const blink::WebRect&) OVERRIDE;
 
     WebTestDelegate* m_delegate;
 };

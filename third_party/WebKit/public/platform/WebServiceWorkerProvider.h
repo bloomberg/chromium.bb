@@ -33,7 +33,7 @@
 
 #include "public/platform/WebCallbacks.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebString;
 class WebURL;
@@ -50,6 +50,6 @@ public:
     virtual ~WebServiceWorkerProvider() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

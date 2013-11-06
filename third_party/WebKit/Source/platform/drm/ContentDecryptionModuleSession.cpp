@@ -39,7 +39,7 @@
 
 namespace WebCore {
 
-ContentDecryptionModuleSession::ContentDecryptionModuleSession(WebKit::WebContentDecryptionModule* contentDecryptionModule, ContentDecryptionModuleSessionClient* client)
+ContentDecryptionModuleSession::ContentDecryptionModuleSession(blink::WebContentDecryptionModule* contentDecryptionModule, ContentDecryptionModuleSessionClient* client)
     : m_client(client)
 {
     m_session = adoptPtr(contentDecryptionModule->createSession(this));
@@ -80,7 +80,7 @@ void ContentDecryptionModuleSession::keyError(MediaKeyErrorCode errorCode, unsig
     m_client->keyError(static_cast<ContentDecryptionModuleSessionClient::MediaKeyErrorCode>(errorCode), systemCode);
 }
 
-void ContentDecryptionModuleSession::keyMessage(const unsigned char* message, size_t messageLength, const WebKit::WebURL& destinationURL)
+void ContentDecryptionModuleSession::keyMessage(const unsigned char* message, size_t messageLength, const blink::WebURL& destinationURL)
 {
     m_client->keyMessage(message, messageLength, destinationURL);
 }

@@ -138,7 +138,7 @@ PassRefPtr<Blob> ChromiumDataObjectItem::getAsFile() const
         // method to the blob registry; that way the data is only copied over
         // into the renderer when it's actually read, not when the blob is
         // initially constructed).
-        RefPtr<SharedBuffer> data = static_cast<PassRefPtr<SharedBuffer> >(WebKit::Platform::current()->clipboard()->readImage(WebKit::WebClipboard::BufferStandard));
+        RefPtr<SharedBuffer> data = static_cast<PassRefPtr<SharedBuffer> >(blink::Platform::current()->clipboard()->readImage(blink::WebClipboard::BufferStandard));
         RefPtr<RawData> rawData = RawData::create();
         rawData->mutableData()->append(data->data(), data->size());
         OwnPtr<BlobData> blobData = BlobData::create();
@@ -159,19 +159,19 @@ String ChromiumDataObjectItem::internalGetAsString() const
 
     ASSERT(m_source == PasteboardSource);
 
-    WebKit::WebClipboard::Buffer buffer = Pasteboard::generalPasteboard()->buffer();
+    blink::WebClipboard::Buffer buffer = Pasteboard::generalPasteboard()->buffer();
     String data;
     // This is ugly but there's no real alternative.
     if (m_type == mimeTypeTextPlain)
-        data = WebKit::Platform::current()->clipboard()->readPlainText(buffer);
+        data = blink::Platform::current()->clipboard()->readPlainText(buffer);
     else if (m_type == mimeTypeTextHTML) {
-        WebKit::WebURL ignoredSourceURL;
+        blink::WebURL ignoredSourceURL;
         unsigned ignored;
-        data = WebKit::Platform::current()->clipboard()->readHTML(buffer, &ignoredSourceURL, &ignored, &ignored);
+        data = blink::Platform::current()->clipboard()->readHTML(buffer, &ignoredSourceURL, &ignored, &ignored);
     } else
-        data = WebKit::Platform::current()->clipboard()->readCustomData(buffer, m_type);
+        data = blink::Platform::current()->clipboard()->readCustomData(buffer, m_type);
 
-    return WebKit::Platform::current()->clipboard()->sequenceNumber(buffer) == m_sequenceNumber ? data : String();
+    return blink::Platform::current()->clipboard()->sequenceNumber(buffer) == m_sequenceNumber ? data : String();
 }
 
 bool ChromiumDataObjectItem::isFilename() const

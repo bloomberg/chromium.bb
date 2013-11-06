@@ -31,7 +31,7 @@
 #ifndef WebPluginListBuilder_h
 #define WebPluginListBuilder_h
 
-namespace WebKit {
+namespace blink {
 
 class WebString;
 
@@ -49,6 +49,6 @@ public:
         const WebString& fileExtension) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -36,7 +36,7 @@
 
 using namespace std;
 
-namespace WebKit {
+namespace blink {
 
 WebRect WebFloatQuad::enclosingRect() const
 {
@@ -48,4 +48,4 @@ WebRect WebFloatQuad::enclosingRect() const
     return WebRect(left, top, right - left, bottom - top);
 }
 
-} // namespace WebKit
+} // namespace blink

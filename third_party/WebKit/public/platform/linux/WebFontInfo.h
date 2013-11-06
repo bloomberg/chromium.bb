@@ -38,7 +38,7 @@
 #include <string.h>
 #include <unistd.h>
 
-namespace WebKit {
+namespace blink {
 
 class WebFontInfo {
 public:
@@ -71,6 +71,6 @@ public:
     BLINK_EXPORT static void renderStyleForStrike(const char* family, int sizeAndStyle, WebFontRenderStyle* result);
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

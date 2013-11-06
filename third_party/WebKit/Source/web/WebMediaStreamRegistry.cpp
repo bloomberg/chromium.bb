@@ -41,11 +41,11 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebMediaStream WebMediaStreamRegistry::lookupMediaStreamDescriptor(const WebURL& url)
 {
     return WebMediaStream(MediaStreamRegistry::registry().lookupMediaStreamDescriptor(KURL(url).string()));
 }
 
-} // namespace WebKit
+} // namespace blink

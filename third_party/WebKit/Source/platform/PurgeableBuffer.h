@@ -31,7 +31,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "platform/PlatformExport.h"
 
-namespace WebKit {
+namespace blink {
 class WebDiscardableMemory;
 }
 
@@ -60,9 +60,9 @@ private:
         Purged
     };
 
-    PurgeableBuffer(PassOwnPtr<WebKit::WebDiscardableMemory>, const char* data, size_t);
+    PurgeableBuffer(PassOwnPtr<blink::WebDiscardableMemory>, const char* data, size_t);
 
-    OwnPtr<WebKit::WebDiscardableMemory> m_memory;
+    OwnPtr<blink::WebDiscardableMemory> m_memory;
     size_t m_size;
     State m_state;
 };

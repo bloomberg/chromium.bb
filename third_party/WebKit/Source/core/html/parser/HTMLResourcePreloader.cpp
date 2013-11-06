@@ -93,7 +93,7 @@ void HTMLResourcePreloader::preload(PassOwnPtr<PreloadRequest> preload)
         return;
 
     FetchRequest request = preload->resourceRequest(m_document);
-    WebKit::Platform::current()->histogramCustomCounts("WebCore.PreloadDelayMs", static_cast<int>(1000 * (monotonicallyIncreasingTime() - preload->discoveryTime())), 0, 2000, 20);
+    blink::Platform::current()->histogramCustomCounts("WebCore.PreloadDelayMs", static_cast<int>(1000 * (monotonicallyIncreasingTime() - preload->discoveryTime())), 0, 2000, 20);
     loadingDocument->fetcher()->preload(preload->resourceType(), request, preload->charset());
 }
 

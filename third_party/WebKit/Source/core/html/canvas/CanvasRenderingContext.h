@@ -32,7 +32,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebKit { class WebLayer; }
+namespace blink { class WebLayer; }
 
 namespace WebCore {
 
@@ -59,7 +59,7 @@ public:
 
     virtual void paintRenderingResultsToCanvas() {}
 
-    virtual WebKit::WebLayer* platformLayer() const { return 0; }
+    virtual blink::WebLayer* platformLayer() const { return 0; }
 
 protected:
     CanvasRenderingContext(HTMLCanvasElement*);

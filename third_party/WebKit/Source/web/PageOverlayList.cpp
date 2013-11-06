@@ -33,7 +33,7 @@
 #include "WebPageOverlay.h"
 #include "WebViewImpl.h"
 
-namespace WebKit {
+namespace blink {
 
 PassOwnPtr<PageOverlayList> PageOverlayList::create(WebViewImpl* viewImpl)
 {
@@ -136,4 +136,4 @@ size_t PageOverlayList::findGraphicsLayer(WebCore::GraphicsLayer* layer)
     return WTF::kNotFound;
 }
 
-} // namespace WebKit
+} // namespace blink

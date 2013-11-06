@@ -35,7 +35,7 @@
 #include "../platform/WebURL.h"
 #include "../platform/WebVector.h"
 
-namespace WebKit {
+namespace blink {
 
 struct WebPluginParams {
     WebURL url;
@@ -45,6 +45,6 @@ struct WebPluginParams {
     bool loadManually;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

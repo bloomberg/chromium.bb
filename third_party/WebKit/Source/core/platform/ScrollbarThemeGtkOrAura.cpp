@@ -56,70 +56,70 @@ ScrollbarTheme* ScrollbarTheme::nativeTheme()
 int ScrollbarThemeGtkOrAura::scrollbarThickness(ScrollbarControlSize controlSize)
 {
     // Horiz and Vert scrollbars are the same thickness.
-    IntSize scrollbarSize = WebKit::Platform::current()->themeEngine()->getSize(WebKit::WebThemeEngine::PartScrollbarVerticalTrack);
+    IntSize scrollbarSize = blink::Platform::current()->themeEngine()->getSize(blink::WebThemeEngine::PartScrollbarVerticalTrack);
     return scrollbarSize.width();
 }
 
 void ScrollbarThemeGtkOrAura::paintTrackPiece(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart partType)
 {
-    WebKit::WebThemeEngine::State state = scrollbar->hoveredPart() == partType ? WebKit::WebThemeEngine::StateHover : WebKit::WebThemeEngine::StateNormal;
+    blink::WebThemeEngine::State state = scrollbar->hoveredPart() == partType ? blink::WebThemeEngine::StateHover : blink::WebThemeEngine::StateNormal;
     IntRect alignRect = trackRect(scrollbar, false);
-    WebKit::WebThemeEngine::ExtraParams extraParams;
-    WebKit::WebCanvas* canvas = gc->canvas();
+    blink::WebThemeEngine::ExtraParams extraParams;
+    blink::WebCanvas* canvas = gc->canvas();
     extraParams.scrollbarTrack.trackX = alignRect.x();
     extraParams.scrollbarTrack.trackY = alignRect.y();
     extraParams.scrollbarTrack.trackWidth = alignRect.width();
     extraParams.scrollbarTrack.trackHeight = alignRect.height();
-    WebKit::Platform::current()->themeEngine()->paint(canvas, scrollbar->orientation() == HorizontalScrollbar ? WebKit::WebThemeEngine::PartScrollbarHorizontalTrack : WebKit::WebThemeEngine::PartScrollbarVerticalTrack, state, WebKit::WebRect(rect), &extraParams);
+    blink::Platform::current()->themeEngine()->paint(canvas, scrollbar->orientation() == HorizontalScrollbar ? blink::WebThemeEngine::PartScrollbarHorizontalTrack : blink::WebThemeEngine::PartScrollbarVerticalTrack, state, blink::WebRect(rect), &extraParams);
 }
 
 void ScrollbarThemeGtkOrAura::paintButton(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart part)
 {
-    WebKit::WebThemeEngine::Part paintPart;
-    WebKit::WebThemeEngine::State state = WebKit::WebThemeEngine::StateNormal;
-    WebKit::WebCanvas* canvas = gc->canvas();
+    blink::WebThemeEngine::Part paintPart;
+    blink::WebThemeEngine::State state = blink::WebThemeEngine::StateNormal;
+    blink::WebCanvas* canvas = gc->canvas();
     bool checkMin = false;
     bool checkMax = false;
     if (scrollbar->orientation() == HorizontalScrollbar) {
         if (part == BackButtonStartPart) {
-            paintPart = WebKit::WebThemeEngine::PartScrollbarLeftArrow;
+            paintPart = blink::WebThemeEngine::PartScrollbarLeftArrow;
             checkMin = true;
         } else {
-            paintPart = WebKit::WebThemeEngine::PartScrollbarRightArrow;
+            paintPart = blink::WebThemeEngine::PartScrollbarRightArrow;
             checkMax = true;
         }
     } else {
         if (part == BackButtonStartPart) {
-            paintPart = WebKit::WebThemeEngine::PartScrollbarUpArrow;
+            paintPart = blink::WebThemeEngine::PartScrollbarUpArrow;
             checkMin = true;
         } else {
-            paintPart = WebKit::WebThemeEngine::PartScrollbarDownArrow;
+            paintPart = blink::WebThemeEngine::PartScrollbarDownArrow;
             checkMax = true;
         }
     }
     if ((checkMin && (scrollbar->currentPos() <= 0))
         || (checkMax && scrollbar->currentPos() == scrollbar->maximum())) {
-        state = WebKit::WebThemeEngine::StateDisabled;
+        state = blink::WebThemeEngine::StateDisabled;
     } else {
         if (part == scrollbar->pressedPart())
-            state = WebKit::WebThemeEngine::StatePressed;
+            state = blink::WebThemeEngine::StatePressed;
         else if (part == scrollbar->hoveredPart())
-            state = WebKit::WebThemeEngine::StateHover;
+            state = blink::WebThemeEngine::StateHover;
     }
-    WebKit::Platform::current()->themeEngine()->paint(canvas, paintPart, state, WebKit::WebRect(rect), 0);
+    blink::Platform::current()->themeEngine()->paint(canvas, paintPart, state, blink::WebRect(rect), 0);
 }
 
 void ScrollbarThemeGtkOrAura::paintThumb(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
-    WebKit::WebThemeEngine::State state;
-    WebKit::WebCanvas* canvas = gc->canvas();
+    blink::WebThemeEngine::State state;
+    blink::WebCanvas* canvas = gc->canvas();
     if (scrollbar->pressedPart() == ThumbPart)
-        state = WebKit::WebThemeEngine::StatePressed;
+        state = blink::WebThemeEngine::StatePressed;
     else if (scrollbar->hoveredPart() == ThumbPart)
-        state = WebKit::WebThemeEngine::StateHover;
+        state = blink::WebThemeEngine::StateHover;
     else
-        state = WebKit::WebThemeEngine::StateNormal;
-    WebKit::Platform::current()->themeEngine()->paint(canvas, scrollbar->orientation() == HorizontalScrollbar ? WebKit::WebThemeEngine::PartScrollbarHorizontalThumb : WebKit::WebThemeEngine::PartScrollbarVerticalThumb, state, WebKit::WebRect(rect), 0);
+        state = blink::WebThemeEngine::StateNormal;
+    blink::Platform::current()->themeEngine()->paint(canvas, scrollbar->orientation() == HorizontalScrollbar ? blink::WebThemeEngine::PartScrollbarHorizontalThumb : blink::WebThemeEngine::PartScrollbarVerticalThumb, state, blink::WebRect(rect), 0);
 }
 
 bool ScrollbarThemeGtkOrAura::shouldCenterOnThumb(ScrollbarThemeClient*, const PlatformMouseEvent& evt)
@@ -130,23 +130,23 @@ bool ScrollbarThemeGtkOrAura::shouldCenterOnThumb(ScrollbarThemeClient*, const P
 IntSize ScrollbarThemeGtkOrAura::buttonSize(ScrollbarThemeClient* scrollbar)
 {
     if (scrollbar->orientation() == VerticalScrollbar) {
-        IntSize size = WebKit::Platform::current()->themeEngine()->getSize(WebKit::WebThemeEngine::PartScrollbarUpArrow);
+        IntSize size = blink::Platform::current()->themeEngine()->getSize(blink::WebThemeEngine::PartScrollbarUpArrow);
         return IntSize(size.width(), scrollbar->height() < 2 * size.height() ? scrollbar->height() / 2 : size.height());
     }
 
     // HorizontalScrollbar
-    IntSize size = WebKit::Platform::current()->themeEngine()->getSize(WebKit::WebThemeEngine::PartScrollbarLeftArrow);
+    IntSize size = blink::Platform::current()->themeEngine()->getSize(blink::WebThemeEngine::PartScrollbarLeftArrow);
     return IntSize(scrollbar->width() < 2 * size.width() ? scrollbar->width() / 2 : size.width(), size.height());
 }
 
 int ScrollbarThemeGtkOrAura::minimumThumbLength(ScrollbarThemeClient* scrollbar)
 {
     if (scrollbar->orientation() == VerticalScrollbar) {
-        IntSize size = WebKit::Platform::current()->themeEngine()->getSize(WebKit::WebThemeEngine::PartScrollbarVerticalThumb);
+        IntSize size = blink::Platform::current()->themeEngine()->getSize(blink::WebThemeEngine::PartScrollbarVerticalThumb);
         return size.height();
     }
 
-    IntSize size = WebKit::Platform::current()->themeEngine()->getSize(WebKit::WebThemeEngine::PartScrollbarHorizontalThumb);
+    IntSize size = blink::Platform::current()->themeEngine()->getSize(blink::WebThemeEngine::PartScrollbarHorizontalThumb);
     return size.width();
 }
 

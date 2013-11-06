@@ -35,7 +35,7 @@
 
 namespace WebCore { class ResourceResponse; }
 
-namespace WebKit {
+namespace blink {
 
 class WebURLResponsePrivate {
 public:
@@ -47,6 +47,6 @@ public:
     WebCore::ResourceResponse* m_resourceResponse;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

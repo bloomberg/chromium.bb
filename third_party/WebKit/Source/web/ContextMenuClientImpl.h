@@ -33,7 +33,7 @@
 
 #include "core/page/ContextMenuClient.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebViewImpl;
 struct WebContextMenuData;
@@ -49,6 +49,6 @@ private:
     WebViewImpl* m_webView;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // ContextMenuClientImpl_h

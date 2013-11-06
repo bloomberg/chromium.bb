@@ -31,7 +31,7 @@
 #include "../platform/WebVector.h"
 #include "WebDateTimeInputType.h"
 
-namespace WebKit {
+namespace blink {
 
 // This class conveys various information to make date/time chooser UI.
 // See WebViewClient::openDateTimeChooser.
@@ -81,6 +81,6 @@ struct WebDateTimeChooserParams {
     }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -31,7 +31,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebRTCStatsResponse::WebRTCStatsResponse(const PassRefPtr<RTCStatsResponseBase>& request)
     : m_private(request)
@@ -65,5 +65,5 @@ void WebRTCStatsResponse::addStatistic(size_t report, WebString name, WebString 
     m_private->addStatistic(report, name, value);
 }
 
-} // namespace WebKit
+} // namespace blink
 

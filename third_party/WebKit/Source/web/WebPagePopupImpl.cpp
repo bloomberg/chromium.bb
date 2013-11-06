@@ -55,7 +55,7 @@
 using namespace WebCore;
 using namespace std;
 
-namespace WebKit {
+namespace blink {
 
 class PagePopupChromeClient : public EmptyChromeClient {
     WTF_MAKE_NONCOPYABLE(PagePopupChromeClient);
@@ -348,4 +348,4 @@ WebPagePopup* WebPagePopup::create(WebWidgetClient* client)
     return adoptRef(new WebPagePopupImpl(client)).leakRef();
 }
 
-} // namespace WebKit
+} // namespace blink

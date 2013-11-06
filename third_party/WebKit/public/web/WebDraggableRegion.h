@@ -35,13 +35,13 @@
 #include "../platform/WebRect.h"
 #include "../platform/WebString.h"
 
-namespace WebKit {
+namespace blink {
 
 struct WebDraggableRegion {
     bool draggable;
     WebRect bounds;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

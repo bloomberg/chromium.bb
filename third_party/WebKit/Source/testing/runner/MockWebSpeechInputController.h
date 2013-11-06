@@ -36,7 +36,7 @@
 #include <string>
 #include <vector>
 
-namespace WebKit {
+namespace blink {
 class WebSecurityOrigin;
 class WebSpeechInputListener;
 class WebString;
@@ -46,18 +46,18 @@ namespace WebTestRunner {
 
 class WebTestDelegate;
 
-class MockWebSpeechInputController : public WebKit::WebSpeechInputController, public WebKit::WebNonCopyable {
+class MockWebSpeechInputController : public blink::WebSpeechInputController, public blink::WebNonCopyable {
 public:
-    explicit MockWebSpeechInputController(WebKit::WebSpeechInputListener*);
+    explicit MockWebSpeechInputController(blink::WebSpeechInputListener*);
     ~MockWebSpeechInputController();
 
-    void addMockRecognitionResult(const WebKit::WebString& result, double confidence, const WebKit::WebString& language);
+    void addMockRecognitionResult(const blink::WebString& result, double confidence, const blink::WebString& language);
     void setDumpRect(bool);
     void clearResults();
     void setDelegate(WebTestDelegate*);
 
     // WebSpeechInputController implementation:
-    virtual bool startRecognition(int requestId, const WebKit::WebRect& elementRect, const WebKit::WebString& language, const WebKit::WebString& grammar, const WebKit::WebSecurityOrigin&) OVERRIDE;
+    virtual bool startRecognition(int requestId, const blink::WebRect& elementRect, const blink::WebString& language, const blink::WebString& grammar, const blink::WebSecurityOrigin&) OVERRIDE;
     virtual void cancelRecognition(int requestId) OVERRIDE;
     virtual void stopRecording(int requestId) OVERRIDE;
 
@@ -75,18 +75,18 @@ private:
         virtual void runIfValid() OVERRIDE;
     };
 
-    WebKit::WebSpeechInputListener* m_listener;
+    blink::WebSpeechInputListener* m_listener;
 
     WebTaskList m_taskList;
     SpeechTask* m_speechTask;
 
     bool m_recording;
     int m_requestId;
-    WebKit::WebRect m_requestRect;
+    blink::WebRect m_requestRect;
     std::string m_language;
 
-    std::map<std::string, std::vector<WebKit::WebSpeechInputResult> > m_recognitionResults;
-    std::vector<WebKit::WebSpeechInputResult> m_resultsForEmptyLanguage;
+    std::map<std::string, std::vector<blink::WebSpeechInputResult> > m_recognitionResults;
+    std::vector<blink::WebSpeechInputResult> m_resultsForEmptyLanguage;
     bool m_dumpRect;
 
     WebTestDelegate* m_delegate;

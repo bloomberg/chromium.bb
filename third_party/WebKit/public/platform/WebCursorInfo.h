@@ -43,7 +43,7 @@ typedef struct HICON__* HICON;
 typedef HICON HCURSOR;
 #endif
 
-namespace WebKit {
+namespace blink {
 
 struct WebCursorInfo {
     enum Type {
@@ -120,6 +120,6 @@ struct WebCursorInfo {
 #endif
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

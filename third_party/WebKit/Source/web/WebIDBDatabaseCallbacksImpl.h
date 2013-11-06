@@ -33,7 +33,7 @@
 
 namespace WebCore { class IDBDatabaseCallbacks; }
 
-namespace WebKit {
+namespace blink {
 
 class WebIDBDatabaseCallbacksImpl : public WebIDBDatabaseCallbacks {
 public:
@@ -49,6 +49,6 @@ private:
     RefPtr<WebCore::IDBDatabaseCallbacks> m_callbacks;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebIDBDatabaseCallbacksImpl_h

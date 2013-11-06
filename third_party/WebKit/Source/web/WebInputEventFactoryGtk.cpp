@@ -50,7 +50,7 @@ static GdkWindow* gLastClickEventWindow = 0;
 static gint gLastClickTime = 0;
 static gint gLastClickX = 0;
 static gint gLastClickY = 0;
-static WebKit::WebMouseEvent::Button gLastClickButton = WebKit::WebMouseEvent::ButtonNone;
+static blink::WebMouseEvent::Button gLastClickButton = blink::WebMouseEvent::ButtonNone;
 
 bool shouldForgetPreviousClick(GdkWindow* window, gint time, gint x, gint y)
 {
@@ -76,7 +76,7 @@ void resetClickCountState()
     gLastClickTime = 0;
     gLastClickX = 0;
     gLastClickY = 0;
-    gLastClickButton = WebKit::WebMouseEvent::ButtonNone;
+    gLastClickButton = blink::WebMouseEvent::ButtonNone;
 }
 
 bool isKeyPadKeyval(guint keyval)
@@ -87,7 +87,7 @@ bool isKeyPadKeyval(guint keyval)
 
 }  // namespace
 
-namespace WebKit {
+namespace blink {
 
 static double gdkEventTimeToWebEventTime(guint32 time)
 {
@@ -421,7 +421,7 @@ WebKeyboardEvent WebInputEventFactory::keyboardEvent(wchar_t character, int stat
     // function creates a WebInputEvent::Char event without using a
     // GdkEventKey object.
     WebKeyboardEvent result;
-    result.type = WebKit::WebInputEvent::Char;
+    result.type = blink::WebInputEvent::Char;
     result.timeStampSeconds = timeStampSeconds;
     result.modifiers = gdkStateToWebEventModifiers(state);
     result.windowsKeyCode = character;
@@ -625,4 +625,4 @@ WebMouseWheelEvent WebInputEventFactory::mouseWheelEvent(const GdkEventScroll* e
     return result;
 }
 
-} // namespace WebKit
+} // namespace blink

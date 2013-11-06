@@ -38,7 +38,7 @@ namespace WebCore {
 class ExecutionContext;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebFrame;
 class WebString;
@@ -65,6 +65,6 @@ private:
 
 void providePermissionClientToWorker(WebCore::WorkerClients*, PassOwnPtr<WebWorkerPermissionClientProxy>);
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WorkerPermissionClient_h

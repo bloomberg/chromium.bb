@@ -66,7 +66,7 @@ Image* Image::nullImage()
 
 PassRefPtr<Image> Image::loadPlatformResource(const char *name)
 {
-    const WebKit::WebData& resource = WebKit::Platform::current()->loadResource(name);
+    const blink::WebData& resource = blink::Platform::current()->loadResource(name);
     if (resource.isEmpty())
         return Image::nullImage();
 

@@ -48,7 +48,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 DragDestinationAction DragClientImpl::actionMaskForDrag(DragData*)
 {
@@ -88,4 +88,4 @@ void DragClientImpl::startDrag(DragImage* dragImage,
     m_webView->startDragging(frame, dragData, dragOperationMask, image, offsetPoint);
 }
 
-} // namespace WebKit
+} // namespace blink

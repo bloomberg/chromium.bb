@@ -37,7 +37,7 @@
 
 namespace WebTestRunner {
 
-class MockWebAudioDevice : public WebKit::WebAudioDevice, public WebKit::WebNonCopyable {
+class MockWebAudioDevice : public blink::WebAudioDevice, public blink::WebNonCopyable {
 public:
     explicit MockWebAudioDevice(double sampleRate);
     virtual ~MockWebAudioDevice();

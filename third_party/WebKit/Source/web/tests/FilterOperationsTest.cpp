@@ -29,7 +29,7 @@
 #include <gtest/gtest.h>
 
 using namespace WebCore;
-using namespace WebKit;
+using namespace blink;
 
 namespace {
 

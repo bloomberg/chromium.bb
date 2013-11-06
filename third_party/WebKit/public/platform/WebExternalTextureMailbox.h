@@ -31,7 +31,7 @@
 #ifndef WebExternalTextureMailbox_h
 #define WebExternalTextureMailbox_h
 
-namespace WebKit {
+namespace blink {
 
 struct WebExternalTextureMailbox {
     signed char name[64];
@@ -44,6 +44,6 @@ struct WebExternalTextureMailbox {
     }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebExternalTextureMailbox_h

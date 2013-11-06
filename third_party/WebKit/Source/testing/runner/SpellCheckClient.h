@@ -40,7 +40,7 @@ namespace WebTestRunner {
 
 class WebTestDelegate;
 
-class SpellCheckClient : public WebKit::WebSpellCheckClient, public WebKit::WebNonCopyable {
+class SpellCheckClient : public blink::WebSpellCheckClient, public blink::WebNonCopyable {
 public:
     SpellCheckClient();
     virtual ~SpellCheckClient();
@@ -50,14 +50,14 @@ public:
     WebTaskList* taskList() { return &m_taskList; }
     MockSpellCheck* mockSpellCheck() { return &m_spellcheck; }
 
-    // WebKit::WebSpellCheckClient implementation.
-    virtual void spellCheck(const WebKit::WebString&, int& offset, int& length, WebKit::WebVector<WebKit::WebString>* optionalSuggestions);
-    virtual void checkTextOfParagraph(const WebKit::WebString&, WebKit::WebTextCheckingTypeMask, WebKit::WebVector<WebKit::WebTextCheckingResult>*);
-    virtual void requestCheckingOfText(const WebKit::WebString&,
-                                       const WebKit::WebVector<uint32_t>&,
-                                       const WebKit::WebVector<unsigned>&,
-                                       WebKit::WebTextCheckingCompletion*);
-    virtual WebKit::WebString autoCorrectWord(const WebKit::WebString&);
+    // blink::WebSpellCheckClient implementation.
+    virtual void spellCheck(const blink::WebString&, int& offset, int& length, blink::WebVector<blink::WebString>* optionalSuggestions);
+    virtual void checkTextOfParagraph(const blink::WebString&, blink::WebTextCheckingTypeMask, blink::WebVector<blink::WebTextCheckingResult>*);
+    virtual void requestCheckingOfText(const blink::WebString&,
+                                       const blink::WebVector<uint32_t>&,
+                                       const blink::WebVector<unsigned>&,
+                                       blink::WebTextCheckingCompletion*);
+    virtual blink::WebString autoCorrectWord(const blink::WebString&);
 
 private:
     void finishLastTextCheck();
@@ -65,8 +65,8 @@ private:
     // The mock spellchecker used in spellCheck().
     MockSpellCheck m_spellcheck;
 
-    WebKit::WebString m_lastRequestedTextCheckString;
-    WebKit::WebTextCheckingCompletion* m_lastRequestedTextCheckingCompletion;
+    blink::WebString m_lastRequestedTextCheckString;
+    blink::WebTextCheckingCompletion* m_lastRequestedTextCheckingCompletion;
 
     WebTaskList m_taskList;
 

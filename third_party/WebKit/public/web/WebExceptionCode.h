@@ -31,11 +31,11 @@
 #ifndef WebExceptionCode_h
 #define WebExceptionCode_h
 
-namespace WebKit {
+namespace blink {
 
 // This should match how ExceptionCode is defined in WebCore.
 typedef int WebExceptionCode;
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

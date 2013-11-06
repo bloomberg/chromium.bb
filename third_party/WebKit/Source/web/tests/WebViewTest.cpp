@@ -60,9 +60,9 @@
 #include "public/platform/WebUnitTestSupport.h"
 #include "public/web/WebWidgetClient.h"
 
-using namespace WebKit;
-using WebKit::FrameTestHelpers::runPendingTasks;
-using WebKit::URLTestHelpers::toKURL;
+using namespace blink;
+using blink::FrameTestHelpers::runPendingTasks;
+using blink::URLTestHelpers::toKURL;
 
 namespace {
 
@@ -145,15 +145,15 @@ private:
 class HelperPluginCreatingWebViewClient : public WebViewClient {
 public:
     // WebViewClient methods
-    virtual WebKit::WebWidget* createPopupMenu(WebKit::WebPopupType popupType) OVERRIDE
+    virtual blink::WebWidget* createPopupMenu(blink::WebPopupType popupType) OVERRIDE
     {
         EXPECT_EQ(WebPopupTypeHelperPlugin, popupType);
-        m_helperPluginWebWidget = WebKit::WebHelperPlugin::create(this);
+        m_helperPluginWebWidget = blink::WebHelperPlugin::create(this);
         // The caller owns the object, but we retain a pointer for use in closeWidgetSoon().
         return m_helperPluginWebWidget;
     }
 
-    virtual void initializeHelperPluginWebFrame(WebKit::WebHelperPlugin* plugin) OVERRIDE
+    virtual void initializeHelperPluginWebFrame(blink::WebHelperPlugin* plugin) OVERRIDE
     {
         ASSERT_TRUE(m_webFrameClient);
         plugin->initializeFrame(m_webFrameClient);
@@ -583,7 +583,7 @@ TEST_F(WebViewTest, SetCompositionFromExistingText)
     WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "input_field_populated.html");
     webView->setInitialFocus(false);
     WebVector<WebCompositionUnderline> underlines(static_cast<size_t>(1));
-    underlines[0] = WebKit::WebCompositionUnderline(0, 4, 0, false);
+    underlines[0] = blink::WebCompositionUnderline(0, 4, 0, false);
     webView->setEditableSelectionOffsets(4, 10);
     webView->setCompositionFromExistingText(8, 12, underlines);
     WebVector<WebCompositionUnderline> underlineResults = toWebViewImpl(webView)->compositionUnderlines();
@@ -609,7 +609,7 @@ TEST_F(WebViewTest, SetCompositionFromExistingTextInTextArea)
     WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "text_area_populated.html");
     webView->setInitialFocus(false);
     WebVector<WebCompositionUnderline> underlines(static_cast<size_t>(1));
-    underlines[0] = WebKit::WebCompositionUnderline(0, 4, 0, false);
+    underlines[0] = blink::WebCompositionUnderline(0, 4, 0, false);
     webView->setEditableSelectionOffsets(27, 27);
     std::string newLineText("\n");
     webView->confirmComposition(WebString::fromUTF8(newLineText.c_str()));

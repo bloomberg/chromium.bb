@@ -39,7 +39,7 @@ namespace WebCore { class Range; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
-namespace WebKit {
+namespace blink {
 
 struct WebFloatQuad;
 class WebFrame;
@@ -90,6 +90,6 @@ private:
     WebRangePrivate* m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

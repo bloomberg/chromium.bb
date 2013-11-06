@@ -29,7 +29,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebKit {
+namespace blink {
 class WebDeviceOrientationData;
 }
 
@@ -39,7 +39,7 @@ class DeviceOrientationData : public RefCounted<DeviceOrientationData> {
 public:
     static PassRefPtr<DeviceOrientationData> create();
     static PassRefPtr<DeviceOrientationData> create(bool canProvideAlpha, double alpha, bool canProvideBeta, double beta, bool canProvideGamma, double gamma, bool canProvideAbsolute = false, bool absolute = false);
-    static PassRefPtr<DeviceOrientationData> create(const WebKit::WebDeviceOrientationData&);
+    static PassRefPtr<DeviceOrientationData> create(const blink::WebDeviceOrientationData&);
 
     double alpha() const;
     double beta() const;

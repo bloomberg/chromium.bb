@@ -27,7 +27,7 @@
 
 #include "WebVector.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebAudioDestinationConsumer {
 public:
@@ -40,6 +40,6 @@ public:
     virtual void consumeAudio(const WebVector<const float*>&, size_t numberOfFrames) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebAudioDestinationConsumer_h

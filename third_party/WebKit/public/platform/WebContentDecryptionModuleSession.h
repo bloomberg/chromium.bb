@@ -33,7 +33,7 @@
 
 #include "WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebString;
 class WebURL;
@@ -49,7 +49,7 @@ public:
 
         virtual void keyAdded() = 0;
         virtual void keyError(MediaKeyErrorCode, unsigned long systemCode) = 0;
-        virtual void keyMessage(const unsigned char* message, size_t messageLength, const WebKit::WebURL& destinationURL) = 0;
+        virtual void keyMessage(const unsigned char* message, size_t messageLength, const blink::WebURL& destinationURL) = 0;
 
     protected:
         virtual ~Client();
@@ -63,6 +63,6 @@ public:
     virtual void close() = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebContentDecryptionModuleSession_h

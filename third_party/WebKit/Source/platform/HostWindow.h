@@ -29,7 +29,7 @@
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebKit {
+namespace blink {
 struct WebScreenInfo;
 }
 
@@ -58,7 +58,7 @@ public:
     virtual IntPoint screenToRootView(const IntPoint&) const = 0;
     virtual IntRect rootViewToScreen(const IntRect&) const = 0;
 
-    virtual WebKit::WebScreenInfo screenInfo() const = 0;
+    virtual blink::WebScreenInfo screenInfo() const = 0;
 
     virtual void scheduleAnimation() = 0;
 };

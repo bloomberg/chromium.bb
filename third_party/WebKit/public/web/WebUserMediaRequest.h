@@ -40,7 +40,7 @@ namespace WebCore {
 class UserMediaRequest;
 }
 
-namespace WebKit {
+namespace blink {
 class WebDocument;
 class WebMediaConstraints;
 class WebMediaStream;
@@ -92,6 +92,6 @@ inline bool operator==(const WebUserMediaRequest& a, const WebUserMediaRequest& 
     return a.equals(b);
 }
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebUserMediaRequest_h

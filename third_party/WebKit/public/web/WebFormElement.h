@@ -38,7 +38,7 @@
 namespace WebCore { class HTMLFormElement; }
 #endif
 
-namespace WebKit {
+namespace blink {
 
     class WebInputElement;
     class WebFormControlElement;
@@ -85,6 +85,6 @@ namespace WebKit {
 #endif
     };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

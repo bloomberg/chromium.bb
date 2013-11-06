@@ -44,7 +44,7 @@ protected:
     virtual ~GraphicsContextPainter() { }
 };
 
-class OpaqueRectTrackingContentLayerDelegate : public WebKit::WebContentLayerClient {
+class OpaqueRectTrackingContentLayerDelegate : public blink::WebContentLayerClient {
     WTF_MAKE_NONCOPYABLE(OpaqueRectTrackingContentLayerDelegate);
 public:
     explicit OpaqueRectTrackingContentLayerDelegate(GraphicsContextPainter*);
@@ -54,8 +54,8 @@ public:
     // tracking opaqueness.
     void setOpaque(bool opaque) { m_opaque = opaque; }
 
-    // WebKit::WebContentLayerClient implementation.
-    virtual void paintContents(SkCanvas*, const WebKit::WebRect& clip, bool canPaintLCDText, WebKit::WebFloatRect& opaque) OVERRIDE;
+    // blink::WebContentLayerClient implementation.
+    virtual void paintContents(SkCanvas*, const blink::WebRect& clip, bool canPaintLCDText, blink::WebFloatRect& opaque) OVERRIDE;
 
 private:
     GraphicsContextPainter* m_painter;

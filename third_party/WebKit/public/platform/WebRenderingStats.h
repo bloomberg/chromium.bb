@@ -26,7 +26,7 @@
 #ifndef WebRenderingStats_h
 #define WebRenderingStats_h
 
-namespace WebKit {
+namespace blink {
 
 struct WebRenderingStats {
     WebRenderingStats()
@@ -34,6 +34,6 @@ struct WebRenderingStats {
     }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebRenderingStats_h

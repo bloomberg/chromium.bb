@@ -36,7 +36,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 class WebHTTPBodyPrivate : public FormData {
 };
@@ -199,4 +199,4 @@ void WebHTTPBody::ensureMutable()
         assign(static_cast<WebHTTPBodyPrivate*>(m_private->copy().leakRef()));
 }
 
-} // namespace WebKit
+} // namespace blink

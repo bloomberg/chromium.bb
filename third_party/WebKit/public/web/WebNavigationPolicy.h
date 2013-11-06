@@ -31,7 +31,7 @@
 #ifndef WebNavigationPolicy_h
 #define WebNavigationPolicy_h
 
-namespace WebKit {
+namespace blink {
 
 enum WebNavigationPolicy {
     WebNavigationPolicyIgnore,
@@ -43,6 +43,6 @@ enum WebNavigationPolicy {
     WebNavigationPolicyNewPopup,
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

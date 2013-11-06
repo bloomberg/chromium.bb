@@ -35,12 +35,12 @@ namespace WebCore {
 
 static void sampleGamepads(GamepadList* into)
 {
-    WebKit::WebGamepads gamepads;
+    blink::WebGamepads gamepads;
 
-    WebKit::Platform::current()->sampleGamepads(gamepads);
+    blink::Platform::current()->sampleGamepads(gamepads);
 
-    for (unsigned i = 0; i < WebKit::WebGamepads::itemsLengthCap; ++i) {
-        WebKit::WebGamepad& webGamepad = gamepads.items[i];
+    for (unsigned i = 0; i < blink::WebGamepads::itemsLengthCap; ++i) {
+        blink::WebGamepad& webGamepad = gamepads.items[i];
         if (i < gamepads.length && webGamepad.connected) {
             RefPtr<Gamepad> gamepad = into->item(i);
             if (!gamepad)

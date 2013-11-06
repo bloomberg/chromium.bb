@@ -36,7 +36,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebDOMProgressEvent::WebDOMProgressEvent(const WebString& type, bool lengthIsComputable, unsigned long long loaded, unsigned long long total)
     : WebDOMEvent(ProgressEvent::create(type, lengthIsComputable, loaded, total))
@@ -45,4 +45,4 @@ WebDOMProgressEvent::WebDOMProgressEvent(const WebString& type, bool lengthIsCom
     ASSERT(isProgressEvent());
 }
 
-} // namespace WebKit
+} // namespace blink

@@ -44,7 +44,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebSettingsImpl::WebSettingsImpl(Settings* settings)
     : m_settings(settings)
@@ -782,4 +782,4 @@ void WebSettingsImpl::setMainFrameResizesAreOrientationChanges(bool enabled)
     m_mainFrameResizesAreOrientationChanges = enabled;
 }
 
-} // namespace WebKit
+} // namespace blink

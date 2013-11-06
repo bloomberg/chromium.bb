@@ -38,12 +38,12 @@ namespace WebCore {
 
 class RsaSsaParams : public Algorithm {
 public:
-    static PassRefPtr<RsaSsaParams> create(const WebKit::WebCryptoAlgorithm& algorithm) { return adoptRef(new RsaSsaParams(algorithm)); }
+    static PassRefPtr<RsaSsaParams> create(const blink::WebCryptoAlgorithm& algorithm) { return adoptRef(new RsaSsaParams(algorithm)); }
 
     Algorithm* hash();
 
 private:
-    explicit RsaSsaParams(const WebKit::WebCryptoAlgorithm&);
+    explicit RsaSsaParams(const blink::WebCryptoAlgorithm&);
 
     RefPtr<Algorithm> m_hash;
 };

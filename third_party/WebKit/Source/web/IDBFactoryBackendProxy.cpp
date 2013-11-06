@@ -54,7 +54,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 PassRefPtr<IDBFactoryBackendInterface> IDBFactoryBackendProxy::create()
 {
@@ -63,7 +63,7 @@ PassRefPtr<IDBFactoryBackendInterface> IDBFactoryBackendProxy::create()
 
 IDBFactoryBackendProxy::IDBFactoryBackendProxy()
 {
-    m_webIDBFactory = WebKit::Platform::current()->idbFactory();
+    m_webIDBFactory = blink::Platform::current()->idbFactory();
 }
 
 IDBFactoryBackendProxy::~IDBFactoryBackendProxy()
@@ -122,4 +122,4 @@ void IDBFactoryBackendProxy::deleteDatabase(const String& name, PassRefPtr<IDBCa
     m_webIDBFactory->deleteDatabase(name, new WebIDBCallbacksImpl(callbacks), databaseIdentifier);
 }
 
-} // namespace WebKit
+} // namespace blink

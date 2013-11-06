@@ -36,11 +36,11 @@ namespace WebCore {
 
 void FontCache::getFontFamilyForCharacter(UChar32 c, const char* preferredLocale, FontCache::SimpleFontFamily* family)
 {
-    WebKit::WebFontFamily webFamily;
-    if (WebKit::Platform::current()->sandboxSupport())
-        WebKit::Platform::current()->sandboxSupport()->getFontFamilyForCharacter(c, preferredLocale, &webFamily);
+    blink::WebFontFamily webFamily;
+    if (blink::Platform::current()->sandboxSupport())
+        blink::Platform::current()->sandboxSupport()->getFontFamilyForCharacter(c, preferredLocale, &webFamily);
     else
-        WebKit::WebFontInfo::familyForChar(c, preferredLocale, &webFamily);
+        blink::WebFontInfo::familyForChar(c, preferredLocale, &webFamily);
     family->name = String::fromUTF8(CString(webFamily.name));
     family->isBold = webFamily.isBold;
     family->isItalic = webFamily.isItalic;

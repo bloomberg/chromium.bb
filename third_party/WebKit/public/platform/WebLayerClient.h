@@ -31,7 +31,7 @@
 #ifndef WebLayerClient_h
 #define WebLayerClient_h
 
-namespace WebKit {
+namespace blink {
 
 class WebLayerClient {
 public:
@@ -41,7 +41,7 @@ protected:
     virtual ~WebLayerClient() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebLayerClient_h
 

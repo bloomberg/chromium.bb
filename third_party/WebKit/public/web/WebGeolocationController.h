@@ -31,7 +31,7 @@
 
 namespace WebCore { class GeolocationController; }
 
-namespace WebKit {
+namespace blink {
 
 class WebGeolocationPosition;
 class WebGeolocationError;
@@ -60,6 +60,6 @@ private:
     WebCore::GeolocationController* m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebGeolocationController_h

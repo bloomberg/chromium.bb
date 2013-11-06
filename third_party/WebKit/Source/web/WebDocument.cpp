@@ -68,7 +68,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebURL WebDocument::url() const
 {
@@ -320,4 +320,4 @@ WebDocument::operator PassRefPtr<Document>() const
     return toDocument(m_private.get());
 }
 
-} // namespace WebKit
+} // namespace blink

@@ -35,7 +35,7 @@ class ColorChooserClient;
 class PagePopup;
 }
 
-namespace WebKit {
+namespace blink {
 
 class ColorChooserPopupUIController : public ColorChooserUIController, public WebCore::PagePopupClient  {
 

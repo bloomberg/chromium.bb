@@ -34,7 +34,7 @@
 #include "public/platform/WebString.h"
 #include "public/testing/WebTestDelegate.h"
 
-using namespace WebKit;
+using namespace blink;
 
 namespace WebTestRunner {
 

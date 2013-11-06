@@ -29,7 +29,7 @@
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include "public/platform/WebGraphicsContext3D.h"
 
-namespace WebKit {
+namespace blink {
 
 // WebGraphicsContext3D base class for use in WebKit unit tests.
 // All operations are no-ops (returning 0 if necessary).
@@ -289,6 +289,6 @@ protected:
     Attributes m_attrs;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // FakeWebGraphicsContext3D_h

@@ -36,7 +36,7 @@ namespace WebCore {
 
 class SourceInfo : public RefCounted<SourceInfo>, public ScriptWrappable {
 public:
-    static PassRefPtr<SourceInfo> create(const WebKit::WebSourceInfo&);
+    static PassRefPtr<SourceInfo> create(const blink::WebSourceInfo&);
 
     String id() const;
     String kind() const;
@@ -44,9 +44,9 @@ public:
     String facing() const;
 
 private:
-    explicit SourceInfo(const WebKit::WebSourceInfo&);
+    explicit SourceInfo(const blink::WebSourceInfo&);
 
-    WebKit::WebSourceInfo m_webSourceInfo;
+    blink::WebSourceInfo m_webSourceInfo;
 };
 
 typedef Vector<RefPtr<SourceInfo> > SourceInfoVector;

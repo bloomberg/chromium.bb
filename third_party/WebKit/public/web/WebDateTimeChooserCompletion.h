@@ -28,7 +28,7 @@
 
 #include "../platform/WebString.h"
 
-namespace WebKit {
+namespace blink {
 
 // Gets called back when WebViewClient finished choosing a date/time value.
 class WebDateTimeChooserCompletion {
@@ -46,6 +46,6 @@ protected:
     virtual ~WebDateTimeChooserCompletion() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

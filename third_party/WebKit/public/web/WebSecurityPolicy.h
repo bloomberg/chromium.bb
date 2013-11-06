@@ -34,7 +34,7 @@
 #include "../platform/WebCommon.h"
 #include "../platform/WebReferrerPolicy.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebString;
 class WebURL;
@@ -93,6 +93,6 @@ private:
     WebSecurityPolicy();
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

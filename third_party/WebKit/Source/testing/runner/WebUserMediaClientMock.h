@@ -43,13 +43,13 @@ namespace WebTestRunner {
 
 class WebTestDelegate;
 
-class WebUserMediaClientMock : public WebKit::WebUserMediaClient, public WebKit::WebNonCopyable {
+class WebUserMediaClientMock : public blink::WebUserMediaClient, public blink::WebNonCopyable {
 public:
     explicit WebUserMediaClientMock(WebTestDelegate*);
     ~WebUserMediaClientMock() { }
 
-    virtual void requestUserMedia(const WebKit::WebUserMediaRequest&) OVERRIDE;
-    virtual void cancelUserMediaRequest(const WebKit::WebUserMediaRequest&) OVERRIDE;
+    virtual void requestUserMedia(const blink::WebUserMediaRequest&) OVERRIDE;
+    virtual void cancelUserMediaRequest(const blink::WebUserMediaRequest&) OVERRIDE;
 
     // Task related methods
     WebTaskList* taskList() { return &m_taskList; }

@@ -43,7 +43,7 @@ class AsyncFileSystemCallbacks;
 }
 namespace WTF { template <typename T> class PassOwnPtr; }
 
-namespace WebKit {
+namespace blink {
 
 struct WebFileInfo;
 class WebFileWriter;
@@ -113,6 +113,6 @@ private:
     WebPrivatePtr<WebFileSystemCallbacksPrivate> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

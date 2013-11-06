@@ -42,7 +42,7 @@ namespace WebCore { class BlobData; }
 namespace WTF { template <typename T> class PassOwnPtr; }
 #endif
 
-namespace WebKit {
+namespace blink {
 
 class WebBlobData : public WebNonCopyable {
 public:
@@ -83,6 +83,6 @@ private:
     WebPrivateOwnPtr<WebCore::BlobData> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebBlobData_h

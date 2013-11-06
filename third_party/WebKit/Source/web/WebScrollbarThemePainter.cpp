@@ -34,7 +34,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 void WebScrollbarThemePainter::assign(const WebScrollbarThemePainter& painter)
 {
@@ -122,4 +122,4 @@ WebScrollbarThemePainter::WebScrollbarThemePainter(WebCore::ScrollbarTheme* them
 {
 }
 
-} // namespace WebKit
+} // namespace blink

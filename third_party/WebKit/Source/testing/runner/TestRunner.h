@@ -48,7 +48,7 @@
 #include <set>
 #include <string>
 
-namespace WebKit {
+namespace blink {
 class WebArrayBufferView;
 class WebNotificationPresenter;
 class WebPageOverlay;
@@ -70,7 +70,7 @@ public:
     virtual ~TestRunner();
 
     void setDelegate(WebTestDelegate*);
-    void setWebView(WebKit::WebView*, WebTestProxyBase*);
+    void setWebView(blink::WebView*, WebTestProxyBase*);
 
     void reset();
 
@@ -82,9 +82,9 @@ public:
     // WebTestRunner implementation.
     virtual bool shouldGeneratePixelResults() OVERRIDE;
     virtual bool shouldDumpAsAudio() const OVERRIDE;
-    virtual const WebKit::WebArrayBufferView* audioData() const OVERRIDE;
+    virtual const blink::WebArrayBufferView* audioData() const OVERRIDE;
     virtual bool shouldDumpBackForwardList() const OVERRIDE;
-    virtual WebKit::WebPermissionClient* webPermissions() const OVERRIDE;
+    virtual blink::WebPermissionClient* webPermissions() const OVERRIDE;
 
     // Methods used by WebTestProxyBase.
     bool shouldDumpSelectionRect() const;
@@ -119,19 +119,19 @@ public:
     bool deferMainResourceDataLoad() const;
     bool shouldStayOnPageAfterHandlingBeforeUnload() const;
     const std::set<std::string>* httpHeadersToClear() const;
-    void setTopLoadingFrame(WebKit::WebFrame*, bool);
-    WebKit::WebFrame* topLoadingFrame() const;
+    void setTopLoadingFrame(blink::WebFrame*, bool);
+    blink::WebFrame* topLoadingFrame() const;
     void policyDelegateDone();
     bool policyDelegateEnabled() const;
     bool policyDelegateIsPermissive() const;
     bool policyDelegateShouldNotifyDone() const;
     bool shouldInterceptPostMessage() const;
     bool shouldDumpResourcePriorities() const;
-    WebKit::WebNotificationPresenter* notificationPresenter() const;
+    blink::WebNotificationPresenter* notificationPresenter() const;
     bool requestPointerLock();
     void requestPointerUnlock();
     bool isPointerLocked();
-    void setToolTipText(const WebKit::WebString&);
+    void setToolTipText(const blink::WebString&);
 
     bool midiAccessorResult();
 
@@ -141,7 +141,7 @@ public:
         virtual ~WorkItem() { }
 
         // Returns true if this started a load.
-        virtual bool run(WebTestDelegate*, WebKit::WebView*) = 0;
+        virtual bool run(WebTestDelegate*, blink::WebView*) = 0;
     };
 
 private:
@@ -532,13 +532,13 @@ private:
     private:
         CallbackMethodType m_callback;
     };
-    class TestPageOverlay : public WebKit::WebPageOverlay {
+    class TestPageOverlay : public blink::WebPageOverlay {
     public:
-        explicit TestPageOverlay(WebKit::WebView*);
-        virtual void paintPageOverlay(WebKit::WebCanvas*) OVERRIDE;
+        explicit TestPageOverlay(blink::WebView*);
+        virtual void paintPageOverlay(blink::WebCanvas*) OVERRIDE;
         virtual ~TestPageOverlay();
     private:
-        WebKit::WebView* m_webView;
+        blink::WebView* m_webView;
     };
     void didAcquirePointerLockInternal();
     void didNotAcquirePointerLockInternal();
@@ -546,7 +546,7 @@ private:
 
     bool cppVariantToBool(const CppVariant&);
     int32_t cppVariantToInt32(const CppVariant&);
-    WebKit::WebString cppVariantToWebString(const CppVariant&);
+    blink::WebString cppVariantToWebString(const CppVariant&);
 
     void printErrorMessage(const std::string&);
 
@@ -579,7 +579,7 @@ private:
 
     WorkQueue m_workQueue;
 
-    WebKit::WebURL m_userStyleSheetLocation;
+    blink::WebURL m_userStyleSheetLocation;
 
     // globalFlag is used by a number of layout tests in http/tests/security/dataURL.
     CppVariant m_globalFlag;
@@ -706,19 +706,19 @@ private:
     std::set<std::string> m_httpHeadersToClear;
 
     // WAV audio data is stored here.
-    WebKit::WebArrayBufferView m_audioData;
+    blink::WebArrayBufferView m_audioData;
 
     // Used for test timeouts.
     WebTaskList m_taskList;
 
     TestInterfaces* m_testInterfaces;
     WebTestDelegate* m_delegate;
-    WebKit::WebView* m_webView;
+    blink::WebView* m_webView;
     TestPageOverlay* m_pageOverlay;
     WebTestProxyBase* m_proxy;
 
     // This is non-0 IFF a load is in progress.
-    WebKit::WebFrame* m_topLoadingFrame;
+    blink::WebFrame* m_topLoadingFrame;
 
     // WebPermissionClient mock object.
     std::auto_ptr<WebPermissions> m_webPermissions;

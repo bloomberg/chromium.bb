@@ -31,7 +31,7 @@
 #ifndef WebPopupType_h
 #define WebPopupType_h
 
-namespace WebKit {
+namespace blink {
 
 enum WebPopupType {
     WebPopupTypeNone, // Not a popup.
@@ -41,6 +41,6 @@ enum WebPopupType {
     WebPopupTypeHelperPlugin, // An off-screen helper plugin.
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -34,7 +34,7 @@
 #include "../platform/WebCommon.h"
 #include "../platform/WebPoint.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebTouchPoint {
 public:
@@ -68,6 +68,6 @@ public:
     float force;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

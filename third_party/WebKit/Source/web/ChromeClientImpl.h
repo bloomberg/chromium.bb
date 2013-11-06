@@ -55,7 +55,7 @@ class DateTimeChooserClient;
 struct WindowFeatures;
 }
 
-namespace WebKit {
+namespace blink {
 class WebColorChooser;
 class WebColorChooserClient;
 class WebViewImpl;
@@ -224,6 +224,6 @@ inline ChromeClientImpl* toChromeClientImpl(WebCore::ChromeClient& client)
     return static_cast<ChromeClientImpl*>(&client);
 }
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

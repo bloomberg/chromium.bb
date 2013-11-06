@@ -32,7 +32,7 @@
 #include "../platform/WebCanvas.h"
 #include "../platform/WebRect.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebPageOverlay {
 public:
@@ -43,6 +43,6 @@ protected:
     virtual ~WebPageOverlay() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebPageOverlay_h

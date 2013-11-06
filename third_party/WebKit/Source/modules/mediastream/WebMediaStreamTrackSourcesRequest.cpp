@@ -33,7 +33,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 namespace {
 
@@ -89,5 +89,5 @@ void WebMediaStreamTrackSourcesRequest::setExtraData(ExtraData* extraData)
     m_private->setExtraData(adoptRef(new ExtraDataContainer(extraData)));
 }
 
-} // namespace WebKit
+} // namespace blink
 

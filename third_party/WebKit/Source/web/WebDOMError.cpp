@@ -38,7 +38,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebDOMError WebDOMError::create(const WebString& name, const WebString& message)
 {
@@ -92,4 +92,4 @@ WebDOMError::operator WTF::PassRefPtr<WebCore::DOMError>() const
     return m_private.get();
 }
 
-} // namespace WebKit
+} // namespace blink

@@ -50,7 +50,7 @@ private:
     static void decode(ArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback);
     static void notifyComplete(ArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, AudioBuffer*);
 
-    OwnPtr<WebKit::WebThread> m_thread;
+    OwnPtr<blink::WebThread> m_thread;
 };
 
 } // namespace WebCore

@@ -31,7 +31,7 @@
 #ifndef WebMediaPlayerAction_h
 #define WebMediaPlayerAction_h
 
-namespace WebKit {
+namespace blink {
 
 struct WebMediaPlayerAction {
     enum Type {
@@ -51,6 +51,6 @@ struct WebMediaPlayerAction {
         : type(type), enable(enable) { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

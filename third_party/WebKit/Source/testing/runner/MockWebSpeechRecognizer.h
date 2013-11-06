@@ -33,7 +33,7 @@
 #include <deque>
 #include <vector>
 
-namespace WebKit {
+namespace blink {
 class WebSpeechRecognitionHandle;
 class WebSpeechRecognitionParams;
 class WebSpeechRecognizerClient;
@@ -43,7 +43,7 @@ namespace WebTestRunner {
 
 class WebTestDelegate;
 
-class MockWebSpeechRecognizer : public WebKit::WebSpeechRecognizer, public WebKit::WebNonCopyable {
+class MockWebSpeechRecognizer : public blink::WebSpeechRecognizer, public blink::WebNonCopyable {
 public:
     MockWebSpeechRecognizer();
     ~MockWebSpeechRecognizer();
@@ -51,18 +51,18 @@ public:
     void setDelegate(WebTestDelegate*);
 
     // WebSpeechRecognizer implementation:
-    virtual void start(const WebKit::WebSpeechRecognitionHandle&, const WebKit::WebSpeechRecognitionParams&, WebKit::WebSpeechRecognizerClient*) OVERRIDE;
-    virtual void stop(const WebKit::WebSpeechRecognitionHandle&, WebKit::WebSpeechRecognizerClient*) OVERRIDE;
-    virtual void abort(const WebKit::WebSpeechRecognitionHandle&, WebKit::WebSpeechRecognizerClient*) OVERRIDE;
+    virtual void start(const blink::WebSpeechRecognitionHandle&, const blink::WebSpeechRecognitionParams&, blink::WebSpeechRecognizerClient*) OVERRIDE;
+    virtual void stop(const blink::WebSpeechRecognitionHandle&, blink::WebSpeechRecognizerClient*) OVERRIDE;
+    virtual void abort(const blink::WebSpeechRecognitionHandle&, blink::WebSpeechRecognizerClient*) OVERRIDE;
 
     // Methods accessed by layout tests:
-    void addMockResult(const WebKit::WebString& transcript, float confidence);
-    void setError(const WebKit::WebString& error, const WebKit::WebString& message);
+    void addMockResult(const blink::WebString& transcript, float confidence);
+    void setError(const blink::WebString& error, const blink::WebString& message);
     bool wasAborted() const { return m_wasAborted; }
 
     // Methods accessed from Task objects:
-    WebKit::WebSpeechRecognizerClient* client() { return m_client; }
-    WebKit::WebSpeechRecognitionHandle& handle() { return m_handle; }
+    blink::WebSpeechRecognizerClient* client() { return m_client; }
+    blink::WebSpeechRecognitionHandle& handle() { return m_handle; }
     WebTaskList* taskList() { return &m_taskList; }
 
     class Task {
@@ -79,9 +79,9 @@ private:
     void clearTaskQueue();
 
     WebTaskList m_taskList;
-    WebKit::WebSpeechRecognitionHandle m_handle;
-    WebKit::WebSpeechRecognizerClient* m_client;
-    std::vector<WebKit::WebString> m_mockTranscripts;
+    blink::WebSpeechRecognitionHandle m_handle;
+    blink::WebSpeechRecognizerClient* m_client;
+    std::vector<blink::WebString> m_mockTranscripts;
     std::vector<float> m_mockConfidences;
     bool m_wasAborted;
 

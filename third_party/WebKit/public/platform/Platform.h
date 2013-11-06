@@ -49,7 +49,7 @@
 
 class GrContext;
 
-namespace WebKit {
+namespace blink {
 
 class WebAudioBus;
 class WebBlobRegistry;
@@ -184,7 +184,7 @@ public:
     virtual long long databaseGetFileSize(const WebString& vfsFileName) { return 0; }
 
     // Returns the space available for the given origin
-    virtual long long databaseGetSpaceAvailableForOrigin(const WebKit::WebString& originIdentifier) { return 0; }
+    virtual long long databaseGetSpaceAvailableForOrigin(const blink::WebString& originIdentifier) { return 0; }
 
 
     // DOM Storage --------------------------------------------------
@@ -575,11 +575,11 @@ public:
 
     // Sets a Listener to listen for device motion data updates.
     // If null, the platform stops providing device motion data to the current listener.
-    virtual void setDeviceMotionListener(WebKit::WebDeviceMotionListener*) { }
+    virtual void setDeviceMotionListener(blink::WebDeviceMotionListener*) { }
 
     // Sets a Listener to listen for device orientation data updates.
     // If null, the platform stops proving device orientation data to the current listener.
-    virtual void setDeviceOrientationListener(WebKit::WebDeviceOrientationListener*) { }
+    virtual void setDeviceOrientationListener(blink::WebDeviceOrientationListener*) { }
 
 
     // Quota -----------------------------------------------------------
@@ -600,6 +600,6 @@ protected:
     virtual ~Platform() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

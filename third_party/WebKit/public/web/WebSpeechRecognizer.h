@@ -29,7 +29,7 @@
 #include "../platform/WebCommon.h"
 #include "WebSpeechRecognitionHandle.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebSpeechGrammar;
 class WebSpeechRecognitionParams;
@@ -51,6 +51,6 @@ protected:
     virtual ~WebSpeechRecognizer() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebSpeechRecognizer_h

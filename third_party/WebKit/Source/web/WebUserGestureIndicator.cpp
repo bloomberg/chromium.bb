@@ -36,7 +36,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 bool WebUserGestureIndicator::isProcessingUserGesture()
 {
@@ -53,4 +53,4 @@ WebUserGestureToken WebUserGestureIndicator::currentUserGestureToken()
     return WebUserGestureToken(UserGestureIndicator::currentToken());
 }
 
-} // namespace WebKit
+} // namespace blink

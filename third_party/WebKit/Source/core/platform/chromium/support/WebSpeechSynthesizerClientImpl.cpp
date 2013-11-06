@@ -40,7 +40,7 @@ WebSpeechSynthesizerClientImpl::~WebSpeechSynthesizerClientImpl()
 {
 }
 
-void WebSpeechSynthesizerClientImpl::setVoiceList(const WebKit::WebVector<WebKit::WebSpeechSynthesisVoice>& voices)
+void WebSpeechSynthesizerClientImpl::setVoiceList(const blink::WebVector<blink::WebSpeechSynthesisVoice>& voices)
 {
     Vector<RefPtr<PlatformSpeechSynthesisVoice> > outVoices;
     for (size_t i = 0; i < voices.size(); i++)
@@ -49,37 +49,37 @@ void WebSpeechSynthesizerClientImpl::setVoiceList(const WebKit::WebVector<WebKit
     m_client->voicesDidChange();
 }
 
-void WebSpeechSynthesizerClientImpl::didStartSpeaking(const WebKit::WebSpeechSynthesisUtterance& utterance)
+void WebSpeechSynthesizerClientImpl::didStartSpeaking(const blink::WebSpeechSynthesisUtterance& utterance)
 {
     m_client->didStartSpeaking(utterance);
 }
 
-void WebSpeechSynthesizerClientImpl::didFinishSpeaking(const WebKit::WebSpeechSynthesisUtterance& utterance)
+void WebSpeechSynthesizerClientImpl::didFinishSpeaking(const blink::WebSpeechSynthesisUtterance& utterance)
 {
     m_client->didFinishSpeaking(utterance);
 }
 
-void WebSpeechSynthesizerClientImpl::didPauseSpeaking(const WebKit::WebSpeechSynthesisUtterance& utterance)
+void WebSpeechSynthesizerClientImpl::didPauseSpeaking(const blink::WebSpeechSynthesisUtterance& utterance)
 {
     m_client->didPauseSpeaking(utterance);
 }
 
-void WebSpeechSynthesizerClientImpl::didResumeSpeaking(const WebKit::WebSpeechSynthesisUtterance& utterance)
+void WebSpeechSynthesizerClientImpl::didResumeSpeaking(const blink::WebSpeechSynthesisUtterance& utterance)
 {
     m_client->didResumeSpeaking(utterance);
 }
 
-void WebSpeechSynthesizerClientImpl::speakingErrorOccurred(const WebKit::WebSpeechSynthesisUtterance& utterance)
+void WebSpeechSynthesizerClientImpl::speakingErrorOccurred(const blink::WebSpeechSynthesisUtterance& utterance)
 {
     m_client->speakingErrorOccurred(utterance);
 }
 
-void WebSpeechSynthesizerClientImpl::wordBoundaryEventOccurred(const WebKit::WebSpeechSynthesisUtterance& utterance, unsigned charIndex)
+void WebSpeechSynthesizerClientImpl::wordBoundaryEventOccurred(const blink::WebSpeechSynthesisUtterance& utterance, unsigned charIndex)
 {
     m_client->boundaryEventOccurred(utterance, SpeechWordBoundary, charIndex);
 }
 
-void WebSpeechSynthesizerClientImpl::sentenceBoundaryEventOccurred(const WebKit::WebSpeechSynthesisUtterance& utterance, unsigned charIndex)
+void WebSpeechSynthesizerClientImpl::sentenceBoundaryEventOccurred(const blink::WebSpeechSynthesisUtterance& utterance, unsigned charIndex)
 {
     m_client->boundaryEventOccurred(utterance, SpeechSentenceBoundary, charIndex);
 }

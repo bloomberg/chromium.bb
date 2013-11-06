@@ -44,7 +44,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 namespace {
 
@@ -212,7 +212,7 @@ void ConsumerWrapper::consumeAudio(AudioBus* bus, size_t numberOfFrames)
 
     // Wrap AudioBus.
     size_t numberOfChannels = bus->numberOfChannels();
-    WebKit::WebVector<const float*> busVector(numberOfChannels);
+    blink::WebVector<const float*> busVector(numberOfChannels);
     for (size_t i = 0; i < numberOfChannels; ++i)
         busVector[i] = bus->channel(i)->data();
 
@@ -243,4 +243,4 @@ bool WebMediaStreamSource::removeAudioConsumer(WebAudioDestinationConsumer* cons
     return false;
 }
 
-} // namespace WebKit
+} // namespace blink

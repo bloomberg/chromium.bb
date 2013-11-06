@@ -45,7 +45,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebGeolocationClientMock* WebGeolocationClientMock::create()
 {

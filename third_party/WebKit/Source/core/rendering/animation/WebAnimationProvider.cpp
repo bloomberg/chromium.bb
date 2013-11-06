@@ -34,7 +34,7 @@
 #include "public/platform/WebAnimation.h"
 #include "wtf/text/StringBuilder.h"
 
-using WebKit::WebAnimation;
+using blink::WebAnimation;
 
 namespace WebCore {
 

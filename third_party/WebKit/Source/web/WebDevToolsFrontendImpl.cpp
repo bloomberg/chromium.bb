@@ -62,7 +62,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 class WebDevToolsFrontendImpl::InspectorFrontendResumeObserver : public ActiveDOMObject {
     WTF_MAKE_NONCOPYABLE(InspectorFrontendResumeObserver);
@@ -172,4 +172,4 @@ void WebDevToolsFrontendImpl::doDispatchOnInspectorFrontend(const WebString& mes
     ScriptController::callFunction(frame->frame()->document(), function, dispatcherObject, args.size(), args.data(), isolate);
 }
 
-} // namespace WebKit
+} // namespace blink

@@ -42,7 +42,7 @@ namespace WebCore {
 class Blob;
 class ExceptionState;
 
-class FileWriterSync : public ScriptWrappable, public FileWriterBase, public WebKit::WebFileWriterClient {
+class FileWriterSync : public ScriptWrappable, public FileWriterBase, public blink::WebFileWriterClient {
 public:
     static PassRefPtr<FileWriterSync> create()
     {
@@ -58,7 +58,7 @@ public:
     // WebFileWriterClient, via FileWriterBase
     virtual void didWrite(long long bytes, bool complete) OVERRIDE;
     virtual void didTruncate() OVERRIDE;
-    virtual void didFail(WebKit::WebFileError) OVERRIDE;
+    virtual void didFail(blink::WebFileError) OVERRIDE;
 
 private:
     FileWriterSync();

@@ -40,7 +40,7 @@
 using namespace WebCore;
 using namespace WebCore::HTMLNames;
 
-namespace WebKit {
+namespace blink {
 
 bool elementHasLegalLinkAttribute(const Element* element, const QualifiedName& attrName)
 {
@@ -61,4 +61,4 @@ bool elementHasLegalLinkAttribute(const Element* element, const QualifiedName& a
     return false;
 }
 
-} // namespace WebKit
+} // namespace blink

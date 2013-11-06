@@ -33,7 +33,7 @@
 
 #include "WebString.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebMIDIAccessor {
 public:
@@ -44,6 +44,6 @@ public:
     virtual void sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebMIDIAccessor_h

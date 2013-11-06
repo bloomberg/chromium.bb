@@ -33,7 +33,7 @@
 
 namespace WebCore { class ResourceRequest; }
 
-namespace WebKit {
+namespace blink {
 
 class WebURLRequestPrivate {
 public:
@@ -48,6 +48,6 @@ public:
     bool m_allowStoredCredentials;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

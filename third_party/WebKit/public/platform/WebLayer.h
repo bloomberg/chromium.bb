@@ -38,7 +38,7 @@
 class SkMatrix44;
 class SkImageFilter;
 
-namespace WebKit {
+namespace blink {
 class WebAnimationDelegate;
 class WebFilterOperations;
 class WebLayerClient;
@@ -214,6 +214,6 @@ public:
     virtual void setWebLayerClient(WebLayerClient*) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebLayer_h

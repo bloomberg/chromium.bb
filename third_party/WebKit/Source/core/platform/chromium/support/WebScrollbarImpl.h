@@ -31,13 +31,13 @@ namespace WebCore {
 class Scrollbar;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebScrollbarImpl : public WebScrollbar {
 public:
     explicit WebScrollbarImpl(WebCore::Scrollbar*);
 
-    // Implement WebKit::WebScrollbar methods
+    // Implement blink::WebScrollbar methods
     virtual bool isOverlay() const OVERRIDE;
     virtual int value() const OVERRIDE;
     virtual WebPoint location() const OVERRIDE;
@@ -62,6 +62,6 @@ private:
     RefPtr<WebCore::Scrollbar> m_scrollbar;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

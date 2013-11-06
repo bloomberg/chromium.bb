@@ -31,7 +31,7 @@
 #ifndef WebURLLoaderOptions_h
 #define WebURLLoaderOptions_h
 
-namespace WebKit {
+namespace blink {
 
 struct WebURLLoaderOptions {
 
@@ -58,6 +58,6 @@ struct WebURLLoaderOptions {
     CrossOriginRequestPolicy crossOriginRequestPolicy;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -31,7 +31,7 @@
 #include "WebIDBKey.h"
 #include "WebString.h"
 
-namespace WebKit {
+namespace blink {
 
 // See comment in WebIDBFactory for a high level overview these classes.
 class WebIDBCursor {
@@ -53,6 +53,6 @@ protected:
     WebIDBCursor() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebIDBCursor_h

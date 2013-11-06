@@ -37,7 +37,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebArrayBuffer WebArrayBuffer::create(unsigned numElements, unsigned elementByteSize)
 {
@@ -100,4 +100,4 @@ WebArrayBuffer::operator WTF::PassRefPtr<WTF::ArrayBuffer>() const
     return m_private.get();
 }
 
-} // namespace WebKit
+} // namespace blink

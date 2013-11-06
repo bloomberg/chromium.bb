@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 #include "WebURLRequest.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebData;
 class WebURLLoaderClient;
@@ -71,6 +71,6 @@ public:
     virtual void didChangePriority(WebURLRequest::Priority newPriority) { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

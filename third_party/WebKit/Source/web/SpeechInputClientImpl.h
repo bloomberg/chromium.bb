@@ -44,7 +44,7 @@ class SecurityOrigin;
 class SpeechInputListener;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebSpeechInputController;
 class WebViewClient;
@@ -74,7 +74,7 @@ private:
     WebCore::SpeechInputListener* m_listener;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // ENABLE(INPUT_SPEECH)
 

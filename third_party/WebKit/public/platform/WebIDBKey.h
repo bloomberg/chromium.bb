@@ -34,7 +34,7 @@
 
 namespace WebCore { class IDBKey; }
 
-namespace WebKit {
+namespace blink {
 
 class WebIDBKey {
 public:
@@ -82,6 +82,6 @@ private:
     WebPrivatePtr<WebCore::IDBKey> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebIDBKey_h

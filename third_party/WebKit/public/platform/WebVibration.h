@@ -31,11 +31,11 @@
 #ifndef WebVibration_h
 #define WebVibration_h
 
-namespace WebKit {
+namespace blink {
 
 // Maximum duration of a vibration is 10 seconds.
 const unsigned kVibrationDurationMax = 10000;
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebVibration_h

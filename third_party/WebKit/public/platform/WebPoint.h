@@ -39,7 +39,7 @@
 #include <ui/gfx/point.h>
 #endif
 
-namespace WebKit {
+namespace blink {
 
 struct WebPoint {
     int x;
@@ -106,6 +106,6 @@ inline bool operator!=(const WebPoint& a, const WebPoint& b)
     return !(a == b);
 }
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

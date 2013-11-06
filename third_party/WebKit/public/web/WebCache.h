@@ -33,7 +33,7 @@
 
 #include "../platform/WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 
 // An interface to query and configure WebKit's resource cache.
 class WebCache {
@@ -86,6 +86,6 @@ private:
     WebCache();  // Not intended to be instanced.
 };
 
-}  // namespace WebKit
+}  // namespace blink
 
 #endif

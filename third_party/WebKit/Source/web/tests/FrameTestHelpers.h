@@ -35,7 +35,7 @@
 #include "wtf/PassOwnPtr.h"
 #include <string>
 
-namespace WebKit {
+namespace blink {
 
 class WebFrameImpl;
 class WebFrameClient;
@@ -73,6 +73,6 @@ private:
 };
 
 } // namespace FrameTestHelpers
-} // namespace WebKit
+} // namespace blink
 
 #endif // FrameTestHelpers_h

@@ -31,12 +31,12 @@
 
 namespace WebCore {
 
-PassRefPtr<IDBVersionChangeEvent> IDBVersionChangeEvent::create(PassRefPtr<IDBAny> oldVersion, PassRefPtr<IDBAny> newVersion, const AtomicString& eventType, WebKit::WebIDBCallbacks::DataLoss dataLoss, const String& dataLossMessage)
+PassRefPtr<IDBVersionChangeEvent> IDBVersionChangeEvent::create(PassRefPtr<IDBAny> oldVersion, PassRefPtr<IDBAny> newVersion, const AtomicString& eventType, blink::WebIDBCallbacks::DataLoss dataLoss, const String& dataLossMessage)
 {
     return adoptRef(new IDBVersionChangeEvent(oldVersion, newVersion, eventType, dataLoss, dataLossMessage));
 }
 
-IDBVersionChangeEvent::IDBVersionChangeEvent(PassRefPtr<IDBAny> oldVersion, PassRefPtr<IDBAny> newVersion, const AtomicString& eventType, WebKit::WebIDBCallbacks::DataLoss dataLoss, const String& dataLossMessage)
+IDBVersionChangeEvent::IDBVersionChangeEvent(PassRefPtr<IDBAny> oldVersion, PassRefPtr<IDBAny> newVersion, const AtomicString& eventType, blink::WebIDBCallbacks::DataLoss dataLoss, const String& dataLossMessage)
     : Event(eventType, false /*canBubble*/, false /*cancelable*/)
     , m_oldVersion(oldVersion)
     , m_newVersion(newVersion)
@@ -53,7 +53,7 @@ IDBVersionChangeEvent::~IDBVersionChangeEvent()
 const AtomicString& IDBVersionChangeEvent::dataLoss()
 {
     DEFINE_STATIC_LOCAL(AtomicString, total, ("total", AtomicString::ConstructFromLiteral));
-    if (m_dataLoss == WebKit::WebIDBCallbacks::DataLossTotal)
+    if (m_dataLoss == blink::WebIDBCallbacks::DataLossTotal)
         return total;
     DEFINE_STATIC_LOCAL(AtomicString, none, ("none", AtomicString::ConstructFromLiteral));
     return none;

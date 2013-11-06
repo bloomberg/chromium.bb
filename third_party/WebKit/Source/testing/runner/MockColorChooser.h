@@ -41,19 +41,19 @@ namespace WebTestRunner {
 
 class WebTestDelegate;
 class WebTestProxyBase;
-class MockColorChooser : public WebKit::WebColorChooser, public WebKit::WebNonCopyable {
+class MockColorChooser : public blink::WebColorChooser, public blink::WebNonCopyable {
 public:
-    MockColorChooser(WebKit::WebColorChooserClient*, WebTestDelegate*, WebTestProxyBase*);
+    MockColorChooser(blink::WebColorChooserClient*, WebTestDelegate*, WebTestProxyBase*);
     virtual ~MockColorChooser();
 
-    // WebKit::WebColorChooser implementation.
-    virtual void setSelectedColor(const WebKit::WebColor) OVERRIDE;
+    // blink::WebColorChooser implementation.
+    virtual void setSelectedColor(const blink::WebColor) OVERRIDE;
     virtual void endChooser() OVERRIDE;
 
     void invokeDidEndChooser();
     WebTaskList* taskList() { return &m_taskList; }
 private:
-    WebKit::WebColorChooserClient* m_client;
+    blink::WebColorChooserClient* m_client;
     WebTestDelegate* m_delegate;
     WebTestProxyBase* m_proxy;
     WebTaskList m_taskList;

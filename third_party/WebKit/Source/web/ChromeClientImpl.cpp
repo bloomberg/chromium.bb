@@ -106,9 +106,9 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
-// Converts a WebCore::PopupContainerType to a WebKit::WebPopupType.
+// Converts a WebCore::PopupContainerType to a blink::WebPopupType.
 static WebPopupType convertPopupType(PopupContainer::PopupType type)
 {
     switch (type) {
@@ -122,7 +122,7 @@ static WebPopupType convertPopupType(PopupContainer::PopupType type)
     }
 }
 
-// Converts a WebCore::AXObjectCache::AXNotification to a WebKit::WebAXEvent
+// Converts a WebCore::AXObjectCache::AXNotification to a blink::WebAXEvent
 static WebAXEvent toWebAXEvent(AXObjectCache::AXNotification notification)
 {
     // These enums have the same values; enforced in AssertMatchingEnums.cpp.
@@ -922,7 +922,7 @@ bool ChromeClientImpl::shouldRunModalDialogDuringPageDismissal(const DialogType&
     int dismissal = static_cast<int>(dismissalType) - 1; // Exclude NoDismissal.
     ASSERT_WITH_SECURITY_IMPLICATION(0 <= dismissal && dismissal < static_cast<int>(arraysize(kDismissals)));
 
-    WebKit::Platform::current()->histogramEnumeration("Renderer.ModalDialogsDuringPageDismissal", dismissal * arraysize(kDialogs) + dialog, arraysize(kDialogs) * arraysize(kDismissals));
+    blink::Platform::current()->histogramEnumeration("Renderer.ModalDialogsDuringPageDismissal", dismissal * arraysize(kDialogs) + dialog, arraysize(kDialogs) * arraysize(kDismissals));
 
     String message = String("Blocked ") + kDialogs[dialog] + "('" + dialogMessage + "') during " + kDismissals[dismissal] + ".";
     m_webView->mainFrame()->addMessageToConsole(WebConsoleMessage(WebConsoleMessage::LevelError, message));
@@ -1006,4 +1006,4 @@ void NavigatorContentUtilsClientImpl::registerProtocolHandler(const String& sche
 }
 #endif
 
-} // namespace WebKit
+} // namespace blink

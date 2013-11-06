@@ -33,7 +33,7 @@
 
 #include "../../platform/WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
 }
 
@@ -43,7 +43,7 @@ class WebFrame;
 class NSAttributedString;
 #endif
 
-namespace WebKit {
+namespace blink {
 
 class WebSubstringUtil {
 public:
@@ -54,6 +54,6 @@ public:
         size_t length);
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

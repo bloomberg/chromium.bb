@@ -36,7 +36,7 @@
 
 namespace WebCore { class WebSocketChannel; }
 
-namespace WebKit {
+namespace blink {
 
 class WebArrayBuffer;
 class WebDocument;
@@ -94,6 +94,6 @@ public:
     virtual void disconnect() = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebSocket_h

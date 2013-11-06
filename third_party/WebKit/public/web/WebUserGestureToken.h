@@ -37,7 +37,7 @@ namespace WebCore {
 class UserGestureToken;
 }
 
-namespace WebKit {
+namespace blink {
 
 // A WebUserGestureToken allows for storing the user gesture state of the
 // currently active context and reinstantiating it later on to continue
@@ -70,6 +70,6 @@ private:
     WebPrivatePtr<WebCore::UserGestureToken> m_token;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebUserGestureToken_h

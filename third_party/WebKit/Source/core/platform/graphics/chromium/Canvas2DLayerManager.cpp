@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "public/platform/Platform.h"
 #include "wtf/StdLibExtras.h"
 
-using WebKit::WebThread;
+using blink::WebThread;
 
 namespace {
 enum {
@@ -60,7 +60,7 @@ void Canvas2DLayerManager::init(size_t maxBytesAllocated, size_t targetBytesAllo
     m_maxBytesAllocated = maxBytesAllocated;
     m_targetBytesAllocated = targetBytesAllocated;
     if (m_taskObserverActive) {
-        WebKit::Platform::current()->currentThread()->removeTaskObserver(this);
+        blink::Platform::current()->currentThread()->removeTaskObserver(this);
         m_taskObserverActive = false;
     }
 }
@@ -79,7 +79,7 @@ void Canvas2DLayerManager::didProcessTask()
 {
     // Called after the script action for the current frame has been processed.
     ASSERT(m_taskObserverActive);
-    WebKit::Platform::current()->currentThread()->removeTaskObserver(this);
+    blink::Platform::current()->currentThread()->removeTaskObserver(this);
     m_taskObserverActive = false;
     for (Canvas2DLayerBridge* layer = m_layerList.head(); layer; layer = layer->next())
         layer->limitPendingFrames();
@@ -98,7 +98,7 @@ void Canvas2DLayerManager::layerDidDraw(Canvas2DLayerBridge* layer)
     if (!m_taskObserverActive) {
         m_taskObserverActive = true;
         // Schedule a call to didProcessTask() after completion of the current script task.
-        WebKit::Platform::current()->currentThread()->addTaskObserver(this);
+        blink::Platform::current()->currentThread()->addTaskObserver(this);
     }
 }
 

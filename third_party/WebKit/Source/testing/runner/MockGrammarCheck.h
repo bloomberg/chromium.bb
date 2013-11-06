@@ -33,7 +33,7 @@
 
 #include <vector>
 
-namespace WebKit {
+namespace blink {
 
 class WebString;
 struct WebTextCheckingResult;
@@ -49,7 +49,7 @@ namespace WebTestRunner {
 // for webkit tests, this class is not suitable for any other usages.
 class MockGrammarCheck {
 public:
-    static bool checkGrammarOfString(const WebKit::WebString&, std::vector<WebKit::WebTextCheckingResult>*);
+    static bool checkGrammarOfString(const blink::WebString&, std::vector<blink::WebTextCheckingResult>*);
 };
 
 }

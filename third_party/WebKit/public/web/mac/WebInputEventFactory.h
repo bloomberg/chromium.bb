@@ -41,7 +41,7 @@ class NSEvent;
 class NSView;
 #endif
 
-namespace WebKit {
+namespace blink {
 
 class WebKeyboardEvent;
 class WebMouseEvent;
@@ -57,6 +57,6 @@ public:
     BLINK_EXPORT static WebGestureEvent gestureEvent(NSEvent *, NSView *);
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

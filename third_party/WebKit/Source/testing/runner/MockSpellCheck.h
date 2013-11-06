@@ -44,9 +44,9 @@ namespace WebTestRunner {
 // words in webkit tests and mark them as missspelled.
 // Even though this is sufficent for webkit tests, this class is not suitable
 // for any other usages.
-class MockSpellCheck : public WebKit::WebNonCopyable {
+class MockSpellCheck : public blink::WebNonCopyable {
 public:
-    static void fillSuggestionList(const WebKit::WebString& word, WebKit::WebVector<WebKit::WebString>* suggestions);
+    static void fillSuggestionList(const blink::WebString& word, blink::WebVector<blink::WebString>* suggestions);
 
     MockSpellCheck();
     ~MockSpellCheck();
@@ -59,11 +59,11 @@ public:
     // the first invalid word to misspelledLength, respectively.
     // For example, when the given text is "   zz zz", this function sets 3 to
     // misspelledOffset and 2 to misspelledLength, respectively.
-    bool spellCheckWord(const WebKit::WebString& text, int* misspelledOffset, int* misspelledLength);
+    bool spellCheckWord(const blink::WebString& text, int* misspelledOffset, int* misspelledLength);
 
     // Checks whether the specified text can be spell checked immediately using
     // the spell checker cache.
-    bool hasInCache(const WebKit::WebString& text);
+    bool hasInCache(const blink::WebString& text);
 
 private:
     // Initialize the internal resources if we need to initialize it.

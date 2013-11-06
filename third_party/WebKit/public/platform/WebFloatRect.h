@@ -41,7 +41,7 @@
 #include <ui/gfx/rect_f.h>
 #endif
 
-namespace WebKit {
+namespace blink {
 
 struct WebFloatRect {
     float x;
@@ -124,6 +124,6 @@ inline bool operator!=(const WebFloatRect& a, const WebFloatRect& b)
     return !(a == b);
 }
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

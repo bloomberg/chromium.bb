@@ -43,7 +43,7 @@ template <class T> class Handle;
 
 namespace WebCore { class DOMFileSystem; }
 
-namespace WebKit {
+namespace blink {
 
 class WebDOMFileSystem {
 public:
@@ -78,6 +78,6 @@ private:
     WebPrivatePtr<WebCore::DOMFileSystem> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebDOMFileSystem_h

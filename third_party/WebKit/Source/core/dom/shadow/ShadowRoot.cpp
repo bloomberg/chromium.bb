@@ -72,7 +72,7 @@ ShadowRoot::ShadowRoot(Document* document, ShadowRootType type)
 
     if (type == ShadowRoot::AuthorShadowRoot) {
         ShadowRootUsageOriginType usageType = document->url().protocolIsInHTTPFamily() ? ShadowRootUsageOriginWeb : ShadowRootUsageOriginNotWeb;
-        WebKit::Platform::current()->histogramEnumeration("WebCore.ShadowRoot.constructor", usageType, ShadowRootUsageOriginMax);
+        blink::Platform::current()->histogramEnumeration("WebCore.ShadowRoot.constructor", usageType, ShadowRootUsageOriginMax);
     }
 }
 

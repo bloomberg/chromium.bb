@@ -45,7 +45,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebFont* WebFont::create(const WebFontDescription& desc)
 {
@@ -127,4 +127,4 @@ WebFloatRect WebFontImpl::selectionRectForText(const WebTextRun& run, const WebF
     return m_font.selectionRectForText(run, leftBaseline, height, from, to);
 }
 
-} // namespace WebKit
+} // namespace blink

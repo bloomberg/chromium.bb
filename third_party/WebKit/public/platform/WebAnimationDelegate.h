@@ -25,7 +25,7 @@
 #ifndef WebAnimationDelegate_h
 #define WebAnimationDelegate_h
 
-namespace WebKit {
+namespace blink {
 
 class WebAnimationDelegate {
 public:
@@ -33,6 +33,6 @@ public:
     virtual void notifyAnimationFinished(double time) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebAnimationDelegate_h

@@ -30,7 +30,7 @@
 #include "wtf/Assertions.h"
 #endif
 
-namespace WebKit {
+namespace blink {
 
 #pragma pack(push, 1)
 

@@ -38,7 +38,7 @@ namespace WebCore {
 class MIDIAccess;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebSecurityOrigin;
 
@@ -80,6 +80,6 @@ inline bool operator!=(const WebMIDIPermissionRequest& a, const WebMIDIPermissio
     return !(a == b);
 }
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebMIDIPermissionRequest_h

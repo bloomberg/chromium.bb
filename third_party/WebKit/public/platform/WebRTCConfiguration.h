@@ -41,7 +41,7 @@ class RTCIceServer;
 class RTCConfiguration;
 }
 
-namespace WebKit {
+namespace blink {
 class WebString;
 class WebURL;
 
@@ -102,6 +102,6 @@ private:
     WebPrivatePtr<WebCore::RTCConfiguration> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebRTCConfiguration_h

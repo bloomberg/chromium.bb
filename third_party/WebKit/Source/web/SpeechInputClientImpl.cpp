@@ -42,7 +42,7 @@
 
 #if ENABLE(INPUT_SPEECH)
 
-namespace WebKit {
+namespace blink {
 
 PassOwnPtr<SpeechInputClientImpl> SpeechInputClientImpl::create(WebViewClient* client)
 {
@@ -103,6 +103,6 @@ void SpeechInputClientImpl::setRecognitionResult(int requestId, const WebSpeechI
     m_listener->setRecognitionResult(requestId, webcoreResults);
 }
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // ENABLE(INPUT_SPEECH)

@@ -41,7 +41,7 @@ class Frame;
 class Page;
 }
 
-namespace WebKit {
+namespace blink {
 
 class PageOverlayList;
 class WebGestureEvent;

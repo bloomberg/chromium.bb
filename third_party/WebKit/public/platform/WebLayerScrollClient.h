@@ -25,7 +25,7 @@
 #ifndef WebLayerScrollClient_h
 #define WebLayerScrollClient_h
 
-namespace WebKit {
+namespace blink {
 
 // A client that is notified of scrolling on a WebLayer.
 class WebLayerScrollClient {
@@ -35,6 +35,6 @@ protected:
     virtual ~WebLayerScrollClient() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebLayerScrollClient_h

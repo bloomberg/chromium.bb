@@ -38,8 +38,8 @@
 
 namespace WebCore {
 
-using WebKit::Platform;
-using WebKit::WebLocalizedString;
+using blink::Platform;
+using blink::WebLocalizedString;
 
 class DateTimeStringBuilder : private DateTimeFormat::TokenHandler {
     WTF_MAKE_NONCOPYABLE(DateTimeStringBuilder);

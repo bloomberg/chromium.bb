@@ -37,7 +37,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 bool WebFormControlElement::isEnabled() const
 {
@@ -108,4 +108,4 @@ WebFormControlElement::operator PassRefPtr<HTMLFormControlElement>() const
     return toHTMLFormControlElement(m_private.get());
 }
 
-} // namespace WebKit
+} // namespace blink

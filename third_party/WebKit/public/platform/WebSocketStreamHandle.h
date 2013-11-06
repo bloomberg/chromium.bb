@@ -33,7 +33,7 @@
 
 #include "WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebData;
 class WebSocketStreamHandleClient;
@@ -53,6 +53,6 @@ public:
     virtual void close() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

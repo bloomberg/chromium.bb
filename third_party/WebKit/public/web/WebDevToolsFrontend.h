@@ -33,7 +33,7 @@
 
 #include "../platform/WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebDevToolsFrontendClient;
 class WebString;
@@ -52,6 +52,6 @@ public:
     virtual void dispatchOnInspectorFrontend(const WebString&) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

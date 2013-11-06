@@ -64,7 +64,7 @@ void LocalFileSystemBase::resolveURL(ExecutionContext* context, const KURL& file
         context->postTask(createCallbackTask(&fileSystemNotAllowed, callbacks));
         return;
     }
-    WebKit::Platform::current()->fileSystem()->resolveURL(fileSystemURL, callbacks);
+    blink::Platform::current()->fileSystem()->resolveURL(fileSystemURL, callbacks);
 }
 
 void LocalFileSystemBase::requestFileSystem(ExecutionContext* context, FileSystemType type, long long size, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
@@ -74,7 +74,7 @@ void LocalFileSystemBase::requestFileSystem(ExecutionContext* context, FileSyste
         return;
     }
     KURL storagePartition = KURL(KURL(), context->securityOrigin()->toString());
-    WebKit::Platform::current()->fileSystem()->openFileSystem(storagePartition, static_cast<WebKit::WebFileSystemType>(type), callbacks);
+    blink::Platform::current()->fileSystem()->openFileSystem(storagePartition, static_cast<blink::WebFileSystemType>(type), callbacks);
 }
 
 void LocalFileSystemBase::deleteFileSystem(ExecutionContext* context, FileSystemType type, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
@@ -87,7 +87,7 @@ void LocalFileSystemBase::deleteFileSystem(ExecutionContext* context, FileSystem
         return;
     }
     KURL storagePartition = KURL(KURL(), context->securityOrigin()->toString());
-    WebKit::Platform::current()->fileSystem()->deleteFileSystem(storagePartition, static_cast<WebKit::WebFileSystemType>(type), callbacks);
+    blink::Platform::current()->fileSystem()->deleteFileSystem(storagePartition, static_cast<blink::WebFileSystemType>(type), callbacks);
 }
 
 LocalFileSystemBase::LocalFileSystemBase(PassOwnPtr<FileSystemClient> client)

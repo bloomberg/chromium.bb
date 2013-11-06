@@ -30,7 +30,7 @@
 #include "WebString.h"
 #include "WebVector.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebData;
 class WebIDBCursor;
@@ -73,6 +73,6 @@ public:
     virtual void onUpgradeNeeded(long long oldVersion, WebIDBDatabase*, const WebIDBMetadata&, DataLoss dataLoss, WebString dataLossMessage) { BLINK_ASSERT_NOT_REACHED(); }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebIDBCallbacks_h

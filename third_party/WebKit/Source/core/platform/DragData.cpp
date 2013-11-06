@@ -81,7 +81,7 @@ String DragData::asURL(FilenameConversionPolicy filenamePolicy, String* title) c
     if (m_platformDragData->types().contains(mimeTypeTextURIList))
         m_platformDragData->urlAndTitle(url, title);
     else if (filenamePolicy == ConvertFilenames && containsFiles())
-        url = KURL(WebKit::Platform::current()->fileUtilities()->filePathToURL(m_platformDragData->filenames()[0]));
+        url = KURL(blink::Platform::current()->fileUtilities()->filePathToURL(m_platformDragData->filenames()[0]));
     return url;
 }
 

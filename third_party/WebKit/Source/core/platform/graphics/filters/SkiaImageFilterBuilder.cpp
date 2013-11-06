@@ -85,7 +85,7 @@ PassRefPtr<SkImageFilter> SkiaImageFilterBuilder::transformColorSpace(
     return adoptRef(SkColorFilterImageFilter::Create(colorFilter.get(), input));
 }
 
-bool SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& operations, WebKit::WebFilterOperations* filters)
+bool SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& operations, blink::WebFilterOperations* filters)
 {
     if (!filters)
         return false;
@@ -179,7 +179,7 @@ bool SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& opera
         }
         case FilterOperation::DROP_SHADOW: {
             const DropShadowFilterOperation* drop = static_cast<const DropShadowFilterOperation*>(&op);
-            filters->appendDropShadowFilter(WebKit::WebPoint(drop->x(), drop->y()), drop->stdDeviation(), drop->color().rgb());
+            filters->appendDropShadowFilter(blink::WebPoint(drop->x(), drop->y()), drop->stdDeviation(), drop->color().rgb());
             break;
         }
         case FilterOperation::VALIDATED_CUSTOM:

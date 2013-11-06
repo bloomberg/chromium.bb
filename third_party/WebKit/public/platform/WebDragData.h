@@ -41,7 +41,7 @@ namespace WebCore { class ChromiumDataObject; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
-namespace WebKit {
+namespace blink {
 
 class WebDragDataPrivate;
 template <typename T> class WebVector;
@@ -118,6 +118,6 @@ private:
     WebDragDataPrivate* m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

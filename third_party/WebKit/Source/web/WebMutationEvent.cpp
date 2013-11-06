@@ -35,7 +35,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebNode WebMutationEvent::relatedNode() const
 {
@@ -62,4 +62,4 @@ WebMutationEvent::AttrChangeType WebMutationEvent::attrChange() const
     return static_cast<AttrChangeType>(constUnwrap<MutationEvent>()->attrChange());
 }
 
-} // namespace WebKit
+} // namespace blink

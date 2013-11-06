@@ -30,7 +30,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebKit {
+namespace blink {
 class WebSpeechSynthesizer;
 class WebSpeechSynthesizerClient;
 }
@@ -81,8 +81,8 @@ protected:
 private:
     PlatformSpeechSynthesizerClient* m_speechSynthesizerClient;
 
-    OwnPtr<WebKit::WebSpeechSynthesizer> m_webSpeechSynthesizer;
-    OwnPtr<WebKit::WebSpeechSynthesizerClient> m_webSpeechSynthesizerClient;
+    OwnPtr<blink::WebSpeechSynthesizer> m_webSpeechSynthesizer;
+    OwnPtr<blink::WebSpeechSynthesizerClient> m_webSpeechSynthesizerClient;
 };
 
 } // namespace WebCore

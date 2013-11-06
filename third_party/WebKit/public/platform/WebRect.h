@@ -41,7 +41,7 @@
 #include <ui/gfx/rect.h>
 #endif
 
-namespace WebKit {
+namespace blink {
 
 struct WebRect {
     int x;
@@ -124,6 +124,6 @@ inline bool operator!=(const WebRect& a, const WebRect& b)
     return !(a == b);
 }
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

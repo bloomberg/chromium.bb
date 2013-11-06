@@ -89,12 +89,12 @@ bool SQLiteFileSystem::deleteEmptyDatabaseDirectory(const String&)
 
 bool SQLiteFileSystem::deleteDatabaseFile(const String& fileName)
 {
-    return (WebKit::Platform::current()->databaseDeleteFile(fileName, false) == SQLITE_OK);
+    return (blink::Platform::current()->databaseDeleteFile(fileName, false) == SQLITE_OK);
 }
 
 long long SQLiteFileSystem::getDatabaseFileSize(const String& fileName)
 {
-    return WebKit::Platform::current()->databaseGetFileSize(fileName);
+    return blink::Platform::current()->databaseGetFileSize(fileName);
 }
 
 } // namespace WebCore

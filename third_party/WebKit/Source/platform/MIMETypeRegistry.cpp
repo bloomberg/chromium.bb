@@ -41,13 +41,13 @@ namespace WebCore {
 
 String MIMETypeRegistry::getMIMETypeForExtension(const String &ext)
 {
-    return WebKit::Platform::current()->mimeRegistry()->mimeTypeForExtension(ext);
+    return blink::Platform::current()->mimeRegistry()->mimeTypeForExtension(ext);
 }
 
 String MIMETypeRegistry::getWellKnownMIMETypeForExtension(const String &ext)
 {
     // This method must be thread safe and should not consult the OS/registry.
-    return WebKit::Platform::current()->mimeRegistry()->wellKnownMimeTypeForExtension(ext);
+    return blink::Platform::current()->mimeRegistry()->wellKnownMimeTypeForExtension(ext);
 }
 
 String MIMETypeRegistry::getMIMETypeForPath(const String& path)
@@ -69,8 +69,8 @@ String MIMETypeRegistry::getMIMETypeForPath(const String& path)
 
 bool MIMETypeRegistry::isSupportedImageMIMEType(const String& mimeType)
 {
-    return WebKit::Platform::current()->mimeRegistry()->supportsImageMIMEType(mimeType)
-        != WebKit::WebMimeRegistry::IsNotSupported;
+    return blink::Platform::current()->mimeRegistry()->supportsImageMIMEType(mimeType)
+        != blink::WebMimeRegistry::IsNotSupported;
 }
 
 bool MIMETypeRegistry::isSupportedImageResourceMIMEType(const String& mimeType)
@@ -89,20 +89,20 @@ bool MIMETypeRegistry::isSupportedImageMIMETypeForEncoding(const String& mimeTyp
 
 bool MIMETypeRegistry::isSupportedJavaScriptMIMEType(const String& mimeType)
 {
-    return WebKit::Platform::current()->mimeRegistry()->supportsJavaScriptMIMEType(mimeType)
-        != WebKit::WebMimeRegistry::IsNotSupported;
+    return blink::Platform::current()->mimeRegistry()->supportsJavaScriptMIMEType(mimeType)
+        != blink::WebMimeRegistry::IsNotSupported;
 }
 
 bool MIMETypeRegistry::isSupportedNonImageMIMEType(const String& mimeType)
 {
-    return WebKit::Platform::current()->mimeRegistry()->supportsNonImageMIMEType(mimeType)
-        != WebKit::WebMimeRegistry::IsNotSupported;
+    return blink::Platform::current()->mimeRegistry()->supportsNonImageMIMEType(mimeType)
+        != blink::WebMimeRegistry::IsNotSupported;
 }
 
 bool MIMETypeRegistry::isSupportedMediaSourceMIMEType(const String& mimeType, const String& codecs)
 {
     return !mimeType.isEmpty()
-        && WebKit::Platform::current()->mimeRegistry()->supportsMediaSourceMIMEType(mimeType, codecs);
+        && blink::Platform::current()->mimeRegistry()->supportsMediaSourceMIMEType(mimeType, codecs);
 }
 
 bool MIMETypeRegistry::isJavaAppletMIMEType(const String& mimeType)

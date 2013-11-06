@@ -30,7 +30,7 @@
 #include "WebPoint.h"
 #include "WebRect.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebFlingAnimator {
 public:
@@ -43,6 +43,6 @@ public:
     virtual void cancelFling() = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebFlingAnimator_h

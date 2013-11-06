@@ -35,7 +35,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 CompositionUnderlineVectorBuilder::CompositionUnderlineVectorBuilder(
     const WebVector<WebCompositionUnderline>& underlines)
@@ -46,4 +46,4 @@ CompositionUnderlineVectorBuilder::CompositionUnderlineVectorBuilder(
         append(CompositionUnderlineBuilder(underlines[i]));
 }
 
-} // namespace WebKit
+} // namespace blink

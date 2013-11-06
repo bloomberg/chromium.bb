@@ -59,7 +59,7 @@ AudioDestinationChromium::AudioDestinationChromium(AudioIOCallback& callback, co
     , m_isPlaying(false)
 {
     // Use the optimal buffer size recommended by the audio backend.
-    m_callbackBufferSize = WebKit::Platform::current()->audioHardwareBufferSize();
+    m_callbackBufferSize = blink::Platform::current()->audioHardwareBufferSize();
 
 #if OS(ANDROID)
     // The optimum low-latency hardware buffer size is usually too small on Android for WebAudio to
@@ -82,7 +82,7 @@ AudioDestinationChromium::AudioDestinationChromium(AudioIOCallback& callback, co
     if (m_callbackBufferSize + renderBufferSize > fifoSize)
         return;
 
-    m_audioDevice = adoptPtr(WebKit::Platform::current()->createAudioDevice(m_callbackBufferSize, numberOfInputChannels, numberOfOutputChannels, sampleRate, this, inputDeviceId));
+    m_audioDevice = adoptPtr(blink::Platform::current()->createAudioDevice(m_callbackBufferSize, numberOfInputChannels, numberOfOutputChannels, sampleRate, this, inputDeviceId));
     ASSERT(m_audioDevice);
 
     // Create a FIFO to handle the possibility of the callback size
@@ -127,15 +127,15 @@ void AudioDestinationChromium::stop()
 
 float AudioDestination::hardwareSampleRate()
 {
-    return static_cast<float>(WebKit::Platform::current()->audioHardwareSampleRate());
+    return static_cast<float>(blink::Platform::current()->audioHardwareSampleRate());
 }
 
 unsigned long AudioDestination::maxChannelCount()
 {
-    return static_cast<float>(WebKit::Platform::current()->audioHardwareOutputChannels());
+    return static_cast<float>(blink::Platform::current()->audioHardwareOutputChannels());
 }
 
-void AudioDestinationChromium::render(const WebKit::WebVector<float*>& sourceData, const WebKit::WebVector<float*>& audioData, size_t numberOfFrames)
+void AudioDestinationChromium::render(const blink::WebVector<float*>& sourceData, const blink::WebVector<float*>& audioData, size_t numberOfFrames)
 {
     bool isNumberOfChannelsGood = audioData.size() == m_numberOfOutputChannels;
     if (!isNumberOfChannelsGood) {

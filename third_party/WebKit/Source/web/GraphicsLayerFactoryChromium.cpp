@@ -31,7 +31,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 GraphicsLayerFactoryChromium::GraphicsLayerFactoryChromium(WebViewImpl* webView)
     : m_webView(webView)
@@ -49,4 +49,4 @@ PassOwnPtr<GraphicsLayer> GraphicsLayerFactoryChromium::createGraphicsLayer(Grap
     return layer.release();
 }
 
-} // namespace WebKit
+} // namespace blink

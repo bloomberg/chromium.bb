@@ -30,7 +30,7 @@
 #include "WebData.h"
 #include "WebString.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebLayerTreeView;
 class WebURL;

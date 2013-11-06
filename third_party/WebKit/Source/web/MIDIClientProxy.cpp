@@ -40,7 +40,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 MIDIClientProxy::MIDIClientProxy(WebMIDIClient* client)
     : m_client(client)
@@ -61,4 +61,4 @@ void MIDIClientProxy::cancelSysExPermissionRequest(MIDIAccess* access)
         m_client->cancelSysExPermissionRequest(WebMIDIPermissionRequest(access));
 }
 
-} // namespace WebKit
+} // namespace blink

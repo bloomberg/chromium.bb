@@ -99,7 +99,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 // Maximum length of data buffer which is used to temporary save generated
 // html content data. This is a soft limit which might be passed if a very large
@@ -526,4 +526,4 @@ bool WebPageSerializerImpl::serialize()
     return didSerialization;
 }
 
-}  // namespace WebKit
+}  // namespace blink

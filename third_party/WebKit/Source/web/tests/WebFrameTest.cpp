@@ -89,15 +89,15 @@
 #include "wtf/Forward.h"
 #include <map>
 
-using namespace WebKit;
+using namespace blink;
 using WebCore::Document;
 using WebCore::DocumentMarker;
 using WebCore::Element;
 using WebCore::FloatRect;
 using WebCore::HitTestRequest;
 using WebCore::Range;
-using WebKit::URLTestHelpers::toKURL;
-using WebKit::FrameTestHelpers::runPendingTasks;
+using blink::URLTestHelpers::toKURL;
+using blink::FrameTestHelpers::runPendingTasks;
 
 namespace {
 
@@ -2093,7 +2093,7 @@ TEST_F(WebFrameTest, updateOverlayScrollbarLayers)
     EXPECT_FALSE(view->renderView()->compositor()->layerForVerticalScrollbar());
 }
 
-void setScaleAndScrollAndLayout(WebKit::WebView* webView, WebPoint scroll, float scale)
+void setScaleAndScrollAndLayout(blink::WebView* webView, WebPoint scroll, float scale)
 {
     webView->setPageScaleFactor(scale, WebPoint(scroll.x, scroll.y));
     webView->layout();
@@ -4043,7 +4043,7 @@ class SpellCheckClient : public WebSpellCheckClient {
 public:
     explicit SpellCheckClient(uint32_t hash = 0) : m_numberOfTimesChecked(0), m_hash(hash) { }
     virtual ~SpellCheckClient() { }
-    virtual void requestCheckingOfText(const WebKit::WebString&, const WebKit::WebVector<uint32_t>&, const WebKit::WebVector<unsigned>&, WebKit::WebTextCheckingCompletion* completion) OVERRIDE
+    virtual void requestCheckingOfText(const blink::WebString&, const blink::WebVector<uint32_t>&, const blink::WebVector<unsigned>&, blink::WebTextCheckingCompletion* completion) OVERRIDE
     {
         ++m_numberOfTimesChecked;
         Vector<WebTextCheckingResult> results;
@@ -4150,10 +4150,10 @@ public:
     virtual ~StubbornSpellCheckClient() { }
 
     virtual void requestCheckingOfText(
-        const WebKit::WebString&,
-        const WebKit::WebVector<uint32_t>&,
-        const WebKit::WebVector<unsigned>&,
-        WebKit::WebTextCheckingCompletion* completion) OVERRIDE
+        const blink::WebString&,
+        const blink::WebVector<uint32_t>&,
+        const blink::WebVector<unsigned>&,
+        blink::WebTextCheckingCompletion* completion) OVERRIDE
     {
         m_completion = completion;
     }
@@ -4190,7 +4190,7 @@ private:
         m_completion = 0;
     }
 
-    WebKit::WebTextCheckingCompletion* m_completion;
+    blink::WebTextCheckingCompletion* m_completion;
 };
 
 TEST_F(WebFrameTest, SlowSpellcheckMarkerPosition)

@@ -39,7 +39,7 @@ namespace WebTestRunner {
 
 class WebTestDelegate;
 
-// A fake implemention of WebKit::WebPlugin for testing purposes.
+// A fake implemention of blink::WebPlugin for testing purposes.
 //
 // It uses WebGraphicsContext3D to paint a scene consisiting of a primitive
 // over a background. The primitive and background can be customized using
@@ -51,40 +51,40 @@ class WebTestDelegate;
 //
 // Whether the plugin accepts touch events or not can be customized using the
 // 'accepts-touch' plugin parameter (defaults to false).
-class TestPlugin : public WebKit::WebPlugin, public WebKit::WebExternalTextureLayerClient, public WebKit::WebNonCopyable {
+class TestPlugin : public blink::WebPlugin, public blink::WebExternalTextureLayerClient, public blink::WebNonCopyable {
 public:
-    static TestPlugin* create(WebKit::WebFrame*, const WebKit::WebPluginParams&, WebTestDelegate*);
+    static TestPlugin* create(blink::WebFrame*, const blink::WebPluginParams&, WebTestDelegate*);
     virtual ~TestPlugin();
 
-    static const WebKit::WebString& mimeType();
+    static const blink::WebString& mimeType();
 
     // WebPlugin methods:
-    virtual bool initialize(WebKit::WebPluginContainer*);
+    virtual bool initialize(blink::WebPluginContainer*);
     virtual void destroy();
     virtual NPObject* scriptableObject() { return 0; }
     virtual bool canProcessDrag() const { return m_canProcessDrag; }
-    virtual void paint(WebKit::WebCanvas*, const WebKit::WebRect&) { }
-    virtual void updateGeometry(const WebKit::WebRect& frameRect, const WebKit::WebRect& clipRect, const WebKit::WebVector<WebKit::WebRect>& cutOutsRects, bool isVisible);
+    virtual void paint(blink::WebCanvas*, const blink::WebRect&) { }
+    virtual void updateGeometry(const blink::WebRect& frameRect, const blink::WebRect& clipRect, const blink::WebVector<blink::WebRect>& cutOutsRects, bool isVisible);
     virtual void updateFocus(bool) { }
     virtual void updateVisibility(bool) { }
     virtual bool acceptsInputEvents() { return true; }
-    virtual bool handleInputEvent(const WebKit::WebInputEvent&, WebKit::WebCursorInfo&);
-    virtual bool handleDragStatusUpdate(WebKit::WebDragStatus, const WebKit::WebDragData&, WebKit::WebDragOperationsMask, const WebKit::WebPoint& position, const WebKit::WebPoint& screenPosition);
-    virtual void didReceiveResponse(const WebKit::WebURLResponse&) { }
+    virtual bool handleInputEvent(const blink::WebInputEvent&, blink::WebCursorInfo&);
+    virtual bool handleDragStatusUpdate(blink::WebDragStatus, const blink::WebDragData&, blink::WebDragOperationsMask, const blink::WebPoint& position, const blink::WebPoint& screenPosition);
+    virtual void didReceiveResponse(const blink::WebURLResponse&) { }
     virtual void didReceiveData(const char* data, int dataLength) { }
     virtual void didFinishLoading() { }
-    virtual void didFailLoading(const WebKit::WebURLError&) { }
-    virtual void didFinishLoadingFrameRequest(const WebKit::WebURL&, void* notifyData) { }
-    virtual void didFailLoadingFrameRequest(const WebKit::WebURL&, void* notifyData, const WebKit::WebURLError&) { }
+    virtual void didFailLoading(const blink::WebURLError&) { }
+    virtual void didFinishLoadingFrameRequest(const blink::WebURL&, void* notifyData) { }
+    virtual void didFailLoadingFrameRequest(const blink::WebURL&, void* notifyData, const blink::WebURLError&) { }
     virtual bool isPlaceholder() { return false; }
 
     // WebExternalTextureLayerClient methods:
-    virtual WebKit::WebGraphicsContext3D* context() { return 0; }
-    virtual bool prepareMailbox(WebKit::WebExternalTextureMailbox*, WebKit::WebExternalBitmap*);
-    virtual void mailboxReleased(const WebKit::WebExternalTextureMailbox&);
+    virtual blink::WebGraphicsContext3D* context() { return 0; }
+    virtual bool prepareMailbox(blink::WebExternalTextureMailbox*, blink::WebExternalBitmap*);
+    virtual void mailboxReleased(const blink::WebExternalTextureMailbox&);
 
 private:
-    TestPlugin(WebKit::WebFrame*, const WebKit::WebPluginParams&, WebTestDelegate*);
+    TestPlugin(blink::WebFrame*, const blink::WebPluginParams&, WebTestDelegate*);
 
     enum Primitive {
         PrimitiveNone,
@@ -116,10 +116,10 @@ private:
     };
 
     // Functions for parsing plugin parameters.
-    Primitive parsePrimitive(const WebKit::WebString&);
-    void parseColor(const WebKit::WebString&, unsigned color[3]);
-    float parseOpacity(const WebKit::WebString&);
-    bool parseBoolean(const WebKit::WebString&);
+    Primitive parsePrimitive(const blink::WebString&);
+    void parseColor(const blink::WebString&, unsigned color[3]);
+    float parseOpacity(const blink::WebString&);
+    bool parseBoolean(const blink::WebString&);
 
     // Functions for loading and drawing scene.
     bool initScene();
@@ -131,20 +131,20 @@ private:
     unsigned loadShader(unsigned type, const std::string& source);
     unsigned loadProgram(const std::string& vertexSource, const std::string& fragmentSource);
 
-    WebKit::WebFrame* m_frame;
+    blink::WebFrame* m_frame;
     WebTestDelegate* m_delegate;
-    WebKit::WebPluginContainer* m_container;
+    blink::WebPluginContainer* m_container;
 
-    WebKit::WebRect m_rect;
-    WebKit::WebGraphicsContext3D* m_context;
+    blink::WebRect m_rect;
+    blink::WebGraphicsContext3D* m_context;
     unsigned m_colorTexture;
-    WebKit::WebExternalTextureMailbox m_mailbox;
+    blink::WebExternalTextureMailbox m_mailbox;
     bool m_mailboxChanged;
     unsigned m_framebuffer;
     Scene m_scene;
-    std::auto_ptr<WebKit::WebExternalTextureLayer> m_layer;
+    std::auto_ptr<blink::WebExternalTextureLayer> m_layer;
 
-    WebKit::WebPluginContainer::TouchEventRequestType m_touchEventRequest;
+    blink::WebPluginContainer::TouchEventRequestType m_touchEventRequest;
     // Requests touch events from the WebPluginContainerImpl multiple times to tickle webkit.org/b/108381
     bool m_reRequestTouchEvents;
     bool m_printEventDetails;

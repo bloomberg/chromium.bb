@@ -30,7 +30,7 @@
 #include "WebSpeechSynthesisVoice.h"
 #include "WebVector.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebSpeechSynthesizerClient {
 public:
@@ -46,6 +46,6 @@ public:
     virtual void sentenceBoundaryEventOccurred(const WebSpeechSynthesisUtterance&, unsigned charIndex) = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebSpeechSynthesizerClient_h

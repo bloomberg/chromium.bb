@@ -34,7 +34,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 ScrollbarGroup::ScrollbarGroup(FrameView* frameView, const IntRect& frameRect)
     : m_frameView(frameView)
@@ -292,4 +292,4 @@ int ScrollbarGroup::pageStep(ScrollbarOrientation orientation) const
     return std::max(pageStep, 1);
 }
 
-} // namespace WebKit
+} // namespace blink

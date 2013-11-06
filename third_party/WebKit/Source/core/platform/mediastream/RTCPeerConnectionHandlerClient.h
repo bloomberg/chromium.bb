@@ -33,7 +33,7 @@
 
 #include "wtf/PassRefPtr.h"
 
-namespace WebKit {
+namespace blink {
 class WebRTCICECandidate;
 }
 
@@ -72,7 +72,7 @@ public:
     virtual ~RTCPeerConnectionHandlerClient() { }
 
     virtual void negotiationNeeded() = 0;
-    virtual void didGenerateIceCandidate(WebKit::WebRTCICECandidate) = 0;
+    virtual void didGenerateIceCandidate(blink::WebRTCICECandidate) = 0;
     virtual void didChangeSignalingState(SignalingState) = 0;
     virtual void didChangeIceGatheringState(IceGatheringState) = 0;
     virtual void didChangeIceConnectionState(IceConnectionState) = 0;

@@ -37,7 +37,7 @@ namespace v8 {
 class Extension;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebScriptController {
 public:
@@ -59,6 +59,6 @@ private:
     WebScriptController();
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -38,7 +38,7 @@
 #include "wtf/PassOwnPtr.h"
 #endif
 
-namespace WebKit {
+namespace blink {
 
 enum WebCryptoAlgorithmId {
     WebCryptoAlgorithmIdAesCbc,
@@ -131,6 +131,6 @@ private:
     WebPrivatePtr<WebCryptoAlgorithmPrivate> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

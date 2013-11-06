@@ -25,10 +25,10 @@
 #include "config.h"
 #include "public/platform/WebContentDecryptionModule.h"
 
-namespace WebKit {
+namespace blink {
 
 WebContentDecryptionModule::~WebContentDecryptionModule()
 {
 }
 
-} // namespace WebKit
+} // namespace blink

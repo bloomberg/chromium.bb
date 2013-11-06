@@ -35,7 +35,7 @@
 #include "../platform/WebCommon.h"
 #include "../platform/WebURL.h"
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
 class WebPageSerializerClient;
 class WebString;
@@ -114,6 +114,6 @@ public:
     BLINK_EXPORT static WebString generateBaseTagDeclaration(const WebString& baseTarget);
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

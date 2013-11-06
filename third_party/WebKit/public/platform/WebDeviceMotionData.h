@@ -37,7 +37,7 @@
 #include "wtf/Assertions.h"
 #endif
 
-namespace WebKit {
+namespace blink {
 
 #pragma pack(push, 1)
 
@@ -81,6 +81,6 @@ COMPILE_ASSERT(sizeof(WebDeviceMotionData) == (10 * sizeof(double) + 2 * sizeof(
 
 #pragma pack(pop)
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebDeviceMotionData_h

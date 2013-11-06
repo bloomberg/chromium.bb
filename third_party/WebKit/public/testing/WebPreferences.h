@@ -36,7 +36,7 @@
 #include "public/platform/WebURL.h"
 #include "public/web/WebSettings.h"
 
-namespace WebKit {
+namespace blink {
 class WebView;
 }
 
@@ -51,7 +51,7 @@ struct WEBTESTRUNNER_EXPORT WebPreferences {
     bool allowFileAccessFromFileURLs;
     bool allowRunningOfInsecureContent;
     bool authorAndUserStylesEnabled;
-    WebKit::WebString defaultTextEncodingName;
+    blink::WebString defaultTextEncodingName;
     bool experimentalWebGLEnabled;
     bool experimentalCSSRegionsEnabled;
     bool experimentalCSSGridLayoutEnabled;
@@ -63,9 +63,9 @@ struct WEBTESTRUNNER_EXPORT WebPreferences {
     bool loadsImagesAutomatically;
     bool offlineWebApplicationCacheEnabled;
     bool pluginsEnabled;
-    WebKit::WebURL userStyleSheetLocation;
+    blink::WebURL userStyleSheetLocation;
     bool allowUniversalAccessFromFileURLs;
-    WebKit::WebSettings::EditingBehavior editingBehavior;
+    blink::WebSettings::EditingBehavior editingBehavior;
     bool tabsToLinks;
     bool hyperlinkAuditingEnabled;
     bool caretBrowsingEnabled;

@@ -26,7 +26,7 @@
 #ifndef WebDiscardableMemory_h
 #define WebDiscardableMemory_h
 
-namespace WebKit {
+namespace blink {
 
 // A memory allocation that can be automatically discarded by the operating
 // system under memory pressure.
@@ -70,6 +70,6 @@ public:
     virtual void unlock() = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

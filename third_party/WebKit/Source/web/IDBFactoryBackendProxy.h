@@ -36,7 +36,7 @@ namespace WebCore {
 class ExecutionContext;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebIDBFactory;
 class WebSecurityOrigin;
@@ -58,6 +58,6 @@ private:
     WebIDBFactory* m_webIDBFactory;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // IDBFactoryBackendProxy_h

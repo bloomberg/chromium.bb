@@ -44,7 +44,7 @@ class AudioPullFIFO;
 
 // An AudioDestination using Chromium's audio system
 
-class PLATFORM_EXPORT AudioDestinationChromium : public AudioDestination, public WebKit::WebAudioDevice::RenderCallback, public AudioSourceProvider {
+class PLATFORM_EXPORT AudioDestinationChromium : public AudioDestination, public blink::WebAudioDevice::RenderCallback, public AudioSourceProvider {
     WTF_MAKE_NONCOPYABLE(AudioDestinationChromium);
 public:
     AudioDestinationChromium(AudioIOCallback&, const String& inputDeviceId, unsigned numberOfInputChannels, unsigned numberOfOutputChannels, float sampleRate);
@@ -56,8 +56,8 @@ public:
 
     float sampleRate() const { return m_sampleRate; }
 
-    // WebKit::WebAudioDevice::RenderCallback
-    virtual void render(const WebKit::WebVector<float*>& sourceData, const WebKit::WebVector<float*>& audioData, size_t numberOfFrames);
+    // blink::WebAudioDevice::RenderCallback
+    virtual void render(const blink::WebVector<float*>& sourceData, const blink::WebVector<float*>& audioData, size_t numberOfFrames);
 
     // WebCore::AudioSourceProvider
     virtual void provideInput(AudioBus*, size_t framesToProcess);
@@ -69,7 +69,7 @@ private:
     RefPtr<AudioBus> m_renderBus;
     float m_sampleRate;
     bool m_isPlaying;
-    OwnPtr<WebKit::WebAudioDevice> m_audioDevice;
+    OwnPtr<blink::WebAudioDevice> m_audioDevice;
     size_t m_callbackBufferSize;
 
     OwnPtr<AudioFIFO> m_inputFifo;

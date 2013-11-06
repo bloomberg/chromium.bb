@@ -34,7 +34,7 @@
 #include "core/platform/graphics/MediaSourcePrivate.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebMediaSource;
 
@@ -52,7 +52,7 @@ public:
     virtual void unmarkEndOfStream() OVERRIDE;
 
 private:
-    OwnPtr<WebKit::WebMediaSource> m_webMediaSource;
+    OwnPtr<blink::WebMediaSource> m_webMediaSource;
 };
 
 }

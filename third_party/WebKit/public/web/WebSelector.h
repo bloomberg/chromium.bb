@@ -33,7 +33,7 @@
 
 #include "../platform/WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebString;
 
@@ -50,6 +50,6 @@ enum WebSelectorType {
 // The canonical form is not guaranteed to stay the same over time.
 BLINK_EXPORT WebString canonicalizeSelector(WebString selector, WebSelectorType restriction = WebSelectorTypeComplex);
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

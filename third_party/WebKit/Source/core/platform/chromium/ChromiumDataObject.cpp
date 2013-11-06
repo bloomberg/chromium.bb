@@ -47,10 +47,10 @@ namespace WebCore {
 PassRefPtr<ChromiumDataObject> ChromiumDataObject::createFromPasteboard(PasteMode pasteMode)
 {
     RefPtr<ChromiumDataObject> dataObject = create();
-    WebKit::WebClipboard::Buffer buffer = Pasteboard::generalPasteboard()->buffer();
-    uint64_t sequenceNumber = WebKit::Platform::current()->clipboard()->sequenceNumber(buffer);
+    blink::WebClipboard::Buffer buffer = Pasteboard::generalPasteboard()->buffer();
+    uint64_t sequenceNumber = blink::Platform::current()->clipboard()->sequenceNumber(buffer);
     bool ignored;
-    WebKit::WebVector<WebKit::WebString> webTypes = WebKit::Platform::current()->clipboard()->readAvailableTypes(buffer, &ignored);
+    blink::WebVector<blink::WebString> webTypes = blink::Platform::current()->clipboard()->readAvailableTypes(buffer, &ignored);
     ListHashSet<String> types;
     for (size_t i = 0; i < webTypes.size(); ++i)
         types.add(webTypes[i]);

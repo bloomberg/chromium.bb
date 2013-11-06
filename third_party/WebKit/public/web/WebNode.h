@@ -38,7 +38,7 @@
 
 namespace WebCore { class Node; }
 
-namespace WebKit {
+namespace blink {
 class WebDOMEvent;
 class WebDOMEventListener;
 class WebDOMEventListenerPrivate;
@@ -177,6 +177,6 @@ inline bool operator<(const WebNode& a, const WebNode& b)
     return a.lessThan(b);
 }
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -33,7 +33,7 @@
 
 #include "../platform/WebString.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebStorageArea;
 class WebStorageNamespace;
@@ -59,6 +59,6 @@ public:
     WebStorageEventDispatcher() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebStorageEventDispatcher_h

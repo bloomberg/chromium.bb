@@ -40,7 +40,7 @@ namespace WebCore {
 class RTCSessionDescriptionRequest;
 }
 
-namespace WebKit {
+namespace blink {
 class WebRTCSessionDescription;
 
 class WebRTCSessionDescriptionRequest {
@@ -83,6 +83,6 @@ private:
     WebPrivatePtr<WebCore::RTCSessionDescriptionRequest> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebRTCSessionDescriptionRequest_h

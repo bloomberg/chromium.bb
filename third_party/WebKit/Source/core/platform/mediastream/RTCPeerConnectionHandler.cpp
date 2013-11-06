@@ -57,7 +57,7 @@
 
 namespace WebCore {
 
-WebKit::WebRTCPeerConnectionHandler* RTCPeerConnectionHandler::toWebRTCPeerConnectionHandler(RTCPeerConnectionHandler* handler)
+blink::WebRTCPeerConnectionHandler* RTCPeerConnectionHandler::toWebRTCPeerConnectionHandler(RTCPeerConnectionHandler* handler)
 {
     return static_cast<RTCPeerConnectionHandler*>(handler)->m_webHandler.get();
 }
@@ -84,7 +84,7 @@ RTCPeerConnectionHandler::~RTCPeerConnectionHandler()
 
 bool RTCPeerConnectionHandler::createWebHandler()
 {
-    m_webHandler = adoptPtr(WebKit::Platform::current()->createRTCPeerConnectionHandler(this));
+    m_webHandler = adoptPtr(blink::Platform::current()->createRTCPeerConnectionHandler(this));
     return m_webHandler;
 }
 
@@ -103,12 +103,12 @@ void RTCPeerConnectionHandler::createAnswer(PassRefPtr<RTCSessionDescriptionRequ
     m_webHandler->createAnswer(request, constraints);
 }
 
-void RTCPeerConnectionHandler::setLocalDescription(PassRefPtr<RTCVoidRequest> request, WebKit::WebRTCSessionDescription sessionDescription)
+void RTCPeerConnectionHandler::setLocalDescription(PassRefPtr<RTCVoidRequest> request, blink::WebRTCSessionDescription sessionDescription)
 {
     m_webHandler->setLocalDescription(request, sessionDescription);
 }
 
-void RTCPeerConnectionHandler::setRemoteDescription(PassRefPtr<RTCVoidRequest> request, WebKit::WebRTCSessionDescription sessionDescription)
+void RTCPeerConnectionHandler::setRemoteDescription(PassRefPtr<RTCVoidRequest> request, blink::WebRTCSessionDescription sessionDescription)
 {
     m_webHandler->setRemoteDescription(request, sessionDescription);
 }
@@ -118,22 +118,22 @@ bool RTCPeerConnectionHandler::updateIce(PassRefPtr<RTCConfiguration> configurat
     return m_webHandler->updateICE(configuration, constraints);
 }
 
-bool RTCPeerConnectionHandler::addIceCandidate(WebKit::WebRTCICECandidate iceCandidate)
+bool RTCPeerConnectionHandler::addIceCandidate(blink::WebRTCICECandidate iceCandidate)
 {
     return m_webHandler->addICECandidate(iceCandidate);
 }
 
-bool RTCPeerConnectionHandler::addIceCandidate(PassRefPtr<RTCVoidRequest> request, WebKit::WebRTCICECandidate iceCandidate)
+bool RTCPeerConnectionHandler::addIceCandidate(PassRefPtr<RTCVoidRequest> request, blink::WebRTCICECandidate iceCandidate)
 {
     return m_webHandler->addICECandidate(request, iceCandidate);
 }
 
-WebKit::WebRTCSessionDescription RTCPeerConnectionHandler::localDescription()
+blink::WebRTCSessionDescription RTCPeerConnectionHandler::localDescription()
 {
     return m_webHandler->localDescription();
 }
 
-WebKit::WebRTCSessionDescription RTCPeerConnectionHandler::remoteDescription()
+blink::WebRTCSessionDescription RTCPeerConnectionHandler::remoteDescription()
 {
     return m_webHandler->remoteDescription();
 }
@@ -153,9 +153,9 @@ void RTCPeerConnectionHandler::getStats(PassRefPtr<RTCStatsRequest> request)
     m_webHandler->getStats(request);
 }
 
-PassOwnPtr<RTCDataChannelHandler> RTCPeerConnectionHandler::createDataChannel(const String& label, const WebKit::WebRTCDataChannelInit& init)
+PassOwnPtr<RTCDataChannelHandler> RTCPeerConnectionHandler::createDataChannel(const String& label, const blink::WebRTCDataChannelInit& init)
 {
-    WebKit::WebRTCDataChannelHandler* webHandler = m_webHandler->createDataChannel(label, init);
+    blink::WebRTCDataChannelHandler* webHandler = m_webHandler->createDataChannel(label, init);
     if (!webHandler)
         return nullptr;
 
@@ -164,7 +164,7 @@ PassOwnPtr<RTCDataChannelHandler> RTCPeerConnectionHandler::createDataChannel(co
 
 PassOwnPtr<RTCDTMFSenderHandler> RTCPeerConnectionHandler::createDTMFSender(PassRefPtr<MediaStreamComponent> track)
 {
-    WebKit::WebRTCDTMFSenderHandler* webHandler = m_webHandler->createDTMFSender(track);
+    blink::WebRTCDTMFSenderHandler* webHandler = m_webHandler->createDTMFSender(track);
     if (!webHandler)
         return nullptr;
 
@@ -181,37 +181,37 @@ void RTCPeerConnectionHandler::negotiationNeeded()
     m_client->negotiationNeeded();
 }
 
-void RTCPeerConnectionHandler::didGenerateICECandidate(const WebKit::WebRTCICECandidate& iceCandidate)
+void RTCPeerConnectionHandler::didGenerateICECandidate(const blink::WebRTCICECandidate& iceCandidate)
 {
     m_client->didGenerateIceCandidate(iceCandidate);
 }
 
-void RTCPeerConnectionHandler::didChangeSignalingState(WebKit::WebRTCPeerConnectionHandlerClient::SignalingState state)
+void RTCPeerConnectionHandler::didChangeSignalingState(blink::WebRTCPeerConnectionHandlerClient::SignalingState state)
 {
     m_client->didChangeSignalingState(static_cast<RTCPeerConnectionHandlerClient::SignalingState>(state));
 }
 
-void RTCPeerConnectionHandler::didChangeICEGatheringState(WebKit::WebRTCPeerConnectionHandlerClient::ICEGatheringState state)
+void RTCPeerConnectionHandler::didChangeICEGatheringState(blink::WebRTCPeerConnectionHandlerClient::ICEGatheringState state)
 {
     m_client->didChangeIceGatheringState(static_cast<RTCPeerConnectionHandlerClient::IceGatheringState>(state));
 }
 
-void RTCPeerConnectionHandler::didChangeICEConnectionState(WebKit::WebRTCPeerConnectionHandlerClient::ICEConnectionState state)
+void RTCPeerConnectionHandler::didChangeICEConnectionState(blink::WebRTCPeerConnectionHandlerClient::ICEConnectionState state)
 {
     m_client->didChangeIceConnectionState(static_cast<RTCPeerConnectionHandlerClient::IceConnectionState>(state));
 }
 
-void RTCPeerConnectionHandler::didAddRemoteStream(const WebKit::WebMediaStream& webMediaStreamDescriptor)
+void RTCPeerConnectionHandler::didAddRemoteStream(const blink::WebMediaStream& webMediaStreamDescriptor)
 {
     m_client->didAddRemoteStream(webMediaStreamDescriptor);
 }
 
-void RTCPeerConnectionHandler::didRemoveRemoteStream(const WebKit::WebMediaStream& webMediaStreamDescriptor)
+void RTCPeerConnectionHandler::didRemoveRemoteStream(const blink::WebMediaStream& webMediaStreamDescriptor)
 {
     m_client->didRemoveRemoteStream(webMediaStreamDescriptor);
 }
 
-void RTCPeerConnectionHandler::didAddRemoteDataChannel(WebKit::WebRTCDataChannelHandler* webHandler)
+void RTCPeerConnectionHandler::didAddRemoteDataChannel(blink::WebRTCDataChannelHandler* webHandler)
 {
     ASSERT(webHandler);
     m_client->didAddRemoteDataChannel(RTCDataChannelHandler::create(webHandler));

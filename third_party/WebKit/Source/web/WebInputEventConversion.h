@@ -49,7 +49,7 @@ class WheelEvent;
 class Widget;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebMouseEvent;
 class WebMouseWheelEvent;
@@ -143,6 +143,6 @@ public:
     WebGestureEventBuilder(const WebCore::Widget*, const WebCore::RenderObject*, const WebCore::GestureEvent&);
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

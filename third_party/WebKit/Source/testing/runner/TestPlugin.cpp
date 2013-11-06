@@ -37,7 +37,7 @@
 #include "public/web/WebTouchPoint.h"
 #include "public/web/WebUserGestureIndicator.h"
 
-using namespace WebKit;
+using namespace blink;
 using namespace std;
 
 namespace WebTestRunner {
@@ -276,7 +276,7 @@ void TestPlugin::updateGeometry(const WebRect& frameRect, const WebRect& clipRec
     m_mailboxChanged = true;
 }
 
-bool TestPlugin::prepareMailbox(WebKit::WebExternalTextureMailbox* mailbox, WebKit::WebExternalBitmap*)
+bool TestPlugin::prepareMailbox(blink::WebExternalTextureMailbox* mailbox, blink::WebExternalBitmap*)
 {
     if (!m_mailboxChanged)
         return false;
@@ -285,7 +285,7 @@ bool TestPlugin::prepareMailbox(WebKit::WebExternalTextureMailbox* mailbox, WebK
     return true;
 }
 
-void TestPlugin::mailboxReleased(const WebKit::WebExternalTextureMailbox&)
+void TestPlugin::mailboxReleased(const blink::WebExternalTextureMailbox&)
 {
 }
 

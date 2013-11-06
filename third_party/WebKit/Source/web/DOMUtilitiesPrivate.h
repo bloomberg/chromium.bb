@@ -37,7 +37,7 @@ class QualifiedName;
 }
 
 // This file is an aggregate of useful WebCore operations.
-namespace WebKit {
+namespace blink {
 
 // For img, script, iframe, frame element, when attribute name is src,
 // for link, a, area element, when attribute name is href,
@@ -49,6 +49,6 @@ namespace WebKit {
 bool elementHasLegalLinkAttribute(const WebCore::Element* element,
                                   const WebCore::QualifiedName& attrName);
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

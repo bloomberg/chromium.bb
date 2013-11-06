@@ -34,7 +34,7 @@
 #include "../platform/WebCommon.h"
 #include "../platform/WebVector.h"
 
-namespace WebKit {
+namespace blink {
 class WebDevToolsAgentClient;
 class WebDevToolsMessageTransport;
 class WebFrame;
@@ -90,6 +90,6 @@ public:
 
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

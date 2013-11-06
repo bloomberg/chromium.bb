@@ -38,7 +38,7 @@
 namespace WebCore { class ResourceResponse; }
 #endif
 
-namespace WebKit {
+namespace blink {
 
 class WebCString;
 class WebHTTPHeaderVisitor;
@@ -200,6 +200,6 @@ private:
     WebURLResponsePrivate* m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

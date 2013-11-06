@@ -36,7 +36,7 @@
 
 namespace WebCore { class ResourceLoadTiming; }
 
-namespace WebKit {
+namespace blink {
 class WebString;
 
 class WebURLLoadTiming {
@@ -103,6 +103,6 @@ private:
     WebPrivatePtr<WebCore::ResourceLoadTiming> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

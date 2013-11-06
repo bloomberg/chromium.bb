@@ -33,7 +33,7 @@
 
 #include "../platform/WebPrivateOwnPtr.h"
 
-namespace WebKit {
+namespace blink {
 
 // This class wraps V8RecursionScope::BypassMicrotaskCheckpoint. Please
 // see V8RecursionScope.h for full usage. Short story: Embedder calls into
@@ -49,7 +49,7 @@ namespace WebKit {
 //
 //        ...
 //        {
-//            WebKit::WebScopedMicrotaskSuppression suppression;
+//            blink::WebScopedMicrotaskSuppression suppression;
 //            func->Call(global, argv, args);
 //        }
 //        ...

@@ -49,7 +49,7 @@ WebPermissions::~WebPermissions()
 {
 }
 
-bool WebPermissions::allowImage(WebKit::WebFrame*, bool enabledPerSettings, const WebKit::WebURL& imageURL)
+bool WebPermissions::allowImage(blink::WebFrame*, bool enabledPerSettings, const blink::WebURL& imageURL)
 {
     bool allowed = enabledPerSettings && m_imagesAllowed;
     if (m_dumpCallbacks && m_delegate)
@@ -57,7 +57,7 @@ bool WebPermissions::allowImage(WebKit::WebFrame*, bool enabledPerSettings, cons
     return allowed;
 }
 
-bool WebPermissions::allowScriptFromSource(WebKit::WebFrame*, bool enabledPerSettings, const WebKit::WebURL& scriptURL)
+bool WebPermissions::allowScriptFromSource(blink::WebFrame*, bool enabledPerSettings, const blink::WebURL& scriptURL)
 {
     bool allowed = enabledPerSettings && m_scriptsAllowed;
     if (m_dumpCallbacks && m_delegate)
@@ -65,22 +65,22 @@ bool WebPermissions::allowScriptFromSource(WebKit::WebFrame*, bool enabledPerSet
     return allowed;
 }
 
-bool WebPermissions::allowStorage(WebKit::WebFrame*, bool)
+bool WebPermissions::allowStorage(blink::WebFrame*, bool)
 {
     return m_storageAllowed;
 }
 
-bool WebPermissions::allowPlugins(WebKit::WebFrame*, bool enabledPerSettings)
+bool WebPermissions::allowPlugins(blink::WebFrame*, bool enabledPerSettings)
 {
     return enabledPerSettings && m_pluginsAllowed;
 }
 
-bool WebPermissions::allowDisplayingInsecureContent(WebKit::WebFrame*, bool enabledPerSettings, const WebKit::WebSecurityOrigin&, const WebKit::WebURL&)
+bool WebPermissions::allowDisplayingInsecureContent(blink::WebFrame*, bool enabledPerSettings, const blink::WebSecurityOrigin&, const blink::WebURL&)
 {
     return enabledPerSettings || m_displayingInsecureContentAllowed;
 }
 
-bool WebPermissions::allowRunningInsecureContent(WebKit::WebFrame*, bool enabledPerSettings, const WebKit::WebSecurityOrigin&, const WebKit::WebURL&)
+bool WebPermissions::allowRunningInsecureContent(blink::WebFrame*, bool enabledPerSettings, const blink::WebSecurityOrigin&, const blink::WebURL&)
 {
     return enabledPerSettings || m_runningInsecureContentAllowed;
 }

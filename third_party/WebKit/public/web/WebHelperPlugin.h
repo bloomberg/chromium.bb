@@ -34,7 +34,7 @@
 #include "../platform/WebCommon.h"
 #include "WebWidget.h"
 
-namespace WebKit {
+namespace blink {
 
 class WebFrameClient;
 class WebPlugin;
@@ -55,6 +55,6 @@ protected:
     ~WebHelperPlugin() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

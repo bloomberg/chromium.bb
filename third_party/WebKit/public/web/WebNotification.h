@@ -43,7 +43,7 @@ namespace WTF {
 class AtomicString;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebNotificationPrivate;
 class WebURL;
@@ -126,6 +126,6 @@ inline bool operator<(const WebNotification& a, const WebNotification& b)
     return a.lessThan(b);
 }
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

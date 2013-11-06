@@ -39,7 +39,7 @@
 #include "core/events/MessageEvent.h"
 #endif
 
-namespace WebKit {
+namespace blink {
 
 class WebFrame;
 class WebString;
@@ -59,6 +59,6 @@ public:
 #endif
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -31,7 +31,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebKit {
+namespace blink {
 
 WebSpeechSynthesisVoice::WebSpeechSynthesisVoice()
     : m_private(WebCore::PlatformSpeechSynthesisVoice::create())
@@ -78,4 +78,4 @@ WebSpeechSynthesisVoice::operator PassRefPtr<WebCore::PlatformSpeechSynthesisVoi
     return m_private.get();
 }
 
-} // namespace WebKit
+} // namespace blink

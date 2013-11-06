@@ -42,7 +42,7 @@ namespace WTF { template <typename T> class PassRefPtr; }
 
 namespace WebCore { class AXObject; }
 
-namespace WebKit {
+namespace blink {
 
 class WebNode;
 class WebDocument;
@@ -220,6 +220,6 @@ private:
     WebPrivatePtr<WebCore::AXObject> m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

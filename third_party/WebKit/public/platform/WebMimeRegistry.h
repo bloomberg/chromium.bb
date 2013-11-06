@@ -33,30 +33,30 @@
 
 #include "WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 class WebString;
 
 class WebMimeRegistry {
 public:
     enum SupportsType { IsNotSupported, IsSupported, MayBeSupported };
 
-    virtual SupportsType supportsMIMEType(const WebKit::WebString& mimeType) = 0;
-    virtual SupportsType supportsImageMIMEType(const WebKit::WebString& mimeType) = 0;
-    virtual SupportsType supportsJavaScriptMIMEType(const WebKit::WebString& mimeType) = 0;
-    virtual SupportsType supportsMediaMIMEType(const WebKit::WebString& mimeType, const WebKit::WebString& codecs, const WebKit::WebString& keySystem) = 0;
+    virtual SupportsType supportsMIMEType(const blink::WebString& mimeType) = 0;
+    virtual SupportsType supportsImageMIMEType(const blink::WebString& mimeType) = 0;
+    virtual SupportsType supportsJavaScriptMIMEType(const blink::WebString& mimeType) = 0;
+    virtual SupportsType supportsMediaMIMEType(const blink::WebString& mimeType, const blink::WebString& codecs, const blink::WebString& keySystem) = 0;
 
-    virtual bool supportsMediaSourceMIMEType(const WebKit::WebString& mimeType, const WebKit::WebString& codecs) = 0;
+    virtual bool supportsMediaSourceMIMEType(const blink::WebString& mimeType, const blink::WebString& codecs) = 0;
 
-    virtual SupportsType supportsNonImageMIMEType(const WebKit::WebString& mimeType) = 0;
+    virtual SupportsType supportsNonImageMIMEType(const blink::WebString& mimeType) = 0;
 
-    virtual WebKit::WebString mimeTypeForExtension(const WebKit::WebString& fileExtension) = 0;
-    virtual WebKit::WebString wellKnownMimeTypeForExtension(const WebKit::WebString& fileExtension) = 0;
-    virtual WebKit::WebString mimeTypeFromFile(const WebKit::WebString& filePath) = 0;
+    virtual blink::WebString mimeTypeForExtension(const blink::WebString& fileExtension) = 0;
+    virtual blink::WebString wellKnownMimeTypeForExtension(const blink::WebString& fileExtension) = 0;
+    virtual blink::WebString mimeTypeFromFile(const blink::WebString& filePath) = 0;
 
 protected:
     ~WebMimeRegistry() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

@@ -34,7 +34,7 @@
 #include "WebScreenInfo.h"
 #include <X11/Xlib.h>
 
-namespace WebKit {
+namespace blink {
 
 // FIXME: Take an X window and use XRandR to find the dimensions of the monitor
 // that it's on (probably using XRRGetScreenInfo() and XRRConfigSizes() from
@@ -66,4 +66,4 @@ WebScreenInfo WebScreenInfoFactory::screenInfo(Display* display, int screenNumbe
     return results;
 }
 
-} // namespace WebKit
+} // namespace blink

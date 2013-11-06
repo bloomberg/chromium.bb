@@ -38,7 +38,7 @@
 #include "public/web/WebNode.h"
 #include "public/web/WebView.h"
 
-using namespace WebKit;
+using namespace blink;
 
 namespace WebTestRunner {
 
@@ -132,7 +132,7 @@ bool AccessibilityController::shouldLogAccessibilityEvents()
     return m_logAccessibilityEvents;
 }
 
-void AccessibilityController::notificationReceived(const WebKit::WebAXObject& target, const char* notificationName)
+void AccessibilityController::notificationReceived(const blink::WebAXObject& target, const char* notificationName)
 {
     // Call notification listeners on the element.
     WebAXObjectProxy* element = m_elements.getOrCreate(target);

@@ -38,7 +38,7 @@ class GraphicsLayer;
 class GraphicsLayerClient;
 }
 
-namespace WebKit {
+namespace blink {
 class OverlayGraphicsLayerClientImpl;
 class WebPageOverlay;
 class WebViewImpl;
@@ -73,6 +73,6 @@ private:
     int m_zOrder;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // PageOverlay_h

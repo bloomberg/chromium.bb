@@ -37,9 +37,9 @@ namespace WebCore {
 
 class RTCDTMFSenderHandlerClient;
 
-class RTCDTMFSenderHandler : public WebKit::WebRTCDTMFSenderHandlerClient {
+class RTCDTMFSenderHandler : public blink::WebRTCDTMFSenderHandlerClient {
 public:
-    static PassOwnPtr<RTCDTMFSenderHandler> create(WebKit::WebRTCDTMFSenderHandler*);
+    static PassOwnPtr<RTCDTMFSenderHandler> create(blink::WebRTCDTMFSenderHandler*);
     virtual ~RTCDTMFSenderHandler();
 
     void setClient(RTCDTMFSenderHandlerClient*);
@@ -49,13 +49,13 @@ public:
     bool canInsertDTMF();
     bool insertDTMF(const String& tones, long duration, long interToneGap);
 
-    // WebKit::WebRTCDTMFSenderHandlerClient implementation.
-    virtual void didPlayTone(const WebKit::WebString& tone) const OVERRIDE;
+    // blink::WebRTCDTMFSenderHandlerClient implementation.
+    virtual void didPlayTone(const blink::WebString& tone) const OVERRIDE;
 
 private:
-    explicit RTCDTMFSenderHandler(WebKit::WebRTCDTMFSenderHandler*);
+    explicit RTCDTMFSenderHandler(blink::WebRTCDTMFSenderHandler*);
 
-    OwnPtr<WebKit::WebRTCDTMFSenderHandler> m_webHandler;
+    OwnPtr<blink::WebRTCDTMFSenderHandler> m_webHandler;
     RTCDTMFSenderHandlerClient* m_client;
 };
 

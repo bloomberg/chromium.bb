@@ -33,7 +33,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebIDBKeyPath WebIDBKeyPath::create(const WebString& keyPath)
 {
@@ -109,4 +109,4 @@ WebIDBKeyPath::operator const WebCore::IDBKeyPath&() const
     return *(m_private.get());
 }
 
-} // namespace WebKit
+} // namespace blink

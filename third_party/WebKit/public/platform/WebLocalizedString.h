@@ -31,7 +31,7 @@
 #ifndef WebLocalizedString_h
 #define WebLocalizedString_h
 
-namespace WebKit {
+namespace blink {
 
 struct WebLocalizedString {
     enum Name {
@@ -167,6 +167,6 @@ struct WebLocalizedString {
     };
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

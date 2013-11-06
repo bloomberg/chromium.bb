@@ -53,8 +53,8 @@
 #include "public/platform/WebUnitTestSupport.h"
 #include "wtf/OwnPtr.h"
 
-using namespace WebKit;
-using WebKit::URLTestHelpers::toKURL;
+using namespace blink;
+using blink::URLTestHelpers::toKURL;
 
 namespace {
 

@@ -1116,7 +1116,7 @@ void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, Vect
 
     if (!depth) {
         int percentageIncreaseInPixels = static_cast<int>(pixelsAddedByPromotingAllTransitions / pixelsWithoutPromotingAllTransitions * 100);
-        WebKit::Platform::current()->histogramCustomCounts("Renderer.PixelIncreaseFromTransitions", percentageIncreaseInPixels, 0, 1000, 50);
+        blink::Platform::current()->histogramCustomCounts("Renderer.PixelIncreaseFromTransitions", percentageIncreaseInPixels, 0, 1000, 50);
     }
 }
 
@@ -1169,14 +1169,14 @@ void RenderLayerCompositor::frameViewDidScroll()
         m_scrollLayer->setPosition(-scrollPosition);
 
 
-    WebKit::Platform::current()->histogramEnumeration("Renderer.AcceleratedFixedRootBackground",
+    blink::Platform::current()->histogramEnumeration("Renderer.AcceleratedFixedRootBackground",
         ScrolledMainFrameBucket,
         AcceleratedFixedRootBackgroundHistogramMax);
 
     if (!m_renderView->rootBackgroundIsEntirelyFixed())
         return;
 
-    WebKit::Platform::current()->histogramEnumeration("Renderer.AcceleratedFixedRootBackground",
+    blink::Platform::current()->histogramEnumeration("Renderer.AcceleratedFixedRootBackground",
         !!fixedRootBackgroundLayer()
             ? ScrolledMainFrameWithAcceleratedFixedRootBackground
             : ScrolledMainFrameWithUnacceleratedFixedRootBackground,

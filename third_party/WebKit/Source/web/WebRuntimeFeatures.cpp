@@ -36,7 +36,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 void WebRuntimeFeatures::enableStableFeatures(bool enable)
 {
@@ -446,4 +446,4 @@ void WebRuntimeFeatures::enableRepaintAfterLayout(bool enable)
     RuntimeEnabledFeatures::setRepaintAfterLayoutEnabled(enable);
 }
 
-} // namespace WebKit
+} // namespace blink

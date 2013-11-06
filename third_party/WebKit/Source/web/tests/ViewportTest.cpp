@@ -48,7 +48,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-using namespace WebKit;
+using namespace blink;
 using WebCore::Frame;
 using WebCore::FrameView;
 using WebCore::IntPoint;
@@ -57,7 +57,7 @@ using WebCore::IntSize;
 using WebCore::Page;
 using WebCore::PageScaleConstraints;
 using WebCore::ViewportDescription;
-using WebKit::FrameTestHelpers::runPendingTasks;
+using blink::FrameTestHelpers::runPendingTasks;
 
 namespace {
 

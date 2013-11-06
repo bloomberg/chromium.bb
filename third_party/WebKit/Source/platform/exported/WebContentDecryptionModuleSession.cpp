@@ -25,7 +25,7 @@
 #include "config.h"
 #include "public/platform/WebContentDecryptionModuleSession.h"
 
-namespace WebKit {
+namespace blink {
 
 WebContentDecryptionModuleSession::~WebContentDecryptionModuleSession()
 {
@@ -35,4 +35,4 @@ WebContentDecryptionModuleSession::Client::~Client()
 {
 }
 
-} // namespace WebKit
+} // namespace blink

@@ -45,7 +45,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebImage WebImage::fromData(const WebData& data, const WebSize& desiredSize)
 {
@@ -165,4 +165,4 @@ WebImage& WebImage::operator=(const PassRefPtr<Image>& image)
     return *this;
 }
 
-} // namespace WebKit
+} // namespace blink

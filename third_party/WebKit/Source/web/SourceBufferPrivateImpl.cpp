@@ -33,7 +33,7 @@
 
 #include "WebSourceBuffer.h"
 
-namespace WebKit {
+namespace blink {
 
 SourceBufferPrivateImpl::SourceBufferPrivateImpl(PassOwnPtr<WebSourceBuffer> sourceBuffer)
     : m_sourceBuffer(sourceBuffer)

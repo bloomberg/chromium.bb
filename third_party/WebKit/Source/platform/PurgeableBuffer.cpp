@@ -43,7 +43,7 @@ PassOwnPtr<PurgeableBuffer> PurgeableBuffer::create(const char* data, size_t siz
     if (size < minimumSize)
         return nullptr;
 
-    OwnPtr<WebKit::WebDiscardableMemory> memory = adoptPtr(WebKit::Platform::current()->allocateAndLockDiscardableMemory(size));
+    OwnPtr<blink::WebDiscardableMemory> memory = adoptPtr(blink::Platform::current()->allocateAndLockDiscardableMemory(size));
     if (!memory)
         return nullptr;
 
@@ -86,7 +86,7 @@ void PurgeableBuffer::unlock()
     m_state = Unlocked;
 }
 
-PurgeableBuffer::PurgeableBuffer(PassOwnPtr<WebKit::WebDiscardableMemory> memory, const char* data, size_t size)
+PurgeableBuffer::PurgeableBuffer(PassOwnPtr<blink::WebDiscardableMemory> memory, const char* data, size_t size)
     : m_memory(memory)
     , m_size(size)
     , m_state(Locked)

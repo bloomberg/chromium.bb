@@ -34,7 +34,7 @@
 #include "public/web/WebBindings.h"
 #include <limits>
 
-using namespace WebKit;
+using namespace blink;
 using namespace std;
 
 namespace WebTestRunner {

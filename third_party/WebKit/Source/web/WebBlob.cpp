@@ -39,7 +39,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 WebBlob WebBlob::createFromFile(const WebString& path, long long size)
 {
@@ -100,4 +100,4 @@ WebBlob::operator WTF::PassRefPtr<WebCore::Blob>() const
     return m_private.get();
 }
 
-} // namespace WebKit
+} // namespace blink

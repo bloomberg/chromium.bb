@@ -95,7 +95,7 @@ PassRefPtr<File> File::createWithRelativePath(const String& path, const String& 
 File::File(const String& path, ContentTypeLookupPolicy policy)
     : Blob(BlobDataHandle::create(createBlobDataForFile(path, policy), -1))
     , m_path(path)
-    , m_name(WebKit::Platform::current()->fileUtilities()->baseName(path))
+    , m_name(blink::Platform::current()->fileUtilities()->baseName(path))
     , m_snapshotSize(-1)
     , m_snapshotModificationTime(invalidFileTime())
 {
@@ -115,7 +115,7 @@ File::File(const String& path, const String& name, ContentTypeLookupPolicy polic
 File::File(const String& path, PassRefPtr<BlobDataHandle> blobDataHandle)
     : Blob(blobDataHandle)
     , m_path(path)
-    , m_name(WebKit::Platform::current()->fileUtilities()->baseName(path))
+    , m_name(blink::Platform::current()->fileUtilities()->baseName(path))
     , m_snapshotSize(-1)
     , m_snapshotModificationTime(invalidFileTime())
 {

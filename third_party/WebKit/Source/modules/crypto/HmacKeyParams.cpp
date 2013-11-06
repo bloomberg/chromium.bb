@@ -49,7 +49,7 @@ unsigned HmacKeyParams::length(bool& isNull)
     return length;
 }
 
-HmacKeyParams::HmacKeyParams(const WebKit::WebCryptoAlgorithm& algorithm)
+HmacKeyParams::HmacKeyParams(const blink::WebCryptoAlgorithm& algorithm)
     : Algorithm(algorithm)
 {
     ASSERT(algorithm.hmacKeyParams());

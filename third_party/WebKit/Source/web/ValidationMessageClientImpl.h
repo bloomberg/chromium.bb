@@ -35,7 +35,7 @@ namespace WebCore {
 class FrameView;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebValidationMessageClient;
 class WebViewImpl;

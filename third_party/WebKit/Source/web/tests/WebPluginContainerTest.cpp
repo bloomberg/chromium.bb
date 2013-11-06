@@ -51,7 +51,7 @@
 #include "public/platform/WebThread.h"
 #include "public/platform/WebUnitTestSupport.h"
 
-using namespace WebKit;
+using namespace blink;
 
 namespace {
 

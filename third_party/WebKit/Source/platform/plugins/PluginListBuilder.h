@@ -37,14 +37,14 @@
 
 namespace WebCore {
 
-class PluginListBuilder : public WebKit::WebPluginListBuilder {
+class PluginListBuilder : public blink::WebPluginListBuilder {
 public:
     PluginListBuilder(Vector<WebCore::PluginInfo>* results) : m_results(results) { }
 
     // WebPluginListBuilder methods:
-    virtual void addPlugin(const WebKit::WebString& name, const WebKit::WebString& description, const WebKit::WebString& fileName);
-    virtual void addMediaTypeToLastPlugin(const WebKit::WebString& name, const WebKit::WebString& description);
-    virtual void addFileExtensionToLastMediaType(const WebKit::WebString& extension);
+    virtual void addPlugin(const blink::WebString& name, const blink::WebString& description, const blink::WebString& fileName);
+    virtual void addMediaTypeToLastPlugin(const blink::WebString& name, const blink::WebString& description);
+    virtual void addFileExtensionToLastMediaType(const blink::WebString& extension);
 
 private:
     Vector<PluginInfo>* m_results;

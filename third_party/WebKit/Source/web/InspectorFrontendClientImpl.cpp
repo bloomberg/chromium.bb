@@ -45,7 +45,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 InspectorFrontendClientImpl::InspectorFrontendClientImpl(Page* frontendPage, WebDevToolsFrontendClient* client, WebDevToolsFrontendImpl* frontend)
     : m_frontendPage(frontendPage)
@@ -136,4 +136,4 @@ bool InspectorFrontendClientImpl::isUnderTest()
     return m_client->isUnderTest();
 }
 
-} // namespace WebKit
+} // namespace blink

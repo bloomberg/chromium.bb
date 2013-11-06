@@ -34,7 +34,7 @@
 #include "../platform/WebCString.h"
 #include "../platform/WebCommon.h"
 
-namespace WebKit {
+namespace blink {
 class WebString;
 struct WebDevToolsMessageData;
 struct WebRect;
@@ -106,6 +106,6 @@ protected:
     ~WebDevToolsAgentClient() { }
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

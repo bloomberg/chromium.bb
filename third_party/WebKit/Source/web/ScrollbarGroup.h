@@ -34,7 +34,7 @@ namespace WebCore {
 class FrameView;
 }
 
-namespace WebKit {
+namespace blink {
 
 class WebPluginScrollbarImpl;
 
@@ -85,6 +85,6 @@ private:
     WebPluginScrollbarImpl* m_verticalScrollbar;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

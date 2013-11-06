@@ -237,7 +237,7 @@ namespace WebCore {
     class ImageDecoder {
         WTF_MAKE_NONCOPYABLE(ImageDecoder); WTF_MAKE_FAST_ALLOCATED;
     public:
-        static const size_t noDecodedImageByteLimit = WebKit::Platform::noDecodedImageByteLimit;
+        static const size_t noDecodedImageByteLimit = blink::Platform::noDecodedImageByteLimit;
 
         ImageDecoder(ImageSource::AlphaOption alphaOption, ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption, size_t maxDecodedBytes)
             : m_premultiplyAlpha(alphaOption == ImageSource::AlphaPremultiplied)

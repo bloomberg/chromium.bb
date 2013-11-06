@@ -38,7 +38,7 @@ namespace WebCore { class SecurityOrigin; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
-namespace WebKit {
+namespace blink {
 
 class WebSecurityOriginPrivate;
 class WebString;
@@ -111,6 +111,6 @@ private:
     WebSecurityOriginPrivate* m_private;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif

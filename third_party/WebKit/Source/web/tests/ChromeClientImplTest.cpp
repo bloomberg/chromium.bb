@@ -39,9 +39,9 @@
 #include "core/page/Chrome.h"
 #include <gtest/gtest.h>
 
-using namespace WebKit;
+using namespace blink;
 
-namespace WebKit {
+namespace blink {
 
 void setCurrentInputEventForTest(const WebInputEvent* event)
 {

@@ -38,7 +38,7 @@
 namespace WebCore {
 
 HTMLParserThread::HTMLParserThread()
-    : m_thread(adoptPtr(WebKit::Platform::current()->createThread("HTMLParserThread")))
+    : m_thread(adoptPtr(blink::Platform::current()->createThread("HTMLParserThread")))
 {
 }
 

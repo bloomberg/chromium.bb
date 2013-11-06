@@ -61,7 +61,7 @@ protected:
 
 private:
     void* m_lockedMemory;
-    OwnPtr<WebKit::WebDiscardableMemory> m_discardable;
+    OwnPtr<blink::WebDiscardableMemory> m_discardable;
     OwnPtr<SkMutex> m_mutex;
 };
 

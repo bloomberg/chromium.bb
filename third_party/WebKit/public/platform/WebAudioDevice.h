@@ -32,7 +32,7 @@
 #include "WebCommon.h"
 #include "WebVector.h"
 
-namespace WebKit {
+namespace blink {
 
 // Abstract interface to the Chromium audio system.
 
@@ -53,6 +53,6 @@ public:
     virtual double sampleRate() = 0;
 };
 
-} // namespace WebKit
+} // namespace blink
 
 #endif // WebAudioDevice_h

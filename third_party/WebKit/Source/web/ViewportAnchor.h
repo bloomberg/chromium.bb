@@ -43,7 +43,7 @@ class IntSize;
 class Node;
 }
 
-namespace WebKit {
+namespace blink {
 
 // ViewportAnchor provides a way to anchor a viewport origin to a DOM node.
 // In particular, the user supplies the current viewport (in CSS coordinates)
@@ -73,6 +73,6 @@ private:
     WebCore::FloatSize m_anchorInNodeCoords;
 };
 
-} // namespace WebKit
+} // namespace blink
 
  #endif
