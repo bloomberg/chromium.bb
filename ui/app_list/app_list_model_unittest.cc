@@ -277,7 +277,7 @@ TEST_F(AppListModelTest, AppOrder) {
 }
 
 TEST_F(AppListModelTest, FolderItem) {
-  AppListFolderItem* folder = new AppListFolderItem("folder1");
+  scoped_ptr<AppListFolderItem> folder(new AppListFolderItem("folder1"));
   const size_t num_folder_apps = 8;
   const size_t num_observed_apps = 4;
   for (int i = 0; static_cast<size_t>(i) < num_folder_apps; ++i) {
@@ -285,12 +285,13 @@ TEST_F(AppListModelTest, FolderItem) {
     folder->item_list()->AddItem(model_.CreateItem(name, name));
   }
   // Check that items 0 and 3 are observed.
-  EXPECT_TRUE(ItemObservedByFolder(folder, folder->item_list()->item_at(0)));
   EXPECT_TRUE(ItemObservedByFolder(
-      folder, folder->item_list()->item_at(num_observed_apps - 1)));
+      folder.get(), folder->item_list()->item_at(0)));
+  EXPECT_TRUE(ItemObservedByFolder(
+      folder.get(), folder->item_list()->item_at(num_observed_apps - 1)));
   // Check that item 4 is not observed.
   EXPECT_FALSE(ItemObservedByFolder(
-      folder, folder->item_list()->item_at(num_observed_apps)));
+      folder.get(), folder->item_list()->item_at(num_observed_apps)));
   folder->item_list()->MoveItem(num_observed_apps, 0);
   // Confirm that everything was moved where expected.
   EXPECT_EQ(model_.GetItemName(num_observed_apps),
@@ -300,12 +301,13 @@ TEST_F(AppListModelTest, FolderItem) {
   EXPECT_EQ(model_.GetItemName(num_observed_apps - 1),
             folder->item_list()->item_at(num_observed_apps)->id());
   // Check that items 0 and 3 are observed.
-  EXPECT_TRUE(ItemObservedByFolder(folder, folder->item_list()->item_at(0)));
   EXPECT_TRUE(ItemObservedByFolder(
-      folder, folder->item_list()->item_at(num_observed_apps - 1)));
+      folder.get(), folder->item_list()->item_at(0)));
+  EXPECT_TRUE(ItemObservedByFolder(
+      folder.get(), folder->item_list()->item_at(num_observed_apps - 1)));
   // Check that item 4 is not observed.
   EXPECT_FALSE(ItemObservedByFolder(
-      folder, folder->item_list()->item_at(num_observed_apps)));
+      folder.get(), folder->item_list()->item_at(num_observed_apps)));
 }
 
 }  // namespace app_list

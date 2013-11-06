@@ -894,9 +894,3 @@
    fun:AppKeepAliveServiceUnitTest_Basic_Test::AppKeepAliveServiceUnitTest_Basic_Test
    fun:testing::internal::TestFactoryImpl::CreateTest
 }
-{
-   bug_313521
-   Heapcheck:Leak
-   ...
-   fun:app_list::AppListModelTest_FolderItem_Test::TestBody
-}

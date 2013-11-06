@@ -6430,9 +6430,3 @@
    ...
    fun:_ZN7WebCore11RenderBlock6layoutEv
 }
-{
-   bug_313521
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8app_list32AppListModelTest_FolderItem_Test8TestBodyEv
-}
