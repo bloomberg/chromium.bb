@@ -81,7 +81,7 @@ void PrinterQuery::GetSettings(
 
   StartWorker(callback);
 
-  // Real work is done in PrintJobWorker::Init().
+  // Real work is done in PrintJobWorker::GetSettings().
   is_print_dialog_box_shown_ = ask_user_for_settings == ASK_USER;
   worker_->message_loop()->PostTask(
       FROM_HERE,

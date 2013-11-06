@@ -27,8 +27,7 @@ class PrintedPage;
 class PrintJob;
 class PrintJobWorkerOwner;
 
-// Worker thread code. All this code, except for the constructor, is executed in
-// the worker thread. It manages the PrintingContext, which can be blocking
+// Worker thread code. It manages the PrintingContext, which can be blocking
 // and/or run a message loop. This is the object that generates most
 // NOTIFY_PRINT_JOB_EVENT notifications, but they are generated through a
 // NotificationTask task to be executed from the right thread, the UI thread.
