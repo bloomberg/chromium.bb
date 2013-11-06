@@ -13,12 +13,20 @@
 #include "ui/events/event_utils.h"
 #include "ui/gfx/screen.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/env.h"
+#include "ui/aura/window.h"
+#include "ui/events/event.h"
+#include "ui/events/event_handler.h"
+#endif
+
 namespace views {
 
 // Amount of time between when the mouse moves outside the Host's zone and when
 // the listener is notified.
 const int kNotifyListenerTimeMs = 300;
 
+#if defined(OS_WIN) && !defined(USE_AURA)
 class MouseWatcher::Observer : public base::MessageLoopForUI::Observer {
  public:
   explicit Observer(MouseWatcher* mouse_watcher)
@@ -32,7 +40,6 @@ class MouseWatcher::Observer : public base::MessageLoopForUI::Observer {
   }
 
   // MessageLoop::Observer implementation:
-#if defined(OS_WIN)
   virtual base::EventStatus WillProcessEvent(
       const base::NativeEvent& event) OVERRIDE {
     return base::EVENT_CONTINUE;
@@ -60,26 +67,6 @@ class MouseWatcher::Observer : public base::MessageLoopForUI::Observer {
         break;
     }
   }
-#elif defined(USE_AURA)
-  virtual base::EventStatus WillProcessEvent(
-      const base::NativeEvent& event) OVERRIDE {
-    return base::EVENT_CONTINUE;
-  }
-  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE {
-    switch (ui::EventTypeFromNative(event)) {
-      case ui::ET_MOUSE_MOVED:
-      case ui::ET_MOUSE_DRAGGED:
-        // DRAGGED is a special case of MOVED. See events_win.cc/events_x.cc.
-        HandleGlobalMouseMoveEvent(MouseWatcherHost::MOUSE_MOVE);
-        break;
-      case ui::ET_MOUSE_EXITED:
-        HandleGlobalMouseMoveEvent(MouseWatcherHost::MOUSE_EXIT);
-        break;
-      default:
-        break;
-    }
-  }
-#endif
 
  private:
   MouseWatcherHost* host() const { return mouse_watcher_->host_.get(); }
@@ -122,6 +109,75 @@ class MouseWatcher::Observer : public base::MessageLoopForUI::Observer {
 
   DISALLOW_COPY_AND_ASSIGN(Observer);
 };
+#else
+class MouseWatcher::Observer : public ui::EventHandler {
+ public:
+  explicit Observer(MouseWatcher* mouse_watcher)
+      : mouse_watcher_(mouse_watcher),
+        notify_listener_factory_(this) {
+    aura::Env::GetInstance()->AddPreTargetHandler(this);
+  }
+
+  virtual ~Observer() {
+    aura::Env::GetInstance()->RemovePreTargetHandler(this);
+  }
+
+  // ui::EventHandler implementation:
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+    switch (event->type()) {
+      case ui::ET_MOUSE_MOVED:
+      case ui::ET_MOUSE_DRAGGED:
+        HandleMouseEvent(MouseWatcherHost::MOUSE_MOVE);
+        break;
+      case ui::ET_MOUSE_EXITED:
+        HandleMouseEvent(MouseWatcherHost::MOUSE_EXIT);
+        break;
+      default:
+        break;
+    }
+  }
+
+ private:
+  MouseWatcherHost* host() const { return mouse_watcher_->host_.get(); }
+
+  // Called when a mouse event we're interested is seen.
+  void HandleMouseEvent(MouseWatcherHost::MouseEventType event_type) {
+    // It's safe to use last_mouse_location() here as this function is invoked
+    // during event dispatching.
+    if (!host()->Contains(aura::Env::GetInstance()->last_mouse_location(),
+                          event_type)) {
+      // Mouse moved outside the host's zone, start a timer to notify the
+      // listener.
+      if (!notify_listener_factory_.HasWeakPtrs()) {
+        base::MessageLoop::current()->PostDelayedTask(
+            FROM_HERE,
+            base::Bind(&Observer::NotifyListener,
+                       notify_listener_factory_.GetWeakPtr()),
+            event_type == MouseWatcherHost::MOUSE_MOVE
+                ? base::TimeDelta::FromMilliseconds(kNotifyListenerTimeMs)
+                : mouse_watcher_->notify_on_exit_time_);
+      }
+    } else {
+      // Mouse moved quickly out of the host and then into it again, so cancel
+      // the timer.
+      notify_listener_factory_.InvalidateWeakPtrs();
+    }
+  }
+
+  void NotifyListener() {
+    mouse_watcher_->NotifyListener();
+    // WARNING: we've been deleted.
+  }
+
+ private:
+  MouseWatcher* mouse_watcher_;
+
+  // A factory that is used to construct a delayed callback to the listener.
+  base::WeakPtrFactory<Observer> notify_listener_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(Observer);
+};
+#endif
 
 MouseWatcherListener::~MouseWatcherListener() {
 }

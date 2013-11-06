@@ -40,6 +40,7 @@ class WindowModalityController;
 
 class DesktopCaptureClient;
 class DesktopDispatcherClient;
+class DesktopEventClient;
 class DesktopRootWindowHost;
 class DropHelper;
 class TooltipManagerAura;
@@ -265,6 +266,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   scoped_ptr<aura::client::ScreenPositionClient> position_client_;
   scoped_ptr<aura::client::DragDropClient> drag_drop_client_;
   scoped_ptr<aura::client::WindowTreeClient> window_tree_client_;
+  scoped_ptr<DesktopEventClient> event_client_;
 
   // Toplevel event filter which dispatches to other event filters.
   corewm::CompoundEventFilter* root_window_event_filter_;

@@ -43,6 +43,7 @@
 #include "ui/views/widget/desktop_aura/desktop_capture_client.h"
 #include "ui/views/widget/desktop_aura/desktop_cursor_loader_updater.h"
 #include "ui/views/widget/desktop_aura/desktop_dispatcher_client.h"
+#include "ui/views/widget/desktop_aura/desktop_event_client.h"
 #include "ui/views/widget/desktop_aura/desktop_focus_rules.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
 #include "ui/views/widget/desktop_aura/desktop_root_window_host.h"
@@ -277,6 +278,9 @@ void DesktopNativeWidgetAura::OnDesktopRootWindowHostDestroyed(
 
   aura::client::SetDragDropClient(root, NULL);
   drag_drop_client_.reset();
+
+  aura::client::SetEventClient(root, NULL);
+  event_client_.reset();
 }
 
 void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
@@ -434,6 +438,9 @@ void DesktopNativeWidgetAura::InitNativeWidget(
         native_widget_delegate_->AsWidget()->GetFocusManager();
     root_window_->AddPreTargetHandler(focus_manager->GetEventHandler());
   }
+
+  event_client_.reset(new DesktopEventClient);
+  aura::client::SetEventClient(root_window_.get(), event_client_.get());
 
   aura::client::GetFocusClient(content_window_)->FocusWindow(content_window_);
 
