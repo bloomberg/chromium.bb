@@ -657,8 +657,9 @@ void AppsGridView::UpdatePaging() {
 }
 
 void AppsGridView::UpdatePulsingBlockViews() {
+  const int existing_items = item_list_ ? item_list_->item_count() : 0;
   const int available_slots =
-      tiles_per_page() - item_list_->item_count() % tiles_per_page();
+      tiles_per_page() - existing_items % tiles_per_page();
   const int desired = model_->status() == AppListModel::STATUS_SYNCING ?
       available_slots : 0;
 
