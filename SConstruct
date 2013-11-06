@@ -2743,6 +2743,13 @@ That means the linker supports the -Trodata-segment switch."""
 
 nacl_env.AddMethod(IsNewLinker)
 
+def UsesAbiNote(env):
+  """Return True if using a new-style GCC with .note.NaCl.ABI.* notes.
+This means there will always be an RODATA segment, even if just for the note."""
+  return env.Bit('target_arm') and not env.Bit('bitcode')
+
+nacl_env.AddMethod(UsesAbiNote)
+
 def UnderWindowsCoverage(env):
   """Return True if using running on coverage under windows."""
   if 'TRUSTED_ENV' not in env:

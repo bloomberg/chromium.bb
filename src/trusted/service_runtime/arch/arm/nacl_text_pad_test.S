@@ -189,9 +189,15 @@ _start:
         bic r3, r3, #0xc000000f
         blx r3
 
-        movw r1, :lower16:(ro_str)
-        movt r1, :upper16:(ro_str)
+        /* Truncate the address to page boundary for comparison. */
+        movw r4, #0
+        movt r4, :upper16:(ro_str)
+        nop
+        nop
+
         mov r0, #1
+        mov r1, r4
+        nop
         bl write_num_16
 
         mov r1, #'\n'
@@ -201,23 +207,23 @@ _start:
 
         movw r1, lower_16(EXPECTED_RODATA)
         movt r1, upper_16(EXPECTED_RODATA)
-        movw r2, :lower16:(ro_str)
-        movt r2, :upper16:(ro_str)
+        nop
+        nop
 
-        cmp r1, r2
-        movne r5, #1
+        cmp r1, r4
+        movne r5, #2
         mov r0, #1  /* r1 still has EXPECTED_RODATA */
         bl write_num_16
 
         mov r1, #'\n'
-        mov r0, #1
+        mov r0, #2
         nop
         bl write_char
 #endif
 
         movw r3, lower_16(NACL_SYSCALL_ADDR(NACL_sys_exit))
         movt r3, upper_16(NACL_SYSCALL_ADDR(NACL_sys_exit))
-        mov r0, #0
+        mov r0, r5
         nop
 
         nop

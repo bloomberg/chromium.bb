@@ -160,7 +160,11 @@ brk_sane:
         movq $NACL_SYSCALL_ADDR(NACL_sys_write), %r10
         naclcall %r10d,%r15
 
-        movq $ro_str, %rsi
+        /* Truncate the address to page boundary for comparison. */
+        leaq ro_str, %rbx
+        andq $-0x10000, %rbx
+
+        movq %rbx, %rsi
         movq $1, %rdi
         call write_num_16
 
@@ -168,13 +172,12 @@ brk_sane:
         movq $1, %rdi
         call write_char
 
-        leaq ro_str, %rax
-        cmpq $EXPECTED_RODATA, %rax
+        cmpq $EXPECTED_RODATA, %rbx
         je ro_sane
-        movq $1, %r12
+        movq $2, %r12
 ro_sane:
 
-        leaq ro_str, %rsi
+        movq %rbx, %rsi
         movq $1, %rdi
         call write_num_16
 

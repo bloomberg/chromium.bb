@@ -117,6 +117,9 @@ def NaturalRodataStart(text_end):
 
 
 def ExpectedBreak(text_end, rodata_addr, rwdata_addr, rwdata_size):
+  if env.IsNewLinker():
+    # The new linker always pads the text segment out to a page boundary.
+    text_end = RoundUpToAllocSize(text_end)
   if rwdata_addr is None:
     if rodata_addr is None:
       break_addr = NaturalRodataStart(text_end)
@@ -137,6 +140,11 @@ for text_end, variant in test_specs:
   for rodata_address, name_modifier in [ (None, ''),
                                          (0, '_ro'),
                                          (0x100000, '_ro_dyn') ]:
+
+    if rodata_address is None and env.UsesAbiNote():
+      # This toolchain always produces some rodata.
+      rodata_address = 0
+
     # rodata_address is None when no .rodata section should appear
     # in the generated nexe, and is 0 when it should appear in the
     # natural location (as defined by the linker script); when it

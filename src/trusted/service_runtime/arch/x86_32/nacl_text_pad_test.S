@@ -175,7 +175,11 @@ brk_sane:
         call NACL_SYSCALL_ADDR(NACL_sys_write)
         addl $12, %esp
 
-        pushl $ro_str
+        /* Truncate the address to page boundary for comparison. */
+        leal ro_str, %ebx
+        andl $-0x10000, %ebx
+
+        pushl %ebx
         pushl $1
         call write_num_16
         addl $8, %esp
@@ -185,10 +189,9 @@ brk_sane:
         call write_char
         addl $8, %esp
 
-        leal ro_str, %eax
-        cmpl $EXPECTED_RODATA, %eax
+        cmpl $EXPECTED_RODATA, %ebx
         je ro_sane
-        movl $1, %edi
+        movl $2, %edi
 ro_sane:
 
         pushl $EXPECTED_RODATA
