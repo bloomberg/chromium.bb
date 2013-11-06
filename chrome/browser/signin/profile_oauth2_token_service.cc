@@ -25,6 +25,10 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/url_request/url_request_context_getter.h"
 
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/managed_mode/managed_user_constants.h"
+#endif
+
 namespace {
 
 const char kAccountIdPrefix[] = "AccountId-";
@@ -154,7 +158,7 @@ void ProfileOAuth2TokenService::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  const std::string& account_id = GetPrimaryAccountId();
+  std::string account_id = GetPrimaryAccountId();
   switch (type) {
     case chrome::NOTIFICATION_TOKEN_AVAILABLE: {
       TokenService::TokenAvailableDetails* tok_details =
@@ -165,6 +169,7 @@ void ProfileOAuth2TokenService::Observe(
         // upgrade steps invoked by Initialize.
         // TODO(fgorski): Refresh token received that way is not persisted in
         // the token DB.
+        account_id = GetAccountIdForMigratingRefreshToken();
         CancelRequestsForAccount(account_id);
         ClearCacheForAccount(account_id);
         refresh_tokens_[account_id].reset(
@@ -209,9 +214,6 @@ void ProfileOAuth2TokenService::Observe(
 }
 
 std::string ProfileOAuth2TokenService::GetPrimaryAccountId() {
-  if (profile_->IsManaged())
-    return std::string("SupervisedUser");
-
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfileIfExists(profile_);
   // TODO(fgorski): DCHECK(signin_manager) here - it may require update to test
@@ -323,6 +325,17 @@ void ProfileOAuth2TokenService::LoadCredentials() {
     web_data_service_request_ = token_web_data->GetAllTokens(this);
 }
 
+std::string ProfileOAuth2TokenService::GetAccountIdForMigratingRefreshToken() {
+#if defined(ENABLE_MANAGED_USERS)
+  // TODO(bauerb): Make sure that only services that can deal with supervised
+  // users see the supervised user token.
+  if (profile_->IsManaged())
+    return managed_users::kManagedUserPseudoEmail;
+#endif
+
+  return GetPrimaryAccountId();
+}
+
 void ProfileOAuth2TokenService::OnWebDataServiceRequestDone(
     WebDataServiceBase::Handle handle,
     const WDTypedResult* result) {
@@ -368,9 +381,11 @@ void ProfileOAuth2TokenService::LoadAllCredentialsIntoMemory(
     }
   }
 
-  if (!old_login_token.empty() &&
-      refresh_tokens_.count(GetPrimaryAccountId()) == 0) {
-    UpdateCredentials(GetPrimaryAccountId(), old_login_token);
+  if (!old_login_token.empty()) {
+    std::string account_id = GetAccountIdForMigratingRefreshToken();
+
+    if (refresh_tokens_.count(account_id) == 0)
+      UpdateCredentials(account_id, old_login_token);
   }
 
   FireRefreshTokensLoaded();

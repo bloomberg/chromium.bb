@@ -52,6 +52,13 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   // Initializes this token service with the profile.
   virtual void Initialize(Profile* profile);
 
+  // Loads credentials from a backing persistent store to make them available
+  // after service is used between profile restarts.
+  // Usually it's not necessary to directly call this method.
+  // TODO(bauerb): Make this method private once this class initializes itself
+  // automatically.
+  void LoadCredentials();
+
   // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
@@ -147,14 +154,14 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceTest,
                            PersistenceLoadCredentials);
 
+  // When migrating an old login-scoped refresh token, this returns the account
+  // ID with which the token was associated.
+  std::string GetAccountIdForMigratingRefreshToken();
+
   // WebDataServiceConsumer implementation:
   virtual void OnWebDataServiceRequestDone(
       WebDataServiceBase::Handle handle,
       const WDTypedResult* result) OVERRIDE;
-
-  // Loads credentials from a backing persistent store to make them available
-  // after service is used between profile restarts.
-  void LoadCredentials();
 
   // Loads credentials into in memory stucture.
   void LoadAllCredentialsIntoMemory(

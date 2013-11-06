@@ -130,10 +130,6 @@ class ManagedUserService : public BrowserContextKeyedService,
                            const std::string& managed_user_id,
                            const AuthErrorCallback& callback);
 
-  // Returns a pseudo-email address for systems that expect well-formed email
-  // addresses (like Sync), even though we're not signed in.
-  static const char* GetManagedUserPseudoEmail();
-
   void set_elevated_for_testing(bool skip) {
     elevated_for_testing_ = skip;
   }

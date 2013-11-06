@@ -109,7 +109,8 @@ class UserPolicySigninServiceTest : public testing::Test {
     // a valid login token, while on other platforms, the login refresh token
     // is specified directly.
 #if defined(OS_ANDROID)
-    GetTokenService()->IssueRefreshToken("oauth2_login_refresh_token");
+    GetTokenService()->IssueRefreshTokenForUser(kTestUser,
+                                                "oauth2_login_refresh_token");
 #endif
     service->RegisterPolicyClient(
         kTestUser,
@@ -359,7 +360,8 @@ TEST_F(UserPolicySigninServiceTest, InitWhileSignedIn) {
   ASSERT_FALSE(IsRequestActive());
 
   // Make oauth token available.
-  GetTokenService()->IssueRefreshToken("oauth_login_refresh_token");
+  GetTokenService()->IssueRefreshTokenForUser(kTestUser,
+                                              "oauth_login_refresh_token");
 
   // Client registration should be in progress since we now have an oauth token.
   EXPECT_EQ(mock_store_->signin_username_, kTestUser);
@@ -387,7 +389,8 @@ TEST_F(UserPolicySigninServiceTest, InitWhileSignedInOAuthError) {
   ASSERT_FALSE(IsRequestActive());
 
   // Make oauth token available.
-  GetTokenService()->IssueRefreshToken("oauth_login_refresh_token");
+  GetTokenService()->IssueRefreshTokenForUser(kTestUser,
+                                              "oauth_login_refresh_token");
 
   // Client registration should be in progress since we now have an oauth token.
   ASSERT_TRUE(IsRequestActive());
@@ -419,7 +422,8 @@ TEST_F(UserPolicySigninServiceTest, SignInAfterInit) {
   mock_store_->NotifyStoreLoaded();
 
   // Make oauth token available.
-  GetTokenService()->IssueRefreshToken("oauth_login_refresh_token");
+  GetTokenService()->IssueRefreshTokenForUser(kTestUser,
+                                              "oauth_login_refresh_token");
 
   // UserCloudPolicyManager should be initialized.
   EXPECT_EQ(mock_store_->signin_username_, kTestUser);
@@ -449,7 +453,8 @@ TEST_F(UserPolicySigninServiceTest, SignInWithNonEnterpriseUser) {
   mock_store_->NotifyStoreLoaded();
 
   // Make oauth token available.
-  GetTokenService()->IssueRefreshToken("oauth_login_refresh_token");
+  GetTokenService()->IssueRefreshTokenForUser(kTestUser,
+                                              "oauth_login_refresh_token");
 
   // UserCloudPolicyManager should not be initialized and there should be no
   // DMToken request active.
@@ -474,7 +479,8 @@ TEST_F(UserPolicySigninServiceTest, UnregisteredClient) {
       kTestUser);
 
   // Make oauth token available.
-  GetTokenService()->IssueRefreshToken("oauth_login_refresh_token");
+  GetTokenService()->IssueRefreshTokenForUser(kTestUser,
+                                              "oauth_login_refresh_token");
 
   // UserCloudPolicyManager should be initialized.
   EXPECT_EQ(mock_store_->signin_username_, kTestUser);
@@ -508,7 +514,8 @@ TEST_F(UserPolicySigninServiceTest, RegisteredClient) {
       kTestUser);
 
   // Make oauth token available.
-  GetTokenService()->IssueRefreshToken("oauth_login_refresh_token");
+  GetTokenService()->IssueRefreshTokenForUser(kTestUser,
+                                              "oauth_login_refresh_token");
 
   // UserCloudPolicyManager should be initialized.
   EXPECT_EQ(mock_store_->signin_username_, kTestUser);

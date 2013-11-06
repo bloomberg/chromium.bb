@@ -47,8 +47,8 @@
 #include "sync/js/sync_js_controller.h"
 #include "url/gurl.h"
 
-class ProfileOAuth2TokenService;
 class Profile;
+class ProfileOAuth2TokenService;
 class ProfileSyncComponentsFactory;
 class SigninManagerBase;
 class SyncGlobalError;
@@ -821,6 +821,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Returns the username (in form of an email address) that should be used in
   // the credentials.
   std::string GetEffectiveUsername();
+
+  // Returns the account ID to use to get tokens.
+  std::string GetAccountIdToUse();
 
  // Factory used to create various dependent objects.
   scoped_ptr<ProfileSyncComponentsFactory> factory_;

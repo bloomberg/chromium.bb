@@ -111,12 +111,13 @@ void UserPolicySigninService::OnRefreshTokenAvailable(
     return;
   }
 
-  std::string username = GetSigninManager()->GetAuthenticatedUsername();
-  // Should not have OAuth tokens if the user isn't signed in.
-  DCHECK(!username.empty());
+  // Ignore OAuth tokens for any account but the primary one.
+  if (account_id != oauth2_token_service_->GetPrimaryAccountId())
+    return;
+
   // ProfileOAuth2TokenService now has a refresh token so initialize the
   // UserCloudPolicyManager.
-  InitializeForSignedInUser(username);
+  InitializeForSignedInUser(GetSigninManager()->GetAuthenticatedUsername());
 }
 
 void UserPolicySigninService::InitializeUserCloudPolicyManager(

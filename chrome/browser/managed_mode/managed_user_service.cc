@@ -25,11 +25,11 @@
 #include "chrome/browser/managed_mode/managed_user_sync_service.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_base.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/token_service.h"
-#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -66,7 +66,6 @@ const char kManagedModeFinchName[] = "ManagedModeLaunch";
 const char kManagedUserAccessRequestKeyPrefix[] =
     "X-ManagedUser-AccessRequests";
 const char kManagedUserAccessRequestTime[] = "timestamp";
-const char kManagedUserPseudoEmail[] = "managed_user@localhost";
 const char kOpenManagedProfileKeyPrefix[] = "X-ManagedUser-Events-OpenProfile";
 const char kQuitBrowserKeyPrefix[] = "X-ManagedUser-Events-QuitBrowser";
 const char kSwitchFromManagedProfileKeyPrefix[] =
@@ -531,9 +530,10 @@ void ManagedUserService::InitSync(const std::string& refresh_token) {
   // until we've finished configuration.
   service->SetSetupInProgress(true);
 
-  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
-  token_service->UpdateCredentialsWithOAuth2(
-      GaiaAuthConsumer::ClientOAuthResult(refresh_token, std::string(), 0));
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+  token_service->UpdateCredentials(managed_users::kManagedUserPseudoEmail,
+                                   refresh_token);
 
   // Continue in SetupSync() once the Sync backend has been initialized.
   if (service->sync_initialized()) {
@@ -542,11 +542,6 @@ void ManagedUserService::InitSync(const std::string& refresh_token) {
     ProfileSyncServiceFactory::GetForProfile(profile_)->AddObserver(this);
     waiting_for_sync_initialization_ = true;
   }
-}
-
-// static
-const char* ManagedUserService::GetManagedUserPseudoEmail() {
-  return kManagedUserPseudoEmail;
 }
 
 void ManagedUserService::Init() {
@@ -565,10 +560,10 @@ void ManagedUserService::Init() {
         command_line->GetSwitchValueASCII(switches::kManagedUserSyncToken));
   }
 
-  // TokenService only loads tokens automatically if we're signed in, so we have
-  // to nudge it ourselves.
-  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
-  token_service->LoadTokensFromDB();
+  // TODO(rogerta): Remove this once PO2TS has replaced TokenService.
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+  token_service->LoadCredentials();
 
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(profile_);

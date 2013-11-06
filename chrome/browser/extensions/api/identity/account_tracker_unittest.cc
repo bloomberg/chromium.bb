@@ -9,8 +9,10 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
+#include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_base.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -210,11 +212,18 @@ class IdentityAccountTrackerTest : public testing::Test {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
                               FakeProfileOAuth2TokenService::Build);
+    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
+                              FakeSigninManagerBase::Build);
 
     test_profile_ = builder.Build();
 
     fake_oauth2_token_service_ = static_cast<FakeProfileOAuth2TokenService*>(
         ProfileOAuth2TokenServiceFactory::GetForProfile(test_profile_.get()));
+
+    SigninManagerBase* signin_manager =
+        SigninManagerFactory::GetForProfile(test_profile_.get());
+    signin_manager->Initialize(test_profile_.get(), NULL);
+    signin_manager->SetAuthenticatedUsername("foo@example.com");
 
     account_tracker_.reset(new AccountTracker(test_profile_.get()));
     account_tracker_->AddObserver(&observer_);

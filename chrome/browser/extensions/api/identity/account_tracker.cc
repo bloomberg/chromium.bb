@@ -51,6 +51,12 @@ void AccountTracker::RemoveObserver(Observer* observer) {
 }
 
 void AccountTracker::OnRefreshTokenAvailable(const std::string& account_id) {
+  // Ignore refresh tokens if there is no primary account ID at all.
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+  if (token_service->GetPrimaryAccountId().empty())
+    return;
+
   DVLOG(1) << "AVAILABLE " << account_id;
   ClearAuthError(account_id);
   UpdateSignInState(account_id, true);

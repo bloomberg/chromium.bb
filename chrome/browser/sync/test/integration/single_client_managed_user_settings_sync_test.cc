@@ -28,9 +28,7 @@ class SingleClientManagedUserSettingsSyncTest : public SyncTest {
   }
 };
 
-// TODO(pavely): Fix this test. See also: http://crbug.com/279307
-IN_PROC_BROWSER_TEST_F(SingleClientManagedUserSettingsSyncTest,
-                       DISABLED_Sanity) {
+IN_PROC_BROWSER_TEST_F(SingleClientManagedUserSettingsSyncTest, Sanity) {
   ASSERT_TRUE(SetupClients());
   for (int i = 0; i < num_clients(); ++i) {
     Profile* profile = GetProfile(i);

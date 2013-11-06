@@ -71,13 +71,16 @@ void LocallyManagedUserLoginFlow::HandleOAuthTokenStatusChange(
 void LocallyManagedUserLoginFlow::OnSyncSetupDataLoaded(
     const std::string& token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // TODO(antrim): add error handling (no token loaded).
   ConfigureSync(token);
 }
 
 void LocallyManagedUserLoginFlow::ConfigureSync(const std::string& token) {
   data_loaded_ = true;
-  ManagedUserServiceFactory::GetForProfile(profile_)->InitSync(token);
+  // TODO(antrim): add error handling (no token loaded).
+  // See also: http://crbug.com/312751
+  if (!token.empty())
+    ManagedUserServiceFactory::GetForProfile(profile_)->InitSync(token);
+
   LoginUtils::Get()->DoBrowserLaunch(profile_, host());
   profile_ = NULL;
   UnregisterFlowSoon();

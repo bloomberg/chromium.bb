@@ -14,4 +14,6 @@ const char kForceSafeSearch[] = "ForceSafeSearch";
 const char kSigninAllowed[] = "SigninAllowed";
 const char kUserName[] = "UserName";
 
+const char kManagedUserPseudoEmail[] = "managed_user@localhost";
+
 }  // namespace managed_users

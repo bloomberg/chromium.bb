@@ -78,7 +78,7 @@
 #include "ui/base/l10n/time_format.h"
 
 #if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_constants.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -209,8 +209,8 @@ bool ProfileSyncService::IsSyncEnabledAndLoggedIn() {
 bool ProfileSyncService::IsOAuthRefreshTokenAvailable() {
   if (!oauth2_token_service_)
     return false;
-  return oauth2_token_service_->RefreshTokenIsAvailable(
-      oauth2_token_service_->GetPrimaryAccountId());
+
+  return oauth2_token_service_->RefreshTokenIsAvailable(GetAccountIdToUse());
 }
 
 void ProfileSyncService::Initialize() {
@@ -699,7 +699,7 @@ void ProfileSyncService::OnGetTokenFailure(
 
 void ProfileSyncService::OnRefreshTokenAvailable(
     const std::string& account_id) {
-  if (oauth2_token_service_->GetPrimaryAccountId() == account_id)
+  if (account_id == GetAccountIdToUse())
     OnRefreshTokensLoaded();
 }
 
@@ -1888,7 +1888,7 @@ void ProfileSyncService::RequestAccessToken() {
 
   // Invalidate previous token, otherwise token service will return the same
   // token again.
-  const std::string& account_id = oauth2_token_service_->GetPrimaryAccountId();
+  const std::string& account_id = GetAccountIdToUse();
   if (!access_token_.empty()) {
     oauth2_token_service_->InvalidateToken(
         account_id, oauth2_scopes, access_token_);
@@ -2130,12 +2130,25 @@ std::string ProfileSyncService::GetEffectiveUsername() {
   if (profile_->IsManaged()) {
 #if defined(ENABLE_MANAGED_USERS)
     DCHECK_EQ(std::string(), signin_->GetAuthenticatedUsername());
-    return ManagedUserService::GetManagedUserPseudoEmail();
+    return managed_users::kManagedUserPseudoEmail;
 #else
     NOTREACHED();
 #endif
   }
 
+  return signin_->GetAuthenticatedUsername();
+}
+
+std::string ProfileSyncService::GetAccountIdToUse() {
+  if (profile_->IsManaged()) {
+#if defined(ENABLE_MANAGED_USERS)
+    return managed_users::kManagedUserPseudoEmail;
+#else
+    NOTREACHED();
+#endif
+  }
+
+  // TODO(fgorski): Use GetPrimaryAccountId() when it's available.
   return signin_->GetAuthenticatedUsername();
 }
 

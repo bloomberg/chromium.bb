@@ -43,7 +43,10 @@ void IdentitySigninFlow::Start() {
 
 void IdentitySigninFlow::OnRefreshTokenAvailable(
     const std::string& account_id) {
-  delegate_->SigninSuccess();
+  if (ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
+          GetPrimaryAccountId() == account_id) {
+    delegate_->SigninSuccess();
+  }
 }
 
 }  // namespace extensions

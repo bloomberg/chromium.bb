@@ -16,6 +16,10 @@ extern const char kForceSafeSearch[];
 extern const char kSigninAllowed[];
 extern const char kUserName[];
 
+// A pseudo-email address for systems that expect well-formed email addresses
+// (like Sync), even though we're not signed in.
+extern const char kManagedUserPseudoEmail[];
+
 }  // namespace managed_users
 
 #endif  // CHROME_BROWSER_MANAGED_MODE_MANAGED_USER_CONSTANTS_H_
