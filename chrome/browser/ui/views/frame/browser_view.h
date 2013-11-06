@@ -92,7 +92,6 @@ class BrowserView : public BrowserWindow,
                     public views::WidgetDelegate,
                     public views::WidgetObserver,
                     public views::ClientView,
-                    public ImmersiveModeController::Delegate,
                     public InfoBarContainer::Delegate,
                     public views::SingleSplitViewListener,
                     public gfx::SysColorChangeListener,
@@ -251,6 +250,11 @@ class BrowserView : public BrowserWindow,
   views::Button* window_switcher_button() {
     return window_switcher_button_;
   }
+
+  // Called after the widget's fullscreen state is changed without going through
+  // FullscreenController. This method does any processing which was skipped.
+  // Only exiting fullscreen in this way is currently supported.
+  void FullscreenStateChanged();
 
   // Called from BookmarkBarView/DownloadShelfView during their show/hide
   // animations.
@@ -426,12 +430,6 @@ class BrowserView : public BrowserWindow,
   virtual bool CanClose() OVERRIDE;
   virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE;
   virtual gfx::Size GetMinimumSize() OVERRIDE;
-
-  // ImmersiveModeController::Delegate overrides:
-  virtual FullscreenController* GetFullscreenController() OVERRIDE;
-  virtual void FullscreenStateChanged() OVERRIDE;
-  virtual void SetImmersiveStyle(bool immersive) OVERRIDE;
-  virtual content::WebContents* GetWebContents() OVERRIDE;
 
   // InfoBarContainer::Delegate overrides
   virtual SkColor GetInfoBarSeparatorColor() const OVERRIDE;

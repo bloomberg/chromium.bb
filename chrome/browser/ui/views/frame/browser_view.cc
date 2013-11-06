@@ -969,6 +969,11 @@ void BrowserView::SetWindowSwitcherButton(views::Button* button) {
   window_switcher_button_ = button;
 }
 
+void BrowserView::FullscreenStateChanged() {
+  CHECK(!IsFullscreen());
+  ProcessFullscreen(false, FOR_DESKTOP, GURL(), FEB_TYPE_NONE);
+}
+
 void BrowserView::ToolbarSizeChanged(bool is_animating) {
   // The call to InfoBarContainer::SetMaxTopArrowHeight() below can result in
   // reentrancy; |call_state| tracks whether we're reentrant.  We can't just
@@ -1880,34 +1885,6 @@ void BrowserView::OnOmniboxPopupShownOrHidden() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserView, ImmersiveModeController::Delegate overrides:
-
-FullscreenController* BrowserView::GetFullscreenController() {
-  // Cannot be injected into ImmersiveModeController because it is constructed
-  // after BrowserView.
-  return browser()->fullscreen_controller();
-}
-
-void BrowserView::FullscreenStateChanged() {
-  if (IsFullscreen()) {
-    ProcessFullscreen(true, FOR_DESKTOP, GURL(),
-                      FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION);
-  } else {
-    ProcessFullscreen(false, FOR_DESKTOP, GURL(), FEB_TYPE_NONE);
-  }
-}
-
-void BrowserView::SetImmersiveStyle(bool immersive) {
-  // Only the tab strip changes its painting style for immersive fullscreen.
-  if (tabstrip_)
-    tabstrip_->SetImmersiveStyle(immersive);
-}
-
-WebContents* BrowserView::GetWebContents() {
-  return GetActiveWebContents();
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // BrowserView, InfoBarContainer::Delegate overrides:
 
 SkColor BrowserView::GetInfoBarSeparatorColor() const {
@@ -2025,7 +2002,7 @@ void BrowserView::InitViews() {
   if (window_switcher_button_)
     AddChildView(window_switcher_button_);
 
-  immersive_mode_controller_->Init(this, GetWidget(), top_container_);
+  immersive_mode_controller_->Init(this);
 
   BrowserViewLayout* browser_view_layout = new BrowserViewLayout;
   browser_view_layout->Init(new BrowserViewLayoutDelegateImpl(this),
