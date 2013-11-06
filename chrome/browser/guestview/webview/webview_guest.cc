@@ -439,9 +439,11 @@ bool WebViewGuest::ClearData(const base::Time remove_since,
   if (!partition)
     return false;
 
-  partition->ClearDataForRange(
+  partition->ClearData(
       removal_mask,
       content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
+      NULL,
+      content::StoragePartition::OriginMatcherFunction(),
       remove_since,
       base::Time::Now(),
       callback);

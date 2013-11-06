@@ -26,6 +26,7 @@ class URLRequestContextGetter;
 
 namespace quota {
 class QuotaManager;
+class SpecialStoragePolicy;
 }
 
 namespace webkit_database {
@@ -97,19 +98,26 @@ class StoragePartition {
                                   const GURL& storage_origin,
                                   net::URLRequestContextGetter* rq_context) = 0;
 
-  // Similar to ClearDataForOrigin(), but deletes all data out of the
-  // StoragePartition rather than just the data related to this origin.
-  virtual void ClearDataForUnboundedRange(uint32 remove_mask,
-                                          uint32 quota_storage_remove_mask) = 0;
+  // A callback type to check if a given origin matches a storage policy.
+  // Can be passed empty/null where used, which means the origin will always
+  // match.
+  typedef base::Callback<bool(const GURL&,
+                              quota::SpecialStoragePolicy*)>
+      OriginMatcherFunction;
 
-  // Similar to ClearDataForOrigin(), but deletes all the data out of the
-  // StoragePartion from between the given |begin| and |end| dates rather
-  // then just the data related to this origin.
-  virtual void ClearDataForRange(uint32 remove_mask,
-                                 uint32 quota_storage_remove_mask,
-                                 const base::Time& begin,
-                                 const base::Time& end,
-                                 const base::Closure& callback) = 0;
+  // Similar to ClearDataForOrigin().
+  // Deletes all data out fo the StoragePartition if |storage_origin| is NULL.
+  // |origin_matcher| is present if special storage policy is to be handled,
+  // otherwise the callback can be null (base::Callback::is_null() == true).
+  // |callback| is called when data deletion is done or at least the deletion is
+  // scheduled.
+  virtual void ClearData(uint32 remove_mask,
+                         uint32 quota_storage_remove_mask,
+                         const GURL* storage_origin,
+                         const OriginMatcherFunction& origin_matcher,
+                         const base::Time begin,
+                         const base::Time end,
+                         const base::Closure& callback) = 0;
 
  protected:
   virtual ~StoragePartition() {}

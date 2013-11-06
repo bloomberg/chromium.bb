@@ -28,21 +28,6 @@ namespace content {
 
 namespace {
 
-int GenerateQuotaClientMask(uint32 remove_mask) {
-  int quota_client_mask = 0;
-
-  if (remove_mask & StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS)
-    quota_client_mask |= quota::QuotaClient::kFileSystem;
-  if (remove_mask & StoragePartition::REMOVE_DATA_MASK_WEBSQL)
-    quota_client_mask |= quota::QuotaClient::kDatabase;
-  if (remove_mask & StoragePartition::REMOVE_DATA_MASK_APPCACHE)
-    quota_client_mask |= quota::QuotaClient::kAppcache;
-  if (remove_mask & StoragePartition::REMOVE_DATA_MASK_INDEXEDDB)
-    quota_client_mask |= quota::QuotaClient::kIndexedDatabase;
-
-  return quota_client_mask;
-}
-
 void OnClearedCookies(const base::Closure& callback, int num_deleted) {
   // The final callback needs to happen from UI thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
@@ -77,51 +62,29 @@ void ClearCookiesOnIOThread(
   }
 }
 
+void CheckQuotaManagedDataDeletionStatus(size_t* deletion_task_count,
+                                         const base::Closure& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (*deletion_task_count == 0) {
+    delete deletion_task_count;
+    callback.Run();
+  }
+}
+
 void OnQuotaManagedOriginDeleted(const GURL& origin,
                                  quota::StorageType type,
-                                 size_t* origins_to_delete_count,
+                                 size_t* deletion_task_count,
                                  const base::Closure& callback,
                                  quota::QuotaStatusCode status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK_GT(*origins_to_delete_count, 0u);
+  DCHECK_GT(*deletion_task_count, 0u);
   if (status != quota::kQuotaStatusOk) {
     DLOG(ERROR) << "Couldn't remove data of type " << type << " for origin "
                 << origin << ". Status: " << status;
   }
 
-  (*origins_to_delete_count)--;
-  if (*origins_to_delete_count == 0) {
-    delete origins_to_delete_count;
-    callback.Run();
-  }
-}
-
-void ClearQuotaManagedOriginsOnIOThread(quota::QuotaManager* quota_manager,
-                                        uint32 remove_mask,
-                                        const base::Closure& callback,
-                                        const std::set<GURL>& origins,
-                                        quota::StorageType quota_storage_type) {
-  // The QuotaManager manages all storage other than cookies, LocalStorage,
-  // and SessionStorage. This loop wipes out most HTML5 storage for the given
-  // origins.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  if (!origins.size()) {
-    // No origins to clear.
-    callback.Run();
-    return;
-  }
-
-  size_t* origins_to_delete_count = new size_t(origins.size());
-  for (std::set<GURL>::const_iterator origin = origins.begin();
-       origin != origins.end(); ++origin) {
-    quota_manager->DeleteOriginData(
-        *origin, quota_storage_type,
-        GenerateQuotaClientMask(remove_mask),
-        base::Bind(&OnQuotaManagedOriginDeleted,
-                   origin->GetOrigin(), quota_storage_type,
-                   origins_to_delete_count, callback));
-  }
+  (*deletion_task_count)--;
+  CheckQuotaManagedDataDeletionStatus(deletion_task_count, callback);
 }
 
 void ClearedShaderCache(const base::Closure& callback) {
@@ -145,6 +108,8 @@ void ClearShaderCacheOnIOThread(const base::FilePath& path,
 
 void OnLocalStorageUsageInfo(
     const scoped_refptr<DOMStorageContextWrapper>& dom_storage_context,
+    const scoped_refptr<quota::SpecialStoragePolicy>& special_storage_policy,
+    const StoragePartition::OriginMatcherFunction& origin_matcher,
     const base::Time delete_begin,
     const base::Time delete_end,
     const base::Closure& callback,
@@ -152,6 +117,11 @@ void OnLocalStorageUsageInfo(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   for (size_t i = 0; i < infos.size(); ++i) {
+    if (!origin_matcher.is_null() &&
+        !origin_matcher.Run(infos[i].origin, special_storage_policy.get())) {
+      continue;
+    }
+
     if (infos[i].last_modified >= delete_begin &&
         infos[i].last_modified <= delete_end) {
       dom_storage_context->DeleteLocalStorage(infos[i].origin);
@@ -162,18 +132,27 @@ void OnLocalStorageUsageInfo(
 
 void OnSessionStorageUsageInfo(
     const scoped_refptr<DOMStorageContextWrapper>& dom_storage_context,
+    const scoped_refptr<quota::SpecialStoragePolicy>& special_storage_policy,
+    const StoragePartition::OriginMatcherFunction& origin_matcher,
     const base::Closure& callback,
     const std::vector<SessionStorageUsageInfo>& infos) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  for (size_t i = 0; i < infos.size(); ++i)
+  for (size_t i = 0; i < infos.size(); ++i) {
+    if (!origin_matcher.is_null() &&
+        !origin_matcher.Run(infos[i].origin, special_storage_policy.get())) {
+      continue;
+    }
     dom_storage_context->DeleteSessionStorage(infos[i]);
+  }
 
   callback.Run();
 }
 
 void ClearLocalStorageOnUIThread(
     const scoped_refptr<DOMStorageContextWrapper>& dom_storage_context,
+    const scoped_refptr<quota::SpecialStoragePolicy>& special_storage_policy,
+    const StoragePartition::OriginMatcherFunction& origin_matcher,
     const GURL& remove_origin,
     const base::Time begin,
     const base::Time end,
@@ -181,33 +160,66 @@ void ClearLocalStorageOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!remove_origin.is_empty()) {
-    dom_storage_context->DeleteLocalStorage(remove_origin);
+    bool can_delete = origin_matcher.is_null() ||
+                      origin_matcher.Run(remove_origin,
+                                         special_storage_policy.get());
+    if (can_delete)
+      dom_storage_context->DeleteLocalStorage(remove_origin);
+
     callback.Run();
     return;
   }
 
   dom_storage_context->GetLocalStorageUsage(
       base::Bind(&OnLocalStorageUsageInfo,
-                 dom_storage_context, begin, end, callback));
+                 dom_storage_context, special_storage_policy, origin_matcher,
+                 begin, end, callback));
 }
 
 void ClearSessionStorageOnUIThread(
     const scoped_refptr<DOMStorageContextWrapper>& dom_storage_context,
+    const scoped_refptr<quota::SpecialStoragePolicy>& special_storage_policy,
+    const StoragePartition::OriginMatcherFunction& origin_matcher,
     const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   dom_storage_context->GetSessionStorageUsage(
-      base::Bind(&OnSessionStorageUsageInfo, dom_storage_context, callback));
+      base::Bind(&OnSessionStorageUsageInfo, dom_storage_context,
+                 special_storage_policy, origin_matcher,
+                 callback));
 }
 
 }  // namespace
+
+// Static.
+int StoragePartitionImpl::GenerateQuotaClientMask(uint32 remove_mask) {
+  int quota_client_mask = 0;
+
+  if (remove_mask & StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS)
+    quota_client_mask |= quota::QuotaClient::kFileSystem;
+  if (remove_mask & StoragePartition::REMOVE_DATA_MASK_WEBSQL)
+    quota_client_mask |= quota::QuotaClient::kDatabase;
+  if (remove_mask & StoragePartition::REMOVE_DATA_MASK_APPCACHE)
+    quota_client_mask |= quota::QuotaClient::kAppcache;
+  if (remove_mask & StoragePartition::REMOVE_DATA_MASK_INDEXEDDB)
+    quota_client_mask |= quota::QuotaClient::kIndexedDatabase;
+
+  return quota_client_mask;
+}
 
 // Helper for deleting quota managed data from a partition.
 //
 // Most of the operations in this class are done on IO thread.
 struct StoragePartitionImpl::QuotaManagedDataDeletionHelper {
-  QuotaManagedDataDeletionHelper(const base::Closure& callback)
-      : callback(callback), task_count(0) {
+  QuotaManagedDataDeletionHelper(uint32 remove_mask,
+                                 uint32 quota_storage_remove_mask,
+                                 const GURL& remove_origin,
+                                 const base::Closure& callback)
+      : remove_mask(remove_mask),
+        quota_storage_remove_mask(quota_storage_remove_mask),
+        remove_origin(remove_origin),
+        callback(callback),
+        task_count(0) {
   }
 
   void IncrementTaskCountOnIO();
@@ -216,13 +228,22 @@ struct StoragePartitionImpl::QuotaManagedDataDeletionHelper {
   void ClearDataOnIOThread(
       const scoped_refptr<quota::QuotaManager>& quota_manager,
       const base::Time begin,
-      uint32 remove_mask,
-      uint32 quota_storage_remove_mask,
-      const GURL& remove_origin);
+      const scoped_refptr<quota::SpecialStoragePolicy>& special_storage_policy,
+      const StoragePartition::OriginMatcherFunction& origin_matcher);
 
-  // Accessed on IO thread.
+  void ClearOriginsOnIOThread(
+      quota::QuotaManager* quota_manager,
+      const scoped_refptr<quota::SpecialStoragePolicy>& special_storage_policy,
+      const StoragePartition::OriginMatcherFunction& origin_matcher,
+      const base::Closure& callback,
+      const std::set<GURL>& origins,
+      quota::StorageType quota_storage_type);
+
+  // All of these data are accessed on IO thread.
+  uint32 remove_mask;
+  uint32 quota_storage_remove_mask;
+  GURL remove_origin;
   const base::Closure callback;
-  // Accessed on IO thread.
   int task_count;
 };
 
@@ -237,23 +258,39 @@ struct StoragePartitionImpl::QuotaManagedDataDeletionHelper {
 // forwarded and updated on each (sub) deletion's callback. The instance is
 // finally destroyed when deletion completes (and |callback| is invoked).
 struct StoragePartitionImpl::DataDeletionHelper {
-  DataDeletionHelper(const base::Closure& callback)
-      : callback(callback), task_count(0) {
+  DataDeletionHelper(uint32 remove_mask,
+                     uint32 quota_storage_remove_mask,
+                     const base::Closure& callback)
+                     : remove_mask(remove_mask),
+                       quota_storage_remove_mask(quota_storage_remove_mask),
+                       callback(callback),
+                       task_count(0) {
   }
 
   void IncrementTaskCountOnUI();
   void DecrementTaskCountOnUI();
 
-  void ClearDataOnUIThread(uint32 remove_mask,
-                           uint32 quota_storage_remove_mask,
-                           const GURL& remove_origin,
+  void ClearDataOnUIThread(const GURL* remove_origin,
+                           const OriginMatcherFunction& origin_matcher,
                            const base::FilePath& path,
                            net::URLRequestContextGetter* rq_context,
                            DOMStorageContextWrapper* dom_storage_context,
                            quota::QuotaManager* quota_manager,
+                           quota::SpecialStoragePolicy* special_storage_policy,
                            WebRTCIdentityStore* webrtc_identity_store,
                            const base::Time begin,
                            const base::Time end);
+
+  void ClearQuotaManagedDataOnIOThread(
+      const scoped_refptr<quota::QuotaManager>& quota_manager,
+      const base::Time begin,
+      const GURL& remove_origin,
+      const scoped_refptr<quota::SpecialStoragePolicy>& special_storage_policy,
+      const StoragePartition::OriginMatcherFunction& origin_matcher,
+      const base::Closure& callback);
+
+  uint32 remove_mask;
+  uint32 quota_storage_remove_mask;
 
   // Accessed on UI thread.
   const base::Closure callback;
@@ -261,19 +298,23 @@ struct StoragePartitionImpl::DataDeletionHelper {
   int task_count;
 };
 
-void ClearQuotaManagedDataOnIOThread(
+void StoragePartitionImpl::DataDeletionHelper::ClearQuotaManagedDataOnIOThread(
     const scoped_refptr<quota::QuotaManager>& quota_manager,
     const base::Time begin,
-    uint32 remove_mask,
-    uint32 quota_storage_remove_mask,
     const GURL& remove_origin,
+    const scoped_refptr<quota::SpecialStoragePolicy>& special_storage_policy,
+    const StoragePartition::OriginMatcherFunction& origin_matcher,
     const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   StoragePartitionImpl::QuotaManagedDataDeletionHelper* helper =
-      new StoragePartitionImpl::QuotaManagedDataDeletionHelper(callback);
-  helper->ClearDataOnIOThread(quota_manager, begin,
-      remove_mask, quota_storage_remove_mask, remove_origin);
+      new StoragePartitionImpl::QuotaManagedDataDeletionHelper(
+          remove_mask,
+          quota_storage_remove_mask,
+          remove_origin,
+          callback);
+  helper->ClearDataOnIOThread(quota_manager, begin, special_storage_policy,
+                              origin_matcher);
 }
 
 StoragePartitionImpl::StoragePartitionImpl(
@@ -285,7 +326,8 @@ StoragePartitionImpl::StoragePartitionImpl(
     DOMStorageContextWrapper* dom_storage_context,
     IndexedDBContextImpl* indexed_db_context,
     ServiceWorkerContext* service_worker_context,
-    WebRTCIdentityStore* webrtc_identity_store)
+    WebRTCIdentityStore* webrtc_identity_store,
+    quota::SpecialStoragePolicy* special_storage_policy)
     : partition_path_(partition_path),
       quota_manager_(quota_manager),
       appcache_service_(appcache_service),
@@ -294,7 +336,8 @@ StoragePartitionImpl::StoragePartitionImpl(
       dom_storage_context_(dom_storage_context),
       indexed_db_context_(indexed_db_context),
       service_worker_context_(service_worker_context),
-      webrtc_identity_store_(webrtc_identity_store) {}
+      webrtc_identity_store_(webrtc_identity_store),
+      special_storage_policy_(special_storage_policy) {}
 
 StoragePartitionImpl::~StoragePartitionImpl() {
   // These message loop checks are just to avoid leaks in unittests.
@@ -378,6 +421,9 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
   scoped_refptr<WebRTCIdentityStore> webrtc_identity_store(
       new WebRTCIdentityStore(path, context->GetSpecialStoragePolicy()));
 
+  scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy(
+      context->GetSpecialStoragePolicy());
+
   return new StoragePartitionImpl(partition_path,
                                   quota_manager.get(),
                                   appcache_service.get(),
@@ -386,7 +432,8 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
                                   dom_storage_context.get(),
                                   indexed_db_context.get(),
                                   service_worker_context.get(),
-                                  webrtc_identity_store.get());
+                                  webrtc_identity_store.get(),
+                                  special_storage_policy.get());
 }
 
 base::FilePath StoragePartitionImpl::GetPath() {
@@ -433,19 +480,22 @@ ServiceWorkerContext* StoragePartitionImpl::GetServiceWorkerContext() {
 void StoragePartitionImpl::ClearDataImpl(
     uint32 remove_mask,
     uint32 quota_storage_remove_mask,
-    const GURL& remove_origin,
+    const GURL* remove_origin,
+    const OriginMatcherFunction& origin_matcher,
     net::URLRequestContextGetter* rq_context,
     const base::Time begin,
     const base::Time end,
     const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DataDeletionHelper* helper = new DataDeletionHelper(callback);
+  DataDeletionHelper* helper = new DataDeletionHelper(remove_mask,
+                                                      quota_storage_remove_mask,
+                                                      callback);
   // |helper| deletes itself when done in
   // DataDeletionHelper::DecrementTaskCountOnUI().
-  helper->ClearDataOnUIThread(
-      remove_mask, quota_storage_remove_mask, remove_origin,
-      GetPath(), rq_context, dom_storage_context_, quota_manager_,
-      webrtc_identity_store_, begin, end);
+  helper->ClearDataOnUIThread(remove_origin, origin_matcher, GetPath(),
+                              rq_context, dom_storage_context_, quota_manager_,
+                              special_storage_policy_.get(),
+                              webrtc_identity_store_, begin, end);
 }
 
 void StoragePartitionImpl::
@@ -469,13 +519,8 @@ void StoragePartitionImpl::
 void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
     const scoped_refptr<quota::QuotaManager>& quota_manager,
     const base::Time begin,
-    uint32 remove_mask,
-    uint32 quota_storage_remove_mask,
-    const GURL& remove_origin) {
-  std::set<GURL> origins;
-  if (!remove_origin.is_empty())
-    origins.insert(remove_origin);
-
+    const scoped_refptr<quota::SpecialStoragePolicy>& special_storage_policy,
+    const StoragePartition::OriginMatcherFunction& origin_matcher) {
   IncrementTaskCountOnIO();
   base::Closure decrement_callback = base::Bind(
       &QuotaManagedDataDeletionHelper::DecrementTaskCountOnIO,
@@ -483,52 +528,90 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
 
   if (quota_storage_remove_mask & QUOTA_MANAGED_STORAGE_MASK_PERSISTENT) {
     IncrementTaskCountOnIO();
-    if (origins.empty()) {  // Remove for all origins.
-      // Ask the QuotaManager for all origins with temporary quota modified
-      // within the user-specified timeframe, and deal with the resulting set in
-      // ClearQuotaManagedOriginsOnIOThread().
-      quota_manager->GetOriginsModifiedSince(
-          quota::kStorageTypePersistent, begin,
-          base::Bind(&ClearQuotaManagedOriginsOnIOThread,
-                     quota_manager, remove_mask, decrement_callback));
-    } else {
-      ClearQuotaManagedOriginsOnIOThread(
-          quota_manager, remove_mask, decrement_callback,
-          origins, quota::kStorageTypePersistent);
-    }
+    // Ask the QuotaManager for all origins with persistent quota modified
+    // within the user-specified timeframe, and deal with the resulting set in
+    // ClearQuotaManagedOriginsOnIOThread().
+    quota_manager->GetOriginsModifiedSince(
+        quota::kStorageTypePersistent, begin,
+        base::Bind(&QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread,
+                   base::Unretained(this),
+                   quota_manager,
+                   special_storage_policy,
+                   origin_matcher,
+                   decrement_callback));
   }
 
   // Do the same for temporary quota.
   if (quota_storage_remove_mask & QUOTA_MANAGED_STORAGE_MASK_TEMPORARY) {
     IncrementTaskCountOnIO();
-    if (origins.empty()) {  // Remove for all origins.
-      quota_manager->GetOriginsModifiedSince(
-          quota::kStorageTypeTemporary, begin,
-          base::Bind(&ClearQuotaManagedOriginsOnIOThread,
-                     quota_manager, remove_mask, decrement_callback));
-    } else {
-      ClearQuotaManagedOriginsOnIOThread(
-          quota_manager, remove_mask, decrement_callback,
-          origins, quota::kStorageTypeTemporary);
-    }
+    quota_manager->GetOriginsModifiedSince(
+        quota::kStorageTypeTemporary, begin,
+        base::Bind(&QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread,
+                   base::Unretained(this),
+                   quota_manager,
+                   special_storage_policy,
+                   origin_matcher,
+                   decrement_callback));
   }
 
   // Do the same for syncable quota.
   if (quota_storage_remove_mask & QUOTA_MANAGED_STORAGE_MASK_SYNCABLE) {
     IncrementTaskCountOnIO();
-    if (origins.empty()) {  // Remove for all origins.
-      quota_manager->GetOriginsModifiedSince(
-          quota::kStorageTypeSyncable, begin,
-          base::Bind(&ClearQuotaManagedOriginsOnIOThread,
-                     quota_manager, remove_mask, decrement_callback));
-    } else {
-      ClearQuotaManagedOriginsOnIOThread(
-          quota_manager, remove_mask, decrement_callback,
-          origins, quota::kStorageTypeSyncable);
-    }
+    quota_manager->GetOriginsModifiedSince(
+        quota::kStorageTypeSyncable, begin,
+        base::Bind(&QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread,
+                   base::Unretained(this),
+                   quota_manager,
+                   special_storage_policy,
+                   origin_matcher,
+                   decrement_callback));
   }
 
   DecrementTaskCountOnIO();
+}
+
+void StoragePartitionImpl::
+    QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread(
+        quota::QuotaManager* quota_manager,
+        const scoped_refptr<quota::SpecialStoragePolicy>&
+            special_storage_policy,
+        const StoragePartition::OriginMatcherFunction& origin_matcher,
+        const base::Closure& callback,
+        const std::set<GURL>& origins,
+        quota::StorageType quota_storage_type) {
+  // The QuotaManager manages all storage other than cookies, LocalStorage,
+  // and SessionStorage. This loop wipes out most HTML5 storage for the given
+  // origins.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!origins.size()) {
+    callback.Run();
+    return;
+  }
+
+  size_t* deletion_task_count = new size_t(0u);
+  (*deletion_task_count)++;
+  for (std::set<GURL>::const_iterator origin = origins.begin();
+       origin != origins.end(); ++origin) {
+    // TODO(mkwst): Clean this up, it's slow. http://crbug.com/130746
+    if (!remove_origin.is_empty() && origin->GetOrigin() != remove_origin)
+      continue;
+
+    if (!origin_matcher.is_null() &&
+        !origin_matcher.Run(*origin, special_storage_policy.get())) {
+      continue;
+    }
+
+    (*deletion_task_count)++;
+    quota_manager->DeleteOriginData(
+        *origin, quota_storage_type,
+        StoragePartitionImpl::GenerateQuotaClientMask(remove_mask),
+        base::Bind(&OnQuotaManagedOriginDeleted,
+                   origin->GetOrigin(), quota_storage_type,
+                   deletion_task_count, callback));
+  }
+  (*deletion_task_count)--;
+
+  CheckQuotaManagedDataDeletionStatus(deletion_task_count, callback);
 }
 
 void StoragePartitionImpl::DataDeletionHelper::IncrementTaskCountOnUI() {
@@ -553,13 +636,13 @@ void StoragePartitionImpl::DataDeletionHelper::DecrementTaskCountOnUI() {
 }
 
 void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
-    uint32 remove_mask,
-    uint32 quota_storage_remove_mask,
-    const GURL& remove_origin,
+    const GURL* remove_origin,
+    const OriginMatcherFunction& origin_matcher,
     const base::FilePath& path,
     net::URLRequestContextGetter* rq_context,
     DOMStorageContextWrapper* dom_storage_context,
     quota::QuotaManager* quota_manager,
+    quota::SpecialStoragePolicy* special_storage_policy,
     WebRTCIdentityStore* webrtc_identity_store,
     const base::Time begin,
     const base::Time end) {
@@ -570,13 +653,14 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
   base::Closure decrement_callback = base::Bind(
       &DataDeletionHelper::DecrementTaskCountOnUI, base::Unretained(this));
 
+  GURL origin = remove_origin ? *remove_origin : GURL();
   if (remove_mask & REMOVE_DATA_MASK_COOKIES) {
     // Handle the cookies.
     IncrementTaskCountOnUI();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&ClearCookiesOnIOThread,
-                   make_scoped_refptr(rq_context), begin, end, remove_origin,
+                   make_scoped_refptr(rq_context), begin, end, origin,
                    decrement_callback));
   }
 
@@ -587,9 +671,13 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     IncrementTaskCountOnUI();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&ClearQuotaManagedDataOnIOThread,
-                   make_scoped_refptr(quota_manager), begin,
-                   remove_mask, quota_storage_remove_mask, remove_origin,
+        base::Bind(&DataDeletionHelper::ClearQuotaManagedDataOnIOThread,
+                   base::Unretained(this),
+                   make_scoped_refptr(quota_manager),
+                   begin,
+                   origin,
+                   make_scoped_refptr(special_storage_policy),
+                   origin_matcher,
                    decrement_callback));
   }
 
@@ -597,15 +685,21 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     IncrementTaskCountOnUI();
     ClearLocalStorageOnUIThread(
         make_scoped_refptr(dom_storage_context),
-        remove_origin, begin, end, decrement_callback);
+        make_scoped_refptr(special_storage_policy),
+        origin_matcher,
+        origin, begin, end,
+        decrement_callback);
 
     // ClearDataImpl cannot clear session storage data when a particular origin
     // is specified. Therefore we ignore clearing session storage in this case.
     // TODO(lazyboy): Fix.
-    if (remove_origin.is_empty()) {
+    if (origin.is_empty()) {
       IncrementTaskCountOnUI();
       ClearSessionStorageOnUIThread(
-          make_scoped_refptr(dom_storage_context), decrement_callback);
+          make_scoped_refptr(dom_storage_context),
+          make_scoped_refptr(special_storage_policy),
+          origin_matcher,
+          decrement_callback);
     }
   }
 
@@ -639,30 +733,35 @@ void StoragePartitionImpl::ClearDataForOrigin(
     const GURL& storage_origin,
     net::URLRequestContextGetter* request_context_getter) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ClearDataImpl(remove_mask, quota_storage_remove_mask, storage_origin,
-                request_context_getter, base::Time(), base::Time::Max(),
-                base::Bind(&base::DoNothing));
+  ClearDataImpl(remove_mask, quota_storage_remove_mask, &storage_origin,
+                OriginMatcherFunction(), request_context_getter,
+                base::Time(), base::Time::Max(), base::Bind(&base::DoNothing));
 }
 
-void StoragePartitionImpl::ClearDataForUnboundedRange(
+void StoragePartitionImpl::ClearData(
     uint32 remove_mask,
-    uint32 quota_storage_remove_mask) {
-  ClearDataImpl(remove_mask, quota_storage_remove_mask, GURL(),
-                GetURLRequestContext(), base::Time(), base::Time::Max(),
-                base::Bind(&base::DoNothing));
-}
-
-void StoragePartitionImpl::ClearDataForRange(uint32 remove_mask,
-                                             uint32 quota_storage_remove_mask,
-                                             const base::Time& begin,
-                                             const base::Time& end,
-                                             const base::Closure& callback) {
-  ClearDataImpl(remove_mask, quota_storage_remove_mask, GURL(),
-                GetURLRequestContext(), begin, end, callback);
+    uint32 quota_storage_remove_mask,
+    const GURL* storage_origin,
+    const OriginMatcherFunction& origin_matcher,
+    const base::Time begin,
+    const base::Time end,
+    const base::Closure& callback) {
+  ClearDataImpl(remove_mask, quota_storage_remove_mask, storage_origin,
+                origin_matcher, GetURLRequestContext(), begin, end, callback);
 }
 
 WebRTCIdentityStore* StoragePartitionImpl::GetWebRTCIdentityStore() {
   return webrtc_identity_store_.get();
+}
+
+void StoragePartitionImpl::OverrideQuotaManagerForTesting(
+    quota::QuotaManager* quota_manager) {
+  quota_manager_ = quota_manager;
+}
+
+void StoragePartitionImpl::OverrideSpecialStoragePolicyForTesting(
+    quota::SpecialStoragePolicy* special_storage_policy) {
+  special_storage_policy_ = special_storage_policy;
 }
 
 void StoragePartitionImpl::SetURLRequestContext(

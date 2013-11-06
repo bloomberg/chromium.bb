@@ -15,12 +15,22 @@
 #include "content/browser/service_worker/service_worker_context.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/storage_partition.h"
+#include "webkit/browser/quota/special_storage_policy.h"
 
 namespace content {
 
 class StoragePartitionImpl : public StoragePartition {
  public:
   CONTENT_EXPORT virtual ~StoragePartitionImpl();
+
+  // Quota managed data uses a different bitmask for types than
+  // StoragePartition uses. This method generates that mask.
+  CONTENT_EXPORT static int GenerateQuotaClientMask(uint32 remove_mask);
+
+  CONTENT_EXPORT void OverrideQuotaManagerForTesting(
+      quota::QuotaManager* quota_manager);
+  CONTENT_EXPORT void OverrideSpecialStoragePolicyForTesting(
+      quota::SpecialStoragePolicy* special_storage_policy);
 
   // StoragePartition interface.
   virtual base::FilePath GetPath() OVERRIDE;
@@ -38,14 +48,13 @@ class StoragePartitionImpl : public StoragePartition {
       uint32 quota_storage_remove_mask,
       const GURL& storage_origin,
       net::URLRequestContextGetter* request_context_getter) OVERRIDE;
-  virtual void ClearDataForUnboundedRange(
-      uint32 remove_mask,
-      uint32 quota_storage_remove_mask) OVERRIDE;
-  virtual void ClearDataForRange(uint32 remove_mask,
-                                 uint32 quota_storage_remove_mask,
-                                 const base::Time& begin,
-                                 const base::Time& end,
-                                 const base::Closure& callback) OVERRIDE;
+  virtual void ClearData(uint32 remove_mask,
+                         uint32 quota_storage_remove_mask,
+                         const GURL* storage_origin,
+                         const OriginMatcherFunction& origin_matcher,
+                         const base::Time begin,
+                         const base::Time end,
+                         const base::Closure& callback) OVERRIDE;
 
   ServiceWorkerContext* GetServiceWorkerContext();
 
@@ -57,6 +66,36 @@ class StoragePartitionImpl : public StoragePartition {
  private:
   friend class StoragePartitionImplMap;
   FRIEND_TEST_ALL_PREFIXES(StoragePartitionShaderClearTest, ClearShaderCache);
+  FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest,
+                           RemoveQuotaManagedDataForeverBoth);
+  FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest,
+                           RemoveQuotaManagedDataForeverOnlyTemporary);
+  FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest,
+                           RemoveQuotaManagedDataForeverOnlyPersistent);
+  FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest,
+                           RemoveQuotaManagedDataForeverNeither);
+  FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest,
+                           RemoveQuotaManagedDataForeverSpecificOrigin);
+  FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest,
+                           RemoveQuotaManagedDataForLastHour);
+  FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest,
+                           RemoveQuotaManagedDataForLastWeek);
+  FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest,
+                           RemoveQuotaManagedUnprotectedOrigins);
+  FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest,
+                           RemoveQuotaManagedProtectedSpecificOrigin);
+  FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest,
+                           RemoveQuotaManagedProtectedOrigins);
+  FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest,
+                           RemoveQuotaManagedIgnoreDevTools);
+  FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest, RemoveCookieForever);
+  FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest, RemoveCookieLastHour);
+  FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest,
+                           RemoveUnprotectedLocalStorageForever);
+  FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest,
+                           RemoveProtectedLocalStorageForever);
+  FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest,
+                           RemoveLocalStorageForLastWeek);
 
   // The |partition_path| is the absolute path to the root of this
   // StoragePartition's on-disk storage.
@@ -68,10 +107,6 @@ class StoragePartitionImpl : public StoragePartition {
                                       bool in_memory,
                                       const base::FilePath& profile_path);
 
-  // Quota managed data uses a different bitmask for types than
-  // StoragePartition uses. This method generates that mask.
-  static int GenerateQuotaClientMask(uint32 remove_mask);
-
   CONTENT_EXPORT StoragePartitionImpl(
       const base::FilePath& partition_path,
       quota::QuotaManager* quota_manager,
@@ -81,11 +116,13 @@ class StoragePartitionImpl : public StoragePartition {
       DOMStorageContextWrapper* dom_storage_context,
       IndexedDBContextImpl* indexed_db_context,
       ServiceWorkerContext* service_worker_context,
-      WebRTCIdentityStore* webrtc_identity_store);
+      WebRTCIdentityStore* webrtc_identity_store,
+      quota::SpecialStoragePolicy* special_storage_policy);
 
   void ClearDataImpl(uint32 remove_mask,
                      uint32 quota_storage_remove_mask,
-                     const GURL& remove_origin,
+                     const GURL* remove_origin,
+                     const OriginMatcherFunction& origin_matcher,
                      net::URLRequestContextGetter* rq_context,
                      const base::Time begin,
                      const base::Time end,
@@ -103,7 +140,8 @@ class StoragePartitionImpl : public StoragePartition {
   // appropriate time.  These should move back into the constructor once
   // URLRequestContextGetter's lifetime is sorted out. We should also move the
   // PostCreateInitialization() out of StoragePartitionImplMap.
-  void SetURLRequestContext(net::URLRequestContextGetter* url_request_context);
+  CONTENT_EXPORT void SetURLRequestContext(
+      net::URLRequestContextGetter* url_request_context);
   void SetMediaURLRequestContext(
       net::URLRequestContextGetter* media_url_request_context);
 
@@ -118,6 +156,7 @@ class StoragePartitionImpl : public StoragePartition {
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
   scoped_refptr<ServiceWorkerContext> service_worker_context_;
   scoped_refptr<WebRTCIdentityStore> webrtc_identity_store_;
+  scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(StoragePartitionImpl);
 };

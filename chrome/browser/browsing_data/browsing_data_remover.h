@@ -29,6 +29,7 @@ class Profile;
 
 namespace content {
 class PluginDataRemover;
+class StoragePartition;
 }
 
 namespace disk_cache {
@@ -158,10 +159,6 @@ class BrowsingDataRemover
   // Calculate the begin time for the deletion range specified by |time_period|.
   static base::Time CalculateBeginDeleteTime(TimePeriod time_period);
 
-  // Quota managed data uses a different bitmask for types than
-  // BrowsingDataRemover uses. This method generates that mask.
-  static int GenerateQuotaClientMask(int remove_mask);
-
   // Is the BrowsingDataRemover currently in the process of removing data?
   static bool is_removing() { return is_removing_; }
 
@@ -176,7 +173,8 @@ class BrowsingDataRemover
   void OnHistoryDeletionDone();
 
   // Used for testing.
-  void OverrideQuotaManagerForTesting(quota::QuotaManager* quota_manager);
+  void OverrideStoragePartitionForTesting(
+      content::StoragePartition* storage_partition);
 
  private:
   // The clear API needs to be able to toggle removing_ in order to test that
@@ -305,44 +303,6 @@ class BrowsingDataRemover
   void ClearPnaclCacheOnIOThread(base::Time begin, base::Time end);
 #endif
 
-  // Invoked on the UI thread to delete local storage.
-  void ClearLocalStorageOnUIThread();
-
-  // Callback to deal with the list gathered in ClearLocalStorageOnUIThread.
-  void OnGotLocalStorageUsageInfo(
-      const std::vector<content::LocalStorageUsageInfo>& infos);
-
-  // Invoked on the UI thread to delete session storage.
-  void ClearSessionStorageOnUIThread();
-
-  // Callback to deal with the list gathered in ClearSessionStorageOnUIThread.
-  void OnGotSessionStorageUsageInfo(
-      const std::vector<content::SessionStorageUsageInfo>& infos);
-
-  // Invoked on the IO thread to delete all storage types managed by the quota
-  // system: AppCache, Databases, FileSystems.
-  void ClearQuotaManagedDataOnIOThread();
-
-  // Callback to respond to QuotaManager::GetOriginsModifiedSince, which is the
-  // core of 'ClearQuotaManagedDataOnIOThread'.
-  void OnGotQuotaManagedOrigins(const std::set<GURL>& origins,
-                                quota::StorageType type);
-
-  // Callback responding to deletion of a single quota managed origin's
-  // persistent data
-  void OnQuotaManagedOriginDeletion(const GURL& origin,
-                                    quota::StorageType type,
-                                    quota::QuotaStatusCode);
-
-  // Called to check whether all temporary and persistent origin data that
-  // should be deleted has been deleted. If everything's good to go, invokes
-  // OnQuotaManagedDataDeleted on the UI thread.
-  void CheckQuotaManagedDataDeletionStatus();
-
-  // Completion handler that runs on the UI thread once persistent data has been
-  // deleted. Updates the waiting flag and invokes NotifyAndDeleteIfDone.
-  void OnQuotaManagedDataDeleted();
-
   // Callback for when Cookies has been deleted. Invokes NotifyAndDeleteIfDone.
   void OnClearedCookies(int num_deleted);
 
@@ -369,28 +329,15 @@ class BrowsingDataRemover
   // been deleted.
   void OnClearedAutofillOriginURLs();
 
-  // Callback for when the shader cache has been deleted.
-  // Invokes NotifyAndDeleteIfDone.
-  void ClearedShaderCache();
 
-  // Invoked on the IO thread to delete from the shader cache.
-  void ClearShaderCacheOnUIThread();
-
-  // Callback on UI thread when the WebRTC identities are cleared.
-  void OnClearWebRTCIdentityStore();
+  // Callback on UI thread when the storage partition related data are cleared.
+  void OnClearedStoragePartitionData();
 
   // Returns true if we're all done.
   bool AllDone();
 
   // Profile we're to remove from.
   Profile* profile_;
-
-  // The QuotaManager is owned by the profile; we can use a raw pointer here,
-  // and rely on the profile to destroy the object whenever it's reasonable.
-  quota::QuotaManager* quota_manager_;
-
-  // The DOMStorageContext is owned by the profile; we'll store a raw pointer.
-  content::DOMStorageContext* dom_storage_context_;
 
   // 'Protected' origins are not subject to data removal.
   scoped_refptr<ExtensionSpecialStoragePolicy> special_storage_policy_;
@@ -431,25 +378,16 @@ class BrowsingDataRemover
   bool waiting_for_clear_form_;
   bool waiting_for_clear_history_;
   bool waiting_for_clear_hostname_resolution_cache_;
-  bool waiting_for_clear_local_storage_;
+  bool waiting_for_clear_keyword_data_;
   bool waiting_for_clear_logged_in_predictor_;
   bool waiting_for_clear_nacl_cache_;
   bool waiting_for_clear_network_predictor_;
   bool waiting_for_clear_networking_history_;
+  bool waiting_for_clear_platform_keys_;
   bool waiting_for_clear_plugin_data_;
   bool waiting_for_clear_pnacl_cache_;
-  bool waiting_for_clear_quota_managed_data_;
   bool waiting_for_clear_server_bound_certs_;
-  bool waiting_for_clear_session_storage_;
-  bool waiting_for_clear_shader_cache_;
-  bool waiting_for_clear_webrtc_identity_store_;
-  bool waiting_for_clear_keyword_data_;
-  bool waiting_for_clear_platform_keys_;
-
-  // Tracking how many origins need to be deleted, and whether we're finished
-  // gathering origins.
-  int quota_managed_origins_to_delete_count_;
-  int quota_managed_storage_types_to_delete_count_;
+  bool waiting_for_clear_storage_partition_data_;
 
   // The removal mask for the current removal operation.
   int remove_mask_;
@@ -466,6 +404,9 @@ class BrowsingDataRemover
   CancelableTaskTracker history_task_tracker_;
 
   scoped_ptr<TemplateURLService::Subscription> template_url_sub_;
+
+  // We do not own this.
+  content::StoragePartition* storage_partition_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemover);
 };
