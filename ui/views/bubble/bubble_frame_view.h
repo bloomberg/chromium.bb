@@ -50,6 +50,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   virtual void Layout() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
   virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
+  virtual void OnThemeChanged() OVERRIDE;
 
   // Overridden from ButtonListener:
   virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;

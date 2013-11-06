@@ -213,6 +213,12 @@ void BubbleFrameView::ChildPreferredSizeChanged(View* child) {
     Layout();
 }
 
+void BubbleFrameView::OnThemeChanged() {
+  UpdateWindowTitle();
+  ResetWindowControls();
+  UpdateWindowIcon();
+}
+
 void BubbleFrameView::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == close_)
     GetWidget()->Close();
