@@ -97,7 +97,7 @@ void SelectEventsForRootWindow() {
                  StructureNotifyMask | attr.your_event_mask);
   }
 
-  if (!ui::IsXInput2Available())
+  if (!base::MessagePumpForUI::HasXInput2())
     return;
 
   unsigned char mask[XIMaskLen(XI_LASTEVENT)] = {};
@@ -398,7 +398,7 @@ RootWindowHostX11::RootWindowHostX11(const gfx::Rect& bounds)
   XSelectInput(xdisplay_, xwindow_, event_mask);
   XFlush(xdisplay_);
 
-  if (ui::IsXInput2Available())
+  if (base::MessagePumpForUI::HasXInput2())
     ui::TouchFactory::GetInstance()->SetupXI2ForXWindow(xwindow_);
 
   SelectEventsForRootWindow();
@@ -1057,8 +1057,6 @@ void RootWindowHostX11::UpdateIsInternalDisplay() {
 
 void RootWindowHostX11::SetCrOSTapPaused(bool state) {
 #if defined(OS_CHROMEOS)
-  if (!ui::IsXInput2Available())
-    return;
   // Temporarily pause tap-to-click when the cursor is hidden.
   Atom prop = atom_cache_.GetAtom("Tap Paused");
   unsigned char value = state;

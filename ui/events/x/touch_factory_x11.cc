@@ -18,7 +18,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "ui/events/event_switches.h"
-#include "ui/events/x/device_data_manager.h"
 #include "ui/events/x/device_list_cache_x.h"
 #include "ui/gfx/x/x11_types.h"
 
@@ -30,8 +29,10 @@ TouchFactory::TouchFactory()
       touch_events_disabled_(false),
       touch_device_list_(),
       id_generator_(0) {
-  if (!DeviceDataManager::GetInstance()->IsXInput2Available())
+#if defined(USE_AURA)
+  if (!base::MessagePumpForUI::HasXInput2())
     return;
+#endif
 
   XDisplay* display = gfx::GetXDisplay();
   UpdateDeviceList(display);
@@ -99,9 +100,6 @@ void TouchFactory::UpdateDeviceList(Display* display) {
     }
   }
 #endif
-
-  if (!DeviceDataManager::GetInstance()->IsXInput2Available())
-    return;
 
   // Instead of asking X for the list of devices all the time, let's maintain a
   // list of pointer devices we care about.

@@ -51,9 +51,7 @@ namespace ui {
 
 // Check if there's an open connection to an X server.
 UI_EXPORT bool XDisplayExists();
-
-// Returns true if the system supports XINPUT2.
-UI_EXPORT bool IsXInput2Available();
+// Return an X11 connection for the current, primary display.
 
 // X shared memory comes in three flavors:
 // 1) No SHM support,

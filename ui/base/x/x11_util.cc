@@ -266,10 +266,6 @@ bool XDisplayExists() {
   return (gfx::GetXDisplay() != NULL);
 }
 
-bool IsXInput2Available() {
-  return DeviceDataManager::GetInstance()->IsXInput2Available();
-}
-
 static SharedMemorySupport DoQuerySharedMemorySupport(XDisplay* dpy) {
   int dummy;
   Bool pixmaps_supported;

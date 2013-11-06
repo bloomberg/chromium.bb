@@ -53,7 +53,7 @@ GSourceFuncs XSourceFuncs = {
 Display* g_xdisplay = NULL;
 int g_xinput_opcode = -1;
 
-bool InitializeXInput2() {
+bool InitializeXInput2Internal() {
   Display* display = MessagePumpX11::GetDefaultXDisplay();
   if (!display)
     return false;
@@ -95,6 +95,11 @@ Window FindEventTarget(const NativeEvent& xev) {
     target = static_cast<XIDeviceEvent*>(xev->xcookie.data)->event;
   }
   return target;
+}
+
+bool InitializeXInput2() {
+  static bool xinput2_supported = InitializeXInput2Internal();
+  return xinput2_supported;
 }
 
 bool InitializeXkb() {
@@ -146,6 +151,11 @@ Display* MessagePumpX11::GetDefaultXDisplay() {
   if (!g_xdisplay)
     g_xdisplay = XOpenDisplay(NULL);
   return g_xdisplay;
+}
+
+// static
+bool MessagePumpX11::HasXInput2() {
+  return InitializeXInput2();
 }
 
 #if defined(TOOLKIT_GTK)

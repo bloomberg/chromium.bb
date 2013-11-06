@@ -103,9 +103,6 @@ class EVENTS_EXPORT DeviceDataManager {
     natural_scroll_enabled_ = enabled;
   }
 
-  // Returns if XInput2 is available on the system.
-  bool IsXInput2Available() const;
-
   // Get the natural scroll direction multiplier (1.0f or -1.0f).
   float GetNaturalScrollFactor(int sourceid) const;
 

@@ -25,7 +25,6 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/x/device_data_manager.h"
-#include "ui/events/x/device_list_cache_x.h"
 #include "ui/events/x/touch_factory_x11.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/path.h"
@@ -935,7 +934,7 @@ void DesktopRootWindowHostX11::InitX11Window(
   XSelectInput(xdisplay_, xwindow_, event_mask);
   XFlush(xdisplay_);
 
-  if (ui::IsXInput2Available())
+  if (base::MessagePumpForUI::HasXInput2())
     ui::TouchFactory::GetInstance()->SetupXI2ForXWindow(xwindow_);
 
   // TODO(erg): We currently only request window deletion events. We also
