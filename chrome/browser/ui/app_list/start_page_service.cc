@@ -11,6 +11,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
+#include "chrome/browser/media/media_stream_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/recommended_apps.h"
 #include "chrome/common/chrome_switches.h"
@@ -22,6 +23,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 
 namespace app_list {
 
@@ -90,6 +92,24 @@ class StartPageService::ProfileDestroyObserver
   DISALLOW_COPY_AND_ASSIGN(ProfileDestroyObserver);
 };
 
+class StartPageService::StartPageWebContentsDelegate
+    : public content::WebContentsDelegate {
+ public:
+  StartPageWebContentsDelegate() {}
+  virtual ~StartPageWebContentsDelegate() {}
+
+  virtual void RequestMediaAccessPermission(
+      content::WebContents* web_contents,
+      const content::MediaStreamRequest& request,
+      const content::MediaResponseCallback& callback) OVERRIDE {
+    if (MediaStreamInfoBarDelegate::Create(web_contents, request, callback))
+      NOTREACHED() << "Media stream not allowed for WebUI";
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(StartPageWebContentsDelegate);
+};
+
 // static
 StartPageService* StartPageService::Get(Profile* profile) {
   return Factory::GetForProfile(profile);
@@ -101,6 +121,8 @@ StartPageService::StartPageService(Profile* profile)
       recommended_apps_(new RecommendedApps(profile)) {
   contents_.reset(content::WebContents::Create(
       content::WebContents::CreateParams(profile_)));
+  contents_delegate_.reset(new StartPageWebContentsDelegate());
+  contents_->SetDelegate(contents_delegate_.get());
 
   GURL url(chrome::kChromeUIAppListStartPageURL);
   CommandLine* command_line = CommandLine::ForCurrentProcess();
