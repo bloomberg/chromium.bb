@@ -438,7 +438,9 @@ bool Command::Parse(const base::DictionaryValue* command,
 
   // Check if this is a global or a regular shortcut.
   bool global = false;
-  command->GetBoolean(keys::kGlobal, &global);
+  if (FeatureSwitch::global_commands()->IsEnabled() &&
+      chrome::VersionInfo::GetChannel() <= chrome::VersionInfo::CHANNEL_DEV)
+    command->GetBoolean(keys::kGlobal, &global);
 
   // Normalize the suggestions.
   for (SuggestionMap::iterator iter = suggestions.begin();

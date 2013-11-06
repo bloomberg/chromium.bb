@@ -4919,7 +4919,7 @@ Make sure you do not expose any sensitive information.
         Keyboard shortcuts
       </message>
       <message name="IDS_EXTENSION_COMMANDS_DIALOG_TITLE" desc="Title of extension commands dialog">
-        Keyboard Shortcuts for Extensions
+        Keyboard Shortcuts for Extensions and Apps
       </message>
       <message name="IDS_EXTENSION_COMMANDS_EMPTY" desc="The heading of the extension commands dialog when there are no commands to show.">
         No extensions have keyboard shortcuts assigned.
