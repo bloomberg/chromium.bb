@@ -9,6 +9,7 @@
       'mac_bundle': 1,
       'mac_bundle_resources': [
         'secret.txt',
+        'executable-file.sh',
       ],
     },
     # A rule with process_outputs_as_mac_bundle_resources should copy files

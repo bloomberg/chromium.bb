@@ -48,6 +48,9 @@ class MacTool(object):
     extension = os.path.splitext(source)[1].lower()
     if os.path.isdir(source):
       # Copy tree.
+      # TODO(thakis): This copies file attributes like mtime, while the
+      # single-file branch below doesn't. This should probably be changed to
+      # be consistent with the single-file branch.
       if os.path.exists(dest):
         shutil.rmtree(dest)
       shutil.copytree(source, dest)
@@ -58,7 +61,7 @@ class MacTool(object):
     elif extension == '.strings':
       self._CopyStringsFile(source, dest)
     else:
-      shutil.copyfile(source, dest)
+      shutil.copy(source, dest)
 
   def _CopyXIBFile(self, source, dest):
     """Compiles a XIB file with ibtool into a binary plist in the bundle."""
