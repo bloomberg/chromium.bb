@@ -93,6 +93,8 @@ void WebKitPlatformSupportChildImpl::didStopWorkerRunLoop(
 
 WebKit::WebDiscardableMemory*
 WebKitPlatformSupportChildImpl::allocateAndLockDiscardableMemory(size_t bytes) {
+  if (!base::DiscardableMemory::SupportedNatively())
+    return NULL;
   return WebDiscardableMemoryImpl::CreateLockedMemory(bytes).release();
 }
 
