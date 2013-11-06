@@ -1438,7 +1438,7 @@ bool FrameLoader::shouldInterruptLoadForXFrameOptions(const String& content, con
         for (Frame* frame = m_frame->tree().parent(); frame; frame = frame->tree().parent()) {
             if (!origin->isSameSchemeHostPort(frame->document()->securityOrigin())) {
                 UseCounter::count(m_frame->domWindow(), UseCounter::XFrameOptionsSameOriginWithBadAncestorChain);
-                return true;
+                break;
             }
         }
         return false;
