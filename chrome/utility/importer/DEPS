@@ -1,4 +1,6 @@
 include_rules = [
   # For PasswordForm.
   "+components/autofill/core/common",
+
+  "+skia/ext",
 ]

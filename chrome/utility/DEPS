@@ -6,6 +6,5 @@ include_rules = [
   # For generated headers.
   "+grit",
 
-  "+skia/ext",
-  "+media",
+  "+media/base",
 ]
