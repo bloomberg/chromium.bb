@@ -8,7 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(OS_LINUX) && !defined(USE_OZONE)
 #include <pango/pango.h>
 #elif defined(OS_WIN)
 #include "ui/gfx/platform_font_win.h"
@@ -22,7 +22,7 @@ class FontTest : public testing::Test {
   // Fulfills the memory management contract as outlined by the comment at
   // gfx::Font::GetNativeFont().
   void FreeIfNecessary(NativeFont font) {
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(OS_LINUX) && !defined(USE_OZONE)
     pango_font_description_free(font);
 #endif
   }

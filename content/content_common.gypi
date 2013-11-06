@@ -173,6 +173,7 @@
     'common/font_list.h',
     'common/font_list_android.cc',
     'common/font_list_mac.mm',
+    'common/font_list_ozone.cc',
     'common/font_list_pango.cc',
     'common/font_list_win.cc',
     'common/gamepad_hardware_buffer.h',

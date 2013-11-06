@@ -110,5 +110,8 @@
                     ['exclude', '(^|/)evdev/'],
       ]
     }],
+    ['<(use_pango)==0', {
+      'sources/': [ ['exclude', '(^|_)pango(_util|_browsertest|_unittest)?\\.(h|cc)$'], ],
+    }],
   ]
 }

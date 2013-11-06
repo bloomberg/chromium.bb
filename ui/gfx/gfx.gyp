@@ -168,6 +168,7 @@
         'platform_font_ios.mm',
         'platform_font_mac.h',
         'platform_font_mac.mm',
+        'platform_font_ozone.cc',
         'platform_font_pango.cc',
         'platform_font_pango.h',
         'platform_font_win.cc',
@@ -197,10 +198,11 @@
         'rect_f.h',
         'render_text.cc',
         'render_text.h',
-        'render_text_linux.cc',
-        'render_text_linux.h',
         'render_text_mac.cc',
         'render_text_mac.h',
+        'render_text_ozone.cc',
+        'render_text_pango.cc',
+        'render_text_pango.h',
         'render_text_win.cc',
         'render_text_win.h',
         'safe_integer_conversions.h',
@@ -300,12 +302,6 @@
         }, {  # use_canvas_skia!=1
           'sources!': [
             'canvas_skia.cc',
-          ],
-        }],
-        ['use_pango==0', {
-          'sources/': [
-            ['exclude', '^pango_util\\.'],
-            ['exclude', '^platform_font_pango\\.'],
           ],
         }],
         ['toolkit_uses_gtk == 1', {

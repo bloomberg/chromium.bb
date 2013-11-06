@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_RENDER_TEXT_LINUX_H_
-#define UI_GFX_RENDER_TEXT_LINUX_H_
+#ifndef UI_GFX_RENDER_TEXT_PANGO_H_
+#define UI_GFX_RENDER_TEXT_PANGO_H_
 
 #include <pango/pango.h>
 #include <vector>
@@ -12,11 +12,11 @@
 
 namespace gfx {
 
-// RenderTextLinux is the Linux implementation of RenderText using Pango.
-class RenderTextLinux : public RenderText {
+// RenderTextPango is the Linux implementation of RenderText using Pango.
+class RenderTextPango : public RenderText {
  public:
-  RenderTextLinux();
-  virtual ~RenderTextLinux();
+  RenderTextPango();
+  virtual ~RenderTextPango();
 
   // Overridden from RenderText:
   virtual Size GetStringSize() OVERRIDE;
@@ -80,9 +80,9 @@ class RenderTextLinux : public RenderText {
   // The text in the |layout_|.
   const char* layout_text_;
 
-  DISALLOW_COPY_AND_ASSIGN(RenderTextLinux);
+  DISALLOW_COPY_AND_ASSIGN(RenderTextPango);
 };
 
 }  // namespace gfx
 
-#endif  // UI_GFX_RENDER_TEXT_LINUX_H_
+#endif  // UI_GFX_RENDER_TEXT_PANGO_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/render_text_linux.h"
+#include "ui/gfx/render_text_pango.h"
 
 #include <pango/pangocairo.h>
 #include <algorithm>
@@ -67,7 +67,7 @@ void SetPangoUnderlineMetrics(PangoFontDescription *desc,
 // Since caret_pos is used internally, we could save utf8 index for caret_pos
 // to avoid conversion.
 
-RenderTextLinux::RenderTextLinux()
+RenderTextPango::RenderTextPango()
     : layout_(NULL),
       current_line_(NULL),
       log_attrs_(NULL),
@@ -75,11 +75,11 @@ RenderTextLinux::RenderTextLinux()
       layout_text_(NULL) {
 }
 
-RenderTextLinux::~RenderTextLinux() {
+RenderTextPango::~RenderTextPango() {
   ResetLayout();
 }
 
-Size RenderTextLinux::GetStringSize() {
+Size RenderTextPango::GetStringSize() {
   EnsureLayout();
   int width = 0, height = 0;
   pango_layout_get_pixel_size(layout_, &width, &height);
@@ -91,7 +91,7 @@ Size RenderTextLinux::GetStringSize() {
   return Size(width, std::max(height, font_list().GetHeight()));
 }
 
-SelectionModel RenderTextLinux::FindCursorPosition(const Point& point) {
+SelectionModel RenderTextPango::FindCursorPosition(const Point& point) {
   EnsureLayout();
 
   if (text().empty())
@@ -120,7 +120,7 @@ SelectionModel RenderTextLinux::FindCursorPosition(const Point& point) {
                         (trailing > 0) ? CURSOR_BACKWARD : CURSOR_FORWARD);
 }
 
-std::vector<RenderText::FontSpan> RenderTextLinux::GetFontSpansForTesting() {
+std::vector<RenderText::FontSpan> RenderTextPango::GetFontSpansForTesting() {
   EnsureLayout();
 
   std::vector<RenderText::FontSpan> spans;
@@ -137,12 +137,12 @@ std::vector<RenderText::FontSpan> RenderTextLinux::GetFontSpansForTesting() {
   return spans;
 }
 
-int RenderTextLinux::GetLayoutTextBaseline() {
+int RenderTextPango::GetLayoutTextBaseline() {
   EnsureLayout();
   return PANGO_PIXELS(pango_layout_get_baseline(layout_));
 }
 
-SelectionModel RenderTextLinux::AdjacentCharSelectionModel(
+SelectionModel RenderTextPango::AdjacentCharSelectionModel(
     const SelectionModel& selection,
     VisualCursorDirection direction) {
   GSList* run = GetRunContainingCaret(selection);
@@ -182,7 +182,7 @@ SelectionModel RenderTextLinux::AdjacentCharSelectionModel(
       FirstSelectionModelInsideRun(item) : LastSelectionModelInsideRun(item);
 }
 
-SelectionModel RenderTextLinux::AdjacentWordSelectionModel(
+SelectionModel RenderTextPango::AdjacentWordSelectionModel(
     const SelectionModel& selection,
     VisualCursorDirection direction) {
   if (obscured())
@@ -210,14 +210,14 @@ SelectionModel RenderTextLinux::AdjacentWordSelectionModel(
   return cur;
 }
 
-Range RenderTextLinux::GetGlyphBounds(size_t index) {
+Range RenderTextPango::GetGlyphBounds(size_t index) {
   PangoRectangle pos;
   pango_layout_index_to_pos(layout_, TextIndexToLayoutIndex(index), &pos);
   // TODO(derat): Support fractional ranges for subpixel positioning?
   return Range(PANGO_PIXELS(pos.x), PANGO_PIXELS(pos.x + pos.width));
 }
 
-std::vector<Rect> RenderTextLinux::GetSubstringBounds(const Range& range) {
+std::vector<Rect> RenderTextPango::GetSubstringBounds(const Range& range) {
   DCHECK_LE(range.GetMax(), text().length());
   if (range.is_empty())
     return std::vector<Rect>();
@@ -246,7 +246,7 @@ std::vector<Rect> RenderTextLinux::GetSubstringBounds(const Range& range) {
   return bounds;
 }
 
-size_t RenderTextLinux::TextIndexToLayoutIndex(size_t index) const {
+size_t RenderTextPango::TextIndexToLayoutIndex(size_t index) const {
   DCHECK(layout_);
   ptrdiff_t offset = gfx::UTF16IndexToOffset(text(), 0, index);
   // Clamp layout indices to the length of the text actually used for layout.
@@ -255,14 +255,14 @@ size_t RenderTextLinux::TextIndexToLayoutIndex(size_t index) const {
   return (layout_pointer - layout_text_);
 }
 
-size_t RenderTextLinux::LayoutIndexToTextIndex(size_t index) const {
+size_t RenderTextPango::LayoutIndexToTextIndex(size_t index) const {
   DCHECK(layout_);
   const char* layout_pointer = layout_text_ + index;
   const long offset = g_utf8_pointer_to_offset(layout_text_, layout_pointer);
   return gfx::UTF16OffsetToIndex(text(), 0, offset);
 }
 
-bool RenderTextLinux::IsCursorablePosition(size_t position) {
+bool RenderTextPango::IsCursorablePosition(size_t position) {
   if (position == 0 && text().empty())
     return true;
   if (position >= text().length())
@@ -279,7 +279,7 @@ bool RenderTextLinux::IsCursorablePosition(size_t position) {
           offset < g_utf8_strlen(layout_text_, -1));
 }
 
-void RenderTextLinux::ResetLayout() {
+void RenderTextPango::ResetLayout() {
   // set_cached_bounds_and_offset_valid(false) is done in RenderText for every
   // operation that triggers ResetLayout().
   if (layout_) {
@@ -299,7 +299,7 @@ void RenderTextLinux::ResetLayout() {
   layout_text_ = NULL;
 }
 
-void RenderTextLinux::EnsureLayout() {
+void RenderTextPango::EnsureLayout() {
   if (layout_ == NULL) {
     cairo_surface_t* surface =
         cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 0, 0);
@@ -338,7 +338,7 @@ void RenderTextLinux::EnsureLayout() {
   }
 }
 
-void RenderTextLinux::SetupPangoAttributes(PangoLayout* layout) {
+void RenderTextPango::SetupPangoAttributes(PangoLayout* layout) {
   PangoAttrList* attrs = pango_attr_list_new();
 
   // Splitting text runs to accommodate styling can break Arabic glyph shaping.
@@ -373,7 +373,7 @@ void RenderTextLinux::SetupPangoAttributes(PangoLayout* layout) {
   pango_attr_list_unref(attrs);
 }
 
-void RenderTextLinux::DrawVisualText(Canvas* canvas) {
+void RenderTextPango::DrawVisualText(Canvas* canvas) {
   DCHECK(layout_);
 
   // Skia will draw glyphs with respect to the baseline.
@@ -472,7 +472,7 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
   UndoCompositionAndSelectionStyles();
 }
 
-GSList* RenderTextLinux::GetRunContainingCaret(
+GSList* RenderTextPango::GetRunContainingCaret(
     const SelectionModel& caret) const {
   size_t position = TextIndexToLayoutIndex(caret.caret_pos());
   LogicalCursorDirection affinity = caret.caret_affinity();
@@ -487,28 +487,28 @@ GSList* RenderTextLinux::GetRunContainingCaret(
   return NULL;
 }
 
-SelectionModel RenderTextLinux::FirstSelectionModelInsideRun(
+SelectionModel RenderTextPango::FirstSelectionModelInsideRun(
     const PangoItem* item) {
   size_t caret = IndexOfAdjacentGrapheme(
       LayoutIndexToTextIndex(item->offset), CURSOR_FORWARD);
   return SelectionModel(caret, CURSOR_BACKWARD);
 }
 
-SelectionModel RenderTextLinux::LastSelectionModelInsideRun(
+SelectionModel RenderTextPango::LastSelectionModelInsideRun(
     const PangoItem* item) {
   size_t caret = IndexOfAdjacentGrapheme(
       LayoutIndexToTextIndex(item->offset + item->length), CURSOR_BACKWARD);
   return SelectionModel(caret, CURSOR_FORWARD);
 }
 
-size_t RenderTextLinux::GetGlyphTextIndex(PangoLayoutRun* run,
+size_t RenderTextPango::GetGlyphTextIndex(PangoLayoutRun* run,
                                           int glyph_index) const {
   return LayoutIndexToTextIndex(run->item->offset +
                                 run->glyphs->log_clusters[glyph_index]);
 }
 
 RenderText* RenderText::CreateInstance() {
-  return new RenderTextLinux;
+  return new RenderTextPango;
 }
 
 }  // namespace gfx
