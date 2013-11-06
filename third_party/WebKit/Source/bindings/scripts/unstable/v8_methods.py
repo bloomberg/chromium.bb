@@ -78,6 +78,7 @@ def generate_method(interface, method):
         'is_check_security_for_node': is_check_security_for_node,
         'is_static': is_static,
         'name': name,
+        'number_of_arguments': len(arguments),
         'number_of_required_arguments': len([
             argument for argument in arguments
             if not (argument.is_optional or argument.is_variadic)]),
@@ -117,8 +118,8 @@ def cpp_method(interface, method, number_of_arguments):
 
     # Truncate omitted optional arguments
     arguments = method.arguments[:number_of_arguments]
-    cpp_arguments = [cpp_argument(argument) for argument in arguments]
-    cpp_arguments.extend(v8_utilities.call_with_arguments(method))
+    cpp_arguments = v8_utilities.call_with_arguments(method)
+    cpp_arguments.extend(cpp_argument(argument) for argument in arguments)
 
     cpp_method_name = v8_utilities.scoped_name(interface, method, method.name)
     cpp_value = '%s(%s)' % (cpp_method_name, ', '.join(cpp_arguments))

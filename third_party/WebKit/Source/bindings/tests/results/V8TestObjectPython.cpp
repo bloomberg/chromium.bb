@@ -5007,6 +5007,46 @@ static void callWithScriptStateScriptArgumentsVoidMethodMethodCallback(const v8:
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    if (UNLIKELY(info.Length() <= 0)) {
+        ScriptState* currentState = ScriptState::current();
+        if (!currentState)
+            return;
+        ScriptState& state = *currentState;
+        RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, 1));
+        imp->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(&state, scriptArguments.release());
+        if (state.hadException()) {
+            v8::Local<v8::Value> exception = state.exception();
+            state.clearException();
+            throwError(exception, info.GetIsolate());
+            return;
+        }
+        return;
+    }
+    V8TRYCATCH_VOID(bool, optionalBooleanArg, info[0]->BooleanValue());
+    ScriptState* currentState = ScriptState::current();
+    if (!currentState)
+        return;
+    ScriptState& state = *currentState;
+    RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, 1));
+    imp->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(&state, scriptArguments.release(), optionalBooleanArg);
+    if (state.hadException()) {
+        v8::Local<v8::Value> exception = state.exception();
+        state.clearException();
+        throwError(exception, info.GetIsolate());
+        return;
+    }
+}
+
+static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void callWithActiveWindowMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
@@ -5260,6 +5300,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"callWithExecutionContextVoidMethod", TestObjectPythonV8Internal::callWithExecutionContextVoidMethodMethodCallback, 0, 0},
     {"callWithScriptStateExecutionContextVoidMethod", TestObjectPythonV8Internal::callWithScriptStateExecutionContextVoidMethodMethodCallback, 0, 0},
     {"callWithScriptStateScriptArgumentsVoidMethod", TestObjectPythonV8Internal::callWithScriptStateScriptArgumentsVoidMethodMethodCallback, 0, 0},
+    {"callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg", TestObjectPythonV8Internal::callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethodCallback, 0, 0},
     {"callWithActiveWindow", TestObjectPythonV8Internal::callWithActiveWindowMethodCallback, 0, 0},
     {"callWithActiveWindowScriptWindow", TestObjectPythonV8Internal::callWithActiveWindowScriptWindowMethodCallback, 0, 0},
     {"checkSecurityForNodeVoidMethod", TestObjectPythonV8Internal::checkSecurityForNodeVoidMethodMethodCallback, 0, 0},

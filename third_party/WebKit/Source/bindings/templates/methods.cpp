@@ -25,7 +25,7 @@ static void {{method.name}}Method(const v8::FunctionCallbackInfo<v8::Value>& inf
        fewer arguments if they are omitted.
        Optional Dictionary arguments default to empty dictionary. #}
     if (UNLIKELY(info.Length() <= {{argument.index}})) {
-        {{argument.cpp_method}};
+        {{cpp_method_call(method, argument.cpp_method) | indent(8)}}
         return;
     }
     {% endif %}
@@ -69,30 +69,34 @@ static void {{method.name}}Method(const v8::FunctionCallbackInfo<v8::Value>& inf
     }
     {% endif %}
     {% endfor %}{# arguments #}
-    {# FIXME: refactor below into separate macro to support early call #}
-    {% if method.is_call_with_script_state %}
-    ScriptState* currentState = ScriptState::current();
-    if (!currentState)
-        return{{script_state_return_value}};
-    ScriptState& state = *currentState;
-    {% endif %}
-    {% if method.is_call_with_execution_context %}
-    ExecutionContext* scriptContext = getExecutionContext();
-    {% endif %}
-    {% if method.is_call_with_script_arguments %}
-    {# FIXME: needs to use index instead, for early call #}
-    RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, {{method.number_of_required_arguments}}));
-    {% endif %}
-    {{method.cpp_method}};
-    {% if method.is_call_with_script_state %}
-    if (state.hadException()) {
-        v8::Local<v8::Value> exception = state.exception();
-        state.clearException();
-        throwError(exception, info.GetIsolate());
-        return;
-    }
-    {% endif %}
+    {{cpp_method_call(method, method.cpp_method) | indent}}
 }
+{% endmacro %}
+
+
+{######################################}
+{% macro cpp_method_call(method, cpp_method) %}
+{% if method.is_call_with_script_state %}
+ScriptState* currentState = ScriptState::current();
+if (!currentState)
+    return;
+ScriptState& state = *currentState;
+{% endif %}
+{% if method.is_call_with_execution_context %}
+ExecutionContext* scriptContext = getExecutionContext();
+{% endif %}
+{% if method.is_call_with_script_arguments %}
+RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, {{method.number_of_arguments}}));
+{% endif %}
+{{cpp_method}};
+{% if method.is_call_with_script_state %}
+if (state.hadException()) {
+    v8::Local<v8::Value> exception = state.exception();
+    state.clearException();
+    throwError(exception, info.GetIsolate());
+    return;
+}
+{% endif %}
 {% endmacro %}
 
 
