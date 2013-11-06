@@ -6,11 +6,7 @@
 
 #include <string>
 
-#include "mojo/public/bindings/sample/generated/sample_bar.h"
-#include "mojo/public/bindings/sample/generated/sample_foo.h"
 #include "mojo/public/bindings/sample/generated/sample_service.h"
-#include "mojo/public/bindings/sample/generated/sample_service_proxy.h"
-#include "mojo/public/bindings/sample/generated/sample_service_stub.h"
 
 namespace sample {
 
