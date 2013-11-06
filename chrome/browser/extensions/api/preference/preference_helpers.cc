@@ -14,7 +14,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/incognito_handler.h"
+#include "extensions/common/manifest_handlers/incognito_info.h"
 
 namespace extensions {
 namespace preference_helpers {

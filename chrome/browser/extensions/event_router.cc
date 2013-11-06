@@ -31,13 +31,13 @@
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/common/extension_urls.h"
+#include "extensions/common/manifest_handlers/incognito_info.h"
 
 using base::DictionaryValue;
 using base::ListValue;

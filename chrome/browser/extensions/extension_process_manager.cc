@@ -24,7 +24,6 @@
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -41,6 +40,7 @@
 #include "content/public/common/renderer_preferences.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/view_type_utils.h"
+#include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/switches.h"
 
 #if defined(OS_MACOSX)

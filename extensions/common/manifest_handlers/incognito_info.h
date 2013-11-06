@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_INCOGNITO_HANDLER_H_
-#define CHROME_COMMON_EXTENSIONS_INCOGNITO_HANDLER_H_
+#ifndef EXTENSIONS_COMMON_MANIFEST_HANDLERS_INCOGNITO_INFO_H_
+#define EXTENSIONS_COMMON_MANIFEST_HANDLERS_INCOGNITO_INFO_H_
 
 #include "base/strings/string16.h"
 #include "chrome/common/extensions/extension.h"
@@ -40,4 +40,4 @@ class IncognitoHandler : public ManifestHandler {
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_INCOGNITO_HANDLER_H_
+#endif  // EXTENSIONS_COMMON_MANIFEST_HANDLERS_INCOGNITO_INFO_H_

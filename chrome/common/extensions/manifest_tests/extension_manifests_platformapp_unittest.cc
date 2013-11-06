@@ -7,11 +7,11 @@
 #include "base/memory/linked_ptr.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/csp_handler.h"
-#include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

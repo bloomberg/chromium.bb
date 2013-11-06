@@ -61,6 +61,8 @@
         'common/manifest_constants.h',
         'common/manifest_handler.cc',
         'common/manifest_handler.h',
+        'common/manifest_handlers/incognito_info.cc',
+        'common/manifest_handlers/incognito_info.h',
         'common/matcher/regex_set_matcher.cc',
         'common/matcher/regex_set_matcher.h',
         'common/matcher/string_pattern.cc',

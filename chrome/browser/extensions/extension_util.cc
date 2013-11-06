@@ -10,9 +10,9 @@
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/manifest_handlers/incognito_info.h"
 
 using extensions::Extension;
 using extensions::ExtensionPrefs;

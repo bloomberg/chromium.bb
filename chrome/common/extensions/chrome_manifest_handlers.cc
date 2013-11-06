@@ -27,7 +27,6 @@
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/csp_handler.h"
-#include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
@@ -46,6 +45,7 @@
 #include "chrome/common/extensions/mime_types_handler.h"
 #include "chrome/common/extensions/web_accessible_resources_handler.h"
 #include "chrome/common/extensions/webview_handler.h"
+#include "extensions/common/manifest_handlers/incognito_info.h"
 
 namespace extensions {
 

@@ -6,10 +6,10 @@
 
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/manifest_handlers/incognito_info.h"
 
 using content::BrowserThread;
 using extensions::Extension;

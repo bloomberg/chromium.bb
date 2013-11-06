@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/incognito_handler.h"
+#include "extensions/common/manifest_handlers/incognito_info.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
