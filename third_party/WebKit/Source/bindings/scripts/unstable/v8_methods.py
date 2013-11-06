@@ -38,11 +38,13 @@ For details, see bug http://crbug.com/239771
 from v8_globals import includes
 import v8_types
 import v8_utilities
+from v8_utilities import has_extended_attribute_value
 
 
 def generate_method(interface, method):
     arguments = method.arguments
     extended_attributes = method.extended_attributes
+    idl_type = method.idl_type
     is_static = method.is_static
     name = method.name
 
@@ -54,11 +56,11 @@ def generate_method(interface, method):
     else:
         signature = 'defaultSignature'
 
-    is_call_with_script_arguments = v8_utilities.has_extended_attribute_value(method, 'CallWith', 'ScriptArguments')
+    is_call_with_script_arguments = has_extended_attribute_value(method, 'CallWith', 'ScriptArguments')
     if is_call_with_script_arguments:
         includes.update(['bindings/v8/ScriptCallStackFactory.h',
                          'core/inspector/ScriptArguments.h'])
-    is_call_with_script_state = v8_utilities.has_extended_attribute_value(method, 'CallWith', 'ScriptState')
+    is_call_with_script_state = has_extended_attribute_value(method, 'CallWith', 'ScriptState')
     if is_call_with_script_state:
         includes.add('bindings/v8/ScriptState.h')
     is_check_security_for_node = 'CheckSecurityForNode' in extended_attributes
@@ -68,15 +70,18 @@ def generate_method(interface, method):
     if is_custom_element_callbacks:
         includes.add('core/dom/custom/CustomElementCallbackDispatcher.h')
 
+    this_cpp_value = cpp_value(interface, method, len(arguments))
     contents = {
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]
         'arguments': [generate_argument(interface, method, argument, index)
                       for index, argument in enumerate(arguments)],
         'conditional_string': v8_utilities.generate_conditional_string(method),
-        'cpp_method': cpp_method(interface, method, len(arguments)),
+        'cpp_type': v8_types.cpp_type(idl_type),
+        'cpp_value': this_cpp_value,
         'custom_signature': this_custom_signature,
-        'idl_type': method.idl_type,
-        'is_call_with_execution_context': v8_utilities.has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
+        'function_template': 'desc' if method.is_static else 'proto',
+        'idl_type': idl_type,
+        'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
         'is_call_with_script_arguments': is_call_with_script_arguments,
         'is_call_with_script_state': is_call_with_script_state,
         'is_check_security_for_node': is_check_security_for_node,
@@ -92,7 +97,7 @@ def generate_method(interface, method):
             argument for argument in arguments
             if not argument.is_optional]),
         'signature': signature,
-        'function_template': 'desc' if method.is_static else 'proto',
+        'v8_set_return_value': v8_set_return_value(method, this_cpp_value),
     }
     return contents
 
@@ -100,22 +105,24 @@ def generate_method(interface, method):
 def generate_argument(interface, method, argument, index):
     extended_attributes = argument.extended_attributes
     idl_type = argument.idl_type
+    this_cpp_value = cpp_value(interface, method, index)
     return {
-        'cpp_method': cpp_method(interface, method, index),
         'cpp_type': v8_types.cpp_type(idl_type),
+        'cpp_value': this_cpp_value,
         'enum_validation_expression': v8_utilities.enum_validation_expression(idl_type),
         'has_default': 'Default' in extended_attributes,
-        'idl_type': argument.idl_type,
+        'idl_type': idl_type,
         'index': index,
         'is_clamp': 'Clamp' in extended_attributes,
         'is_optional': argument.is_optional,
         'is_variadic_wrapper_type': argument.is_variadic and v8_types.is_wrapper_type(idl_type),
         'name': argument.name,
+        'v8_set_return_value': v8_set_return_value(method, this_cpp_value),
         'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(argument, index),
     }
 
 
-def cpp_method(interface, method, number_of_arguments):
+def cpp_value(interface, method, number_of_arguments):
     def cpp_argument(argument):
         if argument.idl_type in ['NodeFilter', 'XPathNSResolver']:
             # FIXME: remove this special case
@@ -128,11 +135,15 @@ def cpp_method(interface, method, number_of_arguments):
     cpp_arguments.extend(cpp_argument(argument) for argument in arguments)
 
     cpp_method_name = v8_utilities.scoped_name(interface, method, method.name)
-    cpp_value = '%s(%s)' % (cpp_method_name, ', '.join(cpp_arguments))
+    return '%s(%s)' % (cpp_method_name, ', '.join(cpp_arguments))
 
+
+def v8_set_return_value(method, cpp_value):
     idl_type = method.idl_type
     if idl_type == 'void':
-        return cpp_value
+        return None
+    if has_extended_attribute_value(method, 'CallWith', 'ScriptState'):
+        cpp_value = 'result'  # use local variable for value
     return v8_types.v8_set_return_value(idl_type, cpp_value)
 
 

@@ -29,7 +29,7 @@ static void {{method.name}}Method(const v8::FunctionCallbackInfo<v8::Value>& inf
        fewer arguments if they are omitted.
        Optional Dictionary arguments default to empty dictionary. #}
     if (UNLIKELY(info.Length() <= {{argument.index}})) {
-        {{cpp_method_call(method, argument.cpp_method) | indent(8)}}
+        {{cpp_method_call(method, argument.v8_set_return_value, argument.cpp_value) | indent(8)}}
         return;
     }
     {% endif %}
@@ -73,14 +73,14 @@ static void {{method.name}}Method(const v8::FunctionCallbackInfo<v8::Value>& inf
     }
     {% endif %}
     {% endfor %}{# arguments #}
-    {{cpp_method_call(method, method.cpp_method) | indent}}
+    {{cpp_method_call(method, method.v8_set_return_value, method.cpp_value) | indent}}
 }
 {% endfilter %}
 {% endmacro %}
 
 
 {######################################}
-{% macro cpp_method_call(method, cpp_method) %}
+{% macro cpp_method_call(method, v8_set_return_value, cpp_value) %}
 {% if method.is_call_with_script_state %}
 ScriptState* currentState = ScriptState::current();
 if (!currentState)
@@ -93,7 +93,12 @@ ExecutionContext* scriptContext = getExecutionContext();
 {% if method.is_call_with_script_arguments %}
 RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, {{method.number_of_arguments}}));
 {% endif %}
-{{cpp_method}};
+{% if method.idl_type == 'void' %}
+{{cpp_value}};
+{% elif method.is_call_with_script_state %}
+{# FIXME: consider always using a local variable #}
+{{method.cpp_type}} result = {{cpp_value}};
+{% endif %}
 {% if method.is_call_with_script_state %}
 if (state.hadException()) {
     v8::Local<v8::Value> exception = state.exception();
@@ -102,6 +107,7 @@ if (state.hadException()) {
     return;
 }
 {% endif %}
+{% if v8_set_return_value %}{{v8_set_return_value}};{% endif %}{# None for void #}
 {% endmacro %}
 
 

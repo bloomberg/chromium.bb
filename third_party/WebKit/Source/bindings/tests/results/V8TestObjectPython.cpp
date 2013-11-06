@@ -4945,6 +4945,30 @@ static void callWithScriptStateVoidMethodMethodCallback(const v8::FunctionCallba
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void callWithScriptStateLongMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    ScriptState* currentState = ScriptState::current();
+    if (!currentState)
+        return;
+    ScriptState& state = *currentState;
+    int result = imp->callWithScriptStateLongMethod(&state);
+    if (state.hadException()) {
+        v8::Local<v8::Value> exception = state.exception();
+        state.clearException();
+        throwError(exception, info.GetIsolate());
+        return;
+    }
+    v8SetReturnValueInt(info, result);
+}
+
+static void callWithScriptStateLongMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::callWithScriptStateLongMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void callWithExecutionContextVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
@@ -5377,6 +5401,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArg", TestObjectPythonV8Internal::voidMethodTreatNullAsNullStringTreatUndefinedAsNullStringStringArgMethodCallback, 0, 1},
     {"activityLoggingAccessForAllWorldsMethod", TestObjectPythonV8Internal::activityLoggingAccessForAllWorldsMethodMethodCallback, 0, 0},
     {"callWithScriptStateVoidMethod", TestObjectPythonV8Internal::callWithScriptStateVoidMethodMethodCallback, 0, 0},
+    {"callWithScriptStateLongMethod", TestObjectPythonV8Internal::callWithScriptStateLongMethodMethodCallback, 0, 0},
     {"callWithExecutionContextVoidMethod", TestObjectPythonV8Internal::callWithExecutionContextVoidMethodMethodCallback, 0, 0},
     {"callWithScriptStateExecutionContextVoidMethod", TestObjectPythonV8Internal::callWithScriptStateExecutionContextVoidMethodMethodCallback, 0, 0},
     {"callWithScriptStateScriptArgumentsVoidMethod", TestObjectPythonV8Internal::callWithScriptStateScriptArgumentsVoidMethodMethodCallback, 0, 0},
