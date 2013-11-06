@@ -464,13 +464,12 @@ bool WindowsCreateFunction::RunImpl() {
 #endif
         if (use_panels) {
           create_panel = true;
-#if !defined(OS_CHROMEOS)
-          // Non-ChromeOS has both docked and detached panel types.
-          if (create_data->type ==
+          // Non-ash supports both docked and detached panel types.
+          if (chrome::GetActiveDesktop() != chrome::HOST_DESKTOP_TYPE_ASH &&
+              create_data->type ==
               windows::Create::Params::CreateData::TYPE_DETACHED_PANEL) {
             panel_create_mode = PanelManager::CREATE_AS_DETACHED;
           }
-#endif
         } else {
           window_type = Browser::TYPE_POPUP;
         }
@@ -531,8 +530,8 @@ bool WindowsCreateFunction::RunImpl() {
     if (urls.empty())
       urls.push_back(GURL(chrome::kChromeUINewTabURL));
 
-#if defined(OS_CHROMEOS)
-    if (PanelManager::ShouldUsePanels(extension_id)) {
+#if defined(USE_ASH)
+    if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH) {
       ShellWindow::CreateParams create_params;
       create_params.window_type = ShellWindow::WINDOW_TYPE_V1_PANEL;
       create_params.bounds = window_bounds;
@@ -546,7 +545,7 @@ bool WindowsCreateFunction::RunImpl() {
                 CreateWindowValueWithTabs(GetExtension()));
       return true;
     }
-#else
+#endif
     std::string title =
         web_app::GenerateApplicationNameFromExtensionId(extension_id);
     // Note: Panels ignore all but the first url provided.
@@ -563,7 +562,6 @@ bool WindowsCreateFunction::RunImpl() {
         panel->extension_window_controller()->CreateWindowValueWithTabs(
             GetExtension()));
     return true;
-#endif
   }
 
   // Create a new BrowserWindow.
