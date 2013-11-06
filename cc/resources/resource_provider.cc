@@ -30,6 +30,27 @@ using WebKit::WebGraphicsContext3D;
 
 namespace cc {
 
+class IdAllocator {
+ public:
+  virtual ~IdAllocator() {}
+
+  virtual unsigned NextId() = 0;
+
+ protected:
+  IdAllocator(WebGraphicsContext3D* context3d, size_t id_allocation_chunk_size)
+      : context3d_(context3d),
+        id_allocation_chunk_size_(id_allocation_chunk_size),
+        ids_(new WebKit::WebGLId[id_allocation_chunk_size]),
+        next_id_index_(id_allocation_chunk_size) {
+    DCHECK(id_allocation_chunk_size_);
+  }
+
+  WebGraphicsContext3D* context3d_;
+  const size_t id_allocation_chunk_size_;
+  scoped_ptr<WebKit::WebGLId[]> ids_;
+  size_t next_id_index_;
+};
+
 namespace {
 
 // Measured in seconds.
@@ -88,6 +109,56 @@ class ScopedSetActiveTexture {
  private:
   WebGraphicsContext3D* context3d_;
   GLenum unit_;
+};
+
+class TextureIdAllocator : public IdAllocator {
+ public:
+  TextureIdAllocator(WebGraphicsContext3D* context3d,
+                     size_t texture_id_allocation_chunk_size)
+      : IdAllocator(context3d, texture_id_allocation_chunk_size) {
+  }
+  virtual ~TextureIdAllocator() {
+    context3d_->deleteTextures(id_allocation_chunk_size_ - next_id_index_,
+                               ids_.get() + next_id_index_);
+  }
+
+  // Overridden from IdAllocator:
+  virtual unsigned NextId() OVERRIDE {
+    if (next_id_index_ == id_allocation_chunk_size_) {
+      context3d_->genTextures(id_allocation_chunk_size_, ids_.get());
+      next_id_index_ = 0;
+    }
+
+    return ids_[next_id_index_++];
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TextureIdAllocator);
+};
+
+class BufferIdAllocator : public IdAllocator {
+ public:
+  BufferIdAllocator(WebGraphicsContext3D* context3d,
+                    size_t buffer_id_allocation_chunk_size)
+      : IdAllocator(context3d, buffer_id_allocation_chunk_size) {
+  }
+  virtual ~BufferIdAllocator() {
+    context3d_->deleteBuffers(id_allocation_chunk_size_ - next_id_index_,
+                              ids_.get() + next_id_index_);
+  }
+
+  // Overridden from IdAllocator:
+  virtual unsigned NextId() OVERRIDE {
+    if (next_id_index_ == id_allocation_chunk_size_) {
+      context3d_->genBuffers(id_allocation_chunk_size_, ids_.get());
+      next_id_index_ = 0;
+    }
+
+    return ids_[next_id_index_++];
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BufferIdAllocator);
 };
 
 }  // namespace
@@ -217,13 +288,13 @@ scoped_ptr<ResourceProvider> ResourceProvider::Create(
     SharedBitmapManager* shared_bitmap_manager,
     int highp_threshold_min,
     bool use_rgba_4444_texture_format,
-    size_t texture_id_allocation_chunk_size) {
+    size_t id_allocation_chunk_size) {
   scoped_ptr<ResourceProvider> resource_provider(
       new ResourceProvider(output_surface,
                            shared_bitmap_manager,
                            highp_threshold_min,
                            use_rgba_4444_texture_format,
-                           texture_id_allocation_chunk_size));
+                           id_allocation_chunk_size));
 
   bool success = false;
   if (resource_provider->Context3d()) {
@@ -649,7 +720,7 @@ const ResourceProvider::Resource* ResourceProvider::LockForRead(ResourceId id) {
             context3d->waitSyncPoint(resource->mailbox.sync_point()));
         resource->mailbox.ResetSyncPoint();
       }
-      resource->gl_id = NextTextureId();
+      resource->gl_id = texture_id_allocator_->NextId();
       GLC(context3d, context3d->bindTexture(resource->target, resource->gl_id));
       GLC(context3d,
           context3d->consumeTextureCHROMIUM(resource->target,
@@ -794,7 +865,7 @@ ResourceProvider::ResourceProvider(OutputSurface* output_surface,
                                    SharedBitmapManager* shared_bitmap_manager,
                                    int highp_threshold_min,
                                    bool use_rgba_4444_texture_format,
-                                   size_t texture_id_allocation_chunk_size)
+                                   size_t id_allocation_chunk_size)
     : output_surface_(output_surface),
       shared_bitmap_manager_(shared_bitmap_manager),
       lost_output_surface_(false),
@@ -808,9 +879,9 @@ ResourceProvider::ResourceProvider(OutputSurface* output_surface,
       max_texture_size_(0),
       best_texture_format_(RGBA_8888),
       use_rgba_4444_texture_format_(use_rgba_4444_texture_format),
-      texture_id_allocation_chunk_size_(texture_id_allocation_chunk_size) {
+      id_allocation_chunk_size_(id_allocation_chunk_size) {
   DCHECK(output_surface_->HasClient());
-  DCHECK(texture_id_allocation_chunk_size_);
+  DCHECK(id_allocation_chunk_size_);
 }
 
 void ResourceProvider::InitializeSoftware() {
@@ -828,6 +899,8 @@ bool ResourceProvider::InitializeGL() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!texture_uploader_);
   DCHECK_NE(GLTexture, default_resource_type_);
+  DCHECK(!texture_id_allocator_);
+  DCHECK(!buffer_id_allocator_);
 
   WebGraphicsContext3D* context3d = Context3d();
   DCHECK(context3d);
@@ -853,6 +926,11 @@ bool ResourceProvider::InitializeGL() {
                                         &max_texture_size_));
   best_texture_format_ = PlatformColor::BestTextureFormat(use_bgra);
 
+  texture_id_allocator_.reset(
+      new TextureIdAllocator(context3d, id_allocation_chunk_size_));
+  buffer_id_allocator_.reset(
+      new BufferIdAllocator(context3d, id_allocation_chunk_size_));
+
   return true;
 }
 
@@ -868,14 +946,8 @@ void ResourceProvider::CleanUpGLIfNeeded() {
   DCHECK(context3d);
   context3d->makeContextCurrent();
   texture_uploader_.reset();
-  if (!unused_texture_ids_.empty()) {
-    size_t size = unused_texture_ids_.size();
-    scoped_ptr<WebKit::WebGLId[]> ids(new WebKit::WebGLId[size]);
-    for (size_t i = 0; i < size; ++i)
-      ids[i] = unused_texture_ids_[i];
-    GLC(context3d, context3d->deleteTextures(size, ids.get()));
-    unused_texture_ids_.clear();
-  }
+  texture_id_allocator_.reset();
+  buffer_id_allocator_.reset();
   Finish();
 }
 
@@ -1001,7 +1073,7 @@ void ResourceProvider::ReceiveFromChild(
       // (and is simpler) to wait.
       if (it->sync_point)
         GLC(context3d, context3d->waitSyncPoint(it->sync_point));
-      texture_id = NextTextureId();
+      texture_id = texture_id_allocator_->NextId();
       GLC(context3d, context3d->bindTexture(it->target, texture_id));
       GLC(context3d,
           context3d->consumeTextureCHROMIUM(it->target, it->mailbox.name));
@@ -1286,7 +1358,7 @@ void ResourceProvider::AcquirePixelBuffer(ResourceId id) {
     WebGraphicsContext3D* context3d = Context3d();
     DCHECK(context3d);
     if (!resource->gl_pixel_buffer_id)
-      resource->gl_pixel_buffer_id = context3d->createBuffer();
+      resource->gl_pixel_buffer_id = buffer_id_allocator_->NextId();
     context3d->bindBuffer(
         GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM,
         resource->gl_pixel_buffer_id);
@@ -1559,7 +1631,7 @@ void ResourceProvider::LazyCreate(Resource* resource) {
   if (resource->texture_pool == 0)
     return;
 
-  resource->gl_id = NextTextureId();
+  resource->gl_id = texture_id_allocator_->NextId();
 
   WebGraphicsContext3D* context3d = Context3d();
   DCHECK(context3d);
@@ -1741,22 +1813,6 @@ GLint ResourceProvider::GetActiveTextureUnit(WebGraphicsContext3D* context) {
 WebKit::WebGraphicsContext3D* ResourceProvider::Context3d() const {
   ContextProvider* context_provider = output_surface_->context_provider();
   return context_provider ? context_provider->Context3d() : NULL;
-}
-
-unsigned ResourceProvider::NextTextureId() {
-  if (unused_texture_ids_.empty()) {
-    size_t size = texture_id_allocation_chunk_size_;
-    scoped_ptr<WebKit::WebGLId[]> ids(new WebKit::WebGLId[size]);
-    WebGraphicsContext3D* context3d = Context3d();
-    DCHECK(context3d);
-    GLC(context3d, context3d->genTextures(size, ids.get()));
-    unused_texture_ids_.assign(ids.get(), ids.get() + size);
-  }
-
-  unsigned gl_id = unused_texture_ids_.front();
-  unused_texture_ids_.pop_front();
-
-  return gl_id;
 }
 
 }  // namespace cc

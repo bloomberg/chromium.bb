@@ -39,6 +39,7 @@ class Vector2d;
 }
 
 namespace cc {
+class IdAllocator;
 class SharedBitmap;
 class SharedBitmapManager;
 class TextureUploader;
@@ -66,7 +67,7 @@ class CC_EXPORT ResourceProvider {
       SharedBitmapManager* shared_bitmap_manager,
       int highp_threshold_min,
       bool use_rgba_4444_texture_format,
-      size_t texture_id_allocation_chunk_size);
+      size_t id_allocation_chunk_size);
   virtual ~ResourceProvider();
 
   void InitializeSoftware();
@@ -434,7 +435,7 @@ class CC_EXPORT ResourceProvider {
                    SharedBitmapManager* shared_bitmap_manager,
                    int highp_threshold_min,
                    bool use_rgba_4444_texture_format,
-                   size_t texture_id_allocation_chunk_size);
+                   size_t id_allocation_chunk_size);
 
   void CleanUpGLIfNeeded();
 
@@ -471,8 +472,6 @@ class CC_EXPORT ResourceProvider {
   // Returns NULL if the output_surface_ does not have a ContextProvider.
   WebKit::WebGraphicsContext3D* Context3d() const;
 
-  unsigned NextTextureId();
-
   OutputSurface* output_surface_;
   SharedBitmapManager* shared_bitmap_manager_;
   bool lost_output_surface_;
@@ -496,8 +495,9 @@ class CC_EXPORT ResourceProvider {
   scoped_refptr<Fence> current_read_lock_fence_;
   bool use_rgba_4444_texture_format_;
 
-  size_t texture_id_allocation_chunk_size_;
-  std::deque<unsigned> unused_texture_ids_;
+  const size_t id_allocation_chunk_size_;
+  scoped_ptr<IdAllocator> texture_id_allocator_;
+  scoped_ptr<IdAllocator> buffer_id_allocator_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceProvider);
 };
