@@ -6217,18 +6217,6 @@
    fun:_ZN7WebCore*SyncV8Internal*FunctionCallbackInfo*
 }
 {
-   bug_291240
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7WebCore12_GLOBAL__N_110Serializer11handleErrorENS1_6StatusEPNS1_9StateBaseE
-   fun:_ZN7WebCore12_GLOBAL__N_110Serializer27writeTransferredArrayBufferEN2v86HandleINS2_5ValueEEEjPNS1_9StateBaseE
-   fun:_ZN7WebCore12_GLOBAL__N_110Serializer11doSerializeEN2v86HandleINS2_5ValueEEEPNS1_9StateBaseE
-   fun:_ZN7WebCore12_GLOBAL__N_110Serializer27writeAndGreyArrayBufferViewEN2v86HandleINS2_6ObjectEEEPNS1_9StateBaseE
-   fun:_ZN7WebCore12_GLOBAL__N_110Serializer11doSerializeEN2v86HandleINS2_5ValueEEEPNS1_9StateBaseE
-   fun:_ZN7WebCore12_GLOBAL__N_110Serializer15DenseArrayState7advanceERS1_
-   fun:_ZN7WebCore12_GLOBAL__N_110Serializer9serializeEN2v86HandleINS2_5ValueEEE
-}
-{
    bug_293024_a
    Memcheck:Leak
    fun:malloc
