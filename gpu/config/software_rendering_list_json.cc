@@ -1122,7 +1122,7 @@ LONG_STRING_CONST(
     },
     {
       "id": 78,
-      "description": "Accelerated video decode interferes with GPU blacklist on older Intel drivers",
+      "description": "Accelerated video decode interferes with GPU sandbox on older Intel drivers",
       "cr_bugs": [180695],
       "os": {
         "type": "win"
