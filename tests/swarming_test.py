@@ -421,7 +421,7 @@ def generate_expected_json(
     u'cleanup': u'root',
     u'configurations': [
       {
-        u'config_name': os_value,
+        u'config_name': u'isolated',
         u'dimensions': {
           u'os': os_value,
         },
@@ -430,7 +430,7 @@ def generate_expected_json(
       },
     ],
     u'data': [],
-    u'encoding': 'UTF-8',
+    u'encoding': u'UTF-8',
     u'env_vars': {},
     u'restart_on_failure': True,
     u'test_case_name': TEST_NAME,
@@ -480,13 +480,14 @@ class ManifestTest(auto_stub.TestCase):
       u'GTEST_SHARD_INDEX': u'%(instance_index)s',
       u'GTEST_TOTAL_SHARDS': u'%(num_instances)s',
     }
+    filters = {'os': 'Windows'}
     manifest = swarming.Manifest(
         isolate_server='http://localhost:8081',
         isolated_hash=FILE_HASH,
         test_name=TEST_NAME,
         shards=2,
         env=env,
-        slave_os='Windows',
+        filters=filters,
         working_dir='swarm_tests',
         verbose=False,
         profile=False,
@@ -508,13 +509,14 @@ class ManifestTest(auto_stub.TestCase):
     """A basic linux manifest test to ensure that windows specific values
        aren't used.
     """
+    filters = {'os': 'Linux'}
     manifest = swarming.Manifest(
         isolate_server='http://localhost:8081',
         isolated_hash=FILE_HASH,
         test_name=TEST_NAME,
         shards=1,
         env={},
-        slave_os='Linux',
+        filters=filters,
         working_dir='swarm_tests',
         verbose=False,
         profile=False,
@@ -533,13 +535,14 @@ class ManifestTest(auto_stub.TestCase):
     self.assertEqual(expected, manifest_json)
 
   def test_basic_linux_profile(self):
+    filters = {'os': 'Linux'}
     manifest = swarming.Manifest(
         isolate_server='http://localhost:8081',
         isolated_hash=FILE_HASH,
         test_name=TEST_NAME,
         shards=1,
         env={},
-        slave_os='Linux',
+        filters=filters,
         working_dir='swarm_tests',
         verbose=False,
         profile=True,

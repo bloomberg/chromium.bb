@@ -71,7 +71,7 @@ class Manifest(object):
   """
   def __init__(
       self, isolate_server, isolated_hash, test_name, shards, env,
-      slave_os, working_dir, verbose, profile, priority, algo):
+      filters, working_dir, verbose, profile, priority, algo):
     """Populates a manifest object.
       Args:
         isolate_server - isolate server url.
@@ -79,7 +79,7 @@ class Manifest(object):
         test_name - The name to give the test request.
         shards - The number of swarm shards to request.
         env - environment variables to set.
-        slave_os - OS to run on.
+        filters - dimensions to filter the task on.
         working_dir - Relative working directory to start the script.
         verbose - if True, have the slave print more details.
         profile - if True, have the slave print more timing data.
@@ -95,7 +95,7 @@ class Manifest(object):
     self._test_name = test_name
     self._shards = shards
     self._env = env
-    self._target_platform = slave_os
+    self._filters = filters
     self._working_dir = working_dir
 
     self.verbose = bool(verbose)
@@ -153,10 +153,8 @@ class Manifest(object):
       'cleanup': 'root',
       'configurations': [
         {
-          'config_name': self._target_platform,
-          'dimensions': {
-            'os': self._target_platform,
-          },
+          'config_name': 'isolated',
+          'dimensions': self._filters,
           'min_instances': self._shards,
           'priority': self.priority,
         },
@@ -359,6 +357,9 @@ def process_manifest(
     env['GTEST_SHARD_INDEX'] = '%(instance_index)s'
     env['GTEST_TOTAL_SHARDS'] = '%(num_instances)s'
 
+  filters = {
+    'os': PLATFORM_MAPPING_SWARMING[slave_os],
+  }
   try:
     manifest = Manifest(
         isolate_server=isolate_server,
@@ -366,7 +367,7 @@ def process_manifest(
         test_name=test_name,
         shards=shards,
         env=env,
-        slave_os=PLATFORM_MAPPING_SWARMING[slave_os],
+        filters=filters,
         working_dir=working_dir,
         verbose=verbose,
         profile=profile,
