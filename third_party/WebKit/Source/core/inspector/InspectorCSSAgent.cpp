@@ -1025,7 +1025,7 @@ void InspectorCSSAgent::collectPlatformFontsForRenderer(RenderText* renderer, Ha
         WidthIterator it(&font, run, 0, false);
         GlyphBuffer glyphBuffer;
         it.advance(run.length(), &glyphBuffer);
-        for (int i = 0; i < glyphBuffer.size(); ++i) {
+        for (unsigned i = 0; i < glyphBuffer.size(); ++i) {
             String familyName = glyphBuffer.fontDataAt(i)->platformData().fontFamilyName();
             if (familyName.isNull())
                 familyName = "";

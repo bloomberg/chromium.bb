@@ -453,8 +453,8 @@ void Font::drawGlyphBuffer(GraphicsContext* context, const TextRunPaintInfo& run
     const SimpleFontData* fontData = glyphBuffer.fontDataAt(0);
     FloatPoint startPoint(point);
     float nextX = startPoint.x() + glyphBuffer.advanceAt(0);
-    int lastFrom = 0;
-    int nextGlyph = 1;
+    unsigned lastFrom = 0;
+    unsigned nextGlyph = 1;
 #if ENABLE(SVG_FONTS)
     TextRun::RenderingContext* renderingContext = runInfo.run.renderingContext();
 #endif
@@ -520,7 +520,7 @@ void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& r
     FloatPoint startPoint(point.x() + middleOfLastGlyph - offsetToMiddleOfGlyph(markFontData, markGlyph), point.y());
 
     GlyphBuffer markBuffer;
-    for (int i = 0; i + 1 < glyphBuffer.size(); ++i) {
+    for (unsigned i = 0; i + 1 < glyphBuffer.size(); ++i) {
         float middleOfNextGlyph = offsetToMiddleOfGlyphAtIndex(glyphBuffer, i + 1);
         float advance = glyphBuffer.advanceAt(i) - middleOfLastGlyph + middleOfNextGlyph;
         markBuffer.add(glyphBuffer.glyphAt(i) ? markGlyph : spaceGlyph, markFontData, advance);

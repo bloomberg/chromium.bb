@@ -100,20 +100,20 @@ public:
 
 typedef Vector<pair<int, OriginalAdvancesForCharacterTreatedAsSpace>, 64> CharactersTreatedAsSpace;
 
-static inline float applyFontTransforms(GlyphBuffer* glyphBuffer, bool ltr, int& lastGlyphCount, const SimpleFontData* fontData, TypesettingFeatures typesettingFeatures, CharactersTreatedAsSpace& charactersTreatedAsSpace)
+static inline float applyFontTransforms(GlyphBuffer* glyphBuffer, bool ltr, unsigned& lastGlyphCount, const SimpleFontData* fontData, TypesettingFeatures typesettingFeatures, CharactersTreatedAsSpace& charactersTreatedAsSpace)
 {
     ASSERT(typesettingFeatures & (Kerning | Ligatures));
 
     if (!glyphBuffer)
         return 0;
 
-    int glyphBufferSize = glyphBuffer->size();
+    unsigned glyphBufferSize = glyphBuffer->size();
     if (glyphBuffer->size() <= lastGlyphCount + 1)
         return 0;
 
     GlyphBufferAdvance* advances = glyphBuffer->advances(0);
     float widthDifference = 0;
-    for (int i = lastGlyphCount; i < glyphBufferSize; ++i)
+    for (unsigned i = lastGlyphCount; i < glyphBufferSize; ++i)
         widthDifference -= advances[i].width();
 
     if (!ltr)
@@ -133,7 +133,7 @@ static inline float applyFontTransforms(GlyphBuffer* glyphBuffer, bool ltr, int&
     }
     charactersTreatedAsSpace.clear();
 
-    for (int i = lastGlyphCount; i < glyphBufferSize; ++i)
+    for (unsigned i = lastGlyphCount; i < glyphBufferSize; ++i)
         widthDifference += advances[i].width();
 
     lastGlyphCount = glyphBufferSize;
@@ -155,7 +155,7 @@ inline unsigned WidthIterator::advanceInternal(TextIterator& textIterator, Glyph
 
     const SimpleFontData* primaryFont = m_font->primaryFont();
     const SimpleFontData* lastFontData = primaryFont;
-    int lastGlyphCount = glyphBuffer ? glyphBuffer->size() : 0;
+    unsigned lastGlyphCount = glyphBuffer ? glyphBuffer->size() : 0;
 
     UChar32 character = 0;
     unsigned clusterLength = 0;
@@ -335,10 +335,10 @@ unsigned WidthIterator::advance(int offset, GlyphBuffer* glyphBuffer)
 
 bool WidthIterator::advanceOneCharacter(float& width, GlyphBuffer& glyphBuffer)
 {
-    int oldSize = glyphBuffer.size();
+    unsigned oldSize = glyphBuffer.size();
     advance(m_currentCharacter + 1, &glyphBuffer);
     float w = 0;
-    for (int i = oldSize; i < glyphBuffer.size(); ++i)
+    for (unsigned i = oldSize; i < glyphBuffer.size(); ++i)
         w += glyphBuffer.advanceAt(i);
     width = w;
     return glyphBuffer.size() > oldSize;

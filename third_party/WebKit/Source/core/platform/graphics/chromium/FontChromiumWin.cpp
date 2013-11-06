@@ -58,12 +58,9 @@ bool Font::canExpandAroundIdeographsInComplexText()
 }
 
 void Font::drawGlyphs(GraphicsContext* graphicsContext,
-                      const SimpleFontData* font,
-                      const GlyphBuffer& glyphBuffer,
-                      int from,
-                      int numGlyphs,
-                      const FloatPoint& point,
-                      const FloatRect& textRect) const
+    const SimpleFontData* font, const GlyphBuffer& glyphBuffer,
+    unsigned from, unsigned numGlyphs, const FloatPoint& point,
+    const FloatRect& textRect) const
 {
     SkColor color = graphicsContext->effectiveFillColor();
     unsigned char alpha = SkColorGetA(color);
@@ -73,9 +70,9 @@ void Font::drawGlyphs(GraphicsContext* graphicsContext,
 
     // We draw the glyphs in chunks to avoid having to do a heap allocation for
     // the arrays of characters and advances.
-    const int kMaxBufferLength = 256;
+    const unsigned kMaxBufferLength = 256;
     Vector<int, kMaxBufferLength> advances;
-    int glyphIndex = 0;  // The starting glyph of the current chunk.
+    unsigned glyphIndex = 0; // The starting glyph of the current chunk.
 
     float horizontalOffset = point.x(); // The floating point offset of the left side of the current glyph.
 
@@ -94,7 +91,7 @@ void Font::drawGlyphs(GraphicsContext* graphicsContext,
         SkScalar verticalOriginX = SkFloatToScalar(point.x() + metrics.floatAscent() - metrics.floatAscent(IdeographicBaseline));
         while (glyphIndex < numGlyphs) {
             // How many chars will be in this chunk?
-            int curLen = std::min(kMaxBufferLength, numGlyphs - glyphIndex);
+            unsigned curLen = std::min(kMaxBufferLength, numGlyphs - glyphIndex);
 
             const Glyph* glyphs = glyphBuffer.glyphs(from + glyphIndex);
             translations.resize(curLen);
@@ -104,7 +101,7 @@ void Font::drawGlyphs(GraphicsContext* graphicsContext,
             advances.fill(0);
             offsets.resize(curLen);
             float currentWidth = 0;
-            for (int i = 0; i < curLen; ++i, ++glyphIndex) {
+            for (unsigned i = 0; i < curLen; ++i, ++glyphIndex) {
                 offsets[i].du = lroundf(translations[i].x());
                 offsets[i].dv = -lroundf(currentWidth - translations[i].y());
                 currentWidth += glyphBuffer.advanceAt(from + glyphIndex);
@@ -127,12 +124,12 @@ void Font::drawGlyphs(GraphicsContext* graphicsContext,
     Vector<WORD, kMaxBufferLength> glyphs;
     while (glyphIndex < numGlyphs) {
         // How many chars will be in this chunk?
-        int curLen = std::min(kMaxBufferLength, numGlyphs - glyphIndex);
+        unsigned curLen = std::min(kMaxBufferLength, numGlyphs - glyphIndex);
         glyphs.resize(curLen);
         advances.resize(curLen);
 
         float currentWidth = 0;
-        for (int i = 0; i < curLen; ++i, ++glyphIndex) {
+        for (unsigned i = 0; i < curLen; ++i, ++glyphIndex) {
             glyphs[i] = glyphBuffer.glyphAt(from + glyphIndex);
             horizontalOffset += glyphBuffer.advanceAt(from + glyphIndex);
             advances[i] = lroundf(horizontalOffset) - lastHorizontalOffsetRounded;

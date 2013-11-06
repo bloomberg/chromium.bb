@@ -65,7 +65,7 @@ typedef FloatSize GlyphBufferAdvance;
 class GlyphBuffer {
 public:
     bool isEmpty() const { return m_fontData.isEmpty(); }
-    int size() const { return m_fontData.size(); }
+    unsigned size() const { return m_fontData.size(); }
 
     void clear()
     {
@@ -74,19 +74,19 @@ public:
         m_advances.clear();
     }
 
-    GlyphBufferGlyph* glyphs(int from) { return m_glyphs.data() + from; }
-    GlyphBufferAdvance* advances(int from) { return m_advances.data() + from; }
-    const GlyphBufferGlyph* glyphs(int from) const { return m_glyphs.data() + from; }
-    const GlyphBufferAdvance* advances(int from) const { return m_advances.data() + from; }
+    GlyphBufferGlyph* glyphs(unsigned from) { return m_glyphs.data() + from; }
+    GlyphBufferAdvance* advances(unsigned from) { return m_advances.data() + from; }
+    const GlyphBufferGlyph* glyphs(unsigned from) const { return m_glyphs.data() + from; }
+    const GlyphBufferAdvance* advances(unsigned from) const { return m_advances.data() + from; }
 
-    const SimpleFontData* fontDataAt(int index) const { return m_fontData[index]; }
+    const SimpleFontData* fontDataAt(unsigned index) const { return m_fontData[index]; }
 
-    Glyph glyphAt(int index) const
+    Glyph glyphAt(unsigned index) const
     {
         return m_glyphs[index];
     }
 
-    float advanceAt(int index) const
+    float advanceAt(unsigned index) const
     {
         return m_advances[index].width();
     }
@@ -111,9 +111,9 @@ public:
         m_advances.append(advance);
     }
 
-    void reverse(int from, int length)
+    void reverse(unsigned from, unsigned length)
     {
-        for (int i = from, end = from + length - 1; i < end; ++i, --end)
+        for (unsigned i = from, end = from + length - 1; i < end; ++i, --end)
             swap(i, end);
     }
 
@@ -125,7 +125,7 @@ public:
     }
 
 private:
-    void swap(int index1, int index2)
+    void swap(unsigned index1, unsigned index2)
     {
         const SimpleFontData* f = m_fontData[index1];
         m_fontData[index1] = m_fontData[index2];

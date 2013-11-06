@@ -57,7 +57,7 @@ bool Font::canExpandAroundIdeographsInComplexText()
 
 
 static void paintGlyphs(GraphicsContext* gc, const SimpleFontData* font,
-    const GlyphBufferGlyph* glyphs, int numGlyphs,
+    const GlyphBufferGlyph* glyphs, unsigned numGlyphs,
     SkPoint* pos, const FloatRect& textRect)
 {
     TextDrawingModeFlags textMode = gc->textDrawingMode();
@@ -95,7 +95,7 @@ static void paintGlyphs(GraphicsContext* gc, const SimpleFontData* font,
 }
 
 void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
-    const GlyphBuffer& glyphBuffer,  int from, int numGlyphs,
+    const GlyphBuffer& glyphBuffer, unsigned from, unsigned numGlyphs,
     const FloatPoint& point, const FloatRect& textRect) const
 {
     SkASSERT(sizeof(GlyphBufferGlyph) == sizeof(uint16_t)); // compile-time assert
@@ -120,16 +120,16 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
         gc->concatCTM(AffineTransform(0, -1, 1, 0, point.x(), point.y()));
         gc->concatCTM(AffineTransform(1, 0, 0, 1, -point.x(), -point.y()));
 
-        const int kMaxBufferLength = 256;
+        const unsigned kMaxBufferLength = 256;
         Vector<FloatPoint, kMaxBufferLength> translations;
 
         const FontMetrics& metrics = font->fontMetrics();
         SkScalar verticalOriginX = SkFloatToScalar(point.x() + metrics.floatAscent() - metrics.floatAscent(IdeographicBaseline));
         float horizontalOffset = point.x();
 
-        int glyphIndex = 0;
+        unsigned glyphIndex = 0;
         while (glyphIndex < numGlyphs) {
-            int chunkLength = std::min(kMaxBufferLength, numGlyphs - glyphIndex);
+            unsigned chunkLength = std::min(kMaxBufferLength, numGlyphs - glyphIndex);
 
             const Glyph* glyphs = glyphBuffer.glyphs(from + glyphIndex);
             translations.resize(chunkLength);
@@ -139,7 +139,7 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
             y = SkFloatToScalar(point.y() + horizontalOffset - point.x());
 
             float currentWidth = 0;
-            for (int i = 0; i < chunkLength; ++i, ++glyphIndex) {
+            for (unsigned i = 0; i < chunkLength; ++i, ++glyphIndex) {
                 pos[i].set(
                     x + SkIntToScalar(lroundf(translations[i].x())),
                     y + -SkIntToScalar(-lroundf(currentWidth - translations[i].y())));
@@ -153,7 +153,7 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
         return;
     }
 
-    for (int i = 0; i < numGlyphs; i++) {
+    for (unsigned i = 0; i < numGlyphs; i++) {
         pos[i].set(x, y);
         x += SkFloatToScalar(adv[i].width());
         y += SkFloatToScalar(adv[i].height());

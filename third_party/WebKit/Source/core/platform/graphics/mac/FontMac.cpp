@@ -87,8 +87,9 @@ static void setupPaint(SkPaint* paint, const SimpleFontData* fontData, const Fon
 // inputs/outputs, and reduce duplicate code.
 // This issue is tracked in https://bugs.webkit.org/show_bug.cgi?id=62989
 void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
-                      const GlyphBuffer& glyphBuffer,  int from, int numGlyphs,
-                      const FloatPoint& point, const FloatRect& textRect) const {
+    const GlyphBuffer& glyphBuffer, unsigned from, unsigned numGlyphs,
+    const FloatPoint& point, const FloatRect& textRect) const
+{
     COMPILE_ASSERT(sizeof(GlyphBufferGlyph) == sizeof(uint16_t), GlyphBufferGlyphSize_equals_uint16_t);
 
     bool shouldSmoothFonts = true;
@@ -130,7 +131,7 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
     SkAutoSTMalloc<32, SkPoint> storage(numGlyphs);
     SkPoint* pos = storage.get();
 
-    for (int i = 0; i < numGlyphs; i++) {
+    for (unsigned i = 0; i < numGlyphs; i++) {
         pos[i].set(x, y);
         x += SkFloatToScalar(adv[i].width());
         y += SkFloatToScalar(adv[i].height());
