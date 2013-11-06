@@ -381,11 +381,13 @@ CreateGpuProcessViewContext(
   limits.max_transfer_buffer_size = std::min(
       3 * full_screen_texture_size_in_bytes, kDefaultMaxTransferBufferSize);
   limits.mapped_memory_reclaim_limit = 2 * 1024 * 1024;
+  bool use_echo_for_swap_ack = true;
   return make_scoped_ptr(
       new WebGraphicsContext3DCommandBufferImpl(surface_id,
                                                 url,
                                                 gpu_channel_host.get(),
                                                 compositor_impl,
+                                                use_echo_for_swap_ack,
                                                 attributes,
                                                 false,
                                                 limits));

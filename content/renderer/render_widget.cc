@@ -2826,8 +2826,14 @@ RenderWidget::CreateGraphicsContext3D(
 
   base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> swap_client;
 
-  if (!is_threaded_compositing_enabled_)
+  bool use_echo_for_swap_ack = true;
+  if (!is_threaded_compositing_enabled_) {
     swap_client = weak_ptr_factory_.GetWeakPtr();
+#if (defined(OS_MACOSX) || defined(OS_WIN)) && !defined(USE_AURA)
+    // ViewMsg_SwapBuffers_ACK is used instead for single-threaded path.
+    use_echo_for_swap_ack = false;
+#endif
+  }
 
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
       new WebGraphicsContext3DCommandBufferImpl(
@@ -2835,6 +2841,7 @@ RenderWidget::CreateGraphicsContext3D(
           GetURLForGraphicsContext3D(),
           gpu_channel_host.get(),
           swap_client,
+          use_echo_for_swap_ack,
           attributes,
           false /* bind generates resources */,
           limits));

@@ -213,6 +213,7 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
     const GURL& active_url,
     GpuChannelHost* host,
     const base::WeakPtr<WebGraphicsContext3DSwapBuffersClient>& swap_client,
+    bool use_echo_for_swap_ack,
     const Attributes& attributes,
     bool bind_generates_resources,
     const SharedMemoryLimits& limits)
@@ -235,15 +236,9 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
       gl_(NULL),
       frame_number_(0),
       bind_generates_resources_(bind_generates_resources),
-      use_echo_for_swap_ack_(true),
+      use_echo_for_swap_ack_(use_echo_for_swap_ack),
       mem_limits_(limits),
       flush_id_(0) {
-#if (defined(OS_MACOSX) || defined(OS_WIN)) && !defined(USE_AURA)
-  // Get ViewMsg_SwapBuffers_ACK from browser for single-threaded path.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  use_echo_for_swap_ack_ =
-      command_line.HasSwitch(switches::kEnableThreadedCompositing);
-#endif
 }
 
 WebGraphicsContext3DCommandBufferImpl::
@@ -1272,10 +1267,12 @@ WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
   if (!host)
     return NULL;
   base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> null_client;
+  bool use_echo_for_swap_ack = true;
   return new WebGraphicsContext3DCommandBufferImpl(0,
                                                    active_url,
                                                    host,
                                                    null_client,
+                                                   use_echo_for_swap_ack,
                                                    attributes,
                                                    false,
                                                    SharedMemoryLimits());

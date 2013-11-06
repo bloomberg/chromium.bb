@@ -90,6 +90,7 @@ class WebGraphicsContext3DCommandBufferImpl
       const GURL& active_url,
       GpuChannelHost* host,
       const base::WeakPtr<WebGraphicsContext3DSwapBuffersClient>& swap_client,
+      bool use_echo_for_swap_ack,
       const Attributes& attributes,
       bool bind_generates_resources,
       const SharedMemoryLimits& limits);
