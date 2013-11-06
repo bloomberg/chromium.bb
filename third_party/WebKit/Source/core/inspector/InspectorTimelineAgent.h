@@ -83,6 +83,7 @@ namespace TimelineRecordType {
 extern const char DecodeImage[];
 extern const char Rasterize[];
 extern const char PaintSetup[];
+extern const char GPUTask[];
 };
 
 class TimelineTimeConverter {
@@ -120,7 +121,7 @@ public:
 
     virtual void enable(ErrorString*);
     virtual void disable(ErrorString*);
-    virtual void start(ErrorString*, const int* maxCallStackDepth, const bool* bufferEvents, const bool* includeDomCounters);
+    virtual void start(ErrorString*, const int* maxCallStackDepth, const bool* bufferEvents, const bool* includeDomCounters, const bool* includeGPUEvents);
     virtual void stop(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Timeline::TimelineEvent> >& events);
 
     void setLayerTreeId(int layerTreeId) { m_layerTreeId = layerTreeId; }
@@ -272,6 +273,8 @@ private:
     bool isStarted();
     void innerStart();
     void innerStop(bool fromConsole);
+
+    bool isCollectingGPUEvents() const;
 
     InspectorPageAgent* m_pageAgent;
     InspectorMemoryAgent* m_memoryAgent;

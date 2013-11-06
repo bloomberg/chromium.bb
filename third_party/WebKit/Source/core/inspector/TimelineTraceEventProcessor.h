@@ -219,6 +219,8 @@ private:
     void onLayerDeleted(const TraceEvent&);
     void onDrawLazyPixelRef(const TraceEvent&);
     void onLazyPixelRefDeleted(const TraceEvent&);
+    void onGPUTaskBegin(const TraceEvent&);
+    void onGPUTaskEnd(const TraceEvent&);
 
     WeakPtr<InspectorTimelineAgent> m_timelineAgent;
     TimelineTimeConverter m_timeConverter;
@@ -240,6 +242,7 @@ private:
     unsigned long long m_layerId;
     double m_paintSetupStart;
     double m_paintSetupEnd;
+    RefPtr<JSONObject> m_gpuTask;
 
     struct ImageInfo {
         int backendNodeId;

@@ -220,6 +220,13 @@ PassRefPtr<JSONObject> TimelineRecordFactory::createAnimationFrameData(int callb
     return data.release();
 }
 
+PassRefPtr<JSONObject> TimelineRecordFactory::createGPUTaskData(unsigned ownerPID)
+{
+    RefPtr<JSONObject> data = JSONObject::create();
+    data->setNumber("ownerPID", ownerPID);
+    return data.release();
+}
+
 static PassRefPtr<JSONArray> createQuad(const FloatQuad& quad)
 {
     RefPtr<JSONArray> array = JSONArray::create();

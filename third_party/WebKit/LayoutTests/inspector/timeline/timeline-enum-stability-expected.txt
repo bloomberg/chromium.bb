@@ -13,6 +13,7 @@ Applications outside of WebKit depend on the stability of the mapping of these t
     FireAnimationFrame : "FireAnimationFrame"
     FunctionCall : "FunctionCall"
     GCEvent : "GCEvent"
+    GPUTask : "GPUTask"
     InvalidateLayout : "InvalidateLayout"
     Layout : "Layout"
     MarkDOMContent : "MarkDOMContent"

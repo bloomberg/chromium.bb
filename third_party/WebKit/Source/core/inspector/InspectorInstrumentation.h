@@ -129,6 +129,7 @@ extern const char Paint[];
 extern const char Layer[];
 extern const char BeginFrame[];
 extern const char UpdateLayer[];
+extern const char GPUTask[];
 };
 
 namespace InstrumentationEventArguments {
@@ -137,6 +138,7 @@ extern const char LayerTreeId[];
 extern const char NodeId[];
 extern const char PageId[];
 extern const char PixelRefId[];
+extern const char OwnerPID[];
 };
 
 namespace InspectorInstrumentation {

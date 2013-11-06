@@ -57,7 +57,7 @@ function test()
         InspectorTest.completeTest();
     }
 
-    WebInspector.tracingAgent.start("", onTracingStarted);
+    WebInspector.tracingAgent.start("", "", onTracingStarted);
     setTimeout(InspectorTest.completeTest.bind(InspectorTest), 2000);
     function onTracingStarted(error)
     {

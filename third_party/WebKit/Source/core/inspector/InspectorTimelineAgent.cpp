@@ -66,6 +66,7 @@ static const char started[] = "started";
 static const char startedFromProtocol[] = "startedFromProtocol";
 static const char timelineMaxCallStackDepth[] = "timelineMaxCallStackDepth";
 static const char includeDomCounters[] = "includeDomCounters";
+static const char includeGPUEvents[] = "includeGPUEvents";
 static const char bufferEvents[] = "bufferEvents";
 }
 
@@ -125,6 +126,7 @@ static const char WebSocketDestroy[] = "WebSocketDestroy";
 const char DecodeImage[] = "DecodeImage";
 const char Rasterize[] = "Rasterize";
 const char PaintSetup[] = "PaintSetup";
+const char GPUTask[] = "GPUTask";
 }
 
 namespace {
@@ -225,7 +227,7 @@ void InspectorTimelineAgent::disable(ErrorString*)
     m_state->setBoolean(TimelineAgentState::enabled, false);
 }
 
-void InspectorTimelineAgent::start(ErrorString* errorString, const int* maxCallStackDepth, const bool* bufferEvents, const bool* includeDomCounters)
+void InspectorTimelineAgent::start(ErrorString* errorString, const int* maxCallStackDepth, const bool* bufferEvents, const bool* includeDomCounters, const bool* includeGPUEvents)
 {
     if (!m_frontend)
         return;
@@ -247,6 +249,7 @@ void InspectorTimelineAgent::start(ErrorString* errorString, const int* maxCallS
 
     m_state->setLong(TimelineAgentState::timelineMaxCallStackDepth, m_maxCallStackDepth);
     m_state->setBoolean(TimelineAgentState::includeDomCounters, includeDomCounters && *includeDomCounters);
+    m_state->setBoolean(TimelineAgentState::includeGPUEvents, includeGPUEvents && *includeGPUEvents);
     m_state->setBoolean(TimelineAgentState::bufferEvents, bufferEvents && *bufferEvents);
 
     innerStart();
@@ -955,6 +958,11 @@ double InspectorTimelineAgent::timestamp()
 Page* InspectorTimelineAgent::page()
 {
     return m_pageAgent ? m_pageAgent->page() : 0;
+}
+
+bool InspectorTimelineAgent::isCollectingGPUEvents() const
+{
+    return m_state->getBoolean(TimelineAgentState::includeGPUEvents);
 }
 
 } // namespace WebCore
