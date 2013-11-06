@@ -292,7 +292,7 @@ bool GlassBrowserFrameView::HitTestRect(const gfx::Rect& rect) const {
 void GlassBrowserFrameView::ButtonPressed(views::Button* sender,
                                           const ui::Event& event) {
   if (sender == new_avatar_button())
-    ShowProfileChooserViewBubble();
+    browser_view()->ShowAvatarBubbleFromAvatarButton();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

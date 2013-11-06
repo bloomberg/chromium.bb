@@ -72,10 +72,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView {
   void UpdateNewStyleAvatarInfo(views::ButtonListener* listener,
                                 const NewAvatarButton::AvatarButtonStyle style);
 
-  // Anchor and show the ProfileChooser bubble under the avatar button in
-  // the caption area.
-  void ShowProfileChooserViewBubble();
-
  private:
   // The frame that hosts this view.
   BrowserFrame* frame_;

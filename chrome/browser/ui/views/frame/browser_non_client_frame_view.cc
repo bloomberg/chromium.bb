@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/taskbar_decorator.h"
 #include "chrome/browser/ui/views/new_avatar_button.h"
-#include "chrome/browser/ui/views/profile_chooser_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -149,15 +148,4 @@ void BrowserNonClientFrameView::UpdateNewStyleAvatarInfo(
     new_avatar_button_ = NULL;
     frame_->GetRootView()->Layout();
   }
-}
-
-void BrowserNonClientFrameView::ShowProfileChooserViewBubble() {
-  gfx::Point origin;
-  views::View::ConvertPointToScreen(new_avatar_button(), &origin);
-  gfx::Rect bounds(origin, size());
-
-  ProfileChooserView::ShowBubble(
-      new_avatar_button(), views::BubbleBorder::TOP_RIGHT,
-      views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE, bounds,
-      browser_view_->browser());
 }

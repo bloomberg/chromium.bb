@@ -400,7 +400,7 @@ void OpaqueBrowserFrameView::ButtonPressed(views::Button* sender,
   else if (sender == close_button_)
     frame()->Close();
   else if (sender == new_avatar_button())
-    ShowProfileChooserViewBubble();
+    browser_view()->ShowAvatarBubbleFromAvatarButton();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

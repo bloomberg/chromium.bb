@@ -27,6 +27,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
@@ -77,6 +78,7 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_views.h"
 #include "chrome/browser/ui/views/password_generation_bubble_view.h"
+#include "chrome/browser/ui/views/profile_chooser_view.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -2573,9 +2575,22 @@ void BrowserView::ShowAvatarBubble(WebContents* web_contents,
 }
 
 void BrowserView::ShowAvatarBubbleFromAvatarButton() {
-  AvatarMenuButton* button = frame_->GetAvatarMenuButton();
-  if (button)
-    button->ShowAvatarBubble();
+  if (profiles::IsNewProfileManagementEnabled()) {
+    NewAvatarButton* button = frame_->GetNewAvatarMenuButton();
+    if (button) {
+      gfx::Point origin;
+      views::View::ConvertPointToScreen(button, &origin);
+      gfx::Rect bounds(origin, size());
+
+      ProfileChooserView::ShowBubble(
+          button, views::BubbleBorder::TOP_RIGHT,
+          views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE, bounds, browser());
+    }
+  } else {
+    AvatarMenuButton* button = frame_->GetAvatarMenuButton();
+    if (button)
+      button->ShowAvatarBubble();
+  }
 }
 
 void BrowserView::ShowPasswordGenerationBubble(
