@@ -62,7 +62,7 @@ class TruncateOperation {
 
   // Part of Truncate(). Called after TruncateOnBlockingPool() is complete.
   void TruncateAfterTruncateOnBlockingPool(
-      const std::string* local_id,
+      const std::string& local_id,
       const FileOperationCallback& callback,
       FileError error);
 

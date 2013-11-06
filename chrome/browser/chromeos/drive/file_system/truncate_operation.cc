@@ -29,19 +29,13 @@ namespace {
 // then marks the resource is dirty on |cache|.
 FileError TruncateOnBlockingPool(internal::ResourceMetadata* metadata,
                                  internal::FileCache* cache,
-                                 const std::string& resource_id,
+                                 const std::string& local_id,
                                  const base::FilePath& local_cache_path,
-                                 int64 length,
-                                 std::string* local_id) {
+                                 int64 length) {
   DCHECK(metadata);
   DCHECK(cache);
-  DCHECK(local_id);
 
-  FileError error = metadata->GetIdByResourceId(resource_id, local_id);
-  if (error != FILE_ERROR_OK)
-    return error;
-
-  error = cache->MarkDirty(*local_id);
+  FileError error = cache->MarkDirty(local_id);
   if (error != FILE_ERROR_OK)
     return error;
 
@@ -133,26 +127,24 @@ void TruncateOperation::TruncateAfterEnsureFileDownloadedByPath(
     return;
   }
 
-  std::string* local_id = new std::string;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&TruncateOnBlockingPool,
-                 metadata_, cache_, entry->resource_id(), local_file_path,
-                 length, local_id),
+                 metadata_, cache_, entry->local_id(), local_file_path, length),
       base::Bind(
           &TruncateOperation::TruncateAfterTruncateOnBlockingPool,
-          weak_ptr_factory_.GetWeakPtr(), base::Owned(local_id), callback));
+          weak_ptr_factory_.GetWeakPtr(), entry->local_id(), callback));
 }
 
 void TruncateOperation::TruncateAfterTruncateOnBlockingPool(
-    const std::string* local_id,
+    const std::string& local_id,
     const FileOperationCallback& callback,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  observer_->OnCacheFileUploadNeededByOperation(*local_id);
+  observer_->OnCacheFileUploadNeededByOperation(local_id);
 
   callback.Run(error);
 }
