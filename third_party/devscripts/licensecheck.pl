@@ -485,7 +485,7 @@ sub parselicense($) {
 	$license = "QPL $license";
     }
 
-    if ($licensetext =~ /opensource\.org\/licenses\/mit-license\.php/) {
+    if ($licensetext =~ /opensource\.org\/licenses\/mit/) {
 	$license = "MIT/X11 (BSD like) $license";
     } elsif ($licensetext =~ /Permission is hereby granted, free of charge, to any person obtaining a copy of this software and(\/or)? associated documentation files \(the (Software|Materials)\), to deal in the (Software|Materials)/) {
 	$license = "MIT/X11 (BSD like) $license";
