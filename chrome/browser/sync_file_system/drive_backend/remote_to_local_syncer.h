@@ -6,9 +6,14 @@
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_REMOTE_TO_LOCAL_SYNCER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/remote_change_processor.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "chrome/browser/sync_file_system/sync_task.h"
+
+namespace drive {
+class DriveServiceInterface;
+}
 
 namespace drive {
 class DriveServiceInterface;
@@ -22,16 +27,63 @@ class SyncEngineContext;
 
 class RemoteToLocalSyncer : public SyncTask {
  public:
-  explicit RemoteToLocalSyncer(SyncEngineContext* sync_context);
+  enum Priority {
+    PRIORITY_NORMAL = 1 << 0,
+    PRIORITY_LOW = 1 << 1,
+  };
+
+  // |priorities| must be a bitwise-or'd value of Priority.
+  // Conflicting trackers will have low priority for RemoteToLocalSyncer so that
+  // it should be resolved by LocatToRemoteSyncer.
+  RemoteToLocalSyncer(SyncEngineContext* sync_context,
+                      int priorities);
   virtual ~RemoteToLocalSyncer();
   virtual void Run(const SyncStatusCallback& callback) OVERRIDE;
 
  private:
+  void AnalyzeCurrentDirtyTracker();
+
+  void ResolveRemoteChange(const SyncStatusCallback& callback);
+
+  void GetRemoteResource(const SyncStatusCallback& callback);
+
+  void HandleDeletion(const SyncStatusCallback& callback);
+  void HandleNewFile(const SyncStatusCallback& callback);
+  void HandleContentUpdate(const SyncStatusCallback& callback);
+  void ListFolderContent(const SyncStatusCallback& callback);
+  void HandleRename(const SyncStatusCallback& callback);
+  void HandleReorganize(const SyncStatusCallback& callback);
+  void HandleOfflineSolvable(const SyncStatusCallback& callback);
+
+  void SyncCompleted(const SyncStatusCallback& callback);
+
+  void Prepare(const SyncStatusCallback& callback);
+  void DidPrepare(const SyncStatusCallback& callback,
+                  SyncStatusCode status,
+                  const SyncFileMetadata& metadata,
+                  const FileChangeList& changes);
+
   drive::DriveServiceInterface* drive_service();
   MetadataDatabase* metadata_database();
   RemoteChangeProcessor* remote_change_processor();
 
   SyncEngineContext* sync_context_;  // Not owned.
+
+  int priorities_;
+  FileTracker dirty_tracker_;
+  FileTracker parent_tracker_;
+  FileMetadata remote_metadata_;
+
+  bool missing_remote_details_;
+  bool missing_synced_details_;
+  bool deleted_remote_details_;
+  bool deleted_synced_details_;
+  bool title_changed_;
+  bool content_changed_;
+  bool needs_folder_listing_;
+  bool missing_parent_;
+
+  bool sync_root_modification_;
 
   base::WeakPtrFactory<RemoteToLocalSyncer> weak_ptr_factory_;
 

@@ -224,6 +224,14 @@ class MetadataDatabase {
                      const FileDetails& updated_details,
                      const SyncStatusCallback& callback);
 
+  // Returns true if there is a normal priority dirty tracker.
+  // Assigns the dirty tracker if exists and |tracker| is non-NULL.
+  bool GetNormalPriorityDirtyTracker(FileTracker* tracker);
+
+  // Returns true if there is a low priority dirty tracker.
+  // Assigns the dirty tracker if exists and |tracker| is non-NULL.
+  bool GetLowPriorityDirtyTracker(FileTracker* tracker);
+
  private:
   friend class ListChangesTaskTest;
   friend class MetadataDatabaseTest;
