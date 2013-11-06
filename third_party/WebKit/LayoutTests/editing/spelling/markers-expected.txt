@@ -1,16 +1,16 @@
-Grammar Error Only
-PASS internals.markerCountForNode(e.firstChild, "spelling") is 0
-FAIL internals.markerCountForNode(e.firstChild, "grammar") should be 1. Was 0.
-FAIL range.toString() should be a. Threw exception TypeError: Cannot call method 'toString' of null
-Spelling Error Only
-PASS internals.markerCountForNode(e.firstChild, "spelling") is 1
-PASS range.toString() is "zz"
-PASS internals.markerCountForNode(e.firstChild, "grammar") is 0
-Grammar and Spelling Error
-PASS internals.markerCountForNode(e.firstChild, "spelling") is 1
-PASS range.toString() is "zz"
-FAIL internals.markerCountForNode(e.firstChild, "grammar") should be 1. Was 0.
-FAIL range.toString() should be orange,zz,apple.. Threw exception TypeError: Cannot call method 'toString' of null
+Tests spelling and grammar markers for misspellings.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS internals.markerCountForNode(element.firstChild, next.marker) became 1
+PASS range.toString() is next.issue
+PASS internals.markerCountForNode(element.firstChild, next.marker) became 1
+PASS range.toString() is next.issue
+PASS internals.markerCountForNode(element.firstChild, next.marker) became 1
+PASS range.toString() is next.issue
+PASS internals.markerCountForNode(element.firstChild, next.marker) became 1
+PASS range.toString() is next.issue
 PASS successfullyParsed is true
 
 TEST COMPLETE
