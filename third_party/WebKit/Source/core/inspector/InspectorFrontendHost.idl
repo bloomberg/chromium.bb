@@ -55,6 +55,7 @@
     DOMString getSelectionForegroundColor();
 
     DOMFileSystem isolatedFileSystem(DOMString fileSystemId, DOMString registeredName);
+    void upgradeDraggedFileSystemPermissions(DOMFileSystem domFileSystem);
 
     boolean isUnderTest();
 };

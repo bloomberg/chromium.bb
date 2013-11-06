@@ -215,6 +215,19 @@ PassRefPtr<DOMFileSystem> InspectorFrontendHost::isolatedFileSystem(const String
     return DOMFileSystem::create(context, fileSystemName, FileSystemTypeIsolated, KURL(ParsedURLString, rootURL));
 }
 
+void InspectorFrontendHost::upgradeDraggedFileSystemPermissions(DOMFileSystem* domFileSystem)
+{
+    if (!m_client)
+        return;
+    RefPtr<JSONObject> message = JSONObject::create();
+    message->setNumber("id", 0);
+    message->setString("method", "upgradeDraggedFileSystemPermissions");
+    RefPtr<JSONArray> params = JSONArray::create();
+    message->setArray("params", params);
+    params->pushString(domFileSystem->rootURL().string());
+    sendMessageToEmbedder(message->toJSONString());
+}
+
 bool InspectorFrontendHost::isUnderTest()
 {
     return m_client && m_client->isUnderTest();

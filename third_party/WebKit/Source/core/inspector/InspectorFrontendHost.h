@@ -71,6 +71,7 @@ public:
     String getSelectionForegroundColor();
 
     PassRefPtr<DOMFileSystem> isolatedFileSystem(const String& fileSystemName, const String& rootURL);
+    void upgradeDraggedFileSystemPermissions(DOMFileSystem*);
 
     bool isUnderTest();
 
