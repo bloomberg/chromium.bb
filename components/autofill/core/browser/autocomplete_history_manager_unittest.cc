@@ -6,7 +6,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/prefs/testing_pref_service.h"
+#include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -15,6 +15,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
+#include "components/autofill/core/browser/autofill_common_test.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
@@ -82,12 +83,14 @@ class MockWebDataServiceWrapperCurrent : public MockWebDataServiceWrapperBase {
 class MockAutofillManagerDelegate
     : public autofill::TestAutofillManagerDelegate {
  public:
-  MockAutofillManagerDelegate() {}
+  MockAutofillManagerDelegate()
+      : prefs_(test::PrefServiceForTesting()) {
+  }
   virtual ~MockAutofillManagerDelegate() {}
-  virtual PrefService* GetPrefs() OVERRIDE { return &prefs_; }
+  virtual PrefService* GetPrefs() OVERRIDE { return prefs_.get(); }
 
  private:
-  TestingPrefServiceSimple prefs_;
+  scoped_ptr<PrefService> prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAutofillManagerDelegate);
 };

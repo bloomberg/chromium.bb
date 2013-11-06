@@ -6,13 +6,17 @@
 
 #include "base/guid.h"
 #include "base/prefs/pref_service.h"
+#include "base/prefs/pref_service_builder.h"
+#include "base/prefs/testing_pref_store.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/user_prefs/pref_registry_syncable.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/webdata/encryptor/encryptor.h"
 #include "content/public/browser/browser_context.h"
@@ -25,6 +29,15 @@ namespace {
 const char kSettingsOrigin[] = "Chrome settings";
 
 }  // namespace
+
+scoped_ptr<PrefService> PrefServiceForTesting() {
+  scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
+      new user_prefs::PrefRegistrySyncable());
+  AutofillManager::RegisterProfilePrefs(registry.get());
+  PrefServiceBuilder builder;
+  builder.WithUserPrefs(new TestingPrefStore());
+  return scoped_ptr<PrefService>(builder.Create(registry.get()));
+}
 
 void CreateTestFormField(const char* label,
                          const char* name,

@@ -18,6 +18,8 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
+class PrefService;
+
 namespace content {
 class BrowserContext;
 }  // namespace content
@@ -62,8 +64,10 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
     virtual ~Observer() {}
   };
 
+  // |context| and |pref_service| must outlive this instance.
   // |observer| - observer to notify on successful completion or error.
   AutofillDownloadManager(content::BrowserContext* context,
+                          PrefService* pref_service,
                           Observer* observer);
   virtual ~AutofillDownloadManager();
 
@@ -132,12 +136,15 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
   void SetPositiveUploadRate(double rate);
   void SetNegativeUploadRate(double rate);
 
-  // The pointer value is const, so this can only be set in the
-  // constructor.  Must not be null.
+  // The BrowserContext that this instance will use. Must not be null, and must
+  // outlive this instance.
   content::BrowserContext* const browser_context_;  // WEAK
 
+  // The PrefService that this instance will use. Must not be null, and must
+  // outlive this instance.
+  PrefService* const pref_service_;  // WEAK
+
   // The observer to notify when server predictions are successfully received.
-  // The pointer value is const, so this can only be set in the constructor.
   // Must not be null.
   AutofillDownloadManager::Observer* const observer_;  // WEAK
 

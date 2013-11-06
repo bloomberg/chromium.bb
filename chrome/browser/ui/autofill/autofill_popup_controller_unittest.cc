@@ -4,13 +4,14 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/testing_pref_service.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/browser/autofill_driver_impl.h"
+#include "components/autofill/core/browser/autofill_common_test.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/test_autofill_external_delegate.h"
@@ -53,13 +54,15 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
 class MockAutofillManagerDelegate
     : public autofill::TestAutofillManagerDelegate {
  public:
-  MockAutofillManagerDelegate() {}
+  MockAutofillManagerDelegate()
+      : prefs_(autofill::test::PrefServiceForTesting()) {
+  }
   virtual ~MockAutofillManagerDelegate() {}
 
-  virtual PrefService* GetPrefs() OVERRIDE { return &prefs_; }
+  virtual PrefService* GetPrefs() OVERRIDE { return prefs_.get(); }
 
  private:
-  TestingPrefServiceSimple prefs_;
+  scoped_ptr<PrefService> prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAutofillManagerDelegate);
 };

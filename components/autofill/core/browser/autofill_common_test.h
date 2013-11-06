@@ -5,6 +5,10 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_COMMON_TEST_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_COMMON_TEST_H_
 
+#include "base/memory/scoped_ptr.h"
+
+class PrefService;
+
 namespace content {
 class BrowserContext;
 }
@@ -18,6 +22,13 @@ struct FormFieldData;
 
 // Common utilities shared amongst Autofill tests.
 namespace test {
+
+// Returns a PrefService that can be used for Autofill-related testing in
+// contexts where the PrefService would otherwise have to be constructed
+// manually (e.g., in unit tests within Autofill core code). The returned
+// PrefService has had Autofill preferences registered on its associated
+// registry.
+scoped_ptr<PrefService> PrefServiceForTesting();
 
 // Provides a quick way to populate a FormField with c-strings.
 void CreateTestFormField(const char* label,

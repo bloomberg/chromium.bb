@@ -202,7 +202,9 @@ AutofillManager::AutofillManager(
   if (enable_download_manager == ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {
     download_manager_.reset(
         new AutofillDownloadManager(
-            driver->GetWebContents()->GetBrowserContext(), this));
+            driver->GetWebContents()->GetBrowserContext(),
+            manager_delegate_->GetPrefs(),
+            this));
   }
 }
 

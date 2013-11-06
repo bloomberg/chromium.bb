@@ -29,6 +29,7 @@ specific_include_rules = {
     #
     # Do not add to the list of temporarily-allowed dependencies below,
     # and please do not introduce more #includes of these files.
+    "!components/user_prefs/user_prefs.h",
     "!content/public/browser/browser_thread.h",
     "!content/public/test",
 

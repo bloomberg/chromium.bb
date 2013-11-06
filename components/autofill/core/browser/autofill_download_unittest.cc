@@ -64,7 +64,7 @@ class AutofillDownloadTest : public AutofillDownloadManager::Observer,
                              public testing::Test {
  public:
   AutofillDownloadTest()
-      : download_manager_(&profile_, this) {
+      : download_manager_(&profile_, profile_.GetPrefs(), this) {
   }
 
   void LimitCache(size_t cache_size) {
