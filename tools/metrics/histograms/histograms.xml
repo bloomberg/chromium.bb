@@ -1260,6 +1260,43 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Cast.Sender.CastButtonShown" enum="BooleanEnabled">
+  <summary>
+    Records the number of times the cast button was shown to the user. The value
+    will be true if the button is enabled, and false if the button is disabled.
+    Note that depending on the current UX, it's possible that we hide the button
+    entirely if it's disabled, so it's possible for the false values to be 0.
+  </summary>
+</histogram>
+
+<histogram name="Cast.Sender.CastButtonShownInitialFullscreen"
+    enum="BooleanEnabled">
+  <summary>
+    Records the number of times the cast button was shown to the user when the
+    video is fullscreened. The value will only be recorded on entering
+    fullscreen. The value will be true if the button is enabled, and false if
+    the button is disabled. Note that depending on the current UX,it's possible
+    that we hide the button entirely if it's disabled, so it's possible for the
+    false values to be 0.
+  </summary>
+</histogram>
+
+<histogram name="Cast.Sender.CastPlaySuccess" enum="BooleanSuccess">
+  <summary>
+    Records the result of a request to play remotely. The value will be true if
+    the playback succeeded, and false if there was an error.
+  </summary>
+</histogram>
+
+<histogram name="Cast.Sender.CastTimeRemainingPercentage"
+    units="percent remaining">
+  <summary>
+    Records the percentage of the video left at the time the remote playback is
+    stopped. This will be recorded when the playback is stopped by the user, or
+    when it's stopped by the cast device.
+  </summary>
+</histogram>
+
 <histogram name="Cellular.ActivationFailure">
   <summary>
     The count of cellular device activation failures (Chrome OS).

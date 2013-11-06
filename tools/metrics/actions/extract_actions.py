@@ -199,6 +199,10 @@ def AddAndroidActions(actions):
   Arguments
     actions: set of actions to add to.
   """
+  actions.add('Cast_Sender_CastEnterFullscreen');
+  actions.add('Cast_Sender_CastDeviceSelected');
+  actions.add('Cast_Sender_YouTubeDeviceSelected');
+  actions.add('Cast_Sender_CastPlayRequested');
   actions.add('DataReductionProxy_PromoDisplayed');
   actions.add('DataReductionProxy_PromoLearnMore');
   actions.add('DataReductionProxy_TurnedOn');
