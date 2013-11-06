@@ -102,6 +102,15 @@ class AppCacheHostTest : public testing::Test {
                                        const GURL& origin,
                                        quota::StorageType type,
                                        int64 delta) OVERRIDE {}
+    virtual void SetUsageCacheEnabled(quota::QuotaClient::ID client_id,
+                                      const GURL& origin,
+                                      quota::StorageType type,
+                                      bool enabled) OVERRIDE {}
+    virtual void GetUsageAndQuota(
+        base::SequencedTaskRunner* original_task_runner,
+        const GURL& origin,
+        quota::StorageType type,
+        const GetUsageAndQuotaCallback& callback) OVERRIDE {}
 
     virtual void NotifyOriginInUse(const GURL& origin) OVERRIDE {
       inuse_[origin] += 1;

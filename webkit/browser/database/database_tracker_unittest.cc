@@ -124,6 +124,15 @@ class TestQuotaManagerProxy : public quota::QuotaManagerProxy {
   // Not needed for our tests.
   virtual void NotifyOriginInUse(const GURL& origin) OVERRIDE {}
   virtual void NotifyOriginNoLongerInUse(const GURL& origin) OVERRIDE {}
+  virtual void SetUsageCacheEnabled(quota::QuotaClient::ID client_id,
+                                    const GURL& origin,
+                                    quota::StorageType type,
+                                    bool enabled) OVERRIDE {}
+  virtual void GetUsageAndQuota(
+      base::SequencedTaskRunner* original_task_runner,
+      const GURL& origin,
+      quota::StorageType type,
+      const GetUsageAndQuotaCallback& callback) OVERRIDE {}
 
   void SimulateQuotaManagerDestroyed() {
     if (registered_client_) {

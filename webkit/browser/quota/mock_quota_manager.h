@@ -151,6 +151,15 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
   // We don't mock them.
   virtual void NotifyOriginInUse(const GURL& origin) OVERRIDE {}
   virtual void NotifyOriginNoLongerInUse(const GURL& origin) OVERRIDE {}
+  virtual void SetUsageCacheEnabled(QuotaClient::ID client_id,
+                                    const GURL& origin,
+                                    StorageType type,
+                                    bool enabled) OVERRIDE {}
+  virtual void GetUsageAndQuota(
+      base::SequencedTaskRunner* original_task_runner,
+      const GURL& origin,
+      StorageType type,
+      const QuotaManager::GetUsageAndQuotaCallback& callback) OVERRIDE {}
 
   // Validates the |client_id| and updates the internal access count
   // which can be accessed via notify_storage_accessed_count().

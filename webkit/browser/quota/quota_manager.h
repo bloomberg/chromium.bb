@@ -438,6 +438,9 @@ struct QuotaManagerDeleter {
 class WEBKIT_STORAGE_BROWSER_EXPORT QuotaManagerProxy
     : public base::RefCountedThreadSafe<QuotaManagerProxy> {
  public:
+  typedef QuotaManager::GetUsageAndQuotaCallback
+      GetUsageAndQuotaCallback;
+
   virtual void RegisterClient(QuotaClient* client);
   virtual void NotifyStorageAccessed(QuotaClient::ID client_id,
                                      const GURL& origin,
@@ -453,6 +456,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT QuotaManagerProxy
                                     const GURL& origin,
                                     StorageType type,
                                     bool enabled);
+  virtual void GetUsageAndQuota(
+      base::SequencedTaskRunner* original_task_runner,
+      const GURL& origin,
+      StorageType type,
+      const GetUsageAndQuotaCallback& callback);
 
   // This method may only be called on the IO thread.
   // It may return NULL if the manager has already been deleted.

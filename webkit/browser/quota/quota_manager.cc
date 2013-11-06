@@ -43,6 +43,21 @@ const int kMinutesInMilliSeconds = 60 * 1000;
 const int64 kReportHistogramInterval = 60 * 60 * 1000;  // 1 hour
 const double kTemporaryQuotaRatioToAvail = 1.0 / 3.0;  // 33%
 
+void DidGetUsageAndQuota(
+    base::SequencedTaskRunner* original_task_runner,
+    const QuotaManagerProxy::GetUsageAndQuotaCallback& callback,
+    QuotaStatusCode status, int64 usage, int64 quota) {
+  if (!original_task_runner->RunsTasksOnCurrentThread()) {
+    original_task_runner->PostTask(
+        FROM_HERE,
+        base::Bind(&DidGetUsageAndQuota,
+                   make_scoped_refptr(original_task_runner),
+                   callback, status, usage, quota));
+    return;
+  }
+  callback.Run(status, usage, quota);
+}
+
 }  // namespace
 
 // Arbitrary for now, but must be reasonably small so that
@@ -1678,6 +1693,29 @@ void QuotaManagerProxy::SetUsageCacheEnabled(QuotaClient::ID client_id,
   }
   if (manager_)
     manager_->SetUsageCacheEnabled(client_id, origin, type, enabled);
+}
+
+void QuotaManagerProxy::GetUsageAndQuota(
+    base::SequencedTaskRunner* original_task_runner,
+    const GURL& origin,
+    StorageType type,
+    const GetUsageAndQuotaCallback& callback) {
+  if (!io_thread_->BelongsToCurrentThread()) {
+    io_thread_->PostTask(
+        FROM_HERE,
+        base::Bind(&QuotaManagerProxy::GetUsageAndQuota, this,
+                   make_scoped_refptr(original_task_runner),
+                   origin, type, callback));
+    return;
+  }
+  if (!manager_) {
+    DidGetUsageAndQuota(original_task_runner, callback, kQuotaErrorAbort, 0, 0);
+    return;
+  }
+  manager_->GetUsageAndQuota(
+      origin, type,
+      base::Bind(&DidGetUsageAndQuota,
+                 make_scoped_refptr(original_task_runner), callback));
 }
 
 QuotaManager* QuotaManagerProxy::quota_manager() const {
