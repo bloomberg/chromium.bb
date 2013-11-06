@@ -103,7 +103,7 @@ void OffTheRecordProfileImpl::Init() {
 #if defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
   // Because UserCloudPolicyManager is in a component, it cannot access
   // GetOriginalProfile. Instead, we have to inject this relation here.
-  policy::UserCloudPolicyManagerFactory::RegisterForOffTheRecordProfile(
+  policy::UserCloudPolicyManagerFactory::RegisterForOffTheRecordBrowserContext(
       this->GetOriginalProfile(), this);
 #endif
 

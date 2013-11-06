@@ -21,7 +21,7 @@ namespace em = enterprise_management;
 namespace policy {
 
 UserCloudPolicyManager::UserCloudPolicyManager(
-    Profile* profile,
+    content::BrowserContext* context,
     scoped_ptr<UserCloudPolicyStore> store,
     scoped_ptr<CloudExternalDataManager> external_data_manager,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
@@ -29,14 +29,14 @@ UserCloudPolicyManager::UserCloudPolicyManager(
           PolicyNamespaceKey(GetChromeUserPolicyType(), std::string()),
           store.get(),
           task_runner),
-      profile_(profile),
+      context_(context),
       store_(store.Pass()),
       external_data_manager_(external_data_manager.Pass()) {
-  UserCloudPolicyManagerFactory::GetInstance()->Register(profile_, this);
+  UserCloudPolicyManagerFactory::GetInstance()->Register(context_, this);
 }
 
 UserCloudPolicyManager::~UserCloudPolicyManager() {
-  UserCloudPolicyManagerFactory::GetInstance()->Unregister(profile_, this);
+  UserCloudPolicyManagerFactory::GetInstance()->Unregister(context_, this);
 }
 
 void UserCloudPolicyManager::Shutdown() {

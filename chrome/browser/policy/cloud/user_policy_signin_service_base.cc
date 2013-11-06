@@ -241,7 +241,7 @@ void UserPolicySigninServiceBase::ShutdownUserCloudPolicyManager() {
 }
 
 UserCloudPolicyManager* UserPolicySigninServiceBase::GetManager() {
-  return UserCloudPolicyManagerFactory::GetForProfile(profile_);
+  return UserCloudPolicyManagerFactory::GetForBrowserContext(profile_);
 }
 
 SigninManager* UserPolicySigninServiceBase::GetSigninManager() {

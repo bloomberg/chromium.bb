@@ -98,7 +98,8 @@ class CloudPolicyManagerTest : public InProcessBrowserTest {
   }
 #else
   UserCloudPolicyManager* policy_manager() {
-    return UserCloudPolicyManagerFactory::GetForProfile(browser()->profile());
+    return UserCloudPolicyManagerFactory::GetForBrowserContext(
+        browser()->profile());
   }
 #endif  // defined(OS_CHROMEOS)
 

@@ -137,7 +137,7 @@ SigninManagerAndroid::GetManagementDomain(JNIEnv* env, jobject obj) {
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   policy::UserCloudPolicyManager* manager =
-      policy::UserCloudPolicyManagerFactory::GetForProfile(profile_);
+      policy::UserCloudPolicyManagerFactory::GetForBrowserContext(profile_);
   policy::CloudPolicyStore* store = manager->core()->store();
 
   if (store && store->is_managed() && store->policy()->has_username()) {

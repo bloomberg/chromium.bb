@@ -97,7 +97,7 @@ ProfilePolicyConnectorFactory::CreateForProfileInternal(
       UserCloudPolicyManagerFactoryChromeOS::GetForProfile(profile);
 #else
   CloudPolicyManager* user_cloud_policy_manager =
-      UserCloudPolicyManagerFactory::GetForProfile(profile);
+      UserCloudPolicyManagerFactory::GetForBrowserContext(profile);
 #endif
 #else
   CloudPolicyManager* user_cloud_policy_manager = NULL;

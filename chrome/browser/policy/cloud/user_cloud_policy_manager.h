@@ -15,10 +15,13 @@
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 
 class PrefService;
-class Profile;
 
 namespace base {
 class SequencedTaskRunner;
+}
+
+namespace content {
+class BrowserContext;
 }
 
 namespace net {
@@ -38,7 +41,7 @@ class UserCloudPolicyManager : public CloudPolicyManager,
  public:
   // |task_runner| is the runner for policy refresh tasks.
   UserCloudPolicyManager(
-      Profile* profile,
+      content::BrowserContext* context,
       scoped_ptr<UserCloudPolicyStore> store,
       scoped_ptr<CloudExternalDataManager> external_data_manager,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
@@ -73,8 +76,8 @@ class UserCloudPolicyManager : public CloudPolicyManager,
       DeviceManagementService* device_management_service);
 
  private:
-  // The profile this instance belongs to.
-  Profile* profile_;
+  // The context this instance belongs to.
+  content::BrowserContext* context_;
 
   // Typed pointer to the store owned by UserCloudPolicyManager. Note that
   // CloudPolicyManager only keeps a plain CloudPolicyStore pointer.

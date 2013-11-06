@@ -10,8 +10,8 @@
 #include "chrome/browser/policy/cloud/cloud_external_data_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_store.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "content/public/browser/browser_context.h"
 
 namespace policy {
 
@@ -21,28 +21,28 @@ UserCloudPolicyManagerFactory* UserCloudPolicyManagerFactory::GetInstance() {
 }
 
 // static
-UserCloudPolicyManager* UserCloudPolicyManagerFactory::GetForProfile(
-    Profile* profile) {
-  return GetInstance()->GetManagerForProfile(profile);
+UserCloudPolicyManager* UserCloudPolicyManagerFactory::GetForBrowserContext(
+    content::BrowserContext* context) {
+  return GetInstance()->GetManagerForBrowserContext(context);
 }
 
 // static
 scoped_ptr<UserCloudPolicyManager>
-UserCloudPolicyManagerFactory::CreateForOriginalProfile(
-    Profile* profile,
+UserCloudPolicyManagerFactory::CreateForOriginalBrowserContext(
+    content::BrowserContext* context,
     bool force_immediate_load,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner) {
-  return GetInstance()->CreateManagerForOriginalProfile(
-      profile, force_immediate_load, background_task_runner);
+  return GetInstance()->CreateManagerForOriginalBrowserContext(
+      context, force_immediate_load, background_task_runner);
 }
 
 // static
 UserCloudPolicyManager*
-UserCloudPolicyManagerFactory::RegisterForOffTheRecordProfile(
-    Profile* original_profile,
-    Profile* off_the_record_profile) {
-  return GetInstance()->RegisterManagerForOffTheRecordProfile(
-      original_profile, off_the_record_profile);
+UserCloudPolicyManagerFactory::RegisterForOffTheRecordBrowserContext(
+    content::BrowserContext* original_context,
+    content::BrowserContext* off_the_record_context) {
+  return GetInstance()->RegisterManagerForOffTheRecordBrowserContext(
+      original_context, off_the_record_context);
 }
 
 
@@ -53,25 +53,26 @@ UserCloudPolicyManagerFactory::UserCloudPolicyManagerFactory()
 
 UserCloudPolicyManagerFactory::~UserCloudPolicyManagerFactory() {}
 
-UserCloudPolicyManager* UserCloudPolicyManagerFactory::GetManagerForProfile(
-    Profile* profile) {
-  // In case |profile| is an incognito Profile, |manager_| will have a matching
-  // entry pointing to the PolicyService of the original Profile.
-  ManagerMap::const_iterator it = managers_.find(profile);
+UserCloudPolicyManager*
+UserCloudPolicyManagerFactory::GetManagerForBrowserContext(
+    content::BrowserContext* context) {
+  // In case |context| is an incognito Profile/Context, |manager_| will have a
+  // matching entry pointing to the PolicyService of the original context.
+  ManagerMap::const_iterator it = managers_.find(context);
   return it != managers_.end() ? it->second : NULL;
 }
 
 scoped_ptr<UserCloudPolicyManager>
-UserCloudPolicyManagerFactory::CreateManagerForOriginalProfile(
-    Profile* profile,
+UserCloudPolicyManagerFactory::CreateManagerForOriginalBrowserContext(
+    content::BrowserContext* context,
     bool force_immediate_load,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner) {
   scoped_ptr<UserCloudPolicyStore> store(
-      UserCloudPolicyStore::Create(profile->GetPath(), background_task_runner));
+      UserCloudPolicyStore::Create(context->GetPath(), background_task_runner));
   if (force_immediate_load)
     store->LoadImmediately();
   scoped_ptr<UserCloudPolicyManager> manager(
-      new UserCloudPolicyManager(profile,
+      new UserCloudPolicyManager(context,
                                  store.Pass(),
                                  scoped_ptr<CloudExternalDataManager>(),
                                  base::MessageLoopProxy::current()));
@@ -80,46 +81,46 @@ UserCloudPolicyManagerFactory::CreateManagerForOriginalProfile(
 }
 
 UserCloudPolicyManager*
-UserCloudPolicyManagerFactory::RegisterManagerForOffTheRecordProfile(
-    Profile* original_profile,
-    Profile* off_the_record_profile) {
-  // Register the PolicyService of the original Profile for the respective
-  // incognito Profile. See GetManagerForProfile above.
-  UserCloudPolicyManager* manager = GetManagerForProfile(original_profile);
-  Register(off_the_record_profile, manager);
+UserCloudPolicyManagerFactory::RegisterManagerForOffTheRecordBrowserContext(
+    content::BrowserContext* original_context,
+    content::BrowserContext* off_the_record_context) {
+  // Register the PolicyService of the original context for the respective
+  // incognito context. See also GetManagerForBrowserContext.
+  UserCloudPolicyManager* manager =
+      GetManagerForBrowserContext(original_context);
+  Register(off_the_record_context, manager);
   return manager;
 }
 
 void UserCloudPolicyManagerFactory::BrowserContextShutdown(
     content::BrowserContext* context) {
-  Profile* profile = static_cast<Profile*>(context);
-  if (profile->IsOffTheRecord())
+  if (context->IsOffTheRecord())
     return;
-  UserCloudPolicyManager* manager = GetManagerForProfile(profile);
+  UserCloudPolicyManager* manager = GetManagerForBrowserContext(context);
   if (manager)
     manager->Shutdown();
 }
 
 void UserCloudPolicyManagerFactory::SetEmptyTestingFactory(
-    content::BrowserContext* profile) {
+    content::BrowserContext* context) {
 }
 
 void UserCloudPolicyManagerFactory::CreateServiceNow(
-    content::BrowserContext* profile) {
+    content::BrowserContext* context) {
 }
 
-void UserCloudPolicyManagerFactory::Register(Profile* profile,
+void UserCloudPolicyManagerFactory::Register(content::BrowserContext* context,
                                              UserCloudPolicyManager* instance) {
-  UserCloudPolicyManager*& entry = managers_[profile];
+  UserCloudPolicyManager*& entry = managers_[context];
   // TODO(pneubeck): Re-enable this DCHECK. See http://crbug.com/315266.
   // DCHECK(!entry);
   entry = instance;
 }
 
 void UserCloudPolicyManagerFactory::Unregister(
-    Profile* profile,
+    content::BrowserContext* context,
     UserCloudPolicyManager* instance) {
-  ManagerMap::iterator entry = managers_.find(profile);
+  ManagerMap::iterator entry = managers_.find(context);
   if (entry != managers_.end()) {
     DCHECK_EQ(instance, entry->second);
     managers_.erase(entry);

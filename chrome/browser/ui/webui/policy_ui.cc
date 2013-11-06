@@ -56,6 +56,7 @@
 #else
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
+#include "content/public/browser/web_contents.h"
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -488,8 +489,8 @@ void PolicyUIHandler::RegisterMessages() {
   }
 #else
   policy::UserCloudPolicyManager* user_cloud_policy_manager =
-      policy::UserCloudPolicyManagerFactory::GetForProfile(
-          Profile::FromWebUI(web_ui()));
+      policy::UserCloudPolicyManagerFactory::GetForBrowserContext(
+          web_ui()->GetWebContents()->GetBrowserContext());
   if (user_cloud_policy_manager) {
     user_status_provider_.reset(
         new UserPolicyStatusProvider(user_cloud_policy_manager->core()));

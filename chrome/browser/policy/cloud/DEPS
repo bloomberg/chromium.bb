@@ -69,11 +69,10 @@ specific_include_rules = {
   ],
 
   r"user_cloud_policy_manager_factory\.cc": [
-    "+chrome/browser/profiles/profile.h",
+    "+content/public/browser/browser_context.h",
   ],
 
   r"user_cloud_policy_store\.cc": [
-    "+chrome/browser/profiles/profile.h",
     "+chrome/browser/signin/signin_manager.h",
     "+chrome/browser/signin/signin_manager_factory.h",
   ],

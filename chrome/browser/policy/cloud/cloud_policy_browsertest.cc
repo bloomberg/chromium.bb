@@ -187,7 +187,8 @@ class CloudPolicyTest : public InProcessBrowserTest,
     signin_manager->SetAuthenticatedUsername(GetTestUser());
 
     UserCloudPolicyManager* policy_manager =
-        UserCloudPolicyManagerFactory::GetForProfile(browser()->profile());
+        UserCloudPolicyManagerFactory::GetForBrowserContext(
+            browser()->profile());
     ASSERT_TRUE(policy_manager);
     policy_manager->Connect(g_browser_process->local_state(),
                             g_browser_process->system_request_context(),

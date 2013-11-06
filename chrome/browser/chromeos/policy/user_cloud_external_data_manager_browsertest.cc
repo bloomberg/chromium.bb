@@ -64,7 +64,7 @@ IN_PROC_BROWSER_TEST_F(UserCloudExternalDataManagerTest, FetchExternalData) {
           browser()->profile());
 #else
   UserCloudPolicyManager* policy_manager =
-      UserCloudPolicyManagerFactory::GetForProfile(browser()->profile());
+      UserCloudPolicyManagerFactory::GetForBrowserContext(browser()->profile());
 #endif
   ASSERT_TRUE(policy_manager);
   // TODO(bartfab): The test injects an ExternalDataFetcher for an arbitrary

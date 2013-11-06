@@ -408,7 +408,7 @@ ProfileImpl::ProfileImpl(
           this, force_immediate_policy_load, sequenced_task_runner);
 #else
   cloud_policy_manager_ =
-      policy::UserCloudPolicyManagerFactory::CreateForOriginalProfile(
+      policy::UserCloudPolicyManagerFactory::CreateForOriginalBrowserContext(
           this, force_immediate_policy_load, sequenced_task_runner);
 #endif
 #endif

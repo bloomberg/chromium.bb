@@ -54,7 +54,7 @@ BrowserContextKeyedService*
       UserCloudPolicyManagerFactoryChromeOS::GetForProfile(profile);
 #else
   CloudPolicyManager* policy_manager =
-      UserCloudPolicyManagerFactory::GetForProfile(profile);
+      UserCloudPolicyManagerFactory::GetForBrowserContext(context);
 #endif
   if (!policy_manager)
     return NULL;
