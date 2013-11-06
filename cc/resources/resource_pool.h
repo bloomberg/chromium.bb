@@ -45,6 +45,7 @@ class CC_EXPORT ResourcePool {
                               size_t max_resource_count);
 
   void ReduceResourceUsage();
+  void CheckBusyResources();
 
   size_t total_memory_usage_bytes() const {
     return memory_usage_bytes_;
@@ -72,6 +73,7 @@ class CC_EXPORT ResourcePool {
 
   typedef std::list<Resource*> ResourceList;
   ResourceList unused_resources_;
+  ResourceList busy_resources_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourcePool);
 };

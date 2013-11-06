@@ -595,6 +595,13 @@ void TileManager::AssignGpuMemoryToTiles(
     TileVector* tiles_that_need_to_be_rasterized) {
   TRACE_EVENT0("cc", "TileManager::AssignGpuMemoryToTiles");
 
+  // Maintain the list of released resources that can potentially be re-used
+  // or deleted.
+  // If this operation becomes expensive too, only do this after some
+  // resource(s) was returned. Note that in that case, one also need to
+  // invalidate when releasing some resource from the pool.
+  resource_pool_->CheckBusyResources();
+
   // Now give memory out to the tiles until we're out, and build
   // the needs-to-be-rasterized queue.
   all_tiles_that_need_to_be_rasterized_have_memory_ = true;

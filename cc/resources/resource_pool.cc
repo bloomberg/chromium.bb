@@ -47,9 +47,8 @@ scoped_ptr<ResourcePool::Resource> ResourcePool::AcquireResource(
   for (ResourceList::iterator it = unused_resources_.begin();
        it != unused_resources_.end(); ++it) {
     Resource* resource = *it;
+    DCHECK(resource_provider_->CanLockForWrite(resource->id()));
 
-    if (!resource_provider_->CanLockForWrite(resource->id()))
-      continue;
     if (resource->size() != size)
       continue;
     if (resource->format() != format)
@@ -75,14 +74,7 @@ scoped_ptr<ResourcePool::Resource> ResourcePool::AcquireResource(
 
 void ResourcePool::ReleaseResource(
     scoped_ptr<ResourcePool::Resource> resource) {
-  if (ResourceUsageTooHigh()) {
-    memory_usage_bytes_ -= resource->bytes();
-    --resource_count_;
-    return;
-  }
-
-  unused_memory_usage_bytes_ += resource->bytes();
-  unused_resources_.push_back(resource.release());
+  busy_resources_.push_back(resource.release());
 }
 
 void ResourcePool::SetResourceUsageLimits(
@@ -125,6 +117,22 @@ bool ResourcePool::ResourceUsageTooHigh() {
   if (unused_memory_usage_bytes_ > max_unused_memory_usage_bytes_)
     return true;
   return false;
+}
+
+void ResourcePool::CheckBusyResources() {
+  ResourceList::iterator it = busy_resources_.begin();
+
+  while (it != busy_resources_.end()) {
+    Resource* resource = *it;
+
+    if (resource_provider_->CanLockForWrite(resource->id())) {
+      unused_memory_usage_bytes_ += resource->bytes();
+      unused_resources_.push_back(resource);
+      it = busy_resources_.erase(it);
+    } else {
+      ++it;
+    }
+  }
 }
 
 }  // namespace cc
