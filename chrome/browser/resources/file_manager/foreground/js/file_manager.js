@@ -209,14 +209,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }.bind(this));
 
     // TODO(yoshiki): Remove the flag when the feature is launched.
-    this.enableExperimentalWebstoreIntegration_ = false;
-    group.add(function(done) {
-      chrome.commandLinePrivate.hasSwitch(
-          'file-manager-enable-webstore-integration', function(flag) {
-        this.enableExperimentalWebstoreIntegration_ = flag;
-        done();
-      }.bind(this));
-    }.bind(this));
+    this.enableExperimentalWebstoreIntegration_ = true;
 
     group.run(callback);
   };
