@@ -285,6 +285,9 @@ struct KeyPressEntry {
     const char* name;
 };
 
+// Key bindings with command key on Mac and alt key on other platforms are
+// marked as system key events and will be ignored (with the exception
+// of Command-B and Command-I) so they shouldn't be added here.
 static const KeyDownEntry keyDownEntries[] = {
     { VKEY_LEFT,   0,                  "MoveLeft"                             },
     { VKEY_LEFT,   ShiftKey,           "MoveLeftAndModifySelection"           },
@@ -326,36 +329,20 @@ static const KeyDownEntry keyDownEntries[] = {
     { VKEY_HOME,   ShiftKey,
         "MoveToBeginningOfLineAndModifySelection"                             },
 #if OS(MACOSX)
-    { VKEY_LEFT,   CommandKey,         "MoveToBeginningOfLine"                },
-    { VKEY_LEFT,   CommandKey | ShiftKey,
-      "MoveToBeginningOfLineAndModifySelection"                               },
     { VKEY_PRIOR,  OptionKey,          "MovePageUp"                           },
     { VKEY_NEXT,   OptionKey,          "MovePageDown"                         },
 #endif
-#if OS(MACOSX)
-    { VKEY_UP,     CommandKey,         "MoveToBeginningOfDocument"            },
-    { VKEY_UP,     CommandKey | ShiftKey,
-        "MoveToBeginningOfDocumentAndModifySelection"                         },
-#else
+#if !OS(MACOSX)
     { VKEY_HOME,   CtrlKey,            "MoveToBeginningOfDocument"            },
     { VKEY_HOME,   CtrlKey | ShiftKey,
         "MoveToBeginningOfDocumentAndModifySelection"                         },
 #endif
     { VKEY_END,    0,                  "MoveToEndOfLine"                      },
     { VKEY_END,    ShiftKey,           "MoveToEndOfLineAndModifySelection"    },
-#if OS(MACOSX)
-    { VKEY_DOWN,   CommandKey,         "MoveToEndOfDocument"                  },
-    { VKEY_DOWN,   CommandKey | ShiftKey,
-        "MoveToEndOfDocumentAndModifySelection"                               },
-#else
+#if !OS(MACOSX)
     { VKEY_END,    CtrlKey,            "MoveToEndOfDocument"                  },
     { VKEY_END,    CtrlKey | ShiftKey,
         "MoveToEndOfDocumentAndModifySelection"                               },
-#endif
-#if OS(MACOSX)
-    { VKEY_RIGHT,  CommandKey,         "MoveToEndOfLine"                      },
-    { VKEY_RIGHT,  CommandKey | ShiftKey,
-        "MoveToEndOfLineAndModifySelection"                                   },
 #endif
     { VKEY_BACK,   0,                  "DeleteBackward"                       },
     { VKEY_BACK,   ShiftKey,           "DeleteBackward"                       },
@@ -367,8 +354,13 @@ static const KeyDownEntry keyDownEntries[] = {
     { VKEY_BACK,   CtrlKey,            "DeleteWordBackward"                   },
     { VKEY_DELETE, CtrlKey,            "DeleteWordForward"                    },
 #endif
+#if OS(MACOSX)
+    { 'B',         CommandKey,         "ToggleBold"                           },
+    { 'I',         CommandKey,         "ToggleItalic"                         },
+#else
     { 'B',         CtrlKey,            "ToggleBold"                           },
     { 'I',         CtrlKey,            "ToggleItalic"                         },
+#endif
     { 'U',         CtrlKey,            "ToggleUnderline"                      },
     { VKEY_ESCAPE, 0,                  "Cancel"                               },
     { VKEY_OEM_PERIOD, CtrlKey,        "Cancel"                               },

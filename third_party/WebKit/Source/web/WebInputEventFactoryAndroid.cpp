@@ -104,6 +104,13 @@ WebMouseEvent WebInputEventFactory::mouseEvent(MouseEventType type,
     return result;
 }
 
+bool WebInputEventFactory::isSystemKeyEvent(const WebKeyboardEvent& event)
+{
+    // On Windows all keys with Alt modifier will be marked as system key.
+    // We keep the same behavior on Linux and everywhere non-Mac.
+    return event.modifiers & WebInputEvent::AltKey;
+}
+
 // WebMouseWheelEvent ------------------------------------------------------------
 
 WebMouseWheelEvent WebInputEventFactory::mouseWheelEvent(MouseWheelDirectionType direction,
