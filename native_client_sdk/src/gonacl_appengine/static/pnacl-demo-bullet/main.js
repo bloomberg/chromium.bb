@@ -75,7 +75,7 @@ function pageDidLoad() {
   embed.setAttribute('width', '0');
   embed.setAttribute('height', '0');
   embed.setAttribute('type', 'application/x-pnacl');
-  embed.setAttribute('src', 'http://commondatastorage.googleapis.com/gonacl/demos/publish/229855/bullet/NaClAMBullet.nmf');
+  embed.setAttribute('src', 'http://commondatastorage.googleapis.com/gonacl/demos/publish/233080/bullet/NaClAMBullet.nmf');
   embedWrap.appendChild(embed);
 }
 

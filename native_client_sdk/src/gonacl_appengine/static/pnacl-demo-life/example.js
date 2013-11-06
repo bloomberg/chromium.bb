@@ -42,7 +42,7 @@ function browserSupportsPNaCl() {
  * @return {string}
  */
 function getDataURL(name) {
-  var revision = 231029;
+  var revision = 233080;
   var baseUrl = 'http://commondatastorage.googleapis.com/gonacl/demos/publish/';
   return baseUrl + revision + '/life/' + name;
 }

@@ -57,11 +57,19 @@ To publish a new version:
 
 4. Update the URLs to use this new revision in each demo's JavaScript files:
 
-  * For ``earth``, this is found in ``/static/pnacl-demo-earth/example.js``, in
-    the ``getDataURL`` function.
-  * For ``bullet``, this is found in ``/static/pnacl-demo-bullet/main.js``, in
-    the ``pageDidLoad`` function.
-  * For ``lua``, this is found in ``/static/pnacl-demo-lua/lua.js``.
+   Please see the following table for the location of the revision number to
+   modify.
+
+   ==========  ========================================  ===========
+   Demo        File                                      Function
+   ==========  ========================================  ===========
+   bullet      /static/pnacl-demo-bullet/main.js         pageDidLoad
+   cube        /static/pnacl-demo-cube/example.js        getDataURL
+   earth       /static/pnacl-demo-earth/example.js       getDataURL
+   life        /static/pnacl-demo-life/example.js        getDataURL
+   lua         /static/pnacl-demo-lua/lua.js
+   smoothlife  /static/pnacl-demo-smoothlife/example.js  getDataURL
+   voronoi     /static/pnacl-demo-voronoi/example.js     getDataURL
 
 5. Land a CL with these changes.
 
