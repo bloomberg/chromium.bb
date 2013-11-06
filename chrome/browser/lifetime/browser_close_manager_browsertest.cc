@@ -807,8 +807,9 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
 }
 
 // Test shutdown with downloads in progress and beforeunload handlers.
+// Disabled, see http://crbug.com/315754.
 IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
-                       TestBeforeUnloadAndDownloads) {
+                       DISABLED_TestBeforeUnloadAndDownloads) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_NO_FATAL_FAILURE(CreateStalledDownload(browser()));
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
