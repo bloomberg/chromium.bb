@@ -96,10 +96,11 @@ private:
     virtual void didFailAccessControlCheck(const ResourceError&);
     virtual void didFailRedirectCheck();
 
+    void scheduleInitialConnect();
     void connect();
     void networkRequestEnded();
     void scheduleReconnect();
-    void reconnectTimerFired(Timer<EventSource>*);
+    void connectTimerFired(Timer<EventSource>*);
     void abortConnectionAttempt();
     void parseEventStream();
     void parseEventStreamLine(unsigned pos, int fieldLength, int lineLength);
@@ -111,7 +112,7 @@ private:
 
     RefPtr<TextResourceDecoder> m_decoder;
     RefPtr<ThreadableLoader> m_loader;
-    Timer<EventSource> m_reconnectTimer;
+    Timer<EventSource> m_connectTimer;
     Vector<UChar> m_receiveBuf;
     bool m_discardTrailingNewline;
     bool m_requestInFlight;

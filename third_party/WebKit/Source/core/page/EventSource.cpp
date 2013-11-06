@@ -63,7 +63,7 @@ inline EventSource::EventSource(ExecutionContext* context, const KURL& url, cons
     , m_withCredentials(false)
     , m_state(CONNECTING)
     , m_decoder(TextResourceDecoder::create("text/plain", "UTF-8"))
-    , m_reconnectTimer(this, &EventSource::reconnectTimerFired)
+    , m_connectTimer(this, &EventSource::connectTimerFired)
     , m_discardTrailingNewline(false)
     , m_requestInFlight(false)
     , m_reconnectDelay(defaultReconnectDelay)
@@ -100,7 +100,7 @@ PassRefPtr<EventSource> EventSource::create(ExecutionContext* context, const Str
     RefPtr<EventSource> source = adoptRef(new EventSource(context, fullURL, eventSourceInit));
 
     source->setPendingActivity(source.get());
-    source->connect();
+    source->scheduleInitialConnect();
     source->suspendIfNeeded();
 
     return source.release();
@@ -110,6 +110,14 @@ EventSource::~EventSource()
 {
     ASSERT(m_state == CLOSED);
     ASSERT(!m_requestInFlight);
+}
+
+void EventSource::scheduleInitialConnect()
+{
+    ASSERT(m_state == CONNECTING);
+    ASSERT(!m_requestInFlight);
+
+    m_connectTimer.startOneShot(0);
 }
 
 void EventSource::connect()
@@ -159,11 +167,11 @@ void EventSource::networkRequestEnded()
 void EventSource::scheduleReconnect()
 {
     m_state = CONNECTING;
-    m_reconnectTimer.startOneShot(m_reconnectDelay / 1000.0);
+    m_connectTimer.startOneShot(m_reconnectDelay / 1000.0);
     dispatchEvent(Event::create(EventTypeNames::error));
 }
 
-void EventSource::reconnectTimerFired(Timer<EventSource>*)
+void EventSource::connectTimerFired(Timer<EventSource>*)
 {
     connect();
 }
@@ -191,8 +199,8 @@ void EventSource::close()
     }
 
     // Stop trying to reconnect if EventSource was explicitly closed or if ActiveDOMObject::stop() was called.
-    if (m_reconnectTimer.isActive()) {
-        m_reconnectTimer.stop();
+    if (m_connectTimer.isActive()) {
+        m_connectTimer.stop();
         unsetPendingActivity(this);
     }
 
@@ -306,9 +314,13 @@ void EventSource::didFailRedirectCheck()
 void EventSource::abortConnectionAttempt()
 {
     ASSERT(m_state == CONNECTING);
-    ASSERT(m_requestInFlight);
 
-    m_loader->cancel();
+    if (m_requestInFlight) {
+        m_loader->cancel();
+    } else {
+        m_state = CLOSED;
+        unsetPendingActivity(this);
+    }
 
     ASSERT(m_state == CLOSED);
     dispatchEvent(Event::create(EventTypeNames::error));
