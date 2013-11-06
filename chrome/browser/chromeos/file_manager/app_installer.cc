@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/file_manager/file_manager_installer.h"
+#include "chrome/browser/chromeos/file_manager/app_installer.h"
 
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
@@ -14,13 +14,13 @@ namespace {
 const char kWebContentsDestroyedError[] = "WebContents is destroyed.";
 }  // namespace
 
-class FileManagerInstaller::WebContentsObserver
+class AppInstaller::WebContentsObserver
     : public content::WebContentsObserver {
 
  public:
   explicit WebContentsObserver(
       content::WebContents* web_contents,
-      FileManagerInstaller* parent)
+      AppInstaller* parent)
       : content::WebContentsObserver(web_contents),
         parent_(parent) {
   }
@@ -33,12 +33,12 @@ class FileManagerInstaller::WebContentsObserver
   }
 
  private:
-  FileManagerInstaller* parent_;
+  AppInstaller* parent_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebContentsObserver);
 };
 
-FileManagerInstaller::FileManagerInstaller(
+AppInstaller::AppInstaller(
     content::WebContents* web_contents,
     const std::string& webstore_item_id,
     Profile* profile,
@@ -52,19 +52,19 @@ FileManagerInstaller::FileManagerInstaller(
       web_contents_observer_(new WebContentsObserver(web_contents, this)) {
 }
 
-FileManagerInstaller::~FileManagerInstaller() {}
+AppInstaller::~AppInstaller() {}
 
-bool FileManagerInstaller::CheckRequestorAlive() const {
+bool AppInstaller::CheckRequestorAlive() const {
   // The tab may have gone away - cancel installation in that case.
   return web_contents_ != NULL;
 }
 
-const GURL& FileManagerInstaller::GetRequestorURL() const {
+const GURL& AppInstaller::GetRequestorURL() const {
   return GURL::EmptyGURL();
 }
 
 scoped_ptr<ExtensionInstallPrompt::Prompt>
-FileManagerInstaller::CreateInstallPrompt() const {
+AppInstaller::CreateInstallPrompt() const {
   scoped_ptr<ExtensionInstallPrompt::Prompt> prompt(
       new ExtensionInstallPrompt::Prompt(
           ExtensionInstallPrompt::INLINE_INSTALL_PROMPT));
@@ -76,19 +76,19 @@ FileManagerInstaller::CreateInstallPrompt() const {
   return prompt.Pass();
 }
 
-bool FileManagerInstaller::ShouldShowPostInstallUI() const {
+bool AppInstaller::ShouldShowPostInstallUI() const {
   return false;
 }
 
-bool FileManagerInstaller::ShouldShowAppInstalledBubble() const {
+bool AppInstaller::ShouldShowAppInstalledBubble() const {
   return false;
 }
 
-content::WebContents* FileManagerInstaller::GetWebContents() const {
+content::WebContents* AppInstaller::GetWebContents() const {
   return web_contents_;
 }
 
-bool FileManagerInstaller::CheckInlineInstallPermitted(
+bool AppInstaller::CheckInlineInstallPermitted(
     const base::DictionaryValue& webstore_data,
     std::string* error) const {
   DCHECK(error != NULL);
@@ -96,7 +96,7 @@ bool FileManagerInstaller::CheckInlineInstallPermitted(
   return true;
 }
 
-bool FileManagerInstaller::CheckRequestorPermitted(
+bool AppInstaller::CheckRequestorPermitted(
     const base::DictionaryValue& webstore_data,
     std::string* error) const {
   DCHECK(error != NULL);
@@ -104,7 +104,7 @@ bool FileManagerInstaller::CheckRequestorPermitted(
   return true;
 }
 
-void FileManagerInstaller::OnWebContentsDestroyed(
+void AppInstaller::OnWebContentsDestroyed(
     content::WebContents* web_contents) {
   callback_.Run(false, kWebContentsDestroyedError);
   AbortInstall();

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_FILE_MANAGER_FILE_MANAGER_INSTALLER_H_
-#define CHROME_BROWSER_CHROMEOS_FILE_MANAGER_FILE_MANAGER_INSTALLER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_FILE_MANAGER_APP_INSTALLER_H_
+#define CHROME_BROWSER_CHROMEOS_FILE_MANAGER_APP_INSTALLER_H_
 
 #include <string>
 
@@ -17,21 +17,22 @@ class WebContents;
 
 namespace file_manager {
 
-// Installer for Files.app.
-class FileManagerInstaller
+// This class is used for installing apps and extensions suggested from the
+// Chrome Web Store for unsupported file types, inside Files.app.
+class AppInstaller
     : public extensions::WebstoreStandaloneInstaller {
  public:
   typedef extensions::WebstoreStandaloneInstaller::Callback Callback;
 
-  FileManagerInstaller(content::WebContents* web_contents,
+  AppInstaller(content::WebContents* web_contents,
                        const std::string& webstore_item_id,
                        Profile* profile,
                        const Callback& callback);
 
  protected:
-  friend class base::RefCountedThreadSafe<FileManagerInstaller>;
+  friend class base::RefCountedThreadSafe<AppInstaller>;
 
-  virtual ~FileManagerInstaller();
+  virtual ~AppInstaller();
 
   void OnWebContentsDestroyed(content::WebContents* web_contents);
 
@@ -57,9 +58,9 @@ class FileManagerInstaller
   content::WebContents* web_contents_;
   scoped_ptr<WebContentsObserver> web_contents_observer_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(FileManagerInstaller);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(AppInstaller);
 };
 
 }  // namespace file_manager
 
-#endif  // CHROME_BROWSER_CHROMEOS_FILE_MANAGER_FILE_MANAGER_INSTALLER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_FILE_MANAGER_APP_INSTALLER_H_

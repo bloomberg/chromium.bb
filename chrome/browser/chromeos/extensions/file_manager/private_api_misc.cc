@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
-#include "chrome/browser/chromeos/file_manager/file_manager_installer.h"
+#include "chrome/browser/chromeos/file_manager/app_installer.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -188,8 +188,8 @@ bool FileBrowserPrivateInstallWebstoreItemFunction::RunImpl() {
           &FileBrowserPrivateInstallWebstoreItemFunction::OnInstallComplete,
           this);
 
-  scoped_refptr<file_manager::FileManagerInstaller> installer(
-      new file_manager::FileManagerInstaller(
+  scoped_refptr<file_manager::AppInstaller> installer(
+      new file_manager::AppInstaller(
           GetAssociatedWebContents(),  // web_contents(),
           params->item_id,
           GetProfile(),
