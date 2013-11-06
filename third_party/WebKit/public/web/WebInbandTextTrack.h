@@ -62,7 +62,6 @@ public:
     virtual Mode mode() const = 0;
 
     virtual Kind kind() const = 0;
-    virtual bool isClosedCaptions() const = 0;
 
     virtual WebString label() const = 0;
     virtual WebString language() const = 0;

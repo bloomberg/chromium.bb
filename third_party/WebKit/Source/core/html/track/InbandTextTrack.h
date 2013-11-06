@@ -42,10 +42,6 @@ public:
     static PassRefPtr<InbandTextTrack> create(Document&, TextTrackClient*, PassRefPtr<InbandTextTrackPrivate>);
     virtual ~InbandTextTrack();
 
-    virtual bool isClosedCaptions() const OVERRIDE;
-    virtual bool containsOnlyForcedSubtitles() const OVERRIDE;
-    virtual bool isMainProgramContent() const OVERRIDE;
-    virtual bool isEasyToRead() const OVERRIDE;
     virtual void setMode(const AtomicString&) OVERRIDE;
     size_t inbandTrackIndex();
     void trackRemoved();

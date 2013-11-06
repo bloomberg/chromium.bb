@@ -53,7 +53,6 @@ public:
     virtual InbandTextTrackPrivate::Mode mode() const;
 
     virtual Kind kind() const;
-    virtual bool isClosedCaptions() const;
 
     virtual AtomicString label() const;
     virtual AtomicString language() const;

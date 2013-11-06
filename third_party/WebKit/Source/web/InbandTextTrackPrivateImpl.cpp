@@ -64,11 +64,6 @@ WebCore::InbandTextTrackPrivate::Kind InbandTextTrackPrivateImpl::kind() const
     return static_cast<WebCore::InbandTextTrackPrivate::Kind>(m_track->kind());
 }
 
-bool InbandTextTrackPrivateImpl::isClosedCaptions() const
-{
-    return m_track->isClosedCaptions();
-}
-
 AtomicString InbandTextTrackPrivateImpl::label() const
 {
     return m_track->label();
