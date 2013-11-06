@@ -228,7 +228,6 @@
             'PartitionAllocTest.cpp',
             'SHA1Test.cpp',
             'SaturatedArithmeticTest.cpp',
-            'SpinLockTest.cpp',
             'StringExtrasTest.cpp',
             'StringHasherTest.cpp',
             'TemporaryChangeTest.cpp',

@@ -31,8 +31,15 @@
 #include "config.h"
 #include "wtf/SpinLock.h"
 
-#include "wtf/Threading.h"
+#include "platform/Task.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebThread.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+
 #include <gtest/gtest.h>
+
+using WebCore::Task;
 
 namespace {
 
@@ -60,9 +67,8 @@ static void changeAndCheckBuffer(volatile char* buffer)
     fillBuffer(buffer, '!');
 }
 
-static void threadMain(void* arg)
+static void threadMain(volatile char* buffer)
 {
-    volatile char* buffer = reinterpret_cast<volatile char*>(arg);
     for (int i = 0; i < 500000; ++i) {
         spinLockLock(&lock);
         changeAndCheckBuffer(buffer);
@@ -74,15 +80,14 @@ TEST(WTF_SpinLock, Torture)
 {
     char sharedBuffer[bufferSize];
 
-    ThreadIdentifier thread1 = createThread(threadMain, sharedBuffer, "thread1");
-    ThreadIdentifier thread2 = createThread(threadMain, sharedBuffer, "thread2");
-    EXPECT_NE(0u, thread1);
-    EXPECT_NE(0u, thread2);
+    OwnPtr<WebKit::WebThread> thread1 = adoptPtr(WebKit::Platform::current()->createThread("thread1"));
+    OwnPtr<WebKit::WebThread> thread2 = adoptPtr(WebKit::Platform::current()->createThread("thread2"));
 
-    int ret = waitForThreadCompletion(thread1);
-    EXPECT_EQ(0, ret);
-    ret = waitForThreadCompletion(thread2);
-    EXPECT_EQ(0, ret);
+    thread1->postTask(new Task(WTF::bind(&threadMain, static_cast<char*>(sharedBuffer))));
+    thread2->postTask(new Task(WTF::bind(&threadMain, static_cast<char*>(sharedBuffer))));
+
+    thread1.clear();
+    thread2.clear();
 }
 
 } // namespace
