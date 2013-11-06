@@ -1937,6 +1937,10 @@
       # Set this to use the new DX11 version of ANGLE.
       # TODO(apatrick): Remove this when the transition is complete.
       'ANGLE_DX11',
+      # We're in the process of renaming the WebKit namespace to blink.
+      # TODO(abarth): Remove this define when we've updated the code.
+      # See https://code.google.com/p/chromium/issues/detail?id=295096
+      'WebKit=blink',
     ],
     'conditions': [
       ['(OS=="mac" or OS=="ios") and asan==1', {
