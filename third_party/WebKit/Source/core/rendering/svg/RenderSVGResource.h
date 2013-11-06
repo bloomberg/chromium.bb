@@ -82,6 +82,9 @@ public:
     static void markForLayoutAndParentResourceInvalidation(RenderObject*, bool needsLayout = true);
 };
 
+#define DEFINE_RENDER_SVG_RESOURCE_TYPE_CASTS(thisType, typeName) \
+    DEFINE_TYPE_CASTS(thisType, RenderSVGResource, resource, resource->resourceType() == typeName, resource.resourceType() == typeName)
+
 }
 
 #endif

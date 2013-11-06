@@ -73,11 +73,7 @@ private:
     FloatRect m_viewport;
 };
 
-inline RenderSVGResourceMarker* toRenderSVGResourceMarker(RenderSVGResource* resource)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!resource || resource->resourceType() == MarkerResourceType);
-    return static_cast<RenderSVGResourceMarker*>(resource);
-}
+DEFINE_RENDER_SVG_RESOURCE_TYPE_CASTS(RenderSVGResourceMarker, MarkerResourceType);
 
 }
 

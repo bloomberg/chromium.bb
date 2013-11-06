@@ -63,11 +63,7 @@ private:
     FloatRect m_maskContentBoundaries;
 };
 
-inline RenderSVGResourceMasker* toRenderSVGResourceMasker(RenderSVGResource* resource)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!resource || resource->resourceType() == MaskerResourceType);
-    return static_cast<RenderSVGResourceMasker*>(resource);
-}
+DEFINE_RENDER_SVG_RESOURCE_TYPE_CASTS(RenderSVGResourceMasker, MaskerResourceType);
 
 }
 
