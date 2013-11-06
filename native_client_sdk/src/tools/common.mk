@@ -112,6 +112,16 @@ endif
 
 
 #
+# Verify we selected a valid configuration for this example.
+#
+VALID_CONFIGS ?= Debug Release
+ifeq (,$(findstring $(CONFIG),$(VALID_CONFIGS)))
+  $(warning Availbile choices are: $(VALID_CONFIGS))
+  $(error Can not use CONFIG=$(CONFIG) on this example.)
+endif
+
+
+#
 # Note for Windows:
 #   The GCC and LLVM toolchains (include the version of Make.exe that comes
 # with the SDK) expect and are capable of dealing with the '/' seperator.
