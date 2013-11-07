@@ -863,6 +863,7 @@
             '../skia/skia.gyp:skia',
             '../testing/gmock.gyp:gmock',
             '../testing/gtest.gyp:gtest',
+            '../third_party/WebKit/public/blink.gyp:blink',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             '../third_party/mesa/mesa.gyp:osmesa',
             '../ui/gfx/gfx.gyp:gfx',
