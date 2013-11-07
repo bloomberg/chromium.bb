@@ -112,8 +112,10 @@ class Namespace(object):
     self.functions = _GetFunctions(self, json, self)
     self.events = _GetEvents(self, json, self)
     self.properties = _GetProperties(self, json, self, toplevel_origin)
-    self.compiler_options = (json.get('compiler_options', {})
-        if include_compiler_options else {})
+    if include_compiler_options:
+      self.compiler_options = json.get('compiler_options', {})
+    else:
+      self.compiler_options = {}
     self.documentation_options = json.get('documentation_options', {})
 
 
