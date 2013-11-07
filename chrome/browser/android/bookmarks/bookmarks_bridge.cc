@@ -8,6 +8,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -25,22 +26,30 @@ using content::BrowserThread;
 // Should mirror constants in BookmarkBridge.java
 static const int kBookmarkTypeNormal = 0;
 static const int kBookmarkTypeManaged = 1;
+static const int kBookmarkTypePartner = 2;
 
 BookmarksBridge::BookmarksBridge(JNIEnv* env,
                                  jobject obj,
                                  jobject j_profile)
-    : weak_java_ref_(env, obj) {
+    : weak_java_ref_(env, obj),
+      bookmark_model_(NULL),
+      partner_bookmarks_shim_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   bookmark_model_ = BookmarkModelFactory::GetForProfile(profile);
 
   // Registers the notifications we are interested.
   bookmark_model_->AddObserver(this);
-  if (bookmark_model_->loaded())
-    Java_BookmarksBridge_bookmarkModelLoaded(env, obj);
+
+  // Create the partner Bookmarks shim as early as possible (but don't attach).
+  partner_bookmarks_shim_ = PartnerBookmarksShim::BuildForBrowserContext(
+      chrome::GetBrowserContextRedirectedInIncognito(profile));
+  partner_bookmarks_shim_->AddObserver(this);
 
   managed_bookmarks_shim_.reset(new ManagedBookmarksShim(profile->GetPrefs()));
   managed_bookmarks_shim_->AddObserver(this);
+
+  NotifyIfDoneLoading();
 
   // Since a sync or import could have started before this class is
   // initialized, we need to make sure that our initial state is
@@ -51,6 +60,8 @@ BookmarksBridge::BookmarksBridge(JNIEnv* env,
 
 BookmarksBridge::~BookmarksBridge() {
   bookmark_model_->RemoveObserver(this);
+  if (partner_bookmarks_shim_)
+    partner_bookmarks_shim_->RemoveObserver(this);
   if (managed_bookmarks_shim_)
     managed_bookmarks_shim_->RemoveObserver(this);
 }
@@ -83,10 +94,14 @@ void BookmarksBridge::GetBookmarksForFolder(JNIEnv* env,
                                             jobject j_folder_id_obj,
                                             jobject j_callback_obj,
                                             jobject j_result_obj) {
-  DCHECK(bookmark_model_->loaded());
+  DCHECK(IsLoaded());
   long folder_id = Java_BookmarkId_getId(env, j_folder_id_obj);
   int type = Java_BookmarkId_getType(env, j_folder_id_obj);
   const BookmarkNode* folder = GetFolderWithFallback(folder_id, type);
+
+  if (!folder->is_folder() || !IsReachable(folder))
+    return;
+
   // If this is the Mobile bookmarks folder then add the "Managed bookmarks"
   // folder first, so that it's the first entry.
   if (folder == bookmark_model_->mobile_node() &&
@@ -101,6 +116,13 @@ void BookmarksBridge::GetBookmarksForFolder(JNIEnv* env,
     ExtractBookmarkNodeInformation(node, j_result_obj);
   }
 
+  if (folder == bookmark_model_->mobile_node() &&
+      partner_bookmarks_shim_->HasPartnerBookmarks()) {
+    ExtractBookmarkNodeInformation(
+        partner_bookmarks_shim_->GetPartnerBookmarksRoot(),
+        j_result_obj);
+  }
+
   Java_BookmarksCallback_onBookmarksAvailable(
       env, j_callback_obj, j_folder_id_obj, j_result_obj);
 }
@@ -110,10 +132,14 @@ void BookmarksBridge::GetCurrentFolderHierarchy(JNIEnv* env,
                                                 jobject j_folder_id_obj,
                                                 jobject j_callback_obj,
                                                 jobject j_result_obj) {
-  DCHECK(bookmark_model_->loaded());
+  DCHECK(IsLoaded());
   long folder_id = Java_BookmarkId_getId(env, j_folder_id_obj);
   int type = Java_BookmarkId_getType(env, j_folder_id_obj);
   const BookmarkNode* folder = GetFolderWithFallback(folder_id, type);
+
+  if (!folder->is_folder() || !IsReachable(folder))
+    return;
+
   // Get the folder heirarchy
   const BookmarkNode* node = folder;
   while (node) {
@@ -129,7 +155,7 @@ void BookmarksBridge::DeleteBookmark(JNIEnv* env,
                                      jobject obj,
                                      jobject j_bookmark_id_obj) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(bookmark_model_->loaded());
+  DCHECK(IsLoaded());
 
   long bookmark_id = Java_BookmarkId_getId(env, j_bookmark_id_obj);
   int type = Java_BookmarkId_getType(env, j_bookmark_id_obj);
@@ -139,8 +165,12 @@ void BookmarksBridge::DeleteBookmark(JNIEnv* env,
     return;
   }
 
-  const BookmarkNode* parent_node = GetParentNode(node);
-  bookmark_model_->Remove(parent_node, parent_node->GetIndexOf(node));
+  if (partner_bookmarks_shim_->IsPartnerBookmark(node)) {
+    partner_bookmarks_shim_->RemoveBookmark(node);
+  } else {
+    const BookmarkNode* parent_node = GetParentNode(node);
+    bookmark_model_->Remove(parent_node, parent_node->GetIndexOf(node));
+  }
 }
 
 ScopedJavaLocalRef<jobject> BookmarksBridge::CreateJavaBookmark(
@@ -158,7 +188,7 @@ ScopedJavaLocalRef<jobject> BookmarksBridge::CreateJavaBookmark(
       env,
       node->id(),
       GetBookmarkType(node),
-      ConvertUTF16ToJavaString(env, node->GetTitle()).obj(),
+      ConvertUTF16ToJavaString(env, GetTitle(node)).obj(),
       ConvertUTF8ToJavaString(env, url).obj(),
       node->is_folder(),
       parent_id,
@@ -170,6 +200,8 @@ void BookmarksBridge::ExtractBookmarkNodeInformation(
     const BookmarkNode* node,
     jobject j_result_obj) {
   JNIEnv* env = AttachCurrentThread();
+  if (!IsReachable(node))
+    return;
   Java_BookmarksBridge_addToList(
       env,
       j_result_obj,
@@ -181,6 +213,9 @@ const BookmarkNode* BookmarksBridge::GetNodeByID(long node_id,
   const BookmarkNode* node;
   if (type == kBookmarkTypeManaged) {
     node = managed_bookmarks_shim_->GetNodeByID(
+        static_cast<int64>(node_id));
+  } else if (type == kBookmarkTypePartner) {
+    node = partner_bookmarks_shim_->GetNodeByID(
         static_cast<int64>(node_id));
   } else {
     node = bookmark_model_->GetNodeByID(static_cast<int64>(node_id));
@@ -197,26 +232,60 @@ const BookmarkNode* BookmarksBridge::GetFolderWithFallback(
 }
 
 bool BookmarksBridge::IsEditable(const BookmarkNode* node) const {
-  return node &&
-      (node->type() == BookmarkNode::FOLDER ||
-          node->type() == BookmarkNode::URL) &&
-      !managed_bookmarks_shim_->IsManagedBookmark(node) &&
-      IsEditBookmarksEnabled();
+  if (!node || (node->type() != BookmarkNode::FOLDER &&
+      node->type() != BookmarkNode::URL)) {
+    return false;
+  }
+  if (!IsEditBookmarksEnabled())
+    return false;
+  if (partner_bookmarks_shim_->IsPartnerBookmark(node))
+    return true;
+  return !managed_bookmarks_shim_->IsManagedBookmark(node);
 }
 
 const BookmarkNode* BookmarksBridge::GetParentNode(const BookmarkNode* node) {
-  DCHECK(bookmark_model_->loaded());
-  if (node == managed_bookmarks_shim_->GetManagedBookmarksRoot())
+  DCHECK(IsLoaded());
+  if (node == managed_bookmarks_shim_->GetManagedBookmarksRoot() ||
+      node == partner_bookmarks_shim_->GetPartnerBookmarksRoot()) {
     return bookmark_model_->mobile_node();
-  else
+  } else {
     return node->parent();
+  }
 }
 
 int BookmarksBridge::GetBookmarkType(const BookmarkNode* node) {
   if (managed_bookmarks_shim_->IsManagedBookmark(node))
     return kBookmarkTypeManaged;
+  else if (partner_bookmarks_shim_->IsPartnerBookmark(node))
+    return kBookmarkTypePartner;
   else
     return kBookmarkTypeNormal;
+}
+
+string16 BookmarksBridge::GetTitle(const BookmarkNode* node) const {
+  if (partner_bookmarks_shim_->IsPartnerBookmark(node))
+    return partner_bookmarks_shim_->GetTitle(node);
+  return node->GetTitle();
+}
+
+bool BookmarksBridge::IsReachable(const BookmarkNode* node) const {
+  if (!partner_bookmarks_shim_->IsPartnerBookmark(node))
+    return true;
+  return partner_bookmarks_shim_->IsReachable(node);
+}
+
+bool BookmarksBridge::IsLoaded() const {
+  return (bookmark_model_->loaded() && partner_bookmarks_shim_->IsLoaded());
+}
+
+void BookmarksBridge::NotifyIfDoneLoading() {
+  if (!IsLoaded())
+    return;
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  Java_BookmarksBridge_bookmarkModelLoaded(env, obj.obj());
 }
 
 // ------------- Observer-related methods ------------- //
@@ -232,11 +301,7 @@ void BookmarksBridge::BookmarkModelChanged() {
 }
 
 void BookmarksBridge::Loaded(BookmarkModel* model, bool ids_reassigned) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
-  if (obj.is_null())
-    return;
-  Java_BookmarksBridge_bookmarkModelLoaded(env, obj.obj());
+  NotifyIfDoneLoading();
 }
 
 void BookmarksBridge::BookmarkModelBeingDeleted(BookmarkModel* model) {
@@ -337,4 +402,16 @@ void BookmarksBridge::ExtensiveBookmarkChangesEnded(BookmarkModel* model) {
 
 void BookmarksBridge::OnManagedBookmarksChanged() {
   BookmarkModelChanged();
+}
+
+void BookmarksBridge::PartnerShimChanged(PartnerBookmarksShim* shim) {
+  BookmarkModelChanged();
+}
+
+void BookmarksBridge::PartnerShimLoaded(PartnerBookmarksShim* shim) {
+  NotifyIfDoneLoading();
+}
+
+void BookmarksBridge::ShimBeingDeleted(PartnerBookmarksShim* shim) {
+  partner_bookmarks_shim_ = NULL;
 }

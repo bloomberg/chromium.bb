@@ -96,6 +96,8 @@
         'browser/android/bookmarks/managed_bookmarks_shim.h',
         'browser/android/bookmarks/bookmarks_bridge.cc',
         'browser/android/bookmarks/bookmarks_bridge.h',
+        'browser/android/bookmarks/partner_bookmarks_shim.cc',
+        'browser/android/bookmarks/partner_bookmarks_shim.h',
         'browser/android/chrome_jni_registrar.cc',
         'browser/android/chrome_jni_registrar.h',
         'browser/android/chrome_startup_flags.cc',

@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/android/bookmarks/managed_bookmarks_shim.h"
+#include "chrome/browser/android/bookmarks/partner_bookmarks_shim.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 
 class Profile;
@@ -20,7 +21,8 @@ class Profile;
 // bookmark page. This fetches the bookmarks, title, urls, folder
 // hierarchy.
 class BookmarksBridge : public BaseBookmarkModelObserver,
-                        public ManagedBookmarksShim::Observer {
+                        public ManagedBookmarksShim::Observer,
+                        public PartnerBookmarksShim::Observer {
  public:
   BookmarksBridge(JNIEnv* env, jobject obj, jobject j_profile);
   void Destroy(JNIEnv*, jobject);
@@ -57,6 +59,10 @@ class BookmarksBridge : public BaseBookmarkModelObserver,
   bool IsEditable(const BookmarkNode* node) const;
   const BookmarkNode* GetParentNode(const BookmarkNode* node);
   int GetBookmarkType(const BookmarkNode* node);
+  string16 GetTitle(const BookmarkNode* node) const;
+  bool IsReachable(const BookmarkNode* node) const;
+  bool IsLoaded() const;
+  void NotifyIfDoneLoading();
 
   // Override BaseBookmarkModelObserver.
   // Called when there are changes to the bookmark model that don't trigger
@@ -87,10 +93,19 @@ class BookmarksBridge : public BaseBookmarkModelObserver,
   // Override ManagedBookmarksShim::Observer
   virtual void OnManagedBookmarksChanged() OVERRIDE;
 
+  // Override PartnerBookmarksShim::Observer
+  virtual void PartnerShimChanged(PartnerBookmarksShim* shim) OVERRIDE;
+  virtual void PartnerShimLoaded(PartnerBookmarksShim* shim) OVERRIDE;
+  virtual void ShimBeingDeleted(PartnerBookmarksShim* shim) OVERRIDE;
+
   JavaObjectWeakGlobalRef weak_java_ref_;
   BookmarkModel* bookmark_model_;  // weak
 
   scoped_ptr<ManagedBookmarksShim> managed_bookmarks_shim_;
+
+  // Information about the Partner bookmarks (must check for IsLoaded()).
+  // This is owned by profile.
+  PartnerBookmarksShim* partner_bookmarks_shim_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarksBridge);
 };
