@@ -44,6 +44,8 @@
 #include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
+#include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "chrome/browser/sync/glue/sync_backend_host_impl.h"
 #include "chrome/browser/sync/glue/synced_device_tracker.h"
 #include "chrome/browser/sync/glue/typed_url_data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_components_factory_impl.h"
@@ -513,8 +515,9 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
 
 void ProfileSyncService::CreateBackend() {
   backend_.reset(
-      new SyncBackendHost(profile_->GetDebugName(),
-                          profile_, sync_prefs_.AsWeakPtr()));
+      new browser_sync::SyncBackendHostImpl(profile_->GetDebugName(),
+                                            profile_,
+                                            sync_prefs_.AsWeakPtr()));
 }
 
 bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {

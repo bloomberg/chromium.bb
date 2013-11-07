@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "chrome/browser/sync/glue/sync_backend_host_impl.h"
 
 #include <cstddef>
 
@@ -15,6 +15,7 @@
 #include "chrome/browser/invalidation/invalidator_storage.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/sync/glue/device_info.h"
+#include "chrome/browser/sync/glue/sync_frontend.h"
 #include "chrome/browser/sync/glue/synced_device_tracker.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/test/base/testing_profile.h"
@@ -137,7 +138,7 @@ class SyncBackendHostTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile());
     sync_prefs_.reset(new SyncPrefs(profile_->GetPrefs()));
-    backend_.reset(new SyncBackendHost(
+    backend_.reset(new SyncBackendHostImpl(
         profile_->GetDebugName(),
         profile_.get(),
         sync_prefs_->AsWeakPtr()));

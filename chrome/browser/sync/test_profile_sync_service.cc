@@ -8,6 +8,7 @@
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "chrome/browser/sync/glue/sync_backend_host_core.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/test/test_http_bridge_factory.h"
 #include "sync/internal_api/public/test/sync_manager_factory_for_profile_sync_test.h"
@@ -30,7 +31,7 @@ SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
     bool synchronous_init,
     bool fail_initial_download,
     syncer::StorageOption storage_option)
-    : browser_sync::SyncBackendHost(
+    : browser_sync::SyncBackendHostImpl(
         profile->GetDebugName(), profile, sync_prefs),
       callback_(callback),
       fail_initial_download_(fail_initial_download),
@@ -70,7 +71,7 @@ void SyncBackendHostForProfileSyncTest::InitCore(
   options->internal_components_factory.reset(
       new TestInternalComponentsFactory(factory_switches, storage));
 
-  SyncBackendHost::InitCore(options.Pass());
+  SyncBackendHostImpl::InitCore(options.Pass());
   if (synchronous_init_ && !base::MessageLoop::current()->is_running()) {
     // The SyncBackend posts a task to the current loop when
     // initialization completes.
@@ -130,7 +131,7 @@ SyncBackendHostForProfileSyncTest::HandleInitializationSuccessOnFrontendLoop(
     if (synchronous_init_)
       base::MessageLoop::current()->Quit();
   } else {
-    SyncBackendHost::HandleInitializationSuccessOnFrontendLoop(
+    SyncBackendHostImpl::HandleInitializationSuccessOnFrontendLoop(
         js_backend,
         debug_info_listener);
   }

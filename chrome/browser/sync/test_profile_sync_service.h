@@ -14,6 +14,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/sync/glue/data_type_manager_impl.h"
+#include "chrome/browser/sync/glue/sync_backend_host_impl.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_prefs.h"
@@ -36,7 +37,7 @@ ACTION(ReturnNewDataTypeManager) {
 
 namespace browser_sync {
 
-class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
+class SyncBackendHostForProfileSyncTest : public SyncBackendHostImpl {
  public:
   // |synchronous_init| causes initialization to block until the syncapi has
   //     completed setting itself up and called us back.
