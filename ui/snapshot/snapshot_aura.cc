@@ -79,12 +79,12 @@ bool GrabWindowSnapshot(gfx::NativeWindow window,
 
   unsigned char* pixels = reinterpret_cast<unsigned char*>(
       bitmap.pixelRef()->pixels());
-  gfx::PNGCodec::Encode(pixels, gfx::PNGCodec::FORMAT_BGRA,
-                        gfx::Size(bitmap.width(), bitmap.height()),
-                        base::checked_numeric_cast<int>(bitmap.rowBytes()),
-                        true, std::vector<gfx::PNGCodec::Comment>(),
-                        png_representation);
-  return true;
+  return gfx::PNGCodec::Encode(
+      pixels, gfx::PNGCodec::FORMAT_BGRA,
+      gfx::Size(bitmap.width(), bitmap.height()),
+      base::checked_numeric_cast<int>(bitmap.rowBytes()),
+      true, std::vector<gfx::PNGCodec::Comment>(),
+      png_representation);
 }
 
 }  // namespace ui
