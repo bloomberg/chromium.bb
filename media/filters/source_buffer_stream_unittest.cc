@@ -2864,6 +2864,31 @@ TEST_F(SourceBufferStreamTest, SetExplicitDuration_DeletePartialSelectedRange) {
   CheckExpectedRanges("{ [0,4) [10,10) }");
 }
 
+// Test the case where duration is set while the stream parser buffers
+// already start passing the data to decoding pipeline. Selected range,
+// when invalidated by getting truncated, should be updated to NULL
+// accordingly so that successive append operations keep working.
+TEST_F(SourceBufferStreamTest, SetExplicitDuration_UpdateSelectedRange) {
+  // Seek to start of stream.
+  SeekToTimestamp(base::TimeDelta::FromMilliseconds(0));
+
+  NewSegmentAppend("0K 30 60 90");
+
+  // Read out the first few buffers.
+  CheckExpectedBuffers("0K 30");
+
+  // Set duration to be right before buffer 1.
+  stream_->OnSetDuration(base::TimeDelta::FromMilliseconds(60));
+
+  // Verify that there is no next buffer.
+  CheckNoNextBuffer();
+
+  // We should be able to append new buffers at this point.
+  NewSegmentAppend("120K 150");
+
+  CheckExpectedRangesByTimestamp("{ [0,60) [120,180) }");
+}
+
 // Test the case were the current playback position is at the end of the
 // buffered data and several overlaps occur that causes the selected
 // range to get split and then merged back into a single range.

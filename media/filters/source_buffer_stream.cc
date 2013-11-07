@@ -1054,6 +1054,8 @@ void SourceBufferStream::OnSetDuration(base::TimeDelta duration) {
   // Need to partially truncate this range.
   if ((*itr)->GetStartTimestamp() < duration) {
     (*itr)->TruncateAt(duration, NULL, false);
+    if ((*itr == selected_range_) && !selected_range_->HasNextBufferPosition())
+      SetSelectedRange(NULL);
     ++itr;
   }
 
