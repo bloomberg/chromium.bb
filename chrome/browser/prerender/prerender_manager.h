@@ -151,6 +151,12 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       content::SessionStorageNamespace* session_storage_namespace,
       const gfx::Size& size);
 
+  PrerenderHandle* AddPrerenderFromExternalRequest(
+      const GURL& url,
+      const content::Referrer& referrer,
+      content::SessionStorageNamespace* session_storage_namespace,
+      const gfx::Size& size);
+
   // If |process_id| and |view_id| refer to a running prerender, destroy
   // it with |final_status|.
   virtual void DestroyPrerenderForRenderView(int process_id,
@@ -214,6 +220,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // prerender |web_contents|.
   bool IsWebContentsPrerendering(const content::WebContents* web_contents,
                                  Origin* origin) const;
+
+  // Whether the PrerenderManager has an active prerender with the given url and
+  // SessionStorageNamespace associated with the given WebContens.
+  bool HasPrerenderedUrl(GURL url, content::WebContents* web_contents) const;
 
   // Returns the PrerenderContents object for the given web_contents if it's
   // used for an active prerender page, otherwise returns NULL.

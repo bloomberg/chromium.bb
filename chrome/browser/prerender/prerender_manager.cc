@@ -400,6 +400,15 @@ PrerenderHandle* PrerenderManager::AddPrerenderFromLocalPredictor(
                       size, session_storage_namespace);
 }
 
+PrerenderHandle* PrerenderManager::AddPrerenderFromExternalRequest(
+    const GURL& url,
+    const content::Referrer& referrer,
+    SessionStorageNamespace* session_storage_namespace,
+    const gfx::Size& size) {
+  return AddPrerender(ORIGIN_EXTERNAL_REQUEST, -1, url, referrer, size,
+                      session_storage_namespace);
+}
+
 void PrerenderManager::DestroyPrerenderForRenderView(
     int process_id, int view_id, FinalStatus final_status) {
   DCHECK(CalledOnValidThread());
@@ -791,6 +800,23 @@ bool PrerenderManager::IsWebContentsPrerendering(
     }
   }
 
+  return false;
+}
+
+bool PrerenderManager::HasPrerenderedUrl(
+    GURL url,
+    content::WebContents* web_contents) const {
+  content::SessionStorageNamespace* session_storage_namespace = web_contents->
+      GetController().GetDefaultSessionStorageNamespace();
+
+  for (ScopedVector<PrerenderData>::const_iterator it =
+           active_prerenders_.begin();
+       it != active_prerenders_.end(); ++it) {
+    PrerenderContents* prerender_contents = (*it)->contents();
+    if (prerender_contents->Matches(url, session_storage_namespace)) {
+      return true;
+    }
+  }
   return false;
 }
 

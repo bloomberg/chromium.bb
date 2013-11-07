@@ -58,6 +58,8 @@ std::string GetHistogramName(Origin origin, uint8 experiment_id,
       return ComposeHistogramName("webcross", name);
     case ORIGIN_LOCAL_PREDICTOR:
       return ComposeHistogramName("localpredictor", name);
+    case ORIGIN_EXTERNAL_REQUEST:
+        return ComposeHistogramName("externalrequest", name);
     case ORIGIN_GWS_PRERENDER:  // Handled above.
     default:
       NOTREACHED();
@@ -116,6 +118,8 @@ bool OriginIsOmnibox(Origin origin) {
   } else if (origin == ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN) { \
     HISTOGRAM; \
   } else if (origin == ORIGIN_LOCAL_PREDICTOR) { \
+    HISTOGRAM; \
+  } else if (origin == ORIGIN_EXTERNAL_REQUEST) { \
     HISTOGRAM; \
   } else if (experiment != kNoExperiment) { \
     HISTOGRAM; \
