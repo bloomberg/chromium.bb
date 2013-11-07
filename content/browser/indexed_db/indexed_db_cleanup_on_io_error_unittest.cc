@@ -66,8 +66,8 @@ TEST(IndexedDBIOErrorTest, CleanUpTest) {
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
   const base::FilePath path = temp_directory.path();
   MockLevelDBFactory mock_leveldb_factory;
-  WebKit::WebIDBCallbacks::DataLoss data_loss =
-      WebKit::WebIDBCallbacks::DataLossNone;
+  blink::WebIDBCallbacks::DataLoss data_loss =
+      blink::WebIDBCallbacks::DataLossNone;
   std::string data_loss_message;
   bool disk_full = false;
   scoped_refptr<IndexedDBBackingStore> backing_store =
@@ -116,8 +116,8 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
   const base::FilePath path = temp_directory.path();
-  WebKit::WebIDBCallbacks::DataLoss data_loss =
-      WebKit::WebIDBCallbacks::DataLossNone;
+  blink::WebIDBCallbacks::DataLoss data_loss =
+      blink::WebIDBCallbacks::DataLossNone;
   std::string data_loss_reason;
   bool disk_full = false;
 

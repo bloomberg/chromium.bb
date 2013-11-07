@@ -14,7 +14,7 @@ class RendererWebApplicationCacheHostImpl : public WebApplicationCacheHostImpl {
  public:
   RendererWebApplicationCacheHostImpl(
       RenderViewImpl* render_view,
-      WebKit::WebApplicationCacheHostClient* client,
+      blink::WebApplicationCacheHostClient* client,
       appcache::AppCacheBackend* backend);
 
   // WebApplicationCacheHostImpl:

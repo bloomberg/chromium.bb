@@ -34,7 +34,7 @@ namespace media {
 class VideoFrame;
 }
 
-namespace WebKit {
+namespace blink {
 struct WebScreenInfo;
 }
 
@@ -60,7 +60,7 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
   static RenderWidgetHostViewPort* CreateViewForWidget(
       RenderWidgetHost* widget);
 
-  static void GetDefaultScreenInfo(WebKit::WebScreenInfo* results);
+  static void GetDefaultScreenInfo(blink::WebScreenInfo* results);
 
   // Perform all the initialization steps necessary for this object to represent
   // a popup (such as a <select> dropdown), then shows the popup at |pos|.
@@ -241,7 +241,7 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
       uint32 output_surface_id,
       scoped_ptr<cc::CompositorFrame> frame) = 0;
 
-  virtual void GetScreenInfo(WebKit::WebScreenInfo* results) = 0;
+  virtual void GetScreenInfo(blink::WebScreenInfo* results) = 0;
 
   // The size of the view's backing surface in non-DPI-adjusted pixels.
   virtual gfx::Size GetPhysicalBackingSize() const = 0;
@@ -282,14 +282,14 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
       bool is_pinned_to_left, bool is_pinned_to_right) = 0;
 
   // Called when a mousewheel event was not processed by the renderer.
-  virtual void UnhandledWheelEvent(const WebKit::WebMouseWheelEvent& event) = 0;
+  virtual void UnhandledWheelEvent(const blink::WebMouseWheelEvent& event) = 0;
 
   // Called prior to forwarding input event messages to the renderer, giving
   // the view a chance to perform in-process event filtering or processing.
   // Return values of |NOT_CONSUMED| or |UNKNOWN| will result in |input_event|
   // being forwarded.
   virtual InputEventAckState FilterInputEvent(
-      const WebKit::WebInputEvent& input_event) = 0;
+      const blink::WebInputEvent& input_event) = 0;
 
   // Called by the host when it requires an input flush; the flush call should
   // by synchronized with BeginFrame.
@@ -304,8 +304,8 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
   virtual void OnOverscrolled(gfx::Vector2dF accumulated_overscroll,
                               gfx::Vector2dF current_fling_velocity) = 0;
 
-  virtual void SetPopupType(WebKit::WebPopupType popup_type) = 0;
-  virtual WebKit::WebPopupType GetPopupType() = 0;
+  virtual void SetPopupType(blink::WebPopupType popup_type) = 0;
+  virtual blink::WebPopupType GetPopupType() = 0;
 
   virtual BrowserAccessibilityManager*
       GetBrowserAccessibilityManager() const = 0;

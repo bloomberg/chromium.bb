@@ -13,9 +13,9 @@
 #include "third_party/icu/source/i18n/unicode/gregocal.h"
 #include "ui/base/ime/text_input_type.h"
 
-namespace WebKit {
+namespace blink {
 struct WebDateTimeChooserParams;
-}  // namespace WebKit
+}  // namespace blink
 
 namespace content {
 
@@ -24,7 +24,7 @@ namespace content {
 // It is timezone agnostic.
 class CONTENT_EXPORT DateTimeFormatter {
  public:
-  explicit DateTimeFormatter(const WebKit::WebDateTimeChooserParams& source);
+  explicit DateTimeFormatter(const blink::WebDateTimeChooserParams& source);
   DateTimeFormatter(ui::TextInputType type,
                     int year,
                     int month,
@@ -55,7 +55,7 @@ class CONTENT_EXPORT DateTimeFormatter {
   const std::string FormatString() const;
   int ExtractValue(
       const icu::Calendar* calendar, UCalendarDateFields value) const;
-  void ExtractType(const WebKit::WebDateTimeChooserParams& source);
+  void ExtractType(const blink::WebDateTimeChooserParams& source);
   void ClearAll();
 
   ui::TextInputType type_;

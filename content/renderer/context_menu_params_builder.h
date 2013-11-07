@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_CONTEXT_MENU_PARAMS_BUILDER_H_
 #define CONTENT_RENDERER_CONTEXT_MENU_PARAMS_BUILDER_H_
 
-namespace WebKit {
+namespace blink {
 struct WebContextMenuData;
 }
 
@@ -14,7 +14,7 @@ struct ContextMenuParams;
 
 class ContextMenuParamsBuilder {
  public:
-  static ContextMenuParams Build(const WebKit::WebContextMenuData& data);
+  static ContextMenuParams Build(const blink::WebContextMenuData& data);
 };
 
 }  // namespace content

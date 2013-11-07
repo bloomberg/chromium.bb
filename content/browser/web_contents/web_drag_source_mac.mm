@@ -285,7 +285,7 @@ void PromiseWriterHelper(const DropData& drop_data,
       operation &= ~NSDragOperationMove;
 
     contents_->DragSourceEndedAt(localPoint.x, localPoint.y, screenPoint.x,
-        screenPoint.y, static_cast<WebKit::WebDragOperation>(operation));
+        screenPoint.y, static_cast<blink::WebDragOperation>(operation));
   }
 
   // Make sure the pasteboard owner isn't us.

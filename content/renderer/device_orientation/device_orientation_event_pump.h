@@ -10,13 +10,13 @@
 #include "content/renderer/shared_memory_seqlock_reader.h"
 #include "third_party/WebKit/public/platform/WebDeviceOrientationData.h"
 
-namespace WebKit {
+namespace blink {
 class WebDeviceOrientationListener;
 }
 
 namespace content {
 
-typedef SharedMemorySeqLockReader<WebKit::WebDeviceOrientationData>
+typedef SharedMemorySeqLockReader<blink::WebDeviceOrientationData>
     DeviceOrientationSharedMemoryReader;
 
 class CONTENT_EXPORT DeviceOrientationEventPump : public DeviceSensorEventPump {
@@ -31,7 +31,7 @@ class CONTENT_EXPORT DeviceOrientationEventPump : public DeviceSensorEventPump {
 
   // Sets the listener to receive updates for device orientation data at
   // regular intervals. Returns true if the registration was successful.
-  bool SetListener(WebKit::WebDeviceOrientationListener* listener);
+  bool SetListener(blink::WebDeviceOrientationListener* listener);
 
   // RenderProcessObserver implementation.
   virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -42,10 +42,10 @@ class CONTENT_EXPORT DeviceOrientationEventPump : public DeviceSensorEventPump {
   virtual bool SendStartMessage() OVERRIDE;
   virtual bool SendStopMessage() OVERRIDE;
 
-  bool ShouldFireEvent(const WebKit::WebDeviceOrientationData& data) const;
+  bool ShouldFireEvent(const blink::WebDeviceOrientationData& data) const;
 
-  WebKit::WebDeviceOrientationListener* listener_;
-  WebKit::WebDeviceOrientationData data_;
+  blink::WebDeviceOrientationListener* listener_;
+  blink::WebDeviceOrientationData data_;
   scoped_ptr<DeviceOrientationSharedMemoryReader> reader_;
 };
 

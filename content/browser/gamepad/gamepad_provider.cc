@@ -158,7 +158,7 @@ void GamepadProvider::DoPoll() {
 
   ANNOTATE_BENIGN_RACE_SIZED(
       &hwbuf->buffer,
-      sizeof(WebKit::WebGamepads),
+      sizeof(blink::WebGamepads),
       "Racey reads are discarded");
 
   {

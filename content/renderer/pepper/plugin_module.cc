@@ -553,7 +553,7 @@ bool PluginModule::SupportsInterface(const char* name) {
 
 PepperPluginInstanceImpl* PluginModule::CreateInstance(
     RenderViewImpl* render_view,
-    WebKit::WebPluginContainer* container,
+    blink::WebPluginContainer* container,
     const GURL& plugin_url) {
   PepperPluginInstanceImpl* instance = PepperPluginInstanceImpl::Create(
       render_view, this, container, plugin_url);

@@ -10,7 +10,7 @@ namespace content {
 
 InputEvent::InputEvent() : is_keyboard_shortcut(false) {}
 
-InputEvent::InputEvent(const WebKit::WebInputEvent& web_event,
+InputEvent::InputEvent(const blink::WebInputEvent& web_event,
                        const ui::LatencyInfo& latency_info,
                        bool is_keyboard_shortcut)
      : web_event(WebInputEventTraits::Clone(web_event)),

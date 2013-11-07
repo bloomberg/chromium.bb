@@ -36,7 +36,7 @@ class Demuxer;
 class MediaLog;
 }
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
 }
 
@@ -53,12 +53,12 @@ class MediaStreamAudioRenderer;
 class MediaStreamClient;
 #endif
 
-// This class implements WebKit::WebMediaPlayer by keeping the android
+// This class implements blink::WebMediaPlayer by keeping the android
 // media player in the browser process. It listens to all the status changes
 // sent from the browser process and sends playback controls to the media
 // player.
 class WebMediaPlayerAndroid
-    : public WebKit::WebMediaPlayer,
+    : public blink::WebMediaPlayer,
       public cc::VideoFrameProvider,
       public base::MessageLoop::DestructionObserver,
       public base::SupportsWeakPtr<WebMediaPlayerAndroid> {
@@ -71,8 +71,8 @@ class WebMediaPlayerAndroid
   // blink, so that enterFullscreen() will not be called if another video is
   // already in fullscreen.
   WebMediaPlayerAndroid(
-      WebKit::WebFrame* frame,
-      WebKit::WebMediaPlayerClient* client,
+      blink::WebFrame* frame,
+      blink::WebMediaPlayerClient* client,
       base::WeakPtr<WebMediaPlayerDelegate> delegate,
       RendererMediaPlayerManager* manager,
       StreamTextureFactory* factory,
@@ -80,14 +80,14 @@ class WebMediaPlayerAndroid
       media::MediaLog* media_log);
   virtual ~WebMediaPlayerAndroid();
 
-  // WebKit::WebMediaPlayer implementation.
+  // blink::WebMediaPlayer implementation.
   virtual void enterFullscreen();
   virtual void exitFullscreen();
   virtual bool canEnterFullscreen() const;
 
   // Resource loading.
   virtual void load(LoadType load_type,
-                    const WebKit::WebURL& url,
+                    const blink::WebURL& url,
                     CORSMode cors_mode) OVERRIDE;
 
   // Playback controls.
@@ -99,16 +99,16 @@ class WebMediaPlayerAndroid
   virtual bool supportsSave() const;
   virtual void setRate(double rate);
   virtual void setVolume(double volume);
-  virtual const WebKit::WebTimeRanges& buffered();
+  virtual const blink::WebTimeRanges& buffered();
   virtual double maxTimeSeekable() const;
 
   // Methods for painting.
-  virtual void paint(WebKit::WebCanvas* canvas,
-                     const WebKit::WebRect& rect,
+  virtual void paint(blink::WebCanvas* canvas,
+                     const blink::WebRect& rect,
                      unsigned char alpha);
 
   virtual bool copyVideoTextureToPlatformTexture(
-      WebKit::WebGraphicsContext3D* web_graphics_context,
+      blink::WebGraphicsContext3D* web_graphics_context,
       unsigned int texture,
       unsigned int level,
       unsigned int internal_format,
@@ -121,7 +121,7 @@ class WebMediaPlayerAndroid
   virtual bool hasAudio() const;
 
   // Dimensions of the video.
-  virtual WebKit::WebSize naturalSize() const;
+  virtual blink::WebSize naturalSize() const;
 
   // Getters of playback state.
   virtual bool paused() const;
@@ -132,8 +132,8 @@ class WebMediaPlayerAndroid
   virtual bool didLoadingProgress() const;
 
   // Internal states of loading and network.
-  virtual WebKit::WebMediaPlayer::NetworkState networkState() const;
-  virtual WebKit::WebMediaPlayer::ReadyState readyState() const;
+  virtual blink::WebMediaPlayer::NetworkState networkState() const;
+  virtual blink::WebMediaPlayer::ReadyState readyState() const;
 
   virtual bool hasSingleSecurityOrigin() const;
   virtual bool didPassCORSAccessCheck() const;
@@ -198,19 +198,19 @@ class WebMediaPlayerAndroid
 #endif
 
   virtual MediaKeyException generateKeyRequest(
-      const WebKit::WebString& key_system,
+      const blink::WebString& key_system,
       const unsigned char* init_data,
       unsigned init_data_length) OVERRIDE;
   virtual MediaKeyException addKey(
-      const WebKit::WebString& key_system,
+      const blink::WebString& key_system,
       const unsigned char* key,
       unsigned key_length,
       const unsigned char* init_data,
       unsigned init_data_length,
-      const WebKit::WebString& session_id) OVERRIDE;
+      const blink::WebString& session_id) OVERRIDE;
   virtual MediaKeyException cancelKeyRequest(
-      const WebKit::WebString& key_system,
-      const WebKit::WebString& session_id) OVERRIDE;
+      const blink::WebString& key_system,
+      const blink::WebString& session_id) OVERRIDE;
 
   void OnKeyAdded(const std::string& session_id);
   void OnKeyError(const std::string& session_id,
@@ -220,7 +220,7 @@ class WebMediaPlayerAndroid
                     const std::vector<uint8>& message,
                     const std::string& destination_url);
 
-  void OnMediaSourceOpened(WebKit::WebMediaSource* web_media_source);
+  void OnMediaSourceOpened(blink::WebMediaSource* web_media_source);
 
   void OnNeedKey(const std::string& type,
                  const std::vector<uint8>& init_data);
@@ -242,8 +242,8 @@ class WebMediaPlayerAndroid
   void UpdatePlayingState(bool is_playing_);
 
   // Helper methods for posting task for setting states and update WebKit.
-  void UpdateNetworkState(WebKit::WebMediaPlayer::NetworkState state);
-  void UpdateReadyState(WebKit::WebMediaPlayer::ReadyState state);
+  void UpdateNetworkState(blink::WebMediaPlayer::NetworkState state);
+  void UpdateReadyState(blink::WebMediaPlayer::ReadyState state);
   void TryCreateStreamTextureProxyIfNeeded();
   void DoCreateStreamTexture();
 
@@ -270,22 +270,22 @@ class WebMediaPlayerAndroid
   // Actually do the work for generateKeyRequest/addKey so they can easily
   // report results to UMA.
   MediaKeyException GenerateKeyRequestInternal(
-      const WebKit::WebString& key_system,
+      const blink::WebString& key_system,
       const unsigned char* init_data,
       unsigned init_data_length);
-  MediaKeyException AddKeyInternal(const WebKit::WebString& key_system,
+  MediaKeyException AddKeyInternal(const blink::WebString& key_system,
                                    const unsigned char* key,
                                    unsigned key_length,
                                    const unsigned char* init_data,
                                    unsigned init_data_length,
-                                   const WebKit::WebString& session_id);
+                                   const blink::WebString& session_id);
   MediaKeyException CancelKeyRequestInternal(
-      const WebKit::WebString& key_system,
-      const WebKit::WebString& session_id);
+      const blink::WebString& key_system,
+      const blink::WebString& session_id);
 
-  WebKit::WebFrame* const frame_;
+  blink::WebFrame* const frame_;
 
-  WebKit::WebMediaPlayerClient* const client_;
+  blink::WebMediaPlayerClient* const client_;
 
   // |delegate_| is used to notify the browser process of the player status, so
   // that the browser process can control screen locks.
@@ -295,13 +295,13 @@ class WebMediaPlayerAndroid
   base::WeakPtr<WebMediaPlayerDelegate> delegate_;
 
   // Save the list of buffered time ranges.
-  WebKit::WebTimeRanges buffered_;
+  blink::WebTimeRanges buffered_;
 
   // Size of the video.
-  WebKit::WebSize natural_size_;
+  blink::WebSize natural_size_;
 
   // Size that has been sent to StreamTexture.
-  WebKit::WebSize cached_stream_texture_size_;
+  blink::WebSize cached_stream_texture_size_;
 
   // The video frame object used for rendering by the compositor.
   scoped_refptr<media::VideoFrame> current_frame_;
@@ -346,8 +346,8 @@ class WebMediaPlayerAndroid
   int player_id_;
 
   // Current player states.
-  WebKit::WebMediaPlayer::NetworkState network_state_;
-  WebKit::WebMediaPlayer::ReadyState ready_state_;
+  blink::WebMediaPlayer::NetworkState network_state_;
+  blink::WebMediaPlayer::ReadyState ready_state_;
 
   // GL texture ID used to show the remote playback icon.
   unsigned int remote_playback_texture_id_;
@@ -437,7 +437,7 @@ class WebMediaPlayerAndroid
 
   // The currently selected key system. Empty string means that no key system
   // has been selected.
-  WebKit::WebString current_key_system_;
+  blink::WebString current_key_system_;
 
   // Temporary for EME v0.1. In the future the init data type should be passed
   // through GenerateKeyRequest() directly from WebKit.

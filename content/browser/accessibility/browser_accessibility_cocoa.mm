@@ -40,129 +40,129 @@ NSString* NSStringForStringAttribute(
 }
 
 struct MapEntry {
-  WebKit::WebAXRole webKitValue;
+  blink::WebAXRole webKitValue;
   NSString* nativeValue;
 };
 
-typedef std::map<WebKit::WebAXRole, NSString*> RoleMap;
+typedef std::map<blink::WebAXRole, NSString*> RoleMap;
 
 // GetState checks the bitmask used in AccessibilityNodeData to check
 // if the given state was set on the accessibility object.
-bool GetState(BrowserAccessibility* accessibility, WebKit::WebAXState state) {
+bool GetState(BrowserAccessibility* accessibility, blink::WebAXState state) {
   return ((accessibility->state() >> state) & 1);
 }
 
 RoleMap BuildRoleMap() {
   const MapEntry roles[] = {
-    { WebKit::WebAXRoleAlert, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleAlertDialog, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleAnnotation, NSAccessibilityUnknownRole },
-    { WebKit::WebAXRoleApplication, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleArticle, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleBrowser, NSAccessibilityBrowserRole },
-    { WebKit::WebAXRoleBusyIndicator, NSAccessibilityBusyIndicatorRole },
-    { WebKit::WebAXRoleButton, NSAccessibilityButtonRole },
-    { WebKit::WebAXRoleCanvas, NSAccessibilityImageRole },
-    { WebKit::WebAXRoleCell, @"AXCell" },
-    { WebKit::WebAXRoleCheckBox, NSAccessibilityCheckBoxRole },
-    { WebKit::WebAXRoleColorWell, NSAccessibilityColorWellRole },
-    { WebKit::WebAXRoleComboBox, NSAccessibilityComboBoxRole },
-    { WebKit::WebAXRoleColumn, NSAccessibilityColumnRole },
-    { WebKit::WebAXRoleColumnHeader, @"AXCell" },
-    { WebKit::WebAXRoleDefinition, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleDescriptionListDetail, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleDescriptionListTerm, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleDialog, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleDirectory, NSAccessibilityListRole },
-    { WebKit::WebAXRoleDisclosureTriangle,
+    { blink::WebAXRoleAlert, NSAccessibilityGroupRole },
+    { blink::WebAXRoleAlertDialog, NSAccessibilityGroupRole },
+    { blink::WebAXRoleAnnotation, NSAccessibilityUnknownRole },
+    { blink::WebAXRoleApplication, NSAccessibilityGroupRole },
+    { blink::WebAXRoleArticle, NSAccessibilityGroupRole },
+    { blink::WebAXRoleBrowser, NSAccessibilityBrowserRole },
+    { blink::WebAXRoleBusyIndicator, NSAccessibilityBusyIndicatorRole },
+    { blink::WebAXRoleButton, NSAccessibilityButtonRole },
+    { blink::WebAXRoleCanvas, NSAccessibilityImageRole },
+    { blink::WebAXRoleCell, @"AXCell" },
+    { blink::WebAXRoleCheckBox, NSAccessibilityCheckBoxRole },
+    { blink::WebAXRoleColorWell, NSAccessibilityColorWellRole },
+    { blink::WebAXRoleComboBox, NSAccessibilityComboBoxRole },
+    { blink::WebAXRoleColumn, NSAccessibilityColumnRole },
+    { blink::WebAXRoleColumnHeader, @"AXCell" },
+    { blink::WebAXRoleDefinition, NSAccessibilityGroupRole },
+    { blink::WebAXRoleDescriptionListDetail, NSAccessibilityGroupRole },
+    { blink::WebAXRoleDescriptionListTerm, NSAccessibilityGroupRole },
+    { blink::WebAXRoleDialog, NSAccessibilityGroupRole },
+    { blink::WebAXRoleDirectory, NSAccessibilityListRole },
+    { blink::WebAXRoleDisclosureTriangle,
           NSAccessibilityDisclosureTriangleRole },
-    { WebKit::WebAXRoleDiv, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleDocument, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleDrawer, NSAccessibilityDrawerRole },
-    { WebKit::WebAXRoleEditableText, NSAccessibilityTextFieldRole },
-    { WebKit::WebAXRoleFooter, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleForm, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleGrid, NSAccessibilityGridRole },
-    { WebKit::WebAXRoleGroup, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleGrowArea, NSAccessibilityGrowAreaRole },
-    { WebKit::WebAXRoleHeading, @"AXHeading" },
-    { WebKit::WebAXRoleHelpTag, NSAccessibilityHelpTagRole },
-    { WebKit::WebAXRoleHorizontalRule, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleIgnored, NSAccessibilityUnknownRole },
-    { WebKit::WebAXRoleImage, NSAccessibilityImageRole },
-    { WebKit::WebAXRoleImageMap, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleImageMapLink, NSAccessibilityLinkRole },
-    { WebKit::WebAXRoleIncrementor, NSAccessibilityIncrementorRole },
-    { WebKit::WebAXRoleLabel, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleApplication, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleBanner, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleComplementary, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleContentInfo, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleMain, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleNavigation, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleSearch, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleLink, NSAccessibilityLinkRole },
-    { WebKit::WebAXRoleList, NSAccessibilityListRole },
-    { WebKit::WebAXRoleListItem, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleListMarker, @"AXListMarker" },
-    { WebKit::WebAXRoleListBox, NSAccessibilityListRole },
-    { WebKit::WebAXRoleListBoxOption, NSAccessibilityStaticTextRole },
-    { WebKit::WebAXRoleLog, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleMarquee, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleMath, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleMatte, NSAccessibilityMatteRole },
-    { WebKit::WebAXRoleMenu, NSAccessibilityMenuRole },
-    { WebKit::WebAXRoleMenuBar, NSAccessibilityMenuBarRole },
-    { WebKit::WebAXRoleMenuItem, NSAccessibilityMenuItemRole },
-    { WebKit::WebAXRoleMenuButton, NSAccessibilityButtonRole },
-    { WebKit::WebAXRoleMenuListOption, NSAccessibilityMenuItemRole },
-    { WebKit::WebAXRoleMenuListPopup, NSAccessibilityUnknownRole },
-    { WebKit::WebAXRoleNote, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleOutline, NSAccessibilityOutlineRole },
-    { WebKit::WebAXRoleParagraph, NSAccessibilityGroupRole },
-    { WebKit::WebAXRolePopUpButton, NSAccessibilityPopUpButtonRole },
-    { WebKit::WebAXRolePresentational, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleProgressIndicator,
+    { blink::WebAXRoleDiv, NSAccessibilityGroupRole },
+    { blink::WebAXRoleDocument, NSAccessibilityGroupRole },
+    { blink::WebAXRoleDrawer, NSAccessibilityDrawerRole },
+    { blink::WebAXRoleEditableText, NSAccessibilityTextFieldRole },
+    { blink::WebAXRoleFooter, NSAccessibilityGroupRole },
+    { blink::WebAXRoleForm, NSAccessibilityGroupRole },
+    { blink::WebAXRoleGrid, NSAccessibilityGridRole },
+    { blink::WebAXRoleGroup, NSAccessibilityGroupRole },
+    { blink::WebAXRoleGrowArea, NSAccessibilityGrowAreaRole },
+    { blink::WebAXRoleHeading, @"AXHeading" },
+    { blink::WebAXRoleHelpTag, NSAccessibilityHelpTagRole },
+    { blink::WebAXRoleHorizontalRule, NSAccessibilityGroupRole },
+    { blink::WebAXRoleIgnored, NSAccessibilityUnknownRole },
+    { blink::WebAXRoleImage, NSAccessibilityImageRole },
+    { blink::WebAXRoleImageMap, NSAccessibilityGroupRole },
+    { blink::WebAXRoleImageMapLink, NSAccessibilityLinkRole },
+    { blink::WebAXRoleIncrementor, NSAccessibilityIncrementorRole },
+    { blink::WebAXRoleLabel, NSAccessibilityGroupRole },
+    { blink::WebAXRoleApplication, NSAccessibilityGroupRole },
+    { blink::WebAXRoleBanner, NSAccessibilityGroupRole },
+    { blink::WebAXRoleComplementary, NSAccessibilityGroupRole },
+    { blink::WebAXRoleContentInfo, NSAccessibilityGroupRole },
+    { blink::WebAXRoleMain, NSAccessibilityGroupRole },
+    { blink::WebAXRoleNavigation, NSAccessibilityGroupRole },
+    { blink::WebAXRoleSearch, NSAccessibilityGroupRole },
+    { blink::WebAXRoleLink, NSAccessibilityLinkRole },
+    { blink::WebAXRoleList, NSAccessibilityListRole },
+    { blink::WebAXRoleListItem, NSAccessibilityGroupRole },
+    { blink::WebAXRoleListMarker, @"AXListMarker" },
+    { blink::WebAXRoleListBox, NSAccessibilityListRole },
+    { blink::WebAXRoleListBoxOption, NSAccessibilityStaticTextRole },
+    { blink::WebAXRoleLog, NSAccessibilityGroupRole },
+    { blink::WebAXRoleMarquee, NSAccessibilityGroupRole },
+    { blink::WebAXRoleMath, NSAccessibilityGroupRole },
+    { blink::WebAXRoleMatte, NSAccessibilityMatteRole },
+    { blink::WebAXRoleMenu, NSAccessibilityMenuRole },
+    { blink::WebAXRoleMenuBar, NSAccessibilityMenuBarRole },
+    { blink::WebAXRoleMenuItem, NSAccessibilityMenuItemRole },
+    { blink::WebAXRoleMenuButton, NSAccessibilityButtonRole },
+    { blink::WebAXRoleMenuListOption, NSAccessibilityMenuItemRole },
+    { blink::WebAXRoleMenuListPopup, NSAccessibilityUnknownRole },
+    { blink::WebAXRoleNote, NSAccessibilityGroupRole },
+    { blink::WebAXRoleOutline, NSAccessibilityOutlineRole },
+    { blink::WebAXRoleParagraph, NSAccessibilityGroupRole },
+    { blink::WebAXRolePopUpButton, NSAccessibilityPopUpButtonRole },
+    { blink::WebAXRolePresentational, NSAccessibilityGroupRole },
+    { blink::WebAXRoleProgressIndicator,
           NSAccessibilityProgressIndicatorRole },
-    { WebKit::WebAXRoleRadioButton, NSAccessibilityRadioButtonRole },
-    { WebKit::WebAXRoleRadioGroup, NSAccessibilityRadioGroupRole },
-    { WebKit::WebAXRoleRegion, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleRootWebArea, @"AXWebArea" },
-    { WebKit::WebAXRoleRow, NSAccessibilityRowRole },
-    { WebKit::WebAXRoleRowHeader, @"AXCell" },
-    { WebKit::WebAXRoleRuler, NSAccessibilityRulerRole },
-    { WebKit::WebAXRoleRulerMarker, NSAccessibilityRulerMarkerRole },
+    { blink::WebAXRoleRadioButton, NSAccessibilityRadioButtonRole },
+    { blink::WebAXRoleRadioGroup, NSAccessibilityRadioGroupRole },
+    { blink::WebAXRoleRegion, NSAccessibilityGroupRole },
+    { blink::WebAXRoleRootWebArea, @"AXWebArea" },
+    { blink::WebAXRoleRow, NSAccessibilityRowRole },
+    { blink::WebAXRoleRowHeader, @"AXCell" },
+    { blink::WebAXRoleRuler, NSAccessibilityRulerRole },
+    { blink::WebAXRoleRulerMarker, NSAccessibilityRulerMarkerRole },
     // TODO(dtseng): we don't correctly support the attributes for these roles.
-    // { WebKit::WebAXRoleScrollArea, NSAccessibilityScrollAreaRole },
-    { WebKit::WebAXRoleScrollBar, NSAccessibilityScrollBarRole },
-    { WebKit::WebAXRoleSheet, NSAccessibilitySheetRole },
-    { WebKit::WebAXRoleSlider, NSAccessibilitySliderRole },
-    { WebKit::WebAXRoleSliderThumb, NSAccessibilityValueIndicatorRole },
-    { WebKit::WebAXRoleSpinButton, NSAccessibilitySliderRole },
-    { WebKit::WebAXRoleSplitter, NSAccessibilitySplitterRole },
-    { WebKit::WebAXRoleSplitGroup, NSAccessibilitySplitGroupRole },
-    { WebKit::WebAXRoleStaticText, NSAccessibilityStaticTextRole },
-    { WebKit::WebAXRoleStatus, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleSVGRoot, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleSystemWide, NSAccessibilityUnknownRole },
-    { WebKit::WebAXRoleTab, NSAccessibilityRadioButtonRole },
-    { WebKit::WebAXRoleTabList, NSAccessibilityTabGroupRole },
-    { WebKit::WebAXRoleTabPanel, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleTable, NSAccessibilityTableRole },
-    { WebKit::WebAXRoleTableHeaderContainer, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleTextArea, NSAccessibilityTextAreaRole },
-    { WebKit::WebAXRoleTextField, NSAccessibilityTextFieldRole },
-    { WebKit::WebAXRoleTimer, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleToggleButton, NSAccessibilityButtonRole },
-    { WebKit::WebAXRoleToolbar, NSAccessibilityToolbarRole },
-    { WebKit::WebAXRoleUserInterfaceTooltip, NSAccessibilityGroupRole },
-    { WebKit::WebAXRoleTree, NSAccessibilityOutlineRole },
-    { WebKit::WebAXRoleTreeGrid, NSAccessibilityTableRole },
-    { WebKit::WebAXRoleTreeItem, NSAccessibilityRowRole },
-    { WebKit::WebAXRoleValueIndicator, NSAccessibilityValueIndicatorRole },
-    { WebKit::WebAXRoleLink, NSAccessibilityLinkRole },
-    { WebKit::WebAXRoleWebArea, @"AXWebArea" },
-    { WebKit::WebAXRoleWindow, NSAccessibilityWindowRole },
+    // { blink::WebAXRoleScrollArea, NSAccessibilityScrollAreaRole },
+    { blink::WebAXRoleScrollBar, NSAccessibilityScrollBarRole },
+    { blink::WebAXRoleSheet, NSAccessibilitySheetRole },
+    { blink::WebAXRoleSlider, NSAccessibilitySliderRole },
+    { blink::WebAXRoleSliderThumb, NSAccessibilityValueIndicatorRole },
+    { blink::WebAXRoleSpinButton, NSAccessibilitySliderRole },
+    { blink::WebAXRoleSplitter, NSAccessibilitySplitterRole },
+    { blink::WebAXRoleSplitGroup, NSAccessibilitySplitGroupRole },
+    { blink::WebAXRoleStaticText, NSAccessibilityStaticTextRole },
+    { blink::WebAXRoleStatus, NSAccessibilityGroupRole },
+    { blink::WebAXRoleSVGRoot, NSAccessibilityGroupRole },
+    { blink::WebAXRoleSystemWide, NSAccessibilityUnknownRole },
+    { blink::WebAXRoleTab, NSAccessibilityRadioButtonRole },
+    { blink::WebAXRoleTabList, NSAccessibilityTabGroupRole },
+    { blink::WebAXRoleTabPanel, NSAccessibilityGroupRole },
+    { blink::WebAXRoleTable, NSAccessibilityTableRole },
+    { blink::WebAXRoleTableHeaderContainer, NSAccessibilityGroupRole },
+    { blink::WebAXRoleTextArea, NSAccessibilityTextAreaRole },
+    { blink::WebAXRoleTextField, NSAccessibilityTextFieldRole },
+    { blink::WebAXRoleTimer, NSAccessibilityGroupRole },
+    { blink::WebAXRoleToggleButton, NSAccessibilityButtonRole },
+    { blink::WebAXRoleToolbar, NSAccessibilityToolbarRole },
+    { blink::WebAXRoleUserInterfaceTooltip, NSAccessibilityGroupRole },
+    { blink::WebAXRoleTree, NSAccessibilityOutlineRole },
+    { blink::WebAXRoleTreeGrid, NSAccessibilityTableRole },
+    { blink::WebAXRoleTreeItem, NSAccessibilityRowRole },
+    { blink::WebAXRoleValueIndicator, NSAccessibilityValueIndicatorRole },
+    { blink::WebAXRoleLink, NSAccessibilityLinkRole },
+    { blink::WebAXRoleWebArea, @"AXWebArea" },
+    { blink::WebAXRoleWindow, NSAccessibilityWindowRole },
   };
 
   RoleMap role_map;
@@ -173,7 +173,7 @@ RoleMap BuildRoleMap() {
 
 // A mapping of webkit roles to native roles.
 NSString* NativeRoleFromAccessibilityNodeDataRole(
-    const WebKit::WebAXRole& role) {
+    const blink::WebAXRole& role) {
   CR_DEFINE_STATIC_LOCAL(RoleMap, web_accessibility_to_native_role,
                          (BuildRoleMap()));
   RoleMap::iterator it = web_accessibility_to_native_role.find(role);
@@ -185,32 +185,32 @@ NSString* NativeRoleFromAccessibilityNodeDataRole(
 
 RoleMap BuildSubroleMap() {
   const MapEntry subroles[] = {
-    { WebKit::WebAXRoleAlert, @"AXApplicationAlert" },
-    { WebKit::WebAXRoleAlertDialog, @"AXApplicationAlertDialog" },
-    { WebKit::WebAXRoleArticle, @"AXDocumentArticle" },
-    { WebKit::WebAXRoleDefinition, @"AXDefinition" },
-    { WebKit::WebAXRoleDescriptionListDetail, @"AXDescription" },
-    { WebKit::WebAXRoleDescriptionListTerm, @"AXTerm" },
-    { WebKit::WebAXRoleDialog, @"AXApplicationDialog" },
-    { WebKit::WebAXRoleDocument, @"AXDocument" },
-    { WebKit::WebAXRoleFooter, @"AXLandmarkContentInfo" },
-    { WebKit::WebAXRoleApplication, @"AXLandmarkApplication" },
-    { WebKit::WebAXRoleBanner, @"AXLandmarkBanner" },
-    { WebKit::WebAXRoleComplementary, @"AXLandmarkComplementary" },
-    { WebKit::WebAXRoleContentInfo, @"AXLandmarkContentInfo" },
-    { WebKit::WebAXRoleMain, @"AXLandmarkMain" },
-    { WebKit::WebAXRoleNavigation, @"AXLandmarkNavigation" },
-    { WebKit::WebAXRoleSearch, @"AXLandmarkSearch" },
-    { WebKit::WebAXRoleLog, @"AXApplicationLog" },
-    { WebKit::WebAXRoleMarquee, @"AXApplicationMarquee" },
-    { WebKit::WebAXRoleMath, @"AXDocumentMath" },
-    { WebKit::WebAXRoleNote, @"AXDocumentNote" },
-    { WebKit::WebAXRoleRegion, @"AXDocumentRegion" },
-    { WebKit::WebAXRoleStatus, @"AXApplicationStatus" },
-    { WebKit::WebAXRoleTabPanel, @"AXTabPanel" },
-    { WebKit::WebAXRoleTimer, @"AXApplicationTimer" },
-    { WebKit::WebAXRoleUserInterfaceTooltip, @"AXUserInterfaceTooltip" },
-    { WebKit::WebAXRoleTreeItem, NSAccessibilityOutlineRowSubrole },
+    { blink::WebAXRoleAlert, @"AXApplicationAlert" },
+    { blink::WebAXRoleAlertDialog, @"AXApplicationAlertDialog" },
+    { blink::WebAXRoleArticle, @"AXDocumentArticle" },
+    { blink::WebAXRoleDefinition, @"AXDefinition" },
+    { blink::WebAXRoleDescriptionListDetail, @"AXDescription" },
+    { blink::WebAXRoleDescriptionListTerm, @"AXTerm" },
+    { blink::WebAXRoleDialog, @"AXApplicationDialog" },
+    { blink::WebAXRoleDocument, @"AXDocument" },
+    { blink::WebAXRoleFooter, @"AXLandmarkContentInfo" },
+    { blink::WebAXRoleApplication, @"AXLandmarkApplication" },
+    { blink::WebAXRoleBanner, @"AXLandmarkBanner" },
+    { blink::WebAXRoleComplementary, @"AXLandmarkComplementary" },
+    { blink::WebAXRoleContentInfo, @"AXLandmarkContentInfo" },
+    { blink::WebAXRoleMain, @"AXLandmarkMain" },
+    { blink::WebAXRoleNavigation, @"AXLandmarkNavigation" },
+    { blink::WebAXRoleSearch, @"AXLandmarkSearch" },
+    { blink::WebAXRoleLog, @"AXApplicationLog" },
+    { blink::WebAXRoleMarquee, @"AXApplicationMarquee" },
+    { blink::WebAXRoleMath, @"AXDocumentMath" },
+    { blink::WebAXRoleNote, @"AXDocumentNote" },
+    { blink::WebAXRoleRegion, @"AXDocumentRegion" },
+    { blink::WebAXRoleStatus, @"AXApplicationStatus" },
+    { blink::WebAXRoleTabPanel, @"AXTabPanel" },
+    { blink::WebAXRoleTimer, @"AXApplicationTimer" },
+    { blink::WebAXRoleUserInterfaceTooltip, @"AXUserInterfaceTooltip" },
+    { blink::WebAXRoleTreeItem, NSAccessibilityOutlineRowSubrole },
   };
 
   RoleMap subrole_map;
@@ -221,7 +221,7 @@ RoleMap BuildSubroleMap() {
 
 // A mapping of webkit roles to native subroles.
 NSString* NativeSubroleFromAccessibilityNodeDataRole(
-    const WebKit::WebAXRole& role) {
+    const blink::WebAXRole& role) {
   CR_DEFINE_STATIC_LOCAL(RoleMap, web_accessibility_to_native_subrole,
                          (BuildSubroleMap()));
   RoleMap::iterator it = web_accessibility_to_native_subrole.find(role);
@@ -396,8 +396,8 @@ NSDictionary* attributeToMethodNameMap = nil;
 }
 
 - (NSArray*)columnHeaders {
-  if ([self internalRole] != WebKit::WebAXRoleTable &&
-      [self internalRole] != WebKit::WebAXRoleGrid) {
+  if ([self internalRole] != blink::WebAXRoleTable &&
+      [self internalRole] != blink::WebAXRoleGrid) {
     return nil;
   }
 
@@ -409,14 +409,14 @@ NSDictionary* attributeToMethodNameMap = nil;
     int id = uniqueCellIds[i];
     BrowserAccessibility* cell =
         browserAccessibility_->manager()->GetFromRendererID(id);
-    if (cell && cell->role() == WebKit::WebAXRoleColumnHeader)
+    if (cell && cell->role() == blink::WebAXRoleColumnHeader)
       [ret addObject:cell->ToBrowserAccessibilityCocoa()];
   }
   return ret;
 }
 
 - (NSValue*)columnIndexRange {
-  if ([self internalRole] != WebKit::WebAXRoleCell)
+  if ([self internalRole] != blink::WebAXRoleCell)
     return nil;
 
   int column = -1;
@@ -474,9 +474,9 @@ NSDictionary* attributeToMethodNameMap = nil;
 }
 
 - (NSNumber*)disclosing {
-  if ([self internalRole] == WebKit::WebAXRoleTreeItem) {
+  if ([self internalRole] == blink::WebAXRoleTreeItem) {
     return [NSNumber numberWithBool:
-        GetState(browserAccessibility_, WebKit::WebAXStateExpanded)];
+        GetState(browserAccessibility_, blink::WebAXStateExpanded)];
   } else {
     return nil;
   }
@@ -489,9 +489,9 @@ NSDictionary* attributeToMethodNameMap = nil;
 }
 
 - (NSNumber*)disclosureLevel {
-  WebKit::WebAXRole role = [self internalRole];
-  if (role == WebKit::WebAXRoleRow ||
-      role == WebKit::WebAXRoleTreeItem) {
+  blink::WebAXRole role = [self internalRole];
+  if (role == blink::WebAXRoleRow ||
+      role == blink::WebAXRoleTreeItem) {
     int level = browserAccessibility_->GetIntAttribute(
         AccessibilityNodeData::ATTR_HIERARCHICAL_LEVEL);
     // Mac disclosureLevel is 0-based, but web levels are 1-based.
@@ -510,7 +510,7 @@ NSDictionary* attributeToMethodNameMap = nil;
 
 - (NSNumber*)enabled {
   return [NSNumber numberWithBool:
-      GetState(browserAccessibility_, WebKit::WebAXStateEnabled)];
+      GetState(browserAccessibility_, blink::WebAXStateEnabled)];
 }
 
 - (NSNumber*)focused {
@@ -522,14 +522,14 @@ NSDictionary* attributeToMethodNameMap = nil;
 
 - (id)header {
   int headerElementId = -1;
-  if ([self internalRole] == WebKit::WebAXRoleTable ||
-      [self internalRole] == WebKit::WebAXRoleGrid) {
+  if ([self internalRole] == blink::WebAXRoleTable ||
+      [self internalRole] == blink::WebAXRoleGrid) {
     browserAccessibility_->GetIntAttribute(
         AccessibilityNodeData::ATTR_TABLE_HEADER_ID, &headerElementId);
-  } else if ([self internalRole] == WebKit::WebAXRoleColumn) {
+  } else if ([self internalRole] == blink::WebAXRoleColumn) {
     browserAccessibility_->GetIntAttribute(
         AccessibilityNodeData::ATTR_TABLE_COLUMN_HEADER_ID, &headerElementId);
-  } else if ([self internalRole] == WebKit::WebAXRoleRow) {
+  } else if ([self internalRole] == blink::WebAXRoleRow) {
     browserAccessibility_->GetIntAttribute(
         AccessibilityNodeData::ATTR_TABLE_ROW_HEADER_ID, &headerElementId);
   }
@@ -549,11 +549,11 @@ NSDictionary* attributeToMethodNameMap = nil;
 }
 
 - (NSNumber*)index {
-  if ([self internalRole] == WebKit::WebAXRoleColumn) {
+  if ([self internalRole] == blink::WebAXRoleColumn) {
     int columnIndex = browserAccessibility_->GetIntAttribute(
           AccessibilityNodeData::ATTR_TABLE_COLUMN_INDEX);
     return [NSNumber numberWithInt:columnIndex];
-  } else if ([self internalRole] == WebKit::WebAXRoleRow) {
+  } else if ([self internalRole] == blink::WebAXRoleRow) {
     int rowIndex = browserAccessibility_->GetIntAttribute(
         AccessibilityNodeData::ATTR_TABLE_ROW_INDEX);
     return [NSNumber numberWithInt:rowIndex];
@@ -605,10 +605,10 @@ NSDictionary* attributeToMethodNameMap = nil;
 - (NSString*)orientation {
   // We present a spin button as a vertical slider, with a role description
   // of "spin button".
-  if ([self internalRole] == WebKit::WebAXRoleSpinButton)
+  if ([self internalRole] == blink::WebAXRoleSpinButton)
     return NSAccessibilityVerticalOrientationValue;
 
-  if (GetState(browserAccessibility_, WebKit::WebAXStateVertical))
+  if (GetState(browserAccessibility_, blink::WebAXStateVertical))
     return NSAccessibilityVerticalOrientationValue;
   else
     return NSAccessibilityHorizontalOrientationValue;
@@ -646,18 +646,18 @@ NSDictionary* attributeToMethodNameMap = nil;
 
 - (NSNumber*)required {
   return [NSNumber numberWithBool:
-      GetState(browserAccessibility_, WebKit::WebAXStateRequired)];
+      GetState(browserAccessibility_, blink::WebAXStateRequired)];
 }
 
 // Returns an enum indicating the role from browserAccessibility_.
-- (WebKit::WebAXRole)internalRole {
-  return static_cast<WebKit::WebAXRole>(browserAccessibility_->role());
+- (blink::WebAXRole)internalRole {
+  return static_cast<blink::WebAXRole>(browserAccessibility_->role());
 }
 
 // Returns a string indicating the NSAccessibility role of this object.
 - (NSString*)role {
-  WebKit::WebAXRole role = [self internalRole];
-  if (role == WebKit::WebAXRoleCanvas &&
+  blink::WebAXRole role = [self internalRole];
+  if (role == blink::WebAXRoleCanvas &&
       browserAccessibility_->GetBoolAttribute(
           AccessibilityNodeData::ATTR_CANVAS_HAS_FALLBACK)) {
     return NSAccessibilityGroupRole;
@@ -691,10 +691,10 @@ NSDictionary* attributeToMethodNameMap = nil;
       [role isEqualToString:NSAccessibilityRadioButtonRole]) {
     std::string role;
     if (browserAccessibility_->GetHtmlAttribute("role", &role)) {
-      WebKit::WebAXRole internalRole = [self internalRole];
-      if ((internalRole != WebKit::WebAXRoleGroup &&
-           internalRole != WebKit::WebAXRoleListItem) ||
-          internalRole == WebKit::WebAXRoleTab) {
+      blink::WebAXRole internalRole = [self internalRole];
+      if ((internalRole != blink::WebAXRoleGroup &&
+           internalRole != blink::WebAXRoleListItem) ||
+          internalRole == blink::WebAXRoleTab) {
         // TODO(dtseng): This is not localized; see crbug/84814.
         return base::SysUTF8ToNSString(role);
       }
@@ -702,10 +702,10 @@ NSDictionary* attributeToMethodNameMap = nil;
   }
 
   switch([self internalRole]) {
-  case WebKit::WebAXRoleFooter:
+  case blink::WebAXRoleFooter:
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(
         IDS_AX_ROLE_FOOTER));
-  case WebKit::WebAXRoleSpinButton:
+  case blink::WebAXRoleSpinButton:
     // This control is similar to what VoiceOver calls a "stepper".
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(
         IDS_AX_ROLE_STEPPER));
@@ -717,8 +717,8 @@ NSDictionary* attributeToMethodNameMap = nil;
 }
 
 - (NSArray*)rowHeaders {
-  if ([self internalRole] != WebKit::WebAXRoleTable &&
-      [self internalRole] != WebKit::WebAXRoleGrid) {
+  if ([self internalRole] != blink::WebAXRoleTable &&
+      [self internalRole] != blink::WebAXRoleGrid) {
     return nil;
   }
 
@@ -730,14 +730,14 @@ NSDictionary* attributeToMethodNameMap = nil;
     int id = uniqueCellIds[i];
     BrowserAccessibility* cell =
         browserAccessibility_->manager()->GetFromRendererID(id);
-    if (cell && cell->role() == WebKit::WebAXRoleRowHeader)
+    if (cell && cell->role() == blink::WebAXRoleRowHeader)
       [ret addObject:cell->ToBrowserAccessibilityCocoa()];
   }
   return ret;
 }
 
 - (NSValue*)rowIndexRange {
-  if ([self internalRole] != WebKit::WebAXRoleCell)
+  if ([self internalRole] != blink::WebAXRoleCell)
     return nil;
 
   int row = -1;
@@ -754,13 +754,13 @@ NSDictionary* attributeToMethodNameMap = nil;
 - (NSArray*)rows {
   NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
 
-  if ([self internalRole] == WebKit::WebAXRoleTable||
-      [self internalRole] == WebKit::WebAXRoleGrid) {
+  if ([self internalRole] == blink::WebAXRoleTable||
+      [self internalRole] == blink::WebAXRoleGrid) {
     for (BrowserAccessibilityCocoa* child in [self children]) {
       if ([[child role] isEqualToString:NSAccessibilityRowRole])
         [ret addObject:child];
     }
-  } else if ([self internalRole] == WebKit::WebAXRoleColumn) {
+  } else if ([self internalRole] == blink::WebAXRoleColumn) {
     const std::vector<int32>& indirectChildIds =
         browserAccessibility_->GetIntListAttribute(
             AccessibilityNodeData::ATTR_INDIRECT_CHILD_IDS);
@@ -784,16 +784,16 @@ NSDictionary* attributeToMethodNameMap = nil;
 
 // Returns a subrole based upon the role.
 - (NSString*) subrole {
-  WebKit::WebAXRole browserAccessibilityRole = [self internalRole];
-  if (browserAccessibilityRole == WebKit::WebAXRoleTextField &&
-      GetState(browserAccessibility_, WebKit::WebAXStateProtected)) {
+  blink::WebAXRole browserAccessibilityRole = [self internalRole];
+  if (browserAccessibilityRole == blink::WebAXRoleTextField &&
+      GetState(browserAccessibility_, blink::WebAXStateProtected)) {
     return @"AXSecureTextField";
   }
 
   NSString* htmlTag = NSStringForStringAttribute(
       browserAccessibility_, AccessibilityNodeData::ATTR_HTML_TAG);
 
-  if (browserAccessibilityRole == WebKit::WebAXRoleList) {
+  if (browserAccessibilityRole == blink::WebAXRoleList) {
     if ([htmlTag isEqualToString:@"ul"] ||
         [htmlTag isEqualToString:@"ol"]) {
       return @"AXContentList";
@@ -809,7 +809,7 @@ NSDictionary* attributeToMethodNameMap = nil;
 - (NSArray*)tabs {
   NSMutableArray* tabSubtree = [[[NSMutableArray alloc] init] autorelease];
 
-  if ([self internalRole] == WebKit::WebAXRoleTab)
+  if ([self internalRole] == blink::WebAXRoleTab)
     [tabSubtree addObject:self];
 
   for (uint i=0; i < [[self children] count]; ++i) {
@@ -864,9 +864,9 @@ NSDictionary* attributeToMethodNameMap = nil;
              [role isEqualToString:NSAccessibilityRadioButtonRole]) {
     int value = 0;
     value = GetState(
-        browserAccessibility_, WebKit::WebAXStateChecked) ? 1 : 0;
+        browserAccessibility_, blink::WebAXStateChecked) ? 1 : 0;
     value = GetState(
-        browserAccessibility_, WebKit::WebAXStateSelected) ?
+        browserAccessibility_, blink::WebAXStateSelected) ?
             1 :
             value;
 
@@ -934,7 +934,7 @@ NSDictionary* attributeToMethodNameMap = nil;
 
 - (NSNumber*)visited {
   return [NSNumber numberWithBool:
-      GetState(browserAccessibility_, WebKit::WebAXStateVisited)];
+      GetState(browserAccessibility_, blink::WebAXStateVisited)];
 }
 
 - (id)window {
@@ -1032,8 +1032,8 @@ NSDictionary* attributeToMethodNameMap = nil;
 
   if ([attribute isEqualToString:
       NSAccessibilityCellForColumnAndRowParameterizedAttribute]) {
-    if ([self internalRole] != WebKit::WebAXRoleTable &&
-        [self internalRole] != WebKit::WebAXRoleGrid) {
+    if ([self internalRole] != blink::WebAXRoleTable &&
+        [self internalRole] != blink::WebAXRoleGrid) {
       return nil;
     }
     if (![parameter isKindOfClass:[NSArray self]])
@@ -1053,7 +1053,7 @@ NSDictionary* attributeToMethodNameMap = nil;
          i < browserAccessibility_->PlatformChildCount();
          ++i) {
       BrowserAccessibility* child = browserAccessibility_->PlatformGetChild(i);
-      if (child->role() != WebKit::WebAXRoleRow)
+      if (child->role() != blink::WebAXRoleRow)
         continue;
       int rowIndex;
       if (!child->GetIntAttribute(
@@ -1068,7 +1068,7 @@ NSDictionary* attributeToMethodNameMap = nil;
            j < child->PlatformChildCount();
            ++j) {
         BrowserAccessibility* cell = child->PlatformGetChild(j);
-        if (cell->role() != WebKit::WebAXRoleCell)
+        if (cell->role() != blink::WebAXRoleCell)
           continue;
         int colIndex;
         if (!cell->GetIntAttribute(
@@ -1341,7 +1341,7 @@ NSDictionary* attributeToMethodNameMap = nil;
 
   if ([attribute isEqualToString:NSAccessibilityFocusedAttribute])
     return GetState(browserAccessibility_,
-        WebKit::WebAXStateFocusable);
+        blink::WebAXStateFocusable);
   if ([attribute isEqualToString:NSAccessibilityValueAttribute]) {
     return browserAccessibility_->GetBoolAttribute(
         AccessibilityNodeData::ATTR_CAN_SET_VALUE);

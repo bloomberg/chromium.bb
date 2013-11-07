@@ -17,7 +17,7 @@
 
 class GURL;
 
-namespace WebKit {
+namespace blink {
 #if defined(ENABLE_PEPPER_CDMS)
 class WebFrame;
 class WebMediaPlayerClient;
@@ -40,8 +40,8 @@ class ProxyDecryptor : public media::MediaKeys {
  public:
   ProxyDecryptor(
 #if defined(ENABLE_PEPPER_CDMS)
-      WebKit::WebMediaPlayerClient* web_media_player_client,
-      WebKit::WebFrame* web_frame,
+      blink::WebMediaPlayerClient* web_media_player_client,
+      blink::WebFrame* web_frame,
 #elif defined(OS_ANDROID)
       RendererMediaPlayerManager* manager,
       int media_keys_id,
@@ -91,8 +91,8 @@ class ProxyDecryptor : public media::MediaKeys {
   void DestroyHelperPlugin();
 
   // Needed to create the PpapiDecryptor.
-  WebKit::WebMediaPlayerClient* web_media_player_client_;
-  WebKit::WebFrame* web_frame_;
+  blink::WebMediaPlayerClient* web_media_player_client_;
+  blink::WebFrame* web_frame_;
 #elif defined(OS_ANDROID)
   RendererMediaPlayerManager* manager_;
   int media_keys_id_;

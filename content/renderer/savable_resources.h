@@ -12,7 +12,7 @@
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "url/gurl.h"
 
-namespace WebKit {
+namespace blink {
 class WebElement;
 class WebString;
 class WebView;
@@ -32,7 +32,7 @@ struct SavableResourcesResult {
   // it matched with links one by one.
   std::vector<GURL>* referrer_urls_list;
   // and the corresponding referrer policies.
-  std::vector<WebKit::WebReferrerPolicy>* referrer_policies_list;
+  std::vector<blink::WebReferrerPolicy>* referrer_policies_list;
   // vector which contains all savable links of main frame and sub frames.
   std::vector<GURL>* frames_list;
 
@@ -40,7 +40,7 @@ struct SavableResourcesResult {
   SavableResourcesResult(
       std::vector<GURL>* resources_list,
       std::vector<GURL>* referrer_urls_list,
-      std::vector<WebKit::WebReferrerPolicy>* referrer_policies_list,
+      std::vector<blink::WebReferrerPolicy>* referrer_policies_list,
       std::vector<GURL>* frames_list)
       : resources_list(resources_list),
         referrer_urls_list(referrer_urls_list),
@@ -56,7 +56,7 @@ struct SavableResourcesResult {
 // will send those links to embedder. Return value indicates whether we get
 // all saved resource links successfully.
 CONTENT_EXPORT bool GetAllSavableResourceLinksForCurrentPage(
-    WebKit::WebView* view,
+    blink::WebView* view,
     const GURL& page_url,
     SavableResourcesResult* savable_resources_result,
     const char** savable_schemes);
@@ -66,8 +66,8 @@ CONTENT_EXPORT bool GetAllSavableResourceLinksForCurrentPage(
 // the value in "href". For BODY, TABLE, TR, TD, returns the value in
 // "background". For BLOCKQUOTE, Q, DEL, INS, returns the value in "cite"
 // attribute. Otherwise returns a null WebString.
-CONTENT_EXPORT WebKit::WebString GetSubResourceLinkFromElement(
-    const WebKit::WebElement& element);
+CONTENT_EXPORT blink::WebString GetSubResourceLinkFromElement(
+    const blink::WebElement& element);
 
 }  // namespace content
 

@@ -39,10 +39,10 @@
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
 #include "ui/gfx/font_render_params_linux.h"
 
-using WebKit::WebCString;
-using WebKit::WebFontInfo;
-using WebKit::WebUChar;
-using WebKit::WebUChar32;
+using blink::WebCString;
+using blink::WebFontInfo;
+using blink::WebUChar;
+using blink::WebUChar32;
 
 namespace content {
 
@@ -260,7 +260,7 @@ class SandboxIPCProcess  {
     if (!pickle.ReadString(&iter, &preferred_locale))
       return;
 
-    WebKit::WebFontFamily family;
+    blink::WebFontFamily family;
     WebFontInfo::familyForChar(c, preferred_locale.c_str(), &family);
 
     Pickle reply;
@@ -286,7 +286,7 @@ class SandboxIPCProcess  {
     }
 
     EnsureWebKitInitialized();
-    WebKit::WebFontRenderStyle style;
+    blink::WebFontRenderStyle style;
     WebFontInfo::renderStyleForStrike(family.c_str(), sizeAndStyle, &style);
 
     Pickle reply;
@@ -654,14 +654,14 @@ class SandboxIPCProcess  {
 SandboxIPCProcess::~SandboxIPCProcess() {
   paths_.deleteAll();
   if (webkit_platform_support_)
-    WebKit::shutdownWithoutV8();
+    blink::shutdownWithoutV8();
 }
 
 void SandboxIPCProcess::EnsureWebKitInitialized() {
   if (webkit_platform_support_)
     return;
   webkit_platform_support_.reset(new WebKitPlatformSupportImpl);
-  WebKit::initializeWithoutV8(webkit_platform_support_.get());
+  blink::initializeWithoutV8(webkit_platform_support_.get());
 }
 
 // -----------------------------------------------------------------------------

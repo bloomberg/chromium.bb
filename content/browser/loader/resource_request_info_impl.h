@@ -53,7 +53,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       bool is_stream,
       bool allow_download,
       bool has_user_gesture,
-      WebKit::WebReferrerPolicy referrer_policy,
+      blink::WebReferrerPolicy referrer_policy,
       ResourceContext* context,
       base::WeakPtr<ResourceMessageFilter> filter,
       bool is_async);
@@ -70,7 +70,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   virtual bool ParentIsMainFrame() const OVERRIDE;
   virtual int64 GetParentFrameID() const OVERRIDE;
   virtual ResourceType::Type GetResourceType() const OVERRIDE;
-  virtual WebKit::WebReferrerPolicy GetReferrerPolicy() const OVERRIDE;
+  virtual blink::WebReferrerPolicy GetReferrerPolicy() const OVERRIDE;
   virtual PageTransition GetPageTransition() const OVERRIDE;
   virtual bool HasUserGesture() const OVERRIDE;
   virtual bool WasIgnoredByHandler() const OVERRIDE;
@@ -153,7 +153,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   ResourceType::Type resource_type_;
   PageTransition transition_type_;
   int memory_cost_;
-  WebKit::WebReferrerPolicy referrer_policy_;
+  blink::WebReferrerPolicy referrer_policy_;
   ResourceContext* context_;
   // The filter might be deleted without deleting this object if the process
   // exits during a transfer.

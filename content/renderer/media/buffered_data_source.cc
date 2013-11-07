@@ -10,7 +10,7 @@
 #include "media/base/media_log.h"
 #include "net/base/net_errors.h"
 
-using WebKit::WebFrame;
+using blink::WebFrame;
 
 namespace {
 

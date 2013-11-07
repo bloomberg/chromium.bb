@@ -6,7 +6,7 @@
 
 #include "build/build_config.h"
 
-using WebKit::WebKeyboardEvent;
+using blink::WebKeyboardEvent;
 
 namespace content {
 

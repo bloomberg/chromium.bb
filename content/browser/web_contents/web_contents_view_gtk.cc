@@ -29,8 +29,8 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
-using WebKit::WebDragOperation;
-using WebKit::WebDragOperationsMask;
+using blink::WebDragOperation;
+using blink::WebDragOperationsMask;
 
 namespace content {
 namespace {

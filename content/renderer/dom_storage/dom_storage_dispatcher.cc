@@ -142,7 +142,7 @@ class DomStorageDispatcher::ProxyImpl : public DOMStorageProxy {
   // to more reliably commit changes during shutdown.
   void PushPendingCallback(const CompletionCallback& callback) {
     if (pending_callbacks_.empty())
-      WebKit::Platform::current()->suddenTerminationChanged(false);
+      blink::Platform::current()->suddenTerminationChanged(false);
     pending_callbacks_.push_back(callback);
   }
 
@@ -150,7 +150,7 @@ class DomStorageDispatcher::ProxyImpl : public DOMStorageProxy {
     CompletionCallback callback = pending_callbacks_.front();
     pending_callbacks_.pop_front();
     if (pending_callbacks_.empty())
-      WebKit::Platform::current()->suddenTerminationChanged(true);
+      blink::Platform::current()->suddenTerminationChanged(true);
     return callback;
   }
 
@@ -316,7 +316,7 @@ void DomStorageDispatcher::OnStorageEvent(
   }
 
   if (params.namespace_id == kLocalStorageNamespaceId) {
-    WebKit::WebStorageEventDispatcher::dispatchLocalStorageEvent(
+    blink::WebStorageEventDispatcher::dispatchLocalStorageEvent(
         params.key,
         params.old_value,
         params.new_value,
@@ -327,7 +327,7 @@ void DomStorageDispatcher::OnStorageEvent(
   } else {
     WebStorageNamespaceImpl
         session_namespace_for_event_dispatch(params.namespace_id);
-    WebKit::WebStorageEventDispatcher::dispatchSessionStorageEvent(
+    blink::WebStorageEventDispatcher::dispatchSessionStorageEvent(
         params.key,
         params.old_value,
         params.new_value,

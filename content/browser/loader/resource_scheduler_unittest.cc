@@ -157,7 +157,7 @@ class ResourceSchedulerTest : public testing::Test {
         false,                             // is_stream
         true,                              // allow_download
         false,                             // has_user_gesture
-        WebKit::WebReferrerPolicyDefault,  // referrer_policy
+        blink::WebReferrerPolicyDefault,  // referrer_policy
         NULL,                              // context
         base::WeakPtr<ResourceMessageFilter>(),  // filter
         true);                             // is_async

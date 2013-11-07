@@ -9,7 +9,7 @@
 #include "content/common/content_export.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace WebKit {
+namespace blink {
 class WebMouseWheelEvent;
 }
 
@@ -44,7 +44,7 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Callback to give the browser a chance to handle the specified mouse wheel
   // event before sending it to the renderer.
   // Returns true if the |event| was handled.
-  virtual bool PreHandleWheelEvent(const WebKit::WebMouseWheelEvent& event);
+  virtual bool PreHandleWheelEvent(const blink::WebMouseWheelEvent& event);
 
   // Notifies that screen rects were sent to renderer process.
   virtual void DidSendScreenRects(RenderWidgetHostImpl* rwh) {}

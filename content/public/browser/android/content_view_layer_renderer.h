@@ -8,7 +8,7 @@
 // This interface is used by consumers of the ContentViewRenderView to
 // attach/detach layers.
 
-namespace WebKit {
+namespace blink {
 class WebLayer;
 }
 
@@ -16,8 +16,8 @@ namespace content {
 
 class ContentViewLayerRenderer {
  public:
-  virtual void AttachLayer(WebKit::WebLayer* layer) = 0;
-  virtual void DetachLayer(WebKit::WebLayer* layer) = 0;
+  virtual void AttachLayer(blink::WebLayer* layer) = 0;
+  virtual void DetachLayer(blink::WebLayer* layer) = 0;
 
  protected:
   virtual ~ContentViewLayerRenderer() {}

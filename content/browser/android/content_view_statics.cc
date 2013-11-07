@@ -24,7 +24,7 @@ namespace {
 
 // TODO(pliard): http://crbug.com/235909. Move WebKit shared timer toggling
 // functionality out of ContentViewStatistics and not be build on top of
-// WebKit::Platform::SuspendSharedTimer.
+// blink::Platform::SuspendSharedTimer.
 // TODO(pliard): http://crbug.com/235912. Add unit tests for WebKit shared timer
 // toggling.
 

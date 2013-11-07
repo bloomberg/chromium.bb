@@ -39,7 +39,7 @@ namespace {
 
 bool CanUseMediaStreamAPI(const RendererPpapiHost* host,
                           PP_Instance instance) {
-  WebKit::WebPluginContainer* container =
+  blink::WebPluginContainer* container =
       host->GetContainerForInstance(instance);
   if (!container)
     return false;

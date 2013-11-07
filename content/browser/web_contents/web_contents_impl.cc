@@ -1157,7 +1157,7 @@ void WebContentsImpl::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 }
 
 bool WebContentsImpl::PreHandleWheelEvent(
-    const WebKit::WebMouseWheelEvent& event) {
+    const blink::WebMouseWheelEvent& event) {
 #if !defined(OS_MACOSX)
   // On platforms other than Mac, control+mousewheel changes zoom. On Mac, this
   // isn't done for two reasons:
@@ -1167,7 +1167,7 @@ bool WebContentsImpl::PreHandleWheelEvent(
   //      with control key set which isn't what the user wants
   if (delegate_ &&
       event.wheelTicksY &&
-      (event.modifiers & WebKit::WebInputEvent::ControlKey)) {
+      (event.modifiers & blink::WebInputEvent::ControlKey)) {
     delegate_->ContentsZoomChange(event.wheelTicksY > 0);
     return true;
   }
@@ -1356,17 +1356,17 @@ void WebContentsImpl::CreateNewWindow(
 }
 
 void WebContentsImpl::CreateNewWidget(int route_id,
-                                      WebKit::WebPopupType popup_type) {
+                                      blink::WebPopupType popup_type) {
   CreateNewWidget(route_id, false, popup_type);
 }
 
 void WebContentsImpl::CreateNewFullscreenWidget(int route_id) {
-  CreateNewWidget(route_id, true, WebKit::WebPopupTypeNone);
+  CreateNewWidget(route_id, true, blink::WebPopupTypeNone);
 }
 
 void WebContentsImpl::CreateNewWidget(int route_id,
                                       bool is_fullscreen,
-                                      WebKit::WebPopupType popup_type) {
+                                      blink::WebPopupType popup_type) {
   RenderProcessHost* process = GetRenderProcessHost();
   RenderWidgetHostImpl* widget_host =
       new RenderWidgetHostImpl(this, process, route_id, IsHidden());
@@ -1811,7 +1811,7 @@ void WebContentsImpl::Close() {
 }
 
 void WebContentsImpl::DragSourceEndedAt(int client_x, int client_y,
-    int screen_x, int screen_y, WebKit::WebDragOperation operation) {
+    int screen_x, int screen_y, blink::WebDragOperation operation) {
   if (browser_plugin_embedder_.get())
     browser_plugin_embedder_->DragSourceEndedAt(client_x, client_y,
         screen_x, screen_y, operation);

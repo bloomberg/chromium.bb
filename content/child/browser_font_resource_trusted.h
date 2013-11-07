@@ -19,7 +19,7 @@
 
 class SkCanvas;
 
-namespace WebKit {
+namespace blink {
 class WebFont;
 }
 
@@ -72,7 +72,7 @@ class BrowserFontResource_Trusted
                         PP_Bool image_data_is_opaque);
 
  private:
-  scoped_ptr<WebKit::WebFont> font_;
+  scoped_ptr<blink::WebFont> font_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserFontResource_Trusted);
 };

@@ -10,7 +10,7 @@
 #include "ipc/ipc_channel.h"
 #include "third_party/WebKit/public/web/WebSharedWorkerClient.h"
 
-namespace WebKit {
+namespace blink {
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebFrame;
@@ -27,7 +27,7 @@ class WebSharedWorkerStub;
 // is also called by the worker code and converts these function calls into
 // IPCs that are sent to the renderer, where they're converted back to function
 // calls by WebWorkerProxy.
-class WebSharedWorkerClientProxy : public WebKit::WebSharedWorkerClient {
+class WebSharedWorkerClientProxy : public blink::WebSharedWorkerClient {
  public:
   WebSharedWorkerClientProxy(int route_id, WebSharedWorkerStub* stub);
   virtual ~WebSharedWorkerClientProxy();
@@ -36,24 +36,24 @@ class WebSharedWorkerClientProxy : public WebKit::WebSharedWorkerClient {
   virtual void workerContextClosed();
   virtual void workerContextDestroyed();
 
-  virtual WebKit::WebNotificationPresenter* notificationPresenter();
+  virtual blink::WebNotificationPresenter* notificationPresenter();
 
-  virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
-      WebKit::WebApplicationCacheHostClient* client);
-  virtual WebKit::WebWorkerPermissionClientProxy*
+  virtual blink::WebApplicationCacheHost* createApplicationCacheHost(
+      blink::WebApplicationCacheHostClient* client);
+  virtual blink::WebWorkerPermissionClientProxy*
       createWorkerPermissionClientProxy(
-          const WebKit::WebSecurityOrigin& origin);
+          const blink::WebSecurityOrigin& origin);
 
   // TODO(kinuko): Deprecate these methods.
-  virtual bool allowDatabase(WebKit::WebFrame* frame,
-                             const WebKit::WebString& name,
-                             const WebKit::WebString& display_name,
+  virtual bool allowDatabase(blink::WebFrame* frame,
+                             const blink::WebString& name,
+                             const blink::WebString& display_name,
                              unsigned long estimated_size);
   virtual bool allowFileSystem();
-  virtual bool allowIndexedDB(const WebKit::WebString&);
+  virtual bool allowIndexedDB(const blink::WebString&);
 
-  virtual void dispatchDevToolsMessage(const WebKit::WebString&);
-  virtual void saveDevToolsAgentState(const WebKit::WebString&);
+  virtual void dispatchDevToolsMessage(const blink::WebString&);
+  virtual void saveDevToolsAgentState(const blink::WebString&);
 
   void EnsureWorkerContextTerminates();
 

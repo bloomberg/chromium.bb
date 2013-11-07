@@ -20,9 +20,9 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-using WebKit::WebFrame;
-using WebKit::WebURLRequest;
-using WebKit::WebURLResponse;
+using blink::WebFrame;
+using blink::WebURLRequest;
+using blink::WebURLResponse;
 
 namespace content {
 

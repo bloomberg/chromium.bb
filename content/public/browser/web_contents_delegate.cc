@@ -113,7 +113,7 @@ bool WebContentsDelegate::PreHandleKeyboardEvent(
 bool WebContentsDelegate::CanDragEnter(
     WebContents* source,
     const DropData& data,
-    WebKit::WebDragOperationsMask operations_allowed) {
+    blink::WebDragOperationsMask operations_allowed) {
   return true;
 }
 

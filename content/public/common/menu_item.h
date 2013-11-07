@@ -17,10 +17,10 @@ namespace content {
 // custom entries of the context menu.
 struct CONTENT_EXPORT MenuItem {
   enum Type {
-    OPTION           = WebKit::WebMenuItemInfo::Option,
-    CHECKABLE_OPTION = WebKit::WebMenuItemInfo::CheckableOption,
-    GROUP            = WebKit::WebMenuItemInfo::Group,
-    SEPARATOR        = WebKit::WebMenuItemInfo::Separator,
+    OPTION           = blink::WebMenuItemInfo::Option,
+    CHECKABLE_OPTION = blink::WebMenuItemInfo::CheckableOption,
+    GROUP            = blink::WebMenuItemInfo::Group,
+    SEPARATOR        = blink::WebMenuItemInfo::Separator,
     SUBMENU  // This is currently only used by Pepper, not by WebKit.
   };
 

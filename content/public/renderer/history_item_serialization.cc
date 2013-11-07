@@ -13,11 +13,11 @@
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebSerializedScriptValue.h"
 
-using WebKit::WebHTTPBody;
-using WebKit::WebHistoryItem;
-using WebKit::WebSerializedScriptValue;
-using WebKit::WebString;
-using WebKit::WebVector;
+using blink::WebHTTPBody;
+using blink::WebHistoryItem;
+using blink::WebSerializedScriptValue;
+using blink::WebString;
+using blink::WebVector;
 
 namespace content {
 namespace {

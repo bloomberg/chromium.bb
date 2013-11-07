@@ -33,7 +33,7 @@ void MediaStreamSourceObserver::OnChanged() {
   if (state == state_)
     return;
   state_ = state;
-  WebKit::WebMediaStreamSource webkit_source(extra_data_->owner());
+  blink::WebMediaStreamSource webkit_source(extra_data_->owner());
 
   switch (state) {
     case webrtc::MediaSourceInterface::kInitializing:
@@ -42,15 +42,15 @@ void MediaStreamSourceObserver::OnChanged() {
       break;
     case webrtc::MediaSourceInterface::kLive:
       webkit_source.setReadyState(
-          WebKit::WebMediaStreamSource::ReadyStateLive);
+          blink::WebMediaStreamSource::ReadyStateLive);
       break;
     case webrtc::MediaSourceInterface::kMuted:
       webkit_source.setReadyState(
-          WebKit::WebMediaStreamSource::ReadyStateMuted);
+          blink::WebMediaStreamSource::ReadyStateMuted);
       break;
     case webrtc::MediaSourceInterface::kEnded:
       webkit_source.setReadyState(
-          WebKit::WebMediaStreamSource::ReadyStateEnded);
+          blink::WebMediaStreamSource::ReadyStateEnded);
       webrtc_source_->UnregisterObserver(this);
       webrtc_source_ = NULL;
       break;

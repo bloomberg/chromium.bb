@@ -76,10 +76,10 @@ using content::RenderWidgetHostImpl;
 using content::RenderWidgetHostViewMac;
 using content::RenderWidgetHostViewMacEditCommandHelper;
 using content::TextInputClientMac;
-using WebKit::WebInputEvent;
-using WebKit::WebInputEventFactory;
-using WebKit::WebMouseEvent;
-using WebKit::WebMouseWheelEvent;
+using blink::WebInputEvent;
+using blink::WebInputEventFactory;
+using blink::WebMouseEvent;
+using blink::WebMouseWheelEvent;
 
 enum CoreAnimationStatus {
   CORE_ANIMATION_DISABLED,
@@ -287,7 +287,7 @@ namespace {
 const size_t kMaxTooltipLength = 1024;
 
 // TODO(suzhe): Upstream this function.
-WebKit::WebColor WebColorFromNSColor(NSColor *color) {
+blink::WebColor WebColorFromNSColor(NSColor *color) {
   CGFloat r, g, b, a;
   [color getRed:&r green:&g blue:&b alpha:&a];
 
@@ -302,7 +302,7 @@ WebKit::WebColor WebColorFromNSColor(NSColor *color) {
 // third_party/WebKit/Source/WebKit/mac/WebView/WebHTMLView.mm
 void ExtractUnderlines(
     NSAttributedString* string,
-    std::vector<WebKit::WebCompositionUnderline>* underlines) {
+    std::vector<blink::WebCompositionUnderline>* underlines) {
   int length = [[string string] length];
   int i = 0;
   while (i < length) {
@@ -311,13 +311,13 @@ void ExtractUnderlines(
                               longestEffectiveRange:&range
                                             inRange:NSMakeRange(i, length - i)];
     if (NSNumber *style = [attrs objectForKey:NSUnderlineStyleAttributeName]) {
-      WebKit::WebColor color = SK_ColorBLACK;
+      blink::WebColor color = SK_ColorBLACK;
       if (NSColor *colorAttr =
           [attrs objectForKey:NSUnderlineColorAttributeName]) {
         color = WebColorFromNSColor(
             [colorAttr colorUsingColorSpaceName:NSDeviceRGBColorSpace]);
       }
-      underlines->push_back(WebKit::WebCompositionUnderline(
+      underlines->push_back(blink::WebCompositionUnderline(
           range.location, NSMaxRange(range), color, [style intValue] > 1));
     }
     i = range.location + range.length;
@@ -374,13 +374,13 @@ NSWindow* ApparentWindowForView(NSView* view) {
   return enclosing_window;
 }
 
-WebKit::WebScreenInfo GetWebScreenInfo(NSView* view) {
+blink::WebScreenInfo GetWebScreenInfo(NSView* view) {
   gfx::Display display =
       gfx::Screen::GetNativeScreen()->GetDisplayNearestWindow(view);
 
   NSScreen* screen = [NSScreen deepestScreen];
 
-  WebKit::WebScreenInfo results;
+  blink::WebScreenInfo results;
 
   results.deviceScaleFactor = static_cast<int>(display.device_scale_factor());
   results.depth = NSBitsPerPixelFromDepth([screen depth]);
@@ -407,7 +407,7 @@ RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
 
 // static
 void RenderWidgetHostViewPort::GetDefaultScreenInfo(
-    WebKit::WebScreenInfo* results) {
+    blink::WebScreenInfo* results) {
   *results = GetWebScreenInfo(NULL);
 }
 
@@ -626,7 +626,7 @@ void RenderWidgetHostViewMac::InitAsChild(
 void RenderWidgetHostViewMac::InitAsPopup(
     RenderWidgetHostView* parent_host_view,
     const gfx::Rect& pos) {
-  bool activatable = popup_type_ == WebKit::WebPopupTypeNone;
+  bool activatable = popup_type_ == blink::WebPopupTypeNone;
   [cocoa_view_ setCloseOnDeactivate:YES];
   [cocoa_view_ setCanBeKeyView:activatable ? YES : NO];
 
@@ -1139,7 +1139,7 @@ void RenderWidgetHostViewMac::SetShowingContextMenu(bool showing) {
 }
 
 bool RenderWidgetHostViewMac::IsPopup() const {
-  return popup_type_ != WebKit::WebPopupTypeNone;
+  return popup_type_ != blink::WebPopupTypeNone;
 }
 
 BackingStore* RenderWidgetHostViewMac::AllocBackingStore(
@@ -1703,7 +1703,7 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
 void RenderWidgetHostViewMac::OnAcceleratedCompositingStateChange() {
 }
 
-void RenderWidgetHostViewMac::GetScreenInfo(WebKit::WebScreenInfo* results) {
+void RenderWidgetHostViewMac::GetScreenInfo(blink::WebScreenInfo* results) {
   *results = GetWebScreenInfo(GetNativeView());
 }
 
@@ -1766,7 +1766,7 @@ void RenderWidgetHostViewMac::UnlockMouse() {
 }
 
 void RenderWidgetHostViewMac::UnhandledWheelEvent(
-    const WebKit::WebMouseWheelEvent& event) {
+    const blink::WebMouseWheelEvent& event) {
   // Only record a wheel event as unhandled if JavaScript handlers got a chance
   // to see it (no-op wheel events are ignored by the event dispatcher)
   if (event.deltaX || event.deltaY)
@@ -2413,7 +2413,7 @@ void RenderWidgetHostViewMac::FrameSwapped() {
     // So before sending the real key down event, we need to send a fake key up
     // event to balance it.
     NativeWebKeyboardEvent fakeEvent = event;
-    fakeEvent.type = WebKit::WebInputEvent::KeyUp;
+    fakeEvent.type = blink::WebInputEvent::KeyUp;
     fakeEvent.skip_in_browser = true;
     widgetHost->ForwardKeyboardEvent(fakeEvent);
     // Not checking |renderWidgetHostView_->render_widget_host_| here because
@@ -2439,7 +2439,7 @@ void RenderWidgetHostViewMac::FrameSwapped() {
     if (!textInserted && textToBeInserted_.length() == 1) {
       // If a single character was inserted, then we just send it as a keypress
       // event.
-      event.type = WebKit::WebInputEvent::Char;
+      event.type = blink::WebInputEvent::Char;
       event.text[0] = textToBeInserted_[0];
       event.text[1] = 0;
       event.skip_in_browser = true;
@@ -2451,7 +2451,7 @@ void RenderWidgetHostViewMac::FrameSwapped() {
       // We don't get insertText: calls if ctrl or cmd is down, or the key event
       // generates an insert command. So synthesize a keypress event for these
       // cases, unless the key event generated any other command.
-      event.type = WebKit::WebInputEvent::Char;
+      event.type = blink::WebInputEvent::Char;
       event.skip_in_browser = true;
       widgetHost->ForwardKeyboardEvent(event);
     }
@@ -3538,7 +3538,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   } else {
     // Use a thin black underline by default.
     underlines_.push_back(
-        WebKit::WebCompositionUnderline(0, length, SK_ColorBLACK, false));
+        blink::WebCompositionUnderline(0, length, SK_ColorBLACK, false));
   }
 
   // If we are handling a key down event, then SetComposition() will be

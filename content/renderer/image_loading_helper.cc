@@ -22,10 +22,10 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "webkit/glue/webkit_glue.h"
 
-using WebKit::WebFrame;
-using WebKit::WebVector;
-using WebKit::WebURL;
-using WebKit::WebURLRequest;
+using blink::WebFrame;
+using blink::WebVector;
+using blink::WebURL;
+using blink::WebURLRequest;
 
 namespace {
 

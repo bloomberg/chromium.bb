@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_MENU_ITEM_BUILDER_H_
 #define CONTENT_RENDERER_MENU_ITEM_BUILDER_H_
 
-namespace WebKit {
+namespace blink {
 struct WebMenuItemInfo;
 }
 
@@ -14,7 +14,7 @@ struct MenuItem;
 
 class MenuItemBuilder {
  public:
-  static MenuItem Build(const WebKit::WebMenuItemInfo& item);
+  static MenuItem Build(const blink::WebMenuItemInfo& item);
 };
 
 }  // namespace content

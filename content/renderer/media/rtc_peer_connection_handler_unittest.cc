@@ -38,7 +38,7 @@
 static const char kDummySdp[] = "dummy sdp";
 static const char kDummySdpType[] = "dummy type";
 
-using WebKit::WebRTCPeerConnectionHandlerClient;
+using blink::WebRTCPeerConnectionHandlerClient;
 using testing::NiceMock;
 using testing::_;
 using testing::Ref;
@@ -52,15 +52,15 @@ class MockRTCStatsResponse : public LocalRTCStatsResponse {
         statistic_count_(0) {
   }
 
-  virtual size_t addReport(WebKit::WebString type,
-                           WebKit::WebString id,
+  virtual size_t addReport(blink::WebString type,
+                           blink::WebString id,
                            double timestamp) OVERRIDE {
     ++report_count_;
     return report_count_;
   }
 
   virtual void addStatistic(size_t report,
-                            WebKit::WebString name, WebKit::WebString value)
+                            blink::WebString name, blink::WebString value)
       OVERRIDE {
     ++statistic_count_;
   }
@@ -71,7 +71,7 @@ class MockRTCStatsResponse : public LocalRTCStatsResponse {
   int statistic_count_;
 };
 
-// Mocked wrapper for WebKit::WebRTCStatsRequest
+// Mocked wrapper for blink::WebRTCStatsRequest
 class MockRTCStatsRequest : public LocalRTCStatsRequest {
  public:
   MockRTCStatsRequest()
@@ -81,7 +81,7 @@ class MockRTCStatsRequest : public LocalRTCStatsRequest {
   virtual bool hasSelector() const OVERRIDE {
     return has_selector_;
   }
-  virtual WebKit::WebMediaStreamTrack component() const OVERRIDE {
+  virtual blink::WebMediaStreamTrack component() const OVERRIDE {
     return component_;
   }
   virtual scoped_refptr<LocalRTCStatsResponse> createResponse() OVERRIDE {
@@ -97,7 +97,7 @@ class MockRTCStatsRequest : public LocalRTCStatsRequest {
   }
 
   // Function for setting whether or not a selector is available.
-  void setSelector(const WebKit::WebMediaStreamTrack& component) {
+  void setSelector(const blink::WebMediaStreamTrack& component) {
     has_selector_ = true;
     component_ = component;
   }
@@ -113,7 +113,7 @@ class MockRTCStatsRequest : public LocalRTCStatsRequest {
 
  private:
   bool has_selector_;
-  WebKit::WebMediaStreamTrack component_;
+  blink::WebMediaStreamTrack component_;
   scoped_refptr<MockRTCStatsResponse> response_;
   bool request_succeeded_called_;
 };
@@ -131,7 +131,7 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
                     const RTCMediaConstraints& constraints));
   MOCK_METHOD3(TrackSetSessionDescription,
                void(RTCPeerConnectionHandler* pc_handler,
-                    const WebKit::WebRTCSessionDescription& desc,
+                    const blink::WebRTCSessionDescription& desc,
                     Source source));
   MOCK_METHOD3(
       TrackUpdateIce,
@@ -141,15 +141,15 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
            const RTCMediaConstraints& options));
   MOCK_METHOD3(TrackAddIceCandidate,
                void(RTCPeerConnectionHandler* pc_handler,
-                    const WebKit::WebRTCICECandidate& candidate,
+                    const blink::WebRTCICECandidate& candidate,
                     Source source));
   MOCK_METHOD3(TrackAddStream,
                void(RTCPeerConnectionHandler* pc_handler,
-                    const WebKit::WebMediaStream& stream,
+                    const blink::WebMediaStream& stream,
                     Source source));
   MOCK_METHOD3(TrackRemoveStream,
                void(RTCPeerConnectionHandler* pc_handler,
-                    const WebKit::WebMediaStream& stream,
+                    const blink::WebMediaStream& stream,
                     Source source));
   MOCK_METHOD1(TrackOnIceComplete,
                void(RTCPeerConnectionHandler* pc_handler));
@@ -173,7 +173,7 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
                void(RTCPeerConnectionHandler* pc_handler));
   MOCK_METHOD2(TrackCreateDTMFSender,
                void(RTCPeerConnectionHandler* pc_handler,
-                     const WebKit::WebMediaStreamTrack& track));
+                     const blink::WebMediaStreamTrack& track));
 };
 
 class RTCPeerConnectionHandlerUnderTest : public RTCPeerConnectionHandler {
@@ -202,8 +202,8 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
         new RTCPeerConnectionHandlerUnderTest(mock_client_.get(),
                                               mock_dependency_factory_.get()));
     mock_tracker_.reset(new NiceMock<MockPeerConnectionTracker>());
-    WebKit::WebRTCConfiguration config;
-    WebKit::WebMediaConstraints constraints;
+    blink::WebRTCConfiguration config;
+    blink::WebMediaConstraints constraints;
     EXPECT_TRUE(pc_handler_->InitializeForTest(config, constraints,
                                                mock_tracker_.get()));
 
@@ -212,28 +212,28 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
   }
 
   // Creates a WebKit local MediaStream.
-  WebKit::WebMediaStream CreateLocalMediaStream(
+  blink::WebMediaStream CreateLocalMediaStream(
       const std::string& stream_label) {
     std::string video_track_label("video-label");
     std::string audio_track_label("audio-label");
 
-    WebKit::WebMediaStreamSource audio_source;
-    audio_source.initialize(WebKit::WebString::fromUTF8(audio_track_label),
-                            WebKit::WebMediaStreamSource::TypeAudio,
-                            WebKit::WebString::fromUTF8("audio_track"));
-    WebKit::WebMediaStreamSource video_source;
-    video_source.initialize(WebKit::WebString::fromUTF8(video_track_label),
-                            WebKit::WebMediaStreamSource::TypeVideo,
-                            WebKit::WebString::fromUTF8("video_track"));
+    blink::WebMediaStreamSource audio_source;
+    audio_source.initialize(blink::WebString::fromUTF8(audio_track_label),
+                            blink::WebMediaStreamSource::TypeAudio,
+                            blink::WebString::fromUTF8("audio_track"));
+    blink::WebMediaStreamSource video_source;
+    video_source.initialize(blink::WebString::fromUTF8(video_track_label),
+                            blink::WebMediaStreamSource::TypeVideo,
+                            blink::WebString::fromUTF8("video_track"));
 
-    WebKit::WebVector<WebKit::WebMediaStreamTrack> audio_tracks(
+    blink::WebVector<blink::WebMediaStreamTrack> audio_tracks(
         static_cast<size_t>(1));
     audio_tracks[0].initialize(audio_source.id(), audio_source);
-    WebKit::WebVector<WebKit::WebMediaStreamTrack> video_tracks(
+    blink::WebVector<blink::WebMediaStreamTrack> video_tracks(
         static_cast<size_t>(1));
     video_tracks[0].initialize(video_source.id(), video_source);
 
-    WebKit::WebMediaStream local_stream;
+    blink::WebMediaStream local_stream;
     local_stream.initialize(UTF8ToUTF16(stream_label), audio_tracks,
                             video_tracks);
 
@@ -312,11 +312,11 @@ TEST_F(RTCPeerConnectionHandlerTest, Destruct) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, CreateOffer) {
-  WebKit::WebRTCSessionDescriptionRequest request;
-  WebKit::WebMediaConstraints options;
+  blink::WebRTCSessionDescriptionRequest request;
+  blink::WebMediaConstraints options;
   EXPECT_CALL(*mock_tracker_.get(), TrackCreateOffer(pc_handler_.get(), _));
 
-  // TODO(perkj): Can WebKit::WebRTCSessionDescriptionRequest be changed so
+  // TODO(perkj): Can blink::WebRTCSessionDescriptionRequest be changed so
   // the |reqest| requestSucceeded can be tested? Currently the |request| object
   // can not be initialized from a unit test.
   EXPECT_FALSE(mock_peer_connection_->created_session_description() != NULL);
@@ -325,10 +325,10 @@ TEST_F(RTCPeerConnectionHandlerTest, CreateOffer) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, CreateAnswer) {
-  WebKit::WebRTCSessionDescriptionRequest request;
-  WebKit::WebMediaConstraints options;
+  blink::WebRTCSessionDescriptionRequest request;
+  blink::WebMediaConstraints options;
   EXPECT_CALL(*mock_tracker_.get(), TrackCreateAnswer(pc_handler_.get(), _));
-  // TODO(perkj): Can WebKit::WebRTCSessionDescriptionRequest be changed so
+  // TODO(perkj): Can blink::WebRTCSessionDescriptionRequest be changed so
   // the |reqest| requestSucceeded can be tested? Currently the |request| object
   // can not be initialized from a unit test.
   EXPECT_FALSE(mock_peer_connection_->created_session_description() != NULL);
@@ -337,8 +337,8 @@ TEST_F(RTCPeerConnectionHandlerTest, CreateAnswer) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, setLocalDescription) {
-  WebKit::WebRTCVoidRequest request;
-  WebKit::WebRTCSessionDescription description;
+  blink::WebRTCVoidRequest request;
+  blink::WebRTCSessionDescription description;
   description.initialize(kDummySdpType, kDummySdp);
   // PeerConnectionTracker::TrackSetSessionDescription is expected to be called
   // before |mock_peer_connection| is called.
@@ -360,8 +360,8 @@ TEST_F(RTCPeerConnectionHandlerTest, setLocalDescription) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, setRemoteDescription) {
-  WebKit::WebRTCVoidRequest request;
-  WebKit::WebRTCSessionDescription description;
+  blink::WebRTCVoidRequest request;
+  blink::WebRTCSessionDescription description;
   description.initialize(kDummySdpType, kDummySdp);
 
   // PeerConnectionTracker::TrackSetSessionDescription is expected to be called
@@ -384,8 +384,8 @@ TEST_F(RTCPeerConnectionHandlerTest, setRemoteDescription) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, updateICE) {
-  WebKit::WebRTCConfiguration config;
-  WebKit::WebMediaConstraints constraints;
+  blink::WebRTCConfiguration config;
+  blink::WebMediaConstraints constraints;
 
   EXPECT_CALL(*mock_tracker_.get(), TrackUpdateIce(pc_handler_.get(), _, _));
   // TODO(perkj): Test that the parameters in |config| can be translated when a
@@ -395,7 +395,7 @@ TEST_F(RTCPeerConnectionHandlerTest, updateICE) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, addICECandidate) {
-  WebKit::WebRTCICECandidate candidate;
+  blink::WebRTCICECandidate candidate;
   candidate.initialize(kDummySdp, "mid", 1);
 
   EXPECT_CALL(*mock_tracker_.get(),
@@ -410,9 +410,9 @@ TEST_F(RTCPeerConnectionHandlerTest, addICECandidate) {
 
 TEST_F(RTCPeerConnectionHandlerTest, addAndRemoveStream) {
   std::string stream_label = "local_stream";
-  WebKit::WebMediaStream local_stream(
+  blink::WebMediaStream local_stream(
       CreateLocalMediaStream(stream_label));
-  WebKit::WebMediaConstraints constraints;
+  blink::WebMediaConstraints constraints;
 
   EXPECT_CALL(*mock_tracker_.get(),
               TrackAddStream(pc_handler_.get(),
@@ -453,11 +453,11 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsAfterClose) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithLocalSelector) {
-  WebKit::WebMediaStream local_stream(
+  blink::WebMediaStream local_stream(
       CreateLocalMediaStream("local_stream"));
-  WebKit::WebMediaConstraints constraints;
+  blink::WebMediaConstraints constraints;
   pc_handler_->addStream(local_stream, constraints);
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> tracks;
+  blink::WebVector<blink::WebMediaStreamTrack> tracks;
   local_stream.audioTracks(tracks);
   ASSERT_LE(1ul, tracks.size());
 
@@ -472,9 +472,9 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithRemoteSelector) {
   scoped_refptr<webrtc::MediaStreamInterface> stream(
       AddRemoteMockMediaStream("remote_stream", "video", "audio"));
   pc_handler_->OnAddStream(stream.get());
-  const WebKit::WebMediaStream& remote_stream = mock_client_->remote_stream();
+  const blink::WebMediaStream& remote_stream = mock_client_->remote_stream();
 
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> tracks;
+  blink::WebVector<blink::WebMediaStreamTrack> tracks;
   remote_stream.audioTracks(tracks);
   ASSERT_LE(1ul, tracks.size());
 
@@ -488,13 +488,13 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithRemoteSelector) {
 TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithBadSelector) {
   // The setup is the same as GetStatsWithLocalSelector, but the stream is not
   // added to the PeerConnection.
-  WebKit::WebMediaStream local_stream(
+  blink::WebMediaStream local_stream(
       CreateLocalMediaStream("local_stream_2"));
-  WebKit::WebMediaConstraints constraints;
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> tracks;
+  blink::WebMediaConstraints constraints;
+  blink::WebVector<blink::WebMediaStreamTrack> tracks;
 
   local_stream.audioTracks(tracks);
-  WebKit::WebMediaStreamTrack component = tracks[0];
+  blink::WebMediaStreamTrack component = tracks[0];
   mock_peer_connection_->SetGetStatsResult(false);
 
   scoped_refptr<MockRTCStatsRequest> request(
@@ -652,20 +652,20 @@ TEST_F(RTCPeerConnectionHandlerTest, OnAddAndOnRemoveStream) {
   testing::InSequence sequence;
   EXPECT_CALL(*mock_tracker_.get(), TrackAddStream(
       pc_handler_.get(),
-      testing::Property(&WebKit::WebMediaStream::id,
+      testing::Property(&blink::WebMediaStream::id,
                         UTF8ToUTF16(remote_stream_label)),
       PeerConnectionTracker::SOURCE_REMOTE));
   EXPECT_CALL(*mock_client_.get(), didAddRemoteStream(
-      testing::Property(&WebKit::WebMediaStream::id,
+      testing::Property(&blink::WebMediaStream::id,
                         UTF8ToUTF16(remote_stream_label))));
 
   EXPECT_CALL(*mock_tracker_.get(), TrackRemoveStream(
       pc_handler_.get(),
-      testing::Property(&WebKit::WebMediaStream::id,
+      testing::Property(&blink::WebMediaStream::id,
                         UTF8ToUTF16(remote_stream_label)),
       PeerConnectionTracker::SOURCE_REMOTE));
   EXPECT_CALL(*mock_client_.get(), didRemoveRemoteStream(
-      testing::Property(&WebKit::WebMediaStream::id,
+      testing::Property(&blink::WebMediaStream::id,
                         UTF8ToUTF16(remote_stream_label))));
 
   pc_handler_->OnAddStream(remote_stream.get());
@@ -680,29 +680,29 @@ TEST_F(RTCPeerConnectionHandlerTest, RemoteTrackState) {
 
   testing::InSequence sequence;
   EXPECT_CALL(*mock_client_.get(), didAddRemoteStream(
-      testing::Property(&WebKit::WebMediaStream::id,
+      testing::Property(&blink::WebMediaStream::id,
                         UTF8ToUTF16(remote_stream_label))));
   pc_handler_->OnAddStream(remote_stream.get());
-  const WebKit::WebMediaStream& webkit_stream = mock_client_->remote_stream();
+  const blink::WebMediaStream& webkit_stream = mock_client_->remote_stream();
 
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> audio_tracks;
+  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
   webkit_stream.audioTracks(audio_tracks);
-  EXPECT_EQ(WebKit::WebMediaStreamSource::ReadyStateLive,
+  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive,
             audio_tracks[0].source().readyState());
 
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> video_tracks;
+  blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
     webkit_stream.videoTracks(video_tracks);
-  EXPECT_EQ(WebKit::WebMediaStreamSource::ReadyStateLive,
+  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive,
             video_tracks[0].source().readyState());
 
   remote_stream->GetAudioTracks()[0]->set_state(
       webrtc::MediaStreamTrackInterface::kEnded);
-  EXPECT_EQ(WebKit::WebMediaStreamSource::ReadyStateEnded,
+  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded,
             audio_tracks[0].source().readyState());
 
   remote_stream->GetVideoTracks()[0]->set_state(
       webrtc::MediaStreamTrackInterface::kEnded);
-  EXPECT_EQ(WebKit::WebMediaStreamSource::ReadyStateEnded,
+  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded,
             video_tracks[0].source().readyState());
 }
 
@@ -712,12 +712,12 @@ TEST_F(RTCPeerConnectionHandlerTest, RemoveAndAddAudioTrackFromRemoteStream) {
       AddRemoteMockMediaStream(remote_stream_label, "video", "audio"));
 
   EXPECT_CALL(*mock_client_.get(), didAddRemoteStream(
-      testing::Property(&WebKit::WebMediaStream::id,
+      testing::Property(&blink::WebMediaStream::id,
                         UTF8ToUTF16(remote_stream_label))));
   pc_handler_->OnAddStream(remote_stream.get());
-  const WebKit::WebMediaStream& webkit_stream = mock_client_->remote_stream();
+  const blink::WebMediaStream& webkit_stream = mock_client_->remote_stream();
 
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> audio_tracks;
+  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
   webkit_stream.audioTracks(audio_tracks);
   EXPECT_EQ(1u, audio_tracks.size());
 
@@ -725,13 +725,13 @@ TEST_F(RTCPeerConnectionHandlerTest, RemoveAndAddAudioTrackFromRemoteStream) {
   scoped_refptr<webrtc::AudioTrackInterface> webrtc_track =
       remote_stream->GetAudioTracks()[0].get();
   remote_stream->RemoveTrack(webrtc_track.get());
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> modified_audio_tracks1;
+  blink::WebVector<blink::WebMediaStreamTrack> modified_audio_tracks1;
   webkit_stream.audioTracks(modified_audio_tracks1);
   EXPECT_EQ(0u, modified_audio_tracks1.size());
 
   // Add the WebRtc audio track again.
   remote_stream->AddTrack(webrtc_track.get());
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> modified_audio_tracks2;
+  blink::WebVector<blink::WebMediaStreamTrack> modified_audio_tracks2;
   webkit_stream.audioTracks(modified_audio_tracks2);
   EXPECT_EQ(1u, modified_audio_tracks2.size());
 }
@@ -742,12 +742,12 @@ TEST_F(RTCPeerConnectionHandlerTest, RemoveAndAddVideoTrackFromRemoteStream) {
       AddRemoteMockMediaStream(remote_stream_label, "video", "video"));
 
   EXPECT_CALL(*mock_client_.get(), didAddRemoteStream(
-      testing::Property(&WebKit::WebMediaStream::id,
+      testing::Property(&blink::WebMediaStream::id,
                         UTF8ToUTF16(remote_stream_label))));
   pc_handler_->OnAddStream(remote_stream.get());
-  const WebKit::WebMediaStream& webkit_stream = mock_client_->remote_stream();
+  const blink::WebMediaStream& webkit_stream = mock_client_->remote_stream();
 
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> video_tracks;
+  blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
   webkit_stream.videoTracks(video_tracks);
   EXPECT_EQ(1u, video_tracks.size());
 
@@ -755,13 +755,13 @@ TEST_F(RTCPeerConnectionHandlerTest, RemoveAndAddVideoTrackFromRemoteStream) {
   scoped_refptr<webrtc::VideoTrackInterface> webrtc_track =
       remote_stream->GetVideoTracks()[0].get();
   remote_stream->RemoveTrack(webrtc_track.get());
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> modified_video_tracks1;
+  blink::WebVector<blink::WebMediaStreamTrack> modified_video_tracks1;
   webkit_stream.videoTracks(modified_video_tracks1);
   EXPECT_EQ(0u, modified_video_tracks1.size());
 
   // Add the WebRtc video track again.
   remote_stream->AddTrack(webrtc_track.get());
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> modified_video_tracks2;
+  blink::WebVector<blink::WebMediaStreamTrack> modified_video_tracks2;
   webkit_stream.videoTracks(modified_video_tracks2);
   EXPECT_EQ(1u, modified_video_tracks2.size());
 }
@@ -790,24 +790,24 @@ TEST_F(RTCPeerConnectionHandlerTest, OnRenegotiationNeeded) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, CreateDataChannel) {
-  WebKit::WebString label = "d1";
+  blink::WebString label = "d1";
   EXPECT_CALL(*mock_tracker_.get(),
               TrackCreateDataChannel(pc_handler_.get(),
                                      testing::NotNull(),
                                      PeerConnectionTracker::SOURCE_LOCAL));
-  scoped_ptr<WebKit::WebRTCDataChannelHandler> channel(
-      pc_handler_->createDataChannel("d1", WebKit::WebRTCDataChannelInit()));
+  scoped_ptr<blink::WebRTCDataChannelHandler> channel(
+      pc_handler_->createDataChannel("d1", blink::WebRTCDataChannelInit()));
   EXPECT_TRUE(channel.get() != NULL);
   EXPECT_EQ(label, channel->label());
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, CreateDtmfSender) {
   std::string stream_label = "local_stream";
-  WebKit::WebMediaStream local_stream(CreateLocalMediaStream(stream_label));
-  WebKit::WebMediaConstraints constraints;
+  blink::WebMediaStream local_stream(CreateLocalMediaStream(stream_label));
+  blink::WebMediaConstraints constraints;
   pc_handler_->addStream(local_stream, constraints);
 
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> tracks;
+  blink::WebVector<blink::WebMediaStreamTrack> tracks;
   local_stream.videoTracks(tracks);
 
   ASSERT_LE(1ul, tracks.size());
@@ -820,7 +820,7 @@ TEST_F(RTCPeerConnectionHandlerTest, CreateDtmfSender) {
               TrackCreateDTMFSender(pc_handler_.get(),
                                     testing::Ref(tracks[0])));
 
-  scoped_ptr<WebKit::WebRTCDTMFSenderHandler> sender(
+  scoped_ptr<blink::WebRTCDTMFSenderHandler> sender(
       pc_handler_->createDTMFSender(tracks[0]));
   EXPECT_TRUE(sender.get());
 }

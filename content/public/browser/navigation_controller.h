@@ -349,7 +349,7 @@ class NavigationController {
 
   // Random --------------------------------------------------------------------
 
-  // Session storage depends on dom_storage that depends on WebKit::WebString,
+  // Session storage depends on dom_storage that depends on blink::WebString,
   // which cannot be used on iOS.
 #if !defined(OS_IOS)
   // Returns all the SessionStorageNamespace objects that this

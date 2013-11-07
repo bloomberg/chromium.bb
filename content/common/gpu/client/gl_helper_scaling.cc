@@ -21,12 +21,12 @@
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_bindings.h"
 
-using WebKit::WebGLId;
-using WebKit::WebGraphicsContext3D;
+using blink::WebGLId;
+using blink::WebGraphicsContext3D;
 
 namespace content {
 
-GLHelperScaling::GLHelperScaling(WebKit::WebGraphicsContext3D* context,
+GLHelperScaling::GLHelperScaling(blink::WebGraphicsContext3D* context,
                 GLHelper* helper)
   : context_(context),
     helper_(helper),
@@ -51,8 +51,8 @@ class ShaderProgram : public base::RefCounted<ShaderProgram> {
   }
 
   // Compile shader program, return true if successful.
-  bool Setup(const WebKit::WGC3Dchar* vertex_shader_text,
-             const WebKit::WGC3Dchar* fragment_shader_text);
+  bool Setup(const blink::WGC3Dchar* vertex_shader_text,
+             const blink::WGC3Dchar* fragment_shader_text);
 
   // UseProgram must be called with GL_TEXTURE_2D bound to the
   // source texture and GL_ARRAY_BUFFER bound to a vertex
@@ -75,22 +75,22 @@ class ShaderProgram : public base::RefCounted<ShaderProgram> {
   ScopedProgram program_;
 
   // The location of the position in the program.
-  WebKit::WGC3Dint position_location_;
+  blink::WGC3Dint position_location_;
   // The location of the texture coordinate in the program.
-  WebKit::WGC3Dint texcoord_location_;
+  blink::WGC3Dint texcoord_location_;
   // The location of the source texture in the program.
-  WebKit::WGC3Dint texture_location_;
+  blink::WGC3Dint texture_location_;
   // The location of the texture coordinate of
   // the sub-rectangle in the program.
-  WebKit::WGC3Dint src_subrect_location_;
+  blink::WGC3Dint src_subrect_location_;
   // Location of size of source image in pixels.
-  WebKit::WGC3Dint src_pixelsize_location_;
+  blink::WGC3Dint src_pixelsize_location_;
   // Location of size of destination image in pixels.
-  WebKit::WGC3Dint dst_pixelsize_location_;
+  blink::WGC3Dint dst_pixelsize_location_;
   // Location of vector for scaling direction.
-  WebKit::WGC3Dint scaling_vector_location_;
+  blink::WGC3Dint scaling_vector_location_;
   // Location of color weights.
-  WebKit::WGC3Dint color_weights_location_;
+  blink::WGC3Dint color_weights_location_;
 
   DISALLOW_COPY_AND_ASSIGN(ShaderProgram);
 };
@@ -164,8 +164,8 @@ class ScalerImpl :
 
   // GLHelperShader::ShaderInterface implementation.
   virtual void Execute(
-      WebKit::WebGLId source_texture,
-      const std::vector<WebKit::WebGLId>& dest_textures) OVERRIDE {
+      blink::WebGLId source_texture,
+      const std::vector<blink::WebGLId>& dest_textures) OVERRIDE {
     if (subscaler_) {
       subscaler_->Scale(source_texture, intermediate_texture_);
       source_texture = intermediate_texture_;
@@ -175,8 +175,8 @@ class ScalerImpl :
         context_,
         dst_framebuffer_);
     DCHECK_GT(dest_textures.size(), 0U);
-    scoped_ptr<WebKit::WGC3Denum[]> buffers(
-        new WebKit::WGC3Denum[dest_textures.size()]);
+    scoped_ptr<blink::WGC3Denum[]> buffers(
+        new blink::WGC3Denum[dest_textures.size()]);
     for (size_t t = 0; t < dest_textures.size(); t++) {
       ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(context_,
                                                         dest_textures[t]);
@@ -224,9 +224,9 @@ class ScalerImpl :
   }
 
   // GLHelper::ScalerInterface implementation.
-  virtual void Scale(WebKit::WebGLId source_texture,
-                     WebKit::WebGLId dest_texture) OVERRIDE {
-    std::vector<WebKit::WebGLId> tmp(1);
+  virtual void Scale(blink::WebGLId source_texture,
+                     blink::WebGLId dest_texture) OVERRIDE {
+    std::vector<blink::WebGLId> tmp(1);
     tmp[0] = dest_texture;
     Execute(source_texture, tmp);
   }
@@ -252,7 +252,7 @@ class ScalerImpl :
   GLHelperScaling* scaler_helper_;
   GLHelperScaling::ScalerStage spec_;
   GLfloat color_weights_[4];
-  WebKit::WebGLId intermediate_texture_;
+  blink::WebGLId intermediate_texture_;
   scoped_refptr<ShaderProgram> shader_program_;
   ScopedFramebuffer dst_framebuffer_;
   scoped_ptr<ScalerImpl> subscaler_;
@@ -510,7 +510,7 @@ GLHelperScaling::CreateYuvMrtShader(
   return new ScalerImpl(context_, this, stage, NULL, NULL);
 }
 
-const WebKit::WGC3Dfloat GLHelperScaling::kVertexAttributes[] = {
+const blink::WGC3Dfloat GLHelperScaling::kVertexAttributes[] = {
   -1.0f, -1.0f, 0.0f, 0.0f,
   1.0f, -1.0f, 1.0f, 0.0f,
   -1.0f, 1.0f, 0.0f, 1.0f,
@@ -533,12 +533,12 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
   scoped_refptr<ShaderProgram>& cache_entry(shader_programs_[key]);
   if (!cache_entry.get()) {
     cache_entry = new ShaderProgram(context_, helper_);
-    std::basic_string<WebKit::WGC3Dchar> vertex_program;
-    std::basic_string<WebKit::WGC3Dchar> fragment_program;
-    std::basic_string<WebKit::WGC3Dchar> vertex_header;
-    std::basic_string<WebKit::WGC3Dchar> fragment_directives;
-    std::basic_string<WebKit::WGC3Dchar> fragment_header;
-    std::basic_string<WebKit::WGC3Dchar> shared_variables;
+    std::basic_string<blink::WGC3Dchar> vertex_program;
+    std::basic_string<blink::WGC3Dchar> fragment_program;
+    std::basic_string<blink::WGC3Dchar> vertex_header;
+    std::basic_string<blink::WGC3Dchar> fragment_directives;
+    std::basic_string<blink::WGC3Dchar> fragment_header;
+    std::basic_string<blink::WGC3Dchar> shared_variables;
 
     vertex_header.append(
         "precision highp float;\n"
@@ -871,8 +871,8 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
   return cache_entry;
 }
 
-bool ShaderProgram::Setup(const WebKit::WGC3Dchar* vertex_shader_text,
-                          const WebKit::WGC3Dchar* fragment_shader_text) {
+bool ShaderProgram::Setup(const blink::WGC3Dchar* vertex_shader_text,
+                          const blink::WGC3Dchar* fragment_shader_text) {
   // Shaders to map the source texture to |dst_texture_|.
   ScopedShader vertex_shader(context_, helper_->CompileShaderFromSource(
       vertex_shader_text, GL_VERTEX_SHADER));
@@ -888,7 +888,7 @@ bool ShaderProgram::Setup(const WebKit::WGC3Dchar* vertex_shader_text,
   context_->attachShader(program_, fragment_shader);
   context_->linkProgram(program_);
 
-  WebKit::WGC3Dint link_status = 0;
+  blink::WGC3Dint link_status = 0;
   context_->getProgramiv(program_, GL_LINK_STATUS, &link_status);
   if (!link_status) {
     LOG(ERROR) << std::string(context_->getProgramInfoLog(program_).utf8());
@@ -918,21 +918,21 @@ void ShaderProgram::UseProgram(
     GLfloat color_weights[4]) {
   context_->useProgram(program_);
 
-  WebKit::WGC3Dintptr offset = 0;
+  blink::WGC3Dintptr offset = 0;
   context_->vertexAttribPointer(position_location_,
                                 2,
                                 GL_FLOAT,
                                 GL_FALSE,
-                                4 * sizeof(WebKit::WGC3Dfloat),
+                                4 * sizeof(blink::WGC3Dfloat),
                                 offset);
   context_->enableVertexAttribArray(position_location_);
 
-  offset += 2 * sizeof(WebKit::WGC3Dfloat);
+  offset += 2 * sizeof(blink::WGC3Dfloat);
   context_->vertexAttribPointer(texcoord_location_,
                                 2,
                                 GL_FLOAT,
                                 GL_FALSE,
-                                4 * sizeof(WebKit::WGC3Dfloat),
+                                4 * sizeof(blink::WGC3Dfloat),
                                 offset);
   context_->enableVertexAttribArray(texcoord_location_);
 

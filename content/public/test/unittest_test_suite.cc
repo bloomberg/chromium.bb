@@ -15,7 +15,7 @@ namespace content {
 #if !defined(OS_IOS)
 // A stubbed out WebKit platform support impl.
 class UnitTestTestSuite::UnitTestWebKitPlatformSupport
-    : public WebKit::Platform {
+    : public blink::Platform {
  public:
   UnitTestWebKitPlatformSupport() {}
   virtual ~UnitTestWebKitPlatformSupport() {}
@@ -37,13 +37,13 @@ UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite)
   DCHECK(test_suite);
 #if !defined(OS_IOS)
   webkit_platform_support_.reset(new UnitTestWebKitPlatformSupport);
-  WebKit::initialize(webkit_platform_support_.get());
+  blink::initialize(webkit_platform_support_.get());
 #endif
 }
 
 UnitTestTestSuite::~UnitTestTestSuite() {
 #if !defined(OS_IOS)
-  WebKit::shutdown();
+  blink::shutdown();
 #endif
 }
 

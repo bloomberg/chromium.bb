@@ -27,10 +27,10 @@
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "webkit/common/cursors/webcursor.h"
 
-using WebKit::WebKeyboardEvent;
-using WebKit::WebInputEvent;
-using WebKit::WebMouseEvent;
-using WebKit::WebMouseWheelEvent;
+using blink::WebKeyboardEvent;
+using blink::WebInputEvent;
+using blink::WebMouseEvent;
+using blink::WebMouseWheelEvent;
 
 // Important implementation notes: The Mac definition of NPAPI, particularly
 // the distinction between windowed and windowless modes, differs from the

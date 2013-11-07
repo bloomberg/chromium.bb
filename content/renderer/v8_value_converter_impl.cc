@@ -217,8 +217,8 @@ v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Object(
 
 v8::Handle<v8::Value> V8ValueConverterImpl::ToArrayBuffer(
     const base::BinaryValue* value) const {
-  WebKit::WebArrayBuffer buffer =
-      WebKit::WebArrayBuffer::create(value->GetSize(), 1);
+  blink::WebArrayBuffer buffer =
+      blink::WebArrayBuffer::create(value->GetSize(), 1);
   memcpy(buffer.data(), value->GetBuffer(), value->GetSize());
   return buffer.toV8Value();
 }
@@ -346,14 +346,14 @@ base::BinaryValue* V8ValueConverterImpl::FromV8Buffer(
   char* data = NULL;
   size_t length = 0;
 
-  scoped_ptr<WebKit::WebArrayBuffer> array_buffer(
-      WebKit::WebArrayBuffer::createFromV8Value(val));
-  scoped_ptr<WebKit::WebArrayBufferView> view;
+  scoped_ptr<blink::WebArrayBuffer> array_buffer(
+      blink::WebArrayBuffer::createFromV8Value(val));
+  scoped_ptr<blink::WebArrayBufferView> view;
   if (array_buffer) {
     data = reinterpret_cast<char*>(array_buffer->data());
     length = array_buffer->byteLength();
   } else {
-    view.reset(WebKit::WebArrayBufferView::createFromV8Value(val));
+    view.reset(blink::WebArrayBufferView::createFromV8Value(val));
     if (view) {
       data = reinterpret_cast<char*>(view->baseAddress()) + view->byteOffset();
       length = view->byteLength();

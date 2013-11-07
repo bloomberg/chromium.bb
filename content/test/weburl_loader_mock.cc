@@ -11,7 +11,7 @@
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 
 WebURLLoaderMock::WebURLLoaderMock(WebURLLoaderMockFactory* factory,
-                                   WebKit::WebURLLoader* default_loader)
+                                   blink::WebURLLoader* default_loader)
     : factory_(factory),
       client_(NULL),
       default_loader_(default_loader),
@@ -23,9 +23,9 @@ WebURLLoaderMock::~WebURLLoaderMock() {
 }
 
 void WebURLLoaderMock::ServeAsynchronousRequest(
-    const WebKit::WebURLResponse& response,
-    const WebKit::WebData& data,
-    const WebKit::WebURLError& error) {
+    const blink::WebURLResponse& response,
+    const blink::WebData& data,
+    const blink::WebURLError& error) {
   DCHECK(!using_default_loader_);
   if (!client_)
     return;
@@ -40,9 +40,9 @@ void WebURLLoaderMock::ServeAsynchronousRequest(
   client_->didFinishLoading(this, 0);
 }
 
-WebKit::WebURLRequest WebURLLoaderMock::ServeRedirect(
-    const WebKit::WebURLResponse& redirectResponse) {
-  WebKit::WebURLRequest newRequest;
+blink::WebURLRequest WebURLLoaderMock::ServeRedirect(
+    const blink::WebURLResponse& redirectResponse) {
+  blink::WebURLRequest newRequest;
   newRequest.initialize();
   GURL redirectURL(redirectResponse.httpHeaderField("Location"));
   newRequest.setURL(redirectURL);
@@ -50,10 +50,10 @@ WebKit::WebURLRequest WebURLLoaderMock::ServeRedirect(
   return newRequest;
 }
 
-void WebURLLoaderMock::loadSynchronously(const WebKit::WebURLRequest& request,
-                                         WebKit::WebURLResponse& response,
-                                         WebKit::WebURLError& error,
-                                         WebKit::WebData& data) {
+void WebURLLoaderMock::loadSynchronously(const blink::WebURLRequest& request,
+                                         blink::WebURLResponse& response,
+                                         blink::WebURLError& error,
+                                         blink::WebData& data) {
   if (factory_->IsMockedURL(request.url())) {
     factory_->LoadSynchronously(request, &response, &error, &data);
     return;
@@ -65,8 +65,8 @@ void WebURLLoaderMock::loadSynchronously(const WebKit::WebURLRequest& request,
   default_loader_->loadSynchronously(request, response, error, data);
 }
 
-void WebURLLoaderMock::loadAsynchronously(const WebKit::WebURLRequest& request,
-                                          WebKit::WebURLLoaderClient* client) {
+void WebURLLoaderMock::loadAsynchronously(const blink::WebURLRequest& request,
+                                          blink::WebURLLoaderClient* client) {
   if (factory_->IsMockedURL(request.url())) {
     client_ = client;
     factory_->LoadAsynchronouly(request, this);

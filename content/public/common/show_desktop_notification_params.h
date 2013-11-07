@@ -31,7 +31,7 @@ struct CONTENT_EXPORT ShowDesktopNotificationHostMsgParams {
   string16 body;
 
   // Directionality of the notification.
-  WebKit::WebTextDirection direction;
+  blink::WebTextDirection direction;
 
   // ReplaceID if this notification should replace an existing one; may be
   // empty if no replacement is called for.

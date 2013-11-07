@@ -23,8 +23,8 @@ void ProxyDecryptor::DestroyHelperPlugin() {
 
 ProxyDecryptor::ProxyDecryptor(
 #if defined(ENABLE_PEPPER_CDMS)
-    WebKit::WebMediaPlayerClient* web_media_player_client,
-    WebKit::WebFrame* web_frame,
+    blink::WebMediaPlayerClient* web_media_player_client,
+    blink::WebFrame* web_frame,
 #elif defined(OS_ANDROID)
     RendererMediaPlayerManager* manager,
     int media_keys_id,

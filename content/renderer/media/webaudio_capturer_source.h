@@ -28,7 +28,7 @@ class WebRtcLocalAudioSourceProvider;
 //    audio stream to the WebRtcLocalAudioTrack::Capture() method.
 class WebAudioCapturerSource
     :  public base::RefCountedThreadSafe<WebAudioCapturerSource>,
-       public WebKit::WebAudioDestinationConsumer {
+       public blink::WebAudioDestinationConsumer {
  public:
   WebAudioCapturerSource();
 
@@ -37,7 +37,7 @@ class WebAudioCapturerSource
   virtual void setFormat(size_t number_of_channels, float sample_rate) OVERRIDE;
   // MediaStreamAudioDestinationNode periodically calls consumeAudio().
   // Called on the WebAudio audio thread.
-  virtual void consumeAudio(const WebKit::WebVector<const float*>& audio_data,
+  virtual void consumeAudio(const blink::WebVector<const float*>& audio_data,
       size_t number_of_frames) OVERRIDE;
 
   // Called when the WebAudioCapturerSource is hooking to a media audio track.

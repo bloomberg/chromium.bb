@@ -15,7 +15,7 @@ namespace {
 
 typedef ScopedVector<InputEvent> InputEvents;
 
-void AddTo(InputEvents& events, const WebKit::WebInputEvent& event) {
+void AddTo(InputEvents& events, const blink::WebInputEvent& event) {
   events.push_back(new InputEvent(event, ui::LatencyInfo(), false));
 }
 
@@ -119,30 +119,30 @@ TEST_F(InputParamTraitsTest, InitializedEvents) {
 
   ui::LatencyInfo latency;
 
-  WebKit::WebKeyboardEvent key_event;
-  key_event.type = WebKit::WebInputEvent::RawKeyDown;
+  blink::WebKeyboardEvent key_event;
+  key_event.type = blink::WebInputEvent::RawKeyDown;
   key_event.nativeKeyCode = 5;
   events.push_back(new InputEvent(key_event, latency, false));
 
-  WebKit::WebMouseWheelEvent wheel_event;
-  wheel_event.type = WebKit::WebInputEvent::MouseWheel;
+  blink::WebMouseWheelEvent wheel_event;
+  wheel_event.type = blink::WebInputEvent::MouseWheel;
   wheel_event.deltaX = 10;
   latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 1, 1);
   events.push_back(new InputEvent(wheel_event, latency, false));
 
-  WebKit::WebMouseEvent mouse_event;
-  mouse_event.type = WebKit::WebInputEvent::MouseDown;
+  blink::WebMouseEvent mouse_event;
+  mouse_event.type = blink::WebInputEvent::MouseDown;
   mouse_event.x = 10;
   latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 2, 2);
   events.push_back(new InputEvent(mouse_event, latency, false));
 
-  WebKit::WebGestureEvent gesture_event;
-  gesture_event.type = WebKit::WebInputEvent::GestureScrollBegin;
+  blink::WebGestureEvent gesture_event;
+  gesture_event.type = blink::WebInputEvent::GestureScrollBegin;
   gesture_event.x = -1;
   events.push_back(new InputEvent(gesture_event, latency, false));
 
-  WebKit::WebTouchEvent touch_event;
-  touch_event.type = WebKit::WebInputEvent::TouchStart;
+  blink::WebTouchEvent touch_event;
+  touch_event.type = blink::WebInputEvent::TouchStart;
   touch_event.touchesLength = 1;
   touch_event.touches[0].radiusX = 1;
   events.push_back(new InputEvent(touch_event, latency, false));

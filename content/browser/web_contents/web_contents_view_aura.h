@@ -55,7 +55,7 @@ class CONTENT_EXPORT WebContentsViewAura
 
   void SizeChangedCommon(const gfx::Size& size);
 
-  void EndDrag(WebKit::WebDragOperationsMask ops);
+  void EndDrag(blink::WebDragOperationsMask ops);
 
   // Creates and sets up the overlay window that will be displayed during the
   // overscroll gesture.
@@ -133,11 +133,11 @@ class CONTENT_EXPORT WebContentsViewAura
                              bool right_aligned,
                              bool allow_multiple_selection) OVERRIDE;
   virtual void StartDragging(const DropData& drop_data,
-                             WebKit::WebDragOperationsMask operations,
+                             blink::WebDragOperationsMask operations,
                              const gfx::ImageSkia& image,
                              const gfx::Vector2d& image_offset,
                              const DragEventSourceInfo& event_info) OVERRIDE;
-  virtual void UpdateDragCursor(WebKit::WebDragOperation operation) OVERRIDE;
+  virtual void UpdateDragCursor(blink::WebDragOperation operation) OVERRIDE;
   virtual void GotFocus() OVERRIDE;
   virtual void TakeFocus(bool reverse) OVERRIDE;
 
@@ -196,7 +196,7 @@ class CONTENT_EXPORT WebContentsViewAura
 
   scoped_ptr<WebContentsViewDelegate> delegate_;
 
-  WebKit::WebDragOperationsMask current_drag_op_;
+  blink::WebDragOperationsMask current_drag_op_;
 
   scoped_ptr<DropData> current_drop_data_;
 

@@ -113,20 +113,20 @@ RenderView* RenderViewFakeResourcesTest::view() {
   return view_;
 }
 
-WebKit::WebFrame* RenderViewFakeResourcesTest::GetMainFrame() {
+blink::WebFrame* RenderViewFakeResourcesTest::GetMainFrame() {
   return view_->GetWebView()->mainFrame();
 }
 
 void RenderViewFakeResourcesTest::LoadURL(const std::string& url) {
   GURL g_url(url);
-  GetMainFrame()->loadRequest(WebKit::WebURLRequest(g_url));
+  GetMainFrame()->loadRequest(blink::WebURLRequest(g_url));
   message_loop_.Run();
 }
 
 void RenderViewFakeResourcesTest::LoadURLWithPost(const std::string& url) {
   GURL g_url(url);
-  WebKit::WebURLRequest request(g_url);
-  request.setHTTPMethod(WebKit::WebString::fromUTF8("POST"));
+  blink::WebURLRequest request(g_url);
+  request.setHTTPMethod(blink::WebString::fromUTF8("POST"));
   GetMainFrame()->loadRequest(request);
   message_loop_.Run();
 }
@@ -136,7 +136,7 @@ void RenderViewFakeResourcesTest::GoBack() {
 }
 
 void RenderViewFakeResourcesTest::GoForward(
-    const WebKit::WebHistoryItem& history_item) {
+    const blink::WebHistoryItem& history_item) {
   GoToOffset(1, history_item);
 }
 
@@ -203,7 +203,7 @@ void RenderViewFakeResourcesTest::OnRenderViewReady() {
 
 void RenderViewFakeResourcesTest::GoToOffset(
     int offset,
-    const WebKit::WebHistoryItem& history_item) {
+    const blink::WebHistoryItem& history_item) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   ViewMsg_Navigate_Params params;
   params.page_id = impl->GetPageId() + offset;

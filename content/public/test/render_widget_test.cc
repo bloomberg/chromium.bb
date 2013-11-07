@@ -78,7 +78,7 @@ void RenderWidgetTest::TestResizeAndPaint() {
       "<html><body><div style='position: absolute; top: %d; left: "
       "%d; background-color: red;'>Hello World</div></body></html>",
       kTextPositionY, kTextPositionX).c_str());
-  WebKit::WebSize old_size = view_->GetWebView()->size();
+  blink::WebSize old_size = view_->GetWebView()->size();
 
   SkBitmap bitmap;
   // If we re-size the view to something smaller than where the 'Hello World'
@@ -154,7 +154,7 @@ void RenderWidgetTest::TestOnResize() {
   // The initial bounds is empty, so setting it to the same thing should do
   // nothing.
   ViewMsg_Resize_Params resize_params;
-  resize_params.screen_info = WebKit::WebScreenInfo();
+  resize_params.screen_info = blink::WebScreenInfo();
   resize_params.new_size = gfx::Size();
   resize_params.physical_backing_size = gfx::Size();
   resize_params.overdraw_bottom_height = 0.f;

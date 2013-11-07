@@ -7,7 +7,7 @@
 #include "webkit/child/websocketstreamhandle_impl.h"
 
 using webkit_glue::WebSocketStreamHandleImpl;
-using WebKit::WebSocketStreamHandle;
+using blink::WebSocketStreamHandle;
 
 namespace content {
 

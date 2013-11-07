@@ -30,15 +30,15 @@ class WorkerWebApplicationCacheHostImpl : public WebApplicationCacheHostImpl {
  public:
   WorkerWebApplicationCacheHostImpl(
       const WorkerAppCacheInitInfo& init_info,
-      WebKit::WebApplicationCacheHostClient* client);
+      blink::WebApplicationCacheHostClient* client);
 
   // Main resource loading is different for workers. The resource is
   // loaded by the creator of the worker rather than the worker itself.
   // These overrides are stubbed out.
   virtual void willStartMainResourceRequest(
-      WebKit::WebURLRequest&, const WebKit::WebFrame*);
+      blink::WebURLRequest&, const blink::WebFrame*);
   virtual void didReceiveResponseForMainResource(
-      const WebKit::WebURLResponse&);
+      const blink::WebURLResponse&);
   virtual void didReceiveDataForMainResource(const char* data, int len);
   virtual void didFinishLoadingMainResource(bool success);
 
@@ -46,7 +46,7 @@ class WorkerWebApplicationCacheHostImpl : public WebApplicationCacheHostImpl {
   // time what cache to select and do so then.
   // These overrides are stubbed out.
   virtual void selectCacheWithoutManifest();
-  virtual bool selectCacheWithManifest(const WebKit::WebURL& manifestURL);
+  virtual bool selectCacheWithManifest(const blink::WebURL& manifestURL);
 };
 
 }  // namespace content

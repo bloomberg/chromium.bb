@@ -48,7 +48,7 @@ void VibrationMessageFilter::OnVibrate(int64 milliseconds) {
   // trust any values passed from the renderer.
   milliseconds = std::max(kMinimumVibrationDurationMs,
       std::min(milliseconds,
-          base::checked_numeric_cast<int64>(WebKit::kVibrationDurationMax)));
+          base::checked_numeric_cast<int64>(blink::kVibrationDurationMax)));
 
   if (j_vibration_message_filter_.is_null()) {
     j_vibration_message_filter_.Reset(

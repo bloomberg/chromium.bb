@@ -53,14 +53,14 @@ class CONTENT_EXPORT IndexedDBBackingStore
   static scoped_refptr<IndexedDBBackingStore> Open(
       const GURL& origin_url,
       const base::FilePath& path_base,
-      WebKit::WebIDBCallbacks::DataLoss* data_loss,
+      blink::WebIDBCallbacks::DataLoss* data_loss,
       std::string* data_loss_message,
       bool* disk_full);
 
   static scoped_refptr<IndexedDBBackingStore> Open(
       const GURL& origin_url,
       const base::FilePath& path_base,
-      WebKit::WebIDBCallbacks::DataLoss* data_loss,
+      blink::WebIDBCallbacks::DataLoss* data_loss,
       std::string* data_loss_message,
       bool* disk_full,
       LevelDBFactory* factory);

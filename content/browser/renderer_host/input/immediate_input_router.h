@@ -91,33 +91,33 @@ private:
   bool Send(IPC::Message* message);
 
   // Filters and forwards |input_event| to the appropriate handler.
-  void FilterAndSendWebInputEvent(const WebKit::WebInputEvent& input_event,
+  void FilterAndSendWebInputEvent(const blink::WebInputEvent& input_event,
                                   const ui::LatencyInfo& latency_info,
                                   bool is_keyboard_shortcut);
 
   // Utility routine for filtering and forwarding |input_event| to the
   // appropriate handler. |input_event| will be offered to the overscroll
   // controller, client and renderer, in that order.
-  void OfferToHandlers(const WebKit::WebInputEvent& input_event,
+  void OfferToHandlers(const blink::WebInputEvent& input_event,
                        const ui::LatencyInfo& latency_info,
                        bool is_keyboard_shortcut);
 
   // Returns true if |input_event| was consumed by the overscroll controller.
-  bool OfferToOverscrollController(const WebKit::WebInputEvent& input_event,
+  bool OfferToOverscrollController(const blink::WebInputEvent& input_event,
                                    const ui::LatencyInfo& latency_info);
 
   // Returns true if |input_event| was consumed by the client.
-  bool OfferToClient(const WebKit::WebInputEvent& input_event,
+  bool OfferToClient(const blink::WebInputEvent& input_event,
                      const ui::LatencyInfo& latency_info);
 
   // Returns true if |input_event| was successfully sent to the renderer
   // as an async IPC Message.
-  bool OfferToRenderer(const WebKit::WebInputEvent& input_event,
+  bool OfferToRenderer(const blink::WebInputEvent& input_event,
                        const ui::LatencyInfo& latency_info,
                        bool is_keyboard_shortcut);
 
   // IPC message handlers
-  void OnInputEventAck(WebKit::WebInputEvent::Type event_type,
+  void OnInputEventAck(blink::WebInputEvent::Type event_type,
                        InputEventAckState ack_result,
                        const ui::LatencyInfo& latency_info);
   void OnMsgMoveCaretAck();
@@ -134,17 +134,17 @@ private:
   };
   // Note: This function may result in |this| being deleted, and as such
   // should be the last method called in any internal chain of event handling.
-  void ProcessInputEventAck(WebKit::WebInputEvent::Type event_type,
+  void ProcessInputEventAck(blink::WebInputEvent::Type event_type,
                             InputEventAckState ack_result,
                             const ui::LatencyInfo& latency_info,
                             AckSource ack_source);
 
   // Dispatches the ack'ed event to |ack_handler_|.
-  void ProcessKeyboardAck(WebKit::WebInputEvent::Type type,
+  void ProcessKeyboardAck(blink::WebInputEvent::Type type,
                           InputEventAckState ack_result);
 
   // Forwards a valid |next_mouse_move_| if |type| is MouseMove.
-  void ProcessMouseAck(WebKit::WebInputEvent::Type type,
+  void ProcessMouseAck(blink::WebInputEvent::Type type,
                        InputEventAckState ack_result);
 
   // Dispatches the ack'ed event to |ack_handler_|, forwarding queued events
@@ -154,7 +154,7 @@ private:
 
   // Forwards the event ack to |gesture_event_filter|, potentially triggering
   // dispatch of queued gesture events.
-  void ProcessGestureAck(WebKit::WebInputEvent::Type type,
+  void ProcessGestureAck(blink::WebInputEvent::Type type,
                          InputEventAckState ack_result,
                          const ui::LatencyInfo& latency);
 
@@ -164,7 +164,7 @@ private:
                        const ui::LatencyInfo& latency);
 
   // Forwards |ack_result| to the client's OverscrollController, if necessary.
-  void ProcessAckForOverscroll(const WebKit::WebInputEvent& event,
+  void ProcessAckForOverscroll(const blink::WebInputEvent& event,
                                InputEventAckState ack_result);
 
   void HandleGestureScroll(const GestureEventWithLatencyInfo& gesture_event);

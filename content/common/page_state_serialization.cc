@@ -25,7 +25,7 @@ float g_device_scale_factor_for_testing = 0.0;
 void AppendDataToHttpBody(ExplodedHttpBody* http_body, const char* data,
                           int data_length) {
   ExplodedHttpBodyElement element;
-  element.type = WebKit::WebHTTPBody::Element::TypeData;
+  element.type = blink::WebHTTPBody::Element::TypeData;
   element.data.assign(data, data_length);
   http_body->elements.push_back(element);
 }
@@ -36,7 +36,7 @@ void AppendFileRangeToHttpBody(ExplodedHttpBody* http_body,
                                int file_length,
                                double file_modification_time) {
   ExplodedHttpBodyElement element;
-  element.type = WebKit::WebHTTPBody::Element::TypeFile;
+  element.type = blink::WebHTTPBody::Element::TypeFile;
   element.file_path = file_path;
   element.file_start = file_start;
   element.file_length = file_length;
@@ -50,7 +50,7 @@ void AppendURLRangeToHttpBody(ExplodedHttpBody* http_body,
                               int file_length,
                               double file_modification_time) {
   ExplodedHttpBodyElement element;
-  element.type = WebKit::WebHTTPBody::Element::TypeFileSystemURL;
+  element.type = blink::WebHTTPBody::Element::TypeFileSystemURL;
   element.filesystem_url = url;
   element.file_start = file_start;
   element.file_length = file_length;
@@ -61,7 +61,7 @@ void AppendURLRangeToHttpBody(ExplodedHttpBody* http_body,
 void AppendBlobToHttpBody(ExplodedHttpBody* http_body,
                           const std::string& uuid) {
   ExplodedHttpBodyElement element;
-  element.type = WebKit::WebHTTPBody::Element::TypeBlob;
+  element.type = blink::WebHTTPBody::Element::TypeBlob;
   element.blob_uuid = uuid;
   http_body->elements.push_back(element);
 }
@@ -72,7 +72,7 @@ void AppendReferencedFilesFromHttpBody(
     const std::vector<ExplodedHttpBodyElement>& elements,
     std::vector<base::NullableString16>* referenced_files) {
   for (size_t i = 0; i < elements.size(); ++i) {
-    if (elements[i].type == WebKit::WebHTTPBody::Element::TypeFile)
+    if (elements[i].type == blink::WebHTTPBody::Element::TypeFile)
       referenced_files->push_back(elements[i].file_path);
   }
 }
@@ -411,22 +411,22 @@ void WriteHttpBody(const ExplodedHttpBody& http_body, SerializeObject* obj) {
   for (size_t i = 0; i < http_body.elements.size(); ++i) {
     const ExplodedHttpBodyElement& element = http_body.elements[i];
     WriteInteger(element.type, obj);
-    if (element.type == WebKit::WebHTTPBody::Element::TypeData) {
+    if (element.type == blink::WebHTTPBody::Element::TypeData) {
       WriteData(element.data.data(), static_cast<int>(element.data.size()),
                 obj);
-    } else if (element.type == WebKit::WebHTTPBody::Element::TypeFile) {
+    } else if (element.type == blink::WebHTTPBody::Element::TypeFile) {
       WriteString(element.file_path, obj);
       WriteInteger64(element.file_start, obj);
       WriteInteger64(element.file_length, obj);
       WriteReal(element.file_modification_time, obj);
     } else if (element.type ==
-               WebKit::WebHTTPBody::Element::TypeFileSystemURL) {
+               blink::WebHTTPBody::Element::TypeFileSystemURL) {
       WriteGURL(element.filesystem_url, obj);
       WriteInteger64(element.file_start, obj);
       WriteInteger64(element.file_length, obj);
       WriteReal(element.file_modification_time, obj);
     } else {
-      DCHECK(element.type == WebKit::WebHTTPBody::Element::TypeBlob);
+      DCHECK(element.type == blink::WebHTTPBody::Element::TypeBlob);
       WriteStdString(element.blob_uuid, obj);
     }
   }
@@ -444,7 +444,7 @@ void ReadHttpBody(SerializeObject* obj, ExplodedHttpBody* http_body) {
 
   for (int i = 0; i < num_elements; ++i) {
     int type = ReadInteger(obj);
-    if (type == WebKit::WebHTTPBody::Element::TypeData) {
+    if (type == blink::WebHTTPBody::Element::TypeData) {
       const void* data;
       int length = -1;
       ReadData(obj, &data, &length);
@@ -452,21 +452,21 @@ void ReadHttpBody(SerializeObject* obj, ExplodedHttpBody* http_body) {
         AppendDataToHttpBody(http_body, static_cast<const char*>(data),
                              length);
       }
-    } else if (type == WebKit::WebHTTPBody::Element::TypeFile) {
+    } else if (type == blink::WebHTTPBody::Element::TypeFile) {
       base::NullableString16 file_path = ReadString(obj);
       int64 file_start = ReadInteger64(obj);
       int64 file_length = ReadInteger64(obj);
       double file_modification_time = ReadReal(obj);
       AppendFileRangeToHttpBody(http_body, file_path, file_start, file_length,
                                 file_modification_time);
-    } else if (type == WebKit::WebHTTPBody::Element::TypeFileSystemURL) {
+    } else if (type == blink::WebHTTPBody::Element::TypeFileSystemURL) {
       GURL url = ReadGURL(obj);
       int64 file_start = ReadInteger64(obj);
       int64 file_length = ReadInteger64(obj);
       double file_modification_time = ReadReal(obj);
       AppendURLRangeToHttpBody(http_body, url, file_start, file_length,
                                file_modification_time);
-    } else if (type == WebKit::WebHTTPBody::Element::TypeBlob) {
+    } else if (type == blink::WebHTTPBody::Element::TypeBlob) {
       if (obj->version >= 16) {
         std::string blob_uuid = ReadStdString(obj);
         AppendBlobToHttpBody(http_body, blob_uuid);
@@ -643,7 +643,7 @@ void ReadPageState(SerializeObject* obj, ExplodedPageState* state) {
 }  // namespace
 
 ExplodedHttpBodyElement::ExplodedHttpBodyElement()
-    : type(WebKit::WebHTTPBody::Element::TypeData),
+    : type(blink::WebHTTPBody::Element::TypeData),
       file_start(0),
       file_length(-1),
       file_modification_time(std::numeric_limits<double>::quiet_NaN()) {

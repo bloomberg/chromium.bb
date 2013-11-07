@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
 
-namespace WebKit {
+namespace blink {
 class WebData;
 struct WebURLError;
 class WebURLLoaderClient;
@@ -23,29 +23,29 @@ class WebURLLoaderMockFactory;
 // If the WebURLLoaderMockFactory it is associated with has been configured to
 // mock the request it gets, it serves the mocked resource.  Otherwise it just
 // forwards it to the default loader.
-class WebURLLoaderMock : public WebKit::WebURLLoader {
+class WebURLLoaderMock : public blink::WebURLLoader {
  public:
   // This object becomes the owner of |default_loader|.
   WebURLLoaderMock(WebURLLoaderMockFactory* factory,
-                   WebKit::WebURLLoader* default_loader);
+                   blink::WebURLLoader* default_loader);
   virtual ~WebURLLoaderMock();
 
   // Simulates the asynchronous request being served.
-  void ServeAsynchronousRequest(const WebKit::WebURLResponse& response,
-                                const WebKit::WebData& data,
-                                const WebKit::WebURLError& error);
+  void ServeAsynchronousRequest(const blink::WebURLResponse& response,
+                                const blink::WebData& data,
+                                const blink::WebURLError& error);
 
   // Simulates the redirect being served.
-  WebKit::WebURLRequest ServeRedirect(
-      const WebKit::WebURLResponse& redirectResponse);
+  blink::WebURLRequest ServeRedirect(
+      const blink::WebURLResponse& redirectResponse);
 
   // WebURLLoader methods:
-  virtual void loadSynchronously(const WebKit::WebURLRequest& request,
-                                 WebKit::WebURLResponse& response,
-                                 WebKit::WebURLError& error,
-                                 WebKit::WebData& data);
-  virtual void loadAsynchronously(const WebKit::WebURLRequest& request,
-                                  WebKit::WebURLLoaderClient* client);
+  virtual void loadSynchronously(const blink::WebURLRequest& request,
+                                 blink::WebURLResponse& response,
+                                 blink::WebURLError& error,
+                                 blink::WebData& data);
+  virtual void loadAsynchronously(const blink::WebURLRequest& request,
+                                  blink::WebURLLoaderClient* client);
   virtual void cancel();
   virtual void setDefersLoading(bool defer);
 
@@ -53,8 +53,8 @@ class WebURLLoaderMock : public WebKit::WebURLLoader {
 
  private:
   WebURLLoaderMockFactory* factory_;
-  WebKit::WebURLLoaderClient* client_;
-  scoped_ptr<WebKit::WebURLLoader> default_loader_;
+  blink::WebURLLoaderClient* client_;
+  scoped_ptr<blink::WebURLLoader> default_loader_;
   bool using_default_loader_;
   bool is_deferred_;
 

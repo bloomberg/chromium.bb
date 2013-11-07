@@ -111,7 +111,7 @@ class MessageChannel {
   // Post a message to the onmessage handler for this channel's instance
   // synchronously.  This is used by PostMessageToJavaScript.
   void PostMessageToJavaScriptImpl(
-      const WebKit::WebSerializedScriptValue& message_data);
+      const blink::WebSerializedScriptValue& message_data);
   // Post a message to the PPP_Instance HandleMessage function for this
   // channel's instance.  This is used by PostMessageToNative.
   void PostMessageToNativeImpl(PP_Var message_data);
@@ -120,7 +120,7 @@ class MessageChannel {
 
   // TODO(teravest): Remove all the tricky DRAIN_CANCELLED logic once
   // PluginInstance::ResetAsProxied() is gone.
-  std::deque<WebKit::WebSerializedScriptValue> early_message_queue_;
+  std::deque<blink::WebSerializedScriptValue> early_message_queue_;
   enum EarlyMessageQueueState {
     QUEUE_MESSAGES,       // Queue JS messages.
     SEND_DIRECTLY,        // Post JS messages directly.

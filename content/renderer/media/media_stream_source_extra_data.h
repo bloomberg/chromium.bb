@@ -17,9 +17,9 @@
 namespace content {
 
 class CONTENT_EXPORT MediaStreamSourceExtraData
-    : NON_EXPORTED_BASE(public WebKit::WebMediaStreamSource::ExtraData) {
+    : NON_EXPORTED_BASE(public blink::WebMediaStreamSource::ExtraData) {
  public:
-  typedef base::Callback<void(const WebKit::WebMediaStreamSource& source)>
+  typedef base::Callback<void(const blink::WebMediaStreamSource& source)>
       SourceStopCallback;
 
   MediaStreamSourceExtraData(const StreamDeviceInfo& device_info,

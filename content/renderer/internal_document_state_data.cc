@@ -25,14 +25,14 @@ InternalDocumentStateData::InternalDocumentStateData()
       is_overriding_user_agent_(false),
       must_reset_scroll_and_scale_state_(false),
       cache_policy_override_set_(false),
-      cache_policy_override_(WebKit::WebURLRequest::UseProtocolCachePolicy),
+      cache_policy_override_(blink::WebURLRequest::UseProtocolCachePolicy),
       referrer_policy_set_(false),
-      referrer_policy_(WebKit::WebReferrerPolicyDefault) {
+      referrer_policy_(blink::WebReferrerPolicyDefault) {
 }
 
 // static
 InternalDocumentStateData* InternalDocumentStateData::FromDataSource(
-    WebKit::WebDataSource* ds) {
+    blink::WebDataSource* ds) {
   return FromDocumentState(static_cast<DocumentState*>(ds->extraData()));
 }
 

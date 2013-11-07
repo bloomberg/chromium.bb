@@ -20,7 +20,7 @@ class InputHandler;
 struct DidOverscrollParams;
 }
 
-namespace WebKit {
+namespace blink {
 class WebInputEvent;
 }
 
@@ -35,7 +35,7 @@ class CONTENT_EXPORT InputHandlerManagerClient {
   // The client should only makes calls to |handler| on the compositor thread.
   typedef base::Callback<
       InputEventAckState(int /*routing_id*/,
-                         const WebKit::WebInputEvent*,
+                         const blink::WebInputEvent*,
                          const ui::LatencyInfo& latency_info)> Handler;
 
   // Called from the main thread.

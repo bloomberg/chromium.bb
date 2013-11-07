@@ -18,8 +18,8 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "webkit/glue/webkit_glue.h"
 
-using WebKit::WebCursorInfo;
-using WebKit::WebInputEvent;
+using blink::WebCursorInfo;
+using blink::WebInputEvent;
 
 namespace content {
 

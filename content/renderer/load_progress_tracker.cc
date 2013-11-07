@@ -38,7 +38,7 @@ void LoadProgressTracker::DidStopLoading() {
   ResetStates();
 }
 
-void LoadProgressTracker::DidChangeLoadProgress(WebKit::WebFrame* frame,
+void LoadProgressTracker::DidChangeLoadProgress(blink::WebFrame* frame,
                                                 double progress) {
   if (tracked_frame_ && frame != tracked_frame_)
     return;

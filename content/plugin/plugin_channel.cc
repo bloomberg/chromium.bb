@@ -27,7 +27,7 @@
 #include "ipc/ipc_channel_posix.h"
 #endif
 
-using WebKit::WebBindings;
+using blink::WebBindings;
 
 namespace content {
 

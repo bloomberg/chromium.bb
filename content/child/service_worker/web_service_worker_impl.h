@@ -12,7 +12,7 @@
 namespace content {
 
 class WebServiceWorkerImpl
-    : NON_EXPORTED_BASE(public WebKit::WebServiceWorker) {
+    : NON_EXPORTED_BASE(public blink::WebServiceWorker) {
  public:
   explicit WebServiceWorkerImpl(int64 service_worker_id)
       : service_worker_id_(service_worker_id) {}

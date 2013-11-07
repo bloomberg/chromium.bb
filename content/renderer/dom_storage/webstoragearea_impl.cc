@@ -14,8 +14,8 @@
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 
-using WebKit::WebString;
-using WebKit::WebURL;
+using blink::WebString;
+using blink::WebURL;
 
 namespace content {
 

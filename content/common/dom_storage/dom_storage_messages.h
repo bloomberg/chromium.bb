@@ -38,7 +38,7 @@ IPC_STRUCT_BEGIN(DOMStorageMsg_Event_Params)
   IPC_STRUCT_MEMBER(int64, namespace_id)
 IPC_STRUCT_END()
 
-IPC_ENUM_TRAITS(WebKit::WebStorageArea::Result)
+IPC_ENUM_TRAITS(blink::WebStorageArea::Result)
 
 // DOM Storage messages sent from the browser to the renderer.
 

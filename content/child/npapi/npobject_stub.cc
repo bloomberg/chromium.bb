@@ -18,7 +18,7 @@
 #include "content/common/plugin_constants_win.h"
 #endif
 
-using WebKit::WebBindings;
+using blink::WebBindings;
 
 namespace content {
 

@@ -53,7 +53,7 @@ class Rect;
 class Size;
 }
 
-namespace WebKit {
+namespace blink {
 class WebLayer;
 struct WebWindowFeatures;
 }
@@ -278,7 +278,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // cancel the operation. This method is used by Chromium Embedded Framework.
   virtual bool CanDragEnter(WebContents* source,
                             const DropData& data,
-                            WebKit::WebDragOperationsMask operations_allowed);
+                            blink::WebDragOperationsMask operations_allowed);
 
   // Render view drag n drop ended.
   virtual void DragEnded() {}

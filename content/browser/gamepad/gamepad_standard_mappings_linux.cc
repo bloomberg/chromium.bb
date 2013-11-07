@@ -23,8 +23,8 @@ float AxisPositiveAsButton(float input) {
 }
 
 void MapperXInputStyleGamepad(
-    const WebKit::WebGamepad& input,
-    WebKit::WebGamepad* mapped) {
+    const blink::WebGamepad& input,
+    blink::WebGamepad* mapped) {
   *mapped = input;
   mapped->buttons[kButtonLeftTrigger] = AxisToButton(input.axes[2]);
   mapped->buttons[kButtonRightTrigger] = AxisToButton(input.axes[5]);
@@ -44,8 +44,8 @@ void MapperXInputStyleGamepad(
 }
 
 void MapperLakeviewResearch(
-    const WebKit::WebGamepad& input,
-    WebKit::WebGamepad* mapped) {
+    const blink::WebGamepad& input,
+    blink::WebGamepad* mapped) {
   *mapped = input;
   mapped->buttons[kButtonPrimary] = input.buttons[2];
   mapped->buttons[kButtonTertiary] = input.buttons[3];
@@ -65,8 +65,8 @@ void MapperLakeviewResearch(
 }
 
 void MapperPlaystationSixAxis(
-    const WebKit::WebGamepad& input,
-    WebKit::WebGamepad* mapped) {
+    const blink::WebGamepad& input,
+    blink::WebGamepad* mapped) {
   *mapped = input;
   mapped->buttons[kButtonPrimary] = input.buttons[14];
   mapped->buttons[kButtonSecondary] = input.buttons[13];
@@ -91,8 +91,8 @@ void MapperPlaystationSixAxis(
 }
 
 void MapperXGEAR(
-    const WebKit::WebGamepad& input,
-    WebKit::WebGamepad* mapped) {
+    const blink::WebGamepad& input,
+    blink::WebGamepad* mapped) {
   *mapped = input;
   mapped->buttons[kButtonPrimary] = input.buttons[2];
   mapped->buttons[kButtonSecondary] = input.buttons[1];
@@ -114,8 +114,8 @@ void MapperXGEAR(
 
 
 void MapperDragonRiseGeneric(
-    const WebKit::WebGamepad& input,
-    WebKit::WebGamepad* mapped) {
+    const blink::WebGamepad& input,
+    blink::WebGamepad* mapped) {
   *mapped = input;
   mapped->buttons[kButtonDpadUp] = AxisNegativeAsButton(input.axes[6]);
   mapped->buttons[kButtonDpadDown] = AxisPositiveAsButton(input.axes[6]);

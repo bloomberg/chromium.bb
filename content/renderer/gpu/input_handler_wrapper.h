@@ -30,11 +30,11 @@ class InputHandlerWrapper
   // InputHandlerProxyClient implementation.
   virtual void WillShutdown() OVERRIDE;
   virtual void TransferActiveWheelFlingAnimation(
-      const WebKit::WebActiveWheelFlingParameters& params) OVERRIDE;
-  virtual WebKit::WebGestureCurve* CreateFlingAnimationCurve(
+      const blink::WebActiveWheelFlingParameters& params) OVERRIDE;
+  virtual blink::WebGestureCurve* CreateFlingAnimationCurve(
       int deviceSource,
-      const WebKit::WebFloatPoint& velocity,
-      const WebKit::WebSize& cumulativeScroll) OVERRIDE;
+      const blink::WebFloatPoint& velocity,
+      const blink::WebSize& cumulativeScroll) OVERRIDE;
   virtual void DidOverscroll(const cc::DidOverscrollParams& params) OVERRIDE;
 
  private:

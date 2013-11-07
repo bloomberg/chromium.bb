@@ -11,7 +11,7 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "url/gurl.h"
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
 class WebURLResponse;
 }
@@ -26,16 +26,16 @@ class AltErrorPageResourceFetcher {
   // This will be called when the alternative error page has been fetched,
   // successfully or not.  If there is a failure, the third parameter (the
   // data) will be empty.
-  typedef base::Callback<void(WebKit::WebFrame*,
-                              const WebKit::WebURLRequest&,
-                              const WebKit::WebURLError&,
+  typedef base::Callback<void(blink::WebFrame*,
+                              const blink::WebURLRequest&,
+                              const blink::WebURLError&,
                               const std::string&)> Callback;
 
   AltErrorPageResourceFetcher(
       const GURL& url,
-      WebKit::WebFrame* frame,
-      const WebKit::WebURLRequest& original_request,
-      const WebKit::WebURLError& original_error,
+      blink::WebFrame* frame,
+      const blink::WebURLRequest& original_request,
+      const blink::WebURLError& original_error,
       const Callback& callback);
   ~AltErrorPageResourceFetcher();
 
@@ -43,22 +43,22 @@ class AltErrorPageResourceFetcher {
   void Cancel();
 
  private:
-  void OnURLFetchComplete(const WebKit::WebURLResponse& response,
+  void OnURLFetchComplete(const blink::WebURLResponse& response,
                           const std::string& data);
 
   // Does the actual fetching.
   scoped_ptr<ResourceFetcherWithTimeout> fetcher_;
 
-  WebKit::WebFrame* frame_;
+  blink::WebFrame* frame_;
   Callback callback_;
 
   // The original request.  If loading the alternate error page fails, it's
   // needed to generate the error page.
-  WebKit::WebURLRequest original_request_;
+  blink::WebURLRequest original_request_;
 
   // The error associated with this load.  If there's an error talking with the
   // alt error page server, we need this to complete the original load.
-  WebKit::WebURLError original_error_;
+  blink::WebURLError original_error_;
 
   DISALLOW_COPY_AND_ASSIGN(AltErrorPageResourceFetcher);
 };

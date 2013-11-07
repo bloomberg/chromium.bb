@@ -55,7 +55,7 @@ void WebSharedWorkerProxy::CreateWorkerContext(
     const string16& user_agent,
     const string16& source_code,
     const string16& content_security_policy,
-    WebKit::WebContentSecurityPolicyType policy_type,
+    blink::WebContentSecurityPolicyType policy_type,
     int pending_route_id,
     int64 script_resource_appcache_id) {
   DCHECK(route_id_ == MSG_ROUTING_NONE);
@@ -121,12 +121,12 @@ bool WebSharedWorkerProxy::isStarted() {
 }
 
 void WebSharedWorkerProxy::startWorkerContext(
-    const WebKit::WebURL& script_url,
-    const WebKit::WebString& name,
-    const WebKit::WebString& user_agent,
-    const WebKit::WebString& source_code,
-    const WebKit::WebString& content_security_policy,
-    WebKit::WebContentSecurityPolicyType policy_type,
+    const blink::WebURL& script_url,
+    const blink::WebString& name,
+    const blink::WebString& user_agent,
+    const blink::WebString& source_code,
+    const blink::WebString& content_security_policy,
+    blink::WebContentSecurityPolicyType policy_type,
     long long script_resource_appcache_id) {
   DCHECK(!isStarted());
   CreateWorkerContext(
@@ -144,7 +144,7 @@ void WebSharedWorkerProxy::clientDestroyed() {
   NOTREACHED();
 }
 
-void WebSharedWorkerProxy::connect(WebKit::WebMessagePortChannel* channel,
+void WebSharedWorkerProxy::connect(blink::WebMessagePortChannel* channel,
                                    ConnectListener* listener) {
   WebMessagePortChannelImpl* webchannel =
         static_cast<WebMessagePortChannelImpl*>(channel);

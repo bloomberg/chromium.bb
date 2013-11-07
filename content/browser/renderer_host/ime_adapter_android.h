@@ -27,7 +27,7 @@ class ImeAdapterAndroid {
 
   // Called from java -> native
   // The java side is responsible to translate android KeyEvent various enums
-  // and values into the corresponding WebKit::WebInputEvent.
+  // and values into the corresponding blink::WebInputEvent.
   bool SendKeyEvent(JNIEnv* env, jobject,
                     jobject original_key_event,
                     int action, int meta_state,

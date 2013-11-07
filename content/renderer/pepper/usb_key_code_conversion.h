@@ -7,9 +7,9 @@
 
 #include "ppapi/c/pp_stdint.h"
 
-namespace WebKit {
+namespace blink {
 class WebKeyboardEvent;
-}  // namespace WebKit
+}  // namespace blink
 
 namespace content {
 
@@ -18,11 +18,11 @@ namespace content {
 // The code consists of the USB Page (in the high-order 16-bit word) and
 // USB Usage Id of the key.  If no translation can be performed then zero
 // is returned.
-uint32_t UsbKeyCodeForKeyboardEvent(const WebKit::WebKeyboardEvent& key_event);
+uint32_t UsbKeyCodeForKeyboardEvent(const blink::WebKeyboardEvent& key_event);
 
 // Returns a string that represents the UI Event |code| parameter as specified
 // in http://www.w3.org/TR/uievents/
-const char* CodeForKeyboardEvent(const WebKit::WebKeyboardEvent& key_event);
+const char* CodeForKeyboardEvent(const blink::WebKeyboardEvent& key_event);
 
 }  // namespace content
 

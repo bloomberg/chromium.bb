@@ -26,7 +26,7 @@ JavaBridgeDispatcherHostManager::JavaBridgeDispatcherHostManager(
 JavaBridgeDispatcherHostManager::~JavaBridgeDispatcherHostManager() {
   for (ObjectMap::iterator iter = objects_.begin(); iter != objects_.end();
       ++iter) {
-    WebKit::WebBindings::releaseObject(iter->second);
+    blink::WebBindings::releaseObject(iter->second);
   }
   DCHECK_EQ(0U, instances_.size());
 }
@@ -37,7 +37,7 @@ void JavaBridgeDispatcherHostManager::AddNamedObject(const string16& name,
   // created later. The JavaBridgeDispatcherHost instances will take a
   // reference to the object, but we take one too, because this method can be
   // called before there are any such instances.
-  WebKit::WebBindings::retainObject(object);
+  blink::WebBindings::retainObject(object);
   objects_[name] = object;
 
   for (InstanceMap::iterator iter = instances_.begin();
@@ -73,7 +73,7 @@ void JavaBridgeDispatcherHostManager::RemoveNamedObject(const string16& name) {
     return;
   }
 
-  WebKit::WebBindings::releaseObject(iter->second);
+  blink::WebBindings::releaseObject(iter->second);
   objects_.erase(iter);
 
   for (InstanceMap::iterator iter = instances_.begin();

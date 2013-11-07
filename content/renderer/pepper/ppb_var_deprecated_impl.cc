@@ -24,7 +24,7 @@ using ppapi::NPObjectVar;
 using ppapi::PpapiGlobals;
 using ppapi::StringVar;
 using ppapi::Var;
-using WebKit::WebBindings;
+using blink::WebBindings;
 
 namespace content {
 
@@ -333,7 +333,7 @@ PP_Var CallDeprecated(PP_Var var,
     return PP_MakeUndefined();
   PepperPluginInstanceImpl* plugin = accessor.GetPluginInstance();
   if (plugin && plugin->IsProcessingUserGesture()) {
-    WebKit::WebScopedUserGesture user_gesture(
+    blink::WebScopedUserGesture user_gesture(
         plugin->CurrentUserGestureToken());
     return InternalCallDeprecated(&accessor, method_name, argc, argv,
                                   exception);

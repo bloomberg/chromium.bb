@@ -14,7 +14,7 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/web/WebDevToolsAgentClient.h"
 
-namespace WebKit {
+namespace blink {
 class WebDevToolsAgent;
 }
 
@@ -26,7 +26,7 @@ class RenderViewImpl;
 // agents infrastructure are flowing through this communication agent.
 // There is a corresponding DevToolsClient object on the client side.
 class DevToolsAgent : public RenderViewObserver,
-                      public WebKit::WebDevToolsAgentClient {
+                      public blink::WebDevToolsAgentClient {
  public:
   explicit DevToolsAgent(RenderViewImpl* render_view);
   virtual ~DevToolsAgent();
@@ -34,7 +34,7 @@ class DevToolsAgent : public RenderViewObserver,
   // Returns agent instance for its host id.
   static DevToolsAgent* FromHostId(int host_id);
 
-  WebKit::WebDevToolsAgent* GetWebAgent();
+  blink::WebDevToolsAgent* GetWebAgent();
 
   bool IsAttached();
 
@@ -45,11 +45,11 @@ class DevToolsAgent : public RenderViewObserver,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // WebDevToolsAgentClient implementation
-  virtual void sendMessageToInspectorFrontend(const WebKit::WebString& data);
+  virtual void sendMessageToInspectorFrontend(const blink::WebString& data);
 
   virtual int hostIdentifier();
-  virtual void saveAgentRuntimeState(const WebKit::WebString& state);
-  virtual WebKit::WebDevToolsAgentClient::WebKitClientMessageLoop*
+  virtual void saveAgentRuntimeState(const blink::WebString& state);
+  virtual blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
       createClientMessageLoop();
   virtual void clearBrowserCache();
   virtual void clearBrowserCookies();
@@ -63,8 +63,8 @@ class DevToolsAgent : public RenderViewObserver,
   virtual void setTraceEventCallback(TraceEventCallback cb);
 
   virtual void enableDeviceEmulation(
-      const WebKit::WebSize& device_size,
-      const WebKit::WebRect& view_rect, float device_scale_factor,
+      const blink::WebSize& device_size,
+      const blink::WebRect& view_rect, float device_scale_factor,
       bool fit_to_view);
   virtual void disableDeviceEmulation();
 

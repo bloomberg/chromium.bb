@@ -17,14 +17,14 @@ namespace content {
 class DeviceMotionEventPumpTest : public testing::Test {
 };
 
-class MockDeviceMotionListener : public WebKit::WebDeviceMotionListener {
+class MockDeviceMotionListener : public blink::WebDeviceMotionListener {
  public:
   MockDeviceMotionListener();
   virtual ~MockDeviceMotionListener() { }
   virtual void didChangeDeviceMotion(
-      const WebKit::WebDeviceMotionData&) OVERRIDE;
+      const blink::WebDeviceMotionData&) OVERRIDE;
   bool did_change_device_motion_;
-  WebKit::WebDeviceMotionData data_;
+  blink::WebDeviceMotionData data_;
 };
 
 MockDeviceMotionListener::MockDeviceMotionListener()
@@ -33,7 +33,7 @@ MockDeviceMotionListener::MockDeviceMotionListener()
 }
 
 void MockDeviceMotionListener::didChangeDeviceMotion(
-    const WebKit::WebDeviceMotionData& data) {
+    const blink::WebDeviceMotionData& data) {
   memcpy(&data_, &data, sizeof(data));
   did_change_device_motion_ = true;
 }
@@ -71,7 +71,7 @@ TEST_F(DeviceMotionEventPumpTest, MAYBE_DidStartPolling) {
   memset(buffer, 0, sizeof(DeviceMotionHardwareBuffer));
   shared_memory.ShareToProcess(base::kNullProcessHandle, &handle);
 
-  WebKit::WebDeviceMotionData& data = buffer->data;
+  blink::WebDeviceMotionData& data = buffer->data;
   data.accelerationX = 1;
   data.hasAccelerationX = true;
   data.accelerationY = 2;
@@ -87,7 +87,7 @@ TEST_F(DeviceMotionEventPumpTest, MAYBE_DidStartPolling) {
   RunAllPendingInMessageLoop();
   motion_pump->SetListener(0);
 
-  WebKit::WebDeviceMotionData& received_data = listener->data_;
+  blink::WebDeviceMotionData& received_data = listener->data_;
   EXPECT_TRUE(listener->did_change_device_motion_);
   EXPECT_TRUE(received_data.hasAccelerationX);
   EXPECT_EQ(1, (double)received_data.accelerationX);
@@ -128,7 +128,7 @@ TEST_F(DeviceMotionEventPumpTest, MAYBE_DidStartPollingNotAllSensorsActive) {
   memset(buffer, 0, sizeof(DeviceMotionHardwareBuffer));
   shared_memory.ShareToProcess(base::kNullProcessHandle, &handle);
 
-  WebKit::WebDeviceMotionData& data = buffer->data;
+  blink::WebDeviceMotionData& data = buffer->data;
   data.accelerationX = 1;
   data.hasAccelerationX = true;
   data.accelerationY = 2;
@@ -144,7 +144,7 @@ TEST_F(DeviceMotionEventPumpTest, MAYBE_DidStartPollingNotAllSensorsActive) {
   RunAllPendingInMessageLoop();
   motion_pump->SetListener(0);
 
-  WebKit::WebDeviceMotionData& received_data = listener->data_;
+  blink::WebDeviceMotionData& received_data = listener->data_;
   // No change in device motion because allAvailableSensorsAreActive is false.
   EXPECT_FALSE(listener->did_change_device_motion_);
   EXPECT_FALSE(received_data.hasAccelerationX);

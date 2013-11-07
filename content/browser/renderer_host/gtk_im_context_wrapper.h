@@ -101,7 +101,7 @@ class GtkIMContextWrapper {
 
   // Sends a fake composition key event with specified event type. A composition
   // key event is a key event with special key code 229.
-  void SendFakeCompositionKeyEvent(WebKit::WebInputEvent::Type type);
+  void SendFakeCompositionKeyEvent(blink::WebInputEvent::Type type);
 
   // Signal handlers of GtkIMContext object.
   static void HandleCommitThunk(GtkIMContext* context, gchar* text,

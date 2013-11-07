@@ -7,13 +7,13 @@
 
 #include "content/child/thread_safe_sender.h"
 
-namespace WebKit {
+namespace blink {
 class WebAudioBus;
 }
 
 namespace content {
 
-bool DecodeAudioFileData(WebKit::WebAudioBus* destination_bus,
+bool DecodeAudioFileData(blink::WebAudioBus* destination_bus,
                          const char* data,
                          size_t data_size,
                          double sample_rate,

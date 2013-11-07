@@ -97,7 +97,7 @@ PpapiThread::PpapiThread(const CommandLine& command_line, bool is_broker)
       command_line.GetSwitchValueASCII(switches::kPpapiFlashArgs));
 
   webkit_platform_support_.reset(new PpapiWebKitPlatformSupportImpl);
-  WebKit::initialize(webkit_platform_support_.get());
+  blink::initialize(webkit_platform_support_.get());
 
   // Register interfaces that expect messages from the browser process. Please
   // note that only those InterfaceProxy-based ones require registration.
@@ -112,7 +112,7 @@ void PpapiThread::Shutdown() {
   ppapi::proxy::PluginGlobals::Get()->set_plugin_proxy_delegate(NULL);
   if (plugin_entry_points_.shutdown_module)
     plugin_entry_points_.shutdown_module();
-  WebKit::shutdown();
+  blink::shutdown();
 }
 
 bool PpapiThread::Send(IPC::Message* msg) {

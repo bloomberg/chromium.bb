@@ -31,15 +31,15 @@ namespace {
 // TODO(jam): this is similar to MultiPartResponseClient in webplugin_impl.cc,
 // we should remove that other class once we switch to loading from the plugin
 // process by default.
-class MultiPartResponseClient : public WebKit::WebURLLoaderClient {
+class MultiPartResponseClient : public blink::WebURLLoaderClient {
  public:
   explicit MultiPartResponseClient(PluginStreamUrl* plugin_stream)
       : byte_range_lower_bound_(0), plugin_stream_(plugin_stream) {}
 
-  // WebKit::WebURLLoaderClient implementation:
+  // blink::WebURLLoaderClient implementation:
   virtual void didReceiveResponse(
-      WebKit::WebURLLoader* loader,
-      const WebKit::WebURLResponse& response) OVERRIDE {
+      blink::WebURLLoader* loader,
+      const blink::WebURLResponse& response) OVERRIDE {
     int64 byte_range_upper_bound, instance_size;
     if (!webkit_glue::MultipartResponseDelegate::ReadContentRanges(
             response, &byte_range_lower_bound_, &byte_range_upper_bound,
@@ -47,7 +47,7 @@ class MultiPartResponseClient : public WebKit::WebURLLoaderClient {
       NOTREACHED();
     }
   }
-  virtual void didReceiveData(WebKit::WebURLLoader* loader,
+  virtual void didReceiveData(blink::WebURLLoader* loader,
                               const char* data,
                               int data_length,
                               int encoded_data_length) OVERRIDE {
@@ -213,7 +213,7 @@ void PluginURLFetcher::OnReceivedResponse(
   if (plugin_stream_->seekable()) {
     int response_code = info.headers->response_code();
     if (response_code == 206) {
-      WebKit::WebURLResponse response;
+      blink::WebURLResponse response;
       response.initialize();
       webkit_glue::WebURLLoaderImpl::PopulateURLResponse(url_, info, &response);
 

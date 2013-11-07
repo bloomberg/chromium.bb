@@ -21,7 +21,7 @@ class ContextFactory;
 class Texture;
 }
 
-namespace WebKit {
+namespace blink {
 class WebGraphicsContext3D;
 }
 

@@ -17,7 +17,7 @@ const char kPersistent[] = "persistent";
 }  // namespace
 
 WindowContainerType WindowFeaturesToContainerType(
-    const WebKit::WebWindowFeatures& window_features) {
+    const blink::WebWindowFeatures& window_features) {
   bool background = false;
   bool persistent = false;
 

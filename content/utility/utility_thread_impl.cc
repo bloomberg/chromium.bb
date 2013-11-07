@@ -49,7 +49,7 @@ void UtilityThreadImpl::Shutdown() {
   ChildThread::Shutdown();
 
   if (!single_process_)
-    WebKit::shutdown();
+    blink::shutdown();
 }
 
 bool UtilityThreadImpl::Send(IPC::Message* msg) {
@@ -92,7 +92,7 @@ void UtilityThreadImpl::Init() {
     // needs WebKit initialized in the utility process, they need to have
     // another path to support single process mode.
     webkit_platform_support_.reset(new WebKitPlatformSupportImpl);
-    WebKit::initialize(webkit_platform_support_.get());
+    blink::initialize(webkit_platform_support_.get());
   }
   GetContentClient()->utility()->UtilityThreadStarted();
 }

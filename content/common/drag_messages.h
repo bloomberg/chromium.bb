@@ -22,13 +22,13 @@ IPC_MESSAGE_ROUTED5(DragMsg_TargetDragEnter,
                     content::DropData /* drop_data */,
                     gfx::Point /* client_pt */,
                     gfx::Point /* screen_pt */,
-                    WebKit::WebDragOperationsMask /* ops_allowed */,
+                    blink::WebDragOperationsMask /* ops_allowed */,
                     int /* key_modifiers */)
 
 IPC_MESSAGE_ROUTED4(DragMsg_TargetDragOver,
                     gfx::Point /* client_pt */,
                     gfx::Point /* screen_pt */,
-                    WebKit::WebDragOperationsMask /* ops_allowed */,
+                    blink::WebDragOperationsMask /* ops_allowed */,
                     int /* key_modifiers */)
 
 IPC_MESSAGE_ROUTED0(DragMsg_TargetDragLeave)
@@ -44,7 +44,7 @@ IPC_MESSAGE_ROUTED4(DragMsg_SourceEndedOrMoved,
                     gfx::Point /* client_pt */,
                     gfx::Point /* screen_pt */,
                     bool /* ended */,
-                    WebKit::WebDragOperation /* drag_operation */)
+                    blink::WebDragOperation /* drag_operation */)
 
 // Notifies the renderer that the system DoDragDrop call has ended.
 IPC_MESSAGE_ROUTED0(DragMsg_SourceSystemDragEnded)
@@ -57,7 +57,7 @@ IPC_MESSAGE_ROUTED0(DragMsg_SourceSystemDragEnded)
 // drag session at the OS level.
 IPC_MESSAGE_ROUTED5(DragHostMsg_StartDragging,
                     content::DropData /* drop_data */,
-                    WebKit::WebDragOperationsMask /* ops_allowed */,
+                    blink::WebDragOperationsMask /* ops_allowed */,
                     SkBitmap /* image */,
                     gfx::Vector2d /* image_offset */,
                     content::DragEventSourceInfo /* event_info */)
@@ -65,7 +65,7 @@ IPC_MESSAGE_ROUTED5(DragHostMsg_StartDragging,
 // The page wants to update the mouse cursor during a drag & drop operation.
 // |is_drop_target| is true if the mouse is over a valid drop target.
 IPC_MESSAGE_ROUTED1(DragHostMsg_UpdateDragCursor,
-                    WebKit::WebDragOperation /* drag_operation */)
+                    blink::WebDragOperation /* drag_operation */)
 
 // Notifies the host that the renderer finished a drop operation.
 IPC_MESSAGE_ROUTED0(DragHostMsg_TargetDrop_ACK)

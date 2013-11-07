@@ -152,7 +152,7 @@ PepperPluginInstance* RendererPpapiHostImpl::GetPluginInstance(
   return GetAndValidateInstance(instance);
 }
 
-WebKit::WebPluginContainer* RendererPpapiHostImpl::GetContainerForInstance(
+blink::WebPluginContainer* RendererPpapiHostImpl::GetContainerForInstance(
       PP_Instance instance) const {
   PepperPluginInstanceImpl* instance_object = GetAndValidateInstance(instance);
   if (!instance_object)
@@ -199,8 +199,8 @@ gfx::Point RendererPpapiHostImpl::PluginPointToRenderView(
       GetRenderViewForInstance(instance));
   if (plugin_instance->view_data().is_fullscreen ||
       plugin_instance->flash_fullscreen()) {
-    WebKit::WebRect window_rect = render_view->windowRect();
-    WebKit::WebRect screen_rect = render_view->screenInfo().rect;
+    blink::WebRect window_rect = render_view->windowRect();
+    blink::WebRect screen_rect = render_view->screenInfo().rect;
     return gfx::Point(pt.x() - window_rect.x + screen_rect.x,
                       pt.y() - window_rect.y + screen_rect.y);
   }

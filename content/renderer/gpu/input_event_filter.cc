@@ -14,7 +14,7 @@
 #include "content/renderer/gpu/input_event_filter.h"
 #include "ui/gfx/vector2d_f.h"
 
-using WebKit::WebInputEvent;
+using blink::WebInputEvent;
 
 namespace content {
 
@@ -148,7 +148,7 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
   SendACK(event->type, ack, latency_info, routing_id);
 }
 
-void InputEventFilter::SendACK(WebKit::WebInputEvent::Type type,
+void InputEventFilter::SendACK(blink::WebInputEvent::Type type,
                                InputEventAckState ack_result,
                                const ui::LatencyInfo& latency_info,
                                int routing_id) {

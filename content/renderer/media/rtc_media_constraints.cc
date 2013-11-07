@@ -16,7 +16,7 @@ namespace content {
 namespace {
 
 void GetNativeMediaConstraints(
-    const WebKit::WebVector<WebKit::WebMediaConstraint>& constraints,
+    const blink::WebVector<blink::WebMediaConstraint>& constraints,
     webrtc::MediaConstraintsInterface::Constraints* native_constraints) {
   DCHECK(native_constraints);
   for (size_t i = 0; i < constraints.size(); ++i) {
@@ -48,13 +48,13 @@ void GetNativeMediaConstraints(
 RTCMediaConstraints::RTCMediaConstraints() {}
 
 RTCMediaConstraints::RTCMediaConstraints(
-      const WebKit::WebMediaConstraints& constraints) {
+      const blink::WebMediaConstraints& constraints) {
   if (constraints.isNull())
     return;  // Will happen in unit tests.
-  WebKit::WebVector<WebKit::WebMediaConstraint> mandatory;
+  blink::WebVector<blink::WebMediaConstraint> mandatory;
   constraints.getMandatoryConstraints(mandatory);
   GetNativeMediaConstraints(mandatory, &mandatory_);
-  WebKit::WebVector<WebKit::WebMediaConstraint> optional;
+  blink::WebVector<blink::WebMediaConstraint> optional;
   constraints.getOptionalConstraints(optional);
   GetNativeMediaConstraints(optional, &optional_);
 }

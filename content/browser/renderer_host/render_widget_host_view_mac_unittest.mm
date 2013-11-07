@@ -329,7 +329,7 @@ TEST_F(RenderWidgetHostViewMacTest, GetFirstRectForCharacterRangeCaretCase) {
   NSRange actual_range;
   rwhv_mac_->SelectionChanged(kDummyString, kDummyOffset, caret_range);
   params.anchor_rect = params.focus_rect = caret_rect;
-  params.anchor_dir = params.focus_dir = WebKit::WebTextDirectionLeftToRight;
+  params.anchor_dir = params.focus_dir = blink::WebTextDirectionLeftToRight;
   rwhv_mac_->SelectionBoundsChanged(params);
   EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
         caret_range.ToNSRange(),
@@ -711,7 +711,7 @@ TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {
 
   // Send an ACK for the first wheel event, so that the queue will be flushed.
   scoped_ptr<IPC::Message> response(new InputHostMsg_HandleInputEvent_ACK(
-      0, WebKit::WebInputEvent::MouseWheel, INPUT_EVENT_ACK_STATE_CONSUMED,
+      0, blink::WebInputEvent::MouseWheel, INPUT_EVENT_ACK_STATE_CONSUMED,
       ui::LatencyInfo()));
   host->OnMessageReceived(*response);
 
@@ -756,7 +756,7 @@ TEST_F(RenderWidgetHostViewMacTest, IgnoreEmptyUnhandledWheelEvent) {
 
   // Indicate that the wheel event was unhandled.
   scoped_ptr<IPC::Message> response1(new InputHostMsg_HandleInputEvent_ACK(0,
-      WebKit::WebInputEvent::MouseWheel, INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
+      blink::WebInputEvent::MouseWheel, INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
       ui::LatencyInfo()));
   host->OnMessageReceived(*response1);
 
@@ -771,7 +771,7 @@ TEST_F(RenderWidgetHostViewMacTest, IgnoreEmptyUnhandledWheelEvent) {
 
   // Indicate that the wheel event was also unhandled.
   scoped_ptr<IPC::Message> response2(new InputHostMsg_HandleInputEvent_ACK(0,
-      WebKit::WebInputEvent::MouseWheel, INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
+      blink::WebInputEvent::MouseWheel, INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
       ui::LatencyInfo()));
   host->OnMessageReceived(*response2);
 

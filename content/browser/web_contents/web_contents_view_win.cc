@@ -261,7 +261,7 @@ void WebContentsViewWin::ShowPopupMenu(const gfx::Rect& bounds,
 }
 
 void WebContentsViewWin::StartDragging(const DropData& drop_data,
-                                       WebKit::WebDragOperationsMask operations,
+                                       blink::WebDragOperationsMask operations,
                                        const gfx::ImageSkia& image,
                                        const gfx::Vector2d& image_offset,
                                        const DragEventSourceInfo& event_info) {
@@ -273,7 +273,7 @@ void WebContentsViewWin::StartDragging(const DropData& drop_data,
   drag_handler_->StartDragging(drop_data, operations, image, image_offset);
 }
 
-void WebContentsViewWin::UpdateDragCursor(WebKit::WebDragOperation operation) {
+void WebContentsViewWin::UpdateDragCursor(blink::WebDragOperation operation) {
   drag_dest_->set_drag_cursor(operation);
 }
 

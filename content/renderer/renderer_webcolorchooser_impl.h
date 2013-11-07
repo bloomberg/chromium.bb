@@ -11,26 +11,26 @@
 #include "third_party/WebKit/public/web/WebColorChooserClient.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
 }
 
 namespace content {
 class RenderViewImpl;
 
-class RendererWebColorChooserImpl : public WebKit::WebColorChooser,
+class RendererWebColorChooserImpl : public blink::WebColorChooser,
                                     public RenderViewObserver {
  public:
   explicit RendererWebColorChooserImpl(RenderViewImpl* sender,
-                                       WebKit::WebColorChooserClient*);
+                                       blink::WebColorChooserClient*);
   virtual ~RendererWebColorChooserImpl();
 
-  virtual void setSelectedColor(const WebKit::WebColor);
+  virtual void setSelectedColor(const blink::WebColor);
   virtual void endChooser();
 
   void Open(SkColor initial_color);
 
-  WebKit::WebColorChooserClient* client() { return client_; }
+  blink::WebColorChooserClient* client() { return client_; }
 
  private:
   // RenderViewObserver implementation.
@@ -40,7 +40,7 @@ class RendererWebColorChooserImpl : public WebKit::WebColorChooser,
   void OnDidEndColorChooser(int color_chooser_id);
 
   int identifier_;
-  WebKit::WebColorChooserClient* client_;
+  blink::WebColorChooserClient* client_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererWebColorChooserImpl);
 };

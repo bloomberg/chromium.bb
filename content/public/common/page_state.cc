@@ -76,13 +76,13 @@ PageState PageState::CreateForTesting(
     state.top.http_body.is_null = false;
     if (optional_body_data) {
       ExplodedHttpBodyElement element;
-      element.type = WebKit::WebHTTPBody::Element::TypeData;
+      element.type = blink::WebHTTPBody::Element::TypeData;
       element.data = optional_body_data;
       state.top.http_body.elements.push_back(element);
     }
     if (optional_body_file_path) {
       ExplodedHttpBodyElement element;
-      element.type = WebKit::WebHTTPBody::Element::TypeFile;
+      element.type = blink::WebHTTPBody::Element::TypeFile;
       element.file_path =
           ToNullableString16(optional_body_file_path->AsUTF8Unsafe());
       state.top.http_body.elements.push_back(element);

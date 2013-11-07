@@ -22,7 +22,7 @@ class FakeTexture : public ui::Texture {
         texture_(context_provider_->Context3d()->createTexture()) {}
 
   virtual unsigned int PrepareTexture() OVERRIDE { return texture_; }
-  virtual WebKit::WebGraphicsContext3D* HostContext3D() OVERRIDE {
+  virtual blink::WebGraphicsContext3D* HostContext3D() OVERRIDE {
     return context_provider_->Context3d();
   }
 

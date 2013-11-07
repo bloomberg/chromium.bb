@@ -13,7 +13,7 @@
 
 namespace content {
 
-void PaintSadPlugin(WebKit::WebCanvas* webcanvas,
+void PaintSadPlugin(blink::WebCanvas* webcanvas,
                     const gfx::Rect& plugin_rect,
                     const SkBitmap& sad_plugin_bitmap) {
   const int width = plugin_rect.width();

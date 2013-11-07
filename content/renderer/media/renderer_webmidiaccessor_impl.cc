@@ -11,7 +11,7 @@
 namespace content {
 
 RendererWebMIDIAccessorImpl::RendererWebMIDIAccessorImpl(
-    WebKit::WebMIDIAccessorClient* client)
+    blink::WebMIDIAccessorClient* client)
     : client_(client) {
   DCHECK(client_);
 }

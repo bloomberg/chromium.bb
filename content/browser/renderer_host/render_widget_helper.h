@@ -153,7 +153,7 @@ class RenderWidgetHelper
       int* surface_id,
       SessionStorageNamespace* session_storage_namespace);
   void CreateNewWidget(int opener_id,
-                       WebKit::WebPopupType popup_type,
+                       blink::WebPopupType popup_type,
                        int* route_id,
                        int* surface_id);
   void CreateNewFullscreenWidget(int opener_id, int* route_id, int* surface_id);
@@ -207,7 +207,7 @@ class RenderWidgetHelper
   // Called on the UI thread to finish creating a widget.
   void OnCreateWidgetOnUI(int opener_id,
                           int route_id,
-                          WebKit::WebPopupType popup_type);
+                          blink::WebPopupType popup_type);
 
   // Called on the UI thread to create a fullscreen widget.
   void OnCreateFullscreenWidgetOnUI(int opener_id, int route_id);

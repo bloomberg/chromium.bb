@@ -55,7 +55,7 @@ struct GpuProcessTransportFactory::PerCompositorData {
 
 class OwnedTexture : public ui::Texture, ImageTransportFactoryObserver {
  public:
-  OwnedTexture(WebKit::WebGraphicsContext3D* host_context,
+  OwnedTexture(blink::WebGraphicsContext3D* host_context,
                const gfx::Size& size,
                float device_scale_factor,
                unsigned int texture_id)
@@ -72,7 +72,7 @@ class OwnedTexture : public ui::Texture, ImageTransportFactoryObserver {
     return texture_id_;
   }
 
-  virtual WebKit::WebGraphicsContext3D* HostContext3D() OVERRIDE {
+  virtual blink::WebGraphicsContext3D* HostContext3D() OVERRIDE {
     return host_context_;
   }
 
@@ -98,7 +98,7 @@ class OwnedTexture : public ui::Texture, ImageTransportFactoryObserver {
 
   // The OnLostResources() callback will happen before this context
   // pointer is destroyed.
-  WebKit::WebGraphicsContext3D* host_context_;
+  blink::WebGraphicsContext3D* host_context_;
   unsigned texture_id_;
 
   DISALLOW_COPY_AND_ASSIGN(OwnedTexture);
@@ -107,7 +107,7 @@ class OwnedTexture : public ui::Texture, ImageTransportFactoryObserver {
 class ImageTransportClientTexture : public OwnedTexture {
  public:
   ImageTransportClientTexture(
-      WebKit::WebGraphicsContext3D* host_context,
+      blink::WebGraphicsContext3D* host_context,
       float device_scale_factor)
       : OwnedTexture(host_context,
                      gfx::Size(0, 0),
@@ -497,7 +497,7 @@ GpuProcessTransportFactory::CreateContextCommon(
     int surface_id) {
   if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor())
     return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
-  WebKit::WebGraphicsContext3D::Attributes attrs;
+  blink::WebGraphicsContext3D::Attributes attrs;
   attrs.shareResources = true;
   attrs.depth = false;
   attrs.stencil = false;

@@ -154,7 +154,7 @@ unsigned StreamTextureFactorySynchronousImpl::CreateStreamTexture(
     gpu::Mailbox* texture_mailbox,
     unsigned* texture_mailbox_sync_point) {
   DCHECK(context_provider_);
-  WebKit::WebGraphicsContext3D* context = context_provider_->Context3d();
+  blink::WebGraphicsContext3D* context = context_provider_->Context3d();
   unsigned stream_id = 0;
   if (context->makeContextCurrent()) {
     *texture_id = context->createTexture();
@@ -173,7 +173,7 @@ unsigned StreamTextureFactorySynchronousImpl::CreateStreamTexture(
 void StreamTextureFactorySynchronousImpl::DestroyStreamTexture(
     unsigned texture_id) {
   DCHECK(context_provider_);
-  WebKit::WebGraphicsContext3D* context = context_provider_->Context3d();
+  blink::WebGraphicsContext3D* context = context_provider_->Context3d();
   if (context->makeContextCurrent()) {
     context->destroyStreamTextureCHROMIUM(texture_id);
     context->deleteTexture(texture_id);
@@ -185,7 +185,7 @@ void StreamTextureFactorySynchronousImpl::SetStreamTextureSize(
     int32 stream_id,
     const gfx::Size& size) {}
 
-WebKit::WebGraphicsContext3D*
+blink::WebGraphicsContext3D*
 StreamTextureFactorySynchronousImpl::Context3d() {
   DCHECK(context_provider_);
   return context_provider_->Context3d();

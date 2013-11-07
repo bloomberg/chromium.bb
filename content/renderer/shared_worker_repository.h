@@ -16,15 +16,15 @@ namespace content {
 class RenderViewImpl;
 
 class SharedWorkerRepository : public RenderViewObserver,
-                               public WebKit::WebSharedWorkerRepositoryClient {
+                               public blink::WebSharedWorkerRepositoryClient {
  public:
   explicit SharedWorkerRepository(RenderViewImpl* render_view);
   virtual ~SharedWorkerRepository();
 
   // WebSharedWorkerRepositoryClient overrides.
-  virtual WebKit::WebSharedWorker* createSharedWorker(
-      const WebKit::WebURL& url,
-      const WebKit::WebString& name,
+  virtual blink::WebSharedWorker* createSharedWorker(
+      const blink::WebURL& url,
+      const blink::WebString& name,
       DocumentID document_id) OVERRIDE;
   virtual void documentDetached(DocumentID document_id) OVERRIDE;
 

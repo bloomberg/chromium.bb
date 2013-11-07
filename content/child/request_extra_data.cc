@@ -4,8 +4,8 @@
 
 #include "content/child/request_extra_data.h"
 
-using WebKit::WebReferrerPolicy;
-using WebKit::WebString;
+using blink::WebReferrerPolicy;
+using blink::WebString;
 
 namespace content {
 

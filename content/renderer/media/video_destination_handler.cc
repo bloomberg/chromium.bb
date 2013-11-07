@@ -168,12 +168,12 @@ bool VideoDestinationHandler::Open(
     factory = RenderThreadImpl::current()->GetMediaStreamDependencyFactory();
     DCHECK(factory != NULL);
   }
-  WebKit::WebMediaStream stream;
+  blink::WebMediaStream stream;
   if (registry) {
     stream = registry->GetMediaStream(url);
   } else {
     stream =
-        WebKit::WebMediaStreamRegistry::lookupMediaStreamDescriptor(GURL(url));
+        blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(GURL(url));
   }
   if (stream.isNull() || !stream.extraData()) {
     LOG(ERROR) << "VideoDestinationHandler::Open - invalid url: " << url;

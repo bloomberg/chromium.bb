@@ -12,10 +12,10 @@
 #include "third_party/WebKit/public/platform/WebMessagePortChannelClient.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
-using WebKit::WebMessagePortChannel;
-using WebKit::WebMessagePortChannelArray;
-using WebKit::WebMessagePortChannelClient;
-using WebKit::WebString;
+using blink::WebMessagePortChannel;
+using blink::WebMessagePortChannelArray;
+using blink::WebMessagePortChannelClient;
+using blink::WebString;
 
 namespace content {
 

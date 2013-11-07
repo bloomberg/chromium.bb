@@ -170,9 +170,9 @@ WebContentDecryptionModuleImpl::~WebContentDecryptionModuleImpl() {
 }
 
 // The caller owns the created session.
-WebKit::WebContentDecryptionModuleSession*
+blink::WebContentDecryptionModuleSession*
 WebContentDecryptionModuleImpl::createSession(
-    WebKit::WebContentDecryptionModuleSession::Client* client) {
+    blink::WebContentDecryptionModuleSession::Client* client) {
   DCHECK(media_keys_);
   WebContentDecryptionModuleSessionImpl* session =
       new WebContentDecryptionModuleSessionImpl(

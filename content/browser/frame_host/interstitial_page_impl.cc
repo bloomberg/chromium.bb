@@ -41,8 +41,8 @@
 #include "net/base/escape.h"
 #include "net/url_request/url_request_context_getter.h"
 
-using WebKit::WebDragOperation;
-using WebKit::WebDragOperationsMask;
+using blink::WebDragOperation;
+using blink::WebDragOperationsMask;
 
 namespace content {
 namespace {
@@ -697,7 +697,7 @@ void InterstitialPageImpl::CreateNewWindow(
 }
 
 void InterstitialPageImpl::CreateNewWidget(int route_id,
-                                           WebKit::WebPopupType popup_type) {
+                                           blink::WebPopupType popup_type) {
   NOTREACHED() << "InterstitialPage does not support showing drop-downs yet.";
 }
 

@@ -32,10 +32,10 @@ class CONTENT_EXPORT PeerConnectionHandlerBase
  protected:
   virtual ~PeerConnectionHandlerBase();
 
-  void AddStream(const WebKit::WebMediaStream& stream);
-  bool AddStream(const WebKit::WebMediaStream& stream,
+  void AddStream(const blink::WebMediaStream& stream);
+  bool AddStream(const blink::WebMediaStream& stream,
                  const webrtc::MediaConstraintsInterface* constraints);
-  void RemoveStream(const WebKit::WebMediaStream& stream);
+  void RemoveStream(const blink::WebMediaStream& stream);
 
   // dependency_factory_ is a raw pointer, and is valid for the lifetime of
   // MediaStreamImpl.

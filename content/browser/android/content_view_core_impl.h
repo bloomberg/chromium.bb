@@ -334,8 +334,8 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   float GetTouchPaddingDip();
 
-  WebKit::WebGestureEvent MakeGestureEvent(
-      WebKit::WebInputEvent::Type type, long time_ms, float x, float y) const;
+  blink::WebGestureEvent MakeGestureEvent(
+      blink::WebInputEvent::Type type, long time_ms, float x, float y) const;
 
   void SendBeginFrame(base::TimeTicks frame_time);
 
@@ -344,7 +344,7 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   void DeleteScaledSnapshotTexture();
 
-  void SendGestureEvent(const WebKit::WebGestureEvent& event);
+  void SendGestureEvent(const blink::WebGestureEvent& event);
 
   // Checks if there there is a corresponding renderer process and updates
   // |tab_crashed_| accordingly.

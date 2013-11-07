@@ -18,7 +18,7 @@
 using base::Time;
 using base::TimeDelta;
 using net::HttpVersion;
-using WebKit::WebURLResponse;
+using blink::WebURLResponse;
 
 namespace content {
 

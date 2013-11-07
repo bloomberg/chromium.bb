@@ -11,7 +11,7 @@
 #include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
 #include "url/gurl.h"
 
-using namespace WebKit;
+using namespace blink;
 
 namespace {
 

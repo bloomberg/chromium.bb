@@ -58,7 +58,7 @@ class CONTENT_EXPORT PepperGraphics2DHost
   // is already bound to a different instance, and nothing will happen.
   bool BindToInstance(PepperPluginInstanceImpl* new_instance);
   // Paints the current backing store to the web page.
-  void Paint(WebKit::WebCanvas* canvas,
+  void Paint(blink::WebCanvas* canvas,
              const gfx::Rect& plugin_rect,
              const gfx::Rect& paint_rect);
 

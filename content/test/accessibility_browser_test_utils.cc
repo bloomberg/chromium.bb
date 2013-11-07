@@ -20,7 +20,7 @@ namespace content {
 AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
     Shell* shell,
     AccessibilityMode accessibility_mode,
-    WebKit::WebAXEvent event_type)
+    blink::WebAXEvent event_type)
     : shell_(shell),
       event_to_wait_for_(event_type),
       loop_runner_(new MessageLoopRunner()),
@@ -47,7 +47,7 @@ AccessibilityNotificationWaiter::GetAccessibilityNodeDataTree() const {
 }
 
 void AccessibilityNotificationWaiter::OnAccessibilityEvent(
-    WebKit::WebAXEvent event_type) {
+    blink::WebAXEvent event_type) {
   if (!IsAboutBlank() && event_to_wait_for_ == event_type)
     loop_runner_->Quit();
 }

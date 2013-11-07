@@ -15,7 +15,7 @@
 
 #define IPC_MESSAGE_START ServiceWorkerMsgStart
 
-IPC_ENUM_TRAITS(WebKit::WebServiceWorkerError::ErrorType)
+IPC_ENUM_TRAITS(blink::WebServiceWorkerError::ErrorType)
 
 // Messages sent from the child process to the browser.
 
@@ -48,5 +48,5 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_ServiceWorkerUnregistered,
 IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerRegistrationError,
                      int32 /* thread_id */,
                      int32 /* request_id */,
-                     WebKit::WebServiceWorkerError::ErrorType /* code */,
+                     blink::WebServiceWorkerError::ErrorType /* code */,
                      string16 /* message */)

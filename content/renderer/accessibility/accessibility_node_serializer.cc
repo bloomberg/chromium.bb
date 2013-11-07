@@ -23,12 +23,12 @@
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 
-using WebKit::WebAXObject;
-using WebKit::WebDocument;
-using WebKit::WebDocumentType;
-using WebKit::WebElement;
-using WebKit::WebNode;
-using WebKit::WebVector;
+using blink::WebAXObject;
+using blink::WebDocument;
+using blink::WebDocumentType;
+using blink::WebElement;
+using blink::WebNode;
+using blink::WebVector;
 
 namespace content {
 namespace {
@@ -55,71 +55,71 @@ bool IsParentUnignoredOf(const WebAXObject& ancestor,
 uint32 ConvertState(const WebAXObject& o) {
   uint32 state = 0;
   if (o.isChecked())
-    state |= (1 << WebKit::WebAXStateChecked);
+    state |= (1 << blink::WebAXStateChecked);
 
   if (o.isCollapsed())
-    state |= (1 << WebKit::WebAXStateCollapsed);
+    state |= (1 << blink::WebAXStateCollapsed);
 
   if (o.canSetFocusAttribute())
-    state |= (1 << WebKit::WebAXStateFocusable);
+    state |= (1 << blink::WebAXStateFocusable);
 
   if (o.isFocused())
-    state |= (1 << WebKit::WebAXStateFocused);
+    state |= (1 << blink::WebAXStateFocused);
 
-  if (o.role() == WebKit::WebAXRolePopUpButton ||
+  if (o.role() == blink::WebAXRolePopUpButton ||
       o.ariaHasPopup()) {
-    state |= (1 << WebKit::WebAXStateHaspopup);
+    state |= (1 << blink::WebAXStateHaspopup);
     if (!o.isCollapsed())
-      state |= (1 << WebKit::WebAXStateExpanded);
+      state |= (1 << blink::WebAXStateExpanded);
   }
 
   if (o.isHovered())
-    state |= (1 << WebKit::WebAXStateHovered);
+    state |= (1 << blink::WebAXStateHovered);
 
   if (o.isIndeterminate())
-    state |= (1 << WebKit::WebAXStateIndeterminate);
+    state |= (1 << blink::WebAXStateIndeterminate);
 
   if (!o.isVisible())
-    state |= (1 << WebKit::WebAXStateInvisible);
+    state |= (1 << blink::WebAXStateInvisible);
 
   if (o.isLinked())
-    state |= (1 << WebKit::WebAXStateLinked);
+    state |= (1 << blink::WebAXStateLinked);
 
   if (o.isMultiSelectable())
-    state |= (1 << WebKit::WebAXStateMultiselectable);
+    state |= (1 << blink::WebAXStateMultiselectable);
 
   if (o.isOffScreen())
-    state |= (1 << WebKit::WebAXStateOffscreen);
+    state |= (1 << blink::WebAXStateOffscreen);
 
   if (o.isPressed())
-    state |= (1 << WebKit::WebAXStatePressed);
+    state |= (1 << blink::WebAXStatePressed);
 
   if (o.isPasswordField())
-    state |= (1 << WebKit::WebAXStateProtected);
+    state |= (1 << blink::WebAXStateProtected);
 
   if (o.isReadOnly())
-    state |= (1 << WebKit::WebAXStateReadonly);
+    state |= (1 << blink::WebAXStateReadonly);
 
   if (o.isRequired())
-    state |= (1 << WebKit::WebAXStateRequired);
+    state |= (1 << blink::WebAXStateRequired);
 
   if (o.canSetSelectedAttribute())
-    state |= (1 << WebKit::WebAXStateSelectable);
+    state |= (1 << blink::WebAXStateSelectable);
 
   if (o.isSelected())
-    state |= (1 << WebKit::WebAXStateSelected);
+    state |= (1 << blink::WebAXStateSelected);
 
   if (o.isVisited())
-    state |= (1 << WebKit::WebAXStateVisited);
+    state |= (1 << blink::WebAXStateVisited);
 
   if (o.isEnabled())
-    state |= (1 << WebKit::WebAXStateEnabled);
+    state |= (1 << blink::WebAXStateEnabled);
 
   if (o.isVertical())
-    state |= (1 << WebKit::WebAXStateVertical);
+    state |= (1 << blink::WebAXStateVertical);
 
   if (o.isVisited())
-    state |= (1 << WebKit::WebAXStateVisited);
+    state |= (1 << blink::WebAXStateVisited);
 
   return state;
 }
@@ -143,7 +143,7 @@ void SerializeAccessibilityNode(
     dst->AddStringAttribute(dst->ATTR_VALUE, UTF16ToUTF8(src.stringValue()));
   }
 
-  if (dst->role == WebKit::WebAXRoleColorWell) {
+  if (dst->role == blink::WebAXRoleColorWell) {
     int r, g, b;
     src.colorValue(r, g, b);
     dst->AddIntAttribute(dst->ATTR_COLOR_VALUE_RED, r);
@@ -151,7 +151,7 @@ void SerializeAccessibilityNode(
     dst->AddIntAttribute(dst->ATTR_COLOR_VALUE_BLUE, b);
   }
 
-  if (dst->role == WebKit::WebAXRoleInlineTextBox) {
+  if (dst->role == blink::WebAXRoleInlineTextBox) {
     dst->AddIntAttribute(dst->ATTR_TEXT_DIRECTION, src.textDirection());
 
     WebVector<int> src_character_offsets;
@@ -208,18 +208,18 @@ void SerializeAccessibilityNode(
   if (!src.url().isEmpty())
     dst->AddStringAttribute(dst->ATTR_URL, src.url().spec());
 
-  if (dst->role == WebKit::WebAXRoleHeading)
+  if (dst->role == blink::WebAXRoleHeading)
     dst->AddIntAttribute(dst->ATTR_HIERARCHICAL_LEVEL, src.headingLevel());
-  else if ((dst->role == WebKit::WebAXRoleTreeItem ||
-            dst->role == WebKit::WebAXRoleRow) &&
+  else if ((dst->role == blink::WebAXRoleTreeItem ||
+            dst->role == blink::WebAXRoleRow) &&
            src.hierarchicalLevel() > 0) {
     dst->AddIntAttribute(dst->ATTR_HIERARCHICAL_LEVEL, src.hierarchicalLevel());
   }
 
   // Treat the active list box item as focused.
-  if (dst->role == WebKit::WebAXRoleListBoxOption &&
+  if (dst->role == blink::WebAXRoleListBoxOption &&
       src.isSelectedOptionActive()) {
-    dst->state |= (1 << WebKit::WebAXStateFocused);
+    dst->state |= (1 << blink::WebAXStateFocused);
   }
 
   if (src.canvasHasFallbackContent())
@@ -237,7 +237,7 @@ void SerializeAccessibilityNode(
     is_iframe = (element.tagName() == ASCIIToUTF16("IFRAME"));
 
     if (LowerCaseEqualsASCII(element.getAttribute("aria-expanded"), "true"))
-      dst->state |= (1 << WebKit::WebAXStateExpanded);
+      dst->state |= (1 << blink::WebAXStateExpanded);
 
     // TODO(ctguil): The tagName in WebKit is lower cased but
     // HTMLElement::nodeName calls localNameUpper. Consider adding
@@ -252,9 +252,9 @@ void SerializeAccessibilityNode(
       dst->html_attributes.push_back(std::make_pair(name, value));
     }
 
-    if (dst->role == WebKit::WebAXRoleEditableText ||
-        dst->role == WebKit::WebAXRoleTextArea ||
-        dst->role == WebKit::WebAXRoleTextField) {
+    if (dst->role == blink::WebAXRoleEditableText ||
+        dst->role == blink::WebAXRoleTextArea ||
+        dst->role == blink::WebAXRoleTextField) {
       dst->AddIntAttribute(dst->ATTR_TEXT_SEL_START, src.selectionStart());
       dst->AddIntAttribute(dst->ATTR_TEXT_SEL_END, src.selectionEnd());
 
@@ -342,10 +342,10 @@ void SerializeAccessibilityNode(
                             container_live_relevant);
   }
 
-  if (dst->role == WebKit::WebAXRoleProgressIndicator ||
-      dst->role == WebKit::WebAXRoleScrollBar ||
-      dst->role == WebKit::WebAXRoleSlider ||
-      dst->role == WebKit::WebAXRoleSpinButton) {
+  if (dst->role == blink::WebAXRoleProgressIndicator ||
+      dst->role == blink::WebAXRoleScrollBar ||
+      dst->role == blink::WebAXRoleSlider ||
+      dst->role == blink::WebAXRoleSpinButton) {
     dst->AddFloatAttribute(dst->ATTR_VALUE_FOR_RANGE, src.valueForRange());
     dst->AddFloatAttribute(dst->ATTR_MAX_VALUE_FOR_RANGE,
                            src.maxValueForRange());
@@ -353,8 +353,8 @@ void SerializeAccessibilityNode(
                            src.minValueForRange());
   }
 
-  if (dst->role == WebKit::WebAXRoleDocument ||
-      dst->role == WebKit::WebAXRoleWebArea) {
+  if (dst->role == blink::WebAXRoleDocument ||
+      dst->role == blink::WebAXRoleWebArea) {
     dst->AddStringAttribute(dst->ATTR_HTML_TAG, "#document");
     const WebDocument& document = src.document();
     if (name.empty())
@@ -387,7 +387,7 @@ void SerializeAccessibilityNode(
     dst->AddIntAttribute(dst->ATTR_SCROLL_Y_MAX, max_offset.height());
   }
 
-  if (dst->role == WebKit::WebAXRoleTable) {
+  if (dst->role == blink::WebAXRoleTable) {
     int column_count = src.columnCount();
     int row_count = src.rowCount();
     if (column_count > 0 && row_count > 0) {
@@ -417,23 +417,23 @@ void SerializeAccessibilityNode(
     }
   }
 
-  if (dst->role == WebKit::WebAXRoleRow) {
+  if (dst->role == blink::WebAXRoleRow) {
     dst->AddIntAttribute(dst->ATTR_TABLE_ROW_INDEX, src.rowIndex());
     WebAXObject header = src.rowHeader();
     if (!header.isDetached())
       dst->AddIntAttribute(dst->ATTR_TABLE_ROW_HEADER_ID, header.axID());
   }
 
-  if (dst->role == WebKit::WebAXRoleColumn) {
+  if (dst->role == blink::WebAXRoleColumn) {
     dst->AddIntAttribute(dst->ATTR_TABLE_COLUMN_INDEX, src.columnIndex());
     WebAXObject header = src.columnHeader();
     if (!header.isDetached())
       dst->AddIntAttribute(dst->ATTR_TABLE_COLUMN_HEADER_ID, header.axID());
   }
 
-  if (dst->role == WebKit::WebAXRoleCell ||
-      dst->role == WebKit::WebAXRoleRowHeader ||
-      dst->role == WebKit::WebAXRoleColumnHeader) {
+  if (dst->role == blink::WebAXRoleCell ||
+      dst->role == blink::WebAXRoleRowHeader ||
+      dst->role == blink::WebAXRoleColumnHeader) {
     dst->AddIntAttribute(dst->ATTR_TABLE_CELL_COLUMN_INDEX,
                          src.cellColumnIndex());
     dst->AddIntAttribute(dst->ATTR_TABLE_CELL_COLUMN_SPAN,
@@ -466,10 +466,10 @@ bool ShouldIncludeChildNode(
     const WebAXObject& parent,
     const WebAXObject& child) {
   switch(parent.role()) {
-    case WebKit::WebAXRoleSlider:
-    case WebKit::WebAXRoleEditableText:
-    case WebKit::WebAXRoleTextArea:
-    case WebKit::WebAXRoleTextField:
+    case blink::WebAXRoleSlider:
+    case blink::WebAXRoleEditableText:
+    case blink::WebAXRoleTextArea:
+    case blink::WebAXRoleTextField:
       return false;
     default:
       break;

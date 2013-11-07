@@ -19,10 +19,10 @@ namespace content {
 // Refer to https://bugs.webkit.org/show_bug.cgi?id=52697 for details.
 base::TimeDelta ConvertSecondsToTimestamp(double seconds);
 
-WebKit::WebTimeRanges ConvertToWebTimeRanges(
+blink::WebTimeRanges ConvertToWebTimeRanges(
     const media::Ranges<base::TimeDelta>& ranges);
 
-WebKit::WebMediaPlayer::NetworkState PipelineErrorToNetworkState(
+blink::WebMediaPlayer::NetworkState PipelineErrorToNetworkState(
     media::PipelineStatus error);
 
 }  // namespace content

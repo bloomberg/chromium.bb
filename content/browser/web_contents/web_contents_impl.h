@@ -154,7 +154,7 @@ class CONTENT_EXPORT WebContentsImpl
   // Informs the render view host and the BrowserPluginEmbedder, if present, of
   // a Drag Source End.
   void DragSourceEndedAt(int client_x, int client_y, int screen_x,
-      int screen_y, WebKit::WebDragOperation operation);
+      int screen_y, blink::WebDragOperation operation);
 
   // Informs the render view host and the BrowserPluginEmbedder, if present, of
   // a Drag Source Move.
@@ -407,7 +407,7 @@ class CONTENT_EXPORT WebContentsImpl
       const ViewHostMsg_CreateWindow_Params& params,
       SessionStorageNamespace* session_storage_namespace) OVERRIDE;
   virtual void CreateNewWidget(int route_id,
-                               WebKit::WebPopupType popup_type) OVERRIDE;
+                               blink::WebPopupType popup_type) OVERRIDE;
   virtual void CreateNewFullscreenWidget(int route_id) OVERRIDE;
   virtual void ShowCreatedWindow(int route_id,
                                  WindowOpenDisposition disposition,
@@ -434,7 +434,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void HandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) OVERRIDE;
   virtual bool PreHandleWheelEvent(
-      const WebKit::WebMouseWheelEvent& event) OVERRIDE;
+      const blink::WebMouseWheelEvent& event) OVERRIDE;
   virtual void DidSendScreenRects(RenderWidgetHostImpl* rwh) OVERRIDE;
 #if defined(OS_WIN) && defined(USE_AURA)
   virtual gfx::NativeViewAccessible GetParentNativeViewAccessible() OVERRIDE;
@@ -724,7 +724,7 @@ class CONTENT_EXPORT WebContentsImpl
   // Helper for CreateNewWidget/CreateNewFullscreenWidget.
   void CreateNewWidget(int route_id,
                        bool is_fullscreen,
-                       WebKit::WebPopupType popup_type);
+                       blink::WebPopupType popup_type);
 
   // Helper for ShowCreatedWidget/ShowCreatedFullscreenWidget.
   void ShowCreatedWidget(int route_id,

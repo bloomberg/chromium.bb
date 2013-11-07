@@ -223,7 +223,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual void AcceleratedSurfaceSuspend() OVERRIDE;
   virtual void AcceleratedSurfaceRelease() OVERRIDE;
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) OVERRIDE;
-  virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
+  virtual void GetScreenInfo(blink::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetBoundsInRootWindow() OVERRIDE;
   virtual void GestureEventAck(int gesture_event_type,
                                InputEventAckState ack_result) OVERRIDE;
@@ -438,7 +438,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // This method computes movementX/Y and keeps track of mouse location for
   // mouse lock on all mouse move events.
-  void ModifyEventMovementAndCoords(WebKit::WebMouseEvent* event);
+  void ModifyEventMovementAndCoords(blink::WebMouseEvent* event);
 
   // Sends an IPC to the renderer process to communicate whether or not
   // the mouse cursor is visible anywhere on the screen.
@@ -591,7 +591,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // The touch-event. Its touch-points are updated as necessary. A new
   // touch-point is added from an ET_TOUCH_PRESSED event, and a touch-point is
   // removed from the list on an ET_TOUCH_RELEASED event.
-  WebKit::WebTouchEvent touch_event_;
+  blink::WebTouchEvent touch_event_;
 
   // The current text input type.
   ui::TextInputType text_input_type_;

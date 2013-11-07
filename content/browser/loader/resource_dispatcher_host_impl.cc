@@ -158,13 +158,13 @@ void SetReferrerForRequest(net::URLRequest* request, const Referrer& referrer) {
   net::URLRequest::ReferrerPolicy net_referrer_policy =
       net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
   switch (referrer.policy) {
-    case WebKit::WebReferrerPolicyDefault:
+    case blink::WebReferrerPolicyDefault:
       net_referrer_policy =
           net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
       break;
-    case WebKit::WebReferrerPolicyAlways:
-    case WebKit::WebReferrerPolicyNever:
-    case WebKit::WebReferrerPolicyOrigin:
+    case blink::WebReferrerPolicyAlways:
+    case blink::WebReferrerPolicyNever:
+    case blink::WebReferrerPolicyOrigin:
       net_referrer_policy = net::URLRequest::NEVER_CLEAR_REFERRER;
       break;
   }
@@ -1225,7 +1225,7 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       false,  // is_stream
       download,  // allow_download
       false,     // has_user_gesture
-      WebKit::WebReferrerPolicyDefault,
+      blink::WebReferrerPolicyDefault,
       context,
       base::WeakPtr<ResourceMessageFilter>(),  // filter
       true);     // is_async

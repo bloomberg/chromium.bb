@@ -13,19 +13,19 @@ namespace content {
 
 class WebKeyboardEventBuilder {
  public:
-  static WebKit::WebKeyboardEvent Build(HWND hwnd, UINT message,
+  static blink::WebKeyboardEvent Build(HWND hwnd, UINT message,
                                         WPARAM wparam, LPARAM lparam);
 };
 
 class WebMouseEventBuilder {
  public:
-  static WebKit::WebMouseEvent Build(HWND hwnd, UINT message,
+  static blink::WebMouseEvent Build(HWND hwnd, UINT message,
                                      WPARAM wparam, LPARAM lparam);
 };
 
 class WebMouseWheelEventBuilder {
  public:
-  static WebKit::WebMouseWheelEvent Build(HWND hwnd, UINT message,
+  static blink::WebMouseWheelEvent Build(HWND hwnd, UINT message,
                                           WPARAM wparam, LPARAM lparam);
 };
 

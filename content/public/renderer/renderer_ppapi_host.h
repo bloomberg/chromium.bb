@@ -34,7 +34,7 @@ class PpapiHost;
 }
 }
 
-namespace WebKit {
+namespace blink {
 class WebPluginContainer;
 }
 
@@ -77,7 +77,7 @@ class RendererPpapiHost {
 
   // Returns the WebPluginContainer for the given plugin instance, or NULL if
   // the instance is invalid.
-  virtual WebKit::WebPluginContainer* GetContainerForInstance(
+  virtual blink::WebPluginContainer* GetContainerForInstance(
       PP_Instance instance) const = 0;
 
   // Returns the PID of the child process containing the plugin. If running

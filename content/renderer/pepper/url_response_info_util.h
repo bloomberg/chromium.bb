@@ -9,7 +9,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/shared_impl/url_response_info_data.h"
 
-namespace WebKit {
+namespace blink {
 class WebURLResponse;
 }
 
@@ -24,7 +24,7 @@ typedef base::Callback<void(const ppapi::URLResponseInfoData&)>
 // passed to the plugin.
 void DataFromWebURLResponse(RendererPpapiHostImpl* host_impl,
                             PP_Instance pp_instance,
-                            const WebKit::WebURLResponse& response,
+                            const blink::WebURLResponse& response,
                             const DataFromWebURLResponseCallback& callback);
 
 }  // namespace content

@@ -19,7 +19,7 @@ class InputHandler;
 struct DidOverscrollParams;
 }
 
-namespace WebKit {
+namespace blink {
 class WebInputEvent;
 }
 
@@ -43,7 +43,7 @@ class SynchronousCompositorImpl
   // is implicitly that of the in-process renderer.
   static SynchronousCompositorImpl* FromRoutingID(int routing_id);
 
-  InputEventAckState HandleInputEvent(const WebKit::WebInputEvent& input_event);
+  InputEventAckState HandleInputEvent(const blink::WebInputEvent& input_event);
 
   // SynchronousCompositor
   virtual void SetClient(SynchronousCompositorClient* compositor_client)

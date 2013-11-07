@@ -11,7 +11,7 @@
 
 #define IPC_MESSAGE_START DragMsgStart
 
-IPC_ENUM_TRAITS(WebKit::WebDragOperation)
+IPC_ENUM_TRAITS(blink::WebDragOperation)
 
 IPC_STRUCT_TRAITS_BEGIN(content::DropData::FileInfo)
   IPC_STRUCT_TRAITS_MEMBER(path)

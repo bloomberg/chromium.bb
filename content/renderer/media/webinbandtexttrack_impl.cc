@@ -10,8 +10,8 @@ namespace content {
 
 WebInbandTextTrackImpl::WebInbandTextTrackImpl(
     Kind kind,
-    const WebKit::WebString& label,
-    const WebKit::WebString& language,
+    const blink::WebString& label,
+    const blink::WebString& language,
     int index)
     : client_(NULL),
       mode_(ModeDisabled),
@@ -26,11 +26,11 @@ WebInbandTextTrackImpl::~WebInbandTextTrackImpl() {
 }
 
 void WebInbandTextTrackImpl::setClient(
-    WebKit::WebInbandTextTrackClient* client) {
+    blink::WebInbandTextTrackClient* client) {
   client_ = client;
 }
 
-WebKit::WebInbandTextTrackClient* WebInbandTextTrackImpl::client() {
+blink::WebInbandTextTrackClient* WebInbandTextTrackImpl::client() {
   return client_;
 }
 
@@ -57,11 +57,11 @@ bool WebInbandTextTrackImpl::isClosedCaptions() const {
   }
 }
 
-WebKit::WebString WebInbandTextTrackImpl::label() const {
+blink::WebString WebInbandTextTrackImpl::label() const {
   return label_;
 }
 
-WebKit::WebString WebInbandTextTrackImpl::language() const {
+blink::WebString WebInbandTextTrackImpl::language() const {
   return language_;
 }
 

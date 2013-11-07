@@ -10,8 +10,8 @@
 namespace content {
 
 IndexedDBKeyRange::IndexedDBKeyRange()
-    : lower_(WebKit::WebIDBKeyTypeNull),
-      upper_(WebKit::WebIDBKeyTypeNull),
+    : lower_(blink::WebIDBKeyTypeNull),
+      upper_(blink::WebIDBKeyTypeNull),
       lower_open_(false),
       upper_open_(false) {}
 

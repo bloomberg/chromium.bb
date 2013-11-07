@@ -19,7 +19,7 @@ using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
 class ContextTestBase : public testing::Test {
  public:
   virtual void SetUp() {
-    WebKit::WebGraphicsContext3D::Attributes attributes;
+    blink::WebGraphicsContext3D::Attributes attributes;
     context_ = WebGraphicsContext3DInProcessCommandBufferImpl::
         CreateOffscreenContext(attributes);
     context_->makeContextCurrent();

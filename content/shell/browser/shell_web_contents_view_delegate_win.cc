@@ -20,7 +20,7 @@
 #include "content/shell/common/shell_switches.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 
-using WebKit::WebContextMenuData;
+using blink::WebContextMenuData;
 
 namespace {
 

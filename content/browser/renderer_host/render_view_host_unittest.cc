@@ -125,14 +125,14 @@ class MockDraggingRenderViewHostDelegateView
                              bool right_aligned,
                              bool allow_multiple_selection) OVERRIDE {}
   virtual void StartDragging(const DropData& drop_data,
-                             WebKit::WebDragOperationsMask allowed_ops,
+                             blink::WebDragOperationsMask allowed_ops,
                              const gfx::ImageSkia& image,
                              const gfx::Vector2d& image_offset,
                              const DragEventSourceInfo& event_info) OVERRIDE {
     drag_url_ = drop_data.url;
     html_base_url_ = drop_data.html_base_url;
   }
-  virtual void UpdateDragCursor(WebKit::WebDragOperation operation) OVERRIDE {}
+  virtual void UpdateDragCursor(blink::WebDragOperation operation) OVERRIDE {}
   virtual void GotFocus() OVERRIDE {}
   virtual void TakeFocus(bool reverse) OVERRIDE {}
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}
@@ -202,7 +202,7 @@ TEST_F(RenderViewHostTest, DragEnteredFileURLsStillBlocked) {
       UTF8ToUTF16(dragged_file_path.AsUTF8Unsafe()), string16()));
 
   rvh()->DragTargetDragEnter(dropped_data, client_point, screen_point,
-                              WebKit::WebDragOperationNone, 0);
+                              blink::WebDragOperationNone, 0);
 
   int id = process()->GetID();
   ChildProcessSecurityPolicyImpl* policy =

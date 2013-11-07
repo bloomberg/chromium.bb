@@ -27,7 +27,7 @@
 #include "webkit/common/database/database_identifier.h"
 
 using webkit_database::DatabaseUtil;
-using WebKit::WebIDBKey;
+using blink::WebIDBKey;
 
 namespace content {
 
@@ -366,7 +366,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::CloseAll() {
     if (connection && connection->IsConnected()) {
       connection->database()->Abort(
           transaction_id,
-          IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError));
+          IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError));
     }
   }
   DCHECK(transaction_database_map_.empty());
@@ -440,7 +440,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateObjectStore(
           database_url_map_[params.ipc_database_id])) {
     connection->database()->Abort(
         host_transaction_id,
-        IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionQuotaError));
+        IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionQuotaError));
   }
 }
 
@@ -570,7 +570,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnSetIndexKeys(
     connection->database()->Abort(
         host_transaction_id,
         IndexedDBDatabaseError(
-            WebKit::WebIDBDatabaseExceptionUnknownError,
+            blink::WebIDBDatabaseExceptionUnknownError,
             "Malformed IPC message: index_ids.size() != index_keys.size()"));
     return;
   }
@@ -708,7 +708,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCommit(
           transaction_url_map_[host_transaction_id], transaction_size)) {
     connection->database()->Abort(
         host_transaction_id,
-        IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionQuotaError));
+        IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionQuotaError));
     return;
   }
 
@@ -736,7 +736,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateIndex(
           database_url_map_[params.ipc_database_id])) {
     connection->database()->Abort(
         host_transaction_id,
-        IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionQuotaError));
+        IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionQuotaError));
   }
 }
 

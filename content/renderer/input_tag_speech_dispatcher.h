@@ -10,7 +10,7 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/web/WebSpeechInputController.h"
 
-namespace WebKit {
+namespace blink {
 class WebSpeechInputListener;
 }
 
@@ -21,21 +21,21 @@ struct SpeechRecognitionResult;
 // InputTagSpeechDispatcher is a delegate for messages used by WebKit. It's
 // the complement of InputTagSpeechDispatcherHost (owned by RenderViewHost).
 class InputTagSpeechDispatcher : public RenderViewObserver,
-                                 public WebKit::WebSpeechInputController {
+                                 public blink::WebSpeechInputController {
  public:
   InputTagSpeechDispatcher(RenderViewImpl* render_view,
-                           WebKit::WebSpeechInputListener* listener);
+                           blink::WebSpeechInputListener* listener);
 
  private:
   // RenderView::Observer implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // WebKit::WebSpeechInputController.
+  // blink::WebSpeechInputController.
   virtual bool startRecognition(int request_id,
-                                const WebKit::WebRect& element_rect,
-                                const WebKit::WebString& language,
-                                const WebKit::WebString& grammar,
-                                const WebKit::WebSecurityOrigin& origin);
+                                const blink::WebRect& element_rect,
+                                const blink::WebString& language,
+                                const blink::WebString& grammar,
+                                const blink::WebSecurityOrigin& origin);
 
   virtual void cancelRecognition(int request_id);
   virtual void stopRecording(int request_id);
@@ -46,7 +46,7 @@ class InputTagSpeechDispatcher : public RenderViewObserver,
   void OnSpeechRecognitionComplete(int request_id);
   void OnSpeechRecognitionToggleSpeechInput();
 
-  WebKit::WebSpeechInputListener* listener_;
+  blink::WebSpeechInputListener* listener_;
 
   DISALLOW_COPY_AND_ASSIGN(InputTagSpeechDispatcher);
 };

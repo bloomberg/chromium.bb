@@ -195,7 +195,7 @@ bool TouchEditableImplAura::HandleInputEvent(const ui::Event* event) {
 
 void TouchEditableImplAura::GestureEventAck(int gesture_event_type) {
   DCHECK(rwhva_);
-  if (gesture_event_type == WebKit::WebInputEvent::GestureTap &&
+  if (gesture_event_type == blink::WebInputEvent::GestureTap &&
       text_input_type_ != ui::TEXT_INPUT_TYPE_NONE &&
       is_tap_on_focused_textfield_) {
     StartTouchEditing();
@@ -203,9 +203,9 @@ void TouchEditableImplAura::GestureEventAck(int gesture_event_type) {
       touch_selection_controller_->SelectionChanged();
   }
 
-  if (gesture_event_type == WebKit::WebInputEvent::GestureLongPress)
+  if (gesture_event_type == blink::WebInputEvent::GestureLongPress)
     selection_gesture_in_process_ = false;
-  if (gesture_event_type == WebKit::WebInputEvent::GestureTap) {
+  if (gesture_event_type == blink::WebInputEvent::GestureTap) {
     if (tap_gesture_tap_count_queue_.front() > 1)
       selection_gesture_in_process_ = false;
     tap_gesture_tap_count_queue_.pop();

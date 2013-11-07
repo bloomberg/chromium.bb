@@ -7,7 +7,7 @@
 
 #include "content/renderer/media/android/stream_texture_factory_android.h"
 
-namespace WebKit {
+namespace blink {
 class WebGraphicsContext3D;
 }
 
@@ -17,7 +17,7 @@ class GpuChannelHost;
 
 class StreamTextureFactoryImpl : public StreamTextureFactory {
  public:
-  StreamTextureFactoryImpl(WebKit::WebGraphicsContext3D* context,
+  StreamTextureFactoryImpl(blink::WebGraphicsContext3D* context,
                            GpuChannelHost* channel,
                            int view_id);
   virtual ~StreamTextureFactoryImpl();
@@ -33,10 +33,10 @@ class StreamTextureFactoryImpl : public StreamTextureFactory {
   virtual void DestroyStreamTexture(unsigned texture_id) OVERRIDE;
   virtual void SetStreamTextureSize(int32 texture_id,
                                     const gfx::Size& size) OVERRIDE;
-  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE;
+  virtual blink::WebGraphicsContext3D* Context3d() OVERRIDE;
 
  private:
-  WebKit::WebGraphicsContext3D* context_;
+  blink::WebGraphicsContext3D* context_;
   scoped_refptr<GpuChannelHost> channel_;
   int view_id_;
 

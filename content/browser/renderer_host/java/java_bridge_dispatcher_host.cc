@@ -128,7 +128,7 @@ void JavaBridgeDispatcherHost::CreateNPVariantParam(NPObject* object,
   int route_id = JavaBridgeChannelHost::ThreadsafeGenerateRouteID();
   param->npobject_routing_id = route_id;
 
-  WebKit::WebBindings::retainObject(object);
+  blink::WebBindings::retainObject(object);
   g_background_thread.Get().message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&JavaBridgeDispatcherHost::CreateObjectStub, this, object,
@@ -161,7 +161,7 @@ void JavaBridgeDispatcherHost::CreateObjectStub(NPObject* object,
 
   // The NPObjectStub takes a reference to the NPObject. Release the ref added
   // in CreateNPVariantParam().
-  WebKit::WebBindings::releaseObject(object);
+  blink::WebBindings::releaseObject(object);
 }
 
 }  // namespace content

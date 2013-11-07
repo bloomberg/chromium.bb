@@ -17,10 +17,10 @@ using ::testing::_;
 using ::testing::InSequence;
 using ::testing::NiceMock;
 
-using WebKit::WebString;
-using WebKit::WebURLError;
-using WebKit::WebURLResponse;
-using WebKit::WebView;
+using blink::WebString;
+using blink::WebURLError;
+using blink::WebURLResponse;
+using blink::WebView;
 
 namespace content {
 
@@ -45,7 +45,7 @@ class MediaInfoLoaderTest : public testing::Test {
 
   void Initialize(
       const char* url,
-      WebKit::WebMediaPlayer::CORSMode cors_mode) {
+      blink::WebMediaPlayer::CORSMode cors_mode) {
     gurl_ = GURL(url);
 
     loader_.reset(new MediaInfoLoader(
@@ -55,7 +55,7 @@ class MediaInfoLoaderTest : public testing::Test {
 
     // |test_loader_| will be used when Start() is called.
     url_loader_ = new NiceMock<MockWebURLLoader>();
-    loader_->test_loader_ = scoped_ptr<WebKit::WebURLLoader>(url_loader_);
+    loader_->test_loader_ = scoped_ptr<blink::WebURLLoader>(url_loader_);
   }
 
   void Start() {
@@ -72,8 +72,8 @@ class MediaInfoLoaderTest : public testing::Test {
 
   void Redirect(const char* url) {
     GURL redirect_url(url);
-    WebKit::WebURLRequest new_request(redirect_url);
-    WebKit::WebURLResponse redirect_response(gurl_);
+    blink::WebURLRequest new_request(redirect_url);
+    blink::WebURLResponse redirect_response(gurl_);
 
     loader_->willSendRequest(url_loader_, new_request, redirect_response);
 
@@ -116,20 +116,20 @@ class MediaInfoLoaderTest : public testing::Test {
 };
 
 TEST_F(MediaInfoLoaderTest, StartStop) {
-  Initialize(kHttpUrl, WebKit::WebMediaPlayer::CORSModeUnspecified);
+  Initialize(kHttpUrl, blink::WebMediaPlayer::CORSModeUnspecified);
   Start();
   Stop();
 }
 
 TEST_F(MediaInfoLoaderTest, LoadFailure) {
-  Initialize(kHttpUrl, WebKit::WebMediaPlayer::CORSModeUnspecified);
+  Initialize(kHttpUrl, blink::WebMediaPlayer::CORSModeUnspecified);
   Start();
   FailLoad();
 }
 
 TEST_F(MediaInfoLoaderTest, HasSingleOriginNoRedirect) {
   // Make sure no redirect case works as expected.
-  Initialize(kHttpUrl, WebKit::WebMediaPlayer::CORSModeUnspecified);
+  Initialize(kHttpUrl, blink::WebMediaPlayer::CORSModeUnspecified);
   Start();
   SendResponse(kHttpOK, MediaInfoLoader::kOk);
   EXPECT_TRUE(loader_->HasSingleOrigin());
@@ -137,7 +137,7 @@ TEST_F(MediaInfoLoaderTest, HasSingleOriginNoRedirect) {
 
 TEST_F(MediaInfoLoaderTest, HasSingleOriginSingleRedirect) {
   // Test redirect to the same domain.
-  Initialize(kHttpUrl, WebKit::WebMediaPlayer::CORSModeUnspecified);
+  Initialize(kHttpUrl, blink::WebMediaPlayer::CORSModeUnspecified);
   Start();
   Redirect(kHttpRedirectToSameDomainUrl1);
   SendResponse(kHttpOK, MediaInfoLoader::kOk);
@@ -146,7 +146,7 @@ TEST_F(MediaInfoLoaderTest, HasSingleOriginSingleRedirect) {
 
 TEST_F(MediaInfoLoaderTest, HasSingleOriginDoubleRedirect) {
   // Test redirect twice to the same domain.
-  Initialize(kHttpUrl, WebKit::WebMediaPlayer::CORSModeUnspecified);
+  Initialize(kHttpUrl, blink::WebMediaPlayer::CORSModeUnspecified);
   Start();
   Redirect(kHttpRedirectToSameDomainUrl1);
   Redirect(kHttpRedirectToSameDomainUrl2);
@@ -156,7 +156,7 @@ TEST_F(MediaInfoLoaderTest, HasSingleOriginDoubleRedirect) {
 
 TEST_F(MediaInfoLoaderTest, HasSingleOriginDifferentDomain) {
   // Test redirect to a different domain.
-  Initialize(kHttpUrl, WebKit::WebMediaPlayer::CORSModeUnspecified);
+  Initialize(kHttpUrl, blink::WebMediaPlayer::CORSModeUnspecified);
   Start();
   Redirect(kHttpRedirectToDifferentDomainUrl1);
   SendResponse(kHttpOK, MediaInfoLoader::kOk);
@@ -165,7 +165,7 @@ TEST_F(MediaInfoLoaderTest, HasSingleOriginDifferentDomain) {
 
 TEST_F(MediaInfoLoaderTest, HasSingleOriginMultipleDomains) {
   // Test redirect to the same domain and then to a different domain.
-  Initialize(kHttpUrl, WebKit::WebMediaPlayer::CORSModeUnspecified);
+  Initialize(kHttpUrl, blink::WebMediaPlayer::CORSModeUnspecified);
   Start();
   Redirect(kHttpRedirectToSameDomainUrl1);
   Redirect(kHttpRedirectToDifferentDomainUrl1);
@@ -174,14 +174,14 @@ TEST_F(MediaInfoLoaderTest, HasSingleOriginMultipleDomains) {
 }
 
 TEST_F(MediaInfoLoaderTest, CORSAccessCheckPassed) {
-  Initialize(kHttpUrl, WebKit::WebMediaPlayer::CORSModeUseCredentials);
+  Initialize(kHttpUrl, blink::WebMediaPlayer::CORSModeUseCredentials);
   Start();
   SendResponse(kHttpOK, MediaInfoLoader::kOk);
   EXPECT_TRUE(loader_->DidPassCORSAccessCheck());
 }
 
 TEST_F(MediaInfoLoaderTest, CORSAccessCheckFailed) {
-  Initialize(kHttpUrl, WebKit::WebMediaPlayer::CORSModeUseCredentials);
+  Initialize(kHttpUrl, blink::WebMediaPlayer::CORSModeUseCredentials);
   Start();
   SendResponse(kHttpNotFound, MediaInfoLoader::kFailed);
   EXPECT_FALSE(loader_->DidPassCORSAccessCheck());

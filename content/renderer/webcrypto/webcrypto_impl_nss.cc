@@ -22,7 +22,7 @@ namespace content {
 
 namespace {
 
-class SymKeyHandle : public WebKit::WebCryptoKeyHandle {
+class SymKeyHandle : public blink::WebCryptoKeyHandle {
  public:
   explicit SymKeyHandle(crypto::ScopedPK11SymKey key) : key_(key.Pass()) {}
 
@@ -34,7 +34,7 @@ class SymKeyHandle : public WebKit::WebCryptoKeyHandle {
   DISALLOW_COPY_AND_ASSIGN(SymKeyHandle);
 };
 
-class PublicKeyHandle : public WebKit::WebCryptoKeyHandle {
+class PublicKeyHandle : public blink::WebCryptoKeyHandle {
  public:
   explicit PublicKeyHandle(crypto::ScopedSECKEYPublicKey key)
       : key_(key.Pass()) {}
@@ -47,7 +47,7 @@ class PublicKeyHandle : public WebKit::WebCryptoKeyHandle {
   DISALLOW_COPY_AND_ASSIGN(PublicKeyHandle);
 };
 
-class PrivateKeyHandle : public WebKit::WebCryptoKeyHandle {
+class PrivateKeyHandle : public blink::WebCryptoKeyHandle {
  public:
   explicit PrivateKeyHandle(crypto::ScopedSECKEYPrivateKey key)
       : key_(key.Pass()) {}
@@ -61,17 +61,17 @@ class PrivateKeyHandle : public WebKit::WebCryptoKeyHandle {
 };
 
 HASH_HashType WebCryptoAlgorithmToNSSHashType(
-    const WebKit::WebCryptoAlgorithm& algorithm) {
+    const blink::WebCryptoAlgorithm& algorithm) {
   switch (algorithm.id()) {
-    case WebKit::WebCryptoAlgorithmIdSha1:
+    case blink::WebCryptoAlgorithmIdSha1:
       return HASH_AlgSHA1;
-    case WebKit::WebCryptoAlgorithmIdSha224:
+    case blink::WebCryptoAlgorithmIdSha224:
       return HASH_AlgSHA224;
-    case WebKit::WebCryptoAlgorithmIdSha256:
+    case blink::WebCryptoAlgorithmIdSha256:
       return HASH_AlgSHA256;
-    case WebKit::WebCryptoAlgorithmIdSha384:
+    case blink::WebCryptoAlgorithmIdSha384:
       return HASH_AlgSHA384;
-    case WebKit::WebCryptoAlgorithmIdSha512:
+    case blink::WebCryptoAlgorithmIdSha512:
       return HASH_AlgSHA512;
     default:
       // Not a digest algorithm.
@@ -80,11 +80,11 @@ HASH_HashType WebCryptoAlgorithmToNSSHashType(
 }
 
 CK_MECHANISM_TYPE WebCryptoAlgorithmToHMACMechanism(
-    const WebKit::WebCryptoAlgorithm& algorithm) {
+    const blink::WebCryptoAlgorithm& algorithm) {
   switch (algorithm.id()) {
-    case WebKit::WebCryptoAlgorithmIdSha1:
+    case blink::WebCryptoAlgorithmIdSha1:
       return CKM_SHA_1_HMAC;
-    case WebKit::WebCryptoAlgorithmIdSha256:
+    case blink::WebCryptoAlgorithmIdSha256:
       return CKM_SHA256_HMAC;
     default:
       // Not a supported algorithm.
@@ -94,19 +94,19 @@ CK_MECHANISM_TYPE WebCryptoAlgorithmToHMACMechanism(
 
 bool AesCbcEncryptDecrypt(
     CK_ATTRIBUTE_TYPE operation,
-    const WebKit::WebCryptoAlgorithm& algorithm,
-    const WebKit::WebCryptoKey& key,
+    const blink::WebCryptoAlgorithm& algorithm,
+    const blink::WebCryptoKey& key,
     const unsigned char* data,
     unsigned data_size,
-    WebKit::WebArrayBuffer* buffer) {
-  DCHECK_EQ(WebKit::WebCryptoAlgorithmIdAesCbc, algorithm.id());
+    blink::WebArrayBuffer* buffer) {
+  DCHECK_EQ(blink::WebCryptoAlgorithmIdAesCbc, algorithm.id());
   DCHECK_EQ(algorithm.id(), key.algorithm().id());
-  DCHECK_EQ(WebKit::WebCryptoKeyTypeSecret, key.type());
+  DCHECK_EQ(blink::WebCryptoKeyTypeSecret, key.type());
   DCHECK(operation == CKA_ENCRYPT || operation == CKA_DECRYPT);
 
   SymKeyHandle* sym_key = reinterpret_cast<SymKeyHandle*>(key.handle());
 
-  const WebKit::WebCryptoAesCbcParams* params = algorithm.aesCbcParams();
+  const blink::WebCryptoAesCbcParams* params = algorithm.aesCbcParams();
   if (params->iv().size() != AES_BLOCK_SIZE)
     return false;
 
@@ -148,7 +148,7 @@ bool AesCbcEncryptDecrypt(
   unsigned output_max_len = data_size + AES_BLOCK_SIZE;
   CHECK_GT(output_max_len, data_size);
 
-  *buffer = WebKit::WebArrayBuffer::create(output_max_len, 1);
+  *buffer = blink::WebArrayBuffer::create(output_max_len, 1);
 
   unsigned char* buffer_data = reinterpret_cast<unsigned char*>(buffer->data());
 
@@ -175,14 +175,14 @@ bool AesCbcEncryptDecrypt(
 }
 
 CK_MECHANISM_TYPE HmacAlgorithmToGenMechanism(
-    const WebKit::WebCryptoAlgorithm& algorithm) {
-  DCHECK_EQ(algorithm.id(), WebKit::WebCryptoAlgorithmIdHmac);
-  const WebKit::WebCryptoHmacKeyParams* params = algorithm.hmacKeyParams();
+    const blink::WebCryptoAlgorithm& algorithm) {
+  DCHECK_EQ(algorithm.id(), blink::WebCryptoAlgorithmIdHmac);
+  const blink::WebCryptoHmacKeyParams* params = algorithm.hmacKeyParams();
   DCHECK(params);
   switch (params->hash().id()) {
-    case WebKit::WebCryptoAlgorithmIdSha1:
+    case blink::WebCryptoAlgorithmIdSha1:
       return CKM_SHA_1_HMAC;
-    case WebKit::WebCryptoAlgorithmIdSha256:
+    case blink::WebCryptoAlgorithmIdSha256:
       return CKM_SHA256_HMAC;
     default:
       return CKM_INVALID_MECHANISM;
@@ -190,11 +190,11 @@ CK_MECHANISM_TYPE HmacAlgorithmToGenMechanism(
 }
 
 CK_MECHANISM_TYPE WebCryptoAlgorithmToGenMechanism(
-    const WebKit::WebCryptoAlgorithm& algorithm) {
+    const blink::WebCryptoAlgorithm& algorithm) {
   switch (algorithm.id()) {
-    case WebKit::WebCryptoAlgorithmIdAesCbc:
+    case blink::WebCryptoAlgorithmIdAesCbc:
       return CKM_AES_KEY_GEN;
-    case WebKit::WebCryptoAlgorithmIdHmac:
+    case blink::WebCryptoAlgorithmIdHmac:
       return HmacAlgorithmToGenMechanism(algorithm);
     default:
       return CKM_INVALID_MECHANISM;
@@ -202,14 +202,14 @@ CK_MECHANISM_TYPE WebCryptoAlgorithmToGenMechanism(
 }
 
 unsigned int WebCryptoHmacAlgorithmToBlockSize(
-    const WebKit::WebCryptoAlgorithm& algorithm) {
-  DCHECK_EQ(algorithm.id(), WebKit::WebCryptoAlgorithmIdHmac);
-  const WebKit::WebCryptoHmacKeyParams* params = algorithm.hmacKeyParams();
+    const blink::WebCryptoAlgorithm& algorithm) {
+  DCHECK_EQ(algorithm.id(), blink::WebCryptoAlgorithmIdHmac);
+  const blink::WebCryptoHmacKeyParams* params = algorithm.hmacKeyParams();
   DCHECK(params);
   switch (params->hash().id()) {
-    case WebKit::WebCryptoAlgorithmIdSha1:
+    case blink::WebCryptoAlgorithmIdSha1:
       return 512;
-    case WebKit::WebCryptoAlgorithmIdSha256:
+    case blink::WebCryptoAlgorithmIdSha256:
       return 512;
     default:
       return 0;
@@ -245,12 +245,12 @@ void WebCryptoImpl::Init() {
 }
 
 bool WebCryptoImpl::EncryptInternal(
-    const WebKit::WebCryptoAlgorithm& algorithm,
-    const WebKit::WebCryptoKey& key,
+    const blink::WebCryptoAlgorithm& algorithm,
+    const blink::WebCryptoKey& key,
     const unsigned char* data,
     unsigned data_size,
-    WebKit::WebArrayBuffer* buffer) {
-  if (algorithm.id() == WebKit::WebCryptoAlgorithmIdAesCbc) {
+    blink::WebArrayBuffer* buffer) {
+  if (algorithm.id() == blink::WebCryptoAlgorithmIdAesCbc) {
     return AesCbcEncryptDecrypt(
         CKA_ENCRYPT, algorithm, key, data, data_size, buffer);
   }
@@ -259,12 +259,12 @@ bool WebCryptoImpl::EncryptInternal(
 }
 
 bool WebCryptoImpl::DecryptInternal(
-    const WebKit::WebCryptoAlgorithm& algorithm,
-    const WebKit::WebCryptoKey& key,
+    const blink::WebCryptoAlgorithm& algorithm,
+    const blink::WebCryptoKey& key,
     const unsigned char* data,
     unsigned data_size,
-    WebKit::WebArrayBuffer* buffer) {
-  if (algorithm.id() == WebKit::WebCryptoAlgorithmIdAesCbc) {
+    blink::WebArrayBuffer* buffer) {
+  if (algorithm.id() == blink::WebCryptoAlgorithmIdAesCbc) {
     return AesCbcEncryptDecrypt(
         CKA_DECRYPT, algorithm, key, data, data_size, buffer);
   }
@@ -273,10 +273,10 @@ bool WebCryptoImpl::DecryptInternal(
 }
 
 bool WebCryptoImpl::DigestInternal(
-    const WebKit::WebCryptoAlgorithm& algorithm,
+    const blink::WebCryptoAlgorithm& algorithm,
     const unsigned char* data,
     unsigned data_size,
-    WebKit::WebArrayBuffer* buffer) {
+    blink::WebArrayBuffer* buffer) {
   HASH_HashType hash_type = WebCryptoAlgorithmToNSSHashType(algorithm);
   if (hash_type == HASH_AlgNULL) {
     return false;
@@ -294,7 +294,7 @@ bool WebCryptoImpl::DigestInternal(
   unsigned hash_result_length = HASH_ResultLenContext(context);
   DCHECK_LE(hash_result_length, static_cast<size_t>(HASH_LENGTH_MAX));
 
-  *buffer = WebKit::WebArrayBuffer::create(hash_result_length, 1);
+  *buffer = blink::WebArrayBuffer::create(hash_result_length, 1);
 
   unsigned char* digest = reinterpret_cast<unsigned char*>(buffer->data());
 
@@ -307,38 +307,38 @@ bool WebCryptoImpl::DigestInternal(
 }
 
 bool WebCryptoImpl::GenerateKeyInternal(
-    const WebKit::WebCryptoAlgorithm& algorithm,
+    const blink::WebCryptoAlgorithm& algorithm,
     bool extractable,
-    WebKit::WebCryptoKeyUsageMask usage_mask,
-    WebKit::WebCryptoKey* key) {
+    blink::WebCryptoKeyUsageMask usage_mask,
+    blink::WebCryptoKey* key) {
 
   CK_MECHANISM_TYPE mech = WebCryptoAlgorithmToGenMechanism(algorithm);
   unsigned int keylen_bytes = 0;
-  WebKit::WebCryptoKeyType key_type = WebKit::WebCryptoKeyTypeSecret;
+  blink::WebCryptoKeyType key_type = blink::WebCryptoKeyTypeSecret;
 
   if (mech == CKM_INVALID_MECHANISM) {
     return false;
   }
 
   switch (algorithm.id()) {
-    case WebKit::WebCryptoAlgorithmIdAesCbc: {
-      const WebKit::WebCryptoAesKeyGenParams* params =
+    case blink::WebCryptoAlgorithmIdAesCbc: {
+      const blink::WebCryptoAesKeyGenParams* params =
           algorithm.aesKeyGenParams();
       DCHECK(params);
       keylen_bytes = params->length() / 8;
       if (params->length() % 8)
         return false;
-      key_type = WebKit::WebCryptoKeyTypeSecret;
+      key_type = blink::WebCryptoKeyTypeSecret;
       break;
     }
-    case WebKit::WebCryptoAlgorithmIdHmac: {
-      const WebKit::WebCryptoHmacKeyParams* params = algorithm.hmacKeyParams();
+    case blink::WebCryptoAlgorithmIdHmac: {
+      const blink::WebCryptoHmacKeyParams* params = algorithm.hmacKeyParams();
       DCHECK(params);
       if (!params->getLength(keylen_bytes)) {
         keylen_bytes = WebCryptoHmacAlgorithmToBlockSize(algorithm) / 8;
       }
 
-      key_type = WebKit::WebCryptoKeyTypeSecret;
+      key_type = blink::WebCryptoKeyTypeSecret;
       break;
     }
 
@@ -363,25 +363,25 @@ bool WebCryptoImpl::GenerateKeyInternal(
     return false;
   }
 
-  *key = WebKit::WebCryptoKey::create(
+  *key = blink::WebCryptoKey::create(
       new SymKeyHandle(pk11_key.Pass()),
       key_type, extractable, algorithm, usage_mask);
   return true;
 }
 
 bool WebCryptoImpl::GenerateKeyPairInternal(
-    const WebKit::WebCryptoAlgorithm& algorithm,
+    const blink::WebCryptoAlgorithm& algorithm,
     bool extractable,
-    WebKit::WebCryptoKeyUsageMask usage_mask,
-    WebKit::WebCryptoKey* public_key,
-    WebKit::WebCryptoKey* private_key) {
+    blink::WebCryptoKeyUsageMask usage_mask,
+    blink::WebCryptoKey* public_key,
+    blink::WebCryptoKey* private_key) {
 
   // TODO(padolph): Handle other asymmetric algorithm key generation.
   switch (algorithm.id()) {
-    case WebKit::WebCryptoAlgorithmIdRsaEsPkcs1v1_5:
-    case WebKit::WebCryptoAlgorithmIdRsaOaep:
-    case WebKit::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5: {
-      const WebKit::WebCryptoRsaKeyGenParams* const params =
+    case blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5:
+    case blink::WebCryptoAlgorithmIdRsaOaep:
+    case blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5: {
+      const blink::WebCryptoRsaKeyGenParams* const params =
           algorithm.rsaKeyGenParams();
       DCHECK(params);
 
@@ -403,11 +403,11 @@ bool WebCryptoImpl::GenerateKeyPairInternal(
       // possible operations for the given key type.
       CK_FLAGS operation_flags;
       switch (algorithm.id()) {
-        case WebKit::WebCryptoAlgorithmIdRsaEsPkcs1v1_5:
-        case WebKit::WebCryptoAlgorithmIdRsaOaep:
+        case blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5:
+        case blink::WebCryptoAlgorithmIdRsaOaep:
           operation_flags = CKF_ENCRYPT | CKF_DECRYPT | CKF_WRAP | CKF_UNWRAP;
           break;
-        case WebKit::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
+        case blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
           operation_flags = CKF_SIGN | CKF_VERIFY;
           break;
         default:
@@ -441,15 +441,15 @@ bool WebCryptoImpl::GenerateKeyPairInternal(
       // extractable apply only to the private key and make the public key
       // always extractable. For now implement what the spec says and track the
       // spec bug here: https://www.w3.org/Bugs/Public/show_bug.cgi?id=23695
-      *public_key = WebKit::WebCryptoKey::create(
+      *public_key = blink::WebCryptoKey::create(
           new PublicKeyHandle(crypto::ScopedSECKEYPublicKey(sec_public_key)),
-          WebKit::WebCryptoKeyTypePublic,
+          blink::WebCryptoKeyTypePublic,
           extractable,   // probably should be 'true' always
           algorithm,
           usage_mask);
-      *private_key = WebKit::WebCryptoKey::create(
+      *private_key = blink::WebCryptoKey::create(
           new PrivateKeyHandle(scoped_sec_private_key.Pass()),
-          WebKit::WebCryptoKeyTypePrivate,
+          blink::WebCryptoKeyTypePrivate,
           extractable,
           algorithm,
           usage_mask);
@@ -462,24 +462,24 @@ bool WebCryptoImpl::GenerateKeyPairInternal(
 }
 
 bool WebCryptoImpl::ImportKeyInternal(
-    WebKit::WebCryptoKeyFormat format,
+    blink::WebCryptoKeyFormat format,
     const unsigned char* key_data,
     unsigned key_data_size,
-    const WebKit::WebCryptoAlgorithm& algorithm_or_null,
+    const blink::WebCryptoAlgorithm& algorithm_or_null,
     bool extractable,
-    WebKit::WebCryptoKeyUsageMask usage_mask,
-    WebKit::WebCryptoKey* key) {
+    blink::WebCryptoKeyUsageMask usage_mask,
+    blink::WebCryptoKey* key) {
   // TODO(eroman): Currently expects algorithm to always be specified, as it is
   //               required for raw format.
   if (algorithm_or_null.isNull())
     return false;
-  const WebKit::WebCryptoAlgorithm& algorithm = algorithm_or_null;
+  const blink::WebCryptoAlgorithm& algorithm = algorithm_or_null;
 
-  WebKit::WebCryptoKeyType type;
+  blink::WebCryptoKeyType type;
   switch (algorithm.id()) {
-    case WebKit::WebCryptoAlgorithmIdHmac:
-    case WebKit::WebCryptoAlgorithmIdAesCbc:
-      type = WebKit::WebCryptoKeyTypeSecret;
+    case blink::WebCryptoAlgorithmIdHmac:
+    case blink::WebCryptoAlgorithmIdAesCbc:
+      type = blink::WebCryptoKeyTypeSecret;
       break;
     // TODO(bryaneyler): Support more key types.
     default:
@@ -494,8 +494,8 @@ bool WebCryptoImpl::ImportKeyInternal(
   CK_FLAGS flags = 0;
 
   switch(algorithm.id()) {
-    case WebKit::WebCryptoAlgorithmIdHmac: {
-      const WebKit::WebCryptoHmacParams* params = algorithm.hmacParams();
+    case blink::WebCryptoAlgorithmIdHmac: {
+      const blink::WebCryptoHmacParams* params = algorithm.hmacParams();
       if (!params) {
         return false;
       }
@@ -509,7 +509,7 @@ bool WebCryptoImpl::ImportKeyInternal(
 
       break;
     }
-    case WebKit::WebCryptoAlgorithmIdAesCbc: {
+    case blink::WebCryptoAlgorithmIdAesCbc: {
       mechanism = CKM_AES_CBC;
       flags |= CKF_ENCRYPT | CKF_DECRYPT;
       break;
@@ -524,7 +524,7 @@ bool WebCryptoImpl::ImportKeyInternal(
   SECItem key_item = { siBuffer, NULL, 0 };
 
   switch (format) {
-    case WebKit::WebCryptoKeyFormatRaw:
+    case blink::WebCryptoKeyFormatRaw:
       key_item.data = const_cast<unsigned char*>(key_data);
       key_item.len = key_data_size;
       break;
@@ -546,22 +546,22 @@ bool WebCryptoImpl::ImportKeyInternal(
     return false;
   }
 
-  *key = WebKit::WebCryptoKey::create(new SymKeyHandle(pk11_sym_key.Pass()),
+  *key = blink::WebCryptoKey::create(new SymKeyHandle(pk11_sym_key.Pass()),
                                       type, extractable, algorithm, usage_mask);
   return true;
 }
 
 bool WebCryptoImpl::SignInternal(
-    const WebKit::WebCryptoAlgorithm& algorithm,
-    const WebKit::WebCryptoKey& key,
+    const blink::WebCryptoAlgorithm& algorithm,
+    const blink::WebCryptoKey& key,
     const unsigned char* data,
     unsigned data_size,
-    WebKit::WebArrayBuffer* buffer) {
-  WebKit::WebArrayBuffer result;
+    blink::WebArrayBuffer* buffer) {
+  blink::WebArrayBuffer result;
 
   switch (algorithm.id()) {
-    case WebKit::WebCryptoAlgorithmIdHmac: {
-      const WebKit::WebCryptoHmacParams* params = algorithm.hmacParams();
+    case blink::WebCryptoAlgorithmIdHmac: {
+      const blink::WebCryptoHmacParams* params = algorithm.hmacParams();
       if (!params) {
         return false;
       }
@@ -570,7 +570,7 @@ bool WebCryptoImpl::SignInternal(
 
       DCHECK_EQ(PK11_GetMechanism(sym_key->key()),
                 WebCryptoAlgorithmToHMACMechanism(params->hash()));
-      DCHECK_NE(0, key.usages() & WebKit::WebCryptoKeyUsageSign);
+      DCHECK_NE(0, key.usages() & blink::WebCryptoKeyUsageSign);
 
       SECItem param_item = { siBuffer, NULL, 0 };
       SECItem data_item = {
@@ -592,7 +592,7 @@ bool WebCryptoImpl::SignInternal(
 
       DCHECK_NE(0u, signature_item.len);
 
-      result = WebKit::WebArrayBuffer::create(signature_item.len, 1);
+      result = blink::WebArrayBuffer::create(signature_item.len, 1);
       signature_item.data = reinterpret_cast<unsigned char*>(result.data());
 
       if (PK11_SignWithSymKey(sym_key->key(),
@@ -617,16 +617,16 @@ bool WebCryptoImpl::SignInternal(
 }
 
 bool WebCryptoImpl::VerifySignatureInternal(
-    const WebKit::WebCryptoAlgorithm& algorithm,
-    const WebKit::WebCryptoKey& key,
+    const blink::WebCryptoAlgorithm& algorithm,
+    const blink::WebCryptoKey& key,
     const unsigned char* signature,
     unsigned signature_size,
     const unsigned char* data,
     unsigned data_size,
     bool* signature_match) {
   switch (algorithm.id()) {
-    case WebKit::WebCryptoAlgorithmIdHmac: {
-      WebKit::WebArrayBuffer result;
+    case blink::WebCryptoAlgorithmIdHmac: {
+      blink::WebArrayBuffer result;
       if (!SignInternal(algorithm, key, data, data_size, &result)) {
         return false;
       }

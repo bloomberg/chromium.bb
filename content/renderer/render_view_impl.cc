@@ -255,102 +255,102 @@
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #endif
 
-using WebKit::WebAXObject;
-using WebKit::WebApplicationCacheHost;
-using WebKit::WebApplicationCacheHostClient;
-using WebKit::WebCString;
-using WebKit::WebColor;
-using WebKit::WebColorName;
-using WebKit::WebConsoleMessage;
-using WebKit::WebContextMenuData;
-using WebKit::WebCookieJar;
-using WebKit::WebData;
-using WebKit::WebDataSource;
-using WebKit::WebDocument;
-using WebKit::WebDOMEvent;
-using WebKit::WebDOMMessageEvent;
-using WebKit::WebDragData;
-using WebKit::WebDragOperation;
-using WebKit::WebDragOperationsMask;
-using WebKit::WebElement;
-using WebKit::WebExternalPopupMenu;
-using WebKit::WebExternalPopupMenuClient;
-using WebKit::WebFileChooserCompletion;
-using WebKit::WebFindOptions;
-using WebKit::WebFormControlElement;
-using WebKit::WebFormElement;
-using WebKit::WebFrame;
-using WebKit::WebGestureEvent;
-using WebKit::WebHistoryItem;
-using WebKit::WebHTTPBody;
-using WebKit::WebIconURL;
-using WebKit::WebImage;
-using WebKit::WebInputElement;
-using WebKit::WebInputEvent;
-using WebKit::WebMediaPlayer;
-using WebKit::WebMediaPlayerAction;
-using WebKit::WebMediaPlayerClient;
-using WebKit::WebMouseEvent;
-using WebKit::WebNavigationPolicy;
-using WebKit::WebNavigationType;
-using WebKit::WebNode;
-using WebKit::WebPageSerializer;
-using WebKit::WebPageSerializerClient;
-using WebKit::WebPeerConnection00Handler;
-using WebKit::WebPeerConnection00HandlerClient;
-using WebKit::WebPeerConnectionHandler;
-using WebKit::WebPeerConnectionHandlerClient;
-using WebKit::WebPluginAction;
-using WebKit::WebPluginContainer;
-using WebKit::WebPluginDocument;
-using WebKit::WebPluginParams;
-using WebKit::WebPoint;
-using WebKit::WebPopupMenuInfo;
-using WebKit::WebRange;
-using WebKit::WebRect;
-using WebKit::WebReferrerPolicy;
-using WebKit::WebRuntimeFeatures;
-using WebKit::WebScriptSource;
-using WebKit::WebSearchableFormData;
-using WebKit::WebSecurityOrigin;
-using WebKit::WebSecurityPolicy;
-using WebKit::WebSerializedScriptValue;
-using WebKit::WebSettings;
-using WebKit::WebSize;
-using WebKit::WebSocketStreamHandle;
-using WebKit::WebStorageNamespace;
-using WebKit::WebStorageQuotaCallbacks;
-using WebKit::WebStorageQuotaError;
-using WebKit::WebStorageQuotaType;
-using WebKit::WebString;
-using WebKit::WebTextAffinity;
-using WebKit::WebTextDirection;
-using WebKit::WebTouchEvent;
-using WebKit::WebURL;
-using WebKit::WebURLError;
-using WebKit::WebURLRequest;
-using WebKit::WebURLResponse;
-using WebKit::WebUserGestureIndicator;
-using WebKit::WebVector;
-using WebKit::WebView;
-using WebKit::WebWidget;
-using WebKit::WebWindowFeatures;
+using blink::WebAXObject;
+using blink::WebApplicationCacheHost;
+using blink::WebApplicationCacheHostClient;
+using blink::WebCString;
+using blink::WebColor;
+using blink::WebColorName;
+using blink::WebConsoleMessage;
+using blink::WebContextMenuData;
+using blink::WebCookieJar;
+using blink::WebData;
+using blink::WebDataSource;
+using blink::WebDocument;
+using blink::WebDOMEvent;
+using blink::WebDOMMessageEvent;
+using blink::WebDragData;
+using blink::WebDragOperation;
+using blink::WebDragOperationsMask;
+using blink::WebElement;
+using blink::WebExternalPopupMenu;
+using blink::WebExternalPopupMenuClient;
+using blink::WebFileChooserCompletion;
+using blink::WebFindOptions;
+using blink::WebFormControlElement;
+using blink::WebFormElement;
+using blink::WebFrame;
+using blink::WebGestureEvent;
+using blink::WebHistoryItem;
+using blink::WebHTTPBody;
+using blink::WebIconURL;
+using blink::WebImage;
+using blink::WebInputElement;
+using blink::WebInputEvent;
+using blink::WebMediaPlayer;
+using blink::WebMediaPlayerAction;
+using blink::WebMediaPlayerClient;
+using blink::WebMouseEvent;
+using blink::WebNavigationPolicy;
+using blink::WebNavigationType;
+using blink::WebNode;
+using blink::WebPageSerializer;
+using blink::WebPageSerializerClient;
+using blink::WebPeerConnection00Handler;
+using blink::WebPeerConnection00HandlerClient;
+using blink::WebPeerConnectionHandler;
+using blink::WebPeerConnectionHandlerClient;
+using blink::WebPluginAction;
+using blink::WebPluginContainer;
+using blink::WebPluginDocument;
+using blink::WebPluginParams;
+using blink::WebPoint;
+using blink::WebPopupMenuInfo;
+using blink::WebRange;
+using blink::WebRect;
+using blink::WebReferrerPolicy;
+using blink::WebRuntimeFeatures;
+using blink::WebScriptSource;
+using blink::WebSearchableFormData;
+using blink::WebSecurityOrigin;
+using blink::WebSecurityPolicy;
+using blink::WebSerializedScriptValue;
+using blink::WebSettings;
+using blink::WebSize;
+using blink::WebSocketStreamHandle;
+using blink::WebStorageNamespace;
+using blink::WebStorageQuotaCallbacks;
+using blink::WebStorageQuotaError;
+using blink::WebStorageQuotaType;
+using blink::WebString;
+using blink::WebTextAffinity;
+using blink::WebTextDirection;
+using blink::WebTouchEvent;
+using blink::WebURL;
+using blink::WebURLError;
+using blink::WebURLRequest;
+using blink::WebURLResponse;
+using blink::WebUserGestureIndicator;
+using blink::WebVector;
+using blink::WebView;
+using blink::WebWidget;
+using blink::WebWindowFeatures;
 using base::Time;
 using base::TimeDelta;
 using webkit_glue::WebURLResponseExtraDataImpl;
 
 #if defined(OS_ANDROID)
-using WebKit::WebContentDetectionResult;
-using WebKit::WebFloatPoint;
-using WebKit::WebFloatRect;
-using WebKit::WebHitTestResult;
+using blink::WebContentDetectionResult;
+using blink::WebFloatPoint;
+using blink::WebFloatRect;
+using blink::WebHitTestResult;
 #endif
 
 namespace content {
 
 //-----------------------------------------------------------------------------
 
-typedef std::map<WebKit::WebView*, RenderViewImpl*> ViewMap;
+typedef std::map<blink::WebView*, RenderViewImpl*> ViewMap;
 static base::LazyInstance<ViewMap> g_view_map = LAZY_INSTANCE_INITIALIZER;
 typedef std::map<int32, RenderViewImpl*> RoutingIDViewMap;
 static base::LazyInstance<RoutingIDViewMap> g_routing_id_view_map =
@@ -520,13 +520,13 @@ static bool IsNonLocalTopLevelNavigation(const GURL& url,
   if (!url.SchemeIs(kHttpScheme) && !url.SchemeIs(kHttpsScheme))
     return false;
 
-  if (type != WebKit::WebNavigationTypeReload &&
-      type != WebKit::WebNavigationTypeBackForward && !is_form_post) {
+  if (type != blink::WebNavigationTypeReload &&
+      type != blink::WebNavigationTypeBackForward && !is_form_post) {
     // The opener relationship between the new window and the parent allows the
     // new window to script the parent and vice versa. This is not allowed if
     // the origins of the two domains are different. This can be treated as a
     // top level navigation and routed back to the host.
-    WebKit::WebFrame* opener = frame->opener();
+    blink::WebFrame* opener = frame->opener();
     if (!opener)
       return true;
 
@@ -536,11 +536,11 @@ static bool IsNonLocalTopLevelNavigation(const GURL& url,
   return false;
 }
 
-static void NotifyTimezoneChange(WebKit::WebFrame* frame) {
+static void NotifyTimezoneChange(blink::WebFrame* frame) {
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   v8::Context::Scope context_scope(frame->mainWorldScriptContext());
   v8::Date::DateTimeConfigurationChangeNotification();
-  WebKit::WebFrame* child = frame->firstChild();
+  blink::WebFrame* child = frame->firstChild();
   for (; child; child = child->nextSibling())
     NotifyTimezoneChange(child);
 }
@@ -548,19 +548,19 @@ static void NotifyTimezoneChange(WebKit::WebFrame* frame) {
 static WindowOpenDisposition NavigationPolicyToDisposition(
     WebNavigationPolicy policy) {
   switch (policy) {
-    case WebKit::WebNavigationPolicyIgnore:
+    case blink::WebNavigationPolicyIgnore:
       return IGNORE_ACTION;
-    case WebKit::WebNavigationPolicyDownload:
+    case blink::WebNavigationPolicyDownload:
       return SAVE_TO_DISK;
-    case WebKit::WebNavigationPolicyCurrentTab:
+    case blink::WebNavigationPolicyCurrentTab:
       return CURRENT_TAB;
-    case WebKit::WebNavigationPolicyNewBackgroundTab:
+    case blink::WebNavigationPolicyNewBackgroundTab:
       return NEW_BACKGROUND_TAB;
-    case WebKit::WebNavigationPolicyNewForegroundTab:
+    case blink::WebNavigationPolicyNewForegroundTab:
       return NEW_FOREGROUND_TAB;
-    case WebKit::WebNavigationPolicyNewWindow:
+    case blink::WebNavigationPolicyNewWindow:
       return NEW_WINDOW;
-    case WebKit::WebNavigationPolicyNewPopup:
+    case blink::WebNavigationPolicyNewPopup:
       return NEW_POPUP;
   default:
     NOTREACHED() << "Unexpected WebNavigationPolicy";
@@ -680,15 +680,15 @@ static bool ShouldUseAcceleratedFixedRootBackground(float device_scale_factor) {
   return DeviceScaleEnsuresTextQuality(device_scale_factor);
 }
 
-static FaviconURL::IconType ToFaviconType(WebKit::WebIconURL::Type type) {
+static FaviconURL::IconType ToFaviconType(blink::WebIconURL::Type type) {
   switch (type) {
-    case WebKit::WebIconURL::TypeFavicon:
+    case blink::WebIconURL::TypeFavicon:
       return FaviconURL::FAVICON;
-    case WebKit::WebIconURL::TypeTouch:
+    case blink::WebIconURL::TypeTouch:
       return FaviconURL::TOUCH_ICON;
-    case WebKit::WebIconURL::TypeTouchPrecomposed:
+    case blink::WebIconURL::TypeTouchPrecomposed:
       return FaviconURL::TOUCH_PRECOMPOSED_ICON;
-    case WebKit::WebIconURL::TypeInvalid:
+    case blink::WebIconURL::TypeInvalid:
       return FaviconURL::INVALID_ICON;
   }
   return FaviconURL::INVALID_ICON;
@@ -709,7 +709,7 @@ namespace {
 
 class WebWidgetLockTarget : public MouseLockDispatcher::LockTarget {
  public:
-  explicit WebWidgetLockTarget(WebKit::WebWidget* webwidget)
+  explicit WebWidgetLockTarget(blink::WebWidget* webwidget)
       : webwidget_(webwidget) {}
 
   virtual void OnLockMouseACK(bool succeeded) OVERRIDE {
@@ -724,13 +724,13 @@ class WebWidgetLockTarget : public MouseLockDispatcher::LockTarget {
   }
 
   virtual bool HandleMouseLockedInputEvent(
-      const WebKit::WebMouseEvent &event) OVERRIDE {
+      const blink::WebMouseEvent &event) OVERRIDE {
     // The WebWidget handles mouse lock in WebKit's handleInputEvent().
     return false;
   }
 
  private:
-  WebKit::WebWidget* webwidget_;
+  blink::WebWidget* webwidget_;
 };
 
 int64 ExtractPostId(const WebHistoryItem& item) {
@@ -820,7 +820,7 @@ WebDragData DropDataToWebDragData(const DropData& drop_data) {
 }  // namespace
 
 RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
-    : RenderWidget(WebKit::WebPopupTypeNone,
+    : RenderWidget(blink::WebPopupTypeNone,
                    params->screen_info,
                    params->swapped_out,
                    params->hidden),
@@ -1073,7 +1073,7 @@ RenderViewImpl* RenderViewImpl::FromWebView(WebView* webview) {
 }
 
 /*static*/
-RenderView* RenderView::FromWebView(WebKit::WebView* webview) {
+RenderView* RenderView::FromWebView(blink::WebView* webview) {
   return RenderViewImpl::FromWebView(webview);
 }
 
@@ -1112,7 +1112,7 @@ RenderViewImpl* RenderViewImpl::Create(
     bool swapped_out,
     bool hidden,
     int32 next_page_id,
-    const WebKit::WebScreenInfo& screen_info,
+    const blink::WebScreenInfo& screen_info,
     AccessibilityMode accessibility_mode,
     bool allow_partial_swap) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
@@ -1157,8 +1157,8 @@ void RenderViewImpl::RemoveObserver(RenderViewObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-WebKit::WebView* RenderViewImpl::webview() const {
-  return static_cast<WebKit::WebView*>(webwidget());
+blink::WebView* RenderViewImpl::webview() const {
+  return static_cast<blink::WebView*>(webwidget());
 }
 
 #if defined(ENABLE_PLUGINS)
@@ -1177,7 +1177,7 @@ void RenderViewImpl::PepperInstanceDeleted(PepperPluginInstanceImpl* instance) {
 
 void RenderViewImpl::PepperDidChangeCursor(
     PepperPluginInstanceImpl* instance,
-    const WebKit::WebCursorInfo& cursor) {
+    const blink::WebCursorInfo& cursor) {
   // Update the cursor appearance immediately if the requesting plugin is the
   // one which receives the last mouse event. Otherwise, the new cursor won't be
   // picked up until the plugin gets the next input event. That is bad if, e.g.,
@@ -1244,7 +1244,7 @@ RenderWidgetFullscreenPepper* RenderViewImpl::CreatePepperFullscreenContainer(
     active_url = GURL(webview()->mainFrame()->document().url());
   RenderWidgetFullscreenPepper* widget = RenderWidgetFullscreenPepper::Create(
       routing_id_, plugin, active_url, screen_info_);
-  widget->show(WebKit::WebNavigationPolicyIgnore);
+  widget->show(blink::WebNavigationPolicyIgnore);
   return widget;
 }
 
@@ -1306,7 +1306,7 @@ bool RenderViewImpl::GetPluginInfo(const GURL& url,
 
 void RenderViewImpl::SimulateImeSetComposition(
     const string16& text,
-    const std::vector<WebKit::WebCompositionUnderline>& underlines,
+    const std::vector<blink::WebCompositionUnderline>& underlines,
     int selection_start,
     int selection_end) {
   OnImeSetComposition(text, underlines, selection_start, selection_end);
@@ -1344,7 +1344,7 @@ void RenderViewImpl::StartPluginIme() {
 #endif  // ENABLE_PLUGINS
 
 void RenderViewImpl::TransferActiveWheelFlingAnimation(
-    const WebKit::WebActiveWheelFlingParameters& params) {
+    const blink::WebActiveWheelFlingParameters& params) {
   if (webview())
     webview()->transferActiveWheelFlingAnimation(params);
 }
@@ -1840,7 +1840,7 @@ void RenderViewImpl::OnReplaceMisspelling(const string16& text) {
 
 void RenderViewImpl::OnScrollFocusedEditableNodeIntoRect(
     const gfx::Rect& rect) {
-  WebKit::WebNode node = GetFocusedNode();
+  blink::WebNode node = GetFocusedNode();
   if (!node.isNull()) {
     if (IsEditableNode(node)) {
       webview()->saveScrollAndScaleState();
@@ -1924,7 +1924,7 @@ void RenderViewImpl::OnSetEditableSelectionOffsets(int start, int end) {
 
 void RenderViewImpl::OnSetCompositionFromExistingText(
     int start, int end,
-    const std::vector<WebKit::WebCompositionUnderline>& underlines) {
+    const std::vector<blink::WebCompositionUnderline>& underlines) {
   if (!ShouldHandleImeEvent())
     return;
   ImeEventGuard guard(this);
@@ -2133,7 +2133,7 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
     // Save some histogram data so we can compute the average memory used per
     // page load of the glyphs.
     UMA_HISTOGRAM_COUNTS_10000("Memory.GlyphPagesPerLoad",
-                               WebKit::WebGlyphCache::pageCount());
+                               blink::WebGlyphCache::pageCount());
 
     // This message needs to be sent before any of allowScripts(),
     // allowImages(), allowPlugins() is called for the new page, so that when
@@ -2239,10 +2239,10 @@ void RenderViewImpl::OpenURL(WebFrame* frame,
   if (GetContentClient()->renderer()->AllowPopup())
     params.user_gesture = true;
 
-  if (policy == WebKit::WebNavigationPolicyNewBackgroundTab ||
-      policy == WebKit::WebNavigationPolicyNewForegroundTab ||
-      policy == WebKit::WebNavigationPolicyNewWindow ||
-      policy == WebKit::WebNavigationPolicyNewPopup) {
+  if (policy == blink::WebNavigationPolicyNewBackgroundTab ||
+      policy == blink::WebNavigationPolicyNewForegroundTab ||
+      policy == blink::WebNavigationPolicyNewWindow ||
+      policy == blink::WebNavigationPolicyNewPopup) {
     WebUserGestureIndicator::consumeUserGesture();
   }
 
@@ -2338,7 +2338,7 @@ void RenderViewImpl::OnWindowSnapshotCompleted(const int snapshot_id,
   }
 }
 
-// WebKit::WebViewClient ------------------------------------------------------
+// blink::WebViewClient ------------------------------------------------------
 
 WebView* RenderViewImpl::createView(
     WebFrame* creator,
@@ -2444,7 +2444,7 @@ WebView* RenderViewImpl::createView(
   return view->webview();
 }
 
-WebWidget* RenderViewImpl::createPopupMenu(WebKit::WebPopupType popup_type) {
+WebWidget* RenderViewImpl::createPopupMenu(blink::WebPopupType popup_type) {
   RenderWidget* widget =
       RenderWidget::Create(routing_id_, popup_type, screen_info_);
   if (screen_metrics_emulator_) {
@@ -2530,7 +2530,7 @@ void RenderViewImpl::printPage(WebFrame* frame) {
                     PrintPage(frame, handling_input_event_));
 }
 
-WebKit::WebNotificationPresenter* RenderViewImpl::notificationPresenter() {
+blink::WebNotificationPresenter* RenderViewImpl::notificationPresenter() {
   return notification_provider_;
 }
 
@@ -2546,7 +2546,7 @@ bool RenderViewImpl::enumerateChosenDirectory(
 }
 
 void RenderViewImpl::initializeHelperPluginWebFrame(
-    WebKit::WebHelperPlugin* plugin) {
+    blink::WebHelperPlugin* plugin) {
   plugin->initializeFrame(main_render_frame_.get());
 }
 
@@ -2650,9 +2650,9 @@ bool RenderViewImpl::handleCurrentKeyboardEvent() {
   return did_execute_command;
 }
 
-WebKit::WebColorChooser* RenderViewImpl::createColorChooser(
-    WebKit::WebColorChooserClient* client,
-    const WebKit::WebColor& initial_color) {
+blink::WebColorChooser* RenderViewImpl::createColorChooser(
+    blink::WebColorChooserClient* client,
+    const blink::WebColor& initial_color) {
   RendererWebColorChooserImpl* color_chooser =
       new RendererWebColorChooserImpl(this, client);
   color_chooser->Open(static_cast<SkColor>(initial_color));
@@ -2660,7 +2660,7 @@ WebKit::WebColorChooser* RenderViewImpl::createColorChooser(
 }
 
 bool RenderViewImpl::runFileChooser(
-    const WebKit::WebFileChooserParams& params,
+    const blink::WebFileChooserParams& params,
     WebFileChooserCompletion* chooser_completion) {
   // Do not open the file dialog in a hidden RenderView.
   if (is_hidden())
@@ -2725,7 +2725,7 @@ bool RenderViewImpl::runModalBeforeUnloadDialog(
   bool is_reload = false;
   WebDataSource* ds = frame->provisionalDataSource();
   if (ds)
-    is_reload = (ds->navigationType() == WebKit::WebNavigationTypeReload);
+    is_reload = (ds->navigationType() == blink::WebNavigationTypeReload);
   return runModalBeforeUnloadDialog(frame, is_reload, message);
 }
 
@@ -2956,7 +2956,7 @@ int RenderViewImpl::historyForwardListCount() {
 }
 
 void RenderViewImpl::postAccessibilityEvent(
-    const WebAXObject& obj, WebKit::WebAXEvent event) {
+    const WebAXObject& obj, blink::WebAXEvent event) {
   if (renderer_accessibility_) {
     renderer_accessibility_->HandleWebAccessibilityEvent(obj, event);
   }
@@ -2969,7 +2969,7 @@ void RenderViewImpl::didUpdateInspectorSetting(const WebString& key,
                                               value.utf8()));
 }
 
-// WebKit::WebWidgetClient ----------------------------------------------------
+// blink::WebWidgetClient ----------------------------------------------------
 
 void RenderViewImpl::didFocus() {
   // TODO(jcivelli): when https://bugs.webkit.org/show_bug.cgi?id=33389 is fixed
@@ -3013,8 +3013,8 @@ void RenderViewImpl::show(WebNavigationPolicy policy) {
     // We exempt background tabs for compat with older versions of Chrome.
     // TODO(darin): This seems bogus.  These should have a user gesture, so
     // we probably don't need this check.
-    if (policy != WebKit::WebNavigationPolicyNewBackgroundTab)
-      policy = WebKit::WebNavigationPolicyNewPopup;
+    if (policy != blink::WebNavigationPolicyNewBackgroundTab)
+      policy = blink::WebNavigationPolicyNewPopup;
   }
 
   // NOTE: initial_pos_ may still have its default values at this point, but
@@ -3101,10 +3101,10 @@ void RenderViewImpl::initializeLayerTreeView() {
   webview()->devToolsAgent()->setLayerTreeId(rwc->GetLayerTreeId());
 }
 
-// WebKit::WebFrameClient -----------------------------------------------------
+// blink::WebFrameClient -----------------------------------------------------
 
 WebMediaPlayer* RenderViewImpl::createMediaPlayer(
-    WebFrame* frame, const WebKit::WebURL& url, WebMediaPlayerClient* client) {
+    WebFrame* frame, const blink::WebURL& url, WebMediaPlayerClient* client) {
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_, WillCreateMediaPlayer(frame, client));
 
@@ -3146,7 +3146,7 @@ void RenderViewImpl::didAccessInitialDocument(WebFrame* frame) {
     Send(new ViewHostMsg_DidAccessInitialDocument(routing_id_));
 }
 
-void RenderViewImpl::didDisownOpener(WebKit::WebFrame* frame) {
+void RenderViewImpl::didDisownOpener(blink::WebFrame* frame) {
   // We only need to notify the browser if the active, top-level frame clears
   // its opener.  We can ignore cases where a swapped out frame clears its
   // opener after hearing about it from the browser, and the browser does not
@@ -3190,7 +3190,7 @@ void RenderViewImpl::ClearEditCommands() {
   edit_commands_.clear();
 }
 
-SSLStatus RenderViewImpl::GetSSLStatusOfFrame(WebKit::WebFrame* frame) const {
+SSLStatus RenderViewImpl::GetSSLStatusOfFrame(blink::WebFrame* frame) const {
   std::string security_info;
   if (frame && frame->dataSource())
     security_info = frame->dataSource()->response().securityInfo();
@@ -3216,7 +3216,7 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
       GetContentClient()->renderer()->HandleNavigation(frame, request, type,
                                                        default_policy,
                                                        is_redirect)) {
-    return WebKit::WebNavigationPolicyIgnore;
+    return blink::WebNavigationPolicyIgnore;
   }
 
   Referrer referrer(GetReferrerFromRequest(frame, request));
@@ -3232,12 +3232,12 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
       // fixing http://crbug.com/101395.
       if (frame->parent() == NULL) {
         OpenURL(frame, request.url(), referrer, default_policy);
-        return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
+        return blink::WebNavigationPolicyIgnore;  // Suppress the load here.
       }
 
       // We should otherwise ignore in-process iframe navigations, if they
       // arrive just after we are swapped out.
-      return WebKit::WebNavigationPolicyIgnore;
+      return blink::WebNavigationPolicyIgnore;
     }
 
     // Allow kSwappedOutURL to complete.
@@ -3276,14 +3276,14 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
             net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
     if (!same_domain_or_host || frame_url.scheme() != url.scheme()) {
       OpenURL(frame, url, referrer, default_policy);
-      return WebKit::WebNavigationPolicyIgnore;
+      return blink::WebNavigationPolicyIgnore;
     }
   }
 
   // If the browser is interested, then give it a chance to look at the request.
   if (is_content_initiated) {
-    bool is_form_post = ((type == WebKit::WebNavigationTypeFormSubmitted) ||
-                         (type == WebKit::WebNavigationTypeFormResubmitted)) &&
+    bool is_form_post = ((type == blink::WebNavigationTypeFormSubmitted) ||
+                         (type == blink::WebNavigationTypeFormResubmitted)) &&
                         EqualsASCII(request.httpMethod(), "POST");
     bool browser_handles_request =
         renderer_preferences_.browser_handles_non_local_top_level_requests &&
@@ -3300,7 +3300,7 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
       page_id_ = -1;
       last_page_id_sent_to_browser_ = -1;
       OpenURL(frame, url, referrer, default_policy);
-      return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
+      return blink::WebNavigationPolicyIgnore;  // Suppress the load here.
     }
   }
 
@@ -3342,7 +3342,7 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
         (cumulative_bindings & BINDINGS_POLICY_WEB_UI) ||
         url.SchemeIs(kViewSourceScheme) ||
         (frame->isViewSourceModeEnabled() &&
-            type != WebKit::WebNavigationTypeReload);
+            type != blink::WebNavigationTypeReload);
 
     if (!should_fork && url.SchemeIs(chrome::kFileScheme)) {
       // Fork non-file to file opens.  Check the opener URL if this is the
@@ -3364,7 +3364,7 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
     if (should_fork) {
       OpenURL(
           frame, url, send_referrer ? referrer : Referrer(), default_policy);
-      return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
+      return blink::WebNavigationPolicyIgnore;  // Suppress the load here.
     }
   }
 
@@ -3396,14 +3396,14 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
       // Must not have issued the request from this page.
       is_content_initiated &&
       // Must be targeted at the current tab.
-      default_policy == WebKit::WebNavigationPolicyCurrentTab &&
+      default_policy == blink::WebNavigationPolicyCurrentTab &&
       // Must be a JavaScript navigation, which appears as "other".
-      type == WebKit::WebNavigationTypeOther;
+      type == blink::WebNavigationTypeOther;
 
   if (is_fork) {
     // Open the URL via the browser, not via WebKit.
     OpenURL(frame, url, Referrer(), default_policy);
-    return WebKit::WebNavigationPolicyIgnore;
+    return blink::WebNavigationPolicyIgnore;
   }
 
   return default_policy;
@@ -3417,8 +3417,8 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
                                    request, type, default_policy, is_redirect);
 }
 
-void RenderViewImpl::willSendSubmitEvent(WebKit::WebFrame* frame,
-    const WebKit::WebFormElement& form) {
+void RenderViewImpl::willSendSubmitEvent(blink::WebFrame* frame,
+    const blink::WebFormElement& form) {
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_, WillSendSubmitEvent(frame, form));
 }
@@ -4159,7 +4159,7 @@ void RenderViewImpl::didChangeScrollOffset(WebFrame* frame) {
       RenderViewObserver, observers_, DidChangeScrollOffset(frame));
 }
 
-void RenderViewImpl::willInsertBody(WebKit::WebFrame* frame) {
+void RenderViewImpl::willInsertBody(blink::WebFrame* frame) {
   NOTREACHED();
 }
 
@@ -4246,10 +4246,10 @@ void RenderViewImpl::requestStorageQuota(
 }
 
 bool RenderViewImpl::willCheckAndDispatchMessageEvent(
-    WebKit::WebFrame* sourceFrame,
-    WebKit::WebFrame* targetFrame,
-    WebKit::WebSecurityOrigin target_origin,
-    WebKit::WebDOMMessageEvent event) {
+    blink::WebFrame* sourceFrame,
+    blink::WebFrame* targetFrame,
+    blink::WebSecurityOrigin target_origin,
+    blink::WebDOMMessageEvent event) {
   if (!is_swapped_out_)
     return false;
 
@@ -4259,7 +4259,7 @@ bool RenderViewImpl::willCheckAndDispatchMessageEvent(
   if (!target_origin.isNull())
     params.target_origin = target_origin.toString();
 
-  WebKit::WebMessagePortChannelArray channels = event.releaseChannels();
+  blink::WebMessagePortChannelArray channels = event.releaseChannels();
   if (!channels.isEmpty()) {
     std::vector<int> message_port_ids(channels.size());
      // Extract the port IDs from the channel array.
@@ -4293,24 +4293,24 @@ void RenderViewImpl::willOpenSocketStream(
 }
 
 void RenderViewImpl::willStartUsingPeerConnectionHandler(
-    WebKit::WebFrame* frame, WebKit::WebRTCPeerConnectionHandler* handler) {
+    blink::WebFrame* frame, blink::WebRTCPeerConnectionHandler* handler) {
   NOTREACHED();
 }
 
-WebKit::WebString RenderViewImpl::acceptLanguages() {
+blink::WebString RenderViewImpl::acceptLanguages() {
   return WebString::fromUTF8(renderer_preferences_.accept_languages);
 }
 
-WebKit::WebString RenderViewImpl::userAgentOverride(
-    WebKit::WebFrame* frame,
-    const WebKit::WebURL& url) {
+blink::WebString RenderViewImpl::userAgentOverride(
+    blink::WebFrame* frame,
+    const blink::WebURL& url) {
   NOTREACHED();
-  return WebKit::WebString();
+  return blink::WebString();
 }
 
 WebString RenderViewImpl::doNotTrackValue(WebFrame* frame) {
   NOTREACHED();
-  return WebKit::WebString();
+  return blink::WebString();
 }
 
 bool RenderViewImpl::allowWebGL(WebFrame* frame, bool default_value) {
@@ -4319,12 +4319,12 @@ bool RenderViewImpl::allowWebGL(WebFrame* frame, bool default_value) {
 }
 
 void RenderViewImpl::didLoseWebGLContext(
-    WebKit::WebFrame* frame,
+    blink::WebFrame* frame,
     int arb_robustness_status_code) {
   NOTREACHED();
 }
 
-// WebKit::WebPageSerializerClient implementation ------------------------------
+// blink::WebPageSerializerClient implementation ------------------------------
 
 void RenderViewImpl::didSerializeDataForFrame(
     const WebURL& frame_url,
@@ -4363,11 +4363,11 @@ void RenderViewImpl::SetWebkitPreferences(const WebPreferences& preferences) {
   OnUpdateWebPreferences(preferences);
 }
 
-WebKit::WebView* RenderViewImpl::GetWebView() {
+blink::WebView* RenderViewImpl::GetWebView() {
   return webview();
 }
 
-WebKit::WebNode RenderViewImpl::GetFocusedNode() const {
+blink::WebNode RenderViewImpl::GetFocusedNode() const {
   if (!webview())
     return WebNode();
   WebFrame* focused_frame = webview()->focusedFrame();
@@ -4380,7 +4380,7 @@ WebKit::WebNode RenderViewImpl::GetFocusedNode() const {
   return WebNode();
 }
 
-WebKit::WebNode RenderViewImpl::GetContextMenuNode() const {
+blink::WebNode RenderViewImpl::GetContextMenuNode() const {
   return context_menu_node_;
 }
 
@@ -4409,10 +4409,10 @@ bool RenderViewImpl::IsEditableNode(const WebNode& node) const {
   return false;
 }
 
-WebKit::WebPlugin* RenderViewImpl::CreatePlugin(
-    WebKit::WebFrame* frame,
+blink::WebPlugin* RenderViewImpl::CreatePlugin(
+    blink::WebFrame* frame,
     const WebPluginInfo& info,
-    const WebKit::WebPluginParams& params) {
+    const blink::WebPluginParams& params) {
 #if defined(ENABLE_PLUGINS)
   bool pepper_plugin_was_registered = false;
   scoped_refptr<PluginModule> pepper_module(PluginModule::Create(
@@ -4486,19 +4486,19 @@ void RenderViewImpl::CancelContextMenu(int request_id) {
   pending_context_menus_.Remove(request_id);
 }
 
-WebKit::WebPageVisibilityState RenderViewImpl::GetVisibilityState() const {
+blink::WebPageVisibilityState RenderViewImpl::GetVisibilityState() const {
   return visibilityState();
 }
 
-void RenderViewImpl::RunModalAlertDialog(WebKit::WebFrame* frame,
-                                         const WebKit::WebString& message) {
+void RenderViewImpl::RunModalAlertDialog(blink::WebFrame* frame,
+                                         const blink::WebString& message) {
   return runModalAlertDialog(frame, message);
 }
 
 void RenderViewImpl::LoadURLExternally(
-    WebKit::WebFrame* frame,
-    const WebKit::WebURLRequest& request,
-    WebKit::WebNavigationPolicy policy) {
+    blink::WebFrame* frame,
+    const blink::WebURLRequest& request,
+    blink::WebNavigationPolicy policy) {
   main_render_frame_->loadURLExternally(frame, request, policy);
 }
 
@@ -4510,7 +4510,7 @@ void RenderViewImpl::DidStopLoading() {
   didStopLoading();
 }
 
-void RenderViewImpl::DidPlay(WebKit::WebMediaPlayer* player) {
+void RenderViewImpl::DidPlay(blink::WebMediaPlayer* player) {
   Send(new ViewHostMsg_MediaNotification(routing_id_,
                                          reinterpret_cast<int64>(player),
                                          player->hasVideo(),
@@ -4518,7 +4518,7 @@ void RenderViewImpl::DidPlay(WebKit::WebMediaPlayer* player) {
                                          true));
 }
 
-void RenderViewImpl::DidPause(WebKit::WebMediaPlayer* player) {
+void RenderViewImpl::DidPause(blink::WebMediaPlayer* player) {
   Send(new ViewHostMsg_MediaNotification(routing_id_,
                                          reinterpret_cast<int64>(player),
                                          player->hasVideo(),
@@ -4526,7 +4526,7 @@ void RenderViewImpl::DidPause(WebKit::WebMediaPlayer* player) {
                                          false));
 }
 
-void RenderViewImpl::PlayerGone(WebKit::WebMediaPlayer* player) {
+void RenderViewImpl::PlayerGone(blink::WebMediaPlayer* player) {
   DidPause(player);
 }
 
@@ -4560,7 +4560,7 @@ void RenderViewImpl::SyncSelectionIfRequired() {
 
     range = gfx::Range(location, location + length);
 
-    if (webview()->textInputInfo().type != WebKit::WebTextInputTypeNone) {
+    if (webview()->textInputInfo().type != blink::WebTextInputTypeNone) {
       // If current focused element is editable, we will send 100 more chars
       // before and after selection. It is for input method surrounding text
       // feature.
@@ -4656,7 +4656,7 @@ GURL RenderViewImpl::GetAlternateErrorPageURL(const GURL& failed_url,
   return url;
 }
 
-GURL RenderViewImpl::GetLoadingUrl(WebKit::WebFrame* frame) const {
+GURL RenderViewImpl::GetLoadingUrl(blink::WebFrame* frame) const {
   WebDataSource* ds = frame->dataSource();
   if (ds->hasUnreachableURL())
     return ds->unreachableURL();
@@ -4665,7 +4665,7 @@ GURL RenderViewImpl::GetLoadingUrl(WebKit::WebFrame* frame) const {
   return request.url();
 }
 
-WebKit::WebPlugin* RenderViewImpl::GetWebPluginFromPluginDocument() {
+blink::WebPlugin* RenderViewImpl::GetWebPluginFromPluginDocument() {
   return webview()->mainFrame()->document().to<WebPluginDocument>().plugin();
 }
 
@@ -5001,7 +5001,7 @@ void RenderViewImpl::OnPostMessageEvent(
 
   // If the message contained MessagePorts, create the corresponding endpoints.
   DCHECK_EQ(params.message_port_ids.size(), params.new_routing_ids.size());
-  WebKit::WebMessagePortChannelArray channels(params.message_port_ids.size());
+  blink::WebMessagePortChannelArray channels(params.message_port_ids.size());
   for (size_t i = 0;
        i < params.message_port_ids.size() && i < params.new_routing_ids.size();
        ++i) {
@@ -5235,9 +5235,9 @@ void RenderViewImpl::OnSetRendererPrefs(
 
 #if defined(USE_DEFAULT_RENDER_THEME) || defined(TOOLKIT_GTK)
   if (renderer_prefs.use_custom_colors) {
-    WebColorName name = WebKit::WebColorWebkitFocusRingColor;
-    WebKit::setNamedColors(&name, &renderer_prefs.focus_ring_color, 1);
-    WebKit::setCaretBlinkInterval(renderer_prefs.caret_blink_interval);
+    WebColorName name = blink::WebColorWebkitFocusRingColor;
+    blink::setNamedColors(&name, &renderer_prefs.focus_ring_color, 1);
+    blink::setCaretBlinkInterval(renderer_prefs.caret_blink_interval);
 #if defined(TOOLKIT_GTK)
     ui::NativeTheme::instance()->SetScrollbarColors(
         renderer_prefs.thumb_inactive_color,
@@ -5297,7 +5297,7 @@ void RenderViewImpl::OnGetAllSavableResourceLinksForCurrentPage(
   // Prepare list to storage all savable resource links.
   std::vector<GURL> resources_list;
   std::vector<GURL> referrer_urls_list;
-  std::vector<WebKit::WebReferrerPolicy> referrer_policies_list;
+  std::vector<blink::WebReferrerPolicy> referrer_policies_list;
   std::vector<GURL> frames_list;
   SavableResourcesResult result(&resources_list,
                                 &referrer_urls_list,
@@ -5394,7 +5394,7 @@ void RenderViewImpl::OnSwapOut() {
 
     // Let WebKit know that this view is hidden so it can drop resources and
     // stop compositing.
-    webview()->setVisibilityState(WebKit::WebPageVisibilityStateHidden, false);
+    webview()->setVisibilityState(blink::WebPageVisibilityStateHidden, false);
   }
 
   // It is now safe to show modal dialogs again.
@@ -5403,7 +5403,7 @@ void RenderViewImpl::OnSwapOut() {
   Send(new ViewHostMsg_SwapOut_ACK(routing_id_));
 }
 
-void RenderViewImpl::NavigateToSwappedOutURL(WebKit::WebFrame* frame) {
+void RenderViewImpl::NavigateToSwappedOutURL(blink::WebFrame* frame) {
   // We use loadRequest instead of loadHTMLString because the former commits
   // synchronously.  Otherwise a new navigation can interrupt the navigation
   // to kSwappedOutURL. If that happens to be to the page we had been
@@ -5713,7 +5713,7 @@ void RenderViewImpl::DidHandleKeyEvent() {
   ClearEditCommands();
 }
 
-bool RenderViewImpl::WillHandleMouseEvent(const WebKit::WebMouseEvent& event) {
+bool RenderViewImpl::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
   context_menu_source_type_ = ui::MENU_SOURCE_MOUSE;
   possible_drag_event_info_.event_source =
       ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE;
@@ -5736,13 +5736,13 @@ bool RenderViewImpl::WillHandleMouseEvent(const WebKit::WebMouseEvent& event) {
   return mouse_lock_dispatcher_->WillHandleMouseEvent(event);
 }
 
-bool RenderViewImpl::WillHandleKeyEvent(const WebKit::WebKeyboardEvent& event) {
+bool RenderViewImpl::WillHandleKeyEvent(const blink::WebKeyboardEvent& event) {
   context_menu_source_type_ = ui::MENU_SOURCE_KEYBOARD;
   return false;
 }
 
 bool RenderViewImpl::WillHandleGestureEvent(
-    const WebKit::WebGestureEvent& event) {
+    const blink::WebGestureEvent& event) {
   context_menu_source_type_ = ui::MENU_SOURCE_TOUCH;
   possible_drag_event_info_.event_source =
       ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH;
@@ -5863,7 +5863,7 @@ void RenderViewImpl::OnSetFocus(bool enable) {
 
 void RenderViewImpl::OnImeSetComposition(
     const string16& text,
-    const std::vector<WebKit::WebCompositionUnderline>& underlines,
+    const std::vector<blink::WebCompositionUnderline>& underlines,
     int selection_start,
     int selection_end) {
 #if defined(ENABLE_PLUGINS)
@@ -5947,8 +5947,8 @@ void RenderViewImpl::OnImeConfirmComposition(
       base::i18n::UTF16CharIterator iterator(&last_text);
       int32 i = 0;
       while (iterator.Advance()) {
-        WebKit::WebKeyboardEvent char_event;
-        char_event.type = WebKit::WebInputEvent::Char;
+        blink::WebKeyboardEvent char_event;
+        char_event.type = blink::WebInputEvent::Char;
         char_event.timeStampSeconds = base::Time::Now().ToDoubleT();
         char_event.modifiers = 0;
         char_event.windowsKeyCode = last_text[i];
@@ -6073,12 +6073,12 @@ void RenderViewImpl::GetCompositionCharacterBounds(
   if (character_count == 0)
     return;
 
-  WebKit::WebFrame* frame = webview()->focusedFrame();
+  blink::WebFrame* frame = webview()->focusedFrame();
   if (!frame)
     return;
 
   bounds->reserve(character_count);
-  WebKit::WebRect webrect;
+  blink::WebRect webrect;
   for (size_t i = 0; i < character_count; ++i) {
     if (!frame->firstRectForCharacterRange(start_offset + i, 1, webrect)) {
       DLOG(ERROR) << "Could not retrieve character rectangle at " << i;
@@ -6177,14 +6177,14 @@ bool RenderViewImpl::ScheduleFileChooser(
   return true;
 }
 
-WebKit::WebGeolocationClient* RenderViewImpl::geolocationClient() {
+blink::WebGeolocationClient* RenderViewImpl::geolocationClient() {
   if (!geolocation_dispatcher_)
     geolocation_dispatcher_ = new GeolocationDispatcher(this);
   return geolocation_dispatcher_;
 }
 
-WebKit::WebSpeechInputController* RenderViewImpl::speechInputController(
-    WebKit::WebSpeechInputListener* listener) {
+blink::WebSpeechInputController* RenderViewImpl::speechInputController(
+    blink::WebSpeechInputListener* listener) {
 #if defined(ENABLE_INPUT_SPEECH)
   if (!input_tag_speech_dispatcher_)
     input_tag_speech_dispatcher_ =
@@ -6193,7 +6193,7 @@ WebKit::WebSpeechInputController* RenderViewImpl::speechInputController(
   return input_tag_speech_dispatcher_;
 }
 
-WebKit::WebSpeechRecognizer* RenderViewImpl::speechRecognizer() {
+blink::WebSpeechRecognizer* RenderViewImpl::speechRecognizer() {
   if (!speech_recognition_dispatcher_)
     speech_recognition_dispatcher_ = new SpeechRecognitionDispatcher(this);
   return speech_recognition_dispatcher_;
@@ -6253,11 +6253,11 @@ void RenderViewImpl::registerProtocolHandler(const WebString& scheme,
                                                user_gesture));
 }
 
-WebKit::WebPageVisibilityState RenderViewImpl::visibilityState() const {
-  WebKit::WebPageVisibilityState current_state = is_hidden() ?
-      WebKit::WebPageVisibilityStateHidden :
-      WebKit::WebPageVisibilityStateVisible;
-  WebKit::WebPageVisibilityState override_state = current_state;
+blink::WebPageVisibilityState RenderViewImpl::visibilityState() const {
+  blink::WebPageVisibilityState current_state = is_hidden() ?
+      blink::WebPageVisibilityStateHidden :
+      blink::WebPageVisibilityStateVisible;
+  blink::WebPageVisibilityState override_state = current_state;
   if (GetContentClient()->renderer()->
           ShouldOverridePageVisibilityState(this,
                                             &override_state))
@@ -6265,7 +6265,7 @@ WebKit::WebPageVisibilityState RenderViewImpl::visibilityState() const {
   return current_state;
 }
 
-WebKit::WebUserMediaClient* RenderViewImpl::userMediaClient() {
+blink::WebUserMediaClient* RenderViewImpl::userMediaClient() {
   // This can happen in tests, in which case it's OK to return NULL.
   if (!InitializeMediaStreamClient())
     return NULL;
@@ -6273,7 +6273,7 @@ WebKit::WebUserMediaClient* RenderViewImpl::userMediaClient() {
   return web_user_media_client_;
 }
 
-WebKit::WebMIDIClient* RenderViewImpl::webMIDIClient() {
+blink::WebMIDIClient* RenderViewImpl::webMIDIClient() {
   if (!midi_dispatcher_)
     midi_dispatcher_ = new MIDIDispatcher(this);
   return midi_dispatcher_;
@@ -6288,7 +6288,7 @@ void RenderViewImpl::draggableRegionsChanged() {
 
 WebMediaPlayer* RenderViewImpl::CreateWebMediaPlayerForMediaStream(
     WebFrame* frame,
-    const WebKit::WebURL& url,
+    const blink::WebURL& url,
     WebMediaPlayerClient* client) {
 #if defined(ENABLE_WEBRTC)
   if (!InitializeMediaStreamClient()) {
@@ -6358,8 +6358,8 @@ void RenderViewImpl::LaunchAndroidContentIntent(const GURL& intent,
 }
 
 bool RenderViewImpl::openDateTimeChooser(
-    const WebKit::WebDateTimeChooserParams& params,
-    WebKit::WebDateTimeChooserCompletion* completion) {
+    const blink::WebDateTimeChooserParams& params,
+    blink::WebDateTimeChooserCompletion* completion) {
   date_time_picker_client_.reset(
       new RendererDateTimePicker(this, params, completion));
   return date_time_picker_client_->Open();
@@ -6367,7 +6367,7 @@ bool RenderViewImpl::openDateTimeChooser(
 
 WebMediaPlayer* RenderViewImpl::CreateAndroidWebMediaPlayer(
       WebFrame* frame,
-      const WebKit::WebURL& url,
+      const blink::WebURL& url,
       WebMediaPlayerClient* client) {
   GpuChannelHost* gpu_channel_host =
       RenderThreadImpl::current()->EstablishGpuChannelSync(
@@ -6500,7 +6500,7 @@ void RenderViewImpl::OnDisownOpener() {
 
 #if defined(OS_ANDROID)
 bool RenderViewImpl::didTapMultipleTargets(
-    const WebKit::WebGestureEvent& event,
+    const blink::WebGestureEvent& event,
     const WebVector<WebRect>& target_rects) {
   // Never show a disambiguation popup when accessibility is enabled,
   // as this interferes with "touch exploration".

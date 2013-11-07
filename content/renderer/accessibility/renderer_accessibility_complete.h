@@ -16,7 +16,7 @@
 #include "third_party/WebKit/public/web/WebAXEnums.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 
-namespace WebKit {
+namespace blink {
 class WebDocument;
 class WebNode;
 };
@@ -40,12 +40,12 @@ class CONTENT_EXPORT RendererAccessibilityComplete
 
   // RenderView::Observer implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void FocusedNodeChanged(const WebKit::WebNode& node) OVERRIDE;
-  virtual void DidFinishLoad(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void FocusedNodeChanged(const blink::WebNode& node) OVERRIDE;
+  virtual void DidFinishLoad(blink::WebFrame* frame) OVERRIDE;
 
   // RendererAccessibility.
   virtual void HandleWebAccessibilityEvent(
-      const WebKit::WebAXObject& obj, WebKit::WebAXEvent event) OVERRIDE;
+      const blink::WebAXObject& obj, blink::WebAXEvent event) OVERRIDE;
 
   // In order to keep track of what nodes the browser knows about, we keep a
   // representation of the browser tree - just IDs and parent/child
@@ -78,7 +78,7 @@ class CONTENT_EXPORT RendererAccessibilityComplete
   // |obj|, based on what object ids we know the browser already has.
   // The set of ids serialized is added to |ids_serialized|, and any
   // ids previously in that set are not serialized again.
-  void SerializeChangedNodes(const WebKit::WebAXObject& obj,
+  void SerializeChangedNodes(const blink::WebAXObject& obj,
                              std::vector<AccessibilityNodeData>* dst,
                              std::set<int>* ids_serialized);
 
@@ -97,19 +97,19 @@ class CONTENT_EXPORT RendererAccessibilityComplete
   void OnFatalError();
 
   // Checks if a WebKit accessibility object is an editable text node.
-  bool IsEditableText(const WebKit::WebAXObject& node);
+  bool IsEditableText(const blink::WebAXObject& node);
 
   // Recursively explore the tree of WebKit accessibility objects rooted
   // at |src|, and for each editable text node encountered, add a
   // corresponding WebAccessibility node as a child of |dst|.
   void RecursiveAddEditableTextNodesToTree(
-      const WebKit::WebAXObject& src,
+      const blink::WebAXObject& src,
       AccessibilityNodeData* dst);
 
   // Build a tree of serializable AccessibilityNodeData nodes to send to the
   // browser process, given a WebAXObject node from WebKit.
   // Modifies |dst| in-place, it's assumed to be empty.
-  void BuildAccessibilityTree(const WebKit::WebAXObject& src,
+  void BuildAccessibilityTree(const blink::WebAXObject& src,
                               bool include_children,
                               AccessibilityNodeData* dst);
 

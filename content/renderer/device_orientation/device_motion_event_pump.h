@@ -10,13 +10,13 @@
 #include "content/renderer/shared_memory_seqlock_reader.h"
 #include "third_party/WebKit/public/platform/WebDeviceMotionData.h"
 
-namespace WebKit {
+namespace blink {
 class WebDeviceMotionListener;
 }
 
 namespace content {
 
-typedef SharedMemorySeqLockReader<WebKit::WebDeviceMotionData>
+typedef SharedMemorySeqLockReader<blink::WebDeviceMotionData>
     DeviceMotionSharedMemoryReader;
 
 class CONTENT_EXPORT DeviceMotionEventPump : public DeviceSensorEventPump {
@@ -27,7 +27,7 @@ class CONTENT_EXPORT DeviceMotionEventPump : public DeviceSensorEventPump {
 
   // Sets the listener to receive updates for device motion data at
   // regular intervals. Returns true if the registration was successful.
-  bool SetListener(WebKit::WebDeviceMotionListener* listener);
+  bool SetListener(blink::WebDeviceMotionListener* listener);
 
   // RenderProcessObserver implementation.
   virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -38,7 +38,7 @@ class CONTENT_EXPORT DeviceMotionEventPump : public DeviceSensorEventPump {
   virtual bool SendStartMessage() OVERRIDE;
   virtual bool SendStopMessage() OVERRIDE;
 
-  WebKit::WebDeviceMotionListener* listener_;
+  blink::WebDeviceMotionListener* listener_;
   scoped_ptr<DeviceMotionSharedMemoryReader> reader_;
 };
 

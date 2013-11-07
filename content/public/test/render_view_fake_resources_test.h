@@ -58,7 +58,7 @@ namespace IPC {
 class Channel;
 }
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
 class WebHistoryItem;
 }
@@ -104,10 +104,10 @@ class RenderViewFakeResourcesTest : public ::testing::Test,
   // forward navigations, the caller needs to capture the WebHistoryItem
   // for the page to go forward to (before going back) and pass it to
   // this method.  The WebHistoryItem is available from the WebFrame.
-  void GoForward(const WebKit::WebHistoryItem& history_item);
+  void GoForward(const blink::WebHistoryItem& history_item);
 
   // Returns the main WebFrame for our RenderView.
-  WebKit::WebFrame* GetMainFrame();
+  blink::WebFrame* GetMainFrame();
 
   // IPC message handlers below
 
@@ -142,7 +142,7 @@ class RenderViewFakeResourcesTest : public ::testing::Test,
 
  private:
   // A helper for GoBack and GoForward.
-  void GoToOffset(int offset, const WebKit::WebHistoryItem& history_item);
+  void GoToOffset(int offset, const blink::WebHistoryItem& history_item);
 
   // The previous state for whether sandbox support was enabled in
   // RenderViewWebKitPlatformSupportImpl.

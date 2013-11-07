@@ -44,7 +44,7 @@ struct CONTENT_EXPORT DropData {
 
   // Referrer policy to use when dragging a link out of the webview results in
   // a download.
-  WebKit::WebReferrerPolicy referrer_policy;
+  blink::WebReferrerPolicy referrer_policy;
 
   // User is dropping one or more files on the webview.
   std::vector<FileInfo> filenames;

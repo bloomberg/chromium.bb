@@ -17,7 +17,7 @@ namespace content {
 class HostArrayBufferVar : public ppapi::ArrayBufferVar {
  public:
   explicit HostArrayBufferVar(uint32 size_in_bytes);
-  explicit HostArrayBufferVar(const WebKit::WebArrayBuffer& buffer);
+  explicit HostArrayBufferVar(const blink::WebArrayBuffer& buffer);
   explicit HostArrayBufferVar(uint32 size_in_bytes,
                               base::SharedMemoryHandle handle);
 
@@ -30,12 +30,12 @@ class HostArrayBufferVar : public ppapi::ArrayBufferVar {
       int* host_shm_handle_id,
       base::SharedMemoryHandle* plugin_shm_handle) OVERRIDE;
 
-  WebKit::WebArrayBuffer& webkit_buffer() { return buffer_; }
+  blink::WebArrayBuffer& webkit_buffer() { return buffer_; }
 
  private:
   virtual ~HostArrayBufferVar();
 
-  WebKit::WebArrayBuffer buffer_;
+  blink::WebArrayBuffer buffer_;
   // Tracks whether the data in the buffer is valid.
   bool valid_;
 

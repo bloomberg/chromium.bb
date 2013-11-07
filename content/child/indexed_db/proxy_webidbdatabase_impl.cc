@@ -16,14 +16,14 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "webkit/child/worker_task_runner.h"
 
-using WebKit::WebIDBCallbacks;
-using WebKit::WebIDBDatabaseCallbacks;
-using WebKit::WebIDBMetadata;
-using WebKit::WebIDBKey;
-using WebKit::WebIDBKeyPath;
-using WebKit::WebIDBKeyRange;
-using WebKit::WebString;
-using WebKit::WebVector;
+using blink::WebIDBCallbacks;
+using blink::WebIDBDatabaseCallbacks;
+using blink::WebIDBMetadata;
+using blink::WebIDBKey;
+using blink::WebIDBKeyPath;
+using blink::WebIDBKeyRange;
+using blink::WebString;
+using blink::WebVector;
 using webkit_glue::WorkerTaskRunner;
 
 namespace content {
@@ -116,7 +116,7 @@ void RendererWebIDBDatabaseImpl::get(
 void RendererWebIDBDatabaseImpl::put(
     long long transaction_id,
     long long object_store_id,
-    const WebKit::WebData& value,
+    const blink::WebData& value,
     const WebIDBKey& key,
     PutMode put_mode,
     WebIDBCallbacks* callbacks,

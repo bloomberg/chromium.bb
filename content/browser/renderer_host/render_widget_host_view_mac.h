@@ -114,7 +114,7 @@ class RenderWidgetHostViewMacEditCommandHelper;
   string16 markedText_;
 
   // Underline information of the |markedText_|.
-  std::vector<WebKit::WebCompositionUnderline> underlines_;
+  std::vector<blink::WebCompositionUnderline> underlines_;
 
   // Indicates if doCommandBySelector method receives any edit command when
   // handling a key down event.
@@ -304,7 +304,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   virtual void AcceleratedSurfaceRelease() OVERRIDE;
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) OVERRIDE;
   virtual void AboutToWaitForBackingStoreMsg() OVERRIDE;
-  virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
+  virtual void GetScreenInfo(blink::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetBoundsInRootWindow() OVERRIDE;
   virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;
 
@@ -315,7 +315,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
   virtual void UnhandledWheelEvent(
-      const WebKit::WebMouseWheelEvent& event) OVERRIDE;
+      const blink::WebMouseWheelEvent& event) OVERRIDE;
 
   // IPC::Sender implementation.
   virtual bool Send(IPC::Message* message) OVERRIDE;
@@ -326,7 +326,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   virtual void ReleaseReferencesToSoftwareFrame() OVERRIDE;
 
   // Forwards the mouse event to the renderer.
-  void ForwardMouseEvent(const WebKit::WebMouseEvent& event);
+  void ForwardMouseEvent(const blink::WebMouseEvent& event);
 
   void KillSelf();
 

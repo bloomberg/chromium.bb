@@ -13,7 +13,7 @@
 #include "third_party/npapi/bindings/nphostapi.h"
 #include "webkit/glue/webkit_glue.h"
 
-using WebKit::WebBindings;
+using blink::WebBindings;
 
 namespace content {
 

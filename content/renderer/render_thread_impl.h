@@ -27,7 +27,7 @@ class GrContext;
 class SkBitmap;
 struct ViewMsg_New_Params;
 
-namespace WebKit {
+namespace blink {
 class WebGamepads;
 class WebGraphicsContext3D;
 class WebMediaStreamCenter;
@@ -224,8 +224,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 
   // Creates the embedder implementation of WebMediaStreamCenter.
   // The resulting object is owned by WebKit and deleted by WebKit at tear-down.
-  WebKit::WebMediaStreamCenter* CreateMediaStreamCenter(
-      WebKit::WebMediaStreamCenterClient* client);
+  blink::WebMediaStreamCenter* CreateMediaStreamCenter(
+      blink::WebMediaStreamCenterClient* client);
 
   // Returns a factory used for creating RTC PeerConnection objects.
   MediaStreamDependencyFactory* GetMediaStreamDependencyFactory();
@@ -337,7 +337,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
                                const std::vector<float>& new_touchscreen);
 
   // Retrieve current gamepad data.
-  void SampleGamepads(WebKit::WebGamepads* data);
+  void SampleGamepads(blink::WebGamepads* data);
 
   // Get the browser process's notion of the renderer process's ID.
   // This is the first argument to RenderWidgetHost::FromID. Ideally
@@ -395,7 +395,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   scoped_ptr<RendererWebKitPlatformSupportImpl> webkit_platform_support_;
 
   // Used on the render thread and deleted by WebKit at shutdown.
-  WebKit::WebMediaStreamCenter* media_stream_center_;
+  blink::WebMediaStreamCenter* media_stream_center_;
 
   // Used on the renderer and IPC threads.
   scoped_refptr<DBMessageFilter> db_message_filter_;

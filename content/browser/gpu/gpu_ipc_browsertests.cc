@@ -35,7 +35,7 @@ class ContextTestBase : public content::ContentBrowserTest {
     context_.reset(
         WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
             gpu_channel_host.get(),
-            WebKit::WebGraphicsContext3D::Attributes(),
+            blink::WebGraphicsContext3D::Attributes(),
             GURL()));
     CHECK(context_.get());
     context_->makeContextCurrent();
@@ -120,7 +120,7 @@ class BrowserGpuChannelHostFactoryTest : public ContextTestBase {
     return make_scoped_ptr(
         WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
             GetGpuChannel(),
-            WebKit::WebGraphicsContext3D::Attributes(),
+            blink::WebGraphicsContext3D::Attributes(),
             GURL()));
   }
 };

@@ -29,7 +29,7 @@ class SignalTest : public ContextTestBase {
   }
 
   // These tests should time out if the callback doesn't get called.
-  void TestSignalQuery(WebKit::WebGLId query) {
+  void TestSignalQuery(blink::WebGLId query) {
     base::RunLoop run_loop;
     context_support_->SignalQuery(
         query,
@@ -59,7 +59,7 @@ CONTEXT_TEST_F(SignalTest, BasicSignalQueryTest) {
 };
 
 CONTEXT_TEST_F(SignalTest, SignalQueryUnboundTest) {
-  WebKit::WebGLId query = context_->createQueryEXT();
+  blink::WebGLId query = context_->createQueryEXT();
   TestSignalQuery(query);
   context_->deleteQueryEXT(query);
 };

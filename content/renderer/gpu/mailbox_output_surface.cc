@@ -53,7 +53,7 @@ MailboxOutputSurface::~MailboxOutputSurface() {
 void MailboxOutputSurface::EnsureBackbuffer() {
   is_backbuffer_discarded_ = false;
 
-  WebKit::WebGraphicsContext3D* context3d = context_provider_->Context3d();
+  blink::WebGraphicsContext3D* context3d = context_provider_->Context3d();
 
   if (!current_backing_.texture_id) {
     // Find a texture of matching size to recycle.
@@ -103,7 +103,7 @@ void MailboxOutputSurface::EnsureBackbuffer() {
 void MailboxOutputSurface::DiscardBackbuffer() {
   is_backbuffer_discarded_ = true;
 
-  WebKit::WebGraphicsContext3D* context3d = context_provider_->Context3d();
+  blink::WebGraphicsContext3D* context3d = context_provider_->Context3d();
 
   if (current_backing_.texture_id) {
     context3d->deleteTexture(current_backing_.texture_id);
@@ -137,7 +137,7 @@ void MailboxOutputSurface::BindFramebuffer() {
   EnsureBackbuffer();
   DCHECK(current_backing_.texture_id);
 
-  WebKit::WebGraphicsContext3D* context3d = context_provider_->Context3d();
+  blink::WebGraphicsContext3D* context3d = context_provider_->Context3d();
 
   if (!fbo_)
     fbo_ = context3d->createFramebuffer();

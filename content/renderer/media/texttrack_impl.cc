@@ -10,7 +10,7 @@
 
 namespace content {
 
-TextTrackImpl::TextTrackImpl(WebKit::WebMediaPlayerClient* client,
+TextTrackImpl::TextTrackImpl(blink::WebMediaPlayerClient* client,
                              WebInbandTextTrackImpl* text_track)
     : client_(client), text_track_(text_track) {
   client_->addTextTrack(text_track_.get());
@@ -26,12 +26,12 @@ void TextTrackImpl::addWebVTTCue(const base::TimeDelta& start,
                                  const std::string& id,
                                  const std::string& content,
                                  const std::string& settings) {
-  if (WebKit::WebInbandTextTrackClient* client = text_track_->client())
+  if (blink::WebInbandTextTrackClient* client = text_track_->client())
     client->addWebVTTCue(start.InSecondsF(),
                          end.InSecondsF(),
-                         WebKit::WebString::fromUTF8(id),
-                         WebKit::WebString::fromUTF8(content),
-                         WebKit::WebString::fromUTF8(settings));
+                         blink::WebString::fromUTF8(id),
+                         blink::WebString::fromUTF8(content),
+                         blink::WebString::fromUTF8(settings));
 }
 
 }  // namespace content

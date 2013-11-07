@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_GAMEPAD_GAMEPAD_DATA_FETCHER_H_
 #define CONTENT_BROWSER_GAMEPAD_GAMEPAD_DATA_FETCHER_H_
 
-namespace WebKit {
+namespace blink {
 class WebGamepads;
 }
 
@@ -16,7 +16,7 @@ namespace content {
 class GamepadDataFetcher {
  public:
   virtual ~GamepadDataFetcher() {}
-  virtual void GetGamepadData(WebKit::WebGamepads* pads,
+  virtual void GetGamepadData(blink::WebGamepads* pads,
                               bool devices_changed_hint) = 0;
   virtual void PauseHint(bool paused) {}
 };

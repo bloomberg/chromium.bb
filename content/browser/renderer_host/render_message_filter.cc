@@ -497,7 +497,7 @@ void RenderMessageFilter::OnCreateWindow(
 }
 
 void RenderMessageFilter::OnCreateWidget(int opener_id,
-                                         WebKit::WebPopupType popup_type,
+                                         blink::WebPopupType popup_type,
                                          int* route_id,
                                          int* surface_id) {
   render_widget_helper_->CreateNewWidget(
@@ -857,7 +857,7 @@ void RenderMessageFilter::OnCheckNotificationPermission(
       CheckDesktopNotificationPermission(source_origin, resource_context_,
                                          render_process_id_);
 #else
-  *result = WebKit::WebNotificationPresenter::PermissionAllowed;
+  *result = blink::WebNotificationPresenter::PermissionAllowed;
 #endif
 }
 

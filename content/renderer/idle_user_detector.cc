@@ -25,7 +25,7 @@ bool IdleUserDetector::OnMessageReceived(const IPC::Message& message) {
   return false;
 }
 
-void IdleUserDetector::OnHandleInputEvent(const WebKit::WebInputEvent* event,
+void IdleUserDetector::OnHandleInputEvent(const blink::WebInputEvent* event,
                                           const ui::LatencyInfo& latency_info,
                                           bool is_keyboard_shortcut) {
   if (GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden()) {

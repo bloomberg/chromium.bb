@@ -223,7 +223,7 @@ WARN_UNUSED_RESULT static bool IsSchemaKnown(LevelDBDatabase* db, bool* known) {
   }
 
   const uint32 latest_known_data_version =
-      WebKit::kSerializedScriptValueVersion;
+      blink::kSerializedScriptValueVersion;
   int64 db_data_version = 0;
   ok = GetInt(db, DataVersionKey::Encode(), &db_data_version, &found);
   if (!ok)
@@ -246,7 +246,7 @@ WARN_UNUSED_RESULT static bool SetUpMetadata(
     LevelDBDatabase* db,
     const std::string& origin_identifier) {
   const uint32 latest_known_data_version =
-      WebKit::kSerializedScriptValueVersion;
+      blink::kSerializedScriptValueVersion;
   const std::string schema_version_key = SchemaVersionKey::Encode();
   const std::string data_version_key = DataVersionKey::Encode();
 
@@ -302,7 +302,7 @@ WARN_UNUSED_RESULT static bool SetUpMetadata(
     if (db_schema_version < 2) {
       db_schema_version = 2;
       PutInt(transaction.get(), schema_version_key, db_schema_version);
-      db_data_version = WebKit::kSerializedScriptValueVersion;
+      db_data_version = blink::kSerializedScriptValueVersion;
       PutInt(transaction.get(), data_version_key, db_data_version);
     }
   }
@@ -424,10 +424,10 @@ enum IndexedDBBackingStoreOpenResult {
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     const GURL& origin_url,
     const base::FilePath& path_base,
-    WebKit::WebIDBCallbacks::DataLoss* data_loss,
+    blink::WebIDBCallbacks::DataLoss* data_loss,
     std::string* data_loss_message,
     bool* disk_full) {
-  *data_loss = WebKit::WebIDBCallbacks::DataLossNone;
+  *data_loss = blink::WebIDBCallbacks::DataLossNone;
   DefaultLevelDBFactory leveldb_factory;
   return IndexedDBBackingStore::Open(origin_url,
                                      path_base,
@@ -477,13 +477,13 @@ static bool IsPathTooLong(const base::FilePath& leveldb_dir) {
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     const GURL& origin_url,
     const base::FilePath& path_base,
-    WebKit::WebIDBCallbacks::DataLoss* data_loss,
+    blink::WebIDBCallbacks::DataLoss* data_loss,
     std::string* data_loss_message,
     bool* is_disk_full,
     LevelDBFactory* leveldb_factory) {
   IDB_TRACE("IndexedDBBackingStore::Open");
   DCHECK(!path_base.empty());
-  *data_loss = WebKit::WebIDBCallbacks::DataLossNone;
+  *data_loss = blink::WebIDBCallbacks::DataLossNone;
   *data_loss_message = "";
   *is_disk_full = false;
 
@@ -516,7 +516,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     if (leveldb_env::IndicatesDiskFull(status)) {
       *is_disk_full = true;
     } else if (leveldb_env::IsCorruption(status)) {
-      *data_loss = WebKit::WebIDBCallbacks::DataLossTotal;
+      *data_loss = blink::WebIDBCallbacks::DataLossTotal;
       *data_loss_message = leveldb_env::GetCorruptionMessage(status);
     }
   }
@@ -530,14 +530,14 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
       HistogramOpenStatus(
           INDEXED_DB_BACKING_STORE_OPEN_FAILED_IO_ERROR_CHECKING_SCHEMA);
       db.reset();
-      *data_loss = WebKit::WebIDBCallbacks::DataLossTotal;
+      *data_loss = blink::WebIDBCallbacks::DataLossTotal;
       *data_loss_message = "I/O error checking schema";
     } else if (!is_schema_known) {
       LOG(ERROR) << "IndexedDB backing store had unknown schema, treating it "
                     "as failure to open";
       HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_FAILED_UNKNOWN_SCHEMA);
       db.reset();
-      *data_loss = WebKit::WebIDBCallbacks::DataLossTotal;
+      *data_loss = blink::WebIDBCallbacks::DataLossTotal;
       *data_loss_message = "Unknown schema";
     }
   }
@@ -965,7 +965,7 @@ bool IndexedDBBackingStore::GetObjectStores(
       // (2) Later, null vs. string vs. array was stored in the key_path itself.
       // So this check is only relevant for string-type key_paths.
       if (!has_key_path &&
-          (key_path.type() == WebKit::WebIDBKeyPathTypeString &&
+          (key_path.type() == blink::WebIDBKeyPathTypeString &&
            !key_path.string().empty())) {
         INTERNAL_CONSISTENCY_ERROR(GET_OBJECT_STORES);
         break;
@@ -1324,7 +1324,7 @@ bool IndexedDBBackingStore::GetKeyGeneratorCurrentNumber(
       return false;
     }
     scoped_ptr<IndexedDBKey> user_key = data_key.user_key();
-    if (user_key->type() == WebKit::WebIDBKeyTypeNumber) {
+    if (user_key->type() == blink::WebIDBKeyTypeNumber) {
       int64 n = static_cast<int64>(user_key->number());
       if (n > max_numeric_key)
         max_numeric_key = n;

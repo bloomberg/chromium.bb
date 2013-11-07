@@ -32,7 +32,7 @@ BrowserPluginCompositingHelper::SwapBuffersInfo::SwapBuffersInfo()
 }
 
 BrowserPluginCompositingHelper::BrowserPluginCompositingHelper(
-    WebKit::WebPluginContainer* container,
+    blink::WebPluginContainer* container,
     BrowserPluginManager* manager,
     int instance_id,
     int host_routing_id)

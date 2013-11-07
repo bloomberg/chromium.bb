@@ -153,7 +153,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
 #elif defined(OS_WIN) && !defined(USE_AURA)
   virtual void WillWmDestroy() OVERRIDE;
 #endif
-  virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE {}
+  virtual void GetScreenInfo(blink::WebScreenInfo* results) OVERRIDE {}
   virtual gfx::Rect GetBoundsInRootWindow() OVERRIDE;
   virtual void SetHasHorizontalScrollbar(
       bool has_horizontal_scrollbar) OVERRIDE { }

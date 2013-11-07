@@ -18,18 +18,18 @@
 #include "third_party/WebKit/public/web/WebSpeechInputListener.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-using WebKit::WebDocument;
-using WebKit::WebElement;
-using WebKit::WebFrame;
-using WebKit::WebInputElement;
-using WebKit::WebNode;
-using WebKit::WebView;
+using blink::WebDocument;
+using blink::WebElement;
+using blink::WebFrame;
+using blink::WebInputElement;
+using blink::WebNode;
+using blink::WebView;
 
 namespace content {
 
 InputTagSpeechDispatcher::InputTagSpeechDispatcher(
     RenderViewImpl* render_view,
-    WebKit::WebSpeechInputListener* listener)
+    blink::WebSpeechInputListener* listener)
     : RenderViewObserver(render_view),
       listener_(listener) {
 }
@@ -53,10 +53,10 @@ bool InputTagSpeechDispatcher::OnMessageReceived(
 
 bool InputTagSpeechDispatcher::startRecognition(
     int request_id,
-    const WebKit::WebRect& element_rect,
-    const WebKit::WebString& language,
-    const WebKit::WebString& grammar,
-    const WebKit::WebSecurityOrigin& origin) {
+    const blink::WebRect& element_rect,
+    const blink::WebString& language,
+    const blink::WebString& grammar,
+    const blink::WebSecurityOrigin& origin) {
   DVLOG(1) << "InputTagSpeechDispatcher::startRecognition enter";
 
   InputTagSpeechHostMsg_StartRecognition_Params params;
@@ -92,7 +92,7 @@ void InputTagSpeechDispatcher::OnSpeechRecognitionResults(
   DCHECK_EQ(results.size(), 1U);
 
   const SpeechRecognitionResult& result = results[0];
-  WebKit::WebSpeechInputResultArray webkit_result(result.hypotheses.size());
+  blink::WebSpeechInputResultArray webkit_result(result.hypotheses.size());
   for (size_t i = 0; i < result.hypotheses.size(); ++i) {
     webkit_result[i].assign(result.hypotheses[i].utterance,
         result.hypotheses[i].confidence);
@@ -131,8 +131,8 @@ void InputTagSpeechDispatcher::OnSpeechRecognitionToggleSpeechInput() {
   if (focused_node.isNull() || !focused_node.isElementNode())
     return;
 
-  WebKit::WebElement element = focused_node.to<WebKit::WebElement>();
-  WebKit::WebInputElement* input_element = WebKit::toWebInputElement(&element);
+  blink::WebElement element = focused_node.to<blink::WebElement>();
+  blink::WebInputElement* input_element = blink::toWebInputElement(&element);
   if (!input_element)
     return;
   if (!input_element->isSpeechInputEnabled())

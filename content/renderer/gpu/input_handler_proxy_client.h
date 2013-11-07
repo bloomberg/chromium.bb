@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_GPU_INPUT_HANDLER_PROXY_CLIENT_H_
 #define CONTENT_RENDERER_GPU_INPUT_HANDLER_PROXY_CLIENT_H_
 
-namespace WebKit {
+namespace blink {
 class WebGestureCurve;
 struct WebActiveWheelFlingParameters;
 struct WebFloatPoint;
@@ -23,14 +23,14 @@ class InputHandlerProxyClient {
   // Transfers an active wheel fling animation initiated by a previously
   // handled input event out to the client.
   virtual void TransferActiveWheelFlingAnimation(
-      const WebKit::WebActiveWheelFlingParameters& params) = 0;
+      const blink::WebActiveWheelFlingParameters& params) = 0;
 
   // Creates a new fling animation curve instance for device |device_source|
   // with |velocity| and already scrolled |cumulative_scroll| pixels.
-  virtual WebKit::WebGestureCurve* CreateFlingAnimationCurve(
+  virtual blink::WebGestureCurve* CreateFlingAnimationCurve(
       int device_source,
-      const WebKit::WebFloatPoint& velocity,
-      const WebKit::WebSize& cumulative_scroll) = 0;
+      const blink::WebFloatPoint& velocity,
+      const blink::WebSize& cumulative_scroll) = 0;
 
   virtual void DidOverscroll(const cc::DidOverscrollParams& params) = 0;
 

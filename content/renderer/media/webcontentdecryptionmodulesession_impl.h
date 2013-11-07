@@ -21,7 +21,7 @@ class MediaKeys;
 namespace content {
 
 class WebContentDecryptionModuleSessionImpl
-    : public WebKit::WebContentDecryptionModuleSession {
+    : public blink::WebContentDecryptionModuleSession {
  public:
   typedef base::Callback<void(const std::string& session_id)> SessionClosedCB;
 
@@ -31,9 +31,9 @@ class WebContentDecryptionModuleSessionImpl
       const SessionClosedCB& session_closed_cb);
   virtual ~WebContentDecryptionModuleSessionImpl();
 
-  // WebKit::WebContentDecryptionModuleSession implementation.
-  virtual WebKit::WebString sessionId() const OVERRIDE;
-  virtual void generateKeyRequest(const WebKit::WebString& mime_type,
+  // blink::WebContentDecryptionModuleSession implementation.
+  virtual blink::WebString sessionId() const OVERRIDE;
+  virtual void generateKeyRequest(const blink::WebString& mime_type,
                                   const uint8* init_data,
                                   size_t init_data_length) OVERRIDE;
   virtual void update(const uint8* key, size_t key_length) OVERRIDE;

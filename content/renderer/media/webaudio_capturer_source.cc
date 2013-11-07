@@ -85,7 +85,7 @@ void WebAudioCapturerSource::Stop() {
 }
 
 void WebAudioCapturerSource::consumeAudio(
-    const WebKit::WebVector<const float*>& audio_data,
+    const blink::WebVector<const float*>& audio_data,
     size_t number_of_frames) {
   base::AutoLock auto_lock(lock_);
   if (!track_)

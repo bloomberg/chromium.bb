@@ -11,7 +11,7 @@
 #include "content/renderer/render_widget_fullscreen.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
 
-namespace WebKit {
+namespace blink {
 class WebLayer;
 }
 
@@ -28,15 +28,15 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
       int32 opener_id,
       PepperPluginInstanceImpl* plugin,
       const GURL& active_url,
-      const WebKit::WebScreenInfo& screen_info);
+      const blink::WebScreenInfo& screen_info);
 
   // pepper::FullscreenContainer API.
   virtual void Invalidate() OVERRIDE;
-  virtual void InvalidateRect(const WebKit::WebRect& rect) OVERRIDE;
-  virtual void ScrollRect(int dx, int dy, const WebKit::WebRect& rect) OVERRIDE;
+  virtual void InvalidateRect(const blink::WebRect& rect) OVERRIDE;
+  virtual void ScrollRect(int dx, int dy, const blink::WebRect& rect) OVERRIDE;
   virtual void Destroy() OVERRIDE;
-  virtual void DidChangeCursor(const WebKit::WebCursorInfo& cursor) OVERRIDE;
-  virtual void SetLayer(WebKit::WebLayer* layer) OVERRIDE;
+  virtual void DidChangeCursor(const blink::WebCursorInfo& cursor) OVERRIDE;
+  virtual void SetLayer(blink::WebLayer* layer) OVERRIDE;
 
   // IPC::Listener implementation. This overrides the implementation
   // in RenderWidgetFullscreen.
@@ -54,7 +54,7 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
  protected:
   RenderWidgetFullscreenPepper(PepperPluginInstanceImpl* plugin,
                                const GURL& active_url,
-                               const WebKit::WebScreenInfo& screen_info);
+                               const blink::WebScreenInfo& screen_info);
   virtual ~RenderWidgetFullscreenPepper();
 
   // RenderWidget API.
@@ -70,7 +70,7 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   virtual void OnResize(const ViewMsg_Resize_Params& params) OVERRIDE;
 
   // RenderWidgetFullscreen API.
-  virtual WebKit::WebWidget* CreateWebWidget() OVERRIDE;
+  virtual blink::WebWidget* CreateWebWidget() OVERRIDE;
 
   // RenderWidget overrides.
   virtual GURL GetURLForGraphicsContext3D() OVERRIDE;
@@ -83,7 +83,7 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   // The plugin instance this widget wraps.
   PepperPluginInstanceImpl* plugin_;
 
-  WebKit::WebLayer* layer_;
+  blink::WebLayer* layer_;
 
   scoped_ptr<MouseLockDispatcher> mouse_lock_dispatcher_;
 

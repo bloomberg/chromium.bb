@@ -36,7 +36,7 @@ CreateWebGraphicsContext3D(scoped_refptr<gfx::GLSurface> surface) {
 
   const gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
 
-  WebKit::WebGraphicsContext3D::Attributes attributes;
+  blink::WebGraphicsContext3D::Attributes attributes;
   attributes.antialias = false;
   attributes.shareResources = true;
   attributes.noAutomaticFlushes = true;

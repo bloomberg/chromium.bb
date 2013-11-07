@@ -22,7 +22,7 @@ class NavigationState;
 // The RenderView stores an instance of this class in the "extra data" of each
 // WebDataSource (see RenderView::DidCreateDataSource).
 class CONTENT_EXPORT DocumentState
-    : NON_EXPORTED_BASE(public WebKit::WebDataSource::ExtraData),
+    : NON_EXPORTED_BASE(public blink::WebDataSource::ExtraData),
       public base::SupportsUserData {
  public:
   // The exact values of this enum are used in histograms, so new values must be
@@ -43,7 +43,7 @@ class CONTENT_EXPORT DocumentState
   DocumentState();
   virtual ~DocumentState();
 
-  static DocumentState* FromDataSource(WebKit::WebDataSource* ds) {
+  static DocumentState* FromDataSource(blink::WebDataSource* ds) {
     return static_cast<DocumentState*>(ds->extraData());
   }
 

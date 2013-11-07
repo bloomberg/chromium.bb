@@ -19,8 +19,8 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "webkit/glue/webkit_glue.h"
 
-using WebKit::WebFrame;
-using WebKit::WebRuntimeFeatures;
+using blink::WebFrame;
+using blink::WebRuntimeFeatures;
 using WebTestRunner::WebTestDelegate;
 using WebTestRunner::WebTestInterfaces;
 

@@ -7,7 +7,7 @@
 #include "content/public/common/renderer_preferences.h"
 #include "third_party/WebKit/public/web/linux/WebFontRendering.h"
 
-using WebKit::WebFontRendering;
+using blink::WebFontRendering;
 
 namespace content {
 

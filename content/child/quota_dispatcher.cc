@@ -18,9 +18,9 @@
 using quota::QuotaStatusCode;
 using quota::StorageType;
 
-using WebKit::WebStorageQuotaCallbacks;
-using WebKit::WebStorageQuotaError;
-using WebKit::WebStorageQuotaType;
+using blink::WebStorageQuotaCallbacks;
+using blink::WebStorageQuotaError;
+using blink::WebStorageQuotaType;
 
 using webkit_glue::WorkerTaskRunner;
 
@@ -34,7 +34,7 @@ namespace {
 // QuotaDispatcher::Callback implementation for WebStorageQuotaCallbacks.
 class WebStorageQuotaDispatcherCallback : public QuotaDispatcher::Callback {
  public:
-  WebStorageQuotaDispatcherCallback(WebKit::WebStorageQuotaCallbacks* callback)
+  WebStorageQuotaDispatcherCallback(blink::WebStorageQuotaCallbacks* callback)
       : callbacks_(callback) {
     DCHECK(callbacks_);
   }
@@ -51,7 +51,7 @@ class WebStorageQuotaDispatcherCallback : public QuotaDispatcher::Callback {
 
  private:
   // Not owned (self-destructed).
-  WebKit::WebStorageQuotaCallbacks* callbacks_;
+  blink::WebStorageQuotaCallbacks* callbacks_;
 };
 
 int CurrentWorkerId() {
@@ -135,7 +135,7 @@ void QuotaDispatcher::RequestStorageQuota(
 // static
 QuotaDispatcher::Callback*
 QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(
-    WebKit::WebStorageQuotaCallbacks* callbacks) {
+    blink::WebStorageQuotaCallbacks* callbacks) {
   return new WebStorageQuotaDispatcherCallback(callbacks);
 }
 
@@ -167,14 +167,14 @@ void QuotaDispatcher::DidFail(
   pending_quota_callbacks_.Remove(request_id);
 }
 
-COMPILE_ASSERT(int(WebKit::WebStorageQuotaTypeTemporary) == \
+COMPILE_ASSERT(int(blink::WebStorageQuotaTypeTemporary) == \
                int(quota::kStorageTypeTemporary), mismatching_enums);
-COMPILE_ASSERT(int(WebKit::WebStorageQuotaTypePersistent) == \
+COMPILE_ASSERT(int(blink::WebStorageQuotaTypePersistent) == \
                int(quota::kStorageTypePersistent), mismatching_enums);
 
-COMPILE_ASSERT(int(WebKit::WebStorageQuotaErrorNotSupported) == \
+COMPILE_ASSERT(int(blink::WebStorageQuotaErrorNotSupported) == \
                int(quota::kQuotaErrorNotSupported), mismatching_enums);
-COMPILE_ASSERT(int(WebKit::WebStorageQuotaErrorAbort) == \
+COMPILE_ASSERT(int(blink::WebStorageQuotaErrorAbort) == \
                int(quota::kQuotaErrorAbort), mismatching_enums);
 
 }  // namespace content

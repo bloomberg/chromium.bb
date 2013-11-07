@@ -35,11 +35,11 @@ bool ShouldSendPinchGesture() {
   return pinch_allowed;
 }
 
-WebKit::WebGestureEvent CreateFlingCancelEvent(double time_stamp) {
-  WebKit::WebGestureEvent gesture_event;
+blink::WebGestureEvent CreateFlingCancelEvent(double time_stamp) {
+  blink::WebGestureEvent gesture_event;
   gesture_event.timeStampSeconds = time_stamp;
-  gesture_event.type = WebKit::WebGestureEvent::GestureFlingCancel;
-  gesture_event.sourceDevice = WebKit::WebGestureEvent::Touchscreen;
+  gesture_event.type = blink::WebGestureEvent::GestureFlingCancel;
+  gesture_event.sourceDevice = blink::WebGestureEvent::Touchscreen;
   return gesture_event;
 }
 
@@ -398,7 +398,7 @@ void RenderWidgetHostViewGuest::UnlockMouse() {
   return platform_view_->UnlockMouse();
 }
 
-void RenderWidgetHostViewGuest::GetScreenInfo(WebKit::WebScreenInfo* results) {
+void RenderWidgetHostViewGuest::GetScreenInfo(blink::WebScreenInfo* results) {
   RenderWidgetHostViewPort* embedder_view =
       RenderWidgetHostViewPort::FromRWHV(
           guest_->GetEmbedderRenderWidgetHostView());
@@ -525,8 +525,8 @@ void RenderWidgetHostViewGuest::DispatchCancelTouchEvent(
   if (!host_)
     return;
 
-  WebKit::WebTouchEvent cancel_event;
-  cancel_event.type = WebKit::WebInputEvent::TouchCancel;
+  blink::WebTouchEvent cancel_event;
+  cancel_event.type = blink::WebInputEvent::TouchCancel;
   cancel_event.timeStampSeconds = event->time_stamp().InSecondsF();
   host_->ForwardTouchEventWithLatencyInfo(cancel_event, *event->latency());
 }
@@ -546,7 +546,7 @@ bool RenderWidgetHostViewGuest::ForwardGestureEventToRenderer(
     return true;
   }
 
-  WebKit::WebGestureEvent web_gesture =
+  blink::WebGestureEvent web_gesture =
       MakeWebGestureEventFromUIEvent(*gesture);
   const gfx::Point& client_point = gesture->location();
   const gfx::Point& screen_point = gesture->location();
@@ -556,9 +556,9 @@ bool RenderWidgetHostViewGuest::ForwardGestureEventToRenderer(
   web_gesture.globalX = screen_point.x();
   web_gesture.globalY = screen_point.y();
 
-  if (web_gesture.type == WebKit::WebGestureEvent::Undefined)
+  if (web_gesture.type == blink::WebGestureEvent::Undefined)
     return false;
-  if (web_gesture.type == WebKit::WebGestureEvent::GestureTapDown) {
+  if (web_gesture.type == blink::WebGestureEvent::GestureTapDown) {
     host_->ForwardGestureEvent(
         CreateFlingCancelEvent(gesture->time_stamp().InSecondsF()));
   }

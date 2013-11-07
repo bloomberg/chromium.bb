@@ -22,11 +22,11 @@ using ::testing::InSequence;
 using ::testing::NiceMock;
 using ::testing::StrictMock;
 
-using WebKit::WebFrame;
-using WebKit::WebString;
-using WebKit::WebURLLoader;
-using WebKit::WebURLResponse;
-using WebKit::WebView;
+using blink::WebFrame;
+using blink::WebString;
+using blink::WebURLLoader;
+using blink::WebURLResponse;
+using blink::WebView;
 
 namespace content {
 

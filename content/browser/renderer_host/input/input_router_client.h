@@ -30,7 +30,7 @@ class CONTENT_EXPORT InputRouterClient {
   //   * |CONSUMED| or |NO_CONSUMER_EXISTS| will trigger the appropriate ack.
   //   * |UNKNOWN| will result in |input_event| being dropped.
   virtual InputEventAckState FilterInputEvent(
-      const WebKit::WebInputEvent& input_event,
+      const blink::WebInputEvent& input_event,
       const ui::LatencyInfo& latency_info) = 0;
 
   // Called each time a WebInputEvent IPC is sent.

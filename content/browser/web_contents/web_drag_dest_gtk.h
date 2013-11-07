@@ -32,7 +32,7 @@ class CONTENT_EXPORT WebDragDestGtk {
 
   // This is called when the renderer responds to a drag motion event. We must
   // update the system drag cursor.
-  void UpdateDragStatus(WebKit::WebDragOperation operation);
+  void UpdateDragStatus(blink::WebDragOperation operation);
 
   // Informs the renderer when a system drag has left the render view.
   // See OnDragLeave().

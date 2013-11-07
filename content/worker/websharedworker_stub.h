@@ -12,7 +12,7 @@
 #include "third_party/WebKit/public/web/WebSharedWorker.h"
 #include "url/gurl.h"
 
-namespace WebKit {
+namespace blink {
 class WebSharedWorker;
 }
 
@@ -55,7 +55,7 @@ class WebSharedWorkerStub : public IPC::Listener {
   void OnStartWorkerContext(
       const GURL& url, const string16& user_agent, const string16& source_code,
       const string16& content_security_policy,
-      WebKit::WebContentSecurityPolicyType policy_type);
+      blink::WebContentSecurityPolicyType policy_type);
 
   void OnTerminateWorkerContext();
 
@@ -66,7 +66,7 @@ class WebSharedWorkerStub : public IPC::Listener {
   // from the worker object.
   WebSharedWorkerClientProxy client_;
 
-  WebKit::WebSharedWorker* impl_;
+  blink::WebSharedWorker* impl_;
   string16 name_;
   bool started_;
   GURL url_;

@@ -11,7 +11,7 @@
 namespace content {
 
 ui::KeyboardCode GetWindowsKeyCodeWithoutLocation(ui::KeyboardCode key_code);
-WebKit::WebInputEvent::Modifiers GetLocationModifiersFromWindowsKeyCode(
+blink::WebInputEvent::Modifiers GetLocationModifiersFromWindowsKeyCode(
     ui::KeyboardCode key_code);
 
 }  // namespace content

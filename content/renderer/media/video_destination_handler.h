@@ -75,7 +75,7 @@ class CONTENT_EXPORT VideoDestinationHandler {
   // |frame_writer|.
   // If |factory| is NULL the MediaStreamDependencyFactory owned by
   // RenderThreadImpl::current() will be used.
-  // If |registry| is NULL the global WebKit::WebMediaStreamRegistry will be
+  // If |registry| is NULL the global blink::WebMediaStreamRegistry will be
   // used to look up the media stream.
   // The caller of the function takes the ownership of |frame_writer|.
   // Returns true on success and false on failure.

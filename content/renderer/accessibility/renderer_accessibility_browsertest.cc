@@ -14,8 +14,8 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-using WebKit::WebAXObject;
-using WebKit::WebDocument;
+using blink::WebAXObject;
+using blink::WebDocument;
 
 namespace content {
 
@@ -102,7 +102,7 @@ TEST_F(RendererAccessibilityTest, EditableTextModeFocusEvents) {
   SetMode(AccessibilityModeEditableTextOnly);
 
   // Set a minimum size and give focus so simulated events work.
-  view()->webwidget()->resize(WebKit::WebSize(500, 500));
+  view()->webwidget()->resize(blink::WebSize(500, 500));
   view()->webwidget()->setFocus(true);
 
   std::string html =
@@ -125,16 +125,16 @@ TEST_F(RendererAccessibilityTest, EditableTextModeFocusEvents) {
     AccessibilityHostMsg_EventParams event;
     GetLastAccEvent(&event);
     EXPECT_EQ(event.event_type,
-              WebKit::WebAXEventLayoutComplete);
+              blink::WebAXEventLayoutComplete);
     EXPECT_EQ(event.id, 1);
     EXPECT_EQ(event.nodes.size(), 2U);
     EXPECT_EQ(event.nodes[0].id, 1);
     EXPECT_EQ(event.nodes[0].role,
-              WebKit::WebAXRoleRootWebArea);
+              blink::WebAXRoleRootWebArea);
     EXPECT_EQ(event.nodes[0].state,
-              (1U << WebKit::WebAXStateReadonly) |
-              (1U << WebKit::WebAXStateFocusable) |
-              (1U << WebKit::WebAXStateFocused));
+              (1U << blink::WebAXStateReadonly) |
+              (1U << blink::WebAXStateFocusable) |
+              (1U << blink::WebAXStateFocused));
     EXPECT_EQ(event.nodes[0].child_ids.size(), 1U);
   }
 
@@ -146,21 +146,21 @@ TEST_F(RendererAccessibilityTest, EditableTextModeFocusEvents) {
     AccessibilityHostMsg_EventParams event;
     GetLastAccEvent(&event);
     EXPECT_EQ(event.event_type,
-              WebKit::WebAXEventFocus);
+              blink::WebAXEventFocus);
     EXPECT_EQ(event.id, 3);
     EXPECT_EQ(event.nodes[0].id, 1);
     EXPECT_EQ(event.nodes[0].role,
-              WebKit::WebAXRoleRootWebArea);
+              blink::WebAXRoleRootWebArea);
     EXPECT_EQ(event.nodes[0].state,
-              (1U << WebKit::WebAXStateReadonly) |
-              (1U << WebKit::WebAXStateFocusable));
+              (1U << blink::WebAXStateReadonly) |
+              (1U << blink::WebAXStateFocusable));
     EXPECT_EQ(event.nodes[0].child_ids.size(), 1U);
     EXPECT_EQ(event.nodes[1].id, 3);
     EXPECT_EQ(event.nodes[1].role,
-              WebKit::WebAXRoleGroup);
+              blink::WebAXRoleGroup);
     EXPECT_EQ(event.nodes[1].state,
-              (1U << WebKit::WebAXStateFocusable) |
-              (1U << WebKit::WebAXStateFocused));
+              (1U << blink::WebAXStateFocusable) |
+              (1U << blink::WebAXStateFocused));
   }
 
   // Check other editable text nodes.
@@ -172,8 +172,8 @@ TEST_F(RendererAccessibilityTest, EditableTextModeFocusEvents) {
     GetLastAccEvent(&event);
     EXPECT_EQ(event.id, 4);
     EXPECT_EQ(event.nodes[1].state,
-              (1U << WebKit::WebAXStateFocusable) |
-              (1U << WebKit::WebAXStateFocused));
+              (1U << blink::WebAXStateFocusable) |
+              (1U << blink::WebAXStateFocused));
   }
 
   {
@@ -184,8 +184,8 @@ TEST_F(RendererAccessibilityTest, EditableTextModeFocusEvents) {
     GetLastAccEvent(&event);
     EXPECT_EQ(event.id, 5);
     EXPECT_EQ(event.nodes[1].state,
-              (1U << WebKit::WebAXStateFocusable) |
-              (1U << WebKit::WebAXStateFocused));
+              (1U << blink::WebAXStateFocusable) |
+              (1U << blink::WebAXStateFocused));
   }
 
   {
@@ -196,8 +196,8 @@ TEST_F(RendererAccessibilityTest, EditableTextModeFocusEvents) {
     GetLastAccEvent(&event);
     EXPECT_EQ(event.id, 6);
     EXPECT_EQ(event.nodes[1].state,
-              (1U << WebKit::WebAXStateFocusable) |
-              (1U << WebKit::WebAXStateFocused));
+              (1U << blink::WebAXStateFocusable) |
+              (1U << blink::WebAXStateFocused));
   }
 
   // Try focusing things that aren't editable text.
@@ -209,9 +209,9 @@ TEST_F(RendererAccessibilityTest, EditableTextModeFocusEvents) {
     GetLastAccEvent(&event);
     EXPECT_EQ(event.id, 7);
     EXPECT_EQ(event.nodes[1].state,
-              (1U << WebKit::WebAXStateFocusable) |
-              (1U << WebKit::WebAXStateFocused) |
-              (1U << WebKit::WebAXStateReadonly));
+              (1U << blink::WebAXStateFocusable) |
+              (1U << blink::WebAXStateFocused) |
+              (1U << blink::WebAXStateReadonly));
   }
 
   {
@@ -222,9 +222,9 @@ TEST_F(RendererAccessibilityTest, EditableTextModeFocusEvents) {
     GetLastAccEvent(&event);
     EXPECT_EQ(event.id, 8);
     EXPECT_EQ(event.nodes[1].state,
-              (1U << WebKit::WebAXStateFocusable) |
-              (1U << WebKit::WebAXStateFocused) |
-              (1U << WebKit::WebAXStateReadonly));
+              (1U << blink::WebAXStateFocusable) |
+              (1U << blink::WebAXStateFocused) |
+              (1U << blink::WebAXStateReadonly));
   }
 
   // Clear focus.
@@ -269,7 +269,7 @@ TEST_F(RendererAccessibilityTest, SendFullAccessibilityTreeOnReload) {
   WebAXObject root_obj = document.accessibilityObject();
   accessibility->HandleWebAccessibilityEvent(
       root_obj,
-      WebKit::WebAXEventLayoutComplete);
+      blink::WebAXEventLayoutComplete);
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(4, accessibility->browser_tree_node_count());
   EXPECT_EQ(1, CountAccessibilityNodesSentToBrowser());
@@ -289,7 +289,7 @@ TEST_F(RendererAccessibilityTest, SendFullAccessibilityTreeOnReload) {
   sink_->ClearMessages();
   accessibility->HandleWebAccessibilityEvent(
       root_obj,
-      WebKit::WebAXEventLayoutComplete);
+      blink::WebAXEventLayoutComplete);
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(4, accessibility->browser_tree_node_count());
   EXPECT_EQ(4, CountAccessibilityNodesSentToBrowser());
@@ -304,7 +304,7 @@ TEST_F(RendererAccessibilityTest, SendFullAccessibilityTreeOnReload) {
   const WebAXObject& first_child = root_obj.childAt(0);
   accessibility->HandleWebAccessibilityEvent(
       first_child,
-      WebKit::WebAXEventLiveRegionChanged);
+      blink::WebAXEventLiveRegionChanged);
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(4, accessibility->browser_tree_node_count());
   EXPECT_EQ(4, CountAccessibilityNodesSentToBrowser());
@@ -343,7 +343,7 @@ TEST_F(RendererAccessibilityTest,
   WebAXObject root_obj = document.accessibilityObject();
   accessibility->HandleWebAccessibilityEvent(
       root_obj,
-      WebKit::WebAXEventValueChanged);
+      blink::WebAXEventValueChanged);
   view()->OnSwapOut();
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_FALSE(sink_->GetUniqueMessageMatching(
@@ -405,7 +405,7 @@ TEST_F(RendererAccessibilityTest, HideAccessibilityObject) {
   sink_->ClearMessages();
   accessibility->HandleWebAccessibilityEvent(
       node_a,
-      WebKit::WebAXEventChildrenChanged);
+      blink::WebAXEventChildrenChanged);
 
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(3, accessibility->browser_tree_node_count());
@@ -455,7 +455,7 @@ TEST_F(RendererAccessibilityTest, ShowAccessibilityObject) {
   WebAXObject node_a = root_obj.childAt(0);
   accessibility->HandleWebAccessibilityEvent(
       node_a,
-      WebKit::WebAXEventChildrenChanged);
+      blink::WebAXEventChildrenChanged);
 
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(4, accessibility->browser_tree_node_count());
@@ -509,7 +509,7 @@ TEST_F(RendererAccessibilityTest, DetachAccessibilityObject) {
   sink_->ClearMessages();
   accessibility->HandleWebAccessibilityEvent(
       body,
-      WebKit::WebAXEventChildrenChanged);
+      blink::WebAXEventChildrenChanged);
 
   accessibility->SendPendingAccessibilityEvents();
 

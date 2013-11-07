@@ -166,7 +166,7 @@ void DumpAccessibilityTreeTest::RunTest(
                         html_file.BaseName().MaybeAsASCII().c_str());
   AccessibilityNotificationWaiter waiter(
       shell(), AccessibilityModeComplete,
-      WebKit::WebAXEventLoadComplete);
+      blink::WebAXEventLoadComplete);
   NavigateToURL(shell(), url);
   waiter.WaitForNotification();
 

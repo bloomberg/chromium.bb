@@ -26,11 +26,11 @@
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 
 using base::StringPiece;
-using WebKit::WebDocument;
-using WebKit::WebString;
-using WebKit::WebURL;
-using WebKit::WebURLResponse;
-using WebKit::WebURLRequest;
+using blink::WebDocument;
+using blink::WebString;
+using blink::WebURL;
+using blink::WebURLResponse;
+using blink::WebURLRequest;
 
 namespace content {
 

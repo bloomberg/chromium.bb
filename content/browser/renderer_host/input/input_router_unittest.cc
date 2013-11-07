@@ -7,12 +7,12 @@
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/common/input_messages.h"
 
-using WebKit::WebGestureEvent;
-using WebKit::WebInputEvent;
-using WebKit::WebMouseEvent;
-using WebKit::WebMouseWheelEvent;
-using WebKit::WebTouchEvent;
-using WebKit::WebTouchPoint;
+using blink::WebGestureEvent;
+using blink::WebInputEvent;
+using blink::WebMouseEvent;
+using blink::WebMouseWheelEvent;
+using blink::WebTouchEvent;
+using blink::WebTouchPoint;
 
 namespace content {
 

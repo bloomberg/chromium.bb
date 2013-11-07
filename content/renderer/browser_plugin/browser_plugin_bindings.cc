@@ -28,12 +28,12 @@
 #include "third_party/npapi/bindings/npapi.h"
 #include "v8/include/v8.h"
 
-using WebKit::WebBindings;
-using WebKit::WebElement;
-using WebKit::WebDOMEvent;
-using WebKit::WebDOMMessageEvent;
-using WebKit::WebPluginContainer;
-using WebKit::WebString;
+using blink::WebBindings;
+using blink::WebElement;
+using blink::WebDOMEvent;
+using blink::WebDOMMessageEvent;
+using blink::WebPluginContainer;
+using blink::WebString;
 
 namespace content {
 
@@ -242,7 +242,7 @@ class BrowserPluginBindingAttach: public BrowserPluginMethodBinding {
       return false;
 
     scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-    v8::Handle<v8::Value> obj(WebKit::WebBindings::toV8Value(&args[0]));
+    v8::Handle<v8::Value> obj(blink::WebBindings::toV8Value(&args[0]));
     scoped_ptr<base::Value> value(
         converter->FromV8Value(obj, bindings->instance()->render_view()->
             GetWebView()->mainFrame()->mainWorldScriptContext()));
@@ -272,7 +272,7 @@ class BrowserPluginBindingAttachWindowTo : public BrowserPluginMethodBinding {
   virtual bool Invoke(BrowserPluginBindings* bindings,
                       const NPVariant* args,
                       NPVariant* result) OVERRIDE {
-    WebKit::WebNode node;
+    blink::WebNode node;
     WebBindings::getNode(NPVARIANT_TO_OBJECT(args[0]), &node);
     int window_id = IntFromNPVariant(args[1]);
     BOOLEAN_TO_NPVARIANT(BrowserPlugin::AttachWindowTo(node, window_id),

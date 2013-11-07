@@ -35,7 +35,7 @@ class CommandLine;
 class GURL;
 struct WebPreferences;
 
-namespace WebKit {
+namespace blink {
 struct WebWindowFeatures;
 }
 
@@ -430,7 +430,7 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Checks if the given page has permission to show desktop notifications.
   // This is called on the IO thread.
-  virtual WebKit::WebNotificationPresenter::Permission
+  virtual blink::WebNotificationPresenter::Permission
       CheckDesktopNotificationPermission(
           const GURL& source_url,
           ResourceContext* context,
@@ -461,7 +461,7 @@ class CONTENT_EXPORT ContentBrowserClient {
                                const GURL& target_url,
                                const content::Referrer& referrer,
                                WindowOpenDisposition disposition,
-                               const WebKit::WebWindowFeatures& features,
+                               const blink::WebWindowFeatures& features,
                                bool user_gesture,
                                bool opener_suppressed,
                                content::ResourceContext* context,

@@ -21,14 +21,14 @@ class AudioFifo;
 class AudioParameters;
 }
 
-namespace WebKit {
+namespace blink {
 class WebAudioSourceProviderClient;
 }
 
 namespace content {
 
 // WebRtcLocalAudioSourceProvider provides a bridge between classes:
-//     WebRtcAudioCapturer ---> WebKit::WebAudioSourceProvider
+//     WebRtcAudioCapturer ---> blink::WebAudioSourceProvider
 //
 // WebRtcLocalAudioSourceProvider works as a sink to the WebRtcAudiocapturer
 // and store the capture data to a FIFO. When the media stream is connected to
@@ -38,7 +38,7 @@ namespace content {
 // All calls are protected by a lock.
 class CONTENT_EXPORT WebRtcLocalAudioSourceProvider
     : NON_EXPORTED_BASE(public media::AudioConverter::InputCallback),
-      NON_EXPORTED_BASE(public WebKit::WebAudioSourceProvider) {
+      NON_EXPORTED_BASE(public blink::WebAudioSourceProvider) {
  public:
   static const size_t kWebAudioRenderBufferSize;
 
@@ -61,9 +61,9 @@ class CONTENT_EXPORT WebRtcLocalAudioSourceProvider
   // so it has been under the protection of |lock_|.
   void GetAudioProcessingParams(int* delay_ms, int* volume, bool* key_pressed);
 
-  // WebKit::WebAudioSourceProvider implementation.
-  virtual void setClient(WebKit::WebAudioSourceProviderClient* client) OVERRIDE;
-  virtual void provideInput(const WebKit::WebVector<float*>& audio_data,
+  // blink::WebAudioSourceProvider implementation.
+  virtual void setClient(blink::WebAudioSourceProviderClient* client) OVERRIDE;
+  virtual void provideInput(const blink::WebVector<float*>& audio_data,
                             size_t number_of_frames) OVERRIDE;
 
   // media::AudioConverter::Inputcallback implementation.

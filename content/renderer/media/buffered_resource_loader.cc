@@ -20,13 +20,13 @@
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebURLLoaderOptions.h"
 
-using WebKit::WebFrame;
-using WebKit::WebString;
-using WebKit::WebURLError;
-using WebKit::WebURLLoader;
-using WebKit::WebURLLoaderOptions;
-using WebKit::WebURLRequest;
-using WebKit::WebURLResponse;
+using blink::WebFrame;
+using blink::WebString;
+using blink::WebURLError;
+using blink::WebURLLoader;
+using blink::WebURLLoaderOptions;
+using blink::WebURLRequest;
+using blink::WebURLResponse;
 
 namespace content {
 
@@ -169,7 +169,7 @@ void BufferedResourceLoader::Start(
                                             last_byte_position_)));
   }
 
-  frame->setReferrerForRequest(request, WebKit::WebURL());
+  frame->setReferrerForRequest(request, blink::WebURL());
 
   // Disable compression, compression for audio/video doesn't make sense...
   request.setHTTPHeaderField(
@@ -322,7 +322,7 @@ bool BufferedResourceLoader::range_supported() {
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// WebKit::WebURLLoaderClient implementation.
+// blink::WebURLLoaderClient implementation.
 void BufferedResourceLoader::willSendRequest(
     WebURLLoader* loader,
     WebURLRequest& newRequest,
@@ -332,7 +332,7 @@ void BufferedResourceLoader::willSendRequest(
   // In this case we shouldn't do anything.
   if (start_cb_.is_null()) {
     // Set the url in the request to an invalid value (empty url).
-    newRequest.setURL(WebKit::WebURL());
+    newRequest.setURL(blink::WebURL());
     return;
   }
 
@@ -467,7 +467,7 @@ void BufferedResourceLoader::didReceiveData(
 }
 
 void BufferedResourceLoader::didDownloadData(
-    WebKit::WebURLLoader* loader,
+    blink::WebURLLoader* loader,
     int dataLength,
     int encoded_data_length) {
   NOTIMPLEMENTED();

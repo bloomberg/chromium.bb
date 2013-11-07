@@ -26,7 +26,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
     m_value1 = "value1";
     m_value2 = "value2";
     m_value3 = "value3";
-    m_key1 = IndexedDBKey(99, WebKit::WebIDBKeyTypeNumber);
+    m_key1 = IndexedDBKey(99, blink::WebIDBKeyTypeNumber);
     m_key2 = IndexedDBKey(ASCIIToUTF16("key2"));
     m_key3 = IndexedDBKey(ASCIIToUTF16("key3"));
   }

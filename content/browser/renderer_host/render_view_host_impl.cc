@@ -86,13 +86,13 @@
 #endif
 
 using base::TimeDelta;
-using WebKit::WebConsoleMessage;
-using WebKit::WebDragOperation;
-using WebKit::WebDragOperationNone;
-using WebKit::WebDragOperationsMask;
-using WebKit::WebInputEvent;
-using WebKit::WebMediaPlayerAction;
-using WebKit::WebPluginAction;
+using blink::WebConsoleMessage;
+using blink::WebDragOperation;
+using blink::WebDragOperationNone;
+using blink::WebDragOperationsMask;
+using blink::WebInputEvent;
+using blink::WebMediaPlayerAction;
+using blink::WebPluginAction;
 
 namespace content {
 namespace {
@@ -103,11 +103,11 @@ const int kUnloadTimeoutMS = 1000;
 
 // Translate a WebKit text direction into a base::i18n one.
 base::i18n::TextDirection WebTextDirectionToChromeTextDirection(
-    WebKit::WebTextDirection dir) {
+    blink::WebTextDirection dir) {
   switch (dir) {
-    case WebKit::WebTextDirectionLeftToRight:
+    case blink::WebTextDirectionLeftToRight:
       return base::i18n::LEFT_TO_RIGHT;
-    case WebKit::WebTextDirectionRightToLeft:
+    case blink::WebTextDirectionRightToLeft:
       return base::i18n::RIGHT_TO_LEFT;
     default:
       NOTREACHED();
@@ -1308,7 +1308,7 @@ void RenderViewHostImpl::CreateNewWindow(
 }
 
 void RenderViewHostImpl::CreateNewWidget(int route_id,
-                                     WebKit::WebPopupType popup_type) {
+                                     blink::WebPopupType popup_type) {
   delegate_->CreateNewWidget(route_id, popup_type);
 }
 
@@ -1515,7 +1515,7 @@ void RenderViewHostImpl::OnUpdateState(int32 page_id, const PageState& state) {
 void RenderViewHostImpl::OnUpdateTitle(
     int32 page_id,
     const string16& title,
-    WebKit::WebTextDirection title_direction) {
+    blink::WebTextDirection title_direction) {
   if (title.length() > kMaxTitleChars) {
     NOTREACHED() << "Renderer sent too many characters in title.";
     return;
@@ -1870,11 +1870,11 @@ gfx::Rect RenderViewHostImpl::GetRootWindowResizerRect() const {
 }
 
 void RenderViewHostImpl::ForwardMouseEvent(
-    const WebKit::WebMouseEvent& mouse_event) {
+    const blink::WebMouseEvent& mouse_event) {
 
   // We make a copy of the mouse event because
   // RenderWidgetHost::ForwardMouseEvent will delete |mouse_event|.
-  WebKit::WebMouseEvent event_copy(mouse_event);
+  blink::WebMouseEvent event_copy(mouse_event);
   RenderWidgetHostImpl::ForwardMouseEvent(event_copy);
 
   switch (event_copy.type) {
@@ -2019,7 +2019,7 @@ void RenderViewHostImpl::DisownOpener() {
 }
 
 void RenderViewHostImpl::SetAccessibilityCallbackForTesting(
-    const base::Callback<void(WebKit::WebAXEvent)>& callback) {
+    const base::Callback<void(blink::WebAXEvent)>& callback) {
   accessibility_testing_callback_ = callback;
 }
 
@@ -2056,7 +2056,7 @@ void RenderViewHostImpl::ReloadFrame() {
 
 void RenderViewHostImpl::Find(int request_id,
                               const string16& search_text,
-                              const WebKit::WebFindOptions& options) {
+                              const blink::WebFindOptions& options) {
   Send(new ViewMsg_Find(GetRoutingID(), request_id, search_text, options));
 }
 
@@ -2099,12 +2099,12 @@ void RenderViewHostImpl::CopyImageAt(int x, int y) {
 }
 
 void RenderViewHostImpl::ExecuteMediaPlayerActionAtLocation(
-  const gfx::Point& location, const WebKit::WebMediaPlayerAction& action) {
+  const gfx::Point& location, const blink::WebMediaPlayerAction& action) {
   Send(new ViewMsg_MediaPlayerActionAt(GetRoutingID(), location, action));
 }
 
 void RenderViewHostImpl::ExecutePluginActionAtLocation(
-  const gfx::Point& location, const WebKit::WebPluginAction& action) {
+  const gfx::Point& location, const blink::WebPluginAction& action) {
   Send(new ViewMsg_PluginActionAt(GetRoutingID(), location, action));
 }
 
@@ -2131,9 +2131,9 @@ void RenderViewHostImpl::OnAccessibilityEvents(
 
   for (unsigned i = 0; i < params.size(); i++) {
     const AccessibilityHostMsg_EventParams& param = params[i];
-    WebKit::WebAXEvent src_type = param.event_type;
-    if (src_type == WebKit::WebAXEventLayoutComplete ||
-        src_type == WebKit::WebAXEventLoadComplete) {
+    blink::WebAXEvent src_type = param.event_type;
+    if (src_type == blink::WebAXEventLayoutComplete ||
+        src_type == blink::WebAXEventLoadComplete) {
       MakeAccessibilityNodeDataTree(param.nodes, &accessibility_tree_);
     }
     accessibility_testing_callback_.Run(src_type);

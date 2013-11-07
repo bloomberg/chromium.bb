@@ -13,7 +13,7 @@
 #include "media/base/android/media_codec_bridge.h"
 #endif
 
-using WebKit::WebRuntimeFeatures;
+using blink::WebRuntimeFeatures;
 
 namespace content {
 

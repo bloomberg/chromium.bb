@@ -103,12 +103,12 @@ bool VideoSourceHandler::Close(const std::string& url,
 scoped_refptr<VideoSourceInterface> VideoSourceHandler::GetFirstVideoSource(
     const std::string& url) {
   scoped_refptr<webrtc::VideoSourceInterface> source;
-  WebKit::WebMediaStream stream;
+  blink::WebMediaStream stream;
   if (registry_) {
     stream = registry_->GetMediaStream(url);
   } else {
     stream =
-        WebKit::WebMediaStreamRegistry::lookupMediaStreamDescriptor(GURL(url));
+        blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(GURL(url));
   }
   if (stream.isNull() || !stream.extraData()) {
     LOG(ERROR) << "GetFirstVideoSource - invalid url: " << url;

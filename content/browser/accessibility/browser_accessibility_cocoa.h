@@ -40,7 +40,7 @@
 
 // Convenience method to get the internal, cross-platform role
 // from browserAccessibility_.
-- (WebKit::WebAXRole)internalRole;
+- (blink::WebAXRole)internalRole;
 
 // Return the method name for the given attribute. For testing only.
 - (NSString*)methodNameForAttribute:(NSString*)attribute;

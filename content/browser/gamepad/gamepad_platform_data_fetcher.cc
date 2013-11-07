@@ -11,7 +11,7 @@ namespace content {
 GamepadDataFetcherEmpty::GamepadDataFetcherEmpty() {
 }
 
-void GamepadDataFetcherEmpty::GetGamepadData(WebKit::WebGamepads* pads,
+void GamepadDataFetcherEmpty::GetGamepadData(blink::WebGamepads* pads,
                                              bool devices_changed_hint) {
   pads->length = 0;
 }

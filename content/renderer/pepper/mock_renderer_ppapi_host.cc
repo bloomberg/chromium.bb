@@ -41,7 +41,7 @@ RenderView* MockRendererPpapiHost::GetRenderViewForInstance(
   return NULL;
 }
 
-WebKit::WebPluginContainer* MockRendererPpapiHost::GetContainerForInstance(
+blink::WebPluginContainer* MockRendererPpapiHost::GetContainerForInstance(
     PP_Instance instance) const {
   NOTIMPLEMENTED();
   return NULL;

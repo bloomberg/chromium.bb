@@ -16,18 +16,18 @@
 #include "third_party/icu/source/common/unicode/uscript.h"
 #include "webkit/common/webpreferences.h"
 
-using WebKit::WebNetworkStateNotifier;
-using WebKit::WebRuntimeFeatures;
-using WebKit::WebSettings;
-using WebKit::WebString;
-using WebKit::WebURL;
-using WebKit::WebView;
+using blink::WebNetworkStateNotifier;
+using blink::WebRuntimeFeatures;
+using blink::WebSettings;
+using blink::WebString;
+using blink::WebURL;
+using blink::WebView;
 
 namespace content {
 
 namespace {
 
-typedef void (*SetFontFamilyWrapper)(WebKit::WebSettings*,
+typedef void (*SetFontFamilyWrapper)(blink::WebSettings*,
                                      const base::string16&,
                                      UScriptCode);
 

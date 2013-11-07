@@ -24,7 +24,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerMac
 
   // Implementation of BrowserAccessibilityManager.
   virtual void NotifyAccessibilityEvent(
-      WebKit::WebAXEvent event_type, BrowserAccessibility* node) OVERRIDE;
+      blink::WebAXEvent event_type, BrowserAccessibility* node) OVERRIDE;
 
   NSView* parent_view() { return parent_view_; }
 

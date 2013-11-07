@@ -40,7 +40,7 @@ class CONTENT_EXPORT FrameReaderInterface {
 class CONTENT_EXPORT VideoSourceHandler {
  public:
   // |registry| is used to look up the media stream by url. If a NULL |registry|
-  // is given, the global WebKit::WebMediaStreamRegistry will be used.
+  // is given, the global blink::WebMediaStreamRegistry will be used.
   explicit VideoSourceHandler(MediaStreamRegistryInterface* registry);
   virtual ~VideoSourceHandler();
   // Connects to the first video track in the MediaStream specified by |url| and

@@ -90,7 +90,7 @@ RenderProcessImpl::RenderProcessImpl()
 
 RenderProcessImpl::~RenderProcessImpl() {
 #ifndef NDEBUG
-  int count = WebKit::WebFrame::instanceCount();
+  int count = blink::WebFrame::instanceCount();
   if (count)
     DLOG(ERROR) << "WebFrame LEAKED " << count << " TIMES";
 #endif

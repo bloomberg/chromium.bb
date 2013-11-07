@@ -13,7 +13,7 @@ namespace content {
 // On Windows, we can just use the builtin WebKit factory methods to fully
 // construct our pre-translated events.
 
-WebKit::WebMouseEvent MakeUntranslatedWebMouseEventFromNativeEvent(
+blink::WebMouseEvent MakeUntranslatedWebMouseEventFromNativeEvent(
     base::NativeEvent native_event) {
   return WebMouseEventBuilder::Build(native_event.hwnd,
                                      native_event.message,
@@ -21,7 +21,7 @@ WebKit::WebMouseEvent MakeUntranslatedWebMouseEventFromNativeEvent(
                                      native_event.lParam);
 }
 
-WebKit::WebMouseWheelEvent MakeUntranslatedWebMouseWheelEventFromNativeEvent(
+blink::WebMouseWheelEvent MakeUntranslatedWebMouseWheelEventFromNativeEvent(
     base::NativeEvent native_event) {
   return WebMouseWheelEventBuilder::Build(native_event.hwnd,
                                           native_event.message,
@@ -29,7 +29,7 @@ WebKit::WebMouseWheelEvent MakeUntranslatedWebMouseWheelEventFromNativeEvent(
                                           native_event.lParam);
 }
 
-WebKit::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
+blink::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
     base::NativeEvent native_event) {
   return WebKeyboardEventBuilder::Build(native_event.hwnd,
                                         native_event.message,
@@ -37,11 +37,11 @@ WebKit::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
                                         native_event.lParam);
 }
 
-WebKit::WebGestureEvent MakeWebGestureEventFromNativeEvent(
+blink::WebGestureEvent MakeWebGestureEventFromNativeEvent(
     base::NativeEvent native_event) {
   // TODO: Create gestures from native event.
   NOTIMPLEMENTED();
-  return  WebKit::WebGestureEvent();
+  return  blink::WebGestureEvent();
 }
 
 }  // namespace content

@@ -12,7 +12,7 @@
 namespace content {
 
 // This class provides a helper method to convert a java object array of touch
-// events (in physical pixdels) into a WebKit::WebTouchEvent (in dip).
+// events (in physical pixdels) into a blink::WebTouchEvent (in dip).
 class TouchPoint {
  public:
   static void BuildWebTouchEvent(JNIEnv* env,
@@ -20,7 +20,7 @@ class TouchPoint {
                                  jlong time_ms,
                                  float dpi_scale,
                                  jobjectArray pts,
-                                 WebKit::WebTouchEvent& event);
+                                 blink::WebTouchEvent& event);
 };
 
 bool RegisterTouchPoint(JNIEnv* env);

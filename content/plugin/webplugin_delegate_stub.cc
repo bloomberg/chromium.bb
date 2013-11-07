@@ -26,8 +26,8 @@
 #include "third_party/npapi/bindings/npruntime.h"
 #include "webkit/common/cursors/webcursor.h"
 
-using WebKit::WebBindings;
-using WebKit::WebCursorInfo;
+using blink::WebBindings;
+using blink::WebCursorInfo;
 
 namespace content {
 
@@ -273,7 +273,7 @@ void WebPluginDelegateStub::OnSetFocus(bool focused) {
 }
 
 void WebPluginDelegateStub::OnHandleInputEvent(
-    const WebKit::WebInputEvent *event,
+    const blink::WebInputEvent *event,
     bool* handled,
     WebCursor* cursor) {
   WebCursor::CursorInfo cursor_info;

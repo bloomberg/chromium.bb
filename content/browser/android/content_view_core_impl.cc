@@ -63,8 +63,8 @@ using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
-using WebKit::WebGestureEvent;
-using WebKit::WebInputEvent;
+using blink::WebGestureEvent;
+using blink::WebInputEvent;
 
 // Describes the type and enabled state of a select popup item.
 // Keep in sync with the value defined in SelectPopupDialog.java
@@ -887,8 +887,8 @@ jboolean ContentViewCoreImpl::SendTouchEvent(JNIEnv* env,
                                              jobjectArray pts) {
   RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
   if (rwhv) {
-    using WebKit::WebTouchEvent;
-    WebKit::WebTouchEvent event;
+    using blink::WebTouchEvent;
+    blink::WebTouchEvent event;
     TouchPoint::BuildWebTouchEvent(env, type, time_ms, GetDpiScale(), pts,
         event);
     rwhv->SendTouchEvent(event);
@@ -922,9 +922,9 @@ jboolean ContentViewCoreImpl::SendMouseMoveEvent(JNIEnv* env,
   if (!rwhv)
     return false;
 
-  WebKit::WebMouseEvent event = WebMouseEventBuilder::Build(
+  blink::WebMouseEvent event = WebMouseEventBuilder::Build(
       WebInputEvent::MouseMove,
-      WebKit::WebMouseEvent::ButtonNone,
+      blink::WebMouseEvent::ButtonNone,
       time_ms / 1000.0, x / GetDpiScale(), y / GetDpiScale(), 0, 1);
 
   rwhv->SendMouseEvent(event);
@@ -949,7 +949,7 @@ jboolean ContentViewCoreImpl::SendMouseWheelEvent(JNIEnv* env,
   } else {
     return false;
   }
-  WebKit::WebMouseWheelEvent event = WebMouseWheelEventBuilder::Build(
+  blink::WebMouseWheelEvent event = WebMouseWheelEventBuilder::Build(
       direction, time_ms / 1000.0, x / GetDpiScale(), y / GetDpiScale());
 
   rwhv->SendMouseWheelEvent(event);
@@ -963,7 +963,7 @@ WebGestureEvent ContentViewCoreImpl::MakeGestureEvent(
 }
 
 void ContentViewCoreImpl::SendGestureEvent(
-    const WebKit::WebGestureEvent& event) {
+    const blink::WebGestureEvent& event) {
   RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
   if (rwhv)
     rwhv->SendGestureEvent(event);
@@ -1251,7 +1251,7 @@ void ContentViewCoreImpl::AddJavascriptInterface(
                                                    java_bridge->AsWeakPtr());
   java_bridge->AddNamedObject(ConvertJavaStringToUTF16(env, name),
                               bound_object);
-  WebKit::WebBindings::releaseObject(bound_object);
+  blink::WebBindings::releaseObject(bound_object);
 }
 
 void ContentViewCoreImpl::RemoveJavascriptInterface(JNIEnv* env,

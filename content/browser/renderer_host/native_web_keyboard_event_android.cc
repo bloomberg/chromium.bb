@@ -30,7 +30,7 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent()
 }
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(
-    WebKit::WebInputEvent::Type type,
+    blink::WebInputEvent::Type type,
     int modifiers, double time_secs, int keycode, int unicode_character,
     bool is_system_key)
     : WebKeyboardEvent(WebKeyboardEventBuilder::Build(
@@ -41,7 +41,7 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent(
 }
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(
-    jobject android_key_event, WebKit::WebInputEvent::Type type,
+    jobject android_key_event, blink::WebInputEvent::Type type,
     int modifiers, double time_secs, int keycode, int unicode_character,
     bool is_system_key)
     : WebKeyboardEvent(WebKeyboardEventBuilder::Build(

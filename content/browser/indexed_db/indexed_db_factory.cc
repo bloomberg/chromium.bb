@@ -109,7 +109,7 @@ void IndexedDBFactory::GetDatabaseNames(
     const base::FilePath& data_directory) {
   IDB_TRACE("IndexedDBFactory::GetDatabaseNames");
   // TODO(dgrogan): Plumb data_loss back to script eventually?
-  WebKit::WebIDBCallbacks::DataLoss data_loss;
+  blink::WebIDBCallbacks::DataLoss data_loss;
   std::string data_loss_message;
   bool disk_full;
   scoped_refptr<IndexedDBBackingStore> backing_store =
@@ -120,7 +120,7 @@ void IndexedDBFactory::GetDatabaseNames(
                        &disk_full);
   if (!backing_store) {
     callbacks->OnError(
-        IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
+        IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
                                "Internal error opening backing store for "
                                "indexedDB.webkitGetDatabaseNames."));
     return;
@@ -145,7 +145,7 @@ void IndexedDBFactory::DeleteDatabase(
   }
 
   // TODO(dgrogan): Plumb data_loss back to script eventually?
-  WebKit::WebIDBCallbacks::DataLoss data_loss;
+  blink::WebIDBCallbacks::DataLoss data_loss;
   std::string data_loss_message;
   bool disk_full = false;
   scoped_refptr<IndexedDBBackingStore> backing_store =
@@ -156,7 +156,7 @@ void IndexedDBFactory::DeleteDatabase(
                        &disk_full);
   if (!backing_store) {
     callbacks->OnError(
-        IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
+        IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
                                ASCIIToUTF16(
                                    "Internal error opening backing store "
                                    "for indexedDB.deleteDatabase.")));
@@ -167,7 +167,7 @@ void IndexedDBFactory::DeleteDatabase(
       IndexedDBDatabase::Create(name, backing_store, this, unique_identifier);
   if (!database) {
     callbacks->OnError(IndexedDBDatabaseError(
-        WebKit::WebIDBDatabaseExceptionUnknownError,
+        blink::WebIDBDatabaseExceptionUnknownError,
         ASCIIToUTF16(
             "Internal error creating database backend for "
             "indexedDB.deleteDatabase.")));
@@ -194,7 +194,7 @@ bool IndexedDBFactory::IsBackingStoreOpenForTesting(const GURL& origin_url)
 scoped_refptr<IndexedDBBackingStore> IndexedDBFactory::OpenBackingStore(
     const GURL& origin_url,
     const base::FilePath& data_directory,
-    WebKit::WebIDBCallbacks::DataLoss* data_loss,
+    blink::WebIDBCallbacks::DataLoss* data_loss,
     std::string* data_loss_message,
     bool* disk_full) {
   const bool open_in_memory = data_directory.empty();
@@ -244,8 +244,8 @@ void IndexedDBFactory::Open(
   scoped_refptr<IndexedDBDatabase> database;
   IndexedDBDatabase::Identifier unique_identifier(origin_url, name);
   IndexedDBDatabaseMap::iterator it = database_map_.find(unique_identifier);
-  WebKit::WebIDBCallbacks::DataLoss data_loss =
-      WebKit::WebIDBCallbacks::DataLossNone;
+  blink::WebIDBCallbacks::DataLoss data_loss =
+      blink::WebIDBCallbacks::DataLossNone;
   std::string data_loss_message;
   bool disk_full = false;
   if (it == database_map_.end()) {
@@ -258,14 +258,14 @@ void IndexedDBFactory::Open(
     if (!backing_store) {
       if (disk_full) {
         callbacks->OnError(
-            IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionQuotaError,
+            IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionQuotaError,
                                    ASCIIToUTF16(
                                        "Encountered full disk while opening "
                                        "backing store for indexedDB.open.")));
         return;
       }
       callbacks->OnError(IndexedDBDatabaseError(
-          WebKit::WebIDBDatabaseExceptionUnknownError,
+          blink::WebIDBDatabaseExceptionUnknownError,
           ASCIIToUTF16(
               "Internal error opening backing store for indexedDB.open.")));
       return;
@@ -275,7 +275,7 @@ void IndexedDBFactory::Open(
         IndexedDBDatabase::Create(name, backing_store, this, unique_identifier);
     if (!database) {
       callbacks->OnError(IndexedDBDatabaseError(
-          WebKit::WebIDBDatabaseExceptionUnknownError,
+          blink::WebIDBDatabaseExceptionUnknownError,
           ASCIIToUTF16(
               "Internal error creating database backend for indexedDB.open.")));
       return;

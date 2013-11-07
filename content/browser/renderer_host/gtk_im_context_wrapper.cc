@@ -41,11 +41,11 @@ const int kCompositionEventKeyCode = 229;
 }  // namespace
 
 // ui::CompositionUnderline should be identical to
-// WebKit::WebCompositionUnderline, so that we can do reinterpret_cast safely.
+// blink::WebCompositionUnderline, so that we can do reinterpret_cast safely.
 // TODO(suzhe): remove it after migrating all code in chrome to use
 // ui::CompositionUnderline.
 COMPILE_ASSERT(sizeof(ui::CompositionUnderline) ==
-               sizeof(WebKit::WebCompositionUnderline),
+               sizeof(blink::WebCompositionUnderline),
                ui_CompositionUnderline__WebKit_WebCompositionUnderline_diff);
 
 GtkIMContextWrapper::GtkIMContextWrapper(RenderWidgetHostViewGtk* host_view)
@@ -402,7 +402,7 @@ void GtkIMContextWrapper::ProcessUnfilteredKeyPressEvent(
   // isSystemKey will be set to true if this key event has Alt modifier,
   // see WebInputEventFactory::keyboardEvent() for details.
   if (wke->text[0]) {
-    wke->type = WebKit::WebInputEvent::Char;
+    wke->type = blink::WebInputEvent::Char;
     wke->skip_in_browser = true;
     host_view_->ForwardKeyboardEvent(*wke);
   }
@@ -455,8 +455,8 @@ void GtkIMContextWrapper::ProcessInputMethodResult(const GdkEventKey* event,
       is_composing_text_ = true;
       // TODO(suzhe): convert both renderer_host and renderer to use
       // ui::CompositionText.
-      const std::vector<WebKit::WebCompositionUnderline>& underlines =
-          reinterpret_cast<const std::vector<WebKit::WebCompositionUnderline>&>(
+      const std::vector<blink::WebCompositionUnderline>& underlines =
+          reinterpret_cast<const std::vector<blink::WebCompositionUnderline>&>(
               composition_.underlines);
       host->ImeSetComposition(composition_.text, underlines,
                               composition_.selection.start(),
@@ -500,11 +500,11 @@ void GtkIMContextWrapper::HandleCommit(const string16& text) {
   // In this case, the text must be committed directly.
   if (!is_in_key_event_handler_ && host_view_->GetRenderWidgetHost()) {
     // Workaround http://crbug.com/45478 by sending fake key down/up events.
-    SendFakeCompositionKeyEvent(WebKit::WebInputEvent::RawKeyDown);
+    SendFakeCompositionKeyEvent(blink::WebInputEvent::RawKeyDown);
     RenderWidgetHostImpl::From(
         host_view_->GetRenderWidgetHost())->ImeConfirmComposition(
             text, gfx::Range::InvalidRange(), false);
-    SendFakeCompositionKeyEvent(WebKit::WebInputEvent::KeyUp);
+    SendFakeCompositionKeyEvent(blink::WebInputEvent::KeyUp);
   }
 }
 
@@ -545,17 +545,17 @@ void GtkIMContextWrapper::HandlePreeditChanged(const gchar* text,
   if (!is_in_key_event_handler_ && is_composing_text_ &&
       host_view_->GetRenderWidgetHost()) {
     // Workaround http://crbug.com/45478 by sending fake key down/up events.
-    SendFakeCompositionKeyEvent(WebKit::WebInputEvent::RawKeyDown);
+    SendFakeCompositionKeyEvent(blink::WebInputEvent::RawKeyDown);
     // TODO(suzhe): convert both renderer_host and renderer to use
     // ui::CompositionText.
-    const std::vector<WebKit::WebCompositionUnderline>& underlines =
-        reinterpret_cast<const std::vector<WebKit::WebCompositionUnderline>&>(
+    const std::vector<blink::WebCompositionUnderline>& underlines =
+        reinterpret_cast<const std::vector<blink::WebCompositionUnderline>&>(
             composition_.underlines);
     RenderWidgetHostImpl::From(
         host_view_->GetRenderWidgetHost())->ImeSetComposition(
             composition_.text, underlines, composition_.selection.start(),
             composition_.selection.end());
-    SendFakeCompositionKeyEvent(WebKit::WebInputEvent::KeyUp);
+    SendFakeCompositionKeyEvent(blink::WebInputEvent::KeyUp);
   }
 }
 
@@ -613,7 +613,7 @@ void GtkIMContextWrapper::HandleHostViewUnrealize() {
 }
 
 void GtkIMContextWrapper::SendFakeCompositionKeyEvent(
-    WebKit::WebInputEvent::Type type) {
+    blink::WebInputEvent::Type type) {
   NativeWebKeyboardEvent fake_event;
   fake_event.windowsKeyCode = kCompositionEventKeyCode;
   fake_event.skip_in_browser = true;

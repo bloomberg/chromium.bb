@@ -9,7 +9,7 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 
-namespace WebKit {
+namespace blink {
 class WebDocument;
 };
 
@@ -55,15 +55,15 @@ class CONTENT_EXPORT RendererAccessibility : public RenderViewObserver {
 
   // Called when an accessibility notification occurs in WebKit.
   virtual void HandleWebAccessibilityEvent(
-      const WebKit::WebAXObject& obj, WebKit::WebAXEvent event) = 0;
+      const blink::WebAXObject& obj, blink::WebAXEvent event) = 0;
 
  protected:
   // Returns the main top-level document for this page, or NULL if there's
   // no view or frame.
-  WebKit::WebDocument GetMainDocument();
+  blink::WebDocument GetMainDocument();
 
 #ifndef NDEBUG
-  const std::string AccessibilityEventToString(WebKit::WebAXEvent event);
+  const std::string AccessibilityEventToString(blink::WebAXEvent event);
 #endif
 
   // The RenderViewImpl that owns us.

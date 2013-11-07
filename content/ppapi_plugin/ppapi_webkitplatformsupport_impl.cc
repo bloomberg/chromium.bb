@@ -28,10 +28,10 @@
 #include "third_party/icu/source/common/unicode/utf16.h"
 #endif
 
-using WebKit::WebSandboxSupport;
-using WebKit::WebString;
-using WebKit::WebUChar;
-using WebKit::WebUChar32;
+using blink::WebSandboxSupport;
+using blink::WebString;
+using blink::WebUChar;
+using blink::WebUChar32;
 
 typedef struct CGFont* CGFontRef;
 
@@ -53,16 +53,16 @@ class PpapiWebKitPlatformSupportImpl::SandboxSupport
   virtual void getFontFamilyForCharacter(
       WebUChar32 character,
       const char* preferred_locale,
-      WebKit::WebFontFamily* family);
+      blink::WebFontFamily* family);
   virtual void getRenderStyleForStrike(
-      const char* family, int sizeAndStyle, WebKit::WebFontRenderStyle* out);
+      const char* family, int sizeAndStyle, blink::WebFontRenderStyle* out);
 
  private:
   // WebKit likes to ask us for the correct font family to use for a set of
   // unicode code points. It needs this information frequently so we cache it
   // here.
   base::Lock unicode_font_families_mutex_;
-  std::map<int32_t, WebKit::WebFontFamily> unicode_font_families_;
+  std::map<int32_t, blink::WebFontFamily> unicode_font_families_;
 #endif
 };
 
@@ -102,9 +102,9 @@ void
 PpapiWebKitPlatformSupportImpl::SandboxSupport::getFontFamilyForCharacter(
     WebUChar32 character,
     const char* preferred_locale,
-    WebKit::WebFontFamily* family) {
+    blink::WebFontFamily* family) {
   base::AutoLock lock(unicode_font_families_mutex_);
-  const std::map<int32_t, WebKit::WebFontFamily>::const_iterator iter =
+  const std::map<int32_t, blink::WebFontFamily>::const_iterator iter =
       unicode_font_families_.find(character);
   if (iter != unicode_font_families_.end()) {
     family->name = iter->second.name;
@@ -118,7 +118,7 @@ PpapiWebKitPlatformSupportImpl::SandboxSupport::getFontFamilyForCharacter(
 }
 
 void PpapiWebKitPlatformSupportImpl::SandboxSupport::getRenderStyleForStrike(
-    const char* family, int sizeAndStyle, WebKit::WebFontRenderStyle* out) {
+    const char* family, int sizeAndStyle, blink::WebFontRenderStyle* out) {
   GetRenderStyleForStrike(family, sizeAndStyle, out);
 }
 
@@ -131,22 +131,22 @@ PpapiWebKitPlatformSupportImpl::PpapiWebKitPlatformSupportImpl()
 PpapiWebKitPlatformSupportImpl::~PpapiWebKitPlatformSupportImpl() {
 }
 
-WebKit::WebClipboard* PpapiWebKitPlatformSupportImpl::clipboard() {
+blink::WebClipboard* PpapiWebKitPlatformSupportImpl::clipboard() {
   NOTREACHED();
   return NULL;
 }
 
-WebKit::WebMimeRegistry* PpapiWebKitPlatformSupportImpl::mimeRegistry() {
+blink::WebMimeRegistry* PpapiWebKitPlatformSupportImpl::mimeRegistry() {
   NOTREACHED();
   return NULL;
 }
 
-WebKit::WebFileUtilities* PpapiWebKitPlatformSupportImpl::fileUtilities() {
+blink::WebFileUtilities* PpapiWebKitPlatformSupportImpl::fileUtilities() {
   NOTREACHED();
   return NULL;
 }
 
-WebKit::WebSandboxSupport* PpapiWebKitPlatformSupportImpl::sandboxSupport() {
+blink::WebSandboxSupport* PpapiWebKitPlatformSupportImpl::sandboxSupport() {
   return sandbox_support_.get();
 }
 
@@ -167,72 +167,72 @@ bool PpapiWebKitPlatformSupportImpl::isLinkVisited(
   return false;
 }
 
-WebKit::WebMessagePortChannel*
+blink::WebMessagePortChannel*
 PpapiWebKitPlatformSupportImpl::createMessagePortChannel() {
   NOTREACHED();
   return NULL;
 }
 
 void PpapiWebKitPlatformSupportImpl::setCookies(
-    const WebKit::WebURL& url,
-    const WebKit::WebURL& first_party_for_cookies,
-    const WebKit::WebString& value) {
+    const blink::WebURL& url,
+    const blink::WebURL& first_party_for_cookies,
+    const blink::WebString& value) {
   NOTREACHED();
 }
 
-WebKit::WebString PpapiWebKitPlatformSupportImpl::cookies(
-    const WebKit::WebURL& url,
-    const WebKit::WebURL& first_party_for_cookies) {
+blink::WebString PpapiWebKitPlatformSupportImpl::cookies(
+    const blink::WebURL& url,
+    const blink::WebURL& first_party_for_cookies) {
   NOTREACHED();
-  return WebKit::WebString();
+  return blink::WebString();
 }
 
-WebKit::WebString PpapiWebKitPlatformSupportImpl::defaultLocale() {
+blink::WebString PpapiWebKitPlatformSupportImpl::defaultLocale() {
   NOTREACHED();
-  return WebKit::WebString();
+  return blink::WebString();
 }
 
-WebKit::WebThemeEngine* PpapiWebKitPlatformSupportImpl::themeEngine() {
-  NOTREACHED();
-  return NULL;
-}
-
-WebKit::WebURLLoader* PpapiWebKitPlatformSupportImpl::createURLLoader() {
+blink::WebThemeEngine* PpapiWebKitPlatformSupportImpl::themeEngine() {
   NOTREACHED();
   return NULL;
 }
 
-WebKit::WebSocketStreamHandle*
+blink::WebURLLoader* PpapiWebKitPlatformSupportImpl::createURLLoader() {
+  NOTREACHED();
+  return NULL;
+}
+
+blink::WebSocketStreamHandle*
     PpapiWebKitPlatformSupportImpl::createSocketStreamHandle() {
   NOTREACHED();
   return NULL;
 }
 
 void PpapiWebKitPlatformSupportImpl::getPluginList(bool refresh,
-    WebKit::WebPluginListBuilder* builder) {
+    blink::WebPluginListBuilder* builder) {
   NOTREACHED();
 }
 
-WebKit::WebData PpapiWebKitPlatformSupportImpl::loadResource(const char* name) {
+blink::WebData PpapiWebKitPlatformSupportImpl::loadResource(const char* name) {
   NOTREACHED();
-  return WebKit::WebData();
+  return blink::WebData();
 }
 
-WebKit::WebStorageNamespace*
+blink::WebStorageNamespace*
 PpapiWebKitPlatformSupportImpl::createLocalStorageNamespace() {
   NOTREACHED();
   return 0;
 }
 
 void PpapiWebKitPlatformSupportImpl::dispatchStorageEvent(
-    const WebKit::WebString& key, const WebKit::WebString& old_value,
-    const WebKit::WebString& new_value, const WebKit::WebString& origin,
-    const WebKit::WebURL& url, bool is_local_storage) {
+    const blink::WebString& key, const blink::WebString& old_value,
+    const blink::WebString& new_value, const blink::WebString& origin,
+    const blink::WebURL& url, bool is_local_storage) {
   NOTREACHED();
 }
 
 int PpapiWebKitPlatformSupportImpl::databaseDeleteFile(
-    const WebKit::WebString& vfs_file_name, bool sync_dir) {
+    const blink::WebString& vfs_file_name, bool sync_dir) {
   NOTREACHED();
   return 0;
 }

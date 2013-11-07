@@ -168,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest,
   TitleWatcher title_watcher(shell()->web_contents(), expected_title);
   title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
   SimulateMouseClick(shell()->web_contents(), 0,
-      WebKit::WebMouseEvent::ButtonLeft);
+      blink::WebMouseEvent::ButtonLeft);
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 #endif

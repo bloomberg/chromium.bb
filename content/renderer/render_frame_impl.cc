@@ -56,24 +56,24 @@
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #endif
 
-using WebKit::WebDataSource;
-using WebKit::WebDocument;
-using WebKit::WebFrame;
-using WebKit::WebNavigationPolicy;
-using WebKit::WebPluginParams;
-using WebKit::WebReferrerPolicy;
-using WebKit::WebSearchableFormData;
-using WebKit::WebSecurityOrigin;
-using WebKit::WebServiceWorkerProvider;
-using WebKit::WebStorageQuotaCallbacks;
-using WebKit::WebString;
-using WebKit::WebURL;
-using WebKit::WebURLError;
-using WebKit::WebURLRequest;
-using WebKit::WebURLResponse;
-using WebKit::WebUserGestureIndicator;
-using WebKit::WebVector;
-using WebKit::WebView;
+using blink::WebDataSource;
+using blink::WebDocument;
+using blink::WebFrame;
+using blink::WebNavigationPolicy;
+using blink::WebPluginParams;
+using blink::WebReferrerPolicy;
+using blink::WebSearchableFormData;
+using blink::WebSecurityOrigin;
+using blink::WebServiceWorkerProvider;
+using blink::WebStorageQuotaCallbacks;
+using blink::WebString;
+using blink::WebURL;
+using blink::WebURLError;
+using blink::WebURLRequest;
+using blink::WebURLResponse;
+using blink::WebUserGestureIndicator;
+using blink::WebVector;
+using blink::WebView;
 using base::Time;
 using base::TimeDelta;
 using webkit_glue::WebURLResponseExtraDataImpl;
@@ -82,7 +82,7 @@ namespace content {
 
 namespace {
 
-typedef std::map<WebKit::WebFrame*, RenderFrameImpl*> FrameMap;
+typedef std::map<blink::WebFrame*, RenderFrameImpl*> FrameMap;
 base::LazyInstance<FrameMap> g_child_frame_map = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
@@ -140,12 +140,12 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
   return false;
 }
 
-// WebKit::WebFrameClient implementation -------------------------------------
+// blink::WebFrameClient implementation -------------------------------------
 
-WebKit::WebPlugin* RenderFrameImpl::createPlugin(
-    WebKit::WebFrame* frame,
-    const WebKit::WebPluginParams& params) {
-  WebKit::WebPlugin* plugin = NULL;
+blink::WebPlugin* RenderFrameImpl::createPlugin(
+    blink::WebFrame* frame,
+    const blink::WebPluginParams& params) {
+  blink::WebPlugin* plugin = NULL;
   if (GetContentClient()->renderer()->OverrideCreatePlugin(
           render_view_, frame, params, &plugin)) {
     return plugin;
@@ -173,19 +173,19 @@ WebKit::WebPlugin* RenderFrameImpl::createPlugin(
 #endif  // defined(ENABLE_PLUGINS)
 }
 
-WebKit::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
-    WebKit::WebFrame* frame,
-    const WebKit::WebURL& url,
-    WebKit::WebMediaPlayerClient* client) {
+blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
+    blink::WebFrame* frame,
+    const blink::WebURL& url,
+    blink::WebMediaPlayerClient* client) {
   // TODO(nasko): Moving the implementation here involves moving a few media
   // related client objects here or referencing them in the RenderView. Needs
   // more work to understand where the proper place for those objects is.
   return render_view_->createMediaPlayer(frame, url, client);
 }
 
-WebKit::WebApplicationCacheHost* RenderFrameImpl::createApplicationCacheHost(
-    WebKit::WebFrame* frame,
-    WebKit::WebApplicationCacheHostClient* client) {
+blink::WebApplicationCacheHost* RenderFrameImpl::createApplicationCacheHost(
+    blink::WebFrame* frame,
+    blink::WebApplicationCacheHostClient* client) {
   if (!frame || !frame->view())
     return NULL;
   return new RendererWebApplicationCacheHostImpl(
@@ -193,7 +193,7 @@ WebKit::WebApplicationCacheHost* RenderFrameImpl::createApplicationCacheHost(
       RenderThreadImpl::current()->appcache_dispatcher()->backend_proxy());
 }
 
-WebKit::WebWorkerPermissionClientProxy*
+blink::WebWorkerPermissionClientProxy*
 RenderFrameImpl::createWorkerPermissionClientProxy(WebFrame* frame) {
   if (!frame || !frame->view())
     return NULL;
@@ -201,13 +201,13 @@ RenderFrameImpl::createWorkerPermissionClientProxy(WebFrame* frame) {
       RenderViewImpl::FromWebView(frame->view()), frame);
 }
 
-WebKit::WebCookieJar* RenderFrameImpl::cookieJar(WebKit::WebFrame* frame) {
+blink::WebCookieJar* RenderFrameImpl::cookieJar(blink::WebFrame* frame) {
   return render_view_->cookieJar(frame);
 }
 
-WebKit::WebServiceWorkerProvider* RenderFrameImpl::createServiceWorkerProvider(
-    WebKit::WebFrame* frame,
-    WebKit::WebServiceWorkerProviderClient* client) {
+blink::WebServiceWorkerProvider* RenderFrameImpl::createServiceWorkerProvider(
+    blink::WebFrame* frame,
+    blink::WebServiceWorkerProviderClient* client) {
   return new WebServiceWorkerProviderImpl(
       ChildThread::current()->thread_safe_sender(),
       ChildThread::current()->service_worker_message_filter(),
@@ -215,13 +215,13 @@ WebKit::WebServiceWorkerProvider* RenderFrameImpl::createServiceWorkerProvider(
       make_scoped_ptr(client));
 }
 
-void RenderFrameImpl::didAccessInitialDocument(WebKit::WebFrame* frame) {
+void RenderFrameImpl::didAccessInitialDocument(blink::WebFrame* frame) {
   render_view_->didAccessInitialDocument(frame);
 }
 
-WebKit::WebFrame* RenderFrameImpl::createChildFrame(
-    WebKit::WebFrame* parent,
-    const WebKit::WebString& name) {
+blink::WebFrame* RenderFrameImpl::createChildFrame(
+    blink::WebFrame* parent,
+    const blink::WebString& name) {
   RenderFrameImpl* child_render_frame = this;
   long long child_frame_identifier = WebFrame::generateEmbedderIdentifier();
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
@@ -236,7 +236,7 @@ WebKit::WebFrame* RenderFrameImpl::createChildFrame(
     child_render_frame = RenderFrameImpl::Create(render_view_, routing_id);
   }
 
-  WebKit::WebFrame* web_frame = WebFrame::create(child_render_frame,
+  blink::WebFrame* web_frame = WebFrame::create(child_render_frame,
                                                  child_frame_identifier);
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
@@ -247,11 +247,11 @@ WebKit::WebFrame* RenderFrameImpl::createChildFrame(
   return web_frame;
 }
 
-void RenderFrameImpl::didDisownOpener(WebKit::WebFrame* frame) {
+void RenderFrameImpl::didDisownOpener(blink::WebFrame* frame) {
   render_view_->didDisownOpener(frame);
 }
 
-void RenderFrameImpl::frameDetached(WebKit::WebFrame* frame) {
+void RenderFrameImpl::frameDetached(blink::WebFrame* frame) {
   // Currently multiple WebCore::Frames can send frameDetached to a single
   // RenderFrameImpl. This is legacy behavior from when RenderViewImpl served
   // as a shared WebFrameClient for multiple Webcore::Frame objects. It also
@@ -286,14 +286,14 @@ void RenderFrameImpl::frameDetached(WebKit::WebFrame* frame) {
   frame->close();
 }
 
-void RenderFrameImpl::willClose(WebKit::WebFrame* frame) {
+void RenderFrameImpl::willClose(blink::WebFrame* frame) {
   // Call back to RenderViewImpl for observers to be notified.
   // TODO(nasko): Remove once we have RenderFrameObserver.
   render_view_->willClose(frame);
 }
 
-void RenderFrameImpl::didChangeName(WebKit::WebFrame* frame,
-                                    const WebKit::WebString& name) {
+void RenderFrameImpl::didChangeName(blink::WebFrame* frame,
+                                    const blink::WebString& name) {
   if (!render_view_->renderer_preferences_.report_frame_name_changes)
     return;
 
@@ -305,26 +305,26 @@ void RenderFrameImpl::didChangeName(WebKit::WebFrame* frame,
 }
 
 void RenderFrameImpl::didMatchCSS(
-    WebKit::WebFrame* frame,
-    const WebKit::WebVector<WebKit::WebString>& newly_matching_selectors,
-    const WebKit::WebVector<WebKit::WebString>& stopped_matching_selectors) {
+    blink::WebFrame* frame,
+    const blink::WebVector<blink::WebString>& newly_matching_selectors,
+    const blink::WebVector<blink::WebString>& stopped_matching_selectors) {
   render_view_->didMatchCSS(
       frame, newly_matching_selectors, stopped_matching_selectors);
 }
 
-void RenderFrameImpl::loadURLExternally(WebKit::WebFrame* frame,
-                                        const WebKit::WebURLRequest& request,
-                                        WebKit::WebNavigationPolicy policy) {
+void RenderFrameImpl::loadURLExternally(blink::WebFrame* frame,
+                                        const blink::WebURLRequest& request,
+                                        blink::WebNavigationPolicy policy) {
   loadURLExternally(frame, request, policy, WebString());
 }
 
 void RenderFrameImpl::loadURLExternally(
-    WebKit::WebFrame* frame,
-    const WebKit::WebURLRequest& request,
-    WebKit::WebNavigationPolicy policy,
-    const WebKit::WebString& suggested_name) {
+    blink::WebFrame* frame,
+    const blink::WebURLRequest& request,
+    blink::WebNavigationPolicy policy,
+    const blink::WebString& suggested_name) {
   Referrer referrer(RenderViewImpl::GetReferrerFromRequest(frame, request));
-  if (policy == WebKit::WebNavigationPolicyDownload) {
+  if (policy == blink::WebNavigationPolicyDownload) {
     render_view_->Send(new ViewHostMsg_DownloadUrl(render_view_->GetRoutingID(),
                                                    request.url(), referrer,
                                                    suggested_name));
@@ -333,36 +333,36 @@ void RenderFrameImpl::loadURLExternally(
   }
 }
 
-WebKit::WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
-    WebKit::WebFrame* frame,
-    WebKit::WebDataSource::ExtraData* extra_data,
-    const WebKit::WebURLRequest& request,
-    WebKit::WebNavigationType type,
-    WebKit::WebNavigationPolicy default_policy,
+blink::WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
+    blink::WebFrame* frame,
+    blink::WebDataSource::ExtraData* extra_data,
+    const blink::WebURLRequest& request,
+    blink::WebNavigationType type,
+    blink::WebNavigationPolicy default_policy,
     bool is_redirect) {
   return render_view_->decidePolicyForNavigation(
       frame, extra_data, request, type, default_policy, is_redirect);
 }
 
-WebKit::WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
-    WebKit::WebFrame* frame,
-    const WebKit::WebURLRequest& request,
-    WebKit::WebNavigationType type,
-    WebKit::WebNavigationPolicy default_policy,
+blink::WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
+    blink::WebFrame* frame,
+    const blink::WebURLRequest& request,
+    blink::WebNavigationType type,
+    blink::WebNavigationPolicy default_policy,
     bool is_redirect) {
   return render_view_->decidePolicyForNavigation(
       frame, request, type, default_policy, is_redirect);
 }
 
-void RenderFrameImpl::willSendSubmitEvent(WebKit::WebFrame* frame,
-                                          const WebKit::WebFormElement& form) {
+void RenderFrameImpl::willSendSubmitEvent(blink::WebFrame* frame,
+                                          const blink::WebFormElement& form) {
   // Call back to RenderViewImpl for observers to be notified.
   // TODO(nasko): Remove once we have RenderFrameObserver.
   render_view_->willSendSubmitEvent(frame, form);
 }
 
-void RenderFrameImpl::willSubmitForm(WebKit::WebFrame* frame,
-                                     const WebKit::WebFormElement& form) {
+void RenderFrameImpl::willSubmitForm(blink::WebFrame* frame,
+                                     const blink::WebFormElement& form) {
   DocumentState* document_state =
       DocumentState::FromDataSource(frame->provisionalDataSource());
   NavigationState* navigation_state = document_state->navigation_state();
@@ -385,8 +385,8 @@ void RenderFrameImpl::willSubmitForm(WebKit::WebFrame* frame,
   render_view_->willSubmitForm(frame, form);
 }
 
-void RenderFrameImpl::didCreateDataSource(WebKit::WebFrame* frame,
-                                          WebKit::WebDataSource* datasource) {
+void RenderFrameImpl::didCreateDataSource(blink::WebFrame* frame,
+                                          blink::WebDataSource* datasource) {
   // TODO(nasko): Move implementation here. Needed state:
   // * pending_navigation_params_
   // * webview
@@ -396,7 +396,7 @@ void RenderFrameImpl::didCreateDataSource(WebKit::WebFrame* frame,
   render_view_->didCreateDataSource(frame, datasource);
 }
 
-void RenderFrameImpl::didStartProvisionalLoad(WebKit::WebFrame* frame) {
+void RenderFrameImpl::didStartProvisionalLoad(blink::WebFrame* frame) {
   WebDataSource* ds = frame->provisionalDataSource();
 
   // In fast/loader/stop-provisional-loads.html, we abort the load before this
@@ -445,15 +445,15 @@ void RenderFrameImpl::didStartProvisionalLoad(WebKit::WebFrame* frame) {
 }
 
 void RenderFrameImpl::didReceiveServerRedirectForProvisionalLoad(
-    WebKit::WebFrame* frame) {
+    blink::WebFrame* frame) {
   // TODO(nasko): Move implementation here. Needed state:
   // * page_id_
   render_view_->didReceiveServerRedirectForProvisionalLoad(frame);
 }
 
 void RenderFrameImpl::didFailProvisionalLoad(
-    WebKit::WebFrame* frame,
-    const WebKit::WebURLError& error) {
+    blink::WebFrame* frame,
+    const blink::WebURLError& error) {
   // TODO(nasko): Move implementation here. Needed state:
   // * page_id_
   // * pending_navigation_params_
@@ -463,7 +463,7 @@ void RenderFrameImpl::didFailProvisionalLoad(
   render_view_->didFailProvisionalLoad(frame, error);
 }
 
-void RenderFrameImpl::didCommitProvisionalLoad(WebKit::WebFrame* frame,
+void RenderFrameImpl::didCommitProvisionalLoad(blink::WebFrame* frame,
                                                bool is_new_navigation) {
   // TODO(nasko): Move implementation here. Needed state:
   // * page_id_
@@ -478,7 +478,7 @@ void RenderFrameImpl::didCommitProvisionalLoad(WebKit::WebFrame* frame,
   render_view_->didCommitProvisionalLoad(frame, is_new_navigation);
 }
 
-void RenderFrameImpl::didClearWindowObject(WebKit::WebFrame* frame) {
+void RenderFrameImpl::didClearWindowObject(blink::WebFrame* frame) {
   // TODO(nasko): Move implementation here. Needed state:
   // * enabled_bindings_
   // * dom_automation_controller_
@@ -486,7 +486,7 @@ void RenderFrameImpl::didClearWindowObject(WebKit::WebFrame* frame) {
   render_view_->didClearWindowObject(frame);
 }
 
-void RenderFrameImpl::didCreateDocumentElement(WebKit::WebFrame* frame) {
+void RenderFrameImpl::didCreateDocumentElement(blink::WebFrame* frame) {
   // Notify the browser about non-blank documents loading in the top frame.
   GURL url = frame->document().url();
   if (url.is_valid() && url.spec() != kAboutBlankURL) {
@@ -503,60 +503,60 @@ void RenderFrameImpl::didCreateDocumentElement(WebKit::WebFrame* frame) {
   render_view_->didCreateDocumentElement(frame);
 }
 
-void RenderFrameImpl::didReceiveTitle(WebKit::WebFrame* frame,
-                                      const WebKit::WebString& title,
-                                      WebKit::WebTextDirection direction) {
+void RenderFrameImpl::didReceiveTitle(blink::WebFrame* frame,
+                                      const blink::WebString& title,
+                                      blink::WebTextDirection direction) {
   // TODO(nasko): Investigate wheather implementation should move here.
   render_view_->didReceiveTitle(frame, title, direction);
 }
 
-void RenderFrameImpl::didChangeIcon(WebKit::WebFrame* frame,
-                                    WebKit::WebIconURL::Type icon_type) {
+void RenderFrameImpl::didChangeIcon(blink::WebFrame* frame,
+                                    blink::WebIconURL::Type icon_type) {
   // TODO(nasko): Investigate wheather implementation should move here.
   render_view_->didChangeIcon(frame, icon_type);
 }
 
-void RenderFrameImpl::didFinishDocumentLoad(WebKit::WebFrame* frame) {
+void RenderFrameImpl::didFinishDocumentLoad(blink::WebFrame* frame) {
   // TODO(nasko): Move implementation here. No state needed, just observers
   // notification in before updating encoding.
   render_view_->didFinishDocumentLoad(frame);
 }
 
-void RenderFrameImpl::didHandleOnloadEvents(WebKit::WebFrame* frame) {
+void RenderFrameImpl::didHandleOnloadEvents(blink::WebFrame* frame) {
   // TODO(nasko): Move implementation here. Needed state:
   // * page_id_
   render_view_->didHandleOnloadEvents(frame);
 }
 
-void RenderFrameImpl::didFailLoad(WebKit::WebFrame* frame,
-                                  const WebKit::WebURLError& error) {
+void RenderFrameImpl::didFailLoad(blink::WebFrame* frame,
+                                  const blink::WebURLError& error) {
   // TODO(nasko): Move implementation here. No state needed.
   render_view_->didFailLoad(frame, error);
 }
 
-void RenderFrameImpl::didFinishLoad(WebKit::WebFrame* frame) {
+void RenderFrameImpl::didFinishLoad(blink::WebFrame* frame) {
   // TODO(nasko): Move implementation here. No state needed, just observers
   // notification before sending message to the browser process.
   render_view_->didFinishLoad(frame);
 }
 
-void RenderFrameImpl::didNavigateWithinPage(WebKit::WebFrame* frame,
+void RenderFrameImpl::didNavigateWithinPage(blink::WebFrame* frame,
                                             bool is_new_navigation) {
   // TODO(nasko): Move implementation here. No state needed, just observers
   // notification before sending message to the browser process.
   render_view_->didNavigateWithinPage(frame, is_new_navigation);
 }
 
-void RenderFrameImpl::didUpdateCurrentHistoryItem(WebKit::WebFrame* frame) {
+void RenderFrameImpl::didUpdateCurrentHistoryItem(blink::WebFrame* frame) {
   // TODO(nasko): Move implementation here. Needed methods:
   // * StartNavStateSyncTimerIfNecessary
   render_view_->didUpdateCurrentHistoryItem(frame);
 }
 
 void RenderFrameImpl::willRequestAfterPreconnect(
-    WebKit::WebFrame* frame,
-    WebKit::WebURLRequest& request) {
-  WebKit::WebReferrerPolicy referrer_policy = WebKit::WebReferrerPolicyDefault;
+    blink::WebFrame* frame,
+    blink::WebURLRequest& request) {
+  blink::WebReferrerPolicy referrer_policy = blink::WebReferrerPolicyDefault;
   WebString custom_user_agent;
 
   if (request.extraData()) {
@@ -578,10 +578,10 @@ void RenderFrameImpl::willRequestAfterPreconnect(
 }
 
 void RenderFrameImpl::willSendRequest(
-    WebKit::WebFrame* frame,
+    blink::WebFrame* frame,
     unsigned identifier,
-    WebKit::WebURLRequest& request,
-    const WebKit::WebURLResponse& redirect_response) {
+    blink::WebURLRequest& request,
+    const blink::WebURLResponse& redirect_response) {
   // The request my be empty during tests.
   if (request.url().isEmpty())
     return;
@@ -616,7 +616,7 @@ void RenderFrameImpl::willSendRequest(
   if (internal_data->is_cache_policy_override_set())
     request.setCachePolicy(internal_data->cache_policy_override());
 
-  WebKit::WebReferrerPolicy referrer_policy;
+  blink::WebReferrerPolicy referrer_policy;
   if (internal_data->is_referrer_policy_set()) {
     referrer_policy = internal_data->referrer_policy();
     internal_data->clear_referrer_policy();
@@ -693,9 +693,9 @@ void RenderFrameImpl::willSendRequest(
 }
 
 void RenderFrameImpl::didReceiveResponse(
-    WebKit::WebFrame* frame,
+    blink::WebFrame* frame,
     unsigned identifier,
-    const WebKit::WebURLResponse& response) {
+    const blink::WebURLResponse& response) {
   // Only do this for responses that correspond to a provisional data source
   // of the top-most frame.  If we have a provisional data source, then we
   // can't have any sub-resources yet, so we know that this response must
@@ -738,7 +738,7 @@ void RenderFrameImpl::didReceiveResponse(
   internal_data->set_use_error_page(true);
 }
 
-void RenderFrameImpl::didFinishResourceLoad(WebKit::WebFrame* frame,
+void RenderFrameImpl::didFinishResourceLoad(blink::WebFrame* frame,
                                             unsigned identifier) {
   // TODO(nasko): Move implementation here. Needed state:
   // * devtools_agent_
@@ -748,9 +748,9 @@ void RenderFrameImpl::didFinishResourceLoad(WebKit::WebFrame* frame,
 }
 
 void RenderFrameImpl::didLoadResourceFromMemoryCache(
-    WebKit::WebFrame* frame,
-    const WebKit::WebURLRequest& request,
-    const WebKit::WebURLResponse& response) {
+    blink::WebFrame* frame,
+    const blink::WebURLRequest& request,
+    const blink::WebURLResponse& response) {
   // The recipients of this message have no use for data: URLs: they don't
   // affect the page's insecure content list and are not in the disk cache. To
   // prevent large (1M+) data: URLs from crashing in the IPC system, we simply
@@ -770,22 +770,22 @@ void RenderFrameImpl::didLoadResourceFromMemoryCache(
       ResourceType::FromTargetType(request.targetType())));
 }
 
-void RenderFrameImpl::didDisplayInsecureContent(WebKit::WebFrame* frame) {
+void RenderFrameImpl::didDisplayInsecureContent(blink::WebFrame* frame) {
   render_view_->Send(new ViewHostMsg_DidDisplayInsecureContent(
       render_view_->GetRoutingID()));
 }
 
 void RenderFrameImpl::didRunInsecureContent(
-    WebKit::WebFrame* frame,
-    const WebKit::WebSecurityOrigin& origin,
-    const WebKit::WebURL& target) {
+    blink::WebFrame* frame,
+    const blink::WebSecurityOrigin& origin,
+    const blink::WebURL& target) {
   render_view_->Send(new ViewHostMsg_DidRunInsecureContent(
       render_view_->GetRoutingID(),
       origin.toString().utf8(),
       target));
 }
 
-void RenderFrameImpl::didAbortLoading(WebKit::WebFrame* frame) {
+void RenderFrameImpl::didAbortLoading(blink::WebFrame* frame) {
 #if defined(ENABLE_PLUGINS)
   if (frame != render_view_->webview()->mainFrame())
     return;
@@ -795,12 +795,12 @@ void RenderFrameImpl::didAbortLoading(WebKit::WebFrame* frame) {
 }
 
 void RenderFrameImpl::didExhaustMemoryAvailableForScript(
-    WebKit::WebFrame* frame) {
+    blink::WebFrame* frame) {
   render_view_->Send(new ViewHostMsg_JSOutOfMemory(
       render_view_->GetRoutingID()));
 }
 
-void RenderFrameImpl::didCreateScriptContext(WebKit::WebFrame* frame,
+void RenderFrameImpl::didCreateScriptContext(blink::WebFrame* frame,
                                              v8::Handle<v8::Context> context,
                                              int extension_group,
                                              int world_id) {
@@ -808,32 +808,32 @@ void RenderFrameImpl::didCreateScriptContext(WebKit::WebFrame* frame,
       frame, context, extension_group, world_id);
 }
 
-void RenderFrameImpl::willReleaseScriptContext(WebKit::WebFrame* frame,
+void RenderFrameImpl::willReleaseScriptContext(blink::WebFrame* frame,
                                                v8::Handle<v8::Context> context,
                                                int world_id) {
   GetContentClient()->renderer()->WillReleaseScriptContext(
       frame, context, world_id);
 }
 
-void RenderFrameImpl::didFirstVisuallyNonEmptyLayout(WebKit::WebFrame* frame) {
+void RenderFrameImpl::didFirstVisuallyNonEmptyLayout(blink::WebFrame* frame) {
   render_view_->didFirstVisuallyNonEmptyLayout(frame);
 }
 
-void RenderFrameImpl::didChangeContentsSize(WebKit::WebFrame* frame,
-                                            const WebKit::WebSize& size) {
+void RenderFrameImpl::didChangeContentsSize(blink::WebFrame* frame,
+                                            const blink::WebSize& size) {
   // TODO(nasko): Move implementation here. Needed state:
   // * cached_has_main_frame_horizontal_scrollbar_
   // * cached_has_main_frame_vertical_scrollbar_
   render_view_->didChangeContentsSize(frame, size);
 }
 
-void RenderFrameImpl::didChangeScrollOffset(WebKit::WebFrame* frame) {
+void RenderFrameImpl::didChangeScrollOffset(blink::WebFrame* frame) {
   // TODO(nasko): Move implementation here. Needed methods:
   // * StartNavStateSyncTimerIfNecessary
   render_view_->didChangeScrollOffset(frame);
 }
 
-void RenderFrameImpl::willInsertBody(WebKit::WebFrame* frame) {
+void RenderFrameImpl::willInsertBody(blink::WebFrame* frame) {
   if (!frame->parent()) {
     render_view_->Send(new ViewHostMsg_WillInsertBody(
         render_view_->GetRoutingID()));
@@ -855,22 +855,22 @@ void RenderFrameImpl::reportFindInPageMatchCount(int request_id,
 void RenderFrameImpl::reportFindInPageSelection(
     int request_id,
     int active_match_ordinal,
-    const WebKit::WebRect& selection_rect) {
+    const blink::WebRect& selection_rect) {
   render_view_->Send(new ViewHostMsg_Find_Reply(
       render_view_->GetRoutingID(), request_id, -1, selection_rect,
       active_match_ordinal, false));
 }
 
 void RenderFrameImpl::requestStorageQuota(
-    WebKit::WebFrame* frame,
-    WebKit::WebStorageQuotaType type,
+    blink::WebFrame* frame,
+    blink::WebStorageQuotaType type,
     unsigned long long requested_size,
-    WebKit::WebStorageQuotaCallbacks* callbacks) {
+    blink::WebStorageQuotaCallbacks* callbacks) {
   DCHECK(frame);
   WebSecurityOrigin origin = frame->document().securityOrigin();
   if (origin.isUnique()) {
     // Unique origins cannot store persistent state.
-    callbacks->didFail(WebKit::WebStorageQuotaErrorAbort);
+    callbacks->didFail(blink::WebStorageQuotaErrorAbort);
     return;
   }
   ChildThread::current()->quota_dispatcher()->RequestStorageQuota(
@@ -880,35 +880,35 @@ void RenderFrameImpl::requestStorageQuota(
 }
 
 void RenderFrameImpl::willOpenSocketStream(
-    WebKit::WebSocketStreamHandle* handle) {
+    blink::WebSocketStreamHandle* handle) {
   SocketStreamHandleData::AddToHandle(handle, render_view_->GetRoutingID());
 }
 
 void RenderFrameImpl::willStartUsingPeerConnectionHandler(
-    WebKit::WebFrame* frame,
-    WebKit::WebRTCPeerConnectionHandler* handler) {
+    blink::WebFrame* frame,
+    blink::WebRTCPeerConnectionHandler* handler) {
 #if defined(ENABLE_WEBRTC)
   static_cast<RTCPeerConnectionHandler*>(handler)->associateWithFrame(frame);
 #endif
 }
 
 bool RenderFrameImpl::willCheckAndDispatchMessageEvent(
-    WebKit::WebFrame* sourceFrame,
-    WebKit::WebFrame* targetFrame,
-    WebKit::WebSecurityOrigin targetOrigin,
-    WebKit::WebDOMMessageEvent event) {
+    blink::WebFrame* sourceFrame,
+    blink::WebFrame* targetFrame,
+    blink::WebSecurityOrigin targetOrigin,
+    blink::WebDOMMessageEvent event) {
   // TODO(nasko): Move implementation here. Needed state:
   // * is_swapped_out_
   return render_view_->willCheckAndDispatchMessageEvent(
       sourceFrame, targetFrame, targetOrigin, event);
 }
 
-WebKit::WebString RenderFrameImpl::userAgentOverride(
-    WebKit::WebFrame* frame,
-    const WebKit::WebURL& url) {
+blink::WebString RenderFrameImpl::userAgentOverride(
+    blink::WebFrame* frame,
+    const blink::WebURL& url) {
   if (!render_view_->webview() || !render_view_->webview()->mainFrame() ||
       render_view_->renderer_preferences_.user_agent_override.empty()) {
-    return WebKit::WebString();
+    return blink::WebString();
   }
 
   // If we're in the middle of committing a load, the data source we need
@@ -925,16 +925,16 @@ WebKit::WebString RenderFrameImpl::userAgentOverride(
   if (internal_data && internal_data->is_overriding_user_agent())
     return WebString::fromUTF8(
         render_view_->renderer_preferences_.user_agent_override);
-  return WebKit::WebString();
+  return blink::WebString();
 }
 
-WebKit::WebString RenderFrameImpl::doNotTrackValue(WebKit::WebFrame* frame) {
+blink::WebString RenderFrameImpl::doNotTrackValue(blink::WebFrame* frame) {
   if (render_view_->renderer_preferences_.enable_do_not_track)
     return WebString::fromUTF8("1");
   return WebString();
 }
 
-bool RenderFrameImpl::allowWebGL(WebKit::WebFrame* frame, bool default_value) {
+bool RenderFrameImpl::allowWebGL(blink::WebFrame* frame, bool default_value) {
   if (!default_value)
     return false;
 
@@ -947,7 +947,7 @@ bool RenderFrameImpl::allowWebGL(WebKit::WebFrame* frame, bool default_value) {
   return !blocked;
 }
 
-void RenderFrameImpl::didLoseWebGLContext(WebKit::WebFrame* frame,
+void RenderFrameImpl::didLoseWebGLContext(blink::WebFrame* frame,
                                           int arb_robustness_status_code) {
   render_view_->Send(new ViewHostMsg_DidLose3DContext(
       GURL(frame->top()->document().securityOrigin().toString()),

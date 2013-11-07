@@ -19,9 +19,9 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 
-using WebKit::WebHTTPHeaderVisitor;
-using WebKit::WebString;
-using WebKit::WebURLResponse;
+using blink::WebHTTPHeaderVisitor;
+using blink::WebString;
+using blink::WebURLResponse;
 
 namespace content {
 

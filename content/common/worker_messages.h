@@ -45,7 +45,7 @@ IPC_STRUCT_BEGIN(WorkerProcessMsg_CreateWorker_Params)
   IPC_STRUCT_MEMBER(int64, shared_worker_appcache_id)
 IPC_STRUCT_END()
 
-IPC_ENUM_TRAITS(WebKit::WebContentSecurityPolicyType)
+IPC_ENUM_TRAITS(blink::WebContentSecurityPolicyType)
 
 //-----------------------------------------------------------------------------
 // WorkerProcess messages
@@ -92,7 +92,7 @@ IPC_MESSAGE_ROUTED5(WorkerMsg_StartWorkerContext,
                     string16  /* user_agent */,
                     string16  /* source_code */,
                     string16  /* content_security_policy */,
-                    WebKit::WebContentSecurityPolicyType)
+                    blink::WebContentSecurityPolicyType)
 
 IPC_MESSAGE_ROUTED0(WorkerMsg_TerminateWorkerContext)
 

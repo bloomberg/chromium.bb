@@ -48,16 +48,16 @@ class OverscrollController {
   // This must be called when dispatching any event from the
   // RenderWidgetHostView so that the state of the overscroll gesture can be
   // updated properly.
-  Disposition DispatchEvent(const WebKit::WebInputEvent& event,
+  Disposition DispatchEvent(const blink::WebInputEvent& event,
                             const ui::LatencyInfo& latency_info);
 
   // This must be called when the ACK for any event comes in. This updates the
   // overscroll gesture status as appropriate.
-  void ReceivedEventACK(const WebKit::WebInputEvent& event, bool processed);
+  void ReceivedEventACK(const blink::WebInputEvent& event, bool processed);
 
   // This must be called when a gesture event is filtered out and not sent to
   // the renderer.
-  void DiscardingGestureEvent(const WebKit::WebGestureEvent& event);
+  void DiscardingGestureEvent(const blink::WebGestureEvent& event);
 
   OverscrollMode overscroll_mode() const { return overscroll_mode_; }
 
@@ -86,22 +86,22 @@ class OverscrollController {
   // Returns true if the event indicates that the in-progress overscroll gesture
   // can now be completed.
   bool DispatchEventCompletesAction(
-      const WebKit::WebInputEvent& event) const;
+      const blink::WebInputEvent& event) const;
 
   // Returns true to indicate that dispatching the event should reset the
   // overscroll gesture status.
-  bool DispatchEventResetsState(const WebKit::WebInputEvent& event) const;
+  bool DispatchEventResetsState(const blink::WebInputEvent& event) const;
 
   // Processes an event to update the internal state for overscroll. Returns
   // true if the state is updated, false otherwise.
-  bool ProcessEventForOverscroll(const WebKit::WebInputEvent& event);
+  bool ProcessEventForOverscroll(const blink::WebInputEvent& event);
 
   // Processes horizontal overscroll. This can update both the overscroll mode
   // and the over scroll amount (i.e. |overscroll_mode_|, |overscroll_delta_x_|
   // and |overscroll_delta_y_|).
   void ProcessOverscroll(float delta_x,
                          float delta_y,
-                         WebKit::WebInputEvent::Type event_type);
+                         blink::WebInputEvent::Type event_type);
 
   // Completes the desired action from the current gesture.
   void CompleteAction();

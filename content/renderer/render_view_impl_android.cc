@@ -51,7 +51,7 @@ void RenderViewImpl::UpdateTopControlsState(TopControlsState constraints,
   top_controls_constraints_ = constraints_cc;
 }
 
-void RenderViewImpl::didScrollWithKeyboard(const WebKit::WebSize& delta) {
+void RenderViewImpl::didScrollWithKeyboard(const blink::WebSize& delta) {
   if (delta.height == 0)
     return;
   if (compositor_) {

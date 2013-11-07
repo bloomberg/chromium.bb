@@ -13,11 +13,11 @@
 #include "third_party/WebKit/public/web/WebGeolocationPosition.h"
 #include "third_party/WebKit/public/web/WebGeolocationError.h"
 
-using WebKit::WebGeolocationController;
-using WebKit::WebGeolocationError;
-using WebKit::WebGeolocationPermissionRequest;
-using WebKit::WebGeolocationPermissionRequestManager;
-using WebKit::WebGeolocationPosition;
+using blink::WebGeolocationController;
+using blink::WebGeolocationError;
+using blink::WebGeolocationPermissionRequest;
+using blink::WebGeolocationPermissionRequestManager;
+using blink::WebGeolocationPosition;
 
 namespace content {
 
@@ -150,7 +150,7 @@ void GeolocationDispatcher::OnPositionUpdated(
     }
     controller_->errorOccurred(
         WebGeolocationError(
-            code, WebKit::WebString::fromUTF8(geoposition.error_message)));
+            code, blink::WebString::fromUTF8(geoposition.error_message)));
   }
 }
 

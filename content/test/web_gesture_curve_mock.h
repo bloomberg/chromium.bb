@@ -12,19 +12,19 @@
 
 // A simple class for mocking a WebGestureCurve. The curve flings at velocity
 // indefinitely.
-class WebGestureCurveMock : public WebKit::WebGestureCurve {
+class WebGestureCurveMock : public blink::WebGestureCurve {
  public:
-  WebGestureCurveMock(const WebKit::WebFloatPoint& velocity,
-                      const WebKit::WebSize& cumulative_scroll);
+  WebGestureCurveMock(const blink::WebFloatPoint& velocity,
+                      const blink::WebSize& cumulative_scroll);
   virtual ~WebGestureCurveMock();
 
   // Returns false if curve has finished and can no longer be applied.
   virtual bool apply(double time,
-                     WebKit::WebGestureCurveTarget* target) OVERRIDE;
+                     blink::WebGestureCurveTarget* target) OVERRIDE;
 
  private:
-  WebKit::WebFloatPoint velocity_;
-  WebKit::WebSize cumulative_scroll_;
+  blink::WebFloatPoint velocity_;
+  blink::WebSize cumulative_scroll_;
 
   DISALLOW_COPY_AND_ASSIGN(WebGestureCurveMock);
 };

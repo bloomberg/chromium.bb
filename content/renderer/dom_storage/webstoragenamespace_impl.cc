@@ -10,9 +10,9 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "url/gurl.h"
 
-using WebKit::WebStorageArea;
-using WebKit::WebStorageNamespace;
-using WebKit::WebString;
+using blink::WebStorageArea;
+using blink::WebStorageNamespace;
+using blink::WebString;
 
 namespace content {
 

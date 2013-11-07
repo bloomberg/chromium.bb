@@ -10,7 +10,7 @@
 #include "third_party/WebKit/public/web/WebGeolocationClient.h"
 #include "third_party/WebKit/public/web/WebGeolocationController.h"
 
-namespace WebKit {
+namespace blink {
 class WebGeolocationController;
 class WebGeolocationPermissionRequest;
 class WebGeolocationPermissionRequestManager;
@@ -25,7 +25,7 @@ struct Geoposition;
 // WebKit.
 // It's the complement of GeolocationDispatcherHost (owned by RenderViewHost).
 class GeolocationDispatcher : public RenderViewObserver,
-                              public WebKit::WebGeolocationClient {
+                              public blink::WebGeolocationClient {
  public:
   explicit GeolocationDispatcher(RenderViewImpl* render_view);
   virtual ~GeolocationDispatcher();
@@ -39,12 +39,12 @@ class GeolocationDispatcher : public RenderViewObserver,
   virtual void startUpdating();
   virtual void stopUpdating();
   virtual void setEnableHighAccuracy(bool enable_high_accuracy);
-  virtual void setController(WebKit::WebGeolocationController* controller);
-  virtual bool lastPosition(WebKit::WebGeolocationPosition& position);
+  virtual void setController(blink::WebGeolocationController* controller);
+  virtual bool lastPosition(blink::WebGeolocationPosition& position);
   virtual void requestPermission(
-      const WebKit::WebGeolocationPermissionRequest& permissionRequest);
+      const blink::WebGeolocationPermissionRequest& permissionRequest);
   virtual void cancelPermissionRequest(
-      const WebKit::WebGeolocationPermissionRequest& permissionRequest);
+      const blink::WebGeolocationPermissionRequest& permissionRequest);
 
   // Permission for using geolocation has been set.
   void OnPermissionSet(int bridge_id, bool is_allowed);
@@ -55,9 +55,9 @@ class GeolocationDispatcher : public RenderViewObserver,
   // The controller_ is valid for the lifetime of the underlying
   // WebCore::GeolocationController. geolocationDestroyed() is
   // invoked when the underlying object is destroyed.
-  scoped_ptr< WebKit::WebGeolocationController> controller_;
+  scoped_ptr< blink::WebGeolocationController> controller_;
 
-  scoped_ptr<WebKit::WebGeolocationPermissionRequestManager>
+  scoped_ptr<blink::WebGeolocationPermissionRequestManager>
       pending_permissions_;
   bool enable_high_accuracy_;
   bool updating_;

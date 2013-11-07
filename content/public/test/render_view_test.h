@@ -19,7 +19,7 @@
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 
-namespace WebKit {
+namespace blink {
 class WebHistoryItem;
 class WebWidget;
 }
@@ -41,7 +41,7 @@ class RenderViewTest : public testing::Test {
    public:
     RendererWebKitPlatformSupportImplNoSandbox();
     ~RendererWebKitPlatformSupportImplNoSandbox();
-    WebKit::Platform* Get();
+    blink::Platform* Get();
 
    private:
     scoped_ptr<RendererWebKitPlatformSupportImplNoSandboxImpl>
@@ -56,7 +56,7 @@ class RenderViewTest : public testing::Test {
   void ProcessPendingMessages();
 
   // Returns a pointer to the main frame.
-  WebKit::WebFrame* GetMainFrame();
+  blink::WebFrame* GetMainFrame();
 
   // Executes the given JavaScript in the context of the main frame. The input
   // is a NULL-terminated UTF-8 string.
@@ -75,17 +75,17 @@ class RenderViewTest : public testing::Test {
   // Navigates the main frame back or forward in session history and commits.
   // The caller must capture a WebHistoryItem for the target page. This is
   // available from the WebFrame.
-  void GoBack(const WebKit::WebHistoryItem& item);
-  void GoForward(const WebKit::WebHistoryItem& item);
+  void GoBack(const blink::WebHistoryItem& item);
+  void GoForward(const blink::WebHistoryItem& item);
 
   // Sends one native key event over IPC.
   void SendNativeKeyEvent(const NativeWebKeyboardEvent& key_event);
 
   // Send a raw keyboard event to the renderer.
-  void SendWebKeyboardEvent(const WebKit::WebKeyboardEvent& key_event);
+  void SendWebKeyboardEvent(const blink::WebKeyboardEvent& key_event);
 
   // Send a raw mouse event to the renderer.
-  void SendWebMouseEvent(const WebKit::WebMouseEvent& key_event);
+  void SendWebMouseEvent(const blink::WebMouseEvent& key_event);
 
   // Returns the bounds (coordinates and size) of the element with id
   // |element_id|.  Returns an empty rect if such an element was not found.
@@ -97,7 +97,7 @@ class RenderViewTest : public testing::Test {
   bool SimulateElementClick(const std::string& element_id);
 
   // Simulates |node| being focused.
-  void SetFocused(const WebKit::WebNode& node);
+  void SetFocused(const blink::WebNode& node);
 
   // Clears anything associated with the browsing history.
   void ClearHistory();
@@ -115,9 +115,9 @@ class RenderViewTest : public testing::Test {
 
   // These are all methods from RenderViewImpl that we expose to testing code.
   bool OnMessageReceived(const IPC::Message& msg);
-  void DidNavigateWithinPage(WebKit::WebFrame* frame, bool is_new_navigation);
+  void DidNavigateWithinPage(blink::WebFrame* frame, bool is_new_navigation);
   void SendContentStateImmediately();
-  WebKit::WebWidget* GetWebWidget();
+  blink::WebWidget* GetWebWidget();
 
   // testing::Test
   virtual void SetUp() OVERRIDE;
@@ -139,7 +139,7 @@ class RenderViewTest : public testing::Test {
   scoped_ptr<CommandLine> command_line_;
 
  private:
-  void GoToOffset(int offset, const WebKit::WebHistoryItem& history_item);
+  void GoToOffset(int offset, const blink::WebHistoryItem& history_item);
 };
 
 }  // namespace content

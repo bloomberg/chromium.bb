@@ -46,11 +46,11 @@
 #endif
 
 using base::TimeDelta;
-using WebKit::WebGestureEvent;
-using WebKit::WebInputEvent;
-using WebKit::WebMouseWheelEvent;
-using WebKit::WebTouchEvent;
-using WebKit::WebTouchPoint;
+using blink::WebGestureEvent;
+using blink::WebInputEvent;
+using blink::WebMouseWheelEvent;
+using blink::WebTouchEvent;
+using blink::WebTouchPoint;
 
 namespace content {
 
@@ -439,7 +439,7 @@ class TestView : public TestRenderWidgetHostView {
   const WebTouchEvent& acked_event() const { return acked_event_; }
   int acked_event_count() const { return acked_event_count_; }
   void ClearAckedEvent() {
-    acked_event_.type = WebKit::WebInputEvent::Undefined;
+    acked_event_.type = blink::WebInputEvent::Undefined;
     acked_event_count_ = 0;
   }
 
@@ -601,7 +601,7 @@ class RenderWidgetHostTest : public testing::Test {
   bool KeyPressEventCallback(const NativeWebKeyboardEvent& /* event */) {
     return handle_key_press_event_;
   }
-  bool MouseEventCallback(const WebKit::WebMouseEvent& /* event */) {
+  bool MouseEventCallback(const blink::WebMouseEvent& /* event */) {
     return handle_mouse_event_;
   }
 
@@ -1943,7 +1943,7 @@ TEST_F(RenderWidgetHostTest, OverscrollWithTouchEvents) {
   EXPECT_EQ(0U, process_->sink().message_count());
   EXPECT_TRUE(host_->TouchEventQueueEmpty());
 
-  SimulateGestureEvent(WebKit::WebInputEvent::GestureScrollEnd,
+  SimulateGestureEvent(blink::WebInputEvent::GestureScrollEnd,
                        WebGestureEvent::Touchscreen);
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
@@ -2001,7 +2001,7 @@ TEST_F(RenderWidgetHostTest, TouchGestureEndDispatchedAfterOverscrollComplete) {
   EXPECT_EQ(-5.f, host_->overscroll_delegate()->delta_y());
 
   // Send end event.
-  SimulateGestureEvent(WebKit::WebInputEvent::GestureScrollEnd,
+  SimulateGestureEvent(blink::WebInputEvent::GestureScrollEnd,
                        WebGestureEvent::Touchscreen);
   EXPECT_EQ(0U, process_->sink().message_count());
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
@@ -2019,7 +2019,7 @@ TEST_F(RenderWidgetHostTest, TouchGestureEndDispatchedAfterOverscrollComplete) {
   EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
   EXPECT_EQ(0U, host_->GestureEventDebouncingQueueSize());
 
-  SendInputEventACK(WebKit::WebInputEvent::GestureScrollEnd,
+  SendInputEventACK(blink::WebInputEvent::GestureScrollEnd,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(0U, process_->sink().message_count());
   EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
@@ -2059,7 +2059,7 @@ TEST_F(RenderWidgetHostTest, TouchGestureEndDispatchedAfterOverscrollComplete) {
   EXPECT_EQ(-5.f, host_->overscroll_delegate()->delta_y());
 
   // Send end event.
-  SimulateGestureEvent(WebKit::WebInputEvent::GestureScrollEnd,
+  SimulateGestureEvent(blink::WebInputEvent::GestureScrollEnd,
                        WebGestureEvent::Touchscreen);
   EXPECT_EQ(0U, process_->sink().message_count());
   EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
@@ -2078,7 +2078,7 @@ TEST_F(RenderWidgetHostTest, TouchGestureEndDispatchedAfterOverscrollComplete) {
   EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
   EXPECT_EQ(0U, host_->GestureEventDebouncingQueueSize());
 
-  SendInputEventACK(WebKit::WebInputEvent::GestureScrollEnd,
+  SendInputEventACK(blink::WebInputEvent::GestureScrollEnd,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(0U, process_->sink().message_count());
   EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());

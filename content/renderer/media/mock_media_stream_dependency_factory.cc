@@ -386,7 +386,7 @@ scoped_refptr<webrtc::PeerConnectionInterface>
 MockMediaStreamDependencyFactory::CreatePeerConnection(
     const webrtc::PeerConnectionInterface::IceServers& ice_servers,
     const webrtc::MediaConstraintsInterface* constraints,
-    WebKit::WebFrame* frame,
+    blink::WebFrame* frame,
     webrtc::PeerConnectionObserver* observer) {
   DCHECK(mock_pc_factory_created_);
   return new talk_base::RefCountedObject<MockPeerConnectionImpl>(this);
@@ -411,7 +411,7 @@ MockMediaStreamDependencyFactory::CreateLocalVideoSource(
 
 scoped_refptr<WebAudioCapturerSource>
 MockMediaStreamDependencyFactory::CreateWebAudioSource(
-    WebKit::WebMediaStreamSource* source,
+    blink::WebMediaStreamSource* source,
     RTCMediaConstraints* constraints) {
   return NULL;
 }

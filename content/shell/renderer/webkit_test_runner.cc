@@ -62,27 +62,27 @@
 #include "webkit/common/webpreferences.h"
 #include "webkit/glue/webkit_glue.h"
 
-using WebKit::Platform;
-using WebKit::WebArrayBufferView;
-using WebKit::WebContextMenuData;
-using WebKit::WebDevToolsAgent;
-using WebKit::WebDeviceMotionData;
-using WebKit::WebDeviceOrientationData;
-using WebKit::WebElement;
-using WebKit::WebFrame;
-using WebKit::WebGamepads;
-using WebKit::WebHistoryItem;
-using WebKit::WebPoint;
-using WebKit::WebRect;
-using WebKit::WebScriptSource;
-using WebKit::WebSize;
-using WebKit::WebString;
-using WebKit::WebURL;
-using WebKit::WebURLError;
-using WebKit::WebURLRequest;
-using WebKit::WebTestingSupport;
-using WebKit::WebVector;
-using WebKit::WebView;
+using blink::Platform;
+using blink::WebArrayBufferView;
+using blink::WebContextMenuData;
+using blink::WebDevToolsAgent;
+using blink::WebDeviceMotionData;
+using blink::WebDeviceOrientationData;
+using blink::WebElement;
+using blink::WebFrame;
+using blink::WebGamepads;
+using blink::WebHistoryItem;
+using blink::WebPoint;
+using blink::WebRect;
+using blink::WebScriptSource;
+using blink::WebSize;
+using blink::WebString;
+using blink::WebURL;
+using blink::WebURLError;
+using blink::WebURLRequest;
+using blink::WebTestingSupport;
+using blink::WebVector;
+using blink::WebView;
 using WebTestRunner::WebTask;
 using WebTestRunner::WebTestInterfaces;
 using WebTestRunner::WebTestProxyBase;
@@ -255,7 +255,7 @@ void WebKitTestRunner::postDelayedTask(WebTask* task, long long ms) {
 }
 
 WebString WebKitTestRunner::registerIsolatedFileSystem(
-    const WebKit::WebVector<WebKit::WebString>& absolute_filenames) {
+    const blink::WebVector<blink::WebString>& absolute_filenames) {
   std::vector<base::FilePath> files;
   for (size_t i = 0; i < absolute_filenames.size(); ++i)
     files.push_back(base::FilePath::FromUTF16Unsafe(absolute_filenames[i]));
@@ -514,7 +514,7 @@ bool WebKitTestRunner::allowExternalPages() {
 
 void WebKitTestRunner::captureHistoryForWindow(
     WebTestProxyBase* proxy,
-    WebVector<WebKit::WebHistoryItem>* history,
+    WebVector<blink::WebHistoryItem>* history,
     size_t* currentEntryIndex) {
   size_t pos = 0;
   std::vector<int>::iterator id;

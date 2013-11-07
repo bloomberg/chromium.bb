@@ -160,7 +160,7 @@ scoped_ptr<base::SharedMemory>
 }
 
 void MockRenderThread::RegisterExtension(v8::Extension* extension) {
-  WebKit::WebScriptController::registerExtension(extension);
+  blink::WebScriptController::registerExtension(extension);
 }
 
 void MockRenderThread::ScheduleIdleHandler(int64 initial_delay_ms) {
@@ -207,7 +207,7 @@ void MockRenderThread::SendCloseMessage() {
 
 // The Widget expects to be returned valid route_id.
 void MockRenderThread::OnCreateWidget(int opener_id,
-                                      WebKit::WebPopupType popup_type,
+                                      blink::WebPopupType popup_type,
                                       int* route_id,
                                       int* surface_id) {
   opener_id_ = opener_id;

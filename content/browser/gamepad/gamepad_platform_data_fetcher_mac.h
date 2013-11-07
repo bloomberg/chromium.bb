@@ -32,7 +32,7 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher,
  public:
   GamepadPlatformDataFetcherMac();
   virtual ~GamepadPlatformDataFetcherMac();
-  virtual void GetGamepadData(WebKit::WebGamepads* pads,
+  virtual void GetGamepadData(blink::WebGamepads* pads,
                               bool devices_changed_hint) OVERRIDE;
   virtual void PauseHint(bool paused) OVERRIDE;
 
@@ -73,7 +73,7 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher,
 
   scoped_ptr<XboxDataFetcher> xbox_fetcher_;
 
-  WebKit::WebGamepads data_;
+  blink::WebGamepads data_;
 
   // Side-band data that's not passed to the consumer, but we need to maintain
   // to update data_.
@@ -82,10 +82,10 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher,
     union {
       struct {
         IOHIDDeviceRef device_ref;
-        IOHIDElementRef button_elements[WebKit::WebGamepad::buttonsLengthCap];
-        IOHIDElementRef axis_elements[WebKit::WebGamepad::buttonsLengthCap];
-        CFIndex axis_minimums[WebKit::WebGamepad::axesLengthCap];
-        CFIndex axis_maximums[WebKit::WebGamepad::axesLengthCap];
+        IOHIDElementRef button_elements[blink::WebGamepad::buttonsLengthCap];
+        IOHIDElementRef axis_elements[blink::WebGamepad::buttonsLengthCap];
+        CFIndex axis_minimums[blink::WebGamepad::axesLengthCap];
+        CFIndex axis_maximums[blink::WebGamepad::axesLengthCap];
         // Function to map from device data to standard layout, if available.
         // May be null if no mapping is available.
         GamepadStandardMappingFunction mapper;
@@ -96,7 +96,7 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher,
       } xbox;
     };
   };
-  AssociatedData associated_[WebKit::WebGamepads::itemsLengthCap];
+  AssociatedData associated_[blink::WebGamepads::itemsLengthCap];
 
   DISALLOW_COPY_AND_ASSIGN(GamepadPlatformDataFetcherMac);
 };

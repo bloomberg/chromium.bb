@@ -22,14 +22,14 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 
-using WebKit::WebApplicationCacheHost;
-using WebKit::WebFrame;
-using WebKit::WebMessagePortChannel;
-using WebKit::WebMessagePortChannelArray;
-using WebKit::WebSecurityOrigin;
-using WebKit::WebString;
-using WebKit::WebWorker;
-using WebKit::WebSharedWorkerClient;
+using blink::WebApplicationCacheHost;
+using blink::WebFrame;
+using blink::WebMessagePortChannel;
+using blink::WebMessagePortChannelArray;
+using blink::WebSecurityOrigin;
+using blink::WebString;
+using blink::WebWorker;
+using blink::WebSharedWorkerClient;
 
 namespace content {
 
@@ -59,7 +59,7 @@ void WebSharedWorkerClientProxy::workerContextDestroyed() {
     stub_->Shutdown();
 }
 
-WebKit::WebNotificationPresenter*
+blink::WebNotificationPresenter*
 WebSharedWorkerClientProxy::notificationPresenter() {
   // TODO(johnnyg): Notifications are not yet hooked up to workers.
   // Coming soon.
@@ -68,7 +68,7 @@ WebSharedWorkerClientProxy::notificationPresenter() {
 }
 
 WebApplicationCacheHost* WebSharedWorkerClientProxy::createApplicationCacheHost(
-    WebKit::WebApplicationCacheHostClient* client) {
+    blink::WebApplicationCacheHostClient* client) {
   WorkerWebApplicationCacheHostImpl* host =
       new WorkerWebApplicationCacheHostImpl(stub_->appcache_init_info(),
                                             client);
@@ -78,9 +78,9 @@ WebApplicationCacheHost* WebSharedWorkerClientProxy::createApplicationCacheHost(
   return host;
 }
 
-WebKit::WebWorkerPermissionClientProxy*
+blink::WebWorkerPermissionClientProxy*
 WebSharedWorkerClientProxy::createWorkerPermissionClientProxy(
-    const WebKit::WebSecurityOrigin& origin) {
+    const blink::WebSecurityOrigin& origin) {
   return new SharedWorkerPermissionClientProxy(
       GURL(origin.toString()), origin.isUnique(), route_id_,
       ChildThread::current()->thread_safe_sender());
@@ -98,7 +98,7 @@ bool WebSharedWorkerClientProxy::allowFileSystem() {
   return false;
 }
 
-bool WebSharedWorkerClientProxy::allowIndexedDB(const WebKit::WebString& name) {
+bool WebSharedWorkerClientProxy::allowIndexedDB(const blink::WebString& name) {
   return false;
 }
 
@@ -109,7 +109,7 @@ void WebSharedWorkerClientProxy::dispatchDevToolsMessage(
 }
 
 void WebSharedWorkerClientProxy::saveDevToolsAgentState(
-    const WebKit::WebString& state) {
+    const blink::WebString& state) {
   if (devtools_agent_)
     devtools_agent_->SaveDevToolsAgentState(state);
 }

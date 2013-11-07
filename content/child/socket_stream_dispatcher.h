@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "ipc/ipc_listener.h"
 
-namespace WebKit {
+namespace blink {
 class WebSocketStreamHandle;
 }
 
@@ -32,7 +32,7 @@ class SocketStreamDispatcher : public IPC::Listener {
   virtual ~SocketStreamDispatcher() {}
 
   static webkit_glue::WebSocketStreamHandleBridge* CreateBridge(
-      WebKit::WebSocketStreamHandle* handle,
+      blink::WebSocketStreamHandle* handle,
       webkit_glue::WebSocketStreamHandleDelegate* delegate);
 
   // IPC::Listener implementation.

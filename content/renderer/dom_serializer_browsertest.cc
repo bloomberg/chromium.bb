@@ -35,21 +35,21 @@
 #include "third_party/WebKit/public/web/WebPageSerializerClient.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-using WebKit::WebCString;
-using WebKit::WebData;
-using WebKit::WebDocument;
-using WebKit::WebElement;
-using WebKit::WebFrame;
-using WebKit::WebNode;
-using WebKit::WebNodeCollection;
-using WebKit::WebNodeList;
-using WebKit::WebPageSerializer;
-using WebKit::WebPageSerializerClient;
-using WebKit::WebNode;
-using WebKit::WebString;
-using WebKit::WebURL;
-using WebKit::WebView;
-using WebKit::WebVector;
+using blink::WebCString;
+using blink::WebData;
+using blink::WebDocument;
+using blink::WebElement;
+using blink::WebFrame;
+using blink::WebNode;
+using blink::WebNodeCollection;
+using blink::WebNodeList;
+using blink::WebPageSerializer;
+using blink::WebPageSerializerClient;
+using blink::WebNode;
+using blink::WebString;
+using blink::WebURL;
+using blink::WebView;
+using blink::WebVector;
 
 namespace content {
 
@@ -150,7 +150,7 @@ class LoadObserver : public RenderViewObserver {
       : RenderViewObserver(render_view),
         quit_closure_(quit_closure) {}
 
-  virtual void DidFinishLoad(WebKit::WebFrame* frame) OVERRIDE {
+  virtual void DidFinishLoad(blink::WebFrame* frame) OVERRIDE {
     if (frame == render_view()->GetWebView()->mainFrame())
       quit_closure_.Run();
   }

@@ -11,12 +11,12 @@
 namespace content {
 
 void SerializeAccessibilityNode(
-    const WebKit::WebAXObject& src,
+    const blink::WebAXObject& src,
     AccessibilityNodeData* dst);
 
 bool ShouldIncludeChildNode(
-    const WebKit::WebAXObject& parent,
-    const WebKit::WebAXObject& child);
+    const blink::WebAXObject& parent,
+    const blink::WebAXObject& child);
 
 }  // namespace content
 

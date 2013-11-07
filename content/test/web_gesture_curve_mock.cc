@@ -8,8 +8,8 @@
 #include "third_party/WebKit/public/platform/WebFloatSize.h"
 #include "third_party/WebKit/public/platform/WebGestureCurveTarget.h"
 
-WebGestureCurveMock::WebGestureCurveMock(const WebKit::WebFloatPoint& velocity,
-    const WebKit::WebSize& cumulative_scroll)
+WebGestureCurveMock::WebGestureCurveMock(const blink::WebFloatPoint& velocity,
+    const blink::WebSize& cumulative_scroll)
     : velocity_(velocity),
       cumulative_scroll_(cumulative_scroll) {
 }
@@ -18,12 +18,12 @@ WebGestureCurveMock::~WebGestureCurveMock() {
 }
 
 bool WebGestureCurveMock::apply(double time,
-                                WebKit::WebGestureCurveTarget* target) {
-  WebKit::WebSize displacement(velocity_.x * time, velocity_.y * time);
-  WebKit::WebFloatSize increment(displacement.width - cumulative_scroll_.width,
+                                blink::WebGestureCurveTarget* target) {
+  blink::WebSize displacement(velocity_.x * time, velocity_.y * time);
+  blink::WebFloatSize increment(displacement.width - cumulative_scroll_.width,
       displacement.height - cumulative_scroll_.height);
   cumulative_scroll_ = displacement;
-  target->notifyCurrentFlingVelocity(WebKit::WebFloatSize(velocity_.x,
+  target->notifyCurrentFlingVelocity(blink::WebFloatSize(velocity_.x,
                                                           velocity_.y));
   // scrollBy() could delete this curve if the animation is over, so don't
   // touch any member variables after making that call.

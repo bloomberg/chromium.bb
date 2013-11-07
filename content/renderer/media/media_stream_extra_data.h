@@ -18,7 +18,7 @@ class MediaStreamInterface;
 namespace content {
 
 class CONTENT_EXPORT MediaStreamExtraData
-    : NON_EXPORTED_BASE(public WebKit::WebMediaStream::ExtraData) {
+    : NON_EXPORTED_BASE(public blink::WebMediaStream::ExtraData) {
  public:
   typedef base::Callback<void(const std::string& label)> StreamStopCallback;
 

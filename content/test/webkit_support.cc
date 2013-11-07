@@ -57,9 +57,9 @@ TestEnvironment* test_environment;
 }  // namespace
 
 void SetUpTestEnvironmentForUnitTests() {
-  WebKit::WebRuntimeFeatures::enableStableFeatures(true);
-  WebKit::WebRuntimeFeatures::enableExperimentalFeatures(true);
-  WebKit::WebRuntimeFeatures::enableTestOnlyFeatures(true);
+  blink::WebRuntimeFeatures::enableStableFeatures(true);
+  blink::WebRuntimeFeatures::enableExperimentalFeatures(true);
+  blink::WebRuntimeFeatures::enableTestOnlyFeatures(true);
 
 #if defined(OS_ANDROID)
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -85,7 +85,7 @@ void TearDownTestEnvironment() {
   base::RunLoop().RunUntilIdle();
 
   if (RunningOnValgrind())
-    WebKit::WebCache::clear();
+    blink::WebCache::clear();
   delete test_environment;
   test_environment = NULL;
 }

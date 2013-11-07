@@ -19,23 +19,23 @@ namespace content {
 
 class CONTENT_EXPORT WebKeyboardEventBuilder {
  public:
-  static WebKit::WebKeyboardEvent Build(const GdkEventKey* event);
-  static WebKit::WebKeyboardEvent Build(wchar_t character,
+  static blink::WebKeyboardEvent Build(const GdkEventKey* event);
+  static blink::WebKeyboardEvent Build(wchar_t character,
                                         int state,
                                         double time_secs);
 };
 
 class CONTENT_EXPORT WebMouseEventBuilder {
  public:
-  static WebKit::WebMouseEvent Build(const GdkEventButton* event);
-  static WebKit::WebMouseEvent Build(const GdkEventMotion* event);
-  static WebKit::WebMouseEvent Build(const GdkEventCrossing* event);
+  static blink::WebMouseEvent Build(const GdkEventButton* event);
+  static blink::WebMouseEvent Build(const GdkEventMotion* event);
+  static blink::WebMouseEvent Build(const GdkEventCrossing* event);
 };
 
 class CONTENT_EXPORT WebMouseWheelEventBuilder {
  public:
   static float ScrollbarPixelsPerTick();
-  static WebKit::WebMouseWheelEvent Build(
+  static blink::WebMouseWheelEvent Build(
       const GdkEventScroll* event);
 };
 

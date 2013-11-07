@@ -12,10 +12,10 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-using WebKit::WebAXObject;
-using WebKit::WebDocument;
-using WebKit::WebFrame;
-using WebKit::WebView;
+using blink::WebAXObject;
+using blink::WebDocument;
+using blink::WebFrame;
+using blink::WebView;
 
 namespace content {
 
@@ -44,59 +44,59 @@ WebDocument RendererAccessibility::GetMainDocument() {
 
 #ifndef NDEBUG
 const std::string RendererAccessibility::AccessibilityEventToString(
-    WebKit::WebAXEvent event) {
+    blink::WebAXEvent event) {
   switch (event) {
-    case WebKit::WebAXEventActiveDescendantChanged:
+    case blink::WebAXEventActiveDescendantChanged:
       return "active descendant changed";
-    case WebKit::WebAXEventAriaAttributeChanged:
+    case blink::WebAXEventAriaAttributeChanged:
       return "aria attribute changed";
-    case WebKit::WebAXEventAutocorrectionOccured:
+    case blink::WebAXEventAutocorrectionOccured:
       return "autocorrection occurred";
-    case WebKit::WebAXEventBlur:
+    case blink::WebAXEventBlur:
       return "blur";
-    case WebKit::WebAXEventAlert:
+    case blink::WebAXEventAlert:
       return "alert";
-    case WebKit::WebAXEventCheckedStateChanged:
+    case blink::WebAXEventCheckedStateChanged:
       return "check state changed";
-    case WebKit::WebAXEventChildrenChanged:
+    case blink::WebAXEventChildrenChanged:
       return "children changed";
-    case WebKit::WebAXEventFocus:
+    case blink::WebAXEventFocus:
       return "focus changed";
-    case WebKit::WebAXEventInvalidStatusChanged:
+    case blink::WebAXEventInvalidStatusChanged:
       return "invalid status changed";
-    case WebKit::WebAXEventLayoutComplete:
+    case blink::WebAXEventLayoutComplete:
       return "layout complete";
-    case WebKit::WebAXEventLiveRegionChanged:
+    case blink::WebAXEventLiveRegionChanged:
       return "live region changed";
-    case WebKit::WebAXEventLoadComplete:
+    case blink::WebAXEventLoadComplete:
       return "load complete";
-    case WebKit::WebAXEventMenuListItemSelected:
+    case blink::WebAXEventMenuListItemSelected:
       return "menu list item selected";
-    case WebKit::WebAXEventMenuListValueChanged:
+    case blink::WebAXEventMenuListValueChanged:
       return "menu list changed";
-    case WebKit::WebAXEventShow:
+    case blink::WebAXEventShow:
       return "object show";
-    case WebKit::WebAXEventHide:
+    case blink::WebAXEventHide:
       return "object hide";
-    case WebKit::WebAXEventRowCountChanged:
+    case blink::WebAXEventRowCountChanged:
       return "row count changed";
-    case WebKit::WebAXEventRowCollapsed:
+    case blink::WebAXEventRowCollapsed:
       return "row collapsed";
-    case WebKit::WebAXEventRowExpanded:
+    case blink::WebAXEventRowExpanded:
       return "row expanded";
-    case WebKit::WebAXEventScrolledToAnchor:
+    case blink::WebAXEventScrolledToAnchor:
       return "scrolled to anchor";
-    case WebKit::WebAXEventSelectedChildrenChanged:
+    case blink::WebAXEventSelectedChildrenChanged:
       return "selected children changed";
-    case WebKit::WebAXEventSelectedTextChanged:
+    case blink::WebAXEventSelectedTextChanged:
       return "selected text changed";
-    case WebKit::WebAXEventTextChanged:
+    case blink::WebAXEventTextChanged:
       return "text changed";
-    case WebKit::WebAXEventTextInserted:
+    case blink::WebAXEventTextInserted:
       return "text inserted";
-    case WebKit::WebAXEventTextRemoved:
+    case blink::WebAXEventTextRemoved:
       return "text removed";
-    case WebKit::WebAXEventValueChanged:
+    case blink::WebAXEventValueChanged:
       return "value changed";
     default:
       NOTREACHED();

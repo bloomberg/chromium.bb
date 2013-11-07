@@ -24,7 +24,7 @@ class ChildThread;
 
 // This is thread safe.
 class WebMessagePortChannelImpl
-    : public WebKit::WebMessagePortChannel,
+    : public blink::WebMessagePortChannel,
       public IPC::Listener,
       public base::RefCountedThreadSafe<WebMessagePortChannelImpl> {
  public:
@@ -43,13 +43,13 @@ class WebMessagePortChannelImpl
   virtual ~WebMessagePortChannelImpl();
 
   // WebMessagePortChannel implementation.
-  virtual void setClient(WebKit::WebMessagePortChannelClient* client);
+  virtual void setClient(blink::WebMessagePortChannelClient* client);
   virtual void destroy();
-  virtual void entangle(WebKit::WebMessagePortChannel* channel);
-  virtual void postMessage(const WebKit::WebString& message,
-                           WebKit::WebMessagePortChannelArray* channels);
-  virtual bool tryGetMessage(WebKit::WebString* message,
-                             WebKit::WebMessagePortChannelArray& channels);
+  virtual void entangle(blink::WebMessagePortChannel* channel);
+  virtual void postMessage(const blink::WebString& message,
+                           blink::WebMessagePortChannelArray* channels);
+  virtual bool tryGetMessage(blink::WebString* message,
+                             blink::WebMessagePortChannelArray& channels);
 
   void Init();
   void Entangle(scoped_refptr<WebMessagePortChannelImpl> channel);
@@ -74,7 +74,7 @@ class WebMessagePortChannelImpl
   typedef std::queue<Message> MessageQueue;
   MessageQueue message_queue_;
 
-  WebKit::WebMessagePortChannelClient* client_;
+  blink::WebMessagePortChannelClient* client_;
   base::Lock lock_;  // Locks access to above.
 
   int route_id_;  // The routing id for this object.

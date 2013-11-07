@@ -11,11 +11,11 @@
 
 namespace content {
 
-WebKit::WebDragOperation WinDragOpToWebDragOp(DWORD effect);
-WebKit::WebDragOperationsMask WinDragOpMaskToWebDragOpMask(DWORD effects);
+blink::WebDragOperation WinDragOpToWebDragOp(DWORD effect);
+blink::WebDragOperationsMask WinDragOpMaskToWebDragOpMask(DWORD effects);
 
-DWORD WebDragOpToWinDragOp(WebKit::WebDragOperation op);
-DWORD WebDragOpMaskToWinDragOpMask(WebKit::WebDragOperationsMask ops);
+DWORD WebDragOpToWinDragOp(blink::WebDragOperation op);
+DWORD WebDragOpMaskToWinDragOpMask(blink::WebDragOperationsMask ops);
 
 }  // namespace content
 

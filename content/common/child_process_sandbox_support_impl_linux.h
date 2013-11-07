@@ -9,7 +9,7 @@
 #include "content/public/common/child_process_sandbox_support_linux.h"
 #include "content/public/common/content_descriptors.h"
 
-namespace WebKit {
+namespace blink {
 struct WebFontFamily;
 struct WebFontRenderStyle;
 }
@@ -25,10 +25,10 @@ namespace content {
 // The instance has an empty font name if the request could not be satisfied.
 void GetFontFamilyForCharacter(const int32_t character,
                                const char* preferred_locale,
-                               WebKit::WebFontFamily* family);
+                               blink::WebFontFamily* family);
 
 void GetRenderStyleForStrike(const char* family, int sizeAndStyle,
-                             WebKit::WebFontRenderStyle* out);
+                             blink::WebFontRenderStyle* out);
 
 inline int GetSandboxFD() {
   return kSandboxIPCChannel + base::GlobalDescriptors::kBaseDescriptor;

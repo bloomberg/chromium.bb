@@ -22,21 +22,21 @@ ui::KeyboardCode GetWindowsKeyCodeWithoutLocation(ui::KeyboardCode key_code) {
   }
 }
 
-WebKit::WebInputEvent::Modifiers GetLocationModifiersFromWindowsKeyCode(
+blink::WebInputEvent::Modifiers GetLocationModifiersFromWindowsKeyCode(
     ui::KeyboardCode key_code) {
   switch (key_code) {
     case ui::VKEY_LCONTROL:
     case ui::VKEY_LSHIFT:
     case ui::VKEY_LMENU:
     case ui::VKEY_LWIN:
-      return WebKit::WebKeyboardEvent::IsLeft;
+      return blink::WebKeyboardEvent::IsLeft;
     case ui::VKEY_RCONTROL:
     case ui::VKEY_RSHIFT:
     case ui::VKEY_RMENU:
     case ui::VKEY_RWIN:
-      return WebKit::WebKeyboardEvent::IsRight;
+      return blink::WebKeyboardEvent::IsRight;
     default:
-      return static_cast<WebKit::WebInputEvent::Modifiers>(0);
+      return static_cast<blink::WebInputEvent::Modifiers>(0);
   }
 }
 

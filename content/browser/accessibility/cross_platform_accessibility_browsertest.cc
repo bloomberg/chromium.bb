@@ -40,7 +40,7 @@ class CrossPlatformAccessibilityBrowserTest : public ContentBrowserTest {
   const AccessibilityNodeDataTreeNode& GetAccessibilityNodeDataTree(
       AccessibilityMode accessibility_mode = AccessibilityModeComplete) {
     AccessibilityNotificationWaiter waiter(
-        shell(), accessibility_mode, WebKit::WebAXEventLayoutComplete);
+        shell(), accessibility_mode, blink::WebAXEventLayoutComplete);
     waiter.WaitForNotification();
     return waiter.GetAccessibilityNodeDataTree();
   }
@@ -152,12 +152,12 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   EXPECT_STREQ(
       "Accessibility Test",
       GetAttr(tree, AccessibilityNodeData::ATTR_NAME).c_str());
-  EXPECT_EQ(WebKit::WebAXRoleRootWebArea, tree.role);
+  EXPECT_EQ(blink::WebAXRoleRootWebArea, tree.role);
 
   // Check properites of the BODY element.
   ASSERT_EQ(1U, tree.children.size());
   const AccessibilityNodeDataTreeNode& body = tree.children[0];
-  EXPECT_EQ(WebKit::WebAXRoleGroup, body.role);
+  EXPECT_EQ(blink::WebAXRoleGroup, body.role);
   EXPECT_STREQ("body",
                GetAttr(body, AccessibilityNodeData::ATTR_HTML_TAG).c_str());
   EXPECT_STREQ("block",
@@ -167,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   ASSERT_EQ(2U, body.children.size());
 
   const AccessibilityNodeDataTreeNode& button = body.children[0];
-  EXPECT_EQ(WebKit::WebAXRoleButton, button.role);
+  EXPECT_EQ(blink::WebAXRoleButton, button.role);
   EXPECT_STREQ(
       "input", GetAttr(button, AccessibilityNodeData::ATTR_HTML_TAG).c_str());
   EXPECT_STREQ(
@@ -183,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   EXPECT_STREQ("push", button.html_attributes[1].second.c_str());
 
   const AccessibilityNodeDataTreeNode& checkbox = body.children[1];
-  EXPECT_EQ(WebKit::WebAXRoleCheckBox, checkbox.role);
+  EXPECT_EQ(blink::WebAXRoleCheckBox, checkbox.role);
   EXPECT_STREQ(
       "input", GetAttr(checkbox, AccessibilityNodeData::ATTR_HTML_TAG).c_str());
   EXPECT_STREQ(
@@ -211,7 +211,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   const AccessibilityNodeDataTreeNode& body = tree.children[0];
   ASSERT_EQ(1U, body.children.size());
   const AccessibilityNodeDataTreeNode& text = body.children[0];
-  EXPECT_EQ(WebKit::WebAXRoleTextField, text.role);
+  EXPECT_EQ(blink::WebAXRoleTextField, text.role);
   EXPECT_STREQ(
       "input", GetAttr(text, AccessibilityNodeData::ATTR_HTML_TAG).c_str());
   EXPECT_EQ(0, GetIntAttr(text, AccessibilityNodeData::ATTR_TEXT_SEL_START));
@@ -242,7 +242,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   const AccessibilityNodeDataTreeNode& body = tree.children[0];
   ASSERT_EQ(1U, body.children.size());
   const AccessibilityNodeDataTreeNode& text = body.children[0];
-  EXPECT_EQ(WebKit::WebAXRoleTextField, text.role);
+  EXPECT_EQ(blink::WebAXRoleTextField, text.role);
   EXPECT_STREQ(
       "input", GetAttr(text, AccessibilityNodeData::ATTR_HTML_TAG).c_str());
   EXPECT_EQ(0, GetIntAttr(text, AccessibilityNodeData::ATTR_TEXT_SEL_START));
@@ -269,15 +269,15 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   const AccessibilityNodeDataTreeNode& tree = GetAccessibilityNodeDataTree();
   ASSERT_EQ(1U, tree.children.size());
   const AccessibilityNodeDataTreeNode& table = tree.children[0];
-  EXPECT_EQ(WebKit::WebAXRoleTable, table.role);
+  EXPECT_EQ(blink::WebAXRoleTable, table.role);
   const AccessibilityNodeDataTreeNode& row = table.children[0];
-  EXPECT_EQ(WebKit::WebAXRoleRow, row.role);
+  EXPECT_EQ(blink::WebAXRoleRow, row.role);
   const AccessibilityNodeDataTreeNode& cell1 = row.children[0];
-  EXPECT_EQ(WebKit::WebAXRoleCell, cell1.role);
+  EXPECT_EQ(blink::WebAXRoleCell, cell1.role);
   const AccessibilityNodeDataTreeNode& cell2 = row.children[1];
-  EXPECT_EQ(WebKit::WebAXRoleCell, cell2.role);
+  EXPECT_EQ(blink::WebAXRoleCell, cell2.role);
   const AccessibilityNodeDataTreeNode& column1 = table.children[1];
-  EXPECT_EQ(WebKit::WebAXRoleColumn, column1.role);
+  EXPECT_EQ(blink::WebAXRoleColumn, column1.role);
   EXPECT_EQ(0U, column1.children.size());
   EXPECT_EQ(1U, column1.intlist_attributes.size());
   EXPECT_EQ(AccessibilityNodeData::ATTR_INDIRECT_CHILD_IDS,
@@ -287,7 +287,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   EXPECT_EQ(1U, column1_indirect_child_ids.size());
   EXPECT_EQ(cell1.id, column1_indirect_child_ids[0]);
   const AccessibilityNodeDataTreeNode& column2 = table.children[2];
-  EXPECT_EQ(WebKit::WebAXRoleColumn, column2.role);
+  EXPECT_EQ(blink::WebAXRoleColumn, column2.role);
   EXPECT_EQ(0U, column2.children.size());
   EXPECT_EQ(AccessibilityNodeData::ATTR_INDIRECT_CHILD_IDS,
             column2.intlist_attributes[0].first);
@@ -340,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   ASSERT_EQ(3U, body.children.size());
 
   const AccessibilityNodeDataTreeNode& button1 = body.children[0];
-  EXPECT_EQ(WebKit::WebAXRoleButton, button1.role);
+  EXPECT_EQ(blink::WebAXRoleButton, button1.role);
   EXPECT_STREQ(
       "Button 1",
       GetAttr(button1, AccessibilityNodeData::ATTR_NAME).c_str());
@@ -351,23 +351,23 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   ASSERT_EQ(1U, iframe.children.size());
 
   const AccessibilityNodeDataTreeNode& scroll_area = iframe.children[0];
-  EXPECT_EQ(WebKit::WebAXRoleScrollArea, scroll_area.role);
+  EXPECT_EQ(blink::WebAXRoleScrollArea, scroll_area.role);
   ASSERT_EQ(1U, scroll_area.children.size());
 
   const AccessibilityNodeDataTreeNode& sub_document = scroll_area.children[0];
-  EXPECT_EQ(WebKit::WebAXRoleWebArea, sub_document.role);
+  EXPECT_EQ(blink::WebAXRoleWebArea, sub_document.role);
   ASSERT_EQ(1U, sub_document.children.size());
 
   const AccessibilityNodeDataTreeNode& sub_body = sub_document.children[0];
   ASSERT_EQ(1U, sub_body.children.size());
 
   const AccessibilityNodeDataTreeNode& button2 = sub_body.children[0];
-  EXPECT_EQ(WebKit::WebAXRoleButton, button2.role);
+  EXPECT_EQ(blink::WebAXRoleButton, button2.role);
   EXPECT_STREQ("Button 2",
                GetAttr(button2, AccessibilityNodeData::ATTR_NAME).c_str());
 
   const AccessibilityNodeDataTreeNode& button3 = body.children[2];
-  EXPECT_EQ(WebKit::WebAXRoleButton, button3.role);
+  EXPECT_EQ(blink::WebAXRoleButton, button3.role);
   EXPECT_STREQ("Button 3",
                GetAttr(button3, AccessibilityNodeData::ATTR_NAME).c_str());
 }
@@ -413,13 +413,13 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 
   const AccessibilityNodeDataTreeNode& tree = GetAccessibilityNodeDataTree();
   const AccessibilityNodeDataTreeNode& table = tree.children[0];
-  EXPECT_EQ(WebKit::WebAXRoleTable, table.role);
+  EXPECT_EQ(blink::WebAXRoleTable, table.role);
   ASSERT_GE(table.children.size(), 5U);
-  EXPECT_EQ(WebKit::WebAXRoleRow, table.children[0].role);
-  EXPECT_EQ(WebKit::WebAXRoleRow, table.children[1].role);
-  EXPECT_EQ(WebKit::WebAXRoleColumn, table.children[2].role);
-  EXPECT_EQ(WebKit::WebAXRoleColumn, table.children[3].role);
-  EXPECT_EQ(WebKit::WebAXRoleColumn, table.children[4].role);
+  EXPECT_EQ(blink::WebAXRoleRow, table.children[0].role);
+  EXPECT_EQ(blink::WebAXRoleRow, table.children[1].role);
+  EXPECT_EQ(blink::WebAXRoleColumn, table.children[2].role);
+  EXPECT_EQ(blink::WebAXRoleColumn, table.children[3].role);
+  EXPECT_EQ(blink::WebAXRoleColumn, table.children[4].role);
   EXPECT_EQ(3,
             GetIntAttr(table, AccessibilityNodeData::ATTR_TABLE_COLUMN_COUNT));
   EXPECT_EQ(2, GetIntAttr(table, AccessibilityNodeData::ATTR_TABLE_ROW_COUNT));

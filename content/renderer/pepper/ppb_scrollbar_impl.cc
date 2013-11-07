@@ -27,10 +27,10 @@
 #endif
 
 using ppapi::thunk::PPB_Scrollbar_API;
-using WebKit::WebInputEvent;
-using WebKit::WebRect;
-using WebKit::WebScrollbar;
-using WebKit::WebPluginScrollbar;
+using blink::WebInputEvent;
+using blink::WebRect;
+using blink::WebScrollbar;
+using blink::WebPluginScrollbar;
 
 namespace content {
 
@@ -59,7 +59,7 @@ void PPB_Scrollbar_Impl::Init(bool vertical) {
   scrollbar_.reset(WebPluginScrollbar::createForPlugin(
       vertical ? WebScrollbar::Vertical : WebScrollbar::Horizontal,
       plugin_instance->container(),
-      static_cast<WebKit::WebPluginScrollbarClient*>(this)));
+      static_cast<blink::WebPluginScrollbarClient*>(this)));
 }
 
 PPB_Scrollbar_API* PPB_Scrollbar_Impl::AsPPB_Scrollbar_API() {
@@ -168,7 +168,7 @@ void PPB_Scrollbar_Impl::SetLocationInternal(const PP_Rect* location) {
                                   location->size.height));
 }
 
-void PPB_Scrollbar_Impl::valueChanged(WebKit::WebPluginScrollbar* scrollbar) {
+void PPB_Scrollbar_Impl::valueChanged(blink::WebPluginScrollbar* scrollbar) {
   PluginModule* plugin_module =
       HostGlobals::Get()->GetInstance(pp_instance())->module();
   if (!plugin_module)
@@ -206,8 +206,8 @@ void PPB_Scrollbar_Impl::overlayChanged(WebPluginScrollbar* scrollbar) {
 }
 
 void PPB_Scrollbar_Impl::invalidateScrollbarRect(
-    WebKit::WebPluginScrollbar* scrollbar,
-    const WebKit::WebRect& rect) {
+    blink::WebPluginScrollbar* scrollbar,
+    const blink::WebRect& rect) {
   gfx::Rect gfx_rect(rect.x,
                      rect.y,
                      rect.width,
@@ -217,8 +217,8 @@ void PPB_Scrollbar_Impl::invalidateScrollbarRect(
   // since the PPB_Scrollbar_Impl code is still in the middle of updating its
   // internal state.
   // Note: we use a WeakPtrFactory here so that a lingering callback can not
-  // modify the lifetime of this object. Otherwise, WebKit::WebPluginScrollbar
-  // could outlive WebKit::WebPluginContainer, which is against its contract.
+  // modify the lifetime of this object. Otherwise, blink::WebPluginScrollbar
+  // could outlive blink::WebPluginContainer, which is against its contract.
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&PPB_Scrollbar_Impl::NotifyInvalidate,
@@ -226,8 +226,8 @@ void PPB_Scrollbar_Impl::invalidateScrollbarRect(
 }
 
 void PPB_Scrollbar_Impl::getTickmarks(
-    WebKit::WebPluginScrollbar* scrollbar,
-    WebKit::WebVector<WebKit::WebRect>* tick_marks) const {
+    blink::WebPluginScrollbar* scrollbar,
+    blink::WebVector<blink::WebRect>* tick_marks) const {
   if (tickmarks_.empty()) {
     WebRect* rects = NULL;
     tick_marks->assign(rects, 0);

@@ -15,14 +15,14 @@
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-using WebKit::WebDocument;
-using WebKit::WebNotification;
-using WebKit::WebNotificationPresenter;
-using WebKit::WebNotificationPermissionCallback;
-using WebKit::WebSecurityOrigin;
-using WebKit::WebString;
-using WebKit::WebURL;
-using WebKit::WebUserGestureIndicator;
+using blink::WebDocument;
+using blink::WebNotification;
+using blink::WebNotificationPresenter;
+using blink::WebNotificationPermissionCallback;
+using blink::WebSecurityOrigin;
+using blink::WebString;
+using blink::WebURL;
+using blink::WebUserGestureIndicator;
 
 namespace content {
 

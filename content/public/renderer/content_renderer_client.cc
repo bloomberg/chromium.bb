@@ -20,13 +20,13 @@ std::string ContentRendererClient::GetDefaultEncoding() {
 
 bool ContentRendererClient::OverrideCreatePlugin(
     RenderView* render_view,
-    WebKit::WebFrame* frame,
-    const WebKit::WebPluginParams& params,
-    WebKit::WebPlugin** plugin) {
+    blink::WebFrame* frame,
+    const blink::WebPluginParams& params,
+    blink::WebPlugin** plugin) {
   return false;
 }
 
-WebKit::WebPlugin* ContentRendererClient::CreatePluginReplacement(
+blink::WebPlugin* ContentRendererClient::CreatePluginReplacement(
     RenderView* render_view,
     const base::FilePath& plugin_path) {
   return NULL;
@@ -46,40 +46,40 @@ void ContentRendererClient::DeferMediaLoad(RenderView* render_view,
   closure.Run();
 }
 
-WebKit::WebMediaStreamCenter*
+blink::WebMediaStreamCenter*
 ContentRendererClient::OverrideCreateWebMediaStreamCenter(
-    WebKit::WebMediaStreamCenterClient* client) {
+    blink::WebMediaStreamCenterClient* client) {
   return NULL;
 }
 
-WebKit::WebRTCPeerConnectionHandler*
+blink::WebRTCPeerConnectionHandler*
 ContentRendererClient::OverrideCreateWebRTCPeerConnectionHandler(
-    WebKit::WebRTCPeerConnectionHandlerClient* client) {
+    blink::WebRTCPeerConnectionHandlerClient* client) {
   return NULL;
 }
 
-WebKit::WebMIDIAccessor*
+blink::WebMIDIAccessor*
 ContentRendererClient::OverrideCreateMIDIAccessor(
-    WebKit::WebMIDIAccessorClient* client) {
+    blink::WebMIDIAccessorClient* client) {
   return NULL;
 }
 
-WebKit::WebAudioDevice*
+blink::WebAudioDevice*
 ContentRendererClient::OverrideCreateAudioDevice(
     double sample_rate) {
   return NULL;
 }
 
-WebKit::WebClipboard* ContentRendererClient::OverrideWebClipboard() {
+blink::WebClipboard* ContentRendererClient::OverrideWebClipboard() {
   return NULL;
 }
 
-WebKit::WebThemeEngine* ContentRendererClient::OverrideThemeEngine() {
+blink::WebThemeEngine* ContentRendererClient::OverrideThemeEngine() {
   return NULL;
 }
 
-WebKit::WebSpeechSynthesizer* ContentRendererClient::OverrideSpeechSynthesizer(
-    WebKit::WebSpeechSynthesizerClient* client) {
+blink::WebSpeechSynthesizer* ContentRendererClient::OverrideSpeechSynthesizer(
+    blink::WebSpeechSynthesizerClient* client) {
   return NULL;
 }
 
@@ -92,15 +92,15 @@ bool ContentRendererClient::AllowPopup() {
 }
 
 bool ContentRendererClient::HandleNavigation(
-    WebKit::WebFrame* frame,
-    const WebKit::WebURLRequest& request,
-    WebKit::WebNavigationType type,
-    WebKit::WebNavigationPolicy default_policy,
+    blink::WebFrame* frame,
+    const blink::WebURLRequest& request,
+    blink::WebNavigationType type,
+    blink::WebNavigationPolicy default_policy,
     bool is_redirect) {
   return false;
 }
 
-bool ContentRendererClient::ShouldFork(WebKit::WebFrame* frame,
+bool ContentRendererClient::ShouldFork(blink::WebFrame* frame,
                                        const GURL& url,
                                        const std::string& http_method,
                                        bool is_initial_navigation,
@@ -110,7 +110,7 @@ bool ContentRendererClient::ShouldFork(WebKit::WebFrame* frame,
 }
 
 bool ContentRendererClient::WillSendRequest(
-    WebKit::WebFrame* frame,
+    blink::WebFrame* frame,
     PageTransition transition_type,
     const GURL& url,
     const GURL& first_party_for_cookies,
@@ -131,14 +131,14 @@ bool ContentRendererClient::IsLinkVisited(unsigned long long link_hash) {
   return false;
 }
 
-WebKit::WebPrescientNetworking*
+blink::WebPrescientNetworking*
 ContentRendererClient::GetPrescientNetworking() {
   return NULL;
 }
 
 bool ContentRendererClient::ShouldOverridePageVisibilityState(
     const RenderView* render_view,
-    WebKit::WebPageVisibilityState* override_state) {
+    blink::WebPageVisibilityState* override_state) {
   return false;
 }
 
@@ -169,12 +169,12 @@ bool ContentRendererClient::IsExternalPepperPlugin(
 }
 
 bool ContentRendererClient::IsPluginAllowedToCallRequestOSFileHandle(
-    WebKit::WebPluginContainer* container) {
+    blink::WebPluginContainer* container) {
   return false;
 }
 
 bool ContentRendererClient::AllowBrowserPlugin(
-    WebKit::WebPluginContainer* container) {
+    blink::WebPluginContainer* container) {
   return false;
 }
 
@@ -195,9 +195,9 @@ bool ContentRendererClient::ShouldEnableSiteIsolationPolicy() const {
   return true;
 }
 
-WebKit::WebWorkerPermissionClientProxy*
+blink::WebWorkerPermissionClientProxy*
 ContentRendererClient::CreateWorkerPermissionClientProxy(
-    RenderView* render_view, WebKit::WebFrame* frame) {
+    RenderView* render_view, blink::WebFrame* frame) {
   return NULL;
 }
 

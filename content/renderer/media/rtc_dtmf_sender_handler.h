@@ -23,19 +23,19 @@ namespace content {
 // Callbacks to the webrtc::DtmfSenderObserverInterface implementation also
 // occur on the main render thread.
 class CONTENT_EXPORT RtcDtmfSenderHandler
-    : NON_EXPORTED_BASE(public WebKit::WebRTCDTMFSenderHandler),
+    : NON_EXPORTED_BASE(public blink::WebRTCDTMFSenderHandler),
       NON_EXPORTED_BASE(public webrtc::DtmfSenderObserverInterface),
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   explicit RtcDtmfSenderHandler(webrtc::DtmfSenderInterface* dtmf_sender);
   virtual ~RtcDtmfSenderHandler();
 
-  // WebKit::WebRTCDTMFSenderHandler implementation.
+  // blink::WebRTCDTMFSenderHandler implementation.
   virtual void setClient(
-      WebKit::WebRTCDTMFSenderHandlerClient* client) OVERRIDE;
-  virtual WebKit::WebString currentToneBuffer() OVERRIDE;
+      blink::WebRTCDTMFSenderHandlerClient* client) OVERRIDE;
+  virtual blink::WebString currentToneBuffer() OVERRIDE;
   virtual bool canInsertDTMF() OVERRIDE;
-  virtual bool insertDTMF(const WebKit::WebString& tones, long duration,
+  virtual bool insertDTMF(const blink::WebString& tones, long duration,
                           long interToneGap) OVERRIDE;
 
   // webrtc::DtmfSenderObserverInterface implementation.
@@ -43,7 +43,7 @@ class CONTENT_EXPORT RtcDtmfSenderHandler
 
  private:
   scoped_refptr<webrtc::DtmfSenderInterface> dtmf_sender_;
-  WebKit::WebRTCDTMFSenderHandlerClient* webkit_client_;
+  blink::WebRTCDTMFSenderHandlerClient* webkit_client_;
 };
 
 }  // namespace content

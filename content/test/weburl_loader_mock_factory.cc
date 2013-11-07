@@ -15,14 +15,14 @@
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 
-using WebKit::WebCache;
-using WebKit::WebData;
-using WebKit::WebString;
-using WebKit::WebURL;
-using WebKit::WebURLError;
-using WebKit::WebURLLoader;
-using WebKit::WebURLRequest;
-using WebKit::WebURLResponse;
+using blink::WebCache;
+using blink::WebData;
+using blink::WebString;
+using blink::WebURL;
+using blink::WebURLError;
+using blink::WebURLLoader;
+using blink::WebURLRequest;
+using blink::WebURLResponse;
 
 WebURLLoaderMockFactory::WebURLLoaderMockFactory() {}
 
@@ -60,7 +60,7 @@ void WebURLLoaderMockFactory::RegisterErrorURL(const WebURL& url,
   url_to_error_info_[url] = error;
 }
 
-void WebURLLoaderMockFactory::UnregisterURL(const WebKit::WebURL& url) {
+void WebURLLoaderMockFactory::UnregisterURL(const blink::WebURL& url) {
   URLToResponseMap::iterator iter = url_to_reponse_info_.find(url);
   DCHECK(iter != url_to_reponse_info_.end());
   url_to_reponse_info_.erase(iter);
@@ -107,12 +107,12 @@ void WebURLLoaderMockFactory::ServeAsynchronousRequests() {
   base::RunLoop().RunUntilIdle();
 }
 
-WebKit::WebURLRequest
+blink::WebURLRequest
 WebURLLoaderMockFactory::GetLastHandledAsynchronousRequest() {
   return last_handled_asynchronous_request_;
 }
 
-bool WebURLLoaderMockFactory::IsMockedURL(const WebKit::WebURL& url) {
+bool WebURLLoaderMockFactory::IsMockedURL(const blink::WebURL& url) {
   return url_to_reponse_info_.find(url) != url_to_reponse_info_.end();
 }
 

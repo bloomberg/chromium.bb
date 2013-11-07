@@ -10,9 +10,9 @@
 
 namespace content {
 
-bool GamepadsHaveUserGesture(const WebKit::WebGamepads& gamepads) {
-  for (unsigned i = 0; i < WebKit::WebGamepads::itemsLengthCap; i++) {
-    const WebKit::WebGamepad& pad = gamepads.items[i];
+bool GamepadsHaveUserGesture(const blink::WebGamepads& gamepads) {
+  for (unsigned i = 0; i < blink::WebGamepads::itemsLengthCap; i++) {
+    const blink::WebGamepad& pad = gamepads.items[i];
 
     // If the device is physically connected, then check the primary 4 buttons
     // to see if there is currently an intentional user action.

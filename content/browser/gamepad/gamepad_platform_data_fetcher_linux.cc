@@ -52,7 +52,7 @@ bool IsGamepad(udev_device* dev, int* index, std::string* path) {
   if (!base::StringToInt(str, &tmp_idx))
     return false;
   if (tmp_idx < 0 ||
-      tmp_idx >= static_cast<int>(WebKit::WebGamepads::itemsLengthCap)) {
+      tmp_idx >= static_cast<int>(blink::WebGamepads::itemsLengthCap)) {
     return false;
   }
   *index = tmp_idx;
@@ -64,8 +64,8 @@ bool IsGamepad(udev_device* dev, int* index, std::string* path) {
 
 namespace content {
 
-using WebKit::WebGamepad;
-using WebKit::WebGamepads;
+using blink::WebGamepad;
+using blink::WebGamepads;
 
 GamepadPlatformDataFetcherLinux::GamepadPlatformDataFetcherLinux() {
   for (size_t i = 0; i < arraysize(device_fds_); ++i)

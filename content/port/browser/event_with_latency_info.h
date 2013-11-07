@@ -9,7 +9,7 @@
 
 #include "content/common/input/web_input_event_traits.h"
 
-namespace WebKit {
+namespace blink {
 class WebGestureEvent;
 class WebMouseEvent;
 class WebMouseWheelEvent;
@@ -40,13 +40,13 @@ class EventWithLatencyInfo {
   }
 };
 
-typedef EventWithLatencyInfo<WebKit::WebGestureEvent>
+typedef EventWithLatencyInfo<blink::WebGestureEvent>
     GestureEventWithLatencyInfo;
-typedef EventWithLatencyInfo<WebKit::WebMouseWheelEvent>
+typedef EventWithLatencyInfo<blink::WebMouseWheelEvent>
     MouseWheelEventWithLatencyInfo;
-typedef EventWithLatencyInfo<WebKit::WebMouseEvent>
+typedef EventWithLatencyInfo<blink::WebMouseEvent>
     MouseEventWithLatencyInfo;
-typedef EventWithLatencyInfo<WebKit::WebTouchEvent>
+typedef EventWithLatencyInfo<blink::WebTouchEvent>
     TouchEventWithLatencyInfo;
 
 }  // namespace content

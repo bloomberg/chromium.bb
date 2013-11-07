@@ -13,7 +13,7 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "url/gurl.h"
 
-namespace WebKit {
+namespace blink {
 class WebDataSource;
 }
 
@@ -27,7 +27,7 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
  public:
   InternalDocumentStateData();
 
-  static InternalDocumentStateData* FromDataSource(WebKit::WebDataSource* ds);
+  static InternalDocumentStateData* FromDataSource(blink::WebDataSource* ds);
   static InternalDocumentStateData* FromDocumentState(DocumentState* ds);
 
   // Set to true once RenderViewImpl::didFirstVisuallyNonEmptyLayout() is
@@ -89,16 +89,16 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
   // by default is not set. You can mark a NavigationState as not having a cache
   // state by way of clear_cache_policy_override.
   void set_cache_policy_override(
-      WebKit::WebURLRequest::CachePolicy cache_policy) {
+      blink::WebURLRequest::CachePolicy cache_policy) {
     cache_policy_override_ = cache_policy;
     cache_policy_override_set_ = true;
   }
-  WebKit::WebURLRequest::CachePolicy cache_policy_override() const {
+  blink::WebURLRequest::CachePolicy cache_policy_override() const {
     return cache_policy_override_;
   }
   void clear_cache_policy_override() {
     cache_policy_override_set_ = false;
-    cache_policy_override_ = WebKit::WebURLRequest::UseProtocolCachePolicy;
+    cache_policy_override_ = blink::WebURLRequest::UseProtocolCachePolicy;
   }
   bool is_cache_policy_override_set() const {
     return cache_policy_override_set_;
@@ -107,15 +107,15 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
   // Sets the referrer policy to use. This is only used for browser initiated
   // navigations, otherwise, the referrer policy is defined by the frame's
   // document.
-  WebKit::WebReferrerPolicy referrer_policy() const {
+  blink::WebReferrerPolicy referrer_policy() const {
     return referrer_policy_;
   }
-  void set_referrer_policy(WebKit::WebReferrerPolicy referrer_policy) {
+  void set_referrer_policy(blink::WebReferrerPolicy referrer_policy) {
     referrer_policy_ = referrer_policy;
     referrer_policy_set_ = true;
   }
   void clear_referrer_policy() {
-    referrer_policy_ = WebKit::WebReferrerPolicyDefault;
+    referrer_policy_ = blink::WebReferrerPolicyDefault;
     referrer_policy_set_ = false;
   }
   bool is_referrer_policy_set() const { return referrer_policy_set_; }
@@ -138,9 +138,9 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
   bool is_overriding_user_agent_;
   bool must_reset_scroll_and_scale_state_;
   bool cache_policy_override_set_;
-  WebKit::WebURLRequest::CachePolicy cache_policy_override_;
+  blink::WebURLRequest::CachePolicy cache_policy_override_;
   bool referrer_policy_set_;
-  WebKit::WebReferrerPolicy referrer_policy_;
+  blink::WebReferrerPolicy referrer_policy_;
   scoped_ptr<AltErrorPageResourceFetcher> alt_error_page_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(InternalDocumentStateData);

@@ -106,8 +106,8 @@ TEST_F(VideoDestinationHandlerTest, Open) {
   EXPECT_TRUE(frame_writer);
 
   // Verify the video track has been added.
-  const WebKit::WebMediaStream test_stream = registry_.test_stream();
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> video_tracks;
+  const blink::WebMediaStream test_stream = registry_.test_stream();
+  blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
   test_stream.videoTracks(video_tracks);
   EXPECT_EQ(1u, video_tracks.size());
 

@@ -141,7 +141,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
 #endif  // defined(OS_WIN) || defined(USE_AURA)
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
-  virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
+  virtual void GetScreenInfo(blink::WebScreenInfo* results) OVERRIDE;
   virtual void OnAccessibilityEvents(
       const std::vector<AccessibilityHostMsg_EventParams>&
           params) OVERRIDE;

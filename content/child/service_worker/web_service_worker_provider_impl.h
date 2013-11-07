@@ -12,7 +12,7 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 
-namespace WebKit {
+namespace blink {
 class WebString;
 class WebURL;
 }
@@ -27,25 +27,25 @@ class ThreadSafeSender;
 class ServiceWorkerMessageFilter;
 
 class WebServiceWorkerProviderImpl
-    : NON_EXPORTED_BASE(public WebKit::WebServiceWorkerProvider) {
+    : NON_EXPORTED_BASE(public blink::WebServiceWorkerProvider) {
  public:
   WebServiceWorkerProviderImpl(
       ThreadSafeSender* thread_safe_sender,
       ServiceWorkerMessageFilter* message_filter,
-      const WebKit::WebURL& origin,
-      scoped_ptr<WebKit::WebServiceWorkerProviderClient> client);
+      const blink::WebURL& origin,
+      scoped_ptr<blink::WebServiceWorkerProviderClient> client);
   virtual ~WebServiceWorkerProviderImpl();
 
-  virtual void registerServiceWorker(const WebKit::WebURL& pattern,
-                                     const WebKit::WebURL& script_url,
+  virtual void registerServiceWorker(const blink::WebURL& pattern,
+                                     const blink::WebURL& script_url,
                                      WebServiceWorkerCallbacks*);
 
-  virtual void unregisterServiceWorker(const WebKit::WebURL& pattern,
+  virtual void unregisterServiceWorker(const blink::WebURL& pattern,
                                        WebServiceWorkerCallbacks*);
 
  private:
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
-  scoped_ptr<WebKit::WebServiceWorkerProviderClient> client_;
+  scoped_ptr<blink::WebServiceWorkerProviderClient> client_;
 
   DISALLOW_COPY_AND_ASSIGN(WebServiceWorkerProviderImpl);
 };

@@ -26,7 +26,7 @@ struct IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params;
 struct IndexedDBMsg_CallbacksSuccessIDBCursor_Params;
 struct IndexedDBMsg_CallbacksUpgradeNeeded_Params;
 
-namespace WebKit {
+namespace blink {
 class WebData;
 }
 
@@ -60,38 +60,38 @@ class CONTENT_EXPORT IndexedDBDispatcher
   // webkit_glue::WorkerTaskRunner::Observer implementation.
   virtual void OnWorkerRunLoopStopped() OVERRIDE;
 
-  static WebKit::WebIDBMetadata ConvertMetadata(
+  static blink::WebIDBMetadata ConvertMetadata(
       const IndexedDBDatabaseMetadata& idb_metadata);
 
   void OnMessageReceived(const IPC::Message& msg);
   bool Send(IPC::Message* msg);
 
   void RequestIDBFactoryGetDatabaseNames(
-      WebKit::WebIDBCallbacks* callbacks,
+      blink::WebIDBCallbacks* callbacks,
       const std::string& database_identifier);
 
   void RequestIDBFactoryOpen(
       const string16& name,
       int64 version,
       int64 transaction_id,
-      WebKit::WebIDBCallbacks* callbacks,
-      WebKit::WebIDBDatabaseCallbacks* database_callbacks,
+      blink::WebIDBCallbacks* callbacks,
+      blink::WebIDBDatabaseCallbacks* database_callbacks,
       const std::string& database_identifier);
 
   void RequestIDBFactoryDeleteDatabase(const string16& name,
-                                       WebKit::WebIDBCallbacks* callbacks,
+                                       blink::WebIDBCallbacks* callbacks,
                                        const std::string& database_identifier);
 
   void RequestIDBCursorAdvance(unsigned long count,
-                               WebKit::WebIDBCallbacks* callbacks_ptr,
+                               blink::WebIDBCallbacks* callbacks_ptr,
                                int32 ipc_cursor_id);
 
   virtual void RequestIDBCursorContinue(const IndexedDBKey& key,
-                                        WebKit::WebIDBCallbacks* callbacks_ptr,
+                                        blink::WebIDBCallbacks* callbacks_ptr,
                                         int32 ipc_cursor_id);
 
   virtual void RequestIDBCursorPrefetch(int n,
-                                        WebKit::WebIDBCallbacks* callbacks_ptr,
+                                        blink::WebIDBCallbacks* callbacks_ptr,
                                         int32 ipc_cursor_id);
 
   void RequestIDBCursorPrefetchReset(int used_prefetches,
@@ -104,8 +104,8 @@ class CONTENT_EXPORT IndexedDBDispatcher
   void RequestIDBDatabaseCreateTransaction(
       int32 ipc_database_id,
       int64 transaction_id,
-      WebKit::WebIDBDatabaseCallbacks* database_callbacks_ptr,
-      WebKit::WebVector<long long> object_store_ids,
+      blink::WebIDBDatabaseCallbacks* database_callbacks_ptr,
+      blink::WebVector<long long> object_store_ids,
       unsigned short mode);
 
   void RequestIDBDatabaseGet(int32 ipc_database_id,
@@ -114,18 +114,18 @@ class CONTENT_EXPORT IndexedDBDispatcher
                              int64 index_id,
                              const IndexedDBKeyRange& key_range,
                              bool key_only,
-                             WebKit::WebIDBCallbacks* callbacks);
+                             blink::WebIDBCallbacks* callbacks);
 
   void RequestIDBDatabasePut(
       int32 ipc_database_id,
       int64 transaction_id,
       int64 object_store_id,
-      const WebKit::WebData& value,
+      const blink::WebData& value,
       const IndexedDBKey& key,
-      WebKit::WebIDBDatabase::PutMode put_mode,
-      WebKit::WebIDBCallbacks* callbacks,
-      const WebKit::WebVector<long long>& index_ids,
-      const WebKit::WebVector<WebKit::WebVector<WebKit::WebIDBKey> >&
+      blink::WebIDBDatabase::PutMode put_mode,
+      blink::WebIDBCallbacks* callbacks,
+      const blink::WebVector<long long>& index_ids,
+      const blink::WebVector<blink::WebVector<blink::WebIDBKey> >&
           index_keys);
 
   void RequestIDBDatabaseOpenCursor(int32 ipc_database_id,
@@ -135,26 +135,26 @@ class CONTENT_EXPORT IndexedDBDispatcher
                                     const IndexedDBKeyRange& key_range,
                                     unsigned short direction,
                                     bool key_only,
-                                    WebKit::WebIDBDatabase::TaskType task_type,
-                                    WebKit::WebIDBCallbacks* callbacks);
+                                    blink::WebIDBDatabase::TaskType task_type,
+                                    blink::WebIDBCallbacks* callbacks);
 
   void RequestIDBDatabaseCount(int32 ipc_database_id,
                                int64 transaction_id,
                                int64 object_store_id,
                                int64 index_id,
                                const IndexedDBKeyRange& key_range,
-                               WebKit::WebIDBCallbacks* callbacks);
+                               blink::WebIDBCallbacks* callbacks);
 
   void RequestIDBDatabaseDeleteRange(int32 ipc_database_id,
                                      int64 transaction_id,
                                      int64 object_store_id,
                                      const IndexedDBKeyRange& key_range,
-                                     WebKit::WebIDBCallbacks* callbacks);
+                                     blink::WebIDBCallbacks* callbacks);
 
   void RequestIDBDatabaseClear(int32 ipc_database_id,
                                int64 transaction_id,
                                int64 object_store_id,
-                               WebKit::WebIDBCallbacks* callbacks);
+                               blink::WebIDBCallbacks* callbacks);
 
   virtual void CursorDestroyed(int32 ipc_cursor_id);
   void DatabaseDestroyed(int32 ipc_database_id);
@@ -167,8 +167,8 @@ class CONTENT_EXPORT IndexedDBDispatcher
   }
 
   template <typename T>
-  void init_params(T& params, WebKit::WebIDBCallbacks* callbacks_ptr) {
-    scoped_ptr<WebKit::WebIDBCallbacks> callbacks(callbacks_ptr);
+  void init_params(T& params, blink::WebIDBCallbacks* callbacks_ptr) {
+    scoped_ptr<blink::WebIDBCallbacks> callbacks(callbacks_ptr);
     params.ipc_thread_id = CurrentWorkerId();
     params.ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
   }
@@ -233,8 +233,8 @@ class CONTENT_EXPORT IndexedDBDispatcher
 
   // Careful! WebIDBCallbacks wraps non-threadsafe data types. It must be
   // destroyed and used on the same thread it was created on.
-  IDMap<WebKit::WebIDBCallbacks, IDMapOwnPointer> pending_callbacks_;
-  IDMap<WebKit::WebIDBDatabaseCallbacks, IDMapOwnPointer>
+  IDMap<blink::WebIDBCallbacks, IDMapOwnPointer> pending_callbacks_;
+  IDMap<blink::WebIDBDatabaseCallbacks, IDMapOwnPointer>
       pending_database_callbacks_;
 
   // Map from cursor id to RendererWebIDBCursorImpl.

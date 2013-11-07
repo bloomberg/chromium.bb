@@ -33,7 +33,7 @@
 #endif  // defined(NDEBUG)
 #endif  // defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
 
-using WebKit::WebString;
+using blink::WebString;
 
 // These are the (fake) key systems that are registered for these tests.
 // kUsesAes uses the AesDecryptor like Clear Key.

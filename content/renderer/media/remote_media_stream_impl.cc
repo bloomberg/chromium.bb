@@ -22,13 +22,13 @@ class RemoteMediaStreamTrackObserver
  public:
   RemoteMediaStreamTrackObserver(
       webrtc::MediaStreamTrackInterface* webrtc_track,
-      const WebKit::WebMediaStreamTrack& webkit_track);
+      const blink::WebMediaStreamTrack& webkit_track);
   virtual ~RemoteMediaStreamTrackObserver();
 
   webrtc::MediaStreamTrackInterface* observered_track() {
     return webrtc_track_.get();
   }
-  const WebKit::WebMediaStreamTrack& webkit_track() { return webkit_track_; }
+  const blink::WebMediaStreamTrack& webkit_track() { return webkit_track_; }
 
  private:
   // webrtc::ObserverInterface implementation.
@@ -36,7 +36,7 @@ class RemoteMediaStreamTrackObserver
 
   webrtc::MediaStreamTrackInterface::TrackState state_;
   scoped_refptr<webrtc::MediaStreamTrackInterface> webrtc_track_;
-  WebKit::WebMediaStreamTrack webkit_track_;
+  blink::WebMediaStreamTrack webkit_track_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteMediaStreamTrackObserver);
 };
@@ -46,10 +46,10 @@ class RemoteMediaStreamTrackObserver
 namespace {
 
 void InitializeWebkitTrack(webrtc::MediaStreamTrackInterface* track,
-                           WebKit::WebMediaStreamTrack* webkit_track,
-                           WebKit::WebMediaStreamSource::Type type) {
-  WebKit::WebMediaStreamSource webkit_source;
-  WebKit::WebString webkit_track_id(UTF8ToUTF16(track->id()));
+                           blink::WebMediaStreamTrack* webkit_track,
+                           blink::WebMediaStreamSource::Type type) {
+  blink::WebMediaStreamSource webkit_source;
+  blink::WebString webkit_track_id(UTF8ToUTF16(track->id()));
 
   webkit_source.initialize(webkit_track_id, type, webkit_track_id);
   webkit_track->initialize(webkit_track_id, webkit_source);
@@ -75,7 +75,7 @@ namespace content {
 
 RemoteMediaStreamTrackObserver::RemoteMediaStreamTrackObserver(
     webrtc::MediaStreamTrackInterface* webrtc_track,
-    const WebKit::WebMediaStreamTrack& webkit_track)
+    const blink::WebMediaStreamTrack& webkit_track)
     : state_(webrtc_track->state()),
       webrtc_track_(webrtc_track),
       webkit_track_(webkit_track) {
@@ -101,11 +101,11 @@ void RemoteMediaStreamTrackObserver::OnChanged() {
       break;
     case webrtc::MediaStreamTrackInterface::kLive:
       webkit_track_.source().setReadyState(
-          WebKit::WebMediaStreamSource::ReadyStateLive);
+          blink::WebMediaStreamSource::ReadyStateLive);
       break;
     case webrtc::MediaStreamTrackInterface::kEnded:
       webkit_track_.source().setReadyState(
-          WebKit::WebMediaStreamSource::ReadyStateEnded);
+          blink::WebMediaStreamSource::ReadyStateEnded);
       break;
     default:
       NOTREACHED();
@@ -120,7 +120,7 @@ RemoteMediaStreamImpl::RemoteMediaStreamImpl(
 
   webrtc::AudioTrackVector webrtc_audio_tracks =
       webrtc_stream_->GetAudioTracks();
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> webkit_audio_tracks(
+  blink::WebVector<blink::WebMediaStreamTrack> webkit_audio_tracks(
       webrtc_audio_tracks.size());
 
   // Initialize WebKit audio tracks.
@@ -129,7 +129,7 @@ RemoteMediaStreamImpl::RemoteMediaStreamImpl(
     webrtc::AudioTrackInterface* audio_track = webrtc_audio_tracks[i];
     DCHECK(audio_track);
     InitializeWebkitTrack(audio_track,  &webkit_audio_tracks[i],
-                          WebKit::WebMediaStreamSource::TypeAudio);
+                          blink::WebMediaStreamSource::TypeAudio);
     audio_track_observers_.push_back(
         new RemoteMediaStreamTrackObserver(audio_track,
                                            webkit_audio_tracks[i]));
@@ -138,13 +138,13 @@ RemoteMediaStreamImpl::RemoteMediaStreamImpl(
   // Initialize WebKit video tracks.
   webrtc::VideoTrackVector webrtc_video_tracks =
         webrtc_stream_->GetVideoTracks();
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> webkit_video_tracks(
+  blink::WebVector<blink::WebMediaStreamTrack> webkit_video_tracks(
        webrtc_video_tracks.size());
   for (i = 0; i < webrtc_video_tracks.size(); ++i) {
     webrtc::VideoTrackInterface* video_track = webrtc_video_tracks[i];
     DCHECK(video_track);
     InitializeWebkitTrack(video_track,  &webkit_video_tracks[i],
-                          WebKit::WebMediaStreamSource::TypeVideo);
+                          blink::WebMediaStreamSource::TypeVideo);
     video_track_observers_.push_back(
         new RemoteMediaStreamTrackObserver(video_track,
                                            webkit_video_tracks[i]));
@@ -192,9 +192,9 @@ void RemoteMediaStreamImpl::OnChanged() {
   for (webrtc::AudioTrackVector::iterator it = webrtc_audio_tracks.begin();
        it != webrtc_audio_tracks.end(); ++it) {
     if (!FindTrackObserver(*it, audio_track_observers_)) {
-      WebKit::WebMediaStreamTrack new_track;
+      blink::WebMediaStreamTrack new_track;
       InitializeWebkitTrack(*it, &new_track,
-                            WebKit::WebMediaStreamSource::TypeAudio);
+                            blink::WebMediaStreamSource::TypeAudio);
       audio_track_observers_.push_back(
           new RemoteMediaStreamTrackObserver(*it, new_track));
       webkit_stream_.addTrack(new_track);
@@ -207,9 +207,9 @@ void RemoteMediaStreamImpl::OnChanged() {
   for (webrtc::VideoTrackVector::iterator it = webrtc_video_tracks.begin();
        it != webrtc_video_tracks.end(); ++it) {
     if (!FindTrackObserver(*it, video_track_observers_)) {
-      WebKit::WebMediaStreamTrack new_track;
+      blink::WebMediaStreamTrack new_track;
       InitializeWebkitTrack(*it, &new_track,
-                            WebKit::WebMediaStreamSource::TypeVideo);
+                            blink::WebMediaStreamSource::TypeVideo);
       video_track_observers_.push_back(
           new RemoteMediaStreamTrackObserver(*it, new_track));
       webkit_stream_.addTrack(new_track);

@@ -81,11 +81,11 @@ class CONTENT_EXPORT WebContentsViewGtk
                              bool right_aligned,
                              bool allow_multiple_selection) OVERRIDE;
   virtual void StartDragging(const DropData& drop_data,
-                             WebKit::WebDragOperationsMask allowed_ops,
+                             blink::WebDragOperationsMask allowed_ops,
                              const gfx::ImageSkia& image,
                              const gfx::Vector2d& image_offset,
                              const DragEventSourceInfo& event_info) OVERRIDE;
-  virtual void UpdateDragCursor(WebKit::WebDragOperation operation) OVERRIDE;
+  virtual void UpdateDragCursor(blink::WebDragOperation operation) OVERRIDE;
   virtual void GotFocus() OVERRIDE;
   virtual void TakeFocus(bool reverse) OVERRIDE;
 

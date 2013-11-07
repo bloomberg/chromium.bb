@@ -39,7 +39,7 @@ class CONTENT_EXPORT WebDragSourceGtk :
   // Starts a drag for the WebContents this WebDragSourceGtk was created for.
   // Returns false if the drag could not be started.
   bool StartDragging(const DropData& drop_data,
-                     WebKit::WebDragOperationsMask allowed_ops,
+                     blink::WebDragOperationsMask allowed_ops,
                      GdkEventButton* last_mouse_down,
                      const SkBitmap& image,
                      const gfx::Vector2d& image_offset);

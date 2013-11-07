@@ -27,13 +27,13 @@
 using ppapi::StringVar;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_ImageData_API;
-using WebKit::WebFloatPoint;
-using WebKit::WebFloatRect;
-using WebKit::WebFont;
-using WebKit::WebFontDescription;
-using WebKit::WebRect;
-using WebKit::WebTextRun;
-using WebKit::WebCanvas;
+using blink::WebFloatPoint;
+using blink::WebFloatRect;
+using blink::WebFont;
+using blink::WebFontDescription;
+using blink::WebRect;
+using blink::WebTextRun;
+using blink::WebCanvas;
 
 namespace content {
 

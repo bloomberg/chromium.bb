@@ -22,7 +22,7 @@
 #include "ui/base/gtk/focus_store_gtk.h"
 #include "ui/base/gtk/gtk_floating_container.h"
 
-using WebKit::WebContextMenuData;
+using blink::WebContextMenuData;
 
 namespace content {
 

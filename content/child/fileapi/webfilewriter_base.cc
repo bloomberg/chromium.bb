@@ -15,7 +15,7 @@ using fileapi::PlatformFileErrorToWebFileError;
 namespace content {
 
 WebFileWriterBase::WebFileWriterBase(const GURL& path,
-                                     WebKit::WebFileWriterClient* client)
+                                     blink::WebFileWriterClient* client)
     : path_(path),
       client_(client),
       operation_(kOperationNone),
@@ -32,7 +32,7 @@ void WebFileWriterBase::truncate(long long length) {
 
 void WebFileWriterBase::write(
       long long position,
-      const WebKit::WebString& id) {
+      const blink::WebString& id) {
   DCHECK_EQ(kOperationNone, operation_);
   DCHECK_EQ(kCancelNotInProgress, cancel_state_);
   operation_ = kOperationWrite;
@@ -147,7 +147,7 @@ void WebFileWriterBase::FinishCancel() {
   DCHECK(kOperationNone != operation_);
   cancel_state_ = kCancelNotInProgress;
   operation_ = kOperationNone;
-  client_->didFail(WebKit::WebFileErrorAbort);
+  client_->didFail(blink::WebFileErrorAbort);
 }
 
 }  // namespace content

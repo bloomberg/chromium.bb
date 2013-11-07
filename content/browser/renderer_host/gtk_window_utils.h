@@ -9,14 +9,14 @@
 
 typedef struct _GdkDrawable GdkWindow;
 
-namespace WebKit {
+namespace blink {
 struct WebScreenInfo;
 }
 
 namespace content {
 
 CONTENT_EXPORT void GetScreenInfoFromNativeWindow(
-    GdkWindow* gdk_window, WebKit::WebScreenInfo* results);
+    GdkWindow* gdk_window, blink::WebScreenInfo* results);
 
 }  // namespace content
 

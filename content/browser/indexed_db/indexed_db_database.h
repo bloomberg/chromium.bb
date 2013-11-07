@@ -81,7 +81,7 @@ class CONTENT_EXPORT IndexedDBDatabase
       scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
       int64 transaction_id,
       int64 version,
-      WebKit::WebIDBCallbacks::DataLoss data_loss,
+      blink::WebIDBCallbacks::DataLoss data_loss,
       std::string data_loss_message);
   void DeleteDatabase(scoped_refptr<IndexedDBCallbacks> callbacks);
   const IndexedDBDatabaseMetadata& metadata() const { return metadata_; }
@@ -195,7 +195,7 @@ class CONTENT_EXPORT IndexedDBDatabase
   void VersionChangeOperation(int64 version,
                               scoped_refptr<IndexedDBCallbacks> callbacks,
                               scoped_ptr<IndexedDBConnection> connection,
-                              WebKit::WebIDBCallbacks::DataLoss data_loss,
+                              blink::WebIDBCallbacks::DataLoss data_loss,
                               std::string data_loss_message,
                               IndexedDBTransaction* transaction);
   void VersionChangeAbortOperation(const string16& previous_version,
@@ -255,7 +255,7 @@ class CONTENT_EXPORT IndexedDBDatabase
                                    scoped_ptr<IndexedDBConnection> connection,
                                    int64 transaction_id,
                                    int64 requested_version,
-                                   WebKit::WebIDBCallbacks::DataLoss data_loss,
+                                   blink::WebIDBCallbacks::DataLoss data_loss,
                                    std::string data_loss_message);
   void RunVersionChangeTransactionFinal(
       scoped_refptr<IndexedDBCallbacks> callbacks,
@@ -267,7 +267,7 @@ class CONTENT_EXPORT IndexedDBDatabase
       scoped_ptr<IndexedDBConnection> connection,
       int64 transaction_id,
       int64 requested_version,
-      WebKit::WebIDBCallbacks::DataLoss data_loss,
+      blink::WebIDBCallbacks::DataLoss data_loss,
       std::string data_loss_message);
   void ProcessPendingCalls();
 

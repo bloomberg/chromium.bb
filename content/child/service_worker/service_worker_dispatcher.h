@@ -14,7 +14,7 @@
 
 class GURL;
 
-namespace WebKit {
+namespace blink {
 class WebURL;
 }
 
@@ -42,11 +42,11 @@ class ServiceWorkerDispatcher : public webkit_glue::WorkerTaskRunner::Observer {
   void RegisterServiceWorker(
       const GURL& pattern,
       const GURL& script_url,
-      WebKit::WebServiceWorkerProvider::WebServiceWorkerCallbacks* callbacks);
+      blink::WebServiceWorkerProvider::WebServiceWorkerCallbacks* callbacks);
   // Corresponds to navigator.unregisterServiceWorker()
   void UnregisterServiceWorker(
       const GURL& pattern,
-      WebKit::WebServiceWorkerProvider::WebServiceWorkerCallbacks* callbacks);
+      blink::WebServiceWorkerProvider::WebServiceWorkerCallbacks* callbacks);
 
   // |thread_safe_sender| needs to be passed in because if the call leads to
   // construction it will be needed.
@@ -64,10 +64,10 @@ class ServiceWorkerDispatcher : public webkit_glue::WorkerTaskRunner::Observer {
                       int32 request_id);
   void OnRegistrationError(int32 thread_id,
                            int32 request_id,
-                           WebKit::WebServiceWorkerError::ErrorType error_type,
+                           blink::WebServiceWorkerError::ErrorType error_type,
                            const string16& message);
 
-  IDMap<WebKit::WebServiceWorkerProvider::WebServiceWorkerCallbacks,
+  IDMap<blink::WebServiceWorkerProvider::WebServiceWorkerCallbacks,
         IDMapOwnPointer> pending_callbacks_;
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;

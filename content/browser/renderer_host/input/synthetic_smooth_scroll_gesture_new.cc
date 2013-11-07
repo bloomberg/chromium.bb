@@ -97,7 +97,7 @@ void SyntheticSmoothScrollGestureNew::ForwardTouchEvent(
 void SyntheticSmoothScrollGestureNew::ForwardMouseWheelEvent(
     SyntheticGestureTarget* target,
     float delta) {
-  WebKit::WebMouseWheelEvent mouse_wheel_event =
+  blink::WebMouseWheelEvent mouse_wheel_event =
       SyntheticWebMouseWheelEventBuilder::Build(0, delta, 0, false);
 
   target->QueueInputEventToPlatform(

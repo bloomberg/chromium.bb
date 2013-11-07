@@ -99,10 +99,10 @@ class MockSyntheticSmoothScrollMouseTarget : public MockSyntheticGestureTarget {
   virtual ~MockSyntheticSmoothScrollMouseTarget() {}
 
   virtual void QueueInputEventToPlatform(const InputEvent& event) OVERRIDE {
-    const WebKit::WebInputEvent* web_event = event.web_event.get();
-    DCHECK_EQ(web_event->type, WebKit::WebInputEvent::MouseWheel);
-    const WebKit::WebMouseWheelEvent* mouse_wheel_event =
-        static_cast<const WebKit::WebMouseWheelEvent*>(web_event);
+    const blink::WebInputEvent* web_event = event.web_event.get();
+    DCHECK_EQ(web_event->type, blink::WebInputEvent::MouseWheel);
+    const blink::WebMouseWheelEvent* mouse_wheel_event =
+        static_cast<const blink::WebMouseWheelEvent*>(web_event);
     DCHECK_EQ(mouse_wheel_event->deltaX, 0);
     scroll_distance_ += mouse_wheel_event->deltaY;
   }
@@ -120,23 +120,23 @@ class MockSyntheticSmoothScrollTouchTarget : public MockSyntheticGestureTarget {
   virtual ~MockSyntheticSmoothScrollTouchTarget() {}
 
   virtual void QueueInputEventToPlatform(const InputEvent& event) OVERRIDE {
-    const WebKit::WebInputEvent* web_event = event.web_event.get();
-    DCHECK(WebKit::WebInputEvent::isTouchEventType(web_event->type));
-    const WebKit::WebTouchEvent* touch_event =
-        static_cast<const WebKit::WebTouchEvent*>(web_event);
+    const blink::WebInputEvent* web_event = event.web_event.get();
+    DCHECK(blink::WebInputEvent::isTouchEventType(web_event->type));
+    const blink::WebTouchEvent* touch_event =
+        static_cast<const blink::WebTouchEvent*>(web_event);
     DCHECK_EQ(touch_event->touchesLength, (unsigned int)1);
 
     if (!started_) {
-      DCHECK_EQ(touch_event->type, WebKit::WebInputEvent::TouchStart);
+      DCHECK_EQ(touch_event->type, blink::WebInputEvent::TouchStart);
       anchor_y_ = touch_event->touches[0].position.y;
       started_ = true;
     }
     else {
-      DCHECK_NE(touch_event->type, WebKit::WebInputEvent::TouchStart);
-      DCHECK_NE(touch_event->type, WebKit::WebInputEvent::TouchCancel);
+      DCHECK_NE(touch_event->type, blink::WebInputEvent::TouchStart);
+      DCHECK_NE(touch_event->type, blink::WebInputEvent::TouchCancel);
       // Ignore move events.
 
-      if (touch_event->type == WebKit::WebInputEvent::TouchEnd)
+      if (touch_event->type == blink::WebInputEvent::TouchEnd)
         scroll_distance_ = touch_event->touches[0].position.y - anchor_y_;
     }
   }

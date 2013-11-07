@@ -28,7 +28,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerGtk
 
   // BrowserAccessibilityManager methods
   virtual void NotifyAccessibilityEvent(
-      WebKit::WebAXEvent event_type, BrowserAccessibility* node) OVERRIDE;
+      blink::WebAXEvent event_type, BrowserAccessibility* node) OVERRIDE;
 
   GtkWidget* parent_widget() { return parent_widget_; }
 

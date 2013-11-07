@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBMEDIAPLAYER_DELEGATE_H_
 #define CONTENT_RENDERER_MEDIA_WEBMEDIAPLAYER_DELEGATE_H_
 
-namespace WebKit {
+namespace blink {
 class WebMediaPlayer;
 }
 namespace content {
@@ -17,13 +17,13 @@ class WebMediaPlayerDelegate {
   WebMediaPlayerDelegate() {}
 
   // The specified player started playing media.
-  virtual void DidPlay(WebKit::WebMediaPlayer* player) = 0;
+  virtual void DidPlay(blink::WebMediaPlayer* player) = 0;
 
   // The specified player stopped playing media.
-  virtual void DidPause(WebKit::WebMediaPlayer* player) = 0;
+  virtual void DidPause(blink::WebMediaPlayer* player) = 0;
 
   // The specified player was destroyed. Do not call any methods on it.
-  virtual void PlayerGone(WebKit::WebMediaPlayer* player) = 0;
+  virtual void PlayerGone(blink::WebMediaPlayer* player) = 0;
 
  protected:
   virtual ~WebMediaPlayerDelegate() {}

@@ -14,14 +14,14 @@
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 
-using WebKit::WebApplicationCacheHost;
-using WebKit::WebApplicationCacheHostClient;
-using WebKit::WebDataSource;
-using WebKit::WebFrame;
-using WebKit::WebURLRequest;
-using WebKit::WebURL;
-using WebKit::WebURLResponse;
-using WebKit::WebVector;
+using blink::WebApplicationCacheHost;
+using blink::WebApplicationCacheHostClient;
+using blink::WebDataSource;
+using blink::WebFrame;
+using blink::WebURLRequest;
+using blink::WebURL;
+using blink::WebURLResponse;
+using blink::WebVector;
 using appcache::AppCacheBackend;
 using appcache::AppCacheResourceInfo;
 

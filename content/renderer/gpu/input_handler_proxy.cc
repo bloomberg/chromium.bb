@@ -12,14 +12,14 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/latency_info.h"
 
-using WebKit::WebFloatPoint;
-using WebKit::WebFloatSize;
-using WebKit::WebGestureEvent;
-using WebKit::WebInputEvent;
-using WebKit::WebMouseEvent;
-using WebKit::WebMouseWheelEvent;
-using WebKit::WebPoint;
-using WebKit::WebTouchEvent;
+using blink::WebFloatPoint;
+using blink::WebFloatSize;
+using blink::WebGestureEvent;
+using blink::WebInputEvent;
+using blink::WebMouseEvent;
+using blink::WebMouseWheelEvent;
+using blink::WebPoint;
+using blink::WebTouchEvent;
 
 namespace {
 
@@ -263,7 +263,7 @@ InputHandlerProxy::HandleGestureFling(
           gesture_event.sourceDevice,
           WebFloatPoint(gesture_event.data.flingStart.velocityX,
                         gesture_event.data.flingStart.velocityY),
-          WebKit::WebSize()));
+          blink::WebSize()));
       fling_overscrolled_horizontally_ = false;
       fling_overscrolled_vertically_ = false;
       TRACE_EVENT_ASYNC_BEGIN0(
@@ -365,7 +365,7 @@ bool InputHandlerProxy::CancelCurrentFling() {
                        had_fling_animation);
   fling_curve_.reset();
   gesture_scroll_on_impl_thread_ = false;
-  fling_parameters_ = WebKit::WebActiveWheelFlingParameters();
+  fling_parameters_ = blink::WebActiveWheelFlingParameters();
   return had_fling_animation;
 }
 

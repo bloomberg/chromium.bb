@@ -87,7 +87,7 @@ class CONTENT_EXPORT TouchEventQueue {
   void PopTouchEventToClient(InputEventAckState ack_result,
                              const ui::LatencyInfo& renderer_latency_info);
 
-  bool ShouldForwardToRenderer(const WebKit::WebTouchEvent& event) const;
+  bool ShouldForwardToRenderer(const blink::WebTouchEvent& event) const;
 
   // Handles touch event forwarding and ack'ed event dispatch.
   TouchEventQueueClient* client_;

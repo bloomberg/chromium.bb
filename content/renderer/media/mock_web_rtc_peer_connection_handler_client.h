@@ -17,7 +17,7 @@
 namespace content {
 
 class MockWebRTCPeerConnectionHandlerClient
-    : public WebKit::WebRTCPeerConnectionHandlerClient {
+    : public blink::WebRTCPeerConnectionHandlerClient {
  public:
   MockWebRTCPeerConnectionHandlerClient();
   virtual ~MockWebRTCPeerConnectionHandlerClient();
@@ -25,33 +25,33 @@ class MockWebRTCPeerConnectionHandlerClient
   // WebRTCPeerConnectionHandlerClient implementation.
   MOCK_METHOD0(negotiationNeeded, void());
   MOCK_METHOD1(didGenerateICECandidate,
-               void(const WebKit::WebRTCICECandidate& candidate));
+               void(const blink::WebRTCICECandidate& candidate));
   MOCK_METHOD1(didChangeSignalingState, void(SignalingState state));
   MOCK_METHOD1(didChangeICEGatheringState, void(ICEGatheringState state));
   MOCK_METHOD1(didChangeICEConnectionState, void(ICEConnectionState state));
   MOCK_METHOD1(didAddRemoteStream,
-               void(const WebKit::WebMediaStream& stream_descriptor));
+               void(const blink::WebMediaStream& stream_descriptor));
   MOCK_METHOD1(didRemoveRemoteStream,
-               void(const WebKit::WebMediaStream& stream_descriptor));
+               void(const blink::WebMediaStream& stream_descriptor));
   MOCK_METHOD1(didAddRemoteDataChannel,
-               void(WebKit::WebRTCDataChannelHandler*));
+               void(blink::WebRTCDataChannelHandler*));
 
   void didGenerateICECandidateWorker(
-      const WebKit::WebRTCICECandidate& candidate);
+      const blink::WebRTCICECandidate& candidate);
   void didAddRemoteStreamWorker(
-      const WebKit::WebMediaStream& stream_descriptor);
+      const blink::WebMediaStream& stream_descriptor);
   void didRemoveRemoteStreamWorker(
-      const WebKit::WebMediaStream& stream_descriptor);
+      const blink::WebMediaStream& stream_descriptor);
 
   const std::string& candidate_sdp() const { return candidate_sdp_; }
   int candidate_mlineindex() const {
     return candidate_mline_index_;
   }
   const std::string& candidate_mid() const { return candidate_mid_ ; }
-  const WebKit::WebMediaStream& remote_stream() const { return remote_steam_;}
+  const blink::WebMediaStream& remote_stream() const { return remote_steam_;}
 
  private:
-  WebKit::WebMediaStream remote_steam_;
+  blink::WebMediaStream remote_steam_;
   std::string candidate_sdp_;
   int candidate_mline_index_;
   std::string candidate_mid_;

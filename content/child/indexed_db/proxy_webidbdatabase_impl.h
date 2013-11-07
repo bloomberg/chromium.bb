@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabase.h"
 
-namespace WebKit {
+namespace blink {
 class WebIDBCallbacks;
 class WebIDBDatabaseCallbacks;
 class WebString;
@@ -18,76 +18,76 @@ class WebString;
 namespace content {
 class ThreadSafeSender;
 
-class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
+class RendererWebIDBDatabaseImpl : public blink::WebIDBDatabase {
  public:
   RendererWebIDBDatabaseImpl(int32 ipc_database_id,
                              int32 ipc_database_callbacks_id,
                              ThreadSafeSender* thread_safe_sender);
   virtual ~RendererWebIDBDatabaseImpl();
 
-  // WebKit::WebIDBDatabase
+  // blink::WebIDBDatabase
   virtual void createObjectStore(
       long long transaction_id,
       long long objectstore_id,
-      const WebKit::WebString& name,
-      const WebKit::WebIDBKeyPath& key_path,
+      const blink::WebString& name,
+      const blink::WebIDBKeyPath& key_path,
       bool auto_increment);
   virtual void deleteObjectStore(
       long long transaction_id,
       long long object_store_id);
   virtual void createTransaction(
       long long transaction_id,
-      WebKit::WebIDBDatabaseCallbacks* callbacks,
-      const WebKit::WebVector<long long>& scope,
+      blink::WebIDBDatabaseCallbacks* callbacks,
+      const blink::WebVector<long long>& scope,
       unsigned short mode);
   virtual void close();
   virtual void get(long long transactionId,
                    long long objectStoreId,
                    long long indexId,
-                   const WebKit::WebIDBKeyRange&,
+                   const blink::WebIDBKeyRange&,
                    bool keyOnly,
-                   WebKit::WebIDBCallbacks*);
+                   blink::WebIDBCallbacks*);
   virtual void put(long long transactionId,
                    long long objectStoreId,
-                   const WebKit::WebData& value,
-                   const WebKit::WebIDBKey&,
+                   const blink::WebData& value,
+                   const blink::WebIDBKey&,
                    PutMode,
-                   WebKit::WebIDBCallbacks*,
-                   const WebKit::WebVector<long long>& indexIds,
-                   const WebKit::WebVector<WebIndexKeys>&);
+                   blink::WebIDBCallbacks*,
+                   const blink::WebVector<long long>& indexIds,
+                   const blink::WebVector<WebIndexKeys>&);
   virtual void setIndexKeys(long long transactionId,
                             long long objectStoreId,
-                            const WebKit::WebIDBKey&,
-                            const WebKit::WebVector<long long>& indexIds,
-                            const WebKit::WebVector<WebIndexKeys>&);
+                            const blink::WebIDBKey&,
+                            const blink::WebVector<long long>& indexIds,
+                            const blink::WebVector<WebIndexKeys>&);
   virtual void setIndexesReady(long long transactionId,
                                long long objectStoreId,
-                               const WebKit::WebVector<long long>& indexIds);
+                               const blink::WebVector<long long>& indexIds);
   virtual void openCursor(long long transactionId,
                           long long objectStoreId,
                           long long indexId,
-                          const WebKit::WebIDBKeyRange&,
+                          const blink::WebIDBKeyRange&,
                           unsigned short direction,
                           bool keyOnly,
                           TaskType,
-                          WebKit::WebIDBCallbacks*);
+                          blink::WebIDBCallbacks*);
   virtual void count(long long transactionId,
                      long long objectStoreId,
                      long long indexId,
-                     const WebKit::WebIDBKeyRange&,
-                     WebKit::WebIDBCallbacks*);
+                     const blink::WebIDBKeyRange&,
+                     blink::WebIDBCallbacks*);
   virtual void deleteRange(long long transactionId,
                            long long objectStoreId,
-                           const WebKit::WebIDBKeyRange&,
-                           WebKit::WebIDBCallbacks*);
+                           const blink::WebIDBKeyRange&,
+                           blink::WebIDBCallbacks*);
   virtual void clear(long long transactionId,
                      long long objectStoreId,
-                     WebKit::WebIDBCallbacks*);
+                     blink::WebIDBCallbacks*);
   virtual void createIndex(long long transactionId,
                            long long objectStoreId,
                            long long indexId,
-                           const WebKit::WebString& name,
-                           const WebKit::WebIDBKeyPath&,
+                           const blink::WebString& name,
+                           const blink::WebIDBKeyPath&,
                            bool unique,
                            bool multiEntry);
   virtual void deleteIndex(long long transactionId, long

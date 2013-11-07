@@ -16,8 +16,8 @@ namespace content {
 
 class CONTENT_EXPORT SyntheticWebMouseEventBuilder {
  public:
-  static WebKit::WebMouseEvent Build(WebKit::WebInputEvent::Type type);
-  static WebKit::WebMouseEvent Build(WebKit::WebInputEvent::Type type,
+  static blink::WebMouseEvent Build(blink::WebInputEvent::Type type);
+  static blink::WebMouseEvent Build(blink::WebInputEvent::Type type,
                                      int window_x,
                                      int window_y,
                                      int modifiers);
@@ -25,9 +25,9 @@ class CONTENT_EXPORT SyntheticWebMouseEventBuilder {
 
 class CONTENT_EXPORT SyntheticWebMouseWheelEventBuilder {
  public:
-  static WebKit::WebMouseWheelEvent Build(
-      WebKit::WebMouseWheelEvent::Phase phase);
-  static WebKit::WebMouseWheelEvent Build(float dx,
+  static blink::WebMouseWheelEvent Build(
+      blink::WebMouseWheelEvent::Phase phase);
+  static blink::WebMouseWheelEvent Build(float dx,
                                           float dy,
                                           int modifiers,
                                           bool precise);
@@ -35,29 +35,29 @@ class CONTENT_EXPORT SyntheticWebMouseWheelEventBuilder {
 
 class CONTENT_EXPORT SyntheticWebKeyboardEventBuilder {
  public:
-  static NativeWebKeyboardEvent Build(WebKit::WebInputEvent::Type type);
+  static NativeWebKeyboardEvent Build(blink::WebInputEvent::Type type);
 };
 
 class CONTENT_EXPORT SyntheticWebGestureEventBuilder {
  public:
-  static WebKit::WebGestureEvent Build(
-      WebKit::WebInputEvent::Type type,
-      WebKit::WebGestureEvent::SourceDevice sourceDevice);
-  static WebKit::WebGestureEvent BuildScrollUpdate(float dx,
+  static blink::WebGestureEvent Build(
+      blink::WebInputEvent::Type type,
+      blink::WebGestureEvent::SourceDevice sourceDevice);
+  static blink::WebGestureEvent BuildScrollUpdate(float dx,
                                                    float dY,
                                                    int modifiers);
-  static WebKit::WebGestureEvent BuildPinchUpdate(float scale,
+  static blink::WebGestureEvent BuildPinchUpdate(float scale,
                                                   float anchor_x,
                                                   float anchor_y,
                                                   int modifiers);
-  static WebKit::WebGestureEvent BuildFling(
+  static blink::WebGestureEvent BuildFling(
       float velocity_x,
       float velocity_y,
-      WebKit::WebGestureEvent::SourceDevice source_device);
+      blink::WebGestureEvent::SourceDevice source_device);
 };
 
 class CONTENT_EXPORT SyntheticWebTouchEvent
-    : public NON_EXPORTED_BASE(WebKit::WebTouchEvent) {
+    : public NON_EXPORTED_BASE(blink::WebTouchEvent) {
  public:
   SyntheticWebTouchEvent();
 
@@ -74,7 +74,7 @@ class CONTENT_EXPORT SyntheticWebTouchEvent
 
 class CONTENT_EXPORT SyntheticWebTouchEventBuilder {
  public:
-  static SyntheticWebTouchEvent Build(WebKit::WebInputEvent::Type type);
+  static SyntheticWebTouchEvent Build(blink::WebInputEvent::Type type);
 };
 
 }  // namespace content

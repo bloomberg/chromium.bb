@@ -13,7 +13,7 @@
 
 struct WebPreferences;
 
-namespace WebKit {
+namespace blink {
 struct WebScreenInfo;
 }
 
@@ -35,7 +35,7 @@ struct CONTENT_EXPORT RenderViewImplParams {
                        bool swapped_out,
                        bool hidden,
                        int32 next_page_id,
-                       const WebKit::WebScreenInfo& screen_info,
+                       const blink::WebScreenInfo& screen_info,
                        AccessibilityMode accessibility_mode,
                        bool allow_partial_swap);
   ~RenderViewImplParams();
@@ -52,7 +52,7 @@ struct CONTENT_EXPORT RenderViewImplParams {
   bool swapped_out;
   bool hidden;
   int32 next_page_id;
-  const WebKit::WebScreenInfo& screen_info;
+  const blink::WebScreenInfo& screen_info;
   AccessibilityMode accessibility_mode;
   bool allow_partial_swap;
 };

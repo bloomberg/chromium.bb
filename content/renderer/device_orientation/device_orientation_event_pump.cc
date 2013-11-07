@@ -26,7 +26,7 @@ DeviceOrientationEventPump::~DeviceOrientationEventPump() {
 }
 
 bool DeviceOrientationEventPump::SetListener(
-    WebKit::WebDeviceOrientationListener* listener) {
+    blink::WebDeviceOrientationListener* listener) {
   listener_ = listener;
   return listener_ ? RequestStart() : Stop();
 }
@@ -43,7 +43,7 @@ bool DeviceOrientationEventPump::OnControlMessageReceived(
 
 void DeviceOrientationEventPump::FireEvent() {
   DCHECK(listener_);
-  WebKit::WebDeviceOrientationData data;
+  blink::WebDeviceOrientationData data;
   if (reader_->GetLatestData(&data) && ShouldFireEvent(data)) {
     memcpy(&data_, &data, sizeof(data));
     listener_->didChangeDeviceOrientation(data);
@@ -59,7 +59,7 @@ static bool IsSignificantlyDifferent(bool hasAngle1, double angle1,
 }
 
 bool DeviceOrientationEventPump::ShouldFireEvent(
-    const WebKit::WebDeviceOrientationData& data) const {
+    const blink::WebDeviceOrientationData& data) const {
   return data.allAvailableSensorsAreActive &&
       (IsSignificantlyDifferent(
           data_.hasAlpha, data_.alpha, data.hasAlpha, data.alpha) ||

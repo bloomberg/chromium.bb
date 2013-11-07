@@ -18,7 +18,7 @@ namespace IPC {
 class SyncMessageFilter;
 }
 
-namespace WebKit {
+namespace blink {
 class WebFileUtilities;
 }
 
@@ -28,7 +28,7 @@ class ThreadSafeSender;
 class WebFileSystemImpl;
 
 class WorkerWebKitPlatformSupportImpl : public WebKitPlatformSupportImpl,
-                                        public WebKit::WebMimeRegistry {
+                                        public blink::WebMimeRegistry {
  public:
   WorkerWebKitPlatformSupportImpl(
       ThreadSafeSender* sender,
@@ -37,76 +37,76 @@ class WorkerWebKitPlatformSupportImpl : public WebKitPlatformSupportImpl,
   virtual ~WorkerWebKitPlatformSupportImpl();
 
   // WebKitPlatformSupport methods:
-  virtual WebKit::WebClipboard* clipboard();
-  virtual WebKit::WebMimeRegistry* mimeRegistry();
-  virtual WebKit::WebFileSystem* fileSystem();
-  virtual WebKit::WebFileUtilities* fileUtilities();
-  virtual WebKit::WebSandboxSupport* sandboxSupport();
+  virtual blink::WebClipboard* clipboard();
+  virtual blink::WebMimeRegistry* mimeRegistry();
+  virtual blink::WebFileSystem* fileSystem();
+  virtual blink::WebFileUtilities* fileUtilities();
+  virtual blink::WebSandboxSupport* sandboxSupport();
   virtual bool sandboxEnabled();
   virtual unsigned long long visitedLinkHash(const char* canonicalURL,
                                              size_t length);
   virtual bool isLinkVisited(unsigned long long linkHash);
-  virtual WebKit::WebMessagePortChannel* createMessagePortChannel();
-  virtual void setCookies(const WebKit::WebURL& url,
-                          const WebKit::WebURL& first_party_for_cookies,
-                          const WebKit::WebString& value);
-  virtual WebKit::WebString cookies(
-      const WebKit::WebURL& url,
-      const WebKit::WebURL& first_party_for_cookies);
-  virtual WebKit::WebString defaultLocale();
-  virtual WebKit::WebStorageNamespace* createLocalStorageNamespace();
+  virtual blink::WebMessagePortChannel* createMessagePortChannel();
+  virtual void setCookies(const blink::WebURL& url,
+                          const blink::WebURL& first_party_for_cookies,
+                          const blink::WebString& value);
+  virtual blink::WebString cookies(
+      const blink::WebURL& url,
+      const blink::WebURL& first_party_for_cookies);
+  virtual blink::WebString defaultLocale();
+  virtual blink::WebStorageNamespace* createLocalStorageNamespace();
   virtual void dispatchStorageEvent(
-      const WebKit::WebString& key, const WebKit::WebString& old_value,
-      const WebKit::WebString& new_value, const WebKit::WebString& origin,
-      const WebKit::WebURL& url, bool is_local_storage);
+      const blink::WebString& key, const blink::WebString& old_value,
+      const blink::WebString& new_value, const blink::WebString& origin,
+      const blink::WebURL& url, bool is_local_storage);
 
-  virtual WebKit::Platform::FileHandle databaseOpenFile(
-      const WebKit::WebString& vfs_file_name, int desired_flags);
-  virtual int databaseDeleteFile(const WebKit::WebString& vfs_file_name,
+  virtual blink::Platform::FileHandle databaseOpenFile(
+      const blink::WebString& vfs_file_name, int desired_flags);
+  virtual int databaseDeleteFile(const blink::WebString& vfs_file_name,
                                  bool sync_dir);
   virtual long databaseGetFileAttributes(
-      const WebKit::WebString& vfs_file_name);
+      const blink::WebString& vfs_file_name);
   virtual long long databaseGetFileSize(
-      const WebKit::WebString& vfs_file_name);
+      const blink::WebString& vfs_file_name);
   virtual long long databaseGetSpaceAvailableForOrigin(
-      const WebKit::WebString& origin_identifier);
+      const blink::WebString& origin_identifier);
 
-  virtual WebKit::WebBlobRegistry* blobRegistry();
+  virtual blink::WebBlobRegistry* blobRegistry();
 
-  virtual WebKit::WebIDBFactory* idbFactory();
+  virtual blink::WebIDBFactory* idbFactory();
 
   // WebMimeRegistry methods:
-  virtual WebKit::WebMimeRegistry::SupportsType supportsMIMEType(
-      const WebKit::WebString&);
-  virtual WebKit::WebMimeRegistry::SupportsType supportsImageMIMEType(
-      const WebKit::WebString&);
-  virtual WebKit::WebMimeRegistry::SupportsType supportsJavaScriptMIMEType(
-      const WebKit::WebString&);
-  virtual WebKit::WebMimeRegistry::SupportsType supportsMediaMIMEType(
-      const WebKit::WebString&,
-      const WebKit::WebString&,
-      const WebKit::WebString&);
+  virtual blink::WebMimeRegistry::SupportsType supportsMIMEType(
+      const blink::WebString&);
+  virtual blink::WebMimeRegistry::SupportsType supportsImageMIMEType(
+      const blink::WebString&);
+  virtual blink::WebMimeRegistry::SupportsType supportsJavaScriptMIMEType(
+      const blink::WebString&);
+  virtual blink::WebMimeRegistry::SupportsType supportsMediaMIMEType(
+      const blink::WebString&,
+      const blink::WebString&,
+      const blink::WebString&);
   virtual bool supportsMediaSourceMIMEType(
-      const WebKit::WebString&,
-      const WebKit::WebString&);
-  virtual WebKit::WebMimeRegistry::SupportsType supportsNonImageMIMEType(
-      const WebKit::WebString&);
-  virtual WebKit::WebString mimeTypeForExtension(const WebKit::WebString&);
-  virtual WebKit::WebString wellKnownMimeTypeForExtension(
-      const WebKit::WebString&);
-  virtual WebKit::WebString mimeTypeFromFile(const WebKit::WebString&);
+      const blink::WebString&,
+      const blink::WebString&);
+  virtual blink::WebMimeRegistry::SupportsType supportsNonImageMIMEType(
+      const blink::WebString&);
+  virtual blink::WebString mimeTypeForExtension(const blink::WebString&);
+  virtual blink::WebString wellKnownMimeTypeForExtension(
+      const blink::WebString&);
+  virtual blink::WebString mimeTypeFromFile(const blink::WebString&);
   virtual void queryStorageUsageAndQuota(
-      const WebKit::WebURL& storage_partition,
-      WebKit::WebStorageQuotaType,
-      WebKit::WebStorageQuotaCallbacks*) OVERRIDE;
+      const blink::WebURL& storage_partition,
+      blink::WebStorageQuotaType,
+      blink::WebStorageQuotaCallbacks*) OVERRIDE;
 
  private:
 
   class FileUtilities;
   scoped_ptr<FileUtilities> file_utilities_;
-  scoped_ptr<WebKit::WebBlobRegistry> blob_registry_;
+  scoped_ptr<blink::WebBlobRegistry> blob_registry_;
   scoped_ptr<WebFileSystemImpl> web_file_system_;
-  scoped_ptr<WebKit::WebIDBFactory> web_idb_factory_;
+  scoped_ptr<blink::WebIDBFactory> web_idb_factory_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<base::MessageLoopProxy> child_thread_loop_;
   scoped_refptr<IPC::SyncMessageFilter> sync_message_filter_;

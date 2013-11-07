@@ -34,7 +34,7 @@ namespace content {
 
 AccessibilityNodeData::AccessibilityNodeData()
     : id(-1),
-      role(WebKit::WebAXRoleUnknown),
+      role(blink::WebAXRoleUnknown),
       state(-1) {
 }
 
@@ -142,161 +142,161 @@ std::string AccessibilityNodeData::DebugString(bool recursive) const {
   result += "id=" + IntToString(id);
 
   switch (role) {
-    case WebKit::WebAXRoleAlert: result += " ALERT"; break;
-    case WebKit::WebAXRoleAlertDialog: result += " ALERT_DIALOG"; break;
-    case WebKit::WebAXRoleAnnotation: result += " ANNOTATION"; break;
-    case WebKit::WebAXRoleApplication: result += " APPLICATION"; break;
-    case WebKit::WebAXRoleArticle: result += " ARTICLE"; break;
-    case WebKit::WebAXRoleBanner: result += " L_BANNER"; break;
-    case WebKit::WebAXRoleBrowser: result += " BROWSER"; break;
-    case WebKit::WebAXRoleBusyIndicator: result += " BUSY_INDICATOR"; break;
-    case WebKit::WebAXRoleButton: result += " BUTTON"; break;
-    case WebKit::WebAXRoleCanvas: result += " CANVAS"; break;
-    case WebKit::WebAXRoleCell: result += " CELL"; break;
-    case WebKit::WebAXRoleCheckBox: result += " CHECKBOX"; break;
-    case WebKit::WebAXRoleColorWell: result += " COLOR_WELL"; break;
-    case WebKit::WebAXRoleColumn: result += " COLUMN"; break;
-    case WebKit::WebAXRoleColumnHeader: result += " COLUMN_HEADER"; break;
-    case WebKit::WebAXRoleComboBox: result += " COMBO_BOX"; break;
-    case WebKit::WebAXRoleComplementary: result += " L_COMPLEMENTARY"; break;
-    case WebKit::WebAXRoleContentInfo: result += " L_CONTENTINFO"; break;
-    case WebKit::WebAXRoleDefinition: result += " DEFINITION"; break;
-    case WebKit::WebAXRoleDescriptionListDetail: result += " DD"; break;
-    case WebKit::WebAXRoleDescriptionListTerm: result += " DT"; break;
-    case WebKit::WebAXRoleDialog: result += " DIALOG"; break;
-    case WebKit::WebAXRoleDirectory: result += " DIRECTORY"; break;
-    case WebKit::WebAXRoleDisclosureTriangle:
+    case blink::WebAXRoleAlert: result += " ALERT"; break;
+    case blink::WebAXRoleAlertDialog: result += " ALERT_DIALOG"; break;
+    case blink::WebAXRoleAnnotation: result += " ANNOTATION"; break;
+    case blink::WebAXRoleApplication: result += " APPLICATION"; break;
+    case blink::WebAXRoleArticle: result += " ARTICLE"; break;
+    case blink::WebAXRoleBanner: result += " L_BANNER"; break;
+    case blink::WebAXRoleBrowser: result += " BROWSER"; break;
+    case blink::WebAXRoleBusyIndicator: result += " BUSY_INDICATOR"; break;
+    case blink::WebAXRoleButton: result += " BUTTON"; break;
+    case blink::WebAXRoleCanvas: result += " CANVAS"; break;
+    case blink::WebAXRoleCell: result += " CELL"; break;
+    case blink::WebAXRoleCheckBox: result += " CHECKBOX"; break;
+    case blink::WebAXRoleColorWell: result += " COLOR_WELL"; break;
+    case blink::WebAXRoleColumn: result += " COLUMN"; break;
+    case blink::WebAXRoleColumnHeader: result += " COLUMN_HEADER"; break;
+    case blink::WebAXRoleComboBox: result += " COMBO_BOX"; break;
+    case blink::WebAXRoleComplementary: result += " L_COMPLEMENTARY"; break;
+    case blink::WebAXRoleContentInfo: result += " L_CONTENTINFO"; break;
+    case blink::WebAXRoleDefinition: result += " DEFINITION"; break;
+    case blink::WebAXRoleDescriptionListDetail: result += " DD"; break;
+    case blink::WebAXRoleDescriptionListTerm: result += " DT"; break;
+    case blink::WebAXRoleDialog: result += " DIALOG"; break;
+    case blink::WebAXRoleDirectory: result += " DIRECTORY"; break;
+    case blink::WebAXRoleDisclosureTriangle:
         result += " DISCLOSURE_TRIANGLE"; break;
-    case WebKit::WebAXRoleDiv: result += " DIV"; break;
-    case WebKit::WebAXRoleDocument: result += " DOCUMENT"; break;
-    case WebKit::WebAXRoleDrawer: result += " DRAWER"; break;
-    case WebKit::WebAXRoleEditableText: result += " EDITABLE_TEXT"; break;
-    case WebKit::WebAXRoleFooter: result += " FOOTER"; break;
-    case WebKit::WebAXRoleForm: result += " FORM"; break;
-    case WebKit::WebAXRoleGrid: result += " GRID"; break;
-    case WebKit::WebAXRoleGroup: result += " GROUP"; break;
-    case WebKit::WebAXRoleGrowArea: result += " GROW_AREA"; break;
-    case WebKit::WebAXRoleHeading: result += " HEADING"; break;
-    case WebKit::WebAXRoleHelpTag: result += " HELP_TAG"; break;
-    case WebKit::WebAXRoleHorizontalRule: result += " HORIZONTAL_RULE"; break;
-    case WebKit::WebAXRoleIgnored: result += " IGNORED"; break;
-    case WebKit::WebAXRoleImage: result += " IMAGE"; break;
-    case WebKit::WebAXRoleImageMap: result += " IMAGE_MAP"; break;
-    case WebKit::WebAXRoleImageMapLink: result += " IMAGE_MAP_LINK"; break;
-    case WebKit::WebAXRoleIncrementor: result += " INCREMENTOR"; break;
-    case WebKit::WebAXRoleInlineTextBox: result += " INLINE_TEXT_BOX"; break;
-    case WebKit::WebAXRoleLabel: result += " LABEL"; break;
-    case WebKit::WebAXRoleLink: result += " LINK"; break;
-    case WebKit::WebAXRoleList: result += " LIST"; break;
-    case WebKit::WebAXRoleListBox: result += " LISTBOX"; break;
-    case WebKit::WebAXRoleListBoxOption: result += " LISTBOX_OPTION"; break;
-    case WebKit::WebAXRoleListItem: result += " LIST_ITEM"; break;
-    case WebKit::WebAXRoleListMarker: result += " LIST_MARKER"; break;
-    case WebKit::WebAXRoleLog: result += " LOG"; break;
-    case WebKit::WebAXRoleMain: result += " L_MAIN"; break;
-    case WebKit::WebAXRoleMarquee: result += " MARQUEE"; break;
-    case WebKit::WebAXRoleMath: result += " MATH"; break;
-    case WebKit::WebAXRoleMatte: result += " MATTE"; break;
-    case WebKit::WebAXRoleMenu: result += " MENU"; break;
-    case WebKit::WebAXRoleMenuBar: result += " MENU_BAR"; break;
-    case WebKit::WebAXRoleMenuButton: result += " MENU_BUTTON"; break;
-    case WebKit::WebAXRoleMenuItem: result += " MENU_ITEM"; break;
-    case WebKit::WebAXRoleMenuListOption: result += " MENU_LIST_OPTION"; break;
-    case WebKit::WebAXRoleMenuListPopup: result += " MENU_LIST_POPUP"; break;
-    case WebKit::WebAXRoleNavigation: result += " L_NAVIGATION"; break;
-    case WebKit::WebAXRoleNote: result += " NOTE"; break;
-    case WebKit::WebAXRoleOutline: result += " OUTLINE"; break;
-    case WebKit::WebAXRoleParagraph: result += " PARAGRAPH"; break;
-    case WebKit::WebAXRolePopUpButton: result += " POPUP_BUTTON"; break;
-    case WebKit::WebAXRolePresentational: result += " PRESENTATIONAL"; break;
-    case WebKit::WebAXRoleProgressIndicator:
+    case blink::WebAXRoleDiv: result += " DIV"; break;
+    case blink::WebAXRoleDocument: result += " DOCUMENT"; break;
+    case blink::WebAXRoleDrawer: result += " DRAWER"; break;
+    case blink::WebAXRoleEditableText: result += " EDITABLE_TEXT"; break;
+    case blink::WebAXRoleFooter: result += " FOOTER"; break;
+    case blink::WebAXRoleForm: result += " FORM"; break;
+    case blink::WebAXRoleGrid: result += " GRID"; break;
+    case blink::WebAXRoleGroup: result += " GROUP"; break;
+    case blink::WebAXRoleGrowArea: result += " GROW_AREA"; break;
+    case blink::WebAXRoleHeading: result += " HEADING"; break;
+    case blink::WebAXRoleHelpTag: result += " HELP_TAG"; break;
+    case blink::WebAXRoleHorizontalRule: result += " HORIZONTAL_RULE"; break;
+    case blink::WebAXRoleIgnored: result += " IGNORED"; break;
+    case blink::WebAXRoleImage: result += " IMAGE"; break;
+    case blink::WebAXRoleImageMap: result += " IMAGE_MAP"; break;
+    case blink::WebAXRoleImageMapLink: result += " IMAGE_MAP_LINK"; break;
+    case blink::WebAXRoleIncrementor: result += " INCREMENTOR"; break;
+    case blink::WebAXRoleInlineTextBox: result += " INLINE_TEXT_BOX"; break;
+    case blink::WebAXRoleLabel: result += " LABEL"; break;
+    case blink::WebAXRoleLink: result += " LINK"; break;
+    case blink::WebAXRoleList: result += " LIST"; break;
+    case blink::WebAXRoleListBox: result += " LISTBOX"; break;
+    case blink::WebAXRoleListBoxOption: result += " LISTBOX_OPTION"; break;
+    case blink::WebAXRoleListItem: result += " LIST_ITEM"; break;
+    case blink::WebAXRoleListMarker: result += " LIST_MARKER"; break;
+    case blink::WebAXRoleLog: result += " LOG"; break;
+    case blink::WebAXRoleMain: result += " L_MAIN"; break;
+    case blink::WebAXRoleMarquee: result += " MARQUEE"; break;
+    case blink::WebAXRoleMath: result += " MATH"; break;
+    case blink::WebAXRoleMatte: result += " MATTE"; break;
+    case blink::WebAXRoleMenu: result += " MENU"; break;
+    case blink::WebAXRoleMenuBar: result += " MENU_BAR"; break;
+    case blink::WebAXRoleMenuButton: result += " MENU_BUTTON"; break;
+    case blink::WebAXRoleMenuItem: result += " MENU_ITEM"; break;
+    case blink::WebAXRoleMenuListOption: result += " MENU_LIST_OPTION"; break;
+    case blink::WebAXRoleMenuListPopup: result += " MENU_LIST_POPUP"; break;
+    case blink::WebAXRoleNavigation: result += " L_NAVIGATION"; break;
+    case blink::WebAXRoleNote: result += " NOTE"; break;
+    case blink::WebAXRoleOutline: result += " OUTLINE"; break;
+    case blink::WebAXRoleParagraph: result += " PARAGRAPH"; break;
+    case blink::WebAXRolePopUpButton: result += " POPUP_BUTTON"; break;
+    case blink::WebAXRolePresentational: result += " PRESENTATIONAL"; break;
+    case blink::WebAXRoleProgressIndicator:
         result += " PROGRESS_INDICATOR"; break;
-    case WebKit::WebAXRoleRadioButton: result += " RADIO_BUTTON"; break;
-    case WebKit::WebAXRoleRadioGroup: result += " RADIO_GROUP"; break;
-    case WebKit::WebAXRoleRegion: result += " REGION"; break;
-    case WebKit::WebAXRoleRootWebArea: result += " ROOT_WEB_AREA"; break;
-    case WebKit::WebAXRoleRow: result += " ROW"; break;
-    case WebKit::WebAXRoleRowHeader: result += " ROW_HEADER"; break;
-    case WebKit::WebAXRoleRuler: result += " RULER"; break;
-    case WebKit::WebAXRoleRulerMarker: result += " RULER_MARKER"; break;
-    case WebKit::WebAXRoleSVGRoot: result += " SVG_ROOT"; break;
-    case WebKit::WebAXRoleScrollArea: result += " SCROLLAREA"; break;
-    case WebKit::WebAXRoleScrollBar: result += " SCROLLBAR"; break;
-    case WebKit::WebAXRoleSearch: result += " L_SEARCH"; break;
-    case WebKit::WebAXRoleSheet: result += " SHEET"; break;
-    case WebKit::WebAXRoleSlider: result += " SLIDER"; break;
-    case WebKit::WebAXRoleSliderThumb: result += " SLIDER_THUMB"; break;
-    case WebKit::WebAXRoleSpinButton: result += " SPIN_BUTTON"; break;
-    case WebKit::WebAXRoleSpinButtonPart: result += " SPIN_BUTTON_PART"; break;
-    case WebKit::WebAXRoleSplitGroup: result += " SPLIT_GROUP"; break;
-    case WebKit::WebAXRoleSplitter: result += " SPLITTER"; break;
-    case WebKit::WebAXRoleStaticText: result += " STATIC_TEXT"; break;
-    case WebKit::WebAXRoleStatus: result += " STATUS"; break;
-    case WebKit::WebAXRoleSystemWide: result += " SYSTEM_WIDE"; break;
-    case WebKit::WebAXRoleTab: result += " TAB"; break;
-    case WebKit::WebAXRoleTabList: result += " TAB_LIST"; break;
-    case WebKit::WebAXRoleTabPanel: result += " TAB_PANEL"; break;
-    case WebKit::WebAXRoleTable: result += " TABLE"; break;
-    case WebKit::WebAXRoleTableHeaderContainer:
+    case blink::WebAXRoleRadioButton: result += " RADIO_BUTTON"; break;
+    case blink::WebAXRoleRadioGroup: result += " RADIO_GROUP"; break;
+    case blink::WebAXRoleRegion: result += " REGION"; break;
+    case blink::WebAXRoleRootWebArea: result += " ROOT_WEB_AREA"; break;
+    case blink::WebAXRoleRow: result += " ROW"; break;
+    case blink::WebAXRoleRowHeader: result += " ROW_HEADER"; break;
+    case blink::WebAXRoleRuler: result += " RULER"; break;
+    case blink::WebAXRoleRulerMarker: result += " RULER_MARKER"; break;
+    case blink::WebAXRoleSVGRoot: result += " SVG_ROOT"; break;
+    case blink::WebAXRoleScrollArea: result += " SCROLLAREA"; break;
+    case blink::WebAXRoleScrollBar: result += " SCROLLBAR"; break;
+    case blink::WebAXRoleSearch: result += " L_SEARCH"; break;
+    case blink::WebAXRoleSheet: result += " SHEET"; break;
+    case blink::WebAXRoleSlider: result += " SLIDER"; break;
+    case blink::WebAXRoleSliderThumb: result += " SLIDER_THUMB"; break;
+    case blink::WebAXRoleSpinButton: result += " SPIN_BUTTON"; break;
+    case blink::WebAXRoleSpinButtonPart: result += " SPIN_BUTTON_PART"; break;
+    case blink::WebAXRoleSplitGroup: result += " SPLIT_GROUP"; break;
+    case blink::WebAXRoleSplitter: result += " SPLITTER"; break;
+    case blink::WebAXRoleStaticText: result += " STATIC_TEXT"; break;
+    case blink::WebAXRoleStatus: result += " STATUS"; break;
+    case blink::WebAXRoleSystemWide: result += " SYSTEM_WIDE"; break;
+    case blink::WebAXRoleTab: result += " TAB"; break;
+    case blink::WebAXRoleTabList: result += " TAB_LIST"; break;
+    case blink::WebAXRoleTabPanel: result += " TAB_PANEL"; break;
+    case blink::WebAXRoleTable: result += " TABLE"; break;
+    case blink::WebAXRoleTableHeaderContainer:
         result += " TABLE_HDR_CONTAINER"; break;
-    case WebKit::WebAXRoleTextArea: result += " TEXTAREA"; break;
-    case WebKit::WebAXRoleTextField: result += " TEXT_FIELD"; break;
-    case WebKit::WebAXRoleTimer: result += " TIMER"; break;
-    case WebKit::WebAXRoleToggleButton: result += " TOGGLE_BUTTON"; break;
-    case WebKit::WebAXRoleToolbar: result += " TOOLBAR"; break;
-    case WebKit::WebAXRoleTree: result += " TREE"; break;
-    case WebKit::WebAXRoleTreeGrid: result += " TREE_GRID"; break;
-    case WebKit::WebAXRoleTreeItem: result += " TREE_ITEM"; break;
-    case WebKit::WebAXRoleUnknown: result += " UNKNOWN"; break;
-    case WebKit::WebAXRoleUserInterfaceTooltip: result += " TOOLTIP"; break;
-    case WebKit::WebAXRoleValueIndicator: result += " VALUE_INDICATOR"; break;
-    case WebKit::WebAXRoleWebArea: result += " WEB_AREA"; break;
-    case WebKit::WebAXRoleWindow: result += " WINDOW"; break;
+    case blink::WebAXRoleTextArea: result += " TEXTAREA"; break;
+    case blink::WebAXRoleTextField: result += " TEXT_FIELD"; break;
+    case blink::WebAXRoleTimer: result += " TIMER"; break;
+    case blink::WebAXRoleToggleButton: result += " TOGGLE_BUTTON"; break;
+    case blink::WebAXRoleToolbar: result += " TOOLBAR"; break;
+    case blink::WebAXRoleTree: result += " TREE"; break;
+    case blink::WebAXRoleTreeGrid: result += " TREE_GRID"; break;
+    case blink::WebAXRoleTreeItem: result += " TREE_ITEM"; break;
+    case blink::WebAXRoleUnknown: result += " UNKNOWN"; break;
+    case blink::WebAXRoleUserInterfaceTooltip: result += " TOOLTIP"; break;
+    case blink::WebAXRoleValueIndicator: result += " VALUE_INDICATOR"; break;
+    case blink::WebAXRoleWebArea: result += " WEB_AREA"; break;
+    case blink::WebAXRoleWindow: result += " WINDOW"; break;
     default:
       assert(false);
   }
 
-  if (state & (1 << WebKit::WebAXStateBusy))
+  if (state & (1 << blink::WebAXStateBusy))
     result += " BUSY";
-  if (state & (1 << WebKit::WebAXStateChecked))
+  if (state & (1 << blink::WebAXStateChecked))
     result += " CHECKED";
-  if (state & (1 << WebKit::WebAXStateCollapsed))
+  if (state & (1 << blink::WebAXStateCollapsed))
     result += " COLLAPSED";
-  if (state & (1 << WebKit::WebAXStateExpanded))
+  if (state & (1 << blink::WebAXStateExpanded))
     result += " EXPANDED";
-  if (state & (1 << WebKit::WebAXStateFocusable))
+  if (state & (1 << blink::WebAXStateFocusable))
     result += " FOCUSABLE";
-  if (state & (1 << WebKit::WebAXStateFocused))
+  if (state & (1 << blink::WebAXStateFocused))
     result += " FOCUSED";
-  if (state & (1 << WebKit::WebAXStateHaspopup))
+  if (state & (1 << blink::WebAXStateHaspopup))
     result += " HASPOPUP";
-  if (state & (1 << WebKit::WebAXStateHovered))
+  if (state & (1 << blink::WebAXStateHovered))
     result += " HOTTRACKED";
-  if (state & (1 << WebKit::WebAXStateIndeterminate))
+  if (state & (1 << blink::WebAXStateIndeterminate))
     result += " INDETERMINATE";
-  if (state & (1 << WebKit::WebAXStateInvisible))
+  if (state & (1 << blink::WebAXStateInvisible))
     result += " INVISIBLE";
-  if (state & (1 << WebKit::WebAXStateLinked))
+  if (state & (1 << blink::WebAXStateLinked))
     result += " LINKED";
-  if (state & (1 << WebKit::WebAXStateMultiselectable))
+  if (state & (1 << blink::WebAXStateMultiselectable))
     result += " MULTISELECTABLE";
-  if (state & (1 << WebKit::WebAXStateOffscreen))
+  if (state & (1 << blink::WebAXStateOffscreen))
     result += " OFFSCREEN";
-  if (state & (1 << WebKit::WebAXStatePressed))
+  if (state & (1 << blink::WebAXStatePressed))
     result += " PRESSED";
-  if (state & (1 << WebKit::WebAXStateProtected))
+  if (state & (1 << blink::WebAXStateProtected))
     result += " PROTECTED";
-  if (state & (1 << WebKit::WebAXStateReadonly))
+  if (state & (1 << blink::WebAXStateReadonly))
     result += " READONLY";
-  if (state & (1 << WebKit::WebAXStateRequired))
+  if (state & (1 << blink::WebAXStateRequired))
     result += " REQUIRED";
-  if (state & (1 << WebKit::WebAXStateSelectable))
+  if (state & (1 << blink::WebAXStateSelectable))
     result += " SELECTABLE";
-  if (state & (1 << WebKit::WebAXStateSelected))
+  if (state & (1 << blink::WebAXStateSelected))
     result += " SELECTED";
-  if (state & (1 << WebKit::WebAXStateVertical))
+  if (state & (1 << blink::WebAXStateVertical))
     result += " VERTICAL";
-  if (state & (1 << WebKit::WebAXStateVisited))
+  if (state & (1 << blink::WebAXStateVisited))
     result += " VISITED";
 
   result += " (" + IntToString(location.x()) + ", " +
@@ -381,17 +381,17 @@ std::string AccessibilityNodeData::DebugString(bool recursive) const {
         break;
       case ATTR_TEXT_DIRECTION:
         switch (int_attributes[i].second) {
-          case WebKit::WebAXTextDirectionLR:
+          case blink::WebAXTextDirectionLR:
           default:
             result += " text_direction=lr";
             break;
-          case WebKit::WebAXTextDirectionRL:
+          case blink::WebAXTextDirectionRL:
             result += " text_direction=rl";
             break;
-          case WebKit::WebAXTextDirectionTB:
+          case blink::WebAXTextDirectionTB:
             result += " text_direction=tb";
             break;
-          case WebKit::WebAXTextDirectionBT:
+          case blink::WebAXTextDirectionBT:
             result += " text_direction=bt";
             break;
         }

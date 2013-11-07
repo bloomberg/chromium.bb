@@ -28,10 +28,10 @@ using ppapi::NPObjectVar;
 using ppapi::PpapiGlobals;
 using ppapi::StringVar;
 using ppapi::Var;
-using WebKit::WebArrayBuffer;
-using WebKit::WebBindings;
-using WebKit::WebFrame;
-using WebKit::WebPluginContainer;
+using blink::WebArrayBuffer;
+using blink::WebBindings;
+using blink::WebFrame;
+using blink::WebPluginContainer;
 
 namespace content {
 

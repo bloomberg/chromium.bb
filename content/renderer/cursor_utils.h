@@ -7,20 +7,20 @@
 
 class WebCursor;
 
-namespace WebKit {
+namespace blink {
 struct WebCursorInfo;
 }
 
 namespace content {
 
-// Adapts our cursor info to WebKit::WebCursorInfo.
+// Adapts our cursor info to blink::WebCursorInfo.
 bool GetWebKitCursorInfo(const WebCursor& cursor,
-                         WebKit::WebCursorInfo* webkit_cursor_info);
+                         blink::WebCursorInfo* webkit_cursor_info);
 
-// Adapts WebKit::CursorInfo to our cursor.
+// Adapts blink::CursorInfo to our cursor.
 void InitializeCursorFromWebKitCursorInfo(
     WebCursor* cursor,
-    const WebKit::WebCursorInfo& webkit_cursor_info);
+    const blink::WebCursorInfo& webkit_cursor_info);
 
 }  // namespace content
 

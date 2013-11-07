@@ -31,8 +31,8 @@ bool BasicMouseWheelSmoothScrollGesture::ForwardInputEvents(
       RenderWidgetHostImpl::From(host)->GetSyntheticGestureMessageInterval());
 
 
-  WebKit::WebMouseWheelEvent event;
-  event.type = WebKit::WebInputEvent::MouseWheel;
+  blink::WebMouseWheelEvent event;
+  event.type = blink::WebInputEvent::MouseWheel;
   event.hasPreciseScrollingDeltas = 0;
   event.deltaY = scroll_down_ ? -position_delta : position_delta;
   // TODO(vollick): find a proper way to access

@@ -9,14 +9,14 @@
 #include "third_party/WebKit/public/web/WebHitTestResult.h"
 #include "third_party/WebKit/public/web/WebSurroundingText.h"
 
-using WebKit::WebRange;
-using WebKit::WebSurroundingText;
+using blink::WebRange;
+using blink::WebSurroundingText;
 
 namespace content {
 
 ContentDetector::Result::Result() : valid(false) {}
 
-ContentDetector::Result::Result(const WebKit::WebRange& content_boundaries,
+ContentDetector::Result::Result(const blink::WebRange& content_boundaries,
                                 const std::string& text,
                                 const GURL& intent_url)
   : valid(true),
@@ -28,12 +28,12 @@ ContentDetector::Result::Result(const WebKit::WebRange& content_boundaries,
 ContentDetector::Result::~Result() {}
 
 ContentDetector::Result ContentDetector::FindTappedContent(
-    const WebKit::WebHitTestResult& hit_test) {
+    const blink::WebHitTestResult& hit_test) {
   if (hit_test.isNull())
     return Result();
 
   std::string content_text;
-  WebKit::WebRange range = FindContentRange(hit_test, &content_text);
+  blink::WebRange range = FindContentRange(hit_test, &content_text);
   if (range.isNull())
     return Result();
 
@@ -42,7 +42,7 @@ ContentDetector::Result ContentDetector::FindTappedContent(
 }
 
 WebRange ContentDetector::FindContentRange(
-    const WebKit::WebHitTestResult& hit_test,
+    const blink::WebHitTestResult& hit_test,
     std::string* content_text) {
   // As the surrounding text extractor looks at maxLength/2 characters on
   // either side of the hit point, we need to double max content length here.

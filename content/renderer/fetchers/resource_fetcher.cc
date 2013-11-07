@@ -15,11 +15,11 @@
 #include "third_party/WebKit/public/web/WebKit.h"
 
 using base::TimeDelta;
-using WebKit::WebFrame;
-using WebKit::WebURLError;
-using WebKit::WebURLLoader;
-using WebKit::WebURLRequest;
-using WebKit::WebURLResponse;
+using blink::WebFrame;
+using blink::WebURLError;
+using blink::WebURLLoader;
+using blink::WebURLRequest;
+using blink::WebURLResponse;
 
 namespace content {
 
@@ -54,7 +54,7 @@ void ResourceFetcher::Start(WebFrame* frame) {
   request.setFirstPartyForCookies(frame->document().firstPartyForCookies());
   frame->dispatchWillSendRequest(request);
 
-  loader_.reset(WebKit::Platform::current()->createURLLoader());
+  loader_.reset(blink::Platform::current()->createURLLoader());
   loader_->loadAsynchronously(request, this);
 }
 

@@ -13,7 +13,7 @@ class Rect;
 class Size;
 }
 
-namespace WebKit {
+namespace blink {
 struct WebRect;
 }
 
@@ -24,7 +24,7 @@ class DisambiguationPopupHelper {
  public:
   CONTENT_EXPORT static float ComputeZoomAreaAndScaleFactor(
       const gfx::Rect& tap_rect,
-      const WebKit::WebVector<WebKit::WebRect>& target_rects,
+      const blink::WebVector<blink::WebRect>& target_rects,
       const gfx::Size& screen_size,
       const gfx::Size& visible_content_size,
       float total_scale,

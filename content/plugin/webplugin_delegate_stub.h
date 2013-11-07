@@ -23,7 +23,7 @@ struct PluginMsg_FetchURL_Params;
 struct PluginMsg_UpdateGeometry_Param;
 class WebCursor;
 
-namespace WebKit {
+namespace blink {
 class WebInputEvent;
 }
 
@@ -69,7 +69,7 @@ class WebPluginDelegateStub : public IPC::Listener,
   void OnDidFail(int id);
   void OnDidFinishLoadWithReason(const GURL& url, int reason, int notify_id);
   void OnSetFocus(bool focused);
-  void OnHandleInputEvent(const WebKit::WebInputEvent* event,
+  void OnHandleInputEvent(const blink::WebInputEvent* event,
                           bool* handled, WebCursor* cursor);
   void OnPaint(const gfx::Rect& damaged_rect);
   void OnDidPaint();

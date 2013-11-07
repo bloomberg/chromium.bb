@@ -26,8 +26,8 @@ SharedWorkerPermissionClientProxy::~SharedWorkerPermissionClientProxy() {
 }
 
 bool SharedWorkerPermissionClientProxy::allowDatabase(
-    const WebKit::WebString& name,
-    const WebKit::WebString& display_name,
+    const blink::WebString& name,
+    const blink::WebString& display_name,
     unsigned long estimated_size) {
   if (is_unique_origin_)
     return false;
@@ -48,7 +48,7 @@ bool SharedWorkerPermissionClientProxy::allowFileSystem() {
 }
 
 bool SharedWorkerPermissionClientProxy::allowIndexedDB(
-    const WebKit::WebString& name) {
+    const blink::WebString& name) {
   if (is_unique_origin_)
     return false;
   bool result = false;

@@ -50,8 +50,8 @@
 #include "ui/gfx/text_elider.h"
 #include "webkit/common/cursors/webcursor_gtk_data.h"
 
-using WebKit::WebMouseWheelEvent;
-using WebKit::WebScreenInfo;
+using blink::WebMouseWheelEvent;
+using blink::WebScreenInfo;
 
 namespace content {
 namespace {
@@ -94,7 +94,7 @@ GdkCursor* GetMozSpinningCursor() {
   return moz_spinning_cursor;
 }
 
-bool MovedToPoint(const WebKit::WebMouseEvent& mouse_event,
+bool MovedToPoint(const blink::WebMouseEvent& mouse_event,
                    const gfx::Point& center) {
   return mouse_event.globalX == center.x() &&
          mouse_event.globalY == center.y();
@@ -385,7 +385,7 @@ class RenderWidgetHostViewGtkWidget {
 
     host_view->ModifyEventForEdgeDragging(widget, event);
 
-    WebKit::WebMouseEvent mouse_event = WebMouseEventBuilder::Build(event);
+    blink::WebMouseEvent mouse_event = WebMouseEventBuilder::Build(event);
 
     if (host_view->mouse_locked_) {
       gfx::Point center = host_view->GetWidgetCenter();
@@ -435,7 +435,7 @@ class RenderWidgetHostViewGtkWidget {
     // additionally send this crossing event with the state indicating the
     // button is down, it causes problems with drag and drop in WebKit.)
     if (!(event->state & any_button_mask)) {
-      WebKit::WebMouseEvent mouse_event = WebMouseEventBuilder::Build(event);
+      blink::WebMouseEvent mouse_event = WebMouseEventBuilder::Build(event);
       host_view->ModifyEventMovementAndCoords(&mouse_event);
       // When crossing out and back into a render view the movement values
       // must represent the instantaneous movement of the mouse, not the jump
@@ -993,11 +993,11 @@ void RenderWidgetHostViewGtk::OnDestroy(GtkWidget* widget) {
 }
 
 bool RenderWidgetHostViewGtk::NeedsInputGrab() {
-  return popup_type_ == WebKit::WebPopupTypeSelect;
+  return popup_type_ == blink::WebPopupTypeSelect;
 }
 
 bool RenderWidgetHostViewGtk::IsPopup() const {
-  return popup_type_ != WebKit::WebPopupTypeNone;
+  return popup_type_ != blink::WebPopupTypeNone;
 }
 
 void RenderWidgetHostViewGtk::DoSharedInit() {
@@ -1450,7 +1450,7 @@ gfx::Point RenderWidgetHostViewGtk::GetWidgetCenter() {
 }
 
 void RenderWidgetHostViewGtk::ModifyEventMovementAndCoords(
-    WebKit::WebMouseEvent* event) {
+    blink::WebMouseEvent* event) {
   // Movement is computed by taking the difference of the new cursor position
   // and the previous. Under mouse lock the cursor will be warped back to the
   // center so that we are not limited by clipping boundaries.

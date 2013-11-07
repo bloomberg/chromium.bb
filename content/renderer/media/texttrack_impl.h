@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/base/text_track.h"
 
-namespace WebKit {
+namespace blink {
 class WebMediaPlayerClient;
 }
 
@@ -22,7 +22,7 @@ class WebInbandTextTrackImpl;
 class TextTrackImpl : public media::TextTrack {
  public:
   // Constructor assumes ownership of the |text_track| object.
-  TextTrackImpl(WebKit::WebMediaPlayerClient* client,
+  TextTrackImpl(blink::WebMediaPlayerClient* client,
                 WebInbandTextTrackImpl* text_track);
 
   virtual ~TextTrackImpl();
@@ -34,7 +34,7 @@ class TextTrackImpl : public media::TextTrack {
                             const std::string& settings) OVERRIDE;
 
  private:
-  WebKit::WebMediaPlayerClient* client_;
+  blink::WebMediaPlayerClient* client_;
   scoped_ptr<WebInbandTextTrackImpl> text_track_;
   DISALLOW_COPY_AND_ASSIGN(TextTrackImpl);
 };

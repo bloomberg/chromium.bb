@@ -32,13 +32,13 @@
 #include "v8/include/v8.h"
 #include "webkit/renderer/compositor_bindings/web_rendering_stats_impl.h"
 
-using WebKit::WebCanvas;
-using WebKit::WebFrame;
-using WebKit::WebImageCache;
-using WebKit::WebPrivatePtr;
-using WebKit::WebRenderingStatsImpl;
-using WebKit::WebSize;
-using WebKit::WebView;
+using blink::WebCanvas;
+using blink::WebFrame;
+using blink::WebImageCache;
+using blink::WebPrivatePtr;
+using blink::WebRenderingStatsImpl;
+using blink::WebSize;
+using blink::WebView;
 
 const char kGpuBenchmarkingExtensionName[] = "v8/GpuBenchmarking";
 
@@ -488,7 +488,7 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     int mouse_event_y = 0;
 
     if (arglen == 3) {
-      WebKit::WebRect rect = context.render_view_impl()->windowRect();
+      blink::WebRect rect = context.render_view_impl()->windowRect();
       mouse_event_x = rect.x + rect.width / 2;
       mouse_event_y = rect.y + rect.height / 2;
     } else {

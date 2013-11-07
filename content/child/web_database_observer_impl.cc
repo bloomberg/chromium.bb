@@ -12,8 +12,8 @@
 #include "third_party/WebKit/public/web/WebDatabase.h"
 #include "third_party/sqlite/sqlite3.h"
 
-using WebKit::WebDatabase;
-using WebKit::WebString;
+using blink::WebDatabase;
+using blink::WebString;
 
 namespace content {
 namespace {

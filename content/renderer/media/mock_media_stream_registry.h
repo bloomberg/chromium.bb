@@ -18,13 +18,13 @@ class MockMediaStreamRegistry : public MediaStreamRegistryInterface {
 
   void Init(const std::string& stream_label);
   bool AddVideoTrack(const std::string& track_id);
-  virtual WebKit::WebMediaStream GetMediaStream(const std::string& url)
+  virtual blink::WebMediaStream GetMediaStream(const std::string& url)
       OVERRIDE;
-  const WebKit::WebMediaStream test_stream() const;
+  const blink::WebMediaStream test_stream() const;
 
  private:
   MockMediaStreamDependencyFactory* factory_;
-  WebKit::WebMediaStream test_stream_;
+  blink::WebMediaStream test_stream_;
   std::string stream_url_;
 };
 

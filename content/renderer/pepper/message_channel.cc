@@ -32,12 +32,12 @@
 using ppapi::ArrayBufferVar;
 using ppapi::PpapiGlobals;
 using ppapi::StringVar;
-using WebKit::WebBindings;
-using WebKit::WebElement;
-using WebKit::WebDOMEvent;
-using WebKit::WebDOMMessageEvent;
-using WebKit::WebPluginContainer;
-using WebKit::WebSerializedScriptValue;
+using blink::WebBindings;
+using blink::WebElement;
+using blink::WebDOMEvent;
+using blink::WebDOMMessageEvent;
+using blink::WebPluginContainer;
+using blink::WebSerializedScriptValue;
 
 namespace content {
 

@@ -40,8 +40,8 @@ class MockIDBFactory : public IndexedDBFactory {
   scoped_refptr<IndexedDBBackingStore> TestOpenBackingStore(
       const GURL& origin,
       const base::FilePath& data_directory) {
-    WebKit::WebIDBCallbacks::DataLoss data_loss =
-        WebKit::WebIDBCallbacks::DataLossNone;
+    blink::WebIDBCallbacks::DataLoss data_loss =
+        blink::WebIDBCallbacks::DataLossNone;
     std::string data_loss_message;
     bool disk_full;
     scoped_refptr<IndexedDBBackingStore> backing_store =
@@ -50,7 +50,7 @@ class MockIDBFactory : public IndexedDBFactory {
                          &data_loss,
                          &data_loss_message,
                          &disk_full);
-    EXPECT_EQ(WebKit::WebIDBCallbacks::DataLossNone, data_loss);
+    EXPECT_EQ(blink::WebIDBCallbacks::DataLossNone, data_loss);
     return backing_store;
   }
 
@@ -187,7 +187,7 @@ class DiskFullFactory : public IndexedDBFactory {
   virtual scoped_refptr<IndexedDBBackingStore> OpenBackingStore(
       const GURL& origin_url,
       const base::FilePath& data_directory,
-      WebKit::WebIDBCallbacks::DataLoss* data_loss,
+      blink::WebIDBCallbacks::DataLoss* data_loss,
       std::string* data_loss_message,
       bool* disk_full) OVERRIDE {
     *disk_full = true;
@@ -201,7 +201,7 @@ class LookingForQuotaErrorMockCallbacks : public IndexedDBCallbacks {
       : IndexedDBCallbacks(NULL, 0, 0), error_called_(false) {}
   virtual void OnError(const IndexedDBDatabaseError& error) OVERRIDE {
     error_called_ = true;
-    EXPECT_EQ(WebKit::WebIDBDatabaseExceptionQuotaError, error.code());
+    EXPECT_EQ(blink::WebIDBDatabaseExceptionQuotaError, error.code());
   }
 
  private:

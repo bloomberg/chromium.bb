@@ -12,12 +12,12 @@
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 
-using WebKit::WebFrame;
-using WebKit::WebURLError;
-using WebKit::WebURLLoader;
-using WebKit::WebURLLoaderOptions;
-using WebKit::WebURLRequest;
-using WebKit::WebURLResponse;
+using blink::WebFrame;
+using blink::WebURLError;
+using blink::WebURLLoader;
+using blink::WebURLLoaderOptions;
+using blink::WebURLRequest;
+using blink::WebURLResponse;
 
 namespace content {
 
@@ -25,7 +25,7 @@ static const int kHttpOK = 200;
 
 MediaInfoLoader::MediaInfoLoader(
     const GURL& url,
-    WebKit::WebMediaPlayer::CORSMode cors_mode,
+    blink::WebMediaPlayer::CORSMode cors_mode,
     const ReadyCB& ready_cb)
     : loader_failed_(false),
       url_(url),
@@ -35,7 +35,7 @@ MediaInfoLoader::MediaInfoLoader(
 
 MediaInfoLoader::~MediaInfoLoader() {}
 
-void MediaInfoLoader::Start(WebKit::WebFrame* frame) {
+void MediaInfoLoader::Start(blink::WebFrame* frame) {
   // Make sure we have not started.
   DCHECK(!ready_cb_.is_null());
   CHECK(frame);
@@ -45,14 +45,14 @@ void MediaInfoLoader::Start(WebKit::WebFrame* frame) {
   // Prepare the request.
   WebURLRequest request(url_);
   request.setTargetType(WebURLRequest::TargetIsMedia);
-  frame->setReferrerForRequest(request, WebKit::WebURL());
+  frame->setReferrerForRequest(request, blink::WebURL());
 
   scoped_ptr<WebURLLoader> loader;
   if (test_loader_) {
     loader = test_loader_.Pass();
   } else {
     WebURLLoaderOptions options;
-    if (cors_mode_ == WebKit::WebMediaPlayer::CORSModeUnspecified) {
+    if (cors_mode_ == blink::WebMediaPlayer::CORSModeUnspecified) {
       options.allowCredentials = true;
       options.crossOriginRequestPolicy =
           WebURLLoaderOptions::CrossOriginRequestPolicyAllow;
@@ -60,7 +60,7 @@ void MediaInfoLoader::Start(WebKit::WebFrame* frame) {
       options.exposeAllResponseHeaders = true;
       options.crossOriginRequestPolicy =
           WebURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl;
-      if (cors_mode_ == WebKit::WebMediaPlayer::CORSModeUseCredentials)
+      if (cors_mode_ == blink::WebMediaPlayer::CORSModeUseCredentials)
         options.allowCredentials = true;
     }
     loader.reset(frame->createAssociatedURLLoader(options));
@@ -72,7 +72,7 @@ void MediaInfoLoader::Start(WebKit::WebFrame* frame) {
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// WebKit::WebURLLoaderClient implementation.
+// blink::WebURLLoaderClient implementation.
 void MediaInfoLoader::willSendRequest(
     WebURLLoader* loader,
     WebURLRequest& newRequest,
@@ -81,7 +81,7 @@ void MediaInfoLoader::willSendRequest(
   // In this case we shouldn't do anything.
   if (ready_cb_.is_null()) {
     // Set the url in the request to an invalid value (empty url).
-    newRequest.setURL(WebKit::WebURL());
+    newRequest.setURL(blink::WebURL());
     return;
   }
 
@@ -126,7 +126,7 @@ void MediaInfoLoader::didReceiveData(
 }
 
 void MediaInfoLoader::didDownloadData(
-    WebKit::WebURLLoader* loader,
+    blink::WebURLLoader* loader,
     int dataLength,
     int encodedDataLength) {
   NOTIMPLEMENTED();
@@ -169,7 +169,7 @@ bool MediaInfoLoader::DidPassCORSAccessCheck() const {
   DCHECK(ready_cb_.is_null())
       << "Must become ready before calling DidPassCORSAccessCheck()";
   return !loader_failed_ &&
-      cors_mode_ != WebKit::WebMediaPlayer::CORSModeUnspecified;
+      cors_mode_ != blink::WebMediaPlayer::CORSModeUnspecified;
 }
 
 /////////////////////////////////////////////////////////////////////////////

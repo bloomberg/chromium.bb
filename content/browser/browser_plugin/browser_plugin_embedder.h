@@ -72,7 +72,7 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   void DragSourceEndedAt(int client_x, int client_y, int screen_x,
-      int screen_y, WebKit::WebDragOperation operation);
+      int screen_y, blink::WebDragOperation operation);
 
   void DragSourceMovedTo(int client_x, int client_y,
                          int screen_x, int screen_y);

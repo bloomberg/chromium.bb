@@ -10,7 +10,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/events/latency_info.h"
 
-using WebKit::WebInputEvent;
+using blink::WebInputEvent;
 
 namespace content {
 
@@ -22,7 +22,7 @@ SynchronousInputEventFilter::~SynchronousInputEventFilter() {
 
 InputEventAckState SynchronousInputEventFilter::HandleInputEvent(
     int routing_id,
-    const WebKit::WebInputEvent& input_event) {
+    const blink::WebInputEvent& input_event) {
   // The handler will be empty both before renderer initialization and after
   // renderer destruction. It's possible that this will be reached in such a
   // state. While not good, it should also not be fatal.

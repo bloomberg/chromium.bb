@@ -39,7 +39,7 @@ GURL mock_path_as_gurl() {
 
 class TestableFileWriter : public WebFileWriterBase {
  public:
-  explicit TestableFileWriter(WebKit::WebFileWriterClient* client)
+  explicit TestableFileWriter(blink::WebFileWriterClient* client)
       : WebFileWriterBase(mock_path_as_gurl(), client) {
     reset();
   }
@@ -128,13 +128,13 @@ class TestableFileWriter : public WebFileWriterBase {
 };
 
 class FileWriterTest : public testing::Test,
-                       public WebKit::WebFileWriterClient {
+                       public blink::WebFileWriterClient {
  public:
   FileWriterTest() {
     reset();
   }
 
-  WebKit::WebFileWriter* writer() {
+  blink::WebFileWriter* writer() {
     return testable_writer_.get();
   }
 
@@ -157,7 +157,7 @@ class FileWriterTest : public testing::Test,
       testable_writer_.reset(NULL);
   }
 
-  virtual void didFail(WebKit::WebFileError error) {
+  virtual void didFail(blink::WebFileError error) {
     EXPECT_FALSE(received_did_fail_);
     received_did_fail_ = true;
     fail_error_received_ = error;
@@ -174,7 +174,7 @@ class FileWriterTest : public testing::Test,
     received_did_write_complete_ = false;
     received_did_truncate_ = false;
     received_did_fail_ = false;
-    fail_error_received_ = static_cast<WebKit::WebFileError>(0);
+    fail_error_received_ = static_cast<blink::WebFileError>(0);
   }
 
   scoped_ptr<TestableFileWriter> testable_writer_;
@@ -186,7 +186,7 @@ class FileWriterTest : public testing::Test,
   bool received_did_write_complete_;
   bool received_did_truncate_;
   bool received_did_fail_;
-  WebKit::WebFileError fail_error_received_;
+  blink::WebFileError fail_error_received_;
 
   DISALLOW_COPY_AND_ASSIGN(FileWriterTest);
 };
@@ -195,7 +195,7 @@ TEST_F(FileWriterTest, BasicFileWrite) {
   // Call the webkit facing api.
   const std::string kBlobId("1234");
   writer()->write(kBasicFileWrite_Offset,
-                  WebKit::WebString::fromUTF8(kBlobId));
+                  blink::WebString::fromUTF8(kBlobId));
 
   // Check that the derived class gets called correctly.
   EXPECT_TRUE(testable_writer_->received_write_);
@@ -238,7 +238,7 @@ TEST_F(FileWriterTest, ErrorFileWrite) {
   // Call the webkit facing api.
   const std::string kBlobId("1234");
   writer()->write(kErrorFileWrite_Offset,
-                  WebKit::WebString::fromUTF8(kBlobId));
+                  blink::WebString::fromUTF8(kBlobId));
 
   // Check that the derived class gets called correctly.
   EXPECT_TRUE(testable_writer_->received_write_);
@@ -252,7 +252,7 @@ TEST_F(FileWriterTest, ErrorFileWrite) {
 
   // Check that the client gets called correctly.
   EXPECT_TRUE(received_did_fail_);
-  EXPECT_EQ(WebKit::WebFileErrorNotFound, fail_error_received_);
+  EXPECT_EQ(blink::WebFileErrorNotFound, fail_error_received_);
   EXPECT_EQ(0, received_did_write_count_);
   EXPECT_FALSE(received_did_truncate_);
 }
@@ -272,7 +272,7 @@ TEST_F(FileWriterTest, ErrorFileTruncate) {
 
   // Check that the client gets called correctly.
   EXPECT_TRUE(received_did_fail_);
-  EXPECT_EQ(WebKit::WebFileErrorNotFound, fail_error_received_);
+  EXPECT_EQ(blink::WebFileErrorNotFound, fail_error_received_);
   EXPECT_FALSE(received_did_truncate_);
   EXPECT_EQ(0, received_did_write_count_);
 }
@@ -281,7 +281,7 @@ TEST_F(FileWriterTest, MultiFileWrite) {
   // Call the webkit facing api.
   const std::string kBlobId("1234");
   writer()->write(kMultiFileWrite_Offset,
-                  WebKit::WebString::fromUTF8(kBlobId));
+                  blink::WebString::fromUTF8(kBlobId));
 
   // Check that the derived class gets called correctly.
   EXPECT_TRUE(testable_writer_->received_write_);
@@ -305,7 +305,7 @@ TEST_F(FileWriterTest, CancelFileWriteBeforeCompletion) {
   // Call the webkit facing api.
   const std::string kBlobId("1234");
   writer()->write(kCancelFileWriteBeforeCompletion_Offset,
-                  WebKit::WebString::fromUTF8(kBlobId));
+                  blink::WebString::fromUTF8(kBlobId));
 
   // Check that the derived class gets called correctly.
   EXPECT_TRUE(testable_writer_->received_write_);
@@ -319,7 +319,7 @@ TEST_F(FileWriterTest, CancelFileWriteBeforeCompletion) {
 
   // Check that the client gets called correctly.
   EXPECT_TRUE(received_did_fail_);
-  EXPECT_EQ(WebKit::WebFileErrorAbort, fail_error_received_);
+  EXPECT_EQ(blink::WebFileErrorAbort, fail_error_received_);
   EXPECT_EQ(1, received_did_write_count_);
   EXPECT_FALSE(received_did_write_complete_);
   EXPECT_EQ(1, received_did_write_bytes_total_);
@@ -330,7 +330,7 @@ TEST_F(FileWriterTest, CancelFileWriteAfterCompletion) {
   // Call the webkit facing api.
   const std::string kBlobId("1234");
   writer()->write(kCancelFileWriteAfterCompletion_Offset,
-                  WebKit::WebString::fromUTF8(kBlobId));
+                  blink::WebString::fromUTF8(kBlobId));
 
   // Check that the derived class gets called correctly.
   EXPECT_TRUE(testable_writer_->received_write_);
@@ -344,7 +344,7 @@ TEST_F(FileWriterTest, CancelFileWriteAfterCompletion) {
 
   // Check that the client gets called correctly.
   EXPECT_TRUE(received_did_fail_);
-  EXPECT_EQ(WebKit::WebFileErrorAbort, fail_error_received_);
+  EXPECT_EQ(blink::WebFileErrorAbort, fail_error_received_);
   EXPECT_EQ(1, received_did_write_count_);
   EXPECT_FALSE(received_did_write_complete_);
   EXPECT_EQ(1, received_did_write_bytes_total_);
@@ -366,7 +366,7 @@ TEST_F(FileWriterTest, CancelFileTruncate) {
 
   // Check that the client gets called correctly.
   EXPECT_TRUE(received_did_fail_);
-  EXPECT_EQ(WebKit::WebFileErrorAbort, fail_error_received_);
+  EXPECT_EQ(blink::WebFileErrorAbort, fail_error_received_);
   EXPECT_FALSE(received_did_truncate_);
   EXPECT_EQ(0, received_did_write_count_);
 }
@@ -386,7 +386,7 @@ TEST_F(FileWriterTest, CancelFailedTruncate) {
 
   // Check that the client gets called correctly.
   EXPECT_TRUE(received_did_fail_);
-  EXPECT_EQ(WebKit::WebFileErrorAbort, fail_error_received_);
+  EXPECT_EQ(blink::WebFileErrorAbort, fail_error_received_);
   EXPECT_FALSE(received_did_truncate_);
   EXPECT_EQ(0, received_did_write_count_);
 }
@@ -395,7 +395,7 @@ TEST_F(FileWriterTest, DeleteInCompletionCallbacks) {
   const std::string kBlobId("1234");
   delete_in_client_callback_ = true;
   writer()->write(kBasicFileWrite_Offset,
-                  WebKit::WebString::fromUTF8(kBlobId));
+                  blink::WebString::fromUTF8(kBlobId));
   EXPECT_FALSE(testable_writer_.get());
 
   reset();
@@ -406,7 +406,7 @@ TEST_F(FileWriterTest, DeleteInCompletionCallbacks) {
   reset();
   delete_in_client_callback_ = true;
   writer()->write(kErrorFileWrite_Offset,
-                  WebKit::WebString::fromUTF8(kBlobId));
+                  blink::WebString::fromUTF8(kBlobId));
   EXPECT_FALSE(testable_writer_.get());
 
   reset();

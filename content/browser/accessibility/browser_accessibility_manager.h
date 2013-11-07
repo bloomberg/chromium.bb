@@ -70,7 +70,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
   static AccessibilityNodeData GetEmptyDocument();
 
   virtual void NotifyAccessibilityEvent(
-      WebKit::WebAXEvent event_type, BrowserAccessibility* node) { }
+      blink::WebAXEvent event_type, BrowserAccessibility* node) { }
 
   // Return a pointer to the root of the tree, does not make a new reference.
   BrowserAccessibility* GetRoot();

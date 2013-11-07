@@ -9,18 +9,18 @@
 
 #include "content/common/content_export.h"
 
-namespace WebKit {
+namespace blink {
 class WebString;
 class WebURL;
 }
 
 namespace content {
 
-CONTENT_EXPORT std::string URLToMarkup(const WebKit::WebURL& url,
-                                       const WebKit::WebString& title);
+CONTENT_EXPORT std::string URLToMarkup(const blink::WebURL& url,
+                                       const blink::WebString& title);
 
-CONTENT_EXPORT std::string URLToImageMarkup(const WebKit::WebURL& url,
-                                            const WebKit::WebString& title);
+CONTENT_EXPORT std::string URLToImageMarkup(const blink::WebURL& url,
+                                            const blink::WebString& title);
 
 }  // namespace content
 

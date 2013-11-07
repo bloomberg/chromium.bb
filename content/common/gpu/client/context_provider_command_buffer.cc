@@ -17,7 +17,7 @@
 namespace content {
 
 class ContextProviderCommandBuffer::LostContextCallbackProxy
-    : public WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback {
+    : public blink::WebGraphicsContext3D::WebGraphicsContextLostCallback {
  public:
   explicit LostContextCallbackProxy(ContextProviderCommandBuffer* provider)
       : provider_(provider) {
@@ -37,7 +37,7 @@ class ContextProviderCommandBuffer::LostContextCallbackProxy
 };
 
 class ContextProviderCommandBuffer::SwapBuffersCompleteCallbackProxy
-    : public WebKit::WebGraphicsContext3D::
+    : public blink::WebGraphicsContext3D::
           WebGraphicsSwapBuffersCompleteCallbackCHROMIUM {
  public:
   explicit SwapBuffersCompleteCallbackProxy(

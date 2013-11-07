@@ -600,12 +600,12 @@ STDMETHODIMP BrowserAccessibilityWin::get_accSelection(VARIANT* selected) {
   if (!instance_active_)
     return E_FAIL;
 
-  if (role_ != WebKit::WebAXRoleListBox)
+  if (role_ != blink::WebAXRoleListBox)
     return E_NOTIMPL;
 
   unsigned long selected_count = 0;
   for (size_t i = 0; i < children_.size(); ++i) {
-    if (children_[i]->HasState(WebKit::WebAXStateSelected))
+    if (children_[i]->HasState(blink::WebAXStateSelected))
       ++selected_count;
   }
 
@@ -616,7 +616,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accSelection(VARIANT* selected) {
 
   if (selected_count == 1) {
     for (size_t i = 0; i < children_.size(); ++i) {
-      if (children_[i]->HasState(WebKit::WebAXStateSelected)) {
+      if (children_[i]->HasState(blink::WebAXStateSelected)) {
         selected->vt = VT_DISPATCH;
         selected->pdispVal =
             children_[i]->ToBrowserAccessibilityWin()->NewReference();
@@ -631,7 +631,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accSelection(VARIANT* selected) {
   enum_variant->AddRef();
   unsigned long index = 0;
   for (size_t i = 0; i < children_.size(); ++i) {
-    if (children_[i]->HasState(WebKit::WebAXStateSelected)) {
+    if (children_[i]->HasState(blink::WebAXStateSelected)) {
       enum_variant->ItemAt(index)->vt = VT_DISPATCH;
       enum_variant->ItemAt(index)->pdispVal =
         children_[i]->ToBrowserAccessibilityWin()->NewReference();
@@ -872,9 +872,9 @@ STDMETHODIMP BrowserAccessibilityWin::get_groupPosition(
   if (!group_level || !similar_items_in_group || !position_in_group)
     return E_INVALIDARG;
 
-  if (role_ == WebKit::WebAXRoleListBoxOption &&
+  if (role_ == blink::WebAXRoleListBoxOption &&
       parent_ &&
-      parent_->role() == WebKit::WebAXRoleListBox) {
+      parent_->role() == blink::WebAXRoleListBox) {
     *group_level = 0;
     *similar_items_in_group = parent_->PlatformChildCount();
     *position_in_group = index_in_parent_ + 1;
@@ -1133,7 +1133,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnDescription(long column,
     int cell_id = cell_ids[i * columns + column];
     BrowserAccessibilityWin* cell = static_cast<BrowserAccessibilityWin*>(
         manager_->GetFromRendererID(cell_id));
-    if (cell && cell->role_ == WebKit::WebAXRoleColumnHeader) {
+    if (cell && cell->role_ == blink::WebAXRoleColumnHeader) {
       string16 cell_name = cell->GetString16Attribute(
           AccessibilityNodeData::ATTR_NAME);
       if (cell_name.size() > 0) {
@@ -1320,7 +1320,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowDescription(long row,
     int cell_id = cell_ids[row * columns + i];
     BrowserAccessibilityWin* cell =
         manager_->GetFromRendererID(cell_id)->ToBrowserAccessibilityWin();
-    if (cell && cell->role_ == WebKit::WebAXRoleRowHeader) {
+    if (cell && cell->role_ == blink::WebAXRoleRowHeader) {
       string16 cell_name = cell->GetString16Attribute(
           AccessibilityNodeData::ATTR_NAME);
       if (cell_name.size() > 0) {
@@ -1643,7 +1643,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnHeaderCells(
   }
 
   BrowserAccessibility* table = parent();
-  while (table && table->role() != WebKit::WebAXRoleTable)
+  while (table && table->role() != blink::WebAXRoleTable)
     table = table->parent();
   if (!table) {
     NOTREACHED();
@@ -1668,7 +1668,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnHeaderCells(
     int cell_id = cell_ids[i * columns + column];
     BrowserAccessibilityWin* cell =
         manager_->GetFromRendererID(cell_id)->ToBrowserAccessibilityWin();
-    if (cell && cell->role_ == WebKit::WebAXRoleColumnHeader)
+    if (cell && cell->role_ == blink::WebAXRoleColumnHeader)
       (*n_column_header_cells)++;
   }
 
@@ -1679,7 +1679,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnHeaderCells(
     int cell_id = cell_ids[i * columns + column];
     BrowserAccessibilityWin* cell =
         manager_->GetFromRendererID(cell_id)->ToBrowserAccessibilityWin();
-    if (cell && cell->role_ == WebKit::WebAXRoleColumnHeader) {
+    if (cell && cell->role_ == blink::WebAXRoleColumnHeader) {
       (*cell_accessibles)[index] =
           static_cast<IAccessible*>(cell->NewReference());
       ++index;
@@ -1742,7 +1742,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowHeaderCells(
   }
 
   BrowserAccessibility* table = parent();
-  while (table && table->role() != WebKit::WebAXRoleTable)
+  while (table && table->role() != blink::WebAXRoleTable)
     table = table->parent();
   if (!table) {
     NOTREACHED();
@@ -1767,7 +1767,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowHeaderCells(
     int cell_id = cell_ids[row * columns + i];
     BrowserAccessibilityWin* cell =
         manager_->GetFromRendererID(cell_id)->ToBrowserAccessibilityWin();
-    if (cell && cell->role_ == WebKit::WebAXRoleRowHeader)
+    if (cell && cell->role_ == blink::WebAXRoleRowHeader)
       (*n_row_header_cells)++;
   }
 
@@ -1778,7 +1778,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowHeaderCells(
     int cell_id = cell_ids[row * columns + i];
     BrowserAccessibilityWin* cell =
         manager_->GetFromRendererID(cell_id)->ToBrowserAccessibilityWin();
-    if (cell && cell->role_ == WebKit::WebAXRoleRowHeader) {
+    if (cell && cell->role_ == blink::WebAXRoleRowHeader) {
       (*cell_accessibles)[index] =
           static_cast<IAccessible*>(cell->NewReference());
       ++index;
@@ -1867,7 +1867,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_table(IUnknown** table) {
   GetIntAttribute(AccessibilityNodeData::ATTR_TABLE_CELL_COLUMN_INDEX, &column);
 
   BrowserAccessibility* find_table = parent();
-  while (find_table && find_table->role() != WebKit::WebAXRoleTable)
+  while (find_table && find_table->role() != blink::WebAXRoleTable)
     find_table = find_table->parent();
   if (!find_table) {
     NOTREACHED();
@@ -1903,8 +1903,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_caretOffset(LONG* offset) {
     return E_INVALIDARG;
 
   *offset = 0;
-  if (role_ == WebKit::WebAXRoleTextField ||
-      role_ == WebKit::WebAXRoleTextArea) {
+  if (role_ == blink::WebAXRoleTextField ||
+      role_ == blink::WebAXRoleTextArea) {
     int sel_start = 0;
     if (GetIntAttribute(AccessibilityNodeData::ATTR_TEXT_SEL_START,
                         &sel_start))
@@ -1922,8 +1922,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_nSelections(LONG* n_selections) {
     return E_INVALIDARG;
 
   *n_selections = 0;
-  if (role_ == WebKit::WebAXRoleTextField ||
-      role_ == WebKit::WebAXRoleTextArea) {
+  if (role_ == blink::WebAXRoleTextField ||
+      role_ == blink::WebAXRoleTextArea) {
     int sel_start = 0;
     int sel_end = 0;
     if (GetIntAttribute(AccessibilityNodeData::ATTR_TEXT_SEL_START,
@@ -1947,8 +1947,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_selection(LONG selection_index,
 
   *start_offset = 0;
   *end_offset = 0;
-  if (role_ == WebKit::WebAXRoleTextField ||
-      role_ == WebKit::WebAXRoleTextArea) {
+  if (role_ == blink::WebAXRoleTextField ||
+      role_ == blink::WebAXRoleTextArea) {
     int sel_start = 0;
     int sel_end = 0;
     if (GetIntAttribute(
@@ -2801,9 +2801,9 @@ void BrowserAccessibilityWin::PreInitialize() {
   IntAttributeToIA2(AccessibilityNodeData::ATTR_HIERARCHICAL_LEVEL, "level");
 
   // Expose the set size and position in set for listbox options.
-  if (role_ == WebKit::WebAXRoleListBoxOption &&
+  if (role_ == blink::WebAXRoleListBoxOption &&
       parent_ &&
-      parent_->role() == WebKit::WebAXRoleListBox) {
+      parent_->role() == blink::WebAXRoleListBox) {
     ia2_attributes_.push_back(
         L"setsize:" + base::IntToString16(parent_->PlatformChildCount()));
     ia2_attributes_.push_back(
@@ -2842,7 +2842,7 @@ void BrowserAccessibilityWin::PreInitialize() {
   // Expose table cell index.
   if (ia_role_ == ROLE_SYSTEM_CELL) {
     BrowserAccessibility* table = parent();
-    while (table && table->role() != WebKit::WebAXRoleTable)
+    while (table && table->role() != blink::WebAXRoleTable)
       table = table->parent();
     if (table) {
       const std::vector<int32>& unique_cell_ids = table->GetIntListAttribute(
@@ -2912,8 +2912,8 @@ void BrowserAccessibilityWin::PreInitialize() {
 
   // If it's a text field, also consider the placeholder.
   std::string placeholder;
-  if (role_ == WebKit::WebAXRoleTextField &&
-      HasState(WebKit::WebAXStateFocusable) &&
+  if (role_ == blink::WebAXRoleTextField &&
+      HasState(blink::WebAXStateFocusable) &&
       GetHtmlAttribute("placeholder", &placeholder)) {
     if (name_.empty() && !title_elem_id) {
       name_ = placeholder;
@@ -2926,8 +2926,8 @@ void BrowserAccessibilityWin::PreInitialize() {
   SetStringAttribute(AccessibilityNodeData::ATTR_HELP, help);
 
   // On Windows, the value of a document should be its url.
-  if (role_ == WebKit::WebAXRoleRootWebArea ||
-      role_ == WebKit::WebAXRoleWebArea) {
+  if (role_ == blink::WebAXRoleRootWebArea ||
+      role_ == blink::WebAXRoleWebArea) {
     GetStringAttribute(AccessibilityNodeData::ATTR_DOC_URL, &value_);
   }
 
@@ -2935,9 +2935,9 @@ void BrowserAccessibilityWin::PreInitialize() {
   // WebKit stores the main accessible text in the "value" - swap it so
   // that it's the "name".
   if (name_.empty() &&
-      (role_ == WebKit::WebAXRoleListBoxOption ||
-       role_ == WebKit::WebAXRoleStaticText ||
-       role_ == WebKit::WebAXRoleListMarker)) {
+      (role_ == blink::WebAXRoleListBoxOption ||
+       role_ == blink::WebAXRoleStaticText ||
+       role_ == blink::WebAXRoleListMarker)) {
     name_.swap(value_);
   }
 
@@ -2974,7 +2974,7 @@ void BrowserAccessibilityWin::PostInitialize() {
   hypertext_.clear();
   for (unsigned int i = 0; i < PlatformChildCount(); ++i) {
     BrowserAccessibility* child = PlatformGetChild(i);
-    if (child->role() == WebKit::WebAXRoleStaticText) {
+    if (child->role() == blink::WebAXRoleStaticText) {
       hypertext_ += UTF8ToUTF16(child->name());
     } else {
       hyperlink_offset_to_index_[hypertext_.size()] = hyperlinks_.size();
@@ -2985,15 +2985,15 @@ void BrowserAccessibilityWin::PostInitialize() {
   DCHECK_EQ(hyperlink_offset_to_index_.size(), hyperlinks_.size());
 
   // Fire an event when an alert first appears.
-  if (role_ == WebKit::WebAXRoleAlert && first_time_)
-    manager_->NotifyAccessibilityEvent(WebKit::WebAXEventAlert, this);
+  if (role_ == blink::WebAXRoleAlert && first_time_)
+    manager_->NotifyAccessibilityEvent(blink::WebAXEventAlert, this);
 
   // Fire events if text has changed.
   string16 text = TextForIAccessibleText();
   if (previous_text_ != text) {
     if (!previous_text_.empty() && !text.empty()) {
       manager_->NotifyAccessibilityEvent(
-          WebKit::WebAXEventShow, this);
+          blink::WebAXEventShow, this);
     }
 
     // TODO(dmazzoni): Look into HIDE events, too.
@@ -3011,7 +3011,7 @@ void BrowserAccessibilityWin::PostInitialize() {
     // focus for managed descendants is platform-specific.
     // Fire a focus event if the focused descendant in a multi-select
     // list box changes.
-    if (role_ == WebKit::WebAXRoleListBoxOption &&
+    if (role_ == blink::WebAXRoleListBoxOption &&
         (ia_state_ & STATE_SYSTEM_FOCUSABLE) &&
         (ia_state_ & STATE_SYSTEM_SELECTABLE) &&
         (ia_state_ & STATE_SYSTEM_FOCUSED) &&
@@ -3132,7 +3132,7 @@ string16 BrowserAccessibilityWin::GetValueText() {
 string16 BrowserAccessibilityWin::TextForIAccessibleText() {
   if (IsEditableText())
     return UTF8ToUTF16(value_);
-  return (role_ == WebKit::WebAXRoleStaticText) ?
+  return (role_ == blink::WebAXRoleStaticText) ?
       UTF8ToUTF16(name_) : hypertext_;
 }
 
@@ -3182,59 +3182,59 @@ void BrowserAccessibilityWin::InitRoleAndState() {
   ia2_state_ = IA2_STATE_OPAQUE;
   ia2_attributes_.clear();
 
-  if (HasState(WebKit::WebAXStateBusy))
+  if (HasState(blink::WebAXStateBusy))
     ia_state_ |= STATE_SYSTEM_BUSY;
-  if (HasState(WebKit::WebAXStateChecked))
+  if (HasState(blink::WebAXStateChecked))
     ia_state_ |= STATE_SYSTEM_CHECKED;
-  if (HasState(WebKit::WebAXStateCollapsed))
+  if (HasState(blink::WebAXStateCollapsed))
     ia_state_ |= STATE_SYSTEM_COLLAPSED;
-  if (HasState(WebKit::WebAXStateExpanded))
+  if (HasState(blink::WebAXStateExpanded))
     ia_state_ |= STATE_SYSTEM_EXPANDED;
-  if (HasState(WebKit::WebAXStateFocusable))
+  if (HasState(blink::WebAXStateFocusable))
     ia_state_ |= STATE_SYSTEM_FOCUSABLE;
-  if (HasState(WebKit::WebAXStateHaspopup))
+  if (HasState(blink::WebAXStateHaspopup))
     ia_state_ |= STATE_SYSTEM_HASPOPUP;
-  if (HasState(WebKit::WebAXStateHovered))
+  if (HasState(blink::WebAXStateHovered))
     ia_state_ |= STATE_SYSTEM_HOTTRACKED;
-  if (HasState(WebKit::WebAXStateIndeterminate))
+  if (HasState(blink::WebAXStateIndeterminate))
     ia_state_ |= STATE_SYSTEM_INDETERMINATE;
-  if (HasState(WebKit::WebAXStateInvisible))
+  if (HasState(blink::WebAXStateInvisible))
     ia_state_ |= STATE_SYSTEM_INVISIBLE;
-  if (HasState(WebKit::WebAXStateLinked))
+  if (HasState(blink::WebAXStateLinked))
     ia_state_ |= STATE_SYSTEM_LINKED;
-  if (HasState(WebKit::WebAXStateMultiselectable)) {
+  if (HasState(blink::WebAXStateMultiselectable)) {
     ia_state_ |= STATE_SYSTEM_EXTSELECTABLE;
     ia_state_ |= STATE_SYSTEM_MULTISELECTABLE;
   }
   // TODO(ctguil): Support STATE_SYSTEM_EXTSELECTABLE/accSelect.
-  if (HasState(WebKit::WebAXStateOffscreen))
+  if (HasState(blink::WebAXStateOffscreen))
     ia_state_ |= STATE_SYSTEM_OFFSCREEN;
-  if (HasState(WebKit::WebAXStatePressed))
+  if (HasState(blink::WebAXStatePressed))
     ia_state_ |= STATE_SYSTEM_PRESSED;
-  if (HasState(WebKit::WebAXStateProtected))
+  if (HasState(blink::WebAXStateProtected))
     ia_state_ |= STATE_SYSTEM_PROTECTED;
-  if (HasState(WebKit::WebAXStateRequired))
+  if (HasState(blink::WebAXStateRequired))
     ia2_state_ |= IA2_STATE_REQUIRED;
-  if (HasState(WebKit::WebAXStateSelectable))
+  if (HasState(blink::WebAXStateSelectable))
     ia_state_ |= STATE_SYSTEM_SELECTABLE;
-  if (HasState(WebKit::WebAXStateSelected))
+  if (HasState(blink::WebAXStateSelected))
     ia_state_ |= STATE_SYSTEM_SELECTED;
-  if (HasState(WebKit::WebAXStateVisited))
+  if (HasState(blink::WebAXStateVisited))
     ia_state_ |= STATE_SYSTEM_TRAVERSED;
-  if (!HasState(WebKit::WebAXStateEnabled))
+  if (!HasState(blink::WebAXStateEnabled))
     ia_state_ |= STATE_SYSTEM_UNAVAILABLE;
-  if (HasState(WebKit::WebAXStateVertical)) {
+  if (HasState(blink::WebAXStateVertical)) {
     ia2_state_ |= IA2_STATE_VERTICAL;
   } else {
     ia2_state_ |= IA2_STATE_HORIZONTAL;
   }
-  if (HasState(WebKit::WebAXStateVisited))
+  if (HasState(blink::WebAXStateVisited))
     ia_state_ |= STATE_SYSTEM_TRAVERSED;
 
   // WebKit marks everything as readonly unless it's editable text, so if it's
   // not readonly, mark it as editable now. The final computation of the
   // READONLY state for MSAA is below, after the switch.
-  if (!HasState(WebKit::WebAXStateReadonly))
+  if (!HasState(blink::WebAXStateReadonly))
     ia2_state_ |= IA2_STATE_EDITABLE;
 
   string16 invalid;
@@ -3252,25 +3252,25 @@ void BrowserAccessibilityWin::InitRoleAndState() {
   ia_role_ = 0;
   ia2_role_ = 0;
   switch (role_) {
-    case WebKit::WebAXRoleAlert:
+    case blink::WebAXRoleAlert:
       ia_role_ = ROLE_SYSTEM_ALERT;
       break;
-    case WebKit::WebAXRoleAlertDialog:
+    case blink::WebAXRoleAlertDialog:
       ia_role_ = ROLE_SYSTEM_DIALOG;
       break;
-    case WebKit::WebAXRoleApplication:
+    case blink::WebAXRoleApplication:
       ia_role_ = ROLE_SYSTEM_APPLICATION;
       break;
-    case WebKit::WebAXRoleArticle:
+    case blink::WebAXRoleArticle:
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_SECTION;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleBusyIndicator:
+    case blink::WebAXRoleBusyIndicator:
       ia_role_ = ROLE_SYSTEM_ANIMATION;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleButton:
+    case blink::WebAXRoleButton:
       ia_role_ = ROLE_SYSTEM_PUSHBUTTON;
       bool is_aria_pressed_defined;
       bool is_mixed;
@@ -3281,7 +3281,7 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       if (is_mixed)
         ia_state_ |= STATE_SYSTEM_MIXED;
       break;
-    case WebKit::WebAXRoleCanvas:
+    case blink::WebAXRoleCanvas:
       if (GetBoolAttribute(AccessibilityNodeData::ATTR_CANVAS_HAS_FALLBACK)) {
         role_name_ = L"canvas";
         ia2_role_ = IA2_ROLE_CANVAS;
@@ -3289,78 +3289,78 @@ void BrowserAccessibilityWin::InitRoleAndState() {
         ia_role_ = ROLE_SYSTEM_GRAPHIC;
       }
       break;
-    case WebKit::WebAXRoleCell:
+    case blink::WebAXRoleCell:
       ia_role_ = ROLE_SYSTEM_CELL;
       break;
-    case WebKit::WebAXRoleCheckBox:
+    case blink::WebAXRoleCheckBox:
       ia_role_ = ROLE_SYSTEM_CHECKBUTTON;
       break;
-    case WebKit::WebAXRoleColorWell:
+    case blink::WebAXRoleColorWell:
       ia_role_ = ROLE_SYSTEM_CLIENT;
       ia2_role_ = IA2_ROLE_COLOR_CHOOSER;
       break;
-    case WebKit::WebAXRoleColumn:
+    case blink::WebAXRoleColumn:
       ia_role_ = ROLE_SYSTEM_COLUMN;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleColumnHeader:
+    case blink::WebAXRoleColumnHeader:
       ia_role_ = ROLE_SYSTEM_COLUMNHEADER;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleComboBox:
+    case blink::WebAXRoleComboBox:
       ia_role_ = ROLE_SYSTEM_COMBOBOX;
       break;
-    case WebKit::WebAXRoleDiv:
+    case blink::WebAXRoleDiv:
       role_name_ = L"div";
       ia2_role_ = IA2_ROLE_SECTION;
       break;
-    case WebKit::WebAXRoleDefinition:
+    case blink::WebAXRoleDefinition:
       role_name_ = html_tag;
       ia2_role_ = IA2_ROLE_PARAGRAPH;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleDescriptionListDetail:
+    case blink::WebAXRoleDescriptionListDetail:
       role_name_ = html_tag;
       ia2_role_ = IA2_ROLE_PARAGRAPH;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleDescriptionListTerm:
+    case blink::WebAXRoleDescriptionListTerm:
       ia_role_ = ROLE_SYSTEM_LISTITEM;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleDialog:
+    case blink::WebAXRoleDialog:
       ia_role_ = ROLE_SYSTEM_DIALOG;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleDisclosureTriangle:
+    case blink::WebAXRoleDisclosureTriangle:
       ia_role_ = ROLE_SYSTEM_OUTLINEBUTTON;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleDocument:
-    case WebKit::WebAXRoleRootWebArea:
-    case WebKit::WebAXRoleWebArea:
+    case blink::WebAXRoleDocument:
+    case blink::WebAXRoleRootWebArea:
+    case blink::WebAXRoleWebArea:
       ia_role_ = ROLE_SYSTEM_DOCUMENT;
       ia_state_ |= STATE_SYSTEM_READONLY;
       ia_state_ |= STATE_SYSTEM_FOCUSABLE;
       break;
-    case WebKit::WebAXRoleEditableText:
+    case blink::WebAXRoleEditableText:
       ia_role_ = ROLE_SYSTEM_TEXT;
       ia2_state_ |= IA2_STATE_SINGLE_LINE;
       ia2_state_ |= IA2_STATE_EDITABLE;
       break;
-    case WebKit::WebAXRoleForm:
+    case blink::WebAXRoleForm:
       role_name_ = L"form";
       ia2_role_ = IA2_ROLE_FORM;
       break;
-    case WebKit::WebAXRoleFooter:
+    case blink::WebAXRoleFooter:
       ia_role_ = IA2_ROLE_FOOTER;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleGrid:
+    case blink::WebAXRoleGrid:
       ia_role_ = ROLE_SYSTEM_TABLE;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleGroup: {
+    case blink::WebAXRoleGroup: {
       string16 aria_role = GetString16Attribute(
           AccessibilityNodeData::ATTR_ROLE);
       if (aria_role == L"group" || html_tag == L"fieldset") {
@@ -3377,188 +3377,188 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     }
-    case WebKit::WebAXRoleGrowArea:
+    case blink::WebAXRoleGrowArea:
       ia_role_ = ROLE_SYSTEM_GRIP;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleHeading:
+    case blink::WebAXRoleHeading:
       role_name_ = html_tag;
       ia2_role_ = IA2_ROLE_HEADING;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleHorizontalRule:
+    case blink::WebAXRoleHorizontalRule:
       ia_role_ = ROLE_SYSTEM_SEPARATOR;
       break;
-    case WebKit::WebAXRoleImage:
+    case blink::WebAXRoleImage:
       ia_role_ = ROLE_SYSTEM_GRAPHIC;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleImageMap:
+    case blink::WebAXRoleImageMap:
       role_name_ = html_tag;
       ia2_role_ = IA2_ROLE_IMAGE_MAP;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleImageMapLink:
+    case blink::WebAXRoleImageMapLink:
       ia_role_ = ROLE_SYSTEM_LINK;
       ia_state_ |= STATE_SYSTEM_LINKED;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleLabel:
+    case blink::WebAXRoleLabel:
       ia_role_ = ROLE_SYSTEM_TEXT;
       ia2_role_ = IA2_ROLE_LABEL;
       break;
-    case WebKit::WebAXRoleBanner:
-    case WebKit::WebAXRoleComplementary:
-    case WebKit::WebAXRoleContentInfo:
-    case WebKit::WebAXRoleMain:
-    case WebKit::WebAXRoleNavigation:
-    case WebKit::WebAXRoleSearch:
+    case blink::WebAXRoleBanner:
+    case blink::WebAXRoleComplementary:
+    case blink::WebAXRoleContentInfo:
+    case blink::WebAXRoleMain:
+    case blink::WebAXRoleNavigation:
+    case blink::WebAXRoleSearch:
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_SECTION;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleLink:
+    case blink::WebAXRoleLink:
       ia_role_ = ROLE_SYSTEM_LINK;
       ia_state_ |= STATE_SYSTEM_LINKED;
       break;
-    case WebKit::WebAXRoleList:
+    case blink::WebAXRoleList:
       ia_role_ = ROLE_SYSTEM_LIST;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleListBox:
+    case blink::WebAXRoleListBox:
       ia_role_ = ROLE_SYSTEM_LIST;
       break;
-    case WebKit::WebAXRoleListBoxOption:
+    case blink::WebAXRoleListBoxOption:
       ia_role_ = ROLE_SYSTEM_LISTITEM;
       if (ia_state_ & STATE_SYSTEM_SELECTABLE) {
         ia_state_ |= STATE_SYSTEM_FOCUSABLE;
-        if (HasState(WebKit::WebAXStateFocused))
+        if (HasState(blink::WebAXStateFocused))
           ia_state_ |= STATE_SYSTEM_FOCUSED;
       }
       break;
-    case WebKit::WebAXRoleListItem:
+    case blink::WebAXRoleListItem:
       ia_role_ = ROLE_SYSTEM_LISTITEM;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleListMarker:
+    case blink::WebAXRoleListMarker:
       ia_role_ = ROLE_SYSTEM_TEXT;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleMath:
+    case blink::WebAXRoleMath:
       ia_role_ = ROLE_SYSTEM_EQUATION;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleMenu:
-    case WebKit::WebAXRoleMenuButton:
+    case blink::WebAXRoleMenu:
+    case blink::WebAXRoleMenuButton:
       ia_role_ = ROLE_SYSTEM_MENUPOPUP;
       break;
-    case WebKit::WebAXRoleMenuBar:
+    case blink::WebAXRoleMenuBar:
       ia_role_ = ROLE_SYSTEM_MENUBAR;
       break;
-    case WebKit::WebAXRoleMenuItem:
+    case blink::WebAXRoleMenuItem:
       ia_role_ = ROLE_SYSTEM_MENUITEM;
       break;
-    case WebKit::WebAXRoleMenuListPopup:
+    case blink::WebAXRoleMenuListPopup:
       ia_role_ = ROLE_SYSTEM_CLIENT;
       break;
-    case WebKit::WebAXRoleMenuListOption:
+    case blink::WebAXRoleMenuListOption:
       ia_role_ = ROLE_SYSTEM_LISTITEM;
       if (ia_state_ & STATE_SYSTEM_SELECTABLE) {
         ia_state_ |= STATE_SYSTEM_FOCUSABLE;
-        if (HasState(WebKit::WebAXStateFocused))
+        if (HasState(blink::WebAXStateFocused))
           ia_state_ |= STATE_SYSTEM_FOCUSED;
       }
       break;
-    case WebKit::WebAXRoleNote:
+    case blink::WebAXRoleNote:
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_NOTE;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleOutline:
+    case blink::WebAXRoleOutline:
       ia_role_ = ROLE_SYSTEM_OUTLINE;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleParagraph:
+    case blink::WebAXRoleParagraph:
       role_name_ = L"P";
       ia2_role_ = IA2_ROLE_PARAGRAPH;
       break;
-    case WebKit::WebAXRolePopUpButton:
+    case blink::WebAXRolePopUpButton:
       if (html_tag == L"select") {
         ia_role_ = ROLE_SYSTEM_COMBOBOX;
       } else {
         ia_role_ = ROLE_SYSTEM_BUTTONMENU;
       }
       break;
-    case WebKit::WebAXRoleProgressIndicator:
+    case blink::WebAXRoleProgressIndicator:
       ia_role_ = ROLE_SYSTEM_PROGRESSBAR;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleRadioButton:
+    case blink::WebAXRoleRadioButton:
       ia_role_ = ROLE_SYSTEM_RADIOBUTTON;
       break;
-    case WebKit::WebAXRoleRadioGroup:
+    case blink::WebAXRoleRadioGroup:
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_SECTION;
       break;
-    case WebKit::WebAXRoleRegion:
+    case blink::WebAXRoleRegion:
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_SECTION;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleRow:
+    case blink::WebAXRoleRow:
       ia_role_ = ROLE_SYSTEM_ROW;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleRowHeader:
+    case blink::WebAXRoleRowHeader:
       ia_role_ = ROLE_SYSTEM_ROWHEADER;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleRuler:
+    case blink::WebAXRoleRuler:
       ia_role_ = ROLE_SYSTEM_CLIENT;
       ia2_role_ = IA2_ROLE_RULER;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleScrollArea:
+    case blink::WebAXRoleScrollArea:
       ia_role_ = ROLE_SYSTEM_CLIENT;
       ia2_role_ = IA2_ROLE_SCROLL_PANE;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleScrollBar:
+    case blink::WebAXRoleScrollBar:
       ia_role_ = ROLE_SYSTEM_SCROLLBAR;
       break;
-    case WebKit::WebAXRoleSlider:
+    case blink::WebAXRoleSlider:
       ia_role_ = ROLE_SYSTEM_SLIDER;
       break;
-    case WebKit::WebAXRoleSpinButton:
+    case blink::WebAXRoleSpinButton:
       ia_role_ = ROLE_SYSTEM_SPINBUTTON;
       break;
-    case WebKit::WebAXRoleSpinButtonPart:
+    case blink::WebAXRoleSpinButtonPart:
       ia_role_ = ROLE_SYSTEM_PUSHBUTTON;
       break;
-    case WebKit::WebAXRoleSplitGroup:
+    case blink::WebAXRoleSplitGroup:
       ia_role_ = ROLE_SYSTEM_CLIENT;
       ia2_role_ = IA2_ROLE_SPLIT_PANE;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleAnnotation:
-    case WebKit::WebAXRoleStaticText:
+    case blink::WebAXRoleAnnotation:
+    case blink::WebAXRoleStaticText:
       ia_role_ = ROLE_SYSTEM_TEXT;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleStatus:
+    case blink::WebAXRoleStatus:
       ia_role_ = ROLE_SYSTEM_STATUSBAR;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleSplitter:
+    case blink::WebAXRoleSplitter:
       ia_role_ = ROLE_SYSTEM_SEPARATOR;
       break;
-    case WebKit::WebAXRoleSVGRoot:
+    case blink::WebAXRoleSVGRoot:
       ia_role_ = ROLE_SYSTEM_GRAPHIC;
       break;
-    case WebKit::WebAXRoleTab:
+    case blink::WebAXRoleTab:
       ia_role_ = ROLE_SYSTEM_PAGETAB;
       break;
-    case WebKit::WebAXRoleTable: {
+    case blink::WebAXRoleTable: {
       string16 aria_role = GetString16Attribute(
           AccessibilityNodeData::ATTR_ROLE);
       if (aria_role == L"treegrid") {
@@ -3569,77 +3569,77 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       }
       break;
     }
-    case WebKit::WebAXRoleTableHeaderContainer:
+    case blink::WebAXRoleTableHeaderContainer:
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_SECTION;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleTabList:
+    case blink::WebAXRoleTabList:
       ia_role_ = ROLE_SYSTEM_PAGETABLIST;
       break;
-    case WebKit::WebAXRoleTabPanel:
+    case blink::WebAXRoleTabPanel:
       ia_role_ = ROLE_SYSTEM_PROPERTYPAGE;
       break;
-    case WebKit::WebAXRoleToggleButton:
+    case blink::WebAXRoleToggleButton:
       ia_role_ = ROLE_SYSTEM_PUSHBUTTON;
       ia2_role_ = IA2_ROLE_TOGGLE_BUTTON;
       break;
-    case WebKit::WebAXRoleTextArea:
+    case blink::WebAXRoleTextArea:
       ia_role_ = ROLE_SYSTEM_TEXT;
       ia2_state_ |= IA2_STATE_MULTI_LINE;
       ia2_state_ |= IA2_STATE_EDITABLE;
       ia2_state_ |= IA2_STATE_SELECTABLE_TEXT;
       break;
-    case WebKit::WebAXRoleTextField:
+    case blink::WebAXRoleTextField:
       ia_role_ = ROLE_SYSTEM_TEXT;
       ia2_state_ |= IA2_STATE_SINGLE_LINE;
       ia2_state_ |= IA2_STATE_EDITABLE;
       ia2_state_ |= IA2_STATE_SELECTABLE_TEXT;
       break;
-    case WebKit::WebAXRoleTimer:
+    case blink::WebAXRoleTimer:
       ia_role_ = ROLE_SYSTEM_CLOCK;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleToolbar:
+    case blink::WebAXRoleToolbar:
       ia_role_ = ROLE_SYSTEM_TOOLBAR;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleUserInterfaceTooltip:
+    case blink::WebAXRoleUserInterfaceTooltip:
       ia_role_ = ROLE_SYSTEM_TOOLTIP;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleTree:
+    case blink::WebAXRoleTree:
       ia_role_ = ROLE_SYSTEM_OUTLINE;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleTreeGrid:
+    case blink::WebAXRoleTreeGrid:
       ia_role_ = ROLE_SYSTEM_OUTLINE;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleTreeItem:
+    case blink::WebAXRoleTreeItem:
       ia_role_ = ROLE_SYSTEM_OUTLINEITEM;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebKit::WebAXRoleWindow:
+    case blink::WebAXRoleWindow:
       ia_role_ = ROLE_SYSTEM_WINDOW;
       break;
 
     // TODO(dmazzoni): figure out the proper MSAA role for all of these.
-    case WebKit::WebAXRoleBrowser:
-    case WebKit::WebAXRoleDirectory:
-    case WebKit::WebAXRoleDrawer:
-    case WebKit::WebAXRoleHelpTag:
-    case WebKit::WebAXRoleIgnored:
-    case WebKit::WebAXRoleIncrementor:
-    case WebKit::WebAXRoleLog:
-    case WebKit::WebAXRoleMarquee:
-    case WebKit::WebAXRoleMatte:
-    case WebKit::WebAXRolePresentational:
-    case WebKit::WebAXRoleRulerMarker:
-    case WebKit::WebAXRoleSheet:
-    case WebKit::WebAXRoleSliderThumb:
-    case WebKit::WebAXRoleSystemWide:
-    case WebKit::WebAXRoleValueIndicator:
+    case blink::WebAXRoleBrowser:
+    case blink::WebAXRoleDirectory:
+    case blink::WebAXRoleDrawer:
+    case blink::WebAXRoleHelpTag:
+    case blink::WebAXRoleIgnored:
+    case blink::WebAXRoleIncrementor:
+    case blink::WebAXRoleLog:
+    case blink::WebAXRoleMarquee:
+    case blink::WebAXRoleMatte:
+    case blink::WebAXRolePresentational:
+    case blink::WebAXRoleRulerMarker:
+    case blink::WebAXRoleSheet:
+    case blink::WebAXRoleSliderThumb:
+    case blink::WebAXRoleSystemWide:
+    case blink::WebAXRoleValueIndicator:
     default:
       ia_role_ = ROLE_SYSTEM_CLIENT;
       break;
@@ -3651,11 +3651,11 @@ void BrowserAccessibilityWin::InitRoleAndState() {
   // aria-readonly attribute and for a few roles (in the switch above).
   // We clear the READONLY state on focusable controls and on a document.
   // Everything else, the majority of objects, do not have this state set.
-  if (HasState(WebKit::WebAXStateFocusable) &&
+  if (HasState(blink::WebAXStateFocusable) &&
       ia_role_ != ROLE_SYSTEM_DOCUMENT) {
     ia_state_ &= ~(STATE_SYSTEM_READONLY);
   }
-  if (!HasState(WebKit::WebAXStateReadonly))
+  if (!HasState(blink::WebAXStateReadonly))
     ia_state_ &= ~(STATE_SYSTEM_READONLY);
   if (GetBoolAttribute(AccessibilityNodeData::ATTR_ARIA_READONLY))
     ia_state_ |= STATE_SYSTEM_READONLY;

@@ -21,12 +21,12 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebURLLoaderOptions.h"
 
-using WebKit::WebString;
-using WebKit::WebURL;
-using WebKit::WebURLLoader;
-using WebKit::WebURLLoaderOptions;
-using WebKit::WebURLRequest;
-using WebKit::WebURLResponse;
+using blink::WebString;
+using blink::WebURL;
+using blink::WebURLLoader;
+using blink::WebURLLoaderOptions;
+using blink::WebURLRequest;
+using blink::WebURLResponse;
 
 namespace content {
 
@@ -69,7 +69,7 @@ P2PPortAllocator::Config::RelayServerConfig::~RelayServerConfig() {
 }
 
 P2PPortAllocator::P2PPortAllocator(
-    WebKit::WebFrame* web_frame,
+    blink::WebFrame* web_frame,
     P2PSocketDispatcher* socket_dispatcher,
     talk_base::NetworkManager* network_manager,
     talk_base::PacketSocketFactory* socket_factory,
@@ -153,8 +153,8 @@ void P2PPortAllocatorSession::didFinishLoading(WebURLLoader* loader,
   ParseRelayResponse();
 }
 
-void P2PPortAllocatorSession::didFail(WebKit::WebURLLoader* loader,
-                                      const WebKit::WebURLError& error) {
+void P2PPortAllocatorSession::didFail(blink::WebURLLoader* loader,
+                                      const blink::WebURLError& error) {
   DCHECK_EQ(loader, relay_session_request_.get());
   DCHECK_NE(error.reason, 0);
 

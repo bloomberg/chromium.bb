@@ -19,12 +19,12 @@
 
 // Argument structures used in messages
 
-IPC_ENUM_TRAITS(WebKit::WebIDBCursor::Direction)
-IPC_ENUM_TRAITS(WebKit::WebIDBDatabase::PutMode)
-IPC_ENUM_TRAITS(WebKit::WebIDBDatabase::TaskType)
+IPC_ENUM_TRAITS(blink::WebIDBCursor::Direction)
+IPC_ENUM_TRAITS(blink::WebIDBDatabase::PutMode)
+IPC_ENUM_TRAITS(blink::WebIDBDatabase::TaskType)
 
-IPC_ENUM_TRAITS_MAX_VALUE(WebKit::WebIDBCallbacks::DataLoss,
-                          WebKit::WebIDBCallbacks::DataLossTotal)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebIDBCallbacks::DataLoss,
+                          blink::WebIDBCallbacks::DataLossTotal)
 
 // Used to enumerate indexed databases.
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryGetDatabaseNames_Params)
@@ -130,7 +130,7 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabasePut_Params)
   // The key to set it on (may not be "valid"/set in some cases).
   IPC_STRUCT_MEMBER(content::IndexedDBKey, key)
   // Whether this is an add or a put.
-  IPC_STRUCT_MEMBER(WebKit::WebIDBDatabase::PutMode, put_mode)
+  IPC_STRUCT_MEMBER(blink::WebIDBDatabase::PutMode, put_mode)
   // The names of the indexes used below.
   IPC_STRUCT_MEMBER(std::vector<int64>, index_ids)
   // The keys for each index, such that each inner vector corresponds
@@ -159,7 +159,7 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseOpenCursor_Params)
   // If this is just retrieving the key
   IPC_STRUCT_MEMBER(bool, key_only)
   // The priority of this cursor.
-  IPC_STRUCT_MEMBER(WebKit::WebIDBDatabase::TaskType, task_type)
+  IPC_STRUCT_MEMBER(blink::WebIDBDatabase::TaskType, task_type)
 IPC_STRUCT_END()
 
 // Used to open both cursors and object cursors in IndexedDB.
@@ -288,7 +288,7 @@ IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksUpgradeNeeded_Params)
   IPC_STRUCT_MEMBER(int32, ipc_database_callbacks_id)
   IPC_STRUCT_MEMBER(int32, ipc_database_id)
   IPC_STRUCT_MEMBER(int64, old_version)
-  IPC_STRUCT_MEMBER(WebKit::WebIDBCallbacks::DataLoss, data_loss)
+  IPC_STRUCT_MEMBER(blink::WebIDBCallbacks::DataLoss, data_loss)
   IPC_STRUCT_MEMBER(std::string, data_loss_message)
   IPC_STRUCT_MEMBER(IndexedDBDatabaseMetadata, idb_metadata)
 IPC_STRUCT_END()

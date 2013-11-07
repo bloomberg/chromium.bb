@@ -13,7 +13,7 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebIDBTypes.h"
 
-namespace WebKit {
+namespace blink {
 class WebIDBKey;
 }
 
@@ -23,12 +23,12 @@ class CONTENT_EXPORT IndexedDBKey {
  public:
   typedef std::vector<IndexedDBKey> KeyArray;
 
-  IndexedDBKey();  // Defaults to WebKit::WebIDBKeyTypeInvalid.
-  IndexedDBKey(WebKit::WebIDBKeyType);  // must be Null or Invalid
+  IndexedDBKey();  // Defaults to blink::WebIDBKeyTypeInvalid.
+  IndexedDBKey(blink::WebIDBKeyType);  // must be Null or Invalid
   explicit IndexedDBKey(const KeyArray& array);
   explicit IndexedDBKey(const string16& str);
   IndexedDBKey(double number,
-               WebKit::WebIDBKeyType type);  // must be date or number
+               blink::WebIDBKeyType type);  // must be date or number
   ~IndexedDBKey();
 
   bool IsValid() const;
@@ -37,7 +37,7 @@ class CONTENT_EXPORT IndexedDBKey {
   bool IsLessThan(const IndexedDBKey& other) const;
   bool IsEqual(const IndexedDBKey& other) const;
 
-  WebKit::WebIDBKeyType type() const { return type_; }
+  blink::WebIDBKeyType type() const { return type_; }
   const std::vector<IndexedDBKey>& array() const { return array_; }
   const string16& string() const { return string_; }
   double date() const { return date_; }
@@ -46,7 +46,7 @@ class CONTENT_EXPORT IndexedDBKey {
   size_t size_estimate() const { return size_estimate_; }
 
  private:
-  WebKit::WebIDBKeyType type_;
+  blink::WebIDBKeyType type_;
   std::vector<IndexedDBKey> array_;
   string16 string_;
   double date_;

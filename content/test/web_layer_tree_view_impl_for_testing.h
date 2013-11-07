@@ -14,12 +14,12 @@ namespace cc {
 class LayerTreeHost;
 }
 
-namespace WebKit { class WebLayer; }
+namespace blink { class WebLayer; }
 
 namespace webkit {
 
 class WebLayerTreeViewImplForTesting
-    : public WebKit::WebLayerTreeView,
+    : public blink::WebLayerTreeView,
       public cc::LayerTreeHostClient,
       public cc::LayerTreeHostSingleThreadClient {
  public:
@@ -28,23 +28,23 @@ class WebLayerTreeViewImplForTesting
 
   bool Initialize();
 
-  // WebKit::WebLayerTreeView implementation.
+  // blink::WebLayerTreeView implementation.
   virtual void setSurfaceReady();
-  virtual void setRootLayer(const WebKit::WebLayer& layer);
+  virtual void setRootLayer(const blink::WebLayer& layer);
   virtual void clearRootLayer();
-  virtual void setViewportSize(const WebKit::WebSize& unused_deprecated,
-                               const WebKit::WebSize& device_viewport_size);
-  virtual WebKit::WebSize layoutViewportSize() const;
-  virtual WebKit::WebSize deviceViewportSize() const;
+  virtual void setViewportSize(const blink::WebSize& unused_deprecated,
+                               const blink::WebSize& device_viewport_size);
+  virtual blink::WebSize layoutViewportSize() const;
+  virtual blink::WebSize deviceViewportSize() const;
   virtual void setDeviceScaleFactor(float scale_factor);
   virtual float deviceScaleFactor() const;
-  virtual void setBackgroundColor(WebKit::WebColor);
+  virtual void setBackgroundColor(blink::WebColor);
   virtual void setHasTransparentBackground(bool transparent);
   virtual void setVisible(bool visible);
   virtual void setPageScaleFactorAndLimits(float page_scale_factor,
                                            float minimum,
                                            float maximum);
-  virtual void startPageScaleAnimation(const WebKit::WebPoint& destination,
+  virtual void startPageScaleAnimation(const blink::WebPoint& destination,
                                        bool use_anchor,
                                        float new_page_scale,
                                        double duration_sec);
@@ -53,11 +53,11 @@ class WebLayerTreeViewImplForTesting
   virtual bool commitRequested() const;
   virtual void composite();
   virtual void didStopFlinging();
-  virtual bool compositeAndReadback(void* pixels, const WebKit::WebRect& rect);
+  virtual bool compositeAndReadback(void* pixels, const blink::WebRect& rect);
   virtual void finishAllRendering();
   virtual void setDeferCommits(bool defer_commits);
   virtual void renderingStats(
-      WebKit::WebRenderingStats& stats) const;  // NOLINT(runtime/references)
+      blink::WebRenderingStats& stats) const;  // NOLINT(runtime/references)
 
   // cc::LayerTreeHostClient implementation.
   virtual void WillBeginMainFrame() OVERRIDE {}

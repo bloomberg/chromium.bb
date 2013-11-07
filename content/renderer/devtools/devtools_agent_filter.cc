@@ -11,8 +11,8 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDevToolsAgent.h"
 
-using WebKit::WebDevToolsAgent;
-using WebKit::WebString;
+using blink::WebDevToolsAgent;
+using blink::WebString;
 
 namespace content {
 

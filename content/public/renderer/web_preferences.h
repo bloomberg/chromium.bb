@@ -9,14 +9,14 @@
 
 struct WebPreferences;
 
-namespace WebKit {
+namespace blink {
 class WebView;
 }
 
 namespace content {
 
 CONTENT_EXPORT void ApplyWebPreferences(const WebPreferences& prefs,
-                                        WebKit::WebView* web_view);
+                                        blink::WebView* web_view);
 
 }  // namespace content
 

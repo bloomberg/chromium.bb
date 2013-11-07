@@ -300,7 +300,7 @@ void RenderWidgetHelper::OnResumeRequestsForView(int route_id) {
 }
 
 void RenderWidgetHelper::CreateNewWidget(int opener_id,
-                                         WebKit::WebPopupType popup_type,
+                                         blink::WebPopupType popup_type,
                                          int* route_id,
                                          int* surface_id) {
   *route_id = GetNextRoutingID();
@@ -327,7 +327,7 @@ void RenderWidgetHelper::CreateNewFullscreenWidget(int opener_id,
 }
 
 void RenderWidgetHelper::OnCreateWidgetOnUI(
-    int opener_id, int route_id, WebKit::WebPopupType popup_type) {
+    int opener_id, int route_id, blink::WebPopupType popup_type) {
   RenderViewHostImpl* host = RenderViewHostImpl::FromID(
       render_process_id_, opener_id);
   if (host)

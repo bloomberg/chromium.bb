@@ -22,8 +22,8 @@
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/gtk/gtk_screen_util.h"
 
-using WebKit::WebDragOperation;
-using WebKit::WebDragOperationNone;
+using blink::WebDragOperation;
+using blink::WebDragOperationNone;
 
 namespace content {
 
@@ -36,13 +36,13 @@ int GetModifierFlags(GtkWidget* widget) {
   gdk_window_get_pointer(gtk_widget_get_window(widget), NULL, NULL, &state);
 
   if (state & GDK_SHIFT_MASK)
-    modifier_state |= WebKit::WebInputEvent::ShiftKey;
+    modifier_state |= blink::WebInputEvent::ShiftKey;
   if (state & GDK_CONTROL_MASK)
-    modifier_state |= WebKit::WebInputEvent::ControlKey;
+    modifier_state |= blink::WebInputEvent::ControlKey;
   if (state & GDK_MOD1_MASK)
-    modifier_state |= WebKit::WebInputEvent::AltKey;
+    modifier_state |= blink::WebInputEvent::AltKey;
   if (state & GDK_META_MASK)
-    modifier_state |= WebKit::WebInputEvent::MetaKey;
+    modifier_state |= blink::WebInputEvent::MetaKey;
   return modifier_state;
 }
 

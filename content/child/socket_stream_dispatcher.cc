@@ -30,7 +30,7 @@ class IPCWebSocketStreamHandleBridge
     : public webkit_glue::WebSocketStreamHandleBridge {
  public:
   IPCWebSocketStreamHandleBridge(
-      WebKit::WebSocketStreamHandle* handle,
+      blink::WebSocketStreamHandle* handle,
       webkit_glue::WebSocketStreamHandleDelegate* delegate)
       : socket_id_(kNoSocketId),
         handle_(handle),
@@ -58,7 +58,7 @@ class IPCWebSocketStreamHandleBridge
   // browser process.
   int socket_id_;
 
-  WebKit::WebSocketStreamHandle* handle_;
+  blink::WebSocketStreamHandle* handle_;
   webkit_glue::WebSocketStreamHandleDelegate* delegate_;
 
   // Map from ID to bridge instance.
@@ -177,7 +177,7 @@ SocketStreamDispatcher::SocketStreamDispatcher() {
 /* static */
 webkit_glue::WebSocketStreamHandleBridge*
 SocketStreamDispatcher::CreateBridge(
-    WebKit::WebSocketStreamHandle* handle,
+    blink::WebSocketStreamHandle* handle,
     webkit_glue::WebSocketStreamHandleDelegate* delegate) {
   return new IPCWebSocketStreamHandleBridge(handle, delegate);
 }

@@ -24,7 +24,7 @@ class WebFileWriterImpl : public WebFileWriterBase,
   };
 
   WebFileWriterImpl(const GURL& path,
-                    WebKit::WebFileWriterClient* client,
+                    blink::WebFileWriterClient* client,
                     Type type,
                     base::MessageLoopProxy* main_thread_loop);
   virtual ~WebFileWriterImpl();

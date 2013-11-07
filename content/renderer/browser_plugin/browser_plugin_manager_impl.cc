@@ -24,8 +24,8 @@ BrowserPluginManagerImpl::~BrowserPluginManagerImpl() {
 
 BrowserPlugin* BrowserPluginManagerImpl::CreateBrowserPlugin(
     RenderViewImpl* render_view,
-    WebKit::WebFrame* frame,
-    const WebKit::WebPluginParams& params) {
+    blink::WebFrame* frame,
+    const blink::WebPluginParams& params) {
   return new BrowserPlugin(render_view, frame, params);
 }
 

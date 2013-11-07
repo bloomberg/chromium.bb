@@ -23,7 +23,7 @@ struct SpeechRecognitionResult;
 // scripted JS speech APIs. It's the complement of
 // SpeechRecognitionDispatcherHost (owned by RenderViewHost).
 class SpeechRecognitionDispatcher : public RenderViewObserver,
-                                    public WebKit::WebSpeechRecognizer {
+                                    public blink::WebSpeechRecognizer {
  public:
   explicit SpeechRecognitionDispatcher(RenderViewImpl* render_view);
   virtual ~SpeechRecognitionDispatcher();
@@ -32,14 +32,14 @@ class SpeechRecognitionDispatcher : public RenderViewObserver,
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // WebKit::WebSpeechRecognizer implementation.
-  virtual void start(const WebKit::WebSpeechRecognitionHandle&,
-                     const WebKit::WebSpeechRecognitionParams&,
-                     WebKit::WebSpeechRecognizerClient*) OVERRIDE;
-  virtual void stop(const WebKit::WebSpeechRecognitionHandle&,
-                    WebKit::WebSpeechRecognizerClient*) OVERRIDE;
-  virtual void abort(const WebKit::WebSpeechRecognitionHandle&,
-                     WebKit::WebSpeechRecognizerClient*) OVERRIDE;
+  // blink::WebSpeechRecognizer implementation.
+  virtual void start(const blink::WebSpeechRecognitionHandle&,
+                     const blink::WebSpeechRecognitionParams&,
+                     blink::WebSpeechRecognizerClient*) OVERRIDE;
+  virtual void stop(const blink::WebSpeechRecognitionHandle&,
+                    blink::WebSpeechRecognizerClient*) OVERRIDE;
+  virtual void abort(const blink::WebSpeechRecognitionHandle&,
+                     blink::WebSpeechRecognizerClient*) OVERRIDE;
 
   void OnRecognitionStarted(int request_id);
   void OnAudioStarted(int request_id);
@@ -51,14 +51,14 @@ class SpeechRecognitionDispatcher : public RenderViewObserver,
   void OnResultsRetrieved(int request_id,
                           const SpeechRecognitionResults& result);
 
-  int GetOrCreateIDForHandle(const WebKit::WebSpeechRecognitionHandle& handle);
-  bool HandleExists(const WebKit::WebSpeechRecognitionHandle& handle);
-  const WebKit::WebSpeechRecognitionHandle& GetHandleFromID(int handle_id);
+  int GetOrCreateIDForHandle(const blink::WebSpeechRecognitionHandle& handle);
+  bool HandleExists(const blink::WebSpeechRecognitionHandle& handle);
+  const blink::WebSpeechRecognitionHandle& GetHandleFromID(int handle_id);
 
   // The WebKit client class that we use to send events back to the JS world.
-  WebKit::WebSpeechRecognizerClient* recognizer_client_;
+  blink::WebSpeechRecognizerClient* recognizer_client_;
 
-  typedef std::map<int, WebKit::WebSpeechRecognitionHandle> HandleMap;
+  typedef std::map<int, blink::WebSpeechRecognitionHandle> HandleMap;
   HandleMap handle_map_;
   int next_id_;
 

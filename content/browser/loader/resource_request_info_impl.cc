@@ -47,7 +47,7 @@ void ResourceRequestInfo::AllocateForTesting(
           false,                             // is_stream
           true,                              // allow_download
           false,                             // has_user_gesture
-          WebKit::WebReferrerPolicyDefault,  // referrer_policy
+          blink::WebReferrerPolicyDefault,  // referrer_policy
           context,                           // context
           base::WeakPtr<ResourceMessageFilter>(),  // filter
           is_async);                         // is_async
@@ -99,7 +99,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     bool is_stream,
     bool allow_download,
     bool has_user_gesture,
-    WebKit::WebReferrerPolicy referrer_policy,
+    blink::WebReferrerPolicy referrer_policy,
     ResourceContext* context,
     base::WeakPtr<ResourceMessageFilter> filter,
     bool is_async)
@@ -170,7 +170,7 @@ ResourceType::Type ResourceRequestInfoImpl::GetResourceType() const {
   return resource_type_;
 }
 
-WebKit::WebReferrerPolicy ResourceRequestInfoImpl::GetReferrerPolicy() const {
+blink::WebReferrerPolicy ResourceRequestInfoImpl::GetReferrerPolicy() const {
   return referrer_policy_;
 }
 

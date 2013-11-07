@@ -24,9 +24,9 @@ class MultiResolutionImageResourceFetcher{
 
   MultiResolutionImageResourceFetcher(
       const GURL& image_url,
-      WebKit::WebFrame* frame,
+      blink::WebFrame* frame,
       int id,
-      WebKit::WebURLRequest::TargetType target_type,
+      blink::WebURLRequest::TargetType target_type,
       const Callback& callback);
 
   virtual ~MultiResolutionImageResourceFetcher();
@@ -42,7 +42,7 @@ class MultiResolutionImageResourceFetcher{
 
  private:
   // ResourceFetcher::Callback. Decodes the image and invokes callback_.
-  void OnURLFetchComplete(const WebKit::WebURLResponse& response,
+  void OnURLFetchComplete(const blink::WebURLResponse& response,
                           const std::string& data);
 
   Callback callback_;

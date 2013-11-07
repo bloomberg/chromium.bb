@@ -43,13 +43,13 @@
 #include "base/sys_info.h"
 #endif
 
-using WebKit::WebCanvas;
-using WebKit::WebPluginContainer;
-using WebKit::WebPluginParams;
-using WebKit::WebPoint;
-using WebKit::WebRect;
-using WebKit::WebURL;
-using WebKit::WebVector;
+using blink::WebCanvas;
+using blink::WebPluginContainer;
+using blink::WebPluginParams;
+using blink::WebPoint;
+using blink::WebRect;
+using blink::WebURL;
+using blink::WebVector;
 
 namespace content {
 
@@ -59,7 +59,7 @@ static std::string GetInternalEventName(const char* event_name) {
   return base::StringPrintf("-internal-%s", event_name);
 }
 
-typedef std::map<WebKit::WebPluginContainer*,
+typedef std::map<blink::WebPluginContainer*,
                  BrowserPlugin*> PluginContainerMap;
 static base::LazyInstance<PluginContainerMap> g_plugin_container_map =
     LAZY_INSTANCE_INITIALIZER;
@@ -68,7 +68,7 @@ static base::LazyInstance<PluginContainerMap> g_plugin_container_map =
 
 BrowserPlugin::BrowserPlugin(
     RenderViewImpl* render_view,
-    WebKit::WebFrame* frame,
+    blink::WebFrame* frame,
     const WebPluginParams& params)
     : guest_instance_id_(browser_plugin::kInstanceIDNone),
       attached_(false),
@@ -108,7 +108,7 @@ BrowserPlugin::~BrowserPlugin() {
 
 /*static*/
 BrowserPlugin* BrowserPlugin::FromContainer(
-    WebKit::WebPluginContainer* container) {
+    blink::WebPluginContainer* container) {
   PluginContainerMap* browser_plugins = g_plugin_container_map.Pointer();
   PluginContainerMap::iterator it = browser_plugins->find(container);
   return it == browser_plugins->end() ? NULL : it->second;
@@ -141,14 +141,14 @@ void BrowserPlugin::UpdateDOMAttribute(const std::string& attribute_name,
   if (!container())
     return;
 
-  WebKit::WebElement element = container()->element();
-  WebKit::WebString web_attribute_name =
-      WebKit::WebString::fromUTF8(attribute_name);
+  blink::WebElement element = container()->element();
+  blink::WebString web_attribute_name =
+      blink::WebString::fromUTF8(attribute_name);
   if (!HasDOMAttribute(attribute_name) ||
       (std::string(element.getAttribute(web_attribute_name).utf8()) !=
           attribute_value)) {
     element.setAttribute(web_attribute_name,
-        WebKit::WebString::fromUTF8(attribute_value));
+        blink::WebString::fromUTF8(attribute_value));
   }
 }
 
@@ -157,7 +157,7 @@ void BrowserPlugin::RemoveDOMAttribute(const std::string& attribute_name) {
     return;
 
   container()->element().removeAttribute(
-      WebKit::WebString::fromUTF8(attribute_name));
+      blink::WebString::fromUTF8(attribute_name));
 }
 
 std::string BrowserPlugin::GetDOMAttributeValue(
@@ -166,7 +166,7 @@ std::string BrowserPlugin::GetDOMAttributeValue(
     return std::string();
 
   return container()->element().getAttribute(
-      WebKit::WebString::fromUTF8(attribute_name)).utf8();
+      blink::WebString::fromUTF8(attribute_name)).utf8();
 }
 
 bool BrowserPlugin::HasDOMAttribute(const std::string& attribute_name) const {
@@ -174,7 +174,7 @@ bool BrowserPlugin::HasDOMAttribute(const std::string& attribute_name) const {
     return false;
 
   return container()->element().hasAttribute(
-      WebKit::WebString::fromUTF8(attribute_name));
+      blink::WebString::fromUTF8(attribute_name));
 }
 
 std::string BrowserPlugin::GetNameAttribute() const {
@@ -481,8 +481,8 @@ void BrowserPlugin::OnShouldAcceptTouchEvents(int guest_instance_id,
                                               bool accept) {
   if (container()) {
     container()->requestTouchEventType(accept ?
-        WebKit::WebPluginContainer::TouchEventRequestTypeRaw :
-        WebKit::WebPluginContainer::TouchEventRequestTypeNone);
+        blink::WebPluginContainer::TouchEventRequestTypeRaw :
+        blink::WebPluginContainer::TouchEventRequestTypeNone);
   }
 }
 
@@ -636,29 +636,29 @@ NPObject* BrowserPlugin::GetContentWindow() const {
       content_window_routing_id_);
   if (!guest_render_view)
     return NULL;
-  WebKit::WebFrame* guest_frame = guest_render_view->GetWebView()->mainFrame();
+  blink::WebFrame* guest_frame = guest_render_view->GetWebView()->mainFrame();
   return guest_frame->windowObject();
 }
 
 // static
-bool BrowserPlugin::AttachWindowTo(const WebKit::WebNode& node, int window_id) {
+bool BrowserPlugin::AttachWindowTo(const blink::WebNode& node, int window_id) {
   if (node.isNull())
     return false;
 
   if (!node.isElementNode())
     return false;
 
-  WebKit::WebElement shim_element = node.toConst<WebKit::WebElement>();
+  blink::WebElement shim_element = node.toConst<blink::WebElement>();
   // The shim containing the BrowserPlugin must be attached to a document.
   if (shim_element.document().isNull())
     return false;
 
-  WebKit::WebNode shadow_root = shim_element.shadowRoot();
+  blink::WebNode shadow_root = shim_element.shadowRoot();
   if (shadow_root.isNull() || !shadow_root.hasChildNodes())
     return false;
 
-  WebKit::WebNode plugin_element = shadow_root.firstChild();
-  WebKit::WebPluginContainer* plugin_container =
+  blink::WebNode plugin_element = shadow_root.firstChild();
+  blink::WebPluginContainer* plugin_container =
       plugin_element.pluginContainer();
   if (!plugin_container)
     return false;
@@ -782,7 +782,7 @@ void BrowserPlugin::TriggerEvent(const std::string& event_name,
   if (!container())
     return;
 
-  WebKit::WebFrame* frame = container()->element().document().frame();
+  blink::WebFrame* frame = container()->element().document().frame();
   if (!frame)
     return;
 
@@ -803,17 +803,17 @@ void BrowserPlugin::TriggerEvent(const std::string& event_name,
       return;
   }
 
-  WebKit::WebDOMEvent dom_event = frame->document().createEvent("CustomEvent");
-  WebKit::WebDOMCustomEvent event = dom_event.to<WebKit::WebDOMCustomEvent>();
+  blink::WebDOMEvent dom_event = frame->document().createEvent("CustomEvent");
+  blink::WebDOMCustomEvent event = dom_event.to<blink::WebDOMCustomEvent>();
 
   // The events triggered directly from the plugin <object> are internal events
   // whose implementation details can (and likely will) change over time. The
   // wrapper/shim (e.g. <webview> tag) should receive these events, and expose a
   // more appropriate (and stable) event to the consumers as part of the API.
   event.initCustomEvent(
-      WebKit::WebString::fromUTF8(GetInternalEventName(event_name.c_str())),
+      blink::WebString::fromUTF8(GetInternalEventName(event_name.c_str())),
       false, false,
-      WebKit::WebSerializedScriptValue::serialize(
+      blink::WebSerializedScriptValue::serialize(
           v8::String::New(json_string.c_str(), json_string.size())));
   container()->element().dispatchEvent(event);
 }
@@ -835,7 +835,7 @@ bool BrowserPlugin::ShouldGuestBeFocused() const {
   return plugin_focused_ && embedder_focused;
 }
 
-WebKit::WebPluginContainer* BrowserPlugin::container() const {
+blink::WebPluginContainer* BrowserPlugin::container() const {
   return container_;
 }
 
@@ -918,7 +918,7 @@ NPObject* BrowserPlugin::scriptableObject() {
 
   NPObject* browser_plugin_np_object(bindings_->np_object());
   // The object is expected to be retained before it is returned.
-  WebKit::WebBindings::retainObject(browser_plugin_np_object);
+  blink::WebBindings::retainObject(browser_plugin_np_object);
   return browser_plugin_np_object;
 }
 
@@ -990,7 +990,7 @@ bool BrowserPlugin::InBounds(const gfx::Point& position) const {
 
 gfx::Point BrowserPlugin::ToLocalCoordinates(const gfx::Point& point) const {
   if (container_)
-    return container_->windowToLocalPoint(WebKit::WebPoint(point));
+    return container_->windowToLocalPoint(blink::WebPoint(point));
   return gfx::Point(point.x() - plugin_rect_.x(), point.y() - plugin_rect_.y());
 }
 
@@ -1182,34 +1182,34 @@ bool BrowserPlugin::acceptsInputEvents() {
   return true;
 }
 
-bool BrowserPlugin::handleInputEvent(const WebKit::WebInputEvent& event,
-                                     WebKit::WebCursorInfo& cursor_info) {
+bool BrowserPlugin::handleInputEvent(const blink::WebInputEvent& event,
+                                     blink::WebCursorInfo& cursor_info) {
   if (guest_crashed_ || !HasGuestInstanceID())
     return false;
 
-  if (event.type == WebKit::WebInputEvent::ContextMenu)
+  if (event.type == blink::WebInputEvent::ContextMenu)
     return true;
 
-  const WebKit::WebInputEvent* modified_event = &event;
-  scoped_ptr<WebKit::WebTouchEvent> touch_event;
+  const blink::WebInputEvent* modified_event = &event;
+  scoped_ptr<blink::WebTouchEvent> touch_event;
   // WebKit gives BrowserPlugin a list of touches that are down, but the browser
   // process expects a list of all touches. We modify the TouchEnd event here to
   // match these expectations.
-  if (event.type == WebKit::WebInputEvent::TouchEnd) {
-    const WebKit::WebTouchEvent* orig_touch_event =
-        static_cast<const WebKit::WebTouchEvent*>(&event);
-    touch_event.reset(new WebKit::WebTouchEvent());
-    memcpy(touch_event.get(), orig_touch_event, sizeof(WebKit::WebTouchEvent));
+  if (event.type == blink::WebInputEvent::TouchEnd) {
+    const blink::WebTouchEvent* orig_touch_event =
+        static_cast<const blink::WebTouchEvent*>(&event);
+    touch_event.reset(new blink::WebTouchEvent());
+    memcpy(touch_event.get(), orig_touch_event, sizeof(blink::WebTouchEvent));
     if (touch_event->changedTouchesLength > 0) {
       memcpy(&touch_event->touches[touch_event->touchesLength],
              &touch_event->changedTouches,
-            touch_event->changedTouchesLength * sizeof(WebKit::WebTouchPoint));
+            touch_event->changedTouchesLength * sizeof(blink::WebTouchPoint));
     }
     touch_event->touchesLength += touch_event->changedTouchesLength;
     modified_event = touch_event.get();
   }
 
-  if (WebKit::WebInputEvent::isKeyboardEventType(event.type) &&
+  if (blink::WebInputEvent::isKeyboardEventType(event.type) &&
       !edit_commands_.empty()) {
     browser_plugin_manager()->Send(
         new BrowserPluginHostMsg_SetEditCommandsForNextKeyEvent(
@@ -1228,11 +1228,11 @@ bool BrowserPlugin::handleInputEvent(const WebKit::WebInputEvent& event,
   return true;
 }
 
-bool BrowserPlugin::handleDragStatusUpdate(WebKit::WebDragStatus drag_status,
-                                           const WebKit::WebDragData& drag_data,
-                                           WebKit::WebDragOperationsMask mask,
-                                           const WebKit::WebPoint& position,
-                                           const WebKit::WebPoint& screen) {
+bool BrowserPlugin::handleDragStatusUpdate(blink::WebDragStatus drag_status,
+                                           const blink::WebDragData& drag_data,
+                                           blink::WebDragOperationsMask mask,
+                                           const blink::WebPoint& position,
+                                           const blink::WebPoint& screen) {
   if (guest_crashed_ || !HasGuestInstanceID())
     return false;
   browser_plugin_manager()->Send(
@@ -1247,7 +1247,7 @@ bool BrowserPlugin::handleDragStatusUpdate(WebKit::WebDragStatus drag_status,
 }
 
 void BrowserPlugin::didReceiveResponse(
-    const WebKit::WebURLResponse& response) {
+    const blink::WebURLResponse& response) {
 }
 
 void BrowserPlugin::didReceiveData(const char* data, int data_length) {
@@ -1256,20 +1256,20 @@ void BrowserPlugin::didReceiveData(const char* data, int data_length) {
 void BrowserPlugin::didFinishLoading() {
 }
 
-void BrowserPlugin::didFailLoading(const WebKit::WebURLError& error) {
+void BrowserPlugin::didFailLoading(const blink::WebURLError& error) {
 }
 
-void BrowserPlugin::didFinishLoadingFrameRequest(const WebKit::WebURL& url,
+void BrowserPlugin::didFinishLoadingFrameRequest(const blink::WebURL& url,
                                                  void* notify_data) {
 }
 
 void BrowserPlugin::didFailLoadingFrameRequest(
-    const WebKit::WebURL& url,
+    const blink::WebURL& url,
     void* notify_data,
-    const WebKit::WebURLError& error) {
+    const blink::WebURLError& error) {
 }
 
-bool BrowserPlugin::executeEditCommand(const WebKit::WebString& name) {
+bool BrowserPlugin::executeEditCommand(const blink::WebString& name) {
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_ExecuteEditCommand(
       render_view_routing_id_,
       guest_instance_id_,
@@ -1279,8 +1279,8 @@ bool BrowserPlugin::executeEditCommand(const WebKit::WebString& name) {
   return true;
 }
 
-bool BrowserPlugin::executeEditCommand(const WebKit::WebString& name,
-                                       const WebKit::WebString& value) {
+bool BrowserPlugin::executeEditCommand(const blink::WebString& name,
+                                       const blink::WebString& value) {
   edit_commands_.push_back(EditCommand(name.utf8(), value.utf8()));
   // BrowserPlugin swallows edit commands.
   return true;
@@ -1302,7 +1302,7 @@ void BrowserPlugin::OnMouseLockLost() {
 }
 
 bool BrowserPlugin::HandleMouseLockedInputEvent(
-    const WebKit::WebMouseEvent& event) {
+    const blink::WebMouseEvent& event) {
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_HandleInputEvent(render_view_routing_id_,
                                                 guest_instance_id_,

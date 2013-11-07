@@ -65,18 +65,18 @@ void CrashTab(WebContents* web_contents);
 // may contain bits from WebInputEvent::Modifiers.
 void SimulateMouseClick(WebContents* web_contents,
                         int modifiers,
-                        WebKit::WebMouseEvent::Button button);
+                        blink::WebMouseEvent::Button button);
 
 // Simulates clicking at the point |point| of the given tab asynchronously;
 // modifiers may contain bits from WebInputEvent::Modifiers.
 void SimulateMouseClickAt(WebContents* web_contents,
                           int modifiers,
-                          WebKit::WebMouseEvent::Button button,
+                          blink::WebMouseEvent::Button button,
                           const gfx::Point& point);
 
 // Simulates asynchronously a mouse enter/move/leave event.
 void SimulateMouseEvent(WebContents* web_contents,
-                        WebKit::WebInputEvent::Type type,
+                        blink::WebInputEvent::Type type,
                         const gfx::Point& point);
 
 // Sends a key press asynchronously.

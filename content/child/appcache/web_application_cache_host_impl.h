@@ -13,28 +13,28 @@
 #include "url/gurl.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
 }
 
 namespace content {
 
 class WebApplicationCacheHostImpl
-    : NON_EXPORTED_BASE(public WebKit::WebApplicationCacheHost) {
+    : NON_EXPORTED_BASE(public blink::WebApplicationCacheHost) {
  public:
   // Returns the host having given id or NULL if there is no such host.
   static WebApplicationCacheHostImpl* FromId(int id);
 
   // Returns the host associated with the current document in frame.
-  static WebApplicationCacheHostImpl* FromFrame(const WebKit::WebFrame* frame);
+  static WebApplicationCacheHostImpl* FromFrame(const blink::WebFrame* frame);
 
-  WebApplicationCacheHostImpl(WebKit::WebApplicationCacheHostClient* client,
+  WebApplicationCacheHostImpl(blink::WebApplicationCacheHostClient* client,
                               appcache::AppCacheBackend* backend);
   virtual ~WebApplicationCacheHostImpl();
 
   int host_id() const { return host_id_; }
   appcache::AppCacheBackend* backend() const { return backend_; }
-  WebKit::WebApplicationCacheHostClient* client() const { return client_; }
+  blink::WebApplicationCacheHostClient* client() const { return client_; }
 
   virtual void OnCacheSelected(const appcache::AppCacheInfo& info);
   void OnStatusChanged(appcache::Status);
@@ -45,19 +45,19 @@ class WebApplicationCacheHostImpl
                             const std::string& message) {}
   virtual void OnContentBlocked(const GURL& manifest_url) {}
 
-  // WebKit::WebApplicationCacheHost:
-  virtual void willStartMainResourceRequest(WebKit::WebURLRequest&,
-                                            const WebKit::WebFrame*);
-  virtual void willStartSubResourceRequest(WebKit::WebURLRequest&);
+  // blink::WebApplicationCacheHost:
+  virtual void willStartMainResourceRequest(blink::WebURLRequest&,
+                                            const blink::WebFrame*);
+  virtual void willStartSubResourceRequest(blink::WebURLRequest&);
   virtual void selectCacheWithoutManifest();
-  virtual bool selectCacheWithManifest(const WebKit::WebURL& manifestURL);
-  virtual void didReceiveResponseForMainResource(const WebKit::WebURLResponse&);
+  virtual bool selectCacheWithManifest(const blink::WebURL& manifestURL);
+  virtual void didReceiveResponseForMainResource(const blink::WebURLResponse&);
   virtual void didReceiveDataForMainResource(const char* data, int len);
   virtual void didFinishLoadingMainResource(bool success);
-  virtual WebKit::WebApplicationCacheHost::Status status();
+  virtual blink::WebApplicationCacheHost::Status status();
   virtual bool startUpdate();
   virtual bool swapCache();
-  virtual void getResourceList(WebKit::WebVector<ResourceInfo>* resources);
+  virtual void getResourceList(blink::WebVector<ResourceInfo>* resources);
   virtual void getAssociatedCacheInfo(CacheInfo* info);
 
  private:
@@ -67,11 +67,11 @@ class WebApplicationCacheHostImpl
     NO
   };
 
-  WebKit::WebApplicationCacheHostClient* client_;
+  blink::WebApplicationCacheHostClient* client_;
   appcache::AppCacheBackend* backend_;
   int host_id_;
   appcache::Status status_;
-  WebKit::WebURLResponse document_response_;
+  blink::WebURLResponse document_response_;
   GURL document_url_;
   bool is_scheme_supported_;
   bool is_get_method_;

@@ -11,10 +11,10 @@
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "third_party/libjingle/source/talk/p2p/client/basicportallocator.h"
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
 class WebURLLoader;
-}  // namespace WebKit
+}  // namespace blink
 
 namespace content {
 
@@ -54,7 +54,7 @@ class P2PPortAllocator : public cricket::BasicPortAllocator {
     bool disable_tcp_transport;
   };
 
-  P2PPortAllocator(WebKit::WebFrame* web_frame,
+  P2PPortAllocator(blink::WebFrame* web_frame,
                    P2PSocketDispatcher* socket_dispatcher,
                    talk_base::NetworkManager* network_manager,
                    talk_base::PacketSocketFactory* socket_factory,
@@ -70,7 +70,7 @@ class P2PPortAllocator : public cricket::BasicPortAllocator {
  private:
   friend class P2PPortAllocatorSession;
 
-  WebKit::WebFrame* web_frame_;
+  blink::WebFrame* web_frame_;
   P2PSocketDispatcher* socket_dispatcher_;
   Config config_;
 
@@ -78,7 +78,7 @@ class P2PPortAllocator : public cricket::BasicPortAllocator {
 };
 
 class P2PPortAllocatorSession : public cricket::BasicPortAllocatorSession,
-                                public WebKit::WebURLLoaderClient  {
+                                public blink::WebURLLoaderClient  {
  public:
   P2PPortAllocatorSession(
       P2PPortAllocator* allocator,
@@ -88,15 +88,15 @@ class P2PPortAllocatorSession : public cricket::BasicPortAllocatorSession,
       const std::string& ice_password);
   virtual ~P2PPortAllocatorSession();
 
-  // WebKit::WebURLLoaderClient overrides.
-  virtual void didReceiveData(WebKit::WebURLLoader* loader,
+  // blink::WebURLLoaderClient overrides.
+  virtual void didReceiveData(blink::WebURLLoader* loader,
                               const char* data,
                               int data_length,
                               int encoded_data_length) OVERRIDE;
-  virtual void didFinishLoading(WebKit::WebURLLoader* loader,
+  virtual void didFinishLoading(blink::WebURLLoader* loader,
                                 double finish_time) OVERRIDE;
-  virtual void didFail(WebKit::WebURLLoader* loader,
-                       const WebKit::WebURLError& error) OVERRIDE;
+  virtual void didFail(blink::WebURLLoader* loader,
+                       const blink::WebURLError& error) OVERRIDE;
 
  protected:
   // Overrides for cricket::BasicPortAllocatorSession.
@@ -134,7 +134,7 @@ class P2PPortAllocatorSession : public cricket::BasicPortAllocatorSession,
 
   std::vector<RelayServer> relay_info_;
 
-  scoped_ptr<WebKit::WebURLLoader> relay_session_request_;
+  scoped_ptr<blink::WebURLLoader> relay_session_request_;
   int relay_session_attempts_;
   std::string relay_session_response_;
   talk_base::SocketAddress relay_ip_;

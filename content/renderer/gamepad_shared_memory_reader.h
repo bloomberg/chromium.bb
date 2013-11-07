@@ -17,7 +17,7 @@ class GamepadSharedMemoryReader {
  public:
   GamepadSharedMemoryReader();
   virtual ~GamepadSharedMemoryReader();
-  void SampleGamepads(WebKit::WebGamepads&);
+  void SampleGamepads(blink::WebGamepads&);
 
  private:
   base::SharedMemoryHandle renderer_shared_memory_handle_;

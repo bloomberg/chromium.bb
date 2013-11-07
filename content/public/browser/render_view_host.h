@@ -35,7 +35,7 @@ namespace ui {
 struct SelectedFileInfo;
 }
 
-namespace WebKit {
+namespace blink {
 struct WebFindOptions;
 struct WebMediaPlayerAction;
 struct WebPluginAction;
@@ -120,7 +120,7 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   // either in a drop or by being cancelled.
   virtual void DragSourceEndedAt(
       int client_x, int client_y, int screen_x, int screen_y,
-      WebKit::WebDragOperation operation) = 0;
+      blink::WebDragOperation operation) = 0;
 
   // Notifies the renderer that a drag and drop operation is in progress, with
   // droppable items positioned over the renderer's view.
@@ -136,12 +136,12 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
       const DropData& drop_data,
       const gfx::Point& client_pt,
       const gfx::Point& screen_pt,
-      WebKit::WebDragOperationsMask operations_allowed,
+      blink::WebDragOperationsMask operations_allowed,
       int key_modifiers) = 0;
   virtual void DragTargetDragOver(
       const gfx::Point& client_pt,
       const gfx::Point& screen_pt,
-      WebKit::WebDragOperationsMask operations_allowed,
+      blink::WebDragOperationsMask operations_allowed,
       int key_modifiers) = 0;
   virtual void DragTargetDragLeave() = 0;
   virtual void DragTargetDrop(const gfx::Point& client_pt,
@@ -167,7 +167,7 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   // located at the given point.
   virtual void ExecuteMediaPlayerActionAtLocation(
       const gfx::Point& location,
-      const WebKit::WebMediaPlayerAction& action) = 0;
+      const blink::WebMediaPlayerAction& action) = 0;
 
   // Runs some javascript within the context of a frame in the page.
   virtual void ExecuteJavascriptInWebFrame(const string16& frame_xpath,
@@ -184,14 +184,14 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   // Tells the renderer to perform the given action on the plugin located at
   // the given point.
   virtual void ExecutePluginActionAtLocation(
-      const gfx::Point& location, const WebKit::WebPluginAction& action) = 0;
+      const gfx::Point& location, const blink::WebPluginAction& action) = 0;
 
   // Asks the renderer to exit fullscreen
   virtual void ExitFullscreen() = 0;
 
   // Finds text on a page.
   virtual void Find(int request_id, const string16& search_text,
-                    const WebKit::WebFindOptions& options) = 0;
+                    const blink::WebFindOptions& options) = 0;
 
   // Notifies the renderer that the user has closed the FindInPage window
   // (and what action to take regarding the selection).

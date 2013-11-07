@@ -22,7 +22,7 @@
 namespace content {
 
 class PepperFileChooserHost::CompletionHandler
-    : public WebKit::WebFileChooserCompletion {
+    : public blink::WebFileChooserCompletion {
  public:
   CompletionHandler(const base::WeakPtr<PepperFileChooserHost>& host)
       : host_(host) {
@@ -31,7 +31,7 @@ class PepperFileChooserHost::CompletionHandler
   virtual ~CompletionHandler() {}
 
   virtual void didChooseFile(
-      const WebKit::WebVector<WebKit::WebString>& file_names) {
+      const blink::WebVector<blink::WebString>& file_names) {
     if (host_.get()) {
       std::vector<PepperFileChooserHost::ChosenFileInfo> files;
       for (size_t i = 0; i < file_names.size(); i++) {
@@ -45,7 +45,7 @@ class PepperFileChooserHost::CompletionHandler
     delete this;
   }
   virtual void didChooseFile(
-      const WebKit::WebVector<SelectedFileInfo>& file_names) {
+      const blink::WebVector<SelectedFileInfo>& file_names) {
     if (host_.get()) {
       std::vector<PepperFileChooserHost::ChosenFileInfo> files;
       for (size_t i = 0; i < file_names.size(); i++) {
@@ -145,17 +145,17 @@ int32_t PepperFileChooserHost::OnShow(
     return PP_ERROR_NO_USER_GESTURE;
   }
 
-  WebKit::WebFileChooserParams params;
+  blink::WebFileChooserParams params;
   if (save_as) {
     params.saveAs = true;
-    params.initialValue = WebKit::WebString::fromUTF8(
+    params.initialValue = blink::WebString::fromUTF8(
         suggested_file_name.data(), suggested_file_name.size());
   } else {
     params.multiSelect = open_multiple;
   }
-  std::vector<WebKit::WebString> mine_types(accept_mime_types.size());
+  std::vector<blink::WebString> mine_types(accept_mime_types.size());
   for (size_t i = 0; i < accept_mime_types.size(); i++) {
-    mine_types[i] = WebKit::WebString::fromUTF8(
+    mine_types[i] = blink::WebString::fromUTF8(
         accept_mime_types[i].data(), accept_mime_types[i].size());
   }
   params.acceptTypes = mine_types;

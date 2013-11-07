@@ -14,7 +14,7 @@ namespace content {
 // Interface to get WebMediaStream from its url.
 class MediaStreamRegistryInterface {
  public:
-  virtual WebKit::WebMediaStream GetMediaStream(const std::string& url) = 0;
+  virtual blink::WebMediaStream GetMediaStream(const std::string& url) = 0;
 
  protected:
   virtual ~MediaStreamRegistryInterface() {}

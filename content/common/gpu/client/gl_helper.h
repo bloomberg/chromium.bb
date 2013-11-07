@@ -34,8 +34,8 @@ class GLHelperScaling;
 
 class ScopedWebGLId {
  public:
-  typedef void (WebKit::WebGraphicsContext3D::*DeleteFunc)(WebGLId);
-  ScopedWebGLId(WebKit::WebGraphicsContext3D* context,
+  typedef void (blink::WebGraphicsContext3D::*DeleteFunc)(WebGLId);
+  ScopedWebGLId(blink::WebGraphicsContext3D* context,
                 WebGLId id,
                 DeleteFunc delete_func)
       : context_(context),
@@ -62,7 +62,7 @@ class ScopedWebGLId {
   }
 
  private:
-  WebKit::WebGraphicsContext3D* context_;
+  blink::WebGraphicsContext3D* context_;
   WebGLId id_;
   DeleteFunc delete_func_;
 
@@ -71,55 +71,55 @@ class ScopedWebGLId {
 
 class ScopedBuffer : public ScopedWebGLId {
  public:
-  ScopedBuffer(WebKit::WebGraphicsContext3D* context,
+  ScopedBuffer(blink::WebGraphicsContext3D* context,
                WebGLId id)
       : ScopedWebGLId(context,
                       id,
-                      &WebKit::WebGraphicsContext3D::deleteBuffer) {}
+                      &blink::WebGraphicsContext3D::deleteBuffer) {}
 };
 
 class ScopedFramebuffer : public ScopedWebGLId {
  public:
-  ScopedFramebuffer(WebKit::WebGraphicsContext3D* context,
+  ScopedFramebuffer(blink::WebGraphicsContext3D* context,
                     WebGLId id)
       : ScopedWebGLId(context,
                       id,
-                      &WebKit::WebGraphicsContext3D::deleteFramebuffer) {}
+                      &blink::WebGraphicsContext3D::deleteFramebuffer) {}
 };
 
 class ScopedProgram : public ScopedWebGLId {
  public:
-  ScopedProgram(WebKit::WebGraphicsContext3D* context,
+  ScopedProgram(blink::WebGraphicsContext3D* context,
                 WebGLId id)
       : ScopedWebGLId(context,
                       id,
-                      &WebKit::WebGraphicsContext3D::deleteProgram) {}
+                      &blink::WebGraphicsContext3D::deleteProgram) {}
 };
 
 class ScopedShader : public ScopedWebGLId {
  public:
-  ScopedShader(WebKit::WebGraphicsContext3D* context,
+  ScopedShader(blink::WebGraphicsContext3D* context,
                WebGLId id)
       : ScopedWebGLId(context,
                       id,
-                      &WebKit::WebGraphicsContext3D::deleteShader) {}
+                      &blink::WebGraphicsContext3D::deleteShader) {}
 };
 
 class ScopedTexture : public ScopedWebGLId {
  public:
-  ScopedTexture(WebKit::WebGraphicsContext3D* context,
+  ScopedTexture(blink::WebGraphicsContext3D* context,
                 WebGLId id)
       : ScopedWebGLId(context,
                       id,
-                      &WebKit::WebGraphicsContext3D::deleteTexture) {}
+                      &blink::WebGraphicsContext3D::deleteTexture) {}
 };
 
-template <WebKit::WGC3Denum target>
+template <blink::WGC3Denum target>
 class ScopedBinder {
  public:
-  typedef void (WebKit::WebGraphicsContext3D::*BindFunc)(WebKit::WGC3Denum,
+  typedef void (blink::WebGraphicsContext3D::*BindFunc)(blink::WGC3Denum,
                                                          WebGLId);
-  ScopedBinder(WebKit::WebGraphicsContext3D* context,
+  ScopedBinder(blink::WebGraphicsContext3D* context,
                WebGLId id,
                BindFunc bind_func)
       : context_(context),
@@ -132,48 +132,48 @@ class ScopedBinder {
   }
 
  private:
-  WebKit::WebGraphicsContext3D* context_;
+  blink::WebGraphicsContext3D* context_;
   BindFunc bind_func_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedBinder);
 };
 
-template <WebKit::WGC3Denum target>
+template <blink::WGC3Denum target>
 class ScopedBufferBinder : ScopedBinder<target> {
  public:
-  ScopedBufferBinder(WebKit::WebGraphicsContext3D* context,
+  ScopedBufferBinder(blink::WebGraphicsContext3D* context,
                      WebGLId id)
       : ScopedBinder<target>(
           context,
           id,
-          &WebKit::WebGraphicsContext3D::bindBuffer) {}
+          &blink::WebGraphicsContext3D::bindBuffer) {}
 };
 
-template <WebKit::WGC3Denum target>
+template <blink::WGC3Denum target>
 class ScopedFramebufferBinder : ScopedBinder<target> {
  public:
-  ScopedFramebufferBinder(WebKit::WebGraphicsContext3D* context,
+  ScopedFramebufferBinder(blink::WebGraphicsContext3D* context,
                           WebGLId id)
       : ScopedBinder<target>(
           context,
           id,
-          &WebKit::WebGraphicsContext3D::bindFramebuffer) {}
+          &blink::WebGraphicsContext3D::bindFramebuffer) {}
 };
 
-template <WebKit::WGC3Denum target>
+template <blink::WGC3Denum target>
 class ScopedTextureBinder : ScopedBinder<target> {
  public:
-  ScopedTextureBinder(WebKit::WebGraphicsContext3D* context,
+  ScopedTextureBinder(blink::WebGraphicsContext3D* context,
                       WebGLId id)
       : ScopedBinder<target>(
           context,
           id,
-          &WebKit::WebGraphicsContext3D::bindTexture) {}
+          &blink::WebGraphicsContext3D::bindTexture) {}
 };
 
 class ScopedFlush {
  public:
-  explicit ScopedFlush(WebKit::WebGraphicsContext3D* context)
+  explicit ScopedFlush(blink::WebGraphicsContext3D* context)
       : context_(context) {
   }
 
@@ -182,7 +182,7 @@ class ScopedFlush {
   }
 
  private:
-  WebKit::WebGraphicsContext3D* context_;
+  blink::WebGraphicsContext3D* context_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedFlush);
 };
@@ -190,11 +190,11 @@ class ScopedFlush {
 
 class ReadbackYUVInterface;
 
-// Provides higher level operations on top of the WebKit::WebGraphicsContext3D
+// Provides higher level operations on top of the blink::WebGraphicsContext3D
 // interfaces.
 class CONTENT_EXPORT GLHelper {
  public:
-  GLHelper(WebKit::WebGraphicsContext3D* context,
+  GLHelper(blink::WebGraphicsContext3D* context,
            gpu::ContextSupport* context_support);
   ~GLHelper();
 
@@ -224,7 +224,7 @@ class CONTENT_EXPORT GLHelper {
   // Note that the src_texture will have the min/mag filter set to GL_LINEAR
   // and wrap_s/t set to CLAMP_TO_EDGE in this call.
   void CropScaleReadbackAndCleanTexture(
-      WebKit::WebGLId src_texture,
+      blink::WebGLId src_texture,
       const gfx::Size& src_size,
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
@@ -254,55 +254,55 @@ class CONTENT_EXPORT GLHelper {
   // texture is assumed to have a format of GL_RGBA with a pixel type of
   // GL_UNSIGNED_BYTE.  This is a blocking call that calls glReadPixels on this
   // current context.
-  void ReadbackTextureSync(WebKit::WebGLId texture,
+  void ReadbackTextureSync(blink::WebGLId texture,
                            const gfx::Rect& src_rect,
                            unsigned char* out);
 
   // Creates a copy of the specified texture. |size| is the size of the texture.
   // Note that the src_texture will have the min/mag filter set to GL_LINEAR
   // and wrap_s/t set to CLAMP_TO_EDGE in this call.
-  WebKit::WebGLId CopyTexture(WebKit::WebGLId texture,
+  blink::WebGLId CopyTexture(blink::WebGLId texture,
                               const gfx::Size& size);
 
   // Creates a scaled copy of the specified texture. |src_size| is the size of
   // the texture and |dst_size| is the size of the resulting copy.
   // Note that the src_texture will have the min/mag filter set to GL_LINEAR
   // and wrap_s/t set to CLAMP_TO_EDGE in this call.
-  WebKit::WebGLId CopyAndScaleTexture(
-      WebKit::WebGLId texture,
+  blink::WebGLId CopyAndScaleTexture(
+      blink::WebGLId texture,
       const gfx::Size& src_size,
       const gfx::Size& dst_size,
       bool vertically_flip_texture,
       ScalerQuality quality);
 
   // Returns the shader compiled from the source.
-  WebKit::WebGLId CompileShaderFromSource(const WebKit::WGC3Dchar* source,
-                                          WebKit::WGC3Denum type);
+  blink::WebGLId CompileShaderFromSource(const blink::WGC3Dchar* source,
+                                          blink::WGC3Denum type);
 
   // Copies all pixels from |previous_texture| into |texture| that are
   // inside the region covered by |old_damage| but not part of |new_damage|.
-  void CopySubBufferDamage(WebKit::WebGLId texture,
-                           WebKit::WebGLId previous_texture,
+  void CopySubBufferDamage(blink::WebGLId texture,
+                           blink::WebGLId previous_texture,
                            const SkRegion& new_damage,
                            const SkRegion& old_damage);
 
   // Simply creates a texture.
-  WebKit::WebGLId CreateTexture();
+  blink::WebGLId CreateTexture();
 
   // Creates a texture and consumes a mailbox into it. Returns 0 on failure.
   // Note the mailbox is assumed to be GL_TEXTURE_2D.
-  WebKit::WebGLId ConsumeMailboxToTexture(const gpu::Mailbox& mailbox,
+  blink::WebGLId ConsumeMailboxToTexture(const gpu::Mailbox& mailbox,
                                           uint32 sync_point);
 
   // Resizes the texture's size to |size|.
-  void ResizeTexture(WebKit::WebGLId texture, const gfx::Size& size);
+  void ResizeTexture(blink::WebGLId texture, const gfx::Size& size);
 
   // Copies the framebuffer data given in |rect| to |texture|.
-  void CopyTextureSubImage(WebKit::WebGLId texture, const gfx::Rect& rect);
+  void CopyTextureSubImage(blink::WebGLId texture, const gfx::Rect& rect);
 
   // Copies the all framebuffer data to |texture|. |size| specifies the
   // size of the framebuffer.
-  void CopyTextureFullImage(WebKit::WebGLId texture, const gfx::Size& size);
+  void CopyTextureFullImage(blink::WebGLId texture, const gfx::Size& size);
 
   // A scaler will cache all intermediate textures and programs
   // needed to scale from a specified size to a destination size.
@@ -315,8 +315,8 @@ class CONTENT_EXPORT GLHelper {
 
     // Note that the src_texture will have the min/mag filter set to GL_LINEAR
     // and wrap_s/t set to CLAMP_TO_EDGE in this call.
-    virtual void Scale(WebKit::WebGLId source_texture,
-                       WebKit::WebGLId dest_texture) = 0;
+    virtual void Scale(blink::WebGLId source_texture,
+                       blink::WebGLId dest_texture) = 0;
     virtual const gfx::Size& SrcSize() = 0;
     virtual const gfx::Rect& SrcSubrect() = 0;
     virtual const gfx::Size& DstSize() = 0;
@@ -352,7 +352,7 @@ class CONTENT_EXPORT GLHelper {
 
   // Returns the maximum number of draw buffers available,
   // 0 if GL_EXT_draw_buffers is not available.
-  WebKit::WGC3Dint MaxDrawBuffers();
+  blink::WGC3Dint MaxDrawBuffers();
 
  protected:
   class CopyTextureToImpl;
@@ -362,7 +362,7 @@ class CONTENT_EXPORT GLHelper {
   // Creates |scaler_impl_| if NULL.
   void InitScalerImpl();
 
-  WebKit::WebGraphicsContext3D* context_;
+  blink::WebGraphicsContext3D* context_;
   gpu::ContextSupport* context_support_;
   scoped_ptr<CopyTextureToImpl> copy_texture_to_impl_;
   scoped_ptr<GLHelperScaling> scaler_impl_;

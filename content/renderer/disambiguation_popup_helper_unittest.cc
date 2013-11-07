@@ -33,7 +33,7 @@ class DisambiguationPopupHelperUnittest : public testing::Test {
 
 TEST_F(DisambiguationPopupHelperUnittest, ClipByViewport) {
   gfx::Rect tap_rect(1000, 1000, 10, 10);
-  WebKit::WebVector<WebKit::WebRect> target_rects(static_cast<size_t>(1));
+  blink::WebVector<blink::WebRect> target_rects(static_cast<size_t>(1));
   target_rects[0] = gfx::Rect(-20, -20, 10, 10);
 
   gfx::Rect zoom_rect;
@@ -50,7 +50,7 @@ TEST_F(DisambiguationPopupHelperUnittest, ClipByViewport) {
 
 TEST_F(DisambiguationPopupHelperUnittest, MiniTarget) {
   gfx::Rect tap_rect(-5, -5, 20, 20);
-  WebKit::WebVector<WebKit::WebRect> target_rects(static_cast<size_t>(1));
+  blink::WebVector<blink::WebRect> target_rects(static_cast<size_t>(1));
   target_rects[0] = gfx::Rect(10, 10, 1, 1);
 
   gfx::Rect zoom_rect;
@@ -68,7 +68,7 @@ TEST_F(DisambiguationPopupHelperUnittest, MiniTarget) {
 
 TEST_F(DisambiguationPopupHelperUnittest, LongLinks) {
   gfx::Rect tap_rect(10, 10, 20, 20);
-  WebKit::WebVector<WebKit::WebRect> target_rects(static_cast<size_t>(2));
+  blink::WebVector<blink::WebRect> target_rects(static_cast<size_t>(2));
   target_rects[0] = gfx::Rect(15, 15, 1000, 5);
   target_rects[1] = gfx::Rect(15, 25, 1000, 5);
 

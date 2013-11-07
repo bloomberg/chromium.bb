@@ -68,7 +68,7 @@ class WebPluginDelegateProxy
   virtual void DidFinishLoadWithReason(const GURL& url, NPReason reason,
                                        int notify_id) OVERRIDE;
   virtual void SetFocus(bool focused) OVERRIDE;
-  virtual bool HandleInputEvent(const WebKit::WebInputEvent& event,
+  virtual bool HandleInputEvent(const blink::WebInputEvent& event,
                                 WebCursor::CursorInfo* cursor) OVERRIDE;
   virtual int GetProcessId() OVERRIDE;
 

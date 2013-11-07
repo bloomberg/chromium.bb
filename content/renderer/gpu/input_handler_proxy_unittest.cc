@@ -16,14 +16,14 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/latency_info.h"
 
-using WebKit::WebActiveWheelFlingParameters;
-using WebKit::WebFloatPoint;
-using WebKit::WebFloatSize;
-using WebKit::WebGestureEvent;
-using WebKit::WebInputEvent;
-using WebKit::WebMouseWheelEvent;
-using WebKit::WebPoint;
-using WebKit::WebSize;
+using blink::WebActiveWheelFlingParameters;
+using blink::WebFloatPoint;
+using blink::WebFloatSize;
+using blink::WebGestureEvent;
+using blink::WebInputEvent;
+using blink::WebMouseWheelEvent;
+using blink::WebPoint;
+using blink::WebSize;
 
 namespace content {
 namespace {
@@ -79,18 +79,18 @@ class MockInputHandler : public cc::InputHandler {
 
 // A simple WebGestureCurve implementation that flings at a constant velocity
 // indefinitely.
-class FakeWebGestureCurve : public WebKit::WebGestureCurve {
+class FakeWebGestureCurve : public blink::WebGestureCurve {
  public:
-  FakeWebGestureCurve(const WebKit::WebFloatPoint& velocity,
-                      const WebKit::WebSize& cumulative_scroll)
+  FakeWebGestureCurve(const blink::WebFloatPoint& velocity,
+                      const blink::WebSize& cumulative_scroll)
       : velocity_(velocity), cumulative_scroll_(cumulative_scroll) {}
 
   virtual ~FakeWebGestureCurve() {}
 
   // Returns false if curve has finished and can no longer be applied.
-  virtual bool apply(double time, WebKit::WebGestureCurveTarget* target) {
-    WebKit::WebSize displacement(velocity_.x * time, velocity_.y * time);
-    WebKit::WebFloatSize increment(
+  virtual bool apply(double time, blink::WebGestureCurveTarget* target) {
+    blink::WebSize displacement(velocity_.x * time, velocity_.y * time);
+    blink::WebFloatSize increment(
         displacement.width - cumulative_scroll_.width,
         displacement.height - cumulative_scroll_.height);
     cumulative_scroll_ = displacement;
@@ -101,8 +101,8 @@ class FakeWebGestureCurve : public WebKit::WebGestureCurve {
   }
 
  private:
-  WebKit::WebFloatPoint velocity_;
-  WebKit::WebSize cumulative_scroll_;
+  blink::WebFloatPoint velocity_;
+  blink::WebSize cumulative_scroll_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeWebGestureCurve);
 };
@@ -118,7 +118,7 @@ class MockInputHandlerProxyClient
   MOCK_METHOD1(TransferActiveWheelFlingAnimation,
                void(const WebActiveWheelFlingParameters&));
 
-  virtual WebKit::WebGestureCurve* CreateFlingAnimationCurve(
+  virtual blink::WebGestureCurve* CreateFlingAnimationCurve(
       int deviceSource,
       const WebFloatPoint& velocity,
       const WebSize& cumulative_scroll) OVERRIDE {

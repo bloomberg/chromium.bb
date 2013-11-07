@@ -5,11 +5,11 @@
 #ifndef CONTENT_RENDERER_PEPPER_PPB_FULLSCREEN_CONTAINER_IMPL_H_
 #define CONTENT_RENDERER_PEPPER_PPB_FULLSCREEN_CONTAINER_IMPL_H_
 
-namespace WebKit {
+namespace blink {
 class WebLayer;
 struct WebCursorInfo;
 struct WebRect;
-}  // namespace WebKit
+}  // namespace blink
 
 namespace content {
 
@@ -21,19 +21,19 @@ class FullscreenContainer {
   virtual void Invalidate() = 0;
 
   // Invalidates a partial region of the plugin.
-  virtual void InvalidateRect(const WebKit::WebRect&) = 0;
+  virtual void InvalidateRect(const blink::WebRect&) = 0;
 
   // Scrolls a partial region of the plugin in the given direction.
-  virtual void ScrollRect(int dx, int dy, const WebKit::WebRect&) = 0;
+  virtual void ScrollRect(int dx, int dy, const blink::WebRect&) = 0;
 
   // Destroys the fullscreen window. This also destroys the FullscreenContainer
   // instance.
   virtual void Destroy() = 0;
 
   // Notifies the container that the mouse cursor has changed.
-  virtual void DidChangeCursor(const WebKit::WebCursorInfo& cursor) = 0;
+  virtual void DidChangeCursor(const blink::WebCursorInfo& cursor) = 0;
 
-  virtual void SetLayer(WebKit::WebLayer* layer) = 0;
+  virtual void SetLayer(blink::WebLayer* layer) = 0;
 
  protected:
   virtual ~FullscreenContainer() {}

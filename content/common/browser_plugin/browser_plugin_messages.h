@@ -35,7 +35,7 @@
 #define IPC_MESSAGE_START BrowserPluginMsgStart
 
 
-IPC_ENUM_TRAITS(WebKit::WebDragStatus)
+IPC_ENUM_TRAITS(blink::WebDragStatus)
 
 IPC_STRUCT_BEGIN(BrowserPluginHostMsg_AutoSize_Params)
   IPC_STRUCT_MEMBER(bool, enable)
@@ -232,9 +232,9 @@ IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SetVisibility,
 // Tells the guest that a drag event happened on the plugin.
 IPC_MESSAGE_ROUTED5(BrowserPluginHostMsg_DragStatusUpdate,
                     int /* instance_id */,
-                    WebKit::WebDragStatus /* drag_status */,
+                    blink::WebDragStatus /* drag_status */,
                     content::DropData /* drop_data */,
-                    WebKit::WebDragOperationsMask /* operation_mask */,
+                    blink::WebDragOperationsMask /* operation_mask */,
                     gfx::Point /* plugin_location */)
 
 // Response to BrowserPluginMsg_PluginAtPositionRequest, returns the browser

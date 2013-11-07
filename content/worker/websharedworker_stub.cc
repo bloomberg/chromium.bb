@@ -36,7 +36,7 @@ WebSharedWorkerStub::WebSharedWorkerStub(
   ChildProcess::current()->AddRefProcess();
 
   // TODO(atwilson): Add support for NaCl when they support MessagePorts.
-  impl_ = WebKit::WebSharedWorker::create(client());
+  impl_ = blink::WebSharedWorker::create(client());
   worker_devtools_agent_.reset(new SharedWorkerDevToolsAgent(route_id, impl_));
   client()->set_devtools_agent(worker_devtools_agent_.get());
 }
@@ -85,7 +85,7 @@ const GURL& WebSharedWorkerStub::url() {
 void WebSharedWorkerStub::OnStartWorkerContext(
     const GURL& url, const string16& user_agent, const string16& source_code,
     const string16& content_security_policy,
-    WebKit::WebContentSecurityPolicyType policy_type) {
+    blink::WebContentSecurityPolicyType policy_type) {
   // Ignore multiple attempts to start this worker (can happen if two pages
   // try to start it simultaneously).
   if (started_)
@@ -107,7 +107,7 @@ void WebSharedWorkerStub::OnStartWorkerContext(
 
 void WebSharedWorkerStub::OnConnect(int sent_message_port_id, int routing_id) {
   if (started_) {
-    WebKit::WebMessagePortChannel* channel =
+    blink::WebMessagePortChannel* channel =
         new WebMessagePortChannelImpl(routing_id,
                                       sent_message_port_id,
                                       base::MessageLoopProxy::current().get());

@@ -10,8 +10,8 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebSharedWorker.h"
 
-using WebKit::WebSharedWorker;
-using WebKit::WebString;
+using blink::WebSharedWorker;
+using blink::WebString;
 
 namespace content {
 
@@ -44,14 +44,14 @@ bool SharedWorkerDevToolsAgent::OnMessageReceived(const IPC::Message& message) {
 }
 
 void SharedWorkerDevToolsAgent::SendDevToolsMessage(
-    const WebKit::WebString& message) {
+    const blink::WebString& message) {
     Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(
         route_id_,
         message.utf8()));
 }
 
 void SharedWorkerDevToolsAgent::SaveDevToolsAgentState(
-    const WebKit::WebString& state) {
+    const blink::WebString& state) {
   Send(new DevToolsHostMsg_SaveAgentRuntimeState(route_id_,
                                                  state.utf8()));
 }

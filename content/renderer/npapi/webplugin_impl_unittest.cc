@@ -9,9 +9,9 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 
-using WebKit::WebHTTPBody;
-using WebKit::WebString;
-using WebKit::WebURLRequest;
+using blink::WebHTTPBody;
+using blink::WebString;
+using blink::WebURLRequest;
 
 namespace content {
 

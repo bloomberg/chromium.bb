@@ -27,20 +27,20 @@ class MediaSourceCreatedObserver {
   }
 
   void OnCreateNativeSourcesComplete(
-      WebKit::WebMediaStream* description,
+      blink::WebMediaStream* description,
       bool request_succeeded) {
     result_ = request_succeeded;
     description_ = description;
   }
 
-  WebKit::WebMediaStream* description() const {
+  blink::WebMediaStream* description() const {
     return description_;
   }
   bool result() const { return result_; }
 
  private:
   bool result_;
-  WebKit::WebMediaStream* description_;
+  blink::WebMediaStream* description_;
 };
 
 class MediaStreamDependencyFactoryTest : public ::testing::Test {
@@ -49,10 +49,10 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
     dependency_factory_.reset(new MockMediaStreamDependencyFactory());
   }
 
-  WebKit::WebMediaStream CreateWebKitMediaStream(bool audio, bool video) {
-    WebKit::WebVector<WebKit::WebMediaStreamSource> audio_sources(
+  blink::WebMediaStream CreateWebKitMediaStream(bool audio, bool video) {
+    blink::WebVector<blink::WebMediaStreamSource> audio_sources(
         audio ? static_cast<size_t>(1) : 0);
-    WebKit::WebVector<WebKit::WebMediaStreamSource> video_sources(
+    blink::WebVector<blink::WebMediaStreamSource> video_sources(
         video ? static_cast<size_t>(1) : 0);
     MediaStreamSourceExtraData::SourceStopCallback dummy_callback;
 
@@ -62,7 +62,7 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
       info.device.name = "audio";
       info.session_id = 99;
       audio_sources[0].initialize("audio",
-                                  WebKit::WebMediaStreamSource::TypeAudio,
+                                  blink::WebMediaStreamSource::TypeAudio,
                                   "audio");
       audio_sources[0].setExtraData(
           new MediaStreamSourceExtraData(info, dummy_callback));
@@ -74,21 +74,21 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
       info.device.name = "video";
       info.session_id = 98;
       video_sources[0].initialize("video",
-                                  WebKit::WebMediaStreamSource::TypeVideo,
+                                  blink::WebMediaStreamSource::TypeVideo,
                                   "video");
       video_sources[0].setExtraData(
           new MediaStreamSourceExtraData(info, dummy_callback));
       video_sources_.assign(video_sources);
     }
-    WebKit::WebMediaStream stream_desc;
-    WebKit::WebVector<WebKit::WebMediaStreamTrack> audio_track_vector(
+    blink::WebMediaStream stream_desc;
+    blink::WebVector<blink::WebMediaStreamTrack> audio_track_vector(
         audio_sources.size());
     for (size_t i = 0; i < audio_track_vector.size(); ++i) {
       audio_track_vector[i].initialize(audio_sources[i].id(),
                                        audio_sources[i]);
     }
 
-    WebKit::WebVector<WebKit::WebMediaStreamTrack> video_track_vector(
+    blink::WebVector<blink::WebMediaStreamTrack> video_track_vector(
         video_sources.size());
     for (size_t i = 0; i < video_track_vector.size(); ++i) {
       video_track_vector[i].initialize(video_sources[i].id(),
@@ -100,15 +100,15 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
     return stream_desc;
   }
 
-  void CreateNativeSources(WebKit::WebMediaStream* descriptor) {
+  void CreateNativeSources(blink::WebMediaStream* descriptor) {
     static const int kRenderViewId = 1;
 
     MediaSourceCreatedObserver observer;
-    WebKit::WebMediaConstraints audio_constraints;
+    blink::WebMediaConstraints audio_constraints;
     dependency_factory_->CreateNativeMediaSources(
         kRenderViewId,
-        WebKit::WebMediaConstraints(),
-        WebKit::WebMediaConstraints(),
+        blink::WebMediaConstraints(),
+        blink::WebMediaConstraints(),
         descriptor,
         base::Bind(
             &MediaSourceCreatedObserver::OnCreateNativeSourcesComplete,
@@ -125,7 +125,7 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
     EXPECT_TRUE(observer.description() == descriptor);
   }
 
-  void VerifyMediaStream(const WebKit::WebMediaStream& stream_desc,
+  void VerifyMediaStream(const blink::WebMediaStream& stream_desc,
                          size_t num_audio_tracks,
                          size_t num_video_tracks) {
     content::MediaStreamExtraData* extra_data =
@@ -138,19 +138,19 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
 
  protected:
   scoped_ptr<MockMediaStreamDependencyFactory> dependency_factory_;
-  WebKit::WebVector<WebKit::WebMediaStreamSource> audio_sources_;
-  WebKit::WebVector<WebKit::WebMediaStreamSource> video_sources_;
+  blink::WebVector<blink::WebMediaStreamSource> audio_sources_;
+  blink::WebVector<blink::WebMediaStreamSource> video_sources_;
 };
 
 TEST_F(MediaStreamDependencyFactoryTest, CreateRTCPeerConnectionHandler) {
   MockWebRTCPeerConnectionHandlerClient client_jsep;
-  scoped_ptr<WebKit::WebRTCPeerConnectionHandler> pc_handler(
+  scoped_ptr<blink::WebRTCPeerConnectionHandler> pc_handler(
       dependency_factory_->CreateRTCPeerConnectionHandler(&client_jsep));
   EXPECT_TRUE(pc_handler.get() != NULL);
 }
 
 TEST_F(MediaStreamDependencyFactoryTest, CreateNativeMediaStream) {
-  WebKit::WebMediaStream stream_desc = CreateWebKitMediaStream(true, true);
+  blink::WebMediaStream stream_desc = CreateWebKitMediaStream(true, true);
   CreateNativeSources(&stream_desc);
 
   dependency_factory_->CreateNativeLocalMediaStream(&stream_desc);
@@ -162,23 +162,23 @@ TEST_F(MediaStreamDependencyFactoryTest, CreateNativeMediaStream) {
 // remote tracks.
 TEST_F(MediaStreamDependencyFactoryTest, CreateNativeMediaStreamWithoutSource) {
   // Create a WebKit MediaStream description.
-  WebKit::WebMediaStreamSource audio_source;
+  blink::WebMediaStreamSource audio_source;
   audio_source.initialize("audio source",
-                          WebKit::WebMediaStreamSource::TypeAudio,
+                          blink::WebMediaStreamSource::TypeAudio,
                           "something");
-  WebKit::WebMediaStreamSource video_source;
+  blink::WebMediaStreamSource video_source;
   video_source.initialize("video source",
-                          WebKit::WebMediaStreamSource::TypeVideo,
+                          blink::WebMediaStreamSource::TypeVideo,
                           "something");
 
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> audio_tracks(
+  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks(
       static_cast<size_t>(1));
   audio_tracks[0].initialize(audio_source.id(), audio_source);
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> video_tracks(
+  blink::WebVector<blink::WebMediaStreamTrack> video_tracks(
       static_cast<size_t>(1));
   video_tracks[0].initialize(video_source.id(), video_source);
 
-  WebKit::WebMediaStream stream_desc;
+  blink::WebMediaStream stream_desc;
   stream_desc.initialize("new stream", audio_tracks, video_tracks);
 
   EXPECT_TRUE(dependency_factory_->EnsurePeerConnectionFactory());
@@ -187,13 +187,13 @@ TEST_F(MediaStreamDependencyFactoryTest, CreateNativeMediaStreamWithoutSource) {
 }
 
 TEST_F(MediaStreamDependencyFactoryTest, AddAndRemoveNativeTrack) {
-  WebKit::WebMediaStream stream_desc = CreateWebKitMediaStream(true, true);
+  blink::WebMediaStream stream_desc = CreateWebKitMediaStream(true, true);
   CreateNativeSources(&stream_desc);
 
   dependency_factory_->CreateNativeLocalMediaStream(&stream_desc);
   VerifyMediaStream(stream_desc, 1, 1);
 
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> audio_tracks;
+  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
   stream_desc.audioTracks(audio_tracks);
   EXPECT_TRUE(dependency_factory_->RemoveNativeMediaStreamTrack(
       stream_desc, audio_tracks[0]));
@@ -203,7 +203,7 @@ TEST_F(MediaStreamDependencyFactoryTest, AddAndRemoveNativeTrack) {
       stream_desc, audio_tracks[0]));
   VerifyMediaStream(stream_desc, 1, 1);
 
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> video_tracks;
+  blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
   stream_desc.videoTracks(video_tracks);
   EXPECT_TRUE(dependency_factory_->RemoveNativeMediaStreamTrack(
       stream_desc, video_tracks[0]));

@@ -8,7 +8,7 @@
 #include "base/supports_user_data.h"
 #include "content_export.h"
 
-namespace WebKit {
+namespace blink {
 class WebSocketStreamHandle;
 }
 
@@ -24,12 +24,12 @@ class SocketStreamHandleData : public base::SupportsUserData::Data {
   // Creates SocketStreamHandleData object with |render_view_id| and store it
   // to |handle|.
   static void AddToHandle(
-      WebKit::WebSocketStreamHandle* handle, int render_view_id);
+      blink::WebSocketStreamHandle* handle, int render_view_id);
 
-  // Retrieves the stored user data from WebKit::WebSocketStreamHandle object.
+  // Retrieves the stored user data from blink::WebSocketStreamHandle object.
   // |handle| must actually be a WebSocketStreamHandleImpl object.
   CONTENT_EXPORT static const SocketStreamHandleData* ForHandle(
-      WebKit::WebSocketStreamHandle* handle);
+      blink::WebSocketStreamHandle* handle);
 
  private:
   explicit SocketStreamHandleData(int render_view_id)

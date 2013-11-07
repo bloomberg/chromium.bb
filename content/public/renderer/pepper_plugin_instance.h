@@ -32,7 +32,7 @@ namespace IPC {
 struct ChannelHandle;
 }
 
-namespace WebKit {
+namespace blink {
 class WebPluginContainer;
 }
 
@@ -51,7 +51,7 @@ class PepperPluginInstance {
 
   virtual content::RenderView* GetRenderView() = 0;
 
-  virtual WebKit::WebPluginContainer* GetContainer() = 0;
+  virtual blink::WebPluginContainer* GetContainer() = 0;
 
   virtual v8::Isolate* GetIsolate() const = 0;
 

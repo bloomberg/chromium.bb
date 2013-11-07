@@ -16,7 +16,7 @@
 #include "third_party/WebKit/public/web/WebMediaPlayer.h"
 #include "url/gurl.h"
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
 class WebURLLoader;
 class WebURLRequest;
@@ -27,7 +27,7 @@ namespace content {
 // This class provides additional information about a media URL. Currently it
 // can be used to determine if a media URL has a single security origin and
 // whether the URL passes a CORS access check.
-class CONTENT_EXPORT MediaInfoLoader : private WebKit::WebURLLoaderClient {
+class CONTENT_EXPORT MediaInfoLoader : private blink::WebURLLoaderClient {
  public:
   // Status codes for start operations on MediaInfoLoader.
   enum Status {
@@ -51,12 +51,12 @@ class CONTENT_EXPORT MediaInfoLoader : private WebKit::WebURLLoaderClient {
   typedef base::Callback<void(Status)> ReadyCB;
   MediaInfoLoader(
       const GURL& url,
-      WebKit::WebMediaPlayer::CORSMode cors_mode,
+      blink::WebMediaPlayer::CORSMode cors_mode,
       const ReadyCB& ready_cb);
   virtual ~MediaInfoLoader();
 
   // Start loading media info.
-  void Start(WebKit::WebFrame* frame);
+  void Start(blink::WebFrame* frame);
 
   // Returns true if the media resource has a single origin, false otherwise.
   // Only valid to call after the loader becomes ready.
@@ -69,48 +69,48 @@ class CONTENT_EXPORT MediaInfoLoader : private WebKit::WebURLLoaderClient {
  private:
   friend class MediaInfoLoaderTest;
 
-  // WebKit::WebURLLoaderClient implementation.
+  // blink::WebURLLoaderClient implementation.
   virtual void willSendRequest(
-      WebKit::WebURLLoader* loader,
-      WebKit::WebURLRequest& newRequest,
-      const WebKit::WebURLResponse& redirectResponse);
+      blink::WebURLLoader* loader,
+      blink::WebURLRequest& newRequest,
+      const blink::WebURLResponse& redirectResponse);
   virtual void didSendData(
-      WebKit::WebURLLoader* loader,
+      blink::WebURLLoader* loader,
       unsigned long long bytesSent,
       unsigned long long totalBytesToBeSent);
   virtual void didReceiveResponse(
-      WebKit::WebURLLoader* loader,
-      const WebKit::WebURLResponse& response);
+      blink::WebURLLoader* loader,
+      const blink::WebURLResponse& response);
   virtual void didDownloadData(
-      WebKit::WebURLLoader* loader,
+      blink::WebURLLoader* loader,
       int data_length,
       int encodedDataLength);
   virtual void didReceiveData(
-      WebKit::WebURLLoader* loader,
+      blink::WebURLLoader* loader,
       const char* data,
       int data_length,
       int encoded_data_length);
   virtual void didReceiveCachedMetadata(
-      WebKit::WebURLLoader* loader,
+      blink::WebURLLoader* loader,
       const char* data, int dataLength);
   virtual void didFinishLoading(
-      WebKit::WebURLLoader* loader,
+      blink::WebURLLoader* loader,
       double finishTime);
   virtual void didFail(
-      WebKit::WebURLLoader* loader,
-      const WebKit::WebURLError&);
+      blink::WebURLLoader* loader,
+      const blink::WebURLError&);
 
   void DidBecomeReady(Status status);
 
   // Injected WebURLLoader instance for testing purposes.
-  scoped_ptr<WebKit::WebURLLoader> test_loader_;
+  scoped_ptr<blink::WebURLLoader> test_loader_;
 
   // Keeps track of an active WebURLLoader and associated state.
   scoped_ptr<ActiveLoader> active_loader_;
 
   bool loader_failed_;
   GURL url_;
-  WebKit::WebMediaPlayer::CORSMode cors_mode_;
+  blink::WebMediaPlayer::CORSMode cors_mode_;
   bool single_origin_;
 
   ReadyCB ready_cb_;

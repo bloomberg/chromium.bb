@@ -59,7 +59,7 @@ class VideoContextProvider
     return gl_in_process_context_->GetSurfaceTexture(stream_id);
   }
 
-  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE {
+  virtual blink::WebGraphicsContext3D* Context3d() OVERRIDE {
     return context_provider_->Context3d();
   }
 
@@ -109,7 +109,7 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
 
     const gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
 
-    WebKit::WebGraphicsContext3D::Attributes attributes;
+    blink::WebGraphicsContext3D::Attributes attributes;
     attributes.antialias = false;
     attributes.shareResources = true;
     attributes.noAutomaticFlushes = true;
@@ -409,7 +409,7 @@ void SynchronousCompositorImpl::SetContinuousInvalidate(bool enable) {
 }
 
 InputEventAckState SynchronousCompositorImpl::HandleInputEvent(
-    const WebKit::WebInputEvent& input_event) {
+    const blink::WebInputEvent& input_event) {
   DCHECK(CalledOnValidThread());
   return g_factory.Get().synchronous_input_event_filter()->HandleInputEvent(
       contents_->GetRoutingID(), input_event);

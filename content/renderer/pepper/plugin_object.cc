@@ -27,7 +27,7 @@
 using ppapi::PpapiGlobals;
 using ppapi::StringVar;
 using ppapi::Var;
-using WebKit::WebBindings;
+using blink::WebBindings;
 
 namespace content {
 

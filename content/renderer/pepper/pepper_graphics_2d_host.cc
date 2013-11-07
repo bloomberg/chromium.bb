@@ -322,7 +322,7 @@ bool PepperGraphics2DHost::BindToInstance(
 // The |backing_bitmap| must be clipped to the |plugin_rect| to avoid painting
 // outside the plugin area. This can happen if the plugin has been resized since
 // PaintImageData verified the image is within the plugin size.
-void PepperGraphics2DHost::Paint(WebKit::WebCanvas* canvas,
+void PepperGraphics2DHost::Paint(blink::WebCanvas* canvas,
                                  const gfx::Rect& plugin_rect,
                                  const gfx::Rect& paint_rect) {
   TRACE_EVENT0("pepper", "PepperGraphics2DHost::Paint");

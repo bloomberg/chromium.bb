@@ -14,7 +14,7 @@ namespace content {
 
 static const char kClearKeyKeySystem[] = "webkit-org.w3.clearkey";
 
-std::string KeySystemNameForUMAInternal(const WebKit::WebString& key_system) {
+std::string KeySystemNameForUMAInternal(const blink::WebString& key_system) {
   if (key_system == kClearKeyKeySystem)
     return "ClearKey";
 #if defined(WIDEVINE_CDM_AVAILABLE)

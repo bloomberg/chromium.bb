@@ -14,7 +14,7 @@
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "webkit/browser/quota/quota_manager.h"
 
-using WebKit::WebIDBCallbacks;
+using blink::WebIDBCallbacks;
 
 namespace content {
 

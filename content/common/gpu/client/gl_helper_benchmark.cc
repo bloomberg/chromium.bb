@@ -43,8 +43,8 @@
 
 namespace content {
 
-using WebKit::WebGLId;
-using WebKit::WebGraphicsContext3D;
+using blink::WebGLId;
+using blink::WebGraphicsContext3D;
 
 content::GLHelper::ScalerQuality kQualities[] = {
   content::GLHelper::SCALER_QUALITY_BEST,

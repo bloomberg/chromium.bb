@@ -17,8 +17,8 @@ namespace content {
 class CONTENT_EXPORT RequestExtraData
     : NON_EXPORTED_BASE(public webkit_glue::WebURLRequestExtraDataImpl) {
  public:
-  RequestExtraData(WebKit::WebReferrerPolicy referrer_policy,
-                   const WebKit::WebString& custom_user_agent,
+  RequestExtraData(blink::WebReferrerPolicy referrer_policy,
+                   const blink::WebString& custom_user_agent,
                    bool was_after_preconnect_request,
                    bool is_main_frame,
                    int64 frame_id,

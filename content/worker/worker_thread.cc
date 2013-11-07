@@ -25,7 +25,7 @@
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "webkit/glue/webkit_glue.h"
 
-using WebKit::WebRuntimeFeatures;
+using blink::WebRuntimeFeatures;
 
 namespace content {
 
@@ -38,14 +38,14 @@ WorkerThread::WorkerThread() {
       thread_safe_sender(),
       sync_message_filter(),
       quota_message_filter()));
-  WebKit::initialize(webkit_platform_support_.get());
+  blink::initialize(webkit_platform_support_.get());
 
   appcache_dispatcher_.reset(
       new AppCacheDispatcher(this, new AppCacheFrontendImpl()));
 
   web_database_observer_impl_.reset(
       new WebDatabaseObserverImpl(sync_message_filter()));
-  WebKit::WebDatabase::setObserver(web_database_observer_impl_.get());
+  blink::WebDatabase::setObserver(web_database_observer_impl_.get());
   db_message_filter_ = new DBMessageFilter();
   channel()->AddFilter(db_message_filter_.get());
 
@@ -77,7 +77,7 @@ void WorkerThread::Shutdown() {
   channel()->RemoveFilter(db_message_filter_.get());
   db_message_filter_ = NULL;
 
-  WebKit::shutdown();
+  blink::shutdown();
   lazy_tls.Pointer()->Set(NULL);
 }
 

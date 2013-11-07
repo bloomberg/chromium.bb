@@ -16,7 +16,7 @@
 #include "ppapi/shared_impl/url_response_info_data.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
 class WebURLLoader;
 }
@@ -27,7 +27,7 @@ class RendererPpapiHostImpl;
 
 class PepperURLLoaderHost
     : public ppapi::host::ResourceHost,
-      public WebKit::WebURLLoaderClient {
+      public blink::WebURLLoaderClient {
  public:
   // If main_document_loader is true, PP_Resource must be 0 since it will be
   // pending until the plugin resource attaches to it.
@@ -42,26 +42,26 @@ class PepperURLLoaderHost
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) OVERRIDE;
 
-  // WebKit::WebURLLoaderClient implementation.
-  virtual void willSendRequest(WebKit::WebURLLoader* loader,
-                               WebKit::WebURLRequest& new_request,
-                               const WebKit::WebURLResponse& redir_response);
-  virtual void didSendData(WebKit::WebURLLoader* loader,
+  // blink::WebURLLoaderClient implementation.
+  virtual void willSendRequest(blink::WebURLLoader* loader,
+                               blink::WebURLRequest& new_request,
+                               const blink::WebURLResponse& redir_response);
+  virtual void didSendData(blink::WebURLLoader* loader,
                            unsigned long long bytes_sent,
                            unsigned long long total_bytes_to_be_sent);
-  virtual void didReceiveResponse(WebKit::WebURLLoader* loader,
-                                  const WebKit::WebURLResponse& response);
-  virtual void didDownloadData(WebKit::WebURLLoader* loader,
+  virtual void didReceiveResponse(blink::WebURLLoader* loader,
+                                  const blink::WebURLResponse& response);
+  virtual void didDownloadData(blink::WebURLLoader* loader,
                                int data_length,
                                int encoded_data_length);
-  virtual void didReceiveData(WebKit::WebURLLoader* loader,
+  virtual void didReceiveData(blink::WebURLLoader* loader,
                               const char* data,
                               int data_length,
                               int encoded_data_length);
-  virtual void didFinishLoading(WebKit::WebURLLoader* loader,
+  virtual void didFinishLoading(blink::WebURLLoader* loader,
                                 double finish_time);
-  virtual void didFail(WebKit::WebURLLoader* loader,
-                       const WebKit::WebURLError& error);
+  virtual void didFail(blink::WebURLLoader* loader,
+                       const blink::WebURLError& error);
 
  private:
   // ResourceHost protected overrides.
@@ -96,14 +96,14 @@ class PepperURLLoaderHost
   void Close();
 
   // Returns the frame for the current request.
-  WebKit::WebFrame* GetFrame();
+  blink::WebFrame* GetFrame();
 
   // Calls SetDefersLoading on the current load. This encapsulates the logic
   // differences between document loads and regular ones.
   void SetDefersLoading(bool defers_loading);
 
   // Converts a WebURLResponse to a URLResponseInfo and saves it.
-  void SaveResponse(const WebKit::WebURLResponse& response);
+  void SaveResponse(const blink::WebURLResponse& response);
   void DidDataFromWebURLResponse(const ppapi::URLResponseInfoData& data);
 
   // Sends the UpdateProgress message (if necessary) to the plugin.
@@ -129,7 +129,7 @@ class PepperURLLoaderHost
   // always NULL check this value before using it. In the case of a main
   // document load, you would call the functions on the document to cancel the
   // load, etc. since there is no loader.
-  scoped_ptr<WebKit::WebURLLoader> loader_;
+  scoped_ptr<blink::WebURLLoader> loader_;
 
   int64_t bytes_sent_;
   int64_t total_bytes_to_be_sent_;

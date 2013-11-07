@@ -120,21 +120,21 @@ void TouchEventQueue::ProcessTouchAck(InputEventAckState ack_result,
     return;
 
   // Update the ACK status for each touch point in the ACKed event.
-  const WebKit::WebTouchEvent& event =
+  const blink::WebTouchEvent& event =
       touch_queue_.front()->coalesced_event().event;
-  if (event.type == WebKit::WebInputEvent::TouchEnd ||
-      event.type == WebKit::WebInputEvent::TouchCancel) {
+  if (event.type == blink::WebInputEvent::TouchEnd ||
+      event.type == blink::WebInputEvent::TouchCancel) {
     // The points have been released. Erase the ACK states.
     for (unsigned i = 0; i < event.touchesLength; ++i) {
-      const WebKit::WebTouchPoint& point = event.touches[i];
-      if (point.state == WebKit::WebTouchPoint::StateReleased ||
-          point.state == WebKit::WebTouchPoint::StateCancelled)
+      const blink::WebTouchPoint& point = event.touches[i];
+      if (point.state == blink::WebTouchPoint::StateReleased ||
+          point.state == blink::WebTouchPoint::StateCancelled)
         touch_ack_states_.erase(point.id);
     }
-  } else if (event.type == WebKit::WebInputEvent::TouchStart) {
+  } else if (event.type == blink::WebInputEvent::TouchStart) {
     for (unsigned i = 0; i < event.touchesLength; ++i) {
-      const WebKit::WebTouchPoint& point = event.touches[i];
-      if (point.state == WebKit::WebTouchPoint::StatePressed)
+      const blink::WebTouchPoint& point = event.touches[i];
+      if (point.state == blink::WebTouchPoint::StatePressed)
         touch_ack_states_[point.id] = ack_result;
     }
   }
@@ -161,8 +161,8 @@ void TouchEventQueue::TryForwardNextEventToRenderer() {
 
 void TouchEventQueue::OnGestureScrollEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
-  WebKit::WebInputEvent::Type type = gesture_event.event.type;
-  if (type == WebKit::WebInputEvent::GestureScrollBegin) {
+  blink::WebInputEvent::Type type = gesture_event.event.type;
+  if (type == blink::WebInputEvent::GestureScrollBegin) {
     // We assume the scroll event are generated synchronously from
     // dispatching a touch event ack, so that we can fake a cancel
     // event that has the correct touch ids as the touch event that
@@ -174,10 +174,10 @@ void TouchEventQueue::OnGestureScrollEvent(
     // that is currently being acked.
     TouchEventWithLatencyInfo cancel_event =
         dispatching_touch_ack_->coalesced_event();
-    cancel_event.event.type = WebKit::WebInputEvent::TouchCancel;
+    cancel_event.event.type = blink::WebInputEvent::TouchCancel;
     for (size_t i = 0; i < cancel_event.event.touchesLength; i++)
       cancel_event.event.touches[i].state =
-          WebKit::WebTouchPoint::StateCancelled;
+          blink::WebTouchPoint::StateCancelled;
     CoalescedWebTouchEvent* coalesced_cancel_event =
         new CoalescedWebTouchEvent(cancel_event);
     // Ignore the ack of the touch cancel so when it is acked, it won't get
@@ -188,8 +188,8 @@ void TouchEventQueue::OnGestureScrollEvent(
     // in the queue is waiting for ack from renderer. So we can just insert
     // the touch cancel at the beginning of the queue.
     touch_queue_.push_front(coalesced_cancel_event);
-  } else if (type == WebKit::WebInputEvent::GestureScrollEnd ||
-             type == WebKit::WebInputEvent::GestureFlingStart) {
+  } else if (type == blink::WebInputEvent::GestureScrollEnd ||
+             type == blink::WebInputEvent::GestureFlingStart) {
     no_touch_to_renderer_ = false;
   }
 }
@@ -234,19 +234,19 @@ void TouchEventQueue::PopTouchEventToClient(
 }
 
 bool TouchEventQueue::ShouldForwardToRenderer(
-    const WebKit::WebTouchEvent& event) const {
+    const blink::WebTouchEvent& event) const {
   if (no_touch_to_renderer_ &&
-      event.type != WebKit::WebInputEvent::TouchCancel)
+      event.type != blink::WebInputEvent::TouchCancel)
     return false;
 
   // Touch press events should always be forwarded to the renderer.
-  if (event.type == WebKit::WebInputEvent::TouchStart)
+  if (event.type == blink::WebInputEvent::TouchStart)
     return true;
 
   for (unsigned int i = 0; i < event.touchesLength; ++i) {
-    const WebKit::WebTouchPoint& point = event.touches[i];
+    const blink::WebTouchPoint& point = event.touches[i];
     // If a point has been stationary, then don't take it into account.
-    if (point.state == WebKit::WebTouchPoint::StateStationary)
+    if (point.state == blink::WebTouchPoint::StateStationary)
       continue;
 
     if (touch_ack_states_.count(point.id) > 0) {

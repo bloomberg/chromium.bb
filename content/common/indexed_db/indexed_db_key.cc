@@ -9,15 +9,15 @@
 
 namespace content {
 
-using WebKit::WebIDBKey;
-using WebKit::WebIDBKeyType;
-using WebKit::WebIDBKeyTypeArray;
-using WebKit::WebIDBKeyTypeDate;
-using WebKit::WebIDBKeyTypeInvalid;
-using WebKit::WebIDBKeyTypeMin;
-using WebKit::WebIDBKeyTypeNull;
-using WebKit::WebIDBKeyTypeNumber;
-using WebKit::WebIDBKeyTypeString;
+using blink::WebIDBKey;
+using blink::WebIDBKeyType;
+using blink::WebIDBKeyTypeArray;
+using blink::WebIDBKeyTypeDate;
+using blink::WebIDBKeyTypeInvalid;
+using blink::WebIDBKeyTypeMin;
+using blink::WebIDBKeyTypeNull;
+using blink::WebIDBKeyTypeNumber;
+using blink::WebIDBKeyTypeString;
 
 namespace {
 

@@ -17,8 +17,8 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 using base::TimeDelta;
-using WebKit::WebGestureEvent;
-using WebKit::WebInputEvent;
+using blink::WebGestureEvent;
+using blink::WebInputEvent;
 
 namespace content {
 

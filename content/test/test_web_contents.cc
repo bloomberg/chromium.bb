@@ -226,7 +226,7 @@ void TestWebContents::CreateNewWindow(
 }
 
 void TestWebContents::CreateNewWidget(int route_id,
-                                      WebKit::WebPopupType popup_type) {
+                                      blink::WebPopupType popup_type) {
 }
 
 void TestWebContents::CreateNewFullscreenWidget(int route_id) {

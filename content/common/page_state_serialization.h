@@ -16,7 +16,7 @@
 namespace content {
 
 struct CONTENT_EXPORT ExplodedHttpBodyElement {
-  WebKit::WebHTTPBody::Element::Type type;
+  blink::WebHTTPBody::Element::Type type;
   std::string data;
   base::NullableString16 file_path;
   GURL filesystem_url;

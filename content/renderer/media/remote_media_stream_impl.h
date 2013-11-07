@@ -32,7 +32,7 @@ class CONTENT_EXPORT RemoteMediaStreamImpl
       webrtc::MediaStreamInterface* webrtc_stream);
   virtual ~RemoteMediaStreamImpl();
 
-  const WebKit::WebMediaStream& webkit_stream() { return webkit_stream_; }
+  const blink::WebMediaStream& webkit_stream() { return webkit_stream_; }
 
  private:
   // webrtc::ObserverInterface implementation.
@@ -41,7 +41,7 @@ class CONTENT_EXPORT RemoteMediaStreamImpl
   scoped_refptr<webrtc::MediaStreamInterface> webrtc_stream_;
   ScopedVector<RemoteMediaStreamTrackObserver> audio_track_observers_;
   ScopedVector<RemoteMediaStreamTrackObserver> video_track_observers_;
-  WebKit::WebMediaStream webkit_stream_;
+  blink::WebMediaStream webkit_stream_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteMediaStreamImpl);
 };

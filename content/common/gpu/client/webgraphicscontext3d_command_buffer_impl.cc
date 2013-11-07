@@ -605,9 +605,9 @@ void WebGraphicsContext3DCommandBufferImpl::copyTextureToParentTextureCHROMIUM(
 DELEGATE_TO_GL(rateLimitOffscreenContextCHROMIUM,
                RateLimitOffscreenContextCHROMIUM)
 
-WebKit::WebString WebGraphicsContext3DCommandBufferImpl::
+blink::WebString WebGraphicsContext3DCommandBufferImpl::
     getRequestableExtensionsCHROMIUM() {
-  return WebKit::WebString::fromUTF8(
+  return blink::WebString::fromUTF8(
       gl_->GetRequestableExtensionsCHROMIUM());
 }
 
@@ -780,7 +780,7 @@ bool WebGraphicsContext3DCommandBufferImpl::getActiveAttrib(
   if (size < 0) {
     return false;
   }
-  info.name = WebKit::WebString::fromUTF8(name.get(), length);
+  info.name = blink::WebString::fromUTF8(name.get(), length);
   info.type = type;
   info.size = size;
   return true;
@@ -806,7 +806,7 @@ bool WebGraphicsContext3DCommandBufferImpl::getActiveUniform(
   if (size < 0) {
     return false;
   }
-  info.name = WebKit::WebString::fromUTF8(name.get(), length);
+  info.name = blink::WebString::fromUTF8(name.get(), length);
   info.type = type;
   info.size = size;
   return true;
@@ -823,7 +823,7 @@ DELEGATE_TO_GL_2(getBooleanv, GetBooleanv, WGC3Denum, WGC3Dboolean*)
 DELEGATE_TO_GL_3(getBufferParameteriv, GetBufferParameteriv,
                  WGC3Denum, WGC3Denum, WGC3Dint*)
 
-WebKit::WebGraphicsContext3D::Attributes
+blink::WebGraphicsContext3D::Attributes
 WebGraphicsContext3DCommandBufferImpl::getContextAttributes() {
   return attributes_;
 }
@@ -855,21 +855,21 @@ DELEGATE_TO_GL_2(getIntegerv, GetIntegerv, WGC3Denum, WGC3Dint*)
 
 DELEGATE_TO_GL_3(getProgramiv, GetProgramiv, WebGLId, WGC3Denum, WGC3Dint*)
 
-WebKit::WebString WebGraphicsContext3DCommandBufferImpl::getProgramInfoLog(
+blink::WebString WebGraphicsContext3DCommandBufferImpl::getProgramInfoLog(
     WebGLId program) {
   GLint logLength = 0;
   gl_->GetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength);
   if (!logLength)
-    return WebKit::WebString();
+    return blink::WebString();
   scoped_ptr<GLchar[]> log(new GLchar[logLength]);
   if (!log)
-    return WebKit::WebString();
+    return blink::WebString();
   GLsizei returnedLogLength = 0;
   gl_->GetProgramInfoLog(
       program, logLength, &returnedLogLength, log.get());
   DCHECK_EQ(logLength, returnedLogLength + 1);
-  WebKit::WebString res =
-      WebKit::WebString::fromUTF8(log.get(), returnedLogLength);
+  blink::WebString res =
+      blink::WebString::fromUTF8(log.get(), returnedLogLength);
   return res;
 }
 
@@ -878,71 +878,71 @@ DELEGATE_TO_GL_3(getRenderbufferParameteriv, GetRenderbufferParameteriv,
 
 DELEGATE_TO_GL_3(getShaderiv, GetShaderiv, WebGLId, WGC3Denum, WGC3Dint*)
 
-WebKit::WebString WebGraphicsContext3DCommandBufferImpl::getShaderInfoLog(
+blink::WebString WebGraphicsContext3DCommandBufferImpl::getShaderInfoLog(
     WebGLId shader) {
   GLint logLength = 0;
   gl_->GetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLength);
   if (!logLength)
-    return WebKit::WebString();
+    return blink::WebString();
   scoped_ptr<GLchar[]> log(new GLchar[logLength]);
   if (!log)
-    return WebKit::WebString();
+    return blink::WebString();
   GLsizei returnedLogLength = 0;
   gl_->GetShaderInfoLog(
       shader, logLength, &returnedLogLength, log.get());
   DCHECK_EQ(logLength, returnedLogLength + 1);
-  WebKit::WebString res =
-      WebKit::WebString::fromUTF8(log.get(), returnedLogLength);
+  blink::WebString res =
+      blink::WebString::fromUTF8(log.get(), returnedLogLength);
   return res;
 }
 
 DELEGATE_TO_GL_4(getShaderPrecisionFormat, GetShaderPrecisionFormat,
                  WGC3Denum, WGC3Denum, WGC3Dint*, WGC3Dint*)
 
-WebKit::WebString WebGraphicsContext3DCommandBufferImpl::getShaderSource(
+blink::WebString WebGraphicsContext3DCommandBufferImpl::getShaderSource(
     WebGLId shader) {
   GLint logLength = 0;
   gl_->GetShaderiv(shader, GL_SHADER_SOURCE_LENGTH, &logLength);
   if (!logLength)
-    return WebKit::WebString();
+    return blink::WebString();
   scoped_ptr<GLchar[]> log(new GLchar[logLength]);
   if (!log)
-    return WebKit::WebString();
+    return blink::WebString();
   GLsizei returnedLogLength = 0;
   gl_->GetShaderSource(
       shader, logLength, &returnedLogLength, log.get());
   if (!returnedLogLength)
-    return WebKit::WebString();
+    return blink::WebString();
   DCHECK_EQ(logLength, returnedLogLength + 1);
-  WebKit::WebString res =
-      WebKit::WebString::fromUTF8(log.get(), returnedLogLength);
+  blink::WebString res =
+      blink::WebString::fromUTF8(log.get(), returnedLogLength);
   return res;
 }
 
-WebKit::WebString WebGraphicsContext3DCommandBufferImpl::
+blink::WebString WebGraphicsContext3DCommandBufferImpl::
     getTranslatedShaderSourceANGLE(WebGLId shader) {
   GLint logLength = 0;
   gl_->GetShaderiv(
       shader, GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE, &logLength);
   if (!logLength)
-    return WebKit::WebString();
+    return blink::WebString();
   scoped_ptr<GLchar[]> log(new GLchar[logLength]);
   if (!log)
-    return WebKit::WebString();
+    return blink::WebString();
   GLsizei returnedLogLength = 0;
   gl_->GetTranslatedShaderSourceANGLE(
       shader, logLength, &returnedLogLength, log.get());
   if (!returnedLogLength)
-    return WebKit::WebString();
+    return blink::WebString();
   DCHECK_EQ(logLength, returnedLogLength + 1);
-  WebKit::WebString res =
-      WebKit::WebString::fromUTF8(log.get(), returnedLogLength);
+  blink::WebString res =
+      blink::WebString::fromUTF8(log.get(), returnedLogLength);
   return res;
 }
 
-WebKit::WebString WebGraphicsContext3DCommandBufferImpl::getString(
+blink::WebString WebGraphicsContext3DCommandBufferImpl::getString(
     WGC3Denum name) {
-  return WebKit::WebString::fromUTF8(
+  return blink::WebString::fromUTF8(
       reinterpret_cast<const char*>(gl_->GetString(name)));
 }
 
@@ -1459,7 +1459,7 @@ void WebGraphicsContext3DCommandBufferImpl::OnGpuChannelLost() {
 void WebGraphicsContext3DCommandBufferImpl::OnErrorMessage(
     const std::string& message, int id) {
   if (error_message_callback_) {
-    WebKit::WebString str = WebKit::WebString::fromUTF8(message.c_str());
+    blink::WebString str = blink::WebString::fromUTF8(message.c_str());
     error_message_callback_->onErrorMessage(str, id);
   }
 }

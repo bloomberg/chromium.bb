@@ -7,13 +7,13 @@
 #include <oleidl.h>
 #include "base/logging.h"
 
-using WebKit::WebDragOperation;
-using WebKit::WebDragOperationsMask;
-using WebKit::WebDragOperationNone;
-using WebKit::WebDragOperationCopy;
-using WebKit::WebDragOperationLink;
-using WebKit::WebDragOperationMove;
-using WebKit::WebDragOperationGeneric;
+using blink::WebDragOperation;
+using blink::WebDragOperationsMask;
+using blink::WebDragOperationNone;
+using blink::WebDragOperationCopy;
+using blink::WebDragOperationLink;
+using blink::WebDragOperationMove;
+using blink::WebDragOperationGeneric;
 
 namespace content {
 

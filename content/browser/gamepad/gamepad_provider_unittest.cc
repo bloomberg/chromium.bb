@@ -15,7 +15,7 @@ namespace content {
 
 namespace {
 
-using WebKit::WebGamepads;
+using blink::WebGamepads;
 
 // Helper class to generate and record user gesture callbacks.
 class UserGestureListener {

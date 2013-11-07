@@ -7,7 +7,7 @@
 
 #include <string>
 
-namespace WebKit {
+namespace blink {
 class WebString;
 }
 
@@ -17,7 +17,7 @@ namespace content {
 // This function can be called frequently. Hence this function should be
 // implemented not to impact performance and does not rely on the main
 // key system map.
-std::string KeySystemNameForUMAInternal(const WebKit::WebString& key_system);
+std::string KeySystemNameForUMAInternal(const blink::WebString& key_system);
 
 }  // namespace content
 

@@ -245,9 +245,9 @@ void BrowserPluginGuestManager::DidSendScreenRects(
 bool BrowserPluginGuestManager::UnlockMouseIfNecessary(
     WebContentsImpl* embedder_web_contents,
     const NativeWebKeyboardEvent& event) {
-  if ((event.type != WebKit::WebInputEvent::RawKeyDown) ||
+  if ((event.type != blink::WebInputEvent::RawKeyDown) ||
       (event.windowsKeyCode != ui::VKEY_ESCAPE) ||
-      (event.modifiers & WebKit::WebInputEvent::InputModifiers)) {
+      (event.modifiers & blink::WebInputEvent::InputModifiers)) {
     return false;
   }
 

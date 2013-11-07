@@ -12,11 +12,11 @@
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-using WebKit::WebDocument;
-using WebKit::WebElement;
-using WebKit::WebFrame;
-using WebKit::WebNode;
-using WebKit::WebView;
+using blink::WebDocument;
+using blink::WebElement;
+using blink::WebFrame;
+using blink::WebNode;
+using blink::WebView;
 
 namespace {
 // The root node will always have id 1. Let each child node have a new
@@ -36,7 +36,7 @@ RendererAccessibilityFocusOnly::~RendererAccessibilityFocusOnly() {
 }
 
 void RendererAccessibilityFocusOnly::HandleWebAccessibilityEvent(
-    const WebKit::WebAXObject& obj, WebKit::WebAXEvent event) {
+    const blink::WebAXObject& obj, blink::WebAXEvent event) {
   // Do nothing.
 }
 
@@ -45,7 +45,7 @@ void RendererAccessibilityFocusOnly::FocusedNodeChanged(const WebNode& node) {
   HandleFocusedNodeChanged(node, true);
 }
 
-void RendererAccessibilityFocusOnly::DidFinishLoad(WebKit::WebFrame* frame) {
+void RendererAccessibilityFocusOnly::DidFinishLoad(blink::WebFrame* frame) {
   WebView* view = render_view()->GetWebView();
   if (view->focusedFrame() != frame)
     return;
@@ -88,8 +88,8 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
   // event, which doesn't post a native event on Windows.
   event.event_type =
       send_focus_event ?
-      WebKit::WebAXEventFocus :
-      WebKit::WebAXEventLayoutComplete;
+      blink::WebAXEventFocus :
+      blink::WebAXEventLayoutComplete;
 
   // Set the id that the event applies to: the root node if nothing
   // has focus, otherwise the focused node.
@@ -101,17 +101,17 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
 
   // Always include the root of the tree, the document. It always has id 1.
   root.id = 1;
-  root.role = WebKit::WebAXRoleRootWebArea;
+  root.role = blink::WebAXRoleRootWebArea;
   root.state =
-      (1 << WebKit::WebAXStateReadonly) |
-      (1 << WebKit::WebAXStateFocusable);
+      (1 << blink::WebAXStateReadonly) |
+      (1 << blink::WebAXStateFocusable);
   if (!node_has_focus)
-    root.state |= (1 << WebKit::WebAXStateFocused);
+    root.state |= (1 << blink::WebAXStateFocused);
   root.location = gfx::Rect(render_view_->size());
   root.child_ids.push_back(next_id_);
 
   child.id = next_id_;
-  child.role = WebKit::WebAXRoleGroup;
+  child.role = blink::WebAXRoleGroup;
 
   if (!node.isNull() && node.isElementNode()) {
     child.location = gfx::Rect(
@@ -124,10 +124,10 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
 
   if (node_has_focus) {
     child.state =
-        (1 << WebKit::WebAXStateFocusable) |
-        (1 << WebKit::WebAXStateFocused);
+        (1 << blink::WebAXStateFocusable) |
+        (1 << blink::WebAXStateFocused);
     if (!node_is_editable_text)
-      child.state |= (1 << WebKit::WebAXStateReadonly);
+      child.state |= (1 << blink::WebAXStateReadonly);
   }
 
 #ifndef NDEBUG

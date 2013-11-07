@@ -21,15 +21,15 @@ TEST(IndexedDBKeyTest, KeySizeEstimates) {
   keys.push_back(IndexedDBKey());
   estimates.push_back(static_cast<size_t>(16));  // Overhead.
 
-  keys.push_back(IndexedDBKey(WebKit::WebIDBKeyTypeNull));
+  keys.push_back(IndexedDBKey(blink::WebIDBKeyTypeNull));
   estimates.push_back(static_cast<size_t>(16));
 
   double number = 3.14159;
-  keys.push_back(IndexedDBKey(number, WebKit::WebIDBKeyTypeNumber));
+  keys.push_back(IndexedDBKey(number, blink::WebIDBKeyTypeNumber));
   estimates.push_back(static_cast<size_t>(24));  // Overhead + sizeof(double).
 
   double date = 1370884329.0;
-  keys.push_back(IndexedDBKey(date, WebKit::WebIDBKeyTypeDate));
+  keys.push_back(IndexedDBKey(date, blink::WebIDBKeyTypeDate));
   estimates.push_back(static_cast<size_t>(24));  // Overhead + sizeof(double).
 
   const string16 string(1024, static_cast<char16>('X'));
@@ -41,7 +41,7 @@ TEST(IndexedDBKeyTest, KeySizeEstimates) {
   IndexedDBKey::KeyArray array;
   double value = 123.456;
   for (size_t i = 0; i < array_size; ++i) {
-    array.push_back(IndexedDBKey(value, WebKit::WebIDBKeyTypeNumber));
+    array.push_back(IndexedDBKey(value, blink::WebIDBKeyTypeNumber));
   }
   keys.push_back(IndexedDBKey(array));
   // Overhead + array length * (Overhead + sizeof(double)).

@@ -25,7 +25,7 @@ class AccessibilityNotificationWaiter {
   AccessibilityNotificationWaiter(
       Shell* shell,
       AccessibilityMode accessibility_mode,
-      WebKit::WebAXEvent event);
+      blink::WebAXEvent event);
   ~AccessibilityNotificationWaiter();
 
   // Blocks until the specific accessibility notification registered in
@@ -39,7 +39,7 @@ class AccessibilityNotificationWaiter {
 
  private:
   // Callback from RenderViewHostImpl.
-  void OnAccessibilityEvent(WebKit::WebAXEvent event);
+  void OnAccessibilityEvent(blink::WebAXEvent event);
 
   // Helper function to determine if the accessibility tree in
   // GetAccessibilityNodeDataTree() is about the page with the url
@@ -48,7 +48,7 @@ class AccessibilityNotificationWaiter {
 
   Shell* shell_;
   RenderViewHostImpl* view_host_;
-  WebKit::WebAXEvent event_to_wait_for_;
+  blink::WebAXEvent event_to_wait_for_;
   scoped_refptr<MessageLoopRunner> loop_runner_;
   base::WeakPtrFactory<AccessibilityNotificationWaiter> weak_factory_;
 

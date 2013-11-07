@@ -62,13 +62,13 @@ class CONTENT_EXPORT CompositorImpl
   virtual cc::UIResourceId GenerateUIResource(
       const cc::UIResourceBitmap& bitmap) OVERRIDE;
   virtual void DeleteUIResource(cc::UIResourceId resource_id) OVERRIDE;
-  virtual WebKit::WebGLId GenerateTexture(gfx::JavaBitmap& bitmap) OVERRIDE;
-  virtual WebKit::WebGLId GenerateCompressedTexture(
+  virtual blink::WebGLId GenerateTexture(gfx::JavaBitmap& bitmap) OVERRIDE;
+  virtual blink::WebGLId GenerateCompressedTexture(
       gfx::Size& size, int data_size, void* data) OVERRIDE;
-  virtual void DeleteTexture(WebKit::WebGLId texture_id) OVERRIDE;
-  virtual bool CopyTextureToBitmap(WebKit::WebGLId texture_id,
+  virtual void DeleteTexture(blink::WebGLId texture_id) OVERRIDE;
+  virtual bool CopyTextureToBitmap(blink::WebGLId texture_id,
                                    gfx::JavaBitmap& bitmap) OVERRIDE;
-  virtual bool CopyTextureToBitmap(WebKit::WebGLId texture_id,
+  virtual bool CopyTextureToBitmap(blink::WebGLId texture_id,
                                    const gfx::Rect& sub_rect,
                                    gfx::JavaBitmap& bitmap) OVERRIDE;
 
@@ -103,9 +103,9 @@ class CONTENT_EXPORT CompositorImpl
   virtual void OnLostResources() OVERRIDE;
 
  private:
-  WebKit::WebGLId BuildBasicTexture();
-  WebKit::WGC3Denum GetGLFormatForBitmap(gfx::JavaBitmap& bitmap);
-  WebKit::WGC3Denum GetGLTypeForBitmap(gfx::JavaBitmap& bitmap);
+  blink::WebGLId BuildBasicTexture();
+  blink::WGC3Denum GetGLFormatForBitmap(gfx::JavaBitmap& bitmap);
+  blink::WGC3Denum GetGLTypeForBitmap(gfx::JavaBitmap& bitmap);
 
   scoped_refptr<cc::Layer> root_layer_;
   scoped_ptr<cc::LayerTreeHost> host_;

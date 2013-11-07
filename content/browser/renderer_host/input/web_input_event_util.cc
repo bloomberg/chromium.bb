@@ -129,7 +129,7 @@ const char* GetKeyIdentifier(ui::KeyboardCode key_code) {
 
 namespace content {
 
-void UpdateWindowsKeyCodeAndKeyIdentifier(WebKit::WebKeyboardEvent* event,
+void UpdateWindowsKeyCodeAndKeyIdentifier(blink::WebKeyboardEvent* event,
                                           ui::KeyboardCode windows_key_code) {
   event->windowsKeyCode = windows_key_code;
 

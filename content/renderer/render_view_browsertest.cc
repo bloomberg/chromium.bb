@@ -57,13 +57,13 @@
 #include "ui/events/x/events_x_utils.h"
 #endif
 
-using WebKit::WebFrame;
-using WebKit::WebInputEvent;
-using WebKit::WebMouseEvent;
-using WebKit::WebRuntimeFeatures;
-using WebKit::WebString;
-using WebKit::WebTextDirection;
-using WebKit::WebURLError;
+using blink::WebFrame;
+using blink::WebInputEvent;
+using blink::WebMouseEvent;
+using blink::WebRuntimeFeatures;
+using blink::WebString;
+using blink::WebTextDirection;
+using blink::WebURLError;
 
 namespace content  {
 
@@ -247,9 +247,9 @@ class RenderViewImplTest : public RenderViewTest {
         SendNativeKeyEvent(webkit_event);
 
         // Need to add a char event after the key down.
-        if (webkit_event.type == WebKit::WebInputEvent::RawKeyDown) {
+        if (webkit_event.type == blink::WebInputEvent::RawKeyDown) {
           NativeWebKeyboardEvent char_event = webkit_event;
-          char_event.type = WebKit::WebInputEvent::Char;
+          char_event.type = blink::WebInputEvent::Char;
           char_event.skip_in_browser = true;
           SendNativeKeyEvent(char_event);
         }
@@ -322,13 +322,13 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
 
   // Check post data sent to browser matches
   EXPECT_TRUE(host_nav_params.a.page_state.IsValid());
-  const WebKit::WebHistoryItem item = PageStateToHistoryItem(
+  const blink::WebHistoryItem item = PageStateToHistoryItem(
       host_nav_params.a.page_state);
-  WebKit::WebHTTPBody body = item.httpBody();
-  WebKit::WebHTTPBody::Element element;
+  blink::WebHTTPBody body = item.httpBody();
+  blink::WebHTTPBody::Element element;
   bool successful = body.elementAt(0, element);
   EXPECT_TRUE(successful);
-  EXPECT_EQ(WebKit::WebHTTPBody::Element::TypeData, element.type);
+  EXPECT_EQ(blink::WebHTTPBody::Element::TypeData, element.type);
   EXPECT_EQ(length, element.data.size());
   EXPECT_EQ(0, memcmp(raw_data, element.data.data(), length));
 }
@@ -341,38 +341,38 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
   state.set_navigation_state(NavigationState::CreateContentInitiated());
 
   // Navigations to normal HTTP URLs can be handled locally.
-  WebKit::WebURLRequest request(GURL("http://foo.com"));
-  WebKit::WebNavigationPolicy policy = view()->decidePolicyForNavigation(
+  blink::WebURLRequest request(GURL("http://foo.com"));
+  blink::WebNavigationPolicy policy = view()->decidePolicyForNavigation(
       GetMainFrame(),
       &state,
       request,
-      WebKit::WebNavigationTypeLinkClicked,
-      WebKit::WebNavigationPolicyCurrentTab,
+      blink::WebNavigationTypeLinkClicked,
+      blink::WebNavigationPolicyCurrentTab,
       false);
-  EXPECT_EQ(WebKit::WebNavigationPolicyCurrentTab, policy);
+  EXPECT_EQ(blink::WebNavigationPolicyCurrentTab, policy);
 
   // Verify that form posts to WebUI URLs will be sent to the browser process.
-  WebKit::WebURLRequest form_request(GURL("chrome://foo"));
+  blink::WebURLRequest form_request(GURL("chrome://foo"));
   form_request.setHTTPMethod("POST");
   policy = view()->decidePolicyForNavigation(
       GetMainFrame(),
       &state,
       form_request,
-      WebKit::WebNavigationTypeFormSubmitted,
-      WebKit::WebNavigationPolicyCurrentTab,
+      blink::WebNavigationTypeFormSubmitted,
+      blink::WebNavigationPolicyCurrentTab,
       false);
-  EXPECT_EQ(WebKit::WebNavigationPolicyIgnore, policy);
+  EXPECT_EQ(blink::WebNavigationPolicyIgnore, policy);
 
   // Verify that popup links to WebUI URLs also are sent to browser.
-  WebKit::WebURLRequest popup_request(GURL("chrome://foo"));
+  blink::WebURLRequest popup_request(GURL("chrome://foo"));
   policy = view()->decidePolicyForNavigation(
       GetMainFrame(),
       &state,
       popup_request,
-      WebKit::WebNavigationTypeLinkClicked,
-      WebKit::WebNavigationPolicyNewForegroundTab,
+      blink::WebNavigationTypeLinkClicked,
+      blink::WebNavigationPolicyNewForegroundTab,
       false);
-  EXPECT_EQ(WebKit::WebNavigationPolicyIgnore, policy);
+  EXPECT_EQ(blink::WebNavigationPolicyIgnore, policy);
 }
 
 TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
@@ -383,55 +383,55 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
   state.set_navigation_state(NavigationState::CreateContentInitiated());
 
   // Navigations to normal HTTP URLs will be sent to browser process.
-  WebKit::WebURLRequest request(GURL("http://foo.com"));
-  WebKit::WebNavigationPolicy policy = view()->decidePolicyForNavigation(
+  blink::WebURLRequest request(GURL("http://foo.com"));
+  blink::WebNavigationPolicy policy = view()->decidePolicyForNavigation(
       GetMainFrame(),
       &state,
       request,
-      WebKit::WebNavigationTypeLinkClicked,
-      WebKit::WebNavigationPolicyCurrentTab,
+      blink::WebNavigationTypeLinkClicked,
+      blink::WebNavigationPolicyCurrentTab,
       false);
-  EXPECT_EQ(WebKit::WebNavigationPolicyIgnore, policy);
+  EXPECT_EQ(blink::WebNavigationPolicyIgnore, policy);
 
   // Navigations to WebUI URLs will also be sent to browser process.
-  WebKit::WebURLRequest webui_request(GURL("chrome://foo"));
+  blink::WebURLRequest webui_request(GURL("chrome://foo"));
   policy = view()->decidePolicyForNavigation(
       GetMainFrame(),
       &state,
       webui_request,
-      WebKit::WebNavigationTypeLinkClicked,
-      WebKit::WebNavigationPolicyCurrentTab,
+      blink::WebNavigationTypeLinkClicked,
+      blink::WebNavigationPolicyCurrentTab,
       false);
-  EXPECT_EQ(WebKit::WebNavigationPolicyIgnore, policy);
+  EXPECT_EQ(blink::WebNavigationPolicyIgnore, policy);
 
   // Verify that form posts to data URLs will be sent to the browser process.
-  WebKit::WebURLRequest data_request(GURL("data:text/html,foo"));
+  blink::WebURLRequest data_request(GURL("data:text/html,foo"));
   data_request.setHTTPMethod("POST");
   policy = view()->decidePolicyForNavigation(
       GetMainFrame(),
       &state,
       data_request,
-      WebKit::WebNavigationTypeFormSubmitted,
-      WebKit::WebNavigationPolicyCurrentTab,
+      blink::WebNavigationTypeFormSubmitted,
+      blink::WebNavigationPolicyCurrentTab,
       false);
-  EXPECT_EQ(WebKit::WebNavigationPolicyIgnore, policy);
+  EXPECT_EQ(blink::WebNavigationPolicyIgnore, policy);
 
   // Verify that a popup that creates a view first and then navigates to a
   // normal HTTP URL will be sent to the browser process, even though the
   // new view does not have any enabled_bindings_.
-  WebKit::WebURLRequest popup_request(GURL("http://foo.com"));
-  WebKit::WebView* new_web_view = view()->createView(
-      GetMainFrame(), popup_request, WebKit::WebWindowFeatures(), "foo",
-      WebKit::WebNavigationPolicyNewForegroundTab);
+  blink::WebURLRequest popup_request(GURL("http://foo.com"));
+  blink::WebView* new_web_view = view()->createView(
+      GetMainFrame(), popup_request, blink::WebWindowFeatures(), "foo",
+      blink::WebNavigationPolicyNewForegroundTab);
   RenderViewImpl* new_view = RenderViewImpl::FromWebView(new_web_view);
   policy = new_view->decidePolicyForNavigation(
       new_web_view->mainFrame(),
       &state,
       popup_request,
-      WebKit::WebNavigationTypeLinkClicked,
-      WebKit::WebNavigationPolicyNewForegroundTab,
+      blink::WebNavigationTypeLinkClicked,
+      blink::WebNavigationPolicyNewForegroundTab,
       false);
-  EXPECT_EQ(WebKit::WebNavigationPolicyIgnore, policy);
+  EXPECT_EQ(blink::WebNavigationPolicyIgnore, policy);
 
   // Clean up after the new view so we don't leak it.
   new_view->Close();
@@ -1007,7 +1007,7 @@ TEST_F(RenderViewImplTest, ImeComposition) {
       case IME_SETCOMPOSITION:
         view()->OnImeSetComposition(
             WideToUTF16Hack(ime_message->ime_string),
-            std::vector<WebKit::WebCompositionUnderline>(),
+            std::vector<blink::WebCompositionUnderline>(),
             ime_message->selection_start,
             ime_message->selection_end);
         break;
@@ -1022,7 +1022,7 @@ TEST_F(RenderViewImplTest, ImeComposition) {
       case IME_CANCELCOMPOSITION:
         view()->OnImeSetComposition(
             string16(),
-            std::vector<WebKit::WebCompositionUnderline>(),
+            std::vector<blink::WebCompositionUnderline>(),
             0, 0);
         break;
     }
@@ -1066,8 +1066,8 @@ TEST_F(RenderViewImplTest, OnSetTextDirection) {
     WebTextDirection direction;
     const wchar_t* expected_result;
   } kTextDirection[] = {
-    { WebKit::WebTextDirectionRightToLeft, L"\x000A" L"rtl,rtl" },
-    { WebKit::WebTextDirectionLeftToRight, L"\x000A" L"ltr,ltr" },
+    { blink::WebTextDirectionRightToLeft, L"\x000A" L"rtl,rtl" },
+    { blink::WebTextDirectionLeftToRight, L"\x000A" L"ltr,ltr" },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTextDirection); ++i) {
     // Set the text direction of the <textarea> element.
@@ -1523,7 +1523,7 @@ TEST_F(RenderViewImplTest, DidFailProvisionalLoadWithErrorForCancellation) {
 // Regression test for http://crbug.com/41562
 TEST_F(RenderViewImplTest, UpdateTargetURLWithInvalidURL) {
   const GURL invalid_gurl("http://");
-  view()->setMouseOverURL(WebKit::WebURL(invalid_gurl));
+  view()->setMouseOverURL(blink::WebURL(invalid_gurl));
   EXPECT_EQ(invalid_gurl, view()->target_url_);
 }
 
@@ -1712,7 +1712,7 @@ TEST_F(RenderViewImplTest, ContextMenu) {
 
 TEST_F(RenderViewImplTest, TestBackForward) {
   LoadHTML("<div id=pagename>Page A</div>");
-  WebKit::WebHistoryItem page_a_item = GetMainFrame()->currentHistoryItem();
+  blink::WebHistoryItem page_a_item = GetMainFrame()->currentHistoryItem();
   int was_page_a = -1;
   string16 check_page_a =
       ASCIIToUTF16(
@@ -1736,7 +1736,7 @@ TEST_F(RenderViewImplTest, TestBackForward) {
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_c, &was_page_c));
   EXPECT_EQ(1, was_page_b);
 
-  WebKit::WebHistoryItem forward_item = GetMainFrame()->currentHistoryItem();
+  blink::WebHistoryItem forward_item = GetMainFrame()->currentHistoryItem();
   GoBack(GetMainFrame()->previousHistoryItem());
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_b, &was_page_b));
   EXPECT_EQ(1, was_page_b);
@@ -1772,7 +1772,7 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
   ExecuteJavaScript("document.getElementById('test').focus();");
 
   const string16 empty_string = UTF8ToUTF16("");
-  const std::vector<WebKit::WebCompositionUnderline> empty_underline;
+  const std::vector<blink::WebCompositionUnderline> empty_underline;
   std::vector<gfx::Rect> bounds;
   view()->OnSetFocus(true);
   view()->OnSetInputMethodActive(true);
@@ -1874,9 +1874,9 @@ TEST_F(RenderViewImplTest, SetEditableSelectionAndComposition) {
            "</html>");
   ExecuteJavaScript("document.getElementById('test1').focus();");
   view()->OnSetEditableSelectionOffsets(4, 8);
-  const std::vector<WebKit::WebCompositionUnderline> empty_underline;
+  const std::vector<blink::WebCompositionUnderline> empty_underline;
   view()->OnSetCompositionFromExistingText(7, 10, empty_underline);
-  WebKit::WebTextInputInfo info = view()->webview()->textInputInfo();
+  blink::WebTextInputInfo info = view()->webview()->textInputInfo();
   EXPECT_EQ(4, info.selectionStart);
   EXPECT_EQ(8, info.selectionEnd);
   EXPECT_EQ(7, info.compositionStart);
@@ -1900,7 +1900,7 @@ TEST_F(RenderViewImplTest, OnExtendSelectionAndDelete) {
   ExecuteJavaScript("document.getElementById('test1').focus();");
   view()->OnSetEditableSelectionOffsets(10, 10);
   view()->OnExtendSelectionAndDelete(3, 4);
-  WebKit::WebTextInputInfo info = view()->webview()->textInputInfo();
+  blink::WebTextInputInfo info = view()->webview()->textInputInfo();
   EXPECT_EQ("abcdefgopqrstuvwxyz", info.value);
   EXPECT_EQ(7, info.selectionStart);
   EXPECT_EQ(7, info.selectionEnd);
@@ -1951,7 +1951,7 @@ TEST_F(RenderViewImplTest, GetSSLStatusOfFrame) {
   SSLStatus ssl_status = view()->GetSSLStatusOfFrame(frame);
   EXPECT_FALSE(net::IsCertStatusError(ssl_status.cert_status));
 
-  const_cast<WebKit::WebURLResponse&>(frame->dataSource()->response()).
+  const_cast<blink::WebURLResponse&>(frame->dataSource()->response()).
       setSecurityInfo(
           SerializeSecurityInfo(0, net::CERT_STATUS_ALL_ERRORS, 0, 0));
   ssl_status = view()->GetSSLStatusOfFrame(frame);
@@ -2008,9 +2008,9 @@ class SuppressErrorPageTest : public RenderViewTest {
     }
 
     virtual void GetNavigationErrorStrings(
-        WebKit::WebFrame* frame,
-        const WebKit::WebURLRequest& failed_request,
-        const WebKit::WebURLError& error,
+        blink::WebFrame* frame,
+        const blink::WebURLRequest& failed_request,
+        const blink::WebURLError& error,
         const std::string& accept_languages,
         std::string* error_html,
         string16* error_description) OVERRIDE {

@@ -6,7 +6,7 @@
 
 #include "content/renderer/render_view_impl.h"
 
-using WebKit::WebFrame;
+using blink::WebFrame;
 
 namespace content {
 

@@ -7,11 +7,11 @@
 #include "content/common/view_messages.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
 
-using WebKit::WebWidget;
+using blink::WebWidget;
 
 namespace content {
 
-void RenderWidgetFullscreen::show(WebKit::WebNavigationPolicy) {
+void RenderWidgetFullscreen::show(blink::WebNavigationPolicy) {
   DCHECK(!did_show_) << "received extraneous Show call";
   DCHECK_NE(MSG_ROUTING_NONE, routing_id_);
   DCHECK_NE(MSG_ROUTING_NONE, opener_id_);
@@ -24,8 +24,8 @@ void RenderWidgetFullscreen::show(WebKit::WebNavigationPolicy) {
 }
 
 RenderWidgetFullscreen::RenderWidgetFullscreen(
-    const WebKit::WebScreenInfo& screen_info)
-    : RenderWidget(WebKit::WebPopupTypeNone, screen_info, false, false) {
+    const blink::WebScreenInfo& screen_info)
+    : RenderWidget(blink::WebPopupTypeNone, screen_info, false, false) {
 }
 
 RenderWidgetFullscreen::~RenderWidgetFullscreen() {}

@@ -53,7 +53,7 @@ class SavableResourcesTest : public ContentBrowserTest {
     // Get all savable resource links for the page.
     std::vector<GURL> resources_list;
     std::vector<GURL> referrer_urls_list;
-    std::vector<WebKit::WebReferrerPolicy> referrer_policies_list;
+    std::vector<blink::WebReferrerPolicy> referrer_policies_list;
     std::vector<GURL> frames_list;
     SavableResourcesResult result(&resources_list,
                                   &referrer_urls_list,

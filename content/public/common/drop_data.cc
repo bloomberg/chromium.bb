@@ -16,7 +16,7 @@ DropData::FileInfo::FileInfo(const base::string16& path,
 }
 
 DropData::DropData()
-    : referrer_policy(WebKit::WebReferrerPolicyDefault) {
+    : referrer_policy(blink::WebReferrerPolicyDefault) {
 }
 
 DropData::~DropData() {

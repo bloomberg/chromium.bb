@@ -23,11 +23,11 @@
 #include "ui/gfx/point.h"
 #include "url/gurl.h"
 
-using WebKit::WebDragOperationNone;
-using WebKit::WebDragOperationCopy;
-using WebKit::WebDragOperationLink;
-using WebKit::WebDragOperationMove;
-using WebKit::WebDragOperationGeneric;
+using blink::WebDragOperationNone;
+using blink::WebDragOperationCopy;
+using blink::WebDragOperationLink;
+using blink::WebDragOperationMove;
+using blink::WebDragOperationGeneric;
 
 namespace content {
 namespace {
@@ -48,15 +48,15 @@ DWORD GetPreferredDropEffect(DWORD effect) {
 int GetModifierFlags() {
   int modifier_state = 0;
   if (base::win::IsShiftPressed())
-    modifier_state |= WebKit::WebInputEvent::ShiftKey;
+    modifier_state |= blink::WebInputEvent::ShiftKey;
   if (base::win::IsCtrlPressed())
-    modifier_state |= WebKit::WebInputEvent::ControlKey;
+    modifier_state |= blink::WebInputEvent::ControlKey;
   if (base::win::IsAltPressed())
-    modifier_state |= WebKit::WebInputEvent::AltKey;
+    modifier_state |= blink::WebInputEvent::AltKey;
   if (::GetKeyState(VK_LWIN) & kHighBitMaskShort)
-    modifier_state |= WebKit::WebInputEvent::MetaKey;
+    modifier_state |= blink::WebInputEvent::MetaKey;
   if (::GetKeyState(VK_RWIN) & kHighBitMaskShort)
-    modifier_state |= WebKit::WebInputEvent::MetaKey;
+    modifier_state |= blink::WebInputEvent::MetaKey;
   return modifier_state;
 }
 

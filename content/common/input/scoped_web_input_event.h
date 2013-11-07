@@ -9,18 +9,18 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 
-namespace WebKit {
+namespace blink {
 class WebInputEvent;
 }
 
 namespace content {
 
-// WebKit::WebInputEvent does not provide a virtual destructor.
+// blink::WebInputEvent does not provide a virtual destructor.
 struct CONTENT_EXPORT WebInputEventDeleter {
   WebInputEventDeleter();
-  void operator()(WebKit::WebInputEvent* web_event) const;
+  void operator()(blink::WebInputEvent* web_event) const;
 };
-typedef scoped_ptr<WebKit::WebInputEvent,
+typedef scoped_ptr<blink::WebInputEvent,
                    WebInputEventDeleter> ScopedWebInputEvent;
 
 }  // namespace content

@@ -12,7 +12,7 @@
 
 class Shell;
 
-namespace WebKit {
+namespace blink {
 class WebLayer;
 }
 
@@ -30,8 +30,8 @@ void CloseShellView(jobject shell_view);
 // Registers the ShellManager native methods.
 bool RegisterShellManager(JNIEnv* env);
 
-void ShellAttachLayer(WebKit::WebLayer* layer);
-void ShellRemoveLayer(WebKit::WebLayer* layer);
+void ShellAttachLayer(blink::WebLayer* layer);
+void ShellRemoveLayer(blink::WebLayer* layer);
 }  // namespace content
 
 #endif  // CONTENT_SHELL_ANDROID_SHELL_MANAGER_H_

@@ -123,13 +123,13 @@ bool ParamTraits<NPIdentifier_Param>::Read(const Message* m,
 }
 
 void ParamTraits<NPIdentifier_Param>::Log(const param_type& p, std::string* l) {
-  if (WebKit::WebBindings::identifierIsString(p.identifier)) {
-    NPUTF8* str = WebKit::WebBindings::utf8FromIdentifier(p.identifier);
+  if (blink::WebBindings::identifierIsString(p.identifier)) {
+    NPUTF8* str = blink::WebBindings::utf8FromIdentifier(p.identifier);
     l->append(str);
     free(str);
   } else {
     l->append(base::IntToString(
-        WebKit::WebBindings::intFromIdentifier(p.identifier)));
+        blink::WebBindings::intFromIdentifier(p.identifier)));
   }
 }
 

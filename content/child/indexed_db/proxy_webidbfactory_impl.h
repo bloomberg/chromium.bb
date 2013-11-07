@@ -11,33 +11,33 @@
 #include "third_party/WebKit/public/platform/WebIDBFactory.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 
-namespace WebKit {
+namespace blink {
 class WebString;
 }
 
 namespace content {
 class ThreadSafeSender;
 
-class RendererWebIDBFactoryImpl : public WebKit::WebIDBFactory {
+class RendererWebIDBFactoryImpl : public blink::WebIDBFactory {
  public:
   explicit RendererWebIDBFactoryImpl(ThreadSafeSender* thread_safe_sender);
   virtual ~RendererWebIDBFactoryImpl();
 
   // See WebIDBFactory.h for documentation on these functions.
   virtual void getDatabaseNames(
-      WebKit::WebIDBCallbacks* callbacks,
-      const WebKit::WebString& database_identifier);
+      blink::WebIDBCallbacks* callbacks,
+      const blink::WebString& database_identifier);
   virtual void open(
-      const WebKit::WebString& name,
+      const blink::WebString& name,
       long long version,
       long long transaction_id,
-      WebKit::WebIDBCallbacks* callbacks,
-      WebKit::WebIDBDatabaseCallbacks* databaseCallbacks,
-      const WebKit::WebString& database_identifier);
+      blink::WebIDBCallbacks* callbacks,
+      blink::WebIDBDatabaseCallbacks* databaseCallbacks,
+      const blink::WebString& database_identifier);
   virtual void deleteDatabase(
-      const WebKit::WebString& name,
-      WebKit::WebIDBCallbacks* callbacks,
-      const WebKit::WebString& database_identifier);
+      const blink::WebString& name,
+      blink::WebIDBCallbacks* callbacks,
+      const blink::WebString& database_identifier);
 
  private:
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;

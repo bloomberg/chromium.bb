@@ -8,10 +8,10 @@
 #include "base/bind_helpers.h"
 #include "content/renderer/fetchers/resource_fetcher.h"
 
-using WebKit::WebFrame;
-using WebKit::WebURLError;
-using WebKit::WebURLRequest;
-using WebKit::WebURLResponse;
+using blink::WebFrame;
+using blink::WebURLError;
+using blink::WebURLRequest;
+using blink::WebURLResponse;
 
 namespace content {
 

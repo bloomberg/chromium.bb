@@ -9,10 +9,10 @@
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
-using WebKit::WebIDBCallbacks;
-using WebKit::WebIDBDatabase;
-using WebKit::WebIDBDatabaseCallbacks;
-using WebKit::WebString;
+using blink::WebIDBCallbacks;
+using blink::WebIDBDatabase;
+using blink::WebIDBDatabaseCallbacks;
+using blink::WebString;
 
 namespace content {
 

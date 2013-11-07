@@ -6,7 +6,7 @@
 
 #include "content/browser/renderer_host/input/web_input_event_builders_win.h"
 
-using WebKit::WebKeyboardEvent;
+using blink::WebKeyboardEvent;
 
 namespace content {
 

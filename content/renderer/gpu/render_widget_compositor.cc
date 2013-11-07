@@ -39,9 +39,9 @@ namespace cc {
 class Layer;
 }
 
-using WebKit::WebFloatPoint;
-using WebKit::WebSize;
-using WebKit::WebRect;
+using blink::WebFloatPoint;
+using blink::WebSize;
+using blink::WebRect;
 
 namespace content {
 namespace {
@@ -430,7 +430,7 @@ void RenderWidgetCompositor::setSurfaceReady() {
   layer_tree_host_->SetLayerTreeHostClientReady();
 }
 
-void RenderWidgetCompositor::setRootLayer(const WebKit::WebLayer& layer) {
+void RenderWidgetCompositor::setRootLayer(const blink::WebLayer& layer) {
   layer_tree_host_->SetRootLayer(
       static_cast<const webkit::WebLayerImpl*>(&layer)->layer());
 }
@@ -466,7 +466,7 @@ float RenderWidgetCompositor::deviceScaleFactor() const {
   return layer_tree_host_->device_scale_factor();
 }
 
-void RenderWidgetCompositor::setBackgroundColor(WebKit::WebColor color) {
+void RenderWidgetCompositor::setBackgroundColor(blink::WebColor color) {
   layer_tree_host_->set_background_color(color);
 }
 
@@ -489,7 +489,7 @@ void RenderWidgetCompositor::setPageScaleFactorAndLimits(
 }
 
 void RenderWidgetCompositor::startPageScaleAnimation(
-    const WebKit::WebPoint& destination,
+    const blink::WebPoint& destination,
     bool use_anchor,
     float new_page_scale,
     double duration_sec) {
@@ -521,16 +521,16 @@ void RenderWidgetCompositor::didStopFlinging() {
   layer_tree_host_->DidStopFlinging();
 }
 
-void RenderWidgetCompositor::registerForAnimations(WebKit::WebLayer* layer) {
+void RenderWidgetCompositor::registerForAnimations(blink::WebLayer* layer) {
   cc::Layer* cc_layer = static_cast<webkit::WebLayerImpl*>(layer)->layer();
   cc_layer->layer_animation_controller()->SetAnimationRegistrar(
       layer_tree_host_->animation_registrar());
 }
 
 void RenderWidgetCompositor::registerViewportLayers(
-    const WebKit::WebLayer* pageScaleLayer,
-    const WebKit::WebLayer* innerViewportScrollLayer,
-    const WebKit::WebLayer* outerViewportScrollLayer) {
+    const blink::WebLayer* pageScaleLayer,
+    const blink::WebLayer* innerViewportScrollLayer,
+    const blink::WebLayer* outerViewportScrollLayer) {
   layer_tree_host_->RegisterViewportLayers(
       static_cast<const webkit::WebLayerImpl*>(pageScaleLayer)->layer(),
       static_cast<const webkit::WebLayerImpl*>(innerViewportScrollLayer)

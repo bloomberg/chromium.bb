@@ -58,7 +58,7 @@ bool MouseLockDispatcher::IsMouseLockedTo(LockTarget* target) {
 }
 
 bool MouseLockDispatcher::WillHandleMouseEvent(
-    const WebKit::WebMouseEvent& event) {
+    const blink::WebMouseEvent& event) {
   if (mouse_locked_ && target_)
     return target_->HandleMouseLockedInputEvent(event);
   return false;

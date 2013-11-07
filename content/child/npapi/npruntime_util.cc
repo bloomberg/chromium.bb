@@ -7,7 +7,7 @@
 #include "base/pickle.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
 
-using WebKit::WebBindings;
+using blink::WebBindings;
 
 namespace content {
 

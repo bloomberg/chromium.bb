@@ -144,7 +144,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void DisableScrollbarsForThreshold(const gfx::Size& size) OVERRIDE;
   virtual void DragSourceEndedAt(
       int client_x, int client_y, int screen_x, int screen_y,
-      WebKit::WebDragOperation operation) OVERRIDE;
+      blink::WebDragOperation operation) OVERRIDE;
   virtual void DragSourceMovedTo(
       int client_x, int client_y, int screen_x, int screen_y) OVERRIDE;
   virtual void DragSourceSystemDragEnded() OVERRIDE;
@@ -152,12 +152,12 @@ class CONTENT_EXPORT RenderViewHostImpl
       const DropData& drop_data,
       const gfx::Point& client_pt,
       const gfx::Point& screen_pt,
-      WebKit::WebDragOperationsMask operations_allowed,
+      blink::WebDragOperationsMask operations_allowed,
       int key_modifiers) OVERRIDE;
   virtual void DragTargetDragOver(
       const gfx::Point& client_pt,
       const gfx::Point& screen_pt,
-      WebKit::WebDragOperationsMask operations_allowed,
+      blink::WebDragOperationsMask operations_allowed,
       int key_modifiers) OVERRIDE;
   virtual void DragTargetDragLeave() OVERRIDE;
   virtual void DragTargetDrop(const gfx::Point& client_pt,
@@ -171,7 +171,7 @@ class CONTENT_EXPORT RenderViewHostImpl
       int action, const CustomContextMenuContext& context) OVERRIDE;
   virtual void ExecuteMediaPlayerActionAtLocation(
       const gfx::Point& location,
-      const WebKit::WebMediaPlayerAction& action) OVERRIDE;
+      const blink::WebMediaPlayerAction& action) OVERRIDE;
   virtual void ExecuteJavascriptInWebFrame(const string16& frame_xpath,
                                            const string16& jscript) OVERRIDE;
   virtual void ExecuteJavascriptInWebFrameCallbackResult(
@@ -180,10 +180,10 @@ class CONTENT_EXPORT RenderViewHostImpl
       const JavascriptResultCallback& callback) OVERRIDE;
   virtual void ExecutePluginActionAtLocation(
       const gfx::Point& location,
-      const WebKit::WebPluginAction& action) OVERRIDE;
+      const blink::WebPluginAction& action) OVERRIDE;
   virtual void ExitFullscreen() OVERRIDE;
   virtual void Find(int request_id, const string16& search_text,
-                    const WebKit::WebFindOptions& options) OVERRIDE;
+                    const blink::WebFindOptions& options) OVERRIDE;
   virtual void StopFinding(StopFindAction action) OVERRIDE;
   virtual void FirePageBeforeUnload(bool for_cross_site_transition) OVERRIDE;
   virtual void FilesSelectedInChooser(
@@ -384,7 +384,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void LostCapture() OVERRIDE;
   virtual void LostMouseLock() OVERRIDE;
   virtual void ForwardMouseEvent(
-      const WebKit::WebMouseEvent& mouse_event) OVERRIDE;
+      const blink::WebMouseEvent& mouse_event) OVERRIDE;
   virtual void OnPointerEventActivate() OVERRIDE;
   virtual void ForwardKeyboardEvent(
       const NativeWebKeyboardEvent& key_event) OVERRIDE;
@@ -399,7 +399,7 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   // Creates a new RenderWidget with the given route id.  |popup_type| indicates
   // if this widget is a popup and what kind of popup it is (select, autofill).
-  void CreateNewWidget(int route_id, WebKit::WebPopupType popup_type);
+  void CreateNewWidget(int route_id, blink::WebPopupType popup_type);
 
   // Creates a full screen RenderWidget.
   void CreateNewFullscreenWidget(int route_id);
@@ -440,7 +440,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   // renderer process, and the accessibility tree it sent can be
   // retrieved using accessibility_tree_for_testing().
   void SetAccessibilityCallbackForTesting(
-      const base::Callback<void(WebKit::WebAXEvent)>& callback);
+      const base::Callback<void(blink::WebAXEvent)>& callback);
 
   // Only valid if SetAccessibilityCallbackForTesting was called and
   // the callback was run at least once. Returns a snapshot of the
@@ -532,7 +532,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnUpdateState(int32 page_id, const PageState& state);
   void OnUpdateTitle(int32 page_id,
                      const string16& title,
-                     WebKit::WebTextDirection title_direction);
+                     blink::WebTextDirection title_direction);
   void OnUpdateEncoding(const std::string& encoding);
   void OnUpdateTargetURL(int32 page_id, const GURL& url);
   void OnClose();
@@ -571,11 +571,11 @@ class CONTENT_EXPORT RenderViewHostImpl
                                 bool is_reload,
                                 IPC::Message* reply_msg);
   void OnStartDragging(const DropData& drop_data,
-                       WebKit::WebDragOperationsMask operations_allowed,
+                       blink::WebDragOperationsMask operations_allowed,
                        const SkBitmap& bitmap,
                        const gfx::Vector2d& bitmap_offset_in_dip,
                        const DragEventSourceInfo& event_info);
-  void OnUpdateDragCursor(WebKit::WebDragOperation drag_operation);
+  void OnUpdateDragCursor(blink::WebDragOperation drag_operation);
   void OnTargetDropACK();
   void OnTakeFocus(bool reverse);
   void OnFocusedNodeChanged(bool is_editable_node);
@@ -717,7 +717,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   std::map<int, JavascriptResultCallback> javascript_callbacks_;
 
   // Accessibility callback for testing.
-  base::Callback<void(WebKit::WebAXEvent)> accessibility_testing_callback_;
+  base::Callback<void(blink::WebAXEvent)> accessibility_testing_callback_;
 
   // The most recently received accessibility tree - for testing only.
   AccessibilityNodeDataTreeNode accessibility_tree_;

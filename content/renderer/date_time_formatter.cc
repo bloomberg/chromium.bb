@@ -77,10 +77,10 @@ static const char* FindLongestTimePatternWhichMatches(const std::string& value,
 }
 
 DateTimeFormatter::DateTimeFormatter(
-    const WebKit::WebDateTimeChooserParams& source)
+    const blink::WebDateTimeChooserParams& source)
     : formatted_string_(source.currentValue.utf8()) {
   CreatePatternMap();
-  if (source.type == WebKit::WebDateTimeInputTypeTime)
+  if (source.type == blink::WebDateTimeInputTypeTime)
     time_pattern_ =
         FindLongestTimePatternWhichMatches(formatted_string_, source.step);
   ExtractType(source);
@@ -214,27 +214,27 @@ const std::string DateTimeFormatter::FormatString() const {
 }
 
 void DateTimeFormatter::ExtractType(
-    const WebKit::WebDateTimeChooserParams& source) {
+    const blink::WebDateTimeChooserParams& source) {
   switch (source.type) {
-    case WebKit::WebDateTimeInputTypeDate:
+    case blink::WebDateTimeInputTypeDate:
       type_ = ui::TEXT_INPUT_TYPE_DATE;
       break;
-    case WebKit::WebDateTimeInputTypeDateTime:
+    case blink::WebDateTimeInputTypeDateTime:
       type_ = ui::TEXT_INPUT_TYPE_DATE_TIME;
       break;
-    case WebKit::WebDateTimeInputTypeDateTimeLocal:
+    case blink::WebDateTimeInputTypeDateTimeLocal:
       type_ = ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL;
       break;
-    case WebKit::WebDateTimeInputTypeMonth:
+    case blink::WebDateTimeInputTypeMonth:
       type_ = ui::TEXT_INPUT_TYPE_MONTH;
       break;
-    case WebKit::WebDateTimeInputTypeTime:
+    case blink::WebDateTimeInputTypeTime:
       type_ = ui::TEXT_INPUT_TYPE_TIME;
       break;
-    case WebKit::WebDateTimeInputTypeWeek:
+    case blink::WebDateTimeInputTypeWeek:
       type_ = ui::TEXT_INPUT_TYPE_WEEK;
       break;
-    case WebKit::WebDateTimeInputTypeNone:
+    case blink::WebDateTimeInputTypeNone:
     default:
       type_ = ui::TEXT_INPUT_TYPE_NONE;
   }

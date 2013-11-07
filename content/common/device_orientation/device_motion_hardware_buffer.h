@@ -10,7 +10,7 @@
 
 namespace content {
 
-typedef SharedMemorySeqLockBuffer<WebKit::WebDeviceMotionData>
+typedef SharedMemorySeqLockBuffer<blink::WebDeviceMotionData>
     DeviceMotionHardwareBuffer;
 
 }  // namespace content

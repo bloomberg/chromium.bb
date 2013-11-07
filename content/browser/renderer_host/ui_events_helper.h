@@ -9,7 +9,7 @@
 #include "content/common/content_export.h"
 #include "content/port/browser/event_with_latency_info.h"
 
-namespace WebKit {
+namespace blink {
 class WebGestureEvent;
 class WebTouchEvent;
 class WebTouchPoint;
@@ -41,7 +41,7 @@ CONTENT_EXPORT bool MakeUITouchEventsFromWebTouchEvents(
 // Creates a WebGestureEvent from a ui::GestureEvent. Note that it does not
 // populate the event coordinates (i.e. |x|, |y|, |globalX|, and |globalY|). So
 // the caller must populate these fields.
-WebKit::WebGestureEvent MakeWebGestureEventFromUIEvent(
+blink::WebGestureEvent MakeWebGestureEventFromUIEvent(
     const ui::GestureEvent& event);
 
 int EventFlagsToWebEventModifiers(int flags);
@@ -49,9 +49,9 @@ int EventFlagsToWebEventModifiers(int flags);
 // Updates the WebTouchEvent based on the TouchEvent. It returns the updated
 // WebTouchPoint contained in the WebTouchEvent, or NULL if no point was
 // updated.
-WebKit::WebTouchPoint* UpdateWebTouchEventFromUIEvent(
+blink::WebTouchPoint* UpdateWebTouchEventFromUIEvent(
     const ui::TouchEvent& event,
-    WebKit::WebTouchEvent* web_event);
+    blink::WebTouchEvent* web_event);
 }
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_UI_EVENTS_HELPER_H_

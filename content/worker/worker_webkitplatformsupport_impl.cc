@@ -30,18 +30,18 @@
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkit_glue.h"
 
-using WebKit::Platform;
-using WebKit::WebBlobRegistry;
-using WebKit::WebClipboard;
-using WebKit::WebFileInfo;
-using WebKit::WebFileSystem;
-using WebKit::WebFileUtilities;
-using WebKit::WebMessagePortChannel;
-using WebKit::WebMimeRegistry;
-using WebKit::WebSandboxSupport;
-using WebKit::WebStorageNamespace;
-using WebKit::WebString;
-using WebKit::WebURL;
+using blink::Platform;
+using blink::WebBlobRegistry;
+using blink::WebClipboard;
+using blink::WebFileInfo;
+using blink::WebFileSystem;
+using blink::WebFileUtilities;
+using blink::WebMessagePortChannel;
+using blink::WebMimeRegistry;
+using blink::WebSandboxSupport;
+using blink::WebStorageNamespace;
+using blink::WebString;
+using blink::WebURL;
 
 namespace content {
 
@@ -169,7 +169,7 @@ WorkerWebKitPlatformSupportImpl::createLocalStorageNamespace() {
 void WorkerWebKitPlatformSupportImpl::dispatchStorageEvent(
     const WebString& key, const WebString& old_value,
     const WebString& new_value, const WebString& origin,
-    const WebKit::WebURL& url, bool is_local_storage) {
+    const blink::WebURL& url, bool is_local_storage) {
   NOTREACHED();
 }
 
@@ -204,7 +204,7 @@ long long WorkerWebKitPlatformSupportImpl::databaseGetSpaceAvailableForOrigin(
                                                  sync_message_filter_.get());
 }
 
-WebKit::WebIDBFactory* WorkerWebKitPlatformSupportImpl::idbFactory() {
+blink::WebIDBFactory* WorkerWebKitPlatformSupportImpl::idbFactory() {
   if (!web_idb_factory_)
     web_idb_factory_.reset(
         new RendererWebIDBFactoryImpl(thread_safe_sender_.get()));
@@ -238,7 +238,7 @@ WorkerWebKitPlatformSupportImpl::supportsMediaMIMEType(
 }
 
 bool WorkerWebKitPlatformSupportImpl::supportsMediaSourceMIMEType(
-    const WebKit::WebString& mimeType, const WebKit::WebString& codecs) {
+    const blink::WebString& mimeType, const blink::WebString& codecs) {
   NOTREACHED();
   return false;
 }
@@ -281,9 +281,9 @@ WebBlobRegistry* WorkerWebKitPlatformSupportImpl::blobRegistry() {
 }
 
 void WorkerWebKitPlatformSupportImpl::queryStorageUsageAndQuota(
-    const WebKit::WebURL& storage_partition,
-    WebKit::WebStorageQuotaType type,
-    WebKit::WebStorageQuotaCallbacks* callbacks) {
+    const blink::WebURL& storage_partition,
+    blink::WebStorageQuotaType type,
+    blink::WebStorageQuotaCallbacks* callbacks) {
   if (!thread_safe_sender_.get() || !quota_message_filter_.get())
     return;
   QuotaDispatcher::ThreadSpecificInstance(

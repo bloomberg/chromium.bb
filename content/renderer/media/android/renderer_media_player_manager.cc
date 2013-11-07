@@ -324,11 +324,11 @@ ProxyMediaKeys* RendererMediaPlayerManager::GetMediaKeys(int media_keys_id) {
   return (iter != media_keys_.end()) ? iter->second : NULL;
 }
 
-bool RendererMediaPlayerManager::CanEnterFullscreen(WebKit::WebFrame* frame) {
+bool RendererMediaPlayerManager::CanEnterFullscreen(blink::WebFrame* frame) {
   return !fullscreen_frame_ || IsInFullscreen(frame);
 }
 
-void RendererMediaPlayerManager::DidEnterFullscreen(WebKit::WebFrame* frame) {
+void RendererMediaPlayerManager::DidEnterFullscreen(blink::WebFrame* frame) {
   fullscreen_frame_ = frame;
 }
 
@@ -336,7 +336,7 @@ void RendererMediaPlayerManager::DidExitFullscreen() {
   fullscreen_frame_ = NULL;
 }
 
-bool RendererMediaPlayerManager::IsInFullscreen(WebKit::WebFrame* frame) {
+bool RendererMediaPlayerManager::IsInFullscreen(blink::WebFrame* frame) {
   return fullscreen_frame_ == frame;
 }
 

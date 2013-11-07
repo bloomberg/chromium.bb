@@ -19,7 +19,7 @@
 
 class SkCanvas;
 
-namespace WebKit {
+namespace blink {
 class WebDeviceMotionData;
 class WebDeviceOrientationData;
 struct WebRect;
@@ -41,39 +41,39 @@ class WebKitTestRunner : public RenderViewObserver,
 
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void DidClearWindowObject(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void DidClearWindowObject(blink::WebFrame* frame) OVERRIDE;
   virtual void Navigate(const GURL& url) OVERRIDE;
-  virtual void DidCommitProvisionalLoad(WebKit::WebFrame* frame,
+  virtual void DidCommitProvisionalLoad(blink::WebFrame* frame,
                                         bool is_new_navigation) OVERRIDE;
   virtual void DidFailProvisionalLoad(
-      WebKit::WebFrame* frame, const WebKit::WebURLError& error) OVERRIDE;
+      blink::WebFrame* frame, const blink::WebURLError& error) OVERRIDE;
 
   // WebTestDelegate implementation.
   virtual void clearEditCommand();
   virtual void setEditCommand(const std::string& name,
                               const std::string& value);
-  virtual void setGamepadData(const WebKit::WebGamepads& gamepads);
-  virtual void setDeviceMotionData(const WebKit::WebDeviceMotionData& data);
+  virtual void setGamepadData(const blink::WebGamepads& gamepads);
+  virtual void setDeviceMotionData(const blink::WebDeviceMotionData& data);
   virtual void setDeviceOrientationData(
-      const WebKit::WebDeviceOrientationData& data);
+      const blink::WebDeviceOrientationData& data);
   virtual void printMessage(const std::string& message);
   virtual void postTask(::WebTestRunner::WebTask* task);
   virtual void postDelayedTask(::WebTestRunner::WebTask* task,
                                long long ms);
-  virtual WebKit::WebString registerIsolatedFileSystem(
-      const WebKit::WebVector<WebKit::WebString>& absolute_filenames);
+  virtual blink::WebString registerIsolatedFileSystem(
+      const blink::WebVector<blink::WebString>& absolute_filenames);
   virtual long long getCurrentTimeInMillisecond();
-  virtual WebKit::WebString getAbsoluteWebStringFromUTF8Path(
+  virtual blink::WebString getAbsoluteWebStringFromUTF8Path(
       const std::string& utf8_path);
-  virtual WebKit::WebURL localFileToDataURL(const WebKit::WebURL& file_url);
-  virtual WebKit::WebURL rewriteLayoutTestsURL(const std::string& utf8_url);
+  virtual blink::WebURL localFileToDataURL(const blink::WebURL& file_url);
+  virtual blink::WebURL rewriteLayoutTestsURL(const std::string& utf8_url);
   virtual ::WebTestRunner::WebPreferences* preferences();
   virtual void applyPreferences();
-  virtual std::string makeURLErrorDescription(const WebKit::WebURLError& error);
+  virtual std::string makeURLErrorDescription(const blink::WebURLError& error);
   virtual void useUnfortunateSynchronousResizeMode(bool enable);
-  virtual void enableAutoResizeMode(const WebKit::WebSize& min_size,
-                                    const WebKit::WebSize& max_size);
-  virtual void disableAutoResizeMode(const WebKit::WebSize& new_size);
+  virtual void enableAutoResizeMode(const blink::WebSize& min_size,
+                                    const blink::WebSize& max_size);
+  virtual void disableAutoResizeMode(const blink::WebSize& new_size);
   virtual void showDevTools();
   virtual void closeDevTools();
   virtual void evaluateInWebInspector(long call_id, const std::string& script);
@@ -90,12 +90,12 @@ class WebKitTestRunner : public RenderViewObserver,
   virtual int navigationEntryCount();
   virtual void goToOffset(int offset);
   virtual void reload();
-  virtual void loadURLForFrame(const WebKit::WebURL& url,
+  virtual void loadURLForFrame(const blink::WebURL& url,
                                const std::string& frame_name);
   virtual bool allowExternalPages();
   virtual void captureHistoryForWindow(
       WebTestRunner::WebTestProxyBase* proxy,
-      WebKit::WebVector<WebKit::WebHistoryItem>* history,
+      blink::WebVector<blink::WebHistoryItem>* history,
       size_t* currentEntryIndex);
 
   void Reset();

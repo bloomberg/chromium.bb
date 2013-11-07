@@ -11,8 +11,8 @@ namespace content {
 
 class WebMouseEventBuilder {
  public:
-  static WebKit::WebMouseEvent Build(WebKit::WebInputEvent::Type type,
-                                     WebKit::WebMouseEvent::Button button,
+  static blink::WebMouseEvent Build(blink::WebInputEvent::Type type,
+                                     blink::WebMouseEvent::Button button,
                                      double time_sec,
                                      int window_x,
                                      int window_y,
@@ -29,7 +29,7 @@ class WebMouseWheelEventBuilder {
     DIRECTION_RIGHT,
   };
 
-  static WebKit::WebMouseWheelEvent Build(Direction direction,
+  static blink::WebMouseWheelEvent Build(Direction direction,
                                           double time_sec,
                                           int window_x,
                                           int window_y);
@@ -37,7 +37,7 @@ class WebMouseWheelEventBuilder {
 
 class WebKeyboardEventBuilder {
  public:
-  static WebKit::WebKeyboardEvent Build(WebKit::WebInputEvent::Type type,
+  static blink::WebKeyboardEvent Build(blink::WebInputEvent::Type type,
                                         int modifiers,
                                         double time_sec,
                                         int keycode,
@@ -47,7 +47,7 @@ class WebKeyboardEventBuilder {
 
 class WebGestureEventBuilder {
  public:
-  static WebKit::WebGestureEvent Build(WebKit::WebInputEvent::Type type,
+  static blink::WebGestureEvent Build(blink::WebInputEvent::Type type,
                                        double time_sec,
                                        int x,
                                        int y);

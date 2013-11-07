@@ -35,14 +35,14 @@ GamepadSharedMemoryReader::GamepadSharedMemoryReader()
       static_cast<GamepadHardwareBuffer*>(memory);
 }
 
-void GamepadSharedMemoryReader::SampleGamepads(WebKit::WebGamepads& gamepads) {
+void GamepadSharedMemoryReader::SampleGamepads(blink::WebGamepads& gamepads) {
   // ==========
   //   DANGER
   // ==========
   //
   // This logic is duplicated in Pepper as well. If you change it, that also
   // needs to be in sync. See ppapi/proxy/gamepad_resource.cc.
-  WebKit::WebGamepads read_into;
+  blink::WebGamepads read_into;
   TRACE_EVENT0("GAMEPAD", "SampleGamepads");
 
   if (!base::SharedMemory::IsHandleValid(renderer_shared_memory_handle_))
@@ -82,7 +82,7 @@ void GamepadSharedMemoryReader::SampleGamepads(WebKit::WebGamepads& gamepads) {
       // gamepads to prevent fingerprinting. The actual data is not cleared.
       // WebKit will only copy out data into the JS buffers for connected
       // gamepads so this is sufficient.
-      for (unsigned i = 0; i < WebKit::WebGamepads::itemsLengthCap; i++)
+      for (unsigned i = 0; i < blink::WebGamepads::itemsLengthCap; i++)
         gamepads.items[i].connected = false;
     }
   }

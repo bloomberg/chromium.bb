@@ -22,9 +22,9 @@
 
 #include "third_party/npapi/bindings/npapi_x11.h"
 
-using WebKit::WebKeyboardEvent;
-using WebKit::WebInputEvent;
-using WebKit::WebMouseEvent;
+using blink::WebKeyboardEvent;
+using blink::WebInputEvent;
+using blink::WebMouseEvent;
 
 namespace content {
 

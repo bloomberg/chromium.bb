@@ -16,7 +16,7 @@
 #include "third_party/WebKit/public/web/WebMediaPlayer.h"
 #include "url/gurl.h"
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
 class WebMediaPlayerClient;
 }
@@ -47,24 +47,24 @@ class WebMediaPlayerDelegate;
 // AudioPlayer
 //   plays audio streams.
 //
-// WebKit::WebMediaPlayerClient
+// blink::WebMediaPlayerClient
 //   WebKit client of this media player object.
 class WebMediaPlayerMS
-    : public WebKit::WebMediaPlayer,
+    : public blink::WebMediaPlayer,
       public cc::VideoFrameProvider,
       public base::SupportsWeakPtr<WebMediaPlayerMS> {
  public:
   // Construct a WebMediaPlayerMS with reference to the client, and
   // a MediaStreamClient which provides VideoFrameProvider.
-  WebMediaPlayerMS(WebKit::WebFrame* frame,
-                   WebKit::WebMediaPlayerClient* client,
+  WebMediaPlayerMS(blink::WebFrame* frame,
+                   blink::WebMediaPlayerClient* client,
                    base::WeakPtr<WebMediaPlayerDelegate> delegate,
                    MediaStreamClient* media_stream_client,
                    media::MediaLog* media_log);
   virtual ~WebMediaPlayerMS();
 
   virtual void load(LoadType load_type,
-                    const WebKit::WebURL& url,
+                    const blink::WebURL& url,
                     CORSMode cors_mode) OVERRIDE;
 
   // Playback controls.
@@ -75,13 +75,13 @@ class WebMediaPlayerMS
   virtual void seek(double seconds);
   virtual void setRate(double rate);
   virtual void setVolume(double volume);
-  virtual void setPreload(WebKit::WebMediaPlayer::Preload preload) OVERRIDE;
-  virtual const WebKit::WebTimeRanges& buffered() OVERRIDE;
+  virtual void setPreload(blink::WebMediaPlayer::Preload preload) OVERRIDE;
+  virtual const blink::WebTimeRanges& buffered() OVERRIDE;
   virtual double maxTimeSeekable() const;
 
   // Methods for painting.
-  virtual void paint(WebKit::WebCanvas* canvas,
-                     const WebKit::WebRect& rect,
+  virtual void paint(blink::WebCanvas* canvas,
+                     const blink::WebRect& rect,
                      unsigned char alpha) OVERRIDE;
 
   // True if the loaded media has a playable video/audio track.
@@ -89,7 +89,7 @@ class WebMediaPlayerMS
   virtual bool hasAudio() const OVERRIDE;
 
   // Dimensions of the video.
-  virtual WebKit::WebSize naturalSize() const OVERRIDE;
+  virtual blink::WebSize naturalSize() const OVERRIDE;
 
   // Getters of playback state.
   virtual bool paused() const OVERRIDE;
@@ -98,8 +98,8 @@ class WebMediaPlayerMS
   virtual double currentTime() const;
 
   // Internal states of loading and network.
-  virtual WebKit::WebMediaPlayer::NetworkState networkState() const OVERRIDE;
-  virtual WebKit::WebMediaPlayer::ReadyState readyState() const OVERRIDE;
+  virtual blink::WebMediaPlayer::NetworkState networkState() const OVERRIDE;
+  virtual blink::WebMediaPlayer::ReadyState readyState() const OVERRIDE;
 
   virtual bool didLoadingProgress() const OVERRIDE;
 
@@ -131,23 +131,23 @@ class WebMediaPlayerMS
 
   // Helpers that set the network/ready state and notifies the client if
   // they've changed.
-  void SetNetworkState(WebKit::WebMediaPlayer::NetworkState state);
-  void SetReadyState(WebKit::WebMediaPlayer::ReadyState state);
+  void SetNetworkState(blink::WebMediaPlayer::NetworkState state);
+  void SetReadyState(blink::WebMediaPlayer::ReadyState state);
 
   // Getter method to |client_|.
-  WebKit::WebMediaPlayerClient* GetClient();
+  blink::WebMediaPlayerClient* GetClient();
 
-  WebKit::WebFrame* frame_;
+  blink::WebFrame* frame_;
 
-  WebKit::WebMediaPlayer::NetworkState network_state_;
-  WebKit::WebMediaPlayer::ReadyState ready_state_;
+  blink::WebMediaPlayer::NetworkState network_state_;
+  blink::WebMediaPlayer::ReadyState ready_state_;
 
-  WebKit::WebTimeRanges buffered_;
+  blink::WebTimeRanges buffered_;
 
   // Used for DCHECKs to ensure methods calls executed in the correct thread.
   base::ThreadChecker thread_checker_;
 
-  WebKit::WebMediaPlayerClient* client_;
+  blink::WebMediaPlayerClient* client_;
 
   base::WeakPtr<WebMediaPlayerDelegate> delegate_;
 

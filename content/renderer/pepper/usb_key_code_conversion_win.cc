@@ -8,7 +8,7 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/keycodes/keycode_converter.h"
 
-using WebKit::WebKeyboardEvent;
+using blink::WebKeyboardEvent;
 
 namespace content {
 

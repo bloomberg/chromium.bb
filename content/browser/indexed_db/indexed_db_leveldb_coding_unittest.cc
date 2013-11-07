@@ -16,8 +16,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
-using WebKit::WebIDBKeyTypeDate;
-using WebKit::WebIDBKeyTypeNumber;
+using blink::WebIDBKeyTypeDate;
+using blink::WebIDBKeyTypeNumber;
 
 namespace content {
 

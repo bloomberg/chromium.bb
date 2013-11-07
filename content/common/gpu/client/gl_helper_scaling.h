@@ -41,13 +41,13 @@ class CONTENT_EXPORT GLHelperScaling {
     virtual ~ShaderInterface() {}
     // Note that the src_texture will have the min/mag filter set to GL_LINEAR
     // and wrap_s/t set to CLAMP_TO_EDGE in this call.
-    virtual void Execute(WebKit::WebGLId source_texture,
-                         const std::vector<WebKit::WebGLId>& dest_textures) = 0;
+    virtual void Execute(blink::WebGLId source_texture,
+                         const std::vector<blink::WebGLId>& dest_textures) = 0;
   };
 
   typedef std::pair<ShaderType, bool> ShaderProgramKeyType;
 
-  GLHelperScaling(WebKit::WebGraphicsContext3D* context,
+  GLHelperScaling(blink::WebGraphicsContext3D* context,
                   GLHelper* helper);
   ~GLHelperScaling();
   void InitBuffer();
@@ -182,9 +182,9 @@ class CONTENT_EXPORT GLHelperScaling {
 
   // Interleaved array of 2-dimentional vertex positions (x, y) and
   // 2-dimentional texture coordinates (s, t).
-  static const WebKit::WGC3Dfloat kVertexAttributes[];
+  static const blink::WGC3Dfloat kVertexAttributes[];
 
-  WebKit::WebGraphicsContext3D* context_;
+  blink::WebGraphicsContext3D* context_;
   GLHelper* helper_;
 
   // The buffer that holds the vertices and the texture coordinates data for

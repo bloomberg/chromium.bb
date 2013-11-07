@@ -123,11 +123,11 @@ BrowserAccessibilityManagerWin::~BrowserAccessibilityManagerWin() {
 AccessibilityNodeData BrowserAccessibilityManagerWin::GetEmptyDocument() {
   AccessibilityNodeData empty_document;
   empty_document.id = 0;
-  empty_document.role = WebKit::WebAXRoleRootWebArea;
+  empty_document.role = blink::WebAXRoleRootWebArea;
   empty_document.state =
-      (1 << WebKit::WebAXStateEnabled) |
-      (1 << WebKit::WebAXStateReadonly) |
-      (1 << WebKit::WebAXStateBusy);
+      (1 << blink::WebAXStateEnabled) |
+      (1 << blink::WebAXStateReadonly) |
+      (1 << blink::WebAXStateBusy);
   return empty_document;
 }
 
@@ -171,79 +171,79 @@ void BrowserAccessibilityManagerWin::RemoveNode(BrowserAccessibility* node) {
 }
 
 void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
-    WebKit::WebAXEvent event_type,
+    blink::WebAXEvent event_type,
     BrowserAccessibility* node) {
   LONG event_id = EVENT_MIN;
   switch (event_type) {
-    case WebKit::WebAXEventActiveDescendantChanged:
+    case blink::WebAXEventActiveDescendantChanged:
       event_id = IA2_EVENT_ACTIVE_DESCENDANT_CHANGED;
       break;
-    case WebKit::WebAXEventAlert:
+    case blink::WebAXEventAlert:
       event_id = EVENT_SYSTEM_ALERT;
       break;
-    case WebKit::WebAXEventAriaAttributeChanged:
+    case blink::WebAXEventAriaAttributeChanged:
       event_id = IA2_EVENT_OBJECT_ATTRIBUTE_CHANGED;
       break;
-    case WebKit::WebAXEventAutocorrectionOccured:
+    case blink::WebAXEventAutocorrectionOccured:
       event_id = IA2_EVENT_OBJECT_ATTRIBUTE_CHANGED;
       break;
-    case WebKit::WebAXEventBlur:
+    case blink::WebAXEventBlur:
       // Equivalent to focus on the root.
       event_id = EVENT_OBJECT_FOCUS;
       node = GetRoot();
       break;
-    case WebKit::WebAXEventCheckedStateChanged:
+    case blink::WebAXEventCheckedStateChanged:
       event_id = EVENT_OBJECT_STATECHANGE;
       break;
-    case WebKit::WebAXEventChildrenChanged:
+    case blink::WebAXEventChildrenChanged:
       event_id = EVENT_OBJECT_REORDER;
       break;
-    case WebKit::WebAXEventFocus:
+    case blink::WebAXEventFocus:
       event_id = EVENT_OBJECT_FOCUS;
       break;
-    case WebKit::WebAXEventInvalidStatusChanged:
+    case blink::WebAXEventInvalidStatusChanged:
       event_id = EVENT_OBJECT_STATECHANGE;
       break;
-    case WebKit::WebAXEventLiveRegionChanged:
+    case blink::WebAXEventLiveRegionChanged:
       // TODO: try not firing a native notification at all, since
       // on Windows, each individual item in a live region that changes
       // already gets its own notification.
       event_id = EVENT_OBJECT_REORDER;
       break;
-    case WebKit::WebAXEventLoadComplete:
+    case blink::WebAXEventLoadComplete:
       event_id = IA2_EVENT_DOCUMENT_LOAD_COMPLETE;
       break;
-    case WebKit::WebAXEventMenuListItemSelected:
+    case blink::WebAXEventMenuListItemSelected:
       event_id = EVENT_OBJECT_FOCUS;
       break;
-    case WebKit::WebAXEventMenuListValueChanged:
+    case blink::WebAXEventMenuListValueChanged:
       event_id = EVENT_OBJECT_VALUECHANGE;
       break;
-    case WebKit::WebAXEventHide:
+    case blink::WebAXEventHide:
       event_id = EVENT_OBJECT_HIDE;
       break;
-    case WebKit::WebAXEventShow:
+    case blink::WebAXEventShow:
       event_id = EVENT_OBJECT_SHOW;
       break;
-    case WebKit::WebAXEventScrolledToAnchor:
+    case blink::WebAXEventScrolledToAnchor:
       event_id = EVENT_SYSTEM_SCROLLINGSTART;
       break;
-    case WebKit::WebAXEventSelectedChildrenChanged:
+    case blink::WebAXEventSelectedChildrenChanged:
       event_id = EVENT_OBJECT_SELECTIONWITHIN;
       break;
-    case WebKit::WebAXEventSelectedTextChanged:
+    case blink::WebAXEventSelectedTextChanged:
       event_id = IA2_EVENT_TEXT_CARET_MOVED;
       break;
-    case WebKit::WebAXEventTextChanged:
+    case blink::WebAXEventTextChanged:
       event_id = EVENT_OBJECT_NAMECHANGE;
       break;
-    case WebKit::WebAXEventTextInserted:
+    case blink::WebAXEventTextInserted:
       event_id = IA2_EVENT_TEXT_INSERTED;
       break;
-    case WebKit::WebAXEventTextRemoved:
+    case blink::WebAXEventTextRemoved:
       event_id = IA2_EVENT_TEXT_REMOVED;
       break;
-    case WebKit::WebAXEventValueChanged:
+    case blink::WebAXEventValueChanged:
       event_id = EVENT_OBJECT_VALUECHANGE;
       break;
     default:
@@ -264,7 +264,7 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
   // If this is a layout complete notification (sent when a container scrolls)
   // and there is a descendant tracked object, send a notification on it.
   // TODO(dmazzoni): remove once http://crbug.com/113483 is fixed.
-  if (event_type == WebKit::WebAXEventLayoutComplete &&
+  if (event_type == blink::WebAXEventLayoutComplete &&
       tracked_scroll_object_ &&
       tracked_scroll_object_->IsDescendantOf(node)) {
     MaybeCallNotifyWinEvent(

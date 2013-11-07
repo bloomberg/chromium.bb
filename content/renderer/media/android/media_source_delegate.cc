@@ -25,8 +25,8 @@
 using media::DemuxerStream;
 using media::DemuxerConfigs;
 using media::DemuxerData;
-using WebKit::WebMediaPlayer;
-using WebKit::WebString;
+using blink::WebMediaPlayer;
+using blink::WebString;
 
 namespace {
 
@@ -202,7 +202,7 @@ void MediaSourceDelegate::InitializeMediaStream(
 }
 #endif
 
-const WebKit::WebTimeRanges& MediaSourceDelegate::Buffered() {
+const blink::WebTimeRanges& MediaSourceDelegate::Buffered() {
   buffered_web_time_ranges_ =
       ConvertToWebTimeRanges(buffered_time_ranges_);
   return buffered_web_time_ranges_;

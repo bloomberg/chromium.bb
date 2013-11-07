@@ -334,40 +334,40 @@ void PrepareDropData(DropData* drop_data, const ui::OSExchangeData& data) {
         pickle.data(), pickle.size(), &drop_data->custom_data);
 }
 
-// Utilities to convert between WebKit::WebDragOperationsMask and
+// Utilities to convert between blink::WebDragOperationsMask and
 // ui::DragDropTypes.
-int ConvertFromWeb(WebKit::WebDragOperationsMask ops) {
+int ConvertFromWeb(blink::WebDragOperationsMask ops) {
   int drag_op = ui::DragDropTypes::DRAG_NONE;
-  if (ops & WebKit::WebDragOperationCopy)
+  if (ops & blink::WebDragOperationCopy)
     drag_op |= ui::DragDropTypes::DRAG_COPY;
-  if (ops & WebKit::WebDragOperationMove)
+  if (ops & blink::WebDragOperationMove)
     drag_op |= ui::DragDropTypes::DRAG_MOVE;
-  if (ops & WebKit::WebDragOperationLink)
+  if (ops & blink::WebDragOperationLink)
     drag_op |= ui::DragDropTypes::DRAG_LINK;
   return drag_op;
 }
 
-WebKit::WebDragOperationsMask ConvertToWeb(int drag_op) {
-  int web_drag_op = WebKit::WebDragOperationNone;
+blink::WebDragOperationsMask ConvertToWeb(int drag_op) {
+  int web_drag_op = blink::WebDragOperationNone;
   if (drag_op & ui::DragDropTypes::DRAG_COPY)
-    web_drag_op |= WebKit::WebDragOperationCopy;
+    web_drag_op |= blink::WebDragOperationCopy;
   if (drag_op & ui::DragDropTypes::DRAG_MOVE)
-    web_drag_op |= WebKit::WebDragOperationMove;
+    web_drag_op |= blink::WebDragOperationMove;
   if (drag_op & ui::DragDropTypes::DRAG_LINK)
-    web_drag_op |= WebKit::WebDragOperationLink;
-  return (WebKit::WebDragOperationsMask) web_drag_op;
+    web_drag_op |= blink::WebDragOperationLink;
+  return (blink::WebDragOperationsMask) web_drag_op;
 }
 
 int ConvertAuraEventFlagsToWebInputEventModifiers(int aura_event_flags) {
   int web_input_event_modifiers = 0;
   if (aura_event_flags & ui::EF_SHIFT_DOWN)
-    web_input_event_modifiers |= WebKit::WebInputEvent::ShiftKey;
+    web_input_event_modifiers |= blink::WebInputEvent::ShiftKey;
   if (aura_event_flags & ui::EF_CONTROL_DOWN)
-    web_input_event_modifiers |= WebKit::WebInputEvent::ControlKey;
+    web_input_event_modifiers |= blink::WebInputEvent::ControlKey;
   if (aura_event_flags & ui::EF_ALT_DOWN)
-    web_input_event_modifiers |= WebKit::WebInputEvent::AltKey;
+    web_input_event_modifiers |= blink::WebInputEvent::AltKey;
   if (aura_event_flags & ui::EF_COMMAND_DOWN)
-    web_input_event_modifiers |= WebKit::WebInputEvent::MetaKey;
+    web_input_event_modifiers |= blink::WebInputEvent::MetaKey;
   return web_input_event_modifiers;
 }
 
@@ -807,7 +807,7 @@ WebContentsViewAura::WebContentsViewAura(
     WebContentsViewDelegate* delegate)
     : web_contents_(web_contents),
       delegate_(delegate),
-      current_drag_op_(WebKit::WebDragOperationNone),
+      current_drag_op_(blink::WebDragOperationNone),
       drag_dest_delegate_(NULL),
       current_rvh_for_drag_(NULL),
       overscroll_change_brightness_(false),
@@ -850,7 +850,7 @@ void WebContentsViewAura::SizeChangedCommon(const gfx::Size& size) {
     rwhv->SetSize(size);
 }
 
-void WebContentsViewAura::EndDrag(WebKit::WebDragOperationsMask ops) {
+void WebContentsViewAura::EndDrag(blink::WebDragOperationsMask ops) {
   aura::Window* root_window = GetNativeView()->GetRootWindow();
   gfx::Point screen_loc =
       gfx::Screen::GetScreenFor(GetNativeView())->GetCursorScreenPoint();
@@ -1265,7 +1265,7 @@ void WebContentsViewAura::ShowPopupMenu(const gfx::Rect& bounds,
 
 void WebContentsViewAura::StartDragging(
     const DropData& drop_data,
-    WebKit::WebDragOperationsMask operations,
+    blink::WebDragOperationsMask operations,
     const gfx::ImageSkia& image,
     const gfx::Vector2d& image_offset,
     const DragEventSourceInfo& event_info) {
@@ -1321,7 +1321,7 @@ void WebContentsViewAura::StartDragging(
   web_contents_->SystemDragEnded();
 }
 
-void WebContentsViewAura::UpdateDragCursor(WebKit::WebDragOperation operation) {
+void WebContentsViewAura::UpdateDragCursor(blink::WebDragOperation operation) {
   current_drag_op_ = operation;
 }
 
@@ -1579,7 +1579,7 @@ void WebContentsViewAura::OnDragEntered(const ui::DropTargetEvent& event) {
   current_drop_data_.reset(new DropData());
 
   PrepareDropData(current_drop_data_.get(), event.data());
-  WebKit::WebDragOperationsMask op = ConvertToWeb(event.source_operations());
+  blink::WebDragOperationsMask op = ConvertToWeb(event.source_operations());
 
   gfx::Point screen_pt =
       gfx::Screen::GetScreenFor(GetNativeView())->GetCursorScreenPoint();
@@ -1599,7 +1599,7 @@ int WebContentsViewAura::OnDragUpdated(const ui::DropTargetEvent& event) {
   if (current_rvh_for_drag_ != web_contents_->GetRenderViewHost())
     OnDragEntered(event);
 
-  WebKit::WebDragOperationsMask op = ConvertToWeb(event.source_operations());
+  blink::WebDragOperationsMask op = ConvertToWeb(event.source_operations());
   gfx::Point screen_pt =
       gfx::Screen::GetScreenFor(GetNativeView())->GetCursorScreenPoint();
   web_contents_->GetRenderViewHost()->DragTargetDragOver(

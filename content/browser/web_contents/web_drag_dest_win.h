@@ -29,7 +29,7 @@ class CONTENT_EXPORT WebDragDest : public ui::DropTargetWin {
 
   DropData* current_drop_data() const { return drop_data_.get(); }
 
-  void set_drag_cursor(WebKit::WebDragOperation op) {
+  void set_drag_cursor(blink::WebDragOperation op) {
     drag_cursor_ = op;
   }
 
@@ -66,7 +66,7 @@ class CONTENT_EXPORT WebDragDest : public ui::DropTargetWin {
 
   // Used to determine what cursor we should display when dragging over web
   // content area.  This can be updated async during a drag operation.
-  WebKit::WebDragOperation drag_cursor_;
+  blink::WebDragOperation drag_cursor_;
 
   // A special drop target handler for when we try to d&d while an interstitial
   // page is showing.

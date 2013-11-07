@@ -30,16 +30,16 @@ void FlushComplete(
   callback.Run(true);
 }
 
-// Converts a WebKit::WebFileSystem::Type to a PP_FileSystemType.
-PP_FileSystemType WebFileSystemTypeToPPAPI(WebKit::WebFileSystem::Type type) {
+// Converts a blink::WebFileSystem::Type to a PP_FileSystemType.
+PP_FileSystemType WebFileSystemTypeToPPAPI(blink::WebFileSystem::Type type) {
   switch (type) {
-    case WebKit::WebFileSystem::TypeTemporary:
+    case blink::WebFileSystem::TypeTemporary:
       return PP_FILESYSTEMTYPE_LOCALTEMPORARY;
-    case WebKit::WebFileSystem::TypePersistent:
+    case blink::WebFileSystem::TypePersistent:
       return PP_FILESYSTEMTYPE_LOCALPERSISTENT;
-    case WebKit::WebFileSystem::TypeIsolated:
+    case blink::WebFileSystem::TypeIsolated:
       return PP_FILESYSTEMTYPE_ISOLATED;
-    case WebKit::WebFileSystem::TypeExternal:
+    case blink::WebFileSystem::TypeExternal:
       return PP_FILESYSTEMTYPE_EXTERNAL;
     default:
       NOTREACHED();
@@ -53,7 +53,7 @@ PP_FileSystemType WebFileSystemTypeToPPAPI(WebKit::WebFileSystem::Type type) {
 bool DOMFileSystemToResource(
     PP_Instance instance,
     content::RendererPpapiHost* host,
-    const WebKit::WebDOMFileSystem& dom_file_system,
+    const blink::WebDOMFileSystem& dom_file_system,
     int* pending_renderer_id,
     scoped_ptr<IPC::Message>* create_message,
     scoped_ptr<IPC::Message>* browser_host_create_message) {
@@ -112,8 +112,8 @@ bool ResourceConverterImpl::FromV8Value(v8::Handle<v8::Object> val,
 
   *was_resource = false;
 
-  WebKit::WebDOMFileSystem dom_file_system =
-      WebKit::WebDOMFileSystem::fromV8Value(val);
+  blink::WebDOMFileSystem dom_file_system =
+      blink::WebDOMFileSystem::fromV8Value(val);
   if (!dom_file_system.isNull()) {
     int pending_renderer_id;
     scoped_ptr<IPC::Message> create_message;

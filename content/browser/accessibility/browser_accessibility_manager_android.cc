@@ -76,8 +76,8 @@ BrowserAccessibilityManagerAndroid::~BrowserAccessibilityManagerAndroid() {
 AccessibilityNodeData BrowserAccessibilityManagerAndroid::GetEmptyDocument() {
   AccessibilityNodeData empty_document;
   empty_document.id = 0;
-  empty_document.role = WebKit::WebAXRoleRootWebArea;
-  empty_document.state = 1 << WebKit::WebAXStateReadonly;
+  empty_document.role = blink::WebAXRoleRootWebArea;
+  empty_document.state = 1 << blink::WebAXStateReadonly;
   return empty_document;
 }
 
@@ -93,7 +93,7 @@ void BrowserAccessibilityManagerAndroid::SetContentViewCore(
 }
 
 void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
-    WebKit::WebAXEvent event_type,
+    blink::WebAXEvent event_type,
     BrowserAccessibility* node) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
@@ -107,26 +107,26 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
       env, obj.obj(), node->renderer_id());
 
   switch (event_type) {
-    case WebKit::WebAXEventLoadComplete:
+    case blink::WebAXEventLoadComplete:
       Java_BrowserAccessibilityManager_handlePageLoaded(
           env, obj.obj(), focus_->renderer_id());
       break;
-    case WebKit::WebAXEventFocus:
+    case blink::WebAXEventFocus:
       Java_BrowserAccessibilityManager_handleFocusChanged(
           env, obj.obj(), node->renderer_id());
       break;
-    case WebKit::WebAXEventCheckedStateChanged:
+    case blink::WebAXEventCheckedStateChanged:
       Java_BrowserAccessibilityManager_handleCheckStateChanged(
           env, obj.obj(), node->renderer_id());
       break;
-    case WebKit::WebAXEventScrolledToAnchor:
+    case blink::WebAXEventScrolledToAnchor:
       Java_BrowserAccessibilityManager_handleScrolledToAnchor(
           env, obj.obj(), node->renderer_id());
       break;
-    case WebKit::WebAXEventAlert:
+    case blink::WebAXEventAlert:
       // An alert is a special case of live region. Fall through to the
       // next case to handle it.
-    case WebKit::WebAXEventShow: {
+    case blink::WebAXEventShow: {
       // This event is fired when an object appears in a live region.
       // Speak its text.
       BrowserAccessibilityAndroid* android_node =
@@ -137,13 +137,13 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
               env, android_node->GetText()).obj());
       break;
     }
-    case WebKit::WebAXEventSelectedTextChanged:
+    case blink::WebAXEventSelectedTextChanged:
       Java_BrowserAccessibilityManager_handleTextSelectionChanged(
           env, obj.obj(), node->renderer_id());
       break;
-    case WebKit::WebAXEventChildrenChanged:
-    case WebKit::WebAXEventTextChanged:
-    case WebKit::WebAXEventValueChanged:
+    case blink::WebAXEventChildrenChanged:
+    case blink::WebAXEventTextChanged:
+    case blink::WebAXEventValueChanged:
       if (node->IsEditableText()) {
         Java_BrowserAccessibilityManager_handleEditableTextChanged(
             env, obj.obj(), node->renderer_id());

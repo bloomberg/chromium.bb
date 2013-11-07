@@ -17,7 +17,7 @@ class RenderViewImpl;
 
 class CONTENT_EXPORT RenderFrameImpl
     : public RenderFrame,
-      NON_EXPORTED_BASE(public WebKit::WebFrameClient) {
+      NON_EXPORTED_BASE(public blink::WebFrameClient) {
  public:
   // Creates a new RenderFrame. |render_view| is the RenderView object that this
   // frame belongs to.
@@ -36,149 +36,149 @@ class CONTENT_EXPORT RenderFrameImpl
   // IPC::Listener
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
-  // WebKit::WebFrameClient implementation -------------------------------------
-  virtual WebKit::WebPlugin* createPlugin(
-      WebKit::WebFrame* frame,
-      const WebKit::WebPluginParams& params);
-  virtual WebKit::WebMediaPlayer* createMediaPlayer(
-      WebKit::WebFrame* frame,
-      const WebKit::WebURL& url,
-      WebKit::WebMediaPlayerClient* client);
-  virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
-      WebKit::WebFrame* frame,
-      WebKit::WebApplicationCacheHostClient* client);
-  virtual WebKit::WebWorkerPermissionClientProxy*
-      createWorkerPermissionClientProxy(WebKit::WebFrame* frame);
-  virtual WebKit::WebCookieJar* cookieJar(WebKit::WebFrame* frame);
-  virtual WebKit::WebServiceWorkerProvider* createServiceWorkerProvider(
-      WebKit::WebFrame* frame,
-      WebKit::WebServiceWorkerProviderClient*);
-  virtual void didAccessInitialDocument(WebKit::WebFrame* frame);
-  virtual WebKit::WebFrame* createChildFrame(WebKit::WebFrame* parent,
-                                             const WebKit::WebString& name);
-  virtual void didDisownOpener(WebKit::WebFrame* frame);
-  virtual void frameDetached(WebKit::WebFrame* frame);
-  virtual void willClose(WebKit::WebFrame* frame);
-  virtual void didChangeName(WebKit::WebFrame* frame,
-                             const WebKit::WebString& name);
+  // blink::WebFrameClient implementation -------------------------------------
+  virtual blink::WebPlugin* createPlugin(
+      blink::WebFrame* frame,
+      const blink::WebPluginParams& params);
+  virtual blink::WebMediaPlayer* createMediaPlayer(
+      blink::WebFrame* frame,
+      const blink::WebURL& url,
+      blink::WebMediaPlayerClient* client);
+  virtual blink::WebApplicationCacheHost* createApplicationCacheHost(
+      blink::WebFrame* frame,
+      blink::WebApplicationCacheHostClient* client);
+  virtual blink::WebWorkerPermissionClientProxy*
+      createWorkerPermissionClientProxy(blink::WebFrame* frame);
+  virtual blink::WebCookieJar* cookieJar(blink::WebFrame* frame);
+  virtual blink::WebServiceWorkerProvider* createServiceWorkerProvider(
+      blink::WebFrame* frame,
+      blink::WebServiceWorkerProviderClient*);
+  virtual void didAccessInitialDocument(blink::WebFrame* frame);
+  virtual blink::WebFrame* createChildFrame(blink::WebFrame* parent,
+                                             const blink::WebString& name);
+  virtual void didDisownOpener(blink::WebFrame* frame);
+  virtual void frameDetached(blink::WebFrame* frame);
+  virtual void willClose(blink::WebFrame* frame);
+  virtual void didChangeName(blink::WebFrame* frame,
+                             const blink::WebString& name);
   virtual void didMatchCSS(
-      WebKit::WebFrame* frame,
-      const WebKit::WebVector<WebKit::WebString>& newly_matching_selectors,
-      const WebKit::WebVector<WebKit::WebString>& stopped_matching_selectors);
-  virtual void loadURLExternally(WebKit::WebFrame* frame,
-                                 const WebKit::WebURLRequest& request,
-                                 WebKit::WebNavigationPolicy policy);
+      blink::WebFrame* frame,
+      const blink::WebVector<blink::WebString>& newly_matching_selectors,
+      const blink::WebVector<blink::WebString>& stopped_matching_selectors);
+  virtual void loadURLExternally(blink::WebFrame* frame,
+                                 const blink::WebURLRequest& request,
+                                 blink::WebNavigationPolicy policy);
   virtual void loadURLExternally(
-      WebKit::WebFrame* frame,
-      const WebKit::WebURLRequest& request,
-      WebKit::WebNavigationPolicy policy,
-      const WebKit::WebString& suggested_name);
-  virtual WebKit::WebNavigationPolicy decidePolicyForNavigation(
-      WebKit::WebFrame* frame,
-      WebKit::WebDataSource::ExtraData* extra_data,
-      const WebKit::WebURLRequest& request,
-      WebKit::WebNavigationType type,
-      WebKit::WebNavigationPolicy default_policy,
+      blink::WebFrame* frame,
+      const blink::WebURLRequest& request,
+      blink::WebNavigationPolicy policy,
+      const blink::WebString& suggested_name);
+  virtual blink::WebNavigationPolicy decidePolicyForNavigation(
+      blink::WebFrame* frame,
+      blink::WebDataSource::ExtraData* extra_data,
+      const blink::WebURLRequest& request,
+      blink::WebNavigationType type,
+      blink::WebNavigationPolicy default_policy,
       bool is_redirect);
   // DEPRECATED
-  virtual WebKit::WebNavigationPolicy decidePolicyForNavigation(
-      WebKit::WebFrame* frame,
-      const WebKit::WebURLRequest& request,
-      WebKit::WebNavigationType type,
-      WebKit::WebNavigationPolicy default_policy,
+  virtual blink::WebNavigationPolicy decidePolicyForNavigation(
+      blink::WebFrame* frame,
+      const blink::WebURLRequest& request,
+      blink::WebNavigationType type,
+      blink::WebNavigationPolicy default_policy,
       bool is_redirect);
-  virtual void willSendSubmitEvent(WebKit::WebFrame* frame,
-                                   const WebKit::WebFormElement& form);
-  virtual void willSubmitForm(WebKit::WebFrame* frame,
-                              const WebKit::WebFormElement& form);
-  virtual void didCreateDataSource(WebKit::WebFrame* frame,
-                                   WebKit::WebDataSource* datasource);
-  virtual void didStartProvisionalLoad(WebKit::WebFrame* frame);
+  virtual void willSendSubmitEvent(blink::WebFrame* frame,
+                                   const blink::WebFormElement& form);
+  virtual void willSubmitForm(blink::WebFrame* frame,
+                              const blink::WebFormElement& form);
+  virtual void didCreateDataSource(blink::WebFrame* frame,
+                                   blink::WebDataSource* datasource);
+  virtual void didStartProvisionalLoad(blink::WebFrame* frame);
   virtual void didReceiveServerRedirectForProvisionalLoad(
-      WebKit::WebFrame* frame);
+      blink::WebFrame* frame);
   virtual void didFailProvisionalLoad(
-      WebKit::WebFrame* frame,
-      const WebKit::WebURLError& error);
-  virtual void didCommitProvisionalLoad(WebKit::WebFrame* frame,
+      blink::WebFrame* frame,
+      const blink::WebURLError& error);
+  virtual void didCommitProvisionalLoad(blink::WebFrame* frame,
                                         bool is_new_navigation);
-  virtual void didClearWindowObject(WebKit::WebFrame* frame);
-  virtual void didCreateDocumentElement(WebKit::WebFrame* frame);
-  virtual void didReceiveTitle(WebKit::WebFrame* frame,
-                               const WebKit::WebString& title,
-                               WebKit::WebTextDirection direction);
-  virtual void didChangeIcon(WebKit::WebFrame* frame,
-                             WebKit::WebIconURL::Type icon_type);
-  virtual void didFinishDocumentLoad(WebKit::WebFrame* frame);
-  virtual void didHandleOnloadEvents(WebKit::WebFrame* frame);
-  virtual void didFailLoad(WebKit::WebFrame* frame,
-                           const WebKit::WebURLError& error);
-  virtual void didFinishLoad(WebKit::WebFrame* frame);
-  virtual void didNavigateWithinPage(WebKit::WebFrame* frame,
+  virtual void didClearWindowObject(blink::WebFrame* frame);
+  virtual void didCreateDocumentElement(blink::WebFrame* frame);
+  virtual void didReceiveTitle(blink::WebFrame* frame,
+                               const blink::WebString& title,
+                               blink::WebTextDirection direction);
+  virtual void didChangeIcon(blink::WebFrame* frame,
+                             blink::WebIconURL::Type icon_type);
+  virtual void didFinishDocumentLoad(blink::WebFrame* frame);
+  virtual void didHandleOnloadEvents(blink::WebFrame* frame);
+  virtual void didFailLoad(blink::WebFrame* frame,
+                           const blink::WebURLError& error);
+  virtual void didFinishLoad(blink::WebFrame* frame);
+  virtual void didNavigateWithinPage(blink::WebFrame* frame,
                                      bool is_new_navigation);
-  virtual void didUpdateCurrentHistoryItem(WebKit::WebFrame* frame);
-  virtual void willRequestAfterPreconnect(WebKit::WebFrame* frame,
-                                          WebKit::WebURLRequest& request);
+  virtual void didUpdateCurrentHistoryItem(blink::WebFrame* frame);
+  virtual void willRequestAfterPreconnect(blink::WebFrame* frame,
+                                          blink::WebURLRequest& request);
   virtual void willSendRequest(
-      WebKit::WebFrame* frame,
+      blink::WebFrame* frame,
       unsigned identifier,
-      WebKit::WebURLRequest& request,
-      const WebKit::WebURLResponse& redirect_response);
+      blink::WebURLRequest& request,
+      const blink::WebURLResponse& redirect_response);
   virtual void didReceiveResponse(
-      WebKit::WebFrame* frame,
+      blink::WebFrame* frame,
       unsigned identifier,
-      const WebKit::WebURLResponse& response);
-  virtual void didFinishResourceLoad(WebKit::WebFrame* frame,
+      const blink::WebURLResponse& response);
+  virtual void didFinishResourceLoad(blink::WebFrame* frame,
                                      unsigned identifier);
   virtual void didLoadResourceFromMemoryCache(
-      WebKit::WebFrame* frame,
-      const WebKit::WebURLRequest& request,
-      const WebKit::WebURLResponse& response);
-  virtual void didDisplayInsecureContent(WebKit::WebFrame* frame);
-  virtual void didRunInsecureContent(WebKit::WebFrame* frame,
-                                     const WebKit::WebSecurityOrigin& origin,
-                                     const WebKit::WebURL& target);
-  virtual void didAbortLoading(WebKit::WebFrame* frame);
+      blink::WebFrame* frame,
+      const blink::WebURLRequest& request,
+      const blink::WebURLResponse& response);
+  virtual void didDisplayInsecureContent(blink::WebFrame* frame);
+  virtual void didRunInsecureContent(blink::WebFrame* frame,
+                                     const blink::WebSecurityOrigin& origin,
+                                     const blink::WebURL& target);
+  virtual void didAbortLoading(blink::WebFrame* frame);
   virtual void didExhaustMemoryAvailableForScript(
-      WebKit::WebFrame* frame);
-  virtual void didCreateScriptContext(WebKit::WebFrame* frame,
+      blink::WebFrame* frame);
+  virtual void didCreateScriptContext(blink::WebFrame* frame,
                                       v8::Handle<v8::Context> context,
                                       int extension_group,
                                       int world_id);
-  virtual void willReleaseScriptContext(WebKit::WebFrame* frame,
+  virtual void willReleaseScriptContext(blink::WebFrame* frame,
                                         v8::Handle<v8::Context> context,
                                         int world_id);
-  virtual void didFirstVisuallyNonEmptyLayout(WebKit::WebFrame* frame);
-  virtual void didChangeContentsSize(WebKit::WebFrame* frame,
-                                     const WebKit::WebSize& size);
-  virtual void didChangeScrollOffset(WebKit::WebFrame* frame);
-  virtual void willInsertBody(WebKit::WebFrame* frame);
+  virtual void didFirstVisuallyNonEmptyLayout(blink::WebFrame* frame);
+  virtual void didChangeContentsSize(blink::WebFrame* frame,
+                                     const blink::WebSize& size);
+  virtual void didChangeScrollOffset(blink::WebFrame* frame);
+  virtual void willInsertBody(blink::WebFrame* frame);
   virtual void reportFindInPageMatchCount(int request_id,
                                           int count,
                                           bool final_update);
   virtual void reportFindInPageSelection(int request_id,
                                          int active_match_ordinal,
-                                         const WebKit::WebRect& sel);
+                                         const blink::WebRect& sel);
   virtual void requestStorageQuota(
-      WebKit::WebFrame* frame,
-      WebKit::WebStorageQuotaType type,
+      blink::WebFrame* frame,
+      blink::WebStorageQuotaType type,
       unsigned long long requested_size,
-      WebKit::WebStorageQuotaCallbacks* callbacks);
+      blink::WebStorageQuotaCallbacks* callbacks);
   virtual void willOpenSocketStream(
-      WebKit::WebSocketStreamHandle* handle);
+      blink::WebSocketStreamHandle* handle);
   virtual void willStartUsingPeerConnectionHandler(
-      WebKit::WebFrame* frame,
-      WebKit::WebRTCPeerConnectionHandler* handler);
+      blink::WebFrame* frame,
+      blink::WebRTCPeerConnectionHandler* handler);
   virtual bool willCheckAndDispatchMessageEvent(
-      WebKit::WebFrame* sourceFrame,
-      WebKit::WebFrame* targetFrame,
-      WebKit::WebSecurityOrigin targetOrigin,
-      WebKit::WebDOMMessageEvent event);
-  virtual WebKit::WebString userAgentOverride(
-      WebKit::WebFrame* frame,
-      const WebKit::WebURL& url);
-  virtual WebKit::WebString doNotTrackValue(WebKit::WebFrame* frame);
-  virtual bool allowWebGL(WebKit::WebFrame* frame, bool default_value);
-  virtual void didLoseWebGLContext(WebKit::WebFrame* frame,
+      blink::WebFrame* sourceFrame,
+      blink::WebFrame* targetFrame,
+      blink::WebSecurityOrigin targetOrigin,
+      blink::WebDOMMessageEvent event);
+  virtual blink::WebString userAgentOverride(
+      blink::WebFrame* frame,
+      const blink::WebURL& url);
+  virtual blink::WebString doNotTrackValue(blink::WebFrame* frame);
+  virtual bool allowWebGL(blink::WebFrame* frame, bool default_value);
+  virtual void didLoseWebGLContext(blink::WebFrame* frame,
                                    int arb_robustness_status_code);
 
  protected:

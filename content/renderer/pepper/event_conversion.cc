@@ -26,14 +26,14 @@
 using ppapi::EventTimeToPPTimeTicks;
 using ppapi::InputEventData;
 using ppapi::PPTimeTicksToEventTime;
-using WebKit::WebInputEvent;
-using WebKit::WebKeyboardEvent;
-using WebKit::WebMouseEvent;
-using WebKit::WebMouseWheelEvent;
-using WebKit::WebString;
-using WebKit::WebTouchEvent;
-using WebKit::WebTouchPoint;
-using WebKit::WebUChar;
+using blink::WebInputEvent;
+using blink::WebKeyboardEvent;
+using blink::WebMouseEvent;
+using blink::WebMouseWheelEvent;
+using blink::WebString;
+using blink::WebTouchEvent;
+using blink::WebTouchPoint;
+using blink::WebUChar;
 
 namespace content {
 

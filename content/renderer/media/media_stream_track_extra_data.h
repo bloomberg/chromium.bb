@@ -18,7 +18,7 @@ class MediaStreamTrackInterface;
 namespace content {
 
 class CONTENT_EXPORT MediaStreamTrackExtraData
-    : NON_EXPORTED_BASE(public WebKit::WebMediaStreamTrack::ExtraData) {
+    : NON_EXPORTED_BASE(public blink::WebMediaStreamTrack::ExtraData) {
  public:
   MediaStreamTrackExtraData(webrtc::MediaStreamTrackInterface* track);
   virtual ~MediaStreamTrackExtraData();

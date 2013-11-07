@@ -11,7 +11,7 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
 
-using WebKit::WebUserGestureIndicator;
+using blink::WebUserGestureIndicator;
 
 namespace content {
 

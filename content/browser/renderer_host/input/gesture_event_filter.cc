@@ -11,8 +11,8 @@
 #include "content/browser/renderer_host/input/touchscreen_tap_suppression_controller.h"
 #include "content/public/common/content_switches.h"
 
-using WebKit::WebGestureEvent;
-using WebKit::WebInputEvent;
+using blink::WebGestureEvent;
+using blink::WebInputEvent;
 
 namespace content {
 namespace {

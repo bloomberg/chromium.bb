@@ -14,7 +14,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace WebKit { class WebImageDecoder; }
+namespace blink { class WebImageDecoder; }
 
 // If CALCULATE_MD5_SUMS is not defined, then this test decodes a handful of
 // image files and compares their MD5 sums to the stored sums on disk.
@@ -70,7 +70,7 @@ class ImageDecoderTest : public testing::Test {
   }
 
   // Creates WebKit API's decoder.
-  virtual WebKit::WebImageDecoder* CreateWebKitImageDecoder() const = 0;
+  virtual blink::WebImageDecoder* CreateWebKitImageDecoder() const = 0;
 
   // The format to be decoded, like "bmp" or "ico".
   std::string format_;

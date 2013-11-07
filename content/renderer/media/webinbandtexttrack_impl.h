@@ -10,16 +10,16 @@
 
 namespace content {
 
-class WebInbandTextTrackImpl : public WebKit::WebInbandTextTrack {
+class WebInbandTextTrackImpl : public blink::WebInbandTextTrack {
  public:
   WebInbandTextTrackImpl(Kind kind,
-                         const WebKit::WebString& label,
-                         const WebKit::WebString& language,
+                         const blink::WebString& label,
+                         const blink::WebString& language,
                          int index);
   virtual ~WebInbandTextTrackImpl();
 
-  virtual void setClient(WebKit::WebInbandTextTrackClient* client);
-  virtual WebKit::WebInbandTextTrackClient* client();
+  virtual void setClient(blink::WebInbandTextTrackClient* client);
+  virtual blink::WebInbandTextTrackClient* client();
 
   virtual void setMode(Mode mode);
   virtual Mode mode() const;
@@ -27,18 +27,18 @@ class WebInbandTextTrackImpl : public WebKit::WebInbandTextTrack {
   virtual Kind kind() const;
   virtual bool isClosedCaptions() const;
 
-  virtual WebKit::WebString label() const;
-  virtual WebKit::WebString language() const;
+  virtual blink::WebString label() const;
+  virtual blink::WebString language() const;
   virtual bool isDefault() const;
 
   virtual int textTrackIndex() const;
 
  private:
-  WebKit::WebInbandTextTrackClient* client_;
+  blink::WebInbandTextTrackClient* client_;
   Mode mode_;
   Kind kind_;
-  WebKit::WebString label_;
-  WebKit::WebString language_;
+  blink::WebString label_;
+  blink::WebString language_;
   int index_;
   DISALLOW_COPY_AND_ASSIGN(WebInbandTextTrackImpl);
 };

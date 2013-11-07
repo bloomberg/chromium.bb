@@ -4,12 +4,12 @@
 
 #include "content/browser/web_contents/drag_utils_gtk.h"
 
-using WebKit::WebDragOperationsMask;
-using WebKit::WebDragOperation;
-using WebKit::WebDragOperationNone;
-using WebKit::WebDragOperationCopy;
-using WebKit::WebDragOperationLink;
-using WebKit::WebDragOperationMove;
+using blink::WebDragOperationsMask;
+using blink::WebDragOperation;
+using blink::WebDragOperationNone;
+using blink::WebDragOperationCopy;
+using blink::WebDragOperationLink;
+using blink::WebDragOperationMove;
 
 namespace content {
 

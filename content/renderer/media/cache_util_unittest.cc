@@ -14,8 +14,8 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 
-using WebKit::WebString;
-using WebKit::WebURLResponse;
+using blink::WebString;
+using blink::WebURLResponse;
 
 namespace content {
 

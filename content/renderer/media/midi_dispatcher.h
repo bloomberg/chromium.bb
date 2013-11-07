@@ -9,7 +9,7 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/web/WebMIDIClient.h"
 
-namespace WebKit {
+namespace blink {
 class WebMIDIPermissionRequest;
 }
 
@@ -23,7 +23,7 @@ class RenderViewImpl;
 // MIDIDispatcherHost owned by RenderViewHost since permissions are managed in
 // the browser process.
 class MIDIDispatcher : public RenderViewObserver,
-                       public WebKit::WebMIDIClient {
+                       public blink::WebMIDIClient {
  public:
   explicit MIDIDispatcher(RenderViewImpl* render_view);
   virtual ~MIDIDispatcher();
@@ -32,11 +32,11 @@ class MIDIDispatcher : public RenderViewObserver,
   // RenderView::Observer implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // WebKit::WebMIDIClient implementation.
+  // blink::WebMIDIClient implementation.
   virtual void requestSysExPermission(
-      const WebKit::WebMIDIPermissionRequest& request) OVERRIDE;
+      const blink::WebMIDIPermissionRequest& request) OVERRIDE;
   virtual void cancelSysExPermissionRequest(
-      const WebKit::WebMIDIPermissionRequest& request) OVERRIDE;
+      const blink::WebMIDIPermissionRequest& request) OVERRIDE;
 
   // Permission for using system exclusive messages has been set.
   void OnSysExPermissionApproved(int client_id, bool is_allowed);
@@ -44,7 +44,7 @@ class MIDIDispatcher : public RenderViewObserver,
   // Each WebMIDIPermissionRequest object is valid until
   // cancelSysExPermissionRequest() is called with the object, or used to call
   // WebMIDIPermissionRequest::setIsAllowed().
-  IDMap<WebKit::WebMIDIPermissionRequest> requests_;
+  IDMap<blink::WebMIDIPermissionRequest> requests_;
 
   DISALLOW_COPY_AND_ASSIGN(MIDIDispatcher);
 };

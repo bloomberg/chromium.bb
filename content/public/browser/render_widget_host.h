@@ -27,7 +27,7 @@ namespace gfx {
 class Rect;
 }
 
-namespace WebKit {
+namespace blink {
 class WebMouseEvent;
 struct WebScreenInfo;
 }
@@ -175,7 +175,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // NotifyTextDirection(). (We may receive keydown events even after we
   // canceled updating the text direction because of auto-repeat.)
   // Note: we cannot undo this change for compatibility with Firefox and IE.
-  virtual void UpdateTextDirection(WebKit::WebTextDirection direction) = 0;
+  virtual void UpdateTextDirection(blink::WebTextDirection direction) = 0;
   virtual void NotifyTextDirection() = 0;
 
   virtual void Focus() = 0;
@@ -221,9 +221,9 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // Forwards the given message to the renderer. These are called by
   // the view when it has received a message.
   virtual void ForwardMouseEvent(
-      const WebKit::WebMouseEvent& mouse_event) = 0;
+      const blink::WebMouseEvent& mouse_event) = 0;
   virtual void ForwardWheelEvent(
-      const WebKit::WebMouseWheelEvent& wheel_event) = 0;
+      const blink::WebMouseWheelEvent& wheel_event) = 0;
   virtual void ForwardKeyboardEvent(
       const NativeWebKeyboardEvent& key_event) = 0;
 
@@ -298,12 +298,12 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
       const KeyPressEventCallback& callback) = 0;
 
   // Add/remove a callback that can handle all kinds of mouse events.
-  typedef base::Callback<bool(const WebKit::WebMouseEvent&)> MouseEventCallback;
+  typedef base::Callback<bool(const blink::WebMouseEvent&)> MouseEventCallback;
   virtual void AddMouseEventCallback(const MouseEventCallback& callback) = 0;
   virtual void RemoveMouseEventCallback(const MouseEventCallback& callback) = 0;
 
   // Get the screen info corresponding to this render widget.
-  virtual void GetWebScreenInfo(WebKit::WebScreenInfo* result) = 0;
+  virtual void GetWebScreenInfo(blink::WebScreenInfo* result) = 0;
 
   // Grabs snapshot from renderer side and returns the bitmap to a callback.
   // If |src_rect| is empty, the whole contents is copied. This is an expensive

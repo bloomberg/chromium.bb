@@ -13,7 +13,7 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 
-namespace WebKit {
+namespace blink {
 class WebData;
 class WebURLLoader;
 }
@@ -34,22 +34,22 @@ class WebURLLoaderMockFactory {
   // Called by TestWebKitPlatformSupport to create a WebURLLoader.
   // Non-mocked request are forwarded to |default_loader| which should not be
   // NULL.
-  virtual WebKit::WebURLLoader* CreateURLLoader(
-      WebKit::WebURLLoader* default_loader);
+  virtual blink::WebURLLoader* CreateURLLoader(
+      blink::WebURLLoader* default_loader);
 
   // Registers a response and the contents to be served when the specified URL
   // is loaded.
-  void RegisterURL(const WebKit::WebURL& url,
-                   const WebKit::WebURLResponse& response,
-                   const WebKit::WebString& filePath);
+  void RegisterURL(const blink::WebURL& url,
+                   const blink::WebURLResponse& response,
+                   const blink::WebString& filePath);
 
   // Registers an error to be served when the specified URL is requested.
-  void RegisterErrorURL(const WebKit::WebURL& url,
-                        const WebKit::WebURLResponse& response,
-                        const WebKit::WebURLError& error);
+  void RegisterErrorURL(const blink::WebURL& url,
+                        const blink::WebURLResponse& response,
+                        const blink::WebURLError& error);
 
   // Unregisters |url| so it will no longer be mocked.
-  void UnregisterURL(const WebKit::WebURL& url);
+  void UnregisterURL(const blink::WebURL& url);
 
   // Unregister all URLs so no URL will be mocked anymore.
   void UnregisterAllURLs();
@@ -58,17 +58,17 @@ class WebURLLoaderMockFactory {
   void ServeAsynchronousRequests();
 
   // Returns the last request handled by |ServeAsynchronousRequests()|.
-  WebKit::WebURLRequest GetLastHandledAsynchronousRequest();
+  blink::WebURLRequest GetLastHandledAsynchronousRequest();
 
   // Returns true if |url| was registered for being mocked.
-  bool IsMockedURL(const WebKit::WebURL& url);
+  bool IsMockedURL(const blink::WebURL& url);
 
   // Called by the loader to load a resource.
-  void LoadSynchronously(const WebKit::WebURLRequest& request,
-                         WebKit::WebURLResponse* response,
-                         WebKit::WebURLError* error,
-                         WebKit::WebData* data);
-  void LoadAsynchronouly(const WebKit::WebURLRequest& request,
+  void LoadSynchronously(const blink::WebURLRequest& request,
+                         blink::WebURLResponse* response,
+                         blink::WebURLError* error,
+                         blink::WebData* data);
+  void LoadAsynchronouly(const blink::WebURLRequest& request,
                          WebURLLoaderMock* loader);
 
   // Removes the loader from the list of pending loaders.
@@ -76,37 +76,37 @@ class WebURLLoaderMockFactory {
 
  private:
   struct ResponseInfo {
-    WebKit::WebURLResponse response;
+    blink::WebURLResponse response;
     base::FilePath file_path;
   };
 
 
   // Loads the specified request and populates the response, error and data
   // accordingly.
-  void LoadRequest(const WebKit::WebURLRequest& request,
-                   WebKit::WebURLResponse* response,
-                   WebKit::WebURLError* error,
-                   WebKit::WebData* data);
+  void LoadRequest(const blink::WebURLRequest& request,
+                   blink::WebURLResponse* response,
+                   blink::WebURLError* error,
+                   blink::WebData* data);
 
   // Checks if the loader is pending. Otherwise, it may have been deleted.
   bool IsPending(WebURLLoaderMock* loader);
 
   // Reads |m_filePath| and puts its content in |data|.
   // Returns true if it successfully read the file.
-  static bool ReadFile(const base::FilePath& file_path, WebKit::WebData* data);
+  static bool ReadFile(const base::FilePath& file_path, blink::WebData* data);
 
   // The loaders that have not being served data yet.
-  typedef std::map<WebURLLoaderMock*, WebKit::WebURLRequest> LoaderToRequestMap;
+  typedef std::map<WebURLLoaderMock*, blink::WebURLRequest> LoaderToRequestMap;
   LoaderToRequestMap pending_loaders_;
 
-  typedef std::map<GURL, WebKit::WebURLError> URLToErrorMap;
+  typedef std::map<GURL, blink::WebURLError> URLToErrorMap;
   URLToErrorMap url_to_error_info_;
 
   // Table of the registered URLs and the responses that they should receive.
   typedef std::map<GURL, ResponseInfo> URLToResponseMap;
   URLToResponseMap url_to_reponse_info_;
 
-  WebKit::WebURLRequest last_handled_asynchronous_request_;
+  blink::WebURLRequest last_handled_asynchronous_request_;
 
   DISALLOW_COPY_AND_ASSIGN(WebURLLoaderMockFactory);
 };

@@ -50,13 +50,13 @@ class MockInputAckHandler : public InputAckHandler {
   const NativeWebKeyboardEvent& acked_keyboard_event() const {
     return acked_key_event_;
   }
-  const WebKit::WebMouseWheelEvent& acked_wheel_event() const {
+  const blink::WebMouseWheelEvent& acked_wheel_event() const {
     return acked_wheel_event_;
   }
   const TouchEventWithLatencyInfo& acked_touch_event() const {
     return acked_touch_event_;
   }
-  const WebKit::WebGestureEvent& acked_gesture_event() const {
+  const blink::WebGestureEvent& acked_gesture_event() const {
     return acked_gesture_event_;
   }
 
@@ -69,9 +69,9 @@ class MockInputAckHandler : public InputAckHandler {
   bool unexpected_event_ack_called_;
   InputEventAckState ack_state_;
   NativeWebKeyboardEvent acked_key_event_;
-  WebKit::WebMouseWheelEvent acked_wheel_event_;
+  blink::WebMouseWheelEvent acked_wheel_event_;
   TouchEventWithLatencyInfo acked_touch_event_;
-  WebKit::WebGestureEvent acked_gesture_event_;
+  blink::WebGestureEvent acked_gesture_event_;
 
   scoped_ptr<GestureEventWithLatencyInfo> gesture_followup_event_;
   scoped_ptr<TouchEventWithLatencyInfo> touch_followup_event_;

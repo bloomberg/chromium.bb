@@ -21,26 +21,26 @@ namespace content {
 // Callbacks to the webrtc::DataChannelObserver implementation also occur on
 // the main render thread.
 class CONTENT_EXPORT RtcDataChannelHandler
-    : NON_EXPORTED_BASE(public WebKit::WebRTCDataChannelHandler),
+    : NON_EXPORTED_BASE(public blink::WebRTCDataChannelHandler),
       NON_EXPORTED_BASE(public webrtc::DataChannelObserver),
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   explicit RtcDataChannelHandler(webrtc::DataChannelInterface* channel);
   virtual ~RtcDataChannelHandler();
 
-  // WebKit::WebRTCDataChannelHandler implementation.
+  // blink::WebRTCDataChannelHandler implementation.
   virtual void setClient(
-      WebKit::WebRTCDataChannelHandlerClient* client) OVERRIDE;
-  virtual WebKit::WebString label() OVERRIDE;
+      blink::WebRTCDataChannelHandlerClient* client) OVERRIDE;
+  virtual blink::WebString label() OVERRIDE;
   virtual bool isReliable() OVERRIDE;
   virtual bool ordered() const OVERRIDE;
   virtual unsigned short maxRetransmitTime() const OVERRIDE;
   virtual unsigned short maxRetransmits() const OVERRIDE;
-  virtual WebKit::WebString protocol() const OVERRIDE;
+  virtual blink::WebString protocol() const OVERRIDE;
   virtual bool negotiated() const OVERRIDE;
   virtual unsigned short id() const OVERRIDE;
   virtual unsigned long bufferedAmount() OVERRIDE;
-  virtual bool sendStringData(const WebKit::WebString& data) OVERRIDE;
+  virtual bool sendStringData(const blink::WebString& data) OVERRIDE;
   virtual bool sendRawData(const char* data, size_t length) OVERRIDE;
   virtual void close() OVERRIDE;
 
@@ -50,7 +50,7 @@ class CONTENT_EXPORT RtcDataChannelHandler
 
  private:
   scoped_refptr<webrtc::DataChannelInterface> channel_;
-  WebKit::WebRTCDataChannelHandlerClient* webkit_client_;
+  blink::WebRTCDataChannelHandlerClient* webkit_client_;
 };
 
 }  // namespace content

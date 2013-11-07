@@ -35,7 +35,7 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
 
 TEST_F(WebRtcLocalAudioSourceProviderTest, VerifyDataFlow) {
   // Point the WebVector into memory owned by |sink_bus_|.
-  WebKit::WebVector<float*> audio_data(
+  blink::WebVector<float*> audio_data(
       static_cast<size_t>(sink_bus_->channels()));
   for (size_t i = 0; i < audio_data.size(); ++i)
     audio_data[i] = sink_bus_->channel(i);
@@ -85,7 +85,7 @@ TEST_F(WebRtcLocalAudioSourceProviderTest, VerifyDataFlow) {
 
 TEST_F(WebRtcLocalAudioSourceProviderTest, VerifyAudioProcessingParams) {
   // Point the WebVector into memory owned by |sink_bus_|.
-  WebKit::WebVector<float*> audio_data(
+  blink::WebVector<float*> audio_data(
       static_cast<size_t>(sink_bus_->channels()));
   for (size_t i = 0; i < audio_data.size(); ++i)
     audio_data[i] = sink_bus_->channel(i);

@@ -23,11 +23,11 @@ namespace content {
 namespace {
 
 bool CurrentRenderViewImpl(RenderViewImpl** out) {
-  WebKit::WebFrame* web_frame = WebKit::WebFrame::frameForCurrentContext();
+  blink::WebFrame* web_frame = blink::WebFrame::frameForCurrentContext();
   if (!web_frame)
     return false;
 
-  WebKit::WebView* web_view = web_frame->view();
+  blink::WebView* web_view = web_frame->view();
   if (!web_view)
     return false;
 

@@ -6,15 +6,15 @@
 #include "content/test/image_decoder_test.h"
 #include "third_party/WebKit/public/web/WebImageDecoder.h"
 
-using WebKit::WebImageDecoder;
+using blink::WebImageDecoder;
 
 class ICOImageDecoderTest : public ImageDecoderTest {
  public:
   ICOImageDecoderTest() : ImageDecoderTest("ico") { }
 
  protected:
-  virtual WebKit::WebImageDecoder* CreateWebKitImageDecoder() const OVERRIDE {
-     return new WebKit::WebImageDecoder(WebKit::WebImageDecoder::TypeICO);
+  virtual blink::WebImageDecoder* CreateWebKitImageDecoder() const OVERRIDE {
+     return new blink::WebImageDecoder(blink::WebImageDecoder::TypeICO);
   }
 };
 

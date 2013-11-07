@@ -8,12 +8,12 @@
 #include "content/common/input/web_input_event_traits.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
-using WebKit::WebGestureEvent;
-using WebKit::WebInputEvent;
-using WebKit::WebKeyboardEvent;
-using WebKit::WebMouseEvent;
-using WebKit::WebMouseWheelEvent;
-using WebKit::WebTouchEvent;
+using blink::WebGestureEvent;
+using blink::WebInputEvent;
+using blink::WebKeyboardEvent;
+using blink::WebMouseEvent;
+using blink::WebMouseWheelEvent;
+using blink::WebTouchEvent;
 
 namespace content {
 

@@ -10,10 +10,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
-using WebKit::WebGestureEvent;
-using WebKit::WebInputEvent;
-using WebKit::WebTouchEvent;
-using WebKit::WebTouchPoint;
+using blink::WebGestureEvent;
+using blink::WebInputEvent;
+using blink::WebTouchEvent;
+using blink::WebTouchPoint;
 
 namespace content {
 
@@ -757,7 +757,7 @@ TEST_F(TouchEventQueueTest, NoTouchOnScroll) {
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, acked_event_state());
 
   // GestureScrollEnd will resume the sending of TouchEvents to renderer.
-  SendGestureEvent(WebKit::WebInputEvent::GestureScrollEnd);
+  SendGestureEvent(blink::WebInputEvent::GestureScrollEnd);
   EXPECT_FALSE(no_touch_to_renderer());
 
   // Now TouchEvents should be forwarded normally.

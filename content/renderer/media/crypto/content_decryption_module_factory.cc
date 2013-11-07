@@ -28,13 +28,13 @@ namespace content {
 // closeHelperPluginSoon() when the Helper Plugin is no longer needed.
 static scoped_refptr<PepperPluginInstanceImpl> CreateHelperPlugin(
     const std::string& plugin_type,
-    WebKit::WebMediaPlayerClient* web_media_player_client,
-    WebKit::WebFrame* web_frame) {
+    blink::WebMediaPlayerClient* web_media_player_client,
+    blink::WebFrame* web_frame) {
   DCHECK(web_media_player_client);
   DCHECK(web_frame);
 
-  WebKit::WebPlugin* web_plugin = web_media_player_client->createHelperPlugin(
-      WebKit::WebString::fromUTF8(plugin_type), web_frame);
+  blink::WebPlugin* web_plugin = web_media_player_client->createHelperPlugin(
+      blink::WebString::fromUTF8(plugin_type), web_frame);
   if (!web_plugin)
     return NULL;
 
@@ -51,8 +51,8 @@ static scoped_ptr<media::MediaKeys> CreatePpapiDecryptor(
     const media::KeyErrorCB& key_error_cb,
     const media::KeyMessageCB& key_message_cb,
     const base::Closure& destroy_plugin_cb,
-    WebKit::WebMediaPlayerClient* web_media_player_client,
-    WebKit::WebFrame* web_frame) {
+    blink::WebMediaPlayerClient* web_media_player_client,
+    blink::WebFrame* web_frame) {
   DCHECK(web_media_player_client);
   DCHECK(web_frame);
 
@@ -81,8 +81,8 @@ static scoped_ptr<media::MediaKeys> CreatePpapiDecryptor(
 }
 
 void ContentDecryptionModuleFactory::DestroyHelperPlugin(
-    WebKit::WebMediaPlayerClient* web_media_player_client,
-    WebKit::WebFrame* web_frame) {
+    blink::WebMediaPlayerClient* web_media_player_client,
+    blink::WebFrame* web_frame) {
   web_media_player_client->closeHelperPluginSoon(web_frame);
 }
 #endif  // defined(ENABLE_PEPPER_CDMS)
@@ -90,8 +90,8 @@ void ContentDecryptionModuleFactory::DestroyHelperPlugin(
 scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
     const std::string& key_system,
 #if defined(ENABLE_PEPPER_CDMS)
-    WebKit::WebMediaPlayerClient* web_media_player_client,
-    WebKit::WebFrame* web_frame,
+    blink::WebMediaPlayerClient* web_media_player_client,
+    blink::WebFrame* web_frame,
     const base::Closure& destroy_plugin_cb,
 #elif defined(OS_ANDROID)
     RendererMediaPlayerManager* manager,

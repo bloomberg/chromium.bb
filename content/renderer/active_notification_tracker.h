@@ -13,7 +13,7 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/web/WebNotification.h"
 
-namespace WebKit {
+namespace blink {
 class WebNotificationPermissionCallback;
 }
 
@@ -28,16 +28,16 @@ class CONTENT_EXPORT ActiveNotificationTracker {
   ~ActiveNotificationTracker();
 
   // Methods for tracking active notification objects.
-  int RegisterNotification(const WebKit::WebNotification& notification);
+  int RegisterNotification(const blink::WebNotification& notification);
   void UnregisterNotification(int id);
-  bool GetId(const WebKit::WebNotification& notification, int& id);
-  bool GetNotification(int id, WebKit::WebNotification* notification);
+  bool GetId(const blink::WebNotification& notification, int& id);
+  bool GetNotification(int id, blink::WebNotification* notification);
 
   // Methods for tracking active permission requests.
   int RegisterPermissionRequest(
-      WebKit::WebNotificationPermissionCallback* callback);
+      blink::WebNotificationPermissionCallback* callback);
   void OnPermissionRequestComplete(int id);
-  WebKit::WebNotificationPermissionCallback* GetCallback(int id);
+  blink::WebNotificationPermissionCallback* GetCallback(int id);
 
   // Clears out all active notifications.  Useful on page navigation.
   void Clear();
@@ -47,12 +47,12 @@ class CONTENT_EXPORT ActiveNotificationTracker {
   void DetachAll();
 
  private:
-  typedef std::map<WebKit::WebNotification, int> ReverseTable;
+  typedef std::map<blink::WebNotification, int> ReverseTable;
 
   // Tracking maps for active notifications and permission requests.
-  IDMap<WebKit::WebNotification> notification_table_;
+  IDMap<blink::WebNotification> notification_table_;
   ReverseTable reverse_notification_table_;
-  IDMap<WebKit::WebNotificationPermissionCallback> callback_table_;
+  IDMap<blink::WebNotificationPermissionCallback> callback_table_;
 
   DISALLOW_COPY_AND_ASSIGN(ActiveNotificationTracker);
 };

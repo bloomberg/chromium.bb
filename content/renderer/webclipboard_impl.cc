@@ -25,13 +25,13 @@
 #include "url/gurl.h"
 #include "webkit/glue/webkit_glue.h"
 
-using WebKit::WebClipboard;
-using WebKit::WebData;
-using WebKit::WebDragData;
-using WebKit::WebImage;
-using WebKit::WebString;
-using WebKit::WebURL;
-using WebKit::WebVector;
+using blink::WebClipboard;
+using blink::WebData;
+using blink::WebDragData;
+using blink::WebImage;
+using blink::WebString;
+using blink::WebURL;
+using blink::WebVector;
 
 namespace content {
 

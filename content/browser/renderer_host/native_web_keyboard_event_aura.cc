@@ -20,15 +20,15 @@ ui::Event* CopyEvent(ui::Event* event) {
 
 int EventFlagsToWebInputEventModifiers(int flags) {
   return
-      (flags & ui::EF_SHIFT_DOWN ? WebKit::WebInputEvent::ShiftKey : 0) |
-      (flags & ui::EF_CONTROL_DOWN ? WebKit::WebInputEvent::ControlKey : 0) |
-      (flags & ui::EF_CAPS_LOCK_DOWN ? WebKit::WebInputEvent::CapsLockOn : 0) |
-      (flags & ui::EF_ALT_DOWN ? WebKit::WebInputEvent::AltKey : 0);
+      (flags & ui::EF_SHIFT_DOWN ? blink::WebInputEvent::ShiftKey : 0) |
+      (flags & ui::EF_CONTROL_DOWN ? blink::WebInputEvent::ControlKey : 0) |
+      (flags & ui::EF_CAPS_LOCK_DOWN ? blink::WebInputEvent::CapsLockOn : 0) |
+      (flags & ui::EF_ALT_DOWN ? blink::WebInputEvent::AltKey : 0);
 }
 
 }  // namespace
 
-using WebKit::WebKeyboardEvent;
+using blink::WebKeyboardEvent;
 
 namespace content {
 
@@ -61,11 +61,11 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent(
       skip_in_browser(false) {
   switch (key_event_type) {
     case ui::ET_KEY_PRESSED:
-      type = is_char ? WebKit::WebInputEvent::Char :
-          WebKit::WebInputEvent::RawKeyDown;
+      type = is_char ? blink::WebInputEvent::Char :
+          blink::WebInputEvent::RawKeyDown;
       break;
     case ui::ET_KEY_RELEASED:
-      type = WebKit::WebInputEvent::KeyUp;
+      type = blink::WebInputEvent::KeyUp;
       break;
     default:
       NOTREACHED();

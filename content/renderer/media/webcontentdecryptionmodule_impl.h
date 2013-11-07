@@ -21,15 +21,15 @@ class WebContentDecryptionModuleSessionImpl;
 class SessionIdAdapter;
 
 class WebContentDecryptionModuleImpl
-    : public WebKit::WebContentDecryptionModule {
+    : public blink::WebContentDecryptionModule {
  public:
   static WebContentDecryptionModuleImpl* Create(const string16& key_system);
 
   virtual ~WebContentDecryptionModuleImpl();
 
-  // WebKit::WebContentDecryptionModule implementation.
-  virtual WebKit::WebContentDecryptionModuleSession* createSession(
-      WebKit::WebContentDecryptionModuleSession::Client* client);
+  // blink::WebContentDecryptionModule implementation.
+  virtual blink::WebContentDecryptionModuleSession* createSession(
+      blink::WebContentDecryptionModuleSession::Client* client);
 
  private:
   // Takes ownership of |media_keys| and |adapter|.

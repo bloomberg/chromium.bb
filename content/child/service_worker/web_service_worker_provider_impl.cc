@@ -14,16 +14,16 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 
-using WebKit::WebString;
-using WebKit::WebURL;
+using blink::WebString;
+using blink::WebURL;
 
 namespace content {
 
 WebServiceWorkerProviderImpl::WebServiceWorkerProviderImpl(
     ThreadSafeSender* thread_safe_sender,
     ServiceWorkerMessageFilter* message_filter,
-    const WebKit::WebURL& origin,
-    scoped_ptr<WebKit::WebServiceWorkerProviderClient> client)
+    const blink::WebURL& origin,
+    scoped_ptr<blink::WebServiceWorkerProviderClient> client)
     : thread_safe_sender_(thread_safe_sender), client_(client.Pass()) {}
 
 WebServiceWorkerProviderImpl::~WebServiceWorkerProviderImpl() {}

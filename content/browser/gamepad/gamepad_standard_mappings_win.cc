@@ -24,8 +24,8 @@ float AxisPositiveAsButton(long value) {
 }
 
 void MapperDragonRiseGeneric(
-    const WebKit::WebGamepad& input,
-    WebKit::WebGamepad* mapped) {
+    const blink::WebGamepad& input,
+    blink::WebGamepad* mapped) {
   *mapped = input;
   mapped->buttons[0] = input.buttons[1];
   mapped->buttons[1] = input.buttons[2];
@@ -43,8 +43,8 @@ void MapperDragonRiseGeneric(
 }
 
 void MapperLogitechDualAction(
-    const WebKit::WebGamepad& input,
-    WebKit::WebGamepad* mapped) {
+    const blink::WebGamepad& input,
+    blink::WebGamepad* mapped) {
   *mapped = input;
   mapped->buttons[0] = input.buttons[1];
   mapped->buttons[1] = input.buttons[2];
@@ -62,8 +62,8 @@ void MapperLogitechDualAction(
 }
 
 void MapperLogitechPrecision(
-    const WebKit::WebGamepad& input,
-    WebKit::WebGamepad* mapped) {
+    const blink::WebGamepad& input,
+    blink::WebGamepad* mapped) {
   *mapped = input;
   mapped->buttons[0] = input.buttons[1];
   mapped->buttons[1] = input.buttons[2];
@@ -79,8 +79,8 @@ void MapperLogitechPrecision(
 }
 
 void Mapper2Axes8Keys(
-    const WebKit::WebGamepad& input,
-    WebKit::WebGamepad* mapped) {
+    const blink::WebGamepad& input,
+    blink::WebGamepad* mapped) {
   *mapped = input;
   mapped->buttons[kButtonLeftTrigger] = 0;  // Not present
   mapped->buttons[kButtonRightTrigger] = 0;  // Not present

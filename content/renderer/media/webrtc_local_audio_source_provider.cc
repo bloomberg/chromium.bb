@@ -11,7 +11,7 @@
 #include "media/base/audio_hardware_config.h"
 #include "third_party/WebKit/public/web/WebAudioSourceProviderClient.h"
 
-using WebKit::WebVector;
+using blink::WebVector;
 
 namespace content {
 
@@ -107,7 +107,7 @@ void WebRtcLocalAudioSourceProvider::GetAudioProcessingParams(
 }
 
 void WebRtcLocalAudioSourceProvider::setClient(
-    WebKit::WebAudioSourceProviderClient* client) {
+    blink::WebAudioSourceProviderClient* client) {
   NOTREACHED();
 }
 

@@ -30,7 +30,7 @@ InputHandlerWrapper::~InputHandlerWrapper() {
 }
 
 void InputHandlerWrapper::TransferActiveWheelFlingAnimation(
-    const WebKit::WebActiveWheelFlingParameters& params) {
+    const blink::WebActiveWheelFlingParameters& params) {
   main_loop_->PostTask(
       FROM_HERE,
       base::Bind(&RenderViewImpl::TransferActiveWheelFlingAnimation,
@@ -42,11 +42,11 @@ void InputHandlerWrapper::WillShutdown() {
   input_handler_manager_->RemoveInputHandler(routing_id_);
 }
 
-WebKit::WebGestureCurve* InputHandlerWrapper::CreateFlingAnimationCurve(
+blink::WebGestureCurve* InputHandlerWrapper::CreateFlingAnimationCurve(
     int deviceSource,
-    const WebKit::WebFloatPoint& velocity,
-    const WebKit::WebSize& cumulative_scroll) {
-  return WebKit::Platform::current()->createFlingAnimationCurve(
+    const blink::WebFloatPoint& velocity,
+    const blink::WebSize& cumulative_scroll) {
+  return blink::Platform::current()->createFlingAnimationCurve(
       deviceSource, velocity, cumulative_scroll);
 }
 

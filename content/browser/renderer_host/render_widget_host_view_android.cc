@@ -214,7 +214,7 @@ void RenderWidgetHostViewAndroid::SetBounds(const gfx::Rect& rect) {
   SetSize(rect.size());
 }
 
-WebKit::WebGLId RenderWidgetHostViewAndroid::GetScaledContentTexture(
+blink::WebGLId RenderWidgetHostViewAndroid::GetScaledContentTexture(
     float scale,
     gfx::Size* out_size) {
   gfx::Size size(gfx::ToCeiledSize(
@@ -254,7 +254,7 @@ bool RenderWidgetHostViewAndroid::PopulateBitmapWithContents(jobject jbitmap) {
 
   GLHelper* helper = ImageTransportFactoryAndroid::GetInstance()->GetGLHelper();
 
-  WebKit::WebGLId texture = helper->CopyAndScaleTexture(
+  blink::WebGLId texture = helper->CopyAndScaleTexture(
       texture_id_in_layer_,
       texture_size_in_layer_,
       bitmap.size(),
@@ -267,7 +267,7 @@ bool RenderWidgetHostViewAndroid::PopulateBitmapWithContents(jobject jbitmap) {
                               gfx::Rect(bitmap.size()),
                               static_cast<unsigned char*> (bitmap.pixels()));
 
-  WebKit::WebGraphicsContext3D* context =
+  blink::WebGraphicsContext3D* context =
       ImageTransportFactoryAndroid::GetInstance()->GetContext3D();
   context->deleteTexture(texture);
 
@@ -948,7 +948,7 @@ bool RenderWidgetHostViewAndroid::HasAcceleratedSurface(
   return false;
 }
 
-void RenderWidgetHostViewAndroid::GetScreenInfo(WebKit::WebScreenInfo* result) {
+void RenderWidgetHostViewAndroid::GetScreenInfo(blink::WebScreenInfo* result) {
   // ScreenInfo isn't tied to the widget on Android. Always return the default.
   RenderWidgetHostViewBase::GetDefaultScreenInfo(result);
 }
@@ -980,25 +980,25 @@ void RenderWidgetHostViewAndroid::SetScrollOffsetPinning(
 }
 
 void RenderWidgetHostViewAndroid::UnhandledWheelEvent(
-    const WebKit::WebMouseWheelEvent& event) {
+    const blink::WebMouseWheelEvent& event) {
   // intentionally empty, like RenderWidgetHostViewViews
 }
 
 void RenderWidgetHostViewAndroid::GestureEventAck(
     int gesture_event_type,
     InputEventAckState ack_result) {
-  if (gesture_event_type == WebKit::WebInputEvent::GestureScrollUpdate &&
+  if (gesture_event_type == blink::WebInputEvent::GestureScrollUpdate &&
       ack_result == INPUT_EVENT_ACK_STATE_CONSUMED) {
     content_view_core_->OnScrollUpdateGestureConsumed();
   }
-  if (gesture_event_type == WebKit::WebInputEvent::GestureFlingStart &&
+  if (gesture_event_type == blink::WebInputEvent::GestureFlingStart &&
       ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS) {
     content_view_core_->UnhandledFlingStartEvent();
   }
 }
 
 InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
-    const WebKit::WebInputEvent& input_event) {
+    const blink::WebInputEvent& input_event) {
   if (host_) {
     SynchronousCompositorImpl* compositor =
         SynchronousCompositorImpl::FromID(host_->GetProcess()->GetID(),
@@ -1103,26 +1103,26 @@ void RenderWidgetHostViewAndroid::SendKeyEvent(
 }
 
 void RenderWidgetHostViewAndroid::SendTouchEvent(
-    const WebKit::WebTouchEvent& event) {
+    const blink::WebTouchEvent& event) {
   if (host_)
     host_->ForwardTouchEventWithLatencyInfo(event, ui::LatencyInfo());
 }
 
 
 void RenderWidgetHostViewAndroid::SendMouseEvent(
-    const WebKit::WebMouseEvent& event) {
+    const blink::WebMouseEvent& event) {
   if (host_)
     host_->ForwardMouseEvent(event);
 }
 
 void RenderWidgetHostViewAndroid::SendMouseWheelEvent(
-    const WebKit::WebMouseWheelEvent& event) {
+    const blink::WebMouseWheelEvent& event) {
   if (host_)
     host_->ForwardWheelEvent(event);
 }
 
 void RenderWidgetHostViewAndroid::SendGestureEvent(
-    const WebKit::WebGestureEvent& event) {
+    const blink::WebGestureEvent& event) {
   // Sending a gesture that may trigger overscroll should resume the effect.
   if (overscroll_effect_)
     overscroll_effect_->SetEnabled(true);
@@ -1340,7 +1340,7 @@ void RenderWidgetHostViewAndroid::PrepareBitmapCopyOutputResult(
 
 // static
 void RenderWidgetHostViewPort::GetDefaultScreenInfo(
-    WebKit::WebScreenInfo* results) {
+    blink::WebScreenInfo* results) {
   const gfx::Display& display =
       gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
   results->rect = display.bounds();

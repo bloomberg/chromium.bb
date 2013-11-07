@@ -31,7 +31,7 @@ class PepperGamepadHostTest
   virtual ~PepperGamepadHostTest() {
   }
 
-  void ConstructService(const WebKit::WebGamepads& test_data) {
+  void ConstructService(const blink::WebGamepads& test_data) {
     service_.reset(new GamepadServiceTestConstructor(test_data));
   }
 
@@ -68,15 +68,15 @@ TEST_F(PepperGamepadHostTest, ValidateHardwareBuffersMatch) {
 TEST_F(PepperGamepadHostTest, ValidateGamepadsMatch) {
   // Gamepads.
   COMPILE_ASSERT(sizeof(ppapi::WebKitGamepads) ==
-                 sizeof(WebKit::WebGamepads),
+                 sizeof(blink::WebGamepads),
                  gamepads_data_must_match);
   ppapi::WebKitGamepads ppapi_gamepads;
-  WebKit::WebGamepads web_gamepads;
+  blink::WebGamepads web_gamepads;
   EXPECT_EQ(AddressDiff(&web_gamepads.length, &web_gamepads),
             AddressDiff(&ppapi_gamepads.length, &ppapi_gamepads));
 
   // See comment below on storage & the EXPECT macro.
-  size_t webkit_items_length_cap = WebKit::WebGamepads::itemsLengthCap;
+  size_t webkit_items_length_cap = blink::WebGamepads::itemsLengthCap;
   size_t ppapi_items_length_cap = ppapi::WebKitGamepads::kItemsLengthCap;
   EXPECT_EQ(webkit_items_length_cap, ppapi_items_length_cap);
 
@@ -89,23 +89,23 @@ TEST_F(PepperGamepadHostTest, ValidateGamepadsMatch) {
 TEST_F(PepperGamepadHostTest, ValidateGamepadMatch) {
   // Gamepad.
   COMPILE_ASSERT(sizeof(ppapi::WebKitGamepad) ==
-                 sizeof(WebKit::WebGamepad),
+                 sizeof(blink::WebGamepad),
                  gamepad_data_must_match);
   ppapi::WebKitGamepad ppapi_gamepad;
-  WebKit::WebGamepad web_gamepad;
+  blink::WebGamepad web_gamepad;
 
   // Using EXPECT seems to force storage for the parameter, which the constants
   // in the WebKit/PPAPI headers don't have. So we have to use temporaries
   // before comparing them.
-  size_t webkit_id_length_cap = WebKit::WebGamepad::idLengthCap;
+  size_t webkit_id_length_cap = blink::WebGamepad::idLengthCap;
   size_t ppapi_id_length_cap = ppapi::WebKitGamepad::kIdLengthCap;
   EXPECT_EQ(webkit_id_length_cap, ppapi_id_length_cap);
 
-  size_t webkit_axes_length_cap = WebKit::WebGamepad::axesLengthCap;
+  size_t webkit_axes_length_cap = blink::WebGamepad::axesLengthCap;
   size_t ppapi_axes_length_cap = ppapi::WebKitGamepad::kAxesLengthCap;
   EXPECT_EQ(webkit_axes_length_cap, ppapi_axes_length_cap);
 
-  size_t webkit_buttons_length_cap = WebKit::WebGamepad::buttonsLengthCap;
+  size_t webkit_buttons_length_cap = blink::WebGamepad::buttonsLengthCap;
   size_t ppapi_buttons_length_cap = ppapi::WebKitGamepad::kButtonsLengthCap;
   EXPECT_EQ(webkit_buttons_length_cap, ppapi_buttons_length_cap);
 
@@ -126,8 +126,8 @@ TEST_F(PepperGamepadHostTest, ValidateGamepadMatch) {
 }
 
 TEST_F(PepperGamepadHostTest, WaitForReply) {
-  WebKit::WebGamepads default_data;
-  memset(&default_data, 0, sizeof(WebKit::WebGamepads));
+  blink::WebGamepads default_data;
+  memset(&default_data, 0, sizeof(blink::WebGamepads));
   default_data.length = 1;
   default_data.items[0].connected = true;
   default_data.items[0].buttonsLength = 1;
@@ -163,7 +163,7 @@ TEST_F(PepperGamepadHostTest, WaitForReply) {
   // will issue the callback on our thread. Waiting for it to read twice
   // ensures that it was able to issue callbacks for the first read (if it
   // issued one) before we try to check for it.
-  WebKit::WebGamepads button_down_data = default_data;
+  blink::WebGamepads button_down_data = default_data;
   button_down_data.items[0].buttons[0] = 1.f;
   fetcher->SetTestData(button_down_data);
   fetcher->WaitForDataRead();

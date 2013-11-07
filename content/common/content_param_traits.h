@@ -58,7 +58,7 @@ struct ParamTraits<WebCursor> {
   }
 };
 
-typedef const WebKit::WebInputEvent* WebInputEventPointer;
+typedef const blink::WebInputEvent* WebInputEventPointer;
 template <>
 struct ParamTraits<WebInputEventPointer> {
   typedef WebInputEventPointer param_type;

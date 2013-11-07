@@ -18,10 +18,10 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "webkit/common/blob/blob_data.h"
 
-using WebKit::WebBlobData;
-using WebKit::WebString;
-using WebKit::WebThreadSafeData;
-using WebKit::WebURL;
+using blink::WebBlobData;
+using blink::WebString;
+using blink::WebThreadSafeData;
+using blink::WebURL;
 
 namespace content {
 
@@ -40,7 +40,7 @@ WebBlobRegistryImpl::~WebBlobRegistryImpl() {
 }
 
 void WebBlobRegistryImpl::registerBlobData(
-    const WebKit::WebString& uuid, const WebKit::WebBlobData& data) {
+    const blink::WebString& uuid, const blink::WebBlobData& data) {
   const std::string uuid_str(uuid.utf8());
 
   sender_->Send(new BlobHostMsg_StartBuilding(uuid_str));

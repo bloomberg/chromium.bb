@@ -25,7 +25,7 @@ PeerConnectionHandlerBase::~PeerConnectionHandlerBase() {
 }
 
 bool PeerConnectionHandlerBase::AddStream(
-    const WebKit::WebMediaStream& stream,
+    const blink::WebMediaStream& stream,
     const webrtc::MediaConstraintsInterface* constraints) {
   webrtc::MediaStreamInterface* native_stream =
       MediaStreamDependencyFactory::GetNativeMediaStream(stream);
@@ -35,7 +35,7 @@ bool PeerConnectionHandlerBase::AddStream(
 }
 
 void PeerConnectionHandlerBase::RemoveStream(
-    const WebKit::WebMediaStream& stream) {
+    const blink::WebMediaStream& stream) {
   webrtc::MediaStreamInterface* native_stream =
       MediaStreamDependencyFactory::GetNativeMediaStream(stream);
   if (native_stream)

@@ -72,11 +72,11 @@
 
 IPC_ENUM_TRAITS(AccessibilityMode)
 IPC_ENUM_TRAITS(ViewMsg_Navigate_Type::Value)
-IPC_ENUM_TRAITS(WebKit::WebContextMenuData::MediaType)
-IPC_ENUM_TRAITS(WebKit::WebMediaPlayerAction::Type)
-IPC_ENUM_TRAITS(WebKit::WebPluginAction::Type)
-IPC_ENUM_TRAITS(WebKit::WebPopupType)
-IPC_ENUM_TRAITS(WebKit::WebTextDirection)
+IPC_ENUM_TRAITS(blink::WebContextMenuData::MediaType)
+IPC_ENUM_TRAITS(blink::WebMediaPlayerAction::Type)
+IPC_ENUM_TRAITS(blink::WebPluginAction::Type)
+IPC_ENUM_TRAITS(blink::WebPopupType)
+IPC_ENUM_TRAITS(blink::WebTextDirection)
 IPC_ENUM_TRAITS(WindowContainerType)
 IPC_ENUM_TRAITS(content::FaviconURL::IconType)
 IPC_ENUM_TRAITS(content::FileChooserParams::Mode)
@@ -103,42 +103,42 @@ IPC_STRUCT_TRAITS_BEGIN(FontDescriptor)
 IPC_STRUCT_TRAITS_END()
 #endif
 
-IPC_STRUCT_TRAITS_BEGIN(WebKit::WebCompositionUnderline)
+IPC_STRUCT_TRAITS_BEGIN(blink::WebCompositionUnderline)
   IPC_STRUCT_TRAITS_MEMBER(startOffset)
   IPC_STRUCT_TRAITS_MEMBER(endOffset)
   IPC_STRUCT_TRAITS_MEMBER(color)
   IPC_STRUCT_TRAITS_MEMBER(thick)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(WebKit::WebFindOptions)
+IPC_STRUCT_TRAITS_BEGIN(blink::WebFindOptions)
   IPC_STRUCT_TRAITS_MEMBER(forward)
   IPC_STRUCT_TRAITS_MEMBER(matchCase)
   IPC_STRUCT_TRAITS_MEMBER(findNext)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(WebKit::WebMediaPlayerAction)
+IPC_STRUCT_TRAITS_BEGIN(blink::WebMediaPlayerAction)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(enable)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(WebKit::WebPluginAction)
+IPC_STRUCT_TRAITS_BEGIN(blink::WebPluginAction)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(enable)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(WebKit::WebFloatPoint)
+IPC_STRUCT_TRAITS_BEGIN(blink::WebFloatPoint)
   IPC_STRUCT_TRAITS_MEMBER(x)
   IPC_STRUCT_TRAITS_MEMBER(y)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(WebKit::WebFloatRect)
+IPC_STRUCT_TRAITS_BEGIN(blink::WebFloatRect)
   IPC_STRUCT_TRAITS_MEMBER(x)
   IPC_STRUCT_TRAITS_MEMBER(y)
   IPC_STRUCT_TRAITS_MEMBER(width)
   IPC_STRUCT_TRAITS_MEMBER(height)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(WebKit::WebScreenInfo)
+IPC_STRUCT_TRAITS_BEGIN(blink::WebScreenInfo)
   IPC_STRUCT_TRAITS_MEMBER(deviceScaleFactor)
   IPC_STRUCT_TRAITS_MEMBER(depth)
   IPC_STRUCT_TRAITS_MEMBER(depthPerComponent)
@@ -362,7 +362,7 @@ IPC_STRUCT_BEGIN(ViewHostMsg_CreateWindow_Params)
   IPC_STRUCT_MEMBER(content::Referrer, referrer)
 
   // The window features to use for the new view.
-  IPC_STRUCT_MEMBER(WebKit::WebWindowFeatures, features)
+  IPC_STRUCT_MEMBER(blink::WebWindowFeatures, features)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewHostMsg_CreateWorker_Params)
@@ -483,9 +483,9 @@ IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewHostMsg_SelectionBounds_Params)
   IPC_STRUCT_MEMBER(gfx::Rect, anchor_rect)
-  IPC_STRUCT_MEMBER(WebKit::WebTextDirection, anchor_dir)
+  IPC_STRUCT_MEMBER(blink::WebTextDirection, anchor_dir)
   IPC_STRUCT_MEMBER(gfx::Rect, focus_rect)
-  IPC_STRUCT_MEMBER(WebKit::WebTextDirection, focus_dir)
+  IPC_STRUCT_MEMBER(blink::WebTextDirection, focus_dir)
   IPC_STRUCT_MEMBER(bool, is_anchor_first)
 IPC_STRUCT_END()
 
@@ -737,7 +737,7 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
   IPC_STRUCT_MEMBER(int32, next_page_id)
 
   // The properties of the screen associated with the view.
-  IPC_STRUCT_MEMBER(WebKit::WebScreenInfo, screen_info)
+  IPC_STRUCT_MEMBER(blink::WebScreenInfo, screen_info)
 
   // The accessibility mode of the renderer.
   IPC_STRUCT_MEMBER(AccessibilityMode, accessibility_mode)
@@ -851,7 +851,7 @@ IPC_MESSAGE_ROUTED0(ViewMsg_TimezoneChange)
 IPC_MESSAGE_ROUTED0(ViewMsg_Close)
 
 IPC_STRUCT_BEGIN(ViewMsg_Resize_Params)
-  IPC_STRUCT_MEMBER(WebKit::WebScreenInfo, screen_info)
+  IPC_STRUCT_MEMBER(blink::WebScreenInfo, screen_info)
   IPC_STRUCT_MEMBER(gfx::Size, new_size)
   IPC_STRUCT_MEMBER(gfx::Size, physical_backing_size)
   IPC_STRUCT_MEMBER(float, overdraw_bottom_height)
@@ -949,7 +949,7 @@ IPC_MESSAGE_ROUTED0(ViewMsg_ReloadFrame)
 IPC_MESSAGE_ROUTED3(ViewMsg_Find,
                     int /* request_id */,
                     string16 /* search_text */,
-                    WebKit::WebFindOptions)
+                    blink::WebFindOptions)
 
 // This message notifies the renderer that the user has closed the FindInPage
 // window (and what action to take regarding the selection).
@@ -975,13 +975,13 @@ IPC_MESSAGE_ROUTED2(ViewMsg_CopyImageAt,
 // located at the given point.
 IPC_MESSAGE_ROUTED2(ViewMsg_MediaPlayerActionAt,
                     gfx::Point, /* location */
-                    WebKit::WebMediaPlayerAction)
+                    blink::WebMediaPlayerAction)
 
 // Tells the renderer to perform the given action on the plugin located at
 // the given point.
 IPC_MESSAGE_ROUTED2(ViewMsg_PluginActionAt,
                     gfx::Point, /* location */
-                    WebKit::WebPluginAction)
+                    blink::WebPluginAction)
 
 // Request for the renderer to evaluate an xpath to a frame and execute a
 // javascript: url in that frame's context. The message is completely
@@ -1096,7 +1096,7 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetInputMethodActive,
 IPC_MESSAGE_ROUTED4(
     ViewMsg_ImeSetComposition,
     string16, /* text */
-    std::vector<WebKit::WebCompositionUnderline>, /* underlines */
+    std::vector<blink::WebCompositionUnderline>, /* underlines */
     int, /* selectiont_start */
     int /* selection_end */)
 
@@ -1111,7 +1111,7 @@ IPC_MESSAGE_ROUTED3(ViewMsg_ImeConfirmComposition,
 IPC_MESSAGE_ROUTED3(ViewMsg_SetCompositionFromExistingText,
     int /* start */,
     int /* end */,
-    std::vector<WebKit::WebCompositionUnderline> /* underlines */)
+    std::vector<blink::WebCompositionUnderline> /* underlines */)
 
 // Selects between the given start and end offsets in the currently focused
 // editable field.
@@ -1212,7 +1212,7 @@ IPC_MESSAGE_ROUTED1(ViewMsg_DisableAutoResize,
 
 // Changes the text direction of the currently selected input field (if any).
 IPC_MESSAGE_ROUTED1(ViewMsg_SetTextDirection,
-                    WebKit::WebTextDirection /* direction */)
+                    blink::WebTextDirection /* direction */)
 
 // Tells the renderer to clear the focused node (if any).
 IPC_MESSAGE_ROUTED0(ViewMsg_ClearFocusedNode)
@@ -1395,7 +1395,7 @@ IPC_SYNC_MESSAGE_CONTROL1_4(ViewHostMsg_CreateWindow,
 // contains the widget being created.
 IPC_SYNC_MESSAGE_CONTROL2_2(ViewHostMsg_CreateWidget,
                             int /* opener_id */,
-                            WebKit::WebPopupType /* popup type */,
+                            blink::WebPopupType /* popup type */,
                             int /* route_id */,
                             int32 /* surface_id */)
 
@@ -1563,7 +1563,7 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_DidFinishLoad,
 IPC_MESSAGE_ROUTED3(ViewHostMsg_UpdateTitle,
                     int32 /* page_id */,
                     string16 /* title */,
-                    WebKit::WebTextDirection /* title direction */)
+                    blink::WebTextDirection /* title direction */)
 
 // Change the encoding name of the page in UI when the page has detected
 // proper encoding name.
@@ -1968,7 +1968,7 @@ IPC_SYNC_MESSAGE_ROUTED1_0(ViewHostMsg_DestroyPluginContainer,
 // Send the tooltip text for the current mouse position to the browser.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_SetTooltipText,
                     string16 /* tooltip text string */,
-                    WebKit::WebTextDirection /* text direction hint */)
+                    blink::WebTextDirection /* text direction hint */)
 
 IPC_MESSAGE_ROUTED0(ViewHostMsg_SelectRange_ACK)
 IPC_MESSAGE_ROUTED0(ViewHostMsg_MoveCaret_ACK)

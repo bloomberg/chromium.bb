@@ -27,12 +27,12 @@ JavaBridgeChannel::JavaBridgeChannel()
     : peer_owner_id_(new struct _NPP) {
   // Register the dummy owner Id for our peer (the Browser process) as an object
   // owner, and have all objects received from the peer owned by it.
-  WebKit::WebBindings::registerObjectOwner(peer_owner_id_.get());
+  blink::WebBindings::registerObjectOwner(peer_owner_id_.get());
   SetDefaultNPObjectOwner(peer_owner_id_.get());
 }
 
 JavaBridgeChannel::~JavaBridgeChannel() {
-  WebKit::WebBindings::unregisterObjectOwner(peer_owner_id_.get());
+  blink::WebBindings::unregisterObjectOwner(peer_owner_id_.get());
 }
 
 int JavaBridgeChannel::GenerateRouteID() {

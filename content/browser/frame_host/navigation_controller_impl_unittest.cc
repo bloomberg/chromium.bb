@@ -499,7 +499,7 @@ TEST_F(NavigationControllerTest, LoadURLWithParams) {
 
   NavigationController::LoadURLParams load_params(GURL("http://foo"));
   load_params.referrer =
-      Referrer(GURL("http://referrer"), WebKit::WebReferrerPolicyDefault);
+      Referrer(GURL("http://referrer"), blink::WebReferrerPolicyDefault);
   load_params.transition_type = PAGE_TRANSITION_GENERATED;
   load_params.extra_headers = "content-type: text/plain";
   load_params.load_type = NavigationController::LOAD_TYPE_DEFAULT;

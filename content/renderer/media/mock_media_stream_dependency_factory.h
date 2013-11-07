@@ -118,7 +118,7 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
   virtual scoped_refptr<webrtc::PeerConnectionInterface> CreatePeerConnection(
       const webrtc::PeerConnectionInterface::IceServers& ice_servers,
       const webrtc::MediaConstraintsInterface* constraints,
-      WebKit::WebFrame* frame,
+      blink::WebFrame* frame,
       webrtc::PeerConnectionObserver* observer) OVERRIDE;
   virtual scoped_refptr<webrtc::AudioSourceInterface>
       CreateLocalAudioSource(
@@ -129,7 +129,7 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
           bool is_screencast,
           const webrtc::MediaConstraintsInterface* constraints) OVERRIDE;
   virtual scoped_refptr<WebAudioCapturerSource> CreateWebAudioSource(
-      WebKit::WebMediaStreamSource* source,
+      blink::WebMediaStreamSource* source,
       RTCMediaConstraints* constraints) OVERRIDE;
   virtual scoped_refptr<webrtc::MediaStreamInterface>
       CreateLocalMediaStream(const std::string& label) OVERRIDE;

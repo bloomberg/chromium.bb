@@ -10,7 +10,7 @@
 #include "third_party/WebKit/public/platform/WebFileWriter.h"
 #include "url/gurl.h"
 
-namespace WebKit {
+namespace blink {
 class WebFileWriterClient;
 class WebURL;
 }
@@ -18,14 +18,14 @@ class WebURL;
 namespace content {
 
 class CONTENT_EXPORT WebFileWriterBase
-    : public NON_EXPORTED_BASE(WebKit::WebFileWriter) {
+    : public NON_EXPORTED_BASE(blink::WebFileWriter) {
  public:
-  WebFileWriterBase(const GURL& path, WebKit::WebFileWriterClient* client);
+  WebFileWriterBase(const GURL& path, blink::WebFileWriterClient* client);
   virtual ~WebFileWriterBase();
 
   // WebFileWriter implementation
   virtual void truncate(long long length);
-  virtual void write(long long position, const WebKit::WebString& id);
+  virtual void write(long long position, const blink::WebString& id);
   virtual void cancel();
 
  protected:
@@ -61,7 +61,7 @@ class CONTENT_EXPORT WebFileWriterBase
   void FinishCancel();
 
   GURL path_;
-  WebKit::WebFileWriterClient* client_;
+  blink::WebFileWriterClient* client_;
   OperationType operation_;
   CancelState cancel_state_;
 };

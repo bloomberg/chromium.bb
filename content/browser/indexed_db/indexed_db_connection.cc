@@ -34,4 +34,4 @@ bool IndexedDBConnection::IsConnected() {
   return database_.get() != NULL;
 }
 
-}  // namespace WebKit
+}  // namespace blink

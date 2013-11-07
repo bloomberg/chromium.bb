@@ -11,15 +11,15 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "ui/base/clipboard/clipboard.h"
 
-using WebKit::WebDragData;
-using WebKit::WebVector;
+using blink::WebDragData;
+using blink::WebVector;
 
 namespace content {
 
 //static
 DropData DropDataBuilder::Build(const WebDragData& drag_data) {
   DropData result;
-  result.referrer_policy = WebKit::WebReferrerPolicyDefault;
+  result.referrer_policy = blink::WebReferrerPolicyDefault;
 
   const WebVector<WebDragData::Item>& item_list = drag_data.items();
   for (size_t i = 0; i < item_list.size(); ++i) {

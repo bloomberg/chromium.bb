@@ -20,16 +20,16 @@
 #include "third_party/WebKit/public/web/WebNodeList.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-using WebKit::WebDocument;
-using WebKit::WebElement;
-using WebKit::WebFrame;
-using WebKit::WebInputElement;
-using WebKit::WebNode;
-using WebKit::WebNodeCollection;
-using WebKit::WebNodeList;
-using WebKit::WebString;
-using WebKit::WebVector;
-using WebKit::WebView;
+using blink::WebDocument;
+using blink::WebElement;
+using blink::WebFrame;
+using blink::WebInputElement;
+using blink::WebNode;
+using blink::WebNodeCollection;
+using blink::WebNodeList;
+using blink::WebString;
+using blink::WebVector;
+using blink::WebView;
 
 namespace content {
 namespace {
@@ -97,7 +97,7 @@ void GetSavableResourceLinkForElement(
   result->resources_list->push_back(u);
   // Insert referrer for above new resource link.
   result->referrer_urls_list->push_back(GURL());
-  result->referrer_policies_list->push_back(WebKit::WebReferrerPolicyDefault);
+  result->referrer_policies_list->push_back(blink::WebReferrerPolicyDefault);
 }
 
 // Get all savable resource links from current WebFrameImpl object pointer.

@@ -32,12 +32,12 @@
 using ppapi::Resource;
 using ppapi::URLRequestInfoData;
 using ppapi::thunk::EnterResourceNoLock;
-using WebKit::WebData;
-using WebKit::WebHTTPBody;
-using WebKit::WebString;
-using WebKit::WebFrame;
-using WebKit::WebURL;
-using WebKit::WebURLRequest;
+using blink::WebData;
+using blink::WebHTTPBody;
+using blink::WebString;
+using blink::WebFrame;
+using blink::WebURL;
+using blink::WebURLRequest;
 
 namespace content {
 
@@ -177,7 +177,7 @@ bool CreateWebURLRequest(PP_Instance instance,
   if (data->has_custom_user_agent) {
     bool was_after_preconnect_request = false;
     dest->setExtraData(new webkit_glue::WebURLRequestExtraDataImpl(
-        WebKit::WebReferrerPolicyDefault,  // Ignored.
+        blink::WebReferrerPolicyDefault,  // Ignored.
         WebString::fromUTF8(data->custom_user_agent),
         was_after_preconnect_request));
   }

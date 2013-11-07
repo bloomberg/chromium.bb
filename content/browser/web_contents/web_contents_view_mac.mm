@@ -28,8 +28,8 @@
 #include "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 
-using WebKit::WebDragOperation;
-using WebKit::WebDragOperationsMask;
+using blink::WebDragOperation;
+using blink::WebDragOperationsMask;
 using content::DropData;
 using content::PopupMenuHelper;
 using content::RenderViewHostFactory;
@@ -39,10 +39,10 @@ using content::WebContents;
 using content::WebContentsImpl;
 using content::WebContentsViewMac;
 
-// Ensure that the WebKit::WebDragOperation enum values stay in sync with
+// Ensure that the blink::WebDragOperation enum values stay in sync with
 // NSDragOperation constants, since the code below static_casts between 'em.
 #define COMPILE_ASSERT_MATCHING_ENUM(name) \
-  COMPILE_ASSERT(int(NS##name) == int(WebKit::Web##name), enum_mismatch_##name)
+  COMPILE_ASSERT(int(NS##name) == int(blink::Web##name), enum_mismatch_##name)
 COMPILE_ASSERT_MATCHING_ENUM(DragOperationNone);
 COMPILE_ASSERT_MATCHING_ENUM(DragOperationCopy);
 COMPILE_ASSERT_MATCHING_ENUM(DragOperationLink);

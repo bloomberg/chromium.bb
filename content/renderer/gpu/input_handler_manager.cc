@@ -12,7 +12,7 @@
 #include "content/renderer/gpu/input_handler_manager_client.h"
 #include "content/renderer/gpu/input_handler_wrapper.h"
 
-using WebKit::WebInputEvent;
+using blink::WebInputEvent;
 
 namespace content {
 

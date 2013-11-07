@@ -42,7 +42,7 @@ class SingleReleaseCallback;
 class TextureLayer;
 }
 
-namespace WebKit {
+namespace blink {
 class WebExternalTextureLayer;
 class WebTouchEvent;
 class WebMouseEvent;
@@ -140,7 +140,7 @@ class RenderWidgetHostViewAndroid
       const scoped_refptr<media::VideoFrame>& target,
       const base::Callback<void(bool)>& callback) OVERRIDE;
   virtual bool CanCopyToVideoFrame() const OVERRIDE;
-  virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
+  virtual void GetScreenInfo(blink::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetBoundsInRootWindow() OVERRIDE;
   virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;
   virtual void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
@@ -150,9 +150,9 @@ class RenderWidgetHostViewAndroid
   virtual void SetScrollOffsetPinning(
       bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE;
   virtual void UnhandledWheelEvent(
-      const WebKit::WebMouseWheelEvent& event) OVERRIDE;
+      const blink::WebMouseWheelEvent& event) OVERRIDE;
   virtual InputEventAckState FilterInputEvent(
-      const WebKit::WebInputEvent& input_event) OVERRIDE;
+      const blink::WebInputEvent& input_event) OVERRIDE;
   virtual void OnSetNeedsFlushInput() OVERRIDE;
   virtual void GestureEventAck(int gesture_event_type,
                                InputEventAckState ack_result) OVERRIDE;
@@ -208,10 +208,10 @@ class RenderWidgetHostViewAndroid
   void SetContentViewCore(ContentViewCoreImpl* content_view_core);
   SkColor GetCachedBackgroundColor() const;
   void SendKeyEvent(const NativeWebKeyboardEvent& event);
-  void SendTouchEvent(const WebKit::WebTouchEvent& event);
-  void SendMouseEvent(const WebKit::WebMouseEvent& event);
-  void SendMouseWheelEvent(const WebKit::WebMouseWheelEvent& event);
-  void SendGestureEvent(const WebKit::WebGestureEvent& event);
+  void SendTouchEvent(const blink::WebTouchEvent& event);
+  void SendMouseEvent(const blink::WebMouseEvent& event);
+  void SendMouseWheelEvent(const blink::WebMouseWheelEvent& event);
+  void SendGestureEvent(const blink::WebGestureEvent& event);
   void SendBeginFrame(const cc::BeginFrameArgs& args);
 
   void OnTextInputStateChanged(const ViewHostMsg_TextInputState_Params& params);
@@ -223,7 +223,7 @@ class RenderWidgetHostViewAndroid
 
   void WasResized();
 
-  WebKit::WebGLId GetScaledContentTexture(float scale, gfx::Size* out_size);
+  blink::WebGLId GetScaledContentTexture(float scale, gfx::Size* out_size);
   bool PopulateBitmapWithContents(jobject jbitmap);
 
   bool HasValidFrame() const;

@@ -62,7 +62,7 @@ class CONTENT_EXPORT InputEventFilter
 
   void ForwardToMainListener(const IPC::Message& message);
   void ForwardToHandler(const IPC::Message& message);
-  void SendACK(WebKit::WebInputEvent::Type type,
+  void SendACK(blink::WebInputEvent::Type type,
                InputEventAckState ack_result,
                const ui::LatencyInfo& latency_info,
                int routing_id);

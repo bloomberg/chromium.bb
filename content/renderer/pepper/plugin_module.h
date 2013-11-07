@@ -41,9 +41,9 @@ namespace IPC {
 struct ChannelHandle;
 }
 
-namespace WebKit {
+namespace blink {
 class WebPluginContainer;
-}  // namespace WebKit
+}  // namespace blink
 
 namespace content {
 class HostDispatcherWrapper;
@@ -140,7 +140,7 @@ class CONTENT_EXPORT PluginModule :
 
   PepperPluginInstanceImpl* CreateInstance(
       RenderViewImpl* render_view,
-      WebKit::WebPluginContainer* container,
+      blink::WebPluginContainer* container,
       const GURL& plugin_url);
 
   // Returns "some" plugin instance associated with this module. This is not

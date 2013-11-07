@@ -11,7 +11,7 @@
 #include "content/common/input/scoped_web_input_event.h"
 #include "ui/events/latency_info.h"
 
-namespace WebKit {
+namespace blink {
 class WebInputEvent;
 }
 
@@ -21,7 +21,7 @@ namespace content {
 class CONTENT_EXPORT InputEvent {
  public:
   InputEvent();
-  InputEvent(const WebKit::WebInputEvent& web_event,
+  InputEvent(const blink::WebInputEvent& web_event,
              const ui::LatencyInfo& latency_info,
              bool is_keyboard_shortcut);
   ~InputEvent();

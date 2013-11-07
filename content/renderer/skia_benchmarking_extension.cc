@@ -24,7 +24,7 @@
 #include "ui/gfx/skia_util.h"
 #include "v8/include/v8.h"
 
-using WebKit::WebFrame;
+using blink::WebFrame;
 
 namespace {
 
@@ -202,8 +202,8 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
                             : std::min(last_index, stop_index));
     }
 
-    WebKit::WebArrayBuffer buffer =
-        WebKit::WebArrayBuffer::create(bitmap.getSize(), 1);
+    blink::WebArrayBuffer buffer =
+        blink::WebArrayBuffer::create(bitmap.getSize(), 1);
     uint32* packed_pixels = reinterpret_cast<uint32*>(bitmap.getPixels());
     uint8* buffer_pixels = reinterpret_cast<uint8*>(buffer.data());
     // Swizzle from native Skia format to RGBA as we copy out.

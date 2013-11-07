@@ -27,7 +27,7 @@
 
 class GURL;
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
 class WebURLLoader;
 struct WebURLError;
@@ -36,18 +36,18 @@ struct WebURLError;
 namespace content {
 
 class CONTENT_EXPORT ResourceFetcher
-    : NON_EXPORTED_BASE(public WebKit::WebURLLoaderClient) {
+    : NON_EXPORTED_BASE(public blink::WebURLLoaderClient) {
  public:
   // This will be called when the URL has been fetched, successfully or not.
   // If there is a failure, response and data will both be empty.  |response|
   // and |data| are both valid until the URLFetcher instance is destroyed.
-  typedef base::Callback<void(const WebKit::WebURLResponse&,
+  typedef base::Callback<void(const blink::WebURLResponse&,
                               const std::string&)> Callback;
 
   // We need a frame to make requests.
   ResourceFetcher(
-      const GURL& url, WebKit::WebFrame* frame,
-      WebKit::WebURLRequest::TargetType target_type,
+      const GURL& url, blink::WebFrame* frame,
+      blink::WebURLRequest::TargetType target_type,
       const Callback& callback);
   virtual ~ResourceFetcher();
 
@@ -59,43 +59,43 @@ class CONTENT_EXPORT ResourceFetcher
  protected:
   // WebURLLoaderClient methods:
   virtual void willSendRequest(
-      WebKit::WebURLLoader* loader, WebKit::WebURLRequest& new_request,
-      const WebKit::WebURLResponse& redirect_response);
+      blink::WebURLLoader* loader, blink::WebURLRequest& new_request,
+      const blink::WebURLResponse& redirect_response);
   virtual void didSendData(
-      WebKit::WebURLLoader* loader, unsigned long long bytes_sent,
+      blink::WebURLLoader* loader, unsigned long long bytes_sent,
       unsigned long long total_bytes_to_be_sent);
   virtual void didReceiveResponse(
-      WebKit::WebURLLoader* loader, const WebKit::WebURLResponse& response);
+      blink::WebURLLoader* loader, const blink::WebURLResponse& response);
   virtual void didReceiveCachedMetadata(
-      WebKit::WebURLLoader* loader, const char* data, int data_length);
+      blink::WebURLLoader* loader, const char* data, int data_length);
 
   virtual void didReceiveData(
-      WebKit::WebURLLoader* loader, const char* data, int data_length,
+      blink::WebURLLoader* loader, const char* data, int data_length,
       int encoded_data_length);
   virtual void didFinishLoading(
-      WebKit::WebURLLoader* loader, double finishTime);
+      blink::WebURLLoader* loader, double finishTime);
   virtual void didFail(
-      WebKit::WebURLLoader* loader, const WebKit::WebURLError& error);
+      blink::WebURLLoader* loader, const blink::WebURLError& error);
 
-  scoped_ptr<WebKit::WebURLLoader> loader_;
+  scoped_ptr<blink::WebURLLoader> loader_;
 
   // URL we're fetching
   GURL url_;
 
   // Target type
-  WebKit::WebURLRequest::TargetType target_type_;
+  blink::WebURLRequest::TargetType target_type_;
 
   // A copy of the original resource response
-  WebKit::WebURLResponse response_;
+  blink::WebURLResponse response_;
 
   // Set to true once the request is compelte.
   bool completed_;
 
  private:
   // Start the actual download.
-  void Start(WebKit::WebFrame* frame);
+  void Start(blink::WebFrame* frame);
 
-  void RunCallback(const WebKit::WebURLResponse& response,
+  void RunCallback(const blink::WebURLResponse& response,
                    const std::string& data);
 
   // Callback when we're done
@@ -114,8 +114,8 @@ class CONTENT_EXPORT ResourceFetcherWithTimeout
     : NON_EXPORTED_BASE(public ResourceFetcher) {
  public:
   ResourceFetcherWithTimeout(const GURL& url,
-                             WebKit::WebFrame* frame,
-                             WebKit::WebURLRequest::TargetType target_type,
+                             blink::WebFrame* frame,
+                             blink::WebURLRequest::TargetType target_type,
                              int timeout_secs,
                              const Callback& callback);
   virtual ~ResourceFetcherWithTimeout();

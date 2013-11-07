@@ -110,7 +110,7 @@ bool BrowserPluginEmbedder::OnMessageReceived(const IPC::Message& message) {
 }
 
 void BrowserPluginEmbedder::DragSourceEndedAt(int client_x, int client_y,
-    int screen_x, int screen_y, WebKit::WebDragOperation operation) {
+    int screen_x, int screen_y, blink::WebDragOperation operation) {
   if (guest_started_drag_.get()) {
     gfx::Point guest_offset =
         guest_started_drag_->GetScreenCoordinates(gfx::Point());

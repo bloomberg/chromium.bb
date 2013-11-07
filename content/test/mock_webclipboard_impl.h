@@ -19,42 +19,42 @@
 
 namespace content {
 
-class MockWebClipboardImpl : public WebKit::WebClipboard {
+class MockWebClipboardImpl : public blink::WebClipboard {
  public:
   MockWebClipboardImpl();
   virtual ~MockWebClipboardImpl();
 
-  virtual bool isFormatAvailable(WebKit::WebClipboard::Format format,
-                                 WebKit::WebClipboard::Buffer buffer);
-  virtual WebKit::WebVector<WebKit::WebString> readAvailableTypes(
-      WebKit::WebClipboard::Buffer buffer, bool* containsFilenames);
+  virtual bool isFormatAvailable(blink::WebClipboard::Format format,
+                                 blink::WebClipboard::Buffer buffer);
+  virtual blink::WebVector<blink::WebString> readAvailableTypes(
+      blink::WebClipboard::Buffer buffer, bool* containsFilenames);
 
-  virtual WebKit::WebString readPlainText(WebKit::WebClipboard::Buffer buffer);
-  virtual WebKit::WebString readHTML(WebKit::WebClipboard::Buffer buffer,
-                                     WebKit::WebURL* url,
+  virtual blink::WebString readPlainText(blink::WebClipboard::Buffer buffer);
+  virtual blink::WebString readHTML(blink::WebClipboard::Buffer buffer,
+                                     blink::WebURL* url,
                                      unsigned* fragmentStart,
                                      unsigned* fragmentEnd);
-  virtual WebKit::WebData readImage(WebKit::WebClipboard::Buffer buffer);
-  virtual WebKit::WebString readCustomData(WebKit::WebClipboard::Buffer buffer,
-                                           const WebKit::WebString& type);
+  virtual blink::WebData readImage(blink::WebClipboard::Buffer buffer);
+  virtual blink::WebString readCustomData(blink::WebClipboard::Buffer buffer,
+                                           const blink::WebString& type);
 
-  virtual void writePlainText(const WebKit::WebString& plain_text);
+  virtual void writePlainText(const blink::WebString& plain_text);
   virtual void writeHTML(
-      const WebKit::WebString& htmlText, const WebKit::WebURL& url,
-      const WebKit::WebString& plainText, bool writeSmartPaste);
+      const blink::WebString& htmlText, const blink::WebURL& url,
+      const blink::WebString& plainText, bool writeSmartPaste);
   virtual void writeURL(
-      const WebKit::WebURL& url, const WebKit::WebString& title);
+      const blink::WebURL& url, const blink::WebString& title);
   virtual void writeImage(
-      const WebKit::WebImage& image, const WebKit::WebURL& url,
-      const WebKit::WebString& title);
-  virtual void writeDataObject(const WebKit::WebDragData& data);
+      const blink::WebImage& image, const blink::WebURL& url,
+      const blink::WebString& title);
+  virtual void writeDataObject(const blink::WebDragData& data);
 
  private:
   void clear();
 
-  WebKit::WebString m_plainText;
-  WebKit::WebString m_htmlText;
-  WebKit::WebImage m_image;
+  blink::WebString m_plainText;
+  blink::WebString m_htmlText;
+  blink::WebImage m_image;
   std::map<base::string16, base::string16> m_customData;
   bool m_writeSmartPaste;
 };

@@ -36,7 +36,7 @@ const char kHttpsScheme[] = "https";
 // pausing resource loading when the in-memory buffer is full and resuming
 // resource loading when there is available capacity.
 class CONTENT_EXPORT BufferedResourceLoader
-    : NON_EXPORTED_BASE(public WebKit::WebURLLoaderClient) {
+    : NON_EXPORTED_BASE(public blink::WebURLLoaderClient) {
  public:
   // kNeverDefer - Aggresively buffer; never defer loading while paused.
   // kReadThenDefer - Request only enough data to fulfill read requests.
@@ -106,7 +106,7 @@ class CONTENT_EXPORT BufferedResourceLoader
   void Start(const StartCB& start_cb,
              const LoadingStateChangedCB& loading_cb,
              const ProgressCB& progress_cb,
-             WebKit::WebFrame* frame);
+             blink::WebFrame* frame);
 
   // Stops everything associated with this loader, including active URL loads
   // and pending callbacks.
@@ -138,36 +138,36 @@ class CONTENT_EXPORT BufferedResourceLoader
   // Returns true if the server supports byte range requests.
   bool range_supported();
 
-  // WebKit::WebURLLoaderClient implementation.
+  // blink::WebURLLoaderClient implementation.
   virtual void willSendRequest(
-      WebKit::WebURLLoader* loader,
-      WebKit::WebURLRequest& newRequest,
-      const WebKit::WebURLResponse& redirectResponse);
+      blink::WebURLLoader* loader,
+      blink::WebURLRequest& newRequest,
+      const blink::WebURLResponse& redirectResponse);
   virtual void didSendData(
-      WebKit::WebURLLoader* loader,
+      blink::WebURLLoader* loader,
       unsigned long long bytesSent,
       unsigned long long totalBytesToBeSent);
   virtual void didReceiveResponse(
-      WebKit::WebURLLoader* loader,
-      const WebKit::WebURLResponse& response);
+      blink::WebURLLoader* loader,
+      const blink::WebURLResponse& response);
   virtual void didDownloadData(
-      WebKit::WebURLLoader* loader,
+      blink::WebURLLoader* loader,
       int data_length,
       int encoded_data_length);
   virtual void didReceiveData(
-      WebKit::WebURLLoader* loader,
+      blink::WebURLLoader* loader,
       const char* data,
       int data_length,
       int encoded_data_length);
   virtual void didReceiveCachedMetadata(
-      WebKit::WebURLLoader* loader,
+      blink::WebURLLoader* loader,
       const char* data, int dataLength);
   virtual void didFinishLoading(
-      WebKit::WebURLLoader* loader,
+      blink::WebURLLoader* loader,
       double finishTime);
   virtual void didFail(
-      WebKit::WebURLLoader* loader,
-      const WebKit::WebURLError&);
+      blink::WebURLLoader* loader,
+      const blink::WebURLError&);
 
   // Returns true if the media resource has a single origin, false otherwise.
   // Only valid to call after Start() has completed.
@@ -235,7 +235,7 @@ class CONTENT_EXPORT BufferedResourceLoader
   void ReadInternal();
 
   // If we have made a range request, verify the response from the server.
-  bool VerifyPartialResponse(const WebKit::WebURLResponse& response);
+  bool VerifyPartialResponse(const blink::WebURLResponse& response);
 
   // Returns the value for a range request header using parameters
   // |first_byte_position| and |last_byte_position|. Negative numbers other
@@ -316,7 +316,7 @@ class CONTENT_EXPORT BufferedResourceLoader
   int last_offset_;
 
   // Injected WebURLLoader instance for testing purposes.
-  scoped_ptr<WebKit::WebURLLoader> test_loader_;
+  scoped_ptr<blink::WebURLLoader> test_loader_;
 
   // Bitrate of the media. Set to 0 if unknown.
   int bitrate_;

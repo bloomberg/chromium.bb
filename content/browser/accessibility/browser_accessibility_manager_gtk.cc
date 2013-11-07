@@ -38,24 +38,24 @@ BrowserAccessibilityManagerGtk::~BrowserAccessibilityManagerGtk() {
 AccessibilityNodeData BrowserAccessibilityManagerGtk::GetEmptyDocument() {
   AccessibilityNodeData empty_document;
   empty_document.id = 0;
-  empty_document.role = WebKit::WebAXRoleRootWebArea;
+  empty_document.role = blink::WebAXRoleRootWebArea;
   empty_document.state =
-      1 << WebKit::WebAXStateReadonly;
+      1 << blink::WebAXStateReadonly;
   return empty_document;
 }
 
 void BrowserAccessibilityManagerGtk::NotifyAccessibilityEvent(
-    WebKit::WebAXEvent event_type,
+    blink::WebAXEvent event_type,
     BrowserAccessibility* node) {
   if (!node->IsNative())
     return;
   AtkObject* atk_object = node->ToBrowserAccessibilityGtk()->GetAtkObject();
 
   switch (event_type) {
-    case WebKit::WebAXEventChildrenChanged:
+    case blink::WebAXEventChildrenChanged:
       RecursivelySendChildrenChanged(GetRoot()->ToBrowserAccessibilityGtk());
       break;
-    case WebKit::WebAXEventFocus:
+    case blink::WebAXEventFocus:
       // Note: the focus-event was deprecated in ATK 2.9.4
       // See https://bugzilla.gnome.org/show_bug.cgi?id=649575#c8
       g_signal_emit_by_name(atk_object, "focus-event", true);

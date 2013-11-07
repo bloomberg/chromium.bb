@@ -8,9 +8,9 @@
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
 
-namespace WebKit {
+namespace blink {
 class WebMouseEvent;
-}  // namespace WebKit
+}  // namespace blink
 
 namespace content {
 
@@ -28,7 +28,7 @@ class CONTENT_EXPORT MouseLockDispatcher {
     virtual void OnMouseLockLost() = 0;
     // A mouse lock is enabled and mouse events are being delievered.
     virtual bool HandleMouseLockedInputEvent(
-        const WebKit::WebMouseEvent& event) = 0;
+        const blink::WebMouseEvent& event) = 0;
   };
 
   // Locks the mouse to the |target|. If true is returned, an asynchronous
@@ -43,7 +43,7 @@ class CONTENT_EXPORT MouseLockDispatcher {
   bool IsMouseLockedTo(LockTarget* target);
 
   // Allow lock target to consumed a mouse event, if it does return true.
-  bool WillHandleMouseEvent(const WebKit::WebMouseEvent& event);
+  bool WillHandleMouseEvent(const blink::WebMouseEvent& event);
 
   // Subclasses or users have to call these methods to report mouse lock events
   // from the browser.

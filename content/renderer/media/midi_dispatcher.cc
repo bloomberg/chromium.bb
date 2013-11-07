@@ -11,8 +11,8 @@
 #include "third_party/WebKit/public/web/WebMIDIPermissionRequest.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 
-using WebKit::WebMIDIPermissionRequest;
-using WebKit::WebSecurityOrigin;
+using blink::WebMIDIPermissionRequest;
+using blink::WebSecurityOrigin;
 
 namespace content {
 

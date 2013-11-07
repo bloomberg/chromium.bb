@@ -122,7 +122,7 @@ class WebFileWriterImpl::WriterBridge
 };
 
 WebFileWriterImpl::WebFileWriterImpl(
-     const GURL& path, WebKit::WebFileWriterClient* client,
+     const GURL& path, blink::WebFileWriterClient* client,
      Type type,
      base::MessageLoopProxy* main_thread_loop)
   : WebFileWriterBase(path, client),

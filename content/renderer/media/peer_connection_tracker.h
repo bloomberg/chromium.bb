@@ -14,12 +14,12 @@
 #include "third_party/WebKit/public/platform/WebRTCSessionDescription.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
 class WebRTCICECandidate;
 class WebString;
 class WebRTCSessionDescription;
-}  // namespace WebKit
+}  // namespace blink
 
 namespace webrtc {
 class DataChannelInterface;
@@ -70,7 +70,7 @@ class CONTENT_EXPORT PeerConnectionTracker : public RenderProcessObserver {
       RTCPeerConnectionHandler* pc_handler,
       const std::vector<webrtc::PeerConnectionInterface::IceServer>& servers,
       const RTCMediaConstraints& constraints,
-      const WebKit::WebFrame* frame);
+      const blink::WebFrame* frame);
 
   // Sends an update when a PeerConnection has been destroyed.
   virtual void UnregisterPeerConnection(RTCPeerConnectionHandler* pc_handler);
@@ -86,7 +86,7 @@ class CONTENT_EXPORT PeerConnectionTracker : public RenderProcessObserver {
   // Sends an update when setLocalDescription or setRemoteDescription is called.
   virtual void TrackSetSessionDescription(
       RTCPeerConnectionHandler* pc_handler,
-      const WebKit::WebRTCSessionDescription& desc, Source source);
+      const blink::WebRTCSessionDescription& desc, Source source);
 
   // Sends an update when Ice candidates are updated.
   virtual void TrackUpdateIce(
@@ -97,17 +97,17 @@ class CONTENT_EXPORT PeerConnectionTracker : public RenderProcessObserver {
   // Sends an update when an Ice candidate is added.
   virtual void TrackAddIceCandidate(
       RTCPeerConnectionHandler* pc_handler,
-      const WebKit::WebRTCICECandidate& candidate, Source source);
+      const blink::WebRTCICECandidate& candidate, Source source);
 
   // Sends an update when a media stream is added.
   virtual void TrackAddStream(
       RTCPeerConnectionHandler* pc_handler,
-      const WebKit::WebMediaStream& stream, Source source);
+      const blink::WebMediaStream& stream, Source source);
 
   // Sends an update when a media stream is removed.
   virtual void TrackRemoveStream(
       RTCPeerConnectionHandler* pc_handler,
-      const WebKit::WebMediaStream& stream, Source source);
+      const blink::WebMediaStream& stream, Source source);
 
   // Sends an update when a DataChannel is created.
   virtual void TrackCreateDataChannel(
@@ -120,19 +120,19 @@ class CONTENT_EXPORT PeerConnectionTracker : public RenderProcessObserver {
   // Sends an update when the signaling state of a PeerConnection has changed.
   virtual void TrackSignalingStateChange(
       RTCPeerConnectionHandler* pc_handler,
-      WebKit::WebRTCPeerConnectionHandlerClient::SignalingState state);
+      blink::WebRTCPeerConnectionHandlerClient::SignalingState state);
 
   // Sends an update when the Ice connection state
   // of a PeerConnection has changed.
   virtual void TrackIceConnectionStateChange(
       RTCPeerConnectionHandler* pc_handler,
-      WebKit::WebRTCPeerConnectionHandlerClient::ICEConnectionState state);
+      blink::WebRTCPeerConnectionHandlerClient::ICEConnectionState state);
 
   // Sends an update when the Ice gathering state
   // of a PeerConnection has changed.
   virtual void TrackIceGatheringStateChange(
       RTCPeerConnectionHandler* pc_handler,
-      WebKit::WebRTCPeerConnectionHandlerClient::ICEGatheringState state);
+      blink::WebRTCPeerConnectionHandlerClient::ICEGatheringState state);
 
   // Sends an update when the SetSessionDescription or CreateOffer or
   // CreateAnswer callbacks are called.
@@ -146,7 +146,7 @@ class CONTENT_EXPORT PeerConnectionTracker : public RenderProcessObserver {
   // Sends an update when a DTMFSender is created.
   virtual void TrackCreateDTMFSender(
       RTCPeerConnectionHandler* pc_handler,
-      const WebKit::WebMediaStreamTrack& track);
+      const blink::WebMediaStreamTrack& track);
 
  private:
   // Assign a local ID to a peer connection so that the browser process can

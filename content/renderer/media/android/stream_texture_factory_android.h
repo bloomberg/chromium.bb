@@ -10,7 +10,7 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "ui/gfx/size.h"
 
-namespace WebKit {
+namespace blink {
 class WebGraphicsContext3D;
 }
 
@@ -75,7 +75,7 @@ class StreamTextureFactory {
   virtual void SetStreamTextureSize(int32 texture_id,
                                     const gfx::Size& size) = 0;
 
-  virtual WebKit::WebGraphicsContext3D* Context3d() = 0;
+  virtual blink::WebGraphicsContext3D* Context3d() = 0;
 };
 
 }  // namespace content

@@ -24,11 +24,11 @@
 #include "webkit/common/gpu/test_context_provider_factory.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
-using WebKit::WebColor;
-using WebKit::WebGraphicsContext3D;
-using WebKit::WebRect;
-using WebKit::WebRenderingStats;
-using WebKit::WebSize;
+using blink::WebColor;
+using blink::WebGraphicsContext3D;
+using blink::WebRect;
+using blink::WebRenderingStats;
+using blink::WebSize;
 
 namespace webkit {
 
@@ -57,7 +57,7 @@ void WebLayerTreeViewImplForTesting::setSurfaceReady() {
 }
 
 void WebLayerTreeViewImplForTesting::setRootLayer(
-    const WebKit::WebLayer& root) {
+    const blink::WebLayer& root) {
   layer_tree_host_->SetRootLayer(
       static_cast<const WebLayerImpl*>(&root)->layer());
 }
@@ -111,7 +111,7 @@ void WebLayerTreeViewImplForTesting::setPageScaleFactorAndLimits(
 }
 
 void WebLayerTreeViewImplForTesting::startPageScaleAnimation(
-    const WebKit::WebPoint& scroll,
+    const blink::WebPoint& scroll,
     bool use_anchor,
     float new_page_scale,
     double duration_sec) {}

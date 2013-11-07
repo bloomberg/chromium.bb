@@ -24,18 +24,18 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
 
-using WebKit::WebAudioDevice;
-using WebKit::WebClipboard;
-using WebKit::WebFrame;
-using WebKit::WebMIDIAccessor;
-using WebKit::WebMIDIAccessorClient;
-using WebKit::WebMediaStreamCenter;
-using WebKit::WebMediaStreamCenterClient;
-using WebKit::WebPlugin;
-using WebKit::WebPluginParams;
-using WebKit::WebRTCPeerConnectionHandler;
-using WebKit::WebRTCPeerConnectionHandlerClient;
-using WebKit::WebThemeEngine;
+using blink::WebAudioDevice;
+using blink::WebClipboard;
+using blink::WebFrame;
+using blink::WebMIDIAccessor;
+using blink::WebMIDIAccessorClient;
+using blink::WebMediaStreamCenter;
+using blink::WebMediaStreamCenterClient;
+using blink::WebPlugin;
+using blink::WebPluginParams;
+using blink::WebRTCPeerConnectionHandler;
+using blink::WebRTCPeerConnectionHandlerClient;
+using blink::WebThemeEngine;
 using WebTestRunner::WebTestDelegate;
 using WebTestRunner::WebTestInterfaces;
 using WebTestRunner::WebTestProxyBase;
@@ -180,7 +180,7 @@ void ShellContentRendererClient::WebTestProxyCreated(RenderView* render_view,
 }
 
 bool ShellContentRendererClient::AllowBrowserPlugin(
-    WebKit::WebPluginContainer* container) {
+    blink::WebPluginContainer* container) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBrowserPluginForAllViewTypes)) {
     // Allow BrowserPlugin if forced by command line flag. This is generally

@@ -15,13 +15,13 @@ namespace content {
 class MIDIMessageFilter;
 
 class RendererWebMIDIAccessorImpl
-    : public WebKit::WebMIDIAccessor {
+    : public blink::WebMIDIAccessor {
  public:
   explicit RendererWebMIDIAccessorImpl(
-      WebKit::WebMIDIAccessorClient* client);
+      blink::WebMIDIAccessorClient* client);
   virtual ~RendererWebMIDIAccessorImpl();
 
-  // WebKit::WebMIDIAccessor implementation.
+  // blink::WebMIDIAccessor implementation.
   virtual void startSession();
   virtual void sendMIDIData(unsigned port_index,
                             const unsigned char* data,
@@ -29,7 +29,7 @@ class RendererWebMIDIAccessorImpl
                             double timestamp);
 
  private:
-  WebKit::WebMIDIAccessorClient* client_;
+  blink::WebMIDIAccessorClient* client_;
 
   MIDIMessageFilter* midi_message_filter();
 

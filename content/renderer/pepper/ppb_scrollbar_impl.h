@@ -20,7 +20,7 @@ namespace content {
 
 class PPB_Scrollbar_Impl : public PPB_Widget_Impl,
                            public ppapi::thunk::PPB_Scrollbar_API,
-                           public WebKit::WebPluginScrollbarClient {
+                           public blink::WebPluginScrollbarClient {
  public:
   static PP_Resource Create(PP_Instance instance, bool vertical);
 
@@ -50,20 +50,20 @@ class PPB_Scrollbar_Impl : public PPB_Widget_Impl,
       const ppapi::InputEventData& data) OVERRIDE;
   virtual void SetLocationInternal(const PP_Rect* location) OVERRIDE;
 
-  // WebKit::WebPluginScrollbarClient implementation.
-  virtual void valueChanged(WebKit::WebPluginScrollbar* scrollbar) OVERRIDE;
-  virtual void overlayChanged(WebKit::WebPluginScrollbar* scrollbar) OVERRIDE;
-  virtual void invalidateScrollbarRect(WebKit::WebPluginScrollbar* scrollbar,
-                                       const WebKit::WebRect& rect) OVERRIDE;
+  // blink::WebPluginScrollbarClient implementation.
+  virtual void valueChanged(blink::WebPluginScrollbar* scrollbar) OVERRIDE;
+  virtual void overlayChanged(blink::WebPluginScrollbar* scrollbar) OVERRIDE;
+  virtual void invalidateScrollbarRect(blink::WebPluginScrollbar* scrollbar,
+                                       const blink::WebRect& rect) OVERRIDE;
   virtual void getTickmarks(
-      WebKit::WebPluginScrollbar* scrollbar,
-      WebKit::WebVector<WebKit::WebRect>* tick_marks) const OVERRIDE;
+      blink::WebPluginScrollbar* scrollbar,
+      blink::WebVector<blink::WebRect>* tick_marks) const OVERRIDE;
 
   void NotifyInvalidate();
 
   gfx::Rect dirty_;
-  std::vector<WebKit::WebRect> tickmarks_;
-  scoped_ptr<WebKit::WebPluginScrollbar> scrollbar_;
+  std::vector<blink::WebRect> tickmarks_;
+  scoped_ptr<blink::WebPluginScrollbar> scrollbar_;
 
   // Used so that the post task for Invalidate doesn't keep an extra reference.
   base::WeakPtrFactory<PPB_Scrollbar_Impl> weak_ptr_factory_;

@@ -25,7 +25,7 @@ class InputHandlerProxyClient;
 // intended for a specific WebWidget.
 class CONTENT_EXPORT InputHandlerProxy
     : public cc::InputHandlerClient,
-      public NON_EXPORTED_BASE(WebKit::WebGestureCurveTarget) {
+      public NON_EXPORTED_BASE(blink::WebGestureCurveTarget) {
  public:
   explicit InputHandlerProxy(cc::InputHandler* input_handler);
   virtual ~InputHandlerProxy();
@@ -38,9 +38,9 @@ class CONTENT_EXPORT InputHandlerProxy
     DROP_EVENT
   };
   EventDisposition HandleInputEventWithLatencyInfo(
-      const WebKit::WebInputEvent& event,
+      const blink::WebInputEvent& event,
       const ui::LatencyInfo& latency_info);
-  EventDisposition HandleInputEvent(const WebKit::WebInputEvent& event);
+  EventDisposition HandleInputEvent(const blink::WebInputEvent& event);
 
   // cc::InputHandlerClient implementation.
   virtual void WillShutdown() OVERRIDE;
@@ -48,27 +48,27 @@ class CONTENT_EXPORT InputHandlerProxy
   virtual void MainThreadHasStoppedFlinging() OVERRIDE;
   virtual void DidOverscroll(const cc::DidOverscrollParams& params) OVERRIDE;
 
-  // WebKit::WebGestureCurveTarget implementation.
-  virtual void scrollBy(const WebKit::WebFloatSize& offset);
-  virtual void notifyCurrentFlingVelocity(const WebKit::WebFloatSize& velocity);
+  // blink::WebGestureCurveTarget implementation.
+  virtual void scrollBy(const blink::WebFloatSize& offset);
+  virtual void notifyCurrentFlingVelocity(const blink::WebFloatSize& velocity);
 
   bool gesture_scroll_on_impl_thread_for_testing() const {
     return gesture_scroll_on_impl_thread_;
   }
 
  private:
-  EventDisposition HandleGestureFling(const WebKit::WebGestureEvent& event);
+  EventDisposition HandleGestureFling(const blink::WebGestureEvent& event);
 
   // Returns true if we scrolled by the increment.
-  bool TouchpadFlingScroll(const WebKit::WebFloatSize& increment);
+  bool TouchpadFlingScroll(const blink::WebFloatSize& increment);
 
   // Returns true if we actually had an active fling to cancel.
   bool CancelCurrentFling();
 
-  scoped_ptr<WebKit::WebGestureCurve> fling_curve_;
+  scoped_ptr<blink::WebGestureCurve> fling_curve_;
   // Parameters for the active fling animation, stored in case we need to
   // transfer it out later.
-  WebKit::WebActiveWheelFlingParameters fling_parameters_;
+  blink::WebActiveWheelFlingParameters fling_parameters_;
 
   InputHandlerProxyClient* client_;
   cc::InputHandler* input_handler_;

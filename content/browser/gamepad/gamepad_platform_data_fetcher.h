@@ -40,7 +40,7 @@ class GamepadDataFetcherEmpty : public GamepadDataFetcher {
  public:
   GamepadDataFetcherEmpty();
 
-  virtual void GetGamepadData(WebKit::WebGamepads* pads,
+  virtual void GetGamepadData(blink::WebGamepads* pads,
                               bool devices_changed_hint) OVERRIDE;
 
  private:

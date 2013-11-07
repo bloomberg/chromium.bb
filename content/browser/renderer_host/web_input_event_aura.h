@@ -23,22 +23,22 @@ namespace content {
 const int kPixelsPerTick = 53;
 
 #if defined(USE_X11) || defined(USE_OZONE)
-CONTENT_EXPORT WebKit::WebUChar GetControlCharacter(
+CONTENT_EXPORT blink::WebUChar GetControlCharacter(
     int windows_key_code, bool shift);
 #endif
-CONTENT_EXPORT WebKit::WebMouseEvent MakeWebMouseEvent(
+CONTENT_EXPORT blink::WebMouseEvent MakeWebMouseEvent(
     ui::MouseEvent* event);
-CONTENT_EXPORT WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(
+CONTENT_EXPORT blink::WebMouseWheelEvent MakeWebMouseWheelEvent(
     ui::MouseWheelEvent* event);
-CONTENT_EXPORT WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(
+CONTENT_EXPORT blink::WebMouseWheelEvent MakeWebMouseWheelEvent(
     ui::ScrollEvent* event);
-CONTENT_EXPORT WebKit::WebKeyboardEvent MakeWebKeyboardEvent(
+CONTENT_EXPORT blink::WebKeyboardEvent MakeWebKeyboardEvent(
     ui::KeyEvent* event);
-CONTENT_EXPORT WebKit::WebGestureEvent MakeWebGestureEvent(
+CONTENT_EXPORT blink::WebGestureEvent MakeWebGestureEvent(
     ui::GestureEvent* event);
-CONTENT_EXPORT WebKit::WebGestureEvent MakeWebGestureEvent(
+CONTENT_EXPORT blink::WebGestureEvent MakeWebGestureEvent(
     ui::ScrollEvent* event);
-CONTENT_EXPORT WebKit::WebGestureEvent MakeWebGestureEventFlingCancel();
+CONTENT_EXPORT blink::WebGestureEvent MakeWebGestureEventFlingCancel();
 
 }  // namespace content
 

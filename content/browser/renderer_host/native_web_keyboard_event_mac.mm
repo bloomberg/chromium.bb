@@ -8,7 +8,7 @@
 
 #include "third_party/WebKit/public/web/mac/WebInputEventFactory.h"
 
-using WebKit::WebInputEventFactory;
+using blink::WebInputEventFactory;
 
 namespace content {
 

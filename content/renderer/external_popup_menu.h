@@ -12,18 +12,18 @@
 #include "third_party/WebKit/public/web/WebPopupMenuInfo.h"
 #include "ui/gfx/point.h"
 
-namespace WebKit {
+namespace blink {
 class WebExternalPopupMenuClient;
 }
 
 namespace content {
 class RenderViewImpl;
 
-class ExternalPopupMenu : public WebKit::WebExternalPopupMenu {
+class ExternalPopupMenu : public blink::WebExternalPopupMenu {
  public:
   ExternalPopupMenu(RenderViewImpl* render_view,
-                    const WebKit::WebPopupMenuInfo& popup_menu_info,
-                    WebKit::WebExternalPopupMenuClient* popup_menu_client);
+                    const blink::WebPopupMenuInfo& popup_menu_info,
+                    blink::WebExternalPopupMenuClient* popup_menu_client);
 
   virtual ~ExternalPopupMenu() {}
 
@@ -40,14 +40,14 @@ class ExternalPopupMenu : public WebKit::WebExternalPopupMenu {
   void DidSelectItems(bool canceled, const std::vector<int>& selected_indices);
 #endif
 
-  // WebKit::WebExternalPopupMenu implementation:
-  virtual void show(const WebKit::WebRect& bounds);
+  // blink::WebExternalPopupMenu implementation:
+  virtual void show(const blink::WebRect& bounds);
   virtual void close();
 
  private:
   RenderViewImpl* render_view_;
-  WebKit::WebPopupMenuInfo popup_menu_info_;
-  WebKit::WebExternalPopupMenuClient* popup_menu_client_;
+  blink::WebPopupMenuInfo popup_menu_info_;
+  blink::WebExternalPopupMenuClient* popup_menu_client_;
 
   // Popups may be displaced when screen metrics emulation is enabled.
   // This scale is used to properly adjust popup position.

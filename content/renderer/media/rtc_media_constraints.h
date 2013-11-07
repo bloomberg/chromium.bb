@@ -9,7 +9,7 @@
 #include "content/common/content_export.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediaconstraintsinterface.h"
 
-namespace WebKit {
+namespace blink {
 class WebMediaConstraints;
 }
 
@@ -23,7 +23,7 @@ class CONTENT_EXPORT RTCMediaConstraints
  public:
   RTCMediaConstraints();
   explicit RTCMediaConstraints(
-      const WebKit::WebMediaConstraints& constraints);
+      const blink::WebMediaConstraints& constraints);
   virtual ~RTCMediaConstraints();
   virtual const Constraints& GetMandatory() const OVERRIDE;
   virtual const Constraints& GetOptional() const OVERRIDE;

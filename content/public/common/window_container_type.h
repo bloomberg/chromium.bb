@@ -5,7 +5,7 @@
 #ifndef CONTENT_PUBLIC_COMMON_WINDOW_CONTAINER_TYPE_H_
 #define CONTENT_PUBLIC_COMMON_WINDOW_CONTAINER_TYPE_H_
 
-namespace WebKit {
+namespace blink {
 
 struct WebWindowFeatures;
 
@@ -30,6 +30,6 @@ enum WindowContainerType {
 
 // Conversion function:
 WindowContainerType WindowFeaturesToContainerType(
-    const WebKit::WebWindowFeatures& window_features);
+    const blink::WebWindowFeatures& window_features);
 
 #endif  // CONTENT_PUBLIC_COMMON_WINDOW_CONTAINER_TYPE_H_

@@ -59,7 +59,7 @@ NPObject* NewTrackedNPObject() {
 class ReleaseNPObject {
  public:
   void operator()(NPObject* o) const {
-    WebKit::WebBindings::releaseObject(o);
+    blink::WebBindings::releaseObject(o);
   }
 };
 

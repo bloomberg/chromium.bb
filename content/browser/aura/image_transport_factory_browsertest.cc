@@ -47,7 +47,7 @@ IN_PROC_BROWSER_TEST_F(ImageTransportFactoryBrowserTest, TestLostContext) {
   EXPECT_CALL(observer, OnLostResources())
       .WillOnce(testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
 
-  WebKit::WebGraphicsContext3D* context = texture->HostContext3D();
+  blink::WebGraphicsContext3D* context = texture->HostContext3D();
   context->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
                                GL_INNOCENT_CONTEXT_RESET_ARB);
 

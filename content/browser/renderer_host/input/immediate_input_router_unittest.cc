@@ -25,12 +25,12 @@
 #endif
 
 using base::TimeDelta;
-using WebKit::WebGestureEvent;
-using WebKit::WebInputEvent;
-using WebKit::WebMouseEvent;
-using WebKit::WebMouseWheelEvent;
-using WebKit::WebTouchEvent;
-using WebKit::WebTouchPoint;
+using blink::WebGestureEvent;
+using blink::WebInputEvent;
+using blink::WebMouseEvent;
+using blink::WebMouseWheelEvent;
+using blink::WebTouchEvent;
+using blink::WebTouchPoint;
 
 namespace content {
 
@@ -117,7 +117,7 @@ class ImmediateInputRouterTest : public InputRouterTest {
         new ImmediateInputRouter(process, client, handler, routing_id));
   }
 
-  void SendInputEventACK(WebKit::WebInputEvent::Type type,
+  void SendInputEventACK(blink::WebInputEvent::Type type,
                          InputEventAckState ack_result) {
     scoped_ptr<IPC::Message> response(
         new InputHostMsg_HandleInputEvent_ACK(0, type, ack_result,

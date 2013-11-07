@@ -10,7 +10,7 @@
 
 namespace content {
 
-class WebStorageNamespaceImpl : public WebKit::WebStorageNamespace {
+class WebStorageNamespaceImpl : public blink::WebStorageNamespace {
  public:
   // The default constructor creates a local storage namespace, the second
   // constructor should be used for session storage namepaces.
@@ -19,9 +19,9 @@ class WebStorageNamespaceImpl : public WebKit::WebStorageNamespace {
   virtual ~WebStorageNamespaceImpl();
 
   // See WebStorageNamespace.h for documentation on these functions.
-  virtual WebKit::WebStorageArea* createStorageArea(
-      const WebKit::WebString& origin);
-  virtual WebKit::WebStorageNamespace* copy();
+  virtual blink::WebStorageArea* createStorageArea(
+      const blink::WebString& origin);
+  virtual blink::WebStorageNamespace* copy();
   virtual bool isSameNamespace(const WebStorageNamespace&) const;
 
  private:

@@ -41,7 +41,7 @@
 #include "content/public/common/sandbox_init.h"
 #endif
 
-using WebKit::WebBindings;
+using blink::WebBindings;
 
 namespace content {
 

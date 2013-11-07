@@ -26,12 +26,12 @@ WebContentDecryptionModuleSessionImpl::
 ~WebContentDecryptionModuleSessionImpl() {
 }
 
-WebKit::WebString WebContentDecryptionModuleSessionImpl::sessionId() const {
-  return WebKit::WebString::fromUTF8(session_id_);
+blink::WebString WebContentDecryptionModuleSessionImpl::sessionId() const {
+  return blink::WebString::fromUTF8(session_id_);
 }
 
 void WebContentDecryptionModuleSessionImpl::generateKeyRequest(
-    const WebKit::WebString& mime_type,
+    const blink::WebString& mime_type,
     const uint8* init_data, size_t init_data_length) {
   // TODO(ddorwin): Guard against this in supported types check and remove this.
   // Chromium only supports ASCII MIME types.

@@ -18,7 +18,7 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
 IPC_ENUM_TRAITS(ResourceType::Type)
-IPC_ENUM_TRAITS(WebKit::WebInputEvent::Type)
+IPC_ENUM_TRAITS(blink::WebInputEvent::Type)
 IPC_ENUM_TRAITS(ui::LatencyComponentType)
 
 IPC_STRUCT_TRAITS_BEGIN(ui::LatencyInfo::LatencyComponent)

@@ -10,8 +10,8 @@
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-using WebKit::WebData;
-using WebKit::WebImage;
+using blink::WebData;
+using blink::WebImage;
 
 namespace content {
 
@@ -41,7 +41,7 @@ SkBitmap ImageDecoder::Decode(const unsigned char* data, size_t size) const {
 // static
 std::vector<SkBitmap> ImageDecoder::DecodeAll(
       const unsigned char* data, size_t size) {
-  const WebKit::WebVector<WebImage>& images = WebImage::framesFromData(
+  const blink::WebVector<WebImage>& images = WebImage::framesFromData(
       WebData(reinterpret_cast<const char*>(data), size));
   std::vector<SkBitmap> result;
   for (size_t i = 0; i < images.size(); ++i)

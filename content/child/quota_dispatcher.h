@@ -20,7 +20,7 @@ namespace IPC {
 class Message;
 }
 
-namespace WebKit {
+namespace blink {
 class WebStorageQuotaCallbacks;
 }
 
@@ -69,7 +69,7 @@ class QuotaDispatcher : public webkit_glue::WorkerTaskRunner::Observer {
 
   // Creates a new Callback instance for WebStorageQuotaCallbacks.
   static Callback* CreateWebStorageQuotaCallbacksWrapper(
-      WebKit::WebStorageQuotaCallbacks* callbacks);
+      blink::WebStorageQuotaCallbacks* callbacks);
 
  private:
   // Message handlers.

@@ -7,7 +7,7 @@
 #include "content/child/npapi/plugin_instance.h"
 #include "webkit/common/cursors/webcursor.h"
 
-using WebKit::WebInputEvent;
+using blink::WebInputEvent;
 
 namespace content {
 

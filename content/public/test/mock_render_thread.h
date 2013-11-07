@@ -113,7 +113,7 @@ class MockRenderThread : public RenderThread {
 
   // The Widget expects to be returned valid route_id.
   void OnCreateWidget(int opener_id,
-                      WebKit::WebPopupType popup_type,
+                      blink::WebPopupType popup_type,
                       int* route_id,
                       int* surface_id);
 

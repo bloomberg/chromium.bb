@@ -22,7 +22,7 @@ using base::android::GetClass;
 using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
-using WebKit::WebBindings;
+using blink::WebBindings;
 
 // The conversion between JavaScript and Java types is based on the Live
 // Connect 2 spec. See

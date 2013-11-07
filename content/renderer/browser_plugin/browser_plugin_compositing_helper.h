@@ -28,7 +28,7 @@ class DelegatedFrameResourceCollection;
 class DelegatedRendererLayer;
 }
 
-namespace WebKit {
+namespace blink {
 class WebPluginContainer;
 class WebLayer;
 }
@@ -40,7 +40,7 @@ class BrowserPluginManager;
 class CONTENT_EXPORT BrowserPluginCompositingHelper :
     public base::RefCounted<BrowserPluginCompositingHelper> {
  public:
-  BrowserPluginCompositingHelper(WebKit::WebPluginContainer* container,
+  BrowserPluginCompositingHelper(blink::WebPluginContainer* container,
                                  BrowserPluginManager* manager,
                                  int instance_id,
                                  int host_routing_id);
@@ -106,8 +106,8 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
   scoped_refptr<cc::SolidColorLayer> background_layer_;
   scoped_refptr<cc::TextureLayer> texture_layer_;
   scoped_refptr<cc::DelegatedRendererLayer> delegated_layer_;
-  scoped_ptr<WebKit::WebLayer> web_layer_;
-  WebKit::WebPluginContainer* container_;
+  scoped_ptr<blink::WebLayer> web_layer_;
+  blink::WebPluginContainer* container_;
 
   scoped_refptr<BrowserPluginManager> browser_plugin_manager_;
 };

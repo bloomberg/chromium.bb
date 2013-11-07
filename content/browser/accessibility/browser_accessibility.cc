@@ -44,7 +44,7 @@ BrowserAccessibility::~BrowserAccessibility() {
 }
 
 bool BrowserAccessibility::PlatformIsLeaf() const {
-  return role_ == WebKit::WebAXRoleStaticText || child_count() == 0;
+  return role_ == blink::WebAXRoleStaticText || child_count() == 0;
 }
 
 uint32 BrowserAccessibility::PlatformChildCount() const {
@@ -151,8 +151,8 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsRect() const {
   // nested web area.
   BrowserAccessibility* parent = parent_;
   bool need_to_offset_web_area =
-      (role_ == WebKit::WebAXRoleWebArea ||
-       role_ == WebKit::WebAXRoleRootWebArea);
+      (role_ == blink::WebAXRoleWebArea ||
+       role_ == blink::WebAXRoleRootWebArea);
   while (parent) {
     if (need_to_offset_web_area &&
         parent->location().width() > 0 &&
@@ -163,13 +163,13 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsRect() const {
 
     // On some platforms, we don't want to take the root scroll offsets
     // into account.
-    if (parent->role() == WebKit::WebAXRoleRootWebArea &&
+    if (parent->role() == blink::WebAXRoleRootWebArea &&
         !manager()->UseRootScrollOffsetsWhenComputingBounds()) {
       break;
     }
 
-    if (parent->role() == WebKit::WebAXRoleWebArea ||
-        parent->role() == WebKit::WebAXRoleRootWebArea) {
+    if (parent->role() == blink::WebAXRoleWebArea ||
+        parent->role() == blink::WebAXRoleRootWebArea) {
       int sx = 0;
       int sy = 0;
       if (parent->GetIntAttribute(AccessibilityNodeData::ATTR_SCROLL_X, &sx) &&
@@ -196,7 +196,7 @@ gfx::Rect BrowserAccessibility::GetGlobalBoundsRect() const {
 
 gfx::Rect BrowserAccessibility::GetLocalBoundsForRange(int start, int len)
     const {
-  DCHECK_EQ(role_, WebKit::WebAXRoleStaticText);
+  DCHECK_EQ(role_, blink::WebAXRoleStaticText);
   int end = start + len;
   int child_start = 0;
   int child_end = 0;
@@ -204,7 +204,7 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsForRange(int start, int len)
   gfx::Rect bounds;
   for (size_t i = 0; i < children_.size() && child_end < start + len; ++i) {
     BrowserAccessibility* child = children_[i];
-    DCHECK_EQ(child->role(), WebKit::WebAXRoleInlineTextBox);
+    DCHECK_EQ(child->role(), blink::WebAXRoleInlineTextBox);
     std::string child_text;
     child->GetStringAttribute(AccessibilityNodeData::ATTR_VALUE, &child_text);
     int child_len = static_cast<int>(child_text.size());
@@ -232,28 +232,28 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsForRange(int start, int len)
 
     gfx::Rect child_overlap_rect;
     switch (text_direction) {
-      case WebKit::WebAXTextDirectionLR: {
+      case blink::WebAXTextDirectionLR: {
         int left = child_rect.x() + start_pixel_offset;
         int right = child_rect.x() + end_pixel_offset;
         child_overlap_rect = gfx::Rect(left, child_rect.y(),
                                        right - left, child_rect.height());
         break;
       }
-      case WebKit::WebAXTextDirectionRL: {
+      case blink::WebAXTextDirectionRL: {
         int right = child_rect.right() - start_pixel_offset;
         int left = child_rect.right() - end_pixel_offset;
         child_overlap_rect = gfx::Rect(left, child_rect.y(),
                                        right - left, child_rect.height());
         break;
       }
-      case WebKit::WebAXTextDirectionTB: {
+      case blink::WebAXTextDirectionTB: {
         int top = child_rect.y() + start_pixel_offset;
         int bottom = child_rect.y() + end_pixel_offset;
         child_overlap_rect = gfx::Rect(child_rect.x(), top,
                                        child_rect.width(), bottom - top);
         break;
       }
-      case WebKit::WebAXTextDirectionBT: {
+      case blink::WebAXTextDirectionBT: {
         int bottom = child_rect.bottom() - start_pixel_offset;
         int top = child_rect.bottom() - end_pixel_offset;
         child_overlap_rect = gfx::Rect(child_rect.x(), top,
@@ -310,7 +310,7 @@ void BrowserAccessibility::Destroy() {
   PostInitialize();
 
   manager_->NotifyAccessibilityEvent(
-      WebKit::WebAXEventHide, this);
+      blink::WebAXEventHide, this);
 
   instance_active_ = false;
   manager_->RemoveNode(this);
@@ -555,24 +555,24 @@ bool BrowserAccessibility::GetAriaTristate(
   return false;  // Not set
 }
 
-bool BrowserAccessibility::HasState(WebKit::WebAXState state_enum) const {
+bool BrowserAccessibility::HasState(blink::WebAXState state_enum) const {
   return (state_ >> state_enum) & 1;
 }
 
 bool BrowserAccessibility::IsEditableText() const {
   // These roles don't have readonly set, but they're not editable text.
-  if (role_ == WebKit::WebAXRoleScrollArea ||
-      role_ == WebKit::WebAXRoleColumn ||
-      role_ == WebKit::WebAXRoleTableHeaderContainer) {
+  if (role_ == blink::WebAXRoleScrollArea ||
+      role_ == blink::WebAXRoleColumn ||
+      role_ == blink::WebAXRoleTableHeaderContainer) {
     return false;
   }
 
   // Note: WebAXStateReadonly being false means it's either a text control,
   // or contenteditable. We also check for editable text roles to cover
   // another element that has role=textbox set on it.
-  return (!HasState(WebKit::WebAXStateReadonly) ||
-          role_ == WebKit::WebAXRoleTextField ||
-          role_ == WebKit::WebAXRoleTextArea);
+  return (!HasState(blink::WebAXStateReadonly) ||
+          role_ == blink::WebAXRoleTextField ||
+          role_ == blink::WebAXRoleTextArea);
 }
 
 std::string BrowserAccessibility::GetTextRecursive() const {

@@ -107,7 +107,7 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   const std::string& device_id() const { return device_id_; }
   int session_id() const { return session_id_; }
 
-  WebKit::WebAudioSourceProvider* audio_source_provider() const {
+  blink::WebAudioSourceProvider* audio_source_provider() const {
     return source_provider_.get();
   }
 

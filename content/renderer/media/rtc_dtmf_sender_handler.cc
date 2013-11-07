@@ -26,11 +26,11 @@ RtcDtmfSenderHandler::~RtcDtmfSenderHandler() {
 }
 
 void RtcDtmfSenderHandler::setClient(
-    WebKit::WebRTCDTMFSenderHandlerClient* client) {
+    blink::WebRTCDTMFSenderHandlerClient* client) {
   webkit_client_ = client;
 }
 
-WebKit::WebString RtcDtmfSenderHandler::currentToneBuffer() {
+blink::WebString RtcDtmfSenderHandler::currentToneBuffer() {
   return UTF8ToUTF16(dtmf_sender_->tones());
 }
 
@@ -38,7 +38,7 @@ bool RtcDtmfSenderHandler::canInsertDTMF() {
   return dtmf_sender_->CanInsertDtmf();
 }
 
-bool RtcDtmfSenderHandler::insertDTMF(const WebKit::WebString& tones,
+bool RtcDtmfSenderHandler::insertDTMF(const blink::WebString& tones,
                                       long duration,
                                       long interToneGap) {
   std::string utf8_tones = UTF16ToUTF8(tones);

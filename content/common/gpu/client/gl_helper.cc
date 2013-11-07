@@ -26,8 +26,8 @@
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_bindings.h"
 
-using WebKit::WebGLId;
-using WebKit::WebGraphicsContext3D;
+using blink::WebGLId;
+using blink::WebGraphicsContext3D;
 
 namespace {
 
@@ -84,7 +84,7 @@ class ScalerHolder {
         scaler_(scaler) {
   }
 
-  void Scale(WebKit::WebGLId src_texture) {
+  void Scale(blink::WebGLId src_texture) {
     scaler_->Scale(src_texture, texture_and_framebuffer_.texture());
   }
 
@@ -162,7 +162,7 @@ class GLHelper::CopyTextureToImpl :
                      const gfx::Rect& dst_subrect,
                      const base::Callback<void(bool)>& callback);
 
-  WebKit::WebGLId CopyAndScaleTexture(WebGLId texture,
+  blink::WebGLId CopyAndScaleTexture(WebGLId texture,
                                       const gfx::Size& src_size,
                                       const gfx::Size& dst_size,
                                       bool vertically_flip_texture,
@@ -179,7 +179,7 @@ class GLHelper::CopyTextureToImpl :
 
   // Returns the maximum number of draw buffers available,
   // 0 if GL_EXT_draw_buffers is not available.
-  WebKit::WGC3Dint MaxDrawBuffers() const {
+  blink::WGC3Dint MaxDrawBuffers() const {
     return max_draw_buffers_;
   }
 
@@ -214,7 +214,7 @@ class GLHelper::CopyTextureToImpl :
     unsigned char* pixels;
     base::Callback<void(bool)> callback;
     GLuint buffer;
-    WebKit::WebGLId query;
+    blink::WebGLId query;
   };
 
   // A readback pipeline that also converts the data to YUV before
@@ -325,7 +325,7 @@ class GLHelper::CopyTextureToImpl :
   ScopedFlush flush_;
 
   std::queue<Request*> request_queue_;
-  WebKit::WGC3Dint max_draw_buffers_;
+  blink::WGC3Dint max_draw_buffers_;
 };
 
 GLHelper::ScalerInterface* GLHelper::CreateScaler(
@@ -468,7 +468,7 @@ void GLHelper::CopyTextureToImpl::ReadbackTextureSync(
                        out);
 }
 
-WebKit::WebGLId GLHelper::CopyTextureToImpl::CopyAndScaleTexture(
+blink::WebGLId GLHelper::CopyTextureToImpl::CopyAndScaleTexture(
     WebGLId src_texture,
     const gfx::Size& src_size,
     const gfx::Size& dst_size,
@@ -550,7 +550,7 @@ void GLHelper::CopyTextureToImpl::CancelRequests() {
   }
 }
 
-GLHelper::GLHelper(WebKit::WebGraphicsContext3D* context,
+GLHelper::GLHelper(blink::WebGraphicsContext3D* context,
                    gpu::ContextSupport* context_support)
     : context_(context),
       context_support_(context_support) {
@@ -591,7 +591,7 @@ void GLHelper::CropScaleReadbackAndCleanMailbox(
   context_->deleteTexture(mailbox_texture);
 }
 
-void GLHelper::ReadbackTextureSync(WebKit::WebGLId texture,
+void GLHelper::ReadbackTextureSync(blink::WebGLId texture,
                                    const gfx::Rect& src_rect,
                                    unsigned char* out) {
   InitCopyTextToImpl();
@@ -600,7 +600,7 @@ void GLHelper::ReadbackTextureSync(WebKit::WebGLId texture,
                                              out);
 }
 
-WebKit::WebGLId GLHelper::CopyTexture(WebKit::WebGLId texture,
+blink::WebGLId GLHelper::CopyTexture(blink::WebGLId texture,
                                       const gfx::Size& size) {
   InitCopyTextToImpl();
   return copy_texture_to_impl_->CopyAndScaleTexture(
@@ -611,8 +611,8 @@ WebKit::WebGLId GLHelper::CopyTexture(WebKit::WebGLId texture,
       GLHelper::SCALER_QUALITY_FAST);
 }
 
-WebKit::WebGLId GLHelper::CopyAndScaleTexture(
-    WebKit::WebGLId texture,
+blink::WebGLId GLHelper::CopyAndScaleTexture(
+    blink::WebGLId texture,
     const gfx::Size& src_size,
     const gfx::Size& dst_size,
     bool vertically_flip_texture,
@@ -626,12 +626,12 @@ WebKit::WebGLId GLHelper::CopyAndScaleTexture(
 }
 
 WebGLId GLHelper::CompileShaderFromSource(
-    const WebKit::WGC3Dchar* source,
-    WebKit::WGC3Denum type) {
+    const blink::WGC3Dchar* source,
+    blink::WGC3Denum type) {
   ScopedShader shader(context_, context_->createShader(type));
   context_->shaderSource(shader, source);
   context_->compileShader(shader);
-  WebKit::WGC3Dint compile_status = 0;
+  blink::WGC3Dint compile_status = 0;
   context_->getShaderiv(shader, GL_COMPILE_STATUS, &compile_status);
   if (!compile_status) {
     LOG(ERROR) << std::string(context_->getShaderInfoLog(shader).utf8());
@@ -653,13 +653,13 @@ void GLHelper::InitScalerImpl() {
     scaler_impl_.reset(new GLHelperScaling(context_, this));
 }
 
-WebKit::WGC3Dint GLHelper::MaxDrawBuffers() {
+blink::WGC3Dint GLHelper::MaxDrawBuffers() {
   InitCopyTextToImpl();
   return copy_texture_to_impl_->MaxDrawBuffers();
 }
 
-void GLHelper::CopySubBufferDamage(WebKit::WebGLId texture,
-                                   WebKit::WebGLId previous_texture,
+void GLHelper::CopySubBufferDamage(blink::WebGLId texture,
+                                   blink::WebGLId previous_texture,
                                    const SkRegion& new_damage,
                                    const SkRegion& old_damage) {
   SkRegion region(old_damage);
@@ -685,8 +685,8 @@ void GLHelper::CopySubBufferDamage(WebKit::WebGLId texture,
   }
 }
 
-WebKit::WebGLId GLHelper::CreateTexture() {
-  WebKit::WebGLId texture = context_->createTexture();
+blink::WebGLId GLHelper::CreateTexture() {
+  blink::WebGLId texture = context_->createTexture();
   content::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(context_,
                                                              texture);
   context_->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -696,27 +696,27 @@ WebKit::WebGLId GLHelper::CreateTexture() {
   return texture;
 }
 
-WebKit::WebGLId GLHelper::ConsumeMailboxToTexture(const gpu::Mailbox& mailbox,
+blink::WebGLId GLHelper::ConsumeMailboxToTexture(const gpu::Mailbox& mailbox,
                                                   uint32 sync_point) {
   if (mailbox.IsZero())
     return 0;
   if (sync_point)
     context_->waitSyncPoint(sync_point);
-  WebKit::WebGLId texture = CreateTexture();
+  blink::WebGLId texture = CreateTexture();
   content::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(context_,
                                                              texture);
   context_->consumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
   return texture;
 }
 
-void GLHelper::ResizeTexture(WebKit::WebGLId texture, const gfx::Size& size) {
+void GLHelper::ResizeTexture(blink::WebGLId texture, const gfx::Size& size) {
   content::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(context_, texture);
   context_->texImage2D(GL_TEXTURE_2D, 0, GL_RGB,
                        size.width(), size.height(), 0,
                        GL_RGB, GL_UNSIGNED_BYTE, NULL);
 }
 
-void GLHelper::CopyTextureSubImage(WebKit::WebGLId texture,
+void GLHelper::CopyTextureSubImage(blink::WebGLId texture,
                                    const gfx::Rect& rect) {
   content::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(context_, texture);
   context_->copyTexSubImage2D(GL_TEXTURE_2D, 0,
@@ -724,7 +724,7 @@ void GLHelper::CopyTextureSubImage(WebKit::WebGLId texture,
                               rect.x(), rect.y(), rect.width(), rect.height());
 }
 
-void GLHelper::CopyTextureFullImage(WebKit::WebGLId texture,
+void GLHelper::CopyTextureFullImage(blink::WebGLId texture,
                                     const gfx::Size& size) {
   content::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(context_, texture);
   context_->copyTexImage2D(GL_TEXTURE_2D, 0,
@@ -967,7 +967,7 @@ void GLHelper::CopyTextureToImpl::ReadbackYUV_MRT::ReadbackYUV(
   }
 
 
-  std::vector<WebKit::WebGLId> outputs(2);
+  std::vector<blink::WebGLId> outputs(2);
   // Convert the scaled texture in to Y, U and V planes.
   outputs[0] = y_.texture();
   outputs[1] = uv_;

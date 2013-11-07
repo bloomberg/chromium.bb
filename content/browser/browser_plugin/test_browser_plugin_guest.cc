@@ -92,7 +92,7 @@ void TestBrowserPluginGuest::RenderProcessGone(base::TerminationStatus status) {
 void TestBrowserPluginGuest::OnHandleInputEvent(
     int instance_id,
     const gfx::Rect& guest_window_rect,
-    const WebKit::WebInputEvent* event) {
+    const blink::WebInputEvent* event) {
   BrowserPluginGuest::OnHandleInputEvent(instance_id,
                                          guest_window_rect,
                                          event);

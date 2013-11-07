@@ -155,7 +155,7 @@ IPC_MESSAGE_ROUTED3(InputMsg_ActivateNearestFindResult,
 
 // Acknowledges receipt of a InputMsg_HandleInputEvent message.
 IPC_MESSAGE_ROUTED3(InputHostMsg_HandleInputEvent_ACK,
-                    WebKit::WebInputEvent::Type,
+                    blink::WebInputEvent::Type,
                     content::InputEventAckState /* ack_result */,
                     ui::LatencyInfo /* latency_info */)
 

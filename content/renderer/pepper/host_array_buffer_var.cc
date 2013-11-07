@@ -18,7 +18,7 @@
 #include "ppapi/c/pp_instance.h"
 
 using ppapi::ArrayBufferVar;
-using WebKit::WebArrayBuffer;
+using blink::WebArrayBuffer;
 
 namespace content {
 

@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
 }
 
@@ -23,7 +23,7 @@ class LoadProgressTracker {
 
   void DidStopLoading();
 
-  void DidChangeLoadProgress(WebKit::WebFrame* frame, double progress);
+  void DidChangeLoadProgress(blink::WebFrame* frame, double progress);
 
  private:
   void ResetStates();
@@ -32,7 +32,7 @@ class LoadProgressTracker {
 
   RenderViewImpl* render_view_;
 
-  WebKit::WebFrame* tracked_frame_;
+  blink::WebFrame* tracked_frame_;
 
   double progress_;
 

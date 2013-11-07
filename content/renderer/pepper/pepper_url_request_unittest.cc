@@ -24,13 +24,13 @@
 // test it by making sure the conversion routines actually work at the same
 // time.
 
-using WebKit::WebCString;
-using WebKit::WebFrame;
-using WebKit::WebFrameClient;
-using WebKit::WebString;
-using WebKit::WebView;
-using WebKit::WebURL;
-using WebKit::WebURLRequest;
+using blink::WebCString;
+using blink::WebFrame;
+using blink::WebFrameClient;
+using blink::WebString;
+using blink::WebView;
+using blink::WebURL;
+using blink::WebURLRequest;
 
 namespace {
 

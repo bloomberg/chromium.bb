@@ -16,7 +16,7 @@ namespace content {
 
 class DOMStorageCachedArea;
 
-class WebStorageAreaImpl : public WebKit::WebStorageArea {
+class WebStorageAreaImpl : public blink::WebStorageArea {
  public:
   static WebStorageAreaImpl* FromConnectionId(int id);
 
@@ -25,14 +25,14 @@ class WebStorageAreaImpl : public WebKit::WebStorageArea {
 
   // See WebStorageArea.h for documentation on these functions.
   virtual unsigned length();
-  virtual WebKit::WebString key(unsigned index);
-  virtual WebKit::WebString getItem(const WebKit::WebString& key);
+  virtual blink::WebString key(unsigned index);
+  virtual blink::WebString getItem(const blink::WebString& key);
   virtual void setItem(
-      const WebKit::WebString& key, const WebKit::WebString& value,
-      const WebKit::WebURL& page_url, WebStorageArea::Result& result);
+      const blink::WebString& key, const blink::WebString& value,
+      const blink::WebURL& page_url, WebStorageArea::Result& result);
   virtual void removeItem(
-      const WebKit::WebString& key, const WebKit::WebURL& page_url);
-  virtual void clear(const WebKit::WebURL& url);
+      const blink::WebString& key, const blink::WebURL& page_url);
+  virtual void clear(const blink::WebURL& url);
   virtual size_t memoryBytesUsedByCache() const;
 
  private:

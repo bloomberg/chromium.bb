@@ -9,8 +9,8 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/sqlite/sqlite3.h"
 
-using WebKit::Platform;
-using WebKit::WebString;
+using blink::Platform;
+using blink::WebString;
 
 namespace content {
 

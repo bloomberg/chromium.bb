@@ -31,13 +31,13 @@ class GamepadPlatformDataFetcherWin : public GamepadDataFetcher {
  public:
   GamepadPlatformDataFetcherWin();
   virtual ~GamepadPlatformDataFetcherWin();
-  virtual void GetGamepadData(WebKit::WebGamepads* pads,
+  virtual void GetGamepadData(blink::WebGamepads* pads,
                               bool devices_changed_hint) OVERRIDE;
  private:
   // XInput-specific implementation for GetGamepadData.
-  bool GetXInputGamepadData(WebKit::WebGamepads* pads,
+  bool GetXInputGamepadData(blink::WebGamepads* pads,
                             bool devices_changed_hint);
-  bool GetDirectInputGamepadData(WebKit::WebGamepads* pads,
+  bool GetDirectInputGamepadData(blink::WebGamepads* pads,
                                  bool devices_changed_hint);
 
   // The three function types we use from xinput1_3.dll.
@@ -54,11 +54,11 @@ class GamepadPlatformDataFetcherWin : public GamepadDataFetcher {
   bool GetXInputDllFunctions();
 
   // Scan for connected XInput and DirectInput gamepads.
-  void EnumerateDevices(WebKit::WebGamepads* pads);
-  bool GetXInputPadConnectivity(int i, WebKit::WebGamepad* pad) const;
+  void EnumerateDevices(blink::WebGamepads* pads);
+  bool GetXInputPadConnectivity(int i, blink::WebGamepad* pad) const;
 
-  void GetXInputPadData(int i, WebKit::WebGamepad* pad);
-  void GetDirectInputPadData(int i, WebKit::WebGamepad* pad);
+  void GetXInputPadData(int i, blink::WebGamepad* pad);
+  void GetDirectInputPadData(int i, blink::WebGamepad* pad);
 
   int FirstAvailableGamepadId() const;
   bool HasXInputGamepad(int index) const;
@@ -90,7 +90,7 @@ class GamepadPlatformDataFetcherWin : public GamepadDataFetcher {
     IDirectInputDevice8* directinput_gamepad;
     GamepadStandardMappingFunction mapper;
   };
-  PadState pad_state_[WebKit::WebGamepads::itemsLengthCap];
+  PadState pad_state_[blink::WebGamepads::itemsLengthCap];
 
   DISALLOW_COPY_AND_ASSIGN(GamepadPlatformDataFetcherWin);
 };

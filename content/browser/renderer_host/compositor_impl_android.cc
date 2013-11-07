@@ -272,15 +272,15 @@ void CompositorImpl::DeleteUIResource(cc::UIResourceId resource_id) {
     ui_resource_map_.erase(it);
 }
 
-WebKit::WebGLId CompositorImpl::GenerateTexture(gfx::JavaBitmap& bitmap) {
+blink::WebGLId CompositorImpl::GenerateTexture(gfx::JavaBitmap& bitmap) {
   unsigned int texture_id = BuildBasicTexture();
-  WebKit::WebGraphicsContext3D* context =
+  blink::WebGraphicsContext3D* context =
       ImageTransportFactoryAndroid::GetInstance()->GetContext3D();
   if (texture_id == 0 || context->isContextLost() ||
       !context->makeContextCurrent())
     return 0;
-  WebKit::WebGLId format = GetGLFormatForBitmap(bitmap);
-  WebKit::WebGLId type = GetGLTypeForBitmap(bitmap);
+  blink::WebGLId format = GetGLFormatForBitmap(bitmap);
+  blink::WebGLId type = GetGLTypeForBitmap(bitmap);
 
   context->texImage2D(GL_TEXTURE_2D,
                       0,
@@ -295,11 +295,11 @@ WebKit::WebGLId CompositorImpl::GenerateTexture(gfx::JavaBitmap& bitmap) {
   return texture_id;
 }
 
-WebKit::WebGLId CompositorImpl::GenerateCompressedTexture(gfx::Size& size,
+blink::WebGLId CompositorImpl::GenerateCompressedTexture(gfx::Size& size,
                                                           int data_size,
                                                           void* data) {
   unsigned int texture_id = BuildBasicTexture();
-  WebKit::WebGraphicsContext3D* context =
+  blink::WebGraphicsContext3D* context =
         ImageTransportFactoryAndroid::GetInstance()->GetContext3D();
   if (texture_id == 0 || context->isContextLost() ||
       !context->makeContextCurrent())
@@ -316,8 +316,8 @@ WebKit::WebGLId CompositorImpl::GenerateCompressedTexture(gfx::Size& size,
   return texture_id;
 }
 
-void CompositorImpl::DeleteTexture(WebKit::WebGLId texture_id) {
-  WebKit::WebGraphicsContext3D* context =
+void CompositorImpl::DeleteTexture(blink::WebGLId texture_id) {
+  blink::WebGraphicsContext3D* context =
       ImageTransportFactoryAndroid::GetInstance()->GetContext3D();
   if (context->isContextLost() || !context->makeContextCurrent())
     return;
@@ -325,12 +325,12 @@ void CompositorImpl::DeleteTexture(WebKit::WebGLId texture_id) {
   context->shallowFlushCHROMIUM();
 }
 
-bool CompositorImpl::CopyTextureToBitmap(WebKit::WebGLId texture_id,
+bool CompositorImpl::CopyTextureToBitmap(blink::WebGLId texture_id,
                                          gfx::JavaBitmap& bitmap) {
   return CopyTextureToBitmap(texture_id, gfx::Rect(bitmap.size()), bitmap);
 }
 
-bool CompositorImpl::CopyTextureToBitmap(WebKit::WebGLId texture_id,
+bool CompositorImpl::CopyTextureToBitmap(blink::WebGLId texture_id,
                                          const gfx::Rect& sub_rect,
                                          gfx::JavaBitmap& bitmap) {
   // The sub_rect should match the bitmap size.
@@ -346,7 +346,7 @@ bool CompositorImpl::CopyTextureToBitmap(WebKit::WebGLId texture_id,
 
 static scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
 CreateGpuProcessViewContext(
-    const WebKit::WebGraphicsContext3D::Attributes attributes,
+    const blink::WebGraphicsContext3D::Attributes attributes,
     int surface_id,
     base::WeakPtr<CompositorImpl> compositor_impl) {
   BrowserGpuChannelHostFactory* factory =
@@ -384,7 +384,7 @@ CreateGpuProcessViewContext(
 
 scoped_ptr<cc::OutputSurface> CompositorImpl::CreateOutputSurface(
     bool fallback) {
-  WebKit::WebGraphicsContext3D::Attributes attrs;
+  blink::WebGraphicsContext3D::Attributes attrs;
   attrs.shareResources = true;
   attrs.noAutomaticFlushes = true;
 
@@ -439,12 +439,12 @@ void CompositorImpl::OnViewContextSwapBuffersAborted() {
   client_->OnSwapBuffersCompleted();
 }
 
-WebKit::WebGLId CompositorImpl::BuildBasicTexture() {
-  WebKit::WebGraphicsContext3D* context =
+blink::WebGLId CompositorImpl::BuildBasicTexture() {
+  blink::WebGraphicsContext3D* context =
             ImageTransportFactoryAndroid::GetInstance()->GetContext3D();
   if (context->isContextLost() || !context->makeContextCurrent())
     return 0;
-  WebKit::WebGLId texture_id = context->createTexture();
+  blink::WebGLId texture_id = context->createTexture();
   context->bindTexture(GL_TEXTURE_2D, texture_id);
   context->texParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   context->texParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -453,7 +453,7 @@ WebKit::WebGLId CompositorImpl::BuildBasicTexture() {
   return texture_id;
 }
 
-WebKit::WGC3Denum CompositorImpl::GetGLFormatForBitmap(
+blink::WGC3Denum CompositorImpl::GetGLFormatForBitmap(
     gfx::JavaBitmap& bitmap) {
   switch (bitmap.format()) {
     case ANDROID_BITMAP_FORMAT_A_8:
@@ -471,7 +471,7 @@ WebKit::WGC3Denum CompositorImpl::GetGLFormatForBitmap(
   }
 }
 
-WebKit::WGC3Denum CompositorImpl::GetGLTypeForBitmap(gfx::JavaBitmap& bitmap) {
+blink::WGC3Denum CompositorImpl::GetGLTypeForBitmap(gfx::JavaBitmap& bitmap) {
   switch (bitmap.format()) {
     case ANDROID_BITMAP_FORMAT_A_8:
       return GL_UNSIGNED_BYTE;

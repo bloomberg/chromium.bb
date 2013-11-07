@@ -46,7 +46,7 @@ class CONTENT_EXPORT WebContentsDragWin
 
   // Called on UI thread.
   void StartDragging(const DropData& drop_data,
-                     WebKit::WebDragOperationsMask ops,
+                     blink::WebDragOperationsMask ops,
                      const gfx::ImageSkia& image,
                      const gfx::Vector2d& image_offset);
   void CancelDrag();
@@ -74,7 +74,7 @@ class CONTENT_EXPORT WebContentsDragWin
   // progress. No further processing should be done beyond this return point
   // because the instance has been destroyed.
   bool DoDragging(const DropData& drop_data,
-                  WebKit::WebDragOperationsMask ops,
+                  blink::WebDragOperationsMask ops,
                   const GURL& page_url,
                   const std::string& page_encoding,
                   const gfx::ImageSkia& image,
@@ -82,7 +82,7 @@ class CONTENT_EXPORT WebContentsDragWin
 
   // Called on drag-and-drop thread.
   void StartBackgroundDragging(const DropData& drop_data,
-                               WebKit::WebDragOperationsMask ops,
+                               blink::WebDragOperationsMask ops,
                                const GURL& page_url,
                                const std::string& page_encoding,
                                const gfx::ImageSkia& image,

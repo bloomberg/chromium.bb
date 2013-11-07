@@ -28,7 +28,7 @@ class GamepadPlatformDataFetcherLinux : public GamepadDataFetcher {
   virtual ~GamepadPlatformDataFetcherLinux();
 
   // GamepadDataFetcher implementation.
-  virtual void GetGamepadData(WebKit::WebGamepads* pads,
+  virtual void GetGamepadData(blink::WebGamepads* pads,
                               bool devices_changed_hint) OVERRIDE;
 
  private:
@@ -37,14 +37,14 @@ class GamepadPlatformDataFetcherLinux : public GamepadDataFetcher {
   void ReadDeviceData(size_t index);
 
   // File descriptors for the /dev/input/js* devices. -1 if not in use.
-  int device_fds_[WebKit::WebGamepads::itemsLengthCap];
+  int device_fds_[blink::WebGamepads::itemsLengthCap];
 
   // Functions to map from device data to standard layout, if available. May
   // be null if no mapping is available.
-  GamepadStandardMappingFunction mappers_[WebKit::WebGamepads::itemsLengthCap];
+  GamepadStandardMappingFunction mappers_[blink::WebGamepads::itemsLengthCap];
 
   // Data that's returned to the consumer.
-  WebKit::WebGamepads data_;
+  blink::WebGamepads data_;
 
   scoped_ptr<UdevLinux> udev_;
 

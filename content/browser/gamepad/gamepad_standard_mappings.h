@@ -7,15 +7,15 @@
 
 #include "base/strings/string_piece.h"
 
-namespace WebKit {
+namespace blink {
 class WebGamepad;
 }
 
 namespace content {
 
 typedef void (*GamepadStandardMappingFunction)(
-    const WebKit::WebGamepad& original,
-    WebKit::WebGamepad* mapped);
+    const blink::WebGamepad& original,
+    blink::WebGamepad* mapped);
 
 GamepadStandardMappingFunction GetGamepadStandardMappingFunction(
     const base::StringPiece& vendor_id,

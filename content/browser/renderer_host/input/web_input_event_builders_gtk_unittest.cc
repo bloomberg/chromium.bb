@@ -11,9 +11,9 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/keycodes/keyboard_code_conversion_gtk.h"
 
-using WebKit::WebInputEvent;
-using WebKit::WebKeyboardEvent;
-using WebKit::WebMouseEvent;
+using blink::WebInputEvent;
+using blink::WebKeyboardEvent;
+using blink::WebMouseEvent;
 using content::WebMouseEventBuilder;
 using content::WebKeyboardEventBuilder;
 

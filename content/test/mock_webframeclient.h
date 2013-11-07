@@ -9,7 +9,7 @@
 
 namespace content {
 
-class MockWebFrameClient : public WebKit::WebFrameClient {};
+class MockWebFrameClient : public blink::WebFrameClient {};
 
 }  // namespace content
 

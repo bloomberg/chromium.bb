@@ -17,9 +17,9 @@ class RendererDateTimePickerTest {
 };
 
 TEST(RendererDateTimePickerTest, TestParserValidStringInputs) {
-  WebKit::WebDateTimeChooserParams params;
+  blink::WebDateTimeChooserParams params;
   params.currentValue = "2010-07";
-  params.type = WebKit::WebDateTimeInputTypeMonth;
+  params.type = blink::WebDateTimeInputTypeMonth;
   DateTimeFormatter sut(params);
   EXPECT_EQ(2010, sut.GetYear());
 
@@ -36,7 +36,7 @@ TEST(RendererDateTimePickerTest, TestParserValidStringInputs) {
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_MONTH, sut.GetType());
 
   params.currentValue = "2012-05-25";
-  params.type = WebKit::WebDateTimeInputTypeDate;
+  params.type = blink::WebDateTimeInputTypeDate;
   DateTimeFormatter sut2(params);
   EXPECT_EQ(2012, sut2.GetYear());
   EXPECT_EQ(4, sut2.GetMonth());
@@ -49,7 +49,7 @@ TEST(RendererDateTimePickerTest, TestParserValidStringInputs) {
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_DATE, sut2.GetType());
 
   params.currentValue = "2013-05-21T12:15";
-  params.type = WebKit::WebDateTimeInputTypeDateTimeLocal;
+  params.type = blink::WebDateTimeInputTypeDateTimeLocal;
   DateTimeFormatter sut3(params);
   EXPECT_EQ(2013, sut3.GetYear());
   EXPECT_EQ(4, sut3.GetMonth());
@@ -62,7 +62,7 @@ TEST(RendererDateTimePickerTest, TestParserValidStringInputs) {
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL, sut3.GetType());
 
   params.currentValue = "2013-W15";
-  params.type = WebKit::WebDateTimeInputTypeWeek;
+  params.type = blink::WebDateTimeInputTypeWeek;
   DateTimeFormatter sut4(params);
   EXPECT_EQ(2013, sut4.GetYear());
   EXPECT_EQ(3, sut4.GetMonth());
@@ -75,7 +75,7 @@ TEST(RendererDateTimePickerTest, TestParserValidStringInputs) {
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_WEEK, sut4.GetType());
 
   params.currentValue = "12:15";
-  params.type = WebKit::WebDateTimeInputTypeTime;
+  params.type = blink::WebDateTimeInputTypeTime;
   DateTimeFormatter sut5(params);
   EXPECT_EQ(12, sut5.GetHour());
   EXPECT_EQ(15, sut5.GetMinute());
@@ -84,7 +84,7 @@ TEST(RendererDateTimePickerTest, TestParserValidStringInputs) {
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_TIME, sut5.GetType());
 
   params.currentValue = "12:15:02";
-  params.type = WebKit::WebDateTimeInputTypeTime;
+  params.type = blink::WebDateTimeInputTypeTime;
   DateTimeFormatter sut6(params);
   EXPECT_EQ(12, sut6.GetHour());
   EXPECT_EQ(15, sut6.GetMinute());
@@ -93,7 +93,7 @@ TEST(RendererDateTimePickerTest, TestParserValidStringInputs) {
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_TIME, sut6.GetType());
 
   params.currentValue = "12:15:02.1";
-  params.type = WebKit::WebDateTimeInputTypeTime;
+  params.type = blink::WebDateTimeInputTypeTime;
   DateTimeFormatter sut7(params);
   EXPECT_EQ(12, sut7.GetHour());
   EXPECT_EQ(15, sut7.GetMinute());
@@ -102,7 +102,7 @@ TEST(RendererDateTimePickerTest, TestParserValidStringInputs) {
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_TIME, sut7.GetType());
 
   params.currentValue = "12:15:02.123";
-  params.type = WebKit::WebDateTimeInputTypeTime;
+  params.type = blink::WebDateTimeInputTypeTime;
   DateTimeFormatter sut8(params);
   EXPECT_EQ(12, sut8.GetHour());
   EXPECT_EQ(15, sut8.GetMinute());
@@ -115,9 +115,9 @@ TEST(RendererDateTimePickerTest, TestParserValidStringInputs) {
 TEST(RendererDateTimePickerTest, TestParserInvalidStringInputs) {
 
   // Random non parsable text
-  WebKit::WebDateTimeChooserParams params;
+  blink::WebDateTimeChooserParams params;
   params.currentValue = "<script injection";
-  params.type = WebKit::WebDateTimeInputTypeMonth;
+  params.type = blink::WebDateTimeInputTypeMonth;
   DateTimeFormatter sut(params);
   EXPECT_EQ(0, sut.GetYear());
   EXPECT_EQ(0, sut.GetMonth());
@@ -129,7 +129,7 @@ TEST(RendererDateTimePickerTest, TestParserInvalidStringInputs) {
 
   // unimplemented type
   params.currentValue = "week 23";
-  params.type = WebKit::WebDateTimeInputTypeWeek; // Not implemented
+  params.type = blink::WebDateTimeInputTypeWeek; // Not implemented
   DateTimeFormatter sut2(params);
   EXPECT_EQ(0, sut2.GetYear());
   EXPECT_EQ(0, sut2.GetMonth());
@@ -141,7 +141,7 @@ TEST(RendererDateTimePickerTest, TestParserInvalidStringInputs) {
 
   // type is a subset of pattern
   params.currentValue = "2012-05-25";
-  params.type = WebKit::WebDateTimeInputTypeDateTimeLocal;
+  params.type = blink::WebDateTimeInputTypeDateTimeLocal;
   DateTimeFormatter sut3(params);
   EXPECT_EQ(0, sut3.GetYear());
   EXPECT_EQ(0, sut3.GetMonth());
@@ -153,7 +153,7 @@ TEST(RendererDateTimePickerTest, TestParserInvalidStringInputs) {
 
   // type is a superset of pattern
   params.currentValue = "2013-05-21T12:15";
-  params.type = WebKit::WebDateTimeInputTypeMonth;
+  params.type = blink::WebDateTimeInputTypeMonth;
   DateTimeFormatter sut4(params);
   EXPECT_EQ(2013, sut4.GetYear());
   EXPECT_EQ(4, sut4.GetMonth());

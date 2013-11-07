@@ -8,8 +8,8 @@
 namespace content {
 
 MockBrowserPlugin::MockBrowserPlugin(RenderViewImpl* render_view,
-                                     WebKit::WebFrame* frame,
-                                     const WebKit::WebPluginParams& params)
+                                     blink::WebFrame* frame,
+                                     const blink::WebPluginParams& params)
     : BrowserPlugin(render_view, frame, params) {
 }
 

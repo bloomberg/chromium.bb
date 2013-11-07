@@ -34,12 +34,12 @@ namespace content {
 namespace {
 
 std::string GetStreamConstraint(
-    const WebKit::WebMediaConstraints& constraints, const std::string& key,
+    const blink::WebMediaConstraints& constraints, const std::string& key,
     bool is_mandatory) {
   if (constraints.isNull())
     return std::string();
 
-  WebKit::WebString value;
+  blink::WebString value;
   if (is_mandatory) {
     constraints.getMandatoryConstraintValue(UTF8ToUTF16(key), value);
   } else {
@@ -49,7 +49,7 @@ std::string GetStreamConstraint(
 }
 
 void UpdateRequestOptions(
-    const WebKit::WebUserMediaRequest& user_media_request,
+    const blink::WebUserMediaRequest& user_media_request,
     StreamOptions* options) {
   if (options->audio_type != content::MEDIA_NO_SERVICE) {
     std::string audio_stream_source = GetStreamConstraint(
@@ -88,7 +88,7 @@ void UpdateRequestOptions(
 static int g_next_request_id  = 0;
 
 webrtc::MediaStreamInterface* GetNativeMediaStream(
-    const WebKit::WebMediaStream& web_stream) {
+    const blink::WebMediaStream& web_stream) {
   content::MediaStreamExtraData* extra_data =
       static_cast<content::MediaStreamExtraData*>(web_stream.extraData());
   if (!extra_data)
@@ -105,9 +105,9 @@ void GetDefaultOutputDeviceParams(
   *output_buffer_size = hardware_config->GetOutputBufferSize();
 }
 
-void RemoveSource(const WebKit::WebMediaStreamSource& source,
-                  std::vector<WebKit::WebMediaStreamSource>* sources) {
-  for (std::vector<WebKit::WebMediaStreamSource>::iterator it =
+void RemoveSource(const blink::WebMediaStreamSource& source,
+                  std::vector<blink::WebMediaStreamSource>* sources) {
+  for (std::vector<blink::WebMediaStreamSource>::iterator it =
            sources->begin();
        it != sources->end(); ++it) {
     if (source.id() == it->id()) {
@@ -132,7 +132,7 @@ MediaStreamImpl::~MediaStreamImpl() {
 }
 
 void MediaStreamImpl::requestUserMedia(
-    const WebKit::WebUserMediaRequest& user_media_request) {
+    const blink::WebUserMediaRequest& user_media_request) {
   // Save histogram data so we can see how much GetUserMedia is used.
   // The histogram counts the number of calls to the JS API
   // webGetUserMedia.
@@ -140,7 +140,7 @@ void MediaStreamImpl::requestUserMedia(
   DCHECK(CalledOnValidThread());
   int request_id = g_next_request_id++;
   StreamOptions options(MEDIA_NO_SERVICE, MEDIA_NO_SERVICE);
-  WebKit::WebFrame* frame = NULL;
+  blink::WebFrame* frame = NULL;
   GURL security_origin;
   bool enable_automatic_output_device_selection = false;
 
@@ -200,7 +200,7 @@ void MediaStreamImpl::requestUserMedia(
 }
 
 void MediaStreamImpl::cancelUserMediaRequest(
-    const WebKit::WebUserMediaRequest& user_media_request) {
+    const blink::WebUserMediaRequest& user_media_request) {
   DCHECK(CalledOnValidThread());
   UserMediaRequestInfo* request = FindUserMediaRequestInfo(user_media_request);
   if (request) {
@@ -211,14 +211,14 @@ void MediaStreamImpl::cancelUserMediaRequest(
   }
 }
 
-WebKit::WebMediaStream MediaStreamImpl::GetMediaStream(
+blink::WebMediaStream MediaStreamImpl::GetMediaStream(
     const GURL& url) {
-  return WebKit::WebMediaStreamRegistry::lookupMediaStreamDescriptor(url);
+  return blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(url);
 }
 
 bool MediaStreamImpl::IsMediaStream(const GURL& url) {
-  WebKit::WebMediaStream web_stream(
-      WebKit::WebMediaStreamRegistry::lookupMediaStreamDescriptor(url));
+  blink::WebMediaStream web_stream(
+      blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(url));
 
   if (web_stream.isNull() || !web_stream.extraData())
     return false;  // This is not a valid stream.
@@ -234,7 +234,7 @@ MediaStreamImpl::GetVideoFrameProvider(
     const base::Closure& error_cb,
     const VideoFrameProvider::RepaintCB& repaint_cb) {
   DCHECK(CalledOnValidThread());
-  WebKit::WebMediaStream web_stream(GetMediaStream(url));
+  blink::WebMediaStream web_stream(GetMediaStream(url));
 
   if (web_stream.isNull() || !web_stream.extraData())
     return NULL;  // This is not a valid stream.
@@ -252,7 +252,7 @@ MediaStreamImpl::GetVideoFrameProvider(
 scoped_refptr<MediaStreamAudioRenderer>
 MediaStreamImpl::GetAudioRenderer(const GURL& url) {
   DCHECK(CalledOnValidThread());
-  WebKit::WebMediaStream web_stream(GetMediaStream(url));
+  blink::WebMediaStream web_stream(GetMediaStream(url));
 
   if (web_stream.isNull() || !web_stream.extraData())
     return NULL;  // This is not a valid stream.
@@ -320,7 +320,7 @@ void MediaStreamImpl::OnStreamGenerated(
   }
   request_info->generated = true;
 
-  WebKit::WebVector<WebKit::WebMediaStreamSource> audio_source_vector(
+  blink::WebVector<blink::WebMediaStreamSource> audio_source_vector(
         audio_array.size());
 
   StreamDeviceInfoArray overridden_audio_array = audio_array;
@@ -335,28 +335,28 @@ void MediaStreamImpl::OnStreamGenerated(
     }
   }
   CreateWebKitSourceVector(label, overridden_audio_array,
-                           WebKit::WebMediaStreamSource::TypeAudio,
+                           blink::WebMediaStreamSource::TypeAudio,
                            request_info->frame,
                            audio_source_vector);
 
-  WebKit::WebVector<WebKit::WebMediaStreamSource> video_source_vector(
+  blink::WebVector<blink::WebMediaStreamSource> video_source_vector(
       video_array.size());
   CreateWebKitSourceVector(label, video_array,
-                           WebKit::WebMediaStreamSource::TypeVideo,
+                           blink::WebMediaStreamSource::TypeVideo,
                            request_info->frame,
                            video_source_vector);
-  WebKit::WebUserMediaRequest* request = &(request_info->request);
-  WebKit::WebString webkit_id = UTF8ToUTF16(label);
-  WebKit::WebMediaStream* web_stream = &(request_info->web_stream);
+  blink::WebUserMediaRequest* request = &(request_info->request);
+  blink::WebString webkit_id = UTF8ToUTF16(label);
+  blink::WebMediaStream* web_stream = &(request_info->web_stream);
 
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> audio_track_vector(
+  blink::WebVector<blink::WebMediaStreamTrack> audio_track_vector(
       audio_array.size());
   for (size_t i = 0; i < audio_track_vector.size(); ++i) {
     audio_track_vector[i].initialize(audio_source_vector[i]);
     request_info->sources.push_back(audio_source_vector[i]);
   }
 
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> video_track_vector(
+  blink::WebVector<blink::WebMediaStreamTrack> video_track_vector(
       video_array.size());
   for (size_t i = 0; i < video_track_vector.size(); ++i) {
     video_track_vector[i].initialize(video_source_vector[i]);
@@ -368,10 +368,10 @@ void MediaStreamImpl::OnStreamGenerated(
 
   // WebUserMediaRequest don't have an implementation in unit tests.
   // Therefore we need to check for isNull here.
-  WebKit::WebMediaConstraints audio_constraints = request->isNull() ?
-      WebKit::WebMediaConstraints() : request->audioConstraints();
-  WebKit::WebMediaConstraints video_constraints = request->isNull() ?
-      WebKit::WebMediaConstraints() : request->videoConstraints();
+  blink::WebMediaConstraints audio_constraints = request->isNull() ?
+      blink::WebMediaConstraints() : request->audioConstraints();
+  blink::WebMediaConstraints video_constraints = request->isNull() ?
+      blink::WebMediaConstraints() : request->videoConstraints();
 
   dependency_factory_->CreateNativeMediaSources(
       RenderViewObserver::routing_id(),
@@ -414,18 +414,18 @@ void MediaStreamImpl::OnStopGeneratedStream(const std::string& label) {
 void MediaStreamImpl::CreateWebKitSourceVector(
     const std::string& label,
     const StreamDeviceInfoArray& devices,
-    WebKit::WebMediaStreamSource::Type type,
-    WebKit::WebFrame* frame,
-    WebKit::WebVector<WebKit::WebMediaStreamSource>& webkit_sources) {
+    blink::WebMediaStreamSource::Type type,
+    blink::WebFrame* frame,
+    blink::WebVector<blink::WebMediaStreamSource>& webkit_sources) {
   CHECK_EQ(devices.size(), webkit_sources.size());
   for (size_t i = 0; i < devices.size(); ++i) {
     const char* track_type =
-        (type == WebKit::WebMediaStreamSource::TypeAudio) ? "a" : "v";
+        (type == blink::WebMediaStreamSource::TypeAudio) ? "a" : "v";
     std::string source_id = base::StringPrintf("%s%s%u", label.c_str(),
                                                track_type,
                                                static_cast<unsigned int>(i));
 
-    const WebKit::WebMediaStreamSource* existing_source =
+    const blink::WebMediaStreamSource* existing_source =
         FindLocalSource(devices[i]);
     if (existing_source) {
       webkit_sources[i] = *existing_source;
@@ -452,7 +452,7 @@ void MediaStreamImpl::CreateWebKitSourceVector(
 // Callback from MediaStreamDependencyFactory when the sources in |web_stream|
 // have been generated.
 void MediaStreamImpl::OnCreateNativeSourcesComplete(
-    WebKit::WebMediaStream* web_stream,
+    blink::WebMediaStream* web_stream,
     bool request_succeeded) {
   UserMediaRequestInfo* request_info = FindUserMediaRequestInfo(web_stream);
   if (!request_info) {
@@ -511,8 +511,8 @@ void MediaStreamImpl::OnDeviceOpenFailed(int request_id) {
 }
 
 void MediaStreamImpl::CompleteGetUserMediaRequest(
-    const WebKit::WebMediaStream& stream,
-    WebKit::WebUserMediaRequest* request_info,
+    const blink::WebMediaStream& stream,
+    blink::WebUserMediaRequest* request_info,
     bool request_succeeded) {
   if (request_succeeded) {
     request_info->requestSucceeded(stream);
@@ -521,7 +521,7 @@ void MediaStreamImpl::CompleteGetUserMediaRequest(
   }
 }
 
-const WebKit::WebMediaStreamSource* MediaStreamImpl::FindLocalSource(
+const blink::WebMediaStreamSource* MediaStreamImpl::FindLocalSource(
     const StreamDeviceInfo& device) const {
   for (LocalStreamSources::const_iterator it = local_sources_.begin();
        it != local_sources_.end(); ++it) {
@@ -538,12 +538,12 @@ const WebKit::WebMediaStreamSource* MediaStreamImpl::FindLocalSource(
 }
 
 bool MediaStreamImpl::FindSourceInRequests(
-    const WebKit::WebMediaStreamSource& source) const {
+    const blink::WebMediaStreamSource& source) const {
   for (UserMediaRequests::const_iterator req_it = user_media_requests_.begin();
        req_it != user_media_requests_.end(); ++req_it) {
-    const std::vector<WebKit::WebMediaStreamSource>& sources =
+    const std::vector<blink::WebMediaStreamSource>& sources =
         (*req_it)->sources;
-    for (std::vector<WebKit::WebMediaStreamSource>::const_iterator source_it =
+    for (std::vector<blink::WebMediaStreamSource>::const_iterator source_it =
              sources.begin();
          source_it != sources.end(); ++source_it) {
       if (source_it->id() == source.id()) {
@@ -566,7 +566,7 @@ MediaStreamImpl::FindUserMediaRequestInfo(int request_id) {
 
 MediaStreamImpl::UserMediaRequestInfo*
 MediaStreamImpl::FindUserMediaRequestInfo(
-    const WebKit::WebUserMediaRequest& request) {
+    const blink::WebUserMediaRequest& request) {
   UserMediaRequests::iterator it = user_media_requests_.begin();
   for (; it != user_media_requests_.end(); ++it) {
     if ((*it)->request == request)
@@ -587,7 +587,7 @@ MediaStreamImpl::FindUserMediaRequestInfo(const std::string& label) {
 
 MediaStreamImpl::UserMediaRequestInfo*
 MediaStreamImpl::FindUserMediaRequestInfo(
-    WebKit::WebMediaStream* web_stream) {
+    blink::WebMediaStream* web_stream) {
   UserMediaRequests::iterator it = user_media_requests_.begin();
   for (; it != user_media_requests_.end(); ++it) {
     if (&((*it)->web_stream) == web_stream)
@@ -608,12 +608,12 @@ void MediaStreamImpl::DeleteUserMediaRequestInfo(
   NOTREACHED();
 }
 
-void MediaStreamImpl::FrameDetached(WebKit::WebFrame* frame) {
+void MediaStreamImpl::FrameDetached(blink::WebFrame* frame) {
   // Do same thing as FrameWillClose.
   FrameWillClose(frame);
 }
 
-void MediaStreamImpl::FrameWillClose(WebKit::WebFrame* frame) {
+void MediaStreamImpl::FrameWillClose(blink::WebFrame* frame) {
   // Loop through all UserMediaRequests and find the requests that belong to the
   // frame that is being closed.
   UserMediaRequests::iterator request_it = user_media_requests_.begin();
@@ -660,7 +660,7 @@ void MediaStreamImpl::OnLocalMediaStreamStop(
 }
 
 void MediaStreamImpl::OnLocalSourceStop(
-    const WebKit::WebMediaStreamSource& source) {
+    const blink::WebMediaStreamSource& source) {
   DCHECK(CalledOnValidThread());
 
   StopLocalSource(source, true);
@@ -691,7 +691,7 @@ void MediaStreamImpl::OnLocalSourceStop(
 }
 
 void MediaStreamImpl::StopLocalSource(
-    const WebKit::WebMediaStreamSource& source,
+    const blink::WebMediaStreamSource& source,
     bool notify_dispatcher) {
   MediaStreamSourceExtraData* extra_data =
         static_cast<MediaStreamSourceExtraData*> (source.extraData());
@@ -699,7 +699,7 @@ void MediaStreamImpl::StopLocalSource(
   DVLOG(1) << "MediaStreamImpl::StopLocalSource("
            << "{device_id = " << extra_data->device_info().device.id << "})";
 
-  if (source.type() == WebKit::WebMediaStreamSource::TypeAudio) {
+  if (source.type() == blink::WebMediaStreamSource::TypeAudio) {
     if (extra_data->GetAudioCapturer()) {
       extra_data->GetAudioCapturer()->Stop();
     }
@@ -708,9 +708,9 @@ void MediaStreamImpl::StopLocalSource(
   if (notify_dispatcher)
     media_stream_dispatcher_->StopStreamDevice(extra_data->device_info());
 
-  WebKit::WebMediaStreamSource writable_source(source);
+  blink::WebMediaStreamSource writable_source(source);
   writable_source.setReadyState(
-      WebKit::WebMediaStreamSource::ReadyStateEnded);
+      blink::WebMediaStreamSource::ReadyStateEnded);
   writable_source.setExtraData(NULL);
 }
 
@@ -855,8 +855,8 @@ void MediaStreamExtraData::OnLocalStreamStop() {
 
 MediaStreamImpl::UserMediaRequestInfo::UserMediaRequestInfo(
     int request_id,
-    WebKit::WebFrame* frame,
-    const WebKit::WebUserMediaRequest& request,
+    blink::WebFrame* frame,
+    const blink::WebUserMediaRequest& request,
     bool enable_automatic_output_device_selection)
     : request_id(request_id),
       generated(false),

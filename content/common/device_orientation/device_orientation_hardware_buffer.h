@@ -10,7 +10,7 @@
 
 namespace content {
 
-typedef SharedMemorySeqLockBuffer<WebKit::WebDeviceOrientationData>
+typedef SharedMemorySeqLockBuffer<blink::WebDeviceOrientationData>
     DeviceOrientationHardwareBuffer;
 
 }  // namespace content

@@ -22,11 +22,11 @@
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebSocket.h"
 
-using WebKit::WebArrayBuffer;
-using WebKit::WebDocument;
-using WebKit::WebString;
-using WebKit::WebSocket;
-using WebKit::WebURL;
+using blink::WebArrayBuffer;
+using blink::WebDocument;
+using blink::WebString;
+using blink::WebSocket;
+using blink::WebURL;
 
 namespace content {
 
@@ -77,7 +77,7 @@ void PepperWebSocketHost::didConnect() {
                         protocol));
 }
 
-void PepperWebSocketHost::didReceiveMessage(const WebKit::WebString& message) {
+void PepperWebSocketHost::didReceiveMessage(const blink::WebString& message) {
   // Dispose packets after receiving an error.
   if (error_was_received_)
     return;
@@ -90,7 +90,7 @@ void PepperWebSocketHost::didReceiveMessage(const WebKit::WebString& message) {
 }
 
 void PepperWebSocketHost::didReceiveArrayBuffer(
-    const WebKit::WebArrayBuffer& binaryData) {
+    const blink::WebArrayBuffer& binaryData) {
   // Dispose packets after receiving an error.
   if (error_was_received_)
     return;
@@ -135,7 +135,7 @@ void PepperWebSocketHost::didStartClosingHandshake() {
 void PepperWebSocketHost::didClose(unsigned long unhandled_buffered_amount,
                                    ClosingHandshakeCompletionStatus status,
                                    unsigned short code,
-                                   const WebKit::WebString& reason) {
+                                   const blink::WebString& reason) {
   if (connecting_) {
     connecting_ = false;
     connect_reply_.params.set_result(PP_ERROR_FAILED);
@@ -224,8 +224,8 @@ int32_t PepperWebSocketHost::OnHostMsgConnect(
   // Convert protocols to WebString.
   WebString web_protocols = WebString::fromUTF8(protocol_string);
 
-  // Create WebKit::WebSocket object and connect.
-  WebKit::WebPluginContainer* container =
+  // Create blink::WebSocket object and connect.
+  blink::WebPluginContainer* container =
       renderer_ppapi_host_->GetContainerForInstance(pp_instance());
   if (!container)
     return PP_ERROR_BADARGUMENT;

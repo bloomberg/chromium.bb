@@ -26,9 +26,9 @@ void MockMediaStreamRegistry::Init(const std::string& stream_url) {
   stream_url_ = stream_url;
   scoped_refptr<webrtc::MediaStreamInterface> stream(
       factory_->CreateLocalMediaStream(kTestStreamLabel));
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> webkit_audio_tracks;
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> webkit_video_tracks;
-  WebKit::WebString webkit_stream_label(UTF8ToUTF16(stream->label()));
+  blink::WebVector<blink::WebMediaStreamTrack> webkit_audio_tracks;
+  blink::WebVector<blink::WebMediaStreamTrack> webkit_video_tracks;
+  blink::WebString webkit_stream_label(UTF8ToUTF16(stream->label()));
   test_stream_.initialize(webkit_stream_label,
                           webkit_audio_tracks, webkit_video_tracks);
   test_stream_.setExtraData(new MediaStreamExtraData(stream.get(), false));
@@ -39,15 +39,15 @@ bool MockMediaStreamRegistry::AddVideoTrack(const std::string& track_id) {
   return factory_->AddNativeVideoMediaTrack(track_id, &test_stream_, capturer);
 }
 
-WebKit::WebMediaStream MockMediaStreamRegistry::GetMediaStream(
+blink::WebMediaStream MockMediaStreamRegistry::GetMediaStream(
     const std::string& url) {
   if (url != stream_url_) {
-    return WebKit::WebMediaStream();
+    return blink::WebMediaStream();
   }
   return test_stream_;
 }
 
-const WebKit::WebMediaStream MockMediaStreamRegistry::test_stream() const {
+const blink::WebMediaStream MockMediaStreamRegistry::test_stream() const {
   return test_stream_;
 }
 

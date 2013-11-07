@@ -32,17 +32,17 @@
 #include "url/gurl.h"
 
 using ppapi::NPObjectVar;
-using WebKit::WebCanvas;
-using WebKit::WebPlugin;
-using WebKit::WebPluginContainer;
-using WebKit::WebPluginParams;
-using WebKit::WebPoint;
-using WebKit::WebPrintParams;
-using WebKit::WebRect;
-using WebKit::WebSize;
-using WebKit::WebString;
-using WebKit::WebURL;
-using WebKit::WebVector;
+using blink::WebCanvas;
+using blink::WebPlugin;
+using blink::WebPluginContainer;
+using blink::WebPluginParams;
+using blink::WebPoint;
+using blink::WebPrintParams;
+using blink::WebRect;
+using blink::WebSize;
+using blink::WebString;
+using blink::WebURL;
+using blink::WebVector;
 
 namespace content {
 
@@ -78,7 +78,7 @@ PepperWebPluginImpl::PepperWebPluginImpl(
 PepperWebPluginImpl::~PepperWebPluginImpl() {
 }
 
-WebKit::WebPluginContainer* PepperWebPluginImpl::container() const {
+blink::WebPluginContainer* PepperWebPluginImpl::container() const {
   return container_;
 }
 
@@ -99,7 +99,7 @@ bool PepperWebPluginImpl::initialize(WebPluginContainer* container) {
     instance_->Delete();
     instance_ = NULL;
 
-    WebKit::WebPlugin* replacement_plugin =
+    blink::WebPlugin* replacement_plugin =
         GetContentClient()->renderer()->CreatePluginReplacement(
             init_data_->render_view.get(), init_data_->module->path());
     if (!replacement_plugin || !replacement_plugin->initialize(container))
@@ -147,7 +147,7 @@ NPObject* PepperWebPluginImpl::scriptableObject() {
   }
   NPObject* message_channel_np_object(instance_->message_channel().np_object());
   // The object is expected to be retained before it is returned.
-  WebKit::WebBindings::retainObject(message_channel_np_object);
+  blink::WebBindings::retainObject(message_channel_np_object);
   return message_channel_np_object;
 }
 
@@ -189,46 +189,46 @@ bool PepperWebPluginImpl::acceptsInputEvents() {
   return true;
 }
 
-bool PepperWebPluginImpl::handleInputEvent(const WebKit::WebInputEvent& event,
-                                           WebKit::WebCursorInfo& cursor_info) {
+bool PepperWebPluginImpl::handleInputEvent(const blink::WebInputEvent& event,
+                                           blink::WebCursorInfo& cursor_info) {
   if (instance_->FlashIsFullscreenOrPending())
     return false;
   return instance_->HandleInputEvent(event, &cursor_info);
 }
 
 void PepperWebPluginImpl::didReceiveResponse(
-    const WebKit::WebURLResponse& response) {
+    const blink::WebURLResponse& response) {
   DCHECK(!instance_->document_loader());
   instance_->HandleDocumentLoad(response);
 }
 
 void PepperWebPluginImpl::didReceiveData(const char* data, int data_length) {
-  WebKit::WebURLLoaderClient* document_loader = instance_->document_loader();
+  blink::WebURLLoaderClient* document_loader = instance_->document_loader();
   if (document_loader)
     document_loader->didReceiveData(NULL, data, data_length, 0);
 }
 
 void PepperWebPluginImpl::didFinishLoading() {
-  WebKit::WebURLLoaderClient* document_loader = instance_->document_loader();
+  blink::WebURLLoaderClient* document_loader = instance_->document_loader();
   if (document_loader)
     document_loader->didFinishLoading(NULL, 0.0);
 }
 
-void PepperWebPluginImpl::didFailLoading(const WebKit::WebURLError& error) {
-  WebKit::WebURLLoaderClient* document_loader = instance_->document_loader();
+void PepperWebPluginImpl::didFailLoading(const blink::WebURLError& error) {
+  blink::WebURLLoaderClient* document_loader = instance_->document_loader();
   if (document_loader)
     document_loader->didFail(NULL, error);
 }
 
 void PepperWebPluginImpl::didFinishLoadingFrameRequest(
-    const WebKit::WebURL& url,
+    const blink::WebURL& url,
     void* notify_data) {
 }
 
 void PepperWebPluginImpl::didFailLoadingFrameRequest(
-    const WebKit::WebURL& url,
+    const blink::WebURL& url,
     void* notify_data,
-    const WebKit::WebURLError& error) {
+    const blink::WebURLError& error) {
 }
 
 bool PepperWebPluginImpl::hasSelection() const {
@@ -251,7 +251,7 @@ void PepperWebPluginImpl::setZoomLevel(double level, bool text_only) {
   instance_->Zoom(content::ZoomLevelToZoomFactor(level), text_only);
 }
 
-bool PepperWebPluginImpl::startFind(const WebKit::WebString& search_text,
+bool PepperWebPluginImpl::startFind(const blink::WebString& search_text,
                                     bool case_sensitive,
                                     int identifier) {
   return instance_->StartFind(search_text, case_sensitive, identifier);
@@ -278,7 +278,7 @@ int PepperWebPluginImpl::printBegin(const WebPrintParams& print_params) {
 }
 
 bool PepperWebPluginImpl::printPage(int page_number,
-                                    WebKit::WebCanvas* canvas) {
+                                    blink::WebCanvas* canvas) {
   return instance_->PrintPage(page_number, canvas);
 }
 

@@ -37,7 +37,7 @@ class MockRendererPpapiHost : public RendererPpapiHost {
       PP_Instance instance) const OVERRIDE;
   virtual RenderView* GetRenderViewForInstance(
       PP_Instance instance) const OVERRIDE;
-  virtual WebKit::WebPluginContainer* GetContainerForInstance(
+  virtual blink::WebPluginContainer* GetContainerForInstance(
       PP_Instance instance) const OVERRIDE;
   virtual base::ProcessId GetPluginPID() const OVERRIDE;
   virtual bool HasUserGesture(PP_Instance instance) const OVERRIDE;

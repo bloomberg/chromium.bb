@@ -35,9 +35,9 @@
 #include "ui/gfx/win/hwnd_util.h"
 #include "webkit/common/cursors/webcursor.h"
 
-using WebKit::WebKeyboardEvent;
-using WebKit::WebInputEvent;
-using WebKit::WebMouseEvent;
+using blink::WebKeyboardEvent;
+using blink::WebInputEvent;
+using blink::WebMouseEvent;
 
 namespace content {
 

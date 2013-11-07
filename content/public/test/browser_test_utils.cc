@@ -118,7 +118,7 @@ bool ExecuteScriptHelper(RenderViewHost* render_view_host,
   return true;
 }
 
-void BuildSimpleWebKeyEvent(WebKit::WebInputEvent::Type type,
+void BuildSimpleWebKeyEvent(blink::WebInputEvent::Type type,
                             ui::KeyboardCode key_code,
                             int native_key_code,
                             int modifiers,
@@ -132,15 +132,15 @@ void BuildSimpleWebKeyEvent(WebKit::WebInputEvent::Type type,
   event->timeStampSeconds = base::Time::Now().ToDoubleT();
   event->skip_in_browser = true;
 
-  if (type == WebKit::WebInputEvent::Char ||
-      type == WebKit::WebInputEvent::RawKeyDown) {
+  if (type == blink::WebInputEvent::Char ||
+      type == blink::WebInputEvent::RawKeyDown) {
     event->text[0] = key_code;
     event->unmodifiedText[0] = key_code;
   }
 }
 
 void InjectRawKeyEvent(WebContents* web_contents,
-                       WebKit::WebInputEvent::Type type,
+                       blink::WebInputEvent::Type type,
                        ui::KeyboardCode key_code,
                        int native_key_code,
                        int modifiers) {
@@ -222,7 +222,7 @@ void CrashTab(WebContents* web_contents) {
 
 void SimulateMouseClick(WebContents* web_contents,
                         int modifiers,
-                        WebKit::WebMouseEvent::Button button) {
+                        blink::WebMouseEvent::Button button) {
   int x = web_contents->GetView()->GetContainerSize().width() / 2;
   int y = web_contents->GetView()->GetContainerSize().height() / 2;
   SimulateMouseClickAt(web_contents, modifiers, button, gfx::Point(x, y));
@@ -230,10 +230,10 @@ void SimulateMouseClick(WebContents* web_contents,
 
 void SimulateMouseClickAt(WebContents* web_contents,
                           int modifiers,
-                          WebKit::WebMouseEvent::Button button,
+                          blink::WebMouseEvent::Button button,
                           const gfx::Point& point) {
-  WebKit::WebMouseEvent mouse_event;
-  mouse_event.type = WebKit::WebInputEvent::MouseDown;
+  blink::WebMouseEvent mouse_event;
+  mouse_event.type = blink::WebInputEvent::MouseDown;
   mouse_event.button = button;
   mouse_event.x = point.x();
   mouse_event.y = point.y();
@@ -245,14 +245,14 @@ void SimulateMouseClickAt(WebContents* web_contents,
   mouse_event.globalY = point.y() + offset.y();
   mouse_event.clickCount = 1;
   web_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
-  mouse_event.type = WebKit::WebInputEvent::MouseUp;
+  mouse_event.type = blink::WebInputEvent::MouseUp;
   web_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
 }
 
 void SimulateMouseEvent(WebContents* web_contents,
-                        WebKit::WebInputEvent::Type type,
+                        blink::WebInputEvent::Type type,
                         const gfx::Point& point) {
-  WebKit::WebMouseEvent mouse_event;
+  blink::WebMouseEvent mouse_event;
   mouse_event.type = type;
   mouse_event.x = point.x();
   mouse_event.y = point.y();
@@ -284,40 +284,40 @@ void SimulateKeyPressWithCode(WebContents* web_contents,
   // The order of these key down events shouldn't matter for our simulation.
   // For our simulation we can use either the left keys or the right keys.
   if (control) {
-    modifiers |= WebKit::WebInputEvent::ControlKey;
+    modifiers |= blink::WebInputEvent::ControlKey;
     InjectRawKeyEvent(
         web_contents,
-        WebKit::WebInputEvent::RawKeyDown,
+        blink::WebInputEvent::RawKeyDown,
         ui::VKEY_CONTROL,
         key_converter->CodeToNativeKeycode("ControlLeft"),
         modifiers);
   }
 
   if (shift) {
-    modifiers |= WebKit::WebInputEvent::ShiftKey;
+    modifiers |= blink::WebInputEvent::ShiftKey;
     InjectRawKeyEvent(
         web_contents,
-        WebKit::WebInputEvent::RawKeyDown,
+        blink::WebInputEvent::RawKeyDown,
         ui::VKEY_SHIFT,
         key_converter->CodeToNativeKeycode("ShiftLeft"),
         modifiers);
   }
 
   if (alt) {
-    modifiers |= WebKit::WebInputEvent::AltKey;
+    modifiers |= blink::WebInputEvent::AltKey;
     InjectRawKeyEvent(
         web_contents,
-        WebKit::WebInputEvent::RawKeyDown,
+        blink::WebInputEvent::RawKeyDown,
         ui::VKEY_MENU,
         key_converter->CodeToNativeKeycode("AltLeft"),
         modifiers);
   }
 
   if (command) {
-    modifiers |= WebKit::WebInputEvent::MetaKey;
+    modifiers |= blink::WebInputEvent::MetaKey;
     InjectRawKeyEvent(
         web_contents,
-        WebKit::WebInputEvent::RawKeyDown,
+        blink::WebInputEvent::RawKeyDown,
         ui::VKEY_COMMAND,
         key_converter->CodeToNativeKeycode("OSLeft"),
         modifiers);
@@ -325,61 +325,61 @@ void SimulateKeyPressWithCode(WebContents* web_contents,
 
   InjectRawKeyEvent(
       web_contents,
-      WebKit::WebInputEvent::RawKeyDown,
+      blink::WebInputEvent::RawKeyDown,
       key_code,
       native_key_code,
       modifiers);
 
   InjectRawKeyEvent(
       web_contents,
-      WebKit::WebInputEvent::Char,
+      blink::WebInputEvent::Char,
       key_code,
       native_key_code,
       modifiers);
 
   InjectRawKeyEvent(
       web_contents,
-      WebKit::WebInputEvent::KeyUp,
+      blink::WebInputEvent::KeyUp,
       key_code,
       native_key_code,
       modifiers);
 
   // The order of these key releases shouldn't matter for our simulation.
   if (control) {
-    modifiers &= ~WebKit::WebInputEvent::ControlKey;
+    modifiers &= ~blink::WebInputEvent::ControlKey;
     InjectRawKeyEvent(
         web_contents,
-        WebKit::WebInputEvent::KeyUp,
+        blink::WebInputEvent::KeyUp,
         ui::VKEY_CONTROL,
         key_converter->CodeToNativeKeycode("ControlLeft"),
         modifiers);
   }
 
   if (shift) {
-    modifiers &= ~WebKit::WebInputEvent::ShiftKey;
+    modifiers &= ~blink::WebInputEvent::ShiftKey;
     InjectRawKeyEvent(
         web_contents,
-        WebKit::WebInputEvent::KeyUp,
+        blink::WebInputEvent::KeyUp,
         ui::VKEY_SHIFT,
         key_converter->CodeToNativeKeycode("ShiftLeft"),
         modifiers);
   }
 
   if (alt) {
-    modifiers &= ~WebKit::WebInputEvent::AltKey;
+    modifiers &= ~blink::WebInputEvent::AltKey;
     InjectRawKeyEvent(
         web_contents,
-        WebKit::WebInputEvent::KeyUp,
+        blink::WebInputEvent::KeyUp,
         ui::VKEY_MENU,
         key_converter->CodeToNativeKeycode("AltLeft"),
         modifiers);
   }
 
   if (command) {
-    modifiers &= ~WebKit::WebInputEvent::MetaKey;
+    modifiers &= ~blink::WebInputEvent::MetaKey;
     InjectRawKeyEvent(
         web_contents,
-        WebKit::WebInputEvent::KeyUp,
+        blink::WebInputEvent::KeyUp,
         ui::VKEY_COMMAND,
         key_converter->CodeToNativeKeycode("OSLeft"),
         modifiers);

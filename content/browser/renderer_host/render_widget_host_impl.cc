@@ -73,12 +73,12 @@
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
-using WebKit::WebGestureEvent;
-using WebKit::WebInputEvent;
-using WebKit::WebKeyboardEvent;
-using WebKit::WebMouseEvent;
-using WebKit::WebMouseWheelEvent;
-using WebKit::WebTextDirection;
+using blink::WebGestureEvent;
+using blink::WebInputEvent;
+using blink::WebKeyboardEvent;
+using blink::WebMouseEvent;
+using blink::WebMouseWheelEvent;
+using blink::WebTextDirection;
 
 namespace content {
 namespace {
@@ -182,7 +182,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       ignore_input_events_(false),
       input_method_active_(false),
       text_direction_updated_(false),
-      text_direction_(WebKit::WebTextDirectionLeftToRight),
+      text_direction_(blink::WebTextDirectionLeftToRight),
       text_direction_canceled_(false),
       suppress_next_char_events_(false),
       pending_mouse_lock_request_(false),
@@ -631,7 +631,7 @@ void RenderWidgetHostImpl::WasResized() {
     return;
 
   if (!screen_info_) {
-    screen_info_.reset(new WebKit::WebScreenInfo);
+    screen_info_.reset(new blink::WebScreenInfo);
     GetWebScreenInfo(screen_info_.get());
   }
 
@@ -1009,12 +1009,12 @@ void RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo(
 }
 
 void RenderWidgetHostImpl::ForwardGestureEvent(
-    const WebKit::WebGestureEvent& gesture_event) {
+    const blink::WebGestureEvent& gesture_event) {
   ForwardGestureEventWithLatencyInfo(gesture_event, ui::LatencyInfo());
 }
 
 void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
-    const WebKit::WebGestureEvent& gesture_event,
+    const blink::WebGestureEvent& gesture_event,
     const ui::LatencyInfo& ui_latency) {
   TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardGestureEvent");
   // Early out if necessary, prior to performing latency logic.
@@ -1023,7 +1023,7 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
 
   ui::LatencyInfo latency_info = CreateRWHLatencyInfoIfNotExist(&ui_latency);
 
-  if (gesture_event.type == WebKit::WebInputEvent::GestureScrollUpdate) {
+  if (gesture_event.type == blink::WebInputEvent::GestureScrollUpdate) {
     latency_info.AddLatencyNumber(
         ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_RWH_COMPONENT,
         GetLatencyComponentId(),
@@ -1051,7 +1051,7 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
 }
 
 void RenderWidgetHostImpl::ForwardTouchEventWithLatencyInfo(
-      const WebKit::WebTouchEvent& touch_event,
+      const blink::WebTouchEvent& touch_event,
       const ui::LatencyInfo& ui_latency) {
   TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardTouchEvent");
 
@@ -1191,7 +1191,7 @@ void RenderWidgetHostImpl::RemoveMouseEventCallback(
   }
 }
 
-void RenderWidgetHostImpl::GetWebScreenInfo(WebKit::WebScreenInfo* result) {
+void RenderWidgetHostImpl::GetWebScreenInfo(blink::WebScreenInfo* result) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::GetWebScreenInfo");
   if (GetView())
     static_cast<RenderWidgetHostViewPort*>(GetView())->GetScreenInfo(result);
@@ -1324,7 +1324,7 @@ void RenderWidgetHostImpl::SetInputMethodActive(bool activate) {
 
 void RenderWidgetHostImpl::ImeSetComposition(
     const string16& text,
-    const std::vector<WebKit::WebCompositionUnderline>& underlines,
+    const std::vector<blink::WebCompositionUnderline>& underlines,
     int selection_start,
     int selection_end) {
   Send(new ViewMsg_ImeSetComposition(
@@ -1341,7 +1341,7 @@ void RenderWidgetHostImpl::ImeConfirmComposition(
 
 void RenderWidgetHostImpl::ImeCancelComposition() {
   Send(new ViewMsg_ImeSetComposition(GetRoutingID(), string16(),
-            std::vector<WebKit::WebCompositionUnderline>(), 0, 0));
+            std::vector<blink::WebCompositionUnderline>(), 0, 0));
 }
 
 void RenderWidgetHostImpl::ExtendSelectionAndDelete(
@@ -1461,11 +1461,11 @@ void RenderWidgetHostImpl::OnSetTooltipText(
   // but we use the current approach to match Fx & IE's behavior.
   string16 wrapped_tooltip_text = tooltip_text;
   if (!tooltip_text.empty()) {
-    if (text_direction_hint == WebKit::WebTextDirectionLeftToRight) {
+    if (text_direction_hint == blink::WebTextDirectionLeftToRight) {
       // Force the tooltip to have LTR directionality.
       wrapped_tooltip_text =
           base::i18n::GetDisplayStringInLTRDirectionality(wrapped_tooltip_text);
-    } else if (text_direction_hint == WebKit::WebTextDirectionRightToLeft &&
+    } else if (text_direction_hint == blink::WebTextDirectionRightToLeft &&
                !base::i18n::IsRTL()) {
       // Force the tooltip to have RTL directionality.
       base::i18n::WrapStringWithRTLFormatting(&wrapped_tooltip_text);
@@ -1971,7 +1971,7 @@ bool RenderWidgetHostImpl::KeyPressListenersHandleEvent(
 }
 
 InputEventAckState RenderWidgetHostImpl::FilterInputEvent(
-    const WebKit::WebInputEvent& event, const ui::LatencyInfo& latency_info) {
+    const blink::WebInputEvent& event, const ui::LatencyInfo& latency_info) {
   // Don't ignore touch cancel events, since they may be sent while input
   // events are being ignored in order to keep the renderer from getting
   // confused about how many touches are active.

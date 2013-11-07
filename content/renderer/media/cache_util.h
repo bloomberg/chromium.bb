@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
 
-namespace WebKit {
+namespace blink {
 class WebURLResponse;
 }
 
@@ -34,7 +34,7 @@ enum UncacheableReason {
 // Return the logical OR of the reasons "response" cannot be used for a future
 // request (using the disk cache), or 0 if it might be useful.
 uint32 CONTENT_EXPORT GetReasonsForUncacheability(
-    const WebKit::WebURLResponse& response);
+    const blink::WebURLResponse& response);
 
 }  // namespace content
 

@@ -13,7 +13,7 @@ namespace IPC {
 class Message;
 }
 
-namespace WebKit {
+namespace blink {
 class WebSharedWorker;
 class WebString;
 }
@@ -22,13 +22,13 @@ namespace content {
 
 class SharedWorkerDevToolsAgent {
  public:
-  SharedWorkerDevToolsAgent(int route_id, WebKit::WebSharedWorker*);
+  SharedWorkerDevToolsAgent(int route_id, blink::WebSharedWorker*);
   ~SharedWorkerDevToolsAgent();
 
   // Called on the Worker thread.
   bool OnMessageReceived(const IPC::Message& message);
-  void SendDevToolsMessage(const WebKit::WebString&);
-  void SaveDevToolsAgentState(const WebKit::WebString& state);
+  void SendDevToolsMessage(const blink::WebString&);
+  void SaveDevToolsAgentState(const blink::WebString& state);
 
  private:
   void OnAttach();
@@ -40,7 +40,7 @@ class SharedWorkerDevToolsAgent {
 
   bool Send(IPC::Message* message);
   const int route_id_;
-  WebKit::WebSharedWorker* webworker_;
+  blink::WebSharedWorker* webworker_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerDevToolsAgent);
 };

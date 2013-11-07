@@ -21,7 +21,7 @@ namespace content {
 
 // Convert a WebString to ASCII, falling back on an empty string in the case
 // of a non-ASCII string.
-static std::string ToASCIIOrEmpty(const WebKit::WebString& string) {
+static std::string ToASCIIOrEmpty(const blink::WebString& string) {
   return IsStringASCII(string) ? UTF16ToASCII(string) : std::string();
 }
 
@@ -317,7 +317,7 @@ std::vector<uint8> KeySystems::GetUUID(const std::string& concrete_key_system) {
 
 //------------------------------------------------------------------------------
 
-bool IsConcreteSupportedKeySystem(const WebKit::WebString& key_system) {
+bool IsConcreteSupportedKeySystem(const blink::WebString& key_system) {
   return KeySystems::GetInstance().IsConcreteSupportedKeySystem(
       ToASCIIOrEmpty(key_system));
 }
@@ -330,7 +330,7 @@ bool IsSupportedKeySystemWithMediaMimeType(
       mime_type, codecs, key_system);
 }
 
-std::string KeySystemNameForUMA(const WebKit::WebString& key_system) {
+std::string KeySystemNameForUMA(const blink::WebString& key_system) {
   return KeySystemNameForUMAInternal(key_system);
 }
 

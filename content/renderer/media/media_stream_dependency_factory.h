@@ -30,7 +30,7 @@ namespace webrtc {
 class PeerConnection;
 }
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
 class WebMediaConstraints;
 class WebMediaStream;
@@ -60,7 +60,7 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
     : NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   // MediaSourcesCreatedCallback is used in CreateNativeMediaSources.
-  typedef base::Callback<void(WebKit::WebMediaStream* web_stream,
+  typedef base::Callback<void(blink::WebMediaStream* web_stream,
                               bool live)> MediaSourcesCreatedCallback;
   MediaStreamDependencyFactory(
       VideoCaptureImplManager* vc_manager,
@@ -69,8 +69,8 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
 
   // Create a RTCPeerConnectionHandler object that implements the
   // WebKit WebRTCPeerConnectionHandler interface.
-  WebKit::WebRTCPeerConnectionHandler* CreateRTCPeerConnectionHandler(
-      WebKit::WebRTCPeerConnectionHandlerClient* client);
+  blink::WebRTCPeerConnectionHandler* CreateRTCPeerConnectionHandler(
+      blink::WebRTCPeerConnectionHandlerClient* client);
 
   // CreateNativeMediaSources creates libjingle representations of
   // the underlying sources to the tracks in |web_stream|.
@@ -81,37 +81,37 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   // |audio_constraints| and |video_constraints| set parameters for the sources.
   void CreateNativeMediaSources(
       int render_view_id,
-      const WebKit::WebMediaConstraints& audio_constraints,
-      const WebKit::WebMediaConstraints& video_constraints,
-      WebKit::WebMediaStream* web_stream,
+      const blink::WebMediaConstraints& audio_constraints,
+      const blink::WebMediaConstraints& video_constraints,
+      blink::WebMediaStream* web_stream,
       const MediaSourcesCreatedCallback& sources_created);
 
   // Creates a libjingle representation of a MediaStream and stores
   // it in the extra data field of |web_stream|.
   void CreateNativeLocalMediaStream(
-      WebKit::WebMediaStream* web_stream);
+      blink::WebMediaStream* web_stream);
 
   // Creates a libjingle representation of a MediaStream and stores
   // it in the extra data field of |web_stream|.
   // |stream_stopped| is a callback that is run when a MediaStream have been
   // stopped.
   void CreateNativeLocalMediaStream(
-      WebKit::WebMediaStream* web_stream,
+      blink::WebMediaStream* web_stream,
       const MediaStreamExtraData::StreamStopCallback& stream_stop);
 
   // Adds a libjingle representation of a MediaStreamTrack to |stream| based
   // on the source of |track|.
-  bool AddNativeMediaStreamTrack(const WebKit::WebMediaStream& stream,
-                                 const WebKit::WebMediaStreamTrack& track);
+  bool AddNativeMediaStreamTrack(const blink::WebMediaStream& stream,
+                                 const blink::WebMediaStreamTrack& track);
 
   // Creates and adds libjingle representation of a MediaStreamTrack to |stream|
   // based on the desired |track_id| and |capturer|.
   bool AddNativeVideoMediaTrack(const std::string& track_id,
-                                WebKit::WebMediaStream* stream,
+                                blink::WebMediaStream* stream,
                                 cricket::VideoCapturer* capturer);
 
-  bool RemoveNativeMediaStreamTrack(const WebKit::WebMediaStream& stream,
-                                    const WebKit::WebMediaStreamTrack& track);
+  bool RemoveNativeMediaStreamTrack(const blink::WebMediaStream& stream,
+                                    const blink::WebMediaStreamTrack& track);
 
   // Asks the libjingle PeerConnection factory to create a libjingle
   // PeerConnection object.
@@ -120,7 +120,7 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
       CreatePeerConnection(
           const webrtc::PeerConnectionInterface::IceServers& ice_servers,
           const webrtc::MediaConstraintsInterface* constraints,
-          WebKit::WebFrame* web_frame,
+          blink::WebFrame* web_frame,
           webrtc::PeerConnectionObserver* observer);
 
   // Creates a libjingle representation of a Session description. Used by a
@@ -144,13 +144,13 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
 
   static void AddNativeTrackToBlinkTrack(
       webrtc::MediaStreamTrackInterface* native_track,
-      const WebKit::WebMediaStreamTrack& webkit_track);
+      const blink::WebMediaStreamTrack& webkit_track);
 
   static webrtc::MediaStreamInterface* GetNativeMediaStream(
-      const WebKit::WebMediaStream& stream);
+      const blink::WebMediaStream& stream);
 
   static webrtc::MediaStreamTrackInterface* GetNativeMediaStreamTrack(
-      const WebKit::WebMediaStreamTrack& track);
+      const blink::WebMediaStreamTrack& track);
 
  protected:
   // Asks the PeerConnection factory to create a Local MediaStream object.
@@ -176,7 +176,7 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   // The |constraints| will be modified to include the default, mandatory
   // WebAudio constraints.
   virtual scoped_refptr<WebAudioCapturerSource> CreateWebAudioSource(
-      WebKit::WebMediaStreamSource* source, RTCMediaConstraints* constraints);
+      blink::WebMediaStreamSource* source, RTCMediaConstraints* constraints);
 
   // Asks the PeerConnection factory to create a Local AudioTrack object.
   virtual scoped_refptr<webrtc::AudioTrackInterface>

@@ -11,7 +11,7 @@
 #include "third_party/WebKit/public/platform/WebServiceWorkerError.h"
 #include "url/gurl.h"
 
-using WebKit::WebServiceWorkerError;
+using blink::WebServiceWorkerError;
 
 namespace content {
 
@@ -60,7 +60,7 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
     Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
         thread_id,
         request_id,
-        WebKit::WebServiceWorkerError::DisabledError,
+        blink::WebServiceWorkerError::DisabledError,
         ASCIIToUTF16("ServiceWorker is disabled")));
     return;
   }
@@ -72,7 +72,7 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
     Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
         thread_id,
         request_id,
-        WebKit::WebServiceWorkerError::SecurityError,
+        blink::WebServiceWorkerError::SecurityError,
         ASCIIToUTF16(kDomainMismatchErrorMessage)));
     return;
   }

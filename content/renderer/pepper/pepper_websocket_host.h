@@ -27,7 +27,7 @@ class RendererPpapiHost;
 
 class CONTENT_EXPORT PepperWebSocketHost
     : public ppapi::host::ResourceHost,
-      public NON_EXPORTED_BASE(::WebKit::WebSocketClient) {
+      public NON_EXPORTED_BASE(::blink::WebSocketClient) {
  public:
   explicit PepperWebSocketHost(RendererPpapiHost* host,
                                PP_Instance instance,
@@ -40,15 +40,15 @@ class CONTENT_EXPORT PepperWebSocketHost
 
   // WebSocketClient implementation.
   virtual void didConnect();
-  virtual void didReceiveMessage(const WebKit::WebString& message);
-  virtual void didReceiveArrayBuffer(const WebKit::WebArrayBuffer& binaryData);
+  virtual void didReceiveMessage(const blink::WebString& message);
+  virtual void didReceiveArrayBuffer(const blink::WebArrayBuffer& binaryData);
   virtual void didReceiveMessageError();
   virtual void didUpdateBufferedAmount(unsigned long buffered_amount);
   virtual void didStartClosingHandshake();
   virtual void didClose(unsigned long unhandled_buffered_amount,
                         ClosingHandshakeCompletionStatus status,
                         unsigned short code,
-                        const WebKit::WebString& reason);
+                        const blink::WebString& reason);
  private:
   // IPC message handlers.
   int32_t OnHostMsgConnect(ppapi::host::HostMessageContext* context,
@@ -89,7 +89,7 @@ class CONTENT_EXPORT PepperWebSocketHost
 
   // Keeps the WebKit side WebSocket object. This is used for calling WebKit
   // side functions via WebKit API.
-  scoped_ptr<WebKit::WebSocket> websocket_;
+  scoped_ptr<blink::WebSocket> websocket_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperWebSocketHost);
 };

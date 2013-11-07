@@ -24,9 +24,9 @@ contention is detected by using the associated SeqLock.
 */
 
 struct GamepadHardwareBuffer {
-  // FIXME: Use the generic SharedMemorySeqLockBuffer<WebKit::WebGamepads>.
+  // FIXME: Use the generic SharedMemorySeqLockBuffer<blink::WebGamepads>.
   OneWriterSeqLock sequence;
-  WebKit::WebGamepads buffer;
+  blink::WebGamepads buffer;
 };
 
 }  // namespace content

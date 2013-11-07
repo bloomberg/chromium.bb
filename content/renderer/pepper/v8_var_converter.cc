@@ -206,8 +206,8 @@ bool GetOrCreateVar(v8::Handle<v8::Value> val,
   } else if (val->IsArray()) {
     *result = (new ArrayVar())->GetPPVar();
   } else if (val->IsObject()) {
-    scoped_ptr<WebKit::WebArrayBuffer> web_array_buffer(
-        WebKit::WebArrayBuffer::createFromV8Value(val));
+    scoped_ptr<blink::WebArrayBuffer> web_array_buffer(
+        blink::WebArrayBuffer::createFromV8Value(val));
     if (web_array_buffer.get()) {
       scoped_refptr<HostArrayBufferVar> buffer_var(new HostArrayBufferVar(
           *web_array_buffer));

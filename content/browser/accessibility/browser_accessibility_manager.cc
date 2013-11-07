@@ -69,7 +69,7 @@ void BrowserAccessibilityManager::Initialize(const AccessibilityNodeData src) {
 AccessibilityNodeData BrowserAccessibilityManager::GetEmptyDocument() {
   AccessibilityNodeData empty_document;
   empty_document.id = 0;
-  empty_document.role = WebKit::WebAXRoleRootWebArea;
+  empty_document.role = blink::WebAXRoleRootWebArea;
   return empty_document;
 }
 
@@ -93,7 +93,7 @@ void BrowserAccessibilityManager::GotFocus(bool touch_event_context) {
   if (!focus_)
     return;
 
-  NotifyAccessibilityEvent(WebKit::WebAXEventFocus, focus_);
+  NotifyAccessibilityEvent(blink::WebAXEventFocus, focus_);
 }
 
 void BrowserAccessibilityManager::WasHidden() {
@@ -102,7 +102,7 @@ void BrowserAccessibilityManager::WasHidden() {
 
 void BrowserAccessibilityManager::GotMouseDown() {
   osk_state_ = OSK_ALLOWED_WITHIN_FOCUSED_OBJECT;
-  NotifyAccessibilityEvent(WebKit::WebAXEventFocus, focus_);
+  NotifyAccessibilityEvent(blink::WebAXEventFocus, focus_);
 }
 
 bool BrowserAccessibilityManager::IsOSKAllowed(const gfx::Rect& bounds) {
@@ -139,9 +139,9 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
     if (!node)
       continue;
 
-    WebKit::WebAXEvent event_type = param.event_type;
-    if (event_type == WebKit::WebAXEventFocus ||
-        event_type == WebKit::WebAXEventBlur) {
+    blink::WebAXEvent event_type = param.event_type;
+    if (event_type == blink::WebAXEventFocus ||
+        event_type == blink::WebAXEventBlur) {
       SetFocus(node, false);
 
       if (osk_state_ != OSK_DISALLOWED_BECAUSE_TAB_HIDDEN &&
@@ -158,11 +158,11 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
     NotifyAccessibilityEvent(event_type, node);
 
     // Set initial focus when a page is loaded.
-    if (event_type == WebKit::WebAXEventLoadComplete) {
+    if (event_type == blink::WebAXEventLoadComplete) {
       if (!focus_)
         SetFocus(root_, false);
       if (!delegate_ || delegate_->HasFocus())
-        NotifyAccessibilityEvent(WebKit::WebAXEventFocus, focus_);
+        NotifyAccessibilityEvent(blink::WebAXEventFocus, focus_);
     }
   }
 }
@@ -333,7 +333,7 @@ bool BrowserAccessibilityManager::UpdateNode(const AccessibilityNodeData& src) {
   // and this is a serious error.
   BrowserAccessibility* instance = GetFromRendererID(src.id);
   if (!instance) {
-    if (src.role != WebKit::WebAXRoleRootWebArea)
+    if (src.role != blink::WebAXRoleRootWebArea)
       return false;
     instance = CreateNode(NULL, src.id, 0);
   }
@@ -400,7 +400,7 @@ bool BrowserAccessibilityManager::UpdateNode(const AccessibilityNodeData& src) {
   instance->SwapChildren(new_children);
 
   // Handle the case where this node is the new root of the tree.
-  if (src.role == WebKit::WebAXRoleRootWebArea &&
+  if (src.role == blink::WebAXRoleRootWebArea &&
       (!root_ || root_->renderer_id() != src.id)) {
     if (root_)
       root_->Destroy();
@@ -410,9 +410,9 @@ bool BrowserAccessibilityManager::UpdateNode(const AccessibilityNodeData& src) {
   }
 
   // Keep track of what node is focused.
-  if (src.role != WebKit::WebAXRoleRootWebArea &&
-      src.role != WebKit::WebAXRoleWebArea &&
-      (src.state >> WebKit::WebAXStateFocused & 1)) {
+  if (src.role != blink::WebAXRoleRootWebArea &&
+      src.role != blink::WebAXRoleWebArea &&
+      (src.state >> blink::WebAXStateFocused & 1)) {
     SetFocus(instance, false);
   }
   return success;

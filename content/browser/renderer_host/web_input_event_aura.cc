@@ -13,7 +13,7 @@ namespace content {
 
 #if defined(USE_X11) || defined(USE_OZONE)
 // From third_party/WebKit/Source/web/gtk/WebInputEventFactory.cpp:
-WebKit::WebUChar GetControlCharacter(int windows_key_code, bool shift) {
+blink::WebUChar GetControlCharacter(int windows_key_code, bool shift) {
   if (windows_key_code >= ui::VKEY_A &&
     windows_key_code <= ui::VKEY_Z) {
     // ctrl-A ~ ctrl-Z map to \x01 ~ \x1A
@@ -58,40 +58,40 @@ WebKit::WebUChar GetControlCharacter(int windows_key_code, bool shift) {
 }
 #endif
 #if defined(OS_WIN)
-WebKit::WebMouseEvent MakeUntranslatedWebMouseEventFromNativeEvent(
+blink::WebMouseEvent MakeUntranslatedWebMouseEventFromNativeEvent(
     base::NativeEvent native_event);
-WebKit::WebMouseWheelEvent MakeUntranslatedWebMouseWheelEventFromNativeEvent(
+blink::WebMouseWheelEvent MakeUntranslatedWebMouseWheelEventFromNativeEvent(
     base::NativeEvent native_event);
-WebKit::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
+blink::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
     base::NativeEvent native_event);
-WebKit::WebGestureEvent MakeWebGestureEventFromNativeEvent(
+blink::WebGestureEvent MakeWebGestureEventFromNativeEvent(
     base::NativeEvent native_event);
 #elif defined(USE_X11)
-WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
+blink::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
     ui::KeyEvent* event);
 #elif defined(USE_OZONE)
-WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
+blink::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
     ui::KeyEvent* event) {
   base::NativeEvent native_event = event->native_event();
   ui::EventType type = ui::EventTypeFromNative(native_event);
-  WebKit::WebKeyboardEvent webkit_event;
+  blink::WebKeyboardEvent webkit_event;
 
   webkit_event.timeStampSeconds = event->time_stamp().InSecondsF();
   webkit_event.modifiers = EventFlagsToWebEventModifiers(event->flags());
 
   switch (type) {
     case ui::ET_KEY_PRESSED:
-      webkit_event.type = event->is_char() ? WebKit::WebInputEvent::Char :
-          WebKit::WebInputEvent::RawKeyDown;
+      webkit_event.type = event->is_char() ? blink::WebInputEvent::Char :
+          blink::WebInputEvent::RawKeyDown;
       break;
     case ui::ET_KEY_RELEASED:
-      webkit_event.type = WebKit::WebInputEvent::KeyUp;
+      webkit_event.type = blink::WebInputEvent::KeyUp;
       break;
     default:
       NOTREACHED();
   }
 
-  if (webkit_event.modifiers & WebKit::WebInputEvent::AltKey)
+  if (webkit_event.modifiers & blink::WebInputEvent::AltKey)
     webkit_event.isSystemKey = true;
 
   wchar_t character = ui::KeyboardCodeFromNative(native_event);
@@ -103,11 +103,11 @@ WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
   else
     webkit_event.unmodifiedText[0] = character;
 
-  if (webkit_event.modifiers & WebKit::WebInputEvent::ControlKey) {
+  if (webkit_event.modifiers & blink::WebInputEvent::ControlKey) {
     webkit_event.text[0] =
         GetControlCharacter(
             webkit_event.windowsKeyCode,
-            webkit_event.modifiers & WebKit::WebInputEvent::ShiftKey);
+            webkit_event.modifiers & blink::WebInputEvent::ShiftKey);
   } else {
     webkit_event.text[0] = webkit_event.unmodifiedText[0];
   }
@@ -118,12 +118,12 @@ WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
 }
 #endif
 #if defined(USE_X11) || defined(USE_OZONE)
-WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
+blink::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
     ui::ScrollEvent* event) {
-  WebKit::WebMouseWheelEvent webkit_event;
+  blink::WebMouseWheelEvent webkit_event;
 
-  webkit_event.type = WebKit::WebInputEvent::MouseWheel;
-  webkit_event.button = WebKit::WebMouseEvent::ButtonNone;
+  webkit_event.type = blink::WebInputEvent::MouseWheel;
+  webkit_event.button = blink::WebMouseEvent::ButtonNone;
   webkit_event.modifiers = EventFlagsToWebEventModifiers(event->flags());
   webkit_event.timeStampSeconds = event->time_stamp().InSecondsF();
   webkit_event.hasPreciseScrollingDeltas = true;
@@ -142,18 +142,18 @@ WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
   return webkit_event;
 }
 
-WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
+blink::WebGestureEvent MakeWebGestureEventFromAuraEvent(
     ui::ScrollEvent* event) {
-  WebKit::WebGestureEvent webkit_event;
+  blink::WebGestureEvent webkit_event;
 
   switch (event->type()) {
     case ui::ET_SCROLL_FLING_START:
-      webkit_event.type = WebKit::WebInputEvent::GestureFlingStart;
+      webkit_event.type = blink::WebInputEvent::GestureFlingStart;
       webkit_event.data.flingStart.velocityX = event->x_offset();
       webkit_event.data.flingStart.velocityY = event->y_offset();
       break;
     case ui::ET_SCROLL_FLING_CANCEL:
-      webkit_event.type = WebKit::WebInputEvent::GestureFlingCancel;
+      webkit_event.type = blink::WebInputEvent::GestureFlingCancel;
       break;
     case ui::ET_SCROLL:
       NOTREACHED() << "Invalid gesture type: " << event->type();
@@ -162,7 +162,7 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
       NOTREACHED() << "Unknown gesture type: " << event->type();
   }
 
-  webkit_event.sourceDevice = WebKit::WebGestureEvent::Touchpad;
+  webkit_event.sourceDevice = blink::WebGestureEvent::Touchpad;
   webkit_event.modifiers = EventFlagsToWebEventModifiers(event->flags());
   webkit_event.timeStampSeconds = event->time_stamp().InSecondsF();
   return webkit_event;
@@ -170,9 +170,9 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
 
 #endif
 
-WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(
+blink::WebMouseEvent MakeWebMouseEventFromAuraEvent(
     ui::MouseEvent* event);
-WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
+blink::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
     ui::MouseWheelEvent* event);
 
 // General approach:
@@ -187,7 +187,7 @@ WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
 // provide coordinates relative to the aura::Window that is hosting the
 // renderer, not the top level platform window.
 //
-// The approach is to fully construct a WebKit::WebInputEvent from the
+// The approach is to fully construct a blink::WebInputEvent from the
 // ui::Event's base::NativeEvent, and then replace the coordinate fields with
 // the translated values from the ui::Event.
 //
@@ -198,9 +198,9 @@ WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
 // ui::MouseEvent. This will not be necessary once only XInput2 is supported.
 //
 
-WebKit::WebMouseEvent MakeWebMouseEvent(ui::MouseEvent* event) {
+blink::WebMouseEvent MakeWebMouseEvent(ui::MouseEvent* event) {
   // Construct an untranslated event from the platform event data.
-  WebKit::WebMouseEvent webkit_event =
+  blink::WebMouseEvent webkit_event =
 #if defined(OS_WIN)
   // On Windows we have WM_ events comming from desktop and pure aura
   // events comming from metro mode.
@@ -226,14 +226,14 @@ WebKit::WebMouseEvent MakeWebMouseEvent(ui::MouseEvent* event) {
   return webkit_event;
 }
 
-WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(ui::MouseWheelEvent* event) {
+blink::WebMouseWheelEvent MakeWebMouseWheelEvent(ui::MouseWheelEvent* event) {
 #if defined(OS_WIN)
   // Construct an untranslated event from the platform event data.
-  WebKit::WebMouseWheelEvent webkit_event = event->native_event().message ?
+  blink::WebMouseWheelEvent webkit_event = event->native_event().message ?
       MakeUntranslatedWebMouseWheelEventFromNativeEvent(event->native_event()) :
       MakeWebMouseWheelEventFromAuraEvent(event);
 #else
-  WebKit::WebMouseWheelEvent webkit_event =
+  blink::WebMouseWheelEvent webkit_event =
       MakeWebMouseWheelEventFromAuraEvent(event);
 #endif
 
@@ -249,13 +249,13 @@ WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(ui::MouseWheelEvent* event) {
   return webkit_event;
 }
 
-WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(ui::ScrollEvent* event) {
+blink::WebMouseWheelEvent MakeWebMouseWheelEvent(ui::ScrollEvent* event) {
 #if defined(OS_WIN)
   // Construct an untranslated event from the platform event data.
-  WebKit::WebMouseWheelEvent webkit_event =
+  blink::WebMouseWheelEvent webkit_event =
       MakeUntranslatedWebMouseWheelEventFromNativeEvent(event->native_event());
 #else
-  WebKit::WebMouseWheelEvent webkit_event =
+  blink::WebMouseWheelEvent webkit_event =
       MakeWebMouseWheelEventFromAuraEvent(event);
 #endif
 
@@ -271,7 +271,7 @@ WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(ui::ScrollEvent* event) {
   return webkit_event;
 }
 
-WebKit::WebKeyboardEvent MakeWebKeyboardEvent(ui::KeyEvent* event) {
+blink::WebKeyboardEvent MakeWebKeyboardEvent(ui::KeyEvent* event) {
   // Windows can figure out whether or not to construct a RawKeyDown or a Char
   // WebInputEvent based on the type of message carried in
   // event->native_event(). X11 is not so fortunate, there is no separate
@@ -286,8 +286,8 @@ WebKit::WebKeyboardEvent MakeWebKeyboardEvent(ui::KeyEvent* event) {
 #endif
 }
 
-WebKit::WebGestureEvent MakeWebGestureEvent(ui::GestureEvent* event) {
-  WebKit::WebGestureEvent gesture_event;
+blink::WebGestureEvent MakeWebGestureEvent(ui::GestureEvent* event) {
+  blink::WebGestureEvent gesture_event;
 #if defined(OS_WIN)
   if (event->HasNativeEvent())
     gesture_event = MakeWebGestureEventFromNativeEvent(event->native_event());
@@ -307,8 +307,8 @@ WebKit::WebGestureEvent MakeWebGestureEvent(ui::GestureEvent* event) {
   return gesture_event;
 }
 
-WebKit::WebGestureEvent MakeWebGestureEvent(ui::ScrollEvent* event) {
-  WebKit::WebGestureEvent gesture_event;
+blink::WebGestureEvent MakeWebGestureEvent(ui::ScrollEvent* event) {
+  blink::WebGestureEvent gesture_event;
 
 #if defined(OS_WIN)
   gesture_event = MakeWebGestureEventFromNativeEvent(event->native_event());
@@ -326,43 +326,43 @@ WebKit::WebGestureEvent MakeWebGestureEvent(ui::ScrollEvent* event) {
   return gesture_event;
 }
 
-WebKit::WebGestureEvent MakeWebGestureEventFlingCancel() {
-  WebKit::WebGestureEvent gesture_event;
+blink::WebGestureEvent MakeWebGestureEventFlingCancel() {
+  blink::WebGestureEvent gesture_event;
 
   // All other fields are ignored on a GestureFlingCancel event.
-  gesture_event.type = WebKit::WebInputEvent::GestureFlingCancel;
-  gesture_event.sourceDevice = WebKit::WebGestureEvent::Touchpad;
+  gesture_event.type = blink::WebInputEvent::GestureFlingCancel;
+  gesture_event.sourceDevice = blink::WebGestureEvent::Touchpad;
   return gesture_event;
 }
 
-WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(ui::MouseEvent* event) {
-  WebKit::WebMouseEvent webkit_event;
+blink::WebMouseEvent MakeWebMouseEventFromAuraEvent(ui::MouseEvent* event) {
+  blink::WebMouseEvent webkit_event;
 
   webkit_event.modifiers = EventFlagsToWebEventModifiers(event->flags());
   webkit_event.timeStampSeconds = event->time_stamp().InSecondsF();
 
-  webkit_event.button = WebKit::WebMouseEvent::ButtonNone;
+  webkit_event.button = blink::WebMouseEvent::ButtonNone;
   if (event->flags() & ui::EF_LEFT_MOUSE_BUTTON)
-    webkit_event.button = WebKit::WebMouseEvent::ButtonLeft;
+    webkit_event.button = blink::WebMouseEvent::ButtonLeft;
   if (event->flags() & ui::EF_MIDDLE_MOUSE_BUTTON)
-    webkit_event.button = WebKit::WebMouseEvent::ButtonMiddle;
+    webkit_event.button = blink::WebMouseEvent::ButtonMiddle;
   if (event->flags() & ui::EF_RIGHT_MOUSE_BUTTON)
-    webkit_event.button = WebKit::WebMouseEvent::ButtonRight;
+    webkit_event.button = blink::WebMouseEvent::ButtonRight;
 
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
-      webkit_event.type = WebKit::WebInputEvent::MouseDown;
+      webkit_event.type = blink::WebInputEvent::MouseDown;
       webkit_event.clickCount = event->GetClickCount();
       break;
     case ui::ET_MOUSE_RELEASED:
-      webkit_event.type = WebKit::WebInputEvent::MouseUp;
+      webkit_event.type = blink::WebInputEvent::MouseUp;
       webkit_event.clickCount = event->GetClickCount();
       break;
     case ui::ET_MOUSE_ENTERED:
     case ui::ET_MOUSE_EXITED:
     case ui::ET_MOUSE_MOVED:
     case ui::ET_MOUSE_DRAGGED:
-      webkit_event.type = WebKit::WebInputEvent::MouseMove;
+      webkit_event.type = blink::WebInputEvent::MouseMove;
       break;
     default:
       NOTIMPLEMENTED() << "Received unexpected event: " << event->type();
@@ -372,12 +372,12 @@ WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(ui::MouseEvent* event) {
   return webkit_event;
 }
 
-WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
+blink::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
     ui::MouseWheelEvent* event) {
-  WebKit::WebMouseWheelEvent webkit_event;
+  blink::WebMouseWheelEvent webkit_event;
 
-  webkit_event.type = WebKit::WebInputEvent::MouseWheel;
-  webkit_event.button = WebKit::WebMouseEvent::ButtonNone;
+  webkit_event.type = blink::WebInputEvent::MouseWheel;
+  webkit_event.button = blink::WebMouseEvent::ButtonNone;
   webkit_event.modifiers = EventFlagsToWebEventModifiers(event->flags());
   webkit_event.timeStampSeconds = event->time_stamp().InSecondsF();
   webkit_event.deltaX = event->x_offset();

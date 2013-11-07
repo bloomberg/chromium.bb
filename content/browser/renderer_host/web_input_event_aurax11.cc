@@ -89,10 +89,10 @@ int XKeyEventToWindowsKeyCode(XKeyEvent* event) {
 
 }  // namespace
 
-WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
+blink::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
     ui::KeyEvent* event) {
   base::NativeEvent native_event = event->native_event();
-  WebKit::WebKeyboardEvent webkit_event;
+  blink::WebKeyboardEvent webkit_event;
   XKeyEvent* native_key_event = &native_event->xkey;
 
   webkit_event.timeStampSeconds = event->time_stamp().InSecondsF();
@@ -100,17 +100,17 @@ WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
 
   switch (native_event->type) {
     case KeyPress:
-      webkit_event.type = event->is_char() ? WebKit::WebInputEvent::Char :
-          WebKit::WebInputEvent::RawKeyDown;
+      webkit_event.type = event->is_char() ? blink::WebInputEvent::Char :
+          blink::WebInputEvent::RawKeyDown;
       break;
     case KeyRelease:
-      webkit_event.type = WebKit::WebInputEvent::KeyUp;
+      webkit_event.type = blink::WebInputEvent::KeyUp;
       break;
     default:
       NOTREACHED();
   }
 
-  if (webkit_event.modifiers & WebKit::WebInputEvent::AltKey)
+  if (webkit_event.modifiers & blink::WebInputEvent::AltKey)
     webkit_event.isSystemKey = true;
 
   webkit_event.windowsKeyCode = XKeyEventToWindowsKeyCode(native_key_event);
@@ -121,11 +121,11 @@ WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
   else
     webkit_event.unmodifiedText[0] = ui::GetCharacterFromXEvent(native_event);
 
-  if (webkit_event.modifiers & WebKit::WebInputEvent::ControlKey) {
+  if (webkit_event.modifiers & blink::WebInputEvent::ControlKey) {
     webkit_event.text[0] =
         GetControlCharacter(
             webkit_event.windowsKeyCode,
-            webkit_event.modifiers & WebKit::WebInputEvent::ShiftKey);
+            webkit_event.modifiers & blink::WebInputEvent::ShiftKey);
   } else {
     webkit_event.text[0] = webkit_event.unmodifiedText[0];
   }

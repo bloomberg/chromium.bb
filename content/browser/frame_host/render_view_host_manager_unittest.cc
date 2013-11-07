@@ -260,7 +260,7 @@ TEST_F(RenderViewHostManagerTest, FilterMessagesWhileSwappedOut) {
 
   // Send an update title message and make sure it works.
   const string16 ntp_title = ASCIIToUTF16("NTP Title");
-  WebKit::WebTextDirection direction = WebKit::WebTextDirectionLeftToRight;
+  blink::WebTextDirection direction = blink::WebTextDirectionLeftToRight;
   EXPECT_TRUE(ntp_rvh->OnMessageReceived(
       ViewHostMsg_UpdateTitle(rvh()->GetRoutingID(), 0, ntp_title, direction)));
   EXPECT_EQ(ntp_title, contents()->GetTitle());
@@ -624,7 +624,7 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
   const GURL kUrl2("http://www.google.com/foo");
   NavigationEntryImpl entry2(
       NULL /* instance */, -1 /* page_id */, kUrl2,
-      Referrer(kUrl1, WebKit::WebReferrerPolicyDefault),
+      Referrer(kUrl1, blink::WebReferrerPolicyDefault),
       string16() /* title */, PAGE_TRANSITION_LINK,
       true /* is_renderer_init */);
   host = manager.Navigate(entry2);
@@ -644,7 +644,7 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
   const GURL kUrl3("http://webkit.org/");
   NavigationEntryImpl entry3(
       NULL /* instance */, -1 /* page_id */, kUrl3,
-      Referrer(kUrl2, WebKit::WebReferrerPolicyDefault),
+      Referrer(kUrl2, blink::WebReferrerPolicyDefault),
       string16() /* title */, PAGE_TRANSITION_LINK,
       false /* is_renderer_init */);
   host = manager.Navigate(entry3);
@@ -1217,7 +1217,7 @@ TEST_F(RenderViewHostManagerTest, NoSwapOnGuestNavigations) {
   const GURL kUrl2("http://www.chromium.org");
   NavigationEntryImpl entry2(
       NULL /* instance */, -1 /* page_id */, kUrl2,
-      Referrer(kUrl1, WebKit::WebReferrerPolicyDefault),
+      Referrer(kUrl1, blink::WebReferrerPolicyDefault),
       string16() /* title */, PAGE_TRANSITION_LINK,
       true /* is_renderer_init */);
   host = manager.Navigate(entry2);

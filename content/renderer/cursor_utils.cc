@@ -8,7 +8,7 @@
 #include "third_party/WebKit/public/web/WebCursorInfo.h"
 #include "webkit/common/cursors/webcursor.h"
 
-using WebKit::WebCursorInfo;
+using blink::WebCursorInfo;
 
 namespace content {
 

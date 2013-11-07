@@ -13,10 +13,10 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/keycodes/keyboard_code_conversion_gtk.h"
 
-using WebKit::WebInputEvent;
-using WebKit::WebMouseEvent;
-using WebKit::WebMouseWheelEvent;
-using WebKit::WebKeyboardEvent;
+using blink::WebInputEvent;
+using blink::WebMouseEvent;
+using blink::WebMouseWheelEvent;
+using blink::WebKeyboardEvent;
 
 namespace {
 
@@ -53,7 +53,7 @@ void ResetClickCountState() {
   last_click_time = 0;
   last_click_x = 0;
   last_click_y = 0;
-  last_click_button = WebKit::WebMouseEvent::ButtonNone;
+  last_click_button = blink::WebMouseEvent::ButtonNone;
 }
 
 bool IsKeyPadKeyval(guint keyval) {
@@ -395,7 +395,7 @@ WebKeyboardEvent WebKeyboardEventBuilder::Build(wchar_t character,
   // function creates a WebInputEvent::Char event without using a
   // GdkEventKey object.
   WebKeyboardEvent result;
-  result.type = WebKit::WebInputEvent::Char;
+  result.type = blink::WebInputEvent::Char;
   result.timeStampSeconds = timeStampSeconds;
   result.modifiers = GdkStateToWebEventModifiers(state);
   result.windowsKeyCode = character;

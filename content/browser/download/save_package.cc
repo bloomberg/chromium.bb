@@ -46,7 +46,7 @@
 #include "third_party/WebKit/public/web/WebPageSerializerClient.h"
 
 using base::Time;
-using WebKit::WebPageSerializerClient;
+using blink::WebPageSerializerClient;
 
 namespace content {
 namespace {

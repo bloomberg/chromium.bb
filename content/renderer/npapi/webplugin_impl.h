@@ -29,7 +29,7 @@ namespace cc {
 class IOSurfaceLayer;
 }
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
 class WebLayer;
 class WebPluginContainer;
@@ -51,50 +51,50 @@ class WebPluginDelegate;
 // after changing out of WebCore types, to a delegate.  The delegate may
 // be in a different process.
 class WebPluginImpl : public WebPlugin,
-                      public WebKit::WebPlugin,
-                      public WebKit::WebURLLoaderClient {
+                      public blink::WebPlugin,
+                      public blink::WebURLLoaderClient {
  public:
   WebPluginImpl(
-      WebKit::WebFrame* frame,
-      const WebKit::WebPluginParams& params,
+      blink::WebFrame* frame,
+      const blink::WebPluginParams& params,
       const base::FilePath& file_path,
       const base::WeakPtr<RenderViewImpl>& render_view);
   virtual ~WebPluginImpl();
 
   // Helper function for sorting post data.
-  CONTENT_EXPORT static bool SetPostData(WebKit::WebURLRequest* request,
+  CONTENT_EXPORT static bool SetPostData(blink::WebURLRequest* request,
                                          const char* buf,
                                          uint32 length);
 
-  WebKit::WebFrame* webframe() { return webframe_; }
+  blink::WebFrame* webframe() { return webframe_; }
   WebPluginDelegate* delegate() { return delegate_; }
 
-  // WebKit::WebPlugin methods:
+  // blink::WebPlugin methods:
   virtual bool initialize(
-      WebKit::WebPluginContainer* container);
+      blink::WebPluginContainer* container);
   virtual void destroy();
   virtual NPObject* scriptableObject();
   virtual struct _NPP* pluginNPP();
-  virtual bool getFormValue(WebKit::WebString& value);
+  virtual bool getFormValue(blink::WebString& value);
   virtual void paint(
-      WebKit::WebCanvas* canvas, const WebKit::WebRect& paint_rect);
+      blink::WebCanvas* canvas, const blink::WebRect& paint_rect);
   virtual void updateGeometry(
-      const WebKit::WebRect& frame_rect, const WebKit::WebRect& clip_rect,
-      const WebKit::WebVector<WebKit::WebRect>& cut_outs, bool is_visible);
+      const blink::WebRect& frame_rect, const blink::WebRect& clip_rect,
+      const blink::WebVector<blink::WebRect>& cut_outs, bool is_visible);
   virtual void updateFocus(bool focused);
   virtual void updateVisibility(bool visible);
   virtual bool acceptsInputEvents();
   virtual bool handleInputEvent(
-      const WebKit::WebInputEvent& event, WebKit::WebCursorInfo& cursor_info);
-  virtual void didReceiveResponse(const WebKit::WebURLResponse& response);
+      const blink::WebInputEvent& event, blink::WebCursorInfo& cursor_info);
+  virtual void didReceiveResponse(const blink::WebURLResponse& response);
   virtual void didReceiveData(const char* data, int data_length);
   virtual void didFinishLoading();
-  virtual void didFailLoading(const WebKit::WebURLError& error);
+  virtual void didFailLoading(const blink::WebURLError& error);
   virtual void didFinishLoadingFrameRequest(
-      const WebKit::WebURL& url, void* notify_data);
+      const blink::WebURL& url, void* notify_data);
   virtual void didFailLoadingFrameRequest(
-      const WebKit::WebURL& url, void* notify_data,
-      const WebKit::WebURLError& error);
+      const blink::WebURL& url, void* notify_data,
+      const blink::WebURLError& error);
   virtual bool isPlaceholder() OVERRIDE;
 
   // WebPlugin implementation:
@@ -200,31 +200,31 @@ class WebPluginImpl : public WebPlugin,
   gfx::Rect GetWindowClipRect(const gfx::Rect& rect);
 
   // Sets the actual Widget for the plugin.
-  void SetContainer(WebKit::WebPluginContainer* container);
+  void SetContainer(blink::WebPluginContainer* container);
 
   // Destroys the plugin instance.
   // The response_handle_to_ignore parameter if not NULL indicates the
   // resource handle to be left valid during plugin shutdown.
-  void TearDownPluginInstance(WebKit::WebURLLoader* loader_to_ignore);
+  void TearDownPluginInstance(blink::WebURLLoader* loader_to_ignore);
 
   // WebURLLoaderClient implementation.  We implement this interface in the
   // renderer process, and then use the simple WebPluginResourceClient interface
   // to relay the callbacks to the plugin.
-  virtual void willSendRequest(WebKit::WebURLLoader* loader,
-                               WebKit::WebURLRequest& request,
-                               const WebKit::WebURLResponse& response);
-  virtual void didSendData(WebKit::WebURLLoader* loader,
+  virtual void willSendRequest(blink::WebURLLoader* loader,
+                               blink::WebURLRequest& request,
+                               const blink::WebURLResponse& response);
+  virtual void didSendData(blink::WebURLLoader* loader,
                            unsigned long long bytes_sent,
                            unsigned long long total_bytes_to_be_sent);
-  virtual void didReceiveResponse(WebKit::WebURLLoader* loader,
-                                  const WebKit::WebURLResponse& response);
+  virtual void didReceiveResponse(blink::WebURLLoader* loader,
+                                  const blink::WebURLResponse& response);
 
-  virtual void didReceiveData(WebKit::WebURLLoader* loader, const char *buffer,
+  virtual void didReceiveData(blink::WebURLLoader* loader, const char *buffer,
                               int data_length, int encoded_data_length);
-  virtual void didFinishLoading(WebKit::WebURLLoader* loader,
+  virtual void didFinishLoading(blink::WebURLLoader* loader,
                                 double finishTime);
-  virtual void didFail(WebKit::WebURLLoader* loader,
-                       const WebKit::WebURLError& error);
+  virtual void didFail(blink::WebURLLoader* loader,
+                       const blink::WebURLError& error);
 
   // Helper function to remove the stored information about a resource
   // request given its index in m_clients.
@@ -232,13 +232,13 @@ class WebPluginImpl : public WebPlugin,
 
   // Helper function to remove the stored information about a resource
   // request given a handle.
-  void RemoveClient(WebKit::WebURLLoader* loader);
+  void RemoveClient(blink::WebURLLoader* loader);
 
   // Handles HTTP multipart responses, i.e. responses received with a HTTP
   // status code of 206.
   // Returns false if response is not multipart (may be if we requested
   // single range).
-  bool HandleHttpMultipartResponse(const WebKit::WebURLResponse& response,
+  bool HandleHttpMultipartResponse(const blink::WebURLResponse& response,
                                    WebPluginResourceClient* client);
 
   void HandleURLRequestInternal(const char* url,
@@ -254,7 +254,7 @@ class WebPluginImpl : public WebPlugin,
 
   // Tears down the existing plugin instance and creates a new plugin instance
   // to handle the response identified by the loader parameter.
-  bool ReinitializePluginForResponse(WebKit::WebURLLoader* loader);
+  bool ReinitializePluginForResponse(blink::WebURLLoader* loader);
 
   // Delayed task for downloading the plugin source URL.
   void OnDownloadPluginSrcUrl();
@@ -262,11 +262,11 @@ class WebPluginImpl : public WebPlugin,
   struct ClientInfo;
 
   // Helper functions
-  WebPluginResourceClient* GetClientFromLoader(WebKit::WebURLLoader* loader);
-  ClientInfo* GetClientInfoFromLoader(WebKit::WebURLLoader* loader);
+  WebPluginResourceClient* GetClientFromLoader(blink::WebURLLoader* loader);
+  ClientInfo* GetClientInfoFromLoader(blink::WebURLLoader* loader);
 
   // Helper function to set the referrer on the request passed in.
-  void SetReferrer(WebKit::WebURLRequest* request, Referrer referrer_flag);
+  void SetReferrer(blink::WebURLRequest* request, Referrer referrer_flag);
 
   // Check for invalid chars like @, ;, \ before the first / (in path).
   bool IsValidUrl(const GURL& url, Referrer referrer_flag);
@@ -283,16 +283,16 @@ class WebPluginImpl : public WebPlugin,
   int32 next_io_surface_height_;
   uint32 next_io_surface_id_;
   scoped_refptr<cc::IOSurfaceLayer> io_surface_layer_;
-  scoped_ptr<WebKit::WebLayer> web_layer_;
+  scoped_ptr<blink::WebLayer> web_layer_;
 #endif
   bool accepts_input_events_;
   base::WeakPtr<RenderViewImpl> render_view_;
-  WebKit::WebFrame* webframe_;
+  blink::WebFrame* webframe_;
 
   WebPluginDelegate* delegate_;
 
   // This is just a weak reference.
-  WebKit::WebPluginContainer* container_;
+  blink::WebPluginContainer* container_;
 
   // Unique identifier for this plugin, used to track script objects.
   struct _NPP* npp_;

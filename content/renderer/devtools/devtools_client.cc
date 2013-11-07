@@ -18,8 +18,8 @@
 #include "ui/base/ui_base_switches.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
 
-using WebKit::WebDevToolsFrontend;
-using WebKit::WebString;
+using blink::WebDevToolsFrontend;
+using blink::WebString;
 
 namespace content {
 

@@ -28,29 +28,29 @@ class TestResponseGenerator {
   TestResponseGenerator(const GURL& gurl, int64 content_length);
 
   // Generates a WebURLError object.
-  WebKit::WebURLError GenerateError();
+  blink::WebURLError GenerateError();
 
   // Generates a regular HTTP 200 response.
-  WebKit::WebURLResponse Generate200();
+  blink::WebURLResponse Generate200();
 
   // Generates a regular HTTP 206 response starting from |first_byte_offset|
   // until the end of the resource.
-  WebKit::WebURLResponse Generate206(int64 first_byte_offset);
+  blink::WebURLResponse Generate206(int64 first_byte_offset);
 
   // Generates a custom HTTP 206 response starting from |first_byte_offset|
   // until the end of the resource. You can tweak what gets included in the
   // headers via |flags|.
-  WebKit::WebURLResponse Generate206(int64 first_byte_offset, Flags flags);
+  blink::WebURLResponse Generate206(int64 first_byte_offset, Flags flags);
 
   // Generates a regular HTTP 404 response.
-  WebKit::WebURLResponse Generate404();
+  blink::WebURLResponse Generate404();
 
   // Generates a file:// response starting from |first_byte_offset| until the
   // end of the resource.
   //
   // If |first_byte_offset| is negative a response containing no content length
   // will be returned.
-  WebKit::WebURLResponse GenerateFileResponse(int64 first_byte_offset);
+  blink::WebURLResponse GenerateFileResponse(int64 first_byte_offset);
 
   int64 content_length() { return content_length_; }
 

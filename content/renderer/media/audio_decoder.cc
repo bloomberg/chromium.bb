@@ -19,13 +19,13 @@ using media::AudioBus;
 using media::AudioFileReader;
 using media::InMemoryUrlProtocol;
 using std::vector;
-using WebKit::WebAudioBus;
+using blink::WebAudioBus;
 
 namespace content {
 
 // Decode in-memory audio file data.
 bool DecodeAudioFileData(
-    WebKit::WebAudioBus* destination_bus,
+    blink::WebAudioBus* destination_bus,
     const char* data, size_t data_size, double sample_rate) {
   DCHECK(destination_bus);
   if (!destination_bus)

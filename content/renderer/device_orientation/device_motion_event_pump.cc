@@ -22,7 +22,7 @@ DeviceMotionEventPump::~DeviceMotionEventPump() {
 }
 
 bool DeviceMotionEventPump::SetListener(
-    WebKit::WebDeviceMotionListener* listener) {
+    blink::WebDeviceMotionListener* listener) {
   listener_ = listener;
   return listener_ ? RequestStart() : Stop();
 }
@@ -39,7 +39,7 @@ bool DeviceMotionEventPump::OnControlMessageReceived(
 
 void DeviceMotionEventPump::FireEvent() {
   DCHECK(listener_);
-  WebKit::WebDeviceMotionData data;
+  blink::WebDeviceMotionData data;
   if (reader_->GetLatestData(&data) && data.allAvailableSensorsAreActive)
     listener_->didChangeDeviceMotion(data);
 }

@@ -13,7 +13,7 @@
 #include "third_party/WebKit/public/platform/WebIDBKeyPath.h"
 #include "third_party/WebKit/public/platform/WebIDBKeyRange.h"
 
-namespace WebKit {
+namespace blink {
 class WebIDBKey;
 }
 
@@ -21,27 +21,27 @@ namespace content {
 
 class CONTENT_EXPORT IndexedDBKeyBuilder {
  public:
-  static IndexedDBKey Build(const WebKit::WebIDBKey& key);
+  static IndexedDBKey Build(const blink::WebIDBKey& key);
 };
 
 class CONTENT_EXPORT WebIDBKeyBuilder {
  public:
-  static WebKit::WebIDBKey Build(const content::IndexedDBKey& key);
+  static blink::WebIDBKey Build(const content::IndexedDBKey& key);
 };
 
 class CONTENT_EXPORT IndexedDBKeyRangeBuilder {
  public:
-  static IndexedDBKeyRange Build(const WebKit::WebIDBKeyRange& key_range);
+  static IndexedDBKeyRange Build(const blink::WebIDBKeyRange& key_range);
 };
 
 class CONTENT_EXPORT IndexedDBKeyPathBuilder {
  public:
-  static IndexedDBKeyPath Build(const WebKit::WebIDBKeyPath& key_path);
+  static IndexedDBKeyPath Build(const blink::WebIDBKeyPath& key_path);
 };
 
 class CONTENT_EXPORT WebIDBKeyPathBuilder {
  public:
-  static WebKit::WebIDBKeyPath Build(const IndexedDBKeyPath& key_path);
+  static blink::WebIDBKeyPath Build(const IndexedDBKeyPath& key_path);
 };
 
 }  // namespace content

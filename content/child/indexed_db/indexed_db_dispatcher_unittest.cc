@@ -13,12 +13,12 @@
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebIDBCallbacks.h"
 
-using WebKit::WebData;
-using WebKit::WebIDBCallbacks;
-using WebKit::WebIDBDatabase;
-using WebKit::WebIDBDatabaseError;
-using WebKit::WebIDBKey;
-using WebKit::WebVector;
+using blink::WebData;
+using blink::WebIDBCallbacks;
+using blink::WebIDBDatabase;
+using blink::WebIDBDatabaseError;
+using blink::WebIDBKey;
+using blink::WebVector;
 
 namespace content {
 namespace {
@@ -55,7 +55,7 @@ TEST(IndexedDBDispatcherTest, ValueSizeTest) {
 
   MockCallbacks callbacks;
   IndexedDBDispatcher dispatcher(thread_safe_sender.get());
-  IndexedDBKey key(0, WebKit::WebIDBKeyTypeNumber);
+  IndexedDBKey key(0, blink::WebIDBKeyTypeNumber);
   dispatcher.RequestIDBDatabasePut(ipc_dummy_id,
                                    transaction_id,
                                    object_store_id,

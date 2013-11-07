@@ -13,7 +13,7 @@
 #include "content/child/npapi/plugin_instance.h"
 #endif
 
-using WebKit::WebBindings;
+using blink::WebBindings;
 
 namespace content {
 

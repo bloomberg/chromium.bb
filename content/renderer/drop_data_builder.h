@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_DROP_DATA_BUILDER_H_
 #define CONTENT_RENDERER_DROP_DATA_BUILDER_H_
 
-namespace WebKit {
+namespace blink {
 class WebDragData;
 }
 
@@ -14,7 +14,7 @@ struct DropData;
 
 class DropDataBuilder {
  public:
-  static DropData Build(const WebKit::WebDragData& data);
+  static DropData Build(const blink::WebDragData& data);
 };
 
 }  // namespace content

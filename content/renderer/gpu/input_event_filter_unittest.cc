@@ -14,8 +14,8 @@
 #include "ipc/ipc_test_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using WebKit::WebInputEvent;
-using WebKit::WebMouseEvent;
+using blink::WebInputEvent;
+using blink::WebMouseEvent;
 
 namespace content {
 namespace {

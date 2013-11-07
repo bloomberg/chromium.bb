@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "third_party/WebKit/public/web/WebAudioSourceProviderClient.h"
 
-using WebKit::WebVector;
+using blink::WebVector;
 
 namespace content {
 
@@ -57,7 +57,7 @@ WebAudioSourceProviderImpl::WebAudioSourceProviderImpl(
 WebAudioSourceProviderImpl::~WebAudioSourceProviderImpl() {}
 
 void WebAudioSourceProviderImpl::setClient(
-    WebKit::WebAudioSourceProviderClient* client) {
+    blink::WebAudioSourceProviderClient* client) {
   base::AutoLock auto_lock(sink_lock_);
   if (client && client != client_) {
     // Detach the audio renderer from normal playback.

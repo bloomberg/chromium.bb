@@ -199,14 +199,14 @@ void WebContentsViewAndroid::ShowPopupMenu(
 
 void WebContentsViewAndroid::StartDragging(
     const DropData& drop_data,
-    WebKit::WebDragOperationsMask allowed_ops,
+    blink::WebDragOperationsMask allowed_ops,
     const gfx::ImageSkia& image,
     const gfx::Vector2d& image_offset,
     const DragEventSourceInfo& event_info) {
   NOTIMPLEMENTED();
 }
 
-void WebContentsViewAndroid::UpdateDragCursor(WebKit::WebDragOperation op) {
+void WebContentsViewAndroid::UpdateDragCursor(blink::WebDragOperation op) {
   NOTIMPLEMENTED();
 }
 

@@ -21,7 +21,7 @@ class MockLockTarget : public MouseLockDispatcher::LockTarget {
    MOCK_METHOD1(OnLockMouseACK, void(bool));
    MOCK_METHOD0(OnMouseLockLost, void());
    MOCK_METHOD1(HandleMouseLockedInputEvent,
-                bool(const WebKit::WebMouseEvent&));
+                bool(const blink::WebMouseEvent&));
 };
 
 // MouseLockDispatcher is a RenderViewObserver, and we test it by creating a
@@ -90,7 +90,7 @@ TEST_F(MouseLockDispatcherTest, BasicMockLockTarget) {
   EXPECT_TRUE(dispatcher()->IsMouseLockedTo(target_));
 
   // Receive mouse event.
-  dispatcher()->WillHandleMouseEvent(WebKit::WebMouseEvent());
+  dispatcher()->WillHandleMouseEvent(blink::WebMouseEvent());
 
   // Unlock.
   dispatcher()->UnlockMouse(target_);
@@ -120,7 +120,7 @@ TEST_F(MouseLockDispatcherTest, DeleteAndUnlock) {
   dispatcher()->OnLockTargetDestroyed(target_);
   delete target_;
   target_ = NULL;
-  dispatcher()->WillHandleMouseEvent(WebKit::WebMouseEvent());
+  dispatcher()->WillHandleMouseEvent(blink::WebMouseEvent());
   view()->OnMessageReceived(ViewMsg_MouseLockLost(route_id_));
   EXPECT_FALSE(dispatcher()->IsMouseLockedTo(target_));
 }
@@ -171,7 +171,7 @@ TEST_F(MouseLockDispatcherTest, MouseEventsNotReceived) {
   EXPECT_CALL(*target_, HandleMouseLockedInputEvent(_)).Times(0);
 
   // (Don't) receive mouse event.
-  dispatcher()->WillHandleMouseEvent(WebKit::WebMouseEvent());
+  dispatcher()->WillHandleMouseEvent(blink::WebMouseEvent());
 
   // Lock.
   EXPECT_TRUE(dispatcher()->LockMouse(target_));
@@ -179,7 +179,7 @@ TEST_F(MouseLockDispatcherTest, MouseEventsNotReceived) {
   EXPECT_TRUE(dispatcher()->IsMouseLockedTo(target_));
 
   // Receive mouse event.
-  dispatcher()->WillHandleMouseEvent(WebKit::WebMouseEvent());
+  dispatcher()->WillHandleMouseEvent(blink::WebMouseEvent());
 
   // Unlock.
   dispatcher()->UnlockMouse(target_);
@@ -187,7 +187,7 @@ TEST_F(MouseLockDispatcherTest, MouseEventsNotReceived) {
   EXPECT_FALSE(dispatcher()->IsMouseLockedTo(target_));
 
   // (Don't) receive mouse event.
-  dispatcher()->WillHandleMouseEvent(WebKit::WebMouseEvent());
+  dispatcher()->WillHandleMouseEvent(blink::WebMouseEvent());
 }
 
 // Test multiple targets
@@ -216,7 +216,7 @@ TEST_F(MouseLockDispatcherTest, MultipleTargets) {
   EXPECT_FALSE(dispatcher()->LockMouse(alternate_target_));
 
   // Receive mouse event to only one target.
-  dispatcher()->WillHandleMouseEvent(WebKit::WebMouseEvent());
+  dispatcher()->WillHandleMouseEvent(blink::WebMouseEvent());
 
   // Unlock alternate target has no effect.
   dispatcher()->UnlockMouse(alternate_target_);

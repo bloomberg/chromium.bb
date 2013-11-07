@@ -7,17 +7,17 @@
 #include "base/logging.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 
-using WebKit::WebIDBKey;
-using WebKit::WebIDBKeyRange;
-using WebKit::WebIDBKeyTypeArray;
-using WebKit::WebIDBKeyTypeDate;
-using WebKit::WebIDBKeyTypeInvalid;
-using WebKit::WebIDBKeyTypeMin;
-using WebKit::WebIDBKeyTypeNull;
-using WebKit::WebIDBKeyTypeNumber;
-using WebKit::WebIDBKeyTypeString;
-using WebKit::WebVector;
-using WebKit::WebString;
+using blink::WebIDBKey;
+using blink::WebIDBKeyRange;
+using blink::WebIDBKeyTypeArray;
+using blink::WebIDBKeyTypeDate;
+using blink::WebIDBKeyTypeInvalid;
+using blink::WebIDBKeyTypeMin;
+using blink::WebIDBKeyTypeNull;
+using blink::WebIDBKeyTypeNumber;
+using blink::WebIDBKeyTypeString;
+using blink::WebVector;
+using blink::WebString;
 
 static content::IndexedDBKey::KeyArray CopyKeyArray(const WebIDBKey& other) {
   content::IndexedDBKey::KeyArray result;
@@ -40,7 +40,7 @@ static std::vector<string16> CopyArray(
 
 namespace content {
 
-IndexedDBKey IndexedDBKeyBuilder::Build(const WebKit::WebIDBKey& key) {
+IndexedDBKey IndexedDBKeyBuilder::Build(const blink::WebIDBKey& key) {
   switch (key.keyType()) {
     case WebIDBKeyTypeArray:
       return IndexedDBKey(CopyKeyArray(key));
@@ -66,7 +66,7 @@ WebIDBKey WebIDBKeyBuilder::Build(const IndexedDBKey& key) {
   switch (key.type()) {
     case WebIDBKeyTypeArray: {
       const IndexedDBKey::KeyArray& array = key.array();
-      WebKit::WebVector<WebIDBKey> web_array(array.size());
+      blink::WebVector<WebIDBKey> web_array(array.size());
       for (size_t i = 0; i < array.size(); ++i) {
         web_array[i] = Build(array[i]);
       }
@@ -101,31 +101,31 @@ IndexedDBKeyRange IndexedDBKeyRangeBuilder::Build(
 }
 
 IndexedDBKeyPath IndexedDBKeyPathBuilder::Build(
-    const WebKit::WebIDBKeyPath& key_path) {
+    const blink::WebIDBKeyPath& key_path) {
   switch (key_path.keyPathType()) {
-    case WebKit::WebIDBKeyPathTypeString:
+    case blink::WebIDBKeyPathTypeString:
       return IndexedDBKeyPath(key_path.string());
-    case WebKit::WebIDBKeyPathTypeArray:
+    case blink::WebIDBKeyPathTypeArray:
       return IndexedDBKeyPath(CopyArray(key_path.array()));
-    case WebKit::WebIDBKeyPathTypeNull:
+    case blink::WebIDBKeyPathTypeNull:
       return IndexedDBKeyPath();
   }
   NOTREACHED();
   return IndexedDBKeyPath();
 }
 
-WebKit::WebIDBKeyPath WebIDBKeyPathBuilder::Build(
+blink::WebIDBKeyPath WebIDBKeyPathBuilder::Build(
     const IndexedDBKeyPath& key_path) {
   switch (key_path.type()) {
-    case WebKit::WebIDBKeyPathTypeString:
-      return WebKit::WebIDBKeyPath::create(WebString(key_path.string()));
-    case WebKit::WebIDBKeyPathTypeArray:
-      return WebKit::WebIDBKeyPath::create(CopyArray(key_path.array()));
-    case WebKit::WebIDBKeyPathTypeNull:
-      return WebKit::WebIDBKeyPath::createNull();
+    case blink::WebIDBKeyPathTypeString:
+      return blink::WebIDBKeyPath::create(WebString(key_path.string()));
+    case blink::WebIDBKeyPathTypeArray:
+      return blink::WebIDBKeyPath::create(CopyArray(key_path.array()));
+    case blink::WebIDBKeyPathTypeNull:
+      return blink::WebIDBKeyPath::createNull();
   }
   NOTREACHED();
-  return WebKit::WebIDBKeyPath::createNull();
+  return blink::WebIDBKeyPath::createNull();
 }
 
 }  // namespace content

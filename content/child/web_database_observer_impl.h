@@ -10,46 +10,46 @@
 #include "third_party/WebKit/public/web/WebDatabaseObserver.h"
 #include "webkit/common/database/database_connections.h"
 
-namespace WebKit {
+namespace blink {
 class WebString;
 }
 
 namespace content {
 
-class WebDatabaseObserverImpl : public WebKit::WebDatabaseObserver {
+class WebDatabaseObserverImpl : public blink::WebDatabaseObserver {
  public:
   explicit WebDatabaseObserverImpl(IPC::SyncMessageFilter* sender);
   virtual ~WebDatabaseObserverImpl();
 
-  virtual void databaseOpened(const WebKit::WebDatabase& database) OVERRIDE;
-  virtual void databaseModified(const WebKit::WebDatabase& database) OVERRIDE;
-  virtual void databaseClosed(const WebKit::WebString& origin_identifier,
-                              const WebKit::WebString& database_name);
+  virtual void databaseOpened(const blink::WebDatabase& database) OVERRIDE;
+  virtual void databaseModified(const blink::WebDatabase& database) OVERRIDE;
+  virtual void databaseClosed(const blink::WebString& origin_identifier,
+                              const blink::WebString& database_name);
   // TODO(jochen): Remove this version once the blink side has rolled.
-  virtual void databaseClosed(const WebKit::WebDatabase& database);
+  virtual void databaseClosed(const blink::WebDatabase& database);
 
   virtual void reportOpenDatabaseResult(
-      const WebKit::WebDatabase& database, int callsite,
+      const blink::WebDatabase& database, int callsite,
       int websql_error, int sqlite_error) OVERRIDE;
   virtual void reportChangeVersionResult(
-      const WebKit::WebDatabase& database, int callsite,
+      const blink::WebDatabase& database, int callsite,
       int websql_error, int sqlite_error) OVERRIDE;
   virtual void reportStartTransactionResult(
-      const WebKit::WebDatabase& database, int callsite,
+      const blink::WebDatabase& database, int callsite,
       int websql_error, int sqlite_error) OVERRIDE;
   virtual void reportCommitTransactionResult(
-      const WebKit::WebDatabase& database, int callsite,
+      const blink::WebDatabase& database, int callsite,
       int websql_error, int sqlite_error) OVERRIDE;
   virtual void reportExecuteStatementResult(
-      const WebKit::WebDatabase& database, int callsite,
+      const blink::WebDatabase& database, int callsite,
       int websql_error, int sqlite_error) OVERRIDE;
   virtual void reportVacuumDatabaseResult(
-      const WebKit::WebDatabase& database, int sqlite_error) OVERRIDE;
+      const blink::WebDatabase& database, int sqlite_error) OVERRIDE;
 
   void WaitForAllDatabasesToClose();
 
  private:
-  void HandleSqliteError(const WebKit::WebDatabase& database, int error);
+  void HandleSqliteError(const blink::WebDatabase& database, int error);
 
   scoped_refptr<IPC::SyncMessageFilter> sender_;
   scoped_refptr<webkit_database::DatabaseConnectionsWrapper> open_connections_;

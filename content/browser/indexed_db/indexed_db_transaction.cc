@@ -114,7 +114,7 @@ void IndexedDBTransaction::EnsureTasksRunning() {
 }
 
 void IndexedDBTransaction::Abort() {
-  Abort(IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
+  Abort(IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
                                "Internal error (unknown cause)"));
 }
 
@@ -253,7 +253,7 @@ void IndexedDBTransaction::Commit() {
   } else {
     callbacks_->OnAbort(
         id_,
-        IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
+        IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
                                "Internal error committing transaction."));
     database_->TransactionFinishedAndAbortFired(this);
     database_->TransactionCommitFailed();

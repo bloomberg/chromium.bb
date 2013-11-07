@@ -370,7 +370,7 @@ void TestRenderViewHost::SimulateWasShown() {
 
 void TestRenderViewHost::TestOnStartDragging(
     const DropData& drop_data) {
-  WebKit::WebDragOperationsMask drag_operation = WebKit::WebDragOperationEvery;
+  blink::WebDragOperationsMask drag_operation = blink::WebDragOperationEvery;
   DragEventSourceInfo event_info;
   OnStartDragging(drop_data, drag_operation, SkBitmap(), gfx::Vector2d(),
                   event_info);

@@ -11,8 +11,8 @@
 #include "third_party/WebKit/public/web/WebView.h"
 
 using appcache::AppCacheBackend;
-using WebKit::WebApplicationCacheHostClient;
-using WebKit::WebConsoleMessage;
+using blink::WebApplicationCacheHostClient;
+using blink::WebConsoleMessage;
 
 namespace content {
 
@@ -34,10 +34,10 @@ void RendererWebApplicationCacheHostImpl::OnLogMessage(
       !render_view->webview()->mainFrame())
     return;
 
-  WebKit::WebFrame* frame = render_view->webview()->mainFrame();
+  blink::WebFrame* frame = render_view->webview()->mainFrame();
   frame->addMessageToConsole(WebConsoleMessage(
         static_cast<WebConsoleMessage::Level>(log_level),
-        WebKit::WebString::fromUTF8(message.c_str())));
+        blink::WebString::fromUTF8(message.c_str())));
 }
 
 void RendererWebApplicationCacheHostImpl::OnContentBlocked(

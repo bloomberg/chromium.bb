@@ -23,22 +23,22 @@ namespace content {
 class ThreadSafeSender;
 
 class CONTENT_EXPORT RendererWebIDBCursorImpl
-    : NON_EXPORTED_BASE(public WebKit::WebIDBCursor) {
+    : NON_EXPORTED_BASE(public blink::WebIDBCursor) {
  public:
   RendererWebIDBCursorImpl(int32 ipc_cursor_id,
                            ThreadSafeSender* thread_safe_sender);
   virtual ~RendererWebIDBCursorImpl();
 
-  virtual void advance(unsigned long count, WebKit::WebIDBCallbacks* callback);
-  virtual void continueFunction(const WebKit::WebIDBKey& key,
-                                WebKit::WebIDBCallbacks* callback);
+  virtual void advance(unsigned long count, blink::WebIDBCallbacks* callback);
+  virtual void continueFunction(const blink::WebIDBKey& key,
+                                blink::WebIDBCallbacks* callback);
   virtual void postSuccessHandlerCallback();
 
   void SetPrefetchData(const std::vector<IndexedDBKey>& keys,
                        const std::vector<IndexedDBKey>& primary_keys,
-                       const std::vector<WebKit::WebData>& values);
+                       const std::vector<blink::WebData>& values);
 
-  void CachedContinue(WebKit::WebIDBCallbacks* callbacks);
+  void CachedContinue(blink::WebIDBCallbacks* callbacks);
   void ResetPrefetchCache();
 
  private:
@@ -49,7 +49,7 @@ class CONTENT_EXPORT RendererWebIDBCursorImpl
   // Prefetch cache.
   std::deque<IndexedDBKey> prefetch_keys_;
   std::deque<IndexedDBKey> prefetch_primary_keys_;
-  std::deque<WebKit::WebData> prefetch_values_;
+  std::deque<blink::WebData> prefetch_values_;
 
   // Number of continue calls that would qualify for a pre-fetch.
   int continue_count_;

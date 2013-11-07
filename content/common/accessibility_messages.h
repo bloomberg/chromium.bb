@@ -21,8 +21,8 @@
 
 #define IPC_MESSAGE_START AccessibilityMsgStart
 
-IPC_ENUM_TRAITS(WebKit::WebAXEvent)
-IPC_ENUM_TRAITS(WebKit::WebAXRole)
+IPC_ENUM_TRAITS(blink::WebAXEvent)
+IPC_ENUM_TRAITS(blink::WebAXRole)
 
 IPC_ENUM_TRAITS(content::AccessibilityNodeData::BoolAttribute)
 IPC_ENUM_TRAITS(content::AccessibilityNodeData::FloatAttribute)
@@ -50,7 +50,7 @@ IPC_STRUCT_BEGIN(AccessibilityHostMsg_EventParams)
   IPC_STRUCT_MEMBER(std::vector<content::AccessibilityNodeData>, nodes)
 
   // Type of event.
-  IPC_STRUCT_MEMBER(WebKit::WebAXEvent, event_type)
+  IPC_STRUCT_MEMBER(blink::WebAXEvent, event_type)
 
   // ID of the node that the event applies to.
   IPC_STRUCT_MEMBER(int, id)

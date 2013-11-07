@@ -38,8 +38,8 @@
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
-using WebKit::WebInputEvent;
-using WebKit::WebMouseEvent;
+using blink::WebInputEvent;
+using blink::WebMouseEvent;
 using content::BrowserPluginEmbedder;
 using content::BrowserPluginGuest;
 using content::BrowserPluginHostFactory;
@@ -396,7 +396,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AdvanceFocus) {
   StartBrowserPluginTest(kEmbedderURL, kGuestURL, false, std::string());
 
   SimulateMouseClick(test_embedder()->web_contents(), 0,
-      WebKit::WebMouseEvent::ButtonLeft);
+      blink::WebMouseEvent::ButtonLeft);
   BrowserPluginHostTest::SimulateTabKeyPress(test_embedder()->web_contents());
   // Wait until we focus into the guest.
   test_guest()->WaitForFocus();
@@ -633,9 +633,9 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, MAYBE_AcceptDragEvents) {
       expected_title);
 
   rvh->DragTargetDragEnter(drop_data, gfx::Point(start_x, start_y),
-      gfx::Point(start_x, start_y), WebKit::WebDragOperationEvery, 0);
+      gfx::Point(start_x, start_y), blink::WebDragOperationEvery, 0);
   rvh->DragTargetDragOver(gfx::Point(end_x, end_y), gfx::Point(end_x, end_y),
-      WebKit::WebDragOperationEvery, 0);
+      blink::WebDragOperationEvery, 0);
   rvh->DragTargetDrop(gfx::Point(end_x, end_y), gfx::Point(end_x, end_y), 0);
 
   string16 actual_title = title_watcher.WaitAndGetTitle();

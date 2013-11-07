@@ -15,8 +15,8 @@ namespace content {
 // Convenience methods for converting between web drag operations and the GDK
 // equivalent.
 CONTENT_EXPORT GdkDragAction WebDragOpToGdkDragAction(
-    WebKit::WebDragOperationsMask op);
-CONTENT_EXPORT WebKit::WebDragOperationsMask GdkDragActionToWebDragOp(
+    blink::WebDragOperationsMask op);
+CONTENT_EXPORT blink::WebDragOperationsMask GdkDragActionToWebDragOp(
     GdkDragAction action);
 
 }  // namespace content

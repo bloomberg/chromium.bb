@@ -31,20 +31,20 @@ class GLES2Interface;
 }
 }
 
-using WebKit::WebGLId;
+using blink::WebGLId;
 
-using WebKit::WGC3Dbyte;
-using WebKit::WGC3Dchar;
-using WebKit::WGC3Denum;
-using WebKit::WGC3Dboolean;
-using WebKit::WGC3Dbitfield;
-using WebKit::WGC3Dint;
-using WebKit::WGC3Dsizei;
-using WebKit::WGC3Duint;
-using WebKit::WGC3Dfloat;
-using WebKit::WGC3Dclampf;
-using WebKit::WGC3Dintptr;
-using WebKit::WGC3Dsizeiptr;
+using blink::WGC3Dbyte;
+using blink::WGC3Dchar;
+using blink::WGC3Denum;
+using blink::WGC3Dboolean;
+using blink::WGC3Dbitfield;
+using blink::WGC3Dint;
+using blink::WGC3Dsizei;
+using blink::WGC3Duint;
+using blink::WGC3Dfloat;
+using blink::WGC3Dclampf;
+using blink::WGC3Dintptr;
+using blink::WGC3Dsizeiptr;
 
 namespace content {
 class GpuChannelHost;
@@ -69,7 +69,7 @@ class WebGraphicsContext3DSwapBuffersClient {
 class WebGraphicsContext3DErrorMessageCallback;
 
 class WebGraphicsContext3DCommandBufferImpl
-    : public WebKit::WebGraphicsContext3D {
+    : public blink::WebGraphicsContext3D {
  public:
   enum MappedMemoryReclaimLimit {
     kNoLimit = 0,
@@ -287,7 +287,7 @@ class WebGraphicsContext3DCommandBufferImpl
 
   virtual void getProgramiv(WebGLId program, WGC3Denum pname, WGC3Dint* value);
 
-  virtual WebKit::WebString getProgramInfoLog(WebGLId program);
+  virtual blink::WebString getProgramInfoLog(WebGLId program);
 
   virtual void getRenderbufferParameteriv(WGC3Denum target,
                                           WGC3Denum pname,
@@ -295,15 +295,15 @@ class WebGraphicsContext3DCommandBufferImpl
 
   virtual void getShaderiv(WebGLId shader, WGC3Denum pname, WGC3Dint* value);
 
-  virtual WebKit::WebString getShaderInfoLog(WebGLId shader);
+  virtual blink::WebString getShaderInfoLog(WebGLId shader);
 
   virtual void getShaderPrecisionFormat(WGC3Denum shadertype,
                                         WGC3Denum precisiontype,
                                         WGC3Dint* range,
                                         WGC3Dint* precision);
 
-  virtual WebKit::WebString getShaderSource(WebGLId shader);
-  virtual WebKit::WebString getString(WGC3Denum name);
+  virtual blink::WebString getShaderSource(WebGLId shader);
+  virtual blink::WebString getString(WGC3Denum name);
 
   virtual void getTexParameterfv(WGC3Denum target,
                                  WGC3Denum pname,
@@ -524,7 +524,7 @@ class WebGraphicsContext3DCommandBufferImpl
 
   virtual void rateLimitOffscreenContextCHROMIUM();
 
-  virtual WebKit::WebString getRequestableExtensionsCHROMIUM();
+  virtual blink::WebString getRequestableExtensionsCHROMIUM();
   virtual void requestExtensionCHROMIUM(const char*);
 
   virtual void blitFramebufferCHROMIUM(
@@ -535,7 +535,7 @@ class WebGraphicsContext3DCommandBufferImpl
       WGC3Denum target, WGC3Dsizei samples, WGC3Denum internalformat,
       WGC3Dsizei width, WGC3Dsizei height);
 
-  virtual WebKit::WebString getTranslatedShaderSourceANGLE(WebGLId shader);
+  virtual blink::WebString getTranslatedShaderSourceANGLE(WebGLId shader);
 
   virtual void setContextLostCallback(
       WebGraphicsContext3D::WebGraphicsContextLostCallback* callback);
@@ -733,7 +733,7 @@ class WebGraphicsContext3DCommandBufferImpl
   WebGraphicsContext3D::WebGraphicsSwapBuffersCompleteCallbackCHROMIUM*
       swapbuffers_complete_callback_;
 
-  WebKit::WebGraphicsContext3D::Attributes attributes_;
+  blink::WebGraphicsContext3D::Attributes attributes_;
   gfx::GpuPreference gpu_preference_;
 
   // Errors raised by synthesizeGLError().

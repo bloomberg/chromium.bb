@@ -22,8 +22,8 @@ MockBrowserPluginManager::~MockBrowserPluginManager() {
 
 BrowserPlugin* MockBrowserPluginManager::CreateBrowserPlugin(
     RenderViewImpl* render_view,
-    WebKit::WebFrame* frame,
-    const WebKit::WebPluginParams& params) {
+    blink::WebFrame* frame,
+    const blink::WebPluginParams& params) {
   return new MockBrowserPlugin(render_view, frame, params);
 }
 

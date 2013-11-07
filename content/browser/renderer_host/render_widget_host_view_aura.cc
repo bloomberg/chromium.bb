@@ -88,8 +88,8 @@
 using gfx::RectToSkIRect;
 using gfx::SkIRectToRect;
 
-using WebKit::WebScreenInfo;
-using WebKit::WebTouchEvent;
+using blink::WebScreenInfo;
+using blink::WebTouchEvent;
 
 namespace content {
 
@@ -220,10 +220,10 @@ BOOL CALLBACK DismissOwnedPopups(HWND window, LPARAM arg) {
 }
 #endif
 
-void UpdateWebTouchEventAfterDispatch(WebKit::WebTouchEvent* event,
-                                      WebKit::WebTouchPoint* point) {
-  if (point->state != WebKit::WebTouchPoint::StateReleased &&
-      point->state != WebKit::WebTouchPoint::StateCancelled)
+void UpdateWebTouchEventAfterDispatch(blink::WebTouchEvent* event,
+                                      blink::WebTouchPoint* point) {
+  if (point->state != blink::WebTouchPoint::StateReleased &&
+      point->state != blink::WebTouchPoint::StateCancelled)
     return;
   --event->touchesLength;
   for (unsigned i = point - event->touches;
@@ -2109,15 +2109,15 @@ void RenderWidgetHostViewAura::SetCompositionText(
     return;
 
   // ui::CompositionUnderline should be identical to
-  // WebKit::WebCompositionUnderline, so that we can do reinterpret_cast safely.
+  // blink::WebCompositionUnderline, so that we can do reinterpret_cast safely.
   COMPILE_ASSERT(sizeof(ui::CompositionUnderline) ==
-                 sizeof(WebKit::WebCompositionUnderline),
+                 sizeof(blink::WebCompositionUnderline),
                  ui_CompositionUnderline__WebKit_WebCompositionUnderline_diff);
 
   // TODO(suzhe): convert both renderer_host and renderer to use
   // ui::CompositionText.
-  const std::vector<WebKit::WebCompositionUnderline>& underlines =
-      reinterpret_cast<const std::vector<WebKit::WebCompositionUnderline>&>(
+  const std::vector<blink::WebCompositionUnderline>& underlines =
+      reinterpret_cast<const std::vector<blink::WebCompositionUnderline>&>(
           composition.underlines);
 
   // TODO(suzhe): due to a bug of webkit, we can't use selection range with
@@ -2156,7 +2156,7 @@ void RenderWidgetHostViewAura::InsertChar(char16 ch, int flags) {
 
   if (host_) {
     double now = ui::EventTimeForNow().InSecondsF();
-    // Send a WebKit::WebInputEvent::Char event to |host_|.
+    // Send a blink::WebInputEvent::Char event to |host_|.
     NativeWebKeyboardEvent webkit_event(ui::ET_KEY_PRESSED,
                                         true /* is_char */,
                                         ch,
@@ -2311,8 +2311,8 @@ bool RenderWidgetHostViewAura::ChangeTextDirectionAndLayoutAlignment(
     return false;
   host_->UpdateTextDirection(
       direction == base::i18n::RIGHT_TO_LEFT ?
-      WebKit::WebTextDirectionRightToLeft :
-      WebKit::WebTextDirectionLeftToRight);
+      blink::WebTextDirectionRightToLeft :
+      blink::WebTextDirectionLeftToRight);
   host_->NotifyTextDirection();
   return true;
 }
@@ -2393,7 +2393,7 @@ bool RenderWidgetHostViewAura::ShouldDescendIntoChildForEventHandling(
 }
 
 bool RenderWidgetHostViewAura::CanFocus() {
-  return popup_type_ == WebKit::WebPopupTypeNone;
+  return popup_type_ == blink::WebPopupTypeNone;
 }
 
 void RenderWidgetHostViewAura::OnCaptureLost() {
@@ -2497,7 +2497,7 @@ void RenderWidgetHostViewAura::DidRecreateLayer(ui::Layer *old_layer,
     scoped_refptr<ui::Texture> new_texture;
     if (host_->is_accelerated_compositing_active() &&
         gl_helper && current_surface_.get()) {
-      WebKit::WebGLId texture_id =
+      blink::WebGLId texture_id =
           gl_helper->CopyTexture(current_surface_->PrepareTexture(),
                                  current_surface_->size());
       if (texture_id) {
@@ -2603,7 +2603,7 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
     DCHECK(!cursor_client || !cursor_client->IsCursorVisible());
 
     if (event->type() == ui::ET_MOUSEWHEEL) {
-      WebKit::WebMouseWheelEvent mouse_wheel_event =
+      blink::WebMouseWheelEvent mouse_wheel_event =
           MakeWebMouseWheelEvent(static_cast<ui::MouseWheelEvent*>(event));
       if (mouse_wheel_event.deltaX != 0 || mouse_wheel_event.deltaY != 0)
         host_->ForwardWheelEvent(mouse_wheel_event);
@@ -2621,7 +2621,7 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
       return;
     }
 
-    WebKit::WebMouseEvent mouse_event = MakeWebMouseEvent(event);
+    blink::WebMouseEvent mouse_event = MakeWebMouseEvent(event);
 
     bool is_move_to_center_event = (event->type() == ui::ET_MOUSE_MOVED ||
         event->type() == ui::ET_MOUSE_DRAGGED) &&
@@ -2676,13 +2676,13 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
                         reinterpret_cast<LPARAM>(toplevel_hwnd));
     }
 #endif
-    WebKit::WebMouseWheelEvent mouse_wheel_event =
+    blink::WebMouseWheelEvent mouse_wheel_event =
         MakeWebMouseWheelEvent(static_cast<ui::MouseWheelEvent*>(event));
     if (mouse_wheel_event.deltaX != 0 || mouse_wheel_event.deltaY != 0)
       host_->ForwardWheelEvent(mouse_wheel_event);
   } else if (CanRendererHandleEvent(event) &&
              !(event->flags() & ui::EF_FROM_TOUCH)) {
-    WebKit::WebMouseEvent mouse_event = MakeWebMouseEvent(event);
+    blink::WebMouseEvent mouse_event = MakeWebMouseEvent(event);
     ModifyEventMovementAndCoords(&mouse_event);
     host_->ForwardMouseEvent(mouse_event);
   }
@@ -2722,16 +2722,16 @@ void RenderWidgetHostViewAura::OnScrollEvent(ui::ScrollEvent* event) {
   if (event->type() == ui::ET_SCROLL) {
     if (event->finger_count() != 2)
       return;
-    WebKit::WebGestureEvent gesture_event =
+    blink::WebGestureEvent gesture_event =
         MakeWebGestureEventFlingCancel();
     host_->ForwardGestureEvent(gesture_event);
-    WebKit::WebMouseWheelEvent mouse_wheel_event =
+    blink::WebMouseWheelEvent mouse_wheel_event =
         MakeWebMouseWheelEvent(event);
     host_->ForwardWheelEvent(mouse_wheel_event);
     RecordAction(UserMetricsAction("TrackpadScroll"));
   } else if (event->type() == ui::ET_SCROLL_FLING_START ||
              event->type() == ui::ET_SCROLL_FLING_CANCEL) {
-    WebKit::WebGestureEvent gesture_event =
+    blink::WebGestureEvent gesture_event =
         MakeWebGestureEvent(event);
     host_->ForwardGestureEvent(gesture_event);
     if (event->type() == ui::ET_SCROLL_FLING_START)
@@ -2747,7 +2747,7 @@ void RenderWidgetHostViewAura::OnTouchEvent(ui::TouchEvent* event) {
     return;
 
   // Update the touch event first.
-  WebKit::WebTouchPoint* point = UpdateWebTouchEventFromUIEvent(*event,
+  blink::WebTouchPoint* point = UpdateWebTouchEventFromUIEvent(*event,
                                                                 &touch_event_);
 
   // Forward the touch event only if a touch point was updated, and there's a
@@ -2780,7 +2780,7 @@ void RenderWidgetHostViewAura::OnGestureEvent(ui::GestureEvent* event) {
     return;
 
   RenderViewHostDelegate* delegate = NULL;
-  if (popup_type_ == WebKit::WebPopupTypeNone && !is_fullscreen_)
+  if (popup_type_ == blink::WebPopupTypeNone && !is_fullscreen_)
     delegate = RenderViewHost::From(host_)->GetDelegate();
 
   if (delegate && event->type() == ui::ET_GESTURE_BEGIN &&
@@ -2788,17 +2788,17 @@ void RenderWidgetHostViewAura::OnGestureEvent(ui::GestureEvent* event) {
     delegate->HandleGestureBegin();
   }
 
-  WebKit::WebGestureEvent gesture = MakeWebGestureEvent(event);
+  blink::WebGestureEvent gesture = MakeWebGestureEvent(event);
   if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
     // Webkit does not stop a fling-scroll on tap-down. So explicitly send an
     // event to stop any in-progress flings.
-    WebKit::WebGestureEvent fling_cancel = gesture;
-    fling_cancel.type = WebKit::WebInputEvent::GestureFlingCancel;
-    fling_cancel.sourceDevice = WebKit::WebGestureEvent::Touchscreen;
+    blink::WebGestureEvent fling_cancel = gesture;
+    fling_cancel.type = blink::WebInputEvent::GestureFlingCancel;
+    fling_cancel.sourceDevice = blink::WebGestureEvent::Touchscreen;
     host_->ForwardGestureEvent(fling_cancel);
   }
 
-  if (gesture.type != WebKit::WebInputEvent::Undefined) {
+  if (gesture.type != blink::WebInputEvent::Undefined) {
     host_->ForwardGestureEventWithLatencyInfo(gesture, *event->latency());
 
     if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN ||
@@ -3153,7 +3153,7 @@ ui::InputMethod* RenderWidgetHostViewAura::GetInputMethod() const {
 }
 
 bool RenderWidgetHostViewAura::NeedsInputGrab() {
-  return popup_type_ == WebKit::WebPopupTypeSelect;
+  return popup_type_ == blink::WebPopupTypeSelect;
 }
 
 void RenderWidgetHostViewAura::FinishImeCompositionSession() {
@@ -3165,11 +3165,11 @@ void RenderWidgetHostViewAura::FinishImeCompositionSession() {
 }
 
 void RenderWidgetHostViewAura::ModifyEventMovementAndCoords(
-    WebKit::WebMouseEvent* event) {
+    blink::WebMouseEvent* event) {
   // If the mouse has just entered, we must report zero movementX/Y. Hence we
   // reset any global_mouse_position set previously.
-  if (event->type == WebKit::WebInputEvent::MouseEnter ||
-      event->type == WebKit::WebInputEvent::MouseLeave)
+  if (event->type == blink::WebInputEvent::MouseEnter ||
+      event->type == blink::WebInputEvent::MouseLeave)
     global_mouse_position_.SetPoint(event->globalX, event->globalY);
 
   // Movement is computed by taking the difference of the new cursor position
@@ -3258,7 +3258,7 @@ void RenderWidgetHostViewAura::AddedToRootWindow() {
   window_->GetDispatcher()->AddRootWindowObserver(this);
   host_->ParentChanged(GetNativeViewId());
   UpdateScreenInfo(window_);
-  if (popup_type_ != WebKit::WebPopupTypeNone)
+  if (popup_type_ != blink::WebPopupTypeNone)
     event_filter_for_popup_exit_.reset(new EventFilterForPopupExit(this));
 
   aura::client::CursorClient* cursor_client =

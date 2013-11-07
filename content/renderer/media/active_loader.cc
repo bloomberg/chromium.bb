@@ -9,7 +9,7 @@
 
 namespace content {
 
-ActiveLoader::ActiveLoader(scoped_ptr<WebKit::WebURLLoader> loader)
+ActiveLoader::ActiveLoader(scoped_ptr<blink::WebURLLoader> loader)
     : loader_(loader.Pass()),
       deferred_(false) {
 }

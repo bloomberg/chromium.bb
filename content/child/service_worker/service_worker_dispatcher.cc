@@ -11,8 +11,8 @@
 #include "content/common/service_worker_messages.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 
-using WebKit::WebServiceWorkerError;
-using WebKit::WebServiceWorkerProvider;
+using blink::WebServiceWorkerError;
+using blink::WebServiceWorkerProvider;
 using base::ThreadLocalPointer;
 using webkit_glue::WorkerTaskRunner;
 

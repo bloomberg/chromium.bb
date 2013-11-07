@@ -27,22 +27,22 @@
 #include "ui/gfx/size_conversions.h"
 #include "ui/gl/gpu_preference.h"
 
-using WebKit::WebCanvas;
-using WebKit::WebCompositionUnderline;
-using WebKit::WebCursorInfo;
-using WebKit::WebGestureEvent;
-using WebKit::WebInputEvent;
-using WebKit::WebMouseEvent;
-using WebKit::WebMouseWheelEvent;
-using WebKit::WebPoint;
-using WebKit::WebRect;
-using WebKit::WebSize;
-using WebKit::WebString;
-using WebKit::WebTextDirection;
-using WebKit::WebTextInputType;
-using WebKit::WebVector;
-using WebKit::WebWidget;
-using WebKit::WGC3Dintptr;
+using blink::WebCanvas;
+using blink::WebCompositionUnderline;
+using blink::WebCursorInfo;
+using blink::WebGestureEvent;
+using blink::WebInputEvent;
+using blink::WebMouseEvent;
+using blink::WebMouseWheelEvent;
+using blink::WebPoint;
+using blink::WebRect;
+using blink::WebSize;
+using blink::WebString;
+using blink::WebTextDirection;
+using blink::WebTextInputType;
+using blink::WebVector;
+using blink::WebWidget;
+using blink::WGC3Dintptr;
 
 namespace content {
 
@@ -309,7 +309,7 @@ class PepperWidget : public WebWidget {
   }
 
   virtual WebTextInputType textInputType() {
-    return WebKit::WebTextInputTypeNone;
+    return blink::WebTextInputTypeNone;
   }
 
   virtual WebRect caretOrSelectionBounds() {
@@ -345,7 +345,7 @@ RenderWidgetFullscreenPepper* RenderWidgetFullscreenPepper::Create(
     int32 opener_id,
     PepperPluginInstanceImpl* plugin,
     const GURL& active_url,
-    const WebKit::WebScreenInfo& screen_info) {
+    const blink::WebScreenInfo& screen_info) {
   DCHECK_NE(MSG_ROUTING_NONE, opener_id);
   scoped_refptr<RenderWidgetFullscreenPepper> widget(
       new RenderWidgetFullscreenPepper(plugin, active_url, screen_info));
@@ -357,7 +357,7 @@ RenderWidgetFullscreenPepper* RenderWidgetFullscreenPepper::Create(
 RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
     PepperPluginInstanceImpl* plugin,
     const GURL& active_url,
-    const WebKit::WebScreenInfo& screen_info)
+    const blink::WebScreenInfo& screen_info)
     : RenderWidgetFullscreen(screen_info),
       active_url_(active_url),
       plugin_(plugin),
@@ -373,12 +373,12 @@ void RenderWidgetFullscreenPepper::Invalidate() {
   InvalidateRect(gfx::Rect(size_.width(), size_.height()));
 }
 
-void RenderWidgetFullscreenPepper::InvalidateRect(const WebKit::WebRect& rect) {
+void RenderWidgetFullscreenPepper::InvalidateRect(const blink::WebRect& rect) {
   didInvalidateRect(rect);
 }
 
 void RenderWidgetFullscreenPepper::ScrollRect(
-    int dx, int dy, const WebKit::WebRect& rect) {
+    int dx, int dy, const blink::WebRect& rect) {
   didScrollRect(dx, dy, rect);
 }
 
@@ -397,11 +397,11 @@ void RenderWidgetFullscreenPepper::Destroy() {
 }
 
 void RenderWidgetFullscreenPepper::DidChangeCursor(
-    const WebKit::WebCursorInfo& cursor) {
+    const blink::WebCursorInfo& cursor) {
   didChangeCursor(cursor);
 }
 
-void RenderWidgetFullscreenPepper::SetLayer(WebKit::WebLayer* layer) {
+void RenderWidgetFullscreenPepper::SetLayer(blink::WebLayer* layer) {
   layer_ = layer;
   bool compositing = !!layer_;
   if (compositing != is_accelerated_compositing_active_) {
@@ -410,7 +410,7 @@ void RenderWidgetFullscreenPepper::SetLayer(WebKit::WebLayer* layer) {
         initializeLayerTreeView();
       if (!layerTreeView())
         return;
-      layer_->setBounds(WebKit::WebSize(size()));
+      layer_->setBounds(blink::WebSize(size()));
       layer_->setDrawsContent(true);
       compositor_->setDeviceScaleFactor(device_scale_factor_);
       compositor_->setRootLayer(*layer_);
@@ -475,7 +475,7 @@ PepperPluginInstanceImpl*
 void RenderWidgetFullscreenPepper::OnResize(
     const ViewMsg_Resize_Params& params) {
   if (layer_)
-    layer_->setBounds(WebKit::WebSize(params.new_size));
+    layer_->setBounds(blink::WebSize(params.new_size));
   RenderWidget::OnResize(params);
 }
 

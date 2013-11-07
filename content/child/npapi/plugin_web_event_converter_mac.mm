@@ -8,10 +8,10 @@
 #include "content/child/npapi/plugin_web_event_converter_mac.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
-using WebKit::WebInputEvent;
-using WebKit::WebKeyboardEvent;
-using WebKit::WebMouseEvent;
-using WebKit::WebMouseWheelEvent;
+using blink::WebInputEvent;
+using blink::WebKeyboardEvent;
+using blink::WebMouseEvent;
+using blink::WebMouseWheelEvent;
 
 namespace content {
 

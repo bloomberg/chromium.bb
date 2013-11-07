@@ -18,7 +18,7 @@
 #import "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "ui/base/window_open_disposition.h"
 
-using WebKit::WebDragOperationsMask;
+using blink::WebDragOperationsMask;
 using content::DropData;
 using content::OpenURLParams;
 using content::Referrer;
@@ -28,13 +28,13 @@ int GetModifierFlags() {
   int modifier_state = 0;
   UInt32 currentModifiers = GetCurrentKeyModifiers();
   if (currentModifiers & ::shiftKey)
-    modifier_state |= WebKit::WebInputEvent::ShiftKey;
+    modifier_state |= blink::WebInputEvent::ShiftKey;
   if (currentModifiers & ::controlKey)
-    modifier_state |= WebKit::WebInputEvent::ControlKey;
+    modifier_state |= blink::WebInputEvent::ControlKey;
   if (currentModifiers & ::optionKey)
-    modifier_state |= WebKit::WebInputEvent::AltKey;
+    modifier_state |= blink::WebInputEvent::AltKey;
   if (currentModifiers & ::cmdKey)
-      modifier_state |= WebKit::WebInputEvent::MetaKey;
+      modifier_state |= blink::WebInputEvent::MetaKey;
   return modifier_state;
 }
 

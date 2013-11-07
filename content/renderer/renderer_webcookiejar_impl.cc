@@ -11,10 +11,10 @@
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/platform/WebCookie.h"
 
-using WebKit::WebCookie;
-using WebKit::WebString;
-using WebKit::WebURL;
-using WebKit::WebVector;
+using blink::WebCookie;
+using blink::WebString;
+using blink::WebURL;
+using blink::WebVector;
 
 namespace content {
 

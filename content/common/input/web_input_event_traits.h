@@ -14,14 +14,14 @@ namespace content {
 // Utility class for performing operations on and with WebInputEvents.
 class WebInputEventTraits {
  public:
-  static const char* GetName(WebKit::WebInputEvent::Type type);
-  static size_t GetSize(WebKit::WebInputEvent::Type type);
-  static ScopedWebInputEvent Clone(const WebKit::WebInputEvent& event);
-  static void Delete(WebKit::WebInputEvent* event);
-  static bool CanCoalesce(const WebKit::WebInputEvent& event_to_coalesce,
-                          const WebKit::WebInputEvent& event);
-  static void Coalesce(const WebKit::WebInputEvent& event_to_coalesce,
-                       WebKit::WebInputEvent* event);
+  static const char* GetName(blink::WebInputEvent::Type type);
+  static size_t GetSize(blink::WebInputEvent::Type type);
+  static ScopedWebInputEvent Clone(const blink::WebInputEvent& event);
+  static void Delete(blink::WebInputEvent* event);
+  static bool CanCoalesce(const blink::WebInputEvent& event_to_coalesce,
+                          const blink::WebInputEvent& event);
+  static void Coalesce(const blink::WebInputEvent& event_to_coalesce,
+                       blink::WebInputEvent* event);
 };
 
 }  // namespace content

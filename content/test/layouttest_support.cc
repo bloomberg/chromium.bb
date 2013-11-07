@@ -26,11 +26,11 @@
 #include "content/browser/renderer_host/popup_menu_helper_mac.h"
 #endif
 
-using WebKit::WebDeviceMotionData;
-using WebKit::WebDeviceOrientationData;
-using WebKit::WebGamepads;
-using WebKit::WebRect;
-using WebKit::WebSize;
+using blink::WebDeviceMotionData;
+using blink::WebDeviceOrientationData;
+using blink::WebGamepads;
+using blink::WebRect;
+using blink::WebSize;
 using WebTestRunner::WebFrameTestProxy;
 using WebTestRunner::WebTestProxy;
 using WebTestRunner::WebTestProxyBase;

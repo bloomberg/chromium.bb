@@ -33,7 +33,7 @@ class BrowserPluginManager;
 class MockBrowserPlugin;
 
 class CONTENT_EXPORT BrowserPlugin :
-    NON_EXPORTED_BASE(public WebKit::WebPlugin),
+    NON_EXPORTED_BASE(public blink::WebPlugin),
     public MouseLockDispatcher::LockTarget {
  public:
   RenderViewImpl* render_view() const { return render_view_.get(); }
@@ -41,7 +41,7 @@ class CONTENT_EXPORT BrowserPlugin :
   int guest_instance_id() const { return guest_instance_id_; }
   bool attached() const { return attached_; }
 
-  static BrowserPlugin* FromContainer(WebKit::WebPluginContainer* container);
+  static BrowserPlugin* FromContainer(blink::WebPluginContainer* container);
 
   bool OnMessageReceived(const IPC::Message& msg);
 
@@ -101,7 +101,7 @@ class CONTENT_EXPORT BrowserPlugin :
 
   // Attaches the window identified by |window_id| to the the given node
   // encapsulating a BrowserPlugin.
-  static bool AttachWindowTo(const WebKit::WebNode& node,
+  static bool AttachWindowTo(const blink::WebNode& node,
                              int window_id);
 
   // Informs the guest of an updated focus state.
@@ -138,9 +138,9 @@ class CONTENT_EXPORT BrowserPlugin :
   // Returns whether a message should be forwarded to BrowserPlugin.
   static bool ShouldForwardToBrowserPlugin(const IPC::Message& message);
 
-  // WebKit::WebPlugin implementation.
-  virtual WebKit::WebPluginContainer* container() const OVERRIDE;
-  virtual bool initialize(WebKit::WebPluginContainer* container) OVERRIDE;
+  // blink::WebPlugin implementation.
+  virtual blink::WebPluginContainer* container() const OVERRIDE;
+  virtual bool initialize(blink::WebPluginContainer* container) OVERRIDE;
   virtual void destroy() OVERRIDE;
   virtual NPObject* scriptableObject() OVERRIDE;
   virtual struct _NPP* pluginNPP() OVERRIDE;
@@ -148,45 +148,45 @@ class CONTENT_EXPORT BrowserPlugin :
   virtual bool supportsEditCommands() const OVERRIDE;
   virtual bool canProcessDrag() const OVERRIDE;
   virtual void paint(
-      WebKit::WebCanvas* canvas,
-      const WebKit::WebRect& rect) OVERRIDE;
+      blink::WebCanvas* canvas,
+      const blink::WebRect& rect) OVERRIDE;
   virtual void updateGeometry(
-      const WebKit::WebRect& frame_rect,
-      const WebKit::WebRect& clip_rect,
-      const WebKit::WebVector<WebKit::WebRect>& cut_outs_rects,
+      const blink::WebRect& frame_rect,
+      const blink::WebRect& clip_rect,
+      const blink::WebVector<blink::WebRect>& cut_outs_rects,
       bool is_visible) OVERRIDE;
   virtual void updateFocus(bool focused) OVERRIDE;
   virtual void updateVisibility(bool visible) OVERRIDE;
   virtual bool acceptsInputEvents() OVERRIDE;
   virtual bool handleInputEvent(
-      const WebKit::WebInputEvent& event,
-      WebKit::WebCursorInfo& cursor_info) OVERRIDE;
-  virtual bool handleDragStatusUpdate(WebKit::WebDragStatus drag_status,
-                                      const WebKit::WebDragData& drag_data,
-                                      WebKit::WebDragOperationsMask mask,
-                                      const WebKit::WebPoint& position,
-                                      const WebKit::WebPoint& screen) OVERRIDE;
+      const blink::WebInputEvent& event,
+      blink::WebCursorInfo& cursor_info) OVERRIDE;
+  virtual bool handleDragStatusUpdate(blink::WebDragStatus drag_status,
+                                      const blink::WebDragData& drag_data,
+                                      blink::WebDragOperationsMask mask,
+                                      const blink::WebPoint& position,
+                                      const blink::WebPoint& screen) OVERRIDE;
   virtual void didReceiveResponse(
-      const WebKit::WebURLResponse& response) OVERRIDE;
+      const blink::WebURLResponse& response) OVERRIDE;
   virtual void didReceiveData(const char* data, int data_length) OVERRIDE;
   virtual void didFinishLoading() OVERRIDE;
-  virtual void didFailLoading(const WebKit::WebURLError& error) OVERRIDE;
+  virtual void didFailLoading(const blink::WebURLError& error) OVERRIDE;
   virtual void didFinishLoadingFrameRequest(
-      const WebKit::WebURL& url,
+      const blink::WebURL& url,
       void* notify_data) OVERRIDE;
   virtual void didFailLoadingFrameRequest(
-      const WebKit::WebURL& url,
+      const blink::WebURL& url,
       void* notify_data,
-      const WebKit::WebURLError& error) OVERRIDE;
-  virtual bool executeEditCommand(const WebKit::WebString& name) OVERRIDE;
-  virtual bool executeEditCommand(const WebKit::WebString& name,
-                                  const WebKit::WebString& value) OVERRIDE;
+      const blink::WebURLError& error) OVERRIDE;
+  virtual bool executeEditCommand(const blink::WebString& name) OVERRIDE;
+  virtual bool executeEditCommand(const blink::WebString& name,
+                                  const blink::WebString& value) OVERRIDE;
 
   // MouseLockDispatcher::LockTarget implementation.
   virtual void OnLockMouseACK(bool succeeded) OVERRIDE;
   virtual void OnMouseLockLost() OVERRIDE;
   virtual bool HandleMouseLockedInputEvent(
-          const WebKit::WebMouseEvent& event) OVERRIDE;
+          const blink::WebMouseEvent& event) OVERRIDE;
 
  private:
   friend class base::DeleteHelper<BrowserPlugin>;
@@ -206,8 +206,8 @@ class CONTENT_EXPORT BrowserPlugin :
   // guest WebContents that's hosted by this BrowserPlugin.
   BrowserPlugin(
       RenderViewImpl* render_view,
-      WebKit::WebFrame* frame,
-      const WebKit::WebPluginParams& params);
+      blink::WebFrame* frame,
+      const blink::WebPluginParams& params);
 
   virtual ~BrowserPlugin();
 
@@ -307,7 +307,7 @@ class CONTENT_EXPORT BrowserPlugin :
   // If the |render_view_| is destroyed before the BrowserPlugin is destroyed
   // then we will attempt to access a NULL pointer.
   int render_view_routing_id_;
-  WebKit::WebPluginContainer* container_;
+  blink::WebPluginContainer* container_;
   scoped_ptr<BrowserPluginBindings> bindings_;
   scoped_ptr<BrowserPluginBackingStore> backing_store_;
   scoped_ptr<base::SharedMemory> current_damage_buffer_;

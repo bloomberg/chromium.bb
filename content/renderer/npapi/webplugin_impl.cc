@@ -57,32 +57,32 @@
 #include "webkit/child/multipart_response_delegate.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
-using WebKit::WebCanvas;
-using WebKit::WebConsoleMessage;
-using WebKit::WebCookieJar;
-using WebKit::WebCString;
-using WebKit::WebCursorInfo;
-using WebKit::WebData;
-using WebKit::WebDataSource;
-using WebKit::WebFrame;
-using WebKit::WebHTTPBody;
-using WebKit::WebHTTPHeaderVisitor;
-using WebKit::WebInputEvent;
-using WebKit::WebKeyboardEvent;
-using WebKit::WebMouseEvent;
-using WebKit::WebPluginContainer;
-using WebKit::WebPluginParams;
-using WebKit::WebRect;
-using WebKit::WebString;
-using WebKit::WebURL;
-using WebKit::WebURLError;
-using WebKit::WebURLLoader;
-using WebKit::WebURLLoaderClient;
-using WebKit::WebURLLoaderOptions;
-using WebKit::WebURLRequest;
-using WebKit::WebURLResponse;
-using WebKit::WebVector;
-using WebKit::WebView;
+using blink::WebCanvas;
+using blink::WebConsoleMessage;
+using blink::WebCookieJar;
+using blink::WebCString;
+using blink::WebCursorInfo;
+using blink::WebData;
+using blink::WebDataSource;
+using blink::WebFrame;
+using blink::WebHTTPBody;
+using blink::WebHTTPHeaderVisitor;
+using blink::WebInputEvent;
+using blink::WebKeyboardEvent;
+using blink::WebMouseEvent;
+using blink::WebPluginContainer;
+using blink::WebPluginParams;
+using blink::WebRect;
+using blink::WebString;
+using blink::WebURL;
+using blink::WebURLError;
+using blink::WebURLLoader;
+using blink::WebURLLoaderClient;
+using blink::WebURLLoaderOptions;
+using blink::WebURLRequest;
+using blink::WebURLResponse;
+using blink::WebVector;
+using blink::WebView;
 using webkit_glue::MultipartResponseDelegate;
 
 namespace content {
@@ -212,14 +212,14 @@ void GetResponseInfo(const WebURLResponse& response,
 
 }  // namespace
 
-// WebKit::WebPlugin ----------------------------------------------------------
+// blink::WebPlugin ----------------------------------------------------------
 
 struct WebPluginImpl::ClientInfo {
   unsigned long id;
   WebPluginResourceClient* client;
-  WebKit::WebURLRequest request;
+  blink::WebURLRequest request;
   bool pending_failure_notification;
-  linked_ptr<WebKit::WebURLLoader> loader;
+  linked_ptr<blink::WebURLLoader> loader;
   bool notify_redirects;
   bool is_plugin_src_load;
   int64 data_offset;
@@ -249,7 +249,7 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
   if (!ok) {
     plugin_delegate->PluginDestroyed();
 
-    WebKit::WebPlugin* replacement_plugin =
+    blink::WebPlugin* replacement_plugin =
         GetContentClient()->renderer()->CreatePluginReplacement(
             render_view_.get(), file_path_);
     if (!replacement_plugin)
@@ -286,7 +286,7 @@ NPP WebPluginImpl::pluginNPP() {
   return npp_;
 }
 
-bool WebPluginImpl::getFormValue(WebKit::WebString& value) {
+bool WebPluginImpl::getFormValue(blink::WebString& value) {
   if (!delegate_)
     return false;
   base::string16 form_value;
@@ -1487,7 +1487,7 @@ void WebPluginImpl::TearDownPluginInstance(
   weak_factory_.InvalidateWeakPtrs();
 }
 
-void WebPluginImpl::SetReferrer(WebKit::WebURLRequest* request,
+void WebPluginImpl::SetReferrer(blink::WebURLRequest* request,
                                 Referrer referrer_flag) {
   switch (referrer_flag) {
     case DOCUMENT_URL:

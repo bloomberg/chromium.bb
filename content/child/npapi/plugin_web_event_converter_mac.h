@@ -7,7 +7,7 @@
 
 #include "third_party/npapi/bindings/npapi.h"
 
-namespace WebKit {
+namespace blink {
 class WebInputEvent;
 class WebKeyboardEvent;
 class WebMouseEvent;
@@ -25,7 +25,7 @@ class PluginWebEventConverter {
 
   // Initializes a converter for the given web event. Returns false if the event
   // could not be converted.
-  bool InitWithEvent(const WebKit::WebInputEvent& web_event);
+  bool InitWithEvent(const blink::WebInputEvent& web_event);
 
   // Returns a pointer to a plugin event--suitable for passing to
   // NPP_HandleEvent--corresponding to the the web event this converter was
@@ -37,12 +37,12 @@ class PluginWebEventConverter {
   // Stores a converted plugin representation of the given web event, suitable
   // for returning from plugin_event.
   // Returns true if the event was successfully converted.
-  bool ConvertKeyboardEvent(const WebKit::WebKeyboardEvent& web_event);
-  bool ConvertMouseEvent(const WebKit::WebMouseEvent& web_event);
-  bool ConvertMouseWheelEvent(const WebKit::WebMouseWheelEvent& web_event);
+  bool ConvertKeyboardEvent(const blink::WebKeyboardEvent& web_event);
+  bool ConvertMouseEvent(const blink::WebMouseEvent& web_event);
+  bool ConvertMouseWheelEvent(const blink::WebMouseWheelEvent& web_event);
 
   // Returns the Cocoa translation of web_event's modifiers.
-  static NSUInteger CocoaModifiers(const WebKit::WebInputEvent& web_event);
+  static NSUInteger CocoaModifiers(const blink::WebInputEvent& web_event);
 
   NPCocoaEvent cocoa_event_;
 

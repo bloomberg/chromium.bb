@@ -17,7 +17,7 @@
 
 struct _NPP;
 
-namespace WebKit {
+namespace blink {
 struct WebPluginParams;
 struct WebPrintParams;
 }
@@ -29,47 +29,47 @@ class PluginModule;
 class PPB_URLLoader_Impl;
 class RenderViewImpl;
 
-class PepperWebPluginImpl : public WebKit::WebPlugin {
+class PepperWebPluginImpl : public blink::WebPlugin {
  public:
   PepperWebPluginImpl(PluginModule* module,
-                      const WebKit::WebPluginParams& params,
+                      const blink::WebPluginParams& params,
                       const base::WeakPtr<RenderViewImpl>& render_view);
 
   PepperPluginInstanceImpl* instance() { return instance_.get(); }
 
-  // WebKit::WebPlugin implementation.
-  virtual WebKit::WebPluginContainer* container() const;
-  virtual bool initialize(WebKit::WebPluginContainer* container);
+  // blink::WebPlugin implementation.
+  virtual blink::WebPluginContainer* container() const;
+  virtual bool initialize(blink::WebPluginContainer* container);
   virtual void destroy();
   virtual NPObject* scriptableObject();
   virtual struct _NPP* pluginNPP();
-  virtual bool getFormValue(WebKit::WebString& value);
-  virtual void paint(WebKit::WebCanvas* canvas, const WebKit::WebRect& rect);
+  virtual bool getFormValue(blink::WebString& value);
+  virtual void paint(blink::WebCanvas* canvas, const blink::WebRect& rect);
   virtual void updateGeometry(
-      const WebKit::WebRect& frame_rect,
-      const WebKit::WebRect& clip_rect,
-      const WebKit::WebVector<WebKit::WebRect>& cut_outs_rects,
+      const blink::WebRect& frame_rect,
+      const blink::WebRect& clip_rect,
+      const blink::WebVector<blink::WebRect>& cut_outs_rects,
       bool is_visible);
   virtual void updateFocus(bool focused);
   virtual void updateVisibility(bool visible);
   virtual bool acceptsInputEvents();
-  virtual bool handleInputEvent(const WebKit::WebInputEvent& event,
-                                WebKit::WebCursorInfo& cursor_info);
-  virtual void didReceiveResponse(const WebKit::WebURLResponse& response);
+  virtual bool handleInputEvent(const blink::WebInputEvent& event,
+                                blink::WebCursorInfo& cursor_info);
+  virtual void didReceiveResponse(const blink::WebURLResponse& response);
   virtual void didReceiveData(const char* data, int data_length);
   virtual void didFinishLoading();
-  virtual void didFailLoading(const WebKit::WebURLError&);
-  virtual void didFinishLoadingFrameRequest(const WebKit::WebURL& url,
+  virtual void didFailLoading(const blink::WebURLError&);
+  virtual void didFinishLoadingFrameRequest(const blink::WebURL& url,
                                             void* notify_data);
-  virtual void didFailLoadingFrameRequest(const WebKit::WebURL& url,
+  virtual void didFailLoadingFrameRequest(const blink::WebURL& url,
                                           void* notify_data,
-                                          const WebKit::WebURLError& error);
+                                          const blink::WebURLError& error);
   virtual bool hasSelection() const;
-  virtual WebKit::WebString selectionAsText() const;
-  virtual WebKit::WebString selectionAsMarkup() const;
-  virtual WebKit::WebURL linkAtPosition(const WebKit::WebPoint& position) const;
+  virtual blink::WebString selectionAsText() const;
+  virtual blink::WebString selectionAsMarkup() const;
+  virtual blink::WebURL linkAtPosition(const blink::WebPoint& position) const;
   virtual void setZoomLevel(double level, bool text_only);
-  virtual bool startFind(const WebKit::WebString& search_text,
+  virtual bool startFind(const blink::WebString& search_text,
                          bool case_sensitive,
                          int identifier);
   virtual void selectFindResult(bool forward);
@@ -77,8 +77,8 @@ class PepperWebPluginImpl : public WebKit::WebPlugin {
   virtual bool supportsPaginatedPrint() OVERRIDE;
   virtual bool isPrintScalingDisabled() OVERRIDE;
 
-  virtual int printBegin(const WebKit::WebPrintParams& print_params) OVERRIDE;
-  virtual bool printPage(int page_number, WebKit::WebCanvas* canvas) OVERRIDE;
+  virtual int printBegin(const blink::WebPrintParams& print_params) OVERRIDE;
+  virtual bool printPage(int page_number, blink::WebCanvas* canvas) OVERRIDE;
   virtual void printEnd() OVERRIDE;
 
   virtual bool canRotateView() OVERRIDE;
@@ -98,7 +98,7 @@ class PepperWebPluginImpl : public WebKit::WebPlugin {
   scoped_refptr<PepperPluginInstanceImpl> instance_;
   gfx::Rect plugin_rect_;
   PP_Var instance_object_;
-  WebKit::WebPluginContainer* container_;
+  blink::WebPluginContainer* container_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperWebPluginImpl);
 };

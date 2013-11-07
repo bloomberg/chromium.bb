@@ -31,7 +31,7 @@ class ExternalPopupMenuTest : public RenderViewTest {
   virtual void SetUp() {
     RenderViewTest::SetUp();
     // We need to set this explictly as RenderMain is not run.
-    WebKit::WebView::setUseExternalPopupMenus(true);
+    blink::WebView::setUseExternalPopupMenus(true);
 
     std::string html = "<select id='mySelect' onchange='selectChanged(this)'>"
                        "  <option>zero</option>"
@@ -52,7 +52,7 @@ class ExternalPopupMenuTest : public RenderViewTest {
     LoadHTML(html.c_str());
 
     // Set a minimum size and give focus so simulated events work.
-    view()->webwidget()->resize(WebKit::WebSize(500, 500));
+    view()->webwidget()->resize(blink::WebSize(500, 500));
     view()->webwidget()->setFocus(true);
   }
 

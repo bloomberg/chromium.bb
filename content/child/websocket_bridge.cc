@@ -23,11 +23,11 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 
-using WebKit::WebSocketHandle;
-using WebKit::WebSocketHandleClient;
-using WebKit::WebString;
-using WebKit::WebURL;
-using WebKit::WebVector;
+using blink::WebSocketHandle;
+using blink::WebSocketHandleClient;
+using blink::WebString;
+using blink::WebURL;
+using blink::WebVector;
 
 namespace content {
 

@@ -13,14 +13,14 @@
 #include "third_party/WebKit/public/web/WebDateTimeChooserParams.h"
 #include "third_party/WebKit/public/web/WebDateTimeInputType.h"
 
-using WebKit::WebString;
+using blink::WebString;
 
 namespace content {
 
 RendererDateTimePicker::RendererDateTimePicker(
     RenderViewImpl* sender,
-    const WebKit::WebDateTimeChooserParams& params,
-    WebKit::WebDateTimeChooserCompletion* completion)
+    const blink::WebDateTimeChooserParams& params,
+    blink::WebDateTimeChooserCompletion* completion)
     : RenderViewObserver(sender),
       chooser_params_(params),
       chooser_completion_(completion){

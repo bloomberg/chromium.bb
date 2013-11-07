@@ -78,26 +78,26 @@
 
 #include "third_party/WebKit/public/web/WebWidget.h"
 
-using WebKit::WebCompositionUnderline;
-using WebKit::WebCursorInfo;
-using WebKit::WebGestureEvent;
-using WebKit::WebInputEvent;
-using WebKit::WebKeyboardEvent;
-using WebKit::WebMouseEvent;
-using WebKit::WebMouseWheelEvent;
-using WebKit::WebNavigationPolicy;
-using WebKit::WebPagePopup;
-using WebKit::WebPopupMenu;
-using WebKit::WebPopupMenuInfo;
-using WebKit::WebPopupType;
-using WebKit::WebRange;
-using WebKit::WebRect;
-using WebKit::WebScreenInfo;
-using WebKit::WebSize;
-using WebKit::WebTextDirection;
-using WebKit::WebTouchEvent;
-using WebKit::WebVector;
-using WebKit::WebWidget;
+using blink::WebCompositionUnderline;
+using blink::WebCursorInfo;
+using blink::WebGestureEvent;
+using blink::WebInputEvent;
+using blink::WebKeyboardEvent;
+using blink::WebMouseEvent;
+using blink::WebMouseWheelEvent;
+using blink::WebNavigationPolicy;
+using blink::WebPagePopup;
+using blink::WebPopupMenu;
+using blink::WebPopupMenuInfo;
+using blink::WebPopupType;
+using blink::WebRange;
+using blink::WebRect;
+using blink::WebScreenInfo;
+using blink::WebSize;
+using blink::WebTextDirection;
+using blink::WebTouchEvent;
+using blink::WebVector;
+using blink::WebWidget;
 
 namespace {
 
@@ -134,7 +134,7 @@ class TextInputModeMapSingleton {
 };
 
 ui::TextInputMode ConvertInputMode(
-    const WebKit::WebString& input_mode) {
+    const blink::WebString& input_mode) {
   static TextInputModeMapSingleton* singleton =
       TextInputModeMapSingleton::GetInstance();
   TextInputModeMap::iterator it = singleton->Map().find(input_mode.utf8());
@@ -200,7 +200,7 @@ class RenderWidget::ScreenMetricsEmulator {
   // Original values to restore back after emulation ends.
   gfx::Size original_size_;
   gfx::Size original_physical_backing_size_;
-  WebKit::WebScreenInfo original_screen_info_;
+  blink::WebScreenInfo original_screen_info_;
   gfx::Rect original_view_screen_rect_;
   gfx::Rect original_window_screen_rect_;
 };
@@ -330,8 +330,8 @@ void RenderWidget::ScreenMetricsEmulator::OnShowContextMenu(
 
 // RenderWidget ---------------------------------------------------------------
 
-RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
-                           const WebKit::WebScreenInfo& screen_info,
+RenderWidget::RenderWidget(blink::WebPopupType popup_type,
+                           const blink::WebScreenInfo& screen_info,
                            bool swapped_out,
                            bool hidden)
     : routing_id_(MSG_ROUTING_NONE),
@@ -411,8 +411,8 @@ RenderWidget::~RenderWidget() {
 
 // static
 RenderWidget* RenderWidget::Create(int32 opener_id,
-                                   WebKit::WebPopupType popup_type,
-                                   const WebKit::WebScreenInfo& screen_info) {
+                                   blink::WebPopupType popup_type,
+                                   const blink::WebScreenInfo& screen_info) {
   DCHECK(opener_id != MSG_ROUTING_NONE);
   scoped_refptr<RenderWidget> widget(
       new RenderWidget(popup_type, screen_info, false, false));
@@ -425,15 +425,15 @@ RenderWidget* RenderWidget::Create(int32 opener_id,
 // static
 WebWidget* RenderWidget::CreateWebWidget(RenderWidget* render_widget) {
   switch (render_widget->popup_type_) {
-    case WebKit::WebPopupTypeNone:  // Nothing to create.
+    case blink::WebPopupTypeNone:  // Nothing to create.
       break;
-    case WebKit::WebPopupTypeSelect:
-    case WebKit::WebPopupTypeSuggestion:
+    case blink::WebPopupTypeSelect:
+    case blink::WebPopupTypeSuggestion:
       return WebPopupMenu::create(render_widget);
-    case WebKit::WebPopupTypePage:
+    case blink::WebPopupTypePage:
       return WebPagePopup::create(render_widget);
-    case WebKit::WebPopupTypeHelperPlugin:
-      return WebKit::WebHelperPlugin::create(render_widget);
+    case blink::WebPopupTypeHelperPlugin:
+      return blink::WebHelperPlugin::create(render_widget);
     default:
       NOTREACHED();
   }
@@ -897,7 +897,7 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
   // be optimized to resolve directly into the IOSurface shared between the
   // GPU and browser processes. For these reasons and to avoid platform
   // disparities we explicitly disable antialiasing.
-  WebKit::WebGraphicsContext3D::Attributes attributes;
+  blink::WebGraphicsContext3D::Attributes attributes;
   attributes.antialias = false;
   attributes.shareResources = true;
   attributes.noAutomaticFlushes = true;
@@ -1049,7 +1049,7 @@ void RenderWidget::OnViewContextSwapBuffersComplete() {
   DoDeferredUpdateAndSendInputAck();
 }
 
-void RenderWidget::OnHandleInputEvent(const WebKit::WebInputEvent* input_event,
+void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
                                       const ui::LatencyInfo& latency_info,
                                       bool is_keyboard_shortcut) {
   handling_input_event_ = true;
@@ -1848,7 +1848,7 @@ void RenderWidget::initializeLayerTreeView() {
     compositor_->setSurfaceReady();
 }
 
-WebKit::WebLayerTreeView* RenderWidget::layerTreeView() {
+blink::WebLayerTreeView* RenderWidget::layerTreeView() {
   return compositor_.get();
 }
 
@@ -2015,7 +2015,7 @@ WebRect RenderWidget::windowRect() {
   return view_screen_rect_;
 }
 
-void RenderWidget::setToolTipText(const WebKit::WebString& text,
+void RenderWidget::setToolTipText(const blink::WebString& text,
                                   WebTextDirection hint) {
   Send(new ViewHostMsg_SetTooltipText(routing_id_, text, hint));
 }
@@ -2433,7 +2433,7 @@ void RenderWidget::UpdateTextInputType() {
 
   bool new_can_compose_inline = CanComposeInline();
 
-  WebKit::WebTextInputInfo new_info;
+  blink::WebTextInputInfo new_info;
   if (webwidget_)
     new_info = webwidget_->textInputInfo();
   const ui::TextInputMode new_mode = ConvertInputMode(new_info.inputMode);
@@ -2462,7 +2462,7 @@ void RenderWidget::UpdateTextInputState(bool show_ime_if_needed,
   if (IsDateTimeInput(new_type))
     return;  // Not considered as a text input field in WebKit/Chromium.
 
-  WebKit::WebTextInputInfo new_info;
+  blink::WebTextInputInfo new_info;
   if (webwidget_)
     new_info = webwidget_->textInputInfo();
 
@@ -2523,47 +2523,47 @@ void RenderWidget::UpdateSelectionBounds() {
 #endif
 }
 
-// Check WebKit::WebTextInputType and ui::TextInputType is kept in sync.
-COMPILE_ASSERT(int(WebKit::WebTextInputTypeNone) == \
+// Check blink::WebTextInputType and ui::TextInputType is kept in sync.
+COMPILE_ASSERT(int(blink::WebTextInputTypeNone) == \
                int(ui::TEXT_INPUT_TYPE_NONE), mismatching_enums);
-COMPILE_ASSERT(int(WebKit::WebTextInputTypeText) == \
+COMPILE_ASSERT(int(blink::WebTextInputTypeText) == \
                int(ui::TEXT_INPUT_TYPE_TEXT), mismatching_enums);
-COMPILE_ASSERT(int(WebKit::WebTextInputTypePassword) == \
+COMPILE_ASSERT(int(blink::WebTextInputTypePassword) == \
                int(ui::TEXT_INPUT_TYPE_PASSWORD), mismatching_enums);
-COMPILE_ASSERT(int(WebKit::WebTextInputTypeSearch) == \
+COMPILE_ASSERT(int(blink::WebTextInputTypeSearch) == \
                int(ui::TEXT_INPUT_TYPE_SEARCH), mismatching_enums);
-COMPILE_ASSERT(int(WebKit::WebTextInputTypeEmail) == \
+COMPILE_ASSERT(int(blink::WebTextInputTypeEmail) == \
                int(ui::TEXT_INPUT_TYPE_EMAIL), mismatching_enums);
-COMPILE_ASSERT(int(WebKit::WebTextInputTypeNumber) == \
+COMPILE_ASSERT(int(blink::WebTextInputTypeNumber) == \
                int(ui::TEXT_INPUT_TYPE_NUMBER), mismatching_enums);
-COMPILE_ASSERT(int(WebKit::WebTextInputTypeTelephone) == \
+COMPILE_ASSERT(int(blink::WebTextInputTypeTelephone) == \
                int(ui::TEXT_INPUT_TYPE_TELEPHONE), mismatching_enums);
-COMPILE_ASSERT(int(WebKit::WebTextInputTypeURL) == \
+COMPILE_ASSERT(int(blink::WebTextInputTypeURL) == \
                int(ui::TEXT_INPUT_TYPE_URL), mismatching_enums);
-COMPILE_ASSERT(int(WebKit::WebTextInputTypeDate) == \
+COMPILE_ASSERT(int(blink::WebTextInputTypeDate) == \
                int(ui::TEXT_INPUT_TYPE_DATE), mismatching_enum);
-COMPILE_ASSERT(int(WebKit::WebTextInputTypeDateTime) == \
+COMPILE_ASSERT(int(blink::WebTextInputTypeDateTime) == \
                int(ui::TEXT_INPUT_TYPE_DATE_TIME), mismatching_enum);
-COMPILE_ASSERT(int(WebKit::WebTextInputTypeDateTimeLocal) == \
+COMPILE_ASSERT(int(blink::WebTextInputTypeDateTimeLocal) == \
                int(ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL), mismatching_enum);
-COMPILE_ASSERT(int(WebKit::WebTextInputTypeMonth) == \
+COMPILE_ASSERT(int(blink::WebTextInputTypeMonth) == \
                int(ui::TEXT_INPUT_TYPE_MONTH), mismatching_enum);
-COMPILE_ASSERT(int(WebKit::WebTextInputTypeTime) == \
+COMPILE_ASSERT(int(blink::WebTextInputTypeTime) == \
                int(ui::TEXT_INPUT_TYPE_TIME), mismatching_enum);
-COMPILE_ASSERT(int(WebKit::WebTextInputTypeWeek) == \
+COMPILE_ASSERT(int(blink::WebTextInputTypeWeek) == \
                int(ui::TEXT_INPUT_TYPE_WEEK), mismatching_enum);
-COMPILE_ASSERT(int(WebKit::WebTextInputTypeTextArea) == \
+COMPILE_ASSERT(int(blink::WebTextInputTypeTextArea) == \
                int(ui::TEXT_INPUT_TYPE_TEXT_AREA), mismatching_enums);
-COMPILE_ASSERT(int(WebKit::WebTextInputTypeContentEditable) == \
+COMPILE_ASSERT(int(blink::WebTextInputTypeContentEditable) == \
                int(ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE), mismatching_enums);
-COMPILE_ASSERT(int(WebKit::WebTextInputTypeDateTimeField) == \
+COMPILE_ASSERT(int(blink::WebTextInputTypeDateTimeField) == \
                int(ui::TEXT_INPUT_TYPE_DATE_TIME_FIELD), mismatching_enums);
 
 ui::TextInputType RenderWidget::WebKitToUiTextInputType(
-    WebKit::WebTextInputType type) {
+    blink::WebTextInputType type) {
   // Check the type is in the range representable by ui::TextInputType.
   DCHECK_LE(type, static_cast<int>(ui::TEXT_INPUT_TYPE_MAX)) <<
-    "WebKit::WebTextInputType and ui::TextInputType not synchronized";
+    "blink::WebTextInputType and ui::TextInputType not synchronized";
   return static_cast<ui::TextInputType>(type);
 }
 
@@ -2698,7 +2698,7 @@ void RenderWidget::CleanupWindowInPluginMoves(gfx::PluginWindowHandle window) {
 }
 
 void RenderWidget::GetRenderingStats(
-    WebKit::WebRenderingStatsImpl& stats) const {
+    blink::WebRenderingStatsImpl& stats) const {
   if (compositor_)
     compositor_->GetRenderingStats(&stats.rendering_stats);
 
@@ -2763,16 +2763,16 @@ void RenderWidget::BeginPinch(
   pending_synthetic_gesture_ = callback;
 }
 
-bool RenderWidget::WillHandleMouseEvent(const WebKit::WebMouseEvent& event) {
+bool RenderWidget::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
   return false;
 }
 
-bool RenderWidget::WillHandleKeyEvent(const WebKit::WebKeyboardEvent& event) {
+bool RenderWidget::WillHandleKeyEvent(const blink::WebKeyboardEvent& event) {
   return false;
 }
 
 bool RenderWidget::WillHandleGestureEvent(
-    const WebKit::WebGestureEvent& event) {
+    const blink::WebGestureEvent& event) {
   return false;
 }
 
@@ -2786,7 +2786,7 @@ bool RenderWidget::HasTouchEventHandlersAt(const gfx::Point& point) const {
 
 scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
 RenderWidget::CreateGraphicsContext3D(
-    const WebKit::WebGraphicsContext3D::Attributes& attributes) {
+    const blink::WebGraphicsContext3D::Attributes& attributes) {
   if (!webwidget_)
     return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
   if (CommandLine::ForCurrentProcess()->HasSwitch(

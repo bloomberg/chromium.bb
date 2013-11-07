@@ -942,7 +942,7 @@ void BrowserPluginGuest::SendMessageToEmbedder(IPC::Message* msg) {
 }
 
 void BrowserPluginGuest::DragSourceEndedAt(int client_x, int client_y,
-    int screen_x, int screen_y, WebKit::WebDragOperation operation) {
+    int screen_x, int screen_y, blink::WebDragOperation operation) {
   web_contents()->GetRenderViewHost()->DragSourceEndedAt(client_x, client_y,
       screen_x, screen_y, operation);
 }
@@ -958,9 +958,9 @@ void BrowserPluginGuest::EndSystemDrag() {
       GetWebContents()->GetRenderViewHost());
   guest_rvh->DragSourceSystemDragEnded();
   // Issue a MouseUp event to get out of a selection state.
-  WebKit::WebMouseEvent mouse_event;
-  mouse_event.type = WebKit::WebInputEvent::MouseUp;
-  mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
+  blink::WebMouseEvent mouse_event;
+  mouse_event.type = blink::WebInputEvent::MouseUp;
+  mouse_event.button = blink::WebMouseEvent::ButtonLeft;
   guest_rvh->ForwardMouseEvent(mouse_event);
 }
 
@@ -1220,29 +1220,29 @@ void BrowserPluginGuest::OnCompositorFrameACK(
 }
 
 void BrowserPluginGuest::OnDragStatusUpdate(int instance_id,
-                                            WebKit::WebDragStatus drag_status,
+                                            blink::WebDragStatus drag_status,
                                             const DropData& drop_data,
-                                            WebKit::WebDragOperationsMask mask,
+                                            blink::WebDragOperationsMask mask,
                                             const gfx::Point& location) {
   RenderViewHost* host = GetWebContents()->GetRenderViewHost();
   switch (drag_status) {
-    case WebKit::WebDragStatusEnter:
+    case blink::WebDragStatusEnter:
       embedder_web_contents_->GetBrowserPluginEmbedder()->DragEnteredGuest(
           this);
       host->DragTargetDragEnter(drop_data, location, location, mask, 0);
       break;
-    case WebKit::WebDragStatusOver:
+    case blink::WebDragStatusOver:
       host->DragTargetDragOver(location, location, mask, 0);
       break;
-    case WebKit::WebDragStatusLeave:
+    case blink::WebDragStatusLeave:
       embedder_web_contents_->GetBrowserPluginEmbedder()->DragLeftGuest(this);
       host->DragTargetDragLeave();
       break;
-    case WebKit::WebDragStatusDrop:
+    case blink::WebDragStatusDrop:
       host->DragTargetDrop(location, location, 0);
       EndSystemDrag();
       break;
-    case WebKit::WebDragStatusUnknown:
+    case blink::WebDragStatusUnknown:
       NOTREACHED();
   }
 }
@@ -1255,7 +1255,7 @@ void BrowserPluginGuest::OnExecuteEditCommand(int instance_id,
 void BrowserPluginGuest::OnHandleInputEvent(
     int instance_id,
     const gfx::Rect& guest_window_rect,
-    const WebKit::WebInputEvent* event) {
+    const blink::WebInputEvent* event) {
   guest_window_rect_ = guest_window_rect;
   // If the embedder's RWHV is destroyed then that means that the embedder's
   // window has been closed but the embedder's WebContents has not yet been
@@ -1270,19 +1270,19 @@ void BrowserPluginGuest::OnHandleInputEvent(
   RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
       GetWebContents()->GetRenderViewHost());
 
-  if (WebKit::WebInputEvent::isMouseEventType(event->type)) {
+  if (blink::WebInputEvent::isMouseEventType(event->type)) {
     guest_rvh->ForwardMouseEvent(
-        *static_cast<const WebKit::WebMouseEvent*>(event));
+        *static_cast<const blink::WebMouseEvent*>(event));
     return;
   }
 
-  if (event->type == WebKit::WebInputEvent::MouseWheel) {
+  if (event->type == blink::WebInputEvent::MouseWheel) {
     guest_rvh->ForwardWheelEvent(
-        *static_cast<const WebKit::WebMouseWheelEvent*>(event));
+        *static_cast<const blink::WebMouseWheelEvent*>(event));
     return;
   }
 
-  if (WebKit::WebInputEvent::isKeyboardEventType(event->type)) {
+  if (blink::WebInputEvent::isKeyboardEventType(event->type)) {
     RenderViewHostImpl* embedder_rvh = static_cast<RenderViewHostImpl*>(
         embedder_web_contents_->GetRenderViewHost());
     if (!embedder_rvh->GetLastKeyboardEvent())
@@ -1293,16 +1293,16 @@ void BrowserPluginGuest::OnHandleInputEvent(
     return;
   }
 
-  if (WebKit::WebInputEvent::isTouchEventType(event->type)) {
+  if (blink::WebInputEvent::isTouchEventType(event->type)) {
     guest_rvh->ForwardTouchEventWithLatencyInfo(
-        *static_cast<const WebKit::WebTouchEvent*>(event),
+        *static_cast<const blink::WebTouchEvent*>(event),
         ui::LatencyInfo());
     return;
   }
 
-  if (WebKit::WebInputEvent::isGestureEventType(event->type)) {
+  if (blink::WebInputEvent::isGestureEventType(event->type)) {
     guest_rvh->ForwardGestureEvent(
-        *static_cast<const WebKit::WebGestureEvent*>(event));
+        *static_cast<const blink::WebGestureEvent*>(event));
     return;
   }
 }

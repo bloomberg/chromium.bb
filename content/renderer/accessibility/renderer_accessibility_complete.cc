@@ -17,14 +17,14 @@
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-using WebKit::WebAXObject;
-using WebKit::WebDocument;
-using WebKit::WebFrame;
-using WebKit::WebNode;
-using WebKit::WebPoint;
-using WebKit::WebRect;
-using WebKit::WebSize;
-using WebKit::WebView;
+using blink::WebAXObject;
+using blink::WebDocument;
+using blink::WebFrame;
+using blink::WebNode;
+using blink::WebPoint;
+using blink::WebRect;
+using blink::WebSize;
+using blink::WebView;
 
 namespace content {
 
@@ -44,7 +44,7 @@ RendererAccessibilityComplete::RendererAccessibilityComplete(
     // accessibility being enabled. Initialize the browser's cached
     // accessibility tree by sending it a notification.
     HandleWebAccessibilityEvent(document.accessibilityObject(),
-                                WebKit::WebAXEventLayoutComplete);
+                                blink::WebAXEventLayoutComplete);
   }
 }
 
@@ -81,11 +81,11 @@ void RendererAccessibilityComplete::FocusedNodeChanged(const WebNode& node) {
     // When focus is cleared, implicitly focus the document.
     // TODO(dmazzoni): Make WebKit send this notification instead.
     HandleWebAccessibilityEvent(document.accessibilityObject(),
-                                WebKit::WebAXEventBlur);
+                                blink::WebAXEventBlur);
   }
 }
 
-void RendererAccessibilityComplete::DidFinishLoad(WebKit::WebFrame* frame) {
+void RendererAccessibilityComplete::DidFinishLoad(blink::WebFrame* frame) {
   const WebDocument& document = GetMainDocument();
   if (document.isNull())
     return;
@@ -96,12 +96,12 @@ void RendererAccessibilityComplete::DidFinishLoad(WebKit::WebFrame* frame) {
   // TODO(dmazzoni): remove this once rdar://5794454 is fixed.
   WebAXObject new_root = document.accessibilityObject();
   if (!browser_root_ || new_root.axID() != browser_root_->id)
-    HandleWebAccessibilityEvent(new_root, WebKit::WebAXEventLayoutComplete);
+    HandleWebAccessibilityEvent(new_root, blink::WebAXEventLayoutComplete);
 }
 
 void RendererAccessibilityComplete::HandleWebAccessibilityEvent(
-    const WebKit::WebAXObject& obj,
-    WebKit::WebAXEvent event) {
+    const blink::WebAXObject& obj,
+    blink::WebAXEvent event) {
   const WebDocument& document = GetMainDocument();
   if (document.isNull())
     return;
@@ -117,7 +117,7 @@ void RendererAccessibilityComplete::HandleWebAccessibilityEvent(
     if (!obj.equals(document.accessibilityObject())) {
       HandleWebAccessibilityEvent(
           document.accessibilityObject(),
-          WebKit::WebAXEventLayoutComplete);
+          blink::WebAXEventLayoutComplete);
     }
   }
 
@@ -189,7 +189,7 @@ void RendererAccessibilityComplete::SendPendingAccessibilityEvents() {
     // doesn't also send us events for each child that changed
     // selection state, so make sure we re-send that whole subtree.
     if (event.event_type ==
-        WebKit::WebAXEventSelectedChildrenChanged) {
+        blink::WebAXEventSelectedChildrenChanged) {
       base::hash_map<int32, BrowserTreeNode*>::iterator iter =
           browser_id_map_.find(obj.axID());
       if (iter != browser_id_map_.end())
@@ -208,7 +208,7 @@ void RendererAccessibilityComplete::SendPendingAccessibilityEvents() {
            obj.axID() != root_id) {
       obj = obj.parentObject();
       if (event.event_type ==
-          WebKit::WebAXEventChildrenChanged) {
+          blink::WebAXEventChildrenChanged) {
         event.id = obj.axID();
       }
     }
@@ -309,7 +309,7 @@ void RendererAccessibilityComplete::AppendLocationChangeEvents(
     return;
 
   AccessibilityHostMsg_EventParams event_msg;
-  event_msg.event_type = static_cast<WebKit::WebAXEvent>(-1);
+  event_msg.event_type = static_cast<blink::WebAXEvent>(-1);
   event_msg.id = root_object.axID();
   event_msg.nodes.resize(location_changes.size());
   for (size_t i = 0; i < location_changes.size(); i++) {
@@ -329,7 +329,7 @@ RendererAccessibilityComplete::CreateBrowserTreeNode() {
 }
 
 void RendererAccessibilityComplete::SerializeChangedNodes(
-    const WebKit::WebAXObject& obj,
+    const blink::WebAXObject& obj,
     std::vector<AccessibilityNodeData>* dst,
     std::set<int>* ids_serialized) {
   if (ids_serialized->find(obj.axID()) != ids_serialized->end())
@@ -432,7 +432,7 @@ void RendererAccessibilityComplete::SerializeChangedNodes(
   AccessibilityNodeData* serialized_node = &dst->back();
   SerializeAccessibilityNode(obj, serialized_node);
   if (serialized_node->id == browser_root_->id)
-    serialized_node->role = WebKit::WebAXRoleRootWebArea;
+    serialized_node->role = blink::WebAXRoleRootWebArea;
 
   // Iterate over the children, make note of the ones that are new
   // and need to be serialized, and update the BrowserTreeNode
@@ -528,7 +528,7 @@ void RendererAccessibilityComplete::OnScrollToMakeVisible(
   // https://bugs.webkit.org/show_bug.cgi?id=73460
   HandleWebAccessibilityEvent(
       document.accessibilityObject(),
-      WebKit::WebAXEventLayoutComplete);
+      blink::WebAXEventLayoutComplete);
 }
 
 void RendererAccessibilityComplete::OnScrollToPoint(
@@ -554,7 +554,7 @@ void RendererAccessibilityComplete::OnScrollToPoint(
   // https://bugs.webkit.org/show_bug.cgi?id=73460
   HandleWebAccessibilityEvent(
       document.accessibilityObject(),
-      WebKit::WebAXEventLayoutComplete);
+      blink::WebAXEventLayoutComplete);
 }
 
 void RendererAccessibilityComplete::OnSetTextSelection(
@@ -573,11 +573,11 @@ void RendererAccessibilityComplete::OnSetTextSelection(
   }
 
   // TODO(dmazzoni): support elements other than <input>.
-  WebKit::WebNode node = obj.node();
+  blink::WebNode node = obj.node();
   if (!node.isNull() && node.isElementNode()) {
-    WebKit::WebElement element = node.to<WebKit::WebElement>();
-    WebKit::WebInputElement* input_element =
-        WebKit::toWebInputElement(&element);
+    blink::WebElement element = node.to<blink::WebElement>();
+    blink::WebInputElement* input_element =
+        blink::toWebInputElement(&element);
     if (input_element && input_element->isTextField())
       input_element->setSelectionRange(start_offset, end_offset);
   }

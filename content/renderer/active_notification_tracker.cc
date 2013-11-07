@@ -9,8 +9,8 @@
 #include "third_party/WebKit/public/web/WebNotification.h"
 #include "third_party/WebKit/public/web/WebNotificationPermissionCallback.h"
 
-using WebKit::WebNotification;
-using WebKit::WebNotificationPermissionCallback;
+using blink::WebNotification;
+using blink::WebNotificationPermissionCallback;
 
 namespace content {
 
@@ -38,7 +38,7 @@ bool ActiveNotificationTracker::GetNotification(
 }
 
 int ActiveNotificationTracker::RegisterNotification(
-    const WebKit::WebNotification& proxy) {
+    const blink::WebNotification& proxy) {
   if (reverse_notification_table_.find(proxy)
       != reverse_notification_table_.end()) {
     return reverse_notification_table_[proxy];

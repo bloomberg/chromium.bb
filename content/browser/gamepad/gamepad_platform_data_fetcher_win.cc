@@ -22,7 +22,7 @@
 
 namespace content {
 
-using namespace WebKit;
+using namespace blink;
 
 namespace {
 

@@ -85,7 +85,7 @@ struct CONTENT_EXPORT AccessibilityNodeData {
     // Relationships between this element and other elements.
     ATTR_TITLE_UI_ELEMENT,
 
-    // Color value for WebKit::WebAXRoleColorWell, each component is 0..255
+    // Color value for blink::WebAXRoleColorWell, each component is 0..255
     ATTR_COLOR_VALUE_RED,
     ATTR_COLOR_VALUE_GREEN,
     ATTR_COLOR_VALUE_BLUE,
@@ -188,7 +188,7 @@ struct CONTENT_EXPORT AccessibilityNodeData {
   // This is a simple serializable struct. All member variables should be
   // public and copyable.
   int32 id;
-  WebKit::WebAXRole role;
+  blink::WebAXRole role;
   uint32 state;
   gfx::Rect location;
   std::vector<std::pair<StringAttribute, std::string> > string_attributes;

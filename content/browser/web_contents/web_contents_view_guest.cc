@@ -25,8 +25,8 @@
 #include "ui/aura/window.h"
 #endif
 
-using WebKit::WebDragOperation;
-using WebKit::WebDragOperationsMask;
+using blink::WebDragOperation;
+using blink::WebDragOperationsMask;
 
 namespace content {
 

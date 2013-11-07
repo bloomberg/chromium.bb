@@ -63,7 +63,7 @@ bool ParamTraits<WebInputEventPointer>::Read(const Message* m,
     NOTREACHED();
     return false;
   }
-  if (data_length < static_cast<int>(sizeof(WebKit::WebInputEvent))) {
+  if (data_length < static_cast<int>(sizeof(blink::WebInputEvent))) {
     NOTREACHED();
     return false;
   }

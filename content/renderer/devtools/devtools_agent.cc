@@ -29,15 +29,15 @@
 #include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
 #endif
 
-using WebKit::WebConsoleMessage;
-using WebKit::WebDevToolsAgent;
-using WebKit::WebDevToolsAgentClient;
-using WebKit::WebFrame;
-using WebKit::WebPoint;
-using WebKit::WebString;
-using WebKit::WebCString;
-using WebKit::WebVector;
-using WebKit::WebView;
+using blink::WebConsoleMessage;
+using blink::WebDevToolsAgent;
+using blink::WebDevToolsAgentClient;
+using blink::WebFrame;
+using blink::WebPoint;
+using blink::WebString;
+using blink::WebCString;
+using blink::WebVector;
+using blink::WebView;
 
 using base::debug::TraceLog;
 
@@ -108,7 +108,7 @@ bool DevToolsAgent::OnMessageReceived(const IPC::Message& message) {
 }
 
 void DevToolsAgent::sendMessageToInspectorFrontend(
-    const WebKit::WebString& message) {
+    const blink::WebString& message) {
   Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(routing_id(),
                                                          message.utf8()));
 }
@@ -118,11 +118,11 @@ int DevToolsAgent::hostIdentifier() {
 }
 
 void DevToolsAgent::saveAgentRuntimeState(
-    const WebKit::WebString& state) {
+    const blink::WebString& state) {
   Send(new DevToolsHostMsg_SaveAgentRuntimeState(routing_id(), state.utf8()));
 }
 
-WebKit::WebDevToolsAgentClient::WebKitClientMessageLoop*
+blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
     DevToolsAgent::createClientMessageLoop() {
   return new WebKitClientMessageLoopImpl();
 }
@@ -171,8 +171,8 @@ void DevToolsAgent::TraceEventCallbackWrapper(
 }
 
 void DevToolsAgent::enableDeviceEmulation(
-    const WebKit::WebSize& device_size,
-    const WebKit::WebRect& view_rect,
+    const blink::WebSize& device_size,
+    const blink::WebRect& view_rect,
     float device_scale_factor,
     bool fit_to_view) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(render_view());
@@ -188,7 +188,7 @@ void DevToolsAgent::disableDeviceEmulation() {
 
 #if defined(USE_TCMALLOC) && !defined(OS_WIN)
 static void AllocationVisitor(void* data, const void* ptr) {
-    typedef WebKit::WebDevToolsAgentClient::AllocatedObjectVisitor Visitor;
+    typedef blink::WebDevToolsAgentClient::AllocatedObjectVisitor Visitor;
     Visitor* visitor = reinterpret_cast<Visitor*>(data);
     visitor->visitObject(ptr);
 }

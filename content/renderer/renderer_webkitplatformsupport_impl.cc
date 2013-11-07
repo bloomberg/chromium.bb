@@ -103,33 +103,33 @@
 #include "content/renderer/media/android/audio_decoder_android.h"
 #endif
 
-using WebKit::WebAudioDevice;
-using WebKit::WebBlobRegistry;
-using WebKit::WebFileInfo;
-using WebKit::WebFileSystem;
-using WebKit::WebFrame;
-using WebKit::WebGamepads;
-using WebKit::WebIDBFactory;
-using WebKit::WebMIDIAccessor;
-using WebKit::Platform;
-using WebKit::WebMediaStreamCenter;
-using WebKit::WebMediaStreamCenterClient;
-using WebKit::WebMimeRegistry;
-using WebKit::WebRTCPeerConnectionHandler;
-using WebKit::WebRTCPeerConnectionHandlerClient;
-using WebKit::WebStorageNamespace;
-using WebKit::WebString;
-using WebKit::WebURL;
-using WebKit::WebVector;
+using blink::WebAudioDevice;
+using blink::WebBlobRegistry;
+using blink::WebFileInfo;
+using blink::WebFileSystem;
+using blink::WebFrame;
+using blink::WebGamepads;
+using blink::WebIDBFactory;
+using blink::WebMIDIAccessor;
+using blink::Platform;
+using blink::WebMediaStreamCenter;
+using blink::WebMediaStreamCenterClient;
+using blink::WebMimeRegistry;
+using blink::WebRTCPeerConnectionHandler;
+using blink::WebRTCPeerConnectionHandlerClient;
+using blink::WebStorageNamespace;
+using blink::WebString;
+using blink::WebURL;
+using blink::WebVector;
 
 namespace content {
 
 static bool g_sandbox_enabled = true;
 base::LazyInstance<WebGamepads>::Leaky g_test_gamepads =
     LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<WebKit::WebDeviceMotionData>::Leaky
+base::LazyInstance<blink::WebDeviceMotionData>::Leaky
     g_test_device_motion_data = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<WebKit::WebDeviceOrientationData>::Leaky
+base::LazyInstance<blink::WebDeviceOrientationData>::Leaky
     g_test_device_orientation_data = LAZY_INSTANCE_INITIALIZER;
 
 //------------------------------------------------------------------------------
@@ -137,16 +137,16 @@ base::LazyInstance<WebKit::WebDeviceOrientationData>::Leaky
 class RendererWebKitPlatformSupportImpl::MimeRegistry
     : public webkit_glue::SimpleWebMimeRegistryImpl {
  public:
-  virtual WebKit::WebMimeRegistry::SupportsType supportsMediaMIMEType(
-      const WebKit::WebString& mime_type,
-      const WebKit::WebString& codecs,
-      const WebKit::WebString& key_system);
-  virtual bool supportsMediaSourceMIMEType(const WebKit::WebString& mime_type,
-                                           const WebKit::WebString& codecs);
-  virtual WebKit::WebString mimeTypeForExtension(
-      const WebKit::WebString& file_extension);
-  virtual WebKit::WebString mimeTypeFromFile(
-      const WebKit::WebString& file_path);
+  virtual blink::WebMimeRegistry::SupportsType supportsMediaMIMEType(
+      const blink::WebString& mime_type,
+      const blink::WebString& codecs,
+      const blink::WebString& key_system);
+  virtual bool supportsMediaSourceMIMEType(const blink::WebString& mime_type,
+                                           const blink::WebString& codecs);
+  virtual blink::WebString mimeTypeForExtension(
+      const blink::WebString& file_extension);
+  virtual blink::WebString mimeTypeFromFile(
+      const blink::WebString& file_path);
 };
 
 class RendererWebKitPlatformSupportImpl::FileUtilities
@@ -167,7 +167,7 @@ class RendererWebKitPlatformSupportImpl::SandboxSupport {
 };
 #else
 class RendererWebKitPlatformSupportImpl::SandboxSupport
-    : public WebKit::WebSandboxSupport {
+    : public blink::WebSandboxSupport {
  public:
   virtual ~SandboxSupport() {}
 
@@ -180,18 +180,18 @@ class RendererWebKitPlatformSupportImpl::SandboxSupport
       uint32* font_id);
 #elif defined(OS_POSIX)
   virtual void getFontFamilyForCharacter(
-      WebKit::WebUChar32 character,
+      blink::WebUChar32 character,
       const char* preferred_locale,
-      WebKit::WebFontFamily* family);
+      blink::WebFontFamily* family);
   virtual void getRenderStyleForStrike(
-      const char* family, int sizeAndStyle, WebKit::WebFontRenderStyle* out);
+      const char* family, int sizeAndStyle, blink::WebFontRenderStyle* out);
 
  private:
   // WebKit likes to ask us for the correct font family to use for a set of
   // unicode code points. It needs this information frequently so we cache it
   // here.
   base::Lock unicode_font_families_mutex_;
-  std::map<int32_t, WebKit::WebFontFamily> unicode_font_families_;
+  std::map<int32_t, blink::WebFontFamily> unicode_font_families_;
 #endif
 };
 #endif  // defined(OS_ANDROID)
@@ -227,19 +227,19 @@ RendererWebKitPlatformSupportImpl::~RendererWebKitPlatformSupportImpl() {
 
 //------------------------------------------------------------------------------
 
-WebKit::WebClipboard* RendererWebKitPlatformSupportImpl::clipboard() {
-  WebKit::WebClipboard* clipboard =
+blink::WebClipboard* RendererWebKitPlatformSupportImpl::clipboard() {
+  blink::WebClipboard* clipboard =
       GetContentClient()->renderer()->OverrideWebClipboard();
   if (clipboard)
     return clipboard;
   return clipboard_.get();
 }
 
-WebKit::WebMimeRegistry* RendererWebKitPlatformSupportImpl::mimeRegistry() {
+blink::WebMimeRegistry* RendererWebKitPlatformSupportImpl::mimeRegistry() {
   return mime_registry_.get();
 }
 
-WebKit::WebFileUtilities*
+blink::WebFileUtilities*
 RendererWebKitPlatformSupportImpl::fileUtilities() {
   if (!file_utilities_) {
     file_utilities_.reset(new FileUtilities(thread_safe_sender_.get()));
@@ -248,7 +248,7 @@ RendererWebKitPlatformSupportImpl::fileUtilities() {
   return file_utilities_.get();
 }
 
-WebKit::WebSandboxSupport* RendererWebKitPlatformSupportImpl::sandboxSupport() {
+blink::WebSandboxSupport* RendererWebKitPlatformSupportImpl::sandboxSupport() {
 #if defined(OS_ANDROID)
   // WebKit doesn't use WebSandboxSupport on android.
   return NULL;
@@ -257,13 +257,13 @@ WebKit::WebSandboxSupport* RendererWebKitPlatformSupportImpl::sandboxSupport() {
 #endif
 }
 
-WebKit::WebCookieJar* RendererWebKitPlatformSupportImpl::cookieJar() {
+blink::WebCookieJar* RendererWebKitPlatformSupportImpl::cookieJar() {
   NOTREACHED() << "Use WebFrameClient::cookieJar() instead!";
   return NULL;
 }
 
-WebKit::WebThemeEngine* RendererWebKitPlatformSupportImpl::themeEngine() {
-  WebKit::WebThemeEngine* theme_engine =
+blink::WebThemeEngine* RendererWebKitPlatformSupportImpl::themeEngine() {
+  blink::WebThemeEngine* theme_engine =
       GetContentClient()->renderer()->OverrideThemeEngine();
   if (theme_engine)
     return theme_engine;
@@ -292,12 +292,12 @@ bool RendererWebKitPlatformSupportImpl::isLinkVisited(
   return GetContentClient()->renderer()->IsLinkVisited(link_hash);
 }
 
-WebKit::WebMessagePortChannel*
+blink::WebMessagePortChannel*
 RendererWebKitPlatformSupportImpl::createMessagePortChannel() {
   return new WebMessagePortChannelImpl(child_thread_loop_.get());
 }
 
-WebKit::WebPrescientNetworking*
+blink::WebPrescientNetworking*
 RendererWebKitPlatformSupportImpl::prescientNetworking() {
   return GetContentClient()->renderer()->GetPrescientNetworking();
 }
@@ -315,7 +315,7 @@ RendererWebKitPlatformSupportImpl::CheckPreparsedJsCachingEnabled() const {
 }
 
 void RendererWebKitPlatformSupportImpl::cacheMetadata(
-    const WebKit::WebURL& url,
+    const blink::WebURL& url,
     double response_time,
     const char* data,
     size_t size) {
@@ -429,7 +429,7 @@ RendererWebKitPlatformSupportImpl::MimeRegistry::supportsMediaMIMEType(
 
 bool
 RendererWebKitPlatformSupportImpl::MimeRegistry::supportsMediaSourceMIMEType(
-    const WebKit::WebString& mime_type,
+    const blink::WebString& mime_type,
     const WebString& codecs) {
   const std::string mime_type_ascii = ToASCIIOrEmpty(mime_type);
   std::vector<std::string> parsed_codec_ids;
@@ -547,11 +547,11 @@ bool RendererWebKitPlatformSupportImpl::SandboxSupport::loadFont(
 
 void
 RendererWebKitPlatformSupportImpl::SandboxSupport::getFontFamilyForCharacter(
-    WebKit::WebUChar32 character,
+    blink::WebUChar32 character,
     const char* preferred_locale,
-    WebKit::WebFontFamily* family) {
+    blink::WebFontFamily* family) {
   base::AutoLock lock(unicode_font_families_mutex_);
-  const std::map<int32_t, WebKit::WebFontFamily>::const_iterator iter =
+  const std::map<int32_t, blink::WebFontFamily>::const_iterator iter =
       unicode_font_families_.find(character);
   if (iter != unicode_font_families_.end()) {
     family->name = iter->second.name;
@@ -566,7 +566,7 @@ RendererWebKitPlatformSupportImpl::SandboxSupport::getFontFamilyForCharacter(
 
 void
 RendererWebKitPlatformSupportImpl::SandboxSupport::getRenderStyleForStrike(
-    const char* family, int sizeAndStyle, WebKit::WebFontRenderStyle* out) {
+    const char* family, int sizeAndStyle, blink::WebFontRenderStyle* out) {
   GetRenderStyleForStrike(family, sizeAndStyle, out);
 }
 
@@ -668,9 +668,9 @@ RendererWebKitPlatformSupportImpl::createAudioDevice(
     unsigned channels,
     double sample_rate,
     WebAudioDevice::RenderCallback* callback,
-    const WebKit::WebString& input_device_id) {
+    const blink::WebString& input_device_id) {
   // Use a mock for testing.
-  WebKit::WebAudioDevice* mock_device =
+  blink::WebAudioDevice* mock_device =
       GetContentClient()->renderer()->OverrideCreateAudioDevice(sample_rate);
   if (mock_device)
     return mock_device;
@@ -729,7 +729,7 @@ RendererWebKitPlatformSupportImpl::createAudioDevice(
 
 #if defined(OS_ANDROID)
 bool RendererWebKitPlatformSupportImpl::loadAudioResource(
-    WebKit::WebAudioBus* destination_bus, const char* audio_file_data,
+    blink::WebAudioBus* destination_bus, const char* audio_file_data,
     size_t data_size, double sample_rate) {
   return DecodeAudioFileData(destination_bus,
                              audio_file_data,
@@ -739,7 +739,7 @@ bool RendererWebKitPlatformSupportImpl::loadAudioResource(
 }
 #else
 bool RendererWebKitPlatformSupportImpl::loadAudioResource(
-    WebKit::WebAudioBus* destination_bus, const char* audio_file_data,
+    blink::WebAudioBus* destination_bus, const char* audio_file_data,
     size_t data_size, double sample_rate) {
   return DecodeAudioFileData(
       destination_bus, audio_file_data, data_size, sample_rate);
@@ -748,18 +748,18 @@ bool RendererWebKitPlatformSupportImpl::loadAudioResource(
 
 //------------------------------------------------------------------------------
 
-WebKit::WebContentDecryptionModule*
+blink::WebContentDecryptionModule*
 RendererWebKitPlatformSupportImpl::createContentDecryptionModule(
-    const WebKit::WebString& key_system) {
+    const blink::WebString& key_system) {
   return WebContentDecryptionModuleImpl::Create(key_system);
 }
 
 //------------------------------------------------------------------------------
 
-WebKit::WebMIDIAccessor*
+blink::WebMIDIAccessor*
 RendererWebKitPlatformSupportImpl::createMIDIAccessor(
-    WebKit::WebMIDIAccessorClient* client) {
-  WebKit::WebMIDIAccessor* accessor =
+    blink::WebMIDIAccessorClient* client) {
+  blink::WebMIDIAccessor* accessor =
       GetContentClient()->renderer()->OverrideCreateMIDIAccessor(client);
   if (accessor)
     return accessor;
@@ -769,7 +769,7 @@ RendererWebKitPlatformSupportImpl::createMIDIAccessor(
 
 void RendererWebKitPlatformSupportImpl::getPluginList(
     bool refresh,
-    WebKit::WebPluginListBuilder* builder) {
+    blink::WebPluginListBuilder* builder) {
 #if defined(ENABLE_PLUGINS)
   std::vector<WebPluginInfo> plugins;
   if (!plugin_refresh_allowed_)
@@ -800,11 +800,11 @@ void RendererWebKitPlatformSupportImpl::getPluginList(
 
 //------------------------------------------------------------------------------
 
-WebKit::WebString
+blink::WebString
 RendererWebKitPlatformSupportImpl::signedPublicKeyAndChallengeString(
     unsigned key_size_index,
-    const WebKit::WebString& challenge,
-    const WebKit::WebURL& url) {
+    const blink::WebString& challenge,
+    const blink::WebURL& url) {
   std::string signed_public_key;
   RenderThread::Get()->Send(new ViewHostMsg_Keygen(
       static_cast<uint32>(key_size_index),
@@ -841,8 +841,8 @@ void RendererWebKitPlatformSupportImpl::sampleGamepads(WebGamepads& gamepads) {
   }
 }
 
-WebKit::WebString RendererWebKitPlatformSupportImpl::userAgent(
-    const WebKit::WebURL& url) {
+blink::WebString RendererWebKitPlatformSupportImpl::userAgent(
+    const blink::WebURL& url) {
   return WebKitPlatformSupportImpl::userAgent(url);
 }
 
@@ -899,9 +899,9 @@ void RendererWebKitPlatformSupportImpl::SetMockGamepadsForTesting(
 
 //------------------------------------------------------------------------------
 
-WebKit::WebSpeechSynthesizer*
+blink::WebSpeechSynthesizer*
 RendererWebKitPlatformSupportImpl::createSpeechSynthesizer(
-    WebKit::WebSpeechSynthesizerClient* client) {
+    blink::WebSpeechSynthesizerClient* client) {
   return GetContentClient()->renderer()->OverrideSpeechSynthesizer(client);
 }
 
@@ -916,9 +916,9 @@ bool RendererWebKitPlatformSupportImpl::processMemorySizesInBytes(
 
 //------------------------------------------------------------------------------
 
-WebKit::WebGraphicsContext3D*
+blink::WebGraphicsContext3D*
 RendererWebKitPlatformSupportImpl::createOffscreenGraphicsContext3D(
-    const WebKit::WebGraphicsContext3D::Attributes& attributes) {
+    const blink::WebGraphicsContext3D::Attributes& attributes) {
   if (!RenderThreadImpl::current())
     return NULL;
 
@@ -933,7 +933,7 @@ RendererWebKitPlatformSupportImpl::createOffscreenGraphicsContext3D(
 
 //------------------------------------------------------------------------------
 
-WebKit::WebGraphicsContext3DProvider* RendererWebKitPlatformSupportImpl::
+blink::WebGraphicsContext3DProvider* RendererWebKitPlatformSupportImpl::
     createSharedOffscreenGraphicsContext3DProvider() {
   scoped_refptr<cc::ContextProvider> provider =
       RenderThreadImpl::current()->SharedMainThreadContextProvider();
@@ -944,23 +944,23 @@ WebKit::WebGraphicsContext3DProvider* RendererWebKitPlatformSupportImpl::
 
 //------------------------------------------------------------------------------
 
-WebKit::WebCompositorSupport*
+blink::WebCompositorSupport*
 RendererWebKitPlatformSupportImpl::compositorSupport() {
   return &compositor_support_;
 }
 
 //------------------------------------------------------------------------------
 
-WebKit::WebString RendererWebKitPlatformSupportImpl::convertIDNToUnicode(
-    const WebKit::WebString& host,
-    const WebKit::WebString& languages) {
+blink::WebString RendererWebKitPlatformSupportImpl::convertIDNToUnicode(
+    const blink::WebString& host,
+    const blink::WebString& languages) {
   return net::IDNToUnicode(host.utf8(), languages.utf8());
 }
 
 //------------------------------------------------------------------------------
 
 void RendererWebKitPlatformSupportImpl::setDeviceMotionListener(
-    WebKit::WebDeviceMotionListener* listener) {
+    blink::WebDeviceMotionListener* listener) {
   if (g_test_device_motion_data == 0) {
     if (!device_motion_event_pump_) {
       device_motion_event_pump_.reset(new DeviceMotionEventPump);
@@ -971,7 +971,7 @@ void RendererWebKitPlatformSupportImpl::setDeviceMotionListener(
     // Testing mode: just echo the test data to the listener.
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
-        base::Bind(&WebKit::WebDeviceMotionListener::didChangeDeviceMotion,
+        base::Bind(&blink::WebDeviceMotionListener::didChangeDeviceMotion,
                    base::Unretained(listener),
                    g_test_device_motion_data.Get()));
   }
@@ -979,14 +979,14 @@ void RendererWebKitPlatformSupportImpl::setDeviceMotionListener(
 
 // static
 void RendererWebKitPlatformSupportImpl::SetMockDeviceMotionDataForTesting(
-    const WebKit::WebDeviceMotionData& data) {
+    const blink::WebDeviceMotionData& data) {
   g_test_device_motion_data.Get() = data;
 }
 
 //------------------------------------------------------------------------------
 
 void RendererWebKitPlatformSupportImpl::setDeviceOrientationListener(
-    WebKit::WebDeviceOrientationListener* listener) {
+    blink::WebDeviceOrientationListener* listener) {
   if (g_test_device_orientation_data == 0) {
     if (!device_orientation_event_pump_) {
       device_orientation_event_pump_.reset(new DeviceOrientationEventPump);
@@ -998,7 +998,7 @@ void RendererWebKitPlatformSupportImpl::setDeviceOrientationListener(
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(
-            &WebKit::WebDeviceOrientationListener::didChangeDeviceOrientation,
+            &blink::WebDeviceOrientationListener::didChangeDeviceOrientation,
             base::Unretained(listener),
             g_test_device_orientation_data.Get()));
   }
@@ -1006,13 +1006,13 @@ void RendererWebKitPlatformSupportImpl::setDeviceOrientationListener(
 
 // static
 void RendererWebKitPlatformSupportImpl::SetMockDeviceOrientationDataForTesting(
-    const WebKit::WebDeviceOrientationData& data) {
+    const blink::WebDeviceOrientationData& data) {
   g_test_device_orientation_data.Get() = data;
 }
 
 //------------------------------------------------------------------------------
 
-WebKit::WebCrypto* RendererWebKitPlatformSupportImpl::crypto() {
+blink::WebCrypto* RendererWebKitPlatformSupportImpl::crypto() {
   if (!web_crypto_)
     web_crypto_.reset(new WebCryptoImpl());
   return web_crypto_.get();
@@ -1035,9 +1035,9 @@ void RendererWebKitPlatformSupportImpl::cancelVibration() {
 //------------------------------------------------------------------------------
 
 void RendererWebKitPlatformSupportImpl::queryStorageUsageAndQuota(
-    const WebKit::WebURL& storage_partition,
-    WebKit::WebStorageQuotaType type,
-    WebKit::WebStorageQuotaCallbacks* callbacks) {
+    const blink::WebURL& storage_partition,
+    blink::WebStorageQuotaType type,
+    blink::WebStorageQuotaCallbacks* callbacks) {
   if (!thread_safe_sender_.get() || !quota_message_filter_.get())
     return;
   QuotaDispatcher::ThreadSpecificInstance(

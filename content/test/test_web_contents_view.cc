@@ -23,13 +23,13 @@ void TestWebContentsView::ShowPopupMenu(const gfx::Rect& bounds,
 
 void TestWebContentsView::StartDragging(
     const DropData& drop_data,
-    WebKit::WebDragOperationsMask allowed_ops,
+    blink::WebDragOperationsMask allowed_ops,
     const gfx::ImageSkia& image,
     const gfx::Vector2d& image_offset,
     const DragEventSourceInfo& event_info) {
 }
 
-void TestWebContentsView::UpdateDragCursor(WebKit::WebDragOperation operation) {
+void TestWebContentsView::UpdateDragCursor(blink::WebDragOperation operation) {
 }
 
 void TestWebContentsView::GotFocus() {

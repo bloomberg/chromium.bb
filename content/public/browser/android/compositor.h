@@ -76,27 +76,27 @@ class CONTENT_EXPORT Compositor {
 
   // Generates an OpenGL texture and returns a texture handle.  May return 0
   // if the current context is lost.
-  virtual WebKit::WebGLId GenerateTexture(gfx::JavaBitmap& bitmap) = 0;
+  virtual blink::WebGLId GenerateTexture(gfx::JavaBitmap& bitmap) = 0;
 
   // Generates an OpenGL compressed texture and returns a texture handle.  May
   // return 0 if the current context is lost.
-  virtual WebKit::WebGLId GenerateCompressedTexture(gfx::Size& size,
+  virtual blink::WebGLId GenerateCompressedTexture(gfx::Size& size,
                                                     int data_size,
                                                     void* data) = 0;
 
   // Deletes an OpenGL texture.
-  virtual void DeleteTexture(WebKit::WebGLId texture_id) = 0;
+  virtual void DeleteTexture(blink::WebGLId texture_id) = 0;
 
   // Grabs a copy of |texture_id| and saves it into |bitmap|.  No scaling is
   // done.  It is assumed that the texture size matches that of the bitmap.
-  virtual bool CopyTextureToBitmap(WebKit::WebGLId texture_id,
+  virtual bool CopyTextureToBitmap(blink::WebGLId texture_id,
                                    gfx::JavaBitmap& bitmap) = 0;
 
   // Grabs a copy of |texture_id| and saves it into |bitmap|.  No scaling is
   // done. |src_rect| allows the caller to specify which rect of |texture_id|
   // to copy to |bitmap|.  It needs to match the size of |bitmap|.  Returns
   // true if the |texture_id| was copied into |bitmap|, false if not.
-  virtual bool CopyTextureToBitmap(WebKit::WebGLId texture_id,
+  virtual bool CopyTextureToBitmap(blink::WebGLId texture_id,
                                    const gfx::Rect& src_rect,
                                    gfx::JavaBitmap& bitmap) = 0;
  protected:

@@ -10,15 +10,15 @@
 
 #include "jni/TouchPoint_jni.h"
 
-using WebKit::WebTouchEvent;
-using WebKit::WebTouchPoint;
+using blink::WebTouchEvent;
+using blink::WebTouchPoint;
 
 namespace {
 
 void MaybeAddTouchPoint(JNIEnv* env,
                         jobject pt,
                         float dpi_scale,
-                        WebKit::WebTouchEvent& event) {
+                        blink::WebTouchEvent& event) {
   WebTouchPoint::State state = static_cast<WebTouchPoint::State>(
       Java_TouchPoint_getState(env, pt));
   if (state == WebTouchPoint::StateUndefined)
@@ -32,7 +32,7 @@ void MaybeAddTouchPoint(JNIEnv* env,
 
   // Record the current number of points in the WebTouchEvent
   const int idx = event.touchesLength;
-  DCHECK_LT(idx, WebKit::WebTouchEvent::touchesLengthCap);
+  DCHECK_LT(idx, blink::WebTouchEvent::touchesLengthCap);
 
   WebTouchPoint wtp;
   wtp.id = Java_TouchPoint_getId(env, pt);
@@ -72,7 +72,7 @@ void TouchPoint::BuildWebTouchEvent(JNIEnv* env,
                                     jlong time_ms,
                                     float dpi_scale,
                                     jobjectArray pts,
-                                    WebKit::WebTouchEvent& event) {
+                                    blink::WebTouchEvent& event) {
   event.type = static_cast<WebTouchEvent::Type>(type);
   event.timeStampSeconds =
       static_cast<double>(time_ms) / base::Time::kMillisecondsPerSecond;
@@ -91,16 +91,16 @@ void TouchPoint::BuildWebTouchEvent(JNIEnv* env,
 static void RegisterConstants(JNIEnv* env) {
    Java_TouchPoint_initializeConstants(
        env,
-       WebKit::WebTouchEvent::TouchStart,
-       WebKit::WebTouchEvent::TouchMove,
-       WebKit::WebTouchEvent::TouchEnd,
-       WebKit::WebTouchEvent::TouchCancel,
-       WebKit::WebTouchPoint::StateUndefined,
-       WebKit::WebTouchPoint::StateReleased,
-       WebKit::WebTouchPoint::StatePressed,
-       WebKit::WebTouchPoint::StateMoved,
-       WebKit::WebTouchPoint::StateStationary,
-       WebKit::WebTouchPoint::StateCancelled);
+       blink::WebTouchEvent::TouchStart,
+       blink::WebTouchEvent::TouchMove,
+       blink::WebTouchEvent::TouchEnd,
+       blink::WebTouchEvent::TouchCancel,
+       blink::WebTouchPoint::StateUndefined,
+       blink::WebTouchPoint::StateReleased,
+       blink::WebTouchPoint::StatePressed,
+       blink::WebTouchPoint::StateMoved,
+       blink::WebTouchPoint::StateStationary,
+       blink::WebTouchPoint::StateCancelled);
 }
 
 bool RegisterTouchPoint(JNIEnv* env) {

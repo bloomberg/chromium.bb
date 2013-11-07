@@ -60,11 +60,11 @@
 #include "v8/include/v8.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
-using WebKit::WebCanvas;
-using WebKit::WebMediaPlayer;
-using WebKit::WebRect;
-using WebKit::WebSize;
-using WebKit::WebString;
+using blink::WebCanvas;
+using blink::WebMediaPlayer;
+using blink::WebRect;
+using blink::WebSize;
+using blink::WebString;
 using media::PipelineStatus;
 
 namespace {
@@ -129,8 +129,8 @@ static void LogMediaSourceError(const scoped_refptr<media::MediaLog>& media_log,
 }
 
 WebMediaPlayerImpl::WebMediaPlayerImpl(
-    WebKit::WebFrame* frame,
-    WebKit::WebMediaPlayerClient* client,
+    blink::WebFrame* frame,
+    blink::WebMediaPlayerClient* client,
     base::WeakPtr<WebMediaPlayerDelegate> delegate,
     const WebMediaPlayerParams& params)
     : frame_(frame),
@@ -184,7 +184,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   // Also we want to be notified of |main_loop_| destruction.
   base::MessageLoop::current()->AddDestructionObserver(this);
 
-  if (WebKit::WebRuntimeFeatures::isPrefixedEncryptedMediaEnabled()) {
+  if (blink::WebRuntimeFeatures::isPrefixedEncryptedMediaEnabled()) {
     decryptor_.reset(new ProxyDecryptor(
 #if defined(ENABLE_PEPPER_CDMS)
         client,
@@ -255,7 +255,7 @@ URLSchemeForHistogram URLScheme(const GURL& url) {
 
 }  // anonymous namespace
 
-void WebMediaPlayerImpl::load(LoadType load_type, const WebKit::WebURL& url,
+void WebMediaPlayerImpl::load(LoadType load_type, const blink::WebURL& url,
                               CORSMode cors_mode) {
   if (!defer_load_cb_.is_null()) {
     defer_load_cb_.Run(base::Bind(
@@ -266,7 +266,7 @@ void WebMediaPlayerImpl::load(LoadType load_type, const WebKit::WebURL& url,
 }
 
 void WebMediaPlayerImpl::DoLoad(LoadType load_type,
-                                const WebKit::WebURL& url,
+                                const blink::WebURL& url,
                                 CORSMode cors_mode) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
@@ -435,12 +435,12 @@ bool WebMediaPlayerImpl::hasAudio() const {
   return pipeline_->HasAudio();
 }
 
-WebKit::WebSize WebMediaPlayerImpl::naturalSize() const {
+blink::WebSize WebMediaPlayerImpl::naturalSize() const {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
   gfx::Size size;
   pipeline_->GetNaturalVideoSize(&size);
-  return WebKit::WebSize(size);
+  return blink::WebSize(size);
 }
 
 bool WebMediaPlayerImpl::paused() const {
@@ -482,9 +482,9 @@ WebMediaPlayer::ReadyState WebMediaPlayerImpl::readyState() const {
   return ready_state_;
 }
 
-const WebKit::WebTimeRanges& WebMediaPlayerImpl::buffered() {
+const blink::WebTimeRanges& WebMediaPlayerImpl::buffered() {
   DCHECK(main_loop_->BelongsToCurrentThread());
-  WebKit::WebTimeRanges web_ranges(
+  blink::WebTimeRanges web_ranges(
       ConvertToWebTimeRanges(pipeline_->GetBufferedTimeRanges()));
   buffered_.swap(web_ranges);
   return buffered_;
@@ -614,7 +614,7 @@ void WebMediaPlayerImpl::PutCurrentFrame(
 }
 
 bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
-    WebKit::WebGraphicsContext3D* web_graphics_context,
+    blink::WebGraphicsContext3D* web_graphics_context,
     unsigned int texture,
     unsigned int level,
     unsigned int internal_format,
@@ -693,7 +693,7 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
 // UMA_HISTOGRAM_COUNTS. The reason that we cannot use those macros directly is
 // that UMA_* macros require the names to be constant throughout the process'
 // lifetime.
-static void EmeUMAHistogramEnumeration(const WebKit::WebString& key_system,
+static void EmeUMAHistogramEnumeration(const blink::WebString& key_system,
                                        const std::string& method,
                                        int sample,
                                        int boundary_value) {
@@ -703,7 +703,7 @@ static void EmeUMAHistogramEnumeration(const WebKit::WebString& key_system,
       base::Histogram::kUmaTargetedHistogramFlag)->Add(sample);
 }
 
-static void EmeUMAHistogramCounts(const WebKit::WebString& key_system,
+static void EmeUMAHistogramCounts(const blink::WebString& key_system,
                                   const std::string& method,
                                   int sample) {
   // Use the same parameters as UMA_HISTOGRAM_COUNTS.
@@ -999,8 +999,8 @@ WebMediaPlayerImpl::OnTextTrack(media::TextKind kind,
                                 const std::string& language) {
   typedef WebInbandTextTrackImpl::Kind webkind_t;
   const webkind_t webkind = static_cast<webkind_t>(kind);
-  const WebKit::WebString weblabel = WebKit::WebString::fromUTF8(label);
-  const WebKit::WebString weblanguage = WebKit::WebString::fromUTF8(language);
+  const blink::WebString weblabel = blink::WebString::fromUTF8(label);
+  const blink::WebString weblanguage = blink::WebString::fromUTF8(language);
 
   WebInbandTextTrackImpl* const text_track =
     new WebInbandTextTrackImpl(webkind, weblabel, weblanguage,
@@ -1021,7 +1021,7 @@ void WebMediaPlayerImpl::OnKeyError(const std::string& session_id,
   GetClient()->keyError(
       current_key_system_,
       WebString::fromUTF8(session_id),
-      static_cast<WebKit::WebMediaPlayerClient::MediaKeyErrorCode>(error_code),
+      static_cast<blink::WebMediaPlayerClient::MediaKeyErrorCode>(error_code),
       system_code);
 }
 
@@ -1239,13 +1239,13 @@ void WebMediaPlayerImpl::Destroy() {
   data_source_.reset();
 }
 
-WebKit::WebMediaPlayerClient* WebMediaPlayerImpl::GetClient() {
+blink::WebMediaPlayerClient* WebMediaPlayerImpl::GetClient() {
   DCHECK(main_loop_->BelongsToCurrentThread());
   DCHECK(client_);
   return client_;
 }
 
-WebKit::WebAudioSourceProvider* WebMediaPlayerImpl::audioSourceProvider() {
+blink::WebAudioSourceProvider* WebMediaPlayerImpl::audioSourceProvider() {
   return audio_source_provider_.get();
 }
 

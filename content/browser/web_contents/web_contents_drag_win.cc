@@ -38,10 +38,10 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
 
-using WebKit::WebDragOperationsMask;
-using WebKit::WebDragOperationCopy;
-using WebKit::WebDragOperationLink;
-using WebKit::WebDragOperationMove;
+using blink::WebDragOperationsMask;
+using blink::WebDragOperationCopy;
+using blink::WebDragOperationLink;
+using blink::WebDragOperationMove;
 
 namespace content {
 namespace {

@@ -15,13 +15,13 @@
 #include "third_party/WebKit/public/web/WebSpeechRecognitionResult.h"
 #include "third_party/WebKit/public/web/WebSpeechRecognizerClient.h"
 
-using WebKit::WebVector;
-using WebKit::WebString;
-using WebKit::WebSpeechGrammar;
-using WebKit::WebSpeechRecognitionHandle;
-using WebKit::WebSpeechRecognitionResult;
-using WebKit::WebSpeechRecognitionParams;
-using WebKit::WebSpeechRecognizerClient;
+using blink::WebVector;
+using blink::WebString;
+using blink::WebSpeechGrammar;
+using blink::WebSpeechRecognitionHandle;
+using blink::WebSpeechRecognitionResult;
+using blink::WebSpeechRecognitionParams;
+using blink::WebSpeechRecognizerClient;
 
 namespace content {
 

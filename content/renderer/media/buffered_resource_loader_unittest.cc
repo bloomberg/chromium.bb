@@ -30,10 +30,10 @@ using ::testing::Return;
 using ::testing::Truly;
 using ::testing::NiceMock;
 
-using WebKit::WebString;
-using WebKit::WebURLError;
-using WebKit::WebURLResponse;
-using WebKit::WebView;
+using blink::WebString;
+using blink::WebURLError;
+using blink::WebURLResponse;
+using blink::WebView;
 
 namespace content {
 
@@ -53,7 +53,7 @@ enum NetworkState {
 };
 
 // Predicate that tests that request disallows compressed data.
-static bool CorrectAcceptEncoding(const WebKit::WebURLRequest &request) {
+static bool CorrectAcceptEncoding(const blink::WebURLRequest &request) {
   std::string value = request.httpHeaderField(
       WebString::fromUTF8(net::HttpRequestHeaders::kAcceptEncoding)).utf8();
   return (value.find("identity;q=1") != std::string::npos) &&
@@ -88,7 +88,7 @@ class BufferedResourceLoaderTest : public testing::Test {
 
     // |test_loader_| will be used when Start() is called.
     url_loader_ = new NiceMock<MockWebURLLoader>();
-    loader_->test_loader_ = scoped_ptr<WebKit::WebURLLoader>(url_loader_);
+    loader_->test_loader_ = scoped_ptr<blink::WebURLLoader>(url_loader_);
   }
 
   void SetLoaderBuffer(int forward_capacity, int backward_capacity) {
@@ -187,8 +187,8 @@ class BufferedResourceLoaderTest : public testing::Test {
 
   void Redirect(const char* url) {
     GURL redirectUrl(url);
-    WebKit::WebURLRequest newRequest(redirectUrl);
-    WebKit::WebURLResponse redirectResponse(gurl_);
+    blink::WebURLRequest newRequest(redirectUrl);
+    blink::WebURLResponse redirectResponse(gurl_);
 
     loader_->willSendRequest(url_loader_, newRequest, redirectResponse);
 

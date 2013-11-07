@@ -29,7 +29,7 @@ GtkKeyBindingsHandler::~GtkKeyBindingsHandler() {
 
 bool GtkKeyBindingsHandler::Match(const NativeWebKeyboardEvent& wke,
                                   EditCommands* edit_commands) {
-  if (wke.type == WebKit::WebInputEvent::Char || !wke.os_event)
+  if (wke.type == blink::WebInputEvent::Char || !wke.os_event)
     return false;
 
   edit_commands_.clear();

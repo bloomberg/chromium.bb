@@ -20,7 +20,7 @@ class MockInputRouterClient : public InputRouterClient {
 
   // InputRouterClient
   virtual InputEventAckState FilterInputEvent(
-      const WebKit::WebInputEvent& input_event,
+      const blink::WebInputEvent& input_event,
       const ui::LatencyInfo& latency_info) OVERRIDE;
   virtual void IncrementInFlightEventCount() OVERRIDE;
   virtual void DecrementInFlightEventCount() OVERRIDE;

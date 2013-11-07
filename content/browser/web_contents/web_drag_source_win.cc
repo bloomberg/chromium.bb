@@ -13,7 +13,7 @@
 #include "content/public/browser/notification_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 
-using WebKit::WebDragOperationNone;
+using blink::WebDragOperationNone;
 
 namespace content {
 namespace {

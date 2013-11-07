@@ -9,7 +9,7 @@
 
 #include "content/common/content_export.h"
 
-namespace WebKit {
+namespace blink {
 class WebHistoryItem;
 }
 
@@ -17,8 +17,8 @@ namespace content {
 class PageState;
 
 CONTENT_EXPORT PageState HistoryItemToPageState(
-    const WebKit::WebHistoryItem& item);
-CONTENT_EXPORT WebKit::WebHistoryItem PageStateToHistoryItem(
+    const blink::WebHistoryItem& item);
+CONTENT_EXPORT blink::WebHistoryItem PageStateToHistoryItem(
     const PageState& state);
 
 }  // namespace content

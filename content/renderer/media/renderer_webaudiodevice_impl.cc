@@ -13,10 +13,10 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-using WebKit::WebAudioDevice;
-using WebKit::WebFrame;
-using WebKit::WebVector;
-using WebKit::WebView;
+using blink::WebAudioDevice;
+using blink::WebFrame;
+using blink::WebVector;
+using blink::WebView;
 
 namespace content {
 

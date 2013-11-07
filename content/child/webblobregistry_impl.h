@@ -9,7 +9,7 @@
 #include "third_party/WebKit/public/platform/WebBlobRegistry.h"
 #include "webkit/common/blob/blob_data.h"
 
-namespace WebKit {
+namespace blink {
 class WebBlobData;
 class WebString;
 class WebThreadSafeData;
@@ -19,33 +19,33 @@ class WebURL;
 namespace content {
 class ThreadSafeSender;
 
-class WebBlobRegistryImpl : public WebKit::WebBlobRegistry {
+class WebBlobRegistryImpl : public blink::WebBlobRegistry {
  public:
   explicit WebBlobRegistryImpl(ThreadSafeSender* sender);
   virtual ~WebBlobRegistryImpl();
 
-  virtual void registerBlobData(const WebKit::WebString& uuid,
-                                const WebKit::WebBlobData& data);
-  virtual void addBlobDataRef(const WebKit::WebString& uuid);
-  virtual void removeBlobDataRef(const WebKit::WebString& uuid);
-  virtual void registerPublicBlobURL(const WebKit::WebURL&,
-                                     const WebKit::WebString& uuid);
-  virtual void revokePublicBlobURL(const WebKit::WebURL&);
+  virtual void registerBlobData(const blink::WebString& uuid,
+                                const blink::WebBlobData& data);
+  virtual void addBlobDataRef(const blink::WebString& uuid);
+  virtual void removeBlobDataRef(const blink::WebString& uuid);
+  virtual void registerPublicBlobURL(const blink::WebURL&,
+                                     const blink::WebString& uuid);
+  virtual void revokePublicBlobURL(const blink::WebURL&);
 
   // Additional support for Streams.
-  virtual void registerStreamURL(const WebKit::WebURL& url,
-                                 const WebKit::WebString& content_type);
-  virtual void registerStreamURL(const WebKit::WebURL& url,
-                                 const WebKit::WebURL& src_url);
-  virtual void addDataToStream(const WebKit::WebURL& url,
-                               WebKit::WebThreadSafeData& data);
-  virtual void finalizeStream(const WebKit::WebURL& url);
-  virtual void abortStream(const WebKit::WebURL& url);
-  virtual void unregisterStreamURL(const WebKit::WebURL& url);
+  virtual void registerStreamURL(const blink::WebURL& url,
+                                 const blink::WebString& content_type);
+  virtual void registerStreamURL(const blink::WebURL& url,
+                                 const blink::WebURL& src_url);
+  virtual void addDataToStream(const blink::WebURL& url,
+                               blink::WebThreadSafeData& data);
+  virtual void finalizeStream(const blink::WebURL& url);
+  virtual void abortStream(const blink::WebURL& url);
+  virtual void unregisterStreamURL(const blink::WebURL& url);
 
  private:
   void SendDataForBlob(const std::string& uuid_str,
-                       const WebKit::WebThreadSafeData& data);
+                       const blink::WebThreadSafeData& data);
 
   scoped_refptr<ThreadSafeSender> sender_;
 };

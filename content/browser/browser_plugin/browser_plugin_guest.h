@@ -53,7 +53,7 @@ namespace cc {
 class CompositorFrameAck;
 }
 
-namespace WebKit {
+namespace blink {
 class WebInputEvent;
 }
 
@@ -282,7 +282,7 @@ class CONTENT_EXPORT BrowserPluginGuest
   gfx::Rect ToGuestRect(const gfx::Rect& rect);
 
   void DragSourceEndedAt(int client_x, int client_y, int screen_x,
-      int screen_y, WebKit::WebDragOperation operation);
+      int screen_y, blink::WebDragOperation operation);
 
   void DragSourceMovedTo(int client_x, int client_y,
                          int screen_x, int screen_y);
@@ -369,9 +369,9 @@ class CONTENT_EXPORT BrowserPluginGuest
   // drag-message to the guest. This routes the drag-message to the guest
   // renderer.
   void OnDragStatusUpdate(int instance_id,
-                          WebKit::WebDragStatus drag_status,
+                          blink::WebDragStatus drag_status,
                           const DropData& drop_data,
-                          WebKit::WebDragOperationsMask drag_mask,
+                          blink::WebDragOperationsMask drag_mask,
                           const gfx::Point& location);
   // Instructs the guest to execute an edit command decoded in the embedder.
   void OnExecuteEditCommand(int instance_id,
@@ -379,7 +379,7 @@ class CONTENT_EXPORT BrowserPluginGuest
   // Overriden in tests.
   virtual void OnHandleInputEvent(int instance_id,
                                   const gfx::Rect& guest_window_rect,
-                                  const WebKit::WebInputEvent* event);
+                                  const blink::WebInputEvent* event);
   void OnLockMouse(bool user_gesture,
                    bool last_unlocked_by_target,
                    bool privileged);
@@ -439,7 +439,7 @@ class CONTENT_EXPORT BrowserPluginGuest
 
   void OnDragStopped();
   void OnHandleInputEventAck(
-      WebKit::WebInputEvent::Type event_type,
+      blink::WebInputEvent::Type event_type,
       InputEventAckState ack_result);
   void OnHasTouchEventHandlers(bool accept);
   void OnSetCursor(const WebCursor& cursor);

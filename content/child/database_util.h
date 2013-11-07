@@ -16,22 +16,22 @@ namespace content {
 // WorkerWebKitPlatformSupportImpl to handle database file accesses.
 class DatabaseUtil {
  public:
-  static WebKit::Platform::FileHandle DatabaseOpenFile(
-      const WebKit::WebString& vfs_file_name,
+  static blink::Platform::FileHandle DatabaseOpenFile(
+      const blink::WebString& vfs_file_name,
       int desired_flags,
       IPC::SyncMessageFilter* sync_message_filter);
   static int DatabaseDeleteFile(
-      const WebKit::WebString& vfs_file_name,
+      const blink::WebString& vfs_file_name,
       bool sync_dir,
       IPC::SyncMessageFilter* sync_message_filter);
   static long DatabaseGetFileAttributes(
-      const WebKit::WebString& vfs_file_name,
+      const blink::WebString& vfs_file_name,
       IPC::SyncMessageFilter* sync_message_filter);
   static long long DatabaseGetFileSize(
-      const WebKit::WebString& vfs_file_name,
+      const blink::WebString& vfs_file_name,
       IPC::SyncMessageFilter* sync_message_filter);
   static long long DatabaseGetSpaceAvailable(
-      const WebKit::WebString& origin_identifier,
+      const blink::WebString& origin_identifier,
       IPC::SyncMessageFilter* sync_message_filter);
 };
 

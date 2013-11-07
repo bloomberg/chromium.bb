@@ -12,9 +12,9 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/size.h"
 
-using WebKit::WebFrame;
-using WebKit::WebURLRequest;
-using WebKit::WebURLResponse;
+using blink::WebFrame;
+using blink::WebURLRequest;
+using blink::WebURLResponse;
 
 namespace content {
 

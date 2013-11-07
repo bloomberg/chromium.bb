@@ -45,7 +45,7 @@ gfx::Rect GetWorkArea(Window window) {
                    property[start_index + 2], property[start_index + 3]);
 }
 
-WebKit::WebScreenInfo GetScreenInfo(XDisplay* display, int screenNumber) {
+blink::WebScreenInfo GetScreenInfo(XDisplay* display, int screenNumber) {
   // XDisplayWidth() and XDisplayHeight() return cached values. To ensure that
   // we return the correct dimensions after the screen is resized, query the
   // root window's geometry each time.
@@ -56,11 +56,11 @@ WebKit::WebScreenInfo GetScreenInfo(XDisplay* display, int screenNumber) {
   XGetGeometry(
       display, root, &root_ret, &x, &y, &width, &height, &border, &depth);
 
-  WebKit::WebScreenInfo results;
+  blink::WebScreenInfo results;
   results.depthPerComponent = 8;  // Assume 8bpp, which is usually right.
   results.depth = depth;
   results.isMonochrome = depth == 1;
-  results.rect = WebKit::WebRect(x, y, width, height);
+  results.rect = blink::WebRect(x, y, width, height);
   results.availableRect = results.rect;
   return results;
 }
@@ -68,7 +68,7 @@ WebKit::WebScreenInfo GetScreenInfo(XDisplay* display, int screenNumber) {
 }  // namespace
 
 void GetScreenInfoFromNativeWindow(
-    GdkWindow* gdk_window, WebKit::WebScreenInfo* results) {
+    GdkWindow* gdk_window, blink::WebScreenInfo* results) {
   GdkScreen* screen = gdk_window_get_screen(gdk_window);
   *results = GetScreenInfo(gdk_x11_drawable_get_xdisplay(gdk_window),
                         gdk_x11_screen_get_screen_number(screen));
@@ -76,7 +76,7 @@ void GetScreenInfoFromNativeWindow(
   int monitor_number = gdk_screen_get_monitor_at_window(screen, gdk_window);
   GdkRectangle monitor_rect;
   gdk_screen_get_monitor_geometry(screen, monitor_number, &monitor_rect);
-  results->rect = WebKit::WebRect(monitor_rect.x, monitor_rect.y,
+  results->rect = blink::WebRect(monitor_rect.x, monitor_rect.y,
                                   monitor_rect.width, monitor_rect.height);
 
   gfx::Rect available_rect = results->rect;

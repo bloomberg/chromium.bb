@@ -10,17 +10,17 @@
 
 namespace content {
 
-class MockWebURLLoader : public WebKit::WebURLLoader {
+class MockWebURLLoader : public blink::WebURLLoader {
  public:
   MockWebURLLoader();
   virtual ~MockWebURLLoader();
 
-  MOCK_METHOD4(loadSynchronously, void(const WebKit::WebURLRequest& request,
-                                       WebKit::WebURLResponse& response,
-                                       WebKit::WebURLError& error,
-                                       WebKit::WebData& data));
-  MOCK_METHOD2(loadAsynchronously, void(const WebKit::WebURLRequest& request,
-                                        WebKit::WebURLLoaderClient* client));
+  MOCK_METHOD4(loadSynchronously, void(const blink::WebURLRequest& request,
+                                       blink::WebURLResponse& response,
+                                       blink::WebURLError& error,
+                                       blink::WebData& data));
+  MOCK_METHOD2(loadAsynchronously, void(const blink::WebURLRequest& request,
+                                        blink::WebURLLoaderClient* client));
   MOCK_METHOD0(cancel, void());
   MOCK_METHOD1(setDefersLoading, void(bool value));
 

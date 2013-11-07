@@ -19,15 +19,15 @@ class AudioOutputDevice;
 namespace content {
 
 class RendererWebAudioDeviceImpl
-    : public WebKit::WebAudioDevice,
+    : public blink::WebAudioDevice,
       public media::AudioRendererSink::RenderCallback {
  public:
   RendererWebAudioDeviceImpl(const media::AudioParameters& params,
-                             WebKit::WebAudioDevice::RenderCallback* callback,
+                             blink::WebAudioDevice::RenderCallback* callback,
                              int session_id);
   virtual ~RendererWebAudioDeviceImpl();
 
-  // WebKit::WebAudioDevice implementation.
+  // blink::WebAudioDevice implementation.
   virtual void start();
   virtual void stop();
   virtual double sampleRate();
@@ -46,10 +46,10 @@ class RendererWebAudioDeviceImpl
   const media::AudioParameters params_;
 
   // Weak reference to the callback into WebKit code.
-  WebKit::WebAudioDevice::RenderCallback* const client_callback_;
+  blink::WebAudioDevice::RenderCallback* const client_callback_;
 
   // To avoid the need for locking, ensure the control methods of the
-  // WebKit::WebAudioDevice implementation are called on the same thread.
+  // blink::WebAudioDevice implementation are called on the same thread.
   base::ThreadChecker thread_checker_;
 
   // When non-NULL, we are started.  When NULL, we are stopped.

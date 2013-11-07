@@ -7,8 +7,8 @@
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "ui/gfx/size_conversions.h"
 
-using WebKit::WebRect;
-using WebKit::WebVector;
+using blink::WebRect;
+using blink::WebVector;
 
 namespace {
 

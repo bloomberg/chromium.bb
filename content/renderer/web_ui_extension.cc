@@ -54,7 +54,7 @@ class WebUIExtensionWrapper : public v8::Extension {
   static void GetVariableValue(const v8::FunctionCallbackInfo<v8::Value>& args);
 
  private:
-  static bool ShouldRespondToRequest(WebKit::WebFrame** frame_ptr,
+  static bool ShouldRespondToRequest(blink::WebFrame** frame_ptr,
                                      RenderView** render_view_ptr);
 
   DISALLOW_COPY_AND_ASSIGN(WebUIExtensionWrapper);
@@ -76,9 +76,9 @@ v8::Handle<v8::FunctionTemplate> WebUIExtensionWrapper::GetNativeFunction(
 
 // static
 bool WebUIExtensionWrapper::ShouldRespondToRequest(
-    WebKit::WebFrame** frame_ptr,
+    blink::WebFrame** frame_ptr,
     RenderView** render_view_ptr) {
-  WebKit::WebFrame* frame = WebKit::WebFrame::frameForCurrentContext();
+  blink::WebFrame* frame = blink::WebFrame::frameForCurrentContext();
   if (!frame || !frame->view())
     return false;
 
@@ -104,7 +104,7 @@ bool WebUIExtensionWrapper::ShouldRespondToRequest(
 // static
 void WebUIExtensionWrapper::Send(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  WebKit::WebFrame* frame;
+  blink::WebFrame* frame;
   RenderView* render_view;
   if (!ShouldRespondToRequest(&frame, &render_view))
     return;
@@ -145,7 +145,7 @@ void WebUIExtensionWrapper::Send(
 // static
 void WebUIExtensionWrapper::GetVariableValue(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  WebKit::WebFrame* frame;
+  blink::WebFrame* frame;
   RenderView* render_view;
   if (!ShouldRespondToRequest(&frame, &render_view))
     return;

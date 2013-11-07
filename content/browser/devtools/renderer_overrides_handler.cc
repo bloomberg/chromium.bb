@@ -45,9 +45,9 @@
 #include "url/gurl.h"
 #include "webkit/browser/quota/quota_manager.h"
 
-using WebKit::WebGestureEvent;
-using WebKit::WebInputEvent;
-using WebKit::WebMouseEvent;
+using blink::WebGestureEvent;
+using blink::WebInputEvent;
+using blink::WebMouseEvent;
 
 namespace content {
 
@@ -825,7 +825,7 @@ RendererOverridesHandler::InputDispatchMouseEvent(
   }
 
   RenderViewHost* host = agent_->GetRenderViewHost();
-  WebKit::WebMouseEvent mouse_event;
+  blink::WebMouseEvent mouse_event;
   ParseGenericInputParams(params, &mouse_event);
 
   std::string type;
@@ -890,7 +890,7 @@ RendererOverridesHandler::InputDispatchGestureEvent(
 
   RenderViewHostImpl* host = static_cast<RenderViewHostImpl*>(
       agent_->GetRenderViewHost());
-  WebKit::WebGestureEvent event;
+  blink::WebGestureEvent event;
   ParseGenericInputParams(params, &event);
 
   std::string type;

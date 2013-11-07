@@ -378,7 +378,7 @@ void RenderWidgetHostViewBase::DetachPluginsHelper(HWND parent) {
 #endif  // OS_WIN
 
 RenderWidgetHostViewBase::RenderWidgetHostViewBase()
-    : popup_type_(WebKit::WebPopupTypeNone),
+    : popup_type_(blink::WebPopupTypeNone),
       mouse_locked_(false),
       showing_context_menu_(false),
       selection_text_offset_(0),
@@ -446,12 +446,12 @@ bool RenderWidgetHostViewBase::IsMouseLocked() {
 }
 
 void RenderWidgetHostViewBase::UnhandledWheelEvent(
-    const WebKit::WebMouseWheelEvent& event) {
+    const blink::WebMouseWheelEvent& event) {
   // Most implementations don't need to do anything here.
 }
 
 InputEventAckState RenderWidgetHostViewBase::FilterInputEvent(
-    const WebKit::WebInputEvent& input_event) {
+    const blink::WebInputEvent& input_event) {
   // By default, input events are simply forwarded to the renderer.
   return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 }
@@ -467,11 +467,11 @@ void RenderWidgetHostViewBase::OnSetNeedsFlushInput() {
 void RenderWidgetHostViewBase::GestureEventAck(int gesture_event_type,
                                                InputEventAckState ack_result) {}
 
-void RenderWidgetHostViewBase::SetPopupType(WebKit::WebPopupType popup_type) {
+void RenderWidgetHostViewBase::SetPopupType(blink::WebPopupType popup_type) {
   popup_type_ = popup_type;
 }
 
-WebKit::WebPopupType RenderWidgetHostViewBase::GetPopupType() {
+blink::WebPopupType RenderWidgetHostViewBase::GetPopupType() {
   return popup_type_;
 }
 

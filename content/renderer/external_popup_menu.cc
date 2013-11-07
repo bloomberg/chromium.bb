@@ -14,8 +14,8 @@ namespace content {
 
 ExternalPopupMenu::ExternalPopupMenu(
     RenderViewImpl* render_view,
-    const WebKit::WebPopupMenuInfo& popup_menu_info,
-    WebKit::WebExternalPopupMenuClient* popup_menu_client)
+    const blink::WebPopupMenuInfo& popup_menu_info,
+    blink::WebExternalPopupMenuClient* popup_menu_client)
     : render_view_(render_view),
       popup_menu_info_(popup_menu_info),
       popup_menu_client_(popup_menu_client),
@@ -26,8 +26,8 @@ void ExternalPopupMenu::SetOriginScaleForEmulation(float scale) {
   origin_scale_for_emulation_ = scale;
 }
 
-void ExternalPopupMenu::show(const WebKit::WebRect& bounds) {
-  WebKit::WebRect rect = bounds;
+void ExternalPopupMenu::show(const blink::WebRect& bounds) {
+  blink::WebRect rect = bounds;
   if (origin_scale_for_emulation_) {
     rect.x *= origin_scale_for_emulation_;
     rect.y *= origin_scale_for_emulation_;

@@ -40,7 +40,7 @@
 struct FontDescriptor;
 struct ViewHostMsg_CreateWindow_Params;
 
-namespace WebKit {
+namespace blink {
 struct WebScreenInfo;
 }
 
@@ -126,7 +126,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
                       int* surface_id,
                       int64* cloned_session_storage_namespace_id);
   void OnCreateWidget(int opener_id,
-                      WebKit::WebPopupType popup_type,
+                      blink::WebPopupType popup_type,
                       int* route_id,
                       int* surface_id);
   void OnCreateFullscreenWidget(int opener_id,

@@ -8,7 +8,7 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDatabase.h"
 
-using WebKit::WebString;
+using blink::WebString;
 
 namespace content {
 
@@ -33,27 +33,27 @@ bool DBMessageFilter::OnMessageReceived(const IPC::Message& message) {
 void DBMessageFilter::OnDatabaseUpdateSize(const std::string& origin_identifier,
                                            const string16& database_name,
                                            int64 database_size) {
-  WebKit::WebDatabase::updateDatabaseSize(
+  blink::WebDatabase::updateDatabaseSize(
       WebString::fromUTF8(origin_identifier), database_name, database_size);
 }
 
 void DBMessageFilter::OnDatabaseUpdateSpaceAvailable(
     const std::string& origin_identifier,
     int64 space_available) {
-  WebKit::WebDatabase::updateSpaceAvailable(
+  blink::WebDatabase::updateSpaceAvailable(
       WebString::fromUTF8(origin_identifier), space_available);
 }
 
 void DBMessageFilter::OnDatabaseResetSpaceAvailable(
     const std::string& origin_identifier) {
-  WebKit::WebDatabase::resetSpaceAvailable(
+  blink::WebDatabase::resetSpaceAvailable(
       WebString::fromUTF8(origin_identifier));
 }
 
 void DBMessageFilter::OnDatabaseCloseImmediately(
     const std::string& origin_identifier,
     const string16& database_name) {
-  WebKit::WebDatabase::closeDatabaseImmediately(
+  blink::WebDatabase::closeDatabaseImmediately(
       WebString::fromUTF8(origin_identifier), database_name);
 }
 

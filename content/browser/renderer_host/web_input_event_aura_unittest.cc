@@ -29,9 +29,9 @@ TEST(WebInputEventAuraTest, TestMakeWebKeyboardEvent) {
                                 0,  // X does not set ControlMask for KeyPress.
                                 &xev);
     ui::KeyEvent event(&xev, false /* is_char */);
-    WebKit::WebKeyboardEvent webkit_event = MakeWebKeyboardEvent(&event);
+    blink::WebKeyboardEvent webkit_event = MakeWebKeyboardEvent(&event);
     // However, modifier bit for Control in |webkit_event| should be set.
-    EXPECT_EQ(webkit_event.modifiers, WebKit::WebInputEvent::ControlKey);
+    EXPECT_EQ(webkit_event.modifiers, blink::WebInputEvent::ControlKey);
   }
   {
     // Release Ctrl.
@@ -40,7 +40,7 @@ TEST(WebInputEventAuraTest, TestMakeWebKeyboardEvent) {
                                 ControlMask,  // X sets the mask for KeyRelease.
                                 &xev);
     ui::KeyEvent event(&xev, false /* is_char */);
-    WebKit::WebKeyboardEvent webkit_event = MakeWebKeyboardEvent(&event);
+    blink::WebKeyboardEvent webkit_event = MakeWebKeyboardEvent(&event);
     // However, modifier bit for Control in |webkit_event| shouldn't be set.
     EXPECT_EQ(webkit_event.modifiers, 0);
   }
@@ -59,7 +59,7 @@ TEST(WebInputEventAuraTest, TestMakeWebKeyboardEventWindowsKeyCode) {
                                 &xev);
     xev.xkey.keycode = XKeysymToKeycode(gfx::GetXDisplay(), XK_Control_L);
     ui::KeyEvent event(&xev, false /* is_char */);
-    WebKit::WebKeyboardEvent webkit_event = MakeWebKeyboardEvent(&event);
+    blink::WebKeyboardEvent webkit_event = MakeWebKeyboardEvent(&event);
     // ui::VKEY_LCONTROL, instead of ui::VKEY_CONTROL, should be filled.
     EXPECT_EQ(ui::VKEY_LCONTROL, webkit_event.windowsKeyCode);
   }
@@ -71,7 +71,7 @@ TEST(WebInputEventAuraTest, TestMakeWebKeyboardEventWindowsKeyCode) {
                                 &xev);
     xev.xkey.keycode = XKeysymToKeycode(gfx::GetXDisplay(), XK_Control_R);
     ui::KeyEvent event(&xev, false /* is_char */);
-    WebKit::WebKeyboardEvent webkit_event = MakeWebKeyboardEvent(&event);
+    blink::WebKeyboardEvent webkit_event = MakeWebKeyboardEvent(&event);
     // ui::VKEY_RCONTROL, instead of ui::VKEY_CONTROL, should be filled.
     EXPECT_EQ(ui::VKEY_RCONTROL, webkit_event.windowsKeyCode);
   }

@@ -137,14 +137,14 @@
 #endif
 
 using base::ThreadRestrictions;
-using WebKit::WebDocument;
-using WebKit::WebFrame;
-using WebKit::WebNetworkStateNotifier;
-using WebKit::WebRuntimeFeatures;
-using WebKit::WebScriptController;
-using WebKit::WebSecurityPolicy;
-using WebKit::WebString;
-using WebKit::WebView;
+using blink::WebDocument;
+using blink::WebFrame;
+using blink::WebNetworkStateNotifier;
+using blink::WebRuntimeFeatures;
+using blink::WebScriptController;
+using blink::WebSecurityPolicy;
+using blink::WebString;
+using blink::WebView;
 
 namespace content {
 
@@ -236,7 +236,7 @@ void EnableWebCoreLogChannels(const std::string& channels) {
     return;
   base::StringTokenizer t(channels, ", ");
   while (t.GetNext())
-    WebKit::enableLogChannel(t.token().c_str());
+    blink::enableLogChannel(t.token().c_str());
 }
 
 }  // namespace
@@ -312,7 +312,7 @@ void RenderThreadImpl::Init() {
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
   // On Mac and Android, the select popups are rendered by the browser.
-  WebKit::WebView::setUseExternalPopupMenus(true);
+  blink::WebView::setUseExternalPopupMenus(true);
 #endif
 
   lazy_tls.Pointer()->Set(this);
@@ -455,7 +455,7 @@ void RenderThreadImpl::Shutdown() {
   main_thread_indexed_db_dispatcher_.reset();
 
   if (webkit_platform_support_)
-    WebKit::shutdown();
+    blink::shutdown();
 
   lazy_tls.Pointer()->Set(NULL);
 
@@ -640,7 +640,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
     return;
 
   webkit_platform_support_.reset(new RendererWebKitPlatformSupportImpl);
-  WebKit::initialize(webkit_platform_support_.get());
+  blink::initialize(webkit_platform_support_.get());
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
@@ -703,7 +703,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   web_database_observer_impl_.reset(
       new WebDatabaseObserverImpl(sync_message_filter()));
-  WebKit::WebDatabase::setObserver(web_database_observer_impl_.get());
+  blink::WebDatabase::setObserver(web_database_observer_impl_.get());
 
   SetRuntimeFeaturesDefaultsAndUpdateFromArgs(command_line);
 
@@ -886,7 +886,7 @@ RenderThreadImpl::GetGpuFactories() {
           make_scoped_ptr(
               WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
                   gpu_channel_host.get(),
-                  WebKit::WebGraphicsContext3D::Attributes(),
+                  blink::WebGraphicsContext3D::Attributes(),
                   GURL("chrome://gpu/RenderThreadImpl::GetGpuVDAContext3D"))),
           "GPU-VideoAccelerator-Offscreen");
     }
@@ -900,7 +900,7 @@ RenderThreadImpl::GetGpuFactories() {
 
 scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
 RenderThreadImpl::CreateOffscreenContext3d() {
-  WebKit::WebGraphicsContext3D::Attributes attributes;
+  blink::WebGraphicsContext3D::Attributes attributes;
   attributes.shareResources = true;
   attributes.depth = false;
   attributes.stencil = false;
@@ -1212,8 +1212,8 @@ GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
   return gpu_channel_.get();
 }
 
-WebKit::WebMediaStreamCenter* RenderThreadImpl::CreateMediaStreamCenter(
-    WebKit::WebMediaStreamCenterClient* client) {
+blink::WebMediaStreamCenter* RenderThreadImpl::CreateMediaStreamCenter(
+    blink::WebMediaStreamCenterClient* client) {
 #if defined(OS_ANDROID)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableWebRTC))
@@ -1263,7 +1263,7 @@ void RenderThreadImpl::OnPurgePluginListCache(bool reload_pages) {
   // refresh temporarily to prevent each renderer process causing the list to be
   // regenerated.
   webkit_platform_support_->set_plugin_refresh_allowed(false);
-  WebKit::resetPluginCache(reload_pages);
+  blink::resetPluginCache(reload_pages);
   webkit_platform_support_->set_plugin_refresh_allowed(true);
 
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, PluginListChanged());
@@ -1296,7 +1296,7 @@ void RenderThreadImpl::OnMemoryPressure(
     // Trigger full v8 garbage collection on critical memory notification.
     v8::V8::LowMemoryNotification();
     // Clear the image cache.
-    WebKit::WebImageCache::clear();
+    blink::WebImageCache::clear();
     // Purge Skia font cache, by setting it to 0 and then again to the previous
     // limit.
     size_t font_cache_limit = SkGraphics::SetFontCacheLimit(0);
@@ -1341,7 +1341,7 @@ void RenderThreadImpl::SetFlingCurveParameters(
 
 }
 
-void RenderThreadImpl::SampleGamepads(WebKit::WebGamepads* data) {
+void RenderThreadImpl::SampleGamepads(blink::WebGamepads* data) {
   if (!gamepad_shared_memory_reader_)
     gamepad_shared_memory_reader_.reset(new GamepadSharedMemoryReader);
   gamepad_shared_memory_reader_->SampleGamepads(*data);

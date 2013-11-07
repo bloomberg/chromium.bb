@@ -16,7 +16,7 @@ static int GenerateColorChooserIdentifier() {
 
 RendererWebColorChooserImpl::RendererWebColorChooserImpl(
     RenderViewImpl* render_view,
-    WebKit::WebColorChooserClient* client)
+    blink::WebColorChooserClient* client)
     : RenderViewObserver(render_view),
       identifier_(GenerateColorChooserIdentifier()),
       client_(client) {
@@ -38,7 +38,7 @@ bool RendererWebColorChooserImpl::OnMessageReceived(
   return handled;
 }
 
-void RendererWebColorChooserImpl::setSelectedColor(WebKit::WebColor color) {
+void RendererWebColorChooserImpl::setSelectedColor(blink::WebColor color) {
   Send(new ViewHostMsg_SetSelectedColorInColorChooser(routing_id(), identifier_,
       static_cast<SkColor>(color)));
 }
@@ -56,7 +56,7 @@ void RendererWebColorChooserImpl::OnDidChooseColorResponse(int color_chooser_id,
                                                            SkColor color) {
   DCHECK(identifier_ == color_chooser_id);
 
-  client_->didChooseColor(static_cast<WebKit::WebColor>(color));
+  client_->didChooseColor(static_cast<blink::WebColor>(color));
 }
 
 void RendererWebColorChooserImpl::OnDidEndColorChooser(int color_chooser_id) {

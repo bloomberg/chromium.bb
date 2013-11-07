@@ -31,9 +31,9 @@ class SyncChannel;
 class SyncMessageFilter;
 }  // namespace IPC
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
-}  // namespace WebKit
+}  // namespace blink
 
 namespace content {
 class ChildHistogramMessageFilter;

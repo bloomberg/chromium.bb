@@ -138,7 +138,7 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
   IPC_STRUCT_MEMBER(GURL, referrer)
 
   // The referrer policy to use.
-  IPC_STRUCT_MEMBER(WebKit::WebReferrerPolicy, referrer_policy)
+  IPC_STRUCT_MEMBER(blink::WebReferrerPolicy, referrer_policy)
 
   // Additional HTTP request headers.
   IPC_STRUCT_MEMBER(std::string, headers)

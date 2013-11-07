@@ -7,12 +7,12 @@
 
 #include "base/basictypes.h"
 
-namespace WebKit { class WebAudioBus; }
+namespace blink { class WebAudioBus; }
 
 namespace content {
 
 // Decode in-memory audio file data.
-bool DecodeAudioFileData(WebKit::WebAudioBus* destination_bus, const char* data,
+bool DecodeAudioFileData(blink::WebAudioBus* destination_bus, const char* data,
                          size_t data_size, double sample_rate);
 
 }  // namespace content

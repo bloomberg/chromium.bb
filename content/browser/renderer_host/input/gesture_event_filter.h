@@ -74,7 +74,7 @@ class CONTENT_EXPORT GestureEventFilter {
   // with state |ack_result| and event |type|. May send events if the queue is
   // not empty.
   void ProcessGestureAck(InputEventAckState ack_result,
-                         WebKit::WebInputEvent::Type type,
+                         blink::WebInputEvent::Type type,
                          const ui::LatencyInfo& latency);
 
   // Sets the state of the |fling_in_progress_| field to indicate that a fling
@@ -93,7 +93,7 @@ class CONTENT_EXPORT GestureEventFilter {
   friend class MockRenderWidgetHost;
   friend class GestureEventFilterTest;
 
-  static bool ShouldIgnoreAckForGestureType(WebKit::WebInputEvent::Type type);
+  static bool ShouldIgnoreAckForGestureType(blink::WebInputEvent::Type type);
 
   // TODO(mohsen): There are a bunch of ShouldForward.../ShouldDiscard...
   // methods that are getting confusing. This should be somehow fixed. Maybe

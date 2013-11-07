@@ -17,16 +17,16 @@ class ChunkDemuxer;
 
 namespace content {
 
-class WebMediaSourceImpl : public WebKit::WebMediaSource {
+class WebMediaSourceImpl : public blink::WebMediaSource {
  public:
   WebMediaSourceImpl(media::ChunkDemuxer* demuxer, media::LogCB log_cb);
   virtual ~WebMediaSourceImpl();
 
-  // WebKit::WebMediaSource implementation.
+  // blink::WebMediaSource implementation.
   virtual AddStatus addSourceBuffer(
-      const WebKit::WebString& type,
-      const WebKit::WebVector<WebKit::WebString>& codecs,
-      WebKit::WebSourceBuffer** source_buffer) OVERRIDE;
+      const blink::WebString& type,
+      const blink::WebVector<blink::WebString>& codecs,
+      blink::WebSourceBuffer** source_buffer) OVERRIDE;
   virtual double duration() OVERRIDE;
   virtual void setDuration(double duration) OVERRIDE;
   virtual void markEndOfStream(EndOfStreamStatus status) OVERRIDE;

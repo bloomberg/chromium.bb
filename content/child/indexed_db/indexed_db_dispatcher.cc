@@ -18,15 +18,15 @@
 #include "third_party/WebKit/public/platform/WebIDBDatabaseError.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseException.h"
 
-using WebKit::WebData;
-using WebKit::WebIDBCallbacks;
-using WebKit::WebIDBDatabase;
-using WebKit::WebIDBDatabaseCallbacks;
-using WebKit::WebIDBDatabaseError;
-using WebKit::WebIDBKey;
-using WebKit::WebIDBMetadata;
-using WebKit::WebString;
-using WebKit::WebVector;
+using blink::WebData;
+using blink::WebIDBCallbacks;
+using blink::WebIDBDatabase;
+using blink::WebIDBDatabaseCallbacks;
+using blink::WebIDBDatabaseError;
+using blink::WebIDBKey;
+using blink::WebIDBMetadata;
+using blink::WebString;
+using blink::WebVector;
 using base::ThreadLocalPointer;
 using webkit_glue::WorkerTaskRunner;
 
@@ -331,7 +331,7 @@ void IndexedDBDispatcher::RequestIDBDatabasePut(
 
   if (value.size() > kMaxIDBValueSizeInBytes) {
     callbacks->onError(WebIDBDatabaseError(
-        WebKit::WebIDBDatabaseExceptionUnknownError,
+        blink::WebIDBDatabaseExceptionUnknownError,
         WebString::fromUTF8(base::StringPrintf(
             "The serialized value is too large"
             " (size=%" PRIuS " bytes, max=%" PRIuS " bytes).",

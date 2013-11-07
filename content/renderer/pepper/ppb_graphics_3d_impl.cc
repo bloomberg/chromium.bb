@@ -27,10 +27,10 @@
 
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Graphics3D_API;
-using WebKit::WebConsoleMessage;
-using WebKit::WebFrame;
-using WebKit::WebPluginContainer;
-using WebKit::WebString;
+using blink::WebConsoleMessage;
+using blink::WebFrame;
+using blink::WebPluginContainer;
+using blink::WebString;
 
 namespace content {
 

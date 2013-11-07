@@ -34,7 +34,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
 
   // Implementation of BrowserAccessibilityManager.
   virtual void NotifyAccessibilityEvent(
-      WebKit::WebAXEvent event_type, BrowserAccessibility* node) OVERRIDE;
+      blink::WebAXEvent event_type, BrowserAccessibility* node) OVERRIDE;
 
   // --------------------------------------------------------------------------
   // Methods called from Java via JNI

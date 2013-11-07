@@ -203,12 +203,12 @@ MediaObserver* ContentBrowserClient::GetMediaObserver() {
   return NULL;
 }
 
-WebKit::WebNotificationPresenter::Permission
+blink::WebNotificationPresenter::Permission
     ContentBrowserClient::CheckDesktopNotificationPermission(
         const GURL& source_origin,
         ResourceContext* context,
         int render_process_id) {
-  return WebKit::WebNotificationPresenter::PermissionAllowed;
+  return blink::WebNotificationPresenter::PermissionAllowed;
 }
 
 bool ContentBrowserClient::CanCreateWindow(
@@ -219,7 +219,7 @@ bool ContentBrowserClient::CanCreateWindow(
     const GURL& target_url,
     const content::Referrer& referrer,
     WindowOpenDisposition disposition,
-    const WebKit::WebWindowFeatures& features,
+    const blink::WebWindowFeatures& features,
     bool user_gesture,
     bool opener_suppressed,
     content::ResourceContext* context,

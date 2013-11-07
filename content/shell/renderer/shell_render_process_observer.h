@@ -12,7 +12,7 @@
 #include "content/public/renderer/render_process_observer.h"
 #include "ipc/ipc_platform_file.h"
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
 }
 

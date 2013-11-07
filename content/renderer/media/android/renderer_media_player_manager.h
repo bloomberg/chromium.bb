@@ -21,7 +21,7 @@
 #include "ui/gfx/rect_f.h"
 #endif
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
 }
 
@@ -117,14 +117,14 @@ class RendererMediaPlayerManager : public RenderViewObserver {
   void ReleaseVideoResources();
 
   // Checks whether a player can enter fullscreen.
-  bool CanEnterFullscreen(WebKit::WebFrame* frame);
+  bool CanEnterFullscreen(blink::WebFrame* frame);
 
   // Called when a player entered or exited fullscreen.
-  void DidEnterFullscreen(WebKit::WebFrame* frame);
+  void DidEnterFullscreen(blink::WebFrame* frame);
   void DidExitFullscreen();
 
   // Checks whether the Webframe is in fullscreen.
-  bool IsInFullscreen(WebKit::WebFrame* frame);
+  bool IsInFullscreen(blink::WebFrame* frame);
 
   // Gets the pointer to WebMediaPlayerAndroid given the |player_id|.
   WebMediaPlayerAndroid* GetMediaPlayer(int player_id);
@@ -179,7 +179,7 @@ class RendererMediaPlayerManager : public RenderViewObserver {
   int next_media_player_id_;
 
   // WebFrame of the fullscreen video.
-  WebKit::WebFrame* fullscreen_frame_;
+  blink::WebFrame* fullscreen_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererMediaPlayerManager);
 };

@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 
-namespace WebKit {
+namespace blink {
 class WebURLLoader;
 }
 
@@ -21,7 +21,7 @@ class ActiveLoader {
  public:
   // Creates an ActiveLoader with the given loader. It is assumed that the
   // initial state of |loader| is loading and not deferred.
-  explicit ActiveLoader(scoped_ptr<WebKit::WebURLLoader> loader);
+  explicit ActiveLoader(scoped_ptr<blink::WebURLLoader> loader);
   ~ActiveLoader();
 
   // Starts or stops deferring the resource load.
@@ -31,7 +31,7 @@ class ActiveLoader {
  private:
   friend class BufferedDataSourceTest;
 
-  scoped_ptr<WebKit::WebURLLoader> loader_;
+  scoped_ptr<blink::WebURLLoader> loader_;
   bool deferred_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ActiveLoader);

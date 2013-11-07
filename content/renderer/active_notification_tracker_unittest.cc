@@ -10,13 +10,13 @@ namespace content {
 TEST(ActiveNotificationTrackerTest, TestLookupAndClear) {
   ActiveNotificationTracker tracker;
 
-  WebKit::WebNotification notification1;
+  blink::WebNotification notification1;
   int id1 = tracker.RegisterNotification(notification1);
 
-  WebKit::WebNotification notification2;
+  blink::WebNotification notification2;
   int id2 = tracker.RegisterNotification(notification2);
 
-  WebKit::WebNotification result;
+  blink::WebNotification result;
   tracker.GetNotification(id1, &result);
   EXPECT_TRUE(result == notification1);
 

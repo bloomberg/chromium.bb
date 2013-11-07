@@ -47,11 +47,11 @@
 
 static const uint32 kGLTextureExternalOES = 0x8D65;
 
-using WebKit::WebMediaPlayer;
-using WebKit::WebSize;
-using WebKit::WebString;
-using WebKit::WebTimeRanges;
-using WebKit::WebURL;
+using blink::WebMediaPlayer;
+using blink::WebSize;
+using blink::WebString;
+using blink::WebTimeRanges;
+using blink::WebURL;
 using media::MediaPlayerAndroid;
 using media::VideoFrame;
 
@@ -75,8 +75,8 @@ void WebMediaPlayerAndroid::OnReleaseRemotePlaybackTexture(
 }
 
 WebMediaPlayerAndroid::WebMediaPlayerAndroid(
-    WebKit::WebFrame* frame,
-    WebKit::WebMediaPlayerClient* client,
+    blink::WebFrame* frame,
+    blink::WebMediaPlayerClient* client,
     base::WeakPtr<WebMediaPlayerDelegate> delegate,
     RendererMediaPlayerManager* manager,
     StreamTextureFactory* factory,
@@ -147,7 +147,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
 #endif
   TryCreateStreamTextureProxyIfNeeded();
 
-  if (WebKit::WebRuntimeFeatures::isPrefixedEncryptedMediaEnabled()) {
+  if (blink::WebRuntimeFeatures::isPrefixedEncryptedMediaEnabled()) {
     // TODO(xhwang): Report an error when there is encrypted stream but EME is
     // not enabled. Currently the player just doesn't start and waits for ever.
     decryptor_.reset(new ProxyDecryptor(
@@ -180,7 +180,7 @@ WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
     stream_texture_factory_->DestroyStreamTexture(texture_id_);
 
   if (remote_playback_texture_id_) {
-    WebKit::WebGraphicsContext3D* context =
+    blink::WebGraphicsContext3D* context =
         stream_texture_factory_->Context3d();
     if (context->makeContextCurrent())
       context->deleteTexture(remote_playback_texture_id_);
@@ -212,7 +212,7 @@ WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
 }
 
 void WebMediaPlayerAndroid::load(LoadType load_type,
-                                 const WebKit::WebURL& url,
+                                 const blink::WebURL& url,
                                  CORSMode cors_mode) {
   switch (load_type) {
     case LoadTypeURL:
@@ -508,14 +508,14 @@ bool WebMediaPlayerAndroid::didLoadingProgress() const {
   return ret;
 }
 
-void WebMediaPlayerAndroid::paint(WebKit::WebCanvas* canvas,
-                                  const WebKit::WebRect& rect,
+void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
+                                  const blink::WebRect& rect,
                                   unsigned char alpha) {
   NOTIMPLEMENTED();
 }
 
 bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
-    WebKit::WebGraphicsContext3D* web_graphics_context,
+    blink::WebGraphicsContext3D* web_graphics_context,
     unsigned int texture,
     unsigned int level,
     unsigned int internal_format,
@@ -908,7 +908,7 @@ void WebMediaPlayerAndroid::DrawRemotePlaybackIcon() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   if (!video_weblayer_)
     return;
-  WebKit::WebGraphicsContext3D* context = stream_texture_factory_->Context3d();
+  blink::WebGraphicsContext3D* context = stream_texture_factory_->Context3d();
   if (!context->makeContextCurrent())
     return;
 
@@ -1171,7 +1171,7 @@ bool WebMediaPlayerAndroid::RetrieveGeometryChange(gfx::RectF* rect) {
 // UMA_HISTOGRAM_COUNTS. The reason that we cannot use those macros directly is
 // that UMA_* macros require the names to be constant throughout the process'
 // lifetime.
-static void EmeUMAHistogramEnumeration(const WebKit::WebString& key_system,
+static void EmeUMAHistogramEnumeration(const blink::WebString& key_system,
                                        const std::string& method,
                                        int sample,
                                        int boundary_value) {
@@ -1181,7 +1181,7 @@ static void EmeUMAHistogramEnumeration(const WebKit::WebString& key_system,
       base::Histogram::kUmaTargetedHistogramFlag)->Add(sample);
 }
 
-static void EmeUMAHistogramCounts(const WebKit::WebString& key_system,
+static void EmeUMAHistogramCounts(const blink::WebString& key_system,
                                   const std::string& method,
                                   int sample) {
   // Use the same parameters as UMA_HISTOGRAM_COUNTS.
@@ -1351,7 +1351,7 @@ void WebMediaPlayerAndroid::OnKeyError(const std::string& session_id,
   client_->keyError(
       current_key_system_,
       WebString::fromUTF8(session_id),
-      static_cast<WebKit::WebMediaPlayerClient::MediaKeyErrorCode>(error_code),
+      static_cast<blink::WebMediaPlayerClient::MediaKeyErrorCode>(error_code),
       system_code);
 }
 
@@ -1370,7 +1370,7 @@ void WebMediaPlayerAndroid::OnKeyMessage(const std::string& session_id,
 }
 
 void WebMediaPlayerAndroid::OnMediaSourceOpened(
-    WebKit::WebMediaSource* web_media_source) {
+    blink::WebMediaSource* web_media_source) {
   client_->mediaSourceOpened(web_media_source);
 }
 
@@ -1378,8 +1378,8 @@ void WebMediaPlayerAndroid::OnNeedKey(const std::string& type,
                                       const std::vector<uint8>& init_data) {
   DCHECK(main_loop_->BelongsToCurrentThread());
   // Do not fire NeedKey event if encrypted media is not enabled.
-  if (!WebKit::WebRuntimeFeatures::isEncryptedMediaEnabled() &&
-      !WebKit::WebRuntimeFeatures::isPrefixedEncryptedMediaEnabled()) {
+  if (!blink::WebRuntimeFeatures::isEncryptedMediaEnabled() &&
+      !blink::WebRuntimeFeatures::isPrefixedEncryptedMediaEnabled()) {
     return;
   }
 
@@ -1414,7 +1414,7 @@ void WebMediaPlayerAndroid::DoReleaseRemotePlaybackTexture(uint32 sync_point) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(remote_playback_texture_id_);
 
-  WebKit::WebGraphicsContext3D* context =
+  blink::WebGraphicsContext3D* context =
       stream_texture_factory_->Context3d();
 
   if (sync_point)

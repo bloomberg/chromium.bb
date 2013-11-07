@@ -113,7 +113,7 @@ class WAVEDecoder {
   // WAVE file, |destination_bus| is filled with the decoded data and
   // DecodeWAVEFile returns true.  Otherwise, DecodeWAVEFile returns
   // false.
-  bool DecodeWAVEFile(WebKit::WebAudioBus* destination_bus);
+  bool DecodeWAVEFile(blink::WebAudioBus* destination_bus);
 
  private:
   // Minimum number of bytes in a WAVE file to hold all of the data we
@@ -157,7 +157,7 @@ class WAVEDecoder {
 
   // Read data chunk and save it to |destination_bus|.  Returns false
   // if the data chunk could not be read correctly.
-  bool CopyDataChunkToBus(WebKit::WebAudioBus* destination_bus);
+  bool CopyDataChunkToBus(blink::WebAudioBus* destination_bus);
 
   // The WAVE chunk ID that identifies the chunk.
   uint8_t chunk_id_[kChunkIDLength];
@@ -293,7 +293,7 @@ bool WAVEDecoder::ReadFMTChunk() {
   return false;
 }
 
-bool WAVEDecoder::CopyDataChunkToBus(WebKit::WebAudioBus* destination_bus) {
+bool WAVEDecoder::CopyDataChunkToBus(blink::WebAudioBus* destination_bus) {
   // The data chunk contains the audio data itself.
   if (!bytes_per_sample_ || bytes_per_sample_ > kMaximumBytesPerSample) {
     DVLOG(1) << "WARNING: data chunk without preceeding fmt chunk,"
@@ -326,7 +326,7 @@ bool WAVEDecoder::CopyDataChunkToBus(WebKit::WebAudioBus* destination_bus) {
   return true;
 }
 
-bool WAVEDecoder::DecodeWAVEFile(WebKit::WebAudioBus* destination_bus) {
+bool WAVEDecoder::DecodeWAVEFile(blink::WebAudioBus* destination_bus) {
   // Parse and decode WAVE file. If we can't parse it, return false.
 
   if (buffer_ + kMinimumWAVLength > buffer_end_) {
@@ -395,7 +395,7 @@ bool WAVEDecoder::DecodeWAVEFile(WebKit::WebAudioBus* destination_bus) {
 // bus and copy the pcm data to the destination bus as it's being
 // received.
 static void CopyPcmDataToBus(int input_fd,
-                             WebKit::WebAudioBus* destination_bus,
+                             blink::WebAudioBus* destination_bus,
                              size_t number_of_frames,
                              unsigned number_of_channels,
                              double file_sample_rate) {
@@ -433,7 +433,7 @@ static void CopyPcmDataToBus(int input_fd,
 // until there's no more data and then copy the data to the
 // destination bus.
 static void BufferAndCopyPcmDataToBus(int input_fd,
-                                      WebKit::WebAudioBus* destination_bus,
+                                      blink::WebAudioBus* destination_bus,
                                       unsigned number_of_channels,
                                       double file_sample_rate) {
   int16_t pipe_data[PIPE_BUF / sizeof(int16_t)];
@@ -478,7 +478,7 @@ static void BufferAndCopyPcmDataToBus(int input_fd,
     destination_bus->resizeSmaller(decoded_frames);
 }
 
-static bool TryWAVEFileDecoder(WebKit::WebAudioBus* destination_bus,
+static bool TryWAVEFileDecoder(blink::WebAudioBus* destination_bus,
                                const uint8_t* encoded_data,
                                size_t data_size) {
   WAVEDecoder decoder(encoded_data, data_size);
@@ -493,7 +493,7 @@ static bool TryWAVEFileDecoder(WebKit::WebAudioBus* destination_bus,
 // to the browser to start the decoder using this buffer and one end
 // of a pipe.  The MediaCodec class will decode the data from the
 // shared memory and write the PCM samples back to us over a pipe.
-bool DecodeAudioFileData(WebKit::WebAudioBus* destination_bus, const char* data,
+bool DecodeAudioFileData(blink::WebAudioBus* destination_bus, const char* data,
                          size_t data_size, double sample_rate,
                          scoped_refptr<ThreadSafeSender> sender) {
   // Try to decode the data as a WAVE file first.  If it can't be

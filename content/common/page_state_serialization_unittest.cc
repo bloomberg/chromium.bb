@@ -116,12 +116,12 @@ class PageStateSerializationTest : public testing::Test {
     http_body->http_content_type = NS16("text/foo");
 
     ExplodedHttpBodyElement e1;
-    e1.type = WebKit::WebHTTPBody::Element::TypeData;
+    e1.type = blink::WebHTTPBody::Element::TypeData;
     e1.data = "foo";
     http_body->elements.push_back(e1);
 
     ExplodedHttpBodyElement e2;
-    e2.type = WebKit::WebHTTPBody::Element::TypeFile;
+    e2.type = blink::WebHTTPBody::Element::TypeFile;
     e2.file_path = NS16("file.txt");
     e2.file_start = 100;
     e2.file_length = 1024;
@@ -161,17 +161,17 @@ class PageStateSerializationTest : public testing::Test {
       frame_state->http_body.is_null = false;
 
       ExplodedHttpBodyElement e1;
-      e1.type = WebKit::WebHTTPBody::Element::TypeData;
+      e1.type = blink::WebHTTPBody::Element::TypeData;
       e1.data = "first data block";
       frame_state->http_body.elements.push_back(e1);
 
       ExplodedHttpBodyElement e2;
-      e2.type = WebKit::WebHTTPBody::Element::TypeFile;
+      e2.type = blink::WebHTTPBody::Element::TypeFile;
       e2.file_path = NS16("file.txt");
       frame_state->http_body.elements.push_back(e2);
 
       ExplodedHttpBodyElement e3;
-      e3.type = WebKit::WebHTTPBody::Element::TypeData;
+      e3.type = blink::WebHTTPBody::Element::TypeData;
       e3.data = "data the second";
       frame_state->http_body.elements.push_back(e3);
 
@@ -352,7 +352,7 @@ TEST_F(PageStateSerializationTest, BadMessagesTest2) {
   p.WriteInt(0);
   // WebForm
   p.WriteInt(1);
-  p.WriteInt(WebKit::WebHTTPBody::Element::TypeData);
+  p.WriteInt(blink::WebHTTPBody::Element::TypeData);
 
   std::string s(static_cast<const char*>(p.data()), p.size());
 
