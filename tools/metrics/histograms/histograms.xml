@@ -3060,6 +3060,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Download.OpenMethod" enum="DownloadOpenMethod">
+  <summary>
+    Invocation count for methods of opening a download. For some file types,
+    Chrome defaults to opening the file in the browser instead of invoking the
+    system handler. The user has the option of overriding this behavior.
+  </summary>
+</histogram>
+
 <histogram name="Download.OpensOutstanding">
   <summary>The number of unopened downloads, when one is opened.</summary>
 </histogram>
@@ -21407,6 +21415,12 @@ other types of suffix sets.
   <int value="6" label="USER_VALIDATED"/>
   <int value="7" label="DANGEROUS_HOST"/>
   <int value="8" label="POTENTIALLY_UNWANTED"/>
+</enum>
+
+<enum name="DownloadOpenMethod" type="int">
+  <int value="0" label="Opened with plaform handler by default"/>
+  <int value="1" label="Opened in browser by default"/>
+  <int value="2" label="Opened with plaform handler by user choice"/>
 </enum>
 
 <enum name="DownloadSavePackageEvent" type="int">

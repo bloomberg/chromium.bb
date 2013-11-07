@@ -37,3 +37,9 @@ void RecordOpenedDangerousConfirmDialog(
                             danger_type,
                             content::DOWNLOAD_DANGER_TYPE_MAX);
 }
+
+void RecordDownloadOpenMethod(ChromeDownloadOpenMethod open_method) {
+  UMA_HISTOGRAM_ENUMERATION("Download.OpenMethod",
+                            open_method,
+                            DOWNLOAD_OPEN_METHOD_LAST_ENTRY);
+}
