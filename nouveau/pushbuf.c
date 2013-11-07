@@ -739,7 +739,8 @@ void
 nouveau_pushbuf_reloc(struct nouveau_pushbuf *push, struct nouveau_bo *bo,
 		      uint32_t data, uint32_t flags, uint32_t vor, uint32_t tor)
 {
-	*push->cur++ = pushbuf_krel(push, bo, data, flags, vor, tor);
+	*push->cur = pushbuf_krel(push, bo, data, flags, vor, tor);
+	push->cur++;
 }
 
 int
