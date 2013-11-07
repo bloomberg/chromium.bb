@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/shell/scoped_message_pipe.h"
+#include "mojo/common/scoped_message_pipe.h"
 
 namespace mojo {
-namespace shell {
+namespace common {
 
 ScopedMessagePipe::ScopedMessagePipe()
     : handle_0_(MOJO_HANDLE_INVALID),
@@ -21,5 +21,5 @@ ScopedMessagePipe::~ScopedMessagePipe() {
     MojoClose(handle_1_);
 }
 
-}  // namespace shell
+}  // namespace common
 }  // namespace mojo

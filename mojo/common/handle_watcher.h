@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SHELL_HANDLE_WATCHER_H_
-#define MOJO_SHELL_HANDLE_WATCHER_H_
+#ifndef MOJO_COMMON_HANDLE_WATCHER_H_
+#define MOJO_COMMON_HANDLE_WATCHER_H_
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
+#include "mojo/common/mojo_common_export.h"
 #include "mojo/public/system/core.h"
 
 namespace base {
@@ -17,14 +18,14 @@ class TimeTicks;
 }
 
 namespace mojo {
-namespace shell {
+namespace common {
 namespace test {
 class HandleWatcherTest;
 }
 
 // HandleWatcher is used to asynchronously wait on a handle and notify a Closure
 // when the handle is ready, or the deadline has expired.
-class HandleWatcher {
+class MOJO_COMMON_EXPORT HandleWatcher {
  public:
   HandleWatcher();
   ~HandleWatcher();
@@ -64,7 +65,7 @@ class HandleWatcher {
   DISALLOW_COPY_AND_ASSIGN(HandleWatcher);
 };
 
-}  // namespace shell
+}  // namespace common
 }  // namespace mojo
 
-#endif  // MOJO_SHELL_HANDLE_WATCHER_H_
+#endif  // MOJO_COMMON_HANDLE_WATCHER_H_

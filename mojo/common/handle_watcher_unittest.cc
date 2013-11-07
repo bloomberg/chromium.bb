@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/shell/handle_watcher.h"
+#include "mojo/common/handle_watcher.h"
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "mojo/shell/scoped_message_pipe.h"
+#include "mojo/common/scoped_message_pipe.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
-namespace shell {
+namespace common {
 namespace test {
 
 MojoResult WriteToHandle(MojoHandle handle) {
@@ -102,6 +102,8 @@ class HandleWatcherTest : public testing::Test {
   base::SimpleTestTickClock tick_clock_;
 
  private:
+  base::MessageLoop message_loop_;
+
   DISALLOW_COPY_AND_ASSIGN(HandleWatcherTest);
 };
 
@@ -274,5 +276,5 @@ TEST_F(HandleWatcherTest, Deadline) {
 }
 
 }  // namespace test
-}  // namespace shell
+}  // namespace common
 }  // namespace mojo

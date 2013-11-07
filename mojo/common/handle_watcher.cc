@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/shell/handle_watcher.h"
+#include "mojo/common/handle_watcher.h"
 
 #include <map>
 #include <set>
@@ -17,10 +17,10 @@
 #include "base/threading/thread.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
-#include "mojo/shell/scoped_message_pipe.h"
+#include "mojo/common/scoped_message_pipe.h"
 
 namespace mojo {
-namespace shell {
+namespace common {
 
 typedef int WatcherID;
 
@@ -396,5 +396,5 @@ base::TimeTicks HandleWatcher::MojoDeadlineToTimeTicks(MojoDeadline deadline) {
       NowTicks() + base::TimeDelta::FromMicroseconds(deadline);
 }
 
-}  // namespace shell
+}  // namespace common
 }  // namespace mojo

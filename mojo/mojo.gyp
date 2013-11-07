@@ -11,6 +11,8 @@
       'target_name': 'mojo',
       'type': 'none',
       'dependencies': [
+        'mojo_common_lib',
+        'mojo_common_unittests',
         'mojo_public_test_support',
         'mojo_public_unittests',
         'mojo_public_perftests',
@@ -18,7 +20,6 @@
         'mojo_system_unittests',
         'mojo_shell_lib',
         'mojo_shell',
-        'mojo_shell_unittests',
         'mojo_utility',
         'sample_app',
         'mojo_bindings',
@@ -39,6 +40,55 @@
         'public/tests/simple_bindings_support.h',
         'public/tests/test_support.cc',
         'public/tests/test_support.h',
+      ],
+    },
+    {
+      'target_name': 'mojo_common_lib',
+      'type': '<(component)',
+      'defines': [
+        'MOJO_COMMON_IMPLEMENTATION',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        'mojo_system',
+      ],
+      'sources': [
+        'common/handle_watcher.cc',
+        'common/handle_watcher.h',
+        'common/scoped_message_pipe.cc',
+        'common/scoped_message_pipe.h',
+      ],
+      'conditions': [
+        ['OS == "win"', {
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [
+            4267,
+          ],
+        }],
+      ],
+    },
+    {
+      'target_name': 'mojo_common_unittests',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/base.gyp:run_all_unittests',
+        '../testing/gtest.gyp:gtest',
+        'mojo_common_lib',
+        'mojo_system',
+      ],
+      'sources': [
+        'common/handle_watcher_unittest.cc',
+        'common/test/run_all_unittests.cc',
+      ],
+      'conditions': [
+        ['OS == "win"', {
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [
+            4267,
+          ],
+        }],
       ],
     },
     {
@@ -161,16 +211,12 @@
         'shell/app_container.h',
         'shell/context.cc',
         'shell/context.h',
-        'shell/handle_watcher.cc',
-        'shell/handle_watcher.h',
         'shell/loader.cc',
         'shell/loader.h',
         'shell/network_delegate.cc',
         'shell/network_delegate.h',
         'shell/run.cc',
         'shell/run.h',
-        'shell/scoped_message_pipe.cc',
-        'shell/scoped_message_pipe.h',
         'shell/storage.cc',
         'shell/storage.h',
         'shell/switches.cc',
@@ -201,29 +247,6 @@
       ],
       'sources': [
         'shell/desktop/mojo_main.cc',
-      ],
-      'conditions': [
-        ['OS == "win"', {
-          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-          'msvs_disabled_warnings': [
-            4267,
-          ],
-        }],
-      ],
-    },
-    {
-      'target_name': 'mojo_shell_unittests',
-      'type': 'executable',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../base/base.gyp:run_all_unittests',
-        '../testing/gtest.gyp:gtest',
-        'mojo_shell_lib',
-        'mojo_system',
-      ],
-      'sources': [
-        'shell/handle_watcher_unittest.cc',
-        'shell/test/run_all_unittests.cc',
       ],
       'conditions': [
         ['OS == "win"', {
