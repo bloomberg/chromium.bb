@@ -532,10 +532,18 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   EXPECT_EQ(std::string(), tls_channel_id);
 }
 
+// Flaky on official Linux bot. http://crbug.com/315264
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_LINUX)
+#define MAYBE_WebConnectableWithEmptyTlsChannelIdAndClosedBackgroundPage \
+    DISABLED_WebConnectableWithEmptyTlsChannelIdAndClosedBackgroundPage
+#else
+#define MAYBE_WebConnectableWithEmptyTlsChannelIdAndClosedBackgroundPage \
+    WebConnectableWithEmptyTlsChannelIdAndClosedBackgroundPage
+#endif
 // Tests a web connectable extension that receives TLS channel id, but
 // immediately closes its background page upon receipt of a message.
 IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
-    WebConnectableWithEmptyTlsChannelIdAndClosedBackgroundPage) {
+    MAYBE_WebConnectableWithEmptyTlsChannelIdAndClosedBackgroundPage) {
   InitializeTestServer();
 
   const Extension* chromium_connectable =
