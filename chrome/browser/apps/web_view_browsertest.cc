@@ -482,30 +482,54 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     return scoped_ptr<net::test_server::HttpResponse>();
   }
 
+  enum TestServer {
+    NEEDS_TEST_SERVER,
+    NO_TEST_SERVER
+  };
+
   void TestHelper(const std::string& test_name,
-                  const std::string& app_location) {
-    ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
+                  const std::string& app_location,
+                  TestServer test_server) {
+    // For serving guest pages.
+    if (test_server == NEEDS_TEST_SERVER) {
+      if (!StartEmbeddedTestServer()) {
+        LOG(ERROR) << "FAILED TO START TEST SERVER.";
+        return;
+      }
+      embedded_test_server()->RegisterRequestHandler(
+          base::Bind(&WebViewTest::RedirectResponseHandler,
+                    kRedirectResponsePath,
+                    embedded_test_server()->GetURL(kRedirectResponseFullPath)));
+
+      embedded_test_server()->RegisterRequestHandler(
+          base::Bind(&WebViewTest::EmptyResponseHandler, kEmptyResponsePath));
+    }
+
     ExtensionTestMessageListener launched_listener("Launched", false);
     LoadAndLaunchPlatformApp(app_location.c_str());
-    ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+    if (!launched_listener.WaitUntilSatisfied()) {
+      LOG(ERROR) << "TEST DID NOT LAUNCH.";
+      return;
+    }
 
-    embedded_test_server()->RegisterRequestHandler(
-        base::Bind(&WebViewTest::RedirectResponseHandler,
-                   kRedirectResponsePath,
-                   embedded_test_server()->GetURL(kRedirectResponseFullPath)));
-
-    embedded_test_server()->RegisterRequestHandler(
-        base::Bind(&WebViewTest::EmptyResponseHandler, kEmptyResponsePath));
+    // Flush any pending events to make sure we start with a clean slate.
+    content::RunAllPendingInMessageLoop();
 
     content::WebContents* embedder_web_contents =
         GetFirstShellWindowWebContents();
-    ASSERT_TRUE(embedder_web_contents);
+    if (!embedder_web_contents) {
+      LOG(ERROR) << "UNABLE TO FIND EMBEDDER WEB CONTENTS.";
+      return;
+    }
 
     ExtensionTestMessageListener done_listener("TEST_PASSED", false);
     done_listener.AlsoListenForFailureMessage("TEST_FAILED");
-    EXPECT_TRUE(content::ExecuteScript(
-                    embedder_web_contents,
-                    base::StringPrintf("runTest('%s')", test_name.c_str())));
+    if (!content::ExecuteScript(
+            embedder_web_contents,
+            base::StringPrintf("runTest('%s')", test_name.c_str()))) {
+      LOG(ERROR) << "UNABLE TO START TEST.";
+      return;
+    }
     ASSERT_TRUE(done_listener.WaitUntilSatisfied());
   }
 
@@ -621,14 +645,14 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AutoSizeSW) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAutosizeAfterNavigation) {
-  TestHelper("testAutosizeAfterNavigation", "web_view/shim");
+  TestHelper("testAutosizeAfterNavigation", "web_view/shim", NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAutosizeBeforeNavigation) {
-  TestHelper("testAutosizeBeforeNavigation", "web_view/shim");
+  TestHelper("testAutosizeBeforeNavigation", "web_view/shim", NO_TEST_SERVER);
 }
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAutosizeRemoveAttributes) {
-  TestHelper("testAutosizeRemoveAttributes", "web_view/shim");
+  TestHelper("testAutosizeRemoveAttributes", "web_view/shim", NO_TEST_SERVER);
 }
 
 // This test is disabled due to being flaky. http://crbug.com/282116
@@ -641,51 +665,55 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAutosizeRemoveAttributes) {
 #endif
 IN_PROC_BROWSER_TEST_F(WebViewTest,
                        MAYBE_Shim_TestAutosizeWithPartialAttributes) {
-  TestHelper("testAutosizeWithPartialAttributes", "web_view/shim");
+  TestHelper("testAutosizeWithPartialAttributes",
+             "web_view/shim",
+             NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAPIMethodExistence) {
-  TestHelper("testAPIMethodExistence", "web_view/shim");
+  TestHelper("testAPIMethodExistence", "web_view/shim", NO_TEST_SERVER);
 }
 
 // Tests the existence of WebRequest API event objects on the request
 // object, on the webview element, and hanging directly off webview.
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPIExistence) {
-  TestHelper("testWebRequestAPIExistence", "web_view/shim");
+  TestHelper("testWebRequestAPIExistence", "web_view/shim", NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestChromeExtensionURL) {
-  TestHelper("testChromeExtensionURL", "web_view/shim");
+  TestHelper("testChromeExtensionURL", "web_view/shim", NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestChromeExtensionRelativePath) {
-  TestHelper("testChromeExtensionRelativePath", "web_view/shim");
+  TestHelper("testChromeExtensionRelativePath",
+             "web_view/shim",
+             NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestInvalidChromeExtensionURL) {
-  TestHelper("testInvalidChromeExtensionURL", "web_view/shim");
+  TestHelper("testInvalidChromeExtensionURL", "web_view/shim", NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestEventName) {
-  TestHelper("testEventName", "web_view/shim");
+  TestHelper("testEventName", "web_view/shim", NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestOnEventProperty) {
-  TestHelper("testOnEventProperties", "web_view/shim");
+  TestHelper("testOnEventProperties", "web_view/shim", NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadProgressEvent) {
-  TestHelper("testLoadProgressEvent", "web_view/shim");
+  TestHelper("testLoadProgressEvent", "web_view/shim", NO_TEST_SERVER);
 }
 
 // WebViewTest.Shim_TestDestroyOnEventListener is flaky, so disable it.
 // http://crbug.com/255106
 IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_Shim_TestDestroyOnEventListener) {
-  TestHelper("testDestroyOnEventListener", "web_view/shim");
+  TestHelper("testDestroyOnEventListener", "web_view/shim", NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestCannotMutateEventName) {
-  TestHelper("testCannotMutateEventName", "web_view/shim");
+  TestHelper("testCannotMutateEventName", "web_view/shim", NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestPartitionRaisesException) {
@@ -695,7 +723,9 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestPartitionRaisesException) {
     return;
 #endif
 
-  TestHelper("testPartitionRaisesException", "web_view/shim");
+  TestHelper("testPartitionRaisesException",
+             "web_view/shim",
+             NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestExecuteScriptFail) {
@@ -705,36 +735,38 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestExecuteScriptFail) {
     return;
 #endif
 
-  TestHelper("testExecuteScriptFail", "web_view/shim");
+  TestHelper("testExecuteScriptFail", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestExecuteScript) {
-  TestHelper("testExecuteScript", "web_view/shim");
+  TestHelper("testExecuteScript", "web_view/shim", NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestTerminateAfterExit) {
-  TestHelper("testTerminateAfterExit", "web_view/shim");
+  TestHelper("testTerminateAfterExit", "web_view/shim", NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAssignSrcAfterCrash) {
-  TestHelper("testAssignSrcAfterCrash", "web_view/shim");
+  TestHelper("testAssignSrcAfterCrash", "web_view/shim", NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest,
                        Shim_TestNavOnConsecutiveSrcAttributeChanges) {
-  TestHelper("testNavOnConsecutiveSrcAttributeChanges", "web_view/shim");
+  TestHelper("testNavOnConsecutiveSrcAttributeChanges",
+             "web_view/shim",
+             NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNavOnSrcAttributeChange) {
-  TestHelper("testNavOnSrcAttributeChange", "web_view/shim");
+  TestHelper("testNavOnSrcAttributeChange", "web_view/shim", NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveSrcAttribute) {
-  TestHelper("testRemoveSrcAttribute", "web_view/shim");
+  TestHelper("testRemoveSrcAttribute", "web_view/shim", NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestReassignSrcAttribute) {
-  TestHelper("testReassignSrcAttribute", "web_view/shim");
+  TestHelper("testReassignSrcAttribute", "web_view/shim", NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestBrowserPluginNotAllowed) {
@@ -744,35 +776,39 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestBrowserPluginNotAllowed) {
     return;
 #endif
 
-  TestHelper("testBrowserPluginNotAllowed", "web_view/shim");
+  TestHelper("testBrowserPluginNotAllowed", "web_view/shim", NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNewWindow) {
-  TestHelper("testNewWindow", "web_view/shim");
+  TestHelper("testNewWindow", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNewWindowTwoListeners) {
-  TestHelper("testNewWindowTwoListeners", "web_view/shim");
+  TestHelper("testNewWindowTwoListeners", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNewWindowNoPreventDefault) {
-  TestHelper("testNewWindowNoPreventDefault", "web_view/shim");
+  TestHelper("testNewWindowNoPreventDefault",
+             "web_view/shim",
+             NEEDS_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNewWindowNoReferrerLink) {
-  TestHelper("testNewWindowNoReferrerLink", "web_view/shim");
+  TestHelper("testNewWindowNoReferrerLink", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestContentLoadEvent) {
-  TestHelper("testContentLoadEvent", "web_view/shim");
+  TestHelper("testContentLoadEvent", "web_view/shim", NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPI) {
-  TestHelper("testWebRequestAPI", "web_view/shim");
+  TestHelper("testWebRequestAPI", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPIGoogleProperty) {
-  TestHelper("testWebRequestAPIGoogleProperty", "web_view/shim");
+  TestHelper("testWebRequestAPIGoogleProperty",
+             "web_view/shim",
+             NO_TEST_SERVER);
 }
 
 // This test is disabled due to being flaky. http://crbug.com/309451
@@ -786,40 +822,48 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPIGoogleProperty) {
 IN_PROC_BROWSER_TEST_F(
     WebViewTest,
     MAYBE_Shim_TestWebRequestListenerSurvivesReparenting) {
-  TestHelper("testWebRequestListenerSurvivesReparenting", "web_view/shim");
+  TestHelper("testWebRequestListenerSurvivesReparenting",
+             "web_view/shim",
+             NEEDS_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadStartLoadRedirect) {
-  TestHelper("testLoadStartLoadRedirect", "web_view/shim");
+  TestHelper("testLoadStartLoadRedirect", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest,
                        Shim_TestLoadAbortChromeExtensionURLWrongPartition) {
-  TestHelper("testLoadAbortChromeExtensionURLWrongPartition", "web_view/shim");
+  TestHelper("testLoadAbortChromeExtensionURLWrongPartition",
+             "web_view/shim",
+             NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadAbortEmptyResponse) {
-  TestHelper("testLoadAbortEmptyResponse", "web_view/shim");
+  TestHelper("testLoadAbortEmptyResponse", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadAbortIllegalChromeURL) {
-  TestHelper("testLoadAbortIllegalChromeURL", "web_view/shim");
+  TestHelper("testLoadAbortIllegalChromeURL",
+             "web_view/shim",
+             NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadAbortIllegalFileURL) {
-  TestHelper("testLoadAbortIllegalFileURL", "web_view/shim");
+  TestHelper("testLoadAbortIllegalFileURL", "web_view/shim", NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadAbortIllegalJavaScriptURL) {
-  TestHelper("testLoadAbortIllegalJavaScriptURL", "web_view/shim");
+  TestHelper("testLoadAbortIllegalJavaScriptURL",
+             "web_view/shim",
+             NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestReload) {
-  TestHelper("testReload", "web_view/shim");
+  TestHelper("testReload", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestGetProcessId) {
-  TestHelper("testGetProcessId", "web_view/shim");
+  TestHelper("testGetProcessId", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveWebviewOnExit) {
@@ -875,15 +919,21 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveWebviewOnExit) {
 // Remove <webview> immediately after navigating it.
 // This is a regression test for http://crbug.com/276023.
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveWebviewAfterNavigation) {
-  TestHelper("testRemoveWebviewAfterNavigation", "web_view/shim");
+  TestHelper("testRemoveWebviewAfterNavigation",
+             "web_view/shim",
+             NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNavigationToExternalProtocol) {
-  TestHelper("testNavigationToExternalProtocol", "web_view/shim");
+  TestHelper("testNavigationToExternalProtocol",
+             "web_view/shim",
+             NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestResizeWebviewResizesContent) {
-  TestHelper("testResizeWebviewResizesContent", "web_view/shim");
+  TestHelper("testResizeWebviewResizesContent",
+             "web_view/shim",
+             NO_TEST_SERVER);
 }
 
 // This test makes sure we do not crash if app is closed while interstitial
@@ -1500,12 +1550,14 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_TearDownTest) {
 // Note that the test name prefix must be "GeolocationAPI".
 IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasNoAccessAllow) {
   TestHelper("testDenyDenies",
-             "web_view/geolocation/embedder_has_no_permission");
+             "web_view/geolocation/embedder_has_no_permission",
+             NEEDS_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasNoAccessDeny) {
   TestHelper("testDenyDenies",
-             "web_view/geolocation/embedder_has_no_permission");
+             "web_view/geolocation/embedder_has_no_permission",
+             NEEDS_TEST_SERVER);
 }
 
 // In following GeolocationAPIEmbedderHasAccess* tests, embedder (i.e. the
@@ -1520,20 +1572,23 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasNoAccessDeny) {
 // GeolocationAPI* test 1 of 3.
 IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasAccessAllow) {
   TestHelper("testAllow",
-             "web_view/geolocation/embedder_has_permission");
+             "web_view/geolocation/embedder_has_permission",
+             NEEDS_TEST_SERVER);
 }
 
 // GeolocationAPI* test 2 of 3.
 IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasAccessDeny) {
   TestHelper("testDeny",
-             "web_view/geolocation/embedder_has_permission");
+             "web_view/geolocation/embedder_has_permission",
+             NEEDS_TEST_SERVER);
 }
 
 // GeolocationAPI* test 3 of 3.
 IN_PROC_BROWSER_TEST_F(WebViewTest,
                        GeolocationAPIEmbedderHasAccessMultipleBridgeIdAllow) {
   TestHelper("testMultipleBridgeIdAllow",
-             "web_view/geolocation/embedder_has_permission");
+             "web_view/geolocation/embedder_has_permission",
+             NEEDS_TEST_SERVER);
 }
 
 // Tests that
@@ -1676,19 +1731,21 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, NoPermission) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestAlertDialog) {
-  TestHelper("testAlertDialog", "web_view/dialog");
+  TestHelper("testAlertDialog", "web_view/dialog", NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialog) {
-  TestHelper("testConfirmDialog", "web_view/dialog");
+  TestHelper("testConfirmDialog", "web_view/dialog", NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialogCancel) {
-  TestHelper("testConfirmDialogCancel", "web_view/dialog");
+  TestHelper("testConfirmDialogCancel", "web_view/dialog", NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialogDefaultCancel) {
-  TestHelper("testConfirmDialogDefaultCancel", "web_view/dialog");
+  TestHelper("testConfirmDialogDefaultCancel",
+             "web_view/dialog",
+             NO_TEST_SERVER);
 }
 
 // TODO(fsamuel): This test consistently times out when run in parallel with
@@ -1696,11 +1753,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialogDefaultCancel) {
 // See http://crbug.com/314809
 IN_PROC_BROWSER_TEST_F(WebViewTest,
                        DISABLED_Dialog_TestConfirmDialogDefaultGCCancel) {
-  TestHelper("testConfirmDialogDefaultGCCancel", "web_view/dialog");
+  TestHelper("testConfirmDialogDefaultGCCancel",
+             "web_view/dialog",
+             NO_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestPromptDialog) {
-  TestHelper("testPromptDialog", "web_view/dialog");
+  TestHelper("testPromptDialog", "web_view/dialog", NO_TEST_SERVER);
 }
 
 #if defined(ENABLE_PLUGINS)
@@ -1725,6 +1784,6 @@ class WebViewPluginTest : public WebViewTest {
 };
 
 IN_PROC_BROWSER_TEST_F(WebViewPluginTest, TestLoadPluginEvent) {
-  TestHelper("testPluginLoadPermission", "web_view/shim");
+  TestHelper("testPluginLoadPermission", "web_view/shim", NO_TEST_SERVER);
 }
 #endif  // defined(ENABLE_PLUGINS)

@@ -14,6 +14,9 @@ embedder.closeSocketURL = '';
 embedder.tests = {};
 
 embedder.setUp_ = function(config) {
+  if (!config || !config.testServer) {
+    return;
+  }
   embedder.baseGuestURL = 'http://localhost:' + config.testServer.port;
   embedder.emptyGuestURL = embedder.baseGuestURL +
       '/extensions/platform_apps/web_view/shim/empty_guest.html';
