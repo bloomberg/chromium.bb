@@ -1421,6 +1421,8 @@ NSDictionary* attributeToMethodNameMap = nil;
 
   BrowserAccessibilityCocoa* hit = self;
   for (BrowserAccessibilityCocoa* child in [self children]) {
+    if (!child->browserAccessibility_)
+      continue;
     NSPoint origin = [child origin];
     NSSize size = [[child size] sizeValue];
     NSRect rect;
