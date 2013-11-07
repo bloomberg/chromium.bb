@@ -64,7 +64,7 @@ void AvatarMenuButtonTest::StartAvatarMenu() {
   AvatarMenuButton* button = GetAvatarMenuButton();
   ASSERT_TRUE(button);
 
-  AvatarMenuBubbleView::set_close_on_deactivate(false);
+  AvatarMenuBubbleView::clear_close_on_deactivate_for_testing();
   static_cast<views::MenuButtonListener*>(button)->OnMenuButtonClicked(
       NULL, gfx::Point());
   base::MessageLoop::current()->RunUntilIdle();

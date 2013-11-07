@@ -53,8 +53,8 @@ class ProfileChooserView : public views::BubbleDelegateView,
   // We normally close the bubble any time it becomes inactive but this can lead
   // to flaky tests where unexpected UI events are triggering this behavior.
   // Tests should call this with "false" for more consistent operation.
-  static void set_close_on_deactivate(bool close) {
-    close_on_deactivate_ = close;
+  static void clear_close_on_deactivate_for_testing() {
+    close_on_deactivate_for_testing_ = false;
   }
 
  private:
@@ -97,7 +97,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
   virtual void OnRefreshTokenRevoked(const std::string& account_id) OVERRIDE;
 
   static ProfileChooserView* profile_bubble_;
-  static bool close_on_deactivate_;
+  static bool close_on_deactivate_for_testing_;
 
   void ResetLinksAndButtons();
 
