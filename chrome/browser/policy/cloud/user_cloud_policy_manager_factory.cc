@@ -67,6 +67,7 @@ UserCloudPolicyManagerFactory::CreateManagerForOriginalBrowserContext(
     content::BrowserContext* context,
     bool force_immediate_load,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner) {
+  DCHECK(!context->IsOffTheRecord());
   scoped_ptr<UserCloudPolicyStore> store(
       UserCloudPolicyStore::Create(context->GetPath(), background_task_runner));
   if (force_immediate_load)
@@ -94,10 +95,19 @@ UserCloudPolicyManagerFactory::RegisterManagerForOffTheRecordBrowserContext(
 
 void UserCloudPolicyManagerFactory::BrowserContextShutdown(
     content::BrowserContext* context) {
-  if (context->IsOffTheRecord())
-    return;
   UserCloudPolicyManager* manager = GetManagerForBrowserContext(context);
-  if (manager)
+  // E.g. for a TestingProfile there might not be a manager created.
+  if (!manager)
+    return;
+
+  // Remove |context| from the |managers_| map. In case of |context| is
+  // off the record, don't delete the manager instance. In case of the original
+  // context, also Shutdown the manager instance (which calls Unregister as
+  // well). We never delete managers here, because they're not owned by this
+  // factory.
+  if (context->IsOffTheRecord())
+    Unregister(context, NULL /* don't check the manager instance */);
+  else
     manager->Shutdown();
 }
 
@@ -112,8 +122,7 @@ void UserCloudPolicyManagerFactory::CreateServiceNow(
 void UserCloudPolicyManagerFactory::Register(content::BrowserContext* context,
                                              UserCloudPolicyManager* instance) {
   UserCloudPolicyManager*& entry = managers_[context];
-  // TODO(pneubeck): Re-enable this DCHECK. See http://crbug.com/315266.
-  // DCHECK(!entry);
+  DCHECK(!entry);
   entry = instance;
 }
 
@@ -122,7 +131,8 @@ void UserCloudPolicyManagerFactory::Unregister(
     UserCloudPolicyManager* instance) {
   ManagerMap::iterator entry = managers_.find(context);
   if (entry != managers_.end()) {
-    DCHECK_EQ(instance, entry->second);
+    if (instance)
+      DCHECK_EQ(instance, entry->second);
     managers_.erase(entry);
   } else {
     NOTREACHED();
