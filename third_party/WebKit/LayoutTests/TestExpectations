@@ -526,3 +526,10 @@ crbug.com/315913 [ Win7 Debug ] editing/spelling/inline-spelling-markers-hidpi.h
 
 crbug.com/316113 fast/js/cross-frame-really-bad-time-with-__proto__.html [ Failure Pass ]
 crbug.com/316113 fast/js/cross-frame-really-bad-time.html [ Failure Pass ]
+
+crbug.com/316349 inspector-protocol/page/enable-disable.html [ Failure Pass ]
+
+crbug.com/316372 fast/forms/calendar-picker/calendar-picker-f4-key.html [ Failure Pass ]
+crbug.com/316372 fast/forms/calendar-picker/date-open-picker-with-f4-key.html [ Failure Pass ]
+
+crbug.com/316380 fast/frames/seamless/seamless-form-post.html [ Failure Pass ]
