@@ -495,7 +495,7 @@ hooks = [
     'action':
          [
     'download_from_google_storage',
-    '--platform="linux*"',
+    '--platform=linux*',
     '--directory',
     '--bucket',
     'chromium-gn',
