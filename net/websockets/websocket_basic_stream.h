@@ -32,7 +32,7 @@ class NET_EXPORT_PRIVATE WebSocketBasicStream : public WebSocketStream {
   // This class should not normally be constructed directly; see
   // WebSocketStream::CreateAndConnectStream() and
   // WebSocketBasicHandshakeStream::Upgrade().
-  explicit WebSocketBasicStream(
+  WebSocketBasicStream(
       scoped_ptr<ClientSocketHandle> connection,
       const scoped_refptr<GrowableIOBuffer>& http_read_buffer,
       const std::string& sub_protocol,
