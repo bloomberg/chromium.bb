@@ -98,6 +98,9 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
+#include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/schema_registry_service.h"
+#include "chrome/browser/policy/schema_registry_service_factory.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
@@ -402,6 +405,11 @@ ProfileImpl::ProfileImpl(
   // policy data immediately.
   bool force_immediate_policy_load = (create_mode == CREATE_MODE_SYNCHRONOUS);
 #if defined(ENABLE_CONFIGURATION_POLICY)
+  policy::BrowserPolicyConnector* connector =
+      g_browser_process->browser_policy_connector();
+  schema_registry_service_ =
+      policy::SchemaRegistryServiceFactory::CreateForContext(
+          this, connector->GetChromeSchema(), connector->GetSchemaRegistry());
 #if defined(OS_CHROMEOS)
   cloud_policy_manager_ =
       policy::UserCloudPolicyManagerFactoryChromeOS::CreateForProfile(

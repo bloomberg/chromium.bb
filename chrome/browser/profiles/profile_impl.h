@@ -43,6 +43,7 @@ class ExtensionSystem;
 namespace policy {
 class CloudPolicyManager;
 class ProfilePolicyConnector;
+class SchemaRegistryService;
 }
 
 namespace user_prefs {
@@ -213,8 +214,10 @@ class ProfileImpl : public Profile {
   // TODO(mnissler, joaodasilva): The |profile_policy_connector_| provides the
   // PolicyService that the |prefs_| depend on, and must outlive |prefs_|.
   // This can be removed once |prefs_| becomes a BrowserContextKeyedService too.
-  // |profile_policy_connector_| in turn depends on |cloud_policy_manager_|.
+  // |profile_policy_connector_| in turn depends on |cloud_policy_manager_|,
+  // which depends on |schema_registry_service_|.
 #if defined(ENABLE_CONFIGURATION_POLICY)
+  scoped_ptr<policy::SchemaRegistryService> schema_registry_service_;
   scoped_ptr<policy::CloudPolicyManager> cloud_policy_manager_;
 #endif
   scoped_ptr<policy::ProfilePolicyConnector> profile_policy_connector_;

@@ -61,6 +61,8 @@ class SchemaRegistry : public base::NonThreadSafe {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  bool HasObservers() const;
+
  protected:
   void Notify(bool has_new_schemas);
 

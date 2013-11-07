@@ -77,6 +77,9 @@
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_service_impl.h"
+#include "chrome/browser/policy/schema_registry_service.h"
+#include "chrome/browser/policy/schema_registry_service_factory.h"
+#include "components/policy/core/common/schema.h"
 #else
 #include "chrome/browser/policy/policy_service_stub.h"
 #endif  // defined(ENABLE_CONFIGURATION_POLICY)
@@ -323,7 +326,8 @@ void TestingProfile::Init() {
   // TODO(joaodasilva): remove this once this PKS isn't created in ProfileImpl
   // anymore, after converting the PrefService to a PKS. Until then it must
   // be associated with a TestingProfile too.
-  CreateProfilePolicyConnector();
+  if (!IsOffTheRecord())
+    CreateProfilePolicyConnector();
 
   extensions::ExtensionSystemFactory::GetInstance()->SetTestingFactory(
       this, extensions::TestExtensionSystem::Build);
@@ -628,6 +632,12 @@ void TestingProfile::CreateTestingPrefService() {
 void TestingProfile::CreateProfilePolicyConnector() {
   scoped_ptr<policy::PolicyService> service;
 #if defined(ENABLE_CONFIGURATION_POLICY)
+  schema_registry_service_ =
+      policy::SchemaRegistryServiceFactory::CreateForContext(
+          this, policy::Schema(), NULL);
+  CHECK_EQ(schema_registry_service_.get(),
+           policy::SchemaRegistryServiceFactory::GetForContext(this));
+
   std::vector<policy::ConfigurationPolicyProvider*> providers;
   service.reset(new policy::PolicyServiceImpl(providers));
 #else

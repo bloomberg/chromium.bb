@@ -58,6 +58,10 @@ void SchemaRegistry::Notify(bool has_new_schemas) {
                     OnSchemaRegistryUpdated(schema_map_, has_new_schemas));
 }
 
+bool SchemaRegistry::HasObservers() const {
+  return observers_.might_have_observers();
+}
+
 CombinedSchemaRegistry::CombinedSchemaRegistry()
     : own_schema_map_(new SchemaMap) {}
 

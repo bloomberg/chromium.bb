@@ -38,6 +38,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
+#include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/schema.h"
 #include "content/public/browser/browser_thread.h"
@@ -213,6 +214,12 @@ BrowserPolicyConnector::BrowserPolicyConnector()
   // threads aren't running yet; initialize components that need local_state,
   // the system request context or other threads (e.g. FILE) at Init().
 
+  // Initialize the SchemaRegistry with the Chrome schema before creating any
+  // of the policy providers.
+  chrome_schema_ = Schema::Wrap(GetChromeSchemaData());
+  schema_registry_.RegisterComponent(PolicyNamespace(POLICY_DOMAIN_CHROME, ""),
+                                     chrome_schema_);
+
   platform_provider_.reset(CreatePlatformProvider());
 
 #if defined(OS_CHROMEOS)
@@ -381,6 +388,14 @@ PolicyService* BrowserPolicyConnector::GetPolicyService() {
     policy_service_ = CreatePolicyService(providers);
   }
   return policy_service_.get();
+}
+
+const Schema& BrowserPolicyConnector::GetChromeSchema() const {
+  return chrome_schema_;
+}
+
+CombinedSchemaRegistry* BrowserPolicyConnector::GetSchemaRegistry() {
+  return &schema_registry_;
 }
 
 #if defined(OS_CHROMEOS)

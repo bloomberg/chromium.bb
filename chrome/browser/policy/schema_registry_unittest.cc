@@ -57,7 +57,9 @@ TEST(SchemaRegistryTest, Notifications) {
 
   MockSchemaRegistryObserver observer;
   SchemaRegistry registry;
+  EXPECT_FALSE(registry.HasObservers());
   registry.AddObserver(&observer);
+  EXPECT_TRUE(registry.HasObservers());
 
   ASSERT_TRUE(registry.schema_map());
   EXPECT_FALSE(registry.schema_map()->GetSchema(
@@ -96,6 +98,7 @@ TEST(SchemaRegistryTest, Notifications) {
   Mock::VerifyAndClearExpectations(&observer);
 
   registry.RemoveObserver(&observer);
+  EXPECT_FALSE(registry.HasObservers());
 }
 
 TEST(SchemaRegistryTest, Combined) {
