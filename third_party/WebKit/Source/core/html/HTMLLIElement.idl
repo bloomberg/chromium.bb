@@ -18,7 +18,6 @@
  */
 
 interface HTMLLIElement : HTMLElement {
-    [Reflect, TreatNullAs=NullString] attribute DOMString type;
+    [Reflect] attribute DOMString type;
     [Reflect] attribute long value;
 };
-

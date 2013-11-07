@@ -54,7 +54,7 @@ TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLA
 TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLBaseElement.href]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLBaseElement.target]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLBlockquoteElement.cite]
+TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLBlockquoteElement.cite]
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLBodyElement.aLink]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLBodyElement.background]
@@ -74,7 +74,7 @@ TEST SUCCEEDED: The value was the string 'null'. [tested HTMLButtonElement.name]
 TEST SUCCEEDED: The value was the string 'submit'. [tested HTMLButtonElement.type]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLButtonElement.value]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLDivElement.align]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLDivElement.align]
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLEmbedElement.align]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLEmbedElement.name]
@@ -152,7 +152,7 @@ TEST SUCCEEDED: The value was the empty string. [tested HTMLLabelElement.htmlFor
 TEST SUCCEEDED: The value was the empty string. [tested HTMLLegendElement.accessKey]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLLegendElement.align]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLLIElement.type]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLLIElement.type]
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLLinkElement.charset]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLLinkElement.href]
@@ -187,7 +187,7 @@ TEST SUCCEEDED: The value was the empty string. [tested HTMLObjectElement.type]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLObjectElement.useMap]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLObjectElement.width]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLOListElement.type]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLOListElement.type]
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLOptGroupElement.label]
 
@@ -195,14 +195,14 @@ TEST SUCCEEDED: The value was the string 'null'. [tested HTMLOptionElement.text]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLOptionElement.label]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLOptionElement.value]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLParagraphElement.align]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLParagraphElement.align]
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLParamElement.name]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLParamElement.type]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLParamElement.value]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLParamElement.valueType]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLQuoteElement.cite]
+TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLQuoteElement.cite]
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLScriptElement.text]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLScriptElement.htmlFor]
@@ -274,7 +274,7 @@ TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTrackElement.label]
 TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLTrackElement.src]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTrackElement.srclang]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLUListElement.type]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLUListElement.type]
 
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLVideoElement.mediaGroup]
 TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLVideoElement.poster]
