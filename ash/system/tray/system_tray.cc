@@ -99,7 +99,12 @@ class SystemBubbleWrapper {
           views::BubbleBorder::PAINT_NONE);
     }
     is_persistent_ = is_persistent;
-    bubble_->FocusDefault();
+
+    // If ChromeVox is enabled, focus the default item.
+    AccessibilityDelegate* delegate =
+        Shell::GetInstance()->accessibility_delegate();
+    if (delegate->IsSpokenFeedbackEnabled())
+      bubble_->FocusDefault();
   }
 
   // Convenience accessors:
