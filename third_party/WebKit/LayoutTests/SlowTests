@@ -127,4 +127,6 @@ crbug.com/245154 editing/selection/move-by-character-brute-force.html [ Slow ]
 crbug.com/246749 inspector/extensions/extensions-panel.html [ Slow ]
 crbug.com/248969 [ Debug ] printing/page-count-with-one-word.html [ Slow ]
 
+crbug.com/307721 http/tests/inspector/network/long-script-content.html [ Slow ]
+
 crbug.com/313659 [ Linux Release ] fast/line-grid/line-align-left-edges.html [ Slow ]
