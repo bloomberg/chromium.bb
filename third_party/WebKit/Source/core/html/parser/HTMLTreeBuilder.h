@@ -80,6 +80,9 @@ public:
     // Done, close any open tags, etc.
     void finished();
 
+    // Synchronously empty any queues, possibly creating more DOM nodes.
+    void flush() { m_tree.flush(); }
+
     void setShouldSkipLeadingNewline(bool shouldSkip) { m_shouldSkipLeadingNewline = shouldSkip; }
 
 private:

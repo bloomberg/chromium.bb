@@ -358,6 +358,7 @@ HTMLTreeBuilder::FragmentParsingContext::~FragmentParsingContext()
 PassRefPtr<Element> HTMLTreeBuilder::takeScriptToProcess(TextPosition& scriptStartPosition)
 {
     ASSERT(m_scriptToProcess);
+    ASSERT(!m_tree.hasPendingTasks());
     // Unpause ourselves, callers may pause us again when processing the script.
     // The HTML5 spec is written as though scripts are executed inside the tree
     // builder.  We pause the parser to exit the tree builder, and then resume
@@ -398,6 +399,9 @@ void HTMLTreeBuilder::processToken(AtomicHTMLToken* token)
         return;
     }
 
+    // Any non-character token needs to cause us to flush any pending text immediately.
+    // NOTE: flush() can cause any queued tasks to execute, possibly re-entering the parser.
+    m_tree.flush();
     m_shouldSkipLeadingNewline = false;
 
     switch (token->type()) {
@@ -2717,6 +2721,15 @@ bool HTMLTreeBuilder::shouldProcessTokenInForeignContent(AtomicHTMLToken* token)
 
 void HTMLTreeBuilder::processTokenInForeignContent(AtomicHTMLToken* token)
 {
+    if (token->type() == HTMLToken::Character) {
+        const String& characters = token->characters();
+        m_tree.insertTextNode(characters);
+        if (m_framesetOk && !isAllWhitespaceOrReplacementCharacters(characters))
+            m_framesetOk = false;
+        return;
+    }
+
+    m_tree.flush();
     RefPtr<HTMLStackItem> adjustedCurrentNode = adjustedCurrentStackItem();
 
     switch (token->type()) {
@@ -2815,14 +2828,8 @@ void HTMLTreeBuilder::processTokenInForeignContent(AtomicHTMLToken* token)
     }
     case HTMLToken::Comment:
         m_tree.insertComment(token);
-        return;
-    case HTMLToken::Character: {
-        const String& characters = token->characters();
-        m_tree.insertTextNode(characters);
-        if (m_framesetOk && !isAllWhitespaceOrReplacementCharacters(characters))
-            m_framesetOk = false;
         break;
-    }
+    case HTMLToken::Character:
     case HTMLToken::EndOfFile:
         ASSERT_NOT_REACHED();
         break;

@@ -557,6 +557,12 @@ void HTMLDocumentParser::pumpTokenizer(SynchronousMode mode)
     if (isStopped())
         return;
 
+    // There should only be PendingText left since the tree-builder always flushes
+    // the task queue before returning. In case that ever changes, crash.
+    if (mode == ForceSynchronous)
+        m_treeBuilder->flush();
+    RELEASE_ASSERT(!isStopped());
+
     if (session.needsYield)
         m_parserScheduler->scheduleForResume();
 

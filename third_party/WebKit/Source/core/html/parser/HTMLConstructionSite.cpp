@@ -119,6 +119,27 @@ static inline void executeInsertTask(HTMLConstructionSiteTask& task)
         task.child->finishParsingChildren();
 }
 
+static inline void executeInsertTextTask(HTMLConstructionSiteTask& task)
+{
+    ASSERT(task.operation == HTMLConstructionSiteTask::InsertText);
+    ASSERT(task.child->isTextNode());
+
+    // Merge text nodes into previous ones if possible:
+    // http://www.whatwg.org/specs/web-apps/current-work/multipage/tree-construction.html#insert-a-character
+    Text* newText = toText(task.child.get());
+    Node* previousChild = task.nextChild ? task.nextChild->previousSibling() : task.parent->lastChild();
+    if (previousChild && previousChild->isTextNode()) {
+        Text* previousText = toText(previousChild);
+        unsigned lengthLimit = textLengthLimitForContainer(task.parent.get());
+        if (previousText->length() + newText->length() < lengthLimit) {
+            previousText->parserAppendData(newText->data());
+            return;
+        }
+    }
+
+    insert(task);
+}
+
 static inline void executeReparentTask(HTMLConstructionSiteTask& task)
 {
     ASSERT(task.operation == HTMLConstructionSiteTask::Reparent);
@@ -149,6 +170,9 @@ void HTMLConstructionSite::executeTask(HTMLConstructionSiteTask& task)
     if (task.operation == HTMLConstructionSiteTask::Insert)
         return executeInsertTask(task);
 
+    if (task.operation == HTMLConstructionSiteTask::InsertText)
+        return executeInsertTextTask(task);
+
     // All the cases below this point are only used by the adoption agency.
 
     if (task.operation == HTMLConstructionSiteTask::InsertAlreadyParsedChild)
@@ -166,7 +190,7 @@ void HTMLConstructionSite::executeTask(HTMLConstructionSiteTask& task)
 // This is only needed for TextDocuments where we might have text nodes
 // approaching the default length limit (~64k) and we don't want to
 // break a text node in the middle of a combining character.
-static unsigned findBreakIndexBetween(const String& string, unsigned currentPosition, unsigned proposedBreakIndex)
+static unsigned findBreakIndexBetween(const StringBuilder& string, unsigned currentPosition, unsigned proposedBreakIndex)
 {
     ASSERT(currentPosition < proposedBreakIndex);
     ASSERT(proposedBreakIndex <= string.length());
@@ -202,8 +226,46 @@ static String atomizeIfAllWhitespace(const String& string, WhitespaceMode whites
     return string;
 }
 
+void HTMLConstructionSite::flushPendingText()
+{
+    if (m_pendingText.isEmpty())
+        return;
+
+    PendingText pendingText;
+    // Hold onto the current pending text on the stack so that queueTask doesn't recurse infinitely.
+    m_pendingText.swap(pendingText);
+    ASSERT(m_pendingText.isEmpty());
+
+    // Splitting text nodes into smaller chunks contradicts HTML5 spec, but is necessary
+    // for performance, see: https://bugs.webkit.org/show_bug.cgi?id=55898
+    unsigned lengthLimit = textLengthLimitForContainer(pendingText.parent.get());
+
+    unsigned currentPosition = 0;
+    const StringBuilder& string = pendingText.stringBuilder;
+    while (currentPosition < string.length()) {
+        unsigned proposedBreakIndex = std::min(currentPosition + lengthLimit, string.length());
+        unsigned breakIndex = findBreakIndexBetween(string, currentPosition, proposedBreakIndex);
+        ASSERT(breakIndex <= string.length());
+        String substring = string.substring(currentPosition, breakIndex - currentPosition);
+        substring = atomizeIfAllWhitespace(substring, pendingText.whitespaceMode);
+
+        HTMLConstructionSiteTask task(HTMLConstructionSiteTask::InsertText);
+        task.parent = pendingText.parent;
+        task.nextChild = pendingText.nextChild;
+        task.child = Text::create(task.parent->document(), substring);
+        queueTask(task);
+
+        ASSERT(breakIndex > currentPosition);
+        ASSERT(breakIndex - currentPosition == substring.length());
+        ASSERT(toText(task.child.get())->length() == substring.length());
+        currentPosition = breakIndex;
+    }
+}
+
 void HTMLConstructionSite::queueTask(const HTMLConstructionSiteTask& task)
 {
+    flushPendingText();
+    ASSERT(m_pendingText.isEmpty());
     m_taskQueue.append(task);
 }
 
@@ -232,6 +294,8 @@ void HTMLConstructionSite::attachLater(ContainerNode* parent, PassRefPtr<Node> p
 
 void HTMLConstructionSite::executeQueuedTasks()
 {
+    // This has no affect on pendingText, and we may have pendingText
+    // remaining after executing all other queued tasks.
     const size_t size = m_taskQueue.size();
     if (!size)
         return;
@@ -274,10 +338,17 @@ HTMLConstructionSite::~HTMLConstructionSite()
     // Depending on why we're being destroyed it might be OK
     // to forget queued tasks, but currently we don't expect to.
     ASSERT(m_taskQueue.isEmpty());
+    // Currently we assume that text will never be the last token in the
+    // document and that we'll always queue some additional task to cause it to flush.
+    ASSERT(m_pendingText.isEmpty());
 }
 
 void HTMLConstructionSite::detach()
 {
+    // FIXME: We'd like to ASSERT here that we're canceling and not just discarding
+    // text that really should have made it into the DOM earlier, but there
+    // doesn't seem to be a nice way to do that.
+    m_pendingText.discard();
     m_document = 0;
     m_attachmentRoot = 0;
 }
@@ -447,12 +518,15 @@ void HTMLConstructionSite::setCompatibilityModeFromDoctype(const String& name, c
 void HTMLConstructionSite::processEndOfFile()
 {
     ASSERT(currentNode());
+    flush();
     openElements()->popAll();
 }
 
 void HTMLConstructionSite::finishedParsing()
 {
+    // We shouldn't have any queued tasks but we might have pending text which we need to promote to tasks and execute.
     ASSERT(m_taskQueue.isEmpty());
+    flush();
     m_document->finishedParsing();
 }
 
@@ -586,63 +660,22 @@ void HTMLConstructionSite::insertForeignElement(AtomicHTMLToken* token, const At
 
 void HTMLConstructionSite::insertTextNode(const String& string, WhitespaceMode whitespaceMode)
 {
-    HTMLConstructionSiteTask protoTask(HTMLConstructionSiteTask::Insert);
-    protoTask.parent = currentNode();
+    HTMLConstructionSiteTask dummyTask(HTMLConstructionSiteTask::Insert);
+    dummyTask.parent = currentNode();
 
     if (shouldFosterParent())
-        findFosterSite(protoTask);
+        findFosterSite(dummyTask);
 
     // FIXME: This probably doesn't need to be done both here and in insert(Task).
-    if (protoTask.parent->hasTagName(templateTag))
-        protoTask.parent = toHTMLTemplateElement(protoTask.parent.get())->content();
+    if (dummyTask.parent->hasTagName(templateTag))
+        dummyTask.parent = toHTMLTemplateElement(dummyTask.parent.get())->content();
 
-    // Splitting text nodes into smaller chunks contradicts HTML5 spec, but is necessary
-    // for performance, see: https://bugs.webkit.org/show_bug.cgi?id=55898
-    unsigned lengthLimit = textLengthLimitForContainer(protoTask.parent.get());
-    unsigned currentPosition = 0;
-
-    // Merge text nodes into previous ones if possible:
-    // http://www.whatwg.org/specs/web-apps/current-work/multipage/tree-construction.html#insert-a-character
-    Node* previousChild = protoTask.nextChild ? protoTask.nextChild->previousSibling() : protoTask.parent->lastChild();
-    if (previousChild && previousChild->isTextNode()) {
-        Text* previousText = toText(previousChild);
-        unsigned appendLengthLimit = lengthLimit - previousText->length();
-
-        unsigned proposedBreakIndex = std::min(currentPosition + appendLengthLimit, string.length());
-        unsigned breakIndex = findBreakIndexBetween(string, currentPosition, proposedBreakIndex);
-        ASSERT(breakIndex <= string.length());
-        // If we didn't find a breable piece to append, forget it.
-        if (breakIndex) {
-            String substring = string.substring(currentPosition, breakIndex - currentPosition);
-            substring = atomizeIfAllWhitespace(substring, whitespaceMode);
-            previousText->parserAppendData(substring);
-            currentPosition += substring.length();
-        }
-    }
-
-    while (currentPosition < string.length()) {
-        unsigned proposedBreakIndex = std::min(currentPosition + lengthLimit, string.length());
-        unsigned breakIndex = findBreakIndexBetween(string, currentPosition, proposedBreakIndex);
-        // We failed to find a breakable boudary between the minimum and the proposed, just give up and break at the proposed index.
-        // We could go searching after the proposed index, but current callers are attempting to break after 65k chars!
-        // 65k of unbreakable characters isn't worth trying to handle "correctly".
-        if (!breakIndex)
-            breakIndex = proposedBreakIndex;
-        ASSERT(breakIndex <= string.length());
-        String substring = string.substring(currentPosition, breakIndex - currentPosition);
-        substring = atomizeIfAllWhitespace(substring, whitespaceMode);
-
-        HTMLConstructionSiteTask task(HTMLConstructionSiteTask::Insert);
-        task.parent = protoTask.parent;
-        task.nextChild = protoTask.nextChild;
-        task.child = Text::create(task.parent->document(), substring);
-        queueTask(task);
-
-        ASSERT(breakIndex > currentPosition);
-        ASSERT(breakIndex - currentPosition == substring.length());
-        ASSERT(toText(task.child)->length() == substring.length());
-        currentPosition = breakIndex;
-    }
+    // Unclear when parent != case occurs. Somehow we insert text into two separate nodes while processing the same Token.
+    // The nextChild != dummy.nextChild case occurs whenever foster parenting happened and we hit a new text node "<table>a</table>b"
+    // In either case we have to flush the pending text into the task queue before making more.
+    if (!m_pendingText.isEmpty() && (m_pendingText.parent != dummyTask.parent ||  m_pendingText.nextChild != dummyTask.nextChild))
+        flushPendingText();
+    m_pendingText.append(dummyTask.parent, dummyTask.nextChild, string, whitespaceMode);
 }
 
 void HTMLConstructionSite::reparent(HTMLElementStack::ElementRecord* newParent, HTMLElementStack::ElementRecord* child)

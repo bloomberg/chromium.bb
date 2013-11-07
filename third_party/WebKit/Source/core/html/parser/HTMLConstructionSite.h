@@ -41,6 +41,7 @@ namespace WebCore {
 struct HTMLConstructionSiteTask {
     enum Operation {
         Insert,
+        InsertText, // Handles possible merging of text nodes.
         InsertAlreadyParsedChild, // Insert w/o calling begin/end parsing.
         Reparent,
         TakeAllChildren,
@@ -96,7 +97,28 @@ public:
     ~HTMLConstructionSite();
 
     void detach();
+
+    // executeQueuedTasks empties the queue but does not flush pending text.
+    // NOTE: Possible reentrancy via JavaScript execution.
     void executeQueuedTasks();
+
+    // flushPendingText turns pending text into queued Text insertions, but does not execute them.
+    void flushPendingText();
+
+    // Called before every token in HTMLTreeBuilder::processToken, thus inlined:
+    void flush()
+    {
+        if (!hasPendingTasks())
+            return;
+        flushPendingText();
+        executeQueuedTasks(); // NOTE: Possible reentrancy via JavaScript execution.
+        ASSERT(!hasPendingTasks());
+    }
+
+    bool hasPendingTasks()
+    {
+        return !m_pendingText.isEmpty() || !m_taskQueue.isEmpty();
+    }
 
     void setDefaultCompatibilityMode();
     void processEndOfFile();
@@ -215,6 +237,53 @@ private:
     mutable HTMLFormattingElementList m_activeFormattingElements;
 
     TaskQueue m_taskQueue;
+
+    struct PendingText {
+        PendingText()
+            : whitespaceMode(WhitespaceUnknown)
+        {
+        }
+
+        void append(PassRefPtr<ContainerNode> newParent, PassRefPtr<Node> newNextChild, const String& newString, WhitespaceMode newWhitespaceMode)
+        {
+            ASSERT(!parent || parent == newParent);
+            parent = newParent;
+            ASSERT(!nextChild || nextChild == newNextChild);
+            nextChild = newNextChild;
+            stringBuilder.append(newString);
+            whitespaceMode = std::min(whitespaceMode, newWhitespaceMode);
+        }
+
+        void swap(PendingText& other)
+        {
+            std::swap(whitespaceMode, other.whitespaceMode);
+            parent.swap(other.parent);
+            nextChild.swap(other.nextChild);
+            stringBuilder.swap(other.stringBuilder);
+        }
+
+        void discard()
+        {
+            PendingText discardedText;
+            swap(discardedText);
+        }
+
+        bool isEmpty()
+        {
+            // When the stringbuilder is empty, the parent and whitespace should also be "empty".
+            ASSERT(stringBuilder.isEmpty() == !parent);
+            ASSERT(!stringBuilder.isEmpty() || !nextChild);
+            ASSERT(!stringBuilder.isEmpty() || (whitespaceMode == WhitespaceUnknown));
+            return stringBuilder.isEmpty();
+        }
+
+        RefPtr<ContainerNode> parent;
+        RefPtr<Node> nextChild;
+        StringBuilder stringBuilder;
+        WhitespaceMode whitespaceMode;
+    };
+
+    PendingText m_pendingText;
 
     ParserContentPolicy m_parserContentPolicy;
     bool m_isParsingFragment;
